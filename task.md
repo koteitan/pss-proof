@@ -32,9 +32,9 @@
       - ✅ 命題（許容化の切片への遺伝性）
       - ✅ 命題（基点の切片への遺伝性）
     - 🚨 §6.4 幹と枝
-      - 🚨 命題（$P$ と $\textrm{IdxSum}$ の関係）
-      - 🚨 系（$P$ と $\textrm{IdxSum}$ の合成の特徴付け）
-      - 🚨 命題（$P$ の各成分の左端の単調性）
+      - ✅ 命題（$P$ と $\textrm{IdxSum}$ の関係）
+      - ✅ 系（$P$ と $\textrm{IdxSum}$ の合成の特徴付け）
+      - ✅ 命題（$P$ の各成分の左端の単調性）
       - 🚨 命題（切片の単項成分と $<_M^{\textrm{Next}}$ の関係）
       - 🚨 命題（$\textrm{FirstNodes}$ と $\textrm{TrMax}$ と $\textrm{Joints}$ の関係）
       - 🚨 系（$\textrm{FirstNodes}$ と $\textrm{Joints}$ の単調性）
