@@ -50,3 +50,31 @@ $$F_M(n) := F_{M[n]}(f(n))$$
 `pss_paper.thy` の `p_5_4_F_oper_dom` / `p_5_4_F_oper_val` を訂正版
 （$\textrm{Lng}\,M > 1$, 第2引数 $f\,n$）で記述し、`pss_mechanized.thy` の
 `m_5_4_*` で証明済み。
+
+---
+
+## A2. §6.6 系（直系先祖による切片と $\textrm{Red}$ と $\textrm{IncrFirst}$ の関係）: 指数の添字 $m$ → $j'_0$
+
+**位置**
+- §6.6 簡約性 / 系（直系先祖による切片と $\textrm{Red}$ と $\textrm{IncrFirst}$ の関係）
+- `content.md` line 1302（命題本文）
+
+**原文**
+
+$(M_j)_{j=j'_0}^{j'_1} = \textrm{IncrFirst}^{M_{0,m} - M_{1,m}}(N)$
+
+**問題点**
+
+ステートメント中の指数 $M_{0,m} - M_{1,m}$ に現れる添字 $m$ は、この系では
+未定義（$m$ はこの命題のスコープに導入されていない）。証明本体（`content.md`
+line 1308–1316）では一貫して $M_{0,j'_0} - M_{1,j'_0}$ を用いており、$m$ は
+$j'_0$ の誤記と判断される。
+
+**訂正案**
+
+$(M_j)_{j=j'_0}^{j'_1} = \textrm{IncrFirst}^{M_{0,j'_0} - M_{1,j'_0}}(N)$
+
+**形式化での扱い**
+
+`pss_paper.thy` の `p_6_6_ancestor_slice_Red_IncrFirst` を訂正版
+（指数 $\textrm{entry}\,M\,0\,j'_0 - \textrm{entry}\,M\,1\,j'_0$）で記述。

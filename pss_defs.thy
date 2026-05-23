@@ -403,4 +403,28 @@ function Red :: "pairseq \<Rightarrow> pairseq" where
              else M))))"
   by pat_completeness auto
 
+
+subsection \<open>§6.6 簡約性 (Reducedness)\<close>
+
+text \<open>\<open>RT\<^sub>PS\<close>: the reduced pair sequences \<open>{M \<in> T\<^sub>PS | Red M = M} = Im(Red)\<close>.\<close>
+
+definition RT_PS :: "pairseq set" where
+  "RT_PS = {M. M \<in> T_PS \<and> Red M = M}"
+
+text \<open>
+  Conditions (A) and (B) of 命題（簡約性と係数の関係）, named for reuse:
+    \<^item> (A): whenever \<open>(i,j\<^sub>0) <\<^bsub>M\<^esub>\<^sup>Next (i,j\<^sub>1)\<close> has a unique parent \<open>j\<^sub>0\<close>
+      (for \<open>i \<in> {0,1}\<close>), then \<open>M\<^bsub>i,j\<^sub>0\<^esub> + 1 = M\<^bsub>i,j\<^sub>1\<^esub>\<close>;
+    \<^item> (B): whenever \<open>j\<^sub>1\<close> (\<open>\<le> Lng M - 1\<close>) has no unique row-0 parent, then
+      \<open>M\<^bsub>0,j\<^sub>1\<^esub> = M\<^bsub>1,j\<^sub>1\<^esub>\<close>.
+\<close>
+
+definition RedCondA :: "pairseq \<Rightarrow> bool" where
+  "RedCondA M \<longleftrightarrow>
+     (\<forall>i\<le>1. \<forall>j1'. hasParent M i j1' \<longrightarrow> entry M i (parent M i j1') + 1 = entry M i j1')"
+
+definition RedCondB :: "pairseq \<Rightarrow> bool" where
+  "RedCondB M \<longleftrightarrow>
+     (\<forall>j1'. \<not> hasParent M 0 j1' \<and> j1' \<le> Lng M - 1 \<longrightarrow> entry M 0 j1' = entry M 1 j1')"
+
 end

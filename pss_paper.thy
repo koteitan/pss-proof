@@ -418,4 +418,97 @@ lemma p_6_5_Red_marked:
   shows "(Red M, m) \<in> Marked"
   sorry
 
+
+subsection \<open>§6.6 簡約性\<close>
+
+text \<open>命題（簡約性の切片への遺伝性） — a reduced sequence restricts to a reduced
+  slice across the trunk end.\<close>
+
+lemma p_6_6_reduced_slice:
+  assumes "M \<in> RT_PS" "j0' \<le> TrMax M" "TrMax M \<le> j1'" "j1' \<le> Lng M - 1"
+  shows "seg M j0' j1' \<in> RT_PS"
+  sorry
+
+text \<open>命題（\<open>P\<close>が簡約性を保つこと）.\<close>
+
+lemma p_6_6_P_reduced:
+  assumes "M \<in> T_PS"
+  shows "M \<in> RT_PS \<longleftrightarrow> (\<forall>J < Lng (P M). P M ! J \<in> RT_PS)"
+  sorry
+
+text \<open>命題（簡約性が基本列で保たれること）.\<close>
+
+lemma p_6_6_reduced_oper:
+  assumes "M \<in> RT_PS" "n \<ge> 1"
+  shows "((M::pairseq)[n]) \<in> RT_PS"
+  sorry
+
+text \<open>命題（簡約性と係数の関係） — reducedness \<open>\<longleftrightarrow>\<close> conditions (A) and (B).\<close>
+
+lemma p_6_6_reduced_iff_cond:
+  assumes "M \<in> T_PS"
+  shows "M \<in> RT_PS \<longleftrightarrow> RedCondA M \<and> RedCondB M"
+  sorry
+
+text \<open>補題（\<open>Red\<close>と左端の関係） (1): \<open>Red\<close> fixes the row-1 left end.\<close>
+
+lemma p_6_6_Red_leftend_1:
+  assumes "M \<in> T_PS"
+  shows "entry (Red M) 1 0 = entry M 1 0"
+  sorry
+
+text \<open>補題（\<open>Red\<close>と左端の関係） (2): a leading diagonal prefix is preserved by \<open>Red\<close>.\<close>
+
+lemma p_6_6_Red_leftend_2:
+  assumes "M \<in> T_PS" "monoT M" "j0 \<le> Lng M - 1"
+    "seg M 0 j0 = diagSeq u (j0 + u)"
+  shows "(Red M) ! j0 = (j0 + u, j0 + u)"
+  sorry
+
+text \<open>補題（簡約性と係数の基本性質） — in a reduced sequence row 0 dominates row 1.\<close>
+
+lemma p_6_6_reduced_coeff:
+  assumes "M \<in> RT_PS" "j < Lng M"
+  shows "entry M 0 j \<ge> entry M 1 j"
+  sorry
+
+text \<open>補題（簡約性と左端の関係） — prepending a diagonal to a reduced mono sequence
+  keeps it reduced and mono.\<close>
+
+lemma p_6_6_reduced_leftend:
+  assumes "M \<in> RT_PS" "M \<in> PT_PS" "u \<le> entry M 1 0"
+  defines "N \<equiv> diagSeq u (entry M 1 0 - 1) @ M"
+  shows "Red N = N \<and> monoT N"
+  sorry
+
+text \<open>補題（条件(A)と(B)と係数の基本性質）.\<close>
+
+lemma p_6_6_condAB_coeff:
+  assumes "M \<in> T_PS" "entry M 0 0 = 0" "entry M 1 0 = 0" "RedCondA M"
+  shows
+    "(\<forall>j \<le> Lng M - 1. entry M 0 j \<le> j)
+   \<and> (RedCondB M \<longrightarrow> (\<forall>j \<le> Lng M - 1. entry M 0 j \<ge> entry M 1 j))
+   \<and> (\<forall>i \<le> 1. (i = 0 \<or> (i = 1 \<and> RedCondB M)) \<longrightarrow>
+        (\<forall>j \<le> Lng M - 1.
+           (\<exists>j0' j1'. \<not> leR M i j0' j1' \<and> j0' < j1' \<and> j1' \<le> j) \<longrightarrow> entry M i j < j))"
+  sorry
+
+text \<open>系（直系先祖による切片と\<open>Red\<close>と\<open>IncrFirst\<close>の関係）.  原文の指数の添字 \<open>m\<close> は
+  \<open>j\<^sub>0'\<close> の誤記（amendments.md A2）。\<close>
+
+lemma p_6_6_ancestor_slice_Red_IncrFirst:
+  assumes "M \<in> RT_PS" "j0' < j1'" "j1' \<le> Lng M - 1" "leR M 0 j0' j1'"
+  defines "N \<equiv> Red (seg M j0' j1')"
+  shows "Red N = N \<and> monoT N
+       \<and> seg M j0' j1' = (IncrFirst ^^ (entry M 0 j0' - entry M 1 j0')) N"
+  sorry
+
+text \<open>系（\<open>1\<close>列ペア数列の基本性質） — the reduced length-1 sequences are exactly
+  the diagonals \<open>((v,v))\<close>.\<close>
+
+lemma p_6_6_oneColumn:
+  assumes "M \<in> T_PS"
+  shows "(Lng M = 1 \<and> M \<in> RT_PS) \<longleftrightarrow> (\<exists>v. M = [(v, v)])"
+  sorry
+
 end
