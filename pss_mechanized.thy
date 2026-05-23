@@ -4285,6 +4285,192 @@ proof -
   qed
 qed
 
+section \<open>§7.4 許容的親子関係 (Admissible parent relation)\<close>
+
+text \<open>Transitivity of \<open>\<le>\<^sub>M\<close> on row 1, and the unified \<open>leR\<close>.\<close>
+
+lemma le1_trans:
+  assumes "le1 M a b" "le1 M b c"
+  shows "le1 M a c"
+  using assms by (auto simp: le1_def intro: rtranclp_trans)
+
+lemma leR_trans:
+  assumes "leR M i a b" "leR M i b c"
+  shows "leR M i a c"
+  using assms by (cases "i = 0") (auto simp: leR_def intro: le0_trans le1_trans)
+
+text \<open>A single \<open>nextR\<close>-step is an instance of \<open>\<le>\<^sub>M\<close> (row \<open>i = 0\<close> or row 1).\<close>
+
+lemma nextR_imp_leR:
+  assumes "nextR M i j0 j1"
+  shows "leR M i j0 j1"
+proof (cases "i = 0")
+  case True
+  hence "nextrel0 M j0 j1" using assms by (simp add: nextR_def)
+  thus ?thesis using True
+    by (auto simp: leR_def le0_def nextrel0_def intro: r_into_rtranclp)
+next
+  case False
+  hence "nextrel1 M j0 j1" using assms by (simp add: nextR_def)
+  thus ?thesis using False
+    by (auto simp: leR_def le1_def nextrel1_def intro: r_into_rtranclp)
+qed
+
+text \<open>
+  Chaining: if every index \<open>j'\<close> in \<open>{a+1..j}\<close> is the row-1 child of its
+  predecessor (\<open>nextrel1 M (j'-1) j'\<close>), then \<open>a\<close> reaches \<open>j\<close> in row 1.
+\<close>
+
+lemma nextrel1_chain:
+  assumes "a \<le> j"
+    and "\<forall>j'. a < j' \<and> j' \<le> j \<longrightarrow> nextrel1 M (j' - 1) j'"
+  shows "(nextrel1 M)\<^sup>*\<^sup>* a j"
+  using assms
+proof (induction j rule: less_induct)
+  case (less j)
+  show ?case
+  proof (cases "a = j")
+    case True
+    thus ?thesis by simp
+  next
+    case False
+    with less.prems(1) have aj: "a < j" by simp
+    hence j1: "j - 1 < j" by simp
+    have alej1: "a \<le> j - 1" using aj by simp
+    have hyp: "\<forall>j'. a < j' \<and> j' \<le> j - 1 \<longrightarrow> nextrel1 M (j' - 1) j'"
+      using less.prems(2) by auto
+    have chain: "(nextrel1 M)\<^sup>*\<^sup>* a (j - 1)"
+      by (rule less.IH[OF j1 alej1 hyp])
+    have step: "nextrel1 M (j - 1) j"
+      using less.prems(2) aj by auto
+    from chain step show ?thesis by (rule rtranclp.rtrancl_into_rtrancl)
+  qed
+qed
+
+text \<open>
+  KEY SUB-LEMMA: the admissibilization \<open>Adm\<^sub>M(j)\<close> is a row-1 ancestor of \<open>j\<close>
+  (for \<open>j \<le> Lng M - 1\<close>).  Every index strictly between \<open>Adm\<^sub>M(j)\<close> and \<open>j\<close> is
+  non-admissible (by maximality of \<open>Adm\<^sub>M(j)\<close>), and a non-admissible index
+  below \<open>Lng M\<close> is the row-1 child of its predecessor.
+\<close>
+
+lemma adm_row1_ancestry:
+  assumes "M \<in> T_PS" "j \<le> Lng M - 1"
+  shows "leR M 1 (Adm M j) j"
+proof -
+  have L: "Lng M \<ge> 1" using assms(1) by (cases M) (auto simp: T_PS_def)
+  let ?a = "Adm M j"
+  have ale: "?a \<le> j" by (rule adm_Adm_le)
+  have jL: "j < Lng M" using assms(2) L by linarith
+  have aL: "?a < Lng M" using ale jL by simp
+  have steps: "\<forall>j'. ?a < j' \<and> j' \<le> j \<longrightarrow> nextrel1 M (j' - 1) j'"
+  proof (intro allI impI)
+    fix j' assume a: "?a < j' \<and> j' \<le> j"
+    have nadm: "\<not> adm M j'"
+    proof
+      assume "adm M j'"
+      hence "j' \<le> ?a" using adm_Adm_max[of M j' j] a by simp
+      with a show False by simp
+    qed
+    have j'L: "j' < Lng M" using a jL by simp
+    from nadm have "nadm M j'" by (simp add: adm_def)
+    hence "nextR M 1 (j' - 1) j' \<and> nextR M 1 j' (j' + 1)"
+      using j'L by (auto simp: nadm_def)
+    thus "nextrel1 M (j' - 1) j'" by (simp add: nextR_def)
+  qed
+  have chain: "(nextrel1 M)\<^sup>*\<^sup>* ?a j" by (rule nextrel1_chain[OF ale steps])
+  show ?thesis using chain ale aL jL by (simp add: leR_def le1_def)
+qed
+
+text \<open>
+  Parent maximality: if \<open>j0\<close> is the (unique) row-\<open>i\<close> parent of \<open>j1\<close> and \<open>j\<close>
+  is a row-\<open>i\<close> ancestor of \<open>j1\<close> with \<open>j < j1\<close>, then \<open>j \<le> j0\<close> (the last step
+  into \<open>j1\<close> must come from the unique parent \<open>j0\<close>).
+\<close>
+
+lemma parent_max:
+  assumes "hasParent M i j1" "nextR M i j0 j1"
+    and "leR M i j j1" "j < j1"
+  shows "j \<le> j0"
+proof (cases "i = 0")
+  case True
+  from assms(3) True have rt: "(nextrel0 M)\<^sup>*\<^sup>* j j1" by (simp add: leR_def le0_def)
+  from rt assms(4) obtain p where jp: "(nextrel0 M)\<^sup>*\<^sup>* j p" and pj1: "nextrel0 M p j1"
+    by (cases rule: rtranclp.cases) auto
+  have "nextR M i p j1" using pj1 True by (simp add: nextR_def)
+  hence "p = j0" using assms(1,2) unfolding hasParent_def by (metis (mono_tags))
+  moreover have "j \<le> p" using jp by (rule nextrel0_rtrancl_mono)
+  ultimately show ?thesis by simp
+next
+  case False
+  from assms(3) False have rt: "(nextrel1 M)\<^sup>*\<^sup>* j j1" by (simp add: leR_def le1_def)
+  from rt assms(4) obtain p where jp: "(nextrel1 M)\<^sup>*\<^sup>* j p" and pj1: "nextrel1 M p j1"
+    by (cases rule: rtranclp.cases) auto
+  have "nextR M i p j1" using pj1 False by (simp add: nextR_def)
+  hence "p = j0" using assms(1,2) unfolding hasParent_def by (metis (mono_tags))
+  moreover have "j \<le> p" using jp by (rule nextrel1_rtrancl_mono)
+  ultimately show ?thesis by simp
+qed
+
+text \<open>
+  m: 命題（\<open>Adm\<^sub>M\<close>と\<open><\<^bsub>M\<^esub>\<^sup>NextAdm\<close>の関係） — discharges
+  @{thm [source] p_7_4_Adm_nextAdm} (§7.4).
+\<close>
+
+lemma m_7_4_Adm_nextAdm:
+  assumes "M \<in> T_PS" "hasParent M i (Lng M - 1)"
+  shows "nextAdm M i (Adm M (parent M i (Lng M - 1))) (Lng M - 1)"
+proof -
+  let ?j1 = "Lng M - 1"
+  let ?j0 = "parent M i ?j1"
+  let ?a = "Adm M ?j0"
+  \<comment> \<open>The unique row-\<open>i\<close> parent of \<open>j1\<close> (\<open>i = 0\<close> uses row 0, any other \<open>i\<close> row 1).\<close>
+  from assms(2) have par: "nextR M i ?j0 ?j1"
+    unfolding hasParent_def parent_def by (rule theI')
+  have j0lt: "?j0 < ?j1"
+    using par unfolding nextR_def nextrel0_def nextrel1_def by (auto split: if_splits)
+  have j0le1: "?j0 \<le> ?j1" using j0lt by simp
+  have L: "Lng M > 1" using j0lt by linarith
+  have j1L: "?j1 < Lng M" using L by linarith
+  \<comment> \<open>(2) \<open>a < j1\<close>.\<close>
+  have ale: "?a \<le> ?j0" by (rule adm_Adm_le)
+  have alt: "?a < ?j1" using ale j0lt by simp
+  \<comment> \<open>(3) \<open>adm M a\<close>.\<close>
+  have aadm: "adm M ?a" by (rule adm_Adm_adm)
+  \<comment> \<open>(1) \<open>leR M i a j1\<close>: row-1 ancestry of \<open>a\<close> below \<open>j0\<close>, then step \<open>j0 <\<^sup>Next j1\<close>.\<close>
+  have j0le: "?j0 \<le> Lng M - 1" using j0lt by simp
+  have a_anc_j0_1: "leR M 1 ?a ?j0" by (rule adm_row1_ancestry[OF assms(1) j0le])
+  have step_j0_j1: "leR M i ?j0 ?j1" by (rule nextR_imp_leR[OF par])
+  have leR_i_a_j1: "leR M i ?a ?j1"
+  proof (cases "i = 0")
+    case True
+    have "leR M 0 ?a ?j0" by (rule m_le1_imp_le0[OF a_anc_j0_1])
+    moreover have "leR M 0 ?j0 ?j1" using step_j0_j1 True by simp
+    ultimately have "leR M 0 ?a ?j1" using le0_trans by (simp add: leR_def)
+    thus ?thesis using True by simp
+  next
+    case False
+    have a_anc_j0_i: "leR M i ?a ?j0" using a_anc_j0_1 False by (simp add: leR_def)
+    show ?thesis by (rule leR_trans[OF a_anc_j0_i step_j0_j1])
+  qed
+  \<comment> \<open>(4) intermediate indices are non-ancestors or non-admissible.\<close>
+  have mid: "\<forall>j. ?a < j \<and> j < ?j1 \<longrightarrow> \<not> leR M i j ?j1 \<or> \<not> adm M j"
+  proof (intro allI impI)
+    fix j assume jb: "?a < j \<and> j < ?j1"
+    show "\<not> leR M i j ?j1 \<or> \<not> adm M j"
+    proof (rule ccontr)
+      assume "\<not> (\<not> leR M i j ?j1 \<or> \<not> adm M j)"
+      hence anc: "leR M i j ?j1" and jadm: "adm M j" by auto
+      have "j \<le> ?j0" by (rule parent_max[OF assms(2) par anc]) (use jb in simp)
+      hence "j \<le> ?a" using adm_Adm_max[OF jadm] by simp
+      with jb show False by simp
+    qed
+  qed
+  show ?thesis
+    unfolding nextAdm_def using leR_i_a_j1 alt aadm mid by blast
+qed
+
+
 section \<open>Faithfulness lemmas (忠実性補題)\<close>
 
 text \<open>
