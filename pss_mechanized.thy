@@ -4777,5 +4777,125 @@ lemma Lng_funpow_IncrFirst[simp]: "Lng ((IncrFirst ^^ k) M) = Lng M"
 lemma TrMax_funpow_IncrFirst[simp]: "TrMax ((IncrFirst ^^ k) M) = TrMax M"
   by (induction k) simp_all
 
+subsection \<open>Trunk extension by a diagonal prefix\<close>
+
+text \<open>A consecutive row-1 increase \<open>(1,j) <\<^bsub>M\<^esub>\<^sup>Next (1,j+1)\<close> follows from the
+  raw monotonicity at \<open>j\<close>: the row-0 step gives \<open>\<le>\<^sub>M\<close>, and the only \<open>\<le>\<^sub>M\<close>-ancestor
+  of \<open>j+1\<close> above \<open>j\<close> is \<open>j+1\<close> itself, so the row-1 minimality is automatic.
+  Generic helper subsuming @{thm [source] nextR1_diagSeq}.\<close>
+
+lemma nextR1_consecutive:
+  assumes L: "Suc j < Lng M"
+    and e0: "entry M 0 j < entry M 0 (Suc j)"
+    and e1: "entry M 1 j < entry M 1 (Suc j)"
+  shows "nextR M 1 j (Suc j)"
+proof -
+  have n0: "nextrel0 M j (Suc j)" unfolding nextrel0_def using L e0 by auto
+  have rt: "(nextrel0 M)\<^sup>*\<^sup>* j (Suc j)" using n0 by (rule r_into_rtranclp)
+  have le0: "le0 M j (Suc j)" unfolding le0_def using L rt by auto
+  have univ: "\<forall>i. j < i \<and> le0 M i (Suc j) \<longrightarrow> entry M 1 (Suc j) \<le> entry M 1 i"
+  proof (intro allI impI)
+    fix i assume a: "j < i \<and> le0 M i (Suc j)"
+    hence "(nextrel0 M)\<^sup>*\<^sup>* i (Suc j)" by (simp add: le0_def)
+    hence "i \<le> Suc j" by (rule nextrel0_rtrancl_mono)
+    with a have "i = Suc j" by linarith
+    thus "entry M 1 (Suc j) \<le> entry M 1 i" by simp
+  qed
+  have "nextrel1 M j (Suc j)"
+    unfolding nextrel1_def using L e1 le0 univ by auto
+  thus ?thesis by (simp add: nextR_def)
+qed
+
+text \<open>Entries of \<open>diagSeq 0 k @ rest\<close>: diagonal on the prefix \<open>i \<le> k\<close>, and
+  \<open>rest\<close>'s head at the junction index \<open>Suc k\<close>.\<close>
+
+lemma entry_diagSeq_append_lo:
+  assumes "i \<le> k"
+  shows "entry (diagSeq 0 k @ rest) p i = i"
+proof -
+  have lt: "i < length (diagSeq 0 k)" using assms by simp
+  have ai: "i < Suc k - 0" using assms by simp
+  have "(diagSeq 0 k @ rest) ! i = diagSeq 0 k ! i" using lt by (simp add: nth_append)
+  also have "\<dots> = (i, i)" using diagSeq_nth[OF ai] by simp
+  finally show ?thesis by (simp add: entry_def)
+qed
+
+lemma entry_diagSeq_append_junction:
+  "entry (diagSeq 0 k @ rest) p (Suc k) = entry rest p 0"
+  by (simp add: entry_def nth_append)
+
+text \<open>If a non-empty \<open>rest\<close> starts strictly above the diagonal (both rows
+  \<open>> k\<close>), the trunk runs through the whole diagonal prefix and the junction, so
+  \<open>TrMax (diagSeq 0 k @ rest) \<ge> Suc k\<close>.  This is the trunk-extension fact behind
+  \<open>coreReduce\<close> (case 4 of @{const Red}): a diagonal prefix of length \<open>m\<^sub>1\<^sub>0\<close> raises
+  \<open>TrMax\<close> by \<open>m\<^sub>1\<^sub>0\<close>, keeping \<open>Lng - TrMax\<close> from growing.\<close>
+
+lemma nextR1_diagSeq_append:
+  assumes ne: "rest \<noteq> []" and r0: "k < entry rest 0 0" and r1: "k < entry rest 1 0"
+    and jk: "j' \<le> k"
+  shows "nextR (diagSeq 0 k @ rest) 1 j' (Suc j')"
+proof -
+  let ?M = "diagSeq 0 k @ rest"
+  have lenr: "Lng rest > 0" using ne by (cases rest) auto
+  have lenM: "Lng ?M = Suc k + Lng rest" by simp
+  have L: "Suc j' < Lng ?M" using jk lenr lenM by linarith
+  have ej': "entry ?M 0 j' = j'" "entry ?M 1 j' = j'" using jk by (auto simp: entry_diagSeq_append_lo)
+  have key: "entry ?M 0 j' < entry ?M 0 (Suc j') \<and> entry ?M 1 j' < entry ?M 1 (Suc j')"
+  proof (cases "j' < k")
+    case True
+    hence sk: "Suc j' \<le> k" by simp
+    have "entry ?M 0 (Suc j') = Suc j'" "entry ?M 1 (Suc j') = Suc j'"
+      using sk by (auto simp: entry_diagSeq_append_lo)
+    thus ?thesis using ej' by simp
+  next
+    case False
+    hence jk': "j' = k" using jk by simp
+    have "entry ?M 0 (Suc j') = entry rest 0 0" "entry ?M 1 (Suc j') = entry rest 1 0"
+      using jk' by (auto simp: entry_diagSeq_append_junction)
+    thus ?thesis using ej' jk' r0 r1 by simp
+  qed
+  show ?thesis by (rule nextR1_consecutive[OF L conjunct1[OF key] conjunct2[OF key]])
+qed
+
+lemma le_TrMax_intro:
+  assumes T: "M \<in> T_PS" and H: "\<forall>j'<n. nextR M 1 j' (j' + 1)"
+  shows "n \<le> TrMax M"
+proof -
+  let ?S = "{j. \<forall>j'<j. nextR M 1 j' (j' + 1)}"
+  have LM: "Lng M > 0" using T by (cases M) (auto simp: T_PS_def)
+  have sub: "?S \<subseteq> {..Lng M - 1}"
+  proof
+    fix j assume "j \<in> ?S"
+    hence Hj: "\<forall>j'<j. nextR M 1 j' (j' + 1)" by simp
+    show "j \<in> {..Lng M - 1}"
+    proof (rule ccontr)
+      assume "j \<notin> {..Lng M - 1}"
+      hence "Lng M - 1 < j" by simp
+      hence "nextR M 1 (Lng M - 1) ((Lng M - 1) + 1)" using Hj by blast
+      hence "(Lng M - 1) + 1 < Lng M" by (simp add: nextR_def nextrel1_def)
+      thus False using LM by simp
+    qed
+  qed
+  hence fin: "finite ?S" by (rule finite_subset) simp
+  have nS: "n \<in> ?S" using H by simp
+  have "n \<le> Max ?S" using fin nS by (rule Max_ge)
+  thus ?thesis by (simp add: TrMax_def)
+qed
+
+lemma TrMax_diagSeq_append_ge:
+  assumes ne: "rest \<noteq> []" and r0: "k < entry rest 0 0" and r1: "k < entry rest 1 0"
+  shows "Suc k \<le> TrMax (diagSeq 0 k @ rest)"
+proof -
+  let ?M = "diagSeq 0 k @ rest"
+  have T: "?M \<in> T_PS" using ne by (simp add: T_PS_def)
+  have "\<forall>j'<Suc k. nextR ?M 1 j' (j' + 1)"
+  proof (intro allI impI)
+    fix j' assume "j' < Suc k"
+    hence "j' \<le> k" by simp
+    from nextR1_diagSeq_append[OF ne r0 r1 this] show "nextR ?M 1 j' (j' + 1)" by simp
+  qed
+  from le_TrMax_intro[OF T this] show ?thesis .
+qed
+
 end
 
