@@ -698,6 +698,69 @@ lemma m_6_2_multi_crit_12:
   shows "(\<not> multiT M) = (\<forall>j. 0 < j \<and> j < Lng M \<longrightarrow> entry M 0 0 < entry M 0 j)"
   using m_6_2_not_multi_iff_le[OF assms] m_6_2_multi_crit_23[OF assms] by simp
 
+text \<open>Basic facts about the slice \<open>seg M a b\<close>.\<close>
+
+lemma Lng_seg[simp]: "Lng (seg M a b) = Suc b - a"
+  by (simp add: seg_def del: upt_Suc)
+
+lemma entry_seg:
+  assumes "j < Lng (seg M a b)"
+  shows "entry (seg M a b) i j = entry M i (a + j)"
+proof -
+  have lj: "j < Suc b - a" using assms by simp
+  hence "a + j < Suc b" by simp
+  hence "[a..<Suc b] ! j = a + j" by (simp add: nth_upt del: upt_Suc)
+  moreover have "j < length [a..<Suc b]" using lj by (simp add: length_upt del: upt_Suc)
+  ultimately show ?thesis by (simp add: seg_def entry_def del: upt_Suc)
+qed
+
+text \<open>m: 命題（単項性の直系先祖による切片への遺伝性） — discharges
+  @{thm [source] p_6_2_mono_ancestor_slice}.\<close>
+
+lemma m_6_2_mono_ancestor_slice:
+  assumes "M \<in> T_PS" "j0' < j1'" "leR M 0 j0' j1'"
+  shows "monoT (seg M j0' j1')"
+proof -
+  let ?M' = "seg M j0' j1'"
+  have LM'gt1: "Lng ?M' > 1" using assms(2) by simp
+  have lne: "Lng ?M' \<noteq> 0" using assms(2) by simp
+  have M'TPS: "?M' \<in> T_PS" using lne by (cases ?M') (auto simp: T_PS_def)
+  have notzero: "\<not> zeroT ?M'" using LM'gt1 by (auto simp: zeroT_def)
+  have "leR ?M' 0 0 (Lng ?M' - 1)"
+  proof (rule m_5_1_parent_exists_3[OF M'TPS])
+    show "0 < Lng ?M' - 1" using LM'gt1 by simp
+    show "Lng ?M' - 1 < Lng ?M'" using LM'gt1 by simp
+    fix j assume "0 < j" "j \<le> Lng ?M' - 1"
+    hence jlt: "j < Lng ?M'" using LM'gt1 by simp
+    have e0: "entry ?M' 0 0 = entry M 0 j0'" using LM'gt1 by (simp add: entry_seg)
+    have ej: "entry ?M' 0 j = entry M 0 (j0' + j)" using jlt by (simp add: entry_seg)
+    have "entry M 0 j0' < entry M 0 (j0' + j)"
+    proof (rule m_5_1_ancestor_basic_1[OF assms(1) _ _ assms(3)])
+      show "j0' < j0' + j" using \<open>0 < j\<close> by simp
+      show "j0' + j \<le> j1'" using \<open>j \<le> Lng ?M' - 1\<close> assms(2) by simp
+    qed
+    thus "entry ?M' 0 0 < entry ?M' 0 j" using e0 ej by simp
+  qed
+  thus ?thesis using notzero by (simp add: monoT_def)
+qed
+
+text \<open>m: 系（単項性の始切片への遺伝性） — discharges @{thm [source] p_6_2_mono_prefix}.\<close>
+
+lemma m_6_2_mono_prefix:
+  assumes "M \<in> PT_PS" "0 < j0" "j0 < Lng M"
+  shows "monoT (seg M 0 j0)"
+proof -
+  have MT: "M \<in> T_PS" and mono: "monoT M" using assms(1) by (simp_all add: PT_PS_def)
+  have "\<not> multiT M" using mono by (simp add: multiT_def)
+  hence le: "leR M 0 0 (Lng M - 1)" using m_6_2_not_multi_iff_le[OF MT] by simp
+  have "leR M 0 0 j0"
+  proof (rule m_5_1_ancestor_tree_1[OF MT le])
+    show "0 \<le> j0" by simp
+    show "j0 \<le> Lng M - 1" using assms(3) by simp
+  qed
+  thus ?thesis by (rule m_6_2_mono_ancestor_slice[OF MT assms(2)])
+qed
+
 
 section \<open>Faithfulness lemmas (忠実性補題)\<close>
 
