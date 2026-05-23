@@ -106,7 +106,7 @@
       - 🚨 系（$s_{-1}$ と $b_{-1}$ の空性と基点の関係）
       - 🚨 命題（$\textrm{Mark}$ の $\textrm{Trans}$ による表示）
     - 🚨 §7.4 許容的親子関係
-      - 🚨 命題（$\textrm{Adm}_M$ と $<_M^{\textrm{NextAdm}}$ の関係）
+      - ✅ 命題（$\textrm{Adm}_M$ と $<_M^{\textrm{NextAdm}}$ の関係）
       - 🚨 命題（$\textrm{Trans}$ と $<_M^{\textrm{NextAdm}}$ の関係）
       - 🚨 系（$\textrm{Mark}$ と $<_M^{\textrm{NextAdm}}$ の関係）
       - 🚨 系（$\textrm{Trans}$ の $\textrm{Mark}$ と $\textrm{Pred}$ による表示）
