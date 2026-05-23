@@ -1241,6 +1241,467 @@ proof -
 qed
 
 
+subsection \<open>§6.3 許容性\<close>
+
+text \<open>
+  THE KEY HELPER for the §6.3 slice lemmas.  For a slice \<open>N = seg M j0' j1'\<close>
+  (with \<open>j1' < Lng M\<close>) the row-0 \<open><\<^sup>Next\<close> relation on \<open>N\<close> corresponds
+  exactly to that on \<open>M\<close>, shifted by \<open>j0'\<close>, on the index range of \<open>N\<close>.
+  Both \<open>nextrel0 N a b\<close> and \<open>nextrel0 M (j0'+a) (j0'+b)\<close> have the same shape;
+  the middle-condition quantifiers correspond under \<open>j' = j0'+j\<close>, and the
+  length bounds agree because \<open>b < Lng N \<longleftrightarrow> j0'+b \<le> j1' < Lng M\<close>.
+\<close>
+
+lemma adm_nextrel0_seg:
+  assumes "j1' < Lng M" "a < Lng (seg M j0' j1')" "b < Lng (seg M j0' j1')"
+  shows "nextrel0 (seg M j0' j1') a b \<longleftrightarrow> nextrel0 M (j0' + a) (j0' + b)"
+proof -
+  let ?N = "seg M j0' j1'"
+  have aN: "a < Suc j1' - j0'" and bN: "b < Suc j1' - j0'" using assms(2,3) by simp_all
+  have aLM: "j0' + a < Lng M" using aN assms(1) by simp
+  have bLM: "j0' + b < Lng M" using bN assms(1) by simp
+  have eA: "entry ?N 0 a = entry M 0 (j0' + a)" using assms(2) by (simp add: entry_seg)
+  have eB: "entry ?N 0 b = entry M 0 (j0' + b)" using assms(3) by (simp add: entry_seg)
+  have mid: "(\<forall>j. a < j \<and> j < b \<longrightarrow> entry ?N 0 j \<ge> entry ?N 0 b)
+           = (\<forall>j'. j0' + a < j' \<and> j' < j0' + b \<longrightarrow> entry M 0 j' \<ge> entry M 0 (j0' + b))"
+  proof
+    assume H: "\<forall>j. a < j \<and> j < b \<longrightarrow> entry ?N 0 j \<ge> entry ?N 0 b"
+    show "\<forall>j'. j0' + a < j' \<and> j' < j0' + b \<longrightarrow> entry M 0 j' \<ge> entry M 0 (j0' + b)"
+    proof (intro allI impI)
+      fix j' assume a': "j0' + a < j' \<and> j' < j0' + b"
+      have j0j': "j0' \<le> j'" using a' by simp
+      let ?j = "j' - j0'"
+      have jN: "?j < Lng ?N" using a' bN j0j' by (simp only: Lng_seg) linarith
+      have "a < ?j \<and> ?j < b" using a' j0j' by linarith
+      hence "entry ?N 0 ?j \<ge> entry ?N 0 b" using H by blast
+      moreover have "entry ?N 0 ?j = entry M 0 j'" using jN a' by (simp add: entry_seg)
+      ultimately show "entry M 0 j' \<ge> entry M 0 (j0' + b)" using eB by simp
+    qed
+  next
+    assume H: "\<forall>j'. j0' + a < j' \<and> j' < j0' + b \<longrightarrow> entry M 0 j' \<ge> entry M 0 (j0' + b)"
+    show "\<forall>j. a < j \<and> j < b \<longrightarrow> entry ?N 0 j \<ge> entry ?N 0 b"
+    proof (intro allI impI)
+      fix j assume aj: "a < j \<and> j < b"
+      hence jN: "j < Lng ?N" using bN by simp
+      have ej: "entry ?N 0 j = entry M 0 (j0' + j)" using jN by (simp add: entry_seg)
+      have "j0' + a < j0' + j \<and> j0' + j < j0' + b" using aj by simp
+      hence "entry M 0 (j0' + j) \<ge> entry M 0 (j0' + b)" using H by blast
+      thus "entry ?N 0 j \<ge> entry ?N 0 b" using ej eB by simp
+    qed
+  qed
+  have "nextrel0 ?N a b \<longleftrightarrow>
+        (a < Lng ?N \<and> b < Lng ?N \<and> a < b \<and> entry ?N 0 a < entry ?N 0 b \<and>
+         (\<forall>j. a < j \<and> j < b \<longrightarrow> entry ?N 0 j \<ge> entry ?N 0 b))"
+    by (simp add: nextrel0_def)
+  also have "\<dots> \<longleftrightarrow>
+        (j0' + a < Lng M \<and> j0' + b < Lng M \<and> j0' + a < j0' + b \<and>
+         entry M 0 (j0' + a) < entry M 0 (j0' + b) \<and>
+         (\<forall>j'. j0' + a < j' \<and> j' < j0' + b \<longrightarrow> entry M 0 j' \<ge> entry M 0 (j0' + b)))"
+    using assms(2,3) aLM bLM eA eB mid by auto
+  also have "\<dots> \<longleftrightarrow> nextrel0 M (j0' + a) (j0' + b)"
+    by (simp add: nextrel0_def)
+  finally show ?thesis .
+qed
+
+text \<open>An \<open>M\<close>-chain inside \<open>[j0'..j1']\<close> transfers to an \<open>N\<close>-chain (shifted).\<close>
+
+lemma adm_le0_seg_M_to_N:
+  assumes "j1' < Lng M" "(nextrel0 M)\<^sup>*\<^sup>* (j0' + a) c" "c \<le> j1'"
+  shows "(nextrel0 (seg M j0' j1'))\<^sup>*\<^sup>* a (c - j0')"
+  using assms(2,3)
+proof (induction rule: rtranclp_induct)
+  case base
+  show ?case by simp
+next
+  case (step y z)
+  have ge0: "j0' + a \<le> y" using step.hyps(1) by (rule nextrel0_rtrancl_mono)
+  have yz: "y < z" using step.hyps(2) by (simp add: nextrel0_def)
+  have yj1: "y \<le> j1'" using yz step.prems by simp
+  have IHy: "(nextrel0 (seg M j0' j1'))\<^sup>*\<^sup>* a (y - j0')" using step.IH yj1 by simp
+  have yN: "y - j0' < Lng (seg M j0' j1')" using yj1 ge0 by simp
+  have zN: "z - j0' < Lng (seg M j0' j1')" using step.prems ge0 yz by simp
+  have "j0' + (y - j0') = y" using ge0 by simp
+  moreover have "j0' + (z - j0') = z" using ge0 yz by simp
+  ultimately have "nextrel0 (seg M j0' j1') (y - j0') (z - j0')"
+    using adm_nextrel0_seg[OF assms(1) yN zN] step.hyps(2) by simp
+  with IHy show ?case by (rule rtranclp.rtrancl_into_rtrancl)
+qed
+
+text \<open>Conversely an \<open>N\<close>-chain transfers to an \<open>M\<close>-chain (shifted up).\<close>
+
+lemma adm_le0_seg_N_to_M:
+  assumes "j1' < Lng M" "(nextrel0 (seg M j0' j1'))\<^sup>*\<^sup>* a b"
+  shows "(nextrel0 M)\<^sup>*\<^sup>* (j0' + a) (j0' + b)"
+  using assms(2)
+proof (induction rule: rtranclp_induct)
+  case base
+  show ?case by simp
+next
+  case (step y z)
+  have yz: "y < z" using step.hyps(2) by (simp add: nextrel0_def)
+  have zN: "z < Lng (seg M j0' j1')" using step.hyps(2) by (simp add: nextrel0_def)
+  have yN: "y < Lng (seg M j0' j1')" using yz zN by simp
+  have "nextrel0 M (j0' + y) (j0' + z)"
+    using adm_nextrel0_seg[OF assms(1) yN zN] step.hyps(2) by simp
+  with step.IH show ?case by (rule rtranclp.rtrancl_into_rtrancl)
+qed
+
+text \<open>
+  Hence \<open>le0\<close> on the slice corresponds to \<open>le0\<close> on \<open>M\<close> shifted by \<open>j0'\<close>, for
+  indices in range.
+\<close>
+
+lemma adm_le0_seg:
+  assumes "j1' < Lng M" "a \<le> j1' - j0'" "b \<le> j1' - j0'" "j0' \<le> j1'"
+  shows "le0 (seg M j0' j1') a b \<longleftrightarrow> le0 M (j0' + a) (j0' + b)"
+proof
+  assume "le0 (seg M j0' j1') a b"
+  hence ch: "(nextrel0 (seg M j0' j1'))\<^sup>*\<^sup>* a b"
+    and aN: "a < Lng (seg M j0' j1')" and bN: "b < Lng (seg M j0' j1')"
+    by (simp_all add: le0_def)
+  have "(nextrel0 M)\<^sup>*\<^sup>* (j0' + a) (j0' + b)"
+    by (rule adm_le0_seg_N_to_M[OF assms(1) ch])
+  moreover have "j0' + a < Lng M" using aN assms(1) by simp
+  moreover have "j0' + b < Lng M" using bN assms(1) by simp
+  ultimately show "le0 M (j0' + a) (j0' + b)" by (simp add: le0_def)
+next
+  assume "le0 M (j0' + a) (j0' + b)"
+  hence ch: "(nextrel0 M)\<^sup>*\<^sup>* (j0' + a) (j0' + b)" by (simp add: le0_def)
+  have cj1: "j0' + b \<le> j1'" using assms(3,4) by simp
+  have "(nextrel0 (seg M j0' j1'))\<^sup>*\<^sup>* a (j0' + b - j0')"
+    by (rule adm_le0_seg_M_to_N[OF assms(1) ch cj1])
+  hence "(nextrel0 (seg M j0' j1'))\<^sup>*\<^sup>* a b" by simp
+  moreover have "a < Lng (seg M j0' j1')" using assms(2,4) by simp
+  moreover have "b < Lng (seg M j0' j1')" using assms(3,4) by simp
+  ultimately show "le0 (seg M j0' j1') a b" by (simp add: le0_def)
+qed
+
+text \<open>
+  The row-1 \<open><\<^sup>Next\<close> relation also corresponds on the slice interior.  Here
+  \<open>nextrel1\<close> additionally constrains the row-1 entries and quantifies over
+  \<open>le0 _ j j1\<close>-ancestors; the \<open>le0\<close> correspondence above turns the universal
+  condition on \<open>N\<close> into the one on \<open>M\<close>.
+\<close>
+
+lemma adm_nextrel1_seg:
+  assumes "j1' < Lng M" "a < Lng (seg M j0' j1')" "b < Lng (seg M j0' j1')"
+  shows "nextrel1 (seg M j0' j1') a b \<longleftrightarrow> nextrel1 M (j0' + a) (j0' + b)"
+proof -
+  let ?N = "seg M j0' j1'"
+  have aN: "a < Suc j1' - j0'" and bN: "b < Suc j1' - j0'" using assms(2,3) by simp_all
+  have j0j1: "j0' \<le> j1'" using bN by simp
+  have aLM: "j0' + a < Lng M" using aN assms(1) by simp
+  have bLM: "j0' + b < Lng M" using bN assms(1) by simp
+  have eA: "entry ?N 1 a = entry M 1 (j0' + a)" using assms(2) by (simp add: entry_seg)
+  have eB: "entry ?N 1 b = entry M 1 (j0' + b)" using assms(3) by (simp add: entry_seg)
+  have le0AB: "le0 ?N a b \<longleftrightarrow> le0 M (j0' + a) (j0' + b)"
+    using adm_le0_seg[OF assms(1) _ _ j0j1] aN bN by simp
+  have univ: "(\<forall>j. a < j \<and> le0 ?N j b \<longrightarrow> entry ?N 1 j \<ge> entry ?N 1 b)
+            = (\<forall>j'. j0' + a < j' \<and> le0 M j' (j0' + b) \<longrightarrow> entry M 1 j' \<ge> entry M 1 (j0' + b))"
+  proof
+    assume H: "\<forall>j. a < j \<and> le0 ?N j b \<longrightarrow> entry ?N 1 j \<ge> entry ?N 1 b"
+    show "\<forall>j'. j0' + a < j' \<and> le0 M j' (j0' + b) \<longrightarrow> entry M 1 j' \<ge> entry M 1 (j0' + b)"
+    proof (intro allI impI)
+      fix j' assume a': "j0' + a < j' \<and> le0 M j' (j0' + b)"
+      hence le0': "le0 M j' (j0' + b)" by simp
+      have j'le: "j' \<le> j0' + b"
+      proof -
+        have "(nextrel0 M)\<^sup>*\<^sup>* j' (j0' + b)" using le0' by (simp add: le0_def)
+        thus ?thesis by (rule nextrel0_rtrancl_mono)
+      qed
+      have j'ge: "j0' \<le> j'" using a' by simp
+      let ?j = "j' - j0'"
+      have jb: "?j \<le> j1' - j0'" using j'le bN j0j1 j'ge by linarith
+      have aj: "a < ?j" using a' j'ge by linarith
+      have le0Nj: "le0 ?N ?j b"
+        using adm_le0_seg[OF assms(1) _ _ j0j1] jb bN le0' j'ge by simp
+      have ejN: "entry ?N 1 ?j = entry M 1 j'"
+        using j'le j'ge bN by (simp add: entry_seg)
+      have "entry ?N 1 ?j \<ge> entry ?N 1 b" using H aj le0Nj by blast
+      thus "entry M 1 j' \<ge> entry M 1 (j0' + b)" using ejN eB by simp
+    qed
+  next
+    assume H: "\<forall>j'. j0' + a < j' \<and> le0 M j' (j0' + b) \<longrightarrow> entry M 1 j' \<ge> entry M 1 (j0' + b)"
+    show "\<forall>j. a < j \<and> le0 ?N j b \<longrightarrow> entry ?N 1 j \<ge> entry ?N 1 b"
+    proof (intro allI impI)
+      fix j assume aj: "a < j \<and> le0 ?N j b"
+      hence le0Nj: "le0 ?N j b" by simp
+      have jN: "j < Lng ?N" using le0Nj by (simp add: le0_def)
+      have jb: "j \<le> j1' - j0'" using jN by simp
+      have le0M: "le0 M (j0' + j) (j0' + b)"
+        using adm_le0_seg[OF assms(1) jb _ j0j1] bN le0Nj by simp
+      have "j0' + a < j0' + j" using aj by simp
+      hence "entry M 1 (j0' + j) \<ge> entry M 1 (j0' + b)" using H le0M by blast
+      moreover have "entry ?N 1 j = entry M 1 (j0' + j)" using jN by (simp add: entry_seg)
+      ultimately show "entry ?N 1 j \<ge> entry ?N 1 b" using eB by simp
+    qed
+  qed
+  have "nextrel1 ?N a b \<longleftrightarrow>
+        (a < Lng ?N \<and> b < Lng ?N \<and> a < b \<and> entry ?N 1 a < entry ?N 1 b \<and>
+         le0 ?N a b \<and>
+         (\<forall>j. a < j \<and> le0 ?N j b \<longrightarrow> entry ?N 1 j \<ge> entry ?N 1 b))"
+    by (simp add: nextrel1_def)
+  also have "\<dots> \<longleftrightarrow>
+        (j0' + a < Lng M \<and> j0' + b < Lng M \<and> j0' + a < j0' + b \<and>
+         entry M 1 (j0' + a) < entry M 1 (j0' + b) \<and>
+         le0 M (j0' + a) (j0' + b) \<and>
+         (\<forall>j'. j0' + a < j' \<and> le0 M j' (j0' + b) \<longrightarrow> entry M 1 j' \<ge> entry M 1 (j0' + b)))"
+    using assms(2,3) aLM bLM eA eB le0AB univ by auto
+  also have "\<dots> \<longleftrightarrow> nextrel1 M (j0' + a) (j0' + b)"
+    by (simp add: nextrel1_def)
+  finally show ?thesis .
+qed
+
+text \<open>
+  Row-1 \<open>nextR\<close> on the slice interior corresponds to that on \<open>M\<close> shifted by
+  \<open>j0'\<close>.  This is the statement the article uses at line 611.
+\<close>
+
+lemma adm_nextR1_seg:
+  assumes "j1' < Lng M" "a < Lng (seg M j0' j1')" "b < Lng (seg M j0' j1')"
+  shows "nextR (seg M j0' j1') 1 a b \<longleftrightarrow> nextR M 1 (j0' + a) (j0' + b)"
+  using adm_nextrel1_seg[OF assms] by (simp add: nextR_def)
+
+text \<open>m: 命題（許容性の切片への遺伝性） — discharges @{thm [source] p_6_3_adm_slice}.\<close>
+
+lemma m_6_3_adm_slice:
+  assumes "M \<in> T_PS" "j0' \<le> j0" "j0 \<le> j1'" "j1' \<le> Lng M - 1"
+  shows "(adm M j0 \<or> j0' = j0 \<or> j0 = j1') = adm (seg M j0' j1') (j0 - j0')"
+proof -
+  let ?N = "seg M j0' j1'"
+  have LM: "Lng M > 0" using assms(1) by (cases M) (auto simp: T_PS_def)
+  have j1LM: "j1' < Lng M" using assms(4) LM by linarith
+  have LN: "Lng ?N = Suc j1' - j0'" by simp
+  show ?thesis
+  proof (cases "j0' = j0 \<or> j0 = j1'")
+    case True
+    \<comment> \<open>Boundary cases: \<open>j0-j0'\<close> is \<open>0\<close> or \<open>Lng N - 1\<close>, so \<open>j0-j0'\<close> is \<open>N\<close>-admissible.\<close>
+    have lhs: "adm M j0 \<or> j0' = j0 \<or> j0 = j1'" using True by blast
+    have "adm ?N (j0 - j0')"
+    proof -
+      have "\<not> nadm ?N (j0 - j0')"
+      proof
+        assume nd: "nadm ?N (j0 - j0')"
+        have notgt: "\<not> (j0 - j0' > Lng ?N)" using assms(2,3) LN by simp
+        with nd have nx2: "nextR ?N 1 (j0 - j0') (j0 - j0' + 1)"
+          by (simp add: nadm_def)
+        from True show False
+        proof
+          assume "j0' = j0"
+          hence "j0 - j0' = 0" by simp
+          with nd notgt have "nextR ?N 1 0 (0 - 1) \<and> nextR ?N 1 0 (0 + 1)"
+            by (simp add: nadm_def)
+          \<comment> \<open>\<open>nextR ?N 1 0 (0-1)\<close> needs \<open>0 < 0\<close>; impossible.\<close>
+          hence "nextrel1 ?N 0 0" by (simp add: nextR_def)
+          thus False by (simp add: nextrel1_def)
+        next
+          assume e: "j0 = j1'"
+          hence jeq: "j0 - j0' = Lng ?N - 1" using LN assms(2,3) by simp
+          have "j0 - j0' + 1 < Lng ?N" using nx2 by (simp add: nextR_def nextrel1_def)
+          thus False using jeq LN assms(2,3) e by simp
+        qed
+      qed
+      thus ?thesis by (simp add: adm_def)
+    qed
+    thus ?thesis using lhs by blast
+  next
+    case False
+    hence ne: "j0' \<noteq> j0" "j0 \<noteq> j1'" by auto
+    hence j0'j0: "j0' < j0" and j0j1: "j0 < j1'" using assms(2,3) by auto
+    have lhs_eq: "(adm M j0 \<or> j0' = j0 \<or> j0 = j1') = adm M j0" using ne by blast
+    \<comment> \<open>Strict interior: reduce to the row-1 \<open>nextR\<close> correspondence.\<close>
+    have notgtM: "\<not> (j0 > Lng M)" using j0j1 j1LM by simp
+    have notgtN: "\<not> (j0 - j0' > Lng ?N)" using assms(2,3) LN by simp
+    \<comment> \<open>indices of the two relevant relations are in range of \<open>N\<close>.\<close>
+    have b1: "j0 - j0' - 1 < Lng ?N" using j0'j0 j0j1 LN by simp
+    have b2: "j0 - j0' < Lng ?N" using j0j1 LN assms(2) by simp
+    have b3: "j0 - j0' + 1 < Lng ?N" using j0j1 LN assms(2) by simp
+    have sh1: "j0' + (j0 - j0' - 1) = j0 - 1" using j0'j0 by simp
+    have sh2: "j0' + (j0 - j0') = j0" using j0'j0 by simp
+    have sh3: "j0' + (j0 - j0' + 1) = j0 + 1" using j0'j0 by simp
+    have c1: "nextR ?N 1 (j0 - j0' - 1) (j0 - j0') \<longleftrightarrow> nextR M 1 (j0 - 1) j0"
+      using adm_nextR1_seg[OF j1LM b1 b2] sh1 sh2 by simp
+    have c2: "nextR ?N 1 (j0 - j0') (j0 - j0' + 1) \<longleftrightarrow> nextR M 1 j0 (j0 + 1)"
+      using adm_nextR1_seg[OF j1LM b2 b3] sh2 sh3 by simp
+    have "nadm M j0 \<longleftrightarrow> nadm ?N (j0 - j0')"
+      using notgtM notgtN c1 c2 by (simp add: nadm_def)
+    hence "adm M j0 \<longleftrightarrow> adm ?N (j0 - j0')" by (simp add: adm_def)
+    thus ?thesis using lhs_eq by simp
+  qed
+qed
+
+text \<open>\<open>0\<close> is always \<open>M\<close>-admissible (\<open>(1,-1) <\<^sup>Next (1,0)\<close> is impossible).\<close>
+
+lemma adm_zero: "adm M 0"
+proof -
+  have "\<not> nextR M 1 0 0" by (simp add: nextR_def nextrel1_def)
+  hence "\<not> nadm M 0" by (auto simp: nadm_def)
+  thus ?thesis by (simp add: adm_def)
+qed
+
+text \<open>The admissible set below a non-admissible \<open>j\<close> is finite and non-empty.\<close>
+
+lemma adm_below_set_finite: "finite {j'. adm M j' \<and> j' < j}"
+  by (rule finite_subset[of _ "{..<j}"]) auto
+
+lemma adm_below_set_nonempty:
+  assumes "\<not> adm M j"
+  shows "{j'. adm M j' \<and> j' < j} \<noteq> {}"
+proof -
+  have "0 < j"
+  proof (rule ccontr)
+    assume "\<not> 0 < j"
+    hence "j = 0" by simp
+    thus False using assms adm_zero by simp
+  qed
+  thus ?thesis using adm_zero by blast
+qed
+
+text \<open>\<open>Adm M j\<close> is itself \<open>M\<close>-admissible.\<close>
+
+lemma adm_Adm_adm: "adm M (Adm M j)"
+proof (cases "adm M j")
+  case True thus ?thesis by (simp add: Adm_def)
+next
+  case False
+  let ?S = "{j'. adm M j' \<and> j' < j}"
+  have "Max ?S \<in> ?S"
+    by (rule Max_in[OF adm_below_set_finite adm_below_set_nonempty[OF False]])
+  hence "adm M (Max ?S)" by simp
+  thus ?thesis using False by (simp add: Adm_def)
+qed
+
+text \<open>\<open>Adm M j \<le> j\<close>.\<close>
+
+lemma adm_Adm_le: "Adm M j \<le> j"
+proof (cases "adm M j")
+  case True thus ?thesis by (simp add: Adm_def)
+next
+  case False
+  let ?S = "{j'. adm M j' \<and> j' < j}"
+  have "Max ?S \<in> ?S"
+    by (rule Max_in[OF adm_below_set_finite adm_below_set_nonempty[OF False]])
+  hence "Max ?S < j" by simp
+  thus ?thesis using False by (simp add: Adm_def)
+qed
+
+text \<open>Maximality: any admissible \<open>k \<le> j\<close> is \<open>\<le> Adm M j\<close>.\<close>
+
+lemma adm_Adm_max:
+  assumes "adm M k" "k \<le> j"
+  shows "k \<le> Adm M j"
+proof (cases "adm M j")
+  case True thus ?thesis using assms by (simp add: Adm_def)
+next
+  case False
+  let ?S = "{j'. adm M j' \<and> j' < j}"
+  have kj: "k < j" using assms False by (cases "k = j") auto
+  hence "k \<in> ?S" using assms(1) by simp
+  hence "k \<le> Max ?S" by (rule Max_ge[OF adm_below_set_finite])
+  thus ?thesis using False by (simp add: Adm_def)
+qed
+
+text \<open>m: 命題（許容化の切片への遺伝性） — discharges @{thm [source] p_6_3_admof_slice}.\<close>
+
+lemma m_6_3_admof_slice:
+  assumes "M \<in> T_PS" "j0' \<le> Adm M j0" "j0 < j1'" "j1' \<le> Lng M - 1"
+  shows "Adm (seg M j0' j1') (j0 - j0') = Adm M j0 - j0'"
+proof -
+  let ?N = "seg M j0' j1'"
+  let ?am = "Adm M j0"
+  let ?aN = "Adm ?N (j0 - j0')"
+  have LM: "Lng M > 0" using assms(1) by (cases M) (auto simp: T_PS_def)
+  have j1LM: "j1' < Lng M" using assms(4) LM by linarith
+  have amle: "?am \<le> j0" by (rule adm_Adm_le)
+  have amadm: "adm M ?am" by (rule adm_Adm_adm)
+  have j0'am: "j0' \<le> ?am" using assms(2) .
+  have j0'j0: "j0' \<le> j0" using j0'am amle by simp
+  \<comment> \<open>\<open>?am\<close> is \<open>M\<close>-admissible and \<open>j0' \<le> ?am \<le> j0 < j1'\<close>, so \<open>?am - j0'\<close> is
+      \<open>?N\<close>-admissible by the slice lemma.\<close>
+  have amN: "adm ?N (?am - j0')"
+  proof -
+    have "(adm M ?am \<or> j0' = ?am \<or> ?am = j1') = adm ?N (?am - j0')"
+      by (rule m_6_3_adm_slice[OF assms(1) j0'am _ assms(4)]) (use amle assms(3) in simp)
+    thus ?thesis using amadm by simp
+  qed
+  have amj1: "?am - j0' \<le> j0 - j0'" using amle by simp
+  \<comment> \<open>Lower bound: \<open>?aN \<ge> ?am - j0'\<close> by maximality of \<open>?aN\<close>.\<close>
+  have ge: "?am - j0' \<le> ?aN" by (rule adm_Adm_max[OF amN amj1])
+  \<comment> \<open>Upper bound.  First, \<open>?aN \<le> j0 - j0'\<close> and \<open>?aN\<close> is \<open>?N\<close>-admissible.\<close>
+  have aNle: "?aN \<le> j0 - j0'" by (rule adm_Adm_le)
+  have aNadm: "adm ?N ?aN" by (rule adm_Adm_adm)
+  \<comment> \<open>\<open>?aN + j0'\<close> is \<open>M\<close>-admissible or hits a boundary, hence \<open>\<le> ?am\<close>.\<close>
+  have le: "?aN \<le> ?am - j0'"
+  proof (rule ccontr)
+    assume "\<not> ?aN \<le> ?am - j0'"
+    hence gt: "?am - j0' < ?aN" by simp
+    have aNj0: "?aN + j0' \<le> j0" using aNle j0'j0 by simp
+    \<comment> \<open>Convert \<open>?N\<close>-admissibility of \<open>?aN\<close> back to \<open>M\<close> at index \<open>?aN + j0'\<close>.\<close>
+    have eq: "(adm M (?aN + j0') \<or> j0' = ?aN + j0' \<or> ?aN + j0' = j1')
+              = adm ?N ((?aN + j0') - j0')"
+      by (rule m_6_3_adm_slice[OF assms(1) _ _ assms(4)])
+         (use aNj0 assms(3) in simp_all)
+    have "(?aN + j0') - j0' = ?aN" by simp
+    with eq aNadm have disj: "adm M (?aN + j0') \<or> j0' = ?aN + j0' \<or> ?aN + j0' = j1'"
+      by simp
+    \<comment> \<open>\<open>j0' = ?aN + j0'\<close> means \<open>?aN = 0 \<le> ?am - j0'\<close>, contradicting \<open>gt\<close>;
+        \<open>?aN + j0' = j1' > j0 \<ge> ?aN + j0'\<close> is impossible; so \<open>?aN + j0'\<close> is
+        \<open>M\<close>-admissible.\<close>
+    have admM: "adm M (?aN + j0')"
+    proof -
+      have "j0' \<noteq> ?aN + j0'" using gt by auto
+      moreover have "?aN + j0' \<noteq> j1'" using aNj0 assms(3) by simp
+      ultimately show ?thesis using disj by blast
+    qed
+    \<comment> \<open>By maximality of \<open>?am\<close>, \<open>?aN + j0' \<le> ?am\<close>, i.e. \<open>?aN \<le> ?am - j0'\<close>.\<close>
+    have "?aN + j0' \<le> ?am" by (rule adm_Adm_max[OF admM aNj0])
+    hence "?aN \<le> ?am - j0'" using j0'am by simp
+    thus False using gt by simp
+  qed
+  show ?thesis using ge le by simp
+qed
+
+text \<open>m: 命題（基点の切片への遺伝性） — discharges @{thm [source] p_6_3_marked_slice}.\<close>
+
+lemma m_6_3_marked_slice:
+  assumes "(M, m) \<in> Marked" "j0' \<le> m" "m \<le> j1'" "j1' \<le> Lng M - 1"
+  shows "(seg M j0' j1', m - j0') \<in> Marked"
+proof -
+  let ?N = "seg M j0' j1'"
+  have MT: "M \<in> T_PS" and admM: "adm M m" and leM: "leR M 0 m (Lng M - 1)"
+    using assms(1) by (auto simp: Marked_def)
+  have LM: "Lng M > 0" using MT by (cases M) (auto simp: T_PS_def)
+  have j1LM: "j1' < Lng M" using assms(4) LM by linarith
+  have j0j1: "j0' \<le> j1'" using assms(2,3) by simp
+  \<comment> \<open>\<open>?N\<close> is non-empty, hence in \<open>T_PS\<close>.\<close>
+  have LN: "Lng ?N = Suc j1' - j0'" by simp
+  have LNpos: "Lng ?N > 0" using j0j1 LN by simp
+  have NT: "?N \<in> T_PS" using LNpos by (cases ?N) (auto simp: T_PS_def)
+  \<comment> \<open>\<open>m - j0'\<close> is \<open>?N\<close>-admissible by the slice lemma.\<close>
+  have admN: "adm ?N (m - j0')"
+  proof -
+    have "(adm M m \<or> j0' = m \<or> m = j1') = adm ?N (m - j0')"
+      by (rule m_6_3_adm_slice[OF MT assms(2,3,4)])
+    thus ?thesis using admM by blast
+  qed
+  \<comment> \<open>\<open>(0, m - j0') \<le>\<^sub>?N (0, Lng ?N - 1)\<close> via the row-0 \<open>le0\<close> slice correspondence.\<close>
+  have leN: "leR ?N 0 (m - j0') (Lng ?N - 1)"
+  proof -
+    have mlast: "leR M 0 m (Lng M - 1)" by (rule leM)
+    \<comment> \<open>Bring the row-0 ancestry down to the slice's last index \<open>j1'\<close>.\<close>
+    have mj1: "leR M 0 m j1'"
+      by (rule m_5_1_ancestor_tree_1[OF MT mlast assms(3)]) (use assms(4) LM in linarith)
+    have le0Mj1: "le0 M (j0' + (m - j0')) (j0' + (j1' - j0'))"
+      using mj1 assms(2,3) j0j1 by (simp add: leR_def)
+    have "le0 ?N (m - j0') (j1' - j0')"
+      using adm_le0_seg[OF j1LM _ _ j0j1] assms(2,3) j0j1 le0Mj1 by simp
+    moreover have "Lng ?N - 1 = j1' - j0'" using LN by simp
+    ultimately show ?thesis by (simp add: leR_def)
+  qed
+  show ?thesis using NT admN leN by (simp add: Marked_def)
+qed
+
+
 section \<open>Faithfulness lemmas (忠実性補題)\<close>
 
 text \<open>
