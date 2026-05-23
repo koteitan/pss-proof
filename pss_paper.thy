@@ -309,4 +309,113 @@ lemma p_6_4_mono_slice:
   shows "monoT (seg M j0' j1')"
   sorry
 
+
+subsection \<open>§6.5 簡約化\<close>
+
+text \<open>命題（\<open>Red\<close>のwell-defined性） — the recursion defining \<open>Red\<close> terminates on
+  every \<open>M \<in> T\<^sub>PS\<close> (the article: 上の条件を全て満たす写像 \<open>Red\<close> が一意に存在する).
+  Encoded as totality of the \<open>function\<close>-domain predicate \<open>Red_dom\<close>.\<close>
+
+lemma p_6_5_Red_welldef:
+  assumes "M \<in> T_PS"
+  shows "Red_dom M"
+  sorry
+
+text \<open>命題（\<open>Red\<close>の\<open>IncrFirst\<close>不変性）.\<close>
+
+lemma p_6_5_Red_IncrFirst:
+  assumes "M \<in> T_PS"
+  shows "Red (IncrFirst M) = Red M"
+  sorry
+
+text \<open>命題（\<open>Lng\<close>の\<open>Red\<close>不変性）.\<close>
+
+lemma p_6_5_Lng_Red:
+  assumes "M \<in> T_PS"
+  shows "Lng (Red M) = Lng M"
+  sorry
+
+text \<open>系（\<open>Red\<close>が零項性を保つこと）.\<close>
+
+lemma p_6_5_Red_zeroT:
+  assumes "M \<in> T_PS"
+  shows "zeroT M \<longleftrightarrow> zeroT (Red M)"
+  sorry
+
+text \<open>系（直系先祖の\<open>Red\<close>不変性） — \<open>\<le>\<^bsub>M\<^esub>\<close> and \<open>\<le>\<^bsub>Red M\<^esub>\<close> coincide.\<close>
+
+lemma p_6_5_Red_le:
+  assumes "M \<in> T_PS"
+  shows "leR M i j0 j1 = leR (Red M) i j0 j1"
+  sorry
+
+text \<open>系（\<open>Red\<close>が単項性を保つこと）.\<close>
+
+lemma p_6_5_Red_monoT:
+  assumes "M \<in> T_PS"
+  shows "monoT M \<longleftrightarrow> monoT (Red M)"
+  sorry
+
+text \<open>系（\<open>P\<close>の\<open>Red\<close>同変性） — \<open>P(Red M) = (Red (P M\<^sub>J))\<^bsub>J\<^esub>\<close>.\<close>
+
+lemma p_6_5_P_Red:
+  assumes "M \<in> T_PS"
+  shows "P (Red M) = map Red (P M)"
+  sorry
+
+text \<open>命題（単項性と\<open>Red\<close>の関係） — the suffix \<open>(N\<^sub>j)\<^bsub>j=M\<^bsub>1,0\<^esub>\<^esub>\<^bsup>Lng N-1\<^esup>\<close> of
+  \<open>N = Red (((j,j))\<^bsub>j=0\<^esub>\<^bsup>M\<^bsub>1,0\<^esub>-1\<^esup> \<oplus> IncrFirst\<^bsup>M\<^bsub>1,0\<^esub>\<^esup>(M))\<close> is mono;
+  this is exactly the branch condition that makes the \<open>Red M := M\<close> fall-throughs
+  \<^bold>\<open>[19]\<close>/\<^bold>\<open>[20]\<close> in the §6.5 definition dead.\<close>
+
+lemma p_6_5_monoT_Red:
+  assumes "M \<in> PT_PS"
+  defines "N \<equiv> Red (diagSeq 0 (entry M 1 0 - 1) @ (IncrFirst ^^ (entry M 1 0)) M)"
+  shows "seg N (entry M 1 0) (Lng N - 1) \<in> PT_PS"
+  sorry
+
+text \<open>命題（\<open>Red\<close>の冪等性）.\<close>
+
+lemma p_6_5_Red_idem:
+  assumes "M \<in> T_PS"
+  shows "Red (Red M) = Red M"
+  sorry
+
+text \<open>命題（\<open>Red\<close>と\<open>Pred\<close>の可換性）.\<close>
+
+lemma p_6_5_Red_Pred:
+  assumes "M \<in> T_PS"
+  shows "Red (Pred M) = Pred (Red M)"
+  sorry
+
+text \<open>命題（\<open>Red\<close>と基本列の可換性）.\<close>
+
+lemma p_6_5_Red_oper:
+  assumes "M \<in> T_PS" "n \<ge> 1"
+  shows "(Red M)[n] = Red (M[n])"
+  sorry
+
+text \<open>命題（\<open>Red\<close>が許容性を保つこと） — \<open>\<nat>\<^sub>M = \<nat>\<^bsub>Red M\<^esub>\<close>.\<close>
+
+lemma p_6_5_Red_adm:
+  assumes "M \<in> T_PS"
+  shows "AdmSet M = AdmSet (Red M)"
+  sorry
+
+text \<open>系（許容化の\<open>Red\<close>不変性）.\<close>
+
+lemma p_6_5_admof_Red:
+  assumes "M \<in> T_PS"
+  shows "Adm M j = Adm (Red M) j"
+  sorry
+
+text \<open>系（\<open>Red\<close>が基点を保つこと） — a marked pair sequence stays marked under
+  \<open>Red\<close>; in the article the codomain is \<open>RT\<^bsub>PS\<^esub>\<^sup>Marked\<close> (marked AND reduced),
+  the reducedness being @{thm [source] p_6_5_Red_idem}.  \<open>RT\<^sub>PS\<close> itself is §6.6.\<close>
+
+lemma p_6_5_Red_marked:
+  assumes "(M, m) \<in> Marked"
+  shows "(Red M, m) \<in> Marked"
+  sorry
+
 end

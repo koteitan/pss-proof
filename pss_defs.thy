@@ -339,4 +339,68 @@ text \<open>
 definition Joints :: "pairseq \<Rightarrow> nat list" where
   "Joints M = map (\<lambda>J. THE j. nextR M 0 j (FirstNodes M ! J)) [0..<length (Br M)]"
 
+
+subsection \<open>§6.5 簡約化 (Reduction \<open>Red\<close>)\<close>
+
+text \<open>\<open>diagSeq a b\<close>: the diagonal segment \<open>((j,j))\<^bsub>j=a\<^esub>\<^bsup>b\<^esup>\<close> (length \<open>b - a + 1\<close>).\<close>
+
+definition diagSeq :: "nat \<Rightarrow> nat \<Rightarrow> pairseq" where
+  "diagSeq a b = map (\<lambda>j. (j, j)) [a..<Suc b]"
+
+text \<open>
+  \<open>Red M\<close> (簡約化): faithful transcription of the recursive definition in §6.5.
+  Case split (零項 / 複項 / 単項, the latter on \<open>M\<^sub>0 = (0,0)\<close> and on \<open>M\<^bsub>1,0\<^esub>\<close>):
+    \<^item> \<open>M\<close> zero: \<open>Red M = ((0,0))\<close>.
+    \<^item> \<open>M\<close> multi: \<open>Red M = \<Oplus>\<^bsub>J\<^esub> Red (P M\<^sub>J)\<close>.
+    \<^item> \<open>M\<close> mono, \<open>M\<^sub>0 = (0,0)\<close> (so \<open>m\<^sub>0\<^sub>0 = m\<^sub>1\<^sub>0 = 0\<close>):
+        \<^item> \<open>TrMax M = Lng M - 1\<close>: \<open>Red M = ((j,j))\<^bsub>j=m\<^sub>1\<^sub>0\<^esub>\<^bsup>m\<^sub>1\<^sub>0+(Lng M-1)\<^esup>\<close>;
+        \<^item> else: \<open>Red M = ((j,j))\<^bsub>j=0\<^esub>\<^bsup>TrMax M\<^esup> \<oplus> \<Oplus>\<^bsub>J\<^esub> IncrFirst\<^bsup>e\<^sub>J\<^esup>(Red N\<^sub>J)\<close>,
+          where (encoding \<open>n\<^sub>J \<in> \<nat>\<union>{-1}\<close> via \<open>np = n\<^sub>J + 1 \<in> \<nat>\<close>)
+          \<open>np = 0\<close> if \<open>(Br M\<^sub>J)\<^bsub>1,0\<^esub> = 0\<close> else \<open>np = Suc (THE j. (1,j) <\<^bsub>M\<^esub>\<^sup>Next (1, FirstNodes M\<^sub>J))\<close>,
+          \<open>e\<^sub>J = Joints M\<^sub>J + 1 - np\<close>, \<open>N\<^sub>J = (m\<^sub>0\<^sub>0+Joints M\<^sub>J+1, m\<^sub>1\<^sub>0+np) \<oplus> Derp (Br M\<^sub>J)\<close>.
+    \<^item> \<open>M\<close> mono, \<open>M\<^sub>0 \<noteq> (0,0)\<close>:
+        \<^item> \<open>m\<^sub>1\<^sub>0 = 0\<close>: \<open>Red M = Red ((M\<^bsub>0,j\<^esub>-m\<^sub>0\<^sub>0, M\<^bsub>1,j\<^esub>))\<^bsub>j=0\<^esub>\<^bsup>Lng M-1\<^esup>\<close>;
+        \<^item> \<open>m\<^sub>1\<^sub>0 > 0\<close>: with \<open>N = Red (((j,j))\<^bsub>j=0\<^esub>\<^bsup>m\<^sub>1\<^sub>0-1\<^esup> \<oplus> IncrFirst\<^bsup>m\<^sub>1\<^sub>0\<^esup>(M))\<close> and
+          \<open>jN = Lng N - 1\<close>: if \<open>m\<^sub>1\<^sub>0 \<le> jN\<close> and \<open>(N\<^sub>j)\<^bsub>j=m\<^sub>1\<^sub>0\<^esub>\<^bsup>jN\<^esup> \<in> PT\<^sub>PS\<close>
+          then \<open>Red M = (N\<^bsub>0,j\<^esub>-N\<^bsub>0,m\<^sub>1\<^sub>0\<^esub>+N\<^bsub>1,m\<^sub>1\<^sub>0\<^esub>, N\<^bsub>1,j\<^esub>)\<^bsub>j=m\<^sub>1\<^sub>0\<^esub>\<^bsup>jN\<^esup>\<close>, else \<open>Red M = M\<close>
+          (the two \<open>= M\<close> fall-throughs \<^bold>\<open>[19]\<close>/\<^bold>\<open>[20]\<close> are dead branches, proved
+          impossible later by §6.5 propositions, but are needed for totality).
+
+  All recursive calls are on \<open>Red\<close>-free arguments (not nested), so the definition
+  is accepted by \<open>function\<close>; termination (\<open>= Red_dom\<close>) is the §6.5 well-definedness
+  proposition, deferred (transcribed as \<open>sorry\<close> in @{file "pss_paper.thy"}).
+\<close>
+
+function Red :: "pairseq \<Rightarrow> pairseq" where
+  "Red M =
+   (if zeroT M then [(0, 0)]
+    else if multiT M then concat (map Red (P M))
+    else
+      (let j1 = Lng M - 1; j1' = TrMax M;
+           m00 = entry M 0 0; m10 = entry M 1 0 in
+       if m00 = 0 \<and> m10 = 0 then
+         (if j1' = j1 then diagSeq m10 (m10 + j1)
+          else
+            diagSeq 0 j1' @
+            concat (map (\<lambda>J.
+              (IncrFirst ^^ (Joints M ! J + 1
+                  - (if entry (Br M ! J) 1 0 = 0 then 0
+                     else Suc (THE j. nextR M 1 j (FirstNodes M ! J)))))
+                (Red ((m00 + Joints M ! J + 1,
+                       m10 + (if entry (Br M ! J) 1 0 = 0 then 0
+                              else Suc (THE j. nextR M 1 j (FirstNodes M ! J))))
+                      # tl (Br M ! J))))
+              [0..<Lng (Br M)]))
+       else
+         (if m10 = 0 then
+            Red (map (\<lambda>j. (entry M 0 j - m00, entry M 1 j)) [0..<Suc j1])
+          else
+            (let N = Red (diagSeq 0 (m10 - 1) @ (IncrFirst ^^ m10) M);
+                 jN = Lng N - 1 in
+             if m10 \<le> jN \<and> seg N m10 jN \<in> PT_PS then
+               map (\<lambda>j. (entry N 0 j - entry N 0 m10 + entry N 1 m10, entry N 1 j))
+                   [m10..<Suc jN]
+             else M))))"
+  by pat_completeness auto
+
 end
