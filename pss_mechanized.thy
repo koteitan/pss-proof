@@ -3178,6 +3178,430 @@ proof -
 qed
 
 
+subsection \<open>§6.2 単項性: 非複項列の基本列 (non-multi expansion)\<close>
+
+text \<open>
+  For a non-multi \<open>M\<close>, \<open>M[n]\<close> is either \<open>n\<close> copies of \<open>Pred M\<close> (when the last
+  index is a row-0 child of index 0 with zero second coordinate) or a single
+  non-multi sequence \<open>[M[n]]\<close>.  These two lemmas discharge
+  @{thm [source] p_6_2_nonmulti_oper_1} / @{thm [source] p_6_2_nonmulti_oper_2}.
+\<close>
+
+text \<open>A non-empty non-multi prefix \<open>Pred M\<close> stays non-multi.\<close>
+
+lemma nonmulti_Pred:
+  assumes M: "M \<in> T_PS" and nm: "\<not> multiT M" and L: "1 < Lng M"
+  shows "\<not> multiT (Pred M)"
+proof -
+  let ?Q = "Pred M"
+  have predtake: "?Q = take (Lng M - 1) M" using L by (simp add: Pred_def butlast_conv_take)
+  have LQ: "Lng ?Q = Lng M - 1" using L by (simp add: Pred_def)
+  have QT: "?Q \<in> T_PS" using L by (cases M) (auto simp: T_PS_def Pred_def)
+  have mono: "\<forall>j. 0 < j \<and> j < Lng M \<longrightarrow> entry M 0 0 < entry M 0 j"
+    using m_6_2_multi_crit_12[OF M] nm by simp
+  show ?thesis
+  proof (subst m_6_2_multi_crit_12[OF QT], intro allI impI)
+    fix j assume j: "0 < j \<and> j < Lng ?Q"
+    hence jlt: "j < Lng M - 1" using LQ by simp
+    hence jL: "j < Lng M" by simp
+    have e0: "entry ?Q 0 0 = entry M 0 0"
+      using L predtake by (simp add: entry_def nth_take)
+    have ej: "entry ?Q 0 j = entry M 0 j"
+      using jlt predtake by (simp add: entry_def nth_take)
+    have "entry M 0 0 < entry M 0 j" using mono[rule_format, of j] j jL by simp
+    thus "entry ?Q 0 0 < entry ?Q 0 j" using e0 ej by simp
+  qed
+qed
+
+text \<open>Row-0 entry of an \<open>n\<close>-fold concatenation, on the first copy.\<close>
+
+lemma entry_concat_replicate_lt:
+  assumes "j < Lng Q"
+  shows "entry (concat (replicate (Suc m) Q)) i j = entry Q i j"
+proof -
+  have "concat (replicate (Suc m) Q) = Q @ concat (replicate m Q)"
+    by (simp add: replicate_Suc)
+  thus ?thesis using assms by (simp add: entry_def nth_append)
+qed
+
+text \<open>\<open>P\<close> of an \<open>n\<close>-fold concatenation of a non-multi sequence is \<open>n\<close> copies.\<close>
+
+lemma P_concat_replicate_nonmulti:
+  assumes Q: "Q \<in> T_PS" and nm: "\<not> multiT Q"
+  shows "n \<ge> 1 \<Longrightarrow> P (concat (replicate n Q)) = replicate n Q"
+proof (induction n)
+  case 0 thus ?case by simp
+next
+  case (Suc m)
+  show ?case
+  proof (cases "m = 0")
+    case True
+    have "concat (replicate (Suc 0) Q) = Q" by simp
+    moreover have "P Q = [Q]" by (rule poper_P_nonmulti) (simp add: nm)
+    ultimately show ?thesis using True by simp
+  next
+    case mpos: False
+    hence m1: "m \<ge> 1" by simp
+    let ?N = "concat (replicate (Suc m) Q)"
+    have lenQ: "0 < Lng Q" using Q by (cases Q) (auto simp: T_PS_def)
+    have decomp: "?N = Q @ concat (replicate m Q)"
+      by (simp add: replicate_Suc)
+    have lenN: "Lng ?N = Suc m * Lng Q"
+      by (simp add: length_concat map_replicate sum_list_replicate)
+    have NT: "?N \<in> T_PS" using lenQ lenN by (cases ?N) (auto simp: T_PS_def)
+    have c0: "0 < Lng Q" using lenQ .
+    have cN1: "Lng Q \<le> Lng ?N - 1"
+    proof -
+      have "2 * Lng Q \<le> Suc m * Lng Q" using m1 by simp
+      thus ?thesis using lenN lenQ by linarith
+    qed
+    \<comment> \<open>row-0 entry minimality at the cut \<open>Lng Q\<close>\<close>
+    have entry_cut: "entry ?N 0 (Lng Q) = entry Q 0 0"
+    proof -
+      have "?N ! (Lng Q) = (concat (replicate m Q)) ! 0"
+        using decomp by (simp add: nth_append)
+      also have "\<dots> = Q ! 0"
+        using m1 lenQ by (cases m) (auto simp add: replicate_Suc nth_append)
+      finally show ?thesis by (simp add: entry_def)
+    qed
+    have lmin: "\<And>j. j < Lng Q \<Longrightarrow> entry ?N 0 (Lng Q) \<le> entry ?N 0 j"
+    proof -
+      fix j assume jq: "j < Lng Q"
+      have ej: "entry ?N 0 j = entry Q 0 j"
+        using jq decomp by (simp add: entry_def nth_append)
+      have mono: "\<forall>k. 0 < k \<and> k < Lng Q \<longrightarrow> entry Q 0 0 < entry Q 0 k"
+        using m_6_2_multi_crit_12[OF Q] nm by simp
+      show "entry ?N 0 (Lng Q) \<le> entry ?N 0 j"
+      proof (cases "j = 0")
+        case True thus ?thesis using ej entry_cut by simp
+      next
+        case False
+        hence "entry Q 0 0 < entry Q 0 j" using mono[rule_format, of j] jq by simp
+        thus ?thesis using ej entry_cut by simp
+      qed
+    qed
+    have padd: "P ?N = P (seg ?N 0 (Lng Q - 1)) @ P (seg ?N (Lng Q) (Lng ?N - 1))"
+      by (rule m_6_2_P_additive[OF NT c0 cN1 lmin])
+    have NcL: "Lng Q < Lng ?N" using cN1 lenN lenQ by linarith
+    have seg1: "seg ?N 0 (Lng Q - 1) = take (Lng Q) ?N"
+      using NcL c0 by (subst seg_0_eq_take) (auto simp del: P.simps)
+    have seg2: "seg ?N (Lng Q) (Lng ?N - 1) = drop (Lng Q) ?N"
+      by (rule drop_eq_seg[OF NcL, symmetric])
+    have takeN: "take (Lng Q) ?N = Q" using decomp by simp
+    have dropN: "drop (Lng Q) ?N = concat (replicate m Q)" using decomp by simp
+    have "P ?N = P Q @ P (concat (replicate m Q))"
+      using padd seg1 seg2 takeN dropN by (simp del: P.simps)
+    also have "\<dots> = [Q] @ P (concat (replicate m Q))"
+      using poper_P_nonmulti[of Q] nm by (simp del: P.simps)
+    also have "\<dots> = [Q] @ replicate m Q" using Suc.IH m1 by simp
+    also have "\<dots> = replicate (Suc m) Q" by (simp add: replicate_app_Cons_same)
+    finally show ?thesis .
+  qed
+qed
+
+text \<open>m: 命題（非複項性と基本列の関係）(1) — \<open>n\<close> copies of \<open>Pred M\<close>.\<close>
+
+lemma m_6_2_nonmulti_oper_1:
+  assumes M: "M \<in> T_PS" and n: "n \<ge> 1" and nm: "\<not> multiT M"
+    and par: "nextR M 0 0 (Lng M - 1)" and e1: "entry M 1 (Lng M - 1) = 0"
+  shows "P (M[n]) = replicate n (Pred M)"
+proof -
+  let ?j1 = "Lng M - 1"
+  \<comment> \<open>\<open>nextR M 0 0 ?j1\<close> forces \<open>Lng M > 1\<close>\<close>
+  have nr0: "nextrel0 M 0 ?j1" using par by (simp add: nextR_def)
+  have j1pos: "0 < ?j1" using nr0 by (simp add: nextrel0_def)
+  have L: "1 < Lng M" using j1pos by simp
+  have nz: "?j1 \<noteq> 0" using L by simp
+  \<comment> \<open>last pair is not \<open>(0,0)\<close> (row 0 entry is positive)\<close>
+  have e0pos: "entry M 0 ?j1 > 0" using nr0 by (simp add: nextrel0_def)
+  have notzero: "\<not> (entry M 0 ?j1 = 0 \<and> entry M 1 ?j1 = 0)" using e0pos by simp
+  \<comment> \<open>\<open>i1 = 0\<close> since the last second coordinate is 0\<close>
+  have i1: "idx1 M ?j1 = 0" using e1 by (simp add: idx1_def)
+  \<comment> \<open>the row-0 parent of \<open>?j1\<close> is \<open>0\<close>\<close>
+  have ex1: "\<exists>!j0. nextR M 0 j0 ?j1"
+    by (metis idxsum_ex1_parent0_iff par)
+  have hp: "hasParent M (idx1 M ?j1) ?j1"
+    unfolding i1 hasParent_def using ex1 .
+  have parent0: "parent M (idx1 M ?j1) ?j1 = 0"
+    unfolding i1 parent_def by (rule the1_equality[OF ex1 par])
+  \<comment> \<open>operator expands with zero increments and zero offset\<close>
+  have op: "M[n] = concat (map (\<lambda>k. map (\<lambda>j. (entry M 0 j, entry M 1 j)) [0..<?j1]) [0..<n])"
+  proof -
+    have "M[n] = take (parent M (idx1 M ?j1) ?j1) M @
+        concat (map (\<lambda>k. map (\<lambda>j. (entry M 0 j +
+                  k * (if 0 < idx1 M ?j1 then entry M 0 ?j1 - entry M 0 (parent M (idx1 M ?j1) ?j1) else 0),
+                              entry M 1 j +
+                  k * (if 1 < idx1 M ?j1 then entry M 1 ?j1 - entry M 1 (parent M (idx1 M ?j1) ?j1) else 0)))
+                              [parent M (idx1 M ?j1) ?j1..<?j1]) [0..<n])"
+      using poper_oper_expand[OF L notzero hp, of n] by (simp add: Let_def)
+    thus ?thesis using i1 parent0 by simp
+  qed
+  \<comment> \<open>each block equals \<open>Pred M = take ?j1 M\<close>\<close>
+  have predtake: "Pred M = take ?j1 M" using L by (simp add: Pred_def butlast_conv_take)
+  have block: "map (\<lambda>j. (entry M 0 j, entry M 1 j)) [0..<?j1] = Pred M"
+  proof -
+    have jL: "?j1 \<le> Lng M" by simp
+    have "map (\<lambda>j. (entry M 0 j, entry M 1 j)) [0..<?j1] = take ?j1 M"
+    proof (rule nth_equalityI)
+      show "length (map (\<lambda>j. (entry M 0 j, entry M 1 j)) [0..<?j1]) = length (take ?j1 M)"
+        using jL by simp
+    next
+      fix i assume "i < length (map (\<lambda>j. (entry M 0 j, entry M 1 j)) [0..<?j1])"
+      hence ilt: "i < ?j1" by simp
+      hence "map (\<lambda>j. (entry M 0 j, entry M 1 j)) [0..<?j1] ! i = (entry M 0 i, entry M 1 i)"
+        by (simp add: nth_upt)
+      also have "\<dots> = M ! i" by (rule entry_pair)
+      also have "\<dots> = take ?j1 M ! i" using ilt by (simp add: nth_take)
+      finally show "map (\<lambda>j. (entry M 0 j, entry M 1 j)) [0..<?j1] ! i = take ?j1 M ! i" .
+    qed
+    thus ?thesis using predtake by simp
+  qed
+  have opn: "M[n] = concat (replicate n (Pred M))"
+  proof -
+    have "M[n] = concat (map (\<lambda>k. Pred M) [0..<n])" using op block by simp
+    also have "\<dots> = concat (replicate n (Pred M))" by (simp add: map_replicate_const)
+    finally show ?thesis .
+  qed
+  \<comment> \<open>\<open>Pred M\<close> is a non-empty non-multi sequence\<close>
+  have predNM: "\<not> multiT (Pred M)" by (rule nonmulti_Pred[OF M nm L])
+  have predT: "Pred M \<in> T_PS" using L by (cases M) (auto simp: T_PS_def Pred_def)
+  show ?thesis
+    using opn P_concat_replicate_nonmulti[OF predT predNM n] by simp
+qed
+
+text \<open>m: 命題（非複項性と基本列の関係）(2) — singleton \<open>[M[n]]\<close>.\<close>
+
+lemma m_6_2_nonmulti_oper_2:
+  assumes M: "M \<in> T_PS" and n: "n \<ge> 1" and nm: "\<not> multiT M"
+    and H: "\<not> nextR M 0 0 (Lng M - 1) \<or> entry M 1 (Lng M - 1) > 0"
+  shows "P ((M::pairseq)[n]) = [(M[n])]"
+proof -
+  let ?j1 = "Lng M - 1"
+  have "\<not> (multiT (M[n]) \<and> 1 < Lng (M[n]))"
+  proof (cases "Lng M = 1")
+    case True
+    hence "?j1 = 0" by simp
+    hence "M[n] = M" by (simp add: oper_def Let_def)
+    thus ?thesis using nm by simp
+  next
+    case False
+    have L: "1 < Lng M" using M False by (cases M) (auto simp: T_PS_def)
+    have nz: "?j1 \<noteq> 0" using L by simp
+    \<comment> \<open>mono: row-0 strictly increases away from 0\<close>
+    have mono: "\<forall>j. 0 < j \<and> j < Lng M \<longrightarrow> entry M 0 0 < entry M 0 j"
+      using m_6_2_multi_crit_12[OF M] nm by simp
+    have j1L: "?j1 < Lng M" using L by simp
+    have e0j1: "entry M 0 ?j1 > 0"
+    proof -
+      have "entry M 0 0 < entry M 0 ?j1" using mono[rule_format, of ?j1] nz j1L by simp
+      thus ?thesis by simp
+    qed
+    have notzero: "\<not> (entry M 0 ?j1 = 0 \<and> entry M 1 ?j1 = 0)" using e0j1 by simp
+    show ?thesis
+    proof (cases "hasParent M (idx1 M ?j1) ?j1")
+      case noparent: False
+      \<comment> \<open>degenerate: \<open>M[n] = Pred M\<close>, non-multi\<close>
+      have "M[n] = Pred M"
+        using notzero noparent nz by (auto simp: oper_def Let_def)
+      moreover have "\<not> multiT (Pred M)" by (rule nonmulti_Pred[OF M nm L])
+      ultimately show ?thesis by simp
+    next
+      case haspar: True
+      let ?i1 = "idx1 M ?j1"
+      let ?j0 = "parent M ?i1 ?j1"
+      let ?d0 = "if 0 < ?i1 then entry M 0 ?j1 - entry M 0 ?j0 else 0"
+      let ?d1 = "if 1 < ?i1 then entry M 1 ?j1 - entry M 1 ?j0 else 0"
+      have parR: "nextR M ?i1 ?j0 ?j1"
+        using haspar unfolding hasParent_def parent_def by (rule theI')
+      have j0lt: "?j0 < ?j1" using parR by (cases "?i1 = 0")
+          (auto simp: nextR_def nextrel0_def nextrel1_def)
+      have op: "M[n] = take ?j0 M @
+          concat (map (\<lambda>k. map (\<lambda>j. (entry M 0 j + k * ?d0, entry M 1 j + k * ?d1))
+                                [?j0..<?j1]) [0..<n])"
+        using poper_oper_expand[OF L notzero haspar, of n] by (simp add: Let_def)
+      \<comment> \<open>the saving fact: when the parent is index 0, the row-0 increment is positive\<close>
+      have j0d0: "?j0 = 0 \<Longrightarrow> 0 < ?d0"
+      proof -
+        assume j00: "?j0 = 0"
+        have "?i1 \<noteq> 0"
+        proof
+          assume "?i1 = 0"
+          hence "nextR M 0 0 ?j1" using parR j00 by simp
+          \<comment> \<open>then \<open>i1 = 0\<close> means \<open>entry M 1 ?j1 = 0\<close>, contradicting \<open>H\<close>\<close>
+          moreover have "entry M 1 ?j1 = 0"
+            using \<open>?i1 = 0\<close> by (simp add: idx1_def split: if_split_asm)
+          ultimately show False using H by simp
+        qed
+        hence i11: "0 < ?i1" by simp
+        have "entry M 0 ?j0 < entry M 0 ?j1"
+          using mono[rule_format, of ?j1] j00 nz L by simp
+        thus "0 < ?d0" using i11 by simp
+      qed
+      \<comment> \<open>show \<open>M[n]\<close> is non-multi via the row-0 strict-minimum criterion\<close>
+      let ?N = "M[n]"
+      have NT: "?N \<in> T_PS" using poper_oper_nth0[OF M L n] by (simp add: T_PS_def)
+      \<comment> \<open>row-0 head equals \<open>entry M 0 0\<close>\<close>
+      have hd0: "entry ?N 0 0 = entry M 0 0"
+        using poper_oper_nth0[OF M L n] by (simp add: entry_def)
+      \<comment> \<open>express the row-0 value list of \<open>?N\<close>\<close>
+      let ?A = "map (entry M 0) [0..<?j0]"
+      let ?B = "concat (map (\<lambda>k. map (\<lambda>j. entry M 0 j + k * ?d0) [?j0..<?j1]) [0..<n])"
+      have j0L: "?j0 \<le> Lng M" using j0lt nz L by linarith
+      have fstN: "map fst ?N = ?A @ ?B"
+      proof -
+        have "map fst (take ?j0 M) = ?A"
+        proof (rule nth_equalityI)
+          show "length (map fst (take ?j0 M)) = length ?A" using j0L by simp
+        next
+          fix i assume ilen: "i < length (map fst (take ?j0 M))"
+          hence ilt: "i < ?j0" using j0L by simp
+          have itk: "i < length (take ?j0 M)" using ilen by simp
+          have "map fst (take ?j0 M) ! i = fst (take ?j0 M ! i)"
+            using itk by (simp add: nth_map)
+          also have "\<dots> = fst (M ! i)" using ilt by (simp add: nth_take)
+          also have "\<dots> = entry M 0 i" by (simp add: entry_def)
+          also have "\<dots> = ?A ! i" using ilt by simp
+          finally show "map fst (take ?j0 M) ! i = ?A ! i" .
+        qed
+        moreover have "map fst (concat (map (\<lambda>k. map (\<lambda>j. (entry M 0 j + k * ?d0,
+                            entry M 1 j + k * ?d1)) [?j0..<?j1]) [0..<n])) = ?B"
+          by (simp add: map_concat o_def)
+        ultimately show ?thesis using op by simp
+      qed
+      \<comment> \<open>row-0 value list of \<open>?N\<close> is \<open>(entry M 0 0) # tail\<close> with all tail values larger\<close>
+      have headM: "map fst ?N \<noteq> []"
+        using poper_oper_nth0[OF M L n] by (cases ?N) auto
+      \<comment> \<open>the key: every element of the tail strictly exceeds \<open>entry M 0 0\<close>\<close>
+      have tailgt: "\<forall>x \<in> set (tl (map fst ?N)). entry M 0 0 < x"
+      proof (cases "0 < ?j0")
+        case j0pos: True
+        \<comment> \<open>prefix non-empty: tail \<open>= tl ?A @ ?B\<close>\<close>
+        have Ane: "?A \<noteq> []" using j0pos by simp
+        have tleq: "tl (map fst ?N) = tl ?A @ ?B" using fstN Ane by simp
+        show ?thesis
+        proof
+          fix x assume "x \<in> set (tl (map fst ?N))"
+          hence "x \<in> set (tl ?A) \<or> x \<in> set ?B" using tleq by auto
+          thus "entry M 0 0 < x"
+          proof
+            assume "x \<in> set (tl ?A)"
+            then obtain p where p: "p \<in> set [Suc 0..<?j0]" and xeq: "x = entry M 0 p"
+              using j0pos by (cases ?j0) (auto simp: map_tl[symmetric] upt_conv_Cons)
+            have prng: "0 < p \<and> p < ?j0" using p by auto
+            hence "p < Lng M" using j0lt nz L by linarith
+            hence "entry M 0 0 < entry M 0 p" using mono[rule_format, of p] prng by simp
+            thus ?thesis using xeq by simp
+          next
+            assume "x \<in> set ?B"
+            then obtain kk where kk: "kk \<in> set [0..<n]"
+              and xin: "x \<in> set (map (\<lambda>j. entry M 0 j + kk * ?d0) [?j0..<?j1])"
+              by (auto simp: set_concat)
+            from xin obtain j where jrng: "j \<in> set [?j0..<?j1]"
+              and xeq: "x = entry M 0 j + kk * ?d0" by auto
+            from jrng have jrng': "?j0 \<le> j \<and> j < ?j1" by auto
+            have jpos: "0 < j" using jrng' j0pos by simp
+            have jL: "j < Lng M" using jrng' j0lt nz L by linarith
+            hence "entry M 0 0 < entry M 0 j" using mono[rule_format, of j] jpos by simp
+            thus ?thesis using xeq by simp
+          qed
+        qed
+      next
+        case j00: False
+        hence j0z: "?j0 = 0" by simp
+        hence d0pos: "0 < ?d0" by (rule j0d0)
+        have Ane: "?A = []" using j0z by simp
+        \<comment> \<open>split \<open>?B\<close> into block 0 and the rest\<close>
+        have nlist: "[0..<n] = 0 # [Suc 0..<n]" using n by (simp add: upt_conv_Cons)
+        have blk0: "map (\<lambda>j. entry M 0 j + 0 * ?d0) [?j0..<?j1] = map (entry M 0) [0..<?j1]"
+          using j0z by simp
+        have Beq: "?B = map (entry M 0) [0..<?j1] @
+              concat (map (\<lambda>k. map (\<lambda>j. entry M 0 j + k * ?d0) [?j0..<?j1]) [Suc 0..<n])"
+        proof -
+          have "?B = concat (map (\<lambda>k. map (\<lambda>j. entry M 0 j + k * ?d0) [?j0..<?j1]) (0 # [Suc 0..<n]))"
+            by (simp only: nlist)
+          also have "\<dots> = map (\<lambda>j. entry M 0 j + 0 * ?d0) [?j0..<?j1] @
+              concat (map (\<lambda>k. map (\<lambda>j. entry M 0 j + k * ?d0) [?j0..<?j1]) [Suc 0..<n])"
+            by simp
+          also have "\<dots> = map (entry M 0) [0..<?j1] @
+              concat (map (\<lambda>k. map (\<lambda>j. entry M 0 j + k * ?d0) [?j0..<?j1]) [Suc 0..<n])"
+            by (simp only: blk0)
+          finally show ?thesis .
+        qed
+        have j1ne: "[0..<?j1] \<noteq> []" using nz by simp
+        have tlblk0: "tl (map (entry M 0) [0..<?j1]) = map (entry M 0) [Suc 0..<?j1]"
+          using nz by (cases ?j1) (auto simp: upt_conv_Cons)
+        have tleq: "tl (map fst ?N) = map (entry M 0) [Suc 0..<?j1] @
+              concat (map (\<lambda>k. map (\<lambda>j. entry M 0 j + k * ?d0) [?j0..<?j1]) [Suc 0..<n])"
+        proof -
+          have "map fst ?N = map (entry M 0) [0..<?j1] @
+              concat (map (\<lambda>k. map (\<lambda>j. entry M 0 j + k * ?d0) [?j0..<?j1]) [Suc 0..<n])"
+            using fstN Ane Beq by simp
+          hence "tl (map fst ?N) = tl (map (entry M 0) [0..<?j1]) @
+              concat (map (\<lambda>k. map (\<lambda>j. entry M 0 j + k * ?d0) [?j0..<?j1]) [Suc 0..<n])"
+            using j1ne by (simp add: tl_append2)
+          thus ?thesis by (simp only: tlblk0)
+        qed
+        show ?thesis
+        proof
+          fix x assume "x \<in> set (tl (map fst ?N))"
+          hence "x \<in> set (map (entry M 0) [Suc 0..<?j1]) \<or>
+                 x \<in> set (concat (map (\<lambda>k. map (\<lambda>j. entry M 0 j + k * ?d0) [?j0..<?j1]) [Suc 0..<n]))"
+            using tleq by auto
+          thus "entry M 0 0 < x"
+          proof
+            assume "x \<in> set (map (entry M 0) [Suc 0..<?j1])"
+            then obtain p where p: "p \<in> set [Suc 0..<?j1]" and xeq: "x = entry M 0 p" by auto
+            have prng: "0 < p \<and> p < ?j1" using p by auto
+            hence "p < Lng M" using nz L by linarith
+            hence "entry M 0 0 < entry M 0 p" using mono[rule_format, of p] prng by simp
+            thus ?thesis using xeq by simp
+          next
+            assume "x \<in> set (concat (map (\<lambda>k. map (\<lambda>j. entry M 0 j + k * ?d0) [?j0..<?j1]) [Suc 0..<n]))"
+            then obtain kk where kk: "kk \<in> set [Suc 0..<n]"
+              and xin: "x \<in> set (map (\<lambda>j. entry M 0 j + kk * ?d0) [?j0..<?j1])"
+              by (auto simp: set_concat)
+            from xin obtain j where jrng: "j \<in> set [?j0..<?j1]"
+              and xeq: "x = entry M 0 j + kk * ?d0" by auto
+            from jrng have jrng': "?j0 \<le> j \<and> j < ?j1" by auto
+            have kkpos: "0 < kk" using kk by auto
+            have jL: "j < Lng M" using jrng' j0lt nz L by linarith
+            show "entry M 0 0 < x"
+            proof (cases "0 < j")
+              case True
+              hence "entry M 0 0 < entry M 0 j" using mono[rule_format, of j] jL by simp
+              thus ?thesis using xeq by simp
+            next
+              case False
+              hence "j = 0" by simp
+              hence "x = entry M 0 0 + kk * ?d0" using xeq by simp
+              moreover have "0 < kk * ?d0" using kkpos d0pos by simp
+              ultimately show ?thesis by simp
+            qed
+          qed
+        qed
+      qed
+      have strict: "\<forall>k. 0 < k \<and> k < Lng ?N \<longrightarrow> entry M 0 0 < entry ?N 0 k"
+      proof (intro allI impI)
+        fix k assume k: "0 < k \<and> k < Lng ?N"
+        have klen: "length (tl (map fst ?N)) = Lng ?N - 1" by (simp add: length_map)
+        have kml: "k - 1 < length (tl (map fst ?N))" using k klen by linarith
+        have ksuc: "Suc (k - 1) = k" using k by simp
+        have "entry ?N 0 k = (map fst ?N) ! k" using k by (simp add: entry_def)
+        also have "\<dots> = (map fst ?N) ! Suc (k - 1)" using ksuc by simp
+        also have "\<dots> = (tl (map fst ?N)) ! (k - 1)" using kml by (simp add: nth_tl)
+        also have "\<dots> \<in> set (tl (map fst ?N))" using kml by (rule nth_mem)
+        finally show "entry M 0 0 < entry ?N 0 k" using tailgt by blast
+      qed
+      have "\<forall>j. 0 < j \<and> j < Lng ?N \<longrightarrow> entry ?N 0 0 < entry ?N 0 j"
+        using strict hd0 by simp
+      hence "\<not> multiT ?N" using m_6_2_multi_crit_12[OF NT] by simp
+      thus ?thesis by simp
+    qed
+  qed
+  thus ?thesis by (rule poper_P_nonmulti)
+qed
+
+
 section \<open>Faithfulness lemmas (忠実性補題)\<close>
 
 text \<open>
