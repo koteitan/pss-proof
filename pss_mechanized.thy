@@ -4605,5 +4605,162 @@ proof -
   qed
 qed
 
+
+section \<open>§6.5 Red termination: foundational helpers\<close>
+
+text \<open>
+  Helpers for the well-definedness (= termination) of @{const Red}.  The
+  article proves \<open>p_6_5_Red_welldef\<close> in two layers: on the core
+  \<open>{M \<in> PT\<^sub>PS | M\<^sub>0 = (0,0)}\<close> by induction on \<open>Lng M - TrMax M\<close>, and on the rest
+  of \<open>T\<^sub>PS\<close> immediately.  The facts below establish the arithmetic the measure
+  needs: lengths/entries of \<open>diagSeq\<close>, that a diagonal prefix extends the trunk,
+  and that branches are strictly shorter than the branch segment.
+\<close>
+
+subsection \<open>Diagonal segments \<open>diagSeq a b = ((j,j))\<^bsub>j=a\<^esub>\<^bsup>b\<^esup>\<close>\<close>
+
+lemma Lng_diagSeq[simp]: "Lng (diagSeq a b) = Suc b - a"
+  by (simp add: diagSeq_def del: upt_Suc)
+
+lemma diagSeq_nth:
+  assumes "j < Suc b - a"
+  shows "diagSeq a b ! j = (a + j, a + j)"
+proof -
+  have lt: "j < length [a..<Suc b]" using assms by (simp del: upt_Suc)
+  have aj: "a + j < Suc b" using assms by linarith
+  show ?thesis by (simp add: diagSeq_def nth_map[OF lt] nth_upt aj del: upt_Suc)
+qed
+
+lemma entry_diagSeq:
+  assumes "j < Suc b - a"
+  shows "entry (diagSeq a b) i j = a + j"
+  using diagSeq_nth[OF assms] by (simp add: entry_def)
+
+subsection \<open>Branch length bound\<close>
+
+text \<open>A single block of a \<open>concat\<close> is no longer than the whole \<open>concat\<close>.\<close>
+
+lemma length_nth_le_concat:
+  assumes "J < length xss"
+  shows "length (xss ! J) \<le> length (concat xss)"
+proof -
+  have mem: "(map length xss) ! J \<in> set (map length xss)"
+    using assms by (simp add: nth_mem)
+  have "length (xss ! J) = (map length xss) ! J" using assms by simp
+  also have "\<dots> \<le> sum_list (map length xss)" by (rule member_le_sum_list[OF mem]) simp
+  also have "\<dots> = length (concat xss)" by (simp add: length_concat)
+  finally show ?thesis .
+qed
+
+text \<open>m: each branch component is strictly shorter than the branch segment,
+  i.e. \<open>Lng (Br M ! J) \<le> Lng M - TrMax M - 1\<close>.  This bounds the recursion
+  argument \<open>N\<^sub>J\<close> in the core case of @{const Red} (case 2).\<close>
+
+lemma Lng_Br_le:
+  assumes J: "J < Lng (Br M)"
+  shows "Lng (Br M ! J) \<le> Lng M - TrMax M - 1"
+proof -
+  have ne: "Br M \<noteq> []" using J by auto
+  have tr: "TrMax M \<noteq> Lng M - 1"
+  proof
+    assume "TrMax M = Lng M - 1"
+    hence "Br M = []" by (simp add: Br_def)
+    thus False using ne by simp
+  qed
+  hence brP: "Br M = P (seg M (TrMax M + 1) (Lng M - 1))" by (simp add: Br_def)
+  let ?Q = "seg M (TrMax M + 1) (Lng M - 1)"
+  have "Lng (Br M ! J) \<le> Lng (concat (P ?Q))"
+    using J by (simp only: brP length_nth_le_concat)
+  also have "\<dots> = Lng ?Q" by (simp add: poper_concat_P)
+  also have "\<dots> = Suc (Lng M - 1) - (TrMax M + 1)" by (simp only: Lng_seg)
+  also have "\<dots> \<le> Lng M - TrMax M - 1" by simp
+  finally show ?thesis .
+qed
+
+subsection \<open>Trunk of a diagonal segment\<close>
+
+text \<open>The row-1 chain steps along a diagonal: \<open>(1,j) <\<^bsub>diagSeq u v\<^esub>\<^sup>Next (1,j+1)\<close>
+  for every interior \<open>j\<close>.  (The single ancestor of \<open>j+1\<close> reachable from above
+  is \<open>j+1\<close> itself, so the row-1 minimality condition is vacuous.)\<close>
+
+lemma nextR1_diagSeq:
+  assumes "Suc j < Suc v - u"
+  shows "nextR (diagSeq u v) 1 j (Suc j)"
+proof -
+  let ?M = "diagSeq u v"
+  have L: "Lng ?M = Suc v - u" by simp
+  have e0j:  "entry ?M 0 j = u + j"          using assms by (intro entry_diagSeq) simp
+  have e0sj: "entry ?M 0 (Suc j) = u + Suc j" using assms by (intro entry_diagSeq) simp
+  have e1j:  "entry ?M 1 j = u + j"          using assms by (intro entry_diagSeq) simp
+  have e1sj: "entry ?M 1 (Suc j) = u + Suc j" using assms by (intro entry_diagSeq) simp
+  have n0: "nextrel0 ?M j (Suc j)"
+    unfolding nextrel0_def using assms e0j e0sj L by auto
+  have rt: "(nextrel0 ?M)\<^sup>*\<^sup>* j (Suc j)" using n0 by (rule r_into_rtranclp)
+  have le0: "le0 ?M j (Suc j)" unfolding le0_def using assms L rt by auto
+  have univ: "\<forall>j''. j < j'' \<and> le0 ?M j'' (Suc j)
+                  \<longrightarrow> entry ?M 1 (Suc j) \<le> entry ?M 1 j''"
+  proof (intro allI impI)
+    fix j'' assume a: "j < j'' \<and> le0 ?M j'' (Suc j)"
+    hence "(nextrel0 ?M)\<^sup>*\<^sup>* j'' (Suc j)" by (simp add: le0_def)
+    hence "j'' \<le> Suc j" by (rule nextrel0_rtrancl_mono)
+    with a have "j'' = Suc j" by linarith
+    thus "entry ?M 1 (Suc j) \<le> entry ?M 1 j''" by simp
+  qed
+  have "nextrel1 ?M j (Suc j)"
+    unfolding nextrel1_def using assms e1j e1sj L le0 univ by auto
+  thus ?thesis by (simp add: nextR_def)
+qed
+
+text \<open>m: a diagonal segment is entirely trunk: \<open>TrMax (diagSeq u v) = v - u\<close>
+  \<open>(= Lng - 1)\<close>.  Foundational for the core base case of @{const Red}
+  (\<open>j\<^sub>1' = j\<^sub>1\<close>) and for the trunk-extension estimate of \<open>coreReduce\<close>.\<close>
+
+lemma TrMax_diagSeq:
+  assumes uv: "u \<le> v"
+  shows "TrMax (diagSeq u v) = v - u"
+proof -
+  let ?M = "diagSeq u v"
+  have L: "Lng ?M = Suc v - u" by simp
+  have pos: "\<And>j'. j' < v - u \<Longrightarrow> nextR ?M 1 j' (Suc j')"
+  proof -
+    fix j' assume "j' < v - u"
+    hence "Suc j' < Suc v - u" using uv by (simp add: Suc_diff_le)
+    thus "nextR ?M 1 j' (Suc j')" by (rule nextR1_diagSeq)
+  qed
+  have neg: "\<not> nextR ?M 1 (v - u) (Suc (v - u))"
+  proof
+    assume "nextR ?M 1 (v - u) (Suc (v - u))"
+    hence "nextrel1 ?M (v - u) (Suc (v - u))" by (simp add: nextR_def)
+    hence "Suc (v - u) < Lng ?M" by (simp add: nextrel1_def)
+    thus False using L uv by simp
+  qed
+  have Seq: "{j. \<forall>j'<j. nextR ?M 1 j' (j' + 1)} = {.. v - u}"
+  proof (rule set_eqI, rule iffI)
+    fix j assume "j \<in> {j. \<forall>j'<j. nextR ?M 1 j' (j' + 1)}"
+    hence h: "\<forall>j'<j. nextR ?M 1 j' (Suc j')" by simp
+    show "j \<in> {.. v - u}"
+    proof (rule ccontr)
+      assume "j \<notin> {.. v - u}"
+      hence "v - u < j" by simp
+      with h have "nextR ?M 1 (v - u) (Suc (v - u))" by simp
+      thus False using neg by simp
+    qed
+  next
+    fix j assume "j \<in> {.. v - u}"
+    hence jle: "j \<le> v - u" by simp
+    have "\<forall>j'<j. nextR ?M 1 j' (Suc j')"
+    proof (intro allI impI)
+      fix j' assume "j' < j"
+      hence "j' < v - u" using jle by linarith
+      thus "nextR ?M 1 j' (Suc j')" by (rule pos)
+    qed
+    thus "j \<in> {j. \<forall>j'<j. nextR ?M 1 j' (j' + 1)}" by simp
+  qed
+  have "TrMax ?M = Max {j. \<forall>j'<j. nextR ?M 1 j' (j' + 1)}" by (simp add: TrMax_def)
+  also have "\<dots> = Max {.. v - u}" by (simp only: Seq)
+  also have "\<dots> = v - u" by (rule Max_eqI) auto
+  finally show ?thesis .
+qed
+
 end
 

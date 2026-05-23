@@ -74,3 +74,57 @@ Consequences:
 
 The helper `diagSeq a b = map (λj. (j,j)) [a..<Suc b]` encodes `((j,j))_{j=a}^b`;
 `IncrFirst^k` is `(IncrFirst ^^ k)`.
+
+## The explicit measure (refined 2026-05-24)
+
+The article says the extension to `T_PS` is "immediate", but for a single
+Isabelle `function`/`domintros` termination proof we need ONE measure that
+strictly decreases on EVERY direct recursive call. No simple `Lng`, `β`, or
+`rank` lexicographic measure works alone:
+
+- `Lng` increases in the mono / `M_0 ≠ (0,0)` / `m10 > 0` case (case 4: the
+  argument `diagSeq 0 (m10-1) @ IncrFirst^{m10} M` is longer);
+- `β = Lng − TrMax` is unchanged in case 3 (`m10 = 0` shift) and not obviously
+  monotone for `multi` blocks;
+- `rank` (core < non-core) goes UP in the core case 2 (`Red N_J`, `N_J`
+  non-core).
+
+The working measure separates the two regimes that never interleave (a **mono**
+argument never produces a **multi** one; `multi` only appears at entry or via
+`P`-blocks):
+
+- **mono `M`**: let `coreReduce M` be the core element a non-core mono `M`
+  reduces to in one step (`m10 = 0`: shift row 0 down by `m00`; `m10 > 0`:
+  `diagSeq 0 (m10-1) @ IncrFirst^{m10} M`). Define
+  ```
+  μ_mono(M) = (if M_0 = (0,0) then 2·β(M) else 2·β(coreReduce M) + 1)
+  ```
+  Checks (all strict):
+  - case 2 (core `M` → `N_J`, non-core): `μ_mono(N_J) = 2·β(coreReduce N_J)+1
+    ≤ 2(β(M)−1)+1 = 2β(M)−1 < 2β(M) = μ_mono(M)`, using the branch bound
+    `Lng(Br M ! J) ≤ Lng M − TrMax M − 1` and that a `diagSeq 0 k` prefix
+    extends the trunk (so `β(coreReduce N_J) ≤ Lng N_J ≤ β(M)−1`);
+  - case 3 (non-core `m10=0` → `coreReduce M`): `2β(coreReduce M) <
+    2β(coreReduce M)+1`;
+  - case 4 (non-core `m10>0` → `coreReduce M`): same as case 3.
+- **multi `M`**: a separate measure on `P`-blocks (strictly shorter `Lng`).
+  Because mono recursion never yields a multi argument, a global well-founded
+  relation can take `multi` blocks via `Lng`-descent and feed each mono entry
+  into the `μ_mono` order independently.
+
+The two arithmetic facts the mono part rests on:
+1. **Branch bound**: `Lng (Br M ! J) ≤ Lng M − TrMax M − 1`
+   (`Br M = P (seg M (TrMax M + 1) (Lng M − 1))`, each `P`-block ≤ the segment).
+2. **Trunk extension by a diagonal prefix**: `TrMax (diagSeq 0 k @ rest) ≥ k`
+   (the consecutive diagonal `(0,0),…,(k-1,k-1)` is a trunk), giving
+   `β(coreReduce M) ≤ Lng (non-trunk part)`.
+
+These (plus `Lng_diagSeq`, `entry_diagSeq`, and `β`-invariance of the row-0
+shift and of `IncrFirst`) are the foundational helpers to prove first; the
+`Red_dom` induction then follows the `μ_mono`/`Lng` split above.
+
+> Method note: this refined measure came from re-checking the article's
+> "extension is immediate" claim **on paper before grinding in Isabelle**
+> (a transferable lesson from the BMS meta-advice; see `tmp/advices-answer.md`).
+> The claim is true, but the Isabelle measure is non-trivial — exactly the kind
+> of "paper says easy, formalization says subtle" gap worth resolving up front.
