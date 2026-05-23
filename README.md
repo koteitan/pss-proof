@@ -24,3 +24,24 @@ P進大好きbot 氏のブログ記事「ペア数列の停止性」（巨大数
 ```
 isbman build -d . -v PSS
 ```
+
+## 出典・引用 (Reference)
+
+本プロジェクトが形式化の対象とする原論文：
+
+> P進大好きbot. 「ペア数列の停止性」. 巨大数研究 Wiki, 2018年11月11日.
+> https://googology.fandom.com/ja/wiki/%E3%83%A6%E3%83%BC%E3%82%B6%E3%83%BC%E3%83%96%E3%83%AD%E3%82%B0:P%E9%80%B2%E5%A4%A7%E5%A5%BD%E3%81%8Dbot/%E3%83%9A%E3%82%A2%E6%95%B0%E5%88%97%E3%81%AE%E5%81%9C%E6%AD%A2%E6%80%A7
+
+BibTeX:
+
+```bibtex
+@misc{pshinkdaisukibot2018pairseq,
+  author       = {P進大好きbot},
+  title        = {ペア数列の停止性},
+  howpublished = {巨大数研究 Wiki},
+  year         = {2018},
+  month        = {11},
+  day          = {11},
+  url          = {https://googology.fandom.com/ja/wiki/%E3%83%A6%E3%83%BC%E3%82%B6%E3%83%BC%E3%83%96%E3%83%AD%E3%82%B0:P%E9%80%B2%E5%A4%A7%E5%A5%BD%E3%81%8Dbot/%E3%83%9A%E3%82%A2%E6%95%B0%E5%88%97%E3%81%AE%E5%81%9C%E6%AD%A2%E6%80%A7}
+}
+```
