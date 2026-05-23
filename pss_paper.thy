@@ -815,4 +815,17 @@ text \<open>\<open>T\<^bsub>B\<^esub>\<^sup>Marked \<subseteq> T\<^bsub>B\<^esub
 definition MarkedB :: "(BT \<times> BT) set" where
   "MarkedB = {(t, c). \<exists>s b. scb_decomp t s (flatBT c) b}"
 
+
+subsection \<open>§7.4 許容的親子関係\<close>
+
+text \<open>命題（\<open>Adm\<^sub>M\<close>と\<open><\<^bsub>M\<^esub>\<^sup>NextAdm\<close>の関係） — when \<open>j\<^sub>1 = Lng M - 1\<close> has a
+  unique row-\<open>i\<close> parent \<open>j\<^sub>0\<close>, its admissibilization \<open>Adm\<^sub>M(j\<^sub>0)\<close> is the
+  admissible parent of \<open>j\<^sub>1\<close>.  (This §7.4 proposition is \<open>Trans\<close>-free; the
+  remaining §7.3 / §7.4 statements await the \<open>Trans\<close> / \<open>Mark\<close> definition.)\<close>
+
+lemma p_7_4_Adm_nextAdm:
+  assumes "M \<in> T_PS" "hasParent M i (Lng M - 1)"
+  shows "nextAdm M i (Adm M (parent M i (Lng M - 1))) (Lng M - 1)"
+  sorry
+
 end

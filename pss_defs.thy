@@ -464,4 +464,20 @@ definition descending :: "pairseq list \<Rightarrow> bool" where
       \<and> (entry (Q ! J0) 0 0 = entry (Q ! J1) 0 0
            \<longrightarrow> entry (Q ! J0) 1 0 \<ge> entry (Q ! J1) 1 0))"
 
+
+subsection \<open>§7.4 許容的親子関係 (Admissible parent relation)\<close>
+
+text \<open>
+  \<open>nextAdm M i j\<^sub>0 j\<^sub>1\<close> models the admissible parent relation
+  \<open>(i,j\<^sub>0) <\<^bsub>M\<^esub>\<^sup>NextAdm (i,j\<^sub>1)\<close> (§7.4): \<open>(i,j\<^sub>0) \<le>\<^sub>M (i,j\<^sub>1)\<close>, \<open>j\<^sub>0 < j\<^sub>1\<close>,
+  \<open>j\<^sub>0\<close> is \<open>M\<close>-admissible, and every intermediate \<open>j\<close> either is not an
+  ancestor of \<open>j\<^sub>1\<close> in row \<open>i\<close> or is non-admissible.  (The article states the
+  relation on \<open>\<int>\<^sup>2\<close>; it is used within a single row \<open>i\<close>, matching \<open>\<le>\<^sub>M\<close>.)
+\<close>
+
+definition nextAdm :: "pairseq \<Rightarrow> nat \<Rightarrow> nat \<Rightarrow> nat \<Rightarrow> bool" where
+  "nextAdm M i j0 j1 \<longleftrightarrow>
+     leR M i j0 j1 \<and> j0 < j1 \<and> adm M j0
+   \<and> (\<forall>j. j0 < j \<and> j < j1 \<longrightarrow> \<not> leR M i j j1 \<or> \<not> adm M j)"
+
 end
