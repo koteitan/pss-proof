@@ -203,4 +203,72 @@ text \<open>
   f(n)) as p_5_4_F_oper_dom / p_5_4_F_oper_val in @{file "pss_paper.thy"}.
 \<close>
 
+
+section \<open>§6 ペア数列の基本性質 (Basic properties)\<close>
+
+subsection \<open>§6.1 最上行のインクリメント (IncrFirst)\<close>
+
+text \<open>\<open>IncrFirst M\<close>: increment the top row (row 0) of every pair.\<close>
+
+definition IncrFirst :: "pairseq \<Rightarrow> pairseq" where
+  "IncrFirst M = map (\<lambda>p. (Suc (fst p), snd p)) M"
+
+text \<open>The inclusive slice \<open>(M\<^sub>j)\<^bsub>j=a\<^esub>\<^bsup>b\<^esup>\<close> (length \<open>b - a + 1\<close> when \<open>a \<le> b\<close>).\<close>
+
+definition seg :: "pairseq \<Rightarrow> nat \<Rightarrow> nat \<Rightarrow> pairseq" where
+  "seg M a b = map (\<lambda>j. M ! j) [a..<Suc b]"
+
+
+subsection \<open>§6.2 単項性 (zero- / mono- / multi-term)\<close>
+
+text \<open>\<open>zeroT M\<close> (零項): \<open>Lng M = 1\<close> and \<open>M\<^bsub>1,0\<^esub> = 0\<close>.\<close>
+
+definition zeroT :: "pairseq \<Rightarrow> bool" where
+  "zeroT M \<longleftrightarrow> Lng M = 1 \<and> entry M 1 0 = 0"
+
+text \<open>\<open>monoT M\<close> (単項): not zero, and \<open>(0,0) \<le>\<^sub>M (0, Lng M - 1)\<close>.\<close>
+
+definition monoT :: "pairseq \<Rightarrow> bool" where
+  "monoT M \<longleftrightarrow> \<not> zeroT M \<and> leR M 0 0 (Lng M - 1)"
+
+text \<open>\<open>multiT M\<close> (複項): not zero and not mono.\<close>
+
+definition multiT :: "pairseq \<Rightarrow> bool" where
+  "multiT M \<longleftrightarrow> \<not> zeroT M \<and> \<not> monoT M"
+
+definition ZT_PS :: "pairseq set" where "ZT_PS = {M. M \<in> T_PS \<and> zeroT M}"
+definition PT_PS :: "pairseq set" where "PT_PS = {M. M \<in> T_PS \<and> monoT M}"
+definition MT_PS :: "pairseq set" where "MT_PS = {M. M \<in> T_PS \<and> multiT M}"
+
+text \<open>
+  \<open>P M\<close> (§6.2): decompose \<open>M\<close> into its non-multi (zero/mono) components.
+  When \<open>M\<close> is multi, \<open>P M = P (prefix) @ [suffix]\<close> where the cut is at
+  \<open>Pcut M\<close>, the least \<open>j\<^sub>0\<close> with \<open>0 < j\<^sub>0 \<le> Lng M - 1\<close> and
+  \<open>(0,j\<^sub>0) \<le>\<^sub>M (0, Lng M - 1)\<close>.  The prefix is strictly shorter, so the
+  recursion terminates.
+\<close>
+
+definition Pcut :: "pairseq \<Rightarrow> nat" where
+  "Pcut M = (LEAST j. 0 < j \<and> j \<le> Lng M - 1 \<and> leR M 0 j (Lng M - 1))"
+
+function P :: "pairseq \<Rightarrow> pairseq list" where
+  "P M = (if multiT M \<and> 1 < Lng M
+          then P (take (Pcut M) M) @ [drop (Pcut M) M]
+          else [M])"
+  by pat_completeness auto
+termination
+proof (relation "measure length")
+  show "wf (measure length)" by simp
+next
+  fix M :: pairseq
+  assume "multiT M \<and> 1 < Lng M"
+  hence L: "1 < Lng M" by simp
+  have wit: "0 < Lng M - 1 \<and> Lng M - 1 \<le> Lng M - 1 \<and> leR M 0 (Lng M - 1) (Lng M - 1)"
+    using L by (auto simp: leR_def le0_def)
+  have "Pcut M \<le> Lng M - 1" unfolding Pcut_def
+    by (rule Least_le[where P = "\<lambda>j. 0 < j \<and> j \<le> Lng M - 1 \<and> leR M 0 j (Lng M - 1)", OF wit])
+  hence "Pcut M < Lng M" using L by simp
+  thus "(take (Pcut M) M, M) \<in> measure length" by simp
+qed
+
 end

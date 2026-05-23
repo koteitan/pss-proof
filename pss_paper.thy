@@ -122,4 +122,103 @@ lemma p_5_4_F_oper_val:
   shows "Fval f M n = Fval f (M[n]) (f n)"
   sorry
 
+
+section \<open>§6 ペア数列の基本性質\<close>
+
+subsection \<open>§6.1 最上行のインクリメント\<close>
+
+text \<open>命題（\<open>\<le>\<^sub>M\<close>の\<open>IncrFirst\<close>不変性） — \<open>\<le>\<^sub>M\<close> and \<open>\<le>\<^bsub>IncrFirst M\<^esub>\<close> coincide.\<close>
+
+lemma p_6_1_le_IncrFirst_inv:
+  shows "leR (IncrFirst M) i j0 j1 \<longleftrightarrow> leR M i j0 j1"
+  sorry
+
+
+subsection \<open>§6.2 単項性\<close>
+
+text \<open>命題（複項性の判定条件） — equivalence of: (1) not multi; (2) strict
+  increase from the left; (3) \<open>(0,0) \<le>\<^sub>M (0, Lng M - 1)\<close>.\<close>
+
+lemma p_6_2_multi_crit_12:
+  assumes "M \<in> T_PS"
+  shows "(\<not> multiT M) = (\<forall>j. 0 < j \<and> j < Lng M \<longrightarrow> entry M 0 0 < entry M 0 j)"
+  sorry
+
+lemma p_6_2_multi_crit_23:
+  assumes "M \<in> T_PS"
+  shows "(\<forall>j. 0 < j \<and> j < Lng M \<longrightarrow> entry M 0 0 < entry M 0 j)
+         = leR M 0 0 (Lng M - 1)"
+  sorry
+
+text \<open>系（単項性の始切片への遺伝性） — a proper initial slice of a mono is mono.\<close>
+
+lemma p_6_2_mono_prefix:
+  assumes "M \<in> PT_PS" "0 < j0" "j0 < Lng M"
+  shows "monoT (seg M 0 j0)"
+  sorry
+
+text \<open>命題（単項性の直系先祖による切片への遺伝性） — an ancestor slice is mono.\<close>
+
+lemma p_6_2_mono_ancestor_slice:
+  assumes "M \<in> T_PS" "j0' < j1'" "leR M 0 j0' j1'"
+  shows "monoT (seg M j0' j1')"
+  sorry
+
+text \<open>命題（\<open>P\<close>の\<open>IncrFirst\<close>同変性） — \<open>P\<close> commutes with \<open>IncrFirst\<close>.\<close>
+
+lemma p_6_2_P_IncrFirst:
+  shows "P (IncrFirst M) = map IncrFirst (P M)"
+  sorry
+
+text \<open>命題（\<open>P\<close>の各成分の非複項性） — each component of \<open>P M\<close> is non-multi, and
+  \<open>M\<close> is multi iff \<open>Lng (P M) > 1\<close>.\<close>
+
+lemma p_6_2_P_components_1:
+  assumes "M \<in> T_PS"
+  shows "\<forall>M' \<in> set (P M). zeroT M' \<or> monoT M'"
+  sorry
+
+lemma p_6_2_P_components_2:
+  assumes "M \<in> T_PS"
+  shows "multiT M \<longleftrightarrow> length (P M) > 1"
+  sorry
+
+text \<open>命題（\<open>P\<close>の加法性） — additivity of \<open>P\<close> at a left-minimal cut \<open>j\<^sub>0\<close>.\<close>
+
+lemma p_6_2_P_additive:
+  assumes "M \<in> T_PS" "0 < j0" "j0 \<le> Lng M - 1"
+    and "\<And>j. j < j0 \<Longrightarrow> entry M 0 j \<ge> entry M 0 j0"
+  shows "P M = P (seg M 0 (j0 - 1)) @ P (seg M j0 (Lng M - 1))"
+  sorry
+
+text \<open>命題（\<open>P\<close>と基本列の関係） — relation between \<open>P\<close> and the fundamental
+  sequence (here \<open>P(M)\<^bsub>J\<^sub>1\<^esub> = last (P M)\<close>, \<open>(P(M)\<^sub>J)\<^bsub>J=0\<^esub>\<^bsup>J\<^sub>1-1\<^esup> = butlast (P M)\<close>).\<close>
+
+lemma p_6_2_P_oper_1:
+  assumes "M \<in> T_PS" "n \<ge> 1" "Lng (last (P M)) = 1"
+  shows "M[n] = Pred M
+       \<and> (if length (P M) = 1 then P (M[n]) = [(M[n])] else P (M[n]) = butlast (P M))"
+  sorry
+
+lemma p_6_2_P_oper_2:
+  assumes "M \<in> T_PS" "n \<ge> 1" "Lng (last (P M)) > 1"
+  shows "M[n] = concat (butlast (P M)) @ (last (P M))[n]
+       \<and> P (M[n]) = butlast (P M) @ P ((last (P M))[n])"
+  sorry
+
+text \<open>命題（非複項性と基本列の関係） — for a non-multi \<open>M\<close>, \<open>P(M[n])\<close> is either
+  \<open>n\<close> copies of \<open>Pred M\<close> or the singleton \<open>[M[n]]\<close>.\<close>
+
+lemma p_6_2_nonmulti_oper_1:
+  assumes "M \<in> T_PS" "n \<ge> 1" "\<not> multiT M"
+    "nextR M 0 0 (Lng M - 1)" "entry M 1 (Lng M - 1) = 0"
+  shows "P (M[n]) = replicate n (Pred M)"
+  sorry
+
+lemma p_6_2_nonmulti_oper_2:
+  assumes "M \<in> T_PS" "n \<ge> 1" "\<not> multiT M"
+    "\<not> nextR M 0 0 (Lng M - 1) \<or> entry M 1 (Lng M - 1) > 0"
+  shows "P ((M::pairseq)[n]) = [(M[n])]"
+  sorry
+
 end

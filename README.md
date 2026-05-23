@@ -1,6 +1,6 @@
 # pss-proof
 
-Version: **v0.1.4**
+Version: **v0.1.5**
 
 ペア数列システム（pair sequence system）の停止性証明を Isabelle/HOL で形式検証するプロジェクト。
 
