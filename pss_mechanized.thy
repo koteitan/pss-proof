@@ -583,6 +583,122 @@ lemma m_5_4_F_oper_val:
   using assms(3) by (simp add: Fval.simps)
 
 
+section \<open>§6.1 最上行のインクリメント\<close>
+
+lemma Lng_IncrFirst[simp]: "Lng (IncrFirst M) = Lng M"
+  by (simp add: IncrFirst_def)
+
+lemma entry_IncrFirst:
+  "j < Lng M \<Longrightarrow>
+   entry (IncrFirst M) i j = (if i = 0 then Suc (entry M 0 j) else entry M i j)"
+  by (simp add: IncrFirst_def entry_def)
+
+lemma nextrel0_IncrFirst_eq: "nextrel0 (IncrFirst M) = nextrel0 M"
+proof (intro ext)
+  fix j0 j1
+  show "nextrel0 (IncrFirst M) j0 j1 = nextrel0 M j0 j1"
+    unfolding nextrel0_def by (auto simp: entry_IncrFirst)
+qed
+
+lemma le0_IncrFirst_eq: "le0 (IncrFirst M) = le0 M"
+  by (intro ext) (simp add: le0_def nextrel0_IncrFirst_eq)
+
+lemma nextrel1_IncrFirst_eq: "nextrel1 (IncrFirst M) = nextrel1 M"
+proof (intro ext)
+  fix j0 j1
+  show "nextrel1 (IncrFirst M) j0 j1 = nextrel1 M j0 j1"
+    unfolding nextrel1_def
+    by (auto simp: entry_IncrFirst le0_IncrFirst_eq le0_def)
+qed
+
+lemma le1_IncrFirst_eq: "le1 (IncrFirst M) = le1 M"
+  by (intro ext) (simp add: le1_def nextrel1_IncrFirst_eq)
+
+text \<open>m: 命題（\<open>\<le>\<^sub>M\<close>の\<open>IncrFirst\<close>不変性） — discharges @{thm [source] p_6_1_le_IncrFirst_inv}.\<close>
+
+lemma m_6_1_le_IncrFirst_inv: "leR (IncrFirst M) i j0 j1 = leR M i j0 j1"
+  by (simp add: leR_def le0_IncrFirst_eq le1_IncrFirst_eq)
+
+
+section \<open>§6.2 単項性\<close>
+
+text \<open>Helper: a pair sequence in \<open>T_PS\<close> with \<open>Lng M \<noteq> 1\<close> has \<open>Lng M > 1\<close>.\<close>
+
+lemma T_PS_Lng_gt1:
+  assumes "M \<in> T_PS" "Lng M \<noteq> 1"
+  shows "Lng M > 1"
+  using assms by (cases M) (auto simp: T_PS_def)
+
+text \<open>\<open>\<not> multiT\<close> coincides with \<open>(0,0) \<le>\<^sub>M (0, Lng M - 1)\<close> (criterion (1) = (3)).\<close>
+
+lemma m_6_2_not_multi_iff_le:
+  assumes "M \<in> T_PS"
+  shows "(\<not> multiT M) = leR M 0 0 (Lng M - 1)"
+proof
+  assume "\<not> multiT M"
+  hence "zeroT M \<or> monoT M" by (simp add: multiT_def)
+  thus "leR M 0 0 (Lng M - 1)"
+  proof
+    assume "zeroT M"
+    hence "Lng M = 1" by (simp add: zeroT_def)
+    thus ?thesis by (simp add: leR_def le0_def)
+  next
+    assume "monoT M"
+    thus ?thesis by (simp add: monoT_def)
+  qed
+next
+  assume le: "leR M 0 0 (Lng M - 1)"
+  show "\<not> multiT M"
+  proof (cases "zeroT M")
+    case True thus ?thesis by (simp add: multiT_def)
+  next
+    case False
+    hence "monoT M" using le by (simp add: monoT_def)
+    thus ?thesis by (simp add: multiT_def)
+  qed
+qed
+
+text \<open>m: 命題（複項性の判定条件） (2)=(3) — discharges @{thm [source] p_6_2_multi_crit_23}.\<close>
+
+lemma m_6_2_multi_crit_23:
+  assumes "M \<in> T_PS"
+  shows "(\<forall>j. 0 < j \<and> j < Lng M \<longrightarrow> entry M 0 0 < entry M 0 j) = leR M 0 0 (Lng M - 1)"
+proof
+  assume H: "\<forall>j. 0 < j \<and> j < Lng M \<longrightarrow> entry M 0 0 < entry M 0 j"
+  show "leR M 0 0 (Lng M - 1)"
+  proof (cases "Lng M = 1")
+    case True thus ?thesis by (simp add: leR_def le0_def)
+  next
+    case False
+    have L: "Lng M > 1" by (rule T_PS_Lng_gt1[OF assms False])
+    show ?thesis
+    proof (rule m_5_1_parent_exists_3[OF assms])
+      show "0 < Lng M - 1" using L by simp
+      show "Lng M - 1 < Lng M" using L by simp
+      fix j assume "0 < j" "j \<le> Lng M - 1"
+      hence "j < Lng M" using L by simp
+      thus "entry M 0 0 < entry M 0 j" using H \<open>0 < j\<close> by blast
+    qed
+  qed
+next
+  assume le: "leR M 0 0 (Lng M - 1)"
+  show "\<forall>j. 0 < j \<and> j < Lng M \<longrightarrow> entry M 0 0 < entry M 0 j"
+  proof (intro allI impI)
+    fix j assume a: "0 < j \<and> j < Lng M"
+    hence "0 < j" "j \<le> Lng M - 1" by auto
+    thus "entry M 0 0 < entry M 0 j"
+      using m_5_1_ancestor_basic_1[OF assms _ _ le] by blast
+  qed
+qed
+
+text \<open>m: 命題（複項性の判定条件） (1)=(2) — discharges @{thm [source] p_6_2_multi_crit_12}.\<close>
+
+lemma m_6_2_multi_crit_12:
+  assumes "M \<in> T_PS"
+  shows "(\<not> multiT M) = (\<forall>j. 0 < j \<and> j < Lng M \<longrightarrow> entry M 0 0 < entry M 0 j)"
+  using m_6_2_not_multi_iff_le[OF assms] m_6_2_multi_crit_23[OF assms] by simp
+
+
 section \<open>Faithfulness lemmas (忠実性補題)\<close>
 
 text \<open>
