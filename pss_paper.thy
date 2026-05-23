@@ -284,17 +284,20 @@ lemma p_6_4_mono_slice_next:
        \<and> parent M 0 (j0 + IdxSum (P (seg M j0 (Lng M - 1))) ! J) < j0"
   sorry
 
-text \<open>命題（\<open>FirstNodes\<close>と\<open>TrMax\<close>と\<open>Joints\<close>の関係）.\<close>
+text \<open>命題（\<open>FirstNodes\<close>と\<open>TrMax\<close>と\<open>Joints\<close>の関係）.  \<open>J\<close> indexes a branch
+  component: the article's \<open>J \<le> Lng (Br M) - 1\<close> is rendered \<open>J < Lng (Br M)\<close>
+  to avoid the \<^bold>\<open>nat\<close> truncation artifact when \<open>Br M = []\<close> (where \<open>Lng - 1 = 0\<close>
+  would spuriously admit \<open>J = 0\<close> and dereference the empty \<open>Joints M\<close>).\<close>
 
 lemma p_6_4_FirstNodes_TrMax_Joints:
-  assumes "M \<in> PT_PS" "J \<le> Lng (Br M) - 1"
+  assumes "M \<in> PT_PS" "J < Lng (Br M)"
   shows "Joints M ! J \<le> TrMax M \<and> TrMax M < FirstNodes M ! J"
   sorry
 
-text \<open>系（\<open>FirstNodes\<close>と\<open>Joints\<close>の単調性）.\<close>
+text \<open>系（\<open>FirstNodes\<close>と\<open>Joints\<close>の単調性）.  (\<open>J\<^sub>1' < Lng (Br M)\<close>: see above.)\<close>
 
 lemma p_6_4_FirstNodes_Joints_mono:
-  assumes "M \<in> PT_PS" "J0' < J1'" "J1' \<le> Lng (Br M) - 1"
+  assumes "M \<in> PT_PS" "J0' < J1'" "J1' < Lng (Br M)"
   shows "FirstNodes M ! J0' \<le> FirstNodes M ! J1'
        \<and> Joints M ! J0' \<ge> Joints M ! J1'
        \<and> entry M 0 (FirstNodes M ! J0') \<ge> entry M 0 (FirstNodes M ! J1')
