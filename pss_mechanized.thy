@@ -551,7 +551,7 @@ qed
 section \<open>§5.4 ペア数列システム\<close>
 
 text \<open>
-  m: 命題（F_M と基本列の関係）— corrected form (see @{file "amendment.md"} A1).
+  m: 命題（F_M と基本列の関係）— corrected form (see @{file "amendments.md"} A1).
   Discharges @{thm [source] p_5_4_F_oper_dom}.  Immediate from the inductive
   definition of @{const Fdom}: with \<open>Lng M > 1\<close> only @{thm [source] Fdom.Fdom_step}
   applies.

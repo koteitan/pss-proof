@@ -106,7 +106,7 @@ text \<open>
   sequence.  The article states the equivalence of: (1) \<open>(M,n) \<in> Dom F\<close>;
   (2) \<open>(M[n],n) \<in> Dom F\<close>; (3) both, together with \<open>F\<^sub>M(n) = F\<^bsub>M[n]\<^esub>(n)\<close>.
 
-  CORRECTED form (see @{file "amendment.md"} entry A1): the article's second
+  CORRECTED form (see @{file "amendments.md"} entry A1): the article's second
   argument \<open>n\<close> is an apparent typo for \<open>f n\<close>, and the substantive content is
   the case \<open>Lng M > 1\<close> (for \<open>Lng M = 1\<close> the relation is trivial since
   \<open>M[n] = M\<close>).
