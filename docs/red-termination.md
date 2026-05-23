@@ -131,10 +131,17 @@ shift and of `IncrFirst`) are the foundational helpers to prove first; the
 
 ### Simplifications found while proving the helper lemmas (2026-05-24)
 
-- **`μ_mono` branches only on `hd M = (0,0)`** (i.e. `entry M 0 0 = 0 ∧
-  entry M 1 0 = 0`), NOT on `monoT`. So `coreReduce M` need only be shown to
-  **start with `(0,0)`** — its `monoT`-ness is irrelevant to the measure. This
-  removes a whole class of "shift/append preserves `monoT`" obligations.
+- **`μ_mono`'s VALUE branches only on `hd M = (0,0)`** (i.e. `entry M 0 0 = 0 ∧
+  entry M 1 0 = 0`), NOT on `monoT`; so `coreReduce M`'s contribution to
+  `μ_mono` only needs it to **start with `(0,0)`** (`coreReduce_core`).
+  *Caveat (corrected):* the GLOBAL measure `ν` still needs `coreReduce M` to be
+  **non-multi** (zero/mono), otherwise `ν(coreReduce M) = 1 + ∑…` rather than
+  `μ_mono(coreReduce M)` and the case-3/4 descent `ν(coreReduce M) < ν(M)`
+  breaks. Since `P`-blocks are always zero/mono (`m_6_2_P_components_1`), only
+  the mono recursion can introduce a multi argument — so a `coreReduce`-is-mono
+  (or just non-multi) lemma is still required. The found `m_6_2_P_components_1`
+  does make `ν` itself **non-recursive** (multi blocks are zero/mono, so
+  `ν(block) = μ_mono(block)` directly — no nested `ν`).
 - **The `m10 = 0` (shift) sub-case needs no `TrMax`-invariance.** For the case-2
   bound it suffices that `β(coreReduce N_J) = β(shift N_J) = Lng N_J −
   TrMax(shift N_J) ≤ Lng N_J` (since `Lng` is preserved by the row-0 `map` and
