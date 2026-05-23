@@ -37,8 +37,8 @@
       - ✅ 命題（$P$ の各成分の左端の単調性）
       - ✅ 命題（切片の単項成分と $<_M^{\textrm{Next}}$ の関係）
       - ✅ 命題（$\textrm{FirstNodes}$ と $\textrm{TrMax}$ と $\textrm{Joints}$ の関係）
-      - 🚨 系（$\textrm{FirstNodes}$ と $\textrm{Joints}$ の単調性）
-      - 🚨 系（単項性の切片への遺伝性）
+      - 🚨 系（$\textrm{FirstNodes}$ と $\textrm{Joints}$ の単調性）〔(1)(2)(3) 証明済、(4) 厳密減少のみ未〕
+      - ✅ 系（単項性の切片への遺伝性）
     - 🚨 §6.5 簡約化
       - 🚨 命題（$\textrm{Red}$ の well-defined 性）
       - 🚨 命題（$\textrm{Red}$ の $\textrm{IncrFirst}$ 不変性）
