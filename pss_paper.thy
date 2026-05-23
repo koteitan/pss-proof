@@ -1,5 +1,5 @@
 theory pss_paper
-  imports pss_defs
+  imports pss_defs "HOL-Library.Extended_Nat"
 begin
 
 text \<open>
@@ -557,5 +557,77 @@ lemma p_6_8_standard_P_descending:
     "entry (P M ! J0') 0 0 = entry (P M ! J1') 0 0"
   shows "entry (P M ! J0') 1 0 \<ge> entry (P M ! J1') 1 0"
   sorry
+
+
+section \<open>§7 Buchholz の表記系への翻訳\<close>
+
+text \<open>
+  The Buchholz notation system, transcribed from the cited reference
+  \<^bold>\<open>[Buc1]\<close> = W. Buchholz, "A new system of proof-theoretic ordinal
+  functions", Annals of Pure and Applied Logic 32 (1986), pp. 195–207.
+  These are the formulas of the external reference on which §7 of the article
+  relies; we transcribe them here (in the paper file) rather than as our own
+  modelling definitions.
+
+  Indices \<open>v \<le> \<omega>\<close> of the symbols \<open>D\<^sub>v\<close> are modelled by \<^typ>\<open>enat\<close>
+  (a finite \<open>v < \<omega>\<close> is \<open>enat n\<close>; \<open>\<omega>\<close> is \<open>\<infinity>\<close>).
+\<close>
+
+subsection \<open>§7.1 Buchholz の表記系 — 項と順序 ([Buc1] §2)\<close>
+
+text \<open>
+  [Buc1] (T1)–(T3): a term is \<open>0\<close> (\<open>= Trm []\<close>), a principal term \<open>D\<^sub>v a\<close>
+  (\<open>= Trm [DB v a]\<close>), or a tuple \<open>(a\<^sub>0,\<dots>,a\<^sub>k)\<close> (\<open>k \<ge> 1\<close>) of principal
+  terms (\<open>= Trm\<close> of a length \<open>\<ge> 2\<close> list).  Single principal: \<open>(a) := a\<close>.
+\<close>
+
+datatype BT = Trm "BP list"
+     and BP = DB enat BT
+
+abbreviation BZero :: BT  ("0\<^sub>B") where "0\<^sub>B \<equiv> Trm []"
+
+text \<open>[Buc1] (<1)–(<3): the ordering \<open><\<close> on \<open>T\<close>.  As a dictionary order on the
+  principal-term lists (a proper prefix is smaller), with principals compared
+  by \<open>D\<^sub>u a < D\<^sub>v b \<longleftrightarrow> u < v \<or> (u = v \<and> a < b)\<close>.\<close>
+
+fun lessBT :: "BT \<Rightarrow> BT \<Rightarrow> bool" and lessBP :: "BP \<Rightarrow> BP \<Rightarrow> bool" where
+  "lessBT (Trm []) (Trm bs) = (bs \<noteq> [])"
+| "lessBT (Trm (a # as)) (Trm []) = False"
+| "lessBT (Trm (a # as)) (Trm (b # bs)) =
+     (lessBP a b \<or> (a = b \<and> lessBT (Trm as) (Trm bs)))"
+| "lessBP (DB u a) (DB v b) = (u < v \<or> (u = v \<and> lessBT a b))"
+
+abbreviation leBT :: "BT \<Rightarrow> BT \<Rightarrow> bool" where
+  "leBT a b \<equiv> lessBT a b \<or> a = b"
+
+text \<open>[Buc1] (G1)–(G3): \<open>G\<^sub>u a \<subseteq> T\<close>.\<close>
+
+fun GBT :: "enat \<Rightarrow> BT \<Rightarrow> BT set" and GBP :: "enat \<Rightarrow> BP \<Rightarrow> BT set" where
+  "GBT u (Trm ps) = (\<Union>p \<in> set ps. GBP u p)"
+| "GBP u (DB v b) = (if u \<le> v then insert b (GBT u b) else {})"
+
+text \<open>[Buc1] §3: addition \<open>a + b\<close> and \<open>a \<cdot> n\<close>.\<close>
+
+fun addBT :: "BT \<Rightarrow> BT \<Rightarrow> BT"  (infixl "+\<^sub>B" 65) where
+  "addBT (Trm as) (Trm bs) = Trm (as @ bs)"
+
+fun multBT :: "BT \<Rightarrow> nat \<Rightarrow> BT"  (infixl "*\<^sub>B" 70) where
+  "multBT a 0 = 0\<^sub>B"
+| "multBT a (Suc n) = (multBT a n) +\<^sub>B a"
+
+text \<open>[Buc1] §3: \<open>T\<^sub>v\<close> for \<open>v \<le> \<omega>\<close> — terms whose top-level principal indices
+  are all \<open>\<le> v\<close>.\<close>
+
+definition TBv :: "enat \<Rightarrow> BT set" where
+  "TBv v = {t. \<forall>p \<in> set (case t of Trm ps \<Rightarrow> ps). (case p of DB u a \<Rightarrow> u \<le> v)}"
+
+text \<open>\<open>T\<^bsub>B\<^esub>\<close>: the \<open>D\<^sub>\<omega>\<close>-free terms (no index equals \<open>\<omega> = \<infinity>\<close> anywhere).\<close>
+
+fun dfree_BT :: "BT \<Rightarrow> bool" and dfree_BP :: "BP \<Rightarrow> bool" where
+  "dfree_BT (Trm ps) = (\<forall>p \<in> set ps. dfree_BP p)"
+| "dfree_BP (DB v b) = (v \<noteq> \<infinity> \<and> dfree_BT b)"
+
+definition T_B :: "BT set" where
+  "T_B = {t. dfree_BT t}"
 
 end

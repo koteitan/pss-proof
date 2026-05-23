@@ -8,6 +8,8 @@ session PSS = HOL +
     pss_mechanized own machine-checked proofs discharging those statements
   "
   options [document = false, quick_and_dirty]
+  sessions
+    "HOL-Library"
   theories
     pss_defs
     pss_paper
