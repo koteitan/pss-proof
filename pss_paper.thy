@@ -654,4 +654,80 @@ text \<open>\<open>OT\<^bsub>B\<^esub> := OT \<inter> T\<^bsub>B\<^esub>\<close>
 definition OT_B :: "BT set" where
   "OT_B = OT \<inter> T_B"
 
+
+subsection \<open>§7.1 Buchholz の表記系 — 基本列と \<open>dom\<close> ([Buc1] §3)\<close>
+
+text \<open>\<open>D\<^sub>v a = Trm [DB v a]\<close> (a principal term as a \<^typ>\<open>BT\<close>).\<close>
+
+abbreviation Dprin :: "enat \<Rightarrow> BT \<Rightarrow> BT" where "Dprin v a \<equiv> Trm [DB v a]"
+
+text \<open>The numeral terms \<open>\<nat> \<cong> {0,1,1+1,\<dots>}\<close> ([Buc1] §3): \<open>n\<close> is \<open>n\<close> copies of
+  \<open>1 = D\<^sub>0 0\<close>.  \<open>numNat\<close> recovers \<open>n\<close> from a numeral term.\<close>
+
+definition numBT :: "nat \<Rightarrow> BT" where
+  "numBT n = Trm (replicate n (DB 0 (Trm [])))"
+
+definition numNat :: "BT \<Rightarrow> nat" where
+  "numNat t = (case t of Trm ps \<Rightarrow> length ps)"
+
+definition NatSet :: "BT set" where
+  "NatSet = range numBT"
+
+text \<open>\<open>tbvIdx D\<close>: the unique \<open>u\<close> with \<open>D = T\<^sub>u\<close> (used when \<open>dom(b) = T\<^sub>u\<close>).\<close>
+
+definition tbvIdx :: "BT set \<Rightarrow> nat" where
+  "tbvIdx D = (THE u. D = TBv (enat u))"
+
+text \<open>
+  [Buc1] §3 \<open>dom(a)\<close> and \<open>a[z]\<close>, ([].0)–([].5), with the \<^bold>\<open>[Buc2]\<close>-modified
+  case ([].4)(ii) (article footnote, content.md 6427): \<open>x\<^sub>0 = D\<^sub>u 0\<close>,
+  \<open>x\<^sub>i = b[D\<^sub>u x\<^bsub>i-1\<^esub>]\<close>, \<open>a[n] = D\<^sub>v b[x\<^sub>n]\<close>; \<open>xseq b u\<close> computes \<open>x\<close>.
+
+  \<open>dom\<close> returns the actual index set (\<open>\<emptyset>\<close>, \<open>{0}\<close>, \<open>\<nat>\<close> = \<open>NatSet\<close>, or
+  \<open>T\<^sub>u\<close> = \<open>TBv (enat u)\<close>).  Mutual recursion (with \<open>xseq\<close>); all calls are on
+  \<open>dom\<close>/\<open>[]\<close>-free arguments, so the definition is accepted by \<open>function\<close>;
+  termination ([Buc1] Lemma 3.2, induction on the length of \<open>a\<close>) is deferred.
+\<close>
+
+function
+  domB :: "BT \<Rightarrow> BT set" and
+  operB :: "BT \<Rightarrow> BT \<Rightarrow> BT" and
+  xseq :: "BT \<Rightarrow> enat \<Rightarrow> nat \<Rightarrow> BT"
+where
+  "domB a =
+     (case a of Trm xs \<Rightarrow> (case xs of
+        [] \<Rightarrow> {}
+      | [DB v b] \<Rightarrow>
+          (if b = Trm [] then
+             (if v = 0 then {Trm []}
+              else if v = \<infinity> then NatSet
+              else TBv (enat (the_enat v - 1)))
+           else
+             (let db = domB b in
+              if db = {Trm []} then NatSet
+              else if (\<exists>u. v \<le> enat u \<and> db = TBv (enat u)) then NatSet
+              else db))
+      | (p # q # rest) \<Rightarrow> domB (Trm [last (p # q # rest)])))"
+| "operB a z =
+     (case a of Trm xs \<Rightarrow> (case xs of
+        [] \<Rightarrow> Trm []
+      | [DB v b] \<Rightarrow>
+          (if b = Trm [] then
+             (if v = 0 then Trm []
+              else if v = \<infinity> then Dprin (enat (numNat z + 1)) (Trm [])
+              else z)
+           else
+             (let db = domB b in
+              if db = {Trm []} then multBT (Dprin v (operB b (Trm []))) (numNat z + 1)
+              else if (\<exists>u. v \<le> enat u \<and> db = TBv (enat u))
+                   then Dprin v (operB b (xseq b (enat (tbvIdx db)) (numNat z)))
+              else Dprin v (operB b z)))
+      | (p # q # rest) \<Rightarrow>
+          addBT (Trm (butlast (p # q # rest))) (operB (Trm [last (p # q # rest)]) z)))"
+| "xseq b u i =
+     (case i of
+        0 \<Rightarrow> Dprin u (Trm [])
+      | Suc j \<Rightarrow> operB b (Dprin u (xseq b u j)))"
+  by pat_completeness auto
+
 end
