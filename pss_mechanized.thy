@@ -4897,5 +4897,110 @@ proof -
   from le_TrMax_intro[OF T this] show ?thesis .
 qed
 
+subsection \<open>The core measure \<open>\<beta>\<close> and the one-step \<open>coreReduce\<close>\<close>
+
+text \<open>\<open>entry\<close> under the \<open>IncrFirst\<close> iterate: row 0 is raised by \<open>k\<close>, row 1 fixed.\<close>
+
+lemma entry_funpow_IncrFirst0:
+  "j < Lng M \<Longrightarrow> entry ((IncrFirst ^^ k) M) 0 j = entry M 0 j + k"
+proof (induction k)
+  case 0 thus ?case by simp
+next
+  case (Suc k)
+  have jl: "j < Lng ((IncrFirst ^^ k) M)" using Suc.prems by simp
+  have "entry ((IncrFirst ^^ Suc k) M) 0 j = entry (IncrFirst ((IncrFirst ^^ k) M)) 0 j"
+    by simp
+  also have "\<dots> = Suc (entry ((IncrFirst ^^ k) M) 0 j)" using jl by (simp add: entry_IncrFirst)
+  also have "\<dots> = Suc (entry M 0 j + k)" using Suc by simp
+  finally show ?case by simp
+qed
+
+lemma entry_funpow_IncrFirst1:
+  "j < Lng M \<Longrightarrow> entry ((IncrFirst ^^ k) M) 1 j = entry M 1 j"
+proof (induction k)
+  case 0 thus ?case by simp
+next
+  case (Suc k)
+  have jl: "j < Lng ((IncrFirst ^^ k) M)" using Suc.prems by simp
+  have "entry ((IncrFirst ^^ Suc k) M) 1 j = entry (IncrFirst ((IncrFirst ^^ k) M)) 1 j"
+    by simp
+  also have "\<dots> = entry ((IncrFirst ^^ k) M) 1 j" using jl by (simp add: entry_IncrFirst)
+  also have "\<dots> = entry M 1 j" using Suc by simp
+  finally show ?case .
+qed
+
+text \<open>\<open>\<beta> M = Lng M - TrMax M\<close> is the core measure (branch positions right of the
+  trunk).  \<open>coreReduce M\<close> is the core element (starting at \<open>(0,0)\<close>) that a
+  non-core mono \<open>M\<close> reduces to in one @{const Red} step: shift row 0 down when
+  \<open>M\<^bsub>1,0\<^esub> = 0\<close> (case 3), else prepend a diagonal of length \<open>M\<^bsub>1,0\<^esub>\<close> (case 4).\<close>
+
+definition betaM :: "pairseq \<Rightarrow> nat" where
+  "betaM M = Lng M - TrMax M"
+
+definition coreReduce :: "pairseq \<Rightarrow> pairseq" where
+  "coreReduce M =
+     (if entry M 1 0 = 0
+      then map (\<lambda>j. (entry M 0 j - entry M 0 0, entry M 1 j)) [0..<Lng M]
+      else diagSeq 0 (entry M 1 0 - 1) @ (IncrFirst ^^ (entry M 1 0)) M)"
+
+text \<open>\<open>coreReduce M\<close> starts at \<open>(0,0)\<close> (it lands in the core), for any non-empty
+  non-core \<open>M\<close>.\<close>
+
+lemma coreReduce_core:
+  assumes T: "M \<in> T_PS"
+  shows "entry (coreReduce M) 0 0 = 0 \<and> entry (coreReduce M) 1 0 = 0"
+proof (cases "entry M 1 0 = 0")
+  case True
+  have L: "Lng M > 0" using T by (cases M) (auto simp: T_PS_def)
+  have "coreReduce M = map (\<lambda>j. (entry M 0 j - entry M 0 0, entry M 1 j)) [0..<Lng M]"
+    using True by (simp add: coreReduce_def)
+  thus ?thesis using True L by (simp add: entry_def)
+next
+  case False
+  let ?k = "entry M 1 0 - 1"
+  have "coreReduce M = diagSeq 0 ?k @ (IncrFirst ^^ (entry M 1 0)) M"
+    using False by (simp add: coreReduce_def)
+  thus ?thesis using False
+    by (simp add: entry_diagSeq_append_lo[where i=0])
+qed
+
+text \<open>m: the core measure does not grow under \<open>coreReduce\<close>:
+  \<open>\<beta> (coreReduce M) \<le> Lng M\<close>.  Case 3 (\<open>m\<^sub>1\<^sub>0=0\<close>) is immediate (\<open>Lng\<close> fixed,
+  \<open>\<beta> \<le> Lng\<close>); case 4 (\<open>m\<^sub>1\<^sub>0>0\<close>) uses @{thm [source] TrMax_diagSeq_append_ge}: the
+  prepended diagonal of length \<open>m\<^sub>1\<^sub>0\<close> raises \<open>TrMax\<close> by \<open>m\<^sub>1\<^sub>0\<close>.\<close>
+
+lemma betaM_coreReduce_le:
+  assumes T: "M \<in> T_PS"
+  shows "betaM (coreReduce M) \<le> Lng M"
+proof (cases "entry M 1 0 = 0")
+  case True
+  have "coreReduce M = map (\<lambda>j. (entry M 0 j - entry M 0 0, entry M 1 j)) [0..<Lng M]"
+    using True by (simp add: coreReduce_def)
+  hence "Lng (coreReduce M) = Lng M" by simp
+  thus ?thesis by (simp add: betaM_def)
+next
+  case False
+  let ?m = "entry M 1 0"
+  let ?k = "?m - 1"
+  let ?rest = "(IncrFirst ^^ ?m) M"
+  have m1: "?m \<ge> 1" using False by simp
+  have L0: "0 < Lng M" using T by (cases M) (auto simp: T_PS_def)
+  have cr: "coreReduce M = diagSeq 0 ?k @ ?rest" using False by (simp add: coreReduce_def)
+  have lenr: "Lng ?rest = Lng M" by simp
+  have ne: "?rest \<noteq> []" using L0 lenr by (metis length_greater_0_conv)
+  have er0: "entry ?rest 0 0 = entry M 0 0 + ?m" by (rule entry_funpow_IncrFirst0[OF L0])
+  have er1: "entry ?rest 1 0 = entry M 1 0" by (rule entry_funpow_IncrFirst1[OF L0])
+  have r0: "?k < entry ?rest 0 0" using m1 er0 by simp
+  have r1: "?k < entry ?rest 1 0" using m1 er1 by simp
+  have trge: "Suc ?k \<le> TrMax (coreReduce M)"
+    using cr TrMax_diagSeq_append_ge[OF ne r0 r1] by simp
+  have lenc: "Lng (coreReduce M) = Suc ?k + Lng M" using cr by simp
+  have "betaM (coreReduce M) = (Suc ?k + Lng M) - TrMax (coreReduce M)"
+    by (simp add: betaM_def lenc)
+  also have "\<dots> \<le> (Suc ?k + Lng M) - Suc ?k" using trge by (rule diff_le_mono2)
+  also have "\<dots> = Lng M" by simp
+  finally show ?thesis .
+qed
+
 end
 
