@@ -40,7 +40,7 @@
       - 🚨 系（$\textrm{FirstNodes}$ と $\textrm{Joints}$ の単調性）〔(1)(2)(3) 証明済、(4) 厳密減少のみ未〕
       - ✅ 系（単項性の切片への遺伝性）
     - 🚨 §6.5 簡約化
-      - 🚨 命題（$\textrm{Red}$ の well-defined 性）
+      - 🚨 命題（$\textrm{Red}$ の well-defined 性）〔停止性測度の基礎補題群を整備中: diagSeq 基礎(`Lng_diagSeq`/`entry_diagSeq`/`TrMax_diagSeq`)・枝長バウンド(`Lng_Br_le`)・IncrFirst の TrMax 不変性・trunk 延長(`TrMax_diagSeq_append_ge`)を証明済。残: 測度 ν 定義＋`Red_dom` 帰納本体。測度設計は docs/red-termination.md〕
       - 🚨 命題（$\textrm{Red}$ の $\textrm{IncrFirst}$ 不変性）
       - 🚨 命題（$\textrm{Lng}$ の $\textrm{Red}$ 不変性）
       - 🚨 系（$\textrm{Red}$ が零項性を保つこと）

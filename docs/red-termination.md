@@ -128,3 +128,33 @@ shift and of `IncrFirst`) are the foundational helpers to prove first; the
 > (a transferable lesson from the BMS meta-advice; see `tmp/advices-answer.md`).
 > The claim is true, but the Isabelle measure is non-trivial — exactly the kind
 > of "paper says easy, formalization says subtle" gap worth resolving up front.
+
+### Simplifications found while proving the helper lemmas (2026-05-24)
+
+- **`μ_mono` branches only on `hd M = (0,0)`** (i.e. `entry M 0 0 = 0 ∧
+  entry M 1 0 = 0`), NOT on `monoT`. So `coreReduce M` need only be shown to
+  **start with `(0,0)`** — its `monoT`-ness is irrelevant to the measure. This
+  removes a whole class of "shift/append preserves `monoT`" obligations.
+- **The `m10 = 0` (shift) sub-case needs no `TrMax`-invariance.** For the case-2
+  bound it suffices that `β(coreReduce N_J) = β(shift N_J) = Lng N_J −
+  TrMax(shift N_J) ≤ Lng N_J` (since `Lng` is preserved by the row-0 `map` and
+  `β ≤ Lng` always). So the planned "row-0 shift preserves `TrMax`" lemma (which
+  would have needed `m00 = min row 0`, a `PT_PS` structural fact) is **not
+  required**. Only the `m10 > 0` sub-case uses `TrMax_diagSeq_append_ge`.
+- **Multi via a sum measure.** A global `ν` can be defined by
+  `ν(M) = (if multiT M then 1 + (∑_J ν(P M ! J)) else μ_mono(M))`,
+  well-defined by `Lng`-recursion (blocks are shorter). Each block then has
+  `ν(block) ≤ ∑ < ν(M)`. The mono entries feed `μ_mono`. Open obligation for
+  this branch: `N_J ∈ PT_PS` (so case 2's argument is mono, never multi) — an
+  article fact to transcribe/derive.
+
+**Helper lemmas proved so far** (in `pss_mechanized.thy`): `Lng_diagSeq`,
+`diagSeq_nth`, `entry_diagSeq`, `length_nth_le_concat`, `Lng_Br_le`,
+`nextR1_consecutive`, `nextR1_diagSeq`, `TrMax_diagSeq`,
+`entry_diagSeq_append_lo`, `entry_diagSeq_append_junction`, `le_TrMax_intro`,
+`nextR1_diagSeq_append`, `TrMax_diagSeq_append_ge`, `TrMax_IncrFirst`,
+`Lng_funpow_IncrFirst`, `TrMax_funpow_IncrFirst`.
+
+**Remaining**: define `ν`/`μ_mono` (and `coreReduce`); prove the per-case
+descent; run the `Red_dom` induction via `Red.domintros` / a well-founded
+relation on `ν`.
