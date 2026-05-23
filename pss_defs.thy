@@ -302,4 +302,41 @@ text \<open>\<open>Marked\<close> (\<open>T\<^bsub>PS\<^esub>\<^sup>Marked\<clos
 definition Marked :: "(pairseq \<times> nat) set" where
   "Marked = {(M,m). M \<in> T_PS \<and> adm M m \<and> leR M 0 m (Lng M - 1)}"
 
+
+subsection \<open>§6.4 幹と枝 (Trunk and branches)\<close>
+
+text \<open>
+  \<open>IdxSum Q\<close>: for \<open>Q\<close> a list of pair sequences, the list of cumulative
+  length-prefix sums \<open>(\<Sum>\<^bsub>k<J\<^esub> Lng Q\<^sub>k)\<^bsub>J=0\<^esub>\<^bsup>Lng Q\<^esup>\<close> (length \<open>Lng Q + 1\<close>).
+\<close>
+
+definition IdxSum :: "pairseq list \<Rightarrow> nat list" where
+  "IdxSum Q = map (\<lambda>J. sum_list (map length (take J Q))) [0..<Suc (length Q)]"
+
+text \<open>
+  \<open>TrMax M\<close> (幹の右端): the largest \<open>j\<close> such that the row-1 chain
+  \<open>(1,j') <\<^bsub>M\<^esub>\<^sup>Next (1,j'+1)\<close> holds for all \<open>j' < j\<close>.
+\<close>
+
+definition TrMax :: "pairseq \<Rightarrow> nat" where
+  "TrMax M = Max {j. \<forall>j'<j. nextR M 1 j' (j' + 1)}"
+
+text \<open>\<open>Br M\<close> (枝): the \<open>P\<close>-decomposition of the segment to the right of the trunk.\<close>
+
+definition Br :: "pairseq \<Rightarrow> pairseq list" where
+  "Br M = (if TrMax M = Lng M - 1 then [] else P (seg M (TrMax M + 1) (Lng M - 1)))"
+
+text \<open>\<open>FirstNodes M\<close>: the left endpoints (in \<open>M\<close>) of the branch components.\<close>
+
+definition FirstNodes :: "pairseq \<Rightarrow> nat list" where
+  "FirstNodes M = map (\<lambda>x. TrMax M + 1 + x) (IdxSum (Br M))"
+
+text \<open>
+  \<open>Joints M\<close>: for each branch component, the unique parent (in row 0, in \<open>M\<close>)
+  of its first node.
+\<close>
+
+definition Joints :: "pairseq \<Rightarrow> nat list" where
+  "Joints M = map (\<lambda>J. THE j. nextR M 0 j (FirstNodes M ! J)) [0..<length (Br M)]"
+
 end

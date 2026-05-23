@@ -245,4 +245,68 @@ lemma p_6_3_marked_slice:
   shows "(seg M j0' j1', m - j0') \<in> Marked"
   sorry
 
+
+subsection \<open>§6.4 幹と枝\<close>
+
+text \<open>命題（\<open>P\<close>と\<open>IdxSum\<close>の関係） — each component of \<open>P M\<close> is the \<open>M\<close>-slice
+  between consecutive \<open>IdxSum\<close> values.\<close>
+
+lemma p_6_4_P_IdxSum:
+  assumes "M \<in> T_PS" "J \<le> Lng (P M) - 1"
+  shows "(P M) ! J = seg M (IdxSum (P M) ! J) (IdxSum (P M) ! (J + 1) - 1)"
+  sorry
+
+text \<open>系（\<open>P\<close>と\<open>IdxSum\<close>の合成の特徴付け）.\<close>
+
+lemma p_6_4_P_IdxSum_char_1:
+  assumes "M \<in> T_PS" "J \<le> Lng (P M) - 1"
+  shows "\<not> (\<exists>!j0. nextR M 0 j0 (IdxSum (P M) ! J))"
+  sorry
+
+lemma p_6_4_P_IdxSum_char_2:
+  assumes "M \<in> T_PS" "j \<le> Lng M - 1" "\<not> (\<exists>!j0. nextR M 0 j0 j)"
+  shows "\<exists>J. J \<le> Lng (P M) - 1 \<and> j = IdxSum (P M) ! J"
+  sorry
+
+text \<open>命題（\<open>P\<close>の各成分の左端の単調性）.\<close>
+
+lemma p_6_4_P_leftend_mono:
+  assumes "M \<in> T_PS" "J0' \<le> J1'" "J1' \<le> Lng (P M) - 1"
+  shows "entry ((P M) ! J0') 0 0 \<ge> entry ((P M) ! J1') 0 0"
+  sorry
+
+text \<open>命題（切片の単項成分と\<open><\<^bsub>M\<^esub>\<^sup>Next\<close>の関係）.\<close>
+
+lemma p_6_4_mono_slice_next:
+  assumes "M \<in> PT_PS" "0 < j0" "j0 \<le> Lng M - 1"
+    "J \<le> Lng (P (seg M j0 (Lng M - 1))) - 1"
+  shows "hasParent M 0 (j0 + IdxSum (P (seg M j0 (Lng M - 1))) ! J)
+       \<and> parent M 0 (j0 + IdxSum (P (seg M j0 (Lng M - 1))) ! J) < j0"
+  sorry
+
+text \<open>命題（\<open>FirstNodes\<close>と\<open>TrMax\<close>と\<open>Joints\<close>の関係）.\<close>
+
+lemma p_6_4_FirstNodes_TrMax_Joints:
+  assumes "M \<in> PT_PS" "J \<le> Lng (Br M) - 1"
+  shows "Joints M ! J \<le> TrMax M \<and> TrMax M < FirstNodes M ! J"
+  sorry
+
+text \<open>系（\<open>FirstNodes\<close>と\<open>Joints\<close>の単調性）.\<close>
+
+lemma p_6_4_FirstNodes_Joints_mono:
+  assumes "M \<in> PT_PS" "J0' < J1'" "J1' \<le> Lng (Br M) - 1"
+  shows "FirstNodes M ! J0' \<le> FirstNodes M ! J1'
+       \<and> Joints M ! J0' \<ge> Joints M ! J1'
+       \<and> entry M 0 (FirstNodes M ! J0') \<ge> entry M 0 (FirstNodes M ! J1')
+       \<and> (\<forall>i\<in>{0,1}. entry M i (Joints M ! J0') > entry M i (Joints M ! J1'))"
+  sorry
+
+text \<open>系（単項性の切片への遺伝性） — §6.4 version (via Joints).\<close>
+
+lemma p_6_4_mono_slice:
+  assumes "M \<in> PT_PS" "j0' < j1'" "j1' \<le> Lng M - 1"
+    "j0' \<le> Joints M ! (Lng (Br M) - 1)"
+  shows "monoT (seg M j0' j1')"
+  sorry
+
 end
