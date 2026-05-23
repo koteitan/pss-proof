@@ -221,4 +221,28 @@ lemma p_6_2_nonmulti_oper_2:
   shows "P ((M::pairseq)[n]) = [(M[n])]"
   sorry
 
+
+subsection \<open>§6.3 許容性\<close>
+
+text \<open>命題（許容性の切片への遺伝性） — admissibility transfers to slices.\<close>
+
+lemma p_6_3_adm_slice:
+  assumes "M \<in> T_PS" "j0' \<le> j0" "j0 \<le> j1'" "j1' \<le> Lng M - 1"
+  shows "(adm M j0 \<or> j0' = j0 \<or> j0 = j1') = adm (seg M j0' j1') (j0 - j0')"
+  sorry
+
+text \<open>命題（許容化の切片への遺伝性） — admissibilization transfers to slices.\<close>
+
+lemma p_6_3_admof_slice:
+  assumes "M \<in> T_PS" "j0' \<le> Adm M j0" "j0 < j1'" "j1' \<le> Lng M - 1"
+  shows "Adm (seg M j0' j1') (j0 - j0') = Adm M j0 - j0'"
+  sorry
+
+text \<open>命題（基点の切片への遺伝性） — a marked pair sequence restricts to a marked slice.\<close>
+
+lemma p_6_3_marked_slice:
+  assumes "(M, m) \<in> Marked" "j0' \<le> m" "m \<le> j1'" "j1' \<le> Lng M - 1"
+  shows "(seg M j0' j1', m - j0') \<in> Marked"
+  sorry
+
 end

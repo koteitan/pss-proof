@@ -271,4 +271,35 @@ next
   thus "(take (Pcut M) M, M) \<in> measure length" by simp
 qed
 
+
+subsection \<open>§6.3 許容性 (Admissibility)\<close>
+
+text \<open>
+  \<open>nadm M j\<close> (非\<open>M\<close>許容): \<open>j > Lng M\<close>, or both
+  \<open>(1,j-1) <\<^bsub>M\<^esub>\<^sup>Next (1,j)\<close> and \<open>(1,j) <\<^bsub>M\<^esub>\<^sup>Next (1,j+1)\<close>.
+\<close>
+
+definition nadm :: "pairseq \<Rightarrow> nat \<Rightarrow> bool" where
+  "nadm M j \<longleftrightarrow> j > Lng M \<or> (nextR M 1 (j - 1) j \<and> nextR M 1 j (j + 1))"
+
+text \<open>\<open>adm M j\<close> (\<open>M\<close>許容): not non-admissible.\<close>
+
+definition adm :: "pairseq \<Rightarrow> nat \<Rightarrow> bool" where
+  "adm M j \<longleftrightarrow> \<not> nadm M j"
+
+text \<open>\<open>AdmSet M\<close> (\<open>\<nat>\<^sub>M\<close>): the set of \<open>M\<close>-admissible naturals.\<close>
+
+definition AdmSet :: "pairseq \<Rightarrow> nat set" where
+  "AdmSet M = {j. adm M j}"
+
+text \<open>\<open>Adm M j\<close> (\<open>Adm\<^sub>M(j)\<close>): the admissibilization of \<open>j\<close>.\<close>
+
+definition Adm :: "pairseq \<Rightarrow> nat \<Rightarrow> nat" where
+  "Adm M j = (if adm M j then j else Max {j'. adm M j' \<and> j' < j})"
+
+text \<open>\<open>Marked\<close> (\<open>T\<^bsub>PS\<^esub>\<^sup>Marked\<close>): basepoint-marked pair sequences.\<close>
+
+definition Marked :: "(pairseq \<times> nat) set" where
+  "Marked = {(M,m). M \<in> T_PS \<and> adm M m \<and> leR M 0 m (Lng M - 1)}"
+
 end

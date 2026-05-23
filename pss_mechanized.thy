@@ -799,6 +799,86 @@ next
 qed
 
 
+text \<open>
+  m: 命題（\<open>P\<close>の\<open>IncrFirst\<close>同変性） — discharges @{thm [source] p_6_2_P_IncrFirst}.
+  Follows from the \<open>IncrFirst\<close>-invariance of \<open>\<le>\<^sub>M\<close> (m_6_1).  We first record that
+  \<open>zeroT\<close>, \<open>monoT\<close>, \<open>multiT\<close> and \<open>Pcut\<close> are all invariant under \<open>IncrFirst\<close>,
+  since they depend only on \<open>Lng M\<close>, \<open>entry M 1 _\<close> (row 1, unchanged) and \<open>leR M\<close>.
+\<close>
+
+lemma IncrFirst_zeroT_eq: "zeroT (IncrFirst M) = zeroT M"
+proof (cases "Lng M = 0")
+  case True thus ?thesis by (simp add: zeroT_def)
+next
+  case False
+  hence "(0::nat) < Lng M" by simp
+  thus ?thesis by (simp add: zeroT_def entry_IncrFirst)
+qed
+
+lemma IncrFirst_monoT_eq: "monoT (IncrFirst M) = monoT M"
+  by (simp add: monoT_def IncrFirst_zeroT_eq m_6_1_le_IncrFirst_inv)
+
+lemma IncrFirst_multiT_eq: "multiT (IncrFirst M) = multiT M"
+  by (simp add: multiT_def IncrFirst_zeroT_eq IncrFirst_monoT_eq)
+
+lemma IncrFirst_Pcut_eq: "Pcut (IncrFirst M) = Pcut M"
+  by (simp add: Pcut_def m_6_1_le_IncrFirst_inv)
+
+lemma IncrFirst_take: "IncrFirst (take k M) = take k (IncrFirst M)"
+  by (simp add: IncrFirst_def take_map)
+
+lemma IncrFirst_drop: "IncrFirst (drop k M) = drop k (IncrFirst M)"
+  by (simp add: IncrFirst_def drop_map)
+
+lemma m_6_2_P_IncrFirst:
+  shows "P (IncrFirst M) = map IncrFirst (P M)"
+proof (induction M rule: P.induct)
+  case (1 M)
+  show ?case
+  proof (cases "multiT M \<and> 1 < Lng M")
+    case True
+    hence step: "P M = P (take (Pcut M) M) @ [drop (Pcut M) M]"
+      by (subst P.simps) simp
+    from True have stepI:
+      "P (IncrFirst M)
+         = P (take (Pcut M) (IncrFirst M)) @ [drop (Pcut M) (IncrFirst M)]"
+      by (subst P.simps) (simp add: IncrFirst_multiT_eq IncrFirst_Pcut_eq)
+    have IH: "P (IncrFirst (take (Pcut M) M)) = map IncrFirst (P (take (Pcut M) M))"
+      using True 1 by blast
+    show ?thesis
+      using stepI step IH
+      by (simp add: IncrFirst_take IncrFirst_drop)
+  next
+    case False
+    hence "P M = [M]" by (subst P.simps) simp
+    moreover have "P (IncrFirst M) = [IncrFirst M]"
+      using False by (subst P.simps) (simp add: IncrFirst_multiT_eq)
+    ultimately show ?thesis by simp
+  qed
+qed
+
+text \<open>Slice / drop / take relations on \<open>seg\<close> (reusable for §6.x).\<close>
+
+lemma drop_eq_map_nth: "drop a M = map (nth M) [a..<Lng M]"
+  by (rule nth_equalityI) (auto simp: nth_drop)
+
+lemma seg_0_eq_take:
+  assumes "Suc b \<le> Lng M"
+  shows "seg M 0 b = take (Suc b) M"
+  unfolding seg_def using assms
+  by (intro nth_equalityI) (auto simp: nth_take simp del: upt_Suc)
+
+lemma seg_to_last_eq_drop:
+  assumes "Lng M > 0"
+  shows "seg M a (Lng M - 1) = drop a M"
+proof -
+  have "seg M a (Lng M - 1) = map (\<lambda>j. M ! j) [a..<Lng M]"
+    using assms by (simp add: seg_def del: upt_Suc)
+  also have "\<dots> = drop a M" by (rule drop_eq_map_nth[symmetric])
+  finally show ?thesis .
+qed
+
+
 section \<open>Faithfulness lemmas (忠実性補題)\<close>
 
 text \<open>
@@ -934,3 +1014,4 @@ proof -
 qed
 
 end
+
