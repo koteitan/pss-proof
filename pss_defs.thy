@@ -23,9 +23,14 @@ section \<open>§4 記法 (Notation)\<close>
 text \<open>
   An \<open>A\<close>-valued array is an element of \<open>A\<^sup>n\<close>; we model it as a HOL list.
   \<open>Lng a\<close> (the length) is @{const length}.  The empty array \<open>()\<close> is @{term "[]"}.
-  The binary concatenation \<open>\<oplus>\<^sub>A\<close> is list append @{term "(@)"} and the iterated
-  \<open>\<Oplus>\<^sub>A\<close> is @{const concat}; both are verified faithful by the article's
-  index bookkeeping.
+  We model the binary concatenation \<open>\<oplus>\<^sub>A\<close> as list append @{term "(@)"} and the
+  iterated \<open>\<Oplus>\<^sub>A\<close> as @{const concat}.
+
+  NOTE on faithfulness: several definitions below are modelling choices, not
+  verbatim transcriptions (e.g. \<open>\<le>\<^sub>M\<close> is given as a reflexive-transitive
+  closure rather than via the article's explicit chain).  Lemmas asserting
+  that these coincide with the article's literal definitions are collected in
+  the "Faithfulness lemmas (忠実性補題)" section of @{file "pss_mechanized.thy"}.
 \<close>
 
 abbreviation Lng :: "'a list \<Rightarrow> nat" where
