@@ -82,18 +82,26 @@ Symbols `D_0, D_1, …, D_ω`. (Indices `v ≤ ω` are modelled by `enat`; `ω =
   to all of `T_PS` via `Red`. `Mark`. §7.4 admissible parent relation
   `<_M^{NextAdm}`.
 
-## Isabelle encoding (in `pss_paper.thy`, §7.1; partial)
+## Isabelle encoding (in `pss_paper.thy`, §7.1)
 
-Done (commit "Transcribe §7.1 Buchholz term system core from [Buc1]"):
+Done:
 - `datatype BT = Trm "BP list" and BP = DB enat BT` — `Trm []` is `0`,
   `Trm [DB v a]` is the principal `D_v a`, length `≥ 2` is a tuple.
 - `lessBT` / `lessBP` (the `<` dictionary order), `leBT` (`≤`).
 - `GBT` / `GBP` (`G_u`); `addBT` (`+B`), `multBT` (`*B`); `TBv` (`T_v`);
   `dfree_BT` / `dfree_BP` and `T_B` (the `D_ω`-free terms).
+- `descP`, `isOT_BT` / `isOT_BP`, `OT` (OT1)-(OT3); `OT_B = OT ∩ T_B`.
+- `domB` / `operB` (`a[z]`) / `xseq` as a mutual `function` with **deferred
+  termination** (`by pat_completeness auto`, like `Red`): ([].0)-([].5) with the
+  [Buc2]-modified ([].4)(ii). Helpers `Dprin`, `numBT` / `numNat` / `NatSet`,
+  `tbvIdx`.
+- `untrm`, `PB` (`P_B`) and `SigmaB` (`Σ_B`), mutually inverse.
 
-To do: `OT` (with the `G_v b < b` condition and the descending-tuple condition),
-`dom` and `[]` (recursive, with the [Buc2]-modified `([].4)(ii)`), `P_B`,
-`Σ_B`, scb-decomposition / `RightNodes`, then §7.3 `Trans` / `Mark` and the §7
-statements. `Trans` connects to the pair-sequence side (`pss_defs`), so it is
-defined in `pss_paper` which imports `pss_defs`. The well-foundedness of
-`(OT_B, <)` (Lemma 2.2) is the eventual source of termination.
+To do: a flatten-to-`Σ`-string view (needed to state the string-level
+propositions faithfully — parenthesis balance, sub-expression inequality
+extension), scb-decomposition / `RightNodes` (§7.2), then §7.3 `Trans` / `Mark`,
+§7.4 admissible parent relation, and the §7 statements. `Trans` connects to the
+pair-sequence side (`pss_defs`), so it is defined in `pss_paper` (which imports
+`pss_defs`). The well-foundedness of `(OT_B, <)` ([Buc1] Lemma 2.2) is the
+eventual source of termination; it (and `domB`/`operB`/`Red` termination) will
+be stated as the relevant §7/§8 propositions.
