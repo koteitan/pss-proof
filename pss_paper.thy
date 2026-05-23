@@ -746,4 +746,70 @@ definition PB :: "BT \<Rightarrow> BT list" where
 definition SigmaB :: "BT list \<Rightarrow> BT" where
   "SigmaB ts = Trm (concat (map untrm ts))"
 
+
+subsection \<open>§7.2 scb分解 ([Buc1] のアルファベット \<open>\<Sigma>\<close> 上)\<close>
+
+text \<open>The alphabet \<open>\<Sigma>\<close>: the letters \<open>\<^bold>(\<close>, \<open>\<^bold>,\<close>, \<open>\<^bold>)\<close>, \<open>0\<close>, and \<open>D\<^sub>u\<close>
+  (\<open>u \<le> \<omega>\<close>).\<close>
+
+datatype Sym = LP | CM | RP | Zsym | Dsym enat
+
+text \<open>\<open>flat t\<close>: the \<open>\<Sigma>\<close>-string of a term.  \<open>0 = "0"\<close>; a principal
+  \<open>D\<^sub>u a = "D\<^sub>u" \<frown> flat a\<close>; a tuple \<open>(a\<^sub>0,\<dots>,a\<^sub>k) = "(" a\<^sub>0 "," \<dots> "," a\<^sub>k ")"\<close>
+  (single principal uncontracted: \<open>(a) = a\<close>).\<close>
+
+fun flatBT :: "BT \<Rightarrow> Sym list" and flatBP :: "BP \<Rightarrow> Sym list" where
+  "flatBT (Trm []) = [Zsym]"
+| "flatBT (Trm [p]) = flatBP p"
+| "flatBT (Trm (p # q # ps)) =
+     LP # (flatBP p @ concat (map (\<lambda>r. CM # flatBP r) (q # ps))) @ [RP]"
+| "flatBP (DB u a) = Dsym u # flatBT a"
+
+text \<open>\<open>RightNodes : T\<^bsub>B\<^esub> \<to> \<nat>\<^bsup><\<omega>\<^esup>\<close> (§7.2): \<open>0 \<mapsto> ()\<close>; \<open>D\<^sub>u t' \<mapsto> (u) \<frown>
+  RightNodes t'\<close>; a multi term \<open>\<mapsto> RightNodes\<close> of its last principal component.\<close>
+
+function RightNodes :: "BT \<Rightarrow> nat list" where
+  "RightNodes (Trm xs) =
+     (case xs of [] \<Rightarrow> []
+      | _ \<Rightarrow> (case last xs of DB u a \<Rightarrow> the_enat u # RightNodes a))"
+  by pat_completeness auto
+\<comment> \<open>termination (induction on the rightmost spine) is deferred, like \<open>Red\<close>/\<open>domB\<close>.\<close>
+
+text \<open>
+  scb-decomposition (§7.2): \<open>(s,c,b) \<in> (\<Sigma>\<^bsup><\<omega>\<^esup>)\<^sup>3\<close> is an scb-decomposition
+  of \<open>t\<close> when \<open>flat t = s \<frown> c \<frown> b\<close>, \<open>c\<close> is (the string of) a principal term
+  \<open>\<in> PT\<^bsub>B\<^esub>\<close> when \<open>t \<noteq> 0\<close>, and \<open>b\<close> consists only of \<open>\<^bold>)\<close>.
+\<close>
+
+definition isPTB_str :: "Sym list \<Rightarrow> bool" where
+  "isPTB_str c = (\<exists>p. dfree_BP p \<and> c = flatBP p)"
+
+definition scb_decomp :: "BT \<Rightarrow> Sym list \<Rightarrow> Sym list \<Rightarrow> Sym list \<Rightarrow> bool" where
+  "scb_decomp t s c b \<longleftrightarrow>
+     flatBT t = s @ c @ b
+   \<and> (t \<noteq> Trm [] \<longrightarrow> isPTB_str c)
+   \<and> (\<forall>x \<in> set b. x = RP)"
+
+text \<open>第\<open>0\<close>種 / 第\<open>1\<close>種 scb-decomposition (§7.2).  Their \<open>RightNodes\<close>
+  conditions refer to the principal term whose string is \<open>c\<close>.\<close>
+
+definition scb_kind0 :: "BT \<Rightarrow> Sym list \<Rightarrow> Sym list \<Rightarrow> Sym list \<Rightarrow> bool" where
+  "scb_kind0 t s c b \<longleftrightarrow>
+     scb_decomp t s c b
+   \<and> (\<forall>p. c = flatBP p \<longrightarrow>
+        (Lng (RightNodes (Trm [p])) = 2 \<and> RightNodes (Trm [p]) ! 1 = 0))"
+
+definition scb_kind1 :: "BT \<Rightarrow> Sym list \<Rightarrow> Sym list \<Rightarrow> Sym list \<Rightarrow> bool" where
+  "scb_kind1 t s c b \<longleftrightarrow>
+     scb_decomp t s c b
+   \<and> (\<forall>p. c = flatBP p \<longrightarrow>
+        (let r = RightNodes (Trm [p]); j1 = Lng r - 1 in
+         j1 \<ge> 1 \<and> r ! 0 < r ! j1 \<and> (\<forall>j. 0 < j \<and> j < j1 \<longrightarrow> r ! j \<ge> r ! j1)))"
+
+text \<open>\<open>T\<^bsub>B\<^esub>\<^sup>Marked \<subseteq> T\<^bsub>B\<^esub>\<^sup>2\<close>: pairs \<open>(t,c)\<close> for which some scb-decomposition
+  \<open>(s,c,b)\<close> of \<open>t\<close> exists (with \<open>c = flat\<close> of the marked principal).\<close>
+
+definition MarkedB :: "(BT \<times> BT) set" where
+  "MarkedB = {(t, c). \<exists>s b. scb_decomp t s (flatBT c) b}"
+
 end
