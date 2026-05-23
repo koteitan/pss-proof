@@ -511,4 +511,51 @@ lemma p_6_6_oneColumn:
   shows "(Lng M = 1 \<and> M \<in> RT_PS) \<longleftrightarrow> (\<exists>v. M = [(v, v)])"
   sorry
 
+
+subsection \<open>§6.7 標準形\<close>
+
+text \<open>命題（標準形の簡約性） — \<open>ST\<^sub>PS \<subseteq> RT\<^sub>PS\<close>.\<close>
+
+lemma p_6_7_standard_reduced:
+  shows "ST_PS \<subseteq> RT_PS"
+  sorry
+
+text \<open>\<open>ST\<^sub>PS = \<Union>\<^sub>k S\<^sub>kT\<^sub>PS\<close> (\<open>ST\<^sub>PS\<close> の定義に基づく最小性より).\<close>
+
+lemma p_6_7_ST_eq_Union_SkT:
+  shows "ST_PS = (\<Union>k. SkT_PS k)"
+  sorry
+
+text \<open>命題（標準形の単項成分が標準形であること） — \<open>P(M) \<in> S\<^sub>kT\<^sub>PS\<^bsup><\<omega>\<^esup>\<close>.\<close>
+
+lemma p_6_7_standard_P_components:
+  assumes "M \<in> SkT_PS k"
+  shows "\<forall>J < Lng (P M). P M ! J \<in> SkT_PS k"
+  sorry
+
+text \<open>命題（標準形の始切片への遺伝性）.\<close>
+
+lemma p_6_7_standard_prefix:
+  assumes "M \<in> ST_PS" "j1' \<le> Lng M - 1"
+  shows "seg M 0 j1' \<in> ST_PS"
+  sorry
+
+
+subsection \<open>§6.8 降順性\<close>
+
+text \<open>命題（標準形の切片と\<open>Br\<close>の降順性の関係）.\<close>
+
+lemma p_6_8_standard_slice_Br_descending:
+  assumes "M \<in> ST_PS" "j0' < j1'" "j1' \<le> Lng M - 1" "leR M 0 j0' j1'"
+  shows "monoT (seg M j0' j1') \<and> descending (Br (seg M j0' j1'))"
+  sorry
+
+text \<open>命題（標準形の単項成分が降順であること）.\<close>
+
+lemma p_6_8_standard_P_descending:
+  assumes "M \<in> ST_PS" "J0' \<le> J1'" "J1' \<le> Lng (P M) - 1"
+    "entry (P M ! J0') 0 0 = entry (P M ! J1') 0 0"
+  shows "entry (P M ! J0') 1 0 \<ge> entry (P M ! J1') 1 0"
+  sorry
+
 end

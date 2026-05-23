@@ -427,4 +427,41 @@ definition RedCondB :: "pairseq \<Rightarrow> bool" where
   "RedCondB M \<longleftrightarrow>
      (\<forall>j1'. \<not> hasParent M 0 j1' \<and> j1' \<le> Lng M - 1 \<longrightarrow> entry M 0 j1' = entry M 1 j1')"
 
+
+subsection \<open>§6.7 標準形 (Standard form)\<close>
+
+text \<open>
+  \<open>ST\<^sub>PS\<close> (標準形): the least \<open>S \<subseteq> T\<^sub>PS\<close> closed under the diagonals
+  \<open>((j,j))\<^bsub>j=u\<^esub>\<^bsup>v\<^esup>\<close> (\<open>u \<le> v\<close>) and the fundamental sequence \<open>M \<mapsto> M[n]\<close>
+  (\<open>n \<ge> 1\<close>).  Encoded as an inductive set.
+\<close>
+
+inductive_set ST_PS :: "pairseq set" where
+  diag: "u \<le> v \<Longrightarrow> diagSeq u v \<in> ST_PS"
+| oper: "\<lbrakk>M \<in> ST_PS; 1 \<le> n\<rbrakk> \<Longrightarrow> (M::pairseq)[n] \<in> ST_PS"
+
+text \<open>
+  \<open>SkT_PS k\<close> (\<open>S\<^sub>kT\<^sub>PS\<close>): the rank-\<open>k\<close> stratification of \<open>ST\<^sub>PS\<close>;
+  \<open>ST\<^sub>PS = \<Union>\<^sub>k S\<^sub>kT\<^sub>PS\<close> (命題 below).
+\<close>
+
+fun SkT_PS :: "nat \<Rightarrow> pairseq set" where
+  "SkT_PS 0 = {N. \<exists>u v. N = diagSeq u v \<and> u \<le> v}"
+| "SkT_PS (Suc k) = {N. \<exists>M n. N = (M::pairseq)[n] \<and> M \<in> SkT_PS k \<and> 1 \<le> n}"
+
+
+subsection \<open>§6.8 降順性 (Descending lists)\<close>
+
+text \<open>
+  \<open>descending Q\<close> for \<open>Q \<in> T\<^sub>PS\<^bsup><\<omega>\<^esup>\<close>: the left ends \<open>(Q\<^sub>J)\<^bsub>0,0\<^esub>\<close> are weakly
+  decreasing in \<open>J\<close>, and tie-broken by weakly decreasing \<open>(Q\<^sub>J)\<^bsub>1,0\<^esub>\<close>.
+\<close>
+
+definition descending :: "pairseq list \<Rightarrow> bool" where
+  "descending Q \<longleftrightarrow>
+     (\<forall>J0 J1. J0 \<le> J1 \<and> J1 \<le> Lng Q - 1 \<longrightarrow>
+        entry (Q ! J0) 0 0 \<ge> entry (Q ! J1) 0 0
+      \<and> (entry (Q ! J0) 0 0 = entry (Q ! J1) 0 0
+           \<longrightarrow> entry (Q ! J0) 1 0 \<ge> entry (Q ! J1) 1 0))"
+
 end
