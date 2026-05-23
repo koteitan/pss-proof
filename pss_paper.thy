@@ -105,16 +105,21 @@ text \<open>
   命題（\<open>F\<^sub>M\<close>と基本列の関係） — relation between \<open>F\<^sub>M\<close> and the fundamental
   sequence.  The article states the equivalence of: (1) \<open>(M,n) \<in> Dom F\<close>;
   (2) \<open>(M[n],n) \<in> Dom F\<close>; (3) both, together with \<open>F\<^sub>M(n) = F\<^bsub>M[n]\<^esub>(n)\<close>.
+
+  CORRECTED form (see @{file "amendment.md"} entry A1): the article's second
+  argument \<open>n\<close> is an apparent typo for \<open>f n\<close>, and the substantive content is
+  the case \<open>Lng M > 1\<close> (for \<open>Lng M = 1\<close> the relation is trivial since
+  \<open>M[n] = M\<close>).
 \<close>
 
 lemma p_5_4_F_oper_dom:
-  assumes "M \<in> T_PS" "n \<ge> 1"
-  shows "Fdom f M n \<longleftrightarrow> Fdom f (M[n]) n"
+  assumes "M \<in> T_PS" "n \<ge> 1" "Lng M > 1"
+  shows "Fdom f M n \<longleftrightarrow> Fdom f (M[n]) (f n)"
   sorry
 
 lemma p_5_4_F_oper_val:
-  assumes "M \<in> T_PS" "n \<ge> 1" "Fdom f M n"
-  shows "Fval f M n = Fval f (M[n]) n"
+  assumes "M \<in> T_PS" "n \<ge> 1" "Lng M > 1" "Fdom f M n"
+  shows "Fval f M n = Fval f (M[n]) (f n)"
   sorry
 
 end

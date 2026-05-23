@@ -548,6 +548,41 @@ proof -
 qed
 
 
+section \<open>§5.4 ペア数列システム\<close>
+
+text \<open>
+  m: 命題（F_M と基本列の関係）— corrected form (see @{file "amendment.md"} A1).
+  Discharges @{thm [source] p_5_4_F_oper_dom}.  Immediate from the inductive
+  definition of @{const Fdom}: with \<open>Lng M > 1\<close> only @{thm [source] Fdom.Fdom_step}
+  applies.
+\<close>
+
+lemma m_5_4_F_oper_dom:
+  assumes "M \<in> T_PS" "n \<ge> 1" "Lng M > 1"
+  shows "Fdom f M n \<longleftrightarrow> Fdom f (M[n]) (f n)"
+proof
+  assume h: "Fdom f M n"
+  show "Fdom f (M[n]) (f n)" using h
+  proof (cases rule: Fdom.cases)
+    case Fdom_base
+    with assms(3) show ?thesis by simp
+  next
+    case Fdom_step
+    then show ?thesis by blast
+  qed
+next
+  assume "Fdom f (M[n]) (f n)"
+  with assms(3) show "Fdom f M n" by (rule Fdom.Fdom_step)
+qed
+
+text \<open>m: 命題（F_M と基本列の関係） value part — discharges @{thm [source] p_5_4_F_oper_val}.\<close>
+
+lemma m_5_4_F_oper_val:
+  assumes "M \<in> T_PS" "n \<ge> 1" "Lng M > 1" "Fdom f M n"
+  shows "Fval f M n = Fval f (M[n]) (f n)"
+  using assms(3) by (simp add: Fval.simps)
+
+
 section \<open>Faithfulness lemmas (忠実性補題)\<close>
 
 text \<open>

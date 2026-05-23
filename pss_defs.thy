@@ -193,4 +193,14 @@ inductive Fdom :: "(nat \<Rightarrow> nat) \<Rightarrow> pairseq \<Rightarrow> n
   Fdom_base: "Lng M = 1 \<Longrightarrow> Fdom f M n"
 | Fdom_step: "\<lbrakk>Lng M > 1; Fdom f (M[n]) (f n)\<rbrakk> \<Longrightarrow> Fdom f M n"
 
+text \<open>
+  CORRECTION NOTE (apparent article typo; see @{file "amendment.md"} entry A1).
+  The §5.4 proposition 命題（F_M と基本列の関係） uses the second argument n
+  (F_M(n) = F_{M[n]}(n)), but this recursive definition of F uses f(n)
+  (F_M(n) = F_{M[n]}(f(n))).  For Lng M = 1 the article's n is correct
+  (M[n] = M), but for Lng M > 1 it must be f(n); no single fixed argument works
+  for both.  We formalize the corrected non-trivial case (Lng M > 1, argument
+  f(n)) as p_5_4_F_oper_dom / p_5_4_F_oper_val in @{file "pss_paper.thy"}.
+\<close>
+
 end
