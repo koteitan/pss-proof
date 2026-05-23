@@ -730,4 +730,20 @@ where
       | Suc j \<Rightarrow> operB b (Dprin u (xseq b u j)))"
   by pat_completeness auto
 
+text \<open>
+  \<open>P\<^bsub>B\<^esub> : T\<^bsub>B\<^esub> \<to> PT\<^bsub>B\<^esub>\<^bsup><\<omega>\<^esup>\<close> and its inverse \<open>\<Sigma>\<^bsub>B\<^esub>\<close> (§7.1).  In the
+  datatype model the principal components of \<open>Trm ps\<close> are simply \<open>(Trm [p])\<^bsub>p\<in>ps\<^esub>\<close>;
+  \<open>\<Sigma>\<^bsub>B\<^esub>\<close> concatenates their (length-1) component lists.  Hence \<open>P\<^bsub>B\<^esub>\<close>
+  and \<open>\<Sigma>\<^bsub>B\<^esub>\<close> are mutually inverse (命題（順序数項の単項成分の基本性質）(2)).
+\<close>
+
+fun untrm :: "BT \<Rightarrow> BP list" where
+  "untrm (Trm ps) = ps"
+
+definition PB :: "BT \<Rightarrow> BT list" where
+  "PB t = map (\<lambda>p. Trm [p]) (untrm t)"
+
+definition SigmaB :: "BT list \<Rightarrow> BT" where
+  "SigmaB ts = Trm (concat (map untrm ts))"
+
 end
