@@ -1,6 +1,6 @@
 # pss-proof
 
-Version: **v0.1.11**
+Version: **v0.1.12**
 
 ペア数列システム（pair sequence system）の停止性証明を Isabelle/HOL で形式検証するプロジェクト。
 
@@ -34,22 +34,6 @@ isbman build -d . -v PSS
 ```
 
 ## 出典・引用 (Reference)
+- Bashicu, ["BASIC 言語による巨大数のまとめ"](https://googology.fandom.com/ja/wiki/%E3%83%A6%E3%83%BC%E3%82%B6%E3%83%BC%E3%83%96%E3%83%AD%E3%82%B0:BashicuHyudora/BASIC%E8%A8%80%E8%AA%9E%E3%81%AB%E3%82%88%E3%82%8B%E5%B7%A8%E5%A4%A7%E6%95%B0%E3%81%AE%E3%81%BE%E3%81%A8%E3%82%81?oldid=15603&useskin=oasis), [巨大数研究 Wiki](http://ja.googology.wikia.com/) ユーザーブログ, 2015.8.21.
+- P進大好きbot. "[ペア数列の停止性](https://googology.fandom.com/ja/wiki/%E3%83%A6%E3%83%BC%E3%82%B6%E3%83%BC%E3%83%96%E3%83%AD%E3%82%B0:BashicuHyudora/BASIC%E8%A8%80%E8%AA%9E%E3%81%AB%E3%82%88%E3%82%8B%E5%B7%A8%E5%A4%A7%E6%95%B0%E3%81%AE%E3%81%BE%E3%81%A8%E3%82%81?oldid=15603&useskin=oasis)", [巨大数研究 Wiki](http://ja.googology.wikia.com/) ユーザーブログ, 2018.11.11.
 
-本プロジェクトが形式化の対象とする原論文：
-
-> P進大好きbot. 「ペア数列の停止性」. 巨大数研究 Wiki, 2018年11月11日.
-> https://googology.fandom.com/ja/wiki/%E3%83%A6%E3%83%BC%E3%82%B6%E3%83%BC%E3%83%96%E3%83%AD%E3%82%B0:P%E9%80%B2%E5%A4%A7%E5%A5%BD%E3%81%8Dbot/%E3%83%9A%E3%82%A2%E6%95%B0%E5%88%97%E3%81%AE%E5%81%9C%E6%AD%A2%E6%80%A7
-
-BibTeX:
-
-```bibtex
-@misc{pshinkdaisukibot2018pairseq,
-  author       = {P進大好きbot},
-  title        = {ペア数列の停止性},
-  howpublished = {巨大数研究 Wiki},
-  year         = {2018},
-  month        = {11},
-  day          = {11},
-  url          = {https://googology.fandom.com/ja/wiki/%E3%83%A6%E3%83%BC%E3%82%B6%E3%83%BC%E3%83%96%E3%83%AD%E3%82%B0:P%E9%80%B2%E5%A4%A7%E5%A5%BD%E3%81%8Dbot/%E3%83%9A%E3%82%A2%E6%95%B0%E5%88%97%E3%81%AE%E5%81%9C%E6%AD%A2%E6%80%A7}
-}
-```
