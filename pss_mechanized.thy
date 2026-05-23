@@ -4762,5 +4762,20 @@ proof -
   finally show ?thesis .
 qed
 
+subsection \<open>\<open>IncrFirst\<close>-invariance of \<open>TrMax\<close> (and its iterate)\<close>
+
+text \<open>\<open>TrMax\<close> depends only on the row-1 \<open><\<^sup>Next\<close> chain, which is \<open>IncrFirst\<close>-
+  invariant (\<open>nextrel1_IncrFirst_eq\<close>); hence so is \<open>TrMax\<close>, and \<open>Lng - TrMax\<close>
+  (the core measure) is preserved by the \<open>IncrFirst\<^bsup>m\<^sub>1\<^sub>0\<^esup>\<close> in case 4 of @{const Red}.\<close>
+
+lemma TrMax_IncrFirst[simp]: "TrMax (IncrFirst M) = TrMax M"
+  by (simp add: TrMax_def nextR_def nextrel1_IncrFirst_eq)
+
+lemma Lng_funpow_IncrFirst[simp]: "Lng ((IncrFirst ^^ k) M) = Lng M"
+  by (induction k) simp_all
+
+lemma TrMax_funpow_IncrFirst[simp]: "TrMax ((IncrFirst ^^ k) M) = TrMax M"
+  by (induction k) simp_all
+
 end
 
