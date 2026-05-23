@@ -1,2 +1,5 @@
 tmp/
-
+.claude/
+commit-msg.txt
+*.bak
+scratch.thy
