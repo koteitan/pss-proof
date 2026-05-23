@@ -97,11 +97,23 @@ Done:
   `tbvIdx`.
 - `untrm`, `PB` (`P_B`) and `SigmaB` (`Σ_B`), mutually inverse.
 
-To do: a flatten-to-`Σ`-string view (needed to state the string-level
-propositions faithfully — parenthesis balance, sub-expression inequality
-extension), scb-decomposition / `RightNodes` (§7.2), then §7.3 `Trans` / `Mark`,
-§7.4 admissible parent relation, and the §7 statements. `Trans` connects to the
-pair-sequence side (`pss_defs`), so it is defined in `pss_paper` (which imports
-`pss_defs`). The well-foundedness of `(OT_B, <)` ([Buc1] Lemma 2.2) is the
-eventual source of termination; it (and `domB`/`operB`/`Red` termination) will
-be stated as the relevant §7/§8 propositions.
+- §7.2: `Sym` (the alphabet `Σ`), `flatBT` / `flatBP` (term to `Σ`-string),
+  `RightNodes` (deferred termination), `scb_decomp` (predicate:
+  `flatBT t = s @ c @ b`, `c` the string of a `PT_B` principal, `b` all `)`),
+  `scb_kind0` / `scb_kind1` (第0種/第1種), `isPTB_str`, `MarkedB` (`T_B^Marked`).
+
+To do (§7.3 `Trans` / `Mark` — the crux, most complex definition, harder than
+`Red`): a mutual `function Trans :: pairseq ⇒ BT` and `Mark :: pairseq ⇒ nat ⇒
+BT`, deferred termination (well-definedness = `Trans_dom`, by induction on
+`Lng M`). The body is a large case analysis (`M` reduced with `j1 = 0`; reduced
+mono with `j1 > 0` under the mutually-exclusive conditions (I)–(VI), building
+`c_2` and setting `Trans M := s_1 c_2 b_1`; reduced multi; non-reduced ⟶
+`Trans (Red M)`). The key missing primitive is **`scb_replace t_1 c_1 c_2`** =
+`t_1` with its scb-marked principal subterm `c_1` (on the rightmost spine, where
+the suffix is all `)`) replaced by `c_2` (i.e. `s_1 c_2 b_1`); a constructive
+(function, not predicate) scb-decomposition is also needed. `Trans` connects to
+the pair-sequence side, so it lives in `pss_paper` (imports `pss_defs`). Then
+§7.4 (admissible parent relation `<_M^NextAdm`) and all the §7 statements; §8
+(expansion rules under (I)–(VI) and the main result) depends entirely on
+`Trans` / `Mark`. The well-foundedness of `(OT_B, <)` ([Buc1] Lemma 2.2) is the
+eventual source of termination.
