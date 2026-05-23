@@ -3755,6 +3755,536 @@ proof -
 qed
 
 
+text \<open>Auxiliary: \<open>FirstNodes M ! J = TrMax M + 1 + IdxSum (Br M) ! J\<close> and
+  \<open>Joints M ! J = parent M 0 (FirstNodes M ! J)\<close> for \<open>J < length (Br M)\<close>.\<close>
+
+lemma FirstNodes_nth:
+  assumes "J < length (Br M)"
+  shows "FirstNodes M ! J = TrMax M + 1 + IdxSum (Br M) ! J"
+proof -
+  have "J < length (IdxSum (Br M))" using assms by (simp add: IdxSum_def)
+  thus ?thesis by (simp add: FirstNodes_def)
+qed
+
+lemma Joints_nth:
+  assumes "J < length (Br M)"
+  shows "Joints M ! J = parent M 0 (FirstNodes M ! J)"
+  using assms by (simp add: Joints_def parent_def)
+
+text \<open>The row-0 parent is the largest index below \<open>k\<close> whose row-0 entry is
+  smaller than that of \<open>k\<close>.\<close>
+
+lemma nextR0_largest_below:
+  assumes "nextR M 0 a k" "j < k" "entry M 0 j < entry M 0 k"
+  shows "j \<le> a"
+proof (rule ccontr)
+  assume "\<not> j \<le> a"
+  hence aj: "a < j" by simp
+  from assms(1) have "\<forall>j'. a < j' \<and> j' < k \<longrightarrow> entry M 0 j' \<ge> entry M 0 k"
+    by (simp add: nextR_def nextrel0_def)
+  hence "entry M 0 j \<ge> entry M 0 k" using aj assms(2) by blast
+  thus False using assms(3) by simp
+qed
+
+text \<open>The row-0 entry at a first node equals the row-0 left-end entry of the
+  corresponding branch component.\<close>
+
+lemma entry_FirstNodes_eq_component:
+  assumes M: "M \<in> PT_PS" and J: "J < length (Br M)"
+  shows "entry M 0 (FirstNodes M ! J) = entry (Br M ! J) 0 0"
+proof -
+  have MT: "M \<in> T_PS" using M by (simp add: PT_PS_def)
+  have tb: "TrMax M \<le> Lng M - 1" by (rule TrMax_bound[OF MT])
+  have trne: "TrMax M \<noteq> Lng M - 1"
+  proof
+    assume "TrMax M = Lng M - 1"
+    hence "Br M = []" by (simp add: Br_def)
+    with J show False by simp
+  qed
+  with tb have trlt: "TrMax M < Lng M - 1" by linarith
+  let ?N = "seg M (TrMax M + 1) (Lng M - 1)"
+  have brQ: "Br M = P ?N" using trne by (simp add: Br_def)
+  have NL: "Lng ?N = Lng M - 1 - TrMax M" using trlt by simp
+  have NLpos: "Lng ?N > 0" using trlt by simp
+  have Nne: "?N \<noteq> []" using NLpos length_greater_0_conv by blast
+  have NT: "?N \<in> T_PS" using Nne by (simp add: T_PS_def)
+  have JN: "J < length (P ?N)" using J brQ by simp
+  have Jle: "J \<le> Lng (P ?N) - 1" using JN by (cases "P ?N") auto
+  \<comment> \<open>component as a slice of \<open>?N\<close>\<close>
+  have comp: "(P ?N) ! J = seg ?N (IdxSum (P ?N) ! J) (IdxSum (P ?N) ! (J + 1) - 1)"
+    by (rule m_6_4_P_IdxSum[OF NT Jle])
+  have lenpos: "0 < Lng ((P ?N) ! J)"
+    by (rule idxsum_P_component_nonempty[OF NT JN])
+  \<comment> \<open>left-end entry of the component\<close>
+  have e_comp: "entry ((P ?N) ! J) 0 0 = entry ?N 0 (IdxSum (P ?N) ! J)"
+  proof -
+    have lp: "0 < Lng (seg ?N (IdxSum (P ?N) ! J) (IdxSum (P ?N) ! (J + 1) - 1))"
+      using lenpos by (simp only: comp[symmetric])
+    have "entry (seg ?N (IdxSum (P ?N) ! J) (IdxSum (P ?N) ! (J + 1) - 1)) 0 0
+         = entry ?N 0 ((IdxSum (P ?N) ! J) + 0)"
+      by (rule entry_seg[OF lp])
+    thus ?thesis using comp by simp
+  qed
+  \<comment> \<open>\<open>IdxSum\<close> value is a valid index into \<open>?N\<close>\<close>
+  have idxbound: "IdxSum (P ?N) ! J \<le> Lng ?N - 1"
+    using idxsum_leftend_lmin[OF NT JN] by blast
+  hence idxlt: "IdxSum (P ?N) ! J < Lng ?N" using NLpos by simp
+  have e_N: "entry ?N 0 (IdxSum (P ?N) ! J)
+           = entry M 0 (TrMax M + 1 + IdxSum (P ?N) ! J)"
+    using idxlt by (simp add: entry_seg)
+  have fn: "FirstNodes M ! J = TrMax M + 1 + IdxSum (Br M) ! J"
+    by (rule FirstNodes_nth[OF J])
+  show ?thesis
+    using e_comp e_N fn brQ by simp
+qed
+
+text \<open>m: 系（\<open>FirstNodes\<close>と\<open>Joints\<close>の単調性）の主要部 (parts (1),(2),(3)) —
+  \<open>FirstNodes\<close> increasing, \<open>Joints\<close> decreasing (non-strict), row-0 entries at
+  \<open>FirstNodes\<close> decreasing.  Part (2) here is the non-strict form, which is all
+  that \<open>m_6_4_mono_slice\<close> needs.\<close>
+
+lemma m_6_4_FirstNodes_Joints_mono_aux:
+  assumes M: "M \<in> PT_PS" and lt: "J0' < J1'" and J1: "J1' < Lng (Br M)"
+  shows "FirstNodes M ! J0' \<le> FirstNodes M ! J1'
+       \<and> Joints M ! J0' \<ge> Joints M ! J1'
+       \<and> entry M 0 (FirstNodes M ! J0') \<ge> entry M 0 (FirstNodes M ! J1')"
+proof -
+  have MT: "M \<in> T_PS" using M by (simp add: PT_PS_def)
+  have J0L: "J0' < length (Br M)" using lt J1 by simp
+  have J1L: "J1' < length (Br M)" using J1 by simp
+  have J0le: "J0' \<le> J1'" using lt by simp
+  \<comment> \<open>(1) FirstNodes increasing\<close>
+  have idxmono: "IdxSum (Br M) ! J0' \<le> IdxSum (Br M) ! J1'"
+    by (rule idxsum_mono[OF J0le less_imp_le_nat[OF J1L]])
+  have fn0: "FirstNodes M ! J0' = TrMax M + 1 + IdxSum (Br M) ! J0'"
+    by (rule FirstNodes_nth[OF J0L])
+  have fn1: "FirstNodes M ! J1' = TrMax M + 1 + IdxSum (Br M) ! J1'"
+    by (rule FirstNodes_nth[OF J1L])
+  have part1: "FirstNodes M ! J0' \<le> FirstNodes M ! J1'"
+    using fn0 fn1 idxmono by simp
+  \<comment> \<open>(3) row-0 entries at FirstNodes decreasing, via \<open>m_6_4_P_leftend_mono\<close>\<close>
+  have tb: "TrMax M \<le> Lng M - 1" by (rule TrMax_bound[OF MT])
+  have trne: "TrMax M \<noteq> Lng M - 1"
+  proof
+    assume "TrMax M = Lng M - 1"
+    hence "Br M = []" by (simp add: Br_def)
+    with J1 show False by simp
+  qed
+  with tb have trlt: "TrMax M < Lng M - 1" by linarith
+  let ?N = "seg M (TrMax M + 1) (Lng M - 1)"
+  have brQ: "Br M = P ?N" using trne by (simp add: Br_def)
+  have NLpos: "Lng ?N > 0" using trlt by simp
+  have Nne: "?N \<noteq> []" using NLpos length_greater_0_conv by blast
+  have NT: "?N \<in> T_PS" using Nne by (simp add: T_PS_def)
+  have J1Q: "J1' \<le> Lng (P ?N) - 1" using J1L brQ by (cases "P ?N") auto
+  have leftend: "entry ((P ?N) ! J0') 0 0 \<ge> entry ((P ?N) ! J1') 0 0"
+    by (rule m_6_4_P_leftend_mono[OF NT J0le J1Q])
+  have ec0: "entry M 0 (FirstNodes M ! J0') = entry (Br M ! J0') 0 0"
+    by (rule entry_FirstNodes_eq_component[OF M J0L])
+  have ec1: "entry M 0 (FirstNodes M ! J1') = entry (Br M ! J1') 0 0"
+    by (rule entry_FirstNodes_eq_component[OF M J1L])
+  have part3: "entry M 0 (FirstNodes M ! J0') \<ge> entry M 0 (FirstNodes M ! J1')"
+    using ec0 ec1 leftend brQ by simp
+  \<comment> \<open>(2) Joints decreasing (non-strict): \<open>a1\<close> is a row-0 ancestor of \<open>f0\<close>,
+      hence \<open>\<le> a0 = parent M 0 f0\<close>.\<close>
+  let ?f0 = "FirstNodes M ! J0'"
+  let ?f1 = "FirstNodes M ! J1'"
+  let ?a0 = "Joints M ! J0'"
+  let ?a1 = "Joints M ! J1'"
+  have a0_eq: "?a0 = parent M 0 ?f0" by (rule Joints_nth[OF J0L])
+  have a1_eq: "?a1 = parent M 0 ?f1" by (rule Joints_nth[OF J1L])
+  \<comment> \<open>parents exist and lie in the trunk\<close>
+  have tj0: "Joints M ! J0' \<le> TrMax M \<and> TrMax M < FirstNodes M ! J0'"
+    by (rule m_6_4_FirstNodes_TrMax_Joints[OF M J0L])
+  have tj1: "Joints M ! J1' \<le> TrMax M \<and> TrMax M < FirstNodes M ! J1'"
+    by (rule m_6_4_FirstNodes_TrMax_Joints[OF M J1L])
+  have a0tr: "?a0 \<le> TrMax M" and trf0: "TrMax M < ?f0" using tj0 by simp_all
+  have a1tr: "?a1 \<le> TrMax M" and trf1: "TrMax M < ?f1" using tj1 by simp_all
+  \<comment> \<open>get the actual \<open>nextR\<close> facts for the two parents\<close>
+  have brQne: "length (P ?N) > 0" using P_nonempty by auto
+  have J0Q': "J0' \<le> Lng (P ?N) - 1" using J0L brQ by (cases "P ?N") auto
+  have hp0: "hasParent M 0 (TrMax M + 1 + IdxSum (P ?N) ! J0')
+           \<and> parent M 0 (TrMax M + 1 + IdxSum (P ?N) ! J0') < TrMax M + 1"
+    using m_6_4_mono_slice_next[OF M _ _ J0Q'] trlt by auto
+  have hp1: "hasParent M 0 (TrMax M + 1 + IdxSum (P ?N) ! J1')
+           \<and> parent M 0 (TrMax M + 1 + IdxSum (P ?N) ! J1') < TrMax M + 1"
+    using m_6_4_mono_slice_next[OF M _ _ J1Q] trlt by auto
+  have idx0: "TrMax M + 1 + IdxSum (P ?N) ! J0' = ?f0" using fn0 brQ by simp
+  have idx1: "TrMax M + 1 + IdxSum (P ?N) ! J1' = ?f1" using fn1 brQ by simp
+  have hpf0: "hasParent M 0 ?f0" using hp0 idx0 by simp
+  have hpf1: "hasParent M 0 ?f1" using hp1 idx1 by simp
+  have nx0: "nextR M 0 ?a0 ?f0"
+  proof -
+    have "\<exists>!j0. nextR M 0 j0 ?f0" using hpf0 by (simp add: hasParent_def)
+    hence "nextR M 0 (THE j0. nextR M 0 j0 ?f0) ?f0" by (rule theI')
+    thus ?thesis using a0_eq by (simp add: parent_def)
+  qed
+  have nx1: "nextR M 0 ?a1 ?f1"
+  proof -
+    have "\<exists>!j0. nextR M 0 j0 ?f1" using hpf1 by (simp add: hasParent_def)
+    hence "nextR M 0 (THE j0. nextR M 0 j0 ?f1) ?f1" by (rule theI')
+    thus ?thesis using a1_eq by (simp add: parent_def)
+  qed
+  \<comment> \<open>\<open>a1 < f1\<close>, \<open>entry M 0 a1 < entry M 0 f1\<close>\<close>
+  from nx1 have a1f1: "?a1 < ?f1" and ea1: "entry M 0 ?a1 < entry M 0 ?f1"
+    by (simp_all add: nextR_def nextrel0_def)
+  \<comment> \<open>\<open>leR M 0 a1 f1\<close>, then by the tree, \<open>leR M 0 a1 f0\<close> (since \<open>a1 \<le> f0 \<le> f1\<close>)\<close>
+  have lea1f1: "leR M 0 ?a1 ?f1"
+    using nx1 a1f1 by (auto simp: nextR_def leR_def le0_def nextrel0_def)
+  have a1lef0: "?a1 \<le> ?f0" using a1tr trf0 by simp
+  have f0lef1: "?f0 \<le> ?f1" using part1 by simp
+  have lea1f0: "leR M 0 ?a1 ?f0"
+    by (rule m_5_1_ancestor_tree_1[OF MT lea1f1 a1lef0 f0lef1])
+  \<comment> \<open>\<open>a1\<close> is below \<open>f0\<close> with smaller row-0 entry, so \<open>a1 \<le> parent M 0 f0 = a0\<close>\<close>
+  have a1ltf0: "?a1 < ?f0" using a1tr trf0 by simp
+  have ea1f0: "entry M 0 ?a1 < entry M 0 ?f0"
+    by (rule m_5_1_ancestor_basic_1[OF MT a1ltf0 le_refl lea1f0])
+  have part2: "?a0 \<ge> ?a1"
+    using nextR0_largest_below[OF nx0 a1ltf0 ea1f0] by simp
+  show ?thesis using part1 part2 part3 by blast
+qed
+
+text \<open>The defining property of the trunk: every step below \<open>TrMax M\<close> is a row-1
+  \<open><\<^sup>Next\<close>-edge.\<close>
+
+lemma TrMax_trunk_step:
+  assumes "M \<in> T_PS" "j' < TrMax M"
+  shows "nextR M 1 j' (j' + 1)"
+proof -
+  let ?S = "{j. \<forall>j'<j. nextR M 1 j' (j' + 1)}"
+  have LM: "Lng M > 0" using assms(1) by (cases M) (auto simp: T_PS_def)
+  have sub: "?S \<subseteq> {..Lng M - 1}"
+  proof
+    fix j assume "j \<in> ?S"
+    hence H: "\<forall>j'<j. nextR M 1 j' (j' + 1)" by simp
+    show "j \<in> {..Lng M - 1}"
+    proof (rule ccontr)
+      assume "j \<notin> {..Lng M - 1}"
+      hence "Lng M - 1 < j" by simp
+      hence "nextR M 1 (Lng M - 1) ((Lng M - 1) + 1)" using H by blast
+      hence "(Lng M - 1) + 1 < Lng M" by (simp add: nextR_def nextrel1_def)
+      thus False using LM by simp
+    qed
+  qed
+  hence fin: "finite ?S" by (rule finite_subset) simp
+  have ne: "?S \<noteq> {}" by blast
+  have "Max ?S \<in> ?S" using fin ne by (rule Max_in)
+  hence "\<forall>j'<Max ?S. nextR M 1 j' (j' + 1)" by simp
+  moreover have "TrMax M = Max ?S" by (simp add: TrMax_def)
+  ultimately show ?thesis using assms(2) by simp
+qed
+
+text \<open>Trunk ancestry in row 1: any \<open>a \<le> b \<le> TrMax M\<close> are row-1 related.\<close>
+
+lemma trunk_le1:
+  assumes "M \<in> T_PS" "a \<le> b" "b \<le> TrMax M"
+  shows "leR M 1 a b"
+proof -
+  have LM: "Lng M > 0" using assms(1) by (cases M) (auto simp: T_PS_def)
+  have tb: "TrMax M \<le> Lng M - 1" by (rule TrMax_bound[OF assms(1)])
+  have "(nextrel1 M)\<^sup>*\<^sup>* a b" using assms(2,3)
+  proof (induction b)
+    case 0 thus ?case by simp
+  next
+    case (Suc b)
+    show ?case
+    proof (cases "a = Suc b")
+      case True thus ?thesis by simp
+    next
+      case False
+      with Suc.prems(1) have ab: "a \<le> b" by simp
+      have bT: "b < TrMax M" using Suc.prems(2) by simp
+      have "(nextrel1 M)\<^sup>*\<^sup>* a b" using Suc.IH[OF ab] bT by simp
+      moreover have "nextrel1 M b (Suc b)"
+        using TrMax_trunk_step[OF assms(1) bT] by (simp add: nextR_def)
+      ultimately show ?thesis by simp
+    qed
+  qed
+  moreover have "a < Lng M" using assms(2,3) tb LM by linarith
+  moreover have "b < Lng M" using assms(3) tb LM by linarith
+  ultimately show ?thesis by (simp add: leR_def le1_def)
+qed
+
+text \<open>Trunk ancestry in row 0 (a consequence of \<open>trunk_le1\<close>).\<close>
+
+lemma trunk_le0:
+  assumes "M \<in> T_PS" "a \<le> b" "b \<le> TrMax M"
+  shows "leR M 0 a b"
+  using m_le1_imp_le0[OF trunk_le1[OF assms]] .
+
+text \<open>For \<open>k < IdxSum Q ! (length Q)\<close> there is a unique block index \<open>J\<close> with
+  \<open>IdxSum Q ! J \<le> k < IdxSum Q ! (J + 1)\<close>.\<close>
+
+lemma idxsum_locate:
+  assumes "k < IdxSum Q ! (length Q)"
+  shows "\<exists>J < length Q. IdxSum Q ! J \<le> k \<and> k < IdxSum Q ! (J + 1)"
+proof -
+  let ?S = "{J. J \<le> length Q \<and> IdxSum Q ! J \<le> k}"
+  have z: "IdxSum Q ! 0 = 0" by (simp add: idxsum_nth)
+  hence z0: "0 \<in> ?S" by simp
+  have fin: "finite ?S" by (auto intro: finite_subset[of ?S "{..length Q}"])
+  have ne: "?S \<noteq> {}" using z0 by blast
+  let ?J = "Max ?S"
+  have inS: "?J \<in> ?S" using fin ne by (rule Max_in)
+  hence Jle: "?J \<le> length Q" and JIdx: "IdxSum Q ! ?J \<le> k" by auto
+  have Jlt: "?J < length Q"
+  proof (cases "?J = length Q")
+    case True
+    hence "IdxSum Q ! (length Q) \<le> k" using JIdx by simp
+    thus ?thesis using assms by simp
+  next
+    case False thus ?thesis using Jle by simp
+  qed
+  have "k < IdxSum Q ! (?J + 1)"
+  proof (rule ccontr)
+    assume "\<not> k < IdxSum Q ! (?J + 1)"
+    hence "IdxSum Q ! (?J + 1) \<le> k" by simp
+    hence "?J + 1 \<in> ?S" using Jlt by simp
+    hence "?J + 1 \<le> ?J" by (rule Max_ge[OF fin])
+    thus False by simp
+  qed
+  thus ?thesis using Jlt JIdx by blast
+qed
+
+text \<open>Within a branch component, the left end is a row-0 ancestor of every later
+  index of that component (translated back to \<open>M\<close>).  For \<open>TrMax M < k \<le> Lng M - 1\<close>
+  this yields a branch index \<open>J\<close> with \<open>leR M 0 (FirstNodes M ! J) k\<close>.\<close>
+
+lemma branch_component_le0:
+  assumes M: "M \<in> PT_PS" and ktr: "TrMax M < k" and kL: "k \<le> Lng M - 1"
+  shows "\<exists>J < length (Br M). leR M 0 (FirstNodes M ! J) k"
+proof -
+  have MT: "M \<in> T_PS" using M by (simp add: PT_PS_def)
+  have tb: "TrMax M \<le> Lng M - 1" by (rule TrMax_bound[OF MT])
+  have trlt: "TrMax M < Lng M - 1" using ktr kL by linarith
+  let ?N = "seg M (TrMax M + 1) (Lng M - 1)"
+  have brQ: "Br M = P ?N" using trlt by (simp add: Br_def)
+  have NL: "Lng ?N = Lng M - 1 - TrMax M" using trlt by simp
+  have NLpos: "Lng ?N > 0" using trlt by simp
+  have Nne: "?N \<noteq> []" using NLpos length_greater_0_conv by blast
+  have NT: "?N \<in> T_PS" using Nne by (simp add: T_PS_def)
+  have LMlt: "Lng M - 1 < Lng M" using trlt by linarith
+  let ?Q = "P ?N"
+  let ?kp = "k - (TrMax M + 1)"
+  have kpN: "?kp < Lng ?N" using ktr kL NL by linarith
+  \<comment> \<open>\<open>IdxSum ?Q ! (length ?Q) = Lng ?N\<close>\<close>
+  have total: "IdxSum ?Q ! (length ?Q) = Lng ?N"
+  proof -
+    have "IdxSum ?Q ! (length ?Q) = sum_list (map length (take (length ?Q) ?Q))"
+      by (simp add: idxsum_nth)
+    also have "\<dots> = sum_list (map length ?Q)" by simp
+    also have "\<dots> = length (concat ?Q)" by (simp add: length_concat)
+    also have "concat ?Q = ?N" by (rule idxsum_concat_P)
+    finally show ?thesis by simp
+  qed
+  have kplt: "?kp < IdxSum ?Q ! (length ?Q)" using kpN total by simp
+  obtain J where J: "J < length ?Q" "IdxSum ?Q ! J \<le> ?kp"
+    "?kp < IdxSum ?Q ! (J + 1)"
+    using idxsum_locate[OF kplt] by blast
+  let ?a = "IdxSum ?Q ! J"
+  let ?b = "IdxSum ?Q ! (J + 1) - 1"
+  have Jle: "J \<le> Lng ?Q - 1" using J(1) by simp
+  have comp: "?Q ! J = seg ?N ?a ?b" by (rule m_6_4_P_IdxSum[OF NT Jle])
+  have lenpos: "0 < Lng (?Q ! J)" by (rule idxsum_P_component_nonempty[OF NT J(1)])
+  have diff: "IdxSum ?Q ! (J + 1) = ?a + length (?Q ! J)" by (rule idxsum_diff[OF J(1)])
+  have bge: "?kp \<le> ?b" using J(3) diff lenpos by linarith
+  \<comment> \<open>row-0 ancestry from the component's left end to \<open>?kp\<close>, inside \<open>?N\<close>\<close>
+  have leNa: "leR ?N 0 ?a ?kp"
+  proof (cases "?a = ?kp")
+    case True
+    have aN: "?a < Lng ?N" using J(2) kpN by simp
+    thus ?thesis using True by (simp add: leR_def le0_def)
+  next
+    case False
+    with J(2) have altkp: "?a < ?kp" by simp
+    let ?C = "?Q ! J"
+    have CinP: "?C \<in> set ?Q" using J(1) by (rule nth_mem)
+    have Czm: "zeroT ?C \<or> monoT ?C" using m_6_2_P_components_1[OF NT] CinP by blast
+    have aN: "?a < Lng ?N" using J(2) kpN by simp
+    have bN: "?b < Lng ?N"
+    proof -
+      have "IdxSum ?Q ! (J + 1) \<le> IdxSum ?Q ! (length ?Q)"
+        by (rule idxsum_mono[OF _ order.refl]) (use J(1) in simp)
+      hence "IdxSum ?Q ! (J + 1) \<le> Lng ?N" using total by simp
+      thus ?thesis using NLpos by linarith
+    qed
+    \<comment> \<open>local position \<open>p = ?kp - ?a\<close> inside the component \<open>?C = seg ?N ?a ?b\<close>\<close>
+    let ?p = "?kp - ?a"
+    have ppos: "0 < ?p" using altkp by simp
+    have CL: "Lng ?C = Suc ?b - ?a" using comp by simp
+    have pb: "?p \<le> Lng ?C - 1" using bge CL altkp J(2) by linarith
+    have Cgt1: "Lng ?C > 1" using ppos pb by linarith
+    \<comment> \<open>so \<open>?C\<close> is monoT (not zeroT, since \<open>Lng > 1\<close>)\<close>
+    have Cmono: "monoT ?C" using Czm Cgt1 by (auto simp: zeroT_def)
+    have leC: "leR ?C 0 0 (Lng ?C - 1)" using Cmono by (simp add: monoT_def)
+    have CTPS: "?C \<in> T_PS" using Cgt1 by (cases ?C) (auto simp: T_PS_def)
+    have le0I: "(0::nat) \<le> ?p" by simp
+    have leCp: "leR ?C 0 0 ?p"
+      by (rule m_5_1_ancestor_tree_1[OF CTPS leC le0I pb])
+    \<comment> \<open>translate component-le0 to \<open>?N\<close>-le0\<close>
+    have le0C: "le0 ?C 0 ?p" using leCp by (simp add: leR_def)
+    have aux: "le0 (seg ?N ?a ?b) 0 ?p = le0 ?N (?a + 0) (?a + ?p)"
+    proof (rule adm_le0_seg)
+      show "?b < Lng ?N" using bN .
+      show "0 \<le> ?b - ?a" by simp
+      show "?p \<le> ?b - ?a" using pb CL by simp
+      show "?a \<le> ?b" using altkp bge by linarith
+    qed
+    have "le0 ?N ?a (?a + ?p)" using le0C comp aux by simp
+    moreover have "?a + ?p = ?kp" using altkp J(2) by simp
+    ultimately show ?thesis by (simp add: leR_def)
+  qed
+  \<comment> \<open>translate \<open>?N\<close>-le0 to \<open>M\<close>-le0\<close>
+  have leMa: "leR M 0 (TrMax M + 1 + ?a) (TrMax M + 1 + ?kp)"
+  proof -
+    have le0N: "le0 ?N ?a ?kp" using leNa by (simp add: leR_def)
+    have aN: "?a \<le> Lng ?N - 1" using J(2) kpN by linarith
+    have eq: "le0 ?N ?a ?kp = le0 M (TrMax M + 1 + ?a) (TrMax M + 1 + ?kp)"
+    proof (rule adm_le0_seg)
+      show "Lng M - 1 < Lng M" using LMlt .
+      show "?a \<le> Lng M - 1 - (TrMax M + 1)" using aN NL by simp
+      show "?kp \<le> Lng M - 1 - (TrMax M + 1)" using kpN NL by simp
+      show "TrMax M + 1 \<le> Lng M - 1" using trlt by simp
+    qed
+    have "le0 M (TrMax M + 1 + ?a) (TrMax M + 1 + ?kp)" using le0N eq by simp
+    thus ?thesis by (simp add: leR_def)
+  qed
+  have JBr: "J < length (Br M)" using J(1) brQ by simp
+  have fn: "FirstNodes M ! J = TrMax M + 1 + ?a" using FirstNodes_nth[OF JBr] brQ by simp
+  have kk: "TrMax M + 1 + ?kp = k" using ktr by simp
+  have "leR M 0 (FirstNodes M ! J) k" using leMa fn kk by simp
+  thus ?thesis using JBr by blast
+qed
+
+text \<open>Core of \<open>m_6_4_mono_slice\<close>: for \<open>j0'\<close> a (weak) ancestor of the last joint,
+  every index \<open>k\<close> with \<open>j0' < k \<le> Lng M - 1\<close> is a row-0 descendant of \<open>j0'\<close>.\<close>
+
+lemma slice_le0_to_index:
+  assumes M: "M \<in> PT_PS" and brne: "Br M \<noteq> []"
+    and j0le: "j0' \<le> Joints M ! (Lng (Br M) - 1)"
+    and lt: "j0' < k" and kL: "k \<le> Lng M - 1"
+  shows "leR M 0 j0' k"
+proof -
+  have MT: "M \<in> T_PS" using M by (simp add: PT_PS_def)
+  let ?last = "Lng (Br M) - 1"
+  have lastL: "?last < Lng (Br M)" using brne by (cases "Br M") auto
+  \<comment> \<open>the last joint is in the trunk\<close>
+  have lastTr: "Joints M ! ?last \<le> TrMax M"
+    using m_6_4_FirstNodes_TrMax_Joints[OF M lastL] by simp
+  have j0Tr: "j0' \<le> TrMax M" using j0le lastTr by simp
+  show ?thesis
+  proof (cases "k \<le> TrMax M")
+    case True
+    \<comment> \<open>Case A: \<open>k\<close> is in the trunk.\<close>
+    show ?thesis by (rule trunk_le0[OF MT less_imp_le_nat[OF lt] True])
+  next
+    case False
+    \<comment> \<open>Case B: \<open>k\<close> is in a branch component.\<close>
+    hence ktr: "TrMax M < k" by simp
+    obtain J where JBr: "J < length (Br M)"
+      and leFNk: "leR M 0 (FirstNodes M ! J) k"
+      using branch_component_le0[OF M ktr kL] by blast
+    \<comment> \<open>\<open>nextR M 0 (Joints M ! J) (FirstNodes M ! J)\<close>\<close>
+    have tb: "TrMax M \<le> Lng M - 1" by (rule TrMax_bound[OF MT])
+    have trne: "TrMax M \<noteq> Lng M - 1"
+    proof
+      assume "TrMax M = Lng M - 1"
+      hence "Br M = []" by (simp add: Br_def)
+      with brne show False by simp
+    qed
+    with tb have trlt: "TrMax M < Lng M - 1" by linarith
+    let ?N = "seg M (TrMax M + 1) (Lng M - 1)"
+    have brQ: "Br M = P ?N" using trne by (simp add: Br_def)
+    have JQ: "J \<le> Lng (P ?N) - 1" using JBr brQ by (cases "P ?N") auto
+    have hp: "hasParent M 0 (TrMax M + 1 + IdxSum (P ?N) ! J)"
+      using m_6_4_mono_slice_next[OF M _ _ JQ] trlt by auto
+    have fnJ: "TrMax M + 1 + IdxSum (P ?N) ! J = FirstNodes M ! J"
+      using FirstNodes_nth[OF JBr] brQ by simp
+    have hpf: "hasParent M 0 (FirstNodes M ! J)" using hp fnJ by simp
+    have aJ_eq: "Joints M ! J = parent M 0 (FirstNodes M ! J)" by (rule Joints_nth[OF JBr])
+    have nxJ: "nextR M 0 (Joints M ! J) (FirstNodes M ! J)"
+    proof -
+      have "\<exists>!j0. nextR M 0 j0 (FirstNodes M ! J)" using hpf by (simp add: hasParent_def)
+      hence "nextR M 0 (THE j0. nextR M 0 j0 (FirstNodes M ! J)) (FirstNodes M ! J)"
+        by (rule theI')
+      thus ?thesis using aJ_eq by (simp add: parent_def)
+    qed
+    \<comment> \<open>\<open>Joints M ! J \<le> TrMax M\<close> and \<open>Joints M ! ?last \<le> Joints M ! J\<close>\<close>
+    have aJTr: "Joints M ! J \<le> TrMax M"
+      using m_6_4_FirstNodes_TrMax_Joints[OF M JBr] by simp
+    have JleLast: "J \<le> ?last" using JBr by simp
+    have lastLeaJ: "Joints M ! ?last \<le> Joints M ! J"
+    proof (cases "J = ?last")
+      case True thus ?thesis by simp
+    next
+      case False
+      with JleLast have "J < ?last" by simp
+      thus ?thesis
+        using m_6_4_FirstNodes_Joints_mono_aux[OF M _ lastL] by simp
+    qed
+    have j0leaJ: "j0' \<le> Joints M ! J" using j0le lastLeaJ by simp
+    \<comment> \<open>chain \<open>j0' \<le> Joints!J <\<^sup>Next FirstNodes!J \<le> k\<close>\<close>
+    have le1: "leR M 0 j0' (Joints M ! J)"
+      by (rule trunk_le0[OF MT j0leaJ aJTr])
+    have leFN: "leR M 0 (Joints M ! J) (FirstNodes M ! J)"
+      using nxJ by (auto simp: nextR_def leR_def le0_def nextrel0_def)
+    have "le0 M j0' (FirstNodes M ! J)"
+      using le0_trans[of M j0' "Joints M ! J" "FirstNodes M ! J"]
+            le1 leFN by (simp add: leR_def)
+    hence "le0 M j0' k"
+      using le0_trans[of M j0' "FirstNodes M ! J" k] leFNk by (simp add: leR_def)
+    thus ?thesis by (simp add: leR_def)
+  qed
+qed
+
+text \<open>m: 系（単項性の切片への遺伝性, §6.4 version） — discharges
+  @{thm [source] p_6_4_mono_slice}.\<close>
+
+lemma m_6_4_mono_slice:
+  assumes M: "M \<in> PT_PS" and lt: "j0' < j1'" and j1L: "j1' \<le> Lng M - 1"
+    and j0le: "j0' \<le> Joints M ! (Lng (Br M) - 1)"
+  shows "monoT (seg M j0' j1')"
+proof -
+  have MT: "M \<in> T_PS" using M by (simp add: PT_PS_def)
+  have LM: "Lng M > 0" using MT by (cases M) (auto simp: T_PS_def)
+  have j1lt: "j1' < Lng M" using j1L LM by linarith
+  show ?thesis
+  proof (cases "Br M = []")
+    case True
+    \<comment> \<open>Degenerate trunk-only case: \<open>TrMax M = Lng M - 1\<close>, so the whole sequence is
+        the trunk and \<open>leR M 0 0 (Lng M - 1)\<close> already holds; the slice is mono.\<close>
+    have trmax: "TrMax M = Lng M - 1"
+    proof (rule ccontr)
+      assume "TrMax M \<noteq> Lng M - 1"
+      hence "Br M = P (seg M (TrMax M + 1) (Lng M - 1))" by (simp add: Br_def)
+      moreover have "P (seg M (TrMax M + 1) (Lng M - 1)) \<noteq> []" by (rule P_nonempty)
+      ultimately show False using True by simp
+    qed
+    have le: "leR M 0 j0' j1'"
+    proof (rule m_5_1_parent_exists_3[OF MT lt j1lt])
+      fix kk assume k: "j0' < kk" "kk \<le> j1'"
+      hence kL: "kk \<le> Lng M - 1" using j1L by simp
+      hence kTr: "kk \<le> TrMax M" using trmax by simp
+      have "leR M 0 j0' kk" by (rule trunk_le0[OF MT less_imp_le_nat[OF k(1)] kTr])
+      thus "entry M 0 j0' < entry M 0 kk"
+        by (rule m_5_1_ancestor_basic_1[OF MT k(1) order.refl])
+    qed
+    show ?thesis by (rule m_6_2_mono_ancestor_slice[OF MT lt le])
+  next
+    case False
+    have le: "leR M 0 j0' j1'"
+    proof (rule m_5_1_parent_exists_3[OF MT lt j1lt])
+      fix kk assume k: "j0' < kk" "kk \<le> j1'"
+      hence kL: "kk \<le> Lng M - 1" using j1L by simp
+      have "leR M 0 j0' kk"
+        by (rule slice_le0_to_index[OF M False j0le k(1) kL])
+      thus "entry M 0 j0' < entry M 0 kk"
+        by (rule m_5_1_ancestor_basic_1[OF MT k(1) order.refl])
+    qed
+    show ?thesis by (rule m_6_2_mono_ancestor_slice[OF MT lt le])
+  qed
+qed
+
 section \<open>Faithfulness lemmas (忠実性補題)\<close>
 
 text \<open>
