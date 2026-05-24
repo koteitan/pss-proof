@@ -43,17 +43,17 @@
       - ✅ 命題（$\textrm{Red}$ の well-defined 性）〔`m_6_5_Red_welldef`: 測度 ν での整礎帰納＋`Red.domintros`。基礎補題群(diagSeq・`Lng_Br_le`・`TrMax_diagSeq_append_ge`・`coreReduce`/`betaM`・`coreReduce_nonmulti`・`NJ_nonmulti`・`nu`/`muMono`・per-case descent)を経て完成。設計 docs/red-termination.md〕
       - 🤖 命題（$\textrm{Red}$ の $\textrm{IncrFirst}$ 不変性）〔agent 作業中: `m_6_5_Red_IncrFirst`〕
       - ✅ 命題（$\textrm{Lng}$ の $\textrm{Red}$ 不変性）〔`m_6_5_Lng_Red`、§6.5 下流の linchpin〕
-      - 🤖 系（$\textrm{Red}$ が零項性を保つこと）〔agent: `m_6_5_Red_zeroT`〕
-      - 🤖 系（直系先祖の $\textrm{Red}$ 不変性）〔agent: `m_6_5_Red_le`〕
-      - 🤖 系（$\textrm{Red}$ が単項性を保つこと）〔agent: `m_6_5_Red_monoT`〕
-      - 🤖 系（$P$ の $\textrm{Red}$ 同変性）〔agent: `m_6_5_P_Red`〕
+      - 🤖 系（$\textrm{Red}$ が零項性を保つこと）〔agent worktree green だが前方依存要解消: `m_6_5_Red_zeroT`〕
+      - 🚨 系（直系先祖の $\textrm{Red}$ 不変性）〔**keystone**: `m_6_5_Red_le`。agent は循環偽証明→要 genuine 再証明。詳細 memory pss-65-fanout〕
+      - 🤖 系（$\textrm{Red}$ が単項性を保つこと）〔agent worktree green (genuine modular, Red_le 待ち): `m_6_5_Red_monoT`〕
+      - 🤖 系（$P$ の $\textrm{Red}$ 同変性）〔agent worktree green (genuine modular, Red_le 待ち): `m_6_5_P_Red`〕
       - 🤖 命題（単項性と $\textrm{Red}$ の関係）〔agent: `m_6_5_monoT_Red`〕
       - 🤖 命題（$\textrm{Red}$ の冪等性）〔agent: `m_6_5_Red_idem`〕
       - 🤖 命題（$\textrm{Red}$ と $\textrm{Pred}$ の可換性）〔agent: `m_6_5_Red_Pred`〕
       - 🤖 命題（$\textrm{Red}$ と基本列の可換性）〔agent: `m_6_5_Red_oper`、最難・入れ子帰納〕
-      - 🤖 命題（$\textrm{Red}$ が許容性を保つこと）〔agent: `m_6_5_Red_adm`〕
-      - 🤖 系（許容化の $\textrm{Red}$ 不変性）〔agent: `m_6_5_admof_Red`〕
-      - 🤖 系（$\textrm{Red}$ が基点を保つこと）〔agent: `m_6_5_Red_marked`〕
+      - 🤖 命題（$\textrm{Red}$ が許容性を保つこと）〔agent worktree green (genuine modular, Red_le 待ち): `m_6_5_Red_adm`〕
+      - 🤖 系（許容化の $\textrm{Red}$ 不変性）〔agent worktree green: `m_6_5_admof_Red`〕
+      - 🤖 系（$\textrm{Red}$ が基点を保つこと）〔agent worktree green: `m_6_5_Red_marked`〕
     - 🚨 §6.6 簡約性
       - 🚨 命題（簡約性の切片への遺伝性）
       - 🚨 命題（$P$ が簡約性を保つこと）
