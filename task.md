@@ -47,10 +47,10 @@
       - 🤖 系（直系先祖の $\textrm{Red}$ 不変性）〔agent: `m_6_5_Red_le`〕
       - 🤖 系（$\textrm{Red}$ が単項性を保つこと）〔agent: `m_6_5_Red_monoT`〕
       - 🤖 系（$P$ の $\textrm{Red}$ 同変性）〔agent: `m_6_5_P_Red`〕
-      - 🚨 命題（単項性と $\textrm{Red}$ の関係）〔次波: `m_6_5_monoT_Red`〕
+      - 🤖 命題（単項性と $\textrm{Red}$ の関係）〔agent: `m_6_5_monoT_Red`〕
       - 🤖 命題（$\textrm{Red}$ の冪等性）〔agent: `m_6_5_Red_idem`〕
       - 🤖 命題（$\textrm{Red}$ と $\textrm{Pred}$ の可換性）〔agent: `m_6_5_Red_Pred`〕
-      - 🚨 命題（$\textrm{Red}$ と基本列の可換性）〔次波: `m_6_5_Red_oper`〕
+      - 🤖 命題（$\textrm{Red}$ と基本列の可換性）〔agent: `m_6_5_Red_oper`、最難・入れ子帰納〕
       - 🤖 命題（$\textrm{Red}$ が許容性を保つこと）〔agent: `m_6_5_Red_adm`〕
       - 🤖 系（許容化の $\textrm{Red}$ 不変性）〔agent: `m_6_5_admof_Red`〕
       - 🤖 系（$\textrm{Red}$ が基点を保つこと）〔agent: `m_6_5_Red_marked`〕
