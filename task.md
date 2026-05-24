@@ -8,9 +8,11 @@
 **🚨→✅ 削減フェーズ**: 独立・自己完結な未証明 🚨 を team で並列討伐中（緑 main ベース・ガードレール: 未証明 p_* 引用禁止／経験的真偽確認／相互独立のみ）。
 | actor | ターゲット | 状態 |
 |---|---|---|
-| 🤖 agent `a7d9…` | `m_6_6_condAB_coeff`（§6.6 条件A/Bと係数、組合せ的・Red非依存） | 稼働中 |
-| ✅ agent `a8c0…` | `m_6_7_ST_eq_Union_SkT`（`ST_PS=⋃SkT_PS`、純帰納的集合等式） | **完了・統合済（緑確認）** |
-| ✅ agent `acf1…` | `m_6_6_Red_leftend_1`（Red が行1左端固定、検証済真） | **完了・統合済（緑確認）** |
+| ✅ agent `a8c0…` | `m_6_7_ST_eq_Union_SkT`（`ST_PS=⋃SkT_PS`） | **統合済（緑）** |
+| ✅ agent `acf1…` | `m_6_6_Red_leftend_1`（Red が行1左端固定） | **統合済（緑）** |
+| ✅ agent `abba09…` | `m_6_7_standard_prefix`（標準形の始切片遺伝＋helper `ST_PS_T_PS`） | **統合済（緑）** |
+| 🤖 agent `af1e…` | `m_6_7_standard_P_components`（標準形の P 成分） | 稼働中 |
+| 🚨 agent `a7d9…`(停止) | `m_6_6_condAB_coeff`（§6.6 条件A/Bと係数、3部構成・最難） | **未完**（経験的に真(455件)。helper と part3 に複数の未閉 by。partial は worktree agent-a7d9 に保存・base 古い b6da51b。原因は予算でなく async build yield＋難所。要 focused 再挑戦） |
 | 👤 親セッション（私） | team 統合（1つずつ緑ビルド確認）＋次の独立補題選定 | — |
 
 reducedness クラスタ（reduced_iff_cond/P_reduced/reduced_oper/reduced_slice/reduced_coeff/oneColumn）は**相互依存＋Red 絡み**で並列化すると循環偽証明リスク → **逐次**で扱う。§7.1+ は命題が `sorry` 未転記なので並列対象外。
@@ -94,7 +96,7 @@ reducedness クラスタ（reduced_iff_cond/P_reduced/reduced_oper/reduced_slice
       - ✅ 命題（標準形の階層和による表示）〔`m_6_7_ST_eq_Union_SkT`: `ST_PS = ⋃k SkT_PS k`。純帰納的集合等式、Red 非依存。agent a8c0 由来、統合済〕
       - 🚨 命題（標準形の簡約性）
       - 🚨 命題（標準形の単項成分が標準形であること）
-      - 🚨 命題（標準形の始切片への遺伝性）
+      - ✅ 命題（標準形の始切片への遺伝性）〔`m_6_7_standard_prefix`: `seg M 0 j' ∈ ST_PS`。ST_PS 帰納＋`less_induct`、`_[1]=Pred` で短縮。helper `ST_PS_T_PS`(ST_PS⊆T_PS) も証明。agent abba09 由来、統合済〕
     - 🚨 §6.8 降順性
       - 🚨 命題（標準形の切片と $\textrm{Br}$ の降順性の関係）
       - 🚨 命題（標準形の単項成分が降順であること）
