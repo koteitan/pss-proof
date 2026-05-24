@@ -322,6 +322,20 @@ lemma p_6_4_mono_slice:
 
 subsection \<open>§6.5 簡約化\<close>
 
+text \<open>
+  CAUTION (correction A4 — see corrections.md and docs/red-le-domain.md).
+  The eight §6.5 corollaries p_6_5_Red_le, p_6_5_Red_monoT, p_6_5_P_Red,
+  p_6_5_Red_idem, p_6_5_Red_oper, p_6_5_Red_adm, p_6_5_admof_Red and
+  p_6_5_Red_marked are FALSE as stated for all M : T_PS — counterexample
+  Red ((0,0)(0,1)) = (0,0)(1,1), which changes the ancestor tree (checked
+  empirically with python/ + yaBMS).  They hold on the restricted domain of
+  ANCESTOR-ANCHORED SLICES of standard / reduced+mono sequences, i.e. the
+  actual §7 use-sites (provisional, pending).  Their sorry below is therefore a
+  FALSE AXIOM on T_PS: do not rely on these downstream until the premise is
+  corrected to the anchored-slice domain.  The remaining §6.5 facts (Lng_Red,
+  Red_zeroT, Red_Pred, Red_IncrFirst) are true on all of T_PS.
+\<close>
+
 text \<open>命題（\<open>Red\<close>のwell-defined性） — the recursion defining \<open>Red\<close> terminates on
   every \<open>M \<in> T\<^sub>PS\<close> (the article: 上の条件を全て満たす写像 \<open>Red\<close> が一意に存在する).
   Encoded as totality of the \<open>function\<close>-domain predicate \<open>Red_dom\<close>.\<close>
