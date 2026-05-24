@@ -5537,5 +5537,73 @@ definition muMono :: "pairseq \<Rightarrow> nat" where
 definition nu :: "pairseq \<Rightarrow> nat" where
   "nu M = (if multiT M then 1 + sum_list (map muMono (P M)) else muMono M)"
 
+lemma betaM_pos:
+  assumes "M \<in> T_PS"
+  shows "1 \<le> betaM M"
+proof -
+  have L: "Lng M > 0" using assms by (cases M) (auto simp: T_PS_def)
+  have T: "TrMax M \<le> Lng M - 1" by (rule TrMax_bound[OF assms])
+  from L T show ?thesis unfolding betaM_def by linarith
+qed
+
+text \<open>Per-case descent of \<open>nu\<close> along @{const Red}'s recursive calls.\<close>
+
+lemma nu_Pblock_lt:
+  assumes M: "M \<in> T_PS" and multi: "multiT M" and x: "x \<in> set (P M)"
+  shows "nu x < nu M"
+proof -
+  have nuM: "nu M = 1 + sum_list (map muMono (P M))" using multi by (simp add: nu_def)
+  have x_nm: "\<not> multiT x" using m_6_2_P_components_1[OF M] x by (auto simp: multiT_def)
+  have mem: "muMono x \<in> set (map muMono (P M))" using x by simp
+  have "nu x = muMono x" using x_nm by (simp add: nu_def)
+  also have "muMono x \<le> sum_list (map muMono (P M))" by (rule member_le_sum_list[OF mem]) simp
+  finally show ?thesis using nuM by linarith
+qed
+
+lemma nu_coreReduce_lt:
+  assumes M: "M \<in> T_PS" and mono: "monoT M"
+    and noncore: "\<not> (entry M 0 0 = 0 \<and> entry M 1 0 = 0)"
+  shows "nu (coreReduce M) < nu M"
+proof -
+  have nmM: "\<not> multiT M" using mono by (simp add: multiT_def)
+  have muM: "muMono M = 2 * betaM (coreReduce M) + 1"
+    unfolding muMono_def by (rule if_not_P[OF noncore])
+  have nuM: "nu M = 2 * betaM (coreReduce M) + 1" using nmM muM by (simp add: nu_def)
+  have cr_nm: "\<not> multiT (coreReduce M)" by (rule coreReduce_nonmulti[OF M mono])
+  have cr_core: "entry (coreReduce M) 0 0 = 0 \<and> entry (coreReduce M) 1 0 = 0"
+    by (rule coreReduce_core[OF M])
+  have "nu (coreReduce M) = muMono (coreReduce M)" using cr_nm by (simp add: nu_def)
+  also have "\<dots> = 2 * betaM (coreReduce M)" using cr_core by (simp add: muMono_def)
+  finally show ?thesis using nuM by simp
+qed
+
+lemma nu_NJ_lt:
+  assumes M: "M \<in> PT_PS" and core: "entry M 0 0 = 0" "entry M 1 0 = 0"
+    and JBr: "J < Lng (Br M)"
+  shows "nu (NJ M J) < nu M"
+proof -
+  have MT: "M \<in> T_PS" and mono: "monoT M" using M by (simp_all add: PT_PS_def)
+  have nmM: "\<not> multiT M" using mono by (simp add: multiT_def)
+  have nuM: "nu M = 2 * betaM M" using nmM core by (simp add: nu_def muMono_def)
+  have nj_nm: "\<not> multiT (NJ M J)" by (rule NJ_nonmulti[OF M core JBr])
+  have nj_noncore: "\<not> (entry (NJ M J) 0 0 = 0 \<and> entry (NJ M J) 1 0 = 0)"
+  proof -
+    have "entry (NJ M J) 0 0 = entry M 0 0 + Joints M ! J + 1" by (simp add: NJ_def entry_def)
+    thus ?thesis by simp
+  qed
+  have muNJ: "muMono (NJ M J) = 2 * betaM (coreReduce (NJ M J)) + 1"
+    unfolding muMono_def by (rule if_not_P[OF nj_noncore])
+  have nuNJ: "nu (NJ M J) = 2 * betaM (coreReduce (NJ M J)) + 1"
+    using nj_nm muNJ by (simp add: nu_def)
+  have brJne: "Br M ! J \<noteq> []" by (rule Br_component_nonempty[OF M JBr])
+  have NJTPS: "NJ M J \<in> T_PS" using brJne by (simp add: T_PS_def NJ_def)
+  have bcr: "betaM (coreReduce (NJ M J)) \<le> Lng (NJ M J)" by (rule betaM_coreReduce_le[OF NJTPS])
+  have lenNJ: "Lng (NJ M J) = Lng (Br M ! J)" using brJne by (rule Lng_NJ)
+  have brbound: "Lng (Br M ! J) \<le> Lng M - TrMax M - 1" by (rule Lng_Br_le[OF JBr])
+  have bpos: "1 \<le> betaM M" by (rule betaM_pos[OF MT])
+  have "Lng (NJ M J) \<le> betaM M - 1" using lenNJ brbound by (simp add: betaM_def)
+  with bcr bpos show ?thesis using nuNJ nuM by linarith
+qed
+
 end
 
