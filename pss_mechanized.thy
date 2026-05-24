@@ -5523,5 +5523,19 @@ proof -
   qed
 qed
 
+subsection \<open>The termination measure \<open>\<nu>\<close>\<close>
+
+text \<open>\<open>muMono M\<close>: the core measure for mono/zero sequences.  Core (\<open>hd = (0,0)\<close>):
+  \<open>2\<beta>\<close>.  Non-core: \<open>2\<beta>(coreReduce M) + 1\<close>, one above the core element it reduces
+  to.  \<open>nu M\<close> lifts it over multi via the \<open>P\<close>-blocks (which are zero/mono by
+  @{thm [source] m_6_2_P_components_1}, so \<open>nu\<close> needs no recursion).\<close>
+
+definition muMono :: "pairseq \<Rightarrow> nat" where
+  "muMono M = (if entry M 0 0 = 0 \<and> entry M 1 0 = 0 then 2 * betaM M
+               else 2 * betaM (coreReduce M) + 1)"
+
+definition nu :: "pairseq \<Rightarrow> nat" where
+  "nu M = (if multiT M then 1 + sum_list (map muMono (P M)) else muMono M)"
+
 end
 
