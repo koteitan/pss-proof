@@ -117,3 +117,20 @@ the pair-sequence side, so it lives in `pss_paper` (imports `pss_defs`). Then
 (expansion rules under (I)–(VI) and the main result) depends entirely on
 `Trans` / `Mark`. The well-foundedness of `(OT_B, <)` ([Buc1] Lemma 2.2) is the
 eventual source of termination.
+
+## Empirical validation (`python/buchholz.py`, `python/buchholz_audit.py`)
+
+A faithful Python model of the notation system (terms, `<`, `+`, `T_v`, `G_u`,
+`OT`, `dom`, `a[z]`). Enumerated small terms (indices 0–2, depth 2):
+
+- **Lemma 2.1** (`<` strict linear order: irreflexive / transitive / trichotomous)
+  — **validated**, 0 failures. This is the well-foundedness crux.
+- **`[]` cases** `0/1/2/3/5` and `([].4)(i),(iii)` — validated against
+  `dom`/order and known values (e.g. `(D_ω 0)[n]=D_{n+1}0`).
+- **`([].4)(ii)` [Buc2] modification — NOT yet validated.** Implemented verbatim
+  from the footnote (content.md 6427), but Lemma 3.2a (`a[z] < a`) FAILS for
+  non-principal `b` (e.g. `a = D_0((D_1 0, D_1 0))`): the outer `b[x_n]` is
+  applied with `x_n ∈ T_{u+1} ∉ dom(b)=T_u`. The [Buc1] original
+  `a[n]=D_v b[D_u b[1]]` keeps the outer argument `D_u`-wrapped (`∈ T_u`); the
+  literal [Buc2] reading loses that. **TODO**: study [Buc1] p.203 to pin the
+  intended reading before using case-(ii) fundamental sequences in any audit.
