@@ -5338,5 +5338,31 @@ proof -
   thus ?thesis using aJ_eq by (simp add: parent_def)
 qed
 
+text \<open>m: article [13] key inequality — \<open>M\<^bsub>0,0\<^esub> + Joints M ! J + 1 \<le> (Br M ! J)\<^bsub>0,0\<^esub>\<close>.
+  Combines the trunk row-0 growth up to \<open>Joints M ! J\<close>, the strict row-0 jump
+  across the parent edge to \<open>FirstNodes M ! J\<close>, and
+  @{thm [source] entry_FirstNodes_eq_component}.  This is what keeps \<open>N\<^sub>J\<close>'s new
+  first entry strictly below the rest of the branch, i.e. \<open>N\<^sub>J\<close> mono.\<close>
+
+lemma joints_lt_branch_first:
+  assumes M: "M \<in> PT_PS" and JBr: "J < Lng (Br M)"
+  shows "entry M 0 0 + Joints M ! J + 1 \<le> entry (Br M ! J) 0 0"
+proof -
+  have MT: "M \<in> T_PS" using M by (simp add: PT_PS_def)
+  have aJTr: "Joints M ! J \<le> TrMax M"
+    using m_6_4_FirstNodes_TrMax_Joints[OF M JBr] by simp
+  have tb: "TrMax M \<le> Lng M - 1" by (rule TrMax_bound[OF MT])
+  have LMpos: "0 < Lng M" using MT by (cases M) (auto simp: T_PS_def)
+  have jL: "Joints M ! J < Lng M" using aJTr tb LMpos by linarith
+  have trunk: "entry M 0 0 + Joints M ! J \<le> entry M 0 (Joints M ! J)"
+    by (rule trunk_row0_inc[OF MT aJTr jL])
+  have nx: "nextR M 0 (Joints M ! J) (FirstNodes M ! J)" by (rule Joints_parent_nextR[OF M JBr])
+  have strict: "entry M 0 (Joints M ! J) < entry M 0 (FirstNodes M ! J)"
+    using nx by (simp add: nextR_def nextrel0_def)
+  have ec: "entry M 0 (FirstNodes M ! J) = entry (Br M ! J) 0 0"
+    by (rule entry_FirstNodes_eq_component[OF M JBr])
+  show ?thesis using trunk strict ec by simp
+qed
+
 end
 
