@@ -45,7 +45,7 @@
       8系は `M∈anchored_slice` 前提へ、偽の公理を解消、commit 063927d）。`anchored_slice⊆T_PS` 証明済
       (`anchored_slice_imp_T_PS`)。fan-out agent の T_PS 版証明は偽命題依存で破棄。〕
       - ✅ 命題（$\textrm{Red}$ の well-defined 性）〔`m_6_5_Red_welldef`: 測度 ν での整礎帰納＋`Red.domintros`。基礎補題群(diagSeq・`Lng_Br_le`・`TrMax_diagSeq_append_ge`・`coreReduce`/`betaM`・`coreReduce_nonmulti`・`NJ_nonmulti`・`nu`/`muMono`・per-case descent)を経て完成。設計 docs/red-termination.md〕
-      - 🤖 命題（$\textrm{Red}$ の $\textrm{IncrFirst}$ 不変性）〔`m_6_5_Red_IncrFirst`。**T_PS で真**。A2 が genuine 証明済(2222行)だが base 分岐→現 main へ移植 agent 作業中〕
+      - 🤖 命題（$\textrm{Red}$ の $\textrm{IncrFirst}$ 不変性）〔`m_6_5_Red_IncrFirst`。**T_PS で真**。genuine 証明(≈2568行)を**現 main ベースへ移植する agent が1つ稼働中**(`adb8…`)。base 分岐の旧 agent は停止。〕
       - ✅ 命題（$\textrm{Lng}$ の $\textrm{Red}$ 不変性）〔`m_6_5_Lng_Red`、§6.5 下流の linchpin〕
       - 🚨 系（$\textrm{Red}$ が零項性を保つこと）〔`m_6_5_Red_zeroT`。**T_PS で真**〕
       - 🚨 系（直系先祖の $\textrm{Red}$ 不変性）〔**keystone**: `m_6_5_Red_le`。**T_PS で偽**(反例 `(0,0)(0,1)`)→先祖係留切片で真(保留中)。A4〕
