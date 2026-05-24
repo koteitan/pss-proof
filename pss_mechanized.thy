@@ -5254,5 +5254,56 @@ next
   from coreReduce_monoT_m10_pos[OF M mono this] show ?thesis by (simp add: multiT_def)
 qed
 
+text \<open>The trunk holds up to \<open>TrMax M\<close>: the row-1 chain \<open>(1,j) <\<^sup>Next (1,j+1)\<close>
+  is unbroken for every \<open>j < TrMax M\<close>.  (\<open>TrMax M = Max ?S\<close> lies in the
+  downward-closed finite set \<open>?S\<close>.)\<close>
+
+lemma TrMax_in_S:
+  assumes T: "M \<in> T_PS"
+  shows "\<forall>j'<TrMax M. nextR M 1 j' (j' + 1)"
+proof -
+  let ?S = "{j. \<forall>j'<j. nextR M 1 j' (j' + 1)}"
+  have LM: "Lng M > 0" using T by (cases M) (auto simp: T_PS_def)
+  have sub: "?S \<subseteq> {..Lng M - 1}"
+  proof
+    fix j assume "j \<in> ?S"
+    hence H: "\<forall>j'<j. nextR M 1 j' (j' + 1)" by simp
+    show "j \<in> {..Lng M - 1}"
+    proof (rule ccontr)
+      assume "j \<notin> {..Lng M - 1}"
+      hence "Lng M - 1 < j" by simp
+      hence "nextR M 1 (Lng M - 1) ((Lng M - 1) + 1)" using H by blast
+      hence "(Lng M - 1) + 1 < Lng M" by (simp add: nextR_def nextrel1_def)
+      thus False using LM by simp
+    qed
+  qed
+  hence fin: "finite ?S" by (rule finite_subset) simp
+  have "0 \<in> ?S" by simp
+  hence ne: "?S \<noteq> {}" by blast
+  have "Max ?S \<in> ?S" by (rule Max_in[OF fin ne])
+  thus ?thesis by (simp add: TrMax_def)
+qed
+
+text \<open>m: row-0 grows by at least 1 per step along the trunk:
+  \<open>M\<^bsub>0,0\<^esub> + j \<le> M\<^bsub>0,j\<^esub>\<close> for \<open>j \<le> TrMax M\<close>.  (Each trunk step gives a row-0
+  \<open>\<le>\<^sub>M\<close>-edge, hence a strict row-0 increase.)\<close>
+
+lemma trunk_row0_inc:
+  assumes T: "M \<in> T_PS" and jt: "j \<le> TrMax M" and jL: "j < Lng M"
+  shows "entry M 0 0 + j \<le> entry M 0 j"
+  using jt jL
+proof (induction j)
+  case 0 thus ?case by simp
+next
+  case (Suc j')
+  have jt': "j' < TrMax M" using Suc.prems(1) by simp
+  have nx: "nextR M 1 j' (Suc j')" using TrMax_in_S[OF T] jt' by simp
+  have le: "leR M 0 j' (Suc j')" using nx by (auto simp: leR_def nextR_def nextrel1_def)
+  have inc: "entry M 0 j' < entry M 0 (Suc j')"
+    by (rule m_5_1_ancestor_basic_1[OF T _ _ le]) auto
+  have IH: "entry M 0 0 + j' \<le> entry M 0 j'" using Suc by simp
+  show ?case using inc IH by simp
+qed
+
 end
 
