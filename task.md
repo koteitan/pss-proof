@@ -10,7 +10,7 @@
 |---|---|---|
 | 🤖 agent `a7d9…` | `m_6_6_condAB_coeff`（§6.6 条件A/Bと係数、組合せ的・Red非依存） | 稼働中 |
 | ✅ agent `a8c0…` | `m_6_7_ST_eq_Union_SkT`（`ST_PS=⋃SkT_PS`、純帰納的集合等式） | **完了・統合済（緑確認）** |
-| 🤖 agent `acf1…` | `m_6_6_Red_leftend_1`（Red が行1左端固定、検証済真） | 稼働中 |
+| ✅ agent `acf1…` | `m_6_6_Red_leftend_1`（Red が行1左端固定、検証済真） | **完了・統合済（緑確認）** |
 | 👤 親セッション（私） | team 統合（1つずつ緑ビルド確認）＋次の独立補題選定 | — |
 
 reducedness クラスタ（reduced_iff_cond/P_reduced/reduced_oper/reduced_slice/reduced_coeff/oneColumn）は**相互依存＋Red 絡み**で並列化すると循環偽証明リスク → **逐次**で扱う。§7.1+ は命題が `sorry` 未転記なので並列対象外。
@@ -84,7 +84,7 @@ reducedness クラスタ（reduced_iff_cond/P_reduced/reduced_oper/reduced_slice
       - 🚨 命題（$P$ が簡約性を保つこと）〔`p_6_6_P_reduced`。**T_PS で真**〕
       - 🚨 命題（簡約性が基本列で保たれること）〔`p_6_6_reduced_oper`。**T_PS で真**〕
       - 🚨 命題（簡約性と係数の関係）〔`p_6_6_reduced_iff_cond`: 簡約 ⟺ 条件A∧B。**T_PS で真**〕
-      - 🚨 補題（$\textrm{Red}$ と左端の関係）〔`p_6_6_Red_leftend_1`。**T_PS で真**〕
+      - ✅ 補題（$\textrm{Red}$ と左端の関係）(1)〔`m_6_6_Red_leftend_1`: `entry (Red M) 1 0 = entry M 1 0`。Red.pinduct 5分岐、m10>0 は `coreReduce_monoT_m10_pos`+`TrMax_diagSeq_append_ge` で（未証明 leftend_2 に依存せず）。agent acf1 由来、統合済〕
       - 🚨 補題（簡約性と係数の基本性質）
       - 🚨 補題（簡約性と左端の関係）
       - 🚨 補題（条件 (A) と (B) と係数の基本性質）
