@@ -450,7 +450,7 @@ subsection \<open>§6.6 簡約性\<close>
 text \<open>命題（簡約性の切片への遺伝性） — a reduced sequence restricts to a reduced
   initial slice (from the trunk root) across the trunk end.
   CORRECTION A5: the article's premise \<open>j0' \<le> TrMax M\<close> is too weak (false for
-  e.g. the standard reduced M = (0,0)(1,1)(1,0), slice (M\<^sub>j)\<^bsub>j=1\<^esub>\<^bsup>2\<^esup>); corrected to
+  e.g. the standard reduced M = (0,0)(1,1)(1,0), slice seg M 1 2); corrected to
   \<open>j0' = 0\<close> (empirically sound, python/red_66_audit.py).  Final premise pending.\<close>
 
 lemma p_6_6_reduced_slice:

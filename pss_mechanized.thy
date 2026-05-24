@@ -6070,5 +6070,111 @@ proof -
   thus ?thesis by (simp add: T_PS_def)
 qed
 
+
+text \<open>m: 命題（zeroT の Red 不変性） — discharges p_6_5_Red_zeroT.\<close>
+\<comment> \<open>Auxiliary: when Lng M = 1, ¬ zeroT M, M ∈ T_PS, then entry (Red M) 1 0 ≠ 0.\<close>
+lemma rz_Red_entry1_nz:
+  assumes MT: "M \<in> T_PS" and L1: "Lng M = 1" and nz: "\<not> zeroT M"
+  shows "entry (Red M) 1 0 \<noteq> 0"
+proof -
+  have domM: "Red_dom M" by (rule m_6_5_Red_welldef[OF MT])
+  have Mne: "M \<noteq> []" using MT by (simp add: T_PS_def)
+  \<comment> \<open>Lng M = 1 and ¬ zeroT M implies monoT and ¬ multiT.\<close>
+  have mono: "monoT M" using L1 nz by (simp add: monoT_def leR_def le0_def)
+  have nmu: "\<not> multiT M" using mono by (simp add: multiT_def)
+  let ?m10 = "entry M 1 0"
+  have m10pos: "0 < ?m10" using nz L1 by (simp add: zeroT_def)
+  \<comment> \<open>¬ core: m10 > 0 implies ¬ (m00 = 0 \<and> m10 = 0).\<close>
+  have nc: "\<not> (entry M 0 0 = 0 \<and> ?m10 = 0)" using m10pos by simp
+  \<comment> \<open>Red M unfolds to the m10>0 non-core branch.\<close>
+  let ?arg = "diagSeq 0 (?m10 - 1) @ (IncrFirst ^^ ?m10) M"
+  have rM: "Red M = (let N = Red ?arg; jN = Lng N - 1 in
+             if ?m10 \<le> jN \<and> seg N ?m10 jN \<in> PT_PS then
+               map (\<lambda>j. (entry N 0 j - entry N 0 ?m10 + entry N 1 ?m10,
+                         entry N 1 j))
+                   [?m10..<Suc jN]
+             else M)"
+    using Red.psimps[OF domM] nz nmu nc m10pos
+    by (simp add: Let_def)
+  \<comment> \<open>arg is in T_PS (non-empty).\<close>
+  have funpow_ne: "(IncrFirst ^^ ?m10) M \<noteq> []"
+    using Mne by (metis Lng_funpow_IncrFirst length_0_conv)
+  have arg_T: "?arg \<in> T_PS" using funpow_ne by (simp add: T_PS_def)
+  \<comment> \<open>Lng (Red arg) = Lng arg = m10 + 1.\<close>
+  have Larg1: "Lng ?arg = ?m10 + 1"
+    using m10pos L1 by (simp add: Lng_funpow_IncrFirst)
+  have LN: "Lng (Red ?arg) = ?m10 + 1"
+    using m_6_5_Lng_Red[OF arg_T] Larg1 by simp
+  \<comment> \<open>jN = m10, so m10 \<le> jN holds.\<close>
+  have jN_eq: "Lng (Red ?arg) - 1 = ?m10" using LN m10pos by simp
+  have m10_le: "?m10 \<le> Lng (Red ?arg) - 1" using jN_eq by simp
+  \<comment> \<open>Case split on whether seg (Red arg) m10 m10 \<in> PT_PS.\<close>
+  show "entry (Red M) 1 0 \<noteq> 0"
+  proof (cases "seg (Red ?arg) ?m10 (Lng (Red ?arg) - 1) \<in> PT_PS")
+    case ptps: True
+    \<comment> \<open>Red M = [(entry N 1 m10, entry N 1 m10)].\<close>
+    have rM': "Red M = map (\<lambda>j. (entry (Red ?arg) 0 j - entry (Red ?arg) 0 ?m10
+                                  + entry (Red ?arg) 1 ?m10,
+                                  entry (Red ?arg) 1 j))
+                            [?m10..<Suc (Lng (Red ?arg) - 1)]"
+      using rM ptps m10_le by (simp add: Let_def)
+    have rM'': "Red M = [(entry (Red ?arg) 1 ?m10, entry (Red ?arg) 1 ?m10)]"
+      using rM' jN_eq by simp
+    \<comment> \<open>seg N m10 m10 \<in> PT_PS \<Longrightarrow> monoT \<Longrightarrow> \<not> zeroT \<Longrightarrow> entry N 1 m10 \<noteq> 0.\<close>
+    have seg_len1: "Lng (seg (Red ?arg) ?m10 ?m10) = 1"
+      using LN m10pos by simp
+    have seg_mono: "monoT (seg (Red ?arg) ?m10 ?m10)"
+      using ptps jN_eq by (simp add: PT_PS_def)
+    have seg_nz: "\<not> zeroT (seg (Red ?arg) ?m10 ?m10)"
+      using seg_mono by (simp add: monoT_def)
+    have eseg: "entry (seg (Red ?arg) ?m10 ?m10) 1 0 = entry (Red ?arg) 1 ?m10"
+      using entry_seg[where M="Red ?arg" and a="?m10" and b="?m10" and i=1 and j=0]
+            seg_len1 by simp
+    have ne10: "entry (Red ?arg) 1 ?m10 \<noteq> 0"
+    proof -
+      have "entry (seg (Red ?arg) ?m10 ?m10) 1 0 \<noteq> 0"
+        using seg_nz seg_len1 by (simp add: zeroT_def)
+      thus ?thesis using eseg by simp
+    qed
+    have "entry (Red M) 1 0 = entry (Red ?arg) 1 ?m10"
+      by (simp add: rM'' entry_def)
+    thus "entry (Red M) 1 0 \<noteq> 0" using ne10 by simp
+  next
+    case False
+    \<comment> \<open>Red M = M, and entry M 1 0 = m10 > 0.\<close>
+    have "Red M = M" using rM m10_le False by (simp add: Let_def)
+    thus ?thesis using m10pos by simp
+  qed
+qed
+
+lemma m_6_5_Red_zeroT:
+  assumes MT: "M \<in> T_PS"
+  shows "zeroT M \<longleftrightarrow> zeroT (Red M)"
+proof -
+  have domM: "Red_dom M" by (rule m_6_5_Red_welldef[OF MT])
+  have LR: "Lng (Red M) = Lng M" by (rule m_6_5_Lng_Red[OF MT])
+  show ?thesis
+  proof (rule iffI)
+    \<comment> \<open>Forward: zeroT M \<Longrightarrow> Red M = [(0,0)], which is zeroT.\<close>
+    assume z: "zeroT M"
+    have rM: "Red M = [(0, 0)]" using Red.psimps[OF domM] z by simp
+    show "zeroT (Red M)" by (simp add: rM zeroT_def entry_def)
+  next
+    \<comment> \<open>Backward: zeroT (Red M) \<Longrightarrow> zeroT M.
+        Prove contrapositive: \<not> zeroT M \<Longrightarrow> \<not> zeroT (Red M).\<close>
+    assume zRM: "zeroT (Red M)"
+    show "zeroT M"
+    proof (rule ccontr)
+      assume nz: "\<not> zeroT M"
+      \<comment> \<open>Lng (Red M) = Lng M, and zeroT (Red M) gives Lng (Red M) = 1.\<close>
+      have L1: "Lng M = 1" using LR zRM by (simp add: zeroT_def)
+      \<comment> \<open>entry M 1 0 \<noteq> 0 gives entry (Red M) 1 0 \<noteq> 0 by rz_Red_entry1_nz.\<close>
+      have ne: "entry (Red M) 1 0 \<noteq> 0" by (rule rz_Red_entry1_nz[OF MT L1 nz])
+      \<comment> \<open>But zeroT (Red M) requires entry (Red M) 1 0 = 0. Contradiction.\<close>
+      thus False using zRM by (simp add: zeroT_def)
+    qed
+  qed
+qed
+
 end
 

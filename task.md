@@ -47,7 +47,7 @@
       - ✅ 命題（$\textrm{Red}$ の well-defined 性）〔`m_6_5_Red_welldef`: 測度 ν での整礎帰納＋`Red.domintros`。基礎補題群(diagSeq・`Lng_Br_le`・`TrMax_diagSeq_append_ge`・`coreReduce`/`betaM`・`coreReduce_nonmulti`・`NJ_nonmulti`・`nu`/`muMono`・per-case descent)を経て完成。設計 docs/red-termination.md〕
       - 🤖 命題（$\textrm{Red}$ の $\textrm{IncrFirst}$ 不変性）〔`m_6_5_Red_IncrFirst`。**T_PS で真**。genuine 証明(≈2568行)を**現 main ベースへ移植する agent が1つ稼働中**(`adb8…`)。base 分岐の旧 agent は停止。〕
       - ✅ 命題（$\textrm{Lng}$ の $\textrm{Red}$ 不変性）〔`m_6_5_Lng_Red`、§6.5 下流の linchpin〕
-      - 🤖 系（$\textrm{Red}$ が零項性を保つこと）〔`m_6_5_Red_zeroT`。**T_PS で真**。agent `a198…` が証明中(Lng=1 へ帰着、Lng_Red 利用)〕
+      - ✅ 系（$\textrm{Red}$ が零項性を保つこと）〔`m_6_5_Red_zeroT`。T_PS で真。Lng=1 へ帰着(`m_6_5_Lng_Red`)＋helper `rz_Red_entry1_nz`。agent 由来、統合済〕
       - 🚨 系（直系先祖の $\textrm{Red}$ 不変性）〔**keystone**: `m_6_5_Red_le`。**T_PS で偽**(反例 `(0,0)(0,1)`)→先祖係留切片で真(保留中)。A4〕
       - 🚨 系（$\textrm{Red}$ が単項性を保つこと）〔`m_6_5_Red_monoT`。T_PS で偽 → 係留切片で真(保留中)。A4〕
       - 🚨 系（$P$ の $\textrm{Red}$ 同変性）〔`m_6_5_P_Red`。T_PS で偽 → 係留切片で真(保留中)。A4〕
