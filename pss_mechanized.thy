@@ -5038,5 +5038,19 @@ proof -
   thus ?thesis using assms by blast
 qed
 
+text \<open>Row-0 minimality of a mono sequence: \<open>M\<^bsub>0,0\<^esub> < M\<^bsub>0,j\<^esub>\<close> for every
+  \<open>0 < j < Lng M\<close> (the left end is the strict row-0 minimum).  This is the fact
+  that makes the \<open>m\<^sub>1\<^sub>0 = 0\<close> row-0 shift in \<open>coreReduce\<close> order-preserving (no
+  \<open>nat\<close> truncation), via @{thm [source] m_5_1_ancestor_basic_1} and \<open>monoT\<close>.\<close>
+
+lemma monoT_row0_min:
+  assumes M: "M \<in> T_PS" and mono: "monoT M" and j: "0 < j" "j < Lng M"
+  shows "entry M 0 0 < entry M 0 j"
+proof -
+  have le: "leR M 0 0 (Lng M - 1)" using mono by (simp add: monoT_def)
+  have jle: "j \<le> Lng M - 1" using j by simp
+  show ?thesis by (rule m_5_1_ancestor_basic_1[OF M j(1) jle le])
+qed
+
 end
 
