@@ -238,6 +238,19 @@ def fmt(M): return "".join(f"({a},{b})" for (a,b) in M)
 def Pred(M): return M[:-1] if Lng(M)>1 else M       # §5.2 Pred
 def reduced(M): return Red(M)==M                     # RT_PS membership (Red M = M)
 
+# ---- §6.3 admissibility ----
+def nadm(M,j):                                       # 非M許容
+    if j>Lng(M): return True
+    jm1 = j-1 if j>=1 else 0                          # nat subtraction: 0-1=0
+    return nextR(M,1,jm1,j) and nextR(M,1,j,j+1)
+def adm(M,j): return not nadm(M,j)                   # M許容
+def AdmSet(M): return frozenset(j for j in range(Lng(M)+1) if adm(M,j))   # ℕ_M
+def Adm(M,j):                                        # 許容化 Adm_M(j)
+    if adm(M,j): return j
+    return max(jp for jp in range(j) if adm(M,jp))
+def marked(M,m):                                     # (M,m) ∈ Marked
+    return Lng(M)>=1 and adm(M,m) and leR(M,0,m,Lng(M)-1)
+
 # ---- standardness via the external yaBMS C tool (independent oracle) ----
 _BMS_BIN = os.environ.get(
     "BMS_BIN",

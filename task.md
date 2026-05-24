@@ -39,21 +39,22 @@
       - ✅ 命題（$\textrm{FirstNodes}$ と $\textrm{TrMax}$ と $\textrm{Joints}$ の関係）
       - ✅ 系（$\textrm{FirstNodes}$ と $\textrm{Joints}$ の単調性）〔(1)(2)(3) 証明済。(4) 厳密減少は**偽**（反例 `(0,0)(1,1)(2,1)(3,1)(2,0)`、標準形、joint 一致）→ correction A3 で paper を (1)(2)(3) に訂正〕
       - ✅ 系（単項性の切片への遺伝性）
-    - 🚨 §6.5 簡約化
+    - 🚨 §6.5 簡約化 〔**注意: 下記8系は論文の前提 $T_{\textrm{PS}}$ では偽**（correction A4 / `docs/red-le-domain.md`）。
+      定義域＝「先祖係留切片」で真（保留中）。fan-out agent の T_PS 版証明は偽命題依存で破棄。〕
       - ✅ 命題（$\textrm{Red}$ の well-defined 性）〔`m_6_5_Red_welldef`: 測度 ν での整礎帰納＋`Red.domintros`。基礎補題群(diagSeq・`Lng_Br_le`・`TrMax_diagSeq_append_ge`・`coreReduce`/`betaM`・`coreReduce_nonmulti`・`NJ_nonmulti`・`nu`/`muMono`・per-case descent)を経て完成。設計 docs/red-termination.md〕
-      - 🤖 命題（$\textrm{Red}$ の $\textrm{IncrFirst}$ 不変性）〔agent 作業中: `m_6_5_Red_IncrFirst`〕
+      - 🚨 命題（$\textrm{Red}$ の $\textrm{IncrFirst}$ 不変性）〔`m_6_5_Red_IncrFirst`。**T_PS で真**（証明対象）〕
       - ✅ 命題（$\textrm{Lng}$ の $\textrm{Red}$ 不変性）〔`m_6_5_Lng_Red`、§6.5 下流の linchpin〕
-      - 🤖 系（$\textrm{Red}$ が零項性を保つこと）〔agent worktree green だが前方依存要解消: `m_6_5_Red_zeroT`〕
-      - 🚨 系（直系先祖の $\textrm{Red}$ 不変性）〔**keystone**: `m_6_5_Red_le`。agent は循環偽証明→要 genuine 再証明。詳細 memory pss-65-fanout〕
-      - 🤖 系（$\textrm{Red}$ が単項性を保つこと）〔agent worktree green (genuine modular, Red_le 待ち): `m_6_5_Red_monoT`〕
-      - 🤖 系（$P$ の $\textrm{Red}$ 同変性）〔agent worktree green (genuine modular, Red_le 待ち): `m_6_5_P_Red`〕
-      - 🤖 命題（単項性と $\textrm{Red}$ の関係）〔agent: `m_6_5_monoT_Red`〕
-      - 🤖 命題（$\textrm{Red}$ の冪等性）〔agent: `m_6_5_Red_idem`〕
-      - 🤖 命題（$\textrm{Red}$ と $\textrm{Pred}$ の可換性）〔agent: `m_6_5_Red_Pred`〕
-      - 🤖 命題（$\textrm{Red}$ と基本列の可換性）〔agent: `m_6_5_Red_oper`、最難・入れ子帰納〕
-      - 🤖 命題（$\textrm{Red}$ が許容性を保つこと）〔agent worktree green (genuine modular, Red_le 待ち): `m_6_5_Red_adm`〕
-      - 🤖 系（許容化の $\textrm{Red}$ 不変性）〔agent worktree green: `m_6_5_admof_Red`〕
-      - 🤖 系（$\textrm{Red}$ が基点を保つこと）〔agent worktree green: `m_6_5_Red_marked`〕
+      - 🚨 系（$\textrm{Red}$ が零項性を保つこと）〔`m_6_5_Red_zeroT`。**T_PS で真**〕
+      - 🚫 系（直系先祖の $\textrm{Red}$ 不変性）〔**keystone**: `m_6_5_Red_le`。**T_PS で偽**(反例 `(0,0)(0,1)`)→先祖係留切片で真(保留中)。A4〕
+      - 🚫 系（$\textrm{Red}$ が単項性を保つこと）〔`m_6_5_Red_monoT`。T_PS で偽 → 係留切片で真(保留中)。A4〕
+      - 🚫 系（$P$ の $\textrm{Red}$ 同変性）〔`m_6_5_P_Red`。T_PS で偽 → 係留切片で真(保留中)。A4〕
+      - 🚨 命題（単項性と $\textrm{Red}$ の関係）〔`m_6_5_monoT_Red`、前提 $PT_{\textrm{PS}}$（[19][20]死枝）〕
+      - 🚫 命題（$\textrm{Red}$ の冪等性）〔`m_6_5_Red_idem`。T_PS で偽(反例 `(0,0)(0,2)`) → 係留切片で真(保留中)。A4〕
+      - 🚨 命題（$\textrm{Red}$ と $\textrm{Pred}$ の可換性）〔`m_6_5_Red_Pred`。**T_PS で真**〕
+      - 🚫 命題（$\textrm{Red}$ と基本列の可換性）〔`m_6_5_Red_oper`。T_PS で偽 → 係留切片で真(保留中)。A4〕
+      - 🚫 命題（$\textrm{Red}$ が許容性を保つこと）〔`m_6_5_Red_adm`。T_PS で偽(反例 `(0,0)(0,1)(0,2)`) → 係留切片で真(保留中)。A4〕
+      - 🚫 系（許容化の $\textrm{Red}$ 不変性）〔`m_6_5_admof_Red`。T_PS で偽 → 係留切片で真(保留中)。A4〕
+      - 🚫 系（$\textrm{Red}$ が基点を保つこと）〔`m_6_5_Red_marked`。T_PS で偽(反例 `(0,0)(0,1)(1,2)`) → 係留切片で真(保留中)。A4〕
     - 🚨 §6.6 簡約性
       - 🚨 命題（簡約性の切片への遺伝性）
       - 🚨 命題（$P$ が簡約性を保つこと）
