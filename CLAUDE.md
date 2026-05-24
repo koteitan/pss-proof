@@ -101,6 +101,12 @@ Import chain: `pss_defs` ← `pss_paper` ← `pss_mechanized`.
 - For parallel proving with agents, use worktree isolation (independent heaps).
   After integrating, remove the worktree AND delete its branch with
   `git branch -D worktree-agent-<id>`.
+- **Spawning or working as a sub-agent? Read and follow
+  [agent-workflow.md](agent-workflow.md)** — the parent/sub-agent rules
+  (one self-contained lemma, no circular/false-axiom citation, empirical
+  truth-check, blocker-first reporting, parent-builds-at-merge). It exists
+  because aggressive fan-out produced circular false proofs and multi-hour
+  stalls.
 
 ## Design documents (`docs/`)
 
