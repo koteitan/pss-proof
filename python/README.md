@@ -11,9 +11,12 @@
 
 | file | 役割 |
 |---|---|
-| `red_model.py` | **コア**。`pss_defs.thy` の忠実移植：`entry`/`Lng`、`nextrel0/1`・`le0/le1/leR`、`zeroT`/`monoT`/`multiT`、`Pcut`/`P`、`TrMax`/`Br`/`FirstNodes`/`Joints`、`diagSeq`/`IncrFirst`、`oper`(M[n])、`Pred`、`Red`。補助：`reduced`(=RT_PS)、`is_standard`(yaBMS 経由)、`red_le_holds`、`Red_trace`(再帰引数を記録)、`fmt` |
-| `red_audit.py` | §6.5/§6.6 の各命題を全 `T_PS`(Lng≤4,成分≤2) で検証し、偽な命題を最小反例つきで列挙 |
-| `red_anchor2.py` | `Red_le` 等5命題を**先祖係留切片**(`le0(S,a,b)` の `seg(S,a,b)`) で検証（標準形ソース／簡約+単項ソース） |
+| `red_model.py` | **コア**。`pss_defs.thy` の忠実移植：`entry`/`Lng`、`nextrel0/1`・`le0/le1/leR`、`zeroT`/`monoT`/`multiT`、`Pcut`/`P`、`TrMax`/`Br`/`FirstNodes`/`Joints`、`diagSeq`/`IncrFirst`、`oper`(M[n])、`Pred`、`Red`、`nadm`/`adm`/`AdmSet`/`Adm`/`marked`。補助：`reduced`(=RT_PS)、`is_standard`(yaBMS 経由)、`red_le_holds`、`Red_trace`(再帰引数を記録)、`fmt` |
+| `red_audit.py` | §6.5 の各命題を全 `T_PS`(Lng≤4,成分≤2) で検証し、偽な命題を最小反例つきで列挙 |
+| `red_adm_audit.py` | `Red_adm`/`admof_Red`/`Red_marked`(adm系) を T_PS・係留切片で検証 |
+| `red_66_audit.py` | §6.6 命題(reduced_slice/P_reduced/reduced_oper/reduced_iff_cond/Red_leftend_1) を T_PS で検証 |
+| `red_67_audit.py` | §6.7 標準形閉性(P成分/前切片/係留切片の Br降順) を列挙標準形で検証 |
+| `red_anchor2.py` | `Red_le` 等を**先祖係留切片**(`le0(S,a,b)` の `seg(S,a,b)`) で検証（標準形ソース／簡約+単項ソース） |
 | `red_domain.py` | 成立域候補（標準形/簡約済の切片、行0シフト同一視）の sound 性・閉包性を比較 |
 | `red_charac.py` | `RedCondA`/`RedCondB`(=簡約性) による `Red_le` の特徴付け |
 | `red_mono.py` | `Red_le` 失敗を zero/mono/multi 別に集計 |
@@ -45,6 +48,11 @@ yaBMS を使わないスクリプト（`red_anchor2.py` の標準形は対角線
 - 一方これらは **「標準形（または簡約+単項）の先祖係留切片」`(0,a)≤_M(0,b)`**
   上では成立（検証範囲で失敗ゼロ）。これは §7 が実際に Red 系を適用する `N` の類
   （命題1422 の前提）と一致。詳細は [`../docs/red-le-domain.md`](../docs/red-le-domain.md)。
+- adm 系 `Red_adm`/`admof_Red`/`Red_marked` も同様に T_PS で偽・係留切片で真（計 **8 系**、A4）。
+- 論文 §6.6 **`reduced_slice`（簡約性の切片への遺伝性）も T_PS で偽**（標準形 `(0,0)(1,1)(1,0)`
+  の切片 `(1,1)(1,0)`）。前提 `j'_0≤TrMax` → `j'_0=0` に補正（correction **A5**）。
+- §6.6 の他（P_reduced/reduced_oper/reduced_iff_cond/Red_leftend_1）と §6.7/§6.8（標準形の閉性・
+  降順性）は **T_PS/標準形で真**（誤りなし）。
 
 ## 限界
 
