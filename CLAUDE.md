@@ -5,7 +5,7 @@ system (ペア数列システム). The source is P進大好きbot's article "ペ
 (Termination of the pair sequence system) on the Googology Wiki. This file is a
 working guide for contributors (human and Claude alike). For the overall picture
 see [README.md](README.md); for progress see [task.md](task.md); for proposed
-corrections to the source see [amendments.md](amendments.md).
+corrections to the source see [corrections.md](corrections.md).
 
 ## Build
 
@@ -50,7 +50,7 @@ Import chain: `pss_defs` ← `pss_paper` ← `pss_mechanized`.
   transitive closure) are not verbatim, so a **faithfulness lemma** (in the
   忠実性補題 section of `pss_mechanized.thy`) shows they coincide with the
   article's literal definition.
-- Collect typos/corrections to the source in `amendments.md`, as edits to the
+- Collect typos/corrections to the source in `corrections.md`, as edits to the
   HTML(LaTeX) source (for author feedback). Reference them by id (A1, A2, …)
   from the code and `task.md`.
 

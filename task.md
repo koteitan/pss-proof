@@ -14,7 +14,7 @@
     - ✅ §5.3 基本列
       - ✅ 命題（$\textrm{Pred}$ が $[1]$ で表されること）
     - ✅ §5.4 ペア数列システム
-      - ✅ 命題（$F_M$ と基本列の関係）〔原文訂正: amendments.md A1〕
+      - ✅ 命題（$F_M$ と基本列の関係）〔原文訂正: corrections.md A1〕
   - 🚨 §6 ペア数列の基本性質
     - ✅ §6.1 最上行のインクリメント
       - ✅ 命題（$\leq_M$ の $\textrm{IncrFirst}$ 不変性）
@@ -37,7 +37,7 @@
       - ✅ 命題（$P$ の各成分の左端の単調性）
       - ✅ 命題（切片の単項成分と $<_M^{\textrm{Next}}$ の関係）
       - ✅ 命題（$\textrm{FirstNodes}$ と $\textrm{TrMax}$ と $\textrm{Joints}$ の関係）
-      - ✅ 系（$\textrm{FirstNodes}$ と $\textrm{Joints}$ の単調性）〔(1)(2)(3) 証明済。(4) 厳密減少は**偽**（反例 `(0,0)(1,1)(2,1)(3,1)(2,0)`、標準形、joint 一致）→ amendment A3 で paper を (1)(2)(3) に訂正〕
+      - ✅ 系（$\textrm{FirstNodes}$ と $\textrm{Joints}$ の単調性）〔(1)(2)(3) 証明済。(4) 厳密減少は**偽**（反例 `(0,0)(1,1)(2,1)(3,1)(2,0)`、標準形、joint 一致）→ correction A3 で paper を (1)(2)(3) に訂正〕
       - ✅ 系（単項性の切片への遺伝性）
     - 🚨 §6.5 簡約化
       - ✅ 命題（$\textrm{Red}$ の well-defined 性）〔`m_6_5_Red_welldef`: 測度 ν での整礎帰納＋`Red.domintros`。基礎補題群(diagSeq・`Lng_Br_le`・`TrMax_diagSeq_append_ge`・`coreReduce`/`betaM`・`coreReduce_nonmulti`・`NJ_nonmulti`・`nu`/`muMono`・per-case descent)を経て完成。設計 docs/red-termination.md〕

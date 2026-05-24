@@ -551,7 +551,7 @@ qed
 section \<open>§5.4 ペア数列システム\<close>
 
 text \<open>
-  m: 命題（F_M と基本列の関係）— corrected form (see @{file "amendments.md"} A1).
+  m: 命題（F_M と基本列の関係）— corrected form (see @{file "corrections.md"} A1).
   Discharges @{thm [source] p_5_4_F_oper_dom}.  Immediate from the inductive
   definition of @{const Fdom}: with \<open>Lng M > 1\<close> only @{thm [source] Fdom.Fdom_step}
   applies.
@@ -3946,7 +3946,7 @@ qed
 
 text \<open>m: 系（\<open>FirstNodes\<close>と\<open>Joints\<close>の単調性） — discharges the corrected
   @{thm [source] p_6_4_FirstNodes_Joints_mono} (parts (1)(2)(3); the article's
-  strict part (4) is false, amendment A3).  Identical to
+  strict part (4) is false, correction A3).  Identical to
   @{thm [source] m_6_4_FirstNodes_Joints_mono_aux}.\<close>
 
 lemma m_6_4_FirstNodes_Joints_mono:
