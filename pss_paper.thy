@@ -448,10 +448,13 @@ lemma p_6_5_Red_marked:
 subsection \<open>§6.6 簡約性\<close>
 
 text \<open>命題（簡約性の切片への遺伝性） — a reduced sequence restricts to a reduced
-  slice across the trunk end.\<close>
+  initial slice (from the trunk root) across the trunk end.
+  CORRECTION A5: the article's premise \<open>j0' \<le> TrMax M\<close> is too weak (false for
+  e.g. the standard reduced M = (0,0)(1,1)(1,0), slice (M\<^sub>j)\<^bsub>j=1\<^esub>\<^bsup>2\<^esup>); corrected to
+  \<open>j0' = 0\<close> (empirically sound, python/red_66_audit.py).  Final premise pending.\<close>
 
 lemma p_6_6_reduced_slice:
-  assumes "M \<in> RT_PS" "j0' \<le> TrMax M" "TrMax M \<le> j1'" "j1' \<le> Lng M - 1"
+  assumes "M \<in> RT_PS" "j0' = 0" "TrMax M \<le> j1'" "j1' \<le> Lng M - 1"  \<comment> \<open>A5: was \<open>j0' \<le> TrMax M\<close>\<close>
   shows "seg M j0' j1' \<in> RT_PS"
   sorry
 
