@@ -1,6 +1,7 @@
 # 進捗管理
 
 凡例: 未証明🚨 / 証明済✅ / 証明不可🚫 / 作業中🤖
+（🚫=論文の言明が真に偽で訂正不能のもの。論文の言明が偽でも定義域を訂正すれば真になるものは 🚨＋〔correction Ax〕で示す＝訂正版は未証明。）
 
 数式は MathJax 記法（`$...$`）で書く。
 
@@ -47,18 +48,18 @@
       - 🤖 命題（$\textrm{Red}$ の $\textrm{IncrFirst}$ 不変性）〔`m_6_5_Red_IncrFirst`。**T_PS で真**。A2 が genuine 証明済(2222行)だが base 分岐→現 main へ移植 agent 作業中〕
       - ✅ 命題（$\textrm{Lng}$ の $\textrm{Red}$ 不変性）〔`m_6_5_Lng_Red`、§6.5 下流の linchpin〕
       - 🚨 系（$\textrm{Red}$ が零項性を保つこと）〔`m_6_5_Red_zeroT`。**T_PS で真**〕
-      - 🚫 系（直系先祖の $\textrm{Red}$ 不変性）〔**keystone**: `m_6_5_Red_le`。**T_PS で偽**(反例 `(0,0)(0,1)`)→先祖係留切片で真(保留中)。A4〕
-      - 🚫 系（$\textrm{Red}$ が単項性を保つこと）〔`m_6_5_Red_monoT`。T_PS で偽 → 係留切片で真(保留中)。A4〕
-      - 🚫 系（$P$ の $\textrm{Red}$ 同変性）〔`m_6_5_P_Red`。T_PS で偽 → 係留切片で真(保留中)。A4〕
+      - 🚨 系（直系先祖の $\textrm{Red}$ 不変性）〔**keystone**: `m_6_5_Red_le`。**T_PS で偽**(反例 `(0,0)(0,1)`)→先祖係留切片で真(保留中)。A4〕
+      - 🚨 系（$\textrm{Red}$ が単項性を保つこと）〔`m_6_5_Red_monoT`。T_PS で偽 → 係留切片で真(保留中)。A4〕
+      - 🚨 系（$P$ の $\textrm{Red}$ 同変性）〔`m_6_5_P_Red`。T_PS で偽 → 係留切片で真(保留中)。A4〕
       - 🚨 命題（単項性と $\textrm{Red}$ の関係）〔`m_6_5_monoT_Red`、前提 $PT_{\textrm{PS}}$（[19][20]死枝）〕
-      - 🚫 命題（$\textrm{Red}$ の冪等性）〔`m_6_5_Red_idem`。T_PS で偽(反例 `(0,0)(0,2)`) → 係留切片で真(保留中)。A4〕
+      - 🚨 命題（$\textrm{Red}$ の冪等性）〔`m_6_5_Red_idem`。T_PS で偽(反例 `(0,0)(0,2)`) → 係留切片で真(保留中)。A4〕
       - 🚨 命題（$\textrm{Red}$ と $\textrm{Pred}$ の可換性）〔`m_6_5_Red_Pred`。**T_PS で真**〕
-      - 🚫 命題（$\textrm{Red}$ と基本列の可換性）〔`m_6_5_Red_oper`。T_PS で偽 → 係留切片で真(保留中)。A4〕
-      - 🚫 命題（$\textrm{Red}$ が許容性を保つこと）〔`m_6_5_Red_adm`。T_PS で偽(反例 `(0,0)(0,1)(0,2)`) → 係留切片で真(保留中)。A4〕
-      - 🚫 系（許容化の $\textrm{Red}$ 不変性）〔`m_6_5_admof_Red`。T_PS で偽 → 係留切片で真(保留中)。A4〕
-      - 🚫 系（$\textrm{Red}$ が基点を保つこと）〔`m_6_5_Red_marked`。T_PS で偽(反例 `(0,0)(0,1)(1,2)`) → 係留切片で真(保留中)。A4〕
+      - 🚨 命題（$\textrm{Red}$ と基本列の可換性）〔`m_6_5_Red_oper`。T_PS で偽 → 係留切片で真(保留中)。A4〕
+      - 🚨 命題（$\textrm{Red}$ が許容性を保つこと）〔`m_6_5_Red_adm`。T_PS で偽(反例 `(0,0)(0,1)(0,2)`) → 係留切片で真(保留中)。A4〕
+      - 🚨 系（許容化の $\textrm{Red}$ 不変性）〔`m_6_5_admof_Red`。T_PS で偽 → 係留切片で真(保留中)。A4〕
+      - 🚨 系（$\textrm{Red}$ が基点を保つこと）〔`m_6_5_Red_marked`。T_PS で偽(反例 `(0,0)(0,1)(1,2)`) → 係留切片で真(保留中)。A4〕
     - 🚨 §6.6 簡約性 〔経験的監査 `python/red_66_audit.py`: 下記の通り大半 T_PS で真〕
-      - 🚫 命題（簡約性の切片への遺伝性）〔`p_6_6_reduced_slice`。article 前提 $j'_0\le\textrm{TrMax}$ は**偽**(反例 標準形 `(0,0)(1,1)(1,0)`)→ $j'_0=0$ に補正済(保留中)。**correction A5**〕
+      - 🚨 命題（簡約性の切片への遺伝性）〔`p_6_6_reduced_slice`。article 前提 $j'_0\le\textrm{TrMax}$ は**偽**(反例 標準形 `(0,0)(1,1)(1,0)`)→ $j'_0=0$ に補正済(保留中)。**correction A5**〕
       - 🚨 命題（$P$ が簡約性を保つこと）〔`p_6_6_P_reduced`。**T_PS で真**〕
       - 🚨 命題（簡約性が基本列で保たれること）〔`p_6_6_reduced_oper`。**T_PS で真**〕
       - 🚨 命題（簡約性と係数の関係）〔`p_6_6_reduced_iff_cond`: 簡約 ⟺ 条件A∧B。**T_PS で真**〕
