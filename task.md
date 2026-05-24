@@ -11,7 +11,8 @@
 | ✅ agent `a8c0…` | `m_6_7_ST_eq_Union_SkT`（`ST_PS=⋃SkT_PS`） | **統合済（緑）** |
 | ✅ agent `acf1…` | `m_6_6_Red_leftend_1`（Red が行1左端固定） | **統合済（緑）** |
 | ✅ agent `abba09…` | `m_6_7_standard_prefix`（標準形の始切片遺伝＋helper `ST_PS_T_PS`） | **統合済（緑）** |
-| 🤖 agent `af1e…` | `m_6_7_standard_P_components`（標準形の P 成分） | 稼働中 |
+| 🤖 agent `a97a…` | `m_6_6_condAB_coeff` 再挑戦（現ベース＋foreground build、a7d9 partial 活用） | 稼働中 |
+| 🚨 agent `af1e…`(停止) | `m_6_7_standard_P_components` | **ブロッカー報告**: 原文命題=`S_kT_PS`(同ランク)だが原文証明は`S_{k-1}`しか示さず(原文内部ギャップ)。経験的に S_k も小範囲で真。**ユーザ決定=(β) S_k のまま hard 証明に挑む**(次の親タスク)。proof 無しなので worktree 破棄可 |
 | 🚨 agent `a7d9…`(停止) | `m_6_6_condAB_coeff`（§6.6 条件A/Bと係数、3部構成・最難） | **未完**（経験的に真(455件)。helper と part3 に複数の未閉 by。partial は worktree agent-a7d9 に保存・base 古い b6da51b。原因は予算でなく async build yield＋難所。要 focused 再挑戦） |
 | 👤 親セッション（私） | team 統合（1つずつ緑ビルド確認）＋次の独立補題選定 | — |
 
@@ -95,7 +96,7 @@ reducedness クラスタ（reduced_iff_cond/P_reduced/reduced_oper/reduced_slice
     - 🚨 §6.7 標準形
       - ✅ 命題（標準形の階層和による表示）〔`m_6_7_ST_eq_Union_SkT`: `ST_PS = ⋃k SkT_PS k`。純帰納的集合等式、Red 非依存。agent a8c0 由来、統合済〕
       - 🚨 命題（標準形の簡約性）
-      - 🚨 命題（標準形の単項成分が標準形であること）
+      - 🚨🚧 命題（標準形の単項成分が標準形であること）〔`p_6_7_standard_P_components`: `M∈SkT_PS k ⟹ P成分∈SkT_PS k`(同ランク)。**原文(content.md 1366)は S_k を主張するが原文証明(1386,1392)は S_{k-1} しか示さない＝原文内部ギャップ**。経験的に S_k も小範囲で真。**決定=(β) S_k のまま証明**(article 証明が足りない hard ケース)。用途上は ST_PS 和集合版で足りる(S_{k-1}⊆ST_PS via m_6_7_ST_eq_Union_SkT)〕
       - ✅ 命題（標準形の始切片への遺伝性）〔`m_6_7_standard_prefix`: `seg M 0 j' ∈ ST_PS`。ST_PS 帰納＋`less_induct`、`_[1]=Pred` で短縮。helper `ST_PS_T_PS`(ST_PS⊆T_PS) も証明。agent abba09 由来、統合済〕
     - 🚨 §6.8 降順性
       - 🚨 命題（標準形の切片と $\textrm{Br}$ の降順性の関係）
