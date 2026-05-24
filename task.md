@@ -43,10 +43,10 @@
       - ✅ 命題（$\textrm{Red}$ の well-defined 性）〔`m_6_5_Red_welldef`: 測度 ν での整礎帰納＋`Red.domintros`。基礎補題群(diagSeq・`Lng_Br_le`・`TrMax_diagSeq_append_ge`・`coreReduce`/`betaM`・`coreReduce_nonmulti`・`NJ_nonmulti`・`nu`/`muMono`・per-case descent)を経て完成。設計 docs/red-termination.md〕
       - 🤖 命題（$\textrm{Red}$ の $\textrm{IncrFirst}$ 不変性）〔agent 作業中: `m_6_5_Red_IncrFirst`〕
       - 🤖 命題（$\textrm{Lng}$ の $\textrm{Red}$ 不変性）〔agent 作業中: `m_6_5_Lng_Red`、§6.5 下流の linchpin〕
-      - 🚨 系（$\textrm{Red}$ が零項性を保つこと）
-      - 🚨 系（直系先祖の $\textrm{Red}$ 不変性）
-      - 🚨 系（$\textrm{Red}$ が単項性を保つこと）
-      - 🚨 系（$P$ の $\textrm{Red}$ 同変性）
+      - 🤖 系（$\textrm{Red}$ が零項性を保つこと）〔agent: `m_6_5_Red_zeroT`〕
+      - 🤖 系（直系先祖の $\textrm{Red}$ 不変性）〔agent: `m_6_5_Red_le`〕
+      - 🤖 系（$\textrm{Red}$ が単項性を保つこと）〔agent: `m_6_5_Red_monoT`〕
+      - 🤖 系（$P$ の $\textrm{Red}$ 同変性）〔agent: `m_6_5_P_Red`〕
       - 🚨 命題（単項性と $\textrm{Red}$ の関係）
       - 🚨 命題（$\textrm{Red}$ の冪等性）
       - 🚨 命題（$\textrm{Red}$ と $\textrm{Pred}$ の可換性）
