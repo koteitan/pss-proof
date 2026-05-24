@@ -91,45 +91,25 @@ $(M_j)_{j=j'_0}^{j'_1} = \textrm{IncrFirst}^{M_{0,j'_0} - M_{1,j'_0}}(N)$
 
 (4) 任意の $i \in \{0,1\}$ に対し $M_{i,\textrm{Joints}(M)_{J'_0}} > M_{i,\textrm{Joints}(M)_{J'_1}}$ である。
 
-証明：（2）と（4）は $\textrm{FirstNodes}$ と $\textrm{TrMax}$ と $\textrm{Joints}$ の関係と（3）から即座に従う。
+**問題点**
 
-**問題点（主張 (4) は偽）**
-
-主張 (4) は**狭義不等号** ($>$) だが、複数の枝が幹上の**同一の joint に接続**し得るため、
-一般の $M \in PT_{\textrm{PS}}$ で成り立たない。反例（**標準形 $ST_{\textrm{PS}}$ かつ単項**、
-`yaBMS` の `bms -s` で標準形と確認済）:
+(4) は狭義不等号だが、複数の枝が同一の joint に接続し得るため偽。反例:
 
 $$M = (0,0)(1,1)(2,1)(3,1)(2,0)$$
 
-- $\textrm{TrMax}(M) = 1$（幹 = 索引 0,1）
-- $\textrm{Br}(M) = [\,(2,1)(3,1),\ (2,0)\,]$（枝2本）
-- $\textrm{FirstNodes}(M) = [2,4]$、$\textrm{Joints}(M) = [1,1]$（**両枝とも索引1で接続**）
-- よって $J'_0=0 < J'_1=1$ で $M_{i,\textrm{Joints}_0} = M_{i,\textrm{Joints}_1} = M_{i,1}$ となり、
-  $i\in\{0,1\}$ 両方で $M_{i,\textrm{Joints}_0} > M_{i,\textrm{Joints}_1}$（$1>1$）は**偽**。
+- $\textrm{TrMax}(M) = 1$、$\textrm{Br}(M) = [\,(2,1)(3,1),\ (2,0)\,]$
+- $\textrm{FirstNodes}(M) = [2,4]$、$\textrm{Joints}(M) = [1,1]$
+- $J'_0=0 < J'_1=1$ で $M_{i,\textrm{Joints}_0} = M_{i,\textrm{Joints}_1} = M_{i,1}$ なので (4) ($1>1$) は偽。
 
-証明文の「(3) から即座に従う」は、(3) が**弱い不等号** ($\geq$、$P$ の各成分の左端の
-単調性 = 左端極小性経由で等号を許す) であるのに (4) で狭義性を主張しており、joint が
-一致する一手を見落としている。標準形のペア数列を多数調べたところ、単項かつ枝2本以上の
-ものの中に part (4) 違反が多数あり（いずれも joint 一致パターン）、上の最小反例はその一例。
-
-なお上の反例は**簡約 $RT_{\textrm{PS}}$（条件(A)∧(B)を満たす）かつ標準形かつ $\textrm{Br}$ 降順**
-でもある（機械的に確認）。すなわち (4) は下流が実際に扱う最深ドメインでも偽。
-
-**(4) は下流で未使用 ⇒ 停止性証明に波及なし**
-
-(4) の狭義不等号は本文のどこでも使われていない。下流（§6.5 以降、$RT_{\textrm{PS}}$ /
-標準形 / 降順の文脈）が joint について用いるのは、(2) の**弱い** $\geq$、index 関係
-$\textrm{Joints}_J \leq \textrm{TrMax} < \textrm{FirstNodes}_J$、そして**条件(A)**
-$M_{0,\textrm{Joints}_J}+1 = M_{0,\textrm{FirstNodes}_J}$（簡約列で成立、`content.md` line 3350
-で明示使用）と $\textrm{Br}$ 降順性のみで、いずれも弱い $\leq/\geq$ の導出に閉じる。
-よって (4) は load-bearing でない冗長な記述。
+この $M$ は標準形・単項・簡約・$\textrm{Br}$ 降順（機械的に確認）。(3) は弱い不等号 ($\geq$) のため
+(4) の狭義性は従わない。(4) は本文で未使用（下流は (2) の $\geq$、$\textrm{Joints}_J \leq \textrm{TrMax} < \textrm{FirstNodes}_J$、
+条件(A) $M_{0,\textrm{Joints}_J}+1 = M_{0,\textrm{FirstNodes}_J}$、$\textrm{Br}$ 降順のみを用いる）。
 
 **訂正案**
 
-(4) を削除する（(1)(2)(3) のみ残す）。狭義性が必要な箇所は存在しないため、追加仮定は不要。
+(4) を削除（(1)(2)(3) のみ残す）。
 
 **形式化での扱い**
 
-`pss_paper.thy` の `p_6_4_FirstNodes_Joints_mono` を主張 (1)(2)(3) のみに弱め、既証明
-`m_6_4_FirstNodes_Joints_mono_aux` を呼ぶ `m_6_4_FirstNodes_Joints_mono` で discharge。
-主張 (4) は本 amendment の誤りとして除外。下流（§6.5 `Red` 等）では (4) を未使用のため波及なし。
+`pss_paper.thy` の `p_6_4_FirstNodes_Joints_mono` を (1)(2)(3) のみに弱め、
+`m_6_4_FirstNodes_Joints_mono`（= 既証明 `m_6_4_FirstNodes_Joints_mono_aux`）で discharge。
