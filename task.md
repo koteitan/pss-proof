@@ -9,7 +9,7 @@
 | actor | ターゲット | 状態 |
 |---|---|---|
 | 🤖 agent `a7d9…` | `m_6_6_condAB_coeff`（§6.6 条件A/Bと係数、組合せ的・Red非依存） | 稼働中 |
-| 🤖 agent `a8c0…` | `m_6_7_ST_eq_Union_SkT`（`ST_PS=⋃SkT_PS`、純帰納的集合等式） | 稼働中 |
+| ✅ agent `a8c0…` | `m_6_7_ST_eq_Union_SkT`（`ST_PS=⋃SkT_PS`、純帰納的集合等式） | **完了・統合済（緑確認）** |
 | 🤖 agent `acf1…` | `m_6_6_Red_leftend_1`（Red が行1左端固定、検証済真） | 稼働中 |
 | 👤 親セッション（私） | team 統合（1つずつ緑ビルド確認）＋次の独立補題選定 | — |
 
@@ -91,6 +91,7 @@ reducedness クラスタ（reduced_iff_cond/P_reduced/reduced_oper/reduced_slice
       - 🚨 系（直系先祖による切片と $\textrm{Red}$ と $\textrm{IncrFirst}$ の関係）
       - 🚨 系（$1$ 列ペア数列の基本性質）
     - 🚨 §6.7 標準形
+      - ✅ 命題（標準形の階層和による表示）〔`m_6_7_ST_eq_Union_SkT`: `ST_PS = ⋃k SkT_PS k`。純帰納的集合等式、Red 非依存。agent a8c0 由来、統合済〕
       - 🚨 命題（標準形の簡約性）
       - 🚨 命題（標準形の単項成分が標準形であること）
       - 🚨 命題（標準形の始切片への遺伝性）
