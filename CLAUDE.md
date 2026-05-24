@@ -69,6 +69,15 @@ Import chain: `pss_defs` ← `pss_paper` ← `pss_mechanized`.
   `Suc(b-a)=Suc b-a`; use `simp ... del: upt_Suc`.
 - **`Least`/`THE` higher-order unifiers**: multiple unifiers → instantiate
   explicitly, e.g. `Least_le[where P="λj. ...", OF wit]`.
+- **Collapsing `if (A ∧ B) …` from a negated hypothesis** (e.g. after
+  `subst P.simps` in the `P.simps[simp del]` region): `simp` rewrites a chained
+  `¬(A ∧ B)` by de Morgan to `A ⟶ ¬B`, which no longer collapses the `if`, so
+  it splits into spurious `(A∧B) ⟶ …` goals. Use `(rule if_not_P[OF nc])` with
+  `nc : ¬(A ∧ B)` instead of `simp`.
+- **`P.induct` on a goal with a meta-premise** mentioning the recursion variable
+  (e.g. `M ≠ [] ⟹ …`) breaks the `case`/`.IH` structure. State the premise as
+  an object implication (`M ≠ [] ⟶ …`), induct, then `… using assms by blast`.
+  The IH is referenced **quoted**: `"1.IH"[OF <recursion-cond>]`.
 - **`length_greater_0_conv[symmetric]` in the simpset loops** → use `cases`.
 
 ## Reusable helpers (in `pss_mechanized.thy`; grep for them)
