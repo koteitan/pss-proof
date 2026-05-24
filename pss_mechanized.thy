@@ -5159,5 +5159,100 @@ proof -
   thus ?thesis using monoT_shiftRow0[OF M mono] by simp
 qed
 
+text \<open>Entry of \<open>diagSeq 0 k @ rest\<close> on the \<open>rest\<close> part (index \<open>Suc k + a\<close>).\<close>
+
+lemma entry_diagSeq_append_hi:
+  assumes "a < Lng rest"
+  shows "entry (diagSeq 0 k @ rest) p (Suc k + a) = entry rest p a"
+proof -
+  have "(diagSeq 0 k @ rest) ! (Suc k + a) = rest ! a" by (simp add: nth_append)
+  thus ?thesis by (simp add: entry_def)
+qed
+
+lemma monoT_funpow_IncrFirst[simp]: "monoT ((IncrFirst ^^ k) M) = monoT M"
+  by (induction k) (simp_all add: IncrFirst_monoT_eq)
+
+text \<open>If a mono \<open>rest\<close> starts strictly above the diagonal in row 0, prepending the
+  diagonal \<open>diagSeq 0 k\<close> keeps it mono: row 0 is \<open>> 0\<close> at every index after \<open>0\<close>,
+  so @{thm [source] le0_build} gives \<open>(0,0) \<le>\<^bsub>M\<^esub> (0, Lng-1)\<close>.  This is the
+  row-0 analogue of @{thm [source] TrMax_diagSeq_append_ge}; it discharges the
+  \<open>m\<^sub>1\<^sub>0 > 0\<close> case of "coreReduce is mono".\<close>
+
+lemma monoT_diagSeq_append:
+  assumes ne: "rest \<noteq> []" and rmono: "monoT rest" and rTPS: "rest \<in> T_PS"
+    and r0: "k < entry rest 0 0"
+  shows "monoT (diagSeq 0 k @ rest)"
+proof -
+  let ?M = "diagSeq 0 k @ rest"
+  have lenr: "0 < Lng rest" using ne by (cases rest) auto
+  have lenM: "Lng ?M = Suc k + Lng rest" by simp
+  have MTPS: "?M \<in> T_PS" using ne by (simp add: T_PS_def)
+  have e00: "entry ?M 0 0 = 0" using entry_diagSeq_append_lo[where i=0 and k=k and rest=rest] by simp
+  have key: "\<And>j. 0 < j \<Longrightarrow> j \<le> Lng ?M - 1 \<Longrightarrow> 0 < entry ?M 0 j"
+  proof -
+    fix j assume j0: "0 < j" and jle: "j \<le> Lng ?M - 1"
+    show "0 < entry ?M 0 j"
+    proof (cases "j \<le> k")
+      case True
+      hence "entry ?M 0 j = j" by (rule entry_diagSeq_append_lo)
+      thus ?thesis using j0 by simp
+    next
+      case False
+      hence kj: "k < j" by simp
+      let ?a = "j - Suc k"
+      have ja: "j = Suc k + ?a" using kj by simp
+      have aL: "?a < Lng rest" using jle lenM kj by linarith
+      have "entry ?M 0 j = entry rest 0 ?a"
+        using ja entry_diagSeq_append_hi[OF aL, where k=k and p=0] by simp
+      moreover have "entry rest 0 0 \<le> entry rest 0 ?a"
+        using entry0_ge_min[OF rTPS rmono aL] .
+      ultimately show ?thesis using r0 by simp
+    qed
+  qed
+  have j1lt: "Lng ?M - 1 < Lng ?M" using lenM lenr by simp
+  have j0lt: "(0::nat) < Lng ?M - 1" using lenM lenr by simp
+  have "(nextrel0 ?M)\<^sup>*\<^sup>* 0 (Lng ?M - 1)"
+  proof (rule le0_build[OF MTPS j1lt j0lt])
+    show "\<forall>j. 0 < j \<and> j \<le> Lng ?M - 1 \<longrightarrow> entry ?M 0 0 < entry ?M 0 j"
+      using key e00 by simp
+  qed
+  hence "le0 ?M 0 (Lng ?M - 1)" using j1lt by (simp add: le0_def)
+  hence "leR ?M 0 0 (Lng ?M - 1)" by (simp add: leR_def)
+  moreover have "\<not> zeroT ?M" using lenM lenr by (simp add: zeroT_def)
+  ultimately show ?thesis by (simp add: monoT_def)
+qed
+
+lemma coreReduce_monoT_m10_pos:
+  assumes M: "M \<in> T_PS" and mono: "monoT M" and pos: "0 < entry M 1 0"
+  shows "monoT (coreReduce M)"
+proof -
+  let ?m = "entry M 1 0"
+  let ?rest = "(IncrFirst ^^ ?m) M"
+  have L0: "0 < Lng M" using M by (cases M) (auto simp: T_PS_def)
+  have cr: "coreReduce M = diagSeq 0 (?m - 1) @ ?rest" using pos by (simp add: coreReduce_def)
+  have lenr: "Lng ?rest = Lng M" by simp
+  have ne: "?rest \<noteq> []" using L0 lenr by (metis length_greater_0_conv)
+  have rTPS: "?rest \<in> T_PS" using ne by (simp add: T_PS_def)
+  have rmono: "monoT ?rest" using mono by simp
+  have "entry ?rest 0 0 = entry M 0 0 + ?m" by (rule entry_funpow_IncrFirst0[OF L0])
+  hence r0: "?m - 1 < entry ?rest 0 0" using pos by simp
+  show ?thesis using cr monoT_diagSeq_append[OF ne rmono rTPS r0] by simp
+qed
+
+text \<open>m: \<open>coreReduce M\<close> is non-multi (mono) for any non-core mono \<open>M\<close> — the
+  case-3/4 obligation that makes the global measure \<open>\<nu>\<close> well-behaved.\<close>
+
+lemma coreReduce_nonmulti:
+  assumes M: "M \<in> T_PS" and mono: "monoT M"
+  shows "\<not> multiT (coreReduce M)"
+proof (cases "entry M 1 0 = 0")
+  case True
+  from coreReduce_monoT_m10_0[OF M mono True] show ?thesis by (simp add: multiT_def)
+next
+  case False
+  hence "0 < entry M 1 0" by simp
+  from coreReduce_monoT_m10_pos[OF M mono this] show ?thesis by (simp add: multiT_def)
+qed
+
 end
 
