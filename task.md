@@ -5,13 +5,18 @@
 （🚫=論文の言明が真に偽で訂正不能のもの。論文の言明が偽でも定義域を訂正すれば真になるものは 🚨＋〔correction Ax〕で示す＝訂正版は未証明。）
 
 ## いまの作業配置 (live, 2026-05-25 更新)
-稼働 agent **0**（全停止）。作業は worktree `agent-adb8…` の `m_6_5_Red_IncrFirst` 移植に集約。
-| actor | 現在地 | 状態 |
+**🚨→✅ 削減フェーズ**: 独立・自己完結な未証明 🚨 を team で並列討伐中（緑 main ベース・ガードレール: 未証明 p_* 引用禁止／経験的真偽確認／相互独立のみ）。
+| actor | ターゲット | 状態 |
 |---|---|---|
-| 👤 親セッション（私） | §6.5 `m_6_5_Red_IncrFirst`（worktree adb8、未commit） | **lexical 11＋証明バグ ~55件 修正**。zeroT/multiT/core/noncore-m10z/**m10>0-trunk まで通過**。`Red_m10pos_unfold`(a2c4由来)統合済。**残り＝m10>0 の死枝[20]**（下記） |
-| （停止）agent `a2c4…` | `Red_m10pos_unfold`（Red M の m10>0 分岐展開補題） | ✅完了・adb8 へ統合済。呪文: `subst Red.psimps[OF dom]`→`simp only: if_not_P[OF …]` 逐次＋`Let_def` |
-| （停止）agent `a4ed…` | `m_6_5_Red_Pred` | 停止。case 6 が**死枝[20]**で頓挫（Red_IncrFirst と同一障壁） |
-| （停止）旧 fan-out worktree 多数 | §6.5 残骸（a335/a9b4/aa98/…偽or未完） | 整理待ち |
+| 🤖 agent `a7d9…` | `m_6_6_condAB_coeff`（§6.6 条件A/Bと係数、組合せ的・Red非依存） | 稼働中 |
+| 🤖 agent `a8c0…` | `m_6_7_ST_eq_Union_SkT`（`ST_PS=⋃SkT_PS`、純帰納的集合等式） | 稼働中 |
+| 🤖 agent `acf1…` | `m_6_6_Red_leftend_1`（Red が行1左端固定、検証済真） | 稼働中 |
+| 👤 親セッション（私） | team 統合（1つずつ緑ビルド確認）＋次の独立補題選定 | — |
+
+reducedness クラスタ（reduced_iff_cond/P_reduced/reduced_oper/reduced_slice/reduced_coeff/oneColumn）は**相互依存＋Red 絡み**で並列化すると循環偽証明リスク → **逐次**で扱う。§7.1+ は命題が `sorry` 未転記なので並列対象外。
+
+### 保留中: m_6_5_Red_IncrFirst（worktree adb8、未commit）
+**lexical 11＋証明バグ ~55件 修正**済、zeroT/multiT/core/noncore-m10z/**m10>0-trunk まで通過**、`Red_m10pos_unfold`(a2c4由来)統合済。**残り＝m10>0 の死枝[20]**（下記）。`Red_Pred`(a4ed,停止) も case 6 が同障壁。
 
 ### 🔴 共通ボトルネック: 死枝[20]
 `seg (Red (coreReduce M)) (entry M 1 0) (Lng(Red(coreReduce M))−1) ∈ PT_PS`（=Red 出力の枝部が単項）。
