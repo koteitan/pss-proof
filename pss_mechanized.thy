@@ -5148,5 +5148,16 @@ proof -
   thus ?thesis using nz by (simp add: monoT_def)
 qed
 
+text \<open>\<open>coreReduce M\<close> is mono (hence non-multi) in the \<open>m\<^sub>1\<^sub>0 = 0\<close> case:
+  there it equals @{const shiftRow0}, which preserves \<open>monoT\<close>.\<close>
+
+lemma coreReduce_monoT_m10_0:
+  assumes M: "M \<in> T_PS" and mono: "monoT M" and z: "entry M 1 0 = 0"
+  shows "monoT (coreReduce M)"
+proof -
+  have "coreReduce M = shiftRow0 M" using z by (simp add: coreReduce_def shiftRow0_def)
+  thus ?thesis using monoT_shiftRow0[OF M mono] by simp
+qed
+
 end
 
