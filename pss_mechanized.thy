@@ -3944,6 +3944,18 @@ proof -
   show ?thesis using part1 part2 part3 by blast
 qed
 
+text \<open>m: 系（\<open>FirstNodes\<close>と\<open>Joints\<close>の単調性） — discharges the corrected
+  @{thm [source] p_6_4_FirstNodes_Joints_mono} (parts (1)(2)(3); the article's
+  strict part (4) is false, amendment A3).  Identical to
+  @{thm [source] m_6_4_FirstNodes_Joints_mono_aux}.\<close>
+
+lemma m_6_4_FirstNodes_Joints_mono:
+  assumes "M \<in> PT_PS" "J0' < J1'" "J1' < Lng (Br M)"
+  shows "FirstNodes M ! J0' \<le> FirstNodes M ! J1'
+       \<and> Joints M ! J0' \<ge> Joints M ! J1'
+       \<and> entry M 0 (FirstNodes M ! J0') \<ge> entry M 0 (FirstNodes M ! J1')"
+  by (rule m_6_4_FirstNodes_Joints_mono_aux[OF assms])
+
 text \<open>The defining property of the trunk: every step below \<open>TrMax M\<close> is a row-1
   \<open><\<^sup>Next\<close>-edge.\<close>
 

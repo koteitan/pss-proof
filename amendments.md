@@ -78,3 +78,49 @@ $(M_j)_{j=j'_0}^{j'_1} = \textrm{IncrFirst}^{M_{0,j'_0} - M_{1,j'_0}}(N)$
 
 `pss_paper.thy` の `p_6_6_ancestor_slice_Red_IncrFirst` を訂正版
 （指数 $\textrm{entry}\,M\,0\,j'_0 - \textrm{entry}\,M\,1\,j'_0$）で記述。
+
+---
+
+## A3. §6.4 系（$\textrm{FirstNodes}$ と $\textrm{Joints}$ の単調性）(4): 偽（反例あり）
+
+**位置**
+- §6.4 幹と枝 / 系（$\textrm{FirstNodes}$ と $\textrm{Joints}$ の単調性）の主張 (4)
+- `content.md` line 791（主張 (4)）、line 793（証明）
+
+**原文**
+
+(4) 任意の $i \in \{0,1\}$ に対し $M_{i,\textrm{Joints}(M)_{J'_0}} > M_{i,\textrm{Joints}(M)_{J'_1}}$ である。
+
+証明：（2）と（4）は $\textrm{FirstNodes}$ と $\textrm{TrMax}$ と $\textrm{Joints}$ の関係と（3）から即座に従う。
+
+**問題点（主張 (4) は偽）**
+
+主張 (4) は**狭義不等号** ($>$) だが、複数の枝が幹上の**同一の joint に接続**し得るため、
+一般の $M \in PT_{\textrm{PS}}$ で成り立たない。反例（**標準形 $ST_{\textrm{PS}}$ かつ単項**、
+`yaBMS` の `bms -s` で標準形と確認済）:
+
+$$M = (0,0)(1,1)(2,1)(3,1)(2,0)$$
+
+- $\textrm{TrMax}(M) = 1$（幹 = 索引 0,1）
+- $\textrm{Br}(M) = [\,(2,1)(3,1),\ (2,0)\,]$（枝2本）
+- $\textrm{FirstNodes}(M) = [2,4]$、$\textrm{Joints}(M) = [1,1]$（**両枝とも索引1で接続**）
+- よって $J'_0=0 < J'_1=1$ で $M_{i,\textrm{Joints}_0} = M_{i,\textrm{Joints}_1} = M_{i,1}$ となり、
+  $i\in\{0,1\}$ 両方で $M_{i,\textrm{Joints}_0} > M_{i,\textrm{Joints}_1}$（$1>1$）は**偽**。
+
+証明文の「(3) から即座に従う」は、(3) が**弱い不等号** ($\geq$、$P$ の各成分の左端の
+単調性 = 左端極小性経由で等号を許す) であるのに (4) で狭義性を主張しており、joint が
+一致する一手を見落としている。標準形のペア数列を多数調べたところ、単項かつ枝2本以上の
+ものの中に part (4) 違反が多数あり（いずれも joint 一致パターン）、上の最小反例はその一例。
+
+**訂正案（候補）**
+
+(4) を成立させるには追加の仮定（例: 連続枝の左端 $M_{0,\textrm{FirstNodes}_J}$ の**狭義**
+減少、または許容性 $\textrm{Adm}$ 由来の joint 相異性）が要る。あるいは (4) を
+**弱い不等号** $\geq$ に直す（(2) と幹の単調性から従う）。下流での (4) の用途を確認の上で
+最小限の修正を選ぶべき（**TODO: `content.md` で (4) 狭義性の下流依存を精査**）。
+
+**形式化での扱い**
+
+`pss_paper.thy` の `p_6_4_FirstNodes_Joints_mono` を主張 (1)(2)(3) のみに弱める
+（既証明 `m_6_4_FirstNodes_Joints_mono_aux` が discharge）。主張 (4) は本 amendment の
+誤りとして除外。下流（§6.5 `Red` 等）では (4) を未使用のため波及なし。

@@ -37,7 +37,7 @@
       - ✅ 命題（$P$ の各成分の左端の単調性）
       - ✅ 命題（切片の単項成分と $<_M^{\textrm{Next}}$ の関係）
       - ✅ 命題（$\textrm{FirstNodes}$ と $\textrm{TrMax}$ と $\textrm{Joints}$ の関係）
-      - 🚨 系（$\textrm{FirstNodes}$ と $\textrm{Joints}$ の単調性）〔(1)(2)(3) 証明済、(4) 厳密減少のみ未〕
+      - ✅ 系（$\textrm{FirstNodes}$ と $\textrm{Joints}$ の単調性）〔(1)(2)(3) 証明済。(4) 厳密減少は**偽**（反例 `(0,0)(1,1)(2,1)(3,1)(2,0)`、標準形、joint 一致）→ amendment A3 で paper を (1)(2)(3) に訂正〕
       - ✅ 系（単項性の切片への遺伝性）
     - 🚨 §6.5 簡約化
       - 🚨 命題（$\textrm{Red}$ の well-defined 性）〔停止性測度の基礎補題群を整備中。証明済: diagSeq 基礎・枝長バウンド(`Lng_Br_le`)・trunk 延長(`TrMax_diagSeq_append_ge`)・IncrFirst の TrMax 不変性・`betaM`/`coreReduce`+`betaM_coreReduce_le`・`P_blocks_nonempty`・row-0 最小性(`monoT_row0_min`)・shift 機構(`monoT_shiftRow0`)・`coreReduce_monoT_m10_0`。残: coreReduce 非multi(m10>0=le0-append)・`N_J∈PT_PS`・測度 ν 定義・per-case descent・`Red_dom` 帰納本体。測度設計は docs/red-termination.md, 詳細は memory pss-red-design〕
