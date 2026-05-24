@@ -5052,5 +5052,101 @@ proof -
   show ?thesis by (rule m_5_1_ancestor_basic_1[OF M j(1) jle le])
 qed
 
+text \<open>The row-0 shift used by \<open>coreReduce\<close> in the \<open>m\<^sub>1\<^sub>0 = 0\<close> case: subtract
+  \<open>M\<^bsub>0,0\<^esub>\<close> from row 0, keep row 1.  For a mono \<open>M\<close> the left end is the row-0
+  minimum (@{thm [source] monoT_row0_min}), so the subtraction is
+  order-preserving and \<open>shiftRow0\<close> stays mono.\<close>
+
+definition shiftRow0 :: "pairseq \<Rightarrow> pairseq" where
+  "shiftRow0 M = map (\<lambda>j. (entry M 0 j - entry M 0 0, entry M 1 j)) [0..<Lng M]"
+
+lemma Lng_shiftRow0[simp]: "Lng (shiftRow0 M) = Lng M"
+  by (simp add: shiftRow0_def)
+
+lemma entry_shiftRow0_0:
+  "j < Lng M \<Longrightarrow> entry (shiftRow0 M) 0 j = entry M 0 j - entry M 0 0"
+  by (simp add: shiftRow0_def entry_def)
+
+lemma entry_shiftRow0_1:
+  "j < Lng M \<Longrightarrow> entry (shiftRow0 M) 1 j = entry M 1 j"
+  by (simp add: shiftRow0_def entry_def)
+
+lemma entry0_ge_min:
+  assumes M: "M \<in> T_PS" and mono: "monoT M" and j: "j < Lng M"
+  shows "entry M 0 0 \<le> entry M 0 j"
+proof (cases "j = 0")
+  case True thus ?thesis by simp
+next
+  case False
+  hence "0 < j" by simp
+  from monoT_row0_min[OF M mono this j] show ?thesis by simp
+qed
+
+lemma nextrel0_shiftRow0_eq:
+  assumes M: "M \<in> T_PS" and mono: "monoT M"
+  shows "nextrel0 (shiftRow0 M) j0 j1 = nextrel0 M j0 j1"
+proof (cases "j0 < Lng M \<and> j1 < Lng M")
+  case True
+  hence j0L: "j0 < Lng M" and j1L: "j1 < Lng M" by simp_all
+  let ?c = "entry M 0 0"
+  have e0: "entry (shiftRow0 M) 0 j0 = entry M 0 j0 - ?c" using j0L by (rule entry_shiftRow0_0)
+  have e1: "entry (shiftRow0 M) 0 j1 = entry M 0 j1 - ?c" using j1L by (rule entry_shiftRow0_0)
+  have gj0: "?c \<le> entry M 0 j0" using entry0_ge_min[OF M mono j0L] .
+  have gj1: "?c \<le> entry M 0 j1" using entry0_ge_min[OF M mono j1L] .
+  have lt_iff: "(entry M 0 j0 - ?c < entry M 0 j1 - ?c) = (entry M 0 j0 < entry M 0 j1)"
+    using gj0 gj1 by linarith
+  have ge_iff: "\<forall>j. j0 < j \<and> j < j1 \<longrightarrow>
+                  (entry (shiftRow0 M) 0 j \<ge> entry (shiftRow0 M) 0 j1)
+                  = (entry M 0 j \<ge> entry M 0 j1)"
+  proof (intro allI impI)
+    fix j assume jb: "j0 < j \<and> j < j1"
+    hence jL: "j < Lng M" using j1L by simp
+    have ej: "entry (shiftRow0 M) 0 j = entry M 0 j - ?c" using jL by (rule entry_shiftRow0_0)
+    have gj: "?c \<le> entry M 0 j" using entry0_ge_min[OF M mono jL] .
+    show "(entry (shiftRow0 M) 0 j \<ge> entry (shiftRow0 M) 0 j1)
+            = (entry M 0 j \<ge> entry M 0 j1)"
+      using ej e1 gj gj1 by linarith
+  qed
+  show ?thesis
+    unfolding nextrel0_def
+    using e0 e1 lt_iff ge_iff by (simp add: Lng_shiftRow0 cong: conj_cong)
+next
+  case False
+  thus ?thesis by (auto simp: nextrel0_def Lng_shiftRow0)
+qed
+
+lemma le0_shiftRow0_eq:
+  assumes M: "M \<in> T_PS" and mono: "monoT M"
+  shows "le0 (shiftRow0 M) j0 j1 = le0 M j0 j1"
+proof -
+  have "nextrel0 (shiftRow0 M) = nextrel0 M"
+    by (intro ext) (rule nextrel0_shiftRow0_eq[OF M mono])
+  thus ?thesis by (simp add: le0_def Lng_shiftRow0)
+qed
+
+lemma monoT_shiftRow0:
+  assumes M: "M \<in> T_PS" and mono: "monoT M"
+  shows "monoT (shiftRow0 M)"
+proof -
+  have nz: "\<not> zeroT (shiftRow0 M)"
+  proof -
+    have "zeroT (shiftRow0 M) = zeroT M"
+    proof (cases "Lng M = 1")
+      case True
+      hence "0 < Lng M" by simp
+      hence "entry (shiftRow0 M) 1 0 = entry M 1 0" by (rule entry_shiftRow0_1)
+      thus ?thesis using True by (simp add: zeroT_def Lng_shiftRow0)
+    next
+      case False
+      thus ?thesis by (simp add: zeroT_def Lng_shiftRow0)
+    qed
+    thus ?thesis using mono by (simp add: monoT_def)
+  qed
+  have "leR M 0 0 (Lng M - 1)" using mono by (simp add: monoT_def)
+  hence "leR (shiftRow0 M) 0 0 (Lng (shiftRow0 M) - 1)"
+    by (simp add: leR_def Lng_shiftRow0 le0_shiftRow0_eq[OF M mono])
+  thus ?thesis using nz by (simp add: monoT_def)
+qed
+
 end
 
