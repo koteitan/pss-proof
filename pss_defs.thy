@@ -449,6 +449,22 @@ fun SkT_PS :: "nat \<Rightarrow> pairseq set" where
   "SkT_PS 0 = {N. \<exists>u v. N = diagSeq u v \<and> u \<le> v}"
 | "SkT_PS (Suc k) = {N. \<exists>M n. N = (M::pairseq)[n] \<and> M \<in> SkT_PS k \<and> 1 \<le> n}"
 
+text \<open>
+  \<open>anchored_slice\<close> (correction A4): the provisional domain on which the §6.5
+  corollaries hold (they are FALSE on all of \<open>T\<^sub>PS\<close>; see corrections.md /
+  docs/red-le-domain.md).  \<open>M\<close> is an ancestor-anchored slice: \<open>M = (S\<^sub>j)\<^bsub>j=a\<^esub>\<^bsup>b\<^esup>\<close>
+  for some standard (or reduced-and-mono) \<open>S\<close> with \<open>(0,a) \<le>\<^sub>S (0,b)\<close> — the
+  hypothesis of 命題 標準形の切片と Br の降順性, and the form of the §7
+  use-sites (\<open>N = (M\<^sub>j)\<^bsub>j=lo\<^esub>\<^bsup>j\<^sub>1\<^esup>\<close> with \<open>lo\<close> an ancestor of \<open>j\<^sub>1\<close>).
+  Empirically verified (python/, yaBMS); the proof and a possibly simpler
+  intrinsic characterization are PENDING.
+\<close>
+
+definition anchored_slice :: "pairseq set" where
+  "anchored_slice =
+     {M. \<exists>S a b. (S \<in> ST_PS \<or> (S \<in> RT_PS \<and> S \<in> PT_PS))
+                  \<and> a \<le> b \<and> b < Lng S \<and> le0 S a b \<and> M = seg S a b}"
+
 
 subsection \<open>§6.8 降順性 (Descending lists)\<close>
 

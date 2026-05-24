@@ -326,14 +326,16 @@ text \<open>
   CAUTION (correction A4 — see corrections.md and docs/red-le-domain.md).
   The eight §6.5 corollaries p_6_5_Red_le, p_6_5_Red_monoT, p_6_5_P_Red,
   p_6_5_Red_idem, p_6_5_Red_oper, p_6_5_Red_adm, p_6_5_admof_Red and
-  p_6_5_Red_marked are FALSE as stated for all M : T_PS — counterexample
-  Red ((0,0)(0,1)) = (0,0)(1,1), which changes the ancestor tree (checked
-  empirically with python/ + yaBMS).  They hold on the restricted domain of
-  ANCESTOR-ANCHORED SLICES of standard / reduced+mono sequences, i.e. the
-  actual §7 use-sites (provisional, pending).  Their sorry below is therefore a
-  FALSE AXIOM on T_PS: do not rely on these downstream until the premise is
-  corrected to the anchored-slice domain.  The remaining §6.5 facts (Lng_Red,
-  Red_zeroT, Red_Pred, Red_IncrFirst) are true on all of T_PS.
+  p_6_5_Red_marked are FALSE as the article states them for all M : T_PS —
+  counterexample Red ((0,0)(0,1)) = (0,0)(1,1), which changes the ancestor tree
+  (checked empirically with python/ + yaBMS).  They DO hold on the restricted
+  domain of ANCESTOR-ANCHORED SLICES of standard / reduced+mono sequences, i.e.
+  the actual §7 use-sites.  Their premise is therefore corrected here from
+  \<open>M \<in> T_PS\<close> to \<open>M \<in> anchored_slice\<close> (pss_defs.thy), so the sorry below is
+  no longer a false axiom — the statements are now true but UNPROVEN, and the
+  domain \<open>anchored_slice\<close> is PROVISIONAL (a simpler intrinsic characterization
+  and the proof are pending).  The remaining §6.5 facts (Lng_Red, Red_zeroT,
+  Red_Pred, Red_IncrFirst) hold on all of T_PS and keep that premise.
 \<close>
 
 text \<open>命題（\<open>Red\<close>のwell-defined性） — the recursion defining \<open>Red\<close> terminates on
@@ -369,21 +371,21 @@ lemma p_6_5_Red_zeroT:
 text \<open>系（直系先祖の\<open>Red\<close>不変性） — \<open>\<le>\<^bsub>M\<^esub>\<close> and \<open>\<le>\<^bsub>Red M\<^esub>\<close> coincide.\<close>
 
 lemma p_6_5_Red_le:
-  assumes "M \<in> T_PS"
+  assumes "M \<in> anchored_slice"  \<comment> \<open>correction A4: false on \<open>T\<^sub>PS\<close>; provisional domain\<close>
   shows "leR M i j0 j1 = leR (Red M) i j0 j1"
   sorry
 
 text \<open>系（\<open>Red\<close>が単項性を保つこと）.\<close>
 
 lemma p_6_5_Red_monoT:
-  assumes "M \<in> T_PS"
+  assumes "M \<in> anchored_slice"  \<comment> \<open>correction A4\<close>
   shows "monoT M \<longleftrightarrow> monoT (Red M)"
   sorry
 
 text \<open>系（\<open>P\<close>の\<open>Red\<close>同変性） — \<open>P(Red M) = (Red (P M\<^sub>J))\<^bsub>J\<^esub>\<close>.\<close>
 
 lemma p_6_5_P_Red:
-  assumes "M \<in> T_PS"
+  assumes "M \<in> anchored_slice"  \<comment> \<open>correction A4\<close>
   shows "P (Red M) = map Red (P M)"
   sorry
 
@@ -401,7 +403,7 @@ lemma p_6_5_monoT_Red:
 text \<open>命題（\<open>Red\<close>の冪等性）.\<close>
 
 lemma p_6_5_Red_idem:
-  assumes "M \<in> T_PS"
+  assumes "M \<in> anchored_slice"  \<comment> \<open>correction A4\<close>
   shows "Red (Red M) = Red M"
   sorry
 
@@ -415,21 +417,21 @@ lemma p_6_5_Red_Pred:
 text \<open>命題（\<open>Red\<close>と基本列の可換性）.\<close>
 
 lemma p_6_5_Red_oper:
-  assumes "M \<in> T_PS" "n \<ge> 1"
+  assumes "M \<in> anchored_slice" "n \<ge> 1"  \<comment> \<open>correction A4\<close>
   shows "(Red M)[n] = Red (M[n])"
   sorry
 
 text \<open>命題（\<open>Red\<close>が許容性を保つこと） — \<open>\<nat>\<^sub>M = \<nat>\<^bsub>Red M\<^esub>\<close>.\<close>
 
 lemma p_6_5_Red_adm:
-  assumes "M \<in> T_PS"
+  assumes "M \<in> anchored_slice"  \<comment> \<open>correction A4\<close>
   shows "AdmSet M = AdmSet (Red M)"
   sorry
 
 text \<open>系（許容化の\<open>Red\<close>不変性）.\<close>
 
 lemma p_6_5_admof_Red:
-  assumes "M \<in> T_PS"
+  assumes "M \<in> anchored_slice"  \<comment> \<open>correction A4\<close>
   shows "Adm M j = Adm (Red M) j"
   sorry
 
@@ -438,7 +440,7 @@ text \<open>系（\<open>Red\<close>が基点を保つこと） — a marked pai
   the reducedness being @{thm [source] p_6_5_Red_idem}.  \<open>RT\<^sub>PS\<close> itself is §6.6.\<close>
 
 lemma p_6_5_Red_marked:
-  assumes "(M, m) \<in> Marked"
+  assumes "(M, m) \<in> Marked" "M \<in> anchored_slice"  \<comment> \<open>correction A4\<close>
   shows "(Red M, m) \<in> Marked"
   sorry
 
