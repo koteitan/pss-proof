@@ -112,15 +112,24 @@ $$M = (0,0)(1,1)(2,1)(3,1)(2,0)$$
 一致する一手を見落としている。標準形のペア数列を多数調べたところ、単項かつ枝2本以上の
 ものの中に part (4) 違反が多数あり（いずれも joint 一致パターン）、上の最小反例はその一例。
 
-**訂正案（候補）**
+なお上の反例は**簡約 $RT_{\textrm{PS}}$（条件(A)∧(B)を満たす）かつ標準形かつ $\textrm{Br}$ 降順**
+でもある（機械的に確認）。すなわち (4) は下流が実際に扱う最深ドメインでも偽。
 
-(4) を成立させるには追加の仮定（例: 連続枝の左端 $M_{0,\textrm{FirstNodes}_J}$ の**狭義**
-減少、または許容性 $\textrm{Adm}$ 由来の joint 相異性）が要る。あるいは (4) を
-**弱い不等号** $\geq$ に直す（(2) と幹の単調性から従う）。下流での (4) の用途を確認の上で
-最小限の修正を選ぶべき（**TODO: `content.md` で (4) 狭義性の下流依存を精査**）。
+**(4) は下流で未使用 ⇒ 停止性証明に波及なし**
+
+(4) の狭義不等号は本文のどこでも使われていない。下流（§6.5 以降、$RT_{\textrm{PS}}$ /
+標準形 / 降順の文脈）が joint について用いるのは、(2) の**弱い** $\geq$、index 関係
+$\textrm{Joints}_J \leq \textrm{TrMax} < \textrm{FirstNodes}_J$、そして**条件(A)**
+$M_{0,\textrm{Joints}_J}+1 = M_{0,\textrm{FirstNodes}_J}$（簡約列で成立、`content.md` line 3350
+で明示使用）と $\textrm{Br}$ 降順性のみで、いずれも弱い $\leq/\geq$ の導出に閉じる。
+よって (4) は load-bearing でない冗長な記述。
+
+**訂正案**
+
+(4) を削除する（(1)(2)(3) のみ残す）。狭義性が必要な箇所は存在しないため、追加仮定は不要。
 
 **形式化での扱い**
 
-`pss_paper.thy` の `p_6_4_FirstNodes_Joints_mono` を主張 (1)(2)(3) のみに弱める
-（既証明 `m_6_4_FirstNodes_Joints_mono_aux` が discharge）。主張 (4) は本 amendment の
-誤りとして除外。下流（§6.5 `Red` 等）では (4) を未使用のため波及なし。
+`pss_paper.thy` の `p_6_4_FirstNodes_Joints_mono` を主張 (1)(2)(3) のみに弱め、既証明
+`m_6_4_FirstNodes_Joints_mono_aux` を呼ぶ `m_6_4_FirstNodes_Joints_mono` で discharge。
+主張 (4) は本 amendment の誤りとして除外。下流（§6.5 `Red` 等）では (4) を未使用のため波及なし。
