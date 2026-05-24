@@ -5002,5 +5002,41 @@ next
   finally show ?thesis .
 qed
 
+text \<open>Every \<open>P\<close>-block of a non-empty sequence is non-empty (the cut
+  \<open>0 < Pcut M \<le> Lng M - 1\<close> keeps both \<open>take\<close> and \<open>drop\<close> halves non-empty).
+  Needed e.g. for \<open>Lng (Br M ! J) = Lng (N\<^sub>J)\<close>.\<close>
+
+lemma P_blocks_nonempty:
+  assumes "M \<noteq> []"
+  shows "\<forall>B \<in> set (P M). B \<noteq> []"
+proof -
+  have "M \<noteq> [] \<longrightarrow> (\<forall>B \<in> set (P M). B \<noteq> [])"
+  proof (induction M rule: P.induct)
+    case (1 M)
+    show ?case
+    proof (rule impI)
+      assume ne: "M \<noteq> []"
+      show "\<forall>B \<in> set (P M). B \<noteq> []"
+      proof (cases "multiT M \<and> 1 < Lng M")
+        case True
+        let ?c = "Pcut M"
+        have L: "1 < Lng M" using True by simp
+        have step: "P M = P (take ?c M) @ [drop ?c M]" using True by (subst P.simps) simp
+        have cge: "0 < ?c" and cle: "?c \<le> Lng M - 1" using Pcut_le[OF L] by auto
+        have tne: "take ?c M \<noteq> []" using cge ne by (simp add: take_eq_Nil)
+        have IH: "\<forall>B \<in> set (P (take ?c M)). B \<noteq> []" using "1.IH"[OF True] tne by blast
+        have dne: "drop ?c M \<noteq> []" using cle L by (simp add: drop_eq_Nil)
+        show ?thesis using step IH dne by auto
+      next
+        case False
+        note nc = this
+        have "P M = [M]" by (subst P.simps) (rule if_not_P[OF nc])
+        thus ?thesis using ne by simp
+      qed
+    qed
+  qed
+  thus ?thesis using assms by blast
+qed
+
 end
 
