@@ -5305,5 +5305,38 @@ next
   show ?case using inc IH by simp
 qed
 
+text \<open>\<open>Joints M ! J\<close> is the (unique) row-0 parent of \<open>FirstNodes M ! J\<close>:
+  \<open>(0, Joints M ! J) <\<^bsub>M\<^esub>\<^sup>Next (0, FirstNodes M ! J)\<close>.  (Extracted from the
+  \<open>m_6_4_FirstNodes_Joints_mono\<close> development.)\<close>
+
+lemma Joints_parent_nextR:
+  assumes M: "M \<in> PT_PS" and JBr: "J < Lng (Br M)"
+  shows "nextR M 0 (Joints M ! J) (FirstNodes M ! J)"
+proof -
+  have MT: "M \<in> T_PS" using M by (simp add: PT_PS_def)
+  have brne: "Br M \<noteq> []" using JBr by auto
+  have tb: "TrMax M \<le> Lng M - 1" by (rule TrMax_bound[OF MT])
+  have trne: "TrMax M \<noteq> Lng M - 1"
+  proof
+    assume "TrMax M = Lng M - 1"
+    hence "Br M = []" by (simp add: Br_def)
+    with brne show False by simp
+  qed
+  with tb have trlt: "TrMax M < Lng M - 1" by linarith
+  let ?N = "seg M (TrMax M + 1) (Lng M - 1)"
+  have brQ: "Br M = P ?N" using trne by (simp add: Br_def)
+  have JQ: "J \<le> Lng (P ?N) - 1" using JBr brQ by (cases "P ?N") auto
+  have hp: "hasParent M 0 (TrMax M + 1 + IdxSum (P ?N) ! J)"
+    using m_6_4_mono_slice_next[OF M _ _ JQ] trlt by auto
+  have fnJ: "TrMax M + 1 + IdxSum (P ?N) ! J = FirstNodes M ! J"
+    using FirstNodes_nth[OF JBr] brQ by simp
+  have hpf: "hasParent M 0 (FirstNodes M ! J)" using hp fnJ by simp
+  have aJ_eq: "Joints M ! J = parent M 0 (FirstNodes M ! J)" by (rule Joints_nth[OF JBr])
+  have "\<exists>!j0. nextR M 0 j0 (FirstNodes M ! J)" using hpf by (simp add: hasParent_def)
+  hence "nextR M 0 (THE j0. nextR M 0 j0 (FirstNodes M ! J)) (FirstNodes M ! J)"
+    by (rule theI')
+  thus ?thesis using aJ_eq by (simp add: parent_def)
+qed
+
 end
 
