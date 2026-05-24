@@ -6053,5 +6053,22 @@ proof -
   thus ?thesis using MT by blast
 qed
 
+
+subsection \<open>§6.5 補正定義域 \<open>anchored_slice\<close> の基本性質 (correction A4)\<close>
+
+text \<open>An ancestor-anchored slice is non-empty, hence in \<open>T\<^sub>PS\<close> (so \<open>Red\<close> is
+  defined on it via @{thm [source] m_6_5_Red_welldef}).\<close>
+
+lemma anchored_slice_imp_T_PS:
+  assumes "M \<in> anchored_slice"
+  shows "M \<in> T_PS"
+proof -
+  from assms obtain S a b where ab: "a \<le> b" and M: "M = seg S a b"
+    unfolding anchored_slice_def by blast
+  have "length M = Suc b - a" using M by simp
+  with ab have "0 < length M" by simp
+  thus ?thesis by (simp add: T_PS_def)
+qed
+
 end
 
