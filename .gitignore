@@ -3,3 +3,5 @@ tmp/
 commit-msg.txt
 *.bak
 scratch.thy
+__pycache__/
+*.pyc
