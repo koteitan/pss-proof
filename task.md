@@ -1,7 +1,23 @@
 # 進捗管理
 
-凡例: 未証明🚨 / 証明済✅ / 証明不可🚫 / 作業中🤖
+凡例: **各項目には必ず 🚨（未証明）または ✅（証明済）を付ける**（司令マーカー）。
+装飾（任意）: 🚨🚧＝未証明だが本質的障壁で停滞 / 🚨🤖＝未証明だが agent 作業中 / 🚫＝真に偽で訂正不能。
 （🚫=論文の言明が真に偽で訂正不能のもの。論文の言明が偽でも定義域を訂正すれば真になるものは 🚨＋〔correction Ax〕で示す＝訂正版は未証明。）
+
+## いまの作業配置 (live, 2026-05-25 更新)
+稼働 agent **0**（全停止）。作業は worktree `agent-adb8…` の `m_6_5_Red_IncrFirst` 移植に集約。
+| actor | 現在地 | 状態 |
+|---|---|---|
+| 👤 親セッション（私） | §6.5 `m_6_5_Red_IncrFirst`（worktree adb8、未commit） | **lexical 11＋証明バグ ~55件 修正**。zeroT/multiT/core/noncore-m10z/**m10>0-trunk まで通過**。`Red_m10pos_unfold`(a2c4由来)統合済。**残り＝m10>0 の死枝[20]**（下記） |
+| （停止）agent `a2c4…` | `Red_m10pos_unfold`（Red M の m10>0 分岐展開補題） | ✅完了・adb8 へ統合済。呪文: `subst Red.psimps[OF dom]`→`simp only: if_not_P[OF …]` 逐次＋`Let_def` |
+| （停止）agent `a4ed…` | `m_6_5_Red_Pred` | 停止。case 6 が**死枝[20]**で頓挫（Red_IncrFirst と同一障壁） |
+| （停止）旧 fan-out worktree 多数 | §6.5 残骸（a335/a9b4/aa98/…偽or未完） | 整理待ち |
+
+### 🔴 共通ボトルネック: 死枝[20]
+`seg (Red (coreReduce M)) (entry M 1 0) (Lng(Red(coreReduce M))−1) ∈ PT_PS`（=Red 出力の枝部が単項）。
+**Red_IncrFirst の m10>0 ケース（claim A・B 計4箇所）と Red_Pred の case 6 の双方がこれに帰着**。
+既存補題に無く、`m_6_5_Lng_Red` は両ケース処理で**回避**（条件を証明していない）。§6.6/6.7 レベルの構造定理が必要＝独立した大仕事。
+エージェントの元 Red_IncrFirst 証明はこの箇所を `by simp` で誤魔化しており**真には未完成**だった。
 
 数式は MathJax 記法（`$...$`）で書く。
 
@@ -45,7 +61,7 @@
       8系は `M∈anchored_slice` 前提へ、偽の公理を解消、commit 063927d）。`anchored_slice⊆T_PS` 証明済
       (`anchored_slice_imp_T_PS`)。fan-out agent の T_PS 版証明は偽命題依存で破棄。〕
       - ✅ 命題（$\textrm{Red}$ の well-defined 性）〔`m_6_5_Red_welldef`: 測度 ν での整礎帰納＋`Red.domintros`。基礎補題群(diagSeq・`Lng_Br_le`・`TrMax_diagSeq_append_ge`・`coreReduce`/`betaM`・`coreReduce_nonmulti`・`NJ_nonmulti`・`nu`/`muMono`・per-case descent)を経て完成。設計 docs/red-termination.md〕
-      - 🤖 命題（$\textrm{Red}$ の $\textrm{IncrFirst}$ 不変性）〔`m_6_5_Red_IncrFirst`。**T_PS で真**。genuine 証明(≈2568行)を**現 main ベースへ移植する agent が1つ稼働中**(`adb8…`)。base 分岐の旧 agent は停止。〕
+      - 🚨🚧 命題（$\textrm{Red}$ の $\textrm{IncrFirst}$ 不変性）〔`m_6_5_Red_IncrFirst`。worktree adb8 で ~55件修正し zeroT/multiT/core/noncore-m10z/**m10>0-trunk まで通過**。`Red_m10pos_unfold` 統合済。**m10>0 の最終段が死枝[20]に帰着**（上記）→ 死枝[20]補題が要る。真理値: 死枝[20]が常に真なら T_PS で真。〕
       - ✅ 命題（$\textrm{Lng}$ の $\textrm{Red}$ 不変性）〔`m_6_5_Lng_Red`、§6.5 下流の linchpin〕
       - ✅ 系（$\textrm{Red}$ が零項性を保つこと）〔`m_6_5_Red_zeroT`。T_PS で真。Lng=1 へ帰着(`m_6_5_Lng_Red`)＋helper `rz_Red_entry1_nz`。agent 由来、統合済〕
       - 🚨 系（直系先祖の $\textrm{Red}$ 不変性）〔**keystone**: `m_6_5_Red_le`。**T_PS で偽**(反例 `(0,0)(0,1)`)→先祖係留切片で真(保留中)。A4〕
@@ -53,7 +69,7 @@
       - 🚨 系（$P$ の $\textrm{Red}$ 同変性）〔`m_6_5_P_Red`。T_PS で偽 → 係留切片で真(保留中)。A4〕
       - 🚨 命題（単項性と $\textrm{Red}$ の関係）〔`m_6_5_monoT_Red`、前提 $PT_{\textrm{PS}}$（[19][20]死枝）〕
       - 🚨 命題（$\textrm{Red}$ の冪等性）〔`m_6_5_Red_idem`。T_PS で偽(反例 `(0,0)(0,2)`) → 係留切片で真(保留中)。A4〕
-      - 🚨 命題（$\textrm{Red}$ と $\textrm{Pred}$ の可換性）〔`m_6_5_Red_Pred`。**T_PS で真**〕
+      - 🚨🚧 命題（$\textrm{Red}$ と $\textrm{Pred}$ の可換性）〔`m_6_5_Red_Pred`。**T_PS で真**。agent a4ed は case 1-5 を詰めたが **case 6 が死枝[20]に帰着**して停止（Red_IncrFirst と同一障壁）。〕
       - 🚨 命題（$\textrm{Red}$ と基本列の可換性）〔`m_6_5_Red_oper`。T_PS で偽 → 係留切片で真(保留中)。A4〕
       - 🚨 命題（$\textrm{Red}$ が許容性を保つこと）〔`m_6_5_Red_adm`。T_PS で偽(反例 `(0,0)(0,1)(0,2)`) → 係留切片で真(保留中)。A4〕
       - 🚨 系（許容化の $\textrm{Red}$ 不変性）〔`m_6_5_admof_Red`。T_PS で偽 → 係留切片で真(保留中)。A4〕
