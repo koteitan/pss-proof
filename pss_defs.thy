@@ -371,7 +371,7 @@ text \<open>
   proposition, deferred (transcribed as \<open>sorry\<close> in @{file "pss_paper.thy"}).
 \<close>
 
-function Red :: "pairseq \<Rightarrow> pairseq" where
+function (domintros) Red :: "pairseq \<Rightarrow> pairseq" where
   "Red M =
    (if zeroT M then [(0, 0)]
     else if multiT M then concat (map Red (P M))
