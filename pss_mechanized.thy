@@ -7910,6 +7910,35 @@ next
   qed
 qed
 
+text \<open>A slice of a slice is a slice: \<open>seg (seg M a b) c d = seg M (a+c) (a+d)\<close>
+  when \<open>d \<le> b - a\<close> (so the inner indices stay in range).  Lets the branch
+  segment of a slice be viewed as a slice of the ambient \<open>M\<close>.\<close>
+
+lemma seg_nth_eq:
+  assumes k: "k < Suc y - x"
+  shows "seg M x y ! k = M ! (x + k)"
+  unfolding seg_def by (rule nth_map_upt[OF k])
+
+lemma seg_of_seg:
+  assumes ab: "a \<le> b" and db: "d \<le> b - a"
+  shows "seg (seg M a b) c d = seg M (a + c) (a + d)"
+proof (rule nth_equalityI)
+  have l1: "length (seg (seg M a b) c d) = Suc d - c" by simp
+  have l2: "length (seg M (a + c) (a + d)) = Suc (a + d) - (a + c)" by simp
+  show leq: "length (seg (seg M a b) c d) = length (seg M (a + c) (a + d))"
+    using l1 l2 by presburger
+  fix i assume "i < length (seg (seg M a b) c d)"
+  hence ic: "i < Suc d - c" by simp
+  have ciba: "c + i < Suc b - a" using ic db ab by presburger
+  have icd: "i < Suc (a + d) - (a + c)" using ic by presburger
+  have "seg (seg M a b) c d ! i = seg M a b ! (c + i)" using ic by (rule seg_nth_eq)
+  also have "\<dots> = M ! (a + (c + i))" using ciba by (rule seg_nth_eq)
+  also have "a + (c + i) = (a + c) + i" by simp
+  finally have lhs: "seg (seg M a b) c d ! i = M ! ((a + c) + i)" .
+  have "seg M (a + c) (a + d) ! i = M ! ((a + c) + i)" using icd by (rule seg_nth_eq)
+  thus "seg (seg M a b) c d ! i = seg M (a + c) (a + d) ! i" using lhs by simp
+qed
+
 
 section \<open>§7.1 Buchholz notation: principal components (命題（順序数項の単項成分の基本性質）)\<close>
 
