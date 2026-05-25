@@ -7842,6 +7842,74 @@ proof -
   show ?thesis using e_comp e_N fn brQ by simp
 qed
 
+text \<open>§6.8 prop1 reduction.  For a mono \<open>M'\<close>, \<open>descending (Br M')\<close> follows from
+  the row-1 tie-break stated at the \<^emph>\<open>FirstNodes\<close> positions of \<open>M'\<close>: the row-0
+  part is @{thm [source] m_6_4_P_leftend_mono} on the branch segment, and the
+  row-1 part is the hypothesis \<open>tie\<close> transported through
+  @{thm [source] entry_FirstNodes_eq_component_gen}.  This isolates the remaining
+  hard obligation of \<open>p_6_8_standard_slice_Br_descending\<close> (see
+  \<open>docs/slice-Br-descending.md\<close>) into the \<open>FirstNodes\<close> tie-break.\<close>
+
+lemma descending_Br_of_FN_tiebreak:
+  assumes M': "M' \<in> PT_PS"
+    and tie: "\<And>J0 J1. J0 \<le> J1 \<Longrightarrow> J1 < length (Br M') \<Longrightarrow>
+                entry M' 0 (FirstNodes M' ! J0) = entry M' 0 (FirstNodes M' ! J1) \<Longrightarrow>
+                entry M' 1 (FirstNodes M' ! J1) \<le> entry M' 1 (FirstNodes M' ! J0)"
+  shows "descending (Br M')"
+proof (cases "Br M' = []")
+  case True
+  thus ?thesis by (simp add: descending_def)
+next
+  case False
+  have MT: "M' \<in> T_PS" using M' by (simp add: PT_PS_def)
+  have tb: "TrMax M' \<le> Lng M' - 1" by (rule TrMax_bound[OF MT])
+  have trne: "TrMax M' \<noteq> Lng M' - 1"
+  proof
+    assume "TrMax M' = Lng M' - 1"
+    hence "Br M' = []" by (simp add: Br_def)
+    with False show False by simp
+  qed
+  from trne tb have trlt: "TrMax M' < Lng M' - 1" by linarith
+  let ?Y = "seg M' (TrMax M' + 1) (Lng M' - 1)"
+  have brQ: "Br M' = P ?Y" using trne by (simp add: Br_def)
+  have NLpos: "Lng ?Y > 0" using trlt by simp
+  have Yne: "?Y \<noteq> []" using NLpos length_greater_0_conv by blast
+  have YT: "?Y \<in> T_PS" using Yne by (simp add: T_PS_def)
+  show ?thesis
+    unfolding descending_def
+  proof (intro allI impI)
+    fix J0 J1
+    assume H: "J0 \<le> J1 \<and> J1 \<le> Lng (Br M') - 1"
+    from H have le: "J0 \<le> J1" and j1: "J1 \<le> Lng (Br M') - 1" by auto
+    have J1lt: "J1 < length (Br M')" using j1 False by (cases "Br M'") auto
+    have J0lt: "J0 < length (Br M')" using le J1lt by linarith
+    have j1Y: "J1 \<le> Lng (P ?Y) - 1" using j1 brQ by simp
+    have r0: "entry (Br M' ! J1) 0 0 \<le> entry (Br M' ! J0) 0 0"
+      using m_6_4_P_leftend_mono[OF YT le j1Y] brQ by simp
+    have tieB: "entry (Br M' ! J0) 0 0 = entry (Br M' ! J1) 0 0
+                \<Longrightarrow> entry (Br M' ! J1) 1 0 \<le> entry (Br M' ! J0) 1 0"
+    proof -
+      assume eq: "entry (Br M' ! J0) 0 0 = entry (Br M' ! J1) 0 0"
+      have c00: "entry M' 0 (FirstNodes M' ! J0) = entry (Br M' ! J0) 0 0"
+        by (rule entry_FirstNodes_eq_component_gen[OF M' J0lt])
+      have c01: "entry M' 0 (FirstNodes M' ! J1) = entry (Br M' ! J1) 0 0"
+        by (rule entry_FirstNodes_eq_component_gen[OF M' J1lt])
+      have c10: "entry M' 1 (FirstNodes M' ! J0) = entry (Br M' ! J0) 1 0"
+        by (rule entry_FirstNodes_eq_component_gen[OF M' J0lt])
+      have c11: "entry M' 1 (FirstNodes M' ! J1) = entry (Br M' ! J1) 1 0"
+        by (rule entry_FirstNodes_eq_component_gen[OF M' J1lt])
+      have eqFN: "entry M' 0 (FirstNodes M' ! J0) = entry M' 0 (FirstNodes M' ! J1)"
+        using c00 c01 eq by simp
+      have "entry M' 1 (FirstNodes M' ! J1) \<le> entry M' 1 (FirstNodes M' ! J0)"
+        by (rule tie[OF le J1lt eqFN])
+      thus "entry (Br M' ! J1) 1 0 \<le> entry (Br M' ! J0) 1 0" using c10 c11 by simp
+    qed
+    from r0 tieB show "entry (Br M' ! J1) 0 0 \<le> entry (Br M' ! J0) 0 0
+          \<and> (entry (Br M' ! J0) 0 0 = entry (Br M' ! J1) 0 0
+             \<longrightarrow> entry (Br M' ! J1) 1 0 \<le> entry (Br M' ! J0) 1 0)" by blast
+  qed
+qed
+
 
 section \<open>§7.1 Buchholz notation: principal components (命題（順序数項の単項成分の基本性質）)\<close>
 
