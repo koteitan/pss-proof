@@ -125,13 +125,36 @@ using `SkT_PS_mono`):
     via `IncrFirst`-invariance). If `d0 = 0` (`i1 = 0`, identical block copies),
     needs separate care. (This is where the formalisation effort concentrates.)
 
+## Two further reductions of `slice_P_descending` (green tools in place)
+
+The row-0 part of `slice_P_descending` is free (`m_6_4_P_leftend_mono`); the
+row-1 tie-break is the core, which can be peeled two ways:
+
+- **slice-length induction (via `descending_snoc`, green).**
+  `P (seg M a b) = P (seg M a (a+Pcut-1)) @ [seg M (a+Pcut) b]` when `seg M a b`
+  is multi (else `P` is a singleton, trivial). The prefix is a shorter slice ⟹
+  IH; `descending_snoc` then reduces the goal to: the new last component
+  `seg M (a+Pcut) b` is `≤` (in the descending order) the previous last
+  component `last (P (seg M a (a+Pcut-1)))`. I.e. the obligation collapses to the
+  **adjacent-cut tie-break**: for two *consecutive* `P`-cut points `p < q` of the
+  slice with `entry M 0 p = entry M 0 q`, one has `entry M 1 p ≥ entry M 1 q`.
+- **prefix reduction (via `m_6_7_standard_prefix`, green).**
+  `seg M 0 b ∈ ST_PS`, and `seg M a b = seg (seg M 0 b) a b` (`seg_of_seg`). So
+  WLOG the slice is a **suffix** `drop a N` of a standard `N := seg M 0 b`.
+
+Either way the irreducible core is a rank-induction over the standard form's
+`oper` structure (the article's content.md 1450–1615), still TODO.
+
 ## Status / Plan
 
 1. ✅ design + empirical reduction; ✅ `seg_nth_eq`, `seg_of_seg` (green);
    ✅ `descending_P_of_ST`, `entry_FirstNodes_eq_component_gen`,
-   `descending_Br_of_FN_tiebreak` (green); ✅ correction A7.
-2. **TODO (hard core)**: prove `slice_P_descending` by the `k`-induction above
-   (multi-block-spanning case is the crux). Largest remaining piece; spans
-   sessions.
+   `descending_Br_of_FN_tiebreak`, `descendingD`, `descending_snoc` (green);
+   ✅ correction A7.
+2. **TODO (hard core)**: `slice_P_descending` — the row-1 tie-break, now isolated
+   to the adjacent-cut tie-break (or, after prefix reduction, descending of `P`
+   of a suffix of a standard form). Needs the `k`-induction over `oper` with the
+   `IncrFirst`-invariance of the tie-break (`m_6_2_P_IncrFirst` / `entry_IncrFirst`);
+   multi-block-spanning / `d0 = 0` is the crux. Largest remaining piece.
 3. Assemble `m_6_8_standard_slice_Br_descending` from `slice_P_descending` +
    `seg_of_seg` + `m_6_2_mono_ancestor_slice`.
