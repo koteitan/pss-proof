@@ -1,32 +1,9 @@
-# 進捗管理
+# 進捗ツリー
 
-凡例: **各項目には必ず 🚨（未証明）または ✅（証明済）を付ける**（司令マーカー）。
-装飾（任意）: 🚨🚧＝未証明だが本質的障壁で停滞 / 🚨🤖＝未証明だが agent 作業中 / 🚫＝真に偽で訂正不能。
-（🚫=論文の言明が真に偽で訂正不能のもの。論文の言明が偽でも定義域を訂正すれば真になるものは 🚨＋〔correction Ax〕で示す＝訂正版は未証明。）
-
-## いまの作業配置 (live, 2026-05-25 更新)
-**🚨→✅ 削減フェーズ**: 独立・自己完結な未証明 🚨 を team で並列討伐中（緑 main ベース・ガードレール: 未証明 p_* 引用禁止／経験的真偽確認／相互独立のみ）。
-| actor | ターゲット | 状態 |
-|---|---|---|
-| ✅ agent `a8c0…` | `m_6_7_ST_eq_Union_SkT`（`ST_PS=⋃SkT_PS`） | **統合済（緑）** |
-| ✅ agent `acf1…` | `m_6_6_Red_leftend_1`（Red が行1左端固定） | **統合済（緑）** |
-| ✅ agent `abba09…` | `m_6_7_standard_prefix`（標準形の始切片遺伝＋helper `ST_PS_T_PS`） | **統合済（緑）** |
-| ✅ agent `a97a…` | `m_6_6_condAB_coeff`（§6.6 条件A/Bと係数、3部構成・最難）＋helper `nextR1_unique`/`condAB_row1_noparent_zero` | **統合済（緑, a5287ab）**。build23 で収束（async yield だが最終緑）。a7d9 の partial を出発点に part3 の greedy intro と bounded-∀ 不整合を修正 |
-| ✅(β) `m_6_7_standard_P_components`（**原文証明 A6 を修復して証明**） | 同ランク `S_kT_PS`。**統合済（緑, 10c0895）**。鍵＝`SkT_PS_mono`（階層単調 `S_k⊆S_{k+1}`、0669768。当初「単調性偽」は私の truncation 誤判断、A6 訂正済）。本体 `SkT_P_comp` は `k×Lng` 辞書式帰納（nonmulti は `Pred M'=M'[1]`、multiT は `m_6_2_P_oper_1/2`＋先頭を mono で持ち上げ、関係(2)末尾を Lng 内側帰納）。Row1Zero/(R)/(U) は単調性により不要に（dead code 残置・後で除去可）。helper `not_multiT_diagSeq`/`SkT_PS_mono`/`Pred_diagSeq_Suc`/`diagSeq_Suc_snoc` 追加 |
-| 👤 親セッション（私） | team 統合（1つずつ緑ビルド確認）＋次の独立補題選定 | — |
-
-reducedness クラスタ（reduced_iff_cond/P_reduced/reduced_oper/reduced_slice/reduced_coeff/oneColumn）は**相互依存＋Red 絡み**で並列化すると循環偽証明リスク → **逐次**で扱う。§7.1+ は命題が `sorry` 未転記なので並列対象外。
-
-### 保留中: m_6_5_Red_IncrFirst（worktree adb8、未commit）
-**lexical 11＋証明バグ ~55件 修正**済、zeroT/multiT/core/noncore-m10z/**m10>0-trunk まで通過**、`Red_m10pos_unfold`(a2c4由来)統合済。**残り＝m10>0 の死枝[20]**（下記）。`Red_Pred`(a4ed,停止) も case 6 が同障壁。
-
-### 🔴 共通ボトルネック: 死枝[20]
-`seg (Red (coreReduce M)) (entry M 1 0) (Lng(Red(coreReduce M))−1) ∈ PT_PS`（=Red 出力の枝部が単項）。
-**Red_IncrFirst の m10>0 ケース（claim A・B 計4箇所）と Red_Pred の case 6 の双方がこれに帰着**。
-既存補題に無く、`m_6_5_Lng_Red` は両ケース処理で**回避**（条件を証明していない）。§6.6/6.7 レベルの構造定理が必要＝独立した大仕事。
-エージェントの元 Red_IncrFirst 証明はこの箇所を `by simp` で誤魔化しており**真には未完成**だった。
-
-数式は MathJax 記法（`$...$`）で書く。
+## 注意事項
+- 進捗ツリー以外をこのページに書かない。
+- 下記の反例以外のマークを増やさない
+  - 凡例: **各項目には必ず 🚨（未証明）または ✅（証明済）を付ける**（司令マーカー）。 / 🚨🤖＝ agent 作業中
 
 - 🚨 定理（標準形ペア数列システムの停止性）[§8.7 主結果]
   - ✅ §5 定式化
@@ -97,9 +74,9 @@ reducedness クラスタ（reduced_iff_cond/P_reduced/reduced_oper/reduced_slice
       - 🚨 命題（標準形の簡約性）
       - ✅ 命題（標準形の単項成分が標準形であること）〔`m_6_7_standard_P_components`(10c0895, 緑): `M∈SkT_PS k ⟹ P成分∈SkT_PS k`(同ランク)。原文証明(1392)のギャップは**単調性 `SkT_PS_mono`(S_k⊆S_{k+1}) の省略**だった(A6訂正済。当初「単調性偽」は私の truncation 誤判断)。`k×Lng` 辞書式帰納、先頭成分を mono で持ち上げ。Row1Zero/(R)/(U) は不要だった〕
       - ✅ 命題（標準形の始切片への遺伝性）〔`m_6_7_standard_prefix`: `seg M 0 j' ∈ ST_PS`。ST_PS 帰納＋`less_induct`、`_[1]=Pred` で短縮。helper `ST_PS_T_PS`(ST_PS⊆T_PS) も証明。agent abba09 由来、統合済〕
-    - 🚨 §6.8 降順性 〔次ターゲット。`descending` 補題はゼロ(新規)。`m_6_4_P_leftend_mono`(P成分の row-0 左端単調) は既証明＝`descending(P M)` の row-0 部はこれで出る〕
+    - 🚧 §6.8 降順性 〔作業中。`descending` 補題はゼロ(新規)。`m_6_4_P_leftend_mono`(P成分の row-0 左端単調) は既証明＝`descending(P M)` の row-0 部はこれで出る〕
       - 🚨 命題（標準形の切片と $\textrm{Br}$ の降順性の関係）〔`p_6_8_standard_slice_Br_descending`(pss_paper 577): `M∈ST_PS, (0,j0')≤(0,j1') ⟹ monoT(seg M j0' j1') ∧ descending(Br(seg ...))`。**本開発最難**。原文 content.md 1422-1615、`k_0` 帰納＋`N_{1,j1}=0/>0`・商余・`FirstNodes`/`TrMax`/`IncrFirst`・`Br(M'[n])` 分解の深いネスト。`Br`-under-oper の新規補題群が必要〕
-      - 🚨 命題（標準形の単項成分が降順であること）〔`p_6_8_standard_P_descending`(pss_paper 584): row-1 tie-break 部分。content.md 1616-1659。`k_0` 帰納(base k_0=2 は diagSeq oper 計算が細かい、step は `m_6_2_P_oper`＋`m_6_7_standard_P_components`✅)。命題1より自己完結＝**先に着手推奨**〕
+      - 🚧 命題（標準形の単項成分が降順であること）〔`p_6_8_standard_P_descending`(pss_paper 584): row-1 tie-break 部分。content.md 1616-1659。**着手中(2026-05-25)**。経験的検証 `python/sk_68_audit.py` で真(違反0)・補題2件も成立確認。**証明アーキテクチャ確定**: 原文の min-rank `k_0` 帰納を回避し `SkT_PS_mono`✅上の素朴な `k` 帰納(内側 Lng 帰納不要)。base(k=0)=diagSeq 非複項→`P X=[X]`で自明。step: M=M'[n]、(a)非複項 M'→`P M`は全成分等しく自明、(b)複項 M'→`m_6_2_P_oper_1/2`で `P M=butlast(P M')`(末尾長1)or `butlast(P M')@P(c[n])`(末尾 c=last(P M'))、J0'/J1' を `J_0=Lng(P M')-1` で場合分け→IH on M' + `m_6_7_standard_P_components`✅。必要ヘルパ: `oper_entry_0`(=`poper_oper_nth0`再利用、左端列保存)、`nonmulti_oper_components_leftcol`(非複項 c の `P(c[n])` 各成分は左端列が c と一致)〕
   - 🚨 §7 Buchholzの表記系への翻訳
     - 🚨 §7.1 Buchholzの表記系
       - 🚨 命題（順序数項のカッコの個数が左右で等しいこと）
