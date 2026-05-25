@@ -7248,5 +7248,51 @@ lemma m_6_7_standard_prefix:
   shows "seg M 0 j1' \<in> ST_PS"
   by (rule ST_PS_seg_0_aux[OF assms(1) assms(2)])
 
+
+subsection \<open>§6.7 標準形の単項成分が標準形であること (P-components are standard, same rank)\<close>
+
+text \<open>
+  Proof of \<open>p_6_7_standard_P_components\<close> (\<open>M \<in> SkT_PS k \<Longrightarrow> P M ! J \<in> SkT_PS k\<close>).
+  The article proof (content.md line 1392) is faulty (correction A6): it derives
+  "the components of \<open>M'\<close> are in \<open>S\<^sub>k\<close>" from the induction hypothesis, which only
+  yields \<open>S\<^bsub>k-1\<^esub>\<close>, and \<open>S\<^bsub>k-1\<^esub> \<subseteq> S\<^sub>k\<close> is false.  The repair uses two facts the
+  article omits, both empirically verified in \<open>python/sk_67_audit.py\<close>:
+    \<^item> (R) a non-last \<open>P\<close>-component has row 1 identically zero;
+    \<^item> (U) a row-1-zero standard form in \<open>S\<^sub>k\<close> is also in \<open>S\<^bsub>k+1\<^esub>\<close>.
+  Step 1 below is the self-contained part of (R): components of a row-1-zero
+  sequence are themselves row-1-zero (they are sublists, and \<open>concat (P M) = M\<close>).
+\<close>
+
+text \<open>Auxiliary predicate: row 1 is identically zero (article: \<open>M\<^bsub>1,j\<^esub> = 0\<close> for all \<open>j\<close>).\<close>
+definition Row1Zero :: "pairseq \<Rightarrow> bool" where
+  "Row1Zero M \<longleftrightarrow> (\<forall>p \<in> set M. snd p = 0)"
+
+lemma Row1Zero_iff_entry: "Row1Zero M \<longleftrightarrow> (\<forall>j < Lng M. entry M 1 j = 0)"
+proof
+  assume "Row1Zero M"
+  thus "\<forall>j < Lng M. entry M 1 j = 0"
+    unfolding Row1Zero_def entry_def by (auto simp: nth_mem)
+next
+  assume r: "\<forall>j < Lng M. entry M 1 j = 0"
+  show "Row1Zero M" unfolding Row1Zero_def
+  proof
+    fix p assume "p \<in> set M"
+    then obtain j where "j < Lng M" "p = M ! j" by (auto simp: in_set_conv_nth)
+    thus "snd p = 0" using r unfolding entry_def by auto
+  qed
+qed
+
+text \<open>Step 1 of (R): every \<open>P\<close>-component of a \<open>Row1Zero\<close> sequence is \<open>Row1Zero\<close>.\<close>
+lemma row1z_P_component:
+  assumes "Row1Zero M" "J < length (P M)"
+  shows "Row1Zero (P M ! J)"
+proof -
+  from assms(2) have mem: "P M ! J \<in> set (P M)" by (rule nth_mem)
+  have "set M = set (concat (P M))" by (simp add: idxsum_concat_P)
+  also have "\<dots> = (\<Union>xs \<in> set (P M). set xs)" by (simp add: set_concat)
+  finally have "set (P M ! J) \<subseteq> set M" using mem by auto
+  thus ?thesis using assms(1) unfolding Row1Zero_def by blast
+qed
+
 end
 
