@@ -7768,6 +7768,30 @@ proof -
   thus ?thesis using SkT_P_descending assms(2,3,4) by blast
 qed
 
+text \<open>Corollary (article §6.8 «(1) P(M) は降順である»): for \<open>X \<in> ST\<^bsub>PS\<^esub>\<close> the
+  component list \<open>P X\<close> is descending.  Combines the row-0 monotonicity
+  @{thm [source] m_6_4_P_leftend_mono} with the row-1 tie-break
+  @{thm [source] m_6_8_standard_P_descending}.\<close>
+
+lemma descending_P_of_ST:
+  assumes "X \<in> ST_PS"
+  shows "descending (P X)"
+  unfolding descending_def
+proof (intro allI impI)
+  fix J0 J1
+  assume H: "J0 \<le> J1 \<and> J1 \<le> Lng (P X) - 1"
+  have XT: "X \<in> T_PS" using assms ST_PS_T_PS by blast
+  from H have le: "J0 \<le> J1" and j1: "J1 \<le> Lng (P X) - 1" by auto
+  have r0: "entry (P X ! J1) 0 0 \<le> entry (P X ! J0) 0 0"
+    by (rule m_6_4_P_leftend_mono[OF XT le j1])
+  have tie: "entry (P X ! J0) 0 0 = entry (P X ! J1) 0 0
+             \<Longrightarrow> entry (P X ! J1) 1 0 \<le> entry (P X ! J0) 1 0"
+    using m_6_8_standard_P_descending[OF assms le j1] by simp
+  from r0 tie show "entry (P X ! J1) 0 0 \<le> entry (P X ! J0) 0 0
+        \<and> (entry (P X ! J0) 0 0 = entry (P X ! J1) 0 0
+           \<longrightarrow> entry (P X ! J1) 1 0 \<le> entry (P X ! J0) 1 0)" by blast
+qed
+
 
 section \<open>§7.1 Buchholz notation: principal components (命題（順序数項の単項成分の基本性質）)\<close>
 
