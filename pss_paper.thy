@@ -629,6 +629,15 @@ fun lessBT :: "BT \<Rightarrow> BT \<Rightarrow> bool" and lessBP :: "BP \<Right
 abbreviation leBT :: "BT \<Rightarrow> BT \<Rightarrow> bool" where
   "leBT a b \<equiv> lessBT a b \<or> a = b"
 
+text \<open>[Buc1] Lemma 2.1: \<open><\<close> is a strict linear order on \<open>T\<close> — irreflexive,
+  transitive, and trichotomous (the latter gives totality and asymmetry).\<close>
+
+lemma p_7_1_lessBT_linord:
+  shows "\<not> lessBT t t"
+    and "lessBT a b \<Longrightarrow> lessBT b c \<Longrightarrow> lessBT a c"
+    and "lessBT a b \<or> a = b \<or> lessBT b a"
+  sorry
+
 text \<open>[Buc1] (G1)–(G3): \<open>G\<^sub>u a \<subseteq> T\<close>.\<close>
 
 fun GBT :: "enat \<Rightarrow> BT \<Rightarrow> BT set" and GBP :: "enat \<Rightarrow> BP \<Rightarrow> BT set" where
