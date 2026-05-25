@@ -775,6 +775,14 @@ definition PB :: "BT \<Rightarrow> BT list" where
 definition SigmaB :: "BT list \<Rightarrow> BT" where
   "SigmaB ts = Trm (concat (map untrm ts))"
 
+text \<open>命題（順序数項の単項成分の基本性質） (§7.1): with \<open>J\<^sub>1 := Lng(P(t)) - 1\<close>,
+  (1) \<open>J\<^sub>1 = -1\<close> (i.e. \<open>Lng(P t) = 0\<close>) iff \<open>t = 0\<close>, and (2) \<open>t = \<Sigma>\<^bsub>B\<^esub>(P t)\<close>.\<close>
+
+lemma p_7_1_term_components:
+  assumes "t \<in> T_B"
+  shows "(Lng (PB t) = 0 \<longleftrightarrow> t = Trm []) \<and> SigmaB (PB t) = t"
+  sorry
+
 
 subsection \<open>§7.2 scb分解 ([Buc1] のアルファベット \<open>\<Sigma>\<close> 上)\<close>
 
@@ -793,6 +801,15 @@ fun flatBT :: "BT \<Rightarrow> Sym list" and flatBP :: "BP \<Rightarrow> Sym li
 | "flatBT (Trm (p # q # ps)) =
      LP # (flatBP p @ concat (map (\<lambda>r. CM # flatBP r) (q # ps))) @ [RP]"
 | "flatBP (DB u a) = Dsym u # flatBT a"
+
+text \<open>命題（順序数項のカッコの個数が左右で等しいこと） (§7.1): in the \<open>\<Sigma>\<close>-string
+  of any \<open>t \<in> T\<^bsub>B\<^esub>\<close> the letter \<open>\<^bold>(\<close> occurs as often as \<open>\<^bold>)\<close>.\<close>
+
+lemma p_7_1_paren_balance:
+  assumes "t \<in> T_B"
+  shows "length (filter (\<lambda>x. x = LP) (flatBT t))
+       = length (filter (\<lambda>x. x = RP) (flatBT t))"
+  sorry
 
 text \<open>\<open>RightNodes : T\<^bsub>B\<^esub> \<to> \<nat>\<^bsup><\<omega>\<^esup>\<close> (§7.2): \<open>0 \<mapsto> ()\<close>; \<open>D\<^sub>u t' \<mapsto> (u) \<frown>
   RightNodes t'\<close>; a multi term \<open>\<mapsto> RightNodes\<close> of its last principal component.\<close>
