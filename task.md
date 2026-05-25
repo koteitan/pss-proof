@@ -95,11 +95,11 @@ reducedness クラスタ（reduced_iff_cond/P_reduced/reduced_oper/reduced_slice
     - 🚨 §6.7 標準形
       - ✅ 命題（標準形の階層和による表示）〔`m_6_7_ST_eq_Union_SkT`: `ST_PS = ⋃k SkT_PS k`。純帰納的集合等式、Red 非依存。agent a8c0 由来、統合済〕
       - 🚨 命題（標準形の簡約性）
-      - 🚨🚧 命題（標準形の単項成分が標準形であること）〔`p_6_7_standard_P_components`: `M∈SkT_PS k ⟹ P成分∈SkT_PS k`(同ランク)。**原文(content.md 1366)は S_k を主張するが原文証明(1386,1392)は S_{k-1} しか示さない＝原文内部ギャップ**。経験的に S_k も小範囲で真。**決定=(β) S_k のまま証明**(article 証明が足りない hard ケース)。用途上は ST_PS 和集合版で足りる(S_{k-1}⊆ST_PS via m_6_7_ST_eq_Union_SkT)〕
+      - ✅ 命題（標準形の単項成分が標準形であること）〔`m_6_7_standard_P_components`(10c0895, 緑): `M∈SkT_PS k ⟹ P成分∈SkT_PS k`(同ランク)。原文証明(1392)のギャップは**単調性 `SkT_PS_mono`(S_k⊆S_{k+1}) の省略**だった(A6訂正済。当初「単調性偽」は私の truncation 誤判断)。`k×Lng` 辞書式帰納、先頭成分を mono で持ち上げ。Row1Zero/(R)/(U) は不要だった〕
       - ✅ 命題（標準形の始切片への遺伝性）〔`m_6_7_standard_prefix`: `seg M 0 j' ∈ ST_PS`。ST_PS 帰納＋`less_induct`、`_[1]=Pred` で短縮。helper `ST_PS_T_PS`(ST_PS⊆T_PS) も証明。agent abba09 由来、統合済〕
-    - 🚨 §6.8 降順性
-      - 🚨 命題（標準形の切片と $\textrm{Br}$ の降順性の関係）
-      - 🚨 命題（標準形の単項成分が降順であること）
+    - 🚨 §6.8 降順性 〔次ターゲット。`descending` 補題はゼロ(新規)。`m_6_4_P_leftend_mono`(P成分の row-0 左端単調) は既証明＝`descending(P M)` の row-0 部はこれで出る〕
+      - 🚨 命題（標準形の切片と $\textrm{Br}$ の降順性の関係）〔`p_6_8_standard_slice_Br_descending`(pss_paper 577): `M∈ST_PS, (0,j0')≤(0,j1') ⟹ monoT(seg M j0' j1') ∧ descending(Br(seg ...))`。**本開発最難**。原文 content.md 1422-1615、`k_0` 帰納＋`N_{1,j1}=0/>0`・商余・`FirstNodes`/`TrMax`/`IncrFirst`・`Br(M'[n])` 分解の深いネスト。`Br`-under-oper の新規補題群が必要〕
+      - 🚨 命題（標準形の単項成分が降順であること）〔`p_6_8_standard_P_descending`(pss_paper 584): row-1 tie-break 部分。content.md 1616-1659。`k_0` 帰納(base k_0=2 は diagSeq oper 計算が細かい、step は `m_6_2_P_oper`＋`m_6_7_standard_P_components`✅)。命題1より自己完結＝**先に着手推奨**〕
   - 🚨 §7 Buchholzの表記系への翻訳
     - 🚨 §7.1 Buchholzの表記系
       - 🚨 命題（順序数項のカッコの個数が左右で等しいこと）
