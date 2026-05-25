@@ -11,9 +11,8 @@
 | ✅ agent `a8c0…` | `m_6_7_ST_eq_Union_SkT`（`ST_PS=⋃SkT_PS`） | **統合済（緑）** |
 | ✅ agent `acf1…` | `m_6_6_Red_leftend_1`（Red が行1左端固定） | **統合済（緑）** |
 | ✅ agent `abba09…` | `m_6_7_standard_prefix`（標準形の始切片遺伝＋helper `ST_PS_T_PS`） | **統合済（緑）** |
-| 🤖 agent `a97a…` | `m_6_6_condAB_coeff` 再挑戦（現ベース＋foreground build、a7d9 partial 活用） | 稼働中 |
-| 🚨 agent `af1e…`(停止) | `m_6_7_standard_P_components` | **ブロッカー報告**: 原文命題=`S_kT_PS`(同ランク)だが原文証明は`S_{k-1}`しか示さず(原文内部ギャップ)。経験的に S_k も小範囲で真。**ユーザ決定=(β) S_k のまま hard 証明に挑む**(次の親タスク)。proof 無しなので worktree 破棄可 |
-| 🚨 agent `a7d9…`(停止) | `m_6_6_condAB_coeff`（§6.6 条件A/Bと係数、3部構成・最難） | **未完**（経験的に真(455件)。helper と part3 に複数の未閉 by。partial は worktree agent-a7d9 に保存・base 古い b6da51b。原因は予算でなく async build yield＋難所。要 focused 再挑戦） |
+| ✅ agent `a97a…` | `m_6_6_condAB_coeff`（§6.6 条件A/Bと係数、3部構成・最難）＋helper `nextR1_unique`/`condAB_row1_noparent_zero` | **統合済（緑, a5287ab）**。build23 で収束（async yield だが最終緑）。a7d9 の partial を出発点に part3 の greedy intro と bounded-∀ 不整合を修正 |
+| 🚨(β) `m_6_7_standard_P_components`（親直轄） | 原文命題=`S_kT_PS`(同ランク)。原文証明は `S_{k-1}` 止まり＝**原文証明はバグ**。経験的検証で命題自体は真(k≤5,違反0)。**証明構造判明**: `T(k):全P成分∈S_k` を補助 `A(k):非末尾P成分∈S_{k+1}` と同時帰納すれば case(1,J₁=0)→直接, 先頭(=P(M')非末尾)→A, 末尾(case2)→T(k)+[n]+構造帰納 で閉じる。**ただし A(k) の帰納ステップが S_{k+1}↔S_{k+2} で閉じず、A の正しい不変量を要確定**（audit5 で rank柔軟性を調査中） |
 | 👤 親セッション（私） | team 統合（1つずつ緑ビルド確認）＋次の独立補題選定 | — |
 
 reducedness クラスタ（reduced_iff_cond/P_reduced/reduced_oper/reduced_slice/reduced_coeff/oneColumn）は**相互依存＋Red 絡み**で並列化すると循環偽証明リスク → **逐次**で扱う。§7.1+ は命題が `sorry` 未転記なので並列対象外。
