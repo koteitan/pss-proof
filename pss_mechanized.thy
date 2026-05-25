@@ -7294,5 +7294,64 @@ proof -
   thus ?thesis using assms(1) unfolding Row1Zero_def by blast
 qed
 
+text \<open>
+  \<open>SkT_PS\<close> is monotone: \<open>SkT_PS k \<subseteq> SkT_PS (Suc k)\<close>.  This is the fact the
+  article's §6.7 proof of standard_P_components silently relies on (correction
+  A6): a rank-\<open>k\<close> standard form is also rank-\<open>(k+1)\<close>.  Witness for the base
+  case: \<open>diagSeq u v = Pred (diagSeq u (v+1)) = (diagSeq u (v+1))[1]\<close>, and
+  \<open>diagSeq u (v+1) \<in> SkT_PS 0\<close>.  (Monotonicity makes the \<open>Row1Zero\<close> route to
+  the leading components unnecessary — see docs/standard-P-components.md.)
+\<close>
+
+text \<open>Auxiliary: \<open>diagSeq u (Suc v) = diagSeq u v @ [(Suc v, Suc v)]\<close> and hence
+  \<open>Pred (diagSeq u (Suc v)) = diagSeq u v\<close>.\<close>
+lemma diagSeq_Suc_snoc:
+  assumes uv: "u \<le> v"
+  shows "diagSeq u (Suc v) = diagSeq u v @ [(Suc v, Suc v)]"
+  using uv by (simp add: diagSeq_def upt_Suc_append)
+
+lemma Pred_diagSeq_Suc:
+  assumes uv: "u \<le> v"
+  shows "Pred (diagSeq u (Suc v)) = diagSeq u v"
+proof -
+  have Lgt1: "1 < Lng (diagSeq u (Suc v))" using uv by simp
+  have "Pred (diagSeq u (Suc v)) = butlast (diagSeq u (Suc v))"
+    using Lgt1 by (simp add: Pred_def)
+  also have "\<dots> = butlast (diagSeq u v @ [(Suc v, Suc v)])"
+    by (simp only: diagSeq_Suc_snoc[OF uv])
+  also have "\<dots> = diagSeq u v" by simp
+  finally show ?thesis .
+qed
+
+lemma SkT_PS_mono: "SkT_PS k \<subseteq> SkT_PS (Suc k)"
+proof (induction k)
+  case 0
+  show "SkT_PS 0 \<subseteq> SkT_PS (Suc 0)"
+  proof
+    fix M assume "M \<in> SkT_PS 0"
+    then obtain u v where Muv: "M = diagSeq u v" and uv: "u \<le> v" by auto
+    have NinS0: "diagSeq u (Suc v) \<in> SkT_PS 0" using uv by force
+    have LN: "1 < Lng (diagSeq u (Suc v))" using uv by simp
+    have NT: "diagSeq u (Suc v) \<in> T_PS"
+      using diagSeq_Suc_snoc[OF uv] by (simp add: T_PS_def)
+    have "M = diagSeq u v" by (rule Muv)
+    also have "\<dots> = Pred (diagSeq u (Suc v))" by (simp add: Pred_diagSeq_Suc[OF uv])
+    also have "\<dots> = (diagSeq u (Suc v))[1]" by (rule m_5_3_pred_is_oper1[OF NT LN])
+    finally have Meq: "M = (diagSeq u (Suc v))[1]" .
+    have "(diagSeq u (Suc v))[1] \<in> SkT_PS (Suc 0)" using NinS0 by auto
+    thus "M \<in> SkT_PS (Suc 0)" using Meq by simp
+  qed
+next
+  case (Suc k)
+  show "SkT_PS (Suc k) \<subseteq> SkT_PS (Suc (Suc k))"
+  proof
+    fix M assume "M \<in> SkT_PS (Suc k)"
+    then obtain N n where MNn: "M = (N::pairseq)[n]"
+                      and NK: "N \<in> SkT_PS k" and n1: "1 \<le> n" by auto
+    have "N \<in> SkT_PS (Suc k)" using Suc.IH NK by blast
+    thus "M \<in> SkT_PS (Suc (Suc k))" using n1 MNn by auto
+  qed
+qed
+
 end
 
