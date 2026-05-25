@@ -7939,6 +7939,81 @@ proof (rule nth_equalityI)
   thus "seg (seg M a b) c d ! i = seg M (a + c) (a + d) ! i" using lhs by simp
 qed
 
+text \<open>Fast accessor for \<open>descending\<close> (avoids unfolding the \<open>\<forall>\<close> in context, which
+  makes \<open>blast\<close>/\<open>simp\<close> explode).\<close>
+
+lemma descendingD:
+  assumes "descending Q" "J0 \<le> J1" "J1 \<le> Lng Q - 1"
+  shows "entry (Q ! J1) 0 0 \<le> entry (Q ! J0) 0 0
+       \<and> (entry (Q ! J0) 0 0 = entry (Q ! J1) 0 0
+          \<longrightarrow> entry (Q ! J1) 1 0 \<le> entry (Q ! J0) 1 0)"
+  using assms unfolding descending_def by blast
+
+text \<open>Appending one component preserves \<open>descending\<close> iff the new last component
+  \<open>x\<close> is \<open>\<le>\<close> the previous last in the descending order — because in a descending
+  list the last element is the \<open>\<le>\<close>-minimum.  This drives the slice-length
+  induction for \<open>slice_P_descending\<close> (\<open>P (seg M a b) = P (prefix) @ [last]\<close>).\<close>
+
+lemma descending_snoc:
+  assumes dQ: "descending Q" and ne: "Q \<noteq> []"
+    and r0: "entry x 0 0 \<le> entry (last Q) 0 0"
+    and r1: "entry (last Q) 0 0 = entry x 0 0 \<longrightarrow> entry x 1 0 \<le> entry (last Q) 1 0"
+  shows "descending (Q @ [x])"
+  unfolding descending_def
+proof (intro allI impI)
+  fix J0 J1
+  assume H: "J0 \<le> J1 \<and> J1 \<le> Lng (Q @ [x]) - 1"
+  from H have le: "J0 \<le> J1" and j1: "J1 \<le> length Q" by auto
+  let ?L = "length Q - 1"
+  have lastQ: "last Q = Q ! ?L" using ne by (simp add: last_conv_nth)
+  show "entry ((Q @ [x]) ! J1) 0 0 \<le> entry ((Q @ [x]) ! J0) 0 0
+        \<and> (entry ((Q @ [x]) ! J0) 0 0 = entry ((Q @ [x]) ! J1) 0 0
+           \<longrightarrow> entry ((Q @ [x]) ! J1) 1 0 \<le> entry ((Q @ [x]) ! J0) 1 0)"
+  proof (cases "J1 < length Q")
+    case True
+    \<comment> \<open>both indices land in \<open>Q\<close>\<close>
+    have e0: "(Q @ [x]) ! J0 = Q ! J0" using le True by (simp add: nth_append)
+    have e1: "(Q @ [x]) ! J1 = Q ! J1" using True by (simp add: nth_append)
+    have j1Q: "J1 \<le> Lng Q - 1" using True by simp
+    show ?thesis using descendingD[OF dQ le j1Q] e0 e1 by simp
+  next
+    case False
+    hence J1eq: "J1 = length Q" using j1 by linarith
+    have ex1: "(Q @ [x]) ! J1 = x" using J1eq by (simp add: nth_append)
+    show ?thesis
+    proof (cases "J0 = length Q")
+      case True
+      \<comment> \<open>\<open>J0 = J1 = length Q\<close>: both point at \<open>x\<close>, reflexive\<close>
+      have "(Q @ [x]) ! J0 = x" using True by (simp add: nth_append)
+      thus ?thesis using ex1 by simp
+    next
+      case False
+      hence J0lt: "J0 < length Q" using le J1eq by linarith
+      have J0L: "J0 \<le> ?L" using J0lt by linarith
+      have e0: "(Q @ [x]) ! J0 = Q ! J0" using J0lt by (simp add: nth_append)
+      \<comment> \<open>\<open>Q ! J0\<close> dominates \<open>last Q\<close> (descending), which dominates \<open>x\<close>\<close>
+      have dom: "entry (Q ! ?L) 0 0 \<le> entry (Q ! J0) 0 0
+               \<and> (entry (Q ! J0) 0 0 = entry (Q ! ?L) 0 0
+                  \<longrightarrow> entry (Q ! ?L) 1 0 \<le> entry (Q ! J0) 1 0)"
+        by (rule descendingD[OF dQ J0L order.refl])
+      show ?thesis
+      proof (intro conjI impI)
+        show "entry ((Q @ [x]) ! J1) 0 0 \<le> entry ((Q @ [x]) ! J0) 0 0"
+          using ex1 e0 dom r0 lastQ by simp
+      next
+        assume eq: "entry ((Q @ [x]) ! J0) 0 0 = entry ((Q @ [x]) ! J1) 0 0"
+        hence eqx: "entry (Q ! J0) 0 0 = entry x 0 0" using e0 ex1 by simp
+        have mid: "entry (Q ! J0) 0 0 = entry (Q ! ?L) 0 0"
+          using dom r0 eqx lastQ by simp
+        have "entry x 1 0 \<le> entry (Q ! ?L) 1 0" using r1 eqx mid lastQ by simp
+        also have "\<dots> \<le> entry (Q ! J0) 1 0" using dom mid by simp
+        finally show "entry ((Q @ [x]) ! J1) 1 0 \<le> entry ((Q @ [x]) ! J0) 1 0"
+          using ex1 e0 by simp
+      qed
+    qed
+  qed
+qed
+
 
 section \<open>§7.1 Buchholz notation: principal components (命題（順序数項の単項成分の基本性質）)\<close>
 
