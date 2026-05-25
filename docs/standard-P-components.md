@@ -4,30 +4,25 @@
 （同ランク `S_k`）。**原文証明はバグ**（corrections.md A6、content.md 1392 行は `S_{k-1}`
 止まりで `S_k` に届かない）。命題自体は真（経験的に `python/sk_67_audit.py` で k≤5 違反0）。
 
-## 全体構造：T と R を fold した同時帰納（辞書式測度 (k, Lng)）
+## 全体構造：単調性 `SkT_PS_mono` を使った `k × Lng` 辞書式帰納（Row1Zero 不要）
 
-**設計指針＝`bms-paper/tmp/simultaneous_induction_playbook.md`**: 相互依存する clause を
-standalone に切り出すと同レベル循環で詰む（"IH が弱すぎる"病巣）。→ **連言 1 本・1 回の帰納**、
-**level × 展開（=Lng）の辞書式測度**、index は `arbitrary:` で一般化。
+> **重要な経緯**: 当初「単調性 $S_{k-1}\subseteq S_k$ は偽」と誤判断し、Row1Zero 経由の補強 (R)/(U) を
+> 設計した（playbook で T と fold する計画）。しかし**単調性は真**（私の経験検証が truncation
+> アーティファクトだった）。agent が `SkT_PS_mono` を発見・私が完成（緑、0669768）。
+> **単調性があれば Row1Zero は丸ごと不要**。corrections.md A6 も訂正済。
 
-当初 (R) を standalone 補題（`row1z_take_Pcut`, agent a12c）にしたが、(R) は T と末尾再帰
-`P(M')_{J₀}[n]` を共有するので standalone は循環の恐れ。**playbook に従い (R) を T の第2連言に
-fold-in**（a12c は停止）。verify-first（`python/sk_fold.py`）で fold した Φ は全 S_k 違反0、
-唯一の新規 obligation（nonmulti-oper_1 の `Row1Zero(Pred M')`）も成立を確認済。
+**証明済の鍵補題 `SkT_PS_mono: SkT_PS k ⊆ SkT_PS (Suc k)`**（`pss_mechanized.thy`）。
+base 証人 `diagSeq u v = (diagSeq u (Suc v))[1] = Pred(diagSeq u (Suc v))`、一般 k は帰納。
 
-**fold した述語**（`X` を `arbitrary:` に、`k`×`Lng X` の辞書式で帰納）:
-```
-Φ(k, X) ≡  X ∈ SkT_PS k ⟶
-            (T) (∀J < Lng (P X). P X ! J ∈ SkT_PS k)
-          ∧ (R) (∀J < Lng (P X) - 1. Row1Zero (P X ! J))
-```
-IH は `∀(k',X'). (k',Lng X') <lex (k,Lng X) ⟶ Φ(k',X')`（leading は k'=k-1 で、末尾は同 k で
-Lng 減少）。
+**T(k)** := `∀X∈SkT_PS k. ∀J<Lng(P X). P X!J ∈ SkT_PS k`。`k` の外帰納 × Suc 内の `Lng X` 強帰納
+（`X` を `arbitrary:`）。leading 成分は IH(k-1) で `∈S_{k-1}`、**`SkT_PS_mono` で `S_k` に持ち上げ**。
+末尾は `Lng` 減少で内側 IH。
 
-補助補題（fold に使う道具）:
-- **段1 `row1z_P_component`**（済, fa3db3b）: `Row1Zero M ⟹ Row1Zero (P M ! J)`。
-- **(U) `SkT_row1z_up`**（agent aaf6, 継続）: `M∈SkT_PS k ⟹ Row1Zero M ⟹ M∈SkT_PS (Suc k)`。
-  ＝ leading 成分 `∈S_{k'}`(IH の T) を `Row1Zero`(IH の R)＋(U) で `S_k` に持ち上げる道具。独立。
+道具:
+- `SkT_PS_mono`（済）: `S_{k-1} ⊆ S_k`。leading 成分の持ち上げに使う唯一の鍵。
+- 基本列関係（既証明 `poper_*` / `m_6_2_nonmulti_oper_1/2` / `m_5_3_pred_is_oper1`）。
+- ~~段1 `row1z_P_component`, `Row1Zero`, (R), (U)~~ → **単調性により不要**（`row1z_P_component`/`Row1Zero`
+  は現状 dead code、後で除去可）。
 
 ## Base k=0
 `X = diagSeq u v`（u≤v）。`monoT (diagSeq u v)`（`monoT_diagSeq_append` 一般化）⟹ `¬multiT`
@@ -48,31 +43,22 @@ nonmulti 基本列関係（`m_6_2_nonmulti_oper_1/2`）:
 ### (b) M' が multiT（`P M'` が ≥2 成分、`J_0 := Lng(P M')-1 ≥ 1`）
 最後の成分 `P M'!J_0` の長さで分岐（`poper` 関係(1)/(2)）。`P M'!J`（J<J_0）は **P M' の非末尾成分**。
 - **先頭部分 `P M'!J`（J<J_0）の処理（両分岐共通）**:
-  IH_k で `P M'!J ∈ SkT_PS k'`。(R)（multiT M' に適用、`butlast(P M')=P(take(Pcut M')M')`）
-  ＋段1 で `Row1Zero (P M'!J)`。(U) で `P M'!J ∈ SkT_PS(Suc k')`。✓
+  IH_k で `P M'!J ∈ SkT_PS k'`。**`SkT_PS_mono` で `P M'!J ∈ SkT_PS(Suc k')`**。✓（Row1Zero 不要）
 - **(1) `Lng(P M'!J_0)=1`**: `P X = butlast(P M') = [P M'!0,…,P M'!(J_0-1)]`（全部先頭部分）。上で済。✓
 - **(2) `Lng(P M'!J_0)>1`**: `P X = [P M'!0,…,P M'!(J_0-1)] @ P((P M'!J_0)[n])`。
-  - 先頭部分: 上で済（(R)+(U)）。
+  - 先頭部分: 上で済（IH_k + mono）。
   - 末尾 `P((P M'!J_0)[n])`: `P M'!J_0 ∈ SkT_PS k'`（IH_k）⟹ `(P M'!J_0)[n] ∈ SkT_PS(Suc k')`（1≤n）。
     `J_0≥1` ゆえ先頭部分は非空、`X = (concat 先頭) @ (P M'!J_0)[n]` より
     `Lng((P M'!J_0)[n]) < Lng X`。よって **IH_L**（inner 強帰納）を `(P M'!J_0)[n]` に適用、
     その P 成分が `SkT_PS(Suc k')`。✓  ← 末尾再帰は Lng で整礎。
 
-## R 連言の per-case obligation（同じ場合分けで同時に閉じる）
-- base k=0: `P X=[X]` 単成分 ⟹ 非末尾なし、R vacuous。
-- nonmulti oper_2: `P X=[X]` 単成分 ⟹ R vacuous。
-- **nonmulti oper_1**: `P X=[Pred M']×n`、非末尾＝`Pred M'`。**`Row1Zero(Pred M')`** が要る
-  （verify-first で oper_1 条件下 3/3 成立）。← R の唯一の非自明 obligation。詰まれば focused agent。
-- multiT (1): 非末尾 = `P M'` の非末尾 → IH の R(M') で Row1Zero。
-- multiT (2): 非末尾 = `P M'` 非末尾（IH R(M')）＋ 末尾 `P((M')_{J₀}[n])` の非末尾（Lng 減少, 同 k の IH R）。
-
 ## 必要な道具（既証明）
-`poper_P_multi`/`poper_P_nonmulti`/`poper_last_P_multi`（last/butlast 構造）、
+`SkT_PS_mono`（leading 持ち上げ）、`poper_P_multi`/`poper_P_nonmulti`/`poper_last_P_multi`（last/butlast 構造）、
 `m_6_2_nonmulti_oper_1/2`、`m_5_3_pred_is_oper1`（`Pred M = M[1]`）、`poper_oper_*`、
 関係(2)の `P(M'[n]) = butlast(P M') @ P((P M'!J_0)[n])` を与える poper 補題（要特定 or 組立）、
-`monoT_diagSeq_append`（base）、append の nth（`nth_append`）でインデックス処理。
+append の nth（`nth_append`）でインデックス処理。
 
-## 統合順序
-agent a12c (R) と aaf6 (U) が緑で戻る → 親が行範囲抽出して main へ → `Finished PSS` 検証 →
-T(k)（本ファイルの構造）を `m_6_7_standard_P_components` として書き、`p_6_7_standard_P_components`
-を discharge。push は明示指示時のみ。
+## 実装順序
+`SkT_PS_mono`（済, 0669768）の上で T(k) を `m_6_7_standard_P_components` として書き、
+`p_6_7_standard_P_components` を discharge。push は明示指示時のみ。
+（`Row1Zero`/`row1z_P_component` は単調性により dead code。後で除去可。）
