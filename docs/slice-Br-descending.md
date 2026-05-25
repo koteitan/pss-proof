@@ -44,8 +44,11 @@ components `Br M'`**.
   its row-1 structure is not that of a `diagSeq`-oper image. **⟹ cannot get the
   tie-break for `Br M'` from (A): `P Y` with `Y ∉ ST_PS`.**
 - (C) even the ancestor slice `M' = seg M j0' j1'` is not always in ST_PS
-  (42/207). So the tie-break needs the article's structural induction, not a
-  membership shortcut.
+  (42/207, **including for mono `M`**, e.g. `M = (0,0)(1,1)(2,0)`, slice
+  `(1,1)(2,0)`). So the tie-break needs the article's structural induction, not
+  a membership shortcut. **This refutes content.md 1434** ("M' が標準形となること
+  を…示す") — the proven (and provable) statement is "Br(M') is descending", not
+  "M' is standard". Recorded as **correction A7**.
 
 ## The hard part: row-1 tie-break of `Br M'` (article k_0 induction)
 

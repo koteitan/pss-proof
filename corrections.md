@@ -279,3 +279,27 @@ $$\textrm{diagSeq}(u,v) = \textrm{Pred}(\textrm{diagSeq}(u,v{+}1)) = (\textrm{di
 `SkT_PS_mono`（済）を用いて `pss_paper.thy` の `p_6_7_standard_P_components`（同ランク $S_k$）を、
 $k$ × $\textrm{Lng}$ の辞書式帰納で証明する（先頭は単調性、末尾は $\textrm{Lng}$ 減少の内側帰納）。詳細は
 `docs/standard-P-components.md`。
+
+
+## A7. §6.8 命題（標準形の切片と Br の降順性の関係）: 「M' が標準形となる」は誤り（示すべきは「Br(M') が降順」）
+
+**所在**: content.md 1434（命題（標準形の切片と $\textrm{Br}$ の降順性の関係）の証明本体）。
+
+> $M$ が単項であるという条件下で**$M'$ が標準形となること**を $k_0$ に関する数学的帰納法で示す。
+
+**問題点**: この一文は帰納法で示す対象を「$M'$ が標準形（$\in ST_{\textrm{PS}}$）」と述べているが、
+
+- 命題の結論は「$M'$ は単項かつ $\textrm{Br}(M')$ は降順」であって「$M'$ が標準形」ではない。
+- 続く base / 各ケースは一貫して「$\textrm{Br}(M')$ は降順である」を結論しており、「$M'$ が標準形」は一度も使われない。
+- 実際 $M'$ は標準形とは限らない。**反例（単項標準形でも）**: $M = (0,0)(1,1)(2,0) \in ST_{\textrm{PS}}$,
+  $j'_0=1,\ j'_1=2$, $(0,1)\le_M(0,2)$ のとき $M' = (1,1)(2,0) \notin ST_{\textrm{PS}}$
+  （python 経験的検証で単項 $M$ に限っても 42/207 が非標準形。truncation 由来でない小例）。
+  さらに枝セグメント $\textrm{seg}(M',\textrm{TrMax}(M')+1,\textrm{Lng}(M')-1)$ は全例で非標準形。
+
+**訂正案**: 「$M'$ が標準形となること」を「$\textrm{Br}(M')$ が降順となること」に修正（単項性は直前で別途証明済）。
+$M'\in ST_{\textrm{PS}}$ は成り立たないので、降順性を「$M'$ が標準形」へ帰着させる経路は使えず、原文どおり
+$k_0$ 帰納＋$\textrm{Br}$-under-oper 分解を要する。
+
+**形式化での扱い**: `monoT(seg M j0' j1')`（`m_6_2_mono_ancestor_slice`）と `descending(Br ...)` の行0部
+（`m_6_4_P_leftend_mono` を枝セグメント $\in T_{\textrm{PS}}$ に適用）は確保済。残るは Br 成分の行1 tie-break
+（$k$ 帰納＋Br-under-oper、設計 `docs/slice-Br-descending.md`）。
