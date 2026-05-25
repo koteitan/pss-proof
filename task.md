@@ -80,9 +80,9 @@
       - ✅ 命題（標準形の単項成分が降順であること）〔`m_6_8_standard_P_descending`(緑): row-1 tie-break。content.md 1616-1659。原文の min-rank `k_0` 帰納を回避し `SkT_PS_mono`✅上の `k` 帰納、step は `m_6_2_P_oper_1/2`＋`m_6_7_standard_P_components`✅、IH on M'。helper `oper_entry_0`/`nonmulti_oper_components_leftcol`。経験的検証 `python/sk_68_audit.py`(違反0)〕
   - 🚨 §7 Buchholzの表記系への翻訳
     - 🚨 §7.1 Buchholzの表記系
-      - 🚨 命題（順序数項のカッコの個数が左右で等しいこと）
-      - 🚨 命題（順序数項の単項成分の基本性質）
-      - 🚨 命題（部分表現の不等式の延長性）
+      - ✅ 命題（順序数項のカッコの個数が左右で等しいこと）〔`m_7_1_paren_balance`(緑): flatBT の Σ列で LP数=RP数。`flatBT_flatBP.induct` 相互帰納＋helper `filter_concat_bal`。agent a09c 由来、統合済〕
+      - ✅ 命題（順序数項の単項成分の基本性質）〔`m_7_1_term_components`(緑): Lng(PB t)=0⟺t=0 ∧ t=SigmaB(PB t)。ほぼ定義的(`cases t`+`PB_def`/`SigmaB_def`)。agent a09c 由来、統合済〕
+      - 🚨 命題（部分表現の不等式の延長性）〔`p_7_1_*` 未転記。文字列ベース(`s t b∈T_B`)で parse 関数(Σ列→BT)が無く faithful 化に encoding 判断要＝保留〕
     - 🚨 §7.2 scb分解
       - 🚨 命題（scb分解の置換可能性）
       - 🚨 命題（scb分解の合成則）
