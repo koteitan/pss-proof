@@ -80,11 +80,58 @@ oper lemma in `pss_mechanized.thy`):
 - row-1 values of `Br` components in terms of joints / `M_{1,FirstNodes}`
   (`entry (Br M ! J) 1 0` characterization), to drive the tie-break.
 
-## Plan
+## CLEAN final reduction (confirmed) — prop1 reduces to ONE lemma
 
-1. ✅ design (this doc) + empirical reduction confirmed.
-2. Prove the easy reusable helpers green: `descending_P_of_ST`,
-   `branch_seg_T_PS`, the row-0 part of `descending (Br M')`.
-3. Build `Br_oper_decomp` and the row-1 characterization; then the `k`-induction
-   for the tie-break. (Largest remaining piece; may span sessions.)
-4. Assemble `m_6_8_standard_slice_Br_descending`.
+The whole proposition reduces to a single lemma about **any slice** of a
+standard form:
+
+> **`slice_P_descending`**: `M ∈ ST_PS ⟹ a ≤ b ⟹ b ≤ Lng M - 1 ⟹
+>   descending (P (seg M a b))`.
+
+Given `slice_P_descending`, `m_6_8_standard_slice_Br_descending` follows:
+- `monoT (seg M j0' j1')` — `m_6_2_mono_ancestor_slice` (FREE).
+- `descending (Br M')`: if `Br M' = []`, trivial; else `Br M' = P Y`,
+  `Y = seg M' (TrMax M'+1)(Lng M'-1)`. By `seg_of_seg` (green; `j0' ≤ j1'`,
+  `Lng M'-1 ≤ j1'-j0'`), `Y = seg M (j0'+TrMax M'+1) (j0'+Lng M'-1)`, a slice of
+  `M` with right end `= j1' ≤ Lng M-1`. So `slice_P_descending` gives
+  `descending (P Y) = descending (Br M')`. ∎
+
+Empirically (G1) `descending (P (seg M a b))` holds for every slice (0/353).
+(The earlier `descending_Br_of_FN_tiebreak` is an alternative FirstNodes-based
+reduction; `slice_P_descending` + `seg_of_seg` is the cleaner route and makes it
+unnecessary.)
+
+## `slice_P_descending` proof strategy (the remaining hard core)
+
+Row-0 part is FREE (`m_6_4_P_leftend_mono` on `seg M a b ∈ T_PS`). The row-1
+tie-break is the irreducible content (= the article's §6.8 induction, content.md
+1450–1615). Plan: induct on the level `k` with `M ∈ SkT_PS k` (as in prop2,
+using `SkT_PS_mono`):
+- **base `k=0`**: `M = diagSeq u v`; `seg M a b = diagSeq (u+a)(u+b)` (diagonal
+  slice, cf. `seg_0_diagSeq`), which is non-multi (`not_multiT_diagSeq`), so
+  `P (seg M a b) = [seg M a b]` — a singleton, trivially descending.
+- **step `M = M''[n]`**, `M'' ∈ SkT_PS k`: the oper expands as
+  `M''[n] = take j0 M'' @ concat_{k'<n} (IncrFirst^{k'·d0}) (seg M'' j0 (j1-1))`
+  where `j1 = Lng M''-1`, `d1 = 0` always, so each block shifts ONLY row-0 (by
+  `k'·d0`) and keeps row-1. Key tools:
+  - `m_6_2_P_IncrFirst`: `P (IncrFirst N) = map IncrFirst (P N)` (equivariance).
+  - `entry_IncrFirst` / `entry_funpow_IncrFirst0`: `IncrFirst` raises row-0 by 1,
+    fixes row-1 ⟹ the tie-break predicate is **`IncrFirst`-invariant**.
+  - A slice within the prefix `take j0 M''` or within a single block reduces to a
+    slice of `M''` (IH), possibly after stripping an `IncrFirst^{k'd0}`.
+  - **crux**: a slice spanning ≥2 blocks. If `d0 > 0` (`i1 = 1`), components in
+    different blocks have row-0 ends differing by a positive multiple of `d0`, so
+    the tie-break across blocks is vacuous (only within-block pairs matter ⟹ IH
+    via `IncrFirst`-invariance). If `d0 = 0` (`i1 = 0`, identical block copies),
+    needs separate care. (This is where the formalisation effort concentrates.)
+
+## Status / Plan
+
+1. ✅ design + empirical reduction; ✅ `seg_nth_eq`, `seg_of_seg` (green);
+   ✅ `descending_P_of_ST`, `entry_FirstNodes_eq_component_gen`,
+   `descending_Br_of_FN_tiebreak` (green); ✅ correction A7.
+2. **TODO (hard core)**: prove `slice_P_descending` by the `k`-induction above
+   (multi-block-spanning case is the crux). Largest remaining piece; spans
+   sessions.
+3. Assemble `m_6_8_standard_slice_Br_descending` from `slice_P_descending` +
+   `seg_of_seg` + `m_6_2_mono_ancestor_slice`.
