@@ -101,7 +101,46 @@ Empirically (G1) `descending (P (seg M a b))` holds for every slice (0/353).
 reduction; `slice_P_descending` + `seg_of_seg` is the cleaner route and makes it
 unnecessary.)
 
-## FURTHER reduction (GREEN) — slice ⟶ single-index «suffix/drop» form
+## DECISION (2026-05-27): faithful conditional `Br` induction (supersedes the unconditional route)
+
+The unconditional `slice_P_descending` (`descending (P (seg N a b))` for ALL
+slices) is empirically true but **diverges from the article** and forces a hard
+multi-period sub-case in `d0zero` that the article avoids via its `leR`
+hypothesis. Per the faithfulness policy we **re-architect to the article's
+conditional statement** (= exactly `p_6_8_standard_slice_Br_descending`):
+
+> `M ∈ ST_PS ⟹ j0' < j1' ⟹ j1' ≤ Lng M - 1 ⟹ leR M 0 j0' j1' ⟹
+>  monoT (seg M j0' j1') ∧ descending (Br (seg M j0' j1'))`
+
+proved by induction on the rank `k` (`M ∈ SkT_PS k`), transcribing content.md
+1422–1615. The `monoT` part stays `m_6_2_mono_ancestor_slice`.
+
+**Key simplification (no minimal rank needed).** The article uses minimal-rank
+`k₀` induction only to get «`N` is monoT» (via `M ≠ P(N)₀`). But a plain `k`
+induction suffices: in the `Suc k` step `M = N[n]`, `N ∈ SkT_PS k`,
+- if `N` is **multi**: `M = N[n]` monoT forces (via the `P`/fundamental-sequence
+  relation: a multi `N` would make `N[n]` multi unless it collapses to the first
+  component) `M = P(N)₀`, which is standard of rank `k` (`m_6_7_standard_P_components`),
+  so `M ∈ SkT_PS k` and **IH applies to `M` directly**;
+- if `N` is **monoT**: run the article's argument, applying IH to the ambient
+  `N ∈ SkT_PS k` with the slices `[j'_0,j'_1]` / `[j'_0, j1^N]` (= `N'`).
+
+So `IH` is always keyed on the **ambient** sequence's rank (`N`, or `M` itself in
+the multi case) — never on a slice being standard.
+
+The committed `_of_drop` reduction lemmas (which depend on the abandoned
+unconditional core) become dead; remove them from `main` when the article-based
+proof integrates. Helpers `take_seg`/`drop_seg`/`seg_diagSeq`/
+`not_multiT_seg_diagSeq`/`oper_nth_lt` (all green) are reused.
+
+The article case structure (content.md): WLOG `M` monoT (1432; multi `M` ⟹ slice
+within one standard component); `k₀=0` ⟹ `M'` diagonal, `Br(M')=()` (1436);
+`k₀>0`, `M=N[n]`, `N` monoT (1442); reductions `M'=slice of N` / `M=Pred N` /
+`n=1` ⟹ IH (1446–1450); `n>1` splits on `N_{1,j1^N}` (= our `d0zero`/`d0pos`):
+1460–1514 / 1516–1586, the bulk (uses `N'`, `FirstNodes`/`TrMax`/`Joints`, the
+quotient/remainder block bookkeeping).
+
+## (superseded) FURTHER reduction — slice ⟶ single-index «suffix/drop» form
 
 `slice_P_descending` (two free indices `a ≤ b`) reduces to a **single-index**
 statement by the prefix lemma. Set `N = seg M 0 b`; then `N ∈ ST_PS`
