@@ -200,13 +200,25 @@ descending (P (seg N a b))`, `proof (induction k)` over the rank, slice carried.
   - `Lng M' = 1`: `N = M'[n] = M'`, slice of rank-`k` `M'` ⟹ **IHk**. DONE.
   - `b < Lng M' - 1` (slice within the `butlast` prefix): `seg N a b = seg M' a b`
     by `oper_nth_lt`, lower rank ⟹ **IHk**. DONE.
-  - `b ≥ Lng M' - 1` (slice reaches the expanded block region) — the only
-    remaining `sorry`. Here the `oper` is necessarily generic (the degenerate
-    case has `Lng N = Lng M' - 1`, forcing `b < Lng M' - 1`), so
-    `N = take j0 M' @ B₀ @ … @ B_{n-1}`, each `B_k = (IncrFirst^{k·d0}) B₀`
-    (`d1 = 0`, so all blocks share `B₀`'s row-1; row-0 shifted by `k·d0`). This is
-    the article crux (content.md 1450–1615): `d0>0` makes cross-block row-0 ties
-    vacuous; `d0=0` (identical copies) needs the within-`B₀` tie-break.
+  - `b ≥ Lng M' - 1` (slice reaches the expanded block region) — the remaining
+    work, now with the layout exposed and split on `d0`. Here the `oper` is
+    necessarily generic (the degenerate case has `Lng N = Lng M' - 1`, forcing
+    `b < Lng M' - 1`); `notzero`, `haspar`, `j0 < j1` and
+    `layout : N = take j0 M' @ concat (map ?f [0..<n])` are GREEN, then
+    `cases "0 < idx1 M' (Lng M'-1)"` splits into two `sorry`s:
+    - **`d0pos`** (`i1=1`, row 1 of `M'` at `j1` positive): cross-block row-0
+      ties impossible (row-0 ends differ by positive multiples of `d0`).
+    - **`d0zero`** (`i1=0`): `d0=d1=0`, all blocks `= B₀ = map (M'!) [j0..<j1]`
+      identical, so `N = take j1 M' @ B₀^{n-1}` is periodic past `take j1 M'`;
+      tie-break reduces to within-`B₀` (a slice of `M'`).
+
+  These two are exactly the article's block-spanning cases (content.md
+  **1478–1586**), proved there by a rank (`k₀`) induction that constructs a
+  derived standard form `N'` and uses the `FirstNodes`/`TrMax`/`Joints` relation
+  and `(0,j0^N) ≤ (0,j1^N)` (the `d0>0` strict row-0 increase). NB the article
+  inducts on `Br(M')` directly via `FirstNodes`; our `P`-of-slice framing is
+  equivalent on content but the transcription of `N'` + the `FirstNodes`
+  bookkeeping is the bulk of the remaining effort.
 
 ## Status / Plan
 
