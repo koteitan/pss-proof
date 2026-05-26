@@ -192,20 +192,21 @@ descending (P (seg N a b))`, `proof (induction k)` over the rank, slice carried.
 - **base `k=0`** — DONE: `N = diagSeq u v`; `seg N a b` is a `diagSeq`
   (`seg_diagSeq`), hence non-multi (`not_multiT_seg_diagSeq`), so `P` is a
   singleton ⟹ `descending` trivial.
-- **step `N = M'[n]`** (`M' ∈ SkT_PS k`, `n ≥ 1`) — the only `sorry`. Plan,
-  mirroring `SkT_P_descending`'s case split but for a slice:
-  raw layout `M'[n] = concat (butlast (P M')) @ (last (P M'))[n]`
-  (`m_6_2_P_oper_2`, multi/`lastgt` case; plus the `last1` and nonmulti cases
-  where `M'[n] = Pred M'` / `replicate`/`[X]`). For the slice `seg (M'[n]) a b`:
-  - slice inside the prefix `concat (butlast (P M')) = take q M'` (`q = Lng M' -
-    Lng (last (P M'))`): equals `seg M' a b`, lower rank ⟹ **IHk** directly.
-  - slice inside the tail `(last (P M'))[n]`: `last (P M') ∈ SkT_PS k`
-    (`m_6_7_standard_P_components`); needs an inner induction (on `n`/`Lng`, as in
-    `SkT_P_descending`'s tail), reducing via `IncrFirst`-invariance
-    (`m_6_2_P_IncrFirst`, `entry_IncrFirst`).
-  - slice spanning prefix∣tail — the **crux** (content.md 1450–1615): block-ends
-    differ by multiples of `d0`; `d0>0` makes cross-block ties vacuous, `d0=0`
-    (identical copies) needs separate care.
+- **step `N = M'[n]`** (`M' ∈ SkT_PS k`, `n ≥ 1`). Key foundation DONE:
+  **`oper_nth_lt`** (green) — `(M[n]) ! i = M ! i` for `i < Lng M - 1`, in all
+  `oper` cases (degenerate `M[n] = Pred M = butlast M`; generic
+  `M[n] = take j0 M @ B₀ @ …` with the `k=0` block `B₀` carrying the unshifted
+  `M`-entries on `[j0..<j1]`, so `take j0 M @ B₀ = take j1 M`). Step sub-cases:
+  - `Lng M' = 1`: `N = M'[n] = M'`, slice of rank-`k` `M'` ⟹ **IHk**. DONE.
+  - `b < Lng M' - 1` (slice within the `butlast` prefix): `seg N a b = seg M' a b`
+    by `oper_nth_lt`, lower rank ⟹ **IHk**. DONE.
+  - `b ≥ Lng M' - 1` (slice reaches the expanded block region) — the only
+    remaining `sorry`. Here the `oper` is necessarily generic (the degenerate
+    case has `Lng N = Lng M' - 1`, forcing `b < Lng M' - 1`), so
+    `N = take j0 M' @ B₀ @ … @ B_{n-1}`, each `B_k = (IncrFirst^{k·d0}) B₀`
+    (`d1 = 0`, so all blocks share `B₀`'s row-1; row-0 shifted by `k·d0`). This is
+    the article crux (content.md 1450–1615): `d0>0` makes cross-block row-0 ties
+    vacuous; `d0=0` (identical copies) needs the within-`B₀` tie-break.
 
 ## Status / Plan
 
