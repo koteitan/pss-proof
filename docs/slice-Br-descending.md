@@ -168,36 +168,44 @@ row-1 tie-break is the core, which can be peeled two ways:
 Either way the irreducible core is a rank-induction over the standard form's
 `oper` structure (the article's content.md 1450–1615), still TODO.
 
-## VALIDATED skeleton (worktree `../pss-slice`, green except ONE sorry)
+## SKELETONS in worktree `../pss-slice` (green except the step `sorry`)
 
-The slice-length-induction route is fully built and **compiles green except a
-single `sorry`** (worktree `../pss-slice/pss_mechanized.thy`, prototyped to keep
-`main` green). Structure of `slice_P_descending` (`N ∈ ST_PS ⟹ a ≤ b ⟹
-b ≤ Lng N - 1 ⟹ descending (P (seg N a b))`):
+Two prototypes were built (worktree `../pss-slice/pss_mechanized.thy`, kept off
+`main` while a `sorry` remains). Green helpers from both, all reusable:
+**`take_seg`** (`take c (seg M a b) = seg M a (a+c-1)`, `1≤c`, `c ≤ Suc b - a`),
+**`drop_seg`** (`drop c (seg M a b) = seg M (a+c) b`), **`seg_diagSeq`**
+(`u≤v, a≤b, b≤v-u ⟹ seg (diagSeq u v) a b = diagSeq (u+a)(u+b)`),
+**`not_multiT_seg_diagSeq`**.
 
-- `proof (induction "b - a" arbitrary: a b rule: less_induct)`.
-- non-multi `seg N a b`: `P (seg N a b) = [seg N a b]`, descending trivial.
-- multi: `c = Pcut (seg N a b)`, `P (seg N a b) = P (seg N a (a+c-1)) @ [seg N (a+c) b]`
-  via green helpers **`take_seg`** (`take c (seg M a b) = seg M a (a+c-1)`, `1≤c`,
-  `c ≤ Suc b - a`) and **`drop_seg`** (`drop c (seg M a b) = seg M (a+c) b`) plus
-  `poper_P_multi`. The prefix `seg N a (a+c-1)` is a strictly shorter slice (`c-1
-  < b-a`) ⟹ IH gives `descending (P (seg N a (a+c-1)))`. `descending_snoc` closes,
-  with the **row-0 obligation free** (`m_6_4_P_leftend_mono` on the two last
-  components of `P (seg N a b)`).
+### (A) slice-length induction — reduces to adjacent-cut tie-break
+`induction "b-a" … less_induct`; multi case
+`P (seg N a b) = P (seg N a (a+c-1)) @ [seg N (a+c) b]` (`take_seg`/`drop_seg`/
+`poper_P_multi`), prefix shorter ⟹ IH, `descending_snoc` closes with row-0 free
+(`m_6_4_P_leftend_mono`). The single `sorry` is the **adjacent-cut row-1
+tie-break**: `c = Pcut (seg N a b)`, `c2 = Pcut (seg N a (a+c-1))`,
+`entry N 0 (a+c2) = entry N 0 (a+c) ⟹ entry N 1 (a+c) ≤ entry N 1 (a+c2)`.
+This is local but still needs the rank/oper structure, so route (B) is preferred.
 
-The ONE remaining `sorry` (line ~8185) is exactly:
-
-> **adjacent-cut row-1 tie-break (r1)**: with `c = Pcut (seg N a b)` and
-> `c2 = Pcut (seg N a (a+c-1))`, if `entry N 0 (a+c2) = entry N 0 (a+c)` then
-> `entry N 1 (a+c) ≤ entry N 1 (a+c2)`.
->
-> (i.e. `last (P (seg N a (a+c-1))) = seg N (a+c2) (a+c-1)` row-1-dominates the
-> new last block `seg N (a+c) b` when their row-0 left ends are equal.)
-
-This is the genuine article content (content.md 1450–1615). The clean helpers
-`take_seg`/`drop_seg` and the whole `descending_snoc` assembly are done; only r1
-needs the rank/oper induction (`IncrFirst`-invariance, multi-block / `d0=0`
-crux as analysed above).
+### (B) rank induction (CURRENT, matches the article) — base done
+`slice_P_descending`: `N ∈ SkT_PS k ⟹ a ≤ b ⟹ b ≤ Lng N - 1 ⟹
+descending (P (seg N a b))`, `proof (induction k)` over the rank, slice carried.
+- **base `k=0`** — DONE: `N = diagSeq u v`; `seg N a b` is a `diagSeq`
+  (`seg_diagSeq`), hence non-multi (`not_multiT_seg_diagSeq`), so `P` is a
+  singleton ⟹ `descending` trivial.
+- **step `N = M'[n]`** (`M' ∈ SkT_PS k`, `n ≥ 1`) — the only `sorry`. Plan,
+  mirroring `SkT_P_descending`'s case split but for a slice:
+  raw layout `M'[n] = concat (butlast (P M')) @ (last (P M'))[n]`
+  (`m_6_2_P_oper_2`, multi/`lastgt` case; plus the `last1` and nonmulti cases
+  where `M'[n] = Pred M'` / `replicate`/`[X]`). For the slice `seg (M'[n]) a b`:
+  - slice inside the prefix `concat (butlast (P M')) = take q M'` (`q = Lng M' -
+    Lng (last (P M'))`): equals `seg M' a b`, lower rank ⟹ **IHk** directly.
+  - slice inside the tail `(last (P M'))[n]`: `last (P M') ∈ SkT_PS k`
+    (`m_6_7_standard_P_components`); needs an inner induction (on `n`/`Lng`, as in
+    `SkT_P_descending`'s tail), reducing via `IncrFirst`-invariance
+    (`m_6_2_P_IncrFirst`, `entry_IncrFirst`).
+  - slice spanning prefix∣tail — the **crux** (content.md 1450–1615): block-ends
+    differ by multiples of `d0`; `d0>0` makes cross-block ties vacuous, `d0=0`
+    (identical copies) needs separate care.
 
 ## Status / Plan
 
