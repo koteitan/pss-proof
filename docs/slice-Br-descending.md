@@ -101,7 +101,30 @@ Empirically (G1) `descending (P (seg M a b))` holds for every slice (0/353).
 reduction; `slice_P_descending` + `seg_of_seg` is the cleaner route and makes it
 unnecessary.)
 
-## `slice_P_descending` proof strategy (the remaining hard core)
+## FURTHER reduction (GREEN) — slice ⟶ single-index «suffix/drop» form
+
+`slice_P_descending` (two free indices `a ≤ b`) reduces to a **single-index**
+statement by the prefix lemma. Set `N = seg M 0 b`; then `N ∈ ST_PS`
+(`m_6_7_standard_prefix`), `Lng N = Suc b`, and by `seg_of_seg`
+`seg M a b = seg N a b = seg N a (Lng N - 1) = drop a N`
+(`seg_to_last_eq_drop`). So:
+
+> **core** (the only remaining obligation): `N ∈ ST_PS ⟹ descending (P (drop j N))`.
+
+Two green conditional lemmas now lock the whole reduction chain in
+`pss_mechanized.thy` (verified, no sorry):
+- `slice_P_descending_of_drop`: `core ⟹ M∈ST_PS ⟹ a≤b ⟹ b≤Lng M-1 ⟹
+  descending (P (seg M a b))`.
+- `m_6_8_standard_slice_Br_descending_of_drop`: `core ⟹ [p_6_8 hyps] ⟹
+  monoT (seg M j0' j1') ∧ descending (Br (seg M j0' j1'))` — the full prop1
+  conclusion, modulo `core`.
+
+So `p_6_8_standard_slice_Br_descending` is discharged the moment `core` is
+proven. The induction below is now stated for `core` (suffix `drop j N` of a
+standard `N`), which is cleaner than the two-index slice: `drop j N` for
+`N ∈ SkT_PS k`.
+
+## `core` / `slice_P_descending` proof strategy (the remaining hard core)
 
 Row-0 part is FREE (`m_6_4_P_leftend_mono` on `seg M a b ∈ T_PS`). The row-1
 tie-break is the irreducible content (= the article's §6.8 induction, content.md
