@@ -115,6 +115,30 @@ conditional statement** (= exactly `p_6_8_standard_slice_Br_descending`):
 proved by induction on the rank `k` (`M ∈ SkT_PS k`), transcribing content.md
 1422–1615. The `monoT` part stays `m_6_2_mono_ancestor_slice`.
 
+### PROGRESS (worktree `../pss-slice`, green; `m_6_8_slice_Br_descending_monoT`)
+The whole rank-induction skeleton is GREEN except **two** `sorry`s, both inside
+the `n>1` block region. Done:
+- **base `k=0`**: `seg_diagSeq` → `Br_diagSeq` (new helper, `TrMax(diagSeq)=Lng-1`)
+  → `descending []`.
+- **`Suc k`, `multiT N`** (article 1442): `M = P(N)₀ ∈ SkT_PS k` (via
+  `m_6_2_P_oper_1/2` + `P M = [M]` from `monoT M`), IH applies to `M`.
+- **`Suc k`, `Lng N = 1`**: `M = N`, `Lng M = 1` contradicts `j0' < j1'`.
+- **`Suc k`, `monoT N`, `j1' < Lng N - 1`** (article 1446): slice agrees with `N`
+  (`oper_nth_lt`), `leR` transferred `M→N` via `adm_le0_seg`, IH on `N`.
+- **`Suc k`, `monoT N`, `j1' ≥ Lng N - 1` groundwork**: the oper is generic
+  (`notzeroN`/`hasparN`; degenerate ⟹ `Lng M = Lng N - 1` < `j1'`), split on
+  `entry N 1 (Lng N - 1)`.
+
+Remaining (the genuine core, multi-session):
+- **`d0zero`** (`entry N 1 (Lng N-1) = 0`, i1=0, unshifted blocks): article 1460–1514.
+- **`d0pos`** (`> 0`, i1=1, `δ`-shifted blocks): article 1516–1589.
+
+Both need a **`Br`-under-oper decomposition** lemma (`Br(M') = (Br(N')_J) ⊕
+blocks` via `FirstNodes(N')`), the principal missing machinery. Available:
+`m_6_4_FirstNodes_TrMax_Joints` (prop 769), `FirstNodes_nth`, `Joints_nth`,
+`entry_FirstNodes_eq_component(_gen)`, `TrMax_*`, `IncrFirst` equivariance
+(`m_6_2_P_IncrFirst`, `TrMax_funpow_IncrFirst`).
+
 **Key simplification (no minimal rank needed).** The article uses minimal-rank
 `k₀` induction only to get «`N` is monoT» (via `M ≠ P(N)₀`). But a plain `k`
 induction suffices: in the `Suc k` step `M = N[n]`, `N ∈ SkT_PS k`,
