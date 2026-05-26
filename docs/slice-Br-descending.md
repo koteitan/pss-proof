@@ -168,6 +168,37 @@ row-1 tie-break is the core, which can be peeled two ways:
 Either way the irreducible core is a rank-induction over the standard form's
 `oper` structure (the article's content.md 1450–1615), still TODO.
 
+## VALIDATED skeleton (worktree `../pss-slice`, green except ONE sorry)
+
+The slice-length-induction route is fully built and **compiles green except a
+single `sorry`** (worktree `../pss-slice/pss_mechanized.thy`, prototyped to keep
+`main` green). Structure of `slice_P_descending` (`N ∈ ST_PS ⟹ a ≤ b ⟹
+b ≤ Lng N - 1 ⟹ descending (P (seg N a b))`):
+
+- `proof (induction "b - a" arbitrary: a b rule: less_induct)`.
+- non-multi `seg N a b`: `P (seg N a b) = [seg N a b]`, descending trivial.
+- multi: `c = Pcut (seg N a b)`, `P (seg N a b) = P (seg N a (a+c-1)) @ [seg N (a+c) b]`
+  via green helpers **`take_seg`** (`take c (seg M a b) = seg M a (a+c-1)`, `1≤c`,
+  `c ≤ Suc b - a`) and **`drop_seg`** (`drop c (seg M a b) = seg M (a+c) b`) plus
+  `poper_P_multi`. The prefix `seg N a (a+c-1)` is a strictly shorter slice (`c-1
+  < b-a`) ⟹ IH gives `descending (P (seg N a (a+c-1)))`. `descending_snoc` closes,
+  with the **row-0 obligation free** (`m_6_4_P_leftend_mono` on the two last
+  components of `P (seg N a b)`).
+
+The ONE remaining `sorry` (line ~8185) is exactly:
+
+> **adjacent-cut row-1 tie-break (r1)**: with `c = Pcut (seg N a b)` and
+> `c2 = Pcut (seg N a (a+c-1))`, if `entry N 0 (a+c2) = entry N 0 (a+c)` then
+> `entry N 1 (a+c) ≤ entry N 1 (a+c2)`.
+>
+> (i.e. `last (P (seg N a (a+c-1))) = seg N (a+c2) (a+c-1)` row-1-dominates the
+> new last block `seg N (a+c) b` when their row-0 left ends are equal.)
+
+This is the genuine article content (content.md 1450–1615). The clean helpers
+`take_seg`/`drop_seg` and the whole `descending_snoc` assembly are done; only r1
+needs the rank/oper induction (`IncrFirst`-invariance, multi-block / `d0=0`
+crux as analysed above).
+
 ## Status / Plan
 
 1. ✅ design + empirical reduction; ✅ `seg_nth_eq`, `seg_of_seg` (green);
