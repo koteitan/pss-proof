@@ -468,3 +468,24 @@ Key fact (1480): `N_{0,j1^N}=0 ∧ j1^N-j'₀ > j0^N-j'₀ > 0 ⟹ TrMax(N') < j
   is `descending` by `descending_take[OF descN']`; the block tail is `descending` by the new
   `descending_replicate`/`descending_const_head`; glue by `descending_append` + the single junction
   `cdom`. **Recommended first target: case A** (cleanest: single junction `N_{0,j0^N}<N_{0,j1^N}`).
+
+## Progress 2026-05-27 (continued): case-A TrMax half done; blocker isolated to one row-1 inequality
+
+Two green bricks added in `../pss-slice` (uncommitted, lines ~8832–8911):
+- `nextrel1_prefix_imp` — row-1 next-relation transfers across a shared prefix `[0,c]`
+  (the `nextrel1` minimality quantifier is confined to `[0,c]` since `le0` is
+  index-monotone; transfer via `le0_prefix_agree` + pointwise row-1 agreement).
+- `TrMax_eqI` — `M∈T_PS ⟹ (∀j'<j. nextR M 1 j' (j'+1)) ⟹ ¬nextR M 1 j (j+1) ⟹ TrMax M = j`
+  (use `TrMax` directly without re-deriving from `Max`).
+
+Empirically (`python/red_model.py`, UB5/NMAX4/KMAX4): `TrMax M' = TrMax N'` holds
+universally (6786/6786). The **below-trunk half** (`j' < TrMax N'`) is DONE: `TrMax_trunk_step`
+on `N'` transfers to `M'` via `nextrel1_prefix_imp` (0/2592 mismatch). The remaining gap is
+the **stop condition at the trunk/branch boundary**: in the 90/6786 cases with
+`TrMax N' = Lng N - 2 - j'₀`, the stop index maps in `M'` to the block-1 start `N!j0^N`
+(outside the prefix-agreement region), and `M'` stops there because of the **row-1 boundary
+inequality `entry N 1 j0^N ≤ entry N 1 (Lng N - 2)`** (d0zero: block-start row-1 ≤ last
+interior row-1; empirically 90/90). This single inequality (article 1484-1488, needs the
+d0zero block value analysis) is the next concrete brick; then `TrMax M' = TrMax N'` is complete
+and the `Br M' = take J1 (Br N') @ blocks` decomposition (m_6_2_P_additive + descending_append)
+finishes case A. **Next-session target: this row-1 inequality.**
