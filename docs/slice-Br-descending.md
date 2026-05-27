@@ -479,13 +479,25 @@ Two green bricks added in `../pss-slice` (uncommitted, lines ~8832–8911):
   (use `TrMax` directly without re-deriving from `Max`).
 
 Empirically (`python/red_model.py`, UB5/NMAX4/KMAX4): `TrMax M' = TrMax N'` holds
-universally (6786/6786). The **below-trunk half** (`j' < TrMax N'`) is DONE: `TrMax_trunk_step`
-on `N'` transfers to `M'` via `nextrel1_prefix_imp` (0/2592 mismatch). The remaining gap is
-the **stop condition at the trunk/branch boundary**: in the 90/6786 cases with
-`TrMax N' = Lng N - 2 - j'₀`, the stop index maps in `M'` to the block-1 start `N!j0^N`
-(outside the prefix-agreement region), and `M'` stops there because of the **row-1 boundary
-inequality `entry N 1 j0^N ≤ entry N 1 (Lng N - 2)`** (d0zero: block-start row-1 ≤ last
-interior row-1; empirically 90/90). This single inequality (article 1484-1488, needs the
-d0zero block value analysis) is the next concrete brick; then `TrMax M' = TrMax N'` is complete
-and the `Br M' = take J1 (Br N') @ blocks` decomposition (m_6_2_P_additive + descending_append)
-finishes case A. **Next-session target: this row-1 inequality.**
+universally (6129/6129). The **below-trunk half** (`j' < TrMax N'`) is DONE: `TrMax_trunk_step`
+on `N'` transfers to `M'` via `nextrel1_prefix_imp`. The remaining gap is the **stop condition
+at the trunk/branch boundary** (the 72/6129 hard cases, all block-width `w=1`).
+
+**UPDATE 2026-05-27 (continued 2): TrMax-equality reduced to one named residual; doc's earlier
+inequality was FALSE.** Five more green bricks added in `../pss-slice` (uncommitted, ~8924–9118):
+`TrMax_eq_of_prefix_agree`, `TrMax_stop`, `TrMax_lt_last_of_row1_zero` (= article 1480,
+`Br N' ≠ []`), `nextR1_boundary_stop_of_prefix` (discharges the EASY 6057/6129 boundary-stop
+cases), and `TrMax_seg_oper_d0zero_eq` (the d0zero case-A `TrMax (seg (N[n]) j0' j1') =
+TrMax (seg N j0' (Lng N-1))`, modulo the boundary stop). 
+
+⚠️ **CORRECTION**: the inequality stated here previously, `entry N 1 j0^N ≤ entry N 1 (Lng N-2)`,
+is **FALSE** (9 counterexamples, e.g. `N=(0,0)(1,1)(2,0)(2,0)(2,0)`). The **real residual**
+(the hard 72-case boundary stop, after trunk confinement `TrMax N' ≤ j0^N - j0'`, empirically
+6129/6129) is the standard-form structural fact **`entry N 1 j0^N ≥ entry N 1 (j0^N + 1)`**
+(row-1 does not increase right after the row-0 parent of the last index; empirically 141/141
+for d0zero standard `N`; false for non-standard `N`, so it needs `SkT_PS`/standard-form theory,
+not the generic §5.1 parent lemmas). **Next-session target: this inequality** (`entry N 1 j0^N
+≥ entry N 1 (j0^N+1)`) + the trunk-confinement `TrMax N' ≤ j0^N - j0'`; then
+`TrMax_seg_oper_d0zero_eq` closes unconditionally and the `Br M' = take J1 (Br N') @ blocks`
+decomposition (m_6_2_P_additive + descending_append) finishes case A. Audit scripts:
+`python/slice_trmaxeq_audit*.py`.
