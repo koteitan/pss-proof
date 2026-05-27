@@ -669,3 +669,31 @@ then `descending_append` + `descending_take[OF descN']` + `descending_replicate`
 line multi-session core; all surrounding groundwork is green and the identity is empirically sound.
 Also `descending_Br_of_FN_tiebreak` reduces the goal to this FN tie-break (0/213). **Next: the
 block-fold induction (dedicated session).**
+
+## UPDATE 2026-05-28 (continued 10): block-fold machinery GREEN; formula corrected; two-regime bridge
+
+The block-fold machinery is now GREEN in `../pss-slice` (worktree builds `Finished PSS`):
+- `oper_d0zero_entry0_min` (~9363) — `entry M 0 j0 ≤ entry (M[n]) 0 x` for in-range `x ≥ j0`.
+- `oper_d0zero_seg_P_split` (~9397) — single P-additivity step
+  `P(seg (M[n]) a (B+s)) = P(seg (M[n]) a (B-1)) @ [seg M j0 (j0+s)]` at block boundary `B = j0+k·w`
+  (left-minimal via `oper_d0zero_entry0_min`; trailing fragment non-multi by `poper_P_nonmulti`).
+- `oper_d0zero_seg_P_hfold` (~9541) — whole-block fold by induction:
+  `P(seg (M[n]) a (j0+m·w-1)) = P(seg (M[n]) a (Lng M-2)) @ replicate (m-1) blk`.
+  (NB: the `by` at ~9481 is slow ~30s but green; candidate for later optimisation.)
+
+⚠️ **FORMULA CORRECTION (supersedes continued-9's `neff`):** under the in-scope `bge` (`Lng N-1 ≤ j1'`),
+let `qb = (j1'-j0^N) div w` (≥1, since `bge` ⟹ `j1'-j0^N ≥ w`), `r2 = (j1'-j0^N) mod w`. Then
+**`Br M' = take J1 (Br N') @ replicate (qb-1) blk @ [partial]`**, `blk = seg N j0^N (Lng N-2)`,
+`partial = seg N j0^N (j0^N+r2)` — empirically 0 fails at maxlen 4 AND 5. (continued-9's `neff` was
+wrong for the `qb=0` cases, which violate `bge`.)
+
+**Two-regime bridge (next-session care):** `a = j0'+TrMax N'+1 ∈ (j0^N, Lng N-1]`. The intermediate
+`P(seg M' a (Lng N-2)) = take J1 (Br N')` holds **only when `a < Lng N-1`** (block-0 fragment
+nonempty, J1≥1; ~24/54). For `a = Lng N-1` (J1=0, `take J1 = []`), block-0 fragment empty
+(`P [] = [[]] ≠ []`) — the bridge must case-split on `a < Lng N-1` vs `a = Lng N-1`.
+
+**Remaining to close 9765 (sub-case A):** (1) final fold = one `oper_d0zero_seg_P_split` at boundary
+`j0+qb·w`, `s=r2`, glued to `hfold qb`; (2) the `P(seg M' a (Lng N-2)) = take J1 (Br N')` bridge
+with the two-regime split; (3) descending assembly: `descending_append [descending_take[OF descN'],
+descending_replicate/const_head]` + junction from `junc0`. Audit: `python/slice_caseA_subA_decomp.py`
+(corrected), `slice_caseA_explore.py`, `slice_caseA_formula.py`.
