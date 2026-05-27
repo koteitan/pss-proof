@@ -818,3 +818,26 @@ C occurs when N''s trunk is short (`TrMax N'` small) and `j_{-1} > TrMax N'`.
 junction `N_{j0^N}=(Br N'_{J1})_0`); **C** (21 cases, true, the single-extra-component decomposition
 above); **d0pos** (separate, IncrFirst^{kδ}). All empirically sound; each B/C/d0pos a dedicated
 sub-development on the now-complete machinery.
+
+## UPDATE 2026-05-28 (continued 16): B agent over-claimed; blk0fold isolated; worktree now COMMITTED (green)
+
+The sub-case B agent reported "B-J1=0 closed" but **never obtained a verified `Finished PSS`** — its
+builds ran 25-40 min and timed out, so its `oper_d0zero_seg_P_blk0fold` was UNVERIFIED. Parent
+verification found blk0fold has (a) a pathological `seg_of_seg`+`linarith` in its `leftseg` step
+(>2400s on compound div/mod terms) and (b) a genuine index-bound proof error in `blkseg` (~10100).
+⚠️ Reminder (agent-workflow rule 5): **the build is the only truth; never accept an agent's "green"
+self-report — verify at integration.**
+
+Resolution: blk0fold's proof body isolated as `sorry` (statement kept; empirically validated 0-fail,
+and B-J1=0 uses it soundly). Worktree now builds `Finished PSS` (54s) with 4 real sorries:
+**blk0fold (proof TODO), B-J1≥1, C, d0pos.**
+
+🔑 **The whole §6.8 work is now COMMITTED to a worktree branch `slice-wip-68`** (it had been
+uncommitted for the entire session — a real loss risk): `fbd9017` = the full blk0fold proof attempt
+(for later repair), `efbd321` = the green checkpoint. **Lesson: commit worktree green states to a
+branch; do not leave the §6.8 development uncommitted.**
+
+**§6.8 remaining (accurate):** sub-case A CLOSED; **blk0fold** proof repair (fast `seg_of_seg` side
+discharge for `leftseg` + fix the `blkseg` index bound — both trivially true, just slow/buggy tactics);
+**B-J1≥1** (the documented N-side P-additive split at `j0^N`, `parent N 0 j0^N < a` route); **C** (21
+cases, single-extra-component); **d0pos** (separate). All empirically sound; machinery green.
