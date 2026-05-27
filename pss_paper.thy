@@ -1754,4 +1754,207 @@ lemma p_8_4_oper_basic:
           \<and> scb_decomp (operB (Trans M) (numBT n)) s (flatBT c2) b"
   sorry
 
+
+
+subsection \<open>§8.5 条件(V)の下での展開規則\<close>
+
+text \<open>This subsection (article ## 条件(V)の下での展開規則) builds up to the exchange
+  relation between the translation \<open>Trans\<close> and the pair-sequence fundamental
+  sequence under condition (V).
+
+  COMMON SETUP / NOTATION (same as §8.3/§8.4, all from the \<open>Trans\<close> recursion):
+    \<^item> \<open>j\<^sub>1 = Lng M - 1\<close>, the rightmost index;
+    \<^item> \<open>j\<^sub>0\<close> = the row-0 nearest ancestor of \<open>j\<^sub>1\<close> (\<open>= parent M 0 j\<^sub>1\<close>);
+    \<^item> \<open>j\<^sub>-\<^sub>1 = Adm M j\<^sub>0\<close> (admissibilization of \<open>j\<^sub>0\<close>);
+    \<^item> "条件(V)" \<open>= transCondV\<close>;
+    \<^item> the index \<open>m\<^sub>n\<close> is \<open>n-1\<close> when \<open>j\<^sub>0\<close> is \<open>M\<close>-admissible (\<open>adm M j\<^sub>0\<close>) and
+      \<open>n\<close> when \<open>j\<^sub>0\<close> is non-\<open>M\<close>-admissible;
+    \<^item> the Buchholz-side fundamental sequence \<open>t[k]\<close> is \<open>operB t (numBT k)\<close>, and
+      \<open>< / \<le>\<close> on \<open>T\<^bsub>B\<^esub>\<close> are \<open>lessBT\<close>/\<open>leBT\<close>.
+
+  FAITHFULNESS / DEFERRAL.  As in §8.4, several auxiliary §8.5 lemmas state
+  relations among the \<^emph>\<open>internal symbols of the \<open>Trans\<close> recursion\<close> (\<open>t\<^sub>2\<close>, \<open>c\<^sub>2\<close>,
+  the scb-strings \<open>s\<^sub>1\<close>/\<open>b\<^sub>1\<close>/\<open>s'\<^sub>1\<close>/\<open>b'\<^sub>1\<close>/\<open>s'\<^sub>0\<close>/\<open>b'\<^sub>0\<close>, the auxiliary \<open>t'\<close>) which
+  are \<^bold>\<open>not\<close> exposed as separate Isabelle functions (cf. the deferred §7.3
+  命題（\<open>c\<^sub>1\<close>と\<open>c\<^sub>2\<close>の大小関係）).  Those are \<^bold>\<open>deferred\<close> (documented as \<open>text\<close>
+  notes with the blocking symbols); only the externally-statable facts are
+  transcribed as \<open>sorry\<close> lemmas.\<close>
+
+text \<open>命題（条件(V)の下での\<open>Trans\<close>と基本列の交換関係） (§8.5, article 5153): for
+  \<open>M \<in> ST\<^bsub>PS\<^esub> \<inter> PT\<^bsub>PS\<^esub>\<close> and \<open>n \<in> \<nat>\<^sub>+\<close>, using the symbols of the \<open>Trans\<close>
+  recursion, set \<open>m\<^sub>n := n-1\<close> if \<open>j\<^sub>0\<close> is \<open>M\<close>-admissible and \<open>m\<^sub>n := n\<close> if \<open>j\<^sub>0\<close> is
+  non-\<open>M\<close>-admissible; if \<open>j\<^sub>1 > 1\<close> and \<open>M\<close> satisfies condition (V), then:
+    (1) \<open>Trans(M[n]) \<le> Trans(M)[m\<^sub>n]\<close>;
+    (2) \<open>Trans(M[n]) < Trans(M)\<close>;
+    (3) \<open>Trans(M)[m\<^sub>n] \<le> Trans(M[n+1])\<close>.
+  Here \<open>Trans(M)[k] = operB (Trans M) (numBT k)\<close> is the Buchholz-side
+  fundamental sequence.  The only setup symbol that enters the conclusions is
+  \<open>j\<^sub>0 = parent M 0 (Lng M - 1)\<close> (exposed, via the case split on \<open>adm M j\<^sub>0\<close>
+  that defines \<open>m\<^sub>n\<close>); the conclusions are otherwise symbol-free, hence
+  transcribable.\<close>
+
+lemma p_8_5_Trans_oper_exchange:
+  fixes M :: pairseq and n :: nat
+  defines "j0 \<equiv> parent M 0 (Lng M - 1)"
+  defines "mn \<equiv> (if adm M j0 then n - 1 else n)"
+  assumes "M \<in> ST_PS" "M \<in> PT_PS" "n \<ge> 1"
+    and "Lng M - 1 > 1"
+    and "transCondV M"
+  shows "leBT (Trans (M[n])) (operB (Trans M) (numBT mn))"
+    and "lessBT (Trans (M[n])) (Trans M)"
+    and "leBT (operB (Trans M) (numBT mn)) (Trans (M[n+1]))"
+  sorry
+
+text \<open>補題（条件(V)の下での\<open>Joints\<close>と\<open>FirstNodes\<close>と\<open>t\<^sub>2\<close>の基本性質） (§8.5, article 5165):
+  for \<open>M \<in> ST\<^bsub>PS\<^esub> \<inter> PT\<^bsub>PS\<^esub>\<close>, using the symbols of the \<open>Trans\<close> recursion, set
+  \<open>N := (M\<^sub>j)\<^bsub>j=j\<^sub>-\<^sub>1\<^esub>\<^bsup>j\<^sub>1\<^esup>\<close> (\<open>= seg M (Adm M j\<^sub>0) j\<^sub>1\<close>) and \<open>J\<^sub>1 := Lng(Br(Red N))-1\<close>;
+  if \<open>(1,j\<^sub>0) <\<^bsub>M\<^esub>\<^sup>Next (1,j\<^sub>1)\<close> (\<open>nextR M 1 j\<^sub>0 j\<^sub>1\<close>), \<open>j\<^sub>0\<close> is non-\<open>M\<close>-admissible
+  and \<open>j\<^sub>0 < j\<^sub>1-1\<close>, then:
+    (1) \<open>J\<^sub>1 \<ge> 0\<close>, \<open>j\<^sub>0-j\<^sub>-\<^sub>1 = Joints(Red N)\<^bsub>J\<^sub>1\<^esub>\<close>, \<open>FirstNodes(Red N)\<^bsub>J\<^sub>1\<^esub> = j\<^sub>1-j\<^sub>-\<^sub>1\<close>;
+    (2) \<open>Red(N)\<^bsub>0,j\<^sub>1-j\<^sub>-\<^sub>1\<^esub> = Red(N)\<^bsub>1,j\<^sub>1-j\<^sub>-\<^sub>1\<^esub>\<close>;
+    (3) \<open>t\<^sub>2\<close>の各単項成分は \<open>D\<^bsub>M\<^sub>1\<^sub>,\<^sub>j\<^sub>1\<^esub> 0\<close> 以上 (each monomial component of \<open>t\<^sub>2\<close> is
+        \<open>\<ge> D\<^bsub>M\<^sub>1\<^sub>,\<^sub>j\<^sub>1\<^esub> 0\<close>).
+  Parts (1)–(2) are \<open>Trans\<close>-free and use only exposed defs (\<open>Adm\<close>, \<open>parent\<close>,
+  \<open>seg\<close>, \<open>Red\<close>, \<open>Br\<close>, \<open>Lng\<close>, \<open>Joints\<close>, \<open>FirstNodes\<close>, \<open>entry\<close>, \<open>nextR\<close>, \<open>adm\<close>),
+  hence transcribed.  Part (3) is DEFERRED: it refers to the unexposed internal
+  \<open>Trans\<close>-recursion term \<open>t\<^sub>2\<close> (and "monomial component" of it).  BLOCKING
+  SYMBOL: \<open>t\<^sub>2\<close>.  Modelling: \<open>Joints\<close>/\<open>FirstNodes\<close> indexing follows §6.4
+  (lists indexed by \<open>! J\<^sub>1\<close>); \<open>Red(N)\<^bsub>i,k\<^esub> = entry (Red N) i k\<close>.\<close>
+
+lemma p_8_5_Joints_FirstNodes_basic:
+  fixes M :: pairseq
+  defines "j1 \<equiv> Lng M - 1"
+    and "j0 \<equiv> parent M 0 (Lng M - 1)"
+  assumes "M \<in> ST_PS" "M \<in> PT_PS"
+    and "nextR M 1 j0 j1"
+    and "\<not> adm M j0"
+    and "j0 < j1 - 1"
+  shows \<comment> \<open>(1)\<close>
+        "Lng (Br (Red (seg M (Adm M j0) j1))) \<ge> 1"  \<comment> \<open>article \<open>J\<^sub>1 \<ge> 0\<close> with \<open>J\<^sub>1 = Lng(Br(Red N))-1\<close>\<close>
+    and "j0 - Adm M j0
+           = Joints (Red (seg M (Adm M j0) j1)) ! (Lng (Br (Red (seg M (Adm M j0) j1))) - 1)"
+    and "FirstNodes (Red (seg M (Adm M j0) j1)) ! (Lng (Br (Red (seg M (Adm M j0) j1))) - 1)
+           = j1 - Adm M j0"
+    and \<comment> \<open>(2)\<close>
+        "entry (Red (seg M (Adm M j0) j1)) 0 (j1 - Adm M j0)
+           = entry (Red (seg M (Adm M j0) j1)) 1 (j1 - Adm M j0)"
+  sorry
+
+text \<open>補題（条件(V)の下での各種scb分解） (§8.5, article 5213): DEFERRED.  With
+  \<open>N' = (M\<^sub>j)\<^bsub>j=j\<^sub>0\<^esub>\<^bsup>j\<^sub>1\<^esup>\<close>, \<open>L' = (M\<^sub>j)\<^bsub>j=j\<^sub>0\<^esub>\<^bsup>j\<^sub>1-\<^sub>1\<^esup> \<oplus> ((M\<^bsub>0,j\<^sub>1\<^esub>,M\<^bsub>1,j\<^sub>0\<^esub>)))\<close> and
+  \<open>L\<^sub>n = M[n] \<oplus> ((M\<^bsub>0,j\<^sub>0\<^esub>+n(M\<^bsub>0,j\<^sub>1\<^esub>-M\<^bsub>0,j\<^sub>0\<^esub>), M\<^bsub>1,j\<^sub>0\<^esub>)))\<close>, the lemma asserts a unique
+  \<open>(s'\<^sub>1,b'\<^sub>1) \<in> (\<Sigma>\<^bsup><\<omega>\<^esup>)\<^sup>2\<close> such that parts (1)–(5) describe scb-decompositions of
+  \<open>c\<^sub>2\<close>, \<open>Trans(N')\<close>, \<open>Trans(L')\<close>, \<open>Trans(Pred N')\<close>, and closed forms for
+  \<open>Trans(L\<^sub>n)\<close> and \<open>Trans(M[n])\<close> — all stated through the unexposed internal
+  \<open>Trans\<close>-recursion symbols \<open>s\<^sub>1\<close>, \<open>b\<^sub>1\<close>, \<open>s'\<^sub>1\<close>, \<open>b'\<^sub>1\<close>, \<open>t\<^sub>2\<close>, \<open>c\<^sub>2\<close> (string
+  concatenation/exponentiation of unexposed scb-strings).  Not faithfully
+  expressible without inventing that exposure.  BLOCKING SYMBOLS:
+  \<open>s\<^sub>1\<close>, \<open>b\<^sub>1\<close>, \<open>s'\<^sub>1\<close>, \<open>b'\<^sub>1\<close>, \<open>t\<^sub>2\<close>, \<open>c\<^sub>2\<close>.\<close>
+
+text \<open>補題（条件(V)の下での基本列のscb分解） (§8.5, article 5352): DEFERRED.  Asserts a
+  unique \<open>u \<in> \<nat>\<close>, \<open>(s'\<^sub>0,b'\<^sub>0) \<in> (\<Sigma>\<^bsup><\<omega>\<^esup>)\<^sup>2\<close> and \<open>t' \<in> T\<^bsub>B\<^esub>\<close> such that
+  \<open>(s'\<^sub>0, D\<^sub>u t\<^sub>2, b'\<^sub>0)\<close>, \<open>(s'\<^sub>0, D\<^sub>u(t\<^sub>2 + D\<^bsub>M\<^sub>1\<^sub>,\<^sub>j\<^sub>0\<^esub> 0), b'\<^sub>0)\<close>,
+  \<open>(s'\<^sub>0, D\<^sub>u(t\<^sub>2 + D\<^bsub>M\<^sub>1\<^sub>,\<^sub>j\<^sub>0\<^esub> t'), b'\<^sub>0)\<close> are scb-decompositions of \<open>Trans(M[n])\<close>,
+  \<open>Trans(M)[m\<^sub>n]\<close>, \<open>Trans(M[n+1])\<close> respectively.  The scb-components name the
+  unexposed internal \<open>Trans\<close>-recursion term \<open>t\<^sub>2\<close> (and the scb-strings
+  \<open>s'\<^sub>0\<close>/\<open>b'\<^sub>0\<close>); not faithfully expressible.  BLOCKING SYMBOLS: \<open>t\<^sub>2\<close>,
+  \<open>s'\<^sub>0\<close>, \<open>b'\<^sub>0\<close>.\<close>
+
+
+subsection \<open>§8.6 条件(VI)の下での展開規則 (Expansion rule under condition (VI))\<close>
+
+text \<open>This subsection (article ## 条件(VI)の下での展開規則, content.md 5482–5848)
+  proves the exchange relation between \<open>Trans\<close> and the pair-sequence fundamental
+  sequence under condition (VI), via three auxiliary lemmas.
+
+  COMMON SETUP / NOTATION (as in §8.1/§8.3/§8.4):
+    \<^item> \<open>j\<^sub>1 = Lng M - 1\<close>; \<open>j\<^sub>0 = parent M 0 j\<^sub>1\<close> (the row-0 nearest ancestor of
+      \<open>j\<^sub>1\<close>); "\<open>M\<close> satisfies condition (VI)" is \<open>transCondVI M\<close>.
+    \<^item> The Buchholz-side fundamental sequence \<open>t[k]\<close> is \<open>operB t (numBT k)\<close>; \<open><\<close> on
+      \<open>T\<^bsub>B\<^esub>\<close> is \<open>lessBT\<close>; \<open>n \<in> \<nat>\<^sub>+\<close> is \<open>n \<ge> 1\<close>.  The article's iterated
+      principal \<open>D\<^sub>u\<^sup>k 0\<close> (\<open>D\<^sub>u(D\<^sub>u(\<dots>(D\<^sub>u 0)))\<close>, \<open>k\<close> times) is the function
+      iteration \<open>(Dpt (enat u) ^^ k) 0\<^sub>B\<close>; the iterated fundamental sequence
+      \<open>t[0]\<^sup>k\<close> is \<open>((\<lambda>a. operB a (numBT 0)) ^^ k) t\<close>.
+    \<^item> 公差\<open>(1,0)\<close> sequence \<open>((m+j,u))\<^bsub>j=0\<^esub>\<^bsup>j\<^sub>1\<^esup>\<close> = \<open>map (\<lambda>j. (m+j, u)) [0..<Suc j\<^sub>1]\<close>
+      (first coordinate increments by \<open>1\<close>, second is constant \<open>u\<close>); 公差\<open>(1,1)\<close>
+      sequence \<open>((u+j,u+j))\<^bsub>j=0\<^esub>\<^bsup>j\<^sub>1\<^esup>\<close> = \<open>diagSeq u (u+j\<^sub>1)\<close>.\<close>
+
+text \<open>補題（公差\<open>(1,0)\<close>のペア数列の\<open>Trans\<close>の基本性質） (§8.6, content.md 5496):
+  for \<open>u, m, j\<^sub>1 \<in> \<nat>\<close>, with \<open>M := ((m+j,u))\<^bsub>j=0\<^esub>\<^bsup>j\<^sub>1\<^esup> \<in> T\<^bsub>PS\<^esub>\<close>,
+  \<open>Trans(M) = 0\<close> if \<open>j\<^sub>1 = 0 \<and> u = 0\<close>, and \<open>Trans(M) = D\<^sub>u\<^sup>j\<^sub>1\<^sup>+\<^sup>1 0\<close> if
+  \<open>j\<^sub>1 > 0 \<or> u > 0\<close>.  Transcribable: states only \<open>Trans\<close> of an explicit sequence
+  against an iterated principal term \<open>(Dpt (enat u) ^^ (j\<^sub>1+1)) 0\<^sub>B\<close>.\<close>
+
+lemma p_8_6_const2nd_Trans:
+  fixes u m j1 :: nat
+  defines "M \<equiv> map (\<lambda>j. (m + j, u)) [0..<Suc j1]"
+  assumes "M \<in> T_PS"
+  shows "(j1 = 0 \<and> u = 0 \<longrightarrow> Trans M = 0\<^sub>B)
+       \<and> (j1 > 0 \<or> u > 0 \<longrightarrow> Trans M = (Dpt (enat u) ^^ (j1 + 1)) 0\<^sub>B)"
+  sorry
+
+text \<open>補題（公差\<open>(1,1)\<close>のペア数列の\<open>Trans\<close>の展開規則） (§8.6, content.md 5575):
+  for \<open>u, j\<^sub>1 \<in> \<nat>\<close> and \<open>n \<in> \<nat>\<^sub>+\<close>, with \<open>M := ((u+j,u+j))\<^bsub>j=0\<^esub>\<^bsup>j\<^sub>1\<^esup> \<in> T\<^bsub>PS\<^esub>\<close>
+  (\<open>= diagSeq u (u+j\<^sub>1)\<close>), if \<open>j\<^sub>1 > 1\<close> then
+  \<open>Trans(M[n]) = D\<^sub>u D\<^bsub>u+j\<^sub>1-1\<^esub>\<^sup>n 0\<close>.  Transcribable: \<open>D\<^bsub>u+j\<^sub>1-1\<^esub>\<^sup>n 0\<close> is
+  \<open>(Dpt (enat (u+j\<^sub>1-1)) ^^ n) 0\<^sub>B\<close>, then one outer \<open>D\<^sub>u\<close>.\<close>
+
+lemma p_8_6_diagSeq_Trans_oper:
+  fixes u j1 n :: nat
+  defines "M \<equiv> diagSeq u (u + j1)"
+  assumes "M \<in> T_PS" "0 < n" "j1 > 1"
+  shows "Trans ((M::pairseq)[n]) = Dpt (enat u) ((Dpt (enat (u + j1 - 1)) ^^ n) 0\<^sub>B)"
+  sorry
+
+text \<open>補題（順序数項の末尾単項の零化可能性） (§8.6, content.md 5621):
+  for \<open>t, t' \<in> T\<^bsub>B\<^esub>\<close>, \<open>s, b \<in> \<Sigma>\<^bsup><\<omega>\<^esup>\<close>, and \<open>u, v \<in> \<nat>\<close>, if
+  \<open>(s, D\<^sub>u(t' + D\<^sub>v 0), b)\<close> is an scb-decomposition of \<open>t\<close>, then there is
+  \<open>k \<in> \<nat>\<close> with \<open>0 < k \<le> v+1\<close> such that \<open>(s, D\<^sub>u t', b)\<close> is an scb-decomposition
+  of \<open>t[0]\<^sup>k\<close>.  Transcribable: the scb-decomposition is \<open>scb_decomp\<close> with the
+  \<open>c\<close>-component flattened (\<open>flatBT\<close>), and \<open>t[0]\<^sup>k\<close> is the \<open>k\<close>-fold iterate of
+  \<open>\<lambda>a. operB a (numBT 0)\<close>.\<close>
+
+lemma p_8_6_trailing_principal_annihilable:
+  fixes t t' :: BT and s b :: "Sym list" and u v :: nat
+  assumes "t \<in> T_B" "t' \<in> T_B"
+    and "scb_decomp t s (flatBT (Dpt (enat u) (t' +\<^sub>B Dpt (enat v) 0\<^sub>B))) b"
+  shows "\<exists>k. 0 < k \<and> k \<le> v + 1
+            \<and> scb_decomp (((\<lambda>a. operB a (numBT 0)) ^^ k) t)
+                         s (flatBT (Dpt (enat u) t')) b"
+  sorry
+
+text \<open>命題（条件(VI)の下での\<open>Trans\<close>と基本列の交換関係） (§8.6, content.md 5484):
+  for \<open>M \<in> ST\<^bsub>PS\<^esub> \<inter> PT\<^bsub>PS\<^esub>\<close> and \<open>n \<in> \<nat>\<^sub>+\<close>, using the symbols of the \<open>Trans\<close>
+  recursion, set \<open>m\<^sub>n := n-2\<close> if \<open>j\<^sub>0\<close> is \<open>M\<close>-admissible (\<open>adm M j\<^sub>0\<close>) and
+  \<open>m\<^sub>n := n-1\<close> otherwise; if \<open>j\<^sub>1 > 1\<close> and \<open>M\<close> satisfies condition (VI), then:
+    (1) if \<open>m\<^sub>n = -1\<close> (i.e. \<open>n = 1\<close> and \<open>j\<^sub>0\<close> is \<open>M\<close>-admissible), there is
+        \<open>k \<in> \<nat>\<close> with \<open>1 < k \<le> M\<^bsub>1,j\<^sub>1\<^esub>+1\<close> and
+        \<open>Trans(M[n]) = Trans(M)[0]\<^sup>k\<close>;
+    (2) if \<open>m\<^sub>n \<ge> 0\<close>, then \<open>Trans(M[n]) = Trans(M)[m\<^sub>n]\<close>;
+    (3) \<open>Trans(M[n]) < Trans(M)\<close>.
+  Modelling note: the integer-valued index \<open>m\<^sub>n \<in> \<nat> \<union> {-1}\<close> is fully determined
+  by \<open>n\<close> and the exposed predicate \<open>adm M j\<^sub>0\<close> (\<open>j\<^sub>0 = parent M 0 (Lng M - 1)\<close>),
+  so it need not be exposed as a separate \<open>Trans\<close>-internal: the case \<open>m\<^sub>n = -1\<close>
+  is \<open>n = 1 \<and> adm M j\<^sub>0\<close>, the value of \<open>m\<^sub>n\<close> in case (2) is \<open>n - 2\<close> under
+  \<open>adm M j\<^sub>0\<close> (here \<open>n \<ge> 2\<close>) and \<open>n - 1\<close> otherwise.  Hence all three conclusions
+  are transcribable without exposing the \<open>Trans\<close>-recursion locals
+  \<open>s\<^sub>1/c\<^sub>1/c\<^sub>2/b\<^sub>1/t\<^sub>2/v\<close>.  \<open>Trans(M)[0]\<^sup>k = ((\<lambda>a. operB a (numBT 0)) ^^ k) (Trans M)\<close>;
+  \<open>Trans(M)[m\<^sub>n] = operB (Trans M) (numBT m\<^sub>n)\<close>.\<close>
+
+lemma p_8_6_Trans_fseq_condVI:
+  fixes M :: pairseq and n :: nat
+  defines "j0 \<equiv> parent M 0 (Lng M - 1)"
+  assumes "M \<in> ST_PS" "M \<in> PT_PS" "0 < n"
+    and "Lng M - 1 > 1" "transCondVI M"
+  shows "\<comment> \<open>(1) the case \<open>m\<^sub>n = -1\<close>, i.e. \<open>n = 1 \<and> adm M j\<^sub>0\<close>\<close>
+         (n = 1 \<and> adm M j0 \<longrightarrow>
+            (\<exists>k. 1 < k \<and> k \<le> entry M 1 (Lng M - 1) + 1
+               \<and> Trans (M[n]) = ((\<lambda>a. operB a (numBT 0)) ^^ k) (Trans M)))
+       \<and> \<comment> \<open>(2) the case \<open>m\<^sub>n \<ge> 0\<close>, with \<open>m\<^sub>n = n-2\<close> if \<open>adm M j\<^sub>0\<close> else \<open>n-1\<close>\<close>
+         (\<not> (n = 1 \<and> adm M j0) \<longrightarrow>
+            Trans (M[n]) = operB (Trans M) (numBT (if adm M j0 then n - 2 else n - 1)))
+       \<and> \<comment> \<open>(3)\<close>
+         lessBT (Trans (M[n])) (Trans M)"
+  sorry
+
 end
