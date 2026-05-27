@@ -92,7 +92,7 @@
       - 🚨 系（加法と scb分解の関係）
       - 🚨 命題（scb分解と基本列の関係）
       - 🚨 命題（$\textrm{RightNodes}$ と部分表現の関係）
-    - 🚨 §7.3 翻訳写像
+    - 🚨 §7.3 翻訳写像 〔主要命題7本を sorry 転記済: `p_7_3_twoColumn`/`Trans_IncrFirst_Red`/`Mark_IncrFirst_Red`/`Trans_zeroT`/`Pred_Trans_descend`/`Mark_rightmost1`/`Trans_monoT`(緑)。残り(非可算基数=基数概念要・`c1<c2`/`s1 b1`空性=def内部記号露出要)は follow-up〕
       - ✅ **定義** `Trans`/`Mark`（相互再帰 `function`、termination 後回し=`RightNodes`/`Red` 同様）〔pss_paper.thy §7.3。条件 `transCondI..VI`・`Dpt`・`unflatBT`（`s c b`連接＝`flat` 単射で `THE`）・主部アクセサ `bpHeadV/T` 付き。設計 `docs/trans-mark.md`。原文 2044–2180 忠実転記。忠実性論点: `j_0=max{j<j_1|(0,j)≤_M(0,j_1)}` を `parent M 0 j_1` でモデル（要確認）〕
       - 🚨 命題（$\textrm{Trans}$ の well-defined 性）
       - 🚨 命題（$2$ 列ペア数列の基本性質）
@@ -113,7 +113,7 @@
       - 🚨 命題（$\textrm{Mark}$ が順序関係を保つこと）
       - 🚨 系（$s_{-1}$ と $b_{-1}$ の空性と基点の関係）
       - 🚨 命題（$\textrm{Mark}$ の $\textrm{Trans}$ による表示）
-    - 🚨 §7.4 許容的親子関係
+    - 🚨 §7.4 許容的親子関係 〔stmt転記: `p_7_4_Trans_nextAdm`/`Mark_nextAdm`/`Trans_Mark_Pred`/`Trans_Mark_seg`/`RightNodes_Mark` を sorry 転記済(agent a2ab8514, 緑統合)。最後の2命題は `RightAnces` 未定義のため未転記=要新定義〕
       - ✅ 命題（$\textrm{Adm}_M$ と $<_M^{\textrm{NextAdm}}$ の関係）
       - 🚨 命題（$\textrm{Trans}$ と $<_M^{\textrm{NextAdm}}$ の関係）
       - 🚨 系（$\textrm{Mark}$ と $<_M^{\textrm{NextAdm}}$ の関係）

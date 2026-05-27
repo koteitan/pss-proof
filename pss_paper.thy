@@ -1000,6 +1000,69 @@ function Trans :: "pairseq \<Rightarrow> BT" and Mark :: "pairseq \<Rightarrow> 
            else Mark PJ (m - j0)))"
   by pat_completeness auto
 
+text \<open>命題（\<open>Trans\<close>の well-defined 性）(§7.3, 2184): the recursion determines a
+  unique total \<open>Trans\<close>/\<open>Mark\<close>.  In Isabelle this is the totality of the
+  \<open>function\<close>-domain (termination); deferred — not transcribed as a separate
+  \<open>sorry\<close> lemma here.\<close>
+
+text \<open>命題（\<open>2\<close>列ペア数列の基本性質） (§7.3, 2190).\<close>
+
+lemma p_7_3_twoColumn:
+  assumes "M \<in> RT_PS" "monoT M" "Lng M = 2"
+  shows "Trans M = Dpt (enat (entry M 1 0)) (Dpt (enat (entry M 1 1)) 0\<^sub>B)"
+    and "(M, 0) \<in> Marked" and "(M, 1) \<in> Marked"
+    and "Mark M 0 = Dpt (enat (entry M 1 0)) (Dpt (enat (entry M 1 1)) 0\<^sub>B)"
+    and "Mark M 1 = Dpt (enat (entry M 1 1)) 0\<^sub>B"
+  sorry
+
+text \<open>命題（\<open>Trans\<close>の\<open>(IncrFirst,Red)\<close>不変\<open>P\<close>同変性） (1) (§7.3, 2234).\<close>
+
+lemma p_7_3_Trans_IncrFirst_Red:
+  assumes "M \<in> T_PS"
+  shows "Trans M = Trans (Red M)" and "Trans M = Trans (IncrFirst M)"
+  sorry
+
+text \<open>命題（\<open>Mark\<close>の\<open>(IncrFirst,Red,P)\<close>不変性） (1) (§7.3, 2246).\<close>
+
+lemma p_7_3_Mark_IncrFirst_Red:
+  assumes "(M, m) \<in> Marked"
+  shows "Mark M m = Mark (Red M) m" and "Mark M m = Mark (IncrFirst M) m"
+  sorry
+
+text \<open>命題（\<open>Trans\<close>が零項性を保つこと） (§7.3, 2254).\<close>
+
+lemma p_7_3_Trans_zeroT:
+  assumes "M \<in> T_PS"
+  shows "zeroT M \<longleftrightarrow> Trans M = 0\<^sub>B"
+  sorry
+
+text \<open>命題（\<open>c\<^sub>1\<close>と\<open>c\<^sub>2\<close>の大小関係） (§7.3, 2270): in the \<open>j\<^sub>1 > 0\<close>, \<open>t\<^sub>1 \<noteq> 0\<close> branch,
+  \<open>c\<^sub>1\<close> and \<open>c\<^sub>2\<close> are principal and \<open>c\<^sub>1 < c\<^sub>2\<close>.  Uses the def-internal symbols
+  \<open>c\<^sub>1\<close>/\<open>c\<^sub>2\<close>; to be stated once they are exposed as separate functions — deferred.\<close>
+
+text \<open>命題（\<open>Pred\<close>の\<open>Trans\<close>に関する降下性） (§7.3, 2278).\<close>
+
+lemma p_7_3_Pred_Trans_descend:
+  assumes "M \<in> T_PS" "Lng M > 1"
+  shows "lessBT (Trans (Pred M)) (Trans M)"
+  sorry
+
+text \<open>命題（右端第\<open>1\<close>基点の\<open>Mark\<close>の基本性質） (§7.3, 2296).\<close>
+
+lemma p_7_3_Mark_rightmost1:
+  assumes "(M, m) \<in> Marked" "M \<in> RT_PS"
+  shows "(m = Lng M - 1) \<longleftrightarrow> (Mark M m = Dpt (enat (entry M 1 m)) 0\<^sub>B)"
+  sorry
+
+text \<open>命題（\<open>Trans\<close>が単項性を保つこと） (§7.3, 2358).  A \<open>BT\<close> term is principal
+  (\<open>\<in> PT\<^bsub>B\<^esub>\<close>) iff it has a single principal component, i.e. \<open>Lng (P\<^bsub>B\<^esub> t) = 1\<close>.\<close>
+
+lemma p_7_3_Trans_monoT:
+  assumes "M \<in> T_PS"
+  shows "monoT M \<longleftrightarrow>
+           (Lng (PB (Trans M)) = 1 \<or> (zeroT (P M ! 0) \<and> Lng (P M) = 2))"
+  sorry
+
 
 subsection \<open>§7.4 許容的親子関係\<close>
 
@@ -1011,6 +1074,83 @@ text \<open>命題（\<open>Adm\<^sub>M\<close>と\<open><\<^bsub>M\<^esub>\<^su
 lemma p_7_4_Adm_nextAdm:
   assumes "M \<in> T_PS" "hasParent M i (Lng M - 1)"
   shows "nextAdm M i (Adm M (parent M i (Lng M - 1))) (Lng M - 1)"
+  sorry
+
+
+text \<open>命題（\<open>Trans\<close>と\<open><\<^bsub>M\<^esub>\<^sup>NextAdm\<close>の関係） (§7.4): for \<open>M \<in> T\<^bsub>PS\<^esub>\<close> with
+  \<open>j\<^sub>1 = Lng M - 1\<close>, if there is a unique \<open>j\<^sub>0\<close> with
+  \<open>(0,j\<^sub>0) <\<^bsub>M\<^esub>\<^sup>NextAdm (0,j\<^sub>1)\<close>, then there exist unique
+  \<open>(s\<^sub>0,b\<^sub>0) \<in> (\<Sigma>\<^bsup><\<omega>\<^esup>)\<^sup>2\<close> such that
+  \<open>(s\<^sub>0, Mark(Pred M, j\<^sub>0), b\<^sub>0)\<close> is an scb-decomposition of \<open>Trans(Pred M)\<close> and
+  \<open>(s\<^sub>0, Mark(M, j\<^sub>0), b\<^sub>0)\<close> is an scb-decomposition of \<open>Trans M\<close>.\<close>
+
+lemma p_7_4_Trans_nextAdm:
+  assumes "M \<in> T_PS"
+    and "\<exists>!j0. nextAdm M 0 j0 (Lng M - 1)"
+  shows "\<exists>!sb. scb_decomp (Trans (Pred M))
+                  (fst sb) (flatBT (Mark (Pred M) (THE j0. nextAdm M 0 j0 (Lng M - 1)))) (snd sb)
+            \<and> scb_decomp (Trans M)
+                  (fst sb) (flatBT (Mark M (THE j0. nextAdm M 0 j0 (Lng M - 1)))) (snd sb)"
+  sorry
+
+text \<open>系（\<open>Mark\<close>と\<open><\<^bsub>M\<^esub>\<^sup>NextAdm\<close>の関係） (§7.4): under the same hypotheses, with
+  \<open>j\<^sub>0\<close> the unique NextAdm-parent of \<open>j\<^sub>1 = Lng M - 1\<close>, for any \<open>j\<close> with
+  \<open>(0,j) \<le>\<^sub>M (0,j\<^sub>0)\<close> there exist unique \<open>(s\<^sub>0,b\<^sub>0)\<close> such that
+  \<open>(s\<^sub>0, Mark(Pred M, j\<^sub>0), b\<^sub>0)\<close> is an scb-decomposition of \<open>Mark(Pred M, j)\<close> and
+  \<open>(s\<^sub>0, Mark(M, j\<^sub>0), b\<^sub>0)\<close> is an scb-decomposition of \<open>Mark(M, j)\<close>.\<close>
+
+lemma p_7_4_Mark_nextAdm:
+  assumes "M \<in> T_PS"
+    and "\<exists>!j0. nextAdm M 0 j0 (Lng M - 1)"
+    and "leR M 0 j (THE j0. nextAdm M 0 j0 (Lng M - 1))"
+  shows "\<exists>!sb. scb_decomp (Mark (Pred M) j)
+                  (fst sb) (flatBT (Mark (Pred M) (THE j0. nextAdm M 0 j0 (Lng M - 1)))) (snd sb)
+            \<and> scb_decomp (Mark M j)
+                  (fst sb) (flatBT (Mark M (THE j0. nextAdm M 0 j0 (Lng M - 1)))) (snd sb)"
+  sorry
+
+text \<open>系（\<open>Trans\<close>の\<open>Mark\<close>と\<open>Pred\<close>による表示） (§7.4): for any
+  \<open>(M,m) \<in> T\<^bsub>PS\<^esub>\<^sup>Marked\<close> (modelled by \<open>(M,m) \<in> Marked\<close>), if \<open>m < Lng M - 1\<close>
+  then there exist unique \<open>(s\<^sub>0,b\<^sub>0)\<close> such that \<open>(s\<^sub>0, Mark(Pred M, m), b\<^sub>0)\<close> is an
+  scb-decomposition of \<open>Trans(Pred M)\<close> and \<open>(s\<^sub>0, Mark(M, m), b\<^sub>0)\<close> is an
+  scb-decomposition of \<open>Trans M\<close>.\<close>
+
+lemma p_7_4_Trans_Mark_Pred:
+  assumes "(M, m) \<in> Marked"
+    and "m < Lng M - 1"
+  shows "\<exists>!sb. scb_decomp (Trans (Pred M)) (fst sb) (flatBT (Mark (Pred M) m)) (snd sb)
+            \<and> scb_decomp (Trans M) (fst sb) (flatBT (Mark M m)) (snd sb)"
+  sorry
+
+text \<open>系（\<open>Trans\<close>の\<open>Mark\<close>と切片による表示） (§7.4): for any
+  \<open>(M,m) \<in> RT\<^bsub>PS\<^esub>\<^sup>Marked\<close> (modelled by \<open>(M,m) \<in> Marked \<and> M \<in> RT\<^bsub>PS\<^esub>\<close>), if
+  \<open>0 < m < Lng M - 1\<close> then there exist unique \<open>(s\<^sub>0,b\<^sub>0)\<close> such that
+  \<open>(s\<^sub>0, D\<^bsub>M\<^sub>1\<^sub>,\<^sub>m\<^esub> 0, b\<^sub>0)\<close> is an scb-decomposition of \<open>Trans((M\<^sub>j)\<^bsub>j=0\<^esub>\<^bsup>m\<^esup>)\<close> and
+  \<open>(s\<^sub>0, Mark(M, m), b\<^sub>0)\<close> is an scb-decomposition of \<open>Trans M\<close>.  Here
+  \<open>(M\<^sub>j)\<^bsub>j=0\<^esub>\<^bsup>m\<^esup> = seg M 0 m\<close> and \<open>D\<^bsub>M\<^sub>1\<^sub>,\<^sub>m\<^esub> 0 = Dpt (enat (entry M 1 m)) 0\<^sub>B\<close>.\<close>
+
+lemma p_7_4_Trans_Mark_seg:
+  assumes "(M, m) \<in> Marked" "M \<in> RT_PS"
+    and "0 < m" "m < Lng M - 1"
+  shows "\<exists>!sb. scb_decomp (Trans (seg M 0 m))
+                  (fst sb) (flatBT (Dpt (enat (entry M 1 m)) 0\<^sub>B)) (snd sb)
+            \<and> scb_decomp (Trans M) (fst sb) (flatBT (Mark M m)) (snd sb)"
+  sorry
+
+text \<open>系（\<open>RightNodes\<close>と\<open>Mark\<close>の関係） (§7.4): for any
+  \<open>(M,m) \<in> RT\<^bsub>PS\<^esub>\<^sup>Marked\<close> (modelled by \<open>(M,m) \<in> Marked \<and> M \<in> RT\<^bsub>PS\<^esub>\<close>), if
+  \<open>0 < m < Lng M - 1\<close> then there exist \<open>a\<^sub>0, a\<^sub>1 \<in> \<nat>\<^bsup><\<omega>\<^esup>\<close> such that
+  \<open>RightNodes(Trans M) = a\<^sub>0 \<frown> (M\<^sub>1\<^sub>,\<^sub>m) \<frown> a\<^sub>1\<close>,
+  \<open>RightNodes(Trans((M\<^sub>j)\<^bsub>j=0\<^esub>\<^bsup>m\<^esup>)) = a\<^sub>0 \<frown> (M\<^sub>1\<^sub>,\<^sub>m)\<close>, and
+  \<open>RightNodes(Mark(M, m)) = (M\<^sub>1\<^sub>,\<^sub>m) \<frown> a\<^sub>1\<close>.  Here the article's \<open>\<oplus>\<^sub>\<nat>\<close> on
+  \<open>\<nat>\<^bsup><\<omega>\<^esup>\<close> is list append \<open>@\<close>, and \<open>(M\<^sub>1\<^sub>,\<^sub>m) = [entry M 1 m]\<close>.\<close>
+
+lemma p_7_4_RightNodes_Mark:
+  assumes "(M, m) \<in> Marked" "M \<in> RT_PS"
+    and "0 < m" "m < Lng M - 1"
+  shows "\<exists>a0 a1. RightNodes (Trans M) = a0 @ [entry M 1 m] @ a1
+              \<and> RightNodes (Trans (seg M 0 m)) = a0 @ [entry M 1 m]
+              \<and> RightNodes (Mark M m) = [entry M 1 m] @ a1"
   sorry
 
 end
