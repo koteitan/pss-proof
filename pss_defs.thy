@@ -496,4 +496,15 @@ definition nextAdm :: "pairseq \<Rightarrow> nat \<Rightarrow> nat \<Rightarrow>
      leR M i j0 j1 \<and> j0 < j1 \<and> adm M j0
    \<and> (\<forall>j. j0 < j \<and> j < j1 \<longrightarrow> \<not> leR M i j j1 \<or> \<not> adm M j)"
 
+
+section \<open>§8 停止性 (Termination)\<close>
+
+text \<open>\<open>DT\<^bsub>PS\<^esub>\<close> (強単項ペア数列): \<open>M\<close> is reduced, mono, and \<open>Br M\<close> is descending
+  (§8.2, article 3279–3281).  The \<open>Br\<close>-descending condition is exactly the
+  conclusion of §6.8 prop1 (\<open>p_6_8_standard_slice_Br_descending\<close>), so §8.2's
+  strong-monomiality of standard slices builds directly on §6.8.\<close>
+
+definition DT_PS :: "pairseq set" where
+  "DT_PS = {M. M \<in> RT_PS \<and> monoT M \<and> descending (Br M)}"
+
 end

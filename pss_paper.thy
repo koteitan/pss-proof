@@ -1358,4 +1358,18 @@ lemma p_7_4_RightAnces_zeroT:
   shows "zeroT M \<longleftrightarrow> RightAnces M = []"
   sorry
 
+
+section \<open>§8 停止性 (Termination)\<close>
+
+text \<open>命題（標準形の直系先祖による切片の簡約化の強単項性） (§8.2, article 3283):
+  for \<open>M \<in> ST\<^bsub>PS\<^esub>\<close>, the reduction of an ancestor slice with \<open>(0,j'\<^sub>0) \<le>\<^sub>M (0,j'\<^sub>1)\<close>
+  is strong-monomial.  Builds directly on §6.8 prop1
+  (\<open>p_6_8_standard_slice_Br_descending\<close>): the slice \<open>M'\<close> is mono with \<open>Br M'\<close>
+  descending, so \<open>Red M'\<close> is reduced + mono + \<open>Br\<close>-descending, i.e. \<open>\<in> DT\<^bsub>PS\<^esub>\<close>.\<close>
+
+lemma p_8_2_standard_slice_Red_strongmono:
+  assumes "M \<in> ST_PS" "j0' < j1'" "j1' \<le> Lng M - 1" "leR M 0 j0' j1'"
+  shows "Red (seg M j0' j1') \<in> DT_PS"
+  sorry
+
 end

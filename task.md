@@ -122,14 +122,14 @@
       - 🚨 系（$\textrm{RightNodes}$ と $\textrm{Mark}$ の関係）
       - 🚨 命題（$\textrm{RightNodes}$ と $\textrm{RightAnces}$ の関係）〔`p_7_4_RightAnces_RightNodes` 転記済; `RightAnces` 定義(deferred function)も追加〕
       - 🚨 系（非零項の $\textrm{RightAnces}$ が非空であること）〔`p_7_4_RightAnces_zeroT` 転記済〕
-  - 🚨 §8 停止性
+  - 🚨 §8 停止性 〔kickoff: `DT_PS`(強単項=簡約∧単項∧Br降順, pss_defs) 定義済。§6.8 prop1 が §8.2 の前提＝critical path。残り定義: `LastStep`/強許容〕
     - 🚨 §8.1 条件 (I) の下での展開規則
       - 🚨 命題（条件 (I) の下での $\textrm{Trans}$ と基本列の交換関係）
       - 🚨 補題（公差 $(1,1)$ のペア数列の $\textrm{Trans}$ の基本性質）
       - 🚨 系（$\textrm{Pred}$ が公差 $(1,1)$ のペア数列の $\textrm{Trans}$ の基本性質）
       - 🚨 補題（条件 (I) か (III) の下での $c_1$ 前後の具体表示）
     - 🚨 §8.2 強単項性
-      - 🚨 命題（標準形の直系先祖による切片の簡約化の強単項性）
+      - 🚨 命題（標準形の直系先祖による切片の簡約化の強単項性）〔`p_8_2_standard_slice_Red_strongmono` 転記済(§6.8 prop1 依存)〕
       - 🚨 命題（条件 (II) か (IV) の下での終切片と $\textrm{Trans}$ の関係）
       - 🚨 補題（強単項性の切片への遺伝性）
       - 🚨 補題（部分表現の単項成分と $\textrm{Pred}$ の関係）
