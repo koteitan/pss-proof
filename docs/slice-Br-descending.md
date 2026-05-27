@@ -523,3 +523,31 @@ boundary stop reflexive => TrMax_seg_oper_d0zero_eq unconditional. (Explains why
 m_6_7_standard_P_components). ~200-line multi-build proof = its own session. **THE irreducible core
 of §6.8 case A.** NB: `seg N j0^N (Lng N-1)` is monoT but NOT always standard (1236/1632), so the
 recursion must go through the last P-component, not that segment.
+
+## UPDATE 2026-05-27 (continued 4): RETRACTION — the "continued 2/3" reduction rests on a FALSE lemma
+
+⚠️⚠️ **The (continued 3) interval lemma is FALSE**, clean counterexample (yaBMS-STANDARD):
+`N = (0,0)(1,1)(1,0)`, `a,b,c = 0,2,1`: `nextrel0 N 0 2`, `entry N 1 2 = 0`, but `entry N 1 1 = 1 ≠ 0`.
+The "1632/1632" (and the continued-2 "141/141" for `entry N 1 j0^N ≥ entry N 1 (j0^N+1)`, which
+this same `N` also breaks: `entry N 1 0 = 0 ≥ entry N 1 1 = 1` is `0≥1`, false) were **bounded-
+enumeration artifacts**: counterexamples first appear at KMAX=6 (not KMAX=4), and the "false for
+non-standard N" probe did NOT filter standardness so it mislabeled this STANDARD counterexample
+as non-standard. **Both `F1` and the interval lemma are RETRACTED.** All failures are in the
+**d0pos** branch (`idx1 N (Lng N-1) = 1`): the IncrFirst block carries row-1 values rising from 0
+at `j0` to positive at `j1`, so an interior offset can be row-1-positive while the block start reads 0.
+
+**Still solid (Isabelle-proven, green, unconditional truth):** the 7 bricks
+`nextrel1_prefix_imp`, `TrMax_eqI`, `TrMax_eq_of_prefix_agree`, `TrMax_stop`,
+`TrMax_lt_last_of_row1_zero`, `nextR1_boundary_stop_of_prefix`, `TrMax_seg_oper_d0zero_eq`.
+The last proves the case-A TrMax-equality **modulo the boundary-stop hypothesis** — that part is
+sound. ONLY the *discharge route* for that hypothesis (via F1 / the interval lemma) was wrong.
+
+**Methodology fix (mandatory before any further empirical claim here):** re-run `red_model.py` /
+`slice_trmaxeq_audit*.py` with (a) a **yaBMS `is_standard` filter** on N, and (b) **KMAX ≥ 6**.
+The earlier audits used neither and are unreliable.
+
+**Open re-derivation:** the boundary-stop discharge for case A needs a NEW argument. The d0zero
+sub-branch may still be true *restricted*, but a naive rank induction recurses into d0pos
+(where it is false), so that route is blocked. The d0pos boundary likely needs the explicit
+`IncrFirst^{kδ}` row-1 structure (article 1516-1589), not a generic interval/row-1 lemma.
+**Next step is empirical re-derivation (with the methodology fix), not another proof attempt.**
