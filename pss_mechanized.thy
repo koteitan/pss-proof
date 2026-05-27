@@ -8411,4 +8411,149 @@ lemma m_7_1_lessBT_linord:
     and "lessBT a b \<or> a = b \<or> lessBT b a"
   using lessBT_irrefl lessBT_trans lessBT_total by blast+
 
+\<comment> \<open>========================================================================
+   §8.7 補題（順序数項の基本例） — m_8_7_OT_examples
+   content.md 6066-6120.  D_u t = Dpt (enat u) t = Trm [DB (enat u) t].
+   ====================================================================== \<close>
+
+\<comment> \<open>helper: D_u 0 is dfree and is an OT-principal with empty G-set, hence in OT_B.\<close>
+lemma otb_Dpt_0: "Dpt (enat u) 0\<^sub>B \<in> OT_B"
+  by (simp add: OT_B_def OT_def T_B_def)
+
+\<comment> \<open>helper: abbreviation-free unfolding of the n-fold D_u tower.\<close>
+lemma otb_tower_Suc:
+  "(Dpt (enat u) ^^ Suc n) 0\<^sub>B = Trm [DB (enat u) ((Dpt (enat u) ^^ n) 0\<^sub>B)]"
+  by (simp add: funpow_swap1)
+
+\<comment> \<open>helper: the n-fold tower is dfree (in T_B).\<close>
+lemma otb_tower_dfree: "dfree_BT ((Dpt (enat u) ^^ n) 0\<^sub>B)"
+  by (induction n) (simp_all add: otb_tower_Suc)
+
+\<comment> \<open>helper: strict monotonicity of the tower (content.md 6102–6106).
+   m < n ==> D_u^m 0 < D_u^n 0.\<close>
+lemma otb_tower_lessBT:
+  "m < n \<Longrightarrow> lessBT ((Dpt (enat u) ^^ m) 0\<^sub>B) ((Dpt (enat u) ^^ n) 0\<^sub>B)"
+proof (induction n arbitrary: m)
+  case 0
+  then show ?case by simp
+next
+  case (Suc n)
+  show ?case
+  proof (cases m)
+    case 0
+    then show ?thesis
+      by (simp add: otb_tower_Suc)
+  next
+    case (Suc k)
+    with Suc.prems have "k < n" by simp
+    from Suc.IH[OF this] have
+      "lessBT ((Dpt (enat u) ^^ k) 0\<^sub>B) ((Dpt (enat u) ^^ n) 0\<^sub>B)" .
+    then show ?thesis
+      unfolding Suc
+      by (simp add: otb_tower_Suc)
+  qed
+qed
+
+\<comment> \<open>helper: the G-set of the tower (content.md 6110, 6118).
+   G_u (D_u^n 0) = {D_u^m 0 | m < n} and the tower is an OT_B term.\<close>
+lemma otb_tower_G_and_OT:
+  "GBT (enat u) ((Dpt (enat u) ^^ n) 0\<^sub>B)
+        = {(Dpt (enat u) ^^ m) 0\<^sub>B | m. m < n}
+   \<and> isOT_BT ((Dpt (enat u) ^^ n) 0\<^sub>B)"
+proof (induction n)
+  case 0
+  show ?case by simp
+next
+  case (Suc n)
+  let ?a = "\<lambda>m. (Dpt (enat u) ^^ m) 0\<^sub>B"
+  from Suc.IH have G_n: "GBT (enat u) (?a n) = {?a m | m. m < n}"
+    and OT_n: "isOT_BT (?a n)" by blast+
+  \<comment> \<open>G-set: G_u (D_u^{Suc n} 0) = insert (D_u^n 0) (G_u (D_u^n 0))\<close>
+  have G_Suc: "GBT (enat u) (?a (Suc n)) = insert (?a n) (GBT (enat u) (?a n))"
+    by (simp add: otb_tower_Suc)
+  have set_eq: "GBT (enat u) (?a (Suc n)) = {?a m | m. m < Suc n}"
+    unfolding G_Suc G_n
+    using less_Suc_eq by auto
+  \<comment> \<open>OT: the isOT_BP condition for D_u^{Suc n} 0 = Trm [DB u (D_u^n 0)] quantifies over
+     G_u (D_u^n 0) = {D_u^m 0 | m < n}, each of which is < D_u^n 0.\<close>
+  have all_less: "\<forall>x \<in> GBT (enat u) (?a n). lessBT x (?a n)"
+  proof
+    fix x assume "x \<in> GBT (enat u) (?a n)"
+    then obtain m where "m < n" and xeq: "x = ?a m"
+      using G_n by blast
+    then show "lessBT x (?a n)"
+      using xeq otb_tower_lessBT by blast
+  qed
+  have OT_Suc: "isOT_BT (?a (Suc n))"
+    unfolding otb_tower_Suc
+    using OT_n all_less by simp
+  show ?case using set_eq OT_Suc by blast
+qed
+
+\<comment> \<open>helper: descP of a list of identical principals (for part (3)).\<close>
+lemma otb_descP_replicate:
+  "descP (replicate m (DB (enat u) (Trm [])))"
+proof (induction m)
+  case 0 then show ?case by simp
+next
+  case (Suc m)
+  show ?case
+  proof (cases m)
+    case 0 then show ?thesis by simp
+  next
+    case (Suc k)
+    then show ?thesis using Suc.IH by simp
+  qed
+qed
+
+\<comment> \<open>helper: (D_u 0) * m as an explicit replicate term.\<close>
+lemma otb_mult_eq_replicate:
+  "multBT (Dpt (enat u) 0\<^sub>B) m = Trm (replicate m (DB (enat u) (Trm [])))"
+  by (induction m) (simp_all add: replicate_append_same)
+
+\<comment> \<open>----  Main lemma: §8.7 順序数項の基本例  ---- \<close>
+lemma m_8_7_OT_examples:
+  \<comment> \<open>m: 補題（順序数項の基本例）(content.md 6066–6120)\<close>
+  shows "Dpt (enat u) 0\<^sub>B \<in> OT_B"
+    and "Dpt (enat u) (Dpt (enat v) 0\<^sub>B) \<in> OT_B"
+    and "n \<ge> 1 \<Longrightarrow> multBT (Dpt (enat u) 0\<^sub>B) (n - 1) \<in> OT_B"
+    and "(Dpt (enat u) ^^ n) 0\<^sub>B \<in> OT_B"
+proof -
+  \<comment> \<open>(1) D_u 0 in OT_B (content.md 6087)\<close>
+  show "Dpt (enat u) 0\<^sub>B \<in> OT_B" by (rule otb_Dpt_0)
+next
+  \<comment> \<open>(2) D_u D_v 0 in OT_B (content.md 6089-6098):
+     G_u (D_v 0) subset-of {0} < D_v 0, and D_v 0 in OT_B.\<close>
+  show "Dpt (enat u) (Dpt (enat v) 0\<^sub>B) \<in> OT_B"
+  proof -
+    have "isOT_BT (Dpt (enat u) (Dpt (enat v) 0\<^sub>B))"
+      by (auto simp: OT_def)
+    moreover have "dfree_BT (Dpt (enat u) (Dpt (enat v) 0\<^sub>B))" by simp
+    ultimately show ?thesis by (simp add: OT_B_def OT_def T_B_def)
+  qed
+next
+  \<comment> \<open>(3) (D_u 0) * (n-1) in OT_B (content.md 6100):
+     all components are the OT-principal D_u 0, and they are non-increasing.\<close>
+  assume "n \<ge> 1"
+  show "multBT (Dpt (enat u) 0\<^sub>B) (n - 1) \<in> OT_B"
+  proof -
+    have "isOT_BT (multBT (Dpt (enat u) 0\<^sub>B) (n - 1))"
+      unfolding otb_mult_eq_replicate
+      by (simp add: otb_descP_replicate)
+    moreover have "dfree_BT (multBT (Dpt (enat u) 0\<^sub>B) (n - 1))"
+      unfolding otb_mult_eq_replicate by simp
+    ultimately show ?thesis by (simp add: OT_B_def OT_def T_B_def)
+  qed
+next
+  \<comment> \<open>(4) D_u^n 0 in OT_B (content.md 6102-6120)\<close>
+  show "(Dpt (enat u) ^^ n) 0\<^sub>B \<in> OT_B"
+  proof -
+    have "isOT_BT ((Dpt (enat u) ^^ n) 0\<^sub>B)"
+      using otb_tower_G_and_OT by blast
+    moreover have "dfree_BT ((Dpt (enat u) ^^ n) 0\<^sub>B)"
+      by (rule otb_tower_dfree)
+    ultimately show ?thesis by (simp add: OT_B_def OT_def T_B_def)
+  qed
+qed
+
 end
