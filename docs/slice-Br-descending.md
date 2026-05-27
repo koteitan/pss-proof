@@ -598,3 +598,13 @@ on the case-A hard domain, in M'-coordinates via the periodic block layout. Then
 `nextR1_boundary_stop_of_prefix` (easy) + this (hard) discharge the boundary stop, making
 `TrMax_seg_oper_d0zero_eq` unconditional, after which the `Br M' = take J1 (Br N') @ blocks`
 decomposition finishes case A. Audit: extend `python/slice_caseA_trmax_recheck.py`.
+
+## Validation (2026-05-27): §6.8 prop1 target is empirically SOUND (methodology-corrected)
+
+Rigorous re-validation of the WHOLE prop1 goal with the methodology fix (yaBMS `is_standard`
+filter over ALL pairseqs to length 5, not the incomplete diag→oper generation; vs the older
+`sk_68_prop1_audit.py` which used KMAX=3 generation without is_standard):
+**250 standard N, 1420 ancestor slices checked, 0 monoT violations, 0 Br-descending violations.**
+So unlike the (retracted) F1 inequality, the prop1 target itself has no false edges — the worktree
+is proving a genuinely true statement. Combined with the case-A audits (TrMax route 738/738,
+boundary stop 738/738, hard-case row-1 ≥ 576/576), the §6.8 case-A empirical foundation is solid.
