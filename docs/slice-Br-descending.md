@@ -648,3 +648,24 @@ This is the hardest passage (~several hundred lines, multi-session). Empirically
 `python/slice_caseA_brdecomp_recheck.py` (is_standard + depth 5, 453 instances) — `descending(Br M')`
 0 fails, `TrMax M'=TrMax N'` 0 fails, junction 0 fails, `descN'` 0 fails; sub-cases A=213/B=198/C=42.
 **Next concrete brick: sub-case A's P-additivity fold (cleanest, single junction).**
+
+## UPDATE 2026-05-27 (continued 9): sub-case A reduced to one precise block-fold identity
+
+More GREEN groundwork in `../pss-slice` inside `m_6_8_slice_Br_descending_monoT` (~9670-9746):
+`monoM'`/`M'PT` (M' ∈ PT_PS), `NpL`/`Npz`/`TrNplt` (= article 1480), `BrNpne`, and the two
+co-anchored framings **`BrM'P : Br M' = P (seg M a j1')`** and **`BrNpP : Br N' = P (seg N a (Lng N-1))`**
+with `a = j0' + TrMax N' + 1`, `j0^N < a ≤ j1^N`. The case-A `sorry` is split A(~9765)/B-C(~9770);
+d0pos at ~9776 (sorry count now 3).
+
+**Sub-case A's SOLE residual (9765)** is the block-fold identity, empirically confirmed 0/213
+(`python/slice_caseA_subA_decomp.py`, is_standard + depth 5):
+> `Br M' = take J1 (Br N') @ replicate (neff-2) blk @ [partial]`, `blk = seg N j0^N (j1^N-1)`,
+> with **`neff = (j1' - j0^N) div w + 1`** (NB: the article's "n-2" is per-block-of-`j1'`, i.e.
+> `neff`, NOT the raw `n`).
+Proof = `m_6_2_P_additive` fold of `seg M a j1'` at block boundary `j0^N + w` (left-minimal via
+`parent_block_entry0_min`) + induction over the `neff-1` repeated blocks (heads all `N!j0^N`);
+then `descending_append` + `descending_take[OF descN']` + `descending_replicate` + junction `junc0`
+(trunk/trunk by descN', block/block equal heads, trunk/block vacuous). This is the ~several-hundred-
+line multi-session core; all surrounding groundwork is green and the identity is empirically sound.
+Also `descending_Br_of_FN_tiebreak` reduces the goal to this FN tie-break (0/213). **Next: the
+block-fold induction (dedicated session).**
