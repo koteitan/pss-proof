@@ -630,3 +630,21 @@ fails 0, hard M'-inequality fails 0, index identities 0 mismatches.
 
 **Remaining for case A (9648 sorry):** only the `Br M' = take J1 (Br N') @ blocks` decomposition
 (m_6_2_P_additive + descending_append + the junction); the TrMax half is fully done. **Next brick.**
+
+## UPDATE 2026-05-27 (continued 8): case-A reduced to the Br = take@blocks decomposition (the hard passage)
+
+Groundwork now GREEN in `../pss-slice` inside `m_6_8_slice_Br_descending_monoT` (~9648): `TrEq`
+(`TrMax M' = TrMax N'` via `TrMax_seg_oper_d0zero_eq_caseA`) and `junc0`
+(`entry N 0 j0^N < entry N 0 (Lng N-1)`, the row-0 strict junction, from `parR0N`/`nextrel0_def`).
+
+**The sole remaining obligation for case A (9648 sorry)** is the article's central identity
+`Br M' = take J1 (Br N') @ blocks` (1486-1500), then `descending_append` +
+`descending_take[OF descN']` + `descending_replicate`/`descending_const_head` close
+`descending (Br M')`. Mechanising the identity needs, per FirstNodes(N')_{J1} sub-case (A/B/C):
+P-additivity folding of the branch region `S = seg M' (TrMax N'+1)(Lng M'-1)` via `m_6_2_P_additive`
+at each block boundary (left-minimal by `parent_block_entry0_min`+`oper_d0zero_entry0`), and
+`FirstNodes(N')_{J1}` identification via `m_6_4_FirstNodes_TrMax_Joints`/`FirstNodes_nth`/`Joints_nth`.
+This is the hardest passage (~several hundred lines, multi-session). Empirically sound:
+`python/slice_caseA_brdecomp_recheck.py` (is_standard + depth 5, 453 instances) — `descending(Br M')`
+0 fails, `TrMax M'=TrMax N'` 0 fails, junction 0 fails, `descN'` 0 fails; sub-cases A=213/B=198/C=42.
+**Next concrete brick: sub-case A's P-additivity fold (cleanest, single junction).**
