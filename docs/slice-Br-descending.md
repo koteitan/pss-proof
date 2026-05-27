@@ -608,3 +608,25 @@ filter over ALL pairseqs to length 5, not the incomplete diag→oper generation;
 So unlike the (retracted) F1 inequality, the prop1 target itself has no false edges — the worktree
 is proving a genuinely true statement. Combined with the case-A audits (TrMax route 738/738,
 boundary stop 738/738, hard-case row-1 ≥ 576/576), the §6.8 case-A empirical foundation is solid.
+
+## UPDATE 2026-05-27 (continued 7): case-A boundary stop PROVEN — TrMax equality now UNCONDITIONAL
+
+The case-A boundary stop is now a GREEN theorem in `../pss-slice` (uncommitted), via the
+trunk-routing that the methodology-corrected analysis pointed to (NOT the retracted F1):
+- `le1_imp_entry1_le` — row-1 weakly increases along a row-1 ancestor chain (`nextrel1` rtrancl).
+- `nextR1_boundary_stop_d0zero_caseA` — discharges `¬ nextR M' 1 (TrMax N')(TrMax N'+1)` on the
+  case-A domain. HARD case: `oper_d0zero_nth` gives `M'!(TrMax N') = N!(Lng N-2)` (block-0 last
+  interior) and `M'!(TrMax N'+1) = N!j0^N` (block-1 start); `j0^N` is on the N'-trunk
+  (`j0^N - j0' ≤ TrMax N'`, arithmetic from `j0^N < Lng N-1`), so row-1 weakly increases to it
+  (`trunk_le1` + `le1_imp_entry1_le`): `N₁,j0^N ≤ N₁,(Lng N-2)`, killing the strict `nextrel1`.
+- `TrMax_seg_oper_d0zero_eq_caseA` — the UNCONDITIONAL `TrMax(seg (N[n]) j0' j1') =
+  TrMax(seg N j0' (Lng N-1))` on the case-A domain (`j0' < j0^N`, article-1466).
+
+Why this works where F1 didn't: the standalone N-form `entry N 1 (Lng N-2) ≥ entry N 1 j0^N` is
+generically FALSE (47 fails), but TRUE under the hard-case condition `TrMax N' = Lng N'-2` (0 fails),
+which the proof uses via `j0^N` on the N'-trunk — not as an N-coordinate inequality. Empirical
+recheck (is_standard + depth 5, `python/slice_caseA_boundary_stop_recheck.py`): boundary stop
+fails 0, hard M'-inequality fails 0, index identities 0 mismatches.
+
+**Remaining for case A (9648 sorry):** only the `Br M' = take J1 (Br N') @ blocks` decomposition
+(m_6_2_P_additive + descending_append + the junction); the TrMax half is fully done. **Next brick.**
