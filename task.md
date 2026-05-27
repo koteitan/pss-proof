@@ -122,7 +122,7 @@
       - 🚨 系（$\textrm{RightNodes}$ と $\textrm{Mark}$ の関係）
       - 🚨 命題（$\textrm{RightNodes}$ と $\textrm{RightAnces}$ の関係）〔`p_7_4_RightAnces_RightNodes` 転記済; `RightAnces` 定義(deferred function)も追加〕
       - 🚨 系（非零項の $\textrm{RightAnces}$ が非空であること）〔`p_7_4_RightAnces_zeroT` 転記済〕
-  - 🚨 §8 停止性 〔定義: `DT_PS`(強単項)・`LastStep`(A9)済。§6.8 prop1 が §8.2 前提＝critical path。展開規則 §8.1/8.3/8.4 を agent並列で sorry 転記(a5df1dfa/a797c612/ad937ac4): `p_8_1_*`(4)/`p_8_3_*`(4)/`p_8_4_*`(3)。公差(1,1)=`diagSeq`, 条件(I-VI)=`transCondI..VI`, 基本列=`operB·numBT` でモデル。残: §8.2(強許容 要定義)・§8.5/8.6/8.7(主結果, 6242 最終定義要)・Trans 内部記号(c1/c2/t2-4/s1/b1)露出依存の命題群〕
+  - 🚨 §8 停止性 〔定義: `DT_PS`(強単項)・`LastStep`(A9)済。§6.8 prop1 が §8.2 前提＝critical path。展開規則 §8.1/8.3/8.4/8.5/8.6 を agent並列で sorry 転記(a5df1dfa/a797c612/ad937ac4/a28113e): `p_8_1_*`(4)/`p_8_3_*`(4)/`p_8_4_*`(3)/`p_8_5_*`(2)/`p_8_6_*`(4)。公差(1,1)=`diagSeq`, 条件(I-VI)=`transCondI..VI`, 基本列=`operB·numBT` でモデル。残: §8.2(強許容 要定義)・§8.7(主結果, 6242 最終定義要)・Trans 内部記号(c1/c2/t2-4/s1/b1)露出依存の命題群〕
     - 🚨 §8.1 条件 (I) の下での展開規則
       - 🚨 命題（条件 (I) の下での $\textrm{Trans}$ と基本列の交換関係）
       - 🚨 補題（公差 $(1,1)$ のペア数列の $\textrm{Trans}$ の基本性質）
@@ -151,15 +151,15 @@
       - 🚨 補題（条件 (III)〜(V) の下での各種 scb分解）
       - 🚨 補題（条件 (III) か (IV) の下での各種 scb分解）
       - 🚨 補題（条件 (III) か (IV) の下での基本列の基本性質）
-    - 🚨 §8.5 条件 (V) の下での展開規則
-      - 🚨 命題（条件 (V) の下での $\textrm{Trans}$ と基本列の交換関係）
-      - 🚨 補題（条件 (V) の下での $\textrm{Joints}$ と $\textrm{FirstNodes}$ と $t_2$ の基本性質）
-      - 🚨 補題（条件 (V) の下での各種 scb分解）
-    - 🚨 §8.6 条件 (VI) の下での展開規則
-      - 🚨 命題（条件 (VI) の下での $\textrm{Trans}$ と基本列の交換関係）
-      - 🚨 補題（公差 $(1,0)$ のペア数列の $\textrm{Trans}$ の基本性質）
-      - 🚨 補題（公差 $(1,1)$ のペア数列の $\textrm{Trans}$ の展開規則）
-      - 🚨 補題（順序数項の末尾単項の零化可能性）
+    - 🚨 §8.5 条件 (V) の下での展開規則 〔転記済(a28113e): `p_8_5_*`(2)〕
+      - 🚨 命題（条件 (V) の下での $\textrm{Trans}$ と基本列の交換関係）〔`p_8_5_Trans_oper_exchange`〕
+      - 🚨 補題（条件 (V) の下での $\textrm{Joints}$ と $\textrm{FirstNodes}$ と $t_2$ の基本性質）〔`p_8_5_Joints_FirstNodes_basic`〕
+      - 🚨 補題（条件 (V) の下での各種 scb分解）〔Trans 内部記号(t2/s1/b1)露出依存=未転記〕
+    - 🚨 §8.6 条件 (VI) の下での展開規則 〔転記済(a28113e): `p_8_6_*`(4)〕
+      - 🚨 命題（条件 (VI) の下での $\textrm{Trans}$ と基本列の交換関係）〔`p_8_6_Trans_fseq_condVI`〕
+      - 🚨 補題（公差 $(1,0)$ のペア数列の $\textrm{Trans}$ の基本性質）〔`p_8_6_const2nd_Trans`〕
+      - 🚨 補題（公差 $(1,1)$ のペア数列の $\textrm{Trans}$ の展開規則）〔`p_8_6_diagSeq_Trans_oper`〕
+      - 🚨 補題（順序数項の末尾単項の零化可能性）〔`p_8_6_trailing_principal_annihilable`〕
     - 🚨 §8.7 主結果
       - 🚨 補題（公差 $(0,0)$ のペア数列の $\textrm{Trans}$ の基本性質）
       - 🚨 補題（基本列の降下性）
