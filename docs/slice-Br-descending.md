@@ -501,3 +501,25 @@ not the generic §5.1 parent lemmas). **Next-session target: this inequality** (
 `TrMax_seg_oper_d0zero_eq` closes unconditionally and the `Br M' = take J1 (Br N') @ blocks`
 decomposition (m_6_2_P_additive + descending_append) finishes case A. Audit scripts:
 `python/slice_trmaxeq_audit*.py`.
+
+## UPDATE 2026-05-27 (continued 3): the boundary residual reduces to ONE clean rank-induction lemma
+
+The boundary stop, trunk confinement, AND the row-1 inequality all collapse to a single
+self-contained standard-form lemma (empirically **1632/1632**; FALSE for non-standard N):
+
+> **`N in SkT_PS k ==> nextrel0 N a b ==> entry N 1 b = 0 ==> a < c ==> c <= b ==> entry N 1 c = 0`**
+
+("along a row-0 descent `a -> b` ending at a row-1-zero node, row-1 is zero throughout `(a,b]`").
+**Wiring (short, only existing green bricks):** this lemma => F1 `not nextrel1 N' (j0^N-j0')(j0^N-j0'+1)`
+(= `entry N 1 j0^N >= entry N 1 (j0^N+1)`, since adjacent-index nextrel1 is just row-1 strict
+increase) => trunk confinement `TrMax N' <= j0^N-j0'` (969/969) => in TrMax_seg_oper_d0zero_eq's
+residual `TrMax N' = Lng N'-2` forces `j0^N = j1^N-1` i.e. block width **w=1** (72/72), making the
+boundary stop reflexive => TrMax_seg_oper_d0zero_eq unconditional. (Explains why the retracted
+`entry N 1 j0^N <= entry N 1 (Lng N-2)` only held on the residual domain: there `Lng N-2 = j0^N`.)
+
+**Proof = rank induction on k.** Base k=0 (diagSeq) vacuous (`entry · 1 b = 0 ==> b=0` contradicts
+`nextrel0 ==> a<b`). Suc k (`N = M'[n]`): periodic d0zero/d0pos index bookkeeping through oper
+(oper_d0zero_nth/_expand) + the multiT-M' case via `N <-> P M'` components (m_6_2_P_oper_1/2,
+m_6_7_standard_P_components). ~200-line multi-build proof = its own session. **THE irreducible core
+of §6.8 case A.** NB: `seg N j0^N (Lng N-1)` is monoT but NOT always standard (1236/1632), so the
+recursion must go through the last P-component, not that segment.
