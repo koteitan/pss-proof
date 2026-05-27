@@ -573,3 +573,28 @@ prefix unrelated to `N'`, so `TrMax` trivially differs; that guard is essential.
 NOT via the retracted F1. Candidate: characterize the hard (block-boundary) cases empirically
 (with is_standard + depth ≥ 5) to find a TRUE sufficient condition, then prove it. The
 `TrMax_seg_oper_d0zero_eq` brick already reduces case A's TrMax-equality to exactly this stop.
+
+## UPDATE 2026-05-27 (continued 6): the CORRECT boundary-stop condition (replaces false F1)
+
+Methodology-corrected characterization (is_standard + depth 5) of the case-A boundary stop
+`¬ nextrel1 M' (TrMax N') (TrMax N' + 1)` (M' = seg M j0' j1', N' = seg N j0' (Lng N-1)):
+- **The stop holds 738/738** on the faithful case-A domain (it IS a theorem).
+- Easy cases (`TrMax N' + 1` inside the M'/N' prefix-agreement region): already discharged by the
+  green `nextR1_boundary_stop_of_prefix` (transfer `TrMax_stop` on N' via `nextrel1_prefix_imp`).
+- **Hard cases** (`TrMax N'+1` reaches the block boundary, 576 instances): the stop follows from
+  > **`entry M' 1 (TrMax N') ≥ entry M' 1 (TrMax N' + 1)`  (576/576 — row-1 does NOT strictly
+  > increase at the block boundary)**,
+  which kills `nextrel1` (it needs a strict row-1 increase). This is the **correct replacement for
+  the retracted F1**. Note: the prior agent's "w=1" claim was a KMAX=4 artifact — here w ∈ {1,2,3};
+  and "row-1 equal" is NOT universal (270/576), only the **≥** is (576/576). The clean N-coordinate
+  form is NOT simple (`entry N 1 (j0^N-1) ≥ entry N 1 j0^N` matches only 300/576), so the proof
+  should stay in **M'-coordinates** and use the d0zero periodic block layout
+  (`oper_d0zero_entry0`/`oper_d0zero_nth` etc.): at the boundary, `M' ! (TrMax N')` is the last
+  interior of block 0 and `M' ! (TrMax N'+1)` is the block-1 start, whose row-1 values satisfy ≥
+  by the periodic structure.
+
+**Concrete remaining proof target (confirmed TRUE):** `entry M' 1 (TrMax N') ≥ entry M' 1 (TrMax N'+1)`
+on the case-A hard domain, in M'-coordinates via the periodic block layout. Then
+`nextR1_boundary_stop_of_prefix` (easy) + this (hard) discharge the boundary stop, making
+`TrMax_seg_oper_d0zero_eq` unconditional, after which the `Br M' = take J1 (Br N') @ blocks`
+decomposition finishes case A. Audit: extend `python/slice_caseA_trmax_recheck.py`.
