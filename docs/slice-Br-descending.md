@@ -841,3 +841,17 @@ branch; do not leave the §6.8 development uncommitted.**
 discharge for `leftseg` + fix the `blkseg` index bound — both trivially true, just slow/buggy tactics);
 **B-J1≥1** (the documented N-side P-additive split at `j0^N`, `parent N 0 j0^N < a` route); **C** (21
 cases, single-extra-component); **d0pos** (separate). All empirically sound; machinery green.
+
+## UPDATE 2026-05-28 (continued 17): concrete blk0fold-leftseg fix recipe (from B agent handoff)
+
+For repairing `oper_d0zero_seg_P_blk0fold` (currently `sorry` at ~9961 on branch slice-wip-68;
+full attempt at fbd9017): the pathological `leftseg` step was `seg_of_seg[OF aleEnd] (use cle lenQ in
+linarith)` — `seg_of_seg`'s 2nd premise is `d ≤ b-a` (here `?w-1 ≤ ?End-?j0`). Replace with an
+EXPLICIT witness (avoids the slow `linarith` on `Lng ?Q`):
+```
+have db: "?w - 1 \<le> ?End - ?j0" using wle r2w by simp   \<comment> ?w-1 \<le> qb*w \<le> qb*w+r2; wle: ?w \<le> qb*?w in scope
+... by (rule seg_of_seg[OF aleEnd db]) ...
+```
+NB: blk0fold ALSO had a separate `blkseg` index-bound proof error (~10100, goal
+`parent M 0 (Lng M-1) + i < Lng M - 1`) found by the parent build — fix that too when un-sorrying.
+The ~35-40min builds were partly two concurrent builds oversubscribing the 12-core box (use ONE build).
