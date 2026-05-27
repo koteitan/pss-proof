@@ -1,6 +1,10 @@
-WIP checkpoint: §6.8 A closed + B-J1=0 + blk0fold (slow steps, pre-fix)
+§6.8 worktree GREEN checkpoint: A closed, B-J1=0 closed, blk0fold sorried
 
-Safety snapshot of the uncommitted §6.8 worktree before isolating the slow
-blk0fold proof steps (the leftseg seg_of_seg/linarith blew up >2400s).
+- ../pss-slice builds Finished PSS (54s). 4 real sorries:
+  blk0fold (9961), B-J1>=1 (10819), C (10825), d0pos (10845).
+- blk0fold's proof attempt (slow leftseg seg_of_seg/linarith + a blkseg index
+  bug; never verified green by the B agent) is isolated as sorry; the statement
+  is empirically validated (high-half block fold 0-fail) and B-J1=0 uses it soundly.
+  Full proof attempt preserved in the previous commit fbd9017.
 
 Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>
