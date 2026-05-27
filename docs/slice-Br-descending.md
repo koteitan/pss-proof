@@ -736,3 +736,26 @@ P-snoc / `poper_last_P_multi` / `Pcut`-based lemma relating `P(X)` and `P(butlas
    **block-boundary-anchored fold** — `oper_d0zero_seg_P_hfold` requires `a ≤ Lng N-2`, which fails
    here; close via `descending_const_head` once the boundary-anchored fold gives the component heads.
 Audit scripts added in worktree: `python/slice_caseA_bridge.py`, `slice_caseA_regime.py`.
+
+## UPDATE 2026-05-28 (continued 12): bridge lemma `P_seg_butlast_bridge` GREEN; regime needs further split
+
+GREEN standalone brick (worktree `../pss-slice` ~8124-8140, builds `Finished PSS`):
+- **`P_seg_butlast_bridge`**: `a < b ⟹ multiT (seg X a b) ⟹ Pcut (seg X a b) = b - a ⟹
+  P (seg X a (b-1)) = butlast (P (seg X a b))`. Essentially definitional via `poper_last_P_multi`
+  (`butlast (P S) = P (take (Pcut S) S)`) + `take_seg`. Pure `P`/`Pcut` property, no N-coords.
+  Empirically 0/228366 at depth 6; necessity of `Pcut = b-a` confirmed (fails 340416/340416 otherwise).
+
+⚠️ **The bridge does NOT cover the whole case-A regime by itself.** Of the 234 case-A `a<Lng N-1`
+windows (depth 5): **mono(89)** (P is a singleton, `butlast = []` ≠ `P(seg a (b-1))`), 
+**multiT ∧ Pcut=b-a (97)** (covered by `P_seg_butlast_bridge`), **multiT ∧ Pcut≠b-a (48)** (last
+component is not at the endpoint — dropped index lies inside a non-final component). So closing the
+sub-case A bridge needs a 3-way split: the `P_seg_butlast_bridge` branch (97), the mono branch (89),
+and the multiT-`Pcut≠b-a` branch (48) — each with its own `Br M' = …` shape. This is more structure
+than continued-11 assumed.
+
+**Honest status: §6.8 case-A sub-case A is a genuine multi-session core.** Extensive green machinery is
+in place (`oper_d0zero_entry0_min`/`_seg_P_split`/`_seg_P_hfold`, `parent_block_le0`,
+`P_seg_butlast_bridge`, the TrMax/boundary-stop bricks), the target is empirically sound (0/1420 prop1,
+0/453 caseA), and the residuals are precisely characterized — but closure keeps revealing further
+sub-case structure (mono/multiT/Pcut-position × two regimes) and is a dedicated sustained effort, not
+"one spawn away". Audit scripts: `python/slice_bridge_butlast.py`, `slice_bridge_pure.py`.
