@@ -120,8 +120,8 @@
       - 🚨 系（$\textrm{Trans}$ の $\textrm{Mark}$ と $\textrm{Pred}$ による表示）
       - 🚨 系（$\textrm{Trans}$ の $\textrm{Mark}$ と切片による表示）
       - 🚨 系（$\textrm{RightNodes}$ と $\textrm{Mark}$ の関係）
-      - 🚨 命題（$\textrm{RightNodes}$ と $\textrm{RightAnces}$ の関係）
-      - 🚨 系（非零項の $\textrm{RightAnces}$ が非空であること）
+      - 🚨 命題（$\textrm{RightNodes}$ と $\textrm{RightAnces}$ の関係）〔`p_7_4_RightAnces_RightNodes` 転記済; `RightAnces` 定義(deferred function)も追加〕
+      - 🚨 系（非零項の $\textrm{RightAnces}$ が非空であること）〔`p_7_4_RightAnces_zeroT` 転記済〕
   - 🚨 §8 停止性
     - 🚨 §8.1 条件 (I) の下での展開規則
       - 🚨 命題（条件 (I) の下での $\textrm{Trans}$ と基本列の交換関係）

@@ -1153,4 +1153,40 @@ lemma p_7_4_RightNodes_Mark:
               \<and> RightNodes (Mark M m) = [entry M 1 m] @ a1"
   sorry
 
+text \<open>\<open>RightAnces : T\<^bsub>PS\<^esub> \<to> \<nat>\<^bsup><\<omega>\<^esup>\<close> (§7.4, article 2704–2741): a recursion on
+  \<open>Lng M\<close> mirroring \<open>Trans\<close> (reduced/mono/multi/non-reduced; conditions (I)–(VI);
+  \<open>j\<^sub>0 = parent M 0 j\<^sub>1\<close>, \<open>j\<^sub>-\<^sub>1 = Adm M j\<^sub>0\<close>).  Independent of \<open>Trans\<close>/\<open>Mark\<close>;
+  termination deferred (like \<open>Trans\<close>/\<open>RightNodes\<close>).\<close>
+
+function RightAnces :: "pairseq \<Rightarrow> nat list" where
+  "RightAnces M =
+     (if M \<notin> RT_PS then RightAnces (Red M)
+      else let j1 = Lng M - 1 in
+        if j1 = 0 then (if (M::pairseq) ! 0 = (0,0) then [] else [entry M 1 0])
+        else if monoT M then
+          (if zeroT (Pred M) then [0, entry M 1 j1]
+           else let jp = parent M 0 j1;  jm1 = Adm M jp;
+                    a = (if zeroT (seg M 0 jm1) then [0] else RightAnces (seg M 0 jm1)) in
+                if transCondI M \<or> transCondIII M \<or> transCondV M \<or> transCondVI M
+                then a @ [entry M 1 j1]
+                else a @ [entry M 1 jp, entry M 1 j1])
+        else
+          (let J1 = Lng (P M) - 1;  PJ = P M ! J1 in
+           if PJ = [(0,0)] then [0] else RightAnces PJ))"
+  by pat_completeness auto
+
+text \<open>命題（\<open>RightNodes\<close>と\<open>RightAnces\<close>の関係） (§7.4, 2745).\<close>
+
+lemma p_7_4_RightAnces_RightNodes:
+  assumes "M \<in> T_PS"
+  shows "RightAnces M = RightNodes (Trans M)"
+  sorry
+
+text \<open>系（非零項の\<open>RightAnces\<close>が非空であること） (§7.4, 2809).\<close>
+
+lemma p_7_4_RightAnces_zeroT:
+  assumes "M \<in> T_PS"
+  shows "zeroT M \<longleftrightarrow> RightAnces M = []"
+  sorry
+
 end
