@@ -802,3 +802,19 @@ is false (60/60 counterexamples for B; `take J1 = []` while LHS nonempty).
 **§6.8 status:** sub-case A CLOSED (verified green); **B** = a dedicated new sub-development (true,
 tractable, well-mapped); **C** = needs empirical reconciliation (possibly vacuous) before proof; **d0pos**
 = separate (IncrFirst^{kδ}). Worktree artifact: `../pss-slice/python/slice_caseBC_decomp.py`.
+
+## UPDATE 2026-05-28 (continued 15): C reconciled — NOT vacuous (A=285, B=270, C=21)
+
+Re-computed the A/B/C partition with the CORRECT `j_{-1}` (the row-0 parent of `d = j0^N - j0'`
+within `N'`): over the case-A d0zero regime (is_standard, len 5, maxval 3, n≤3, 576 windows):
+**A = 285, B = 270, C = 21.** So **C is NOT vacuous** (21 witnesses, e.g. `N=(0,0)(1,0)(2,0)(3,0)`,
+`j0'=0, j1'=2`: `TrMax N' = 0 < j_{-1} = 1 = d-1`, `d=2`); continued-14's "0 witnesses for C" was a
+mis-encoding of `j_{-1}` by that agent, and matches the earlier continued-3 `C=42` (maxval diff).
+**C must be proven** (article 1496-1500: `Br M' = take J1 (Br N') @ [seg M (FirstNodes(N')_{J1}+j0') j1']`,
+`Lng(Br M')-1 = J1`, junction `M_{FirstNodes(N')_{J1}+j0'} = N_… = (Br N'_{J1})_0`, that index `< j1^N` so M=N).
+C occurs when N''s trunk is short (`TrMax N'` small) and `j_{-1} > TrMax N'`.
+
+**§6.8 remaining (accurate map):** sub-case A CLOSED; **B** (270 cases, true, new trunk-spanning fold +
+junction `N_{j0^N}=(Br N'_{J1})_0`); **C** (21 cases, true, the single-extra-component decomposition
+above); **d0pos** (separate, IncrFirst^{kδ}). All empirically sound; each B/C/d0pos a dedicated
+sub-development on the now-complete machinery.
