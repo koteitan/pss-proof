@@ -779,3 +779,26 @@ leaf above its parent), `oper_d0zero_seg_P_blk1fold` (~9694; block-1-anchored fo
 B/C are the other FirstNodes(N')_{J1} positions and are analogous to A — and now have ALL of A's
 machinery (`P_seg_butlast_bridge`, `parent_block_le0`, `hfold`/`split`/`blk1fold`, the boundary-stop /
 TrMax bricks, the descending algebra) available as a template. Next: B/C, then d0pos.
+
+## UPDATE 2026-05-28 (continued 14): sub-cases B/C — B true but needs NEW development; C status ambiguous
+
+The sub-case A template does NOT transfer to B/C. In A, the branch region starts at
+`a = j0'+TrMax N'+1 > j0^N` (since `j0^N-j0' ≤ TrMax N'`), so the fold helpers
+(`oper_d0zero_seg_P_hfold`/`_split`, precondition `j0^N < a`) apply. In B/C, `TrMax N' < j0^N-j0'`
+gives `a ≤ j0^N`, so that precondition FAILS and the A-bridge `P(seg M a (Lng N-2)) = take J1 (Br N')`
+is false (60/60 counterexamples for B; `take J1 = []` while LHS nonempty).
+
+- **B (article 1490-1494): empirically TRUE** (237/237 at depth 6): `FirstNodes(N')_{J1} = j0^N-j0'`,
+  `Br M' = take J1 (Br N') @ replicate qb blk @ [partial]` — **`qb` whole blocks, ONE MORE than A's
+  `qb-1`** (matches the article). Junction `N_{j0^N} = (Br N'_{J1})_0`. Needs a NEW trunk-spanning
+  fold + junction (the `descending_Br_of_FN_tiebreak` route, not A's `descending_append`); reusable
+  piece: high-half `P(seg M j0^N j1') = replicate qb blk @ [partial]` (0 fail).
+- **C (article 1496-1500): status AMBIGUOUS.** This agent found **0 witnesses** (depth≤6, maxval≤3,
+  n≤4) for its C-discriminant (`TrMax N' < j_{-1}`), so it could not validate C's decomposition —
+  BUT the earlier continued-3 `brdecomp_recheck` reported **C=42** at depth 5 (different discriminant).
+  ⚠️ **The two C-encodings disagree; reconcile before any C proof attempt** — C may be vacuous in the
+  case-A regime, or one encoding is wrong. Investigate first (do not "fly blind").
+
+**§6.8 status:** sub-case A CLOSED (verified green); **B** = a dedicated new sub-development (true,
+tractable, well-mapped); **C** = needs empirical reconciliation (possibly vacuous) before proof; **d0pos**
+= separate (IncrFirst^{kδ}). Worktree artifact: `../pss-slice/python/slice_caseBC_decomp.py`.
