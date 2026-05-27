@@ -1361,6 +1361,20 @@ lemma p_7_4_RightAnces_zeroT:
 
 section \<open>§8 停止性 (Termination)\<close>
 
+subsection \<open>§8.2 強単項性 (Strong-monomiality)\<close>
+
+text \<open>Article order is §8.1 < §8.2, but §8.2 is grouped first here because it
+  introduces \<open>DT\<^bsub>PS\<^esub>\<close> (= \<open>DT_PS\<close>, 強単項) and \<open>LastStep\<close> used throughout §8;
+  all statements are \<open>sorry\<close> so the document order is cosmetic.
+
+  Faithfulness note on 強許容 (strong-admissibility): the article uses the
+  phrase \<open>M の強許容性\<close> only inside §8.2 proofs (article 3532/3552/3576/3800),
+  never as a separate definition.  At each use it denotes the consequence of
+  \<open>descending (Br M)\<close> (the third clause of 強単項) re-expressed in
+  \<open>FirstNodes\<close>/\<open>Joints\<close> coordinates (e.g. equal row-0 heads \<open>\<Rightarrow>\<close> descending
+  row-1 heads).  Hence it is NOT a primitive needed to state the §8.2
+  propositions; it only surfaces in their (deferred) proofs.\<close>
+
 text \<open>命題（標準形の直系先祖による切片の簡約化の強単項性） (§8.2, article 3283):
   for \<open>M \<in> ST\<^bsub>PS\<^esub>\<close>, the reduction of an ancestor slice with \<open>(0,j'\<^sub>0) \<le>\<^sub>M (0,j'\<^sub>1)\<close>
   is strong-monomial.  Builds directly on §6.8 prop1
@@ -1370,6 +1384,151 @@ text \<open>命題（標準形の直系先祖による切片の簡約化の強�
 lemma p_8_2_standard_slice_Red_strongmono:
   assumes "M \<in> ST_PS" "j0' < j1'" "j1' \<le> Lng M - 1" "leR M 0 j0' j1'"
   shows "Red (seg M j0' j1') \<in> DT_PS"
+  sorry
+
+text \<open>補題（強単項性の切片への遺伝性） (§8.2, article 3328):
+  for \<open>M \<in> DT\<^bsub>PS\<^esub>\<close>, an ancestor slice \<open>M' = (M\<^sub>j)\<^bsub>j=j'\<^sub>0\<^esub>\<^bsup>j'\<^sub>1\<^esup>\<close> with
+  \<open>j'\<^sub>0 < j'\<^sub>1 \<le> Lng M - 1\<close> and \<open>j'\<^sub>0 \<le> Joints(M)\<^bsub>J\<^sub>1\<^esub>\<close> (\<open>J\<^sub>1 = Lng(Br M)-1\<close>)
+  is again strong-monomial.\<close>
+
+lemma p_8_2_strongmono_slice:
+  fixes M :: pairseq
+  defines "J1 \<equiv> Lng (Br M) - 1"
+  assumes "M \<in> DT_PS" "j0' < j1'" "j1' \<le> Lng M - 1" "j0' \<le> Joints M ! J1"
+  shows "seg M j0' j1' \<in> DT_PS"
+  sorry
+
+text \<open>補題（部分表現の単項成分と\<open>Pred\<close>の関係） (§8.2, article 3360):
+  for \<open>M \<in> RT\<^bsub>PS\<^esub> \<inter> PT\<^bsub>PS\<^esub>\<close> with \<open>j\<^sub>1 = Lng M - 1 > 1\<close>, set \<open>J\<^sub>1 = Lng(Br M)-1\<close>
+  (\<open>Br M \<noteq> []\<close>), \<open>j'\<^sub>0 = Joints(M)\<^bsub>J\<^sub>1\<^esub>\<close>, \<open>j'\<^sub>1 = FirstNodes(M)\<^bsub>J\<^sub>1\<^esub>\<close>.  One of four
+  cases (1)–(4) holds, each pinning down \<open>Trans(Pred M)\<close> and \<open>Trans M\<close> for a
+  unique tuple of \<open>T\<^bsub>B\<^esub>\<close>-terms.  \<open>D\<^sub>x t = Dpt (enat x) t\<close>; \<open>+\<close> = \<open>+\<^sub>B\<close>;
+  \<open>0\<close> = \<open>0\<^sub>B\<close>.  Tuples use \<open>fst\<close>/\<open>snd\<close> projections (\<open>(t\<^sub>1,t\<^sub>2,t\<^sub>3)\<close> as \<open>t123\<close>).\<close>
+
+lemma p_8_2_subexpr_component_Pred:
+  fixes M :: pairseq
+  defines "j1 \<equiv> Lng M - 1"
+  defines "J1 \<equiv> Lng (Br M) - 1"
+  defines "j0' \<equiv> Joints M ! J1"
+  defines "j1' \<equiv> FirstNodes M ! J1"
+  assumes "M \<in> RT_PS" "M \<in> PT_PS" "Br M \<noteq> []" "j1 > 1"
+  shows
+    "\<comment> \<open>(1)\<close>
+     (j1' = j1 \<and> (TrMax M = 0 \<or> j0' < TrMax M)
+        \<and> (entry M 0 j1' = entry M 1 j1' \<or> adm M j0')
+        \<and> (\<exists>!t1. Trans (Pred M) = Dpt (enat (entry M 1 0)) t1
+              \<and> Trans M = Dpt (enat (entry M 1 0))
+                            (t1 +\<^sub>B Dpt (enat (entry M 1 j1')) 0\<^sub>B)))
+   \<or> \<comment> \<open>(2)\<close>
+     (j1' = j1 \<and> entry M 0 j1' > entry M 1 j1' \<and> \<not> adm M j0'
+        \<and> (\<exists>!t12. Trans (Pred M) = Dpt (enat (entry M 1 0)) (fst t12)
+              \<and> Trans M = Dpt (enat (entry M 1 0))
+                            (fst t12 +\<^sub>B Dpt (enat (entry M 1 j0')) (snd t12))))
+   \<or> \<comment> \<open>(3)\<close>
+     (\<exists>!t123. Trans (Pred M)
+                = Dpt (enat (entry M 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M 1 j1')) (fst (snd t123)))
+            \<and> Trans M = Dpt (enat (entry M 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M 1 j1')) (snd (snd t123))))
+   \<or> \<comment> \<open>(4)\<close>
+     (\<exists>!t123. Trans (Pred M)
+                = Dpt (enat (entry M 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M 1 j0')) (fst (snd t123)))
+            \<and> Trans M = Dpt (enat (entry M 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M 1 j0')) (snd (snd t123))))"
+  sorry
+
+text \<open>補題（強単項性の下での部分表現の単項成分の基本性質） (§8.2, article 3454):
+  for \<open>M \<in> DT\<^bsub>PS\<^esub>\<close> (\<open>Br M \<noteq> []\<close>), a unique \<open>t' \<in> T\<^bsub>B\<^esub>\<close> with
+  \<open>Trans M = D\<^bsub>M\<^sub>1\<^sub>,\<^sub>0\<^esub> t'\<close> bounds every principal component of \<open>t'\<close> from below.
+  「\<open>t'\<close>の各単項成分は \<open>D\<^sub>x 0\<close> 以上」 is modelled as
+  \<open>\<forall>p \<in> set (PB t'). leBT (D\<^sub>x 0) p\<close> (the elements of \<open>PB t'\<close> are already the
+  principal-component \<^typ>\<open>BT\<close>s, so each summand \<open>p \<ge> D\<^sub>x 0\<close>).\<close>
+
+lemma p_8_2_subexpr_component_strongmono:
+  fixes M :: pairseq
+  defines "J1 \<equiv> Lng (Br M) - 1"
+  defines "j0' \<equiv> Joints M ! J1"
+  defines "j1' \<equiv> FirstNodes M ! J1"
+  assumes "M \<in> DT_PS" "Br M \<noteq> []"
+  shows "\<exists>!t'.
+      \<comment> \<open>(1)\<close>
+      Trans M = Dpt (enat (entry M 1 0)) t'
+    \<and> \<comment> \<open>(2)\<close>
+      ((j0' = 0 \<or> entry M 0 j1' = entry M 1 j1')
+         \<longrightarrow> (\<forall>p\<in>set (PB t'). leBT (Dpt (enat (entry M 1 j1')) 0\<^sub>B) p))
+    \<and> \<comment> \<open>(3)\<close>
+      ((0 < j0' \<and> j0' < TrMax M \<and> entry M 0 j1' > entry M 1 j1')
+         \<longrightarrow> (\<forall>p\<in>set (PB t'). leBT (Dpt (enat (entry M 1 j0')) 0\<^sub>B) p))
+    \<and> \<comment> \<open>(4)\<close>
+      ((0 < j0' \<and> j0' = TrMax M)
+         \<longrightarrow> (\<forall>p\<in>set (PB t'). leBT (Dpt (enat (entry M 1 (TrMax M))) 0\<^sub>B) p))"
+  sorry
+
+text \<open>補題（条件(V)の下での右端の親の基本性質） (§8.2, article 3602):
+  for \<open>M \<in> RT\<^bsub>PS\<^esub> \<inter> PT\<^bsub>PS\<^esub>\<close> and \<open>m \<in> \<nat>\<close>, under
+  「\<open>m < j'\<^sub>0\<close>」or「\<open>m = j'\<^sub>0 \<and> M\<^bsub>0,j'\<^sub>1\<^esub> = M\<^bsub>1,j'\<^sub>1\<^esub> \<and> Br M\<close> descending」,
+  a unique \<open>j\<^sub>0\<close> satisfies (1)–(4).  \<open><\<^bsub>M\<^esub>\<^sup>Next\<close> on row 0 = \<open>nextR M 0\<close>.\<close>
+
+lemma p_8_2_condV_rightmost_parent:
+  fixes M :: pairseq and m :: nat
+  defines "j1 \<equiv> Lng M - 1"
+  defines "J1 \<equiv> Lng (Br M) - 1"
+  defines "j0' \<equiv> Joints M ! J1"
+  defines "j1' \<equiv> FirstNodes M ! J1"
+  assumes "M \<in> RT_PS" "M \<in> PT_PS" "Br M \<noteq> []"
+    and "m < j0' \<or> (m = j0' \<and> entry M 0 j1' = entry M 1 j1' \<and> descending (Br M))"
+  shows "\<exists>!j0.
+      \<comment> \<open>(1)\<close> nextR M 0 j0 j1
+    \<and> \<comment> \<open>(2)\<close> j0' \<le> j0
+    \<and> \<comment> \<open>(3)\<close> (m < j0 \<or> entry M 0 j1 = entry M 1 j1)
+    \<and> \<comment> \<open>(4)\<close> (m = j0 \<longrightarrow> j0 < TrMax M)"
+  sorry
+
+text \<open>補題（条件(V)の下での終切片と\<open>Trans\<close>の関係） (§8.2, article 3664):
+  same hypotheses as the previous lemma, with \<open>M' = (M\<^sub>j)\<^bsub>j=m\<^esub>\<^bsup>j\<^sub>1\<^esup> = seg M m j\<^sub>1\<close>;
+  a unique \<open>t\<^sub>1 \<in> T\<^bsub>B\<^esub>\<close> gives \<open>Trans M = D\<^bsub>M\<^sub>1\<^sub>,\<^sub>0\<^esub> t\<^sub>1\<close> and \<open>Trans M' = D\<^bsub>M\<^sub>1\<^sub>,\<^sub>m\<^esub> t\<^sub>1\<close>.\<close>
+
+lemma p_8_2_condV_terminal_slice_Trans:
+  fixes M :: pairseq and m :: nat
+  defines "j1 \<equiv> Lng M - 1"
+  defines "J1 \<equiv> Lng (Br M) - 1"
+  defines "j0' \<equiv> Joints M ! J1"
+  defines "j1' \<equiv> FirstNodes M ! J1"
+  defines "M' \<equiv> seg M m j1"
+  assumes "M \<in> RT_PS" "M \<in> PT_PS" "Br M \<noteq> []"
+    and "m < j0' \<or> (m = j0' \<and> entry M 0 j1' = entry M 1 j1' \<and> descending (Br M))"
+  shows "\<exists>!t1. Trans M = Dpt (enat (entry M 1 0)) t1
+            \<and> Trans M' = Dpt (enat (entry M 1 m)) t1"
+  sorry
+
+text \<open>命題（条件(II)か(IV)の下での終切片と\<open>Trans\<close>の関係） (§8.2, article 3314):
+  for \<open>M \<in> DT\<^bsub>PS\<^esub>\<close>, set \<open>j\<^sub>1 = Lng M - 1\<close>, \<open>J\<^sub>1 = Lng(Br M)-1\<close> (\<open>Br M \<noteq> []\<close>),
+  \<open>j'\<^sub>0 = Joints(M)\<^bsub>J\<^sub>1\<^esub>\<close>, \<open>j'\<^sub>1 = FirstNodes(M)\<^bsub>J\<^sub>1\<^esub>\<close>, \<open>J\<^sub>0 = LastStep M\<close>,
+  \<open>m\<^sub>1 = FirstNodes(M)\<^bsub>J\<^sub>0\<^esub> - 1\<close>, \<open>N = seg M 0 m\<^sub>1\<close>, \<open>N' = seg M j'\<^sub>0 m\<^sub>1\<close>,
+  \<open>M' = seg M j'\<^sub>0 j\<^sub>1\<close>.  If \<open>0 < j'\<^sub>0 < TrMax M\<close> and \<open>M\<^bsub>0,j'\<^sub>1\<^esub> > M\<^bsub>1,j'\<^sub>1\<^esub>\<close>
+  then a unique \<open>(t\<^sub>1,t\<^sub>2) \<in> T\<^bsub>B\<^esub>\<^sup>2\<close> satisfies (1)–(4).\<close>
+
+lemma p_8_2_condIIIV_terminal_slice_Trans:
+  fixes M :: pairseq
+  defines "j1 \<equiv> Lng M - 1"
+  defines "J1 \<equiv> Lng (Br M) - 1"
+  defines "j0' \<equiv> Joints M ! J1"
+  defines "j1' \<equiv> FirstNodes M ! J1"
+  defines "J0 \<equiv> LastStep M"
+  defines "m1 \<equiv> FirstNodes M ! J0 - 1"
+  defines "N \<equiv> seg M 0 m1"
+  defines "N' \<equiv> seg M j0' m1"
+  defines "M' \<equiv> seg M j0' j1"
+  assumes "M \<in> DT_PS" "Br M \<noteq> []"
+    and "0 < j0'" "j0' < TrMax M" "entry M 0 j1' > entry M 1 j1'"
+  shows "\<exists>!t12.
+      \<comment> \<open>(1)\<close> Trans N = Dpt (enat (entry M 1 0)) (fst t12)
+    \<and> \<comment> \<open>(2)\<close> Trans N' = Dpt (enat (entry M 1 j0')) (fst t12)
+    \<and> \<comment> \<open>(3)\<close> Trans M' = Dpt (enat (entry M 1 j0')) (fst t12 +\<^sub>B snd t12)
+              \<and> snd t12 \<noteq> 0\<^sub>B
+    \<and> \<comment> \<open>(4)\<close> Trans M = Dpt (enat (entry M 1 0))
+                  (fst t12 +\<^sub>B Dpt (enat (entry M 1 j0')) (fst t12 +\<^sub>B snd t12))"
   sorry
 
 

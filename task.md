@@ -122,7 +122,7 @@
       - 🚨 系（$\textrm{RightNodes}$ と $\textrm{Mark}$ の関係）
       - 🚨 命題（$\textrm{RightNodes}$ と $\textrm{RightAnces}$ の関係）〔`p_7_4_RightAnces_RightNodes` 転記済; `RightAnces` 定義(deferred function)も追加〕
       - 🚨 系（非零項の $\textrm{RightAnces}$ が非空であること）〔`p_7_4_RightAnces_zeroT` 転記済〕
-  - 🚨 §8 停止性 〔定義: `DT_PS`(強単項)・`LastStep`(A9)済。§6.8 prop1 が §8.2 前提＝critical path。展開規則 §8.1/8.3/8.4/8.5/8.6 を agent並列で sorry 転記(a5df1dfa/a797c612/ad937ac4/a28113e): `p_8_1_*`(4)/`p_8_3_*`(4)/`p_8_4_*`(3)/`p_8_5_*`(2)/`p_8_6_*`(4)。公差(1,1)=`diagSeq`, 条件(I-VI)=`transCondI..VI`, 基本列=`operB·numBT` でモデル。残: §8.2(強許容 要定義)・§8.7(主結果, 6242 最終定義要)・Trans 内部記号(c1/c2/t2-4/s1/b1)露出依存の命題群〕
+  - 🚨 §8 停止性 〔定義: `DT_PS`(強単項)・`LastStep`(A9)済。§6.8 prop1 が §8.2 前提＝critical path。展開規則 §8.1/8.3/8.4/8.5/8.6 を agent並列で sorry 転記(a5df1dfa/a797c612/ad937ac4/a28113e): `p_8_1_*`(4)/`p_8_3_*`(4)/`p_8_4_*`(3)/`p_8_5_*`(2)/`p_8_6_*`(4)。**§8.2 残り6補題も転記済**(`p_8_2_*`)。公差(1,1)=`diagSeq`, 条件(I-VI)=`transCondI..VI`, 基本列=`operB·numBT` でモデル。**強許容(強許容性)は §8.2 証明本文専用で定義箇所が無く、Br降順性を FirstNodes/Joints 座標へ言い換えたもの=命題「文」の転記には不要**(証明フェーズでのみ要)。残: §8.7(主結果, 6242 最終定義要)・Trans 内部記号(c1/c2/t2-4/s1/b1)露出依存の命題群〕
     - 🚨 §8.1 条件 (I) の下での展開規則
       - 🚨 命題（条件 (I) の下での $\textrm{Trans}$ と基本列の交換関係）
       - 🚨 補題（公差 $(1,1)$ のペア数列の $\textrm{Trans}$ の基本性質）
@@ -130,12 +130,12 @@
       - 🚨 補題（条件 (I) か (III) の下での $c_1$ 前後の具体表示）
     - 🚨 §8.2 強単項性
       - 🚨 命題（標準形の直系先祖による切片の簡約化の強単項性）〔`p_8_2_standard_slice_Red_strongmono` 転記済(§6.8 prop1 依存)〕
-      - 🚨 命題（条件 (II) か (IV) の下での終切片と $\textrm{Trans}$ の関係）
-      - 🚨 補題（強単項性の切片への遺伝性）
-      - 🚨 補題（部分表現の単項成分と $\textrm{Pred}$ の関係）
-      - 🚨 補題（強単項性の下での部分表現の単項成分の基本性質）
-      - 🚨 補題（条件 (V) の下での右端の親の基本性質）
-      - 🚨 補題（条件 (V) の下での終切片と $\textrm{Trans}$ の関係）
+      - 🚨 命題（条件 (II) か (IV) の下での終切片と $\textrm{Trans}$ の関係）〔`p_8_2_condIIIV_terminal_slice_Trans`〕
+      - 🚨 補題（強単項性の切片への遺伝性）〔`p_8_2_strongmono_slice`〕
+      - 🚨 補題（部分表現の単項成分と $\textrm{Pred}$ の関係）〔`p_8_2_subexpr_component_Pred`、4分岐の選言〕
+      - 🚨 補題（強単項性の下での部分表現の単項成分の基本性質）〔`p_8_2_subexpr_component_strongmono`、各単項成分=`set(PB t')` の元(既に BT)を `leBT` 比較〕
+      - 🚨 補題（条件 (V) の下での右端の親の基本性質）〔`p_8_2_condV_rightmost_parent`〕
+      - 🚨 補題（条件 (V) の下での終切片と $\textrm{Trans}$ の関係）〔`p_8_2_condV_terminal_slice_Trans`〕
     - 🚨 §8.3 条件 (II) の下での展開規則
       - 🚨 命題（条件 (II) の下での $\textrm{Trans}$ と基本列の交換関係）
       - 🚨 補題（第 $0$ 種型基本列の基本不等式）
