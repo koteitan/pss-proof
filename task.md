@@ -84,7 +84,7 @@
       - ✅ 命題（順序数項の単項成分の基本性質）〔`m_7_1_term_components`(緑): Lng(PB t)=0⟺t=0 ∧ t=SigmaB(PB t)。ほぼ定義的(`cases t`+`PB_def`/`SigmaB_def`)。agent a09c 由来、統合済〕
       - 🚨 命題（部分表現の不等式の延長性）〔`p_7_1_*` 未転記。文字列ベース(`s t b∈T_B`)で parse 関数(Σ列→BT)が無く faithful 化に encoding 判断要＝保留〕
       - ✅ [Buc1] Lemma 2.1（`<` が `T` 上の狭義全順序）〔`m_7_1_lessBT_linord`(緑): `lessBT` の非反射・推移・三分律。`lessBT_lessBP.induct` 相互帰納(+list補題)、enat は linorder。agent ac7d 由来、統合済。整礎性 Lemma 2.2 とは別(2.2 は保留)〕
-    - 🚨 §7.2 scb分解
+    - 🚨 §7.2 scb分解 〔全7命題を sorry 転記済(agent a281a2ec, 緑統合): `p_7_2_scb_replaceable`/`scb_compose`/`scb_triviality`/`scb_unique`/`add_scb`/`scb_fseq`/`RightNodes_subexpr`＋helper `scb_kind0_able`/`scb_kind1_able`〕
       - 🚨 命題（scb分解の置換可能性）
       - 🚨 命題（scb分解の合成則）
       - 🚨 命題（scb分解の自明性の判定条件）

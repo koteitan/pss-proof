@@ -868,6 +868,175 @@ definition MarkedB :: "(BT \<times> BT) set" where
   "MarkedB = {(t, c). \<exists>s b. scb_decomp t s (flatBT c) b}"
 
 
+text \<open>
+  Modelling note for the §7.2 propositions below.  The article ranges over
+  \<open>\<Sigma>\<^bsup><\<omega>\<^esup>\<close> (strings) and \<open>\<nat>\<^bsup><\<omega>\<^esup>\<close>; we model the former as \<^typ>\<open>Sym list\<close>
+  and the latter as \<^typ>\<open>nat list\<close>, with the string connective \<open>s c b\<close> = list
+  append \<open>@\<close> and \<open>\<oplus>\<^sub>\<nat>\<close> = \<open>@\<close>.  "\<open>x \<in> T\<^bsub>B\<^esub>\<close> as a string" (i.e. the string is the
+  \<open>flat\<close> of a \<open>D\<^sub>\<omega>\<close>-free term) is written \<open>\<exists>t. t \<in> T\<^bsub>B\<^esub> \<and> flatBT t = \<dots>\<close>; the
+  unique witnessing term is recovered by \<open>unflatBT\<close> (defined in §7.3).  "\<open>c\<close> 単項" (\<open>c \<in> PT\<^bsub>B\<^esub>\<close>)
+  for a \<^typ>\<open>BT\<close> is \<open>\<exists>p. c = Trm [p]\<close> (a single principal component), with
+  \<open>D\<^sub>\<omega>\<close>-freeness added as \<open>c \<in> T\<^bsub>B\<^esub>\<close> where the article writes \<open>PT\<^bsub>B\<^esub>\<close>.  The
+  string-level \<open>D\<^sub>v\<close>-prefix \<open>D\<^sub>v s\<close> is \<open>Dsym (enat v) # s\<close> (cf. \<^const>\<open>flatBP\<close>).
+\<close>
+
+text \<open>命題（scb分解の置換可能性） (§7.2): for strings \<open>s,b\<close> and terms \<open>c\<^sub>0,c\<^sub>1\<close>,
+  if (\<open>c\<^sub>0\<close> is not principal \<open>\<or>\<close> \<open>c\<^sub>1\<close> is principal), the string \<open>s\<frown>flat c\<^sub>0\<frown>b\<close> is
+  (the \<open>flat\<close> of) a term \<open>\<in> T\<^bsub>B\<^esub>\<close>, and \<open>(s, flat c\<^sub>0, b)\<close> is an scb-decomposition
+  of it, then \<open>s\<frown>flat c\<^sub>1\<frown>b\<close> is also (the \<open>flat\<close> of) a term \<open>\<in> T\<^bsub>B\<^esub>\<close> and
+  \<open>(s, flat c\<^sub>1, b)\<close> is an scb-decomposition of it.\<close>
+
+lemma p_7_2_scb_replaceable:
+  assumes "c\<^sub>0 \<in> T_B" "c\<^sub>1 \<in> T_B"
+    and "(\<not>(\<exists>p. c\<^sub>0 = Trm [p])) \<or> (\<exists>p. c\<^sub>1 = Trm [p])"
+    and "t\<^sub>0 \<in> T_B" "flatBT t\<^sub>0 = s @ flatBT c\<^sub>0 @ b"
+    and "scb_decomp t\<^sub>0 s (flatBT c\<^sub>0) b"
+  shows "\<exists>t\<^sub>1. t\<^sub>1 \<in> T_B \<and> flatBT t\<^sub>1 = s @ flatBT c\<^sub>1 @ b
+            \<and> scb_decomp t\<^sub>1 s (flatBT c\<^sub>1) b"
+  sorry
+
+text \<open>命題（scb分解の合成則） (§7.2):
+  (1) if \<open>(s\<^sub>0,flat c\<^sub>0,b\<^sub>0)\<close> is an scb-decomposition of \<open>t\<close> (\<open>c\<^sub>0 \<in> PT\<^bsub>B\<^esub>\<close>) and
+      \<open>(s\<^sub>1,c\<^sub>1,b\<^sub>1)\<close> is an scb-decomposition of \<open>c\<^sub>0\<close>, then \<open>(s\<^sub>0\<frown>s\<^sub>1, c\<^sub>1, b\<^sub>1\<frown>b\<^sub>0)\<close>
+      is an scb-decomposition of \<open>t\<close>;
+  (2) if \<open>(s,c,b)\<close> is an scb-decomposition of \<open>t\<close> then \<open>(D\<^sub>v s, c, b)\<close> is one of
+      \<open>D\<^sub>v t\<close>.\<close>
+
+lemma p_7_2_scb_compose:
+  assumes "t \<in> T_B"
+  shows "\<And>c\<^sub>0 s\<^sub>0 s\<^sub>1 c\<^sub>1 b\<^sub>1 b\<^sub>0.
+            c\<^sub>0 \<in> T_B \<Longrightarrow> (\<exists>p. c\<^sub>0 = Trm [p]) \<Longrightarrow>
+            scb_decomp t s\<^sub>0 (flatBT c\<^sub>0) b\<^sub>0 \<Longrightarrow>
+            scb_decomp c\<^sub>0 s\<^sub>1 c\<^sub>1 b\<^sub>1 \<Longrightarrow>
+            scb_decomp t (s\<^sub>0 @ s\<^sub>1) c\<^sub>1 (b\<^sub>1 @ b\<^sub>0)"
+    and "\<And>v s c b. scb_decomp t s c b \<Longrightarrow>
+            scb_decomp (Dpt (enat v) t) (Dsym (enat v) # s) c b"
+  sorry
+
+text \<open>命題（scb分解の自明性の判定条件） (§7.2): for \<open>(t,c) \<in> T\<^bsub>B\<^esub>\<^sup>Marked\<close> the
+  following are equivalent: (1) \<open>t = c\<close>; (2) every scb-decomposition \<open>(s,flat c,b)\<close>
+  of \<open>t\<close> has \<open>s = ()\<close> and \<open>b = ()\<close>; (3) some scb-decomposition \<open>((),flat c,b)\<close> of
+  \<open>t\<close> exists.\<close>
+
+lemma p_7_2_scb_triviality:
+  assumes "(t, c) \<in> MarkedB"
+  shows "(t = c)
+       \<longleftrightarrow> (\<forall>s b. scb_decomp t s (flatBT c) b \<longrightarrow> s = [] \<and> b = [])"
+    and "(t = c)
+       \<longleftrightarrow> (\<exists>b. scb_decomp t [] (flatBT c) b)"
+  sorry
+
+text \<open>\<open>t\<close> が第\<open>0\<close>種 / 第\<open>1\<close>種 scb分解可能 (§7.2): some \<open>scb_kind0\<close> / \<open>scb_kind1\<close>
+  decomposition of \<open>t\<close> exists.\<close>
+
+abbreviation scb_kind0_able :: "BT \<Rightarrow> bool" where
+  "scb_kind0_able t \<equiv> \<exists>s c b. scb_kind0 t s c b"
+
+abbreviation scb_kind1_able :: "BT \<Rightarrow> bool" where
+  "scb_kind1_able t \<equiv> \<exists>s c b. scb_kind1 t s c b"
+
+text \<open>命題（scb分解の一意性） (§7.2):
+  (1) the \<open>(s,b)\<close>-part of an scb-decomposition with a fixed \<open>c\<close> is unique;
+  (2) \<open>dom(t) = \<nat>\<close> iff \<open>t\<close> is 第\<open>0\<close>種- or 第\<open>1\<close>種-scb-decomposable;
+  (3) \<open>t\<close> is not both 第\<open>0\<close>種- and 第\<open>1\<close>種-scb-decomposable;
+  (4) the 第\<open>0\<close>種 scb-decomposition of \<open>t\<close> is unique;
+  (5) the 第\<open>1\<close>種 scb-decomposition of \<open>t\<close> is unique.\<close>
+
+lemma p_7_2_scb_unique:
+  assumes "t \<in> T_B"
+  shows "\<And>s\<^sub>0 s\<^sub>1 c b\<^sub>0 b\<^sub>1.
+            scb_decomp t s\<^sub>0 c b\<^sub>0 \<Longrightarrow> scb_decomp t s\<^sub>1 c b\<^sub>1 \<Longrightarrow>
+            s\<^sub>0 = s\<^sub>1 \<and> b\<^sub>0 = b\<^sub>1"
+    and "(domB t = NatSet) \<longleftrightarrow> (scb_kind0_able t \<or> scb_kind1_able t)"
+    and "\<not> scb_kind0_able t \<or> \<not> scb_kind1_able t"
+    and "\<And>s\<^sub>0 c\<^sub>0 b\<^sub>0 s\<^sub>1 c\<^sub>1 b\<^sub>1.
+            scb_kind0 t s\<^sub>0 c\<^sub>0 b\<^sub>0 \<Longrightarrow> scb_kind0 t s\<^sub>1 c\<^sub>1 b\<^sub>1 \<Longrightarrow>
+            (s\<^sub>0, c\<^sub>0, b\<^sub>0) = (s\<^sub>1, c\<^sub>1, b\<^sub>1)"
+    and "\<And>s\<^sub>0 c\<^sub>0 b\<^sub>0 s\<^sub>1 c\<^sub>1 b\<^sub>1.
+            scb_kind1 t s\<^sub>0 c\<^sub>0 b\<^sub>0 \<Longrightarrow> scb_kind1 t s\<^sub>1 c\<^sub>1 b\<^sub>1 \<Longrightarrow>
+            (s\<^sub>0, c\<^sub>0, b\<^sub>0) = (s\<^sub>1, c\<^sub>1, b\<^sub>1)"
+  sorry
+
+text \<open>系（加法とscb分解の関係） (§7.2): for \<open>t \<in> T\<^bsub>B\<^esub>\<close>, \<open>c \<in> PT\<^bsub>B\<^esub>\<close>:
+  (1) \<open>(t+c, c) \<in> T\<^bsub>B\<^esub>\<^sup>Marked\<close>;
+  (2) if \<open>(s,flat c,b)\<close> is an scb-decomposition of \<open>t+c\<close>, then \<open>(s,flat c',b)\<close>
+      is one of \<open>t+c'\<close>;
+  (3) if \<open>s\<^sub>1\<frown>D\<^sub>v(t+c)\<frown>b\<^sub>1 \<in> T\<^bsub>B\<^esub>\<close> and \<open>(s\<^sub>0,flat c,b\<^sub>0)\<close> is an scb-decomposition of
+      \<open>s\<^sub>1 D\<^sub>v(t+c) b\<^sub>1\<close>, then \<open>s\<^sub>1 D\<^sub>v(t+c') b\<^sub>1 \<in> T\<^bsub>B\<^esub>\<close> and \<open>(s\<^sub>0,flat c',b\<^sub>0)\<close> is
+      an scb-decomposition of it.\<close>
+
+lemma p_7_2_add_scb:
+  assumes "t \<in> T_B" "c \<in> T_B" "\<exists>p. c = Trm [p]"
+  shows "(t +\<^sub>B c, c) \<in> MarkedB"
+    and "\<And>s b c'. c' \<in> T_B \<Longrightarrow> (\<exists>p. c' = Trm [p]) \<Longrightarrow>
+            scb_decomp (t +\<^sub>B c) s (flatBT c) b \<Longrightarrow>
+            scb_decomp (t +\<^sub>B c') s (flatBT c') b"
+    and "\<And>v s\<^sub>0 s\<^sub>1 b\<^sub>0 b\<^sub>1 c' u\<^sub>1.
+            c' \<in> T_B \<Longrightarrow> (\<exists>p. c' = Trm [p]) \<Longrightarrow>
+            u\<^sub>1 \<in> T_B \<Longrightarrow> flatBT u\<^sub>1 = s\<^sub>1 @ (Dsym (enat v) # flatBT (t +\<^sub>B c)) @ b\<^sub>1 \<Longrightarrow>
+            scb_decomp u\<^sub>1 s\<^sub>0 (flatBT c) b\<^sub>0 \<Longrightarrow>
+            (\<exists>u\<^sub>1'. u\<^sub>1' \<in> T_B
+                 \<and> flatBT u\<^sub>1' = s\<^sub>1 @ (Dsym (enat v) # flatBT (t +\<^sub>B c')) @ b\<^sub>1
+                 \<and> scb_decomp u\<^sub>1' s\<^sub>0 (flatBT c') b\<^sub>0)"
+  sorry
+
+text \<open>命題（scb分解と基本列の関係） (§7.2):
+  (1-1) \<open>t'\<^sub>0 + D\<^sub>v(t'\<^sub>1 + D\<^sub>0 0)[n] = t'\<^sub>0 + (D\<^sub>v t'\<^sub>1)\<cdot>(n+1)\<close>;
+  (1-2) if \<open>(s, D\<^sub>u(t'\<^sub>0 + D\<^sub>v(t'\<^sub>1+D\<^sub>0 0)), b)\<close> is an scb-decomposition of \<open>t\<close>,
+        then \<open>(s, D\<^sub>u(t'\<^sub>0 + (D\<^sub>v t'\<^sub>1)\<cdot>(n+1)), b)\<close> is one of \<open>t[n]\<close>;
+  (2) if \<open>(s\<^sub>1,c\<^sub>2,b\<^sub>1)\<close> is a 第\<open>1\<close>種 scb-decomposition of \<open>t\<close> and
+        \<open>(D\<^sub>u s\<^sub>0, D\<^sub>v 0, b\<^sub>0)\<close> is an scb-decomposition of \<open>c\<^sub>2\<close>, then \<open>v > u\<close> and
+        the \<open>\<Sigma>\<close>-string of \<open>t[n]\<close> is
+        \<open>s\<^sub>1 D\<^sub>u (s\<^sub>0 D\<^bsub>v-1\<^esub>)\<^bsup>n+1\<^esup> 0 b\<^sub>0\<^bsup>n+1\<^esup> b\<^sub>1\<close>.
+  Modelling: BT fundamental sequence \<open>t[n] = operB t (numB<\<close>\<open>n)\<close> (numeral term);
+  string powers \<open>x\<^bsup>k\<^esup> = concat (replicate k x)\<close>.\<close>
+
+lemma p_7_2_scb_fseq:
+  fixes v n :: nat
+  shows "\<And>t'\<^sub>0 t'\<^sub>1. t'\<^sub>0 \<in> T_B \<Longrightarrow> t'\<^sub>1 \<in> T_B \<Longrightarrow>
+            operB (t'\<^sub>0 +\<^sub>B Dpt (enat v) (t'\<^sub>1 +\<^sub>B Dpt 0 0\<^sub>B)) (numBT n)
+              = t'\<^sub>0 +\<^sub>B multBT (Dpt (enat v) t'\<^sub>1) (n + 1)"
+    and "\<And>t'\<^sub>0 t'\<^sub>1 t u s b.
+            t'\<^sub>0 \<in> T_B \<Longrightarrow> t'\<^sub>1 \<in> T_B \<Longrightarrow> t \<in> T_B \<Longrightarrow>
+            scb_decomp t s
+              (flatBT (Dpt (enat u) (t'\<^sub>0 +\<^sub>B Dpt (enat v) (t'\<^sub>1 +\<^sub>B Dpt 0 0\<^sub>B)))) b \<Longrightarrow>
+            scb_decomp (operB t (numBT n)) s
+              (flatBT (Dpt (enat u) (t'\<^sub>0 +\<^sub>B multBT (Dpt (enat v) t'\<^sub>1) (n + 1)))) b"
+    and "\<And>t u s\<^sub>0 s\<^sub>1 c\<^sub>2 b\<^sub>0 b\<^sub>1.
+            t \<in> T_B \<Longrightarrow>
+            scb_kind1 t s\<^sub>1 (flatBT c\<^sub>2) b\<^sub>1 \<Longrightarrow>
+            scb_decomp c\<^sub>2 (Dsym (enat u) # s\<^sub>0) (flatBT (Dpt (enat v) 0\<^sub>B)) b\<^sub>0 \<Longrightarrow>
+            v > u \<and>
+            flatBT (operB t (numBT n)) =
+              s\<^sub>1 @ (Dsym (enat u)
+                # concat (replicate (n + 1) (s\<^sub>0 @ [Dsym (enat (v - 1))]))
+                @ [Zsym]
+                @ concat (replicate (n + 1) b\<^sub>0))
+              @ b\<^sub>1"
+  sorry
+
+text \<open>命題（\<open>RightNodes\<close>と部分表現の関係） (§7.2): for strings \<open>s,b\<close>, \<open>v \<in> \<nat>\<close> and
+  \<open>t \<in> PT\<^bsub>B\<^esub>\<close>, if \<open>b\<close> consists only of \<open>\<^bold>)\<close> and \<open>s\<frown>flat(D\<^sub>v 0)\<frown>b \<in> T\<^bsub>B\<^esub>\<close>, then
+  \<open>s\<frown>flat(D\<^sub>v t)\<frown>b \<in> T\<^bsub>B\<^esub>\<close>, \<open>Lng(P(s D\<^sub>v t b)) = Lng(P(s D\<^sub>v 0 b))\<close>, and there are
+  unique \<open>a\<^sub>0,a\<^sub>1 \<in> \<nat>\<^bsup><\<omega>\<^esup>\<close> with
+  (1) \<open>RightNodes(s D\<^sub>v t b) = a\<^sub>0 \<frown> [v] \<frown> a\<^sub>1\<close>;
+  (2) \<open>RightNodes(s D\<^sub>v 0 b) = a\<^sub>0 \<frown> [v]\<close>;
+  (3) \<open>RightNodes(D\<^sub>v t) = [v] \<frown> a\<^sub>1\<close>.
+  Modelling: \<open>P(\<dots>)\<close> on a string = \<open>P\<^bsub>B\<^esub>\<close> of the witnessing term \<open>unflatBT\<close>.\<close>
+
+lemma p_7_2_RightNodes_subexpr:
+  fixes v :: nat
+  assumes "t \<in> T_B" "\<exists>p. t = Trm [p]"
+    and "\<forall>x \<in> set b. x = RP"
+    and "t\<^sub>0 \<in> T_B" "flatBT t\<^sub>0 = s @ flatBT (Dpt (enat v) 0\<^sub>B) @ b"
+  shows "\<exists>t\<^sub>1. t\<^sub>1 \<in> T_B \<and> flatBT t\<^sub>1 = s @ flatBT (Dpt (enat v) t) @ b
+            \<and> Lng (PB t\<^sub>1) = Lng (PB t\<^sub>0)
+            \<and> (\<exists>!aa. RightNodes t\<^sub>1 = fst aa @ [v] @ snd aa
+                  \<and> RightNodes t\<^sub>0 = fst aa @ [v]
+                  \<and> RightNodes (Dpt (enat v) t) = [v] @ snd aa)"
+  sorry
+
+
 subsection \<open>§7.3 翻訳写像 (Trans / Mark)\<close>
 
 text \<open>The principal-term constructor \<open>D\<^sub>v t = Trm [DB v t]\<close> (\<open>v :: enat\<close>); on the
