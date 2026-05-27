@@ -697,3 +697,42 @@ nonempty, J1≥1; ~24/54). For `a = Lng N-1` (J1=0, `take J1 = []`), block-0 fra
 with the two-regime split; (3) descending assembly: `descending_append [descending_take[OF descN'],
 descending_replicate/const_head]` + junction from `junc0`. Audit: `python/slice_caseA_subA_decomp.py`
 (corrected), `slice_caseA_explore.py`, `slice_caseA_formula.py`.
+
+## UPDATE 2026-05-28 (continued 11): new green brick `parent_block_le0`; bridge route corrected; two genuine residuals isolated
+
+New GREEN reusable brick (worktree `../pss-slice`, uncommitted, `pss_mechanized.thy` ~8527–8612,
+just after `parent_block_entry0_min`; worktree builds `Finished PSS`):
+- **`parent_block_le0`** — `nextrel0 M (parent M 0 (Lng M-1)) (Lng M-1) ⟹ s < w ⟹
+  le0 M (parent M 0 (Lng M-1)) (parent M 0 (Lng M-1) + s)`. The block start `j0` is the row-0
+  ancestor (`≤_0`) of every block-0 interior. Proof: strong induction on the offset `s`; for `s>0`
+  take the maximal strict-row-0 predecessor `p` of `x=j0+s` (which is `≥ j0` since `j0` itself is a
+  strict predecessor by `parent_block_entry0_min`), so `nextrel0 M p x`, `p=j0+s'` with `s'<s`, chain
+  by IH + `le0_trans`. This is exactly the `blockmono` precondition demanded by BOTH
+  `oper_d0zero_seg_P_hfold` and `oper_d0zero_seg_P_split`; verified empirically `le0(N,j0N,j0N+s)`
+  162/162 (is_standard, depth 5). **Audit clean** (no `slice_P_descending`/`_of_drop`/`m_6_8`/`F1`).
+
+The full sub-case-A assembly was DRAFTED on top of this brick (fold via `hfold`+`split`+`BrM'fold`
+all type-checked through line ~10210, M/N block-0 agreement `MNblk0`/`segMNa` green) but hit ONE
+genuine logic error and was reverted to the original FN-tiebreak `sorry` to keep the worktree green.
+
+⚠️ **BRIDGE-PROOF CORRECTION (the blocker):** the two-regime bridge
+`P(seg N a (Lng N-2)) = take J1 (Br N')` (`Br N' = P(seg N a (Lng N-1))`, identity 0/132 in regime
+`a<Lng N-1`) **cannot** be proven by `m_6_2_P_additive` at the **endpoint** cut `c = Lng N-1-a`:
+that index is the row-0 **maximum** of the block, NOT left-minimal, so `m_6_2_P_additive`'s
+left-minimality premise is FALSE there (the residual `entry N 0 (Lng N-1) ≤ entry N 0 (a+j)` for
+interior `j` is false — interior < endpoint). The CORRECT route: split `seg N a (Lng N-1)` at its
+**last `Pcut`** (which IS left-minimal), giving `Br N' = P(seg N a (lastPcut-1)) @ [lastcomp]`; the
+last P-component is generally NOT a singleton (so the earlier `seg N (Lng N-1)(Lng N-1)` framing was
+also wrong). Empirically `P(seg N a (Lng N-2)) = (all-but-last of P(seg N a (Lng N-1)))` is 0/132,
+so the bridge conclusion is sound — only the cut location in the proof was wrong. Likely tool: a
+P-snoc / `poper_last_P_multi` / `Pcut`-based lemma relating `P(X)` and `P(butlast-by-one X)`.
+
+**Two genuine residuals for sub-case A (both empirically TRUE):**
+1. **Bridge via last-Pcut** (regime `a < Lng N-1`, 132/150): the corrected route above. Everything
+   else in the `a<Lng N-1` branch (fold `BrM'fold`, `descending_append`, `descending_const_head`
+   block tail, junction via `junc0`+descN', `lastfull`) was drafted and is correct MODULO the bridge.
+2. **Degenerate `a = Lng N-1 = j0^N + w`** (18/150): here `J1=0`, `take J1 (Br N') = []`, and
+   `Br M' = P(seg M a j1')` is purely the block tail (all components head `N!j0^N`, 18/18). Needs a
+   **block-boundary-anchored fold** — `oper_d0zero_seg_P_hfold` requires `a ≤ Lng N-2`, which fails
+   here; close via `descending_const_head` once the boundary-anchored fold gives the component heads.
+Audit scripts added in worktree: `python/slice_caseA_bridge.py`, `slice_caseA_regime.py`.
