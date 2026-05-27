@@ -1169,6 +1169,46 @@ function Trans :: "pairseq \<Rightarrow> BT" and Mark :: "pairseq \<Rightarrow> 
            else Mark PJ (m - j0)))"
   by pat_completeness auto
 
+text \<open>Accessors exposing the internal symbols of the recursive definition of
+  \<open>Trans\<close> (the \<open>monoT M \<and> j\<^sub>1 > 0 \<and> t\<^sub>1 \<noteq> 0\<close> branch above), so that the §7.3 /
+  §8.3–8.5 propositions stated in terms of them become expressible.  Each mirrors
+  the corresponding \<open>let\<close>-binding in the \<open>Trans\<close> body verbatim:
+  \<open>j\<^sub>1 = transJ1\<close>, \<open>j\<^sub>0 = transJ0\<close> (\<open>= jp\<close>), \<open>j\<^sub>-\<^sub>1 = transJm1\<close>, \<open>t\<^sub>1 = transT1\<close>,
+  \<open>c\<^sub>1 = transC1\<close>, \<open>v = transV\<close>, \<open>t\<^sub>2 = transT2\<close>, \<open>c\<^sub>2 = transC2\<close>.  They are total
+  functions of \<open>M\<close>; the propositions guard them with the branch conditions
+  (\<open>M \<in> RT\<^bsub>PS\<^esub> \<inter> PT\<^bsub>PS\<^esub>\<close>, \<open>j\<^sub>1 > 0\<close>, \<open>t\<^sub>1 \<noteq> 0\<close>) under which they coincide with the
+  def-internal symbols.\<close>
+
+definition transJ1 :: "pairseq \<Rightarrow> nat" where
+  "transJ1 M = Lng M - 1"
+definition transJ0 :: "pairseq \<Rightarrow> nat" where
+  "transJ0 M = parent M 0 (transJ1 M)"
+definition transJm1 :: "pairseq \<Rightarrow> nat" where
+  "transJm1 M = Adm M (transJ0 M)"
+definition transT1 :: "pairseq \<Rightarrow> BT" where
+  "transT1 M = Trans (Pred M)"
+definition transC1 :: "pairseq \<Rightarrow> BT" where
+  "transC1 M = Mark (Pred M) (transJm1 M)"
+definition transV :: "pairseq \<Rightarrow> enat" where
+  "transV M = bpHeadV (transC1 M)"
+definition transT2 :: "pairseq \<Rightarrow> BT" where
+  "transT2 M = bpHeadT (transC1 M)"
+definition transC2 :: "pairseq \<Rightarrow> BT" where
+  "transC2 M =
+     (let j1 = transJ1 M;  jp = transJ0 M;  v = transV M;  t2 = transT2 M;
+          J1 = Lng (PB t2) - 1;  pj = PB t2 ! J1;
+          leftDj0 = (bpHeadV pj = enat (entry M 1 jp));
+          t3 = (if leftDj0 then SigmaB (take J1 (PB t2)) else t2);
+          t4 = (if leftDj0 then bpHeadT pj else t2)
+      in if transCondI M \<or> transCondIII M \<or> transCondV M
+         then Dpt v (t2 +\<^sub>B Dpt (enat (entry M 1 j1)) 0\<^sub>B)
+         else if transCondVI M
+         then Dpt v (Dpt (enat (entry M 1 j1)) 0\<^sub>B)
+         else if t2 = 0\<^sub>B
+         then Dpt v (Dpt (enat (entry M 1 jp)) (Dpt (enat (entry M 1 j1)) 0\<^sub>B))
+         else Dpt v (t3 +\<^sub>B Dpt (enat (entry M 1 jp))
+                            (t4 +\<^sub>B Dpt (enat (entry M 1 j1)) 0\<^sub>B)))"
+
 text \<open>命題（\<open>Trans\<close>の well-defined 性）(§7.3, 2184): the recursion determines a
   unique total \<open>Trans\<close>/\<open>Mark\<close>.  In Isabelle this is the totality of the
   \<open>function\<close>-domain (termination); deferred — not transcribed as a separate
@@ -1205,9 +1245,17 @@ lemma p_7_3_Trans_zeroT:
   shows "zeroT M \<longleftrightarrow> Trans M = 0\<^sub>B"
   sorry
 
-text \<open>命題（\<open>c\<^sub>1\<close>と\<open>c\<^sub>2\<close>の大小関係） (§7.3, 2270): in the \<open>j\<^sub>1 > 0\<close>, \<open>t\<^sub>1 \<noteq> 0\<close> branch,
-  \<open>c\<^sub>1\<close> and \<open>c\<^sub>2\<close> are principal and \<open>c\<^sub>1 < c\<^sub>2\<close>.  Uses the def-internal symbols
-  \<open>c\<^sub>1\<close>/\<open>c\<^sub>2\<close>; to be stated once they are exposed as separate functions — deferred.\<close>
+text \<open>命題（\<open>c\<^sub>1\<close>と\<open>c\<^sub>2\<close>の大小関係） (§7.3, article 2270): for \<open>M \<in> RT\<^bsub>PS\<^esub> \<inter> PT\<^bsub>PS\<^esub>\<close>,
+  using the symbols of the recursive definition of \<open>Trans\<close> (now exposed as
+  \<open>transC1\<close>/\<open>transC2\<close>), if \<open>j\<^sub>1 > 0\<close> and \<open>t\<^sub>1 \<noteq> 0\<close> then \<open>c\<^sub>1\<close> and \<open>c\<^sub>2\<close> are
+  principal (単項 = a single principal component, \<open>Lng (PB \<cdot>) = 1\<close>) and
+  \<open>c\<^sub>1 < c\<^sub>2\<close> (\<open>lessBT\<close>).\<close>
+
+lemma p_7_3_c1_c2:
+  assumes "M \<in> RT_PS" "M \<in> PT_PS" "transJ1 M > 0" "transT1 M \<noteq> 0\<^sub>B"
+  shows "Lng (PB (transC1 M)) = 1" and "Lng (PB (transC2 M)) = 1"
+    and "lessBT (transC1 M) (transC2 M)"
+  sorry
 
 text \<open>命題（\<open>Pred\<close>の\<open>Trans\<close>に関する降下性） (§7.3, 2278).\<close>
 
