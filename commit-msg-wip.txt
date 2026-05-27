@@ -1,0 +1,6 @@
+WIP checkpoint: §6.8 A closed + B-J1=0 + blk0fold (slow steps, pre-fix)
+
+Safety snapshot of the uncommitted §6.8 worktree before isolating the slow
+blk0fold proof steps (the leftseg seg_of_seg/linarith blew up >2400s).
+
+Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>

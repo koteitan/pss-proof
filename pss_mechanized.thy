@@ -8092,6 +8092,2981 @@ proof
 qed
 
 
+text \<open>PROTOTYPE (worktree): green reusable helpers for the §6.8 prop1 slice
+  bookkeeping (\<open>take\<close>/\<open>drop\<close> of a \<open>seg\<close>, slices of a \<open>diagSeq\<close>, \<open>oper\<close> agreeing
+  with \<open>M\<close> below \<open>Lng M - 1\<close>), used by the conditional \<open>Br\<close> induction below.\<close>
+
+lemma take_seg:
+  assumes c1: "1 \<le> c" and cb: "c \<le> Suc b - a"
+  shows "take c (seg M a b) = seg M a (a + c - 1)"
+proof -
+  have ac: "a + c \<le> Suc b" using c1 cb by linarith
+  have e1: "Suc (a + c - 1) = a + c" using c1 by simp
+  have e2: "seg M a (a + c - 1) = map (\<lambda>j. M ! j) [a..<a + c]"
+    using e1 by (simp add: seg_def del: upt_Suc)
+  have "take c (seg M a b) = map (\<lambda>j. M ! j) (take c [a..<Suc b])"
+    by (simp add: seg_def take_map del: upt_Suc)
+  also have "\<dots> = map (\<lambda>j. M ! j) [a..<a + c]"
+    using ac by (simp add: take_upt min.absorb1 del: upt_Suc)
+  finally show ?thesis using e2 by simp
+qed
+
+text \<open>§6.8 sub-case A "butlast bridge".  When the last \<open>Pcut\<close> of a multi-term
+  segment \<open>seg X a b\<close> sits at its right endpoint (\<open>Pcut (seg X a b) = b - a\<close>),
+  dropping the last index \<open>b\<close> removes exactly the last \<open>P\<close>-component: the
+  \<open>P\<close>-decomposition of \<open>seg X a (b-1)\<close> is the \<open>butlast\<close> of that of \<open>seg X a b\<close>.
+  Minimal hypotheses (pinned empirically, 0 failures at depth 6): \<open>a < b\<close>,
+  \<open>multiT (seg X a b)\<close>, and \<open>Pcut (seg X a b) = b - a\<close>.  Without \<open>Pcut = b - a\<close>
+  it is false (the dropped index lies inside a non-final component); for a mono
+  segment it is false too (then \<open>P\<close> is a singleton and \<open>butlast\<close> is empty).\<close>
+
+lemma P_seg_butlast_bridge:
+  assumes ab: "a < b"
+    and multi: "multiT (seg X a b)"
+    and pc: "Pcut (seg X a b) = b - a"
+  shows "P (seg X a (b - 1)) = butlast (P (seg X a b))"
+proof -
+  have L: "1 < Lng (seg X a b)" using ab by (simp add: Lng_seg)
+  have but: "butlast (P (seg X a b)) = P (take (Pcut (seg X a b)) (seg X a b))"
+    using poper_last_P_multi[OF multi L] by simp
+  have c1: "1 \<le> b - a" using ab by simp
+  have cb: "b - a \<le> Suc b - a" by simp
+  have "take (Pcut (seg X a b)) (seg X a b) = seg X a (a + (b - a) - 1)"
+    using take_seg[OF c1 cb] pc by simp
+  also have "a + (b - a) - 1 = b - 1" using ab by simp
+  finally have "take (Pcut (seg X a b)) (seg X a b) = seg X a (b - 1)" .
+  with but show ?thesis by simp
+qed
+
+lemma drop_seg:
+  shows "drop c (seg M a b) = seg M (a + c) b"
+proof -
+  have "drop c (seg M a b) = map (\<lambda>j. M ! j) (drop c [a..<Suc b])"
+    by (simp add: seg_def drop_map del: upt_Suc)
+  also have "\<dots> = map (\<lambda>j. M ! j) [a + c..<Suc b]"
+    by (simp add: drop_upt del: upt_Suc)
+  finally show ?thesis by (simp add: seg_def del: upt_Suc)
+qed
+
+text \<open>A slice of the rank-0 standard form \<open>diagSeq u v\<close> is again a \<open>diagSeq\<close>,
+  hence non-multi: this is the base case of the rank induction.\<close>
+
+lemma seg_diagSeq:
+  assumes ab: "a \<le> b" and bv: "b \<le> v - u" and uv: "u \<le> v"
+  shows "seg (diagSeq u v) a b = diagSeq (u + a) (u + b)"
+proof (rule nth_equalityI)
+  have l1: "length (seg (diagSeq u v) a b) = Suc b - a" by simp
+  have l2: "length (diagSeq (u + a) (u + b)) = Suc (u + b) - (u + a)" by simp
+  show leq: "length (seg (diagSeq u v) a b) = length (diagSeq (u + a) (u + b))"
+    using l1 l2 ab by presburger
+  fix i assume "i < length (seg (diagSeq u v) a b)"
+  hence ic: "i < Suc b - a" by simp
+  have ai: "a + i < Suc v - u" using ic bv ab uv by linarith
+  have ib: "i < Suc (u + b) - (u + a)" using ic by linarith
+  have "seg (diagSeq u v) a b ! i = diagSeq u v ! (a + i)" using ic by (rule seg_nth_eq)
+  also have "\<dots> = (u + (a + i), u + (a + i))" by (rule diagSeq_nth[OF ai])
+  also have "\<dots> = ((u + a) + i, (u + a) + i)" by simp
+  also have "\<dots> = diagSeq (u + a) (u + b) ! i" by (rule diagSeq_nth[symmetric, OF ib])
+  finally show "seg (diagSeq u v) a b ! i = diagSeq (u + a) (u + b) ! i" .
+qed
+
+lemma not_multiT_seg_diagSeq:
+  assumes ab: "a \<le> b" and bv: "b \<le> v - u" and uv: "u \<le> v"
+  shows "\<not> multiT (seg (diagSeq u v) a b)"
+proof -
+  have le: "u + a \<le> u + b" using ab by simp
+  have "\<not> multiT (diagSeq (u + a) (u + b))" by (rule not_multiT_diagSeq[OF le])
+  thus ?thesis using seg_diagSeq[OF ab bv uv] by simp
+qed
+
+text \<open>The fundamental sequence \<open>M[n]\<close> agrees with \<open>M\<close> on every index strictly
+  below \<open>Lng M - 1\<close>: in the two degenerate \<open>oper\<close> cases \<open>M[n] = Pred M = butlast M\<close>,
+  and in the generic case \<open>M[n] = take j0 M @ B\<^sub>0 @ \<dots>\<close> with \<open>take j0 M @ B\<^sub>0 =
+  take j1 M\<close> (the \<open>k=0\<close> block \<open>B\<^sub>0\<close> carries the unshifted \<open>M\<close>-entries on \<open>[j0..<j1]\<close>).
+  This lets a slice ending before \<open>Lng M - 1\<close> reduce to a slice of \<open>M\<close>.\<close>
+
+lemma oper_nth_lt:
+  assumes M: "M \<in> T_PS" and L: "1 < Lng M" and n: "n \<ge> 1" and i: "i < Lng M - 1"
+  shows "(M[n]) ! i = M ! i"
+proof -
+  let ?j1 = "Lng M - 1"
+  have nz: "?j1 \<noteq> 0" using L by simp
+  show ?thesis
+  proof (cases "entry M 0 ?j1 = 0 \<and> entry M 1 ?j1 = 0")
+    case True
+    hence op: "M[n] = Pred M" using nz by (simp add: oper_def Let_def)
+    have "Pred M = butlast M" using L by (simp add: Pred_def)
+    thus ?thesis using op i by (simp add: nth_butlast)
+  next
+    case notzero: False
+    show ?thesis
+    proof (cases "hasParent M (idx1 M ?j1) ?j1")
+      case False
+      hence op: "M[n] = Pred M" using notzero nz by (simp add: oper_def Let_def)
+      have "Pred M = butlast M" using L by (simp add: Pred_def)
+      thus ?thesis using op i by (simp add: nth_butlast)
+    next
+      case haspar: True
+      let ?i1 = "idx1 M ?j1"
+      let ?j0 = "parent M ?i1 ?j1"
+      let ?d0 = "if 0 < ?i1 then entry M 0 ?j1 - entry M 0 ?j0 else 0"
+      let ?d1 = "if 1 < ?i1 then entry M 1 ?j1 - entry M 1 ?j0 else 0"
+      let ?f = "\<lambda>k. map (\<lambda>j. (entry M 0 j + k * ?d0, entry M 1 j + k * ?d1)) [?j0..<?j1]"
+      have parR: "nextR M ?i1 ?j0 ?j1"
+        using haspar unfolding hasParent_def parent_def by (rule theI')
+      have j0lt: "?j0 < ?j1" using poper_nextR_imp_le0[OF parR] by simp
+      have oper: "M[n] = take ?j0 M @ concat (map ?f [0..<n])"
+        using poper_oper_expand[OF L notzero haspar, of n] by (simp add: Let_def)
+      have n0: "0 < n" using n by simp
+      have blocks_hd: "concat (map ?f [0..<n]) = ?f 0 @ concat (map ?f [1..<n])"
+        using n0 by (subst upt_conv_Cons) auto
+      have operB: "M[n] = take ?j0 M @ ?f 0 @ concat (map ?f [1..<n])"
+        using oper blocks_hd by simp
+      have lenj0: "length (take ?j0 M) = ?j0" using j0lt L by simp
+      have lenB0: "length (?f 0) = ?j1 - ?j0" by simp
+      show ?thesis
+      proof (cases "i < ?j0")
+        case True
+        have "(M[n]) ! i = (take ?j0 M) ! i"
+          using operB True lenj0 by (simp add: nth_append)
+        also have "\<dots> = M ! i" using True by (simp add: nth_take)
+        finally show ?thesis .
+      next
+        case False
+        hence ge: "?j0 \<le> i" by simp
+        have iltj1: "i < ?j1" using i by simp
+        have off: "i - ?j0 < ?j1 - ?j0" using ge iltj1 by linarith
+        have B0i: "?f 0 ! (i - ?j0) = M ! i"
+        proof -
+          have idx: "[?j0..<?j1] ! (i - ?j0) = i" using off ge by (simp add: nth_upt)
+          have "?f 0 ! (i - ?j0) = (entry M 0 i, entry M 1 i)"
+            using off idx by (simp add: nth_map del: upt_Suc)
+          also have "\<dots> = M ! i" by (rule entry_pair)
+          finally show ?thesis .
+        qed
+        have "(M[n]) ! i = (?f 0 @ concat (map ?f [1..<n])) ! (i - ?j0)"
+          using operB ge lenj0 by (simp add: nth_append)
+        also have "\<dots> = ?f 0 ! (i - ?j0)" using off lenB0 by (simp add: nth_append)
+        also have "\<dots> = M ! i" by (rule B0i)
+        finally show ?thesis .
+      qed
+    qed
+  qed
+qed
+
+
+
+text \<open>A \<open>diagSeq\<close> is trunk-only: \<open>TrMax = Lng - 1\<close>, hence \<open>Br (diagSeq u v) = []\<close>.
+  Used in the base case (\<open>k = 0\<close>) of the §6.8 prop1 rank induction.\<close>
+
+lemma Br_diagSeq:
+  assumes uv: "u \<le> v"
+  shows "Br (diagSeq u v) = []"
+proof -
+  have "TrMax (diagSeq u v) = v - u" by (rule TrMax_diagSeq[OF uv])
+  moreover have "Lng (diagSeq u v) - 1 = v - u" using uv by simp
+  ultimately have "TrMax (diagSeq u v) = Lng (diagSeq u v) - 1" by simp
+  thus ?thesis by (simp add: Br_def)
+qed
+
+text \<open>Domination of branch components by their head pair \<open>C\<^bsub>0\<^esub>\<close>, in the
+  \<open>descending\<close> order (row-0 weakly larger, tie-broken by row-1 weakly larger).
+  \<open>descending Q\<close> is exactly \<open>cdom\<close>-monotonicity of \<open>Q\<close> along its indices, so the
+  §6.8 prop1 sub-cases — which all assemble \<open>Br(M') = take J\<^sub>1 (Br N') @ blocks\<close> —
+  reduce to \<open>cdom\<close> transitivity plus a single junction inequality.\<close>
+
+definition cdom :: "pairseq \<Rightarrow> pairseq \<Rightarrow> bool" where
+  "cdom C D \<longleftrightarrow> entry D 0 0 \<le> entry C 0 0
+                \<and> (entry C 0 0 = entry D 0 0 \<longrightarrow> entry D 1 0 \<le> entry C 1 0)"
+
+lemma cdom_refl: "cdom C C" by (simp add: cdom_def)
+
+lemma cdom_trans:
+  assumes CD: "cdom C D" and DE: "cdom D E" shows "cdom C E"
+proof -
+  from CD have a: "entry D 0 0 \<le> entry C 0 0"
+    and a': "entry C 0 0 = entry D 0 0 \<longrightarrow> entry D 1 0 \<le> entry C 1 0"
+    by (auto simp: cdom_def)
+  from DE have b: "entry E 0 0 \<le> entry D 0 0"
+    and b': "entry D 0 0 = entry E 0 0 \<longrightarrow> entry E 1 0 \<le> entry D 1 0"
+    by (auto simp: cdom_def)
+  show ?thesis unfolding cdom_def
+  proof (intro conjI impI)
+    show "entry E 0 0 \<le> entry C 0 0" using a b by simp
+    assume "entry C 0 0 = entry E 0 0"
+    hence "entry C 0 0 = entry D 0 0" and "entry D 0 0 = entry E 0 0" using a b by auto
+    thus "entry E 1 0 \<le> entry C 1 0" using a' b' by simp
+  qed
+qed
+
+text \<open>\<open>descending\<close> re-expressed as \<open>cdom\<close>-monotonicity along the index.\<close>
+
+lemma descending_via_cdom:
+  "descending Q \<longleftrightarrow> (\<forall>J0 J1. J0 \<le> J1 \<longrightarrow> J1 < Lng Q \<longrightarrow> cdom (Q ! J0) (Q ! J1))"
+proof (cases "Q = []")
+  case True thus ?thesis by (simp add: descending_def cdom_def)
+next
+  case False
+  hence pos: "0 < Lng Q" by simp
+  have key: "(J1 \<le> Lng Q - 1) = (J1 < Lng Q)" for J1 using pos by linarith
+  show ?thesis
+    unfolding descending_def cdom_def
+    by (metis key)
+qed
+
+lemma descendingI_cdom:
+  assumes "\<And>J0 J1. J0 \<le> J1 \<Longrightarrow> J1 < Lng Q \<Longrightarrow> cdom (Q ! J0) (Q ! J1)"
+  shows "descending Q"
+  using assms descending_via_cdom by blast
+
+lemma descending_cdomD:
+  assumes "descending Q" "J0 \<le> J1" "J1 < Lng Q"
+  shows "cdom (Q ! J0) (Q ! J1)"
+  using assms descending_via_cdom by blast
+
+text \<open>Concatenation: \<open>A @ B\<close> is descending iff both are and the junction
+  \<open>cdom (last A) (B\<^bsub>0\<^esub>)\<close> holds.  The within-\<open>A\<close>, junction and within-\<open>B\<close> steps
+  compose by @{thm [source] cdom_trans}.\<close>
+
+lemma descending_append:
+  assumes dA: "descending A" and dB: "descending B"
+    and junc: "A \<noteq> [] \<Longrightarrow> B \<noteq> [] \<Longrightarrow> cdom (last A) (B ! 0)"
+  shows "descending (A @ B)"
+proof (rule descendingI_cdom)
+  fix J0 J1 assume le: "J0 \<le> J1" and j1: "J1 < Lng (A @ B)"
+  let ?lA = "Lng A"
+  show "cdom ((A @ B) ! J0) ((A @ B) ! J1)"
+  proof (cases "J1 < ?lA")
+    case True \<comment> \<open>both in \<open>A\<close>\<close>
+    have "cdom (A ! J0) (A ! J1)" using descending_cdomD[OF dA le True] .
+    thus ?thesis using True le by (simp add: nth_append)
+  next
+    case j1A: False
+    hence j1B: "J1 - ?lA < Lng B" using j1 by auto
+    have eJ1: "(A @ B) ! J1 = B ! (J1 - ?lA)" using j1A by (simp add: nth_append)
+    show ?thesis
+    proof (cases "J0 < ?lA")
+      case True \<comment> \<open>\<open>J0\<close> in \<open>A\<close>, \<open>J1\<close> in \<open>B\<close>: chain through \<open>last A\<close> and \<open>B\<^bsub>0\<^esub>\<close>\<close>
+      have Ane: "A \<noteq> []" using True by auto
+      have Bne: "B \<noteq> []" using j1B by auto
+      have eJ0: "(A @ B) ! J0 = A ! J0" using True by (simp add: nth_append)
+      have lastA: "A ! (?lA - 1) = last A" using Ane by (simp add: last_conv_nth)
+      have B0: "B ! 0 = B ! 0" ..
+      have s1: "cdom (A ! J0) (last A)"
+        using descending_cdomD[OF dA, of J0 "?lA - 1"] True lastA by simp
+      have s2: "cdom (last A) (B ! 0)" using junc[OF Ane Bne] .
+      have s3: "cdom (B ! 0) (B ! (J1 - ?lA))"
+        using descending_cdomD[OF dB, of 0 "J1 - ?lA"] j1B by simp
+      have "cdom (A ! J0) (B ! (J1 - ?lA))"
+        using cdom_trans[OF cdom_trans[OF s1 s2] s3] .
+      thus ?thesis using eJ0 eJ1 by simp
+    next
+      case False \<comment> \<open>both in \<open>B\<close>\<close>
+      hence j0A: "\<not> J0 < ?lA" .
+      have le': "J0 - ?lA \<le> J1 - ?lA" using le by simp
+      have eJ0: "(A @ B) ! J0 = B ! (J0 - ?lA)" using j0A by (simp add: nth_append)
+      have "cdom (B ! (J0 - ?lA)) (B ! (J1 - ?lA))"
+        using descending_cdomD[OF dB le' j1B] .
+      thus ?thesis using eJ0 eJ1 by simp
+    qed
+  qed
+qed
+
+text \<open>A prefix of a descending list is descending.\<close>
+
+lemma descending_take:
+  assumes "descending Q" shows "descending (take m Q)"
+proof (rule descendingI_cdom)
+  fix J0 J1 assume le: "J0 \<le> J1" and j1: "J1 < Lng (take m Q)"
+  have j1Q: "J1 < Lng Q" using j1 by simp
+  have "cdom (Q ! J0) (Q ! J1)" using descending_cdomD[OF assms le j1Q] .
+  thus "cdom (take m Q ! J0) (take m Q ! J1)"
+    using j1 le by simp
+qed
+
+text \<open>A list all of whose entries carry the same head pair \<open>(entry _ 0 0, entry _ 1 0)\<close>
+  is \<open>descending\<close> (every \<open>cdom\<close> step is a reflexive equality).  This is the
+  closing fact for the \<open>i\<^sub>1=0\<close> branch blocks (article 1488/1494/1500): the
+  \<open>n\<close> repeated copies of \<open>seg N j\<^sub>0\<^sup>N (j\<^sub>1\<^sup>N-1)\<close> all start with \<open>N\<^bsub>j\<^sub>0\<^sup>N\<^esub>\<close>.\<close>
+
+lemma descending_const_head:
+  assumes "\<And>J. J < Lng Q \<Longrightarrow> entry (Q ! J) 0 0 = v0 \<and> entry (Q ! J) 1 0 = v1"
+  shows "descending Q"
+proof (rule descendingI_cdom)
+  fix J0 J1 assume "J0 \<le> J1" and j1: "J1 < Lng Q"
+  hence j0: "J0 < Lng Q" by simp
+  have "entry (Q ! J0) 0 0 = entry (Q ! J1) 0 0"
+    using assms[OF j0] assms[OF j1] by simp
+  moreover have "entry (Q ! J0) 1 0 = entry (Q ! J1) 1 0"
+    using assms[OF j0] assms[OF j1] by simp
+  ultimately show "cdom (Q ! J0) (Q ! J1)" by (simp add: cdom_def)
+qed
+
+text \<open>In particular a list of identical components is descending.\<close>
+
+lemma descending_replicate: "descending (replicate m C)"
+proof (rule descending_const_head)
+  fix J assume "J < Lng (replicate m C)"
+  hence "J < m" by simp
+  thus "entry (replicate m C ! J) 0 0 = entry C 0 0
+        \<and> entry (replicate m C ! J) 1 0 = entry C 1 0" by simp
+qed
+
+text \<open>Block periodicity of the \<open>i\<^sub>1 = 0\<close> oper (article 1462).  With \<open>i\<^sub>1 = 0\<close> the
+  row shifts \<open>d\<^sub>0, d\<^sub>1\<close> both vanish, so each of the \<open>n\<close> blocks is the verbatim
+  copy \<open>(M\<^sub>j)\<^bsub>j=j\<^sub>0\<^esub>\<^bsup>j\<^sub>1-1\<^esup> = seg M j\<^sub>0 (j\<^sub>1-1)\<close>; hence \<open>M[n]\<close> is \<open>take j\<^sub>0 M\<close>
+  followed by \<open>n\<close> identical such blocks.\<close>
+
+lemma nth_concat_replicate:
+  "s < length B \<Longrightarrow> q < n \<Longrightarrow> concat (replicate n B) ! (q * length B + s) = B ! s"
+proof (induction n arbitrary: q)
+  case 0 thus ?case by simp
+next
+  case (Suc n)
+  show ?case
+  proof (cases q)
+    case 0
+    have "concat (replicate (Suc n) B) = B @ concat (replicate n B)" by simp
+    thus ?thesis using Suc.prems 0 by (simp add: nth_append)
+  next
+    case (Suc q')
+    have eq: "concat (replicate (Suc n) B) = B @ concat (replicate n B)" by simp
+    have idx: "q * length B + s = length B + (q' * length B + s)"
+      using Suc by (simp add: algebra_simps)
+    have qn: "q' < n" using Suc.prems Suc by simp
+    show ?thesis using eq idx Suc.IH[OF Suc.prems(1) qn] by (simp add: nth_append)
+  qed
+qed
+
+lemma oper_d0zero_expand:
+  assumes L: "1 < Lng M"
+    and notzero: "\<not> (entry M 0 (Lng M - 1) = 0 \<and> entry M 1 (Lng M - 1) = 0)"
+    and hp: "hasParent M (idx1 M (Lng M - 1)) (Lng M - 1)"
+    and i1z: "idx1 M (Lng M - 1) = 0"
+  shows "M[n] = take (parent M 0 (Lng M - 1)) M
+              @ concat (replicate n (map ((!) M) [parent M 0 (Lng M - 1)..<Lng M - 1]))"
+proof -
+  let ?j1 = "Lng M - 1"  let ?i1 = "idx1 M ?j1"  let ?j0 = "parent M ?i1 ?j1"
+  let ?d0 = "if 0 < ?i1 then entry M 0 ?j1 - entry M 0 ?j0 else 0"
+  let ?d1 = "if 1 < ?i1 then entry M 1 ?j1 - entry M 1 ?j0 else 0"
+  \<comment> \<open>unfold the oper Let by pure rewriting (no \<open>1\<close>-normalisation)\<close>
+  have raw: "M[n] = take ?j0 M @
+       concat (map (\<lambda>k. map (\<lambda>j. (entry M 0 j + k * ?d0, entry M 1 j + k * ?d1))
+                            [?j0..<?j1]) [0..<n])"
+    by (rule poper_oper_expand[OF L notzero hp, of n, unfolded Let_def])
+  \<comment> \<open>\<open>i\<^sub>1 = 0\<close> collapses parent index and both shifts (via \<open>subst\<close>, no normalisation)\<close>
+  have d0z: "?d0 = 0" by (subst i1z) simp
+  have d1z: "?d1 = 0" by (subst i1z) simp
+  have pj0: "?j0 = parent M 0 ?j1" by (subst i1z) (rule refl)
+  have "M[n] = take ?j0 M @ concat (map (\<lambda>k. map ((!) M) [?j0..<?j1]) [0..<n])"
+    using raw by (simp add: d0z d1z entry_def del: One_nat_def)
+  also have "\<dots> = take ?j0 M @ concat (replicate n (map ((!) M) [?j0..<?j1]))"
+    by (simp add: map_replicate_const)
+  finally have key: "M[n] = take ?j0 M @ concat (replicate n (map ((!) M) [?j0..<?j1]))" .
+  show ?thesis using key[unfolded pj0] .
+qed
+
+text \<open>Periodicity in index form: inside block \<open>q < n\<close> at offset \<open>s\<close>, \<open>M[n]\<close> reads
+  off \<open>M\<close> at \<open>j\<^sub>0 + s\<close>.\<close>
+
+lemma oper_d0zero_nth:
+  assumes L: "1 < Lng M"
+    and notzero: "\<not> (entry M 0 (Lng M - 1) = 0 \<and> entry M 1 (Lng M - 1) = 0)"
+    and hp: "hasParent M (idx1 M (Lng M - 1)) (Lng M - 1)"
+    and i1z: "idx1 M (Lng M - 1) = 0"
+    and j0lt: "parent M 0 (Lng M - 1) < Lng M - 1"
+    and q: "q < n"
+    and s: "s < Lng M - 1 - parent M 0 (Lng M - 1)"
+  shows "(M[n]) ! (parent M 0 (Lng M - 1)
+                   + q * (Lng M - 1 - parent M 0 (Lng M - 1)) + s)
+       = M ! (parent M 0 (Lng M - 1) + s)"
+proof -
+  let ?j1 = "Lng M - 1"  let ?j0 = "parent M 0 ?j1"  let ?w = "?j1 - ?j0"
+  let ?B = "map ((!) M) [?j0..<?j1]"
+  have lenB: "length ?B = ?w" by simp
+  have j0le: "?j0 \<le> Lng M" using j0lt by linarith
+  have lentake: "length (take ?j0 M) = ?j0" using j0le by simp
+  have idxge: "?j0 \<le> ?j0 + q * ?w + s" by simp
+  have expand: "M[n] = take ?j0 M @ concat (replicate n ?B)"
+    using oper_d0zero_expand[OF L notzero hp i1z] by simp
+  have "(M[n]) ! (?j0 + q * ?w + s) = concat (replicate n ?B) ! (q * ?w + s)"
+    using expand lentake idxge by (simp add: nth_append)
+  also have "\<dots> = ?B ! s"
+    using nth_concat_replicate[OF _ q, of s ?B] s lenB by simp
+  also have "\<dots> = M ! (?j0 + s)"
+    using s by (simp add: nth_upt)
+  finally show ?thesis .
+qed
+
+text \<open>Row-0 value at an index \<open>x \<ge> j\<^sub>0\<close> of the \<open>i\<^sub>1=0\<close> oper: it equals \<open>M\<close>'s
+  row-0 value at \<open>j\<^sub>0 + (x-j\<^sub>0) mod w\<close> (the offset within \<open>x\<close>'s block).\<close>
+
+lemma oper_d0zero_entry0:
+  assumes L: "1 < Lng M"
+    and notzero: "\<not> (entry M 0 (Lng M - 1) = 0 \<and> entry M 1 (Lng M - 1) = 0)"
+    and hp: "hasParent M (idx1 M (Lng M - 1)) (Lng M - 1)"
+    and i1z: "idx1 M (Lng M - 1) = 0"
+    and j0lt: "parent M 0 (Lng M - 1) < Lng M - 1"
+    and x0: "parent M 0 (Lng M - 1) \<le> x"
+    and xlt: "x < parent M 0 (Lng M - 1) + n * (Lng M - 1 - parent M 0 (Lng M - 1))"
+  shows "entry (M[n]) 0 x
+       = entry M 0 (parent M 0 (Lng M - 1) + (x - parent M 0 (Lng M - 1)) mod (Lng M - 1 - parent M 0 (Lng M - 1)))"
+proof -
+  let ?j0 = "parent M 0 (Lng M - 1)"  let ?w = "Lng M - 1 - ?j0"
+  have w0: "0 < ?w" using j0lt by linarith
+  let ?q = "(x - ?j0) div ?w"  let ?s = "(x - ?j0) mod ?w"
+  have sw: "?s < ?w" using w0 by simp
+  have xmj: "x - ?j0 < n * ?w" using xlt x0 by linarith
+  have qn: "?q < n" using less_mult_imp_div_less[OF xmj] .
+  have dm: "?q * ?w + ?s = x - ?j0"
+    using div_mult_mod_eq[of "x - ?j0" ?w] by (simp add: mult.commute)
+  have xsplit: "x = ?j0 + ?q * ?w + ?s" using dm x0 by linarith
+  have "(M[n]) ! x = (M[n]) ! (?j0 + ?q * ?w + ?s)" using xsplit by simp
+  also have "\<dots> = M ! (?j0 + ?s)"
+    by (rule oper_d0zero_nth[OF L notzero hp i1z j0lt qn sw])
+  finally have "(M[n]) ! x = M ! (?j0 + ?s)" .
+  thus ?thesis by (simp add: entry_def)
+qed
+
+text \<open>In a standard parent step \<open>(0,j\<^sub>0) <\<^sup>Next (0,j\<^sub>1)\<close>, \<open>j\<^sub>0\<close> is the row-0 minimum
+  of the closed block \<open>[j\<^sub>0, j\<^sub>1)\<close>: strictly below every interior index.\<close>
+
+lemma parent_block_entry0_min:
+  assumes parR: "nextrel0 M (parent M 0 (Lng M - 1)) (Lng M - 1)"
+    and s: "s < Lng M - 1 - parent M 0 (Lng M - 1)"
+  shows "entry M 0 (parent M 0 (Lng M - 1)) \<le> entry M 0 (parent M 0 (Lng M - 1) + s)"
+    and "0 < s \<Longrightarrow> entry M 0 (parent M 0 (Lng M - 1)) < entry M 0 (parent M 0 (Lng M - 1) + s)"
+proof -
+  let ?j0 = "parent M 0 (Lng M - 1)"
+  have lt01: "entry M 0 ?j0 < entry M 0 (Lng M - 1)"
+    using parR by (simp add: nextrel0_def)
+  show "0 < s \<Longrightarrow> entry M 0 ?j0 < entry M 0 (?j0 + s)"
+  proof -
+    assume sp: "0 < s"
+    have between: "?j0 < ?j0 + s \<and> ?j0 + s < Lng M - 1" using sp s by linarith
+    hence "entry M 0 (Lng M - 1) \<le> entry M 0 (?j0 + s)"
+      using parR by (simp add: nextrel0_def)
+    thus "entry M 0 ?j0 < entry M 0 (?j0 + s)" using lt01 by linarith
+  qed
+  thus "entry M 0 ?j0 \<le> entry M 0 (?j0 + s)" by (cases "0 < s") auto
+qed
+
+text \<open>Block ancestry: in the standard parent step \<open>(0,j\<^sub>0) <\<^sup>Next (0,Lng M-1)\<close>, the
+  block start \<open>j\<^sub>0\<close> is the row-0 ancestor (\<open>\<le>\<^sub>0\<close>) of every index in the open block
+  \<open>[j\<^sub>0, Lng M-1)\<close>.  Proof: strong induction on the offset \<open>s\<close>; for \<open>s>0\<close> pick the
+  immediate row-0 predecessor \<open>p\<close> of \<open>x = j\<^sub>0+s\<close>, which lies in \<open>[j\<^sub>0, x)\<close> because
+  \<open>j\<^sub>0\<close> itself has strictly smaller row-0 (\<open>parent_block_entry0_min\<close>), so \<open>p = j\<^sub>0+s'\<close>
+  with \<open>s'<s\<close> and \<open>nextrel0 M p x\<close>; chain by IH + \<open>le0_trans\<close>.\<close>
+
+lemma parent_block_le0:
+  assumes parR: "nextrel0 M (parent M 0 (Lng M - 1)) (Lng M - 1)"
+    and s: "s < Lng M - 1 - parent M 0 (Lng M - 1)"
+  shows "le0 M (parent M 0 (Lng M - 1)) (parent M 0 (Lng M - 1) + s)"
+proof -
+  let ?j0 = "parent M 0 (Lng M - 1)"
+  have j0lt: "?j0 < Lng M - 1" using parR by (simp add: nextrel0_def)
+  have Lpos: "0 < Lng M" using j0lt by linarith
+  have key: "t < Lng M - 1 - ?j0 \<Longrightarrow> le0 M ?j0 (?j0 + t)" for t
+  proof (induct t rule: less_induct)
+    case (less t)
+    note IH = less.hyps
+    show ?case
+    proof -
+      have tw: "t < Lng M - 1 - ?j0" using less.prems .
+      let ?x = "?j0 + t"
+      have xlt: "?x < Lng M" using tw j0lt by linarith
+      have j0ltM: "?j0 < Lng M" using j0lt by linarith
+      show "le0 M ?j0 ?x"
+      proof (cases "t = 0")
+        case True thus ?thesis using le0_refl[OF j0ltM] by simp
+      next
+        case False
+        hence t0: "0 < t" by simp
+        \<comment> \<open>\<open>j\<^sub>0\<close> has strictly smaller row-0 than \<open>x\<close>, so the set of strict-row-0
+           predecessors of \<open>x\<close> within \<open>[j\<^sub>0, x)\<close> is non-empty; take its maximum \<open>p\<close>.\<close>
+        have j0x: "entry M 0 ?j0 < entry M 0 ?x"
+          using parent_block_entry0_min(2)[OF parR tw] t0 by simp
+        define S where "S = {p. ?j0 \<le> p \<and> p < ?x \<and> entry M 0 p < entry M 0 ?x}"
+        have j0S: "?j0 \<in> S" using j0x t0 unfolding S_def by simp
+        have Sfin: "finite S" unfolding S_def by simp
+        have Sne: "S \<noteq> {}" using j0S by blast
+        define p where "p = Max S"
+        have pS: "p \<in> S" unfolding p_def using Sfin Sne by (rule Max_in)
+        have pmax: "\<And>q. q \<in> S \<Longrightarrow> q \<le> p" unfolding p_def using Sfin by (rule Max_ge)
+        from pS have pge: "?j0 \<le> p" and plt: "p < ?x"
+          and prow: "entry M 0 p < entry M 0 ?x" unfolding S_def by auto
+        \<comment> \<open>between \<open>p\<close> and \<open>x\<close> every row-0 is \<open>\<ge> entry M 0 x\<close> (else a bigger member of \<open>S\<close>)\<close>
+        have pnext: "nextrel0 M p ?x"
+        proof -
+          have "\<forall>j. p < j \<and> j < ?x \<longrightarrow> entry M 0 j \<ge> entry M 0 ?x"
+          proof (intro allI impI)
+            fix j assume j: "p < j \<and> j < ?x"
+            show "entry M 0 j \<ge> entry M 0 ?x"
+            proof (rule ccontr)
+              assume "\<not> entry M 0 j \<ge> entry M 0 ?x"
+              hence jrow: "entry M 0 j < entry M 0 ?x" by simp
+              have "?j0 \<le> j" using j pge by linarith
+              hence "j \<in> S" using j jrow unfolding S_def by simp
+              hence "j \<le> p" using pmax by simp
+              thus False using j by simp
+            qed
+          qed
+          moreover have "p < Lng M" using plt xlt by linarith
+          ultimately show ?thesis using plt xlt prow
+            unfolding nextrel0_def by blast
+        qed
+        have pstep: "le0 M p ?x"
+        proof -
+          have "p < Lng M" using plt xlt by linarith
+          thus ?thesis using pnext xlt by (auto simp: le0_def intro: r_into_rtranclp)
+        qed
+        show ?thesis
+        proof (cases "p = ?j0")
+          case True thus ?thesis using pstep by simp
+        next
+          case False
+          hence pgt: "?j0 < p" using pge by simp
+          define s' where "s' = p - ?j0"
+          have ps': "p = ?j0 + s'" unfolding s'_def using pge by simp
+          have s'lt: "s' < t" unfolding s'_def using plt pge by linarith
+          have s'w: "s' < Lng M - 1 - ?j0" using s'lt tw by linarith
+          have lej0p: "le0 M ?j0 p" using IH[OF s'lt s'w] ps' by simp
+          show ?thesis using le0_trans[OF lej0p pstep] by simp
+        qed
+      qed
+    qed
+  qed
+  show ?thesis using key[OF s] .
+qed
+
+text \<open>Above the row-0 parent \<open>j\<^sub>0\<close> of the trunk leaf \<open>b = Lng N - 1\<close> there is no
+  proper row-0 ancestor of \<open>b\<close>: \<open>j\<^sub>0\<close> is the nearest strict-row-0 predecessor of
+  \<open>b\<close> (\<open>nextrel0 N j\<^sub>0 b\<close>), so every interior index \<open>k \<in> (j\<^sub>0, b)\<close> has row-0
+  \<open>\<ge> N\<^bsub>0,b\<^esub>\<close>; a reachability chain into \<open>b\<close> would need a final strict-row-0
+  increase, which no such \<open>k\<close> provides.  Hence any \<open>x > j\<^sub>0\<close> with
+  \<open>(nextrel0 N)\<^sup>*\<^sup>* x b\<close> must already equal \<open>b\<close>.  This pins
+  \<open>Pcut (seg N a b) = b - a\<close> in §6.8 d0zero case-A, where the slice starts
+  strictly above \<open>j\<^sub>0\<close>.\<close>
+
+lemma nextrel0_above_parent_trivial:
+  assumes par: "nextrel0 N j0 b"
+    and chain: "(nextrel0 N)\<^sup>*\<^sup>* x b"
+    and xgt: "j0 < x"
+  shows "x = b"
+proof -
+  have barrier: "\<And>k. j0 < k \<Longrightarrow> k < b \<Longrightarrow> entry N 0 b \<le> entry N 0 k"
+    using par by (simp add: nextrel0_def)
+  have "(nextrel0 N)\<^sup>*\<^sup>* x b \<Longrightarrow> j0 < x \<longrightarrow> x = b"
+  proof (induction rule: converse_rtranclp_induct)
+    case base show ?case by simp
+  next
+    case (step y z)
+    note nyz = step.hyps(1) and IH = step.IH
+    show ?case
+    proof
+      assume yj0: "j0 < y"
+      have yz: "y < z" using nyz by (simp add: nextrel0_def)
+      hence j0z: "j0 < z" using yj0 by linarith
+      have zb: "z = b" using IH j0z by simp
+      have "entry N 0 y < entry N 0 b" using nyz zb by (simp add: nextrel0_def)
+      moreover have "y < b" using yz zb by simp
+      ultimately have False using barrier[OF yj0] by linarith
+      thus "y = b" by simp
+    qed
+  qed
+  thus ?thesis using chain xgt by simp
+qed
+
+text \<open>Confinement (article 1510): in the \<open>i\<^sub>1=0\<close> periodic layout each block-start
+  carries the row-0 minimum \<open>M\<^bsub>0,j\<^sub>0\<^esub>\<close>, which acts as a barrier — a row-0
+  reachability chain starting at \<open>a \<ge> j\<^sub>0\<close> cannot cross into a later block, so
+  its target stays below the end of \<open>a\<close>'s block.\<close>
+
+lemma oper_d0zero_le0_confined:
+  assumes L: "1 < Lng M"
+    and notzero: "\<not> (entry M 0 (Lng M - 1) = 0 \<and> entry M 1 (Lng M - 1) = 0)"
+    and hp: "hasParent M (idx1 M (Lng M - 1)) (Lng M - 1)"
+    and i1z: "idx1 M (Lng M - 1) = 0"
+    and a0: "parent M 0 (Lng M - 1) \<le> a"
+    and alt: "a < Lng ((M::pairseq)[n])"
+    and ab: "(nextrel0 ((M::pairseq)[n]))\<^sup>*\<^sup>* a b"
+  shows "b < parent M 0 (Lng M - 1)
+           + ((a - parent M 0 (Lng M - 1)) div (Lng M - 1 - parent M 0 (Lng M - 1)) + 1)
+             * (Lng M - 1 - parent M 0 (Lng M - 1))"
+proof -
+  let ?j0 = "parent M 0 (Lng M - 1)"  let ?w = "Lng M - 1 - ?j0"
+  let ?q = "(a - ?j0) div ?w"
+  have hp0: "hasParent M 0 (Lng M - 1)" using hp i1z by simp
+  have parR: "nextR M 0 ?j0 (Lng M - 1)"
+    using hp0 unfolding hasParent_def parent_def by (rule theI')
+  have parR0: "nextrel0 M ?j0 (Lng M - 1)" using parR by (simp add: nextR_def)
+  have j0lt: "?j0 < Lng M - 1" using poper_nextR_imp_le0[OF parR] by simp
+  have w0: "0 < ?w" using j0lt by linarith
+  have lenM: "Lng ((M::pairseq)[n]) = ?j0 + n * ?w"
+  proof -
+    have e: "M[n] = take ?j0 M @ concat (replicate n (map ((!) M) [?j0..<Lng M - 1]))"
+      by (rule oper_d0zero_expand[OF L notzero hp i1z])
+    have t: "length (take ?j0 M) = ?j0" using j0lt L by simp
+    have b: "length (map ((!) M) [?j0..<Lng M - 1]) = ?w" by simp
+    show ?thesis using e t b by (simp add: length_concat sum_list_replicate)
+  qed
+  have qn: "?q < n"
+  proof -
+    have "a - ?j0 < n * ?w" using alt lenM a0 by linarith
+    thus ?thesis using less_mult_imp_div_less by simp
+  qed
+  \<comment> \<open>strengthened invariant along the reachability chain\<close>
+  have main: "?j0 \<le> b \<and> b < ?j0 + (?q + 1) * ?w"
+    using ab
+  proof (induction rule: rtranclp_induct)
+    case base
+    have md: "a - ?j0 = ?q * ?w + (a - ?j0) mod ?w"
+      using div_mult_mod_eq[of "a - ?j0" ?w] by (simp add: mult.commute)
+    have "(a - ?j0) mod ?w < ?w" using w0 by simp
+    hence "a - ?j0 < (?q + 1) * ?w" using md by (simp add: algebra_simps)
+    thus ?case using a0 by linarith
+  next
+    case (step y z)
+    from step.IH have Py: "?j0 \<le> y" and Pyb: "y < ?j0 + (?q + 1) * ?w" by auto
+    have yz: "nextrel0 ((M::pairseq)[n]) y z" using step.hyps(2) .
+    have ylt: "y < z" and zlt: "z < Lng ((M::pairseq)[n])"
+      and vlt: "entry ((M::pairseq)[n]) 0 y < entry ((M::pairseq)[n]) 0 z"
+      using yz by (auto simp: nextrel0_def)
+    have ybar: "\<And>j. y < j \<Longrightarrow> j < z \<Longrightarrow> entry ((M::pairseq)[n]) 0 z \<le> entry ((M::pairseq)[n]) 0 j"
+      using yz by (auto simp: nextrel0_def)
+    show ?case
+    proof (intro conjI)
+      show "?j0 \<le> z" using Py ylt by linarith
+      show "z < ?j0 + (?q + 1) * ?w"
+      proof (rule ccontr)
+        assume "\<not> z < ?j0 + (?q + 1) * ?w"
+        hence zge: "?j0 + (?q + 1) * ?w \<le> z" by linarith
+        let ?B = "?j0 + (?q + 1) * ?w"
+        have q1n: "?q + 1 < n"
+        proof -
+          have "?j0 + (?q + 1) * ?w \<le> z" by (rule zge)
+          also have "z < ?j0 + n * ?w" using zlt lenM by simp
+          finally have "(?q + 1) * ?w < n * ?w" by simp
+          thus ?thesis using w0 by (metis mult_less_cancel2)
+        qed
+        have Blt: "?B < Lng ((M::pairseq)[n])"
+          using mult_less_mono1[OF q1n w0] lenM by simp
+        \<comment> \<open>row-0 value at the block-start \<open>?B\<close> is the minimum \<open>M\<^bsub>0,j\<^sub>0\<^esub>\<close>\<close>
+        have offB: "(?B - ?j0) mod ?w = 0" by simp
+        have entryB: "entry ((M::pairseq)[n]) 0 ?B = entry M 0 ?j0"
+          using oper_d0zero_entry0[OF L notzero hp i1z j0lt, of ?B n] offB
+                Blt lenM by simp
+        \<comment> \<open>row-0 value at any \<open>x\<in>[j\<^sub>0,Lng)\<close> is \<open>\<ge> M\<^bsub>0,j\<^sub>0\<^esub>\<close>, with \<open>=\<close> only at block-starts\<close>
+        have ge_min: "\<And>x. ?j0 \<le> x \<Longrightarrow> x < Lng ((M::pairseq)[n]) \<Longrightarrow> entry M 0 ?j0 \<le> entry ((M::pairseq)[n]) 0 x"
+        proof -
+          fix x assume xx: "?j0 \<le> x" "x < Lng ((M::pairseq)[n])"
+          have "(x - ?j0) mod ?w < ?w" using w0 by simp
+          hence "entry M 0 ?j0 \<le> entry M 0 (?j0 + (x - ?j0) mod ?w)"
+            using parent_block_entry0_min(1)[OF parR0] by blast
+          thus "entry M 0 ?j0 \<le> entry ((M::pairseq)[n]) 0 x"
+            using oper_d0zero_entry0[OF L notzero hp i1z j0lt, of x n] xx lenM by simp
+        qed
+        have eq_min_imp: "\<And>x. ?j0 \<le> x \<Longrightarrow> x < Lng ((M::pairseq)[n]) \<Longrightarrow>
+              entry ((M::pairseq)[n]) 0 x = entry M 0 ?j0 \<Longrightarrow> (x - ?j0) mod ?w = 0"
+        proof -
+          fix x assume xx: "?j0 \<le> x" "x < Lng ((M::pairseq)[n])"
+            and xeq: "entry ((M::pairseq)[n]) 0 x = entry M 0 ?j0"
+          have xval: "entry ((M::pairseq)[n]) 0 x = entry M 0 (?j0 + (x - ?j0) mod ?w)"
+            using oper_d0zero_entry0[OF L notzero hp i1z j0lt, of x n] xx lenM by simp
+          show "(x - ?j0) mod ?w = 0"
+          proof (rule ccontr)
+            assume "(x - ?j0) mod ?w \<noteq> 0"
+            hence sp: "0 < (x - ?j0) mod ?w" by simp
+            have "(x - ?j0) mod ?w < ?w" using w0 by simp
+            hence "entry M 0 ?j0 < entry M 0 (?j0 + (x - ?j0) mod ?w)"
+              using parent_block_entry0_min(2)[OF parR0] sp by blast
+            thus False using xval xeq by simp
+          qed
+        qed
+        \<comment> \<open>case on whether \<open>?B\<close> equals \<open>z\<close> or lies strictly inside \<open>(y,z)\<close>\<close>
+        have yB: "y < ?B" using Pyb by simp
+        show False
+        proof (cases "?B = z")
+          case True
+          have "entry ((M::pairseq)[n]) 0 y < entry M 0 ?j0" using vlt entryB True by simp
+          moreover have "entry M 0 ?j0 \<le> entry ((M::pairseq)[n]) 0 y"
+            using ge_min[of y] Py ylt zlt by linarith
+          ultimately show False by simp
+        next
+          case False
+          hence Bin: "y < ?B \<and> ?B < z" using yB zge by linarith
+          have "entry ((M::pairseq)[n]) 0 z \<le> entry ((M::pairseq)[n]) 0 ?B" using ybar Bin by simp
+          hence zle: "entry ((M::pairseq)[n]) 0 z \<le> entry M 0 ?j0" using entryB by simp
+          have zge_min: "entry M 0 ?j0 \<le> entry ((M::pairseq)[n]) 0 z"
+            using ge_min[of z] Py ylt zlt by linarith
+          have zeq: "entry ((M::pairseq)[n]) 0 z = entry M 0 ?j0" using zle zge_min by simp
+          \<comment> \<open>then \<open>z\<close> is a block-start, so \<open>M\<^bsub>0,y\<^esub> < M\<^bsub>0,j\<^sub>0\<^esub>\<close> — impossible for \<open>y \<ge> j\<^sub>0\<close>\<close>
+          have "entry ((M::pairseq)[n]) 0 y < entry M 0 ?j0" using vlt zeq by simp
+          moreover have "entry M 0 ?j0 \<le> entry ((M::pairseq)[n]) 0 y"
+            using ge_min[of y] Py ylt zlt by linarith
+          ultimately show False by simp
+        qed
+      qed
+    qed
+  qed
+  show ?thesis using main by simp
+qed
+
+text \<open>Prefix indices (\<open>x < j\<^sub>0\<close>) of the \<open>i\<^sub>1=0\<close> oper read straight off \<open>M\<close>.\<close>
+
+lemma oper_d0zero_nth_prefix:
+  assumes L: "1 < Lng M"
+    and notzero: "\<not> (entry M 0 (Lng M - 1) = 0 \<and> entry M 1 (Lng M - 1) = 0)"
+    and hp: "hasParent M (idx1 M (Lng M - 1)) (Lng M - 1)"
+    and i1z: "idx1 M (Lng M - 1) = 0"
+    and x: "x < parent M 0 (Lng M - 1)"
+  shows "((M::pairseq)[n]) ! x = M ! x"
+proof -
+  let ?j0 = "parent M 0 (Lng M - 1)"
+  have hp0: "hasParent M 0 (Lng M - 1)" using hp i1z by simp
+  have parR: "nextR M 0 ?j0 (Lng M - 1)"
+    using hp0 unfolding hasParent_def parent_def by (rule theI')
+  have j0lt: "?j0 < Lng M - 1" using poper_nextR_imp_le0[OF parR] by simp
+  have j0le: "?j0 \<le> Lng M" using j0lt by linarith
+  have e: "(M::pairseq)[n] = take ?j0 M @ concat (replicate n (map ((!) M) [?j0..<Lng M - 1]))"
+    by (rule oper_d0zero_expand[OF L notzero hp i1z])
+  have "x < length (take ?j0 M)" using x j0le by simp
+  thus ?thesis using e by (simp add: nth_append nth_take x)
+qed
+
+text \<open>The \<open>i\<^sub>1=0\<close> oper agrees with \<open>M\<close> on the whole closed prefix \<open>[0, j\<^sub>0]\<close>
+  (prefix indices read off directly; \<open>j\<^sub>0\<close> is the start of block 0, value \<open>M\<^bsub>j\<^sub>0\<^esub>\<close>).\<close>
+
+lemma oper_d0zero_nth_le_parent:
+  assumes L: "1 < Lng M"
+    and notzero: "\<not> (entry M 0 (Lng M - 1) = 0 \<and> entry M 1 (Lng M - 1) = 0)"
+    and hp: "hasParent M (idx1 M (Lng M - 1)) (Lng M - 1)"
+    and i1z: "idx1 M (Lng M - 1) = 0"
+    and n: "1 \<le> n" and x: "x \<le> parent M 0 (Lng M - 1)"
+  shows "((M::pairseq)[n]) ! x = M ! x"
+proof (cases "x < parent M 0 (Lng M - 1)")
+  case True
+  show ?thesis by (rule oper_d0zero_nth_prefix[OF L notzero hp i1z True])
+next
+  case False
+  hence xeq: "x = parent M 0 (Lng M - 1)" using x by linarith
+  let ?j0 = "parent M 0 (Lng M - 1)"
+  have hp0: "hasParent M 0 (Lng M - 1)" using hp i1z by simp
+  have parR: "nextR M 0 ?j0 (Lng M - 1)"
+    using hp0 unfolding hasParent_def parent_def by (rule theI')
+  have j0lt: "?j0 < Lng M - 1" using poper_nextR_imp_le0[OF parR] by simp
+  have "((M::pairseq)[n]) ! (?j0 + 0 * (Lng M - 1 - ?j0) + 0) = M ! (?j0 + 0)"
+    by (rule oper_d0zero_nth[OF L notzero hp i1z j0lt]) (use n j0lt in auto)
+  thus ?thesis using xeq by simp
+qed
+
+text \<open>Period reduction (article 1472, \<open>WLOG q = n-1\<close>): a slice of \<open>M[n]\<close> ending in
+  block \<open>q\<close> agrees with the same slice of \<open>M[q+1]\<close>, since the first \<open>q+1\<close> blocks
+  are identical.\<close>
+
+lemma oper_d0zero_seg_period_reduce:
+  assumes L: "1 < Lng M"
+    and notzero: "\<not> (entry M 0 (Lng M - 1) = 0 \<and> entry M 1 (Lng M - 1) = 0)"
+    and hp: "hasParent M (idx1 M (Lng M - 1)) (Lng M - 1)"
+    and i1z: "idx1 M (Lng M - 1) = 0"
+    and qn1: "q + 1 \<le> n"
+    and ble: "b < parent M 0 (Lng M - 1) + (q + 1) * (Lng M - 1 - parent M 0 (Lng M - 1))"
+  shows "seg ((M::pairseq)[n]) a b = seg ((M::pairseq)[q + 1]) a b"
+proof (rule nth_equalityI)
+  show "length (seg ((M::pairseq)[n]) a b) = length (seg ((M::pairseq)[q + 1]) a b)" by simp
+next
+  let ?j0 = "parent M 0 (Lng M - 1)"  let ?w = "Lng M - 1 - ?j0"
+  have hp0: "hasParent M 0 (Lng M - 1)" using hp i1z by simp
+  have parR: "nextR M 0 ?j0 (Lng M - 1)"
+    using hp0 unfolding hasParent_def parent_def by (rule theI')
+  have j0lt: "?j0 < Lng M - 1" using poper_nextR_imp_le0[OF parR] by simp
+  have w0: "0 < ?w" using j0lt by linarith
+  fix i assume "i < length (seg ((M::pairseq)[n]) a b)"
+  hence ic: "i < Suc b - a" by simp
+  have agree: "((M::pairseq)[n]) ! (a + i) = ((M::pairseq)[q + 1]) ! (a + i)"
+  proof (cases "a + i < ?j0")
+    case True
+    show ?thesis
+      using oper_d0zero_nth_prefix[OF L notzero hp i1z True, of n]
+            oper_d0zero_nth_prefix[OF L notzero hp i1z True, of "q + 1"] by simp
+  next
+    case False
+    hence ge: "?j0 \<le> a + i" by simp
+    let ?qx = "(a + i - ?j0) div ?w"  let ?sx = "(a + i - ?j0) mod ?w"
+    have aible: "a + i < ?j0 + (q + 1) * ?w" using ic ble by linarith
+    have sx: "?sx < ?w" using w0 by simp
+    have xmj: "a + i - ?j0 < (q + 1) * ?w" using aible ge by linarith
+    have qxq: "?qx < q + 1" using less_mult_imp_div_less[OF xmj] .
+    have qxn: "?qx < n" using qxq qn1 by linarith
+    have splitmod: "?qx * ?w + ?sx = a + i - ?j0"
+      using div_mult_mod_eq[of "a + i - ?j0" ?w] by (simp add: mult.commute)
+    have split: "a + i = ?j0 + ?qx * ?w + ?sx" using splitmod ge by linarith
+    have "((M::pairseq)[n]) ! (a + i) = M ! (?j0 + ?sx)"
+      using split oper_d0zero_nth[OF L notzero hp i1z j0lt qxn sx] by simp
+    moreover have "((M::pairseq)[q + 1]) ! (a + i) = M ! (?j0 + ?sx)"
+      using split oper_d0zero_nth[OF L notzero hp i1z j0lt qxq sx] by simp
+    ultimately show ?thesis by simp
+  qed
+  have "seg ((M::pairseq)[n]) a b ! i = ((M::pairseq)[n]) ! (a + i)"
+    using ic by (rule seg_nth_eq)
+  also have "\<dots> = ((M::pairseq)[q + 1]) ! (a + i)" by (rule agree)
+  also have "\<dots> = seg ((M::pairseq)[q + 1]) a b ! i" using ic by (simp add: seg_nth_eq)
+  finally show "seg ((M::pairseq)[n]) a b ! i = seg ((M::pairseq)[q + 1]) a b ! i" .
+qed
+
+text \<open>If \<open>M\<close> and \<open>N\<close> agree on the closed prefix \<open>[0,c]\<close> then row-0 reachability
+  among indices \<open>\<le> c\<close> coincides: a \<open>nextrel0\<close> chain to a target \<open>\<le> c\<close> stays
+  \<open>\<le> c\<close> (indices increase along the chain), where the two sequences are equal.
+  Used to pull \<open>(0,j'\<^sub>0) \<le> (0,j\<^sub>0\<^sup>N)\<close> from \<open>M = N[n]\<close> back to \<open>N\<close> (article 1476).\<close>
+
+lemma nextrel0_prefix_imp:
+  assumes agree: "\<And>j. j \<le> c \<Longrightarrow> M ! j = N ! j"
+    and cN: "c < Lng N"
+    and xy: "x \<le> c" "y \<le> c"
+    and h: "nextrel0 M x y"
+  shows "nextrel0 N x y"
+proof -
+  have e: "\<And>j. j \<le> c \<Longrightarrow> entry M 0 j = entry N 0 j"
+    using agree by (simp add: entry_def)
+  from h have hx: "x < y" and hv: "entry M 0 x < entry M 0 y"
+    and hmid: "\<And>j. x < j \<Longrightarrow> j < y \<Longrightarrow> entry M 0 y \<le> entry M 0 j"
+    by (auto simp: nextrel0_def)
+  show ?thesis
+    unfolding nextrel0_def
+  proof (intro conjI allI impI)
+    show "x < Lng N" using xy(1) cN by linarith
+    show "y < Lng N" using xy(2) cN by linarith
+    show "x < y" by (rule hx)
+    show "entry N 0 x < entry N 0 y" using hv e[OF xy(1)] e[OF xy(2)] by simp
+    fix j assume "x < j \<and> j < y"
+    hence j1: "x < j" and j2: "j < y" by auto
+    have jc: "j \<le> c" using j2 xy(2) by linarith
+    show "entry N 0 y \<le> entry N 0 j" using hmid[OF j1 j2] e[OF xy(2)] e[OF jc] by simp
+  qed
+qed
+
+lemma le0_prefix_agree:
+  assumes agree: "\<And>j. j \<le> c \<Longrightarrow> M ! j = N ! j"
+    and cM: "c < Lng M" and cN: "c < Lng N"
+    and ac: "a \<le> c" and bc: "b \<le> c"
+    and le: "le0 M a b"
+  shows "le0 N a b"
+proof -
+  have rM: "(nextrel0 M)\<^sup>*\<^sup>* a b" using le by (simp add: le0_def)
+  have "b \<le> c \<longrightarrow> (nextrel0 N)\<^sup>*\<^sup>* a b"
+    using rM
+  proof (induction rule: rtranclp_induct)
+    case base show ?case by simp
+  next
+    case (step y z)
+    show ?case
+    proof
+      assume zc: "z \<le> c"
+      have yz: "nextrel0 M y z" using step.hyps(2) .
+      have ylt: "y < z" using yz by (simp add: nextrel0_def)
+      have yc: "y \<le> c" using ylt zc by linarith
+      have "(nextrel0 N)\<^sup>*\<^sup>* a y" using step.IH yc by simp
+      moreover have "nextrel0 N y z"
+        by (rule nextrel0_prefix_imp[OF agree cN yc zc yz])
+      ultimately show "(nextrel0 N)\<^sup>*\<^sup>* a z" by simp
+    qed
+  qed
+  hence "(nextrel0 N)\<^sup>*\<^sup>* a b" using bc by simp
+  thus ?thesis using ac bc cN by (simp add: le0_def)
+qed
+
+text \<open>Row-1 next-relation transfers across a shared prefix \<open>[0,c]\<close>.  The
+  \<open>nextrel1\<close> minimality quantifier ranges over \<open>j\<close> with \<open>le0 _ j y\<close>; since
+  \<open>le0\<close> is index-monotone (@{thm [source] nextrel0_rtrancl_mono}) such \<open>j\<close>
+  satisfy \<open>j \<le> y \<le> c\<close>, so the whole condition is confined to the agreement
+  region and transfers (using @{thm [source] le0_prefix_agree} both ways and the
+  pointwise row-1 agreement).\<close>
+
+lemma nextrel1_prefix_imp:
+  assumes agree: "\<And>j. j \<le> c \<Longrightarrow> M ! j = N ! j"
+    and cM: "c < Lng M" and cN: "c < Lng N"
+    and xy: "x \<le> c" "y \<le> c"
+    and h: "nextrel1 M x y"
+  shows "nextrel1 N x y"
+proof -
+  have e: "\<And>j. j \<le> c \<Longrightarrow> entry M 1 j = entry N 1 j"
+    using agree by (simp add: entry_def)
+  from h have hx: "x < y" and hv: "entry M 1 x < entry M 1 y"
+    and hle: "le0 M x y"
+    and hmin: "\<And>j. x < j \<Longrightarrow> le0 M j y \<Longrightarrow> entry M 1 y \<le> entry M 1 j"
+    by (auto simp: nextrel1_def)
+  show ?thesis
+    unfolding nextrel1_def
+  proof (intro conjI allI impI)
+    show "x < Lng N" using xy(1) cN by linarith
+    show "y < Lng N" using xy(2) cN by linarith
+    show "x < y" by (rule hx)
+    show "entry N 1 x < entry N 1 y" using hv e[OF xy(1)] e[OF xy(2)] by simp
+    show "le0 N x y" by (rule le0_prefix_agree[OF agree cM cN xy hle])
+    fix j assume j: "x < j \<and> le0 N j y"
+    hence xj: "x < j" and lej: "le0 N j y" by auto
+    have "(nextrel0 N)\<^sup>*\<^sup>* j y" using lej by (simp add: le0_def)
+    hence jy: "j \<le> y" by (rule nextrel0_rtrancl_mono)
+    hence jc: "j \<le> c" using xy(2) by linarith
+    have leMjy: "le0 M j y"
+      using le0_prefix_agree[OF _ cN cM jc xy(2) lej] agree by simp
+    have "entry M 1 y \<le> entry M 1 j" using hmin[OF xj leMjy] .
+    thus "entry N 1 y \<le> entry N 1 j" using e[OF xy(2)] e[OF jc] by simp
+  qed
+qed
+
+text \<open>Characterisation of \<open>TrMax\<close>.  \<open>TrMax M\<close> is by definition
+  \<open>Max {j. \<forall>j'<j. nextR M 1 j' (j'+1)}\<close>.  The set is bounded by \<open>Lng M - 1\<close>
+  (proof reused from @{thm [source] TrMax_bound}) and contains \<open>0\<close>, so its \<open>Max\<close>
+  is well-defined; a value \<open>j\<close> with the full row-1 chain below it and the step
+  failing at it is exactly the maximum.  This is the brick the §6.8 block cases
+  need to pin \<open>TrMax (seg M' \<dots>)\<close> without re-deriving from \<open>Max\<close>.\<close>
+
+lemma TrMax_eqI:
+  assumes M: "M \<in> T_PS"
+    and below: "\<And>j'. j' < j \<Longrightarrow> nextR M 1 j' (j' + 1)"
+    and stop: "\<not> nextR M 1 j (j + 1)"
+  shows "TrMax M = j"
+proof -
+  let ?S = "{i. \<forall>j'<i. nextR M 1 j' (j' + 1)}"
+  have LM: "Lng M > 0" using M by (cases M) (auto simp: T_PS_def)
+  have sub: "?S \<subseteq> {..Lng M - 1}"
+  proof
+    fix i assume "i \<in> ?S"
+    hence H: "\<forall>j'<i. nextR M 1 j' (j' + 1)" by simp
+    show "i \<in> {..Lng M - 1}"
+    proof (rule ccontr)
+      assume "i \<notin> {..Lng M - 1}"
+      hence "Lng M - 1 < i" by simp
+      hence "nextR M 1 (Lng M - 1) ((Lng M - 1) + 1)" using H by blast
+      hence "(Lng M - 1) + 1 < Lng M" by (simp add: nextR_def nextrel1_def)
+      thus False using LM by simp
+    qed
+  qed
+  hence fin: "finite ?S" by (rule finite_subset) simp
+  have jin: "j \<in> ?S" using below by simp
+  hence ne: "?S \<noteq> {}" by blast
+  \<comment> \<open>\<open>j\<close> is an upper bound of \<open>?S\<close>: any \<open>i > j\<close> would force the step at \<open>j\<close>\<close>
+  have ub: "\<And>i. i \<in> ?S \<Longrightarrow> i \<le> j"
+  proof -
+    fix i assume "i \<in> ?S"
+    hence H: "\<forall>j'<i. nextR M 1 j' (j' + 1)" by simp
+    show "i \<le> j"
+    proof (rule ccontr)
+      assume "\<not> i \<le> j"
+      hence "j < i" by simp
+      hence "nextR M 1 j (j + 1)" using H by blast
+      thus False using stop by simp
+    qed
+  qed
+  have "Max ?S = j" using fin ne jin ub by (intro Max_eqI) auto
+  thus ?thesis by (simp add: TrMax_def)
+qed
+
+text \<open>\<open>TrMax\<close> transfers across a shared prefix \<open>[0,c]\<close> when the trunk of \<open>N\<close>
+  is confined to that prefix (\<open>TrMax N \<le> c\<close>) and the \<open>M\<close>-side stop step at
+  \<open>TrMax N\<close> is given.  The below-trunk row-1 chain of \<open>N\<close> (@{thm [source]
+  TrMax_trunk_step}) lands inside \<open>[0,c]\<close> (since \<open>j'+1 \<le> TrMax N \<le> c\<close>) and
+  transfers to \<open>M\<close> via @{thm [source] nextrel1_prefix_imp}; the stop step is the
+  hypothesis; @{thm [source] TrMax_eqI} then pins \<open>TrMax M\<close>.  This is the
+  trunk-confinement half of the §6.8 d0zero block-spanning argument: with
+  \<open>c = min(j'\<^sub>1, Lng N - 2) - j'\<^sub>0\<close> the slices \<open>M' = seg (N[n]) j'\<^sub>0 j'\<^sub>1\<close> and
+  \<open>N' = seg N j'\<^sub>0 (Lng N-1)\<close> agree on \<open>[0,c]\<close> and \<open>TrMax N' \<le> c\<close>; the boundary
+  stop is the only residual.\<close>
+
+lemma TrMax_eq_of_prefix_agree:
+  assumes M: "M \<in> T_PS" and N: "N \<in> T_PS"
+    and agree: "\<And>j. j \<le> c \<Longrightarrow> M ! j = N ! j"
+    and cM: "c < Lng M" and cN: "c < Lng N"
+    and tnc: "TrMax N \<le> c"
+    and stop: "\<not> nextR M 1 (TrMax N) (TrMax N + 1)"
+  shows "TrMax M = TrMax N"
+proof (rule TrMax_eqI[OF M _ stop])
+  fix j' assume j': "j' < TrMax N"
+  \<comment> \<open>below-trunk step of \<open>N\<close> (lives in the prefix) transfers to \<open>M\<close>\<close>
+  have stepN: "nextrel1 N j' (j' + 1)"
+    using TrMax_trunk_step[OF N j'] by (simp add: nextR_def)
+  have y_le: "j' + 1 \<le> c" using j' tnc by linarith
+  have x_le: "j' \<le> c" using y_le by linarith
+  have agree': "\<And>j. j \<le> c \<Longrightarrow> N ! j = M ! j" using agree by simp
+  have "nextrel1 M j' (j' + 1)"
+    by (rule nextrel1_prefix_imp[OF agree' cN cM x_le y_le stepN])
+  thus "nextR M 1 j' (j' + 1)" by (simp add: nextR_def)
+qed
+
+text \<open>Maximality of \<open>TrMax\<close>: when the trunk does not fill the whole sequence
+  (\<open>TrMax M < Lng M - 1\<close>) the row-1 step at the trunk's right end fails (else
+  \<open>TrMax M + 1\<close> would also be a valid trunk length, contradicting maximality).
+  This is the stop step every \<open>TrMax\<close>-equality argument needs on the reference
+  side.\<close>
+
+lemma TrMax_stop:
+  assumes M: "M \<in> T_PS" and lt: "TrMax M < Lng M - 1"
+  shows "\<not> nextR M 1 (TrMax M) (TrMax M + 1)"
+proof
+  assume step: "nextR M 1 (TrMax M) (TrMax M + 1)"
+  let ?S = "{j. \<forall>j'<j. nextR M 1 j' (j' + 1)}"
+  have LM: "Lng M > 0" using M by (cases M) (auto simp: T_PS_def)
+  have sub: "?S \<subseteq> {..Lng M - 1}"
+  proof
+    fix j assume "j \<in> ?S"
+    hence H: "\<forall>j'<j. nextR M 1 j' (j' + 1)" by simp
+    show "j \<in> {..Lng M - 1}"
+    proof (rule ccontr)
+      assume "j \<notin> {..Lng M - 1}"
+      hence "Lng M - 1 < j" by simp
+      hence "nextR M 1 (Lng M - 1) ((Lng M - 1) + 1)" using H by blast
+      hence "(Lng M - 1) + 1 < Lng M" by (simp add: nextR_def nextrel1_def)
+      thus False using LM by simp
+    qed
+  qed
+  hence fin: "finite ?S" by (rule finite_subset) simp
+  \<comment> \<open>\<open>TrMax M + 1\<close> is a valid trunk length: below it every step holds\<close>
+  have below: "\<forall>j'<TrMax M. nextR M 1 j' (j' + 1)" by (rule TrMax_in_S[OF M])
+  have "\<forall>j'<TrMax M + 1. nextR M 1 j' (j' + 1)"
+  proof (intro allI impI)
+    fix j' assume "j' < TrMax M + 1"
+    hence "j' < TrMax M \<or> j' = TrMax M" by linarith
+    thus "nextR M 1 j' (j' + 1)" using below step by auto
+  qed
+  hence inS: "TrMax M + 1 \<in> ?S" by simp
+  have "TrMax M + 1 \<le> Max ?S" by (rule Max_ge[OF fin inS])
+  thus False by (simp add: TrMax_def)
+qed
+
+text \<open>If the last row-1 entry is \<open>0\<close> the trunk cannot reach the right end: the
+  final trunk step would need \<open>entry M 1 (Lng M-2) < entry M 1 (Lng M-1) = 0\<close>,
+  impossible.  In the §6.8 d0zero case the slice \<open>N' = seg N j'\<^sub>0 (Lng N-1)\<close> ends
+  at \<open>N\<^bsub>j\<^sub>1\<^sup>N\<^esub>\<close> with \<open>N\<^bsub>1,j\<^sub>1\<^sup>N\<^esub> = 0\<close>, so this gives article 1480 (\<open>Br N' \<noteq> []\<close>).\<close>
+
+lemma TrMax_lt_last_of_row1_zero:
+  assumes M: "M \<in> T_PS" and L: "1 < Lng M" and z: "entry M 1 (Lng M - 1) = 0"
+  shows "TrMax M < Lng M - 1"
+proof -
+  have tb: "TrMax M \<le> Lng M - 1" by (rule TrMax_bound[OF M])
+  have "TrMax M \<noteq> Lng M - 1"
+  proof
+    assume eq: "TrMax M = Lng M - 1"
+    have pos: "0 < Lng M - 1" using L by linarith
+    have prev: "Lng M - 2 < TrMax M" using eq pos by linarith
+    have "nextR M 1 (Lng M - 2) ((Lng M - 2) + 1)"
+      using TrMax_in_S[OF M] prev by blast
+    moreover have "(Lng M - 2) + 1 = Lng M - 1" using L by simp
+    ultimately have "nextrel1 M (Lng M - 2) (Lng M - 1)" by (simp add: nextR_def)
+    hence "entry M 1 (Lng M - 2) < entry M 1 (Lng M - 1)" by (simp add: nextrel1_def)
+    thus False using z by simp
+  qed
+  with tb show ?thesis by linarith
+qed
+
+text \<open>Row-1 monotonicity along a row-1 ancestor chain: \<open>le1 M a b\<close> (the reflexive-
+  transitive closure of \<open>nextrel1\<close>) implies \<open>entry M 1 a \<le> entry M 1 b\<close>, because
+  every \<open>nextrel1\<close> step strictly increases row-1.  Used to compare the row-1 value
+  at the row-0 parent \<open>j\<^sub>0\<^sup>N\<close> (which lies on the trunk of \<open>N'\<close>) with the row-1 value
+  at the trunk's right end in the d0zero case-A boundary stop.\<close>
+
+lemma le1_imp_entry1_le:
+  assumes "le1 M a b"
+  shows "entry M 1 a \<le> entry M 1 b"
+proof -
+  have "(nextrel1 M)\<^sup>*\<^sup>* a b" using assms by (simp add: le1_def)
+  thus ?thesis
+  proof (induction rule: rtranclp_induct)
+    case base show ?case by simp
+  next
+    case (step y z)
+    have "entry M 1 y < entry M 1 z" using step.hyps(2) by (simp add: nextrel1_def)
+    thus ?case using step.IH by linarith
+  qed
+qed
+
+text \<open>§6.8 d0zero case-A (article 1466) trunk-confinement: the slice
+  \<open>M' = seg (N[n]) j'\<^sub>0 j'\<^sub>1\<close> and the reference slice \<open>N' = seg N j'\<^sub>0 (Lng N-1)\<close>
+  have the SAME trunk right end (\<open>TrMax M' = TrMax N'\<close>), as long as \<open>j'\<^sub>1\<close> reaches
+  the parent region (\<open>Lng N - 2 \<le> j'\<^sub>1\<close>).  This packages the trunk-confinement
+  half of the d0zero block-spanning decomposition: \<open>M'\<close> and \<open>N'\<close> agree on
+  \<open>[0, Lng N - 2 - j'\<^sub>0]\<close> (period of \<open>N[n]\<close> intact below \<open>Lng N - 1\<close>, via
+  @{thm [source] oper_nth_lt}); the \<open>N'\<close>-trunk is confined there because its last
+  row-1 entry is \<open>N\<^bsub>1,j\<^sub>1\<^sup>N\<^esub> = 0\<close> (d0zero, @{thm [source] TrMax_lt_last_of_row1_zero});
+  so @{thm [source] TrMax_eq_of_prefix_agree} reduces \<open>TrMax M' = TrMax N'\<close> to the
+  single \<^emph>\<open>boundary stop\<close> \<open>\<not> nextR M' 1 (TrMax N') (TrMax N' + 1)\<close>, taken here as
+  a hypothesis.  Empirically (\<open>python/slice_trmaxeq_audit*.py\<close>, UB5/NMAX4/KMAX4)
+  the equality holds 6129/6129 and the boundary stop holds 6129/6129; the residual
+  boundary stop is automatic whenever its index lies in the agreement region
+  (6057 cases), and otherwise (\<open>TrMax N' = Lng N' - 2\<close>, all with block width 1)
+  reduces to the within-block row-1 inequality \<open>N\<^bsub>1,j\<^sub>0\<^sup>N\<^esub> \<le> N\<^bsub>1,Lng N-2\<^esub>\<close> (72/72).\<close>
+
+text \<open>Boundary-stop transfer (the \<^emph>\<open>easy direction\<close> of the d0zero boundary):
+  when the stop index \<open>TrMax N + 1\<close> also lies in the shared prefix \<open>[0,c]\<close>, the
+  \<open>N\<close>-side stop (@{thm [source] TrMax_stop}) transfers to \<open>M\<close>.  If
+  \<open>nextrel1 M (TrMax N) (TrMax N+1)\<close> held it would push back to \<open>N\<close> via
+  @{thm [source] nextrel1_prefix_imp}, contradicting \<open>TrMax N\<close>'s maximality.  The
+  remaining (hard) direction is when \<open>TrMax N + 1 > c\<close>, i.e. \<open>TrMax N = c\<close> at the
+  agreement boundary, handled separately (block width 1, equal row-1 values).\<close>
+
+lemma nextR1_boundary_stop_of_prefix:
+  assumes M: "M \<in> T_PS" and N: "N \<in> T_PS"
+    and agree: "\<And>j. j \<le> c \<Longrightarrow> M ! j = N ! j"
+    and cM: "c < Lng M" and cN: "c < Lng N"
+    and tnlt: "TrMax N < Lng N - 1"
+    and inrange: "TrMax N + 1 \<le> c"
+  shows "\<not> nextR M 1 (TrMax N) (TrMax N + 1)"
+proof
+  assume "nextR M 1 (TrMax N) (TrMax N + 1)"
+  hence stepM: "nextrel1 M (TrMax N) (TrMax N + 1)" by (simp add: nextR_def)
+  have x_le: "TrMax N \<le> c" using inrange by linarith
+  have stepN: "nextrel1 N (TrMax N) (TrMax N + 1)"
+    by (rule nextrel1_prefix_imp[OF agree cM cN x_le inrange stepM])
+  have "\<not> nextR N 1 (TrMax N) (TrMax N + 1)" by (rule TrMax_stop[OF N tnlt])
+  thus False using stepN by (simp add: nextR_def)
+qed
+
+text \<open>§6.8 d0zero case-A boundary stop (the residual discharged here).  On the
+  faithful case-A domain (standard \<open>N\<close>, d0zero, \<open>j'\<^sub>0 < j\<^sub>0\<^sup>N = parent N 0 (Lng N-1)\<close>,
+  \<open>Lng N - 2 \<le> j'\<^sub>1\<close>), the row-1 step at the trunk's right end of \<open>N'\<close> fails in
+  \<open>M' = seg (N[n]) j'\<^sub>0 j'\<^sub>1\<close>:
+  \<open>\<not> nextrel1 M' (TrMax N') (TrMax N' + 1)\<close>, \<open>N' = seg N j'\<^sub>0 (Lng N-1)\<close>.
+
+  Two cases on \<open>TrMax N'\<close> (which is \<open>\<le> Lng N' - 2\<close> since \<open>N\<^bsub>1,Lng N-1\<^esub> = 0\<close>,
+  @{thm [source] TrMax_lt_last_of_row1_zero}):
+  \<^item> EASY (\<open>TrMax N' < Lng N' - 2\<close>): the stop index \<open>TrMax N' + 1\<close> lies in the
+    \<open>M'/N'\<close> prefix-agreement region \<open>[0, Lng N' - 2]\<close>, so
+    @{thm [source] nextR1_boundary_stop_of_prefix} transfers the \<open>N'\<close>-side stop.
+  \<^item> HARD (\<open>TrMax N' = Lng N' - 2\<close>): the stop index \<open>= Lng N' - 1\<close> reaches the block
+    boundary.  If it leaves \<open>M'\<close> (\<open>\<ge> Lng M'\<close>) the step fails for length reasons.
+    Otherwise \<open>M' ! (TrMax N') = N ! (Lng N - 2)\<close> (block-0 last interior) and
+    \<open>M' ! (TrMax N' + 1) = N ! j\<^sub>0\<^sup>N\<close> (block-1 start), by the d0zero periodicity
+    (@{thm [source] oper_d0zero_nth}).  Since \<open>j\<^sub>0\<^sup>N\<close> lies on the trunk of \<open>N'\<close>
+    (\<open>j\<^sub>0\<^sup>N - j'\<^sub>0 \<le> TrMax N'\<close>) and row-1 weakly increases along the trunk
+    (@{thm [source] trunk_le1}, @{thm [source] le1_imp_entry1_le}), we get
+    \<open>entry M' 1 (TrMax N' + 1) = N\<^bsub>1,j\<^sub>0\<^sup>N\<^esub> \<le> N\<^bsub>1,Lng N-2\<^esub> = entry M' 1 (TrMax N')\<close>,
+    so the strict row-1 increase \<open>nextrel1\<close> needs is impossible.
+
+  Empirically (\<open>python/slice_caseA_boundary_stop_recheck.py\<close>, is_standard +
+  enumeration to length 5, the exact hypotheses): the stop holds 738/738 and the
+  hard-case inequality \<open>entry M' 1 (TrMax N') \<ge> entry M' 1 (TrMax N' + 1)\<close>
+  holds on all hard instances (block widths \<open>w \<in> {1,2,3}\<close>).\<close>
+
+lemma nextR1_boundary_stop_d0zero_caseA:
+  assumes N: "N \<in> T_PS" and L: "1 < Lng N"
+    and notzero: "\<not> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0)"
+    and hp: "hasParent N (idx1 N (Lng N - 1)) (Lng N - 1)"
+    and i1z: "idx1 N (Lng N - 1) = 0"
+    and parR0: "nextrel0 N (parent N 0 (Lng N - 1)) (Lng N - 1)"
+    and n1: "1 \<le> n"
+    and j0'lt0N: "j0' < parent N 0 (Lng N - 1)"
+    and bge: "Lng N - 2 \<le> j1'"
+    and j1lt: "j1' < Lng ((N::pairseq)[n])"
+  shows "\<not> nextR (seg ((N::pairseq)[n]) j0' j1') 1
+            (TrMax (seg N j0' (Lng N - 1)))
+            (TrMax (seg N j0' (Lng N - 1)) + 1)"
+proof -
+  let ?M = "(N::pairseq)[n]"
+  let ?j1N = "Lng N - 1"
+  let ?j0N = "parent N 0 ?j1N"
+  let ?w = "?j1N - ?j0N"
+  let ?Mp = "seg ?M j0' j1'"
+  let ?Np = "seg N j0' ?j1N"
+  let ?t = "TrMax ?Np"
+  \<comment> \<open>basic facts\<close>
+  have j0Nlt: "?j0N < ?j1N" using parR0 by (simp add: nextrel0_def)
+  have j0'lt: "j0' < ?j1N" using j0'lt0N j0Nlt by linarith
+  have j0lt1: "j0' \<le> ?j1N" using j0'lt by linarith
+  have j0ltM: "j0' \<le> j1'" using j0'lt bge by linarith
+  have w0: "0 < ?w" using j0Nlt by linarith
+  have MpT: "?Mp \<in> T_PS" using j0ltM by (simp add: T_PS_def seg_def)
+  have NpT: "?Np \<in> T_PS" using j0lt1 by (simp add: T_PS_def seg_def)
+  have LMp: "Lng ?Mp = Suc j1' - j0'" by simp
+  have LNp: "Lng ?Np = Suc ?j1N - j0'" by simp
+  have LNp2: "1 < Lng ?Np" using j0'lt by simp
+  \<comment> \<open>last row-1 entry of \<open>N'\<close> is \<open>N\<^bsub>1,j\<^sub>1\<^sup>N\<^esub> = 0\<close> (d0zero)\<close>
+  have d0zero: "entry N 1 ?j1N = 0" using i1z by (simp add: idx1_def split: if_splits)
+  have lastNp_idx: "Lng ?Np - 1 = ?j1N - j0'" using LNp by simp
+  have lastNp: "?Np ! (Lng ?Np - 1) = N ! ?j1N"
+  proof -
+    have lt: "?j1N - j0' < Suc ?j1N - j0'" using j0'lt by linarith
+    have "?Np ! (?j1N - j0') = N ! (j0' + (?j1N - j0'))" using lt by (rule seg_nth_eq)
+    also have "j0' + (?j1N - j0') = ?j1N" using j0lt1 by simp
+    finally show ?thesis using lastNp_idx by simp
+  qed
+  have zNp: "entry ?Np 1 (Lng ?Np - 1) = 0" using lastNp d0zero by (simp add: entry_def)
+  \<comment> \<open>\<open>N'\<close>-trunk confined: \<open>TrMax N' < Lng N' - 1 = Lng N' - 1\<close>, i.e. \<open>?t \<le> Lng N' - 2\<close>\<close>
+  have tNlt: "?t < Lng ?Np - 1"
+    by (rule TrMax_lt_last_of_row1_zero[OF NpT LNp2 zNp])
+  have tle: "?t \<le> Lng ?Np - 2" using tNlt by linarith
+  have LNpval: "Lng ?Np - 2 = ?j1N - 1 - j0'" using LNp by simp
+  show ?thesis
+  proof (cases "?t < Lng ?Np - 2")
+    case easy: True
+    \<comment> \<open>stop index inside the prefix-agreement region \<open>[0, Lng N' - 2]\<close>\<close>
+    let ?c = "Lng ?Np - 2"
+    have agree: "\<And>s. s \<le> ?c \<Longrightarrow> ?Mp ! s = ?Np ! s"
+    proof -
+      fix s assume sc: "s \<le> ?c"
+      have idxlt: "j0' + s < ?j1N" using sc LNpval j0'lt by linarith
+      have sM: "s < Suc j1' - j0'" using sc LNpval bge j0'lt by linarith
+      have sN: "s < Suc ?j1N - j0'" using sc LNpval j0'lt by linarith
+      have "?Mp ! s = ?M ! (j0' + s)" using sM by (rule seg_nth_eq)
+      also have "\<dots> = N ! (j0' + s)" using oper_nth_lt[OF N L n1 idxlt] by simp
+      also have "\<dots> = ?Np ! s" using sN by (simp add: seg_nth_eq)
+      finally show "?Mp ! s = ?Np ! s" .
+    qed
+    have cM: "?c < Lng ?Mp" using LMp LNpval bge j0'lt by linarith
+    have cN: "?c < Lng ?Np" using LNp2 by linarith
+    have inrange: "?t + 1 \<le> ?c" using easy by linarith
+    show ?thesis
+      by (rule nextR1_boundary_stop_of_prefix[OF MpT NpT agree cM cN tNlt inrange])
+  next
+    case hard: False
+    have teq: "?t = Lng ?Np - 2" using tle hard by linarith
+    \<comment> \<open>stop index \<open>?t + 1 = Lng N' - 1 = ?j1N - j0'\<close>\<close>
+    have t1: "?t + 1 = ?j1N - j0'" using teq LNpval j0'lt by linarith
+    show ?thesis
+    proof
+      assume "nextR ?Mp 1 ?t (?t + 1)"
+      hence step: "nextrel1 ?Mp ?t (?t + 1)" by (simp add: nextR_def)
+      have rng: "?t + 1 < Lng ?Mp" using step by (simp add: nextrel1_def)
+      \<comment> \<open>index of \<open>?t+1\<close> in \<open>M\<close> is \<open>?j1N\<close>; \<open>n \<ge> 2\<close> follows (else it leaves \<open>M\<close>)\<close>
+      have j1pge: "?j1N - j0' < Suc j1' - j0'" using rng LMp t1 by linarith
+      have idxM_t1: "j0' + (?t + 1) = ?j1N" using t1 j0lt1 by linarith
+      have idxM_t: "j0' + ?t = ?j1N - 1" using t1 j0Nlt j0'lt0N by linarith
+      \<comment> \<open>\<open>M' ! (?t+1) = M ! ?j1N\<close> and \<open>M' ! ?t = M ! (?j1N - 1)\<close>\<close>
+      have segt1: "?Mp ! (?t + 1) = ?M ! ?j1N"
+      proof -
+        have "?Mp ! (?t + 1) = ?M ! (j0' + (?t + 1))" using j1pge t1 by (simp add: seg_nth_eq)
+        thus ?thesis using idxM_t1 by simp
+      qed
+      have tlt: "?t < ?t + 1" by simp
+      have segt: "?Mp ! ?t = ?M ! (?j1N - 1)"
+      proof -
+        have "?t < Suc j1' - j0'" using rng LMp by linarith
+        hence "?Mp ! ?t = ?M ! (j0' + ?t)" by (rule seg_nth_eq)
+        thus ?thesis using idxM_t by simp
+      qed
+      \<comment> \<open>identify the two \<open>M\<close>-entries via d0zero periodicity\<close>
+      have LngM: "Lng ?M = ?j0N + n * ?w"
+      proof -
+        have ex: "?M = take ?j0N N @ concat (replicate n (map ((!) N) [?j0N..<?j1N]))"
+          using oper_d0zero_expand[OF L notzero hp i1z] by simp
+        have t: "length (take ?j0N N) = ?j0N" using j0Nlt L by simp
+        have b: "length (map ((!) N) [?j0N..<?j1N]) = ?w" by simp
+        show ?thesis using ex t b by (simp add: length_concat sum_list_replicate)
+      qed
+      \<comment> \<open>\<open>n \<ge> 2\<close>: else \<open>Lng M = ?j0N + ?w = ?j1N\<close> and \<open>?t+1 = ?j1N - j0' \<ge> Lng M'\<close>\<close>
+      have n2: "2 \<le> n"
+      proof (rule ccontr)
+        assume "\<not> 2 \<le> n"
+        hence "n = 1" using n1 by linarith
+        hence LMn1: "Lng ?M = ?j1N" using LngM w0 j0Nlt by simp
+        have "j1' < ?j1N" using j1lt LMn1 by linarith
+        hence "Lng ?Mp \<le> ?j1N - j0'" using LMp j0lt1 by linarith
+        thus False using rng t1 by linarith
+      qed
+      \<comment> \<open>\<open>M ! ?j1N = M ! (?j0N + 1*?w + 0) = N ! ?j0N\<close> (block 1, offset 0)\<close>
+      have valt1: "?M ! ?j1N = N ! ?j0N"
+      proof -
+        have e: "?j1N = ?j0N + 1 * ?w + 0" using j0Nlt by simp
+        have "?M ! (?j0N + 1 * ?w + 0) = N ! (?j0N + 0)"
+          by (rule oper_d0zero_nth[OF L notzero hp i1z j0Nlt _ w0]) (use n2 in simp)
+        thus ?thesis using e by simp
+      qed
+      \<comment> \<open>\<open>M ! (?j1N - 1) = M ! (?j0N + 0*?w + (?w-1)) = N ! (?j1N - 1)\<close> (block 0)\<close>
+      have valt: "?M ! (?j1N - 1) = N ! (?j1N - 1)"
+      proof -
+        have e: "?j1N - 1 = ?j0N + 0 * ?w + (?w - 1)" using j0Nlt w0 by simp
+        have sw: "?w - 1 < ?w" using w0 by simp
+        have q0: "(0::nat) < n" using n1 by simp
+        have "?M ! (?j0N + 0 * ?w + (?w - 1)) = N ! (?j0N + (?w - 1))"
+          by (rule oper_d0zero_nth[OF L notzero hp i1z j0Nlt q0 sw])
+        also have "?j0N + (?w - 1) = ?j1N - 1" using j0Nlt w0 by linarith
+        finally show ?thesis using e by simp
+      qed
+      \<comment> \<open>row-1 values: \<open>entry M' 1 (?t+1) = N\<^bsub>1,?j0N\<^esub>\<close>, \<open>entry M' 1 ?t = N\<^bsub>1,?j1N-1\<^esub>\<close>\<close>
+      have e_t1: "entry ?Mp 1 (?t + 1) = entry N 1 ?j0N"
+        using segt1 valt1 by (simp add: entry_def)
+      have e_t: "entry ?Mp 1 ?t = entry N 1 (?j1N - 1)"
+        using segt valt by (simp add: entry_def)
+      \<comment> \<open>\<open>j\<^sub>0\<^sup>N\<close> is on the trunk of \<open>N'\<close>; relate its row-1 value to that of the trunk end\<close>
+      have jjle: "?j0N - j0' \<le> ?t"
+        using teq LNpval j0Nlt j0'lt0N by linarith
+      have le1Np: "leR ?Np 1 (?j0N - j0') ?t"
+        by (rule trunk_le1[OF NpT jjle le_refl])
+      have e_jj: "entry ?Np 1 (?j0N - j0') = entry N 1 ?j0N"
+      proof -
+        have lt: "?j0N - j0' < Suc ?j1N - j0'" using j0Nlt j0'lt0N by linarith
+        have "?Np ! (?j0N - j0') = N ! (j0' + (?j0N - j0'))" using lt by (rule seg_nth_eq)
+        also have "j0' + (?j0N - j0') = ?j0N" using j0'lt0N by linarith
+        finally show ?thesis by (simp add: entry_def)
+      qed
+      have e_te: "entry ?Np 1 ?t = entry N 1 (?j1N - 1)"
+      proof -
+        have lt: "?t < Suc ?j1N - j0'" using tNlt LNp by linarith
+        have "?Np ! ?t = N ! (j0' + ?t)" using lt by (rule seg_nth_eq)
+        also have "j0' + ?t = ?j1N - 1" using idxM_t by simp
+        finally show ?thesis by (simp add: entry_def)
+      qed
+      have le1Np': "le1 ?Np (?j0N - j0') ?t" using le1Np by (simp add: leR_def)
+      have mono: "entry ?Np 1 (?j0N - j0') \<le> entry ?Np 1 ?t"
+        by (rule le1_imp_entry1_le[OF le1Np'])
+      have key: "entry N 1 ?j0N \<le> entry N 1 (?j1N - 1)"
+        using mono e_jj e_te by simp
+      \<comment> \<open>contradiction: \<open>nextrel1\<close> needs strict row-1 increase \<open>?t \<to> ?t+1\<close>\<close>
+      have "entry ?Mp 1 ?t < entry ?Mp 1 (?t + 1)" using step by (simp add: nextrel1_def)
+      hence "entry N 1 (?j1N - 1) < entry N 1 ?j0N" using e_t e_t1 by simp
+      thus False using key by linarith
+    qed
+  qed
+qed
+
+lemma TrMax_seg_oper_d0zero_eq:
+  assumes N: "N \<in> T_PS" and L: "1 < Lng N"
+    and notzero: "\<not> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0)"
+    and hp: "hasParent N (idx1 N (Lng N - 1)) (Lng N - 1)"
+    and i1z: "idx1 N (Lng N - 1) = 0"
+    and n1: "1 \<le> n"
+    and j0'lt: "j0' < Lng N - 1"
+    and bge: "Lng N - 2 \<le> j1'"
+    and j1lt: "j1' < Lng ((N::pairseq)[n])"
+    and stop: "\<not> nextR (seg ((N::pairseq)[n]) j0' j1') 1
+                  (TrMax (seg N j0' (Lng N - 1)))
+                  (TrMax (seg N j0' (Lng N - 1)) + 1)"
+  shows "TrMax (seg ((N::pairseq)[n]) j0' j1') = TrMax (seg N j0' (Lng N - 1))"
+proof -
+  let ?M = "(N::pairseq)[n]"
+  let ?j1N = "Lng N - 1"
+  let ?Mp = "seg ?M j0' j1'"
+  let ?Np = "seg N j0' ?j1N"
+  let ?c = "?j1N - 1 - j0'"
+  \<comment> \<open>both slices are non-empty, hence in \<open>T_PS\<close>\<close>
+  have j0lt1: "j0' \<le> ?j1N" using j0'lt by linarith
+  have j0ltM: "j0' \<le> j1'" using j0'lt bge by linarith
+  have MpT: "?Mp \<in> T_PS" using j0ltM by (simp add: T_PS_def seg_def)
+  have NpT: "?Np \<in> T_PS" using j0lt1 by (simp add: T_PS_def seg_def)
+  \<comment> \<open>lengths\<close>
+  have LMp: "Lng ?Mp = Suc j1' - j0'" by simp
+  have LNp: "Lng ?Np = Suc ?j1N - j0'" by simp
+  have LNp2: "1 < Lng ?Np" using j0'lt by simp
+  \<comment> \<open>last row-1 entry of \<open>N'\<close> is \<open>N\<^bsub>1,j\<^sub>1\<^sup>N\<^esub> = 0\<close> (d0zero)\<close>
+  have d0zero: "entry N 1 ?j1N = 0" using i1z by (simp add: idx1_def split: if_splits)
+  have lastNp_idx: "Lng ?Np - 1 = ?j1N - j0'" using LNp by simp
+  have lastNp: "?Np ! (Lng ?Np - 1) = N ! ?j1N"
+  proof -
+    have lt: "?j1N - j0' < Suc ?j1N - j0'" using j0'lt by linarith
+    have "?Np ! (?j1N - j0') = N ! (j0' + (?j1N - j0'))" using lt by (rule seg_nth_eq)
+    also have "j0' + (?j1N - j0') = ?j1N" using j0lt1 by simp
+    finally show ?thesis using lastNp_idx by simp
+  qed
+  have zNp: "entry ?Np 1 (Lng ?Np - 1) = 0" using lastNp d0zero by (simp add: entry_def)
+  \<comment> \<open>\<open>N'\<close>-trunk confined: \<open>TrMax N' < Lng N' - 1\<close>\<close>
+  have tNlt: "TrMax ?Np < Lng ?Np - 1"
+    by (rule TrMax_lt_last_of_row1_zero[OF NpT LNp2 zNp])
+  have tnc: "TrMax ?Np \<le> ?c" using tNlt LNp by linarith
+  \<comment> \<open>\<open>c\<close> within both slices\<close>
+  have cN: "?c < Lng ?Np" using LNp j0'lt by linarith
+  have cM: "?c < Lng ?Mp" using LMp bge j0'lt by linarith
+  \<comment> \<open>pointwise agreement on \<open>[0, c]\<close>: period of \<open>N[n]\<close> intact below \<open>Lng N - 1\<close>\<close>
+  have agree: "\<And>s. s \<le> ?c \<Longrightarrow> ?Mp ! s = ?Np ! s"
+  proof -
+    fix s assume sc: "s \<le> ?c"
+    have sM: "s < Suc j1' - j0'" using sc cM LMp by linarith
+    have sN: "s < Suc ?j1N - j0'" using sc cN LNp by linarith
+    have idxlt: "j0' + s < ?j1N" using sc j0'lt by linarith
+    have "?Mp ! s = ?M ! (j0' + s)" using sM by (rule seg_nth_eq)
+    also have "\<dots> = N ! (j0' + s)" using oper_nth_lt[OF N L n1 idxlt] by simp
+    also have "\<dots> = ?Np ! s" using sN by (simp add: seg_nth_eq)
+    finally show "?Mp ! s = ?Np ! s" .
+  qed
+  show ?thesis
+    by (rule TrMax_eq_of_prefix_agree[OF MpT NpT agree cM cN tnc stop])
+qed
+
+text \<open>Unconditional d0zero case-A \<open>TrMax\<close>-equality: discharge the boundary-stop
+  hypothesis of @{thm [source] TrMax_seg_oper_d0zero_eq} via
+  @{thm [source] nextR1_boundary_stop_d0zero_caseA}.  On the faithful case-A domain
+  (\<open>j'\<^sub>0 < j\<^sub>0\<^sup>N\<close>, the article-1466 sub-case), \<open>TrMax (seg (N[n]) j'\<^sub>0 j'\<^sub>1) =
+  TrMax (seg N j'\<^sub>0 (Lng N-1))\<close> holds without any extra assumption.\<close>
+
+lemma TrMax_seg_oper_d0zero_eq_caseA:
+  assumes N: "N \<in> T_PS" and L: "1 < Lng N"
+    and notzero: "\<not> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0)"
+    and hp: "hasParent N (idx1 N (Lng N - 1)) (Lng N - 1)"
+    and i1z: "idx1 N (Lng N - 1) = 0"
+    and parR0: "nextrel0 N (parent N 0 (Lng N - 1)) (Lng N - 1)"
+    and n1: "1 \<le> n"
+    and j0'lt0N: "j0' < parent N 0 (Lng N - 1)"
+    and bge: "Lng N - 2 \<le> j1'"
+    and j1lt: "j1' < Lng ((N::pairseq)[n])"
+  shows "TrMax (seg ((N::pairseq)[n]) j0' j1') = TrMax (seg N j0' (Lng N - 1))"
+proof -
+  have j0Nlt: "parent N 0 (Lng N - 1) < Lng N - 1" using parR0 by (simp add: nextrel0_def)
+  have j0'lt: "j0' < Lng N - 1" using j0'lt0N j0Nlt by linarith
+  have stop: "\<not> nextR (seg ((N::pairseq)[n]) j0' j1') 1
+                (TrMax (seg N j0' (Lng N - 1)))
+                (TrMax (seg N j0' (Lng N - 1)) + 1)"
+    by (rule nextR1_boundary_stop_d0zero_caseA[OF N L notzero hp i1z parR0 n1 j0'lt0N bge j1lt])
+  show ?thesis
+    by (rule TrMax_seg_oper_d0zero_eq[OF N L notzero hp i1z n1 j0'lt bge j1lt stop])
+qed
+
+text \<open>§6.8 sub-case A block-fold groundwork.  In the d0zero periodic layout
+  \<open>M[n] = take j\<^sub>0 M @ (block)\<^bsup>n\<^esup>\<close>, the row-0 value at any index \<open>x \<ge> j\<^sub>0\<close> is at
+  least the block-start minimum \<open>M\<^bsub>0,j\<^sub>0\<^esub>\<close> (combine
+  @{thm [source] oper_d0zero_entry0} with @{thm [source] parent_block_entry0_min}).\<close>
+
+lemma oper_d0zero_entry0_min:
+  assumes L: "1 < Lng M"
+    and notzero: "\<not> (entry M 0 (Lng M - 1) = 0 \<and> entry M 1 (Lng M - 1) = 0)"
+    and hp: "hasParent M (idx1 M (Lng M - 1)) (Lng M - 1)"
+    and i1z: "idx1 M (Lng M - 1) = 0"
+    and j0lt: "parent M 0 (Lng M - 1) < Lng M - 1"
+    and x0: "parent M 0 (Lng M - 1) \<le> x"
+    and xlt: "x < parent M 0 (Lng M - 1) + n * (Lng M - 1 - parent M 0 (Lng M - 1))"
+  shows "entry M 0 (parent M 0 (Lng M - 1)) \<le> entry ((M::pairseq)[n]) 0 x"
+proof -
+  let ?j0 = "parent M 0 (Lng M - 1)"  let ?w = "Lng M - 1 - ?j0"
+  let ?s = "(x - ?j0) mod ?w"
+  have w0: "0 < ?w" using j0lt by linarith
+  have sw: "?s < ?w" using w0 by simp
+  have parR0: "nextrel0 M ?j0 (Lng M - 1)"
+  proof -
+    have hp0: "hasParent M 0 (Lng M - 1)" using hp i1z by simp
+    have "nextR M 0 ?j0 (Lng M - 1)"
+      using hp0 unfolding hasParent_def parent_def by (rule theI')
+    thus ?thesis by (simp add: nextR_def)
+  qed
+  have eq: "entry ((M::pairseq)[n]) 0 x = entry M 0 (?j0 + ?s)"
+    using oper_d0zero_entry0[OF L notzero hp i1z j0lt x0 xlt] .
+  have "entry M 0 ?j0 \<le> entry M 0 (?j0 + ?s)"
+    using parent_block_entry0_min(1)[OF parR0 sw] .
+  thus ?thesis using eq by simp
+qed
+
+text \<open>Single block-fold step (the iterated @{thm [source] m_6_2_P_additive} brick for
+  sub-case A).  In the d0zero layout, splitting the slice \<open>seg (M[n]) a (B+s)\<close> at a
+  block boundary \<open>B = j\<^sub>0 + k\<cdot>w\<close> (\<open>k \<ge> 1\<close>, left-minimal because every block-start
+  carries the row-0 minimum \<open>M\<^bsub>0,j\<^sub>0\<^esub>\<close>) peels the trailing partial block
+  \<open>seg M j\<^sub>0 (j\<^sub>0+s)\<close>, which is itself a single \<open>P\<close>-component.\<close>
+
+lemma oper_d0zero_seg_P_split:
+  assumes L: "1 < Lng M"
+    and notzero: "\<not> (entry M 0 (Lng M - 1) = 0 \<and> entry M 1 (Lng M - 1) = 0)"
+    and hp: "hasParent M (idx1 M (Lng M - 1)) (Lng M - 1)"
+    and i1z: "idx1 M (Lng M - 1) = 0"
+    and aB: "parent M 0 (Lng M - 1) < a"
+    and k1: "1 \<le> k"
+    and ale: "a < parent M 0 (Lng M - 1) + k * (Lng M - 1 - parent M 0 (Lng M - 1))"
+    and sw: "s < Lng M - 1 - parent M 0 (Lng M - 1)"
+    and blockmono: "le0 M (parent M 0 (Lng M - 1)) (parent M 0 (Lng M - 1) + s)"
+    and Bsk: "parent M 0 (Lng M - 1) + k * (Lng M - 1 - parent M 0 (Lng M - 1)) + s
+                < Lng ((M::pairseq)[n])"
+    and kn: "k < n"
+  shows "P (seg ((M::pairseq)[n]) a
+              (parent M 0 (Lng M - 1) + k * (Lng M - 1 - parent M 0 (Lng M - 1)) + s))
+       = P (seg ((M::pairseq)[n]) a
+              (parent M 0 (Lng M - 1) + k * (Lng M - 1 - parent M 0 (Lng M - 1)) - 1))
+       @ [seg M (parent M 0 (Lng M - 1)) (parent M 0 (Lng M - 1) + s)]"
+proof -
+  let ?j0 = "parent M 0 (Lng M - 1)"  let ?w = "Lng M - 1 - ?j0"
+  let ?B = "?j0 + k * ?w"  let ?MN = "(M::pairseq)[n]"
+  let ?Q = "seg ?MN a (?B + s)"
+  have w0: "0 < ?w" using aB ale k1
+    by (cases "?w = 0") auto
+  have j0lt: "?j0 < Lng M - 1" using w0 by linarith
+  have aB': "a < ?B" using ale .
+  \<comment> \<open>length of the slice and the cut index \<open>c = B - a\<close>\<close>
+  have lenQ: "Lng ?Q = Suc (?B + s) - a" by (rule Lng_seg)
+  let ?c = "?B - a"
+  have c0: "0 < ?c" using aB' by simp
+  have BsM: "?B + s < Lng ?MN" using Bsk by simp
+  have aleBs: "a \<le> ?B + s" using aB' by simp
+  have cQ: "?c \<le> Lng ?Q - 1" using lenQ aB' aleBs by linarith
+  have QT: "?Q \<in> T_PS"
+  proof -
+    have "0 < Lng ?Q" using lenQ aleBs by linarith
+    hence "?Q \<noteq> []" using length_greater_0_conv by blast
+    thus ?thesis by (simp add: T_PS_def)
+  qed
+  \<comment> \<open>row-0 of \<open>Q\<close> at the cut \<open>= M\<^bsub>0,j\<^sub>0\<^esub>\<close> (block start)\<close>
+  have nseg: "\<And>i. i < Suc (?B + s) - a \<Longrightarrow> ?Q ! i = ?MN ! (a + i)"
+    by (rule seg_nth_eq)
+  have cidx: "?c < Suc (?B + s) - a" using aB' by linarith
+  have entryQc: "entry ?Q 0 ?c = entry ?MN 0 ?B"
+  proof -
+    have "?Q ! ?c = ?MN ! (a + ?c)" using cidx by (rule nseg)
+    moreover have "a + ?c = ?B" using aB' by simp
+    ultimately show ?thesis by (simp add: entry_def)
+  qed
+  have Bval: "entry ?MN 0 ?B = entry M 0 ?j0"
+  proof -
+    have x0: "?j0 \<le> ?B" by simp
+    have xlt: "?B < ?j0 + n * ?w" using kn w0 by (simp add: mult_strict_right_mono)
+    have "entry ?MN 0 ?B = entry M 0 (?j0 + (?B - ?j0) mod ?w)"
+      using oper_d0zero_entry0[OF L notzero hp i1z j0lt x0 xlt] .
+    moreover have "(?B - ?j0) mod ?w = 0" by simp
+    ultimately show ?thesis by simp
+  qed
+  \<comment> \<open>left-minimality at the cut: every earlier index has row-0 \<open>\<ge> M\<^bsub>0,j\<^sub>0\<^esub>\<close>\<close>
+  have lmin: "\<And>j. j < ?c \<Longrightarrow> entry ?Q 0 ?c \<le> entry ?Q 0 j"
+  proof -
+    fix j assume jc: "j < ?c"
+    have jidx: "j < Suc (?B + s) - a" using jc cidx by linarith
+    have "?Q ! j = ?MN ! (a + j)" using jidx by (rule nseg)
+    hence eQj: "entry ?Q 0 j = entry ?MN 0 (a + j)" by (simp add: entry_def)
+    have ge: "?j0 \<le> a + j" using aB by simp
+    have lt: "a + j < ?j0 + n * ?w"
+    proof -
+      have "a + j < ?B" using jc aB' by linarith
+      also have "?B \<le> ?j0 + n * ?w" using kn w0 by (simp add: mult_le_mono1 less_imp_le)
+      finally show ?thesis .
+    qed
+    have "entry M 0 ?j0 \<le> entry ?MN 0 (a + j)"
+      using oper_d0zero_entry0_min[OF L notzero hp i1z j0lt ge lt] .
+    thus "entry ?Q 0 ?c \<le> entry ?Q 0 j"
+      using eQj entryQc Bval by simp
+  qed
+  \<comment> \<open>apply \<open>P\<close>-additivity at the cut\<close>
+  have padd: "P ?Q = P (seg ?Q 0 (?c - 1)) @ P (seg ?Q ?c (Lng ?Q - 1))"
+    by (rule m_6_2_P_additive[OF QT c0 cQ lmin])
+  \<comment> \<open>left part \<open>= seg (M[n]) a (B-1)\<close>\<close>
+  have left: "seg ?Q 0 (?c - 1) = seg ?MN a (?B - 1)"
+  proof -
+    have "seg ?Q 0 (?c - 1) = seg ?MN (a + 0) (a + (?c - 1))"
+      by (rule seg_of_seg[OF aleBs]) (use cQ lenQ in linarith)
+    moreover have "a + (?c - 1) = ?B - 1" using aB' by simp
+    ultimately show ?thesis by simp
+  qed
+  \<comment> \<open>right part \<open>= seg (M[n]) B (B+s)\<close>, a single block which reads off \<open>seg M j\<^sub>0 (j\<^sub>0+s)\<close>\<close>
+  have right_seg: "seg ?Q ?c (Lng ?Q - 1) = seg ?MN ?B (?B + s)"
+  proof -
+    have "seg ?Q ?c (Lng ?Q - 1) = seg ?MN (a + ?c) (a + (Lng ?Q - 1))"
+      by (rule seg_of_seg[OF aleBs]) simp
+    moreover have "a + ?c = ?B" using aB' by simp
+    moreover have "a + (Lng ?Q - 1) = ?B + s" using lenQ aleBs by linarith
+    ultimately show ?thesis by simp
+  qed
+  have blockseg: "seg ?MN ?B (?B + s) = seg M ?j0 (?j0 + s)"
+  proof (rule nth_equalityI)
+    show "length (seg ?MN ?B (?B + s)) = length (seg M ?j0 (?j0 + s))" by simp
+    fix i assume "i < length (seg ?MN ?B (?B + s))"
+    hence ic: "i < Suc s" by simp
+    have e1: "seg ?MN ?B (?B + s) ! i = ?MN ! (?j0 + k * ?w + i)"
+      using ic by (simp add: seg_nth_eq)
+    have e2: "?MN ! (?j0 + k * ?w + i) = M ! (?j0 + i)"
+      by (rule oper_d0zero_nth[OF L notzero hp i1z j0lt kn]) (use ic sw in linarith)
+    have e3: "M ! (?j0 + i) = seg M ?j0 (?j0 + s) ! i" using ic by (simp add: seg_nth_eq)
+    show "seg ?MN ?B (?B + s) ! i = seg M ?j0 (?j0 + s) ! i" using e1 e2 e3 by simp
+  qed
+  have right_single: "P (seg M ?j0 (?j0 + s)) = [seg M ?j0 (?j0 + s)]"
+  proof (rule poper_P_nonmulti)
+    show "\<not> (multiT (seg M ?j0 (?j0 + s)) \<and> 1 < Lng (seg M ?j0 (?j0 + s)))"
+    proof (cases "1 < Lng (seg M ?j0 (?j0 + s))")
+      case True
+      \<comment> \<open>the block fragment is mono (its left end is the row-0 ancestor of every entry),
+         hence not multi: \<open>j\<^sub>0\<close> is \<open>\<le>\<^sub>M\<close> the right end\<close>
+      have Lseg: "Lng (seg M ?j0 (?j0 + s)) = Suc s" by simp
+      have s1: "1 \<le> s" using True Lseg by simp
+      have le0js: "le0 M ?j0 (?j0 + s)" using blockmono .
+      have segmono: "monoT (seg M ?j0 (?j0 + s))"
+      proof -
+        have segL: "?j0 + s < Lng M" using sw j0lt by linarith
+        have eqv: "le0 (seg M ?j0 (?j0 + s)) 0 s = le0 M (?j0 + 0) (?j0 + s)"
+          using adm_le0_seg[OF segL, where a=0 and b=s and j0'="?j0"] by simp
+        have "le0 (seg M ?j0 (?j0 + s)) 0 s" using eqv le0js by simp
+        hence le00: "leR (seg M ?j0 (?j0 + s)) 0 0 (Lng (seg M ?j0 (?j0 + s)) - 1)"
+          using Lseg by (simp add: leR_def)
+        have nz: "\<not> zeroT (seg M ?j0 (?j0 + s))" using True by (simp add: zeroT_def)
+        show ?thesis using le00 nz by (simp add: monoT_def)
+      qed
+      thus ?thesis by (simp add: multiT_def)
+    next
+      case False thus ?thesis by simp
+    qed
+  qed
+  have right: "P (seg ?Q ?c (Lng ?Q - 1)) = [seg M ?j0 (?j0 + s)]"
+    using right_seg blockseg right_single by simp
+  show ?thesis using padd left right by simp
+qed
+
+text \<open>Whole-block fold: iterating @{thm [source] oper_d0zero_seg_P_split} at \<open>s = w-1\<close>
+  over the \<open>m\<close> block boundaries \<open>j\<^sub>0+w, \<dots>, j\<^sub>0+m\<cdot>w\<close> peels \<open>m-1\<close> verbatim copies of the
+  full block \<open>blk = seg M j\<^sub>0 (Lng M-2)\<close> off the right of a block-0-anchored slice.\<close>
+
+lemma oper_d0zero_seg_P_hfold:
+  assumes L: "1 < Lng M"
+    and notzero: "\<not> (entry M 0 (Lng M - 1) = 0 \<and> entry M 1 (Lng M - 1) = 0)"
+    and hp: "hasParent M (idx1 M (Lng M - 1)) (Lng M - 1)"
+    and i1z: "idx1 M (Lng M - 1) = 0"
+    and aB: "parent M 0 (Lng M - 1) < a"
+    and aw: "a \<le> Lng M - 2"
+    and blockmono: "\<And>s. s < Lng M - 1 - parent M 0 (Lng M - 1)
+                      \<Longrightarrow> le0 M (parent M 0 (Lng M - 1)) (parent M 0 (Lng M - 1) + s)"
+    and mn: "m \<le> n"
+    and m1: "1 \<le> m"
+  shows "P (seg ((M::pairseq)[n]) a
+              (parent M 0 (Lng M - 1) + m * (Lng M - 1 - parent M 0 (Lng M - 1)) - 1))
+       = P (seg ((M::pairseq)[n]) a (Lng M - 2))
+       @ replicate (m - 1) (seg M (parent M 0 (Lng M - 1)) (Lng M - 2))"
+proof -
+  let ?j0 = "parent M 0 (Lng M - 1)"  let ?w = "Lng M - 1 - ?j0"
+  let ?MN = "(M::pairseq)[n]"  let ?blk = "seg M ?j0 (Lng M - 2)"
+  have w0: "0 < ?w" using aB aw by linarith
+  have j0w1: "?j0 + ?w - 1 = Lng M - 2" using w0 by simp
+  have j0lt: "?j0 < Lng M - 1" using w0 by linarith
+  have lenMN: "Lng ?MN = ?j0 + n * ?w"
+  proof -
+    have e: "?MN = take ?j0 M @ concat (replicate n (map ((!) M) [?j0..<Lng M - 1]))"
+      by (rule oper_d0zero_expand[OF L notzero hp i1z])
+    have t: "length (take ?j0 M) = ?j0" using j0lt by simp
+    have b: "length (map ((!) M) [?j0..<Lng M - 1]) = ?w" by simp
+    show ?thesis using e t b by (simp add: length_concat sum_list_replicate)
+  qed
+  show ?thesis using mn m1
+  proof (induction m)
+    case 0 thus ?case by simp
+  next
+    case (Suc m)
+    show ?case
+    proof (cases "m = 0")
+      case True
+      have "?j0 + Suc m * ?w - 1 = Lng M - 2" using True j0w1 by simp
+      thus ?thesis using True by simp
+    next
+      case False
+      hence m1': "1 \<le> m" by simp
+      have Smn: "Suc m \<le> n" using Suc.prems by simp
+      have mln: "m < n" using Smn by simp
+      \<comment> \<open>peel the \<open>m\<close>-th full block via the step lemma at boundary \<open>j\<^sub>0+m\<cdot>w\<close>, \<open>s=w-1\<close>\<close>
+      have sw: "?w - 1 < ?w" using w0 by simp
+      have bm: "le0 M ?j0 (?j0 + (?w - 1))" using blockmono[OF sw] .
+      have aboundary: "a < ?j0 + m * ?w"
+      proof -
+        have "a \<le> ?j0 + ?w - 1" using aw j0w1 by simp
+        also have "?j0 + ?w - 1 < ?j0 + ?w" using w0 by simp
+        also have "?j0 + ?w \<le> ?j0 + m * ?w" using m1' by simp
+        finally show ?thesis .
+      qed
+      have Bsk: "?j0 + m * ?w + (?w - 1) < Lng ?MN"
+      proof -
+        have "?j0 + m * ?w + (?w - 1) < ?j0 + Suc m * ?w" using w0 by simp
+        also have "?j0 + Suc m * ?w \<le> ?j0 + n * ?w"
+          using mult_le_mono1[OF Smn, of ?w] by linarith
+        finally show ?thesis using lenMN by simp
+      qed
+      have step: "P (seg ?MN a (?j0 + m * ?w + (?w - 1)))
+                 = P (seg ?MN a (?j0 + m * ?w - 1)) @ [seg M ?j0 (?j0 + (?w - 1))]"
+        by (rule oper_d0zero_seg_P_split[OF L notzero hp i1z aB m1' aboundary sw bm Bsk mln])
+      have rend: "?j0 + m * ?w + (?w - 1) = ?j0 + Suc m * ?w - 1" using w0 by simp
+      have j0we: "?j0 + (?w - 1) = Lng M - 2" using w0 j0w1 by linarith
+      have blk_eq: "seg M ?j0 (?j0 + (?w - 1)) = ?blk" using j0we by simp
+      have mlen: "m \<le> n" using mln by simp
+      have IH: "P (seg ?MN a (?j0 + m * ?w - 1))
+              = P (seg ?MN a (Lng M - 2)) @ replicate (m - 1) ?blk"
+        by (rule Suc.IH[OF mlen m1'])
+      have repl: "replicate (m - 1) ?blk @ [?blk] = replicate m ?blk"
+      proof -
+        have "replicate (m - 1) ?blk @ [?blk] = ?blk # replicate (m - 1) ?blk"
+          by (rule replicate_append_same)
+        also have "\<dots> = replicate (Suc (m - 1)) ?blk" by simp
+        also have "Suc (m - 1) = m" using m1' by simp
+        finally show ?thesis .
+      qed
+      have "P (seg ?MN a (?j0 + Suc m * ?w - 1))
+          = P (seg ?MN a (?j0 + m * ?w - 1)) @ [?blk]"
+        using step rend blk_eq by simp
+      also have "\<dots> = P (seg ?MN a (Lng M - 2)) @ (replicate (m - 1) ?blk @ [?blk])"
+        using IH by simp
+      also have "\<dots> = P (seg ?MN a (Lng M - 2)) @ replicate m ?blk"
+        using repl by simp
+      finally show ?thesis by simp
+    qed
+  qed
+qed
+
+text \<open>Block-1-anchored fold (§6.8 d0zero case-A pure-block regime, \<open>j'\<^sub>0 = j\<^sub>0\<^sup>N\<close>): a
+  slice that STARTS at the block-1 boundary \<open>j\<^sub>0 + w\<close> and ends inside block \<open>m+1\<close>
+  decomposes into \<open>m\<close> verbatim copies of the full block \<open>blk = seg M j\<^sub>0 (Lng M-2)\<close>
+  followed by one partial block \<open>seg M j\<^sub>0 (j\<^sub>0+s)\<close>.  Like
+  @{thm [source] oper_d0zero_seg_P_hfold}, but with empty branch prefix
+  (the base case \<open>m=0\<close> is the single block-1 fragment, a non-multi component).\<close>
+
+lemma oper_d0zero_seg_P_blk1fold:
+  assumes L: "1 < Lng M"
+    and notzero: "\<not> (entry M 0 (Lng M - 1) = 0 \<and> entry M 1 (Lng M - 1) = 0)"
+    and hp: "hasParent M (idx1 M (Lng M - 1)) (Lng M - 1)"
+    and i1z: "idx1 M (Lng M - 1) = 0"
+    and j0lt: "parent M 0 (Lng M - 1) < Lng M - 1"
+    and blockmono: "\<And>s. s < Lng M - 1 - parent M 0 (Lng M - 1)
+                      \<Longrightarrow> le0 M (parent M 0 (Lng M - 1)) (parent M 0 (Lng M - 1) + s)"
+    and sw: "s < Lng M - 1 - parent M 0 (Lng M - 1)"
+    and mn: "Suc m < n"
+  shows "P (seg ((M::pairseq)[n])
+              (parent M 0 (Lng M - 1) + (Lng M - 1 - parent M 0 (Lng M - 1)))
+              (parent M 0 (Lng M - 1) + Suc m * (Lng M - 1 - parent M 0 (Lng M - 1)) + s))
+       = replicate m (seg M (parent M 0 (Lng M - 1)) (Lng M - 2))
+       @ [seg M (parent M 0 (Lng M - 1)) (parent M 0 (Lng M - 1) + s)]"
+proof -
+  let ?j0 = "parent M 0 (Lng M - 1)"  let ?w = "Lng M - 1 - ?j0"
+  let ?MN = "(M::pairseq)[n]"  let ?blk = "seg M ?j0 (Lng M - 2)"
+  let ?a = "?j0 + ?w"
+  have w0: "0 < ?w" using j0lt by linarith
+  have j0w1: "?j0 + ?w - 1 = Lng M - 2" using w0 by simp
+  have aB: "?j0 < ?a" using w0 by simp
+  have parR0: "nextrel0 M ?j0 (Lng M - 1)"
+  proof -
+    have hp0: "hasParent M 0 (Lng M - 1)" using hp i1z by simp
+    have "nextR M 0 ?j0 (Lng M - 1)"
+      using hp0 unfolding hasParent_def parent_def by (rule theI')
+    thus ?thesis by (simp add: nextR_def)
+  qed
+  have lenMN: "Lng ?MN = ?j0 + n * ?w"
+  proof -
+    have e: "?MN = take ?j0 M @ concat (replicate n (map ((!) M) [?j0..<Lng M - 1]))"
+      by (rule oper_d0zero_expand[OF L notzero hp i1z])
+    have t: "length (take ?j0 M) = ?j0" using j0lt by simp
+    have b: "length (map ((!) M) [?j0..<Lng M - 1]) = ?w" by simp
+    show ?thesis using e t b by (simp add: length_concat sum_list_replicate)
+  qed
+  have gen: "\<And>s m. s < ?w \<Longrightarrow> Suc m < n \<Longrightarrow>
+       P (seg ?MN ?a (?j0 + Suc m * ?w + s))
+       = replicate m ?blk @ [seg M ?j0 (?j0 + s)]"
+  proof -
+    fix s0 m0
+    show "s0 < ?w \<Longrightarrow> Suc m0 < n \<Longrightarrow>
+       P (seg ?MN ?a (?j0 + Suc m0 * ?w + s0))
+       = replicate m0 ?blk @ [seg M ?j0 (?j0 + s0)]"
+    proof (induction m0 arbitrary: s0)
+    case (0 s)
+    note sw = \<open>s < ?w\<close>
+    \<comment> \<open>base: the block-1 fragment \<open>seg (M[n]) (j\<^sub>0+w) (j\<^sub>0+w+s)\<close> reads \<open>seg M j\<^sub>0 (j\<^sub>0+s)\<close>,
+       a single non-multi \<open>P\<close>-component\<close>
+    have S1n: "1 < n" using "0.prems" by simp
+    have blockseg: "seg ?MN ?a (?a + s) = seg M ?j0 (?j0 + s)"
+    proof (rule nth_equalityI)
+      show "length (seg ?MN ?a (?a + s)) = length (seg M ?j0 (?j0 + s))" by simp
+      fix i assume "i < length (seg ?MN ?a (?a + s))"
+      hence ic: "i < Suc s" by simp
+      have e1: "seg ?MN ?a (?a + s) ! i = ?MN ! (?j0 + 1 * ?w + i)"
+        using ic by (simp add: seg_nth_eq)
+      have e2: "?MN ! (?j0 + 1 * ?w + i) = M ! (?j0 + i)"
+        by (rule oper_d0zero_nth[OF L notzero hp i1z j0lt S1n]) (use ic sw in linarith)
+      have e3: "M ! (?j0 + i) = seg M ?j0 (?j0 + s) ! i" using ic by (simp add: seg_nth_eq)
+      show "seg ?MN ?a (?a + s) ! i = seg M ?j0 (?j0 + s) ! i" using e1 e2 e3 by simp
+    qed
+    have bm: "le0 M ?j0 (?j0 + s)" using blockmono[OF sw] .
+    have single: "P (seg M ?j0 (?j0 + s)) = [seg M ?j0 (?j0 + s)]"
+    proof (rule poper_P_nonmulti)
+      show "\<not> (multiT (seg M ?j0 (?j0 + s)) \<and> 1 < Lng (seg M ?j0 (?j0 + s)))"
+      proof (cases "1 < Lng (seg M ?j0 (?j0 + s))")
+        case True
+        have Lseg: "Lng (seg M ?j0 (?j0 + s)) = Suc s" by simp
+        have segmono: "monoT (seg M ?j0 (?j0 + s))"
+        proof -
+          have segL: "?j0 + s < Lng M" using sw j0lt by linarith
+          have eqv: "le0 (seg M ?j0 (?j0 + s)) 0 s = le0 M (?j0 + 0) (?j0 + s)"
+            using adm_le0_seg[OF segL, where a=0 and b=s and j0'="?j0"] by simp
+          have "le0 (seg M ?j0 (?j0 + s)) 0 s" using eqv bm by simp
+          hence le00: "leR (seg M ?j0 (?j0 + s)) 0 0 (Lng (seg M ?j0 (?j0 + s)) - 1)"
+            using Lseg by (simp add: leR_def)
+          have nz: "\<not> zeroT (seg M ?j0 (?j0 + s))" using True by (simp add: zeroT_def)
+          show ?thesis using le00 nz by (simp add: monoT_def)
+        qed
+        thus ?thesis by (simp add: multiT_def)
+      next
+        case False thus ?thesis by simp
+      qed
+    qed
+    have "?j0 + Suc 0 * ?w + s = ?a + s" by simp
+    thus ?case using blockseg single by simp
+  next
+    case (Suc m s)
+    note sw = \<open>s < ?w\<close>
+    have Smn: "Suc (Suc m) < n" using Suc.prems(2) by simp
+    have Smn1: "Suc m < n" using Smn by simp
+    \<comment> \<open>split off the inner partial \<open>seg M j\<^sub>0 (j\<^sub>0+s)\<close> at the outermost boundary
+       \<open>j\<^sub>0 + (Suc(Suc m))\<cdot>w\<close>; the prefix \<open>P(seg (M[n]) (j\<^sub>0+w) (j\<^sub>0+(Suc(Suc m))w-1))\<close>
+       is the IH at \<open>m\<close>, \<open>s' = w-1\<close> (\<open>= replicate (Suc m) blk\<close>)\<close>
+    have k1: "1 \<le> Suc (Suc m)" by simp
+    have wmul: "1 * ?w < Suc (Suc m) * ?w" using w0 by simp
+    have aBk: "?a < ?j0 + Suc (Suc m) * ?w" using wmul by simp
+    have bmw: "le0 M ?j0 (?j0 + s)" using blockmono[OF sw] .
+    have SSSle: "Suc (Suc (Suc m)) * ?w \<le> n * ?w"
+    proof -
+      have "Suc (Suc (Suc m)) \<le> n" using Smn by simp
+      thus ?thesis by (rule mult_le_mono1)
+    qed
+    have Bsk: "?j0 + Suc (Suc m) * ?w + s < Lng ?MN"
+    proof -
+      have "Suc (Suc m) * ?w + ?w = Suc (Suc (Suc m)) * ?w" by simp
+      hence "?j0 + Suc (Suc m) * ?w + s < ?j0 + n * ?w"
+        using sw SSSle by linarith
+      thus ?thesis using lenMN by simp
+    qed
+    have split: "P (seg ?MN ?a (?j0 + Suc (Suc m) * ?w + s))
+               = P (seg ?MN ?a (?j0 + Suc (Suc m) * ?w - 1)) @ [seg M ?j0 (?j0 + s)]"
+      by (rule oper_d0zero_seg_P_split[OF L notzero hp i1z aB k1 aBk sw bmw Bsk Smn])
+    have sw': "?w - 1 < ?w" using w0 by simp
+    \<comment> \<open>\<open>j\<^sub>0 + Suc m * w + (w-1) = j\<^sub>0 + Suc(Suc m)*w - 1\<close> aligns IH-endpoint with split-prefix\<close>
+    have rend: "?j0 + Suc m * ?w + (?w - 1) = ?j0 + Suc (Suc m) * ?w - 1"
+      using w0 by simp
+    have blkidx: "?j0 + (?w - 1) = Lng M - 2" using w0 j0w1 by linarith
+    have blkval: "seg M ?j0 (?j0 + (?w - 1)) = ?blk" using blkidx by simp
+    have IH: "P (seg ?MN ?a (?j0 + Suc m * ?w + (?w - 1)))
+            = replicate m ?blk @ [seg M ?j0 (?j0 + (?w - 1))]"
+      by (rule Suc.IH[OF sw' Smn1])
+    have prefix: "P (seg ?MN ?a (?j0 + Suc (Suc m) * ?w - 1)) = replicate (Suc m) ?blk"
+    proof -
+      have "P (seg ?MN ?a (?j0 + Suc (Suc m) * ?w - 1)) = replicate m ?blk @ [?blk]"
+        using IH rend blkval by simp
+      also have "\<dots> = replicate (Suc m) ?blk"
+        by (simp add: replicate_append_same)
+      finally show ?thesis .
+    qed
+    have "P (seg ?MN ?a (?j0 + Suc (Suc m) * ?w + s))
+        = replicate (Suc m) ?blk @ [seg M ?j0 (?j0 + s)]"
+      using split prefix by simp
+    thus ?case by simp
+    qed
+  qed
+  show ?thesis using gen[OF sw mn] .
+qed
+
+text \<open>Block-0-anchored fold (§6.8 d0zero case-B): a slice that STARTS at the
+  block-0 boundary \<open>j\<^sub>0\<close> itself and ends inside block \<open>qb\<close> decomposes into \<open>qb\<close>
+  verbatim copies of the full block \<open>blk = seg M j\<^sub>0 (Lng M-2)\<close> followed by one
+  partial block \<open>seg M j\<^sub>0 (j\<^sub>0+r2)\<close>.  Unlike @{thm [source]
+  oper_d0zero_seg_P_blk1fold} (anchored at \<open>j\<^sub>0+w\<close>) this includes the leftmost
+  full block: peel it off by one @{thm [source] m_6_2_P_additive} cut at the
+  block-1 boundary \<open>j\<^sub>0+w\<close> (\<open>P(seg j\<^sub>0 (j\<^sub>0+w-1)) = [blk]\<close>, a single multi
+  component), then the high tail is @{thm [source] oper_d0zero_seg_P_blk1fold}
+  with \<open>m = qb-1\<close>.  The \<open>qb=0\<close> base is the lone partial block.\<close>
+
+lemma oper_d0zero_seg_P_blk0fold:
+  assumes L: "1 < Lng M"
+    and notzero: "\<not> (entry M 0 (Lng M - 1) = 0 \<and> entry M 1 (Lng M - 1) = 0)"
+    and hp: "hasParent M (idx1 M (Lng M - 1)) (Lng M - 1)"
+    and i1z: "idx1 M (Lng M - 1) = 0"
+    and j0lt: "parent M 0 (Lng M - 1) < Lng M - 1"
+    and blockmono: "\<And>s. s < Lng M - 1 - parent M 0 (Lng M - 1)
+                      \<Longrightarrow> le0 M (parent M 0 (Lng M - 1)) (parent M 0 (Lng M - 1) + s)"
+    and r2w: "r2 < Lng M - 1 - parent M 0 (Lng M - 1)"
+    and qbn: "qb < n"
+  shows "P (seg ((M::pairseq)[n])
+              (parent M 0 (Lng M - 1))
+              (parent M 0 (Lng M - 1) + qb * (Lng M - 1 - parent M 0 (Lng M - 1)) + r2))
+       = replicate qb (seg M (parent M 0 (Lng M - 1)) (Lng M - 2))
+       @ [seg M (parent M 0 (Lng M - 1)) (parent M 0 (Lng M - 1) + r2)]"
+proof -
+  let ?j0 = "parent M 0 (Lng M - 1)"  let ?w = "Lng M - 1 - ?j0"
+  let ?MN = "(M::pairseq)[n]"  let ?blk = "seg M ?j0 (Lng M - 2)"
+  let ?partial = "seg M ?j0 (?j0 + r2)"
+  have w0: "0 < ?w" using j0lt by linarith
+  have j0w1: "?j0 + ?w - 1 = Lng M - 2" using w0 by simp
+  have parR0: "nextrel0 M ?j0 (Lng M - 1)"
+  proof -
+    have hp0: "hasParent M 0 (Lng M - 1)" using hp i1z by simp
+    have "nextR M 0 ?j0 (Lng M - 1)"
+      using hp0 unfolding hasParent_def parent_def by (rule theI')
+    thus ?thesis by (simp add: nextR_def)
+  qed
+  have lenMN: "Lng ?MN = ?j0 + n * ?w"
+  proof -
+    have e: "?MN = take ?j0 M @ concat (replicate n (map ((!) M) [?j0..<Lng M - 1]))"
+      by (rule oper_d0zero_expand[OF L notzero hp i1z])
+    have t: "length (take ?j0 M) = ?j0" using j0lt by simp
+    have b: "length (map ((!) M) [?j0..<Lng M - 1]) = ?w" by simp
+    show ?thesis using e t b by (simp add: length_concat sum_list_replicate)
+  qed
+  show ?thesis
+  proof (cases "qb = 0")
+    case True
+    \<comment> \<open>base: \<open>P(seg M[n] j\<^sub>0 (j\<^sub>0+r2)) = [partial]\<close>, a single non-multi block fragment\<close>
+    have blockseg: "seg ?MN ?j0 (?j0 + r2) = ?partial"
+    proof (rule nth_equalityI)
+      show "length (seg ?MN ?j0 (?j0 + r2)) = length ?partial" by simp
+      fix i assume "i < length (seg ?MN ?j0 (?j0 + r2))"
+      hence ic: "i < Suc r2" by simp
+      have q0: "(0::nat) < n" using qbn by simp
+      have e1: "seg ?MN ?j0 (?j0 + r2) ! i = ?MN ! (?j0 + i)"
+        using ic by (simp add: seg_nth_eq)
+      have e2: "?MN ! (?j0 + i) = M ! (?j0 + i)"
+        using oper_d0zero_nth[OF L notzero hp i1z j0lt q0, of i] ic r2w by simp
+      have e3: "M ! (?j0 + i) = ?partial ! i" using ic by (simp add: seg_nth_eq)
+      show "seg ?MN ?j0 (?j0 + r2) ! i = ?partial ! i" using e1 e2 e3 by simp
+    qed
+    have bm: "le0 M ?j0 (?j0 + r2)" using blockmono[OF r2w] .
+    have single: "P ?partial = [?partial]"
+    proof (rule poper_P_nonmulti)
+      show "\<not> (multiT ?partial \<and> 1 < Lng ?partial)"
+      proof (cases "1 < Lng ?partial")
+        case True
+        have Lseg: "Lng ?partial = Suc r2" by simp
+        have segmono: "monoT ?partial"
+        proof -
+          have segL: "?j0 + r2 < Lng M" using r2w j0lt by linarith
+          have eqv: "le0 ?partial 0 r2 = le0 M (?j0 + 0) (?j0 + r2)"
+            using adm_le0_seg[OF segL, where a=0 and b=r2 and j0'="?j0"] by simp
+          have "le0 ?partial 0 r2" using eqv bm by simp
+          hence le00: "leR ?partial 0 0 (Lng ?partial - 1)" using Lseg by (simp add: leR_def)
+          have nz: "\<not> zeroT ?partial" using True by (simp add: zeroT_def)
+          show ?thesis using le00 nz by (simp add: monoT_def)
+        qed
+        thus ?thesis by (simp add: multiT_def)
+      next
+        case False thus ?thesis by simp
+      qed
+    qed
+    show ?thesis using True blockseg single by simp
+  next
+    case False
+    hence qb1: "1 \<le> qb" by simp
+    \<comment> \<open>peel the leftmost full block by a \<open>P\<close>-additive cut at the block-1 boundary
+       \<open>j\<^sub>0+w\<close>; the tail is @{thm [source] oper_d0zero_seg_P_blk1fold} with \<open>m=qb-1\<close>\<close>
+    let ?End = "?j0 + qb * ?w + r2"
+    let ?Q = "seg ?MN ?j0 ?End"
+    have endlt: "?End < Lng ?MN"
+    proof -
+      have "qb * ?w + r2 < n * ?w"
+      proof -
+        have "qb * ?w + r2 < qb * ?w + ?w" using r2w by simp
+        also have "\<dots> = Suc qb * ?w" by simp
+        also have "\<dots> \<le> n * ?w" using mult_le_mono1[OF Suc_leI[OF qbn], of ?w] .
+        finally show ?thesis .
+      qed
+      thus ?thesis using lenMN by simp
+    qed
+    have aleEnd: "?j0 \<le> ?End" by simp
+    have lenQ: "Lng ?Q = Suc ?End - ?j0" by (rule Lng_seg)
+    let ?c = "?w"   \<comment> \<open>cut index in \<open>Q\<close>: global \<open>j\<^sub>0+w\<close> is local \<open>w\<close>\<close>
+    have c0: "0 < ?c" using w0 .
+    have cle: "?c \<le> Lng ?Q - 1"
+    proof -
+      have wle: "?w \<le> qb * ?w" using mult_le_mono1[OF qb1, of ?w] by simp
+      have "?j0 + ?w \<le> ?j0 + qb * ?w + r2" using wle by linarith
+      thus ?thesis using lenQ aleEnd by linarith
+    qed
+    have QT: "?Q \<in> T_PS"
+    proof -
+      have "0 < Lng ?Q" using lenQ aleEnd by linarith
+      hence "?Q \<noteq> []" using length_greater_0_conv by blast
+      thus ?thesis by (simp add: T_PS_def)
+    qed
+    \<comment> \<open>left-minimality at the cut \<open>c=w\<close> (row-0 there \<open>= M\<^bsub>0,j\<^sub>0\<^esub>\<close>, the block min)\<close>
+    have nseg: "\<And>i. i < Suc ?End - ?j0 \<Longrightarrow> ?Q ! i = ?MN ! (?j0 + i)"
+      by (rule seg_nth_eq)
+    have cidx: "?c < Suc ?End - ?j0" using cle lenQ by linarith
+    have entryQc: "entry ?Q 0 ?c = entry M 0 ?j0"
+    proof -
+      have n2: "1 < n" using qbn qb1 by linarith
+      have x0: "?j0 \<le> ?j0 + ?w" by simp
+      have wnw: "?w < n * ?w" using n2 w0 by (simp add: mult_strict_right_mono)
+      have xlt: "?j0 + ?w < ?j0 + n * ?w" using wnw by linarith
+      have "?Q ! ?c = ?MN ! (?j0 + ?w)" using nseg[OF cidx] .
+      hence "entry ?Q 0 ?c = entry ?MN 0 (?j0 + ?w)" by (simp add: entry_def)
+      moreover have "entry ?MN 0 (?j0 + ?w)
+                   = entry M 0 (?j0 + ((?j0 + ?w) - ?j0) mod ?w)"
+        using oper_d0zero_entry0[OF L notzero hp i1z j0lt x0 xlt] .
+      moreover have "((?j0 + ?w) - ?j0) mod ?w = 0" by simp
+      ultimately show ?thesis by simp
+    qed
+    have lmin: "\<And>j. j < ?c \<Longrightarrow> entry ?Q 0 ?c \<le> entry ?Q 0 j"
+    proof -
+      fix j assume jc: "j < ?c"
+      have jidx: "j < Suc ?End - ?j0" using jc cidx by linarith
+      have "?Q ! j = ?MN ! (?j0 + j)" using nseg[OF jidx] .
+      hence eQj: "entry ?Q 0 j = entry ?MN 0 (?j0 + j)" by (simp add: entry_def)
+      have ge: "?j0 \<le> ?j0 + j" by simp
+      have lt: "?j0 + j < ?j0 + n * ?w" using jc w0 qbn by (cases n) auto
+      have "entry M 0 ?j0 \<le> entry ?MN 0 (?j0 + j)"
+        using oper_d0zero_entry0_min[OF L notzero hp i1z j0lt ge lt] .
+      thus "entry ?Q 0 ?c \<le> entry ?Q 0 j" using eQj entryQc by simp
+    qed
+    have padd: "P ?Q = P (seg ?Q 0 (?c - 1)) @ P (seg ?Q ?c (Lng ?Q - 1))"
+      by (rule m_6_2_P_additive[OF QT c0 cle lmin])
+    \<comment> \<open>left part \<open>= seg M[n] j\<^sub>0 (j\<^sub>0+w-1)\<close>, whose \<open>P\<close> is the single full block \<open>[blk]\<close>\<close>
+    have leftseg: "seg ?Q 0 (?c - 1) = seg ?MN ?j0 (?j0 + ?w - 1)"
+    proof -
+      have "seg ?Q 0 (?c - 1) = seg ?MN (?j0 + 0) (?j0 + (?c - 1))"
+        \<comment> \<open>TODO(parent): the @{thm seg_of_seg} side goal \<open>d \<le> b - a\<close> was discharged by
+           \<open>(use cle lenQ in linarith)\<close> which BLEW UP (>2400s) on the compound div/mod terms;
+           isolated as \<open>sorry\<close> to keep the worktree green. It is a trivial true index bound;
+           replace with an explicit \<open>db\<close> witness + \<open>by (rule seg_of_seg[OF aleEnd db'])\<close>.\<close>
+        sorry
+      thus ?thesis by simp
+    qed
+    have blkseg: "seg ?MN ?j0 (?j0 + ?w - 1) = ?blk"
+    proof -
+      have "seg ?MN ?j0 (Lng M - 2) = ?blk"
+      proof (rule nth_equalityI)
+        show "length (seg ?MN ?j0 (Lng M - 2)) = length ?blk" by simp
+        fix i assume "i < length (seg ?MN ?j0 (Lng M - 2))"
+        hence ic: "i < Suc (Lng M - 2) - ?j0" by simp
+        hence iw: "?j0 + i < Lng M - 1" using j0w1 by linarith
+        have q0: "(0::nat) < n" using qbn by simp
+        have e1: "seg ?MN ?j0 (Lng M - 2) ! i = ?MN ! (?j0 + i)"
+          using ic by (simp add: seg_nth_eq)
+        have e2: "?MN ! (?j0 + i) = M ! (?j0 + i)"
+          using oper_d0zero_nth[OF L notzero hp i1z j0lt q0, of i] iw by simp
+        have e3: "M ! (?j0 + i) = ?blk ! i" using ic by (simp add: seg_nth_eq)
+        show "seg ?MN ?j0 (Lng M - 2) ! i = ?blk ! i" using e1 e2 e3 by simp
+      qed
+      thus ?thesis using j0w1 by simp
+    qed
+    have leftP: "P (seg ?Q 0 (?c - 1)) = [?blk]"
+    proof -
+      have "P ?blk = [?blk]"
+      proof (rule poper_P_nonmulti)
+        show "\<not> (multiT ?blk \<and> 1 < Lng ?blk)"
+        proof (cases "1 < Lng ?blk")
+          case True
+          have Lblk: "Lng ?blk = Suc (Lng M - 2) - ?j0" by simp
+          have segmono: "monoT ?blk"
+          proof -
+            have wm1: "?w - 1 < ?w" using w0 by simp
+            have bm: "le0 M ?j0 (?j0 + (?w - 1))" using blockmono[OF wm1] .
+            have segL: "?j0 + (?w - 1) < Lng M" using w0 j0lt by linarith
+            have idxe: "?j0 + (?w - 1) = Lng M - 2" using j0w1 w0 by linarith
+            have eqv: "le0 ?blk 0 (Lng M - 2 - ?j0) = le0 M (?j0 + 0) (?j0 + (Lng M - 2 - ?j0))"
+              using adm_le0_seg[OF segL[unfolded idxe], where a=0 and b="Lng M - 2 - ?j0" and j0'="?j0"]
+              by simp
+            have ej: "?j0 + (Lng M - 2 - ?j0) = Lng M - 2" using j0w1 w0 by linarith
+            have bm2: "le0 M ?j0 (?j0 + (Lng M - 2 - ?j0))" using bm idxe ej by simp
+            have "le0 ?blk 0 (Lng M - 2 - ?j0)" using eqv bm2 by simp
+            hence le00: "leR ?blk 0 0 (Lng ?blk - 1)" using Lblk by (simp add: leR_def)
+            have nz: "\<not> zeroT ?blk" using True by (simp add: zeroT_def)
+            show ?thesis using le00 nz by (simp add: monoT_def)
+          qed
+          thus ?thesis by (simp add: multiT_def)
+        next
+          case False thus ?thesis by simp
+        qed
+      qed
+      thus ?thesis using leftseg blkseg by simp
+    qed
+    \<comment> \<open>right part \<open>= seg M[n] (j\<^sub>0+w) End\<close>; \<open>blk1fold\<close> at \<open>m = qb-1\<close>, \<open>s = r2\<close>\<close>
+    have rightseg: "seg ?Q ?c (Lng ?Q - 1) = seg ?MN (?j0 + ?w) ?End"
+    proof -
+      have "seg ?Q ?c (Lng ?Q - 1) = seg ?MN (?j0 + ?w) (?j0 + (Lng ?Q - 1))"
+        by (rule seg_of_seg[OF aleEnd]) simp
+      moreover have "?j0 + (Lng ?Q - 1) = ?End" using lenQ aleEnd by linarith
+      ultimately show ?thesis by simp
+    qed
+    have qbS: "qb = Suc (qb - 1)" using qb1 by simp
+    have endeq: "?End = ?j0 + Suc (qb - 1) * ?w + r2" using qbS by simp
+    have mn': "Suc (qb - 1) < n" using qbn qbS by simp
+    have rightP: "P (seg ?MN (?j0 + ?w) ?End)
+                = replicate (qb - 1) ?blk @ [?partial]"
+      using oper_d0zero_seg_P_blk1fold[OF L notzero hp i1z j0lt blockmono r2w mn']
+            endeq by simp
+    have "P ?Q = [?blk] @ (replicate (qb - 1) ?blk @ [?partial])"
+      using padd leftP rightseg rightP by simp
+    also have "\<dots> = (?blk # replicate (qb - 1) ?blk) @ [?partial]" by simp
+    also have "?blk # replicate (qb - 1) ?blk = replicate (Suc (qb - 1)) ?blk" by simp
+    also have "Suc (qb - 1) = qb" using qb1 by simp
+    finally show ?thesis .
+  qed
+qed
+
+text \<open>§6.8 命題（標準形の切片と \<open>Br\<close> の降順性の関係） — FAITHFUL conditional form
+  (article content.md 1422–1615), the \<open>monoT M\<close> core after the WLOG reduction
+  (1434).  By induction on the rank \<open>k\<close> (plain, no minimal rank: in the \<open>Suc k\<close>
+  step \<open>M = N[n]\<close>, a multi \<open>N\<close> forces \<open>M = P(N)\<^sub>0 \<in> SkT_PS k\<close> so the IH applies to
+  \<open>M\<close>; otherwise \<open>N\<close> is monoT and the IH applies to the ambient \<open>N\<close>).
+  TODO: base case needs \<open>TrMax (diagSeq) = Lng - 1\<close> (so \<open>Br\<close> of a diagonal slice
+  is \<open>[]\<close>); the \<open>Suc k\<close> step is the article's case analysis (1438–1586).\<close>
+
+lemma m_6_8_slice_Br_descending_monoT:
+  shows "M \<in> SkT_PS k \<Longrightarrow> monoT M \<Longrightarrow> j0' < j1' \<Longrightarrow> j1' \<le> Lng M - 1
+         \<Longrightarrow> leR M 0 j0' j1' \<Longrightarrow> descending (Br (seg M j0' j1'))"
+proof -
+  have "\<forall>M j0' j1'. M \<in> SkT_PS k \<longrightarrow> monoT M \<longrightarrow> j0' < j1' \<longrightarrow> j1' \<le> Lng M - 1
+          \<longrightarrow> leR M 0 j0' j1' \<longrightarrow> descending (Br (seg M j0' j1'))"
+  proof (induction k)
+    case 0
+    show ?case
+    proof (intro allI impI)
+      fix M j0' j1'
+      assume M0: "M \<in> SkT_PS 0" and mono: "monoT M" and lt: "j0' < j1'"
+        and j1: "j1' \<le> Lng M - 1" and leR: "leR M 0 j0' j1'"
+      from M0 obtain u v where Muv: "M = diagSeq u v" and uv: "u \<le> v" by auto
+      \<comment> \<open>the slice is itself a diagonal \<open>diagSeq (u+j0') (u+j1')\<close>, whose \<open>Br\<close> is empty\<close>
+      have leab: "j0' \<le> j1'" using lt by simp
+      have j1v: "j1' \<le> v - u" using j1 uv by (simp add: Muv)
+      have slice: "seg M j0' j1' = diagSeq (u + j0') (u + j1')"
+        using seg_diagSeq[OF leab j1v uv] Muv by simp
+      have le2: "u + j0' \<le> u + j1'" using leab by simp
+      have "Br (seg M j0' j1') = []" using slice Br_diagSeq[OF le2] by simp
+      thus "descending (Br (seg M j0' j1'))" by (simp add: descending_def)
+    qed
+  next
+    case (Suc k)
+    note IHk = Suc.IH
+    show ?case
+    proof (intro allI impI)
+      fix M j0' j1'
+      assume MS: "M \<in> SkT_PS (Suc k)" and mono: "monoT M" and lt: "j0' < j1'"
+        and j1: "j1' \<le> Lng M - 1" and leR: "leR M 0 j0' j1'"
+      from MS obtain N n where Neq: "M = (N::pairseq)[n]" and NS: "N \<in> SkT_PS k"
+        and n1: "1 \<le> n" by auto
+      have NT: "N \<in> T_PS" using NS SkT_PS_subset_ST_PS ST_PS_T_PS by blast
+      have jM: "j1' < Lng M" using j1 lt by linarith
+      show "descending (Br (seg M j0' j1'))"
+      proof (cases "multiT N")
+        case multiN: True
+        \<comment> \<open>article 1442: a multi \<open>N\<close> forces \<open>M = P(N)\<^sub>0 \<in> SkT_PS k\<close> (else \<open>M\<close> would be
+           multi), so the IH applies to \<open>M\<close> itself\<close>
+        have lenPN: "1 < length (P N)" using multiN m_6_2_P_components_2[OF NT] by simp
+        have PM: "P M = [M]"
+        proof -
+          have "\<not> (multiT M \<and> 1 < Lng M)" using mono by (simp add: multiT_def)
+          thus ?thesis by (rule poper_P_nonmulti)
+        qed
+        have MP0: "M = P N ! 0"
+        proof (cases "Lng (last (P N)) = 1")
+          case last1: True
+          have PMeq: "P M = butlast (P N)"
+          proof -
+            have "P (N[n]) = butlast (P N)"
+              using conjunct2[OF m_6_2_P_oper_1[OF NT n1 last1]] lenPN by simp
+            thus ?thesis using Neq by simp
+          qed
+          have "butlast (P N) = [M]" using PMeq PM by simp
+          hence l1: "length (butlast (P N)) = 1" by simp
+          hence len2: "length (P N) = 2" using lenPN by simp
+          have "butlast (P N) = take 1 (P N)"
+            using len2 by (simp add: butlast_conv_take)
+          also have "\<dots> = [P N ! 0]" using lenPN by (cases "P N") auto
+          finally have "butlast (P N) = [P N ! 0]" .
+          thus ?thesis using \<open>butlast (P N) = [M]\<close> by simp
+        next
+          case lastgt: False
+          have lastpos: "0 < Lng (last (P N))"
+            using idxsum_P_component_nonempty[OF NT, of "length (P N) - 1"] P_nonempty
+            by (simp add: last_conv_nth)
+          with lastgt have lgt: "1 < Lng (last (P N))" by linarith
+          have PMeq: "P M = butlast (P N) @ P ((last (P N))[n])"
+            using conjunct2[OF m_6_2_P_oper_2[OF NT n1 lgt]] Neq by simp
+          have "length (P N) - 1 \<le> length (butlast (P N))" by simp
+          moreover have "1 \<le> length (P ((last (P N))[n]))"
+            using P_nonempty by (cases "P ((last (P N))[n])") auto
+          ultimately have "2 \<le> length (P M)" using PMeq lenPN by simp
+          thus ?thesis using PM by simp
+        qed
+        have Mmem: "M \<in> SkT_PS k"
+        proof -
+          have "0 < Lng (P N)" using lenPN by linarith
+          hence "P N ! 0 \<in> SkT_PS k" using m_6_7_standard_P_components[OF NS] by blast
+          thus ?thesis using MP0 by simp
+        qed
+        have "descending (Br (seg M j0' j1'))"
+          using IHk Mmem mono lt j1 leR by blast
+        thus ?thesis .
+      next
+        case nmN: False
+        show ?thesis
+        proof (cases "1 < Lng N")
+          case LNgt: True
+          have monoN: "monoT N" using nmN LNgt by (auto simp: multiT_def zeroT_def)
+          show ?thesis
+          proof (cases "j1' < Lng N - 1")
+            case jsmall: True
+            \<comment> \<open>article 1446: the slice lies in the \<open>butlast\<close> prefix where \<open>M = N[n]\<close>
+               agrees with \<open>N\<close> (@{thm [source] oper_nth_lt}); reduce to IH on \<open>N\<close>\<close>
+            have agree: "\<And>i. i \<le> j1' \<Longrightarrow> M ! i = N ! i"
+            proof -
+              fix i assume "i \<le> j1'"
+              hence "i < Lng N - 1" using jsmall by linarith
+              thus "M ! i = N ! i" using Neq oper_nth_lt[OF NT LNgt n1, of i] by simp
+            qed
+            have segeq: "seg M j0' j1' = seg N j0' j1'"
+            proof (rule nth_equalityI)
+              show "length (seg M j0' j1') = length (seg N j0' j1')" by simp
+              fix i assume "i < length (seg M j0' j1')"
+              hence ic: "i < Suc j1' - j0'" by simp
+              have ij: "j0' + i \<le> j1'" using ic by linarith
+              have "seg M j0' j1' ! i = M ! (j0' + i)" using ic by (rule seg_nth_eq)
+              also have "\<dots> = N ! (j0' + i)" using agree[OF ij] by simp
+              also have "\<dots> = seg N j0' j1' ! i" using ic by (simp add: seg_nth_eq)
+              finally show "seg M j0' j1' ! i = seg N j0' j1' ! i" .
+            qed
+            \<comment> \<open>transfer \<open>leR\<close> from \<open>M\<close> to \<open>N\<close> via the slice (@{thm [source] adm_le0_seg})\<close>
+            have j0j1: "j0' \<le> j1'" using lt by simp
+            have jNlt: "j1' < Lng N" using jsmall by linarith
+            have idx: "j0' + (j1' - j0') = j1'" using j0j1 by simp
+            have stepM: "le0 (seg M j0' j1') 0 (j1' - j0') = le0 M j0' j1'"
+              using adm_le0_seg[OF jM _ _ j0j1, of 0 "j1' - j0'"] idx by simp
+            have stepN: "le0 (seg N j0' j1') 0 (j1' - j0') = le0 N j0' j1'"
+              using adm_le0_seg[OF jNlt _ _ j0j1, of 0 "j1' - j0'"] idx by simp
+            have "le0 M j0' j1'" using leR by (simp add: leR_def)
+            hence "le0 N j0' j1'" using stepM stepN segeq by simp
+            hence leRN: "leR N 0 j0' j1'" by (simp add: leR_def)
+            have j1N: "j1' \<le> Lng N - 1" using jsmall by linarith
+            have "descending (Br (seg N j0' j1'))"
+              using IHk NS monoN lt j1N leRN by blast
+            thus ?thesis using segeq by simp
+          next
+            case jlarge: False
+            \<comment> \<open>slice reaches index \<open>\<ge> Lng N - 1\<close>: the \<open>n>1\<close> block cases (article 1452–1589).
+               First the shared groundwork: the oper is generic (a degenerate oper
+               gives \<open>M = Pred N\<close>, \<open>Lng M = Lng N - 1\<close>, contradicting \<open>j1' \<ge> Lng N - 1\<close>),
+               then split on \<open>N\<^bsub>1,Lng N-1\<^esub>\<close> (\<open>= 0\<close>: i1=0, unshifted blocks, 1460–1514;
+               \<open>> 0\<close>: i1=1, \<open>\<delta>\<close>-shifted blocks, 1516–1589).\<close>
+            have bge: "Lng N - 1 \<le> j1'" using jlarge by simp
+            have nzj1N: "Lng N - 1 \<noteq> 0" using LNgt by simp
+            have notzeroN: "\<not> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0)"
+            proof
+              assume "entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0"
+              hence "(N::pairseq)[n] = Pred N" using nzj1N by (simp add: oper_def Let_def)
+              hence "Lng M = Lng N - 1" using Neq LNgt by (simp add: Pred_def)
+              thus False using bge j1 LNgt by presburger
+            qed
+            have hasparN: "hasParent N (idx1 N (Lng N - 1)) (Lng N - 1)"
+            proof (rule ccontr)
+              assume "\<not> hasParent N (idx1 N (Lng N - 1)) (Lng N - 1)"
+              hence "(N::pairseq)[n] = Pred N" using notzeroN nzj1N by (simp add: oper_def Let_def)
+              hence "Lng M = Lng N - 1" using Neq LNgt by (simp add: Pred_def)
+              thus False using bge j1 LNgt by presburger
+            qed
+            show ?thesis
+            proof (cases "entry N 1 (Lng N - 1) = 0")
+              case d0zero: True
+              \<comment> \<open>\<open>i\<^sub>1 = 0\<close>: layout \<open>M = take j\<^sub>0\<^sup>N N @ (block)\<^bsup>n\<^esup>\<close>, block \<open>= (N\<^sub>j)\<^bsub>j=j\<^sub>0\<^sup>N\<^esub>\<^bsup>j\<^sub>1\<^sup>N-1\<^esup>\<close>
+                 (unshifted, article 1460).  GREEN groundwork below; the case
+                 analysis 1464/1466/1502 on \<open>j\<^sub>0\<^sup>N\<close> vs \<open>j'\<^sub>0,j'\<^sub>1\<close> remains.\<close>
+              have i1zN: "idx1 N (Lng N - 1) = 0" using d0zero by (simp add: idx1_def)
+              have haspar0: "hasParent N 0 (Lng N - 1)" using hasparN i1zN by simp
+              have parR: "nextR N 0 (parent N 0 (Lng N - 1)) (Lng N - 1)"
+                using haspar0 unfolding hasParent_def parent_def by (rule theI')
+              have j0Nlt: "parent N 0 (Lng N - 1) < Lng N - 1"
+                using poper_nextR_imp_le0[OF parR] by simp
+              have layout: "M = take (parent N 0 (Lng N - 1)) N
+                @ concat (replicate n (map ((!) N) [parent N 0 (Lng N - 1)..<Lng N - 1]))"
+                using Neq oper_d0zero_expand[OF LNgt notzeroN hasparN i1zN] by simp
+              have parR0N: "nextrel0 N (parent N 0 (Lng N - 1)) (Lng N - 1)"
+                using parR by (simp add: nextR_def)
+              let ?j0N = "parent N 0 (Lng N - 1)"  let ?w = "Lng N - 1 - ?j0N"
+              have w0: "0 < ?w" using j0Nlt by linarith
+              have LngM: "Lng M = ?j0N + n * ?w"
+              proof -
+                have t: "length (take ?j0N N) = ?j0N" using j0Nlt LNgt by simp
+                have b: "length (map ((!) N) [?j0N..<Lng N - 1]) = ?w" by simp
+                show ?thesis using layout t b by (simp add: length_concat sum_list_replicate)
+              qed
+              have le0M: "le0 M j0' j1'" using leR by (simp add: leR_def)
+              have j0'lt: "j0' < Lng M" using lt jM by linarith
+              show ?thesis
+              proof (cases "?j0N \<le> j0'")
+                case ge: True
+                \<comment> \<open>article 1502: \<open>j'\<^sub>0 \<ge> j\<^sub>0\<^sup>N\<close>; the slice lies inside one block, so it
+                   equals a slice of \<open>N\<close> (block periodicity), reduce to IHk on \<open>N\<close>\<close>
+                define q where "q = (j0' - ?j0N) div ?w"
+                define rr where "rr = (j0' - ?j0N) mod ?w"
+                define rp where "rp = j1' - (?j0N + q * ?w)"
+                define A where "A = ?j0N + rr"
+                define E where "E = ?j0N + rp"
+                have qn: "q < n"
+                proof -
+                  have "j0' - ?j0N < n * ?w" using j0'lt LngM ge by linarith
+                  thus ?thesis unfolding q_def using less_mult_imp_div_less by simp
+                qed
+                have j0'mod: "q * ?w + rr = j0' - ?j0N"
+                  unfolding q_def rr_def using div_mult_mod_eq[of "j0' - ?j0N" ?w]
+                  by (simp add: mult.commute)
+                have j0'split: "j0' = ?j0N + q * ?w + rr" using j0'mod ge by linarith
+                \<comment> \<open>confinement: \<open>j'\<^sub>1\<close> stays in \<open>j'\<^sub>0\<close>'s block\<close>
+                have abN: "(nextrel0 ((N::pairseq)[n]))\<^sup>*\<^sup>* j0' j1'"
+                  using le0M Neq by (simp add: le0_def)
+                have altN: "j0' < Lng ((N::pairseq)[n])" using j0'lt Neq by simp
+                have conf: "j1' < ?j0N + (q + 1) * ?w"
+                  using oper_d0zero_le0_confined[OF LNgt notzeroN hasparN i1zN ge altN abN]
+                  by (simp add: q_def)
+                have conf': "j1' < ?j0N + q * ?w + ?w" using conf by (simp add: algebra_simps)
+                have r'lt: "rp < ?w" unfolding rp_def using conf' j0'split lt by linarith
+                have rrr': "rr < rp" unfolding rp_def using j0'split lt by linarith
+                have j1'split: "j1' = ?j0N + q * ?w + rp"
+                  unfolding rp_def using j0'split lt by linarith
+                have aend: "A < E" unfolding A_def E_def using rrr' by simp
+                have endle: "E \<le> Lng N - 1" unfolding E_def using r'lt by linarith
+                \<comment> \<open>the two slices coincide pointwise (block periodicity)\<close>
+                have segeq: "seg M j0' j1' = seg N A E"
+                proof (rule nth_equalityI)
+                  have "length (seg M j0' j1') = Suc j1' - j0'" by simp
+                  also have "\<dots> = Suc E - A"
+                    unfolding A_def E_def using j0'split j1'split rrr' by linarith
+                  also have "\<dots> = length (seg N A E)" by simp
+                  finally show "length (seg M j0' j1') = length (seg N A E)" .
+                  fix i assume "i < length (seg M j0' j1')"
+                  hence ic: "i < Suc j1' - j0'" by simp
+                  have rri: "rr + i < ?w" using ic j0'split j1'split r'lt by linarith
+                  have ic': "i < Suc E - A"
+                    unfolding A_def E_def using ic j0'split j1'split rrr' by linarith
+                  have "seg M j0' j1' ! i = M ! (j0' + i)" using ic by (rule seg_nth_eq)
+                  also have "j0' + i = ?j0N + q * ?w + (rr + i)" using j0'split by simp
+                  also have "M ! (?j0N + q * ?w + (rr + i)) = N ! (?j0N + (rr + i))"
+                    using Neq oper_d0zero_nth[OF LNgt notzeroN hasparN i1zN j0Nlt qn rri] by simp
+                  also have "?j0N + (rr + i) = A + i" unfolding A_def by simp
+                  also have "N ! (A + i) = seg N A E ! i" using ic' by (simp add: seg_nth_eq)
+                  finally show "seg M j0' j1' ! i = seg N A E ! i" .
+                qed
+                \<comment> \<open>transfer \<open>leR\<close> through the equal slices (@{thm [source] adm_le0_seg})\<close>
+                have j0j1: "j0' \<le> j1'" using lt by simp
+                have aleb: "A \<le> E" using aend by simp
+                have jNlt: "E < Lng N" using endle LNgt by linarith
+                have idxM: "j0' + (j1' - j0') = j1'" using j0j1 by simp
+                have idxN: "A + (E - A) = E" using aleb by linarith
+                have leneq: "j1' - j0' = E - A"
+                  unfolding A_def E_def using j0'split j1'split rrr' by linarith
+                have stepM: "le0 (seg M j0' j1') 0 (j1' - j0') = le0 M j0' j1'"
+                  using adm_le0_seg[OF jM _ _ j0j1, of 0 "j1' - j0'"] idxM by simp
+                have stepN: "le0 (seg N A E) 0 (E - A) = le0 N A E"
+                  using adm_le0_seg[OF jNlt _ _ aleb, of 0 "E - A"] idxN by simp
+                have "le0 N A E" using le0M stepM stepN segeq leneq by simp
+                hence leRN: "leR N 0 A E" by (simp add: leR_def)
+                have "descending (Br (seg N A E))"
+                  using IHk NS monoN aend endle leRN by blast
+                thus ?thesis using segeq by simp
+              next
+                case lt0: False
+                \<comment> \<open>article 1466: \<open>j'\<^sub>0 < j\<^sub>0\<^sup>N < j'\<^sub>1\<close>; the slice straddles the trunk/branch
+                   junction.  GROUNDWORK (green): \<open>leR N 0 j'\<^sub>0 j\<^sub>1\<^sup>N\<close> (article 1476, via
+                   row-0 convexity + prefix agreement) so IHk gives \<open>descending (Br N')\<close>
+                   with \<open>N' = seg N j'\<^sub>0 (Lng N-1)\<close>.  The \<open>Br\<close>-under-oper decomposition
+                   (\<open>Br M' = take J\<^sub>1 (Br N') @ blocks\<close>, 1486/1492/1498) remains.\<close>
+                have j0'lt0N: "j0' < ?j0N" using lt0 by linarith
+                have MT: "M \<in> T_PS" using MS SkT_PS_subset_ST_PS ST_PS_T_PS by blast
+                have j0Nle1: "?j0N \<le> j1'" using j0Nlt bge by linarith
+                have j0'le: "j0' \<le> ?j0N" using j0'lt0N by simp
+                \<comment> \<open>row-0 convexity (木構造(1)): \<open>(0,j'\<^sub>0) \<le>\<^sub>M (0,j\<^sub>0\<^sup>N)\<close>\<close>
+                have le0Mj0: "le0 M j0' ?j0N"
+                  using m_5_1_ancestor_tree_1[OF MT leR j0'le j0Nle1] by (simp add: leR_def)
+                \<comment> \<open>\<open>M = N[n]\<close> agrees with \<open>N\<close> on \<open>[0, j\<^sub>0\<^sup>N]\<close>, so \<open>le0\<close> transfers to \<open>N\<close>\<close>
+                have agree: "\<And>x. x \<le> ?j0N \<Longrightarrow> M ! x = N ! x"
+                  using Neq oper_d0zero_nth_le_parent[OF LNgt notzeroN hasparN i1zN n1] by simp
+                have j0NltN: "?j0N < Lng N" using j0Nlt LNgt by linarith
+                have nw0: "0 < n * ?w" using n1 w0 by simp
+                have j0NltM: "?j0N < Lng M" using LngM nw0 by linarith
+                have le0Nj0: "le0 N j0' ?j0N"
+                  using le0_prefix_agree[OF agree j0NltM j0NltN _ _ le0Mj0] j0'lt0N by simp
+                have le0NjN: "le0 N ?j0N (Lng N - 1)"
+                proof -
+                  have "(nextrel0 N)\<^sup>*\<^sup>* ?j0N (Lng N - 1)" using parR0N by (rule r_into_rtranclp)
+                  thus ?thesis using parR0N by (simp add: le0_def nextrel0_def)
+                qed
+                have leRN: "leR N 0 j0' (Lng N - 1)"
+                  using le0_trans[OF le0Nj0 le0NjN] by (simp add: leR_def)
+                have j0'lt1N: "j0' < Lng N - 1" using j0'lt0N j0Nlt by linarith
+                have descN': "descending (Br (seg N j0' (Lng N - 1)))"
+                  using IHk NS monoN j0'lt1N leRN by blast
+                \<comment> \<open>GROUNDWORK for the \<open>Br\<close>-under-oper decomposition (article 1486/1492/1498).
+                   Pin \<open>TrMax M' = TrMax N'\<close> (proven brick), expose the branch region
+                   \<open>S = seg M' (TrMax N'+1)(Lng M'-1)\<close> with \<open>Br M' = P S\<close>, and record the
+                   junction inequality \<open>N\<^bsub>0,j\<^sub>0\<^sup>N\<^esub> < N\<^bsub>0,j\<^sub>1\<^sup>N\<^esub>\<close>.\<close>
+                have bge2: "Lng N - 2 \<le> j1'" using bge by linarith
+                have jMn: "j1' < Lng ((N::pairseq)[n])" using jM Neq by simp
+                have TrEq: "TrMax (seg M j0' j1') = TrMax (seg N j0' (Lng N - 1))"
+                  using TrMax_seg_oper_d0zero_eq_caseA[OF NT LNgt notzeroN hasparN i1zN
+                    parR0N n1 j0'lt0N bge2 jMn] Neq by simp
+                \<comment> \<open>junction: row-0 of the parent step is strict (\<open>nextrel0\<close>)\<close>
+                have junc0: "entry N 0 ?j0N < entry N 0 (Lng N - 1)"
+                  using parR0N by (simp add: nextrel0_def)
+                \<comment> \<open>Split on the position of \<open>FirstNodes(N')\<^bsub>J\<^sub>1\<^esub>\<close> relative to the trunk
+                   (article 1484/1490/1496): sub-case A is \<open>j\<^sub>0\<^sup>N - j'\<^sub>0 \<le> TrMax(N')\<close>.\<close>
+                let ?Np = "seg N j0' (Lng N - 1)"
+                show ?thesis
+                proof (cases "?j0N - j0' \<le> TrMax ?Np")
+                  case caseA: True
+                  \<comment> \<open>article 1484-1488: \<open>FirstNodes(N')\<^bsub>J\<^sub>1\<^esub> = j\<^sub>1\<^sup>N - j'\<^sub>0\<close>, the branch region of
+                     \<open>M'\<close> folds into \<open>take J\<^sub>1 (Br N') @ blocks\<close> with all block heads \<open>N\<^bsub>j\<^sub>0\<^sup>N\<^esub>\<close>.
+                     Close \<open>descending (Br M')\<close> via the FirstNodes tie-break
+                     (@{thm [source] descending_Br_of_FN_tiebreak}).\<close>
+                  let ?M' = "seg M j0' j1'"
+                  have monoM': "monoT ?M'"
+                    using m_6_2_mono_ancestor_slice[OF MT lt leR] .
+                  have M'ne: "?M' \<noteq> []"
+                  proof -
+                    have "Lng ?M' = Suc j1' - j0'" by (rule Lng_seg)
+                    hence "0 < Lng ?M'" using lt by linarith
+                    thus ?thesis using length_greater_0_conv by blast
+                  qed
+                  have M'T: "?M' \<in> T_PS" using M'ne by (simp add: T_PS_def)
+                  have M'PT: "?M' \<in> PT_PS" using M'T monoM' by (simp add: PT_PS_def)
+                  \<comment> \<open>article 1480: \<open>TrMax(N') < j\<^sub>1\<^sup>N - j'\<^sub>0\<close> (\<open>Br N' \<noteq> []\<close>).  \<open>?Np \<in> T_PS\<close>,
+                     \<open>1 < Lng ?Np\<close> and \<open>?Np\<^bsub>1, last\<^esub> = 0\<close> from the d0zero hypotheses.\<close>
+                  have NpL: "Lng ?Np = Lng N - j0'" using j0'lt1N by simp
+                  have NpLgt: "1 < Lng ?Np"
+                    using NpL j0'lt0N j0Nlt by linarith
+                  have Npne: "?Np \<noteq> []" using NpLgt length_greater_0_conv by fastforce
+                  have NpT: "?Np \<in> T_PS" using Npne by (simp add: T_PS_def)
+                  have Nplast: "?Np ! (Lng ?Np - 1) = N ! (Lng N - 1)"
+                  proof -
+                    have idx: "Lng ?Np - 1 < Suc (Lng N - 1) - j0'" using NpL NpLgt by linarith
+                    have "?Np ! (Lng ?Np - 1) = N ! (j0' + (Lng ?Np - 1))"
+                      using idx by (rule seg_nth_eq)
+                    moreover have "j0' + (Lng ?Np - 1) = Lng N - 1"
+                      using NpL j0'lt1N by linarith
+                    ultimately show ?thesis by simp
+                  qed
+                  have Npz: "entry ?Np 1 (Lng ?Np - 1) = 0"
+                    using Nplast d0zero by (simp add: entry_def)
+                  have TrNplt: "TrMax ?Np < Lng ?Np - 1"
+                    by (rule TrMax_lt_last_of_row1_zero[OF NpT NpLgt Npz])
+                  \<comment> \<open>so \<open>Br ?Np \<noteq> []\<close>; record \<open>J\<^sub>1 = Lng (Br ?Np) - 1\<close>\<close>
+                  have BrNpne: "Br ?Np \<noteq> []"
+                  proof -
+                    have ne: "TrMax ?Np \<noteq> Lng ?Np - 1" using TrNplt by simp
+                    have "Br ?Np = P (seg ?Np (TrMax ?Np + 1) (Lng ?Np - 1))"
+                      using ne by (simp add: Br_def)
+                    moreover have "P (seg ?Np (TrMax ?Np + 1) (Lng ?Np - 1)) \<noteq> []"
+                      by (rule P_nonempty)
+                    ultimately show ?thesis by simp
+                  qed
+                  \<comment> \<open>branch region of \<open>M'\<close> as a slice of \<open>M\<close>: \<open>Br M' = P (seg M a j'\<^sub>1)\<close>,
+                     \<open>a = j'\<^sub>0 + TrMax(N') + 1\<close> (\<open>TrMax M' = TrMax N'\<close> by \<open>TrEq\<close>).\<close>
+                  have TrM'lt: "TrMax ?M' < Lng ?M' - 1"
+                  proof -
+                    have "Lng ?M' - 1 = j1' - j0'" by simp
+                    moreover have "TrMax ?M' = TrMax ?Np" using TrEq by simp
+                    moreover have "TrMax ?Np < Lng N - 1 - j0'" using TrNplt NpL by linarith
+                    moreover have "Lng N - 1 - j0' \<le> j1' - j0'" using bge by linarith
+                    ultimately show ?thesis by linarith
+                  qed
+                  have BrM'P: "Br ?M' = P (seg M (j0' + TrMax ?Np + 1) j1')"
+                  proof -
+                    have ne: "TrMax ?M' \<noteq> Lng ?M' - 1" using TrM'lt by simp
+                    have "Br ?M' = P (seg ?M' (TrMax ?M' + 1) (Lng ?M' - 1))"
+                      using ne by (simp add: Br_def)
+                    also have "Lng ?M' - 1 = j1' - j0'" by simp
+                    also have "seg ?M' (TrMax ?M' + 1) (j1' - j0')
+                             = seg M (j0' + (TrMax ?M' + 1)) (j0' + (j1' - j0'))"
+                      by (rule seg_of_seg[OF less_imp_le[OF lt]]) simp
+                    also have "j0' + (j1' - j0') = j1'" using lt by simp
+                    also have "TrMax ?M' = TrMax ?Np" using TrEq by simp
+                    finally show ?thesis by simp
+                  qed
+                  \<comment> \<open>and \<open>Br N' = P (seg N a (Lng N-1))\<close>, the same starting index \<open>a\<close>\<close>
+                  have BrNpP: "Br ?Np = P (seg N (j0' + TrMax ?Np + 1) (Lng N - 1))"
+                  proof -
+                    have ne: "TrMax ?Np \<noteq> Lng ?Np - 1" using TrNplt by simp
+                    have "Br ?Np = P (seg ?Np (TrMax ?Np + 1) (Lng ?Np - 1))"
+                      using ne by (simp add: Br_def)
+                    also have "Lng ?Np - 1 = (Lng N - 1) - j0'" using NpL by simp
+                    also have "seg ?Np (TrMax ?Np + 1) ((Lng N - 1) - j0')
+                             = seg N (j0' + (TrMax ?Np + 1)) (j0' + ((Lng N - 1) - j0'))"
+                      by (rule seg_of_seg[OF _ _]) (use j0'lt1N in auto)
+                    also have "j0' + ((Lng N - 1) - j0') = Lng N - 1" using j0'lt1N by simp
+                    finally show ?thesis by simp
+                  qed
+                  \<comment> \<open>CLOSED sub-case A (article 1484-1488) via the \<open>descending_append\<close>
+                     route: \<open>Br M' = X @ Y\<close> with \<open>X = P(seg M a (Lng N-2))\<close> the
+                     truncated branch and \<open>Y = replicate (qb-1) blk @ [partial]\<close> the
+                     repeated whole/partial blocks.  \<open>X\<close> is \<open>butlast (Br N')\<close>
+                     (\<open>P_seg_butlast_bridge\<close> with \<open>Pcut(seg N a (Lng N-1)) = endpoint\<close>,
+                     proven from \<open>nextrel0_above_parent_trivial\<close>), descending by
+                     \<open>descending_take[OF descN']\<close>; \<open>Y\<close> has constant head \<open>N\<^bsub>j\<^sub>0\<^sup>N\<^esub>\<close>
+                     (\<open>descending_const_head\<close>); junction \<open>cdom\<close> from \<open>junc0\<close>
+                     (block head row-0 \<open>= N\<^bsub>0,j\<^sub>0\<^sup>N\<^esub> < N\<^bsub>0,Lng N-1\<^esub> \<le> entry (last X) 0 0\<close>).\<close>
+                  let ?a = "j0' + TrMax ?Np + 1"
+                  let ?qb = "(j1' - ?j0N) div ?w"  let ?r2 = "(j1' - ?j0N) mod ?w"
+                  let ?blk = "seg N ?j0N (Lng N - 2)"  let ?partial = "seg N ?j0N (?j0N + ?r2)"
+                  \<comment> \<open>basic arithmetic facts on \<open>a\<close>, \<open>qb\<close>, \<open>r2\<close>\<close>
+                  have aj0N: "?j0N < ?a" using caseA j0'lt0N by linarith
+                  have alt1N: "?a \<le> Lng N - 1"
+                  proof -
+                    have "TrMax ?Np < Lng ?Np - 1" by (rule TrNplt)
+                    hence "TrMax ?Np < Lng N - 1 - j0'" using NpL by linarith
+                    thus ?thesis using j0'lt1N by linarith
+                  qed
+                  have aMlt: "?a < Lng M"
+                  proof -
+                    have "?a \<le> Lng N - 1" by (rule alt1N)
+                    also have "Lng N - 1 \<le> j1'" by (rule bge)
+                    also have "j1' < Lng M" by (rule jM)
+                    finally show ?thesis .
+                  qed
+                  have jw: "?j0N + ?w = Lng N - 1" using w0 j0Nlt by simp
+                  have qbr2: "?qb * ?w + ?r2 = j1' - ?j0N"
+                    using div_mult_mod_eq[of "j1' - ?j0N" ?w] by (simp add: mult.commute)
+                  have j1Nge: "?j0N \<le> j1'" using j0Nlt bge by linarith
+                  have j1split: "j1' = ?j0N + ?qb * ?w + ?r2" using qbr2 j1Nge by linarith
+                  have r2w: "?r2 < ?w" using w0 by simp
+                  have qb1: "1 \<le> ?qb"
+                  proof -
+                    have "?w \<le> j1' - ?j0N" using bge jw j1Nge by linarith
+                    thus ?thesis using w0 by (simp add: div_greater_zero_iff Suc_leI)
+                  qed
+                  have qbn: "?qb < n"
+                  proof -
+                    have "j1' - ?j0N < n * ?w" using jM LngM j1Nge by linarith
+                    thus ?thesis using less_mult_imp_div_less by simp
+                  qed
+                  \<comment> \<open>blockmono: every offset within a block is \<open>\<ge>\<^sub>0\<close> the block start \<open>j\<^sub>0\<^sup>N\<close>\<close>
+                  have blockmono: "\<And>s. s < ?w \<Longrightarrow> le0 N ?j0N (?j0N + s)"
+                    using parent_block_le0[OF parR0N] by simp
+                  \<comment> \<open>the two main regimes coincide with \<open>J\<^sub>1 = Lng (Br N') - 1 \<ge> 1\<close> vs \<open>= 0\<close>\<close>
+                  show ?thesis
+                  proof (cases "?a < Lng N - 1")
+                    case asmall: True
+                    \<comment> \<open>regime \<open>J\<^sub>1 \<ge> 1\<close>: the branch slice \<open>seg N a (Lng N-1) = Br N'\<close> is multi,
+                       so \<open>P(seg M a (Lng N-2)) = butlast (Br N') = take J\<^sub>1 (Br N')\<close>\<close>
+                    have aw: "?a \<le> Lng N - 2" using asmall by linarith
+                    \<comment> \<open>fold identity: \<open>Br M' = P(seg M a (Lng N-2)) @ replicate (qb-1) blk @ [partial]\<close>\<close>
+                    have foldmid: "P (seg M ?a (?j0N + ?qb * ?w - 1))
+                                 = P (seg M ?a (Lng N - 2)) @ replicate (?qb - 1) ?blk"
+                      using oper_d0zero_seg_P_hfold[OF LNgt notzeroN hasparN i1zN aj0N aw
+                        blockmono qbn[THEN less_imp_le] qb1] Neq by simp
+                    have aB': "?a < ?j0N + ?qb * ?w"
+                    proof -
+                      have "?a \<le> Lng N - 2" by (rule aw)
+                      also have "Lng N - 2 < ?j0N + ?w" using jw w0 by linarith
+                      also have "?j0N + ?w \<le> ?j0N + ?qb * ?w" using qb1 by simp
+                      finally show ?thesis .
+                    qed
+                    have Bsk: "?j0N + ?qb * ?w + ?r2 < Lng M" using j1split jM by simp
+                    have bmr2: "le0 N ?j0N (?j0N + ?r2)" using blockmono[OF r2w] .
+                    have foldlast: "P (seg M ?a j1')
+                                  = P (seg M ?a (?j0N + ?qb * ?w - 1)) @ [?partial]"
+                      using oper_d0zero_seg_P_split[OF LNgt notzeroN hasparN i1zN aj0N qb1 aB'
+                        r2w bmr2 Bsk[unfolded Neq] qbn] j1split Neq by simp
+                    have fold: "Br ?M' = P (seg M ?a (Lng N - 2))
+                                       @ replicate (?qb - 1) ?blk @ [?partial]"
+                      using BrM'P foldlast foldmid by simp
+                    \<comment> \<open>the prefix \<open>seg M a (Lng N-2)\<close> equals \<open>seg N a (Lng N-2)\<close> (period intact)\<close>
+                    have segMN: "seg M ?a (Lng N - 2) = seg N ?a (Lng N - 2)"
+                    proof (rule nth_equalityI)
+                      show "length (seg M ?a (Lng N - 2)) = length (seg N ?a (Lng N - 2))" by simp
+                      fix i assume "i < length (seg M ?a (Lng N - 2))"
+                      hence ic: "i < Suc (Lng N - 2) - ?a" by simp
+                      have ai: "?a + i < Lng N - 1" using ic aw by linarith
+                      have "seg M ?a (Lng N - 2) ! i = M ! (?a + i)" using ic by (rule seg_nth_eq)
+                      also have "\<dots> = N ! (?a + i)"
+                        using Neq oper_nth_lt[OF NT LNgt n1 ai] by simp
+                      also have "\<dots> = seg N ?a (Lng N - 2) ! i" using ic by (simp add: seg_nth_eq)
+                      finally show "seg M ?a (Lng N - 2) ! i = seg N ?a (Lng N - 2) ! i" .
+                    qed
+                    \<comment> \<open>\<open>seg N a (Lng N-1) = Br N'\<close> is multi (\<open>Lng (Br N') = J\<^sub>1 + 1 \<ge> 2\<close>)\<close>
+                    have aLN1: "?a < Lng N - 1" by (rule asmall)
+                    have segNT: "seg N ?a (Lng N - 1) \<in> T_PS"
+                    proof -
+                      have "0 < Lng (seg N ?a (Lng N - 1))" using aLN1 by simp
+                      hence "seg N ?a (Lng N - 1) \<noteq> []" using length_greater_0_conv by blast
+                      thus ?thesis by (simp add: T_PS_def)
+                    qed
+                    have LsegN: "1 < Lng (seg N ?a (Lng N - 1))" using aLN1 by simp
+                    \<comment> \<open>\<open>seg N a (Lng N-1)\<close> is multi: it is not mono, because \<open>a\<close> (above \<open>j\<^sub>0\<^sup>N\<close>)
+                       is NOT a row-0 ancestor of the leaf (\<open>nextrel0_above_parent_trivial\<close>),
+                       so \<open>leR (seg) 0 0 (Lng-1)\<close> fails.\<close>
+                    have notmono: "\<not> le0 N ?a (Lng N - 1)"
+                    proof
+                      assume "le0 N ?a (Lng N - 1)"
+                      hence "(nextrel0 N)\<^sup>*\<^sup>* ?a (Lng N - 1)" by (simp add: le0_def)
+                      hence "?a = Lng N - 1"
+                        using nextrel0_above_parent_trivial[OF parR0N] aj0N by simp
+                      thus False using aLN1 by simp
+                    qed
+                    have multiseg: "multiT (seg N ?a (Lng N - 1))"
+                    proof -
+                      have nz: "\<not> zeroT (seg N ?a (Lng N - 1))" using LsegN by (simp add: zeroT_def)
+                      have aj1: "?a \<le> Lng N - 1" using aLN1 by linarith
+                      have NLpos: "Lng N - 1 < Lng N" using LNgt by linarith
+                      have idx: "(Lng N - 1) - ?a \<le> (Lng N - 1) - ?a" by simp
+                      have aend: "?a + ((Lng N - 1) - ?a) = Lng N - 1" using aj1 by simp
+                      have transfer0: "le0 (seg N ?a (Lng N - 1)) 0 ((Lng N - 1) - ?a)
+                                    = le0 N (?a + 0) (?a + ((Lng N - 1) - ?a))"
+                        using adm_le0_seg[OF NLpos _ idx aj1, of 0] by blast
+                      have transfer: "le0 (seg N ?a (Lng N - 1)) 0 ((Lng N - 1) - ?a)
+                                    = le0 N ?a (Lng N - 1)"
+                        using transfer0 aend by (metis add_0_right)
+                      have Lseg1: "Lng (seg N ?a (Lng N - 1)) - 1 = (Lng N - 1) - ?a"
+                        using aLN1 by simp
+                      have "\<not> leR (seg N ?a (Lng N - 1)) 0 0 (Lng (seg N ?a (Lng N - 1)) - 1)"
+                        using notmono transfer Lseg1 by (simp add: leR_def)
+                      thus ?thesis using nz by (simp add: multiT_def monoT_def)
+                    qed
+                    have BrNpne2: "1 < length (Br ?Np)"
+                      using m_6_2_P_components_2[OF segNT] multiseg BrNpP by simp
+                    \<comment> \<open>\<open>Pcut(seg N a (Lng N-1)) = (Lng N-1) - a\<close>: the leaf has no proper
+                       row-0 ancestor above \<open>j\<^sub>0\<^sup>N\<close>, and the slice starts above \<open>j\<^sub>0\<^sup>N\<close>\<close>
+                    have Pcutend: "Pcut (seg N ?a (Lng N - 1)) = (Lng N - 1) - ?a"
+                    proof -
+                      let ?S = "seg N ?a (Lng N - 1)"  let ?e = "(Lng N - 1) - ?a"
+                      have Le: "Lng ?S - 1 = ?e" using aLN1 by simp
+                      let ?Q = "\<lambda>j. 0 < j \<and> j \<le> Lng ?S - 1 \<and> leR ?S 0 j (Lng ?S - 1)"
+                      have wit: "?Q ?e" using LsegN Le by (auto simp: leR_def le0_def)
+                      have uniq: "\<And>j. ?Q j \<Longrightarrow> j = ?e"
+                      proof -
+                        fix j assume Qj: "?Q j"
+                        hence jpos: "0 < j" and jle: "j \<le> ?e" and lej: "leR ?S 0 j ?e"
+                          using Le by auto
+                        have jlt: "j < Lng N" using jle aLN1 by linarith
+                        have ele: "?e \<le> Lng N" using aLN1 by linarith
+                        have aj1: "?a \<le> Lng N - 1" using aLN1 by linarith
+                        have transfer: "le0 ?S j ?e = le0 N (?a + j) (?a + ?e)"
+                          using adm_le0_seg[where M=N and j0'="?a" and j1'="Lng N - 1"
+                              and a=j and b="?e"] aj1 jle Le by simp
+                        have aej: "?a + ?e = Lng N - 1" using aLN1 by simp
+                        have le0je: "le0 ?S j ?e" using lej by (simp add: leR_def)
+                        have le0aje: "le0 N (?a + j) (Lng N - 1)"
+                          using le0je transfer aej by metis
+                        have chain: "(nextrel0 N)\<^sup>*\<^sup>* (?a + j) (Lng N - 1)"
+                          using le0aje unfolding le0_def by (rule conjunct2[OF conjunct2])
+                        have agt: "?j0N < ?a + j" using aj0N jpos by linarith
+                        have "?a + j = Lng N - 1"
+                          by (rule nextrel0_above_parent_trivial[OF parR0N chain agt])
+                        thus "j = ?e" using aej by linarith
+                      qed
+                      have "(LEAST j. ?Q j) = ?e"
+                        by (rule Least_equality[where P = ?Q and x = ?e, OF wit])
+                           (use uniq in fastforce)
+                      thus ?thesis unfolding Pcut_def by simp
+                    qed
+                    \<comment> \<open>bridge: \<open>P(seg N a (Lng N-2)) = butlast (Br N') = take J\<^sub>1 (Br N')\<close>\<close>
+                    have bridge: "P (seg N ?a (Lng N - 2)) = butlast (Br ?Np)"
+                    proof -
+                      have "P (seg N ?a ((Lng N - 1) - 1)) = butlast (P (seg N ?a (Lng N - 1)))"
+                        by (rule P_seg_butlast_bridge[OF aLN1 multiseg]) (use Pcutend in simp)
+                      moreover have "(Lng N - 1) - 1 = Lng N - 2" by simp
+                      ultimately show ?thesis using BrNpP by simp
+                    qed
+                    have Xdesc: "descending (P (seg M ?a (Lng N - 2)))"
+                    proof -
+                      have "P (seg M ?a (Lng N - 2)) = butlast (Br ?Np)"
+                        using segMN bridge by simp
+                      also have "butlast (Br ?Np) = take (length (Br ?Np) - 1) (Br ?Np)"
+                        by (simp add: butlast_conv_take)
+                      finally show ?thesis using descending_take[OF descN'] by simp
+                    qed
+                    \<comment> \<open>tail \<open>Y\<close>: every component starts with the block head \<open>N\<^bsub>j\<^sub>0\<^sup>N\<^esub>\<close>\<close>
+                    let ?Y = "replicate (?qb - 1) ?blk @ [?partial]"
+                    have blkhd0: "entry ?blk 0 0 = entry N 0 ?j0N"
+                      using w0 j0Nlt by (simp add: entry_seg)
+                    have blkhd1: "entry ?blk 1 0 = entry N 1 ?j0N"
+                      using w0 j0Nlt by (simp add: entry_seg)
+                    have parhd0: "entry ?partial 0 0 = entry N 0 ?j0N"
+                      by (simp add: entry_seg)
+                    have parhd1: "entry ?partial 1 0 = entry N 1 ?j0N"
+                      by (simp add: entry_seg)
+                    have Ydesc: "descending ?Y"
+                    proof (rule descending_const_head)
+                      fix J assume "J < Lng ?Y"
+                      hence Jlt: "J < (?qb - 1) + 1" by simp
+                      show "entry (?Y ! J) 0 0 = entry N 0 ?j0N \<and> entry (?Y ! J) 1 0 = entry N 1 ?j0N"
+                      proof (cases "J < ?qb - 1")
+                        case True
+                        hence "?Y ! J = ?blk" by (simp add: nth_append)
+                        thus ?thesis using blkhd0 blkhd1 by simp
+                      next
+                        case False
+                        hence "J = ?qb - 1" using Jlt by linarith
+                        hence "?Y ! J = ?partial" by (simp add: nth_append)
+                        thus ?thesis using parhd0 parhd1 by simp
+                      qed
+                    qed
+                    \<comment> \<open>junction: \<open>cdom (last X) (Y\<^bsub>0\<^esub>)\<close>; the block head row-0 \<open>= N\<^bsub>0,j\<^sub>0\<^sup>N\<^esub>\<close> is
+                       strictly below the leaf row-0 \<open>= N\<^bsub>0,Lng N-1\<^esub> \<le> entry (last X) 0 0\<close>\<close>
+                    have leafval: "entry (Br ?Np ! (length (Br ?Np) - 1)) 0 0 = entry N 0 (Lng N - 1)"
+                    proof -
+                      have lastB: "Br ?Np ! (length (Br ?Np) - 1) = last (Br ?Np)"
+                        using BrNpne by (simp add: last_conv_nth)
+                      have "last (Br ?Np) = drop (Pcut (seg N ?a (Lng N - 1))) (seg N ?a (Lng N - 1))"
+                        using poper_last_P_multi[OF multiseg LsegN] BrNpP by simp
+                      also have "\<dots> = drop ((Lng N - 1) - ?a) (seg N ?a (Lng N - 1))"
+                        using Pcutend by simp
+                      also have "\<dots> = seg N (?a + ((Lng N - 1) - ?a)) (Lng N - 1)"
+                        by (rule drop_seg)
+                      also have "?a + ((Lng N - 1) - ?a) = Lng N - 1" using aLN1 by simp
+                      finally have "last (Br ?Np) = seg N (Lng N - 1) (Lng N - 1)" .
+                      thus ?thesis using lastB by (simp add: entry_seg)
+                    qed
+                    have junc_cdom: "cdom (last (P (seg M ?a (Lng N - 2)))) (?Y ! 0)"
+                    proof -
+                      \<comment> \<open>\<open>last X = Br N' ! (J\<^sub>1 - 1)\<close>, the penultimate branch component\<close>
+                      have lenBrk: "length (Br ?Np) = Suc (length (Br ?Np) - 1)"
+                        using BrNpne by (cases "Br ?Np") auto
+                      have Xeq: "P (seg M ?a (Lng N - 2)) = take (length (Br ?Np) - 1) (Br ?Np)"
+                        using segMN bridge by (simp add: butlast_conv_take)
+                      have Xlen: "length (P (seg M ?a (Lng N - 2))) = length (Br ?Np) - 1"
+                        using Xeq BrNpne2 by simp
+                      have Xne: "P (seg M ?a (Lng N - 2)) \<noteq> []" using Xlen BrNpne2 by auto
+                      have arith2: "length (P (seg M ?a (Lng N - 2))) - 1 = length (Br ?Np) - 2"
+                        using Xlen by simp
+                      have lt2: "length (Br ?Np) - 2 < length (Br ?Np) - 1"
+                        using BrNpne2 by linarith
+                      have lastXeq: "last (P (seg M ?a (Lng N - 2))) = Br ?Np ! (length (Br ?Np) - 2)"
+                      proof -
+                        have "last (P (seg M ?a (Lng N - 2)))
+                              = P (seg M ?a (Lng N - 2)) ! (length (P (seg M ?a (Lng N - 2))) - 1)"
+                          using Xne by (rule last_conv_nth)
+                        also have "\<dots> = P (seg M ?a (Lng N - 2)) ! (length (Br ?Np) - 2)"
+                          using arith2 by simp
+                        also have "\<dots> = take (length (Br ?Np) - 1) (Br ?Np) ! (length (Br ?Np) - 2)"
+                          using Xeq by simp
+                        also have "\<dots> = Br ?Np ! (length (Br ?Np) - 2)"
+                          using lt2 by simp
+                        finally show ?thesis .
+                      qed
+                      \<comment> \<open>\<open>descN'\<close> gives \<open>cdom (Br N' ! (J\<^sub>1-1)) (Br N' ! J\<^sub>1)\<close>\<close>
+                      have cdomBr: "cdom (Br ?Np ! (length (Br ?Np) - 2)) (Br ?Np ! (length (Br ?Np) - 1))"
+                      proof (rule descending_cdomD[OF descN'])
+                        show "length (Br ?Np) - 2 \<le> length (Br ?Np) - 1" by simp
+                        show "length (Br ?Np) - 1 < Lng (Br ?Np)" using BrNpne by simp
+                      qed
+                      \<comment> \<open>leaf row-0 \<open>\<le> entry (last X) 0 0\<close> from \<open>cdomBr\<close>\<close>
+                      have leaf_le: "entry N 0 (Lng N - 1) \<le> entry (last (P (seg M ?a (Lng N - 2)))) 0 0"
+                        using cdomBr leafval lastXeq by (simp add: cdom_def)
+                      \<comment> \<open>block-head row-0 \<open>= N\<^bsub>0,j\<^sub>0\<^sup>N\<^esub> < N\<^bsub>0,Lng N-1\<^esub>\<close> (\<open>junc0\<close>) \<open>\<Longrightarrow>\<close> strict drop\<close>
+                      have Y0hd: "entry (?Y ! 0) 0 0 = entry N 0 ?j0N"
+                      proof (cases "?qb - 1 = 0")
+                        case True hence "?Y ! 0 = ?partial" by simp
+                          thus ?thesis using parhd0 by simp
+                      next
+                        case False hence "?Y ! 0 = ?blk" by (simp add: nth_append)
+                          thus ?thesis using blkhd0 by simp
+                      qed
+                      have "entry (?Y ! 0) 0 0 < entry (last (P (seg M ?a (Lng N - 2)))) 0 0"
+                        using Y0hd junc0 leaf_le by linarith
+                      thus ?thesis by (simp add: cdom_def)
+                    qed
+                    have "descending (P (seg M ?a (Lng N - 2)) @ ?Y)"
+                      by (rule descending_append[OF Xdesc Ydesc]) (use junc_cdom in simp)
+                    thus ?thesis using fold by simp
+                  next
+                    case alarge: False
+                    \<comment> \<open>regime \<open>J\<^sub>1 = 0\<close> (\<open>a = Lng N - 1 = j\<^sub>0\<^sup>N + w\<close>): \<open>Br M' = P(seg M a j1')\<close>
+                       is the pure block tail \<open>replicate (qb-1) blk @ [partial]\<close>
+                       (@{thm [source] oper_d0zero_seg_P_blk1fold}), all heads \<open>N\<^bsub>j\<^sub>0\<^sup>N\<^esub>\<close>,
+                       hence descending by @{thm [source] descending_const_head}.\<close>
+                    have aeq: "?a = Lng N - 1" using alarge alt1N by linarith
+                    have aeqw: "?a = ?j0N + ?w" using aeq jw by simp
+                    \<comment> \<open>\<open>qb = Suc (qb-1)\<close> and \<open>j1' = j\<^sub>0\<^sup>N + Suc (qb-1) * w + r2\<close>\<close>
+                    have qbS: "?qb = Suc (?qb - 1)" using qb1 by simp
+                    have j1split': "j1' = ?j0N + Suc (?qb - 1) * ?w + ?r2"
+                      using j1split qbS by simp
+                    have qbn': "Suc (?qb - 1) < n" using qbn qbS by simp
+                    have fold: "Br ?M' = replicate (?qb - 1) ?blk @ [?partial]"
+                    proof -
+                      have "P (seg M ?a j1') = replicate (?qb - 1) ?blk @ [?partial]"
+                        using oper_d0zero_seg_P_blk1fold[OF LNgt notzeroN hasparN i1zN j0Nlt
+                          blockmono r2w qbn'] aeqw j1split' Neq by simp
+                      thus ?thesis using BrM'P by simp
+                    qed
+                    \<comment> \<open>tail descending: every component starts with the block head \<open>N\<^bsub>j\<^sub>0\<^sup>N\<^esub>\<close>\<close>
+                    have blkhd0: "entry ?blk 0 0 = entry N 0 ?j0N"
+                      using w0 j0Nlt by (simp add: entry_seg)
+                    have blkhd1: "entry ?blk 1 0 = entry N 1 ?j0N"
+                      using w0 j0Nlt by (simp add: entry_seg)
+                    have parhd0: "entry ?partial 0 0 = entry N 0 ?j0N" by (simp add: entry_seg)
+                    have parhd1: "entry ?partial 1 0 = entry N 1 ?j0N" by (simp add: entry_seg)
+                    let ?Y = "replicate (?qb - 1) ?blk @ [?partial]"
+                    have Ydesc: "descending ?Y"
+                    proof (rule descending_const_head)
+                      fix J assume "J < Lng ?Y"
+                      hence Jlt: "J < (?qb - 1) + 1" by simp
+                      show "entry (?Y ! J) 0 0 = entry N 0 ?j0N \<and> entry (?Y ! J) 1 0 = entry N 1 ?j0N"
+                      proof (cases "J < ?qb - 1")
+                        case True
+                        hence "?Y ! J = ?blk" by (simp add: nth_append)
+                        thus ?thesis using blkhd0 blkhd1 by simp
+                      next
+                        case False
+                        hence "J = ?qb - 1" using Jlt by linarith
+                        hence "?Y ! J = ?partial" by (simp add: nth_append)
+                        thus ?thesis using parhd0 parhd1 by simp
+                      qed
+                    qed
+                    show ?thesis using fold Ydesc by simp
+                  qed
+                next
+                  case caseBC: False
+                  \<comment> \<open>article 1490/1496: \<open>TrMax(N') < d = j\<^sub>0\<^sup>N - j'\<^sub>0\<close>.  Re-derive the same
+                     \<open>Br M'\<close>-decomposition groundwork as sub-case A (none of A's local
+                     facts are in scope here), then split on the regime
+                     \<open>j\<^sub>-\<^sub>1 \<le> TrMax(N')\<close> (sub-case B) vs \<open>TrMax(N') < j\<^sub>-\<^sub>1\<close> (sub-case C).\<close>
+                  let ?Np = "seg N j0' (Lng N - 1)"
+                  have BClt: "TrMax ?Np < ?j0N - j0'" using caseBC by linarith
+                  let ?M' = "seg M j0' j1'"
+                  have monoM': "monoT ?M'"
+                    using m_6_2_mono_ancestor_slice[OF MT lt leR] .
+                  have M'ne: "?M' \<noteq> []"
+                  proof -
+                    have "Lng ?M' = Suc j1' - j0'" by (rule Lng_seg)
+                    hence "0 < Lng ?M'" using lt by linarith
+                    thus ?thesis using length_greater_0_conv by blast
+                  qed
+                  have NpL: "Lng ?Np = Lng N - j0'" using j0'lt1N by simp
+                  have NpLgt: "1 < Lng ?Np" using NpL j0'lt0N j0Nlt by linarith
+                  have Npne: "?Np \<noteq> []" using NpLgt length_greater_0_conv by fastforce
+                  have NpT: "?Np \<in> T_PS" using Npne by (simp add: T_PS_def)
+                  have Nplast: "?Np ! (Lng ?Np - 1) = N ! (Lng N - 1)"
+                  proof -
+                    have idx: "Lng ?Np - 1 < Suc (Lng N - 1) - j0'" using NpL NpLgt by linarith
+                    have "?Np ! (Lng ?Np - 1) = N ! (j0' + (Lng ?Np - 1))"
+                      using idx by (rule seg_nth_eq)
+                    moreover have "j0' + (Lng ?Np - 1) = Lng N - 1"
+                      using NpL j0'lt1N by linarith
+                    ultimately show ?thesis by simp
+                  qed
+                  have Npz: "entry ?Np 1 (Lng ?Np - 1) = 0"
+                    using Nplast d0zero by (simp add: entry_def)
+                  have TrNplt: "TrMax ?Np < Lng ?Np - 1"
+                    by (rule TrMax_lt_last_of_row1_zero[OF NpT NpLgt Npz])
+                  have BrNpne: "Br ?Np \<noteq> []"
+                  proof -
+                    have ne: "TrMax ?Np \<noteq> Lng ?Np - 1" using TrNplt by simp
+                    have "Br ?Np = P (seg ?Np (TrMax ?Np + 1) (Lng ?Np - 1))"
+                      using ne by (simp add: Br_def)
+                    moreover have "P (seg ?Np (TrMax ?Np + 1) (Lng ?Np - 1)) \<noteq> []"
+                      by (rule P_nonempty)
+                    ultimately show ?thesis by simp
+                  qed
+                  have TrM'lt: "TrMax ?M' < Lng ?M' - 1"
+                  proof -
+                    have "Lng ?M' - 1 = j1' - j0'" by simp
+                    moreover have "TrMax ?M' = TrMax ?Np" using TrEq by simp
+                    moreover have "TrMax ?Np < Lng N - 1 - j0'" using TrNplt NpL by linarith
+                    moreover have "Lng N - 1 - j0' \<le> j1' - j0'" using bge by linarith
+                    ultimately show ?thesis by linarith
+                  qed
+                  let ?a = "j0' + TrMax ?Np + 1"
+                  let ?qb = "(j1' - ?j0N) div ?w"  let ?r2 = "(j1' - ?j0N) mod ?w"
+                  let ?blk = "seg N ?j0N (Lng N - 2)"  let ?partial = "seg N ?j0N (?j0N + ?r2)"
+                  have BrM'P: "Br ?M' = P (seg M ?a j1')"
+                  proof -
+                    have ne: "TrMax ?M' \<noteq> Lng ?M' - 1" using TrM'lt by simp
+                    have "Br ?M' = P (seg ?M' (TrMax ?M' + 1) (Lng ?M' - 1))"
+                      using ne by (simp add: Br_def)
+                    also have "Lng ?M' - 1 = j1' - j0'" by simp
+                    also have "seg ?M' (TrMax ?M' + 1) (j1' - j0')
+                             = seg M (j0' + (TrMax ?M' + 1)) (j0' + (j1' - j0'))"
+                      by (rule seg_of_seg[OF less_imp_le[OF lt]]) simp
+                    also have "j0' + (j1' - j0') = j1'" using lt by simp
+                    also have "TrMax ?M' = TrMax ?Np" using TrEq by simp
+                    finally show ?thesis by simp
+                  qed
+                  have BrNpP: "Br ?Np = P (seg N ?a (Lng N - 1))"
+                  proof -
+                    have ne: "TrMax ?Np \<noteq> Lng ?Np - 1" using TrNplt by simp
+                    have "Br ?Np = P (seg ?Np (TrMax ?Np + 1) (Lng ?Np - 1))"
+                      using ne by (simp add: Br_def)
+                    also have "Lng ?Np - 1 = (Lng N - 1) - j0'" using NpL by simp
+                    also have "seg ?Np (TrMax ?Np + 1) ((Lng N - 1) - j0')
+                             = seg N (j0' + (TrMax ?Np + 1)) (j0' + ((Lng N - 1) - j0'))"
+                      by (rule seg_of_seg[OF _ _]) (use j0'lt1N in auto)
+                    also have "j0' + ((Lng N - 1) - j0') = Lng N - 1" using j0'lt1N by simp
+                    finally show ?thesis by simp
+                  qed
+                  \<comment> \<open>basic arithmetic on \<open>a\<close>, \<open>qb\<close>, \<open>r2\<close>; in sub-case BC \<open>a \<le> j\<^sub>0\<^sup>N\<close>\<close>
+                  have ale: "?a \<le> ?j0N" using BClt j0'lt0N by linarith
+                  have alt1N: "?a \<le> Lng N - 1"
+                  proof -
+                    have "TrMax ?Np < Lng N - 1 - j0'" using TrNplt NpL by linarith
+                    thus ?thesis using j0'lt1N by linarith
+                  qed
+                  have jw: "?j0N + ?w = Lng N - 1" using w0 j0Nlt by simp
+                  have qbr2: "?qb * ?w + ?r2 = j1' - ?j0N"
+                    using div_mult_mod_eq[of "j1' - ?j0N" ?w] by (simp add: mult.commute)
+                  have j1Nge: "?j0N \<le> j1'" using j0Nlt bge by linarith
+                  have j1split: "j1' = ?j0N + ?qb * ?w + ?r2" using qbr2 j1Nge by linarith
+                  have r2w: "?r2 < ?w" using w0 by simp
+                  have qbn: "?qb < n"
+                  proof -
+                    have "j1' - ?j0N < n * ?w" using jM LngM j1Nge by linarith
+                    thus ?thesis using less_mult_imp_div_less by simp
+                  qed
+                  have blockmono: "\<And>s. s < ?w \<Longrightarrow> le0 N ?j0N (?j0N + s)"
+                    using parent_block_le0[OF parR0N] by simp
+                  \<comment> \<open>HIGH half (block-0-anchored fold): \<open>P(seg M j\<^sub>0\<^sup>N j'\<^sub>1) = replicate qb blk @ [partial]\<close>\<close>
+                  have hival: "P (seg M ?j0N j1') = replicate ?qb ?blk @ [?partial]"
+                    using oper_d0zero_seg_P_blk0fold[OF LNgt notzeroN hasparN i1zN j0Nlt
+                      blockmono r2w qbn] j1split Neq by simp
+                  \<comment> \<open>HIGH half is descending: all heads are the block head \<open>N\<^bsub>j\<^sub>0\<^sup>N\<^esub>\<close>\<close>
+                  let ?Y = "replicate ?qb ?blk @ [?partial]"
+                  have blkhd0: "entry ?blk 0 0 = entry N 0 ?j0N"
+                    using w0 j0Nlt by (simp add: entry_seg)
+                  have blkhd1: "entry ?blk 1 0 = entry N 1 ?j0N"
+                    using w0 j0Nlt by (simp add: entry_seg)
+                  have parhd0: "entry ?partial 0 0 = entry N 0 ?j0N" by (simp add: entry_seg)
+                  have parhd1: "entry ?partial 1 0 = entry N 1 ?j0N" by (simp add: entry_seg)
+                  have Ydesc: "descending ?Y"
+                  proof (rule descending_const_head)
+                    fix J assume "J < Lng ?Y"
+                    hence Jlt: "J < ?qb + 1" by simp
+                    show "entry (?Y ! J) 0 0 = entry N 0 ?j0N \<and> entry (?Y ! J) 1 0 = entry N 1 ?j0N"
+                    proof (cases "J < ?qb")
+                      case True
+                      hence "?Y ! J = ?blk" by (simp add: nth_append)
+                      thus ?thesis using blkhd0 blkhd1 by simp
+                    next
+                      case False
+                      hence "J = ?qb" using Jlt by linarith
+                      hence "?Y ! J = ?partial" by (simp add: nth_append)
+                      thus ?thesis using parhd0 parhd1 by simp
+                    qed
+                  qed
+                  show ?thesis
+                  proof (cases "?a < ?j0N")
+                    case asmall: True
+                    \<comment> \<open>sub-case B, regime \<open>J\<^sub>1 \<ge> 1\<close> (\<open>a < j\<^sub>0\<^sup>N\<close>): the branch region of \<open>M'\<close> is
+                       \<open>P(seg M a (j\<^sub>0\<^sup>N-1)) @ (replicate qb blk @ [partial])\<close>.  The LOW part is a
+                       prefix of \<open>Br N'\<close> (N-side \<open>P\<close>-additive split at \<open>j\<^sub>0\<^sup>N\<close>, descending by
+                       \<open>descending_take\<close>); the HIGH part is the block tail \<open>?Y\<close> (\<open>Ydesc\<close>);
+                       junction by \<open>junc0\<close>.  Sub-case B requires \<open>j\<^sub>-\<^sub>1 \<le> TrMax(N')\<close>, i.e.
+                       \<open>parent N 0 j\<^sub>0\<^sup>N < a\<close>, which makes \<open>j\<^sub>0\<^sup>N\<close> the left-minimal P-cut.\<close>
+                    show ?thesis
+                    proof (cases "parent ?Np 0 (?j0N - j0') \<le> TrMax ?Np")
+                      case caseB: True
+                      \<comment> \<open>sub-case B, \<open>J\<^sub>1 \<ge> 1\<close>.  RESIDUAL (left as \<open>sorry\<close>): the LOW part
+                         \<open>P(seg M a (j\<^sub>0\<^sup>N-1)) = take J\<^sub>1 (Br N')\<close> via the N-side \<open>P\<close>-additive
+                         split at \<open>j\<^sub>0\<^sup>N\<close>, whose left-minimality follows from
+                         \<open>parent N 0 j\<^sub>0\<^sup>N = j0' + (parent N' 0 (j\<^sub>0\<^sup>N-j0')) \<le> j0' + TrMax(N') = a-1 < a\<close>
+                         (\<open>adm_nextrel0_seg\<close> + \<open>caseB\<close>), so \<open>j\<^sub>0\<^sup>N\<close> is the unique row-0 ancestor of
+                         the leaf at/above \<open>a\<close> (\<open>nextrel0_above_parent_trivial\<close>), giving
+                         \<open>Pcut(seg N a (Lng N-1)) = j\<^sub>0\<^sup>N - a\<close>; then \<open>descending_append\<close> of
+                         \<open>descending_take[OF descN']\<close> (LOW) and \<open>Ydesc\<close> (HIGH), junction
+                         \<open>cdom\<close> from \<open>junc0\<close>.  Decomposition empirically TRUE 237/237.\<close>
+                      show ?thesis sorry
+                    next
+                      case caseC: False
+                      \<comment> \<open>sub-case C (article 1496): \<open>TrMax(N') < j\<^sub>-\<^sub>1\<close>; \<open>j\<^sub>0\<^sup>N\<close>'s row-0 parent lies
+                         in the branch, not the trunk.  Left as \<open>sorry\<close> (out of scope; the
+                         decomposition is empirically UNVALIDATED at the explored depths).\<close>
+                      show ?thesis sorry
+                    qed
+                  next
+                    case alarge: False
+                    \<comment> \<open>sub-case B, regime \<open>J\<^sub>1 = 0\<close> (\<open>a = j\<^sub>0\<^sup>N\<close>, i.e. \<open>TrMax(N') = d-1\<close>):
+                       \<open>Br M' = P(seg M j\<^sub>0\<^sup>N j'\<^sub>1) = ?Y\<close> directly (block-0 fold), descending
+                       by \<open>Ydesc\<close>.  This regime is independent of the B/C split.\<close>
+                    have aeq: "?a = ?j0N" using alarge ale by linarith
+                    have fold: "Br ?M' = ?Y"
+                    proof -
+                      have "Br ?M' = P (seg M ?j0N j1')" using BrM'P aeq by simp
+                      thus ?thesis using hival by simp
+                    qed
+                    show ?thesis using fold Ydesc by simp
+                  qed
+                qed
+              qed
+            next
+              case d0pos: False
+              \<comment> \<open>\<open>i\<^sub>1 = 1\<close>: \<open>M = prefix @ \<Oplus>\<^sub>k IncrFirst\<^bsup>k\<delta>\<^esup>(block)\<close>, article 1516–1589\<close>
+              show ?thesis sorry
+            qed
+          qed
+        next
+          case LN1: False
+          \<comment> \<open>\<open>Lng N = 1\<close>: then \<open>M = N[n] = N\<close>, \<open>Lng M = 1\<close>, contradicting \<open>j0' < j1'\<close>\<close>
+          have LN: "Lng N = 1" using LN1 NT by (cases N) (auto simp: T_PS_def)
+          hence "M = N" using Neq by (simp add: oper_def Let_def)
+          hence "Lng M = 1" using LN by simp
+          thus ?thesis using lt j1 by simp
+        qed
+      qed
+    qed
+  qed
+  thus "M \<in> SkT_PS k \<Longrightarrow> monoT M \<Longrightarrow> j0' < j1' \<Longrightarrow> j1' \<le> Lng M - 1
+        \<Longrightarrow> leR M 0 j0' j1' \<Longrightarrow> descending (Br (seg M j0' j1'))" by blast
+qed
+
+
 section \<open>§7.1 Buchholz notation: principal components (命題（順序数項の単項成分の基本性質）)\<close>
 
 text \<open>
