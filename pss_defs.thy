@@ -507,4 +507,18 @@ text \<open>\<open>DT\<^bsub>PS\<^esub>\<close> (強単項ペア数列): \<open>
 definition DT_PS :: "pairseq set" where
   "DT_PS = {M. M \<in> RT_PS \<and> monoT M \<and> descending (Br M)}"
 
+text \<open>\<open>LastStep : DT\<^bsub>PS\<^esub> \<to> \<nat>\<close> (§8.2, article 3297–3326): with \<open>J\<^sub>1\<close> the last
+  \<open>Br\<close>-index, \<open>0\<close> if \<open>Br M = []\<close>; \<open>J\<^sub>1\<close> if the last branch has equal head rows;
+  else the least \<open>J\<close> whose head row-0 equals \<open>(Br M\<^bsub>J\<^sub>1\<^esub>)\<^bsub>0,0\<^esub>\<close> and exceeds its
+  own row-1.  (CORRECTION A9: the article writes \<open>J\<^sub>1 := Lng(Br M)\<close> but then
+  indexes \<open>Br(M)\<^bsub>J\<^sub>1\<^esub>\<close>, which is out of range; \<open>Lng(Br M) - 1\<close> is meant.)\<close>
+
+definition LastStep :: "pairseq \<Rightarrow> nat" where
+  "LastStep M =
+     (if Br M = [] then 0
+      else let J1 = Lng (Br M) - 1 in
+        if entry (Br M ! J1) 0 0 = entry (Br M ! J1) 1 0 then J1
+        else Min {J. entry (Br M ! J1) 0 0 = entry (Br M ! J) 0 0
+                     \<and> entry (Br M ! J) 1 0 < entry (Br M ! J) 0 0})"
+
 end

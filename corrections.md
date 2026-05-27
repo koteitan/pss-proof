@@ -285,3 +285,35 @@ $k_0$ 帰納＋$\textrm{Br}$-under-oper 分解を要する。
 **形式化での扱い**: `monoT(seg M j0' j1')`（`m_6_2_mono_ancestor_slice`）と `descending(Br ...)` の行0部
 （`m_6_4_P_leftend_mono` を枝セグメント $\in T_{\textrm{PS}}$ に適用）は確保済。残るは Br 成分の行1 tie-break
 （$k$ 帰納＋Br-under-oper、設計 `docs/slice-Br-descending.md`）。
+
+
+## A8. §6.8 命題（標準形の切片と Br の降順性の関係）: 展開後の末尾添字 j_1 の式の off-by-one
+
+**所在**: §6.8「降順性」, 命題（標準形の切片と Br の降順性の関係）の証明本体、
+$N_{1,j_1^N}=0$ の場合の冒頭（$M$ をブロック分解する一文）。
+
+> $M = (N_j)_{j=0}^{j_0^N-1} \bigoplus_{\mathbb{N}^2} ((N_j)_{j=j_0^N}^{j_1^N-1})_{k=0}^{n-1}$ であり、
+> $j_1 = j_0^N+(n+1)(j_1^N-j_0^N)-1$ である。
+
+**問題点**: 同じ一文の $M$ の分解は、長さ $j_0^N$ の前半 $(N_j)_{j=0}^{j_0^N-1}$ に続けて、
+それぞれ長さ $j_1^N-j_0^N$ のブロック $(N_j)_{j=j_0^N}^{j_1^N-1}$ を $k=0,\dots,n-1$ の **$n$ 個**連結している。
+よって $\textrm{Lng}(M) = j_0^N + n(j_1^N-j_0^N)$、$j_1 = \textrm{Lng}(M)-1 = j_0^N + n(j_1^N-j_0^N) - 1$ となり、
+係数は $(n+1)$ ではなく **$n$** である。
+
+**訂正案**: $j_1 = j_0^N + n(j_1^N-j_0^N) - 1$ に修正（係数 $(n+1)\to n$）。
+
+**形式化での扱い**: 当方の `oper`（$M[n] = \textrm{take}\,j_0\,M \mathbin{@} \textrm{concat}(\textrm{map}(\lambda k.\,\cdots)[0..<n])$、
+yaBMS で経験的検証済）はブロック $n$ 個でこの訂正後の式と一致する（`oper_d0zero_expand`）。
+
+
+## A9. §8.2 LastStep の添字 J_1 の範囲外参照
+
+**所在**: §8.2「強単項性」, 写像 LastStep の定義（\(J_1\) を置く一文）。
+
+> \(J_1 := \textrm{Lng}(\textrm{Br}(M))\)と置く。… \((\textrm{Br}(M)_{J_1})_{0,0} = (\textrm{Br}(M)_{J_1})_{1,0}\)ならば…
+
+**問題点**: \(\textrm{Br}(M)\) の添字は \(0,\dots,\textrm{Lng}(\textrm{Br}(M))-1\) の範囲。\(J_1 := \textrm{Lng}(\textrm{Br}(M))\) と置くと \(\textrm{Br}(M)_{J_1}\) は範囲外。直後の「\(J_1 = 0\) ならば」も \(\textrm{Lng}(\textrm{Br}(M)) = 0\)（\(\textrm{Br}(M)\) が空）の意図と読め、\(J_1\) は最終成分の添字 \(\textrm{Lng}(\textrm{Br}(M))-1\) を指すべき。
+
+**訂正案**: \(J_1 := \textrm{Lng}(\textrm{Br}(M)) - 1\)（他の命題の \(J_1\) と同じ規約）。空の場合分けは「\(\textrm{Br}(M) = ()\) ならば \(\textrm{LastStep}(M) = 0\)」とする。
+
+**形式化での扱い**: `LastStep`（pss_defs §8）は `Br M = []` で `0`、それ以外は `J1 = Lng(Br M)-1` を最終添字として定義（訂正後と一致）。
