@@ -93,6 +93,7 @@
       - 🚨 命題（scb分解と基本列の関係）
       - 🚨 命題（$\textrm{RightNodes}$ と部分表現の関係）
     - 🚨 §7.3 翻訳写像
+      - ✅ **定義** `Trans`/`Mark`（相互再帰 `function`、termination 後回し=`RightNodes`/`Red` 同様）〔pss_paper.thy §7.3。条件 `transCondI..VI`・`Dpt`・`unflatBT`（`s c b`連接＝`flat` 単射で `THE`）・主部アクセサ `bpHeadV/T` 付き。設計 `docs/trans-mark.md`。原文 2044–2180 忠実転記。忠実性論点: `j_0=max{j<j_1|(0,j)≤_M(0,j_1)}` を `parent M 0 j_1` でモデル（要確認）〕
       - 🚨 命題（$\textrm{Trans}$ の well-defined 性）
       - 🚨 命題（$2$ 列ペア数列の基本性質）
       - 🚨 命題（$\textrm{Trans}$ の $(\textrm{IncrFirst},\textrm{Red})$ 不変 $P$ 同変性）

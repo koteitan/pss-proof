@@ -868,6 +868,139 @@ definition MarkedB :: "(BT \<times> BT) set" where
   "MarkedB = {(t, c). \<exists>s b. scb_decomp t s (flatBT c) b}"
 
 
+subsection \<open>§7.3 翻訳写像 (Trans / Mark)\<close>
+
+text \<open>The principal-term constructor \<open>D\<^sub>v t = Trm [DB v t]\<close> (\<open>v :: enat\<close>); on the
+  pair-sequence side the row-1 coefficients are \<open>nat\<close>, embedded via \<open>enat\<close>.\<close>
+
+abbreviation Dpt :: "enat \<Rightarrow> BT \<Rightarrow> BT" where
+  "Dpt v t \<equiv> Trm [DB v t]"
+
+text \<open>The mutually exclusive conditions (I)–(VI) of the \<open>Trans\<close> recursion
+  (article 2096–2106), for a reduced mono \<open>M\<close> with \<open>j\<^sub>1 = Lng M - 1 > 0\<close>.
+  Here \<open>j\<^sub>0\<close> is the row-0 nearest ancestor of \<open>j\<^sub>1\<close>, modelled as \<open>parent M 0 j\<^sub>1\<close>
+  (FAITHFULNESS: article \<open>j\<^sub>0 = max{j<j\<^sub>1 | (0,j) \<le>\<^sub>M (0,j\<^sub>1)}\<close>; coincidence with
+  \<open>parent M 0 j\<^sub>1\<close> to be verified — see \<open>docs/trans-mark.md\<close>).\<close>
+
+definition transCondI :: "pairseq \<Rightarrow> bool" where
+  "transCondI M \<longleftrightarrow> entry M 1 (Lng M - 1) = 0 \<and> adm M (parent M 0 (Lng M - 1))"
+
+definition transCondII :: "pairseq \<Rightarrow> bool" where
+  "transCondII M \<longleftrightarrow> entry M 1 (Lng M - 1) = 0 \<and> \<not> adm M (parent M 0 (Lng M - 1))"
+
+definition transCondIII :: "pairseq \<Rightarrow> bool" where
+  "transCondIII M \<longleftrightarrow> entry M 1 (Lng M - 1) > 0
+     \<and> entry M 1 (parent M 0 (Lng M - 1)) \<ge> entry M 1 (Lng M - 1)
+     \<and> adm M (parent M 0 (Lng M - 1))"
+
+definition transCondIV :: "pairseq \<Rightarrow> bool" where
+  "transCondIV M \<longleftrightarrow> entry M 1 (Lng M - 1) > 0
+     \<and> entry M 1 (parent M 0 (Lng M - 1)) \<ge> entry M 1 (Lng M - 1)
+     \<and> \<not> adm M (parent M 0 (Lng M - 1))"
+
+definition transCondV :: "pairseq \<Rightarrow> bool" where
+  "transCondV M \<longleftrightarrow> entry M 1 (Lng M - 1) > 0
+     \<and> entry M 1 (parent M 0 (Lng M - 1)) + 1 = entry M 1 (Lng M - 1)
+     \<and> parent M 0 (Lng M - 1) + 1 < Lng M - 1"
+
+definition transCondVI :: "pairseq \<Rightarrow> bool" where
+  "transCondVI M \<longleftrightarrow> entry M 1 (Lng M - 1) > 0
+     \<and> entry M 1 (parent M 0 (Lng M - 1)) + 1 = entry M 1 (Lng M - 1)
+     \<and> parent M 0 (Lng M - 1) + 1 = Lng M - 1"
+
+text \<open>The string-level connective \<open>s c b\<close> of the article (a \<open>\<Sigma>\<close>-string that is a
+  valid term string) is realised at the \<open>BT\<close> level by \<open>unflatBT\<close>: the unique
+  term whose \<open>flat\<close> is the given string (\<open>flatBT\<close> is injective on \<open>T\<^bsub>B\<^esub>\<close>).\<close>
+
+definition unflatBT :: "Sym list \<Rightarrow> BT" where
+  "unflatBT xs = (THE t. flatBT t = xs)"
+
+text \<open>Accessors for a principal term \<open>D\<^sub>v t\<close> (its head index \<open>v\<close> and body \<open>t\<close>);
+  total, with junk defaults off the principal shape.  Used to read \<open>c\<^sub>1 = D\<^sub>v t\<^sub>2\<close>
+  and the left end \<open>D\<^bsub>M\<^sub>1\<^sub>,\<^sub>j\<^sub>0\<^esub>\<close> of \<open>P\<^bsub>B\<^esub>(t\<^sub>2)\<^bsub>J\<^sub>1\<^esub>\<close>.\<close>
+
+fun bpHeadV :: "BT \<Rightarrow> enat" where
+  "bpHeadV (Trm (DB v t # ps)) = v"
+| "bpHeadV (Trm []) = 0"
+
+fun bpHeadT :: "BT \<Rightarrow> BT" where
+  "bpHeadT (Trm (DB v t # ps)) = t"
+| "bpHeadT (Trm []) = 0\<^sub>B"
+
+text \<open>翻訳写像 \<open>Trans\<close> / \<open>Mark\<close> (§7.3, article 2044–2180), a mutual recursion on
+  \<open>Lng M\<close>.  Termination is deferred (like \<open>Red\<close> / \<open>RightNodes\<close> / \<open>domB\<close>): we use a
+  catch-all \<open>function\<close> and \<open>pat_completeness\<close>, leaving the conditional \<open>psimps\<close>.
+  The article's \<open>\<Sigma>\<close>-string connective \<open>s c b\<close> is realised by \<open>unflatBT\<close>.\<close>
+
+function Trans :: "pairseq \<Rightarrow> BT" and Mark :: "pairseq \<Rightarrow> nat \<Rightarrow> BT" where
+  "Trans M =
+     (if M \<notin> RT_PS then Trans (Red M)
+      else let j1 = Lng M - 1 in
+        if j1 = 0 then
+          (if (M::pairseq) ! 0 = (0,0) then 0\<^sub>B else Dpt (enat (entry M 1 0)) 0\<^sub>B)
+        else if monoT M then
+          (let t1 = Trans (Pred M) in
+           if t1 = 0\<^sub>B then Dpt 0 (Dpt (enat (entry M 1 j1)) 0\<^sub>B)
+           else
+             let jp = parent M 0 j1;
+                 c1 = Mark (Pred M) (Adm M jp);
+                 v = bpHeadV c1;  t2 = bpHeadT c1;  J1 = Lng (PB t2) - 1;
+                 pj = PB t2 ! J1;  leftDj0 = (bpHeadV pj = enat (entry M 1 jp));
+                 t3 = (if leftDj0 then SigmaB (take J1 (PB t2)) else t2);
+                 t4 = (if leftDj0 then bpHeadT pj else t2);
+                 c2 = (if transCondI M \<or> transCondIII M \<or> transCondV M
+                       then Dpt v (t2 +\<^sub>B Dpt (enat (entry M 1 j1)) 0\<^sub>B)
+                       else if transCondVI M
+                       then Dpt v (Dpt (enat (entry M 1 j1)) 0\<^sub>B)
+                       else if t2 = 0\<^sub>B
+                       then Dpt v (Dpt (enat (entry M 1 jp)) (Dpt (enat (entry M 1 j1)) 0\<^sub>B))
+                       else Dpt v (t3 +\<^sub>B Dpt (enat (entry M 1 jp))
+                                          (t4 +\<^sub>B Dpt (enat (entry M 1 j1)) 0\<^sub>B)));
+                 sb1 = (SOME sb. scb_decomp t1 (fst sb) (flatBT c1) (snd sb))
+             in unflatBT (fst sb1 @ flatBT c2 @ snd sb1))
+        else
+          (let J1 = Lng (P M) - 1;  PJ = P M ! J1;  j0 = j1 - Lng PJ + 1 in
+           if PJ = [(0,0)] then Trans (seg M 0 (j0 - 1)) +\<^sub>B Dpt 0 0\<^sub>B
+           else Trans (seg M 0 (j0 - 1)) +\<^sub>B Trans PJ))"
+| "Mark M m =
+     (if M \<notin> RT_PS then Mark (Red M) m
+      else let j1 = Lng M - 1 in
+        if j1 = 0 then
+          (if (M::pairseq) ! 0 = (0,0) then 0\<^sub>B else Dpt (enat (entry M 1 0)) 0\<^sub>B)
+        else if monoT M then
+          (let t1 = Trans (Pred M) in
+           if t1 = 0\<^sub>B then
+             (if m = 0 then Dpt 0 (Dpt (enat (entry M 1 j1)) 0\<^sub>B)
+              else Dpt (enat (entry M 1 j1)) 0\<^sub>B)
+           else
+             let jp = parent M 0 j1;
+                 c1 = Mark (Pred M) (Adm M jp);
+                 v = bpHeadV c1;  t2 = bpHeadT c1;  J1 = Lng (PB t2) - 1;
+                 pj = PB t2 ! J1;  leftDj0 = (bpHeadV pj = enat (entry M 1 jp));
+                 t3 = (if leftDj0 then SigmaB (take J1 (PB t2)) else t2);
+                 t4 = (if leftDj0 then bpHeadT pj else t2);
+                 c2 = (if transCondI M \<or> transCondIII M \<or> transCondV M
+                       then Dpt v (t2 +\<^sub>B Dpt (enat (entry M 1 j1)) 0\<^sub>B)
+                       else if transCondVI M
+                       then Dpt v (Dpt (enat (entry M 1 j1)) 0\<^sub>B)
+                       else if t2 = 0\<^sub>B
+                       then Dpt v (Dpt (enat (entry M 1 jp)) (Dpt (enat (entry M 1 j1)) 0\<^sub>B))
+                       else Dpt v (t3 +\<^sub>B Dpt (enat (entry M 1 jp))
+                                          (t4 +\<^sub>B Dpt (enat (entry M 1 j1)) 0\<^sub>B)))
+             in if m < j1 then
+                  (let c0 = Mark (Pred M) m in
+                   if (c0, c1) \<in> MarkedB
+                   then let sm1 = (SOME sb. scb_decomp c0 (fst sb) (flatBT c1) (snd sb))
+                        in unflatBT (fst sm1 @ flatBT c2 @ snd sm1)
+                   else Dpt (enat (entry M 1 j1)) 0\<^sub>B)
+                else Dpt (enat (entry M 1 j1)) 0\<^sub>B)
+        else
+          (let J1 = Lng (P M) - 1;  PJ = P M ! J1;  j0 = j1 - Lng PJ + 1 in
+           if PJ = [(0,0)] then Dpt 0 0\<^sub>B
+           else Mark PJ (m - j0)))"
+  by pat_completeness auto
+
+
 subsection \<open>§7.4 許容的親子関係\<close>
 
 text \<open>命題（\<open>Adm\<^sub>M\<close>と\<open><\<^bsub>M\<^esub>\<^sup>NextAdm\<close>の関係） — when \<open>j\<^sub>1 = Lng M - 1\<close> has a
