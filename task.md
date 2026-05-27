@@ -122,7 +122,7 @@
       - 🚨 系（$\textrm{RightNodes}$ と $\textrm{Mark}$ の関係）
       - 🚨 命題（$\textrm{RightNodes}$ と $\textrm{RightAnces}$ の関係）〔`p_7_4_RightAnces_RightNodes` 転記済; `RightAnces` 定義(deferred function)も追加〕
       - 🚨 系（非零項の $\textrm{RightAnces}$ が非空であること）〔`p_7_4_RightAnces_zeroT` 転記済〕
-  - 🚨 §8 停止性 〔kickoff: `DT_PS`(強単項=簡約∧単項∧Br降順, pss_defs) 定義済。§6.8 prop1 が §8.2 の前提＝critical path。残り定義: `LastStep`/強許容〕
+  - 🚨 §8 停止性 〔定義: `DT_PS`(強単項)・`LastStep`(A9)済。§6.8 prop1 が §8.2 前提＝critical path。展開規則 §8.1/8.3/8.4 を agent並列で sorry 転記(a5df1dfa/a797c612/ad937ac4): `p_8_1_*`(4)/`p_8_3_*`(4)/`p_8_4_*`(3)。公差(1,1)=`diagSeq`, 条件(I-VI)=`transCondI..VI`, 基本列=`operB·numBT` でモデル。残: §8.2(強許容 要定義)・§8.5/8.6/8.7(主結果, 6242 最終定義要)・Trans 内部記号(c1/c2/t2-4/s1/b1)露出依存の命題群〕
     - 🚨 §8.1 条件 (I) の下での展開規則
       - 🚨 命題（条件 (I) の下での $\textrm{Trans}$ と基本列の交換関係）
       - 🚨 補題（公差 $(1,1)$ のペア数列の $\textrm{Trans}$ の基本性質）
