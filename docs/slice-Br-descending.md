@@ -551,3 +551,25 @@ sub-branch may still be true *restricted*, but a naive rank induction recurses i
 (where it is false), so that route is blocked. The d0pos boundary likely needs the explicit
 `IncrFirst^{kδ}` row-1 structure (article 1516-1589), not a generic interval/row-1 lemma.
 **Next step is empirical re-derivation (with the methodology fix), not another proof attempt.**
+
+## UPDATE 2026-05-27 (continued 5): TrMax route is SOUND for case A (methodology-corrected)
+
+Methodology-corrected re-audit (yaBMS `is_standard` filter + enumeration to length 5,
+`python/slice_caseA_trmax_recheck.py`-style) of the **faithful** case-A domain
+(standard `N`, d0zero `entry N 1 (Lng N-1)=0`, `j0' < j0^N = parent N 0 (Lng N-1)`,
+`leR M 0 j0' j1'`, **and the brick precondition `Lng N - 2 ≤ j1'`**):
+
+> **`TrMax (seg (N[n]) j0' j1') = TrMax (seg N j0' (Lng N-1))` holds 738/738 (0 mismatches).**
+
+So the green brick `TrMax_seg_oper_d0zero_eq`'s **conclusion is correct on case A**, and its
+boundary-stop hypothesis **is a theorem on this domain** (dischargeable). The (continued 4)
+retraction was right that the *F1/interval lemma route* is false, but that does NOT doom the
+TrMax approach — only that one discharge route was wrong. ⚠️ (Earlier audits that omitted
+`Lng N - 2 ≤ j1'` reported spurious mismatches: with `j1'=1` the slice `seg M 0 1` is a tiny
+prefix unrelated to `N'`, so `TrMax` trivially differs; that guard is essential.)
+
+**Revised next step:** find a CORRECT argument for the boundary stop
+`¬ nextrel1 (seg M j0' j1') (TrMax N') (TrMax N' + 1)` on this (now confirmed-true) domain —
+NOT via the retracted F1. Candidate: characterize the hard (block-boundary) cases empirically
+(with is_standard + depth ≥ 5) to find a TRUE sufficient condition, then prove it. The
+`TrMax_seg_oper_d0zero_eq` brick already reduces case A's TrMax-equality to exactly this stop.
