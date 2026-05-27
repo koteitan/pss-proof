@@ -759,3 +759,23 @@ in place (`oper_d0zero_entry0_min`/`_seg_P_split`/`_seg_P_hfold`, `parent_block_
 0/453 caseA), and the residuals are precisely characterized — but closure keeps revealing further
 sub-case structure (mono/multiT/Pcut-position × two regimes) and is a dedicated sustained effort, not
 "one spawn away". Audit scripts: `python/slice_bridge_butlast.py`, `slice_bridge_pure.py`.
+
+## UPDATE 2026-05-28 (continued 13): ✅ sub-case A CLOSED (verified green)
+
+The d0zero 1466 **sub-case A is fully proven** (no sorry) — parent-verified: `../pss-slice` builds
+`Finished PSS` and the only remaining `sorry`s are B/C (~10644) and d0pos (~10650). The FN-tiebreak
+sorry is replaced by the `descending_append` route on the now-complete machinery. Both regimes:
+- `a < Lng N-1` (J1≥1): `Br M' = P(seg M a (Lng N-2)) @ replicate (qb-1) blk @ [partial]`; the prefix
+  `P(seg M a (Lng N-2)) = P(seg N a (Lng N-2)) = butlast (Br N') = take J1 (Br N')` via
+  `P_seg_butlast_bridge` (the `multiT` + `Pcut = endpoint` hypotheses hold here — empirically
+  `Pcut(seg N a (Lng N-1)) = (Lng N-1)-a` 100%, because the leaf's row-0 parent `j0^N < a`; the
+  earlier "Pcut≠endpoint" worry does NOT bite within sub-case A). Block tail by `hfold`/`split`;
+  descending by `descending_append[descending_take[OF descN'], descending_const_head]` + junction `junc0`.
+- `a = Lng N-1` (J1=0): pure block tail `replicate (qb-1) blk @ [partial]`, descending by `descending_const_head`.
+New helpers (worktree): `nextrel0_above_parent_trivial` (~8650; no proper row-0 ancestor of the trunk
+leaf above its parent), `oper_d0zero_seg_P_blk1fold` (~9694; block-1-anchored fold for the J1=0 regime).
+
+**§6.8 case A now: only sub-cases B/C (article 1490/1496) remain** (+ the separate d0pos 1516-1589).
+B/C are the other FirstNodes(N')_{J1} positions and are analogous to A — and now have ALL of A's
+machinery (`P_seg_butlast_bridge`, `parent_block_le0`, `hfold`/`split`/`blk1fold`, the boundary-stop /
+TrMax bricks, the descending algebra) available as a template. Next: B/C, then d0pos.
