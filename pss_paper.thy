@@ -2116,4 +2116,104 @@ lemma p_8_6_Trans_fseq_condVI:
          lessBT (Trans (M[n])) (Trans M)"
   sorry
 
+
+subsection \<open>§8.7 主結果 (Main result)\<close>
+
+text \<open>補題（公差\<open>(0,0)\<close>のペア数列の\<open>Trans\<close>の基本性質） (§8.7, article 5857):
+  for \<open>u, j\<^sub>1 \<in> \<nat>\<close>, the constant (公差\<open>(0,0)\<close>) sequence
+  \<open>M = ((u,u))\<^bsub>j=0\<^esub>\<^bsup>j\<^sub>1\<^esup>\<close> (= \<open>replicate (Suc j\<^sub>1) (u,u)\<close>) has
+  \<open>Trans(M) = (D\<^sub>0 0)\<times>j\<^sub>1\<close> if \<open>u = 0\<close> and \<open>(D\<^sub>u 0)\<times>(j\<^sub>1+1)\<close> if \<open>u > 0\<close>.
+  \<open>(D\<^sub>u 0)\<times>k = multBT (D\<^sub>u 0) k\<close> (\<open>k\<close>-fold \<open>+\<^sub>B\<close>-sum).\<close>
+
+lemma p_8_7_const00_Trans:
+  shows "Trans (replicate (Suc j1) (u, u))
+           = (if u = 0 then multBT (Dpt (enat u) 0\<^sub>B) j1
+              else multBT (Dpt (enat u) 0\<^sub>B) (Suc j1))"
+  sorry
+
+text \<open>補題（基本列の降下性） (§8.7, article 5869):
+  for \<open>M \<in> ST\<^bsub>PS\<^esub>\<close> and \<open>n \<in> \<nat>\<^sub>+\<close>, if \<open>Lng M > 1\<close> then
+  \<open>Trans(M[n]) < Trans(M)\<close> (\<open><\<close> on \<open>T\<^bsub>B\<^esub>\<close> = \<open>lessBT\<close>).\<close>
+
+lemma p_8_7_fseq_descend:
+  assumes "M \<in> ST_PS" "n \<ge> 1" "Lng M > 1"
+  shows "lessBT (Trans (M[n])) (Trans M)"
+  sorry
+
+text \<open>補題（順序数項の再帰構造） (§8.7, article 5953):
+  for \<open>t \<in> OT\<^bsub>B\<^esub>\<close>, \<open>c \<in> T\<^bsub>B\<^esub>\<close> and \<open>s, b \<in> \<Sigma>\<^bsup><\<omega>\<^esup>\<close> (= \<^typ>\<open>Sym list\<close>),
+  if \<open>(s,c,b)\<close> is an scb-decomposition of \<open>t\<close> (\<open>scb_decomp t s (flatBT c) b\<close>)
+  then \<open>c\<close> is an ordinal term (\<open>c \<in> OT\<close>).\<close>
+
+lemma p_8_7_OT_scb_recursive:
+  assumes "t \<in> OT_B" "c \<in> T_B" "scb_decomp t s (flatBT c) b"
+  shows "c \<in> OT"
+  sorry
+
+text \<open>補題（順序数項の共終数の遺伝性） (§8.7, article 5962):
+  for \<open>t, t' \<in> T\<^bsub>B\<^esub>\<close> and \<open>s, b \<in> \<Sigma>\<^bsup><\<omega>\<^esup>\<close>, if \<open>dom(t') = \<nat>\<close>
+  (\<open>domB t' = NatSet\<close>) and \<open>(s,t',b)\<close> is an scb-decomposition of \<open>t\<close>, then
+  \<open>dom(t) = \<nat>\<close>.\<close>
+
+lemma p_8_7_OT_dom_hereditary:
+  assumes "t \<in> T_B" "t' \<in> T_B" "domB t' = NatSet" "scb_decomp t s (flatBT t') b"
+  shows "domB t = NatSet"
+  sorry
+
+text \<open>補題（順序数項の末尾項の零化可能性） (§8.7, article 5971):
+  for \<open>t \<in> OT\<^bsub>B\<^esub>\<close>, \<open>t' \<in> T\<^bsub>B\<^esub>\<close>, \<open>s, b \<in> \<Sigma>\<^bsup><\<omega>\<^esup>\<close>, \<open>u \<in> \<nat>\<close>, if
+  \<open>(s, D\<^sub>u t', b)\<close> is an scb-decomposition of \<open>t\<close>, then some \<open>k\<close> makes
+  \<open>(s, D\<^sub>u 0, b)\<close> an scb-decomposition of \<open>t[0]\<^sup>k\<close>
+  (\<open>t[0]\<^sup>k = ((\<lambda>a. operB a (numBT 0)) ^^ k) t\<close>).\<close>
+
+lemma p_8_7_OT_tail_annihilable:
+  assumes "t \<in> OT_B" "t' \<in> T_B"
+    and "scb_decomp t s (flatBT (Dpt (enat u) t')) b"
+  shows "\<exists>k. scb_decomp (((\<lambda>a. operB a (numBT 0)) ^^ k) t) s
+                        (flatBT (Dpt (enat u) 0\<^sub>B)) b"
+  sorry
+
+text \<open>補題（\<open>Pred\<close>と\<open>[0]\<close>の関係） (§8.7, article 6014):
+  for \<open>M \<in> RT\<^bsub>PS\<^esub> \<inter> PT\<^bsub>PS\<^esub>\<close> (article writes \<open>PT\<^bsub>B\<^esub>\<close>, a typo for \<open>PT\<^bsub>PS\<^esub>\<close>),
+  using the symbols of the recursive definition of \<open>Trans\<close>, if \<open>j\<^sub>1 > 1\<close>,
+  \<open>M\<close> fails condition (VI), and \<open>Trans(M)\<close> is an ordinal term, then some \<open>k\<close>
+  gives \<open>Trans(M)[0]\<^sup>k = t\<^sub>1\<close>.  The internal \<open>t\<^sub>1\<close> of \<open>Trans\<close> is \<open>Trans (Pred M)\<close>,
+  so it is exposed as such here.\<close>
+
+lemma p_8_7_Pred_oper0:
+  assumes "M \<in> RT_PS" "M \<in> PT_PS" "Lng M - 1 > 1"
+    and "\<not> transCondVI M" "Trans M \<in> OT"
+  shows "\<exists>k. ((\<lambda>a. operB a (numBT 0)) ^^ k) (Trans M) = Trans (Pred M)"
+  sorry
+
+text \<open>補題（順序数項の基本例） (§8.7, article 6066): four basic memberships in
+  \<open>OT\<^bsub>B\<^esub>\<close>.  \<open>D\<^sub>u\<^sup>n 0 = (Dpt (enat u) ^^ n) 0\<^sub>B\<close>; \<open>(D\<^sub>u 0)\<times>(n-1) = multBT (D\<^sub>u 0) (n-1)\<close>.\<close>
+
+lemma p_8_7_OT_examples:
+  shows "Dpt (enat u) 0\<^sub>B \<in> OT_B"
+    and "Dpt (enat u) (Dpt (enat v) 0\<^sub>B) \<in> OT_B"
+    and "n \<ge> 1 \<Longrightarrow> multBT (Dpt (enat u) 0\<^sub>B) (n - 1) \<in> OT_B"
+    and "(Dpt (enat u) ^^ n) 0\<^sub>B \<in> OT_B"
+  sorry
+
+text \<open>補題（\<open>Trans\<close>が標準形を保つこと） (§8.7, article 6122):
+  for \<open>M \<in> ST\<^bsub>PS\<^esub>\<close>, \<open>Trans(M) \<in> OT\<^bsub>B\<^esub>\<close> (\<open>Trans\<close> lands in ordinal terms).\<close>
+
+lemma p_8_7_Trans_preserves_OT:
+  assumes "M \<in> ST_PS"
+  shows "Trans M \<in> OT_B"
+  sorry
+
+text \<open>定理（標準形ペア数列システムの停止性） (§8.7, article 5851):
+  \<open>ST\<^bsub>PS\<^esub> \<times> \<nat>\<^sub>+ \<subseteq> Dom(F)\<close>.  Here \<open>Dom(F)\<close> is \<open>Fdom f\<close> (§5.4); the auxiliary
+  map \<open>f : \<nat>\<^sub>+ \<to> \<nat>\<^sub>+\<close> is fixed (article 346), modelled by the positivity
+  hypothesis \<open>1 \<le> k \<Longrightarrow> 1 \<le> f k\<close>.  The proof is the well-foundedness of \<open><\<close>
+  on \<open>OT\<^bsub>B\<^esub>\<close> ([Buc1] Lemma 2.2) together with 基本列の降下性 + Trans が標準形を
+  保つこと: each expansion step strictly decreases \<open>Trans\<close>.\<close>
+
+theorem p_8_7_termination:
+  assumes "M \<in> ST_PS" "n \<ge> 1" "\<And>k. 1 \<le> k \<Longrightarrow> 1 \<le> f k"
+  shows "Fdom f M n"
+  sorry
+
 end
