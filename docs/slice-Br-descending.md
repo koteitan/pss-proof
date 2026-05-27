@@ -296,3 +296,175 @@ descending (P (seg N a b))`, `proof (induction k)` over the rank, slice carried.
    multi-block-spanning / `d0 = 0` is the crux. Largest remaining piece.
 3. Assemble `m_6_8_standard_slice_Br_descending` from `slice_P_descending` +
    `seg_of_seg` + `m_6_2_mono_ancestor_slice`.
+
+## Conditional Br induction — validated foundation (2026-05-27)
+
+Re-architected to the article's **faithful conditional Br induction**
+(`m_6_8_slice_Br_descending_monoT`, content.md 1422–1614), proved by plain
+rank induction on `k`. Base (`k=0`, diagSeq slice has empty `Br`), `multiT N`
+(M = P(N)₀ ∈ SkT_PS k, IHk), `Lng N = 1` (vacuous) and the `jsmall`
+(`j1' < Lng N - 1`, slice within `butlast` prefix) cases are GREEN. The `jlarge`
+groundwork (oper is generic; `notzeroN`, `hasparN`) is GREEN. Remaining: the two
+block-spanning `sorry`s `d0zero` (i1=0, 1460–1514) and `d0pos` (i1=1, 1516–1589).
+
+Two reusable pillars now GREEN (in `pss_mechanized.thy`, just before the main
+lemma):
+
+- **Descending algebra** (head-pair lexicographic order `cdom`):
+  `cdom`, `cdom_refl`, `cdom_trans`, `descending_via_cdom` (descending ⟺
+  cdom-monotone along the index), `descendingI_cdom`, `descending_cdomD`,
+  `descending_append` (`A@B` descending ⟸ both descending + junction
+  `cdom (last A) (B!0)`), `descending_take` (prefix of descending). These reduce
+  every sub-case's `Br(M') = take J₁ (Br N') @ blocks` goal to cdom transitivity
+  + one junction inequality.
+- **d0zero block periodicity** (i1=0 ⟹ d0=d1=0, blocks k-independent):
+  `nth_concat_replicate`, `oper_d0zero_expand`
+  (`M[n] = take j₀ M @ concat (replicate n (map (M!) [j₀..<j₁]))`),
+  `oper_d0zero_nth` (`(M[n])!(j₀+q·w+s) = M!(j₀+s)` for `q<n`, `s<w=j₁-j₀`).
+
+Isabelle note: `Lng M - 1` is rewritten to `Lng M - Suc 0` by `One_nat_def`
+(a default simp rule), which de-syncs any rule stated with literal `1`. Build the
+oper expansion by `poper_oper_expand[..., unfolded Let_def]` (pure rewriting, no
+normalisation), collapse `i1=0` shifts by `subst i1z`, and add `del: One_nat_def`
+when a `Lng M - 1` rule must fire under simp.
+
+CORRECTION CANDIDATE: content.md 1462 writes `j_1 = j0^N+(n+1)(j1^N-j0^N)-1`,
+but the M-decomposition on the **same line** has `n` blocks (`k=0..n-1`), giving
+`j_1 = j0^N + n(j1^N-j0^N) - 1`. The `(n+1)` is an off-by-one typo (should be `n`),
+consistent with our (yaBMS-validated) `oper`. To be logged in corrections.md.
+
+### Next (d0zero, 1460–1514)
+- 1464 `j1' ≤ j0^N`: cannot arise under `jlarge` (`j1' ≥ Lng N-1 > j0^N`).
+- 1502 `j0^N ≤ j1'`... actually `j0^N ≤ j'0`: slice lands in one block; by
+  `oper_d0zero_nth`, `seg M j'0 j'1 = seg N (j0^N+r) (j0^N+r')`, then IHk.
+- 1466 `j'0 < j0^N < j'1`: the hard `Br(M')` decomposition via
+  `FirstNodes(N')`/`TrMax(N')`; uses `descending_append` + the junction
+  `N_{0,j0^N} < N_{0,j1^N} = (Br(N')_{J₁})_{0,0}`.
+
+## d0zero: confinement + case 1502 done (2026-05-27)
+
+More GREEN machinery in the worktree (`../pss-slice`), all validated:
+
+- **Row-0 value characterisation**: `oper_d0zero_entry0`
+  (`entry (M[n]) 0 x = entry M 0 (j₀ + (x-j₀) mod w)` for `x ≥ j₀`),
+  `parent_block_entry0_min` (`j₀` is the row-0 minimum of its block, strict at
+  interior offsets — from `nextrel0 M j₀ (Lng M-1)`).
+- **Confinement (article 1510)**: `oper_d0zero_le0_confined` — in the `i₁=0`
+  periodic layout, `(nextrel0 (M[n]))** a b` with `a ≥ j₀` forces
+  `b < j₀ + ((a-j₀) div w + 1)*w` (b stays in a's block). Proof: `rtranclp_induct`
+  with invariant `j₀ ≤ · < j₀+(q+1)w`; each block-start carries the row-0 minimum
+  `M_{0,j₀}`, which no `nextrel0` step (strictly increasing row-0) can reach from
+  within the block — the barrier argument.
+- **Case 1502** (`j₀^N ≤ j'₀`) of d0zero is now **fully proven**: confinement +
+  periodicity give `seg M j'₀ j'₁ = seg N (j₀^N+r) (j₀^N+r')` (one block), `leR`
+  transfers through the equal slices via `adm_le0_seg`, then IHk on `N`. (Used
+  `define` for the div/mod offsets to keep them opaque to simp.)
+
+Remaining d0zero `sorry`: **1466** (`j'₀ < j₀^N < j'₁`, slice straddles the
+trunk/branch junction) — needs the **Br-under-oper decomposition** via
+`FirstNodes(N')`. d0pos (1516–1589) likewise. That decomposition is the central
+remaining piece for both.
+
+Isabelle notes: `(M[n])` must be annotated `((M::pairseq)[n])` whenever a head
+combinator (`Lng`, `nextrel0`, `entry`) is applied directly to it (parse
+ambiguity vs list application). For block-offset arithmetic, prove identities by
+`linarith` (treating `q*w` as an atom) rather than `simp`, which expands
+`(q+1)*w` / unfolds `let`-bound div/mod terms and thrashes; `mult_less_mono1` /
+`mult_less_cancel2` for the strict-product steps.
+
+## Br-under-oper decomposition: the mechanisation route (2026-05-27)
+
+GREEN prerequisites added: `oper_d0zero_nth_prefix` (`(M[n])!x = M!x` for `x<j₀`)
+and `oper_d0zero_seg_period_reduce` (`seg (M[n]) a b = seg (M[q+1]) a b` when `b`
+is in block `q`, `q+1≤n` — the article's WLOG `q=n-1`, 1472).
+
+**Key tool for the decomposition: `m_6_2_P_additive`** —
+`P M = P(seg M 0 (j₀-1)) @ P(seg M j₀ (Lng M-1))` whenever `j₀` is a *left-minimal*
+cut (`∀j<j₀. entry M 0 j ≥ entry M 0 j₀`). In d0zero every block-start carries the
+row-0 minimum `N_{0,j₀^N}` (`parent_block_entry0_min`), so it is left-minimal
+within the branch region `S = seg M' (TrMax M'+1)(Lng M'-1)`. Applying P-additivity
+at the block boundaries decomposes `Br M' = P S` into `P(prefix) @ (P block)*`,
+i.e. the article's `take J₁ (Br N') @ blocks`. Combined with `descending_append`
+and the junction `N_{0,j₀^N} < N_{0,j1^N} = (Br N'_{J₁})_{0,0} ≤ (Br N'_{J₁-1})_{0,0}`
+(latter = descending Br N', from IHk), this yields `descending (Br M')`.
+
+Remaining concrete obligations for 1466 (and analogously d0pos):
+1. compute/bound `TrMax M'` so the branch region `S` is pinned down;
+2. identify the block-boundary cuts inside `S` and discharge their left-minimality
+   (via `parent_block_entry0_min` + `oper_d0zero_entry0`);
+3. fold the repeated `P block` via `m_6_2_P_additive` + `descending_append`;
+4. establish `leR N 0 j'₀ j1^N` (so IHk gives `descending (Br N')`) — needs the
+   periodic le0 transfer (one direction is `oper_d0zero_le0_confined`; the other
+   is the within-block le0 lift already used in 1502).
+
+## 1466 leR-N groundwork done; Br decomposition plan (2026-05-27)
+
+GREEN now in the worktree: the 1466 case (`j'₀ < j₀^N < j'₁`) establishes
+`descN' : descending (Br (seg N j'₀ (Lng N-1)))` (article 1476→IHk), via
+- row-0 convexity `m_5_1_ancestor_tree_1` (木構造(1)) : `le0 M j'₀ j₀^N`;
+- `[0,j₀^N]` agreement `oper_d0zero_nth_le_parent` + `le0_prefix_agree` : `le0 N j'₀ j₀^N`;
+- `le0_trans` with `le0 N j₀^N (Lng N-1)` (from `parR0N`) : `le0 N j'₀ (Lng N-1)` ⟹ leRN.
+New green helpers: `nextrel0_prefix_imp`, `le0_prefix_agree`, `oper_d0zero_nth_le_parent`.
+
+Both remaining `sorry`s (1466, d0pos) reduce to the SAME final obligation:
+**`descending (Br M')` from `descN'` + block structure**, via this concrete plan
+(N' = seg N j'₀ (Lng N-1), J₁ = Lng(Br N')-1):
+
+1. WLOG `j'₁` in the last block (`oper_d0zero_seg_period_reduce`, q=n-1).
+2. **`Br M' = take J₁ (Br N') @ B`** where `B` is a list of branch components each
+   equal to the block `seg N j₀^N (j1^N-1)` (head `N!j₀^N`), possibly with a partial
+   final component — article 1486/1492/1498 (3 sub-cases on `FirstNodes(N')_{J₁}`
+   position vs `TrMax(N')`). Mechanise by **`m_6_2_P_additive` at the block-boundary
+   cuts** (left-minimal by `parent_block_entry0_min`) inside the branch region
+   `S = seg M' (TrMax M'+1)(Lng M'-1)`. Needs: relate `TrMax M'` to `TrMax N'`
+   (the trunk does not reach the repeated blocks), and the `FirstNodes(N')` position
+   lemmas (`m_6_4_FirstNodes_TrMax_Joints`, `FirstNodes_nth`, `Joints_nth`).
+3. **junction**: `(Br N'_{J₁})_{0,0} = N_{0,j1^N}` (article 1486) and
+   `N_{0,j₀^N} < N_{0,j1^N}` (from `parR0N` = `nextrel0 N j₀^N (Lng N-1)`,
+   `parent_block_entry0_min`). So `cdom (last (take J₁ (Br N'))) (B!0)` holds
+   (strict row-0), and `descending_append` + `descending_take[OF descN']` +
+   constant-`B` descending give `descending (Br M')`.
+
+This step (computing `TrMax M'`, the P-additivity cut sequence, the 3 FirstNodes
+sub-cases, and the d0pos `IncrFirst`-shift analog) is the last and largest piece.
+
+## 1466 (d0zero) / d0pos sub-case map (article 1478–1596) — formalization targets
+
+Notation: `N' = seg N j'₀ (j1^N)` (article writes `(N_j)_{j'₀..j1^N}`; in our worktree
+`descN' = descending(Br(seg N j'₀ (Lng N-1)))` since `j1^N = Lng N-1` here),
+`J₁ = Lng(Br N')-1`, `w = j1^N - j0^N` (block width, d0zero), `r = (j'₀-j0^N) mod w`.
+Key fact (1480): `N_{0,j1^N}=0 ∧ j1^N-j'₀ > j0^N-j'₀ > 0 ⟹ TrMax(N') < j1^N-j'₀`, so `J₁≥0`.
+`j_{-1}` = unique row-0 next-parent of `j0^N-j'₀` in `N'` (1482).
+
+### d0zero, case `j'₀ < j0^N < j'₁` (the open sorry @9115). Trichotomy on FirstNodes(N')_{J₁}:
+- **A. `j0^N-j'₀ ≤ TrMax(N')`** (1484-1488): `FirstNodes(N')_{J₁} = j1^N-j'₀`, `Br(N')_{J₁}=(N_{j1^N})`.
+  `Br M' = take J₁ (Br N') @ replicate (n-2) blk @ [partial]`, `blk = seg N j0^N (j1^N-1)`,
+  `partial = seg N j0^N (j0^N+r)`. `Lng(Br M')-1 = J₁+n-2`. Head sequence =
+  `(Br N')_0..(J₁-1)` heads then `N_{j0^N}` ×(n-1). Junction: `N_{0,j0^N} < N_{0,j1^N} = (Br N'_{J₁})_{0,0}`.
+- **B. `j_{-1} ≤ TrMax(N') < j0^N-j'₀`** (1490-1494): `FirstNodes(N')_{J₁}=j0^N-j'₀`,
+  `Br(N')_{J₁}=seg N j0^N j1^N`. `Br M' = take J₁(Br N') @ replicate(n-1) blk @ [partial]`,
+  `Lng-1=J₁+n-1`. Junction: `N_{j0^N} = (Br N'_{J₁})_0`.
+- **C. `TrMax(N') < j_{-1}`** (1496-1500): `FirstNodes(N')_{J₁} ≤ j_{-1}`.
+  `Br M' = take J₁(Br N') @ [seg M (FirstNodes(N')_{J₁}+j'₀) j'₁]`, `Lng-1=J₁`.
+  Junction: `M_{FirstNodes(N')_{J₁}+j'₀} = N_{...} = (Br N'_{J₁})_0` (index `< j1^N` so M=N there).
+- (case `j0^N ≤ j'₀` @1502 = already proven in worktree.)
+
+### d0pos `N_{1,j1^N} > 0` (the open sorry @9120, article 1516–1596):
+- no row-1 next-parent `j_{-2}^N` ⟹ `M = N[n] = Pred N` ⟹ reduces to an already-shown case (1518).
+- else `δ = N_{0,j1^N}-N_{0,j_{-2}^N} > 0`, `M = take j_{-2}^N N @ ⨁_{k=0}^{n-1} IncrFirst^{kδ}(seg N j_{-2}^N j1^N)` (1524).
+  Establish `(0,j_{-2}^N) ≤_M (0,j1)` by the per-block row-0 monotonicity (1526-1538, uses `entry_IncrFirst`/`m_6_2_P_IncrFirst`).
+  - `j'₁ ≤ j_{-2}^N` (1540): prefix agrees with N ⟹ `M' = seg N j'₀ j'₁` ⟹ reduces to shown case.
+  - `j'₀ < j_{-2}^N < j'₁` (1542-1576): get `(0,j'₀) ≤_N (0,j1^N)` ⟹ `descN'`; then trichotomy
+    on `J₁` (=-1 @1546 trivial single component; ≥0 @1552 mirrors A/B/C with `j_{-3}` = next-parent of `j_{-2}^N-j'₀`).
+  - `j_{-2}^N ≤ j'₀` (1578-…): quotient `q,r` of `j'₀-j_{-2}^N` by `j1^N-j_{-2}^N`; WLOG q=0 (1584);
+    `j'₁<j1^N` ⟹ prefix=Pred N case; `j'₁≥j1^N` ⟹ `(0,j'₀)≤_N(0,j1^N)` ⟹ `descN'` ⟹ A/B/C again.
+
+### Shared machinery still to build (the bottleneck, both sorries):
+- **TrMax-under-oper**: `TrMax M'` vs `TrMax N'` — the trunk of `M'` does not reach the repeated
+  blocks, so `TrMax M' = TrMax N'` (d0zero) and the branch region `S = seg M' (TrMax M'+1)(Lng M'-1)`
+  is the periodic part. No `TrMax(seg …)`/`TrMax(…[n])` lemma exists yet.
+- **Br-as-take-@-blocks**: fold the repeated `P`-components via `m_6_2_P_additive` at the
+  block-boundary cuts (left-minimal by `parent_block_entry0_min`); the `take J₁ (Br N')` prefix
+  is `descending` by `descending_take[OF descN']`; the block tail is `descending` by the new
+  `descending_replicate`/`descending_const_head`; glue by `descending_append` + the single junction
+  `cdom`. **Recommended first target: case A** (cleanest: single junction `N_{0,j0^N}<N_{0,j1^N}`).
