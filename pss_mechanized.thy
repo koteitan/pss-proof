@@ -11256,7 +11256,139 @@ proof -
                             = take (length (P (seg N ?a (?j0N - 1)))) (Br ?Np)" by simp
                         thus ?thesis using descending_take[OF descN'] by simp
                       qed
-                      show ?thesis sorry
+                      \<comment> \<open>junction \<open>cdom\<close>: \<open>cdom (last LOW) (?Y!0)\<close>.  Plan:
+                         (i) \<open>NbrSplit\<close>: \<open>Br N' = LOWN @ HIGHN\<close> with \<open>LOWN = P(seg N a (j\<^sub>0\<^sup>N-1))\<close>
+                         and \<open>HIGHN = P(seg N j\<^sub>0\<^sup>N (Lng N-1))\<close>;
+                         (ii) \<open>descending_cdomD[OF descN']\<close>: \<open>cdom (Br N' ! (J\<^sub>1-1)) (Br N' ! J\<^sub>1)\<close>
+                         where \<open>J\<^sub>1 = length LOWN\<close>;
+                         (iii) \<open>last LOWN = Br N' ! (J\<^sub>1-1)\<close> and \<open>HIGHN!0 = Br N' ! J\<^sub>1\<close>;
+                         (iv) heads of \<open>HIGHN!0\<close> and \<open>?Y!0\<close> are both \<open>(entry N 0 j\<^sub>0\<^sup>N, entry N 1 j\<^sub>0\<^sup>N)\<close>
+                         (via \<open>m_6_4_P_IdxSum\<close>+\<open>entry_seg\<close> on the N-side, \<open>blkhd_/parhd_\<close> on the Y-side);
+                         (v) \<open>cdom_def\<close> depends only on entry _ 0 0 and entry _ 1 0, so the
+                         \<open>cdom\<close> transfers from \<open>HIGHN!0\<close> to \<open>?Y!0\<close>; \<open>segMN\<close> turns \<open>last LOWN\<close>
+                         into \<open>last (P(seg M a (j\<^sub>0\<^sup>N-1)))\<close>.\<close>
+                      have junc_cdom: "cdom (last (P (seg M ?a (?j0N - 1)))) (?Y ! 0)"
+                      proof -
+                        let ?LOWN = "P (seg N ?a (?j0N - 1))"
+                        let ?HIGHN = "P (seg N ?j0N (Lng N - 1))"
+                        let ?J1 = "length ?LOWN"
+                        have LOWN_ne: "?LOWN \<noteq> []" by (rule P_nonempty)
+                        have HIGHN_ne: "?HIGHN \<noteq> []" by (rule P_nonempty)
+                        have J1pos: "0 < ?J1" using LOWN_ne by (cases ?LOWN) auto
+                        have BrNp_eq: "Br ?Np = ?LOWN @ ?HIGHN" using NbrSplit .
+                        \<comment> \<open>(iii) the junction indices land where expected\<close>
+                        have last_low_low: "last ?LOWN = ?LOWN ! (?J1 - 1)"
+                          using LOWN_ne by (rule last_conv_nth)
+                        have lowJ1m1: "(?LOWN @ ?HIGHN) ! (?J1 - 1) = ?LOWN ! (?J1 - 1)"
+                          using J1pos by (simp add: nth_append)
+                        have high0_low: "(?LOWN @ ?HIGHN) ! ?J1 = ?HIGHN ! 0"
+                          by (simp add: nth_append)
+                        have last_low_eq: "last ?LOWN = Br ?Np ! (?J1 - 1)"
+                          using last_low_low lowJ1m1 BrNp_eq by simp
+                        have high0_eq: "?HIGHN ! 0 = Br ?Np ! ?J1"
+                          using high0_low BrNp_eq by simp
+                        \<comment> \<open>(ii) \<open>cdom\<close> from \<open>descN'\<close> on adjacent indices in \<open>Br N'\<close>\<close>
+                        have J1_lt: "?J1 < Lng (Br ?Np)"
+                          using HIGHN_ne BrNp_eq by simp
+                        have cdomBr: "cdom (Br ?Np ! (?J1 - 1)) (Br ?Np ! ?J1)"
+                          by (rule descending_cdomD[OF descN' diff_le_self J1_lt])
+                        \<comment> \<open>(iv) heads of \<open>HIGHN!0\<close> are \<open>(entry N _ j\<^sub>0\<^sup>N)\<close>\<close>
+                        let ?SN = "seg N ?j0N (Lng N - 1)"
+                        have SNL: "Lng ?SN = Suc (Lng N - 1) - ?j0N" by (rule Lng_seg)
+                        have SNpos: "0 < Lng ?SN" using SNL j0NltN by linarith
+                        have SNne: "?SN \<noteq> []" using SNpos length_greater_0_conv by blast
+                        have SNT: "?SN \<in> T_PS" using SNne by (simp add: T_PS_def)
+                        have HIGHN_JL: "0 < length ?HIGHN"
+                          using HIGHN_ne by (cases ?HIGHN) auto
+                        have HIGHN0_len_pos: "0 < Lng (?HIGHN ! 0)"
+                          by (rule idxsum_P_component_nonempty[OF SNT HIGHN_JL])
+                        have HIGHN_Jle: "(0::nat) \<le> Lng ?HIGHN - 1"
+                          using HIGHN_ne by (cases ?HIGHN) auto
+                        have HIGHN0_seg:
+                          "?HIGHN ! 0 = seg ?SN (IdxSum ?HIGHN ! 0) (IdxSum ?HIGHN ! 1 - 1)"
+                          using m_6_4_P_IdxSum[OF SNT HIGHN_Jle] by simp
+                        have idx0: "IdxSum ?HIGHN ! 0 = 0" by (simp add: idxsum_nth)
+                        have HIGHN0_lp:
+                          "0 < Lng (seg ?SN (IdxSum ?HIGHN ! 0) (IdxSum ?HIGHN ! 1 - 1))"
+                        proof -
+                          have "Lng (?HIGHN ! 0)
+                                = Lng (seg ?SN (IdxSum ?HIGHN ! 0) (IdxSum ?HIGHN ! 1 - 1))"
+                            using HIGHN0_seg by simp
+                          thus ?thesis using HIGHN0_len_pos by simp
+                        qed
+                        have H0hd0: "entry (?HIGHN ! 0) 0 0 = entry N 0 ?j0N"
+                        proof -
+                          have step1: "entry (?HIGHN ! 0) 0 0
+                                       = entry (seg ?SN (IdxSum ?HIGHN ! 0) (IdxSum ?HIGHN ! 1 - 1)) 0 0"
+                            using HIGHN0_seg by simp
+                          have step2: "entry (seg ?SN (IdxSum ?HIGHN ! 0) (IdxSum ?HIGHN ! 1 - 1)) 0 0
+                                       = entry ?SN 0 (IdxSum ?HIGHN ! 0 + 0)"
+                            by (rule entry_seg[OF HIGHN0_lp])
+                          have step3: "entry ?SN 0 (IdxSum ?HIGHN ! 0 + 0) = entry ?SN 0 0"
+                            by (simp only: idx0 add_0)
+                          have step4: "entry ?SN 0 0 = entry N 0 (?j0N + 0)"
+                            by (rule entry_seg) (use SNpos in simp)
+                          have step5: "entry N 0 (?j0N + 0) = entry N 0 ?j0N" by simp
+                          from step1 step2 step3 step4 step5 show ?thesis by simp
+                        qed
+                        have H0hd1: "entry (?HIGHN ! 0) 1 0 = entry N 1 ?j0N"
+                        proof -
+                          have step1: "entry (?HIGHN ! 0) 1 0
+                                       = entry (seg ?SN (IdxSum ?HIGHN ! 0) (IdxSum ?HIGHN ! 1 - 1)) 1 0"
+                            using HIGHN0_seg by simp
+                          have step2: "entry (seg ?SN (IdxSum ?HIGHN ! 0) (IdxSum ?HIGHN ! 1 - 1)) 1 0
+                                       = entry ?SN 1 (IdxSum ?HIGHN ! 0 + 0)"
+                            by (rule entry_seg[OF HIGHN0_lp])
+                          have step3: "entry ?SN 1 (IdxSum ?HIGHN ! 0 + 0) = entry ?SN 1 0"
+                            by (simp only: idx0 add_0)
+                          have step4: "entry ?SN 1 0 = entry N 1 (?j0N + 0)"
+                            by (rule entry_seg) (use SNpos in simp)
+                          have step5: "entry N 1 (?j0N + 0) = entry N 1 ?j0N" by simp
+                          from step1 step2 step3 step4 step5 show ?thesis by simp
+                        qed
+                        \<comment> \<open>heads of \<open>?Y!0\<close> are also \<open>(entry N _ j\<^sub>0\<^sup>N)\<close>\<close>
+                        have Y0hd0: "entry (?Y ! 0) 0 0 = entry N 0 ?j0N"
+                        proof (cases "?qb = 0")
+                          case True hence "?Y ! 0 = ?partial" by simp
+                            thus ?thesis using parhd0 by simp
+                        next
+                          case False hence "?Y ! 0 = ?blk" by (simp add: nth_append)
+                            thus ?thesis using blkhd0 by simp
+                        qed
+                        have Y0hd1: "entry (?Y ! 0) 1 0 = entry N 1 ?j0N"
+                        proof (cases "?qb = 0")
+                          case True hence "?Y ! 0 = ?partial" by simp
+                            thus ?thesis using parhd1 by simp
+                        next
+                          case False hence "?Y ! 0 = ?blk" by (simp add: nth_append)
+                            thus ?thesis using blkhd1 by simp
+                        qed
+                        \<comment> \<open>(v) transfer \<open>cdom\<close> from \<open>HIGHN!0\<close> to \<open>?Y!0\<close> via same heads;
+                           \<open>segMN\<close> swaps \<open>M\<close> for \<open>N\<close> in the \<open>last (P ...)\<close>\<close>
+                        have lastM_eq: "last (P (seg M ?a (?j0N - 1))) = last ?LOWN"
+                          using segMN by simp
+                        have key: "cdom (last ?LOWN) (?HIGHN ! 0)"
+                          using cdomBr last_low_eq high0_eq by simp
+                        from key have row0: "entry (?HIGHN ! 0) 0 0 \<le> entry (last ?LOWN) 0 0"
+                          and row1cond: "entry (last ?LOWN) 0 0 = entry (?HIGHN ! 0) 0 0
+                                          \<longrightarrow> entry (?HIGHN ! 0) 1 0 \<le> entry (last ?LOWN) 1 0"
+                          unfolding cdom_def by auto
+                        show ?thesis
+                          unfolding cdom_def
+                        proof (intro conjI impI)
+                          show "entry (?Y ! 0) 0 0 \<le> entry (last (P (seg M ?a (?j0N - 1)))) 0 0"
+                            using row0 H0hd0 Y0hd0 lastM_eq by simp
+                          assume eq0: "entry (last (P (seg M ?a (?j0N - 1)))) 0 0 = entry (?Y ! 0) 0 0"
+                          hence "entry (last ?LOWN) 0 0 = entry (?HIGHN ! 0) 0 0"
+                            using H0hd0 Y0hd0 lastM_eq by simp
+                          hence "entry (?HIGHN ! 0) 1 0 \<le> entry (last ?LOWN) 1 0"
+                            using row1cond by simp
+                          thus "entry (?Y ! 0) 1 0 \<le> entry (last (P (seg M ?a (?j0N - 1)))) 1 0"
+                            using H0hd1 Y0hd1 lastM_eq by simp
+                        qed
+                      qed
+                      show ?thesis
+                        using descending_append[OF Xdesc Ydesc] junc_cdom fold by simp
                     next
                       case caseC: False
                       \<comment> \<open>sub-case C (article 1496): \<open>TrMax(N') < j\<^sub>-\<^sub>1\<close>; \<open>j\<^sub>0\<^sup>N\<close>'s row-0 parent lies
