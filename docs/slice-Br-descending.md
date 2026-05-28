@@ -882,3 +882,42 @@ The B agent's "blk0fold closed/green" self-report (its builds all timed out, nev
 was indeed false — landmines 2–5 were never verified. Parent build-at-merge caught it (the rule held).
 
 **§6.8 remaining real sorries (3):** B-J1≥1 (11051), C (11057), d0pos (11077). All else green.
+
+## UPDATE 2026-05-28 (continued 19): §6.8 B-J1≥1 — leftmin + fold proven green
+
+Two more verified `have` blocks inside the caseB branch (worktree `slice-wip-68`,
+commits `8b9ea44` leftmin + `b89989d` fold). `show ?thesis sorry` still remains
+for the descending closure (Xdesc + junc_cdom), but the genuinely-new content of
+B-J1≥1 is now green.
+
+### leftmin (8b9ea44): `entry N 0 j0N ≤ entry N 0 q` for all q ∈ [a, j0N)
+Route: `m_5_1_ancestor_basic_1[OF NT j0'lt0N j0Nle1 leRN]` gives `entry N 0 j0' <
+entry N 0 j0N` → `m_5_1_parent_exists_1` yields a row-0 parent `p` (j0'≤p<j0N) →
+`adm_nextrel0_seg` transfers to `nextrel0 N' (p-j0') (j0N-j0')` → uniqueness
+(`idxsum_ex1_parent0_iff` + `the1_equality[rotated]`) identifies it as
+`parent N' 0 (j0N-j0')` → caseB gives `p-j0' ≤ TrMax(N')`, hence `p < a`. The
+`nextrel0_def` valley clause then closes leftmin.
+
+**New Isabelle gotcha** (added to CLAUDE.md): `unfolding parent_def` on
+`parent ?Np 0 (?j0N - j0')` ALSO unfolds the inner `?j0N = parent N 0 (Lng N - 1)`,
+breaking matching with folded facts. Stash the inner index in a fresh `b` via
+`obtain b where bdef: "?j0N - j0' = b" by blast` so `unfolding parent_def` only
+hits the outer `parent`.
+
+### fold (b89989d): `Br M' = P(seg M a (j0N-1)) @ ?Y`
+M-side `m_6_2_P_additive[OF XT c0 cle lminX]` on `?X = seg M a j1'` at cut
+`c = j0N - a`; `lminX` derived from `leftmin` via period agreement (`agree`) +
+`entry_def`; segment conversions by `seg_of_seg[OF less_imp_le[OF aj1] db]` +
+`arg_cong` for endpoints; `P(seg M j0N j1') = ?Y` from `hival` (blk0fold).
+
+**Three more tactic landmines fixed:**
+1. `entry_seg`+`agree`+`entry_def` in one `simp` does not close `fst(M!x)=fst(N!x)`;
+   establish nth-equality at list level first, then a single `simp add: entry_def`.
+2. `using c0 ac by linarith` on `?a + (?c-1) = ?j0N - 1` loops (the `?c`-double-
+   expansion gotcha); chain `c0`-only assoc + `ac` by `simp` via `also`/`finally`.
+3. `thus ?thesis using <eq> by simp` to rewrite seg endpoints is unreliable in
+   `?c`/`?a` contexts; use `arg_cong[OF eq, of "seg M ?a"]` (blk0fold's recipe).
+
+**§6.8 remaining real sorries (3, unchanged in count):** B-J1≥1 closure (Xdesc +
+junc_cdom), C, d0pos. B-J1≥1's hardest math is now green; closure mirrors
+sub-case A's `descending_take[OF descN']` + `descending_append`.
