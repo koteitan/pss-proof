@@ -6,57 +6,54 @@
   - 凡例: **各項目には必ず 🚨（未証明）または ✅（証明済）を付ける**（司令マーカー）。 / 🚨🤖＝ agent 作業中
 
 ## 進捗ツリー
-- 🚨 定理（標準形ペア数列システムの停止性）[§8.7 主結果]〔文は転記済 `p_8_7_termination`。**原文の全命題・補題・定理の文の sorry 転記が §5〜§8 で完了**。以降は証明フェーズ(sorry 解消)〕
+- 🚨 定理（標準形ペア数列システムの停止性）[§8.7 主結果]〔§5〜§8 全命題の sorry 転記完了、以降は証明フェーズ〕
   - ✅ §5 定式化
   - 🚨 §6 ペア数列の基本性質
     - ✅ §6.1 最上行のインクリメント
     - ✅ §6.2 単項性
     - ✅ §6.3 許容性
     - ✅ §6.4 幹と枝
-    - 🚨 §6.5 簡約化 〔**注意: 下記8系は論文の前提 $T_{\textrm{PS}}$ では偽**（correction A4 / `docs/red-le-domain.md`）。
-      定義域＝「先祖係留切片」で真（保留中）。**前提を `anchored_slice` に補正済**（`pss_defs.thy` に定義、
-      8系は `M∈anchored_slice` 前提へ、偽の公理を解消、commit 063927d）。`anchored_slice⊆T_PS` 証明済
-      (`anchored_slice_imp_T_PS`)。fan-out agent の T_PS 版証明は偽命題依存で破棄。〕
-      - ✅ 命題（$\textrm{Red}$ の well-defined 性）〔`m_6_5_Red_welldef`: 測度 ν での整礎帰納＋`Red.domintros`。基礎補題群(diagSeq・`Lng_Br_le`・`TrMax_diagSeq_append_ge`・`coreReduce`/`betaM`・`coreReduce_nonmulti`・`NJ_nonmulti`・`nu`/`muMono`・per-case descent)を経て完成。設計 docs/red-termination.md〕
-      - 🚨🚧 命題（$\textrm{Red}$ の $\textrm{IncrFirst}$ 不変性）〔`m_6_5_Red_IncrFirst`。worktree adb8 で ~55件修正し zeroT/multiT/core/noncore-m10z/**m10>0-trunk まで通過**。`Red_m10pos_unfold` 統合済。**m10>0 の最終段が死枝[20]に帰着**（上記）→ 死枝[20]補題が要る。真理値: 死枝[20]が常に真なら T_PS で真。〕
-      - ✅ 命題（$\textrm{Lng}$ の $\textrm{Red}$ 不変性）〔`m_6_5_Lng_Red`、§6.5 下流の linchpin〕
-      - ✅ 系（$\textrm{Red}$ が零項性を保つこと）〔`m_6_5_Red_zeroT`。T_PS で真。Lng=1 へ帰着(`m_6_5_Lng_Red`)＋helper `rz_Red_entry1_nz`。agent 由来、統合済〕
-      - 🚨 系（直系先祖の $\textrm{Red}$ 不変性）〔**keystone**: `m_6_5_Red_le`。**T_PS で偽**(反例 `(0,0)(0,1)`)→先祖係留切片で真(保留中)。A4〕
-      - 🚨 系（$\textrm{Red}$ が単項性を保つこと）〔`m_6_5_Red_monoT`。T_PS で偽 → 係留切片で真(保留中)。A4〕
-      - 🚨 系（$P$ の $\textrm{Red}$ 同変性）〔`m_6_5_P_Red`。T_PS で偽 → 係留切片で真(保留中)。A4〕
-      - 🚨 命題（単項性と $\textrm{Red}$ の関係）〔`m_6_5_monoT_Red`、前提 $PT_{\textrm{PS}}$（[19][20]死枝）〕
-      - 🚨 命題（$\textrm{Red}$ の冪等性）〔`m_6_5_Red_idem`。T_PS で偽(反例 `(0,0)(0,2)`) → 係留切片で真(保留中)。A4〕
-      - 🚨🚧 命題（$\textrm{Red}$ と $\textrm{Pred}$ の可換性）〔`m_6_5_Red_Pred`。**T_PS で真**。agent a4ed は case 1-5 を詰めたが **case 6 が死枝[20]に帰着**して停止（Red_IncrFirst と同一障壁）。〕
-      - 🚨 命題（$\textrm{Red}$ と基本列の可換性）〔`m_6_5_Red_oper`。T_PS で偽 → 係留切片で真(保留中)。A4〕
-      - 🚨 命題（$\textrm{Red}$ が許容性を保つこと）〔`m_6_5_Red_adm`。T_PS で偽(反例 `(0,0)(0,1)(0,2)`) → 係留切片で真(保留中)。A4〕
-      - 🚨 系（許容化の $\textrm{Red}$ 不変性）〔`m_6_5_admof_Red`。T_PS で偽 → 係留切片で真(保留中)。A4〕
-      - 🚨 系（$\textrm{Red}$ が基点を保つこと）〔`m_6_5_Red_marked`。T_PS で偽(反例 `(0,0)(0,1)(1,2)`) → 係留切片で真(保留中)。A4〕
-    - 🚨 §6.6 簡約性 〔経験的監査 `python/red_66_audit.py`: 下記の通り大半 T_PS で真〕
-      - 🚨 命題（簡約性の切片への遺伝性）〔`p_6_6_reduced_slice`。article 前提 $j'_0\le\textrm{TrMax}$ は**偽**(反例 標準形 `(0,0)(1,1)(1,0)`)→ $j'_0=0$ に補正済(保留中)。**correction A5**〕
-      - 🚨 命題（$P$ が簡約性を保つこと）〔`p_6_6_P_reduced`。**T_PS で真**〕
-      - 🚨 命題（簡約性が基本列で保たれること）〔`p_6_6_reduced_oper`。**T_PS で真**〕
-      - 🚨 命題（簡約性と係数の関係）〔`p_6_6_reduced_iff_cond`: 簡約 ⟺ 条件A∧B。**T_PS で真**〕
-      - ✅ 補題（$\textrm{Red}$ と左端の関係）(1)〔`m_6_6_Red_leftend_1`: `entry (Red M) 1 0 = entry M 1 0`。Red.pinduct 5分岐、m10>0 は `coreReduce_monoT_m10_pos`+`TrMax_diagSeq_append_ge` で（未証明 leftend_2 に依存せず）。agent acf1 由来、統合済〕
+    - 🚨 §6.5 簡約化 〔下記8系は $T_{\textrm{PS}}$ で偽、係留切片で真 (correction A4、保留中)〕
+      - ✅ 命題（$\textrm{Red}$ の well-defined 性）
+      - 🚨🚧 命題（$\textrm{Red}$ の $\textrm{IncrFirst}$ 不変性）〔m10>0 が死枝[20]待ち〕
+      - ✅ 命題（$\textrm{Lng}$ の $\textrm{Red}$ 不変性）〔§6.5 下流の linchpin〕
+      - ✅ 系（$\textrm{Red}$ が零項性を保つこと）
+      - 🚨 系（直系先祖の $\textrm{Red}$ 不変性）〔keystone・A4〕
+      - 🚨 系（$\textrm{Red}$ が単項性を保つこと）〔A4〕
+      - 🚨 系（$P$ の $\textrm{Red}$ 同変性）〔A4〕
+      - 🚨 命題（単項性と $\textrm{Red}$ の関係）〔$PT_{\textrm{PS}}$ 前提〕
+      - 🚨 命題（$\textrm{Red}$ の冪等性）〔A4〕
+      - 🚨🚧 命題（$\textrm{Red}$ と $\textrm{Pred}$ の可換性）〔case 6 が死枝[20]待ち〕
+      - 🚨 命題（$\textrm{Red}$ と基本列の可換性）〔A4〕
+      - 🚨 命題（$\textrm{Red}$ が許容性を保つこと）〔A4〕
+      - 🚨 系（許容化の $\textrm{Red}$ 不変性）〔A4〕
+      - 🚨 系（$\textrm{Red}$ が基点を保つこと）〔A4〕
+    - 🚨 §6.6 簡約性 〔大半 $T_{\textrm{PS}}$ で真〕
+      - 🚨 命題（簡約性の切片への遺伝性）〔article 前提偽 → $j'_0=0$ に補正 (A5)〕
+      - 🚨 命題（$P$ が簡約性を保つこと）
+      - 🚨 命題（簡約性が基本列で保たれること）
+      - 🚨 命題（簡約性と係数の関係）
+      - ✅ 補題（$\textrm{Red}$ と左端の関係）(1)
       - 🚨 補題（簡約性と係数の基本性質）
       - 🚨 補題（簡約性と左端の関係）
       - 🚨 補題（条件 (A) と (B) と係数の基本性質）
       - 🚨 系（直系先祖による切片と $\textrm{Red}$ と $\textrm{IncrFirst}$ の関係）
       - 🚨 系（$1$ 列ペア数列の基本性質）
     - 🚨 §6.7 標準形
-      - ✅ 命題（標準形の階層和による表示）〔`m_6_7_ST_eq_Union_SkT`: `ST_PS = ⋃k SkT_PS k`。純帰納的集合等式、Red 非依存。agent a8c0 由来、統合済〕
+      - ✅ 命題（標準形の階層和による表示）
       - 🚨 命題（標準形の簡約性）
-      - ✅ 命題（標準形の単項成分が標準形であること）〔`m_6_7_standard_P_components`(10c0895, 緑): `M∈SkT_PS k ⟹ P成分∈SkT_PS k`(同ランク)。原文証明(1392)のギャップは**単調性 `SkT_PS_mono`(S_k⊆S_{k+1}) の省略**だった(A6訂正済。当初「単調性偽」は私の truncation 誤判断)。`k×Lng` 辞書式帰納、先頭成分を mono で持ち上げ。Row1Zero/(R)/(U) は不要だった〕
-      - ✅ 命題（標準形の始切片への遺伝性）〔`m_6_7_standard_prefix`: `seg M 0 j' ∈ ST_PS`。ST_PS 帰納＋`less_induct`、`_[1]=Pred` で短縮。helper `ST_PS_T_PS`(ST_PS⊆T_PS) も証明。agent abba09 由来、統合済〕
-    - 🚨 §6.8 降順性 〔`descending` 補題はゼロ(新規)。`m_6_4_P_leftend_mono`(P成分の row-0 左端単調) は既証明＝`descending(P M)` の row-0 部はこれで出る〕
-      - 🚨 命題（標準形の切片と $\textrm{Br}$ の降順性の関係）〔`p_6_8_standard_slice_Br_descending`(pss_paper 577): `M∈ST_PS, (0,j0')≤(0,j1') ⟹ monoT(seg M j0' j1') ∧ descending(Br(seg ...))`。**本開発最難**。設計 `docs/slice-Br-descending.md`、経験的に真(`python/sk_68_prop1_audit.py`)。**分解**: `monoT(seg)`＝`m_6_2_mono_ancestor_slice`で free、`descending(Br)` 行0部＝枝seg(∈T_PS)に`m_6_4_P_leftend_mono`で free、残る難所＝**Br成分の行1 tie-break**(原文 content.md 1438-1586)。**方針確定(2026-05-27)**: 無条件 P-of-slice 版は原文乖離(d0zero 複数周期)のため破棄、**原文忠実な条件付き `Br` 帰納**に組替(worktree `../pss-slice` で進行)。**洞察**: 最小ランク不要、素の `k` 帰納で可(複項Nなら M=P(N)_0∈S_k で IH(M))。**進捗**: `m_6_8_slice_Br_descending_monoT`(`induction k`)の**base(k=0)完成・緑**(`seg_diagSeq`→新`Br_diagSeq`→`descending []`)、green helper(`take_seg`/`drop_seg`/`seg_diagSeq`/`not_multiT_seg_diagSeq`/`oper_nth_lt`)。**残**: Suc k step(原文 1438-1586: M=N[n] 還元→IH、n>1 を `N_{1,j1^N}` で d0zero/d0pos 分割、`N'`構成・`FirstNodes`/`TrMax`/`Joints`・商余簿記)＋WLOG-monoT ラッパー＋main 統合(dead化した`_of_drop`削除)。helper 済: `descending_P_of_ST`・`entry_FirstNodes_eq_component_gen`・`descending_snoc`/`descendingD`/`seg_of_seg`。**原文訂正 A7**: 1434「M'が標準形」は偽(切片は非標準形、反例`(0,0)(1,1)(2,0)`)→「Br(M')降順」が正〕
-      - ✅ 命題（標準形の単項成分が降順であること）〔`m_6_8_standard_P_descending`(緑): row-1 tie-break。content.md 1616-1659。原文の min-rank `k_0` 帰納を回避し `SkT_PS_mono`✅上の `k` 帰納、step は `m_6_2_P_oper_1/2`＋`m_6_7_standard_P_components`✅、IH on M'。helper `oper_entry_0`/`nonmulti_oper_components_leftcol`。経験的検証 `python/sk_68_audit.py`(違反0)〕
+      - ✅ 命題（標準形の単項成分が標準形であること）
+      - ✅ 命題（標準形の始切片への遺伝性）
+    - 🚨 §6.8 降順性
+      - 🚨 命題（標準形の切片と $\textrm{Br}$ の降順性の関係）〔本開発最難、設計 `docs/slice-Br-descending.md`〕
+      - ✅ 命題（標準形の単項成分が降順であること）
   - 🚨 §7 Buchholzの表記系への翻訳
     - 🚨 §7.1 Buchholzの表記系
-      - ✅ 命題（順序数項のカッコの個数が左右で等しいこと）〔`m_7_1_paren_balance`(緑): flatBT の Σ列で LP数=RP数。`flatBT_flatBP.induct` 相互帰納＋helper `filter_concat_bal`。agent a09c 由来、統合済〕
-      - ✅ 命題（順序数項の単項成分の基本性質）〔`m_7_1_term_components`(緑): Lng(PB t)=0⟺t=0 ∧ t=SigmaB(PB t)。ほぼ定義的(`cases t`+`PB_def`/`SigmaB_def`)。agent a09c 由来、統合済〕
-      - 🚨 命題（部分表現の不等式の延長性）〔`p_7_1_*` 未転記。文字列ベース(`s t b∈T_B`)で parse 関数(Σ列→BT)が無く faithful 化に encoding 判断要＝保留〕
-      - ✅ [Buc1] Lemma 2.1（`<` が `T` 上の狭義全順序）〔`m_7_1_lessBT_linord`(緑): `lessBT` の非反射・推移・三分律。`lessBT_lessBP.induct` 相互帰納(+list補題)、enat は linorder。agent ac7d 由来、統合済。整礎性 Lemma 2.2 とは別(2.2 は保留)〕
-    - 🚨 §7.2 scb分解 〔全7命題を sorry 転記済(agent a281a2ec, 緑統合): `p_7_2_scb_replaceable`/`scb_compose`/`scb_triviality`/`scb_unique`/`add_scb`/`scb_fseq`/`RightNodes_subexpr`＋helper `scb_kind0_able`/`scb_kind1_able`〕
+      - ✅ 命題（順序数項のカッコの個数が左右で等しいこと）
+      - ✅ 命題（順序数項の単項成分の基本性質）
+      - 🚨 命題（部分表現の不等式の延長性）〔encoding 判断要、保留〕
+      - ✅ [Buc1] Lemma 2.1（`<` が `T` 上の狭義全順序）
+    - 🚨 §7.2 scb分解 〔全 sorry 転記済〕
       - 🚨 命題（scb分解の置換可能性）
       - 🚨 命題（scb分解の合成則）
       - 🚨 命題（scb分解の自明性の判定条件）
@@ -64,8 +61,8 @@
       - 🚨 系（加法と scb分解の関係）
       - 🚨 命題（scb分解と基本列の関係）
       - 🚨 命題（$\textrm{RightNodes}$ と部分表現の関係）
-    - 🚨 §7.3 翻訳写像 〔主要命題7本を sorry 転記済: `p_7_3_twoColumn`/`Trans_IncrFirst_Red`/`Mark_IncrFirst_Red`/`Trans_zeroT`/`Pred_Trans_descend`/`Mark_rightmost1`/`Trans_monoT`(緑)。残り(非可算基数=基数概念要・`c1<c2`/`s1 b1`空性=def内部記号露出要)は follow-up〕
-      - ✅ **定義** `Trans`/`Mark`（相互再帰 `function`、termination 後回し=`RightNodes`/`Red` 同様）〔pss_paper.thy §7.3。条件 `transCondI..VI`・`Dpt`・`unflatBT`（`s c b`連接＝`flat` 単射で `THE`）・主部アクセサ `bpHeadV/T` 付き。設計 `docs/trans-mark.md`。原文 2044–2180 忠実転記。忠実性論点: `j_0=max{j<j_1|(0,j)≤_M(0,j_1)}` を `parent M 0 j_1` でモデル（要確認）〕
+    - 🚨 §7.3 翻訳写像
+      - ✅ **定義** `Trans`/`Mark`（相互再帰 `function`、termination 後回し）
       - 🚨 命題（$\textrm{Trans}$ の well-defined 性）
       - 🚨 命題（$2$ 列ペア数列の基本性質）
       - 🚨 命題（$\textrm{Trans}$ の $(\textrm{IncrFirst},\textrm{Red})$ 不変 $P$ 同変性）
@@ -79,35 +76,35 @@
       - 🚨 命題（右端第 $2$ 基点の $\textrm{Mark}$ の基本性質）
       - 🚨 命題（$\textrm{Trans}$ の最左単項成分の左端の基本性質）
       - 🚨 命題（$\textrm{Trans}$ が単項性を保つこと）
-      - 🚨 系（$\textrm{Trans}$ と非可算基数の関係）
+      - 🚨 系（$\textrm{Trans}$ と非可算基数の関係）〔基数概念要〕
       - 🚨 系（左端第 $1$ 基点の $\textrm{Mark}$ の基本性質）
-      - 🚨 系（$s_1$ と $b_1$ の空性と基点の関係）
+      - 🚨 系（$s_1$ と $b_1$ の空性と基点の関係）〔def 内部記号露出要〕
       - 🚨 命題（$\textrm{Mark}$ が順序関係を保つこと）
       - 🚨 系（$s_{-1}$ と $b_{-1}$ の空性と基点の関係）
       - 🚨 命題（$\textrm{Mark}$ の $\textrm{Trans}$ による表示）
-    - 🚨 §7.4 許容的親子関係 〔stmt転記: `p_7_4_Trans_nextAdm`/`Mark_nextAdm`/`Trans_Mark_Pred`/`Trans_Mark_seg`/`RightNodes_Mark` を sorry 転記済(agent a2ab8514, 緑統合)。最後の2命題は `RightAnces` 未定義のため未転記=要新定義〕
+    - 🚨 §7.4 許容的親子関係
       - ✅ 命題（$\textrm{Adm}_M$ と $<_M^{\textrm{NextAdm}}$ の関係）
       - 🚨 命題（$\textrm{Trans}$ と $<_M^{\textrm{NextAdm}}$ の関係）
       - 🚨 系（$\textrm{Mark}$ と $<_M^{\textrm{NextAdm}}$ の関係）
       - 🚨 系（$\textrm{Trans}$ の $\textrm{Mark}$ と $\textrm{Pred}$ による表示）
       - 🚨 系（$\textrm{Trans}$ の $\textrm{Mark}$ と切片による表示）
       - 🚨 系（$\textrm{RightNodes}$ と $\textrm{Mark}$ の関係）
-      - 🚨 命題（$\textrm{RightNodes}$ と $\textrm{RightAnces}$ の関係）〔`p_7_4_RightAnces_RightNodes` 転記済; `RightAnces` 定義(deferred function)も追加〕
-      - 🚨 系（非零項の $\textrm{RightAnces}$ が非空であること）〔`p_7_4_RightAnces_zeroT` 転記済〕
-  - 🚨 §8 停止性 〔定義: `DT_PS`(強単項)・`LastStep`(A9)済。§6.8 prop1 が §8.2 前提＝critical path。展開規則 §8.1/8.3/8.4/8.5/8.6 を agent並列で sorry 転記(a5df1dfa/a797c612/ad937ac4/a28113e): `p_8_1_*`(4)/`p_8_3_*`(4)/`p_8_4_*`(3)/`p_8_5_*`(2)/`p_8_6_*`(4)。**§8.2 残り6補題も転記済**(`p_8_2_*`)。公差(1,1)=`diagSeq`, 条件(I-VI)=`transCondI..VI`, 基本列=`operB·numBT` でモデル。**強許容(強許容性)は §8.2 証明本文専用で定義箇所が無く、Br降順性を FirstNodes/Joints 座標へ言い換えたもの=命題「文」の転記には不要**(証明フェーズでのみ要)。残: §8.7(主結果, 6242 最終定義要)・Trans 内部記号(c1/c2/t2-4/s1/b1)露出依存の命題群〕
+      - 🚨 命題（$\textrm{RightNodes}$ と $\textrm{RightAnces}$ の関係）〔`RightAnces` 新定義要〕
+      - 🚨 系（非零項の $\textrm{RightAnces}$ が非空であること）
+  - 🚨 §8 停止性 〔§6.8 prop1 が §8.2 前提＝critical path〕
     - 🚨 §8.1 条件 (I) の下での展開規則
       - 🚨 命題（条件 (I) の下での $\textrm{Trans}$ と基本列の交換関係）
       - 🚨 補題（公差 $(1,1)$ のペア数列の $\textrm{Trans}$ の基本性質）
       - 🚨 系（$\textrm{Pred}$ が公差 $(1,1)$ のペア数列の $\textrm{Trans}$ の基本性質）
       - 🚨 補題（条件 (I) か (III) の下での $c_1$ 前後の具体表示）
-    - 🚨 §8.2 強単項性
-      - 🚨 命題（標準形の直系先祖による切片の簡約化の強単項性）〔`p_8_2_standard_slice_Red_strongmono` 転記済(§6.8 prop1 依存)〕
-      - 🚨 命題（条件 (II) か (IV) の下での終切片と $\textrm{Trans}$ の関係）〔`p_8_2_condIIIV_terminal_slice_Trans`〕
-      - 🚨 補題（強単項性の切片への遺伝性）〔`p_8_2_strongmono_slice`〕
-      - 🚨 補題（部分表現の単項成分と $\textrm{Pred}$ の関係）〔`p_8_2_subexpr_component_Pred`、4分岐の選言〕
-      - 🚨 補題（強単項性の下での部分表現の単項成分の基本性質）〔`p_8_2_subexpr_component_strongmono`、各単項成分=`set(PB t')` の元(既に BT)を `leBT` 比較〕
-      - 🚨 補題（条件 (V) の下での右端の親の基本性質）〔`p_8_2_condV_rightmost_parent`〕
-      - 🚨 補題（条件 (V) の下での終切片と $\textrm{Trans}$ の関係）〔`p_8_2_condV_terminal_slice_Trans`〕
+    - 🚨 §8.2 強単項性 〔§6.8 prop1 依存〕
+      - 🚨 命題（標準形の直系先祖による切片の簡約化の強単項性）
+      - 🚨 命題（条件 (II) か (IV) の下での終切片と $\textrm{Trans}$ の関係）
+      - 🚨 補題（強単項性の切片への遺伝性）
+      - 🚨 補題（部分表現の単項成分と $\textrm{Pred}$ の関係）
+      - 🚨 補題（強単項性の下での部分表現の単項成分の基本性質）
+      - 🚨 補題（条件 (V) の下での右端の親の基本性質）
+      - 🚨 補題（条件 (V) の下での終切片と $\textrm{Trans}$ の関係）
     - 🚨 §8.3 条件 (II) の下での展開規則
       - 🚨 命題（条件 (II) の下での $\textrm{Trans}$ と基本列の交換関係）
       - 🚨 補題（第 $0$ 種型基本列の基本不等式）
@@ -123,21 +120,21 @@
       - 🚨 補題（条件 (III)〜(V) の下での各種 scb分解）
       - 🚨 補題（条件 (III) か (IV) の下での各種 scb分解）
       - 🚨 補題（条件 (III) か (IV) の下での基本列の基本性質）
-    - 🚨 §8.5 条件 (V) の下での展開規則 〔転記済(a28113e): `p_8_5_*`(2)〕
-      - 🚨 命題（条件 (V) の下での $\textrm{Trans}$ と基本列の交換関係）〔`p_8_5_Trans_oper_exchange`〕
-      - 🚨 補題（条件 (V) の下での $\textrm{Joints}$ と $\textrm{FirstNodes}$ と $t_2$ の基本性質）〔`p_8_5_Joints_FirstNodes_basic`〕
-      - 🚨 補題（条件 (V) の下での各種 scb分解）〔Trans 内部記号(t2/s1/b1)露出依存=未転記〕
-    - 🚨 §8.6 条件 (VI) の下での展開規則 〔転記済(a28113e): `p_8_6_*`(4)〕
-      - 🚨 命題（条件 (VI) の下での $\textrm{Trans}$ と基本列の交換関係）〔`p_8_6_Trans_fseq_condVI`〕
-      - 🚨 補題（公差 $(1,0)$ のペア数列の $\textrm{Trans}$ の基本性質）〔`p_8_6_const2nd_Trans`〕
-      - 🚨 補題（公差 $(1,1)$ のペア数列の $\textrm{Trans}$ の展開規則）〔`p_8_6_diagSeq_Trans_oper`〕
-      - 🚨 補題（順序数項の末尾単項の零化可能性）〔`p_8_6_trailing_principal_annihilable`〕
-    - 🚨 §8.7 主結果 〔転記済: 主定理 `p_8_7_termination`(`ST_PS×ℕ_+⊆Dom F`=`Fdom f M n`、f:ℕ_+→ℕ_+ を `1≤k⟹1≤f k` でモデル)＋補助8補題 `p_8_7_*`。`Dom F`=`Fdom`(§5.4既存)、`OT_B`/`domB`/`NatSet`/`scb_decomp`/`multBT`/`operB`/`Dpt^^` 既存定義で全文転記可。`t[0]^k`=`(λa. operB a (numBT 0))^^k`。原文6016 `PT_B` は `PT_PS` の誤記〕
-      - 🚨 補題（公差 $(0,0)$ のペア数列の $\textrm{Trans}$ の基本性質）〔`p_8_7_const00_Trans`〕
-      - 🚨 補題（基本列の降下性）〔`p_8_7_fseq_descend`〕
-      - 🚨 補題（順序数項の再帰構造）〔`p_8_7_OT_scb_recursive`〕
-      - 🚨 補題（順序数項の共終数の遺伝性）〔`p_8_7_OT_dom_hereditary`〕
-      - 🚨 補題（順序数項の末尾項の零化可能性）〔`p_8_7_OT_tail_annihilable`〕
-      - 🚨 補題（$\textrm{Pred}$ と $[0]$ の関係）〔`p_8_7_Pred_oper0`、内部記号 $t_1$=`Trans(Pred M)` を露出〕
-      - 🚨 補題（順序数項の基本例）〔`p_8_7_OT_examples`、4項〕
-      - 🚨 補題（$\textrm{Trans}$ が標準形を保つこと）〔`p_8_7_Trans_preserves_OT`〕
+    - 🚨 §8.5 条件 (V) の下での展開規則
+      - 🚨 命題（条件 (V) の下での $\textrm{Trans}$ と基本列の交換関係）
+      - 🚨 補題（条件 (V) の下での $\textrm{Joints}$ と $\textrm{FirstNodes}$ と $t_2$ の基本性質）
+      - 🚨 補題（条件 (V) の下での各種 scb分解）〔def 内部記号露出要〕
+    - 🚨 §8.6 条件 (VI) の下での展開規則
+      - 🚨 命題（条件 (VI) の下での $\textrm{Trans}$ と基本列の交換関係）
+      - 🚨 補題（公差 $(1,0)$ のペア数列の $\textrm{Trans}$ の基本性質）
+      - 🚨 補題（公差 $(1,1)$ のペア数列の $\textrm{Trans}$ の展開規則）
+      - 🚨 補題（順序数項の末尾単項の零化可能性）
+    - 🚨 §8.7 主結果
+      - 🚨 補題（公差 $(0,0)$ のペア数列の $\textrm{Trans}$ の基本性質）
+      - 🚨 補題（基本列の降下性）
+      - 🚨 補題（順序数項の再帰構造）
+      - 🚨 補題（順序数項の共終数の遺伝性）
+      - 🚨 補題（順序数項の末尾項の零化可能性）
+      - 🚨 補題（$\textrm{Pred}$ と $[0]$ の関係）
+      - 🚨 補題（順序数項の基本例）
+      - 🚨 補題（$\textrm{Trans}$ が標準形を保つこと）
