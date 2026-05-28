@@ -1014,3 +1014,14 @@ Followed up on Agent Y's monoT hypothesis with focused `python/slice_caseC_monoT
 Truth at deeper depth (parent > ?a witnesses) is **not yet checked**; the depth-4/maxval-3 search is too narrow to surface the general case. Recommended next step: enumerate caseC witnesses with `parent N 0 j0N > ?a` strictly, verify monoT still holds (or find a counterexample). If monoT survives generally, proceed with the monoT-via-direct-nextrel0 route; otherwise the full article decomposition `Br M' = take J1 (Br N') @ [tail]` is required.
 
 **Status**: caseC not closed in this session. B-J1≥1 fully green (slice-wip-68 `1323561`); the §6.8 prop1 lemma still has 2 sorries (caseC, d0pos).
+
+**Addendum (deeper Y-script search, late-arriving result)**: a follow-up run of Y's full-decomposition
+script at depth 5 / maxval 5 / n≤3 (which completed in background after the above was written) found
+**42 caseC witnesses, all article-decomposition clean** (`Cidfail=0`, `Cprefixfail=0`, `Cfnfail=0`;
+also 198 case-B, all `B-shape(qb whole)`). This is much stronger than caseC's prior "UNVALIDATED"
+reputation — the full article decomposition `Br M' = take J1 (Br N') @ [seg M (FN[J1]+j0') j1']`
+holds at this depth.
+
+**Recommendation for next session**: (a) widen the monoT check to detect `parent > ?a` witnesses
+and decide monoT vs full route, OR (b) commit directly to the full article decomposition
+(~200 lines, mirrors sub-case A structurally, empirically robust at 42/42).
