@@ -11133,17 +11133,19 @@ proof -
                       qed
                       have Msplit: "P ?X = P (seg ?X 0 (?c - 1)) @ P (seg ?X ?c (Lng ?X - 1))"
                         by (rule m_6_2_P_additive[OF XT c0 cle lminX])
+                      \<comment> \<open>hoist \<open>idx\<close>: needed by both segLOW (M-side) and segLOW_N (N-side, in Xdesc).
+                         \<open>using c0 ac by linarith\<close> loops (\<open>?c\<close> double-expands the complex atoms
+                         \<open>?j0N\<close>/\<open>?a\<close> with \<open>ac\<close> in scope); chain the \<open>c0\<close>-only assoc then \<open>ac\<close>
+                         via \<open>also\<close>/\<open>finally\<close> (CLAUDE.md gotcha)\<close>
+                      have idx: "?a + (?c - 1) = ?j0N - 1"
+                      proof -
+                        have "?a + (?c - 1) = ?a + ?c - 1" using c0 by linarith
+                        also have "\<dots> = ?j0N - 1" using ac by simp
+                        finally show ?thesis .
+                      qed
                       have segLOW: "seg ?X 0 (?c - 1) = seg M ?a (?j0N - 1)"
                       proof -
                         have db: "?c - 1 \<le> j1' - ?a" using cle LngX by linarith
-                        \<comment> \<open>\<open>using c0 ac by linarith\<close> loops (\<open>?c\<close> double-expands the complex atoms
-                           \<open>?j0N\<close>/\<open>?a\<close>); chain the \<open>c0\<close>-only assoc then \<open>ac\<close> by \<open>simp\<close> (CLAUDE.md gotcha)\<close>
-                        have idx: "?a + (?c - 1) = ?j0N - 1"
-                        proof -
-                          have "?a + (?c - 1) = ?a + ?c - 1" using c0 by linarith
-                          also have "\<dots> = ?j0N - 1" using ac by simp
-                          finally show ?thesis .
-                        qed
                         have "seg ?X 0 (?c - 1) = seg M (?a + 0) (?a + (?c - 1))"
                           by (rule seg_of_seg[OF less_imp_le[OF aj1] db])
                         also have "\<dots> = seg M ?a (?a + (?c - 1))" by simp
@@ -11167,6 +11169,92 @@ proof -
                         have "Br ?M' = P (seg M ?a (?j0N - 1)) @ P (seg M ?j0N j1')"
                           using BrM'P Msplit segLOW segHIGH by simp
                         thus ?thesis using hival by simp
+                      qed
+                      \<comment> \<open>Xdesc: \<open>LOW = P(seg M a (j\<^sub>0\<^sup>N-1)) = take J\<^sub>1 (Br N')\<close>, descending by
+                         \<open>descending_take[OF descN']\<close>.  N-side \<open>m_6_2_P_additive\<close> at the
+                         same cut \<open>j\<^sub>0\<^sup>N\<close> (\<open>leftmin\<close> directly) + period agreement.\<close>
+                      let ?Y' = "seg N ?a (Lng N - 1)"
+                      have aLN1: "?a < Lng N - 1" using asmall j0Nlt1 by linarith
+                      have aLN1_le: "?a \<le> Lng N - 1" using aLN1 by linarith
+                      have LngY': "Lng ?Y' = Suc (Lng N - 1) - ?a" by (rule Lng_seg)
+                      have Y'T: "?Y' \<in> T_PS"
+                      proof -
+                        have "0 < Lng ?Y'" using LngY' aLN1 by linarith
+                        hence "?Y' \<noteq> []" using length_greater_0_conv by blast
+                        thus ?thesis by (simp add: T_PS_def)
+                      qed
+                      have cle': "?c \<le> Lng ?Y' - 1" using LngY' j0Nlt1 by linarith
+                      have axc': "?a + (Lng ?Y' - 1) = Lng N - 1" using LngY' aLN1 by linarith
+                      have lminY': "\<And>j. j < ?c \<Longrightarrow> entry ?Y' 0 ?c \<le> entry ?Y' 0 j"
+                      proof -
+                        fix j assume jc: "j < ?c"
+                        have jY': "j < Lng ?Y'" using jc cle' by linarith
+                        have cY': "?c < Lng ?Y'" using cle' LngY' aLN1 by linarith
+                        have eY'_j: "entry ?Y' 0 j = entry N 0 (?a + j)"
+                        proof -
+                          have "?Y' ! j = N ! (?a + j)" by (rule seg_nth_eq) (use jY' LngY' in simp)
+                          thus ?thesis by (simp add: entry_def)
+                        qed
+                        have eY'_c: "entry ?Y' 0 ?c = entry N 0 ?j0N"
+                        proof -
+                          have "?Y' ! ?c = N ! (?a + ?c)" by (rule seg_nth_eq) (use cY' LngY' in simp)
+                          hence "?Y' ! ?c = N ! ?j0N" using ac by simp
+                          thus ?thesis by (simp add: entry_def)
+                        qed
+                        have "entry N 0 ?j0N \<le> entry N 0 (?a + j)"
+                          using leftmin[of "?a + j"] jc by linarith
+                        thus "entry ?Y' 0 ?c \<le> entry ?Y' 0 j" using eY'_j eY'_c by simp
+                      qed
+                      have Nsplit: "P ?Y' = P (seg ?Y' 0 (?c - 1)) @ P (seg ?Y' ?c (Lng ?Y' - 1))"
+                        by (rule m_6_2_P_additive[OF Y'T c0 cle' lminY'])
+                      have segLOW_N: "seg ?Y' 0 (?c - 1) = seg N ?a (?j0N - 1)"
+                      proof -
+                        have db: "?c - 1 \<le> Lng N - 1 - ?a" using cle' LngY' by linarith
+                        have "seg ?Y' 0 (?c - 1) = seg N (?a + 0) (?a + (?c - 1))"
+                          by (rule seg_of_seg[OF aLN1_le db])
+                        also have "\<dots> = seg N ?a (?a + (?c - 1))" by simp
+                        also have "\<dots> = seg N ?a (?j0N - 1)"
+                          using arg_cong[OF idx, of "seg N ?a"] .
+                        finally show ?thesis .
+                      qed
+                      have segHIGH_N: "seg ?Y' ?c (Lng ?Y' - 1) = seg N ?j0N (Lng N - 1)"
+                      proof -
+                        have db: "Lng ?Y' - 1 \<le> Lng N - 1 - ?a" using LngY' by linarith
+                        have "seg ?Y' ?c (Lng ?Y' - 1) = seg N (?a + ?c) (?a + (Lng ?Y' - 1))"
+                          by (rule seg_of_seg[OF aLN1_le db])
+                        also have "\<dots> = seg N ?j0N (?a + (Lng ?Y' - 1))"
+                          using arg_cong[OF ac, of "\<lambda>x. seg N x (?a + (Lng ?Y' - 1))"] .
+                        also have "\<dots> = seg N ?j0N (Lng N - 1)"
+                          using arg_cong[OF axc', of "seg N ?j0N"] .
+                        finally show ?thesis .
+                      qed
+                      have NbrSplit: "Br ?Np = P (seg N ?a (?j0N - 1)) @ P (seg N ?j0N (Lng N - 1))"
+                        using BrNpP Nsplit segLOW_N segHIGH_N by simp
+                      \<comment> \<open>period agreement: \<open>M\<close> and \<open>N\<close> coincide on \<open>[?a, ?j0N-1]\<close> (\<open>\<le> ?j0N\<close>)\<close>
+                      have segMN: "seg M ?a (?j0N - 1) = seg N ?a (?j0N - 1)"
+                      proof (rule nth_equalityI)
+                        show "length (seg M ?a (?j0N - 1)) = length (seg N ?a (?j0N - 1))" by simp
+                        fix i assume "i < length (seg M ?a (?j0N - 1))"
+                        hence ic: "i < Suc (?j0N - 1) - ?a" by simp
+                        have aileq: "?a + i \<le> ?j0N" using ic c0 by linarith
+                        have "seg M ?a (?j0N - 1) ! i = M ! (?a + i)"
+                          by (rule seg_nth_eq) (use ic in simp)
+                        also have "\<dots> = N ! (?a + i)" using agree[OF aileq] .
+                        also have "\<dots> = seg N ?a (?j0N - 1) ! i"
+                          by (rule seg_nth_eq[symmetric]) (use ic in simp)
+                        finally show "seg M ?a (?j0N - 1) ! i = seg N ?a (?j0N - 1) ! i" .
+                      qed
+                      have Xdesc: "descending (P (seg M ?a (?j0N - 1)))"
+                      proof -
+                        have lowEq: "P (seg M ?a (?j0N - 1)) = P (seg N ?a (?j0N - 1))"
+                          using segMN by simp
+                        have takeEq: "P (seg N ?a (?j0N - 1))
+                                    = take (length (P (seg N ?a (?j0N - 1)))) (Br ?Np)"
+                          using NbrSplit by simp
+                        from lowEq takeEq
+                        have "P (seg M ?a (?j0N - 1))
+                            = take (length (P (seg N ?a (?j0N - 1)))) (Br ?Np)" by simp
+                        thus ?thesis using descending_take[OF descN'] by simp
                       qed
                       show ?thesis sorry
                     next

@@ -1,20 +1,14 @@
-§6.8 B-J1>=1 fold proven green: Br M' = LOW @ HIGH at the cut j0N
+§6.8 B-J1>=1 Xdesc proven green: LOW = take J1 (Br N') descending
 
-- M-side m_6_2_P_additive split of seg M a j1' at the cut c=j0N-a is now a
-  verified `have fold: Br M' = P(seg M a (j0N-1)) @ ?Y` block (Finished PSS, 58s),
-  using `leftmin` (this commit's predecessor 8b9ea44) for the left-minimality
-  premise; `?Y = P(seg M j0N j1')` is hival from blk0fold.
-- Several tactic landmines surfaced and were fixed:
-  * `entry_seg`+`agree`+`entry_def` in one `simp` does not close `fst(M!x)=fst(N!x)`;
-    establish the nth-equality `?X!j = N!(?a+j)` at list level first, then a single
-    `simp add: entry_def` step.
-  * `using c0 ac by linarith` on `?a + (?c-1) = ?j0N - 1` loops (the CLAUDE.md
-    `?w`-style gotcha: `?c` re-expands the complex atoms `?j0N`/`?a` once `ac` is
-    supplied); chain `c0`-only assoc then `ac` by `simp` via `also`/`finally`.
-  * `thus ?thesis using <eq> by simp` to rewrite a seg endpoint is unreliable in
-    this `?c`/`?a` context; switch to `arg_cong[OF eq, of "seg M ?a"]` for both
-    segLOW and segHIGH (blk0fold's recipe).
-- Remaining for B-J1>=1: Xdesc (LOW = take J1 (Br N'), descending_take) and
-  junc_cdom (descending_append) mirroring sub-case A. 3 sorries unchanged in count.
+- The descending of LOW = P(seg M a (j0N-1)) is now a verified `have Xdesc`
+  block (Finished PSS, 53s).  N-side m_6_2_P_additive at the same cut j0N
+  (leftmin in N coords directly, no agree needed) gives the prefix split of
+  Br N', and period agreement (segMN via nth_equalityI + agree) bridges to the
+  M-side LOW; descending_take[OF descN'] closes.
+- Required hoisting `idx` from inside segLOW's proof to the outer scope so both
+  segLOW (M-side) and segLOW_N (N-side) can use it.
+- Remaining for B-J1>=1: junc_cdom (descending_append junction) — last LOW =
+  Br N' ! (J1-1), Br N' ! J1 = first component of P(seg N j0N (Lng N-1)) whose
+  head equals ?Y!0's head, cdom via descN' + head-only dependence of cdom.
 
 Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>
