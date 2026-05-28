@@ -1,10 +1,16 @@
-§6.8 worktree GREEN checkpoint: A closed, B-J1=0 closed, blk0fold sorried
+§6.8 blk0fold PROVEN green: discharge the isolated sorry (3 real sorries left)
 
-- ../pss-slice builds Finished PSS (54s). 4 real sorries:
-  blk0fold (9961), B-J1>=1 (10819), C (10825), d0pos (10845).
-- blk0fold's proof attempt (slow leftseg seg_of_seg/linarith + a blkseg index
-  bug; never verified green by the B agent) is isolated as sorry; the statement
-  is empirically validated (high-half block fold 0-fail) and B-J1=0 uses it soundly.
-  Full proof attempt preserved in the previous commit fbd9017.
+- oper_d0zero_seg_P_blk0fold is now a real proof (Finished PSS, 49s, no slow
+  steps).  Both linarith and presburger loop in preprocessing on the ?w-expanded
+  double-parent goal when j0lt is supplied (>2400s); the fix avoids decision
+  procedures on ?w-laden goals:
+  * leftseg: explicit db witness (?c-1 <= End-j0) for seg_of_seg + idxL index eq
+  * segmono: chain assoc (w0-only linarith) + j0w1 (simp trans) for idxe/segL/ej,
+    keeping j0lt out of all ?w arithmetic
+  * eqv: reorder j0le2/ej before eqv and feed ej to its simp
+  * rightseg: arg_cong (not simp) for the endpoint, dodging the Lng_seg assoc shift
+  * nz: extract the Lng=1 conjunct of zeroT and contradict True, avoiding the
+    messy Suc(Lng M-2)-j0 entry blowup that simp+zeroT_def triggers
+- Remaining real sorries: B-J1>=1 (11051), C (11057), d0pos (11077).
 
 Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>

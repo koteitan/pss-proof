@@ -9955,10 +9955,242 @@ lemma oper_d0zero_seg_P_blk0fold:
               (parent M 0 (Lng M - 1) + qb * (Lng M - 1 - parent M 0 (Lng M - 1)) + r2))
        = replicate qb (seg M (parent M 0 (Lng M - 1)) (Lng M - 2))
        @ [seg M (parent M 0 (Lng M - 1)) (parent M 0 (Lng M - 1) + r2)]"
-  \<comment> \<open>TODO(parent): proof attempt (slow leftseg seg_of_seg/linarith + blkseg index
-     bug) preserved on worktree branch slice-wip-68 commit fbd9017; isolated as \<open>sorry\<close>.
-     Statement empirically validated 0-fail (high-half block fold).\<close>
-  sorry
+proof -
+  let ?j0 = "parent M 0 (Lng M - 1)"  let ?w = "Lng M - 1 - ?j0"
+  let ?MN = "(M::pairseq)[n]"  let ?blk = "seg M ?j0 (Lng M - 2)"
+  let ?partial = "seg M ?j0 (?j0 + r2)"
+  have w0: "0 < ?w" using j0lt by linarith
+  have j0w1: "?j0 + ?w - 1 = Lng M - 2" using w0 by simp
+  have parR0: "nextrel0 M ?j0 (Lng M - 1)"
+  proof -
+    have hp0: "hasParent M 0 (Lng M - 1)" using hp i1z by simp
+    have "nextR M 0 ?j0 (Lng M - 1)"
+      using hp0 unfolding hasParent_def parent_def by (rule theI')
+    thus ?thesis by (simp add: nextR_def)
+  qed
+  have lenMN: "Lng ?MN = ?j0 + n * ?w"
+  proof -
+    have e: "?MN = take ?j0 M @ concat (replicate n (map ((!) M) [?j0..<Lng M - 1]))"
+      by (rule oper_d0zero_expand[OF L notzero hp i1z])
+    have t: "length (take ?j0 M) = ?j0" using j0lt by simp
+    have b: "length (map ((!) M) [?j0..<Lng M - 1]) = ?w" by simp
+    show ?thesis using e t b by (simp add: length_concat sum_list_replicate)
+  qed
+  show ?thesis
+  proof (cases "qb = 0")
+    case True
+    \<comment> \<open>base: \<open>P(seg M[n] j\<^sub>0 (j\<^sub>0+r2)) = [partial]\<close>, a single non-multi block fragment\<close>
+    have blockseg: "seg ?MN ?j0 (?j0 + r2) = ?partial"
+    proof (rule nth_equalityI)
+      show "length (seg ?MN ?j0 (?j0 + r2)) = length ?partial" by simp
+      fix i assume "i < length (seg ?MN ?j0 (?j0 + r2))"
+      hence ic: "i < Suc r2" by simp
+      have q0: "(0::nat) < n" using qbn by simp
+      have e1: "seg ?MN ?j0 (?j0 + r2) ! i = ?MN ! (?j0 + i)"
+        using ic by (simp add: seg_nth_eq)
+      have e2: "?MN ! (?j0 + i) = M ! (?j0 + i)"
+        using oper_d0zero_nth[OF L notzero hp i1z j0lt q0, of i] ic r2w by simp
+      have e3: "M ! (?j0 + i) = ?partial ! i" using ic by (simp add: seg_nth_eq)
+      show "seg ?MN ?j0 (?j0 + r2) ! i = ?partial ! i" using e1 e2 e3 by simp
+    qed
+    have bm: "le0 M ?j0 (?j0 + r2)" using blockmono[OF r2w] .
+    have single: "P ?partial = [?partial]"
+    proof (rule poper_P_nonmulti)
+      show "\<not> (multiT ?partial \<and> 1 < Lng ?partial)"
+      proof (cases "1 < Lng ?partial")
+        case True
+        have Lseg: "Lng ?partial = Suc r2" by simp
+        have segmono: "monoT ?partial"
+        proof -
+          have segL: "?j0 + r2 < Lng M" using r2w j0lt by linarith
+          have eqv: "le0 ?partial 0 r2 = le0 M (?j0 + 0) (?j0 + r2)"
+            using adm_le0_seg[OF segL, where a=0 and b=r2 and j0'="?j0"] by simp
+          have "le0 ?partial 0 r2" using eqv bm by simp
+          hence le00: "leR ?partial 0 0 (Lng ?partial - 1)" using Lseg by (simp add: leR_def)
+          have nz: "\<not> zeroT ?partial" using True by (simp add: zeroT_def)
+          show ?thesis using le00 nz by (simp add: monoT_def)
+        qed
+        thus ?thesis by (simp add: multiT_def)
+      next
+        case False thus ?thesis by simp
+      qed
+    qed
+    show ?thesis using True blockseg single by simp
+  next
+    case False
+    hence qb1: "1 \<le> qb" by simp
+    \<comment> \<open>peel the leftmost full block by a \<open>P\<close>-additive cut at the block-1 boundary
+       \<open>j\<^sub>0+w\<close>; the tail is @{thm [source] oper_d0zero_seg_P_blk1fold} with \<open>m=qb-1\<close>\<close>
+    let ?End = "?j0 + qb * ?w + r2"
+    let ?Q = "seg ?MN ?j0 ?End"
+    have endlt: "?End < Lng ?MN"
+    proof -
+      have "qb * ?w + r2 < n * ?w"
+      proof -
+        have "qb * ?w + r2 < qb * ?w + ?w" using r2w by simp
+        also have "\<dots> = Suc qb * ?w" by simp
+        also have "\<dots> \<le> n * ?w" using mult_le_mono1[OF Suc_leI[OF qbn], of ?w] .
+        finally show ?thesis .
+      qed
+      thus ?thesis using lenMN by simp
+    qed
+    have aleEnd: "?j0 \<le> ?End" by simp
+    have lenQ: "Lng ?Q = Suc ?End - ?j0" by (rule Lng_seg)
+    let ?c = "?w"   \<comment> \<open>cut index in \<open>Q\<close>: global \<open>j\<^sub>0+w\<close> is local \<open>w\<close>\<close>
+    have c0: "0 < ?c" using w0 .
+    have cle: "?c \<le> Lng ?Q - 1"
+    proof -
+      have wle: "?w \<le> qb * ?w" using mult_le_mono1[OF qb1, of ?w] by simp
+      have "?j0 + ?w \<le> ?j0 + qb * ?w + r2" using wle by linarith
+      thus ?thesis using lenQ aleEnd by linarith
+    qed
+    have QT: "?Q \<in> T_PS"
+    proof -
+      have "0 < Lng ?Q" using lenQ aleEnd by linarith
+      hence "?Q \<noteq> []" using length_greater_0_conv by blast
+      thus ?thesis by (simp add: T_PS_def)
+    qed
+    \<comment> \<open>left-minimality at the cut \<open>c=w\<close> (row-0 there \<open>= M\<^bsub>0,j\<^sub>0\<^esub>\<close>, the block min)\<close>
+    have nseg: "\<And>i. i < Suc ?End - ?j0 \<Longrightarrow> ?Q ! i = ?MN ! (?j0 + i)"
+      by (rule seg_nth_eq)
+    have cidx: "?c < Suc ?End - ?j0" using cle lenQ by linarith
+    have entryQc: "entry ?Q 0 ?c = entry M 0 ?j0"
+    proof -
+      have n2: "1 < n" using qbn qb1 by linarith
+      have x0: "?j0 \<le> ?j0 + ?w" by simp
+      have wnw: "?w < n * ?w" using n2 w0 by (simp add: mult_strict_right_mono)
+      have xlt: "?j0 + ?w < ?j0 + n * ?w" using wnw by linarith
+      have "?Q ! ?c = ?MN ! (?j0 + ?w)" using nseg[OF cidx] .
+      hence "entry ?Q 0 ?c = entry ?MN 0 (?j0 + ?w)" by (simp add: entry_def)
+      moreover have "entry ?MN 0 (?j0 + ?w)
+                   = entry M 0 (?j0 + ((?j0 + ?w) - ?j0) mod ?w)"
+        using oper_d0zero_entry0[OF L notzero hp i1z j0lt x0 xlt] .
+      moreover have "((?j0 + ?w) - ?j0) mod ?w = 0" by simp
+      ultimately show ?thesis by simp
+    qed
+    have lmin: "\<And>j. j < ?c \<Longrightarrow> entry ?Q 0 ?c \<le> entry ?Q 0 j"
+    proof -
+      fix j assume jc: "j < ?c"
+      have jidx: "j < Suc ?End - ?j0" using jc cidx by linarith
+      have "?Q ! j = ?MN ! (?j0 + j)" using nseg[OF jidx] .
+      hence eQj: "entry ?Q 0 j = entry ?MN 0 (?j0 + j)" by (simp add: entry_def)
+      have ge: "?j0 \<le> ?j0 + j" by simp
+      have lt: "?j0 + j < ?j0 + n * ?w" using jc w0 qbn by (cases n) auto
+      have "entry M 0 ?j0 \<le> entry ?MN 0 (?j0 + j)"
+        using oper_d0zero_entry0_min[OF L notzero hp i1z j0lt ge lt] .
+      thus "entry ?Q 0 ?c \<le> entry ?Q 0 j" using eQj entryQc by simp
+    qed
+    have padd: "P ?Q = P (seg ?Q 0 (?c - 1)) @ P (seg ?Q ?c (Lng ?Q - 1))"
+      by (rule m_6_2_P_additive[OF QT c0 cle lmin])
+    \<comment> \<open>left part \<open>= seg M[n] j\<^sub>0 (j\<^sub>0+w-1)\<close>, whose \<open>P\<close> is the single full block \<open>[blk]\<close>;
+       the @{thm seg_of_seg} side goal \<open>c-1 \<le> End-j\<^sub>0\<close> via an explicit \<open>db\<close> witness
+       (the old \<open>(use cle lenQ in linarith)\<close> blew up >2400s on the compound terms)\<close>
+    have leftseg: "seg ?Q 0 (?c - 1) = seg ?MN ?j0 (?j0 + ?w - 1)"
+    proof -
+      have db: "?c - 1 \<le> ?End - ?j0"
+      proof -
+        have e: "?End - ?j0 = qb * ?w + r2" by simp
+        have "?w \<le> qb * ?w" using mult_le_mono1[OF qb1, of ?w] by simp
+        thus ?thesis using e by linarith
+      qed
+      have idxL: "?j0 + (?c - 1) = ?j0 + ?w - 1" using w0 by linarith
+      have "seg ?Q 0 (?c - 1) = seg ?MN (?j0 + 0) (?j0 + (?c - 1))"
+        by (rule seg_of_seg[OF aleEnd db])
+      thus ?thesis using idxL by simp
+    qed
+    have blkseg: "seg ?MN ?j0 (?j0 + ?w - 1) = ?blk"
+    proof -
+      have "seg ?MN ?j0 (Lng M - 2) = ?blk"
+      proof (rule nth_equalityI)
+        show "length (seg ?MN ?j0 (Lng M - 2)) = length ?blk" by simp
+        fix i assume "i < length (seg ?MN ?j0 (Lng M - 2))"
+        hence ic: "i < Suc (Lng M - 2) - ?j0" by simp
+        hence iw: "?j0 + i < Lng M - 1" using j0lt L j0w1 w0 by linarith
+        have q0: "(0::nat) < n" using qbn by simp
+        have e1: "seg ?MN ?j0 (Lng M - 2) ! i = ?MN ! (?j0 + i)"
+          using ic by (simp add: seg_nth_eq)
+        have e2: "?MN ! (?j0 + i) = M ! (?j0 + i)"
+          using oper_d0zero_nth[OF L notzero hp i1z j0lt q0, of i] iw by simp
+        have e3: "M ! (?j0 + i) = ?blk ! i" using ic by (simp add: seg_nth_eq)
+        show "seg ?MN ?j0 (Lng M - 2) ! i = ?blk ! i" using e1 e2 e3 by simp
+      qed
+      thus ?thesis using j0w1 by simp
+    qed
+    have leftP: "P (seg ?Q 0 (?c - 1)) = [?blk]"
+    proof -
+      have "P ?blk = [?blk]"
+      proof (rule poper_P_nonmulti)
+        show "\<not> (multiT ?blk \<and> 1 < Lng ?blk)"
+        proof (cases "1 < Lng ?blk")
+          case True
+          have Lblk: "Lng ?blk = Suc (Lng M - 2) - ?j0" by simp
+          have segmono: "monoT ?blk"
+          proof -
+            have wm1: "?w - 1 < ?w" using w0 by simp
+            have bm: "le0 M ?j0 (?j0 + (?w - 1))" using blockmono[OF wm1] .
+            \<comment> \<open>both \<open>linarith\<close> and \<open>presburger\<close> loop in preprocessing on the \<open>?w\<close>-expanded
+               double-\<open>parent\<close> goal once \<open>j0lt\<close> is supplied; chain through the cheap
+               \<open>w0\<close>-only assoc + \<open>j0w1\<close> (\<open>by simp\<close> trans) instead — keeps \<open>j0lt\<close> out of arith\<close>
+            have assoc: "?j0 + (?w - 1) = ?j0 + ?w - 1" using w0 by linarith
+            have idxe: "?j0 + (?w - 1) = Lng M - 2" using assoc j0w1 by simp
+            have lt2: "Lng M - 2 < Lng M" using L by linarith
+            have segL: "?j0 + (?w - 1) < Lng M" using idxe lt2 by simp
+            have j0le2: "?j0 \<le> Lng M - 2"
+            proof -
+              have "?j0 \<le> ?j0 + ?w - 1" using w0 by linarith
+              thus ?thesis using j0w1 by simp
+            qed
+            have ej: "?j0 + (Lng M - 2 - ?j0) = Lng M - 2" using j0le2 by simp
+            have eqv: "le0 ?blk 0 (Lng M - 2 - ?j0) = le0 M (?j0 + 0) (?j0 + (Lng M - 2 - ?j0))"
+              using adm_le0_seg[OF segL[unfolded idxe], where a=0 and b="Lng M - 2 - ?j0" and j0'="?j0"] ej
+              by simp
+            have bm2: "le0 M ?j0 (?j0 + (Lng M - 2 - ?j0))" using bm idxe ej by simp
+            have "le0 ?blk 0 (Lng M - 2 - ?j0)" using eqv bm2 by simp
+            hence le00: "leR ?blk 0 0 (Lng ?blk - 1)" using Lblk by (simp add: leR_def)
+            \<comment> \<open>\<open>Lng ?blk = Suc(Lng M-2)-?j0\<close> normalizes messily; extract only the
+               \<open>Lng = 1\<close> conjunct and contradict \<open>True\<close>, avoiding the \<open>entry\<close> blowup\<close>
+            have nz: "\<not> zeroT ?blk"
+            proof
+              assume "zeroT ?blk"
+              hence "Lng ?blk = 1" by (simp add: zeroT_def)
+              thus False using True by simp
+            qed
+            show ?thesis using le00 nz by (simp add: monoT_def)
+          qed
+          thus ?thesis by (simp add: multiT_def)
+        next
+          case False thus ?thesis by simp
+        qed
+      qed
+      thus ?thesis using leftseg blkseg by simp
+    qed
+    \<comment> \<open>right part \<open>= seg M[n] (j\<^sub>0+w) End\<close>; \<open>blk1fold\<close> at \<open>m = qb-1\<close>, \<open>s = r2\<close>\<close>
+    have rightseg: "seg ?Q ?c (Lng ?Q - 1) = seg ?MN (?j0 + ?w) ?End"
+    proof -
+      have e: "?j0 + (Lng ?Q - 1) = ?End" using lenQ aleEnd by linarith
+      have "seg ?Q ?c (Lng ?Q - 1) = seg ?MN (?j0 + ?w) (?j0 + (Lng ?Q - 1))"
+        by (rule seg_of_seg[OF aleEnd]) simp
+      \<comment> \<open>rewrite the endpoint via @{thm arg_cong}, not \<open>simp\<close>: the \<open>Lng_seg\<close> simproc
+         mangles \<open>?j0 + (Lng Q - 1)\<close> into an assoc-shifted \<open>qb*w+r2\<close> form simp won't re-close\<close>
+      also have "\<dots> = seg ?MN (?j0 + ?w) ?End"
+        using arg_cong[OF e, of "seg ?MN (?j0 + ?w)"] .
+      finally show ?thesis .
+    qed
+    have qbS: "qb = Suc (qb - 1)" using qb1 by simp
+    have endeq: "?End = ?j0 + Suc (qb - 1) * ?w + r2" using qbS by simp
+    have mn': "Suc (qb - 1) < n" using qbn qbS by simp
+    have rightP: "P (seg ?MN (?j0 + ?w) ?End)
+                = replicate (qb - 1) ?blk @ [?partial]"
+      using oper_d0zero_seg_P_blk1fold[OF L notzero hp i1z j0lt blockmono r2w mn']
+            endeq by simp
+    have "P ?Q = [?blk] @ (replicate (qb - 1) ?blk @ [?partial])"
+      using padd leftP rightseg rightP by simp
+    also have "\<dots> = (?blk # replicate (qb - 1) ?blk) @ [?partial]" by simp
+    also have "?blk # replicate (qb - 1) ?blk = replicate (Suc (qb - 1)) ?blk" by simp
+    also have "Suc (qb - 1) = qb" using qb1 by simp
+    finally show ?thesis .
+  qed
+qed
 
 text \<open>§6.8 命題（標準形の切片と \<open>Br\<close> の降順性の関係） — FAITHFUL conditional form
   (article content.md 1422–1615), the \<open>monoT M\<close> core after the WLOG reduction
