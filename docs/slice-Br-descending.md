@@ -1001,3 +1001,16 @@ d0zero の周期性補題群（`oper_d0zero_nth`, `oper_d0zero_entry0`, `oper_d0
 
 **§6.8 prop1 残**: caseC (60-100 行、新 brick 1 つ)、d0pos (~1500 LOC、9-agent fan-out)。
 caseC が小ければ次にやるべきは caseC、d0pos は別計画。
+
+## UPDATE 2026-05-28 (continued 22): caseC monoT route — empirically supported at limited depth, structural ambiguity at the (?a, parent] interval
+
+Followed up on Agent Y's monoT hypothesis with focused `python/slice_caseC_monoT_check.py`:
+- depth 4 maxval 3 n≤4: 6 caseC witnesses, **all monoT** (zero counterexamples).
+- All 6 witnesses have the same shape: N=[(0,0),(1,0),(2,0),(3,0)], j0N=2, j0'=0, TrMax(?Np)=0, **?a = parent N 0 j0N = 1** (a CRITICAL coincidence).
+- The seg M ?a j1' is monoT because nextrel0 M ?a j1' holds DIRECTLY (single edge): the valley clause `∀q∈(?a,j1'). entry M 0 q ≥ entry M 0 j1'` is satisfied — every intermediate position is in the d0zero block-cycle at row-0 value `entry N 0 j0N` = `entry M 0 j1'` (the seg has shape `[(low,0),(cycle-val,0),(cycle-val,0),...]`).
+
+**Structural concern**: caseC says `parent N 0 j0N ≥ ?a` (weak inequality). In the explored witnesses we found `parent = ?a` (strict equality), making the interval `(?a, parent]` empty and the valley analysis trivial. But for general caseC, parent could be `> ?a`, leaving the `(?a, parent]` interval non-empty with NO direct constraint on entries there. The monoT route would then need an additional argument to establish the valley over `(?a, parent]`.
+
+Truth at deeper depth (parent > ?a witnesses) is **not yet checked**; the depth-4/maxval-3 search is too narrow to surface the general case. Recommended next step: enumerate caseC witnesses with `parent N 0 j0N > ?a` strictly, verify monoT still holds (or find a counterexample). If monoT survives generally, proceed with the monoT-via-direct-nextrel0 route; otherwise the full article decomposition `Br M' = take J1 (Br N') @ [tail]` is required.
+
+**Status**: caseC not closed in this session. B-J1≥1 fully green (slice-wip-68 `1323561`); the §6.8 prop1 lemma still has 2 sorries (caseC, d0pos).
