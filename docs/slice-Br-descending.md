@@ -1025,3 +1025,41 @@ holds at this depth.
 **Recommendation for next session**: (a) widen the monoT check to detect `parent > ?a` witnesses
 and decide monoT vs full route, OR (b) commit directly to the full article decomposition
 (~200 lines, mirrors sub-case A structurally, empirically robust at 42/42).
+
+## UPDATE 2026-05-29 (continued 23): Dynamic Workflow fan-out (Opus 4.8) — d0pos Z1 green, caseC groundwork green
+
+First use of the Workflow primitive (`workflow` keyword) with `model: 'opus'` (4.8) agents,
+2-way parallel on `slice-wip-68 @ 1323561`. Both verified by parent build, merged into
+slice-wip-68 (`8912c95`, `Finished PSS` 52s). Sorry count unchanged at 2 (caseC, d0pos) — both
+results are green groundwork that relocate/prepare, not yet discharge.
+
+### d0pos Z1 — GREEN (merge `cfaadf6`, lemmas at 8475/8511)
+`oper_d1pos_expand` + `oper_d1pos_LngM`, the i1=1 analogs of `oper_d0zero_expand`. Built via
+`poper_oper_expand` with d0=δ (row-0 shift live since 0<i1), d1=0. **Faithfulness note**: the
+agent matched the actual `oper` def (block bound `Lng M - 1`, NOT the task-prose `Lng N`), so
+`w = Lng M - 1 - parent M 1 (Lng M-1)` and `Lng(M[n]) = parent M 1 (Lng M-1) + n*w`. First brick
+of the 9-task d0pos plan (Z1). No sorry, no p_* cite. Phase-1 infra; Z2-Z4 (nth/entry0/entry1,
+le0_confined, seg_period_reduce) still needed before the d0pos case-analysis (Z5-Z9).
+
+### caseC — PARTIAL (merge `8912c95`, groundwork at 11398+, sorry relocated to 11535)
+Green reusable geometry haves: `monoNp`/`NpPT`, `?J1 = Lng(Br Np)-1`, `?fn = FirstNodes Np!J1`,
+`?fnM = j0'+?fn`, `a_le_fnM`, `e_lt`, `p`/`jm1eq` (fresh-b trick), `jm1lt`, `caseC'`,
+`nleaf` (article 1482 via `adm_nextrel0_seg`).
+
+**The remaining caseC obligation (BULK, ~360 lines like sub-case B), in order:**
+1. `?fn ≤ ?jm1` (article 1498): show `entry Np 0 ?fn < entry Np 0 (Lng Np-1)` from the last branch
+   component being non-multi, then `nextR0_largest_below` twice → `?fnM < ?j0N`. (~40-60 lines, tractable.)
+2. **THE BLOCKER — HIGH non-multiplicity**: `P(seg M ?fnM j1') = [seg M ?fnM j1']`, i.e.
+   `seg M (FN[J1]+j0') j1'` is non-multi (single P-component, article 1498). Requires
+   `entry M 0 ?fnM < entry M 0 q` for all `q ∈ (?fnM, j1']` — `?fnM` strictly row-0-dominates the
+   whole tail, **crossing the oper n-fold repetition boundary at ?j0N**. No existing helper gives
+   this M-side cross-repetition row-0 domination; needs a NEW named lemma.
+3. LOW = `take J1 (Br Np)` (`m_6_2_P_additive` cut at `?fnM-?a`, period agreement on `[?a,?fnM]`
+   since `?fnM<?j0N`, left-min from `idxsum_leftend_lmin` NOT a nextrel0 valley), `descending_take`.
+4. junction `cdom (last LOW) (HIGH!0)` via head-equality (heads agree since `?fnM<?j0N`,
+   tail head = `(Br Np ! J1)_0` via `entry_FirstNodes_eq_component`), mirroring caseB's junc_cdom.
+5. close via `descending_append` + fold.
+
+**RECOMMENDATION (agent C2)**: split off step-2's HIGH non-multiplicity as its OWN named lemma
+FIRST — it is the one missing brick with no existing analogue and is the true blocker; the
+LOW/junction parts then transcribe from sub-case B. Decomposition empirically sound (42/42).
