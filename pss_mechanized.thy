@@ -11532,7 +11532,540 @@ proof -
                           using shiftL shiftJ by simp
                         finally show ?thesis using parR0N by simp
                       qed
-                      show ?thesis sorry
+                      \<comment> \<open>STEP 1 (article 1498): \<open>FN\<^bsub>J\<^sub>1\<^esub> \<le> j\<^sub>-\<^sub>1\<close>, hence \<open>?fnM < ?j0N\<close>.\<close>
+                      \<comment> \<open>the last branch component is \<open>seg ?Np ?fn (Lng ?Np-1)\<close>\<close>
+                      let ?S = "seg ?Np (TrMax ?Np + 1) (Lng ?Np - 1)"
+                      have trNpne: "TrMax ?Np \<noteq> Lng ?Np - 1" using TrNplt by simp
+                      have brQ: "Br ?Np = P ?S" using trNpne by (simp add: Br_def)
+                      have ST: "?S \<in> T_PS"
+                      proof -
+                        have "0 < Lng ?S" using TrNplt by simp
+                        thus ?thesis using length_greater_0_conv by (fastforce simp: T_PS_def)
+                      qed
+                      have J1Br: "?J1 < length (Br ?Np)" using J1L by simp
+                      have J1leQ: "?J1 \<le> Lng (P ?S) - 1" using J1Br brQ by (cases "P ?S") auto
+                      have lenS: "Lng ?S = Lng ?Np - 1 - TrMax ?Np" using TrNplt by simp
+                      \<comment> \<open>\<open>IdxSum (Br ?Np) ! (?J1+1) = Lng ?S\<close> (total length)\<close>
+                      have BrNpne': "length (Br ?Np) = Suc ?J1" using BrNpne by (cases "Br ?Np") auto
+                      have idxtot: "IdxSum (Br ?Np) ! (?J1 + 1) = Lng ?S"
+                      proof -
+                        have "?J1 + 1 = length (Br ?Np)" using BrNpne' by simp
+                        hence "IdxSum (Br ?Np) ! (?J1 + 1) = sum_list (map length (Br ?Np))"
+                          by (simp add: idxsum_nth)
+                        also have "\<dots> = length (concat (Br ?Np))" by (simp add: length_concat)
+                        also have "concat (Br ?Np) = ?S" using brQ idxsum_concat_P by simp
+                        finally show ?thesis by simp
+                      qed
+                      have idxJ1: "IdxSum (Br ?Np) ! ?J1 = ?fn - (TrMax ?Np + 1)"
+                        using fnval by simp
+                      have fnge: "TrMax ?Np + 1 \<le> ?fn" using fnval by simp
+                      \<comment> \<open>\<open>Br ?Np ! ?J1 = seg ?Np ?fn (Lng ?Np-1)\<close> via \<open>m_6_4_P_IdxSum\<close> + \<open>seg_of_seg\<close>\<close>
+                      have compS: "Br ?Np ! ?J1
+                          = seg ?S (IdxSum (Br ?Np) ! ?J1) (IdxSum (Br ?Np) ! (?J1 + 1) - 1)"
+                        using m_6_4_P_IdxSum[OF ST J1leQ] brQ by simp
+                      have idxJ1le: "IdxSum (Br ?Np) ! ?J1 \<le> Lng ?S - 1"
+                        using idxsum_leftend_lmin[OF ST J1Br[unfolded brQ]] brQ by simp
+                      have comp_eq: "Br ?Np ! ?J1 = seg ?Np ?fn (Lng ?Np - 1)"
+                      proof -
+                        have ab': "TrMax ?Np + 1 \<le> Lng ?Np - 1" using TrNplt by linarith
+                        have hi: "IdxSum (Br ?Np) ! (?J1 + 1) - 1
+                                  \<le> (Lng ?Np - 1) - (TrMax ?Np + 1)"
+                          using idxtot lenS by linarith
+                        have "seg ?S (IdxSum (Br ?Np) ! ?J1) (IdxSum (Br ?Np) ! (?J1 + 1) - 1)
+                            = seg ?Np ((TrMax ?Np + 1) + IdxSum (Br ?Np) ! ?J1)
+                                       ((TrMax ?Np + 1) + (IdxSum (Br ?Np) ! (?J1 + 1) - 1))"
+                          by (rule seg_of_seg[OF ab' hi])
+                        also have "(TrMax ?Np + 1) + IdxSum (Br ?Np) ! ?J1 = ?fn"
+                          using idxJ1 fnge by simp
+                        also have "(TrMax ?Np + 1) + (IdxSum (Br ?Np) ! (?J1 + 1) - 1) = Lng ?Np - 1"
+                          using idxtot lenS TrNplt by linarith
+                        finally show ?thesis using compS by simp
+                      qed
+                      \<comment> \<open>the component is non-multi (each \<open>P\<close>-component) and non-empty\<close>
+                      have compne: "0 < Lng (Br ?Np ! ?J1)"
+                        using idxsum_P_component_nonempty[OF ST J1Br[unfolded brQ]] brQ by simp
+                      have compNT: "Br ?Np ! ?J1 \<in> T_PS"
+                        using compne length_greater_0_conv by (fastforce simp: T_PS_def)
+                      have compnm: "\<not> multiT (Br ?Np ! ?J1)"
+                        using m_6_2_P_components_1[OF ST] brQ J1Br[unfolded brQ]
+                        by (auto simp: multiT_def)
+                      \<comment> \<open>\<open>?fn < Lng ?Np - 1\<close>: else the last component is the single leaf, whose
+                         row-0 parent would be \<open>\<le> TrMax\<close>, contradicting \<open>nleaf\<close>+\<open>BClt\<close>\<close>
+                      have parent_fn: "parent ?Np 0 ?fn \<le> TrMax ?Np"
+                      proof -
+                        have "Joints ?Np ! ?J1 = parent ?Np 0 ?fn"
+                          by (rule Joints_nth[OF J1Br])
+                        thus ?thesis using m_6_4_FirstNodes_TrMax_Joints[OF NpPT J1Br] by simp
+                      qed
+                      have fnLng: "?fn < Lng ?Np - 1"
+                      proof (rule ccontr)
+                        assume "\<not> ?fn < Lng ?Np - 1"
+                        moreover have "?fn \<le> Lng ?Np - 1"
+                          using comp_eq compne by (cases "?fn \<le> Lng ?Np - 1") auto
+                        ultimately have feq: "?fn = Lng ?Np - 1" by linarith
+                        \<comment> \<open>then \<open>?j0N-j0'\<close> is the row-0 parent of \<open>?fn=leaf\<close>; uniqueness vs \<open>parent_fn\<close>\<close>
+                        have fnIdx: "?fn = (TrMax ?Np + 1) + IdxSum (Br ?Np) ! ?J1"
+                          using fnval by simp
+                        have p1: "(0::nat) < TrMax ?Np + 1" by simp
+                        have p2: "TrMax ?Np + 1 \<le> Lng ?Np - 1" using TrNplt by linarith
+                        have slnext: "hasParent ?Np 0
+                            ((TrMax ?Np + 1) + IdxSum (P (seg ?Np (TrMax ?Np + 1) (Lng ?Np - 1))) ! ?J1)"
+                          using m_6_4_mono_slice_next[OF NpPT p1 p2 J1leQ] by simp
+                        have hpfn: "hasParent ?Np 0 ?fn"
+                          using slnext fnIdx brQ by simp
+                        have nfn: "nextR ?Np 0 (parent ?Np 0 ?fn) ?fn"
+                        proof -
+                          have "\<exists>!x. nextR ?Np 0 x ?fn" using hpfn by (simp add: hasParent_def)
+                          thus ?thesis unfolding parent_def by (rule theI')
+                        qed
+                        have nfn': "nextR ?Np 0 (?j0N - j0') ?fn"
+                          using nleaf feq by (simp add: nextR_def)
+                        have "parent ?Np 0 ?fn = ?j0N - j0'"
+                          using idxsum_parent0_unique[OF nfn nfn'] .
+                        thus False using parent_fn BClt by linarith
+                      qed
+                      \<comment> \<open>\<open>FN\<^sub>J\<^sub>1\<close> strictly row-0-dominates every other component member\<close>
+                      have compdom: "\<And>q. ?fn < q \<Longrightarrow> q \<le> Lng ?Np - 1
+                                      \<Longrightarrow> entry ?Np 0 ?fn < entry ?Np 0 q"
+                      proof -
+                        fix q assume q1: "?fn < q" and q2: "q \<le> Lng ?Np - 1"
+                        let ?C = "Br ?Np ! ?J1"
+                        have LC: "Lng ?C = Suc (Lng ?Np - 1) - ?fn"
+                          using comp_eq by (simp only: Lng_seg)
+                        have crit: "\<forall>j. 0 < j \<and> j < Lng ?C
+                                      \<longrightarrow> entry ?C 0 0 < entry ?C 0 j"
+                          using m_6_2_multi_crit_12[OF compNT] compnm by blast
+                        let ?j = "q - ?fn"
+                        have jpos: "0 < ?j" using q1 by simp
+                        have jlt: "?j < Lng ?C" using LC q1 q2 by linarith
+                        have e0: "entry ?C 0 0 = entry ?Np 0 ?fn"
+                          using comp_eq compne by (simp add: entry_seg)
+                        have ej: "entry ?C 0 ?j = entry ?Np 0 q"
+                        proof -
+                          have "entry ?C 0 ?j = entry ?Np 0 (?fn + ?j)"
+                            using comp_eq jlt LC by (simp add: entry_seg)
+                          thus ?thesis using q1 by simp
+                        qed
+                        have "entry ?C 0 0 < entry ?C 0 ?j" using crit jpos jlt by blast
+                        thus "entry ?Np 0 ?fn < entry ?Np 0 q" using e0 ej by simp
+                      qed
+                      \<comment> \<open>\<open>?fn \<le> ?j0N-j0'\<close> from \<open>nleaf\<close> (\<open>?j0N-j0'\<close> is the parent of the leaf)\<close>
+                      have fn_le_d: "?fn \<le> ?j0N - j0'"
+                      proof -
+                        have nleafR: "nextR ?Np 0 (?j0N - j0') (Lng ?Np - 1)"
+                          using nleaf by (simp add: nextR_def)
+                        have edom: "entry ?Np 0 ?fn < entry ?Np 0 (Lng ?Np - 1)"
+                          using compdom[OF fnLng] by simp
+                        show ?thesis
+                          by (rule nextR0_largest_below[OF nleafR fnLng edom])
+                      qed
+                      \<comment> \<open>\<open>?fn \<noteq> ?j0N-j0'\<close>: their row-0 parents differ (\<open>\<le> TrMax\<close> vs \<open>?jm1 > TrMax\<close>)\<close>
+                      have fn_ne_d: "?fn \<noteq> ?j0N - j0'"
+                      proof
+                        assume "?fn = ?j0N - j0'"
+                        hence "parent ?Np 0 (?j0N - j0') \<le> TrMax ?Np" using parent_fn by simp
+                        thus False using jm1eq caseC' by simp
+                      qed
+                      have fn_lt_d: "?fn < ?j0N - j0'" using fn_le_d fn_ne_d by linarith
+                      \<comment> \<open>\<open>?fn \<le> ?jm1\<close> from \<open>p\<close> (\<open>?jm1\<close> is the parent of \<open>?j0N-j0'\<close>)\<close>
+                      have fn_le_jm1: "?fn \<le> ?jm1"
+                      proof -
+                        have pR: "nextR ?Np 0 ?jm1 (?j0N - j0')" using jm1eq p by simp
+                        have edom2: "entry ?Np 0 ?fn < entry ?Np 0 (?j0N - j0')"
+                          using compdom[OF fn_lt_d] j0Ng by simp
+                        show ?thesis
+                          by (rule nextR0_largest_below[OF pR fn_lt_d edom2])
+                      qed
+                      have fnM_lt: "?fnM < ?j0N"
+                        using fn_le_jm1 jm1lt j0'lt0N by linarith
+                      \<comment> \<open>STEP 2 (article 1498): the tail \<open>seg M ?fnM j'\<^sub>1\<close> is a single
+                         non-multi \<open>P\<close>-component, i.e. \<open>?fnM\<close> row-0-strictly-dominates
+                         the whole tail (crossing the oper boundary at \<open>?j0N\<close>).\<close>
+                      \<comment> \<open>N-side domination from \<open>compdom\<close>, translated by \<open>entry_seg\<close>\<close>
+                      have Ndom: "\<And>q. ?fnM < q \<Longrightarrow> q \<le> Lng N - 1
+                                    \<Longrightarrow> entry N 0 ?fnM < entry N 0 q"
+                      proof -
+                        fix q assume q1: "?fnM < q" and q2: "q \<le> Lng N - 1"
+                        have qj0': "j0' \<le> q" using q1 by simp
+                        have qLng: "q - j0' \<le> Lng ?Np - 1" using q2 NpL by linarith
+                        have fnNp: "?fn < q - j0'" using q1 by simp
+                        have efn: "entry N 0 ?fnM = entry ?Np 0 ?fn"
+                        proof -
+                          have "?fn < Lng ?Np" using fnLng by linarith
+                          thus ?thesis by (simp add: entry_seg)
+                        qed
+                        have eq': "entry N 0 q = entry ?Np 0 (q - j0')"
+                        proof -
+                          have "q - j0' < Lng ?Np" using qLng TrNplt by linarith
+                          hence "entry ?Np 0 (q - j0') = entry N 0 (j0' + (q - j0'))"
+                            by (simp add: entry_seg)
+                          thus ?thesis using qj0' by simp
+                        qed
+                        have "entry ?Np 0 ?fn < entry ?Np 0 (q - j0')"
+                          using compdom[OF fnNp qLng] .
+                        thus "entry N 0 ?fnM < entry N 0 q" using efn eq' by simp
+                      qed
+                      \<comment> \<open>\<open>entry M 0 ?fnM = entry N 0 ?fnM\<close> (\<open>?fnM < ?j0N\<close>, agree)\<close>
+                      have efnM_MN: "entry M 0 ?fnM = entry N 0 ?fnM"
+                        using agree[of ?fnM] fnM_lt by (simp add: entry_def)
+                      \<comment> \<open>strict row-0 domination of \<open>?fnM\<close> over the whole tail \<open>(?fnM, j'\<^sub>1]\<close> in \<open>M\<close>\<close>
+                      have Mdom: "\<And>q. ?fnM < q \<Longrightarrow> q \<le> j1'
+                                    \<Longrightarrow> entry M 0 ?fnM < entry M 0 q"
+                      proof -
+                        fix q assume q1: "?fnM < q" and q2: "q \<le> j1'"
+                        show "entry M 0 ?fnM < entry M 0 q"
+                        proof (cases "q \<le> ?j0N")
+                          case low: True
+                          have qN: "q \<le> Lng N - 1" using low j0NltN by linarith
+                          have "entry M 0 q = entry N 0 q"
+                            using agree[of q] low by (simp add: entry_def)
+                          thus ?thesis using Ndom[OF q1 qN] efnM_MN by simp
+                        next
+                          case high: False
+                          \<comment> \<open>\<open>q > ?j0N\<close>: \<open>entry M 0 q \<ge> entry N 0 ?j0N > entry N 0 ?fnM\<close>\<close>
+                          have qge: "?j0N \<le> q" using high by linarith
+                          have qlt: "q < ?j0N + n * ?w" using q2 j1 lt LngM by linarith
+                          have eblk: "entry N 0 ?j0N \<le> entry M 0 q"
+                            using oper_d0zero_entry0_min[OF LNgt notzeroN hasparN i1zN j0Nlt qge qlt]
+                                  Neq by simp
+                          have fnj0N: "entry N 0 ?fnM < entry N 0 ?j0N"
+                            using Ndom[OF fnM_lt] j0NltN by simp
+                          show ?thesis using eblk fnj0N efnM_MN by simp
+                        qed
+                      qed
+                      \<comment> \<open>hence the tail is non-multi, so a single \<open>P\<close>-component\<close>
+                      let ?TL = "seg M ?fnM j1'"
+                      have fnMj1: "?fnM < j1'" using fnM_lt j1Nge by linarith
+                      have LngTL: "Lng ?TL = Suc j1' - ?fnM" by (rule Lng_seg)
+                      have TLT: "?TL \<in> T_PS"
+                      proof -
+                        have "0 < Lng ?TL" using LngTL fnMj1 by linarith
+                        thus ?thesis using length_greater_0_conv by (fastforce simp: T_PS_def)
+                      qed
+                      have hitail: "P ?TL = [?TL]"
+                      proof (rule poper_P_nonmulti)
+                        show "\<not> (multiT ?TL \<and> 1 < Lng ?TL)"
+                        proof (cases "1 < Lng ?TL")
+                          case False thus ?thesis by simp
+                        next
+                          case True
+                          have crit: "\<forall>j. 0 < j \<and> j < Lng ?TL
+                                        \<longrightarrow> entry ?TL 0 0 < entry ?TL 0 j"
+                          proof (intro allI impI)
+                            fix j assume j: "0 < j \<and> j < Lng ?TL"
+                            have e0: "entry ?TL 0 0 = entry M 0 ?fnM"
+                              using True by (simp add: entry_seg)
+                            have ej: "entry ?TL 0 j = entry M 0 (?fnM + j)"
+                              using j LngTL by (simp add: entry_seg)
+                            have q1: "?fnM < ?fnM + j" using j by simp
+                            have q2: "?fnM + j \<le> j1'" using j LngTL by linarith
+                            show "entry ?TL 0 0 < entry ?TL 0 j"
+                              using Mdom[OF q1 q2] e0 ej by simp
+                          qed
+                          have "\<not> multiT ?TL"
+                            using m_6_2_multi_crit_12[OF TLT] crit by blast
+                          thus ?thesis by simp
+                        qed
+                      qed
+                      show ?thesis
+                      proof (cases "?J1 = 0")
+                        case J1z: True
+                        \<comment> \<open>only one branch component: \<open>?a = ?fnM\<close>, \<open>Br M' = [?TL]\<close>\<close>
+                        have idxz: "IdxSum (Br ?Np) ! ?J1 = 0" using J1z by (simp add: idxsum_nth)
+                        have aeqfn: "?fnM = ?a" using idxJ1 idxz a_le_fnM fnval by simp
+                        have "Br ?M' = P (seg M ?fnM j1')"
+                          using BrM'P arg_cong[OF aeqfn, of "\<lambda>x. P (seg M x j1')"] by simp
+                        hence "Br ?M' = [?TL]" using hitail by simp
+                        thus ?thesis by (simp add: descending_def)
+                      next
+                        case J1pos: False
+                      \<comment> \<open>STEP 3 (article 1498): \<open>LOW = P(seg M ?a (?fnM-1)) = take J\<^sub>1 (Br N')\<close>.
+                         N-side \<open>P\<close>-additive split of \<open>Br N' = P(seg N ?a (Lng N-1))\<close> at \<open>?fnM\<close>;
+                         the HIGH part is the single last component \<open>seg N ?fnM (Lng N-1)\<close>.\<close>
+                      let ?Yn = "seg N ?a (Lng N - 1)"
+                      have aLN1: "?a < Lng N - 1" using a_le_fnM fnM_lt j0NltN by linarith
+                      have aLN1_le: "?a \<le> Lng N - 1" using aLN1 by linarith
+                      have LngYn: "Lng ?Yn = Suc (Lng N - 1) - ?a" by (rule Lng_seg)
+                      have YnT: "?Yn \<in> T_PS"
+                      proof -
+                        have "0 < Lng ?Yn" using LngYn aLN1 by linarith
+                        thus ?thesis using length_greater_0_conv by (fastforce simp: T_PS_def)
+                      qed
+                      let ?cn = "?fnM - ?a"
+                      have idxJ1pos: "0 < IdxSum (Br ?Np) ! ?J1"
+                      proof -
+                        have "IdxSum (Br ?Np) ! ?J1 = sum_list (map length (take ?J1 (Br ?Np)))"
+                          using J1Br by (simp add: idxsum_nth)
+                        moreover have "take ?J1 (Br ?Np) \<noteq> []" using J1pos J1Br by auto
+                        moreover have "\<And>C. C \<in> set (take ?J1 (Br ?Np)) \<Longrightarrow> 0 < length C"
+                          using idxsum_P_component_nonempty[OF ST] brQ
+                          by (metis in_set_conv_nth length_take min.absorb4 nth_take
+                              set_take_subset subsetD)
+                        ultimately show ?thesis
+                          by (cases "take ?J1 (Br ?Np)") (auto simp: sum_list_eq_0_iff)
+                      qed
+                      have cn0: "0 < ?cn" using idxJ1 idxJ1pos a_le_fnM fnval by simp
+                      have fnM_le1: "?fnM \<le> Lng N - 1" using fnM_lt j0NltN by linarith
+                      have cnle: "?cn \<le> Lng ?Yn - 1" using LngYn fnM_le1 a_le_fnM by linarith
+                      have acn: "?a + ?cn = ?fnM" using a_le_fnM by simp
+                      have axcn: "?a + (Lng ?Yn - 1) = Lng N - 1" using LngYn aLN1 by linarith
+                      \<comment> \<open>left-minimality of \<open>?fnM\<close> within \<open>[?a, ?fnM)\<close> (last-component left-end)\<close>
+                      have lminLOW: "\<And>q. ?a \<le> q \<Longrightarrow> q < ?fnM \<Longrightarrow> entry N 0 ?fnM \<le> entry N 0 q"
+                      proof -
+                        fix q assume qa: "?a \<le> q" and qfn: "q < ?fnM"
+                        \<comment> \<open>translate to \<open>?S\<close> coords; \<open>idxsum_leftend_lmin\<close> at the last component\<close>
+                        let ?i = "q - j0' - (TrMax ?Np + 1)"
+                        have lmS: "\<forall>j < IdxSum (Br ?Np) ! ?J1.
+                                     entry ?S 0 (IdxSum (Br ?Np) ! ?J1) \<le> entry ?S 0 j"
+                          using idxsum_leftend_lmin[OF ST J1Br[unfolded brQ]] brQ by simp
+                        have iidx: "?i < IdxSum (Br ?Np) ! ?J1"
+                          using qfn qa idxJ1 fnge by linarith
+                        have iS: "?i < Lng ?S"
+                          using iidx idxJ1le by linarith
+                        have qS: "q - j0' < Lng ?Np" using qfn fnM_lt fnLng by linarith
+                        have eqJ1: "entry ?S 0 (IdxSum (Br ?Np) ! ?J1) = entry ?Np 0 ?fn"
+                        proof -
+                          have "IdxSum (Br ?Np) ! ?J1 < Lng ?S" using idxJ1le iS by linarith
+                          hence "entry ?S 0 (IdxSum (Br ?Np) ! ?J1)
+                               = entry ?Np 0 ((TrMax ?Np + 1) + IdxSum (Br ?Np) ! ?J1)"
+                            by (simp add: entry_seg)
+                          thus ?thesis using idxJ1 fnval a_le_fnM by simp
+                        qed
+                        have eqi: "entry ?S 0 ?i = entry ?Np 0 (q - j0')"
+                        proof -
+                          have e1: "entry ?S 0 ?i = entry ?Np 0 ((TrMax ?Np + 1) + ?i)"
+                            using iS by (simp add: entry_seg)
+                          have e2: "(TrMax ?Np + 1) + ?i = q - j0'"
+                            using qa by linarith
+                          show ?thesis using e1 arg_cong[OF e2, of "entry ?Np 0"] by simp
+                        qed
+                        have efnM: "entry N 0 ?fnM = entry ?Np 0 ?fn"
+                          using fnLng by (simp add: entry_seg)
+                        have eq2: "entry N 0 q = entry ?Np 0 (q - j0')"
+                        proof -
+                          have "entry ?Np 0 (q - j0') = entry N 0 (j0' + (q - j0'))"
+                            using qS by (simp add: entry_seg)
+                          moreover have "j0' + (q - j0') = q" using qa by linarith
+                          ultimately show ?thesis by simp
+                        qed
+                        have "entry ?S 0 (IdxSum (Br ?Np) ! ?J1) \<le> entry ?S 0 ?i"
+                          using lmS iidx by blast
+                        thus "entry N 0 ?fnM \<le> entry N 0 q"
+                          using eqJ1 eqi efnM eq2 by simp
+                      qed
+                      have lminYn: "\<And>j. j < ?cn \<Longrightarrow> entry ?Yn 0 ?cn \<le> entry ?Yn 0 j"
+                      proof -
+                        fix j assume jcn: "j < ?cn"
+                        have jYn: "j < Lng ?Yn" using jcn cnle by linarith
+                        have cYn: "?cn < Lng ?Yn" using cnle LngYn aLN1 by linarith
+                        have eYj: "entry ?Yn 0 j = entry N 0 (?a + j)"
+                          using jYn by (simp add: entry_seg)
+                        have eYc: "entry ?Yn 0 ?cn = entry N 0 ?fnM"
+                          using cYn acn by (simp add: entry_seg)
+                        have "entry N 0 ?fnM \<le> entry N 0 (?a + j)"
+                          using lminLOW[of "?a + j"] jcn by simp
+                        thus "entry ?Yn 0 ?cn \<le> entry ?Yn 0 j" using eYj eYc by simp
+                      qed
+                      have Nsplit: "P ?Yn = P (seg ?Yn 0 (?cn - 1)) @ P (seg ?Yn ?cn (Lng ?Yn - 1))"
+                        by (rule m_6_2_P_additive[OF YnT cn0 cnle lminYn])
+                      have segLOW_N: "seg ?Yn 0 (?cn - 1) = seg N ?a (?fnM - 1)"
+                      proof -
+                        have db: "?cn - 1 \<le> Lng N - 1 - ?a" using cnle LngYn by linarith
+                        have "seg ?Yn 0 (?cn - 1) = seg N (?a + 0) (?a + (?cn - 1))"
+                          by (rule seg_of_seg[OF aLN1_le db])
+                        also have "\<dots> = seg N ?a (?a + (?cn - 1))" by simp
+                        also have "?a + (?cn - 1) = ?fnM - 1" using cn0 acn by linarith
+                        finally show ?thesis by simp
+                      qed
+                      have segHIGH_N: "seg ?Yn ?cn (Lng ?Yn - 1) = seg N ?fnM (Lng N - 1)"
+                      proof -
+                        have db: "Lng ?Yn - 1 \<le> Lng N - 1 - ?a" using LngYn by linarith
+                        have "seg ?Yn ?cn (Lng ?Yn - 1) = seg N (?a + ?cn) (?a + (Lng ?Yn - 1))"
+                          by (rule seg_of_seg[OF aLN1_le db])
+                        also have "?a + ?cn = ?fnM" using acn .
+                        also have "?a + (Lng ?Yn - 1) = Lng N - 1" using axcn .
+                        finally show ?thesis by simp
+                      qed
+                      \<comment> \<open>the N-side HIGH is the single non-multi last component \<open>seg N ?fnM (Lng N-1)\<close>\<close>
+                      have compN_eq: "seg N ?fnM (Lng N - 1) = Br ?Np ! ?J1"
+                      proof -
+                        have ab2: "j0' \<le> Lng N - 1" using j0'lt1N by linarith
+                        have db2: "Lng ?Np - 1 \<le> (Lng N - 1) - j0'" using NpL by linarith
+                        have endeq: "j0' + (Lng ?Np - 1) = Lng N - 1" using NpL j0'lt1N by linarith
+                        have "Br ?Np ! ?J1 = seg ?Np ?fn (Lng ?Np - 1)" using comp_eq .
+                        also have "seg ?Np ?fn (Lng ?Np - 1) = seg N ?fnM (j0' + (Lng ?Np - 1))"
+                          by (rule seg_of_seg[OF ab2 db2])
+                        also have "\<dots> = seg N ?fnM (Lng N - 1)"
+                          using arg_cong[OF endeq, of "seg N ?fnM"] .
+                        finally show ?thesis by simp
+                      qed
+                      have HIGH_N_single: "P (seg N ?fnM (Lng N - 1)) = [seg N ?fnM (Lng N - 1)]"
+                      proof (rule poper_P_nonmulti)
+                        show "\<not> (multiT (seg N ?fnM (Lng N - 1)) \<and> 1 < Lng (seg N ?fnM (Lng N - 1)))"
+                          using compnm compN_eq by simp
+                      qed
+                      have BrNp_split: "Br ?Np = P (seg N ?a (?fnM - 1)) @ [seg N ?fnM (Lng N - 1)]"
+                        using BrNpP Nsplit segLOW_N segHIGH_N HIGH_N_single by simp
+                      \<comment> \<open>\<open>P(seg N ?a (?fnM-1)) = take J\<^sub>1 (Br N')\<close>\<close>
+                      have lowN_take: "P (seg N ?a (?fnM - 1)) = take ?J1 (Br ?Np)"
+                      proof -
+                        have "take ?J1 (Br ?Np)
+                            = take ?J1 (P (seg N ?a (?fnM - 1)) @ [seg N ?fnM (Lng N - 1)])"
+                          using BrNp_split by simp
+                        moreover have "length (P (seg N ?a (?fnM - 1))) = ?J1"
+                        proof -
+                          have "length (Br ?Np)
+                              = length (P (seg N ?a (?fnM - 1)) @ [seg N ?fnM (Lng N - 1)])"
+                            using BrNp_split by simp
+                          also have "\<dots> = length (P (seg N ?a (?fnM - 1))) + 1" by simp
+                          finally show ?thesis using BrNpne' by simp
+                        qed
+                        ultimately show ?thesis using BrNpne' by simp
+                      qed
+                      \<comment> \<open>period agreement: \<open>M = N\<close> on \<open>[?a, ?fnM-1]\<close> (\<open>\<le> ?fnM \<le> ?j0N\<close>)\<close>
+                      have segMN: "seg M ?a (?fnM - 1) = seg N ?a (?fnM - 1)"
+                      proof (rule nth_equalityI)
+                        show "length (seg M ?a (?fnM - 1)) = length (seg N ?a (?fnM - 1))" by simp
+                        fix i assume "i < length (seg M ?a (?fnM - 1))"
+                        hence ic: "i < Suc (?fnM - 1) - ?a" by simp
+                        have aile: "?a + i \<le> ?j0N" using ic cn0 acn fnM_lt by linarith
+                        have "seg M ?a (?fnM - 1) ! i = M ! (?a + i)"
+                          by (rule seg_nth_eq) (use ic in simp)
+                        also have "\<dots> = N ! (?a + i)" using agree[OF aile] .
+                        also have "\<dots> = seg N ?a (?fnM - 1) ! i"
+                          by (rule seg_nth_eq[symmetric]) (use ic in simp)
+                        finally show "seg M ?a (?fnM - 1) ! i = seg N ?a (?fnM - 1) ! i" .
+                      qed
+                      have LOW_eq: "P (seg M ?a (?fnM - 1)) = take ?J1 (Br ?Np)"
+                        using segMN lowN_take by simp
+                      \<comment> \<open>STEP 5: fold \<open>Br M' = LOW @ [?TL]\<close> via \<open>BrM'P\<close> + \<open>P\<close>-additivity on \<open>M\<close>-side\<close>
+                      let ?X = "seg M ?a j1'"
+                      have aj1: "?a < j1'" using fnM_lt fnMj1 a_le_fnM by linarith
+                      have LngX: "Lng ?X = Suc j1' - ?a" by (rule Lng_seg)
+                      have XT: "?X \<in> T_PS"
+                      proof -
+                        have "0 < Lng ?X" using LngX aj1 by linarith
+                        thus ?thesis using length_greater_0_conv by (fastforce simp: T_PS_def)
+                      qed
+                      have cnleX: "?cn \<le> Lng ?X - 1" using LngX fnMj1 a_le_fnM by linarith
+                      have axcX: "?a + (Lng ?X - 1) = j1'" using LngX aj1 by linarith
+                      have lminX: "\<And>j. j < ?cn \<Longrightarrow> entry ?X 0 ?cn \<le> entry ?X 0 j"
+                      proof -
+                        fix j assume jcn: "j < ?cn"
+                        have jX: "j < Lng ?X" using jcn cnleX by linarith
+                        have cX: "?cn < Lng ?X" using cnleX LngX aj1 by linarith
+                        have eXj: "entry ?X 0 j = entry M 0 (?a + j)"
+                          using jX by (simp add: entry_seg)
+                        have eXc: "entry ?X 0 ?cn = entry M 0 ?fnM"
+                          using cX acn by (simp add: entry_seg)
+                        \<comment> \<open>\<open>?a+j < ?fnM \<le> ?j0N\<close>, so \<open>M = N\<close>; use \<open>lminLOW\<close> + \<open>efnM_MN\<close>\<close>
+                        have ajfn: "?a + j < ?fnM" using jcn acn by linarith
+                        have ajle: "?a + j \<le> ?j0N" using ajfn fnM_lt by linarith
+                        have "entry M 0 (?a + j) = entry N 0 (?a + j)"
+                          using agree[OF ajle] by (simp add: entry_def)
+                        moreover have "entry N 0 ?fnM \<le> entry N 0 (?a + j)"
+                          using lminLOW[of "?a + j"] ajfn by simp
+                        ultimately show "entry ?X 0 ?cn \<le> entry ?X 0 j"
+                          using eXj eXc efnM_MN by simp
+                      qed
+                      have Msplit: "P ?X = P (seg ?X 0 (?cn - 1)) @ P (seg ?X ?cn (Lng ?X - 1))"
+                        by (rule m_6_2_P_additive[OF XT cn0 cnleX lminX])
+                      have segLOW_M: "seg ?X 0 (?cn - 1) = seg M ?a (?fnM - 1)"
+                      proof -
+                        have db: "?cn - 1 \<le> j1' - ?a" using cnleX LngX by linarith
+                        have "seg ?X 0 (?cn - 1) = seg M (?a + 0) (?a + (?cn - 1))"
+                          by (rule seg_of_seg[OF less_imp_le[OF aj1] db])
+                        also have "\<dots> = seg M ?a (?a + (?cn - 1))" by simp
+                        also have "?a + (?cn - 1) = ?fnM - 1" using cn0 acn by linarith
+                        finally show ?thesis by simp
+                      qed
+                      have segHIGH_M: "seg ?X ?cn (Lng ?X - 1) = seg M ?fnM j1'"
+                      proof -
+                        have db: "Lng ?X - 1 \<le> j1' - ?a" using LngX by linarith
+                        have "seg ?X ?cn (Lng ?X - 1) = seg M (?a + ?cn) (?a + (Lng ?X - 1))"
+                          by (rule seg_of_seg[OF less_imp_le[OF aj1] db])
+                        also have "?a + ?cn = ?fnM" using acn .
+                        also have "?a + (Lng ?X - 1) = j1'" using axcX .
+                        finally show ?thesis by simp
+                      qed
+                      have fold: "Br ?M' = take ?J1 (Br ?Np) @ [?TL]"
+                      proof -
+                        have "Br ?M' = P (seg M ?a (?fnM - 1)) @ P (seg M ?fnM j1')"
+                          using BrM'P Msplit segLOW_M segHIGH_M by simp
+                        thus ?thesis using LOW_eq hitail by simp
+                      qed
+                      \<comment> \<open>STEP 4: junction \<open>cdom (last LOW) (?TL)\<close>.  \<open>last LOW = Br N' ! (J\<^sub>1-1)\<close>,
+                         \<open>cdom\<close> from \<open>descN'\<close> on adjacent \<open>J\<^sub>1-1, J\<^sub>1\<close>; the \<open>?TL\<close> head equals
+                         \<open>(Br N' ! J\<^sub>1)\<^sub>0\<close> since \<open>M_{?fnM} = N_{?fnM}\<close> (article 1500).\<close>
+                      have junc_cdom: "?J1 \<noteq> 0 \<Longrightarrow> cdom (last (take ?J1 (Br ?Np))) ?TL"
+                      proof -
+                        assume J1ne: "?J1 \<noteq> 0"
+                        have takelen: "length (take ?J1 (Br ?Np)) = ?J1"
+                          using J1Br by simp
+                        have takene: "take ?J1 (Br ?Np) \<noteq> []" using J1ne takelen by auto
+                        have lastlow: "last (take ?J1 (Br ?Np)) = Br ?Np ! (?J1 - 1)"
+                        proof -
+                          have "last (take ?J1 (Br ?Np)) = take ?J1 (Br ?Np) ! (?J1 - 1)"
+                            using takene takelen by (simp add: last_conv_nth)
+                          also have "\<dots> = Br ?Np ! (?J1 - 1)"
+                            using J1ne J1Br by simp
+                          finally show ?thesis .
+                        qed
+                        have cdomBr: "cdom (Br ?Np ! (?J1 - 1)) (Br ?Np ! ?J1)"
+                          by (rule descending_cdomD[OF descN' diff_le_self J1L])
+                        \<comment> \<open>\<open>?TL\<close> head row-0/row-1 \<open>= (Br N' ! J\<^sub>1)\<close> head (both \<open>= N_{?fnM}\<close>)\<close>
+                        have TLne: "0 < Lng ?TL" using LngTL fnMj1 by linarith
+                        have TLhd0: "entry ?TL 0 0 = entry N 0 ?fnM"
+                          using TLne efnM_MN by (simp add: entry_seg)
+                        have TLhd1: "entry ?TL 1 0 = entry N 1 ?fnM"
+                        proof -
+                          have "entry ?TL 1 0 = entry M 1 ?fnM" using TLne by (simp add: entry_seg)
+                          also have "\<dots> = entry N 1 ?fnM"
+                            using agree[of ?fnM] fnM_lt by (simp add: entry_def)
+                          finally show ?thesis .
+                        qed
+                        have compLpos: "0 < Lng (seg N ?fnM (Lng N - 1))"
+                          using compne compN_eq by simp
+                        have Chd0: "entry (Br ?Np ! ?J1) 0 0 = entry N 0 ?fnM"
+                        proof -
+                          have "entry (seg N ?fnM (Lng N - 1)) 0 0 = entry N 0 (?fnM + 0)"
+                            by (rule entry_seg[OF compLpos])
+                          thus ?thesis using compN_eq by simp
+                        qed
+                        have Chd1: "entry (Br ?Np ! ?J1) 1 0 = entry N 1 ?fnM"
+                        proof -
+                          have "entry (seg N ?fnM (Lng N - 1)) 1 0 = entry N 1 (?fnM + 0)"
+                            by (rule entry_seg[OF compLpos])
+                          thus ?thesis using compN_eq by simp
+                        qed
+                        show "cdom (last (take ?J1 (Br ?Np))) ?TL"
+                          unfolding cdom_def
+                        proof (intro conjI impI)
+                          from cdomBr have r0: "entry (Br ?Np ! ?J1) 0 0
+                                                  \<le> entry (Br ?Np ! (?J1 - 1)) 0 0"
+                            and r1: "entry (Br ?Np ! (?J1 - 1)) 0 0 = entry (Br ?Np ! ?J1) 0 0
+                                      \<longrightarrow> entry (Br ?Np ! ?J1) 1 0 \<le> entry (Br ?Np ! (?J1 - 1)) 1 0"
+                            unfolding cdom_def by auto
+                          show "entry ?TL 0 0 \<le> entry (last (take ?J1 (Br ?Np))) 0 0"
+                            using r0 lastlow TLhd0 Chd0 by simp
+                          assume "entry (last (take ?J1 (Br ?Np))) 0 0 = entry ?TL 0 0"
+                          hence "entry (Br ?Np ! (?J1 - 1)) 0 0 = entry (Br ?Np ! ?J1) 0 0"
+                            using lastlow TLhd0 Chd0 by simp
+                          hence "entry (Br ?Np ! ?J1) 1 0 \<le> entry (Br ?Np ! (?J1 - 1)) 1 0"
+                            using r1 by simp
+                          thus "entry ?TL 1 0 \<le> entry (last (take ?J1 (Br ?Np))) 1 0"
+                            using lastlow TLhd1 Chd1 by simp
+                        qed
+                      qed
+                      have TLdesc: "descending [?TL]" by (simp add: descending_def)
+                      have LOWdesc: "descending (take ?J1 (Br ?Np))"
+                        by (rule descending_take[OF descN'])
+                      have junc: "cdom (last (take ?J1 (Br ?Np))) (?TL)"
+                        using junc_cdom J1pos by simp
+                      have "descending (take ?J1 (Br ?Np) @ [?TL])"
+                        by (rule descending_append[OF LOWdesc TLdesc]) (use junc in simp)
+                      thus ?thesis using fold by simp
+                      qed
                     qed
                   next
                     case alarge: False
