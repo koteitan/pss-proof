@@ -1063,3 +1063,35 @@ Green reusable geometry haves: `monoNp`/`NpPT`, `?J1 = Lng(Br Np)-1`, `?fn = Fir
 **RECOMMENDATION (agent C2)**: split off step-2's HIGH non-multiplicity as its OWN named lemma
 FIRST — it is the one missing brick with no existing analogue and is the true blocker; the
 LOW/junction parts then transcribe from sub-case B. Decomposition empirically sound (42/42).
+
+## UPDATE 2026-05-29 (continued 24): caseC CLOSED + d0pos Z2 — §6.8 prop1 now d0pos-only
+
+Second Workflow run (Opus 4.8, 2-way parallel), both parent-verified green and merged into
+slice-wip-68 (`4310f7f`, `Finished PSS` 132s). **m_6_8_slice_Br_descending_monoT now has exactly
+ONE sorry left: d0pos.** (B-J1≥1 + caseB-J1=0 + caseA + caseC all closed; only the i1=1 branch remains.)
+
+### caseC — CLOSED (merge `4310f7f`, proof at 11535-12069, ~534 lines)
+Full article-1498/1500 decomposition `Br M' = take J1 (Br N') @ [seg M (FN[J1]+j0') j1']`, 5 steps:
+- **Step 1 fnM_lt** (`?fnM < ?j0N`, article 1498): last branch component `Br Np!J1 = seg Np ?fn (Lng Np-1)`
+  is non-multi (`m_6_2_P_components_1`), `?fn < Lng Np-1` (else its parent ≤ TrMax contradicts nleaf+caseC'
+  via `idxsum_parent0_unique`), `compdom` via `m_6_2_multi_crit_12`, then `nextR0_largest_below` from
+  nleaf + `fn_ne_d` (parent uniqueness) + from p → `?fn ≤ ?jm1` → `?fnM < ?j0N`.
+- **Step 2 hitail** (THE key brick): `P(seg M ?fnM j1') = [seg M ?fnM j1']` — the tail is a single
+  non-multi component CROSSING the oper boundary. `Mdom`: `?fnM` row-0-dominates `(?fnM,j1']`: for q≤?j0N
+  via `agree` + `Ndom` (compdom→N by entry_seg); for q>?j0N via `oper_d0zero_entry0_min`
+  (entry M 0 q ≥ entry N 0 ?j0N > entry N 0 ?fnM). Then `poper_P_nonmulti` + `m_6_2_multi_crit_12`.
+- **Step 3 LOW_eq**: `P(seg M ?a (?fnM-1)) = take J1 (Br Np)` — N-side `m_6_2_P_additive` at ?fnM
+  (left-min `lminLOW` from `idxsum_leftend_lmin`, NOT a nextrel0 valley), HIGH_N single, transferred by `segMN`.
+- **Step 4 junction** `cdom (last LOW) ?TL`: `descending_cdomD[OF descN']` + head equality
+  (?TL head = (Br Np!J1) head = N_{?fnM} via agree + entry_seg).
+- **Step 5 fold**: M-side `m_6_2_P_additive` split → `Br M' = take J1 (Br N') @ [?TL]`;
+  `descending_append[OF descending_take[OF descN'], descending [?TL]]` + junction; `cases ?J1=0`.
+
+### d0pos Z2 — GREEN (merge `ce9b236`, lemmas at ~8542-8678)
+`oper_d1pos_nth` + `oper_d1pos_entry0` + `oper_d1pos_entry1` (row-1 UNSHIFTED — the d0pos vs d0zero
+difference) + helper `nth_concat_map_const_len` (nth of concat of distinct equal-length blocks;
+d0zero's `nth_concat_replicate` needs identical blocks, d1pos blocks differ per k; induction
+`arbitrary: q B`). Z2 of the 9-task d0pos plan; Z1 (expand/LngM) already in. Next: Z3 (le0_confined),
+Z4 (seg_period_reduce), then the d0pos case-analysis Z5-Z9.
+
+**§6.8 prop1 status**: ONE sorry left (d0pos). All other cases closed.
