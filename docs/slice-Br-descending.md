@@ -953,3 +953,51 @@ multiseg/Pcutend live in `caseBC:True` and aren't in scope for B):
 8. `cdom_def` depends only on heads, so cdomBr + same-heads(HIGHN!0, ?Y!0) gives `cdom (last LOW) (?Y!0)`.
 
 Then `descending (fold) = descending (LOW @ ?Y)` by `descending_append[OF Xdesc Ydesc]` + `junc_cdom`. Close.
+
+## UPDATE 2026-05-28 (continued 21): A案 agent fan-out 結果 — B-J1≥1 完全 close、C/d0pos は blocker 報告
+
+Agent X/Y/Z を `slice-wip-68@466f77e` ベースの 3 worktree（`pss-junc`/`pss-c-wip`/`pss-d0pos`）で並列実行。
+parent ルール5「自己申告を信じず必ずビルド」を遵守し、X の green 主張を parent build で検証してから統合。
+
+### Agent X — junc_cdom + descending_append 緑（worktree `junc-wip-68` → `slice-wip-68` ff-merge `1323561`）
+8-step plan 通りに 132 行の証明を書き、`Finished PSS` 検証済、`p_*` 引用なし。
+**B-J1≥1 完全 close**。`m_6_8_slice_Br_descending_monoT` 内の sorry は 3→2（caseC, d0pos）。
+
+### Agent Y — caseC 重要発見：empirically 真、`monoT (seg M ?a j1')` に reduce
+truth-check 結果（`python/slice_caseBC_decomp.py` をコピー）:
+- depth 4 maxval 4 n≤5 で **caseC は 10 witnesses あり**（以前の「empirically UNVALIDATED」は探索深度不足だった）
+- 全 witness で `Br N'`/`Br M'` ともに singleton（`J1=0`、`take 0 _ = []`）
+- 全 witness で article 分解 `Br M' = take J1 (Br N') @ [...]` が成立、`descending` も真
+
+**戦略的洞察（agent Y）**: caseC では `seg M ?a j1'` が monoT（non-multi、`P = [seg ...]`）なので
+`Br ?M' = [seg M ?a j1']` の singleton、`descending` は自明。**核心は `le0 M ?a j1'`**。
+これは次のチェインで分解可能:
+- `nextrel0 M p j0N`（`?a ≤ p < j0N`、N-side `nextrel0` を `agree` で M に転送）
+- `le0 M j0N j1'`（**新 brick が要**: `le0_M_block_extension: le0 N j0N (Lng N - 1) ⟹ le0 M j0N j1'`、d0zero block-replication 構造の延長）
+- `?a ≤ p` + 推移 + `adm_le0_seg` → `monoT (seg M ?a j1')`
+- `P_non_multi_singleton` + `descending_via_cdom` + `cdom_refl` で close
+
+**推定 60-100 行**（新 brick 含む）。BC:False が常に caseB/caseC で singleta J1=0 を生むなら、案外 asmall:True の caseB ≥ J1≥1 と caseC の両方をこの monoT route で再 close できる可能性もある（要確認）。
+
+### Agent Z — d0pos 構造解析：単独 agent では out of scope、9 sub-task に decompose
+truth-check 結果（`python/d0pos_truth_check.py` をコピー）: 5,950 instances 0 violations（深度 6 まで empirically 真）。
+
+**構造的相違（d0zero vs d0pos）**:
+- d0zero: `M = take j0N N @ concat (replicate n block)`（リテラル繰り返し）
+- d0pos: `M = (N_j)[0..j-2N-1] ⊕ ⊕_{k=0..n-1} IncrFirst^{kδ}((N_j)[j-2N..j1N])`（各 block で row-0 を `δ > 0` 増分）
+
+d0zero の周期性補題群（`oper_d0zero_nth`, `oper_d0zero_entry0`, `oper_d0zero_le0_confined`,
+`oper_d0zero_seg_period_reduce`, …）は `M ! (j0+qw+s) = M ! (j0+s)` に依存しているため d0pos には使えない。
+新 infrastructure ~1500 LOC が要。
+
+**Z 推奨 fan-out 9 sub-task**:
+- Phase 1（infrastructure、逐次）: Z1=`oper_d1pos_expand`+`LngM`、Z2=`_nth`+`_entry0`+`_entry1`、Z3=`_le0_confined`、Z4=`_seg_period_reduce`
+- Phase 2（case analysis、並列、Phase 1 後）:
+  - Z5: 1a/2a の N-slice 還元（小）
+  - Z6: 1b inter-block monotonicity `(0, j-2N+kw) ≤_M (0, j-2N+(k+1)w)`（article 1530-1538）
+  - Z7: 2b `(0, j0') ≤_M (0, j1N)` 推移チェイン（Z6 引用）
+  - Z8: 2b 内 3 sub-cases on `TrMax(N')` vs `j-3`（article 1564-1586、Z7 引用）
+  - Z9: 1b/2b finalization（article 1539-1545, 1572-1586）
+
+**§6.8 prop1 残**: caseC (60-100 行、新 brick 1 つ)、d0pos (~1500 LOC、9-agent fan-out)。
+caseC が小ければ次にやるべきは caseC、d0pos は別計画。
