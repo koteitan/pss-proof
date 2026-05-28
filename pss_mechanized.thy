@@ -11039,15 +11039,55 @@ proof -
                     show ?thesis
                     proof (cases "parent ?Np 0 (?j0N - j0') \<le> TrMax ?Np")
                       case caseB: True
-                      \<comment> \<open>sub-case B, \<open>J\<^sub>1 \<ge> 1\<close>.  RESIDUAL (left as \<open>sorry\<close>): the LOW part
-                         \<open>P(seg M a (j\<^sub>0\<^sup>N-1)) = take J\<^sub>1 (Br N')\<close> via the N-side \<open>P\<close>-additive
-                         split at \<open>j\<^sub>0\<^sup>N\<close>, whose left-minimality follows from
-                         \<open>parent N 0 j\<^sub>0\<^sup>N = j0' + (parent N' 0 (j\<^sub>0\<^sup>N-j0')) \<le> j0' + TrMax(N') = a-1 < a\<close>
-                         (\<open>adm_nextrel0_seg\<close> + \<open>caseB\<close>), so \<open>j\<^sub>0\<^sup>N\<close> is the unique row-0 ancestor of
-                         the leaf at/above \<open>a\<close> (\<open>nextrel0_above_parent_trivial\<close>), giving
-                         \<open>Pcut(seg N a (Lng N-1)) = j\<^sub>0\<^sup>N - a\<close>; then \<open>descending_append\<close> of
-                         \<open>descending_take[OF descN']\<close> (LOW) and \<open>Ydesc\<close> (HIGH), junction
-                         \<open>cdom\<close> from \<open>junc0\<close>.  Decomposition empirically TRUE 237/237.\<close>
+                      \<comment> \<open>sub-case B, \<open>J\<^sub>1 \<ge> 1\<close>.  CRUX (now proven): \<open>j\<^sub>0\<^sup>N\<close> is a left-minimal
+                         row-0 P-cut of \<open>seg N a (Lng N-1)\<close>.  Its row-0 parent \<open>p\<close> exists
+                         (\<open>m_5_1_parent_exists_1\<close> from \<open>entry N 0 j'\<^sub>0 < entry N 0 j\<^sub>0\<^sup>N\<close>), and the
+                         N'-coordinate parent \<open>p - j'\<^sub>0 = parent N' 0 (j\<^sub>0\<^sup>N-j'\<^sub>0)\<close>
+                         (\<open>adm_nextrel0_seg\<close> + uniqueness) is \<open>\<le> TrMax(N')\<close> by \<open>caseB\<close>, so
+                         \<open>p \<le> j'\<^sub>0 + TrMax(N') = a-1 < a\<close>.  The \<open>nextrel0\<close> valley clause for
+                         \<open>p \<rightarrow> j\<^sub>0\<^sup>N\<close> then gives \<open>entry N 0 j\<^sub>0\<^sup>N \<le> entry N 0 q\<close> for all \<open>q\<in>[a,j\<^sub>0\<^sup>N)\<close>.\<close>
+                      have j0Nlt1: "?j0N < Lng N - 1" using parR0N by (simp add: nextrel0_def)
+                      have j0Nle1: "?j0N \<le> Lng N - 1" using j0Nlt1 by simp
+                      have e_lt: "entry N 0 j0' < entry N 0 ?j0N"
+                        by (rule m_5_1_ancestor_basic_1[OF NT j0'lt0N j0Nle1 leRN])
+                      obtain p where p: "j0' \<le> p" "p < ?j0N" "nextR N 0 p ?j0N"
+                        using m_5_1_parent_exists_1[OF NT j0'lt0N j0NltN e_lt] by auto
+                      have npr: "nextrel0 N p ?j0N" using p(3) by (simp add: nextR_def)
+                      \<comment> \<open>shift the parent into \<open>N'\<close> coordinates and identify it via uniqueness\<close>
+                      have pj0': "j0' + (p - j0') = p" using p(1) by simp
+                      have j0Nj0': "j0' + (?j0N - j0') = ?j0N" using j0'lt0N by simp
+                      have LN1ltN: "Lng N - 1 < Lng N" using j0NltN by linarith
+                      have pNp: "p - j0' < Lng ?Np" using p(1) p(2) j0Nlt1 NpL by linarith
+                      have j0NNp: "?j0N - j0' < Lng ?Np" using j0'lt0N j0Nlt1 NpL by linarith
+                      have nprNp: "nextrel0 ?Np (p - j0') (?j0N - j0')"
+                        using adm_nextrel0_seg[OF LN1ltN pNp j0NNp] npr pj0' j0Nj0' by simp
+                      have nRNp: "nextR ?Np 0 (p - j0') (?j0N - j0')"
+                        using nprNp by (simp add: nextR_def)
+                      have ex1Np: "\<exists>!x. nextR ?Np 0 x (?j0N - j0')"
+                        using nRNp idxsum_ex1_parent0_iff[of ?Np "?j0N - j0'"] by blast
+                      \<comment> \<open>identify the outer \<open>parent\<close> via uniqueness; stash the inner index
+                         \<open>?j0N - j0'\<close> in a fresh \<open>b\<close> so \<open>unfolding parent_def\<close> does not also
+                         unfold the \<open>?j0N = parent N 0 (Lng N-1)\<close> hidden inside it\<close>
+                      have parNp_eq: "parent ?Np 0 (?j0N - j0') = p - j0'"
+                      proof -
+                        obtain b where bdef: "?j0N - j0' = b" by blast
+                        have nRb: "nextR ?Np 0 (p - j0') b" using nRNp bdef by simp
+                        have ex1b: "\<exists>!x. nextR ?Np 0 x b" using ex1Np bdef by simp
+                        have pb: "parent ?Np 0 b = p - j0'"
+                          unfolding parent_def using nRb ex1b by (rule the1_equality[rotated])
+                        show ?thesis using pb bdef by simp
+                      qed
+                      have plt_a: "p < ?a"
+                      proof -
+                        have "p - j0' \<le> TrMax ?Np" using caseB parNp_eq by simp
+                        thus ?thesis using p(1) by linarith
+                      qed
+                      have leftmin: "\<And>q. ?a \<le> q \<Longrightarrow> q < ?j0N \<Longrightarrow> entry N 0 ?j0N \<le> entry N 0 q"
+                      proof -
+                        fix q assume "?a \<le> q" "q < ?j0N"
+                        hence "p < q \<and> q < ?j0N" using plt_a by linarith
+                        thus "entry N 0 ?j0N \<le> entry N 0 q" using npr by (simp add: nextrel0_def)
+                      qed
                       show ?thesis sorry
                     next
                       case caseC: False

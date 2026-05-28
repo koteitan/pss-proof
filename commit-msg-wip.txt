@@ -1,16 +1,14 @@
-§6.8 blk0fold PROVEN green: discharge the isolated sorry (3 real sorries left)
+§6.8 B-J1>=1 CRUX proven green: j0N is a left-minimal row-0 P-cut (caseB)
 
-- oper_d0zero_seg_P_blk0fold is now a real proof (Finished PSS, 49s, no slow
-  steps).  Both linarith and presburger loop in preprocessing on the ?w-expanded
-  double-parent goal when j0lt is supplied (>2400s); the fix avoids decision
-  procedures on ?w-laden goals:
-  * leftseg: explicit db witness (?c-1 <= End-j0) for seg_of_seg + idxL index eq
-  * segmono: chain assoc (w0-only linarith) + j0w1 (simp trans) for idxe/segL/ej,
-    keeping j0lt out of all ?w arithmetic
-  * eqv: reorder j0le2/ej before eqv and feed ej to its simp
-  * rightseg: arg_cong (not simp) for the endpoint, dodging the Lng_seg assoc shift
-  * nz: extract the Lng=1 conjunct of zeroT and contradict True, avoiding the
-    messy Suc(Lng M-2)-j0 entry blowup that simp+zeroT_def triggers
-- Remaining real sorries: B-J1>=1 (11051), C (11057), d0pos (11077).
+- The genuinely-new part of sub-case B-J1>=1 is now a verified `have` block
+  (Finished PSS, 52s): the cut j0N's row-0 parent p exists
+  (m_5_1_ancestor_basic_1 -> entry N 0 j0' < entry N 0 j0N -> m_5_1_parent_exists_1),
+  its N'-coordinate image p-j0' = parent N' 0 (j0N-j0') (adm_nextrel0_seg + the1_equality,
+  with the inner parent stashed in a fresh b so parent_def does not double-unfold)
+  is <= TrMax(N') by caseB, hence p <= j0'+TrMax = a-1 < a; the nextrel0 valley
+  clause then gives `leftmin: entry N 0 j0N <= entry N 0 q` for all q in [a, j0N).
+- `show ?thesis sorry` remains for the assembly (M-/N-side m_6_2_P_additive split
+  at j0N + descending_append, mirroring sub-case A). 3 real sorries unchanged in
+  count; B-J1>=1's crux de-risked.
 
 Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>
