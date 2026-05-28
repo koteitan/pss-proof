@@ -8466,6 +8466,74 @@ proof -
   show ?thesis using key[unfolded pj0] .
 qed
 
+text \<open>§6.8 d0pos analog of @{thm [source] oper_d0zero_expand}: when the row-1
+  index of the last node is \<open>i\<^sub>1 = 1\<close>, the fundamental sequence repeats the slice
+  \<open>seg M j\<^sub>0 (Lng M-1)\<close> with each block's row-0 entries shifted by \<open>k\<cdot>\<delta>\<close>, where
+  \<open>\<delta> = entry M 0 (Lng M-1) - entry M 0 j\<^sub>0\<close> and \<open>j\<^sub>0 = parent M 1 (Lng M-1)\<close>.
+  Row 1 is unchanged (\<open>d\<^sub>1 = 0\<close> because \<open>1 < i\<^sub>1\<close> fails).\<close>
+
+lemma oper_d1pos_expand:
+  assumes L: "1 < Lng M"
+    and notzero: "\<not> (entry M 0 (Lng M - 1) = 0 \<and> entry M 1 (Lng M - 1) = 0)"
+    and hp: "hasParent M (idx1 M (Lng M - 1)) (Lng M - 1)"
+    and i1z: "idx1 M (Lng M - 1) = 1"
+  shows "M[n] = take (parent M 1 (Lng M - 1)) M
+              @ concat (map (\<lambda>k. map (\<lambda>j. (entry M 0 j
+                          + k * (entry M 0 (Lng M - 1) - entry M 0 (parent M 1 (Lng M - 1))),
+                          entry M 1 j))
+                        [parent M 1 (Lng M - 1)..<Lng M - 1]) [0..<n])"
+proof -
+  let ?j1 = "Lng M - 1"  let ?i1 = "idx1 M ?j1"  let ?j0 = "parent M ?i1 ?j1"
+  let ?d0 = "if 0 < ?i1 then entry M 0 ?j1 - entry M 0 ?j0 else 0"
+  let ?d1 = "if 1 < ?i1 then entry M 1 ?j1 - entry M 1 ?j0 else 0"
+  \<comment> \<open>unfold the oper Let by pure rewriting (no \<open>1\<close>-normalisation)\<close>
+  have raw: "M[n] = take ?j0 M @
+       concat (map (\<lambda>k. map (\<lambda>j. (entry M 0 j + k * ?d0, entry M 1 j + k * ?d1))
+                            [?j0..<?j1]) [0..<n])"
+    by (rule poper_oper_expand[OF L notzero hp, of n, unfolded Let_def])
+  \<comment> \<open>\<open>i\<^sub>1 = 1\<close>: \<open>0 < i\<^sub>1\<close> holds (row-0 shift live), \<open>1 < i\<^sub>1\<close> fails (\<open>d\<^sub>1 = 0\<close>)\<close>
+  let ?delta = "entry M 0 ?j1 - entry M 0 ?j0"
+  have d0v: "?d0 = ?delta" by (subst i1z) simp
+  have d1z: "?d1 = 0" by (subst i1z) simp
+  have pj0: "?j0 = parent M 1 ?j1" by (subst i1z) (rule refl)
+  have key: "M[n] = take ?j0 M @
+       concat (map (\<lambda>k. map (\<lambda>j. (entry M 0 j + k * ?delta, entry M 1 j))
+                            [?j0..<?j1]) [0..<n])"
+    using raw by (simp add: d0v d1z del: One_nat_def)
+  show ?thesis using key unfolding pj0 .
+qed
+
+text \<open>Length of the §6.8 d0pos fundamental-sequence term: \<open>j\<^sub>0 + n\<cdot>w\<close> with
+  \<open>w = Lng M - 1 - j\<^sub>0\<close>, equivalently (the form requested by the article)
+  \<open>parent M 1 (Lng M-1) + n\<cdot>(Lng M - parent M 1 (Lng M-1))\<close> once \<open>w\<close> is unfolded;
+  here stated in the exact \<open>Lng M - 1\<close> form that the \<open>oper\<close> definition produces.\<close>
+
+lemma oper_d1pos_LngM:
+  assumes L: "1 < Lng M"
+    and notzero: "\<not> (entry M 0 (Lng M - 1) = 0 \<and> entry M 1 (Lng M - 1) = 0)"
+    and hp: "hasParent M (idx1 M (Lng M - 1)) (Lng M - 1)"
+    and i1z: "idx1 M (Lng M - 1) = 1"
+    and j0lt: "parent M 1 (Lng M - 1) < Lng M - 1"
+  shows "Lng (M[n]) = parent M 1 (Lng M - 1)
+                    + n * (Lng M - 1 - parent M 1 (Lng M - 1))"
+proof -
+  let ?j0 = "parent M 1 (Lng M - 1)"  let ?w = "Lng M - 1 - ?j0"
+  let ?B = "\<lambda>k. map (\<lambda>j. (entry M 0 j
+              + k * (entry M 0 (Lng M - 1) - entry M 0 ?j0), entry M 1 j))
+            [?j0..<Lng M - 1]"
+  have expand: "M[n] = take ?j0 M @ concat (map ?B [0..<n])"
+    using oper_d1pos_expand[OF L notzero hp i1z] by simp
+  have t: "length (take ?j0 M) = ?j0" using j0lt L by simp
+  have lmap: "map Lng (map ?B [0..<n]) = replicate n ?w"
+  proof -
+    have "map Lng (map ?B [0..<n]) = map (\<lambda>k. ?w) [0..<n]" by simp
+    thus ?thesis by (simp add: map_replicate_const)
+  qed
+  have lc: "length (concat (map ?B [0..<n])) = n * ?w"
+    by (subst length_concat, subst lmap) (simp add: sum_list_replicate)
+  show ?thesis using expand t lc by simp
+qed
+
 text \<open>Periodicity in index form: inside block \<open>q < n\<close> at offset \<open>s\<close>, \<open>M[n]\<close> reads
   off \<open>M\<close> at \<open>j\<^sub>0 + s\<close>.\<close>
 
