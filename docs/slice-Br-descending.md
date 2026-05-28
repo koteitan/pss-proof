@@ -921,3 +921,35 @@ M-side `m_6_2_P_additive[OF XT c0 cle lminX]` on `?X = seg M a j1'` at cut
 **§6.8 remaining real sorries (3, unchanged in count):** B-J1≥1 closure (Xdesc +
 junc_cdom), C, d0pos. B-J1≥1's hardest math is now green; closure mirrors
 sub-case A's `descending_take[OF descN']` + `descending_append`.
+
+## UPDATE 2026-05-28 (continued 20): §6.8 B-J1≥1 — Xdesc proven green (closure-only sorry left)
+
+Third verified `have` block (worktree `slice-wip-68`, commit `466f77e`,
+`Finished PSS` 53s). The descending of LOW = P(seg M a (j0N-1)) is now green:
+N-side `m_6_2_P_additive` at the SAME cut j0N (leftmin direct on N, no agree
+needed), segLOW_N/segHIGH_N via `seg_of_seg` + `arg_cong` (twice for segHIGH_N's
+two endpoint rewrites), `segMN` via `nth_equalityI` + `agree` for the period
+bridge, then `descending_take[OF descN']`.
+
+**One refactor hit:** `idx` had to be hoisted out of segLOW (M-side)'s `proof -
+... qed` so segLOW_N (N-side) can reuse it.
+
+**§6.8 status:** B-J1≥1 has 4 verified haves stacked (leftmin/fold/Xdesc/segMN);
+just `show ?thesis sorry` remains, needing one final brick:
+
+### junc_cdom plan (the one remaining piece)
+`cdom (last LOW) (?Y!0)` via the head-equality route (NOT A's leafval — A's
+multiseg/Pcutend live in `caseBC:True` and aren't in scope for B):
+
+1. `LOWN = P(seg N a (j0N-1))`, `HIGHN = P(seg N j0N (Lng N-1))`, `J1 = length LOWN`.
+2. Both non-empty (`a < j0N`, `j0N ≤ Lng N - 2`).
+3. `last LOWN = LOWN ! (J1-1) = (LOWN @ HIGHN) ! (J1-1) = Br N' ! (J1-1)` via `nth_append`.
+4. `Br N' ! J1 = HIGHN ! 0` via `nth_append` + brEq.
+5. `cdomBr: cdom (Br N' ! (J1-1)) (Br N' ! J1)` by `descending_cdomD[OF descN']`.
+6. `entry (HIGHN!0) i 0 = entry N i j0N` for i∈{0,1} via first-P-component-head
+   (look for an existing lemma like `entry_P_first` or derive via `IdxSum...!0 = 0`
+   pattern from line 6817 — `P M ! 0 = seg M 0 k`, then `entry (seg M 0 k) i 0 = entry M i 0`).
+7. `Y0hd0/Y0hd1: entry (?Y!0) i 0 = entry N i j0N` via `cases "?qb = 0"` + `blkhdi`/`parhdi`.
+8. `cdom_def` depends only on heads, so cdomBr + same-heads(HIGHN!0, ?Y!0) gives `cdom (last LOW) (?Y!0)`.
+
+Then `descending (fold) = descending (LOW @ ?Y)` by `descending_append[OF Xdesc Ydesc]` + `junc_cdom`. Close.
