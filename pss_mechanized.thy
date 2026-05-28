@@ -11391,9 +11391,79 @@ proof -
                         using descending_append[OF Xdesc Ydesc] junc_cdom fold by simp
                     next
                       case caseC: False
-                      \<comment> \<open>sub-case C (article 1496): \<open>TrMax(N') < j\<^sub>-\<^sub>1\<close>; \<open>j\<^sub>0\<^sup>N\<close>'s row-0 parent lies
-                         in the branch, not the trunk.  Left as \<open>sorry\<close> (out of scope; the
-                         decomposition is empirically UNVALIDATED at the explored depths).\<close>
+                      \<comment> \<open>sub-case C (article 1496-1500): \<open>TrMax(N') < j\<^sub>-\<^sub>1\<close>; \<open>j\<^sub>0\<^sup>N\<close>'s row-0
+                         parent lies in the branch.  \<open>Br M' = take J\<^sub>1 (Br N') @ [tail]\<close>
+                         with \<open>tail = seg M (FN\<^bsub>J\<^sub>1\<^esub>+j'\<^sub>0) j'\<^sub>1\<close>; the tail head equals
+                         \<open>(Br N'\<^bsub>J\<^sub>1\<^esub>)\<^bsub>0\<^esub>\<close>, so \<open>Br M'\<close> shares \<open>Br N'\<close>'s descending head sequence.\<close>
+                      have j0Nlt1: "?j0N < Lng N - 1" using j0Nlt by simp
+                      \<comment> \<open>\<open>?Np \<in> PT_PS\<close>\<close>
+                      have monoNp: "monoT ?Np"
+                        using m_6_2_mono_ancestor_slice[OF NT _ leRN] j0'lt1N by simp
+                      have NpPT: "?Np \<in> PT_PS" using NpT monoNp by (simp add: PT_PS_def)
+                      \<comment> \<open>\<open>J\<^sub>1 = Lng (Br N') - 1\<close>, the last branch component index\<close>
+                      let ?J1 = "Lng (Br ?Np) - 1"
+                      have J1L: "?J1 < length (Br ?Np)" using BrNpne by (cases "Br ?Np") auto
+                      \<comment> \<open>\<open>?fn = FirstNodes(N')\<^bsub>J\<^sub>1\<^esub>\<close> (N' coords), \<open>?fnM = j'\<^sub>0 + ?fn\<close> (M/N coords)\<close>
+                      let ?fn = "FirstNodes ?Np ! ?J1"
+                      let ?fnM = "j0' + ?fn"
+                      have fnval: "?fn = TrMax ?Np + 1 + IdxSum (Br ?Np) ! ?J1"
+                        by (rule FirstNodes_nth[OF J1L])
+                      \<comment> \<open>\<open>?a \<le> ?fnM\<close>: \<open>?fn \<ge> TrMax(N')+1\<close>, \<open>?a = j'\<^sub>0+TrMax(N')+1\<close>\<close>
+                      have a_le_fnM: "?a \<le> ?fnM" using fnval by simp
+                      \<comment> \<open>\<open>?fnM < ?j0N\<close> (article 1500): \<open>FN\<^bsub>J\<^sub>1\<^esub> \<le> j\<^sub>-\<^sub>1 < j\<^sub>0\<^sup>N - j'\<^sub>0\<close>.
+                         \<open>j\<^sub>-\<^sub>1 = parent N' 0 (j\<^sub>0\<^sup>N-j'\<^sub>0)\<close> and \<open>caseC\<close>: \<open>TrMax(N') < j\<^sub>-\<^sub>1\<close>;
+                         \<open>FN\<^bsub>J\<^sub>1\<^esub>\<close> is the last row-0 left-minimum of the branch region.\<close>
+                      let ?jm1 = "parent ?Np 0 (?j0N - j0')"
+                      have j0Npos: "0 < ?j0N - j0'" using j0'lt0N by linarith
+                      have j0Ng: "?j0N - j0' < Lng ?Np" using j0'lt0N j0Nlt1 NpL by linarith
+                      \<comment> \<open>\<open>le0 N' 0 (j\<^sub>0\<^sup>N-j'\<^sub>0)\<close> by transferring \<open>le0Nj0\<close> across the slice\<close>
+                      have LN1ltN: "Lng N - 1 < Lng N" using j0NltN by linarith
+                      have bsmall: "?j0N - j0' \<le> Lng N - 1 - j0'" using j0Nlt1 by linarith
+                      have le0Np: "le0 ?Np 0 (?j0N - j0')"
+                      proof -
+                        have "le0 ?Np 0 (?j0N - j0')
+                            = le0 N (j0' + 0) (j0' + (?j0N - j0'))"
+                          by (rule adm_le0_seg[where M=N and j0'=j0' and j1'="Lng N - 1"
+                                and a=0 and b="?j0N - j0'", OF LN1ltN _ bsmall])
+                             (use j0'lt1N in auto)
+                        also have "j0' + 0 = j0'" by simp
+                        also have "j0' + (?j0N - j0') = ?j0N" using j0'lt0N by simp
+                        finally show ?thesis using le0Nj0 by simp
+                      qed
+                      have leRNp: "leR ?Np 0 0 (?j0N - j0')" using le0Np by (simp add: leR_def)
+                      have e_lt: "entry ?Np 0 0 < entry ?Np 0 (?j0N - j0')"
+                        by (rule m_5_1_ancestor_basic_1[OF NpT j0Npos order.refl leRNp])
+                      obtain p where p: "nextR ?Np 0 p (?j0N - j0')"
+                        using m_5_1_parent_exists_1[OF NpT j0Npos j0Ng e_lt] by blast
+                      have ex1: "\<exists>!x. nextR ?Np 0 x (?j0N - j0')"
+                        using p idxsum_ex1_parent0_iff by metis
+                      have jm1eq: "?jm1 = p"
+                      proof -
+                        obtain b where bdef: "?j0N - j0' = b" by blast
+                        have pb: "nextR ?Np 0 p b" using p bdef by simp
+                        have ex1b: "\<exists>!x. nextR ?Np 0 x b" using ex1 bdef by simp
+                        have "parent ?Np 0 b = p"
+                          unfolding parent_def using pb ex1b by (rule the1_equality[rotated])
+                        thus ?thesis using bdef by simp
+                      qed
+                      have jm1lt: "?jm1 < ?j0N - j0'"
+                        using jm1eq p by (simp add: nextR_def nextrel0_def)
+                      have caseC': "TrMax ?Np < ?jm1" using caseC by linarith
+                      \<comment> \<open>leaf parent: \<open>(0, j\<^sub>0\<^sup>N-j'\<^sub>0) <\<^sub>N\<^sub>'\<^sup>Next (0, Lng N'-1)\<close> (article 1482),
+                         transferring \<open>parR0N\<close> across the slice\<close>
+                      have leafidx: "Lng ?Np - 1 < Lng ?Np" using NpLgt by linarith
+                      have nleaf: "nextrel0 ?Np (?j0N - j0') (Lng ?Np - 1)"
+                      proof -
+                        have e1: "?j0N - j0' < Lng ?Np" using j0Ng .
+                        have shiftL: "j0' + (Lng ?Np - 1) = Lng N - 1" using NpL j0'lt1N by linarith
+                        have shiftJ: "j0' + (?j0N - j0') = ?j0N" using j0'lt0N by simp
+                        have "nextrel0 ?Np (?j0N - j0') (Lng ?Np - 1)
+                            = nextrel0 N (j0' + (?j0N - j0')) (j0' + (Lng ?Np - 1))"
+                          by (rule adm_nextrel0_seg[OF LN1ltN e1 leafidx])
+                        also have "\<dots> = nextrel0 N ?j0N (Lng N - 1)"
+                          using shiftL shiftJ by simp
+                        finally show ?thesis using parR0N by simp
+                      qed
                       show ?thesis sorry
                     qed
                   next
