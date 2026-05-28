@@ -11088,6 +11088,86 @@ proof -
                         hence "p < q \<and> q < ?j0N" using plt_a by linarith
                         thus "entry N 0 ?j0N \<le> entry N 0 q" using npr by (simp add: nextrel0_def)
                       qed
+                      \<comment> \<open>fold: \<open>Br M' = LOW @ HIGH\<close>, \<open>LOW = P(seg M a (j\<^sub>0\<^sup>N-1))\<close> (the prefix below
+                         the cut, period intact), \<open>HIGH = ?Y = P(seg M j\<^sub>0\<^sup>N j'\<^sub>1)\<close> (\<open>hival\<close>).
+                         The cut \<open>j\<^sub>0\<^sup>N\<close> is left-minimal in \<open>?X = seg M a j'\<^sub>1\<close> by \<open>leftmin\<close> + period
+                         agreement (\<open>agree\<close>: \<open>M\<close> and \<open>N\<close> coincide on \<open>[0,j\<^sub>0\<^sup>N]\<close>).\<close>
+                      let ?c = "?j0N - ?a"
+                      let ?X = "seg M ?a j1'"
+                      have aj1: "?a < j1'" using asmall j1Nge by linarith
+                      have LngX: "Lng ?X = Suc j1' - ?a" by (rule Lng_seg)
+                      have XT: "?X \<in> T_PS"
+                      proof -
+                        have "0 < Lng ?X" using LngX aj1 by linarith
+                        hence "?X \<noteq> []" using length_greater_0_conv by blast
+                        thus ?thesis by (simp add: T_PS_def)
+                      qed
+                      have c0: "0 < ?c" using asmall by linarith
+                      have cle: "?c \<le> Lng ?X - 1" using LngX j1Nge asmall by linarith
+                      have ac: "?a + ?c = ?j0N" using asmall by linarith
+                      have axc: "?a + (Lng ?X - 1) = j1'" using LngX aj1 by linarith
+                      have lminX: "\<And>j. j < ?c \<Longrightarrow> entry ?X 0 ?c \<le> entry ?X 0 j"
+                      proof -
+                        fix j assume jc: "j < ?c"
+                        have jX: "j < Lng ?X" using jc cle by linarith
+                        have cX: "?c < Lng ?X" using cle LngX aj1 by linarith
+                        have aleq: "?a + j \<le> ?j0N" using jc by linarith
+                        have eX_j: "entry ?X 0 j = entry N 0 (?a + j)"
+                        proof -
+                          have "?X ! j = M ! (?a + j)" by (rule seg_nth_eq) (use jX LngX in simp)
+                          also have "M ! (?a + j) = N ! (?a + j)" using agree[OF aleq] .
+                          finally have "?X ! j = N ! (?a + j)" .
+                          thus ?thesis by (simp add: entry_def)
+                        qed
+                        have eX_c: "entry ?X 0 ?c = entry N 0 ?j0N"
+                        proof -
+                          have "?X ! ?c = M ! (?a + ?c)" by (rule seg_nth_eq) (use cX LngX in simp)
+                          hence "?X ! ?c = M ! ?j0N" using ac by simp
+                          also have "M ! ?j0N = N ! ?j0N" using agree[of ?j0N] by simp
+                          finally have "?X ! ?c = N ! ?j0N" .
+                          thus ?thesis by (simp add: entry_def)
+                        qed
+                        have "entry N 0 ?j0N \<le> entry N 0 (?a + j)"
+                          using leftmin[of "?a + j"] jc by linarith
+                        thus "entry ?X 0 ?c \<le> entry ?X 0 j" using eX_j eX_c by simp
+                      qed
+                      have Msplit: "P ?X = P (seg ?X 0 (?c - 1)) @ P (seg ?X ?c (Lng ?X - 1))"
+                        by (rule m_6_2_P_additive[OF XT c0 cle lminX])
+                      have segLOW: "seg ?X 0 (?c - 1) = seg M ?a (?j0N - 1)"
+                      proof -
+                        have db: "?c - 1 \<le> j1' - ?a" using cle LngX by linarith
+                        \<comment> \<open>\<open>using c0 ac by linarith\<close> loops (\<open>?c\<close> double-expands the complex atoms
+                           \<open>?j0N\<close>/\<open>?a\<close>); chain the \<open>c0\<close>-only assoc then \<open>ac\<close> by \<open>simp\<close> (CLAUDE.md gotcha)\<close>
+                        have idx: "?a + (?c - 1) = ?j0N - 1"
+                        proof -
+                          have "?a + (?c - 1) = ?a + ?c - 1" using c0 by linarith
+                          also have "\<dots> = ?j0N - 1" using ac by simp
+                          finally show ?thesis .
+                        qed
+                        have "seg ?X 0 (?c - 1) = seg M (?a + 0) (?a + (?c - 1))"
+                          by (rule seg_of_seg[OF less_imp_le[OF aj1] db])
+                        also have "\<dots> = seg M ?a (?a + (?c - 1))" by simp
+                        also have "\<dots> = seg M ?a (?j0N - 1)"
+                          using arg_cong[OF idx, of "seg M ?a"] .
+                        finally show ?thesis .
+                      qed
+                      have segHIGH: "seg ?X ?c (Lng ?X - 1) = seg M ?j0N j1'"
+                      proof -
+                        have db: "Lng ?X - 1 \<le> j1' - ?a" using LngX by linarith
+                        have "seg ?X ?c (Lng ?X - 1) = seg M (?a + ?c) (?a + (Lng ?X - 1))"
+                          by (rule seg_of_seg[OF less_imp_le[OF aj1] db])
+                        also have "\<dots> = seg M ?j0N (?a + (Lng ?X - 1))"
+                          using arg_cong[OF ac, of "\<lambda>x. seg M x (?a + (Lng ?X - 1))"] .
+                        also have "\<dots> = seg M ?j0N j1'"
+                          using arg_cong[OF axc, of "seg M ?j0N"] .
+                        finally show ?thesis .
+                      qed
+                      have fold: "Br ?M' = P (seg M ?a (?j0N - 1)) @ ?Y"
+                      proof -
+                        have "Br ?M' = P (seg M ?a (?j0N - 1)) @ P (seg M ?j0N j1')"
+                          using BrM'P Msplit segLOW segHIGH by simp
+                        thus ?thesis using hival by simp
+                      qed
                       show ?thesis sorry
                     next
                       case caseC: False

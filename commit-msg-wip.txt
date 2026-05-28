@@ -1,14 +1,20 @@
-§6.8 B-J1>=1 CRUX proven green: j0N is a left-minimal row-0 P-cut (caseB)
+§6.8 B-J1>=1 fold proven green: Br M' = LOW @ HIGH at the cut j0N
 
-- The genuinely-new part of sub-case B-J1>=1 is now a verified `have` block
-  (Finished PSS, 52s): the cut j0N's row-0 parent p exists
-  (m_5_1_ancestor_basic_1 -> entry N 0 j0' < entry N 0 j0N -> m_5_1_parent_exists_1),
-  its N'-coordinate image p-j0' = parent N' 0 (j0N-j0') (adm_nextrel0_seg + the1_equality,
-  with the inner parent stashed in a fresh b so parent_def does not double-unfold)
-  is <= TrMax(N') by caseB, hence p <= j0'+TrMax = a-1 < a; the nextrel0 valley
-  clause then gives `leftmin: entry N 0 j0N <= entry N 0 q` for all q in [a, j0N).
-- `show ?thesis sorry` remains for the assembly (M-/N-side m_6_2_P_additive split
-  at j0N + descending_append, mirroring sub-case A). 3 real sorries unchanged in
-  count; B-J1>=1's crux de-risked.
+- M-side m_6_2_P_additive split of seg M a j1' at the cut c=j0N-a is now a
+  verified `have fold: Br M' = P(seg M a (j0N-1)) @ ?Y` block (Finished PSS, 58s),
+  using `leftmin` (this commit's predecessor 8b9ea44) for the left-minimality
+  premise; `?Y = P(seg M j0N j1')` is hival from blk0fold.
+- Several tactic landmines surfaced and were fixed:
+  * `entry_seg`+`agree`+`entry_def` in one `simp` does not close `fst(M!x)=fst(N!x)`;
+    establish the nth-equality `?X!j = N!(?a+j)` at list level first, then a single
+    `simp add: entry_def` step.
+  * `using c0 ac by linarith` on `?a + (?c-1) = ?j0N - 1` loops (the CLAUDE.md
+    `?w`-style gotcha: `?c` re-expands the complex atoms `?j0N`/`?a` once `ac` is
+    supplied); chain `c0`-only assoc then `ac` by `simp` via `also`/`finally`.
+  * `thus ?thesis using <eq> by simp` to rewrite a seg endpoint is unreliable in
+    this `?c`/`?a` context; switch to `arg_cong[OF eq, of "seg M ?a"]` for both
+    segLOW and segHIGH (blk0fold's recipe).
+- Remaining for B-J1>=1: Xdesc (LOW = take J1 (Br N'), descending_take) and
+  junc_cdom (descending_append) mirroring sub-case A. 3 sorries unchanged in count.
 
 Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>
