@@ -79,6 +79,22 @@ Import chain: `pss_defs` ← `pss_paper` ← `pss_mechanized`.
   an object implication (`M ≠ [] ⟶ …`), induct, then `… using assms by blast`.
   The IH is referenced **quoted**: `"1.IH"[OF <recursion-cond>]`.
 - **`length_greater_0_conv[symmetric]` in the simpset loops** → use `cases`.
+- **`linarith`/`presburger` loop in preprocessing on `let`-abbreviation goals
+  where the abbreviation re-expands a complex atom**: e.g. with `let ?w = "Lng M
+  - 1 - parent M 0 (Lng M-1)"`, a goal like `?j0 + (?w - 1) < Lng M` expands to
+  `parent.. + (Lng M-1 - parent.. - 1) < Lng M` (the `parent` atom appears twice,
+  under nested nat-subtraction). Supplying an extra hypothesis (`j0lt`) tips the
+  preprocessing simplifier into a >2400s loop — **both** linarith and presburger.
+  Fix: never hand such a goal to a decision procedure. Chain through a cheap
+  `w0`-only assoc step (`?j0 + (?w-1) = ?j0 + ?w - 1`, fast) plus a pre-proved
+  flat equation (`?j0 + ?w - 1 = Lng M - 2`, `by simp`) via `by simp` transitivity.
+- **`Lng_seg` (a `[simp]` rule) rewrites `Lng (seg ..) - 1` mid-goal**, shifting
+  `?j0 + (Lng Q - 1)` into an assoc-different `qb*w+r2` form that `simp` then
+  won't re-close (`a+(b+c)` vs `a+b+c` inside a `seg` argument). Rewrite the
+  endpoint with `arg_cong[OF eq, of "seg M a"]` instead of `simp`. Likewise
+  `¬ zeroT (seg M a b)` blows up when `Lng(seg..)=1` normalizes messily: extract
+  the `Lng = 1` conjunct (`zeroT_def`) and contradict `1 < Lng ..`, don't `simp`
+  the whole `zeroT_def` (it evaluates the `entry ..` conjunct into garbage).
 
 ## Reusable helpers (in `pss_mechanized.thy`; grep for them)
 

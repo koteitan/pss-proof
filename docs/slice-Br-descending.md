@@ -855,3 +855,30 @@ have db: "?w - 1 \<le> ?End - ?j0" using wle r2w by simp   \<comment> ?w-1 \<le>
 NB: blk0fold ALSO had a separate `blkseg` index-bound proof error (~10100, goal
 `parent M 0 (Lng M-1) + i < Lng M - 1`) found by the parent build — fix that too when un-sorrying.
 The ~35-40min builds were partly two concurrent builds oversubscribing the 12-core box (use ONE build).
+
+## UPDATE 2026-05-28 (continued 18): blk0fold PROVEN green (parent, not agent)
+
+`oper_d0zero_seg_P_blk0fold` is now a **real proof** (no `sorry`); worktree `slice-wip-68`
+commit `552dcd7`, `Finished PSS` in 49s with NO slow steps. The B agent's `db`-witness recipe
+(continued 17) fixed the `leftseg` blow-up, but the lemma had FOUR more landmines, all from
+decision procedures / `simp` choking on the `?w`-expanded `parent` terms — diagnosed and fixed
+incrementally by the parent (each build ~50s green or ~40min loop, so build-after-every-fix):
+
+1. **leftseg `thus`**: `?j0+(?c-1) = ?j0+?w-1` index mismatch (nat-sub assoc) → explicit `idxL`.
+2. **segL/idxe/ej**: `?j0+(?w-1) < Lng M` etc. — **both `linarith` AND `presburger` loop >2400s**
+   in preprocessing once `j0lt` is supplied (the `?w` abbreviation re-expands `parent` twice under
+   nested subtraction). Fix: chain `assoc` (`w0`-only linarith, fast) + `j0w1` (`by simp` trans);
+   keep `j0lt` out of every `?w`-laden arith. Recorded as a CLAUDE.md gotcha.
+3. **eqv**: needs `ej` (`?j0+(Lng M-2-?j0)=Lng M-2`) to match `?blk`; reorder `j0le2`/`ej` BEFORE
+   `eqv` and feed `ej` to its `simp`.
+4. **rightseg**: `Lng_seg` simproc shifts `?j0+(Lng Q-1)` into an assoc-different form `simp` won't
+   re-close → rewrite endpoint with `arg_cong[OF e, of "seg ?MN (?j0+?w)"]`, not `simp`.
+5. **nz (`¬ zeroT ?blk`)**: `Lng ?blk = Suc(Lng M-2)-?j0` normalizes messily; `simp add: zeroT_def`
+   evaluates the `entry` conjunct into garbage. Fix: extract only the `Lng=1` conjunct and
+   contradict `True` (`1 < Lng ?blk`). (The base-case `?partial` nz worked because `Lng = Suc r2`
+   is clean — the difference is the messy `Lng M-2-?j0` endpoint.)
+
+The B agent's "blk0fold closed/green" self-report (its builds all timed out, never `Finished PSS`)
+was indeed false — landmines 2–5 were never verified. Parent build-at-merge caught it (the rule held).
+
+**§6.8 remaining real sorries (3):** B-J1≥1 (11051), C (11057), d0pos (11077). All else green.
