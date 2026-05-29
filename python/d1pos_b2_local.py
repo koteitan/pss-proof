@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
-"""Re-verify the B2b structural discovery for the §6.8 d0pos (i1=1) row-1 tie-break.
+"""⚠️ UNRELIABLE — narrow generator. See docs/slice-Br-descending.md continued 31.
+This checker only folds standard d1pos N at one level, so its "0-fail" for (S-adj)/(S-sgl)
+is a SAMPLING ARTIFACT: those facts are actually FALSE (16/94) on the proper rank-stratified
+standard domain (use python/nlocal_verify2.py / the diagSeq->oper->SkT_PS generator instead).
+Kept only as a record of the refuted route.
+
+Re-verify the B2b structural discovery for the §6.8 d0pos (i1=1) row-1 tie-break.
 
 Findings to confirm (over row-0 tie pairs of consecutive P-components of the
 branch region Yp = P(seg M' (TrMax M'+1) (Lng M'-1)), M' a monoT slice of

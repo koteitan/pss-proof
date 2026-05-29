@@ -1298,3 +1298,48 @@ Clean **k-induction** (mirrors `SkT_P_descending`), full skeleton (all cases clo
 
 python: d1pos_b2_local.py (S-adj/S-sgl/M-loc/N-loc all 0-fail), d1pos_b2_struct_general.py
 (S-adj/S-sgl context-dependent, not general P).
+
+## UPDATE 2026-05-29 (continued 31): (S-adj)/(S-sgl) is FALSE; §6.8 collapses to ONE core `slice_P_tiebreak`
+
+⚠️ **The continued-30 reduction (S-adj)+(S-sgl)+`nlocal_adj_tie` is REFUTED.** The
+continued-30 `python/d1pos_b2_local.py` "373/373 0-fail" was a **sampling artifact of a
+too-narrow generator** (it only folded standard d1pos `N` at one level; it never produced
+the failing slices). With a proper rank-stratified standard generator (`nlocal_verify2/3.py`,
+diagSeq→oper→SkT_PS), (S-adj)/(S-sgl) **FAIL 16/94** on the d0pos domain.
+
+Counterexample (yaBMS-standard) `M' = (0,0)(1,1)(2,0)(1,1)(2,0)(1,0)`, `TrMax M'=1`,
+`Yp = (2,0)(1,1)(2,0)(1,0)`, `P Yp = [(2,0)],[(1,1)(2,0)],[(1,0)]`, `IdxSum=[0,1,3,4]`.
+The row-0 tie is between comp J=1 head `(1,1)` and J=2 head `(1,0)`: the left comp has
+**Lng 2** (S-sgl false) and `pR=pL+2` (S-adj false). Worse, the tie is **non-local** — the
+intermediate index between the two tied cut-heads has a strictly larger row-0 (a "dip"), so
+there is **no chain of adjacent row-0 ties**, and the adjacent-only `nlocal_adj_tie` can
+NEVER bridge it. So `nlocal_adj_tie` (though TRUE and now GREEN) is structurally
+insufficient for the tie-break. (Lesson: a narrow empirical sweep gives false confidence —
+always use the rank-stratified standard generator. This is the THIRD refuted B2 route.)
+
+### The real, clean core — `slice_P_tiebreak` (verified 237/0 at len7/val3, 487/0 at len8/val4)
+> `M ∈ SkT_PS k ⟹ a≤b ⟹ b≤Lng M-1 ⟹ J0≤J1 ⟹ J1≤Lng(P(seg M a b))-1 ⟹`
+> `entry(P(seg M a b)!J0) 0 0 = entry(...!J1) 0 0 ⟹ entry(...!J1) 1 0 ≤ entry(...!J0) 1 0`
+
+This is the row-1 tie-break of the P-decomposition of ANY slice of a standard form — exactly
+the article's `slice_P_descending` core (content.md 1450–1615). Via `m_6_7_standard_prefix`
++ `seg_to_last_eq_drop` it equals **the drop-core** `N∈ST_PS ⟹ descending(P(drop j N))`,
+which is *the same core* that the already-green `m_6_8_standard_slice_Br_descending_of_drop`
+(pss_mechanized.thy ~8050) and `slice_P_descending_of_drop` (~8026) assume.
+
+### State after this update (slice-wip-68 commit 9177499, GREEN)
+- All 5 cases of `m_6_8_slice_Br_descending_monoT` (base/caseA/B/C/d0pos) now CLOSED
+  **modulo the single `slice_P_tiebreak` stub** (agent-B B3 assembly replaced the d0pos sorry).
+- agent-A merged: general i1-agnostic oper helpers `oper_gen_block_nth/entry0/entry1`,
+  `oper_gen_nth_prefix` (off `poper_oper_expand`+`nth_concat_map_const_len`) + `nlocal_adj_tie`
+  (real proof, GREEN — kept; the helpers are reusable, nlocal may feed the core's adjacent
+  sub-cases).
+- **§6.8 prop1 now hinges on exactly ONE lemma**: `slice_P_tiebreak` ⟺ the drop-core. Proving
+  it discharges BOTH route 2 (`m_6_8_slice_Br_descending_monoT`) AND route 1 (the `_of_drop`
+  assembly). This is the genuine §6.8 hard core; next step = its k-induction over `oper`
+  (study SkT_P_descending's standard-form induction + the article 1450–1615).
+
+python: nlocal_verify.py (nlocal_adj_tie 74/74), nlocal_verify2.py (S-adj/S-sgl 16/94 FAIL +
+descending(Br M') 805/805), nlocal_verify3.py (slice_P_tiebreak C1 237/0..487/0),
+nlocal_verify4.py (drop-head NOT global left-min, 175/316). ⚠️ d1pos_b2_local.py is UNRELIABLE
+(narrow generator — do not trust its 0-fail claims).
