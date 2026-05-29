@@ -1398,3 +1398,28 @@ Then:
 2. Block chain `(0,j_{-2}^N) ≤_M (0,j_1)` + regime split (j'_0 vs j_{-2}^N).
 3. Regime A sub-cases; Regime B sub-cases (incl. the row-1 tie-break sub-case).
 Then remove the slice_P_tiebreak stub + B3 assembly, replace with the direct proof.
+
+## UPDATE 2026-05-29 (continued 33): d0pos collapses to the ¬brle multi-component remainder
+
+Two parallel agents (workflow w01qu1rhv) on the article-direct route produced the decisive
+reconciliation (python/d1pos_Br_singleton_check.py, rank-stratified std generator, 149
+witnesses):
+
+- **`brle` := (TrMax M' = Lng M'−1 ∨ le0 M' (TrMax M'+1)(Lng M'−1)) holds IFF Br M' is a
+  SINGLE P-component** — `#Br M'` distribution {1: 137, 2: 12}, and brle ok/no = 137/12
+  (exact match). The delta-shifted i1=1 block boundaries are not row-0 left-minima, so when
+  brle holds the whole branch region Yp is monoT ⇒ `P Yp = [Yp]` ⇒ descending is trivial.
+- agent-A green lemmas (merged, slice bdc0a84): `monoT_seg_of_le0` (le0 M a b, a<b ⇒
+  monoT(seg M a b) — the a-free, oper-hyp-free generalization of oper_d1pos_seg_mono) and
+  `descending_Br_of_branch_le0` (brle ⇒ descending(Br M'), single-component).
+- The d0pos closure now case-splits on brle: **brle (137/149) is FULLY PROVEN**; the
+  over-general `slice_P_tiebreak` stub is REMOVED. Only **¬brle (12/149, multi-component)**
+  remains as a narrow inline residual sorry.
+
+### The remaining piece — ¬brle (Yp multiT, Br M' multi-component)
+This is the article regime A/B decomposition `Br M' = (Br N')[0..J₁−1] @ [tail]` with the
+junction row-1 tie-break (D3 = 132/132): prefix descends by IHk on N-slices, junction is a
+row-0 tie with row-1 weakly decreasing (article: `N_{1,j_{-2}^N} < N_{1,j1^N}`), tail is one
+component. This is the genuine last d0pos brick. NOTE the earlier "agent A says Yp always
+single (5548/5548)" was over a brle-restricted sub-family; the true picture is the {1:137,
+2:12} split above (verify with the rank-stratified generator, never a narrow one-level one).
