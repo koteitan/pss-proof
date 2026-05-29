@@ -5,7 +5,13 @@ digraph pss {
   edge [color="#7a7a7a", arrowsize=0.6];
   node [shape=box, style=filled, fontsize=10, fontname="sans"];
   edge [color="#888888", arrowsize=0.6];
-  G [label="✅緑=証明済  🚨赤=未証明  🚧橙=作業中/再定式化\n矢印 X→Y = X を使って Y を証明", shape=note, fillcolor="#2a2a2a"];
+  G [label="✅緑=証明済  🚨赤=未証明  🚧橙=作業中/再定式化\n矢印 X→Y = X を使って Y を証明\n□=原文の命題  ○=原文に無い補助/分解/内部", shape=note, fillcolor="#2a2a2a"];
+
+  /* 原文に無い命題(我々の補助補題・証明内分解・内部)=楕円; 原文の命題=矩形(既定) */
+  c_base [shape=ellipse]; c_A [shape=ellipse]; c_B [shape=ellipse]; c_C [shape=ellipse]; c_d0pos [shape=ellipse];
+  Z1 [shape=ellipse]; Z2 [shape=ellipse]; Z3 [shape=ellipse]; Z4 [shape=ellipse]; Z5 [shape=ellipse];
+  Z6 [shape=ellipse]; Z7 [shape=ellipse]; Z8 [shape=ellipse]; Z9 [shape=ellipse];
+  SkTmono [shape=ellipse]; dead20 [shape=ellipse];
 
   /* ===== color classes ===== */
   /* green #2e5d34, red #6b2b30, orange #7a5320 */

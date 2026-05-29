@@ -5,6 +5,7 @@
 基礎が最上段、最終目標 **§8.7 停止性定理** が最下段（sink）。
 
 - 色: 🟩 緑 = 証明済 / 🟥 赤 = 未証明 / 🟧 橙 = 作業中・再定式化済
+- 形: □ 矩形 = 原文にある命題 / ○ 楕円 = 原文に無い我々の補助・証明内分解・内部補題
 - §7/§8 のノード内エッジは粗く（節間依存のみ）。critical path・§6.5・§6.8 は詳細。
 
 **▶ 拡大縮小できる対話版（dark mode）: [`dag.html`](dag.html)** をブラウザで開く
@@ -12,13 +13,13 @@
 
 ![PSS proof dependency DAG](dag.svg)
 
-> 図のソースは [`dag.dot`](dag.dot)（dark 配色）。更新フロー:
+> 図のソースは [`dag.dot`](dag.dot)（dark 配色, 形=原文有無）。更新したら:
 > ```
-> unflatten -f -l 14 -c 2 dag.dot | dot -Tsvg -o dag.svg      # 静的(dark)
-> unflatten -f -l 14 -c 2 dag.dot | dot -Tpng -Gdpi=90 -o dag.png
-> python3 tools/build_dag_html.py    # dag.svg→ zoom 可能な dag.html を再生成
+> python3 tools/render_dag.py    # dag.dot → dag.svg/png/html を一括再生成
 > ```
-> dag.md にソースは置かない。節は箱を廃しラベル接頭辞（§x.y）で識別、幅 9022→5215pt(3:1)。
+> `render_dag.py` がレイアウトを計算し、過密ランク（≥10 ノード）を不可視エッジで
+> 2 列の階段状に分割（横長 12:1 → 1.4:1）、dark で svg/png を描き、zoom/pan/touch
+> 対応の dag.html を生成する。dag.md にソースは置かない。節はラベル接頭辞（§x.y）で識別。
 
 ---
 
