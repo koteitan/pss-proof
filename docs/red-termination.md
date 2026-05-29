@@ -165,3 +165,25 @@ shift and of `IncrFirst`) are the foundational helpers to prove first; the
 **Remaining**: define `ν`/`μ_mono` (and `coreReduce`); prove the per-case
 descent; run the `Red_dom` induction via `Red.domintros` / a well-founded
 relation on `ν`.
+
+## UPDATE 2026-05-29: dead-branch[20] reachability — empirically UNREACHABLE
+
+`python/dead20_check.py` runs an instrumented `Red` on standard-form inputs
+(yaBMS `is_standard`) and ALL recursive sub-calls, counting how often the
+mono / M0≠(0,0) / m10>0 case is reached and whether its `else: return M`
+fall-through (dead-branch[20]) is ever taken:
+
+| range | standard inputs | m10>0 reached | dead-branch[20] taken |
+|---|---|---|---|
+| len≤4, val≤3 | 56 | 22 | 0 |
+| len≤3, val≤6 | 14 | 2 | 0 |
+| len≤5, val≤2 | 152 | 98 | 0 |
+| len≤4, val≤4 | 56 | 22 | 0 |
+| **total** | | **144** | **0** |
+
+So `m10 ≤ jN ∧ seg(N,m10,jN) ∈ PT_PS` held on every one of the 144 m10>0
+evaluations: **dead-branch[20] is empirically unreachable**, hence the
+unreachability lemma (the shared blocker of `Red_IncrFirst` m10>0 and
+`Red_Pred` case 6) is TRUE and worth proving. Recommended timing: after §6.8
+prop1 (d0pos) closes and as part of the §6.5 A4 anchored-slice cleanup (so the
+Red scaffolding is on a sound domain first).

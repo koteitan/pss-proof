@@ -165,7 +165,7 @@
 <!-- Z6 -->
 <g id="node12" class="node">
 <title>Z6</title>
-<ellipse fill="#6b2b30" stroke="#666666" cx="1808" cy="-2704" rx="64.51" ry="18"/>
+<ellipse fill="#2e5d34" stroke="#666666" cx="1808" cy="-2704" rx="64.51" ry="18"/>
 <text text-anchor="middle" x="1808" y="-2701.5" font-family="sans" font-size="10.00" fill="#eaeaea">d0pos Z6 block単調</text>
 </g>
 <!-- Z2&#45;&gt;Z6 -->
