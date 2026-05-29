@@ -124,7 +124,7 @@ digraph pss {
     d_split [label="¬brle P分割 notbrle_P_split", fillcolor="#2e5d34"];
     d_low [label="¬brle LOW機構\n P_funpow/LOW_source/LOW_eq", fillcolor="#2e5d34"];
     d_dapp [label="¬brle descending_shift/map_IncrFirst", fillcolor="#2e5d34"];
-    d_wire [label="¬brle assembly wiring", fillcolor="#6b2b30"];
+    d_wire [label="¬brle 同定stub\n notbrle_LOW_take_eq(存在)", fillcolor="#6b2b30"];
 
   /* ===================== §6.7 標準形 ===================== */
     p67_un [label="§6.7 ST=∪SkT", fillcolor="#2e5d34"];

@@ -1487,3 +1487,28 @@ N-side reference slice), so LOW = map(IncrFirst^{qδ})(take J1 (Br Np)); then de
 (row-0 tie after +qδ shift, row-1 drop via nextrel1 N jm2 j1N). This identification (the c =
 FirstNodes anchor + the N-side Br/TrMax bookkeeping) is the last piece — both agents punted
 on it (agent B via the false vacuity). python/d1pos_residual_vacuity.py + notbrle_low_check.py.
+
+## UPDATE 2026-05-30 (continued 36): ¬brle descending assembly GREEN; residual = the existential identification
+
+The wiring workflow (wcwc0hnf3) closed the ¬brle descending-assembly half (slice 15998e6,
+green). The inline ¬brle sorry is REMOVED; the d0pos case now reduces to ONE existential stub.
+
+- **Assembly (PROVEN)**: regime A (18) + regime B (12) close uniformly via
+  `descending_shift_append`: obtain (j0red, shamt, LOW, tail) from the stub; descending(Br Np)
+  via IHk on N (Np = seg N j0red (Lng N-1)); descending_shift_append wires LOW @ [tail].
+- **The single residual** = `oper_d1pos_notbrle_LOW_take_eq` (existential): for the ¬brle
+  d0pos slice, ∃ j0red shamt LOW tail with Br M' = LOW @ [tail], LOW the +shamt-IncrFirst-shift
+  of `take (len-1) (Br Np)` and the junction tail facts. Empirically 30/30 in residual context.
+- **Anchor correction** (deep gen, the warned class, caught): anchor on Jm = length(Br M')−1,
+  NOT J1 = Lng(Br Np)−1 (refuted 3/150 — Br M' is generally SHORTER, last comp a truncation).
+- **TrEq holds in context**: TrMax M' = TrMax Np is TRUE 681/681 in the PRECISE regime-B ¬brle
+  residual context (my earlier "TrEq false for d1pos" warning was for a broader regime). So the
+  d0zero caseC TrEq-based block-fold/first-node bookkeeping (~12084-13271) DOES port here.
+- Banked helper: `oper_d1pos_notbrle_take_map` (agent-A combinator, P_funpow_IncrFirst-based).
+
+### Remaining = prove the existential stub (the last d0pos piece)
+Provide the witnesses (j0red via period-reduction, shamt = q·δ, LOW/tail from
+`oper_d1pos_notbrle_P_split`) and discharge the facts using TrEq (provable) + the d0zero caseC
+FirstNodes/Br/TrMax bookkeeping + `oper_d1pos_notbrle_take_map`/LOW machinery. python:
+notbrle_low_take_check.py (anchor 681/681), d1pos_notbrle_wire.py (full fact set 30/30),
+d1pos_residual_vacuity.py (¬brle 18/183 non-vacuous).
