@@ -1512,3 +1512,27 @@ Provide the witnesses (j0red via period-reduction, shamt = q·δ, LOW/tail from
 FirstNodes/Br/TrMax bookkeeping + `oper_d1pos_notbrle_take_map`/LOW machinery. python:
 notbrle_low_take_check.py (anchor 681/681), d1pos_notbrle_wire.py (full fact set 30/30),
 d1pos_residual_vacuity.py (¬brle 18/183 non-vacuous).
+
+## UPDATE 2026-05-30 (continued 37): the identification stub was FALSE (Lng N-1 endpoint); fixed to free j1red
+
+The stub-proof workflow (wzvkg801x) split: agent B reported "green" (30/30 at KMAX=5) but
+agent A (KMAX=7) REFUTED the stub as stated. **Independently confirmed (python/
+d1pos_stub_endpoint.py, KMAX=6, len10/val4)**: the committed stub
+`oper_d1pos_notbrle_LOW_take_eq` hardcoded the N-side reference endpoint as `Lng N-1`
+(Np = seg N j0red (Lng N-1)), and `length(Br M') = Lng(Br Np)` **FAILS 36/207 at rank 6**
+(when the d0pos slice ends strictly INSIDE a block, Br M' is shorter than Br of the
+full-length Np). Minimal witness: N=(0,0)(1,1)(2,0)(1,1)(1,1), n=2, j0'=4, j1'=7
+(len(Br M')=2 but Lng(Br(seg N 0 4))=3). **This was the 4th shallow-generator false
+claim** (agent B's KMAX=5 had 0 fails — the refutation only appears at rank≥6).
+
+**FIX (deep-verified 207/207)**: generalize the N-side endpoint from `Lng N-1` to a FREE
+`j1red` with `j0red < j1red ≤ Lng N-1` and `le0 N j0red j1red`, so `Np = seg N j0red j1red`.
+With the free endpoint the existential identification holds 207/207. The ¬brle assembly's
+IHk application still works (IHk is ∀ slices with j1red < Lng N). Both the stub statement
+and the assembly's `obtain`/`?Np`/IHk were corrected (slice 4965840, green). The stub is now
+a TRUE sorry (dischargeable); proving it (the block-fold + first-node geometry with the free
+endpoint + TrEq, which holds 1912/1912) is the final d0pos piece. python/d1pos_stub_endpoint.py.
+
+⚠️ LESSON (now 4×): EVERY simplicity/length/vacuity claim from a sub-agent MUST be re-checked
+at rank≥6-7 with the exact in-context hypotheses before trusting; KMAX=5 is too shallow for
+the d0pos fold.
