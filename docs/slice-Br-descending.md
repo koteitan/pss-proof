@@ -1095,3 +1095,39 @@ d0zero's `nth_concat_replicate` needs identical blocks, d1pos blocks differ per 
 Z4 (seg_period_reduce), then the d0pos case-analysis Z5-Z9.
 
 **§6.8 prop1 status**: ONE sorry left (d0pos). All other cases closed.
+
+## UPDATE 2026-05-29 (continued 25): d0pos — block-fold is the WRONG brick; the fold collapses to ONE mono component (caseC-shaped)
+
+The d1pos-shape + d1pos-split workflow (empirical-first) overturned the "build a
+d1pos block-fold family `oper_d1pos_seg_P_*`" plan:
+
+- **`oper_d1pos_seg_P_split` is FALSE for delta>0.** In d0zero every block starts
+  at the same row-0 value, so the block boundary B=j0+k*w is a row-0 left-minimum
+  and `m_6_2_P_additive` peels one block. In d1pos block k's start carries row-0
+  `entry M 0 j0 + k*delta` which is INCREASING, so B is the row-0 MAXIMUM among
+  block starts; left-minimality fails and **P does not split at block boundaries**.
+  Counterexample: `M=[(0,0),(1,1),(2,1)], n=2` → `M[2]=[(0,0),(1,1),(2,0),(3,1)]`,
+  `seg(M[2],1,2)=[(1,1),(2,0)]` is a SINGLE P-component. (left-min fails 504/708.)
+
+- **H1 (the right brick, empirically 550/0):** for a block-start anchor
+  `a = j_2 + q*w` (q<n) and any b with `a<b<Lng M ∧ le0 M a b`,
+  `P (seg M a b) = [seg M a b]` — a SINGLE mono component. The delta-shifted fold
+  absorbs into ONE mono component (its later, larger row-0 entries keep the span
+  mono; the row-1 last-node chain stays mono).
+
+- **Paradox resolved:** descending(Br) needs the branch P-component heads row-0
+  weakly DECREASING; delta>0 makes BLOCK heads INCREASING — no conflict because
+  the blocks do NOT each become a component. The multi-component structure of
+  `Br(seg M j0' j1')` comes ONLY from N's own pre-existing branch components (left
+  of the fold); the whole fold is the SINGLE LAST mono component.
+
+**Consequence — d0pos closure mirrors caseC, not a block-fold:**
+`Br M' = take J1 (Br N') @ [single mono tail]`. The needed brick is the d1pos
+analogue of caseC's `hitail` (HIGH non-multiplicity): the fold tail is one mono
+P-component (via le0 → leR → monoT → `poper_P_nonmulti`), NOT a block-fold.
+Verified: H1 550/0, H2 (last component mono) 932/0, descending 932/0, J1=-1 fold
+row form (w=1) 15/0 — `python/d1pos_fold_shape.py`.
+
+**Next brick:** `oper_d1pos_seg_mono` (block-start-anchored le0 slice is monoT,
+P = singleton), then assemble the d0pos closure exactly like caseC (LOW = take J1
+(Br N') via N-side P-additive + agree, junction cdom, descending_append).
