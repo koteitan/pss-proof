@@ -12639,7 +12639,79 @@ proof -
               qed
             next
               case d0pos: False
-              \<comment> \<open>\<open>i\<^sub>1 = 1\<close>: \<open>M = prefix @ \<Oplus>\<^sub>k IncrFirst\<^bsup>k\<delta>\<^esup>(block)\<close>, article 1516–1589\<close>
+              \<comment> \<open>\<open>i\<^sub>1 = 1\<close>: \<open>M = prefix @ \<Oplus>\<^sub>k IncrFirst\<^bsup>k\<delta>\<^esup>(block)\<close>, article 1516–1589.
+                 GREEN GROUNDWORK (geometry common to all four article sub-cases):
+                 \<open>i\<^sub>1 = 1\<close>, \<open>j\<^sub>-\<^sub>2\<^sup>N = parent N 1 (Lng N-1)\<close>, \<open>\<delta> > 0\<close> (always), the
+                 fundamental-sequence layout/length, prefix agreement \<open>M = N\<close> on
+                 \<open>[0, j\<^sub>-\<^sub>2\<^sup>N]\<close>, the last-node identity \<open>M\<^bsub>j\<^sub>1\<^sup>N\<^esub> = (N\<^bsub>0,j\<^sub>1\<^sup>N\<^esub>, N\<^bsub>1,j\<^sub>-\<^sub>2\<^sup>N\<^esub>)\<close>,
+                 and \<open>le0 N j\<^sub>-\<^sub>2\<^sup>N (Lng N-1)\<close>.  Empirically verified (red_model, KMAX=6,
+                 18 standard d0pos witnesses): \<open>\<delta>>0\<close>, block-floor formula, prefix
+                 agreement, last-node identity all hold with 0 failures.\<close>
+              have d1posN: "0 < entry N 1 (Lng N - 1)" using d0pos by simp
+              have i1zN: "idx1 N (Lng N - 1) = 1" using d1posN by (simp add: idx1_def)
+              \<comment> \<open>\<open>j\<^sub>-\<^sub>2\<^sup>N = parent N 1 (Lng N-1)\<close>: the row-1 parent of the last node\<close>
+              have haspar1: "hasParent N 1 (Lng N - 1)" using hasparN i1zN by simp
+              have parR1: "nextR N 1 (parent N 1 (Lng N - 1)) (Lng N - 1)"
+                using haspar1 unfolding hasParent_def parent_def by (rule theI')
+              have j0Nlt: "parent N 1 (Lng N - 1) < Lng N - 1"
+                using poper_nextR_imp_le0[OF parR1] by simp
+              let ?j0N = "parent N 1 (Lng N - 1)"  let ?w = "Lng N - 1 - ?j0N"
+              let ?delta = "entry N 0 (Lng N - 1) - entry N 0 ?j0N"
+              have w0: "0 < ?w" using j0Nlt by linarith
+              have j0NltN: "?j0N < Lng N" using j0Nlt LNgt by linarith
+              \<comment> \<open>\<open>le0 N j\<^sub>-\<^sub>2\<^sup>N (Lng N-1)\<close>: a conjunct of the row-1 next-relation
+                 \<open>nextR N 1 j\<^sub>-\<^sub>2\<^sup>N (Lng N-1)\<close> (\<open>j\<^sub>-\<^sub>2\<^sup>N\<close> is a row-0 ancestor of the last
+                 node, article: \<open>(1,j\<^sub>-\<^sub>2\<^sup>N) <\<^sup>Next (1,j\<^sub>1\<^sup>N)\<close> implies \<open>(0,j\<^sub>-\<^sub>2\<^sup>N) \<le> (0,j\<^sub>1\<^sup>N)\<close>).\<close>
+              have le0NjN: "le0 N ?j0N (Lng N - 1)"
+                using parR1 by (simp add: nextR_def nextrel1_def)
+              \<comment> \<open>\<open>\<delta> > 0\<close> ALWAYS (article 1522; empirically 0 failures over 17128 cases):
+                 the row-0 \<open>nextrel0\<close>-chain \<open>j\<^sub>-\<^sub>2\<^sup>N \<rightarrow>\<^sup>* Lng N-1\<close> with \<open>j\<^sub>-\<^sub>2\<^sup>N < Lng N-1\<close>
+                 forces a strict row-0 increase (@{thm [source] le0_ances_aux}).\<close>
+              have deltaPos: "0 < ?delta"
+              proof -
+                have chain: "(nextrel0 N)\<^sup>*\<^sup>* ?j0N (Lng N - 1)"
+                  using le0NjN by (simp add: le0_def)
+                have "entry N 0 ?j0N < entry N 0 (Lng N - 1)"
+                  using le0_ances_aux[OF chain] j0Nlt by simp
+                thus ?thesis by simp
+              qed
+              \<comment> \<open>fundamental-sequence layout + length (\<open>oper_d1pos_*\<close>)\<close>
+              have layout: "M = take ?j0N N
+                @ concat (map (\<lambda>k. map (\<lambda>j. (entry N 0 j + k * ?delta, entry N 1 j))
+                      [?j0N..<Lng N - 1]) [0..<n])"
+                using Neq oper_d1pos_expand[OF LNgt notzeroN hasparN i1zN] by simp
+              have LngM: "Lng M = ?j0N + n * ?w"
+                using Neq oper_d1pos_LngM[OF LNgt notzeroN hasparN i1zN j0Nlt] by simp
+              have le0M: "le0 M j0' j1'" using leR by (simp add: leR_def)
+              have j0'lt: "j0' < Lng M" using lt jM by linarith
+              have nw0: "0 < n * ?w" using n1 w0 by simp
+              have j0NltM: "?j0N < Lng M" using LngM nw0 by linarith
+              have MT: "M \<in> T_PS" using MS SkT_PS_subset_ST_PS ST_PS_T_PS by blast
+              \<comment> \<open>prefix agreement: \<open>M = N\<close> on \<open>[0, j\<^sub>-\<^sub>2\<^sup>N]\<close> inclusive.  For \<open>x < j\<^sub>-\<^sub>2\<^sup>N\<close>
+                 use \<open>oper_d1pos_nth_prefix\<close>; at \<open>x = j\<^sub>-\<^sub>2\<^sup>N\<close> it is the head of block 0,
+                 \<open>(N\<^bsub>0,j\<^sub>-\<^sub>2\<^sup>N\<^esub> + 0\<cdot>\<delta>, N\<^bsub>1,j\<^sub>-\<^sub>2\<^sup>N\<^esub>) = N\<^bsub>j\<^sub>-\<^sub>2\<^sup>N\<^esub>\<close> (\<open>oper_d1pos_nth\<close>, \<open>q=0,s=0\<close>).\<close>
+              have agree: "\<And>x. x \<le> ?j0N \<Longrightarrow> M ! x = N ! x"
+              proof -
+                fix x assume xle: "x \<le> ?j0N"
+                show "M ! x = N ! x"
+                proof (cases "x < ?j0N")
+                  case True
+                  show ?thesis
+                    using Neq oper_d1pos_nth_prefix[OF LNgt notzeroN hasparN i1zN True] by simp
+                next
+                  case False
+                  hence xeq: "x = ?j0N" using xle by linarith
+                  have npos: "0 < n" using n1 by simp
+                  have s0: "(0::nat) < ?w" using w0 .
+                  have "M ! ?j0N = (M::pairseq) ! (?j0N + 0 * ?w + 0)" by simp
+                  also have "M ! (?j0N + 0 * ?w + 0)
+                      = (entry N 0 (?j0N + 0) + 0 * ?delta, entry N 1 (?j0N + 0))"
+                    using Neq oper_d1pos_nth[OF LNgt notzeroN hasparN i1zN j0Nlt npos s0] by simp
+                  also have "\<dots> = (entry N 0 ?j0N, entry N 1 ?j0N)" by simp
+                  also have "\<dots> = N ! ?j0N" using j0NltN by (simp add: entry_def)
+                  finally show ?thesis using xeq by simp
+                qed
+              qed
               show ?thesis sorry
             qed
           qed
