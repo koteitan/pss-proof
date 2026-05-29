@@ -1454,3 +1454,36 @@ Junction: row-0 tie via `oper_d1pos_entry0` (+q·δ both sides), row-1 drop via
 `nextrel1 N jm2 j1N` (entry N 1 jm2 < entry N 1 j1N). Then `descending_shift_append` (GREEN).
 Next build target = (a)+(b)+(c) (the funpow-IncrFirst LOW-identity machinery); then the
 regime A/B assembly wires (d)+(e)+junction.
+
+## UPDATE 2026-05-30 (continued 35): ¬brle is NOT vacuous (agent-B reshaping rejected); LOW machinery banked
+
+⚠️ Agent B (LOW workflow) reshaped the ¬brle residual to a single `brYp_single`
+(le0 M' (TrMax+1)(Lng-1)) claiming the ¬brle case is VACUOUS in the d0pos-branch context
+(notbrle=0 over 30309 slices). **This is FALSE — a shallow-generator artifact (the THIRD
+such).** With the EXACT residual context (incl. `bge: Lng N-1 ≤ j1'`) and a deeper sweep
+(python/d1pos_residual_vacuity.py, len8/val3/KMAX5): **¬brle = 18/183 in context** — NOT
+vacuous. `brYp_single` would be a FALSE stub. Concrete: N=(0,0)(1,1)(1,1)(1,1), n=2,
+j0'=0, j1'=3 (bge: 3≤3 ✓): M'=(0,0)(1,1)(1,1)(1,0), Br M' has 2 components, brle false.
+(Note: the bge constraint DOES filter some — 6 of the 24 no-bge ¬brle cases are jsmall,
+IH-handled — but 18 genuinely reach the residual.) The agent-B brYp_single reshaping was
+REJECTED; the ¬brle residual sorry is kept unchanged.
+
+LESSON (now 3×): agents keep reporting false "vacuous/always-single/all-regime-B" from
+shallow generators. ALWAYS re-verify simplicity claims with the deep rank-stratified
+generator AND the exact in-context hypotheses before trusting.
+
+### All bricks for the regime A+B assembly now exist (slice f0a51e8, green)
+- `oper_d1pos_notbrle_P_split`: Br M' = LOW @ [tail] (LOW = P(seg Yp 0 (c-1)), c the
+  last-component anchor; tail = single ¬multiT component).
+- LOW machinery (a)(b)(c): `P_funpow_IncrFirst`, `oper_d1pos_LOW_source_eq`,
+  `oper_d1pos_notbrle_LOW_eq` (LOW = map(IncrFirst^{qδ}) of the N-side P-slice).
+- `descending_map_IncrFirst`, `descending_shift_append`, `descending_Br_of_branch_le0`,
+  `monoT_seg_of_le0`, `descending_take`, `descending_append`, IHk on N.
+
+### Remaining = the assembly WIRING (the FirstNodes/Br/TrMax bookkeeping)
+Connect `oper_d1pos_notbrle_LOW_eq`'s P(seg M (j0+s0)(j0+e0)) to `take J1 (Br Np)` (Np = the
+N-side reference slice), so LOW = map(IncrFirst^{qδ})(take J1 (Br Np)); then descending(LOW)
+= descending_map_IncrFirst on descending_take[OF IHk]; junction via descending_shift_append
+(row-0 tie after +qδ shift, row-1 drop via nextrel1 N jm2 j1N). This identification (the c =
+FirstNodes anchor + the N-side Br/TrMax bookkeeping) is the last piece — both agents punted
+on it (agent B via the false vacuity). python/d1pos_residual_vacuity.py + notbrle_low_check.py.
