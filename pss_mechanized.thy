@@ -857,6 +857,31 @@ proof (induction M rule: P.induct)
   qed
 qed
 
+text \<open>§6.8 (b): \<open>P\<close> commutes with an iterated \<open>IncrFirst\<close> as a per-component map.
+  Funpow-iterate of @{thm [source] m_6_2_P_IncrFirst} (\<open>P (IncrFirst M) = map IncrFirst (P M)\<close>);
+  the step uses that one-step fact + \<open>map\<close>-compose.  Empirically 1155/1155
+  (@{file "python/notbrle_low_check.py"}, rank-stratified std).\<close>
+
+lemma P_funpow_IncrFirst:
+  shows "P ((IncrFirst ^^ s) X) = map (IncrFirst ^^ s) (P X)"
+proof (induction s)
+  case 0
+  show ?case by simp
+next
+  case (Suc s)
+  have "P ((IncrFirst ^^ Suc s) X) = P (IncrFirst ((IncrFirst ^^ s) X))"
+    by (simp add: funpow_swap1)
+  also have "\<dots> = map IncrFirst (P ((IncrFirst ^^ s) X))"
+    by (rule m_6_2_P_IncrFirst)
+  also have "\<dots> = map IncrFirst (map (IncrFirst ^^ s) (P X))"
+    using Suc.IH by simp
+  also have "\<dots> = map (\<lambda>c. IncrFirst ((IncrFirst ^^ s) c)) (P X)"
+    by simp
+  also have "\<dots> = map (IncrFirst ^^ Suc s) (P X)"
+    by (simp add: funpow_swap1)
+  finally show ?case .
+qed
+
 text \<open>Slice / drop / take relations on \<open>seg\<close> (reusable for §6.x).\<close>
 
 lemma drop_eq_map_nth: "drop a M = map (nth M) [a..<Lng M]"
@@ -8883,6 +8908,90 @@ next
   finally show "seg ((M::pairseq)[n]) a b ! i = seg ((M::pairseq)[q + 1]) a b ! i" .
 qed
 
+text \<open>§6.8 (a): the LOW SOURCE seg-shift identity (d0pos, \<open>i\<^sub>1=1\<close>).  A slice of
+  \<open>M[n]\<close> that lies entirely INSIDE one period-block \<open>q\<close> (from block-offset \<open>s\<^sub>0\<close> to
+  block-offset \<open>e\<^sub>0\<close>, \<open>s\<^sub>0 \<le> e\<^sub>0 < w\<close>) is exactly the corresponding slice of the base
+  \<open>M\<close> (from \<open>j\<^sub>0+s\<^sub>0\<close> to \<open>j\<^sub>0+e\<^sub>0\<close>) with every row-0 entry shifted up by \<open>q\<cdot>\<delta>\<close>, i.e.
+  \<open>(IncrFirst^^(q\<cdot>\<delta>))\<close> applied.  This is the article's LOW source decomposition:
+  in the §6.8 closure the base is \<open>N\<close> (\<open>M = N[n]\<close>), \<open>j\<^sub>0 = j\<^sub>-\<^sub>2\<^sup>N\<close>, the slice
+  starts at \<open>j'\<^sub>0 = j\<^sub>0+q\<cdot>w+s\<^sub>0\<close> and ends at \<open>fnM-1 = j\<^sub>0+q\<cdot>w+e\<^sub>0\<close> (the LOW part stays
+  in one block, empirically 2132/2132, @{file "python/notbrle_low_check.py"}).
+  Proof: nth-equality; each element reads off via @{thm [source] oper_d1pos_nth}
+  (LHS) and @{thm [source] entry_funpow_IncrFirst0}/@{thm [source] entry_funpow_IncrFirst1}
+  (RHS).  Empirically (a) holds 2132/2132 (same script, rank-stratified std gen).\<close>
+
+lemma oper_d1pos_LOW_source_eq:
+  fixes M :: pairseq
+  assumes L: "1 < Lng M"
+    and notzero: "\<not> (entry M 0 (Lng M - 1) = 0 \<and> entry M 1 (Lng M - 1) = 0)"
+    and hp: "hasParent M (idx1 M (Lng M - 1)) (Lng M - 1)"
+    and i1z: "idx1 M (Lng M - 1) = 1"
+    and j0lt: "parent M 1 (Lng M - 1) < Lng M - 1"
+    and q: "q < n"
+    and s0e0: "s0 \<le> e0"
+    and e0lt: "e0 < Lng M - 1 - parent M 1 (Lng M - 1)"
+  shows "seg (M[n])
+              (parent M 1 (Lng M - 1) + q * (Lng M - 1 - parent M 1 (Lng M - 1)) + s0)
+              (parent M 1 (Lng M - 1) + q * (Lng M - 1 - parent M 1 (Lng M - 1)) + e0)
+       = (IncrFirst ^^ (q * (entry M 0 (Lng M - 1) - entry M 0 (parent M 1 (Lng M - 1)))))
+            (seg M (parent M 1 (Lng M - 1) + s0) (parent M 1 (Lng M - 1) + e0))"
+proof (rule nth_equalityI)
+  let ?j1 = "Lng M - 1"  let ?j0 = "parent M 1 ?j1"  let ?w = "?j1 - ?j0"
+  let ?delta = "entry M 0 ?j1 - entry M 0 ?j0"
+  let ?sh = "q * ?delta"
+  let ?lo = "?j0 + q * ?w + s0"  let ?hi = "?j0 + q * ?w + e0"
+  let ?L = "seg (M[n]) ?lo ?hi"
+  let ?R = "(IncrFirst ^^ ?sh) (seg M (?j0 + s0) (?j0 + e0))"
+  \<comment> \<open>both slices have the same length \<open>e\<^sub>0 - s\<^sub>0 + 1\<close>\<close>
+  have lenseg: "Suc (?j0 + e0) - (?j0 + s0) = Suc e0 - s0" using s0e0 by simp
+  show lenEq: "length ?L = length ?R"
+    using lenseg by (simp)
+  fix i assume "i < length ?L"
+  hence ic: "i < Suc e0 - s0" by simp
+  hence ie: "s0 + i \<le> e0" using s0e0 by linarith
+  have ielt: "s0 + i < ?w" using ie e0lt by linarith
+  \<comment> \<open>LHS element: oper block-read at block \<open>q\<close>, offset \<open>s\<^sub>0+i\<close>\<close>
+  have lhs_idx: "?lo + i = ?j0 + q * ?w + (s0 + i)" by simp
+  have "?L ! i = (M[n]) ! (?lo + i)" using ic by (simp add: seg_nth_eq)
+  also have "\<dots> = (M[n]) ! (?j0 + q * ?w + (s0 + i))" by (simp add: add.assoc)
+  also have "\<dots> = (entry M 0 (?j0 + (s0 + i)) + q * ?delta, entry M 1 (?j0 + (s0 + i)))"
+    by (rule oper_d1pos_nth[OF L notzero hp i1z j0lt q ielt])
+  finally have LHS: "?L ! i = (entry M 0 (?j0 + (s0 + i)) + ?sh, entry M 1 (?j0 + (s0 + i)))" .
+  \<comment> \<open>RHS element: base slice node \<open>j\<^sub>0+s\<^sub>0+i\<close> with row 0 shifted by \<open>?sh\<close>, row 1 unchanged\<close>
+  have rseg_idx: "i < Suc (?j0 + e0) - (?j0 + s0)" using ic lenseg by linarith
+  have segidxN: "?j0 + s0 + i < Lng M"
+    using ielt j0lt by (simp add: add.assoc)
+  have R0: "entry ?R 0 i = entry (seg M (?j0 + s0) (?j0 + e0)) 0 i + ?sh"
+  proof -
+    have ii: "i < Lng (seg M (?j0 + s0) (?j0 + e0))" using rseg_idx by simp
+    show ?thesis by (rule entry_funpow_IncrFirst0[OF ii])
+  qed
+  have R1: "entry ?R 1 i = entry (seg M (?j0 + s0) (?j0 + e0)) 1 i"
+  proof -
+    have ii: "i < Lng (seg M (?j0 + s0) (?j0 + e0))" using rseg_idx by simp
+    show ?thesis by (rule entry_funpow_IncrFirst1[OF ii])
+  qed
+  have segN0: "entry (seg M (?j0 + s0) (?j0 + e0)) 0 i = entry M 0 (?j0 + (s0 + i))"
+  proof -
+    have "seg M (?j0 + s0) (?j0 + e0) ! i = M ! (?j0 + s0 + i)"
+      using rseg_idx by (rule seg_nth_eq)
+    thus ?thesis by (simp add: entry_def add.assoc)
+  qed
+  have segN1: "entry (seg M (?j0 + s0) (?j0 + e0)) 1 i = entry M 1 (?j0 + (s0 + i))"
+  proof -
+    have "seg M (?j0 + s0) (?j0 + e0) ! i = M ! (?j0 + s0 + i)"
+      using rseg_idx by (rule seg_nth_eq)
+    thus ?thesis by (simp add: entry_def add.assoc)
+  qed
+  have ilenR: "i < length ?R" using lenEq \<open>i < length ?L\<close> by simp
+  have "?R ! i = (entry ?R 0 i, entry ?R 1 i)"
+    using ilenR by (cases "?R ! i") (simp add: entry_def)
+  also have "\<dots> = (entry M 0 (?j0 + (s0 + i)) + ?sh, entry M 1 (?j0 + (s0 + i)))"
+    using R0 R1 segN0 segN1 by simp
+  finally have RHS: "?R ! i = (entry M 0 (?j0 + (s0 + i)) + ?sh, entry M 1 (?j0 + (s0 + i)))" .
+  show "?L ! i = ?R ! i" using LHS RHS by simp
+qed
+
 text \<open>Periodicity in index form: inside block \<open>q < n\<close> at offset \<open>s\<close>, \<open>M[n]\<close> reads
   off \<open>M\<close> at \<open>j\<^sub>0 + s\<close>.\<close>
 
@@ -11580,6 +11689,50 @@ proof -
   qed
   show "P Yp = P (seg Yp 0 (c - 1)) @ [seg Yp c (Lng Yp - 1)]"
     using split Ptail by simp
+qed
+
+text \<open>§6.8 (c): the LOW component-list identity (d0pos, \<open>i\<^sub>1=1\<close>).  Combining
+  (a) @{thm [source] oper_d1pos_LOW_source_eq} (the in-block slice of \<open>M[n]\<close> is the
+  \<open>(IncrFirst^^(q\<cdot>\<delta>))\<close>-shift of the base slice of \<open>M\<close>) with (b)
+  @{thm [source] P_funpow_IncrFirst} (\<open>P\<close> commutes with iterated \<open>IncrFirst\<close> as a
+  per-component map): the \<open>P\<close>-decomposition of the LOW source slice of \<open>M[n]\<close> is the
+  \<open>map (IncrFirst^^(q\<cdot>\<delta>))\<close> of the base \<open>P\<close>-decomposition.  In the §6.8 assembly the
+  base is \<open>N\<close>, \<open>P (seg N (j\<^sub>0+s\<^sub>0) (j\<^sub>0+e\<^sub>0))\<close> is the N-side branch prefix
+  \<open>take J\<^sub>1 (Br N')\<close>, and the LHS \<open>P (seg (N[n]) lo hi)\<close> is the LOW component list
+  \<open>P (seg Y\<^sub>p 0 (c-1))\<close>; descending then follows from
+  @{thm [source] descending_map_IncrFirst} on the N-side @{thm [source] descending_take}.\<close>
+
+lemma oper_d1pos_notbrle_LOW_eq:
+  fixes M :: pairseq
+  assumes L: "1 < Lng M"
+    and notzero: "\<not> (entry M 0 (Lng M - 1) = 0 \<and> entry M 1 (Lng M - 1) = 0)"
+    and hp: "hasParent M (idx1 M (Lng M - 1)) (Lng M - 1)"
+    and i1z: "idx1 M (Lng M - 1) = 1"
+    and j0lt: "parent M 1 (Lng M - 1) < Lng M - 1"
+    and q: "q < n"
+    and s0e0: "s0 \<le> e0"
+    and e0lt: "e0 < Lng M - 1 - parent M 1 (Lng M - 1)"
+  shows "P (seg (M[n])
+              (parent M 1 (Lng M - 1) + q * (Lng M - 1 - parent M 1 (Lng M - 1)) + s0)
+              (parent M 1 (Lng M - 1) + q * (Lng M - 1 - parent M 1 (Lng M - 1)) + e0))
+       = map (IncrFirst ^^ (q * (entry M 0 (Lng M - 1) - entry M 0 (parent M 1 (Lng M - 1)))))
+             (P (seg M (parent M 1 (Lng M - 1) + s0) (parent M 1 (Lng M - 1) + e0)))"
+proof -
+  let ?sh = "q * (entry M 0 (Lng M - 1) - entry M 0 (parent M 1 (Lng M - 1)))"
+  let ?base = "seg M (parent M 1 (Lng M - 1) + s0) (parent M 1 (Lng M - 1) + e0)"
+  have aeq: "seg (M[n])
+              (parent M 1 (Lng M - 1) + q * (Lng M - 1 - parent M 1 (Lng M - 1)) + s0)
+              (parent M 1 (Lng M - 1) + q * (Lng M - 1 - parent M 1 (Lng M - 1)) + e0)
+            = (IncrFirst ^^ ?sh) ?base"
+    by (rule oper_d1pos_LOW_source_eq[OF L notzero hp i1z j0lt q s0e0 e0lt])
+  have "P (seg (M[n])
+              (parent M 1 (Lng M - 1) + q * (Lng M - 1 - parent M 1 (Lng M - 1)) + s0)
+              (parent M 1 (Lng M - 1) + q * (Lng M - 1 - parent M 1 (Lng M - 1)) + e0))
+        = P ((IncrFirst ^^ ?sh) ?base)"
+    using aeq by simp
+  also have "\<dots> = map (IncrFirst ^^ ?sh) (P ?base)"
+    by (rule P_funpow_IncrFirst)
+  finally show ?thesis .
 qed
 
 lemma descending_Br_of_branch_le0:
