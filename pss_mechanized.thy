@@ -9545,6 +9545,40 @@ proof -
   show ?thesis using nzS leRS by (simp add: monoT_def)
 qed
 
+text \<open>§6.8 d1pos B1 (S1): every P-component of a d1pos branch region is
+  \<open>monoT\<close> or \<open>zeroT\<close>.  The branch region of \<open>N = M[n]\<close> is the slice
+  \<open>Q = seg N (TrMax N + 1) (Lng N - 1)\<close>, and \<open>Br N = P Q\<close> (article §6.8).  We
+  state it for an arbitrary branch-region slice \<open>Q = seg (M[n]) a b\<close> (the d1pos
+  oper hypotheses are carried for traceability), only requiring \<open>Q \<in> T_PS\<close>.
+  Each component \<open>P Q ! J = seg Q (IdxSum (P Q)!J) (IdxSum (P Q)!(J+1)-1)\<close>
+  (@{thm [source] m_6_4_P_IdxSum}) has a row-0 left-minimum left end
+  (@{thm [source] idxsum_leftend_lmin}), and \<open>P\<close> decomposes any \<open>T_PS\<close> sequence
+  into non-multi (zero/mono) components by construction — so the component
+  \<open>monoT/zeroT\<close> property is exactly @{thm [source] m_6_2_P_components_1} read at
+  the index \<open>J\<close> via \<open>nth_mem\<close>.  Empirically validated (\<open>python/red_model.py\<close>
+  via \<open>is_standard\<close> + yaBMS, \<open>KMAX = 7\<close>): 140/140 P-components of standard d1pos
+  branch regions are \<open>monoT \<or> zeroT\<close> (0 failures), and the route lemma — \<open>le0\<close>
+  holds across every component's endpoints — also held 105/105.\<close>
+
+lemma oper_d1pos_Br_comp_mono:
+  assumes L: "1 < Lng M"
+    and notzero: "\<not> (entry M 0 (Lng M - 1) = 0 \<and> entry M 1 (Lng M - 1) = 0)"
+    and hp: "hasParent M (idx1 M (Lng M - 1)) (Lng M - 1)"
+    and i1z: "idx1 M (Lng M - 1) = 1"
+    and j0lt: "parent M 1 (Lng M - 1) < Lng M - 1"
+    and Qdef: "Q = seg ((M::pairseq)[n]) a b"
+    and QT: "Q \<in> T_PS"
+    and JL: "J < Lng (P Q)"
+  shows "monoT (P Q ! J) \<or> zeroT (P Q ! J)"
+proof -
+  \<comment> \<open>\<open>P\<close> decomposes \<open>Q \<in> T_PS\<close> into non-multi (zero/mono) components
+     (@{thm [source] m_6_2_P_components_1}); read it at the index \<open>J\<close>.\<close>
+  have mem: "P Q ! J \<in> set (P Q)" using JL by (rule nth_mem)
+  have "zeroT (P Q ! J) \<or> monoT (P Q ! J)"
+    using m_6_2_P_components_1[OF QT] mem by blast
+  thus ?thesis by blast
+qed
+
 text \<open>Prefix indices (\<open>x < j\<^sub>0\<close>) of the \<open>i\<^sub>1=0\<close> oper read straight off \<open>M\<close>.\<close>
 
 lemma oper_d0zero_nth_prefix:
