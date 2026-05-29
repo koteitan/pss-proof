@@ -1151,3 +1151,31 @@ P = singleton), then assemble the d0pos closure exactly like caseC (LOW = take J
 - Plan: prove TrMax_seg_oper_d1pos_eq_caseA, THEN the closure assembles from
   caseC's template (Br M' = take J1 (Br N') @ [mono tail], LOW via descending_take,
   tail via oper_d1pos_seg_mono, junction cdom, descending_append).
+
+## UPDATE 2026-05-29 (continued 27): caseC-reduction is WRONG for d0pos — TrMax_seg_oper_d1pos_eq_caseA is FALSE
+
+The empirical-first workflow again caught a false target before any proof was written.
+
+- **`TrMax_seg_oper_d1pos_eq_caseA` is FALSE.** Counterexample (standard, all
+  hyps hold): `N = (0,0)(1,1)(2,2)(3,3)` (diagonal), n=1, j0'=0, j1'=2.
+  `oper(N,1) = (0,0)(1,1)(2,2)`; LHS `TrMax(seg N[1] 0 2) = 2`,
+  RHS `TrMax(seg N 0 3) = 3`. 2 ≠ 3. (132/3288 caseA slices fail.)
+- **Root cause:** the d0zero caseA reduction rests on `TrMax N' < Lng N' - 1`
+  (the reference slice N' = seg N j0' (Lng N-1) has a confined trunk), which
+  comes from `entry N 1 (Lng N-1) = 0` (d0zero). For d1pos i1=1 means
+  `entry N 1 (Lng N-1) > 0`, so the N'-trunk is NOT confined — it can fill the
+  whole reference slice (TrMax N' = Lng N'-1, the diagonal/trunk-filling family).
+  Then `TrMax M' = TrMax N'` simply fails.
+- **Consequence — the d0pos closure CANNOT mirror caseC's "reduce to N'" route.**
+  caseC/d0zero decompose `Br M' = take J1 (Br N') @ [tail]` via TrMax M' = TrMax N';
+  that foundation is false for d1pos. The agent's diagnosis: compare against the
+  **M'-trunk directly**, not the reference slice N'. The boundary-stop helper
+  (`nextR1_boundary_stop_d1pos_caseA`) is provable (row-1 unshifted, bstop_fail=0)
+  but useless because the TrMax-equality it would feed is false.
+- **descending(Br M') itself is still empirically TRUE (932/0)** — provable, but
+  the route must be re-derived around the M'-trunk.
+
+**Next step (re-map, not re-prove):** empirically determine the ACTUAL d1pos
+decomposition — what is `TrMax (seg M[n] j0' j1')` in terms of the M'-trunk, and
+how does `Br M'` actually decompose for i1=1 — BEFORE attempting any closure proof.
+Counterexample finder: `python/d1pos_trmax_caseA_k4.py`.
