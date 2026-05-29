@@ -1215,3 +1215,29 @@ a row-1 tie-break on P-components — NOT the caseC machinery.
   (regime B folds via oper_d1pos_seg_period_reduce).
 
 Both regimes use the M'-trunk-direct view; the dead TrMax-equality route is fully abandoned.
+
+## UPDATE 2026-05-29 (continued 29): B1 green; B2 needs standardness (now 373/0), reduces to nextrel1
+
+- **B1 oper_d1pos_Br_comp_mono GREEN** (merged): every Br M' component is monoT/zeroT.
+  Surprise simplification — reduces in 3 lines to the generic `m_6_2_P_components_1`
+  (P never emits a multi component for any T_PS source); no d1pos-specific work, only
+  Q ∈ T_PS. So S1 is essentially free.
+- **B2 oper_d1pos_Br_cdom_step (row-1 tie) — literal form is FALSE; needs STANDARDNESS.**
+  - Q ∈ T_PS form: 2649/14733 row-0-tie pairs FAIL (e.g. N=(0,0)(0,1)(1,2), Q=seg M 0 1
+    has row-0 tie but row-1 increases). Branch-region-of-monoT (no std): still 1062/3738.
+  - The isolated fold-cell arithmetic ("row-0 tie => row-1 weakly decreasing") and the
+    naive "le0 N a b => entry N 1 a >= entry N 1 b" are BOTH false even for standard N.
+  - **With M=N[n] STANDARD (the prop1 M ∈ SkT_PS k context), B2 HOLDS.** Parent-widened
+    sweep: len5/val2 = 373 tie pairs / 0 fails (the agent's thin 36-pair/shared-offset
+    pool was just length≤4). Robust.
+  - **Reduction (the irreducible core):** map the two consecutive branch left-minima to
+    absolute M-indices; row-1 = entry N 1 joff (block-invariant, oper_d1pos_entry1). The
+    row-0 tie forces `nextrel1 N joffR joffL` (joffR is the row-1 parent of joffL in N),
+    giving entry N 1 joffR < entry N 1 joffL = B2. Deriving nextrel1 from the tie NEEDS
+    N's standardness/admissibility — same hard kernel as the green prop2
+    (m_6_8_standard_P_descending), but transported to a branch region of a NON-standard
+    monoT slice of M.
+- **Plan:** restate B2 to carry the SkT_PS/ST_PS hypothesis (M standard), prove the
+  "tie ⟹ nextrel1 N joffR joffL" core (the row-1 parent derivation), likely reusing
+  prop2's admissibility machinery; then B3 assembly closes the d0pos sorry. python:
+  d1pos_b2_std.py (standard 373/0), d1pos_b2_audit.py (T_PS false), d1pos_b2_hyp.py.
