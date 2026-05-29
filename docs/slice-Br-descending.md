@@ -1241,3 +1241,60 @@ Both regimes use the M'-trunk-direct view; the dead TrMax-equality route is full
   "tie ⟹ nextrel1 N joffR joffL" core (the row-1 parent derivation), likely reusing
   prop2's admissibility machinery; then B3 assembly closes the d0pos sorry. python:
   d1pos_b2_std.py (standard 373/0), d1pos_b2_audit.py (T_PS false), d1pos_b2_hyp.py.
+
+## UPDATE 2026-05-29 (continued 30): the nextrel1 route is FALSE; B2 = `nlocal_adj_tie` (clean) + structural facts
+
+The continued-29 `nextrel1 N joffR joffL` reduction is **EMPIRICALLY FALSE** (workflow
+wzz3gc4gj, agent B2b): holds at len4/val2 (36/36) but FAILS at len5/val2 — only 185/373,
+and in 217/373 `joffR > joffL` (joffR is to the RIGHT, not the row-1 parent). Refuted.
+
+### The TRUE decomposition (python/d1pos_b2_local.py, all 0-fail)
+For the d1pos branch region `Yp = seg M' (TrMax M'+1)(Lng M'-1)`, over the row-0 **tie**
+pairs of consecutive P-components (J-1, J):
+- **(S-adj)** the two components are M-adjacent: `pR = pL+1`  (373/373)
+- **(S-sgl)** the LEFT component is a singleton: `Lng (P Yp!(J-1)) = 1`  (373/373)
+- These are NOT general P facts (fail on arbitrary multiT Q, e.g. Q=(0,0)(1,0)(0,0):
+  left Lng=2, non-adjacent) — they need the *branch-region-of-a-monoT-slice-of-standard-M*
+  context (python/d1pos_b2_struct_general.py).
+
+Because **M is standard** (`M ∈ SkT_PS k` in the prop1 induction) and `Yp` is a contiguous
+segment of M (`Yp = seg M (j0'+TrMax M'+1) j1'`), a tie pair sits at **adjacent absolute
+M-indices**. So B2's row-1 conclusion (`entry(P Yp!J) 1 0 ≤ entry(P Yp!(J-1)) 1 0`) reduces,
+via (S-adj)+(S-sgl), to applying to standard M the **N-local adjacent-tie lemma**:
+
+### `nlocal_adj_tie` — the real irreducible core (TRUE, 604/0 at len6/val2)
+> `N ∈ SkT_PS k ⟹ Suc j < Lng N ⟹ entry N 0 j = entry N 0 (Suc j) ⟹ entry N 1 (Suc j) ≤ entry N 1 j`
+
+Clean **k-induction** (mirrors `SkT_P_descending`), full skeleton (all cases closed by hand):
+- **k=0** (`N = diagSeq u v`): row-0 strictly increasing ⇒ no adjacent ties ⇒ vacuous.
+- **Suc k**, `N = M'[n]`, `M' ∈ SkT_PS k` (use `poper_oper_expand`; note `d1 = 0` always
+  since `i1 = idx1 ∈ {0,1}` and `d1 = (if 1<i1 ..)`; and `d0 = 0` when `i1=0`):
+  - degenerate oper (`= Pred M' = butlast M'`): adjacent ties = ties in M' ⇒ IH.
+  - block form `take j0 M' @ concat(map blocks [0..<n])`, `w = j1-j0`, `j1 = Lng M'-1`:
+    - **prefix ∪ block-0** (= first `j1` elements of M', unshifted): adjacent tie maps to
+      an adjacent tie in M' ⇒ **IH on M'**.
+    - **within block copy k**: cells map to M'-indices `j0+t, j0+t+1`, row-0 shifted by
+      `k*d0` uniformly, row-1 by `k*d1=0`; tie ⇒ M'-tie at `(j0+t, j0+t+1)` ⇒ **IH**.
+    - **block boundary** (copy k → k+1; left = M' `j1-1` +k, right = M' `j0` +(k+1)):
+      tie ⇒ `entry M' 0 (j1-1) = entry M' 0 j0 + d0`.
+      - **i1=1**: `d0 = entry M' 0 j1 - entry M' 0 j0` ⇒ `entry M' 0 (j1-1) = entry M' 0 j1`
+        = an adjacent M'-tie at `(j1-1, j1)` ⇒ IH gives `entry M' 1 j1 ≤ entry M' 1 (j1-1)`;
+        `j0 = ` nextrel1-parent of `j1` ⇒ `entry M' 1 j0 < entry M' 1 j1` (nextrel1_def);
+        chain ⇒ `entry M' 1 j0 ≤ entry M' 1 (j1-1)` = the goal (d1=0). ✓
+      - **i1=0**: `d0=0`; `j0 = ` nextrel0-parent of `j1` ⇒ `entry M' 0 (j1-1) ≥ entry M' 0 j1
+        > entry M' 0 j0` (w≥2), contradicting the tie ⇒ **vacuous**; `w=1` ⇒ both map to `j0`
+        ⇒ equal ⇒ goal holds with equality. ✓
+
+### Closure = 3 bricks (B1 GREEN)
+- **B1 oper_d1pos_Br_comp_mono** — GREEN (merged, slice 7d5cb06).
+- **NEW core: `nlocal_adj_tie`** — the clean k-induction above; needs **general** oper
+  entry-in-block lemmas (generalize oper_d1pos_entry0/entry1/nth/LngM off the d1pos-only
+  hyps to the `poper_oper_expand` block form, or prove fresh `oper_entry_block`).
+- **B2' reduction** = (S-adj)+(S-sgl) on Yp ⇒ adjacent M-tie ⇒ `nlocal_adj_tie` on M.
+  (S-adj/S-sgl) are the remaining context-dependent structural facts to establish for Yp;
+  alternatively look for a P-of-segment-of-standard route via `SkT_P_descending` on M.
+- **B3 assembly** (EASY): descendingI_cdom + cdom_trans + row-0 free (m_6_4_P_leftend_mono)
+  + the row-1 tie via B2'.
+
+python: d1pos_b2_local.py (S-adj/S-sgl/M-loc/N-loc all 0-fail), d1pos_b2_struct_general.py
+(S-adj/S-sgl context-dependent, not general P).
