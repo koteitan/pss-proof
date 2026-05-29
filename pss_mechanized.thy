@@ -9435,6 +9435,68 @@ proof -
     using baselt endlt chain' by blast
 qed
 
+text \<open>§6.8 d0pos TRANSITIVE inter-block reachability (article 1530-1545): the
+  block-0 start \<open>j\<^sub>0 = parent M 1 j\<^sub>1\<close> row-0-reaches ANY later block start
+  \<open>j\<^sub>0 + k\<cdot>w\<close> (\<open>w = Lng M - 1 - j\<^sub>0\<close>), for every \<open>k < n\<close>.  Proof: induction on
+  \<open>k\<close>.  Base \<open>k=0\<close> is \<open>le0_refl\<close> at \<open>j\<^sub>0\<close> (in range since \<open>0 < n\<close>).  Step
+  \<open>k \<rightarrow> k+1\<close>: from the IH \<open>le0 (M[n]) j\<^sub>0 (j\<^sub>0+k\<cdot>w)\<close> (valid as \<open>k < n\<close>) compose
+  one consecutive-block step \<open>oper_d1pos_block_chain\<close>, which at its \<open>k\<close> needs
+  \<open>k+1 < n\<close> — exactly the hypothesis for the \<open>k+1\<close> target — via \<open>le0_trans\<close>.
+  Hence the required bound is \<open>k < n\<close> (not \<open>k+1 \<le> n\<close> in a stronger sense; they
+  coincide, but the last chained step \<open>(k-1) \<rightarrow> k\<close> uses \<open>block_chain\<close> at index
+  \<open>k-1\<close> with side-condition \<open>(k-1)+1 = k < n\<close>).  Empirically validated
+  (\<open>python/red_model.py\<close>, \<open>is_standard\<close> + \<open>KMAX=6\<close>): 378/378 standard d0pos
+  block-start pairs with \<open>k < n\<close> satisfy this \<open>le0\<close>.\<close>
+
+lemma oper_d1pos_le0_blockstarts:
+  assumes L: "1 < Lng M"
+    and notzero: "\<not> (entry M 0 (Lng M - 1) = 0 \<and> entry M 1 (Lng M - 1) = 0)"
+    and hp: "hasParent M (idx1 M (Lng M - 1)) (Lng M - 1)"
+    and i1z: "idx1 M (Lng M - 1) = 1"
+    and j0lt: "parent M 1 (Lng M - 1) < Lng M - 1"
+    and kn: "k < n"
+  shows "le0 ((M::pairseq)[n])
+            (parent M 1 (Lng M - 1))
+            (parent M 1 (Lng M - 1) + k * (Lng M - 1 - parent M 1 (Lng M - 1)))"
+proof -
+  let ?j0 = "parent M 1 (Lng M - 1)"  let ?w = "Lng M - 1 - ?j0"
+  \<comment> \<open>hold \<open>w\<close> abstract so no decision procedure sees the nat-sub double-expansion\<close>
+  obtain w where wdef: "?w = w" by blast
+  have w0: "0 < w" using j0lt wdef by linarith
+  have lenMn: "Lng (M[n]) = ?j0 + n * w"
+    using oper_d1pos_LngM[OF L notzero hp i1z j0lt] wdef by simp
+  \<comment> \<open>induction on \<open>k\<close>, guarding the claim by the running bound \<open>k < n\<close>\<close>
+  have "k < n \<longrightarrow> le0 (M[n]) ?j0 (?j0 + k * w)"
+  proof (induction k)
+    case 0
+    show ?case
+    proof
+      assume "0 < n"
+      hence "?j0 < ?j0 + n * w" using w0 by simp
+      hence "?j0 < Lng (M[n])" using lenMn by simp
+      thus "le0 (M[n]) ?j0 (?j0 + 0 * w)" using le0_refl by simp
+    qed
+  next
+    case (Suc k)
+    show ?case
+    proof
+      assume sn: "Suc k < n"
+      have kn': "k < n" using sn by simp
+      have IH: "le0 (M[n]) ?j0 (?j0 + k * w)" using Suc.IH kn' by simp
+      \<comment> \<open>one consecutive-block step \<open>k \<rightarrow> k+1\<close>; \<open>block_chain\<close> needs \<open>k+1 < n\<close>\<close>
+      have k1: "k + 1 < n" using sn by simp
+      have step: "le0 (M[n]) (?j0 + k * ?w) (?j0 + (k + 1) * ?w)"
+        by (rule oper_d1pos_block_chain[OF L notzero hp i1z j0lt k1])
+      have step': "le0 (M[n]) (?j0 + k * w) (?j0 + Suc k * w)"
+        using step wdef by simp
+      show "le0 (M[n]) ?j0 (?j0 + Suc k * w)"
+        using le0_trans[OF IH step'] .
+    qed
+  qed
+  hence "le0 (M[n]) ?j0 (?j0 + k * w)" using kn by simp
+  thus ?thesis using wdef by simp
+qed
+
 text \<open>Prefix indices (\<open>x < j\<^sub>0\<close>) of the \<open>i\<^sub>1=0\<close> oper read straight off \<open>M\<close>.\<close>
 
 lemma oper_d0zero_nth_prefix:
