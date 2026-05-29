@@ -1536,3 +1536,37 @@ endpoint + TrEq, which holds 1912/1912) is the final d0pos piece. python/d1pos_s
 ⚠️ LESSON (now 4×): EVERY simplicity/length/vacuity claim from a sub-agent MUST be re-checked
 at rank≥6-7 with the exact in-context hypotheses before trusting; KMAX=5 is too shallow for
 the d0pos fold.
+
+## UPDATE 2026-05-30 (continued 38): witness PINNED (formula G); the stub proof = the ~1000-line d0zero-caseC port for d1pos
+
+Both independent attempts at the corrected free-endpoint stub BLOCKED — but together they
+PIN the witness and EXPOSE the true scope.
+
+### Witness = formula G (deep-verified, independently reconfirmed 207/207 at KMAX6/len11/val4)
+With jm2=parent N 1 (Lng N-1), w=Lng N-1-jm2, delta=entry N 0 (Lng N-1)-entry N 0 jm2,
+q=(j0'-jm2) div w:
+- `j0red = (jm2 ≤ j0' ? jm2 + (j0'-jm2) mod w : j0')`,  `shamt = q*delta`
+- `j1red = min (j0red + (j1'-j0')) (Lng N-1)`   ← **the MIN-CAP is essential** (uncapped
+  `j0red+(j1'-j0')` is FALSE 436/1083; agent B missed the cap and wrongly concluded "no
+  closed form"; agent A's formula G with the cap is 1083/1083 at KMAX7, and I reconfirm
+  bound/le0/TrEq/length all 207/207 at KMAX6).
+- `LOW = butlast (Br M')`,  `tail = last (Br M')`.
+- TrEq `TrMax M' = TrMax (seg N j0red j1red)` holds at this j1red (207/207, 1083/1083).
+
+### True scope: the stub PROOF is the genuine §6.8 d0pos heart (~1000 lines)
+The existential is TRUE with formula G, but proving it constructively needs the
+**delta-shifted block-fold machinery** — the i1=1 analogues of `oper_d0zero_seg_P_blk0fold/
+_split/_blk1fold/_hfold` (lines ~10733-11126) PLUS a d1pos TrEq brick PLUS the FirstNodes/
+Br/IdxSum identification — i.e. essentially the entire GREEN d0zero caseC closure (~12084-
+13271, ~1000+ lines) re-derived for the delta-shifted fold, with an added min-cap case split.
+This is NOT a single self-contained lemma; it is a multi-session infrastructure build.
+
+### Status summary (§6.8 prop1)
+- ✅ brle (single-component branch) — fully proven.
+- ✅ ¬brle descending ASSEMBLY (regime A+B, descending_shift_append) — proven modulo the stub.
+- ✅ surrounding bricks green: LOW machinery, descending_map_IncrFirst, descending_shift_append,
+  oper_d1pos_notbrle_P_split, oper_d1pos_notbrle_take_map, monoT_seg_of_le0, nlocal_adj_tie,
+  d0pos Z1-Z7/H1/B1.
+- 🚨 the ONE residual = oper_d1pos_notbrle_LOW_take_eq (TRUE, witness=formula G PINNED) — its
+  proof = the delta-shifted block-fold machinery (the next major effort).
+- 4 shallow-generator false claims caught this push; ALWAYS verify at rank≥6.
