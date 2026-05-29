@@ -1131,3 +1131,23 @@ row form (w=1) 15/0 — `python/d1pos_fold_shape.py`.
 **Next brick:** `oper_d1pos_seg_mono` (block-start-anchored le0 slice is monoT,
 P = singleton), then assemble the d0pos closure exactly like caseC (LOW = take J1
 (Br N') via N-side P-additive + agree, junction cdom, descending_append).
+
+## UPDATE 2026-05-29 (continued 26): H1 brick green; closure needs a 2nd d1pos brick (TrMax_seg)
+
+- **oper_d1pos_seg_mono GREEN** (merged into slice-wip-68): monoT (seg (M[n]) a b)
+  for a block-start anchor a with le0 (M[n]) a b (the H1 single-mono-component
+  fact). Proof = caseC hitail route (not zeroT + leR via adm_le0_seg). This is
+  the mono-tail brick for the d0pos closure.
+- **Closure still blocked on a SECOND d1pos brick.** Transcribing the caseC
+  closure to d0pos needs, besides oper_d1pos_seg_mono, the TrMax-equality /
+  boundary-stop analogue:
+    **TrMax_seg_oper_d1pos_eq_caseA** : TrMax (seg (M[n]) j0' j1') = TrMax (seg N j0' (Lng N-1))
+  i.e. the d1pos analogue of `TrMax_seg_oper_d0zero_eq_caseA` /
+  `nextR1_boundary_stop_d0zero_caseA`. The d0zero version's hard branch (stop
+  index at the period boundary) uses the UNSHIFTED periodicity `oper_d0zero_nth`;
+  the d1pos version must replace it with `oper_d1pos_nth` and account for the
+  +delta row-0 shift at the block-1 head (block-1 head = (N_{0,j0N}+delta, N_{1,j0N})).
+  No such lemma exists yet — it is the next brick.
+- Plan: prove TrMax_seg_oper_d1pos_eq_caseA, THEN the closure assembles from
+  caseC's template (Br M' = take J1 (Br N') @ [mono tail], LOW via descending_take,
+  tail via oper_d1pos_seg_mono, junction cdom, descending_append).
