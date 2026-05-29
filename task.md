@@ -47,7 +47,7 @@
       - ✅ 命題（標準形の単項成分が標準形であること）
       - ✅ 命題（標準形の始切片への遺伝性）
     - 🚨 §6.8 降順性
-      - 🚨🤖 命題（標準形の切片と $\textrm{Br}$ の降順性の関係）〔本開発最難、設計 `docs/slice-Br-descending.md`。`m_6_8_slice_Br_descending_monoT`(worktree slice-wip-68)は base/caseA/caseB/caseC 全緑＋d0pos の A0(vacuous)も緑、残 sorry は **d0pos の非vacuous 2 regime のみ**。d0pos infra Z1(expand/LngM)/Z2(nth/entry)/Z3(le0_confined 再定式化)/Z4(seg_period_reduce)/Z6(block_chain)/Z7(le0_blockstarts) 緑＋共通 groundwork 緑。**唯一の残ブリック＝delta シフト版 block-fold `oper_d1pos_seg_P_*`**（d0zero の `oper_d0zero_seg_P_blk0fold/_split/_hfold` 類似）→これが揃えば Z5/A1/A2/B 各 sub-case が閉じる〕
+      - 🚨🤖 命題（標準形の切片と $\textrm{Br}$ の降順性の関係）〔本開発最難、設計 `docs/slice-Br-descending.md`（最新=continued 32）。`m_6_8_slice_Br_descending_monoT`(worktree slice-wip-68, 緑チェックポイント 9177499)は base/caseA/B/C + d0pos 全 case 緑＝**slice_P_tiebreak stub 1本に集約**(agent B B3 assembly)。infra: agent A の i1非依存 `oper_gen_block_nth/entry0/entry1`+`oper_gen_nth_prefix`、`nlocal_adj_tie`(緑/真だが非局所tieで不十分)、d0pos Z1-Z7+H1+B1 緑。**ルート決定(continued 32)=記事忠実・直接**: slice_P_tiebreak(=drop-core)を使わず d0pos を記事 regime A/B 直接 case 分析(N スライスへ IH)で閉じ stub 除去。**残ブリック＝delta シフト版 block-fold `oper_d1pos_seg_P_*`**（d0zero `oper_d0zero_seg_P_blk0fold/_split/_blk1fold/_hfold` の +k·δ 版、P はブロック境界で分割せず非自明）→揃えば regime A/B 全 sub-case が閉じる〕
       - ✅ 命題（標準形の単項成分が降順であること）
   - 🚨 §7 Buchholzの表記系への翻訳
     - 🚨 §7.1 Buchholzの表記系

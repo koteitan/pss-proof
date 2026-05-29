@@ -1343,3 +1343,58 @@ python: nlocal_verify.py (nlocal_adj_tie 74/74), nlocal_verify2.py (S-adj/S-sgl 
 descending(Br M') 805/805), nlocal_verify3.py (slice_P_tiebreak C1 237/0..487/0),
 nlocal_verify4.py (drop-head NOT global left-min, 175/316). ⚠️ d1pos_b2_local.py is UNRELIABLE
 (narrow generator — do not trust its 0-fail claims).
+
+## UPDATE 2026-05-29 (continued 32): ROUTE DECISION — article-faithful direct d0pos (route 2)
+
+User chose the **article-faithful direct route** for the §6.8 hard core: close the d0pos
+case of `m_6_8_slice_Br_descending_monoT` by transcribing the article's content.md d0pos
+(i1=1) case analysis (using the IH on a slice of `N`), making the `slice_P_tiebreak`
+stub UNNECESSARY (it/`m_6_8_standard_slice_Br_descending_of_drop`/the drop-core route are
+NOT pursued). The agent-B B3 assembly + `slice_P_tiebreak` stub remain ONLY as the current
+green checkpoint (slice-wip-68 9177499); they get REPLACED by the direct proof.
+
+### Why the i1=1 fold P-structure differs from d0zero (the crux)
+For i1=1, `d0 = δ > 0`: block k starts with row-0 `entry M 0 j0 + k·δ`, which is LARGER
+than block 0's start. So a delta-shifted block boundary is NOT a global row-0 left-min, and
+**P does NOT split at block boundaries** (this is why the naive `oper_d1pos_seg_P_split` is
+FALSE — refuted long ago). The article therefore does a regime/sub-case analysis instead of
+a uniform split. The existing d0zero helpers `oper_d0zero_seg_P_blk0fold/_split/_blk1fold/
+_hfold` (10733–11126) are the i1=0 templates; their i1=1 (delta-shifted) analogues must be
+built (these are the "blk0fold/split/hfold do NOT yet exist" pieces in the d0pos docstring).
+
+### Article d0pos (i1=1) proof map (content.md, faithful)
+Setup: `M = N[n]`, `i1 = idx1 N (j1^N) = 1`; if no row-1 parent `j_{-2}^N = parent N 1 (j1^N)`
+then `M = Pred N` (done). Else `δ = N_{0,j1^N} − N_{0,j_{-2}^N} > 0`, fold blocks
+`IncrFirst^{kδ}((N_j)_{j=j_{-2}^N}^{j1^N})`. First establish the block chain
+`(0,j_{-2}^N) ≤_M (0,j1)` (have: `oper_d1pos_block_chain`, `oper_d1pos_le0_blockstarts`).
+Then:
+- **Regime A — `j'_0 < j_{-2}^N`** (if `j'_1 ≤ j_{-2}^N`: slice is in `N`, IH on N; else
+  `j'_0 < j_{-2}^N < j'_1`): derive `(0,j'_0) ≤_N (0,j1^N)` ⇒ IH gives `N'` monoT +
+  `descending(Br N')`, `N' = seg N j'_0 (Lng N−1)`. Sub-cases:
+  - `J_1 = −1` (`j_{-2}^N=j_0^N=j1^N−1`, `j'_1=j_1`): `Br M'` = one block, `Lng=1`, descending.
+  - `J_1 ≥ 0`, `TrMax(N') < j1^N−j'_0`, with `j_{-3} = ` row-0 parent of `j_{-2}^N−j'_0` in N':
+    - `j_{-2}^N−j'_0 ≤ TrMax(N')`: `Br M' = (Br N')[0..J_1−1] @ [seg M (j_{-1}+j'_0) j'_1]`,
+      `j_{-1}=FirstNodes(N')_{J_1}`; head `M_{j_{-1}} = N_{j_{-1}} = (Br N'_{J_1})_0`. desc.
+    - `j_{-3} ≤ TrMax(N') < j_{-2}^N−j'_0`: `FirstNodes(N')_{J_1} = j_{-2}^N−j'_0`,
+      `Br M' = (Br N')[0..J_1−1] @ repeated-blocks @ tail`; head `N_{j_{-2}^N}=(Br N'_{J_1})_0`. desc.
+    - `TrMax(N') < j_{-3}`: `Br M' = (Br N')[0..J_1−1] @ [seg M ... j'_1]`; head=`N_..=(Br N'_{J_1})_0`. desc.
+- **Regime B — `j_{-2}^N ≤ j'_0`**: divide `j'_0−j_{-2}^N` by `w=j1^N−j_{-2}^N`, period-reduce to
+  `q=0` (have: `oper_d1pos_seg_period_reduce`). Then:
+  - `j'_1 < j1^N`: `(M_j)_{0..j1^N−1}=Pred N` ⇒ slice in N ⇒ IH on N. desc.
+  - `j'_1 ≥ j1^N`: `(0,j'_0) ≤_N (0,j1^N)` ⇒ IH gives `N'` monoT + `descending(Br N')`. Sub-cases:
+    - `j1^N−j'_0 ≤ TrMax(N')`: `j_{-2}^N=j_0^N=j1^N−1`, `j'_0=j_0^N`; `Br M'`=one block. desc.
+    - `j_0^N−j'_0 ≤ TrMax(N') < j1^N−j'_0`: `FirstNodes(N')_{J_1}=j1^N−j'_0`,
+      `Br M'=(Br N')[0..J_1−1] @ [seg M j1^N j_1]`; **THE row-1 tie-break case**: head row-0
+      `M_{0,j1^N}=N_{0,j1^N}=(Br N'_{J_1})_{0,0}` (TIE) while row-1
+      `M_{1,j1^N}=N_{1,j_{-2}^N} < N_{1,j1^N}=(Br N'_{J_1})_{1,0}` (strict drop). desc.
+    - `TrMax(N') < j_0^N−j'_0`: `Br M'=(Br N')[0..J_1−1] @ [seg M (j_{-1}+j'_0) j_1]`;
+      head=`N_..=(Br N'_{J_1})_0`. desc.
+
+### Build order (each empirically pin the actual i1=1 P-decomposition FIRST, then prove)
+1. i1=1 fold P-decomposition helpers (delta-shifted analogues of the d0zero `_blk0fold/
+   _split/_blk1fold/_hfold`) — the foundational missing pieces. Reuse agent-A's i1-agnostic
+   `oper_gen_block_*` + existing `oper_d1pos_*` (block_chain, le0_blockstarts, seg_period_reduce,
+   seg_mono=H1, Br_comp_mono=B1).
+2. Block chain `(0,j_{-2}^N) ≤_M (0,j_1)` + regime split (j'_0 vs j_{-2}^N).
+3. Regime A sub-cases; Regime B sub-cases (incl. the row-1 tie-break sub-case).
+Then remove the slice_P_tiebreak stub + B3 assembly, replace with the direct proof.
