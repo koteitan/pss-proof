@@ -1423,3 +1423,34 @@ row-0 tie with row-1 weakly decreasing (article: `N_{1,j_{-2}^N} < N_{1,j1^N}`),
 component. This is the genuine last d0pos brick. NOTE the earlier "agent A says Yp always
 single (5548/5548)" was over a brle-restricted sub-family; the true picture is the {1:137,
 2:12} split above (verify with the rank-stratified generator, never a narrow one-level one).
+
+## UPDATE 2026-05-29 (continued 34): d0pos ¬brle = full article regime A+B (delta-shift); 3 bricks banked
+
+Depth correction: the ¬brle MULTI case is NOT all regime B (KMAX=4 gave 12/12 B — a shallow
+artifact). On KMAX=5 the 149 ¬brle-multi witnesses split **57 regime A / 92 regime B**; within
+B, 80 reach the next block boundary, 12 do not. And the prefix is NOT raw-equal to Br N′ — it
+is the **row-0 +k·δ IncrFirst shift** of `take J₁ (Br N′)` (raw equality fails 3/12 even
+shallow). So ¬brle = the FULL article regime A+B with the delta-shift ≈ a port of the d0zero
+caseC (lines ~12128/13271/12681–13146) PLUS novel funpow-IncrFirst-oper machinery.
+
+### 3 reusable green bricks banked (slice 5c1f990)
+- `descending_map_IncrFirst` — descending invariant under componentwise IncrFirst.
+- `descending_shift_append` — descending Q + a +c-row-0-shifted PRE (len Lng Q−1) + junction
+  TL (row-0 = last+c, row-1 ≤ last) ⇒ descending(PRE@[TL]). The regime-B head assembly.
+- `oper_d1pos_notbrle_P_split` — P Yp = P(seg Yp 0 (c−1)) @ [tail] at a row-0 left-min anchor
+  c, ¬multiT tail (tail may be a zeroT singleton, not always monoT).
+
+### Precise remaining reduction (agent-verified 204/204), for `descending(LOW)`, LOW = P(seg Yp 0 (c−1))
+With jm2 = parent N 1 (Lng N−1), w = j1N−jm2, δ = N₀,j1N − N₀,jm2, q = (j0′−jm2) div w,
+j0red = jm2 + (j0′−jm2) mod w, Np = seg N j0red (Lng N−1), fnM = j0′+FirstNodes(M′)!J₁:
+- (a) **LOW source identity**: `seg M j0′ (fnM−1) = IncrFirst^{q·δ}(seg N j0red (j0red+(fnM−1−j0′)))`
+  — needs NEW funpow-IncrFirst-oper block-read (no `funpow IncrFirst` lemma exists yet).
+- (b) **P–shift commute**: `P(IncrFirst^s X) = map (IncrFirst^s) (P X)` — funpow-iterate the
+  existing `m_6_2_P_IncrFirst` (small).
+- (c) `LOW = map (IncrFirst^{q·δ}) (take J₁ (Br Np))` — from (a)+(b)+`oper_d1pos_seg_period_reduce`.
+- (d) `descending (take J₁ (Br Np))` — `descending_take[OF IHk Np …]` (IHk on N at rank k = ALLOWED).
+- (e) `descending LOW` — `descending_map_IncrFirst` (GREEN) on (c)+(d).
+Junction: row-0 tie via `oper_d1pos_entry0` (+q·δ both sides), row-1 drop via
+`nextrel1 N jm2 j1N` (entry N 1 jm2 < entry N 1 j1N). Then `descending_shift_append` (GREEN).
+Next build target = (a)+(b)+(c) (the funpow-IncrFirst LOW-identity machinery); then the
+regime A/B assembly wires (d)+(e)+junction.
