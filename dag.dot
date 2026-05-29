@@ -109,18 +109,22 @@ digraph pss {
     c_A [label="§6.8 caseA", fillcolor="#2e5d34"];
     c_B [label="§6.8 caseB", fillcolor="#2e5d34"];
     c_C [label="§6.8 caseC", fillcolor="#2e5d34"];
-    c_d0pos [label="§6.8 d0pos", fillcolor="#6b2b30"];
+    c_d0pos [label="§6.8 d0pos (brle済/¬brle中)", fillcolor="#6b2b30"];
 
-  /* d0pos infra Z1-Z9 */
+  /* d0pos infra Z1-Z7 (oper_d1pos_* helpers, all green) */
     Z1 [label="d0pos Z1 expand/Lng", fillcolor="#2e5d34"];
     Z2 [label="d0pos Z2 nth/entry", fillcolor="#2e5d34"];
     Z3 [label="d0pos Z3 confined*", fillcolor="#2e5d34"];
     Z4 [label="d0pos Z4 period", fillcolor="#2e5d34"];
-    Z5 [label="d0pos Z5 N-slice還元", fillcolor="#6b2b30"];
     Z6 [label="d0pos Z6 block単調", fillcolor="#2e5d34"];
     Z7 [label="d0pos Z7 le0_blockstarts", fillcolor="#2e5d34"];
-    Z8 [label="d0pos Z8 3-subcase", fillcolor="#6b2b30"];
-    Z9 [label="d0pos Z9 finalize", fillcolor="#6b2b30"];
+  /* d0pos closure: brle (single-comp) PROVEN; ¬brle (multi) bricks green + wiring pending */
+    d_brle [label="d0pos brle単一(済)\n descending_Br_of_branch_le0", fillcolor="#2e5d34"];
+    d_mono [label="d0pos monoT_seg_of_le0", fillcolor="#2e5d34"];
+    d_split [label="¬brle P分割 notbrle_P_split", fillcolor="#2e5d34"];
+    d_low [label="¬brle LOW機構\n P_funpow/LOW_source/LOW_eq", fillcolor="#2e5d34"];
+    d_dapp [label="¬brle descending_shift/map_IncrFirst", fillcolor="#2e5d34"];
+    d_wire [label="¬brle assembly wiring", fillcolor="#6b2b30"];
 
   /* ===================== §6.7 標準形 ===================== */
     p67_un [label="§6.7 ST=∪SkT", fillcolor="#2e5d34"];
@@ -200,9 +204,11 @@ digraph pss {
   {c_base c_A c_B c_C c_d0pos} -> p68_p1;
   {p62_Padd p62_Pnm p62_crit p64_idx p64_next p64_ftj p64_lend} -> {c_A c_B c_C};
   p67_Pc -> p68_p1;
-  {Z5 Z6 Z7 Z8 Z9} -> c_d0pos;
-  Z1 -> Z2; Z2 -> Z3; Z2 -> Z4; Z1 -> Z3; Z1 -> Z4;
-  Z2 -> Z6; Z6 -> Z7; Z7 -> Z8; Z3 -> Z8; Z4 -> Z8; Z6 -> Z9;
+  {d_brle d_wire} -> c_d0pos;
+  d_mono -> d_brle;
+  {d_split d_low d_dapp} -> d_wire;
+  Z1 -> Z2; Z2 -> Z3; Z2 -> Z4; Z1 -> Z3; Z1 -> Z4; Z2 -> Z6; Z6 -> Z7;
+  {Z2 Z4} -> d_low; d_mono -> d_split; {Z6 Z7} -> d_split;
   p67_Pc -> p68_p2; p62_Pop -> p68_p2;
   SkTmono -> p67_Pc;
 
