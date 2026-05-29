@@ -118,7 +118,7 @@ digraph pss {
     Z4 [label="d0pos Z4 period", fillcolor="#2e5d34"];
     Z5 [label="d0pos Z5 N-slice還元", fillcolor="#6b2b30"];
     Z6 [label="d0pos Z6 block単調", fillcolor="#2e5d34"];
-    Z7 [label="d0pos Z7 推移chain", fillcolor="#6b2b30"];
+    Z7 [label="d0pos Z7 le0_blockstarts", fillcolor="#2e5d34"];
     Z8 [label="d0pos Z8 3-subcase", fillcolor="#6b2b30"];
     Z9 [label="d0pos Z9 finalize", fillcolor="#6b2b30"];
 

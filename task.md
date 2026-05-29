@@ -16,6 +16,7 @@
     - 🚨 §6.5 簡約化 〔下記8系は $T_{\textrm{PS}}$ で偽、係留切片で真 (correction A4、保留中)〕
       - ✅ 命題（$\textrm{Red}$ の well-defined 性）
       - 🚨🚧 命題（$\textrm{Red}$ の $\textrm{IncrFirst}$ 不変性）〔m10>0 が死枝[20]待ち〕
+        - 🚨 補題（死枝[20]の到達不能性）〔`Red` 定義 m10>0 ケースの else 枝(`Red M = M`、原文脚注[20])が決して起こらないこと＝`m10 ≤ jN ∧ (N_j)_{m10..jN} ∈ PT_PS`。下記「Red と Pred の可換性」と共有の障壁。**経験的に到達不能=真**(標準形+全サブコール、m10>0 到達144回/死枝0回, `python/dead20_check.py`)。設計 `docs/red-termination.md`〕
       - ✅ 命題（$\textrm{Lng}$ の $\textrm{Red}$ 不変性）〔§6.5 下流の linchpin〕
       - ✅ 系（$\textrm{Red}$ が零項性を保つこと）
       - 🚨 系（直系先祖の $\textrm{Red}$ 不変性）〔keystone・A4〕
@@ -24,6 +25,7 @@
       - 🚨 命題（単項性と $\textrm{Red}$ の関係）〔$PT_{\textrm{PS}}$ 前提〕
       - 🚨 命題（$\textrm{Red}$ の冪等性）〔A4〕
       - 🚨🚧 命題（$\textrm{Red}$ と $\textrm{Pred}$ の可換性）〔case 6 が死枝[20]待ち〕
+        - 🚨 補題（死枝[20]の到達不能性）〔上記「Red の IncrFirst 不変性」と同一の補題。`Red` 定義 m10>0 ケースの else 枝(原文脚注[20])が到達不能。設計 `docs/red-termination.md`〕
       - 🚨 命題（$\textrm{Red}$ と基本列の可換性）〔A4〕
       - 🚨 命題（$\textrm{Red}$ が許容性を保つこと）〔A4〕
       - 🚨 系（許容化の $\textrm{Red}$ 不変性）〔A4〕
@@ -45,7 +47,7 @@
       - ✅ 命題（標準形の単項成分が標準形であること）
       - ✅ 命題（標準形の始切片への遺伝性）
     - 🚨 §6.8 降順性
-      - 🚨 命題（標準形の切片と $\textrm{Br}$ の降順性の関係）〔本開発最難、設計 `docs/slice-Br-descending.md`〕
+      - 🚨🤖 命題（標準形の切片と $\textrm{Br}$ の降順性の関係）〔本開発最難、設計 `docs/slice-Br-descending.md`。`m_6_8_slice_Br_descending_monoT`(worktree slice-wip-68)は base/caseA/caseB/caseC 全緑＋d0pos の A0(vacuous)も緑、残 sorry は **d0pos の非vacuous 2 regime のみ**。d0pos infra Z1(expand/LngM)/Z2(nth/entry)/Z3(le0_confined 再定式化)/Z4(seg_period_reduce)/Z6(block_chain)/Z7(le0_blockstarts) 緑＋共通 groundwork 緑。**唯一の残ブリック＝delta シフト版 block-fold `oper_d1pos_seg_P_*`**（d0zero の `oper_d0zero_seg_P_blk0fold/_split/_hfold` 類似）→これが揃えば Z5/A1/A2/B 各 sub-case が閉じる〕
       - ✅ 命題（標準形の単項成分が降順であること）
   - 🚨 §7 Buchholzの表記系への翻訳
     - 🚨 §7.1 Buchholzの表記系
