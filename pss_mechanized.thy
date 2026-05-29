@@ -11828,22 +11828,25 @@ lemma oper_d1pos_notbrle_LOW_take_eq:
     and bge: "Lng N - 1 \<le> j1'"
     and notbrle: "\<not> (TrMax (seg M j0' j1') = Lng (seg M j0' j1') - 1
                      \<or> le0 (seg M j0' j1') (TrMax (seg M j0' j1') + 1) (Lng (seg M j0' j1') - 1))"
-  shows "\<exists>j0red shamt LOW tail.
-            j0red < Lng N - 1
-          \<and> le0 N j0red (Lng N - 1)
+  shows "\<exists>j0red j1red shamt LOW tail.
+            j0red < j1red \<and> j1red \<le> Lng N - 1
+          \<and> le0 N j0red j1red
           \<and> Br (seg M j0' j1') = LOW @ [tail]
-          \<and> Br (seg N j0red (Lng N - 1)) \<noteq> []
-          \<and> length LOW = Lng (Br (seg N j0red (Lng N - 1))) - 1
+          \<and> Br (seg N j0red j1red) \<noteq> []
+          \<and> length LOW = Lng (Br (seg N j0red j1red)) - 1
           \<and> (\<forall>J. J < length LOW
-                 \<longrightarrow> entry (LOW ! J) 0 0 = entry (Br (seg N j0red (Lng N - 1)) ! J) 0 0 + shamt
-                   \<and> entry (LOW ! J) 1 0 = entry (Br (seg N j0red (Lng N - 1)) ! J) 1 0)
+                 \<longrightarrow> entry (LOW ! J) 0 0 = entry (Br (seg N j0red j1red) ! J) 0 0 + shamt
+                   \<and> entry (LOW ! J) 1 0 = entry (Br (seg N j0red j1red) ! J) 1 0)
           \<and> entry tail 0 0
-              = entry (Br (seg N j0red (Lng N - 1)) ! (Lng (Br (seg N j0red (Lng N - 1))) - 1)) 0 0
+              = entry (Br (seg N j0red j1red) ! (Lng (Br (seg N j0red j1red)) - 1)) 0 0
                 + shamt
           \<and> entry tail 1 0
-              \<le> entry (Br (seg N j0red (Lng N - 1)) ! (Lng (Br (seg N j0red (Lng N - 1))) - 1)) 1 0"
+              \<le> entry (Br (seg N j0red j1red) ! (Lng (Br (seg N j0red j1red)) - 1)) 1 0"
   \<comment> \<open>AGENT-A IDENTIFICATION STUB — the precise block-fold + first-node geometry,
-     replaced by the parent at merge.  DEEP-verified 30/30 (d1pos_notbrle_wire.py).\<close>
+     replaced by the parent at merge.  N-side endpoint is a FREE \<open>j1red\<close> (NOT
+     \<open>Lng N-1\<close>: the slice may end strictly inside a block, making \<open>Br M'\<close> shorter —
+     the \<open>Lng N-1\<close> endpoint is FALSE 36/207 at rank 6, the free \<open>j1red\<close> holds 207/207,
+     python/d1pos_stub_endpoint.py).\<close>
   sorry
 
 text \<open>§6.8 命題（標準形の切片と \<open>Br\<close> の降順性の関係） — FAITHFUL conditional form
@@ -13815,49 +13818,50 @@ proof -
                      geometry is the agent-A identification stub
                      @{thm [source] oper_d1pos_notbrle_LOW_take_eq} (parent replaces at
                      merge).  DEEP-verified 30/30 (python/d1pos_notbrle_wire.py).\<close>
-                  obtain j0red shamt LOW tail where
-                      ASM: "j0red < Lng N - 1"
-                        "le0 N j0red (Lng N - 1)"
+                  obtain j0red j1red shamt LOW tail where
+                      ASM: "j0red < j1red" "j1red \<le> Lng N - 1"
+                        "le0 N j0red j1red"
                         "Br ?M' = LOW @ [tail]"
-                        "Br (seg N j0red (Lng N - 1)) \<noteq> []"
-                        "length LOW = Lng (Br (seg N j0red (Lng N - 1))) - 1"
+                        "Br (seg N j0red j1red) \<noteq> []"
+                        "length LOW = Lng (Br (seg N j0red j1red)) - 1"
                         "\<forall>J. J < length LOW
                              \<longrightarrow> entry (LOW ! J) 0 0
-                                   = entry (Br (seg N j0red (Lng N - 1)) ! J) 0 0 + shamt
+                                   = entry (Br (seg N j0red j1red) ! J) 0 0 + shamt
                                \<and> entry (LOW ! J) 1 0
-                                   = entry (Br (seg N j0red (Lng N - 1)) ! J) 1 0"
+                                   = entry (Br (seg N j0red j1red) ! J) 1 0"
                         "entry tail 0 0
-                           = entry (Br (seg N j0red (Lng N - 1))
-                                      ! (Lng (Br (seg N j0red (Lng N - 1))) - 1)) 0 0 + shamt"
+                           = entry (Br (seg N j0red j1red)
+                                      ! (Lng (Br (seg N j0red j1red)) - 1)) 0 0 + shamt"
                         "entry tail 1 0
-                           \<le> entry (Br (seg N j0red (Lng N - 1))
-                                      ! (Lng (Br (seg N j0red (Lng N - 1))) - 1)) 1 0"
+                           \<le> entry (Br (seg N j0red j1red)
+                                      ! (Lng (Br (seg N j0red j1red)) - 1)) 1 0"
                     using oper_d1pos_notbrle_LOW_take_eq[OF NT monoN LNgt notzeroN
                             hasparN i1zN Neq n1 M'T le0M lt jM bge notbrle] by blast
-                  let ?Np = "seg N j0red (Lng N - 1)"
-                  \<comment> \<open>\<open>descending (Br N\<^sub>p)\<close> via \<open>IHk\<close> on the \<open>N\<close>-slice (\<open>N \<in> SkT_PS k\<close>)\<close>
-                  have leRNp: "leR N 0 j0red (Lng N - 1)"
-                    using ASM(2) by (simp add: leR_def)
+                  let ?Np = "seg N j0red j1red"
+                  \<comment> \<open>\<open>descending (Br N\<^sub>p)\<close> via \<open>IHk\<close> on the \<open>N\<close>-slice (\<open>N \<in> SkT_PS k\<close>,
+                     FREE endpoint \<open>j1red \<le> Lng N-1\<close>)\<close>
+                  have leRNp: "leR N 0 j0red j1red"
+                    using ASM(3) by (simp add: leR_def)
                   have descNp: "descending (Br ?Np)"
-                    using IHk NS monoN ASM(1) leRNp by blast
+                    using IHk NS monoN ASM(1) ASM(2) leRNp by blast
                   \<comment> \<open>assemble \<open>descending (LOW @ [tail])\<close> by the shift-append brick\<close>
                   have "descending (LOW @ [tail])"
-                  proof (rule descending_shift_append[OF descNp ASM(4) ASM(5)])
+                  proof (rule descending_shift_append[OF descNp ASM(5) ASM(6)])
                     fix J assume "J < length LOW"
                     thus "entry (LOW ! J) 0 0 = entry (Br ?Np ! J) 0 0 + shamt"
-                      using ASM(6) by blast
+                      using ASM(7) by blast
                   next
                     fix J assume "J < length LOW"
                     thus "entry (LOW ! J) 1 0 = entry (Br ?Np ! J) 1 0"
-                      using ASM(6) by blast
+                      using ASM(7) by blast
                   next
                     show "entry tail 0 0 = entry (Br ?Np ! (Lng (Br ?Np) - 1)) 0 0 + shamt"
-                      using ASM(7) .
+                      using ASM(8) .
                   next
                     show "entry tail 1 0 \<le> entry (Br ?Np ! (Lng (Br ?Np) - 1)) 1 0"
-                      using ASM(8) .
+                      using ASM(9) .
                   qed
-                  thus ?thesis using ASM(3) by simp
+                  thus ?thesis using ASM(4) by simp
                 qed
               qed
             qed
