@@ -8412,6 +8412,127 @@ proof (rule descending_const_head)
         \<and> entry (replicate m C ! J) 1 0 = entry C 1 0" by simp
 qed
 
+text \<open>\<open>descending\<close> is invariant under a uniform row-0 shift \<open>IncrFirst\<close> applied
+  componentwise (\<open>map IncrFirst\<close>): each component head's row-0 entry is bumped by
+  the SAME \<open>+1\<close> and the row-1 head is unchanged, so every \<open>cdom\<close> step (a row-0
+  comparison with a row-1 tie-break) is preserved.  Requires each component to be
+  nonempty so \<open>entry .. 0 0\<close> actually reads the shifted head.  This is the
+  closing brick for the \<open>i\<^sub>1 = 1\<close> (d1pos) branch prefix, whose \<open>P\<close>-components are
+  \<open>q\<cdot>\<delta>\<close>-shifted copies of the \<open>N\<close>-side branch components.\<close>
+
+lemma descending_map_IncrFirst:
+  assumes dQ: "descending Q"
+    and ne: "\<And>J. J < Lng Q \<Longrightarrow> 0 < Lng (Q ! J)"
+  shows "descending (map IncrFirst Q)"
+proof (rule descendingI_cdom)
+  fix J0 J1 assume le: "J0 \<le> J1" and j1: "J1 < Lng (map IncrFirst Q)"
+  have lenEq: "Lng (map IncrFirst Q) = Lng Q" by simp
+  have j1Q: "J1 < Lng Q" using j1 lenEq by simp
+  have j0Q: "J0 < Lng Q" using le j1Q by linarith
+  have m0: "map IncrFirst Q ! J0 = IncrFirst (Q ! J0)" using j0Q by simp
+  have m1: "map IncrFirst Q ! J1 = IncrFirst (Q ! J1)" using j1Q by simp
+  have e00: "entry (IncrFirst (Q ! J0)) 0 0 = Suc (entry (Q ! J0) 0 0)"
+    using entry_IncrFirst[of 0 "Q ! J0" 0] ne[OF j0Q] by simp
+  have e10: "entry (IncrFirst (Q ! J0)) 1 0 = entry (Q ! J0) 1 0"
+    using entry_IncrFirst[of 0 "Q ! J0" 1] ne[OF j0Q] by simp
+  have e01: "entry (IncrFirst (Q ! J1)) 0 0 = Suc (entry (Q ! J1) 0 0)"
+    using entry_IncrFirst[of 0 "Q ! J1" 0] ne[OF j1Q] by simp
+  have e11: "entry (IncrFirst (Q ! J1)) 1 0 = entry (Q ! J1) 1 0"
+    using entry_IncrFirst[of 0 "Q ! J1" 1] ne[OF j1Q] by simp
+  \<comment> \<open>the underlying \<open>cdom\<close> step on \<open>Q\<close>\<close>
+  have base: "cdom (Q ! J0) (Q ! J1)" using descending_cdomD[OF dQ le j1Q] .
+  have b0: "entry (Q ! J1) 0 0 \<le> entry (Q ! J0) 0 0"
+    using base unfolding cdom_def by simp
+  have b1: "entry (Q ! J0) 0 0 = entry (Q ! J1) 0 0
+            \<longrightarrow> entry (Q ! J1) 1 0 \<le> entry (Q ! J0) 1 0"
+    using base unfolding cdom_def by simp
+  show "cdom (map IncrFirst Q ! J0) (map IncrFirst Q ! J1)"
+    unfolding cdom_def m0 m1
+  proof (intro conjI impI)
+    \<comment> \<open>row-0: the shift is uniform, so \<open>\<le>\<close> is preserved\<close>
+    show "entry (IncrFirst (Q ! J1)) 0 0 \<le> entry (IncrFirst (Q ! J0)) 0 0"
+      using b0 e00 e01 by simp
+  next
+    assume "entry (IncrFirst (Q ! J0)) 0 0 = entry (IncrFirst (Q ! J1)) 0 0"
+    hence "entry (Q ! J0) 0 0 = entry (Q ! J1) 0 0" using e00 e01 by simp
+    hence "entry (Q ! J1) 1 0 \<le> entry (Q ! J0) 1 0" using b1 by simp
+    thus "entry (IncrFirst (Q ! J1)) 1 0 \<le> entry (IncrFirst (Q ! J0)) 1 0"
+      using e10 e11 by simp
+  qed
+qed
+
+lemma descending_shift_append:
+  assumes dQ: "descending Q" and Qne: "Q \<noteq> []"
+    and lenPRE: "length PRE = Lng Q - 1"
+    and pre0: "\<And>J. J < length PRE \<Longrightarrow> entry (PRE ! J) 0 0 = entry (Q ! J) 0 0 + c"
+    and pre1: "\<And>J. J < length PRE \<Longrightarrow> entry (PRE ! J) 1 0 = entry (Q ! J) 1 0"
+    and tl0: "entry TL 0 0 = entry (Q ! (Lng Q - 1)) 0 0 + c"
+    and tl1: "entry TL 1 0 \<le> entry (Q ! (Lng Q - 1)) 1 0"
+  shows "descending (PRE @ [TL])"
+proof (rule descending_append)
+  \<comment> \<open>\<open>PRE\<close> descending: each \<open>cdom (PRE!J0)(PRE!J1)\<close> is the \<open>+c\<close>-shift of
+     \<open>cdom (Q!J0)(Q!J1)\<close>, which holds since \<open>J0\<le>J1\<le>J\<^sub>1-1<Lng Q-1\<close>.\<close>
+  show "descending PRE"
+  proof (rule descendingI_cdom)
+    fix J0 J1 assume le: "J0 \<le> J1" and j1: "J1 < Lng PRE"
+    have j1p: "J1 < length PRE" using j1 by simp
+    have j0p: "J0 < length PRE" using le j1p by linarith
+    have j1Q: "J1 < Lng Q" using j1p lenPRE by simp
+    have cdomQ: "cdom (Q ! J0) (Q ! J1)" using descending_cdomD[OF dQ le j1Q] .
+    show "cdom (PRE ! J0) (PRE ! J1)"
+      unfolding cdom_def
+    proof (intro conjI impI)
+      have e0J0: "entry (PRE ! J0) 0 0 = entry (Q ! J0) 0 0 + c" using pre0[OF j0p] .
+      have e0J1: "entry (PRE ! J1) 0 0 = entry (Q ! J1) 0 0 + c" using pre0[OF j1p] .
+      have e1J0: "entry (PRE ! J0) 1 0 = entry (Q ! J0) 1 0" using pre1[OF j0p] .
+      have e1J1: "entry (PRE ! J1) 1 0 = entry (Q ! J1) 1 0" using pre1[OF j1p] .
+      from cdomQ have r0: "entry (Q ! J1) 0 0 \<le> entry (Q ! J0) 0 0"
+        and r1: "entry (Q ! J0) 0 0 = entry (Q ! J1) 0 0
+                  \<longrightarrow> entry (Q ! J1) 1 0 \<le> entry (Q ! J0) 1 0"
+        by (auto simp: cdom_def)
+      show "entry (PRE ! J1) 0 0 \<le> entry (PRE ! J0) 0 0"
+        using r0 e0J0 e0J1 by simp
+      assume "entry (PRE ! J0) 0 0 = entry (PRE ! J1) 0 0"
+      hence "entry (Q ! J0) 0 0 = entry (Q ! J1) 0 0" using e0J0 e0J1 by simp
+      thus "entry (PRE ! J1) 1 0 \<le> entry (PRE ! J0) 1 0"
+        using r1 e1J0 e1J1 by simp
+    qed
+  qed
+next
+  show "descending [TL]" by (simp add: descending_def)
+next
+  \<comment> \<open>junction \<open>cdom (last PRE) TL\<close>: \<open>last PRE = PRE!(J\<^sub>1-1)\<close>, and
+     \<open>cdom (Q!(J\<^sub>1-1)) (Q!J\<^sub>1)\<close> with \<open>J\<^sub>1 = Lng Q - 1\<close> shifts to it.\<close>
+  assume PREne: "PRE \<noteq> []" and "[TL] \<noteq> []"
+  let ?J1 = "Lng Q - 1"
+  have lenpos: "0 < length PRE" using PREne by simp
+  have J1pos: "0 < ?J1" using lenpos lenPRE by simp
+  have idxlt: "?J1 - 1 < length PRE" using lenPRE J1pos by linarith
+  have lastPRE: "last PRE = PRE ! (?J1 - 1)"
+    using PREne lenPRE by (simp add: last_conv_nth)
+  have cdomQ: "cdom (Q ! (?J1 - 1)) (Q ! ?J1)"
+    by (rule descending_cdomD[OF dQ diff_le_self]) (use Qne in simp)
+  from cdomQ have r0: "entry (Q ! ?J1) 0 0 \<le> entry (Q ! (?J1 - 1)) 0 0"
+    and r1: "entry (Q ! (?J1 - 1)) 0 0 = entry (Q ! ?J1) 0 0
+              \<longrightarrow> entry (Q ! ?J1) 1 0 \<le> entry (Q ! (?J1 - 1)) 1 0"
+    by (auto simp: cdom_def)
+  have pe0: "entry (last PRE) 0 0 = entry (Q ! (?J1 - 1)) 0 0 + c"
+    using pre0[OF idxlt] lastPRE by simp
+  have pe1: "entry (last PRE) 1 0 = entry (Q ! (?J1 - 1)) 1 0"
+    using pre1[OF idxlt] lastPRE by simp
+  show "cdom (last PRE) ([TL] ! 0)"
+    unfolding cdom_def
+  proof (intro conjI impI)
+    show "entry ([TL] ! 0) 0 0 \<le> entry (last PRE) 0 0"
+      using tl0 r0 pe0 by simp
+    assume "entry (last PRE) 0 0 = entry ([TL] ! 0) 0 0"
+    hence "entry (Q ! (?J1 - 1)) 0 0 = entry (Q ! ?J1) 0 0" using pe0 tl0 by simp
+    hence "entry (Q ! ?J1) 1 0 \<le> entry (Q ! (?J1 - 1)) 1 0" using r1 by simp
+    thus "entry ([TL] ! 0) 1 0 \<le> entry (last PRE) 1 0"
+      using tl1 pe1 by simp
+  qed
+qed
+
 text \<open>Block periodicity of the \<open>i\<^sub>1 = 0\<close> oper (article 1462).  With \<open>i\<^sub>1 = 0\<close> the
   row shifts \<open>d\<^sub>0, d\<^sub>1\<close> both vanish, so each of the \<open>n\<close> blocks is the verbatim
   copy \<open>(M\<^sub>j)\<^bsub>j=j\<^sub>0\<^esub>\<^bsup>j\<^sub>1-1\<^esup> = seg M j\<^sub>0 (j\<^sub>1-1)\<close>; hence \<open>M[n]\<close> is \<open>take j\<^sub>0 M\<close>
@@ -11423,6 +11544,43 @@ text \<open>§6.8 d1pos DIRECT route — the clean reduction of \<open>descendin
   residual hypothesis \<open>brle\<close> (\<open>le0 (seg M j0' j1') (TrMax (seg M j0' j1')+1)
   (Lng (seg M j0' j1')-1)\<close>) is the genuine d1pos content (article 1542-1620:
   the branch trunk-end row-0-reaches the slice end).\<close>
+
+text \<open>§6.8 d1pos ¬brle structural split (regime-independent).  For a branch region
+  \<open>Yp \<in> T_PS\<close> with a row-0 LEFT-MINIMUM anchor \<open>c\<close> (\<open>0 < c \<le> Lng Yp - 1\<close>) that is
+  also a single-component cut (\<open>le0 Yp c (Lng Yp - 1)\<close>, so the tail
+  \<open>seg Yp c (Lng Yp - 1)\<close> is one \<open>monoT\<close> component), \<open>P Yp\<close> splits as
+  \<open>P (seg Yp 0 (c-1)) @ [seg Yp c (Lng Yp - 1)]\<close>.  This is the multi-component
+  fold of the d1pos branch (the \<open>\<not>brle\<close> case): \<open>c\<close> is the last \<open>FirstNodes\<close>
+  position, \<open>seg Yp 0 (c-1)\<close> is the prefix (a \<open>q\<cdot>\<delta>\<close>-shifted copy of the \<open>N\<close>-side
+  branch), and \<open>seg Yp c (Lng Yp - 1)\<close> the last (single) component.  Empirically
+  verified: \<open>python/d1pos_notbrle_anchor.py\<close> (split 12/12, tail single monoT 12/12)
+  and \<open>python/d1pos_notbrle_goal.py\<close> (204/204, 0 failures, rank-stratified std gen).
+  This packages the @{thm [source] m_6_2_P_additive} split + the tail's
+  @{thm [source] monoT_seg_of_le0} property as a single reusable brick.\<close>
+
+lemma oper_d1pos_notbrle_P_split:
+  assumes YpT: "Yp \<in> T_PS"
+    and c0: "0 < c" and cle: "c \<le> Lng Yp - 1"
+    and lmin: "\<And>j. j < c \<Longrightarrow> entry Yp 0 c \<le> entry Yp 0 j"
+    and tailnm: "\<not> multiT (seg Yp c (Lng Yp - 1))"
+  shows "P Yp = P (seg Yp 0 (c - 1)) @ [seg Yp c (Lng Yp - 1)]"
+proof -
+  \<comment> \<open>the additive split at the row-0 left-min cut \<open>c\<close>\<close>
+  have split: "P Yp = P (seg Yp 0 (c - 1)) @ P (seg Yp c (Lng Yp - 1))"
+    by (rule m_6_2_P_additive[OF YpT c0 cle lmin])
+  \<comment> \<open>the tail is a single (non-multi) component, so \<open>P tail = [tail]\<close>.  NB the tail
+     is NOT always \<open>monoT\<close> — when \<open>c = Lng Yp - 1\<close> it is the single last node, which
+     may be \<open>zeroT\<close> (row-1 0, 21/75 degenerate cases empirically); but a singleton
+     list is still \<open>descending\<close>, and either way \<open>\<not> multiT tail\<close> gives \<open>P tail = [tail]\<close>.\<close>
+  have Ptail: "P (seg Yp c (Lng Yp - 1)) = [seg Yp c (Lng Yp - 1)]"
+  proof -
+    have "\<not> (multiT (seg Yp c (Lng Yp - 1)) \<and> 1 < Lng (seg Yp c (Lng Yp - 1)))"
+      using tailnm by simp
+    thus ?thesis by (rule poper_P_nonmulti)
+  qed
+  show "P Yp = P (seg Yp 0 (c - 1)) @ [seg Yp c (Lng Yp - 1)]"
+    using split Ptail by simp
+qed
 
 lemma descending_Br_of_branch_le0:
   assumes M'T: "seg M j0' j1' \<in> T_PS"
