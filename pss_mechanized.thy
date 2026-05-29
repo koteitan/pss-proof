@@ -11735,6 +11735,25 @@ proof -
   finally show ?thesis .
 qed
 
+text \<open>§6.8 d0pos ¬brle take-map combinator (agent-A): if the \<open>Jm\<close>-prefixes of two
+  \<open>Br\<close>-lists are \<open>P\<close> of an \<open>IncrFirst\<^sup>s\<close>-shift pair, the prefixes are the shift-map.
+  A small helper toward the existential identification stub (uses @{thm [source]
+  P_funpow_IncrFirst}).\<close>
+
+lemma oper_d1pos_notbrle_take_map:
+  fixes Jm :: nat
+  assumes leg1: "take Jm B1 = P R1"
+    and leg2: "take Jm B2 = P R2"
+    and leg3: "R1 = (IncrFirst ^^ s) R2"
+  shows "take Jm B1 = map (IncrFirst ^^ s) (take Jm B2)"
+proof -
+  have "take Jm B1 = P R1" by (rule leg1)
+  also have "\<dots> = P ((IncrFirst ^^ s) R2)" using leg3 by simp
+  also have "\<dots> = map (IncrFirst ^^ s) (P R2)" by (rule P_funpow_IncrFirst)
+  also have "\<dots> = map (IncrFirst ^^ s) (take Jm B2)" using leg2 by simp
+  finally show ?thesis .
+qed
+
 lemma descending_Br_of_branch_le0:
   assumes M'T: "seg M j0' j1' \<in> T_PS"
     and brle: "TrMax (seg M j0' j1') = Lng (seg M j0' j1') - 1
@@ -11776,6 +11795,56 @@ text \<open>(The over-general \<open>slice_P_tiebreak\<close> stub was REMOVED: 
   \<open>brle\<close>-true case is now fully proven by @{thm [source] descending_Br_of_branch_le0}
   (single component), and only the \<open>\<not>brle\<close> multi-component case remains as an inline
   residual sorry inside the d0pos closure — docs continued 33.)\<close>
+
+text \<open>§6.8 d0pos \<open>\<not>brle\<close> — agent-A IDENTIFICATION STUB (\<open>oper_d1pos_notbrle_LOW_take_eq\<close>).
+  In the residual d0pos \<open>\<not>brle\<close> context (\<open>N\<close> monoT std, \<open>i\<^sub>1=1\<close>, \<open>M=N[n]\<close>,
+  \<open>M'=seg M j0' j1'\<close> monoT, \<open>le0 M j0' j1'\<close>, \<open>Lng N-1 \<le> j1'\<close>, \<open>\<not>brle\<close>) the article's
+  regime A+B assembly identifies an \<open>N\<close>-side slice \<open>N\<^sub>p = seg N j\<^sub>0\<^sup>red (Lng N-1)\<close>
+  (\<open>j\<^sub>0\<^sup>red\<close> the block-period reduction of the LOW source start) whose branch
+  \<open>Br N\<^sub>p\<close> is NON-empty, splits as \<open>take J\<^sub>1 (Br N\<^sub>p) @ [Br N\<^sub>p ! J\<^sub>1]\<close> with
+  \<open>J\<^sub>1 = Lng (Br N\<^sub>p) - 1\<close>, and yields \<open>Br M' = LOW @ [tail]\<close> where the LOW prefix is
+  the \<open>(IncrFirst^^(q\<cdot>\<delta>))\<close>-shift of \<open>take J\<^sub>1 (Br N\<^sub>p)\<close> (per-component) and the tail is
+  the single \<open>\<not>multiT\<close> last node, whose head ties the shifted \<open>Br N\<^sub>p ! J\<^sub>1\<close> head in
+  row 0 and is \<open>\<le>\<close> in row 1.  This is the precise block-fold + first-node geometry
+  (agent-A's job: \<open>oper_d1pos_seg_P_*\<close> + @{thm [source] m_6_4_FirstNodes_TrMax_Joints}
+  + @{thm [source] oper_d1pos_notbrle_LOW_eq}); the PARENT replaces this stub at merge.
+  DEEP-verified (python/d1pos_notbrle_wire.py, rank-stratified std gen len\<le>9 KMAX=5:
+  all 30 \<open>\<not>brle\<close> residual cases admit such \<open>N\<^sub>p\<close> with the full
+  \<open>descending_shift_append\<close> fact set — lenPRE, pre0, pre1, tl0, tl1 — 0 failures).
+  NB: \<open>Br N\<^sub>p\<close>'s descending-ness is NOT part of the stub — it is supplied by \<open>IHk\<close>
+  on \<open>N\<close> (\<open>N \<in> SkT_PS k\<close>) at the assembly site, so the stub stays a pure
+  structural identification (no circular/forward citation).\<close>
+
+lemma oper_d1pos_notbrle_LOW_take_eq:
+  fixes N :: pairseq and M :: pairseq
+  assumes NT: "N \<in> T_PS" and monoN: "monoT N" and LNgt: "1 < Lng N"
+    and notzeroN: "\<not> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0)"
+    and hasparN: "hasParent N (idx1 N (Lng N - 1)) (Lng N - 1)"
+    and i1zN: "idx1 N (Lng N - 1) = 1"
+    and Neq: "M = N[n]" and n1: "1 \<le> n"
+    and M'T: "seg M j0' j1' \<in> T_PS"
+    and le0M: "le0 M j0' j1'"
+    and lt: "j0' < j1'" and jM: "j1' < Lng M"
+    and bge: "Lng N - 1 \<le> j1'"
+    and notbrle: "\<not> (TrMax (seg M j0' j1') = Lng (seg M j0' j1') - 1
+                     \<or> le0 (seg M j0' j1') (TrMax (seg M j0' j1') + 1) (Lng (seg M j0' j1') - 1))"
+  shows "\<exists>j0red shamt LOW tail.
+            j0red < Lng N - 1
+          \<and> le0 N j0red (Lng N - 1)
+          \<and> Br (seg M j0' j1') = LOW @ [tail]
+          \<and> Br (seg N j0red (Lng N - 1)) \<noteq> []
+          \<and> length LOW = Lng (Br (seg N j0red (Lng N - 1))) - 1
+          \<and> (\<forall>J. J < length LOW
+                 \<longrightarrow> entry (LOW ! J) 0 0 = entry (Br (seg N j0red (Lng N - 1)) ! J) 0 0 + shamt
+                   \<and> entry (LOW ! J) 1 0 = entry (Br (seg N j0red (Lng N - 1)) ! J) 1 0)
+          \<and> entry tail 0 0
+              = entry (Br (seg N j0red (Lng N - 1)) ! (Lng (Br (seg N j0red (Lng N - 1))) - 1)) 0 0
+                + shamt
+          \<and> entry tail 1 0
+              \<le> entry (Br (seg N j0red (Lng N - 1)) ! (Lng (Br (seg N j0red (Lng N - 1))) - 1)) 1 0"
+  \<comment> \<open>AGENT-A IDENTIFICATION STUB — the precise block-fold + first-node geometry,
+     replaced by the parent at merge.  DEEP-verified 30/30 (d1pos_notbrle_wire.py).\<close>
+  sorry
 
 text \<open>§6.8 命題（標準形の切片と \<open>Br\<close> の降順性の関係） — FAITHFUL conditional form
   (article content.md 1422–1615), the \<open>monoT M\<close> core after the WLOG reduction
@@ -13739,9 +13808,56 @@ proof -
                 next
                   case notbrle: False
                   \<comment> \<open>multi-component d0pos remainder: article regime A/B decomposition
-                     \<open>Br M' = (Br N')[0..J\<^sub>1-1] @ [tail]\<close>, junction row-1 tie-break via
-                     \<open>IHk\<close> on \<open>N\<close>-slices (the last d0pos piece). RESIDUAL.\<close>
-                  show ?thesis sorry
+                     \<open>Br M' = LOW @ [tail]\<close> with \<open>LOW\<close> the \<open>(IncrFirst^^(q\<delta>))\<close>-shift of
+                     \<open>take J\<^sub>1 (Br N\<^sub>p)\<close> (\<open>N\<^sub>p = seg N j\<^sub>0\<^sup>red (Lng N-1)\<close>), junction row-1
+                     tie-break via @{thm [source] descending_shift_append}.  \<open>descending
+                     (Br N\<^sub>p)\<close> from \<open>IHk\<close> on \<open>N\<close>; the precise block-fold + first-node
+                     geometry is the agent-A identification stub
+                     @{thm [source] oper_d1pos_notbrle_LOW_take_eq} (parent replaces at
+                     merge).  DEEP-verified 30/30 (python/d1pos_notbrle_wire.py).\<close>
+                  obtain j0red shamt LOW tail where
+                      ASM: "j0red < Lng N - 1"
+                        "le0 N j0red (Lng N - 1)"
+                        "Br ?M' = LOW @ [tail]"
+                        "Br (seg N j0red (Lng N - 1)) \<noteq> []"
+                        "length LOW = Lng (Br (seg N j0red (Lng N - 1))) - 1"
+                        "\<forall>J. J < length LOW
+                             \<longrightarrow> entry (LOW ! J) 0 0
+                                   = entry (Br (seg N j0red (Lng N - 1)) ! J) 0 0 + shamt
+                               \<and> entry (LOW ! J) 1 0
+                                   = entry (Br (seg N j0red (Lng N - 1)) ! J) 1 0"
+                        "entry tail 0 0
+                           = entry (Br (seg N j0red (Lng N - 1))
+                                      ! (Lng (Br (seg N j0red (Lng N - 1))) - 1)) 0 0 + shamt"
+                        "entry tail 1 0
+                           \<le> entry (Br (seg N j0red (Lng N - 1))
+                                      ! (Lng (Br (seg N j0red (Lng N - 1))) - 1)) 1 0"
+                    using oper_d1pos_notbrle_LOW_take_eq[OF NT monoN LNgt notzeroN
+                            hasparN i1zN Neq n1 M'T le0M lt jM bge notbrle] by blast
+                  let ?Np = "seg N j0red (Lng N - 1)"
+                  \<comment> \<open>\<open>descending (Br N\<^sub>p)\<close> via \<open>IHk\<close> on the \<open>N\<close>-slice (\<open>N \<in> SkT_PS k\<close>)\<close>
+                  have leRNp: "leR N 0 j0red (Lng N - 1)"
+                    using ASM(2) by (simp add: leR_def)
+                  have descNp: "descending (Br ?Np)"
+                    using IHk NS monoN ASM(1) leRNp by blast
+                  \<comment> \<open>assemble \<open>descending (LOW @ [tail])\<close> by the shift-append brick\<close>
+                  have "descending (LOW @ [tail])"
+                  proof (rule descending_shift_append[OF descNp ASM(4) ASM(5)])
+                    fix J assume "J < length LOW"
+                    thus "entry (LOW ! J) 0 0 = entry (Br ?Np ! J) 0 0 + shamt"
+                      using ASM(6) by blast
+                  next
+                    fix J assume "J < length LOW"
+                    thus "entry (LOW ! J) 1 0 = entry (Br ?Np ! J) 1 0"
+                      using ASM(6) by blast
+                  next
+                    show "entry tail 0 0 = entry (Br ?Np ! (Lng (Br ?Np) - 1)) 0 0 + shamt"
+                      using ASM(7) .
+                  next
+                    show "entry tail 1 0 \<le> entry (Br ?Np ! (Lng (Br ?Np) - 1)) 1 0"
+                      using ASM(8) .
+                  qed
+                  thus ?thesis using ASM(3) by simp
                 qed
               qed
             qed
