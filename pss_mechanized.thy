@@ -12712,7 +12712,46 @@ proof -
                   finally show ?thesis using xeq by simp
                 qed
               qed
-              show ?thesis sorry
+              \<comment> \<open>article TOP SPLIT (1542 / 1592) on \<open>j'\<^sub>0\<close> vs \<open>j\<^sub>-\<^sub>2\<^sup>N = ?j0N\<close>.
+                 BANKED (green): the would-be "A0" sub-case \<open>j'\<^sub>1 \<le> j\<^sub>-\<^sub>2\<^sup>N\<close> (article 1540,
+                 slice inside the \<open>M = N\<close> prefix, reduce to IH on \<open>N\<close>) is VACUOUS in
+                 this jlarge branch: \<open>j\<^sub>-\<^sub>2\<^sup>N = parent N 1 (Lng N-1) < Lng N-1 \<le> j'\<^sub>1\<close>
+                 (\<open>j0Nlt\<close> + \<open>bge\<close>), so always \<open>j\<^sub>-\<^sub>2\<^sup>N < j'\<^sub>1\<close>.  Empirically confirmed
+                 (0 of 1648 d0pos jlarge slices fall in A0; whole theorem also has
+                 0 descending failures — @{file "python/sk_68_d0pos_audit.py"}).
+                 So the slice always crosses \<open>j\<^sub>-\<^sub>2\<^sup>N\<close>, leaving exactly the two genuine
+                 hard regimes below, both funnelled to the single residual sorry.\<close>
+              have j0Nltj1: "?j0N < j1'" using j0Nlt bge by linarith
+              show ?thesis
+              proof (cases "j1' \<le> ?j0N")
+                case A0: True
+                \<comment> \<open>CLOSED (green) — the article's "A0" (1540): vacuous here, since
+                   \<open>j\<^sub>-\<^sub>2\<^sup>N < j'\<^sub>1\<close> (\<open>j0Nltj1\<close>) contradicts \<open>j'\<^sub>1 \<le> j\<^sub>-\<^sub>2\<^sup>N\<close>.\<close>
+                have False using A0 j0Nltj1 by linarith
+                thus ?thesis ..
+              next
+                case crossesA0: False
+                \<comment> \<open>RESIDUAL HARD REGIME (article 1542–1620), single relocated sorry.
+                 TWO regimes on \<open>j'\<^sub>0\<close> vs \<open>j\<^sub>-\<^sub>2\<^sup>N\<close> (\<open>= ?j0N\<close>); both share the missing
+                 brick \<open>oper_d1pos_seg_P_*\<close> (the \<open>\<delta>\<close>-shifted block-fold analogue of
+                 \<open>oper_d0zero_seg_P_blk0fold/_split/_hfold\<close>), which does NOT yet exist.
+
+                 (A) \<open>j'\<^sub>0 < j\<^sub>-\<^sub>2\<^sup>N\<close> (\<open>< j'\<^sub>1\<close> by \<open>j0Nltj1\<close>; article 1544–1589): derive
+                     \<open>(0,j'\<^sub>0) \<le>\<^sub>N (0,j\<^sub>1\<^sup>N)\<close> via row-0 convexity \<open>m_5_1_ancestor_tree_1\<close> +
+                     the n-block chain \<open>(0,j\<^sub>-\<^sub>2\<^sup>N) \<le>\<^sub>M (0,j\<^sub>1)\<close> (have:
+                     @{thm [source] oper_d1pos_block_chain},
+                     @{thm [source] oper_d1pos_nextrel0_transfer}); IH gives
+                     \<open>descending (Br N')\<close>, \<open>N' = seg N j'\<^sub>0 (Lng N-1)\<close>.  Then \<open>J\<^sub>1 = -1\<close>
+                     (1546, single-block constant-head fold) vs \<open>J\<^sub>1 \<ge> 0\<close> (1552, 3
+                     sub-subcases on \<open>TrMax(N')\<close> vs \<open>j\<^sub>-\<^sub>2\<^sup>N-j'\<^sub>0\<close> / \<open>j\<^sub>-\<^sub>3\<close>).
+
+                 (B) \<open>j\<^sub>-\<^sub>2\<^sup>N \<le> j'\<^sub>0\<close> (article 1592–1620): divide \<open>j'\<^sub>0-j\<^sub>-\<^sub>2\<^sup>N\<close> by \<open>?w\<close>,
+                     reduce to \<open>q=0\<close> via @{thm [source] oper_d1pos_seg_period_reduce};
+                     then \<open>j'\<^sub>1 < j\<^sub>1\<^sup>N\<close> (1602, \<open>M = Pred N\<close>-prefix, \<open>M' = seg N j'\<^sub>0 j'\<^sub>1\<close>,
+                     reduce to IH on \<open>N\<close>) vs \<open>j'\<^sub>1 \<ge> j\<^sub>1\<^sup>N\<close> (1606, 3 sub-subcases on
+                     \<open>TrMax(N')\<close> vs \<open>j\<^sub>1\<^sup>N-j'\<^sub>0\<close> / \<open>j\<^sub>0\<^sup>N-j'\<^sub>0\<close>).\<close>
+                show ?thesis sorry
+              qed
             qed
           qed
         next
