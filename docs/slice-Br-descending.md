@@ -1179,3 +1179,39 @@ The empirical-first workflow again caught a false target before any proof was wr
 decomposition — what is `TrMax (seg M[n] j0' j1')` in terms of the M'-trunk, and
 how does `Br M'` actually decompose for i1=1 — BEFORE attempting any closure proof.
 Counterexample finder: `python/d1pos_trmax_caseA_k4.py`.
+
+## UPDATE 2026-05-29 (continued 28): correct d0pos design — M'-trunk-direct, descending(P Y') via row-1 tie-break
+
+The re-map workflow (both agents "mapped", 0 empirical failures) gives the correct
+caseC-FREE design for d0pos.
+
+### TrMax M' closed form (python/d1pos_trmax_formula.py, 474/0, 1215/0)
+`TrMax (seg M' j0' j1') = min(trunkM'(j0'), j1'-j0')`, where (j0'<=j0N)
+`trunkM'(j0') = min(TrMax(seg N j0' (Lng N-1)), (j1N-1)-j0')`. The defect vs the
+(false) caseA equality is the **off-by-one (j1N-1 not j1N)**: d1pos drops N's last
+column and (d1=0) keeps row-1 constant across the tail, so the M'-trunk breaks one
+column early. n does NOT appear (trunk fixed by the first block). A conditional
+caseA equality holds excluding the trunk-filling + window-binding families.
+
+### Br M' decomposition (python/d1pos_br_decomp.py, d1pos_br_cdom.py)
+caseC's `take J1 (Br N') @ [tail]` REFUTED (FirstNodes identity fails 67/244;
+#BrM'-#BrN' ranges -2..+2). Correct = **M'-trunk-direct**: `Br M' = P Y'`,
+`Y' = seg M' (TrMax M'+1)(Lng M'-1)`, with (0 failures):
+- **(S1)** every component is monoT/zeroT (a single block-anchored le0 slice; H1 per cut).
+- **(S2)** the branch window is entirely inside the delta-fold (j0'+TrMax M'+1 >= j0N).
+- **(S3)** cdom-descending: row-0 weakly decreasing is FREE (m_6_4_P_leftend_mono on
+  Y'∈T_PS); the row-1 tie-break (row-0 tie => row-1 strictly falls) is the genuine content.
+
+This is the SAME shape as the already-green §6.8 prop2 (m_6_8_standard_P_descending):
+a row-1 tie-break on P-components — NOT the caseC machinery.
+
+### Closure = 3 bricks (everything else GREEN; descending_take/append/const_head NOT needed)
+- **B1 oper_d1pos_Br_comp_mono** (S1, MEDIUM): generalize H1 (oper_d1pos_seg_mono) over P's IdxSum cuts.
+- **B2 oper_d1pos_Br_cdom_step** (S3 row-1 tie, HARD, irreducible core): "row-0 tie of two
+  fold cells => row-1 weakly decreasing in P-cut order" — via m_6_4_P_IdxSum (cut left-ends),
+  oper_d1pos_entry0/entry1 (row-1 block-invariant), oper_d1pos_le0_blockstarts/block_chain.
+- **B3 oper_d1pos_Br_descending** (assembly, EASY): descendingI_cdom + cdom_trans + row-0(B1?)/row-1(B2),
+  STEP0 Br=[] trivial; both regimes (j0'<j0N, j0N<=j0') reduce to the same STEP1-3
+  (regime B folds via oper_d1pos_seg_period_reduce).
+
+Both regimes use the M'-trunk-direct view; the dead TrMax-equality route is fully abandoned.
