@@ -11375,28 +11375,96 @@ proof -
   qed
 qed
 
-text \<open>§6.8 d0pos core STUB (THE genuine hard core): the row-1 tie-break of any
-  \<open>P\<close>-decomposed SLICE of a standard form.  CLEARLY-MARKED STUB.  This is the
-  article §6.8 induction's irreducible content (= the design doc's
-  \<open>slice_P_descending\<close> tie-break, content.md 1450–1615): for a standard \<open>M\<close> and a
-  slice \<open>seg M a b\<close> (\<open>b \<le> Lng M-1\<close>), consecutive \<open>P\<close>-components with equal row-0
-  left ends have weakly-decreasing row-1 left ends.  Empirically TRUE
-  (\<open>python/nlocal_verify3.py\<close>, \<open>is_standard\<close>+yaBMS, \<open>KMAX=6\<close>): 487/487 slice
-  row-0 ties satisfy it (0 fail).  Reduces, via @{thm [source] m_6_7_standard_prefix} +
-  @{thm [source] seg_to_last_eq_drop}, to the suffix core
-  \<open>N \<in> ST_PS \<Longrightarrow> descending (P (drop j N))\<close> (the same core that
-  @{thm [source] m_6_8_standard_slice_Br_descending_of_drop} assumes); needs a
-  \<open>k\<close>-induction over \<open>oper\<close>.  NOT reachable from the adjacent @{thm [source] nlocal_adj_tie}
-  (the branch-region tie is between NON-adjacent \<open>P\<close>-cut heads with a row-0 dip
-  between them, so no chain of adjacent ties exists — refuted route, see
-  docs/slice-Br-descending.md continued 31).\<close>
+text \<open>§6.8 d1pos GENERAL brick (regime-INDEPENDENT): a slice whose endpoints are
+  row-0 reachable (\<open>le0 M a b\<close>, \<open>a < b\<close>) is \<open>monoT\<close>.  This is the \<open>a\<close>-free version of
+  @{thm [source] oper_d1pos_seg_mono} (whose block-start/oper hypotheses are not
+  actually used in the \<open>monoT\<close> derivation): \<open>\<not> zeroT\<close> from \<open>1 < Lng\<close> (as \<open>a < b\<close>),
+  the \<open>leR\<close> body transfers via @{thm [source] adm_le0_seg}.\<close>
 
-lemma slice_P_tiebreak:
-  "M \<in> SkT_PS k \<Longrightarrow> a \<le> b \<Longrightarrow> b \<le> Lng M - 1
-     \<Longrightarrow> J0 \<le> J1 \<Longrightarrow> J1 \<le> Lng (P (seg M a b)) - 1
-     \<Longrightarrow> entry (P (seg M a b) ! J0) 0 0 = entry (P (seg M a b) ! J1) 0 0
-     \<Longrightarrow> entry (P (seg M a b) ! J1) 1 0 \<le> entry (P (seg M a b) ! J0) 1 0"
-  sorry
+lemma monoT_seg_of_le0:
+  assumes blt: "b < Lng M" and ab: "a < b" and leab: "le0 M a b"
+  shows "monoT (seg M a b)"
+proof -
+  let ?S = "seg M a b"
+  have LS: "Lng ?S = Suc b - a" by (simp only: Lng_seg)
+  have LSgt1: "1 < Lng ?S" using LS ab by simp
+  have nzS: "\<not> zeroT ?S"
+  proof
+    assume "zeroT ?S"
+    hence "Lng ?S = 1" by (simp add: zeroT_def)
+    thus False using LSgt1 by simp
+  qed
+  have LSm1: "Lng ?S - 1 = b - a" using LS ab by simp
+  have aleb: "a \<le> b" using ab by simp
+  have b0le: "b - a \<le> b - a" by (rule order.refl)
+  have z0le: "(0::nat) \<le> b - a" by simp
+  have tr: "le0 ?S 0 (b - a) = le0 M (a + 0) (a + (b - a))"
+    by (rule adm_le0_seg[where M="M" and j0'=a and j1'=b and a=0 and b="b - a",
+          OF blt z0le b0le aleb])
+  have ab0: "a + 0 = a" by simp
+  have abb: "a + (b - a) = b" using aleb by simp
+  have le0S: "le0 ?S 0 (b - a)" using tr ab0 abb leab by simp
+  have leRS: "leR ?S 0 0 (Lng ?S - 1)" using le0S LSm1 by (simp add: leR_def)
+  show ?thesis using nzS leRS by (simp add: monoT_def)
+qed
+
+text \<open>§6.8 d1pos DIRECT route — the clean reduction of \<open>descending (Br M')\<close> for a
+  monoT slice \<open>M'\<close> to a SINGLE row-0 reachability fact.  Empirically (python/
+  d1pos_fold_Br_decomp.py + d1pos_fold_lastblock.py, rank-stratified standard
+  generator, KMAX=4): for the i1=1 (d0pos) fold the branch region
+  \<open>Yp = seg M' (TrMax M'+1)(Lng M'-1)\<close> is ALWAYS a SINGLE \<open>P\<close>-component
+  (\<open>P Yp = [Yp]\<close>, 5548/5548) — the delta-shifted block boundaries are NOT row-0
+  left-minima so \<open>P\<close> does not split.  Equivalently \<open>Yp\<close> is non-multi, and (when
+  \<open>1 < Lng Yp\<close>) \<open>monoT\<close>, which is EXACTLY \<open>le0 M' (TrMax M'+1)(Lng M'-1)\<close>
+  (the empirical iff is 257/257).  Hence \<open>Br M' = [Yp]\<close> and \<open>descending\<close> is the
+  trivial singleton case.  This lemma packages that reduction: the row-1
+  tie-break of \<open>Br M'\<close> is VACUOUS (one component), replacing the
+  \<open>slice_P_tiebreak\<close> stub on the d1pos branch.  The single
+  residual hypothesis \<open>brle\<close> (\<open>le0 (seg M j0' j1') (TrMax (seg M j0' j1')+1)
+  (Lng (seg M j0' j1')-1)\<close>) is the genuine d1pos content (article 1542-1620:
+  the branch trunk-end row-0-reaches the slice end).\<close>
+
+lemma descending_Br_of_branch_le0:
+  assumes M'T: "seg M j0' j1' \<in> T_PS"
+    and brle: "TrMax (seg M j0' j1') = Lng (seg M j0' j1') - 1
+               \<or> le0 (seg M j0' j1') (TrMax (seg M j0' j1') + 1) (Lng (seg M j0' j1') - 1)"
+  shows "descending (Br (seg M j0' j1'))"
+proof -
+  let ?M' = "seg M j0' j1'"
+  let ?Yp = "seg ?M' (TrMax ?M' + 1) (Lng ?M' - 1)"
+  show ?thesis
+  proof (cases "TrMax ?M' = Lng ?M' - 1")
+    case True
+    have "Br ?M' = []" using True by (simp add: Br_def)
+    thus ?thesis by (simp add: descending_def)
+  next
+    case Trne: False
+    have tb: "TrMax ?M' \<le> Lng ?M' - 1" by (rule TrMax_bound[OF M'T])
+    with Trne have trlt: "TrMax ?M' < Lng ?M' - 1" by linarith
+    have BrM': "Br ?M' = P ?Yp" using Trne by (simp add: Br_def)
+    \<comment> \<open>the residual le0 holds (the \<open>TrMax = end\<close> disjunct is excluded by \<open>Trne\<close>)\<close>
+    have le0Yp: "le0 ?M' (TrMax ?M' + 1) (Lng ?M' - 1)" using brle Trne by blast
+    \<comment> \<open>\<open>Y\<^sub>p\<close> is non-multi: when \<open>1 < Lng Y\<^sub>p\<close> it is \<open>monoT\<close> via @{thm [source] monoT_seg_of_le0}\<close>
+    have YpNonMulti: "\<not> (multiT ?Yp \<and> 1 < Lng ?Yp)"
+    proof (cases "1 < Lng ?Yp")
+      case False thus ?thesis by simp
+    next
+      case LYp: True
+      have LYp': "Lng ?Yp = Suc (Lng ?M' - 1) - (TrMax ?M' + 1)" by (simp only: Lng_seg)
+      have ab: "TrMax ?M' + 1 < Lng ?M' - 1" using LYp LYp' by linarith
+      have blt: "Lng ?M' - 1 < Lng ?M'" using trlt by linarith
+      have "monoT ?Yp" by (rule monoT_seg_of_le0[OF blt ab le0Yp])
+      thus ?thesis by (simp add: multiT_def)
+    qed
+    have PYp: "P ?Yp = [?Yp]" by (rule poper_P_nonmulti[OF YpNonMulti])
+    show ?thesis using BrM' PYp by (simp add: descending_def)
+  qed
+qed
+
+text \<open>(The over-general \<open>slice_P_tiebreak\<close> stub was REMOVED: the d0pos branch's
+  \<open>brle\<close>-true case is now fully proven by @{thm [source] descending_Br_of_branch_le0}
+  (single component), and only the \<open>\<not>brle\<close> multi-component case remains as an inline
+  residual sorry inside the d0pos closure — docs continued 33.)\<close>
 
 text \<open>§6.8 命題（標準形の切片と \<open>Br\<close> の降順性の関係） — FAITHFUL conditional form
   (article content.md 1422–1615), the \<open>monoT M\<close> core after the WLOG reduction
@@ -13333,83 +13401,36 @@ proof -
                      then \<open>j'\<^sub>1 < j\<^sub>1\<^sup>N\<close> (1602, \<open>M = Pred N\<close>-prefix, \<open>M' = seg N j'\<^sub>0 j'\<^sub>1\<close>,
                      reduce to IH on \<open>N\<close>) vs \<open>j'\<^sub>1 \<ge> j\<^sub>1\<^sup>N\<close> (1606, 3 sub-subcases on
                      \<open>TrMax(N')\<close> vs \<open>j\<^sub>1\<^sup>N-j'\<^sub>0\<close> / \<open>j\<^sub>0\<^sup>N-j'\<^sub>0\<close>.
-                 B3 ASSEMBLY (sound, COMPILES): \<open>descending (Br M')\<close> from the slice
-                 \<open>P\<close>-decomposition.  \<open>Br M' = []\<close> (TrMax = end) is trivial; else
-                 \<open>Br M' = P Y\<^sub>p\<close> with \<open>Y\<^sub>p = seg M (j'\<^sub>0+TrMax M'+1) j'\<^sub>1\<close> a slice of the
-                 STANDARD \<open>M\<close> (\<open>seg_of_seg\<close>).  Row-0 (weak left-end decrease) is FREE
-                 (@{thm [source] m_6_4_P_leftend_mono} on \<open>Y\<^sub>p \<in> T_PS\<close>); the row-1
-                 tie-break is the genuine core @{thm [source] slice_P_tiebreak}
-                 (stubbed).  NOTE: the originally-prescribed
-                 (S-adj)/(S-sgl)+@{thm [source] nlocal_adj_tie} route is EMPIRICALLY
-                 FALSE on this very domain (see docs continued 31); this assembly
-                 uses the true slice-tie-break core instead.\<close>
+                 CLOSURE (article-faithful direct, docs continued 32–33): case-split
+                 on \<open>brle = (TrMax M' = end \<or> le0 M' (TrMax M'+1)(Lng M'-1))\<close>.
+                 EMPIRICALLY (python/d1pos_Br_singleton_check.py, rank-stratified std):
+                 \<open>brle\<close> holds iff \<open>Br M'\<close> is a SINGLE component (137/149); the 12/149
+                 \<open>\<not>brle\<close> cases are the genuine multi-component d0pos remainder.
+                 - \<open>brle\<close>: @{thm [source] descending_Br_of_branch_le0} (FULLY PROVEN —
+                   \<open>Y\<^sub>p\<close> non-multi so \<open>P Y\<^sub>p = [Y\<^sub>p]\<close>, descending is the trivial singleton).
+                 - \<open>\<not>brle\<close>: the multi-component article regime A/B decomposition
+                   \<open>Br M' = (Br N')[0..J\<^sub>1-1] @ [tail]\<close> with the junction row-1 tie-break
+                   (D3, empirically 132/132), via \<open>IHk\<close> on \<open>N\<close>-slices.  RESIDUAL (the
+                   last d0pos piece; no longer the over-general \<open>slice_P_tiebreak\<close>).\<close>
                 let ?M' = "seg M j0' j1'"
-                let ?Yp = "seg ?M' (TrMax ?M' + 1) (Lng ?M' - 1)"
                 have M'T: "?M' \<in> T_PS"
                 proof -
                   have "length ?M' = Suc j1' - j0'" using Lng_seg by simp
                   hence "0 < length ?M'" using lt by simp
                   thus ?thesis by (cases ?M') (auto simp: T_PS_def)
                 qed
-                have LngM': "Lng ?M' = Suc j1' - j0'" by (simp only: Lng_seg)
-                have LngM'm1: "Lng ?M' - 1 = j1' - j0'" using lt LngM' by simp
-                have j01: "j0' \<le> j1'" using lt by simp
                 show ?thesis
-                proof (cases "TrMax ?M' = Lng ?M' - 1")
-                  case True
-                  have "Br ?M' = []" using True by (simp add: Br_def)
-                  thus ?thesis by (simp add: descending_def)
+                proof (cases "TrMax ?M' = Lng ?M' - 1
+                              \<or> le0 ?M' (TrMax ?M' + 1) (Lng ?M' - 1)")
+                  case brle: True
+                  \<comment> \<open>single-component branch: descending is the trivial singleton case\<close>
+                  show ?thesis by (rule descending_Br_of_branch_le0[OF M'T brle])
                 next
-                  case Trne: False
-                  have tb: "TrMax ?M' \<le> Lng ?M' - 1" by (rule TrMax_bound[OF M'T])
-                  with Trne have trlt: "TrMax ?M' < Lng ?M' - 1" by linarith
-                  \<comment> \<open>\<open>Br M' = P Y\<^sub>p\<close>\<close>
-                  have BrM': "Br ?M' = P ?Yp" using Trne by (simp add: Br_def)
-                  \<comment> \<open>\<open>Y\<^sub>p\<close> is a slice of the standard \<open>M\<close> ending at \<open>j'\<^sub>1\<close>\<close>
-                  let ?a = "j0' + TrMax ?M' + 1"
-                  have dle: "Lng ?M' - 1 \<le> j1' - j0'" using LngM'm1 by simp
-                  have Ypseg: "?Yp = seg M ?a j1'"
-                  proof -
-                    have "?Yp = seg M (j0' + (TrMax ?M' + 1)) (j0' + (Lng ?M' - 1))"
-                      by (rule seg_of_seg[OF j01 dle])
-                    also have "j0' + (Lng ?M' - 1) = j1'" using LngM'm1 j01 by simp
-                    finally show ?thesis by simp
-                  qed
-                  have ale: "?a \<le> j1'" using trlt LngM'm1 by linarith
-                  have YpT: "?Yp \<in> T_PS"
-                  proof -
-                    have lYp: "length ?Yp = Suc (Lng ?M' - 1) - (TrMax ?M' + 1)"
-                      using Lng_seg by simp
-                    have l0: "0 < length ?Yp" using lYp trlt by linarith
-                    have ne: "?Yp \<noteq> []" using l0 length_greater_0_conv by blast
-                    show ?thesis unfolding T_PS_def using ne by blast
-                  qed
-                  \<comment> \<open>row-0 (FREE) + row-1 (core \<open>slice_P_tiebreak\<close>) assemble \<open>descending\<close>\<close>
-                  show ?thesis
-                    unfolding BrM' descending_def
-                  proof (intro allI impI)
-                    fix J0 J1
-                    assume A: "J0 \<le> J1 \<and> J1 \<le> Lng (P ?Yp) - 1"
-                    hence J0le: "J0 \<le> J1" and J1le: "J1 \<le> Lng (P ?Yp) - 1" by auto
-                    show "entry (P ?Yp ! J0) 0 0 \<ge> entry (P ?Yp ! J1) 0 0
-                          \<and> (entry (P ?Yp ! J0) 0 0 = entry (P ?Yp ! J1) 0 0
-                              \<longrightarrow> entry (P ?Yp ! J0) 1 0 \<ge> entry (P ?Yp ! J1) 1 0)"
-                    proof (intro conjI impI)
-                      show "entry (P ?Yp ! J1) 0 0 \<le> entry (P ?Yp ! J0) 0 0"
-                        by (rule m_6_4_P_leftend_mono[OF YpT J0le J1le])
-                    next
-                      assume eq: "entry (P ?Yp ! J0) 0 0 = entry (P ?Yp ! J1) 0 0"
-                      have eq': "entry (P (seg M ?a j1') ! J0) 0 0
-                                  = entry (P (seg M ?a j1') ! J1) 0 0"
-                        using eq Ypseg by simp
-                      have J1le': "J1 \<le> Lng (P (seg M ?a j1')) - 1" using J1le Ypseg by simp
-                      have "entry (P (seg M ?a j1') ! J1) 1 0
-                              \<le> entry (P (seg M ?a j1') ! J0) 1 0"
-                        by (rule slice_P_tiebreak[OF MS ale j1 J0le J1le' eq'])
-                      thus "entry (P ?Yp ! J1) 1 0 \<le> entry (P ?Yp ! J0) 1 0"
-                        using Ypseg by simp
-                    qed
-                  qed
+                  case notbrle: False
+                  \<comment> \<open>multi-component d0pos remainder: article regime A/B decomposition
+                     \<open>Br M' = (Br N')[0..J\<^sub>1-1] @ [tail]\<close>, junction row-1 tie-break via
+                     \<open>IHk\<close> on \<open>N\<close>-slices (the last d0pos piece). RESIDUAL.\<close>
+                  show ?thesis sorry
                 qed
               qed
             qed
