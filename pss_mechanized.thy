@@ -13149,6 +13149,62 @@ proof -
   finally show ?thesis .
 qed
 
+text \<open>§6.8 d1pos ¬brle — the ACROSS-BLOCK \<open>P\<close>-COLLAPSE (the core missing brick).
+  Unlike the d0zero fold (where \<open>P\<close> SPLITS into replicate-blocks because the
+  block boundaries ARE row-0 left-minima — see @{thm [source] oper_d0zero_seg_P_split}
+  / @{thm [source] oper_d0zero_seg_P_hfold} / @{thm [source] oper_d0zero_seg_P_blk1fold}),
+  the d1pos case has \<open>\<delta> > 0\<close>, so every block is row-0 SHIFTED by \<open>\<delta>\<close> and the
+  boundaries are NOT row-0 left-minima.  Consequently \<open>P\<close> COLLAPSES all the
+  across-block growth into a SINGLE non-multi last component: only ONE genuine
+  row-0 left-minimum survives inside the branch region (the last \<open>FirstNodes\<close>
+  anchor \<open>c\<close>), and the entire tail \<open>seg S c (Lng S - 1)\<close> from there to the slice
+  end is one \<open>monoT\<close> (single) \<open>P\<close>-component.
+
+  This lemma packages the collapse as a pure structural identity for a branch
+  region \<open>S\<close> presented as the ambient slice \<open>seg M A E\<close> (= \<open>Br M'\<close> after
+  the \<open>Br_seg_reshape\<close> reshape, below): with the last-anchor cut \<open>c\<close> a row-0
+  left-minimum (\<open>lmin\<close>) whose tail is single (\<open>tailnm\<close>), the LOW prefix being a
+  \<open>(IncrFirst^^shamt)\<close>-shift of an \<open>N\<close>-side branch \<open>base\<close> (\<open>lowshift\<close>, the in-block
+  shift from @{thm [source] oper_d1pos_LOW_source_eq}/@{thm [source] oper_d1pos_notbrle_LOW_eq}),
+  and \<open>base\<close> being the \<open>butlast\<close> source of the \<open>N\<close>-side decomposition \<open>BN\<close>
+  (\<open>butl\<close>), one obtains
+    \<open>P S = map (IncrFirst^^shamt) (butlast BN) @ [seg S c (Lng S - 1)]\<close>.
+  The proof is: additive split at \<open>c\<close> (@{thm [source] oper_d1pos_notbrle_P_split},
+  the tail being a single non-multi component), then the LOW prefix
+  \<open>P (seg S 0 (c-1)) = P ((IncrFirst^^shamt) base) = map (IncrFirst^^shamt) (P base)
+   = map (IncrFirst^^shamt) (butlast BN)\<close> via @{thm [source] P_funpow_IncrFirst}.
+
+  DEEP-VERIFIED at rank 8 (KMAX=8, len=12, val=4; python/d1pos_collapse_struct.py
+  and python/d1pos_collapse_target.py): the full collapse and EVERY hypothesis
+  (c0/cle/lmin/tailnm/lowshift/butl) hold 1395/1395, 0 failures; 780/1395 of the
+  branch regions span \<open>>1\<close> block and ALL collapse to a single tail.\<close>
+
+lemma oper_d1pos_collapse:
+  fixes S :: pairseq and base :: pairseq and BN :: "pairseq list"
+  assumes ST: "S \<in> T_PS"
+    and c0: "0 < c" and cle: "c \<le> Lng S - 1"
+    and lmin: "\<And>j. j < c \<Longrightarrow> entry S 0 c \<le> entry S 0 j"
+    and tailnm: "\<not> multiT (seg S c (Lng S - 1))"
+    and lowshift: "seg S 0 (c - 1) = (IncrFirst ^^ shamt) base"
+    and butl: "butlast BN = P base"
+  shows "P S = map (IncrFirst ^^ shamt) (butlast BN) @ [seg S c (Lng S - 1)]"
+proof -
+  \<comment> \<open>additive split at the row-0 left-min cut \<open>c\<close>: tail is a single non-multi component\<close>
+  have split: "P S = P (seg S 0 (c - 1)) @ [seg S c (Lng S - 1)]"
+    by (rule oper_d1pos_notbrle_P_split[OF ST c0 cle lmin tailnm])
+  \<comment> \<open>the LOW prefix is the per-component \<open>(IncrFirst^^shamt)\<close>-shift of \<open>P base\<close>\<close>
+  have low: "P (seg S 0 (c - 1)) = map (IncrFirst ^^ shamt) (P base)"
+  proof -
+    have "P (seg S 0 (c - 1)) = P ((IncrFirst ^^ shamt) base)" using lowshift by simp
+    also have "\<dots> = map (IncrFirst ^^ shamt) (P base)" by (rule P_funpow_IncrFirst)
+    finally show ?thesis .
+  qed
+  \<comment> \<open>\<open>P base = butlast BN\<close> identifies the shifted prefix with \<open>map shift (butlast BN)\<close>\<close>
+  have lowB: "P (seg S 0 (c - 1)) = map (IncrFirst ^^ shamt) (butlast BN)"
+    using low butl by simp
+  show ?thesis using split lowB by simp
+qed
+
 text \<open>§6.8 d0pos ¬brle — BRICK 3 (Br alignment): the \<open>Br\<close>-decomposition of a
   branch slice \<open>seg M j0' j1'\<close> reshaped into the AMBIENT \<open>M\<close>-coordinates.  When the
   branch is non-empty (\<open>TrMax (seg M j0' j1') \<noteq> Lng (seg M j0' j1') - 1\<close>), unfolding
@@ -13261,6 +13317,187 @@ proof -
   have BrNpP: "Br ?Np = P (seg N (j0red + TrMax ?Np + 1) j1red)"
     by (rule Br_seg_reshape[OF j0j1red j1redltN trneN])
   \<comment> \<open>non-emptiness of both branch lists\<close>
+  have BrM'ne: "Br ?Mp \<noteq> []" using BrM'P P_nonempty by simp
+  have BrNpne: "Br ?Np \<noteq> []" using BrNpP P_nonempty by simp
+  show ?thesis using TrEq BrM'P BrNpP BrM'ne BrNpne by blast
+qed
+
+text \<open>§6.8 d1pos REGIME A verbatim agreement.  When the index \<open>x\<close> lies BELOW the
+  last block boundary \<open>Lng N - 1\<close> (\<open>x \<le> Lng N - 2\<close>, i.e.\ \<open>x < Lng N - 1\<close>), the
+  \<open>i\<^sub>1=1\<close> oper reads off \<open>N\<close> VERBATIM: \<open>(N[n]) ! x = N ! x\<close>.  Two sub-cases:
+  the prefix \<open>x < j\<^sub>m\<^sub>2\<close> is the verbatim \<open>take j\<^sub>m\<^sub>2 N\<close> (@{thm [source]
+  oper_d1pos_nth_prefix}); block 0 (\<open>j\<^sub>m\<^sub>2 \<le> x < Lng N - 1\<close>, offset \<open>s\<^sub>x = x - j\<^sub>m\<^sub>2 < w\<close>,
+  \<open>q = 0 < n\<close>) is @{thm [source] oper_d1pos_nth} with NO per-block shift
+  (\<open>0\<cdot>\<delta> = 0\<close>) — so it equals \<open>(entry N 0 x, entry N 1 x) = N ! x\<close>.  This is the
+  REGIME A keystone simplification: the slice prefix below the first fold is
+  literally \<open>N\<close>, so there is NO \<open>(IncrFirst^^shamt)\<close> shift (\<open>shamt = 0\<close>).\<close>
+
+lemma oper_d1pos_nth_low_verbatim:
+  fixes N :: pairseq
+  assumes L: "1 < Lng N"
+    and notzero: "\<not> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0)"
+    and hp: "hasParent N (idx1 N (Lng N - 1)) (Lng N - 1)"
+    and i1z: "idx1 N (Lng N - 1) = 1"
+    and j0lt: "parent N 1 (Lng N - 1) < Lng N - 1"
+    and n1: "1 \<le> n"
+    and xlt: "x < Lng N - 1"
+  shows "((N::pairseq)[n]) ! x = N ! x"
+proof (cases "x < parent N 1 (Lng N - 1)")
+  case True
+  show ?thesis by (rule oper_d1pos_nth_prefix[OF L notzero hp i1z True])
+next
+  case False
+  let ?j0 = "parent N 1 (Lng N - 1)"  let ?w = "Lng N - 1 - ?j0"
+  have ge: "?j0 \<le> x" using False by simp
+  let ?sx = "x - ?j0"
+  have sxw: "?sx < ?w" using xlt ge by linarith
+  have q0n: "(0::nat) < n" using n1 by simp
+  have split: "?j0 + 0 * ?w + ?sx = x" using ge by simp
+  have "((N::pairseq)[n]) ! x = ((N::pairseq)[n]) ! (?j0 + 0 * ?w + ?sx)"
+    using split by simp
+  also have "\<dots> = (entry N 0 (?j0 + ?sx) + 0 * (entry N 0 (Lng N - 1) - entry N 0 ?j0),
+                   entry N 1 (?j0 + ?sx))"
+    by (rule oper_d1pos_nth[OF L notzero hp i1z j0lt q0n sxw])
+  also have "\<dots> = (entry N 0 x, entry N 1 x)" using ge by simp
+  also have "\<dots> = N ! x"
+  proof -
+    have xN: "x < Lng N" using xlt by linarith
+    show ?thesis using xN by (cases "N ! x") (simp add: entry_def)
+  qed
+  finally show ?thesis .
+qed
+
+text \<open>§6.8 d1pos REGIME A TrEq keystone (\<open>j'\<^sub>0 < j\<^sub>m\<^sub>2\<close>, so \<open>q = 0\<close>, \<open>shamt = 0\<close>,
+  \<open>j\<^sub>0\<^sup>red = j'\<^sub>0\<close>).  Mirrors @{thm [source] TrMax_seg_oper_d1pos_eq_span} but the
+  pointwise prefix agreement is the VERBATIM @{thm [source] oper_d1pos_nth_low_verbatim}
+  (no \<open>(IncrFirst^^shamt)\<close> shift): on \<open>[0,c]\<close> (\<open>c = j\<^sub>1\<^sup>red - 1 - j\<^sub>0\<^sup>red\<close>, which is
+  within both \<open>[j'\<^sub>0,j'\<^sub>1)\<close> and \<open>[j\<^sub>0\<^sup>red,j\<^sub>1\<^sup>red)\<close>) the indices \<open>j'\<^sub>0 + s = j\<^sub>0\<^sup>red + s\<close>
+  satisfy \<open>j\<^sub>0\<^sup>red + s \<le> j\<^sub>1\<^sup>red - 1 < Lng N - 1\<close> (STRICTLY below the last boundary —
+  the endpoint \<open>j\<^sub>1\<^sup>red\<close> itself is NOT in \<open>[0,c]\<close>), hence read off \<open>N\<close> verbatim on
+  BOTH operands.  (NB the full slice \<open>seg ?M j'\<^sub>0 j\<^sub>1\<^sup>red = seg N j'\<^sub>0 j\<^sub>1\<^sup>red\<close> is FALSE
+  when \<open>j\<^sub>1\<^sup>red = Lng N - 1\<close>: at the boundary index \<open>Lng N - 1\<close> the oper sits in
+  block 1, row-0 still matches via \<open>\<delta>\<close> but row-1 \<open>= entry N 1 j\<^sub>m\<^sub>2 \<noteq> entry N 1 (Lng N-1)\<close>.
+  This is why only the STRICT-prefix agreement \<open>[0,c]\<close> is used.)  The
+  trunk-confinement (\<open>tnc\<close>) and boundary stop (\<open>stop\<close>) are supplied by the caller
+  (same shape as the regime-B keystone).\<close>
+
+lemma TrMax_seg_oper_d1pos_eq_regA:
+  fixes N :: pairseq
+  assumes L: "1 < Lng N"
+    and notzero: "\<not> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0)"
+    and hp: "hasParent N (idx1 N (Lng N - 1)) (Lng N - 1)"
+    and i1z: "idx1 N (Lng N - 1) = 1"
+    and j0lt: "parent N 1 (Lng N - 1) < Lng N - 1"
+    and n1: "1 \<le> n"
+    and j1redle: "j1red \<le> Lng N - 1"
+    and j0j1red: "j0red < j1red"
+    and j1redspan: "j1red \<le> j0red + (j1' - j0')"
+    and j0eqA: "j0red = j0'"
+    and j0j1': "j0' < j1'"
+    and j1lt: "j1' < Lng ((N::pairseq)[n])"
+    and tnc: "TrMax (seg N j0red j1red) \<le> j1red - 1 - j0red"
+    and stop: "\<not> nextR (seg ((N::pairseq)[n]) j0' j1') 1
+                  (TrMax (seg N j0red j1red))
+                  (TrMax (seg N j0red j1red) + 1)"
+  shows "TrMax (seg ((N::pairseq)[n]) j0' j1')
+       = TrMax (seg N j0red j1red)"
+proof -
+  let ?M = "(N::pairseq)[n]"
+  let ?Mp = "seg ?M j0' j1'"
+  let ?Np = "seg N j0red j1red"
+  let ?c = "j1red - 1 - j0red"
+  have j0'le: "j0' \<le> j1'" using j0j1' by linarith
+  have MpT: "?Mp \<in> T_PS" using j0'le by (simp add: T_PS_def seg_def)
+  have NpT: "?Np \<in> T_PS" using j0j1red by (simp add: T_PS_def seg_def)
+  have LMp: "Lng ?Mp = Suc j1' - j0'" by simp
+  have LNp: "Lng ?Np = Suc j1red - j0red" by simp
+  have cN: "?c < Lng ?Np" using LNp j0j1red by linarith
+  have cM: "?c < Lng ?Mp"
+  proof -
+    have "?c < j1red - j0red" using j0j1red by linarith
+    also have "j1red - j0red \<le> j1' - j0'" using j1redspan by linarith
+    also have "j1' - j0' < Suc j1' - j0'" using j0j1' by linarith
+    finally show ?thesis using LMp by simp
+  qed
+  have agree: "\<And>s. s \<le> ?c \<Longrightarrow> ?Mp ! s = ?Np ! s"
+  proof -
+    fix s assume sc: "s \<le> ?c"
+    have sM: "s < Suc j1' - j0'" using sc cM LMp by linarith
+    have sNp: "s < Suc j1red - j0red" using sc cN LNp by linarith
+    \<comment> \<open>the read index \<open>j0' + s = j0red + s\<close> is STRICTLY below \<open>Lng N - 1\<close>\<close>
+    have idxlt: "j0red + s < Lng N - 1"
+    proof -
+      have "j0red + s \<le> j1red - 1" using sc j0j1red by linarith
+      thus ?thesis using j1redle j0j1red by linarith
+    qed
+    \<comment> \<open>both slices read \<open>?M ! (j0' + s) = N ! (j0' + s)\<close> verbatim (regime A, block-0)\<close>
+    have "?Mp ! s = ?M ! (j0' + s)" using sM by (rule seg_nth_eq)
+    also have "\<dots> = ?M ! (j0red + s)" using j0eqA by simp
+    also have "\<dots> = N ! (j0red + s)"
+      by (rule oper_d1pos_nth_low_verbatim[OF L notzero hp i1z j0lt n1 idxlt])
+    also have "\<dots> = ?Np ! s" using sNp by (simp add: seg_nth_eq)
+    finally show "?Mp ! s = ?Np ! s" .
+  qed
+  show ?thesis
+    by (rule TrMax_eq_of_prefix_agree[OF MpT NpT agree cM cN tnc stop])
+qed
+
+text \<open>§6.8 d1pos REGIME A Br alignment (analogue of @{thm [source]
+  oper_d1pos_notbrle_Br_align} for \<open>j'\<^sub>0 < j\<^sub>m\<^sub>2\<close>, \<open>shamt = 0\<close>): TrEq via the
+  regime-A keystone, both branches non-empty (\<open>notbrle\<close> / \<open>tnc\<close>), and the two
+  \<open>Br = P(...)\<close> reshapes (@{thm [source] Br_seg_reshape}).  Identical packaging to
+  the regime-B version, only the TrEq witness differs.\<close>
+
+lemma oper_d1pos_notbrle_Br_align_regA:
+  fixes N :: pairseq
+  assumes L: "1 < Lng N"
+    and notzero: "\<not> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0)"
+    and hp: "hasParent N (idx1 N (Lng N - 1)) (Lng N - 1)"
+    and i1z: "idx1 N (Lng N - 1) = 1"
+    and j0lt: "parent N 1 (Lng N - 1) < Lng N - 1"
+    and n1: "1 \<le> n"
+    and j1redle: "j1red \<le> Lng N - 1"
+    and j0j1red: "j0red < j1red"
+    and j1redspan: "j1red \<le> j0red + (j1' - j0')"
+    and j0eqA: "j0red = j0'"
+    and j0j1': "j0' < j1'"
+    and j1lt: "j1' < Lng ((N::pairseq)[n])"
+    and tnc: "TrMax (seg N j0red j1red) \<le> j1red - 1 - j0red"
+    and stop: "\<not> nextR (seg ((N::pairseq)[n]) j0' j1') 1
+                  (TrMax (seg N j0red j1red))
+                  (TrMax (seg N j0red j1red) + 1)"
+    and notbrle: "\<not> (TrMax (seg ((N::pairseq)[n]) j0' j1')
+                        = Lng (seg ((N::pairseq)[n]) j0' j1') - 1
+                      \<or> le0 (seg ((N::pairseq)[n]) j0' j1')
+                            (TrMax (seg ((N::pairseq)[n]) j0' j1') + 1)
+                            (Lng (seg ((N::pairseq)[n]) j0' j1') - 1))"
+  shows "TrMax (seg ((N::pairseq)[n]) j0' j1') = TrMax (seg N j0red j1red)
+       \<and> Br (seg ((N::pairseq)[n]) j0' j1')
+           = P (seg ((N::pairseq)[n])
+                  (j0' + TrMax (seg ((N::pairseq)[n]) j0' j1') + 1) j1')
+       \<and> Br (seg N j0red j1red)
+           = P (seg N (j0red + TrMax (seg N j0red j1red) + 1) j1red)
+       \<and> Br (seg ((N::pairseq)[n]) j0' j1') \<noteq> []
+       \<and> Br (seg N j0red j1red) \<noteq> []"
+proof -
+  let ?M = "(N::pairseq)[n]"
+  let ?Mp = "seg ?M j0' j1'"
+  let ?Np = "seg N j0red j1red"
+  have TrEq: "TrMax ?Mp = TrMax ?Np"
+    by (rule TrMax_seg_oper_d1pos_eq_regA[OF L notzero hp i1z j0lt n1 j1redle
+              j0j1red j1redspan j0eqA j0j1' j1lt tnc stop])
+  have trneM: "TrMax ?Mp \<noteq> Lng ?Mp - 1" using notbrle by blast
+  have lenNp: "Lng ?Np - 1 = j1red - j0red" using j0j1red by (simp del: Lng_seg add: Lng_seg)
+  have trneN: "TrMax ?Np \<noteq> Lng ?Np - 1"
+  proof -
+    have "TrMax ?Np < j1red - j0red" using tnc j0j1red by linarith
+    thus ?thesis using lenNp by simp
+  qed
+  have BrM'P: "Br ?Mp = P (seg ?M (j0' + TrMax ?Mp + 1) j1')"
+    by (rule Br_seg_reshape[OF j0j1' j1lt trneM])
+  have j1redltN: "j1red < Lng N" using j1redle L by linarith
+  have BrNpP: "Br ?Np = P (seg N (j0red + TrMax ?Np + 1) j1red)"
+    by (rule Br_seg_reshape[OF j0j1red j1redltN trneN])
   have BrM'ne: "Br ?Mp \<noteq> []" using BrM'P P_nonempty by simp
   have BrNpne: "Br ?Np \<noteq> []" using BrNpP P_nonempty by simp
   show ?thesis using TrEq BrM'P BrNpP BrM'ne BrNpne by blast
