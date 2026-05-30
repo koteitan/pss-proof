@@ -131,7 +131,7 @@ digraph pss {
     d_regA [label="regime A keystone(済)\n nth_low_verbatim/TrEq_regA/Br_align_regA", fillcolor="#2e5d34"];
     d_anchor [label="FirstNodes-anchor 同定(済)\n branch_anchor/collapse_concrete/butl/lowshift_regB", fillcolor="#2e5d34"];
     d_anchorco [label="anchor一致+lowshift+tail(済)\n P_butlast_take_at_anchor/anchor_coincide_regA/tail_junction", fillcolor="#2e5d34"];
-    d_wire [label="¬brle 最終組立stub\n notbrle_LOW_take_eq(存在)\n 残=clt/cNlt+regB-shift+assembly", fillcolor="#6b2b30"];
+    d_wire [label="¬brle 最終組立stub\n 4セル全green(regA/regB/boundary/periodic)\n 残=tnc/B3N(IH依存)+4セルcase-split", fillcolor="#6b2b30"];
 
   /* ===================== §6.7 標準形 ===================== */
     p67_un [label="§6.7 ST=∪SkT", fillcolor="#2e5d34"];

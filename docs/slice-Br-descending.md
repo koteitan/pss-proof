@@ -1793,3 +1793,26 @@ exercised in the in-context d0pos ¬brle case. Context-hyp dischargers GREEN: op
    mirror TrMax_seg_oper_d1pos_eq_notbrle_uncapped's internal tnc derivation (wbvl9gp2x).
 3. **The final case-split assembly** of oper_d1pos_notbrle_LOW_take_eq once the tiling + all
    dischargers are green.
+
+## UPDATE 2026-05-31 (continued 47): all 4 cells GREEN; B3N/tnc need the rank-k IH (slice e800758)
+
+The ¬brle tiling = exactly 4 cells, ALL now have green assembly lemmas (each = the main-stub
+conclusion under its cell condition, carrying deep-verified geometry hyps):
+- CELL 1 regA (j0'<jm2, A<jm2), CELL 2 regB (jm2<=j0', A<Lng N-1), CELL 3 boundary (j0'<jm2,
+  jm2<=A<Lng N-1) — all shamt=0;
+- CELL 4 periodic (j0'>=Lng N-1, shamt=q0*delta>0, the ONLY shift cell) =
+  oper_d1pos_notbrle_LOW_take_eq_periodic, itself dispatching interior (c<m) / boundary (c=m).
+Correct case-split: A vs Lng N-1, then (A<Lng N-1) A vs jm2, then (A>=jm2) j0' vs jm2.
+
+**KEY ARCHITECTURAL FINDING (b3n agent).** The tnc hyp (TrMax(seg N j0' (Lng N-1)) < Lng N-1-1-j0',
+capped case) reduces to B3N: entry N 1 jm2 <= entry N 1 (Lng N-2). B3N is **FALSE under the bare
+main-stub hyps** — CE N=(0,0)(1,1)(2,2)(3,0)(2,2) (a row-1 DIP at the (3,0) entry) satisfies every
+stub hyp incl ¬brle yet fails B3N. The earlier "1368/1368 true" was a generator artifact (oper-
+closure from diagonal seeds never makes dip-bearing N). B3N <=> MR (jm2 is row-1-minimal over its
+le0-cone below Lng N-1 = dip-freeness), and MR is exactly what the rank-k descending IH
+m_6_8_slice_Br_descending_monoT licenses for N (N in SkT_PS k). So B3N/tnc are NOT standalone bricks
+— they must be supplied by applying the IH to N inside the Suc-k induction step. The remaining work
+is therefore the FINAL ASSEMBLY done WITHIN the induction: case-split the 4 cells, discharge the
+geometry hyps from context, and discharge tnc/B3N (MR on N) from the IH applied to N's own slice.
+This explains why so many bricks needed "parent-supplied deep-verified hyps": the genuinely IH-
+dependent ones (B3N/tnc/std-slice) cannot be context-derived.

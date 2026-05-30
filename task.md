@@ -47,7 +47,7 @@
       - ✅ 命題（標準形の単項成分が標準形であること）
       - ✅ 命題（標準形の始切片への遺伝性）
     - 🚨 §6.8 降順性
-      - 🚨🤖 命題（標準形の切片と $\textrm{Br}$ の降順性の関係）〔本開発最難。詳細は `docs/slice-Br-descending.md`（最新=continued 46）。`m_6_8_slice_Br_descending_monoT`(slice-wip-68 HEAD **ae6ef55** 緑)は base/caseA/B/C + d0pos の brle case 緑。残=d0pos ¬brle の存在同定 stub `oper_d1pos_notbrle_LOW_take_eq`（真）。両 regime 組立 lemma（_regA/_regB）+ 文脈仮説 discharger（dpos/r1le/j0lt/multiM/le0Np/stop/mLmin）green。残=第3 regime A≥Lng N-1(~32%)と未カバーセルの正しい tiling + strict-tnc producer + 主 stub の最終 case-split 配線〕
+      - 🚨🤖 命題（標準形の切片と $\textrm{Br}$ の降順性の関係）〔本開発最難。詳細は `docs/slice-Br-descending.md`（最新=continued 47）。`m_6_8_slice_Br_descending_monoT`(slice-wip-68 HEAD **e800758** 緑)は base/caseA/B/C + d0pos の brle case 緑。残=d0pos ¬brle の存在同定 stub `oper_d1pos_notbrle_LOW_take_eq`（真）。¬brle 空間=4セル、全セルに green 組立 lemma（regA/regB/boundary/periodic）。文脈 discharger 大半 green。残=tnc/B3N（rank-k IH 依存＝standalone では偽、CE で確認）を Suc-k 帰納段で IH から供給 + 主 stub の4セル最終 case-split 配線〕
       - ✅ 命題（標準形の単項成分が降順であること）
   - 🚨 §7 Buchholzの表記系への翻訳
     - 🚨 §7.1 Buchholzの表記系
