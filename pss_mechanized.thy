@@ -14367,6 +14367,56 @@ proof -
   show ?thesis using min e0 es by simp
 qed
 
+text \<open>§6.8 geomB — STRICT within-period row-0 floor.  Sharpens
+  @{thm [source] oper_d1pos_period_row0_floor} from \<open>\<le>\<close> to \<open><\<close> for a NON-trivial
+  offset (\<open>0 < s \<le> w = Lng N-1-j\<^sub>m\<^sub>2\<close>): the period base \<open>j\<^sub>m\<^sub>2\<close> carries the STRICT
+  row-0 minimum of the closed period window.  The period slice
+  \<open>seg N j\<^sub>m\<^sub>2 (Lng N-1)\<close> is \<open>monoT\<close> (same derivation as the \<open>\<le>\<close> floor), so it is
+  NOT \<open>multiT\<close>; @{thm [source] m_6_2_multi_crit_23} (the \<open>(2)=(3)\<close> multi-criterion,
+  forward direction from \<open>leR \<cdot> 0 0 (Lng-1)\<close>, which is the \<open>monoT\<close> conjunct) then
+  gives the STRICT increase \<open>entry (seg ..) 0 0 < entry (seg ..) 0 s\<close> for every
+  \<open>0 < s < Lng (seg ..) = w+1\<close>; transfer both endpoints to \<open>N\<close> by
+  @{thm [source] entry_seg}.  This is the missing brick the REGIME-B \<open>clt\<close> witness
+  needs to undercut SAME-block tail positions (where the \<open>\<le>\<close> floor is too weak).
+  DEEP-VERIFIED rank 10 (515/515 d1pos \<open>N\<close>, /tmp/regB_strictfloor.py).\<close>
+
+lemma oper_d1pos_strict_period_floor:
+  fixes N :: pairseq
+  assumes hp: "hasParent N (idx1 N (Lng N - 1)) (Lng N - 1)"
+    and i1z: "idx1 N (Lng N - 1) = 1"
+    and j0lt: "parent N 1 (Lng N - 1) < Lng N - 1"
+    and s0: "0 < s"
+    and sle: "s \<le> Lng N - 1 - parent N 1 (Lng N - 1)"
+  shows "entry N 0 (parent N 1 (Lng N - 1))
+       < entry N 0 (parent N 1 (Lng N - 1) + s)"
+proof -
+  let ?jm2 = "parent N 1 (Lng N - 1)"  let ?j1 = "Lng N - 1"
+  have L: "1 < Lng N" using j0lt by linarith
+  have NT: "N \<in> T_PS" using L by (cases N) (auto simp: T_PS_def)
+  \<comment> \<open>row-1 parent step gives the row-0 reachability \<open>leR N 0 jm2 j1\<close>\<close>
+  have hp1: "hasParent N 1 ?j1" using hp i1z by simp
+  have parR: "nextR N 1 ?jm2 ?j1"
+    using hp1 unfolding hasParent_def parent_def by (rule theI')
+  have le0: "leR N 0 ?jm2 ?j1" using poper_nextR_imp_le0[OF parR] by simp
+  \<comment> \<open>the period slice is \<open>monoT\<close>, hence carries the strict row-0 minimum at its left end\<close>
+  have mono: "monoT (seg N ?jm2 ?j1)"
+    by (rule m_6_2_mono_ancestor_slice[OF NT j0lt le0])
+  have segT: "seg N ?jm2 ?j1 \<in> T_PS" using j0lt by (auto simp: T_PS_def seg_def)
+  have leR0: "leR (seg N ?jm2 ?j1) 0 0 (Lng (seg N ?jm2 ?j1) - 1)"
+    using mono by (simp add: monoT_def)
+  \<comment> \<open>strict row-0 increase for any non-trivial index (multi-criterion (2)=(3))\<close>
+  have slt: "s < Lng (seg N ?jm2 ?j1)" using sle j0lt by simp
+  have strictseg: "entry (seg N ?jm2 ?j1) 0 0 < entry (seg N ?jm2 ?j1) 0 s"
+    using m_6_2_multi_crit_23[OF segT] leR0 s0 slt by blast
+  \<comment> \<open>transfer both endpoints to \<open>N\<close>\<close>
+  have z0: "0 < Lng (seg N ?jm2 ?j1)" using j0lt by simp
+  have e0: "entry (seg N ?jm2 ?j1) 0 0 = entry N 0 ?jm2"
+    using entry_seg[OF z0] by simp
+  have es: "entry (seg N ?jm2 ?j1) 0 s = entry N 0 (?jm2 + s)"
+    using entry_seg[OF slt] by simp
+  show ?thesis using strictseg e0 es by simp
+qed
+
 text \<open>§6.8 geomA — the REGIME-A \<open>clt\<close> brick (\<open>c < m\<close>, replacing the non-universal
   hypothesis of @{thm [source] oper_d1pos_anchor_coincide_regA}).  For
   \<open>S = seg (N[n]) A E\<close> with \<open>A < j\<^sub>m\<^sub>2\<close> (regime A), the last \<open>FirstNodes\<close> anchor
@@ -14492,6 +14542,202 @@ proof -
   have "IdxSum (P S) ! (length (P S) - 1) < ?m"
     by (rule anchor_lt_of_uniform_witness[OF ST multi jjlt wit])
   thus "c < ?m" unfolding c_def .
+qed
+
+text \<open>§6.8 geomB — the REGIME-B \<open>c \<le> m\<close> brick (the regime-A \<open>clt\<close> technique
+  transferred to \<open>j\<^sub>m\<^sub>2 \<le> A\<close>).  For \<open>S = seg (N[n]) A E\<close> with \<open>j\<^sub>m\<^sub>2 \<le> A\<close> (regime B)
+  the last \<open>FirstNodes\<close> anchor \<open>c = IdxSum (P S) ! (len-1)\<close> sits at or below the
+  boundary index \<open>m = Lng (seg N A (Lng N-1)) - 1 = Lng N-1-A\<close>.  Unlike regime A,
+  the boundary \<open>c = m\<close> CAN (in fact always does) occur, so this is the NON-strict
+  universal bound \<open>c \<le> m\<close>, obtained via @{thm [source] anchor_lt_of_uniform_witness}
+  at \<open>k = m+1\<close> (which yields \<open>c < m+1\<close>).  WITNESS \<open>jj = (w - s0) mod w\<close> where
+  \<open>s0 = (A-j\<^sub>m\<^sub>2) mod w\<close>: this is the S-offset of the FIRST period FLOOR at/after \<open>A\<close>,
+  so \<open>A + jj = j\<^sub>m\<^sub>2 + q\<^sub>j\<^sub>j\<cdot>w\<close> (offset 0) and \<open>entry S 0 jj = entry N 0 j\<^sub>m\<^sub>2 + q\<^sub>j\<^sub>j\<cdot>\<delta>\<close>
+  (@{thm [source] oper_d1pos_entry0}).  Every STRICT tail index \<open>x \<in> [m+1, Lng S-1]\<close>
+  has \<open>A + x \<ge> Lng N = j\<^sub>m\<^sub>2 + q\<^sub>j\<^sub>j\<cdot>w + (\<dots>)\<close> in block \<open>q\<^sub>x \<ge> q\<^sub>j\<^sub>j\<close> at offset \<open>s\<^sub>x\<close>;
+  the undercut \<open>entry N 0 j\<^sub>m\<^sub>2 + q\<^sub>j\<^sub>j\<cdot>\<delta> < entry N 0 (j\<^sub>m\<^sub>2+s\<^sub>x) + q\<^sub>x\<cdot>\<delta>\<close> splits:
+  HIGHER block (\<open>q\<^sub>x > q\<^sub>j\<^sub>j\<close>) closes by \<open>q\<^sub>x\<cdot>\<delta> \<ge> q\<^sub>j\<^sub>j\<cdot>\<delta> + \<delta>\<close> and the \<open>\<le>\<close> floor;
+  SAME block (\<open>q\<^sub>x = q\<^sub>j\<^sub>j\<close>, then \<open>s\<^sub>x > 0\<close>) closes by the STRICT floor
+  @{thm [source] oper_d1pos_strict_period_floor}.  DEEP-VERIFIED rank 10 (519/519
+  regime-B cases: \<open>c \<le> m\<close> 519/519, witness undercut 519/519, /tmp/regB_clt.py;
+  block-index decode in range 519/519, /tmp/regB_qrange.py).  NB \<open>c = m\<close> holds
+  519/519 (\<open>c < m\<close> 0/519): the bound is realised at the boundary.\<close>
+
+lemma oper_d1pos_clt_regB:
+  fixes N :: pairseq and A E n :: nat
+  defines "S \<equiv> seg ((N::pairseq)[n]) A E"
+  defines "c \<equiv> IdxSum (P S) ! (length (P S) - 1)"
+  assumes L: "1 < Lng N"
+    and notzero: "\<not> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0)"
+    and hp: "hasParent N (idx1 N (Lng N - 1)) (Lng N - 1)"
+    and i1z: "idx1 N (Lng N - 1) = 1"
+    and j0lt: "parent N 1 (Lng N - 1) < Lng N - 1"
+    and n1: "1 \<le> n"
+    and Ajm2: "parent N 1 (Lng N - 1) \<le> A"
+    and AltN: "A < Lng N - 1"
+    and Ele: "Lng N - 1 \<le> E"
+    and Eub: "E < Lng ((N::pairseq)[n])"
+    and dpos: "entry N 0 (parent N 1 (Lng N - 1)) < entry N 0 (Lng N - 1)"
+    and multi: "1 < length (P S)"
+  shows "c \<le> Lng (seg N A (Lng N - 1)) - 1"
+proof -
+  let ?jm2 = "parent N 1 (Lng N - 1)"  let ?j1 = "Lng N - 1"  let ?w = "?j1 - ?jm2"
+  let ?delta = "entry N 0 ?j1 - entry N 0 ?jm2"
+  let ?m = "Lng (seg N A ?j1) - 1"
+  \<comment> \<open>geometry\<close>
+  have mval: "?m = ?j1 - A" using AltN by simp
+  have w0: "0 < ?w" using j0lt by linarith
+  obtain w where wdef: "?w = w" by blast
+  have w0': "0 < w" using w0 wdef by simp
+  have lenMn: "Lng ((N::pairseq)[n]) = ?jm2 + n * w"
+    using oper_d1pos_LngM[OF L notzero hp i1z j0lt] wdef by simp
+  \<comment> \<open>\<open>S \<in> T_PS\<close>\<close>
+  have Sne: "S \<noteq> []"
+  proof
+    assume "S = []"
+    hence "P S = [[]]" by (subst P.simps) (simp add: multiT_def zeroT_def monoT_def)
+    thus False using multi by simp
+  qed
+  have ST: "S \<in> T_PS" using Sne unfolding S_def by (auto simp: T_PS_def seg_def)
+  have LngS: "Lng S = Suc E - A" unfolding S_def by simp
+  \<comment> \<open>witness offset: \<open>jj = (w - s0) mod w\<close>, the first floor at/after \<open>A\<close>\<close>
+  let ?s0 = "(A - ?jm2) mod w"  let ?q0 = "(A - ?jm2) div w"
+  let ?jj = "(w - ?s0) mod w"
+  \<comment> \<open>KEY: \<open>jm2 \<le> A < jm2 + w\<close> (\<open>A < Lng N - 1 = jm2 + w\<close>), so \<open>A\<close> is in BLOCK 0:
+     \<open>q0 = 0\<close>, \<open>s0 = A - jm2\<close>\<close>
+  have AmlT: "A - ?jm2 < w" using AltN wdef j0lt Ajm2 by linarith
+  have s0val: "?s0 = A - ?jm2" using AmlT by simp
+  have q0z: "?q0 = 0" using AmlT by simp
+  have s0w: "?s0 < w" using AmlT s0val by simp
+  \<comment> \<open>\<open>A + jj = jm2 + qjj*w\<close> with \<open>qjj = (if s0=0 then 0 else 1) \<le> 1\<close>, offset 0\<close>
+  obtain qjj where qjjdef: "qjj = (if ?s0 = 0 then 0 else 1 :: nat)" by blast
+  have qjj1: "qjj \<le> 1" using qjjdef by simp
+  have Ajjfloor: "A + ?jj = ?jm2 + qjj * w"
+  proof (cases "?s0 = 0")
+    case True
+    hence jjz: "?jj = 0" using w0' by simp
+    have "A = ?jm2" using s0val True Ajm2 by simp
+    thus ?thesis using jjz qjjdef True by simp
+  next
+    case False
+    hence s0pos: "0 < ?s0" by simp
+    have "?jj = w - ?s0" using s0w s0pos by simp
+    hence "A + ?jj = ?jm2 + ?s0 + (w - ?s0)" using s0val Ajm2 by simp
+    also have "\<dots> = ?jm2 + w" using s0w by simp
+    finally show ?thesis using qjjdef False by simp
+  qed
+  \<comment> \<open>\<open>A + jj \<le> j1 = jm2 + w\<close>, hence \<open>jj \<le> m\<close>\<close>
+  have Ajjle: "A + ?jj \<le> ?j1"
+  proof -
+    have "?jm2 + qjj * w \<le> ?jm2 + 1 * w" using qjj1 by (simp add: mult_le_mono1)
+    thus ?thesis using Ajjfloor wdef j0lt by linarith
+  qed
+  have jjle_m: "?jj \<le> ?m" using Ajjle mval by linarith
+  \<comment> \<open>\<open>qjj < n\<close>: \<open>jm2 + qjj*w = A + jj \<le> E < Lng (N[n]) = jm2 + n*w\<close>\<close>
+  have qjjlt: "qjj < n"
+  proof -
+    have "A + ?jj \<le> E" using jjle_m mval Ele AltN by linarith
+    hence "?jm2 + qjj * w < ?jm2 + n * w" using Ajjfloor Eub lenMn by linarith
+    hence "qjj * w < n * w" by simp
+    thus ?thesis using w0' by simp
+  qed
+  \<comment> \<open>witness reads \<open>entry N 0 jm2 + qjj*delta\<close> (floor, offset 0)\<close>
+  have jjltS: "?jj < Lng S" using jjle_m mval LngS Ele AltN by linarith
+  have eSjj: "entry S 0 ?jj = entry N 0 ?jm2 + qjj * ?delta"
+  proof -
+    have decode: "entry ((N::pairseq)[n]) 0 (?jm2 + qjj * ?w + 0)
+              = entry N 0 (?jm2 + 0) + qjj * ?delta"
+      by (rule oper_d1pos_entry0[OF L notzero hp i1z j0lt qjjlt]) (use w0 in simp)
+    have "entry S 0 ?jj = entry ((N::pairseq)[n]) 0 (A + ?jj)"
+      unfolding S_def by (rule entry_seg[OF jjltS[unfolded S_def]])
+    also have "\<dots> = entry ((N::pairseq)[n]) 0 (?jm2 + qjj * ?w + 0)"
+      using Ajjfloor wdef by simp
+    also have "\<dots> = entry N 0 ?jm2 + qjj * ?delta" using decode by simp
+    finally show ?thesis .
+  qed
+  \<comment> \<open>uniform witness over the STRICT tail \<open>[m+1, Lng S-1]\<close> (\<open>k = m+1\<close>)\<close>
+  have wit: "\<And>x. Suc ?m \<le> x \<Longrightarrow> x \<le> Lng S - 1 \<Longrightarrow> entry S 0 ?jj < entry S 0 x"
+  proof -
+    fix x assume xlo: "Suc ?m \<le> x" and xhi: "x \<le> Lng S - 1"
+    \<comment> \<open>the N[n]-index \<open>A + x\<close> lies strictly above \<open>j1 = jm2 + w\<close>\<close>
+    have AxgN: "?j1 < A + x" using xlo mval by linarith
+    have AxleE: "A + x \<le> E" using xhi LngS Ele AltN by linarith
+    let ?qx = "(A + x - ?jm2) div w"  let ?sx = "(A + x - ?jm2) mod w"
+    have sxw: "?sx < w" using w0' by simp
+    have Axge: "?jm2 \<le> A + x" using AxgN j0lt by linarith
+    have xsplit: "A + x = ?jm2 + ?qx * w + ?sx"
+      using div_mult_mod_eq[of "A + x - ?jm2" w] Axge by (simp add: mult.commute)
+    \<comment> \<open>\<open>qx < n\<close>\<close>
+    have qxn: "?qx < n"
+    proof -
+      have "A + x - ?jm2 < n * w" using AxleE Eub lenMn Axge by linarith
+      thus ?thesis by (rule less_mult_imp_div_less)
+    qed
+    \<comment> \<open>read \<open>entry S 0 x\<close> via the block formula\<close>
+    have xltS: "x < Lng S" using xhi LngS Ele AltN by linarith
+    have eSx: "entry S 0 x = entry ((N::pairseq)[n]) 0 (A + x)"
+      unfolding S_def by (rule entry_seg[OF xltS[unfolded S_def]])
+    have sxw': "?sx < ?j1 - ?jm2" using sxw wdef by simp
+    have block: "entry ((N::pairseq)[n]) 0 (?jm2 + ?qx * ?w + ?sx)
+               = entry N 0 (?jm2 + ?sx) + ?qx * ?delta"
+      by (rule oper_d1pos_entry0[OF L notzero hp i1z j0lt qxn sxw'])
+    have xsplit': "A + x = ?jm2 + ?qx * ?w + ?sx" using xsplit wdef by simp
+    have eSx2: "entry S 0 x = entry N 0 (?jm2 + ?sx) + ?qx * ?delta"
+      using eSx xsplit' block by simp
+    \<comment> \<open>\<open>qjj \<le> qx\<close>, and \<open>qjj < qx \<or> (qjj = qx \<and> 0 < sx)\<close>\<close>
+    have AxgtAjj: "A + ?jj < A + x" using xlo jjle_m by linarith
+    have floorlt: "?jm2 + qjj * w < ?jm2 + ?qx * w + ?sx"
+      using AxgtAjj Ajjfloor xsplit wdef by simp
+    have qjjle: "qjj \<le> ?qx"
+    proof (rule ccontr)
+      assume "\<not> qjj \<le> ?qx"
+      hence sq: "Suc ?qx \<le> qjj" by simp
+      have "Suc ?qx * w \<le> qjj * w" by (rule mult_le_mono1[OF sq])
+      hence "?qx * w + w \<le> qjj * w" by simp
+      hence "?qx * w + ?sx < qjj * w" using sxw by linarith
+      thus False using floorlt by linarith
+    qed
+    have dpos': "0 < ?delta" using dpos by simp
+    have floor_le: "entry N 0 ?jm2 \<le> entry N 0 (?jm2 + ?sx)"
+      by (rule oper_d1pos_period_row0_floor[OF hp i1z j0lt]) (use sxw' in simp)
+    show "entry S 0 ?jj < entry S 0 x"
+    proof (cases "qjj = ?qx")
+      case True
+      \<comment> \<open>SAME block: then \<open>0 < sx\<close>; STRICT floor undercuts\<close>
+      have sxpos: "0 < ?sx"
+      proof -
+        have "?jm2 + qjj * w < ?jm2 + qjj * w + ?sx" using floorlt True by simp
+        thus ?thesis by linarith
+      qed
+      have strict: "entry N 0 ?jm2 < entry N 0 (?jm2 + ?sx)"
+        by (rule oper_d1pos_strict_period_floor[OF hp i1z j0lt sxpos]) (use sxw' in simp)
+      have "entry S 0 ?jj = entry N 0 ?jm2 + qjj * ?delta" using eSjj .
+      also have "\<dots> < entry N 0 (?jm2 + ?sx) + ?qx * ?delta"
+        using strict True by simp
+      also have "\<dots> = entry S 0 x" using eSx2 by simp
+      finally show ?thesis .
+    next
+      case False
+      \<comment> \<open>HIGHER block: \<open>qjj + 1 \<le> qx\<close>, so \<open>qjj*delta + delta \<le> qx*delta\<close>\<close>
+      have q1: "Suc qjj \<le> ?qx" using qjjle False by simp
+      have qd: "qjj * ?delta + ?delta \<le> ?qx * ?delta"
+      proof -
+        have "Suc qjj * ?delta \<le> ?qx * ?delta" by (rule mult_le_mono1[OF q1])
+        thus ?thesis by simp
+      qed
+      have "entry S 0 ?jj = entry N 0 ?jm2 + qjj * ?delta" using eSjj .
+      also have "\<dots> < entry N 0 ?jm2 + (qjj * ?delta + ?delta)" using dpos' by simp
+      also have "\<dots> \<le> entry N 0 (?jm2 + ?sx) + ?qx * ?delta"
+        using floor_le qd by linarith
+      also have "\<dots> = entry S 0 x" using eSx2 by simp
+      finally show ?thesis .
+    qed
+  qed
+  \<comment> \<open>bridge: anchor strictly below \<open>k = m+1\<close>, i.e. \<open>c \<le> m\<close>\<close>
+  have jjltk: "?jj < Suc ?m" using jjle_m by simp
+  have "IdxSum (P S) ! (length (P S) - 1) < Suc ?m"
+    by (rule anchor_lt_of_uniform_witness[OF ST multi jjltk wit])
+  thus "c \<le> ?m" unfolding c_def by simp
 qed
 
 text \<open>§6.8 d1pos \<not>brle REGIME-A anchor coincidence, clt/cNlt-FREE.  This is the
@@ -14686,6 +14932,185 @@ proof -
   have e1: "entry S 1 c = entry Snside 1 c" using eqQc1 lhs1 rhs1 by simp
   show "entry S 0 c = entry Snside 0 cN + shamt" using e0 ceq by simp
   show "entry S 1 c \<le> entry Snside 1 cN" using e1 ceq by simp
+qed
+
+text \<open>§6.8 geomB — the ANCHOR-AT-\<open>k\<close> bridge (a leftend \<open>k\<close> pins the anchor from
+  BELOW).  Dual of @{thm [source] anchor_lt_of_uniform_witness}: if an index \<open>k\<close>
+  is a row-0 LEFT-MINIMUM of \<open>S\<close> (\<open>\<forall>j<k. entry S 0 k \<le> entry S 0 j\<close>) and
+  \<open>k \<le> Lng S - 1\<close>, then \<open>k\<close> is a leftend (an \<open>IdxSum\<close> value,
+  @{thm [source] idxsum_lmin_leftend}); since the last anchor
+  \<open>c = IdxSum (P S) ! (length (P S)-1)\<close> is the LARGEST leftend
+  (@{thm [source] idxsum_mono}), \<open>k \<le> c\<close>.  Combined with the upper bound
+  \<open>c \<le> k\<close> of @{thm [source] oper_d1pos_clt_regB} this pins \<open>c = k\<close>.\<close>
+
+lemma anchor_ge_of_leftmin:
+  fixes S :: pairseq
+  defines "c \<equiv> IdxSum (P S) ! (length (P S) - 1)"
+  assumes ST: "S \<in> T_PS"
+    and kle: "k \<le> Lng S - 1"
+    and lmin: "\<forall>j < k. entry S 0 k \<le> entry S 0 j"
+  shows "k \<le> c"
+proof -
+  obtain J where JL: "J < length (P S)" and Jk: "IdxSum (P S) ! J = k"
+    using idxsum_lmin_leftend[OF ST kle] lmin by auto
+  have "IdxSum (P S) ! J \<le> IdxSum (P S) ! (length (P S) - 1)"
+    by (rule idxsum_mono) (use JL in auto)
+  thus ?thesis using Jk unfolding c_def by simp
+qed
+
+text \<open>§6.8 d1pos \<open>\<not>brle\<close> REGIME B anchor coincidence, clt/cNlt-FREE (the BOUNDARY
+  analogue of @{thm [source] oper_d1pos_anchor_coincide_regA2}).  In regime B
+  (\<open>j\<^sub>m\<^sub>2 \<le> A < Lng N-1\<close>, where \<open>A = j'\<^sub>0 + TrMax M' + 1\<close>) the slice start \<open>A\<close> sits in
+  BLOCK 0 of the period (\<open>q\<^sub>0 = (A-j\<^sub>m\<^sub>2) div w = 0\<close> since \<open>A-j\<^sub>m\<^sub>2 < w\<close>), so
+  \<open>shamt = q\<^sub>0\<cdot>\<delta> = 0\<close> and both row-0 anchors AGREE verbatim — but UNLIKE regime A the
+  common anchor sits AT the boundary \<open>c = c\<^sub>N = m = Lng (seg N A (Lng N-1)) - 1\<close>
+  (the last \<open>P\<close>-component is a singleton, so the strict bound of
+  @{thm [source] oper_d1pos_anchor_coincide_regB} is INAPPLICABLE).  We pin the two
+  anchors at \<open>m\<close> directly: \<open>c \<le> m\<close> by @{thm [source] oper_d1pos_clt_regB},
+  \<open>c \<ge> m\<close> and \<open>c\<^sub>N \<ge> m\<close>/\<open>c\<^sub>N \<le> m\<close> by @{thm [source] anchor_ge_of_leftmin} /
+  @{thm [source] oper_d1pos_branch_anchor}(2) from the residual block-fold left-min
+  facts \<open>mLmin_S\<close>/\<open>mLmin_Sn\<close> (the boundary index \<open>m\<close>, resp. the last index of
+  \<open>Snside\<close>, is a row-0 left-min — DEEP-VERIFIED 519/519, /tmp/regB_mleftmin.py /
+  /tmp/regB_cNm.py).  The junction entries are then read at the single index \<open>m\<close>
+  (\<open>A+m = Lng N-1 = j\<^sub>m\<^sub>2 + w\<close>, block 1 offset 0): row-0 \<open>entry S 0 m = entry N 0
+  (Lng N-1) = entry Snside 0 m\<close> (@{thm [source] oper_d1pos_entry0}, \<open>shamt = 0\<close>),
+  row-1 \<open>entry S 1 m = entry N 1 j\<^sub>m\<^sub>2 \<le> entry N 1 (Lng N-1) = entry Snside 1 m\<close>
+  (@{thm [source] oper_d1pos_entry1} + the row-1 period bound \<open>r1le\<close>).
+  DEEP-VERIFIED rank 10 (519/519, /tmp/regB_ceqm.py, /tmp/regB_entrybd.py,
+  /tmp/regB_row1.py).  The hypotheses \<open>mLmin_S\<close>/\<open>mLmin_Sn\<close>/\<open>r1le\<close> are exactly the
+  residual block-fold / first-node geometry (parent supplies them).\<close>
+
+lemma oper_d1pos_anchor_coincide_regB2:
+  fixes N :: pairseq and A E n :: nat
+  defines "S \<equiv> seg ((N::pairseq)[n]) A E"
+      and "Snside \<equiv> seg N A (Lng N - 1)"
+  defines "c \<equiv> IdxSum (P S) ! (length (P S) - 1)"
+      and "cN \<equiv> IdxSum (P Snside) ! (length (P Snside) - 1)"
+  assumes L: "1 < Lng N"
+    and notzero: "\<not> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0)"
+    and hp: "hasParent N (idx1 N (Lng N - 1)) (Lng N - 1)"
+    and i1z: "idx1 N (Lng N - 1) = 1"
+    and j0lt: "parent N 1 (Lng N - 1) < Lng N - 1"
+    and n1: "1 \<le> n"
+    and Ajm2: "parent N 1 (Lng N - 1) \<le> A"
+    and AltN: "A < Lng N - 1"
+    and Ele: "Lng N - 1 \<le> E"
+    and Eub: "E < Lng ((N::pairseq)[n])"
+    and dpos: "entry N 0 (parent N 1 (Lng N - 1)) < entry N 0 (Lng N - 1)"
+    and multi: "1 < length (P S)"
+    and multiN: "1 < length (P Snside)"
+    and mLmin_S: "\<forall>j < Lng (seg N A (Lng N - 1)) - 1.
+                    entry S 0 (Lng (seg N A (Lng N - 1)) - 1) \<le> entry S 0 j"
+    and mLmin_Sn: "\<forall>j < Lng Snside - 1. entry Snside 0 (Lng Snside - 1) \<le> entry Snside 0 j"
+    and r1le: "entry N 1 (parent N 1 (Lng N - 1)) \<le> entry N 1 (Lng N - 1)"
+  shows "c = cN"
+    and "entry S 0 c = entry Snside 0 cN"
+    and "entry S 1 c \<le> entry Snside 1 cN"
+proof -
+  let ?jm2 = "parent N 1 (Lng N - 1)"  let ?j1 = "Lng N - 1"  let ?w = "?j1 - ?jm2"
+  let ?delta = "entry N 0 ?j1 - entry N 0 ?jm2"
+  let ?m = "Lng (seg N A ?j1) - 1"
+  have mval: "?m = ?j1 - A" using AltN by simp
+  have w0: "0 < ?w" using j0lt by linarith
+  obtain w where wdef: "?w = w" by blast
+  have w0': "0 < w" using w0 wdef by simp
+  have lenMn: "Lng ((N::pairseq)[n]) = ?jm2 + n * w"
+    using oper_d1pos_LngM[OF L notzero hp i1z j0lt] wdef by simp
+  \<comment> \<open>\<open>1 < n\<close>: \<open>jm2 + w = Lng N-1 \<le> E < Lng (N[n]) = jm2 + n*w\<close> forces \<open>w < n*w\<close>\<close>
+  have jm2w: "?jm2 + w = ?j1" using wdef j0lt by linarith
+  have n2: "1 < n"
+  proof -
+    have "?jm2 + w \<le> E" using Ele jm2w by simp
+    hence "?jm2 + w < ?jm2 + n * w" using Eub lenMn by linarith
+    hence "w < n * w" by simp
+    thus ?thesis using w0' by (simp add: mult.commute)
+  qed
+  \<comment> \<open>\<open>S \<in> T_PS\<close>, \<open>Snside \<in> T_PS\<close>\<close>
+  have Sne: "S \<noteq> []"
+  proof
+    assume "S = []"
+    hence "P S = [[]]" by (subst P.simps) (simp add: multiT_def zeroT_def monoT_def)
+    thus False using multi by simp
+  qed
+  have ST: "S \<in> T_PS" using Sne unfolding S_def by (auto simp: T_PS_def seg_def)
+  have Snne: "Snside \<noteq> []"
+  proof
+    assume "Snside = []"
+    hence "P Snside = [[]]" by (subst P.simps) (simp add: multiT_def zeroT_def monoT_def)
+    thus False using multiN by simp
+  qed
+  have SnT: "Snside \<in> T_PS" using Snne unfolding Snside_def by (auto simp: T_PS_def seg_def)
+  have LngS: "Lng S = Suc E - A" unfolding S_def by simp
+  have LngSn: "Lng Snside = Suc ?j1 - A" unfolding Snside_def by simp
+  have mSn: "Lng Snside - 1 = ?m" using LngSn AltN by simp
+  \<comment> \<open>\<open>m\<close> is a valid index of both \<open>S\<close> and \<open>Snside\<close> (\<open>A + m = Lng N-1 \<le> E\<close>)\<close>
+  have Amj1: "A + ?m = ?j1" using mval AltN by linarith
+  have mltS: "?m < Lng S" using LngS Ele AltN mval by linarith
+  have mltSn: "?m < Lng Snside" using mSn LngSn AltN by linarith
+  \<comment> \<open>pin \<open>c = m\<close>: \<open>c \<le> m\<close> (clt) and \<open>c \<ge> m\<close> (\<open>m\<close> a leftend of \<open>S\<close>)\<close>
+  have cle: "c \<le> ?m" unfolding c_def S_def
+    by (rule oper_d1pos_clt_regB[OF L notzero hp i1z j0lt n1 Ajm2 AltN Ele Eub dpos
+              multi[unfolded S_def c_def]])
+  have mleS1: "?m \<le> Lng S - 1" using mltS by linarith
+  have cge: "?m \<le> c" unfolding c_def
+    by (rule anchor_ge_of_leftmin[OF ST mleS1]) (use mLmin_S in simp)
+  have ceqm: "c = ?m" using cle cge by linarith
+  \<comment> \<open>pin \<open>cN = m\<close>: \<open>cN \<le> Lng Snside-1 = m\<close> (anchor) and \<open>cN \<ge> m\<close> (last index a leftend)\<close>
+  have cNle: "cN \<le> Lng Snside - 1" unfolding cN_def
+    by (rule oper_d1pos_branch_anchor(2)[OF SnT multiN])
+  have cNle': "cN \<le> ?m" using cNle mSn by simp
+  have mleSn1: "Lng Snside - 1 \<le> Lng Snside - 1" by simp
+  have cNge: "Lng Snside - 1 \<le> cN" unfolding cN_def
+    by (rule anchor_ge_of_leftmin[OF SnT mleSn1]) (use mLmin_Sn in simp)
+  have cNeqm: "cN = ?m" using cNge cNle' mSn by linarith
+  \<comment> \<open>c = cN\<close>
+  show ceqcN: "c = cN" using ceqm cNeqm by simp
+  \<comment> \<open>row-0 at the junction index \<open>m\<close>: both read \<open>entry N 0 (Lng N-1)\<close> (\<open>shamt = 0\<close>)\<close>
+  have eSm0: "entry S 0 ?m = entry N 0 ?j1"
+  proof -
+    have wpos: "(0::nat) < ?w" using w0 .
+    have decode: "entry ((N::pairseq)[n]) 0 (?jm2 + 1 * ?w + 0)
+              = entry N 0 (?jm2 + 0) + 1 * ?delta"
+      by (rule oper_d1pos_entry0[OF L notzero hp i1z j0lt n2 wpos])
+    have idx: "A + ?m = ?jm2 + 1 * ?w + 0" using Amj1 wdef j0lt by simp
+    have "entry S 0 ?m = entry ((N::pairseq)[n]) 0 (A + ?m)"
+      unfolding S_def by (rule entry_seg[OF mltS[unfolded S_def]])
+    also have "\<dots> = entry ((N::pairseq)[n]) 0 (?jm2 + 1 * ?w + 0)" using idx by simp
+    also have "\<dots> = entry N 0 ?jm2 + ?delta" using decode by simp
+    also have "\<dots> = entry N 0 ?j1" using dpos by simp
+    finally show ?thesis .
+  qed
+  have eSnm0: "entry Snside 0 ?m = entry N 0 ?j1"
+  proof -
+    have "entry Snside 0 ?m = entry N 0 (A + ?m)"
+      unfolding Snside_def by (rule entry_seg[OF mltSn[unfolded Snside_def]])
+    thus ?thesis using Amj1 by simp
+  qed
+  show "entry S 0 c = entry Snside 0 cN"
+    using eSm0 eSnm0 ceqm cNeqm by simp
+  \<comment> \<open>row-1 at the junction index \<open>m\<close>: \<open>entry S 1 m = entry N 1 jm2 \<le> entry N 1 (Lng N-1)
+     = entry Snside 1 m\<close>\<close>
+  have eSm1: "entry S 1 ?m = entry N 1 ?jm2"
+  proof -
+    have wpos: "(0::nat) < ?w" using w0 .
+    have decode: "entry ((N::pairseq)[n]) 1 (?jm2 + 1 * ?w + 0)
+              = entry N 1 (?jm2 + 0)"
+      by (rule oper_d1pos_entry1[OF L notzero hp i1z j0lt n2 wpos])
+    have idx: "A + ?m = ?jm2 + 1 * ?w + 0" using Amj1 wdef j0lt by simp
+    have "entry S 1 ?m = entry ((N::pairseq)[n]) 1 (A + ?m)"
+      unfolding S_def by (rule entry_seg[OF mltS[unfolded S_def]])
+    also have "\<dots> = entry ((N::pairseq)[n]) 1 (?jm2 + 1 * ?w + 0)" using idx by simp
+    also have "\<dots> = entry N 1 ?jm2" using decode by simp
+    finally show ?thesis .
+  qed
+  have eSnm1: "entry Snside 1 ?m = entry N 1 ?j1"
+  proof -
+    have "entry Snside 1 ?m = entry N 1 (A + ?m)"
+      unfolding Snside_def by (rule entry_seg[OF mltSn[unfolded Snside_def]])
+    thus ?thesis using Amj1 by simp
+  qed
+  show "entry S 1 c \<le> entry Snside 1 cN"
+    using eSm1 eSnm1 r1le ceqm cNeqm by simp
 qed
 
 text \<open>§6.8 d1pos \<open>\<not>brle\<close> REGIME B lowshift — EXACT plug-in form (conc-A,
