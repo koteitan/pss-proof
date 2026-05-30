@@ -13,7 +13,7 @@ digraph pss {
   Z6 [shape=ellipse]; Z7 [shape=ellipse];
   d_brle [shape=ellipse]; d_mono [shape=ellipse]; d_split [shape=ellipse];
   d_low [shape=ellipse]; d_dapp [shape=ellipse]; d_wire [shape=ellipse];
-  d_collapse [shape=ellipse]; d_regA [shape=ellipse]; d_anchor [shape=ellipse];
+  d_collapse [shape=ellipse]; d_regA [shape=ellipse]; d_anchor [shape=ellipse]; d_anchorco [shape=ellipse];
   SkTmono [shape=ellipse]; dead20 [shape=ellipse];
 
   /* ===== color classes ===== */
@@ -130,7 +130,8 @@ digraph pss {
     d_collapse [label="across-block P-collapse(済)\n oper_d1pos_collapse", fillcolor="#2e5d34"];
     d_regA [label="regime A keystone(済)\n nth_low_verbatim/TrEq_regA/Br_align_regA", fillcolor="#2e5d34"];
     d_anchor [label="FirstNodes-anchor 同定(済)\n branch_anchor/collapse_concrete/butl/lowshift_regB", fillcolor="#2e5d34"];
-    d_wire [label="¬brle 最終組立stub\n notbrle_LOW_take_eq(存在)\n 残=lowshift-ctx/tail-junc/assembly", fillcolor="#6b2b30"];
+    d_anchorco [label="anchor一致+lowshift+tail(済)\n P_butlast_take_at_anchor/anchor_coincide_regA/tail_junction", fillcolor="#2e5d34"];
+    d_wire [label="¬brle 最終組立stub\n notbrle_LOW_take_eq(存在)\n 残=clt/cNlt+regB-shift+assembly", fillcolor="#6b2b30"];
 
   /* ===================== §6.7 標準形 ===================== */
     p67_un [label="§6.7 ST=∪SkT", fillcolor="#2e5d34"];
@@ -212,7 +213,8 @@ digraph pss {
   p67_Pc -> p68_p1;
   {d_brle d_wire} -> c_d0pos;
   d_mono -> d_brle;
-  {d_split d_low d_dapp d_collapse d_regA d_anchor} -> d_wire;
+  {d_split d_low d_dapp d_collapse d_regA d_anchor d_anchorco} -> d_wire;
+  d_anchor -> d_anchorco;
   {d_split d_low d_mono} -> d_collapse;
   {d_collapse d_split} -> d_anchor;
   Z1 -> Z2; Z2 -> Z3; Z2 -> Z4; Z1 -> Z3; Z1 -> Z4; Z2 -> Z6; Z6 -> Z7;

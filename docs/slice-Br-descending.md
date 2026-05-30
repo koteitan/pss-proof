@@ -1724,3 +1724,27 @@ existential assembly threading collapse_concrete + branch_butl + lowshift_ctx + 
 facts (entry_funpow_IncrFirst0/1) + le0 N j0red j1red + the Br reshapes. Workflow wzxdjxihh runs
 (a)+(b). No block-fold family (oper_d1pos_seg_P_split/_hfold/...) is needed after all — the idxsum
 anchor + the single-block source-eq cover it.
+
+## UPDATE 2026-05-30 (continued 44): regime-A anchor coincidence c=cN + F8end/F9end GREEN; residual = clt/cNlt + regime-B shift (slice f3a5cd3)
+
+The lowshift-ctx + tail-junction bricks landed (slice 4c2decb): oper_d1pos_seg_low_verbatim,
+oper_d1pos_branch_lowshift_regA (regime A, shamt=0), oper_d1pos_branch_lowshift_regB_plug (base =
+seg Snside 0 (cN−1)), oper_d1pos_anchor_tail_entry (entry(last(P S)) i 0 = entry S i c),
+oper_d1pos_tail_junction (F8/F9 from F8end/F9end). Then the anchor-coincidence (slice f3a5cd3):
+- **`P_butlast_take_at_anchor` (GREEN, reusable core)**: truncating S above its last anchor c
+  preserves butlast(P S): butlast(P(seg S 0 (m−1))) = butlast(P S) for c<m≤Lng S. (FALSE at m=c.)
+- **`notmulti_seg_prefix` (GREEN)**: a start-prefix of a non-multi T_PS seq is non-multi.
+- **`oper_d1pos_anchor_coincide_regA` (GREEN)**: regime-A c=cN, F8end (shamt=0 tie), F9end — derived
+  via the KEY CORRECTION that S and Snside are NOT element-wise verbatim (0/267) but agree on
+  ALL-BUT-LAST [0,Lng Snside−2]; c=cN reduces to butlast(P S)=butlast(P Snside) via
+  P_butlast_take_at_anchor on both. Residual: two deep-verified bounds clt:c<Lng Snside−1,
+  cNlt:cN<Lng Snside−1 (the last branch component has length≥2; from the periodic tail having
+  row-0 above the running min, no left-min at index≥m).
+
+So the §6.8 d0pos stub is now reduced to: (regime A) discharge clt/cNlt → fully green + the regime-A
+branch assembly; (regime B, jm2≤j0') the SHIFT analogue of anchor_coincide_regA — butlast(P S) =
+map(IncrFirst^^shamt)(butlast(P Snside)) via P_butlast_take_at_anchor + the single-block shift
+seg-eq (oper_d1pos_LOW_source_eq) + P_funpow_IncrFirst, then c=cN (Lng_funpow_IncrFirst preserves
+lengths), baseEq, F8end (+shamt), F9end. Workflow wcy5tmj4j runs both. NB a verification-script bug
+(IdxSum[−1]=Lng S vs the correct IdxSum[len−1]=last anchor) caused a spurious "regime-B multi-block /
+c≠cN" false alarm — with the correct anchor, regime B is single-block 1128/1128.
