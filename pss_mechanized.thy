@@ -16567,6 +16567,502 @@ proof -
 qed
 
 
+text \<open>§6.8 helper — \<open>IncrFirst\<close> commutes with \<open>seg\<close>: a slice of the row-0-shifted
+  sequence is the shift of the slice (\<open>IncrFirst = map\<close>, which commutes with the
+  take/drop that build \<open>seg\<close>).  The \<open>funpow\<close> version follows by induction.  Used in
+  the CELL-4 periodic assembly to push the full per-block shift through the LOW
+  prefix window.\<close>
+
+lemma seg_IncrFirst0:
+  assumes "b < Lng M"
+  shows "seg (IncrFirst M) a b = IncrFirst (seg M a b)"
+proof (rule nth_equalityI)
+  show "length (seg (IncrFirst M) a b) = length (IncrFirst (seg M a b))"
+    by (simp add: IncrFirst_def)
+next
+  fix i assume "i < length (seg (IncrFirst M) a b)"
+  hence ic: "i < Suc b - a" by (simp add: IncrFirst_def)
+  have segL: "seg (IncrFirst M) a b ! i = (IncrFirst M) ! (a + i)"
+    using ic by (rule seg_nth_eq)
+  have segR: "seg M a b ! i = M ! (a + i)" using ic by (rule seg_nth_eq)
+  have ailt: "a + i < Lng M" using ic assms by linarith
+  have "(IncrFirst M) ! (a + i) = (Suc (fst (M ! (a + i))), snd (M ! (a + i)))"
+    using ailt by (simp add: IncrFirst_def)
+  moreover have "IncrFirst (seg M a b) ! i
+               = (Suc (fst (seg M a b ! i)), snd (seg M a b ! i))"
+  proof -
+    have "i < length (seg M a b)" using ic by simp
+    thus ?thesis by (simp add: IncrFirst_def)
+  qed
+  ultimately show "seg (IncrFirst M) a b ! i = IncrFirst (seg M a b) ! i"
+    using segL segR by simp
+qed
+
+lemma seg_funpow_IncrFirst0:
+  assumes "b < Lng M"
+  shows "seg ((IncrFirst ^^ k) M) a b = (IncrFirst ^^ k) (seg M a b)"
+  using assms
+proof (induction k)
+  case 0 thus ?case by simp
+next
+  case (Suc k)
+  have bk: "b < Lng ((IncrFirst ^^ k) M)" using Suc.prems by simp
+  have "seg ((IncrFirst ^^ Suc k) M) a b = seg (IncrFirst ((IncrFirst ^^ k) M)) a b"
+    by simp
+  also have "\<dots> = IncrFirst (seg ((IncrFirst ^^ k) M) a b)" by (rule seg_IncrFirst0[OF bk])
+  also have "\<dots> = IncrFirst ((IncrFirst ^^ k) (seg M a b))" using Suc by simp
+  also have "\<dots> = (IncrFirst ^^ Suc k) (seg M a b)" by simp
+  finally show ?case .
+qed
+
+
+text \<open>§6.8 d1pos \<open>\<not>brle\<close> CELL-4 (PERIODIC-TAIL) anchor coincidence — INTERIOR
+  sub-case (\<open>c < m\<close>, deep-verified 729/1254).  The slice starts in \<open>M\<close>'s PERIODIC
+  TAIL; the \<open>M\<close>-side branch \<open>S = Br M'\<close> source lies ENTIRELY inside block \<open>q\<^sub>0\<close>, so it
+  is a CLEAN per-block shift of its block-0 image \<open>Snside = Br N\<^sub>r\<close> source:
+  \<open>S = (IncrFirst^^shamt) Snside\<close> (\<open>shamt = q\<^sub>0\<cdot>\<delta>\<close>, deep-verified 729/729,
+  python/cell4_periodic_check.py).  Then \<open>P\<close> commutes with the shift
+  (@{thm [source] P_funpow_IncrFirst}), so the anchors coincide and the junction
+  entries shift by \<open>shamt\<close> (row 0) / are unchanged (row 1).\<close>
+
+lemma oper_d1pos_anchor_coincide_period_interior:
+  fixes S :: pairseq and Snside :: pairseq and shamt :: nat
+  defines "c \<equiv> IdxSum (P S) ! (length (P S) - 1)"
+      and "cN \<equiv> IdxSum (P Snside) ! (length (P Snside) - 1)"
+  assumes SnT: "Snside \<in> T_PS" and multiN: "1 < length (P Snside)"
+    and fullShift: "S = (IncrFirst ^^ shamt) Snside"
+  shows "c = cN"
+    and "entry S 0 c = entry Snside 0 cN + shamt"
+    and "entry S 1 c \<le> entry Snside 1 cN"
+proof -
+  have PS: "P S = map (IncrFirst ^^ shamt) (P Snside)"
+    using fullShift by (simp add: P_funpow_IncrFirst)
+  have lenEq: "length (P S) = length (P Snside)" using PS by simp
+  \<comment> \<open>anchor offset \<open>c = sum_list (map length (butlast (P S)))\<close>; the shift preserves
+     all component lengths, so \<open>c = cN\<close>\<close>
+  have ceqlen: "c = sum_list (map length (butlast (P S)))"
+    unfolding c_def by (simp add: idxsum_nth butlast_conv_take)
+  have cNeqlen: "cN = sum_list (map length (butlast (P Snside)))"
+    unfolding cN_def by (simp add: idxsum_nth butlast_conv_take)
+  have butEq: "butlast (P S) = map (IncrFirst ^^ shamt) (butlast (P Snside))"
+    using PS by (simp add: map_butlast)
+  show ceqcN: "c = cN"
+    using ceqlen cNeqlen butEq by (simp add: o_def Lng_funpow_IncrFirst)
+  \<comment> \<open>\<open>c < Lng Snside\<close> (anchor is a valid index of \<open>Snside\<close>)\<close>
+  have cNlt: "cN < Lng Snside"
+  proof -
+    have cle: "cN \<le> Lng Snside - 1" unfolding cN_def
+      by (rule oper_d1pos_branch_anchor(2)[OF SnT multiN])
+    have Lpos: "0 < Lng Snside"
+    proof -
+      have "Snside \<noteq> []" using multiN by (cases "Snside = []")
+          (auto simp: P.simps multiT_def zeroT_def monoT_def)
+      thus ?thesis by (cases Snside) auto
+    qed
+    show ?thesis using cle Lpos by linarith
+  qed
+  have cltS: "c < Lng S" using ceqcN cNlt fullShift by simp
+  show "entry S 0 c = entry Snside 0 cN + shamt"
+  proof -
+    have "entry S 0 c = entry ((IncrFirst ^^ shamt) Snside) 0 c" using fullShift by simp
+    also have "\<dots> = entry Snside 0 c + shamt" by (rule entry_funpow_IncrFirst0[OF cNlt[unfolded ceqcN[symmetric]]])
+    finally show ?thesis using ceqcN by simp
+  qed
+  show "entry S 1 c \<le> entry Snside 1 cN"
+  proof -
+    have "entry S 1 c = entry ((IncrFirst ^^ shamt) Snside) 1 c" using fullShift by simp
+    also have "\<dots> = entry Snside 1 c" by (rule entry_funpow_IncrFirst1[OF cNlt[unfolded ceqcN[symmetric]]])
+    finally show ?thesis using ceqcN by simp
+  qed
+qed
+
+text \<open>§6.8 d1pos \<open>\<not>brle\<close> CELL-4 (PERIODIC-TAIL) anchor coincidence — BOUNDARY
+  sub-case (\<open>c = m\<close>, deep-verified 525/1254).  The \<open>M\<close>-side branch \<open>S\<close> CROSSES the
+  period boundary, so its last \<open>P\<close>-component is a singleton at the boundary index
+  \<open>m = Lng Snside - 1\<close> (\<open>A + m = j\<^sub>m\<^sub>2 + (q\<^sub>0+1)\<cdot>w\<close>).  We pin \<open>c = cN = m\<close> via
+  @{thm [source] anchor_ge_of_leftmin} (the \<open>mLmin\<close> facts: \<open>m\<close> is a row-0 left-min of
+  both \<open>S\<close> — up to \<open>shamt\<close> — and \<open>Snside\<close>) together with the upper bound \<open>cle\<close>
+  (\<open>cle : c \<le> m\<close>, supplied by the assembly's anchor-bound geometry), and read the
+  junction entries from \<open>boundEq0\<close>/\<open>boundEq1\<close> (the period-boundary block decode,
+  deep-verified rank 11, python/cell4_periodic_check.py: F8/F9 1254/1254).\<close>
+
+lemma oper_d1pos_anchor_coincide_period_boundary:
+  fixes S :: pairseq and Snside :: pairseq and shamt :: nat
+  defines "c \<equiv> IdxSum (P S) ! (length (P S) - 1)"
+      and "cN \<equiv> IdxSum (P Snside) ! (length (P Snside) - 1)"
+  assumes ST: "S \<in> T_PS" and multi: "1 < length (P S)"
+    and SnT: "Snside \<in> T_PS" and multiN: "1 < length (P Snside)"
+    and mleS: "Lng Snside - 1 \<le> Lng S - 1"
+    and cle: "c = Lng Snside - 1"
+    and mLmin_Sn: "\<forall>j < Lng Snside - 1. entry Snside 0 (Lng Snside - 1) \<le> entry Snside 0 j"
+    and boundEq0: "entry S 0 (Lng Snside - 1) = entry Snside 0 (Lng Snside - 1) + shamt"
+    and boundEq1: "entry S 1 (Lng Snside - 1) \<le> entry Snside 1 (Lng Snside - 1)"
+  shows "c = cN"
+    and "entry S 0 c = entry Snside 0 cN + shamt"
+    and "entry S 1 c \<le> entry Snside 1 cN"
+proof -
+  let ?m = "Lng Snside - 1"
+  have cNle: "cN \<le> ?m" unfolding cN_def
+    by (rule oper_d1pos_branch_anchor(2)[OF SnT multiN])
+  have mleSn1: "?m \<le> Lng Snside - 1" by simp
+  have cNge: "Lng Snside - 1 \<le> cN" unfolding cN_def
+    by (rule anchor_ge_of_leftmin[OF SnT mleSn1]) (use mLmin_Sn in simp)
+  have cNeqm: "cN = ?m" using cNge cNle by linarith
+  show ceqcN: "c = cN" using cle cNeqm by simp
+  show "entry S 0 c = entry Snside 0 cN + shamt" using boundEq0 cle cNeqm by simp
+  show "entry S 1 c \<le> entry Snside 1 cN" using boundEq1 cle cNeqm by simp
+qed
+
+
+text \<open>§6.8 d1pos \<open>\<not>brle\<close> CELL-4 (PERIODIC-TAIL) assembly — the GENUINE SHIFT case
+  (\<open>shamt = q\<^sub>0\<cdot>\<delta> > 0\<close>).  The slice starts in \<open>M\<close>'s PERIODIC TAIL
+  (\<open>j'\<^sub>0 \<ge> Lng N-1\<close>); the block index is \<open>q\<^sub>0 = (j'\<^sub>0-j\<^sub>m\<^sub>2) div w \<ge> 1\<close>, the reduced
+  start \<open>j\<^sub>0\<^sup>red = j\<^sub>m\<^sub>2 + (j'\<^sub>0-j\<^sub>m\<^sub>2) mod w < Lng N-1\<close>, \<open>j\<^sub>1\<^sup>red = min (j\<^sub>0\<^sup>red+(j'\<^sub>1-j'\<^sub>0)) (Lng N-1)\<close>.
+  Wiring mirrors the regime-B assembly but WITH the shift: (1) the shifted Br
+  alignment @{thm [source] oper_d1pos_notbrle_Br_align} (TrEq + both reshapes);
+  (2) the anchor coincidence splits INTERIOR (\<open>j\<^sub>1\<^sup>red < Lng N-1\<close>, whole branch in
+  block \<open>q\<^sub>0\<close>, @{thm [source] oper_d1pos_anchor_coincide_period_interior} via the
+  full shift from @{thm [source] oper_d1pos_LOW_source_eq}) vs BOUNDARY
+  (\<open>j\<^sub>1\<^sup>red = Lng N-1\<close>, branch crosses the period boundary,
+  @{thm [source] oper_d1pos_anchor_coincide_period_boundary}); (3)
+  @{thm [source] oper_d1pos_branch_collapse_concrete} folds \<open>P S\<close> with \<open>shamt = q\<^sub>0\<cdot>\<delta>\<close>;
+  (4) @{thm [source] oper_d1pos_tail_junction} lifts F8/F9 to the tail node.
+  DEEP-VERIFIED rank 11 (python/cell4_periodic_check.py: full existential 1254/1254,
+  c=IdxSum(P S)!(len-1); interior 729 / boundary 525).  The per-case anchor inputs
+  (\<open>fullShift\<close> / \<open>shiftEqB\<close>+\<open>boundEq*\<close>+\<open>mLmin_SnB\<close>), the Br-align inputs (\<open>tnc\<close>/\<open>stop\<close>),
+  and the multiplicity / \<open>le0\<close> facts are the residual block-fold geometry the parent
+  discharges at merge.\<close>
+
+lemma oper_d1pos_notbrle_LOW_take_eq_periodic:
+  fixes N :: pairseq and M :: pairseq
+  assumes NT: "N \<in> T_PS" and monoN: "monoT N" and LNgt: "1 < Lng N"
+    and notzeroN: "\<not> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0)"
+    and hasparN: "hasParent N (idx1 N (Lng N - 1)) (Lng N - 1)"
+    and i1zN: "idx1 N (Lng N - 1) = 1"
+    and Neq: "M = N[n]" and n1: "1 \<le> n"
+    and M'T: "seg M j0' j1' \<in> T_PS"
+    and le0M: "le0 M j0' j1'"
+    and lt: "j0' < j1'" and jM: "j1' < Lng M"
+    and bge: "Lng N - 1 \<le> j1'"
+    and notbrle: "\<not> (TrMax (seg M j0' j1') = Lng (seg M j0' j1') - 1
+                     \<or> le0 (seg M j0' j1') (TrMax (seg M j0' j1') + 1) (Lng (seg M j0' j1') - 1))"
+    and j0lt: "parent N 1 (Lng N - 1) < Lng N - 1"
+    and dpos: "entry N 0 (parent N 1 (Lng N - 1)) < entry N 0 (Lng N - 1)"
+    \<comment> \<open>CELL-4 placement: slice start in the PERIODIC TAIL, block index \<open>q\<^sub>0 \<ge> 1\<close>\<close>
+    and j0pge: "Lng N - 1 \<le> j0'"
+    \<comment> \<open>witness definitions (block-period reduction of the slice start)\<close>
+    and q0def: "q0 = (j0' - parent N 1 (Lng N - 1)) div (Lng N - 1 - parent N 1 (Lng N - 1))"
+    and s0def: "s0 = (j0' - parent N 1 (Lng N - 1)) mod (Lng N - 1 - parent N 1 (Lng N - 1))"
+    and j0reddef: "j0red = parent N 1 (Lng N - 1) + s0"
+    and j1reddef: "j1red = min (j0red + (j1' - j0')) (Lng N - 1)"
+    and shamtdef: "shamt = q0 * (entry N 0 (Lng N - 1) - entry N 0 (parent N 1 (Lng N - 1)))"
+    \<comment> \<open>multiplicity of both branch regions\<close>
+    and multiM: "1 < length (P (seg M (j0' + TrMax (seg M j0' j1') + 1) j1'))"
+    and multiNp: "1 < length (P (seg N (j0red + TrMax (seg N j0red j1red) + 1) j1red))"
+    \<comment> \<open>Br-align inputs (the shifted TrEq keystone), and \<open>le0\<close>\<close>
+    and le0Np: "le0 N j0red j1red"
+    and tnc: "TrMax (seg N j0red j1red) \<le> j1red - 1 - j0red"
+    and stop: "\<not> nextR (seg ((N::pairseq)[n]) j0' j1') 1
+                  (TrMax (seg N j0red j1red))
+                  (TrMax (seg N j0red j1red) + 1)"
+    \<comment> \<open>INTERIOR anchor input: the whole \<open>M\<close>-side branch is a clean per-block shift\<close>
+    and fullShift: "j1red < Lng N - 1 \<longrightarrow>
+          seg M (j0' + TrMax (seg M j0' j1') + 1) j1'
+        = (IncrFirst ^^ shamt)
+            (seg N (j0red + TrMax (seg N j0red j1red) + 1) j1red)"
+    \<comment> \<open>BOUNDARY anchor inputs: prefix shift + boundary junction + left-min\<close>
+    and shiftEqB: "\<not> j1red < Lng N - 1 \<longrightarrow>
+          seg (seg M (j0' + TrMax (seg M j0' j1') + 1) j1') 0
+              (Lng (seg N (j0red + TrMax (seg N j0red j1red) + 1) j1red) - 1 - 1)
+        = (IncrFirst ^^ shamt)
+            (seg (seg N (j0red + TrMax (seg N j0red j1red) + 1) j1red) 0
+                 (Lng (seg N (j0red + TrMax (seg N j0red j1red) + 1) j1red) - 1 - 1))"
+    and boundEq0B: "\<not> j1red < Lng N - 1 \<longrightarrow>
+          entry (seg M (j0' + TrMax (seg M j0' j1') + 1) j1') 0
+                (Lng (seg N (j0red + TrMax (seg N j0red j1red) + 1) j1red) - 1)
+        = entry (seg N (j0red + TrMax (seg N j0red j1red) + 1) j1red) 0
+                (Lng (seg N (j0red + TrMax (seg N j0red j1red) + 1) j1red) - 1) + shamt"
+    and boundEq1B: "\<not> j1red < Lng N - 1 \<longrightarrow>
+          entry (seg M (j0' + TrMax (seg M j0' j1') + 1) j1') 1
+                (Lng (seg N (j0red + TrMax (seg N j0red j1red) + 1) j1red) - 1)
+        \<le> entry (seg N (j0red + TrMax (seg N j0red j1red) + 1) j1red) 1
+                (Lng (seg N (j0red + TrMax (seg N j0red j1red) + 1) j1red) - 1)"
+    and mLmin_SnB: "\<not> j1red < Lng N - 1 \<longrightarrow>
+          (\<forall>j < Lng (seg N (j0red + TrMax (seg N j0red j1red) + 1) j1red) - 1.
+             entry (seg N (j0red + TrMax (seg N j0red j1red) + 1) j1red) 0
+                   (Lng (seg N (j0red + TrMax (seg N j0red j1red) + 1) j1red) - 1)
+           \<le> entry (seg N (j0red + TrMax (seg N j0red j1red) + 1) j1red) 0 j)"
+    \<comment> \<open>anchor upper bound (BOUNDARY): \<open>c \<le> m\<close>, and span data\<close>
+    and cleB: "\<not> j1red < Lng N - 1 \<longrightarrow>
+          IdxSum (P (seg M (j0' + TrMax (seg M j0' j1') + 1) j1')) !
+            (length (P (seg M (j0' + TrMax (seg M j0' j1') + 1) j1')) - 1)
+        = Lng (seg N (j0red + TrMax (seg N j0red j1red) + 1) j1red) - 1"
+    and mleSB: "Lng (seg N (j0red + TrMax (seg N j0red j1red) + 1) j1red) - 1
+              \<le> Lng (seg M (j0' + TrMax (seg M j0' j1') + 1) j1') - 1"
+  shows "\<exists>j0red j1red shamt LOW tail.
+            j0red < j1red \<and> j1red \<le> Lng N - 1
+          \<and> le0 N j0red j1red
+          \<and> Br (seg M j0' j1') = LOW @ [tail]
+          \<and> Br (seg N j0red j1red) \<noteq> []
+          \<and> length LOW = Lng (Br (seg N j0red j1red)) - 1
+          \<and> (\<forall>J. J < length LOW
+                 \<longrightarrow> entry (LOW ! J) 0 0 = entry (Br (seg N j0red j1red) ! J) 0 0 + shamt
+                   \<and> entry (LOW ! J) 1 0 = entry (Br (seg N j0red j1red) ! J) 1 0)
+          \<and> entry tail 0 0
+              = entry (Br (seg N j0red j1red) ! (Lng (Br (seg N j0red j1red)) - 1)) 0 0
+                + shamt
+          \<and> entry tail 1 0
+              \<le> entry (Br (seg N j0red j1red) ! (Lng (Br (seg N j0red j1red)) - 1)) 1 0"
+proof -
+  let ?M = "(N::pairseq)[n]"
+  let ?M' = "seg M j0' j1'"
+  let ?T = "TrMax ?M'"
+  let ?A = "j0' + ?T + 1"
+  let ?jm2 = "parent N 1 (Lng N - 1)"
+  let ?w = "Lng N - 1 - ?jm2"
+  let ?delta = "entry N 0 (Lng N - 1) - entry N 0 ?jm2"
+  let ?Np = "seg N j0red j1red"
+  let ?AN = "j0red + TrMax ?Np + 1"
+  \<comment> \<open>geometry\<close>
+  have MNn: "M = ?M" using Neq .
+  have j1lt: "j1' < Lng ?M" using jM Neq by simp
+  have w0: "0 < ?w" using j0lt by linarith
+  have s0lt: "s0 < ?w" using s0def w0 by simp
+  have j0reds: "j0red = ?jm2 + s0" using j0reddef .
+  have j0redlt: "j0red < Lng N - 1" using j0reds s0lt by linarith
+  \<comment> \<open>\<open>j'\<^sub>0 = jm2 + q0*w + s0\<close> via div/mod, and \<open>q0 \<ge> 1\<close>\<close>
+  have j0pge2: "?jm2 \<le> j0'" using j0pge j0lt by linarith
+  have j0'split: "j0' - ?jm2 = q0 * ?w + s0"
+    using q0def s0def by (simp add: mult.commute)
+  have j0'eq: "j0' = ?jm2 + q0 * ?w + s0" using j0'split j0pge2 by linarith
+  have q0n: "q0 < n"
+  proof -
+    have "j0' < Lng ?M" using lt j1lt by linarith
+    hence "j0' < ?jm2 + n * ?w" using oper_d1pos_LngM[OF LNgt notzeroN hasparN i1zN j0lt] Neq by simp
+    hence "q0 * ?w + s0 < n * ?w" using j0'eq by linarith
+    hence "q0 * ?w < n * ?w" using s0lt by linarith
+    thus ?thesis using w0 by simp
+  qed
+  \<comment> \<open>geometry of \<open>j1red\<close>\<close>
+  have j1redle: "j1red \<le> Lng N - 1" using j1reddef by simp
+  have j0j1red: "j0red < j1red"
+  proof -
+    have "j0red < j0red + (j1' - j0')" using lt by simp
+    moreover have "j0red < Lng N - 1" using j0redlt .
+    ultimately show ?thesis using j1reddef by simp
+  qed
+  have j1redspan: "j1red \<le> j0red + (j1' - j0')" using j1reddef by simp
+  \<comment> \<open>\<open>M = N[n]\<close>: consumer slice\<close>
+  have Mp_eq: "?M' = seg ?M j0' j1'" using Neq by simp
+  have notbrle': "\<not> (TrMax (seg ?M j0' j1') = Lng (seg ?M j0' j1') - 1
+                     \<or> le0 (seg ?M j0' j1') (TrMax (seg ?M j0' j1') + 1) (Lng (seg ?M j0' j1') - 1))"
+    using notbrle Mp_eq by simp
+  have stop': "\<not> nextR (seg ?M j0' j1') 1 (TrMax ?Np) (TrMax ?Np + 1)" using stop .
+  \<comment> \<open>(1) the SHIFTED Br alignment (TrEq + both reshapes + non-emptiness)\<close>
+  have align: "TrMax (seg ?M j0' j1') = TrMax ?Np
+       \<and> Br (seg ?M j0' j1') = P (seg ?M (j0' + TrMax (seg ?M j0' j1') + 1) j1')
+       \<and> Br ?Np = P (seg N (j0red + TrMax ?Np + 1) j1red)
+       \<and> Br (seg ?M j0' j1') \<noteq> [] \<and> Br ?Np \<noteq> []"
+    by (rule oper_d1pos_notbrle_Br_align[OF NT LNgt notzeroN hasparN i1zN j0lt n1 q0n
+            j0redlt j0reds s0lt j0'eq shamtdef j1redle j0j1red j1redspan lt j1lt tnc stop' notbrle'])
+  have alTrEq: "TrMax (seg ?M j0' j1') = TrMax ?Np" using align by blast
+  have alBrM:  "Br (seg ?M j0' j1') = P (seg ?M (j0' + TrMax (seg ?M j0' j1') + 1) j1')"
+    using align by blast
+  have alBrN:  "Br ?Np = P (seg N (j0red + TrMax ?Np + 1) j1red)" using align by blast
+  have alneM:  "Br (seg ?M j0' j1') \<noteq> []" using align by blast
+  have alneN:  "Br ?Np \<noteq> []" using align by blast
+  have TrMeq: "?T = TrMax (seg ?M j0' j1')" using Mp_eq by (rule arg_cong)
+  have TrEq: "?T = TrMax ?Np" using TrMeq alTrEq by simp
+  have BrM'P: "Br ?M' = P (seg ?M ?A j1')"
+  proof -
+    have aeq: "j0' + TrMax (seg ?M j0' j1') + 1 = ?A" using TrMeq by simp
+    have "Br ?M' = Br (seg ?M j0' j1')" using Mp_eq by (rule arg_cong)
+    also have "\<dots> = P (seg ?M (j0' + TrMax (seg ?M j0' j1') + 1) j1')" by (rule alBrM)
+    also have "\<dots> = P (seg ?M ?A j1')" using aeq by (rule arg_cong[where f = "\<lambda>z. P (seg ?M z j1')"])
+    finally show ?thesis .
+  qed
+  have BrNpP: "Br ?Np = P (seg N ?AN j1red)" using alBrN .
+  have BrM'ne: "Br ?M' \<noteq> []" using alneM Mp_eq by simp
+  have BrNpne: "Br ?Np \<noteq> []" using alneN .
+  let ?S = "seg ?M ?A j1'"
+  let ?Snside = "seg N ?AN j1red"
+  have BrM'PS: "Br ?M' = P ?S" using BrM'P .
+  have BrNpPS: "Br ?Np = P ?Snside" using BrNpP .
+  \<comment> \<open>bridge \<open>?S\<close> to the ambient-\<open>M\<close> branch source (\<open>M = N[n]\<close>, \<open>?A = j0'+TrMax M'+1\<close>),
+     so the consumer hypotheses (\<open>shiftEqB\<close>/\<open>boundEq*\<close>/\<open>mLmin_SnB\<close>/\<open>cleB\<close>) line up\<close>
+  have SeqM: "?S = seg M (j0' + TrMax (seg M j0' j1') + 1) j1'"
+  proof -
+    have aeq: "j0' + TrMax (seg M j0' j1') + 1 = ?A" by simp
+    show ?thesis using Neq aeq by simp
+  qed
+  \<comment> \<open>multiplicity\<close>
+  have multiS: "1 < length (P ?S)" using SeqM multiM by simp
+  have multiSn: "1 < length (P ?Snside)" using multiNp by simp
+  \<comment> \<open>\<open>S\<close>, \<open>Snside \<in> T_PS\<close>\<close>
+  have Sne: "?S \<noteq> []"
+  proof
+    assume "?S = []"
+    hence "P ?S = [[]]" by (subst P.simps) (simp add: multiT_def zeroT_def monoT_def)
+    thus False using multiS by simp
+  qed
+  have ST: "?S \<in> T_PS" using Sne by (auto simp: T_PS_def seg_def)
+  have Snne: "?Snside \<noteq> []"
+  proof
+    assume "?Snside = []"
+    hence "P ?Snside = [[]]" by (subst P.simps) (simp add: multiT_def zeroT_def monoT_def)
+    thus False using multiSn by simp
+  qed
+  have SnT: "?Snside \<in> T_PS" using Snne by (auto simp: T_PS_def seg_def)
+  \<comment> \<open>anchors\<close>
+  let ?c = "IdxSum (P ?S) ! (length (P ?S) - 1)"
+  let ?cN = "IdxSum (P ?Snside) ! (length (P ?Snside) - 1)"
+  \<comment> \<open>(2) anchor coincidence: INTERIOR vs BOUNDARY dispatch\<close>
+  have ceq: "?c = ?cN" and F8end: "entry ?S 0 ?c = entry ?Snside 0 ?cN + shamt"
+       and F9end: "entry ?S 1 ?c \<le> entry ?Snside 1 ?cN"
+  proof -
+    have triple: "?c = ?cN \<and> entry ?S 0 ?c = entry ?Snside 0 ?cN + shamt
+                \<and> entry ?S 1 ?c \<le> entry ?Snside 1 ?cN"
+    proof (cases "j1red < Lng N - 1")
+      case interior: True
+      have fs: "?S = (IncrFirst ^^ shamt) ?Snside"
+        using SeqM fullShift[THEN mp, OF interior] by simp
+      have e1: "?c = ?cN"
+        by (rule oper_d1pos_anchor_coincide_period_interior(1)[OF SnT multiSn fs])
+      have e2: "entry ?S 0 ?c = entry ?Snside 0 ?cN + shamt"
+        by (rule oper_d1pos_anchor_coincide_period_interior(2)[OF SnT multiSn fs])
+      have e3: "entry ?S 1 ?c \<le> entry ?Snside 1 ?cN"
+        by (rule oper_d1pos_anchor_coincide_period_interior(3)[OF SnT multiSn fs])
+      show ?thesis using e1 e2 e3 by blast
+    next
+      case boundary: False
+      have shB: "seg ?S 0 (Lng ?Snside - 1 - 1)
+               = (IncrFirst ^^ shamt) (seg ?Snside 0 (Lng ?Snside - 1 - 1))"
+        using shiftEqB[THEN mp, OF boundary] SeqM by simp
+      have clB: "?c = Lng ?Snside - 1" using cleB[THEN mp, OF boundary] SeqM by simp
+      have mlB: "\<forall>j < Lng ?Snside - 1. entry ?Snside 0 (Lng ?Snside - 1) \<le> entry ?Snside 0 j"
+        using mLmin_SnB[THEN mp, OF boundary] by simp
+      have b0: "entry ?S 0 (Lng ?Snside - 1) = entry ?Snside 0 (Lng ?Snside - 1) + shamt"
+        using boundEq0B[THEN mp, OF boundary] SeqM by simp
+      have b1: "entry ?S 1 (Lng ?Snside - 1) \<le> entry ?Snside 1 (Lng ?Snside - 1)"
+        using boundEq1B[THEN mp, OF boundary] SeqM by simp
+      have mleS_loc: "Lng ?Snside - 1 \<le> Lng ?S - 1" using mleSB SeqM by simp
+      have e1: "?c = ?cN"
+        by (rule oper_d1pos_anchor_coincide_period_boundary(1)[OF ST multiS SnT multiSn
+              mleS_loc clB mlB b0 b1])
+      have e2: "entry ?S 0 ?c = entry ?Snside 0 ?cN + shamt"
+        by (rule oper_d1pos_anchor_coincide_period_boundary(2)[OF ST multiS SnT multiSn
+              mleS_loc clB mlB b0 b1])
+      have e3: "entry ?S 1 ?c \<le> entry ?Snside 1 ?cN"
+        by (rule oper_d1pos_anchor_coincide_period_boundary(3)[OF ST multiS SnT multiSn
+              mleS_loc clB mlB b0 b1])
+      show ?thesis using e1 e2 e3 by blast
+    qed
+    show "?c = ?cN" using triple by blast
+    show "entry ?S 0 ?c = entry ?Snside 0 ?cN + shamt" using triple by blast
+    show "entry ?S 1 ?c \<le> entry ?Snside 1 ?cN" using triple by blast
+  qed
+  \<comment> \<open>(3) collapse: \<open>P S = map (IncrFirst^^shamt) (butlast (Br Np)) @ [last (P S)]\<close>\<close>
+  have butl: "butlast (P ?Snside) = P (seg ?Snside 0 (?cN - 1))"
+    by (rule oper_d1pos_branch_butl[OF SnT multiSn])
+  have lowshift': "seg ?S 0 (IdxSum (P ?S) ! (length (P ?S) - 1) - 1)
+                 = (IncrFirst ^^ shamt) (seg ?Snside 0 (?cN - 1))"
+  proof (cases "j1red < Lng N - 1")
+    case interior: True
+    have fs: "?S = (IncrFirst ^^ shamt) ?Snside"
+      using SeqM fullShift[THEN mp, OF interior] by simp
+    have cNlt: "?cN < Lng ?Snside"
+    proof -
+      have a: "?cN \<le> Lng ?Snside - 1" by (rule oper_d1pos_branch_anchor(2)[OF SnT multiSn])
+      have b: "0 < Lng ?Snside" using Snne by (cases ?Snside) auto
+      show ?thesis using a b by linarith
+    qed
+    have cm1lt: "?c - 1 < Lng ?Snside" using cNlt ceq by linarith
+    have segShift: "seg ?S 0 (?c - 1) = (IncrFirst ^^ shamt) (seg ?Snside 0 (?c - 1))"
+      using fs seg_funpow_IncrFirst0[OF cm1lt, of shamt 0] by simp
+    show ?thesis using segShift ceq by simp
+  next
+    case boundary: False
+    have shB: "seg ?S 0 (Lng ?Snside - 1 - 1)
+             = (IncrFirst ^^ shamt) (seg ?Snside 0 (Lng ?Snside - 1 - 1))"
+      using shiftEqB[THEN mp, OF boundary] SeqM by simp
+    have clB: "?c = Lng ?Snside - 1" using cleB[THEN mp, OF boundary] SeqM by simp
+    have "?cN = Lng ?Snside - 1" using ceq clB by simp
+    thus ?thesis using shB clB by simp
+  qed
+  have butlBN: "butlast (Br ?Np) = P (seg ?Snside 0 (?cN - 1))" using butl BrNpPS by simp
+  have collapse: "P ?S = map (IncrFirst ^^ shamt) (butlast (Br ?Np)) @ [last (P ?S)]"
+    by (rule oper_d1pos_branch_collapse_concrete[OF ST multiS lowshift' butlBN])
+  have collapse0: "Br ?M' = map (IncrFirst ^^ shamt) (butlast (Br ?Np)) @ [last (P ?S)]"
+    using collapse BrM'PS by simp
+  \<comment> \<open>identify \<open>LOW = butlast (Br M')\<close>, \<open>tail = last (Br M')\<close>\<close>
+  have BrM'split: "Br ?M' = butlast (Br ?M') @ [last (Br ?M')]"
+    using BrM'ne by (simp add: append_butlast_last_id)
+  have LOWeq: "butlast (Br ?M') = map (IncrFirst ^^ shamt) (butlast (Br ?Np))"
+    using collapse0 BrM'split by simp
+  have tailEq: "last (Br ?M') = last (P ?S)" using collapse0 BrM'split by simp
+  \<comment> \<open>(4) tail junction F8/F9\<close>
+  have F8: "entry (last (P ?S)) 0 0 = entry (last (P ?Snside)) 0 0 + shamt"
+    by (rule oper_d1pos_tail_junction(1)[OF ST multiS SnT multiSn F8end F9end])
+  have F9: "entry (last (P ?S)) 1 0 \<le> entry (last (P ?Snside)) 1 0"
+    by (rule oper_d1pos_tail_junction(2)[OF ST multiS SnT multiSn F8end F9end])
+  have lastNp: "last (P ?Snside) = Br ?Np ! (Lng (Br ?Np) - 1)"
+    using BrNpPS BrNpne by (simp add: last_conv_nth)
+  \<comment> \<open>length and per-component shift on the LOW prefix\<close>
+  have lenLOW: "length (butlast (Br ?M')) = Lng (Br ?Np) - 1"
+    using LOWeq BrNpne by simp
+  have prefix: "\<forall>J. J < length (butlast (Br ?M'))
+                 \<longrightarrow> entry (butlast (Br ?M') ! J) 0 0 = entry (Br ?Np ! J) 0 0 + shamt
+                   \<and> entry (butlast (Br ?M') ! J) 1 0 = entry (Br ?Np ! J) 1 0"
+  proof (intro allI impI)
+    fix J assume JL: "J < length (butlast (Br ?M'))"
+    have JLN: "J < length (butlast (Br ?Np))" using JL LOWeq by simp
+    have nthEq: "butlast (Br ?M') ! J = (IncrFirst ^^ shamt) (butlast (Br ?Np) ! J)"
+      using LOWeq JLN by simp
+    have nthBN: "butlast (Br ?Np) ! J = Br ?Np ! J" using JLN by (simp add: nth_butlast)
+    have nodeShift: "butlast (Br ?M') ! J = (IncrFirst ^^ shamt) (Br ?Np ! J)"
+      using nthEq nthBN by simp
+    have JLNp: "J < length (Br ?Np)" using JLN by (simp add: length_butlast)
+    have nodePos: "0 < Lng (Br ?Np ! J)"
+    proof -
+      have "Br ?Np ! J = P ?Snside ! J" using BrNpPS by simp
+      moreover have "J < length (P ?Snside)" using JLNp BrNpPS by simp
+      ultimately show ?thesis using idxsum_P_component_nonempty[OF SnT] by simp
+    qed
+    have node0: "entry ((IncrFirst ^^ shamt) (Br ?Np ! J)) 0 0
+               = entry (Br ?Np ! J) 0 0 + shamt"
+      by (rule entry_funpow_IncrFirst0[OF nodePos])
+    have node1: "entry ((IncrFirst ^^ shamt) (Br ?Np ! J)) 1 0
+               = entry (Br ?Np ! J) 1 0"
+      by (rule entry_funpow_IncrFirst1[OF nodePos])
+    show "entry (butlast (Br ?M') ! J) 0 0 = entry (Br ?Np ! J) 0 0 + shamt
+        \<and> entry (butlast (Br ?M') ! J) 1 0 = entry (Br ?Np ! J) 1 0"
+      using nodeShift node0 node1 by simp
+  qed
+  have tail0: "entry (last (Br ?M')) 0 0 = entry (Br ?Np ! (Lng (Br ?Np) - 1)) 0 0 + shamt"
+    using tailEq F8 lastNp by simp
+  have tail1: "entry (last (Br ?M')) 1 0 \<le> entry (Br ?Np ! (Lng (Br ?Np) - 1)) 1 0"
+    using tailEq F9 lastNp by simp
+  have le0N: "le0 N j0red j1red" using le0Np .
+  have body:
+    "j0red < j1red \<and> j1red \<le> Lng N - 1
+       \<and> le0 N j0red j1red
+       \<and> Br ?M' = butlast (Br ?M') @ [last (Br ?M')]
+       \<and> Br (seg N j0red j1red) \<noteq> []
+       \<and> length (butlast (Br ?M')) = Lng (Br (seg N j0red j1red)) - 1
+       \<and> (\<forall>J. J < length (butlast (Br ?M'))
+              \<longrightarrow> entry (butlast (Br ?M') ! J) 0 0 = entry (Br (seg N j0red j1red) ! J) 0 0 + shamt
+                \<and> entry (butlast (Br ?M') ! J) 1 0 = entry (Br (seg N j0red j1red) ! J) 1 0)
+       \<and> entry (last (Br ?M')) 0 0
+           = entry (Br (seg N j0red j1red) ! (Lng (Br (seg N j0red j1red)) - 1)) 0 0 + shamt
+       \<and> entry (last (Br ?M')) 1 0
+           \<le> entry (Br (seg N j0red j1red) ! (Lng (Br (seg N j0red j1red)) - 1)) 1 0"
+    using j0j1red j1redle le0N BrM'split BrNpne lenLOW prefix tail0 tail1 by blast
+  show ?thesis
+    by (intro exI[of _ j0red] exI[of _ j1red] exI[of _ shamt]
+              exI[of _ "butlast (Br ?M')"] exI[of _ "last (Br ?M')"]) (rule body)
+qed
+
+
 text \<open>§6.8 d0pos \<open>\<not>brle\<close> — agent-A IDENTIFICATION STUB (\<open>oper_d1pos_notbrle_LOW_take_eq\<close>).
   In the residual d0pos \<open>\<not>brle\<close> context (\<open>N\<close> monoT std, \<open>i\<^sub>1=1\<close>, \<open>M=N[n]\<close>,
   \<open>M'=seg M j0' j1'\<close> monoT, \<open>le0 M j0' j1'\<close>, \<open>Lng N-1 \<le> j1'\<close>, \<open>\<not>brle\<close>) the article's
