@@ -14195,6 +14195,267 @@ proof -
   show "entry S 1 c \<le> entry Snside 1 cN" using e1 ceq by simp
 qed
 
+text \<open>§6.8 geomA BLOCKER (regA-close, rank-10 finding).  The \<open>clt\<close>/\<open>cNlt\<close>
+  hypotheses of @{thm [source] oper_d1pos_anchor_coincide_regA} (the last
+  \<open>P\<close>-component of \<open>S\<close>/\<open>Snside\<close> has length \<open>\<ge> 2\<close>, i.e. \<open>c < m\<close> / \<open>cN < m\<close>) are NOT
+  universal: they hold only 3273/3792 at rank 10 (KMAX=10 len 14 val 5,
+  /tmp/regA_clt_hi.py).  In the 519 \<open>A > jm2\<close> (flat row-0) cases the last component
+  is a SINGLETON and \<open>c = cN = m\<close> (CONCRETE counterexample
+  \<open>N=(0,0)(1,1)(2,2)(2,2)(2,2)\<close>, \<open>n=2\<close>, \<open>j'\<^sub>0=0\<close>, \<open>j'\<^sub>1=5\<close>: \<open>Snside=(2,2)(2,2)\<close>,
+  \<open>P Snside=[[(2,2)],[(2,2)]]\<close>, \<open>cN=1=m\<close>).  HOWEVER the CONCLUSIONS \<open>c=cN\<close>,
+  \<open>entry S 0 c = entry Snside 0 cN\<close> (F8end), \<open>entry S 1 c \<le> entry Snside 1 cN\<close>
+  (F9end) ALL hold 3792/3792 UNIVERSALLY (/tmp/regA_ceqcn.py), together with
+  \<open>butlast (P S) = butlast (P Snside)\<close>, \<open>entry S 0 m = entry Snside 0 m\<close>,
+  \<open>entry S 1 m \<le> entry Snside 1 m\<close>, \<open>len (P S) = len (P Snside)\<close>, and the UNIFORM
+  bound \<open>c \<le> m\<close> / \<open>cN \<le> m\<close> (/tmp/regA_boundary.py, /tmp/regA_cle_m.py).
+  So @{thm [source] oper_d1pos_anchor_coincide_regA} is OVER-CONDITIONED: it should
+  be reproved WITHOUT \<open>clt\<close>/\<open>cNlt\<close>, splitting on \<open>c<m\<close> (current truncate-at-\<open>m-1\<close>
+  route) vs \<open>c=m\<close> (singleton-tail boundary).  The MISSING BRICK for the universal
+  \<open>c \<le> m\<close> is \<open>no row-0 left-min of S strictly above its boundary index m\<close> (the
+  periodic-tail-above-boundary lower bound, the same §6.8 block-fold residual);
+  given it, the \<open>anchor_lt_of_uniform_witness\<close> bridge (below) closes \<open>c \<le> m\<close>
+  directly.\<close>
+
+text \<open>§6.8 geomA — the ANCHOR-BELOW-\<open>k\<close> bridge (\<open>clt\<close>/\<open>cNlt\<close> from a UNIFORM
+  row-0 witness).  PURELY STRUCTURAL: the last \<open>FirstNodes\<close> anchor
+  \<open>c = IdxSum (P S) ! (length (P S) - 1)\<close> is a row-0 left-minimum
+  (@{thm [source] oper_d1pos_branch_anchor}(3)).  If there is ONE earlier index
+  \<open>jj < k\<close> whose row-0 value strictly UNDERCUTS every tail index \<open>x \<in> [k, Lng S-1]\<close>
+  (\<open>wit : \<And>x. k \<le> x \<Longrightarrow> x \<le> Lng S-1 \<Longrightarrow> entry S 0 jj < entry S 0 x\<close>), then NO tail
+  index is a left-minimum, so the anchor sits strictly below \<open>k\<close>: \<open>c < k\<close>.  (Proof:
+  if \<open>c \<ge> k\<close> then \<open>jj < k \<le> c\<close> so the left-min property gives \<open>entry S 0 c \<le> entry
+  S 0 jj\<close>, contradicting \<open>wit\<close> at \<open>x = c\<close>.)  This discharges BOTH \<open>clt\<close> (\<open>k = m\<close>,
+  \<open>S\<close>) and \<open>cNlt\<close> (\<open>k = m\<close>, \<open>Snside\<close>) of @{thm [source] oper_d1pos_anchor_coincide_regA}
+  once the uniform witness is supplied.\<close>
+
+lemma anchor_lt_of_uniform_witness:
+  fixes S :: pairseq
+  defines "c \<equiv> IdxSum (P S) ! (length (P S) - 1)"
+  assumes ST: "S \<in> T_PS" and multi: "1 < length (P S)"
+    and jjlt: "jj < k"
+    and wit: "\<And>x. k \<le> x \<Longrightarrow> x \<le> Lng S - 1 \<Longrightarrow> entry S 0 jj < entry S 0 x"
+  shows "c < k"
+proof (rule ccontr)
+  assume "\<not> c < k"
+  hence kc: "k \<le> c" by simp
+  have cle: "c \<le> Lng S - 1" unfolding c_def
+    by (rule oper_d1pos_branch_anchor(2)[OF ST multi])
+  have lmin: "\<And>j. j < c \<Longrightarrow> entry S 0 c \<le> entry S 0 j" unfolding c_def
+    using oper_d1pos_branch_anchor(3)[OF ST multi] by blast
+  \<comment> \<open>\<open>jj < k \<le> c\<close>, so the anchor's left-min property applies at \<open>jj\<close>\<close>
+  have jjc: "jj < c" using jjlt kc by linarith
+  have a: "entry S 0 c \<le> entry S 0 jj" by (rule lmin[OF jjc])
+  \<comment> \<open>but \<open>c\<close> is itself a tail index (\<open>k \<le> c \<le> Lng S - 1\<close>), so \<open>wit\<close> undercuts it\<close>
+  have b: "entry S 0 jj < entry S 0 c" by (rule wit[OF kc cle])
+  show False using a b by linarith
+qed
+
+text \<open>§6.8 geomA — \<open>cNlt\<close> from \<open>A \<le> jm2\<close> (the \<open>N\<close>-side, verbatim).  For
+  \<open>Snside = seg N A (Lng N-1)\<close> the last index \<open>m = Lng Snside-1\<close> reads N's last
+  index (\<open>entry Snside 0 m = entry N 0 (Lng N-1)\<close>) and the witness \<open>jj = jm2-A\<close>
+  reads \<open>entry N 0 jm2\<close> (verbatim, \<open>jm2 < Lng N-1\<close>); with \<open>\<delta> = entry N 0 (Lng N-1)
+  - entry N 0 jm2 > 0\<close> the strict undercut holds, and since \<open>m\<close> is the ONLY tail
+  index of \<open>Snside\<close> the uniform-witness bridge gives \<open>cN < m\<close>.  The supplied
+  hypothesis \<open>Ajm2 : A \<le> jm2\<close> covers only the SUB-regime where the slice start
+  sits at/below the period base: it is NOT universal — at rank 10 (KMAX=10 len 14
+  val 5) \<open>A \<le> jm2\<close> holds only 3273/3792, and in the other 519 (\<open>A > jm2\<close>, flat
+  row-0) cases the last \<open>P\<close>-component of \<open>Snside\<close> is a SINGLETON so \<open>cN = m\<close> and
+  \<open>cNlt\<close> is FALSE (e.g. \<open>N=(0,0)(1,1)(2,2)(2,2)(2,2)\<close>, \<open>n=2\<close>, \<open>j'\<^sub>0=0\<close>, \<open>j'\<^sub>1=5\<close>:
+  \<open>Snside=(2,2)(2,2)\<close>, \<open>P Snside=[[(2,2)],[(2,2)]]\<close>, \<open>cN=1=m\<close>).  See the BLOCKER
+  note above @{thm [source] oper_d1pos_anchor_coincide_regA}.  \<open>dpos : entry N 0
+  jm2 < entry N 0 (Lng N-1)\<close> is \<open>\<delta>>0\<close>.\<close>
+
+lemma oper_d1pos_cNlt_of_Ajm2:
+  fixes N :: pairseq and A :: nat
+  defines "Snside \<equiv> seg N A (Lng N - 1)"
+  defines "cN \<equiv> IdxSum (P Snside) ! (length (P Snside) - 1)"
+  assumes L: "1 < Lng N"
+    and Abnd: "A < Lng N - 1"
+    and multiN: "1 < length (P Snside)"
+    and Ajm2: "A \<le> parent N 1 (Lng N - 1)"
+    and jm2lt: "parent N 1 (Lng N - 1) < Lng N - 1"
+    and dpos: "entry N 0 (parent N 1 (Lng N - 1)) < entry N 0 (Lng N - 1)"
+  shows "cN < Lng Snside - 1"
+proof -
+  let ?jm2 = "parent N 1 (Lng N - 1)"
+  let ?m = "Lng Snside - 1"
+  let ?jj = "?jm2 - A"
+  have Snne: "Snside \<noteq> []"
+  proof
+    assume "Snside = []"
+    hence "P Snside = [[]]" by (subst P.simps) (simp add: multiT_def zeroT_def monoT_def)
+    thus False using multiN by simp
+  qed
+  have SnT: "Snside \<in> T_PS" using Snne unfolding Snside_def by (auto simp: T_PS_def seg_def)
+  \<comment> \<open>geometry: \<open>Lng Snside = Lng N - A\<close>, \<open>m = Lng N - 1 - A\<close>\<close>
+  have LngSn: "Lng Snside = Suc (Lng N - 1) - A" unfolding Snside_def by simp
+  have mval: "?m = Lng N - 1 - A" using LngSn Abnd by linarith
+  have jjlt: "?jj < ?m" using mval Ajm2 jm2lt Abnd by linarith
+  \<comment> \<open>freeze \<open>mm = m\<close> and \<open>jj0 = jj\<close> so \<open>entry_seg\<close>'s arithmetic residue can be rewritten\<close>
+  obtain mm where mmdef: "mm = ?m" by blast
+  obtain jj0 where jj0def: "jj0 = ?jj" by blast
+  \<comment> \<open>\<open>m\<close> is the only tail index; \<open>entry Snside 0 m = entry N 0 (Lng N-1)\<close>\<close>
+  have mInSn: "A + mm = Lng N - 1" using mval Abnd mmdef by linarith
+  have mlt: "mm < Lng Snside" using LngSn Abnd mmdef by linarith
+  have eSm: "entry Snside 0 mm = entry N 0 (Lng N - 1)"
+  proof -
+    have "entry Snside 0 mm = entry N (0::nat) (A + mm)"
+      unfolding Snside_def by (rule entry_seg[OF mlt[unfolded Snside_def]])
+    thus ?thesis using mInSn by simp
+  qed
+  \<comment> \<open>witness reads \<open>entry N 0 jm2\<close> verbatim (\<open>jj + A = jm2 < Lng N-1\<close>)\<close>
+  have jjInSn: "A + jj0 = ?jm2" using Ajm2 jj0def by simp
+  have jjlt2: "jj0 < Lng Snside" using jjlt mlt mmdef jj0def by linarith
+  have eSjj: "entry Snside 0 jj0 = entry N 0 ?jm2"
+  proof -
+    have "entry Snside 0 jj0 = entry N (0::nat) (A + jj0)"
+      unfolding Snside_def by (rule entry_seg[OF jjlt2[unfolded Snside_def]])
+    thus ?thesis using jjInSn by simp
+  qed
+  \<comment> \<open>the uniform witness: the ONLY tail index \<open>x \<in> [m, Lng Snside-1]\<close> is \<open>m\<close> itself\<close>
+  have jjltmm: "jj0 < mm" using jjlt mmdef jj0def by simp
+  have wit: "\<And>x. mm \<le> x \<Longrightarrow> x \<le> Lng Snside - 1 \<Longrightarrow> entry Snside 0 jj0 < entry Snside 0 x"
+  proof -
+    fix x assume xlo: "mm \<le> x" and xhi: "x \<le> Lng Snside - 1"
+    have "x = mm" using xlo xhi mmdef by linarith
+    thus "entry Snside 0 jj0 < entry Snside 0 x" using eSjj eSm dpos by simp
+  qed
+  have "cN < mm" unfolding cN_def
+    by (rule anchor_lt_of_uniform_witness[OF SnT multiN jjltmm wit])
+  thus "cN < ?m" using mmdef by simp
+qed
+
+text \<open>§6.8 d1pos \<open>\<not>brle\<close> REGIME B anchor coincidence — the SHIFT analogue of
+  @{thm [source] oper_d1pos_anchor_coincide_regA} (regime B, \<open>j\<^sub>m\<^sub>2 \<le> j'\<^sub>0\<close>).  In
+  regime A the all-but-last agreement of \<open>S\<close> (= \<open>Br M'\<close> source) and \<open>Snside\<close>
+  (= \<open>Br N\<^sub>p\<close> source) is VERBATIM (\<open>seg S 0 (m-1) = seg Snside 0 (m-1)\<close>); in regime B
+  it is a single-block \<open>(IncrFirst^^shamt)\<close>-SHIFT (\<open>shamt = q\<^sub>0\<cdot>\<delta>\<close>), supplied here as
+  the hypothesis \<open>shiftEq\<close> — exactly the form delivered by
+  @{thm [source] oper_d1pos_branch_lowshift_regB} / @{thm [source] oper_d1pos_LOW_source_eq}
+  (DEEP-VERIFIED 1128/1128 at rank 8).  From it we derive, at the anchor cut
+  \<open>c = IdxSum (P S) ! (len-1)\<close> / \<open>cN = IdxSum (P Snside) ! (len-1)\<close>:
+    \<open>c = cN\<close>  (the anchor offsets coincide: \<open>(IncrFirst^^shamt)\<close> PRESERVES
+               component lengths via @{thm [source] Lng_funpow_IncrFirst}, so
+               \<open>sum_list (map length (butlast (P S))) = sum_list (map length (butlast (P Snside)))\<close>),
+    \<open>F8end : entry S 0 c = entry Snside 0 cN + shamt\<close>  (row-0 \<open>+shamt\<close>,
+               @{thm [source] entry_funpow_IncrFirst0}),
+    \<open>F9end : entry S 1 c \<le> entry Snside 1 cN\<close>  (row-1 UNSHIFTED — in fact \<open>=\<close>,
+               @{thm [source] entry_funpow_IncrFirst1}).
+  The P-prefix anchor stability used is the regime-AGNOSTIC
+  @{thm [source] P_butlast_take_at_anchor} (applied to BOTH operands), lifted across
+  the shift by @{thm [source] P_funpow_IncrFirst} (\<open>P\<close> commutes with the per-component
+  shift).  PURELY STRUCTURAL given the shift agreement — no block-fold inside this
+  lemma (the single-block realisation \<open>Aform\<close>/\<open>e0lt\<close> behind \<open>shiftEq\<close> is the
+  documented residual block-fold geometry, delivered by the lowshift bricks).\<close>
+
+lemma oper_d1pos_anchor_coincide_regB:
+  fixes S :: pairseq and Snside :: pairseq and shamt :: nat
+  defines "c \<equiv> IdxSum (P S) ! (length (P S) - 1)"
+      and "cN \<equiv> IdxSum (P Snside) ! (length (P Snside) - 1)"
+  assumes ST: "S \<in> T_PS" and multi: "1 < length (P S)"
+    and SnT: "Snside \<in> T_PS" and multiN: "1 < length (P Snside)"
+    and clt: "c < Lng Snside - 1"
+    and cNlt: "cN < Lng Snside - 1"
+    and LngEq: "Lng S = Lng Snside"
+    and shiftEq: "seg S 0 (Lng Snside - 1 - 1)
+                = (IncrFirst ^^ shamt) (seg Snside 0 (Lng Snside - 1 - 1))"
+  shows "c = cN"
+    and "entry S 0 c = entry Snside 0 cN + shamt"
+    and "entry S 1 c \<le> entry Snside 1 cN"
+proof -
+  let ?m = "Lng Snside - 1"
+  obtain e where edef: "e = ?m - 1" by blast
+  have mpos: "0 < ?m" using cNlt by linarith
+  \<comment> \<open>the shift agreement on the all-but-last prefix\<close>
+  have shiftEqe: "seg S 0 e = (IncrFirst ^^ shamt) (seg Snside 0 e)"
+    using shiftEq edef by simp
+  \<comment> \<open>P-prefix anchor stability on both operands (anchors strictly below \<open>m\<close>)\<close>
+  have mleS: "?m \<le> Lng S" using LngEq by simp
+  have mleSn: "?m \<le> Lng Snside" by linarith
+  have cltS: "IdxSum (P S) ! (length (P S) - 1) < ?m" using clt unfolding c_def by simp
+  have cltSn: "IdxSum (P Snside) ! (length (P Snside) - 1) < ?m" using cNlt unfolding cN_def by simp
+  have butS: "butlast (P (seg S 0 e)) = butlast (P S)"
+    using P_butlast_take_at_anchor[OF ST multi cltS mleS] edef by simp
+  have butSn: "butlast (P (seg Snside 0 e)) = butlast (P Snside)"
+    using P_butlast_take_at_anchor[OF SnT multiN cltSn mleSn] edef by simp
+  \<comment> \<open>\<open>P\<close> commutes with the per-component shift on the prefix\<close>
+  have PshiftEq: "P (seg S 0 e) = map (IncrFirst ^^ shamt) (P (seg Snside 0 e))"
+    using shiftEqe by (simp add: P_funpow_IncrFirst)
+  have butlastMap: "butlast (P (seg S 0 e))
+                  = map (IncrFirst ^^ shamt) (butlast (P (seg Snside 0 e)))"
+    using PshiftEq by (simp add: map_butlast)
+  have butEq: "butlast (P S) = map (IncrFirst ^^ shamt) (butlast (P Snside))"
+    using butS butSn butlastMap by simp
+  \<comment> \<open>\<open>c = cN\<close>: the last \<open>IdxSum\<close> value is the total length of \<open>butlast (P \<cdot>)\<close>;
+     the per-component shift preserves lengths, so the totals agree\<close>
+  have cbutl: "c = sum_list (map length (butlast (P S)))"
+  proof -
+    have "c = IdxSum (P S) ! (length (P S) - 1)" unfolding c_def ..
+    also have "\<dots> = sum_list (map length (take (length (P S) - 1) (P S)))"
+      by (simp add: idxsum_nth)
+    also have "take (length (P S) - 1) (P S) = butlast (P S)"
+      by (simp add: butlast_conv_take)
+    finally show ?thesis .
+  qed
+  have cNbutl: "cN = sum_list (map length (butlast (P Snside)))"
+  proof -
+    have "cN = IdxSum (P Snside) ! (length (P Snside) - 1)" unfolding cN_def ..
+    also have "\<dots> = sum_list (map length (take (length (P Snside) - 1) (P Snside)))"
+      by (simp add: idxsum_nth)
+    also have "take (length (P Snside) - 1) (P Snside) = butlast (P Snside)"
+      by (simp add: butlast_conv_take)
+    finally show ?thesis .
+  qed
+  have lenPreserve: "map length (map (IncrFirst ^^ shamt) (butlast (P Snside)))
+                   = map length (butlast (P Snside))"
+  proof -
+    have "map length (map (IncrFirst ^^ shamt) (butlast (P Snside)))
+        = map (\<lambda>x. length ((IncrFirst ^^ shamt) x)) (butlast (P Snside))"
+      by simp
+    also have "\<dots> = map length (butlast (P Snside))"
+      by (rule map_cong) (simp_all add: Lng_funpow_IncrFirst)
+    finally show ?thesis .
+  qed
+  show ceq: "c = cN"
+  proof -
+    have "c = sum_list (map length (butlast (P S)))" by (rule cbutl)
+    also have "\<dots> = sum_list (map length (map (IncrFirst ^^ shamt) (butlast (P Snside))))"
+      using butEq by simp
+    also have "\<dots> = sum_list (map length (butlast (P Snside)))"
+      by (simp add: o_def)
+    also have "\<dots> = cN" using cNbutl by simp
+    finally show ?thesis .
+  qed
+  \<comment> \<open>entry agreement at the anchor cut \<open>c = cN\<close>, lifted across the shift\<close>
+  have ccm: "c \<le> e" using clt edef by linarith
+  have LngSnseg: "Lng (seg Snside 0 e) = Suc e" using edef mpos by simp
+  have cltSeg: "c < Lng (seg Snside 0 e)" using ccm LngSnseg by simp
+  \<comment> \<open>row 0: \<open>+shamt\<close>\<close>
+  have eqQc0: "entry (seg S 0 e) 0 c = entry (seg Snside 0 e) 0 c + shamt"
+    using shiftEqe entry_funpow_IncrFirst0[OF cltSeg] by simp
+  \<comment> \<open>row 1: unshifted\<close>
+  have eqQc1: "entry (seg S 0 e) 1 c = entry (seg Snside 0 e) 1 c"
+    using shiftEqe entry_funpow_IncrFirst1[OF cltSeg] by simp
+  \<comment> \<open>reduce the prefix-entries back to \<open>S\<close>/\<open>Snside\<close> entries (\<open>c\<close> in the prefix window)\<close>
+  have cltLng: "c < Lng (seg S 0 e)"
+  proof -
+    have "Lng (seg S 0 e) = Suc e" using edef mpos mleS by simp
+    thus ?thesis using ccm by simp
+  qed
+  have lhs0: "entry (seg S 0 e) 0 c = entry S 0 c"
+    using entry_seg[OF cltLng] by simp
+  have lhs1: "entry (seg S 0 e) 1 c = entry S 1 c"
+    using entry_seg[OF cltLng] by simp
+  have rhs0: "entry (seg Snside 0 e) 0 c = entry Snside 0 c"
+    using entry_seg[OF cltSeg] by simp
+  have rhs1: "entry (seg Snside 0 e) 1 c = entry Snside 1 c"
+    using entry_seg[OF cltSeg] by simp
+  have e0: "entry S 0 c = entry Snside 0 c + shamt" using eqQc0 lhs0 rhs0 by simp
+  have e1: "entry S 1 c = entry Snside 1 c" using eqQc1 lhs1 rhs1 by simp
+  show "entry S 0 c = entry Snside 0 cN + shamt" using e0 ceq by simp
+  show "entry S 1 c \<le> entry Snside 1 cN" using e1 ceq by simp
+qed
+
 text \<open>§6.8 d1pos \<open>\<not>brle\<close> REGIME B lowshift — EXACT plug-in form (conc-A,
   \<open>j\<^sub>m\<^sub>2 \<le> j'\<^sub>0\<close>).  Repackages @{thm [source] oper_d1pos_branch_lowshift_regB}
   (whose base is the \<open>N\<close>-slice \<open>seg N (jm2+s0) (jm2+(s0+(cc-1)))\<close>) into the form
