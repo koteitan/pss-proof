@@ -1595,3 +1595,41 @@ and TRUE under notbrle (22431/22431). Good sign the brick-by-brick build is conv
   BrM'P=P(seg M a j1') and BrNpP=P(seg N a' j1red); oper_d1pos_notbrle_LOW_eq + take_map).
 - **Brick 4**: the junction facts (tail row-0 tie after shift, row-1 drop via nextrel1 N jm2).
 Then assemble the stub oper_d1pos_notbrle_LOW_take_eq from bricks 1-4 + formula-G witnesses.
+
+## UPDATE 2026-05-30 (continued 40): trunk-confinement family DONE (sound); 6 shallow-false catches; Br-alignment remains
+
+The block-fold infrastructure build advanced substantially. The TRUNK-CONFINEMENT family
+(the keystone for the §6.8 d0pos ¬brle identification) is essentially complete and SOUND
+(slice 3c76a84, green). Bricks landed:
+- `TrMax_seg_oper_d1pos_eq` (TrEq keystone, conditional on tnc/stop) ✅
+- `TrMax_eq_of_prefix_agree_sym` (symmetric companion, breaks d1pos circularity) ✅
+- `TrMax_seg_oper_d1pos_eq_span` (capped-generalized) ✅
+- `TrMax_seg_oper_d1pos_eq_notbrle_uncapped` (uncapped TrEq, notbrle-unconditional) ✅
+- `TrMax_seg_oper_d1pos_brle_uncapped` (uncapped trunk-fill ⟹ brle) ✅
+- `TrMax_seg_oper_d1pos_brle_capped` (capped trunk-fill ⟹ brle, modulo the B3N inline residual) ✅
+- `oper_d1pos_seg_le0_boundary` + 4 reusable helpers (oper_d1pos_nextrel0_within / le0_within /
+  le0_start_to_start / le0_start_to_any — block-(q+1) start row-0-reaches any in-range index,
+  the k+1<n-free within-block le0 machinery) ✅
+
+### 6 shallow-generator false-claims caught this push (the discipline that saved soundness)
+Each appeared only at progressively DEEPER ranks; the verifier (me) re-checked every sub-agent
+simplicity/length/vacuity claim at rank≥6-8 before integrating:
+1. agent A "Yp always single P-component 5548/5548" — brle-restricted sub-family.
+2. agent B "¬brle multi all regime B / 12 cases" — KMAX=4 artifact (really 57 A / 92 B).
+3. agent B "¬brle case vacuous (brYp_single)" — KMAX=4 artifact (really 18/183 in context).
+4. agent B "stub take-eq 30/30 KMAX=5" — the N-side endpoint Lng N-1 is FALSE 36/207 at rank 6
+   (fixed to the free j1red, 207/207).
+5. agent B "general H2 increment bound 1016/1016 KMAX=7" — FALSE 6/4133 at rank 8.
+6. agent A "last-column H2 191/191" — ALSO FALSE 10/11219 at rank 8 (this one had reached
+   COMMITTED code; removed the false standalone H2 stub, replaced with the inline B3N residual
+   true-in-context). LESSON: even KMAX=7 is too shallow for the d0pos fold; verify at rank≥8.
+
+### Remaining for the §6.8 d0pos ¬brle stub
+- **B3N** (inline residual in TrMax_seg_oper_d1pos_brle_capped): entry N 1 jm2 ≤ entry N 1 (Lng N-2),
+  TRUE in the full capped ¬brle slice context (1688/1688) — needs the context-specific derivation
+  (NOT the false H2 decomposition).
+- **Brick 3** (Br = LOW @ [tail] alignment): with TrEq now available, line up BrM'P=P(seg M a j1')
+  and BrNpP=P(seg N a' j1red), LOW = (IncrFirst^^shamt)-shift of take (Lng(Br Np)-1)(Br Np), via
+  oper_d1pos_notbrle_LOW_eq + oper_d1pos_notbrle_take_map; the le0 helpers above feed it.
+- **Brick 4** (junction): tail row-0 tie after shift, row-1 drop via nextrel1 N jm2.
+Then assemble the main stub oper_d1pos_notbrle_LOW_take_eq from TrEq + B3N + bricks 3-4 + formula-G.
