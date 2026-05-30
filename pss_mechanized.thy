@@ -16281,6 +16281,292 @@ proof -
               exI[of _ "butlast (Br ?M')"] exI[of _ "last (Br ?M')"]) (rule body)
 qed
 
+text \<open>§6.8 d1pos \<open>\<not>brle\<close> BOUNDARY-CROSS assembly (the GREEN boundary-cross instance
+  of the main identification stub \<open>oper_d1pos_notbrle_LOW_take_eq\<close>, below).  The
+  MISSING tile between regime A and regime B: the slice START sits in the BASE
+  (\<open>j'\<^sub>0 < j\<^sub>m\<^sub>2\<close>, so it is read \<open>N\<close>-verbatim, \<open>j\<^sub>0\<^sup>red = j'\<^sub>0\<close>, \<open>shamt = 0\<close>) yet the
+  branch SOURCE \<open>A = j'\<^sub>0 + TrMax M' + 1\<close> crosses the period boundary into block 0's
+  tail (\<open>j\<^sub>m\<^sub>2 \<le> A < Lng N-1\<close>), so the common branch anchor sits AT the boundary
+  \<open>c = c\<^sub>N = m\<close> just like regime B.  HENCE the WITNESS is regime-A-like
+  (\<open>j\<^sub>0\<^sup>red = j'\<^sub>0\<close>, \<open>j\<^sub>1\<^sup>red = Lng N-1\<close>, \<open>shamt = 0\<close>) while the GEOMETRY route is
+  regime-B-like (boundary anchor).  DEEP-VERIFIED rank 9 (KMAX=9, python/d1pos_uncovered_deep.py:
+  99/99 boundary-cross cases \<open>j'\<^sub>0<j\<^sub>m\<^sub>2 \<and> j\<^sub>m\<^sub>2\<le>A<Lng N-1\<close>, all of \<open>shamt=0\<close>/\<open>j\<^sub>0\<^sup>red=j'\<^sub>0\<close>/full
+  F1..F9 wiring, 0 failures; python/d1pos_tiling_map.py 9/9 at rank 7).  WIRING:
+  (1) @{thm [source] oper_d1pos_notbrle_Br_align_regA} (\<open>j\<^sub>0\<^sup>red = j'\<^sub>0\<close>, verbatim,
+      \<open>shamt = 0\<close>) gives \<open>TrMax M' = TrMax N\<^sub>p\<close> and both reshapes — the ONLY step that
+      differs from regime B (where \<open>j'\<^sub>0 \<ge> j\<^sub>m\<^sub>2\<close> needs the period-split Br-align);
+  (2)–(4) IDENTICAL to regime B: @{thm [source] oper_d1pos_anchor_coincide_regB2}
+      pins \<open>c = c\<^sub>N = m\<close> at the boundary, @{thm [source] oper_d1pos_branch_lowshift_regA}
+      reads the LOW window \<open>N\<close>-verbatim, @{thm [source] oper_d1pos_branch_collapse_concrete}
+      folds, @{thm [source] oper_d1pos_tail_junction} lifts the tail.\<close>
+
+lemma oper_d1pos_notbrle_LOW_take_eq_boundary:
+  fixes N :: pairseq and M :: pairseq
+  assumes NT: "N \<in> T_PS" and monoN: "monoT N" and LNgt: "1 < Lng N"
+    and notzeroN: "\<not> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0)"
+    and hasparN: "hasParent N (idx1 N (Lng N - 1)) (Lng N - 1)"
+    and i1zN: "idx1 N (Lng N - 1) = 1"
+    and Neq: "M = N[n]" and n1: "1 \<le> n"
+    and M'T: "seg M j0' j1' \<in> T_PS"
+    and le0M: "le0 M j0' j1'"
+    and lt: "j0' < j1'" and jM: "j1' < Lng M"
+    and bge: "Lng N - 1 \<le> j1'"
+    and notbrle: "\<not> (TrMax (seg M j0' j1') = Lng (seg M j0' j1') - 1
+                     \<or> le0 (seg M j0' j1') (TrMax (seg M j0' j1') + 1) (Lng (seg M j0' j1') - 1))"
+    and j0lt: "parent N 1 (Lng N - 1) < Lng N - 1"
+    and dpos: "entry N 0 (parent N 1 (Lng N - 1)) < entry N 0 (Lng N - 1)"
+    and Areg: "parent N 1 (Lng N - 1) \<le> j0' + TrMax (seg M j0' j1') + 1
+                 \<and> j0' + TrMax (seg M j0' j1') + 1 < Lng N - 1"
+    and j0ltjm2: "j0' < parent N 1 (Lng N - 1)"
+    and multiM: "1 < length (P (seg M (j0' + TrMax (seg M j0' j1') + 1) j1'))"
+    and multiNp: "1 < length (P (seg N (j0' + TrMax (seg M j0' j1') + 1) (Lng N - 1)))"
+    and le0Np: "le0 N j0' (Lng N - 1)"
+    and tnc: "TrMax (seg N j0' (Lng N - 1)) \<le> Lng N - 1 - 1 - j0'"
+    and stop: "\<not> nextR (seg ((N::pairseq)[n]) j0' j1') 1
+                  (TrMax (seg N j0' (Lng N - 1)))
+                  (TrMax (seg N j0' (Lng N - 1)) + 1)"
+    and mLmin_S: "\<forall>j < Lng (seg N (j0' + TrMax (seg M j0' j1') + 1) (Lng N - 1)) - 1.
+                    entry (seg M (j0' + TrMax (seg M j0' j1') + 1) j1') 0
+                          (Lng (seg N (j0' + TrMax (seg M j0' j1') + 1) (Lng N - 1)) - 1)
+                  \<le> entry (seg M (j0' + TrMax (seg M j0' j1') + 1) j1') 0 j"
+    and mLmin_Sn: "\<forall>j < Lng (seg N (j0' + TrMax (seg M j0' j1') + 1) (Lng N - 1)) - 1.
+                    entry (seg N (j0' + TrMax (seg M j0' j1') + 1) (Lng N - 1)) 0
+                          (Lng (seg N (j0' + TrMax (seg M j0' j1') + 1) (Lng N - 1)) - 1)
+                  \<le> entry (seg N (j0' + TrMax (seg M j0' j1') + 1) (Lng N - 1)) 0 j"
+    and r1le: "entry N 1 (parent N 1 (Lng N - 1)) \<le> entry N 1 (Lng N - 1)"
+  shows "\<exists>j0red j1red shamt LOW tail.
+            j0red < j1red \<and> j1red \<le> Lng N - 1
+          \<and> le0 N j0red j1red
+          \<and> Br (seg M j0' j1') = LOW @ [tail]
+          \<and> Br (seg N j0red j1red) \<noteq> []
+          \<and> length LOW = Lng (Br (seg N j0red j1red)) - 1
+          \<and> (\<forall>J. J < length LOW
+                 \<longrightarrow> entry (LOW ! J) 0 0 = entry (Br (seg N j0red j1red) ! J) 0 0 + shamt
+                   \<and> entry (LOW ! J) 1 0 = entry (Br (seg N j0red j1red) ! J) 1 0)
+          \<and> entry tail 0 0
+              = entry (Br (seg N j0red j1red) ! (Lng (Br (seg N j0red j1red)) - 1)) 0 0
+                + shamt
+          \<and> entry tail 1 0
+              \<le> entry (Br (seg N j0red j1red) ! (Lng (Br (seg N j0red j1red)) - 1)) 1 0"
+proof -
+  let ?M = "(N::pairseq)[n]"
+  let ?M' = "seg M j0' j1'"
+  let ?T = "TrMax ?M'"
+  let ?A = "j0' + ?T + 1"
+  let ?j1red = "Lng N - 1"
+  let ?Np = "seg N j0' ?j1red"
+  let ?jm2 = "parent N 1 (Lng N - 1)"
+  let ?w = "?j1red - ?jm2"
+  let ?delta = "entry N 0 ?j1red - entry N 0 ?jm2"
+  \<comment> \<open>boundary-cross placement: \<open>jm2 \<le> A < Lng N-1\<close>, but \<open>j'\<^sub>0 < jm2\<close> (slice starts in base)\<close>
+  have Ajm2: "?jm2 \<le> ?A" using Areg by blast
+  have AltN: "?A < ?j1red" using Areg by blast
+  \<comment> \<open>basic geometry: \<open>M = N[n]\<close>, span/cap data\<close>
+  have MNn: "M = ?M" using Neq .
+  have j1lt: "j1' < Lng ?M" using jM Neq by simp
+  have j0lt2: "j0' < ?j1red" using AltN lt by linarith
+  have j0j1red: "j0' < ?j1red" using j0lt2 .
+  have j1redspan: "?j1red \<le> j0' + (j1' - j0')" using bge lt by linarith
+  have j1redle: "?j1red \<le> Lng N - 1" by simp
+  \<comment> \<open>\<open>M = N[n]\<close>: identify the consumer-side slice with the \<open>N[n]\<close>-slice\<close>
+  have Mp_eq: "?M' = seg ?M j0' j1'" using Neq by simp
+  \<comment> \<open>(1) TrEq + both \<open>Br = P(seg ..)\<close> reshapes + non-emptiness (boundary, \<open>j\<^sub>0\<^sup>red = j'\<^sub>0\<close>)\<close>
+  have notbrle': "\<not> (TrMax (seg ?M j0' j1') = Lng (seg ?M j0' j1') - 1
+                     \<or> le0 (seg ?M j0' j1') (TrMax (seg ?M j0' j1') + 1) (Lng (seg ?M j0' j1') - 1))"
+    using notbrle Mp_eq by simp
+  have stop': "\<not> nextR (seg ?M j0' j1') 1
+                  (TrMax (seg N j0' (Lng N - 1)))
+                  (TrMax (seg N j0' (Lng N - 1)) + 1)"
+    using stop .
+  \<comment> \<open>regime-A (verbatim) Br alignment: \<open>j\<^sub>0\<^sup>red = j'\<^sub>0\<close>, \<open>shamt = 0\<close> — the slice start
+     \<open>j'\<^sub>0 < jm2\<close> is read \<open>N\<close>-verbatim, exactly as in regime A\<close>
+  have align: "TrMax (seg ?M j0' j1') = TrMax (seg N j0' ?j1red)
+       \<and> Br (seg ?M j0' j1') = P (seg ?M (j0' + TrMax (seg ?M j0' j1') + 1) j1')
+       \<and> Br (seg N j0' ?j1red) = P (seg N (j0' + TrMax (seg N j0' ?j1red) + 1) ?j1red)
+       \<and> Br (seg ?M j0' j1') \<noteq> [] \<and> Br (seg N j0' ?j1red) \<noteq> []"
+    by (rule oper_d1pos_notbrle_Br_align_regA[OF LNgt notzeroN hasparN i1zN j0lt n1
+            j1redle j0j1red j1redspan refl lt j1lt tnc stop' notbrle'])
+  \<comment> \<open>extract the five conjuncts as separate facts (avoid feeding TrEq to simp)\<close>
+  have alTrEq: "TrMax (seg ?M j0' j1') = TrMax (seg N j0' ?j1red)" using align by blast
+  have alBrM:  "Br (seg ?M j0' j1') = P (seg ?M (j0' + TrMax (seg ?M j0' j1') + 1) j1')"
+    using align by blast
+  have alBrN:  "Br (seg N j0' ?j1red) = P (seg N (j0' + TrMax (seg N j0' ?j1red) + 1) ?j1red)"
+    using align by blast
+  have alneM:  "Br (seg ?M j0' j1') \<noteq> []" using align by blast
+  have alneN:  "Br (seg N j0' ?j1red) \<noteq> []" using align by blast
+  have TrMeq: "?T = TrMax (seg ?M j0' j1')" using Mp_eq by (rule arg_cong)
+  have TrEq: "?T = TrMax ?Np" using TrMeq alTrEq by simp
+  have BrM'P: "Br ?M' = P (seg ?M ?A j1')"
+  proof -
+    have aeq: "j0' + TrMax (seg ?M j0' j1') + 1 = ?A" using TrMeq by simp
+    have "Br ?M' = Br (seg ?M j0' j1')" using Mp_eq by (rule arg_cong)
+    also have "\<dots> = P (seg ?M (j0' + TrMax (seg ?M j0' j1') + 1) j1')" by (rule alBrM)
+    also have "\<dots> = P (seg ?M ?A j1')" using aeq by (rule arg_cong[where f = "\<lambda>z. P (seg ?M z j1')"])
+    finally show ?thesis .
+  qed
+  have BrNpP0: "Br ?Np = P (seg N (j0' + TrMax ?Np + 1) ?j1red)" using alBrN .
+  have BrM'ne: "Br ?M' \<noteq> []" using alneM Mp_eq by simp
+  have BrNpne: "Br ?Np \<noteq> []" using alneN .
+  \<comment> \<open>rewrite the \<open>N\<close>-side branch region with TrEq: \<open>Snside = seg N A (Lng N-1)\<close>\<close>
+  let ?S = "seg ?M ?A j1'"
+  let ?Snside = "seg N ?A ?j1red"
+  have BrNpP: "Br ?Np = P ?Snside" using BrNpP0 TrEq by simp
+  have BrM'PS: "Br ?M' = P ?S" using BrM'P .
+  \<comment> \<open>multiplicity of both branch regions (consumer side-conditions)\<close>
+  have multiS: "1 < length (P ?S)"
+  proof -
+    have "?S = seg M ?A j1'" using Neq by simp
+    thus ?thesis using multiM by simp
+  qed
+  have multiSn: "1 < length (P ?Snside)" using multiNp by simp
+  have Ele: "Lng N - 1 \<le> j1'" using bge .
+  have Eub: "j1' < Lng ?M" using j1lt .
+  \<comment> \<open>residual block-fold left-mins (deep-verified): rephrase against \<open>?S\<close>/\<open>?Snside\<close>\<close>
+  have mLmin_S': "\<forall>j < Lng (seg N ?A (Lng N - 1)) - 1.
+                    entry ?S 0 (Lng (seg N ?A (Lng N - 1)) - 1) \<le> entry ?S 0 j"
+  proof (intro allI impI)
+    fix j assume "j < Lng (seg N ?A (Lng N - 1)) - 1"
+    thus "entry ?S 0 (Lng (seg N ?A (Lng N - 1)) - 1) \<le> entry ?S 0 j"
+      using mLmin_S Neq by simp
+  qed
+  have mLmin_Sn': "\<forall>j < Lng ?Snside - 1. entry ?Snside 0 (Lng ?Snside - 1) \<le> entry ?Snside 0 j"
+    using mLmin_Sn by simp
+  \<comment> \<open>(2) anchor coincidence (BOUNDARY): \<open>c = cN\<close> / \<open>F8end\<close> / \<open>F9end\<close> at \<open>m\<close>\<close>
+  let ?c = "IdxSum (P ?S) ! (length (P ?S) - 1)"
+  let ?cN = "IdxSum (P ?Snside) ! (length (P ?Snside) - 1)"
+  have ceq: "?c = ?cN"
+    by (rule oper_d1pos_anchor_coincide_regB2(1)[OF LNgt notzeroN hasparN i1zN j0lt
+          n1 Ajm2 AltN Ele Eub dpos multiS multiSn mLmin_S' mLmin_Sn' r1le])
+  have F8end: "entry ?S 0 ?c = entry ?Snside 0 ?cN"
+    by (rule oper_d1pos_anchor_coincide_regB2(2)[OF LNgt notzeroN hasparN i1zN j0lt
+          n1 Ajm2 AltN Ele Eub dpos multiS multiSn mLmin_S' mLmin_Sn' r1le])
+  have F9end: "entry ?S 1 ?c \<le> entry ?Snside 1 ?cN"
+    by (rule oper_d1pos_anchor_coincide_regB2(3)[OF LNgt notzeroN hasparN i1zN j0lt
+          n1 Ajm2 AltN Ele Eub dpos multiS multiSn mLmin_S' mLmin_Sn' r1le])
+  \<comment> \<open>\<open>S \<in> T_PS\<close>, \<open>Snside \<in> T_PS\<close> (non-empty from multiplicity)\<close>
+  have Sne: "?S \<noteq> []"
+  proof
+    assume "?S = []"
+    hence "P ?S = [[]]" by (subst P.simps) (simp add: multiT_def zeroT_def monoT_def)
+    thus False using multiS by simp
+  qed
+  have ST: "?S \<in> T_PS" using Sne by (auto simp: T_PS_def seg_def)
+  have Snne: "?Snside \<noteq> []"
+  proof
+    assume "?Snside = []"
+    hence "P ?Snside = [[]]" by (subst P.simps) (simp add: multiT_def zeroT_def monoT_def)
+    thus False using multiSn by simp
+  qed
+  have SnT: "?Snside \<in> T_PS" using Snne by (auto simp: T_PS_def seg_def)
+  \<comment> \<open>(3) the \<open>butl\<close> hypothesis: \<open>butlast (P Snside) = P (seg Snside 0 (cN-1))\<close>\<close>
+  have butl: "butlast (P ?Snside) = P (seg ?Snside 0 (?cN - 1))"
+    by (rule oper_d1pos_branch_butl[OF SnT multiSn])
+  \<comment> \<open>(3) the \<open>lowshift\<close> hypothesis (\<open>shamt = 0\<close>): the LOW window \<open>[A, A+c-1]\<close> ends at
+     \<open>Lng N-2 < Lng N-1\<close>, so it is read \<open>N\<close>-verbatim; both windows start at \<open>A\<close>, \<open>c = cN\<close>\<close>
+  have cle: "?c \<le> Lng (seg N ?A (Lng N - 1)) - 1"
+    by (rule oper_d1pos_clt_regB[OF LNgt notzeroN hasparN i1zN j0lt n1 Ajm2 AltN Ele Eub
+          dpos multiS])
+  have LngSn: "Lng ?Snside = Suc (Lng N - 1) - ?A" by simp
+  have mEq: "Lng ?Snside - 1 = Lng N - 1 - ?A" using LngSn AltN by simp
+  have cleM: "?c \<le> Lng N - 1 - ?A" using cle mEq by simp
+  \<comment> \<open>freeze \<open>c\<close>/\<open>A\<close>/\<open>j1\<close> as abstract vars (avoid the documented double-nat-sub linarith loop)\<close>
+  obtain cc where ccdef: "cc = ?c" by blast
+  obtain AA where AAdef: "AA = ?A" by blast
+  obtain b1 where b1def: "b1 = (j1'::nat)" by blast
+  obtain LN1 where LN1def: "LN1 = Lng N - 1" by blast
+  have cclt: "cc \<le> LN1 - AA" using cleM ccdef AAdef LN1def by simp
+  have AltN': "AA < LN1" using AltN AAdef LN1def by simp
+  have AleE': "AA \<le> b1" using Ele AltN AAdef b1def LN1def by simp
+  have LN1leE: "LN1 \<le> b1" using Ele b1def LN1def by simp
+  \<comment> \<open>\<open>A + (c-1) < Lng N-1\<close>: \<open>c \<le> Lng N-1 - A\<close> and \<open>0 < A\<close>-window so \<open>A+(c-1) \<le> Lng N-2\<close>\<close>
+  have Abnd: "?A + (?c - 1) < Lng N - 1"
+    using cclt AltN' ccdef AAdef LN1def by linarith
+  have AleE: "?A \<le> j1'" using AleE' AAdef b1def by simp
+  have ccleE: "?c - 1 \<le> j1' - ?A"
+    using cclt AltN' LN1leE ccdef AAdef b1def LN1def by linarith
+  have ANleE: "?A \<le> ?j1red" using AltN by linarith
+  have cNleEN: "?cN - 1 \<le> ?j1red - ?A" using ceq ccdef AAdef LN1def cclt by linarith
+  have lowshift: "seg ?S 0 (?c - 1) = (IncrFirst ^^ (0::nat)) (seg ?Snside 0 (?cN - 1))"
+    by (rule oper_d1pos_branch_lowshift_regA[OF LNgt notzeroN hasparN i1zN j0lt n1
+          refl ceq Abnd AleE ccleE ANleE cNleEN])
+  \<comment> \<open>(3) the concrete collapse with \<open>shamt = 0\<close>, \<open>BN = Br N\<^sub>p\<close>, \<open>base = seg Snside 0 (cN-1)\<close>\<close>
+  have lowshift': "seg ?S 0 (IdxSum (P ?S) ! (length (P ?S) - 1) - 1)
+                 = (IncrFirst ^^ (0::nat)) (seg ?Snside 0 (?cN - 1))"
+    using lowshift by simp
+  have butlBN: "butlast (Br ?Np) = P (seg ?Snside 0 (?cN - 1))"
+    using butl BrNpP by simp
+  have collapse: "P ?S = map (IncrFirst ^^ (0::nat)) (butlast (Br ?Np)) @ [last (P ?S)]"
+    by (rule oper_d1pos_branch_collapse_concrete[OF ST multiS lowshift' butlBN])
+  \<comment> \<open>\<open>(IncrFirst^^0) = id\<close>, so the LOW prefix is \<open>butlast (Br N\<^sub>p)\<close> VERBATIM\<close>
+  have collapse0: "Br ?M' = butlast (Br ?Np) @ [last (P ?S)]"
+    using collapse BrM'PS by simp
+  \<comment> \<open>identify \<open>LOW = butlast (Br M')\<close>, \<open>tail = last (Br M')\<close>\<close>
+  have BrM'split: "Br ?M' = butlast (Br ?M') @ [last (Br ?M')]"
+    using BrM'ne by (simp add: append_butlast_last_id)
+  have LOWeq: "butlast (Br ?M') = butlast (Br ?Np)"
+    using collapse0 BrM'split by simp
+  have tailEq: "last (Br ?M') = last (P ?S)"
+    using collapse0 BrM'split by simp
+  \<comment> \<open>(4) tail junction \<open>F8\<close>/\<open>F9\<close> (\<open>shamt = 0\<close>)\<close>
+  have F8end0: "entry ?S 0 ?c = entry ?Snside 0 ?cN + (0::nat)" using F8end by simp
+  have F8: "entry (last (P ?S)) 0 0 = entry (last (P ?Snside)) 0 0 + (0::nat)"
+    by (rule oper_d1pos_tail_junction(1)[OF ST multiS SnT multiSn F8end0 F9end])
+  have F9: "entry (last (P ?S)) 1 0 \<le> entry (last (P ?Snside)) 1 0"
+    by (rule oper_d1pos_tail_junction(2)[OF ST multiS SnT multiSn F8end0 F9end])
+  \<comment> \<open>\<open>last (P Snside) = Br N\<^sub>p ! (Lng (Br N\<^sub>p) - 1)\<close>\<close>
+  have lastNp: "last (P ?Snside) = Br ?Np ! (Lng (Br ?Np) - 1)"
+    using BrNpP BrNpne by (simp add: last_conv_nth)
+  \<comment> \<open>length of the LOW prefix\<close>
+  have lenLOW: "length (butlast (Br ?M')) = Lng (Br ?Np) - 1"
+    using LOWeq BrNpne by simp
+  \<comment> \<open>per-component verbatim entry facts on the LOW prefix\<close>
+  have prefix: "\<forall>J. J < length (butlast (Br ?M'))
+                 \<longrightarrow> entry (butlast (Br ?M') ! J) 0 0
+                       = entry (Br ?Np ! J) 0 0 + (0::nat)
+                   \<and> entry (butlast (Br ?M') ! J) 1 0
+                       = entry (Br ?Np ! J) 1 0"
+  proof (intro allI impI)
+    fix J assume JL: "J < length (butlast (Br ?M'))"
+    have JLN: "J < length (butlast (Br ?Np))" using JL LOWeq by simp
+    have nthEq: "butlast (Br ?M') ! J = butlast (Br ?Np) ! J" using LOWeq by simp
+    have nthBN: "butlast (Br ?Np) ! J = Br ?Np ! J" using JLN by (simp add: nth_butlast)
+    have "butlast (Br ?M') ! J = Br ?Np ! J" using nthEq nthBN by simp
+    thus "entry (butlast (Br ?M') ! J) 0 0 = entry (Br ?Np ! J) 0 0 + (0::nat)
+        \<and> entry (butlast (Br ?M') ! J) 1 0 = entry (Br ?Np ! J) 1 0" by simp
+  qed
+  \<comment> \<open>tail facts against \<open>Br N\<^sub>p ! (Lng (Br N\<^sub>p) - 1)\<close>\<close>
+  have tail0: "entry (last (Br ?M')) 0 0
+             = entry (Br ?Np ! (Lng (Br ?Np) - 1)) 0 0 + (0::nat)"
+    using tailEq F8 lastNp by simp
+  have tail1: "entry (last (Br ?M')) 1 0
+             \<le> entry (Br ?Np ! (Lng (Br ?Np) - 1)) 1 0"
+    using tailEq F9 lastNp by simp
+  \<comment> \<open>\<open>le0 N j'\<^sub>0 (Lng N-1)\<close> is supplied (deep-verified true; from \<open>le0M\<close> at the assembly site)\<close>
+  have le0N: "le0 N j0' ?j1red" using le0Np .
+  \<comment> \<open>collect the body with the regime-B witnesses (\<open>j\<^sub>0\<^sup>red = j'\<^sub>0\<close>, \<open>j\<^sub>1\<^sup>red = Lng N-1\<close>,
+     \<open>shamt = 0\<close>), then EXISTS-introduce\<close>
+  have body:
+    "j0' < ?j1red \<and> ?j1red \<le> Lng N - 1
+       \<and> le0 N j0' ?j1red
+       \<and> Br ?M' = butlast (Br ?M') @ [last (Br ?M')]
+       \<and> Br (seg N j0' ?j1red) \<noteq> []
+       \<and> length (butlast (Br ?M')) = Lng (Br (seg N j0' ?j1red)) - 1
+       \<and> (\<forall>J. J < length (butlast (Br ?M'))
+              \<longrightarrow> entry (butlast (Br ?M') ! J) 0 0
+                    = entry (Br (seg N j0' ?j1red) ! J) 0 0 + (0::nat)
+                \<and> entry (butlast (Br ?M') ! J) 1 0
+                    = entry (Br (seg N j0' ?j1red) ! J) 1 0)
+       \<and> entry (last (Br ?M')) 0 0
+           = entry (Br (seg N j0' ?j1red) ! (Lng (Br (seg N j0' ?j1red)) - 1)) 0 0 + (0::nat)
+       \<and> entry (last (Br ?M')) 1 0
+           \<le> entry (Br (seg N j0' ?j1red) ! (Lng (Br (seg N j0' ?j1red)) - 1)) 1 0"
+    using j0j1red j1redle le0N BrM'split BrNpne lenLOW prefix tail0 tail1 by blast
+  show ?thesis
+    by (intro exI[of _ j0'] exI[of _ "Lng N - 1"] exI[of _ "0::nat"]
+              exI[of _ "butlast (Br ?M')"] exI[of _ "last (Br ?M')"]) (rule body)
+qed
+
+
 text \<open>§6.8 d0pos \<open>\<not>brle\<close> — agent-A IDENTIFICATION STUB (\<open>oper_d1pos_notbrle_LOW_take_eq\<close>).
   In the residual d0pos \<open>\<not>brle\<close> context (\<open>N\<close> monoT std, \<open>i\<^sub>1=1\<close>, \<open>M=N[n]\<close>,
   \<open>M'=seg M j0' j1'\<close> monoT, \<open>le0 M j0' j1'\<close>, \<open>Lng N-1 \<le> j1'\<close>, \<open>\<not>brle\<close>) the article's
