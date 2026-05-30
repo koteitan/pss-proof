@@ -14325,6 +14325,238 @@ proof -
   thus "cN < ?m" using mmdef by simp
 qed
 
+text \<open>§6.8 geomA — WITHIN-PERIOD row-0 floor.  The period base \<open>j\<^sub>m\<^sub>2 = parent N 1
+  (Lng N-1)\<close> carries the row-0 MINIMUM of the closed period window \<open>[j\<^sub>m\<^sub>2, Lng N-1]\<close>:
+  \<open>entry N 0 j\<^sub>m\<^sub>2 \<le> entry N 0 (j\<^sub>m\<^sub>2 + s)\<close> for every \<open>s \<le> Lng N-1-j\<^sub>m\<^sub>2\<close>.  The
+  slice \<open>seg N j\<^sub>m\<^sub>2 (Lng N-1)\<close> is \<open>monoT\<close> (@{thm [source] m_6_2_mono_ancestor_slice}
+  from \<open>leR N 0 j\<^sub>m\<^sub>2 (Lng N-1)\<close>, itself @{thm [source] poper_nextR_imp_le0} on the
+  row-1 parent step), so its left end is the row-0 minimum
+  (@{thm [source] entry0_ge_min}); transfer back to \<open>N\<close> by @{thm [source] entry_seg}.
+  DEEP-VERIFIED rank 10 (1968/1968, /tmp/regA_le0period.py).\<close>
+
+lemma oper_d1pos_period_row0_floor:
+  fixes N :: pairseq
+  assumes hp: "hasParent N (idx1 N (Lng N - 1)) (Lng N - 1)"
+    and i1z: "idx1 N (Lng N - 1) = 1"
+    and j0lt: "parent N 1 (Lng N - 1) < Lng N - 1"
+    and sle: "s \<le> Lng N - 1 - parent N 1 (Lng N - 1)"
+  shows "entry N 0 (parent N 1 (Lng N - 1))
+       \<le> entry N 0 (parent N 1 (Lng N - 1) + s)"
+proof -
+  let ?jm2 = "parent N 1 (Lng N - 1)"  let ?j1 = "Lng N - 1"
+  have L: "1 < Lng N" using j0lt by linarith
+  have NT: "N \<in> T_PS" using L by (cases N) (auto simp: T_PS_def)
+  \<comment> \<open>row-1 parent step gives the row-0 reachability \<open>leR N 0 jm2 j1\<close>\<close>
+  have hp1: "hasParent N 1 ?j1" using hp i1z by simp
+  have parR: "nextR N 1 ?jm2 ?j1"
+    using hp1 unfolding hasParent_def parent_def by (rule theI')
+  have le0: "leR N 0 ?jm2 ?j1" using poper_nextR_imp_le0[OF parR] by simp
+  \<comment> \<open>the period slice is \<open>monoT\<close>; its left end is the row-0 minimum\<close>
+  have mono: "monoT (seg N ?jm2 ?j1)"
+    by (rule m_6_2_mono_ancestor_slice[OF NT j0lt le0])
+  have segT: "seg N ?jm2 ?j1 \<in> T_PS" using j0lt by (auto simp: T_PS_def seg_def)
+  have slt: "s < Lng (seg N ?jm2 ?j1)" using sle j0lt by simp
+  have z0: "0 < Lng (seg N ?jm2 ?j1)" using j0lt by simp
+  have min: "entry (seg N ?jm2 ?j1) 0 0 \<le> entry (seg N ?jm2 ?j1) 0 s"
+    by (rule entry0_ge_min[OF segT mono slt])
+  \<comment> \<open>transfer both endpoints back to \<open>N\<close>\<close>
+  have e0: "entry (seg N ?jm2 ?j1) 0 0 = entry N 0 ?jm2"
+    using entry_seg[OF z0] by simp
+  have es: "entry (seg N ?jm2 ?j1) 0 s = entry N 0 (?jm2 + s)"
+    using entry_seg[OF slt] by simp
+  show ?thesis using min e0 es by simp
+qed
+
+text \<open>§6.8 geomA — the REGIME-A \<open>clt\<close> brick (\<open>c < m\<close>, replacing the non-universal
+  hypothesis of @{thm [source] oper_d1pos_anchor_coincide_regA}).  For
+  \<open>S = seg (N[n]) A E\<close> with \<open>A < j\<^sub>m\<^sub>2\<close> (regime A), the last \<open>FirstNodes\<close> anchor
+  \<open>c = IdxSum (P S) ! (len-1)\<close> sits STRICTLY below the boundary index
+  \<open>m = Lng (seg N A (Lng N-1)) - 1 = Lng N-1-A\<close>.  WITNESS \<open>jj = j\<^sub>m\<^sub>2 - A < m\<close>:
+  \<open>entry S 0 jj = entry N 0 j\<^sub>m\<^sub>2\<close> (verbatim prefix, block 0), while every tail index
+  \<open>x \<in> [m, Lng S-1]\<close> reads a HIGHER block (\<open>A+x \<ge> Lng N-1 = j\<^sub>m\<^sub>2 + w\<close>, so block
+  \<open>q = (A+x-j\<^sub>m\<^sub>2) div w \<ge> 1\<close>): \<open>entry S 0 x = entry N 0 (j\<^sub>m\<^sub>2+s) + q\<cdot>\<delta>\<close>
+  (@{thm [source] oper_d1pos_entry0}) \<open>\<ge> entry N 0 j\<^sub>m\<^sub>2 + \<delta> > entry N 0 j\<^sub>m\<^sub>2\<close>, using
+  the within-period floor (@{thm [source] oper_d1pos_period_row0_floor}) and
+  \<open>\<delta> > 0\<close>.  The uniform-witness bridge (@{thm [source] anchor_lt_of_uniform_witness},
+  \<open>k = m\<close>) then gives \<open>c < m\<close>.  DEEP-VERIFIED rank 10 (3273/3273 regime-A cases,
+  /tmp/regA_kwit.py); \<open>c = m\<close> NEVER occurs in regime A (0/3273, /tmp/regA_cNlt_regA.py).\<close>
+
+lemma oper_d1pos_clt_regA:
+  fixes N :: pairseq and A E n :: nat
+  defines "S \<equiv> seg ((N::pairseq)[n]) A E"
+  defines "c \<equiv> IdxSum (P S) ! (length (P S) - 1)"
+  assumes L: "1 < Lng N"
+    and notzero: "\<not> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0)"
+    and hp: "hasParent N (idx1 N (Lng N - 1)) (Lng N - 1)"
+    and i1z: "idx1 N (Lng N - 1) = 1"
+    and j0lt: "parent N 1 (Lng N - 1) < Lng N - 1"
+    and n1: "1 \<le> n"
+    and Abnd: "A < parent N 1 (Lng N - 1)"
+    and Ele: "Lng N - 1 \<le> E"
+    and Eub: "E < Lng ((N::pairseq)[n])"
+    and dpos: "entry N 0 (parent N 1 (Lng N - 1)) < entry N 0 (Lng N - 1)"
+    and multi: "1 < length (P S)"
+  shows "c < Lng (seg N A (Lng N - 1)) - 1"
+proof -
+  let ?jm2 = "parent N 1 (Lng N - 1)"  let ?j1 = "Lng N - 1"  let ?w = "?j1 - ?jm2"
+  let ?delta = "entry N 0 ?j1 - entry N 0 ?jm2"
+  let ?m = "Lng (seg N A ?j1) - 1"
+  let ?jj = "?jm2 - A"
+  \<comment> \<open>geometry\<close>
+  have AltN: "A < ?j1" using Abnd j0lt by linarith
+  have mval: "?m = ?j1 - A" using AltN by simp
+  have w0: "0 < ?w" using j0lt by linarith
+  obtain w where wdef: "?w = w" by blast
+  have w0': "0 < w" using w0 wdef by simp
+  have lenMn: "Lng ((N::pairseq)[n]) = ?jm2 + n * w"
+    using oper_d1pos_LngM[OF L notzero hp i1z j0lt] wdef by simp
+  \<comment> \<open>\<open>S \<in> T_PS\<close>\<close>
+  have Sne: "S \<noteq> []"
+  proof
+    assume "S = []"
+    hence "P S = [[]]" by (subst P.simps) (simp add: multiT_def zeroT_def monoT_def)
+    thus False using multi by simp
+  qed
+  have ST: "S \<in> T_PS" using Sne unfolding S_def by (auto simp: T_PS_def seg_def)
+  \<comment> \<open>\<open>Lng S = Suc E - A\<close>; so a tail index \<open>x \<le> Lng S - 1\<close> has \<open>A + x \<le> E\<close>\<close>
+  have LngS: "Lng S = Suc E - A" unfolding S_def by simp
+  \<comment> \<open>witness offset \<open>jj = jm2 - A < m\<close>\<close>
+  have jjlt: "?jj < ?m" using mval Abnd j0lt by linarith
+  \<comment> \<open>\<open>entry S 0 jj = entry N 0 jm2\<close> (verbatim prefix, \<open>A + jj = jm2 < j1\<close>)\<close>
+  have jjInS: "A + ?jj = ?jm2" using Abnd by simp
+  have jjltS: "?jj < Lng S" using jjlt mval LngS Ele Abnd j0lt by linarith
+  have nzero: "0 < n" using n1 by simp
+  have eSjj: "entry S 0 ?jj = entry N 0 ?jm2"
+  proof -
+    \<comment> \<open>\<open>jm2\<close> is the block-0 start (\<open>q = 0\<close>, offset \<open>s = 0\<close>)\<close>
+    have blk0: "entry ((N::pairseq)[n]) 0 (?jm2 + 0 * ?w + 0)
+              = entry N 0 (?jm2 + 0) + 0 * ?delta"
+      by (rule oper_d1pos_entry0[OF L notzero hp i1z j0lt nzero]) (use w0 in simp)
+    have "entry S 0 ?jj = entry ((N::pairseq)[n]) 0 (A + ?jj)"
+      unfolding S_def by (rule entry_seg[OF jjltS[unfolded S_def]])
+    also have "\<dots> = entry ((N::pairseq)[n]) 0 ?jm2" using jjInS by simp
+    also have "\<dots> = entry N 0 ?jm2" using blk0 by simp
+    finally show ?thesis .
+  qed
+  \<comment> \<open>the uniform witness: every tail index \<open>x \<in> [m, Lng S-1]\<close> is strictly above \<open>jj\<close>\<close>
+  have wit: "\<And>x. ?m \<le> x \<Longrightarrow> x \<le> Lng S - 1 \<Longrightarrow> entry S 0 ?jj < entry S 0 x"
+  proof -
+    fix x assume xlo: "?m \<le> x" and xhi: "x \<le> Lng S - 1"
+    \<comment> \<open>the N[n]-index \<open>A + x\<close> lies in block \<open>q \<ge> 1\<close> of the period\<close>
+    have AxlN: "?j1 \<le> A + x" using xlo mval by linarith
+    have AxleE: "A + x \<le> E" using xhi LngS Ele AltN by linarith
+    let ?q = "(A + x - ?jm2) div w"  let ?s = "(A + x - ?jm2) mod w"
+    have sw: "?s < w" using w0' by simp
+    have dm: "?q * w + ?s = A + x - ?jm2"
+      using div_mult_mod_eq[of "A + x - ?jm2" w] by (simp add: mult.commute)
+    have Axge: "?jm2 \<le> A + x" using AxlN j0lt by linarith
+    have xsplit: "A + x = ?jm2 + ?q * w + ?s" using dm Axge by linarith
+    \<comment> \<open>\<open>q \<ge> 1\<close> since \<open>A + x \<ge> j1 = jm2 + w\<close>\<close>
+    have jm2w: "?jm2 + w = ?j1" using wdef j0lt by linarith
+    have q1: "1 \<le> ?q"
+    proof -
+      have "?jm2 + w \<le> A + x" using AxlN jm2w by simp
+      hence "w \<le> A + x - ?jm2" using Axge by linarith
+      thus ?thesis using w0' by (simp add: div_greater_zero_iff Suc_leI)
+    qed
+    \<comment> \<open>\<open>q < n\<close> since \<open>A + x \<le> E < Lng (N[n]) = jm2 + n*w\<close>\<close>
+    have qn: "?q < n"
+    proof -
+      have "A + x - ?jm2 < n * w" using AxleE Eub lenMn Axge by linarith
+      thus ?thesis by (rule less_mult_imp_div_less)
+    qed
+    \<comment> \<open>read \<open>entry S 0 x = entry (N[n]) 0 (A+x)\<close> then decode via the block formula\<close>
+    have xltS: "x < Lng S" using xhi LngS Ele AltN by linarith
+    have eSx: "entry S 0 x = entry ((N::pairseq)[n]) 0 (A + x)"
+      unfolding S_def by (rule entry_seg[OF xltS[unfolded S_def]])
+    have sw': "?s < ?j1 - ?jm2" using sw wdef by simp
+    have block: "entry ((N::pairseq)[n]) 0 (?jm2 + ?q * ?w + ?s)
+               = entry N 0 (?jm2 + ?s) + ?q * ?delta"
+      by (rule oper_d1pos_entry0[OF L notzero hp i1z j0lt qn sw'])
+    have xsplit': "A + x = ?jm2 + ?q * ?w + ?s" using xsplit wdef by simp
+    have eSx2: "entry S 0 x = entry N 0 (?jm2 + ?s) + ?q * ?delta"
+      using eSx xsplit' block by simp
+    \<comment> \<open>within-period floor: \<open>entry N 0 (jm2+s) \<ge> entry N 0 jm2\<close>\<close>
+    have floor: "entry N 0 ?jm2 \<le> entry N 0 (?jm2 + ?s)"
+      by (rule oper_d1pos_period_row0_floor[OF hp i1z j0lt]) (use sw' in simp)
+    \<comment> \<open>\<open>q\<cdot>\<delta> \<ge> \<delta> > 0\<close>\<close>
+    have dpos': "0 < ?delta" using dpos by simp
+    have qd: "?delta \<le> ?q * ?delta" using q1 by (simp add: mult_le_mono1)
+    \<comment> \<open>assemble: \<open>entry S 0 x \<ge> entry N 0 jm2 + delta > entry N 0 jm2 = entry S 0 jj\<close>\<close>
+    have "entry S 0 ?jj = entry N 0 ?jm2" using eSjj .
+    also have "\<dots> < entry N 0 ?jm2 + ?delta" using dpos' by simp
+    also have "\<dots> \<le> entry N 0 (?jm2 + ?s) + ?q * ?delta" using floor qd by linarith
+    also have "\<dots> = entry S 0 x" using eSx2 by simp
+    finally show "entry S 0 ?jj < entry S 0 x" .
+  qed
+  have "IdxSum (P S) ! (length (P S) - 1) < ?m"
+    by (rule anchor_lt_of_uniform_witness[OF ST multi jjlt wit])
+  thus "c < ?m" unfolding c_def .
+qed
+
+text \<open>§6.8 d1pos \<not>brle REGIME-A anchor coincidence, clt/cNlt-FREE.  This is the
+  reproved @{thm [source] oper_d1pos_anchor_coincide_regA} with the two
+  NON-UNIVERSAL hypotheses \<open>clt : c < m\<close> / \<open>cNlt : cN < m\<close> ELIMINATED.  In regime A
+  (\<open>A < j\<^sub>m\<^sub>2\<close>, the verbatim-prefix sub-regime, \<open>shamt = 0\<close>) BOTH anchors sit
+  strictly below the boundary \<open>m = Lng (seg N A (Lng N-1)) - 1\<close>: \<open>c < m\<close> by
+  @{thm [source] oper_d1pos_clt_regA} (the periodic-tail row-0 lower bound) and
+  \<open>cN < m\<close> by @{thm [source] oper_d1pos_cNlt_of_Ajm2} (\<open>A \<le> j\<^sub>m\<^sub>2\<close>, the period-base
+  witness).  The boundary case \<open>c = m\<close> (singleton last \<open>P\<close>-component) NEVER occurs
+  in regime A (deep-verified 0/3273, /tmp/regA_cNlt_regA.py), so the existing
+  truncate-at-\<open>(m-1)\<close> agreement of @{thm [source] oper_d1pos_anchor_coincide_regA}
+  applies verbatim.  Replaces the over-conditioned regA with a hypothesis set that
+  is UNIVERSAL on regime A.\<close>
+
+lemma oper_d1pos_anchor_coincide_regA2:
+  fixes N :: pairseq and A E n :: nat
+  defines "S \<equiv> seg ((N::pairseq)[n]) A E"
+      and "Snside \<equiv> seg N A (Lng N - 1)"
+  defines "c \<equiv> IdxSum (P S) ! (length (P S) - 1)"
+      and "cN \<equiv> IdxSum (P Snside) ! (length (P Snside) - 1)"
+  assumes L: "1 < Lng N"
+    and notzero: "\<not> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0)"
+    and hp: "hasParent N (idx1 N (Lng N - 1)) (Lng N - 1)"
+    and i1z: "idx1 N (Lng N - 1) = 1"
+    and j0lt: "parent N 1 (Lng N - 1) < Lng N - 1"
+    and n1: "1 \<le> n"
+    and Abnd: "A < parent N 1 (Lng N - 1)"
+    and Ele: "Lng N - 1 \<le> E"
+    and Eub: "E < Lng ((N::pairseq)[n])"
+    and dpos: "entry N 0 (parent N 1 (Lng N - 1)) < entry N 0 (Lng N - 1)"
+    and multi: "1 < length (P S)"
+    and multiN: "1 < length (P Snside)"
+  shows "c = cN"
+    and "entry S 0 c = entry Snside 0 cN"
+    and "entry S 1 c \<le> entry Snside 1 cN"
+proof -
+  let ?jm2 = "parent N 1 (Lng N - 1)"
+  \<comment> \<open>regime A places \<open>A\<close> strictly below the period base \<open>jm2\<close>, hence below \<open>Lng N-1\<close>\<close>
+  have AltN: "A < Lng N - 1" using Abnd j0lt by linarith
+  have Ajm2: "A \<le> ?jm2" using Abnd by linarith
+  \<comment> \<open>derive the two anchor bounds (UNIVERSAL on regime A)\<close>
+  have clt: "c < Lng Snside - 1" unfolding c_def S_def Snside_def
+    by (rule oper_d1pos_clt_regA[OF L notzero hp i1z j0lt n1 Abnd Ele Eub dpos
+              multi[unfolded S_def c_def]])
+  have cNlt: "cN < Lng Snside - 1" unfolding cN_def Snside_def
+    by (rule oper_d1pos_cNlt_of_Ajm2[OF L AltN multiN[unfolded Snside_def] Ajm2 j0lt dpos])
+  \<comment> \<open>invoke the (truncate-route) anchor coincidence with the now-discharged bounds\<close>
+  show "c = cN"
+    unfolding c_def cN_def S_def Snside_def
+    by (rule oper_d1pos_anchor_coincide_regA(1)[OF L notzero hp i1z j0lt n1 AltN Ele
+          multi[unfolded S_def] multiN[unfolded Snside_def]
+          clt[unfolded c_def S_def Snside_def] cNlt[unfolded cN_def Snside_def]])
+  show "entry S 0 c = entry Snside 0 cN"
+    unfolding c_def cN_def S_def Snside_def
+    by (rule oper_d1pos_anchor_coincide_regA(2)[OF L notzero hp i1z j0lt n1 AltN Ele
+          multi[unfolded S_def] multiN[unfolded Snside_def]
+          clt[unfolded c_def S_def Snside_def] cNlt[unfolded cN_def Snside_def]])
+  show "entry S 1 c \<le> entry Snside 1 cN"
+    unfolding c_def cN_def S_def Snside_def
+    by (rule oper_d1pos_anchor_coincide_regA(3)[OF L notzero hp i1z j0lt n1 AltN Ele
+          multi[unfolded S_def] multiN[unfolded Snside_def]
+          clt[unfolded c_def S_def Snside_def] cNlt[unfolded cN_def Snside_def]])
+qed
+
 text \<open>§6.8 d1pos \<open>\<not>brle\<close> REGIME B anchor coincidence — the SHIFT analogue of
   @{thm [source] oper_d1pos_anchor_coincide_regA} (regime B, \<open>j\<^sub>m\<^sub>2 \<le> j'\<^sub>0\<close>).  In
   regime A the all-but-last agreement of \<open>S\<close> (= \<open>Br M'\<close> source) and \<open>Snside\<close>
