@@ -1570,3 +1570,28 @@ This is NOT a single self-contained lemma; it is a multi-session infrastructure 
 - 🚨 the ONE residual = oper_d1pos_notbrle_LOW_take_eq (TRUE, witness=formula G PINNED) — its
   proof = the delta-shifted block-fold machinery (the next major effort).
 - 4 shallow-generator false claims caught this push; ALWAYS verify at rank≥6.
+
+## UPDATE 2026-05-30 (continued 39): block-fold brick 1 = d1pos TrEq keystone (uncapped, conditional)
+
+The block-fold infrastructure build began. BRICK 1 banked (slice 8c779b8, green):
+`TrMax_seg_oper_d1pos_eq` — TrMax(seg (N[n]) j0' j1') = TrMax(seg N j0red j1red) via the
+IncrFirst-invariance route (TrMax_funpow_IncrFirst + oper_d1pos_nth in-block agreement +
+TrMax_eq_of_prefix_agree). Both independent attempts CONVERGED (deep gen, NO shallow-false
+this round): the keystone is FALSE without notbrle (A 1833 / B 15 counterexamples, all brle)
+and TRUE under notbrle (22431/22431). Good sign the brick-by-brick build is converging.
+
+### Brick map (the remaining ~1000-line block-fold port, sub-cases identified)
+- **Brick 1a (DONE)**: TrEq for the UNCAPPED case (span `j1red = j0red+(j1'-j0')`, j1red≤Lng N-1),
+  CONDITIONAL on `tnc` (TrMax Nred ≤ j1red-1-j0red) + `stop` (boundary stop). 0 sorries.
+- **Brick 1b**: TrEq for the CAPPED across-block case (j1red = Lng N-1 < j0red+(j1'-j0'));
+  the harder sub-case (deep-verified tnc/stop hold 15246, but the keystone's `span` hyp is
+  uncapped — needs a capped variant / generalized span).
+- **Brick 2**: discharge `tnc` + `stop` from notbrle (the trunk-confinement — ¬brle forces the
+  M'-trunk strictly below the block-q boundary; `TrMax M' < c` ⟺ the boundary row-1 step
+  nextrel1 fails because the next block restarts row-1 from the unshifted block-start; both
+  attempts deep-verified 2206/2206 strict). The block-fold row-1 chain-break structure.
+- **Brick 3**: the Br = LOW @ [tail] decomposition with LOW = (IncrFirst^^shamt)-shift of
+  take (Lng(Br Np)-1) (Br Np) — the FirstNodes/Br/IdxSum alignment (uses TrEq to line up
+  BrM'P=P(seg M a j1') and BrNpP=P(seg N a' j1red); oper_d1pos_notbrle_LOW_eq + take_map).
+- **Brick 4**: the junction facts (tail row-0 tie after shift, row-1 drop via nextrel1 N jm2).
+Then assemble the stub oper_d1pos_notbrle_LOW_take_eq from bricks 1-4 + formula-G witnesses.
