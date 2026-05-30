@@ -13856,6 +13856,152 @@ proof (rule nth_equalityI)
   qed
 qed
 
+text \<open>§6.8 geomA helper — a START-prefix of a NON-MULTI \<open>T_PS\<close> sequence is itself
+  NON-MULTI.  \<open>\<not> multiT M\<close> is \<open>(0,0) \<le>\<^sub>M (0, Lng M-1)\<close> (@{thm [source]
+  m_6_2_not_multi_iff_le}), which by ancestor-monotonicity (@{thm [source]
+  m_5_1_ancestor_tree_1}) extends to every earlier endpoint \<open>b \<le> Lng M-1\<close>; the
+  resulting slice is \<open>monoT\<close> (@{thm [source] m_6_2_mono_ancestor_slice}) when
+  \<open>0 < b\<close>, and a singleton (hence non-multi) when \<open>b = 0\<close>.\<close>
+
+lemma notmulti_seg_prefix:
+  assumes MT: "M \<in> T_PS" and nm: "\<not> multiT M" and ble: "b < Lng M"
+  shows "\<not> multiT (seg M 0 b)"
+proof (cases "0 < b")
+  case False
+  hence b0: "b = 0" by simp
+  have L1: "Lng (seg M 0 b) = 1" using b0 by simp
+  hence segT: "seg M 0 b \<in> T_PS" by (cases "seg M 0 b") (auto simp: T_PS_def)
+  show ?thesis
+  proof
+    assume mult: "multiT (seg M 0 b)"
+    have "1 < Lng (seg M 0 b)" by (rule multiT_imp_Lng_gt1[OF segT mult])
+    thus False using L1 by simp
+  qed
+next
+  case True
+  have le0: "leR M 0 0 (Lng M - 1)" using m_6_2_not_multi_iff_le[OF MT] nm by simp
+  have ble1: "b \<le> Lng M - 1" using ble by linarith
+  have leb: "leR M 0 0 b" by (rule m_5_1_ancestor_tree_1[OF MT le0 _ ble1]) simp
+  have "monoT (seg M 0 b)" by (rule m_6_2_mono_ancestor_slice[OF MT True leb])
+  thus ?thesis by (simp add: multiT_def)
+qed
+
+text \<open>§6.8 geomA core (P-prefix anchor stability).  For a multi-\<open>P\<close> \<open>S \<in> T_PS\<close>
+  with LAST \<open>FirstNodes\<close> anchor \<open>c = IdxSum (P S) ! (length (P S)-1)\<close>, truncating
+  \<open>S\<close> to ANY prefix length \<open>m\<close> STRICTLY ABOVE the anchor (\<open>c < m \<le> Lng S\<close>) leaves
+  the \<open>butlast\<close> of its \<open>P\<close>-decomposition UNCHANGED:
+    \<open>butlast (P (seg S 0 (m-1))) = butlast (P S)\<close>.
+  Both equal the LOW component list \<open>P (seg S 0 (c-1))\<close>: on the whole \<open>S\<close> by the
+  anchor split (@{thm [source] oper_d1pos_notbrle_P_split}, tail single), and on
+  the prefix \<open>seg S 0 (m-1)\<close> by the SAME split at \<open>c\<close> — the prefix-tail
+  \<open>seg S c (m-1)\<close> is a start-prefix of the non-multi last component \<open>seg S c (Lng S-1)\<close>,
+  hence non-multi (@{thm [source] notmulti_seg_prefix}).  DEEP-VERIFIED rank 8
+  (/tmp/gen_butl_take.py): the identity holds for every \<open>c < m \<le> Lng S\<close>, 47/47.\<close>
+
+lemma P_butlast_take_at_anchor:
+  fixes S :: pairseq
+  defines "c \<equiv> IdxSum (P S) ! (length (P S) - 1)"
+  assumes ST: "S \<in> T_PS" and multi: "1 < length (P S)"
+    and cm: "c < m" and mle: "m \<le> Lng S"
+  shows "butlast (P (seg S 0 (m - 1))) = butlast (P S)"
+proof -
+  \<comment> \<open>anchor data on the whole \<open>S\<close>\<close>
+  have c0: "0 < c" unfolding c_def by (rule oper_d1pos_branch_anchor(1)[OF ST multi])
+  have cle: "c \<le> Lng S - 1" unfolding c_def by (rule oper_d1pos_branch_anchor(2)[OF ST multi])
+  have lmin: "\<And>j. j < c \<Longrightarrow> entry S 0 c \<le> entry S 0 j"
+    unfolding c_def using oper_d1pos_branch_anchor(3)[OF ST multi] by blast
+  have tailnm: "\<not> multiT (seg S c (Lng S - 1))"
+    unfolding c_def by (rule oper_d1pos_branch_anchor(4)[OF ST multi])
+  have tailseg: "seg S c (Lng S - 1) = last (P S)"
+    unfolding c_def by (rule oper_d1pos_branch_anchor(5)[OF ST multi])
+  \<comment> \<open>\<open>butlast (P S) = P (seg S 0 (c-1))\<close> via the anchor split on the whole \<open>S\<close>\<close>
+  have splitS: "P S = P (seg S 0 (c - 1)) @ [seg S c (Lng S - 1)]"
+    by (rule oper_d1pos_notbrle_P_split[OF ST c0 cle lmin tailnm])
+  have butS: "butlast (P S) = P (seg S 0 (c - 1))" using splitS by simp
+  \<comment> \<open>the prefix \<open>Q = seg S 0 (m-1)\<close>\<close>
+  let ?Q = "seg S 0 (m - 1)"
+  have Lng_S_pos: "0 < Lng S" using c0 cle by linarith
+  have mpos: "0 < m" using cm by linarith
+  have LngQ: "Lng ?Q = m" using mle mpos by simp
+  have Qne: "?Q \<noteq> []"
+  proof
+    assume "?Q = []"
+    hence "length ?Q = 0" by simp
+    thus False using LngQ mpos by simp
+  qed
+  have QT: "?Q \<in> T_PS" using Qne by (auto simp: T_PS_def seg_def)
+  \<comment> \<open>the cut \<open>c\<close> on \<open>Q\<close>: \<open>0 < c\<close>, \<open>c \<le> Lng Q - 1 = m-1\<close>, lmin (entries agree on \<open>[0,m-1]\<close>)\<close>
+  have cleQ: "c \<le> Lng ?Q - 1" using cm LngQ by simp
+  have agreeE: "\<And>j. j \<le> m - 1 \<Longrightarrow> entry ?Q 0 j = entry S 0 j"
+  proof -
+    fix j assume jle: "j \<le> m - 1"
+    have jlt: "j < Lng S" using jle cm mle by linarith
+    show "entry ?Q 0 j = entry S 0 j"
+      using jle by (simp add: entry_seg jlt)
+  qed
+  have lminQ: "\<And>j. j < c \<Longrightarrow> entry ?Q 0 c \<le> entry ?Q 0 j"
+  proof -
+    fix j assume jc: "j < c"
+    have jm1: "j \<le> m - 1" using jc cm by linarith
+    have cm1: "c \<le> m - 1" using cm by linarith
+    have "entry ?Q 0 c = entry S 0 c" using agreeE[OF cm1] .
+    moreover have "entry ?Q 0 j = entry S 0 j" using agreeE[OF jm1] .
+    ultimately show "entry ?Q 0 c \<le> entry ?Q 0 j" using lmin[OF jc] by simp
+  qed
+  \<comment> \<open>the prefix-tail \<open>seg Q c (Lng Q-1) = seg S c (m-1)\<close> is a start-prefix of the
+     non-multi last component, hence non-multi\<close>
+  have segQtail: "seg ?Q c (Lng ?Q - 1) = seg S c (m - 1)"
+  proof -
+    have "seg ?Q c (Lng ?Q - 1) = seg ?Q c (m - 1)" using LngQ by simp
+    also have "\<dots> = seg S (0 + c) (0 + (m - 1))"
+      by (rule seg_of_seg) (use cm in linarith)+
+    finally show ?thesis by simp
+  qed
+  have segS_tail_eq: "seg S c (m - 1) = seg (seg S c (Lng S - 1)) 0 (m - 1 - c)"
+  proof -
+    have "seg (seg S c (Lng S - 1)) 0 (m - 1 - c) = seg S (c + 0) (c + (m - 1 - c))"
+      by (rule seg_of_seg) (use cle mle in linarith)+
+    also have "c + (m - 1 - c) = m - 1" using cm by linarith
+    finally show ?thesis by simp
+  qed
+  have tailseg_TPS: "seg S c (Lng S - 1) \<in> T_PS"
+  proof -
+    have tlen: "length (seg S c (Lng S - 1)) = Suc (Lng S - 1) - c" by simp
+    have "seg S c (Lng S - 1) \<noteq> []"
+    proof
+      assume "seg S c (Lng S - 1) = []"
+      hence "length (seg S c (Lng S - 1)) = 0" by simp
+      thus False using tlen cle by linarith
+    qed
+    thus ?thesis by (auto simp: T_PS_def seg_def)
+  qed
+  have mc_lt: "m - 1 - c < Lng (seg S c (Lng S - 1))"
+  proof -
+    have "Lng (seg S c (Lng S - 1)) = Suc (Lng S - 1) - c" by simp
+    moreover have "m - 1 - c < Suc (Lng S - 1) - c" using cm mle cle by linarith
+    ultimately show ?thesis by simp
+  qed
+  have tailnmQ: "\<not> multiT (seg ?Q c (Lng ?Q - 1))"
+  proof -
+    have "\<not> multiT (seg (seg S c (Lng S - 1)) 0 (m - 1 - c))"
+      by (rule notmulti_seg_prefix[OF tailseg_TPS tailnm mc_lt])
+    thus ?thesis using segQtail segS_tail_eq by simp
+  qed
+  \<comment> \<open>apply the SAME anchor split to \<open>Q\<close>\<close>
+  have splitQ: "P ?Q = P (seg ?Q 0 (c - 1)) @ [seg ?Q c (Lng ?Q - 1)]"
+    by (rule oper_d1pos_notbrle_P_split[OF QT c0 cleQ lminQ tailnmQ])
+  have segQ0: "seg ?Q 0 (c - 1) = seg S 0 (c - 1)"
+  proof -
+    have "seg ?Q 0 (c - 1) = seg S (0 + 0) (0 + (c - 1))"
+      by (rule seg_of_seg) (use cm in linarith)+
+    thus ?thesis by simp
+  qed
+  have "butlast (P ?Q) = P (seg ?Q 0 (c - 1))" using splitQ by simp
+  also have "\<dots> = P (seg S 0 (c - 1))" using segQ0 by simp
+  also have "\<dots> = butlast (P S)" using butS by simp
+  finally show ?thesis .
+qed
+
 text \<open>§6.8 d1pos \<open>\<not>brle\<close> REGIME A lowshift (conc-A, \<open>j'\<^sub>0 < j\<^sub>m\<^sub>2\<close>, \<open>shamt = 0\<close>).
   Companion to @{thm [source] oper_d1pos_branch_lowshift_regB}: in regime A the
   block index \<open>q\<^sub>0 = 0\<close> so \<open>shamt = 0\<close> and \<open>j\<^sub>0\<^sup>red = j'\<^sub>0\<close>, and (via the regime-A
@@ -13904,6 +14050,149 @@ proof -
   also have "\<dots> = seg (seg N AN EN) 0 (cN - 1)" using reN by simp
   also have "\<dots> = (IncrFirst ^^ (0::nat)) (seg (seg N AN EN) 0 (cN - 1))" by simp
   finally show ?thesis .
+qed
+
+text \<open>§6.8 geomA ANCHOR COINCIDENCE (the regime-A \<open>c = cN\<close> / \<open>F8end\<close> / \<open>F9end\<close>
+  derivation).  In regime A the \<open>M\<close>-side branch region \<open>S = seg (N[n]) A E\<close>
+  (\<open>E = j'\<^sub>1 \<ge> Lng N-1\<close>) and the \<open>N\<close>-side region
+  \<open>Snside = seg N A (Lng N-1)\<close> START AT THE SAME index \<open>A\<close> (via the regime-A TrEq,
+  @{thm [source] TrMax_seg_oper_d1pos_eq_regA}, \<open>A = AN\<close>) and AGREE VERBATIM on the
+  common window \<open>[A, Lng N-2]\<close> (the \<open>N[n]\<close>-extension reads \<open>N\<close> off verbatim strictly
+  below the boundary, @{thm [source] oper_d1pos_seg_low_verbatim}); they differ only
+  at \<open>Snside\<close>'s last index.  Writing \<open>m = Lng Snside - 1 = Lng N - 1 - A\<close> the common
+  prefix is \<open>Q = seg S 0 (m-1) = seg Snside 0 (m-1)\<close>.  By the P-prefix anchor
+  stability lemma @{thm [source] P_butlast_take_at_anchor} applied to BOTH operands
+  (each anchor lies strictly below the differing index, \<open>c < m\<close> / \<open>cN < m\<close>, the
+  267/267 regime-A realisation — \<open>len(last(P S)) \<ge> 2\<close> / \<open>len(last(P Snside)) \<ge> 2\<close>,
+  /tmp/geomA_lastlen.py):
+    \<open>butlast (P S) = butlast (P Q) = butlast (P Snside)\<close>,
+  hence the LAST \<open>IdxSum\<close> values coincide (\<open>c = sum_list (map length (butlast (P S)))
+  = cN\<close>): \<open>c = cN\<close>.  Then \<open>shamt = 0\<close>, and since the anchor cut sits in the verbatim
+  window (\<open>c < m\<close>, \<open>A + c < Lng N - 1\<close>) the row-0/row-1 entries at the cut coincide:
+    \<open>F8end : entry S 0 c = entry Snside 0 cN  (= + shamt, shamt = 0)\<close>,
+    \<open>F9end : entry S 1 c = entry Snside 1 cN  (\<le>)\<close>.
+  DEEP-VERIFIED rank 8 (/tmp/geomA_verify.py): \<open>c = cN\<close>, \<open>F8end\<close>, \<open>F9end\<close> all
+  267/267, with \<open>A + c < Lng N-1\<close> and \<open>A + (c-1) < Lng N-1\<close> 267/267.  The bounds
+  \<open>c < m\<close>, \<open>cN < m\<close> are the regime-A residual block-fold realisation (the last
+  \<open>P\<close>-component spans the whole extended tail, length \<open>\<ge> 2\<close>); everything else is
+  derived from the std \<open>d1pos\<close> context.\<close>
+
+lemma oper_d1pos_anchor_coincide_regA:
+  fixes N :: pairseq and A E n :: nat
+  defines "S \<equiv> seg ((N::pairseq)[n]) A E"
+      and "Snside \<equiv> seg N A (Lng N - 1)"
+  defines "c \<equiv> IdxSum (P S) ! (length (P S) - 1)"
+      and "cN \<equiv> IdxSum (P Snside) ! (length (P Snside) - 1)"
+  assumes L: "1 < Lng N"
+    and notzero: "\<not> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0)"
+    and hp: "hasParent N (idx1 N (Lng N - 1)) (Lng N - 1)"
+    and i1z: "idx1 N (Lng N - 1) = 1"
+    and j0lt: "parent N 1 (Lng N - 1) < Lng N - 1"
+    and n1: "1 \<le> n"
+    and Abnd: "A < Lng N - 1"
+    and Ele: "Lng N - 1 \<le> E"
+    and multi: "1 < length (P S)"
+    and multiN: "1 < length (P Snside)"
+    and clt: "c < Lng Snside - 1"
+    and cNlt: "cN < Lng Snside - 1"
+  shows "c = cN"
+    and "entry S 0 c = entry Snside 0 cN"
+    and "entry S 1 c \<le> entry Snside 1 cN"
+proof -
+  let ?m = "Lng Snside - 1"
+  \<comment> \<open>\<open>S \<in> T_PS\<close>, \<open>Snside \<in> T_PS\<close>\<close>
+  have Sne: "S \<noteq> []"
+  proof
+    assume "S = []"
+    hence "P S = [[]]" by (subst P.simps) (simp add: multiT_def zeroT_def monoT_def)
+    thus False using multi by simp
+  qed
+  have ST: "S \<in> T_PS" using Sne unfolding S_def by (auto simp: T_PS_def seg_def)
+  have Snne: "Snside \<noteq> []"
+  proof
+    assume "Snside = []"
+    hence "P Snside = [[]]" by (subst P.simps) (simp add: multiT_def zeroT_def monoT_def)
+    thus False using multiN by simp
+  qed
+  have SnT: "Snside \<in> T_PS" using Snne unfolding Snside_def by (auto simp: T_PS_def seg_def)
+  \<comment> \<open>geometry of \<open>m\<close>: \<open>Lng Snside = Lng N - A\<close>, so \<open>m = Lng N - 1 - A\<close>, \<open>A + (m-1) = Lng N - 2\<close>\<close>
+  have LngSn: "Lng Snside = Suc (Lng N - 1) - A" unfolding Snside_def by simp
+  have mpos: "0 < ?m" using cNlt by linarith
+  have mval: "?m = Lng N - 1 - A" using LngSn Abnd by linarith
+  \<comment> \<open>freeze \<open>e = m-1\<close> so \<open>Lng_seg\<close> cannot re-expand the endpoint mid-reshape\<close>
+  obtain e where edef: "e = ?m - 1" by blast
+  have AmB: "A + e < Lng N - 1" using edef mval Abnd mpos by linarith
+  \<comment> \<open>verbatim common prefix \<open>Q = seg S 0 e = seg Snside 0 e\<close>\<close>
+  have ELng: "A \<le> E" using Ele Abnd by linarith
+  have mleE: "e \<le> E - A" using edef mval Ele Abnd by linarith
+  have reS: "seg S 0 e = seg ((N::pairseq)[n]) A (A + e)"
+    unfolding S_def using seg_of_seg[OF ELng mleE] by simp
+  have mleN: "e \<le> (Lng N - 1) - A" using edef mval Abnd mpos by linarith
+  have ALeN: "A \<le> Lng N - 1" using Abnd by linarith
+  have reSn: "seg Snside 0 e = seg N A (A + e)"
+    unfolding Snside_def using seg_of_seg[OF ALeN mleN] by simp
+  have verb: "seg ((N::pairseq)[n]) A (A + e) = seg N A (A + e)"
+    by (rule oper_d1pos_seg_low_verbatim[OF L notzero hp i1z j0lt n1 AmB])
+  have Qeq: "seg S 0 e = seg Snside 0 e"
+    using reS reSn verb by simp
+  \<comment> \<open>P-prefix anchor stability on both operands (anchors strictly below \<open>m\<close>)\<close>
+  have mleS: "?m \<le> Lng S"
+  proof -
+    have "Lng S = Suc E - A" unfolding S_def by simp
+    moreover have "?m \<le> Suc E - A" using mval Ele Abnd by linarith
+    ultimately show ?thesis by simp
+  qed
+  have mleSn: "?m \<le> Lng Snside" by linarith
+  have cltS: "IdxSum (P S) ! (length (P S) - 1) < ?m" using clt unfolding c_def by simp
+  have cltSn: "IdxSum (P Snside) ! (length (P Snside) - 1) < ?m" using cNlt unfolding cN_def by simp
+  have butS: "butlast (P (seg S 0 e)) = butlast (P S)"
+    using P_butlast_take_at_anchor[OF ST multi cltS mleS] edef by simp
+  have butSn: "butlast (P (seg Snside 0 e)) = butlast (P Snside)"
+    using P_butlast_take_at_anchor[OF SnT multiN cltSn mleSn] edef by simp
+  have butEq: "butlast (P S) = butlast (P Snside)"
+    using butS butSn Qeq by simp
+  \<comment> \<open>\<open>c = cN\<close>: the last \<open>IdxSum\<close> value is the total length of \<open>butlast (P \<cdot>)\<close>\<close>
+  have neS: "P S \<noteq> []" by (rule P_nonempty)
+  have neSn: "P Snside \<noteq> []" by (rule P_nonempty)
+  have cbutl: "c = sum_list (map length (butlast (P S)))"
+  proof -
+    have "c = IdxSum (P S) ! (length (P S) - 1)" unfolding c_def ..
+    also have "\<dots> = sum_list (map length (take (length (P S) - 1) (P S)))"
+      by (simp add: idxsum_nth)
+    also have "take (length (P S) - 1) (P S) = butlast (P S)"
+      by (simp add: butlast_conv_take)
+    finally show ?thesis .
+  qed
+  have cNbutl: "cN = sum_list (map length (butlast (P Snside)))"
+  proof -
+    have "cN = IdxSum (P Snside) ! (length (P Snside) - 1)" unfolding cN_def ..
+    also have "\<dots> = sum_list (map length (take (length (P Snside) - 1) (P Snside)))"
+      by (simp add: idxsum_nth)
+    also have "take (length (P Snside) - 1) (P Snside) = butlast (P Snside)"
+      by (simp add: butlast_conv_take)
+    finally show ?thesis .
+  qed
+  show ceq: "c = cN" using cbutl cNbutl butEq by simp
+  \<comment> \<open>the anchor cut lies in the verbatim window: \<open>entry\<close> agreement at \<open>c = cN\<close>\<close>
+  have ccm: "c \<le> e" using clt edef by linarith
+  have eqQc0: "entry (seg S 0 e) 0 c = entry (seg Snside 0 e) 0 c"
+    using Qeq by simp
+  have eqQc1: "entry (seg S 0 e) 1 c = entry (seg Snside 0 e) 1 c"
+    using Qeq by simp
+  have cltLng: "c < Lng (seg S 0 e)" using ccm by simp
+  have cltLngN: "c < Lng (seg Snside 0 e)" using ccm by simp
+  have lhs0: "entry (seg S 0 e) 0 c = entry S 0 c"
+    using entry_seg[OF cltLng] by simp
+  have lhs1: "entry (seg S 0 e) 1 c = entry S 1 c"
+    using entry_seg[OF cltLng] by simp
+  have rhs0: "entry (seg Snside 0 e) 0 c = entry Snside 0 c"
+    using entry_seg[OF cltLngN] by simp
+  have rhs1: "entry (seg Snside 0 e) 1 c = entry Snside 1 c"
+    using entry_seg[OF cltLngN] by simp
+  have e0: "entry S 0 c = entry Snside 0 c" using eqQc0 lhs0 rhs0 by simp
+  have e1: "entry S 1 c = entry Snside 1 c" using eqQc1 lhs1 rhs1 by simp
+  show "entry S 0 c = entry Snside 0 cN" using e0 ceq by simp
+  show "entry S 1 c \<le> entry Snside 1 cN" using e1 ceq by simp
 qed
 
 text \<open>§6.8 d1pos \<open>\<not>brle\<close> REGIME B lowshift — EXACT plug-in form (conc-A,
