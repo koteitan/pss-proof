@@ -11902,6 +11902,105 @@ proof -
   thus ?thesis using seg_iff by simp
 qed
 
+text \<open>§6.8 d1pos N-side boundary residual (B3N).  In the capped \<open>\<not>brle\<close> slice
+  context the row-1 parent of the last column does NOT exceed the predecessor's
+  row-1 entry:
+    \<open>entry N 1 (parent N 1 (Lng N-1)) \<le> entry N 1 (Lng N-2)\<close>.
+
+  FALSE in isolation (CE \<open>N=(0,0)(1,1)(2,2)(3,0)(2,2)\<close>: \<open>jm2=1\<close>,
+  \<open>entry N 1 4 = 2 > entry N 1 3 = 0\<close>; there the predecessor \<open>Lng N-2 = 3\<close> is
+  NOT row-0-reachable to the last column \<open>Lng N-1\<close>, so the \<open>nextrel1\<close> minimality
+  clause does not apply to it).  The minimal sufficient extra hypothesis is the
+  \<open>fill\<close> condition: the \<open>N\<close>-reference reduced slice \<open>seg N a (Lng N-1)\<close> (with
+  \<open>a < Lng N-1\<close>) is a FULL trunk (\<open>TrMax = Lng - 1\<close>).  Then its last trunk step
+  \<open>Lng N-2 \<rightarrow> Lng N-1\<close> transfers to \<open>le0 N (Lng N-2)(Lng N-1)\<close>
+  (@{thm [source] trunk_le0}, @{thm [source] adm_le0_seg}), and the \<open>nextrel1\<close>
+  minimality of the parent \<open>jm2\<close> (from @{thm [source] hasParent_def}) gives
+  \<open>entry N 1 (Lng N-2) \<ge> entry N 1 (Lng N-1) > entry N 1 jm2\<close> (when
+  \<open>jm2 < Lng N-2\<close>; the case \<open>jm2 = Lng N-2\<close> is reflexive).
+
+  DEEP-VERIFIED (rank 9: \<open>python/d1pos_b3n_fillsuff.py\<close>,
+  \<open>python/d1pos_b3n_chain_rand.py\<close>, len\<le>16 maxval=9, 600k\<endash>800k samples): the bare
+  claim fails ~10% (3904/37919), but \<open>fill \<Longrightarrow> B3N\<close> has 0 counterexamples over
+  18112 fill cases; the keystone transfer \<open>fill \<Longrightarrow> le0 N (Lng N-2)(Lng N-1)\<close>
+  is also 0/14315 failures.\<close>
+
+lemma oper_d1pos_b3n_boundary:
+  fixes N :: pairseq
+  assumes N: "N \<in> T_PS"
+    and L: "1 < Lng N"
+    and hp1: "hasParent N 1 (Lng N - 1)"
+    and a_lt: "a < Lng N - 1"
+    and fill: "TrMax (seg N a (Lng N - 1)) = Lng (seg N a (Lng N - 1)) - 1"
+  shows "entry N 1 (parent N 1 (Lng N - 1)) \<le> entry N 1 (Lng N - 2)"
+proof -
+  let ?j1N = "Lng N - 1"
+  let ?jm2 = "parent N 1 ?j1N"
+  let ?S = "seg N a ?j1N"
+  \<comment> \<open>\<open>parR1\<close>: the row-1 parent relation \<open>nextrel1 N jm2 (Lng N-1)\<close>\<close>
+  have parR1: "nextR N 1 ?jm2 ?j1N"
+    using hp1 unfolding hasParent_def parent_def by (rule theI')
+  have nr1: "nextrel1 N ?jm2 ?j1N" using parR1 by (simp add: nextR_def)
+  have H1: "entry N 1 ?jm2 < entry N 1 ?j1N" using nr1 by (simp add: nextrel1_def)
+  have jm2lt: "?jm2 < ?j1N" using nr1 by (simp add: nextrel1_def)
+  \<comment> \<open>the minimality clause of \<open>nextrel1\<close>: \<open>\<forall>j. jm2 < j \<and> le0 N j (Lng N-1) \<longrightarrow> entry N 1 j \<ge> entry N 1 (Lng N-1)\<close>\<close>
+  have minim: "\<And>j. ?jm2 < j \<Longrightarrow> le0 N j ?j1N \<Longrightarrow> entry N 1 ?j1N \<le> entry N 1 j"
+    using nr1 by (simp add: nextrel1_def)
+  \<comment> \<open>\<open>S \<in> T_PS\<close> and its length\<close>
+  have ST: "?S \<in> T_PS" using a_lt by (simp add: T_PS_def seg_def)
+  have aleN: "a \<le> ?j1N" using a_lt by linarith
+  have LS: "Lng ?S = Suc ?j1N - a" using aleN by simp
+  have LSpos: "1 < Lng ?S" using LS a_lt by linarith
+  \<comment> \<open>last trunk step of the FILLED slice: \<open>le0 S (Lng S-2)(Lng S-1)\<close>\<close>
+  have fillT: "TrMax ?S = Lng ?S - 1" by (rule fill)
+  have le0S: "le0 ?S (Lng ?S - 2) (Lng ?S - 1)"
+  proof -
+    have ab: "Lng ?S - 2 \<le> Lng ?S - 1" by simp
+    have bT: "Lng ?S - 1 \<le> TrMax ?S" using fillT by simp
+    have "leR ?S 0 (Lng ?S - 2) (Lng ?S - 1)"
+      by (rule trunk_le0[OF ST ab bT])
+    thus ?thesis by (simp add: leR_def)
+  qed
+  \<comment> \<open>transfer the slice trunk step back to \<open>N\<close>: \<open>le0 N (Lng N-2)(Lng N-1)\<close>\<close>
+  have idx_lo: "a + (Lng ?S - 2) = ?j1N - 1"
+  proof -
+    have "a + (Lng ?S - 2) = a + (Suc ?j1N - a - 2)" using LS by simp
+    also have "\<dots> = ?j1N - 1" using a_lt by linarith
+    finally show ?thesis .
+  qed
+  have idx_hi: "a + (Lng ?S - 1) = ?j1N"
+  proof -
+    have "a + (Lng ?S - 1) = a + (Suc ?j1N - a - 1)" using LS by simp
+    also have "\<dots> = ?j1N" using a_lt by linarith
+    finally show ?thesis .
+  qed
+  have lo_le: "Lng ?S - 2 \<le> ?j1N - a" using LS by linarith
+  have hi_le: "Lng ?S - 1 \<le> ?j1N - a" using LS by linarith
+  have aj1N: "a \<le> ?j1N" using a_lt by linarith
+  have j1Nlt: "?j1N < Lng N" using L by linarith
+  have le0N: "le0 N (?j1N - 1) ?j1N"
+  proof -
+    have "le0 N (a + (Lng ?S - 2)) (a + (Lng ?S - 1))"
+      using adm_le0_seg[OF j1Nlt lo_le hi_le aj1N] le0S by simp
+    thus ?thesis using idx_lo idx_hi by simp
+  qed
+  \<comment> \<open>combine: either \<open>jm2 = Lng N-2\<close> (reflexive) or minimality applies\<close>
+  show ?thesis
+  proof (cases "?jm2 = ?j1N - 1")
+    case True
+    have "?j1N - 1 = Lng N - 2" by simp
+    thus ?thesis using True by simp
+  next
+    case False
+    hence "?jm2 < ?j1N - 1" using jm2lt by linarith
+    have step: "entry N 1 ?j1N \<le> entry N 1 (?j1N - 1)"
+      using minim[OF \<open>?jm2 < ?j1N - 1\<close> le0N] .
+    have idxeq2: "?j1N - 1 = Lng N - 2" by simp
+    have "entry N 1 ?jm2 \<le> entry N 1 (?j1N - 1)" using step H1 by linarith
+    thus ?thesis using idxeq2 by simp
+  qed
+qed
+
 text \<open>§6.8 d1pos \<open>brle\<close>-conclusion closer, CAPPED form (the across-block min-cap
   ACTIVE: \<open>j\<^sub>1\<^sup>red = Lng N - 1 < j\<^sub>0\<^sup>red + (j'\<^sub>1 - j'\<^sub>0)\<close>).  This is the capped twin of
   @{thm [source] TrMax_seg_oper_d1pos_brle_uncapped}: when the \<open>N\<close>-reference trunk
@@ -12123,7 +12222,15 @@ proof (rule ccontr)
      (CE N=(0,0)(1,1)(2,2)(3,0)(2,2): jm2=1, entry N 1 4=2 > entry N 1 3+1=1).  B3N
      needs the full slice context, so it is a precisely-scoped inline residual (the
      false standalone H2 stub oper_d1pos_row1_incr_bound was removed).\<close>
-  have B3N: "entry N 1 ?j0 \<le> entry N 1 (?j1N - 1)" sorry
+  have B3N: "entry N 1 ?j0 \<le> entry N 1 (?j1N - 1)"
+  proof -
+    have fillS: "TrMax (seg N j0red ?j1N) = Lng (seg N j0red ?j1N) - 1"
+      using fill cap by simp
+    have b3nlem: "entry N 1 (parent N 1 (Lng N - 1)) \<le> entry N 1 (Lng N - 2)"
+      by (rule oper_d1pos_b3n_boundary[OF N L haspar1 s0w fillS])
+    have idxeq: "?j1N - 1 = Lng N - 2" by simp
+    show ?thesis using b3nlem idxeq by simp
+  qed
   have B3: "entry ?Mp 1 (?c + 1) \<le> entry ?Mp 1 ?c"
     using B3N e1_c1 e1_c by simp
   \<comment> \<open>========== confinement \<open>TrMax M' \<le> c\<close> via boundary stop ==========\<close>
@@ -13040,6 +13147,123 @@ proof -
   also have "\<dots> = map (IncrFirst ^^ s) (P R2)" by (rule P_funpow_IncrFirst)
   also have "\<dots> = map (IncrFirst ^^ s) (take Jm B2)" using leg2 by simp
   finally show ?thesis .
+qed
+
+text \<open>§6.8 d0pos ¬brle — BRICK 3 (Br alignment): the \<open>Br\<close>-decomposition of a
+  branch slice \<open>seg M j0' j1'\<close> reshaped into the AMBIENT \<open>M\<close>-coordinates.  When the
+  branch is non-empty (\<open>TrMax (seg M j0' j1') \<noteq> Lng (seg M j0' j1') - 1\<close>), unfolding
+  @{thm [source] Br_def} gives \<open>P\<close> of an inner slice \<open>seg (seg M j0' j1')
+  (TrMax+1) (Lng-1)\<close>, which @{thm [source] seg_of_seg} collapses to the single
+  ambient slice \<open>seg M (j0' + TrMax (seg M j0' j1') + 1) j1'\<close>.  This is the common
+  shape used by BOTH halves of the §6.8 assembly: the \<open>M\<close>-side (\<open>M' = M[n]\<close>-slice,
+  \<open>BrM'P\<close>) and the \<open>N\<close>-side (\<open>N\<^sub>p\<close>-slice, \<open>BrNpP\<close>).  DEEP-VERIFIED at rank 8 (KMAX=8,
+  python/br3_align_check.py): facts (A)/(B), 1395/1395 (len\<le>12 val\<le>4) and
+  3276/3276 (len\<le>11 val\<le>5), 0 failures.\<close>
+
+lemma Br_seg_reshape:
+  fixes M :: pairseq
+  assumes lt: "j0' < j1'" and jM: "j1' < Lng M"
+    and trne: "TrMax (seg M j0' j1') \<noteq> Lng (seg M j0' j1') - 1"
+  shows "Br (seg M j0' j1') = P (seg M (j0' + TrMax (seg M j0' j1') + 1) j1')"
+proof -
+  let ?M' = "seg M j0' j1'"
+  let ?t = "TrMax ?M'"
+  \<comment> \<open>non-empty branch: @{thm [source] Br_def} takes the \<open>P\<close>-of-inner-slice branch\<close>
+  have BrM': "Br ?M' = P (seg ?M' (?t + 1) (Lng ?M' - 1))"
+    using trne by (simp add: Br_def)
+  \<comment> \<open>inner-slice length: \<open>Lng ?M' - 1 = j1' - j0'\<close> (since \<open>j0' < j1'\<close>)\<close>
+  have LM': "Lng ?M' - 1 = j1' - j0'" using lt by (simp del: Lng_seg add: Lng_seg)
+  \<comment> \<open>seg-of-seg: \<open>a = j0' \<le> b = j1'\<close>, \<open>d = Lng ?M' - 1 \<le> b - a = j1' - j0'\<close>\<close>
+  have ab: "j0' \<le> j1'" using lt by linarith
+  have db: "Lng ?M' - 1 \<le> j1' - j0'" using LM' by simp
+  have reshape: "seg ?M' (?t + 1) (Lng ?M' - 1) = seg M (j0' + (?t + 1)) (j0' + (Lng ?M' - 1))"
+    by (rule seg_of_seg[OF ab db])
+  \<comment> \<open>the right endpoint \<open>j0' + (Lng ?M' - 1) = j1'\<close>\<close>
+  have rend: "j0' + (Lng ?M' - 1) = j1'" using LM' lt by linarith
+  have "seg ?M' (?t + 1) (Lng ?M' - 1) = seg M (j0' + ?t + 1) j1'"
+    using reshape rend by (simp add: add.assoc)
+  thus ?thesis using BrM' by simp
+qed
+
+text \<open>§6.8 d0pos ¬brle — BRICK 3 (combined Br alignment).  In the formula-G d1pos
+  ¬brle context (the SAME hypotheses as @{thm [source] TrMax_seg_oper_d1pos_eq_span},
+  plus \<open>notbrle\<close>), packages the structural skeleton that the main identification stub
+  \<open>oper_d1pos_notbrle_LOW_take_eq\<close> (below) assembles:
+    (BrM'P)  \<open>Br M' = P (seg M (j0' + T + 1) j1')\<close>,
+    (BrNpP)  \<open>Br N\<^sub>p = P (seg N (j0red + T + 1) j1red)\<close>,
+  where \<open>T = TrMax M' = TrMax N\<^sub>p\<close> (the SHARED trunk end, via TrEq), and BOTH
+  branches are NON-empty (\<open>Br M' \<noteq> []\<close> from \<open>notbrle\<close>; \<open>Br N\<^sub>p \<noteq> []\<close> from \<open>tnc\<close>).
+  The N-side endpoint is the FREE \<open>j1red\<close> (NOT \<open>Lng N - 1\<close>).  This is the pure
+  structural identification (facts A/B/C/D); the remaining per-component shift
+  identity (LOW = \<open>map (IncrFirst^^shamt)\<close> of \<open>take\<close>, fact F) is the documented
+  block-fold blocker.  DEEP-VERIFIED rank 8 (python/br3_align_check.py): A/B/C/D
+  all 1395/1395 (len\<le>12 val\<le>4) and 3276/3276 (len\<le>11 val\<le>5), 0 failures.\<close>
+
+lemma oper_d1pos_notbrle_Br_align:
+  fixes N :: pairseq
+  assumes N: "N \<in> T_PS" and L: "1 < Lng N"
+    and notzero: "\<not> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0)"
+    and hp: "hasParent N (idx1 N (Lng N - 1)) (Lng N - 1)"
+    and i1z: "idx1 N (Lng N - 1) = 1"
+    and j0lt: "parent N 1 (Lng N - 1) < Lng N - 1"
+    and n1: "1 \<le> n"
+    and qn: "q < n"
+    and s0w: "j0red < Lng N - 1"
+    and s0eq: "j0red = parent N 1 (Lng N - 1) + s0"
+    and s0lt: "s0 < Lng N - 1 - parent N 1 (Lng N - 1)"
+    and j0'eq: "j0' = parent N 1 (Lng N - 1)
+                  + q * (Lng N - 1 - parent N 1 (Lng N - 1)) + s0"
+    and shamt: "shamt = q * (entry N 0 (Lng N - 1) - entry N 0 (parent N 1 (Lng N - 1)))"
+    and j1redle: "j1red \<le> Lng N - 1"
+    and j0j1red: "j0red < j1red"
+    and j1redspan: "j1red \<le> j0red + (j1' - j0')"
+    and j0j1': "j0' < j1'"
+    and j1lt: "j1' < Lng ((N::pairseq)[n])"
+    and tnc: "TrMax (seg N j0red j1red) \<le> j1red - 1 - j0red"
+    and stop: "\<not> nextR (seg ((N::pairseq)[n]) j0' j1') 1
+                  (TrMax (seg N j0red j1red))
+                  (TrMax (seg N j0red j1red) + 1)"
+    and notbrle: "\<not> (TrMax (seg ((N::pairseq)[n]) j0' j1')
+                        = Lng (seg ((N::pairseq)[n]) j0' j1') - 1
+                      \<or> le0 (seg ((N::pairseq)[n]) j0' j1')
+                            (TrMax (seg ((N::pairseq)[n]) j0' j1') + 1)
+                            (Lng (seg ((N::pairseq)[n]) j0' j1') - 1))"
+  shows "TrMax (seg ((N::pairseq)[n]) j0' j1') = TrMax (seg N j0red j1red)
+       \<and> Br (seg ((N::pairseq)[n]) j0' j1')
+           = P (seg ((N::pairseq)[n])
+                  (j0' + TrMax (seg ((N::pairseq)[n]) j0' j1') + 1) j1')
+       \<and> Br (seg N j0red j1red)
+           = P (seg N (j0red + TrMax (seg N j0red j1red) + 1) j1red)
+       \<and> Br (seg ((N::pairseq)[n]) j0' j1') \<noteq> []
+       \<and> Br (seg N j0red j1red) \<noteq> []"
+proof -
+  let ?M = "(N::pairseq)[n]"
+  let ?Mp = "seg ?M j0' j1'"
+  let ?Np = "seg N j0red j1red"
+  \<comment> \<open>(D) TrEq via the CAPPED-general span keystone\<close>
+  have TrEq: "TrMax ?Mp = TrMax ?Np"
+    by (rule TrMax_seg_oper_d1pos_eq_span[OF N L notzero hp i1z j0lt n1 qn s0w s0eq
+              s0lt j0'eq shamt j1redle j0j1red j1redspan j0j1' j1lt tnc stop])
+  \<comment> \<open>(C) M-side non-empty: \<open>notbrle\<close> gives \<open>TrMax ?Mp \<noteq> Lng ?Mp - 1\<close>\<close>
+  have trneM: "TrMax ?Mp \<noteq> Lng ?Mp - 1" using notbrle by blast
+  \<comment> \<open>(C) N-side non-empty: \<open>tnc\<close> gives \<open>TrMax ?Np \<le> j1red-1-j0red < j1red-j0red = Lng ?Np - 1\<close>\<close>
+  have lenNp: "Lng ?Np - 1 = j1red - j0red" using j0j1red by (simp del: Lng_seg add: Lng_seg)
+  have trneN: "TrMax ?Np \<noteq> Lng ?Np - 1"
+  proof -
+    have "TrMax ?Np < j1red - j0red" using tnc j0j1red by linarith
+    thus ?thesis using lenNp by simp
+  qed
+  \<comment> \<open>(A) BrM'P: reshape the M-side branch into ambient \<open>M\<close>-coords\<close>
+  have BrM'P: "Br ?Mp = P (seg ?M (j0' + TrMax ?Mp + 1) j1')"
+    by (rule Br_seg_reshape[OF j0j1' j1lt trneM])
+  \<comment> \<open>(B) BrNpP: reshape the N-side branch into ambient \<open>N\<close>-coords\<close>
+  have j1redltN: "j1red < Lng N" using j1redle L by linarith
+  have BrNpP: "Br ?Np = P (seg N (j0red + TrMax ?Np + 1) j1red)"
+    by (rule Br_seg_reshape[OF j0j1red j1redltN trneN])
+  \<comment> \<open>non-emptiness of both branch lists\<close>
+  have BrM'ne: "Br ?Mp \<noteq> []" using BrM'P P_nonempty by simp
+  have BrNpne: "Br ?Np \<noteq> []" using BrNpP P_nonempty by simp
+  show ?thesis using TrEq BrM'P BrNpP BrM'ne BrNpne by blast
 qed
 
 lemma descending_Br_of_branch_le0:
