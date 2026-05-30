@@ -1665,3 +1665,37 @@ Br_seg_reshape, oper_d1pos_notbrle_Br_align (skeleton), LOW machinery + take_map
 heart is now precisely: the across-block P-collapse (brick-family 3) + regime A (1) + the ¬brle
 Br_align (2) + tail (4). This is a multi-session infra build (the d0zero blk-fold port for d1pos),
 not a single lemma. python/d1pos_stub_full_G.py (1395/1395 rank-8 full-stub verification).
+
+## UPDATE 2026-05-30 (continued 42): brick-families 1 + 3 DONE (collapse + regime A green, slice 1267715)
+
+Two parallel deep-verified agents closed the two CORE brick-families; both integrated to
+slice-wip-68 HEAD **1267715**, build green ("Finished PSS"), sorry count unchanged at 7 (both are
+sorry-free structural/conditional lemmas — no false-stub risk).
+
+1. **Brick-family 3 (the CORE across-block P-collapse) — `oper_d1pos_collapse`**: a *structural*
+   identity, NOT empirical. For a branch region S∈T_PS with last row-0 left-min cut c
+   (c0:0<c, cle:c≤Lng S−1, lmin:∀j<c. entry S 0 c ≤ entry S 0 j), single tail
+   (tailnm:¬multiT(seg S c (Lng S−1))), LOW prefix a shift (lowshift: seg S 0 (c−1)=(IncrFirst^^shamt) base)
+   and butl (butlast BN=P base): **P S = map(IncrFirst^^shamt)(butlast BN) @ [seg S c (Lng S−1)]**.
+   Proof = additive split at c (oper_d1pos_notbrle_P_split) + P(seg S 0 (c−1))=P((IncrFirst^^shamt)base)
+   =map(shift)(P base)=map(shift)(butlast BN) via P_funpow_IncrFirst. Cites only proven facts.
+   The hypotheses (lowshift/butl/tailnm/lmin) are the per-regime discharge job (the final assembly).
+   The d1pos collapse vs d0zero SPLIT: δ>0 shifts every block in row 0, so the boundaries are NOT
+   row-0 left-minima — only ONE genuine left-min (the last anchor c) survives and the whole tail is
+   one monoT component. Deep-verified 1395/1395 rank-8 (every hypothesis holds in context).
+
+2. **Brick-family 1 (regime A keystone, j0'<jm2, q=0, shamt=0)** — 3 green lemmas:
+   `oper_d1pos_nth_low_verbatim` ((N[n])!x=N!x for x<Lng N−1; the full-seg verbatim is FALSE at the
+   boundary x=Lng N−1 — strict-prefix only, agent self-caught), `TrMax_seg_oper_d1pos_eq_regA`
+   (regime-A TrEq via verbatim prefix-agreement + TrMax_eq_of_prefix_agree),
+   `oper_d1pos_notbrle_Br_align_regA` (regime-A Br-align via Br_seg_reshape). Deep-verified
+   2460/2460 rank-8. shamt=0 ⇒ IncrFirst^^0=id ⇒ LOW=butlast(Br Np) verbatim.
+
+### Remaining: the FINAL ASSEMBLY (workflow wx8fo9kps running)
+Wire the green bricks into `oper_d1pos_notbrle_LOW_take_eq`: obtain formula-G witnesses, discharge
+oper_d1pos_collapse's hypotheses per regime (B via Br_align + LOW_source_eq + le0 helpers; A via the
+regA bricks + shamt=0), read off Br M'=LOW@[tail], length LOW=Lng(Br Np)−1, the entry conjuncts via
+entry_funpow_IncrFirst0 (row-0 +shamt) / entry_funpow_IncrFirst1 (row-1 unchanged), and the tail
+junction (row-0 +shamt tie, row-1 drop via b3n + nextrel1). Brick-families 2 (¬brle Br_align capped)
+and 4 (tail tie/drop) are absorbed into this assembly. After it closes: WLOG-monoT wrapper +
+integrate §6.8 prop1 into main, merge slice-wip-68 → main.
