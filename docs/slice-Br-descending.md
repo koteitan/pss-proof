@@ -1770,3 +1770,26 @@ strictly, so the singleton-at-m case is not in the witness range). With c≤m + 
 butlast(P S)=butlast(P Snside), reprove anchor_coincide_regA/regB WITHOUT clt/cNlt, case-splitting
 c<m (truncate route) vs c=m (singleton boundary). Then the final assembly. Derive the tail bound from
 oper_d1pos_entry0 (block row-0 = base + q·delta) + delta>0 + monoT N.
+
+## UPDATE 2026-05-31 (continued 46): both regime assembly lemmas + most dischargers green; a THIRD regime discovered (slice ae6ef55)
+
+The periodic-tail bound cracked the geometry. Now GREEN: oper_d1pos_clt_regA/regB (c<=m, both
+regimes), oper_d1pos_anchor_coincide_regA2 (regime A, clt/cNlt-free) and _regB2 (regime B, boundary
+c=cN=m, shamt=0), and BOTH regime assembly lemmas oper_d1pos_notbrle_LOW_take_eq_regA (cond A<jm2) /
+_regB (cond jm2<=A<Lng N-1 & jm2<=j0'). Discovery: in BOTH regimes shamt=0 (the branch start A stays
+in block 0 when A<Lng N-1), so LOW=butlast(Br Np) verbatim — the IncrFirst-shift machinery is never
+exercised in the in-context d0pos ¬brle case. Context-hyp dischargers GREEN: oper_d1pos_ctx_dpos
+(delta>0), _r1le (row-1 parent), _j0lt, _multiM (1<len(P S) from notbrle), _le0Np (le0 N j0' (Lng N-1)
+— the earlier "35/767 false" probe was WRONG, le0Np is genuinely TRUE), _stop_of_tnc, idxsum_lastcut_lmin_at
+(mLmin), oper_d1pos_row0_agree/nth_below (row-0 M->N transfer).
+
+**The remaining gap (3 items):**
+1. **A THIRD regime A>=Lng N-1 (~32%, AltN false 1151/3602)** — the branch start sits in M's periodic
+   tail; neither assembly lemma covers it. Plus the cell {j0'<jm2 AND jm2<=A} (branch crosses the
+   boundary but slice starts before it) is uncovered (regA needs A<jm2, regB needs jm2<=j0'). The two
+   lemmas do NOT tile the ¬brle space. The correct minimal split is likely on j0' vs Lng N-1 (slice
+   start in base vs periodic tail) — workflow wbvl9gp2x is mapping it.
+2. **The strict-tnc producer** (oper_d1pos_ctx_tnc: TrMax(seg N j0' (Lng N-1)) < Lng N-1-1-j0') —
+   mirror TrMax_seg_oper_d1pos_eq_notbrle_uncapped's internal tnc derivation (wbvl9gp2x).
+3. **The final case-split assembly** of oper_d1pos_notbrle_LOW_take_eq once the tiling + all
+   dischargers are green.

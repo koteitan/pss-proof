@@ -47,7 +47,7 @@
       - ✅ 命題（標準形の単項成分が標準形であること）
       - ✅ 命題（標準形の始切片への遺伝性）
     - 🚨 §6.8 降順性
-      - 🚨🤖 命題（標準形の切片と $\textrm{Br}$ の降順性の関係）〔本開発最難。詳細は `docs/slice-Br-descending.md`（最新=continued 45）。`m_6_8_slice_Br_descending_monoT`(slice-wip-68 HEAD **8096f42** 緑)は base/caseA/B/C + d0pos の brle case 緑。残=d0pos ¬brle の存在同定 stub `oper_d1pos_notbrle_LOW_take_eq`（真）。基盤ブリック大半 green（collapse/anchor同定/lowshift/tail/regime A/B anchor一致）。残=唯一の真ブリック「周期 tail row-0 下界(→c≤m 普遍)」+ clt/cNlt 無しの anchor_coincide 再証明 + 最終組立。clt/cNlt は rank10 で偽(7回目 shallow-false、rank8 で不足)〕
+      - 🚨🤖 命題（標準形の切片と $\textrm{Br}$ の降順性の関係）〔本開発最難。詳細は `docs/slice-Br-descending.md`（最新=continued 46）。`m_6_8_slice_Br_descending_monoT`(slice-wip-68 HEAD **ae6ef55** 緑)は base/caseA/B/C + d0pos の brle case 緑。残=d0pos ¬brle の存在同定 stub `oper_d1pos_notbrle_LOW_take_eq`（真）。基盤ブリック大半 green（collapse/anchor同定/lowshift/tail/regime A/B anchor一致）。残=唯一の真ブリック「周期 tail row-0 下界(→c≤m 普遍)」+ clt/cNlt 無しの anchor_coincide 再証明 + 最終組立。clt/cNlt は rank10 で偽(7回目 shallow-false、rank8 で不足)〕
       - ✅ 命題（標準形の単項成分が降順であること）
   - 🚨 §7 Buchholzの表記系への翻訳
     - 🚨 §7.1 Buchholzの表記系
