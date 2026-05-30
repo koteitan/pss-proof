@@ -13205,6 +13205,252 @@ proof -
   show ?thesis using split lowB by simp
 qed
 
+text \<open>§6.8 d1pos ¬brle — the ANCHOR brick (conc-A).  For ANY \<open>S \<in> T_PS\<close> whose
+  \<open>P\<close>-decomposition has \<open>>1\<close> component, the LAST \<open>FirstNodes\<close> anchor
+    \<open>c = IdxSum (P S) ! (length (P S) - 1) = Lng S - Lng (last (P S))\<close>
+  is a genuine cut satisfying ALL three structural hypotheses of
+  @{thm [source] oper_d1pos_collapse}: \<open>0 < c\<close> (\<open>cpos\<close>), \<open>c \<le> Lng S - 1\<close> (\<open>cle\<close>),
+  the row-0 left-minimum (\<open>lmin\<close>, from @{thm [source] idxsum_leftend_lmin} at the
+  last component), and the single (non-multi) tail (\<open>tailnm\<close>, since the last
+  \<open>P\<close>-component is \<open>zeroT \<or> monoT\<close> by @{thm [source] m_6_2_P_components_1}, hence
+  \<open>\<not> multiT\<close>).  Moreover the tail slice is exactly the last component
+    \<open>seg S c (Lng S - 1) = last (P S)\<close>  (\<open>tailseg\<close>).
+  This is PURELY STRUCTURAL (no \<open>d1pos\<close> block-fold needed): the cut is the
+  S-local left endpoint of the last \<open>P\<close>-component, identified via
+  @{thm [source] m_6_4_P_IdxSum} / @{thm [source] idxsum_diff} /
+  @{thm [source] idxsum_concat_P}.
+  DEEP-VERIFIED rank 8 (KMAX=8 len 12 val 4, /tmp/conc_a_verify.py): cpos 1395/1395,
+  cle 1395/1395, lmin 1395/1395, tailnm 1395/1395, tailseg 1395/1395, 0 failures.\<close>
+
+lemma oper_d1pos_branch_anchor:
+  fixes S :: pairseq
+  defines "c \<equiv> IdxSum (P S) ! (length (P S) - 1)"
+  assumes ST: "S \<in> T_PS" and multi: "1 < length (P S)"
+  shows "0 < c"
+    and "c \<le> Lng S - 1"
+    and "\<And>j. j < c \<Longrightarrow> entry S 0 c \<le> entry S 0 j"
+    and "\<not> multiT (seg S c (Lng S - 1))"
+    and "seg S c (Lng S - 1) = last (P S)"
+    and "c = Lng S - Lng (last (P S))"
+proof -
+  let ?Q = "P S"
+  let ?J = "length ?Q - 1"
+  have ne: "?Q \<noteq> []" by (rule P_nonempty)
+  have JL: "?J < length ?Q" using ne by (cases ?Q) auto
+  have Jle: "?J \<le> Lng ?Q - 1" by simp
+  \<comment> \<open>the last component is the slice between consecutive \<open>IdxSum\<close> values\<close>
+  have comp: "?Q ! ?J = seg S (IdxSum ?Q ! ?J) (IdxSum ?Q ! (?J + 1) - 1)"
+    by (rule m_6_4_P_IdxSum[OF ST Jle])
+  have cdef: "c = IdxSum ?Q ! ?J" using c_def by simp
+  \<comment> \<open>the right endpoint of the last component is \<open>Lng S - 1\<close>\<close>
+  have idxlast: "IdxSum ?Q ! (?J + 1) = Lng S"
+  proof -
+    have "?J + 1 = length ?Q" using ne by (cases ?Q) auto
+    hence "IdxSum ?Q ! (?J + 1) = sum_list (map length (take (length ?Q) ?Q))"
+      by (simp add: idxsum_nth)
+    also have "\<dots> = sum_list (map length ?Q)" by simp
+    also have "\<dots> = length (concat ?Q)" by (simp add: length_concat)
+    also have "concat ?Q = S" by (rule idxsum_concat_P)
+    finally show ?thesis by simp
+  qed
+  \<comment> \<open>last component is the last list element\<close>
+  have lastnth: "?Q ! ?J = last ?Q" using ne by (simp add: last_conv_nth)
+  \<comment> \<open>tailseg\<close>
+  have tailseg: "seg S c (Lng S - 1) = last ?Q"
+    using comp cdef idxlast lastnth by simp
+  thus "seg S c (Lng S - 1) = last (P S)" .
+  \<comment> \<open>length of the last component is positive\<close>
+  have lenpos: "0 < length (?Q ! ?J)"
+    using idxsum_P_component_nonempty[OF ST JL] by simp
+  \<comment> \<open>\<open>IdxSum ?J + length(last) = Lng S\<close>, hence \<open>c = Lng S - Lng(last)\<close>\<close>
+  have diff: "IdxSum ?Q ! (?J + 1) = IdxSum ?Q ! ?J + length (?Q ! ?J)"
+    by (rule idxsum_diff[OF JL])
+  have cval: "c = Lng S - Lng (last ?Q)"
+    using diff idxlast cdef lastnth by simp
+  thus "c = Lng S - Lng (last (P S))" .
+  \<comment> \<open>cpos: the first component is non-empty, so the last endpoint \<open>c > 0\<close> when \<open>>1\<close> comp\<close>
+  have cpos: "0 < c"
+  proof -
+    have "IdxSum ?Q ! 1 \<le> IdxSum ?Q ! ?J"
+    proof -
+      have a1: "IdxSum ?Q ! 1 = sum_list (map length (take 1 ?Q))"
+        using JL multi by (simp add: idxsum_nth)
+      have aJ: "IdxSum ?Q ! ?J = sum_list (map length (take ?J ?Q))"
+        using JL by (simp add: idxsum_nth less_imp_le_nat)
+      have "(1::nat) \<le> ?J" using multi by simp
+      thus ?thesis using a1 aJ by (simp add: idxsum_sum_take_mono)
+    qed
+    moreover have "0 < IdxSum ?Q ! 1"
+    proof -
+      have z0: "0 < length ?Q" using multi by linarith
+      have d0: "IdxSum ?Q ! (0 + 1) = IdxSum ?Q ! 0 + length (?Q ! 0)"
+        by (rule idxsum_diff[OF z0])
+      have i0: "IdxSum ?Q ! 0 = 0" by (simp add: idxsum_nth)
+      have "0 < length (?Q ! 0)"
+        using idxsum_P_component_nonempty[OF ST] z0 by simp
+      thus ?thesis using d0 i0 by simp
+    qed
+    ultimately show ?thesis using cdef by simp
+  qed
+  thus "0 < c" .
+  \<comment> \<open>cle and lmin from \<open>idxsum_leftend_lmin\<close> at the last component\<close>
+  have lmlast: "IdxSum ?Q ! ?J \<le> Lng S - 1
+       \<and> (\<forall>j < IdxSum ?Q ! ?J. entry S 0 (IdxSum ?Q ! ?J) \<le> entry S 0 j)"
+    using idxsum_leftend_lmin[OF ST JL] by (simp add: linorder_class.not_le)
+  show "c \<le> Lng S - 1" using lmlast cdef by simp
+  show "\<And>j. j < c \<Longrightarrow> entry S 0 c \<le> entry S 0 j" using lmlast cdef by simp
+  \<comment> \<open>tailnm: the last component is \<open>zeroT \<or> monoT\<close>, hence \<open>\<not> multiT\<close>\<close>
+  have lastin: "last ?Q \<in> set ?Q" using ne by simp
+  have "zeroT (last ?Q) \<or> monoT (last ?Q)"
+    using m_6_2_P_components_1[OF ST] lastin by blast
+  hence "\<not> multiT (last ?Q)" by (auto simp: multiT_def)
+  thus "\<not> multiT (seg S c (Lng S - 1))" using tailseg by simp
+qed
+
+text \<open>§6.8 d1pos ¬brle — ASSEMBLED concrete collapse (conc-A).  Combines the
+  ANCHOR brick @{thm [source] oper_d1pos_branch_anchor} (which discharges the
+  three STRUCTURAL hypotheses \<open>c0/cle/lmin/tailnm\<close> of
+  @{thm [source] oper_d1pos_collapse} at the concrete cut
+  \<open>c = IdxSum (P S) ! (length (P S) - 1)\<close>) with the two SHIFT hypotheses
+  (\<open>lowshift\<close>: the LOW prefix is an \<open>(IncrFirst^^shamt)\<close>-shift of \<open>base\<close>; \<open>butl\<close>:
+  \<open>butlast BN = P base\<close>) to yield the FULL concrete collapse
+    \<open>P S = map (IncrFirst^^shamt) (butlast BN) @ [last (P S)]\<close>.
+  The two remaining hypotheses are exactly the §6.8 BLOCKER (the \<open>d1pos\<close>
+  block-fold + first-node geometry): \<open>butl\<close> is itself a second ANCHOR application
+  on the \<open>N\<close>-side reshape (\<open>butlast (Br N\<^sub>p) = P (seg Snside 0 (cN-1))\<close>, deep-verified
+  1395/1395), and \<open>lowshift\<close> reduces, in the UNCAPPED regime B (\<open>A \<ge> jm2\<close>,
+  single block), to @{thm [source] oper_d1pos_LOW_source_eq} with the block index
+  \<open>q = (A - jm2) div w\<close> (deep-verified 1128/1128, where \<open>A = j0' + TrMax M' + 1\<close>;
+  the 267 \<open>A < jm2\<close> cases are the regime-A/capped residual).
+  DEEP-VERIFIED rank 8 (/tmp/conc_a_verify.py): with this concrete \<open>c\<close>/\<open>base\<close> the
+  full collapse holds 1395/1395, 0 failures.\<close>
+
+lemma oper_d1pos_branch_collapse_concrete:
+  fixes S :: pairseq and base :: pairseq and BN :: "pairseq list"
+  assumes ST: "S \<in> T_PS" and multi: "1 < length (P S)"
+    and lowshift: "seg S 0 (IdxSum (P S) ! (length (P S) - 1) - 1) = (IncrFirst ^^ shamt) base"
+    and butl: "butlast BN = P base"
+  shows "P S = map (IncrFirst ^^ shamt) (butlast BN) @ [last (P S)]"
+proof -
+  let ?c = "IdxSum (P S) ! (length (P S) - 1)"
+  \<comment> \<open>structural hypotheses from the ANCHOR brick\<close>
+  have c0: "0 < ?c" by (rule oper_d1pos_branch_anchor(1)[OF ST multi])
+  have cle: "?c \<le> Lng S - 1" by (rule oper_d1pos_branch_anchor(2)[OF ST multi])
+  have lmin: "\<And>j. j < ?c \<Longrightarrow> entry S 0 ?c \<le> entry S 0 j"
+    using oper_d1pos_branch_anchor(3)[OF ST multi] by blast
+  have tailnm: "\<not> multiT (seg S ?c (Lng S - 1))"
+    by (rule oper_d1pos_branch_anchor(4)[OF ST multi])
+  have tailseg: "seg S ?c (Lng S - 1) = last (P S)"
+    by (rule oper_d1pos_branch_anchor(5)[OF ST multi])
+  \<comment> \<open>assemble via the structural collapse, then rewrite the tail to \<open>last (P S)\<close>\<close>
+  have "P S = map (IncrFirst ^^ shamt) (butlast BN) @ [seg S ?c (Lng S - 1)]"
+    by (rule oper_d1pos_collapse[OF ST c0 cle lmin tailnm lowshift butl])
+  thus ?thesis using tailseg by simp
+qed
+
+text \<open>§6.8 d1pos ¬brle — the \<open>butl\<close> hypothesis of
+  @{thm [source] oper_d1pos_branch_collapse_concrete} is itself an ANCHOR
+  application on the \<open>N\<close>-side reshape (conc-A).  For the \<open>N\<close>-side branch region
+  \<open>Snside \<in> T_PS\<close> with \<open>>1\<close> \<open>P\<close>-component, \<open>butlast (P Snside)\<close> is exactly
+  \<open>P (seg Snside 0 (cN - 1))\<close> where \<open>cN = IdxSum (P Snside) ! (length (P Snside) - 1)\<close>
+  is the last \<open>FirstNodes\<close> anchor of \<open>Snside\<close>.  Since \<open>Br N\<^sub>p = P Snside\<close> (via
+  the \<open>Br_seg_reshape\<close> reshape, below), this gives \<open>base = seg Snside 0 (cN - 1)\<close>
+  satisfying \<open>butlast BN = P base\<close>.  DEEP-VERIFIED rank 8: 1395/1395.\<close>
+
+lemma oper_d1pos_branch_butl:
+  fixes Snside :: pairseq
+  defines "cN \<equiv> IdxSum (P Snside) ! (length (P Snside) - 1)"
+  assumes ST: "Snside \<in> T_PS" and multi: "1 < length (P Snside)"
+  shows "butlast (P Snside) = P (seg Snside 0 (cN - 1))"
+proof -
+  have c0: "0 < cN" unfolding cN_def by (rule oper_d1pos_branch_anchor(1)[OF ST multi])
+  have cle: "cN \<le> Lng Snside - 1" unfolding cN_def
+    by (rule oper_d1pos_branch_anchor(2)[OF ST multi])
+  have lmin: "\<And>j. j < cN \<Longrightarrow> entry Snside 0 cN \<le> entry Snside 0 j"
+    unfolding cN_def using oper_d1pos_branch_anchor(3)[OF ST multi] by blast
+  have tailnm: "\<not> multiT (seg Snside cN (Lng Snside - 1))"
+    unfolding cN_def by (rule oper_d1pos_branch_anchor(4)[OF ST multi])
+  \<comment> \<open>the additive split at \<open>cN\<close>: tail is a single non-multi component\<close>
+  have split: "P Snside = P (seg Snside 0 (cN - 1)) @ [seg Snside cN (Lng Snside - 1)]"
+    by (rule oper_d1pos_notbrle_P_split[OF ST c0 cle lmin tailnm])
+  thus ?thesis by simp
+qed
+
+text \<open>§6.8 d1pos ¬brle — the \<open>lowshift\<close> hypothesis of
+  @{thm [source] oper_d1pos_branch_collapse_concrete} in the UNCAPPED regime B
+  (conc-A).  The LOW prefix \<open>seg S 0 (c-1)\<close> of the reshaped \<open>M\<close>-side branch region
+  \<open>S = seg (N[n]) A E\<close> (\<open>A = j0' + TrMax M' + 1\<close>) lies, in regime B, in a SINGLE
+  block \<open>q\<close> of the periodic \<open>N[n]\<close>-extension (\<open>A \<ge> jm2\<close>, the offset
+  \<open>e0 = (A - jm2) - q\<cdot>w + (c-1)\<close> staying \<open><w\<close>), and is therefore an
+  \<open>(IncrFirst^^(q\<cdot>\<delta>))\<close>-shift of the \<open>N\<close>-side base slice \<open>seg N (jm2+s0) (jm2+e0)\<close>,
+  by @{thm [source] oper_d1pos_LOW_source_eq}.  The single-block realisation
+  (\<open>Aform\<close>/\<open>e0lt\<close>/\<open>qn\<close>) is the residual \<open>d1pos\<close> block-fold geometry (the documented
+  BLOCKER); given it, this lemma packages \<open>lowshift\<close> with
+  \<open>shamt = q\<cdot>(entry N 0 (Lng N-1) - entry N 0 jm2)\<close>,
+  \<open>base = seg N (jm2+s0) (jm2+e0)\<close>.  Pure reshape (@{thm [source] seg_of_seg}) +
+  @{thm [source] oper_d1pos_LOW_source_eq}.  DEEP-VERIFIED rank 8
+  (/tmp/conc_a_verify.py route): the in-block source-eq holds 1128/1128 of the
+  regime-B \<open>A \<ge> jm2\<close> cases (the 267 \<open>A < jm2\<close> cases are regime A / the capped
+  residual).\<close>
+
+lemma oper_d1pos_branch_lowshift_regB:
+  fixes N :: pairseq
+  defines "jm2 \<equiv> parent N 1 (Lng N - 1)"
+      and "w \<equiv> Lng N - 1 - parent N 1 (Lng N - 1)"
+  assumes L: "1 < Lng N"
+    and notzero: "\<not> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0)"
+    and hp: "hasParent N (idx1 N (Lng N - 1)) (Lng N - 1)"
+    and i1z: "idx1 N (Lng N - 1) = 1"
+    and j0lt: "parent N 1 (Lng N - 1) < Lng N - 1"
+    and qn: "q < n"
+    and Aform: "A = jm2 + q * w + s0"
+    and s0e0: "s0 \<le> s0 + (cc - 1)"
+    and e0lt: "s0 + (cc - 1) < w"
+    and Ele: "A \<le> E" and ccle: "cc - 1 \<le> E - A"
+  shows "seg (seg (N[n]) A E) 0 (cc - 1)
+       = (IncrFirst ^^ (q * (entry N 0 (Lng N - 1) - entry N 0 jm2)))
+            (seg N (jm2 + s0) (jm2 + (s0 + (cc - 1))))"
+proof -
+  let ?j1 = "Lng N - 1"
+  have wdef: "w = ?j1 - parent N 1 ?j1" unfolding w_def by simp
+  have jm2def: "jm2 = parent N 1 ?j1" unfolding jm2_def by simp
+  \<comment> \<open>rule-shaped hypotheses (unfold the \<open>w\<close> abbreviation)\<close>
+  have e0lt': "s0 + (cc - 1) < ?j1 - parent N 1 ?j1" using e0lt wdef by simp
+  \<comment> \<open>the source-equality from @{thm [source] oper_d1pos_LOW_source_eq}\<close>
+  have src: "seg (N[n]) (parent N 1 ?j1 + q * (?j1 - parent N 1 ?j1) + s0)
+                        (parent N 1 ?j1 + q * (?j1 - parent N 1 ?j1) + (s0 + (cc - 1)))
+       = (IncrFirst ^^ (q * (entry N 0 ?j1 - entry N 0 (parent N 1 ?j1))))
+            (seg N (parent N 1 ?j1 + s0) (parent N 1 ?j1 + (s0 + (cc - 1))))"
+    by (rule oper_d1pos_LOW_source_eq[OF L notzero hp i1z j0lt qn s0e0 e0lt'])
+  \<comment> \<open>rewrite the source-eq into \<open>jm2\<close>/\<open>w\<close> abbreviations\<close>
+  have src': "seg (N[n]) A (A + (cc - 1))
+       = (IncrFirst ^^ (q * (entry N 0 ?j1 - entry N 0 jm2)))
+            (seg N (jm2 + s0) (jm2 + (s0 + (cc - 1))))"
+  proof -
+    let ?lo = "parent N 1 ?j1 + q * (?j1 - parent N 1 ?j1) + s0"
+    let ?hi = "parent N 1 ?j1 + q * (?j1 - parent N 1 ?j1) + (s0 + (cc - 1))"
+    have lo: "A = ?lo" using Aform wdef jm2def by simp
+    have hi: "A + (cc - 1) = ?hi" using lo by (simp add: add.assoc)
+    have jbase: "(jm2 + s0) = parent N 1 ?j1 + s0" using jm2def by simp
+    have jhi: "(jm2 + (s0 + (cc - 1))) = parent N 1 ?j1 + (s0 + (cc - 1))"
+      using jm2def by simp
+    have jshift: "entry N 0 jm2 = entry N 0 (parent N 1 ?j1)" using jm2def by simp
+    have "seg (N[n]) A (A + (cc - 1)) = seg (N[n]) ?lo ?hi"
+      by (simp only: hi[symmetric] lo[symmetric])
+    also have "\<dots> = (IncrFirst ^^ (q * (entry N 0 ?j1 - entry N 0 (parent N 1 ?j1))))
+            (seg N (parent N 1 ?j1 + s0) (parent N 1 ?j1 + (s0 + (cc - 1))))"
+      by (rule src)
+    also have "\<dots> = (IncrFirst ^^ (q * (entry N 0 ?j1 - entry N 0 jm2)))
+            (seg N (jm2 + s0) (jm2 + (s0 + (cc - 1))))"
+      using jbase jhi jshift by simp
+    finally show ?thesis .
+  qed
+  \<comment> \<open>the LOW prefix is the reshape \<open>seg (seg (N[n]) A E) 0 (cc-1) = seg (N[n]) A (A+(cc-1))\<close>\<close>
+  have reshape: "seg (seg (N[n]) A E) 0 (cc - 1) = seg (N[n]) (A + 0) (A + (cc - 1))"
+    by (rule seg_of_seg[OF Ele ccle])
+  thus ?thesis using src' by simp
+qed
+
 text \<open>§6.8 d0pos ¬brle — BRICK 3 (Br alignment): the \<open>Br\<close>-decomposition of a
   branch slice \<open>seg M j0' j1'\<close> reshaped into the AMBIENT \<open>M\<close>-coordinates.  When the
   branch is non-empty (\<open>TrMax (seg M j0' j1') \<noteq> Lng (seg M j0' j1') - 1\<close>), unfolding
