@@ -1748,3 +1748,25 @@ seg-eq (oper_d1pos_LOW_source_eq) + P_funpow_IncrFirst, then c=cN (Lng_funpow_In
 lengths), baseEq, F8end (+shamt), F9end. Workflow wcy5tmj4j runs both. NB a verification-script bug
 (IdxSum[−1]=Lng S vs the correct IdxSum[len−1]=last anchor) caused a spurious "regime-B multi-block /
 c≠cN" false alarm — with the correct anchor, regime B is single-block 1128/1128.
+
+## UPDATE 2026-05-30 (continued 45): 7th shallow-false (clt/cNlt false at rank 10); regB coincide green; the one true brick = periodic-tail row-0 bound (slice 8096f42)
+
+**7th shallow-false — rank 8 was NOT enough.** clt:c<Lng Snside−1 / cNlt:cN<Lng Snside−1 verified
+267/267 at rank 8 but are FALSE at rank 10 (3273/3792). CE N=(0,0)(1,1)(2,2)(2,2)(2,2): the last
+P-component is a SINGLETON so c=cN=m (the strict bound fails). So oper_d1pos_anchor_coincide_regA
+(which takes clt/cNlt as hyps) is SOUND but OVER-CONDITIONED. The conclusions c=cN, F8end, F9end and
+the bounds c≤m, cN≤m are all UNIVERSAL (3792/3792 rank 10).
+
+Integrated green (slice 8096f42): oper_d1pos_anchor_coincide_regB (shift analogue, given the
+single-block shift agreement; an agent left its sum_list(map length(map f L)) step non-green — fixed
+with `simp add: o_def` instead of the map-fused lenPreserve — a 未緑自己申告 catch),
+anchor_lt_of_uniform_witness (c<k from a row-0 witness jj<k below all x≥k), oper_d1pos_cNlt_of_Ajm2
+(A≤jm2 sub-regime).
+
+**The ONE true remaining brick** = the periodic-tail row-0 lower bound: for the branch region S, every
+tail index x with m<x≤Lng S−1 (m=Lng Snside−1) lies in a higher block (q≥1) so entry S 0 x is above
+the block-0 minimum; hence anchor_lt_of_uniform_witness with k=m+1 gives c≤m UNIVERSALLY (note: x>m
+strictly, so the singleton-at-m case is not in the witness range). With c≤m + cN≤m (trivial) +
+butlast(P S)=butlast(P Snside), reprove anchor_coincide_regA/regB WITHOUT clt/cNlt, case-splitting
+c<m (truncate route) vs c=m (singleton boundary). Then the final assembly. Derive the tail bound from
+oper_d1pos_entry0 (block row-0 = base + q·delta) + delta>0 + monoT N.
