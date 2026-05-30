@@ -1699,3 +1699,28 @@ entry_funpow_IncrFirst0 (row-0 +shamt) / entry_funpow_IncrFirst1 (row-1 unchange
 junction (row-0 +shamt tie, row-1 drop via b3n + nextrel1). Brick-families 2 (¬brle Br_align capped)
 and 4 (tail tie/drop) are absorbed into this assembly. After it closes: WLOG-monoT wrapper +
 integrate §6.8 prop1 into main, merge slice-wip-68 → main.
+
+## UPDATE 2026-05-30 (continued 43): FirstNodes-anchor identification GREEN — purely STRUCTURAL (slice 103aa05)
+
+The documented "core gap" (the FirstNodes-anchor identification + the delta-shifted block-fold
+family) turned out to need NO block-fold for the structural half. Two converging deep-verified agents
+both found the concrete cut **c = IdxSum (P S) ! (length (P S) − 1)** (the last P-component's left
+endpoint, = Lng S − Lng(last(P S))), and discharged the collapse hypotheses STRUCTURALLY:
+- `oper_d1pos_branch_anchor` (GREEN): for S∈T_PS with 1<length(P S), this c gives 0<c, c≤Lng S−1,
+  lmin (via idxsum_leftend_lmin at the last component), ¬multiT(seg S c (Lng S−1)) (via
+  m_6_2_P_components_1: every P-component is zeroT∨monoT), plus seg S c (Lng S−1)=last(P S),
+  c=Lng S−Lng(last(P S)). PURE idxsum geometry — no block-fold. Deep-verified 1395/1395 rank-8.
+- `oper_d1pos_branch_collapse_concrete` (GREEN): anchor + oper_d1pos_collapse ⇒
+  P S = map(IncrFirst^^shamt)(butlast BN) @ [last(P S)], given lowshift+butl.
+- `oper_d1pos_branch_butl` (GREEN): butlast(P Snside)=P(seg Snside 0 (cN−1)) via the anchor split on
+  the N side ⇒ base = seg Snside 0 (cN−1).
+- `oper_d1pos_branch_lowshift_regB` (GREEN): lowshift for uncapped regime B (single-block A≥jm2,
+  e0<w taken as hyps) via oper_d1pos_LOW_source_eq.
+
+So the §6.8 d0pos remainder is now just: (a) the CONTEXT-level lowshift — derive the block
+realization (regime B) / verbatim shamt=0 (regime A) so base = seg Snside 0 (cN−1); (b) the tail
+junction F8 (entry last(P S) 0 0 = entry last(P Snside) 0 0 + shamt) / F9 (row-1 drop); (c) the final
+existential assembly threading collapse_concrete + branch_butl + lowshift_ctx + tail + the entry
+facts (entry_funpow_IncrFirst0/1) + le0 N j0red j1red + the Br reshapes. Workflow wzxdjxihh runs
+(a)+(b). No block-fold family (oper_d1pos_seg_P_split/_hfold/...) is needed after all — the idxsum
+anchor + the single-block source-eq cover it.
