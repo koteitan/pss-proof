@@ -1633,3 +1633,35 @@ simplicity/length/vacuity claim at rank≥6-8 before integrating:
   oper_d1pos_notbrle_LOW_eq + oper_d1pos_notbrle_take_map; the le0 helpers above feed it.
 - **Brick 4** (junction): tail row-0 tie after shift, row-1 drop via nextrel1 N jm2.
 Then assemble the main stub oper_d1pos_notbrle_LOW_take_eq from TrEq + B3N + bricks 3-4 + formula-G.
+
+## UPDATE 2026-05-30 (continued 41): main stub is TRUE; reduces to 4 brick-families (across-block P-collapse = core)
+
+Both independent attempts at the main identification stub oper_d1pos_notbrle_LOW_take_eq
+CONVERGED (no shallow-false; both deep-verified the stub TRUE at rank≥8 with the free-j1red
+formula-G witnesses: 1395/1395 at KMAX8/len12, 3276/3276 at KMAX8/len11/val5). So the stub is a
+SOUND residual. Its proof, however, is the FULL remaining §6.8 d0pos multi-block fold
+infrastructure — 4 brick-families, none green yet:
+
+1. **Regime A keystone (267/1395 cases, j0'<jm2)** — ENTIRELY uncovered. Every existing d1pos
+   TrEq/reshape/le0 brick hard-requires jm2≤j0' (regime B, via s0eq/j0'eq). A regime-A TrEq +
+   reshape must be authored.
+2. **¬brle-route Br_align for the CAPPED case (857/1395) + regime A** — oper_d1pos_notbrle_Br_align
+   takes tnc/stop as HYPOTHESES (routes through the conditional keystone). The ¬brle keystones
+   derive tnc/stop only for uncapped regime-B; a ¬brle Br_align supplying Br Np ≠ [] for capped /
+   regime A is missing.
+3. **THE ACROSS-BLOCK P-COLLAPSE (the CORE missing brick)**: the M'-branch region spans MULTIPLE
+   blocks in 1047/1395 cases (up to 3), yet F7 holds with a UNIFORM shamt=q·δ because P collapses
+   ALL across-block growth into the SINGLE non-multiT LAST component (tail); LOW=butlast lies
+   entirely in block q (uniform in-block shift, where LOW_eq/take_map apply). Needs the d1pos
+   analogues `oper_d1pos_seg_P_split/_hfold/_blk1fold/_blk0fold` (of the d0zero blk-fold family):
+   P(branch) = map(IncrFirst^^shamt)(butlast(Br Np)) @ [collapsed monoT tail].
+4. **F8/F9 tail tie/drop**: tail row-0=+shamt tie, row-1 drop via nextrel1 N jm2 (Lng N-1);
+   partly present (oper_d1pos_seg_le0_boundary) but unassembled, absent for regime A.
+
+### State (slice 346171b, green; SOUND — the one remaining sorry is a TRUE stub)
+DONE & sound: trunk-confinement family (TrEq keystone/sym/span/uncapped+capped notbrle TrEq +
+uncapped+capped trunk-fill⟹brle), B3N (oper_d1pos_b3n_boundary), le0-boundary + 4 le0 helpers,
+Br_seg_reshape, oper_d1pos_notbrle_Br_align (skeleton), LOW machinery + take_map. The §6.8 d0pos
+heart is now precisely: the across-block P-collapse (brick-family 3) + regime A (1) + the ¬brle
+Br_align (2) + tail (4). This is a multi-session infra build (the d0zero blk-fold port for d1pos),
+not a single lemma. python/d1pos_stub_full_G.py (1395/1395 rank-8 full-stub verification).
