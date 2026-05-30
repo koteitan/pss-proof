@@ -13451,6 +13451,74 @@ proof -
   thus ?thesis using src' by simp
 qed
 
+text \<open>§6.8 d1pos ¬brle — the ANCHOR TAIL entry reduction.  The last \<open>P\<close>-component
+  of a multi-\<open>P\<close> \<open>S \<in> T_PS\<close> is, by @{thm [source] oper_d1pos_branch_anchor}(5),
+  the single segment \<open>seg S c (Lng S - 1)\<close> with \<open>c = IdxSum (P S) ! (length (P S) - 1)\<close>,
+  whose head row-\<open>i\<close> value (\<open>entry (last (P S)) i 0\<close>) is just the \<open>S\<close>-entry at the
+  anchor cut \<open>c\<close> (the left endpoint, @{thm [source] entry_seg} at offset \<open>0\<close>; the
+  cut satisfies \<open>c \<le> Lng S - 1\<close> so the segment is non-empty).  PURELY STRUCTURAL —
+  no block-fold.\<close>
+
+lemma oper_d1pos_anchor_tail_entry:
+  fixes S :: pairseq
+  defines "c \<equiv> IdxSum (P S) ! (length (P S) - 1)"
+  assumes ST: "S \<in> T_PS" and multi: "1 < length (P S)"
+  shows "entry (last (P S)) i 0 = entry S i c"
+proof -
+  have cle: "c \<le> Lng S - 1" unfolding c_def
+    by (rule oper_d1pos_branch_anchor(2)[OF ST multi])
+  have tailseg: "seg S c (Lng S - 1) = last (P S)" unfolding c_def
+    by (rule oper_d1pos_branch_anchor(5)[OF ST multi])
+  \<comment> \<open>the tail segment is non-empty: \<open>0 < Suc (Lng S - 1) - c\<close> since \<open>c \<le> Lng S - 1\<close>\<close>
+  have ne: "(0::nat) < Lng (seg S c (Lng S - 1))" using cle by simp
+  have "entry (seg S c (Lng S - 1)) i 0 = entry S i (c + 0)"
+    by (rule entry_seg[OF ne])
+  hence "entry (seg S c (Lng S - 1)) i 0 = entry S i c" by simp
+  thus ?thesis using tailseg by simp
+qed
+
+text \<open>§6.8 d1pos ¬brle — the TAIL JUNCTION (F8/F9).  Given the two N-/M-side multi-\<open>P\<close>
+  branch regions \<open>S\<close> (= \<open>Br M'\<close>) and \<open>Snside\<close> (= \<open>Br N\<^sub>p\<close>), each with its anchor cut
+  \<open>c\<close>/\<open>cN\<close>, the article's row-0 \<open>+shamt\<close> tie and row-1 drop at the anchor LEFT
+  ENDPOINTS (the deep block-fold geometry, supplied as \<open>F8end\<close>/\<open>F9end\<close>):
+    \<open>F8end : entry S 0 c    = entry Snside 0 cN + shamt\<close>   (row-0 +shamt tie)
+    \<open>F9end : entry S 1 c    \<le> entry Snside 1 cN\<close>           (row-1 drop)
+  lift, via the anchor-tail entry reduction @{thm [source] oper_d1pos_anchor_tail_entry},
+  to the TAIL-NODE junction the §6.8 assembly stub consumes:
+    \<open>F8 : entry (last (P S)) 0 0    = entry (last (P Snside)) 0 0 + shamt\<close>
+    \<open>F9 : entry (last (P S)) 1 0    \<le> entry (last (P Snside)) 1 0\<close>.
+  Here \<open>last (P S) = Br M' ! (Lng (Br M') - 1)\<close> and \<open>last (P Snside) = Br N\<^sub>p !
+  (Lng (Br N\<^sub>p) - 1)\<close> are the tail nodes \<open>tail\<close> and \<open>Br N\<^sub>p ! (Lng (Br N\<^sub>p) - 1)\<close> of the
+  consumer obligation.  DEEP-VERIFIED rank 8 (python/d1pos_tail_junction.py): both the
+  endpoint identities \<open>F8end\<close>/\<open>F9end\<close> and the lifted tail facts \<open>F8\<close>/\<open>F9\<close> hold
+  1395/1395 (len\<le>12 val\<le>4) and 3276/3276 (len\<le>11 val\<le>5), 0 failures.  PURELY
+  STRUCTURAL given the endpoint identities — no block-fold inside this lemma.\<close>
+
+lemma oper_d1pos_tail_junction:
+  fixes S :: pairseq and Snside :: pairseq
+  defines "c \<equiv> IdxSum (P S) ! (length (P S) - 1)"
+      and "cN \<equiv> IdxSum (P Snside) ! (length (P Snside) - 1)"
+  assumes ST: "S \<in> T_PS" and multi: "1 < length (P S)"
+    and SnT: "Snside \<in> T_PS" and multiN: "1 < length (P Snside)"
+    and F8end: "entry S 0 c = entry Snside 0 cN + shamt"
+    and F9end: "entry S 1 c \<le> entry Snside 1 cN"
+  shows "entry (last (P S)) 0 0 = entry (last (P Snside)) 0 0 + shamt"
+    and "entry (last (P S)) 1 0 \<le> entry (last (P Snside)) 1 0"
+proof -
+  have eS0: "entry (last (P S)) 0 0 = entry S 0 c" unfolding c_def
+    by (rule oper_d1pos_anchor_tail_entry[OF ST multi])
+  have eS1: "entry (last (P S)) 1 0 = entry S 1 c" unfolding c_def
+    by (rule oper_d1pos_anchor_tail_entry[OF ST multi])
+  have eSn0: "entry (last (P Snside)) 0 0 = entry Snside 0 cN" unfolding cN_def
+    by (rule oper_d1pos_anchor_tail_entry[OF SnT multiN])
+  have eSn1: "entry (last (P Snside)) 1 0 = entry Snside 1 cN" unfolding cN_def
+    by (rule oper_d1pos_anchor_tail_entry[OF SnT multiN])
+  show "entry (last (P S)) 0 0 = entry (last (P Snside)) 0 0 + shamt"
+    using eS0 eSn0 F8end by simp
+  show "entry (last (P S)) 1 0 \<le> entry (last (P Snside)) 1 0"
+    using eS1 eSn1 F9end by simp
+qed
+
 text \<open>§6.8 d0pos ¬brle — BRICK 3 (Br alignment): the \<open>Br\<close>-decomposition of a
   branch slice \<open>seg M j0' j1'\<close> reshaped into the AMBIENT \<open>M\<close>-coordinates.  When the
   branch is non-empty (\<open>TrMax (seg M j0' j1') \<noteq> Lng (seg M j0' j1') - 1\<close>), unfolding
@@ -13747,6 +13815,133 @@ proof -
   have BrM'ne: "Br ?Mp \<noteq> []" using BrM'P P_nonempty by simp
   have BrNpne: "Br ?Np \<noteq> []" using BrNpP P_nonempty by simp
   show ?thesis using TrEq BrM'P BrNpP BrM'ne BrNpne by blast
+qed
+
+text \<open>§6.8 d1pos LOW verbatim seg (conc-A, regime A).  When the right endpoint
+  \<open>b\<close> of a slice stays STRICTLY below the last boundary \<open>Lng N-1\<close>, the periodic
+  \<open>N[n]\<close>-extension reads off \<open>N\<close> verbatim on the whole window \<open>[a,b]\<close>, so
+  \<open>seg (N[n]) a b = seg N a b\<close>.  Pointwise from
+  @{thm [source] oper_d1pos_nth_low_verbatim}.\<close>
+
+lemma oper_d1pos_seg_low_verbatim:
+  fixes N :: pairseq
+  assumes L: "1 < Lng N"
+    and notzero: "\<not> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0)"
+    and hp: "hasParent N (idx1 N (Lng N - 1)) (Lng N - 1)"
+    and i1z: "idx1 N (Lng N - 1) = 1"
+    and j0lt: "parent N 1 (Lng N - 1) < Lng N - 1"
+    and n1: "1 \<le> n"
+    and ble: "b < Lng N - 1"
+  shows "seg ((N::pairseq)[n]) a b = seg N a b"
+proof (rule nth_equalityI)
+  show leq: "length (seg ((N::pairseq)[n]) a b) = length (seg N a b)" by simp
+  fix i assume "i < length (seg ((N::pairseq)[n]) a b)"
+  hence ic: "i < Suc b - a" by simp
+  show "seg ((N::pairseq)[n]) a b ! i = seg N a b ! i"
+  proof (cases "a \<le> b")
+    case False
+    \<comment> \<open>empty window: both sides have length 0, but \<open>ic\<close> already excludes this\<close>
+    have "Suc b - a = 0" using False by simp
+    thus ?thesis using ic by simp
+  next
+    case True
+    have aib: "a + i \<le> b" using ic True by linarith
+    have idxlt: "a + i < Lng N - 1" using aib ble by linarith
+    have "seg ((N::pairseq)[n]) a b ! i = ((N::pairseq)[n]) ! (a + i)"
+      using ic by (rule seg_nth_eq)
+    also have "\<dots> = N ! (a + i)"
+      by (rule oper_d1pos_nth_low_verbatim[OF L notzero hp i1z j0lt n1 idxlt])
+    also have "\<dots> = seg N a b ! i" using ic by (simp add: seg_nth_eq)
+    finally show ?thesis .
+  qed
+qed
+
+text \<open>§6.8 d1pos \<open>\<not>brle\<close> REGIME A lowshift (conc-A, \<open>j'\<^sub>0 < j\<^sub>m\<^sub>2\<close>, \<open>shamt = 0\<close>).
+  Companion to @{thm [source] oper_d1pos_branch_lowshift_regB}: in regime A the
+  block index \<open>q\<^sub>0 = 0\<close> so \<open>shamt = 0\<close> and \<open>j\<^sub>0\<^sup>red = j'\<^sub>0\<close>, and (via the regime-A
+  TrEq) the \<open>M\<close>-side branch region \<open>S = seg (N[n]) A E\<close> and the \<open>N\<close>-side region
+  \<open>Snside = seg N A E\<^sub>N\<close> START AT THE SAME index \<open>A = A\<^sub>N\<close>.  When the \<open>S\<close>-anchor
+  prefix \<open>[A, A+c-1]\<close> stays STRICTLY below the boundary \<open>Lng N-1\<close> (\<open>Abnd\<close>) and the
+  anchors coincide (\<open>ccN\<close>: \<open>c = cN\<close>, the deep-verified regime-A realisation —
+  267/267, /tmp/regA_butl.py), the LOW prefix is read off \<open>N\<close> verbatim on both
+  operands, so both reduce to \<open>seg N A (A+c-1)\<close> and the \<open>(IncrFirst^^0)\<close>-shift is the
+  identity.  DEEP-VERIFIED rank 8 (267/267 regime-A cases, the EXACT anchor
+  \<open>c = IdxSum (P S) ! (length (P S)-1)\<close>; /tmp/lowshift_exact_verify.py).
+  The realisation hyps (\<open>AeqAN\<close>, \<open>ccN\<close>, \<open>Abnd\<close>) are the regime-A counterparts of
+  @{thm [source] oper_d1pos_branch_lowshift_regB}'s block hypotheses
+  (\<open>Aform\<close>/\<open>e0lt\<close>/\<open>qn\<close>), all three 267/267 at rank 8.\<close>
+
+lemma oper_d1pos_branch_lowshift_regA:
+  fixes N :: pairseq
+  assumes L: "1 < Lng N"
+    and notzero: "\<not> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0)"
+    and hp: "hasParent N (idx1 N (Lng N - 1)) (Lng N - 1)"
+    and i1z: "idx1 N (Lng N - 1) = 1"
+    and j0lt: "parent N 1 (Lng N - 1) < Lng N - 1"
+    and n1: "1 \<le> n"
+    and AeqAN: "A = AN"
+    and ccN: "cc = cN"
+    and Abnd: "A + (cc - 1) < Lng N - 1"
+    and Ele: "A \<le> E" and ccle: "cc - 1 \<le> E - A"
+    and ANle: "AN \<le> EN" and cNle: "cN - 1 \<le> EN - AN"
+  shows "seg (seg ((N::pairseq)[n]) A E) 0 (cc - 1)
+       = (IncrFirst ^^ (0::nat)) (seg (seg N AN EN) 0 (cN - 1))"
+proof -
+  \<comment> \<open>reshape both LOW prefixes to the ambient \<open>[A,A+c-1]\<close> / \<open>[AN,AN+cN-1]\<close> windows\<close>
+  have reM: "seg (seg ((N::pairseq)[n]) A E) 0 (cc - 1) = seg ((N::pairseq)[n]) A (A + (cc - 1))"
+    using seg_of_seg[OF Ele ccle] by simp
+  have reN: "seg (seg N AN EN) 0 (cN - 1) = seg N AN (AN + (cN - 1))"
+    using seg_of_seg[OF ANle cNle] by simp
+  \<comment> \<open>the \<open>M\<close>-side window reads \<open>N\<close> verbatim (endpoint below the boundary)\<close>
+  have bnd: "A + (cc - 1) < Lng N - 1" using Abnd .
+  have verb: "seg ((N::pairseq)[n]) A (A + (cc - 1)) = seg N A (A + (cc - 1))"
+    by (rule oper_d1pos_seg_low_verbatim[OF L notzero hp i1z j0lt n1 bnd])
+  \<comment> \<open>align the \<open>N\<close>-side window via \<open>A = AN\<close>, \<open>c = cN\<close>\<close>
+  have align: "seg N A (A + (cc - 1)) = seg N AN (AN + (cN - 1))"
+    using AeqAN ccN by simp
+  have "seg (seg ((N::pairseq)[n]) A E) 0 (cc - 1) = seg N AN (AN + (cN - 1))"
+    using reM verb align by simp
+  also have "\<dots> = seg (seg N AN EN) 0 (cN - 1)" using reN by simp
+  also have "\<dots> = (IncrFirst ^^ (0::nat)) (seg (seg N AN EN) 0 (cN - 1))" by simp
+  finally show ?thesis .
+qed
+
+text \<open>§6.8 d1pos \<open>\<not>brle\<close> REGIME B lowshift — EXACT plug-in form (conc-A,
+  \<open>j\<^sub>m\<^sub>2 \<le> j'\<^sub>0\<close>).  Repackages @{thm [source] oper_d1pos_branch_lowshift_regB}
+  (whose base is the \<open>N\<close>-slice \<open>seg N (jm2+s0) (jm2+(s0+(cc-1)))\<close>) into the form
+  that plugs DIRECTLY into @{thm [source] oper_d1pos_branch_collapse_concrete}:
+  with \<open>base = seg Snside 0 (cN-1)\<close> (so @{thm [source] oper_d1pos_branch_butl}
+  supplies \<open>butlast (P Snside) = P base\<close>), given the deep-verified base-equality
+  \<open>baseEq\<close>: \<open>seg N (jm2+s0) (jm2+(s0+(cc-1))) = seg Snside 0 (cN-1)\<close> (the residual
+  block-fold / first-node geometry, 1128/1128 at rank 8, /tmp/regB_base.py).
+  Pure rewrite of the regime-B lowshift along \<open>baseEq\<close>.\<close>
+
+lemma oper_d1pos_branch_lowshift_regB_plug:
+  fixes N :: pairseq
+  defines "jm2 \<equiv> parent N 1 (Lng N - 1)"
+      and "w \<equiv> Lng N - 1 - parent N 1 (Lng N - 1)"
+  assumes L: "1 < Lng N"
+    and notzero: "\<not> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0)"
+    and hp: "hasParent N (idx1 N (Lng N - 1)) (Lng N - 1)"
+    and i1z: "idx1 N (Lng N - 1) = 1"
+    and j0lt: "parent N 1 (Lng N - 1) < Lng N - 1"
+    and qn: "q < n"
+    and Aform: "A = jm2 + q * w + s0"
+    and s0e0: "s0 \<le> s0 + (cc - 1)"
+    and e0lt: "s0 + (cc - 1) < w"
+    and Ele: "A \<le> E" and ccle: "cc - 1 \<le> E - A"
+    and baseEq: "seg N (jm2 + s0) (jm2 + (s0 + (cc - 1))) = seg Snside 0 (cN - 1)"
+  shows "seg (seg ((N::pairseq)[n]) A E) 0 (cc - 1)
+       = (IncrFirst ^^ (q * (entry N 0 (Lng N - 1) - entry N 0 jm2)))
+            (seg Snside 0 (cN - 1))"
+proof -
+  have base: "seg (seg ((N::pairseq)[n]) A E) 0 (cc - 1)
+       = (IncrFirst ^^ (q * (entry N 0 (Lng N - 1) - entry N 0 jm2)))
+            (seg N (jm2 + s0) (jm2 + (s0 + (cc - 1))))"
+    unfolding jm2_def w_def
+    by (rule oper_d1pos_branch_lowshift_regB[OF L notzero hp i1z j0lt qn
+          Aform[unfolded jm2_def w_def] s0e0 e0lt[unfolded w_def] Ele ccle])
+  show ?thesis using base baseEq by simp
 qed
 
 lemma descending_Br_of_branch_le0:
