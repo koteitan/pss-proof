@@ -1897,3 +1897,21 @@ because S crosses the boundary while the anchor sits at the N-side boundary mN).
 must still deep-verify (rank 12, both counts) each mLmin/cle hyp before relying on it, re-deriving via
 the unified-coupling template if any is false. Remaining: the 4-cell capstone discharging the
 periodic new hyps (lenPSeqB/cleMB/mleSB) + regB/boundary mLmin_S/mLmin_Sn.
+
+## UPDATE 2026-06-01 (continued 51): the monoT CORE m_6_8_slice_Br_descending_monoT is CLOSED (sorry-free) — slice 3d26901
+
+The d0pos saga is DONE. The stub oper_d1pos_notbrle_LOW_take_eq was eliminated via the 4-cell
+case-split (capB's ~650-line assembly, debugged to green: A<Lng N-1 from notbrle-degeneracy, the
+LOW-branch tnc/stop split cap-active vs uncapped since j1'=Lng N-1 genuinely occurs). With the stub
+closed, m_6_8_slice_Br_descending_monoT (the monoT core, ¬brle case at line ~23066) closes
+transitively: it obtains the existential from the stub, gets descending(Br Np) from the IH (IHk on
+the rank-k N-slice), and assembles descending(LOW@[tail]) via descending_shift_append. CONFIRMED:
+pss_mechanized.thy has ZERO real sorry/oops commands (the 6 grep hits are all doc comments); the
+monoT core is fully proven. The whole periodic-boundary mLmin scare (continued 49) was resolved by
+the left-min coupling (continued 50) — NO IH was needed for that, only the across-block collapse.
+
+REMAINING for the full §6.8 prop1 (p_6_8_standard_slice_Br_descending): the WLOG-monoT wrapper +
+p_6_8 wiring — from M∈ST_PS (=⋃ SkT_PS k via m_6_7_ST_eq_Union_SkT) obtain the rank k, prove
+monoT(seg M j0' j1') from leR (the "show mono" of m_6_8_standard_slice_Br_descending_of_drop), then
+apply m_6_8_slice_Br_descending_monoT. This is the modest finish; the hard core (multi-session) is
+done.

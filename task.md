@@ -47,7 +47,7 @@
       - ✅ 命題（標準形の単項成分が標準形であること）
       - ✅ 命題（標準形の始切片への遺伝性）
     - 🚨 §6.8 降順性
-      - 🚨🤖 命題（標準形の切片と $\textrm{Br}$ の降順性の関係）〔本開発最難。詳細は `docs/slice-Br-descending.md`（最新=continued 50）。`m_6_8_slice_Br_descending_monoT`(slice-wip-68 HEAD **03935e3** 緑)は base/caseA/B/C + d0pos の brle case 緑。残=d0pos ¬brle の存在同定 stub `oper_d1pos_notbrle_LOW_take_eq`（真）。¬brle 空間=4セル、全セルに green 組立 lemma（regA/regB/boundary/periodic）。文脈 discharger 大半 green。全 discharger green（tnc は brle_capped の対偶＝IH 不要）。残=唯一の hard ブリック「d1pos 境界 stop」（stop を strict-tnc 経由でなく直接産む、d0zero 版の i1z=1 類似）。これが落ちれば4セル case-split で d0pos 完成〕
+      - 🚨🤖 命題（標準形の切片と $\textrm{Br}$ の降順性の関係）〔本開発最難。詳細は `docs/slice-Br-descending.md`（最新=continued 51）。`m_6_8_slice_Br_descending_monoT`(slice-wip-68 HEAD **03935e3** 緑)は base/caseA/B/C + d0pos の brle case 緑。残=d0pos ¬brle の存在同定 stub `oper_d1pos_notbrle_LOW_take_eq`（真）。¬brle 空間=4セル、全セルに green 組立 lemma（regA/regB/boundary/periodic）。文脈 discharger 大半 green。全 discharger green（tnc は brle_capped の対偶＝IH 不要）。残=唯一の hard ブリック「d1pos 境界 stop」（stop を strict-tnc 経由でなく直接産む、d0zero 版の i1z=1 類似）。これが落ちれば4セル case-split で d0pos 完成〕
       - ✅ 命題（標準形の単項成分が降順であること）
   - 🚨 §7 Buchholzの表記系への翻訳
     - 🚨 §7.1 Buchholzの表記系
