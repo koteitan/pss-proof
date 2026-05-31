@@ -19314,6 +19314,214 @@ proof -
   show ?thesis using cleM cge by linarith
 qed
 
+text \<open>§6.8 d1pos \<open>\<not>brle\<close> CELL-4 (PERIODIC-TAIL) UNIFIED anchor coincidence
+  (perfix-A).  Replaces the FALSE-hyp BOUNDARY dispatch (\<open>mLmin_SnB\<close>/\<open>cleB\<close>) of
+  the periodic-tail cell \<open>oper_d1pos_notbrle_LOW_take_eq_periodic\<close>.  Both anchors satisfy
+  \<open>c, c\<^sub>N \<le> m = Lng Snside - 1\<close> and the ALL-BUT-LAST prefix is a clean
+  \<open>(IncrFirst^^shamt)\<close>-shift (\<open>shiftEq\<close>, deep-verified 8019/8019 at rank 12);
+  the single boundary node at \<open>m\<close> shifts by \<open>shamt\<close> in row 0 (\<open>boundEq0\<close>) and is
+  \<open>\<le>\<close> in row 1 (\<open>boundEq1\<close>, both 8019/8019).  This covers the regime where the
+  \<open>M\<close>-side branch \<open>S\<close> may CROSS the period boundary (\<open>Lng S > Lng Snside\<close>) with the
+  anchor STRICTLY below the boundary (\<open>c = c\<^sub>N < m\<close>, the 458/3369 boundary cases
+  where the OLD \<open>mLmin_SnB\<close>/\<open>cleB\<close> are FALSE) AS WELL AS the anchor-at-boundary
+  case (\<open>c = c\<^sub>N = m\<close>).  Derivation: \<open>P (seg S 0 (m-1)) = map (shift) (P (seg Snside
+  0 (m-1)))\<close> from \<open>shiftEq\<close> (@{thm [source] P_funpow_IncrFirst}); relate both
+  butlasts to it by cases on \<open>c < m\<close> — STRICT uses the regime-agnostic
+  @{thm [source] P_butlast_take_at_anchor} on BOTH operands; the BOUNDARY \<open>c = m\<close>
+  identifies the prefix directly with @{thm [source] oper_d1pos_branch_butl}.  The
+  length count (\<open>shift\<close> preserves component lengths, @{thm [source] Lng_funpow_IncrFirst})
+  gives \<open>c = c\<^sub>N\<close>; junction entries from the prefix shift (\<open>c < m\<close>) or
+  \<open>boundEq0\<close>/\<open>boundEq1\<close> (\<open>c = m\<close>).  NO \<open>mLmin\<close>, NO \<open>cle\<close>, NO IH.\<close>
+
+lemma oper_d1pos_anchor_coincide_period_unified:
+  fixes S :: pairseq and Snside :: pairseq and shamt :: nat
+  defines "c \<equiv> IdxSum (P S) ! (length (P S) - 1)"
+      and "cN \<equiv> IdxSum (P Snside) ! (length (P Snside) - 1)"
+  assumes ST: "S \<in> T_PS" and multi: "1 < length (P S)"
+    and SnT: "Snside \<in> T_PS" and multiN: "1 < length (P Snside)"
+    and mleS: "Lng Snside - 1 \<le> Lng S - 1"
+    and cleM: "IdxSum (P S) ! (length (P S) - 1) \<le> Lng Snside - 1"
+    and lenPSeq: "length (P S) = length (P Snside)"
+    and shiftEq: "seg S 0 (Lng Snside - 1 - 1)
+                = (IncrFirst ^^ shamt) (seg Snside 0 (Lng Snside - 1 - 1))"
+    and boundEq0: "entry S 0 (Lng Snside - 1) = entry Snside 0 (Lng Snside - 1) + shamt"
+    and boundEq1: "entry S 1 (Lng Snside - 1) \<le> entry Snside 1 (Lng Snside - 1)"
+  shows "c = cN"
+    and "entry S 0 c = entry Snside 0 cN + shamt"
+    and "entry S 1 c \<le> entry Snside 1 cN"
+proof -
+  let ?m = "Lng Snside - 1"
+  \<comment> \<open>anchor structural data on both operands\<close>
+  have c0: "0 < c" unfolding c_def by (rule oper_d1pos_branch_anchor(1)[OF ST multi])
+  have cleS: "c \<le> Lng S - 1" unfolding c_def by (rule oper_d1pos_branch_anchor(2)[OF ST multi])
+  have cleM': "c \<le> ?m" unfolding c_def using cleM by simp
+  have cN0: "0 < cN" unfolding cN_def by (rule oper_d1pos_branch_anchor(1)[OF SnT multiN])
+  have cNlem: "cN \<le> ?m" unfolding cN_def by (rule oper_d1pos_branch_anchor(2)[OF SnT multiN])
+  have mpos: "0 < ?m" using cN0 cNlem by linarith
+  have Snpos: "0 < Lng Snside" using mpos by linarith
+  have Spos: "0 < Lng S" using cleS c0 by linarith
+  have mleS': "?m \<le> Lng S" using mleS Spos by linarith
+  have mleSn': "?m \<le> Lng Snside" by simp
+  \<comment> \<open>butlast identities at the respective anchors (regime-agnostic)\<close>
+  have butS_anchor: "butlast (P S) = P (seg S 0 (c - 1))"
+    using oper_d1pos_branch_butl[OF ST multi] unfolding c_def by simp
+  have butSn_anchor: "butlast (P Snside) = P (seg Snside 0 (cN - 1))"
+    using oper_d1pos_branch_butl[OF SnT multiN] unfolding cN_def by simp
+  \<comment> \<open>the prefix shift at \<open>m-1\<close>, lifted to \<open>P\<close>\<close>
+  have PpreEq: "P (seg S 0 (?m - 1)) = map (IncrFirst ^^ shamt) (P (seg Snside 0 (?m - 1)))"
+    using shiftEq by (simp add: P_funpow_IncrFirst)
+  have butlPpreEq: "butlast (P (seg S 0 (?m - 1)))
+                  = map (IncrFirst ^^ shamt) (butlast (P (seg Snside 0 (?m - 1))))"
+    using PpreEq by (simp add: map_butlast)
+  \<comment> \<open>uniform anchor offsets: \<open>c\<close>/\<open>cN\<close> are the all-but-last \<open>P\<close>-length totals\<close>
+  have cbutl: "c = sum_list (map length (butlast (P S)))"
+    unfolding c_def by (simp add: idxsum_nth butlast_conv_take)
+  have cNbutl: "cN = sum_list (map length (butlast (P Snside)))"
+    unfolding cN_def by (simp add: idxsum_nth butlast_conv_take)
+  \<comment> \<open>common shifted prefix length \<open>Lpre = length (P (seg \<cdot> 0 (m-1)))\<close> (shift preserves count)\<close>
+  have Lpre_eq: "length (P (seg S 0 (?m - 1))) = length (P (seg Snside 0 (?m - 1)))"
+    using PpreEq by simp
+  \<comment> \<open>boundary-status bridge: for an anchor \<open>a \<le> m \<le> Lng X\<close>, the component count of
+     \<open>X\<close> is the prefix count when \<open>a < m\<close>, one MORE when \<open>a = m\<close>.  We extract:
+     \<open>length (P X) = length (P (seg X 0 (m-1))) + (if anchor=m then 1 else 0)\<close>.\<close>
+  have lenStat_S:
+    "length (P S) = length (P (seg S 0 (?m - 1))) + (if c = ?m then 1 else 0)"
+  proof (cases "c < ?m")
+    case True
+    have eqb: "butlast (P (seg S 0 (?m - 1))) = butlast (P S)"
+      using P_butlast_take_at_anchor[OF ST multi True[unfolded c_def] mleS'] c_def by simp
+    have "length (P (seg S 0 (?m - 1))) - 1 = length (P S) - 1"
+      using eqb by (metis length_butlast)
+    moreover have "0 < length (P (seg S 0 (?m-1)))" "0 < length (P S)"
+      using P_nonempty[of "seg S 0 (?m-1)"] P_nonempty[of S] by auto
+    ultimately have "length (P (seg S 0 (?m - 1))) = length (P S)" by linarith
+    thus ?thesis using True by simp
+  next
+    case False
+    hence cm: "c = ?m" using cleM' by linarith
+    have eqp: "butlast (P S) = P (seg S 0 (?m - 1))" using butS_anchor cm by simp
+    have d1: "length (P S) - 1 = length (P (seg S 0 (?m - 1)))"
+      using eqp by (metis length_butlast)
+    have p1: "0 < length (P S)" using P_nonempty[of S] by (cases "P S") auto
+    have "length (P S) = length (P (seg S 0 (?m - 1))) + 1" using d1 p1 by linarith
+    thus ?thesis using cm by simp
+  qed
+  have lenStat_Sn:
+    "length (P Snside) = length (P (seg Snside 0 (?m - 1))) + (if cN = ?m then 1 else 0)"
+  proof (cases "cN < ?m")
+    case True
+    have eqb: "butlast (P (seg Snside 0 (?m - 1))) = butlast (P Snside)"
+      using P_butlast_take_at_anchor[OF SnT multiN True[unfolded cN_def] mleSn'] cN_def by simp
+    have "length (P (seg Snside 0 (?m - 1))) - 1 = length (P Snside) - 1"
+      using eqb by (metis length_butlast)
+    moreover have "0 < length (P (seg Snside 0 (?m-1)))" "0 < length (P Snside)"
+      using P_nonempty[of "seg Snside 0 (?m-1)"] P_nonempty[of Snside] by auto
+    ultimately have "length (P (seg Snside 0 (?m - 1))) = length (P Snside)" by linarith
+    thus ?thesis using True by simp
+  next
+    case False
+    hence cNm: "cN = ?m" using cNlem by linarith
+    have eqp: "butlast (P Snside) = P (seg Snside 0 (?m - 1))" using butSn_anchor cNm by simp
+    have d1: "length (P Snside) - 1 = length (P (seg Snside 0 (?m - 1)))"
+      using eqp by (metis length_butlast)
+    have p1: "0 < length (P Snside)" using P_nonempty[of Snside] by (cases "P Snside") auto
+    have "length (P Snside) = length (P (seg Snside 0 (?m - 1))) + 1" using d1 p1 by linarith
+    thus ?thesis using cNm by simp
+  qed
+  \<comment> \<open>from \<open>length (P S) = length (P Snside)\<close> and \<open>Lpre_eq\<close>: the boundary statuses match\<close>
+  have statEq: "(c = ?m) = (cN = ?m)"
+  proof -
+    obtain ls lsn lp where ls: "ls = length (P S)" and lsn: "lsn = length (P Snside)"
+      and lp: "lp = length (P (seg S 0 (?m - 1)))" by blast
+    have lp': "length (P (seg Snside 0 (?m - 1))) = lp" using Lpre_eq lp by simp
+    have eS: "ls = lp + (if c = ?m then 1 else 0)" using lenStat_S ls lp by simp
+    have eSn: "lsn = lp + (if cN = ?m then 1 else 0)" using lenStat_Sn lsn lp' by simp
+    have "ls = lsn" using lenPSeq ls lsn by simp
+    hence ifeq: "(if c = ?m then (1::nat) else 0) = (if cN = ?m then 1 else 0)"
+      using eS eSn by simp
+    show ?thesis
+    proof (cases "c = ?m")
+      case True
+      have "(if cN = ?m then (1::nat) else 0) = 1" using ifeq True by simp
+      hence "cN = ?m" by (cases "cN = ?m") simp_all
+      thus ?thesis using True by simp
+    next
+      case Fa: False
+      have "(if cN = ?m then (1::nat) else 0) = 0" using ifeq Fa by simp
+      hence "cN \<noteq> ?m" by (cases "cN = ?m") simp_all
+      thus ?thesis using Fa by simp
+    qed
+  qed
+  \<comment> \<open>uniform \<open>butShift\<close> from the matched status\<close>
+  have butShift: "butlast (P S) = map (IncrFirst ^^ shamt) (butlast (P Snside))"
+  proof (cases "c = ?m")
+    case True
+    \<comment> \<open>BOTH anchors at boundary: \<open>butlast (P X) = P (seg X 0 (m-1))\<close> (full prefix)\<close>
+    have cNm: "cN = ?m" using True statEq by simp
+    have lhs: "butlast (P S) = P (seg S 0 (?m - 1))" using butS_anchor True by simp
+    have rhsN: "butlast (P Snside) = P (seg Snside 0 (?m - 1))" using butSn_anchor cNm by simp
+    show ?thesis using lhs rhsN PpreEq by simp
+  next
+    case False
+    \<comment> \<open>BOTH anchors strictly below boundary: \<open>butlast (P X) = butlast (P (seg X 0 (m-1)))\<close>\<close>
+    have clt: "c < ?m" using False cleM' by linarith
+    have cNm: "cN \<noteq> ?m" using False statEq by simp
+    have cNlt: "cN < ?m" using cNm cNlem by linarith
+    have e1: "butlast (P (seg S 0 (?m - 1))) = butlast (P S)"
+      using P_butlast_take_at_anchor[OF ST multi clt[unfolded c_def] mleS'] c_def by simp
+    have e2: "butlast (P (seg Snside 0 (?m - 1))) = butlast (P Snside)"
+      using P_butlast_take_at_anchor[OF SnT multiN cNlt[unfolded cN_def] mleSn'] cN_def by simp
+    show ?thesis using e1[symmetric] butlPpreEq e2 by simp
+  qed
+  show ceq: "c = cN"
+    using cbutl cNbutl butShift by (simp add: o_def Lng_funpow_IncrFirst)
+  \<comment> \<open>junction entries at the anchor \<open>c = cN \<le> m\<close>\<close>
+  have cle_m: "c \<le> ?m" using ceq cNlem by simp
+  show "entry S 0 c = entry Snside 0 cN + shamt"
+  proof (cases "c < ?m")
+    case strict: True
+    \<comment> \<open>anchor in the shifted all-but-last prefix\<close>
+    have ce: "c \<le> ?m - 1" using strict by linarith
+    have segpre: "seg S 0 (?m - 1) = (IncrFirst ^^ shamt) (seg Snside 0 (?m - 1))"
+      using shiftEq by simp
+    have cltSeg: "c < Lng (seg Snside 0 (?m - 1))"
+      using ce Lng_seg[of Snside 0 "?m-1"] mpos by simp
+    have eqsh: "entry (seg S 0 (?m - 1)) 0 c = entry (seg Snside 0 (?m - 1)) 0 c + shamt"
+      using segpre entry_funpow_IncrFirst0[OF cltSeg] by simp
+    have cltS: "c < Lng (seg S 0 (?m - 1))"
+      using ce Lng_seg[of S 0 "?m-1"] mpos mleS' by simp
+    have l: "entry (seg S 0 (?m - 1)) 0 c = entry S 0 c" using entry_seg[OF cltS] by simp
+    have r: "entry (seg Snside 0 (?m - 1)) 0 c = entry Snside 0 c" using entry_seg[OF cltSeg] by simp
+    show ?thesis using eqsh l r ceq by simp
+  next
+    case False
+    hence cm: "c = ?m" using cle_m by linarith
+    have "entry S 0 ?m = entry Snside 0 ?m + shamt" using boundEq0 .
+    thus ?thesis using cm ceq by simp
+  qed
+  show "entry S 1 c \<le> entry Snside 1 cN"
+  proof (cases "c < ?m")
+    case strict: True
+    have ce: "c \<le> ?m - 1" using strict by linarith
+    have segpre: "seg S 0 (?m - 1) = (IncrFirst ^^ shamt) (seg Snside 0 (?m - 1))"
+      using shiftEq by simp
+    have cltSeg: "c < Lng (seg Snside 0 (?m - 1))"
+      using ce Lng_seg[of Snside 0 "?m-1"] mpos by simp
+    have eqsh: "entry (seg S 0 (?m - 1)) 1 c = entry (seg Snside 0 (?m - 1)) 1 c"
+      using segpre entry_funpow_IncrFirst1[OF cltSeg] by simp
+    have cltS: "c < Lng (seg S 0 (?m - 1))"
+      using ce Lng_seg[of S 0 "?m-1"] mpos mleS' by simp
+    have l: "entry (seg S 0 (?m - 1)) 1 c = entry S 1 c" using entry_seg[OF cltS] by simp
+    have r: "entry (seg Snside 0 (?m - 1)) 1 c = entry Snside 1 c" using entry_seg[OF cltSeg] by simp
+    show ?thesis using eqsh l r ceq by simp
+  next
+    case False
+    hence cm: "c = ?m" using cle_m by linarith
+    have "entry S 1 ?m \<le> entry Snside 1 ?m" using boundEq1 .
+    thus ?thesis using cm ceq by simp
+  qed
+qed
+
 lemma oper_d1pos_notbrle_LOW_take_eq_periodic:
   fixes N :: pairseq and M :: pairseq
   assumes NT: "N \<in> T_PS" and monoN: "monoT N" and LNgt: "1 < Lng N"
@@ -19346,38 +19554,29 @@ lemma oper_d1pos_notbrle_LOW_take_eq_periodic:
     and stop: "\<not> nextR (seg ((N::pairseq)[n]) j0' j1') 1
                   (TrMax (seg N j0red j1red))
                   (TrMax (seg N j0red j1red) + 1)"
-    \<comment> \<open>INTERIOR anchor input: the whole \<open>M\<close>-side branch is a clean per-block shift\<close>
-    and fullShift: "j1red < Lng N - 1 \<longrightarrow>
-          seg M (j0' + TrMax (seg M j0' j1') + 1) j1'
-        = (IncrFirst ^^ shamt)
-            (seg N (j0red + TrMax (seg N j0red j1red) + 1) j1red)"
-    \<comment> \<open>BOUNDARY anchor inputs: prefix shift + boundary junction + left-min\<close>
-    and shiftEqB: "\<not> j1red < Lng N - 1 \<longrightarrow>
-          seg (seg M (j0' + TrMax (seg M j0' j1') + 1) j1') 0
+    \<comment> \<open>UNIFIED anchor inputs (perfix-A): unconditional all-but-last prefix shift +
+       boundary junction + component-count match + anchor bound.  NO \<open>fullShift\<close>,
+       NO \<open>mLmin_SnB\<close>, NO \<open>cleB\<close> (the last two are FALSE on 458/3369 boundary cases).
+       All deep-verified rank 12 (perfix-A: shiftEqB/boundEq0/boundEq1 8019/8019,
+       lenPSeq/cleM 922/922 rank 10).\<close>
+    and shiftEqB: "seg (seg M (j0' + TrMax (seg M j0' j1') + 1) j1') 0
               (Lng (seg N (j0red + TrMax (seg N j0red j1red) + 1) j1red) - 1 - 1)
         = (IncrFirst ^^ shamt)
             (seg (seg N (j0red + TrMax (seg N j0red j1red) + 1) j1red) 0
                  (Lng (seg N (j0red + TrMax (seg N j0red j1red) + 1) j1red) - 1 - 1))"
-    and boundEq0B: "\<not> j1red < Lng N - 1 \<longrightarrow>
-          entry (seg M (j0' + TrMax (seg M j0' j1') + 1) j1') 0
+    and boundEq0B: "entry (seg M (j0' + TrMax (seg M j0' j1') + 1) j1') 0
                 (Lng (seg N (j0red + TrMax (seg N j0red j1red) + 1) j1red) - 1)
         = entry (seg N (j0red + TrMax (seg N j0red j1red) + 1) j1red) 0
                 (Lng (seg N (j0red + TrMax (seg N j0red j1red) + 1) j1red) - 1) + shamt"
-    and boundEq1B: "\<not> j1red < Lng N - 1 \<longrightarrow>
-          entry (seg M (j0' + TrMax (seg M j0' j1') + 1) j1') 1
+    and boundEq1B: "entry (seg M (j0' + TrMax (seg M j0' j1') + 1) j1') 1
                 (Lng (seg N (j0red + TrMax (seg N j0red j1red) + 1) j1red) - 1)
         \<le> entry (seg N (j0red + TrMax (seg N j0red j1red) + 1) j1red) 1
                 (Lng (seg N (j0red + TrMax (seg N j0red j1red) + 1) j1red) - 1)"
-    and mLmin_SnB: "\<not> j1red < Lng N - 1 \<longrightarrow>
-          (\<forall>j < Lng (seg N (j0red + TrMax (seg N j0red j1red) + 1) j1red) - 1.
-             entry (seg N (j0red + TrMax (seg N j0red j1red) + 1) j1red) 0
-                   (Lng (seg N (j0red + TrMax (seg N j0red j1red) + 1) j1red) - 1)
-           \<le> entry (seg N (j0red + TrMax (seg N j0red j1red) + 1) j1red) 0 j)"
-    \<comment> \<open>anchor upper bound (BOUNDARY): \<open>c \<le> m\<close>, and span data\<close>
-    and cleB: "\<not> j1red < Lng N - 1 \<longrightarrow>
-          IdxSum (P (seg M (j0' + TrMax (seg M j0' j1') + 1) j1')) !
+    and lenPSeqB: "length (P (seg M (j0' + TrMax (seg M j0' j1') + 1) j1'))
+                 = length (P (seg N (j0red + TrMax (seg N j0red j1red) + 1) j1red))"
+    and cleMB: "IdxSum (P (seg M (j0' + TrMax (seg M j0' j1') + 1) j1')) !
             (length (P (seg M (j0' + TrMax (seg M j0' j1') + 1) j1')) - 1)
-        = Lng (seg N (j0red + TrMax (seg N j0red j1red) + 1) j1red) - 1"
+          \<le> Lng (seg N (j0red + TrMax (seg N j0red j1red) + 1) j1red) - 1"
     and mleSB: "Lng (seg N (j0red + TrMax (seg N j0red j1red) + 1) j1red) - 1
               \<le> Lng (seg M (j0' + TrMax (seg M j0' j1') + 1) j1') - 1"
   shows "\<exists>j0red j1red shamt LOW tail.
@@ -19470,7 +19669,7 @@ proof -
   have BrM'PS: "Br ?M' = P ?S" using BrM'P .
   have BrNpPS: "Br ?Np = P ?Snside" using BrNpP .
   \<comment> \<open>bridge \<open>?S\<close> to the ambient-\<open>M\<close> branch source (\<open>M = N[n]\<close>, \<open>?A = j0'+TrMax M'+1\<close>),
-     so the consumer hypotheses (\<open>shiftEqB\<close>/\<open>boundEq*\<close>/\<open>mLmin_SnB\<close>/\<open>cleB\<close>) line up\<close>
+     so the unified consumer hypotheses (\<open>shiftEqB\<close>/\<open>boundEq*\<close>/\<open>lenPSeqB\<close>/\<open>cleMB\<close>) line up\<close>
   have SeqM: "?S = seg M (j0' + TrMax (seg M j0' j1') + 1) j1'"
   proof -
     have aeq: "j0' + TrMax (seg M j0' j1') + 1 = ?A" by simp
@@ -19497,78 +19696,68 @@ proof -
   \<comment> \<open>anchors\<close>
   let ?c = "IdxSum (P ?S) ! (length (P ?S) - 1)"
   let ?cN = "IdxSum (P ?Snside) ! (length (P ?Snside) - 1)"
-  \<comment> \<open>(2) anchor coincidence: INTERIOR vs BOUNDARY dispatch\<close>
-  have ceq: "?c = ?cN" and F8end: "entry ?S 0 ?c = entry ?Snside 0 ?cN + shamt"
-       and F9end: "entry ?S 1 ?c \<le> entry ?Snside 1 ?cN"
-  proof -
-    have triple: "?c = ?cN \<and> entry ?S 0 ?c = entry ?Snside 0 ?cN + shamt
-                \<and> entry ?S 1 ?c \<le> entry ?Snside 1 ?cN"
-    proof (cases "j1red < Lng N - 1")
-      case interior: True
-      have fs: "?S = (IncrFirst ^^ shamt) ?Snside"
-        using SeqM fullShift[THEN mp, OF interior] by simp
-      have e1: "?c = ?cN"
-        by (rule oper_d1pos_anchor_coincide_period_interior(1)[OF SnT multiSn fs])
-      have e2: "entry ?S 0 ?c = entry ?Snside 0 ?cN + shamt"
-        by (rule oper_d1pos_anchor_coincide_period_interior(2)[OF SnT multiSn fs])
-      have e3: "entry ?S 1 ?c \<le> entry ?Snside 1 ?cN"
-        by (rule oper_d1pos_anchor_coincide_period_interior(3)[OF SnT multiSn fs])
-      show ?thesis using e1 e2 e3 by blast
-    next
-      case boundary: False
-      have shB: "seg ?S 0 (Lng ?Snside - 1 - 1)
-               = (IncrFirst ^^ shamt) (seg ?Snside 0 (Lng ?Snside - 1 - 1))"
-        using shiftEqB[THEN mp, OF boundary] SeqM by simp
-      have clB: "?c = Lng ?Snside - 1" using cleB[THEN mp, OF boundary] SeqM by simp
-      have mlB: "\<forall>j < Lng ?Snside - 1. entry ?Snside 0 (Lng ?Snside - 1) \<le> entry ?Snside 0 j"
-        using mLmin_SnB[THEN mp, OF boundary] by simp
-      have b0: "entry ?S 0 (Lng ?Snside - 1) = entry ?Snside 0 (Lng ?Snside - 1) + shamt"
-        using boundEq0B[THEN mp, OF boundary] SeqM by simp
-      have b1: "entry ?S 1 (Lng ?Snside - 1) \<le> entry ?Snside 1 (Lng ?Snside - 1)"
-        using boundEq1B[THEN mp, OF boundary] SeqM by simp
-      have mleS_loc: "Lng ?Snside - 1 \<le> Lng ?S - 1" using mleSB SeqM by simp
-      have e1: "?c = ?cN"
-        by (rule oper_d1pos_anchor_coincide_period_boundary(1)[OF ST multiS SnT multiSn
-              mleS_loc clB mlB b0 b1])
-      have e2: "entry ?S 0 ?c = entry ?Snside 0 ?cN + shamt"
-        by (rule oper_d1pos_anchor_coincide_period_boundary(2)[OF ST multiS SnT multiSn
-              mleS_loc clB mlB b0 b1])
-      have e3: "entry ?S 1 ?c \<le> entry ?Snside 1 ?cN"
-        by (rule oper_d1pos_anchor_coincide_period_boundary(3)[OF ST multiS SnT multiSn
-              mleS_loc clB mlB b0 b1])
-      show ?thesis using e1 e2 e3 by blast
-    qed
-    show "?c = ?cN" using triple by blast
-    show "entry ?S 0 ?c = entry ?Snside 0 ?cN + shamt" using triple by blast
-    show "entry ?S 1 ?c \<le> entry ?Snside 1 ?cN" using triple by blast
-  qed
+  \<comment> \<open>UNIFIED anchor inputs in \<open>?S\<close>/\<open>?Snside\<close> form (via \<open>SeqM\<close>)\<close>
+  have shB: "seg ?S 0 (Lng ?Snside - 1 - 1)
+           = (IncrFirst ^^ shamt) (seg ?Snside 0 (Lng ?Snside - 1 - 1))"
+    using shiftEqB SeqM by simp
+  have b0: "entry ?S 0 (Lng ?Snside - 1) = entry ?Snside 0 (Lng ?Snside - 1) + shamt"
+    using boundEq0B SeqM by simp
+  have b1: "entry ?S 1 (Lng ?Snside - 1) \<le> entry ?Snside 1 (Lng ?Snside - 1)"
+    using boundEq1B SeqM by simp
+  have lenPS_loc: "length (P ?S) = length (P ?Snside)" using lenPSeqB SeqM by simp
+  have cleM_loc: "?c \<le> Lng ?Snside - 1" using cleMB SeqM by simp
+  have mleS_loc: "Lng ?Snside - 1 \<le> Lng ?S - 1" using mleSB SeqM by simp
+  \<comment> \<open>(2) anchor coincidence: SINGLE unified call (NO interior/boundary dispatch,
+     NO \<open>mLmin\<close>, NO \<open>cleB\<close> — the anchor may be \<open>?c < m\<close> with \<open>?S\<close> crossing the boundary)\<close>
+  have ceq: "?c = ?cN"
+    by (rule oper_d1pos_anchor_coincide_period_unified(1)[OF ST multiS SnT multiSn
+          mleS_loc cleM_loc lenPS_loc shB b0 b1])
+  have F8end: "entry ?S 0 ?c = entry ?Snside 0 ?cN + shamt"
+    by (rule oper_d1pos_anchor_coincide_period_unified(2)[OF ST multiS SnT multiSn
+          mleS_loc cleM_loc lenPS_loc shB b0 b1])
+  have F9end: "entry ?S 1 ?c \<le> entry ?Snside 1 ?cN"
+    by (rule oper_d1pos_anchor_coincide_period_unified(3)[OF ST multiS SnT multiSn
+          mleS_loc cleM_loc lenPS_loc shB b0 b1])
   \<comment> \<open>(3) collapse: \<open>P S = map (IncrFirst^^shamt) (butlast (Br Np)) @ [last (P S)]\<close>\<close>
   have butl: "butlast (P ?Snside) = P (seg ?Snside 0 (?cN - 1))"
     by (rule oper_d1pos_branch_butl[OF SnT multiSn])
+  \<comment> \<open>\<open>lowshift'\<close>: the prefix shift at the ACTUAL anchor \<open>?c-1\<close> (\<open>?c = ?cN \<le> m\<close>, so
+     \<open>?c-1 \<le> m-1\<close> sits in the shifted all-but-last window \<open>shB\<close>) — uniform, no dispatch\<close>
   have lowshift': "seg ?S 0 (IdxSum (P ?S) ! (length (P ?S) - 1) - 1)
                  = (IncrFirst ^^ shamt) (seg ?Snside 0 (?cN - 1))"
-  proof (cases "j1red < Lng N - 1")
-    case interior: True
-    have fs: "?S = (IncrFirst ^^ shamt) ?Snside"
-      using SeqM fullShift[THEN mp, OF interior] by simp
+  proof -
     have cNlt: "?cN < Lng ?Snside"
     proof -
       have a: "?cN \<le> Lng ?Snside - 1" by (rule oper_d1pos_branch_anchor(2)[OF SnT multiSn])
       have b: "0 < Lng ?Snside" using Snne by (cases ?Snside) auto
       show ?thesis using a b by linarith
     qed
-    have cm1lt: "?c - 1 < Lng ?Snside" using cNlt ceq by linarith
-    have segShift: "seg ?S 0 (?c - 1) = (IncrFirst ^^ shamt) (seg ?Snside 0 (?c - 1))"
-      using fs seg_funpow_IncrFirst0[OF cm1lt, of shamt 0] by simp
+    have cm1lt: "?cN - 1 < Lng ?Snside" using cNlt by linarith
+    \<comment> \<open>\<open>?c - 1 = ?cN - 1 \<le> m - 1\<close>; the shift on \<open>seg ?Snside 0 (m-1)\<close> restricts to it\<close>
+    have cNle_m: "?cN \<le> Lng ?Snside - 1" by (rule oper_d1pos_branch_anchor(2)[OF SnT multiSn])
+    have segShift: "seg ?S 0 (?cN - 1) = (IncrFirst ^^ shamt) (seg ?Snside 0 (?cN - 1))"
+    proof -
+      have mpos: "0 < Lng ?Snside - 1"
+      proof -
+        have "0 < ?cN" by (rule oper_d1pos_branch_anchor(1)[OF SnT multiSn])
+        thus ?thesis using cNle_m by linarith
+      qed
+      have cm1le: "?cN - 1 \<le> Lng ?Snside - 1 - 1" using cNle_m mpos by linarith
+      \<comment> \<open>restrict the \<open>m-1\<close>-prefix shift \<open>shB\<close> to the sub-prefix \<open>[0, ?cN-1]\<close>\<close>
+      have sS: "seg ?S 0 (?cN - 1) = seg (seg ?S 0 (Lng ?Snside - 1 - 1)) 0 (?cN - 1)"
+        using seg_of_seg[of 0 "Lng ?Snside - 1 - 1" "?cN - 1" ?S] cm1le by simp
+      have sSn: "seg ?Snside 0 (?cN - 1) = seg (seg ?Snside 0 (Lng ?Snside - 1 - 1)) 0 (?cN - 1)"
+        using seg_of_seg[of 0 "Lng ?Snside - 1 - 1" "?cN - 1" ?Snside] cm1le by simp
+      have cm1ltSeg: "?cN - 1 < Lng (seg ?Snside 0 (Lng ?Snside - 1 - 1))"
+        using cm1le mpos by simp
+      have "seg (seg ?S 0 (Lng ?Snside - 1 - 1)) 0 (?cN - 1)
+          = seg ((IncrFirst ^^ shamt) (seg ?Snside 0 (Lng ?Snside - 1 - 1))) 0 (?cN - 1)"
+        using shB by simp
+      also have "\<dots> = (IncrFirst ^^ shamt) (seg (seg ?Snside 0 (Lng ?Snside - 1 - 1)) 0 (?cN - 1))"
+        by (rule seg_funpow_IncrFirst0[OF cm1ltSeg])
+      finally show ?thesis using sS sSn by simp
+    qed
     show ?thesis using segShift ceq by simp
-  next
-    case boundary: False
-    have shB: "seg ?S 0 (Lng ?Snside - 1 - 1)
-             = (IncrFirst ^^ shamt) (seg ?Snside 0 (Lng ?Snside - 1 - 1))"
-      using shiftEqB[THEN mp, OF boundary] SeqM by simp
-    have clB: "?c = Lng ?Snside - 1" using cleB[THEN mp, OF boundary] SeqM by simp
-    have "?cN = Lng ?Snside - 1" using ceq clB by simp
-    thus ?thesis using shB clB by simp
   qed
   have butlBN: "butlast (Br ?Np) = P (seg ?Snside 0 (?cN - 1))" using butl BrNpPS by simp
   have collapse: "P ?S = map (IncrFirst ^^ shamt) (butlast (Br ?Np)) @ [last (P ?S)]"
