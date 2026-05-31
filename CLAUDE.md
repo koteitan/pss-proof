@@ -23,6 +23,21 @@ isbman build -m "pss-§6.4-trunk" -d . -v PSS
   **required** because we use `sorry`.
 - For long proof search, extend the timeout: `ISBMAN_TIMEOUT=2400 isbman build ...`.
 
+## Repository layout and external files
+
+The git repo lives in `git/`; its parent directory holds the large **external
+sources** (gitignored, kept out of the tree): `original.html` (the raw article
+HTML/LaTeX), `content.md` (the extracted article text), the `yaBMS/` calculator,
+and reference PDFs/xlsx. `tmp/` is a symlink (`git/tmp -> ..`) so the in-repo
+references `tmp/content.md`, `tmp/original.html`, `tmp/yaBMS/`, … resolve to the
+parent. **Do not `git merge` a branch that tracks `tmp` as a committed symlink**
+— that once clobbered the gitignored `tmp/` and lost `content.md`.
+
+`content.md` is DERIVED from `original.html` and **regenerable**:
+`python3 tools/make_content.py` (html2text + extraction recipe, anchored to
+`tools/content-anchors.md` to keep the `content.md line NNN` references valid).
+The Isabelle build only needs `tmp/content.md` to *exist* (`@{file}` check).
+
 ## File layout and roles
 
 | File | Role |
