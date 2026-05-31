@@ -106,13 +106,13 @@ digraph pss {
     lem22 [label="§7.1 Lem2.2 整礎性", fillcolor="#6b2b30"];
 
   /* ===================== §6.8 降順性 ===================== */
-    p68_p1 [label="§6.8 切片Br降順(prop1)", fillcolor="#7a5320"];
+    p68_p1 [label="§6.8 切片Br降順(prop1)済", fillcolor="#2e5d34"];
     p68_p2 [label="§6.8 標準形P成分降順", fillcolor="#2e5d34"];
     c_base [label="§6.8 base k=0", fillcolor="#2e5d34"];
     c_A [label="§6.8 caseA", fillcolor="#2e5d34"];
     c_B [label="§6.8 caseB", fillcolor="#2e5d34"];
     c_C [label="§6.8 caseC", fillcolor="#2e5d34"];
-    c_d0pos [label="§6.8 d0pos (brle済/¬brle中)", fillcolor="#6b2b30"];
+    c_d0pos [label="§6.8 d0pos(済)", fillcolor="#2e5d34"];
 
   /* d0pos infra Z1-Z7 (oper_d1pos_* helpers, all green) */
     Z1 [label="d0pos Z1 expand/Lng", fillcolor="#2e5d34"];
@@ -131,7 +131,7 @@ digraph pss {
     d_regA [label="regime A keystone(済)\n nth_low_verbatim/TrEq_regA/Br_align_regA", fillcolor="#2e5d34"];
     d_anchor [label="FirstNodes-anchor 同定(済)\n branch_anchor/collapse_concrete/butl/lowshift_regB", fillcolor="#2e5d34"];
     d_anchorco [label="anchor一致+lowshift+tail(済)\n P_butlast_take_at_anchor/anchor_coincide_regA/tail_junction", fillcolor="#2e5d34"];
-    d_wire [label="¬brle 最終組立stub\n 4セル全green(regA/regB/boundary/periodic)\n 残=tnc/B3N(IH依存)+4セルcase-split", fillcolor="#6b2b30"];
+    d_wire [label="¬brle 同定stub(済)\n 4セルcase-split", fillcolor="#2e5d34"];
 
   /* ===================== §6.7 標準形 ===================== */
     p67_un [label="§6.7 ST=∪SkT", fillcolor="#2e5d34"];

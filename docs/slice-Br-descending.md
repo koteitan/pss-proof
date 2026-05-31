@@ -1915,3 +1915,20 @@ p_6_8 wiring — from M∈ST_PS (=⋃ SkT_PS k via m_6_7_ST_eq_Union_SkT) obtain
 monoT(seg M j0' j1') from leR (the "show mono" of m_6_8_standard_slice_Br_descending_of_drop), then
 apply m_6_8_slice_Br_descending_monoT. This is the modest finish; the hard core (multi-session) is
 done.
+
+## UPDATE 2026-06-01 (continued 52): §6.8 prop1 COMPLETE — full p_6_8_standard_slice_Br_descending discharged (slice ef80662)
+
+The WLOG-monoT wrapper (article 1434) landed: m_6_8_standard_slice_Br_descending discharges the full
+proposition p_6_8_standard_slice_Br_descending (M∈ST_PS, leR M 0 j0' j1' ⟹ monoT(seg M j0' j1') ∧
+descending(Br(seg M j0' j1'))). monoT via m_6_2_mono_ancestor_slice; descending via the case-split:
+monoT M → the green core m_6_8_slice_Br_descending_monoT directly (rank k from m_6_7_ST_eq_Union_SkT);
+zeroT M → vacuous (j0'<j1'); multi M → leR confines the slice to the single P-component containing it
+(its left end is a row-0 local min, idxsum_leftend_lmin + m_5_1_ancestor_basic_1), which is a standard
+monoT component (m_6_7_standard_P_components + m_6_2_P_components_1), apply the core. Per project
+convention pss_paper's p_6_8 keeps its statement-sorry (import order: paper cannot cite mechanized);
+the m_ lemma is the real proof, exactly mirroring the already-✅ p_6_8_standard_P_descending.
+
+**§6.8 (both propositions) is COMPLETE.** This was the development's hardest section and the §8.2
+critical-path gate. The d0pos ¬brle saga spanned ~30 workflow rounds; 9 shallow-false / inverted-
+predicate traps were caught and corrected (the rank threshold rose to rank-12/val-5, both-count
+reporting mandatory). pss_mechanized.thy has ZERO real sorry commands.
