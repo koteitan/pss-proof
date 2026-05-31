@@ -1842,3 +1842,34 @@ row-1-RESET argument: at the boundary the row-1 jumps to the next block's patter
 (Lng N-1) = entry N 1 jm2), breaking the nextrel1 chain. Once this lands, `stop` is free => notbrleNp
 free => strict tnc (oper_d1pos_ctx_tnc_strict, already green-able) => the 4-cell case-split closes the
 stub. This is the single remaining sorry of §6.8 d0pos. (Workflow wddq9m4i6.)
+
+## UPDATE 2026-05-31 (continued 49): tnc/stop all closed, BUT the periodic-boundary mLmin is FALSE (9th shallow-false, possible inverted predicate) — slice 20dcaf1
+
+Endgame closed the tnc/stop layer completely (slice 20dcaf1): nextR1_boundary_stop_d1pos (verbatim
+j0'<=jm2 boundary stop, RECOVERED from the agent transcript after a worktree reset), oper_d1pos_ctx_
+stop_direct (period j0'>=jm2), oper_d1pos_ctx_tnc_prefix (weak tnc j0'<jm2), oper_d1pos_ctx_stop_direct_
+strict + _period_tncstrict_uncapped (uncapped periodic), oper_d1pos_ctx_notbrleNp_verbatim, std added to
+the stub + threaded from the caller, oper_d1pos_ctx_high_impossible (A=Lng N-1 ⟹ brle, green). The regA
+stub cell was closed green by a capstone agent.
+
+**CRITICAL — a previously-integrated brick rests on a FALSE premise.** The 4-cell capstone bottomed out
+needing the periodic-cell hyps `mLmin_SnB` (boundary index is a row-0 left-min of Snside=seg N AN (Lng N-1))
+and `cleB`. These are **FALSE on reachable in-context cases**: INDEPENDENTLY CONFIRMED with red_model on
+N=(0,0)(1,1)(2,1)(1,1)(2,1), n=3, j0'=4, j1'=9 — is_standard(N)=True, d1pos i1=1, M'=seg M 4 9 monoT
+le0 ¬brle, A=6>=Lng N-1=4 (genuine CELL-4 periodic boundary). There Snside=[(2,1)(1,1)(2,1)], row-0
+[2,1,2]: the boundary reads 2 but entry Snside 0 1 = 1 < 2, so the boundary is the row-0 **MAXIMUM**,
+NOT a left-min ⟹ mLmin_SnB FALSE; parent N 0 (Lng N-1)=3 ≥ AN=2. mlmin found 458/3369 such cases at
+rank 12. This is the **9th shallow-false**: cell4's "boundary 448/448" was at rank 10/val4 (too shallow);
+the falsity appears at rank 12/val5. The referenced perbnd_*.py PASS scripts were never committed and the
+458-fail count ≈ the prior 448-"pass" count — a likely **inverted predicate** in the earlier verification.
+Consequence: oper_d1pos_period_boundary_mLmin/_cle are SOUND conditionals but their hyps are unsatisfiable
+in those 458 cases, so oper_d1pos_notbrle_LOW_take_eq_periodic (which CARRIES mLmin_SnB/cleB) is
+OVER-CONDITIONED on its boundary sub-cell and cannot cover ~14% of periodic-boundary cases.
+
+**FIX DIRECTION (mlmin's redirect, deep-verified):** the theorem still holds (descending(Br M') 0/458
+fail); the TRUE carrier is the P-component HEAD ordering / the IH descending(Br Np) (Br Np head-descending
+0/458 fail), NOT a left-min within Snside. The periodic-boundary sub-cell of the cell lemma must be
+RE-DERIVED from the head-descending IH (the descending_shift_append route the tail component already uses),
+and its mLmin_SnB/cleB hypotheses REPLACED. This is an IH-dependent re-architecture of just the periodic
+boundary sub-cell; the interior sub-cell (fullShift, c<m, anchor_coincide_period_interior) is unaffected,
+and regA/regB/periodic-interior + all tnc/stop are sound and green.
