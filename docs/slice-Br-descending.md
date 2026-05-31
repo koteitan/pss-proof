@@ -1873,3 +1873,27 @@ RE-DERIVED from the head-descending IH (the descending_shift_append route the ta
 and its mLmin_SnB/cleB hypotheses REPLACED. This is an IH-dependent re-architecture of just the periodic
 boundary sub-cell; the interior sub-cell (fullShift, c<m, anchor_coincide_period_interior) is unaffected,
 and regA/regB/periodic-interior + all tnc/stop are sound and green.
+
+## UPDATE 2026-05-31 (continued 50): periodic cell FIXED via the left-min coupling (no IH, no mLmin); slice b9c1866
+
+The continued-49 "needs the IH" diagnosis was WRONG (overcomplicated). Re-diagnosis (red_model on the
+witness): the 458 mLmin-false cases are NOT a left-min failure of the *proof* — they are c=cN<m
+(the last P-anchor is strictly below the boundary; the last component CROSSES the period boundary,
+Lng S>Lng Snside). cell4's sub-split on j1red vs Lng N-1 was wrong; the real distinction is c vs m.
+butlast(P S)=map(IncrFirst^^shamt)(butlast(P Snside)) holds (witness 8019/8019), so the across-block
+COLLAPSE machinery (oper_d1pos_branch_collapse_concrete + P_butlast_take_at_anchor) closes it — NO IH.
+
+FIX (slice b9c1866, both agents converged, BOTH true+false counts reported per the anti-inverted-
+predicate rule): oper_d1pos_anchor_coincide_period_unified handles BOTH c<m and c=m via the LEFT-MIN
+COUPLING — m is a row-0 left-min of S IFF of Snside (entries agree up to +shamt on [0,m]), so
+(c=m)=(cN=m); both anchors move together. The periodic cell drops fullShift/mLmin_SnB/cleB, makes
+shiftEqB/boundEq0B/boundEq1B unconditional, and adds the dischargeable lenPSeqB (length(P S)=length(P
+Snside)) + cleMB (c<=m, the TRUE fact; c=m was the false one). c<m is NOT universal (1940/8019 c<m,
+6079 c=m at rank 12) — both occur, both handled.
+
+NB regB/boundary (shamt=0, verbatim) are likely UNAFFECTED: with no +shamt shift the boundary row-0
+stays small so its mLmin_Sn holds (quick scan: 0 false over 18 regB cases, though c<m occurs S-side
+because S crosses the boundary while the anchor sits at the N-side boundary mN). The final capstone
+must still deep-verify (rank 12, both counts) each mLmin/cle hyp before relying on it, re-deriving via
+the unified-coupling template if any is false. Remaining: the 4-cell capstone discharging the
+periodic new hyps (lenPSeqB/cleMB/mleSB) + regB/boundary mLmin_S/mLmin_Sn.
