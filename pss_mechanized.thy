@@ -16722,6 +16722,161 @@ proof -
   qed
 qed
 
+text \<open>§6.8 d1pos \<open>\<not>brle\<close> UNIFIED \<open>lenPSeqB\<close> DISCHARGER (cap7-a).  The component-count
+  match \<open>length (P S) = length (P Snside)\<close> — the one unified-route hypothesis that the
+  unified anchor lemma @{thm [source] oper_d1pos_anchor_coincide_period_unified} CONSUMES
+  rather than derives.  Derived from the SAME prefix-shift data MINUS \<open>lenPSeq\<close>:
+  \<open>shiftEq\<close> (\<open>seg S 0 (m-1) = (IncrFirst^^shamt)(seg Snside 0 (m-1))\<close>),
+  \<open>boundEq0\<close> (the row-0 boundary value), and the spans \<open>mleS\<close> (\<open>m \<le> Lng S-1\<close>) / \<open>cleM\<close>
+  (\<open>c \<le> m\<close>).  ROUTE (the crux): \<open>length (P X) = Lpre + (if anchor X = m then 1 else 0)\<close>
+  for both \<open>X = S, Snside\<close> (the \<open>lenStat\<close> count: a boundary component is present iff the
+  anchor sits at \<open>m\<close>), with the common \<open>Lpre = length (P (seg X 0 (m-1)))\<close> equal across
+  the shift (@{thm [source] P_funpow_IncrFirst}); the boundary STATUS coincides because
+  \<open>anchor X = m \<longleftrightarrow> m\<close> is a row-0 weak left-minimum of \<open>X\<close>
+  (@{thm [source] idxsum_lastcut_lmin_at} \<open>\<Rightarrow>\<close>, @{thm [source] anchor_ge_of_leftmin} \<open>\<Leftarrow>\<close>),
+  and that left-min status transfers verbatim from \<open>Snside\<close> to \<open>S\<close> through the +\<open>shamt\<close>
+  row-0 agreement (\<open>shiftEq\<close> on \<open>[0,m-1]\<close> via @{thm [source] entry_funpow_IncrFirst0},
+  \<open>boundEq0\<close> at \<open>m\<close>): adding the constant \<open>shamt\<close> to every row-0 entry preserves the
+  \<open>\<le>\<close> comparisons.  DEEP-VERIFIED rank 13 (val 5, KMAX=7, tmp/cap7_lenpseq_check.py:
+  2478 regB/boundary/periodic cases, lenPSeqB 0 fails, status-mismatch 0;
+  tmp/cap7_probe3.py: \<open>(anchor=m) = lmin0\<close> 0 fails both \<open>S\<close>/\<open>Snside\<close>).\<close>
+
+lemma oper_d1pos_lenPSeq_unified:
+  fixes S :: pairseq and Snside :: pairseq and shamt :: nat
+  defines "c \<equiv> IdxSum (P S) ! (length (P S) - 1)"
+      and "cN \<equiv> IdxSum (P Snside) ! (length (P Snside) - 1)"
+  assumes ST: "S \<in> T_PS" and multi: "1 < length (P S)"
+    and SnT: "Snside \<in> T_PS" and multiN: "1 < length (P Snside)"
+    and mleS: "Lng Snside - 1 \<le> Lng S - 1"
+    and cleM: "IdxSum (P S) ! (length (P S) - 1) \<le> Lng Snside - 1"
+    and shiftEq: "seg S 0 (Lng Snside - 1 - 1)
+                = (IncrFirst ^^ shamt) (seg Snside 0 (Lng Snside - 1 - 1))"
+    and boundEq0: "entry S 0 (Lng Snside - 1) = entry Snside 0 (Lng Snside - 1) + shamt"
+  shows "length (P S) = length (P Snside)"
+proof -
+  let ?m = "Lng Snside - 1"
+  \<comment> \<open>anchor structural data on both operands (\<open>0 < c, cN\<close>; \<open>c, cN \<le> m\<close>)\<close>
+  have c0: "0 < c" unfolding c_def by (rule oper_d1pos_branch_anchor(1)[OF ST multi])
+  have cleS: "c \<le> Lng S - 1" unfolding c_def by (rule oper_d1pos_branch_anchor(2)[OF ST multi])
+  have cleM': "c \<le> ?m" unfolding c_def using cleM by simp
+  have cN0: "0 < cN" unfolding cN_def by (rule oper_d1pos_branch_anchor(1)[OF SnT multiN])
+  have cNlem: "cN \<le> ?m" unfolding cN_def by (rule oper_d1pos_branch_anchor(2)[OF SnT multiN])
+  have mpos: "0 < ?m" using cN0 cNlem by linarith
+  have Snpos: "0 < Lng Snside" using mpos by linarith
+  have Spos: "0 < Lng S" using c0 cleS by linarith
+  have mleS': "?m \<le> Lng S" using mleS Spos by linarith
+  have mleSn': "?m \<le> Lng Snside" by simp
+  \<comment> \<open>butlast identities at the respective anchors (regime-agnostic)\<close>
+  have butS_anchor: "butlast (P S) = P (seg S 0 (c - 1))"
+    using oper_d1pos_branch_butl[OF ST multi] unfolding c_def by simp
+  have butSn_anchor: "butlast (P Snside) = P (seg Snside 0 (cN - 1))"
+    using oper_d1pos_branch_butl[OF SnT multiN] unfolding cN_def by simp
+  \<comment> \<open>the prefix shift at \<open>m-1\<close>, lifted to \<open>P\<close>: equal component COUNTS\<close>
+  have PpreEq: "P (seg S 0 (?m - 1)) = map (IncrFirst ^^ shamt) (P (seg Snside 0 (?m - 1)))"
+    using shiftEq by (simp add: P_funpow_IncrFirst)
+  have Lpre_eq: "length (P (seg S 0 (?m - 1))) = length (P (seg Snside 0 (?m - 1)))"
+    using PpreEq by simp
+  \<comment> \<open>\<open>lenStat\<close>: a boundary component is present iff the anchor sits at \<open>m\<close>\<close>
+  have lenStat_S:
+    "length (P S) = length (P (seg S 0 (?m - 1))) + (if c = ?m then 1 else 0)"
+  proof (cases "c < ?m")
+    case True
+    have eqb: "butlast (P (seg S 0 (?m - 1))) = butlast (P S)"
+      using P_butlast_take_at_anchor[OF ST multi True[unfolded c_def] mleS'] c_def by simp
+    have "length (P (seg S 0 (?m - 1))) - 1 = length (P S) - 1"
+      using eqb by (metis length_butlast)
+    moreover have "0 < length (P (seg S 0 (?m - 1)))" "0 < length (P S)"
+      using P_nonempty[of "seg S 0 (?m-1)"] P_nonempty[of S] by auto
+    ultimately have "length (P (seg S 0 (?m - 1))) = length (P S)" by linarith
+    thus ?thesis using True by simp
+  next
+    case False
+    hence cm: "c = ?m" using cleM' by linarith
+    have eqp: "butlast (P S) = P (seg S 0 (?m - 1))" using butS_anchor cm by simp
+    have d1: "length (P S) - 1 = length (P (seg S 0 (?m - 1)))"
+      using eqp by (metis length_butlast)
+    have p1: "0 < length (P S)" using P_nonempty[of S] by (cases "P S") auto
+    have "length (P S) = length (P (seg S 0 (?m - 1))) + 1" using d1 p1 by linarith
+    thus ?thesis using cm by simp
+  qed
+  have lenStat_Sn:
+    "length (P Snside) = length (P (seg Snside 0 (?m - 1))) + (if cN = ?m then 1 else 0)"
+  proof (cases "cN < ?m")
+    case True
+    have eqb: "butlast (P (seg Snside 0 (?m - 1))) = butlast (P Snside)"
+      using P_butlast_take_at_anchor[OF SnT multiN True[unfolded cN_def] mleSn'] cN_def by simp
+    have "length (P (seg Snside 0 (?m - 1))) - 1 = length (P Snside) - 1"
+      using eqb by (metis length_butlast)
+    moreover have "0 < length (P (seg Snside 0 (?m-1)))" "0 < length (P Snside)"
+      using P_nonempty[of "seg Snside 0 (?m-1)"] P_nonempty[of Snside] by auto
+    ultimately have "length (P (seg Snside 0 (?m - 1))) = length (P Snside)" by linarith
+    thus ?thesis using True by simp
+  next
+    case False
+    hence cNm: "cN = ?m" using cNlem by linarith
+    have eqp: "butlast (P Snside) = P (seg Snside 0 (?m - 1))" using butSn_anchor cNm by simp
+    have d1: "length (P Snside) - 1 = length (P (seg Snside 0 (?m - 1)))"
+      using eqp by (metis length_butlast)
+    have p1: "0 < length (P Snside)" using P_nonempty[of Snside] by (cases "P Snside") auto
+    have "length (P Snside) = length (P (seg Snside 0 (?m - 1))) + 1" using d1 p1 by linarith
+    thus ?thesis using cNm by simp
+  qed
+  \<comment> \<open>(crux) the boundary status coincides: \<open>(c = m) = (cN = m)\<close>, via the row-0
+     left-min characterization (transferred across the +\<open>shamt\<close> shift)\<close>
+  have row0_shift: "\<And>j. j < ?m \<Longrightarrow> entry S 0 j = entry Snside 0 j + shamt"
+  proof -
+    fix j assume jm: "j < ?m"
+    have jle: "j \<le> ?m - 1" using jm by linarith
+    have jltSn: "j < Lng (seg Snside 0 (?m - 1))"
+      using jle Lng_seg[of Snside 0 "?m-1"] mpos by simp
+    have jltS: "j < Lng (seg S 0 (?m - 1))"
+      using jle Lng_seg[of S 0 "?m-1"] mpos mleS' by simp
+    have eS: "entry (seg S 0 (?m - 1)) 0 j = entry S 0 j" using entry_seg[OF jltS] by simp
+    have eSn: "entry (seg Snside 0 (?m - 1)) 0 j = entry Snside 0 j" using entry_seg[OF jltSn] by simp
+    have "entry (seg S 0 (?m - 1)) 0 j = entry (seg Snside 0 (?m - 1)) 0 j + shamt"
+      using shiftEq entry_funpow_IncrFirst0[OF jltSn] by simp
+    thus "entry S 0 j = entry Snside 0 j + shamt" using eS eSn by simp
+  qed
+  have lmin_transfer: "(\<forall>j < ?m. entry S 0 ?m \<le> entry S 0 j)
+                     = (\<forall>j < ?m. entry Snside 0 ?m \<le> entry Snside 0 j)"
+  proof -
+    have "\<And>j. j < ?m \<Longrightarrow> (entry S 0 ?m \<le> entry S 0 j) = (entry Snside 0 ?m \<le> entry Snside 0 j)"
+    proof -
+      fix j assume jm: "j < ?m"
+      have eSj: "entry S 0 j = entry Snside 0 j + shamt" using row0_shift[OF jm] .
+      have eSm: "entry S 0 ?m = entry Snside 0 ?m + shamt" using boundEq0 .
+      show "(entry S 0 ?m \<le> entry S 0 j) = (entry Snside 0 ?m \<le> entry Snside 0 j)"
+        using eSj eSm by simp
+    qed
+    thus ?thesis by blast
+  qed
+  have statEq: "(c = ?m) = (cN = ?m)"
+  proof
+    assume cm: "c = ?m"
+    \<comment> \<open>\<open>c = m \<Longrightarrow> m\<close> is a row-0 left-min of \<open>S\<close> (anchor cut), transfers to \<open>Snside\<close>,
+       then @{thm [source] anchor_ge_of_leftmin} forces \<open>cN \<ge> m\<close>, with \<open>cN \<le> m\<close>: \<open>cN = m\<close>\<close>
+    have lminS: "\<forall>j < ?m. entry S 0 ?m \<le> entry S 0 j"
+      using idxsum_lastcut_lmin_at[OF ST multi cm[unfolded c_def]] by blast
+    have lminSn: "\<forall>j < ?m. entry Snside 0 ?m \<le> entry Snside 0 j"
+      using lminS lmin_transfer by simp
+    have mleSnm1: "?m \<le> Lng Snside - 1" by simp
+    have "?m \<le> cN" unfolding cN_def
+      by (rule anchor_ge_of_leftmin[OF SnT mleSnm1 lminSn])
+    thus "cN = ?m" using cNlem by linarith
+  next
+    assume cNm: "cN = ?m"
+    have lminSn: "\<forall>j < ?m. entry Snside 0 ?m \<le> entry Snside 0 j"
+      using idxsum_lastcut_lmin_at[OF SnT multiN cNm[unfolded cN_def]] by blast
+    have lminS: "\<forall>j < ?m. entry S 0 ?m \<le> entry S 0 j"
+      using lminSn lmin_transfer by simp
+    have mleSm1: "?m \<le> Lng S - 1" using mleS by simp
+    have "?m \<le> c" unfolding c_def
+      by (rule anchor_ge_of_leftmin[OF ST mleSm1 lminS])
+    thus "c = ?m" using cleM' by linarith
+  qed
+  show ?thesis using lenStat_S lenStat_Sn Lpre_eq statEq by simp
+qed
+
 lemma oper_d1pos_notbrle_LOW_take_eq_regA:
   fixes N :: pairseq and M :: pairseq
   assumes NT: "N \<in> T_PS" and monoN: "monoT N" and LNgt: "1 < Lng N"
