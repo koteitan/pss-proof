@@ -187,3 +187,39 @@ unreachability lemma (the shared blocker of `Red_IncrFirst` m10>0 and
 `Red_Pred` case 6) is TRUE and worth proving. Recommended timing: after §6.8
 prop1 (d0pos) closes and as part of the §6.5 A4 anchored-slice cleanup (so the
 Red scaffolding is on a sound domain first).
+
+## UPDATE 2026-06-01: §6.5 understand-phase plan (post-§6.8-merge)
+
+A 3-agent understand workflow (scaffolding / empirical / article-deps) mapped
+the §6.5 dependency structure. **The whole subsection funnels through ONE
+bottleneck: `Red_le` (直系先祖の Red 不変性) on the anchored-slice domain.**
+
+Strict proof order (`→` = "unlocks"):
+**7a `Red_le` on `anchored_slice` → 5 dead-branch[20] unreachable → 6
+`monoT_Red` → 3,4 `Red_IncrFirst`/`Red_Pred` (m10>0 cases)**.
+
+- **Now provable, A4-independent**: `Lng_Red` (✅), `Red_zeroT` (✅), and the two
+  clean structural lemmas the article's `monoT_Red` proof rests on —
+  **fact 1 (length): `Lng(N) = Lng(M) + m10`** (from `Lng_Red` + `Lng_diagSeq` +
+  `Lng_funpow_IncrFirst`, unconditional) and **fact 2 (ancestor index-shift):
+  `(i,j) ≤_M (i',j') ⟺ (i,j+m10) ≤_N (i',j'+m10)`** (from the diagSeq-prefix +
+  `IncrFirst^m10` trunk structure). Both verified TRUE 990/0.
+- **`monoT_Red`** (= dead-branch[20]/[19] unreachability, the §6.5 keystone) =
+  fact1 + fact2 + `Red_le`-anchored. Its use-site IS anchored (the `m10..jN`
+  slice of `N` is anchored by `(0,m10) ≤_N (0,jN)`), so `Red_le`-anchored closes it.
+- **`Red_le`-anchored (7a)** is the hardest proof in the project. Prereqs are in
+  place: `anchored_slice` is defined (`pss_defs.thy` 463-466 = anchored slices of
+  `ST_PS ∪ (RT_PS∩PT_PS)`), `Red_dom` termination is GREEN (ν/`coreReduce`). The
+  remaining work is the global argument: the article's "immediate by Lng
+  induction" fails in the **multi case** (block concatenation can create/destroy
+  a row-0 `≤` across block boundaries — counterexample `Red((0,0)(0,1)) =
+  (0,0)(1,1)`); on the anchored domain the anchor `(0,a) ≤_S (0,b)` fixes the
+  inter-block ancestor structure so concatenation preserves `≤`.
+
+Empirical (rank-stratified, BOTH counts, rank≥12 val≥5; scripts
+`python/red65_*.py`): fact1 990/0, fact2 990/0, dead-branch 344 reached/0 taken
+(gen_std sub-calls, L=3..12) + 990 direct/0, `Red_le` 307/0 on standard / 776/0
+on anchored-mono slices / FALSE only on general `T_PS` (`(0,0)(0,1)`).
+
+**First concrete targets**: facts 1 & 2 (clean bricks), then design + prove
+`Red_le`-anchored (7a).
