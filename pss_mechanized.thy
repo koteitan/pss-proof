@@ -18986,7 +18986,8 @@ text \<open>§6.8 d0pos \<open>\<not>brle\<close> — agent-A IDENTIFICATION STU
 
 lemma oper_d1pos_notbrle_LOW_take_eq:
   fixes N :: pairseq and M :: pairseq
-  assumes NT: "N \<in> T_PS" and monoN: "monoT N" and LNgt: "1 < Lng N"
+  assumes NT: "N \<in> T_PS" and monoN: "monoT N" and std: "N \<in> ST_PS"
+    and LNgt: "1 < Lng N"
     and notzeroN: "\<not> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0)"
     and hasparN: "hasParent N (idx1 N (Lng N - 1)) (Lng N - 1)"
     and i1zN: "idx1 N (Lng N - 1) = 1"
@@ -21008,6 +21009,7 @@ proof -
                      geometry is the agent-A identification stub
                      @{thm [source] oper_d1pos_notbrle_LOW_take_eq} (parent replaces at
                      merge).  DEEP-verified 30/30 (python/d1pos_notbrle_wire.py).\<close>
+                  have stdN: "N \<in> ST_PS" using NS SkT_PS_subset_ST_PS by blast
                   obtain j0red j1red shamt LOW tail where
                       ASM: "j0red < j1red" "j1red \<le> Lng N - 1"
                         "le0 N j0red j1red"
@@ -21025,7 +21027,7 @@ proof -
                         "entry tail 1 0
                            \<le> entry (Br (seg N j0red j1red)
                                       ! (Lng (Br (seg N j0red j1red)) - 1)) 1 0"
-                    using oper_d1pos_notbrle_LOW_take_eq[OF NT monoN LNgt notzeroN
+                    using oper_d1pos_notbrle_LOW_take_eq[OF NT monoN stdN LNgt notzeroN
                             hasparN i1zN Neq n1 M'T le0M lt jM bge notbrle] by blast
                   let ?Np = "seg N j0red j1red"
                   \<comment> \<open>\<open>descending (Br N\<^sub>p)\<close> via \<open>IHk\<close> on the \<open>N\<close>-slice (\<open>N \<in> SkT_PS k\<close>,
