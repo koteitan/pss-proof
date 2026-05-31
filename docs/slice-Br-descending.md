@@ -1816,3 +1816,29 @@ is therefore the FINAL ASSEMBLY done WITHIN the induction: case-split the 4 cell
 geometry hyps from context, and discharge tnc/B3N (MR on N) from the IH applied to N's own slice.
 This explains why so many bricks needed "parent-supplied deep-verified hyps": the genuinely IH-
 dependent ones (B3N/tnc/std-slice) cannot be context-derived.
+
+## UPDATE 2026-05-31 (continued 48): all dischargers green EXCEPT one; the last brick = the d1pos capped boundary stop (slice 03935e3)
+
+The endgame resolved cleanly down to ONE residual. GREEN now (slice 03935e3): all 4 cell assembly
+lemmas, and the dischargers oper_d1pos_ctx_{dpos,r1le,j0lt,multiM,le0Np,period_le0Np,tnc_capped,
+stop_of_tnc,notbrleNp,period_multiNp}, idxsum_lastcut_lmin_at, oper_d1pos_notbrle_period_fullShift/
+_boundary_geom, oper_d1pos_period_boundary_cle/_mLmin. tnc closes via the CONTRAPOSITIVE of
+TrMax_seg_oper_d1pos_brle_capped (notbrle => notfill => weak tnc) — no IH, no B3N, no keystone
+(both NON-universal in-context: bare B3N false on 8 SkT_PS families at rank 10, itself a shallow-rank
+artifact below KMAX 6).
+
+**THE GENUINE CYCLE (two capstone attempts converged).** The 4-cell case-split is the right
+structure, but every cell carries `stop: ¬nextR M' 1 (TrMax Np)(TrMax Np+1)`, and:
+  stop <- (only producer oper_d1pos_ctx_stop_of_tnc) <- STRICT tnc <- (proposed via)
+  oper_d1pos_ctx_notbrleNp's 2nd disjunct <- (its D2 uses TrMax_seg_oper_d1pos_eq_span) <- stop.
+So stop cannot be obtained via notbrleNp/strict-tnc — that route is circular (notbrleNp is conditional
+on stop, not free). The weak-only tnc_capped and the non-universal B3-route (oper_d1pos_ctx_tnc)
+are the only stop-free strict-tnc candidates and neither suffices.
+
+**THE LAST BRICK = the d1pos capped boundary stop**, a DIRECT producer of `stop` (not via strict
+tnc), the analogue of nextR1_boundary_stop_d0zero_caseA (line ~10711, hard branch ~10778). The
+d0zero hard branch uses entry N 1 (Lng N-1)=0 (i1z=0); the d1pos case (i1z=1) needs the block-boundary
+row-1-RESET argument: at the boundary the row-1 jumps to the next block's pattern (entry (N[n]) 1
+(Lng N-1) = entry N 1 jm2), breaking the nextrel1 chain. Once this lands, `stop` is free => notbrleNp
+free => strict tnc (oper_d1pos_ctx_tnc_strict, already green-able) => the 4-cell case-split closes the
+stub. This is the single remaining sorry of §6.8 d0pos. (Workflow wddq9m4i6.)
