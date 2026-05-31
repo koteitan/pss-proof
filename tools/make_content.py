@@ -17,7 +17,7 @@ clobbered the gitignored tmp/ directory; this tool is the recovery path).
 
 HOW THE ORIGINAL content.md WAS PRODUCED
 ----------------------------------------
-The original extraction recipe (reverse-engineered from a 43% transcript
+The original extraction recipe (reverse-engineered from the transcript
 recovery) is: take original.html from the `mw-parser-output` article div, run
 `html2text` (body_width=0, ul_item_mark='-', ignore_links=True), then
 post-process: halve doubled backslashes (`\\\\` -> `\\`), rstrip each line,
@@ -28,12 +28,13 @@ version differences in the TOC / reference-list formatting).
 
 To keep the 30-odd `content.md line NNN` references valid, this script ANCHORS
 the output to `tools/content-anchors.md` — the transcript-recovered ground
-truth (every line that was ever Read in a session, at its exact original line
-number; gaps marked `<<<MISSING ...>>>`).  Known lines are pinned to their exact
-positions; the ~13 gaps are filled with the html2text regen, content-aligned at
-the gap boundaries and sized to fit so downstream line numbers stay exact.
-Result: 6426 lines, 43% byte-exact at exact positions, gaps faithful (the few
-references inside the large §8.6 gap are within ±a handful of lines).
+truth (every line ever Read across all sessions AND sub-agent transcripts —
+`projects/.../<sid>/subagents/agent-*.jsonl` — at its exact line number, by
+majority vote; gaps marked `<<<MISSING ...>>>`).  Known lines are pinned to
+their exact positions; the remaining gaps are filled with the html2text regen,
+content-aligned at the gap boundaries and sized to fit so downstream line
+numbers stay exact.  Result: 6427 lines, ~80% byte-exact at exact positions
+(all 30 `content.md line NNN` references land exactly), gaps faithful.
 
 USAGE
 -----
