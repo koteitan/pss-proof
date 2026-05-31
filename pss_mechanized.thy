@@ -10879,6 +10879,272 @@ proof -
   qed
 qed
 
+text \<open>§6.8 d1pos CAPPED regime-A boundary stop (the d1pos analogue of
+  @{thm [source] nextR1_boundary_stop_d0zero_caseA}, the LAST hard brick of the
+  d0pos \<open>\<not>brle\<close> closure).  On the faithful d1pos domain (standard \<open>N\<close>,
+  \<open>i\<^sub>1 = 1\<close>, regime A \<open>j'\<^sub>0 \<le> j\<^sub>-\<^sub>2 = parent N 1 (Lng N-1)\<close>, capped \<open>Lng N-1 \<le> j'\<^sub>1\<close>),
+  the row-1 step at the right end of the reduced trunk fails in
+  \<open>M' = seg (N[n]) j'\<^sub>0 j'\<^sub>1\<close>:
+  \<open>\<not> nextR M' 1 (TrMax N\<^sub>p) (TrMax N\<^sub>p + 1)\<close>, \<open>N\<^sub>p = seg N j'\<^sub>0 (Lng N-1)\<close>.
+
+  Unlike d0zero, the last row-1 entry \<open>N\<^bsub>1,Lng N-1\<^esub>\<close> is NONZERO (\<open>i\<^sub>1=1\<close>), so there
+  is no intrinsic trunk-confinement.  The boundary argument is instead the
+  block-boundary row-1 RESET: along the d1pos oper, row 1 carries NO per-block
+  shift (\<open>d\<^sub>1 = 0\<close>, @{thm [source] oper_d1pos_entry1}), so at the block boundary the
+  row-1 value drops back to the block-start value
+  \<open>entry (N[n]) 1 (Lng N-1) = N\<^bsub>1,j\<^sub>-\<^sub>2\<^esub>\<close>; combined with the row-1 weak increase
+  along the reduced trunk (@{thm [source] trunk_le1}/@{thm [source] le1_imp_entry1_le})
+  from \<open>j\<^sub>-\<^sub>2 - j'\<^sub>0\<close> to \<open>TrMax N\<^sub>p\<close>, this makes the strict row-1 increase that
+  \<open>nextrel1\<close> needs impossible.  Two cases (mirroring d0zero):
+  \<^item> EASY (\<open>TrMax N\<^sub>p + 1 \<le> Lng N\<^sub>p - 2\<close>): the stop index lies in the verbatim prefix
+    \<open>[0, Lng N-2-j'\<^sub>0]\<close> (@{thm [source] oper_nth_lt}), so the \<open>N\<^sub>p\<close>-side stop
+    (@{thm [source] TrMax_stop}, available since \<open>TrMax N\<^sub>p < Lng N\<^sub>p - 1\<close> there)
+    transfers via @{thm [source] nextR1_boundary_stop_of_prefix}.
+  \<^item> HARD (\<open>TrMax N\<^sub>p \<in> {Lng N\<^sub>p-2, Lng N\<^sub>p-1}\<close>): the stop index reaches the boundary.
+    If it leaves \<open>M'\<close> the step fails for length reasons; otherwise the M-index of
+    \<open>TrMax N\<^sub>p + 1\<close> sits at the start of block 1 (offset 0), where the row-1 reset
+    gives \<open>entry M' 1 (TrMax N\<^sub>p + 1) = N\<^bsub>1,j\<^sub>-\<^sub>2\<^esub> \<le> entry M' 1 (TrMax N\<^sub>p)\<close>.
+
+  DEEP-VERIFIED (rank-stratified standard generator, len\<le>12 KMAX\<le>8,
+  \<open>/tmp/d1pos_capped_stop_check.py\<close>): the stop holds 18969/18969 on the EXACT
+  hypotheses, and the unified boundary inequality
+  \<open>entry M' 1 (TrMax N\<^sub>p + 1) \<le> entry M' 1 (TrMax N\<^sub>p)\<close> holds 584/584 on the hard
+  (boundary-reaching) cases.\<close>
+
+lemma nextR1_boundary_stop_d1pos:
+  fixes N :: pairseq
+  assumes N: "N \<in> T_PS" and L: "1 < Lng N"
+    and notzero: "\<not> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0)"
+    and hp: "hasParent N (idx1 N (Lng N - 1)) (Lng N - 1)"
+    and i1z: "idx1 N (Lng N - 1) = 1"
+    and j0lt: "parent N 1 (Lng N - 1) < Lng N - 1"
+    and n1: "1 \<le> n"
+    and j0'le: "j0' \<le> parent N 1 (Lng N - 1)"
+    and bge: "Lng N - 1 \<le> j1'"
+    and j1lt: "j1' < Lng ((N::pairseq)[n])"
+  shows "\<not> nextR (seg ((N::pairseq)[n]) j0' j1') 1
+            (TrMax (seg N j0' (Lng N - 1)))
+            (TrMax (seg N j0' (Lng N - 1)) + 1)"
+proof -
+  let ?M = "(N::pairseq)[n]"
+  let ?j1N = "Lng N - 1"
+  let ?jm2 = "parent N 1 ?j1N"
+  let ?w = "?j1N - ?jm2"
+  let ?delta = "entry N 0 ?j1N - entry N 0 ?jm2"
+  let ?Mp = "seg ?M j0' j1'"
+  let ?Np = "seg N j0' ?j1N"
+  let ?t = "TrMax ?Np"
+  \<comment> \<open>basic facts\<close>
+  have w0: "0 < ?w" using j0lt by linarith
+  have j0'lt: "j0' < ?j1N" using j0'le j0lt by linarith
+  have j0lt1: "j0' \<le> ?j1N" using j0'lt by linarith
+  have j0ltM: "j0' \<le> j1'" using j0'lt bge by linarith
+  have MpT: "?Mp \<in> T_PS" using j0ltM by (simp add: T_PS_def seg_def)
+  have NpT: "?Np \<in> T_PS" using j0lt1 by (simp add: T_PS_def seg_def)
+  have LMp: "Lng ?Mp = Suc j1' - j0'" by simp
+  have LNp: "Lng ?Np = Suc ?j1N - j0'" by simp
+  have LNp2: "1 < Lng ?Np" using j0'lt by simp
+  have LNpval: "Lng ?Np - 2 = ?j1N - 1 - j0'" using LNp by simp
+  \<comment> \<open>boundary index of \<open>?M\<close>: \<open>?j1N < Lng ?M\<close>\<close>
+  have bnd: "?j1N < Lng ?M"
+  proof -
+    have "?j1N \<le> j1'" using bge .
+    thus ?thesis using j1lt by simp
+  qed
+  have tb: "?t \<le> Lng ?Np - 1" by (rule TrMax_bound[OF NpT])
+  \<comment> \<open>verbatim prefix agreement on \<open>[0, Lng N - 2 - j'\<^sub>0]\<close> (period intact below \<open>Lng N-1\<close>)\<close>
+  let ?c = "Lng ?Np - 2"
+  have agree: "\<And>s. s \<le> ?c \<Longrightarrow> ?Mp ! s = ?Np ! s"
+  proof -
+    fix s assume sc: "s \<le> ?c"
+    have idxlt: "j0' + s < ?j1N" using sc LNpval j0'lt by linarith
+    have sM: "s < Suc j1' - j0'" using sc LNpval bge j0'lt by linarith
+    have sN: "s < Suc ?j1N - j0'" using sc LNpval j0'lt by linarith
+    have "?Mp ! s = ?M ! (j0' + s)" using sM by (rule seg_nth_eq)
+    also have "\<dots> = N ! (j0' + s)"
+      by (rule oper_nth_lt[OF N L n1 idxlt])
+    also have "\<dots> = ?Np ! s" using sN by (simp add: seg_nth_eq)
+    finally show "?Mp ! s = ?Np ! s" .
+  qed
+  have cM: "?c < Lng ?Mp" using LMp LNpval bge j0'lt by linarith
+  have cN: "?c < Lng ?Np" using LNp2 by linarith
+  show ?thesis
+  proof (cases "?t + 1 \<le> ?c")
+    case easy: True
+    \<comment> \<open>stop index inside the prefix; \<open>N\<^sub>p\<close>-side confinement from \<open>?t+1 \<le> c = Lng N\<^sub>p - 2\<close>\<close>
+    have tNlt: "?t < Lng ?Np - 1" using easy by linarith
+    show ?thesis
+      by (rule nextR1_boundary_stop_of_prefix[OF MpT NpT agree cM cN tNlt easy])
+  next
+    case hard: False
+    \<comment> \<open>\<open>?t \<ge> Lng N\<^sub>p - 2\<close>: the stop index reaches the block boundary\<close>
+    have tge: "Lng ?Np - 2 \<le> ?t" using hard by linarith
+    show ?thesis
+    proof
+      assume "nextR ?Mp 1 ?t (?t + 1)"
+      hence step: "nextrel1 ?Mp ?t (?t + 1)" by (simp add: nextR_def)
+      have rng: "?t + 1 < Lng ?Mp" using step by (simp add: nextrel1_def)
+      \<comment> \<open>\<open>?t \<le> Lng N\<^sub>p - 1\<close> and \<open>j'\<^sub>0 + ?t \<le> Lng N - 1\<close> (block 0 or boundary)\<close>
+      have t_le: "?t \<le> Lng ?Np - 1" by (rule tb)
+      have idx_t_le: "j0' + ?t \<le> ?j1N" using t_le LNp j0'lt by linarith
+      \<comment> \<open>HARD: \<open>?t \<ge> Lng N\<^sub>p - 2\<close> gives \<open>j'\<^sub>0+?t \<ge> Lng N - 2\<close>\<close>
+      have idx_t_ge: "?j1N - 1 \<le> j0' + ?t" using tge LNp j0'lt by linarith
+      \<comment> \<open>\<open>n \<ge> 2\<close>: the boundary node \<open>Lng N-1\<close> already sits in block 1 of \<open>?M\<close>\<close>
+      have n2: "2 \<le> n"
+      proof -
+        have "?j1N < Lng ?M" by (rule bnd)
+        also have "Lng ?M = ?jm2 + n * ?w"
+          by (rule oper_d1pos_LngM[OF L notzero hp i1z j0lt])
+        finally have "?jm2 + 1 * ?w < ?jm2 + n * ?w" using j0lt by simp
+        hence "1 * ?w < n * ?w" by linarith
+        thus ?thesis using w0 by (cases n) auto
+      qed
+      have qn: "1 < n" using n2 by simp
+      \<comment> \<open>row-1 value at the boundary \<open>?t+1\<close>: it reduces to \<open>N\<^bsub>1, j\<^sub>-\<^sub>2\<^esub>\<close> (block-1 start)\<close>
+      have idx_t1_le: "j0' + (?t + 1) \<le> ?j1N + 1" using idx_t_le by linarith
+      \<comment> \<open>two boundary positions: \<open>j'\<^sub>0+(?t+1) = Lng N-1\<close> or \<open>= Lng N\<close> (only with \<open>w=1\<close>)\<close>
+      have segt1: "entry ?Mp 1 (?t + 1) = entry N 1 ?jm2"
+      proof -
+        have t1lt: "?t + 1 < Suc j1' - j0'" using rng LMp by linarith
+        have Mp_t1: "?Mp ! (?t + 1) = ?M ! (j0' + (?t + 1))" using t1lt by (rule seg_nth_eq)
+        show ?thesis
+        proof (cases "j0' + (?t + 1) = ?j1N")
+          case True
+          \<comment> \<open>\<open>?j1N = j\<^sub>-\<^sub>2 + 1\<cdot>w + 0\<close> (block 1, offset 0)\<close>
+          have e1: "?j1N = ?jm2 + 1 * ?w + 0" using j0lt by simp
+          have "?M ! (?jm2 + 1 * ?w + 0)
+                  = (entry N 0 (?jm2 + 0) + 1 * ?delta, entry N 1 (?jm2 + 0))"
+            by (rule oper_d1pos_nth[OF L notzero hp i1z j0lt qn]) (use w0 in simp)
+          hence "?M ! ?j1N = (entry N 0 ?jm2 + ?delta, entry N 1 ?jm2)" using e1 by simp
+          thus ?thesis using Mp_t1 True by (simp add: entry_def)
+        next
+          case False
+          \<comment> \<open>then \<open>j'\<^sub>0+(?t+1) = Lng N\<close> (one past the boundary); this forces \<open>w = 1\<close>\<close>
+          have eqLN: "j0' + (?t + 1) = ?j1N + 1" using False idx_t1_le idx_t_ge by linarith
+          \<comment> \<open>boundary reachability: \<open>?j1N + 1 = j'\<^sub>0+?t+1 < Lng M' \<le> Lng M\<close>\<close>
+          have ltM: "?j1N + 1 < Lng ?M"
+          proof -
+            have "j0' + (?t + 1) < Lng ?Mp + j0'" using rng by simp
+            also have "\<dots> = Suc j1'" using LMp j0ltM by simp
+            finally have "?j1N + 1 < Suc j1'" using eqLN by simp
+            thus ?thesis using j1lt by simp
+          qed
+          \<comment> \<open>\<open>?t = Lng N\<^sub>p - 1\<close>: the trunk of \<open>N\<^sub>p\<close> fills, so its last step transfers to
+            \<open>nextrel1 N (Lng N-2) (Lng N-1)\<close>; minimality of the row-1 parent \<open>j\<^sub>-\<^sub>2\<close>
+            then forces \<open>j\<^sub>-\<^sub>2 = Lng N-2\<close>, i.e. \<open>w = 1\<close>\<close>
+          have tLNp: "?t = Lng ?Np - 1" using eqLN LNp j0'lt by linarith
+          have pre_lt: "Lng ?Np - 2 < ?t" using tLNp LNp2 by linarith
+          have stepNp: "nextrel1 ?Np (Lng ?Np - 2) (Lng ?Np - 1)"
+          proof -
+            have "nextR ?Np 1 (Lng ?Np - 2) ((Lng ?Np - 2) + 1)"
+              by (rule TrMax_trunk_step[OF NpT pre_lt])
+            moreover have "(Lng ?Np - 2) + 1 = Lng ?Np - 1" using LNp2 by simp
+            ultimately show ?thesis by (simp add: nextR_def)
+          qed
+          have aN: "Lng ?Np - 2 < Lng (seg N j0' ?j1N)" using LNp2 by simp
+          have bN: "Lng ?Np - 1 < Lng (seg N j0' ?j1N)" using LNp2 by simp
+          have idxlo: "j0' + (Lng ?Np - 2) = ?j1N - 1" using LNp j0'lt by simp
+          have idxhi: "j0' + (Lng ?Np - 1) = ?j1N" using LNp j0'lt by simp
+          have j1NltN: "?j1N < Lng N" using L by linarith
+          have stepN: "nextrel1 N (?j1N - 1) ?j1N"
+          proof -
+            have "nextrel1 (seg N j0' ?j1N) (Lng ?Np - 2) (Lng ?Np - 1)
+                    = nextrel1 N (j0' + (Lng ?Np - 2)) (j0' + (Lng ?Np - 1))"
+              by (rule adm_nextrel1_seg[OF j1NltN aN bN])
+            thus ?thesis using stepNp idxlo idxhi by simp
+          qed
+          \<comment> \<open>row-1 parent relation \<open>nextrel1 N j\<^sub>-\<^sub>2 (Lng N-1)\<close> and its minimality\<close>
+          have hp1: "hasParent N 1 ?j1N" using hp i1z by simp
+          have parR1: "nextR N 1 ?jm2 ?j1N"
+            using hp1 unfolding hasParent_def parent_def by (rule theI')
+          have nr1: "nextrel1 N ?jm2 ?j1N" using parR1 by (simp add: nextR_def)
+          have w1: "?w = 1"
+          proof (rule ccontr)
+            assume "?w \<noteq> 1"
+            hence "?jm2 < ?j1N - 1" using w0 j0lt by linarith
+            have le0pred: "le0 N (?j1N - 1) ?j1N" using stepN by (simp add: nextrel1_def)
+            have "entry N 1 ?j1N \<le> entry N 1 (?j1N - 1)"
+              using nr1 \<open>?jm2 < ?j1N - 1\<close> le0pred by (simp add: nextrel1_def)
+            moreover have "entry N 1 (?j1N - 1) < entry N 1 ?j1N"
+              using stepN by (simp add: nextrel1_def)
+            ultimately show False by linarith
+          qed
+          \<comment> \<open>\<open>Lng N = j\<^sub>-\<^sub>2 + 1\<cdot>1 + 1 = j\<^sub>-\<^sub>2 + 2\<cdot>1 + 0\<close>: block 2 offset 0 (with \<open>w=1\<close>)\<close>
+          have e2: "?j1N + 1 = ?jm2 + 2 * ?w + 0" using w1 j0lt by simp
+          have qn3: "2 < n"
+          proof -
+            have "?j1N + 1 < Lng ?M" by (rule ltM)
+            also have "Lng ?M = ?jm2 + n * ?w"
+              by (rule oper_d1pos_LngM[OF L notzero hp i1z j0lt])
+            finally have "?jm2 + 2 * ?w < ?jm2 + n * ?w" using e2 by simp
+            hence "2 * ?w < n * ?w" by linarith
+            thus ?thesis using w1 by simp
+          qed
+          have "?M ! (?jm2 + 2 * ?w + 0)
+                  = (entry N 0 (?jm2 + 0) + 2 * ?delta, entry N 1 (?jm2 + 0))"
+            by (rule oper_d1pos_nth[OF L notzero hp i1z j0lt qn3]) (use w0 in simp)
+          hence "?M ! (?j1N + 1) = (entry N 0 ?jm2 + 2 * ?delta, entry N 1 ?jm2)"
+            using e2 by simp
+          thus ?thesis using Mp_t1 eqLN by (simp add: entry_def)
+        qed
+      qed
+      \<comment> \<open>row-1 weak increase along the reduced trunk: \<open>N\<^bsub>1,j\<^sub>-\<^sub>2\<^esub> \<le> entry M' 1 ?t\<close>\<close>
+      have jjle: "?jm2 - j0' \<le> ?t"
+      proof -
+        have "?jm2 \<le> ?j1N - 1" using j0lt by linarith
+        hence "?jm2 - j0' \<le> ?j1N - 1 - j0'" by linarith
+        also have "\<dots> = Lng ?Np - 2" using LNpval by simp
+        also have "\<dots> \<le> ?t" using tge by simp
+        finally show ?thesis .
+      qed
+      have le1Np: "leR ?Np 1 (?jm2 - j0') ?t"
+        by (rule trunk_le1[OF NpT jjle le_refl])
+      have le1Np': "le1 ?Np (?jm2 - j0') ?t" using le1Np by (simp add: leR_def)
+      have mono: "entry ?Np 1 (?jm2 - j0') \<le> entry ?Np 1 ?t"
+        by (rule le1_imp_entry1_le[OF le1Np'])
+      have e_jj: "entry ?Np 1 (?jm2 - j0') = entry N 1 ?jm2"
+      proof -
+        have lt: "?jm2 - j0' < Suc ?j1N - j0'" using j0lt j0'le by linarith
+        have "?Np ! (?jm2 - j0') = N ! (j0' + (?jm2 - j0'))" using lt by (rule seg_nth_eq)
+        also have "j0' + (?jm2 - j0') = ?jm2" using j0'le by simp
+        finally show ?thesis by (simp add: entry_def)
+      qed
+      \<comment> \<open>\<open>entry M' 1 ?t\<close>: \<open>N\<^bsub>1,j\<^sub>-\<^sub>2\<^esub>\<close> (boundary reset, \<open>j'\<^sub>0+?t = Lng N-1\<close>) or
+        \<open>entry N\<^sub>p 1 ?t\<close> (block 0, \<open>j'\<^sub>0+?t < Lng N-1\<close>) which is \<open>\<ge> N\<^bsub>1,j\<^sub>-\<^sub>2\<^esub>\<close> by \<open>mono\<close>\<close>
+      have e_Mt: "entry N 1 ?jm2 \<le> entry ?Mp 1 ?t"
+      proof (cases "j0' + ?t < ?j1N")
+        case True
+        \<comment> \<open>block-0: verbatim period, \<open>entry M' 1 ?t = entry N\<^sub>p 1 ?t\<close>\<close>
+        have tlt: "?t < Suc j1' - j0'" using rng LMp by linarith
+        have ltN: "?t < Suc ?j1N - j0'" using True by linarith
+        have "?Mp ! ?t = ?M ! (j0' + ?t)" using tlt by (rule seg_nth_eq)
+        also have "\<dots> = N ! (j0' + ?t)" by (rule oper_nth_lt[OF N L n1 True])
+        also have "\<dots> = ?Np ! ?t" using ltN by (simp add: seg_nth_eq)
+        finally have "entry ?Mp 1 ?t = entry ?Np 1 ?t" by (simp add: entry_def)
+        thus ?thesis using e_jj mono by simp
+      next
+        case False
+        \<comment> \<open>boundary: \<open>j'\<^sub>0+?t = Lng N-1 = j\<^sub>-\<^sub>2 + 1\<cdot>w + 0\<close> reset to \<open>N\<^bsub>1,j\<^sub>-\<^sub>2\<^esub>\<close>\<close>
+        have eqj: "j0' + ?t = ?j1N" using idx_t_le False by linarith
+        have tlt: "?t < Suc j1' - j0'" using rng LMp by linarith
+        have e1: "?j1N = ?jm2 + 1 * ?w + 0" using j0lt by simp
+        have "?Mp ! ?t = ?M ! (j0' + ?t)" using tlt by (rule seg_nth_eq)
+        also have "\<dots> = ?M ! (?jm2 + 1 * ?w + 0)" using eqj e1 by simp
+        also have "\<dots> = (entry N 0 (?jm2 + 0) + 1 * ?delta, entry N 1 (?jm2 + 0))"
+          by (rule oper_d1pos_nth[OF L notzero hp i1z j0lt qn]) (use w0 in simp)
+        finally have "entry ?Mp 1 ?t = entry N 1 ?jm2" by (simp add: entry_def)
+        thus ?thesis by simp
+      qed
+      \<comment> \<open>combine: \<open>entry M' 1 (?t+1) = N\<^bsub>1,j\<^sub>-\<^sub>2\<^esub> \<le> entry M' 1 ?t\<close>\<close>
+      have key: "entry ?Mp 1 (?t + 1) \<le> entry ?Mp 1 ?t"
+        using segt1 e_Mt by simp
+      \<comment> \<open>contradiction: \<open>nextrel1\<close> needs strict row-1 increase\<close>
+      have "entry ?Mp 1 ?t < entry ?Mp 1 (?t + 1)" using step by (simp add: nextrel1_def)
+      thus False using key by linarith
+    qed
+  qed
+qed
+
 lemma TrMax_seg_oper_d0zero_eq:
   assumes N: "N \<in> T_PS" and L: "1 < Lng N"
     and notzero: "\<not> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0)"
