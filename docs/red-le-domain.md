@@ -338,3 +338,31 @@ cases zeroT/multi(m_6_2_P_IncrFirst)/core→shift(cross-branch, nth_equalityI �
 
 Red_IncrFirst は keystone(d) backward が使う → critical path 上。これが green になれば Red_IncrFirst
 完全 green → keystone → RedCondA⟹red_le → 8系 A4。
+
+## 13. Red_IncrFirst の完全証明設計 (2026-06-01): JOINT 述語 Φ
+
+workflow waclyoneo で Red_IncrFirst の論理的ブロッカーを**完全に解消する joint 述語**を設計
+（mechanization は未完、数日 labor）。
+
+**Φ(M) := ∀t. cut(M,t) ⟹ Red(take t M @ IncrFirst(drop t M)) = Red M**
+（`cut(M,t)` = t=0 ∨ (0<t≤Lng M ∧ ∀j∈[t,Lng M). le0 M (t-1) j ∧ entry M 0 (t-1) < entry M 0 j)
+= clean le0-subtree cut: 末尾 suffix [t..) に1回 IncrFirst しても Red 不変）。
+
+- **t=0 インスタンス = Red(IncrFirst M)=Red M = p_6_5_Red_IncrFirst**。
+- **m10>0 が閉じる理由**: branch-5 で Red(IncrFirst M)/Red M は coreReduce(IncrFirst M)=A /
+  coreReduce M=crM に再帰、同一 rebase formula(m_6_5_monoT_Red_m10pos)で productive、よって
+  deeper residual D = (Red A = Red crM)。A = take m10 crM @ IncrFirst(drop m10 crM) かつ
+  cut(crM,m10) 成立(114/0) → **D = Φ(crM) の t=m10 インスタンス**。crM は smaller subcall →
+  **pinduct IH が Φ(crM) を供給**。prefix(diag vs IF(diag))の相互依存は branch-4 collapse
+  (Red(IncrFirst(crM))=Red(crM) FREE)で解消。
+- **自己閉鎖**: core 非trunk branch では各 Br-block の NJ_b=take p NJ_a @ IncrFirst(drop p NJ_a)
+  も cut 付き(15/0)→同じ Φ-IH。Φ は NJ 再帰で閉じる(bare Red_IncrFirst では閉じない)。
+
+経験: Φ 7377/0(網羅), rank≥12 両連言 78/78, dead-branch 自己監査 **0/34044**(productive 常発火、
+monoT_Red への循環依存なし)。**論理ギャップなし・非循環**。
+
+**残り = mechanization labor のみ（数日, multi-week でない）**: cut-guarded bump 不変量を5分岐に
+通す + 核心の **§6.4 NJ-alignment 補題**（coreReduce M と coreReduce(IncrFirst M) が TrMax/Br/
+Joints/FirstNodes/eJ を共有、105/105 = TrMax/Joints/Br の IncrFirst 同変性）を Isabelle 化。
+これは §6.4 構造事実(Red 非再帰)で分離可能。mechanize 時: `m_6_5_Red_IncrFirst_joint`(Φ pinduct)
+→ t=0 系で p_6_5_Red_IncrFirst discharge。
