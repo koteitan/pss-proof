@@ -215,3 +215,28 @@ anchored、Red.pinduct で multi vacuous）。ただし pinduct の core-nontrun
 再突入しないかは要精査（NJ ブロックが m10>0 になり得る）。これが解ければ monoT_Red→
 dead-branch[20]→Red_IncrFirst/Red_Pred→keystone(d)→RedCondA⟹red_le で cluster 全体が解ける。
 **次の単一目標: α の BC0 断片**（red-termination.md §7a の forward/row-0 半分への scope 縮小）。
+
+## 8. α/BC0 は非循環と確定 (2026-06-01): cluster は破れる
+
+α/BC0 断片 `le0 A m10 jA ⟹ le0 (Red A) m10 jN` の proving 試行（workflow w4zg8ebzn、2試行）。
+
+**循環性の対立を解決 — 非循環（agent B 正、agent A 誤診）**:
+- agent A は「branch-5 子ノードの productive-fire = dead-branch不到達 = BC0 recursively = 循環」と
+  判定したが、これは**誤診**。branch-5 子は pinduct の構造的により小さい arg であり、その
+  dead-branch 判定は **IH (IH_nc4) が供給**する＝**整礎帰納**であって循環ではない。
+- agent B が instrument で確認: A-recursion subtree 全体で dead-branch[20] 発火 **0/756, 0/600**、
+  multiT 0。全 productive sub-call は A4-free、b5then は `redle_branch5_rebase`(green)+IH で閉じる。
+  **p_6_5_monoT_Red / Red_IncrFirst / Red_le を一切引かない**。
+- ∴ **α/BC0 は genuinely 非循環。§6.5/§6.6 cluster は既約循環ではなく、破れる。**
+
+**残る唯一の穴 = branch-3b BC0**:
+- branches 1(zeroT)/2(core-trunk: leR_diagSeq)/3a/4(shift)/5then(rebase) は green 弾薬で閉じる。
+- **branch-3b**（core-nontrunk）の **cross-block / into-branch の row-0 le0 辺**（jN-in-branch
+  59191/59240、anchor-in-branch 2521/4663、cross-block 1224/4663）が未証明。trunk spine
+  (`idxsum_leftend_lmin`)は trunk prefix しか供給せず、branch tail の le0 辺は §6.8 anchoring
+  (`oper_d1pos_anchor_coincide_*`)を要する。**row-0 のみ**なので L6/BC1(row-1)より易しい半分。
+- 非循環だが multi-week 級（§6.8 inter-branch faithfulness の row-0 版を再組立）。
+
+**結論**: cluster の唯一の突破口 = **branch-3b BC0**（row-0 cross-block le0、非循環、§6.8 anchoring）。
+これが green になれば α 経由で monoT_Red→dead-branch[20]→Red_IncrFirst/Red_Pred/keystone(d)→
+`RedCondA⟹red_le` で cluster 全体が連鎖的に解ける。経験: 断片 59240/0(rank≤5) + 1070/0(rank≥12)。
