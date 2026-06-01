@@ -25318,5 +25318,365 @@ proof -
   qed
 qed
 
+
+subsection \<open>CASCADE-A: dead-branch[20] unreachability (\<open>p_6_5_monoT_Red\<close>, m10>0)\<close>
+
+text \<open>RESIDUAL (strict row-0 suffix-minimum from the diagonal anchor \<open>m10\<close>):
+  for \<open>B = coreReduce M\<close> (\<open>M\<close> monoT, \<open>m10 = M\<^bsub>1,0\<^esub> > 0\<close>), the row-0 value of
+  \<open>Red B\<close> at \<open>m10\<close> equals \<open>m10\<close> (it sits on the trunk diagonal), and every later
+  index has a STRICTLY larger row-0 value.  Empirically TRUE 3354/0 (Lng\<le>5),
+  600/0 (Lng\<le>4).  This is the row-0 forward BC0 fragment; \<open>m_5_1_parent_exists_3\<close>
+  turns the strict suffix-min into the \<open>le0\<close> anchor edge \<open>m10 \<rightarrow> jN\<close>.\<close>
+
+text \<open>\<open>m10 \<le> TrMax B\<close>: the diagonal prefix of \<open>B = coreReduce M\<close> has length
+  \<open>m10\<close> and \<open>rest = IncrFirst\<^bsup>m10\<^esup> M\<close> starts strictly above the diagonal in both
+  rows, so the trunk of \<open>B\<close> reaches at least \<open>m10\<close>.\<close>
+
+lemma coreReduce_m10_le_TrMax:
+  assumes MT: "M \<in> T_PS" and mono: "monoT M" and pos: "0 < entry M 1 0"
+  shows "entry M 1 0 \<le> TrMax (diagSeq 0 (entry M 1 0 - 1) @ (IncrFirst ^^ (entry M 1 0)) M)"
+proof -
+  let ?m10 = "entry M 1 0"
+  let ?rest = "(IncrFirst ^^ ?m10) M"
+  let ?k = "?m10 - 1"
+  have Mne: "M \<noteq> []" using MT by (simp add: T_PS_def)
+  have LM: "0 < Lng M" using Mne by (cases M) auto
+  have ne: "?rest \<noteq> []" using Mne by (metis Lng_funpow_IncrFirst length_0_conv)
+  have r0: "?k < entry ?rest 0 0"
+  proof -
+    have "entry ?rest 0 0 = entry M 0 0 + ?m10" by (rule entry_funpow_IncrFirst0[OF LM])
+    thus ?thesis using pos by simp
+  qed
+  have r1: "?k < entry ?rest 1 0"
+  proof -
+    have "entry ?rest 1 0 = entry M 1 0" by (rule entry_funpow_IncrFirst1[OF LM])
+    thus ?thesis using pos by simp
+  qed
+  have "Suc ?k \<le> TrMax (diagSeq 0 ?k @ ?rest)"
+    by (rule TrMax_diagSeq_append_ge[OF ne r0 r1])
+  thus ?thesis using pos by simp
+qed
+
+text \<open>The diagonal prefix of \<open>Red B\<close> (core monoT \<open>B = coreReduce M\<close>): for every
+  \<open>j \<le> m10\<close>, both rows read \<open>j\<close>.  In particular the row-0/row-1 anchor values at
+  \<open>m10\<close> are \<open>m10\<close>.  Proof: \<open>Red B\<close> opens (core-trunk or core-nontrunk) with a
+  diagonal \<open>diagSeq 0 t\<close>, \<open>t \<ge> m10\<close>; @{thm [source] entry_diagSeq} /
+  @{thm [source] entry_diagSeq_append_lo} read the prefix.\<close>
+
+lemma redB_prefix_diag:
+  assumes MT: "M \<in> T_PS" and mono: "monoT M" and pos: "0 < entry M 1 0"
+  defines "B \<equiv> diagSeq 0 (entry M 1 0 - 1) @ (IncrFirst ^^ (entry M 1 0)) M"
+  shows "\<forall>(i::nat) j. (i = 0 \<or> i = 1) \<and> j \<le> entry M 1 0 \<longrightarrow> entry (Red B) i j = j"
+proof -
+  let ?m10 = "entry M 1 0"
+  let ?B = "B"
+  have Mne: "M \<noteq> []" using MT by (simp add: T_PS_def)
+  have funpow_ne: "(IncrFirst ^^ ?m10) M \<noteq> []"
+    using Mne by (metis Lng_funpow_IncrFirst length_0_conv)
+  have BT: "?B \<in> T_PS" unfolding B_def using funpow_ne by (simp add: T_PS_def)
+  have domB: "Red_dom ?B" by (rule m_6_5_Red_welldef[OF BT])
+  \<comment> \<open>B is core: entry00 = 0, entry10 = 0.\<close>
+  have crB: "entry ?B 0 0 = 0 \<and> entry ?B 1 0 = 0"
+  proof -
+    have "coreReduce M = ?B" unfolding B_def using pos by (simp add: coreReduce_def)
+    thus ?thesis using coreReduce_core[OF MT] by simp
+  qed
+  have c0: "entry ?B 0 0 = 0" and c1: "entry ?B 1 0 = 0" using crB by simp_all
+  \<comment> \<open>B is monoT (coreReduce of mono is mono).\<close>
+  have monoB: "monoT ?B"
+    using coreReduce_monoT_m10_pos[OF MT mono pos] B_def pos by (simp add: coreReduce_def)
+  have nzB: "\<not> zeroT ?B" using monoB by (simp add: monoT_def)
+  have nmuB: "\<not> multiT ?B" using monoB by (simp add: multiT_def)
+  \<comment> \<open>m10 \<le> TrMax B.\<close>
+  have m10leTr: "?m10 \<le> TrMax ?B"
+    using coreReduce_m10_le_TrMax[OF MT mono pos] B_def by simp
+  let ?j1 = "Lng ?B - 1"
+  let ?j1' = "TrMax ?B"
+  show "\<forall>(i::nat) j. (i = 0 \<or> i = 1) \<and> j \<le> ?m10 \<longrightarrow> entry (Red ?B) i j = j"
+  proof (cases "?j1' = ?j1")
+    \<comment> \<open>core-trunk: Red B = diagSeq 0 (Lng B - 1).\<close>
+    case True
+    have rB: "Red ?B = diagSeq 0 (0 + ?j1)"
+      using Red.psimps[OF domB] nzB nmuB c0 c1 True by (simp add: Let_def)
+    have m10le1: "?m10 \<le> ?j1" using m10leTr True by simp
+    show ?thesis
+    proof (intro allI impI)
+      fix i j :: nat assume H: "(i = 0 \<or> i = 1) \<and> j \<le> ?m10"
+      hence jm: "j \<le> ?m10" by simp
+      have jj1: "j \<le> 0 + ?j1" using jm m10le1 by simp
+      have jlt: "j < Suc (0 + ?j1) - 0" using jj1 by simp
+      have "entry (diagSeq 0 (0 + ?j1)) i j = 0 + j"
+        using entry_diagSeq[where a=0 and b="0+?j1" and j=j and i=i] jlt by simp
+      thus "entry (Red ?B) i j = j" using rB by simp
+    qed
+  next
+    \<comment> \<open>core-nontrunk: Red B = diagSeq 0 (TrMax B) @ tail.\<close>
+    case tne: False
+    let ?tail = "concat (map (\<lambda>J.
+              (IncrFirst ^^ (Joints ?B ! J + 1
+                  - (if entry (Br ?B ! J) 1 0 = 0 then 0
+                     else Suc (THE j. nextR ?B 1 j (FirstNodes ?B ! J)))))
+                (Red ((entry ?B 0 0 + Joints ?B ! J + 1,
+                       entry ?B 1 0 + (if entry (Br ?B ! J) 1 0 = 0 then 0
+                              else Suc (THE j. nextR ?B 1 j (FirstNodes ?B ! J))))
+                      # tl (Br ?B ! J))))
+            [0..<Lng (Br ?B)])"
+    have rB: "Red ?B = diagSeq 0 ?j1' @ ?tail"
+      using Red.psimps[OF domB] nzB nmuB c0 c1 tne by (simp add: Let_def)
+    show ?thesis
+    proof (intro allI impI)
+      fix i j :: nat assume H: "(i = 0 \<or> i = 1) \<and> j \<le> ?m10"
+      hence jm: "j \<le> ?m10" by simp
+      have jTr: "j \<le> ?j1'" using jm m10leTr by simp
+      have "entry (diagSeq 0 ?j1' @ ?tail) i j = j"
+        by (rule entry_diagSeq_append_lo[OF jTr])
+      thus "entry (Red ?B) i j = j" using rB by simp
+    qed
+  qed
+qed
+
+text \<open>RESIDUAL (strict row-0 suffix-minimum past the diagonal anchor \<open>m10\<close>):
+  for \<open>B = coreReduce M\<close>, every index \<open>j > m10\<close> has row-0 value STRICTLY above
+  \<open>m10\<close>.  Empirically TRUE 3354/0 (Lng\<le>5), 600/0 (Lng\<le>4).  This is the genuine
+  BC0 core: in the core-nontrunk decomposition \<open>Red B = diagSeq 0 (TrMax B) @
+  concat(branch blocks)\<close>, the trunk part (\<open>m10 < j \<le> TrMax B\<close>) gives \<open>j > m10\<close>
+  trivially, and the branch part needs \<open>Joints B ! J \<ge> m10\<close> (validated 591/0,
+  from @{thm [source] m_6_4_FirstNodes_TrMax_Joints} + the length-\<open>m10\<close> diagonal
+  prefix of \<open>B\<close>) plus per-block row-0 minimality (@{thm [source]
+  m_6_5_Red_leftend_row0_min}).\<close>
+
+text \<open>The genuinely-hard BC0 residual, restricted to the BRANCH tail.  In the
+  core-nontrunk decomposition \<open>Red B = diagSeq 0 (TrMax B) @ tail\<close>, every tail
+  index \<open>j > TrMax B\<close> carries a row-0 value \<open>> m10\<close>.  Empirically TRUE 591/0
+  (Lng\<le>4); the trunk part (\<open>j \<le> TrMax B\<close>) is discharged below, the core-trunk
+  case is vacuous (no tail).  This is what remains of PIECE3/BC0: it needs
+  \<open>Joints B ! J \<ge> m10\<close> (validated 591/0) + per-block @{thm [source]
+  m_6_5_Red_leftend_row0_min}.\<close>
+
+text \<open>Full strict suffix-min: combine the trunk-diagonal part (\<open>m10 < j \<le>
+  TrMax B\<close>, via @{thm [source] redB_prefix_diag}-style diagonal reads) with the
+  branch tail (@{thm [source] redB_tail_row0_above_anchor}).\<close>
+
+lemma redB_row0_strict_above_anchor:
+  assumes MT: "M \<in> T_PS" and mono: "monoT M" and pos: "0 < entry M 1 0"
+  defines "B \<equiv> diagSeq 0 (entry M 1 0 - 1) @ (IncrFirst ^^ (entry M 1 0)) M"
+  shows "\<forall>j. entry M 1 0 < j \<and> j < Lng (Red B) \<longrightarrow> entry M 1 0 < entry (Red B) 0 j"
+proof (intro allI impI)
+  let ?m10 = "entry M 1 0"
+  let ?B = "B"
+  fix j assume H: "?m10 < j \<and> j < Lng (Red ?B)"
+  hence jgt: "?m10 < j" and jlt: "j < Lng (Red ?B)" by simp_all
+  have Mne: "M \<noteq> []" using MT by (simp add: T_PS_def)
+  have funpow_ne: "(IncrFirst ^^ ?m10) M \<noteq> []"
+    using Mne by (metis Lng_funpow_IncrFirst length_0_conv)
+  have BT: "?B \<in> T_PS" unfolding B_def using funpow_ne by (simp add: T_PS_def)
+  have domB: "Red_dom ?B" by (rule m_6_5_Red_welldef[OF BT])
+  have crB: "entry ?B 0 0 = 0 \<and> entry ?B 1 0 = 0"
+  proof -
+    have "coreReduce M = ?B" unfolding B_def using pos by (simp add: coreReduce_def)
+    thus ?thesis using coreReduce_core[OF MT] by simp
+  qed
+  have c0: "entry ?B 0 0 = 0" and c1: "entry ?B 1 0 = 0" using crB by simp_all
+  have monoB: "monoT ?B"
+    using coreReduce_monoT_m10_pos[OF MT mono pos] B_def pos by (simp add: coreReduce_def)
+  have nzB: "\<not> zeroT ?B" using monoB by (simp add: monoT_def)
+  have nmuB: "\<not> multiT ?B" using monoB by (simp add: multiT_def)
+  have m10leTr: "?m10 \<le> TrMax ?B"
+    using coreReduce_m10_le_TrMax[OF MT mono pos] B_def by simp
+  let ?j1 = "Lng ?B - 1"
+  let ?j1' = "TrMax ?B"
+  show "?m10 < entry (Red ?B) 0 j"
+  proof (cases "?j1' = ?j1")
+    \<comment> \<open>core-trunk: Red B = diagSeq 0 (Lng B-1), row 0 = identity.\<close>
+    case True
+    have rB: "Red ?B = diagSeq 0 (0 + ?j1)"
+      using Red.psimps[OF domB] nzB nmuB c0 c1 True by (simp add: Let_def)
+    have LR: "Lng (Red ?B) = Suc ?j1" using rB by simp
+    have jj1: "j < Suc ?j1" using jlt LR by simp
+    have "entry (diagSeq 0 (0 + ?j1)) 0 j = 0 + j"
+      using entry_diagSeq[where a=0 and b="0+?j1" and j=j and i=0] jj1 by simp
+    hence "entry (Red ?B) 0 j = j" using rB by simp
+    thus ?thesis using jgt by simp
+  next
+    \<comment> \<open>core-nontrunk: split on trunk (j \<le> TrMax B) vs branch tail (j > TrMax B).\<close>
+    case tne: False
+    let ?tail = "concat (map (\<lambda>J.
+              (IncrFirst ^^ (Joints ?B ! J + 1
+                  - (if entry (Br ?B ! J) 1 0 = 0 then 0
+                     else Suc (THE j. nextR ?B 1 j (FirstNodes ?B ! J)))))
+                (Red ((entry ?B 0 0 + Joints ?B ! J + 1,
+                       entry ?B 1 0 + (if entry (Br ?B ! J) 1 0 = 0 then 0
+                              else Suc (THE j. nextR ?B 1 j (FirstNodes ?B ! J))))
+                      # tl (Br ?B ! J))))
+            [0..<Lng (Br ?B)])"
+    have rB: "Red ?B = diagSeq 0 ?j1' @ ?tail"
+      using Red.psimps[OF domB] nzB nmuB c0 c1 tne by (simp add: Let_def)
+    show ?thesis
+    proof (cases "j \<le> ?j1'")
+      \<comment> \<open>trunk diagonal part: entry = j > m10.\<close>
+      case True
+      have "entry (diagSeq 0 ?j1' @ ?tail) 0 j = j"
+        by (rule entry_diagSeq_append_lo[OF True])
+      hence "entry (Red ?B) 0 j = j" using rB by simp
+      thus ?thesis using jgt by simp
+    next
+      \<comment> \<open>branch tail part: the isolated residual.\<close>
+      case False
+      hence jtr: "?j1' < j" by simp
+      show ?thesis
+        using redB_tail_row0_above_anchor[OF MT mono pos] jtr jlt
+        unfolding B_def by blast
+    qed
+  qed
+qed
+
+lemma redB_row0_strict_suffix_min:
+  assumes MT: "M \<in> T_PS" and mono: "monoT M" and pos: "0 < entry M 1 0"
+  defines "B \<equiv> diagSeq 0 (entry M 1 0 - 1) @ (IncrFirst ^^ (entry M 1 0)) M"
+  shows "entry (Red B) 0 (entry M 1 0) = entry M 1 0
+       \<and> (\<forall>j. entry M 1 0 < j \<and> j < Lng (Red B)
+              \<longrightarrow> entry M 1 0 < entry (Red B) 0 j)"
+proof -
+  have anc: "entry (Red B) 0 (entry M 1 0) = entry M 1 0"
+    using redB_prefix_diag[OF MT mono pos, rule_format, of 0 "entry M 1 0"]
+    unfolding B_def by simp
+  show ?thesis using anc redB_row0_strict_above_anchor[OF MT mono pos] unfolding B_def by simp
+qed
+
+text \<open>Row-1 diagonal anchor: \<open>m10\<close> sits on the row-1 diagonal of \<open>Red B\<close>, so its
+  row-1 value is \<open>m10\<close>.  Used only to rule out \<open>zeroT\<close> in the singleton suffix.
+  Empirically TRUE 600/0.\<close>
+
+lemma redB_row1_anchor:
+  assumes MT: "M \<in> T_PS" and mono: "monoT M" and pos: "0 < entry M 1 0"
+  defines "B \<equiv> diagSeq 0 (entry M 1 0 - 1) @ (IncrFirst ^^ (entry M 1 0)) M"
+  shows "entry (Red B) 1 (entry M 1 0) = entry M 1 0"
+  using redB_prefix_diag[OF MT mono pos, rule_format, of 1 "entry M 1 0"]
+  unfolding B_def by simp
+
+text \<open>BC0 (\<open>le0\<close> anchor edge): from the strict suffix-min, the diagonal anchor
+  \<open>m10\<close> is a row-0 ancestor of the right end \<open>jN\<close> of \<open>Red B\<close>.\<close>
+
+lemma redB_le0_anchor_jN:
+  assumes MT: "M \<in> T_PS" and mono: "monoT M" and pos: "0 < entry M 1 0"
+  defines "B \<equiv> diagSeq 0 (entry M 1 0 - 1) @ (IncrFirst ^^ (entry M 1 0)) M"
+  shows "le0 (Red B) (entry M 1 0) (Lng (Red B) - 1)"
+proof -
+  let ?m10 = "entry M 1 0"
+  let ?N = "Red B"
+  let ?jN = "Lng ?N - 1"
+  \<comment> \<open>geometry: Lng B = Lng M + m10, so m10 < Lng (Red B).\<close>
+  have Mne: "M \<noteq> []" using MT by (simp add: T_PS_def)
+  have LM: "0 < Lng M" using Mne by (cases M) auto
+  have funpow_ne: "(IncrFirst ^^ ?m10) M \<noteq> []"
+    using Mne by (metis Lng_funpow_IncrFirst length_0_conv)
+  have BT: "B \<in> T_PS" unfolding B_def using funpow_ne by (simp add: T_PS_def)
+  have LB: "Lng B = Lng M + ?m10"
+  proof -
+    have Ldiag: "Lng (diagSeq 0 (?m10 - 1)) = ?m10" using pos by (simp del: upt_Suc)
+    show ?thesis unfolding B_def using Ldiag by simp
+  qed
+  have LN: "Lng ?N = Lng M + ?m10" using m_6_5_Lng_Red[OF BT] LB by simp
+  have m10lt: "?m10 < Lng ?N" using LN LM by simp
+  have jNlt: "?jN < Lng ?N" using m10lt by simp
+  \<comment> \<open>residual: strict suffix-min from the anchor.\<close>
+  have res: "entry ?N 0 ?m10 = ?m10
+             \<and> (\<forall>j. ?m10 < j \<and> j < Lng ?N \<longrightarrow> ?m10 < entry ?N 0 j)"
+    using redB_row0_strict_suffix_min[OF MT mono pos] unfolding B_def by simp
+  have anc_val: "entry ?N 0 ?m10 = ?m10" using res by simp
+  have strict: "\<And>j. ?m10 < j \<Longrightarrow> j \<le> ?jN \<Longrightarrow> entry ?N 0 ?m10 < entry ?N 0 j"
+  proof -
+    fix j assume a: "?m10 < j" and b: "j \<le> ?jN"
+    have jlt: "j < Lng ?N" using b jNlt by simp
+    have "?m10 < entry ?N 0 j" using res a jlt by blast
+    thus "entry ?N 0 ?m10 < entry ?N 0 j" using anc_val by simp
+  qed
+  show ?thesis
+  proof (cases "?m10 = ?jN")
+    case True
+    show ?thesis using True m10lt by (simp add: le0_def)
+  next
+    case False
+    hence lt: "?m10 < ?jN" using m10lt by simp
+    have Nne: "?N \<noteq> []" using LN LM by (metis add_is_0 length_0_conv less_numeral_extra(3))
+    have NT: "?N \<in> T_PS" using Nne by (simp add: T_PS_def)
+    have "leR ?N 0 ?m10 ?jN"
+      by (rule m_5_1_parent_exists_3[OF NT lt jNlt strict])
+    thus ?thesis by (simp add: leR_def)
+  qed
+qed
+
+text \<open>STEP-monoT_Red (α, m10>0): the suffix \<open>(N\<^bsub>j\<^esub>)\<^bsub>j=m10\<^esub>\<^bsup>jN\<^esup>\<close> is monoT, i.e.
+  \<open>seg N m10 jN \<in> PT_PS\<close>.  This is the dead-branch[20] guard.  By
+  @{thm [source] adm_le0_seg}, \<open>monoT(seg N m10 jN)\<close> reduces to the BC0 anchor
+  edge @{thm [source] redB_le0_anchor_jN}.  Discharges \<open>p_6_5_monoT_Red\<close>
+  for the \<open>m10>0\<close> case (the only case reachable in the \<open>Red\<close> recursion).\<close>
+
+lemma m_6_5_monoT_Red_m10pos:
+  assumes M: "M \<in> PT_PS" and pos: "0 < entry M 1 0"
+  defines "N \<equiv> Red (diagSeq 0 (entry M 1 0 - 1) @ (IncrFirst ^^ (entry M 1 0)) M)"
+  shows "seg N (entry M 1 0) (Lng N - 1) \<in> PT_PS"
+proof -
+  let ?m10 = "entry M 1 0"
+  let ?B = "diagSeq 0 (?m10 - 1) @ (IncrFirst ^^ ?m10) M"
+  let ?jN = "Lng N - 1"
+  have MT: "M \<in> T_PS" and mono: "monoT M" using M by (simp_all add: PT_PS_def)
+  have Mne: "M \<noteq> []" using MT by (simp add: T_PS_def)
+  have LM: "0 < Lng M" using Mne by (cases M) auto
+  \<comment> \<open>geometry of N.\<close>
+  have funpow_ne: "(IncrFirst ^^ ?m10) M \<noteq> []"
+    using Mne by (metis Lng_funpow_IncrFirst length_0_conv)
+  have BT: "?B \<in> T_PS" using funpow_ne by (simp add: T_PS_def)
+  have LB: "Lng ?B = Lng M + ?m10"
+  proof -
+    have Ldiag: "Lng (diagSeq 0 (?m10 - 1)) = ?m10" using pos by (simp del: upt_Suc)
+    show ?thesis using Ldiag by simp
+  qed
+  have NB: "N = Red ?B" unfolding N_def by simp
+  have LN: "Lng N = Lng M + ?m10" using m_6_5_Lng_Red[OF BT] LB NB by simp
+  have m10lt: "?m10 < Lng N" using LN LM by simp
+  have m10le: "?m10 \<le> ?jN" using m10lt by simp
+  \<comment> \<open>the segment is non-empty, hence in T_PS.\<close>
+  let ?S = "seg N ?m10 ?jN"
+  have LS: "Lng ?S = Suc ?jN - ?m10" by (simp only: Lng_seg)
+  have LSpos: "0 < Lng ?S" using LS m10le m10lt by simp
+  have Sne: "?S \<noteq> []" using LSpos by force
+  have ST: "?S \<in> T_PS" using Sne by (simp add: T_PS_def)
+  \<comment> \<open>BC0 anchor edge: le0 N m10 jN.\<close>
+  have bc0: "le0 N ?m10 ?jN"
+    using redB_le0_anchor_jN[OF MT mono pos] NB by simp
+  \<comment> \<open>transfer the le0 anchor edge onto the segment via @{thm [source] adm_le0_seg}.\<close>
+  have jNlt: "?jN < Lng N" using m10lt by simp
+  have inr0: "(0::nat) \<le> ?jN - ?m10" by simp
+  have inrJ: "?jN - ?m10 \<le> ?jN - ?m10" by simp
+  have transfer: "le0 ?S 0 (?jN - ?m10) = le0 N (?m10 + 0) (?m10 + (?jN - ?m10))"
+    by (rule adm_le0_seg[OF jNlt inr0 inrJ m10le])
+  have segend: "?m10 + (?jN - ?m10) = ?jN" using m10le by simp
+  have le0S: "le0 ?S 0 (?jN - ?m10)"
+    using transfer bc0 segend by simp
+  \<comment> \<open>turn into monoT: leR S 0 0 (Lng S - 1) and non-zero.\<close>
+  have LSm1: "Lng ?S - 1 = ?jN - ?m10" using LS m10le by simp
+  have leRS: "leR ?S 0 0 (Lng ?S - 1)" using le0S LSm1 by (simp add: leR_def)
+  have nzS: "\<not> zeroT ?S"
+  proof (cases "Lng ?S = 1")
+    case True
+    \<comment> \<open>singleton: then m10 = jN, le0 S 0 0 trivially, and entry S 1 0 = entry N 1 m10 \<noteq> 0.\<close>
+    have e1: "entry ?S 1 0 = entry N 1 ?m10"
+      using entry_seg[where M=N and a="?m10" and b="?jN" and i=1 and j=0] LSpos
+      by (simp only: LS) simp
+    \<comment> \<open>entry N 1 m10 = m10 > 0 (row-1 diagonal value at the anchor).\<close>
+    have e1val: "entry N 1 ?m10 = ?m10"
+      using redB_row1_anchor[OF MT mono pos] NB by simp
+    have "entry ?S 1 0 \<noteq> 0" using e1 e1val pos by simp
+    thus ?thesis by (simp add: zeroT_def)
+  next
+    case False
+    thus ?thesis by (simp add: zeroT_def)
+  qed
+  have monoS: "monoT ?S" using leRS nzS by (simp add: monoT_def)
+  show ?thesis using ST monoS by (simp add: PT_PS_def)
+qed
+
+
 end
 
