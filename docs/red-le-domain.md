@@ -317,3 +317,24 @@ row-0 値 > m10。`Joints(B)!J ≥ m10`(§6.4、B の長さ m10 対角前置か�
 （258/297 反例）だが、空対角で評価すれば真（5028/0）。Red 定義の branch 5 は m10>0 前提なので
 **実際の使用は m10>0 のみ**。統合時に p_6_5_monoT_Red を (a) `0<entry M 1 0` 制限 or (b) 対角を
 `map (λj.(j,j)) [0..<m10]`（空対角)に修正、で `m_6_5_monoT_Red_m10pos` で discharge する。
+
+## 12. Red_IncrFirst frontier (2026-06-01): §6.4 IncrFirst-equivariance へ
+
+workflow we1h0whiv + w34qxwwhn。Red_IncrFirst (Red(IncrFirst M)=Red M) を Red.pinduct で。
+cases zeroT/multi(m_6_2_P_IncrFirst)/core→shift(cross-branch, nth_equalityI 定義的)/shift/m10>0
+(m_6_5_monoT_Red_m10pos で両辺 productive) は全 green。残り residual を2層還元:
+
+- `red_diagprefix_incr` (case-5): Red(diagSeq 0 (m10-1) @ IncrFirst^(m10+1) M) =
+  Red(IncrFirst(diagSeq 0 (m10-1)) @ IncrFirst^(m10+1) M)。green wiring (`redB_branch4_collapse`:
+  Red(IncrFirst(coreReduce M))=Red(coreReduce M) via branch-4 shift; `red_diagprefix_IncrFirst_collapse`)
+  で次へ還元。
+- **唯一の deeper residual = `red_diagprefix_incr_deeper`**: **`Red(coreReduce(IncrFirst M)) =
+  Red(coreReduce M)`**（= `Red(diagSeq 0 (m10-1) @ IncrFirst^(m10+1) M) = Red(diagSeq 0 (m10-1) @
+  IncrFirst^m10 M)`）。両 arg は core(branch-3)だが TrMax/Br/Joints が異なる(tail の +1 IncrFirst が
+  trunk 対角開始と joints をずらす)のに Red が同値正規化。**§6.4 trunk/branch の IncrFirst 同変性**。
+  経験 600/0(網羅 Lng≤4) + 69/0(到達 subcall). M-indexed pinduct IH では不供給、非循環。
+  route: redB_prefix_diag(entry(Red B) i j = j, j≤m10) + Joints/FirstNodes/Br の IncrFirst 同変性、
+  長さ m10 対角前置を anchor に prefix 長と tail row-1 高さを結ぶ。
+
+Red_IncrFirst は keystone(d) backward が使う → critical path 上。これが green になれば Red_IncrFirst
+完全 green → keystone → RedCondA⟹red_le → 8系 A4。
