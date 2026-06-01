@@ -178,3 +178,40 @@ slice transfer `adm_le0_seg`/`adm_nextR1_seg`/`adm_le1_seg`(新)。
 §7 use-site の anchoring（article 注[12]）を陽に使う。§6.6 簡約性の成果に依存する可能性大
 → **§6.5 Red_le は §6.6 の後に回すのが自然**。multi-week 級。main には sorry を入れない
 （5 green ブリックは sorry-free で済）。
+
+## 7. 循環の精査 (2026-06-01): β は循環、α が唯一の突破口
+
+§6.5/§6.6 循環を破る2ルートを read-only 精査（workflow wy3p446qv）した結論。
+
+### β (keystone backward 経由) = 循環（却下）
+keystone(d) backward (RedCondA∧RedCondB⟹reduced) の A4非依存証明は load-bearing に
+`p_6_5_Red_IncrFirst`(Red∘IncrFirst=Red) を要する。だが **Red_IncrFirst の m10>0 ケースは
+dead-branch[20] と論理的に等価**:
+- m10>0 で死枝が発火すると Red M = M、Red(IncrFirst M)=IncrFirst M、両者は異なる(M≠IncrFirst M)
+  → Red_IncrFirst が偽。
+- Red_IncrFirst は真(7381/0)なので死枝は不到達。だが**その証明は死枝不到達を示さねば閉じない**
+  （productive 分岐では IH で N_M=N_IM が一致し equivariance 成立だが、dead 分岐は M≠IncrFirst M で
+  閉じない）。
+- ∴ **Red_IncrFirst(m10>0) ⟺ dead-branch[20]不到達**。β は循環を relocate するだけ。
+
+### α (monoT_Red 経由) = 真の scope 縮小（採用）
+monoT_Red(dead-branch[20]) は **green ステップのみ**で次の唯一の既約義務へ帰着:
+**`le0 A m10 jA ⟹ le0 (Red A) m10 jN`**（A=coreReduce M=diagSeq 0 (m10-1)@IncrFirst^m10 M、
+jA=Lng A-1、jN=Lng(Red A)-1）。これは **Red_le の row-0・forward・single-anchor 断片**:
+- 全 Red_le(T_PS で偽)より真に弱い。row-1 反例 `(0,0)(1,1)(1,2)(2,2)` は **row-1(le1)** の flip
+  なので **row-0(le0) 断片は回避**。
+- anchored 域で 11916/0 + 6896/0（非空、multi A4 族は anchored で vacuous）。到達 A は常に mono
+  (coreReduce_monoT 344/0)。
+- = **BC0**（L6 block-connection の row-0 半分、red-termination.md の easier half）。
+
+green ステップ(α): Step1 monoT(seg)⟺le0 N m10 jN [adm_le0_seg]; Step2 le0 A m10 jA
+[fact2a]; Step4 rebase productive [redle_branch5_rebase]。**Step3 = 上記 BC0 断片が唯一の穴**。
+係数 bypass は反例で否定（flat `(0,0)(0,0)(0,0)` が condAB 全充足でも le0 N m10 jN 偽、104/241）。
+
+### 結論
+§6.5/§6.6 cluster は **dead-branch[20]不到達 (`p_6_5_monoT_Red`) を中心に密に循環**。唯一の
+A4非依存な突破口は **α の BC0 断片 `le0 A m10 jA ⟹ le0 (Red A) m10 jN`**（row-0 forward
+anchored、Red.pinduct で multi vacuous）。ただし pinduct の core-nontrunk 子再帰で死枝に
+再突入しないかは要精査（NJ ブロックが m10>0 になり得る）。これが解ければ monoT_Red→
+dead-branch[20]→Red_IncrFirst/Red_Pred→keystone(d)→RedCondA⟹red_le で cluster 全体が解ける。
+**次の単一目標: α の BC0 断片**（red-termination.md §7a の forward/row-0 半分への scope 縮小）。
