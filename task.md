@@ -13,10 +13,10 @@
     - ✅ §6.2 単項性
     - ✅ §6.3 許容性
     - ✅ §6.4 幹と枝
-    - 🚨 §6.5 簡約化 〔下記8系は $T_{\textrm{PS}}$ で偽、係留切片で真 (correction A4、保留中)〕
+    - 🚨🚧 §6.5 簡約化 〔下記8系は $T_{\textrm{PS}}$ で偽、係留切片で真 (correction A4)。**cluster は dead-branch[20] を中心に絡むが非循環＝破れると確定**。最難ボトルネックを値単調性不変量1つ `m_6_5_Red_leftend_row0_min` まで絞り込み済。設計 `docs/red-le-domain.md §6-10`〕
       - ✅ 命題（$\textrm{Red}$ の well-defined 性）
-      - 🚨🚧 命題（$\textrm{Red}$ の $\textrm{IncrFirst}$ 不変性）〔m10>0 が死枝[20]待ち〕
-        - 🚨 補題（死枝[20]の到達不能性）〔`Red` 定義 m10>0 ケースの else 枝(`Red M = M`、原文脚注[20])が決して起こらないこと＝`m10 ≤ jN ∧ (N_j)_{m10..jN} ∈ PT_PS`。下記「Red と Pred の可換性」と共有の障壁。**経験的に到達不能=真**(標準形+全サブコール、m10>0 到達144回/死枝0回, `python/dead20_check.py`)。設計 `docs/red-termination.md`〕
+      - 🚨🚧 命題（$\textrm{Red}$ の $\textrm{IncrFirst}$ 不変性）〔m10>0 が死枝[20]待ち。死枝[20]⟺Red_IncrFirst(m10>0) と判明〕
+        - 🚨🚧 補題（死枝[20]の到達不能性）〔= `p_6_5_monoT_Red`。**α 経由で row-0 forward 断片→BC0→PIECE3→最終残件 `m_6_5_Red_leftend_row0_min`(値単調性, Red.pinduct, 非循環) へ崩した**。green ブリック多数統合済 (facts1/2a, leR_diagSeq, leR_shiftRow0, redle_branch5_rebase, le0_diagSeq_*/junction, le0_monoT_seg_into_list)。設計 `docs/red-le-domain.md §6-10`〕
       - ✅ 命題（$\textrm{Lng}$ の $\textrm{Red}$ 不変性）〔§6.5 下流の linchpin〕
       - ✅ 系（$\textrm{Red}$ が零項性を保つこと）
       - 🚨 系（直系先祖の $\textrm{Red}$ 不変性）〔keystone・A4〕
@@ -30,7 +30,7 @@
       - 🚨 命題（$\textrm{Red}$ が許容性を保つこと）〔A4〕
       - 🚨 系（許容化の $\textrm{Red}$ 不変性）〔A4〕
       - 🚨 系（$\textrm{Red}$ が基点を保つこと）〔A4〕
-    - 🚨 §6.6 簡約性 〔大半 $T_{\textrm{PS}}$ で真〕
+    - 🚨🚧 §6.6 簡約性 〔大半 $T_{\textrm{PS}}$ で真。keystone「reduced ⟺ RedCondA∧RedCondB」は**A4非依存・今証明可能**と確定 (877/0)、`RedCondA⟹red_le` で §6.5 を unblock。設計 `docs/reducedness.md`〕
       - 🚨 命題（簡約性の切片への遺伝性）〔article 前提偽 → $j'_0=0$ に補正 (A5)〕
       - 🚨 命題（$P$ が簡約性を保つこと）
       - 🚨 命題（簡約性が基本列で保たれること）
