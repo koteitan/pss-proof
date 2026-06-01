@@ -4193,6 +4193,47 @@ proof -
   thus ?thesis using JBr by blast
 qed
 
+text \<open>§6.5 branch-3b BC0, PIECE 2 (into-block row-0 edge).  Each branch block of
+  \<open>Red M\<close> is, as a sub-list, a contiguous segment \<open>seg (Red M) bs be\<close> that is
+  \<open>monoT\<close> (or \<open>zeroT\<close>); the block left-end is therefore a row-0 ancestor of every
+  later index of the SAME block, lifted back to \<open>Red M\<close>.  Stated generally for a
+  \<open>monoT\<close> segment of any \<open>T_PS\<close> sequence \<open>R\<close>: this is the part of branch-3b BC0
+  that lives inside a single block (no inter-block reasoning).  The block-equals-
+  segment fact and monotonicity are supplied at the use-site from the \<open>Red\<close>
+  recursion (per-block IH: \<open>monoT (Red N_J)\<close>, \<open>IncrFirst\<close> preserves \<open>monoT\<close> and
+  \<open>le0\<close>).  Empirically TRUE 70037/70037 (rank\<le>5), validated at rank\<ge>12.\<close>
+
+lemma le0_monoT_seg_into_list:
+  assumes R: "R \<in> T_PS"
+    and seg_mono: "monoT (seg R bs be)"
+    and order: "bs \<le> p" "p \<le> be" and beL: "be < Lng R"
+  shows "le0 R bs p"
+proof -
+  let ?S = "seg R bs be"
+  have bsbe: "bs \<le> be" using order by linarith
+  have SL: "Lng ?S = Suc be - bs" by (simp only: Lng_seg)
+  have SLpos: "Lng ?S > 0" using SL bsbe by linarith
+  have Sne: "?S \<noteq> []" using SLpos by force
+  have ST: "?S \<in> T_PS" using Sne by (simp add: T_PS_def)
+  \<comment> \<open>mono gives the left-end as row-0 ancestor of the segment's last index\<close>
+  have leLast: "leR ?S 0 0 (Lng ?S - 1)" using seg_mono by (simp add: monoT_def)
+  have pbs: "p - bs \<le> Lng ?S - 1" using order SL by linarith
+  have z: "(0::nat) \<le> p - bs" by simp
+  have leP: "leR ?S 0 0 (p - bs)"
+    by (rule m_5_1_ancestor_tree_1[OF ST leLast z pbs])
+  have le0S: "le0 ?S 0 (p - bs)" using leP by (simp add: leR_def)
+  \<comment> \<open>lift segment-le0 to \<open>R\<close>-le0 via @{thm [source] adm_le0_seg}\<close>
+  have transfer: "le0 ?S 0 (p - bs) = le0 R (bs + 0) (bs + (p - bs))"
+  proof (rule adm_le0_seg)
+    show "be < Lng R" using beL .
+    show "(0::nat) \<le> be - bs" by simp
+    show "p - bs \<le> be - bs" using order by simp
+    show "bs \<le> be" using bsbe .
+  qed
+  have "le0 R bs p" using le0S transfer order by simp
+  thus ?thesis .
+qed
+
 text \<open>Core of \<open>m_6_4_mono_slice\<close>: for \<open>j0'\<close> a (weak) ancestor of the last joint,
   every index \<open>k\<close> with \<open>j0' < k \<le> Lng M - 1\<close> is a row-0 descendant of \<open>j0'\<close>.\<close>
 
@@ -5466,6 +5507,62 @@ qed
 lemma entry_diagSeq_append_junction:
   "entry (diagSeq 0 k @ rest) p (Suc k) = entry rest p 0"
   by (simp add: entry_def nth_append)
+
+text \<open>§6.5 branch-3b BC0, PIECE 1 (trunk-spine row-0 edge).  In the core-nontrunk
+  reduction \<open>Red M = diagSeq 0 (TrMax M) @ concat (..branch blocks..)\<close>, the
+  diagonal prefix \<open>diagSeq 0 t\<close> carries a faithful row-0 spine: on every prefix
+  index \<open>j \<le> t\<close> the row-0 \<open><\<^sup>Next\<close>-step is the consecutive step, so \<open>le0\<close> on the
+  prefix is the index order.  This is the easy half of branch-3b BC0 (the part
+  that lives entirely inside the trunk diagonal); the genuinely-hard residual is
+  PIECE 3 (the spine-to-block junction).  Empirically TRUE 60750/60750 (rank\<le>5),
+  validated again at rank\<ge>12.\<close>
+
+lemma nextrel0_diagSeq_append_step:
+  assumes "j < k"
+  shows "nextrel0 (diagSeq 0 k @ rest) j (Suc j)"
+proof -
+  let ?M = "diagSeq 0 k @ rest"
+  have L: "Lng ?M = Suc k + Lng rest" by simp
+  have lt: "Suc j < Lng ?M" using assms L by linarith
+  have ej:  "entry ?M 0 j = j"       using assms by (intro entry_diagSeq_append_lo) simp
+  have esj: "entry ?M 0 (Suc j) = Suc j" using assms by (intro entry_diagSeq_append_lo) simp
+  have noint: "\<forall>j'. j < j' \<and> j' < Suc j \<longrightarrow> entry ?M 0 j' \<ge> entry ?M 0 (Suc j)" by auto
+  show ?thesis unfolding nextrel0_def using assms lt ej esj noint by simp
+qed
+
+lemma nextrel0_diagSeq_append_rtrancl:
+  assumes "j1 \<le> k" and "j0 \<le> j1"
+  shows "(nextrel0 (diagSeq 0 k @ rest))\<^sup>*\<^sup>* j0 j1"
+proof -
+  let ?M = "diagSeq 0 k @ rest"
+  from assms(2) obtain d where d: "j1 = j0 + d" using le_Suc_ex by blast
+  have "j0 + d \<le> k \<Longrightarrow> (nextrel0 ?M)\<^sup>*\<^sup>* j0 (j0 + d)"
+  proof (induction d)
+    case 0 show ?case by simp
+  next
+    case (Suc d)
+    have le: "j0 + d \<le> k" using Suc.prems by simp
+    have rt: "(nextrel0 ?M)\<^sup>*\<^sup>* j0 (j0 + d)" using Suc.IH le by simp
+    have lt: "j0 + d < k" using Suc.prems by simp
+    have step: "nextrel0 ?M (j0 + d) (Suc (j0 + d))"
+      using lt by (rule nextrel0_diagSeq_append_step)
+    show ?case using rt step by (simp add: rtranclp.rtrancl_into_rtrancl)
+  qed
+  thus ?thesis using assms(1) d by simp
+qed
+
+lemma le0_diagSeq_append_prefix:
+  assumes "j0 \<le> j1" and "j1 \<le> k"
+  shows "le0 (diagSeq 0 k @ rest) j0 j1"
+proof -
+  let ?M = "diagSeq 0 k @ rest"
+  have rt: "(nextrel0 ?M)\<^sup>*\<^sup>* j0 j1"
+    by (rule nextrel0_diagSeq_append_rtrancl[OF assms(2,1)])
+  have L: "Lng ?M = Suc k + Lng rest" by simp
+  have b1: "j1 < Lng ?M" using assms(2) L by linarith
+  have b0: "j0 < Lng ?M" using assms b1 by linarith
+  show ?thesis using rt b0 b1 by (simp add: le0_def)
+qed
 
 text \<open>If a non-empty \<open>rest\<close> starts strictly above the diagonal (both rows
   \<open>> k\<close>), the trunk runs through the whole diagonal prefix and the junction, so

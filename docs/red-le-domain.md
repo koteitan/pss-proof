@@ -240,3 +240,32 @@ dead-branch[20]→Red_IncrFirst/Red_Pred→keystone(d)→RedCondA⟹red_le で c
 **結論**: cluster の唯一の突破口 = **branch-3b BC0**（row-0 cross-block le0、非循環、§6.8 anchoring）。
 これが green になれば α 経由で monoT_Red→dead-branch[20]→Red_IncrFirst/Red_Pred/keystone(d)→
 `RedCondA⟹red_le` で cluster 全体が連鎖的に解ける。経験: 断片 59240/0(rank≤5) + 1070/0(rank≥12)。
+
+## 9. branch-3b BC0 を PIECE3(cross-block junction)へ精密化 (2026-06-01)
+
+branch-3b BC0 の proving 試行（workflow wlozsbwjb、2試行 green-full）。**row-0 forward の組立
+には le0 reassembly residual が無い**ことが判明し、residual が1つの構造事実へ collapse:
+
+**GREEN A4非依存ブリック統合済**（agent B、循環引用0）:
+- `le0_diagSeq_append_prefix` (+`nextrel0_diagSeq_append_step/rtrancl`): trunk prefix
+  `diagSeq 0 k @ rest` の row-0 spine = index 順（PIECE1 trunk-spine）。
+- `le0_monoT_seg_into_list`: monoT な branch block (= seg(Red M) bs be) の左端が後続 index の
+  row-0 祖先（PIECE2 into-block、`adm_le0_seg`+`m_5_1_ancestor_tree_1`）。
+
+**honest な唯一の residual = PIECE3 (cross-block inter-branch junction、非循環、multi-week)**:
+```
+M∈PT_PS, monoT M, M_0=(0,0), TrMax M ≠ Lng M-1, ∀J<Lng(Br M):
+  le0 (Red M) 0 bs_J     [bs_J = (TrMax M+1)+Σ_{K<J} Lng(block_K) = J番目 branch block の Red M 内左端]
+```
+= J 番目 block 左端 bs_J が 0(trunk root)の row-0 子孫。経験 49669/49669 + 27751/27751(rank≥12)。
+組立(検証 22601/22601): PIECE3(last block bs)→PIECE2(into last block)→le0推移で α/BC0 target。
+
+PIECE3 は §6.8 `oper_d1pos_branch_anchor`/`oper_d1pos_anchor_coincide_*`(~14345-18000)が**単一
+P成分**に対し既に grind 済の row-0 last-component anchor + n_J row-1親一致(注[12])を、**全 block
+(inter-branch)へ row-0 で再組立**するもの。row-0 のみ(BC1/row-1 不要)。非循環。
+
+⚠️ agent A の代替 framing「residual = R1: Red A∈PT_PS」は**循環**(monoT(Red A)=le0(Red A)0(Lng-1)
+=BC0 at a=0=BC0 自身)。PIECE3 が正しい honest residual。
+
+**cluster の最終残件 = PIECE3**。これ1つが green になれば α/BC0→monoT_Red→dead-branch[20]→
+Red_IncrFirst/Red_Pred/keystone(d)→`RedCondA⟹red_le` で §6.5/§6.6 全体が連鎖解決。
