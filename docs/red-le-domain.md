@@ -145,3 +145,36 @@ slice transfer `adm_le0_seg`/`adm_nextR1_seg`/`adm_le1_seg`(新)。
 不変量で解決（coreReduce 引数 20/1066 の非descending(Br) は core 枝で Red_le-ok を別途
 確認、経験 1066/1066）。経験的確信は HIGH（Red_le 776/0 anchored, 1066/1066 coreReduce
 引数, multi 不在）。
+
+## 6. 重大な設計結論 (2026-06-01): 固定不変量 pinduct は不可
+
+§5 の GLUE 試行（2 workflow, 6 agent, ~1.3M token）で判明した**根本障害**:
+
+**`Red_le` を anchored_slice 上で証明する Red.pinduct は、いかなる固定不変量 Φ でも
+閉じない。** 必要なのは Φ が (a) 全 Red sub-call で閉じ、かつ (b) core-nontrunk
+ノードで L6/BC 同値を含意すること。だが:
+
+- **`descending(Br M)` は閉だが弱すぎ**（(b) 不成立）: 反例
+  **`(0,0)(1,1)(1,2)(2,2)`** — core・monoT・descending(Br)=真・全 NJ も descending
+  なのに `Red M = (0,0)(1,1)(1,1)(2,2)` が row-1 辺を反転（`leR M 1 2 3`=偽 vs
+  `leR(Red M) 1 2 3`=真）。全 T_PS で 2198 反例、core-nontrunk monoT+descending で
+  188中5反例。
+- **`RedCondA`（§6.6 簡約性: 一意親辺は+1増分）は BC を含意**し5反例を正確に分離
+  （descending∧RedCondA → BC 37/0、RedCondA∧RedCondB → 50/0）が、**sub-call で閉じない**
+  （anchored seed から到達する 72 個の coreReduce 引数 Narg=diagSeq@IncrFirst^m10 M が
+  RedCondA を破る）。
+- **`descending(Br)` 自体が NJ 再ルートで閉じない**（776反例、C-NJ補題は偽）。
+- **真のガードは reachability**（M が anchored_slice の Red-sub-call 子孫）。これが
+  大域定理 `m_6_5_Red_le_anchored` を真にするが（到達集合で BC 0反例、5破壊項は
+  到達不能）、reachability は pinduct 非閉。
+
+**閉な C-shift/C-core は真**（`descending_Br_shiftRow0` 15904/0,
+`descending_Br_coreArg` 4338/0、ただし未証明）。**反例再現**: `python/glue_verify.py`
+（`python3 glue_verify.py brute 5 3`）。
+
+**正しい証明構造（次の研究対象）**: 固定不変量 pinduct を捨て、anchored slice 上で
+**直接** `redle_anchored_core` / `redle_anchored_noncore`（共に経験的真 263/0, 346/0）を
+証明する。recursion の productive ステップごとに RedCondA(簡約性)を**再確立**する機構か、
+§7 use-site の anchoring（article 注[12]）を陽に使う。§6.6 簡約性の成果に依存する可能性大
+→ **§6.5 Red_le は §6.6 の後に回すのが自然**。multi-week 級。main には sorry を入れない
+（5 green ブリックは sorry-free で済）。
