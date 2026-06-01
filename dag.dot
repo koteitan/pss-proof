@@ -166,8 +166,8 @@ digraph pss {
     r_adm [label="§6.5 Red許容保存", fillcolor="#6b2b30"];
     r_admof [label="§6.5 許容化Red不変", fillcolor="#6b2b30"];
     r_mark [label="§6.5 Red基点保存", fillcolor="#6b2b30"];
-    r_mRed [label="§6.5 単項とRed", fillcolor="#6b2b30"];
-    dead20 [label="§6.5 死枝[20]到達不能", fillcolor="#7a5320"];
+    r_mRed [label="§6.5 単項とRed", fillcolor="#2e5d34"];
+    dead20 [label="§6.5 死枝[20]到達不能", fillcolor="#2e5d34"];
 
   /* ===================== §6.1-6.4 (全✅) ===================== */
     p64_idx [label="§6.4 P-IdxSum", fillcolor="#2e5d34"];

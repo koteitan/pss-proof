@@ -394,8 +394,15 @@ text \<open>命題（単項性と\<open>Red\<close>の関係） — the suffix \
   this is exactly the branch condition that makes the \<open>Red M := M\<close> fall-throughs
   \<^bold>\<open>[19]\<close>/\<^bold>\<open>[20]\<close> in the §6.5 definition dead.\<close>
 
+text \<open>Encoding note: the article's diagonal \<open>((j,j))\<^bsub>j=0\<^esub>\<^bsup>M\<^bsub>1,0\<^esub>-1\<^esup>\<close> is the
+  \<^emph>\<open>empty\<close> sequence when \<open>M\<^bsub>1,0\<^esub> = 0\<close>, but \<open>diagSeq 0 (entry M 1 0 - 1)\<close> is a
+  spurious singleton \<open>[(0,0)]\<close> there (nat subtraction \<open>0-1=0\<close>), making the literal
+  statement false at \<open>M\<^bsub>1,0\<^esub>=0\<close>.  Red invokes this construction only in its
+  \<open>m\<^sub>1\<^sub>0>0\<close> branch [17], so the premise \<open>0 < entry M 1 0\<close> is added (faithful to
+  the use-site); discharged by \<open>m_6_5_monoT_Red_m10pos\<close> in \<open>pss_mechanized\<close>.\<close>
+
 lemma p_6_5_monoT_Red:
-  assumes "M \<in> PT_PS"
+  assumes "M \<in> PT_PS" "0 < entry M 1 0"  \<comment> \<open>m10>0: the empty-diagonal regime Red uses\<close>
   defines "N \<equiv> Red (diagSeq 0 (entry M 1 0 - 1) @ (IncrFirst ^^ (entry M 1 0)) M)"
   shows "seg N (entry M 1 0) (Lng N - 1) \<in> PT_PS"
   sorry

@@ -15,14 +15,14 @@
     - ✅ §6.4 幹と枝
     - 🚨🚧 §6.5 簡約化 〔下記8系は $T_{\textrm{PS}}$ で偽、係留切片で真 (correction A4)。**cluster は dead-branch[20] を中心に絡むが非循環＝破れると確定**。最難ボトルネックを値単調性不変量1つ `m_6_5_Red_leftend_row0_min` まで絞り込み済。設計 `docs/red-le-domain.md §6-10`〕
       - ✅ 命題（$\textrm{Red}$ の well-defined 性）
-      - 🚨🚧 命題（$\textrm{Red}$ の $\textrm{IncrFirst}$ 不変性）〔m10>0 が死枝[20]待ち。死枝[20]⟺Red_IncrFirst(m10>0) と判明〕
-        - 🚨🚧 補題（死枝[20]の到達不能性）〔= `p_6_5_monoT_Red`。**α 経由で row-0 forward 断片→BC0→PIECE3→最終残件 `m_6_5_Red_leftend_row0_min`(値単調性, Red.pinduct, 非循環) へ崩した**。green ブリック多数統合済 (facts1/2a, leR_diagSeq, leR_shiftRow0, redle_branch5_rebase, le0_diagSeq_*/junction, le0_monoT_seg_into_list)。設計 `docs/red-le-domain.md §6-10`〕
+      - 🚨🚧 命題（$\textrm{Red}$ の $\textrm{IncrFirst}$ 不変性）〔m10>0=死枝[20]⟺Red_IncrFirst。**死枝[20]不到達 `m_6_5_monoT_Red_m10pos` が green になり unblock**、配線待ち〕
+        - ✅🚧 補題（死枝[20]の到達不能性）〔= `p_6_5_monoT_Red`。**m10>0 ケース完全証明 `m_6_5_monoT_Red_m10pos`(green, 非循環)**。α 経由: leftend-min→PIECE3→BC0→monoT_Red。m10=0 はエンコーディング縮退で premise `0<m10` 補正(Red は m10>0 でのみ使用)。設計 `docs/red-le-domain.md §6-11`〕
       - ✅ 命題（$\textrm{Lng}$ の $\textrm{Red}$ 不変性）〔§6.5 下流の linchpin〕
       - ✅ 系（$\textrm{Red}$ が零項性を保つこと）
       - 🚨 系（直系先祖の $\textrm{Red}$ 不変性）〔keystone・A4〕
       - 🚨 系（$\textrm{Red}$ が単項性を保つこと）〔A4〕
       - 🚨 系（$P$ の $\textrm{Red}$ 同変性）〔A4〕
-      - 🚨 命題（単項性と $\textrm{Red}$ の関係）〔$PT_{\textrm{PS}}$ 前提〕
+      - ✅ 命題（単項性と $\textrm{Red}$ の関係）〔`m_6_5_monoT_Red_m10pos`、m10>0(=Red 使用域)、dead-branch[20]不到達〕
       - 🚨 命題（$\textrm{Red}$ の冪等性）〔A4〕
       - 🚨🚧 命題（$\textrm{Red}$ と $\textrm{Pred}$ の可換性）〔case 6 が死枝[20]待ち〕
         - 🚨 補題（死枝[20]の到達不能性）〔上記「Red の IncrFirst 不変性」と同一の補題。`Red` 定義 m10>0 ケースの else 枝(原文脚注[20])が到達不能。設計 `docs/red-termination.md`〕
