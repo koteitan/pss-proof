@@ -366,3 +366,24 @@ monoT_Red への循環依存なし)。**論理ギャップなし・非循環**�
 Joints/FirstNodes/eJ を共有、105/105 = TrMax/Joints/Br の IncrFirst 同変性）を Isabelle 化。
 これは §6.4 構造事実(Red 非再帰)で分離可能。mechanize 時: `m_6_5_Red_IncrFirst_joint`(Φ pinduct)
 → t=0 系で p_6_5_Red_IncrFirst discharge。
+
+## 14. Red_IncrFirst: 核心 relation-engine green、残り assembly (2026-06-01)
+
+workflow wr85758i3。Φ mechanization で**設計が「multi-day blocker」と呼んだ核心が GREEN 化**:
+- **`bumpAt_nextrel0_eq`（A）/ `cutAt_bumpAt_nextrel0/nextrel1`（B）= cut-anchored relation equality**:
+  `cutP M t ⟹ nextrel0(bumpAt M t)=nextrel0 M`。clean cut の約半数は prefix row-0 値 > tail 値で
+  global-bumpv の tail_bump locale が効かないため、**cut 仮説のみから**（prefix↔tail junction の
+  a=t-1 引数 + tail +1 が strict 比較と最小性を保存）証明。**§6.8 oper_d1pos anchoring 再組立 不要**だった。
+- `cut_bump` locale + `cut_bump_bumpAt`: bumpAt M t と M が le0/le1/nextR/leR/TrMax/zeroT/monoT/
+  multiT/Pcut を全共有。`m_6_5_Red_IncrFirst`(t=0 系) は wired・sorry-free body。
+
+**残り = Φ pinduct の非zeroT 分岐 assembly のみ**（agent A は1 sorry に集約: multi[IH_mu]/core-trunk/
+core-nontrunk[Br A=map IncrFirst(Br crM)=njA_Br_eq, 各 NJ は cut付き tail-bump=Φ-IH]/shift[branch-4 free]
+/m10>0[njA_*+monoT_Red→Red(coreReduce(IncrFirst M))=Red(coreReduce M)=Φ(crM) t=m10, IH_nc4 供給]）。
+全ピース green（relation-engine + njA_* + monoT_Red）。経験 19290/19290 + rank≥12 3912。
+**論理ブロッカーなし・非循環、残りは mechanical assembly labor（multi-day）**。
+
+### フェーズ転換
+§6.5 の **breakthrough（最難 dead-branch[20] + 各 relation-engine の hard logic）は完了**。残りの §6.5
+（Red_IncrFirst の assembly, Red_Pred, keystone(d), RedCondA⟹red_le, 8系A4）は**論理は解決済で、
+multi-day の mechanization assembly フェーズ**。各層は非循環・健全。
