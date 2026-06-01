@@ -297,3 +297,23 @@ sub-call）。agent A 評「**multi-week より遥かに小さい、reachability
 
 **cluster の最終目標 = `m_6_5_Red_leftend_row0_min`**（値単調性、Red.pinduct）。これで PIECE3→BC0→
 monoT_Red→dead-branch[20]→Red_IncrFirst/Red_Pred/keystone(d)→`RedCondA⟹red_le` で §6.5/§6.6 全解決。
+
+## 11. m10>0 カスケード green まで残り sorry 1つ (2026-06-01)
+
+workflow wttfxj25r で leftend-min から monoT_Red への m10>0 カスケードを GREEN 構築、残り sorry 1つ:
+
+**GREEN（worktree、leftend-min 依存）**: `coreReduce_m10_le_TrMax`, `redB_prefix_diag`(Red B の
+diagSeq 前置で entry=j, i∈{0,1}, j≤m10), `redB_row1_anchor`(entry(Red B)1 m10=m10),
+`redB_row0_strict_suffix_min`, `redB_le0_anchor_jN`(=STEP-BC0: le0(Red B) m10 jN),
+**`m_6_5_monoT_Red_m10pos`**(=p_6_5_monoT_Red の m10>0 ケース: M∈PT_PS, m10>0 ⟹ seg N m10 jN∈PT_PS)。
+
+**残り唯一の sorry = `redB_tail_row0_above_anchor`**: core-nontrunk Red B の branch-tail が
+row-0 値 > m10。`Joints(B)!J ≥ m10`(§6.4、B の長さ m10 対角前置から) + block 左端値 Joints!J+1
++ leftend-min(green) に還元。非循環、591/591。→ workflow wd4enixhu で証明中。
+
+**忠実性: m10=0 エンコーディングバグ（article 訂正でなく我々の転記）**: p_6_5_monoT_Red の
+`diagSeq 0 (entry M 1 0 - 1)` は m10=0 で Isabelle nat により `diagSeq 0 0 = [(0,0)]`（偽 singleton）
+を生むが、article の `((j,j))_{j=0}^{m10-1}` は m10=0 で**空対角**。よって literal 文は m10=0 で偽
+（258/297 反例）だが、空対角で評価すれば真（5028/0）。Red 定義の branch 5 は m10>0 前提なので
+**実際の使用は m10>0 のみ**。統合時に p_6_5_monoT_Red を (a) `0<entry M 1 0` 制限 or (b) 対角を
+`map (λj.(j,j)) [0..<m10]`（空対角)に修正、で `m_6_5_monoT_Red_m10pos` で discharge する。
