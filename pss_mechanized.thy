@@ -24427,5 +24427,63 @@ proof -
     using e1 ge0 domj by simp
 qed
 
+text \<open>§6.5 branch-3b BC0, PIECE 3 ASSEMBLY (cross-block junction, row-0).
+  This is the green ASSEMBLY of the cross-block junction edge from the trunk
+  diagonal into a branch block leftend, on the explicit \<open>core-nontrunk\<close> form
+  \<open>R = Red M = diagSeq 0 t @ rest\<close> (\<open>t = TrMax M\<close>, \<open>rest = concat (branch blocks)\<close>).
+
+  It reduces \<open>le0 R 0 bs\<close> (the J-th block leftend \<open>bs\<close> is a row-0 descendant of
+  the trunk root 0) to the SINGLE deeper residual @{term noint} (the cross-block
+  ``no-smaller-intermediate'' condition: nothing strictly between the diagonal
+  parent \<open>e-1\<close> and \<open>bs\<close> has a row-0 entry below \<open>e = entry R 0 bs\<close>).  Everything
+  else is discharged by the GREEN bricks @{thm [source] le0_diagSeq_append_prefix}
+  (trunk spine) and @{thm [source] entry_diagSeq_append_lo} (the diagonal parent
+  \<open>e-1\<close> reads value \<open>e-1\<close>), plus a single @{const nextrel0} step.
+
+  Empirically the residual @{term noint} is the cross-block fact
+  ``\<open>entry R 0 bs = Joints M ! J + 1\<close> and every earlier-block / diagonal entry is
+  \<open>\<ge> Joints M ! J + 1\<close>'', which on the NJ side becomes
+  ``\<open>entry (Red (NJ M J)) 0 j \<ge> npJ M J\<close> for all \<open>j\<close>'' — a Red-recursive entry
+  lower bound (see \<open>docs/red-le-domain.md\<close> \<S>9).  Empirically TRUE
+  49669/49669 (rank\<le>5) + rank\<ge>12 (5003/0, 1657/0).\<close>
+
+lemma le0_diagSeq_junction_into_block:
+  fixes R :: pairseq
+  assumes Rsplit: "R = diagSeq 0 t @ rest"
+    and e_def: "e = entry R 0 bs"
+    and e1: "1 \<le> e" and et: "e \<le> Suc t"
+    and bsgt: "t < bs" and bsL: "bs < Lng R"
+    and noint: "\<forall>j. e - 1 < j \<and> j < bs \<longrightarrow> entry R 0 j \<ge> e"
+  shows "le0 R 0 bs"
+proof -
+  define p where "p = e - 1"
+  \<comment> \<open>The diagonal parent \<open>p = e-1 \<le> t\<close> reads value \<open>p\<close>.\<close>
+  have ple: "p \<le> t" using et e1 p_def by linarith
+  have ep: "entry R 0 p = p"
+  proof -
+    have "entry (diagSeq 0 t @ rest) 0 p = p" by (rule entry_diagSeq_append_lo[OF ple])
+    thus ?thesis using Rsplit by simp
+  qed
+  \<comment> \<open>Trunk spine: \<open>0 \<rightarrow>\<^sup>* p\<close> (GREEN @{thm le0_diagSeq_append_prefix}).\<close>
+  have z0: "(0::nat) \<le> p" by simp
+  have spine: "le0 R 0 p"
+    using le0_diagSeq_append_prefix[OF z0 ple, of rest] Rsplit by simp
+  \<comment> \<open>The single junction step \<open>p \<rightarrow> bs\<close> (a @{const nextrel0} step).\<close>
+  have pbs: "p < bs" using bsgt ple by linarith
+  have ebs: "entry R 0 bs = e" using e_def by simp
+  have lt: "entry R 0 p < entry R 0 bs" using ep ebs e1 p_def by linarith
+  have noint': "\<forall>j. p < j \<and> j < bs \<longrightarrow> entry R 0 j \<ge> entry R 0 bs"
+    using noint ebs p_def by simp
+  have pL: "p < Lng R" using pbs bsL by linarith
+  have step: "nextrel0 R p bs"
+    unfolding nextrel0_def using pL bsL pbs lt noint' by blast
+  \<comment> \<open>Assemble: \<open>0 \<rightarrow>\<^sup>* p \<rightarrow> bs\<close>.\<close>
+  have stepR: "(nextrel0 R)\<^sup>*\<^sup>* p bs" using step by (rule r_into_rtranclp)
+  have spineR: "(nextrel0 R)\<^sup>*\<^sup>* 0 p" using spine by (simp add: le0_def)
+  have rt: "(nextrel0 R)\<^sup>*\<^sup>* 0 bs" using spineR stepR by (rule rtranclp_trans)
+  have b0: "(0::nat) < Lng R" using bsL by linarith
+  show ?thesis using rt b0 bsL by (simp add: le0_def)
+qed
+
 end
 

@@ -269,3 +269,31 @@ P成分**に対し既に grind 済の row-0 last-component anchor + n_J row-1親
 
 **cluster の最終残件 = PIECE3**。これ1つが green になれば α/BC0→monoT_Red→dead-branch[20]→
 Red_IncrFirst/Red_Pred/keystone(d)→`RedCondA⟹red_le` で §6.5/§6.6 全体が連鎖解決。
+
+## 10. PIECE3 が値不変量へ collapse (2026-06-01): multi-week 消滅
+
+PIECE3 proving 試行（workflow w9sg0nm22、2試行 reduced-to-deeper）。**恐れていた multi-week の
+§6.8 inter-branch reassembly は消滅** — PIECE3 が green bricks で1つの**row-0 値単調性不変量**へ collapse。
+
+**ROUTE-A (idxsum_leftend_lmin) は DEAD**: bs_J は Red M の row-0 左最小では**ない**（entry0=Joints!J+1≥1、
+index 0 は entry0=0、0/3169+0/6530）。正しい route = **diagonal-junction**: 0 →* (e-1) [trunk diagSeq
+spine, green `le0_diagSeq_append_prefix`] → bs_J [単一 nextrel0 step]。
+
+**GREEN assembly lemma 統合済**: `le0_diagSeq_junction_into_block`（PIECE3 の le0(Red M) 0 bs_J を
+residual `noint`(e-1 と bs の間に row-0 値 <e が無い)から証明、green bricks のみ）。
+`noint` は (a) trunk tail [trivial] + (b) earlier blocks K<J [green `m_6_4_FirstNodes_Joints_mono`
+＝Joints 非増加] へ分解。**feared cross-block reassembly は Joints 非増加で完全処理**。
+
+**唯一の最終 residual = row-0 値不変量（非循環、Red.pinduct）**:
+```
+m_6_5_Red_leftend_row0_min:  monoT M ⟹ ∀k<Lng(Red M). entry(Red M) 0 0 ≤ entry(Red M) 0 k
+  + 注[12] 値: entry(Red(NJ M J)) 0 0 = npJ M J
+```
+= monoT 入力の Red 出力は左端が row-0 最小（diag-prefixed）。**le0/nextrel0 を含まない値不変量**
+＝BC0/monoT_Red の変装では**ない**（Red(NJ) が非monoT/zeroT でも成立 1246/1246 ＝循環 framing と無関係、
+**非循環確定**）。経験 1004/1004(exhaustive) + 3169/3169(NJ-shaped) + rank≥12 1201/1201。
+Red.pinduct（trunk diag は 0=global min、各 block IncrFirst^eJ で row0 を eJ 持上げ、IH は smaller monoT
+sub-call）。agent A 評「**multi-week より遥かに小さい、reachability でなく value-monotonicity 不変量**」。
+
+**cluster の最終目標 = `m_6_5_Red_leftend_row0_min`**（値単調性、Red.pinduct）。これで PIECE3→BC0→
+monoT_Red→dead-branch[20]→Red_IncrFirst/Red_Pred/keystone(d)→`RedCondA⟹red_le` で §6.5/§6.6 全解決。
