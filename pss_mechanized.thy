@@ -5299,6 +5299,112 @@ proof -
   finally show ?thesis .
 qed
 
+subsection \<open>\<open>\<le>\<^sub>M\<close> on a diagonal segment is the index order (both rows)\<close>
+
+text \<open>H1 (feeds the core-trunk base case \<open>Red (diagSeq ..)\<close>): on a diagonal
+  segment \<open>diagSeq a b\<close> the row-0 \<open><\<^sup>Next\<close>-step is the consecutive index step.\<close>
+
+lemma nextrel0_diagSeq_step:
+  assumes "Suc j < Suc b - a"
+  shows "nextrel0 (diagSeq a b) j (Suc j)"
+proof -
+  let ?M = "diagSeq a b"
+  have L: "Lng ?M = Suc b - a" by simp
+  have ej:  "entry ?M 0 j = a + j"           using assms by (intro entry_diagSeq) simp
+  have esj: "entry ?M 0 (Suc j) = a + Suc j"  using assms by (intro entry_diagSeq) simp
+  show ?thesis unfolding nextrel0_def using assms ej esj L by auto
+qed
+
+text \<open>Row-0 reachability along a diagonal: every \<open>j0 \<le> j1 < Lng\<close> is connected
+  by the reflexive-transitive closure of consecutive steps.\<close>
+
+lemma nextrel0_diagSeq_rtrancl:
+  assumes "j1 < Suc b - a" and "j0 \<le> j1"
+  shows "(nextrel0 (diagSeq a b))\<^sup>*\<^sup>* j0 j1"
+proof -
+  let ?M = "diagSeq a b"
+  from assms obtain d where d: "j1 = j0 + d" using le_Suc_ex by blast
+  have "j0 + d < Suc b - a \<Longrightarrow> (nextrel0 ?M)\<^sup>*\<^sup>* j0 (j0 + d)"
+  proof (induction d)
+    case 0 show ?case by simp
+  next
+    case (Suc d)
+    have lt: "Suc (j0 + d) < Suc b - a" using Suc.prems by simp
+    have rt: "(nextrel0 ?M)\<^sup>*\<^sup>* j0 (j0 + d)" using Suc.IH lt by simp
+    have step: "nextrel0 ?M (j0 + d) (Suc (j0 + d))"
+      using lt by (rule nextrel0_diagSeq_step)
+    show ?case using rt step by (simp add: rtranclp.rtrancl_into_rtrancl)
+  qed
+  thus ?thesis using assms(1) d by simp
+qed
+
+text \<open>Row-1 reachability along a diagonal: same chain, lifted through
+  @{thm [source] nextR1_diagSeq} (the diagonal has full row-1 \<open><\<^sup>Next\<close> edges,
+  so \<open>\<le>\<^sub>M\<close> on row 1 is also the index order \<open>j0 \<le> j1\<close> \<open>-\<close> NOT \<open>j0 = j1\<close>).\<close>
+
+lemma nextrel1_diagSeq_rtrancl:
+  assumes "j1 < Suc b - a" and "j0 \<le> j1"
+  shows "(nextrel1 (diagSeq a b))\<^sup>*\<^sup>* j0 j1"
+proof -
+  let ?M = "diagSeq a b"
+  from assms obtain d where d: "j1 = j0 + d" using le_Suc_ex by blast
+  have "j0 + d < Suc b - a \<Longrightarrow> (nextrel1 ?M)\<^sup>*\<^sup>* j0 (j0 + d)"
+  proof (induction d)
+    case 0 show ?case by simp
+  next
+    case (Suc d)
+    have lt: "Suc (j0 + d) < Suc b - a" using Suc.prems by simp
+    have rt: "(nextrel1 ?M)\<^sup>*\<^sup>* j0 (j0 + d)" using Suc.IH lt by simp
+    have step: "nextrel1 ?M (j0 + d) (Suc (j0 + d))"
+      using nextR1_diagSeq[OF lt] by (simp add: nextR_def)
+    show ?case using rt step by (simp add: rtranclp.rtrancl_into_rtrancl)
+  qed
+  thus ?thesis using assms(1) d by simp
+qed
+
+text \<open>m (H1): row-0 \<open>\<le>\<^sub>M\<close> on a diagonal segment is the index order.\<close>
+
+lemma le0_diagSeq:
+  assumes "j0 < Suc b - a" and "j1 < Suc b - a"
+  shows "le0 (diagSeq a b) j0 j1 \<longleftrightarrow> j0 \<le> j1"
+proof
+  assume "le0 (diagSeq a b) j0 j1"
+  hence "(nextrel0 (diagSeq a b))\<^sup>*\<^sup>* j0 j1" by (simp add: le0_def)
+  thus "j0 \<le> j1" by (rule nextrel0_rtrancl_mono)
+next
+  assume "j0 \<le> j1"
+  hence "(nextrel0 (diagSeq a b))\<^sup>*\<^sup>* j0 j1"
+    using assms(2) by (rule nextrel0_diagSeq_rtrancl[rotated])
+  thus "le0 (diagSeq a b) j0 j1" using assms by (simp add: le0_def)
+qed
+
+text \<open>m (H1): row-1 \<open>\<le>\<^sub>M\<close> on a diagonal segment is the index order, too.\<close>
+
+lemma le1_diagSeq:
+  assumes "j0 < Suc b - a" and "j1 < Suc b - a"
+  shows "le1 (diagSeq a b) j0 j1 \<longleftrightarrow> j0 \<le> j1"
+proof
+  assume "le1 (diagSeq a b) j0 j1"
+  hence "(nextrel1 (diagSeq a b))\<^sup>*\<^sup>* j0 j1" by (simp add: le1_def)
+  thus "j0 \<le> j1" by (rule nextrel1_rtrancl_mono)
+next
+  assume "j0 \<le> j1"
+  hence "(nextrel1 (diagSeq a b))\<^sup>*\<^sup>* j0 j1"
+    using assms(2) by (rule nextrel1_diagSeq_rtrancl[rotated])
+  thus "le1 (diagSeq a b) j0 j1" using assms by (simp add: le1_def)
+qed
+
+text \<open>m (H1): the unified \<open>\<le>\<^sub>M\<close> on a diagonal segment, both rows.  This is the
+  empirically-correct form: \<open>leR (diagSeq a b) i j0 j1 = (j0 \<le> j1)\<close> for
+  \<open>i \<in> {0,1}\<close> (the task's \<open>i=1 \<Rightarrow> j0 = j1\<close> guess is FALSE \<open>-\<close> the diagonal
+  carries full row-1 edges via @{thm [source] nextR1_diagSeq}).\<close>
+
+lemma leR_diagSeq:
+  assumes "i \<in> {0,1}" and "j0 < Suc b - a" and "j1 < Suc b - a"
+  shows "leR (diagSeq a b) i j0 j1 \<longleftrightarrow> j0 \<le> j1"
+  using assms le0_diagSeq[OF assms(2,3)] le1_diagSeq[OF assms(2,3)]
+  by (auto simp: leR_def)
+
 subsection \<open>\<open>IncrFirst\<close>-invariance of \<open>TrMax\<close> (and its iterate)\<close>
 
 text \<open>\<open>TrMax\<close> depends only on the row-1 \<open><\<^sup>Next\<close> chain, which is \<open>IncrFirst\<close>-
@@ -5661,6 +5767,78 @@ proof -
     by (intro ext) (rule nextrel0_shiftRow0_eq[OF M mono])
   thus ?thesis by (simp add: le0_def Lng_shiftRow0)
 qed
+
+text \<open>m: row-1 is untouched by \<open>shiftRow0\<close> and \<open>le0\<close> is preserved (above), so
+  \<open>nextrel1\<close> is preserved.  Function-level so it rewrites under \<open>\<^sup>*\<^sup>*\<close> in \<open>le1\<close>.\<close>
+
+lemma nextrel1_shiftRow0_eq:
+  assumes M: "M \<in> T_PS" and mono: "monoT M"
+  shows "nextrel1 (shiftRow0 M) = nextrel1 M"
+proof (intro ext)
+  fix j0 j1
+  have le0eq: "le0 (shiftRow0 M) = le0 M"
+    by (intro ext) (rule le0_shiftRow0_eq[OF M mono])
+  have "nextrel1 (shiftRow0 M) j0 j1 \<longleftrightarrow>
+        (j0 < Lng M \<and> j1 < Lng M \<and> j0 < j1 \<and>
+         entry (shiftRow0 M) 1 j0 < entry (shiftRow0 M) 1 j1 \<and>
+         le0 M j0 j1 \<and>
+         (\<forall>j. j0 < j \<and> le0 M j j1 \<longrightarrow>
+              entry (shiftRow0 M) 1 j \<ge> entry (shiftRow0 M) 1 j1))"
+    unfolding nextrel1_def by (simp add: le0eq Lng_shiftRow0)
+  also have "\<dots> \<longleftrightarrow> nextrel1 M j0 j1"
+  proof (cases "j0 < Lng M \<and> j1 < Lng M")
+    case False thus ?thesis by (auto simp: nextrel1_def le0_def)
+  next
+    case True
+    then have jb: "j0 < Lng M" "j1 < Lng M" by auto
+    have e1j0: "entry (shiftRow0 M) 1 j0 = entry M 1 j0"
+      using jb(1) by (rule entry_shiftRow0_1)
+    have e1j1: "entry (shiftRow0 M) 1 j1 = entry M 1 j1"
+      using jb(2) by (rule entry_shiftRow0_1)
+    have q: "(\<forall>j. j0 < j \<and> le0 M j j1 \<longrightarrow>
+                entry (shiftRow0 M) 1 j \<ge> entry (shiftRow0 M) 1 j1)
+           = (\<forall>j. j0 < j \<and> le0 M j j1 \<longrightarrow> entry M 1 j \<ge> entry M 1 j1)"
+    proof (intro iffI allI impI)
+      fix j assume H: "\<forall>j. j0 < j \<and> le0 M j j1 \<longrightarrow>
+                          entry (shiftRow0 M) 1 j \<ge> entry (shiftRow0 M) 1 j1"
+        and jr: "j0 < j \<and> le0 M j j1"
+      from jr have jL: "j < Lng M" by (simp add: le0_def)
+      have ej: "entry (shiftRow0 M) 1 j = entry M 1 j" using jL by (rule entry_shiftRow0_1)
+      from H jr have "entry (shiftRow0 M) 1 j1 \<le> entry (shiftRow0 M) 1 j" by blast
+      thus "entry M 1 j1 \<le> entry M 1 j" using e1j1 ej by simp
+    next
+      fix j assume H: "\<forall>j. j0 < j \<and> le0 M j j1 \<longrightarrow> entry M 1 j1 \<le> entry M 1 j"
+        and jr: "j0 < j \<and> le0 M j j1"
+      from jr have jL: "j < Lng M" by (simp add: le0_def)
+      have ej: "entry (shiftRow0 M) 1 j = entry M 1 j" using jL by (rule entry_shiftRow0_1)
+      from H jr have "entry M 1 j1 \<le> entry M 1 j" by blast
+      thus "entry (shiftRow0 M) 1 j1 \<le> entry (shiftRow0 M) 1 j" using e1j1 ej by simp
+    qed
+    have lt: "(entry (shiftRow0 M) 1 j0 < entry (shiftRow0 M) 1 j1)
+            = (entry M 1 j0 < entry M 1 j1)" using e1j0 e1j1 by simp
+    show ?thesis
+      unfolding nextrel1_def using jb lt q
+      by (simp add: Lng_shiftRow0 le0eq)
+  qed
+  finally show "nextrel1 (shiftRow0 M) j0 j1 = nextrel1 M j0 j1" .
+qed
+
+lemma le1_shiftRow0_eq:
+  assumes M: "M \<in> T_PS" and mono: "monoT M"
+  shows "le1 (shiftRow0 M) j0 j1 = le1 M j0 j1"
+proof -
+  have "nextrel1 (shiftRow0 M) = nextrel1 M"
+    by (rule nextrel1_shiftRow0_eq[OF M mono])
+  thus ?thesis by (simp add: le1_def Lng_shiftRow0)
+qed
+
+text \<open>m: full \<open>leR\<close> invariance under the row-0 shift \<open>shiftRow0\<close> (both rows).
+  This is the §6.5 L4 helper: \<open>(i,j0) \<le>\<^sub>M (i,j1)\<close> is preserved for \<open>i \<in> {0,1}\<close>.\<close>
+
+lemma leR_shiftRow0_eq:
+  assumes M: "M \<in> T_PS" and mono: "monoT M"
+  shows "leR (shiftRow0 M) i j0 j1 = leR M i j0 j1"
+  by (simp add: leR_def le0_shiftRow0_eq[OF M mono] le1_shiftRow0_eq[OF M mono])
 
 lemma monoT_shiftRow0:
   assumes M: "M \<in> T_PS" and mono: "monoT M"
@@ -6748,6 +6926,208 @@ proof -
     also have "\<dots> = leR M 1 j j'" by (simp add: leR_def)
     finally show ?thesis using i1 by simp
   qed
+qed
+
+
+text \<open>m (H3): branch-5 re-basing map preserves \<open>leR\<close> on the suffix.
+
+  In \<open>Red\<close> branch 5 (\<open>M\<^sub>0 \<noteq> (0,0)\<close>, \<open>M\<^bsub>1,0\<^esub> > 0\<close>), with \<open>N\<close> a term and
+  \<open>m\<^sub>1\<^sub>0 \<le> j\<^sub>N = Lng N - 1\<close>, the productive form [18] is
+  \<open>Red M = map (\<lambda>p. (fst p - N\<^bsub>0,m\<^sub>1\<^sub>0\<^esub> + N\<^bsub>1,m\<^sub>1\<^sub>0\<^esub>, snd p)) (seg N m\<^sub>1\<^sub>0 (Lng N - 1))\<close>.
+  This is a composition of (i) the seg-extraction transfer
+  @{thm [source] adm_le0_seg}/@{thm [source] adm_le1_seg} and (ii) a uniform
+  row-0 affine shift (subtract \<open>N\<^bsub>0,m\<^sub>1\<^sub>0\<^esub>\<close>, add \<open>N\<^bsub>1,m\<^sub>1\<^sub>0\<^esub>\<close>) of the slice.
+
+  The map is the generic affine row-0 shift \<open>rebaseRow0 c d\<close>; on a slice whose
+  row-0 minimum is its left end (the [18] \<open>PT\<^sub>PS\<close>-anchoring guarantees this via
+  @{thm [source] monoT_row0_min}) the subtraction does not truncate, so the order
+  on row 0 — and hence \<open>nextrel0\<close>/\<open>le0\<close>, and then \<open>nextrel1\<close>/\<open>le1\<close> which keep row 1
+  and reuse \<open>le0\<close> — is preserved.\<close>
+
+definition rebaseRow0 :: "nat \<Rightarrow> nat \<Rightarrow> pairseq \<Rightarrow> pairseq" where
+  "rebaseRow0 c d M = map (\<lambda>p. (fst p - c + d, snd p)) M"
+
+lemma Lng_rebaseRow0[simp]: "Lng (rebaseRow0 c d M) = Lng M"
+  by (simp add: rebaseRow0_def)
+
+lemma entry_rebaseRow0_0:
+  "j < Lng M \<Longrightarrow> entry (rebaseRow0 c d M) 0 j = entry M 0 j - c + d"
+  by (simp add: rebaseRow0_def entry_def)
+
+lemma entry_rebaseRow0_1:
+  "j < Lng M \<Longrightarrow> entry (rebaseRow0 c d M) 1 j = entry M 1 j"
+  by (simp add: rebaseRow0_def entry_def)
+
+text \<open>Generic affine row-0 shift preserves \<open>nextrel0\<close> when \<open>c\<close> is a row-0 lower
+  bound (so no nat-truncation).\<close>
+
+lemma nextrel0_rebaseRow0_eq:
+  assumes lb: "\<And>j. j < Lng M \<Longrightarrow> c \<le> entry M 0 j"
+  shows "nextrel0 (rebaseRow0 c d M) j0 j1 = nextrel0 M j0 j1"
+proof (cases "j0 < Lng M \<and> j1 < Lng M")
+  case True
+  hence j0L: "j0 < Lng M" and j1L: "j1 < Lng M" by simp_all
+  have e0: "entry (rebaseRow0 c d M) 0 j0 = entry M 0 j0 - c + d"
+    using j0L by (rule entry_rebaseRow0_0)
+  have e1: "entry (rebaseRow0 c d M) 0 j1 = entry M 0 j1 - c + d"
+    using j1L by (rule entry_rebaseRow0_0)
+  have gj0: "c \<le> entry M 0 j0" using lb[OF j0L] .
+  have gj1: "c \<le> entry M 0 j1" using lb[OF j1L] .
+  have lt_iff: "(entry M 0 j0 - c + d < entry M 0 j1 - c + d) = (entry M 0 j0 < entry M 0 j1)"
+    using gj0 gj1 by linarith
+  have ge_iff: "\<forall>j. j0 < j \<and> j < j1 \<longrightarrow>
+                  (entry (rebaseRow0 c d M) 0 j \<ge> entry (rebaseRow0 c d M) 0 j1)
+                  = (entry M 0 j \<ge> entry M 0 j1)"
+  proof (intro allI impI)
+    fix j assume jb: "j0 < j \<and> j < j1"
+    hence jL: "j < Lng M" using j1L by simp
+    have ej: "entry (rebaseRow0 c d M) 0 j = entry M 0 j - c + d"
+      using jL by (rule entry_rebaseRow0_0)
+    have gj: "c \<le> entry M 0 j" using lb[OF jL] .
+    show "(entry (rebaseRow0 c d M) 0 j \<ge> entry (rebaseRow0 c d M) 0 j1)
+            = (entry M 0 j \<ge> entry M 0 j1)"
+      using ej e1 gj gj1 by linarith
+  qed
+  show ?thesis
+    unfolding nextrel0_def
+    using e0 e1 lt_iff ge_iff by (simp cong: conj_cong)
+next
+  case False
+  thus ?thesis by (auto simp: nextrel0_def)
+qed
+
+lemma le0_rebaseRow0_eq:
+  assumes lb: "\<And>j. j < Lng M \<Longrightarrow> c \<le> entry M 0 j"
+  shows "le0 (rebaseRow0 c d M) j0 j1 = le0 M j0 j1"
+proof -
+  have "nextrel0 (rebaseRow0 c d M) = nextrel0 M"
+    by (intro ext) (rule nextrel0_rebaseRow0_eq[OF lb])
+  thus ?thesis by (simp add: le0_def)
+qed
+
+text \<open>\<open>nextrel1\<close> only adds row-1 comparisons (row 1 is kept) and a \<open>le0\<close>-quantified
+  condition, so it transfers along the \<open>le0\<close> correspondence above.\<close>
+
+lemma nextrel1_rebaseRow0_eq:
+  assumes lb: "\<And>j. j < Lng M \<Longrightarrow> c \<le> entry M 0 j"
+  shows "nextrel1 (rebaseRow0 c d M) j0 j1 = nextrel1 M j0 j1"
+proof (cases "j0 < Lng M \<and> j1 < Lng M")
+  case True
+  hence j0L: "j0 < Lng M" and j1L: "j1 < Lng M" by simp_all
+  have e1j0: "entry (rebaseRow0 c d M) 1 j0 = entry M 1 j0" using j0L by (rule entry_rebaseRow0_1)
+  have e1j1: "entry (rebaseRow0 c d M) 1 j1 = entry M 1 j1" using j1L by (rule entry_rebaseRow0_1)
+  have le0eq: "le0 (rebaseRow0 c d M) = le0 M"
+    by (intro ext) (rule le0_rebaseRow0_eq[OF lb])
+  have univ: "(\<forall>j. j0 < j \<and> le0 (rebaseRow0 c d M) j j1
+                 \<longrightarrow> entry (rebaseRow0 c d M) 1 j \<ge> entry (rebaseRow0 c d M) 1 j1)
+            = (\<forall>j. j0 < j \<and> le0 M j j1 \<longrightarrow> entry M 1 j \<ge> entry M 1 j1)"
+  proof (intro iffI allI impI)
+    fix j assume A: "\<forall>j. j0 < j \<and> le0 M j j1 \<longrightarrow> entry M 1 j \<ge> entry M 1 j1"
+      and B: "j0 < j \<and> le0 (rebaseRow0 c d M) j j1"
+    from B have jL: "(j::nat) < Lng M" by (simp add: le0_def)
+    have ej: "entry (rebaseRow0 c d M) 1 j = entry M 1 j" using jL by (rule entry_rebaseRow0_1)
+    from B A have "entry M 1 j1 \<le> entry M 1 j" using le0eq by simp
+    thus "entry (rebaseRow0 c d M) 1 j1 \<le> entry (rebaseRow0 c d M) 1 j"
+      using ej e1j1 by simp
+  next
+    fix j assume A: "\<forall>j. j0 < j \<and> le0 (rebaseRow0 c d M) j j1
+                       \<longrightarrow> entry (rebaseRow0 c d M) 1 j \<ge> entry (rebaseRow0 c d M) 1 j1"
+      and B: "j0 < j \<and> le0 M j j1"
+    from B have jL: "(j::nat) < Lng M" by (simp add: le0_def)
+    have ej: "entry (rebaseRow0 c d M) 1 j = entry M 1 j" using jL by (rule entry_rebaseRow0_1)
+    from B A have "entry (rebaseRow0 c d M) 1 j1 \<le> entry (rebaseRow0 c d M) 1 j"
+      using le0eq by simp
+    thus "entry M 1 j1 \<le> entry M 1 j" using ej e1j1 by simp
+  qed
+  have le0eq2: "\<And>a b. le0 (rebaseRow0 c d M) a b = le0 M a b" using le0eq by simp
+  show ?thesis
+    unfolding nextrel1_def
+    using e1j0 e1j1 le0eq univ by (simp cong: conj_cong)
+next
+  case False
+  thus ?thesis by (auto simp: nextrel1_def)
+qed
+
+lemma le1_rebaseRow0_eq:
+  assumes lb: "\<And>j. j < Lng M \<Longrightarrow> c \<le> entry M 0 j"
+  shows "le1 (rebaseRow0 c d M) j0 j1 = le1 M j0 j1"
+proof -
+  have "nextrel1 (rebaseRow0 c d M) = nextrel1 M"
+    by (intro ext) (rule nextrel1_rebaseRow0_eq[OF lb])
+  thus ?thesis by (simp add: le1_def)
+qed
+
+lemma leR_rebaseRow0_eq:
+  assumes lb: "\<And>j. j < Lng M \<Longrightarrow> c \<le> entry M 0 j"
+  shows "leR (rebaseRow0 c d M) i j0 j1 = leR M i j0 j1"
+  by (simp add: leR_def le0_rebaseRow0_eq[OF lb] le1_rebaseRow0_eq[OF lb])
+
+text \<open>The branch-5 re-basing of the suffix \<open>seg N m\<^sub>1\<^sub>0 (Lng N - 1)\<close> preserves
+  \<open>leR\<close> against \<open>N\<close> at the shifted indices.  The slice's being \<open>monoT\<close> (the
+  article [18] \<open>PT\<^sub>PS\<close>-anchoring) makes its left end the row-0 minimum, hence the
+  re-base is order-preserving.  Feeds L5 with
+  @{thm [source] m_6_5_monoT_Red_fact2a_leR_shift}.\<close>
+
+lemma redle_branch5_rebase:
+  assumes Sps: "seg N m10 (Lng N - 1) \<in> T_PS"
+    and Smono: "monoT (seg N m10 (Lng N - 1))"
+    and m10lt: "m10 < Lng N"
+    and i: "i = 0 \<or> i = 1"
+    and aL: "a < Lng N - m10" and bL: "b < Lng N - m10"
+  shows "leR (rebaseRow0 (entry N 0 m10) (entry N 1 m10) (seg N m10 (Lng N - 1)))
+              i a b
+         = leR N i (a + m10) (b + m10)"
+proof -
+  let ?S = "seg N m10 (Lng N - 1)"
+  let ?c = "entry N 0 m10"
+  let ?d = "entry N 1 m10"
+  have jN: "Lng N - 1 < Lng N" using m10lt by simp
+  have LS: "Lng ?S = Lng N - m10" using m10lt by (simp del: upt_Suc)
+  \<comment> \<open>left end of the slice is its row-0 minimum (anchoring)\<close>
+  have e0S0: "entry ?S 0 0 = ?c"
+  proof -
+    have "0 < Lng ?S" using LS aL bL by simp
+    hence "entry ?S 0 0 = entry N 0 (m10 + 0)" by (rule entry_seg)
+    thus ?thesis by simp
+  qed
+  have lb: "\<And>j. j < Lng ?S \<Longrightarrow> ?c \<le> entry ?S 0 j"
+  proof -
+    fix j assume jL: "j < Lng ?S"
+    show "?c \<le> entry ?S 0 j"
+    proof (cases "j = 0")
+      case True thus ?thesis using e0S0 by simp
+    next
+      case False
+      hence "0 < j" by simp
+      from monoT_row0_min[OF Sps Smono this jL] have "entry ?S 0 0 < entry ?S 0 j" .
+      thus ?thesis using e0S0 by simp
+    qed
+  qed
+  \<comment> \<open>step (ii): row-0 affine shift invariance on the slice\<close>
+  have shift: "leR (rebaseRow0 ?c ?d ?S) i a b = leR ?S i a b"
+    by (rule leR_rebaseRow0_eq[OF lb])
+  \<comment> \<open>step (i): seg-extraction transfer\<close>
+  have aLS: "a \<le> (Lng N - 1) - m10" using aL by simp
+  have bLS: "b \<le> (Lng N - 1) - m10" using bL by simp
+  have m10le: "m10 \<le> Lng N - 1" using m10lt by simp
+  have seg: "leR ?S i a b = leR N i (a + m10) (b + m10)"
+  proof (cases "i = 0")
+    case True
+    have "leR ?S 0 a b = le0 ?S a b" by (simp add: leR_def)
+    also have "\<dots> = le0 N (m10 + a) (m10 + b)"
+      using adm_le0_seg[OF jN aLS bLS m10le] by simp
+    also have "\<dots> = leR N 0 (a + m10) (b + m10)" by (simp add: leR_def add.commute)
+    finally show ?thesis using True by simp
+  next
+    case False
+    hence i1: "i = 1" using i by simp
+    have "leR ?S 1 a b = le1 ?S a b" by (simp add: leR_def)
+    also have "\<dots> = le1 N (m10 + a) (m10 + b)"
+      using adm_le1_seg[OF jN aLS bLS m10le] by simp
+    also have "\<dots> = leR N 1 (a + m10) (b + m10)" by (simp add: leR_def add.commute)
+    finally show ?thesis using i1 by simp
+  qed
+  show ?thesis using shift seg by simp
 qed
 
 
