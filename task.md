@@ -24,8 +24,8 @@
       - 🚨 系（$P$ の $\textrm{Red}$ 同変性）〔A4〕
       - ✅ 命題（単項性と $\textrm{Red}$ の関係）〔`m_6_5_monoT_Red_m10pos`、m10>0(=Red 使用域)、dead-branch[20]不到達〕
       - 🚨 命題（$\textrm{Red}$ の冪等性）〔A4〕
-      - 🚨🚧 命題（$\textrm{Red}$ と $\textrm{Pred}$ の可換性）〔case 6 が死枝[20]待ち〕
-        - 🚨 補題（死枝[20]の到達不能性）〔上記「Red の IncrFirst 不変性」と同一の補題。`Red` 定義 m10>0 ケースの else 枝(原文脚注[20])が到達不能。設計 `docs/red-termination.md`〕
+      - 🚨🚧 命題（$\textrm{Red}$ と $\textrm{Pred}$ の可換性）〔case 6 の死枝[20]不到達は `m_6_5_monoT_Red_m10pos`(green) で解消、配線待ち〕
+        - ✅🚧 補題（死枝[20]の到達不能性）〔上記「Red の IncrFirst 不変性」と共有。m10>0 完全証明 `m_6_5_monoT_Red_m10pos`(green)。設計 `docs/red-le-domain.md §6-11`〕
       - 🚨 命題（$\textrm{Red}$ と基本列の可換性）〔A4〕
       - 🚨 命題（$\textrm{Red}$ が許容性を保つこと）〔A4〕
       - 🚨 系（許容化の $\textrm{Red}$ 不変性）〔A4〕
