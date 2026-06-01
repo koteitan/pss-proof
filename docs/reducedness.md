@@ -44,3 +44,33 @@ RedCondA が正確に分離。よって keystone (d) が証明できれば:
 
 経験: `RedCondA⟹red_le` 877/0、reduced⟹RedCondA 286/0、reduced⟹RedCondB 286/0、
 (A∧B)∧¬reduced 0、死枝[20] 0/7380。
+
+## 7. 構造的発見 (2026-06-01): §6.5/§6.6 は dead-branch[20] で循環
+
+(c) `m_6_6_condAB_coeff` は既 green（A4非依存、純 nextrel）と確認。残るは keystone (d)
+と前提 (a)(2)/(e)。だが **§6.5/§6.6 cluster は循環的に絡む**:
+
+```
+Red_le ──needs──▶ RedCondA ──needs──▶ keystone(d) reduced⟺RedCondA∧RedCondB
+  ▲                                          │ backward 方向
+  │                                          ▼ (mono非core m10>0 を Red 展開)
+  └──────── dead-branch[20]不到達 ◀──needs── Red_monoT (= productive branch fires)
+            (= p_6_5_monoT_Red, 経験的真 344/0)
+```
+
+- keystone (d) の backward (RedCondA∧RedCondB ⟹ reduced) は mono非core m10>0 で Red を
+  展開し branch[17]/[18] が fire する＝`p_6_5_Red_monoT`（dead-branch[20]不到達）に依存
+  （agent B の警告、agent A は core 引き戻しで回避と主張＝**未決着**）。
+- dead-branch[20]不到達 (`p_6_5_monoT_Red`) は §6.5 で Red_le を必要とする。
+- Red_le は RedCondA を必要とする（lead: RedCondA⟹red_le 877/0）。
+
+**循環を破る直接エントリが必要**（新しい数学的アイデア。brute fan-out では循環偽証明を
+生むだけ＝§6.5 fan-out の既知失敗）。候補:
+- **(α)** dead-branch[20]不到達 を coefficient 構造から直接証明（Red_le 経由せず）。(c)
+  condAB_coeff の係数限界 `M_{0,j}≤j`, `M_{1,j}<j` で seg(N,m10,jN) の monoT 性
+  （=productive 条件）を直接導けるか。
+- **(β)** keystone backward を mono非core で condAB_coeff の係数限界経由で閉じ、Red_monoT
+  を迂回（agent A 主張の精査）。
+- どちらか1つが A4非依存で閉じれば循環全体が解ける。
+
+→ 次: (α)/(β) の実現可能性を read-only で精査（proving 前に循環回避を確認）。
