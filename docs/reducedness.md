@@ -105,3 +105,39 @@ Red_le ──needs──▶ RedCondA ──needs──▶ keystone(d) reduced⟺
 
 → 次: #1(parent block-locality), #5(core-trunk pinning) を独立 leaf として並列証明（土台）。
 green 後 #2/#3/#4 を次ラウンド、最後に fwd/bwd 組立て。#6 shift は別途精査。
+
+## 9. keystone 組立ての壁 (2026-06-03): 原文証明ルートは anchored ドメイン依存
+
+土台が全て green（#1 `m_6_4_parent_in_block`, #2 `m_6_6_RedCond_P_block`, #3
+`m_6_6_RedCond_concat_lift`, #4 `m_6_6_Red_P_stable`, #5 `m_6_6_RedCondA_core_diag`,
+`m_6_6_P_reduced`）。fwd/bwd 組立てを試行したが **mono の2枝で blocker**:
+
+- **multiT / zeroT / core-trunk / shift は閉じる**（shift は両方向で vacuous: fwd は
+  shift M が never reduced、bwd は RedCondB⟹m00=m10=0 が m00>0 と矛盾）。
+- **core-nontrunk と m10>0 が未解決**。
+
+### 決定的発見
+1. **m10>0 枝の再帰引数 N=Red(diagSeq 0(m10-1)@IncrFirst^m10 M) は長さ Lng M+m10
+   ＝ M より長い**。よって **Lng 帰納の IH が届かない**。Red 自身の整礎測度
+   ＝ **Red.pinduct で帰納**すべき（Lng 帰納でも単純 Red 再帰でも不可）。
+2. keystone iff `reduced⟺RedCondA∧RedCondB` は **全 T_PS={M≠[]} で真**
+   （型正規化後 0 fail; maxlen3,val3 4368件）。先の検証スクリプトの「131 fail」は
+   list-vs-tuple 型不一致バグ（教訓: [[verify-rank-depth]] 同様、経験検証は型に注意）。
+3. だが**原文の keystone 証明ルート**（簡約性と係数の関係の証明, content.md 1130-)
+   は **補題(e)簡約性と左端の関係(1084) + 簡約性の切片への遺伝性(1026) + Pred 帰納**
+   を使い、(e)/遺伝性はいずれも **Red 冪等性(960)** に依存。そして **Red 冪等性は
+   全 T_PS で偽**（820/4368 fail、**全て is_standard=False の非標準列**; 標準列では
+   0 fail）＝既に **A4 で `p_6_5_Red_idem` は `anchored_slice` に制限済**。
+4. よって keystone を**原文どおり**証明するには anchored/標準ドメインの
+   冪等性・(e)・遺伝性が要る。一方 keystone 自体は全 T_PS で真なので、
+   **冪等性を経由しない直接証明**（core-nontrunk/m10>0 の reproduction を condAB_coeff
+   構造から Red.pinduct で直接）も原理的に可能だが、原文に対応証明が無い＝原創作業。
+
+### 分岐（要方針判断）
+- **(A) 原文ルート**: `p_6_5_Red_idem`(anchored, 根) → (e) → slice遺伝性 → keystone。
+  原文が証明を与える（"Lng帰納で即座"）が4命題の連鎖＝multi-round。冪等性自体も
+  m10>0 longer-arg で Red.pinduct 要。
+- **(B) 直接ルート**: keystone を全 T_PS で Red.pinduct 直接証明。core-nontrunk/m10>0
+  の reproduction 補題を condAB_coeff から直接。原文に無い＝原創、難。
+- **(C) 一旦保留**し §6.7/§7/§8 等の独立タスクへ。keystone は §6.6/§6.7 の後続を
+  block するが §6.8(green)経由の §8 critical path とは別。
