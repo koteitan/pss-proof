@@ -188,3 +188,24 @@ engine 実装案（W1 設計 + tail_bump テンプレ@25718）:
 - 以後 B1/B2/idem/(e)/遺伝性/keystone は短い組立てで落ちる。
 
 → 残る唯一のボトルネック。deliberate に段階構築（multi-day）。設計駆動（fan-out でない）。
+
+## 12. Red_IncrFirst engine 完成 → cascade は interlocking cluster (2026-06-03)
+
+**`p_6_5_Red_IncrFirst` green**（commit ed43f8e）: cut_bump locale + `fin_cut_bump_Red`
+(Red.pinduct, cut量化, ~490行) + B2。プロジェクト最難の multi-week ボトルネック解消。
+
+だが cascade は即座でない。idempotency `idem_nonmulti` を Red.pinduct で攻めると、
+**3枝(zeroT/core-trunk/shift)は green**(commit 711ed24)だが残り2枝は **Red_IncrFirst とは
+別の engine 義務**:
+- **B1(idem) core-nontrunk**: 外側 Red の**再分解**（出力 `diagSeq@concat(IncrFirst^eJ(Red NJ))`
+  を Red が固定）。残差 `Red(NJ(Red M)J)=Red(NJ M J)` は Red_IncrFirst で落ちるが、**outer
+  re-decomposition alignment が未構築**。かつ idem IH は ¬multiT 限定で NJ M J が multiT
+  になりうるため不適 → **full idempotency**（multiT 込み）が要り、その multiT 枝は
+  `P(Red M)=map Red(P M)`(= p_6_5_P_Red, §6.5 sorry)に依存。
+- **B2(idem) m10>0**: `Red(coreReduce(Red M))=Red(coreReduce M)` の**非一様 cut**（row-1 head
+  597/756 で非一様）。uniform bumpv の fin_cut_bump_Red 不適。general «Red は nextR で決まる»
+  congruence が要る（cut_bump は IncrFirst の uniform 特殊例）。
+
+→ idem/keystone は interlocking cluster（idem ↔ P_Red ↔ Red_Pred ↔ outer-redecomp ↔
+非一様-cut）。**もう一段の engine フェーズ**（general nextR-congruence もしくは個別 pinning 群）。
+keystone backward の mono 枝も同じ機構を要求。
