@@ -27502,5 +27502,611 @@ proof -
   qed
 qed
 
+
+(* ===== keystone concat-transfer block from workflow kc-rcpb ===== *)
+
+(* ===== block inheritance of RedCondA/RedCondB (worktree kc-rcpb) ===== *)
+
+text \<open>rcpb: structural data for a \<open>P\<close>-block.  For \<open>M \<in> T_PS\<close> and
+  \<open>J < length (P M)\<close>, setting \<open>a = IdxSum (P M) ! J\<close> and \<open>L = Lng (P M ! J)\<close>,
+  the block is the \<open>M\<close>-slice \<open>seg M a (a + L - 1)\<close>, has positive length, and
+  lies entirely inside \<open>M\<close> (so \<open>a + L - 1 < Lng M\<close>).\<close>
+
+lemma rcpb_block_eq:
+  assumes M: "M \<in> T_PS" and JL: "J < length (P M)"
+  shows "P M ! J = seg M (IdxSum (P M) ! J) (IdxSum (P M) ! J + Lng (P M ! J) - 1)
+       \<and> 0 < Lng (P M ! J)
+       \<and> IdxSum (P M) ! J + Lng (P M ! J) - 1 < Lng M"
+proof -
+  let ?a = "IdxSum (P M) ! J"
+  let ?b = "IdxSum (P M) ! (J + 1) - 1"
+  let ?L = "Lng (P M ! J)"
+  have ne: "P M \<noteq> []" by (rule P_nonempty)
+  have J1: "J \<le> Lng (P M) - 1" using JL ne by (cases "P M") auto
+  have seq: "P M ! J = seg M ?a ?b" by (rule m_6_4_P_IdxSum[OF M J1])
+  have Lpos: "0 < ?L" by (rule idxsum_P_component_nonempty[OF M JL])
+  have Leq: "?L = Suc ?b - ?a" using seq by simp
+  have diff: "IdxSum (P M) ! (J + 1) = ?a + length (P M ! J)"
+    by (rule idxsum_diff[OF JL])
+  have sucb: "Suc ?b = ?a + ?L" using diff Lpos by simp
+  hence bval: "?b = ?a + ?L - 1" by simp
+  \<comment> \<open>range bound \<open>?a + ?L \<le> Lng M\<close>\<close>
+  have aval: "?a = sum_list (map length (take J (P M)))"
+    using JL by (simp add: idxsum_nth)
+  have lenM: "length M = sum_list (map length (P M))"
+    using idxsum_concat_P[of M] by (metis length_concat)
+  have rangeb: "?a + ?L \<le> Lng M"
+  proof -
+    have "?a + ?L = sum_list (map length (take (Suc J) (P M)))"
+      using aval JL by (simp add: take_Suc_conv_app_nth)
+    also have "\<dots> \<le> sum_list (map length (take (length (P M)) (P M)))"
+      using JL by (intro idxsum_sum_take_mono) simp
+    also have "\<dots> = sum_list (map length (P M))" by simp
+    finally show ?thesis using lenM by simp
+  qed
+  have blt: "?a + ?L - 1 < Lng M" using rangeb Lpos by linarith
+  show ?thesis using seq[unfolded bval] Lpos blt by simp
+qed
+
+text \<open>rcpb: row-\<open>i\<close> \<open>nextR\<close> on a slice corresponds to that on \<open>M\<close> shifted by the
+  slice offset (uniform in \<open>i \<le> 1\<close>), packaging
+  @{thm [source] adm_nextrel0_seg}/@{thm [source] adm_nextrel1_seg}.\<close>
+
+lemma rcpb_nextR_seg:
+  assumes b: "b < Lng M" and i: "i \<le> 1"
+    and p: "p < Lng (seg M a b)" and q: "q < Lng (seg M a b)"
+  shows "nextR (seg M a b) i p q \<longleftrightarrow> nextR M i (a + p) (a + q)"
+proof (cases "i = 0")
+  case True
+  thus ?thesis using adm_nextrel0_seg[OF b p q] by (simp add: nextR_def)
+next
+  case False
+  hence "i = 1" using i by simp
+  thus ?thesis using adm_nextrel1_seg[OF b p q] by (simp add: nextR_def)
+qed
+
+text \<open>rcpb: the parent-set bijection.  Inside a \<open>P\<close>-block, the row-\<open>i\<close> parents in
+  \<open>M\<close> of a node at local column \<open>jl\<close> are exactly the (offset-shifted) row-\<open>i\<close>
+  parents in the block.  Block-locality (@{thm [source] m_6_4_parent_in_block})
+  bounds every \<open>M\<close>-parent below by the block start \<open>a\<close>; the child relation
+  \<open>nextR\<close> bounds it above by the child column; the slice bridge
+  (@{thm [source] rcpb_nextR_seg}) then identifies the in-block parents.\<close>
+
+lemma rcpb_parent_iff:
+  assumes M: "M \<in> T_PS" and JL: "J < length (P M)" and i: "i \<le> 1"
+    and jl: "jl < Lng (P M ! J)"
+  defines "a \<equiv> IdxSum (P M) ! J"
+  shows "nextR (P M ! J) i pl jl \<longleftrightarrow> (pl < Lng (P M ! J) \<and> nextR M i (a + pl) (a + jl))"
+proof -
+  let ?B = "P M ! J"
+  let ?L = "Lng ?B"
+  let ?b = "a + ?L - 1"
+  have be: "?B = seg M a ?b" and Lpos: "0 < ?L" and blt: "?b < Lng M"
+    using rcpb_block_eq[OF M JL] unfolding a_def by auto
+  have segL: "Lng (seg M a ?b) = ?L" using be by simp
+  have jlseg: "jl < Lng (seg M a ?b)" using jl segL by simp
+  show ?thesis
+  proof
+    assume H: "nextR ?B i pl jl"
+    \<comment> \<open>parent column \<open>pl\<close> is in the block (\<open>< L\<close>) because \<open>nextR\<close> needs \<open>pl < jl\<close>.\<close>
+    have plj: "pl < jl"
+      using H by (cases "i = 0") (auto simp: nextR_def nextrel0_def nextrel1_def)
+    hence plL: "pl < ?L" using jl by simp
+    have plseg: "pl < Lng (seg M a ?b)" using plL segL by simp
+    have "nextR (seg M a ?b) i pl jl" using H be by simp
+    hence "nextR M i (a + pl) (a + jl)"
+      using rcpb_nextR_seg[OF blt i plseg jlseg] by simp
+    thus "pl < ?L \<and> nextR M i (a + pl) (a + jl)" using plL by simp
+  next
+    assume H: "pl < ?L \<and> nextR M i (a + pl) (a + jl)"
+    hence plL: "pl < ?L" and HM: "nextR M i (a + pl) (a + jl)" by simp_all
+    have plseg: "pl < Lng (seg M a ?b)" using plL segL by simp
+    have "nextR (seg M a ?b) i pl jl"
+      using rcpb_nextR_seg[OF blt i plseg jlseg] HM by simp
+    thus "nextR ?B i pl jl" using be by simp
+  qed
+qed
+
+text \<open>rcpb: \<open>hasParent\<close> agrees between the block and \<open>M\<close>.  Every \<open>M\<close>-parent of an
+  in-block node lies in the same block (@{thm [source] m_6_4_parent_in_block}
+  gives \<open>\<ge> a\<close>; \<open>nextR\<close> gives \<open>< a + jl < a + L\<close>), so the offset map \<open>pl \<mapsto> a+pl\<close>
+  is a bijection between block-parents and \<open>M\<close>-parents.  Existence/uniqueness and
+  the parent value therefore transfer.\<close>
+
+lemma rcpb_hasParent_iff:
+  assumes M: "M \<in> T_PS" and JL: "J < length (P M)" and i: "i \<le> 1"
+    and jl: "jl < Lng (P M ! J)"
+  defines "a \<equiv> IdxSum (P M) ! J"
+  shows "hasParent (P M ! J) i jl \<longleftrightarrow> hasParent M i (a + jl)"
+    and "hasParent (P M ! J) i jl \<Longrightarrow> a + parent (P M ! J) i jl = parent M i (a + jl)"
+proof -
+  let ?B = "P M ! J"
+  let ?L = "Lng ?B"
+  \<comment> \<open>The parent equivalence as a single named fact (offset \<open>a\<close> folded in).\<close>
+  have piff: "\<And>pl. nextR ?B i pl jl \<longleftrightarrow> (pl < ?L \<and> nextR M i (a + pl) (a + jl))"
+    using rcpb_parent_iff[OF M JL i jl] unfolding a_def by simp
+  \<comment> \<open>Block parents and \<open>M\<close>-parents of \<open>a + jl\<close> correspond via \<open>pl \<mapsto> a + pl\<close>.\<close>
+  have block_to_M: "\<And>pl. nextR ?B i pl jl \<Longrightarrow> nextR M i (a + pl) (a + jl)"
+  proof -
+    fix pl assume "nextR ?B i pl jl"
+    thus "nextR M i (a + pl) (a + jl)" using piff[of pl] by simp
+  qed
+  have M_in_block: "\<And>p. nextR M i p (a + jl) \<Longrightarrow> (\<exists>pl. p = a + pl \<and> nextR ?B i pl jl)"
+  proof -
+    fix p assume Hp: "nextR M i p (a + jl)"
+    \<comment> \<open>lower bound from block-locality\<close>
+    have age: "a \<le> p"
+      using m_6_4_parent_in_block[OF M JL i _ Hp] unfolding a_def by simp
+    then obtain pl where pl: "p = a + pl" by (metis le_add_diff_inverse)
+    \<comment> \<open>parent column is below the child, hence inside the block.\<close>
+    have "p < a + jl" using Hp
+      by (cases "i = 0") (auto simp: nextR_def nextrel0_def nextrel1_def)
+    hence plL: "pl < ?L" using pl jl by simp
+    have "nextR ?B i pl jl" using piff[of pl] plL Hp pl by simp
+    thus "\<exists>pl. p = a + pl \<and> nextR ?B i pl jl" using pl by blast
+  qed
+  \<comment> \<open>existence both ways\<close>
+  have ex_iff: "(\<exists>pl. nextR ?B i pl jl) \<longleftrightarrow> (\<exists>p. nextR M i p (a + jl))"
+    using block_to_M M_in_block by metis
+  \<comment> \<open>uniqueness transfers because the offset map is injective\<close>
+  have uniq_iff: "(\<exists>!pl. nextR ?B i pl jl) \<longleftrightarrow> (\<exists>!p. nextR M i p (a + jl))"
+  proof
+    assume "\<exists>!pl. nextR ?B i pl jl"
+    then obtain pl0 where pl0: "nextR ?B i pl0 jl"
+      and uB: "\<And>pl'. nextR ?B i pl' jl \<Longrightarrow> pl' = pl0" by blast
+    have m0: "nextR M i (a + pl0) (a + jl)" using block_to_M pl0 by blast
+    have "\<And>p'. nextR M i p' (a + jl) \<Longrightarrow> p' = a + pl0"
+    proof -
+      fix p' assume "nextR M i p' (a + jl)"
+      then obtain pl' where pl': "p' = a + pl'" "nextR ?B i pl' jl"
+        using M_in_block by blast
+      have "pl' = pl0" using uB pl'(2) by blast
+      thus "p' = a + pl0" using pl'(1) by simp
+    qed
+    with m0 show "\<exists>!p. nextR M i p (a + jl)" by blast
+  next
+    assume "\<exists>!p. nextR M i p (a + jl)"
+    then obtain p0 where p0: "nextR M i p0 (a + jl)"
+      and uM: "\<And>p'. nextR M i p' (a + jl) \<Longrightarrow> p' = p0" by blast
+    obtain pl0 where pl0eq: "p0 = a + pl0" and bpl0: "nextR ?B i pl0 jl"
+      using M_in_block p0 by blast
+    have "\<And>pl'. nextR ?B i pl' jl \<Longrightarrow> pl' = pl0"
+    proof -
+      fix pl' assume "nextR ?B i pl' jl"
+      hence "nextR M i (a + pl') (a + jl)" using block_to_M by blast
+      hence "a + pl' = p0" using uM by blast
+      thus "pl' = pl0" using pl0eq by simp
+    qed
+    with bpl0 show "\<exists>!pl. nextR ?B i pl jl" by blast
+  qed
+  show hpi: "hasParent ?B i jl \<longleftrightarrow> hasParent M i (a + jl)"
+    using uniq_iff by (simp add: hasParent_def)
+  \<comment> \<open>parent value\<close>
+  show "hasParent ?B i jl \<Longrightarrow> a + parent ?B i jl = parent M i (a + jl)"
+  proof -
+    assume hp: "hasParent ?B i jl"
+    hence ex1B: "\<exists>!pl. nextR ?B i pl jl" by (simp add: hasParent_def)
+    then obtain pl0 where pl0: "nextR ?B i pl0 jl"
+      and uB: "\<And>pl'. nextR ?B i pl' jl \<Longrightarrow> pl' = pl0" by blast
+    have pB: "parent ?B i jl = pl0"
+      unfolding parent_def
+      by (rule the_equality[where P="\<lambda>pl. nextR ?B i pl jl", OF pl0 uB])
+    have m0: "nextR M i (a + pl0) (a + jl)" using block_to_M pl0 by blast
+    have uM: "\<And>p'. nextR M i p' (a + jl) \<Longrightarrow> p' = a + pl0"
+    proof -
+      fix p' assume "nextR M i p' (a + jl)"
+      then obtain pl' where pl': "p' = a + pl'" "nextR ?B i pl' jl"
+        using M_in_block by blast
+      thus "p' = a + pl0" using uB by simp
+    qed
+    have pM: "parent M i (a + jl) = a + pl0"
+      unfolding parent_def
+      by (rule the_equality[where P="\<lambda>p. nextR M i p (a + jl)", OF m0 uM])
+    show "a + parent ?B i jl = parent M i (a + jl)" using pB pM by simp
+  qed
+qed
+
+text \<open>rcpb (§6.6, C1): blockwise inheritance of the reducedness conditions.
+  Each \<open>P\<close>-block of \<open>M\<close> inherits \<open>RedCondA\<close> and \<open>RedCondB\<close> from \<open>M\<close>.
+
+  Route: a block is the slice \<open>seg M a (a+L-1)\<close> (@{thm [source] rcpb_block_eq});
+  parent edges transfer edge-by-edge through the offset bijection
+  (@{thm [source] rcpb_hasParent_iff}, built on block-locality
+  @{thm [source] m_6_4_parent_in_block} and the slice \<open>nextR\<close> bridge).  For
+  \<open>RedCondA\<close>: \<open>hasParent (block) i jl\<close> gives \<open>hasParent M i (a+jl)\<close> with the same
+  \<open>+1\<close> entry relation (entries shift by \<open>a\<close> via @{thm [source] entry_seg}).  For
+  \<open>RedCondB\<close>: a block node with no row-0 parent in the block has no row-0 parent
+  in \<open>M\<close> either (the offset bijection again — block-locality already excludes any
+  cross-block parent, so the block left end is also a global left-minimum), so
+  \<open>RedCondB M\<close> applies at \<open>a+jl\<close>.\<close>
+
+lemma m_6_6_RedCond_P_block:
+  assumes M: "M \<in> T_PS" and multi: "multiT M"
+    and condA: "RedCondA M" and condB: "RedCondB M"
+    and JL: "J < length (P M)"
+  shows "RedCondA (P M ! J) \<and> RedCondB (P M ! J)"
+proof -
+  let ?B = "P M ! J"
+  let ?a = "IdxSum (P M) ! J"
+  let ?L = "Lng ?B"
+  have be: "?B = seg M ?a (?a + ?L - 1)" and Lpos: "0 < ?L"
+    and blt: "?a + ?L - 1 < Lng M"
+    using rcpb_block_eq[OF M JL] by auto
+  \<comment> \<open>entries of the block are \<open>M\<close>-entries shifted by \<open>?a\<close>.\<close>
+  have eB: "\<And>i j. j < ?L \<Longrightarrow> entry ?B i j = entry M i (?a + j)"
+  proof -
+    fix i j assume jL: "j < ?L"
+    have jseg: "j < Lng (seg M ?a (?a + ?L - 1))" using jL be by simp
+    have "entry (seg M ?a (?a + ?L - 1)) i j = entry M i (?a + j)"
+      by (rule entry_seg[OF jseg])
+    thus "entry ?B i j = entry M i (?a + j)" using be by simp
+  qed
+  \<comment> \<open>any in-block column maps to an \<open>M\<close>-column \<open>\<le> Lng M - 1\<close>.\<close>
+  have ajle: "\<And>jl. jl < ?L \<Longrightarrow> ?a + jl \<le> Lng M - 1"
+    using blt by simp
+  have condAB: "RedCondA ?B \<and> RedCondB ?B"
+  proof (intro conjI)
+    \<comment> \<open>RedCondA on the block.\<close>
+    show "RedCondA ?B"
+      unfolding RedCondA_def
+    proof (intro allI impI)
+      fix i jl assume i: "i \<le> 1" and hp: "hasParent ?B i jl"
+      show "entry ?B i (parent ?B i jl) + 1 = entry ?B i jl"
+      proof (cases "jl < ?L")
+        case True
+        have hpM: "hasParent M i (?a + jl)"
+          using rcpb_hasParent_iff(1)[OF M JL i True] hp by simp
+        have pval: "?a + parent ?B i jl = parent M i (?a + jl)"
+          using rcpb_hasParent_iff(2)[OF M JL i True] hp by simp
+        \<comment> \<open>parent column is also in the block (it is \<open>< jl\<close>).\<close>
+        have ex1: "\<exists>!pl. nextR ?B i pl jl" using hp by (simp add: hasParent_def)
+        then obtain pl0 where pl0: "nextR ?B i pl0 jl"
+          and uB: "\<And>pl'. nextR ?B i pl' jl \<Longrightarrow> pl' = pl0" by blast
+        have plj: "pl0 < jl"
+          using pl0 by (cases "i = 0") (auto simp: nextR_def nextrel0_def nextrel1_def)
+        have pB: "parent ?B i jl = pl0"
+          unfolding parent_def
+          by (rule the_equality[where P="\<lambda>pl. nextR ?B i pl jl", OF pl0 uB])
+        have plL: "parent ?B i jl < ?L" using pB plj True by simp
+        \<comment> \<open>apply \<open>RedCondA M\<close> at the shifted child.\<close>
+        have "entry M i (parent M i (?a + jl)) + 1 = entry M i (?a + jl)"
+          using condA hpM i unfolding RedCondA_def by blast
+        hence "entry M i (?a + parent ?B i jl) + 1 = entry M i (?a + jl)"
+          using pval by simp
+        thus ?thesis using eB[OF plL] eB[OF True] by simp
+      next
+        case False
+        \<comment> \<open>out-of-range \<open>jl\<close>: no parent, contradiction with \<open>hasParent\<close>.\<close>
+        have "\<not> nextR ?B i pl jl" for pl
+        proof
+          assume "nextR ?B i pl jl"
+          hence "jl < ?L" by (cases "i = 0") (auto simp: nextR_def nextrel0_def nextrel1_def)
+          thus False using False by simp
+        qed
+        hence "\<not> hasParent ?B i jl" by (auto simp: hasParent_def)
+        thus ?thesis using hp by simp
+      qed
+    qed
+  next
+    \<comment> \<open>RedCondB on the block.\<close>
+    show "RedCondB ?B"
+      unfolding RedCondB_def
+    proof (intro allI impI)
+      fix jl assume hyp: "\<not> hasParent ?B 0 jl \<and> jl \<le> Lng ?B - 1"
+      have nhp: "\<not> hasParent ?B 0 jl" and jlb: "jl \<le> ?L - 1" using hyp by simp_all
+      have jlL: "jl < ?L" using jlb Lpos by linarith
+      have i0: "(0::nat) \<le> 1" by simp
+      \<comment> \<open>no row-0 parent in the block \<Longrightarrow> none in \<open>M\<close> either.\<close>
+      have nhpM: "\<not> hasParent M 0 (?a + jl)"
+        using rcpb_hasParent_iff(1)[OF M JL i0 jlL] nhp by simp
+      have ajle': "?a + jl \<le> Lng M - 1" using ajle[OF jlL] by simp
+      \<comment> \<open>apply \<open>RedCondB M\<close> at the shifted node.\<close>
+      have "entry M 0 (?a + jl) = entry M 1 (?a + jl)"
+        using condB nhpM ajle' unfolding RedCondB_def by blast
+      thus "entry ?B 0 jl = entry ?B 1 jl" using eB[OF jlL] by simp
+    qed
+  qed
+  thus ?thesis by simp
+qed
+
+
+(* ===== keystone concat-transfer block from workflow kc-clift ===== *)
+
+(* ===== C2 (concat-lifting): forward transfer of RedCondA/RedCondB ===== *)
+
+text \<open>\<open>clift_block_bounds\<close>: structural facts about the \<open>J\<close>-th \<open>P\<close>-block of
+  \<open>M\<close>.  Writing \<open>a = IdxSum (P M) ! J\<close> and \<open>b = IdxSum (P M) ! (J+1) - 1\<close>, the
+  block equals \<open>seg M a b\<close>, is non-empty with \<open>Lng (seg M a b) = Suc b - a\<close>,
+  and \<open>Suc b = a + Lng (P M ! J) \<le> Lng M\<close>, so \<open>b < Lng M\<close>.\<close>
+
+lemma clift_block_bounds:
+  assumes M: "M \<in> T_PS" and JL: "J < length (P M)"
+  shows "P M ! J = seg M (IdxSum (P M) ! J) (IdxSum (P M) ! (J + 1) - 1)
+       \<and> 0 < Lng (P M ! J)
+       \<and> Suc (IdxSum (P M) ! (J + 1) - 1) = IdxSum (P M) ! J + Lng (P M ! J)
+       \<and> IdxSum (P M) ! J + Lng (P M ! J) \<le> Lng M
+       \<and> IdxSum (P M) ! (J + 1) - 1 < Lng M"
+proof -
+  let ?Q = "P M"
+  let ?a = "IdxSum ?Q ! J"
+  let ?b = "IdxSum ?Q ! (J + 1) - 1"
+  have Jle: "J \<le> Lng ?Q - 1" using JL by simp
+  have seg: "?Q ! J = seg M ?a ?b" by (rule m_6_4_P_IdxSum[OF M Jle])
+  have lenpos: "0 < Lng (?Q ! J)" by (rule idxsum_P_component_nonempty[OF M JL])
+  have diff: "IdxSum ?Q ! (J + 1) = ?a + length (?Q ! J)" using JL by (rule idxsum_diff)
+  have sucb: "Suc ?b = ?a + Lng (?Q ! J)" using diff lenpos by simp
+  \<comment> \<open>\<open>?a + Lng block \<le> Lng M\<close> via the cumulative-length bound.\<close>
+  have concatM: "concat ?Q = M" by (rule idxsum_concat_P)
+  have lenM: "Lng M = sum_list (map length ?Q)"
+    using concatM by (metis length_concat)
+  have aval: "?a = sum_list (map length (take J ?Q))" using JL by (simp add: idxsum_nth)
+  have rangeb: "?a + Lng (?Q ! J) \<le> Lng M"
+  proof -
+    have "?a + length (?Q ! J) = sum_list (map length (take (Suc J) ?Q))"
+      using aval JL by (simp add: take_Suc_conv_app_nth)
+    also have "\<dots> \<le> sum_list (map length (take (length ?Q) ?Q))"
+      using JL by (intro idxsum_sum_take_mono) simp
+    also have "\<dots> = sum_list (map length ?Q)" by simp
+    finally show ?thesis using lenM by simp
+  qed
+  have bL: "?b < Lng M" using sucb rangeb lenpos by linarith
+  show ?thesis using seg lenpos sucb rangeb bL by blast
+qed
+
+text \<open>\<open>clift_nextR_lift\<close>: the per-block \<open>nextR\<close> relation transfers up to \<open>M\<close>.
+  If \<open>x\<close>, \<open>y\<close> are interior to the \<open>J\<close>-th block (\<open>< Lng (block)\<close>) then
+  \<open>nextR block i x y \<longleftrightarrow> nextR M i (a + x) (a + y)\<close>, where \<open>a = IdxSum (P M) ! J\<close>.
+  Both rows reduce to the slice correspondences @{thm [source] adm_nextrel0_seg}
+  / @{thm [source] adm_nextR1_seg}.\<close>
+
+lemma clift_nextR_lift:
+  assumes M: "M \<in> T_PS" and JL: "J < length (P M)" and i: "i \<le> 1"
+    and x: "x < Lng (P M ! J)" and y: "y < Lng (P M ! J)"
+  shows "nextR (P M ! J) i x y \<longleftrightarrow> nextR M i (IdxSum (P M) ! J + x) (IdxSum (P M) ! J + y)"
+proof -
+  let ?a = "IdxSum (P M) ! J"
+  let ?b = "IdxSum (P M) ! (J + 1) - 1"
+  note B = clift_block_bounds[OF M JL]
+  hence seg: "P M ! J = seg M ?a ?b" and bL: "?b < Lng M" by blast+
+  have xseg: "x < Lng (seg M ?a ?b)" using x seg by simp
+  have yseg: "y < Lng (seg M ?a ?b)" using y seg by simp
+  show ?thesis
+  proof (cases "i = 0")
+    case True
+    have "nextR (P M ! J) 0 x y \<longleftrightarrow> nextrel0 (seg M ?a ?b) x y"
+      using seg by (simp add: nextR_def)
+    also have "\<dots> \<longleftrightarrow> nextrel0 M (?a + x) (?a + y)"
+      by (rule adm_nextrel0_seg[OF bL xseg yseg])
+    also have "\<dots> \<longleftrightarrow> nextR M 0 (?a + x) (?a + y)" by (simp add: nextR_def)
+    finally show ?thesis using True by simp
+  next
+    case False
+    hence i1: "i = 1" using i by simp
+    have "nextR (P M ! J) 1 x y \<longleftrightarrow> nextR (seg M ?a ?b) 1 x y" using seg by simp
+    also have "\<dots> \<longleftrightarrow> nextR M 1 (?a + x) (?a + y)"
+      by (rule adm_nextR1_seg[OF bL xseg yseg])
+    finally show ?thesis using i1 by simp
+  qed
+qed
+
+text \<open>\<open>clift_hasParent_lift\<close>: for a node interior to block \<open>J\<close> (with the global
+  parent already known to land \<open>\<ge> a\<close> by @{thm [source] m_6_4_parent_in_block}),
+  having a unique local parent is equivalent to having one in \<open>M\<close>, and the
+  parents correspond by the shift \<open>a\<close>.\<close>
+
+lemma clift_local_imp_global_parent:
+  assumes M: "M \<in> T_PS" and JL: "J < length (P M)" and i: "i \<le> 1"
+    and y: "y < Lng (P M ! J)"
+    and lp: "nextR (P M ! J) i q y"
+  shows "nextR M i (IdxSum (P M) ! J + q) (IdxSum (P M) ! J + y)"
+proof -
+  have qy: "q < y" using lp by (cases "i = 0") (auto simp: nextR_def nextrel0_def nextrel1_def)
+  have q: "q < Lng (P M ! J)" using qy y by simp
+  show ?thesis using clift_nextR_lift[OF M JL i q y] lp by simp
+qed
+
+text \<open>Conversely a global parent of an interior node lands inside the block and
+  descends to a local parent.\<close>
+
+lemma clift_global_imp_local_parent:
+  assumes M: "M \<in> T_PS" and JL: "J < length (P M)" and i: "i \<le> 1"
+    and y: "y < Lng (P M ! J)"
+    and gp: "nextR M i p (IdxSum (P M) ! J + y)"
+  shows "p \<ge> IdxSum (P M) ! J \<and> nextR (P M ! J) i (p - IdxSum (P M) ! J) y"
+proof -
+  let ?a = "IdxSum (P M) ! J"
+  \<comment> \<open>parent stays in the block.\<close>
+  have alo: "?a \<le> ?a + y" by simp
+  have pge: "?a \<le> p" by (rule m_6_4_parent_in_block[OF M JL i alo gp])
+  \<comment> \<open>and \<open>p < ?a + y\<close> from the strict-order part of \<open>nextR\<close>.\<close>
+  have plt: "p < ?a + y"
+    using gp by (cases "i = 0") (auto simp: nextR_def nextrel0_def nextrel1_def)
+  have py: "p - ?a < y" using pge plt by linarith
+  have pblk: "p - ?a < Lng (P M ! J)" using py y by simp
+  have shift: "?a + (p - ?a) = p" using pge by simp
+  have "nextR (P M ! J) i (p - ?a) y \<longleftrightarrow> nextR M i (?a + (p - ?a)) (?a + y)"
+    by (rule clift_nextR_lift[OF M JL i pblk y])
+  hence "nextR (P M ! J) i (p - ?a) y \<longleftrightarrow> nextR M i p (?a + y)" using shift by simp
+  thus ?thesis using gp pge by simp
+qed
+
+text \<open>m (§6.6 C2, concat-lifting): if every \<open>P\<close>-block of \<open>M\<close> satisfies
+  \<open>RedCondA\<close> and \<open>RedCondB\<close> then so does \<open>M = concat (P M)\<close>.  Forward transfer,
+  inverse of the inheritance: every node of \<open>M\<close> lies in a unique block; by
+  @{thm [source] m_6_4_parent_in_block} its parent stays in that block, so the
+  per-block edge relation lifts to \<open>M\<close> edge-by-edge
+  (@{thm [source] clift_nextR_lift}), and entries agree by the slice offset
+  (@{thm [source] entry_seg}).  For \<open>RedCondB\<close>: a row-0 parentless node of \<open>M\<close> is
+  also row-0 parentless inside its block, so the block's \<open>RedCondB\<close> applies.\<close>
+
+lemma m_6_6_RedCond_concat_lift:
+  assumes M: "M \<in> T_PS" and multi: "multiT M"
+    and blocks: "\<forall>J < length (P M). RedCondA (P M ! J) \<and> RedCondB (P M ! J)"
+  shows "RedCondA M \<and> RedCondB M"
+proof
+  show "RedCondA M"
+    unfolding RedCondA_def
+  proof (intro allI impI)
+    fix i j1' assume i: "i \<le> 1" and hp: "hasParent M i j1'"
+    \<comment> \<open>Let \<open>p\<close> be the (unique) parent of \<open>j1'\<close> in row \<open>i\<close>.\<close>
+    have exu: "\<exists>!p. nextR M i p j1'" using hp by (simp add: hasParent_def)
+    have par: "nextR M i (parent M i j1') j1'"
+      unfolding parent_def using exu by (rule theI')
+    let ?p = "parent M i j1'"
+    \<comment> \<open>\<open>j1' < Lng M\<close> from the relation.\<close>
+    have j1L: "j1' < Lng M"
+      using par by (cases "i = 0") (auto simp: nextR_def nextrel0_def nextrel1_def)
+    \<comment> \<open>Locate the block of \<open>j1'\<close>.\<close>
+    let ?Q = "P M"
+    have ne: "?Q \<noteq> []" by (rule P_nonempty)
+    have total: "IdxSum ?Q ! (length ?Q) = Lng M"
+    proof -
+      have "IdxSum ?Q ! (length ?Q) = sum_list (map length (take (length ?Q) ?Q))"
+        by (simp add: idxsum_nth)
+      also have "\<dots> = sum_list (map length ?Q)" by simp
+      also have "\<dots> = Lng M" using idxsum_concat_P[of M] by (metis length_concat)
+      finally show ?thesis .
+    qed
+    have j1tot: "j1' < IdxSum ?Q ! (length ?Q)" using j1L total by simp
+    obtain J where JL: "J < length ?Q"
+      and Jlo: "IdxSum ?Q ! J \<le> j1'" and Jhi: "j1' < IdxSum ?Q ! (J + 1)"
+      using idxsum_locate[OF j1tot] by blast
+    let ?a = "IdxSum ?Q ! J"
+    \<comment> \<open>Block structural facts.\<close>
+    note B = clift_block_bounds[OF M JL]
+    hence sucb: "Suc (IdxSum ?Q ! (J + 1) - 1) = ?a + Lng (?Q ! J)" by blast
+    have idxeq: "IdxSum ?Q ! (J + 1) = ?a + Lng (?Q ! J)" using idxsum_diff[OF JL] by simp
+    \<comment> \<open>\<open>j1'\<close> sits interior to block \<open>J\<close> (local index \<open>j1' - ?a\<close>).\<close>
+    have yltLen: "j1' - ?a < Lng (?Q ! J)" using Jhi idxeq Jlo by linarith
+    have shifty: "?a + (j1' - ?a) = j1'" using Jlo by simp
+    \<comment> \<open>The global parent descends to a local parent at shift \<open>p - ?a\<close>.\<close>
+    have gp: "nextR M i ?p (?a + (j1' - ?a))" using par shifty by simp
+    obtain pge: "?a \<le> ?p"
+      and lp: "nextR (?Q ! J) i (?p - ?a) (j1' - ?a)"
+      using clift_global_imp_local_parent[OF M JL i yltLen gp] by blast
+    \<comment> \<open>Local parent is unique, hence \<open>hasParent\<close> on the block, with parent \<open>?p - ?a\<close>.\<close>
+    have qlt: "?p - ?a < j1' - ?a"
+      using lp by (cases "i = 0") (auto simp: nextR_def nextrel0_def nextrel1_def)
+    have qLen: "?p - ?a < Lng (?Q ! J)" using qlt yltLen by simp
+    have luniq: "\<And>q. nextR (?Q ! J) i q (j1' - ?a) \<Longrightarrow> q = ?p - ?a"
+    proof -
+      fix q assume lq: "nextR (?Q ! J) i q (j1' - ?a)"
+      have "nextR M i (?a + q) (?a + (j1' - ?a))"
+        by (rule clift_local_imp_global_parent[OF M JL i yltLen lq])
+      hence "nextR M i (?a + q) j1'" using shifty by simp
+      hence "?a + q = ?p" using exu par by (metis (no_types) the1_equality hasParent_def)
+      thus "q = ?p - ?a" by simp
+    qed
+    have lhp: "hasParent (?Q ! J) i (j1' - ?a)"
+      unfolding hasParent_def using lp luniq by blast
+    have lex1: "\<exists>!j0. nextR (?Q ! J) i j0 (j1' - ?a)" using lp luniq by blast
+    have lpar: "parent (?Q ! J) i (j1' - ?a) = ?p - ?a"
+    proof -
+      have "parent (?Q ! J) i (j1' - ?a) = (THE j0. nextR (?Q ! J) i j0 (j1' - ?a))"
+        by (simp add: parent_def)
+      also have "\<dots> = ?p - ?a" by (rule the1_equality[OF lex1 lp])
+      finally show ?thesis .
+    qed
+    \<comment> \<open>Apply the block's \<open>RedCondA\<close>.\<close>
+    have condA: "RedCondA (?Q ! J)" using blocks JL by blast
+    have local: "entry (?Q ! J) i (parent (?Q ! J) i (j1' - ?a)) + 1
+               = entry (?Q ! J) i (j1' - ?a)"
+      using condA i lhp unfolding RedCondA_def by blast
+    have local2: "entry (?Q ! J) i (?p - ?a) + 1 = entry (?Q ! J) i (j1' - ?a)"
+      using local lpar by simp
+    \<comment> \<open>Lift entries through the slice (\<open>?Q ! J = seg M ?a ?b\<close>).\<close>
+    have seg: "?Q ! J = seg M ?a (IdxSum ?Q ! (J + 1) - 1)" using B by blast
+    have eP: "entry (?Q ! J) i (?p - ?a) = entry M i ?p"
+    proof -
+      have "entry (?Q ! J) i (?p - ?a) = entry (seg M ?a (IdxSum ?Q ! (J + 1) - 1)) i (?p - ?a)"
+        using seg by simp
+      also have "\<dots> = entry M i (?a + (?p - ?a))"
+        by (rule entry_seg) (use qLen seg in simp)
+      also have "\<dots> = entry M i ?p" using pge by simp
+      finally show ?thesis .
+    qed
+    have eJ: "entry (?Q ! J) i (j1' - ?a) = entry M i j1'"
+    proof -
+      have "entry (?Q ! J) i (j1' - ?a) = entry (seg M ?a (IdxSum ?Q ! (J + 1) - 1)) i (j1' - ?a)"
+        using seg by simp
+      also have "\<dots> = entry M i (?a + (j1' - ?a))"
+        by (rule entry_seg) (use yltLen seg in simp)
+      also have "\<dots> = entry M i j1'" using shifty by simp
+      finally show ?thesis .
+    qed
+    show "entry M i (parent M i j1') + 1 = entry M i j1'"
+      using local2 eP eJ by simp
+  qed
+next
+  show "RedCondB M"
+    unfolding RedCondB_def
+  proof (intro allI impI)
+    fix j1' assume hyp: "\<not> hasParent M 0 j1' \<and> j1' \<le> Lng M - 1"
+    have nhp: "\<not> hasParent M 0 j1'" and j1le: "j1' \<le> Lng M - 1" using hyp by blast+
+    have L0: "Lng M \<ge> 1" using M by (cases M) (auto simp: T_PS_def)
+    have j1L: "j1' < Lng M" using j1le L0 by linarith
+    \<comment> \<open>Locate the block.\<close>
+    let ?Q = "P M"
+    have total: "IdxSum ?Q ! (length ?Q) = Lng M"
+    proof -
+      have "IdxSum ?Q ! (length ?Q) = sum_list (map length (take (length ?Q) ?Q))"
+        by (simp add: idxsum_nth)
+      also have "\<dots> = sum_list (map length ?Q)" by simp
+      also have "\<dots> = Lng M" using idxsum_concat_P[of M] by (metis length_concat)
+      finally show ?thesis .
+    qed
+    have j1tot: "j1' < IdxSum ?Q ! (length ?Q)" using j1L total by simp
+    obtain J where JL: "J < length ?Q"
+      and Jlo: "IdxSum ?Q ! J \<le> j1'" and Jhi: "j1' < IdxSum ?Q ! (J + 1)"
+      using idxsum_locate[OF j1tot] by blast
+    let ?a = "IdxSum ?Q ! J"
+    note B = clift_block_bounds[OF M JL]
+    hence sucb: "Suc (IdxSum ?Q ! (J + 1) - 1) = ?a + Lng (?Q ! J)" by blast
+    have idxeq: "IdxSum ?Q ! (J + 1) = ?a + Lng (?Q ! J)" using idxsum_diff[OF JL] by simp
+    have seg: "?Q ! J = seg M ?a (IdxSum ?Q ! (J + 1) - 1)" using B by blast
+    have yltLen: "j1' - ?a < Lng (?Q ! J)" using Jhi idxeq Jlo by linarith
+    have shifty: "?a + (j1' - ?a) = j1'" using Jlo by simp
+    \<comment> \<open>\<open>j1'\<close> is row-0 parentless in its block too: a local row-0 parent would
+        lift to a global one (row-0 parents are unique).\<close>
+    have lnhp: "\<not> hasParent (?Q ! J) 0 (j1' - ?a)"
+    proof
+      assume "hasParent (?Q ! J) 0 (j1' - ?a)"
+      then obtain q where lq: "nextR (?Q ! J) 0 q (j1' - ?a)"
+        by (auto simp: hasParent_def)
+      have "nextR M 0 (?a + q) (?a + (j1' - ?a))"
+        by (rule clift_local_imp_global_parent[OF M JL _ yltLen lq]) simp
+      hence "nextR M 0 (?a + q) j1'" using shifty by simp
+      hence "\<exists>j0. nextR M 0 j0 j1'" by blast
+      hence "\<exists>!j0. nextR M 0 j0 j1'" by (simp add: idxsum_ex1_parent0_iff)
+      thus False using nhp by (simp add: hasParent_def)
+    qed
+    \<comment> \<open>Apply the block's \<open>RedCondB\<close>.  Local index \<open>\<le> Lng block - 1\<close>.\<close>
+    have yle: "j1' - ?a \<le> Lng (?Q ! J) - 1" using yltLen by linarith
+    have condB: "RedCondB (?Q ! J)" using blocks JL by blast
+    have local: "entry (?Q ! J) 0 (j1' - ?a) = entry (?Q ! J) 1 (j1' - ?a)"
+      using condB lnhp yle unfolding RedCondB_def by blast
+    \<comment> \<open>Lift both entries through the slice.\<close>
+    have e0: "entry (?Q ! J) 0 (j1' - ?a) = entry M 0 j1'"
+    proof -
+      have "entry (?Q ! J) 0 (j1' - ?a) = entry (seg M ?a (IdxSum ?Q ! (J + 1) - 1)) 0 (j1' - ?a)"
+        using seg by simp
+      also have "\<dots> = entry M 0 (?a + (j1' - ?a))"
+        by (rule entry_seg) (use yltLen seg in simp)
+      also have "\<dots> = entry M 0 j1'" using shifty by simp
+      finally show ?thesis .
+    qed
+    have e1: "entry (?Q ! J) 1 (j1' - ?a) = entry M 1 j1'"
+    proof -
+      have "entry (?Q ! J) 1 (j1' - ?a) = entry (seg M ?a (IdxSum ?Q ! (J + 1) - 1)) 1 (j1' - ?a)"
+        using seg by simp
+      also have "\<dots> = entry M 1 (?a + (j1' - ?a))"
+        by (rule entry_seg) (use yltLen seg in simp)
+      also have "\<dots> = entry M 1 j1'" using shifty by simp
+      finally show ?thesis .
+    qed
+    show "entry M 0 j1' = entry M 1 j1'" using local e0 e1 by simp
+  qed
+qed
+
 end
 
