@@ -74,3 +74,34 @@ Red_le ──needs──▶ RedCondA ──needs──▶ keystone(d) reduced⟺
 - どちらか1つが A4非依存で閉じれば循環全体が解ける。
 
 → 次: (α)/(β) の実現可能性を read-only で精査（proving 前に循環回避を確認）。
+
+## 8. 循環は破れた (2026-06-02): keystone (d) は真の multi-lemma program
+
+**(α) が成功**＝`m_6_5_monoT_Red_m10pos`(green, dead-branch[20]不到達, m10>0) が **Red_le を
+経由せず値単調性で証明済**。よって §7 の循環は解消。keystone (d) `reduced⟺RedCondA∧RedCondB`
+を非循環に証明できる状態。だが並列 fan-out で **(d) は1補題でなく multi-lemma program** と判明
+（K-fwd/K-bwd 両 agent が blocker 報告、self-contained 1補題に収まらず）。
+
+### scout 前提の訂正（agent が経験的に検出）
+- **誤**: 「multiT 枝は reduced で vacuous（Red 出力は concat≠M）」。
+- **正**: reduced の **multiT が支配的**（reduced 417件中 267件=64%が multiT。例 (0,0)(0,0),
+  (1,1)(0,0)）。`Red(concat)=concat` は各ブロックが reduced なら成立する。Route 2（Red N は常に
+  reduced）も不可: red_model で **Red は冪等でない**（Red(Red M)≠Red M, 1919/11748）、Im(Red)
+  は RedCondA を満たさない（1919/11748）。よって M 自身の Red 枝での substitution route が必須。
+
+### keystone (d) を構成する未 green sub-lemma（両方向で共有）
+1. **parent block-locality**（基盤・独立 leaf）: ブロック J 内ノードの parent はブロック J 内
+   （419/419 in-block）。§6.4 idxsum/nextR の純構造。fwd/bwd 両方の multiT 枝の土台。
+2. **m_6_6_RedCond_P_block**（blockwise 継承, bwd 用）: `RedCondA M∧RedCondB M ⟹
+   RedCondA(P M!J)∧RedCondB(P M!J)`（644/644）。#1 に依存。
+3. **concat-lifting**（fwd 用）: blockwise A∧B ⟹ 全体 A∧B（+ ブロック境界 RedCondB:
+   各ブロック先頭は row-0 parent 無し ⟹ entry M 0 j=entry M 1 j）。#1 に依存。
+4. **P-stability**（fwd 用）: `Red M=M ⟹ Red(P M!J)=P M!J`（644/644）。Lng_Red で長さ一致
+   ＋ concat 単射。
+5. **core-trunk 対角 pinning**: `RedCondA M ⟹ M=diagSeq 0 (Lng M-1)`（TrMax=Lng-1 枝）。
+   condAB_coeff は `M0j≤j` まで、**対角への等号**は no-row0-parent⟹entry=0 連鎖が追加で要る。
+6. **shift 枝**（m10=0, M0≠(0,0)）: A∧B が m00=0 を強制する到達可能部分の構造論。**未明瞭・要研究**。
+7. **m10>0 rebase pinning**: rebase 出力係数が M に一致（condAB_coeff + 内側 N の IH + brick guard）。
+
+→ 次: #1(parent block-locality), #5(core-trunk pinning) を独立 leaf として並列証明（土台）。
+green 後 #2/#3/#4 を次ラウンド、最後に fwd/bwd 組立て。#6 shift は別途精査。

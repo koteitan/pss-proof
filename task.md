@@ -37,7 +37,7 @@
       - 🚨 命題（簡約性と係数の関係）
       - ✅ 補題（$\textrm{Red}$ と左端の関係）(1)(2)〔(2)=`m_6_6_Red_leftend_2`(green)、対角前置の Red 保存。A4非依存 leaf、keystone cascade の step(2)〕
       - 🚨 補題（簡約性と係数の基本性質）
-      - 🚨 補題（簡約性と左端の関係）
+      - 🚨 補題（簡約性と左端の関係）〔keystone (d) 経路。`m_6_6_Br_Pred`(訂正版,green)〕
       - ✅ 補題（条件 (A) と (B) と係数の基本性質）〔`m_6_6_condAB_coeff`、A4非依存・純nextrel〕
       - 🚨 系（直系先祖による切片と $\textrm{Red}$ と $\textrm{IncrFirst}$ の関係）
       - 🚨 系（$1$ 列ペア数列の基本性質）
