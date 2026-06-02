@@ -141,3 +141,26 @@ green 後 #2/#3/#4 を次ラウンド、最後に fwd/bwd 組立て。#6 shift �
   の reproduction 補題を condAB_coeff から直接。原文に無い＝原創、難。
 - **(C) 一旦保留**し §6.7/§7/§8 等の独立タスクへ。keystone は §6.6/§6.7 の後続を
   block するが §6.8(green)経由の §8 critical path とは別。
+
+## 10. (A)ルート採用→冪等性も同一コアに収束 (2026-06-03)
+
+ユーザーが (A) 原文ルート採用。根 `p_6_5_Red_idem`(anchored) を Red.pinduct で攻めた結果:
+- green ブリック `idem_anchored_not_multi`（anchored slice は never multiT, commit 34d9831）
+  で multiT 枝を除去。冪等性は `idem_nonmulti: M∈T_PS ⟹ ¬multiT M ⟹ Red(Red M)=Red M`
+  （全 T_PS で 0-fail）に帰着。
+- Red.pinduct で **zeroT/core-trunk/shift の3枝は IH で close**（shift は coreReduce_nonmulti
+  ＋ IH で Red M=Red core=Red(Red core)）。
+- **残り2枝＝keystone と同一の壁**（idempotency も keystone-bwd も §6.6(e) も全部ここに収束）:
+  - **B1 (core-nontrunk)**: 外側 Red が `diagSeq 0 t @ concat(map(λJ. IncrFirst^eJ(RNJ J)))`
+    （各 RNJ J 簡約）を固定する njA 整合の**再分解補題**。
+  - **B2 (m10>0)**: IH で N:=Red(diagSeq 0(m10-1)@IncrFirst^m10 M) が**簡約**(Red N=N)と判明。
+    更に Red M = seg N m10 jN（rebase shift=0: entry N 0 m10=entry N 1 m10, 756/0）、
+    N_K=N。よって B2 は**単一の式**に帰着:
+    **`Red(diagSeq 0(m10-1) @ IncrFirst^m10 (seg N m10 jN)) = N`**（N 簡約 mono-core, 756/0）。
+    これは **Red_IncrFirst 級 equivariance**（§9 の #7 rebase-pinning）＝ §6.5 の
+    cut-anchored relation engine（cutP/bumpAt/locale cut_bump、W1 で多日と判定）に依存しうる。
+
+**結論**: Red_IncrFirst・冪等性・keystone は全て **B1(再分解) + B2(Red_IncrFirst engine instance)**
+という単一コアに収束。これが §6.5後半/§6.6 の真のボトルネック。次: B1/B2 を独立並列で
+直接攻め（既存 redB_*/njA_* で閉じるか、engine が要るか判定）。engine 必須なら deliberate に
+cut-anchored relation engine を段階構築。
