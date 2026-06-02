@@ -29792,5 +29792,72 @@ proof (rule eng_Red_IncrFirst_modB2[OF _ MT])
     by (rule m_6_5_Red_IncrFirst_B2[OF XT mono pos])
 qed
 
+
+subsection \<open>§6.5 命題（\<open>Red\<close>の冪等性）— bankable branch bricks (idempotency)\<close>
+
+text \<open>m: the \<open>zeroT\<close> branch of idempotency.  \<open>Red M = [(0,0)]\<close>, which is a zero
+  term, so a second \<open>Red\<close> leaves it fixed.\<close>
+
+lemma idem2_zeroT:
+  assumes MT: "M \<in> T_PS" and z: "zeroT M"
+  shows "Red (Red M) = Red M"
+proof -
+  have domM: "Red_dom M" by (rule m_6_5_Red_welldef[OF MT])
+  have rM: "Red M = [(0,0)]" using Red.psimps[OF domM] z by simp
+  have z2: "zeroT (Red M)" by (simp add: rM zeroT_def entry_def)
+  have rM_T: "Red M \<in> T_PS" by (simp add: rM T_PS_def)
+  have dom2: "Red_dom (Red M)" by (rule m_6_5_Red_welldef[OF rM_T])
+  have "Red (Red M) = [(0,0)]" using Red.psimps[OF dom2] z2 by simp
+  thus ?thesis using rM by simp
+qed
+
+text \<open>m: the core-trunk branch of idempotency.  \<open>Red M = diagSeq 0 (Lng M - 1)\<close>
+  (a core diagonal), and @{thm [source] Red_core_diagSeq} pins it as a fixed
+  point of \<open>Red\<close>.\<close>
+
+lemma idem2_core_trunk:
+  assumes MT: "M \<in> T_PS" and nz: "\<not> zeroT M" and nmu: "\<not> multiT M"
+    and c0: "entry M 0 0 = 0" and c1: "entry M 1 0 = 0"
+    and tr: "TrMax M = Lng M - 1"
+  shows "Red (Red M) = Red M"
+proof -
+  have domM: "Red_dom M" by (rule m_6_5_Red_welldef[OF MT])
+  have rM: "Red M = diagSeq (entry M 1 0) (entry M 1 0 + (Lng M - 1))"
+    using Red.psimps[OF domM] nz nmu c0 c1 tr by (simp add: Let_def)
+  have rM': "Red M = diagSeq 0 (Lng M - 1)" using rM c1 by simp
+  have "Red (Red M) = Red (diagSeq 0 (Lng M - 1))" by (simp add: rM')
+  also have "\<dots> = diagSeq 0 (Lng M - 1)" by (rule Red_core_diagSeq)
+  finally show ?thesis using rM' by simp
+qed
+
+text \<open>m: the shift branch of idempotency, as a REDUCTION onto @{const coreReduce}.
+  For a \<open>monoT\<close> \<open>M\<close> with \<open>m\<^sub>0\<^sub>0 > 0, m\<^sub>1\<^sub>0 = 0\<close>, the \<open>Red\<close> recursion takes the
+  shift branch with argument \<open>coreReduce M\<close> (the \<open>m\<^sub>1\<^sub>0 = 0\<close> form of
+  @{const coreReduce}), so \<open>Red M = Red (coreReduce M)\<close>.  Since \<open>coreReduce M\<close> is
+  non-multi (@{thm [source] coreReduce_nonmulti}) and in \<open>T\<^sub>PS\<close>, idempotency on it
+  (the induction hypothesis) transfers to \<open>M\<close>.\<close>
+
+lemma idem2_shift_reduce:
+  assumes MT: "M \<in> T_PS" and mono: "monoT M"
+    and nc: "\<not> (entry M 0 0 = 0 \<and> entry M 1 0 = 0)" and c1: "entry M 1 0 = 0"
+    and IH: "Red (Red (coreReduce M)) = Red (coreReduce M)"
+  shows "Red (Red M) = Red M"
+proof -
+  have domM: "Red_dom M" by (rule m_6_5_Red_welldef[OF MT])
+  have nz: "\<not> zeroT M" using mono by (simp add: monoT_def)
+  have nmu: "\<not> multiT M" using mono by (simp add: multiT_def)
+  have Mne: "M \<noteq> []" using MT by (simp add: T_PS_def)
+  have LMpos: "0 < Lng M" using Mne by (cases M) auto
+  let ?j1 = "Lng M - 1"
+  let ?sh = "map (\<lambda>j. (entry M 0 j - entry M 0 0, entry M 1 j)) [0..<Suc ?j1]"
+  have rM: "Red M = Red ?sh"
+    using Red.psimps[OF domM] nz nmu nc c1 by (simp add: Let_def)
+  \<comment> \<open>the shift argument is exactly \<open>coreReduce M\<close> (\<open>m\<^sub>1\<^sub>0 = 0\<close> form).\<close>
+  have sh_eq: "?sh = coreReduce M"
+    using c1 LMpos by (simp add: coreReduce_def del: upt_Suc)
+  have rM_cr: "Red M = Red (coreReduce M)" using rM sh_eq by simp
+  show ?thesis using rM_cr IH by simp
+qed
+
 end
 
