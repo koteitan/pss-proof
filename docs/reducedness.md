@@ -164,3 +164,27 @@ green 後 #2/#3/#4 を次ラウンド、最後に fwd/bwd 組立て。#6 shift �
 という単一コアに収束。これが §6.5後半/§6.6 の真のボトルネック。次: B1/B2 を独立並列で
 直接攻め（既存 redB_*/njA_* で閉じるか、engine が要るか判定）。engine 必須なら deliberate に
 cut-anchored relation engine を段階構築。
+
+## 11. 確定: 全クラスタは cut-anchored Red_IncrFirst engine に収束 (2026-06-03)
+
+B1/B2 を直接攻めた結果、**両方とも同一の engine に blocker**:
+- **B1** 残差 = `Red(NJ(Red M)J) = Red(NJ M J)`（NJ(Red M)J≠NJ(M)J が 529/3169、入力は違うが
+  Red が collapse）= `Red(IncrFirst X)=Red X` のインスタンス = 未証明 `p_6_5_Red_IncrFirst`。
+- **B2** = `Red(coreReduce(Red M)) = Red(coreReduce M)`。2引数は **Lng/TrMax/le0/full nextR
+  を共有**し、raw row-1 と branch row-0 head のみ**非一様に**異なる(597/756)が Red が collapse。
+  tail_bump は row1_eq 必須＋値写像が uniform `bumpv n`(+1) なので**不適**。
+
+**4つの独立解析（W1, idem-crux, B1, B2）が全て同一結論**: §6.5後半/§6.6 の全命題
+（Red_IncrFirst・冪等性・(e)簡約性と左端の関係・簡約性の切片への遺伝性・keystone）は
+**単一の cut-anchored relation engine に収束**。本質は «Red は nextR(祖先構造)で決まる»:
+`nextR M = nextR M' ∧ Lng一致 ∧ le0一致(等) ⟹ Red M = Red M'`。IncrFirst/coreReduce-of-Red
+は nextR を保つので Red を collapse する。
+
+engine 実装案（W1 設計 + tail_bump テンプレ@25718）:
+- (A) `cutP`/`bumpAt` 定義 + `bumpAt_nextrel0_eq`/`nextrel1` 不変性。**非一様値写像**を許容
+  （tail_bump の uniform bumpv を一般化）。
+- (B) locale `cut_bump`（tail_bump の cut 版）で le0/le1/nextR/leR/TrMax/zeroT/monoT/multiT/Pcut 共有。
+- (C) `Red_IncrFirst_joint` を Red.pinduct で → `p_6_5_Red_IncrFirst`(t=0)。
+- 以後 B1/B2/idem/(e)/遺伝性/keystone は短い組立てで落ちる。
+
+→ 残る唯一のボトルネック。deliberate に段階構築（multi-day）。設計駆動（fan-out でない）。
