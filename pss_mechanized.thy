@@ -28215,5 +28215,305 @@ proof -
   qed
 qed
 
+
+subsection \<open>§6.5 engine: \<open>Red (IncrFirst M) = Red M\<close> — bankable branch lemmas\<close>
+
+text \<open>m: the \<open>zeroT\<close> branch.  \<open>IncrFirst\<close> preserves \<open>zeroT\<close> (row 1 is unchanged),
+  so both sides unfold to \<open>[(0,0)]\<close>.\<close>
+
+lemma eng_Red_IncrFirst_zeroT:
+  assumes MT: "M \<in> T_PS" and z: "zeroT M"
+  shows "Red (IncrFirst M) = Red M"
+proof -
+  have IT: "IncrFirst M \<in> T_PS" using MT by (simp add: T_PS_def IncrFirst_def)
+  have domM: "Red_dom M" by (rule m_6_5_Red_welldef[OF MT])
+  have domI: "Red_dom (IncrFirst M)" by (rule m_6_5_Red_welldef[OF IT])
+  have zI: "zeroT (IncrFirst M)" using z by (simp add: IncrFirst_zeroT_eq)
+  have "Red (IncrFirst M) = [(0,0)]" using Red.psimps[OF domI] zI by simp
+  moreover have "Red M = [(0,0)]" using Red.psimps[OF domM] z by simp
+  ultimately show ?thesis by simp
+qed
+
+text \<open>m: the core branch (\<open>monoT\<close>, \<open>m\<^sub>0\<^sub>0 = m\<^sub>1\<^sub>0 = 0\<close>).  \<open>IncrFirst M\<close> is then
+  \<open>monoT\<close> with \<open>m\<^sub>0\<^sub>0 = 1, m\<^sub>1\<^sub>0 = 0\<close>, so it takes the shift branch (case 4); the
+  shift subtracts \<open>1\<close> from row 0, which exactly cancels the \<open>IncrFirst\<close> bump and
+  recovers \<open>M\<close>.  Hence \<open>Red (IncrFirst M) = Red M\<close> directly (no induction).\<close>
+
+lemma eng_Red_IncrFirst_core:
+  assumes MT: "M \<in> T_PS" and nz: "\<not> zeroT M" and nmu: "\<not> multiT M"
+    and c0: "entry M 0 0 = 0" and c1: "entry M 1 0 = 0"
+  shows "Red (IncrFirst M) = Red M"
+proof -
+  let ?I = "IncrFirst M"
+  have Mne: "M \<noteq> []" using MT by (simp add: T_PS_def)
+  have LMpos: "0 < Lng M" using Mne by (cases M) auto
+  have IT: "?I \<in> T_PS" using MT by (simp add: T_PS_def IncrFirst_def)
+  have domI: "Red_dom ?I" by (rule m_6_5_Red_welldef[OF IT])
+  have Inz: "\<not> zeroT ?I" using nz by (simp add: IncrFirst_zeroT_eq)
+  have Inmu: "\<not> multiT ?I" using nmu by (simp add: IncrFirst_multiT_eq)
+  \<comment> \<open>row-0 head becomes 1, row-1 head stays 0.\<close>
+  have Ic0: "entry ?I 0 0 = Suc 0" using c0 entry_IncrFirst[OF LMpos, of 0] by simp
+  have Ic1: "entry ?I 1 0 = 0" using c1 entry_IncrFirst[OF LMpos, of 1] by simp
+  have Inc: "\<not> (entry ?I 0 0 = 0 \<and> entry ?I 1 0 = 0)" using Ic0 by simp
+  \<comment> \<open>the shift branch: subtract \<open>entry ?I 0 0 = 1\<close>.\<close>
+  let ?j1 = "Lng ?I - 1"
+  have rI: "Red ?I = Red (map (\<lambda>j. (entry ?I 0 j - entry ?I 0 0, entry ?I 1 j))
+                                [0..<Suc ?j1])"
+    using Red.psimps[OF domI] Inz Inmu Inc Ic1 by (simp add: Let_def)
+  \<comment> \<open>that map equals \<open>M\<close>.\<close>
+  have shifteq: "map (\<lambda>j. (entry ?I 0 j - entry ?I 0 0, entry ?I 1 j)) [0..<Suc ?j1] = M"
+  proof (rule nth_equalityI)
+    show "length (map (\<lambda>j. (entry ?I 0 j - entry ?I 0 0, entry ?I 1 j)) [0..<Suc ?j1])
+        = length M" using LMpos by simp
+  next
+    fix p assume p: "p < length (map (\<lambda>j. (entry ?I 0 j - entry ?I 0 0, entry ?I 1 j))
+                                       [0..<Suc ?j1])"
+    have plen: "p < length [0..<Suc ?j1]" using p by simp
+    have pl: "p < Lng M" using p LMpos by simp
+    have idx: "[0..<Suc ?j1] ! p = p" using pl by (simp add: nth_upt del: upt_Suc)
+    have e0: "entry ?I 0 p = Suc (entry M 0 p)" using entry_IncrFirst[OF pl, of 0] by simp
+    have e1: "entry ?I 1 p = entry M 1 p" using entry_IncrFirst[OF pl, of 1] by simp
+    have "map (\<lambda>j. (entry ?I 0 j - entry ?I 0 0, entry ?I 1 j)) [0..<Suc ?j1] ! p
+           = (entry ?I 0 p - entry ?I 0 0, entry ?I 1 p)"
+      using nth_map[OF plen] idx by simp
+    also have "\<dots> = (entry M 0 p, entry M 1 p)" using e0 e1 Ic0 by simp
+    also have "\<dots> = M ! p" using pl by (simp add: entry_def)
+    finally show "map (\<lambda>j. (entry ?I 0 j - entry ?I 0 0, entry ?I 1 j)) [0..<Suc ?j1] ! p
+                = M ! p" .
+  qed
+  show ?thesis using rI by (simp only: shifteq)
+qed
+
+text \<open>m: the shift branch (\<open>monoT\<close>, \<open>m\<^sub>1\<^sub>0 = 0, m\<^sub>0\<^sub>0 > 0\<close>).  Both \<open>M\<close> and
+  \<open>IncrFirst M\<close> take the shift branch; the shift subtracts \<open>m\<^sub>0\<^sub>0\<close> resp.
+  \<open>m\<^sub>0\<^sub>0 + 1\<close>, landing on the SAME core sequence, so \<open>Red\<close> agrees (no induction).\<close>
+
+lemma eng_Red_IncrFirst_shift:
+  assumes MT: "M \<in> T_PS" and nz: "\<not> zeroT M" and nmu: "\<not> multiT M"
+    and nc: "\<not> (entry M 0 0 = 0 \<and> entry M 1 0 = 0)" and c1: "entry M 1 0 = 0"
+  shows "Red (IncrFirst M) = Red M"
+proof -
+  let ?I = "IncrFirst M"
+  have Mne: "M \<noteq> []" using MT by (simp add: T_PS_def)
+  have LMpos: "0 < Lng M" using Mne by (cases M) auto
+  have IT: "?I \<in> T_PS" using MT by (simp add: T_PS_def IncrFirst_def)
+  have domM: "Red_dom M" by (rule m_6_5_Red_welldef[OF MT])
+  have domI: "Red_dom ?I" by (rule m_6_5_Red_welldef[OF IT])
+  have c0p: "0 < entry M 0 0" using nc c1 by simp
+  \<comment> \<open>shift output of \<open>M\<close>.\<close>
+  let ?j1 = "Lng M - 1"
+  have rM: "Red M = Red (map (\<lambda>j. (entry M 0 j - entry M 0 0, entry M 1 j))
+                              [0..<Suc ?j1])"
+    using Red.psimps[OF domM] nz nmu nc c1 by (simp add: Let_def)
+  \<comment> \<open>\<open>IncrFirst M\<close>: still mono, row-1 head 0, row-0 head \<open>m\<^sub>0\<^sub>0 + 1 > 0\<close>.\<close>
+  have Inz: "\<not> zeroT ?I" using nz by (simp add: IncrFirst_zeroT_eq)
+  have Inmu: "\<not> multiT ?I" using nmu by (simp add: IncrFirst_multiT_eq)
+  have Ic1: "entry ?I 1 0 = 0" using c1 entry_IncrFirst[OF LMpos, of 1] by simp
+  have Ic0: "entry ?I 0 0 = Suc (entry M 0 0)" using entry_IncrFirst[OF LMpos, of 0] by simp
+  have Inc: "\<not> (entry ?I 0 0 = 0 \<and> entry ?I 1 0 = 0)" using Ic0 by simp
+  have LI: "Lng ?I = Lng M" by simp
+  have rI: "Red ?I = Red (map (\<lambda>j. (entry ?I 0 j - entry ?I 0 0, entry ?I 1 j))
+                               [0..<Suc ?j1])"
+    using Red.psimps[OF domI] Inz Inmu Inc Ic1 LI by (simp add: Let_def)
+  \<comment> \<open>both shift maps coincide.\<close>
+  have mapeq: "map (\<lambda>j. (entry ?I 0 j - entry ?I 0 0, entry ?I 1 j)) [0..<Suc ?j1]
+             = map (\<lambda>j. (entry M 0 j - entry M 0 0, entry M 1 j)) [0..<Suc ?j1]"
+  proof (rule map_cong[OF refl])
+    fix p assume "p \<in> set [0..<Suc ?j1]"
+    hence pl: "p < Lng M" using LMpos by auto
+    have e0: "entry ?I 0 p = Suc (entry M 0 p)" using entry_IncrFirst[OF pl, of 0] by simp
+    have e1: "entry ?I 1 p = entry M 1 p" using entry_IncrFirst[OF pl, of 1] by simp
+    show "(entry ?I 0 p - entry ?I 0 0, entry ?I 1 p)
+        = (entry M 0 p - entry M 0 0, entry M 1 p)"
+      using e0 e1 Ic0 by simp
+  qed
+  show ?thesis using rI rM by (simp only: mapeq)
+qed
+
+text \<open>m: the multi branch, as a REDUCTION.  When \<open>M\<close> is multi, \<open>Red M\<close> is the
+  concatenation of the block reductions, and \<open>P (IncrFirst M) = map IncrFirst (P M)\<close>
+  (@{thm [source] m_6_2_P_IncrFirst}).  Hence if the goal holds on every block of
+  \<open>P M\<close> it holds on \<open>M\<close>.  (Bankable: the multi branch of the @{const Red}-induction
+  closes once the per-block instances are available.)\<close>
+
+lemma eng_Red_IncrFirst_multi_reduce:
+  assumes MT: "M \<in> T_PS" and mu: "multiT M"
+    and blocks: "\<And>y. y \<in> set (P M) \<Longrightarrow> Red (IncrFirst y) = Red y"
+  shows "Red (IncrFirst M) = Red M"
+proof -
+  have Mne: "M \<noteq> []" using MT by (simp add: T_PS_def)
+  have IT: "IncrFirst M \<in> T_PS" using MT by (simp add: T_PS_def IncrFirst_def)
+  have domM: "Red_dom M" by (rule m_6_5_Red_welldef[OF MT])
+  have domI: "Red_dom (IncrFirst M)" by (rule m_6_5_Red_welldef[OF IT])
+  have nzM: "\<not> zeroT M" using mu by (simp add: multiT_def)
+  have muI: "multiT (IncrFirst M)" using mu by (simp add: IncrFirst_multiT_eq)
+  have nzI: "\<not> zeroT (IncrFirst M)" using muI by (simp add: multiT_def)
+  have rM: "Red M = concat (map Red (P M))"
+    using Red.psimps[OF domM] nzM mu by simp
+  have rI: "Red (IncrFirst M) = concat (map Red (P (IncrFirst M)))"
+    using Red.psimps[OF domI] nzI muI by simp
+  have PI: "P (IncrFirst M) = map IncrFirst (P M)" by (rule m_6_2_P_IncrFirst)
+  have "Red (IncrFirst M) = concat (map Red (map IncrFirst (P M)))"
+    using rI PI by simp
+  also have "\<dots> = concat (map (\<lambda>y. Red (IncrFirst y)) (P M))"
+    by (simp add: comp_def)
+  also have "\<dots> = concat (map Red (P M))"
+    by (rule arg_cong[where f=concat], rule map_cong[OF refl]) (simp add: blocks)
+  also have "\<dots> = Red M" using rM by simp
+  finally show ?thesis .
+qed
+
+text \<open>m: the \<open>m\<^sub>1\<^sub>0 > 0\<close> branch, as a REDUCTION onto the single \<open>coreReduce\<close>
+  obligation \<open>(B2)\<close>.  For a \<open>monoT\<close> \<open>M\<close> with \<open>m\<^sub>1\<^sub>0 = entry M 1 0 > 0\<close>, both
+  \<open>Red M\<close> and \<open>Red (IncrFirst M)\<close> are read off, via the SAME output map, from
+  \<open>N = Red (coreReduce M)\<close> resp. \<open>N' = Red (coreReduce (IncrFirst M))\<close>; the
+  productive (then) branch is taken on both sides (by @{thm [source]
+  m_6_5_monoT_Red_m10pos} and @{thm [source] m_6_5_Lng_Red}).  Hence \<open>N' = N\<close>
+  — i.e. the single fact (B2) \<open>Red (coreReduce (IncrFirst M)) = Red (coreReduce M)\<close>
+  — suffices to conclude \<open>Red (IncrFirst M) = Red M\<close>.
+
+  (B2) is the residual cut-anchored \<open>Red_IncrFirst\<close> engine instance; \<open>coreReduce M\<close>
+  and \<open>coreReduce (IncrFirst M)\<close> share the length-\<open>m\<^sub>1\<^sub>0\<close> diagonal prefix and
+  differ only by one extra @{const IncrFirst} on the tail past the prefix (the
+  @{const tail_bump} / @{thm [source] njA_Br_eq} cut).\<close>
+
+lemma eng_Red_IncrFirst_m10pos_reduce:
+  assumes MT: "M \<in> T_PS" and mono: "monoT M" and pos: "0 < entry M 1 0"
+    and B2: "Red (coreReduce (IncrFirst M)) = Red (coreReduce M)"
+  shows "Red (IncrFirst M) = Red M"
+proof -
+  let ?m10 = "entry M 1 0"
+  let ?I = "IncrFirst M"
+  have Mne: "M \<noteq> []" using MT by (simp add: T_PS_def)
+  have LMpos: "0 < Lng M" using Mne by (cases M) auto
+  have IT: "?I \<in> T_PS" using MT by (simp add: T_PS_def IncrFirst_def)
+  have domM: "Red_dom M" by (rule m_6_5_Red_welldef[OF MT])
+  have domI: "Red_dom ?I" by (rule m_6_5_Red_welldef[OF IT])
+  have M_PT: "M \<in> PT_PS" using MT mono by (simp add: PT_PS_def)
+  \<comment> \<open>structural data shared by \<open>M\<close> and \<open>IncrFirst M\<close>.\<close>
+  have nzM: "\<not> zeroT M" using mono by (simp add: monoT_def)
+  have nmuM: "\<not> multiT M" using mono by (simp add: multiT_def)
+  have ncM: "\<not> (entry M 0 0 = 0 \<and> entry M 1 0 = 0)" using pos by simp
+  have monoI: "monoT ?I" using mono by (simp add: IncrFirst_monoT_eq)
+  have posI: "0 < entry ?I 1 0" using pos entry_IncrFirst[OF LMpos, of 1] by simp
+  have nzI: "\<not> zeroT ?I" using monoI by (simp add: monoT_def)
+  have nmuI: "\<not> multiT ?I" using monoI by (simp add: multiT_def)
+  have m10I: "entry ?I 1 0 = ?m10" using entry_IncrFirst[OF LMpos, of 1] by simp
+  have ncI: "\<not> (entry ?I 0 0 = 0 \<and> entry ?I 1 0 = 0)" using posI by simp
+  \<comment> \<open>the \<open>m\<^sub>1\<^sub>0 > 0\<close> recursion argument is \<open>coreReduce\<close>.\<close>
+  let ?argM = "diagSeq 0 (?m10 - 1) @ (IncrFirst ^^ ?m10) M"
+  let ?argI = "diagSeq 0 (entry ?I 1 0 - 1) @ (IncrFirst ^^ (entry ?I 1 0)) ?I"
+  have argM_cr: "?argM = coreReduce M" using pos by (simp add: coreReduce_def)
+  have argI_cr: "?argI = coreReduce ?I" using posI by (simp add: coreReduce_def)
+  let ?N  = "Red ?argM"
+  let ?N' = "Red ?argI"
+  \<comment> \<open>(B2): the two recursive \<open>Red\<close>s agree.\<close>
+  have NN: "?N' = ?N"
+    using B2 argM_cr argI_cr by simp
+  \<comment> \<open>geometry: both args are in \<open>T_PS\<close>; \<open>Lng N = m10 + Lng M\<close>.\<close>
+  have funM_ne: "(IncrFirst ^^ ?m10) M \<noteq> []"
+    using Mne by (metis Lng_funpow_IncrFirst length_0_conv)
+  have argM_T: "?argM \<in> T_PS" using funM_ne by (simp add: T_PS_def)
+  have LN: "Lng ?N = ?m10 + Lng M"
+    using m_6_5_monoT_Red_fact1_Lng[OF MT pos] by simp
+  have jN_ge: "?m10 \<le> Lng ?N - 1" using LN LMpos by linarith
+  have segN_PT: "seg ?N ?m10 (Lng ?N - 1) \<in> PT_PS"
+    using m_6_5_monoT_Red_m10pos[OF M_PT pos] by simp
+  have thenM: "?m10 \<le> Lng ?N - 1 \<and> seg ?N ?m10 (Lng ?N - 1) \<in> PT_PS"
+    using jN_ge segN_PT by simp
+  \<comment> \<open>unfold \<open>Red M\<close> on the productive branch.\<close>
+  have rM: "Red M = map (\<lambda>j. (entry ?N 0 j - entry ?N 0 ?m10 + entry ?N 1 ?m10,
+                              entry ?N 1 j))
+                        [?m10..<Suc (Lng ?N - 1)]"
+    using Red.psimps[OF domM] nzM nmuM ncM pos thenM by (simp add: Let_def)
+  \<comment> \<open>unfold \<open>Red (IncrFirst M)\<close>: same shape, with \<open>N'\<close>, \<open>m10 (IncrFirst M) = m10\<close>.\<close>
+  have thenI: "entry ?I 1 0 \<le> Lng ?N' - 1 \<and> seg ?N' (entry ?I 1 0) (Lng ?N' - 1) \<in> PT_PS"
+    using thenM NN m10I by simp
+  have rI: "Red ?I = map (\<lambda>j. (entry ?N' 0 j - entry ?N' 0 (entry ?I 1 0)
+                                + entry ?N' 1 (entry ?I 1 0), entry ?N' 1 j))
+                          [entry ?I 1 0..<Suc (Lng ?N' - 1)]"
+    using Red.psimps[OF domI] nzI nmuI ncI posI thenI by (simp add: Let_def)
+  show ?thesis using rI rM NN m10I by simp
+qed
+
+text \<open>m: assembled \<open>Red (IncrFirst M) = Red M\<close>, MODULO the single cut-anchored
+  obligation \<open>(B2)\<close>.  By @{thm [source] Red.pinduct} on \<open>M\<close>, all branches close
+  from the green branch bricks above except the \<open>monoT, m\<^sub>1\<^sub>0 > 0\<close> one, which
+  @{thm [source] eng_Red_IncrFirst_m10pos_reduce} reduces to \<open>(B2)\<close>
+  \<open>Red (coreReduce (IncrFirst X)) = Red (coreReduce X)\<close>.  The latter is the
+  residual cut-anchored \<open>Red_IncrFirst\<close> engine instance (\<open>coreReduce X\<close> and
+  \<open>coreReduce (IncrFirst X)\<close> share a length-\<open>m\<^sub>1\<^sub>0\<close> diagonal prefix and differ by
+  one @{const IncrFirst} on the tail past it; the @{const tail_bump} / @{thm
+  [source] njA_Br_eq} family is the cut machinery for it).  Discharging \<open>(B2)\<close>
+  for every \<open>monoT\<close> \<open>X\<close> with \<open>entry X 1 0 > 0\<close> yields the §6.5 \<open>Red\<close>/\<open>IncrFirst\<close>
+  invariance (\<open>p_6_5_Red_IncrFirst\<close> in pss_paper.thy).\<close>
+
+lemma eng_Red_IncrFirst_modB2:
+  assumes B2: "\<And>X. X \<in> T_PS \<Longrightarrow> monoT X \<Longrightarrow> 0 < entry X 1 0 \<Longrightarrow>
+                  Red (coreReduce (IncrFirst X)) = Red (coreReduce X)"
+  assumes MT: "M \<in> T_PS"
+  shows "Red (IncrFirst M) = Red M"
+proof -
+  have domM: "Red_dom M" by (rule m_6_5_Red_welldef[OF MT])
+  have "M \<in> T_PS \<longrightarrow> Red (IncrFirst M) = Red M"
+    using domM
+  proof (induction M rule: Red.pinduct)
+    case (1 M)
+    note dom    = 1(1)
+    note IH_mu  = 1(2)
+    show ?case
+    proof (rule impI)
+      assume MT': "M \<in> T_PS"
+      show "Red (IncrFirst M) = Red M"
+      proof (cases "zeroT M")
+        case True
+        thus ?thesis by (rule eng_Red_IncrFirst_zeroT[OF MT'])
+      next
+        case nz: False
+        show ?thesis
+        proof (cases "multiT M")
+          case mu: True
+          \<comment> \<open>per-block IH from the multiT branch of the recursion.\<close>
+          have blocks: "\<And>y. y \<in> set (P M) \<Longrightarrow> Red (IncrFirst y) = Red y"
+          proof -
+            fix y assume y: "y \<in> set (P M)"
+            have Mne: "M \<noteq> []" using MT' by (simp add: T_PS_def)
+            have yT: "y \<in> T_PS"
+              using P_blocks_nonempty[OF Mne] y by (auto simp: T_PS_def)
+            have ih: "y \<in> T_PS \<longrightarrow> Red (IncrFirst y) = Red y"
+              by (rule IH_mu[OF nz mu y])
+            thus "Red (IncrFirst y) = Red y" using yT by blast
+          qed
+          show ?thesis by (rule eng_Red_IncrFirst_multi_reduce[OF MT' mu blocks])
+        next
+          case nmu: False
+          have mono: "monoT M" using nz nmu by (simp add: multiT_def)
+          show ?thesis
+          proof (cases "entry M 0 0 = 0 \<and> entry M 1 0 = 0")
+            case core: True
+            hence c0: "entry M 0 0 = 0" and c1: "entry M 1 0 = 0" by simp_all
+            show ?thesis by (rule eng_Red_IncrFirst_core[OF MT' nz nmu c0 c1])
+          next
+            case nc: False
+            show ?thesis
+            proof (cases "entry M 1 0 = 0")
+              case c1z: True
+              show ?thesis by (rule eng_Red_IncrFirst_shift[OF MT' nz nmu nc c1z])
+            next
+              case c1p: False
+              hence pos: "0 < entry M 1 0" by simp
+              have b2: "Red (coreReduce (IncrFirst M)) = Red (coreReduce M)"
+                by (rule B2[OF MT' mono pos])
+              show ?thesis
+                by (rule eng_Red_IncrFirst_m10pos_reduce[OF MT' mono pos b2])
+            qed
+          qed
+        qed
+      qed
+    qed
+  qed
+  thus ?thesis using MT by blast
+qed
+
 end
 
