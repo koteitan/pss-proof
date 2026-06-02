@@ -24,7 +24,7 @@
       - 🚨 系（$P$ の $\textrm{Red}$ 同変性）〔A4〕
       - ✅ 命題（単項性と $\textrm{Red}$ の関係）〔`m_6_5_monoT_Red_m10pos`、m10>0(=Red 使用域)、dead-branch[20]不到達〕
       - 🚨 命題（$\textrm{Red}$ の冪等性）〔A4〕
-      - 🚨🚧 命題（$\textrm{Red}$ と $\textrm{Pred}$ の可換性）〔case 6 の死枝[20]不到達は `m_6_5_monoT_Red_m10pos`(green) で解消、配線待ち〕
+      - 🚨🚧 命題（$\textrm{Red}$ と $\textrm{Pred}$ の可換性）〔枝補題 green 化済(`pred_P_decomp`/`butlast_diagSeq`系/`TrMax_Pred`/`m_6_5_T4_coreArg_Pred`)。branch-5 が親ゴール instance に帰着＝**枝独立leafでなく Red.pinduct 帰納が必要**と判明。残: T3(ii)訂正版+本体帰納組立て。設計 `docs/6.5_red_pred_decomposition.md`〕
         - ✅🚧 補題（死枝[20]の到達不能性）〔上記「Red の IncrFirst 不変性」と共有。m10>0 完全証明 `m_6_5_monoT_Red_m10pos`(green)。設計 `docs/red-le-domain.md §6-11`〕
       - 🚨 命題（$\textrm{Red}$ と基本列の可換性）〔A4〕
       - 🚨 命題（$\textrm{Red}$ が許容性を保つこと）〔A4〕
