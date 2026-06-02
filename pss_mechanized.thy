@@ -28515,5 +28515,485 @@ proof -
   thus ?thesis using MT by blast
 qed
 
+
+subsection \<open>The cut-anchored \<open>Red_IncrFirst\<close> engine (B2 deliverable)\<close>
+
+text \<open>\<open>bumpAt M n\<close>: bump every row-0 value at or above the cut \<open>n\<close> by one (an
+  order isomorphism on row 0), leaving row 1 alone.  This is the abstract suffix
+  bump underlying both the top-level @{const coreReduce} cut and the recursive
+  branch cuts (uniform on @{const IncrFirst} suffixes).\<close>
+
+definition bumpAt :: "pairseq \<Rightarrow> nat \<Rightarrow> pairseq" where
+  "bumpAt M n = map (\<lambda>p. (bumpv n (fst p), snd p)) M"
+
+lemma Lng_bumpAt[simp]: "Lng (bumpAt M n) = Lng M"
+  by (simp add: bumpAt_def)
+
+lemma entry_bumpAt0:
+  "j < Lng M \<Longrightarrow> entry (bumpAt M n) 0 j = bumpv n (entry M 0 j)"
+  by (simp add: bumpAt_def entry_def)
+
+lemma entry_bumpAt1:
+  "j < Lng M \<Longrightarrow> entry (bumpAt M n) 1 j = entry M 1 j"
+  by (simp add: bumpAt_def entry_def)
+
+text \<open>For any cut \<open>n\<close>, \<open>(bumpAt X n, X)\<close> satisfies the @{locale tail_bump}
+  hypotheses — all structural data (\<open>Lng\<close>, \<open>nextR\<close>, \<open>le0\<close>, \<open>le1\<close>, \<open>leR\<close>,
+  \<open>TrMax\<close>, \<open>zeroT\<close>, \<open>monoT\<close>, \<open>multiT\<close>, \<open>Pcut\<close>) is shared.\<close>
+
+lemma tail_bump_bumpAt: "tail_bump (bumpAt X n) X n"
+proof
+  show "Lng (bumpAt X n) = Lng X" by simp
+next
+  fix j assume "j < Lng X" thus "entry (bumpAt X n) 0 j = bumpv n (entry X 0 j)"
+    by (rule entry_bumpAt0)
+next
+  fix j assume "j < Lng X" thus "entry (bumpAt X n) 1 j = entry X 1 j"
+    by (rule entry_bumpAt1)
+qed
+
+text \<open>The cut-anchored relation locale: \<open>tail_bump\<close> plus the \<open>tail_low\<close> condition
+  that, past the trunk right-end \<open>TrMax X\<close>, every row-0 value is at least the cut
+  \<open>n\<close>.  Under \<open>tail_low\<close> the suffix bump acts as a uniform @{const IncrFirst} on the
+  branch region, which is what lets @{const Red} collapse.  (\<open>tail_low\<close> is preserved
+  by all three recursive descents — branch \<open>N\<^sub>J\<close>, shift, \<open>m\<^sub>1\<^sub>0>0\<close> — empirically
+  3034/0; the relation itself is a valid \<open>Red\<close>-collapse condition 8480/0.)\<close>
+
+locale cut_bump = tail_bump +
+  assumes tail_low: "\<And>j. TrMax X < j \<Longrightarrow> j < Lng X \<Longrightarrow> n \<le> entry X 0 j"
+begin
+
+text \<open>On the branch region (indices \<open>> TrMax X\<close>) the bump is a uniform +1, so a
+  segment of \<open>A\<close> there is the @{const IncrFirst}-image of the same segment of \<open>X\<close>.\<close>
+
+lemma cb_branch_entry0:
+  assumes a: "TrMax X < j" and b: "j < Lng X"
+  shows "entry A 0 j = Suc (entry X 0 j)"
+proof -
+  have "entry A 0 j = bumpv n (entry X 0 j)" using row0_bump[OF b] .
+  also have "\<dots> = Suc (entry X 0 j)"
+    using tail_low[OF a b] by (simp add: bumpv_def)
+  finally show ?thesis .
+qed
+
+lemma cb_seg_IncrFirst:
+  assumes a: "TrMax X < aa" and b: "bb < Lng X"
+  shows "seg A aa bb = IncrFirst (seg X aa bb)"
+proof (rule nth_equalityI)
+  show "length (seg A aa bb) = length (IncrFirst (seg X aa bb))"
+    by (simp add: seg_def IncrFirst_def len_eq)
+next
+  fix p assume p: "p < length (seg A aa bb)"
+  have pb: "p < Suc bb - aa" using p by (simp add: seg_def len_eq del: upt_Suc)
+  let ?j = "aa + p"
+  have idx: "[aa..<Suc bb] ! p = ?j" using pb by (simp add: nth_upt del: upt_Suc)
+  have jge: "TrMax X < ?j" using a by simp
+  have jb: "?j \<le> bb" using pb by simp
+  have jlt: "?j < Lng X" using jb b by simp
+  have lhs: "seg A aa bb ! p = A ! ?j"
+    using pb idx by (simp add: seg_def len_eq del: upt_Suc)
+  have rhs0: "seg X aa bb ! p = X ! ?j"
+    using pb idx by (simp add: seg_def del: upt_Suc)
+  have e0: "entry A 0 ?j = Suc (entry X 0 ?j)" by (rule cb_branch_entry0[OF jge jlt])
+  have e1: "entry A 1 ?j = entry X 1 ?j" using row1_eq[OF jlt] .
+  have jA: "?j < Lng A" using jlt len_eq by simp
+  have Ap: "A ! ?j = (Suc (fst (X ! ?j)), snd (X ! ?j))"
+  proof -
+    have "fst (A ! ?j) = Suc (fst (X ! ?j))" using e0 by (simp add: entry_def)
+    moreover have "snd (A ! ?j) = snd (X ! ?j)" using e1 by (simp add: entry_def)
+    ultimately show ?thesis by (cases "A ! ?j") simp
+  qed
+  have inc: "IncrFirst (seg X aa bb) ! p
+              = (Suc (fst (seg X aa bb ! p)), snd (seg X aa bb ! p))"
+    using p by (simp add: IncrFirst_def seg_def len_eq)
+  show "seg A aa bb ! p = IncrFirst (seg X aa bb) ! p"
+    using lhs rhs0 Ap inc by (simp add: seg_def del: upt_Suc)
+qed
+
+text \<open>The branches of \<open>A\<close> are the @{const IncrFirst}-images of the branches of
+  \<open>X\<close> (same shape, +1 on the tail).\<close>
+
+lemma cb_Br_eq: "Br A = map IncrFirst (Br X)"
+proof -
+  have trEq: "TrMax A = TrMax X" by (rule TrMax_eq)
+  show ?thesis
+  proof (cases "TrMax X = Lng X - 1")
+    case True
+    hence "Br A = []" "Br X = []" using trEq len_eq by (simp_all add: Br_def)
+    thus ?thesis by simp
+  next
+    case False
+    have Lpos: "0 < Lng X"
+    proof (rule ccontr)
+      assume "\<not> 0 < Lng X"
+      hence L0: "Lng X = 0" by simp
+      have "{j. \<forall>j'<j. nextR X 1 j' (j' + 1)} = {0}"
+      proof
+        show "{j. \<forall>j'<j. nextR X 1 j' (j' + 1)} \<subseteq> {0}"
+        proof
+          fix j assume "j \<in> {j. \<forall>j'<j. nextR X 1 j' (j' + 1)}"
+          hence H: "\<forall>j'<j. nextR X 1 j' (j' + 1)" by simp
+          show "j \<in> {0}"
+          proof (rule ccontr)
+            assume "j \<notin> {0}"
+            hence "0 < j" by simp
+            from H this have "nextR X 1 0 (0 + 1)" by blast
+            thus False using L0 by (simp add: nextR_def nextrel1_def)
+          qed
+        qed
+      next
+        show "{0} \<subseteq> {j. \<forall>j'<j. nextR X 1 j' (j' + 1)}" by auto
+      qed
+      hence "TrMax X = 0" by (simp add: TrMax_def)
+      thus False using False L0 by simp
+    qed
+    have bb: "Lng X - 1 < Lng X" using Lpos by simp
+    have aa: "TrMax X < TrMax X + 1" by simp
+    have segEq: "seg A (TrMax X + 1) (Lng X - 1)
+               = IncrFirst (seg X (TrMax X + 1) (Lng X - 1))"
+      by (rule cb_seg_IncrFirst[OF aa bb])
+    have "Br A = P (seg A (TrMax A + 1) (Lng A - 1))"
+      using False trEq len_eq by (simp add: Br_def)
+    also have "\<dots> = P (seg A (TrMax X + 1) (Lng X - 1))" using trEq len_eq by simp
+    also have "\<dots> = P (IncrFirst (seg X (TrMax X + 1) (Lng X - 1)))" using segEq by simp
+    also have "\<dots> = map IncrFirst (P (seg X (TrMax X + 1) (Lng X - 1)))"
+      by (rule m_6_2_P_IncrFirst)
+    also have "\<dots> = map IncrFirst (Br X)" using False by (simp add: Br_def)
+    finally show ?thesis .
+  qed
+qed
+
+lemma cb_length_Br_eq: "length (Br A) = length (Br X)"
+  by (simp add: cb_Br_eq)
+
+lemma cb_FirstNodes_eq: "FirstNodes A = FirstNodes X"
+proof -
+  have "IdxSum (Br A) = IdxSum (Br X)"
+    by (simp add: cb_Br_eq IdxSum_map_IncrFirst)
+  thus ?thesis by (simp add: FirstNodes_def TrMax_eq)
+qed
+
+lemma cb_Joints_eq: "Joints A = Joints X"
+  by (simp add: Joints_def nextR_eq cb_FirstNodes_eq cb_length_Br_eq)
+
+lemma cb_npJ_eq:
+  assumes J: "J < length (Br X)"
+  shows "npJ A J = npJ X J"
+proof -
+  have br: "Br A = map IncrFirst (Br X)" by (rule cb_Br_eq)
+  have brJ: "Br A ! J = IncrFirst (Br X ! J)" using J br by simp
+  have e1: "entry (Br A ! J) 1 0 = entry (Br X ! J) 1 0"
+  proof (cases "Lng (Br X ! J) = 0")
+    case True
+    hence "Br X ! J = []" by simp
+    thus ?thesis using brJ by (simp add: IncrFirst_def)
+  next
+    case False
+    hence L0: "0 < Lng (Br X ! J)" by simp
+    show ?thesis using entry_IncrFirst[OF L0, of 1] by (simp add: brJ)
+  qed
+  have theEq: "(THE j. nextR A 1 j (FirstNodes A ! J))
+             = (THE j. nextR X 1 j (FirstNodes X ! J))"
+    by (simp add: nextR_eq cb_FirstNodes_eq)
+  show ?thesis unfolding npJ_def by (simp only: e1 theEq)
+qed
+
+text \<open>The branch recursion argument \<open>N\<^sub>J\<close> of \<open>A\<close> is the \<open>bumpAt\<close>-image of that of
+  \<open>X\<close>, at the fresh cut \<open>Joints!J + 2\<close>: the head node \<open>(Joints!J+1, np)\<close> is fixed
+  (its row-0 value \<open>Joints!J+1\<close> is below the new cut), and the rest of the branch
+  is bumped uniformly.  Here \<open>n \<ge> 1\<close> and \<open>X\<close> core (\<open>m\<^sub>0\<^sub>0 = m\<^sub>1\<^sub>0 = 0\<close>), so the
+  head row-0/row-1 of \<open>A\<close> match \<open>X\<close>.\<close>
+
+lemma cb_NJ_bumpAt:
+  assumes XP: "X \<in> PT_PS" and n1: "1 \<le> n" and c0: "entry X 0 0 = 0" and c1: "entry X 1 0 = 0"
+    and J: "J < length (Br X)"
+  shows "NJ A J = bumpAt (NJ X J) (Joints X ! J + 2)"
+proof -
+  let ?np = "Joints X ! J + 2"
+  have XT: "X \<in> T_PS" using XP by (simp add: PT_PS_def)
+  have Lpos: "0 < Lng X" using XT by (cases X) (auto simp: T_PS_def)
+  have JBr: "J < Lng (Br X)" using J by simp
+  \<comment> \<open>tail-cleanness of the branch: past the head, row-0 \<ge> \<open>Joints!J + 2\<close>.\<close>
+  have cb_NJ_tail_ge: "\<And>p. p < Lng (Br X ! J) \<Longrightarrow> 0 < p \<Longrightarrow> ?np \<le> fst (Br X ! J ! p)"
+  proof -
+    fix p assume pBrX: "p < Lng (Br X ! J)" and pq: "0 < p"
+    have brJne: "Br X ! J \<noteq> []" by (rule Br_component_nonempty[OF XP JBr])
+    have brJTPS: "Br X ! J \<in> T_PS" using brJne by (simp add: T_PS_def)
+    have mo: "monoT (Br X ! J)"
+    proof -
+      have "zeroT (Br X ! J) \<or> monoT (Br X ! J)" by (rule Br_component_nonmulti[OF XP JBr])
+      moreover have "\<not> zeroT (Br X ! J)"
+        using pBrX pq by (auto simp: zeroT_def)
+      ultimately show ?thesis by blast
+    qed
+    have K: "Joints X ! J + 1 \<le> entry (Br X ! J) 0 0"
+      using joints_lt_branch_first[OF XP JBr] c0 by simp
+    have mn: "entry (Br X ! J) 0 0 < entry (Br X ! J) 0 p"
+      by (rule monoT_row0_min[OF brJTPS mo pq pBrX])
+    have "?np \<le> entry (Br X ! J) 0 p" using K mn by simp
+    thus "?np \<le> fst (Br X ! J ! p)" by (simp add: entry_def)
+  qed
+  \<comment> \<open>head of A matches X (core, n\<ge>1): bumpv leaves 0 fixed.\<close>
+  have A00: "entry A 0 0 = 0" using row0_bump[OF Lpos] c0 n1 by (simp add: bumpv_def)
+  have A10: "entry A 1 0 = 0" using row1_eq[OF Lpos] c1 by simp
+  have jt: "Joints A = Joints X" by (rule cb_Joints_eq)
+  have np: "npJ A J = npJ X J" by (rule cb_npJ_eq[OF J])
+  have br: "Br A ! J = IncrFirst (Br X ! J)" using J cb_Br_eq by simp
+  \<comment> \<open>head node value.\<close>
+  let ?hv = "Joints X ! J + 1"
+  have brXne: "Br X ! J \<noteq> []" by (rule Br_component_nonempty[OF XP JBr])
+  have brAne: "Br A ! J \<noteq> []" using br brXne by (simp add: IncrFirst_def)
+  have lA: "Lng (NJ A J) = Lng (Br A ! J)" using brAne by (rule Lng_NJ)
+  have lX: "Lng (NJ X J) = Lng (Br X ! J)" using brXne by (rule Lng_NJ)
+  show ?thesis
+  proof (rule nth_equalityI)
+    show "length (NJ A J) = length (bumpAt (NJ X J) ?np)"
+      using lA lX br by (simp add: IncrFirst_def)
+  next
+    fix p assume p: "p < length (NJ A J)"
+    show "NJ A J ! p = bumpAt (NJ X J) ?np ! p"
+    proof (cases p)
+      case 0
+      have hA: "NJ A J ! 0 = (entry A 0 0 + Joints A ! J + 1, entry A 1 0 + npJ A J)"
+        by (simp add: NJ_def)
+      have hX: "NJ X J ! 0 = (entry X 0 0 + Joints X ! J + 1, entry X 1 0 + npJ X J)"
+        by (simp add: NJ_def)
+      have bv: "bumpv ?np (fst (NJ X J ! 0)) = fst (NJ X J ! 0)"
+        using hX c0 by (simp add: bumpv_def)
+      have njXpos: "0 < length (NJ X J)" by (simp add: NJ_def)
+      have "bumpAt (NJ X J) ?np ! 0
+              = (\<lambda>pp. (bumpv ?np (fst pp), snd pp)) (NJ X J ! 0)"
+        unfolding bumpAt_def by (rule nth_map[OF njXpos])
+      hence "bumpAt (NJ X J) ?np ! 0 = (bumpv ?np (fst (NJ X J ! 0)), snd (NJ X J ! 0))"
+        by simp
+      also have "\<dots> = NJ X J ! 0" using bv by (cases "NJ X J ! 0") simp
+      also have "\<dots> = NJ A J ! 0" using hA hX A00 A10 jt np c0 c1 by simp
+      finally have "bumpAt (NJ X J) ?np ! 0 = NJ A J ! 0" .
+      thus ?thesis using 0 by simp
+    next
+      case (Suc q)
+      have pBr: "p < Lng (Br A ! J)" using p Lng_NJ[OF brAne] by simp
+      have pBrX: "p < Lng (Br X ! J)" using pBr br by (simp add: IncrFirst_def)
+      have pq: "0 < p" using Suc by simp
+      \<comment> \<open>tail entry: NJ reads Br at p; A side is IncrFirst (+1) of X side.\<close>
+      have tlA: "p - 1 < length (tl (Br A ! J))" using pBr pq by simp
+      have tlX: "p - 1 < length (tl (Br X ! J))" using pBrX pq by simp
+      have tA: "NJ A J ! p = Br A ! J ! p"
+      proof -
+        have "NJ A J ! p = tl (Br A ! J) ! (p - 1)"
+          unfolding NJ_def using pq by (cases p) auto
+        also have "\<dots> = Br A ! J ! Suc (p - 1)" using nth_tl[OF tlA] .
+        also have "\<dots> = Br A ! J ! p" using pq by simp
+        finally show ?thesis .
+      qed
+      have tX: "NJ X J ! p = Br X ! J ! p"
+      proof -
+        have "NJ X J ! p = tl (Br X ! J) ! (p - 1)"
+          unfolding NJ_def using pq by (cases p) auto
+        also have "\<dots> = Br X ! J ! Suc (p - 1)" using nth_tl[OF tlX] .
+        also have "\<dots> = Br X ! J ! p" using pq by simp
+        finally show ?thesis .
+      qed
+      have brp: "Br A ! J ! p = (Suc (fst (Br X ! J ! p)), snd (Br X ! J ! p))"
+        using br pBrX by (simp add: IncrFirst_def)
+      \<comment> \<open>the bump at \<open>?np\<close> is a +1 on this tail position (row-0 value \<ge> ?np).\<close>
+      have ge: "?np \<le> fst (Br X ! J ! p)"
+        by (rule cb_NJ_tail_ge[OF pBrX pq])
+      have pNJX: "p < length (NJ X J)" using pBrX lX by simp
+      have "bumpAt (NJ X J) ?np ! p
+              = (\<lambda>pp. (bumpv ?np (fst pp), snd pp)) (NJ X J ! p)"
+        unfolding bumpAt_def by (rule nth_map[OF pNJX])
+      hence "bumpAt (NJ X J) ?np ! p = (bumpv ?np (fst (NJ X J ! p)), snd (NJ X J ! p))"
+        by simp
+      also have "\<dots> = (Suc (fst (Br X ! J ! p)), snd (Br X ! J ! p))"
+        using tX ge by (simp add: bumpv_def)
+      also have "\<dots> = NJ A J ! p" using tA brp by simp
+      finally show ?thesis by (rule sym)
+    qed
+  qed
+qed
+
+end
+
+
+text \<open>@{const bumpAt} is a per-component map, so it commutes with \<open>take\<close>/\<open>drop\<close>
+  and (preserving \<open>multiT\<close>/\<open>Pcut\<close>) with the block decomposition \<open>P\<close>.\<close>
+
+lemma bumpAt_take: "bumpAt (take k M) n = take k (bumpAt M n)"
+  by (simp add: bumpAt_def take_map)
+
+lemma bumpAt_drop: "bumpAt (drop k M) n = drop k (bumpAt M n)"
+  by (simp add: bumpAt_def drop_map)
+
+lemma bumpAt_multiT_eq: "multiT (bumpAt M n) = multiT M"
+  by (rule tail_bump.multiT_eq[OF tail_bump_bumpAt])
+
+lemma bumpAt_Pcut_eq: "Pcut (bumpAt M n) = Pcut M"
+  by (rule tail_bump.Pcut_eq[OF tail_bump_bumpAt])
+
+lemma P_bumpAt: "P (bumpAt M n) = map (\<lambda>b. bumpAt b n) (P M)"
+proof (induction M rule: P.induct)
+  case (1 M)
+  show ?case
+  proof (cases "multiT M \<and> 1 < Lng M")
+    case True
+    hence step: "P M = P (take (Pcut M) M) @ [drop (Pcut M) M]"
+      by (subst P.simps) simp
+    from True have stepB:
+      "P (bumpAt M n)
+         = P (take (Pcut M) (bumpAt M n)) @ [drop (Pcut M) (bumpAt M n)]"
+      by (subst P.simps) (simp add: bumpAt_multiT_eq bumpAt_Pcut_eq)
+    have IH: "P (bumpAt (take (Pcut M) M) n) = map (\<lambda>b. bumpAt b n) (P (take (Pcut M) M))"
+      using True 1 by blast
+    show ?thesis
+      using stepB step IH by (simp add: bumpAt_take bumpAt_drop)
+  next
+    case False
+    have ncM: "\<not> (multiT M \<and> 1 < Lng M)" using False by simp
+    have pM: "P M = [M]" by (subst P.simps) (rule if_not_P[OF ncM])
+    moreover have "P (bumpAt M n) = [bumpAt M n]"
+    proof -
+      have nc: "\<not> (multiT (bumpAt M n) \<and> 1 < Lng (bumpAt M n))"
+        using False by (simp add: bumpAt_multiT_eq)
+      show ?thesis by (subst P.simps) (rule if_not_P[OF nc])
+    qed
+    ultimately show ?thesis by simp
+  qed
+qed
+
+
+text \<open>bumpv interacts with a uniform \<open>+m\<close> shift by shifting the cut: this is the
+  algebraic identity underlying the \<open>m\<^sub>1\<^sub>0>0\<close> recursion step.\<close>
+
+lemma bumpv_shift: "bumpv (n + m) (v + m) = bumpv n v + m"
+  by (simp add: bumpv_def)
+
+lemma entry_diag_funpow_bumpAt0:
+  assumes k: "k < m" and j: "j < Lng (diagSeq 0 k @ (IncrFirst ^^ m) X)"
+  shows "entry (bumpAt (diagSeq 0 k @ (IncrFirst ^^ m) X) (n + m)) 0 j
+       = entry (diagSeq 0 k @ (IncrFirst ^^ m) (bumpAt X n)) 0 j"
+proof -
+  let ?D = "diagSeq 0 k"
+  have lenD: "length ?D = Suc k" by simp
+  have jlt: "j < Suc k + Lng X" using j by simp
+  show ?thesis
+  proof (cases "j < Suc k")
+    case True
+    have eL: "entry (bumpAt (?D @ (IncrFirst ^^ m) X) (n + m)) 0 j = bumpv (n+m) j"
+      using True j by (simp add: entry_bumpAt0 entry_diagSeq_append_lo)
+    have eR: "entry (?D @ (IncrFirst ^^ m) (bumpAt X n)) 0 j = j"
+      using True by (simp add: entry_diagSeq_append_lo)
+    have "bumpv (n+m) j = j" using True k by (simp add: bumpv_def)
+    thus ?thesis using eL eR by simp
+  next
+    case False
+    have jge: "Suc k \<le> j" using False by simp
+    have jX: "j - Suc k < Lng X" using jlt jge by simp
+    have eX: "entry (?D @ (IncrFirst ^^ m) X) 0 j = entry ((IncrFirst ^^ m) X) 0 (j - Suc k)"
+      using jge lenD jX by (simp add: nth_append entry_def)
+    have eL: "entry (bumpAt (?D @ (IncrFirst ^^ m) X) (n+m)) 0 j
+            = bumpv (n+m) (entry X 0 (j - Suc k) + m)"
+      using j eX entry_bumpAt0[of j "?D @ (IncrFirst ^^ m) X" "n+m"]
+            entry_funpow_IncrFirst0[OF jX] by simp
+    have eR0: "entry (?D @ (IncrFirst ^^ m) (bumpAt X n)) 0 j
+             = entry ((IncrFirst ^^ m) (bumpAt X n)) 0 (j - Suc k)"
+      using jge lenD jX by (simp add: nth_append entry_def)
+    have jXb: "j - Suc k < Lng (bumpAt X n)" using jX by simp
+    have eR: "entry (?D @ (IncrFirst ^^ m) (bumpAt X n)) 0 j
+            = bumpv n (entry X 0 (j - Suc k)) + m"
+      using eR0 entry_funpow_IncrFirst0[OF jXb] entry_bumpAt0[OF jX] by simp
+    show ?thesis using eL eR bumpv_shift by simp
+  qed
+qed
+
+lemma bumpAt_diag_funpow:
+  assumes k: "k < m"
+  shows "bumpAt (diagSeq 0 k @ (IncrFirst ^^ m) X) (n + m)
+       = diagSeq 0 k @ (IncrFirst ^^ m) (bumpAt X n)"
+proof (rule nth_equalityI)
+  show "length (bumpAt (diagSeq 0 k @ (IncrFirst ^^ m) X) (n + m))
+      = length (diagSeq 0 k @ (IncrFirst ^^ m) (bumpAt X n))"
+    by (simp add: bumpAt_def)
+next
+  fix j assume j: "j < length (bumpAt (diagSeq 0 k @ (IncrFirst ^^ m) X) (n + m))"
+  have jL: "j < Lng (diagSeq 0 k @ (IncrFirst ^^ m) X)" using j by (simp add: bumpAt_def)
+  let ?L = "bumpAt (diagSeq 0 k @ (IncrFirst ^^ m) X) (n + m)"
+  let ?R = "diagSeq 0 k @ (IncrFirst ^^ m) (bumpAt X n)"
+  have row0: "entry ?L 0 j = entry ?R 0 j" by (rule entry_diag_funpow_bumpAt0[OF k jL])
+  \<comment> \<open>row 1: both leave row 1 alone; \<open>bumpAt\<close>/\<open>IncrFirst\<close> preserve row 1.\<close>
+  have lenD: "length (diagSeq 0 k) = Suc k" by simp
+  have jlt: "j < Suc k + Lng X" using jL by simp
+  have row1: "entry ?L 1 j = entry ?R 1 j"
+  proof (cases "j < Suc k")
+    case True
+    have e1: "entry ?L 1 j = entry (diagSeq 0 k @ (IncrFirst ^^ m) X) 1 j"
+      using jL by (rule entry_bumpAt1)
+    have "entry ?L 1 j = j" using e1 True by (simp add: entry_diagSeq_append_lo)
+    moreover have "entry ?R 1 j = j" using True by (simp add: entry_diagSeq_append_lo)
+    ultimately show ?thesis by simp
+  next
+    case False
+    have jge: "Suc k \<le> j" using False by simp
+    have jX: "j - Suc k < Lng X" using jlt jge by simp
+    have eLb: "entry ?L 1 j = entry (diagSeq 0 k @ (IncrFirst ^^ m) X) 1 j"
+      using jL by (rule entry_bumpAt1)
+    have eLf: "entry (diagSeq 0 k @ (IncrFirst ^^ m) X) 1 j
+             = entry ((IncrFirst ^^ m) X) 1 (j - Suc k)"
+      using jge lenD jX by (simp add: nth_append entry_def)
+    have eL: "entry ?L 1 j = entry X 1 (j - Suc k)"
+      using eLb eLf entry_funpow_IncrFirst1[OF jX] by simp
+    have jXb: "j - Suc k < Lng (bumpAt X n)" using jX by simp
+    have eR1: "entry ?R 1 j = entry ((IncrFirst ^^ m) (bumpAt X n)) 1 (j - Suc k)"
+      using jge lenD jXb by (simp add: nth_append entry_def)
+    have eR: "entry ?R 1 j = entry (bumpAt X n) 1 (j - Suc k)"
+      using eR1 entry_funpow_IncrFirst1[OF jXb] by simp
+    show ?thesis using eL eR entry_bumpAt1[OF jX] by simp
+  qed
+  have "?L ! j = (entry ?L 0 j, entry ?L 1 j)" using jL by (cases "?L ! j") (simp add: entry_def bumpAt_def)
+  moreover have "?R ! j = (entry ?R 0 j, entry ?R 1 j)" using jL by (cases "?R ! j") (simp add: entry_def)
+  ultimately show "?L ! j = ?R ! j" using row0 row1 by simp
+qed
+
+text \<open>\<open>cutOK X n\<close>: the cut hypothesis (\<open>n \<ge> 1\<close> and the branch region past
+  \<open>TrMax X\<close> has row-0 \<open>\<ge> n\<close>) under which the suffix bump @{const bumpAt} preserves
+  @{const Red}.  It is exactly the @{locale cut_bump} \<open>tail_low\<close> axiom plus
+  \<open>1 \<le> n\<close>; \<open>cut_bump (bumpAt X n) X n\<close> holds whenever \<open>cutOK X n\<close>.\<close>
+
+definition cutOK :: "pairseq \<Rightarrow> nat \<Rightarrow> bool" where
+  "cutOK X n \<longleftrightarrow> 1 \<le> n \<and> (\<forall>j. TrMax X < j \<longrightarrow> j < Lng X \<longrightarrow> n \<le> entry X 0 j)"
+
+lemma cut_bump_bumpAt:
+  assumes "cutOK X n" shows "cut_bump (bumpAt X n) X n"
+  using assms
+  by (intro cut_bump.intro cut_bump_axioms.intro tail_bump_bumpAt) (simp_all add: cutOK_def)
+
+text \<open>Concrete cut for the top-level @{const coreReduce} pair: it satisfies the
+  \<open>cut_bump\<close> hypotheses with cut \<open>m\<^sub>1\<^sub>0\<close> (the tail past \<open>TrMax\<close> has row-0 \<open>\<ge> m\<^sub>1\<^sub>0\<close>
+  because the whole post-prefix tail does, by @{thm [source] njA_TrMax_ge_m10}).\<close>
+
+lemma cut_bump_coreReduce:
+  assumes T: "M \<in> T_PS" and mono: "monoT M" and pos: "0 < entry M 1 0"
+  shows "cut_bump (coreReduce (IncrFirst M)) (coreReduce M) (entry M 1 0)"
+proof -
+  let ?m = "entry M 1 0"
+  let ?R = "(IncrFirst ^^ ?m) M"
+  have tb: "tail_bump (coreReduce (IncrFirst M)) (coreReduce M) ?m"
+    by (rule tail_bump_coreReduce[OF T pos])
+  have crX: "coreReduce M = diagSeq 0 (?m - 1) @ ?R" by (rule coreReduce_m10pos_form[OF pos])
+  have lenD: "length (diagSeq 0 (?m - 1)) = ?m" using pos by simp
+  show ?thesis
+  proof (intro cut_bump.intro cut_bump_axioms.intro tb)
+    fix j assume a: "TrMax (coreReduce M) < j" and b: "j < Lng (coreReduce M)"
+    have m10le: "?m \<le> TrMax (coreReduce M)" by (rule njA_TrMax_ge_m10[OF T pos])
+    have jge: "?m \<le> j" using a m10le by simp
+    have jR: "j - ?m < Lng ?R" using b crX lenD jge by simp
+    have eX: "entry (coreReduce M) 0 j = entry ?R 0 (j - ?m)"
+      using crX jge lenD jR by (simp add: nth_append entry_def)
+    have "?m \<le> entry ?R 0 (j - ?m)"
+      using entry_funpow_IncrFirst0[OF jR[unfolded Lng_funpow_IncrFirst]] by simp
+    thus "?m \<le> entry (coreReduce M) 0 j" using eX by simp
+  qed
+qed
+
 end
 
