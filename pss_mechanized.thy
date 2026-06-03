@@ -39450,4 +39450,109 @@ proof -
 qed
 
 
+
+text \<open>FWD keystone, core-NONTRUNK initial slice (article content.md 1154):
+  for a reduced \<open>monoT M\<close> with \<open>M\<^sub>0 = (0,0)\<close> and \<open>TrMax M \<noteq> Lng M - 1\<close>, the
+  row-1-trunk initial slice \<open>seg M 0 (TrMax M)\<close> is reduced (slice-heredity
+  @{thm [source] herd_6_6_reduced_slice}, with \<open>j\<^sub>0' = 0\<close> and
+  \<open>TrMax M \<le> j\<^sub>1' = TrMax M \<le> Lng M - 1\<close>), has both left-end values \<open>0\<close>, and
+  length \<open>Suc (TrMax M)\<close>.  This is the article's initial reduced segment
+  \<open>(M\<^sub>j)\<^bsub>j=0\<^esub>\<^bsup>j\<^sub>0\<^esup>\<close> of the \<open>j\<^sub>1\<close>-induction core-nontrunk case (line 1154): a
+  strictly shorter reduced core to which the induction hypothesis applies.
+  (We do NOT claim \<open>monoT\<close> here: \<open>TrMax M = 0\<close> nontrunk reduced cores occur
+  27/63 in \<open>red_model\<close>, val\<le>3 Lng\<le>4, and then the slice is the \<open>zeroT\<close>
+  singleton \<open>[(0,0)]\<close>; reducedness and the left-end values hold uniformly.)
+  Empirically TRUE: 63/0 reduced monoT-nontrunk cores.\<close>
+
+lemma kfwd_reduced_core_nontrunk_initslice:
+  assumes M: "M \<in> RT_PS"
+    and e00: "entry M 0 0 = 0" and e10: "entry M 1 0 = 0"
+    and tne: "TrMax M \<noteq> Lng M - 1"
+  shows "seg M 0 (TrMax M) \<in> RT_PS
+           \<and> entry (seg M 0 (TrMax M)) 0 0 = 0
+           \<and> entry (seg M 0 (TrMax M)) 1 0 = 0
+           \<and> Lng (seg M 0 (TrMax M)) = Suc (TrMax M)"
+proof -
+  have MT: "M \<in> T_PS" using M by (simp add: RT_PS_def)
+  have tb: "TrMax M \<le> Lng M - 1" by (rule TrMax_bound[OF MT])
+  let ?t = "TrMax M"
+  let ?S = "seg M 0 ?t"
+  \<comment> \<open>reduced (slice heredity).\<close>
+  have segRT: "?S \<in> RT_PS"
+    by (rule herd_6_6_reduced_slice[OF M refl order.refl tb])
+  have Lseg: "Lng ?S = Suc ?t" using Lng_seg[of M 0 ?t] by simp
+  \<comment> \<open>left-end values inherit from \<open>M\<close>.\<close>
+  have es00: "entry ?S 0 0 = 0"
+  proof -
+    have jlt: "(0::nat) < Lng ?S" using Lseg by simp
+    have "entry ?S 0 0 = entry M 0 (0 + 0)" by (rule entry_seg[OF jlt])
+    thus ?thesis using e00 by simp
+  qed
+  have es10: "entry ?S 1 0 = 0"
+  proof -
+    have jlt: "(0::nat) < Lng ?S" using Lseg by simp
+    have "entry ?S 1 0 = entry M 1 (0 + 0)" by (rule entry_seg[OF jlt])
+    thus ?thesis using e10 by simp
+  qed
+  show ?thesis using segRT es00 es10 Lseg by simp
+qed
+
+section \<open>§7.2 第0種/第1種 scb分解の一意性 (p_7_2_scb_unique conjuncts (4),(5))\<close>
+
+text \<open>
+  EMPIRICAL TRUTH-CHECK (\<open>_scbkind_check.py\<close>, BT model, indices \<open>{0,1,2}\<close>,
+  depth \<open>2\<close>, 1560 nonempty \<open>D\<^sub>\<omega>\<close>-free terms):
+
+  \<^item> conjunct (4) \<open>kind0\<close>-uniqueness, conjunct (5) \<open>kind1\<close>-uniqueness, conjunct (3)
+    \<open>kind0/kind1\<close>-exclusivity: 0 failures over 1560 nonempty terms.
+  \<^item> But ALL THREE FAIL at \<open>t = Trm []\<close>: there \<open>flatBT t = [Zsym]\<close> and the
+    \<open>isPTB_str c\<close> side-condition of \<^const>\<open>scb_decomp\<close> is WAIVED, so both
+    \<open>(s,c,b) = ([], [Zsym], [])\<close> and \<open>([Zsym], [], [])\<close> are scb-decompositions
+    whose \<^const>\<open>scb_kind0\<close> / \<^const>\<open>scb_kind1\<close> \<open>RightNodes\<close> conditions hold
+    vacuously (no principal \<open>p\<close> has \<open>flatBP p = [Zsym]\<close> or \<open>= []\<close>).  Their
+    \<open>c\<close>-parts \<open>[Zsym]\<close> vs \<open>[]\<close> differ, so uniqueness is FALSE at \<open>t = Trm []\<close>.
+
+  Hence the conjuncts as transcribed in \<open>p_7_2_scb_unique\<close> (assumption \<open>t \<in> T_B\<close>
+  only) are false; the article-faithful form needs the extra hypothesis
+  \<open>t \<noteq> Trm []\<close> (the same degenerate-zero hole as A11/A12/A13).  The brick below
+  is the GREEN reduction; the kind conjuncts stay unproven in \<open>pss_paper.thy\<close>.
+
+  REDUCTION.  For \<open>t \<noteq> Trm []\<close>, the green @{thm [source] m_7_2_scb_unique_decomp}
+  already gives \<open>(s\<^sub>0,b\<^sub>0) = (s\<^sub>1,b\<^sub>1)\<close> once \<open>c\<^sub>0 = c\<^sub>1\<close>.  So both kind-uniqueness
+  conjuncts reduce to the single residual obligation \<open>c\<^sub>0 = c\<^sub>1\<close> (the article's
+  "\<open>c\<close> is the maximal proper term substring", pinned by the \<open>RightNodes\<close> spine).
+\<close>
+
+\<comment> \<open>Reduction brick (GREEN): kind0/kind1 uniqueness from \<open>c\<close>-equality.  Sound — it
+   cites only the green @{thm [source] m_7_2_scb_unique_decomp}, never an
+   unproven stub.  This is the article's final step
+   ("\<open>c\<^sub>0 = c\<^sub>1\<close> かつ \<open>b\<^sub>0 = b\<^sub>1\<close> ... \<open>s\<^sub>0 = s\<^sub>1\<close>").\<close>
+lemma m_7_2_scb_kind_unique_of_ceq:
+  assumes tTB: "t \<in> T_B"
+      and ceq: "c\<^sub>0 = c\<^sub>1"
+      and d0: "scb_decomp t s\<^sub>0 c\<^sub>0 b\<^sub>0"
+      and d1: "scb_decomp t s\<^sub>1 c\<^sub>1 b\<^sub>1"
+  shows "(s\<^sub>0, c\<^sub>0, b\<^sub>0) = (s\<^sub>1, c\<^sub>1, b\<^sub>1)"
+proof -
+  have d1': "scb_decomp t s\<^sub>1 c\<^sub>0 b\<^sub>1" using d1 ceq by simp
+  have "s\<^sub>0 = s\<^sub>1 \<and> b\<^sub>0 = b\<^sub>1"
+    by (rule m_7_2_scb_unique_decomp[OF tTB d0 d1'])
+  thus ?thesis using ceq by simp
+qed
+
+text \<open>
+  RESIDUAL (precise).  What remains for the full conjuncts (4),(5) is the
+  \<open>c\<close>-equality \<open>c\<^sub>0 = c\<^sub>1\<close> for two kind-\<open>k\<close> scb-decompositions of a nonempty \<open>t\<close>.
+  The article proves it (content.md 1900..1960) by the \<open>RightNodes\<close> spine
+  argument, whose Isabelle bricks are ALREADY GREEN here:
+  @{thm [source] rnsub_RightNodes_t0_lastv}, @{thm [source] rnsub_flat_pre_post},
+  @{thm [source] rnsub_align_lastZ}, @{thm [source] rnsub_RightNodes_last},
+  @{thm [source] rnsub_RightNodes_spineSub}.  The two missing links are
+  (i) \<open>RightNodes c\<^sub>i\<close> is the length-\<open>(j\<^sub>1\<^sub>,\<^sub>i+1)\<close> SUFFIX segment of \<open>RightNodes t\<close>
+  (so the kind condition pins \<open>j\<^sub>1\<^sub>,\<^sub>0 = j\<^sub>1\<^sub>,\<^sub>1\<close> and \<open>v\<^sub>0 = v\<^sub>1\<close>), and
+  (ii) MAXIMALITY of \<open>c\<close> as a term substring.  Both are multi-lemma.
+\<close>
+
+
+
 end

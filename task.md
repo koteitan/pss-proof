@@ -59,7 +59,7 @@
       - ✅🚧 命題（scb分解の置換可能性）〔原文 literal は**偽**(反例 t0=c0=(),c1=複項; `m_7_2_scb_replaceable_counterexample` green)→**A12**。退化 `m_7_2_scb_replaceable_t0zero`/像条件つき補正 `m_7_2_scb_replaceable_corr_mod_image` green〕
       - ✅🚧 命題（scb分解の合成則）〔part(1) `m_7_2_scb_compose`(green)。part(2) は**原文どおりだと偽**(反例 t=Trm[],c=[Zsym]; `scbcomp_compose2_counterexample` green)→訂正版 `scbcomp_compose2_PT`(前提 isPTB_str c 追加)green。**A11**〕
       - ✅ 命題（scb分解の自明性の判定条件）〔`m_7_2_scb_triviality`(両 shows green)。t=c⟺自明分解⟺s=[]分解存在。converse は flatBT_inj+プレフィックス自由(`scbtriv_flat_append_RP_nil`)〕
-      - 🚨🚧 命題（scb分解の一意性）〔conjunct(1) 無条件版 `m_7_2_scb_unique_decomp`(green、(s,b) 一意性、t=Trm[]ケース埋め+`m_7_2_scb_unique_sb`)。残 conjunct(2)-(5)=domB↔kind/kind0,1 一意性〕
+      - 🚨🚧 命題（scb分解の一意性）〔(1) `m_7_2_scb_unique_decomp`(green)。種一意性(4)(5)は**t=Trm[]で偽**(空虚分解)→**A14**、健全還元 `m_7_2_scb_kind_unique_of_ceq`(c0=c1へ)green。残＝c0=c1(RightNodes 脊柱、多補題)＋(2)domB↔kind〕
       - ✅ 系（加法と scb分解の関係）〔(1) `m_7_2_add_scb_conj1`/(2) `m_7_2_add_scb_conj2`(c→c'置換、scb一意性経由)green。(3) は**原文偽**(反例 `m_7_2_add_scb_conj3_counterexample`、D_v(t+c)出現の非一意性)→**A13**訂正済〕
       - 🚨 命題（scb分解と基本列の関係）
       - ✅ 命題（$\textrm{RightNodes}$ と部分表現の関係）〔`m_7_2_RightNodes_subexpr`、BT項レベル(spineSub)、§6独立〕
