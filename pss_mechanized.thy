@@ -34726,4 +34726,2359 @@ proof -
   thus ?thesis using MT by blast
 qed
 
+
+(* ===== block from workflow t2-rpred ===== *)
+subsection \<open>§6.5 命題（\<open>Red\<close>と\<open>Pred\<close>の可換性）— core-nontrunk \<open>Hbr\<close> の解消\<close>
+
+text \<open>rpred: \<open>Br (Pred M)\<close> shares the prefix \<open>butlast (Br M)\<close>.  Combined with
+  @{thm [source] TrMax_Pred} this gives \<open>IdxSum\<close>/\<open>FirstNodes\<close> agreement on the
+  prefix branch indices \<open>J \<le> Lng (Br M) - 1\<close>.\<close>
+
+lemma rpred_Br_Pred_prefix:
+  assumes M: "M \<in> T_PS" and m00: "entry M 0 0 = 0" and m10: "entry M 1 0 = 0"
+    and br: "TrMax M \<noteq> Lng M - 1" and L: "1 < Lng M"
+  shows "\<exists>ext. Br (Pred M) = butlast (Br M) @ ext"
+proof -
+  have "Br (Pred M) =
+           butlast (Br M)
+           @ (if Lng (last (Br M)) \<le> 1 then [] else [butlast (last (Br M))])"
+    by (rule m_6_6_Br_Pred[OF M m00 m10 br L])
+  thus ?thesis by blast
+qed
+
+text \<open>rpred: \<open>IdxSum\<close> agrees on a shared prefix region.  If \<open>Q\<^sub>1 = Q\<^sub>0 @ ext\<close> and
+  \<open>J \<le> length Q\<^sub>0\<close>, then \<open>IdxSum Q\<^sub>1 ! J = IdxSum Q\<^sub>0 ! J\<close> (both are
+  \<open>sum_list (map length (take J ·))\<close> and \<open>take J\<close> stays in the shared prefix).\<close>
+
+lemma rpred_IdxSum_prefix_append:
+  assumes "J \<le> length Q0"
+  shows "IdxSum (Q0 @ ext) ! J = IdxSum Q0 ! J"
+proof -
+  have JleA: "J \<le> length (Q0 @ ext)" using assms by simp
+  have a: "IdxSum (Q0 @ ext) ! J = sum_list (map length (take J (Q0 @ ext)))"
+    by (rule idxsum_nth[OF JleA])
+  have b: "IdxSum Q0 ! J = sum_list (map length (take J Q0))"
+    by (rule idxsum_nth[OF assms])
+  have c: "take J (Q0 @ ext) = take J Q0" using assms by (simp add: take_append)
+  have "IdxSum (Q0 @ ext) ! J = sum_list (map length (take J Q0))" by (simp only: a c)
+  thus ?thesis by (simp only: b)
+qed
+
+text \<open>rpred: \<open>IdxSum\<close> of \<open>butlast\<close> agrees with that of the full list on prefix
+  indices \<open>J \<le> length L - 1\<close>.\<close>
+
+lemma rpred_IdxSum_butlast:
+  assumes "J \<le> length L - 1" and "L \<noteq> []"
+  shows "IdxSum (butlast L) ! J = IdxSum L ! J"
+proof -
+  obtain Ls lst where Lsplit: "L = Ls @ [lst]" using assms(2)
+    by (metis append_butlast_last_id)
+  have but: "butlast L = Ls" using Lsplit by simp
+  have lenLs: "length Ls = length L - 1" using Lsplit by simp
+  have Jle: "J \<le> length Ls" using assms(1) lenLs by simp
+  have "IdxSum L ! J = IdxSum (Ls @ [lst]) ! J" using Lsplit by simp
+  also have "\<dots> = IdxSum Ls ! J" by (rule rpred_IdxSum_prefix_append[OF Jle])
+  finally show ?thesis using but by simp
+qed
+
+text \<open>rpred: \<open>FirstNodes (Pred M) ! J = FirstNodes M ! J\<close> on prefix branches
+  \<open>J < Lng (Br (Pred M))\<close>, for core-nontrunk \<open>M\<close>.  Uses \<open>TrMax (Pred M) = TrMax M\<close>
+  (@{thm [source] TrMax_Pred}) and the \<open>IdxSum\<close> prefix agreement: \<open>Br (Pred M)\<close>
+  starts with \<open>butlast (Br M)\<close>, so for \<open>J \<le> Lng (Br M) - 1\<close> the cumulative sums
+  coincide.\<close>
+
+lemma rpred_FirstNodes_Pred:
+  assumes M: "M \<in> T_PS" and mono: "monoT M"
+    and m00: "entry M 0 0 = 0" and m10: "entry M 1 0 = 0"
+    and br: "TrMax M \<noteq> Lng M - 1" and L: "1 < Lng M"
+    and JBr: "J < Lng (Br (Pred M))"
+  shows "FirstNodes (Pred M) ! J = FirstNodes M ! J"
+proof -
+  have MP: "M \<in> PT_PS" using M mono by (simp add: PT_PS_def)
+  have predT: "Pred M \<in> T_PS" by (rule Pred_preserves_T_PS[OF M])
+  have predbl: "Pred M = butlast M" using L by (simp add: Pred_def)
+  \<comment> \<open>\<open>Pred M\<close> is again core-nontrunk, so it has a nonempty \<open>Br\<close>.\<close>
+  have trP: "TrMax (Pred M) = TrMax M" by (rule TrMax_Pred[OF M L br])
+  \<comment> \<open>\<open>Br (Pred M)\<close> shares the prefix \<open>butlast (Br M)\<close>.\<close>
+  obtain ext where ext: "Br (Pred M) = butlast (Br M) @ ext"
+    using rpred_Br_Pred_prefix[OF M m00 m10 br L] by blast
+  have brMne: "Br M \<noteq> []"
+  proof -
+    have "Br M = P (seg M (TrMax M + 1) (Lng M - 1))" using br by (simp add: Br_def)
+    moreover have "0 < Lng (seg M (TrMax M + 1) (Lng M - 1))"
+    proof -
+      have tb: "TrMax M \<le> Lng M - 1" by (rule TrMax_bound[OF M])
+      with br have "TrMax M < Lng M - 1" by linarith
+      thus ?thesis using L by (simp add: Lng_seg)
+    qed
+    ultimately show ?thesis by (metis P_nonempty)
+  qed
+  \<comment> \<open>prefix index bound: \<open>J \<le> Lng (Br M) - 1\<close>.\<close>
+  have Jle: "J \<le> Lng (Br M) - 1"
+  proof -
+    have "Lng (Br (Pred M)) = Lng (butlast (Br M)) + Lng ext" using ext by simp
+    hence "J < Lng (butlast (Br M)) + Lng ext" using JBr by simp
+    \<comment> \<open>use the \<open>m_6_6_Br_Pred\<close> shape: \<open>ext\<close> has length \<le> 1 and the prefix is exactly
+       \<open>butlast (Br M)\<close>; either way prefix indices we need satisfy \<open>J \<le> Lng(Br M)-1\<close>.\<close>
+    have brEq: "Br (Pred M) =
+             butlast (Br M)
+             @ (if Lng (last (Br M)) \<le> 1 then [] else [butlast (last (Br M))])"
+      by (rule m_6_6_Br_Pred[OF M m00 m10 br L])
+    show ?thesis
+    proof (cases "Lng (last (Br M)) \<le> 1")
+      case True
+      hence "Br (Pred M) = butlast (Br M)" using brEq by simp
+      hence "J < Lng (butlast (Br M))" using JBr by simp
+      thus ?thesis using brMne by simp
+    next
+      case False
+      hence "Br (Pred M) = butlast (Br M) @ [butlast (last (Br M))]" using brEq by simp
+      hence "J < Lng (butlast (Br M)) + 1" using JBr by simp
+      thus ?thesis using brMne by simp
+    qed
+  qed
+  have JleL: "J \<le> length (Br M) - 1" using Jle by simp
+  \<comment> \<open>\<open>IdxSum (Br (Pred M)) ! J = IdxSum (Br M) ! J\<close>.\<close>
+  have idxeq: "IdxSum (Br (Pred M)) ! J = IdxSum (Br M) ! J"
+  proof -
+    have JleBut: "J \<le> length (butlast (Br M))" using Jle brMne by simp
+    have "IdxSum (Br (Pred M)) ! J = IdxSum (butlast (Br M)) ! J"
+      using ext by (simp add: rpred_IdxSum_prefix_append[OF JleBut])
+    also have "\<dots> = IdxSum (Br M) ! J"
+      by (rule rpred_IdxSum_butlast[OF JleL brMne])
+    finally show ?thesis .
+  qed
+  have fnP: "FirstNodes (Pred M) ! J = TrMax (Pred M) + 1 + IdxSum (Br (Pred M)) ! J"
+    by (rule FirstNodes_nth[OF JBr])
+  have JM: "J < Lng (Br M)" using Jle brMne by (cases "Br M") auto
+  have fnM: "FirstNodes M ! J = TrMax M + 1 + IdxSum (Br M) ! J"
+    by (rule FirstNodes_nth[OF JM])
+  show ?thesis using fnP fnM trP idxeq by simp
+qed
+
+text \<open>rpred: the branch index bound \<open>J < Lng (Br (Pred M))\<close> forces \<open>J < Lng (Br M)\<close>
+  for core-nontrunk \<open>M\<close> (the predecessor's branch list is no longer than the
+  original's).\<close>
+
+lemma rpred_JBr_Pred_imp:
+  assumes M: "M \<in> T_PS" and m00: "entry M 0 0 = 0" and m10: "entry M 1 0 = 0"
+    and br: "TrMax M \<noteq> Lng M - 1" and L: "1 < Lng M"
+    and JBr: "J < Lng (Br (Pred M))"
+  shows "J < Lng (Br M)"
+proof -
+  have brMne: "Br M \<noteq> []"
+  proof -
+    have "Br M = P (seg M (TrMax M + 1) (Lng M - 1))" using br by (simp add: Br_def)
+    moreover have "0 < Lng (seg M (TrMax M + 1) (Lng M - 1))"
+    proof -
+      have tb: "TrMax M \<le> Lng M - 1" by (rule TrMax_bound[OF M])
+      with br have "TrMax M < Lng M - 1" by linarith
+      thus ?thesis using L by (simp add: Lng_seg)
+    qed
+    ultimately show ?thesis by (metis P_nonempty)
+  qed
+  have brEq: "Br (Pred M) =
+           butlast (Br M)
+           @ (if Lng (last (Br M)) \<le> 1 then [] else [butlast (last (Br M))])"
+    by (rule m_6_6_Br_Pred[OF M m00 m10 br L])
+  show ?thesis
+  proof (cases "Lng (last (Br M)) \<le> 1")
+    case True
+    hence "Br (Pred M) = butlast (Br M)" using brEq by simp
+    hence "J < Lng (butlast (Br M))" using JBr by simp
+    thus ?thesis using brMne by simp
+  next
+    case False
+    hence "Br (Pred M) = butlast (Br M) @ [butlast (last (Br M))]" using brEq by simp
+    hence "J < Lng (butlast (Br M)) + 1" using JBr by simp
+    thus ?thesis using brMne by simp
+  qed
+qed
+
+text \<open>rpred: a branch first node has a unique row-0 parent.\<close>
+
+lemma rpred_hasParent_FirstNodes:
+  assumes M: "M \<in> PT_PS" and JBr: "J < Lng (Br M)"
+  shows "hasParent M 0 (FirstNodes M ! J)"
+proof -
+  have MT: "M \<in> T_PS" using M by (simp add: PT_PS_def)
+  have brne: "Br M \<noteq> []" using JBr by auto
+  have tb: "TrMax M \<le> Lng M - 1" by (rule TrMax_bound[OF MT])
+  have trne: "TrMax M \<noteq> Lng M - 1"
+  proof
+    assume "TrMax M = Lng M - 1"
+    hence "Br M = []" by (simp add: Br_def)
+    with brne show False by simp
+  qed
+  with tb have trlt: "TrMax M < Lng M - 1" by linarith
+  let ?N = "seg M (TrMax M + 1) (Lng M - 1)"
+  have brQ: "Br M = P ?N" using trne by (simp add: Br_def)
+  have JQ: "J \<le> Lng (P ?N) - 1" using JBr brQ by (cases "P ?N") auto
+  have hp: "hasParent M 0 (TrMax M + 1 + IdxSum (P ?N) ! J)"
+    using m_6_4_mono_slice_next[OF M _ _ JQ] trlt by auto
+  have fnJ: "TrMax M + 1 + IdxSum (P ?N) ! J = FirstNodes M ! J"
+    using FirstNodes_nth[OF JBr] brQ by simp
+  show ?thesis using hp fnJ by simp
+qed
+
+text \<open>rpred: \<open>Joints (Pred M) ! J = Joints M ! J\<close> on prefix branches.  Both are the
+  \<open>THE\<close> row-0 parent of \<open>FirstNodes _ ! J\<close>; @{thm [source] rpred_FirstNodes_Pred}
+  identifies the first nodes, and the parent transfers across the shared prefix
+  \<open>[0, FirstNodes M ! J]\<close> (the dropped last column lies strictly right of it, since
+  \<open>FirstNodes M ! J < Lng (Pred M)\<close>).\<close>
+
+lemma rpred_Joints_Pred:
+  assumes M: "M \<in> T_PS" and mono: "monoT M"
+    and m00: "entry M 0 0 = 0" and m10: "entry M 1 0 = 0"
+    and br: "TrMax M \<noteq> Lng M - 1" and L: "1 < Lng M"
+    and JBr: "J < Lng (Br (Pred M))"
+  shows "Joints (Pred M) ! J = Joints M ! J"
+proof -
+  have MP: "M \<in> PT_PS" using M mono by (simp add: PT_PS_def)
+  have predT: "Pred M \<in> T_PS" by (rule Pred_preserves_T_PS[OF M])
+  have JM: "J < Lng (Br M)" by (rule rpred_JBr_Pred_imp[OF M m00 m10 br L JBr])
+  \<comment> \<open>\<open>Pred M\<close> is again core-nontrunk and in \<open>PT_PS\<close>.\<close>
+  have predbl: "Pred M = butlast M" using L by (simp add: Pred_def)
+  have nz: "\<not> zeroT M" using L by (simp add: zeroT_def)
+  have nmu: "\<not> multiT M" using mono by (simp add: multiT_def)
+  have nzP: "\<not> zeroT (Pred M)"
+  proof -
+    have LP: "Lng (Pred M) = Lng M - 1" using L by (simp add: predbl)
+    \<comment> \<open>\<open>Pred M\<close> has a nonempty \<open>Br\<close>, so \<open>Lng (Pred M) > 1\<close>.\<close>
+    have brPne: "Br (Pred M) \<noteq> []" using JBr by auto
+    have tneP: "TrMax (Pred M) \<noteq> Lng (Pred M) - 1"
+    proof
+      assume "TrMax (Pred M) = Lng (Pred M) - 1"
+      hence "Br (Pred M) = []" by (simp add: Br_def)
+      with brPne show False by simp
+    qed
+    have LPgt: "1 < Lng (Pred M)"
+    proof (rule ccontr)
+      assume "\<not> 1 < Lng (Pred M)"
+      hence "Lng (Pred M) \<le> 1" by simp
+      moreover have "0 < Lng (Pred M)" using LP L by linarith
+      ultimately have "Lng (Pred M) = 1" by linarith
+      hence "TrMax (Pred M) = Lng (Pred M) - 1"
+        using TrMax_bound[OF predT] by simp
+      thus False using tneP by simp
+    qed
+    thus ?thesis by (simp add: zeroT_def)
+  qed
+  have nmuP: "\<not> multiT (Pred M)" by (rule nonmulti_Pred[OF M nmu L])
+  have monoP: "monoT (Pred M)" using nzP nmuP by (simp add: multiT_def)
+  have MPP: "Pred M \<in> PT_PS" using predT monoP by (simp add: PT_PS_def)
+  let ?f = "FirstNodes M ! J"
+  have fnP: "FirstNodes (Pred M) ! J = ?f"
+    by (rule rpred_FirstNodes_Pred[OF M mono m00 m10 br L JBr])
+  \<comment> \<open>the unique parent in \<open>Pred M\<close>.\<close>
+  have hpP: "hasParent (Pred M) 0 ?f"
+    using rpred_hasParent_FirstNodes[OF MPP JBr] fnP by simp
+  \<comment> \<open>the parent in \<open>M\<close> transfers to \<open>Pred M\<close>.\<close>
+  have nxM: "nextR M 0 (Joints M ! J) ?f" by (rule Joints_parent_nextR[OF MP JM])
+  \<comment> \<open>bounds: both endpoints \<le> \<open>?f\<close> and \<open>?f < Lng (Pred M)\<close>.\<close>
+  have jM_le: "Joints M ! J \<le> TrMax M \<and> TrMax M < ?f"
+    by (rule m_6_4_FirstNodes_TrMax_Joints[OF MP JM])
+  have f_lt_M: "?f < Lng M" using nxM by (simp add: nextR_def nextrel0_def)
+  have f_lt_P: "?f < Lng (Pred M)"
+  proof -
+    have fnP': "?f = TrMax (Pred M) + 1 + IdxSum (Br (Pred M)) ! J"
+      using fnP FirstNodes_nth[OF JBr] by simp
+    have fnP2: "FirstNodes (Pred M) ! J < Lng (Pred M)"
+      using Joints_parent_nextR[OF MPP JBr] by (simp add: nextR_def nextrel0_def)
+    thus ?thesis using fnP by simp
+  qed
+  \<comment> \<open>row-0 agreement on the prefix \<open>[0, ?f]\<close>.\<close>
+  have agree0: "\<And>j. j \<le> ?f \<Longrightarrow> entry M 0 j = entry (Pred M) 0 j"
+  proof -
+    fix j assume "j \<le> ?f"
+    hence "j < Lng (Pred M)" using f_lt_P by linarith
+    thus "entry M 0 j = entry (Pred M) 0 j"
+      by (simp add: predbl entry_def nth_butlast)
+  qed
+  have agree0': "\<And>j. j \<le> ?f \<Longrightarrow> entry (Pred M) 0 j = entry M 0 j"
+    using agree0 by simp
+  \<comment> \<open>\<open>nextR (Pred M) 0 (Joints M ! J) ?f\<close> via row-0 prefix transfer.\<close>
+  have jMle_f: "Joints M ! J \<le> ?f" using jM_le by linarith
+  have nxMrel: "nextrel0 M (Joints M ! J) ?f" using nxM by (simp add: nextR_def)
+  have nxMP: "nextR (Pred M) 0 (Joints M ! J) ?f"
+  proof -
+    have "nextrel0 (Pred M) (Joints M ! J) ?f"
+      by (rule nextrel0_prefix_row0[OF agree0 f_lt_P jMle_f order.refl nxMrel])
+    thus ?thesis by (simp add: nextR_def)
+  qed
+  \<comment> \<open>uniqueness of the parent in \<open>Pred M\<close>: \<open>Joints (Pred M) ! J\<close> is THE.\<close>
+  have jP_eq: "Joints (Pred M) ! J = parent (Pred M) 0 ?f"
+    using JBr fnP by (simp add: Joints_nth)
+  have exu: "\<exists>!j0. nextR (Pred M) 0 j0 ?f"
+    using hpP by (simp add: hasParent_def)
+  have "parent (Pred M) 0 ?f = Joints M ! J"
+    unfolding parent_def
+    by (rule the1_equality[OF exu nxMP])
+  thus ?thesis using jP_eq by simp
+qed
+
+text \<open>rpred: the block left-end \<open>(Br (Pred M) ! J)\<^bsub>1,0\<^esub> = (Br M ! J)\<^bsub>1,0\<^esub>\<close> on prefix
+  branches \<open>J < Lng (Br (Pred M))\<close>.  Reads the row-1 entry of the \<open>J\<close>-th branch
+  block; both equal \<open>entry M 1 (FirstNodes M ! J)\<close> (the first-node row-1 value),
+  which only depends on indices in the shared prefix.\<close>
+
+lemma rpred_branch_e1_Pred:
+  assumes M: "M \<in> T_PS" and mono: "monoT M"
+    and m00: "entry M 0 0 = 0" and m10: "entry M 1 0 = 0"
+    and br: "TrMax M \<noteq> Lng M - 1" and L: "1 < Lng M"
+    and JBr: "J < Lng (Br (Pred M))"
+  shows "entry (Br (Pred M) ! J) 1 0 = entry (Br M ! J) 1 0"
+proof -
+  have MP: "M \<in> PT_PS" using M mono by (simp add: PT_PS_def)
+  have predT: "Pred M \<in> T_PS" by (rule Pred_preserves_T_PS[OF M])
+  have JM: "J < Lng (Br M)" by (rule rpred_JBr_Pred_imp[OF M m00 m10 br L JBr])
+  \<comment> \<open>\<open>Pred M\<close> is core-nontrunk, in \<open>PT_PS\<close> (re-derive monoT of \<open>Pred M\<close>).\<close>
+  have predbl: "Pred M = butlast M" using L by (simp add: Pred_def)
+  have nz: "\<not> zeroT M" using L by (simp add: zeroT_def)
+  have nmu: "\<not> multiT M" using mono by (simp add: multiT_def)
+  have brPne: "Br (Pred M) \<noteq> []" using JBr by auto
+  have tneP: "TrMax (Pred M) \<noteq> Lng (Pred M) - 1"
+  proof
+    assume "TrMax (Pred M) = Lng (Pred M) - 1"
+    hence "Br (Pred M) = []" by (simp add: Br_def)
+    with brPne show False by simp
+  qed
+  have LP: "Lng (Pred M) = Lng M - 1" using L by (simp add: predbl)
+  have LPgt: "1 < Lng (Pred M)"
+  proof (rule ccontr)
+    assume "\<not> 1 < Lng (Pred M)"
+    moreover have "0 < Lng (Pred M)" using LP L by linarith
+    ultimately have "Lng (Pred M) = 1" by linarith
+    hence "TrMax (Pred M) = Lng (Pred M) - 1" using TrMax_bound[OF predT] by simp
+    thus False using tneP by simp
+  qed
+  have nzP: "\<not> zeroT (Pred M)" using LPgt by (simp add: zeroT_def)
+  have nmuP: "\<not> multiT (Pred M)" by (rule nonmulti_Pred[OF M nmu L])
+  have monoP: "monoT (Pred M)" using nzP nmuP by (simp add: multiT_def)
+  have MPP: "Pred M \<in> PT_PS" using predT monoP by (simp add: PT_PS_def)
+  \<comment> \<open>both branch row-1 left ends equal the first-node row-1 entry.\<close>
+  have eP: "entry (Br (Pred M) ! J) 1 0 = entry (Pred M) 1 (FirstNodes (Pred M) ! J)"
+    by (rule entry_FirstNodes_eq_component_gen[OF MPP JBr, symmetric])
+  have eM: "entry (Br M ! J) 1 0 = entry M 1 (FirstNodes M ! J)"
+    by (rule entry_FirstNodes_eq_component_gen[OF MP JM, symmetric])
+  have fnP: "FirstNodes (Pred M) ! J = FirstNodes M ! J"
+    by (rule rpred_FirstNodes_Pred[OF M mono m00 m10 br L JBr])
+  \<comment> \<open>\<open>FirstNodes M ! J < Lng (Pred M)\<close>, so row-1 entries agree.\<close>
+  have f_lt_P: "FirstNodes M ! J < Lng (Pred M)"
+  proof -
+    have "FirstNodes (Pred M) ! J < Lng (Pred M)"
+      using Joints_parent_nextR[OF MPP JBr] by (simp add: nextR_def nextrel0_def)
+    thus ?thesis using fnP by simp
+  qed
+  have "entry (Pred M) 1 (FirstNodes M ! J) = entry M 1 (FirstNodes M ! J)"
+    using f_lt_P by (simp add: predbl entry_def nth_butlast)
+  thus ?thesis using eP eM fnP by simp
+qed
+
+text \<open>rpred: \<open>npJ (Pred M) J = npJ M J\<close> on prefix branches.  The \<open>if\<close> guard
+  \<open>(Br _ ! J)\<^bsub>1,0\<^esub> = 0\<close> transfers (@{thm [source] rpred_branch_e1_Pred}); in the
+  nonzero arm both \<open>npJ = Suc p\<^sub>1\<close> with \<open>p\<^sub>1\<close> the unique row-1 parent of the (shared)
+  first node, which is determined by data in the prefix \<open>[0, FirstNodes M ! J]\<close> and
+  hence the same for \<open>M\<close> and \<open>Pred M\<close>.\<close>
+
+lemma rpred_npJ_Pred:
+  assumes M: "M \<in> T_PS" and mono: "monoT M"
+    and m00: "entry M 0 0 = 0" and m10: "entry M 1 0 = 0"
+    and br: "TrMax M \<noteq> Lng M - 1" and L: "1 < Lng M"
+    and JBr: "J < Lng (Br (Pred M))"
+  shows "npJ (Pred M) J = npJ M J"
+proof -
+  have MP: "M \<in> PT_PS" using M mono by (simp add: PT_PS_def)
+  have MT: "M \<in> T_PS" using M .
+  have predT: "Pred M \<in> T_PS" by (rule Pred_preserves_T_PS[OF M])
+  have JM: "J < Lng (Br M)" by (rule rpred_JBr_Pred_imp[OF M m00 m10 br L JBr])
+  have predbl: "Pred M = butlast M" using L by (simp add: Pred_def)
+  have nz: "\<not> zeroT M" using L by (simp add: zeroT_def)
+  have nmu: "\<not> multiT M" using mono by (simp add: multiT_def)
+  \<comment> \<open>\<open>Pred M\<close> core-nontrunk in \<open>PT_PS\<close>.\<close>
+  have brPne: "Br (Pred M) \<noteq> []" using JBr by auto
+  have tneP: "TrMax (Pred M) \<noteq> Lng (Pred M) - 1"
+  proof
+    assume "TrMax (Pred M) = Lng (Pred M) - 1"
+    hence "Br (Pred M) = []" by (simp add: Br_def)
+    with brPne show False by simp
+  qed
+  have LP: "Lng (Pred M) = Lng M - 1" using L by (simp add: predbl)
+  have LPgt: "1 < Lng (Pred M)"
+  proof (rule ccontr)
+    assume "\<not> 1 < Lng (Pred M)"
+    moreover have "0 < Lng (Pred M)" using LP L by linarith
+    ultimately have "Lng (Pred M) = 1" by linarith
+    hence "TrMax (Pred M) = Lng (Pred M) - 1" using TrMax_bound[OF predT] by simp
+    thus False using tneP by simp
+  qed
+  have nzP: "\<not> zeroT (Pred M)" using LPgt by (simp add: zeroT_def)
+  have nmuP: "\<not> multiT (Pred M)" by (rule nonmulti_Pred[OF M nmu L])
+  have monoP: "monoT (Pred M)" using nzP nmuP by (simp add: multiT_def)
+  have MPP: "Pred M \<in> PT_PS" using predT monoP by (simp add: PT_PS_def)
+  have e1P: "entry (Pred M) 1 0 = 0" using m10 entry_Pred_0[OF L] by simp
+  have e0P: "entry (Pred M) 0 0 = 0" using m00 entry_Pred_0[OF L] by simp
+  \<comment> \<open>branch row-1 guard transfers.\<close>
+  have e1br: "entry (Br (Pred M) ! J) 1 0 = entry (Br M ! J) 1 0"
+    by (rule rpred_branch_e1_Pred[OF M mono m00 m10 br L JBr])
+  show ?thesis
+  proof (cases "entry (Br M ! J) 1 0 = 0")
+    case True
+    have "entry (Br (Pred M) ! J) 1 0 = 0" using e1br True by simp
+    thus ?thesis using True by (simp add: npJ_def)
+  next
+    case nzbr: False
+    have nzbrP: "entry (Br (Pred M) ! J) 1 0 \<noteq> 0" using e1br nzbr by simp
+    let ?f = "FirstNodes M ! J"
+    have fnP: "FirstNodes (Pred M) ! J = ?f"
+      by (rule rpred_FirstNodes_Pred[OF M mono m00 m10 br L JBr])
+    \<comment> \<open>row-1 parent of \<open>?f\<close> in \<open>M\<close>: exists, unique = \<open>p1\<close>.\<close>
+    have fnTr: "Joints M ! J \<le> TrMax M \<and> TrMax M < ?f"
+      by (rule m_6_4_FirstNodes_TrMax_Joints[OF MP JM])
+    have nxJ: "nextR M 0 (Joints M ! J) ?f" by (rule Joints_parent_nextR[OF MP JM])
+    have fL: "?f < Lng M" using nxJ by (simp add: nextR_def nextrel0_def)
+    have fpos: "0 < ?f" using fnTr by linarith
+    have eBf1: "entry M 1 ?f = entry (Br M ! J) 1 0"
+      by (rule entry_FirstNodes_eq_component_gen[OF MP JM])
+    have f1pos: "0 < entry M 1 ?f" using eBf1 nzbr by simp
+    have e10_lt: "entry M 1 0 < entry M 1 ?f" using m10 f1pos by simp
+    have le00f: "leR M 0 0 ?f"
+    proof -
+      have root: "leR M 0 0 (Lng M - 1)" using mono by (simp add: monoT_def)
+      have fle: "?f \<le> Lng M - 1" using fL by simp
+      show ?thesis by (rule m_5_1_ancestor_tree_1[OF MT root _ fle]) simp
+    qed
+    obtain p1 where p1: "0 \<le> p1" "p1 < ?f" "nextR M 1 p1 ?f"
+      using m_5_1_parent_exists_2[OF MT fpos fL e10_lt le00f] by blast
+    have ex1M: "\<exists>!j. nextR M 1 j ?f" using p1(3) nextR1_unique by blast
+    have theM: "(THE j. nextR M 1 j ?f) = p1" using p1(3) by (rule the1_equality[OF ex1M])
+    \<comment> \<open>\<open>?f < Lng (Pred M)\<close>, and \<open>p1 < ?f\<close>; transfer \<open>nextR M 1 p1 ?f\<close> to \<open>Pred M\<close>.\<close>
+    have f_lt_P: "?f < Lng (Pred M)"
+    proof -
+      have "FirstNodes (Pred M) ! J < Lng (Pred M)"
+        using Joints_parent_nextR[OF MPP JBr] by (simp add: nextR_def nextrel0_def)
+      thus ?thesis using fnP by simp
+    qed
+    have agreeMP: "\<And>j. j \<le> ?f \<Longrightarrow> M ! j = Pred M ! j"
+    proof -
+      fix j assume "j \<le> ?f"
+      hence "j < Lng (Pred M)" using f_lt_P by linarith
+      thus "M ! j = Pred M ! j" by (simp add: predbl nth_butlast)
+    qed
+    have p1le: "p1 \<le> ?f" using p1(2) by linarith
+    have fle': "?f \<le> ?f" by simp
+    have fLP: "?f < Lng (Pred M)" using f_lt_P .
+    have fLM: "?f < Lng M" using fL .
+    have rel1M: "nextrel1 M p1 ?f" using p1(3) by (simp add: nextR_def)
+    have rel1P: "nextrel1 (Pred M) p1 ?f"
+      by (rule nextrel1_prefix_imp[OF agreeMP fLM fLP p1le fle' rel1M])
+    have nxP: "nextR (Pred M) 1 p1 ?f" using rel1P by (simp add: nextR_def)
+    have ex1P: "\<exists>!j. nextR (Pred M) 1 j ?f" using nxP nextR1_unique by blast
+    have theP0: "(THE j. nextR (Pred M) 1 j ?f) = p1" by (rule the1_equality[OF ex1P nxP])
+    have theP: "(THE j. nextR (Pred M) 1 j (FirstNodes (Pred M) ! J)) = p1"
+      using theP0 fnP by simp
+    have "npJ (Pred M) J = Suc p1" using nzbrP theP by (simp add: npJ_def)
+    moreover have "npJ M J = Suc p1" using nzbr theM by (simp add: npJ_def)
+    ultimately show ?thesis by simp
+  qed
+qed
+
+text \<open>rpred: the interior branch blocks of \<open>Pred M\<close> are verbatim those of \<open>M\<close>:
+  \<open>Br (Pred M) ! J = Br M ! J\<close> for \<open>J < Lng (Br M) - 1\<close>.  (\<open>Br (Pred M)\<close> starts with
+  \<open>butlast (Br M)\<close>; only the last block is touched.)\<close>
+
+lemma rpred_block_eq_interior:
+  assumes M: "M \<in> T_PS" and m00: "entry M 0 0 = 0" and m10: "entry M 1 0 = 0"
+    and br: "TrMax M \<noteq> Lng M - 1" and L: "1 < Lng M"
+    and Jlt: "J < Lng (Br M) - 1"
+  shows "Br (Pred M) ! J = Br M ! J"
+proof -
+  obtain ext where ext: "Br (Pred M) = butlast (Br M) @ ext"
+    using rpred_Br_Pred_prefix[OF M m00 m10 br L] by blast
+  have brMne: "Br M \<noteq> []"
+  proof -
+    have "Br M = P (seg M (TrMax M + 1) (Lng M - 1))" using br by (simp add: Br_def)
+    moreover have "0 < Lng (seg M (TrMax M + 1) (Lng M - 1))"
+    proof -
+      have tb: "TrMax M \<le> Lng M - 1" by (rule TrMax_bound[OF M])
+      with br have "TrMax M < Lng M - 1" by linarith
+      thus ?thesis using L by (simp add: Lng_seg)
+    qed
+    ultimately show ?thesis by (metis P_nonempty)
+  qed
+  have JltBut: "J < length (butlast (Br M))" using Jlt brMne by simp
+  have "Br (Pred M) ! J = butlast (Br M) ! J"
+    using ext JltBut by (simp add: nth_append)
+  also have "\<dots> = Br M ! J" using JltBut by (simp add: nth_butlast)
+  finally show ?thesis .
+qed
+
+text \<open>rpred: \<open>NJ (Pred M) J = NJ M J\<close> on interior prefix branches \<open>J < Lng (Br M) - 1\<close>.
+  All four ingredients (\<open>entry _ 0 0\<close>, \<open>entry _ 1 0\<close>, \<open>Joints\<close>, \<open>npJ\<close>) agree and the
+  block \<open>Br _ ! J\<close> is verbatim, so the constructed \<open>N\<^sub>J\<close> coincides.\<close>
+
+lemma rpred_NJ_interior:
+  assumes M: "M \<in> T_PS" and mono: "monoT M"
+    and m00: "entry M 0 0 = 0" and m10: "entry M 1 0 = 0"
+    and br: "TrMax M \<noteq> Lng M - 1" and L: "1 < Lng M"
+    and Jlt: "J < Lng (Br M) - 1"
+    and JBrP: "J < Lng (Br (Pred M))"
+  shows "NJ (Pred M) J = NJ M J"
+proof -
+  have e0P: "entry (Pred M) 0 0 = 0" using m00 entry_Pred_0[OF L] by simp
+  have e1P: "entry (Pred M) 1 0 = 0" using m10 entry_Pred_0[OF L] by simp
+  have joints: "Joints (Pred M) ! J = Joints M ! J"
+    by (rule rpred_Joints_Pred[OF M mono m00 m10 br L JBrP])
+  have np: "npJ (Pred M) J = npJ M J"
+    by (rule rpred_npJ_Pred[OF M mono m00 m10 br L JBrP])
+  have blk: "Br (Pred M) ! J = Br M ! J"
+    by (rule rpred_block_eq_interior[OF M m00 m10 br L Jlt])
+  show ?thesis
+    unfolding NJ_def
+    using e0P e1P m00 m10 joints np blk by simp
+qed
+
+text \<open>rpred: the last branch block of \<open>Pred M\<close> is \<open>butlast (last (Br M))\<close> when the
+  last block of \<open>M\<close> has length \<open>> 1\<close>.  Then \<open>Lng (Br (Pred M)) = Lng (Br M)\<close>.\<close>
+
+lemma rpred_lastblock_Pred:
+  assumes M: "M \<in> T_PS" and m00: "entry M 0 0 = 0" and m10: "entry M 1 0 = 0"
+    and br: "TrMax M \<noteq> Lng M - 1" and L: "1 < Lng M"
+    and lastgt: "1 < Lng (last (Br M))"
+  shows "Lng (Br (Pred M)) = Lng (Br M)
+       \<and> Br (Pred M) ! (Lng (Br M) - 1) = butlast (Br M ! (Lng (Br M) - 1))"
+proof -
+  have brMne: "Br M \<noteq> []"
+  proof -
+    have "Br M = P (seg M (TrMax M + 1) (Lng M - 1))" using br by (simp add: Br_def)
+    moreover have "0 < Lng (seg M (TrMax M + 1) (Lng M - 1))"
+    proof -
+      have tb: "TrMax M \<le> Lng M - 1" by (rule TrMax_bound[OF M])
+      with br have "TrMax M < Lng M - 1" by linarith
+      thus ?thesis using L by (simp add: Lng_seg)
+    qed
+    ultimately show ?thesis by (metis P_nonempty)
+  qed
+  have brEq: "Br (Pred M) = butlast (Br M) @ [butlast (last (Br M))]"
+  proof -
+    have "\<not> Lng (last (Br M)) \<le> 1" using lastgt by simp
+    thus ?thesis using m_6_6_Br_Pred[OF M m00 m10 br L] by simp
+  qed
+  have lenEq: "Lng (Br (Pred M)) = Lng (Br M)" using brEq brMne by simp
+  have idx: "Lng (Br M) - 1 = length (butlast (Br M))" using brMne by simp
+  have "Br (Pred M) ! (Lng (Br M) - 1) = butlast (last (Br M))"
+    using brEq idx by (simp add: nth_append)
+  also have "last (Br M) = Br M ! (Lng (Br M) - 1)"
+    using brMne by (simp add: last_conv_nth)
+  finally show ?thesis using lenEq by simp
+qed
+
+text \<open>rpred: \<open>NJ (Pred M) (Lng (Br M) - 1) = Pred (NJ M (Lng (Br M) - 1))\<close> on the last
+  branch when \<open>Lng (last (Br M)) > 1\<close>.  The shared head \<open>(Joints+1, npJ)\<close> is fixed by
+  the transfers; the tail is \<open>tl (butlast B) = butlast (tl B)\<close>, and
+  \<open>Pred (N\<^sub>J) = butlast (N\<^sub>J)\<close> since \<open>Lng (N\<^sub>J) = Lng B > 1\<close>.\<close>
+
+lemma rpred_NJ_lastblock:
+  assumes M: "M \<in> T_PS" and mono: "monoT M"
+    and m00: "entry M 0 0 = 0" and m10: "entry M 1 0 = 0"
+    and br: "TrMax M \<noteq> Lng M - 1" and L: "1 < Lng M"
+    and lastgt: "1 < Lng (last (Br M))"
+  shows "NJ (Pred M) (Lng (Br M) - 1) = Pred (NJ M (Lng (Br M) - 1))"
+proof -
+  let ?J = "Lng (Br M) - 1"
+  let ?B = "Br M ! ?J"
+  have brMne: "Br M \<noteq> []"
+  proof -
+    have "Br M = P (seg M (TrMax M + 1) (Lng M - 1))" using br by (simp add: Br_def)
+    moreover have "0 < Lng (seg M (TrMax M + 1) (Lng M - 1))"
+    proof -
+      have tb: "TrMax M \<le> Lng M - 1" by (rule TrMax_bound[OF M])
+      with br have "TrMax M < Lng M - 1" by linarith
+      thus ?thesis using L by (simp add: Lng_seg)
+    qed
+    ultimately show ?thesis by (metis P_nonempty)
+  qed
+  have JM: "?J < Lng (Br M)" using brMne by (cases "Br M") auto
+  have lastB: "last (Br M) = ?B" using brMne by (simp add: last_conv_nth)
+  have Bgt: "1 < Lng ?B" using lastgt lastB by simp
+  obtain lenEq blkEq where
+    lenEq: "Lng (Br (Pred M)) = Lng (Br M)" and
+    blkEq: "Br (Pred M) ! ?J = butlast ?B"
+    using rpred_lastblock_Pred[OF M m00 m10 br L lastgt] by auto
+  have JBrP: "?J < Lng (Br (Pred M))" using JM lenEq by simp
+  have e0P: "entry (Pred M) 0 0 = 0" using m00 entry_Pred_0[OF L] by simp
+  have e1P: "entry (Pred M) 1 0 = 0" using m10 entry_Pred_0[OF L] by simp
+  have joints: "Joints (Pred M) ! ?J = Joints M ! ?J"
+    by (rule rpred_Joints_Pred[OF M mono m00 m10 br L JBrP])
+  have np: "npJ (Pred M) ?J = npJ M ?J"
+    by (rule rpred_npJ_Pred[OF M mono m00 m10 br L JBrP])
+  \<comment> \<open>tail relation: \<open>tl (butlast ?B) = butlast (tl ?B)\<close>.\<close>
+  have tltail: "tl (butlast ?B) = butlast (tl ?B)" by (simp add: butlast_tl)
+  \<comment> \<open>both \<open>NJ\<close> expansions.\<close>
+  have lhs: "NJ (Pred M) ?J
+           = (Joints M ! ?J + 1, npJ M ?J) # butlast (tl ?B)"
+    unfolding NJ_def using e0P e1P joints np blkEq tltail by simp
+  have rhs0: "NJ M ?J = (Joints M ! ?J + 1, npJ M ?J) # tl ?B"
+    unfolding NJ_def using m00 m10 by simp
+  \<comment> \<open>\<open>Pred (NJ M ?J) = butlast (NJ M ?J)\<close> since \<open>Lng (NJ M ?J) = Lng ?B > 1\<close>.\<close>
+  have LNJ: "Lng (NJ M ?J) = Lng ?B"
+  proof -
+    have Bne: "?B \<noteq> []" using Bgt by (cases ?B) auto
+    show ?thesis by (rule Lng_NJ[OF Bne])
+  qed
+  have LNJgt: "1 < Lng (NJ M ?J)" using LNJ Bgt by simp
+  have predNJ: "Pred (NJ M ?J) = butlast (NJ M ?J)" using LNJgt by (simp add: Pred_def)
+  have "butlast (NJ M ?J) = butlast ((Joints M ! ?J + 1, npJ M ?J) # tl ?B)"
+    using rhs0 by simp
+  also have "\<dots> = (Joints M ! ?J + 1, npJ M ?J) # butlast (tl ?B)"
+  proof -
+    have "tl ?B \<noteq> []" using Bgt by (cases ?B) (auto simp: Suc_lessD)
+    thus ?thesis by simp
+  qed
+  finally have rhs: "Pred (NJ M ?J) = (Joints M ! ?J + 1, npJ M ?J) # butlast (tl ?B)"
+    using predNJ by simp
+  show ?thesis using lhs rhs by simp
+qed
+
+text \<open>rpred: the branch block \<open>BL M J = IncrFirst\<^bsup>e\<^sub>J\<^esup>(Red (N\<^sub>J M J))\<close> is non-empty
+  (its length is \<open>Lng (Br M ! J) > 0\<close>).\<close>
+
+lemma rpred_BL_nonempty:
+  assumes M: "M \<in> PT_PS" and JBr: "J < Lng (Br M)"
+  shows "(IncrFirst ^^ (Joints M ! J + 1 - npJ M J)) (Red (NJ M J)) \<noteq> []"
+proof -
+  have brJne: "Br M ! J \<noteq> []" by (rule Br_component_nonempty[OF M JBr])
+  have NJne: "NJ M J \<noteq> []" by (simp add: NJ_def)
+  have NJT: "NJ M J \<in> T_PS" using NJne by (simp add: T_PS_def)
+  have pos: "0 < Lng (Red (NJ M J))"
+  proof -
+    have "Lng (Red (NJ M J)) = Lng (NJ M J)" by (rule m_6_5_Lng_Red[OF NJT])
+    moreover have "0 < Lng (NJ M J)" using NJne by (cases "NJ M J") auto
+    ultimately show ?thesis by simp
+  qed
+  have leneq: "length ((IncrFirst ^^ (Joints M ! J + 1 - npJ M J)) (Red (NJ M J)))
+            = length (Red (NJ M J))" by (rule Lng_funpow_IncrFirst)
+  have lenpos: "0 < length ((IncrFirst ^^ (Joints M ! J + 1 - npJ M J)) (Red (NJ M J)))"
+    unfolding leneq using pos by simp
+  show ?thesis by (rule length_greater_0_conv[THEN iffD1, OF lenpos])
+qed
+
+text \<open>rpred: in the length-\<open>1\<close> last-block case the dropped block \<open>BL M (Lng(Br M)-1)\<close>
+  has length \<open>1\<close> (its inner \<open>N\<^sub>J\<close> is a singleton).\<close>
+
+lemma rpred_BL_lastlen1:
+  assumes M: "M \<in> PT_PS" and JBr: "J < Lng (Br M)" and len1: "Lng (Br M ! J) = 1"
+  shows "Lng ((IncrFirst ^^ (Joints M ! J + 1 - npJ M J)) (Red (NJ M J))) = 1"
+proof -
+  have brJne: "Br M ! J \<noteq> []" by (rule Br_component_nonempty[OF M JBr])
+  have NJne: "NJ M J \<noteq> []" by (simp add: NJ_def)
+  have NJT: "NJ M J \<in> T_PS" using NJne by (simp add: T_PS_def)
+  have LNJ: "Lng (NJ M J) = 1" using Lng_NJ[OF brJne] len1 by simp
+  have "Lng (Red (NJ M J)) = Lng (NJ M J)" by (rule m_6_5_Lng_Red[OF NJT])
+  hence "Lng (Red (NJ M J)) = 1" using LNJ by simp
+  thus ?thesis by simp
+qed
+
+text \<open>rpred: CORE-NONTRUNK STEP.  Given the per-branch \<open>Red\<close>/\<open>Pred\<close> commutation IH on
+  the recursion arguments \<open>N\<^sub>J M J\<close>, the core-nontrunk obligation
+  \<open>Red (Pred M) = Pred (Red M)\<close> holds.  \<open>Red M\<close> and \<open>Red (Pred M)\<close> both unfold via
+  @{thm [source] d_Red_core_nontrunk_unfold} (same trunk \<open>diagSeq 0 (TrMax M)\<close> by
+  @{thm [source] TrMax_Pred}); the branch tails differ only in the last block, which
+  is dropped (singleton case, @{thm [source] rpred_BL_lastlen1}) or
+  \<open>butlast\<close>-ed (via @{thm [source] rpred_NJ_lastblock} + the IH +
+  @{thm [source] funpow_IncrFirst_butlast}); the interior blocks are verbatim
+  (@{thm [source] rpred_NJ_interior}).\<close>
+
+lemma rpred_core_nontrunk_step:
+  assumes MT: "M \<in> T_PS" and mono: "monoT M"
+    and c0: "entry M 0 0 = 0" and c1: "entry M 1 0 = 0"
+    and tne: "TrMax M \<noteq> Lng M - 1"
+    and IH: "\<And>J. J < Lng (Br M) \<Longrightarrow> Red (Pred (NJ M J)) = Pred (Red (NJ M J))"
+  shows "Red (Pred M) = Pred (Red M)"
+proof -
+  have nz: "\<not> zeroT M" using mono by (simp add: monoT_def)
+  have nmu: "\<not> multiT M" using mono by (simp add: multiT_def)
+  have MP: "M \<in> PT_PS" using MT mono by (simp add: PT_PS_def)
+  have Mne: "M \<noteq> []" using MT by (simp add: T_PS_def)
+  have L: "1 < Lng M"
+  proof (rule ccontr)
+    assume "\<not> 1 < Lng M"
+    moreover have "0 < Lng M" using Mne by (cases M) auto
+    ultimately have "Lng M = 1" by linarith
+    hence "TrMax M = Lng M - 1" using TrMax_bound[OF MT] by simp
+    thus False using tne by simp
+  qed
+  let ?t = "TrMax M"
+  let ?nM = "Lng (Br M)"
+  let ?BL = "\<lambda>N J. (IncrFirst ^^ (Joints N ! J + 1 - npJ N J)) (Red (NJ N J))"
+  \<comment> \<open>unfold \<open>Red M\<close>.\<close>
+  have unfoldR: "Red M = diagSeq 0 ?t @ concat (map (?BL M) [0..<?nM])"
+    by (rule d_Red_core_nontrunk_unfold[OF MT nz nmu c0 c1 tne])
+  \<comment> \<open>\<open>Pred M\<close> is core-nontrunk.\<close>
+  have predbl: "Pred M = butlast M" using L by (simp add: Pred_def)
+  have predT: "Pred M \<in> T_PS" by (rule Pred_preserves_T_PS[OF MT])
+  have trP: "TrMax (Pred M) = ?t" by (rule TrMax_Pred[OF MT L tne])
+  have brMne: "Br M \<noteq> []"
+  proof -
+    have "Br M = P (seg M (?t + 1) (Lng M - 1))" using tne by (simp add: Br_def)
+    moreover have "0 < Lng (seg M (?t + 1) (Lng M - 1))"
+    proof -
+      have tb: "?t \<le> Lng M - 1" by (rule TrMax_bound[OF MT])
+      with tne have "?t < Lng M - 1" by linarith
+      thus ?thesis using L by (simp add: Lng_seg)
+    qed
+    ultimately show ?thesis by (metis P_nonempty)
+  qed
+  have nMpos: "0 < ?nM" using brMne by (cases "Br M") auto
+  have LP: "Lng (Pred M) = Lng M - 1" using L by (simp add: predbl)
+  have c0P: "entry (Pred M) 0 0 = 0" using c0 entry_Pred_0[OF L] by simp
+  have c1P: "entry (Pred M) 1 0 = 0" using c1 entry_Pred_0[OF L] by simp
+  have nmuP: "\<not> multiT (Pred M)" by (rule nonmulti_Pred[OF MT nmu L])
+  \<comment> \<open>\<open>Pred (Red M) = diagSeq 0 ?t @ butlast (concat (map (?BL M) [0..<?nM]))\<close>.\<close>
+  have LrM: "Lng (Red M) = Lng M" by (rule m_6_5_Lng_Red[OF MT])
+  have LrMgt: "1 < Lng (Red M)" using LrM L by simp
+  have concatMne: "concat (map (?BL M) [0..<?nM]) \<noteq> []"
+  proof -
+    have ne0: "?BL M 0 \<noteq> []" by (rule rpred_BL_nonempty[OF MP]) (use nMpos in simp)
+    have split0: "[0..<?nM] = 0 # [1..<?nM]" using nMpos by (simp add: upt_conv_Cons)
+    have "concat (map (?BL M) [0..<?nM]) = ?BL M 0 @ concat (map (?BL M) [1..<?nM])"
+      by (subst split0) simp
+    thus ?thesis using ne0 by simp
+  qed
+  have predRedM: "Pred (Red M) = diagSeq 0 ?t @ butlast (concat (map (?BL M) [0..<?nM]))"
+  proof -
+    have "Pred (Red M) = butlast (Red M)" using LrMgt by (simp add: Pred_def)
+    also have "\<dots> = butlast (diagSeq 0 ?t @ concat (map (?BL M) [0..<?nM]))"
+      by (simp only: unfoldR)
+    also have "\<dots> = diagSeq 0 ?t @ butlast (concat (map (?BL M) [0..<?nM]))"
+      by (simp only: butlast_append if_not_P[OF concatMne])
+    finally show ?thesis .
+  qed
+  \<comment> \<open>reduce to the concat residual.\<close>
+  have residual: "concat (map (?BL (Pred M)) [0..<Lng (Br (Pred M))])
+                = butlast (concat (map (?BL M) [0..<?nM]))"
+  proof (cases "Lng (last (Br M)) \<le> 1")
+    case singleton: True
+    \<comment> \<open>last block dropped; \<open>Lng (Br (Pred M)) = ?nM - 1\<close> and interior blocks verbatim.\<close>
+    have brEq: "Br (Pred M) = butlast (Br M)"
+      using m_6_6_Br_Pred[OF MT c0 c1 tne L] singleton by simp
+    have lenP: "Lng (Br (Pred M)) = ?nM - 1" using brEq brMne by simp
+    \<comment> \<open>concat over \<open>M\<close> splits: prefix + last block; last block is length 1.\<close>
+    have last_in: "last (Br M) = Br M ! (?nM - 1)" using brMne by (simp add: last_conv_nth)
+    have JlastBr: "?nM - 1 < ?nM" using nMpos by simp
+    have lastlen1: "Lng (last (Br M)) = 1"
+    proof -
+      have "0 < Lng (last (Br M))"
+      proof -
+        have "last (Br M) \<in> set (Br M)" using brMne by simp
+        moreover have "Br M ! (?nM - 1) \<noteq> []"
+          by (rule Br_component_nonempty[OF MP JlastBr])
+        ultimately show ?thesis using last_in by (cases "last (Br M)") auto
+      qed
+      thus ?thesis using singleton by linarith
+    qed
+    have BLlast_len1: "Lng (?BL M (?nM - 1)) = 1"
+      using rpred_BL_lastlen1[OF MP JlastBr] lastlen1 last_in by simp
+    \<comment> \<open>split the \<open>M\<close>-range into \<open>[0..<?nM-1]\<close> and \<open>[?nM-1]\<close>.\<close>
+    have rangeM: "[0..<?nM] = [0..<?nM - 1] @ [?nM - 1]"
+      using nMpos by (simp add: upt_Suc_append[symmetric])
+    have concatM_split: "concat (map (?BL M) [0..<?nM])
+                       = concat (map (?BL M) [0..<?nM - 1]) @ ?BL M (?nM - 1)"
+      using rangeM by simp
+    have but_concat: "butlast (concat (map (?BL M) [0..<?nM]))
+                    = concat (map (?BL M) [0..<?nM - 1])"
+    proof -
+      have len1: "length (?BL M (?nM - 1)) = 1" using BLlast_len1 by simp
+      have BLne: "?BL M (?nM - 1) \<noteq> []"
+        by (rule length_greater_0_conv[THEN iffD1]) (simp only: len1)
+      have butnil: "butlast (?BL M (?nM - 1)) = []"
+      proof -
+        have "length (butlast (?BL M (?nM - 1))) = 0"
+          by (simp only: length_butlast len1 diff_self_eq_0)
+        thus ?thesis by (rule length_0_conv[THEN iffD1])
+      qed
+      have "butlast (concat (map (?BL M) [0..<?nM]))
+            = butlast (concat (map (?BL M) [0..<?nM - 1]) @ ?BL M (?nM - 1))"
+        using concatM_split by simp
+      also have "\<dots> = concat (map (?BL M) [0..<?nM - 1]) @ butlast (?BL M (?nM - 1))"
+        by (simp only: butlast_append if_not_P[OF BLne])
+      also have "\<dots> = concat (map (?BL M) [0..<?nM - 1])" using butnil by simp
+      finally show ?thesis .
+    qed
+    \<comment> \<open>interior blocks agree.\<close>
+    have interior: "map (?BL (Pred M)) [0..<?nM - 1] = map (?BL M) [0..<?nM - 1]"
+    proof (rule map_cong[OF refl])
+      fix J assume "J \<in> set [0..<?nM - 1]"
+      hence Jlt: "J < ?nM - 1" by simp
+      have JBrP: "J < Lng (Br (Pred M))" using Jlt lenP by simp
+      have JBr: "J < ?nM" using Jlt by simp
+      have joints: "Joints (Pred M) ! J = Joints M ! J"
+        by (rule rpred_Joints_Pred[OF MT mono c0 c1 tne L JBrP])
+      have np: "npJ (Pred M) J = npJ M J"
+        by (rule rpred_npJ_Pred[OF MT mono c0 c1 tne L JBrP])
+      have njeq: "NJ (Pred M) J = NJ M J"
+        by (rule rpred_NJ_interior[OF MT mono c0 c1 tne L Jlt JBrP])
+      show "?BL (Pred M) J = ?BL M J" by (simp only: joints np njeq)
+    qed
+    have "concat (map (?BL (Pred M)) [0..<Lng (Br (Pred M))])
+        = concat (map (?BL (Pred M)) [0..<?nM - 1])" using lenP by simp
+    also have "\<dots> = concat (map (?BL M) [0..<?nM - 1])" by (simp only: interior)
+    also have "\<dots> = butlast (concat (map (?BL M) [0..<?nM]))" by (rule but_concat[symmetric])
+    finally show ?thesis .
+  next
+    case nonsing: False
+    have lastgt: "1 < Lng (last (Br M))" using nonsing by simp
+    \<comment> \<open>last block \<open>butlast\<close>-ed; \<open>Lng (Br (Pred M)) = ?nM\<close>.\<close>
+    obtain lenEq blkEq where
+      lenEq: "Lng (Br (Pred M)) = ?nM" and
+      blkEq: "Br (Pred M) ! (?nM - 1) = butlast (Br M ! (?nM - 1))"
+      using rpred_lastblock_Pred[OF MT c0 c1 tne L lastgt] by auto
+    have last_in: "last (Br M) = Br M ! (?nM - 1)" using brMne by (simp add: last_conv_nth)
+    have JlastBr: "?nM - 1 < ?nM" using nMpos by simp
+    \<comment> \<open>split both ranges into \<open>[0..<?nM-1]\<close> and \<open>[?nM-1]\<close>.\<close>
+    have rangeM: "[0..<?nM] = [0..<?nM - 1] @ [?nM - 1]"
+      using nMpos by (simp add: upt_Suc_append[symmetric])
+    have concatM_split: "concat (map (?BL M) [0..<?nM])
+                       = concat (map (?BL M) [0..<?nM - 1]) @ ?BL M (?nM - 1)"
+      using rangeM by simp
+    have concatP_split: "concat (map (?BL (Pred M)) [0..<Lng (Br (Pred M))])
+                       = concat (map (?BL (Pred M)) [0..<?nM - 1]) @ ?BL (Pred M) (?nM - 1)"
+      using rangeM lenEq by simp
+    \<comment> \<open>interior blocks agree.\<close>
+    have interior: "map (?BL (Pred M)) [0..<?nM - 1] = map (?BL M) [0..<?nM - 1]"
+    proof (rule map_cong[OF refl])
+      fix J assume "J \<in> set [0..<?nM - 1]"
+      hence Jlt: "J < ?nM - 1" by simp
+      have JBrP: "J < Lng (Br (Pred M))" using Jlt lenEq by simp
+      have joints: "Joints (Pred M) ! J = Joints M ! J"
+        by (rule rpred_Joints_Pred[OF MT mono c0 c1 tne L JBrP])
+      have np: "npJ (Pred M) J = npJ M J"
+        by (rule rpred_npJ_Pred[OF MT mono c0 c1 tne L JBrP])
+      have njeq: "NJ (Pred M) J = NJ M J"
+        by (rule rpred_NJ_interior[OF MT mono c0 c1 tne L Jlt JBrP])
+      show "?BL (Pred M) J = ?BL M J" by (simp only: joints np njeq)
+    qed
+    \<comment> \<open>last block: \<open>?BL (Pred M) (?nM-1) = butlast (?BL M (?nM-1))\<close> via the IH.\<close>
+    have JBrP_last: "?nM - 1 < Lng (Br (Pred M))" using JlastBr lenEq by simp
+    have joints_last: "Joints (Pred M) ! (?nM - 1) = Joints M ! (?nM - 1)"
+      by (rule rpred_Joints_Pred[OF MT mono c0 c1 tne L JBrP_last])
+    have np_last: "npJ (Pred M) (?nM - 1) = npJ M (?nM - 1)"
+      by (rule rpred_npJ_Pred[OF MT mono c0 c1 tne L JBrP_last])
+    have njlast: "NJ (Pred M) (?nM - 1) = Pred (NJ M (?nM - 1))"
+      by (rule rpred_NJ_lastblock[OF MT mono c0 c1 tne L lastgt])
+    have ihlast: "Red (Pred (NJ M (?nM - 1))) = Pred (Red (NJ M (?nM - 1)))"
+      by (rule IH[OF JlastBr])
+    \<comment> \<open>\<open>Red (NJ M (?nM-1))\<close> has length \<open>> 1\<close>, so \<open>Pred = butlast\<close>.\<close>
+    have brJne: "Br M ! (?nM - 1) \<noteq> []" by (rule Br_component_nonempty[OF MP JlastBr])
+    have Bgt: "1 < Lng (Br M ! (?nM - 1))" using lastgt last_in by simp
+    have NJne: "NJ M (?nM - 1) \<noteq> []" by (simp add: NJ_def)
+    have NJT: "NJ M (?nM - 1) \<in> T_PS" using NJne by (simp add: T_PS_def)
+    have LNJgt: "1 < Lng (Red (NJ M (?nM - 1)))"
+    proof -
+      have "Lng (Red (NJ M (?nM - 1))) = Lng (NJ M (?nM - 1))" by (rule m_6_5_Lng_Red[OF NJT])
+      moreover have "Lng (NJ M (?nM - 1)) = Lng (Br M ! (?nM - 1))" by (rule Lng_NJ[OF brJne])
+      ultimately show ?thesis using Bgt by simp
+    qed
+    have predRedNJ: "Pred (Red (NJ M (?nM - 1))) = butlast (Red (NJ M (?nM - 1)))"
+      using LNJgt by (simp add: Pred_def)
+    have BLlast: "?BL (Pred M) (?nM - 1) = butlast (?BL M (?nM - 1))"
+    proof -
+      have "?BL (Pred M) (?nM - 1)
+          = (IncrFirst ^^ (Joints M ! (?nM - 1) + 1 - npJ M (?nM - 1)))
+              (Red (Pred (NJ M (?nM - 1))))"
+        using joints_last np_last njlast by simp
+      also have "\<dots> = (IncrFirst ^^ (Joints M ! (?nM - 1) + 1 - npJ M (?nM - 1)))
+              (butlast (Red (NJ M (?nM - 1))))"
+        using ihlast predRedNJ by simp
+      also have "\<dots> = butlast ((IncrFirst ^^ (Joints M ! (?nM - 1) + 1 - npJ M (?nM - 1)))
+              (Red (NJ M (?nM - 1))))"
+        by (simp add: funpow_IncrFirst_butlast)
+      finally show ?thesis .
+    qed
+    \<comment> \<open>assemble: butlast acts on the last block (it is non-empty).\<close>
+    have BLlastM_ne: "?BL M (?nM - 1) \<noteq> []" by (rule rpred_BL_nonempty[OF MP JlastBr])
+    have "concat (map (?BL (Pred M)) [0..<Lng (Br (Pred M))])
+        = concat (map (?BL M) [0..<?nM - 1]) @ butlast (?BL M (?nM - 1))"
+      by (simp only: concatP_split interior BLlast)
+    also have "\<dots> = butlast (concat (map (?BL M) [0..<?nM - 1]) @ ?BL M (?nM - 1))"
+      by (simp only: butlast_append if_not_P[OF BLlastM_ne])
+    also have "\<dots> = butlast (concat (map (?BL M) [0..<?nM]))"
+      using concatM_split by simp
+    finally show ?thesis .
+  qed
+  \<comment> \<open>conclude, splitting on whether \<open>Pred M\<close> retains a branch region.\<close>
+  show ?thesis
+  proof (cases "Br (Pred M) = []")
+    case brPemp: True
+    \<comment> \<open>\<open>Pred M\<close> is core-trunk: \<open>Red (Pred M) = diagSeq 0 (Lng (Pred M) - 1) = diagSeq 0 ?t\<close>,
+       and the dropped tail \<open>butlast (concat ...)\<close> is empty (\<open>?nM = 1\<close>, length-1 block).\<close>
+    have tPeq: "TrMax (Pred M) = Lng (Pred M) - 1"
+    proof (rule ccontr)
+      assume "TrMax (Pred M) \<noteq> Lng (Pred M) - 1"
+      hence "Br (Pred M) = P (seg (Pred M) (TrMax (Pred M) + 1) (Lng (Pred M) - 1))"
+        by (simp add: Br_def)
+      hence "Br (Pred M) \<noteq> []" by (metis P_nonempty)
+      thus False using brPemp by simp
+    qed
+    \<comment> \<open>\<open>?nM = 1\<close>: the branch region of \<open>Pred M\<close> is empty, so \<open>Br M\<close> is a singleton.\<close>
+    have nM1: "?nM = 1"
+    proof -
+      have brEq: "Br (Pred M) =
+               butlast (Br M)
+               @ (if Lng (last (Br M)) \<le> 1 then [] else [butlast (last (Br M))])"
+        by (rule m_6_6_Br_Pred[OF MT c0 c1 tne L])
+      have butBrnil: "butlast (Br M) = []"
+        using brPemp brEq by (cases "Lng (last (Br M)) \<le> 1") auto
+      have "length (butlast (Br M)) = 0" using butBrnil by simp
+      hence "Lng (Br M) - 1 = 0" by (simp only: length_butlast)
+      thus ?thesis using nMpos by linarith
+    qed
+    have JlastBr0: "(0::nat) < ?nM" using nMpos by simp
+    have last_in: "last (Br M) = Br M ! 0" using brMne nM1 by (simp add: last_conv_nth)
+    have lastlen1: "Lng (last (Br M)) = 1"
+    proof -
+      \<comment> \<open>\<open>Lng (last (Br M)) \<le> 1\<close> forced by \<open>Br (Pred M) = []\<close> + singleton.\<close>
+      have brEq: "Br (Pred M) =
+               butlast (Br M)
+               @ (if Lng (last (Br M)) \<le> 1 then [] else [butlast (last (Br M))])"
+        by (rule m_6_6_Br_Pred[OF MT c0 c1 tne L])
+      have "\<not> (1 < Lng (last (Br M)))"
+      proof
+        assume "1 < Lng (last (Br M))"
+        hence "Br (Pred M) = butlast (Br M) @ [butlast (last (Br M))]" using brEq by simp
+        thus False using brPemp by simp
+      qed
+      moreover have "0 < Lng (last (Br M))"
+      proof -
+        have "Br M ! 0 \<noteq> []" by (rule Br_component_nonempty[OF MP JlastBr0])
+        thus ?thesis using last_in by (cases "last (Br M)") auto
+      qed
+      ultimately show ?thesis by linarith
+    qed
+    have BLlast_len1: "Lng (?BL M 0) = 1"
+      using rpred_BL_lastlen1[OF MP JlastBr0] lastlen1 last_in by simp
+    \<comment> \<open>concat over \<open>M\<close> is the single block \<open>?BL M 0\<close>, length 1, so butlast is \<open>[]\<close>.\<close>
+    have concatM_one: "concat (map (?BL M) [0..<?nM]) = ?BL M 0" using nM1 by simp
+    have but_empty: "butlast (concat (map (?BL M) [0..<?nM])) = []"
+    proof -
+      have len1: "length (?BL M 0) = 1" using BLlast_len1 by simp
+      have "length (butlast (?BL M 0)) = 0"
+        by (simp only: length_butlast len1 diff_self_eq_0)
+      hence "butlast (?BL M 0) = []" by (rule length_0_conv[THEN iffD1])
+      thus ?thesis using concatM_one by simp
+    qed
+    \<comment> \<open>\<open>Red (Pred M)\<close> on the core-trunk branch (or zeroT when \<open>Lng (Pred M) = 1\<close>).\<close>
+    have predT': "Pred M \<in> T_PS" using predT .
+    have domP: "Red_dom (Pred M)" by (rule m_6_5_Red_welldef[OF predT'])
+    have redPred: "Red (Pred M) = diagSeq 0 ?t"
+    proof (cases "zeroT (Pred M)")
+      case True
+      have L1P: "Lng (Pred M) = 1" using True by (simp add: zeroT_def)
+      have "?t = 0" using trP tPeq L1P by simp
+      hence "diagSeq 0 ?t = [(0,0)]" by (simp add: diagSeq_def)
+      moreover have "Red (Pred M) = [(0,0)]" using Red.psimps[OF domP] True by simp
+      ultimately show ?thesis by simp
+    next
+      case False
+      have nmuP': "\<not> multiT (Pred M)" using nmuP .
+      have "Red (Pred M) = diagSeq (entry (Pred M) 1 0) (entry (Pred M) 1 0 + (Lng (Pred M) - 1))"
+        using Red.psimps[OF domP] False nmuP' c0P c1P tPeq by (simp add: Let_def)
+      also have "\<dots> = diagSeq 0 (Lng (Pred M) - 1)" using c1P by simp
+      also have "\<dots> = diagSeq 0 ?t" using tPeq trP by simp
+      finally show ?thesis .
+    qed
+    show ?thesis using redPred predRedM but_empty by simp
+  next
+    case brPne: False
+    \<comment> \<open>\<open>Pred M\<close> is core-nontrunk: unfold and use the concat residual.\<close>
+    have tneP: "TrMax (Pred M) \<noteq> Lng (Pred M) - 1"
+    proof
+      assume "TrMax (Pred M) = Lng (Pred M) - 1"
+      hence "Br (Pred M) = []" by (simp add: Br_def)
+      with brPne show False by simp
+    qed
+    have LPgt: "1 < Lng (Pred M)"
+    proof -
+      have tbP: "TrMax (Pred M) \<le> Lng (Pred M) - 1" by (rule TrMax_bound[OF predT])
+      have "0 < Lng (Pred M)" using LP L by linarith
+      thus ?thesis using tneP tbP by linarith
+    qed
+    have nzP: "\<not> zeroT (Pred M)" using LPgt by (simp add: zeroT_def)
+    have unfoldRP: "Red (Pred M)
+                  = diagSeq 0 ?t @ concat (map (?BL (Pred M)) [0..<Lng (Br (Pred M))])"
+    proof -
+      have "Red (Pred M)
+          = diagSeq 0 (TrMax (Pred M)) @ concat (map (?BL (Pred M)) [0..<Lng (Br (Pred M))])"
+        by (rule d_Red_core_nontrunk_unfold[OF predT nzP nmuP c0P c1P tneP])
+      thus ?thesis using trP by simp
+    qed
+    show ?thesis using unfoldRP predRedM residual by simp
+  qed
+qed
+
+
+text \<open>§6.5 命題（\<open>Red\<close>と\<open>Pred\<close>の可換性）\<open>Red (Pred M) = Pred (Red M)\<close> for
+  \<open>M \<in> T\<^sub>PS\<close> \<dash> discharges @{thm [source] p_6_5_Red_Pred}.  Proved by the same
+  @{thm [source] Red.pinduct} as @{thm [source] a3_Red_Pred_cond}; the five
+  non-core-nontrunk branches are identical, and the core-nontrunk \<open>Hbr\<close> obligation
+  is discharged by @{thm [source] rpred_core_nontrunk_step} using the per-branch
+  recursion IH on \<open>N\<^sub>J M J\<close>.  Empirically \<open>Red(Pred M)=Pred(Red M)\<close> holds 7380/7380.\<close>
+
+lemma m_6_5_Red_Pred:
+  assumes MT: "M \<in> T_PS"
+  shows "Red (Pred M) = Pred (Red M)"
+proof -
+  have domM: "Red_dom M" by (rule m_6_5_Red_welldef[OF MT])
+  have "M \<in> T_PS \<longrightarrow> Red (Pred M) = Pred (Red M)"
+    using domM
+  proof (induction M rule: Red.pinduct)
+    case (1 M)
+    note dom    = 1(1)
+    note IH_mu  = 1(2)  \<comment> \<open>multiT IH on \<open>P\<close>-blocks\<close>
+    note IH_bz  = 1(3)  \<comment> \<open>core-branch IH (\<open>NJ M J\<close>)\<close>
+    note IH_sh  = 1(4)  \<comment> \<open>shift (\<open>m\<^sub>1\<^sub>0=0\<close>) IH\<close>
+    note IH_m1  = 1(5)  \<comment> \<open>m10>0 core-reduce-arg IH\<close>
+    show ?case
+    proof (rule impI)
+      assume MT': "M \<in> T_PS"
+      have Mne: "M \<noteq> []" using MT' by (simp add: T_PS_def)
+      have LMpos: "0 < Lng M" using Mne by (cases M) auto
+      show "Red (Pred M) = Pred (Red M)"
+      proof (cases "1 < Lng M")
+        case False
+        \<comment> \<open>\<open>Lng M = 1\<close>: \<open>Pred M = M\<close> and \<open>Lng (Red M) = Lng M = 1\<close>, so
+           \<open>Pred (Red M) = Red M\<close>.\<close>
+        have L1: "Lng M = 1" using False LMpos by linarith
+        have predM: "Pred M = M" using L1 by (simp add: Pred_def)
+        have "Lng (Red M) = 1" using m_6_5_Lng_Red[OF MT'] L1 by simp
+        hence "Pred (Red M) = Red M" by (simp add: Pred_def)
+        thus ?thesis using predM by simp
+      next
+        case L1: True
+        have nz: "\<not> zeroT M" using L1 by (simp add: zeroT_def)
+        have predbl: "Pred M = butlast M" using L1 by (simp add: Pred_def)
+        show "Red (Pred M) = Pred (Red M)"
+        proof (cases "multiT M")
+          case mu: True
+          \<comment> \<open>Branch 2: multiT.\<close>
+          have rM: "Red M = concat (map Red (P M))"
+            using Red.psimps[OF dom] nz mu by simp
+          let ?L = "map Red (P M)"
+          have PMne: "P M \<noteq> []" by (rule P_nonempty)
+          have lastPM_in: "last (P M) \<in> set (P M)" using PMne last_in_set by blast
+          have lastPM_ne: "last (P M) \<noteq> []"
+            using P_blocks_nonempty[OF Mne] lastPM_in by blast
+          have lastPM_T: "last (P M) \<in> T_PS" using lastPM_ne by (simp add: T_PS_def)
+          have Lne: "?L \<noteq> []" using PMne by simp
+          have lastL: "last ?L = Red (last (P M))" using PMne by (simp add: last_map)
+          have lastL_ne: "last ?L \<noteq> []"
+          proof -
+            have "Lng (Red (last (P M))) = Lng (last (P M))"
+              by (rule m_6_5_Lng_Red[OF lastPM_T])
+            hence "0 < Lng (Red (last (P M)))" using lastPM_ne by (cases "last (P M)") auto
+            thus ?thesis using lastL by (cases "last ?L") auto
+          qed
+          \<comment> \<open>\<open>Pred (Red M)\<close> acts on the last reduced block.\<close>
+          have predRM: "Pred (Red M)
+                  = concat (map Red (butlast (P M))) @ butlast (Red (last (P M)))"
+          proof -
+            have LrM: "1 < Lng (Red M)"
+            proof -
+              have "Lng (Red M) = Lng M" by (rule m_6_5_Lng_Red[OF MT'])
+              thus ?thesis using L1 by simp
+            qed
+            have "Pred (Red M) = butlast (Red M)" using LrM by (simp add: Pred_def)
+            also have "\<dots> = butlast (concat ?L)" by (simp add: rM)
+            also have "\<dots> = concat (butlast ?L) @ butlast (last ?L)"
+              by (rule a3_butlast_concat[OF Lne lastL_ne])
+            also have "butlast ?L = map Red (butlast (P M))" by (simp add: a3_map_butlast)
+            also have "last ?L = Red (last (P M))" by (rule lastL)
+            finally show ?thesis .
+          qed
+          \<comment> \<open>\<open>Red (Pred M)\<close> via \<open>pred_P_decomp\<close>.\<close>
+          have pdec: "P (Pred M) =
+                  (if Lng (last (P M)) = 1
+                   then butlast (P M)
+                   else butlast (P M) @ [Pred (last (P M))])"
+            by (rule pred_P_decomp[OF MT' mu])
+          have predT: "Pred M \<in> T_PS" by (rule Pred_preserves_T_PS[OF MT'])
+          have dom_pred: "Red_dom (Pred M)" by (rule m_6_5_Red_welldef[OF predT])
+          \<comment> \<open>\<open>Pred M\<close> is still multi (multiT class is stable when last block length \<noteq> 0,
+             handled inside the two cases) — unfold \<open>Red (Pred M)\<close> via the recursion.\<close>
+          show ?thesis
+          proof (cases "Lng (last (P M)) = 1")
+            case len1: True
+            have PpredM: "P (Pred M) = butlast (P M)" using pdec len1 by simp
+            \<comment> \<open>\<open>butlast (Red (last (P M))) = []\<close> since \<open>Lng (last (P M)) = 1\<close>.\<close>
+            have empt: "butlast (Red (last (P M))) = []"
+              by (rule a3_butlast_Red_len1[OF lastPM_T len1])
+            \<comment> \<open>\<open>Red (Pred M) = concat (map Red (P (Pred M)))\<close> — need \<open>Pred M\<close> multi or handle mono.\<close>
+            have RpredM: "Red (Pred M) = concat (map Red (butlast (P M)))"
+            proof (cases "multiT (Pred M)")
+              case True
+              have nzP: "\<not> zeroT (Pred M)" using True by (simp add: multiT_def)
+              have "Red (Pred M) = concat (map Red (P (Pred M)))"
+                using Red.psimps[OF dom_pred] nzP True by simp
+              thus ?thesis using PpredM by simp
+            next
+              case nmuP: False
+              \<comment> \<open>\<open>P (Pred M) = butlast (P M)\<close> has length 1: \<open>Pred M\<close> is a single block.\<close>
+              have "P (Pred M) = [Pred M]" using nmuP by (subst P.simps) simp
+              hence single: "butlast (P M) = [Pred M]" using PpredM by simp
+              hence "concat (map Red (butlast (P M))) = Red (Pred M)" by simp
+              thus ?thesis by simp
+            qed
+            show ?thesis using RpredM predRM empt by simp
+          next
+            case lenN: False
+            have lastN_T: "last (P M) \<in> T_PS" by (rule lastPM_T)
+            have lastN_L1: "1 < Lng (last (P M))"
+              using lenN lastPM_ne by (cases "last (P M)") auto
+            have PpredM: "P (Pred M) = butlast (P M) @ [Pred (last (P M))]"
+              using pdec lenN by simp
+            \<comment> \<open>\<open>Pred M\<close> is multi (its last \<open>P\<close>-block \<open>Pred (last (P M))\<close> is non-trivial here,
+               and \<open>butlast (P M)\<close> may be empty or not).\<close>
+            have RpredM: "Red (Pred M)
+                    = concat (map Red (butlast (P M))) @ Red (Pred (last (P M)))"
+            proof (cases "multiT (Pred M)")
+              case True
+              have nzP: "\<not> zeroT (Pred M)" using True by (simp add: multiT_def)
+              have "Red (Pred M) = concat (map Red (P (Pred M)))"
+                using Red.psimps[OF dom_pred] nzP True by simp
+              thus ?thesis using PpredM by simp
+            next
+              case nmuP: False
+              \<comment> \<open>\<open>P (Pred M)\<close> length 1: then \<open>butlast (P M) = []\<close> and \<open>Pred M = Pred (last (P M))\<close>.\<close>
+              have "P (Pred M) = [Pred M]" using nmuP by (subst P.simps) simp
+              hence "butlast (P M) @ [Pred (last (P M))] = [Pred M]" using PpredM by simp
+              hence bnil: "butlast (P M) = []" and pe: "Pred (last (P M)) = Pred M"
+                by auto
+              show ?thesis using bnil pe by simp
+            qed
+            \<comment> \<open>IH on \<open>last (P M)\<close>: \<open>Red (Pred (last (P M))) = Pred (Red (last (P M)))\<close>.\<close>
+            have ihL: "Red (Pred (last (P M))) = Pred (Red (last (P M)))"
+            proof -
+              have ih: "last (P M) \<in> T_PS \<longrightarrow>
+                          Red (Pred (last (P M))) = Pred (Red (last (P M)))"
+                by (rule IH_mu[OF nz mu lastPM_in])
+              thus ?thesis using lastN_T by blast
+            qed
+            \<comment> \<open>\<open>Pred (Red (last (P M))) = butlast (Red (last (P M)))\<close> since \<open>Lng > 1\<close>.\<close>
+            have predRl: "Pred (Red (last (P M))) = butlast (Red (last (P M)))"
+            proof -
+              have "1 < Lng (Red (last (P M)))"
+                using m_6_5_Lng_Red[OF lastN_T] lastN_L1 by simp
+              thus ?thesis by (simp add: Pred_def)
+            qed
+            show ?thesis using RpredM predRM ihL predRl by simp
+          qed
+        next
+          case nmu: False
+          have mono: "monoT M" using nz nmu by (simp add: multiT_def)
+          have Mpt: "M \<in> PT_PS" using MT' mono by (simp add: PT_PS_def)
+          let ?m00 = "entry M 0 0"
+          let ?m10 = "entry M 1 0"
+          show "Red (Pred M) = Pred (Red M)"
+          proof (cases "?m00 = 0 \<and> ?m10 = 0")
+            case core: True
+            hence c0: "?m00 = 0" and c1: "?m10 = 0" by simp_all
+            show ?thesis
+            proof (cases "TrMax M = Lng M - 1")
+              case trunk: True
+              \<comment> \<open>Branch 3a: core diagonal.  \<open>Red M = diagSeq 0 (Lng M - 1)\<close>; \<open>Pred M\<close> is
+                 again core-trunk (or a zero term), so \<open>Red (Pred M) = diagSeq 0 (Lng M - 2)\<close>.\<close>
+              have rM: "Red M = diagSeq (?m10) (?m10 + (Lng M - 1))"
+                using Red.psimps[OF dom] nz nmu c0 c1 trunk by (simp add: Let_def)
+              have rM': "Red M = diagSeq 0 (Lng M - 1)" using rM c1 by simp
+              have nc4: "1 < Lng M" using L1 .
+              have predM_T: "Pred M \<in> T_PS" by (rule Pred_preserves_T_PS[OF MT'])
+              have predbl: "Pred M = butlast M" using L1 by (simp add: Pred_def)
+              have LP: "Lng (Pred M) = Lng M - 1" using L1 by (simp add: predbl)
+              have dom_pred: "Red_dom (Pred M)" by (rule m_6_5_Red_welldef[OF predM_T])
+              \<comment> \<open>row-0/row-1 head of \<open>Pred M\<close> is core.\<close>
+              have c0P: "entry (Pred M) 0 0 = 0" using c0 entry_Pred_0[OF L1] by simp
+              have c1P: "entry (Pred M) 1 0 = 0" using c1 entry_Pred_0[OF L1] by simp
+              \<comment> \<open>\<open>Red (Pred M) = diagSeq 0 (Lng M - 2)\<close>.\<close>
+              have RpredM: "Red (Pred M) = diagSeq 0 (Lng M - 2)"
+              proof (cases "zeroT (Pred M)")
+                case True
+                have L1P: "Lng (Pred M) = 1" using True by (simp add: zeroT_def)
+                hence "Lng M - 2 = 0" using LP by simp
+                have "Red (Pred M) = [(0,0)]" using Red.psimps[OF dom_pred] True by simp
+                also have "\<dots> = diagSeq 0 (Lng M - 2)"
+                  using \<open>Lng M - 2 = 0\<close> by (simp add: diagSeq_def)
+                finally show ?thesis .
+              next
+                case False
+                have nmuP: "\<not> multiT (Pred M)" by (rule nonmulti_Pred[OF MT' nmu L1])
+                have trP: "TrMax (Pred M) = Lng (Pred M) - 1"
+                  by (rule a3_TrMax_Pred_trunk[OF MT' trunk L1])
+                have "Red (Pred M) = diagSeq (entry (Pred M) 1 0)
+                          (entry (Pred M) 1 0 + (Lng (Pred M) - 1))"
+                  using Red.psimps[OF dom_pred] False nmuP c0P c1P trP by (simp add: Let_def)
+                also have "\<dots> = diagSeq 0 (Lng M - 2)"
+                  using c1P LP by (simp add: numeral_2_eq_2)
+                finally show ?thesis .
+              qed
+              \<comment> \<open>\<open>Pred (Red M) = butlast (diagSeq 0 (Lng M - 1)) = diagSeq 0 (Lng M - 2)\<close>.\<close>
+              have predRedM: "Pred (Red M) = diagSeq 0 (Lng M - 2)"
+              proof -
+                have LrM: "1 < Lng (Red M)" using m_6_5_Lng_Red[OF MT'] L1 by simp
+                have "Pred (Red M) = butlast (diagSeq 0 (Lng M - 1))"
+                  using LrM rM' by (simp add: Pred_def)
+                also have "\<dots> = diagSeq 0 ((Lng M - 1) - 1)"
+                  using butlast_diagSeq[of 0 "Lng M - 1"] L1 by simp
+                also have "(Lng M - 1) - 1 = Lng M - 2" by simp
+                finally show ?thesis .
+              qed
+              show ?thesis using RpredM predRedM by simp
+            next
+              case tne: False
+              \<comment> \<open>Branch 3b: core non-trunk \<dash> discharged via @{thm [source]
+                 rpred_core_nontrunk_step} with the per-branch IH on \<open>NJ M J\<close>.\<close>
+              have IHbr: "\<And>J. J < Lng (Br M) \<Longrightarrow>
+                            Red (Pred (NJ M J)) = Pred (Red (NJ M J))"
+              proof -
+                fix J assume JBr: "J < Lng (Br M)"
+                have M_PT: "M \<in> PT_PS" using MT' mono by (simp add: PT_PS_def)
+                have Jmem: "J \<in> set [0..<Lng (Br M)]" using JBr by simp
+                have core': "?m00 = 0 \<and> ?m10 = 0" using core by simp
+                have npE: "(if entry (Br M ! J) 1 0 = 0 then 0
+                            else Suc (THE j. nextR M 1 j (FirstNodes M ! J))) = npJ M J"
+                  by (simp add: npJ_def)
+                have argE: "((entry M 0 0 + Joints M ! J + 1, entry M 1 0 + npJ M J)
+                             # tl (Br M ! J)) = NJ M J"
+                  by (simp add: NJ_def)
+                have ih: "NJ M J \<in> T_PS \<longrightarrow>
+                            Red (Pred (NJ M J)) = Pred (Red (NJ M J))"
+                  using IH_bz[OF nz nmu refl refl refl refl core' tne Jmem]
+                  by (simp only: npE argE)
+                have NJne: "NJ M J \<noteq> []" by (simp add: NJ_def)
+                have NJT: "NJ M J \<in> T_PS" using NJne by (simp add: T_PS_def)
+                show "Red (Pred (NJ M J)) = Pred (Red (NJ M J))" using ih NJT by blast
+              qed
+              show ?thesis
+                by (rule rpred_core_nontrunk_step[OF MT' mono c0 c1 tne IHbr])
+            qed
+          next
+            case nc: False
+            show ?thesis
+            proof (cases "?m10 = 0")
+              case c1z: True
+              \<comment> \<open>Branch 4: shift (\<open>m\<^sub>1\<^sub>0 = 0\<close>, \<open>m\<^sub>0\<^sub>0 > 0\<close>).\<close>
+              have c0p: "0 < ?m00" using nc c1z by simp
+              \<comment> \<open>\<open>Red M = Red (shiftRow0 M)\<close>.\<close>
+              have rM_sh: "Red M = Red (shiftRow0 M)"
+                by (rule cdn_Red_shiftRow0_m10z[OF MT' mono c1z])
+              let ?sh = "shiftRow0 M"
+              have shT: "?sh \<in> T_PS" by (simp add: T_PS_def shiftRow0_def Mne)
+              \<comment> \<open>IH on the shift argument \<open>?sh\<close>.\<close>
+              have SAeq: "map (\<lambda>j. (entry M 0 j - ?m00, entry M 1 j)) [0..<Suc (Lng M - 1)] = ?sh"
+              proof -
+                have "Suc (Lng M - 1) = Lng M" using LMpos by simp
+                thus ?thesis by (simp add: shiftRow0_def)
+              qed
+              have ih_sh: "?sh \<in> T_PS \<longrightarrow> Red (Pred ?sh) = Pred (Red ?sh)"
+                using IH_sh[OF nz nmu refl refl refl refl nc c1z] SAeq by simp
+              have predRed_sh: "Red (Pred ?sh) = Pred (Red ?sh)" using ih_sh shT by blast
+              \<comment> \<open>\<open>Pred (Red M) = Pred (Red ?sh) = Red (Pred ?sh)\<close>.\<close>
+              have step1: "Pred (Red M) = Red (Pred ?sh)" using rM_sh predRed_sh by simp
+              \<comment> \<open>\<open>shiftRow0\<close> commutes with \<open>Pred = butlast\<close>.\<close>
+              have shiftPred: "?sh = ?sh" ..
+              have commute: "Pred ?sh = shiftRow0 (Pred M)"
+                by (rule a3_shiftRow0_Pred[OF L1])
+              \<comment> \<open>\<open>Red (Pred M) = Red (shiftRow0 (Pred M))\<close>.\<close>
+              have predM_mono_or: "Red (Pred M) = Red (shiftRow0 (Pred M))"
+                by (rule a3_Red_shiftRow0_Pred_m10z[OF MT' mono c1z L1])
+              show ?thesis using predM_mono_or commute step1 by simp
+            next
+              case c1p: False
+              \<comment> \<open>Branch 5: \<open>m\<^sub>1\<^sub>0 > 0\<close>.  \<open>Red M = outMap N m10\<close> with \<open>N = Red (argM)\<close>;
+                 \<open>Pred M\<close> is again branch 5 with \<open>N' = Red (Pred argM) = Pred N\<close> by the IH
+                 on \<open>argM\<close> via @{thm [source] m_6_5_T4_coreArg_Pred}.\<close>
+              have pos: "0 < ?m10" using c1p by simp
+              let ?argM = "diagSeq 0 (?m10 - 1) @ (IncrFirst ^^ ?m10) M"
+              have funM_ne: "(IncrFirst ^^ ?m10) M \<noteq> []"
+                using Mne by (metis Lng_funpow_IncrFirst length_0_conv)
+              have argMT: "?argM \<in> T_PS" using funM_ne by (simp add: T_PS_def)
+              let ?N = "Red ?argM"
+              have LN: "Lng ?N = Lng M + ?m10"
+                using m_6_5_monoT_Red_fact1_Lng[OF MT' pos] by simp
+              have jN_ge: "?m10 \<le> Lng ?N - 1" using LN LMpos by linarith
+              have segN_PT: "seg ?N ?m10 (Lng ?N - 1) \<in> PT_PS"
+                using m_6_5_monoT_Red_m10pos[OF Mpt pos] by simp
+              have thenM: "?m10 \<le> Lng ?N - 1 \<and> seg ?N ?m10 (Lng ?N - 1) \<in> PT_PS"
+                using jN_ge segN_PT by simp
+              let ?outMap = "\<lambda>P m. map (\<lambda>j. (entry P 0 j - entry P 0 m + entry P 1 m,
+                                            entry P 1 j)) [m..<Suc (Lng P - 1)]"
+              have rM: "Red M = ?outMap ?N ?m10"
+                using Red.psimps[OF dom] nz nmu nc c1p thenM by (simp add: Let_def)
+              \<comment> \<open>\<open>Pred M\<close>: monoT, m10>0, in PT_PS.\<close>
+              have predT: "Pred M \<in> T_PS" by (rule Pred_preserves_T_PS[OF MT'])
+              have e1P: "entry (Pred M) 1 0 = ?m10" by (rule entry_Pred_0[OF L1])
+              have posP: "0 < entry (Pred M) 1 0" using e1P pos by simp
+              have nzP: "\<not> zeroT (Pred M)" using e1P pos by (simp add: zeroT_def)
+              have nmuP: "\<not> multiT (Pred M)" by (rule nonmulti_Pred[OF MT' nmu L1])
+              have monoP: "monoT (Pred M)" using nzP nmuP by (simp add: multiT_def)
+              have PpredPT: "Pred M \<in> PT_PS" using predT monoP by (simp add: PT_PS_def)
+              have ncP: "\<not> (entry (Pred M) 0 0 = 0 \<and> entry (Pred M) 1 0 = 0)"
+                using posP by simp
+              have domP: "Red_dom (Pred M)" by (rule m_6_5_Red_welldef[OF predT])
+              \<comment> \<open>\<open>argM\<close> under \<open>Pred\<close>: \<open>argM(Pred M) = Pred argM\<close>.\<close>
+              let ?argP = "diagSeq 0 (entry (Pred M) 1 0 - 1)
+                              @ (IncrFirst ^^ (entry (Pred M) 1 0)) (Pred M)"
+              have argP_eq: "?argP = Pred ?argM"
+                using m_6_5_T4_coreArg_Pred[OF L1 pos] e1P by simp
+              \<comment> \<open>IH on \<open>argM\<close>: \<open>Red (Pred argM) = Pred (Red argM)\<close>.\<close>
+              have ih: "?argM \<in> T_PS \<longrightarrow> Red (Pred ?argM) = Pred (Red ?argM)"
+                using IH_m1[OF nz nmu refl refl refl refl nc c1p] by simp
+              have ihM: "Red (Pred ?argM) = Pred ?N" using ih argMT by blast
+              have LNgt1: "1 < Lng ?N" using LN L1 pos by simp
+              have predN: "Pred ?N = butlast ?N" using LNgt1 by (simp add: Pred_def)
+              have NP_eq: "Red ?argP = butlast ?N"
+                using argP_eq ihM predN by simp
+              have LbutN: "Lng (butlast ?N) = Lng ?N - 1" using LNgt1 by simp
+              \<comment> \<open>\<open>Pred M\<close> takes the same productive branch.\<close>
+              have LNP: "Lng (Red ?argP) = Lng (Pred M) + entry (Pred M) 1 0"
+                using m_6_5_monoT_Red_fact1_Lng[OF predT posP] by simp
+              have jNP_ge: "entry (Pred M) 1 0 \<le> Lng (Red ?argP) - 1"
+              proof -
+                have predM_ne: "Pred M \<noteq> []" using predT by (simp add: T_PS_def)
+                hence "0 < Lng (Pred M)" by (cases "Pred M") auto
+                thus ?thesis using LNP by linarith
+              qed
+              have segNP_PT: "seg (Red ?argP) (entry (Pred M) 1 0) (Lng (Red ?argP) - 1) \<in> PT_PS"
+                using m_6_5_monoT_Red_m10pos[OF PpredPT posP] by simp
+              have thenP: "entry (Pred M) 1 0 \<le> Lng (Red ?argP) - 1
+                            \<and> seg (Red ?argP) (entry (Pred M) 1 0) (Lng (Red ?argP) - 1) \<in> PT_PS"
+                using jNP_ge segNP_PT by simp
+              have rPredM: "Red (Pred M) = ?outMap (Red ?argP) (entry (Pred M) 1 0)"
+                using Red.psimps[OF domP] nzP nmuP ncP posP thenP by (simp add: Let_def)
+              have rPredM': "Red (Pred M) = ?outMap (butlast ?N) ?m10"
+                using rPredM NP_eq e1P by simp
+              \<comment> \<open>Now compare \<open>?outMap (butlast ?N) m10\<close> with \<open>Pred (?outMap ?N m10)\<close>.\<close>
+              have m10_lt_butN: "?m10 < Lng (butlast ?N)" using LbutN LN LMpos L1 by linarith
+              \<comment> \<open>\<open>Pred (Red M) = butlast (?outMap ?N m10) = map f (butlast [m10..<Suc(Lng N -1)])\<close>.\<close>
+              have LrM: "Lng (Red M) = Lng M" by (rule m_6_5_Lng_Red[OF MT'])
+              have LrMgt1: "1 < Lng (Red M)" using LrM L1 by simp
+              have sucN: "Suc (Lng ?N - 1) = Lng ?N" using LNgt1 by simp
+              have rangeN: "[?m10..<Suc (Lng ?N - 1)] = [?m10..<Lng ?N]" by (simp only: sucN)
+              have predRedM: "Pred (Red M)
+                    = map (\<lambda>j. (entry ?N 0 j - entry ?N 0 ?m10 + entry ?N 1 ?m10, entry ?N 1 j))
+                          [?m10..<Lng ?N - 1]"
+              proof -
+                have "Pred (Red M) = butlast (Red M)" using LrMgt1 by (simp add: Pred_def)
+                also have "\<dots> = butlast (map (\<lambda>j. (entry ?N 0 j - entry ?N 0 ?m10 + entry ?N 1 ?m10,
+                                                  entry ?N 1 j)) [?m10..<Lng ?N])"
+                  using rM rangeN by simp
+                also have "\<dots> = map (\<lambda>j. (entry ?N 0 j - entry ?N 0 ?m10 + entry ?N 1 ?m10,
+                                          entry ?N 1 j)) (butlast [?m10..<Lng ?N])"
+                  by (simp add: map_butlast)
+                also have "butlast [?m10..<Lng ?N] = [?m10..<Lng ?N - 1]"
+                proof -
+                  have le: "?m10 \<le> Lng ?N - 1" using jN_ge by simp
+                  have suc: "Suc (Lng ?N - 1) = Lng ?N" using LNgt1 by simp
+                  have "[?m10..<Lng ?N] = [?m10..<Suc (Lng ?N - 1)]" using suc by simp
+                  also have "\<dots> = [?m10..<Lng ?N - 1] @ [Lng ?N - 1]"
+                    by (rule upt_Suc_append[OF le])
+                  finally show ?thesis by simp
+                qed
+                finally show ?thesis .
+              qed
+              \<comment> \<open>\<open>Red (Pred M)\<close> as a map over the same range; entries via \<open>butlast ?N = ?N\<close> below cut.\<close>
+              have predRedM2: "Red (Pred M)
+                    = map (\<lambda>j. (entry (butlast ?N) 0 j - entry (butlast ?N) 0 ?m10
+                                  + entry (butlast ?N) 1 ?m10, entry (butlast ?N) 1 j))
+                          [?m10..<Lng ?N - 1]"
+              proof -
+                have "Suc (Lng (butlast ?N) - 1) = Lng ?N - 1" using LbutN m10_lt_butN by simp
+                thus ?thesis using rPredM' by simp
+              qed
+              \<comment> \<open>entries of \<open>butlast ?N\<close> agree with \<open>?N\<close> on indices \<open>< Lng ?N - 1\<close>.\<close>
+              have ebut: "\<And>i j. j < Lng ?N - 1 \<Longrightarrow> entry (butlast ?N) i j = entry ?N i j"
+                using LNgt1 by (simp add: entry_def nth_butlast)
+              have m10lt': "?m10 < Lng ?N - 1" using m10_lt_butN LbutN by simp
+              have ebut_m0: "entry (butlast ?N) 0 ?m10 = entry ?N 0 ?m10"
+                by (rule ebut[OF m10lt'])
+              have ebut_m1: "entry (butlast ?N) 1 ?m10 = entry ?N 1 ?m10"
+                by (rule ebut[OF m10lt'])
+              note ebut_m = ebut_m0 ebut_m1
+              show ?thesis
+              proof (simp only: predRedM predRedM2, rule map_cong[OF refl])
+                fix j assume "j \<in> set [?m10..<Lng ?N - 1]"
+                hence jlt: "j < Lng ?N - 1" by simp
+                have e0j: "entry (butlast ?N) 0 j = entry ?N 0 j" by (rule ebut[OF jlt])
+                have e1j: "entry (butlast ?N) 1 j = entry ?N 1 j" by (rule ebut[OF jlt])
+                show "(entry (butlast ?N) 0 j - entry (butlast ?N) 0 ?m10
+                          + entry (butlast ?N) 1 ?m10, entry (butlast ?N) 1 j)
+                      = (entry ?N 0 j - entry ?N 0 ?m10 + entry ?N 1 ?m10, entry ?N 1 j)"
+                  by (simp only: e0j e1j ebut_m)
+              qed
+            qed
+          qed
+        qed
+      qed
+    qed
+  qed
+  thus ?thesis using MT by blast
+qed
+
+
+
+(* ===== block from workflow t2-rnsub ===== *)
+subsection \<open>§7.2 命題（\<open>RightNodes\<close>と部分表現の関係） — m_7_2_RightNodes_subexpr\<close>
+
+text \<open>
+  Development block (rnsub_*).  We prove the proposition directly at the \<^typ>\<open>BT\<close>
+  level, replacing the article's string-level scb argument by a structural
+  recursion along the rightmost spine.  The witness \<open>t\<^sub>1\<close> is \<open>t\<^sub>0\<close> with the
+  rightmost-spine bottom principal \<open>D\<^sub>v 0\<close> having its \<open>0\<close>-argument replaced by \<open>t\<close>.
+\<close>
+
+\<comment> \<open>Termination of \<open>RightNodes\<close>: the single recursive call \<open>RightNodes a\<close> (where
+   \<open>last xs = DB u a\<close>) is on a strict subterm, so the datatype \<open>size\<close> measure
+   decreases.  This discharges the deferred termination and gives us the
+   unconditional simp rule \<open>RightNodes.simps\<close>.\<close>
+
+lemma rnsub_size_arg_lt:
+  assumes "xs \<noteq> []" "last xs = DB u a"
+  shows "size a < size (Trm xs)"
+proof -
+  have "DB u a \<in> set xs" using assms last_in_set by metis
+  hence "size (DB u a) \<le> size_list size xs"
+    by (simp add: size_list_estimation' [where x = "DB u a"] order.strict_implies_order)
+  moreover have "size (Trm xs) = Suc (size_list size xs)" by simp
+  moreover have "size a < size (DB u a)" by simp
+  ultimately show ?thesis by linarith
+qed
+
+lemma rnsub_size_arg_lt':
+  "last xs = DB u a \<Longrightarrow> xs \<noteq> [] \<Longrightarrow> size a < size (Trm xs)"
+  using rnsub_size_arg_lt by blast
+
+termination RightNodes
+  apply (relation "measure size")
+   apply simp
+  apply (clarsimp simp only: in_measure)
+  apply (rule rnsub_size_arg_lt')
+   apply assumption
+  apply simp
+  done
+
+\<comment> \<open>Basic RightNodes computation on a nonempty term.\<close>
+lemma rnsub_RightNodes_cons:
+  "RightNodes (Trm (x # xs)) =
+     (case last (x # xs) of DB u a \<Rightarrow> the_enat u # RightNodes a)"
+  by simp
+
+lemma rnsub_RightNodes_zero: "RightNodes (Trm []) = []"
+  by simp
+
+lemma rnsub_RightNodes_Dpt:
+  "RightNodes (Dpt (enat v) t) = v # RightNodes t"
+  by simp
+
+\<comment> \<open>RightNodes only depends on the last principal component.\<close>
+lemma rnsub_RightNodes_last:
+  "xs \<noteq> [] \<Longrightarrow> RightNodes (Trm xs) = RightNodes (Trm [last xs])"
+  by (cases xs) simp_all
+
+\<comment> \<open>flatBT of a single principal.\<close>
+lemma rnsub_flat_single: "flatBT (Trm [DB u a]) = Dsym u # flatBT a"
+  by simp
+
+\<comment> \<open>The flat string of a single principal whose argument is \<open>0\<close>.\<close>
+lemma rnsub_flat_Dpt0: "flatBT (Dpt (enat v) 0\<^sub>B) = [Dsym (enat v), Zsym]"
+  by simp
+
+\<comment> \<open>\<open>flatBT a\<close> never starts with \<open>Zsym\<close> unless \<open>a = 0\<close>; and never starts with \<open>RP\<close>.\<close>
+lemma rnsub_flat_hd:
+  "flatBT a = Zsym # rest \<Longrightarrow> a = Trm [] \<and> rest = []"
+  by (cases a rule: flatBT.cases) (auto elim: flatBP.elims)
+
+lemma rnsub_flat_nonempty: "flatBT a \<noteq> []"
+  by (cases a rule: flatBT.cases) (auto elim: flatBP.elims)
+
+\<comment> \<open>\<open>Lng (PB t)\<close> is the number of top-level components.\<close>
+lemma rnsub_Lng_PB: "Lng (PB t) = length (untrm t)"
+  by (simp add: PB_def)
+
+text \<open>
+  The flat string of \<open>Trm xs\<close> (\<open>xs \<noteq> []\<close>, \<open>last xs = DB u a\<close>) splits as
+  \<open>pre \<frown> (Dsym u # flatBT a) \<frown> post\<close> with \<open>post\<close> all-\<open>)\<close>, uniformly for the
+  single (\<open>pre = []\<close>, \<open>post = []\<close>) and multi (\<open>pre = LP # \<dots> CM, Dsym u\<close>,
+  \<open>post = [RP]\<close>) cases.  Replacing the last principal's argument by any \<open>c\<close>
+  changes only the middle component.
+\<close>
+
+\<comment> \<open>List alignment at the last \<open>Zsym\<close>.  If two append-decompositions of the same
+   string each place a \<open>Zsym\<close> with an all-\<open>RP\<close> (hence \<open>Zsym\<close>-free) tail after it,
+   the two \<open>Zsym\<close>-positions and the tails coincide.\<close>
+lemma rnsub_align_lastZ:
+  assumes "aa @ Zsym # pp = bb @ Zsym # qq"
+    and "Zsym \<notin> set pp" and "Zsym \<notin> set qq"
+  shows "aa = bb \<and> pp = qq"
+proof -
+  from assms(1) have
+    "\<exists>us. (aa = bb @ us \<and> us @ Zsym # pp = Zsym # qq) \<or>
+          (aa @ us = bb \<and> Zsym # pp = us @ Zsym # qq)"
+    by (simp add: append_eq_append_conv2)
+  then obtain us where
+    "(aa = bb @ us \<and> us @ Zsym # pp = Zsym # qq) \<or>
+     (aa @ us = bb \<and> Zsym # pp = us @ Zsym # qq)" by blast
+  thus ?thesis
+  proof (elim disjE conjE)
+    assume aa_eq: "aa = bb @ us" and tl: "us @ Zsym # pp = Zsym # qq"
+    have "us = []"
+    proof (rule ccontr)
+      assume "us \<noteq> []"
+      then obtain u0 us' where us: "us = u0 # us'" by (cases us) auto
+      have "qq = us' @ Zsym # pp" using tl us by simp
+      hence "Zsym \<in> set qq" by simp
+      thus False using assms(3) by simp
+    qed
+    thus ?thesis using aa_eq tl by simp
+  next
+    assume bb_eq: "aa @ us = bb" and tl: "Zsym # pp = us @ Zsym # qq"
+    have "us = []"
+    proof (rule ccontr)
+      assume "us \<noteq> []"
+      then obtain u0 us' where us: "us = u0 # us'" by (cases us) auto
+      have "pp = us' @ Zsym # qq" using tl us by simp
+      hence "Zsym \<in> set pp" by simp
+      thus False using assms(2) by simp
+    qed
+    thus ?thesis using bb_eq tl by simp
+  qed
+qed
+
+\<comment> \<open>flat of a multi-term with the tail not necessarily a literal cons.\<close>
+lemma rnsub_flat_multi:
+  "zs \<noteq> [] \<Longrightarrow>
+   flatBT (Trm (p # zs)) =
+     LP # (flatBP p @ concat (map (\<lambda>r. CM # flatBP r) zs)) @ [RP]"
+  by (cases zs) simp_all
+
+lemma rnsub_flat_pre_post:
+  assumes "xs \<noteq> []" "last xs = DB u a"
+  shows "\<exists>pre post. (\<forall>x \<in> set post. x = RP)
+            \<and> flatBT (Trm xs) = pre @ (Dsym u # flatBT a) @ post
+            \<and> (\<forall>c. flatBT (Trm (butlast xs @ [DB u c]))
+                    = pre @ (Dsym u # flatBT c) @ post)"
+proof (cases xs rule: rev_cases)
+  case Nil thus ?thesis using assms by simp
+next
+  case (snoc ys y)
+  \<comment> \<open>\<open>y = last xs = DB u a\<close>\<close>
+  have y_eq: "y = DB u a" using assms snoc by simp
+  show ?thesis
+  proof (cases ys)
+    case Nil
+    \<comment> \<open>single principal \<open>xs = [DB u a]\<close>: \<open>pre = []\<close>, \<open>post = []\<close>\<close>
+    show ?thesis
+      apply (rule exI[of _ "[]"], rule exI[of _ "[]"])
+      using snoc Nil y_eq by simp
+  next
+    case (Cons p ps)
+    \<comment> \<open>multi: \<open>xs = p # ps @ [DB u a]\<close>; the wrap is \<open>LP # \<dots> @ [RP]\<close>\<close>
+    define mid where "mid = concat (map (\<lambda>r. CM # flatBP r) (ps @ [DB u a]))"
+    have xs_eq: "xs = p # (ps @ [DB u a])" using snoc Cons y_eq by simp
+    have flat_xs: "flatBT (Trm xs) = LP # (flatBP p @ mid) @ [RP]"
+      unfolding xs_eq mid_def by (rule rnsub_flat_multi) simp
+    \<comment> \<open>peel the last component out of \<open>mid\<close>\<close>
+    define midpre where
+      "midpre = concat (map (\<lambda>r. CM # flatBP r) ps)"
+    have mid_eq: "mid = midpre @ CM # flatBP (DB u a)"
+      unfolding mid_def midpre_def by simp
+    define pre where "pre = LP # flatBP p @ midpre @ [CM]"
+    define post where "post = [RP]"
+    have flat_split: "flatBT (Trm xs) = pre @ (Dsym u # flatBT a) @ post"
+      using flat_xs unfolding mid_eq pre_def post_def by simp
+    have post_RP: "\<forall>x \<in> set post. x = RP" unfolding post_def by simp
+    have sub: "\<And>c. flatBT (Trm (butlast xs @ [DB u c]))
+                    = pre @ (Dsym u # flatBT c) @ post"
+    proof -
+      fix c
+      have bl: "butlast xs = p # ps"
+        using snoc Cons by simp
+      have "flatBT (Trm (p # (ps @ [DB u c])))
+            = LP # (flatBP p @ concat (map (\<lambda>r. CM # flatBP r) (ps @ [DB u c]))) @ [RP]"
+        by (rule rnsub_flat_multi) simp
+      also have "concat (map (\<lambda>r. CM # flatBP r) (ps @ [DB u c]))
+               = midpre @ CM # flatBP (DB u c)"
+        unfolding midpre_def by simp
+      finally show "flatBT (Trm (butlast xs @ [DB u c]))
+                    = pre @ (Dsym u # flatBT c) @ post"
+        using bl unfolding pre_def post_def by simp
+    qed
+    show ?thesis
+      apply (rule exI[of _ pre], rule exI[of _ post])
+      using post_RP flat_split sub by blast
+  qed
+qed
+
+\<comment> \<open>Every flat string contains at least one \<open>Zsym\<close> (the spine bottom).\<close>
+lemma rnsub_Zsym_in_flat: "Zsym \<in> set (flatBT a)"
+  and rnsub_Zsym_in_flatP: "Zsym \<in> set (flatBP p)"
+proof (induction a and p rule: flatBT_flatBP.induct)
+qed auto
+
+\<comment> \<open>An all-\<open>RP\<close> list contains no \<open>Zsym\<close>.\<close>
+lemma rnsub_allRP_no_Zsym: "\<forall>x \<in> set xs. x = RP \<Longrightarrow> Zsym \<notin> set xs"
+  by auto
+
+\<comment> \<open>\<open>T_B\<close> facts: a single (or last) principal of a \<open>D\<^sub>\<omega>\<close>-free term has \<open>u \<noteq> \<infinity>\<close>
+   and a \<open>D\<^sub>\<omega>\<close>-free argument; \<open>butlast\<close> stays \<open>D\<^sub>\<omega>\<close>-free.\<close>
+lemma rnsub_TB_last:
+  assumes "Trm xs \<in> T_B" "xs \<noteq> []" "last xs = DB u a"
+  shows "u \<noteq> \<infinity> \<and> a \<in> T_B"
+proof -
+  have mem: "DB u a \<in> set xs" using assms last_in_set by metis
+  have df: "dfree_BP (DB u a)" using assms(1) mem by (auto simp: T_B_def)
+  hence ui: "u \<noteq> \<infinity>" and da: "dfree_BT a" by auto
+  have "\<exists>i. u = enat i" using ui by (cases u) auto
+  thus ?thesis using da by (simp add: T_B_def)
+qed
+
+lemma rnsub_TB_replace_last:
+  assumes "Trm xs \<in> T_B" "xs \<noteq> []" "u \<noteq> \<infinity>" "c \<in> T_B"
+  shows "Trm (butlast xs @ [DB u c]) \<in> T_B"
+proof -
+  have "\<forall>p \<in> set (butlast xs). dfree_BP p"
+    using assms(1) by (auto simp: T_B_def dest: in_set_butlastD)
+  moreover have "dfree_BP (DB u c)"
+    using assms(3,4) by (simp add: T_B_def)
+  ultimately show ?thesis by (simp add: T_B_def)
+qed
+
+text \<open>
+  \<open>spineSub t\<^sub>0 t\<close>: replace the rightmost-spine bottom \<open>0\<close>-argument of \<open>t\<^sub>0\<close> by \<open>t\<close>.
+  Recurses into \<open>last xs = DB u a\<close>; the bottom is reached when \<open>a = 0\<close>.
+\<close>
+
+function spineSub :: "BT \<Rightarrow> BT \<Rightarrow> BT" where
+  "spineSub (Trm xs) t =
+     (case xs of [] \<Rightarrow> Trm []
+      | _ \<Rightarrow> (case last xs of DB u a \<Rightarrow>
+                (if a = Trm [] then Trm (butlast xs @ [DB u t])
+                 else Trm (butlast xs @ [DB u (spineSub a t)]))))"
+  by pat_completeness auto
+termination spineSub
+  apply (relation "measure (\<lambda>(t0,t). size t0)")
+   apply simp
+  apply (clarsimp simp only: in_measure prod.case)
+  apply (rule rnsub_size_arg_lt')
+   apply assumption
+  apply simp
+  done
+
+\<comment> \<open>spineSub preserves the top-level component count (only the last is touched).\<close>
+lemma rnsub_spineSub_len:
+  "xs \<noteq> [] \<Longrightarrow> length (untrm (spineSub (Trm xs) t)) = length xs"
+  by (cases "last xs") (auto split: list.split)
+
+\<comment> \<open>RightNodes of spineSub: appends RightNodes t at the bottom.\<close>
+lemma rnsub_RightNodes_spineSub:
+  "t0 \<noteq> Trm [] \<Longrightarrow> RightNodes (spineSub t0 t) = RightNodes t0 @ RightNodes t"
+proof (induction t0 t rule: spineSub.induct)
+  case (1 xs t)
+  show ?case
+  proof (cases xs)
+    case Nil thus ?thesis using 1 by simp
+  next
+    case (Cons y ys)
+    hence ne: "xs \<noteq> []" by simp
+    obtain u a where la: "last xs = DB u a" by (cases "last xs")
+    show ?thesis
+    proof (cases "a = Trm []")
+      case True
+      have "spineSub (Trm xs) t = Trm (butlast xs @ [DB u t])"
+        using ne la True by (auto split: list.split)
+      moreover have "RightNodes (Trm (butlast xs @ [DB u t]))
+                   = the_enat u # RightNodes t"
+        by (subst rnsub_RightNodes_last) auto
+      moreover have "RightNodes (Trm xs) = the_enat u # RightNodes a"
+        using ne la by (cases xs) auto
+      ultimately show ?thesis using True by simp
+    next
+      case False
+      have eq: "spineSub (Trm xs) t = Trm (butlast xs @ [DB u (spineSub a t)])"
+        using ne la False by (auto split: list.split)
+      have IH: "RightNodes (spineSub a t) = RightNodes a @ RightNodes t"
+        using "1.IH"[of "hd xs" "tl xs" u a] ne la False Cons by simp
+      have "RightNodes (Trm (butlast xs @ [DB u (spineSub a t)]))
+          = the_enat u # RightNodes (spineSub a t)"
+        by (subst rnsub_RightNodes_last) auto
+      moreover have "RightNodes (Trm xs) = the_enat u # RightNodes a"
+        using ne la by (cases xs) auto
+      ultimately show ?thesis using eq IH by simp
+    qed
+  qed
+qed
+
+text \<open>
+  Main structural lemma (the article's induction on \<open>Lng(s)\<close>, recast as strong
+  induction on \<open>length s\<close>): if \<open>flatBT t\<^sub>0 = s \<frown> D\<^sub>v 0 \<frown> b\<close> with \<open>b\<close> all-\<open>)\<close> and
+  \<open>t\<^sub>0,t \<in> T\<^bsub>B\<^esub>\<close>, then \<open>spineSub t\<^sub>0 t\<close> witnesses \<open>flatBT = s \<frown> D\<^sub>v t \<frown> b\<close> and stays
+  in \<open>T\<^bsub>B\<^esub>\<close>.  (No use of the unproven scb propositions; purely \<^typ>\<open>BT\<close>-structural.)
+\<close>
+
+lemma rnsub_flat_main:
+  fixes v :: nat
+  shows "\<And>t0 s b. flatBT t0 = s @ Dsym (enat v) # Zsym # b \<Longrightarrow>
+            (\<forall>x \<in> set b. x = RP) \<Longrightarrow> t0 \<in> T_B \<Longrightarrow> t \<in> T_B \<Longrightarrow>
+            flatBT (spineSub t0 t) = s @ Dsym (enat v) # flatBT t @ b
+              \<and> spineSub t0 t \<in> T_B"
+proof -
+  fix t0 s b
+  show "flatBT t0 = s @ Dsym (enat v) # Zsym # b \<Longrightarrow>
+        (\<forall>x \<in> set b. x = RP) \<Longrightarrow> t0 \<in> T_B \<Longrightarrow> t \<in> T_B \<Longrightarrow>
+        flatBT (spineSub t0 t) = s @ Dsym (enat v) # flatBT t @ b
+          \<and> spineSub t0 t \<in> T_B"
+  proof (induction "length s" arbitrary: t0 s b rule: less_induct)
+    case less
+    \<comment> \<open>\<open>t0 = Trm xs\<close> with \<open>xs \<noteq> []\<close> (else flat = [Zsym], no \<open>Dsym\<close>).\<close>
+    obtain xs where t0xs: "t0 = Trm xs" by (cases t0)
+    have xs_ne: "xs \<noteq> []"
+    proof
+      assume "xs = []"
+      hence "flatBT t0 = [Zsym]" using t0xs by simp
+      thus False using less.prems(1) by (cases s) auto
+    qed
+    obtain u a where la: "last xs = DB u a" by (cases "last xs")
+    \<comment> \<open>uniform pre/post decomposition\<close>
+    obtain pre post where
+      post_RP: "\<forall>x \<in> set post. x = RP" and
+      PP: "flatBT (Trm xs) = pre @ (Dsym u # flatBT a) @ post" and
+      PPc: "\<And>c. flatBT (Trm (butlast xs @ [DB u c])) = pre @ (Dsym u # flatBT c) @ post"
+      using rnsub_flat_pre_post[OF xs_ne la] by blast
+    have Hflat: "flatBT (Trm xs) = (s @ [Dsym (enat v)]) @ Zsym # b"
+      using less.prems(1) t0xs by simp
+    have no_Z_b: "Zsym \<notin> set b" using less.prems(2) by auto
+    have no_Z_post: "Zsym \<notin> set post" using post_RP by auto
+    \<comment> \<open>\<open>u \<noteq> \<infinity>\<close>, \<open>a \<in> T_B\<close> from \<open>t0 \<in> T_B\<close>\<close>
+    have uinf: "u \<noteq> \<infinity>" and aTB: "a \<in> T_B"
+      using rnsub_TB_last[OF less.prems(3)[unfolded t0xs] xs_ne la] by auto
+    show ?case
+    proof (cases "a = Trm []")
+      case True
+      \<comment> \<open>bottom reached: \<open>flatBT a = [Zsym]\<close>; align \<open>(s,b)\<close> with \<open>(pre,post)\<close>.\<close>
+      have PPb: "flatBT (Trm xs) = (pre @ [Dsym u]) @ Zsym # post"
+        using PP True by simp
+      have al: "s @ [Dsym (enat v)] = pre @ [Dsym u] \<and> b = post"
+        using rnsub_align_lastZ[of "s @ [Dsym (enat v)]" b "pre @ [Dsym u]" post]
+              Hflat PPb no_Z_b no_Z_post by simp
+      have s_pre: "s = pre" and uv: "Dsym u = Dsym (enat v)"
+        using al by auto
+      have ueq: "u = enat v" using uv by simp
+      have b_post: "b = post" using al by simp
+      \<comment> \<open>witness: replace the \<open>0\<close> by \<open>t\<close>\<close>
+      have ss: "spineSub (Trm xs) t = Trm (butlast xs @ [DB u t])"
+        using xs_ne la True by (auto split: list.split)
+      have flat_eq: "flatBT (spineSub (Trm xs) t)
+                   = s @ Dsym (enat v) # flatBT t @ b"
+        using ss PPc[of t] s_pre ueq b_post by simp
+      have mem: "spineSub (Trm xs) t \<in> T_B"
+        using ss rnsub_TB_replace_last[OF less.prems(3)[unfolded t0xs] xs_ne uinf less.prems(4)]
+        by simp
+      show ?thesis using flat_eq mem t0xs by simp
+    next
+      case False
+      \<comment> \<open>recurse into \<open>a\<close>: split \<open>flatBT a\<close> at its last \<open>Zsym\<close>.\<close>
+      have "Zsym \<in> set (flatBT a)" by (rule rnsub_Zsym_in_flat)
+      then obtain fpre fpost where
+        fa: "flatBT a = fpre @ Zsym # fpost" and no_Z_fpost: "Zsym \<notin> set fpost"
+        by (meson split_list_last)
+      have PP2: "flatBT (Trm xs) = (pre @ Dsym u # fpre) @ Zsym # (fpost @ post)"
+        using PP fa by simp
+      have no_Z_fp: "Zsym \<notin> set (fpost @ post)"
+        using no_Z_fpost no_Z_post by simp
+      have al: "s @ [Dsym (enat v)] = pre @ Dsym u # fpre \<and> b = fpost @ post"
+        using rnsub_align_lastZ[of "s @ [Dsym (enat v)]" b "pre @ Dsym u # fpre" "fpost @ post"]
+              Hflat PP2 no_Z_b no_Z_fp by simp
+      \<comment> \<open>\<open>fpre \<noteq> []\<close> (else \<open>flatBT a\<close> starts with \<open>Zsym\<close>, forcing \<open>a = 0\<close>)\<close>
+      have fpre_ne: "fpre \<noteq> []"
+      proof
+        assume "fpre = []"
+        hence "flatBT a = Zsym # fpost" using fa by simp
+        thus False using rnsub_flat_hd False by blast
+      qed
+      then obtain fpre' where fpre': "fpre = fpre' @ [Dsym (enat v)]"
+                          and s_eq: "s = pre @ Dsym u # fpre'"
+        using al by (metis append_eq_append_conv2 append_butlast_last_id
+                     last_snoc butlast_snoc append.assoc append_Cons append_Nil2)
+      \<comment> \<open>inner decomposition for the IH\<close>
+      have fa_dec: "flatBT a = fpre' @ Dsym (enat v) # Zsym # fpost"
+        using fa fpre' by simp
+      have fpost_RP: "\<forall>x \<in> set fpost. x = RP"
+        using al less.prems(2) by (metis Un_iff set_append)
+      have len_lt: "length fpre' < length s"
+        using s_eq by simp
+      have IH: "flatBT (spineSub a t) = fpre' @ Dsym (enat v) # flatBT t @ fpost
+              \<and> spineSub a t \<in> T_B"
+        using less.hyps[OF len_lt fa_dec fpost_RP aTB less.prems(4)] by blast
+      \<comment> \<open>assemble\<close>
+      have ss: "spineSub (Trm xs) t = Trm (butlast xs @ [DB u (spineSub a t)])"
+        using xs_ne la False by (auto split: list.split)
+      have flat_eq: "flatBT (spineSub (Trm xs) t)
+                   = s @ Dsym (enat v) # flatBT t @ b"
+      proof -
+        have "flatBT (spineSub (Trm xs) t)
+            = pre @ Dsym u # flatBT (spineSub a t) @ post"
+          using ss PPc[of "spineSub a t"] by simp
+        also have "\<dots> = pre @ Dsym u # (fpre' @ Dsym (enat v) # flatBT t @ fpost) @ post"
+          using IH by simp
+        also have "\<dots> = (pre @ Dsym u # fpre') @ Dsym (enat v) # flatBT t @ (fpost @ post)"
+          by simp
+        also have "\<dots> = s @ Dsym (enat v) # flatBT t @ b"
+          using s_eq al by simp
+        finally show ?thesis .
+      qed
+      have mem: "spineSub (Trm xs) t \<in> T_B"
+        using ss IH rnsub_TB_replace_last[OF less.prems(3)[unfolded t0xs] xs_ne uinf]
+        by simp
+      show ?thesis using flat_eq mem t0xs by simp
+    qed
+  qed
+qed
+
+\<comment> \<open>\<open>Lng (PB \<dots>)\<close> is preserved by spineSub (only the last component's argument changes).\<close>
+lemma rnsub_Lng_spineSub:
+  "t0 \<noteq> Trm [] \<Longrightarrow> Lng (PB (spineSub t0 t)) = Lng (PB t0)"
+proof -
+  assume "t0 \<noteq> Trm []"
+  then obtain xs where t0xs: "t0 = Trm xs" and ne: "xs \<noteq> []" by (cases t0) auto
+  have "Lng (PB (spineSub (Trm xs) t)) = length (untrm (spineSub (Trm xs) t))"
+    by (simp add: rnsub_Lng_PB)
+  also have "\<dots> = length xs" using rnsub_spineSub_len[OF ne] by simp
+  also have "\<dots> = Lng (PB (Trm xs))" by (simp add: rnsub_Lng_PB)
+  finally show ?thesis using t0xs by simp
+qed
+
+\<comment> \<open>The rightmost-spine bottom index of \<open>t\<^sub>0\<close> is \<open>v\<close>: \<open>RightNodes t\<^sub>0\<close> ends in \<open>[v]\<close>.
+   Same strong induction on \<open>length s\<close> as the flat lemma, tracking only the bottom.\<close>
+lemma rnsub_RightNodes_t0_lastv:
+  fixes v :: nat
+  shows "\<And>t0 s b. flatBT t0 = s @ Dsym (enat v) # Zsym # b \<Longrightarrow>
+            (\<forall>x \<in> set b. x = RP) \<Longrightarrow> t0 \<in> T_B \<Longrightarrow>
+            \<exists>a0. RightNodes t0 = a0 @ [v]"
+proof -
+  fix t0 s b
+  show "flatBT t0 = s @ Dsym (enat v) # Zsym # b \<Longrightarrow>
+        (\<forall>x \<in> set b. x = RP) \<Longrightarrow> t0 \<in> T_B \<Longrightarrow>
+        \<exists>a0. RightNodes t0 = a0 @ [v]"
+  proof (induction "length s" arbitrary: t0 s b rule: less_induct)
+    case less
+    obtain xs where t0xs: "t0 = Trm xs" by (cases t0)
+    have xs_ne: "xs \<noteq> []"
+    proof
+      assume "xs = []"
+      hence "flatBT t0 = [Zsym]" using t0xs by simp
+      thus False using less.prems(1) by (cases s) auto
+    qed
+    obtain u a where la: "last xs = DB u a" by (cases "last xs")
+    obtain pre post where
+      post_RP: "\<forall>x \<in> set post. x = RP" and
+      PP: "flatBT (Trm xs) = pre @ (Dsym u # flatBT a) @ post"
+      using rnsub_flat_pre_post[OF xs_ne la] by blast
+    have Hflat: "flatBT (Trm xs) = (s @ [Dsym (enat v)]) @ Zsym # b"
+      using less.prems(1) t0xs by simp
+    have no_Z_b: "Zsym \<notin> set b" using less.prems(2) by auto
+    have no_Z_post: "Zsym \<notin> set post" using post_RP by auto
+    have aTB: "a \<in> T_B"
+      using rnsub_TB_last[OF less.prems(3)[unfolded t0xs] xs_ne la] by auto
+    have rn_xs: "RightNodes (Trm xs) = the_enat u # RightNodes a"
+      using xs_ne la by (cases xs) auto
+    show ?case
+    proof (cases "a = Trm []")
+      case True
+      have PPb: "flatBT (Trm xs) = (pre @ [Dsym u]) @ Zsym # post"
+        using PP True by simp
+      have al: "s @ [Dsym (enat v)] = pre @ [Dsym u] \<and> b = post"
+        using rnsub_align_lastZ[of "s @ [Dsym (enat v)]" b "pre @ [Dsym u]" post]
+              Hflat PPb no_Z_b no_Z_post by simp
+      have "Dsym u = Dsym (enat v)" using al by auto
+      hence "u = enat v" by simp
+      hence "RightNodes (Trm xs) = [v]" using rn_xs True by simp
+      thus ?thesis using t0xs by (intro exI[of _ "[]"]) simp
+    next
+      case False
+      have "Zsym \<in> set (flatBT a)" by (rule rnsub_Zsym_in_flat)
+      then obtain fpre fpost where
+        fa: "flatBT a = fpre @ Zsym # fpost" and no_Z_fpost: "Zsym \<notin> set fpost"
+        by (meson split_list_last)
+      have PP2: "flatBT (Trm xs) = (pre @ Dsym u # fpre) @ Zsym # (fpost @ post)"
+        using PP fa by simp
+      have no_Z_fp: "Zsym \<notin> set (fpost @ post)"
+        using no_Z_fpost no_Z_post by simp
+      have al: "s @ [Dsym (enat v)] = pre @ Dsym u # fpre \<and> b = fpost @ post"
+        using rnsub_align_lastZ[of "s @ [Dsym (enat v)]" b "pre @ Dsym u # fpre" "fpost @ post"]
+              Hflat PP2 no_Z_b no_Z_fp by simp
+      have fpre_ne: "fpre \<noteq> []"
+      proof
+        assume "fpre = []"
+        hence "flatBT a = Zsym # fpost" using fa by simp
+        thus False using rnsub_flat_hd False by blast
+      qed
+      then obtain fpre' where fpre': "fpre = fpre' @ [Dsym (enat v)]"
+                          and s_eq: "s = pre @ Dsym u # fpre'"
+        using al by (metis append_eq_append_conv2 append_butlast_last_id
+                     last_snoc butlast_snoc append.assoc append_Cons append_Nil2)
+      have fa_dec: "flatBT a = fpre' @ Dsym (enat v) # Zsym # fpost"
+        using fa fpre' by simp
+      have fpost_RP: "\<forall>x \<in> set fpost. x = RP"
+        using al less.prems(2) by (metis Un_iff set_append)
+      have len_lt: "length fpre' < length s" using s_eq by simp
+      have IH: "\<exists>a0. RightNodes a = a0 @ [v]"
+        using less.hyps[OF len_lt fa_dec fpost_RP aTB] by blast
+      then obtain a0 where "RightNodes a = a0 @ [v]" by blast
+      hence "RightNodes (Trm xs) = (the_enat u # a0) @ [v]" using rn_xs by simp
+      thus ?thesis using t0xs by blast
+    qed
+  qed
+qed
+
+text \<open>
+  m: 命題（\<open>RightNodes\<close>と部分表現の関係） (§7.2).  The target stub
+  \<open>p_7_2_RightNodes_subexpr\<close>: discharged via the spine substitution \<open>spineSub\<close>.
+  The unique \<open>(a\<^sub>0,a\<^sub>1)\<close> is \<open>a\<^sub>0 = RightNodes t\<^sub>0\<close> minus the last \<open>[v]\<close>, \<open>a\<^sub>1 = RightNodes t\<close>.
+\<close>
+
+lemma m_7_2_RightNodes_subexpr:
+  fixes v :: nat
+  assumes "t \<in> T_B" "\<exists>p. t = Trm [p]"
+    and "\<forall>x \<in> set b. x = RP"
+    and "t\<^sub>0 \<in> T_B" "flatBT t\<^sub>0 = s @ flatBT (Dpt (enat v) 0\<^sub>B) @ b"
+  shows "\<exists>t\<^sub>1. t\<^sub>1 \<in> T_B \<and> flatBT t\<^sub>1 = s @ flatBT (Dpt (enat v) t) @ b
+            \<and> Lng (PB t\<^sub>1) = Lng (PB t\<^sub>0)
+            \<and> (\<exists>!aa. RightNodes t\<^sub>1 = fst aa @ [v] @ snd aa
+                  \<and> RightNodes t\<^sub>0 = fst aa @ [v]
+                  \<and> RightNodes (Dpt (enat v) t) = [v] @ snd aa)"
+proof -
+  define t1 where "t1 = spineSub t\<^sub>0 t"
+  \<comment> \<open>the flat hypothesis in cons form\<close>
+  have Hf: "flatBT t\<^sub>0 = s @ Dsym (enat v) # Zsym # b"
+    using assms(5) by simp
+  \<comment> \<open>main structural lemma\<close>
+  have main: "flatBT t1 = s @ Dsym (enat v) # flatBT t @ b \<and> t1 \<in> T_B"
+    unfolding t1_def
+    using rnsub_flat_main Hf assms(3) assms(4) assms(1) by blast
+  have flat1: "flatBT t1 = s @ flatBT (Dpt (enat v) t) @ b"
+    using main by simp
+  have memTB: "t1 \<in> T_B" using main by blast
+  \<comment> \<open>\<open>t\<^sub>0 \<noteq> 0\<close> (its flat contains a \<open>Dsym\<close>)\<close>
+  have t0_ne: "t\<^sub>0 \<noteq> Trm []"
+  proof
+    assume "t\<^sub>0 = Trm []"
+    hence "flatBT t\<^sub>0 = [Zsym]" by simp
+    thus False using assms(5) by (cases s) auto
+  qed
+  \<comment> \<open>RightNodes of the substitution: \<open>RightNodes t\<^sub>0 \<frown> RightNodes t\<close>\<close>
+  have rn1: "RightNodes t1 = RightNodes t\<^sub>0 @ RightNodes t"
+    unfolding t1_def using rnsub_RightNodes_spineSub[OF t0_ne] by blast
+  \<comment> \<open>\<open>RightNodes t\<^sub>0 = a\<^sub>0 @ [v]\<close>: the rightmost-spine bottom is \<open>D\<^sub>v 0\<close>.\<close>
+  obtain p where tp: "t = Trm [p]" using assms(2) by blast
+  \<comment> \<open>Identify the spine bottom of \<open>t\<^sub>0\<close> as \<open>D\<^sub>v 0\<close> by re-running the bottom alignment.\<close>
+  have rn0_last: "\<exists>a0. RightNodes t\<^sub>0 = a0 @ [v]"
+    using rnsub_RightNodes_t0_lastv Hf assms(3) assms(4) by blast
+  then obtain a0 where rn0: "RightNodes t\<^sub>0 = a0 @ [v]" by blast
+  define a1 where "a1 = RightNodes t"
+  have rnDvt: "RightNodes (Dpt (enat v) t) = [v] @ a1"
+    unfolding a1_def by simp
+  have rnt1: "RightNodes t1 = a0 @ [v] @ a1"
+    using rn1 rn0 unfolding a1_def by simp
+  \<comment> \<open>Lng PB preserved: only the last component's argument changes.\<close>
+  have lng: "Lng (PB t1) = Lng (PB t\<^sub>0)"
+    unfolding t1_def using rnsub_Lng_spineSub[OF t0_ne] .
+  \<comment> \<open>the unique pair\<close>
+  have uniq: "\<exists>!aa. RightNodes t1 = fst aa @ [v] @ snd aa
+                  \<and> RightNodes t\<^sub>0 = fst aa @ [v]
+                  \<and> RightNodes (Dpt (enat v) t) = [v] @ snd aa"
+  proof (rule ex1I[of _ "(a0, a1)"])
+    show "RightNodes t1 = fst (a0,a1) @ [v] @ snd (a0,a1)
+        \<and> RightNodes t\<^sub>0 = fst (a0,a1) @ [v]
+        \<and> RightNodes (Dpt (enat v) t) = [v] @ snd (a0,a1)"
+      using rnt1 rn0 rnDvt by simp
+  next
+    fix aa
+    assume "RightNodes t1 = fst aa @ [v] @ snd aa
+          \<and> RightNodes t\<^sub>0 = fst aa @ [v]
+          \<and> RightNodes (Dpt (enat v) t) = [v] @ snd aa"
+    hence f0: "RightNodes t\<^sub>0 = fst aa @ [v]"
+      and fD: "RightNodes (Dpt (enat v) t) = [v] @ snd aa" by auto
+    have "fst aa = a0" using f0 rn0 by simp
+    moreover have "snd aa = a1" using fD rnDvt by simp
+    ultimately show "aa = (a0, a1)" by (cases aa) simp
+  qed
+  show ?thesis
+    using memTB flat1 lng uniq by blast
+qed
+
+
+(* ===== block from workflow t2-key ===== *)
+text \<open>§6.6 keystone (命題 簡約性と係数の関係), \<open>multiT\<close> branch reduction.
+  For a \<open>multiT M\<close>, the keystone iff \<open>M \<in> RT\<^bsub>PS\<^esub> \<longleftrightarrow> RedCondA M \<and> RedCondB M\<close>
+  reduces to the per-block keystone iff on every block of \<open>P M\<close>.  This is the
+  recursive glue of the article's induction on \<open>j\<^sub>1 = Lng M - 1\<close>: when \<open>M\<close> is
+  \<open>multiT\<close> the \<open>Red\<close> recursion descends into the (strictly shorter) blocks
+  \<open>P M ! J\<close>, so the per-block iff is the induction hypothesis.  Proven from the
+  green foundation bricks only — \<open>m_6_6_P_reduced\<close> (reduced \<open>\<longleftrightarrow>\<close> blockwise
+  reduced), \<open>m_6_6_RedCond_P_block\<close> (global \<open>A\<and>B\<close> \<open>\<Longrightarrow>\<close> blockwise \<open>A\<and>B\<close>) and
+  \<open>m_6_6_RedCond_concat_lift\<close> (blockwise \<open>A\<and>B\<close> \<open>\<Longrightarrow>\<close> global \<open>A\<and>B\<close>) — so it cites
+  no unproven \<open>p_*\<close> and no \<open>Red\<close>-output / idempotency machinery.  Empirically the
+  full keystone holds on all of \<open>T\<^bsub>PS\<^esub>\<close> (\<open>python/red_66_audit.py\<close>,
+  \<open>reduced_iff_cond\<close> 7380/0); this lemma discharges its \<open>multiT\<close> case modulo the
+  per-block iter.\<close>
+
+lemma key_reduced_iff_cond_multi:
+  assumes M: "M \<in> T_PS" and multi: "multiT M"
+    and IH: "\<forall>J < Lng (P M).
+               (P M ! J \<in> RT_PS) \<longleftrightarrow> (RedCondA (P M ! J) \<and> RedCondB (P M ! J))"
+  shows "(M \<in> RT_PS) \<longleftrightarrow> (RedCondA M \<and> RedCondB M)"
+proof
+  assume MR: "M \<in> RT_PS"
+  \<comment> \<open>Forward: each block is reduced (\<open>m_6_6_P_reduced\<close>), hence (by the per-block
+     iff) satisfies \<open>A\<and>B\<close>; lift to global \<open>A\<and>B\<close> (\<open>m_6_6_RedCond_concat_lift\<close>).\<close>
+  have blocksRT: "\<forall>J < Lng (P M). P M ! J \<in> RT_PS"
+    using m_6_6_P_reduced[OF M] MR by blast
+  have blocksAB: "\<forall>J < length (P M). RedCondA (P M ! J) \<and> RedCondB (P M ! J)"
+  proof (intro allI impI)
+    fix J assume "J < length (P M)"
+    hence J: "J < Lng (P M)" by simp
+    have "P M ! J \<in> RT_PS" using blocksRT J by blast
+    thus "RedCondA (P M ! J) \<and> RedCondB (P M ! J)" using IH J by blast
+  qed
+  show "RedCondA M \<and> RedCondB M"
+    by (rule m_6_6_RedCond_concat_lift[OF M multi blocksAB])
+next
+  assume AB: "RedCondA M \<and> RedCondB M"
+  hence condA: "RedCondA M" and condB: "RedCondB M" by simp_all
+  \<comment> \<open>Backward: global \<open>A\<and>B\<close> gives blockwise \<open>A\<and>B\<close> (\<open>m_6_6_RedCond_P_block\<close>), hence
+     (by the per-block iff) each block is reduced; lift to \<open>M \<in> RT\<^bsub>PS\<^esub>\<close>
+     (\<open>m_6_6_P_reduced\<close>).\<close>
+  have blocksRT: "\<forall>J < Lng (P M). P M ! J \<in> RT_PS"
+  proof (intro allI impI)
+    fix J assume J: "J < Lng (P M)"
+    hence JL: "J < length (P M)" by simp
+    have "RedCondA (P M ! J) \<and> RedCondB (P M ! J)"
+      by (rule m_6_6_RedCond_P_block[OF M multi condA condB JL])
+    thus "P M ! J \<in> RT_PS" using IH J by blast
+  qed
+  show "M \<in> RT_PS" using m_6_6_P_reduced[OF M] blocksRT by blast
+qed
+
+
+(* ===== block from workflow t2-elead ===== *)
+
+subsection \<open>§6.6 補題（簡約性と左端の関係）— (e) keystone tool\<close>
+
+text \<open>elead helpers for a general diagonal prefix \<open>diagSeq u v @ rest\<close> (starting
+  at \<open>u\<close>, not necessarily \<open>0\<close>).  Length of the prefix is \<open>Suc v - u\<close>; entries on
+  the prefix are \<open>u + i\<close>.\<close>
+
+lemma elead_Lng_diag_append:
+  "Lng (diagSeq u v @ rest) = (Suc v - u) + Lng rest"
+  by simp
+
+lemma elead_entry_diag_append_lo:
+  assumes "i < Suc v - u"
+  shows "entry (diagSeq u v @ rest) p i = u + i"
+proof -
+  have lt: "i < length (diagSeq u v)" using assms by (simp del: upt_Suc)
+  have "(diagSeq u v @ rest) ! i = diagSeq u v ! i" using lt by (simp add: nth_append)
+  also have "\<dots> = (u + i, u + i)" using diagSeq_nth[OF assms] by simp
+  finally show ?thesis by (simp add: entry_def)
+qed
+
+lemma elead_entry_diag_append_hi:
+  assumes "a < Lng rest"
+  shows "entry (diagSeq u v @ rest) p ((Suc v - u) + a) = entry rest p a"
+proof -
+  have lp: "length (diagSeq u v) = Suc v - u" by (simp del: upt_Suc)
+  have "(diagSeq u v @ rest) ! ((Suc v - u) + a) = rest ! a"
+    using lp by (simp add: nth_append)
+  thus ?thesis by (simp add: entry_def)
+qed
+
+text \<open>elead: \<open>monoT N\<close> where \<open>N = diagSeq u (m\<^sub>1\<^sub>0-1) @ M\<close>, for a \<open>monoT M\<close> with
+  \<open>m\<^sub>1\<^sub>0 = entry M 1 0 \<le> entry M 0 0 = m\<^sub>0\<^sub>0\<close> (the reduced row-0/row-1 inequality) and
+  \<open>u \<le> m\<^sub>1\<^sub>0\<close>.  When \<open>u = m\<^sub>1\<^sub>0\<close> the diagonal is empty and \<open>N = M\<close>; otherwise the
+  row-0 spine \<open>u, u+1, \<dots>, m\<^sub>1\<^sub>0-1\<close> then \<open>m\<^sub>0\<^sub>0 \<ge> m\<^sub>1\<^sub>0 > m\<^sub>1\<^sub>0-1 \<ge> u\<close> is strictly
+  increasing, so @{thm [source] le0_build} gives \<open>(0,0) \<le>\<^bsub>N\<^esub> (0, Lng N - 1)\<close>.\<close>
+
+lemma elead_monoT_N:
+  assumes MT: "M \<in> T_PS" and mono: "monoT M"
+    and rle: "entry M 1 0 \<le> entry M 0 0"
+    and ule: "u \<le> entry M 1 0"
+  shows "monoT ((if u < entry M 1 0 then diagSeq u (entry M 1 0 - 1) else []) @ M)"
+proof (cases "u < entry M 1 0")
+  case False
+  \<comment> \<open>\<open>u = m\<^sub>1\<^sub>0\<close> (article: empty diagonal), so \<open>N = M\<close>.\<close>
+  thus ?thesis using mono by simp
+next
+  case True
+  hence truepref: "(if u < entry M 1 0 then diagSeq u (entry M 1 0 - 1) else [])
+                    = diagSeq u (entry M 1 0 - 1)" by simp
+  have main: "monoT (diagSeq u (entry M 1 0 - 1) @ M)"
+  proof -
+  let ?m10 = "entry M 1 0"
+  let ?m00 = "entry M 0 0"
+  let ?v = "?m10 - 1"
+  let ?N = "diagSeq u ?v @ M"
+  have upos: "u < ?m10" using True by simp
+  have m10pos: "0 < ?m10" using upos by simp
+  have Mne: "M \<noteq> []" using MT by (simp add: T_PS_def)
+  have lenM: "0 < Lng M" using Mne by (cases M) auto
+  have plen: "Suc ?v - u = ?m10 - u" using m10pos by simp
+  have plenpos: "0 < Suc ?v - u" using upos m10pos by simp
+  have lenN: "Lng ?N = (Suc ?v - u) + Lng M" by simp
+  have NTPS: "?N \<in> T_PS" using Mne by (simp add: T_PS_def)
+  have e00: "entry ?N 0 0 = u"
+    using elead_entry_diag_append_lo[where i=0 and u=u and v="?v" and rest=M and p=0] plenpos
+    by simp
+  have m00gt: "u < ?m00" using upos rle by simp
+  have key: "\<And>j. 0 < j \<Longrightarrow> j \<le> Lng ?N - 1 \<Longrightarrow> u < entry ?N 0 j"
+  proof -
+    fix j assume j0: "0 < j" and jle: "j \<le> Lng ?N - 1"
+    show "u < entry ?N 0 j"
+    proof (cases "j < Suc ?v - u")
+      case True
+      have "entry ?N 0 j = u + j" by (rule elead_entry_diag_append_lo[OF True])
+      thus ?thesis using j0 by simp
+    next
+      case False
+      hence kj: "Suc ?v - u \<le> j" by simp
+      let ?a = "j - (Suc ?v - u)"
+      have ja: "j = (Suc ?v - u) + ?a" using kj by simp
+      have aL: "?a < Lng M" using jle lenN kj lenM by linarith
+      have "entry ?N 0 j = entry M 0 ?a"
+        using ja elead_entry_diag_append_hi[OF aL, where u=u and v="?v" and p=0] by simp
+      moreover have "?m00 \<le> entry M 0 ?a" using entry0_ge_min[OF MT mono aL] .
+      ultimately show ?thesis using m00gt by simp
+    qed
+  qed
+  have j1lt: "Lng ?N - 1 < Lng ?N" using lenN lenM plenpos by linarith
+  have j0lt: "(0::nat) < Lng ?N - 1" using lenN lenM plenpos by linarith
+  have NPos: "0 < Lng ?N" using lenN lenM plenpos by linarith
+  have rt: "(nextrel0 ?N)\<^sup>*\<^sup>* 0 (Lng ?N - 1)"
+  proof (rule le0_build[OF NTPS j1lt j0lt])
+    show "\<forall>j. 0 < j \<and> j \<le> Lng ?N - 1 \<longrightarrow> entry ?N 0 0 < entry ?N 0 j"
+      using key e00 by simp
+  qed
+  have "le0 ?N 0 (Lng ?N - 1)" unfolding le0_def using NPos j1lt rt by blast
+  hence leRN: "leR ?N 0 0 (Lng ?N - 1)" by (simp add: leR_def)
+  have Lge2: "2 \<le> Lng ?N" using lenN lenM plenpos by linarith
+  have "\<not> zeroT ?N" using Lge2 by (simp add: zeroT_def)
+  with leRN show "monoT ?N" by (simp add: monoT_def)
+  qed
+  show ?thesis unfolding truepref by (rule main)
+qed
+
+
+(* ===== block from workflow t2-scbuniq ===== *)
+
+subsection \<open>§7.2 scb分解の一意性 (1) — the \<open>(s,b)\<close>-part is unique for fixed \<open>c\<close>\<close>
+
+text \<open>
+  Discharges the first conjunct of @{thm [source] p_7_2_scb_unique}: if both
+  \<open>(s\<^sub>0, c, b\<^sub>0)\<close> and \<open>(s\<^sub>1, c, b\<^sub>1)\<close> are scb-decompositions of the same \<open>t\<close>
+  (i.e. \<open>flat t = s\<^sub>i \<frown> c \<frown> b\<^sub>i\<close> with \<open>b\<^sub>i\<close> all \<open>\<^bold>)\<close> and \<open>c\<close> a principal string),
+  then \<open>s\<^sub>0 = s\<^sub>1\<close> and \<open>b\<^sub>0 = b\<^sub>1\<close>.
+
+  Article argument (content.md 1872): "(1) は \<open>c\<close> が単項であり単項は \<open>\<^bold>)\<close> 以外の
+  文字を含むことから即座に従う" — \<open>c\<close> is a principal term string, which contains a
+  letter other than \<open>\<^bold>)\<close>, while \<open>b\<^sub>0, b\<^sub>1\<close> consist only of \<open>\<^bold>)\<close>.
+
+  Mechanization.  Measure the length of the maximal trailing run of \<open>RP\<close> via
+  \<open>trailRP xs = length (takeWhile ((=) RP) (rev xs))\<close>.  Appending an all-\<open>RP\<close>
+  block \<open>b\<close> adds exactly \<open>length b\<close> to it, and — because \<open>c\<close> contains a non-\<open>RP\<close>
+  letter — \<open>trailRP (s \<frown> c)\<close> does not depend on \<open>s\<close> (it equals \<open>trailRP c\<close>).
+  Hence \<open>trailRP (flat t) = length b\<^sub>i + trailRP c\<close> for both \<open>i\<close>, forcing
+  \<open>length b\<^sub>0 = length b\<^sub>1\<close>; both being all-\<open>RP\<close> of equal length gives \<open>b\<^sub>0 = b\<^sub>1\<close>,
+  and a total-length count then gives \<open>s\<^sub>0 = s\<^sub>1\<close>.
+\<close>
+
+definition trailRP :: "Sym list \<Rightarrow> nat" where
+  "trailRP xs = length (takeWhile ((=) RP) (rev xs))"
+
+\<comment> \<open>A principal-term string starts with a \<open>Dsym\<close>, hence contains a non-\<open>RP\<close> letter.\<close>
+lemma scbuniq_isPTB_has_nonRP:
+  assumes "isPTB_str c"
+  shows "\<exists>x \<in> set c. x \<noteq> RP"
+proof -
+  from assms obtain p where p: "c = flatBP p" unfolding isPTB_str_def by blast
+  obtain u a where "p = DB u a" by (cases p)
+  hence "c = Dsym u # flatBT a" using p by simp
+  thus ?thesis by auto
+qed
+
+\<comment> \<open>Appending an all-\<open>RP\<close> block adds exactly its length to the trailing-\<open>RP\<close> run.\<close>
+lemma scbuniq_trailRP_append_RP:
+  assumes "\<forall>x \<in> set b. x = RP"
+  shows "trailRP (xs @ b) = length b + trailRP xs"
+proof -
+  have allP: "\<forall>y \<in> set (rev b). ((=) RP) y" using assms by auto
+  have "trailRP (xs @ b) = length (takeWhile ((=) RP) (rev b @ rev xs))"
+    by (simp add: trailRP_def)
+  also have "takeWhile ((=) RP) (rev b @ rev xs) = rev b @ takeWhile ((=) RP) (rev xs)"
+    using allP by (simp add: takeWhile_append)
+  finally show ?thesis by (simp add: trailRP_def)
+qed
+
+\<comment> \<open>If \<open>c\<close> contains a non-\<open>RP\<close> letter, prefixing \<open>s\<close> does not change \<open>trailRP\<close>.\<close>
+lemma scbuniq_trailRP_prefix_indep:
+  assumes "\<exists>x \<in> set c. x \<noteq> RP"
+  shows "trailRP (s @ c) = trailRP c"
+proof -
+  from assms obtain x where x: "x \<in> set (rev c)" "\<not> ((=) RP) x" by auto
+  have "trailRP (s @ c) = length (takeWhile ((=) RP) (rev c @ rev s))"
+    by (simp add: trailRP_def)
+  also have "takeWhile ((=) RP) (rev c @ rev s) = takeWhile ((=) RP) (rev c)"
+    by (rule takeWhile_append1[where P="(=) RP" and xs="rev c" and ys="rev s", OF x(1) x(2)])
+  finally show ?thesis by (simp add: trailRP_def)
+qed
+
+\<comment> \<open>Two all-\<open>RP\<close> lists of equal length are equal.\<close>
+lemma scbuniq_all_RP_eq:
+  assumes "\<forall>x \<in> set b\<^sub>0. x = RP" "\<forall>x \<in> set b\<^sub>1. x = RP" "length b\<^sub>0 = length b\<^sub>1"
+  shows "b\<^sub>0 = b\<^sub>1"
+proof -
+  have "b\<^sub>0 = replicate (length b\<^sub>0) RP" by (metis assms(1) replicate_eqI)
+  moreover have "b\<^sub>1 = replicate (length b\<^sub>1) RP" by (metis assms(2) replicate_eqI)
+  ultimately show ?thesis using assms(3) by simp
+qed
+
+text \<open>命題（scb分解の一意性）(1) (§7.2): the \<open>(s,b)\<close>-part of an scb-decomposition
+  with a fixed principal \<open>c\<close> is unique.\<close>
+
+lemma m_7_2_scb_unique_sb:
+  assumes d0: "scb_decomp t s\<^sub>0 c b\<^sub>0"
+      and d1: "scb_decomp t s\<^sub>1 c b\<^sub>1"
+      and tne: "t \<noteq> Trm []"
+  shows "s\<^sub>0 = s\<^sub>1 \<and> b\<^sub>0 = b\<^sub>1"
+proof -
+  \<comment> \<open>Unfold the two scb-decompositions.\<close>
+  from d0 have e0: "flatBT t = s\<^sub>0 @ c @ b\<^sub>0"
+    and pc0: "isPTB_str c" and rb0: "\<forall>x \<in> set b\<^sub>0. x = RP"
+    using tne by (auto simp: scb_decomp_def)
+  from d1 have e1: "flatBT t = s\<^sub>1 @ c @ b\<^sub>1"
+    and rb1: "\<forall>x \<in> set b\<^sub>1. x = RP"
+    using tne by (auto simp: scb_decomp_def)
+  \<comment> \<open>\<open>c\<close> contains a non-\<open>RP\<close> letter.\<close>
+  have cne: "\<exists>x \<in> set c. x \<noteq> RP" by (rule scbuniq_isPTB_has_nonRP[OF pc0])
+  \<comment> \<open>Trailing-\<open>RP\<close> count of \<open>flat t\<close> computed two ways.\<close>
+  have t0: "trailRP (flatBT t) = length b\<^sub>0 + trailRP c"
+    by (simp only: e0 append_assoc[symmetric]
+                   scbuniq_trailRP_append_RP[OF rb0]
+                   scbuniq_trailRP_prefix_indep[OF cne])
+  have t1: "trailRP (flatBT t) = length b\<^sub>1 + trailRP c"
+    by (simp only: e1 append_assoc[symmetric]
+                   scbuniq_trailRP_append_RP[OF rb1]
+                   scbuniq_trailRP_prefix_indep[OF cne])
+  have lenb: "length b\<^sub>0 = length b\<^sub>1" using t0 t1 by simp
+  \<comment> \<open>Equal-length all-\<open>RP\<close> blocks coincide.\<close>
+  have beq: "b\<^sub>0 = b\<^sub>1" by (rule scbuniq_all_RP_eq[OF rb0 rb1 lenb])
+  \<comment> \<open>Total length then pins down \<open>s\<close>.\<close>
+  have eqstr: "s\<^sub>0 @ c @ b\<^sub>0 = s\<^sub>1 @ c @ b\<^sub>1" using e0 e1 by simp
+  have lentot: "length s\<^sub>0 + (length c + length b\<^sub>0) = length s\<^sub>1 + (length c + length b\<^sub>1)"
+    using arg_cong[OF eqstr, of length] by simp
+  hence lens: "length s\<^sub>0 = length s\<^sub>1" using lenb by simp
+  have "s\<^sub>0 @ (c @ b\<^sub>0) = s\<^sub>1 @ (c @ b\<^sub>1)" using eqstr by simp
+  hence "s\<^sub>0 = s\<^sub>1" using lens by (simp add: append_eq_append_conv)
+  thus ?thesis using beq by blast
+qed
+
+
+(* ===== block from workflow t2-scbtriv ===== *)
+section \<open>§7.2 scb分解の自明性の判定条件 (p_7_2_scb_triviality)\<close>
+
+text \<open>
+  The article proves the three-way equivalence "at the string level": it
+  identifies a term with its \<open>\<Sigma>\<close>-string \<open>flat\<close>, so "\<open>t = scb = c\<close>" is read as
+  string equality.  At the \<^typ>\<open>BT\<close> level the missing ingredient is that
+  \<^const>\<open>flatBT\<close> is injective (this is exactly what the §7.3 \<^const>\<open>unflatBT\<close>,
+  defined by \<open>THE\<close>, presupposes).  We prove that injectivity here from the
+  grammar, by the standard "unique readability of a balanced-bracket comma
+  language" argument, then read off the three equivalences faithfully.
+
+  Bracket depth: \<open>(\<close> counts \<open>+1\<close>, \<open>)\<close> counts \<open>-1\<close>, everything else \<open>0\<close>.
+\<close>
+
+definition scbtriv_dlt :: "Sym \<Rightarrow> int" where
+  "scbtriv_dlt x = (if x = LP then 1 else if x = RP then -1 else 0)"
+
+definition scbtriv_depth :: "Sym list \<Rightarrow> int" where
+  "scbtriv_depth xs = sum_list (map scbtriv_dlt xs)"
+
+lemma scbtriv_depth_append [simp]:
+  "scbtriv_depth (xs @ ys) = scbtriv_depth xs + scbtriv_depth ys"
+  by (simp add: scbtriv_depth_def)
+
+lemma scbtriv_depth_Nil [simp]: "scbtriv_depth [] = 0"
+  by (simp add: scbtriv_depth_def)
+
+lemma scbtriv_depth_Cons [simp]:
+  "scbtriv_depth (x # xs) = scbtriv_dlt x + scbtriv_depth xs"
+  by (simp add: scbtriv_depth_def)
+
+lemma scbtriv_dlt_simps [simp]:
+  "scbtriv_dlt LP = 1" "scbtriv_dlt RP = -1"
+  "scbtriv_dlt CM = 0" "scbtriv_dlt Zsym = 0" "scbtriv_dlt (Dsym u) = 0"
+  by (simp_all add: scbtriv_dlt_def)
+
+lemma scbtriv_depth_concat_CM:
+  "scbtriv_depth (concat (map (\<lambda>r. CM # flatBP r) rs))
+     = sum_list (map (\<lambda>r. scbtriv_depth (flatBP r)) rs)"
+  by (induct rs) simp_all
+
+lemma scbtriv_sum_list_zero:
+  "(\<forall>x \<in> set xs. f x = (0::int)) \<Longrightarrow> sum_list (map f xs) = 0"
+  by (induct xs) simp_all
+
+text \<open>\<open>flat\<close>-strings are nonempty.\<close>
+
+lemma scbtriv_flat_nonempty:
+  "flatBT t \<noteq> []" "flatBP p \<noteq> []"
+  by (induct t and p rule: flatBT_flatBP.induct) auto
+
+text \<open>\<open>flat\<close>-strings are balanced: total depth \<open>0\<close>.\<close>
+
+lemma scbtriv_depth_flat:
+  "scbtriv_depth (flatBT t) = 0" "scbtriv_depth (flatBP p) = 0"
+proof (induct t and p rule: flatBT_flatBP.induct)
+  case 1 show ?case by simp
+next
+  case (2 p) thus ?case by simp
+next
+  case (3 p q ps)
+  \<comment> \<open>IH 3(2): every segment \<open>r \<in> set (q#ps)\<close> has balanced \<open>flatBP r\<close>\<close>
+  have seg0: "\<forall>r \<in> set (q # ps). scbtriv_depth (flatBP r) = 0"
+    using 3(2) by auto
+  have allz: "(\<Sum>r\<leftarrow>(q # ps). scbtriv_depth (flatBP r)) = 0"
+    by (rule scbtriv_sum_list_zero) (rule seg0)
+  have "scbtriv_depth (concat (map (\<lambda>r. CM # flatBP r) (q # ps))) = 0"
+    by (simp only: scbtriv_depth_concat_CM allz)
+  thus ?case using 3(1) by simp
+next
+  case (4 u a) thus ?case by simp
+qed
+
+text \<open>
+  The forward (1\<Rightarrow>2) and (1\<Rightarrow>3) directions of the triviality equivalence — the
+  ones that do NOT need \<^const>\<open>flatBT\<close> injectivity — packaged as reusable facts.
+  (1\<Rightarrow>2): if \<open>t = c\<close> then any decomposition has empty \<open>s\<close>,\<open>b\<close> by a length count.
+\<close>
+
+lemma scbtriv_eq_imp_trivial_decomp:
+  assumes "t = c" and "scb_decomp t s (flatBT c) b"
+  shows "s = [] \<and> b = []"
+proof -
+  from assms have eq: "flatBT c = s @ flatBT c @ b"
+    unfolding scb_decomp_def by simp
+  have "length (flatBT c) = length s + (length (flatBT c) + length b)"
+    using eq by (metis length_append)
+  hence "length s = 0 \<and> length b = 0" by linarith
+  thus ?thesis by simp
+qed
+
 end
