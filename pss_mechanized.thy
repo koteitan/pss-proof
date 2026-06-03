@@ -38609,4 +38609,485 @@ proof -
 qed
 
 
+
+section \<open>§6.6 KEYSTONE chain — (e) 補題（簡約性と左端の関係） and the keystone iff\<close>
+
+text \<open>Helper (b-flavour): in a reduced mono sequence the row-0 left end dominates
+  the row-1 left end, \<open>entry M 1 0 \<le> entry M 0 0\<close>.  Empirically 55/0 on reduced
+  mono sequences (and \<open>Red\<close>-output always satisfies it, 4368/0).
+
+  Proof.  Unfold \<open>Red M = M\<close> once (\<open>M\<close> mono so neither zero nor multi):
+  \<^item> core (\<open>m\<^sub>0\<^sub>0 = m\<^sub>1\<^sub>0 = 0\<close>): \<open>m\<^sub>1\<^sub>0 = 0 \<le> m\<^sub>0\<^sub>0\<close>.
+  \<^item> shift (\<open>m\<^sub>1\<^sub>0 = 0\<close>, \<open>m\<^sub>0\<^sub>0 > 0\<close>): \<open>m\<^sub>1\<^sub>0 = 0 \<le> m\<^sub>0\<^sub>0\<close>.
+  \<^item> \<open>m\<^sub>1\<^sub>0 > 0\<close>: the dead branch \<^bold>\<open>[20]\<close> is excluded by
+    @{thm [source] m_6_5_monoT_Red_m10pos} (the productive guard holds), so
+    \<open>Red M\<close> is the rebase \<open>map (\<lambda>j. (N\<^bsub>0,j\<^esub> - N\<^bsub>0,m\<^sub>1\<^sub>0\<^esub> + N\<^bsub>1,m\<^sub>1\<^sub>0\<^esub>, N\<^bsub>1,j\<^esub>)) [m\<^sub>1\<^sub>0..]\<close>;
+    its position-0 row-0 value is \<open>N\<^bsub>0,m\<^sub>1\<^sub>0\<^esub> - N\<^bsub>0,m\<^sub>1\<^sub>0\<^esub> + N\<^bsub>1,m\<^sub>1\<^sub>0\<^esub> = N\<^bsub>1,m\<^sub>1\<^sub>0\<^esub>\<close> and its
+    position-0 row-1 value is also \<open>N\<^bsub>1,m\<^sub>1\<^sub>0\<^esub>\<close>, so they are equal.\<close>
+
+lemma kst_reduced_row1_le_row0:
+  assumes M: "M \<in> RT_PS" and mono: "monoT M"
+  shows "entry M 1 0 \<le> entry M 0 0"
+proof -
+  have MT: "M \<in> T_PS" using M by (simp add: RT_PS_def)
+  have redM: "Red M = M" using M by (simp add: RT_PS_def)
+  have Mne: "M \<noteq> []" using MT by (simp add: T_PS_def)
+  have LMpos: "0 < Lng M" using Mne by (cases M) auto
+  have nz: "\<not> zeroT M" using mono by (simp add: monoT_def)
+  have nmu: "\<not> multiT M" using mono by (simp add: multiT_def)
+  have dom: "Red_dom M" by (rule m_6_5_Red_welldef[OF MT])
+  let ?j1  = "Lng M - 1"
+  let ?j1' = "TrMax M"
+  let ?m00 = "entry M 0 0"
+  let ?m10 = "entry M 1 0"
+  show "?m10 \<le> ?m00"
+  proof (cases "?m00 = 0 \<and> ?m10 = 0")
+    case True
+    thus ?thesis by simp
+  next
+    case nc: False
+    show ?thesis
+    proof (cases "?m10 = 0")
+      case True
+      thus ?thesis by simp
+    next
+      case False
+      hence c1p: "0 < ?m10" by simp
+      have MPT: "M \<in> PT_PS" using MT mono by (simp add: PT_PS_def)
+      let ?arg = "diagSeq 0 (?m10 - 1) @ (IncrFirst ^^ ?m10) M"
+      have funpow_ne: "(IncrFirst ^^ ?m10) M \<noteq> []"
+        using Mne by (metis Lng_funpow_IncrFirst length_0_conv)
+      have arg_T: "?arg \<in> T_PS" using funpow_ne by (simp add: T_PS_def)
+      let ?N = "Red ?arg"
+      let ?jN = "Lng ?N - 1"
+      have rM: "Red M = (let N = ?N; jN = ?jN in
+                 if ?m10 \<le> jN \<and> seg N ?m10 jN \<in> PT_PS then
+                   map (\<lambda>j. (entry N 0 j - entry N 0 ?m10 + entry N 1 ?m10,
+                             entry N 1 j))
+                       [?m10..<Suc jN]
+                 else M)"
+        using Red.psimps[OF dom] nz nmu nc c1p by (simp add: Let_def)
+      \<comment> \<open>the dead branch [20] is excluded: the productive guard holds.\<close>
+      have segPT: "seg ?N ?m10 ?jN \<in> PT_PS"
+        using m_6_5_monoT_Red_m10pos[OF MPT c1p] by simp
+      have segne: "seg ?N ?m10 ?jN \<noteq> []"
+        using segPT by (simp add: PT_PS_def T_PS_def)
+      have m10_le: "?m10 \<le> ?jN"
+      proof -
+        have "0 < Lng (seg ?N ?m10 ?jN)"
+          using segne by (cases "seg ?N ?m10 ?jN") auto
+        hence "0 < Suc ?jN - ?m10" by (simp only: Lng_seg)
+        thus ?thesis by simp
+      qed
+      have then_case: "?m10 \<le> ?jN \<and> seg ?N ?m10 ?jN \<in> PT_PS"
+        using m10_le segPT by simp
+      have rM': "Red M = map (\<lambda>j. (entry ?N 0 j - entry ?N 0 ?m10
+                                    + entry ?N 1 ?m10, entry ?N 1 j))
+                             [?m10..<Suc ?jN]"
+        using rM then_case by (simp add: Let_def del: upt_Suc)
+      have len0: "0 < length [?m10..<Suc ?jN]" using m10_le by (simp del: upt_Suc)
+      have idx0: "[?m10..<Suc ?jN] ! 0 = ?m10"
+        using m10_le by (simp add: nth_upt del: upt_Suc)
+      have nth0: "(Red M) ! 0 = (\<lambda>j. (entry ?N 0 j - entry ?N 0 ?m10
+                                        + entry ?N 1 ?m10, entry ?N 1 j)) ?m10"
+        using rM' len0 idx0 by (simp add: nth_map del: upt_Suc)
+      have e_rM0: "entry (Red M) 0 0 = entry ?N 1 ?m10"
+        using nth0 unfolding entry_def by simp
+      have e_rM1: "entry (Red M) 1 0 = entry ?N 1 ?m10"
+        using nth0 unfolding entry_def by simp
+      have "?m10 = entry (Red M) 1 0" using redM by simp
+      also have "\<dots> = entry ?N 1 ?m10" using e_rM1 .
+      also have "\<dots> = entry (Red M) 0 0" using e_rM0 by simp
+      also have "\<dots> = ?m00" using redM by simp
+      finally show ?thesis by simp
+    qed
+  qed
+qed
+
+text \<open>(e) 補題（簡約性と左端の関係） — discharges \<open>p_6_6_reduced_leftend\<close>.
+  Prepending a leading diagonal \<open>diagSeq u (m\<^sub>1\<^sub>0-1)\<close> (guarded: empty when
+  \<open>u = m\<^sub>1\<^sub>0\<close>) to a reduced mono \<open>M\<close> keeps it reduced and mono.
+
+  The literal article form \<open>diagSeq u (entry M 1 0 - 1) @ M\<close> degenerates to a
+  spurious singleton at \<open>u = entry M 1 0\<close> with \<open>m\<^sub>1\<^sub>0 = 0\<close> (nat subtraction); the
+  guarded form below is the correct/usable one and matches the green mono-half
+  @{thm [source] elead_monoT_N}.
+
+  Reduced half via @{thm [source] m_6_6_Red_diag_prefix}
+  (\<open>Red(diagSeq 0 (m\<^sub>1\<^sub>0-1) @ M') = diagSeq 0 (m\<^sub>1\<^sub>0-1) @ Red M'\<close> for mono \<open>M'\<close> with
+  \<open>0 < m\<^sub>1\<^sub>0 \<le> m\<^sub>0\<^sub>0\<close>), @{thm [source] ecrux_diagSeq_split} and
+  \<open>Red M = M\<close>.  Mono half via @{thm [source] elead_monoT_N}.\<close>
+
+lemma m_6_6_reduced_leftend:
+  assumes M: "M \<in> RT_PS" "M \<in> PT_PS" and ule: "u \<le> entry M 1 0"
+  defines "N \<equiv> (if u < entry M 1 0 then diagSeq u (entry M 1 0 - 1) else []) @ M"
+  shows "Red N = N \<and> monoT N"
+proof -
+  let ?m10 = "entry M 1 0"
+  let ?m00 = "entry M 0 0"
+  let ?k = "?m10 - 1"
+  have MT: "M \<in> T_PS" using M by (simp add: RT_PS_def)
+  have mono: "monoT M" using M by (simp add: PT_PS_def)
+  have redM: "Red M = M" using M by (simp add: RT_PS_def)
+  have dom: "?m10 \<le> ?m00" by (rule kst_reduced_row1_le_row0[OF M(1) mono])
+  \<comment> \<open>Mono half (green brick @{thm [source] elead_monoT_N}).\<close>
+  have monoN: "monoT N"
+    unfolding N_def by (rule elead_monoT_N[OF MT mono dom ule])
+  \<comment> \<open>Reduced half.\<close>
+  have redN: "Red N = N"
+  proof (cases "0 < ?m10")
+    case False
+    \<comment> \<open>\<open>m\<^sub>1\<^sub>0 = 0\<close>: then \<open>u \<le> 0\<close> so \<open>\<not> (u < m\<^sub>1\<^sub>0)\<close>, the guard makes \<open>N = M\<close>.\<close>
+    hence m10z: "?m10 = 0" by simp
+    hence "\<not> (u < ?m10)" using ule by simp
+    hence NM: "N = M" unfolding N_def by simp
+    show ?thesis using NM redM by simp
+  next
+    case True
+    hence m10pos: "0 < ?m10" .
+    \<comment> \<open>Auxiliary diagonal/CRUX facts shared by the two subcases.\<close>
+    have AeqRedA: "Red (diagSeq 0 ?k @ M) = diagSeq 0 ?k @ M"
+    proof -
+      have "Red (diagSeq 0 ?k @ M) = diagSeq 0 ?k @ Red M"
+        by (rule m_6_6_Red_diag_prefix[OF mono m10pos dom])
+      thus ?thesis using redM by simp
+    qed
+    show ?thesis
+    proof (cases "u < ?m10")
+      case False
+      \<comment> \<open>\<open>u = m\<^sub>1\<^sub>0\<close>: guard makes \<open>N = M\<close>.\<close>
+      hence NM: "N = M" unfolding N_def by simp
+      show ?thesis using NM redM by simp
+    next
+      case True
+      hence upos_lt: "u < ?m10" .
+      have NeqU: "N = diagSeq u ?k @ M" unfolding N_def using upos_lt by simp
+      show ?thesis
+      proof (cases "u = 0")
+        case True
+        \<comment> \<open>\<open>u = 0\<close>: \<open>N = diagSeq 0 (m\<^sub>1\<^sub>0-1) @ M\<close>; CRUX directly.\<close>
+        have "N = diagSeq 0 ?k @ M" using NeqU True by simp
+        thus ?thesis using AeqRedA by simp
+      next
+        case False
+        hence upos: "0 < u" by simp
+        \<comment> \<open>\<open>u > 0\<close>: prepend \<open>diagSeq 0 (u-1)\<close>; \<open>diagSeq 0 (u-1) @ N = diagSeq 0 (m\<^sub>1\<^sub>0-1) @ M = A\<close>.\<close>
+        let ?A = "diagSeq 0 ?k @ M"
+        have split: "diagSeq 0 (u - 1) @ diagSeq u ?k = diagSeq 0 ?k"
+        proof -
+          have alm: "(0::nat) \<le> u - 1" by simp
+          have mb: "u - 1 < ?k" using upos upos_lt m10pos by simp
+          have su: "Suc (u - 1) = u" using upos by simp
+          have "diagSeq 0 (u - 1) @ diagSeq (Suc (u - 1)) ?k = diagSeq 0 ?k"
+            by (rule ecrux_diagSeq_split[OF alm mb])
+          thus ?thesis using su by simp
+        qed
+        have preNeqA: "diagSeq 0 (u - 1) @ N = ?A"
+        proof -
+          have "diagSeq 0 (u - 1) @ N = diagSeq 0 (u - 1) @ (diagSeq u ?k @ M)"
+            using NeqU by simp
+          also have "\<dots> = (diagSeq 0 (u - 1) @ diagSeq u ?k) @ M" by simp
+          also have "\<dots> = diagSeq 0 ?k @ M" using split by simp
+          finally show ?thesis .
+        qed
+        \<comment> \<open>\<open>N\<close> is mono with \<open>entry N 1 0 = u > 0\<close> and \<open>entry N 1 0 \<le> entry N 0 0\<close>; CRUX on \<open>N\<close>.\<close>
+        have Nne: "N \<noteq> []"
+        proof -
+          have "M \<noteq> []" using MT by (simp add: T_PS_def)
+          thus ?thesis using NeqU by simp
+        qed
+        have NT: "N \<in> T_PS" using Nne by (simp add: T_PS_def)
+        have eN10: "entry N 1 0 = u"
+        proof -
+          have lt: "0 < Suc ?k - u" using upos_lt by simp
+          have "entry (diagSeq u ?k @ M) 1 0 = u + 0"
+            by (rule elead_entry_diag_append_lo[OF lt])
+          thus ?thesis using NeqU by simp
+        qed
+        have eN00: "entry N 0 0 = u"
+        proof -
+          have lt: "0 < Suc ?k - u" using upos_lt by simp
+          have "entry (diagSeq u ?k @ M) 0 0 = u + 0"
+            by (rule elead_entry_diag_append_lo[OF lt])
+          thus ?thesis using NeqU by simp
+        qed
+        have N10pos: "0 < entry N 1 0" using eN10 upos by simp
+        have N_dom: "entry N 1 0 \<le> entry N 0 0" using eN10 eN00 by simp
+        \<comment> \<open>CRUX on \<open>N\<close>: \<open>Red(diagSeq 0 (u-1) @ N) = diagSeq 0 (u-1) @ Red N\<close>.\<close>
+        have cruxN: "Red (diagSeq 0 (entry N 1 0 - 1) @ N)
+                       = diagSeq 0 (entry N 1 0 - 1) @ Red N"
+          by (rule m_6_6_Red_diag_prefix[OF monoN N10pos N_dom])
+        have crux: "Red (diagSeq 0 (u - 1) @ N) = diagSeq 0 (u - 1) @ Red N"
+          using cruxN eN10 by simp
+        \<comment> \<open>LHS = Red A = A = diagSeq 0 (u-1) @ N.\<close>
+        have lhs: "Red (diagSeq 0 (u - 1) @ N) = diagSeq 0 (u - 1) @ N"
+          using preNeqA AeqRedA by simp
+        \<comment> \<open>cancel the common prefix \<open>diagSeq 0 (u-1)\<close>.\<close>
+        have "diagSeq 0 (u - 1) @ Red N = diagSeq 0 (u - 1) @ N"
+          using crux lhs by simp
+        thus ?thesis by simp
+      qed
+    qed
+  qed
+  show ?thesis using redN monoN by simp
+qed
+
+
+text \<open>STEP 2 (keystone) — partial: the \<open>zeroT\<close> base case of
+  \<open>p_6_6_reduced_iff_cond\<close>.  For a \<open>zeroT\<close> \<open>M\<close> (so \<open>Lng M = 1\<close>, \<open>M\<^bsub>1,0\<^esub> = 0\<close>,
+  \<open>M = [(m\<^sub>0\<^sub>0, 0)]\<close>):
+  \<^item> No node has a parent (\<open>nextR\<close> needs two distinct columns but \<open>Lng M = 1\<close>), so
+    \<open>RedCondA M\<close> is vacuously true and \<open>RedCondB M \<longleftrightarrow> m\<^sub>0\<^sub>0 = m\<^sub>1\<^sub>0 = 0\<close>.
+  \<^item> \<open>Red M = [(0,0)]\<close> (zeroT branch), so \<open>M \<in> RT\<^bsub>PS\<^esub> \<longleftrightarrow> M = [(0,0)] \<longleftrightarrow> m\<^sub>0\<^sub>0 = 0\<close>.
+  Both sides reduce to \<open>entry M 0 0 = 0\<close>.  This is one WLOG base case of the
+  article's \<open>j\<^sub>1\<close>-induction (the others — \<open>multiT\<close> via
+  @{thm [source] key_reduced_iff_cond_multi}, and the \<open>monoT\<close> \<open>j\<^sub>1\<close>-induction —
+  remain).\<close>
+
+lemma kst_no_parent_Lng1:
+  assumes L1: "Lng M = 1"
+  shows "\<not> hasParent M i j1"
+proof -
+  have noex: "\<not> (\<exists>j0. nextR M i j0 j1)"
+  proof
+    assume "\<exists>j0. nextR M i j0 j1"
+    then obtain j0 where nx: "nextR M i j0 j1" by blast
+    have "j0 < j1 \<and> j1 < Lng M"
+    proof (cases "i = 0")
+      case True
+      thus ?thesis using nx by (simp add: nextR_def nextrel0_def)
+    next
+      case False
+      thus ?thesis using nx by (simp add: nextR_def nextrel1_def)
+    qed
+    thus False using L1 by auto
+  qed
+  show ?thesis unfolding hasParent_def using noex by blast
+qed
+
+lemma kst_reduced_iff_cond_zeroT:
+  assumes MT: "M \<in> T_PS" and z: "zeroT M"
+  shows "(M \<in> RT_PS) \<longleftrightarrow> RedCondA M \<and> RedCondB M"
+proof -
+  have L1: "Lng M = 1" using z by (simp add: zeroT_def)
+  have m10z: "entry M 1 0 = 0" using z by (simp add: zeroT_def)
+  \<comment> \<open>\<open>M = [(m\<^sub>0\<^sub>0, 0)]\<close>.\<close>
+  obtain p where Mp: "M = [p]" using L1 by (cases M) auto
+  have Mpair: "M = [(entry M 0 0, entry M 1 0)]"
+    using Mp by (cases p) (simp add: entry_def)
+  \<comment> \<open>No parents (\<open>Lng M = 1\<close>): \<open>RedCondA\<close> vacuous, \<open>RedCondB \<longleftrightarrow> m\<^sub>0\<^sub>0 = m\<^sub>1\<^sub>0\<close>.\<close>
+  have noP: "\<And>i j1. \<not> hasParent M i j1" by (rule kst_no_parent_Lng1[OF L1])
+  have condA: "RedCondA M" using noP by (simp add: RedCondA_def)
+  have condB_iff: "RedCondB M \<longleftrightarrow> entry M 0 0 = entry M 1 0"
+  proof
+    assume "RedCondB M"
+    thus "entry M 0 0 = entry M 1 0"
+      using noP L1 by (simp add: RedCondB_def)
+  next
+    assume eq: "entry M 0 0 = entry M 1 0"
+    show "RedCondB M" unfolding RedCondB_def
+    proof (intro allI impI)
+      fix j1' assume "\<not> hasParent M 0 j1' \<and> j1' \<le> Lng M - 1"
+      hence "j1' = 0" using L1 by simp
+      thus "entry M 0 j1' = entry M 1 j1'" using eq by simp
+    qed
+  qed
+  \<comment> \<open>\<open>Red M = [(0,0)]\<close>; \<open>M \<in> RT\<^bsub>PS\<^esub> \<longleftrightarrow> M = [(0,0)] \<longleftrightarrow> m\<^sub>0\<^sub>0 = 0\<close>.\<close>
+  have dom: "Red_dom M" by (rule m_6_5_Red_welldef[OF MT])
+  have redEq: "Red M = [(0,0)]" using Red.psimps[OF dom] z by simp
+  have RT_iff: "(M \<in> RT_PS) \<longleftrightarrow> entry M 0 0 = 0"
+  proof
+    assume "M \<in> RT_PS"
+    hence "Red M = M" by (simp add: RT_PS_def)
+    hence "M = [(0,0)]" using redEq by simp
+    thus "entry M 0 0 = 0" by (simp add: entry_def)
+  next
+    assume e0: "entry M 0 0 = 0"
+    have "M = [(0,0)]" using Mpair e0 m10z by simp
+    hence "Red M = M" using redEq by simp
+    thus "M \<in> RT_PS" using MT by (simp add: RT_PS_def)
+  qed
+  show ?thesis using RT_iff condA condB_iff m10z by simp
+qed
+
+
+subsection \<open>§7.2 系（加法とscb分解の関係） — m_7_2_add_scb (Front B)\<close>
+
+text \<open>
+  Target \<open>p_7_2_add_scb\<close> (pss\_paper.thy lines 975–988).  For \<open>t \<in> T\<^bsub>B\<^esub>\<close> and a
+  principal \<open>c = Trm [p] \<in> T\<^bsub>B\<^esub>\<close>:
+
+  \<^enum> \<open>(t +\<^sub>B c, c) \<in> MarkedB\<close>                                       — BANKED, proven.
+  \<^enum> \<open>scb_decomp (t +\<^sub>B c) s (flat c) b \<Longrightarrow> scb_decomp (t +\<^sub>B c') s (flat c') b\<close>
+                                                                  — residual (see below).
+  \<^enum> the nested-\<open>D\<^sub>v\<close> replacement                                  — \<^bold>\<open>FALSE\<close> as transcribed
+     (concrete counterexample below, A13), TRUE in a corrected form.
+
+  Conjunct (1) is fully discharged here.  Conjunct (3) is shown FALSE by a
+  mechanized counterexample, exactly mirroring the A11/A12 pattern: the marked
+  scb component \<open>(s\<^sub>0, flat c, b\<^sub>0)\<close> is NOT forced to be the \<open>c\<close> inside
+  \<open>D\<^sub>v(t+c)\<close> when that same string \<open>flat c\<close> also occurs as a valid rightmost
+  mark elsewhere in \<open>u\<^sub>1\<close>.  The article's proof silently invokes scb-uniqueness
+  to identify the two; uniqueness fixes only the \<open>(s,b)\<close> pair for a \<^emph>\<open>given\<close>
+  \<open>c\<close>-string and does not exclude a competing occurrence.
+\<close>
+
+text \<open>Helper: a principal \<open>c = Trm [p] \<in> T\<^bsub>B\<^esub>\<close> has \<open>isPTB_str (flatBT c)\<close>.\<close>
+
+lemma addscb_princ_isPTB:
+  assumes cTB: "c \<in> T_B" and cp: "c = Trm [p]"
+  shows "isPTB_str (flatBT c)"
+proof -
+  have df: "dfree_BP p" using cTB cp by (simp add: T_B_def)
+  have "flatBT c = flatBP p" using cp by simp
+  thus ?thesis using df unfolding isPTB_str_def by blast
+qed
+
+text \<open>Helper: \<open>t +\<^sub>B Trm [p] = Trm (untrm t @ [p])\<close>, whose last component is \<open>p\<close>.\<close>
+
+lemma addscb_addBT_snoc:
+  "t +\<^sub>B Trm [p] = Trm (untrm t @ [p])"
+  by (cases t) simp
+
+text \<open>BANK (conjunct 1): \<open>(t +\<^sub>B c, c) \<in> MarkedB\<close>.  The witness decomposition marks
+  the last (snoc) principal \<open>p\<close>, supplied by \<open>rnsub_flat_pre_post\<close>.\<close>
+
+lemma m_7_2_add_scb_conj1:
+  assumes tTB: "t \<in> T_B" and cTB: "c \<in> T_B" and cp: "\<exists>p. c = Trm [p]"
+  shows "(t +\<^sub>B c, c) \<in> MarkedB"
+proof -
+  from cp obtain p where cpe: "c = Trm [p]" by blast
+  obtain u a where pua: "p = DB u a" by (cases p)
+  define xs where "xs = untrm t @ [DB u a]"
+  have tc_eq: "t +\<^sub>B c = Trm xs"
+    using cpe pua addscb_addBT_snoc[of t p] unfolding xs_def by simp
+  have xs_ne: "xs \<noteq> []" unfolding xs_def by simp
+  have xs_last: "last xs = DB u a" unfolding xs_def by simp
+  from rnsub_flat_pre_post[OF xs_ne xs_last]
+  obtain pre post where post_RP: "\<forall>x \<in> set post. x = RP"
+      and flat_split: "flatBT (Trm xs) = pre @ (Dsym u # flatBT a) @ post"
+    by blast
+  \<comment> \<open>\<open>flatBT c = flatBP p = Dsym u # flatBT a\<close>.\<close>
+  have fc_eq: "flatBT c = Dsym u # flatBT a"
+    using cpe pua by simp
+  have ptb: "isPTB_str (flatBT c)"
+    using addscb_princ_isPTB[OF cTB cpe] .
+  have tc_ne: "t +\<^sub>B c \<noteq> Trm []"
+    using tc_eq xs_ne by simp
+  have sd: "scb_decomp (t +\<^sub>B c) pre (flatBT c) post"
+    unfolding scb_decomp_def
+    using flat_split fc_eq post_RP ptb tc_eq tc_ne by simp
+  thus ?thesis unfolding MarkedB_def by auto
+qed
+
+text \<open>A13 COUNTEREXAMPLE (conjunct 3 is FALSE as literally transcribed).
+
+  Take \<open>t = 0\<close>, \<open>c = D\<^sub>0 0\<close>, \<open>c' = D\<^sub>0(D\<^sub>0 0)\<close>, \<open>v = 0\<close>, and
+  \<open>u\<^sub>1 = (D\<^sub>0(D\<^sub>0 0), D\<^sub>0 0)\<close> (a 2-principal term).  Then
+  \<open>flatBT u\<^sub>1 = ( D\<^sub>0 D\<^sub>0 0 , D\<^sub>0 0 )\<close>.  With \<open>s\<^sub>1 = (\<close>, \<open>b\<^sub>1 = , D\<^sub>0 0 )\<close> the
+  hypothesis \<open>flatBT u\<^sub>1 = s\<^sub>1 @ (D\<^sub>v # flatBT (t+c)) @ b\<^sub>1\<close> holds (the \<open>D\<^sub>v(t+c)\<close>
+  slice is the \<^bold>\<open>first\<close> principal).  The UNIQUE valid scb-decomposition of
+  \<open>u\<^sub>1\<close> with \<open>c\<close>-string \<open>flatBT c = D\<^sub>0 0\<close> marks the \<^bold>\<open>second\<close> principal:
+  \<open>s\<^sub>0 = ( D\<^sub>0 D\<^sub>0 0 ,\<close>, \<open>b\<^sub>0 = )\<close> (the first-principal occurrence has a non-\<open>)\<close>
+  tail, so it is not a valid mark).  The conclusion would need one \<open>u\<^sub>1'\<close> with
+  BOTH \<open>flatBT u\<^sub>1' = s\<^sub>1 @ (D\<^sub>v # flatBT (t+c')) @ b\<^sub>1\<close> AND
+  \<open>flatBT u\<^sub>1' = s\<^sub>0 @ flatBT c' @ b\<^sub>0\<close>; these two strings differ, so by
+  \<open>flatBT\<close>-injectivity no such \<open>u\<^sub>1'\<close> exists.\<close>
+
+lemma m_7_2_add_scb_conj3_counterexample:
+  defines "t \<equiv> (Trm [] :: BT)"
+      and "c \<equiv> (Trm [DB 0 (Trm [])] :: BT)"
+      and "c' \<equiv> (Trm [DB 0 (Trm [DB 0 (Trm [])])] :: BT)"
+      and "u1 \<equiv> (Trm [DB 0 (Trm [DB 0 (Trm [])]), DB 0 (Trm [])] :: BT)"
+      and "v \<equiv> (0 :: nat)"
+      and "s1 \<equiv> [LP]"
+      and "b1 \<equiv> [CM, Dsym 0, Zsym, RP]"
+      and "s0 \<equiv> [LP, Dsym 0, Dsym 0, Zsym, CM]"
+      and "b0 \<equiv> [RP]"
+  shows "t \<in> T_B \<and> c \<in> T_B \<and> (\<exists>p. c = Trm [p])
+       \<and> c' \<in> T_B \<and> (\<exists>p. c' = Trm [p])
+       \<and> u1 \<in> T_B
+       \<and> flatBT u1 = s1 @ (Dsym (enat v) # flatBT (t +\<^sub>B c)) @ b1
+       \<and> scb_decomp u1 s0 (flatBT c) b0
+       \<and> \<not> (\<exists>u1'. u1' \<in> T_B
+              \<and> flatBT u1' = s1 @ (Dsym (enat v) # flatBT (t +\<^sub>B c')) @ b1
+              \<and> scb_decomp u1' s0 (flatBT c') b0)"
+proof -
+  have tTB: "t \<in> T_B" unfolding t_def by (simp add: T_B_def)
+  have cTB: "c \<in> T_B" unfolding c_def by (simp add: T_B_def)
+  have cP: "\<exists>p. c = Trm [p]" unfolding c_def by blast
+  have c'TB: "c' \<in> T_B" unfolding c'_def by (simp add: T_B_def)
+  have c'P: "\<exists>p. c' = Trm [p]" unfolding c'_def by blast
+  have u1TB: "u1 \<in> T_B" unfolding u1_def by (simp add: T_B_def)
+  \<comment> \<open>flat strings (evaluated by the \<open>flatBT\<close> simp rules).\<close>
+  have ftc: "flatBT (t +\<^sub>B c) = [Dsym 0, Zsym]"
+    unfolding t_def c_def by simp
+  have hyp_flat: "flatBT u1 = s1 @ (Dsym (enat v) # flatBT (t +\<^sub>B c)) @ b1"
+    unfolding u1_def s1_def b1_def v_def t_def c_def
+    by (simp add: zero_enat_def)
+  \<comment> \<open>the chosen scb-decomposition of \<open>u\<^sub>1\<close> (marks the 2nd principal).\<close>
+  have fc: "flatBT c = [Dsym 0, Zsym]" unfolding c_def by simp
+  have u1flat: "flatBT u1 =
+      [LP, Dsym 0, Dsym 0, Zsym, CM, Dsym 0, Zsym, RP]"
+    unfolding u1_def by simp
+  have sd: "scb_decomp u1 s0 (flatBT c) b0"
+    unfolding scb_decomp_def
+  proof (intro conjI)
+    show "flatBT u1 = s0 @ flatBT c @ b0"
+      unfolding s0_def b0_def using u1flat fc by simp
+    show "u1 \<noteq> Trm [] \<longrightarrow> isPTB_str (flatBT c)"
+      using addscb_princ_isPTB[OF cTB] cP by blast
+    show "\<forall>x \<in> set b0. x = RP" unfolding b0_def by simp
+  qed
+  \<comment> \<open>No \<open>u\<^sub>1'\<close>: the two required flat strings differ.\<close>
+  have ftc': "flatBT (t +\<^sub>B c') =
+      [Dsym 0, Dsym 0, Zsym]"
+    unfolding t_def c'_def by simp
+  have want_eq: "s1 @ (Dsym (enat v) # flatBT (t +\<^sub>B c')) @ b1
+      = [LP, Dsym 0, Dsym 0, Dsym 0, Zsym,
+         CM, Dsym 0, Zsym, RP]"
+    unfolding s1_def b1_def v_def using ftc' by (simp add: zero_enat_def)
+  have fc': "flatBT c' = [Dsym 0, Dsym 0, Zsym]"
+    unfolding c'_def by simp
+  have need_eq: "s0 @ flatBT c' @ b0
+      = [LP, Dsym 0, Dsym 0, Zsym, CM,
+         Dsym 0, Dsym 0, Zsym, RP]"
+    unfolding s0_def b0_def using fc' by simp
+  \<comment> \<open>The two explicit lists differ at index 3 (\<open>Dsym\<close> vs \<open>Zsym\<close>).\<close>
+  have lists_differ:
+    "[LP, Dsym 0, Dsym 0, Dsym 0, Zsym,
+      CM, Dsym 0, Zsym, RP]
+     \<noteq> [LP, Dsym 0, Dsym 0, Zsym, CM,
+        Dsym 0, Dsym 0, Zsym, RP]"
+    by simp
+  have noU1': "\<not> (\<exists>u1'. u1' \<in> T_B
+              \<and> flatBT u1' = s1 @ (Dsym (enat v) # flatBT (t +\<^sub>B c')) @ b1
+              \<and> scb_decomp u1' s0 (flatBT c') b0)"
+  proof
+    assume "\<exists>u1'. u1' \<in> T_B
+              \<and> flatBT u1' = s1 @ (Dsym (enat v) # flatBT (t +\<^sub>B c')) @ b1
+              \<and> scb_decomp u1' s0 (flatBT c') b0"
+    then obtain u1' where
+        f1: "flatBT u1' = s1 @ (Dsym (enat v) # flatBT (t +\<^sub>B c')) @ b1"
+      and sd': "scb_decomp u1' s0 (flatBT c') b0" by blast
+    \<comment> \<open>Rewrite both sides to their explicit evaluated lists.\<close>
+    have lhs: "flatBT u1' =
+        [LP, Dsym 0, Dsym 0, Dsym 0, Zsym,
+         CM, Dsym 0, Zsym, RP]"
+      using f1 want_eq by simp
+    have "flatBT u1' = s0 @ flatBT c' @ b0"
+      using sd' unfolding scb_decomp_def by simp
+    hence rhs: "flatBT u1' =
+        [LP, Dsym 0, Dsym 0, Zsym, CM,
+         Dsym 0, Dsym 0, Zsym, RP]"
+      using need_eq by simp
+    \<comment> \<open>\<open>flatBT u1'\<close> equals two distinct concrete lists — contradiction.\<close>
+    from lhs rhs lists_differ show False by simp
+  qed
+  show ?thesis
+    using tTB cTB cP c'TB c'P u1TB hyp_flat sd noU1' by blast
+qed
+
+
+
 end

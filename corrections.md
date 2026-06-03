@@ -369,3 +369,17 @@ yaBMS で経験的検証済）はブロック $n$ 個でこの訂正後の式と
 **訂正案**: 選言前提を \((t_0 \neq ()) \to \textrm{principal}(c_1)\)（または単に \(t_0 \neq ()\) を仮定し \(c_0\) の主表現性を \(t_0\) の分解から導く）に補正する。すなわち空項 \(t_0\) の場合を除けば原文の論証は通る。
 
 **形式化での扱い**: 反例を `m_7_2_scb_replaceable_counterexample`（`scbrepl_multi_not_PTB` = 複項の flat は非主表現）として機械化。\(t_0=()\) の退化ケースを `m_7_2_scb_replaceable_t0zero`、像条件つきの補正版を `m_7_2_scb_replaceable_corr_mod_image`（`scbrepl_concl_from_image` 経由）として証明した。いずれも本体ビルド緑。
+
+## A13. §7.2 系（加法とscb分解の関係）(3): \(D_v(t+c)\) の出現位置が一意でないため偽（反例あり）
+
+**所在**: §7.2「系（加法とscb分解の関係）」の (3)。形式化では `p_7_2_add_scb` の第3主張。
+
+> \(c' \in T_{\textrm{B}}\) が主表現、\(u_1 \in T_{\textrm{B}}\)、\(\textrm{flat}(u_1) = s_1 \frown D_v\,\textrm{flat}(t+c) \frown b_1\)、\((s_0, \textrm{flat}(c), b_0)\) が \(u_1\) の scb分解であるとき、ある \(u_1'\) が存在して \(\textrm{flat}(u_1') = s_1 \frown D_v\,\textrm{flat}(t+c') \frown b_1\) かつ \((s_0, \textrm{flat}(c'), b_0)\) が \(u_1'\) の scb分解となる。
+
+**観察**: 主張は暗黙に「\(s_1 \frown D_v\,\textrm{flat}(t+c) \frown b_1\) で指す \(D_v(t+c)\) の出現と、\((s_0,\textrm{flat}(c),b_0)\) が指す \(c\) の出現が**同一の部分項**」を仮定しているが、これは前提から従わない。\(u_1\) が \(D_v(t+c)\) と別の \(c\) を**両方**部分項に持つとき、第1主表現を \(s_1\,D_v\dots b_1\) で、第2主表現の \(c\) を \((s_0,\textrm{flat}(c),b_0)\) で指す配置が成立し、\(c\to c'\) 置換後に要求される2つの flat 文字列が食い違う。
+
+反例: \(t=0\), \(c=D_0 0\), \(c'=D_0(D_0 0)\), \(v=0\), \(u_1=(D_0(D_0 0), D_0 0)\)（2主表現タプル）。\(s_1\,D_v\,\textrm{flat}(t+c)\,b_1\) は**第1**主表現を、\((s_0,\textrm{flat}(c),b_0)\) は**第2**主表現を指す。結論の \(u_1'\) は \(\textrm{flat}(u_1')=s_1\,D_v\,\textrm{flat}(t+c')\,b_1\)（第1側置換）と \(\textrm{flat}(u_1')=s_0\,\textrm{flat}(c')\,b_0\)（第2側置換）を同時に満たす必要があるが、両文字列は相異なるので flat の単射性（`m_7_flatBT_inj`）より存在しない。
+
+**訂正案**: (3) の前提に「\(s_1\frown D_v\,\textrm{flat}(t+c)\frown b_1\) の \(D_v(t+c)\) 出現と \((s_0,\textrm{flat}(c),b_0)\) の \(c\) 出現が一致する」旨（例えば \(s_0 = s_1\frown D_v\,(\textrm{flat}\,t)\) 型の整合条件、あるいは \(u_1\) のマーク一意性）を追加する。原文の用途（Trans の整礎性証明）では当該出現は構成的に一致しているため、その文脈では主張は正しい。
+
+**形式化での扱い**: (1) は原文どおり成立し `m_7_2_add_scb_conj1` として証明済。(3) の literal 形を反例 `m_7_2_add_scb_conj3_counterexample` として機械化した。(2)（\(c\to c'\) 置換の単純版）は別途。いずれも本体ビルド緑。
