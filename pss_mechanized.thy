@@ -32166,4 +32166,199 @@ proof -
   show ?thesis using rM by (simp only: blk_eq)
 qed
 
+
+(* ===== final-layer block: idempotency re-decomposition (fin) ===== *)
+
+text \<open>fin: the row-0 left end of \<open>Red M\<close> equals \<open>M\<^bsub>1,0\<^esub>\<close> for \<open>monoT M\<close>.  Branch-by-branch
+  on the @{const Red} recursion: core (trunk/non-trunk) gives \<open>0 = m\<^sub>1\<^sub>0\<close>; the
+  \<open>m\<^sub>1\<^sub>0 = 0\<close> shift recurses onto \<open>shiftRow0 M\<close> (core); the \<open>m\<^sub>1\<^sub>0 > 0\<close> branch is the
+  productive rebase whose left end is \<open>entry N 1 m\<^sub>1\<^sub>0 = m\<^sub>1\<^sub>0\<close> (@{thm [source]
+  redB_row1_anchor}, the \<open>then_case\<close> is forced by @{thm [source] m_6_5_monoT_Red_m10pos}).
+  Empirically TRUE 10220/10220 (monoT, rank\<le>4).\<close>
+
+lemma fin_Red_leftend_row0_eq_m10:
+  assumes MT: "M \<in> T_PS" and monoM: "monoT M"
+  shows "entry (Red M) 0 0 = entry M 1 0"
+proof -
+  have domM: "Red_dom M" by (rule m_6_5_Red_welldef[OF MT])
+  have "M \<in> T_PS \<longrightarrow> monoT M \<longrightarrow> entry (Red M) 0 0 = entry M 1 0"
+    using domM
+  proof (induction M rule: Red.pinduct)
+    case (1 M)
+    note dom    = 1(1)
+    note IH_nc3 = 1(4)  \<comment> \<open>non-core m10=0 shift IH\<close>
+    show ?case
+    proof (rule impI, rule impI)
+      assume MT': "M \<in> T_PS" and mono: "monoT M"
+      have Mne: "M \<noteq> []" using MT' by (simp add: T_PS_def)
+      have LMpos: "0 < Lng M" using Mne by (cases M) auto
+      have nz: "\<not> zeroT M" using mono by (simp add: monoT_def)
+      have nmu: "\<not> multiT M" using mono by (simp add: multiT_def)
+      let ?j1  = "Lng M - 1"
+      let ?j1' = "TrMax M"
+      let ?m00 = "entry M 0 0"
+      let ?m10 = "entry M 1 0"
+      show "entry (Red M) 0 0 = entry M 1 0"
+      proof (cases "?m00 = 0 \<and> ?m10 = 0")
+        case core: True
+        hence c0: "?m00 = 0" and c1: "?m10 = 0" by simp_all
+        have e0: "entry (Red M) 0 0 = 0"
+        proof (cases "?j1' = ?j1")
+          case True
+          have rM: "Red M = diagSeq ?m10 (?m10 + ?j1)"
+            using Red.psimps[OF dom] nz nmu c0 c1 True by (simp add: Let_def)
+          have "entry (Red M) 0 0 = ?m10 + 0"
+            using rM entry_diagSeq[where a="?m10" and b="?m10 + ?j1" and j=0 and i=0]
+            by (simp add: LMpos)
+          thus ?thesis using c1 by simp
+        next
+          case tne: False
+          let ?tail = "concat (map (\<lambda>J.
+                    (IncrFirst ^^ (Joints M ! J + 1
+                        - (if entry (Br M ! J) 1 0 = 0 then 0
+                           else Suc (THE j. nextR M 1 j (FirstNodes M ! J)))))
+                      (Red ((entry M 0 0 + Joints M ! J + 1,
+                             entry M 1 0 + (if entry (Br M ! J) 1 0 = 0 then 0
+                                    else Suc (THE j. nextR M 1 j (FirstNodes M ! J))))
+                            # tl (Br M ! J))))
+                  [0..<Lng (Br M)])"
+          have rM: "Red M = diagSeq 0 ?j1' @ ?tail"
+            using Red.psimps[OF dom] nz nmu c0 c1 tne by (simp add: Let_def)
+          have "entry (Red M) 0 0 = entry (diagSeq 0 ?j1' @ ?tail) 0 0"
+            by (simp add: rM)
+          also have "\<dots> = 0" by (rule entry_diagSeq_append_lo) simp
+          finally show ?thesis .
+        qed
+        show ?thesis using e0 c1 by simp
+      next
+        case nc: False
+        show ?thesis
+        proof (cases "?m10 = 0")
+          case True
+          let ?shift = "map (\<lambda>j. (entry M 0 j - ?m00, entry M 1 j)) [0..<Suc ?j1]"
+          have rM: "Red M = Red ?shift"
+            using Red.psimps[OF dom] nz nmu nc True by (simp add: Let_def)
+          have shift_eq: "?shift = shiftRow0 M"
+            using LMpos by (simp add: shiftRow0_def)
+          have shift_T: "?shift \<in> T_PS" by (simp add: T_PS_def)
+          have shift_mono: "monoT ?shift"
+            using monoT_shiftRow0[OF MT' mono] shift_eq by simp
+          have IH': "entry (Red ?shift) 0 0 = entry ?shift 1 0"
+            using IH_nc3[OF nz nmu refl refl refl refl nc True] shift_T shift_mono by blast
+          have e1sh: "entry ?shift 1 0 = ?m10" using LMpos by (simp add: entry_def)
+          show ?thesis using IH' rM e1sh by simp
+        next
+          case False
+          hence c1p: "0 < ?m10" by simp
+          have Mpt: "M \<in> PT_PS" using MT' mono by (simp add: PT_PS_def)
+          let ?arg = "diagSeq 0 (?m10 - 1) @ (IncrFirst ^^ ?m10) M"
+          have funpow_ne: "(IncrFirst ^^ ?m10) M \<noteq> []"
+            using Mne by (metis Lng_funpow_IncrFirst length_0_conv)
+          have arg_T: "?arg \<in> T_PS" using funpow_ne by (simp add: T_PS_def)
+          let ?N = "Red ?arg"
+          let ?jN = "Lng ?N - 1"
+          have rM: "Red M = (let N = ?N; jN = ?jN in
+                     if ?m10 \<le> jN \<and> seg N ?m10 jN \<in> PT_PS then
+                       map (\<lambda>j. (entry N 0 j - entry N 0 ?m10 + entry N 1 ?m10,
+                                 entry N 1 j))
+                           [?m10..<Suc jN]
+                     else M)"
+            using Red.psimps[OF dom] nz nmu nc c1p by (simp add: Let_def)
+          \<comment> \<open>the productive branch is forced for monoT M (segment is PT_PS).\<close>
+          have segPT: "seg ?N ?m10 ?jN \<in> PT_PS"
+            using m_6_5_monoT_Red_m10pos[OF Mpt c1p] by simp
+          have LN: "Lng ?N = Lng M + ?m10"
+            using m_6_5_monoT_Red_fact1_Lng[OF MT' c1p]
+                  coreReduce_m10pos_form[OF c1p] by simp
+          have m10le: "?m10 \<le> ?jN" using LN LMpos by linarith
+          have then_cond: "?m10 \<le> ?jN \<and> seg ?N ?m10 ?jN \<in> PT_PS"
+            using m10le segPT by simp
+          have rM': "Red M = map (\<lambda>j. (entry ?N 0 j - entry ?N 0 ?m10 + entry ?N 1 ?m10,
+                                        entry ?N 1 j))
+                                 [?m10..<Suc ?jN]"
+            using rM then_cond by (simp add: Let_def del: upt_Suc)
+          have idx0: "[?m10..<Suc ?jN] ! 0 = ?m10"
+            using m10le by (simp add: nth_upt del: upt_Suc)
+          have len0: "0 < length [?m10..<Suc ?jN]" using m10le by (simp del: upt_Suc)
+          have e_rM0: "entry (Red M) 0 0
+                        = entry ?N 0 ?m10 - entry ?N 0 ?m10 + entry ?N 1 ?m10"
+          proof -
+            have "(Red M) ! 0 = (\<lambda>j. (entry ?N 0 j - entry ?N 0 ?m10 + entry ?N 1 ?m10,
+                                      entry ?N 1 j)) ?m10"
+              using rM' len0 idx0 by (simp add: nth_map del: upt_Suc)
+            thus ?thesis unfolding entry_def by simp
+          qed
+          \<comment> \<open>row-1 anchor value: entry N 1 m10 = m10.\<close>
+          have e1val: "entry ?N 1 ?m10 = ?m10"
+            using redB_row1_anchor[OF MT' mono c1p]
+                  coreReduce_m10pos_form[OF c1p] by simp
+          show ?thesis using e_rM0 e1val by simp
+        qed
+      qed
+    qed
+  qed
+  thus ?thesis using MT monoM by blast
+qed
+
+text \<open>fin: the row-0 left end of \<open>Red (NJ M J)\<close> equals \<open>npJ M J\<close>, for a core-nontrunk
+  \<open>M\<close>.  Since \<open>NJ M J\<close> is non-multi (@{thm [source] NJ_nonmulti}); if it is monoT
+  apply @{thm [source] fin_Red_leftend_row0_eq_m10} (its \<open>m\<^sub>1\<^sub>0 = npJ M J\<close> by
+  @{thm [source] entry_NJ_1_0}); if it is zeroT (singleton with \<open>npJ = 0\<close>) then
+  \<open>Red (NJ M J) = [(0,0)]\<close>, leftend \<open>0 = npJ\<close>.\<close>
+
+lemma fin_Red_NJ_leftend:
+  assumes M: "M \<in> PT_PS" and c0: "entry M 0 0 = 0" and c1: "entry M 1 0 = 0"
+    and JBr: "J < Lng (Br M)"
+  shows "entry (Red (NJ M J)) 0 0 = npJ M J"
+proof -
+  have brJne: "Br M ! J \<noteq> []" by (rule Br_component_nonempty[OF M JBr])
+  have NJne: "NJ M J \<noteq> []" by (simp add: NJ_def)
+  have NJT: "NJ M J \<in> T_PS" using NJne by (simp add: T_PS_def)
+  have nm: "\<not> multiT (NJ M J)" by (rule NJ_nonmulti[OF M c0 c1 JBr])
+  have e1: "entry (NJ M J) 1 0 = npJ M J" using entry_NJ_1_0[of M J] c1 by simp
+  show ?thesis
+  proof (cases "zeroT (NJ M J)")
+    case True
+    have domNJ: "Red_dom (NJ M J)" by (rule m_6_5_Red_welldef[OF NJT])
+    have "Red (NJ M J) = [(0,0)]" using Red.psimps[OF domNJ] True by simp
+    moreover have "npJ M J = 0" using True e1 by (simp add: zeroT_def)
+    ultimately show ?thesis by (simp add: entry_def)
+  next
+    case False
+    have mono: "monoT (NJ M J)" using nm False by (simp add: multiT_def)
+    have "entry (Red (NJ M J)) 0 0 = entry (NJ M J) 1 0"
+      by (rule fin_Red_leftend_row0_eq_m10[OF NJT mono])
+    thus ?thesis using e1 by simp
+  qed
+qed
+
+text \<open>fin: the row-0 head of the core-nontrunk branch block
+  \<open>B\<^sub>J = IncrFirst\<^bsup>e\<^sub>J\<^esup>(Red (N\<^sub>J M J))\<close> (\<open>e\<^sub>J = Joints M ! J + 1 - npJ M J\<close>) equals
+  \<open>Joints M ! J + 1\<close>.  Indeed \<open>IncrFirst\<close> bumps row 0 by \<open>e\<^sub>J\<close> and the inner left end
+  is \<open>npJ M J\<close> (@{thm [source] fin_Red_NJ_leftend}); with \<open>npJ \<le> Joints+1\<close>
+  (@{thm [source] npJ_le_Joints_Suc}) the sum \<open>npJ + e\<^sub>J = Joints M ! J + 1\<close>.\<close>
+
+lemma fin_block_head:
+  assumes M: "M \<in> PT_PS" and c0: "entry M 0 0 = 0" and c1: "entry M 1 0 = 0"
+    and JBr: "J < Lng (Br M)"
+  shows "entry ((IncrFirst ^^ (Joints M ! J + 1 - npJ M J)) (Red (NJ M J))) 0 0
+         = Joints M ! J + 1"
+proof -
+  have NJne: "NJ M J \<noteq> []" by (simp add: NJ_def)
+  have L0: "0 < Lng (Red (NJ M J))"
+  proof -
+    have NJT: "NJ M J \<in> T_PS" using NJne by (simp add: T_PS_def)
+    have "Lng (Red (NJ M J)) = Lng (NJ M J)" by (rule m_6_5_Lng_Red[OF NJT])
+    moreover have "0 < Lng (NJ M J)" by (simp add: NJ_def)
+    ultimately show ?thesis by simp
+  qed
+  have e0: "entry ((IncrFirst ^^ (Joints M ! J + 1 - npJ M J)) (Red (NJ M J))) 0 0
+            = entry (Red (NJ M J)) 0 0 + (Joints M ! J + 1 - npJ M J)"
+    by (rule entry_funpow_IncrFirst0[OF L0])
+  have inner: "entry (Red (NJ M J)) 0 0 = npJ M J"
+    by (rule fin_Red_NJ_leftend[OF M c0 c1 JBr])
+  have le: "npJ M J \<le> Joints M ! J + 1" by (rule npJ_le_Joints_Suc[OF M c1 JBr])
+  show ?thesis using e0 inner le by simp
+qed
+
 end
