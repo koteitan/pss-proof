@@ -31384,4 +31384,499 @@ proof -
 qed
 
 
+
+
+subsection \<open>§6.5/§6.6 idempotency keystone residual (B2): \<open>Red (coreReduce (Red M)) = Red (coreReduce M)\<close>\<close>
+
+text \<open>m: row-0 of the unbumped diagonal-prefixed sequence \<open>diagSeq 0 (m-1) @ B\<close>.\<close>
+
+lemma b2_entry0_diag_app:
+  assumes mpos: "0 < m" and ib: "i < m + Lng B"
+  shows "entry (diagSeq 0 (m - 1) @ B) 0 i
+         = (if i < m then i else entry B 0 (i - m))"
+proof (cases "i < m")
+  case True
+  hence "i \<le> m - 1" using mpos by simp
+  thus ?thesis using True by (simp add: entry_diagSeq_append_lo)
+next
+  case False
+  hence im: "m \<le> i" by simp
+  have iLB: "i - m < Lng B" using ib im by simp
+  have "i = Suc (m - 1) + (i - m)" using im mpos by simp
+  thus ?thesis using entry_diagSeq_append_hi[of "i - m" B "m - 1" 0] iLB False by simp
+qed
+
+lemma b2_Lng_diag_app:
+  assumes mpos: "0 < m"
+  shows "Lng (diagSeq 0 (m - 1) @ B) = m + Lng B"
+proof -
+  have "Lng (diagSeq 0 (m - 1)) = m" using mpos by (simp del: upt_Suc)
+  thus ?thesis by simp
+qed
+
+text \<open>m: the genuine new \<open>nextrel0\<close> congruence for the multi-\<open>IncrFirst\<close> tail bump.
+  \<open>diagSeq 0 (m-1) @ (IncrFirst^^m) B\<close> bumps the tail of \<open>diagSeq 0 (m-1) @ B\<close>
+  by \<open>+m\<close> past the cut at \<open>m\<close>.  When every tail row-0 value is \<open>\<ge> m\<close> (the cut
+  condition), this preserves \<open>nextrel0\<close>: the diagonal prefix is shared, the
+  prefix\<rightarrow>suffix boundary edge \<open>m-1 \<rightarrow> q\<close> reduces to the same running-min
+  predicate on \<open>B\<close>, and suffix\<rightarrow>suffix edges are a uniform shift.\<close>
+
+lemma b2_nextrel0_tailbump:
+  assumes mpos: "0 < m" and cut: "\<And>j. j < Lng B \<Longrightarrow> m \<le> entry B 0 j"
+  shows "nextrel0 (diagSeq 0 (m - 1) @ (IncrFirst ^^ m) B)
+       = nextrel0 (diagSeq 0 (m - 1) @ B)"
+proof (intro ext)
+  let ?aA = "diagSeq 0 (m - 1) @ (IncrFirst ^^ m) B"
+  let ?aX = "diagSeq 0 (m - 1) @ B"
+  have La: "Lng ?aA = m + Lng B" by (rule cdn_Lng_diagfun[OF mpos])
+  have Lx: "Lng ?aX = m + Lng B" by (rule b2_Lng_diag_app[OF mpos])
+  have LaLx: "Lng ?aA = Lng ?aX" using La Lx by simp
+  have eA0: "\<And>i. i < m + Lng B \<Longrightarrow> entry ?aA 0 i = (if i < m then i else entry B 0 (i - m) + m)"
+    by (rule cdn_entry0_diagfun[OF mpos])
+  have eX0: "\<And>i. i < m + Lng B \<Longrightarrow> entry ?aX 0 i = (if i < m then i else entry B 0 (i - m))"
+    by (rule b2_entry0_diag_app[OF mpos])
+  fix p q
+  show "nextrel0 ?aA p q = nextrel0 ?aX p q"
+  proof (cases "p < q \<and> q < Lng ?aA")
+    case False
+    thus ?thesis unfolding nextrel0_def using LaLx by auto
+  next
+    case True
+    hence pq: "p < q" and qa: "q < Lng ?aA" by simp_all
+    have qx: "q < Lng ?aX" using qa LaLx by simp
+    have qaB: "q < m + Lng B" using qa La by simp
+    have eA: "\<And>i. i \<le> q \<Longrightarrow> entry ?aA 0 i = (if i < m then i else entry B 0 (i - m) + m)"
+      using eA0 qaB by (metis le_imp_less_Suc less_Suc_eq_le order_le_less_trans)
+    have eX: "\<And>i. i \<le> q \<Longrightarrow> entry ?aX 0 i = (if i < m then i else entry B 0 (i - m))"
+      using eX0 qaB by (metis le_imp_less_Suc less_Suc_eq_le order_le_less_trans)
+    show ?thesis
+    proof (cases "q < m")
+      case qlt: True
+      have plt: "p < m" using pq qlt by simp
+      have valA: "\<And>j. j \<le> q \<Longrightarrow> entry ?aA 0 j = j" using eA qlt by simp
+      have valX: "\<And>j. j \<le> q \<Longrightarrow> entry ?aX 0 j = j" using eX qlt by simp
+      have diagchar: "\<And>aa::pairseq. q < Lng aa \<Longrightarrow> (\<And>j. j \<le> q \<Longrightarrow> entry aa 0 j = j)
+                       \<Longrightarrow> nextrel0 aa p q \<longleftrightarrow> q = Suc p"
+      proof -
+        fix aa::pairseq
+        assume qaa: "q < Lng aa" and val: "\<And>j. j \<le> q \<Longrightarrow> entry aa 0 j = j"
+        show "nextrel0 aa p q \<longleftrightarrow> q = Suc p"
+        proof
+          assume "nextrel0 aa p q"
+          hence betw: "\<forall>j. p < j \<and> j < q \<longrightarrow> entry aa 0 j \<ge> entry aa 0 q"
+            by (simp add: nextrel0_def)
+          show "q = Suc p"
+          proof (rule ccontr)
+            assume "q \<noteq> Suc p"
+            hence "Suc p < q" using pq by simp
+            hence "entry aa 0 (Suc p) \<ge> entry aa 0 q" using betw by simp
+            moreover have "entry aa 0 (Suc p) = Suc p" using val \<open>Suc p < q\<close> by simp
+            moreover have "entry aa 0 q = q" using val by simp
+            ultimately show False using \<open>Suc p < q\<close> by simp
+          qed
+        next
+          assume qsp: "q = Suc p"
+          have ep: "entry aa 0 p = p" using val pq by simp
+          have eq: "entry aa 0 q = q" using val by simp
+          have "\<forall>j. p < j \<and> j < q \<longrightarrow> entry aa 0 j \<ge> entry aa 0 q" using qsp by simp
+          thus "nextrel0 aa p q" unfolding nextrel0_def using pq qaa ep eq qsp by simp
+        qed
+      qed
+      have lhs: "nextrel0 ?aA p q \<longleftrightarrow> q = Suc p" by (rule diagchar[OF qa valA])
+      have rhs: "nextrel0 ?aX p q \<longleftrightarrow> q = Suc p" by (rule diagchar[OF qx valX])
+      show ?thesis using lhs rhs by simp
+    next
+      case qge: False
+      hence qm: "m \<le> q" by simp
+      then obtain qq where qeq: "q = m + qq" using le_Suc_ex by blast
+      have qqB: "qq < Lng B" using qa La qeq by simp
+      have eq_qA: "entry ?aA 0 q = entry B 0 qq + m" using eA[of q] qge qeq by simp
+      have eq_qX: "entry ?aX 0 q = entry B 0 qq" using eX[of q] qge qeq by simp
+      have cutqq: "m \<le> entry B 0 qq" by (rule cut[OF qqB])
+      show ?thesis
+      proof (cases "p < m")
+        case psm: True
+        show ?thesis
+        proof (cases "p = m - 1")
+          case pm: True
+          have lhs: "nextrel0 ?aA p q = (\<forall>r. r < qq \<longrightarrow> entry B 0 r \<ge> entry B 0 qq)"
+          proof
+            assume nr: "nextrel0 ?aA p q"
+            show "\<forall>r. r < qq \<longrightarrow> entry B 0 r \<ge> entry B 0 qq"
+            proof (intro allI impI)
+              fix r assume r: "r < qq"
+              have idx: "p < m + r \<and> m + r < q" using pm mpos r qeq by simp
+              have "entry ?aA 0 (m + r) \<ge> entry ?aA 0 q" using nr idx by (simp add: nextrel0_def)
+              moreover have "entry ?aA 0 (m + r) = entry B 0 r + m" using eA[of "m + r"] idx by simp
+              ultimately show "entry B 0 r \<ge> entry B 0 qq" using eq_qA by simp
+            qed
+          next
+            assume H: "\<forall>r. r < qq \<longrightarrow> entry B 0 r \<ge> entry B 0 qq"
+            have ep: "entry ?aA 0 p = m - 1" using eA[of p] psm pm pq by simp
+            have lt: "entry ?aA 0 p < entry ?aA 0 q" using ep eq_qA mpos by simp
+            have betw: "\<forall>j. p < j \<and> j < q \<longrightarrow> entry ?aA 0 j \<ge> entry ?aA 0 q"
+            proof (intro allI impI)
+              fix j assume j: "p < j \<and> j < q"
+              have jm: "m \<le> j" using j pm mpos by linarith
+              then obtain jj where jj: "j = m + jj" using le_Suc_ex by blast
+              have jjlt: "jj < qq" using j jj qeq by simp
+              have "entry ?aA 0 j = entry B 0 jj + m" using eA[of j] jm jj j by simp
+              thus "entry ?aA 0 j \<ge> entry ?aA 0 q" using H jjlt eq_qA by simp
+            qed
+            show "nextrel0 ?aA p q" unfolding nextrel0_def using pq qa lt betw by simp
+          qed
+          have rhs: "nextrel0 ?aX p q = (\<forall>r. r < qq \<longrightarrow> entry B 0 r \<ge> entry B 0 qq)"
+          proof
+            assume nr: "nextrel0 ?aX p q"
+            show "\<forall>r. r < qq \<longrightarrow> entry B 0 r \<ge> entry B 0 qq"
+            proof (intro allI impI)
+              fix r assume r: "r < qq"
+              have idx: "p < m + r \<and> m + r < q" using pm mpos r qeq by simp
+              have "entry ?aX 0 (m + r) \<ge> entry ?aX 0 q" using nr idx by (simp add: nextrel0_def)
+              moreover have "entry ?aX 0 (m + r) = entry B 0 r" using eX[of "m + r"] idx by simp
+              ultimately show "entry B 0 r \<ge> entry B 0 qq" using eq_qX by simp
+            qed
+          next
+            assume H: "\<forall>r. r < qq \<longrightarrow> entry B 0 r \<ge> entry B 0 qq"
+            have ep: "entry ?aX 0 p = m - 1" using eX[of p] psm pm pq by simp
+            have lt: "entry ?aX 0 p < entry ?aX 0 q" using ep eq_qX cutqq mpos by simp
+            have betw: "\<forall>j. p < j \<and> j < q \<longrightarrow> entry ?aX 0 j \<ge> entry ?aX 0 q"
+            proof (intro allI impI)
+              fix j assume j: "p < j \<and> j < q"
+              have jm: "m \<le> j" using j pm mpos by linarith
+              then obtain jj where jj: "j = m + jj" using le_Suc_ex by blast
+              have jjlt: "jj < qq" using j jj qeq by simp
+              have "entry ?aX 0 j = entry B 0 jj" using eX[of j] jm jj j by simp
+              thus "entry ?aX 0 j \<ge> entry ?aX 0 q" using H jjlt eq_qX by simp
+            qed
+            show "nextrel0 ?aX p q" unfolding nextrel0_def using pq qx lt betw by simp
+          qed
+          show ?thesis using lhs rhs by simp
+        next
+          case pne: False
+          hence plt2: "p < m - 1" using psm by simp
+          have idxm: "p < m - 1 \<and> m - 1 < q" using plt2 qm mpos by simp
+          have lhs: "\<not> nextrel0 ?aA p q"
+          proof
+            assume nr: "nextrel0 ?aA p q"
+            have "entry ?aA 0 (m - 1) \<ge> entry ?aA 0 q" using nr idxm by (simp add: nextrel0_def)
+            moreover have "entry ?aA 0 (m - 1) = m - 1" using eA[of "m - 1"] mpos qm by simp
+            ultimately show False using eq_qA mpos by simp
+          qed
+          have rhs: "\<not> nextrel0 ?aX p q"
+          proof
+            assume nr: "nextrel0 ?aX p q"
+            have "entry ?aX 0 (m - 1) \<ge> entry ?aX 0 q" using nr idxm by (simp add: nextrel0_def)
+            moreover have "entry ?aX 0 (m - 1) = m - 1" using eX[of "m - 1"] mpos qm by simp
+            ultimately show False using eq_qX cutqq mpos by simp
+          qed
+          show ?thesis using lhs rhs by simp
+        qed
+      next
+        case pge: False
+        hence pm: "m \<le> p" by simp
+        then obtain pp where peq: "p = m + pp" using le_Suc_ex by blast
+        have ppqq: "pp < qq" using pq peq qeq by simp
+        have lhs: "nextrel0 ?aA p q = nextrel0 B pp qq"
+        proof
+          assume nr: "nextrel0 ?aA p q"
+          have lt: "entry B 0 pp < entry B 0 qq"
+            using nr eA[of p] eA[of q] pm peq qge qeq pq by (simp add: nextrel0_def)
+          have betw: "\<forall>j. pp < j \<and> j < qq \<longrightarrow> entry B 0 j \<ge> entry B 0 qq"
+          proof (intro allI impI)
+            fix j assume j: "pp < j \<and> j < qq"
+            have idx: "p < m + j \<and> m + j < q" using j peq qeq by simp
+            have "entry ?aA 0 (m + j) \<ge> entry ?aA 0 q" using nr idx by (simp add: nextrel0_def)
+            thus "entry B 0 j \<ge> entry B 0 qq" using eA[of "m + j"] idx eq_qA by simp
+          qed
+          show "nextrel0 B pp qq" unfolding nextrel0_def using ppqq qqB lt betw by simp
+        next
+          assume nr: "nextrel0 B pp qq"
+          have lt: "entry ?aA 0 p < entry ?aA 0 q"
+            using nr eA[of p] eA[of q] pm peq qge qeq pq by (simp add: nextrel0_def)
+          have betw: "\<forall>j. p < j \<and> j < q \<longrightarrow> entry ?aA 0 j \<ge> entry ?aA 0 q"
+          proof (intro allI impI)
+            fix j assume j: "p < j \<and> j < q"
+            have jm: "m \<le> j" using j peq by simp
+            then obtain jj where jj: "j = m + jj" using le_Suc_ex by blast
+            have jjr: "pp < jj \<and> jj < qq" using j jj peq qeq by simp
+            have "entry B 0 jj \<ge> entry B 0 qq" using nr jjr by (simp add: nextrel0_def)
+            thus "entry ?aA 0 j \<ge> entry ?aA 0 q" using eA[of j] jm jj j eq_qA by simp
+          qed
+          show "nextrel0 ?aA p q" unfolding nextrel0_def using pq qa lt betw by simp
+        qed
+        have rhs: "nextrel0 ?aX p q = nextrel0 B pp qq"
+        proof
+          assume nr: "nextrel0 ?aX p q"
+          have lt: "entry B 0 pp < entry B 0 qq"
+            using nr eX[of p] eX[of q] pm peq qge qeq pq by (simp add: nextrel0_def)
+          have betw: "\<forall>j. pp < j \<and> j < qq \<longrightarrow> entry B 0 j \<ge> entry B 0 qq"
+          proof (intro allI impI)
+            fix j assume j: "pp < j \<and> j < qq"
+            have idx: "p < m + j \<and> m + j < q" using j peq qeq by simp
+            have "entry ?aX 0 (m + j) \<ge> entry ?aX 0 q" using nr idx by (simp add: nextrel0_def)
+            thus "entry B 0 j \<ge> entry B 0 qq" using eX[of "m + j"] idx eq_qX by simp
+          qed
+          show "nextrel0 B pp qq" unfolding nextrel0_def using ppqq qqB lt betw by simp
+        next
+          assume nr: "nextrel0 B pp qq"
+          have lt: "entry ?aX 0 p < entry ?aX 0 q"
+            using nr eX[of p] eX[of q] pm peq qge qeq pq by (simp add: nextrel0_def)
+          have betw: "\<forall>j. p < j \<and> j < q \<longrightarrow> entry ?aX 0 j \<ge> entry ?aX 0 q"
+          proof (intro allI impI)
+            fix j assume j: "p < j \<and> j < q"
+            have jm: "m \<le> j" using j peq by simp
+            then obtain jj where jj: "j = m + jj" using le_Suc_ex by blast
+            have jjr: "pp < jj \<and> jj < qq" using j jj peq qeq by simp
+            have "entry B 0 jj \<ge> entry B 0 qq" using nr jjr by (simp add: nextrel0_def)
+            thus "entry ?aX 0 j \<ge> entry ?aX 0 q" using eX[of j] jm jj j eq_qX by simp
+          qed
+          show "nextrel0 ?aX p q" unfolding nextrel0_def using pq qx lt betw by simp
+        qed
+        show ?thesis using lhs rhs by simp
+      qed
+    qed
+  qed
+qed
+
+text \<open>m: \<open>congR\<close> for the multi-\<open>IncrFirst\<close> tail bump (row 1 untouched, \<open>nextrel0\<close>
+  preserved by @{thm [source] b2_nextrel0_tailbump}).\<close>
+
+lemma b2_congR_tailbump:
+  assumes mpos: "0 < m" and cut: "\<And>j. j < Lng B \<Longrightarrow> m \<le> entry B 0 j"
+  shows "congR (diagSeq 0 (m - 1) @ (IncrFirst ^^ m) B) (diagSeq 0 (m - 1) @ B)"
+  unfolding congR_def
+proof (intro conjI allI impI)
+  show "Lng (diagSeq 0 (m - 1) @ (IncrFirst ^^ m) B) = Lng (diagSeq 0 (m - 1) @ B)"
+    using cdn_Lng_diagfun[OF mpos] b2_Lng_diag_app[OF mpos] by simp
+next
+  show "nextrel0 (diagSeq 0 (m - 1) @ (IncrFirst ^^ m) B) = nextrel0 (diagSeq 0 (m - 1) @ B)"
+    by (rule b2_nextrel0_tailbump[OF mpos cut])
+next
+  fix j assume jX: "j < Lng (diagSeq 0 (m - 1) @ B)"
+  have Lx: "Lng (diagSeq 0 (m - 1) @ B) = m + Lng B" by (rule b2_Lng_diag_app[OF mpos])
+  show "entry (diagSeq 0 (m - 1) @ (IncrFirst ^^ m) B) 1 j = entry (diagSeq 0 (m - 1) @ B) 1 j"
+  proof (cases "j < m")
+    case True
+    hence "j \<le> m - 1" using mpos by simp
+    thus ?thesis by (simp add: entry_diagSeq_append_lo)
+  next
+    case False
+    hence jm: "m \<le> j" by simp
+    then obtain jj where jj: "j = m + jj" using le_Suc_ex by blast
+    have jjB: "jj < Lng B" using jX Lx jj by simp
+    have je: "j = Suc (m - 1) + jj" using jm mpos jj by simp
+    have lhs: "entry (diagSeq 0 (m - 1) @ (IncrFirst ^^ m) B) 1 j = entry B 1 jj"
+    proof -
+      have "entry (diagSeq 0 (m - 1) @ (IncrFirst ^^ m) B) 1 j = entry ((IncrFirst ^^ m) B) 1 jj"
+        using je entry_diagSeq_append_hi[of jj "(IncrFirst ^^ m) B" "m - 1" 1] jjB by simp
+      thus ?thesis using entry_funpow_IncrFirst1[OF jjB] by simp
+    qed
+    have rhs: "entry (diagSeq 0 (m - 1) @ B) 1 j = entry B 1 jj"
+      using je entry_diagSeq_append_hi[of jj B "m - 1" 1] jjB by simp
+    show ?thesis using lhs rhs by simp
+  qed
+qed
+
+text \<open>m: in the \<open>m\<^sub>1\<^sub>0 > 0\<close> productive branch, \<open>Red M\<close> is exactly the right slice
+  of \<open>N = Red (coreReduce M)\<close> from the diagonal anchor \<open>m\<^sub>1\<^sub>0\<close> (the rebase is the
+  identity because \<open>N\<^bsub>0,m\<^sub>1\<^sub>0\<^esub> = N\<^bsub>1,m\<^sub>1\<^sub>0\<^esub> = m\<^sub>1\<^sub>0\<close> and the slice row 0 is \<open>\<ge> m\<^sub>1\<^sub>0\<close>).\<close>
+
+lemma b2_RedM_eq_segN:
+  assumes MT: "M \<in> T_PS" and mono: "monoT M" and pos: "0 < entry M 1 0"
+  shows "Red M = seg (Red (coreReduce M)) (entry M 1 0) (Lng (Red (coreReduce M)) - 1)"
+proof -
+  let ?m = "entry M 1 0"
+  let ?B = "diagSeq 0 (?m - 1) @ (IncrFirst ^^ ?m) M"
+  let ?N = "Red ?B"
+  let ?jN = "Lng ?N - 1"
+  have crM: "coreReduce M = ?B" by (rule coreReduce_m10pos_form[OF pos])
+  have nz: "\<not> zeroT M" using mono by (simp add: monoT_def)
+  have nmu: "\<not> multiT M" using mono by (simp add: multiT_def)
+  have nc: "\<not> (entry M 0 0 = 0 \<and> entry M 1 0 = 0)" using pos by simp
+  have domM: "Red_dom M" by (rule m_6_5_Red_welldef[OF MT])
+  have Mne: "M \<noteq> []" using MT by (simp add: T_PS_def)
+  have LMpos: "0 < Lng M" using Mne by (cases M) auto
+  have MPT: "M \<in> PT_PS" using MT mono by (simp add: PT_PS_def)
+  \<comment> \<open>geometry.\<close>
+  have LN: "Lng ?N = Lng M + ?m" by (rule m_6_5_monoT_Red_fact1_Lng[OF MT pos])
+  have m10le: "?m \<le> ?jN" using LN LMpos by linarith
+  have segPT: "seg ?N ?m ?jN \<in> PT_PS" using m_6_5_monoT_Red_m10pos[OF MPT pos] by simp
+  have thenC: "?m \<le> ?jN \<and> seg ?N ?m ?jN \<in> PT_PS" using m10le segPT by simp
+  \<comment> \<open>productive form.\<close>
+  have rM: "Red M = map (\<lambda>j. (entry ?N 0 j - entry ?N 0 ?m + entry ?N 1 ?m, entry ?N 1 j))
+                       [?m..<Suc ?jN]"
+    using Red.psimps[OF domM] nz nmu nc pos thenC by (simp add: Let_def)
+  \<comment> \<open>anchor values: entry N 0 m = m, entry N 1 m = m, so the rebase shift cancels.\<close>
+  have anc0: "entry ?N 0 ?m = ?m" using redB_prefix_diag[OF MT mono pos, rule_format, of 0 ?m] by simp
+  have anc1: "entry ?N 1 ?m = ?m" using redB_prefix_diag[OF MT mono pos, rule_format, of 1 ?m] by simp
+  \<comment> \<open>strict above anchor: entry N 0 j \<ge> m for m \<le> j \<le> jN.\<close>
+  have above: "\<And>j. ?m < j \<Longrightarrow> j \<le> ?jN \<Longrightarrow> ?m < entry ?N 0 j"
+  proof -
+    fix j assume a: "?m < j" and b: "j \<le> ?jN"
+    have jlt: "j < Lng ?N" using b LN LMpos by linarith
+    show "?m < entry ?N 0 j"
+      using redB_row0_strict_above_anchor[OF MT mono pos, rule_format, of j] a jlt by simp
+  qed
+  \<comment> \<open>the map equals seg N m jN.\<close>
+  have seqeq: "Red M = seg ?N ?m ?jN"
+  proof (rule nth_equalityI)
+    have Lmap: "Lng (Red M) = Suc ?jN - ?m" using rM by (simp add: length_upt del: upt_Suc)
+    have Lseg: "Lng (seg ?N ?m ?jN) = Suc ?jN - ?m" by (simp only: Lng_seg)
+    show "length (Red M) = length (seg ?N ?m ?jN)" using Lmap Lseg by simp
+    fix p assume p: "p < length (Red M)"
+    have plen: "p < Suc ?jN - ?m" using p rM by (simp add: length_upt del: upt_Suc)
+    have idx: "[?m..<Suc ?jN] ! p = ?m + p" using plen by (simp add: nth_upt del: upt_Suc)
+    have pmlt: "?m + p < Suc ?jN" using plen by simp
+    have pmle: "?m + p \<le> ?jN" using pmlt by simp
+    have plenmap: "p < length [?m..<Suc ?jN]" using plen by (simp add: length_upt del: upt_Suc)
+    have row0ge: "?m \<le> entry ?N 0 (?m + p)"
+    proof (cases "p = 0")
+      case True thus ?thesis using anc0 by simp
+    next
+      case False
+      hence "?m < ?m + p" by simp
+      thus ?thesis using above[of "?m + p"] pmle by simp
+    qed
+    have step_nth: "Red M ! p
+        = (\<lambda>j. (entry ?N 0 j - entry ?N 0 ?m + entry ?N 1 ?m, entry ?N 1 j)) ([?m..<Suc ?jN] ! p)"
+      by (subst rM) (rule nth_map[OF plenmap])
+    have "Red M ! p = (entry ?N 0 (?m + p) - entry ?N 0 ?m + entry ?N 1 ?m, entry ?N 1 (?m + p))"
+      using step_nth idx by simp
+    also have "\<dots> = (entry ?N 0 (?m + p), entry ?N 1 (?m + p))"
+      using anc0 anc1 row0ge by simp
+    also have "\<dots> = seg ?N ?m ?jN ! p"
+    proof -
+      have pseg: "p < Lng (seg ?N ?m ?jN)" using plen by (simp only: Lng_seg)
+      have e0: "fst (seg ?N ?m ?jN ! p) = entry ?N 0 (?m + p)"
+        using entry_seg[OF pseg, of 0] by (simp add: entry_def)
+      have e1: "snd (seg ?N ?m ?jN ! p) = entry ?N 1 (?m + p)"
+        using entry_seg[OF pseg, of 1] by (simp add: entry_def)
+      show ?thesis using e0 e1 by (simp add: prod_eq_iff)
+    qed
+    finally show "Red M ! p = seg ?N ?m ?jN ! p" .
+  qed
+  show ?thesis using seqeq crM by simp
+qed
+
+text \<open>m: \<open>N = Red (coreReduce M)\<close> splits as its diagonal prefix \<open>diagSeq 0 (m\<^sub>1\<^sub>0-1)\<close>
+  followed by \<open>Red M\<close> (its tail slice).  Uses @{thm [source] redB_prefix_diag}
+  (prefix is the diagonal) and @{thm [source] b2_RedM_eq_segN} (tail is \<open>Red M\<close>).\<close>
+
+lemma b2_N_eq_diag_RedM:
+  assumes MT: "M \<in> T_PS" and mono: "monoT M" and pos: "0 < entry M 1 0"
+  shows "Red (coreReduce M) = diagSeq 0 (entry M 1 0 - 1) @ Red M"
+proof -
+  let ?m = "entry M 1 0"
+  let ?N = "Red (coreReduce M)"
+  let ?jN = "Lng ?N - 1"
+  have crM: "coreReduce M = diagSeq 0 (?m - 1) @ (IncrFirst ^^ ?m) M"
+    by (rule coreReduce_m10pos_form[OF pos])
+  have Mne: "M \<noteq> []" using MT by (simp add: T_PS_def)
+  have LMpos: "0 < Lng M" using Mne by (cases M) auto
+  have LN: "Lng ?N = Lng M + ?m"
+    using m_6_5_monoT_Red_fact1_Lng[OF MT pos] crM by simp
+  have mlt: "?m < Lng ?N" using LN LMpos by linarith
+  have RMeq: "Red M = seg ?N ?m ?jN" by (rule b2_RedM_eq_segN[OF MT mono pos])
+  \<comment> \<open>prefix: take m N = diagSeq 0 (m-1).\<close>
+  have prefdiag: "\<And>i j. (i = 0 \<or> i = 1) \<and> j \<le> ?m \<Longrightarrow> entry ?N i j = j"
+    using redB_prefix_diag[OF MT mono pos, rule_format] crM by simp
+  have takeeq: "take ?m ?N = diagSeq 0 (?m - 1)"
+  proof (rule nth_equalityI)
+    have Ld: "Lng (diagSeq 0 (?m - 1)) = ?m" using pos by (simp del: upt_Suc)
+    show "length (take ?m ?N) = length (diagSeq 0 (?m - 1))"
+      using mlt Ld by simp
+    fix p assume p: "p < length (take ?m ?N)"
+    have pm: "p < ?m" using p mlt by simp
+    have ple: "p \<le> ?m" using pm by simp
+    have pN: "p < Lng ?N" using pm mlt by simp
+    have "take ?m ?N ! p = ?N ! p" using pm by simp
+    also have "\<dots> = (entry ?N 0 p, entry ?N 1 p)" by (simp add: entry_def)
+    also have "\<dots> = (p, p)" using prefdiag[of 0 p] prefdiag[of 1 p] ple by simp
+    also have "\<dots> = diagSeq 0 (?m - 1) ! p"
+    proof -
+      have pb: "p < Suc (?m - 1) - 0" using pm pos by simp
+      have "diagSeq 0 (?m - 1) ! p = (0 + p, 0 + p)" by (rule diagSeq_nth[OF pb])
+      thus ?thesis by simp
+    qed
+    finally show "take ?m ?N ! p = diagSeq 0 (?m - 1) ! p" .
+  qed
+  \<comment> \<open>tail: drop m N = seg N m jN = Red M.\<close>
+  have LNpos: "0 < Lng ?N" using mlt by linarith
+  have dropeq: "drop ?m ?N = seg ?N ?m ?jN"
+    by (rule seg_to_last_eq_drop[OF LNpos, symmetric])
+  have "?N = take ?m ?N @ drop ?m ?N" by simp
+  also have "\<dots> = diagSeq 0 (?m - 1) @ seg ?N ?m ?jN" using takeeq dropeq by simp
+  also have "\<dots> = diagSeq 0 (?m - 1) @ Red M" using RMeq by simp
+  finally show ?thesis .
+qed
+
+text \<open>m (B2 keystone, \<open>m\<^sub>1\<^sub>0 > 0\<close>): the idempotency \<open>Red.pinduct\<close> residual.
+  \<open>coreReduce (Red M)\<close> is the \<open>+m\<^sub>1\<^sub>0\<close> tail-bump of \<open>N = Red (coreReduce M)\<close>
+  (= \<open>diagSeq 0 (m\<^sub>1\<^sub>0-1) @ Red M\<close>), hence \<open>congR\<close> to \<open>N\<close> (@{thm [source]
+  b2_congR_tailbump}); so by the master-key @{thm [source] cdn_red_cong},
+  \<open>Red (coreReduce (Red M)) = Red N\<close>, which the supplied idempotency IH on
+  \<open>coreReduce M\<close> collapses to \<open>N = Red (coreReduce M)\<close>.\<close>
+
+lemma b2_idem_m10pos:
+  assumes MT: "M \<in> T_PS" and mono: "monoT M" and pos: "0 < entry M 1 0"
+    and IH: "Red (Red (coreReduce M)) = Red (coreReduce M)"
+  shows "Red (coreReduce (Red M)) = Red (coreReduce M)"
+proof -
+  let ?m = "entry M 1 0"
+  let ?N = "Red (coreReduce M)"
+  have Mne: "M \<noteq> []" using MT by (simp add: T_PS_def)
+  have LMpos: "0 < Lng M" using Mne by (cases M) auto
+  \<comment> \<open>Red M is in T_PS and has the same row-1 left end m10 > 0.\<close>
+  have LRM: "Lng (Red M) = Lng M" by (rule m_6_5_Lng_Red[OF MT])
+  have RMne: "Red M \<noteq> []" using LRM LMpos by (cases "Red M") auto
+  have RMT: "Red M \<in> T_PS" using RMne by (simp add: T_PS_def)
+  have RMm10: "entry (Red M) 1 0 = ?m" by (rule m_6_6_Red_leftend_1[OF MT])
+  have RMpos: "0 < entry (Red M) 1 0" using RMm10 pos by simp
+  \<comment> \<open>coreReduce (Red M) in m10>0 form.\<close>
+  have crRM: "coreReduce (Red M) = diagSeq 0 (?m - 1) @ (IncrFirst ^^ ?m) (Red M)"
+    using coreReduce_m10pos_form[OF RMpos] RMm10 by simp
+  \<comment> \<open>N = diagSeq prefix @ Red M.\<close>
+  have Neq: "?N = diagSeq 0 (?m - 1) @ Red M" by (rule b2_N_eq_diag_RedM[OF MT mono pos])
+  \<comment> \<open>cut condition: row 0 of Red M is \<ge> m10.\<close>
+  have RMrow0: "Red M = seg ?N ?m (Lng ?N - 1)" by (rule b2_RedM_eq_segN[OF MT mono pos])
+  have anc0: "entry ?N 0 ?m = ?m"
+    using redB_prefix_diag[OF MT mono pos, rule_format, of 0 ?m]
+          coreReduce_m10pos_form[OF pos] by simp
+  have LN: "Lng ?N = Lng M + ?m"
+    using m_6_5_monoT_Red_fact1_Lng[OF MT pos] coreReduce_m10pos_form[OF pos] by simp
+  have mlt: "?m < Lng ?N" using LN LMpos by linarith
+  have cut: "\<And>j. j < Lng (Red M) \<Longrightarrow> ?m \<le> entry (Red M) 0 j"
+  proof -
+    fix j assume j: "j < Lng (Red M)"
+    have jseg: "j < Lng (seg ?N ?m (Lng ?N - 1))" using j RMrow0 by simp
+    have "j < Suc (Lng ?N - 1) - ?m" using jseg by (simp only: Lng_seg)
+    hence jN: "?m + j < Lng ?N" using mlt by simp
+    have ej: "entry (Red M) 0 j = entry ?N 0 (?m + j)" using RMrow0 entry_seg[OF jseg] by simp
+    show "?m \<le> entry (Red M) 0 j"
+    proof (cases "j = 0")
+      case True thus ?thesis using ej anc0 by simp
+    next
+      case False
+      hence mj: "?m < ?m + j" by simp
+      have "?m < entry (Red (diagSeq 0 (?m - 1) @ (IncrFirst ^^ ?m) M)) 0 (?m + j)"
+        using redB_row0_strict_above_anchor[OF MT mono pos, rule_format, of "?m + j"]
+              mj jN coreReduce_m10pos_form[OF pos] by simp
+      hence "?m < entry ?N 0 (?m + j)" using coreReduce_m10pos_form[OF pos] by simp
+      thus ?thesis using ej by simp
+    qed
+  qed
+  \<comment> \<open>congR: coreReduce (Red M) ~ N.\<close>
+  have RcongN: "congR (coreReduce (Red M)) ?N"
+    using b2_congR_tailbump[OF pos cut] crRM Neq by simp
+  have funpow_ne: "(IncrFirst ^^ ?m) (Red M) \<noteq> []"
+    using RMne by (metis Lng_funpow_IncrFirst length_0_conv)
+  have crRMT: "coreReduce (Red M) \<in> T_PS"
+    using funpow_ne by (simp add: T_PS_def crRM)
+  \<comment> \<open>master-key congruence + the idempotency IH.\<close>
+  have "Red (coreReduce (Red M)) = Red ?N" by (rule cdn_red_cong[OF RcongN crRMT])
+  also have "\<dots> = ?N" using IH by simp
+  finally show ?thesis .
+qed
+
 end
