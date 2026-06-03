@@ -32770,4 +32770,355 @@ proof -
   thus ?thesis using MT0 M by (simp add: PT_PS_def)
 qed
 
+
+(* ===== final-layer block (if2): idempotency re-decomposition + B1 + finish ===== *)
+
+subsection \<open>§6.6 final layer (if2): \<open>Red\<close>-output re-decomposition and idempotency\<close>
+
+text \<open>if2: re-decomposition of \<open>P (concat Qs)\<close> for a list of NON-MULTI blocks whose
+  row-0 heads are descending left-minima.  Concretely: each block \<open>Qs!J\<close> is
+  non-empty and \<open>\<not> multiT\<close>, and the head \<open>entry (Qs!J) 0 0\<close> is \<open>\<le>\<close> every row-0
+  value of \<open>concat Qs\<close> at an index strictly inside an earlier-or-equal block.  Then
+  \<open>P (concat Qs) = Qs\<close>.  Proof by induction peeling the FIRST block via
+  @{thm [source] m_6_2_P_additive} at the boundary \<open>Lng (Qs!0)\<close> (a row-0 left-min
+  because the head of block 1 \<le> all of block 0).  Empirically TRUE (the
+  \<open>Red\<close>-output branch blocks satisfy this, 900/900 core-nontrunk at rank\<le>4).\<close>
+
+lemma if2_P_concat_blocks:
+  "\<And>i. Qs \<noteq> []
+       \<Longrightarrow> (\<forall>J < length Qs. Qs!J \<noteq> [] \<and> \<not> multiT (Qs!J))
+       \<Longrightarrow> (\<forall>J < length Qs. \<forall>I \<le> J. \<forall>k < Lng (Qs!I).
+              entry (Qs!J) 0 0 \<le> entry (Qs!I) 0 k)
+       \<Longrightarrow> P (concat Qs) = Qs"
+proof (induction Qs rule: length_induct)
+  case (1 Qs)
+  note IH = 1(1)
+  note Qsne = 1(2)
+  note nm = 1(3)
+  note hmin = 1(4)
+  show ?case
+  proof (cases Qs)
+    case Nil
+    thus ?thesis using Qsne by simp
+  next
+    case (Cons Q0 rest)
+    have Q0ne: "Q0 \<noteq> []" and Q0nm: "\<not> multiT Q0"
+      using nm Cons by fastforce+
+    show ?thesis
+    proof (cases "rest = []")
+      case True
+      \<comment> \<open>single non-multi block.\<close>
+      have "P (concat Qs) = P Q0" using Cons True by simp
+      also have "\<dots> = [Q0]" by (rule poper_P_nonmulti) (use Q0nm in simp)
+      finally show ?thesis using Cons True by simp
+    next
+      case restne0: False
+      \<comment> \<open>at least two blocks: peel block 0 at the boundary \<open>Lng Q0\<close>.\<close>
+      let ?S = "concat Qs"
+      have Sval: "?S = Q0 @ concat rest" using Cons by simp
+      have restne: "concat rest \<noteq> []"
+      proof -
+        obtain a list where rl: "rest = a # list" using restne0 by (cases rest) auto
+        have "a \<noteq> []" using nm Cons restne0 rl by fastforce
+        thus ?thesis using rl by simp
+      qed
+      have ST: "?S \<in> T_PS"
+      proof -
+        have "?S \<noteq> []" using Sval Q0ne by simp
+        thus ?thesis by (simp add: T_PS_def)
+      qed
+      let ?c = "Lng Q0"
+      have cpos: "0 < ?c" using Q0ne by (cases Q0) auto
+      have LS: "Lng ?S = Lng Q0 + Lng (concat rest)" using Sval by simp
+      have cle: "?c \<le> Lng ?S - 1" using LS restne by (cases "concat rest") auto
+      \<comment> \<open>row-0 of \<open>?S\<close> below \<open>?c\<close> reads \<open>Q0\<close>; at \<open>?c\<close> reads \<open>head (concat rest)\<close>.\<close>
+      have eS_lo: "\<And>j. j < ?c \<Longrightarrow> entry ?S 0 j = entry Q0 0 j"
+        using Sval cpos by (simp add: entry_def nth_append)
+      have eS_c: "entry ?S 0 ?c = entry (concat rest) 0 0"
+        using Sval by (simp add: entry_def nth_append)
+      \<comment> \<open>head of block 1 (= head of \<open>concat rest\<close>) is \<open>\<le>\<close> all of block 0.\<close>
+      have lmin: "\<And>j. j < ?c \<Longrightarrow> entry ?S 0 ?c \<le> entry ?S 0 j"
+      proof -
+        fix j assume j: "j < ?c"
+        have len1: "1 < length Qs" using Cons restne0 by (cases rest) auto
+        have jc: "j < Lng (Qs!0)" using j Cons by simp
+        have h1: "entry (Qs!1) 0 0 \<le> entry (Qs!0) 0 j"
+          using hmin[rule_format, of 1 0 j] len1 jc by simp
+        have q0: "Qs!0 = Q0" using Cons by simp
+        have q1: "Qs!1 = rest!0" using Cons by simp
+        have r0ne: "rest!0 \<noteq> []" using nm Cons restne0 by fastforce
+        have head_rest: "entry (concat rest) 0 0 = entry (rest!0) 0 0"
+        proof -
+          obtain a list where rl: "rest = a # list" using restne0 by (cases rest) auto
+          have ane: "a \<noteq> []" using r0ne rl by simp
+          have "concat rest = a @ concat list" using rl by simp
+          thus ?thesis using ane rl by (simp add: entry_def nth_append)
+        qed
+        show "entry ?S 0 ?c \<le> entry ?S 0 j"
+          using h1 j eS_lo eS_c head_rest q0 q1 by simp
+      qed
+      \<comment> \<open>additive split of \<open>P\<close> at the boundary \<open>?c\<close>.\<close>
+      have split: "P ?S = P (seg ?S 0 (?c - 1)) @ P (seg ?S ?c (Lng ?S - 1))"
+        by (rule m_6_2_P_additive[OF ST cpos cle lmin])
+      \<comment> \<open>left part is \<open>Q0\<close>.\<close>
+      have segL: "seg ?S 0 (?c - 1) = Q0"
+      proof -
+        have suc_c: "Suc (?c - 1) = ?c" using cpos by simp
+        have cleS: "Suc (?c - 1) \<le> Lng ?S" using suc_c cle LS restne by simp
+        have "seg ?S 0 (?c - 1) = take (Suc (?c - 1)) ?S"
+          by (rule seg_0_eq_take[OF cleS])
+        also have "\<dots> = take ?c ?S" using suc_c by simp
+        also have "\<dots> = Q0" using Sval by simp
+        finally show ?thesis .
+      qed
+      have PL: "P (seg ?S 0 (?c - 1)) = [Q0]"
+      proof -
+        have "\<not> (multiT Q0 \<and> 1 < Lng Q0)" using Q0nm by simp
+        thus ?thesis using segL by (simp add: poper_P_nonmulti)
+      qed
+      \<comment> \<open>right part is \<open>concat rest\<close>.\<close>
+      have segR: "seg ?S ?c (Lng ?S - 1) = concat rest"
+      proof -
+        have LSpos: "0 < Lng ?S" using LS cpos by linarith
+        have "seg ?S ?c (Lng ?S - 1) = drop ?c ?S"
+          by (rule seg_to_last_eq_drop[OF LSpos])
+        also have "\<dots> = concat rest" using Sval by simp
+        finally show ?thesis .
+      qed
+      \<comment> \<open>IH on \<open>rest\<close>.\<close>
+      have nm_rest: "\<forall>J < length rest. rest!J \<noteq> [] \<and> \<not> multiT (rest!J)"
+      proof (intro allI impI)
+        fix J assume J: "J < length rest"
+        have "Suc J < length Qs" using J Cons by simp
+        moreover have "Qs!(Suc J) = rest!J" using Cons by simp
+        ultimately show "rest!J \<noteq> [] \<and> \<not> multiT (rest!J)" using nm by metis
+      qed
+      have hmin_rest: "\<forall>J < length rest. \<forall>I \<le> J. \<forall>k < Lng (rest!I).
+              entry (rest!J) 0 0 \<le> entry (rest!I) 0 k"
+      proof (intro allI impI)
+        fix J I k assume J: "J < length rest" and IJ: "I \<le> J" and k: "k < Lng (rest!I)"
+        have sJ: "Suc J < length Qs" using J Cons by simp
+        have sIJ: "Suc I \<le> Suc J" using IJ by simp
+        have kQ: "k < Lng (Qs!(Suc I))" using k Cons by simp
+        have "entry (Qs!(Suc J)) 0 0 \<le> entry (Qs!(Suc I)) 0 k"
+          using hmin sJ sIJ kQ by blast
+        moreover have "Qs!(Suc J) = rest!J" using Cons by simp
+        moreover have "Qs!(Suc I) = rest!I" using Cons by simp
+        ultimately show "entry (rest!J) 0 0 \<le> entry (rest!I) 0 k" by simp
+      qed
+      have shorter: "length rest < length Qs" using Cons by simp
+      have PR: "P (concat rest) = rest"
+        using IH shorter restne0 nm_rest hmin_rest by blast
+      have "P ?S = [Q0] @ rest" using split PL segR PR by simp
+      thus ?thesis using Cons by simp
+    qed
+  qed
+qed
+
+text \<open>if2: \<open>(IncrFirst^^k)\<close> preserves \<open>\<not> multiT\<close> (per @{thm [source] IncrFirst_multiT_eq}).\<close>
+
+lemma if2_multiT_funpow_IncrFirst: "multiT ((IncrFirst ^^ k) M) = multiT M"
+  by (induction k) (simp_all add: IncrFirst_multiT_eq)
+
+text \<open>if2: the branch block \<open>B\<^sub>J = (IncrFirst^^e\<^sub>J)(Red (NJ M J))\<close> of a core-nontrunk
+  \<open>M\<close> is non-empty and non-multi.  \<open>NJ M J\<close> is non-multi (@{thm [source] NJ_nonmulti});
+  if mono it is in \<open>PT\<^sub>PS\<close> so \<open>Red (NJ M J)\<close> is mono (@{thm [source]
+  m_6_5_Red_preserves_monoT}, the now-green keystone); if zero \<open>Red (NJ M J) = [(0,0)]\<close>
+  is zero.  Either way \<open>\<not> multiT\<close>, preserved by \<open>(IncrFirst^^e\<^sub>J)\<close>.\<close>
+
+lemma if2_block_props:
+  assumes M: "M \<in> PT_PS" and c0: "entry M 0 0 = 0" and c1: "entry M 1 0 = 0"
+    and JBr: "J < Lng (Br M)"
+  shows "(IncrFirst ^^ (Joints M ! J + 1 - npJ M J)) (Red (NJ M J)) \<noteq> []
+       \<and> \<not> multiT ((IncrFirst ^^ (Joints M ! J + 1 - npJ M J)) (Red (NJ M J)))"
+proof -
+  let ?e = "Joints M ! J + 1 - npJ M J"
+  let ?B = "(IncrFirst ^^ ?e) (Red (NJ M J))"
+  have brJne: "Br M ! J \<noteq> []" by (rule Br_component_nonempty[OF M JBr])
+  have NJne: "NJ M J \<noteq> []" by (simp add: NJ_def)
+  have NJT: "NJ M J \<in> T_PS" using NJne by (simp add: T_PS_def)
+  have nm: "\<not> multiT (NJ M J)" by (rule NJ_nonmulti[OF M c0 c1 JBr])
+  have L0: "0 < Lng (Red (NJ M J))"
+  proof -
+    have "Lng (Red (NJ M J)) = Lng (NJ M J)" by (rule m_6_5_Lng_Red[OF NJT])
+    moreover have "0 < Lng (NJ M J)" by (simp add: NJ_def)
+    ultimately show ?thesis by simp
+  qed
+  have LB: "Lng ?B = Lng (Red (NJ M J))" by (simp only: Lng_funpow_IncrFirst)
+  have Bpos: "0 < Lng ?B" using L0 LB by simp
+  have Bne: "?B \<noteq> []" using Bpos length_greater_0_conv by blast
+  have nmRed: "\<not> multiT (Red (NJ M J))"
+  proof (cases "zeroT (NJ M J)")
+    case True
+    have domNJ: "Red_dom (NJ M J)" by (rule m_6_5_Red_welldef[OF NJT])
+    have "Red (NJ M J) = [(0,0)]" using Red.psimps[OF domNJ] True by simp
+    thus ?thesis by (simp add: multiT_def zeroT_def entry_def)
+  next
+    case False
+    have mono: "monoT (NJ M J)" using nm False by (simp add: multiT_def)
+    have NJPT: "NJ M J \<in> PT_PS" using NJT mono by (simp add: PT_PS_def)
+    have "monoT (Red (NJ M J))" by (rule m_6_5_Red_preserves_monoT[OF NJPT])
+    thus ?thesis by (simp add: multiT_def)
+  qed
+  have nmB: "\<not> multiT ?B" using nmRed by (simp add: if2_multiT_funpow_IncrFirst)
+  show ?thesis using Bne nmB by simp
+qed
+
+text \<open>if2: the branch block row-0 head \<open>Joints M ! J + 1\<close> is the row-0 MINIMUM of the
+  block \<open>B\<^sub>J\<close>.  Inner \<open>Red (NJ M J)\<close> has its head as row-0 min (@{thm [source]
+  m_6_5_Red_leftend_row0_min}, or trivially for the zero singleton);
+  \<open>(IncrFirst^^e\<^sub>J)\<close> shifts row 0 uniformly, preserving the min.\<close>
+
+lemma if2_block_row0_min:
+  assumes M: "M \<in> PT_PS" and c0: "entry M 0 0 = 0" and c1: "entry M 1 0 = 0"
+    and JBr: "J < Lng (Br M)"
+    and k: "k < Lng ((IncrFirst ^^ (Joints M ! J + 1 - npJ M J)) (Red (NJ M J)))"
+  shows "Joints M ! J + 1
+         \<le> entry ((IncrFirst ^^ (Joints M ! J + 1 - npJ M J)) (Red (NJ M J))) 0 k"
+proof -
+  let ?e = "Joints M ! J + 1 - npJ M J"
+  let ?R = "Red (NJ M J)"
+  let ?B = "(IncrFirst ^^ ?e) ?R"
+  have brJne: "Br M ! J \<noteq> []" by (rule Br_component_nonempty[OF M JBr])
+  have NJne: "NJ M J \<noteq> []" by (simp add: NJ_def)
+  have NJT: "NJ M J \<in> T_PS" using NJne by (simp add: T_PS_def)
+  have nm: "\<not> multiT (NJ M J)" by (rule NJ_nonmulti[OF M c0 c1 JBr])
+  have LR: "Lng ?R = Lng (NJ M J)" by (rule m_6_5_Lng_Red[OF NJT])
+  have LRpos: "0 < Lng ?R" using LR by (simp add: NJ_def)
+  have kR: "k < Lng ?R" using k by simp
+  \<comment> \<open>row-0 head of \<open>?R\<close> is its row-0 min.\<close>
+  have headmin: "entry ?R 0 0 \<le> entry ?R 0 k"
+  proof (cases "zeroT (NJ M J)")
+    case True
+    have domNJ: "Red_dom (NJ M J)" by (rule m_6_5_Red_welldef[OF NJT])
+    have R1: "?R = [(0,0)]" using Red.psimps[OF domNJ] True by simp
+    have "k = 0" using kR R1 by simp
+    thus ?thesis by simp
+  next
+    case False
+    have mono: "monoT (NJ M J)" using nm False by (simp add: multiT_def)
+    show ?thesis using m_6_5_Red_leftend_row0_min[OF NJT mono] kR by blast
+  qed
+  \<comment> \<open>head value of \<open>?R\<close> is \<open>npJ M J\<close>.\<close>
+  have head_val: "entry ?R 0 0 = npJ M J" by (rule fin_Red_NJ_leftend[OF M c0 c1 JBr])
+  have nple: "npJ M J \<le> Joints M ! J + 1" by (rule npJ_le_Joints_Suc[OF M c1 JBr])
+  \<comment> \<open>\<open>(IncrFirst^^e)\<close> shifts row 0 by \<open>e\<close>.\<close>
+  have eB: "entry ?B 0 k = entry ?R 0 k + ?e"
+    by (rule entry_funpow_IncrFirst0[OF kR])
+  have "Joints M ! J + 1 = npJ M J + ?e" using nple by simp
+  also have "\<dots> = entry ?R 0 0 + ?e" using head_val by simp
+  also have "\<dots> \<le> entry ?R 0 k + ?e" using headmin by simp
+  also have "\<dots> = entry ?B 0 k" using eB by simp
+  finally show ?thesis .
+qed
+
+text \<open>if2: STRUCTURE — \<open>Br (Red M) = map B [0..<Lng (Br M)]\<close> for a core-nontrunk
+  \<open>M\<close>.  By @{thm [source] fl_s_TrMax_Red} \<open>TrMax (Red M) = TrMax M \<noteq> Lng (Red M) - 1\<close>,
+  so \<open>Br (Red M) = P (seg (Red M) (TrMax M + 1) (Lng (Red M) - 1))\<close>; that segment is
+  exactly the \<open>concat (branch blocks)\<close> tail of @{thm [source]
+  d_Red_core_nontrunk_unfold} (dropping the \<open>diagSeq 0 (TrMax M)\<close> prefix); and
+  @{thm [source] if2_P_concat_blocks} re-decomposes it back to the blocks
+  (non-multi by @{thm [source] if2_block_props}; descending heads by
+  @{thm [source] if2_block_row0_min} + @{thm [source] fin_block_head} +
+  Joints non-increasing @{thm [source] m_6_4_FirstNodes_Joints_mono}).\<close>
+
+lemma if2_Br_Red:
+  assumes M: "M \<in> PT_PS" and c0: "entry M 0 0 = 0" and c1: "entry M 1 0 = 0"
+    and tne: "TrMax M \<noteq> Lng M - 1"
+  shows "Br (Red M)
+       = map (\<lambda>J. (IncrFirst ^^ (Joints M ! J + 1 - npJ M J)) (Red (NJ M J)))
+             [0..<Lng (Br M)]"
+proof -
+  have MT: "M \<in> T_PS" using M by (simp add: PT_PS_def)
+  have mono: "monoT M" using M by (simp add: PT_PS_def)
+  have nz: "\<not> zeroT M" using mono by (simp add: monoT_def)
+  have nmu: "\<not> multiT M" using mono by (simp add: multiT_def)
+  let ?t = "TrMax M"
+  let ?blk = "\<lambda>J. (IncrFirst ^^ (Joints M ! J + 1 - npJ M J)) (Red (NJ M J))"
+  let ?Qs = "map ?blk [0..<Lng (Br M)]"
+  have LrM: "Lng (Red M) = Lng M" by (rule m_6_5_Lng_Red[OF MT])
+  \<comment> \<open>\<open>TrMax\<close> and the unfold of \<open>Red M\<close>.\<close>
+  have trR: "TrMax (Red M) = ?t" by (rule fl_s_TrMax_Red[OF MT mono c0 c1 tne])
+  have rM: "Red M = diagSeq 0 ?t @ concat ?Qs"
+    by (rule d_Red_core_nontrunk_unfold[OF MT nz nmu c0 c1 tne])
+  \<comment> \<open>there is a branch.\<close>
+  have brne: "Br M \<noteq> []"
+  proof -
+    have "Br M = P (seg M (?t + 1) (Lng M - 1))" using tne by (simp add: Br_def)
+    thus ?thesis using P_nonempty by simp
+  qed
+  have JBr: "0 < Lng (Br M)" using brne by (cases "Br M") auto
+  \<comment> \<open>\<open>TrMax (Red M) \<noteq> Lng (Red M) - 1\<close>.\<close>
+  have tb: "?t \<le> Lng M - 1" by (rule TrMax_bound[OF MT])
+  with tne have trlt: "?t < Lng M - 1" by linarith
+  have trRne: "TrMax (Red M) \<noteq> Lng (Red M) - 1" using trR trlt LrM by simp
+  \<comment> \<open>length of the diagonal prefix.\<close>
+  have lenD: "Lng (diagSeq 0 ?t) = Suc ?t" by (simp del: upt_Suc)
+  \<comment> \<open>\<open>Br (Red M)\<close> as the \<open>P\<close> of the segment past the trunk.\<close>
+  have brRed: "Br (Red M) = P (seg (Red M) (?t + 1) (Lng (Red M) - 1))"
+    using trRne trR by (simp add: Br_def)
+  \<comment> \<open>that segment is \<open>concat ?Qs\<close>.\<close>
+  have RMne: "Red M \<noteq> []"
+  proof -
+    have "0 < Lng (Red M)" using rM lenD by simp
+    thus ?thesis by (cases "Red M") auto
+  qed
+  have LRM_ge: "?t + 1 \<le> Lng (Red M) - 1"
+  proof -
+    have "Lng (Red M) - 1 = Lng M - 1" using LrM by simp
+    thus ?thesis using trlt by linarith
+  qed
+  have seg_eq: "seg (Red M) (?t + 1) (Lng (Red M) - 1) = concat ?Qs"
+  proof -
+    have LRMpos: "0 < Lng (Red M)" using RMne by (cases "Red M") auto
+    have "seg (Red M) (?t + 1) (Lng (Red M) - 1) = drop (?t + 1) (Red M)"
+      by (rule seg_to_last_eq_drop[OF LRMpos])
+    also have "\<dots> = drop (Suc ?t) (diagSeq 0 ?t @ concat ?Qs)" using rM by simp
+    also have "\<dots> = concat ?Qs" using lenD by simp
+    finally show ?thesis .
+  qed
+  \<comment> \<open>re-decompose \<open>P (concat ?Qs) = ?Qs\<close>.\<close>
+  have Qsne: "?Qs \<noteq> []" using JBr by simp
+  have lenQs: "length ?Qs = Lng (Br M)" by simp
+  have nm: "\<forall>J < length ?Qs. ?Qs!J \<noteq> [] \<and> \<not> multiT (?Qs!J)"
+  proof (intro allI impI)
+    fix J assume J: "J < length ?Qs"
+    hence JB: "J < Lng (Br M)" using lenQs by simp
+    have nthQ: "?Qs!J = ?blk J" using JB by simp
+    show "?Qs!J \<noteq> [] \<and> \<not> multiT (?Qs!J)"
+      using if2_block_props[OF M c0 c1 JB] nthQ by simp
+  qed
+  have hmin: "\<forall>J < length ?Qs. \<forall>I \<le> J. \<forall>k < Lng (?Qs!I).
+                entry (?Qs!J) 0 0 \<le> entry (?Qs!I) 0 k"
+  proof (intro allI impI)
+    fix J I k
+    assume J: "J < length ?Qs" and IJ: "I \<le> J" and k: "k < Lng (?Qs!I)"
+    have JB: "J < Lng (Br M)" using J lenQs by simp
+    have IB: "I < Lng (Br M)" using IJ JB by linarith
+    have nthJ: "?Qs!J = ?blk J" using JB by simp
+    have nthI: "?Qs!I = ?blk I" using IB by simp
+    \<comment> \<open>head of block J equals \<open>Joints M ! J + 1\<close>.\<close>
+    have hJ: "entry (?Qs!J) 0 0 = Joints M ! J + 1"
+      using fin_block_head[OF M c0 c1 JB] nthJ by simp
+    \<comment> \<open>row-0 of block I is \<open>\<ge> Joints M ! I + 1\<close>.\<close>
+    have kI: "k < Lng (?blk I)" using k nthI by simp
+    have geI: "Joints M ! I + 1 \<le> entry (?Qs!I) 0 k"
+      using if2_block_row0_min[OF M c0 c1 IB kI] nthI by simp
+    \<comment> \<open>Joints non-increasing: \<open>Joints M ! J \<le> Joints M ! I\<close>.\<close>
+    have jJI: "Joints M ! J \<le> Joints M ! I"
+    proof (cases "I = J")
+      case True thus ?thesis by simp
+    next
+      case False
+      hence IltJ: "I < J" using IJ by simp
+      show ?thesis using m_6_4_FirstNodes_Joints_mono[OF M IltJ JB] by simp
+    qed
+    show "entry (?Qs!J) 0 0 \<le> entry (?Qs!I) 0 k"
+      using hJ geI jJI by simp
+  qed
+  have "P (concat ?Qs) = ?Qs"
+    by (rule if2_P_concat_blocks[OF Qsne nm hmin])
+  thus ?thesis using brRed seg_eq by simp
+qed
+
 end
