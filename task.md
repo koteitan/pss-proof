@@ -26,18 +26,18 @@
       - ✅ 命題（$\textrm{Red}$ の冪等性）〔`p_6_5_Red_idem` 討伐。`idem_nonmulti`(Red.pinduct 5枝)→`m_6_5_Red_idem`(anchored_slice)。鍵: `NJ(Red M)J=IncrFirst^eJ(Red(NJ M J))`(head置換恒等)で B1 が Red_IncrFirst+IH に collapse。full-multiT/P_Red 不要〕
       - ✅ 命題（$\textrm{Red}$ と $\textrm{Pred}$ の可換性）〔`m_6_5_Red_Pred` 討伐。Red.pinduct 全6枝、core-nontrunk(3b)を `rpred_core_nontrunk_step`(per-branch IH + Pred-transfer `rpred_FirstNodes/Joints/npJ/NJ_*`)で close〕
         - ✅🚧 補題（死枝[20]の到達不能性）〔上記「Red の IncrFirst 不変性」と共有。m10>0 完全証明 `m_6_5_monoT_Red_m10pos`(green)。設計 `docs/red-le-domain.md §6-11`〕
-      - 🚨 命題（$\textrm{Red}$ と基本列の可換性）〔A4〕
+      - 🚨🚧 命題（$\textrm{Red}$ と基本列の可換性）〔A4。base case $j_1=0$ green(`roper_base_Lng1`/`roper_oper_Lng1`)。帰納段は BLOCKER＝$M[n]$ が Red 再帰の逆側で pinduct 非整列、mono Red は長さ非減少。要 mono-recursion 帰納原理〕
       - 🚨 命題（$\textrm{Red}$ が許容性を保つこと）〔A4〕
       - 🚨 系（許容化の $\textrm{Red}$ 不変性）〔A4〕
       - 🚨 系（$\textrm{Red}$ が基点を保つこと）〔A4〕
     - 🚨🚧 §6.6 簡約性 〔大半 $T_{\textrm{PS}}$ で真。keystone「reduced ⟺ RedCondA∧RedCondB」は**A4非依存・今証明可能**と確定 (877/0)、`RedCondA⟹red_le` で §6.5 を unblock。設計 `docs/reducedness.md`〕
-      - 🚨 命題（簡約性の切片への遺伝性）〔article 前提偽 → $j'_0=0$ に補正 (A5)〕
+      - ✅ 命題（簡約性の切片への遺伝性）〔A5補正 $j'_0=0$。`herd_6_6_reduced_slice`(green)。**idem 不要**＝`Pred^^k`+`m_6_5_Red_Pred` 可換性で直接(seg M 0 j1'=Pred^^k M, Red M=M)。(f) brick 完了〕
       - 🚨 命題（$P$ が簡約性を保つこと）
       - 🚨 命題（簡約性が基本列で保たれること）
       - 🚨 命題（簡約性と係数の関係）
       - ✅ 補題（$\textrm{Red}$ と左端の関係）(1)(2)〔(2)=`m_6_6_Red_leftend_2`(green)、対角前置の Red 保存。A4非依存 leaf、keystone cascade の step(2)〕
       - 🚨 補題（簡約性と係数の基本性質）
-      - 🚨 補題（簡約性と左端の関係）〔keystone (d) 経路。`m_6_6_Br_Pred`(訂正版,green)〕
+      - 🚨🚧 補題（簡約性と左端の関係）〔keystone (d) (e)経路。`m_6_6_Br_Pred`(訂正版,green)。CRUX `m_6_6_Red_diag_prefix`(Red が対角前置を保存)は経験的真6310/0だが数百行級 BLOCKER＝Br/Joints/npJ/NJ の diag-prefix sub-theory(4補題)要。green helper `ecrux_diagSeq_split` バンク済〕
       - ✅ 補題（条件 (A) と (B) と係数の基本性質）〔`m_6_6_condAB_coeff`、A4非依存・純nextrel〕
       - 🚨 系（直系先祖による切片と $\textrm{Red}$ と $\textrm{IncrFirst}$ の関係）
       - 🚨 系（$1$ 列ペア数列の基本性質）
@@ -55,9 +55,9 @@
       - ✅ 命題（順序数項の単項成分の基本性質）
       - 🚨 命題（部分表現の不等式の延長性）〔encoding 判断要、保留〕
       - ✅ [Buc1] Lemma 2.1（`<` が `T` 上の狭義全順序）
-    - 🚨 §7.2 scb分解 〔全 sorry 転記済〕
+    - 🚨🚧 §7.2 scb分解 〔全 sorry 転記済。**brick `m_7_flatBT_inj`(flatBT 単射, green, 重み/プレフィックス自由論法)完成** → triviality/unique を unblock〕
       - 🚨 命題（scb分解の置換可能性）
-      - 🚨 命題（scb分解の合成則）
+      - ✅🚧 命題（scb分解の合成則）〔part(1) `m_7_2_scb_compose`(green)。part(2) は**原文どおりだと偽**(反例 t=Trm[],c=[Zsym]; `scbcomp_compose2_counterexample` green)→訂正版 `scbcomp_compose2_PT`(前提 isPTB_str c 追加)green。**A11**〕
       - 🚨 命題（scb分解の自明性の判定条件）
       - 🚨 命題（scb分解の一意性）
       - 🚨 系（加法と scb分解の関係）

@@ -241,3 +241,46 @@ idem_nonmulti(Red.pinduct)は **zeroT/core-trunk/shift/m10>0 の4枝が green**
 → 残りは full idempotency（multiT concat-fixpoint）+ Red-output 構造補題群 + B1 組立て。
 interlocking で multi-week 級。3 engine（Red_IncrFirst/cut_bump/cdn_red_cong）は土台として
 不可欠だが、この最終層は別途まとまった作業を要する。
+
+## 15. keystone 組立て設計 = 原文 j₁ 帰納の subcase ↔ brick 対応 (2026-06-03)
+
+idem(`p_6_5_Red_idem`, green via NJ_nonmulti) 完了で §14 の full-idem 壁は破れた。
+keystone は今や原文ルート(A)で組める。原文証明(content.md 1099-1230)の構造:
+
+**WLOG**: `j₁=0` は Red 定義直結（CondA 自明 ∧ CondB⟺M₀₀=M₁₀）。一般 M は
+`M` 単項 ∧ `M₁₀=0` に帰着（係留＝(0,0)始まり; multiT は P で分解 + concat-lift）。
+以下 `M` mono, `M₀₀=M₁₀=0`、`j₁` に関する数学的帰納法。
+
+**base `j₁=1`**: `(0,0)<ᴹ(0,1)`。`(1,0)<ᴹ(1,1)` の有無で2分岐、両者 Red 定義直結。
+
+**step `j₁>1` — forward (reduced ⟹ A∧B)**: `j₀:=max{j≤j₁ | ∀j'<j. (1,j')<ᴹ(1,j'+1)}`,
+`J₁:=Lng(P(seg M j₀ j₁))-1`。slice遺伝性[(f)=A3] で `seg M 0 j₀` reduced ∧ mono ⟹
+Red 定義より `= diagSeq 0 j₀`。任意の next-witness `(i,j'₀)<ᴹ(i,j'₁)` を以下で分類:
+  - `j'₁<j₁`: Pred(M) reduced[(f)] + IH ⟹ `M_{i,j'₀}+1=M_{i,j'₁}`.
+  - `j₀=j'₁=j₁ ∧ J₁=0`: `M=diagSeq` ⟹ 直接.
+  - `j₀<j'₁=j₁ ∧ J₁=0`: `N:=diagSeq 0 (M₁ₘ-1)@Red(P(seg M (j₀+1) j₁)_{J₀})`,
+    N reduced via (e)[=A1]; N₀=(0,0) via Red_leftend(2)[(a)green]; `Lng N-1<j₁` ⟹ IH.
+    `j'₀≤j₀`/`j₀<j'₀` の2副subcase（後者は P 定義で `m≤j'₀`）.
+  - `j'₁=j₁ ∧ J₁>0`: `m:=j₁-Lng(P(M)_{J₁})+1`。`M₀ₘ<j₀`(P 定義)+係数基本性質(2)[(c)]
+    ⟹ `M₁ₘ≤M₀ₘ<j₀<m`。`P(M)_{J₁}=IncrFirst^{M₀ₘ-M₁ₘ}(Red(P(M)_{J₁}))`[reduced+Red 定義]。
+    同 N 構成 + (e) + IH。`m=j₁`/`m<j₁∧j'₀≤j₀`/`m<j₁∧j₀<j'₀` の3副subcase。
+
+**step — backward (A∧B ⟹ reduced)**: `M₁₀=0∧CondB ⟹ M₀₀=0`。補助(＊): next-tie
+で切れる任意 PT_PS slice `seg M j'₀ j'₁` に対し rebase `N':=(M₀ⱼ-M₀ⱼ'₀+M₁ⱼ'₀, M₁ⱼ)`
+が reduced（(c)係数基本性質(2)で N'∈ℕ²）。`N:=diagSeq 0 (M₁ⱼ'₀-1)@N'`, `Lng N-1<j₁`
+[(c)係数基本性質(3): `M₁ⱼ'₀<j'₀`] ⟹ IH で N reduced ⟹ Red(M)=M を blockwise 再構成。
+
+**brick 在庫（2026-06-03）**:
+| brick | 役割 | 状態 |
+|---|---|---|
+| (a) Red_leftend(1)(2) | N₀=(0,0) pinning | ✅ `m_6_6_Red_leftend_1/2` |
+| (c) condAB_coeff(2)(3) | `M₁ⱼ≤M₀ⱼ` ∧ `M_{i,j}<j` | ✅ `m_6_6_condAB_coeff` 系 |
+| idem | Red 固定点・diag 折返し | ✅ `p_6_5_Red_idem` |
+| (e) reduced_leftend | N reduced (diag前置) | 🚨🤖 A1 `m_6_6_Red_diag_prefix`+`m_6_6_reduced_leftend` |
+| (f) reduced_slice | Pred/初片 reduced 遺伝 | 🚨🤖 A3 `p_6_6_reduced_slice` (A5: j'₀=0) |
+| concat-lift / P_block | multiT WLOG・blockwise | ✅ `m_6_6_RedCond_concat_lift`/`_P_block`/`Red_P_stable` |
+
+→ A1(e)+A3(f) 着地で `m_6_6_reduced_iff_cond` を上記 subcase 木で Isar 組立て。
+forward/backward とも IH は `Pred M` / 構成した `N`(Lng 厳減) に当てる二重帰納。
+keystone 緑後: `reduced⟹RedCondA⟹red_le`(877/0 lead)で §6.5 Red_le が unblock、
+さらに reduced_coeff(=reduced⟹(c))・reduced_oper・P_reduced が keystone 下流で連鎖。
