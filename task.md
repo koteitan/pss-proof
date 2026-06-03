@@ -15,7 +15,7 @@
     - ✅ §6.4 幹と枝
     - 🚨🚧 §6.5 簡約化 〔下記8系は $T_{\textrm{PS}}$ で偽、係留切片で真 (correction A4)。**cluster は dead-branch[20] を中心に絡むが非循環＝破れると確定**。最難ボトルネックを値単調性不変量1つ `m_6_5_Red_leftend_row0_min` まで絞り込み済。設計 `docs/red-le-domain.md §6-10`〕
       - ✅ 命題（$\textrm{Red}$ の well-defined 性）
-      - ✅ 命題（$\textrm{Red}$ の $\textrm{IncrFirst}$ 不変性）〔`m_6_5_Red_IncrFirst`(green)。**cut-anchored engine 完成**: `cut_bump` locale + `fin_cut_bump_Red`(Red.pinduct, cut量化) + B2。§6.5後半/§6.6 全体の唯一ボトルネックを解消。設計 `docs/reducedness.md §11`〕
+      - ✅ 命題（$\textrm{Red}$ の $\textrm{IncrFirst}$ 不変性）〔`m_6_5_Red_IncrFirst`(green)。**cut-anchored engine 完成**: `cut_bump` locale + `fin_cut_bump_Red`(Red.pinduct, cut量化) + B2。更に master-key **`cdn_red_cong`**(green): `congR A X ⟹ Red A = Red X`(nextrel0+Lng+row1一致)。§6.5後半/§6.6 の唯一ボトルネックを解消。設計 `docs/reducedness.md §11-§12`〕
         - ✅🚧 補題（死枝[20]の到達不能性）〔= `p_6_5_monoT_Red`。**m10>0 ケース完全証明 `m_6_5_monoT_Red_m10pos`(green, 非循環)**。α 経由: leftend-min→PIECE3→BC0→monoT_Red。m10=0 はエンコーディング縮退で premise `0<m10` 補正(Red は m10>0 でのみ使用)。設計 `docs/red-le-domain.md §6-11`〕
       - ✅ 命題（$\textrm{Lng}$ の $\textrm{Red}$ 不変性）〔§6.5 下流の linchpin〕
       - ✅ 系（$\textrm{Red}$ が零項性を保つこと）
