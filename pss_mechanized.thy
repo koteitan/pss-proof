@@ -31879,4 +31879,291 @@ proof -
   finally show ?thesis .
 qed
 
+
+(* ===== final-layer block from workflow fl-s ===== *)
+
+subsection \<open>§6.6 final layer (S): \<open>Red\<close>-output structure on the core-nontrunk branch\<close>
+
+text \<open>m: For a core-nontrunk \<open>M\<close> (\<open>monoT\<close>, \<open>M\<^bsub>0,0\<^esub> = M\<^bsub>1,0\<^esub> = 0\<close>, \<open>TrMax M \<noteq> Lng M - 1\<close>),
+  the row-1 parent \<open>npJ M 0 - 1\<close> of the first node \<open>FirstNodes M ! 0 = TrMax M + 1\<close>
+  lies strictly below \<open>TrMax M\<close>, so \<open>npJ M 0 \<le> TrMax M\<close>.
+
+  The clean argument: \<open>FirstNodes M ! 0 = TrMax M + 1\<close> (since \<open>IdxSum (Br M) ! 0 = 0\<close>);
+  if the branch head row-1 is \<open>0\<close> then \<open>npJ M 0 = 0 \<le> TrMax M\<close>; otherwise the unique
+  row-1 parent \<open>p\<^sub>1\<close> of \<open>TrMax M + 1\<close> satisfies \<open>p\<^sub>1 < TrMax M + 1\<close>, and \<open>p\<^sub>1 = TrMax M\<close>
+  would give \<open>nextR M 1 (TrMax M) (TrMax M + 1)\<close>, contradicting @{thm [source] TrMax_stop}.
+  Hence \<open>p\<^sub>1 < TrMax M\<close> and \<open>npJ M 0 = Suc p\<^sub>1 \<le> TrMax M\<close>.
+  Empirically TRUE 1865/1865 (rank\<le>4, core-nontrunk), \<open>npJ M 0 = TrMax M + 1\<close> never.\<close>
+
+lemma s_FirstNode0_eq_TrMax_Suc:
+  assumes M: "M \<in> PT_PS" and brne: "Br M \<noteq> []"
+  shows "FirstNodes M ! 0 = TrMax M + 1"
+proof -
+  have JBr: "0 < length (Br M)" using brne by (cases "Br M") auto
+  have "IdxSum (Br M) ! 0 = 0" by (simp add: idxsum_nth[where J=0])
+  thus ?thesis using FirstNodes_nth[OF JBr] by simp
+qed
+
+lemma s_npJ0_le_TrMax:
+  assumes M: "M \<in> PT_PS" and core1: "entry M 1 0 = 0" and brne: "Br M \<noteq> []"
+  shows "npJ M 0 \<le> TrMax M"
+proof (cases "entry (Br M ! 0) 1 0 = 0")
+  case True
+  thus ?thesis by (simp add: npJ_def)
+next
+  case nzbr: False
+  have MT: "M \<in> T_PS" using M by (simp add: PT_PS_def)
+  have monoM: "monoT M" using M by (simp add: PT_PS_def)
+  have JBr: "0 < Lng (Br M)" using brne by (cases "Br M") auto
+  let ?f = "FirstNodes M ! 0"
+  have fnEq: "?f = TrMax M + 1" by (rule s_FirstNode0_eq_TrMax_Suc[OF M brne])
+  \<comment> \<open>\<open>TrMax M \<noteq> Lng M - 1\<close> because there is a branch.\<close>
+  have tb: "TrMax M \<le> Lng M - 1" by (rule TrMax_bound[OF MT])
+  have trne: "TrMax M \<noteq> Lng M - 1"
+  proof
+    assume "TrMax M = Lng M - 1"
+    hence "Br M = []" by (simp add: Br_def)
+    with brne show False by simp
+  qed
+  with tb have trlt: "TrMax M < Lng M - 1" by linarith
+  \<comment> \<open>structure of the first node, mirroring @{thm [source] npJ_le_Joints_Suc}.\<close>
+  have fnTr: "Joints M ! 0 \<le> TrMax M \<and> TrMax M < ?f"
+    by (rule m_6_4_FirstNodes_TrMax_Joints[OF M JBr])
+  have nxJ: "nextR M 0 (Joints M ! 0) ?f" by (rule Joints_parent_nextR[OF M JBr])
+  have fL: "?f < Lng M" using nxJ by (simp add: nextR_def nextrel0_def)
+  have fpos: "0 < ?f" using fnTr by linarith
+  have eBf1: "entry M 1 ?f = entry (Br M ! 0) 1 0"
+    by (rule entry_FirstNodes_eq_component_gen[OF M JBr])
+  have f1pos: "0 < entry M 1 ?f" using eBf1 nzbr by simp
+  have e10_lt: "entry M 1 0 < entry M 1 ?f" using core1 f1pos by simp
+  have le00f: "leR M 0 0 ?f"
+  proof -
+    have root: "leR M 0 0 (Lng M - 1)" using monoM by (simp add: monoT_def)
+    have fle: "?f \<le> Lng M - 1" using fL by simp
+    show ?thesis by (rule m_5_1_ancestor_tree_1[OF MT root _ fle]) simp
+  qed
+  obtain p1 where p1: "0 \<le> p1" "p1 < ?f" "nextR M 1 p1 ?f"
+    using m_5_1_parent_exists_2[OF MT fpos fL e10_lt le00f] by blast
+  have ex1: "\<exists>!j. nextR M 1 j ?f"
+    using p1(3) nextR1_unique by blast
+  have the_p1: "(THE j. nextR M 1 j ?f) = p1"
+    using p1(3) by (rule the1_equality[OF ex1])
+  have np: "npJ M 0 = Suc p1" using nzbr the_p1 by (simp add: npJ_def)
+  \<comment> \<open>\<open>p\<^sub>1 \<le> TrMax M\<close> from \<open>p\<^sub>1 < ?f = TrMax M + 1\<close>; and \<open>p\<^sub>1 \<noteq> TrMax M\<close> by \<open>TrMax_stop\<close>.\<close>
+  have p1_le: "p1 \<le> TrMax M" using p1(2) fnEq by simp
+  have p1_ne: "p1 \<noteq> TrMax M"
+  proof
+    assume eq: "p1 = TrMax M"
+    have "nextR M 1 (TrMax M) (TrMax M + 1)" using p1(3) eq fnEq by simp
+    moreover have "\<not> nextR M 1 (TrMax M) (TrMax M + 1)" by (rule TrMax_stop[OF MT trlt])
+    ultimately show False by simp
+  qed
+  have "p1 < TrMax M" using p1_le p1_ne by linarith
+  thus ?thesis using np by simp
+qed
+
+text \<open>m: \<S>6.6 final layer (S) — keystone \<open>TrMax (Red M) = TrMax M\<close> on core-nontrunk.
+
+  \<open>Red M = diagSeq 0 (TrMax M) @ rest\<close> with \<open>rest = concat (branch blocks)\<close>.  The
+  trunk of the output coincides with that of \<open>M\<close> by @{thm [source] TrMax_eqI}:
+  \<^item> \<^bold>\<open>below\<close>: for \<open>j' < TrMax M\<close> both \<open>j'\<close>, \<open>j'+1\<close> sit on the diagonal prefix, so
+    the consecutive step is a \<open>nextR _ 1\<close> edge (@{thm [source] nextR1_consecutive}).
+  \<^item> \<^bold>\<open>stop\<close>: at the junction \<open>entry (Red M) 1 (TrMax M) = TrMax M\<close> but
+    \<open>entry (Red M) 1 (TrMax M + 1) = npJ M 0 \<le> TrMax M\<close> (@{thm [source] s_npJ0_le_TrMax}
+    via row-1 leftend invariance of the bumped \<open>Red (N\<^sub>0)\<close>), so the row-1 value does
+    not strictly increase and the trunk stops.
+  Empirically TRUE 22601/22601 (rank\<le>5 core-nontrunk).\<close>
+
+lemma fl_s_TrMax_Red:
+  assumes MT: "M \<in> T_PS" and mono: "monoT M"
+    and c0: "entry M 0 0 = 0" and c1: "entry M 1 0 = 0"
+    and tne: "TrMax M \<noteq> Lng M - 1"
+  shows "TrMax (Red M) = TrMax M"
+proof -
+  have M_PT: "M \<in> PT_PS" using MT mono by (simp add: PT_PS_def)
+  have Mne: "M \<noteq> []" using MT by (simp add: T_PS_def)
+  have LMpos: "0 < Lng M" using Mne by (cases M) auto
+  have nz: "\<not> zeroT M" using mono by (simp add: monoT_def)
+  have nmu: "\<not> multiT M" using mono by (simp add: multiT_def)
+  have dom: "Red_dom M" by (rule m_6_5_Red_welldef[OF MT])
+  let ?t = "TrMax M"
+  \<comment> \<open>there is a branch.\<close>
+  have tb: "?t \<le> Lng M - 1" by (rule TrMax_bound[OF MT])
+  with tne have trlt: "?t < Lng M - 1" by linarith
+  have brne: "Br M \<noteq> []"
+  proof -
+    have "Br M = P (seg M (?t + 1) (Lng M - 1))" using tne by (simp add: Br_def)
+    thus ?thesis using P_nonempty by simp
+  qed
+  have JBr: "0 < Lng (Br M)" using brne by (cases "Br M") auto
+  \<comment> \<open>unfold \<open>Red M\<close> in the core-nontrunk branch.\<close>
+  define f where "f = (\<lambda>J.
+        (IncrFirst ^^ (Joints M ! J + 1
+            - (if entry (Br M ! J) 1 0 = 0 then 0
+               else Suc (THE j. nextR M 1 j (FirstNodes M ! J)))))
+          (Red ((entry M 0 0 + Joints M ! J + 1,
+                 entry M 1 0 + (if entry (Br M ! J) 1 0 = 0 then 0
+                        else Suc (THE j. nextR M 1 j (FirstNodes M ! J))))
+                # tl (Br M ! J))))"
+  have rM: "Red M = diagSeq 0 ?t @ concat (map f [0..<Lng (Br M)])"
+    using Red.psimps[OF dom] nz nmu c0 c1 tne unfolding f_def by (simp add: Let_def)
+  \<comment> \<open>the first block, identified with \<open>(IncrFirst ^^ e\<^sub>0) (Red (NJ M 0))\<close>.\<close>
+  have f0: "f 0 = (IncrFirst ^^ (Joints M ! 0 + 1 - npJ M 0)) (Red (NJ M 0))"
+    unfolding f_def NJ_def npJ_def using c0 c1 by simp
+  have blk0_ne: "Red (NJ M 0) \<noteq> []"
+  proof -
+    have brJne: "Br M ! 0 \<noteq> []" by (rule Br_component_nonempty[OF M_PT JBr])
+    have "NJ M 0 \<noteq> []" by (simp add: NJ_def)
+    hence "NJ M 0 \<in> T_PS" by (simp add: T_PS_def)
+    hence "Lng (Red (NJ M 0)) = Lng (NJ M 0)" by (rule m_6_5_Lng_Red)
+    moreover have "0 < Lng (NJ M 0)" by (simp add: NJ_def)
+    ultimately show ?thesis by (cases "Red (NJ M 0)") auto
+  qed
+  \<comment> \<open>\<open>rest = concat blocks\<close>; split off block 0 so its head is exposed.\<close>
+  let ?rest = "concat (map f [0..<Lng (Br M)])"
+  have blk0f_ne: "f 0 \<noteq> []"
+  proof -
+    have "Lng (f 0) = Lng (Red (NJ M 0))" using f0 by simp
+    thus ?thesis using blk0_ne by (cases "f 0") auto
+  qed
+  have rest_split: "?rest = f 0 @ concat (map f [1..<Lng (Br M)])"
+  proof -
+    have "[0..<Lng (Br M)] = 0 # [1..<Lng (Br M)]"
+      using JBr by (simp add: upt_rec)
+    thus ?thesis by simp
+  qed
+  have rest_ne: "?rest \<noteq> []" using rest_split blk0f_ne by simp
+  \<comment> \<open>length of the diagonal prefix is \<open>Suc ?t\<close>.\<close>
+  have lenD: "Lng (diagSeq 0 ?t) = Suc ?t" by (simp del: upt_Suc)
+  \<comment> \<open>the junction row-1 value of \<open>Red M\<close> is \<open>npJ M 0\<close>, which is \<open>\<le> ?t\<close>.\<close>
+  have e_junc1: "entry (Red M) 1 (?t + 1) = npJ M 0"
+  proof -
+    have "entry (Red M) 1 (?t + 1) = entry ?rest 1 0"
+      using rM by (simp add: entry_diagSeq_append_junction)
+    also have "\<dots> = entry (f 0) 1 0"
+      using rest_split blk0f_ne by (simp add: entry_def nth_append)
+    also have "\<dots> = entry (Red (NJ M 0)) 1 0"
+    proof -
+      have L0: "0 < Lng (Red (NJ M 0))" using blk0_ne by (cases "Red (NJ M 0)") auto
+      show ?thesis using f0 entry_funpow_IncrFirst1[OF L0] by simp
+    qed
+    also have "\<dots> = entry (NJ M 0) 1 0"
+      by (rule m_6_6_Red_leftend_1) (simp add: NJ_def T_PS_def)
+    also have "\<dots> = entry M 1 0 + npJ M 0" by (rule entry_NJ_1_0)
+    also have "\<dots> = npJ M 0" using c1 by simp
+    finally show ?thesis .
+  qed
+  have np_le: "npJ M 0 \<le> ?t" by (rule s_npJ0_le_TrMax[OF M_PT c1 brne])
+  \<comment> \<open>now pin \<open>TrMax\<close> by @{thm [source] TrMax_eqI}.\<close>
+  have RMne: "Red M \<noteq> []"
+  proof -
+    have "Lng (Red M) = Suc ?t + Lng (concat (map f [0..<Lng (Br M)]))"
+      using rM lenD by simp
+    thus ?thesis by (cases "Red M") auto
+  qed
+  have RMT: "Red M \<in> T_PS" using RMne by (simp add: T_PS_def)
+  show ?thesis
+  proof (rule TrMax_eqI[OF RMT])
+    fix j' assume j': "j' < ?t"
+    \<comment> \<open>below: diagonal-prefix consecutive step.\<close>
+    have jj: "Suc j' \<le> ?t" using j' by simp
+    have L: "Suc j' < Lng (Red M)"
+    proof -
+      have "Suc ?t \<le> Lng (Red M)" using rM lenD by simp
+      thus ?thesis using jj by linarith
+    qed
+    have jle: "j' \<le> ?t" using j' by simp
+    have e0j:  "entry (Red M) 0 j' = j'"
+      using rM entry_diagSeq_append_lo[OF jle] by simp
+    have e0sj: "entry (Red M) 0 (Suc j') = Suc j'"
+      using rM entry_diagSeq_append_lo[OF jj] by simp
+    have e1j:  "entry (Red M) 1 j' = j'"
+      using rM entry_diagSeq_append_lo[OF jle] by simp
+    have e1sj: "entry (Red M) 1 (Suc j') = Suc j'"
+      using rM entry_diagSeq_append_lo[OF jj] by simp
+    show "nextR (Red M) 1 j' (j' + 1)"
+      using nextR1_consecutive[OF L] e0j e0sj e1j e1sj by simp
+  next
+    \<comment> \<open>stop: row-1 does not strictly increase at the junction.\<close>
+    show "\<not> nextR (Red M) 1 ?t (?t + 1)"
+    proof
+      assume step: "nextR (Red M) 1 ?t (?t + 1)"
+      have "entry (Red M) 1 ?t < entry (Red M) 1 (?t + 1)"
+        using step by (simp add: nextR_def nextrel1_def)
+      moreover have "entry (Red M) 1 ?t = ?t"
+      proof -
+        have "entry (diagSeq 0 ?t @ concat (map f [0..<Lng (Br M)])) 1 ?t = ?t"
+          by (rule entry_diagSeq_append_lo[OF order.refl])
+        thus ?thesis using rM by simp
+      qed
+      ultimately have "?t < npJ M 0" using e_junc1 by simp
+      thus False using np_le by linarith
+    qed
+  qed
+qed
+
+
+(* ===== final-layer block from workflow fl-d ===== *)
+subsection \<open>D (idempotency domain): reusable core-nontrunk \<open>Red\<close> unfold (\<open>NJ\<close> form)\<close>
+
+text \<open>m (final layer, B1 prep): the core-nontrunk \<open>Red\<close> equation written in the
+  abstracted \<open>NJ\<close>/\<open>npJ\<close> form.  This is the same equation reproduced inline at
+  many use-sites (e.g. \<open>m_6_5_Lng_Red\<close>'s non-trunk case, line ~6694); banking it
+  once makes the B1 (core-nontrunk idempotency) re-decomposition a short rewrite.
+  Empirically the recursive arguments \<open>NJ M J\<close> are exactly the \<open>tl (Br M ! J)\<close>
+  branch heads rebased by \<open>(Joints M ! J + 1, npJ M J)\<close>, and they are
+  \<^emph>\<open>non-multi\<close> (@{thm [source] NJ_nonmulti}) so the idempotency \<open>Red.pinduct\<close>
+  IH on the \<open>\<not> multiT\<close> domain D applies to each of them.\<close>
+
+lemma d_Red_core_nontrunk_unfold:
+  assumes MT: "M \<in> T_PS" and nz: "\<not> zeroT M" and nmu: "\<not> multiT M"
+    and c0: "entry M 0 0 = 0" and c1: "entry M 1 0 = 0"
+    and tne: "TrMax M \<noteq> Lng M - 1"
+  shows "Red M = diagSeq 0 (TrMax M)
+           @ concat (map (\<lambda>J. (IncrFirst ^^ (Joints M ! J + 1 - npJ M J))
+                                  (Red (NJ M J)))
+                     [0..<Lng (Br M)])"
+proof -
+  have dom: "Red_dom M" by (rule m_6_5_Red_welldef[OF MT])
+  have rM: "Red M = diagSeq 0 (TrMax M) @
+        concat (map (\<lambda>J.
+            (IncrFirst ^^ (Joints M ! J + 1
+                - (if entry (Br M ! J) 1 0 = 0 then 0
+                   else Suc (THE j. nextR M 1 j (FirstNodes M ! J)))))
+              (Red ((entry M 0 0 + Joints M ! J + 1,
+                     entry M 1 0 + (if entry (Br M ! J) 1 0 = 0 then 0
+                            else Suc (THE j. nextR M 1 j (FirstNodes M ! J))))
+                    # tl (Br M ! J))))
+          [0..<Lng (Br M)])"
+    using Red.psimps[OF dom] nz nmu c0 c1 tne by (simp add: Let_def)
+  have blk_eq: "(\<lambda>J.
+            (IncrFirst ^^ (Joints M ! J + 1
+                - (if entry (Br M ! J) 1 0 = 0 then 0
+                   else Suc (THE j. nextR M 1 j (FirstNodes M ! J)))))
+              (Red ((entry M 0 0 + Joints M ! J + 1,
+                     entry M 1 0 + (if entry (Br M ! J) 1 0 = 0 then 0
+                            else Suc (THE j. nextR M 1 j (FirstNodes M ! J))))
+                    # tl (Br M ! J))))
+        = (\<lambda>J. (IncrFirst ^^ (Joints M ! J + 1 - npJ M J)) (Red (NJ M J)))"
+  proof (rule ext)
+    fix J
+    have npE: "(if entry (Br M ! J) 1 0 = 0 then 0
+                else Suc (THE j. nextR M 1 j (FirstNodes M ! J))) = npJ M J"
+      by (simp add: npJ_def)
+    have argE: "((entry M 0 0 + Joints M ! J + 1, entry M 1 0 + npJ M J)
+                 # tl (Br M ! J)) = NJ M J"
+      by (simp add: NJ_def)
+    show "(IncrFirst ^^ (Joints M ! J + 1
+              - (if entry (Br M ! J) 1 0 = 0 then 0
+                 else Suc (THE j. nextR M 1 j (FirstNodes M ! J)))))
+            (Red ((entry M 0 0 + Joints M ! J + 1,
+                   entry M 1 0 + (if entry (Br M ! J) 1 0 = 0 then 0
+                          else Suc (THE j. nextR M 1 j (FirstNodes M ! J))))
+                  # tl (Br M ! J)))
+        = (IncrFirst ^^ (Joints M ! J + 1 - npJ M J)) (Red (NJ M J))"
+      by (simp only: npE argE)
+  qed
+  show ?thesis using rM by (simp only: blk_eq)
+qed
+
 end
