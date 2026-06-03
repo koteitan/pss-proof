@@ -223,3 +223,21 @@ cdn_red_cong(green) は **row-0/nextrel0 congruence**（row-1 完全一致が前
   不可なら row-1-changing engine（非一様）。
 
 → 次: B2 を直接 pinning で（到達可能性高）。並行/後続で B1 は P_Red 経由。
+
+## 14. idempotency 4/5 枝 green、B1 は full-idem + Red-output 構造に依存 (2026-06-03)
+
+idem_nonmulti(Red.pinduct)は **zeroT/core-trunk/shift/m10>0 の4枝が green**
+(idem2_* + b2_idem_m10pos)。残る **core-nontrunk(B1)** を精査:
+- 残差 `Red(NJ(Red M)J)=Red(NJ M J)` の経路: `congR(NJ(Red M)J, NJ M J)` は **偽**
+  (row-1 差 151/3748; 反例 M=[(0,0),(1,0),(2,2)] J=0: NJ(Red M)=[(1,0),(2,1)] vs
+  NJ(M)=[(1,0),(2,2)])。だが **`congR(NJ(Red M)J, Red(NJ M J))` は真 3748/3748** →
+  `Red(NJ(Red M)J)=Red(Red(NJ M J))`[cdn_red_cong]`=Red(NJ M J)`[**idem IH**]。
+- よって **B1 は idem IH 必須**（IH-free 不可）。だが NJ M J が multiT になりうるので
+  ¬multiT 限定 IH では足りず、**full idempotency（multiT 枝込み）**が要る。
+- full idem の multiT 枝: `Red(concat(map Red(P M)))=concat(map Red(P M))`（P_Red は偽で
+  再 merge するが Red は fixpoint）。+ **Red-output 構造補題**（TrMax(Red M)=TrMax M,
+  Lng(Br(Red M))=Lng(Br M), Br(Red M)!J 分解。いずれも未構築の multi-lemma）。
+
+→ 残りは full idempotency（multiT concat-fixpoint）+ Red-output 構造補題群 + B1 組立て。
+interlocking で multi-week 級。3 engine（Red_IncrFirst/cut_bump/cdn_red_cong）は土台として
+不可欠だが、この最終層は別途まとまった作業を要する。
