@@ -24,7 +24,7 @@
       - 🚨 系（$P$ の $\textrm{Red}$ 同変性）〔A4〕
       - ✅ 命題（単項性と $\textrm{Red}$ の関係）〔`m_6_5_monoT_Red_m10pos`、m10>0(=Red 使用域)、dead-branch[20]不到達〕
       - ✅ 命題（$\textrm{Red}$ の冪等性）〔`p_6_5_Red_idem` 討伐。`idem_nonmulti`(Red.pinduct 5枝)→`m_6_5_Red_idem`(anchored_slice)。鍵: `NJ(Red M)J=IncrFirst^eJ(Red(NJ M J))`(head置換恒等)で B1 が Red_IncrFirst+IH に collapse。full-multiT/P_Red 不要〕
-      - 🚨🤖 命題（$\textrm{Red}$ と $\textrm{Pred}$ の可換性）〔`a3_Red_Pred_cond`(green): Red.pinduct 5/6枝(zeroT/multiT/core-trunk/shift/m10>0)を discharge、core-nontrunk(3b)を仮定 Hbr で carry。残: 3b は Pred-transfer(FirstNodes/Joints(Pred M)=…)で Hbr discharge。設計 `docs/6.5_red_pred_decomposition.md`〕
+      - ✅ 命題（$\textrm{Red}$ と $\textrm{Pred}$ の可換性）〔`m_6_5_Red_Pred` 討伐。Red.pinduct 全6枝、core-nontrunk(3b)を `rpred_core_nontrunk_step`(per-branch IH + Pred-transfer `rpred_FirstNodes/Joints/npJ/NJ_*`)で close〕
         - ✅🚧 補題（死枝[20]の到達不能性）〔上記「Red の IncrFirst 不変性」と共有。m10>0 完全証明 `m_6_5_monoT_Red_m10pos`(green)。設計 `docs/red-le-domain.md §6-11`〕
       - 🚨 命題（$\textrm{Red}$ と基本列の可換性）〔A4〕
       - 🚨 命題（$\textrm{Red}$ が許容性を保つこと）〔A4〕
@@ -62,7 +62,7 @@
       - 🚨 命題（scb分解の一意性）
       - 🚨 系（加法と scb分解の関係）
       - 🚨 命題（scb分解と基本列の関係）
-      - 🚨 命題（$\textrm{RightNodes}$ と部分表現の関係）
+      - ✅ 命題（$\textrm{RightNodes}$ と部分表現の関係）〔`m_7_2_RightNodes_subexpr`、BT項レベル(spineSub)、§6独立〕
     - 🚨 §7.3 翻訳写像
       - ✅ **定義** `Trans`/`Mark`（相互再帰 `function`、termination 後回し）
       - 🚨 命題（$\textrm{Trans}$ の well-defined 性）
