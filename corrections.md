@@ -355,3 +355,17 @@ yaBMS で経験的検証済）はブロック $n$ 個でこの訂正後の式と
 **訂正案**: (2) の前提に「\(c\) が主表現列である（`isPTB_str c`）」を追加する（同値な代替として「\(t \neq ()\)」を仮定してもよい。\(t\neq()\) のとき \((s,c,b)\) が \(t\) の scb分解であることから \(c\) の主表現性が従う）。この補正の下で (2) は成り立つ（\(\textrm{flatBT}(D_v t) = D_v \# \textrm{flatBT}(t) = (D_v\# s)\frown c\frown b\) で右側末尾 \(b\) も不変）。
 
 **形式化での扱い**: (1) は原文どおり成立し `m_7_2_scb_compose` として証明済。(2) は原文の literal 形を反例として機械化（`scbcomp_compose2_counterexample`、`\<not> isPTB_str [Zsym]` は `scbcomp_isPTB_Zsym_False`）、補正版を `scbcomp_compose2_PT`（前提 `isPTB_str c` 追加）として証明した。いずれも本体ビルド緑。
+
+## A12. §7.2 命題（scb分解の置換可能性）: 前提に \(t_0\neq()\) または \(c_1\) が主表現列であることが必要（反例あり）
+
+**所在**: §7.2「命題（scb分解の置換可能性）」。形式化では `p_7_2_scb_replaceable`。
+
+> \(c_0, c_1 \in T_{\textrm{B}}\)、\((c_0\) が主表現列でない\() \vee (c_1\) が主表現列\()\)、\(t_0 \in T_{\textrm{B}}\)、\((s, \textrm{flat}(c_0), b)\) が \(t_0\) の scb分解であるとする。このとき \(t_1 \in T_{\textrm{B}}\) が存在して \(\textrm{flat}(t_1) = s\frown\textrm{flat}(c_1)\frown b\) かつ \((s, \textrm{flat}(c_1), b)\) が \(t_1\) の scb分解となる。
+
+**観察**: scb分解の主表現条件は、対象項が空項 \(()\) のときのみ外れる（[[A11]] と同じ穴）。原文の選言前提 \((\neg\textrm{principal}(c_0)) \vee \textrm{principal}(c_1)\) は、\(c_0 = ()\)（\(\neg\textrm{principal}\) で左成立）のとき \(c_1\) が**非主表現（複項）でも満たされてしまう**。
+
+反例: \(t_0 = c_0 = ()\)（空項）、\(s=b=()\)、\(c_1 = D_0() \cdot D_1()\)（複項＝2項のタプル、非主表現）。前提はすべて成立（\((s,\textrm{flat}(c_0),b)\) は \(t_0=()\) の scb分解、選言前提は左で成立）。だが結論の \(t_1\) は \(\textrm{flat}(t_1)=\textrm{flat}(c_1)\) と flat の単射性（`m_7_flatBT_inj`）から \(t_1 = c_1\) に限られ、\(c_1 \neq ()\) なので scb分解 \((s,\textrm{flat}(c_1),b)\) は \(\textrm{principal}(\textrm{flat}(c_1))\) を要求するが、\(c_1\) は複項ゆえ偽。よって結論が成り立たない。
+
+**訂正案**: 選言前提を \((t_0 \neq ()) \to \textrm{principal}(c_1)\)（または単に \(t_0 \neq ()\) を仮定し \(c_0\) の主表現性を \(t_0\) の分解から導く）に補正する。すなわち空項 \(t_0\) の場合を除けば原文の論証は通る。
+
+**形式化での扱い**: 反例を `m_7_2_scb_replaceable_counterexample`（`scbrepl_multi_not_PTB` = 複項の flat は非主表現）として機械化。\(t_0=()\) の退化ケースを `m_7_2_scb_replaceable_t0zero`、像条件つきの補正版を `m_7_2_scb_replaceable_corr_mod_image`（`scbrepl_concl_from_image` 経由）として証明した。いずれも本体ビルド緑。

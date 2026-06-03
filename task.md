@@ -37,7 +37,7 @@
       - 🚨 命題（簡約性と係数の関係）
       - ✅ 補題（$\textrm{Red}$ と左端の関係）(1)(2)〔(2)=`m_6_6_Red_leftend_2`(green)、対角前置の Red 保存。A4非依存 leaf、keystone cascade の step(2)〕
       - 🚨 補題（簡約性と係数の基本性質）
-      - 🚨🚧 補題（簡約性と左端の関係）〔keystone (d) (e)経路。`m_6_6_Br_Pred`(訂正版,green)。CRUX `m_6_6_Red_diag_prefix`(Red が対角前置を保存)＝経験真6310/0。**構造トリオ green**: `ecrux_TrMax_diag_prefix`(TrMax(diagSeq 0 k@M)=Suc k+TrMax M)/`ecrux_Br_diag_prefix`(Br A=Br M)/`ecrux_FirstNodes_diag_prefix`(map(+Suc k))＋`ecrux_drop_tail`/`ecrux_Lng`/`ecrux_branch_seg_eq`/`ecrux_diagSeq_split`。**残＝funpow 整合**(`IncrFirst^eJ(Red(NJ A J))=IncrFirst^eJ(Red(NJ M J))` 全 J)＋`d_Red_core_nontrunk_unfold`(@32118) で CRUX assembly→`m_6_6_reduced_leftend`〕
+      - 🚨🚧 補題（簡約性と左端の関係）〔keystone (d) (e)経路。**CRUX `m_6_6_Red_diag_prefix` green!**(Red が対角前置を保存=keystone 最後の壁突破)。近道: `b2_N_eq_diag_RedM`(Red(coreReduce M)=diagSeq 0(m10-1)@Red M, 既green)で coreReduce 経由→`fin_cut_bump_Red` engine(ecrux_bumpAt_diag_IncrFirst/cutOK_diag/Red_diag_IncrFirst_step/_pow/eq_Red_coreReduce)。funpow 整合は不要だった。**残＝(e)-lemma `m_6_6_reduced_leftend` 組立て**(u=0: CRUX+M reduced; u>0: ecrux_diagSeq_split+CRUX(N); mono=elead_monoT_N green)〕
       - ✅ 補題（条件 (A) と (B) と係数の基本性質）〔`m_6_6_condAB_coeff`、A4非依存・純nextrel〕
       - 🚨 系（直系先祖による切片と $\textrm{Red}$ と $\textrm{IncrFirst}$ の関係）
       - 🚨 系（$1$ 列ペア数列の基本性質）
@@ -56,7 +56,7 @@
       - 🚨 命題（部分表現の不等式の延長性）〔encoding 判断要、保留〕
       - ✅ [Buc1] Lemma 2.1（`<` が `T` 上の狭義全順序）
     - 🚨🚧 §7.2 scb分解 〔全 sorry 転記済。**brick `m_7_flatBT_inj`(flatBT 単射, green, 重み/プレフィックス自由論法)完成** → triviality/unique を unblock〕
-      - 🚨 命題（scb分解の置換可能性）
+      - ✅🚧 命題（scb分解の置換可能性）〔原文 literal は**偽**(反例 t0=c0=(),c1=複項; `m_7_2_scb_replaceable_counterexample` green)→**A12**。退化 `m_7_2_scb_replaceable_t0zero`/像条件つき補正 `m_7_2_scb_replaceable_corr_mod_image` green〕
       - ✅🚧 命題（scb分解の合成則）〔part(1) `m_7_2_scb_compose`(green)。part(2) は**原文どおりだと偽**(反例 t=Trm[],c=[Zsym]; `scbcomp_compose2_counterexample` green)→訂正版 `scbcomp_compose2_PT`(前提 isPTB_str c 追加)green。**A11**〕
       - ✅ 命題（scb分解の自明性の判定条件）〔`m_7_2_scb_triviality`(両 shows green)。t=c⟺自明分解⟺s=[]分解存在。converse は flatBT_inj+プレフィックス自由(`scbtriv_flat_append_RP_nil`)〕
       - 🚨🚧 命題（scb分解の一意性）〔conjunct(1) 無条件版 `m_7_2_scb_unique_decomp`(green、(s,b) 一意性、t=Trm[]ケース埋め+`m_7_2_scb_unique_sb`)。残 conjunct(2)-(5)=domB↔kind/kind0,1 一意性〕
