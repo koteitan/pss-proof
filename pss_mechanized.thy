@@ -39090,4 +39090,364 @@ qed
 
 
 
+
+subsection \<open>§6.6 keystone forward — \<open>M \<in> RT\<^bsub>PS\<^esub> \<Longrightarrow> RedCondA M \<and> RedCondB M\<close> (Front A)\<close>
+
+text \<open>FWD brick: a diagonal \<open>diagSeq u v\<close> (\<open>u \<le> v\<close>) satisfies both \<open>RedCondA\<close> and
+  \<open>RedCondB\<close>.  Every node \<open>j > 0\<close> has unique row-\<open>i\<close> parent \<open>j-1\<close> with
+  \<open>entry i (j-1) + 1 = entry i j\<close> (entries are \<open>u + j\<close>); the only node with no
+  row-0 parent is \<open>j = 0\<close>, where \<open>entry 0 0 = u = entry 1 0\<close>.  This discharges the
+  \<open>monoT\<close>-core trunk subcase (\<open>TrMax M = Lng M - 1\<close>, where
+  @{thm [source] m_6_6_RedCondA_core_diag}-style reasoning makes \<open>M\<close> a diagonal)
+  and is the base shape of the article's \<open>j\<^sub>1\<close>-induction.\<close>
+
+lemma kfwd_nextR_diagSeq_parent:
+  assumes uv: "u \<le> v" and i: "i \<le> 1"
+    and nx: "nextR (diagSeq u v) i j0 j1"
+  shows "Suc j0 = j1"
+proof -
+  let ?M = "diagSeq u v"
+  have L: "Lng ?M = Suc v - u" by simp
+  consider (r0) "i = 0" | (r1) "i = 1" using i by linarith
+  thus ?thesis
+  proof cases
+    case r0
+    have nr0: "nextrel0 ?M j0 j1" using nx r0 by (simp add: nextR_def)
+    have j0L: "j0 < Lng ?M" and j1L: "j1 < Lng ?M" and lt: "j0 < j1"
+      and univ: "\<forall>j. j0 < j \<and> j < j1 \<longrightarrow> entry ?M 0 j \<ge> entry ?M 0 j1"
+      using nr0 by (simp_all add: nextrel0_def)
+    show ?thesis
+    proof (rule ccontr)
+      assume "Suc j0 \<noteq> j1"
+      hence j0lt: "j0 < j1 - 1" using lt by linarith
+      hence mid: "j0 < j1 - 1 \<and> j1 - 1 < j1" using lt by linarith
+      have j1pos: "0 < j1" using lt by linarith
+      have m1L: "j1 - 1 < Suc v - u" using j1L L by linarith
+      have j1L': "j1 < Suc v - u" using j1L L by simp
+      have em: "entry ?M 0 (j1 - 1) = u + (j1 - 1)"
+        by (rule entry_diagSeq[OF m1L])
+      have ej: "entry ?M 0 j1 = u + j1" by (rule entry_diagSeq[OF j1L'])
+      have hi: "entry ?M 0 (j1 - 1) < entry ?M 0 j1"
+        using em ej j1pos by simp
+      have "entry ?M 0 (j1 - 1) \<ge> entry ?M 0 j1" using univ mid by blast
+      thus False using hi by simp
+    qed
+  next
+    case r1
+    have nr1: "nextrel1 ?M j0 j1" using nx r1 by (simp add: nextR_def)
+    have j0L: "j0 < Lng ?M" and j1L: "j1 < Lng ?M" and lt: "j0 < j1"
+      and le0: "le0 ?M j0 j1"
+      and univ: "\<forall>j. j0 < j \<and> le0 ?M j j1 \<longrightarrow> entry ?M 1 j \<ge> entry ?M 1 j1"
+      using nr1 by (simp_all add: nextrel1_def)
+    show ?thesis
+    proof (rule ccontr)
+      assume "Suc j0 \<noteq> j1"
+      hence j0lt: "j0 < j1 - 1" using lt by linarith
+      have m1L: "j1 - 1 < Suc v - u" using j1L L by linarith
+      have j1L'': "j1 < Suc v - u" using j1L L by simp
+      have le0mid: "le0 ?M (j1 - 1) j1"
+        using le0_diagSeq[OF m1L j1L''] by simp
+      have mid: "j0 < j1 - 1 \<and> le0 ?M (j1 - 1) j1" using j0lt le0mid by simp
+      have j1pos: "0 < j1" using lt by linarith
+      have em: "entry ?M 1 (j1 - 1) = u + (j1 - 1)"
+        by (rule entry_diagSeq[OF m1L])
+      have ej: "entry ?M 1 j1 = u + j1" by (rule entry_diagSeq[OF j1L''])
+      have hi: "entry ?M 1 (j1 - 1) < entry ?M 1 j1"
+        using em ej j1pos by simp
+      have "entry ?M 1 (j1 - 1) \<ge> entry ?M 1 j1" using univ mid by blast
+      thus False using hi by simp
+    qed
+  qed
+qed
+
+lemma kfwd_condAB_diagSeq:
+  assumes uv: "u \<le> v"
+  shows "RedCondA (diagSeq u v) \<and> RedCondB (diagSeq u v)"
+proof
+  let ?M = "diagSeq u v"
+  have L: "Lng ?M = Suc v - u" by simp
+  show "RedCondA ?M"
+    unfolding RedCondA_def
+  proof (intro allI impI)
+    fix i j1' assume i: "i \<le> 1" and hp: "hasParent ?M i j1'"
+    have exu: "\<exists>!p. nextR ?M i p j1'" using hp by (simp add: hasParent_def)
+    have par: "nextR ?M i (parent ?M i j1') j1'"
+      unfolding parent_def using exu by (rule theI')
+    let ?p = "parent ?M i j1'"
+    have suc: "Suc ?p = j1'" by (rule kfwd_nextR_diagSeq_parent[OF uv i par])
+    have j1L: "j1' < Lng ?M"
+      using par by (cases "i = 0") (auto simp: nextR_def nextrel0_def nextrel1_def)
+    have pL: "?p < Suc v - u" using suc j1L L by linarith
+    have j1L': "j1' < Suc v - u" using j1L L by simp
+    have ep: "entry ?M i ?p = u + ?p" by (rule entry_diagSeq[OF pL])
+    have ej: "entry ?M i j1' = u + j1'" by (rule entry_diagSeq[OF j1L'])
+    have "entry ?M i ?p + 1 = u + ?p + 1" using ep by simp
+    also have "\<dots> = u + j1'" using suc by simp
+    also have "\<dots> = entry ?M i j1'" using ej by simp
+    finally show "entry ?M i ?p + 1 = entry ?M i j1'" .
+  qed
+next
+  let ?M = "diagSeq u v"
+  have L: "Lng ?M = Suc v - u" by simp
+  show "RedCondB ?M"
+    unfolding RedCondB_def
+  proof (intro allI impI)
+    fix j1' assume H: "\<not> hasParent ?M 0 j1' \<and> j1' \<le> Lng ?M - 1"
+    hence noP: "\<not> hasParent ?M 0 j1'" and hle: "j1' \<le> Lng ?M - 1" by simp_all
+    have j1L: "j1' < Suc v - u" using hle L uv by linarith
+    \<comment> \<open>If \<open>j1' > 0\<close>, then \<open>j1'-1\<close> is a unique row-0 parent (contradiction).\<close>
+    have "j1' = 0"
+    proof (rule ccontr)
+      assume "j1' \<noteq> 0"
+      hence j1pos: "0 < j1'" by simp
+      have step: "nextrel0 ?M (j1' - 1) j1'"
+        using nextrel0_diagSeq_step[of "j1' - 1" v u] uv j1pos j1L L
+        by (metis Suc_diff_1 j1pos)
+      have nx: "nextR ?M 0 (j1' - 1) j1'" using step by (simp add: nextR_def)
+      have uniq: "\<And>q. nextR ?M 0 q j1' \<Longrightarrow> q = j1' - 1"
+      proof -
+        fix q assume nq: "nextR ?M 0 q j1'"
+        have "Suc q = j1'"
+          by (rule kfwd_nextR_diagSeq_parent[OF uv _ nq]) simp
+        thus "q = j1' - 1" by simp
+      qed
+      have "hasParent ?M 0 j1'" unfolding hasParent_def using nx uniq by blast
+      thus False using noP by simp
+    qed
+    thus "entry ?M 0 j1' = entry ?M 1 j1'"
+      using entry_diagSeq[OF j1L, of 0] entry_diagSeq[OF j1L, of 1] by simp
+  qed
+qed
+
+text \<open>FWD monoT-core-trunk subcase: a reduced \<open>monoT M\<close> with \<open>M\<^sub>0 = (0,0)\<close> and
+  \<open>TrMax M = Lng M - 1\<close> is the diagonal \<open>diagSeq 0 (Lng M - 1)\<close> (the \<open>Red\<close>
+  core-trunk branch outputs \<open>diagSeq m\<^sub>1\<^sub>0 (m\<^sub>1\<^sub>0 + j\<^sub>1) = diagSeq 0 j\<^sub>1\<close> and
+  \<open>Red M = M\<close>); hence it satisfies \<open>RedCondA \<and> RedCondB\<close> by
+  @{thm [source] kfwd_condAB_diagSeq}.  Unlike
+  @{thm [source] m_6_6_RedCondA_core_diag} this needs no \<open>RedCondA\<close> hypothesis —
+  it derives the diagonal directly from reducedness, which is what the forward
+  direction requires.\<close>
+
+lemma kfwd_reduced_core_trunk_diag:
+  assumes M: "M \<in> RT_PS" and mono: "monoT M"
+    and e00: "entry M 0 0 = 0" and e10: "entry M 1 0 = 0"
+    and trmax: "TrMax M = Lng M - 1"
+  shows "M = diagSeq 0 (Lng M - 1)"
+proof -
+  have MT: "M \<in> T_PS" using M by (simp add: RT_PS_def)
+  have redM: "Red M = M" using M by (simp add: RT_PS_def)
+  have nz: "\<not> zeroT M" using mono by (simp add: monoT_def)
+  have nmu: "\<not> multiT M" using mono by (simp add: multiT_def)
+  have dom: "Red_dom M" by (rule m_6_5_Red_welldef[OF MT])
+  let ?j1 = "Lng M - 1"
+  have rM: "Red M = diagSeq (entry M 1 0) (entry M 1 0 + ?j1)"
+    using Red.psimps[OF dom] nz nmu e00 e10 trmax by (simp add: Let_def)
+  have "M = diagSeq (entry M 1 0) (entry M 1 0 + ?j1)" using rM redM by simp
+  thus ?thesis using e10 by simp
+qed
+
+lemma kfwd_reduced_core_trunk_condAB:
+  assumes M: "M \<in> RT_PS" and mono: "monoT M"
+    and e00: "entry M 0 0 = 0" and e10: "entry M 1 0 = 0"
+    and trmax: "TrMax M = Lng M - 1"
+  shows "RedCondA M \<and> RedCondB M"
+proof -
+  have Mdiag: "M = diagSeq 0 (Lng M - 1)"
+    by (rule kfwd_reduced_core_trunk_diag[OF M mono e00 e10 trmax])
+  have "RedCondA (diagSeq 0 (Lng M - 1)) \<and> RedCondB (diagSeq 0 (Lng M - 1))"
+    by (rule kfwd_condAB_diagSeq) simp
+  thus ?thesis using Mdiag by simp
+qed
+
+text \<open>FWD brick: a \<open>monoT\<close> core sequence (\<open>M\<^sub>0 = (0,0)\<close>) has \<open>entry (Red M) 0 0 = 0\<close>.
+  Both \<open>Red\<close> core branches start with a leading diagonal \<open>diagSeq 0 _\<close> (trunk:
+  \<open>diagSeq m\<^sub>1\<^sub>0 _ = diagSeq 0 _\<close>; nontrunk: \<open>diagSeq 0 (TrMax M) @ _\<close>), whose
+  row-0 value at index 0 is 0.  (Standalone version of the core case of
+  @{thm [source] m_6_5_Red_leftend_row0_min}.)\<close>
+
+lemma kfwd_Red_core_leftend00:
+  assumes MT: "M \<in> T_PS" and mono: "monoT M"
+    and e00: "entry M 0 0 = 0" and e10: "entry M 1 0 = 0"
+  shows "entry (Red M) 0 0 = 0"
+proof -
+  have nz: "\<not> zeroT M" using mono by (simp add: monoT_def)
+  have nmu: "\<not> multiT M" using mono by (simp add: multiT_def)
+  have dom: "Red_dom M" by (rule m_6_5_Red_welldef[OF MT])
+  have LMpos: "0 < Lng M" using MT by (cases M) (auto simp: T_PS_def)
+  let ?j1 = "Lng M - 1" and ?j1' = "TrMax M"
+  show ?thesis
+  proof (cases "?j1' = ?j1")
+    case True
+    have rM: "Red M = diagSeq (entry M 1 0) (entry M 1 0 + ?j1)"
+      using Red.psimps[OF dom] nz nmu e00 e10 True by (simp add: Let_def)
+    have lt: "(0::nat) < Suc (entry M 1 0 + ?j1) - entry M 1 0" by simp
+    have "entry (Red M) 0 0 = entry M 1 0 + 0"
+      using rM entry_diagSeq[OF lt, of 0] by simp
+    thus ?thesis using e10 by simp
+  next
+    case tne: False
+    let ?tail = "concat (map (\<lambda>J.
+              (IncrFirst ^^ (Joints M ! J + 1
+                  - (if entry (Br M ! J) 1 0 = 0 then 0
+                     else Suc (THE j. nextR M 1 j (FirstNodes M ! J)))))
+                (Red ((entry M 0 0 + Joints M ! J + 1,
+                       entry M 1 0 + (if entry (Br M ! J) 1 0 = 0 then 0
+                              else Suc (THE j. nextR M 1 j (FirstNodes M ! J))))
+                      # tl (Br M ! J))))
+            [0..<Lng (Br M)])"
+    have rM: "Red M = diagSeq 0 ?j1' @ ?tail"
+      using Red.psimps[OF dom] nz nmu e00 e10 tne by (simp add: Let_def)
+    have "entry (Red M) 0 0 = entry (diagSeq 0 ?j1' @ ?tail) 0 0" by (simp add: rM)
+    also have "\<dots> = 0" by (rule entry_diagSeq_append_lo) simp
+    finally show ?thesis .
+  qed
+qed
+
+text \<open>FWD monoT-shift subcase is VACUOUS: there is no reduced \<open>monoT M\<close> with
+  \<open>entry M 1 0 = 0\<close> and \<open>entry M 0 0 \<noteq> 0\<close>.  The \<open>Red\<close> \<open>m\<^sub>1\<^sub>0 = 0\<close> branch gives
+  \<open>Red M = Red (shiftRow0 M)\<close>, and \<open>shiftRow0 M\<close> is \<open>monoT\<close> core
+  (\<open>entry _ 0 0 = m\<^sub>0\<^sub>0 - m\<^sub>0\<^sub>0 = 0\<close>, \<open>entry _ 1 0 = m\<^sub>1\<^sub>0 = 0\<close>), so
+  \<open>entry (Red M) 0 0 = entry (Red (shiftRow0 M)) 0 0 = 0\<close>
+  (@{thm [source] kfwd_Red_core_leftend00}); but \<open>Red M = M\<close> forces this to be
+  \<open>entry M 0 0 = m\<^sub>0\<^sub>0 \<noteq> 0\<close> — contradiction.  Empirically 0 such reduced
+  sequences (\<open>python/_shift_check.py\<close>).\<close>
+
+lemma kfwd_reduced_monoT_shift_vacuous:
+  assumes M: "M \<in> RT_PS" and mono: "monoT M"
+    and e10: "entry M 1 0 = 0" and e00: "entry M 0 0 \<noteq> 0"
+  shows "False"
+proof -
+  have MT: "M \<in> T_PS" using M by (simp add: RT_PS_def)
+  have redM: "Red M = M" using M by (simp add: RT_PS_def)
+  have nz: "\<not> zeroT M" using mono by (simp add: monoT_def)
+  have nmu: "\<not> multiT M" using mono by (simp add: multiT_def)
+  have dom: "Red_dom M" by (rule m_6_5_Red_welldef[OF MT])
+  have LMpos: "0 < Lng M" using MT by (cases M) (auto simp: T_PS_def)
+  let ?j1 = "Lng M - 1"
+  have nc: "\<not> (entry M 0 0 = 0 \<and> entry M 1 0 = 0)" using e00 by simp
+  \<comment> \<open>\<open>Red M = Red (shiftRow0 M)\<close>.\<close>
+  let ?shift = "map (\<lambda>j. (entry M 0 j - entry M 0 0, entry M 1 j)) [0..<Suc ?j1]"
+  have rM: "Red M = Red ?shift"
+    using Red.psimps[OF dom] nz nmu nc e10 by (simp add: Let_def)
+  have shift_eq: "?shift = shiftRow0 M"
+    using LMpos by (simp add: shiftRow0_def)
+  have shift_T: "shiftRow0 M \<in> T_PS"
+    using MT by (simp add: T_PS_def shiftRow0_def)
+  have shift_mono: "monoT (shiftRow0 M)" by (rule monoT_shiftRow0[OF MT mono])
+  \<comment> \<open>\<open>shiftRow0 M\<close> is core.\<close>
+  have s00: "entry (shiftRow0 M) 0 0 = 0"
+    using entry_shiftRow0_0[of 0 M] LMpos by simp
+  have s10: "entry (shiftRow0 M) 1 0 = 0"
+    using entry_shiftRow0_1[of 0 M] LMpos e10 by simp
+  \<comment> \<open>core leftend gives \<open>entry (Red (shiftRow0 M)) 0 0 = 0\<close>.\<close>
+  have e0: "entry (Red (shiftRow0 M)) 0 0 = 0"
+    by (rule kfwd_Red_core_leftend00[OF shift_T shift_mono s00 s10])
+  have "entry M 0 0 = entry (Red M) 0 0" using redM by simp
+  also have "\<dots> = entry (Red (shiftRow0 M)) 0 0" using rM shift_eq by simp
+  also have "\<dots> = 0" using e0 .
+  finally have "entry M 0 0 = 0" .
+  thus False using e00 by simp
+qed
+
+text \<open>Stronger pre/post split (Front B, conjunct 2): like \<open>rnsub_flat_pre_post\<close>
+  but the trailing principal \<open>D\<^sub>u a\<close> is replaced \<^emph>\<open>wholesale\<close> (both index \<open>u\<close>
+  and argument \<open>a\<close> free), so the same \<open>pre\<close>/\<open>post\<close> serve every principal appended
+  after \<open>butlast xs\<close>.  \<open>pre\<close>/\<open>post\<close> depend only on \<open>butlast xs\<close>.\<close>
+
+lemma addscb_flat_pre_post2:
+  assumes "xs \<noteq> []"
+  shows "\<exists>pre post. (\<forall>x \<in> set post. x = RP)
+            \<and> (\<forall>u a. flatBT (Trm (butlast xs @ [DB u a]))
+                      = pre @ (Dsym u # flatBT a) @ post)"
+proof (cases "butlast xs")
+  case Nil
+  \<comment> \<open>single principal: \<open>butlast xs = []\<close>, so \<open>pre = post = []\<close>.\<close>
+  show ?thesis
+    by (rule exI[of _ "[]"], rule exI[of _ "[]"]) (simp add: Nil)
+next
+  case (Cons p ps)
+  \<comment> \<open>multi: the wrap is \<open>LP # \<dots> @ [RP]\<close>, last component peeled off \<open>mid\<close>.\<close>
+  define midpre where "midpre = concat (map (\<lambda>r. CM # flatBP r) ps)"
+  define pre where "pre = LP # flatBP p @ midpre @ [CM]"
+  define post where "post = [RP::Sym]"
+  have post_RP: "\<forall>x \<in> set post. x = RP" unfolding post_def by simp
+  have body: "\<And>u a. flatBT (Trm (butlast xs @ [DB u a]))
+                  = pre @ (Dsym u # flatBT a) @ post"
+  proof -
+    fix u a
+    have "flatBT (Trm (p # (ps @ [DB u a])))
+          = LP # (flatBP p @ concat (map (\<lambda>r. CM # flatBP r) (ps @ [DB u a]))) @ [RP]"
+      by (rule rnsub_flat_multi) simp
+    also have "concat (map (\<lambda>r. CM # flatBP r) (ps @ [DB u a]))
+             = midpre @ CM # flatBP (DB u a)"
+      unfolding midpre_def by simp
+    finally show "flatBT (Trm (butlast xs @ [DB u a]))
+                  = pre @ (Dsym u # flatBT a) @ post"
+      using Cons unfolding pre_def post_def by simp
+  qed
+  show ?thesis
+    by (rule exI[of _ pre], rule exI[of _ post]) (use post_RP body in blast)
+qed
+
+text \<open>Front B — conjunct (2) of \<open>p_7_2_add_scb\<close>: replacing the marked principal
+  \<open>c\<close> by another principal \<open>c'\<close> preserves the scb-decomposition with the same
+  \<open>s\<close>/\<open>b\<close>.  Empirically TRUE (small-BT enumeration, 0 counterexamples).
+
+  Proof: \<open>t +\<^sub>B c = Trm (untrm t @ [p\<^sub>c])\<close>; the constraint "\<open>b\<close> is all \<open>)\<close>"
+  pins the marked occurrence of \<open>flatBT c\<close> to the \<^emph>\<open>last\<close> principal, so the
+  hypothesis decomposition \<open>(s,b)\<close> equals the canonical \<open>(pre,post)\<close> by
+  scb-uniqueness (\<open>m_7_2_scb_unique_sb\<close>).  The same \<open>pre\<close>/\<open>post\<close> (which depend
+  only on \<open>untrm t = butlast xs\<close>) serve \<open>c'\<close> by \<open>addscb_flat_pre_post2\<close>.\<close>
+
+lemma m_7_2_add_scb_conj2:
+  assumes tTB: "t \<in> T_B" and cTB: "c \<in> T_B" and cp: "\<exists>p. c = Trm [p]"
+      and c'TB: "c' \<in> T_B" and c'p: "\<exists>p. c' = Trm [p]"
+      and hyp: "scb_decomp (t +\<^sub>B c) s (flatBT c) b"
+  shows "scb_decomp (t +\<^sub>B c') s (flatBT c') b"
+proof -
+  from cp obtain pc where cpe: "c = Trm [pc]" by blast
+  obtain uc ac where pcua: "pc = DB uc ac" by (cases pc)
+  from c'p obtain pc' where c'pe: "c' = Trm [pc']" by blast
+  obtain u' a' where pc'ua: "pc' = DB u' a'" by (cases pc')
+  \<comment> \<open>\<open>t +\<^sub>B c = Trm xs\<close> with \<open>last xs\<close> the (whole) principal \<open>pc\<close>.\<close>
+  define xs where "xs = untrm t @ [DB uc ac]"
+  have tc_eq: "t +\<^sub>B c = Trm xs"
+    using cpe pcua addscb_addBT_snoc[of t pc] unfolding xs_def by simp
+  have xs_ne: "xs \<noteq> []" unfolding xs_def by simp
+  have bl_xs: "butlast xs = untrm t" unfolding xs_def by simp
+  \<comment> \<open>\<open>flatBT c = flatBP pc = Dsym uc # flatBT ac\<close>; similarly for \<open>c'\<close>.\<close>
+  have fc_eq: "flatBT c = Dsym uc # flatBT ac" using cpe pcua by simp
+  have fc'_eq: "flatBT c' = Dsym u' # flatBT a'" using c'pe pc'ua by simp
+  \<comment> \<open>The uniform pre/post split for the trailing principal of \<open>Trm xs\<close>.\<close>
+  obtain pre post where post_RP: "\<forall>x \<in> set post. x = RP"
+      and split: "\<And>u a. flatBT (Trm (butlast xs @ [DB u a]))
+                          = pre @ (Dsym u # flatBT a) @ post"
+    using addscb_flat_pre_post2[OF xs_ne] by blast
+  \<comment> \<open>Canonical scb-decomposition of \<open>t +\<^sub>B c\<close> marking the last principal \<open>c\<close>.\<close>
+  have ptb_c: "isPTB_str (flatBT c)"
+    using addscb_princ_isPTB[OF cTB cpe] .
+  have tc_ne: "t +\<^sub>B c \<noteq> Trm []" using tc_eq xs_ne by simp
+  have flat_tc: "flatBT (t +\<^sub>B c) = pre @ (Dsym uc # flatBT ac) @ post"
+    using split[of uc ac] bl_xs tc_eq unfolding xs_def by simp
+  have sd_can: "scb_decomp (t +\<^sub>B c) pre (flatBT c) post"
+    unfolding scb_decomp_def
+    using flat_tc fc_eq post_RP ptb_c tc_ne by simp
+  \<comment> \<open>The hypothesis decomposition coincides with the canonical one.\<close>
+  have sbeq: "s = pre \<and> b = post"
+    by (rule m_7_2_scb_unique_sb[OF hyp sd_can tc_ne])
+  \<comment> \<open>Replace the last principal by \<open>c'\<close>: same \<open>pre\<close>/\<open>post\<close>.\<close>
+  have tc'_eq: "t +\<^sub>B c' = Trm (butlast xs @ [DB u' a'])"
+    using c'pe pc'ua addscb_addBT_snoc[of t pc'] bl_xs unfolding xs_def
+    by simp
+  have flat_tc': "flatBT (t +\<^sub>B c') = pre @ (Dsym u' # flatBT a') @ post"
+    using split[of u' a'] tc'_eq by simp
+  have ptb_c': "isPTB_str (flatBT c')"
+    using addscb_princ_isPTB[OF c'TB c'pe] .
+  have tc'_ne: "t +\<^sub>B c' \<noteq> Trm []" using tc'_eq by simp
+  show ?thesis
+    unfolding scb_decomp_def
+    using flat_tc' fc'_eq post_RP ptb_c' tc'_ne sbeq by simp
+qed
+
+
 end
