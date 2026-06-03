@@ -20,10 +20,10 @@
       - ✅ 命題（$\textrm{Lng}$ の $\textrm{Red}$ 不変性）〔§6.5 下流の linchpin〕
       - ✅ 系（$\textrm{Red}$ が零項性を保つこと）
       - 🚨 系（直系先祖の $\textrm{Red}$ 不変性）〔keystone・A4〕
-      - 🚨 系（$\textrm{Red}$ が単項性を保つこと）〔A4〕
+      - 🚨🤖 系（$\textrm{Red}$ が単項性を保つこと）〔`m_6_5_Red_preserves_monoT`(M∈PT_PS⟹monoT(Red M)) を Red.pinduct+値単調性で証明中。m10>0 は既 green(`m_6_5_monoT_Red_m10pos`)、core-nontrunk が最後の障害。これが idempotency 全チェーンを unblock〕
       - 🚨 系（$P$ の $\textrm{Red}$ 同変性）〔A4〕
       - ✅ 命題（単項性と $\textrm{Red}$ の関係）〔`m_6_5_monoT_Red_m10pos`、m10>0(=Red 使用域)、dead-branch[20]不到達〕
-      - 🚨 命題（$\textrm{Red}$ の冪等性）〔A4〕
+      - 🚨🤖 命題（$\textrm{Red}$ の冪等性）〔`m_6_5_Red_idem`。4/5枝 green(`idem2_*`/`b2_idem_m10pos`)。残 B1(core-nontrunk)は構造補題+`cdn_red_cong`+IH で機械的、全て `monoT(Red M)` core に帰着＝上の単項性保存待ち。ドメイン D={¬multiT}(NJは`NJ_nonmulti`)〕
       - 🚨🚧 命題（$\textrm{Red}$ と $\textrm{Pred}$ の可換性）〔枝補題 green 化済(`pred_P_decomp`/`butlast_diagSeq`系/`TrMax_Pred`/`m_6_5_T4_coreArg_Pred`)。branch-5 が親ゴール instance に帰着＝**枝独立leafでなく Red.pinduct 帰納が必要**と判明。残: T3(ii)訂正版+本体帰納組立て。設計 `docs/6.5_red_pred_decomposition.md`〕
         - ✅🚧 補題（死枝[20]の到達不能性）〔上記「Red の IncrFirst 不変性」と共有。m10>0 完全証明 `m_6_5_monoT_Red_m10pos`(green)。設計 `docs/red-le-domain.md §6-11`〕
       - 🚨 命題（$\textrm{Red}$ と基本列の可換性）〔A4〕
