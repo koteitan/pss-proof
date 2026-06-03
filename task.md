@@ -34,7 +34,7 @@
       - ✅ 命題（簡約性の切片への遺伝性）〔A5補正 $j'_0=0$。`herd_6_6_reduced_slice`(green)。**idem 不要**＝`Pred^^k`+`m_6_5_Red_Pred` 可換性で直接(seg M 0 j1'=Pred^^k M, Red M=M)。(f) brick 完了〕
       - 🚨 命題（$P$ が簡約性を保つこと）
       - 🚨 命題（簡約性が基本列で保たれること）
-      - 🚨🚧 命題（簡約性と係数の関係）〔**keystone** `reduced⟺RedCondA∧RedCondB`。WLOG 完成: multiT/zeroT green。forward monoT 進行: base `kfwd_condAB_diagSeq`/core-trunk `kfwd_reduced_core_trunk_condAB`/shift は**空虚**`kfwd_reduced_monoT_shift_vacuous`/`kfwd_Red_core_leftend00` green。**残 forward＝core-nontrunk + m10>0**(inner-N 入れ子帰納、content.md 1130-1175、単一補題化不可＝専用多ラウンド)。**backward 未着手**。scout 訂正: reduced monoT m10>0 は非空虚(41 cases)。設計 §15〕
+      - 🚨🚧 命題（簡約性と係数の関係）〔**keystone** `reduced⟺RedCondA∧RedCondB`。WLOG(multiT/zeroT)+forward 入れ子帰納 skeleton 完成。Pred-lift brick 7本 green(`kfwd_pred_agree`/`nextR_Pred_imp`/`_rev`/`hasParent_Pred_iff`/`parent_Pred_eq`/`entry_Pred_eq`/`monoT_hasParent_top`)で zeroT/trunk/全 j'<j1 witness/最終列 RedCondB(空虚)は green。**forward 残＝condA_top ただ1つ**(最終列 RedCondA、N-construction、content.md 1156-1218、~200行 witness translation。全 brick green=数学欠落なし)。**backward 未着手**。設計 §15〕
       - ✅ 補題（$\textrm{Red}$ と左端の関係）(1)(2)〔(2)=`m_6_6_Red_leftend_2`(green)、対角前置の Red 保存。A4非依存 leaf、keystone cascade の step(2)〕
       - 🚨 補題（簡約性と係数の基本性質）
       - ✅ 補題（簡約性と左端の関係）〔(e)-lemma `m_6_6_reduced_leftend` green(guard付き対角前置=reduced∧mono 保存)。CRUX `m_6_6_Red_diag_prefix`(coreReduce 経由+cut-bump engine)+`ecrux_diagSeq_split`+idem で u=0/u>0/m10=0 組立て。mono half=`elead_monoT_N`、helper `kst_reduced_row1_le_row0`(reduced∧mono⟹m10≤m00)〕
@@ -59,7 +59,7 @@
       - ✅🚧 命題（scb分解の置換可能性）〔原文 literal は**偽**(反例 t0=c0=(),c1=複項; `m_7_2_scb_replaceable_counterexample` green)→**A12**。退化 `m_7_2_scb_replaceable_t0zero`/像条件つき補正 `m_7_2_scb_replaceable_corr_mod_image` green〕
       - ✅🚧 命題（scb分解の合成則）〔part(1) `m_7_2_scb_compose`(green)。part(2) は**原文どおりだと偽**(反例 t=Trm[],c=[Zsym]; `scbcomp_compose2_counterexample` green)→訂正版 `scbcomp_compose2_PT`(前提 isPTB_str c 追加)green。**A11**〕
       - ✅ 命題（scb分解の自明性の判定条件）〔`m_7_2_scb_triviality`(両 shows green)。t=c⟺自明分解⟺s=[]分解存在。converse は flatBT_inj+プレフィックス自由(`scbtriv_flat_append_RP_nil`)〕
-      - 🚨🚧 命題（scb分解の一意性）〔(1) `m_7_2_scb_unique_decomp`(green)。種一意性(4)(5)は**t=Trm[]で偽**(空虚分解)→**A14**、健全還元 `m_7_2_scb_kind_unique_of_ceq`(c0=c1へ)green。残＝c0=c1(RightNodes 脊柱、多補題)＋(2)domB↔kind〕
+      - 🚨🚧 命題（scb分解の一意性）〔(1) `m_7_2_scb_unique_decomp`(green)。種一意性(4)(5)は**t=Trm[]で偽**→**A14**。`m_7_2_scb_c_unique`+`m_7_2_scb_kind0/1_unique` green(**脊柱 pinning length s0=s1 を仮定**、文字列 cancel `scbc_principal_cancel`+`flatinj_flatBP_cancel`)。**残＝pinning 導出**(RightNodes 脊柱、rnsub_* 多補題)＋(2)domB↔kind〕
       - ✅ 系（加法と scb分解の関係）〔(1) `m_7_2_add_scb_conj1`/(2) `m_7_2_add_scb_conj2`(c→c'置換、scb一意性経由)green。(3) は**原文偽**(反例 `m_7_2_add_scb_conj3_counterexample`、D_v(t+c)出現の非一意性)→**A13**訂正済〕
       - 🚨 命題（scb分解と基本列の関係）
       - ✅ 命題（$\textrm{RightNodes}$ と部分表現の関係）〔`m_7_2_RightNodes_subexpr`、BT項レベル(spineSub)、§6独立〕

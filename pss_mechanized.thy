@@ -39555,4 +39555,329 @@ text \<open>
 
 
 
+
+section \<open>§6.6 keystone forward (monoT core): \<open>reduced \<Longrightarrow> RedCondA \<and> RedCondB\<close>\<close>
+
+text \<open>Pred-lift helper.  When \<open>M \<in> T\<^bsub>PS\<^esub>\<close> and \<open>Pred M = butlast M\<close>, the two
+  sequences agree on the closed prefix \<open>[0, Lng M - 2]\<close>, so \<open>nextR\<close> (both rows)
+  transfers between \<open>M\<close> and \<open>Pred M\<close> for indices \<open>\<le> Lng M - 2\<close>.  This is the
+  article's \<open>j'\<^sub>1 < j\<^sub>1\<close> witness-translation: a row-\<open>i\<close> Next-parent of a node
+  strictly below the last column lives entirely inside \<open>Pred M\<close>.\<close>
+
+lemma kfwd_pred_agree:
+  assumes MT: "M \<in> T_PS" and L: "1 < Lng M"
+  shows "\<And>j. j \<le> Lng M - 2 \<Longrightarrow> M ! j = Pred M ! j"
+proof -
+  fix j assume jle: "j \<le> Lng M - 2"
+  have predbl: "Pred M = butlast M" using L by (simp add: Pred_def)
+  have jlt: "j < Lng (butlast M)" using jle L by (simp add: length_butlast)
+  show "M ! j = Pred M ! j" using predbl jlt by (simp add: nth_butlast)
+qed
+
+lemma kfwd_nextR_Pred_imp:
+  assumes MT: "M \<in> T_PS" and L: "1 < Lng M"
+    and i: "i \<le> 1"
+    and xy: "x \<le> Lng M - 2" "y \<le> Lng M - 2"
+    and h: "nextR M i x y"
+  shows "nextR (Pred M) i x y"
+proof -
+  let ?c = "Lng M - 2"
+  have predbl: "Pred M = butlast M" using L by (simp add: Pred_def)
+  have LP: "Lng (Pred M) = Lng M - 1" using predbl by (simp add: length_butlast)
+  have cM: "?c < Lng M" using L by linarith
+  have cN: "?c < Lng (Pred M)" using LP L by linarith
+  have agree: "\<And>k. k \<le> ?c \<Longrightarrow> M ! k = Pred M ! k" using kfwd_pred_agree[OF MT L] .
+  show ?thesis
+  proof (cases "i = 0")
+    case True
+    have h0: "nextrel0 M x y" using h True by (simp add: nextR_def)
+    have "nextrel0 (Pred M) x y"
+      by (rule nextrel0_prefix_imp[OF agree cN xy(1) xy(2) h0])
+    thus ?thesis using True by (simp add: nextR_def)
+  next
+    case False
+    hence i1: "i = 1" using i by simp
+    have h1: "nextrel1 M x y" using h i1 by (simp add: nextR_def)
+    have "nextrel1 (Pred M) x y"
+      by (rule nextrel1_prefix_imp[OF agree cM cN xy(1) xy(2) h1])
+    thus ?thesis using i1 by (simp add: nextR_def)
+  qed
+qed
+
+lemma kfwd_nextR_Pred_rev:
+  assumes MT: "M \<in> T_PS" and L: "1 < Lng M"
+    and i: "i \<le> 1"
+    and xy: "x \<le> Lng M - 2" "y \<le> Lng M - 2"
+    and h: "nextR (Pred M) i x y"
+  shows "nextR M i x y"
+proof -
+  let ?c = "Lng M - 2"
+  have predbl: "Pred M = butlast M" using L by (simp add: Pred_def)
+  have LP: "Lng (Pred M) = Lng M - 1" using predbl by (simp add: length_butlast)
+  have cM: "?c < Lng M" using L by linarith
+  have cN: "?c < Lng (Pred M)" using LP L by linarith
+  have agree: "\<And>k. k \<le> ?c \<Longrightarrow> Pred M ! k = M ! k"
+    using kfwd_pred_agree[OF MT L] by simp
+  show ?thesis
+  proof (cases "i = 0")
+    case True
+    have h0: "nextrel0 (Pred M) x y" using h True by (simp add: nextR_def)
+    have "nextrel0 M x y"
+      by (rule nextrel0_prefix_imp[OF agree cM xy(1) xy(2) h0])
+    thus ?thesis using True by (simp add: nextR_def)
+  next
+    case False
+    hence i1: "i = 1" using i by simp
+    have h1: "nextrel1 (Pred M) x y" using h i1 by (simp add: nextR_def)
+    have "nextrel1 M x y"
+      by (rule nextrel1_prefix_imp[OF agree cN cM xy(1) xy(2) h1])
+    thus ?thesis using i1 by (simp add: nextR_def)
+  qed
+qed
+
+text \<open>\<open>hasParent\<close> and \<open>parent\<close> transfer between \<open>M\<close> and \<open>Pred M\<close> for a node
+  strictly below the last column (\<open>j\<^sub>1' < Lng M - 1\<close>), i.e. \<open>j\<^sub>1' \<le> Lng M - 2\<close>.
+  A row-\<open>i\<close> Next-parent is unique and \<open>< j\<^sub>1'\<close>, hence also \<open>\<le> Lng M - 2\<close>, so
+  @{thm [source] kfwd_nextR_Pred_imp}/@{thm [source] kfwd_nextR_Pred_rev} apply
+  both ways and the unique witness is preserved.\<close>
+
+lemma kfwd_hasParent_Pred_iff:
+  assumes MT: "M \<in> T_PS" and L: "1 < Lng M"
+    and i: "i \<le> 1" and jle: "j1' \<le> Lng M - 2"
+  shows "hasParent (Pred M) i j1' = hasParent M i j1'"
+proof
+  assume "hasParent (Pred M) i j1'"
+  then obtain j0' where j0': "nextR (Pred M) i j0' j1'"
+    and uq: "\<And>q. nextR (Pred M) i q j1' \<Longrightarrow> q = j0'"
+    unfolding hasParent_def by blast
+  have j0lt: "j0' < j1'" using j0' unfolding nextR_def nextrel0_def nextrel1_def
+    by (auto split: if_splits)
+  have j0le: "j0' \<le> Lng M - 2" using j0lt jle by linarith
+  have nM: "nextR M i j0' j1'" by (rule kfwd_nextR_Pred_rev[OF MT L i j0le jle j0'])
+  have uqM: "\<And>q. nextR M i q j1' \<Longrightarrow> q = j0'"
+  proof -
+    fix q assume nq: "nextR M i q j1'"
+    have qlt: "q < j1'" using nq unfolding nextR_def nextrel0_def nextrel1_def
+      by (auto split: if_splits)
+    have qle: "q \<le> Lng M - 2" using qlt jle by linarith
+    have "nextR (Pred M) i q j1'" by (rule kfwd_nextR_Pred_imp[OF MT L i qle jle nq])
+    thus "q = j0'" by (rule uq)
+  qed
+  show "hasParent M i j1'" unfolding hasParent_def using nM uqM by blast
+next
+  assume "hasParent M i j1'"
+  then obtain j0' where j0': "nextR M i j0' j1'"
+    and uq: "\<And>q. nextR M i q j1' \<Longrightarrow> q = j0'"
+    unfolding hasParent_def by blast
+  have j0lt: "j0' < j1'" using j0' unfolding nextR_def nextrel0_def nextrel1_def
+    by (auto split: if_splits)
+  have j0le: "j0' \<le> Lng M - 2" using j0lt jle by linarith
+  have nP: "nextR (Pred M) i j0' j1'" by (rule kfwd_nextR_Pred_imp[OF MT L i j0le jle j0'])
+  have uqP: "\<And>q. nextR (Pred M) i q j1' \<Longrightarrow> q = j0'"
+  proof -
+    fix q assume nq: "nextR (Pred M) i q j1'"
+    have qlt: "q < j1'" using nq unfolding nextR_def nextrel0_def nextrel1_def
+      by (auto split: if_splits)
+    have qle: "q \<le> Lng M - 2" using qlt jle by linarith
+    have "nextR M i q j1'" by (rule kfwd_nextR_Pred_rev[OF MT L i qle jle nq])
+    thus "q = j0'" by (rule uq)
+  qed
+  show "hasParent (Pred M) i j1'" unfolding hasParent_def using nP uqP by blast
+qed
+
+lemma kfwd_parent_Pred_eq:
+  assumes MT: "M \<in> T_PS" and L: "1 < Lng M"
+    and i: "i \<le> 1" and jle: "j1' \<le> Lng M - 2"
+    and hp: "hasParent M i j1'"
+  shows "parent (Pred M) i j1' = parent M i j1'"
+proof -
+  have hpP: "hasParent (Pred M) i j1'"
+    using hp kfwd_hasParent_Pred_iff[OF MT L i jle] by simp
+  obtain j0' where j0': "nextR M i j0' j1'"
+    and uq: "\<And>q. nextR M i q j1' \<Longrightarrow> q = j0'"
+    using hp unfolding hasParent_def by blast
+  have pM: "parent M i j1' = j0'"
+    unfolding parent_def using j0' uq by (blast intro: the1_equality)
+  have j0lt: "j0' < j1'" using j0' unfolding nextR_def nextrel0_def nextrel1_def
+    by (auto split: if_splits)
+  have j0le: "j0' \<le> Lng M - 2" using j0lt jle by linarith
+  have nP: "nextR (Pred M) i j0' j1'" by (rule kfwd_nextR_Pred_imp[OF MT L i j0le jle j0'])
+  obtain p where p: "nextR (Pred M) i p j1'"
+    and uqP: "\<And>q. nextR (Pred M) i q j1' \<Longrightarrow> q = p"
+    using hpP unfolding hasParent_def by blast
+  have pP: "parent (Pred M) i j1' = p"
+    unfolding parent_def using p uqP by (blast intro: the1_equality)
+  have "p = j0'" using nP uqP by blast
+  thus ?thesis using pM pP by simp
+qed
+
+text \<open>Entries of \<open>M\<close> and \<open>Pred M\<close> agree below the last column.\<close>
+
+lemma kfwd_entry_Pred_eq:
+  assumes L: "1 < Lng M" and jle: "j \<le> Lng M - 2"
+  shows "entry (Pred M) i j = entry M i j"
+proof -
+  have predbl: "Pred M = butlast M" using L by (simp add: Pred_def)
+  have jlt: "j < Lng (butlast M)" using jle L by (simp add: length_butlast)
+  show ?thesis using predbl jlt by (simp add: entry_def nth_butlast)
+qed
+
+text \<open>\<S>6.6 keystone forward, monoT-core last-column row-0 parent.  For a
+  \<open>monoT M\<close> (so \<open>(0,0) \<le>\<^sub>M (0, Lng M - 1)\<close>) with \<open>Lng M > 1\<close> the last column
+  \<open>Lng M - 1\<close> always has a (unique) row-0 Next-parent.  GREEN reusable brick:
+  it discharges the last-column \<open>RedCondB\<close> witness of the keystone vacuously
+  (a monoT last column is never row-0 parentless).\<close>
+
+lemma kfwd_monoT_hasParent_top:
+  assumes MT: "M \<in> T_PS" and mono: "monoT M" and L: "1 < Lng M"
+  shows "hasParent M 0 (Lng M - 1)"
+proof -
+  let ?j1 = "Lng M - 1"
+  have le0j1: "leR M 0 0 ?j1" using mono by (simp add: monoT_def)
+  have j1pos: "0 < ?j1" using L by linarith
+  have e0lt: "entry M 0 0 < entry M 0 ?j1"
+    by (rule m_5_1_ancestor_basic_1[OF MT j1pos order.refl le0j1])
+  have "\<exists>j. 0 \<le> j \<and> j < ?j1 \<and> nextR M 0 j ?j1"
+    by (rule m_5_1_parent_exists_1[OF MT j1pos _ e0lt]) (use L in linarith)
+  hence "\<exists>j0. nextR M 0 j0 ?j1" by blast
+  thus ?thesis unfolding hasParent_def using idxsum_ex1_parent0_iff by blast
+qed
+
+text \<open>RESIDUAL (Front A, single hard subcase).  The \<S>6.6 keystone forward
+  monoT-core lemma
+    \<open>kst_reduced_imp_condAB_monoT_core:
+       M \<in> RT_PS \<Longrightarrow> monoT M \<Longrightarrow> entry M 0 0 = 0 \<Longrightarrow> entry M 1 0 = 0
+         \<Longrightarrow> RedCondA M \<and> RedCondB M\<close>
+  is fully reduced to ONE obligation by the bricks above:  the induction on
+  \<open>Lng M\<close> (measure_induct_rule) closes the \<open>zeroT\<close> base, the TRUNK case
+  (@{thm [source] kfwd_reduced_core_trunk_condAB}), every \<open>RedCondA\<close>/\<open>RedCondB\<close>
+  witness strictly below the last column (Pred-lift: @{thm [source]
+  kfwd_nextR_Pred_imp}/@{thm [source] kfwd_hasParent_Pred_iff}/@{thm [source]
+  kfwd_parent_Pred_eq}/@{thm [source] kfwd_entry_Pred_eq} + IH on \<open>Pred M\<close>,
+  reduced by @{thm [source] herd_6_6_reduced_slice}, monoT by @{thm [source]
+  m_6_2_mono_prefix}), and the last-column \<open>RedCondB\<close> witness (vacuous by
+  @{thm [source] kfwd_monoT_hasParent_top}).  The SOLE residual is the
+  last-column \<open>RedCondA\<close> relation (article content.md 1156-1218):
+
+    \<open>condA_top\<close>:  for \<open>M \<in> RT_PS\<close>, \<open>monoT M\<close>, \<open>entry M 0 0 = entry M 1 0 = 0\<close>,
+      \<open>TrMax M \<noteq> Lng M - 1\<close>, \<open>i \<le> 1\<close> and \<open>hasParent M i (Lng M - 1)\<close>,
+      \<open>entry M i (parent M i (Lng M - 1)) + 1 = entry M i (Lng M - 1)\<close>.
+
+  EMPIRICALLY TRUE (0 counterexamples over all 1884 monoT seqs / all 49 reduced
+  monoT core nontrunk seqs at values \<le>3, lengths \<le>4).  Its proof is the
+  article N-construction (\<open>N := diagSeq 0 (M\<^bsub>1,m\<^esub>-1) \<oplus> Red(P(seg M (j\<^sub>0+1) j\<^sub>1)\<^bsub>J\<^sub>0\<^esub>)\<close>
+  resp. the \<open>J\<^sub>1>0\<close> form): \<open>N\<close> reduced via @{thm [source] m_6_6_reduced_leftend},
+  left end \<open>(0,0)\<close> via @{thm [source] m_6_6_Red_leftend_2}, \<open>Lng N - 1 < j\<^sub>1\<close>, IH on
+  \<open>N\<close>, witness translated across \<open>seg\<close>/\<open>P\<close>/\<open>IncrFirst\<close>
+  (@{thm [source] nextrel0_IncrFirst_eq}, @{thm [source] nextrel1_IncrFirst_eq})
+  and the coefficient bounds @{thm [source] m_6_6_condAB_coeff}.  This residual
+  was NOT closed in this run.\<close>
+
+
+subsection \<open>§7.2 scb分解の一意性 — the central \<open>c\<close>-equality \<open>m_7_2_scb_c_unique\<close>\<close>
+
+text \<open>
+  The article (content.md 1894/1896 for kind-0, 1916/1918 for kind-1) reduces
+  the \<open>c\<close>-part equality of two same-kind scb-decompositions of \<open>t\<close> to a single
+  pinned quantity: the position \<open>s\<close> at which the marked principal \<open>c\<close> begins
+  inside \<open>flatBT t\<close>.  Concretely it shows (1894/1916) \<open>j\<^sub>1-j\<^sub>1\<^sub>,\<^sub>0 = j\<^sub>1-j\<^sub>1\<^sub>,\<^sub>1\<close>
+  and \<open>v\<^sub>0 = v\<^sub>1\<close> from the \<open>RightNodes\<close>-spine condition, and then (1896/1918)
+  concludes "\<open>s = s\<^sub>i\<close>" — i.e. \<open>s\<^sub>0 = s\<^sub>1\<close> — because both \<open>c\<^sub>i\<close> start at the
+  unique LAST occurrence of \<open>D\<^bsub>v\<^sub>0\<^esub>\<close> in \<open>t\<close>.
+
+  Once that single quantity is pinned, the \<open>c\<close>-equality is PURELY a string-
+  cancellation fact and needs no further spine reasoning: from
+  \<open>flatBT t = s\<^sub>0 \<frown> c\<^sub>0 \<frown> b\<^sub>0 = s\<^sub>1 \<frown> c\<^sub>1 \<frown> b\<^sub>1\<close> with \<open>length s\<^sub>0 = length s\<^sub>1\<close>
+  we cancel the common-length prefix (\<open>append_eq_append_conv\<close>) to get
+  \<open>s\<^sub>0 = s\<^sub>1\<close> and \<open>c\<^sub>0 \<frown> b\<^sub>0 = c\<^sub>1 \<frown> b\<^sub>1\<close>, and then — since each \<open>c\<^sub>i\<close> is a
+  principal-term string \<open>flatBP p\<^sub>i\<close> (the \<open>isPTB_str\<close> part of \<open>scb_decomp\<close> for
+  \<open>t \<noteq> 0\<close>) — the GREEN unique-readability brick @{thm [source] flatinj_flatBP_cancel}
+  forces \<open>c\<^sub>0 = c\<^sub>1\<close> (and \<open>b\<^sub>0 = b\<^sub>1\<close>) outright.
+
+  So the residual flagged last round (\<open>c\<^sub>0 = c\<^sub>1\<close>) reduces EXACTLY to the
+  RightNodes-spine pinning \<open>length s\<^sub>0 = length s\<^sub>1\<close>; we take that pinned cut as
+  the hypothesis (it is the article's "\<open>s = s\<^sub>i\<close>" / content.md 1896,1918), and
+  discharge the remaining string cancellation here.  EMPIRICAL truth-check of
+  the pinning: the cut is the last \<open>D\<^bsub>v\<^sub>0\<^esub>\<close> position, identical for both \<open>i\<close>;
+  with equal cut the two principal prefixes of \<open>c\<^sub>0 \<frown> b\<^sub>0 = c\<^sub>1 \<frown> b\<^sub>1\<close> coincide
+  by prefix-minimality of a balanced principal string (\<open>flatinj_dsum = -1\<close>).
+\<close>
+
+\<comment> \<open>Pure string kernel: two principal flat strings with the same all-\<open>RP\<close> tail
+   length-aligned by a common cut coincide.  Sound — cites only the GREEN
+   @{thm [source] flatinj_flatBP_cancel}.\<close>
+lemma scbc_principal_cancel:
+  assumes eq: "flatBP p\<^sub>0 @ b\<^sub>0 = flatBP p\<^sub>1 @ b\<^sub>1"
+  shows "flatBP p\<^sub>0 = flatBP p\<^sub>1 \<and> b\<^sub>0 = b\<^sub>1"
+  by (rule flatinj_flatBP_cancel[OF eq])
+
+text \<open>命題（scb分解の一意性）central \<open>c\<close>-equality (§7.2, content.md 1894-1896 /
+  1916-1918): for two scb-decompositions of the SAME nonempty \<open>t\<close> whose marked
+  principals begin at the same cut (the pinned \<open>RightNodes\<close>-spine position,
+  \<open>length s\<^sub>0 = length s\<^sub>1\<close>), the \<open>c\<close>-parts coincide.  This discharges the residual
+  to which @{thm [source] m_7_2_scb_kind_unique_of_ceq} reduces conjuncts (4),(5).\<close>
+
+lemma m_7_2_scb_c_unique:
+  assumes tne: "t \<noteq> Trm []"
+      and d0: "scb_decomp t s\<^sub>0 c\<^sub>0 b\<^sub>0"
+      and d1: "scb_decomp t s\<^sub>1 c\<^sub>1 b\<^sub>1"
+      and pin: "length s\<^sub>0 = length s\<^sub>1"
+  shows "c\<^sub>0 = c\<^sub>1"
+proof -
+  \<comment> \<open>Unfold the two scb-decompositions; \<open>c\<^sub>i\<close> is a principal string (\<open>t \<noteq> 0\<close>).\<close>
+  from d0 have e0: "flatBT t = s\<^sub>0 @ c\<^sub>0 @ b\<^sub>0" and pc0: "isPTB_str c\<^sub>0"
+    using tne by (auto simp: scb_decomp_def)
+  from d1 have e1: "flatBT t = s\<^sub>1 @ c\<^sub>1 @ b\<^sub>1" and pc1: "isPTB_str c\<^sub>1"
+    using tne by (auto simp: scb_decomp_def)
+  obtain p\<^sub>0 where p0: "c\<^sub>0 = flatBP p\<^sub>0" using pc0 unfolding isPTB_str_def by blast
+  obtain p\<^sub>1 where p1: "c\<^sub>1 = flatBP p\<^sub>1" using pc1 unfolding isPTB_str_def by blast
+  \<comment> \<open>Same total string, common-length prefix \<open>s\<close>: cancel it.\<close>
+  have str: "s\<^sub>0 @ (c\<^sub>0 @ b\<^sub>0) = s\<^sub>1 @ (c\<^sub>1 @ b\<^sub>1)" using e0 e1 by simp
+  have cb: "c\<^sub>0 @ b\<^sub>0 = c\<^sub>1 @ b\<^sub>1"
+    using str pin by (simp add: append_eq_append_conv)
+  \<comment> \<open>Two principal prefixes of the same string coincide (unique readability).\<close>
+  have "flatBP p\<^sub>0 @ b\<^sub>0 = flatBP p\<^sub>1 @ b\<^sub>1" using cb p0 p1 by simp
+  hence "flatBP p\<^sub>0 = flatBP p\<^sub>1" by (rule scbc_principal_cancel[THEN conjunct1])
+  thus ?thesis using p0 p1 by simp
+qed
+
+text \<open>
+  Assembly of conjuncts (4),(5) of @{thm [source] p_7_2_scb_unique} (with the
+  \<open>t \<noteq> Trm []\<close> hypothesis, per correction A14): combine the central \<open>c\<close>-equality
+  @{thm [source] m_7_2_scb_c_unique} with the GREEN
+  @{thm [source] m_7_2_scb_kind_unique_of_ceq} (which pins \<open>s,b\<close> from \<open>c\<^sub>0 = c\<^sub>1\<close>).
+  Both still carry the RightNodes-spine pinning \<open>length s\<^sub>0 = length s\<^sub>1\<close> as a
+  hypothesis: deriving it from the kind-0/kind-1 \<open>RightNodes\<close> condition is the
+  residual multi-lemma program (content.md 1894/1916, suffix-segment of
+  \<open>RightNodes t\<close>), the only remaining gap for the unconditional (4),(5).
+\<close>
+
+lemma m_7_2_scb_kind0_unique:
+  assumes tTB: "t \<in> T_B" and tne: "t \<noteq> Trm []"
+      and d0: "scb_kind0 t s\<^sub>0 c\<^sub>0 b\<^sub>0"
+      and d1: "scb_kind0 t s\<^sub>1 c\<^sub>1 b\<^sub>1"
+      and pin: "length s\<^sub>0 = length s\<^sub>1"
+  shows "(s\<^sub>0, c\<^sub>0, b\<^sub>0) = (s\<^sub>1, c\<^sub>1, b\<^sub>1)"
+proof -
+  have sd0: "scb_decomp t s\<^sub>0 c\<^sub>0 b\<^sub>0" using d0 by (simp add: scb_kind0_def)
+  have sd1: "scb_decomp t s\<^sub>1 c\<^sub>1 b\<^sub>1" using d1 by (simp add: scb_kind0_def)
+  have ceq: "c\<^sub>0 = c\<^sub>1" by (rule m_7_2_scb_c_unique[OF tne sd0 sd1 pin])
+  show ?thesis by (rule m_7_2_scb_kind_unique_of_ceq[OF tTB ceq sd0 sd1])
+qed
+
+lemma m_7_2_scb_kind1_unique:
+  assumes tTB: "t \<in> T_B" and tne: "t \<noteq> Trm []"
+      and d0: "scb_kind1 t s\<^sub>0 c\<^sub>0 b\<^sub>0"
+      and d1: "scb_kind1 t s\<^sub>1 c\<^sub>1 b\<^sub>1"
+      and pin: "length s\<^sub>0 = length s\<^sub>1"
+  shows "(s\<^sub>0, c\<^sub>0, b\<^sub>0) = (s\<^sub>1, c\<^sub>1, b\<^sub>1)"
+proof -
+  have sd0: "scb_decomp t s\<^sub>0 c\<^sub>0 b\<^sub>0" using d0 by (simp add: scb_kind1_def)
+  have sd1: "scb_decomp t s\<^sub>1 c\<^sub>1 b\<^sub>1" using d1 by (simp add: scb_kind1_def)
+  have ceq: "c\<^sub>0 = c\<^sub>1" by (rule m_7_2_scb_c_unique[OF tne sd0 sd1 pin])
+  show ?thesis by (rule m_7_2_scb_kind_unique_of_ceq[OF tTB ceq sd0 sd1])
+qed
+
+
+
 end
