@@ -37793,4 +37793,369 @@ lemma m_7_2_scb_compose:
   using scbcomp_compose1[OF c0prin d0 d1] .
 
 
+subsection \<open>§6.6 keystone (e)-CRUX: prepending a diagonal segment\<close>
+
+text \<open>
+  Structural facts about \<open>A = diagSeq 0 k @ M\<close> when \<open>M\<close> is monotone and the
+  junction values dominate the diagonal (\<open>k < M\<^bsub>0,0\<^esub>\<close>, \<open>k < M\<^bsub>1,0\<^esub>\<close>).  These are
+  the foundation of the §6.6 keystone (e)-lemma.  Empirically TRUE (re-verified
+  23655/0 over \<open>monoT M\<close>, \<open>Lng M \<le> 4\<close>, values \<open>\<le> 4\<close>, \<open>0 \<le> k < M\<^bsub>0,0\<^esub>\<close>,
+  \<open>k < M\<^bsub>1,0\<^esub>\<close>).  Side conditions are the weakest correct form: \<open>k < M\<^bsub>0,0\<^esub>\<close> and
+  \<open>k < M\<^bsub>1,0\<^esub>\<close> (NOT \<open>\<le>\<close>; the junction step \<open>(k,k) <\<^sup>Next (M\<^bsub>0,0\<^esub>,M\<^bsub>1,0\<^esub>)\<close> needs
+  strict increase in both rows).  No \<open>Red\<close> is involved \<open>-\<close> pure trunk-combinatorics,
+  built on @{thm [source] nextR1_diagSeq_append}, @{thm [source] le_TrMax_intro},
+  @{thm [source] TrMax_in_S}, @{thm [source] TrMax_stop} and the drop-shift transfer
+  @{thm [source] poper_nextrel1_drop}.
+\<close>
+
+text \<open>The diagonal prefix \<open>diagSeq 0 k\<close> has length \<open>Suc k\<close>, so the tail past it is
+  exactly \<open>M\<close>: \<open>drop (Suc k) (diagSeq 0 k @ M) = M\<close>.\<close>
+
+lemma ecrux_drop_tail: "drop (Suc k) (diagSeq 0 k @ M) = M"
+proof -
+  have "Lng (diagSeq 0 k) = Suc k" by simp
+  thus ?thesis by simp
+qed
+
+lemma ecrux_Lng: "Lng (diagSeq 0 k @ M) = Suc k + Lng M"
+  by simp
+
+text \<open>m (§6.6 keystone (e)-CRUX, part 1): prepending a length-\<open>Suc k\<close> diagonal to a
+  monotone \<open>M\<close> whose first pair dominates the diagonal raises \<open>TrMax\<close> by exactly
+  \<open>Suc k\<close>.  The whole diagonal (and its junction to \<open>M\<close>) is one trunk run, and past
+  the junction the trunk of \<open>A\<close> mirrors that of \<open>M\<close> (drop-shift transfer).\<close>
+
+lemma ecrux_TrMax_diag_prefix:
+  assumes mono: "monoT M" and r0: "k < entry M 0 0" and r1: "k < entry M 1 0"
+  shows "TrMax (diagSeq 0 k @ M) = Suc k + TrMax M"
+proof -
+  let ?c = "Suc k"
+  let ?A = "diagSeq 0 k @ M"
+  have "0 < Lng M" using mono by (simp add: monoT_def leR_def le0_def)
+  hence Mne: "M \<noteq> []" by auto
+  have MT: "M \<in> T_PS" using Mne by (simp add: T_PS_def)
+  have LM: "0 < Lng M" using Mne by (cases M) auto
+  have LA: "Lng ?A = ?c + Lng M" using Lng_diagSeq[of 0 k] by simp
+  have LApos: "0 < Lng ?A" using LA by linarith
+  have "?A \<noteq> []" using LApos by (cases ?A) auto
+  hence AT: "?A \<in> T_PS" by (simp add: T_PS_def)
+  have dropeq: "drop ?c ?A = M" by (rule ecrux_drop_tail)
+  \<comment> \<open>lower bound: every step below \<open>?c + TrMax M\<close> is a trunk step of \<open>?A\<close>.\<close>
+  have lower: "?c + TrMax M \<le> TrMax ?A"
+  proof -
+    have allstep: "\<forall>j'<?c + TrMax M. nextR ?A 1 j' (j' + 1)"
+    proof (intro allI impI)
+      fix j' assume j'lt: "j' < ?c + TrMax M"
+      show "nextR ?A 1 j' (j' + 1)"
+      proof (cases "j' < ?c")
+        case True
+        hence jk: "j' \<le> k" by simp
+        have "nextR (diagSeq 0 k @ M) 1 j' (Suc j')"
+          by (rule nextR1_diagSeq_append[OF Mne r0 r1 jk])
+        thus ?thesis by simp
+      next
+        case False
+        hence jge: "?c \<le> j'" by simp
+        let ?a = "j' - ?c"
+        have aTr: "?a < TrMax M" using j'lt jge by simp
+        have aL: "?a < Lng M - ?c + ?c" using aTr TrMax_bound[OF MT] LM by linarith
+        have aLA: "?a < Lng ?A - ?c" using aTr TrMax_bound[OF MT] LA by linarith
+        have a1LA: "?a + 1 < Lng ?A - ?c" using aTr TrMax_bound[OF MT] LA by linarith
+        have stepM: "nextR M 1 ?a (?a + 1)" using TrMax_in_S[OF MT] aTr by simp
+        have rel: "nextrel1 (drop ?c ?A) ?a (?a + 1)
+                    \<longleftrightarrow> nextrel1 ?A (?c + ?a) (?c + (?a + 1))"
+          by (rule poper_nextrel1_drop[OF aLA a1LA])
+        have lhs: "nextrel1 M ?a (?a + 1)" using stepM by (simp add: nextR_def)
+        have "nextrel1 ?A (?c + ?a) (?c + (?a + 1))" using rel lhs dropeq by simp
+        hence "nextrel1 ?A j' (j' + 1)" using jge by simp
+        thus ?thesis by (simp add: nextR_def)
+      qed
+    qed
+    show ?thesis by (rule le_TrMax_intro[OF AT allstep])
+  qed
+  \<comment> \<open>upper bound: case on whether \<open>M\<close> is all-trunk.\<close>
+  have upper: "TrMax ?A \<le> ?c + TrMax M"
+  proof (cases "TrMax M = Lng M - 1")
+    case True
+    \<comment> \<open>\<open>?c + TrMax M = Lng ?A - 1\<close>, which bounds \<open>TrMax\<close>.\<close>
+    have "TrMax ?A \<le> Lng ?A - 1" by (rule TrMax_bound[OF AT])
+    also have "\<dots> = ?c + (Lng M - 1)" using LA LM by simp
+    also have "\<dots> = ?c + TrMax M" using True by simp
+    finally show ?thesis .
+  next
+    case False
+    have trlt: "TrMax M < Lng M - 1" using False TrMax_bound[OF MT] by simp
+    show ?thesis
+    proof (rule ccontr)
+      assume "\<not> TrMax ?A \<le> ?c + TrMax M"
+      hence gt: "?c + TrMax M < TrMax ?A" by simp
+      \<comment> \<open>the step at \<open>?c + TrMax M\<close> is then a trunk step of \<open>?A\<close>.\<close>
+      have stepA: "nextR ?A 1 (?c + TrMax M) ((?c + TrMax M) + 1)"
+        using TrMax_in_S[OF AT] gt by simp
+      \<comment> \<open>transfer it back to a step of \<open>M\<close> at \<open>TrMax M\<close>.\<close>
+      have b0: "TrMax M < Lng ?A - ?c" using trlt LA LM by linarith
+      have b1: "TrMax M + 1 < Lng ?A - ?c" using trlt LA LM by linarith
+      have rel: "nextrel1 (drop ?c ?A) (TrMax M) (TrMax M + 1)
+                  \<longleftrightarrow> nextrel1 ?A (?c + TrMax M) (?c + (TrMax M + 1))"
+        by (rule poper_nextrel1_drop[OF b0 b1])
+      have "nextrel1 ?A (?c + TrMax M) (?c + (TrMax M + 1))"
+        using stepA by (simp add: nextR_def)
+      hence "nextrel1 (drop ?c ?A) (TrMax M) (TrMax M + 1)" using rel by simp
+      hence "nextR M 1 (TrMax M) (TrMax M + 1)" using dropeq by (simp add: nextR_def)
+      thus False using TrMax_stop[OF MT trlt] by simp
+    qed
+  qed
+  show ?thesis using lower upper by simp
+qed
+
+text \<open>The branch segment of \<open>A = diagSeq 0 k @ M\<close> coincides with that of \<open>M\<close>:
+  both pick the suffix of \<open>M\<close> right of its trunk, since past the diagonal+junction
+  \<open>A\<close> is literally \<open>M\<close> (drop-shift), and the trunk end shifts by exactly \<open>Suc k\<close>.\<close>
+
+lemma ecrux_branch_seg_eq:
+  assumes mono: "monoT M" and r0: "k < entry M 0 0" and r1: "k < entry M 1 0"
+    and tne: "TrMax M \<noteq> Lng M - 1"
+  shows "seg (diagSeq 0 k @ M) (TrMax (diagSeq 0 k @ M) + 1) (Lng (diagSeq 0 k @ M) - 1)
+       = seg M (TrMax M + 1) (Lng M - 1)"
+proof -
+  let ?c = "Suc k"
+  let ?A = "diagSeq 0 k @ M"
+  have "0 < Lng M" using mono by (simp add: monoT_def leR_def le0_def)
+  hence Mne: "M \<noteq> []" by auto
+  have MT: "M \<in> T_PS" using Mne by (simp add: T_PS_def)
+  have LM: "0 < Lng M" using Mne by (cases M) auto
+  have LA: "Lng ?A = ?c + Lng M" using Lng_diagSeq[of 0 k] by simp
+  have dropeq: "drop ?c ?A = M" by (rule ecrux_drop_tail)
+  have trA: "TrMax ?A = ?c + TrMax M"
+    by (rule ecrux_TrMax_diag_prefix[OF mono r0 r1])
+  have trlt: "TrMax M < Lng M - 1" using tne TrMax_bound[OF MT] by simp
+  \<comment> \<open>the \<open>A\<close>-branch is a \<open>drop\<close>, and that \<open>drop\<close> peels the diagonal off to land in \<open>M\<close>.\<close>
+  have AltL: "TrMax ?A + 1 < Lng ?A" using trA LA trlt LM by linarith
+  have MltL: "TrMax M + 1 < Lng M" using trlt LM by linarith
+  have segA: "seg ?A (TrMax ?A + 1) (Lng ?A - 1) = drop (TrMax ?A + 1) ?A"
+    by (rule drop_eq_seg[OF AltL, symmetric])
+  have segM: "seg M (TrMax M + 1) (Lng M - 1) = drop (TrMax M + 1) M"
+    by (rule drop_eq_seg[OF MltL, symmetric])
+  have "drop (TrMax ?A + 1) ?A = drop ((TrMax M + 1) + ?c) ?A" using trA by (simp add: add.commute)
+  also have "\<dots> = drop (TrMax M + 1) (drop ?c ?A)" by (simp add: drop_drop)
+  also have "\<dots> = drop (TrMax M + 1) M" using dropeq by simp
+  finally have "drop (TrMax ?A + 1) ?A = drop (TrMax M + 1) M" .
+  thus ?thesis using segA segM by simp
+qed
+
+text \<open>m (§6.6 keystone (e)-CRUX, part 2): the branch decomposition is unchanged by
+  prepending the diagonal (the branch region is the unchanged suffix of \<open>M\<close>).\<close>
+
+lemma ecrux_Br_diag_prefix:
+  assumes mono: "monoT M" and r0: "k < entry M 0 0" and r1: "k < entry M 1 0"
+  shows "Br (diagSeq 0 k @ M) = Br M"
+proof -
+  let ?c = "Suc k"
+  let ?A = "diagSeq 0 k @ M"
+  have "0 < Lng M" using mono by (simp add: monoT_def leR_def le0_def)
+  hence Mne: "M \<noteq> []" by auto
+  have LM: "0 < Lng M" using Mne by (cases M) auto
+  have LA: "Lng ?A = ?c + Lng M" using Lng_diagSeq[of 0 k] by simp
+  have trA: "TrMax ?A = ?c + TrMax M"
+    by (rule ecrux_TrMax_diag_prefix[OF mono r0 r1])
+  \<comment> \<open>the trunk-saturation flag agrees between \<open>A\<close> and \<open>M\<close>.\<close>
+  have flag: "(TrMax ?A = Lng ?A - 1) \<longleftrightarrow> (TrMax M = Lng M - 1)"
+    using trA LA LM by linarith
+  show ?thesis
+  proof (cases "TrMax M = Lng M - 1")
+    case True
+    hence "TrMax ?A = Lng ?A - 1" using flag by simp
+    hence "Br ?A = []" by (simp add: Br_def)
+    moreover have "Br M = []" using True by (simp add: Br_def)
+    ultimately show ?thesis by simp
+  next
+    case False
+    hence "TrMax ?A \<noteq> Lng ?A - 1" using flag by simp
+    hence "Br ?A = P (seg ?A (TrMax ?A + 1) (Lng ?A - 1))" by (simp add: Br_def)
+    also have "\<dots> = P (seg M (TrMax M + 1) (Lng M - 1))"
+      using ecrux_branch_seg_eq[OF mono r0 r1 False] by simp
+    also have "\<dots> = Br M" using False by (simp add: Br_def)
+    finally show ?thesis .
+  qed
+qed
+
+text \<open>m (§6.6 keystone (e)-CRUX, part 3): the branch first-nodes all shift right by
+  \<open>Suc k\<close> (their relative offsets within the unchanged branch region are fixed; only
+  the trunk-end basepoint moves by \<open>Suc k\<close>).\<close>
+
+lemma ecrux_FirstNodes_diag_prefix:
+  assumes mono: "monoT M" and r0: "k < entry M 0 0" and r1: "k < entry M 1 0"
+  shows "FirstNodes (diagSeq 0 k @ M) = map (\<lambda>x. Suc k + x) (FirstNodes M)"
+proof -
+  let ?c = "Suc k"
+  let ?A = "diagSeq 0 k @ M"
+  have trA: "TrMax ?A = ?c + TrMax M"
+    by (rule ecrux_TrMax_diag_prefix[OF mono r0 r1])
+  have brA: "Br ?A = Br M" by (rule ecrux_Br_diag_prefix[OF mono r0 r1])
+  have "FirstNodes ?A = map (\<lambda>x. TrMax ?A + 1 + x) (IdxSum (Br ?A))"
+    by (simp add: FirstNodes_def)
+  also have "\<dots> = map (\<lambda>x. ?c + (TrMax M + 1 + x)) (IdxSum (Br M))"
+    using trA brA by (simp add: add.assoc add.left_commute)
+  also have "\<dots> = map (\<lambda>x. ?c + x) (map (\<lambda>x. TrMax M + 1 + x) (IdxSum (Br M)))"
+    by simp
+  also have "\<dots> = map (\<lambda>x. ?c + x) (FirstNodes M)"
+    by (simp add: FirstNodes_def)
+  finally show ?thesis .
+qed
+
+subsection \<open>§7.2 命題（scb分解の自明性の判定条件） — m_7_2_scb_triviality\<close>
+
+text \<open>
+  The three-way triviality criterion (§7.2): for \<open>(t,c) \<in> T\<^bsub>B\<^esub>\<^sup>Marked\<close> the
+  conditions \<open>t = c\<close>, "every \<open>(s, flat c, b)\<close> scb-decomposition of \<open>t\<close> is
+  trivial (\<open>s = b = ()\<close>)", and "some \<open>((), flat c, b)\<close> scb-decomposition of
+  \<open>t\<close> exists" coincide.
+
+  At the \<^typ>\<open>BT\<close> level the article's string-identification "\<open>t = scb = c\<close>"
+  is exactly \<^const>\<open>flatBT\<close> injectivity (@{thm [source] m_7_flatBT_inj}).
+
+  \<^item> Forward (\<open>t = c \<Rightarrow>\<close> trivial): a length count, already banked as
+    @{thm [source] scbtriv_eq_imp_trivial_decomp}.
+  \<^item> Converse for (2): a trivial-on-both-sides decomposition gives
+    \<open>flat t = flat c\<close> outright, so injectivity yields \<open>t = c\<close>.  (Any \<open>(s,b)\<close>
+    decomposition exists because \<open>(t,c) \<in> MarkedB\<close>; the hypothesis forces it
+    trivial.)
+  \<^item> Converse for (3): an \<open>s = ()\<close> decomposition has \<open>flat t = flat c \<frown> b\<close> with
+    \<open>b\<close> all-\<open>\<^bold>)\<close>.  If \<open>b \<noteq> ()\<close> then \<open>flat c\<close> is a proper nonempty prefix of the
+    complete string \<open>flat t\<close>, so by prefix positivity
+    (@{thm [source] flatinj_prefix_nonneg_BT}) \<open>flatinj_dsum (flat c) \<ge> 0\<close>,
+    contradicting @{thm [source] flatinj_dsum_flatBT} (\<open>= -1\<close>).  Hence \<open>b = ()\<close>,
+    \<open>flat t = flat c\<close>, and injectivity gives \<open>t = c\<close>.
+\<close>
+
+\<comment> \<open>The (3)\<Rightarrow>(1) engine: a trailing all-\<open>RP\<close> block appended to a complete
+   \<open>flatBT\<close> string must be empty (prefix-freeness of complete strings).\<close>
+lemma scbtriv_flat_append_RP_nil:
+  assumes "flatBT t = flatBT c @ b"
+  shows "b = []"
+proof (rule ccontr)
+  assume bne: "b \<noteq> []"
+  have "0 \<le> flatinj_dsum (flatBT c)"
+    by (rule flatinj_prefix_nonneg_BT[OF assms bne])
+  thus False using flatinj_dsum_flatBT[of c] by simp
+qed
+
+lemma m_7_2_scb_triviality:
+  assumes mB: "(t, c) \<in> MarkedB"
+  shows "(t = c)
+       \<longleftrightarrow> (\<forall>s b. scb_decomp t s (flatBT c) b \<longrightarrow> s = [] \<and> b = [])"
+    and "(t = c)
+       \<longleftrightarrow> (\<exists>b. scb_decomp t [] (flatBT c) b)"
+proof -
+  \<comment> \<open>The MarkedB witness: some scb-decomposition with marked principal \<open>flat c\<close>.\<close>
+  from mB obtain s\<^sub>w b\<^sub>w where wit: "scb_decomp t s\<^sub>w (flatBT c) b\<^sub>w"
+    unfolding MarkedB_def by auto
+
+  \<comment> \<open>Shared forward direction (1\<Rightarrow>2): trivial by the banked length count.\<close>
+  have fwd2: "t = c \<Longrightarrow> (\<forall>s b. scb_decomp t s (flatBT c) b \<longrightarrow> s = [] \<and> b = [])"
+    using scbtriv_eq_imp_trivial_decomp by blast
+
+  \<comment> \<open>Show (2): \<open>t = c \<longleftrightarrow> every decomposition is trivial\<close>.\<close>
+  show "(t = c)
+       \<longleftrightarrow> (\<forall>s b. scb_decomp t s (flatBT c) b \<longrightarrow> s = [] \<and> b = [])"
+  proof
+    assume "t = c" thus "\<forall>s b. scb_decomp t s (flatBT c) b \<longrightarrow> s = [] \<and> b = []"
+      by (rule fwd2)
+  next
+    assume triv: "\<forall>s b. scb_decomp t s (flatBT c) b \<longrightarrow> s = [] \<and> b = []"
+    \<comment> \<open>Apply triviality to the MarkedB witness: \<open>s\<^sub>w = b\<^sub>w = ()\<close>.\<close>
+    from triv wit have sw: "s\<^sub>w = []" and bw: "b\<^sub>w = []" by blast+
+    have "flatBT t = flatBT c"
+      using wit unfolding scb_decomp_def by (simp add: sw bw)
+    thus "t = c" by (rule m_7_flatBT_inj)
+  qed
+
+  \<comment> \<open>Show (3): \<open>t = c \<longleftrightarrow> some \<open>s = ()\<close> decomposition exists\<close>.\<close>
+  show "(t = c)
+       \<longleftrightarrow> (\<exists>b. scb_decomp t [] (flatBT c) b)"
+  proof
+    assume tc: "t = c"
+    \<comment> \<open>Witness \<open>b = ()\<close>.  \<open>flat c = () \<frown> flat c \<frown> ()\<close>; the principal-string
+       condition (needed only when \<open>c \<noteq> 0\<close>) is supplied by the MarkedB witness,
+       since \<open>t = c \<noteq> 0\<close> makes that witness carry \<open>isPTB_str (flat c)\<close>.\<close>
+    have "scb_decomp c [] (flatBT c) []"
+    proof (cases "c = Trm []")
+      case True thus ?thesis by (simp add: scb_decomp_def)
+    next
+      case False
+      hence "t \<noteq> Trm []" using tc by simp
+      hence "isPTB_str (flatBT c)"
+        using wit unfolding scb_decomp_def by simp
+      thus ?thesis using False by (simp add: scb_decomp_def)
+    qed
+    thus "\<exists>b. scb_decomp t [] (flatBT c) b" using tc by blast
+  next
+    assume "\<exists>b. scb_decomp t [] (flatBT c) b"
+    then obtain b where d: "scb_decomp t [] (flatBT c) b" by blast
+    have "flatBT t = flatBT c @ b"
+      using d unfolding scb_decomp_def by simp
+    hence "b = []" by (rule scbtriv_flat_append_RP_nil)
+    with \<open>flatBT t = flatBT c @ b\<close> have "flatBT t = flatBT c" by simp
+    thus "t = c" by (rule m_7_flatBT_inj)
+  qed
+qed
+
+
+section \<open>§7.2 scb分解の一意性（無条件版） (p_7_2_scb_unique, conjunct (1))\<close>
+
+text \<open>
+  Unconditional conjunct (1) of \<open>p_7_2_scb_unique\<close>: for \<open>t \<in> T\<^bsub>B\<^esub>\<close>, an scb
+  decomposition with a fixed middle string \<open>c\<close> determines \<open>s\<close> and \<open>b\<close>.  The
+  generic case \<open>t \<noteq> Trm []\<close> is the green \<open>m_7_2_scb_unique_sb\<close>.  We close the
+  remaining \<open>t = Trm []\<close> case directly: there \<open>flatBT t = [Zsym]\<close> and the
+  principal side-condition \<open>isPTB_str c\<close> is waived, so \<open>s @ c @ b = [Zsym]\<close>
+  with every letter of \<open>b\<close> equal to \<open>RP \<noteq> Zsym\<close>; hence \<open>b = []\<close> and, with the
+  shared \<open>c\<close>, \<open>s\<close> is pinned by \<open>append_eq_append_conv\<close>.  The \<open>t \<in> T\<^bsub>B\<^esub>\<close>
+  hypothesis is kept to match the article statement but is not needed for this
+  conjunct.\<close>
+
+lemma m_7_2_scb_unique_decomp:
+  assumes tTB: "t \<in> T_B"
+      and d0: "scb_decomp t s\<^sub>0 c b\<^sub>0"
+      and d1: "scb_decomp t s\<^sub>1 c b\<^sub>1"
+  shows "s\<^sub>0 = s\<^sub>1 \<and> b\<^sub>0 = b\<^sub>1"
+proof (cases "t = Trm []")
+  case True
+  \<comment> \<open>\<open>flatBT (Trm []) = [Zsym]\<close>; the \<open>isPTB_str\<close> side-condition is waived here.\<close>
+  from d0 have e0: "s\<^sub>0 @ c @ b\<^sub>0 = [Zsym]" and rb0: "\<forall>x \<in> set b\<^sub>0. x = RP"
+    by (simp_all add: scb_decomp_def True)
+  from d1 have e1: "s\<^sub>1 @ c @ b\<^sub>1 = [Zsym]" and rb1: "\<forall>x \<in> set b\<^sub>1. x = RP"
+    by (simp_all add: scb_decomp_def True)
+  \<comment> \<open>Each \<open>b\<close> is a sublist of \<open>[Zsym]\<close>, so its letters are \<open>Zsym\<close>; but they are
+      \<open>RP \<noteq> Zsym\<close>, forcing \<open>b = []\<close>.\<close>
+  have sub0: "set b\<^sub>0 \<subseteq> set [Zsym]" using e0 by (metis set_append Un_iff subsetI)
+  have b0: "b\<^sub>0 = []"
+  proof (rule ccontr)
+    assume "b\<^sub>0 \<noteq> []"
+    then obtain x where x: "x \<in> set b\<^sub>0" by (cases b\<^sub>0) auto
+    from x rb0 have "x = RP" by blast
+    moreover from x sub0 have "x = Zsym" by auto
+    ultimately show False by simp
+  qed
+  have sub1: "set b\<^sub>1 \<subseteq> set [Zsym]" using e1 by (metis set_append Un_iff subsetI)
+  have b1: "b\<^sub>1 = []"
+  proof (rule ccontr)
+    assume "b\<^sub>1 \<noteq> []"
+    then obtain x where x: "x \<in> set b\<^sub>1" by (cases b\<^sub>1) auto
+    from x rb1 have "x = RP" by blast
+    moreover from x sub1 have "x = Zsym" by auto
+    ultimately show False by simp
+  qed
+  from e0 b0 have s0c: "s\<^sub>0 @ c = [Zsym]" by simp
+  from e1 b1 have s1c: "s\<^sub>1 @ c = [Zsym]" by simp
+  from s0c s1c have "s\<^sub>0 @ c = s\<^sub>1 @ c" by simp
+  hence "s\<^sub>0 = s\<^sub>1" by simp
+  thus ?thesis using b0 b1 by simp
+next
+  case False
+  thus ?thesis using m_7_2_scb_unique_sb[OF d0 d1] by blast
+qed
+
+
+
 end
