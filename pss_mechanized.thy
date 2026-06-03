@@ -32361,4 +32361,413 @@ proof -
   show ?thesis using e0 inner le by simp
 qed
 
+(* ===== keystone: Red preserves monoT (forward direction of p_6_5_Red_monoT) ===== *)
+
+text \<open>rmt: tail row-0 positivity for a mono core-nontrunk \<open>M\<close>.  Every branch-tail
+  index \<open>j > TrMax M\<close> of \<open>Red M = diagSeq 0 (TrMax M) @ concat (branch blocks)\<close>
+  reads a row-0 value \<open>\<ge> Joints M ! J + 1 \<ge> 1 > 0\<close>.  Adapts the non-trunk arm of
+  @{thm [source] redB_tail_row0_above_anchor}, anchoring at the row-0 left end
+  \<open>0\<close> (instead of \<open>m\<^sub>1\<^sub>0\<close>).\<close>
+
+lemma rmt_core_nontrunk_tail_pos:
+  assumes M: "M \<in> PT_PS" and c0: "entry M 0 0 = 0" and c1: "entry M 1 0 = 0"
+    and tne: "TrMax M \<noteq> Lng M - 1"
+  shows "\<forall>j. TrMax M < j \<longrightarrow> j < Lng (Red M) \<longrightarrow> 0 < entry (Red M) 0 j"
+proof -
+  have MT: "M \<in> T_PS" using M by (simp add: PT_PS_def)
+  have mono: "monoT M" using M by (simp add: PT_PS_def)
+  have nz: "\<not> zeroT M" using mono by (simp add: monoT_def)
+  have nmu: "\<not> multiT M" using mono by (simp add: multiT_def)
+  have domM: "Red_dom M" by (rule m_6_5_Red_welldef[OF MT])
+  let ?t = "TrMax M"
+  let ?blk = "\<lambda>J. (IncrFirst ^^ (Joints M ! J + 1 - npJ M J)) (Red (NJ M J))"
+  let ?Q = "map ?blk [0..<Lng (Br M)]"
+  have rB: "Red M = diagSeq 0 ?t @ concat ?Q"
+    by (rule d_Red_core_nontrunk_unfold[OF MT nz nmu c0 c1 tne])
+  have Lblk: "\<And>J. J < Lng (Br M) \<Longrightarrow> Lng (?blk J) = Lng (Br M ! J)"
+  proof -
+    fix J assume J: "J < Lng (Br M)"
+    have brJne: "Br M ! J \<noteq> []" by (rule Br_component_nonempty[OF M J])
+    have NJTl: "NJ M J \<in> T_PS" using brJne by (simp add: NJ_def T_PS_def)
+    have step1: "Lng (?blk J) = Lng (Red (NJ M J))" by (simp only: Lng_funpow_IncrFirst)
+    have step2: "Lng (Red (NJ M J)) = Lng (NJ M J)" by (rule m_6_5_Lng_Red[OF NJTl])
+    have step3: "Lng (NJ M J) = Lng (Br M ! J)" using brJne by (rule Lng_NJ)
+    show "Lng (?blk J) = Lng (Br M ! J)" using step1 step2 step3 by simp
+  qed
+  have LrM: "Lng (Red M) = Lng M" by (rule m_6_5_Lng_Red[OF MT])
+  have lendiag: "length (diagSeq 0 ?t) = Suc ?t" by (simp add: diagSeq_def)
+  have Ltail: "Lng (concat ?Q) = Lng M - Suc ?t"
+  proof -
+    have "Lng (Red M) = length (diagSeq 0 ?t) + Lng (concat ?Q)" by (simp add: rB)
+    thus ?thesis using LrM lendiag by simp
+  qed
+  have lenQ: "length ?Q = Lng (Br M)" by simp
+  have idx_total: "IdxSum ?Q ! (length ?Q) = Lng (concat ?Q)"
+  proof -
+    have "IdxSum ?Q ! (length ?Q) = sum_list (map length (take (length ?Q) ?Q))"
+      by (simp add: idxsum_nth)
+    also have "\<dots> = sum_list (map length ?Q)" by simp
+    also have "\<dots> = length (concat ?Q)" by (simp add: length_concat)
+    finally show ?thesis .
+  qed
+  show ?thesis
+  proof (intro allI impI)
+    fix j assume tj: "?t < j" and jL: "j < Lng (Red M)"
+    let ?jp = "j - Suc ?t"
+    have jge: "Suc ?t \<le> j" using tj by simp
+    have jpL: "?jp < Lng (concat ?Q)" using jL LrM Ltail jge by linarith
+    have e_split: "entry (Red M) 0 j = entry (concat ?Q) 0 ?jp"
+    proof -
+      have "(Red M) ! j = (diagSeq 0 ?t @ concat ?Q) ! j" by (simp add: rB)
+      also have "\<dots> = concat ?Q ! (j - length (diagSeq 0 ?t))"
+        using jge lendiag by (simp add: nth_append)
+      also have "\<dots> = concat ?Q ! ?jp" using lendiag by simp
+      finally show ?thesis by (simp add: entry_def)
+    qed
+    have jp_tot: "?jp < IdxSum ?Q ! (length ?Q)" using jpL idx_total by simp
+    obtain J where J: "J < length ?Q" "IdxSum ?Q ! J \<le> ?jp"
+                     "?jp < IdxSum ?Q ! (J + 1)"
+      using idxsum_locate[OF jp_tot] by blast
+    have JBr: "J < Lng (Br M)" using J(1) lenQ by simp
+    let ?loc = "?jp - IdxSum ?Q ! J"
+    have QJ_blk: "?Q ! J = ?blk J"
+      using nth_map_upt[where f="?blk" and m=0 and n="Lng (Br M)" and i=J] JBr by simp
+    have blkJ_len: "length (?Q ! J) = Lng (Br M ! J)"
+      using QJ_blk Lblk[OF JBr] by simp
+    have idxdiff: "IdxSum ?Q ! (J + 1) = IdxSum ?Q ! J + length (?Q ! J)"
+      using J(1) by (rule idxsum_diff)
+    have loc_lt: "?loc < length (?Q ! J)" using J(2,3) idxdiff by linarith
+    have sJ: "sum_list (map length (take J ?Q)) = IdxSum ?Q ! J"
+      using J(1) by (simp add: idxsum_nth less_imp_le_nat)
+    have jp_decomp: "?jp = IdxSum ?Q ! J + ?loc" using J(2) by simp
+    have e_block: "entry (concat ?Q) 0 ?jp = entry (?Q ! J) 0 ?loc"
+    proof -
+      have "concat ?Q ! ?jp = concat ?Q ! (sum_list (map length (take J ?Q)) + ?loc)"
+        using sJ jp_decomp by simp
+      also have "\<dots> = (?Q ! J) ! ?loc"
+        by (rule nth_concat_block[OF J(1) loc_lt])
+      finally show ?thesis by (simp add: entry_def)
+    qed
+    let ?eJ = "Joints M ! J + 1 - npJ M J"
+    have brJne: "Br M ! J \<noteq> []" by (rule Br_component_nonempty[OF M JBr])
+    have NJT: "NJ M J \<in> T_PS" using brJne by (simp add: NJ_def T_PS_def)
+    have LredNJ: "Lng (Red (NJ M J)) = Lng (NJ M J)" by (rule m_6_5_Lng_Red[OF NJT])
+    have loc_ltN: "?loc < Lng (Red (NJ M J))"
+    proof -
+      have "?loc < Lng (Br M ! J)" using loc_lt blkJ_len by simp
+      also have "\<dots> = Lng (NJ M J)" using brJne by (simp add: Lng_NJ)
+      also have "\<dots> = Lng (Red (NJ M J))" using LredNJ by simp
+      finally show ?thesis .
+    qed
+    have e_QJ: "entry (?Q ! J) 0 ?loc = entry (Red (NJ M J)) 0 ?loc + ?eJ"
+    proof -
+      have "entry (?Q ! J) 0 ?loc = entry ((IncrFirst ^^ ?eJ) (Red (NJ M J))) 0 ?loc"
+        using QJ_blk by simp
+      also have "\<dots> = entry (Red (NJ M J)) 0 ?loc + ?eJ"
+        by (rule entry_funpow_IncrFirst0[OF loc_ltN])
+      finally show ?thesis .
+    qed
+    \<comment> \<open>Leftend lower bound: \<open>entry (Red (NJ M J)) 0 ?loc \<ge> npJ M J\<close>.\<close>
+    have NJzm: "zeroT (NJ M J) \<or> monoT (NJ M J)"
+      using NJ_nonmulti[OF M c0 c1 JBr] by (simp add: multiT_def)
+    have lm_NJ: "entry (Red (NJ M J)) 0 0 \<le> entry (Red (NJ M J)) 0 ?loc"
+    proof (cases "zeroT (NJ M J)")
+      case True
+      have "Lng (Red (NJ M J)) = 1" using LredNJ True by (simp add: zeroT_def)
+      hence "?loc = 0" using loc_ltN by simp
+      thus ?thesis by simp
+    next
+      case False
+      hence "monoT (NJ M J)" using NJzm by simp
+      from m_6_5_Red_leftend_row0_min[OF NJT this] loc_ltN show ?thesis by blast
+    qed
+    have inner: "entry (Red (NJ M J)) 0 0 = npJ M J"
+      by (rule fin_Red_NJ_leftend[OF M c0 c1 JBr])
+    have leftend_ge: "npJ M J \<le> entry (Red (NJ M J)) 0 ?loc" using inner lm_NJ by simp
+    have eRBj: "entry (Red M) 0 j = entry (Red (NJ M J)) 0 ?loc + ?eJ"
+      using e_split e_block e_QJ by simp
+    have nat_id: "Joints M ! J + 1 \<le> ?eJ + npJ M J" by simp
+    have "Joints M ! J + 1 \<le> entry (Red (NJ M J)) 0 ?loc + ?eJ"
+      using leftend_ge nat_id by linarith
+    hence "Joints M ! J + 1 \<le> entry (Red M) 0 j" using eRBj by simp
+    thus "0 < entry (Red M) 0 j" by linarith
+  qed
+qed
+
+text \<open>rmt: strict row-0 suffix-minimum for a mono core-nontrunk \<open>M\<close>: the row-0
+  left end is \<open>0\<close> and every later index reads a strictly larger row-0 value
+  (trunk diagonal reads \<open>j > 0\<close>; branch tail \<open>\<ge> Joints+1 > 0\<close> via
+  @{thm [source] rmt_core_nontrunk_tail_pos}).\<close>
+
+lemma rmt_core_nontrunk_strict_suffix_min:
+  assumes M: "M \<in> PT_PS" and c0: "entry M 0 0 = 0" and c1: "entry M 1 0 = 0"
+    and tne: "TrMax M \<noteq> Lng M - 1"
+  shows "\<forall>j. 0 < j \<longrightarrow> j < Lng (Red M) \<longrightarrow> 0 < entry (Red M) 0 j"
+proof -
+  have MT: "M \<in> T_PS" using M by (simp add: PT_PS_def)
+  have mono: "monoT M" using M by (simp add: PT_PS_def)
+  have nz: "\<not> zeroT M" using mono by (simp add: monoT_def)
+  have nmu: "\<not> multiT M" using mono by (simp add: multiT_def)
+  let ?t = "TrMax M"
+  let ?blk = "\<lambda>J. (IncrFirst ^^ (Joints M ! J + 1 - npJ M J)) (Red (NJ M J))"
+  let ?Q = "map ?blk [0..<Lng (Br M)]"
+  have rB: "Red M = diagSeq 0 ?t @ concat ?Q"
+    by (rule d_Red_core_nontrunk_unfold[OF MT nz nmu c0 c1 tne])
+  have tail_pos: "\<forall>j. ?t < j \<longrightarrow> j < Lng (Red M) \<longrightarrow> 0 < entry (Red M) 0 j"
+    by (rule rmt_core_nontrunk_tail_pos[OF M c0 c1 tne])
+  show ?thesis
+  proof (intro allI impI)
+    fix j assume jpos: "0 < j" and jL: "j < Lng (Red M)"
+    show "0 < entry (Red M) 0 j"
+    proof (cases "j \<le> ?t")
+      case True
+      have "entry (diagSeq 0 ?t @ concat ?Q) 0 j = j"
+        by (rule entry_diagSeq_append_lo[OF True])
+      hence "entry (Red M) 0 j = j" using rB by simp
+      thus ?thesis using jpos by simp
+    next
+      case False
+      hence "?t < j" by simp
+      thus ?thesis using tail_pos jL by blast
+    qed
+  qed
+qed
+
+text \<open>rmt KEYSTONE: \<open>Red\<close> preserves @{const monoT}.  Forward direction of
+  \<open>p_6_5_Red_monoT\<close> (\<open>= \<not> multiT (Red M)\<close> for mono \<open>M\<close>, needed by the idempotency
+  chain).  Proved by @{const Red}'s well-founded induction; the productive
+  branches reuse the value-monotonicity bricks (\<open>m_6_5_Red_leftend_row0_min\<close>,
+  the core-nontrunk strict suffix-min, the \<open>m\<^sub>1\<^sub>0>0\<close> brick
+  @{thm [source] m_6_5_monoT_Red_m10pos}).\<close>
+
+lemma m_6_5_Red_preserves_monoT:
+  assumes M: "M \<in> PT_PS"
+  shows "monoT (Red M)"
+proof -
+  have MT0: "M \<in> T_PS" using M by (simp add: PT_PS_def)
+  have domM: "Red_dom M" by (rule m_6_5_Red_welldef[OF MT0])
+  have "M \<in> T_PS \<longrightarrow> monoT M \<longrightarrow> monoT (Red M)"
+    using domM
+  proof (induction M rule: Red.pinduct)
+    case (1 M)
+    note dom    = 1(1)
+    note IH_nc3 = 1(4)  \<comment> \<open>non-core m10=0 shift IH\<close>
+    show ?case
+    proof (rule impI, rule impI)
+      assume MT': "M \<in> T_PS" and mono: "monoT M"
+      have MPT: "M \<in> PT_PS" using MT' mono by (simp add: PT_PS_def)
+      have Mne: "M \<noteq> []" using MT' by (simp add: T_PS_def)
+      have LMpos: "0 < Lng M" using Mne by (cases M) auto
+      have nz: "\<not> zeroT M" using mono by (simp add: monoT_def)
+      have nmu: "\<not> multiT M" using mono by (simp add: multiT_def)
+      let ?j1  = "Lng M - 1"
+      let ?j1' = "TrMax M"
+      let ?m00 = "entry M 0 0"
+      let ?m10 = "entry M 1 0"
+      have LrM: "Lng (Red M) = Lng M" by (rule m_6_5_Lng_Red[OF MT'])
+      have Rne: "Red M \<noteq> []" using LrM LMpos by (cases "Red M") auto
+      have RT: "Red M \<in> T_PS" using Rne by (simp add: T_PS_def)
+      show "monoT (Red M)"
+      proof (cases "?m00 = 0 \<and> ?m10 = 0")
+        case core: True
+        hence c0: "?m00 = 0" and c1: "?m10 = 0" by simp_all
+        show ?thesis
+        proof (cases "?j1' = ?j1")
+          \<comment> \<open>core-trunk: Red M = diagSeq 0 j1, monoT (diagonal).\<close>
+          case True
+          have rM: "Red M = diagSeq ?m10 (?m10 + ?j1)"
+            using Red.psimps[OF dom] nz nmu c0 c1 True by (simp add: Let_def)
+          have rM': "Red M = diagSeq 0 ?j1" using rM c1 by simp
+          have le0R: "le0 (Red M) 0 (Lng (Red M) - 1)"
+          proof -
+            have b0: "(0::nat) < Suc ?j1 - 0" by simp
+            have b1: "?j1 < Suc ?j1 - 0" by simp
+            have "le0 (diagSeq 0 ?j1) 0 ?j1"
+              using le0_diagSeq[OF b0 b1] by simp
+            moreover have "Lng (Red M) - 1 = ?j1" using LrM by simp
+            ultimately show ?thesis using rM' by simp
+          qed
+          have nzR: "\<not> zeroT (Red M)"
+          proof (cases "Lng (Red M) = 1")
+            case True
+            have "Lng M = 1" using True LrM by simp
+            hence "zeroT M" using c1 by (simp add: zeroT_def)
+            thus ?thesis using nz by simp
+          next
+            case False thus ?thesis by (simp add: zeroT_def)
+          qed
+          show ?thesis using nzR le0R by (simp add: monoT_def leR_def)
+        next
+          \<comment> \<open>core-nontrunk: leftend 0 is a strict row-0 suffix-min, reaching the end.\<close>
+          case tne: False
+          have e0: "entry (Red M) 0 0 = 0"
+            by (rule fin_Red_leftend_row0_eq_m10[OF MT' mono, simplified c1])
+          have suffmin: "\<forall>j. 0 < j \<longrightarrow> j < Lng (Red M) \<longrightarrow> 0 < entry (Red M) 0 j"
+            by (rule rmt_core_nontrunk_strict_suffix_min[OF MPT c0 c1 tne])
+          have nzR: "\<not> zeroT (Red M)"
+          proof (cases "Lng (Red M) = 1")
+            case True
+            have "Lng M = 1" using True LrM by simp
+            hence "zeroT M" using c1 by (simp add: zeroT_def)
+            thus ?thesis using nz by simp
+          next
+            case False thus ?thesis by (simp add: zeroT_def)
+          qed
+          have LRpos: "0 < Lng (Red M)" using LrM LMpos by simp
+          have le0R: "le0 (Red M) 0 (Lng (Red M) - 1)"
+          proof (cases "Lng (Red M) = 1")
+            case True thus ?thesis using LRpos by (simp add: le0_def)
+          next
+            case False
+            hence lt: "0 < Lng (Red M) - 1" using LRpos by linarith
+            have jNlt: "Lng (Red M) - 1 < Lng (Red M)" using LRpos by linarith
+            have strict: "\<And>k. 0 < k \<Longrightarrow> k \<le> Lng (Red M) - 1
+                            \<Longrightarrow> entry (Red M) 0 0 < entry (Red M) 0 k"
+            proof -
+              fix k assume a: "0 < k" and b: "k \<le> Lng (Red M) - 1"
+              have klt: "k < Lng (Red M)" using b jNlt by simp
+              have "0 < entry (Red M) 0 k" using suffmin a klt by blast
+              thus "entry (Red M) 0 0 < entry (Red M) 0 k" using e0 by simp
+            qed
+            have "leR (Red M) 0 0 (Lng (Red M) - 1)"
+              by (rule m_5_1_parent_exists_3[OF RT lt jNlt strict])
+            thus ?thesis by (simp add: leR_def)
+          qed
+          show ?thesis using nzR le0R by (simp add: monoT_def leR_def)
+        qed
+      next
+        case nc: False
+        show ?thesis
+        proof (cases "?m10 = 0")
+          \<comment> \<open>shift branch: Red M = Red (shiftRow0 M); IH on shiftRow0 M.\<close>
+          case True
+          let ?shift = "map (\<lambda>j. (entry M 0 j - ?m00, entry M 1 j)) [0..<Suc ?j1]"
+          have rM: "Red M = Red ?shift"
+            using Red.psimps[OF dom] nz nmu nc True by (simp add: Let_def)
+          have shift_eq: "?shift = shiftRow0 M"
+            using LMpos by (simp add: shiftRow0_def)
+          have shift_T: "?shift \<in> T_PS" by (simp add: T_PS_def)
+          have shift_mono: "monoT ?shift"
+            using monoT_shiftRow0[OF MT' mono] shift_eq by simp
+          have IH': "monoT (Red ?shift)"
+            using IH_nc3[OF nz nmu refl refl refl refl nc True] shift_T shift_mono by blast
+          show ?thesis using IH' rM by simp
+        next
+          \<comment> \<open>m10>0 branch: Red M = productive segment, monoT by m_6_5_monoT_Red_m10pos.\<close>
+          case False
+          hence c1p: "0 < ?m10" by simp
+          let ?arg = "diagSeq 0 (?m10 - 1) @ (IncrFirst ^^ ?m10) M"
+          have funpow_ne: "(IncrFirst ^^ ?m10) M \<noteq> []"
+            using Mne by (metis Lng_funpow_IncrFirst length_0_conv)
+          have arg_T: "?arg \<in> T_PS" using funpow_ne by (simp add: T_PS_def)
+          let ?N = "Red ?arg"
+          let ?jN = "Lng ?N - 1"
+          have rM: "Red M = (let N = ?N; jN = ?jN in
+                     if ?m10 \<le> jN \<and> seg N ?m10 jN \<in> PT_PS then
+                       map (\<lambda>j. (entry N 0 j - entry N 0 ?m10 + entry N 1 ?m10,
+                                 entry N 1 j))
+                           [?m10..<Suc jN]
+                     else M)"
+            using Red.psimps[OF dom] nz nmu nc c1p by (simp add: Let_def)
+          have segPT: "seg ?N ?m10 ?jN \<in> PT_PS"
+            using m_6_5_monoT_Red_m10pos[OF MPT c1p] by simp
+          have LN: "Lng ?N = Lng M + ?m10"
+            using m_6_5_monoT_Red_fact1_Lng[OF MT' c1p]
+                  coreReduce_m10pos_form[OF c1p] by simp
+          have m10le: "?m10 \<le> ?jN" using LN LMpos by linarith
+          have then_cond: "?m10 \<le> ?jN \<and> seg ?N ?m10 ?jN \<in> PT_PS"
+            using m10le segPT by simp
+          have rM': "Red M = map (\<lambda>j. (entry ?N 0 j - entry ?N 0 ?m10 + entry ?N 1 ?m10,
+                                        entry ?N 1 j))
+                                 [?m10..<Suc ?jN]"
+            using rM then_cond by (simp add: Let_def del: upt_Suc)
+          let ?S = "seg ?N ?m10 ?jN"
+          let ?d0 = "entry ?N 0 ?m10"
+          let ?b1 = "entry ?N 1 ?m10"
+          let ?R = "map (\<lambda>p. (fst p - ?d0 + ?b1, snd p)) ?S"
+          have segeq: "Red M = ?R"
+          proof -
+            have "?S = map (\<lambda>j. ?N ! j) [?m10..<Suc ?jN]" by (simp add: seg_def)
+            thus ?thesis using rM' by (simp add: entry_def del: upt_Suc cong: map_cong)
+          qed
+          have seg_mono: "monoT ?S" using segPT by (simp add: PT_PS_def)
+          have LSR: "Lng ?R = Lng ?S" by simp
+          have eR0: "\<And>j. j < Lng ?S \<Longrightarrow> entry ?R 0 j = entry ?S 0 j - ?d0 + ?b1"
+            by (simp add: entry_def)
+          have eR1: "\<And>j. j < Lng ?S \<Longrightarrow> entry ?R 1 j = entry ?S 1 j"
+            by (simp add: entry_def)
+          have Spos: "0 < Lng ?S" using seg_mono by (cases "Lng ?S = 0")
+              (simp_all add: monoT_def zeroT_def le0_def leR_def)
+          \<comment> \<open>\<open>?d0 = entry ?S 0 0\<close> is the row-0 minimum of the (mono) segment.\<close>
+          have seg_T: "?S \<in> T_PS" using segPT by (simp add: PT_PS_def)
+          have d0_left: "entry ?S 0 0 = ?d0"
+            using entry_seg[where M="?N" and a="?m10" and b="?jN" and i=0 and j=0] Spos
+            by (simp only: Lng_seg) simp
+          have d0min: "\<And>j. j < Lng ?S \<Longrightarrow> ?d0 \<le> entry ?S 0 j"
+          proof -
+            fix j assume j: "j < Lng ?S"
+            have "entry ?S 0 0 \<le> entry ?S 0 j" by (rule entry0_ge_min[OF seg_T seg_mono j])
+            thus "?d0 \<le> entry ?S 0 j" using d0_left by simp
+          qed
+          have nr0eq: "le0 ?R 0 (Lng ?S - 1) = le0 ?S 0 (Lng ?S - 1)"
+          proof -
+            have nx: "nextrel0 ?R = nextrel0 ?S"
+            proof (intro ext)
+              fix a b
+              show "nextrel0 ?R a b = nextrel0 ?S a b"
+              proof (cases "a < Lng ?S \<and> b < Lng ?S")
+                case True
+                hence aS: "a < Lng ?S" and bS: "b < Lng ?S" by auto
+                have U: "(\<forall>j. a < j \<and> j < b \<longrightarrow> entry ?R 0 b \<le> entry ?R 0 j)
+                       = (\<forall>j. a < j \<and> j < b \<longrightarrow> entry ?S 0 b \<le> entry ?S 0 j)"
+                proof (rule all_cong1)
+                  fix j
+                  show "(a < j \<and> j < b \<longrightarrow> entry ?R 0 b \<le> entry ?R 0 j)
+                      = (a < j \<and> j < b \<longrightarrow> entry ?S 0 b \<le> entry ?S 0 j)"
+                  proof (cases "a < j \<and> j < b")
+                    case True
+                    hence jS: "j < Lng ?S" using bS by linarith
+                    have le_iff: "(entry ?R 0 b \<le> entry ?R 0 j) = (entry ?S 0 b \<le> entry ?S 0 j)"
+                      using eR0[OF jS] eR0[OF bS] d0min[OF jS] d0min[OF bS] by linarith
+                    show ?thesis using le_iff by blast
+                  next
+                    case False thus ?thesis by blast
+                  qed
+                qed
+                have lt: "(entry ?R 0 a < entry ?R 0 b) = (entry ?S 0 a < entry ?S 0 b)"
+                  using eR0[OF aS] eR0[OF bS] d0min[OF aS] d0min[OF bS] by linarith
+                show ?thesis
+                  unfolding nextrel0_def using LSR lt U by (simp add: LSR)
+              next
+                case False thus ?thesis by (auto simp: nextrel0_def LSR)
+              qed
+            qed
+            show ?thesis unfolding le0_def by (simp only: nx LSR)
+          qed
+          have leRR: "le0 ?R 0 (Lng ?R - 1)"
+          proof -
+            have "le0 ?S 0 (Lng ?S - 1)" using seg_mono by (simp add: monoT_def leR_def)
+            thus ?thesis using nr0eq LSR by simp
+          qed
+          have nzR: "\<not> zeroT ?R"
+          proof (cases "Lng ?S = 1")
+            case True
+            have e1: "entry ?R 1 0 = entry ?S 1 0" using eR1 Spos by simp
+            have "entry ?S 1 0 \<noteq> 0" using seg_mono True by (simp add: monoT_def zeroT_def)
+            hence "entry ?R 1 0 \<noteq> 0" using e1 by simp
+            thus ?thesis using LSR True by (simp add: zeroT_def)
+          next
+            case False
+            hence "Lng ?R \<noteq> 1" using LSR by simp
+            thus ?thesis by (simp add: zeroT_def)
+          qed
+          have "monoT ?R" using nzR leRR by (simp add: monoT_def leR_def)
+          thus ?thesis using segeq by simp
+        qed
+      qed
+    qed
+  qed
+  thus ?thesis using MT0 M by (simp add: PT_PS_def)
+qed
+
 end
