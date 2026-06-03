@@ -209,3 +209,17 @@ engine 実装案（W1 設計 + tail_bump テンプレ@25718）:
 → idem/keystone は interlocking cluster（idem ↔ P_Red ↔ Red_Pred ↔ outer-redecomp ↔
 非一様-cut）。**もう一段の engine フェーズ**（general nextR-congruence もしくは個別 pinning 群）。
 keystone backward の mono 枝も同じ機構を要求。
+
+## 13. master-key 後の残り2ピース (2026-06-03 scout)
+
+cdn_red_cong(green) は **row-0/nextrel0 congruence**（row-1 完全一致が前提）。idem/keystone
+は同じ core-nontrunk/m10>0 で、3 engine(cdn_red_cong/fin_cut_bump_Red/Red_IncrFirst)の外:
+- **B1 (core-nontrunk)** 残差 `Red(NJ(Red M)J)=Red(NJ M J)`: 同 nextrel0/Lng だが
+  **NJ M J が multiT になりうる**ので idem の ¬multiT IH 不適。→ **full idempotency**
+  （multiT 枝＝`P(Red M)=map Red(P M)` = `p_6_5_P_Red` 未証明）or outer 再分解補題。
+- **B2 (m10>0)** 残差 `Red(coreReduce(Red M))=Red(coreReduce M)`: **row-1 が異なる**
+  （Red が row-1 を collapse）ので congR 非該当。scout 推奨: **rebase_shift=0 不変量
+  (entry N 0 m10 = entry N 1 m10, 756/0) での直接構造 pinning** で engine 無しに到達可能か。
+  不可なら row-1-changing engine（非一様）。
+
+→ 次: B2 を直接 pinning で（到達可能性高）。並行/後続で B1 は P_Red 経由。
