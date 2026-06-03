@@ -29859,5 +29859,495 @@ proof -
   show ?thesis using rM_cr IH by simp
 qed
 
+
+subsection \<open>The MASTER-KEY ancestor-structure \<open>Red\<close> congruence engine\<close>
+
+text \<open>STEP 0 (empirically pinned, \<open>python/cong_step0.py\<close>, 0-fail over
+  >4000 ordered-relabel pairs across multiple sizes/seeds): @{const Red} is
+  determined by the ancestor structure together with the full row-1 data.  The
+  minimal sufficient hypothesis is
+    \<open>Lng A = Lng X \<and> nextrel0 A = nextrel0 X \<and> (\<forall>j. entry A 1 j = entry X 1 j)\<close>.
+  (Dropping any one fails; \<open>nextrel1\<close> equality is then redundant — it is implied,
+  see \<open>cong_struct.nextrel1_eq\<close> below — and \<open>entry _ 0 0\<close> equality is
+  not needed.)  This generalizes the green @{locale cut_bump} engine, whose
+  \<open>row0_bump\<close> axiom is the uniform-@{const IncrFirst} special case of
+  \<open>nextrel0 A = nextrel0 X\<close>.\<close>
+
+locale cong_struct =
+  fixes A X :: pairseq
+  assumes len_eq:     "Lng A = Lng X"
+    and nextrel0_eq': "nextrel0 A = nextrel0 X"
+    and row1_eq:      "\<And>j. j < Lng X \<Longrightarrow> entry A 1 j = entry X 1 j"
+begin
+
+text \<open>All ancestor structure is shared.  The proofs are verbatim those of the
+  @{locale tail_bump} downstream lemmas — they never used \<open>row0_bump\<close> except to
+  derive \<open>nextrel0_eq\<close>, which here is an axiom.\<close>
+
+lemma nextrel0_eq: "nextrel0 A = nextrel0 X" by (rule nextrel0_eq')
+
+lemma le0_eq: "le0 A = le0 X"
+  by (intro ext) (simp add: le0_def nextrel0_eq len_eq)
+
+lemma nextrel1_eq: "nextrel1 A = nextrel1 X"
+proof (intro ext)
+  fix a b
+  show "nextrel1 A a b = nextrel1 X a b"
+  proof (cases "a < Lng X \<and> b < Lng X")
+    case True
+    hence aX: "a < Lng X" and bX: "b < Lng X" by auto
+    have e1a: "entry A 1 a = entry X 1 a" by (rule row1_eq[OF aX])
+    have e1b: "entry A 1 b = entry X 1 b" by (rule row1_eq[OF bX])
+    have U: "(\<forall>j. a < j \<and> le0 X j b \<longrightarrow> entry A 1 b \<le> entry A 1 j)
+              = (\<forall>j. a < j \<and> le0 X j b \<longrightarrow> entry X 1 b \<le> entry X 1 j)"
+    proof (rule all_cong1)
+      fix j
+      show "(a < j \<and> le0 X j b \<longrightarrow> entry A 1 b \<le> entry A 1 j)
+          = (a < j \<and> le0 X j b \<longrightarrow> entry X 1 b \<le> entry X 1 j)"
+      proof (cases "a < j \<and> le0 X j b")
+        case True
+        hence jX: "j < Lng X" by (simp add: le0_def)
+        show ?thesis using e1b row1_eq[OF jX] by simp
+      next
+        case False
+        thus ?thesis by blast
+      qed
+    qed
+    have "nextrel1 A a b =
+       (a < Lng X \<and> b < Lng X \<and> a < b \<and>
+        entry A 1 a < entry A 1 b \<and> le0 X a b \<and>
+        (\<forall>j. a < j \<and> le0 X j b \<longrightarrow> entry A 1 b \<le> entry A 1 j))"
+      unfolding nextrel1_def by (simp add: len_eq le0_eq)
+    also have "\<dots> =
+       (a < Lng X \<and> b < Lng X \<and> a < b \<and>
+        entry X 1 a < entry X 1 b \<and> le0 X a b \<and>
+        (\<forall>j. a < j \<and> le0 X j b \<longrightarrow> entry X 1 b \<le> entry X 1 j))"
+      using e1a e1b U by simp
+    also have "\<dots> = nextrel1 X a b"
+      unfolding nextrel1_def by (simp add: len_eq le0_eq)
+    finally show ?thesis .
+  next
+    case False
+    thus ?thesis by (auto simp: nextrel1_def len_eq)
+  qed
+qed
+
+lemma le1_eq: "le1 A = le1 X"
+  by (intro ext) (simp add: le1_def nextrel1_eq len_eq)
+
+lemma nextR_eq: "nextR A = nextR X"
+  by (intro ext) (simp add: nextR_def nextrel0_eq nextrel1_eq)
+
+lemma leR_eq: "leR A = leR X"
+  by (intro ext) (simp add: leR_def le0_eq le1_eq)
+
+lemma TrMax_eq: "TrMax A = TrMax X"
+  by (simp add: TrMax_def nextR_eq)
+
+lemma zeroT_eq: "zeroT A = zeroT X"
+  using row1_eq[of 0]
+  by (cases "Lng X = 0") (auto simp: zeroT_def len_eq)
+
+lemma monoT_eq: "monoT A = monoT X"
+  by (simp add: monoT_def zeroT_eq leR_eq len_eq)
+
+lemma multiT_eq: "multiT A = multiT X"
+  by (simp add: multiT_def zeroT_eq monoT_eq)
+
+lemma Pcut_eq: "Pcut A = Pcut X"
+  by (simp add: Pcut_def leR_eq len_eq)
+
 end
 
+text \<open>\<open>P\<close>, \<open>Br\<close>, \<open>FirstNodes\<close>, \<open>Joints\<close>, \<open>npJ\<close> are all functions of the shared
+  ancestor structure.  Unlike @{locale cut_bump} (where \<open>Br A = map IncrFirst
+  (Br X)\<close>), here \<open>Br A\<close> is \<^emph>\<open>not\<close> a fixed reshape of \<open>Br X\<close> — the row-0 values of
+  the blocks differ — so we cannot conclude \<open>P A = P X\<close>.  Instead the
+  \<^emph>\<open>combinatorial\<close> data of \<open>P\<close> (number of blocks and their boundary index sums)
+  is shared, and each block \<open>P A ! J = seg A s e\<close> / \<open>P X ! J = seg X s e\<close> is over
+  the \<^emph>\<open>same\<close> index window, hence again \<open>cong_struct\<close>-related (lemma
+  \<open>congR_seg\<close> below).
+
+  We carry the abstract structural relation \<open>R A X\<close> through the \<open>P\<close> recursion.\<close>
+
+definition congR :: "pairseq \<Rightarrow> pairseq \<Rightarrow> bool" where
+  "congR A X \<longleftrightarrow> Lng A = Lng X \<and> nextrel0 A = nextrel0 X
+                  \<and> (\<forall>j < Lng X. entry A 1 j = entry X 1 j)"
+
+lemma congR_cong_struct: "congR A X \<Longrightarrow> cong_struct A X"
+  by (unfold_locales) (auto simp: congR_def)
+
+lemma cong_struct_congR: "cong_struct A X \<Longrightarrow> congR A X"
+proof -
+  assume cs: "cong_struct A X"
+  show "congR A X" unfolding congR_def
+  proof (intro conjI allI impI)
+    show "Lng A = Lng X" by (rule cong_struct.len_eq[OF cs])
+    show "nextrel0 A = nextrel0 X" by (rule cong_struct.nextrel0_eq[OF cs])
+    fix j assume "j < Lng X"
+    thus "entry A 1 j = entry X 1 j" by (rule cong_struct.row1_eq[OF cs])
+  qed
+qed
+
+lemma congR_refl: "congR A A" by (simp add: congR_def)
+
+text \<open>Structural sharing, restated point-free off \<open>congR\<close> (for use outside the locale).\<close>
+lemma congR_Lng: "congR A X \<Longrightarrow> Lng A = Lng X" by (simp add: congR_def)
+lemma congR_nextR: "congR A X \<Longrightarrow> nextR A = nextR X"
+  by (drule congR_cong_struct) (rule cong_struct.nextR_eq)
+lemma congR_leR: "congR A X \<Longrightarrow> leR A = leR X"
+  by (drule congR_cong_struct) (rule cong_struct.leR_eq)
+lemma congR_TrMax: "congR A X \<Longrightarrow> TrMax A = TrMax X"
+  by (drule congR_cong_struct) (rule cong_struct.TrMax_eq)
+lemma congR_zeroT: "congR A X \<Longrightarrow> zeroT A = zeroT X"
+  by (drule congR_cong_struct) (rule cong_struct.zeroT_eq)
+lemma congR_monoT: "congR A X \<Longrightarrow> monoT A = monoT X"
+  by (drule congR_cong_struct) (rule cong_struct.monoT_eq)
+lemma congR_multiT: "congR A X \<Longrightarrow> multiT A = multiT X"
+  by (drule congR_cong_struct) (rule cong_struct.multiT_eq)
+lemma congR_Pcut: "congR A X \<Longrightarrow> Pcut A = Pcut X"
+  by (drule congR_cong_struct) (rule cong_struct.Pcut_eq)
+
+text \<open>A segment of \<open>A\<close> and \<open>X\<close> over the \<^emph>\<open>same\<close> index window inherits \<open>congR\<close>:
+  row-1 is shared pointwise, length is shared, and \<open>nextrel0\<close> on a segment is
+  determined by \<open>nextrel0\<close> on the whole (@{thm [source] adm_nextrel0_seg}).\<close>
+
+lemma congR_seg:
+  assumes R: "congR A X" and b: "bb < Lng X"
+  shows "congR (seg A aa bb) (seg X aa bb)"
+proof -
+  have LAX: "Lng A = Lng X" using R by (simp add: congR_def)
+  have bA: "bb < Lng A" using b LAX by simp
+  have n0AX: "nextrel0 A = nextrel0 X" using R by (simp add: congR_def)
+  have lenseg: "Lng (seg A aa bb) = Lng (seg X aa bb)" by (simp add: Lng_seg)
+  show ?thesis
+  proof (unfold congR_def, intro conjI allI impI)
+    show "Lng (seg A aa bb) = Lng (seg X aa bb)" by (rule lenseg)
+  next
+    show "nextrel0 (seg A aa bb) = nextrel0 (seg X aa bb)"
+    proof (intro ext)
+      fix p q
+      show "nextrel0 (seg A aa bb) p q = nextrel0 (seg X aa bb) p q"
+      proof (cases "p < Lng (seg X aa bb) \<and> q < Lng (seg X aa bb)")
+        case True
+        hence pX: "p < Lng (seg X aa bb)" and qX: "q < Lng (seg X aa bb)" by auto
+        have pA: "p < Lng (seg A aa bb)" using pX lenseg by simp
+        have qA: "q < Lng (seg A aa bb)" using qX lenseg by simp
+        have "nextrel0 (seg A aa bb) p q = nextrel0 A (aa + p) (aa + q)"
+          by (rule adm_nextrel0_seg[OF bA pA qA])
+        also have "\<dots> = nextrel0 X (aa + p) (aa + q)" using n0AX by simp
+        also have "\<dots> = nextrel0 (seg X aa bb) p q"
+          by (rule adm_nextrel0_seg[OF b pX qX, symmetric])
+        finally show ?thesis .
+      next
+        case False
+        thus ?thesis by (auto simp: nextrel0_def lenseg)
+      qed
+    qed
+  next
+    fix j assume jl: "j < Lng (seg X aa bb)"
+    have jA: "j < Lng (seg A aa bb)" using jl lenseg by simp
+    have idxX: "aa + j < Lng X" using jl by (simp add: Lng_seg) (insert b, simp)
+    have "entry (seg A aa bb) 1 j = entry A 1 (aa + j)" using jA by (simp add: entry_seg)
+    also have "\<dots> = entry X 1 (aa + j)"
+      using R idxX by (simp add: congR_def)
+    also have "\<dots> = entry (seg X aa bb) 1 j" using jl by (simp add: entry_seg)
+    finally show "entry (seg A aa bb) 1 j = entry (seg X aa bb) 1 j" .
+  qed
+qed
+
+text \<open>\<open>take c A\<close> / \<open>take c X\<close> and \<open>drop c A\<close> / \<open>drop c X\<close> inherit \<open>congR\<close> (special
+  windows of @{thm [source] congR_seg}).\<close>
+
+lemma congR_take:
+  assumes R: "congR A X" and c: "c \<le> Lng X"
+  shows "congR (take c A) (take c X)"
+proof (cases "c = 0")
+  case True thus ?thesis by (simp add: congR_def)
+next
+  case False
+  hence cpos: "0 < c" by simp
+  have LAX: "Lng A = Lng X" using R by (simp add: congR_def)
+  have sb: "c - 1 < Lng X" using c cpos by simp
+  have segR: "congR (seg A 0 (c - 1)) (seg X 0 (c - 1))" by (rule congR_seg[OF R sb])
+  have tA: "seg A 0 (c - 1) = take c A" using c cpos LAX by (simp add: seg_0_eq_take)
+  have tX: "seg X 0 (c - 1) = take c X" using c cpos by (simp add: seg_0_eq_take)
+  show ?thesis using segR tA tX by simp
+qed
+
+lemma congR_drop:
+  assumes R: "congR A X" and L0: "0 < Lng X"
+  shows "congR (drop c A) (drop c X)"
+proof -
+  have LAX: "Lng A = Lng X" using R by (simp add: congR_def)
+  have LA0: "0 < Lng A" using L0 LAX by simp
+  have sb: "Lng X - 1 < Lng X" using L0 by simp
+  have segR: "congR (seg A c (Lng X - 1)) (seg X c (Lng X - 1))" by (rule congR_seg[OF R sb])
+  have dA: "seg A c (Lng X - 1) = drop c A"
+    using LA0 LAX seg_to_last_eq_drop[OF LA0, of c] by simp
+  have dX: "seg X c (Lng X - 1) = drop c X" using L0 seg_to_last_eq_drop[OF L0, of c] by simp
+  show ?thesis using segR dA dX by simp
+qed
+
+text \<open>The \<open>P\<close>-decomposition has the same block count and per-position block
+  lengths: \<open>map length (P A) = map length (P X)\<close> (hence \<open>length (P A) =
+  length (P X)\<close>, \<open>IdxSum (P A) = IdxSum (P X)\<close>).  By @{thm [source] P.induct}
+  carrying \<open>congR\<close>: \<open>multiT\<close> and \<open>Pcut\<close> are shared, the prefix \<open>take (Pcut) _\<close>
+  inherits \<open>congR\<close> (IH), and the suffix \<open>drop (Pcut) _\<close> has shared length.\<close>
+
+lemma congR_P_maplen:
+  "congR A X \<Longrightarrow> map length (P A) = map length (P X)"
+proof (induction A arbitrary: X rule: P.induct)
+  case (1 A)
+  note R = "1.prems"
+  have LAX: "Lng A = Lng X" using R by (simp add: congR_def)
+  have muAX: "multiT A = multiT X" by (rule congR_multiT[OF R])
+  show ?case
+  proof (cases "multiT A \<and> 1 < Lng A")
+    case mu: True
+    hence muX: "multiT X \<and> 1 < Lng X" using muAX LAX by simp
+    let ?cA = "Pcut A"
+    have pcAX: "Pcut A = Pcut X" by (rule congR_Pcut[OF R])
+    have LX1: "1 < Lng X" using muX by (rule conjunct2)
+    have L0: "0 < Lng X" using LX1 by linarith
+    have "Pcut X \<le> Lng X - 1" using Pcut_le[OF LX1] by simp
+    hence cle: "Pcut A \<le> Lng X" using pcAX by simp
+    have RtakeA: "congR (take ?cA A) (take ?cA X)" by (rule congR_take[OF R cle])
+    have RdropA: "congR (drop ?cA A) (drop ?cA X)" by (rule congR_drop[OF R L0])
+    have ih: "map length (P (take ?cA A)) = map length (P (take ?cA X))"
+      using "1.IH"[OF mu RtakeA] by simp
+    have PA: "P A = P (take ?cA A) @ [drop ?cA A]"
+      by (subst P.simps) (rule if_P[OF mu])
+    have PX: "P X = P (take (Pcut X) X) @ [drop (Pcut X) X]"
+      by (subst P.simps) (rule if_P[OF muX])
+    have lenDrop: "length (drop ?cA A) = length (drop ?cA X)"
+      using RdropA by (simp add: congR_def)
+    show ?thesis using PA PX ih lenDrop pcAX by simp
+  next
+    case nmu: False
+    have ncX: "\<not> (multiT X \<and> 1 < Lng X)" using muAX LAX nmu by simp
+    have PX: "P X = [X]" by (subst P.simps) (rule if_not_P[OF ncX])
+    have PA: "P A = [A]" by (subst P.simps) (rule if_not_P[OF nmu])
+    show ?thesis using PA PX LAX by simp
+  qed
+qed
+
+lemma congR_P_length: "congR A X \<Longrightarrow> length (P A) = length (P X)"
+  by (drule congR_P_maplen) (metis length_map)
+
+lemma congR_P_IdxSum: "congR A X \<Longrightarrow> IdxSum (P A) = IdxSum (P X)"
+proof -
+  assume "congR A X"
+  hence ml: "map length (P A) = map length (P X)" by (rule congR_P_maplen)
+  hence ll: "length (P A) = length (P X)" by (metis length_map)
+  have "\<And>x. sum_list (map length (take x (P A))) = sum_list (map length (take x (P X)))"
+    using ml by (metis take_map)
+  thus ?thesis using ll by (simp add: IdxSum_def)
+qed
+
+text \<open>Each \<open>P\<close>-block pair inherits \<open>congR\<close>: both are the segment over the same
+  IdxSum window of \<open>A\<close>, \<open>X\<close> respectively.\<close>
+
+lemma congR_P_block:
+  assumes R: "congR A X" and AT: "A \<in> T_PS" and XT: "X \<in> T_PS"
+    and J: "J < length (P X)"
+  shows "congR (P A ! J) (P X ! J)"
+proof -
+  have LAX: "Lng A = Lng X" using R by (simp add: congR_def)
+  have idxAX: "IdxSum (P A) = IdxSum (P X)" by (rule congR_P_IdxSum[OF R])
+  have lenAX: "length (P A) = length (P X)" by (rule congR_P_length[OF R])
+  have JA: "J \<le> Lng (P A) - 1" using J lenAX by simp
+  have JX: "J \<le> Lng (P X) - 1" using J by simp
+  let ?s = "IdxSum (P X) ! J" let ?e = "IdxSum (P X) ! (J + 1) - 1"
+  have blkA: "P A ! J = seg A (IdxSum (P A) ! J) (IdxSum (P A) ! (J + 1) - 1)"
+    by (rule m_6_4_P_IdxSum[OF AT JA])
+  have blkX: "P X ! J = seg X ?s ?e" by (rule m_6_4_P_IdxSum[OF XT JX])
+  have blkA': "P A ! J = seg A ?s ?e" using blkA idxAX by simp
+  have Xne: "X \<noteq> []" using XT by (simp add: T_PS_def)
+  have JL: "J < length (P X)" using J .
+  have eltX: "?e < Lng X"
+  proof -
+    have concatM: "concat (P X) = X" by (rule idxsum_concat_P)
+    hence lensum: "Lng X = sum_list (map length (P X))" by (metis length_concat)
+    have J1: "J + 1 \<le> length (P X)" using JL by simp
+    have idx1: "IdxSum (P X) ! (J + 1) = sum_list (map length (take (J + 1) (P X)))"
+      using J1 by (rule idxsum_nth)
+    have mono': "sum_list (map length (take (J + 1) (P X)))
+                  \<le> sum_list (map length (take (length (P X)) (P X)))"
+      using idxsum_sum_take_mono[OF J1, of "P X"] by simp
+    have "sum_list (map length (take (J + 1) (P X))) \<le> sum_list (map length (P X))"
+      using mono' by (simp add: take_all)
+    hence le1: "IdxSum (P X) ! (J + 1) \<le> Lng X" using idx1 lensum by simp
+    have diff: "IdxSum (P X) ! (J + 1) = ?s + length (P X ! J)" by (rule idxsum_diff[OF JL])
+    have bnonempty: "0 < length (P X ! J)"
+      using P_blocks_nonempty[OF Xne] JL nth_mem by (metis length_greater_0_conv)
+    have pos: "0 < IdxSum (P X) ! (J + 1)" using diff bnonempty by simp
+    show "?e < Lng X" using le1 pos by simp
+  qed
+  show ?thesis using congR_seg[OF R eltX] blkA' blkX by simp
+qed
+
+text \<open>\<open>IncrFirst\<close> (and its funpow) preserves \<open>congR\<close>: it preserves \<open>nextrel0\<close>
+  (@{thm [source] nextrel0_IncrFirst_eq}) and row-1 (@{thm [source] entry_IncrFirst}).\<close>
+
+lemma congR_IncrFirst:
+  assumes R: "congR A X" shows "congR (IncrFirst A) (IncrFirst X)"
+proof -
+  have LAX: "Lng A = Lng X" using R by (simp add: congR_def)
+  have n0: "nextrel0 A = nextrel0 X" using R by (simp add: congR_def)
+  show ?thesis unfolding congR_def
+  proof (intro conjI allI impI)
+    show "Lng (IncrFirst A) = Lng (IncrFirst X)" using LAX by (simp add: IncrFirst_def)
+    show "nextrel0 (IncrFirst A) = nextrel0 (IncrFirst X)"
+      by (simp add: nextrel0_IncrFirst_eq n0)
+    fix j assume j: "j < Lng (IncrFirst X)"
+    hence jX: "j < Lng X" by (simp add: IncrFirst_def)
+    have jA: "j < Lng A" using jX LAX by simp
+    have "entry (IncrFirst A) 1 j = entry A 1 j" using entry_IncrFirst[OF jA, of 1] by simp
+    also have "\<dots> = entry X 1 j" using R jX by (simp add: congR_def)
+    also have "\<dots> = entry (IncrFirst X) 1 j" using entry_IncrFirst[OF jX, of 1] by simp
+    finally show "entry (IncrFirst A) 1 j = entry (IncrFirst X) 1 j" .
+  qed
+qed
+
+lemma congR_funpow_IncrFirst:
+  "congR A X \<Longrightarrow> congR ((IncrFirst ^^ k) A) ((IncrFirst ^^ k) X)"
+  by (induction k) (simp_all add: congR_IncrFirst)
+
+text \<open>\<open>shiftRow0\<close> preserves \<open>congR\<close> for mono \<open>A\<close>, \<open>X\<close> (row-1 untouched, and
+  \<open>nextrel0 (shiftRow0 _) = nextrel0 _\<close> by @{thm [source] nextrel0_shiftRow0_eq}).\<close>
+
+lemma congR_shiftRow0:
+  assumes R: "congR A X" and AT: "A \<in> T_PS" and XT: "X \<in> T_PS"
+    and monoA: "monoT A" and monoX: "monoT X"
+  shows "congR (shiftRow0 A) (shiftRow0 X)"
+proof -
+  have LAX: "Lng A = Lng X" using R by (simp add: congR_def)
+  have n0: "nextrel0 A = nextrel0 X" using R by (simp add: congR_def)
+  show ?thesis unfolding congR_def
+  proof (intro conjI allI impI)
+    show "Lng (shiftRow0 A) = Lng (shiftRow0 X)" using LAX by simp
+    show "nextrel0 (shiftRow0 A) = nextrel0 (shiftRow0 X)"
+    proof (intro ext)
+      fix p q
+      have "nextrel0 (shiftRow0 A) p q = nextrel0 A p q"
+        by (rule nextrel0_shiftRow0_eq[OF AT monoA])
+      also have "\<dots> = nextrel0 X p q" using n0 by simp
+      also have "\<dots> = nextrel0 (shiftRow0 X) p q"
+        by (rule nextrel0_shiftRow0_eq[OF XT monoX, symmetric])
+      finally show "nextrel0 (shiftRow0 A) p q = nextrel0 (shiftRow0 X) p q" .
+    qed
+    fix j assume j: "j < Lng (shiftRow0 X)"
+    hence jX: "j < Lng X" by simp
+    have jA: "j < Lng A" using jX LAX by simp
+    have "entry (shiftRow0 A) 1 j = entry A 1 j" using entry_shiftRow0_1[OF jA] .
+    also have "\<dots> = entry X 1 j" using R jX by (simp add: congR_def)
+    also have "\<dots> = entry (shiftRow0 X) 1 j" using entry_shiftRow0_1[OF jX] by simp
+    finally show "entry (shiftRow0 A) 1 j = entry (shiftRow0 X) 1 j" .
+  qed
+qed
+
+text \<open>The branch \<^emph>\<open>segment\<close> \<open>seg _ (TrMax+1) (Lng-1)\<close> inherits \<open>congR\<close> (shared
+  \<open>TrMax\<close>), hence \<open>Br A\<close> and \<open>Br X\<close> have the same length and each component pair
+  \<open>Br A ! J\<close> / \<open>Br X ! J\<close> is \<open>congR\<close>-related (P-block of a \<open>congR\<close> segment).\<close>
+
+lemma congR_brseg:
+  assumes R: "congR A X" and ne: "TrMax X \<noteq> Lng X - 1" and L0: "0 < Lng X"
+  shows "congR (seg A (TrMax X + 1) (Lng X - 1)) (seg X (TrMax X + 1) (Lng X - 1))"
+proof -
+  have sb: "Lng X - 1 < Lng X" using L0 by simp
+  show ?thesis by (rule congR_seg[OF R sb])
+qed
+
+lemma congR_Br_length:
+  assumes R: "congR A X" and AT: "A \<in> T_PS" and XT: "X \<in> T_PS"
+  shows "length (Br A) = length (Br X)"
+proof -
+  have LAX: "Lng A = Lng X" using R by (simp add: congR_def)
+  have trAX: "TrMax A = TrMax X" by (rule congR_TrMax[OF R])
+  show ?thesis
+  proof (cases "TrMax X = Lng X - 1")
+    case True
+    hence "Br A = []" "Br X = []" using trAX LAX by (simp_all add: Br_def)
+    thus ?thesis by simp
+  next
+    case False
+    have L0: "0 < Lng X" using XT by (cases X) (auto simp: T_PS_def)
+    let ?sa = "seg A (TrMax X + 1) (Lng X - 1)" let ?sx = "seg X (TrMax X + 1) (Lng X - 1)"
+    have Rseg: "congR ?sa ?sx" by (rule congR_brseg[OF R False L0])
+    have BrA: "Br A = P ?sa" using False trAX LAX by (simp add: Br_def)
+    have BrX: "Br X = P ?sx" using False by (simp add: Br_def)
+    have "length (P ?sa) = length (P ?sx)" by (rule congR_P_length[OF Rseg])
+    thus ?thesis using BrA BrX by simp
+  qed
+qed
+
+lemma congR_Br_block:
+  assumes R: "congR A X" and AT: "A \<in> T_PS" and XT: "X \<in> T_PS"
+    and J: "J < length (Br X)"
+  shows "congR (Br A ! J) (Br X ! J)"
+proof -
+  have LAX: "Lng A = Lng X" using R by (simp add: congR_def)
+  have trAX: "TrMax A = TrMax X" by (rule congR_TrMax[OF R])
+  have ne: "TrMax X \<noteq> Lng X - 1"
+  proof
+    assume "TrMax X = Lng X - 1"
+    hence "Br X = []" by (simp add: Br_def)
+    thus False using J by simp
+  qed
+  have L0: "0 < Lng X" using XT by (cases X) (auto simp: T_PS_def)
+  let ?sa = "seg A (TrMax X + 1) (Lng X - 1)" let ?sx = "seg X (TrMax X + 1) (Lng X - 1)"
+  have Rseg: "congR ?sa ?sx" by (rule congR_brseg[OF R ne L0])
+  have trlt: "TrMax X < Lng X - 1" using TrMax_bound[OF XT] ne by linarith
+  have sxlen: "0 < Lng ?sx" using trlt L0 by (simp only: Lng_seg)
+  have salen: "0 < Lng ?sa" using sxlen Rseg by (simp add: congR_def)
+  have sane: "?sa \<noteq> []" using salen length_greater_0_conv by blast
+  have sxne: "?sx \<noteq> []" using sxlen length_greater_0_conv by blast
+  have saT: "?sa \<in> T_PS" using sane by (simp add: T_PS_def)
+  have sxT: "?sx \<in> T_PS" using sxne by (simp add: T_PS_def)
+  have BrA: "Br A = P ?sa" using ne trAX LAX by (simp add: Br_def)
+  have BrX: "Br X = P ?sx" using ne by (simp add: Br_def)
+  have JX: "J < length (P ?sx)" using J BrX by simp
+  have "congR (P ?sa ! J) (P ?sx ! J)" by (rule congR_P_block[OF Rseg saT sxT JX])
+  thus ?thesis using BrA BrX by simp
+qed
+
+text \<open>\<^bold>\<open>REMAINING OBLIGATION for the full \<open>cong_red_cong\<close>\<close> (\<open>congR A X \<Longrightarrow> Red A =
+  Red X\<close>, empirically 0-fail).  The structural sharing above closes the \<open>zeroT\<close>,
+  \<open>multiT\<close> (via @{thm [source] congR_P_block}), core-trunk, and \<open>monoT\<close>-shift (via
+  @{thm [source] congR_shiftRow0}) recursion alignments.  Two obstructions remain,
+  newly pinned here:
+
+  \<^enum> \<^bold>\<open>Cross-branch interleave\<close> (decisive, empirically confirmed
+    \<open>python/cong_step0.py\<close>): \<open>congR\<close> does \<^emph>\<open>not\<close> preserve the \<open>m\<^sub>0\<^sub>0 = 0\<close> split.  With
+    \<open>X\<close> core mono (\<open>m\<^sub>0\<^sub>0 = m\<^sub>1\<^sub>0 = 0\<close>) one may have \<open>entry A 0 0 > 0\<close> (48/90 cases),
+    so \<open>A\<close> takes the \<^emph>\<open>shift\<close> branch while \<open>X\<close> takes \<^emph>\<open>core-trunk/nontrunk\<close>.  Hence a
+    plain @{thm [source] Red.pinduct} on \<open>X\<close> (or \<open>A\<close>) does \<^emph>\<open>not\<close> line the two sides'
+    branches up the way @{thm [source] fin_cut_bump_Red} does (there \<open>bumpAt\<close>
+    preserves \<open>m\<^sub>0\<^sub>0\<close>/\<open>m\<^sub>1\<^sub>0\<close>, so both took the same branch).  The fix is to route the
+    shift side through \<open>Red A = Red (shiftRow0 A)\<close> and use \<open>congR (shiftRow0 A)
+    (shiftRow0 X)\<close> (= @{thm [source] congR_shiftRow0}) — but the matching Red-call
+    is \<^emph>\<open>not\<close> a sub-call of \<open>X\<close> in \<open>X\<close>'s recursion tree, so the bare \<open>pinduct\<close> IH
+    does not reach it.  A custom well-founded induction (e.g. on
+    \<open>Lng + entry _ 0 0\<close>, which strictly decreases under shift and stays under the
+    core/branch descents) or a prior \<open>Red\<close>-normalisation \<open>Red M = Red (shiftRow0
+    M)\<close> (collapsing \<open>m\<^sub>0\<^sub>0\<close> before the structural induction) is required.
+
+  \<^enum> \<^bold>\<open>Two missing value-helpers\<close> for the still-aligned branches once (1) is handled:
+    \<^item> \<open>congR_NJ\<close>: \<open>congR (NJ A J) (NJ X J)\<close> in the core-nontrunk branch — the
+      \<open>NJ\<close> head row-0 is \<open>entry _ 0 0 + Joints!J + 1\<close>, so its \<open>nextrel0\<close>-alignment
+      vs. \<open>tl (Br _ ! J)\<close> needs the core assumption; reduce via
+      @{thm [source] congR_Br_block} + the shared \<open>Joints\<close>/@{const npJ}.
+    \<^item> \<open>congR_diag_funpow\<close>: \<open>congR (diagSeq 0 (m\<^sub>1\<^sub>0-1) @ (IncrFirst^^m\<^sub>1\<^sub>0) A)
+      (diagSeq 0 (m\<^sub>1\<^sub>0-1) @ (IncrFirst^^m\<^sub>1\<^sub>0) X)\<close> for the \<open>m\<^sub>1\<^sub>0>0\<close> branch — row-1 and
+      the diagonal prefix are identical, the suffixes are @{thm [source]
+      congR_funpow_IncrFirst}-related, and every suffix row-0 value \<open>\<ge> m\<^sub>1\<^sub>0\<close>
+      exceeds every prefix value (\<open>< m\<^sub>1\<^sub>0\<close>), so the cross-boundary \<open>nextrel0\<close> is
+      constant; provable from @{thm [source] nextrel0_diagSeq_append_step} +
+      @{thm [source] entry_funpow_IncrFirst0} but tedious (all index-pair cases).
+
+  The locale + the eight green \<open>congR_*\<close> inheritance lemmas are the reusable
+  engine; obstruction (1) is the genuine mathematical content still to design.\<close>
+
+
+end
