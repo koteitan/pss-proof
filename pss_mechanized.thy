@@ -41692,4 +41692,460 @@ proof -
 qed
 
 
+
+section \<open>Front A (wf16) — \<open>condA_top\<close> in-block parent correspondence\<close>
+
+text \<open>WF16 BRICK 3 (in-block parent/hasParent correspondence at the last column).
+  For a reduced \<open>monoT\<close> core \<open>M\<close> with \<open>M\<^sub>0 = (0,0)\<close> on the nontrunk branch, the
+  suffix \<open>drop off M\<close> (\<open>off\<close> the last block start) equals the last block
+  \<open>(IncrFirst ^^ ee) (Red (NJ M J\<^sup>*))\<close>, and the last column is \<open>Lng M - 1 = off + kk\<close>.
+  Hence, for any IN-BLOCK parent index \<open>off \<le> p\<close>, the M-\<open>nextR\<close> at the last column
+  corresponds (via the unconditional drop-correspondence
+  @{thm [source] poper_nextR_drop}) to the block-local \<open>nextR\<close> at \<open>kk\<close>, and then
+  via the GREEN \<open>incf_pow_*\<close> family to \<open>Red (NJ M J\<^sup>*)\<close> itself.  This pins:
+    (i) \<open>hasParent M i (Lng M-1)\<close> with parent \<open>off \<le> p\<close> \<Longrightarrow>
+        \<open>hasParent (Red (NJ M J\<^sup>*)) i (p - off)\<close> at \<open>kk\<close>'s parent;
+    (ii) the entry relation transfers (row-1 verbatim, row-0 with the \<open>+ee\<close> shift,
+         which cancels in \<open>condA\<close>).
+  This is the IN-BLOCK half of the last-column \<open>condA\<close> witness translation
+  (content.md 1198-1216).  SOUND — cites only GREEN @{thm [source] poper_nextR_drop},
+  @{thm [source] incf_pow_nextR}, @{thm [source] wf15_lastblock_entry_transfer},
+  @{thm [source] kfwd_lastblock_locate} and the library; never a \<open>p_*\<close> stub.
+
+  RESIDUAL (reported, not faked).  Two gaps remain for the full \<open>condA_top_all\<close>:
+  (A) the CROSS-BLOCK case (\<open>p < off\<close>): empirically the MAJORITY (60/98 last-column
+      parents over reduced monoT cores, values \<le>3 len \<le>4; \<open>python/_condA_loc2.py\<close>),
+      where row-0 \<open>p = Joints M J\<^sup>*\<close> (37 cases) and row-1 \<open>p\<close> sits in the diagonal
+      trunk with \<open>entry M 1 p = p = npJ - 1\<close> and \<open>entry M 1 (Lng M-1) = npJ\<close> (23
+      cases).  This needs the joint/block-start relation
+      \<open>entry M i (Lng M-1) = (joint value) + 1\<close> from the \<open>NJ\<close> head construction
+      (@{thm [source] entry_NJ_1_0}, @{thm [source] fin_Red_NJ_leftend}) — NOT
+      derivable from the in-block drop alone.
+  (B) deriving \<open>RedCondA (Red (NJ M J\<^sup>*))\<close> at column \<open>kk\<close> from the IH: the IH
+      (@{thm [source] kst_reduced_imp_condAB_monoT_core_cond}) needs left end
+      \<open>(0,0)\<close>, but \<open>entry (Red (NJ M J\<^sup>*)) 0 0 = npJ M J\<^sup>*\<close>
+      (@{thm [source] wf15_inblock_N_core}); so the IH applies to the diagonal-
+      prefixed \<open>N\<close>, and \<open>RedCondA (Red (NJ M J\<^sup>*))\<close> must be transferred back across
+      the diagonal-prefix drop (a further drop-correspondence layer on the WHOLE
+      \<open>RedCondA\<close>, not just the last column).
+  Both are separate multi-lemma programs; \<open>condA_top_all\<close> was NOT closed this run.\<close>
+
+lemma wf16_inblock_parent_corr:
+  assumes M: "M \<in> RT_PS" and mono: "monoT M"
+    and e00: "entry M 0 0 = 0" and e10: "entry M 1 0 = 0"
+    and tne: "TrMax M \<noteq> Lng M - 1"
+  defines "Jstar \<equiv> Lng (Br M) - 1"
+  defines "ee \<equiv> Joints M ! Jstar + 1 - npJ M Jstar"
+  defines "off \<equiv> Suc (TrMax M)
+                  + Lng (concat (map (\<lambda>J. (IncrFirst ^^ (Joints M ! J + 1 - npJ M J))
+                                            (Red (NJ M J))) [0..<Jstar]))"
+  defines "kk \<equiv> Lng (NJ M Jstar) - 1"
+  defines "Rs \<equiv> Red (NJ M Jstar)"
+  shows "Lng M - 1 = off + kk
+       \<and> kk < Lng Rs
+       \<and> Lng (NJ M Jstar) < Lng M
+       \<and> drop off M = (IncrFirst ^^ ee) Rs
+       \<and> (\<forall>i\<le>1. \<forall>p. off \<le> p \<longrightarrow>
+              (nextR M i p (Lng M - 1) \<longleftrightarrow> nextR Rs i (p - off) kk))
+       \<and> (\<forall>i\<le>1. \<forall>p. off \<le> p \<longrightarrow> hasParent M i (Lng M - 1) \<longrightarrow> parent M i (Lng M - 1) = p
+              \<longrightarrow> hasParent Rs i kk \<and> parent Rs i kk = p - off)
+       \<and> (entry M 1 (Lng M - 1) = entry Rs 1 kk)
+       \<and> (entry M 0 (Lng M - 1) = entry Rs 0 kk + ee)"
+proof -
+  let ?blk = "(IncrFirst ^^ ee) Rs"
+  have MT: "M \<in> T_PS" using M by (simp add: RT_PS_def)
+  have redM: "Red M = M" using M by (simp add: RT_PS_def)
+  have LMpos: "0 < Lng M" using MT by (cases M) (auto simp: T_PS_def)
+  \<comment> \<open>Locate the last block (GREEN @{thm [source] kfwd_lastblock_locate}).\<close>
+  have loc: "drop off (Red M) = (IncrFirst ^^ (Joints M ! Jstar + 1 - npJ M Jstar)) (Red (NJ M Jstar))
+       \<and> (IncrFirst ^^ (Joints M ! Jstar + 1 - npJ M Jstar)) (Red (NJ M Jstar))
+            = (IncrFirst ^^ (Joints M ! Jstar + 1 - npJ M Jstar)) (Red (NJ M Jstar))
+       \<and> Lng (NJ M Jstar) = Lng (Br M ! Jstar)
+       \<and> Lng (NJ M Jstar) < Lng M
+       \<and> Lng (Br M) \<noteq> 0"
+    unfolding Jstar_def off_def
+    by (rule kfwd_lastblock_locate[OF M mono e00 e10 tne])
+  have dropoff: "drop off M = ?blk"
+    using loc redM unfolding ee_def Rs_def by simp
+  have NJlt: "Lng (NJ M Jstar) < Lng M" using loc by simp
+  have NJne: "NJ M Jstar \<noteq> []" by (simp add: NJ_def)
+  have NJT: "NJ M Jstar \<in> T_PS" using NJne by (simp add: T_PS_def)
+  have lRs: "Lng Rs = Lng (NJ M Jstar)"
+    unfolding Rs_def by (rule m_6_5_Lng_Red[OF NJT])
+  have lblk: "Lng ?blk = Lng (NJ M Jstar)" using lRs by simp
+  have lenrel: "Lng M - off = Lng (NJ M Jstar)"
+  proof -
+    have "Lng (drop off M) = Lng M - off" by simp
+    thus ?thesis using dropoff lblk by simp
+  qed
+  have NJpos: "0 < Lng (NJ M Jstar)" using NJne by (cases "NJ M Jstar") auto
+  have offle: "off \<le> Lng M" using lenrel NJpos by linarith
+  have Leq: "Lng M - 1 = off + kk"
+    unfolding kk_def using lenrel NJpos offle by linarith
+  have kkLT: "kk < Lng Rs"
+    unfolding kk_def using NJpos lRs by linarith
+  \<comment> \<open>--- nextR correspondence for in-block parent indices \<open>off \<le> p\<close> ---\<close>
+  have corr: "\<forall>i\<le>1. \<forall>p::nat. off \<le> p \<longrightarrow>
+                (nextR M i p (Lng M - 1) \<longleftrightarrow> nextR Rs i (p - off) kk)"
+  proof (intro allI impI)
+    fix i p :: nat assume i: "i \<le> 1" and pge: "off \<le> p"
+    show "nextR M i p (Lng M - 1) \<longleftrightarrow> nextR Rs i (p - off) kk"
+    proof (cases "p < Lng M")
+      case pin: True
+      have a1: "p - off < Lng M - off" using pge pin by linarith
+      have a2: "(Lng M - 1) - off < Lng M - off" using Leq kkLT lRs lenrel by linarith
+      have step1: "nextR (drop off M) i (p - off) ((Lng M - 1) - off)
+                     = nextR M i (off + (p - off)) (off + ((Lng M - 1) - off))"
+        by (rule poper_nextR_drop[OF a1 a2])
+      have e_p: "off + (p - off) = p" using pge by simp
+      have e_j: "off + ((Lng M - 1) - off) = Lng M - 1" using Leq by simp
+      have e_kk: "(Lng M - 1) - off = kk" using Leq by simp
+      have stepM: "nextR M i p (Lng M - 1)
+                     = nextR (drop off M) i (p - off) kk"
+        using step1 e_p e_j e_kk by simp
+      have stepB: "nextR (drop off M) i (p - off) kk = nextR Rs i (p - off) kk"
+        using dropoff incf_pow_nextR[OF i, of ee Rs "p - off" kk] by simp
+      show ?thesis using stepM stepB by simp
+    next
+      case pout: False
+      \<comment> \<open>\<open>p \<ge> Lng M\<close>: both sides false (out of range).\<close>
+      have pNL: "\<not> p < Lng M" using pout by simp
+      have lhsF: "\<not> nextR M i p (Lng M - 1)"
+        unfolding nextR_def nextrel0_def nextrel1_def using pNL by simp
+      have poff: "\<not> (p - off) < Lng Rs" using pout offle lenrel lRs by linarith
+      have rhsF: "\<not> nextR Rs i (p - off) kk"
+        unfolding nextR_def nextrel0_def nextrel1_def using poff by simp
+      show ?thesis using lhsF rhsF by simp
+    qed
+  qed
+  \<comment> \<open>--- hasParent/parent transfer for an in-block parent ---\<close>
+  have parcorr: "\<forall>i\<le>1. \<forall>p::nat. off \<le> p \<longrightarrow> hasParent M i (Lng M - 1) \<longrightarrow> parent M i (Lng M - 1) = p
+              \<longrightarrow> hasParent Rs i kk \<and> parent Rs i kk = p - off"
+  proof (intro allI impI)
+    fix i p :: nat assume i: "i \<le> 1" and pge: "off \<le> p"
+      and hpM: "hasParent M i (Lng M - 1)" and parM: "parent M i (Lng M - 1) = p"
+    obtain q where q: "nextR M i q (Lng M - 1)"
+      and uq: "\<And>r. nextR M i r (Lng M - 1) \<Longrightarrow> r = q"
+      using hpM unfolding hasParent_def by blast
+    have parq: "parent M i (Lng M - 1) = q"
+      unfolding parent_def using q uq by (rule the_equality)
+    have pq: "p = q" using parM parq by simp
+    have nM: "nextR M i p (Lng M - 1)" using q pq by simp
+    have nB: "nextR Rs i (p - off) kk" using corr i pge nM by blast
+    \<comment> \<open>Uniqueness in \<open>Rs\<close>: any \<open>nextR Rs i r kk\<close> pulls back to \<open>nextR M i (off+r) j1\<close>.\<close>
+    have uniqB: "\<And>r. nextR Rs i r kk \<Longrightarrow> r = p - off"
+    proof -
+      fix r assume rr: "nextR Rs i r kk"
+      have offr: "off \<le> off + r" by simp
+      have "nextR M i (off + r) (Lng M - 1)" using corr i offr rr by simp
+      hence "off + r = q" using uq by simp
+      thus "r = p - off" using pq by simp
+    qed
+    have hpB: "hasParent Rs i kk" unfolding hasParent_def using nB uniqB by blast
+    have parB: "parent Rs i kk = p - off"
+      unfolding parent_def using nB by (rule the_equality) (rule uniqB)
+    show "hasParent Rs i kk \<and> parent Rs i kk = p - off" using hpB parB by blast
+  qed
+  \<comment> \<open>--- entry transfers (from BRICK 1) ---\<close>
+  \<comment> \<open>\<open>wf15\<close>'s \<open>kk\<close>/\<open>ee\<close> defines expand to exactly the same inline terms as ours;
+     project the two entry conjuncts (conjuncts 3,4 of the brick).\<close>
+  note B1 = wf15_lastblock_entry_transfer[OF M mono e00 e10 tne]
+  have e0: "entry M 0 (Lng M - 1) = entry Rs 0 kk + ee"
+    using conjunct1[OF conjunct2[OF conjunct2[OF B1]]]
+    unfolding Rs_def Jstar_def ee_def kk_def by simp
+  have e1: "entry M 1 (Lng M - 1) = entry Rs 1 kk"
+    using conjunct1[OF conjunct2[OF conjunct2[OF conjunct2[OF B1]]]]
+    unfolding Rs_def Jstar_def kk_def by simp
+  show ?thesis
+    using Leq kkLT NJlt dropoff corr parcorr e0 e1 by (intro conjI)
+qed
+
+
+section \<open>§7.2 種の排他性 (p_7_2_scb_unique conjunct (3), with t \<noteq> Trm []) — wf16-kinds\<close>
+
+text \<open>
+  EMPIRICAL TRUTH-CHECK (\<open>python/_wf16_kinds_check.py\<close>, BT model, indices
+  \<open>{0,1,2}\<close>, depth \<open>2\<close>, 1561 \<open>D\<^sub>\<omega>\<close>-free terms):
+  \<^item> conjunct (3) kind0/kind1-EXCLUSIVITY: 0 failures over the 1560 NONEMPTY
+    terms; the SOLE failure is \<open>t = Trm []\<close> (where \<open>flatBT t = [Zsym]\<close>, the
+    \<open>isPTB_str c\<close> side-condition of \<^const>\<open>scb_decomp\<close> is waived, and BOTH
+    \<^const>\<open>scb_kind0\<close> and \<^const>\<open>scb_kind1\<close> hold vacuously).  This is exactly the
+    A14 degenerate-zero hole, so the article-faithful (3) carries \<open>t \<noteq> Trm []\<close>.
+  \<^item> KEY arithmetic fact (0/39 principals): NO principal \<open>p\<close> has its
+    \<^const>\<open>RightNodes\<close> meeting BOTH kind conditions — kind0 forces \<open>j\<^sub>1 = 1\<close> with
+    \<open>r ! 1 = 0\<close>, while kind1 needs \<open>r ! 0 < r ! j\<^sub>1\<close>; if both, then \<open>r ! 0 < 0\<close>
+    in \<^typ>\<open>nat\<close>, absurd.
+
+  MECHANIZATION.  Both kind0 and kind1 marked principals occur in scb-shaped
+  positions, so by the GREEN suffix brick @{thm [source] rnsub_RN_occ_suffix}
+  each \<open>RightNodes (Trm [p])\<close> is a \<^const>\<open>drop\<close>-suffix of \<open>RightNodes t\<close>.  Two
+  nonempty suffixes of one list share their LAST element; kind0's last element is
+  \<open>0\<close>, so kind1's \<open>r ! 0 < r ! j\<^sub>1 = 0\<close> is the contradiction.  No \<open>c\<close>-uniqueness
+  / length-pin needed.  Sound — cites only GREEN @{thm [source] rnsub_RN_occ_suffix}
+  and pure list/\<^const>\<open>RightNodes\<close> facts.
+\<close>
+
+\<comment> \<open>A nonempty \<^const>\<open>drop\<close>-suffix shares the last element of the whole list.\<close>
+lemma rnsub_drop_last_eq:
+  assumes "k < length R"
+  shows "drop k R ! (length (drop k R) - 1) = R ! (length R - 1)"
+proof -
+  have ne: "drop k R \<noteq> []" using assms by simp
+  have Rne: "R \<noteq> []" using assms by auto
+  have "drop k R ! (length (drop k R) - 1) = last (drop k R)"
+    using ne by (simp add: last_conv_nth)
+  also have "\<dots> = last R" using ne by (simp add: last_drop)
+  also have "\<dots> = R ! (length R - 1)"
+    using Rne by (simp add: last_conv_nth)
+  finally show ?thesis .
+qed
+
+\<comment> \<open>From a kind-0 scb-decomposition of a nonempty \<open>t\<close>: the marked principal's
+   \<^const>\<open>RightNodes\<close> is a length-2 suffix of \<open>RightNodes t\<close> with last entry \<open>0\<close>.
+   Hence \<open>RightNodes t\<close> is nonempty and its last element is \<open>0\<close>.\<close>
+lemma rnsub_kind0_last0:
+  assumes tne: "t \<noteq> Trm []"
+      and d0: "scb_kind0 t s c b"
+  shows "RightNodes t \<noteq> [] \<and> RightNodes t ! (length (RightNodes t) - 1) = 0"
+proof -
+  have sd: "scb_decomp t s c b" using d0 by (simp add: scb_kind0_def)
+  obtain ys where ys: "t = Trm ys" by (cases t)
+  from sd have occ': "flatBT t = s @ c @ b" and pc: "isPTB_str c"
+    and bRP: "\<forall>x \<in> set b. x = RP"
+    using tne by (auto simp: scb_decomp_def)
+  obtain p where p: "c = flatBP p" using pc unfolding isPTB_str_def by blast
+  have kc: "Lng (RightNodes (Trm [p])) = 2 \<and> RightNodes (Trm [p]) ! 1 = 0"
+    using d0 p by (simp add: scb_kind0_def)
+  have occ: "flatBT (Trm ys) = s @ flatBP p @ b" using occ' p ys by simp
+  obtain k where suf: "RightNodes (Trm [p]) = drop k (RightNodes (Trm ys))"
+    using rnsub_RN_occ_suffix[OF occ bRP] by blast
+  have len2: "length (RightNodes (Trm [p])) = 2" using kc by simp
+  \<comment> \<open>the suffix is nonempty (length 2), so \<open>k < length (RightNodes (Trm ys))\<close>.\<close>
+  have klt: "k < length (RightNodes (Trm ys))"
+  proof (rule ccontr)
+    assume "\<not> k < length (RightNodes (Trm ys))"
+    hence "length (RightNodes (Trm ys)) \<le> k" by simp
+    hence "drop k (RightNodes (Trm ys)) = []" by simp
+    thus False using suf len2 by simp
+  qed
+  have RNne: "RightNodes (Trm ys) \<noteq> []" using klt by auto
+  \<comment> \<open>last of the suffix = last of \<open>RightNodes (Trm ys)\<close>; and last of the suffix
+     is \<open>RightNodes (Trm [p]) ! 1 = 0\<close>.\<close>
+  have lasteq: "RightNodes (Trm [p]) ! (length (RightNodes (Trm [p])) - 1)
+                  = RightNodes (Trm ys) ! (length (RightNodes (Trm ys)) - 1)"
+    using suf rnsub_drop_last_eq[OF klt] by simp
+  have "RightNodes (Trm [p]) ! (length (RightNodes (Trm [p])) - 1)
+          = RightNodes (Trm [p]) ! 1" using len2 by simp
+  hence "RightNodes (Trm ys) ! (length (RightNodes (Trm ys)) - 1) = 0"
+    using lasteq kc by simp
+  thus ?thesis using RNne ys by simp
+qed
+
+\<comment> \<open>From a kind-1 scb-decomposition of a nonempty \<open>t\<close>: the marked principal's
+   \<^const>\<open>RightNodes\<close> is a suffix of \<open>RightNodes t\<close> of length \<open>j\<^sub>1+1 \<ge> 2\<close> whose
+   LAST element is strictly greater than its FIRST.  Hence \<open>RightNodes t\<close> is
+   nonempty and its last element is \<open>> RightNodes (Trm [p]) ! 0 \<ge> 0\<close>.\<close>
+lemma rnsub_kind1_lastpos:
+  assumes tne: "t \<noteq> Trm []"
+      and d1: "scb_kind1 t s c b"
+  shows "RightNodes t \<noteq> []
+         \<and> RightNodes t ! (length (RightNodes t) - 1) > 0"
+proof -
+  have sd: "scb_decomp t s c b" using d1 by (simp add: scb_kind1_def)
+  obtain ys where ys: "t = Trm ys" by (cases t)
+  from sd have occ': "flatBT t = s @ c @ b" and pc: "isPTB_str c"
+    and bRP: "\<forall>x \<in> set b. x = RP"
+    using tne by (auto simp: scb_decomp_def)
+  obtain p where p: "c = flatBP p" using pc unfolding isPTB_str_def by blast
+  define R0 where "R0 = RightNodes (Trm [p])"
+  define j1 where "j1 = Lng R0 - 1"
+  have kc: "j1 \<ge> 1 \<and> R0 ! 0 < R0 ! j1
+              \<and> (\<forall>j. 0 < j \<and> j < j1 \<longrightarrow> R0 ! j \<ge> R0 ! j1)"
+    using d1 p unfolding R0_def j1_def by (simp add: scb_kind1_def Let_def)
+  have occ: "flatBT (Trm ys) = s @ flatBP p @ b" using occ' p ys by simp
+  obtain k where suf: "R0 = drop k (RightNodes (Trm ys))"
+    using rnsub_RN_occ_suffix[OF occ bRP] unfolding R0_def by blast
+  have j1ge1: "j1 \<ge> 1" using kc by simp
+  have len2: "length R0 \<ge> 2" using j1ge1 unfolding j1_def by linarith
+  hence j1id: "j1 = length R0 - 1" unfolding j1_def by simp
+  have klt: "k < length (RightNodes (Trm ys))"
+  proof (rule ccontr)
+    assume "\<not> k < length (RightNodes (Trm ys))"
+    hence "length (RightNodes (Trm ys)) \<le> k" by simp
+    hence "drop k (RightNodes (Trm ys)) = []" by simp
+    thus False using suf len2 by simp
+  qed
+  have RNne: "RightNodes (Trm ys) \<noteq> []" using klt by auto
+  have lasteq: "R0 ! (length R0 - 1)
+                  = RightNodes (Trm ys) ! (length (RightNodes (Trm ys)) - 1)"
+    using suf rnsub_drop_last_eq[OF klt] by simp
+  have "R0 ! 0 < R0 ! j1" using kc by simp
+  hence "0 < R0 ! j1" by simp
+  hence "0 < R0 ! (length R0 - 1)" using j1id by simp
+  hence "0 < RightNodes (Trm ys) ! (length (RightNodes (Trm ys)) - 1)"
+    using lasteq by simp
+  thus ?thesis using RNne ys by simp
+qed
+
+text \<open>UNCONDITIONAL conjunct (3) of @{thm [source] p_7_2_scb_unique} for nonempty
+  \<open>t\<close> (correction A14): \<open>t\<close> is not both 第0種- and 第1種-scb分解可能.  If it were,
+  the kind-0 decomposition pins the last \<^const>\<open>RightNodes\<close> entry to \<open>0\<close> while the
+  kind-1 decomposition pins it to \<open>> 0\<close> — contradiction.\<close>
+lemma m_7_2_scb_kinds_exclusive:
+  assumes tne: "t \<noteq> Trm []"
+  shows "\<not> scb_kind0_able t \<or> \<not> scb_kind1_able t"
+proof (rule ccontr)
+  assume "\<not> (\<not> scb_kind0_able t \<or> \<not> scb_kind1_able t)"
+  hence k0: "scb_kind0_able t" and k1: "scb_kind1_able t" by auto
+  obtain s\<^sub>0 c\<^sub>0 b\<^sub>0 where d0: "scb_kind0 t s\<^sub>0 c\<^sub>0 b\<^sub>0" using k0 by blast
+  obtain s\<^sub>1 c\<^sub>1 b\<^sub>1 where d1: "scb_kind1 t s\<^sub>1 c\<^sub>1 b\<^sub>1" using k1 by blast
+  have last0: "RightNodes t ! (length (RightNodes t) - 1) = 0"
+    using rnsub_kind0_last0[OF tne d0] by simp
+  have lastpos: "RightNodes t ! (length (RightNodes t) - 1) > 0"
+    using rnsub_kind1_lastpos[OF tne d1] by simp
+  show False using last0 lastpos by simp
+qed
+
+
+section \<open>§7.2 dom-可分解性 (p_7_2_scb_unique conjunct (2)) — scb側 forward + domB blocker\<close>
+
+text \<open>
+  Conjunct (2): \<open>domB t = NatSet \<longleftrightarrow> (scb_kind0_able t \<or> scb_kind1_able t)\<close>
+  (with \<open>t \<noteq> Trm []\<close>, correction A14: at \<open>t = Trm []\<close> the LHS is \<open>{} \<noteq> NatSet\<close>
+  but the RHS holds vacuously, so the bare statement is false — see
+  \<open>python/_wf16_kinds_check.py\<close>, the SOLE failure is \<open>t = Trm []\<close>).
+
+  EMPIRICAL CHARACTERIZATION (\<open>python/_wf16_dom2.py\<close>/\<open>_dom3.py\<close>/\<open>_dom4.py\<close>,
+  BT model indices \<open>{0,1,2}\<close> depth 2, 1560 nonempty terms, 0 mismatches; with
+  \<open>R = RightNodes t\<close>, \<open>j\<^sub>1 = Lng R - 1\<close>):
+  \<^enum> \<open>scb_kind0_able t \<longleftrightarrow> (j\<^sub>1 \<ge> 1 \<and> R ! j\<^sub>1 = 0)\<close>;
+  \<^enum> \<open>scb_kind1_able t \<longleftrightarrow> (j\<^sub>1 \<ge> 1 \<and> (\<exists>k < j\<^sub>1. R ! k < R ! j\<^sub>1))\<close>;
+  \<^enum> \<open>domB t = NatSet \<longleftrightarrow> (j\<^sub>1 \<ge> 1 \<and> (R ! j\<^sub>1 = 0 \<or> (\<exists>k < j\<^sub>1. R ! k < R ! j\<^sub>1)))\<close>.
+  (1)\<open>\<or>\<close>(2) is exactly (3), matching the article's "(2) follows immediately from
+  the recursive definition of \<open>dom\<close>".
+
+  \<^bold>\<open>BLOCKER (honest).\<close>  Equivalence (3) — the \<open>domB\<close> side — is \<^emph>\<open>not\<close> mechanizable
+  in the current development: \<^const>\<open>domB\<close> is declared by \<open>function \<dots> by
+  pat_completeness auto\<close> with termination DEFERRED ([Buc1] Lemma 3.2; see
+  \<open>pss_paper.thy\<close> line 776 and the \<open>termination \<dots> deferred\<close> comment).  There is
+  NO \<open>domB.psimps\<close>/\<open>domB_dom\<close> fact in the tree (grep confirms: only \<open>Red_dom\<close>
+  occurrences, which are unrelated), so \<open>domB t\<close> cannot be unfolded/evaluated at
+  all.  Discharging (2) therefore REDUCES to first proving the deferred
+  \<open>domB\<close>/\<open>operB\<close>/\<open>xseq\<close> termination (or at least \<open>domB_operB_xseq_dom\<close> on
+  \<^const>\<open>T_B\<close>), then the rightmost-spine induction giving equivalence (3) above.
+  That is a separate multi-lemma program ([Buc1] §3), out of scope for this brick.
+
+  What IS banked GREEN below: the \<open>scb\<close>-side forward implications (1)(\<open>\<Rightarrow>\<close>) and
+  (2)(\<open>\<Rightarrow>\<close>), i.e. \<open>scb_kind0_able / scb_kind1_able \<Longrightarrow> RightNodes-shape\<close>, sound
+  consequences of the GREEN suffix brick @{thm [source] rnsub_RN_occ_suffix} and
+  the (3) helpers @{thm [source] rnsub_kind0_last0}, @{thm [source] rnsub_kind1_lastpos}.
+  These are exactly the RHS-to-RightNodes half of (2) (the part that does NOT
+  touch \<^const>\<open>domB\<close>).
+\<close>
+
+\<comment> \<open>kind-0-able \<Longrightarrow> the RightNodes shape \<open>(j\<^sub>1 \<ge> 1 \<and> R ! j\<^sub>1 = 0)\<close>.  The marked
+   principal's RightNodes (length 2) is a suffix of \<open>R\<close>, so \<open>Lng R \<ge> 2\<close>
+   (i.e. \<open>j\<^sub>1 \<ge> 1\<close>); its last entry is \<open>0\<close> by @{thm [source] rnsub_kind0_last0}.\<close>
+lemma rnsub_kind0_able_shape:
+  assumes tne: "t \<noteq> Trm []"
+      and k0: "scb_kind0_able t"
+  shows "Lng (RightNodes t) - 1 \<ge> 1
+         \<and> RightNodes t ! (Lng (RightNodes t) - 1) = 0"
+proof -
+  obtain s c b where d0: "scb_kind0 t s c b" using k0 by blast
+  have sd: "scb_decomp t s c b" using d0 by (simp add: scb_kind0_def)
+  obtain ys where ys: "t = Trm ys" by (cases t)
+  from sd have occ': "flatBT t = s @ c @ b" and pc: "isPTB_str c"
+    and bRP: "\<forall>x \<in> set b. x = RP"
+    using tne by (auto simp: scb_decomp_def)
+  obtain p where p: "c = flatBP p" using pc unfolding isPTB_str_def by blast
+  have kc2: "Lng (RightNodes (Trm [p])) = 2" using d0 p by (simp add: scb_kind0_def)
+  have occ: "flatBT (Trm ys) = s @ flatBP p @ b" using occ' p ys by simp
+  obtain k where suf: "RightNodes (Trm [p]) = drop k (RightNodes (Trm ys))"
+    using rnsub_RN_occ_suffix[OF occ bRP] by blast
+  have "length (drop k (RightNodes (Trm ys))) = 2" using suf kc2 by simp
+  hence lenge: "Lng (RightNodes (Trm ys)) \<ge> 2" by simp
+  have last0: "RightNodes t ! (length (RightNodes t) - 1) = 0"
+    using rnsub_kind0_last0[OF tne d0] by simp
+  show ?thesis using lenge last0 ys by simp
+qed
+
+\<comment> \<open>kind-1-able \<Longrightarrow> the RightNodes shape \<open>(j\<^sub>1 \<ge> 1 \<and> (\<exists>k < j\<^sub>1. R ! k < R ! j\<^sub>1))\<close>.
+   The marked principal's RightNodes \<open>= drop k R\<close> has first \<open>< last\<close>; its first is
+   \<open>R ! k\<close>, its last is \<open>R ! j\<^sub>1\<close> (shared last element), and \<open>k < j\<^sub>1\<close> since the
+   suffix has length \<open>\<ge> 2\<close>.\<close>
+lemma rnsub_kind1_able_shape:
+  assumes tne: "t \<noteq> Trm []"
+      and k1: "scb_kind1_able t"
+  shows "Lng (RightNodes t) - 1 \<ge> 1
+         \<and> (\<exists>k < Lng (RightNodes t) - 1.
+              RightNodes t ! k < RightNodes t ! (Lng (RightNodes t) - 1))"
+proof -
+  obtain s c b where d1: "scb_kind1 t s c b" using k1 by blast
+  have sd: "scb_decomp t s c b" using d1 by (simp add: scb_kind1_def)
+  obtain ys where ys: "t = Trm ys" by (cases t)
+  from sd have occ': "flatBT t = s @ c @ b" and pc: "isPTB_str c"
+    and bRP: "\<forall>x \<in> set b. x = RP"
+    using tne by (auto simp: scb_decomp_def)
+  obtain p where p: "c = flatBP p" using pc unfolding isPTB_str_def by blast
+  define R0 where "R0 = RightNodes (Trm [p])"
+  define j1 where "j1 = Lng R0 - 1"
+  define R where "R = RightNodes (Trm ys)"
+  have kc: "j1 \<ge> 1 \<and> R0 ! 0 < R0 ! j1
+              \<and> (\<forall>j. 0 < j \<and> j < j1 \<longrightarrow> R0 ! j \<ge> R0 ! j1)"
+    using d1 p unfolding R0_def j1_def by (simp add: scb_kind1_def Let_def)
+  have j1ge1: "j1 \<ge> 1" using kc by simp
+  have len2: "length R0 \<ge> 2" using j1ge1 unfolding j1_def by linarith
+  hence j1id: "j1 = length R0 - 1" unfolding j1_def by simp
+  have occ: "flatBT (Trm ys) = s @ flatBP p @ b" using occ' p ys by simp
+  obtain k where suf: "R0 = drop k R"
+    using rnsub_RN_occ_suffix[OF occ bRP] unfolding R0_def R_def by blast
+  \<comment> \<open>start index \<open>k < Lng R\<close>, and \<open>k + j1 = Lng R - 1\<close>.\<close>
+  have klt: "k < length R"
+  proof (rule ccontr)
+    assume "\<not> k < length R"
+    hence "length R \<le> k" by simp
+    hence "drop k R = []" by simp
+    thus False using suf len2 by simp
+  qed
+  have lenR0: "length R0 = length R - k" using suf klt by simp
+  have lenRge: "length R \<ge> 2 + k" using lenR0 len2 by simp
+  \<comment> \<open>\<open>j\<^sub>1\<^bsup>t\<^esup> = Lng R - 1\<close>; the witness index is \<open>k < j\<^sub>1\<^bsup>t\<^esup>\<close>.\<close>
+  have kltj1t: "k < length R - 1" using lenRge by simp
+  \<comment> \<open>\<open>R ! k = R0 ! 0\<close> (first of the suffix).\<close>
+  have R0hd: "R0 ! 0 = R ! k" using suf klt by (simp add: nth_drop)
+  \<comment> \<open>\<open>R0 ! j1 = R ! (Lng R - 1)\<close> (shared last element).\<close>
+  have R0last: "R0 ! j1 = R ! (length R - 1)"
+    using suf j1id rnsub_drop_last_eq[OF klt] by simp
+  have "R0 ! 0 < R0 ! j1" using kc by simp
+  hence wit: "R ! k < R ! (length R - 1)" using R0hd R0last by simp
+  have j1tge1: "Lng R - 1 \<ge> 1" using lenRge by simp
+  have "\<exists>k < Lng R - 1. R ! k < R ! (Lng R - 1)"
+    using kltj1t wit by blast
+  thus ?thesis using j1tge1 unfolding R_def using ys by simp
+qed
+
+text \<open>The \<open>scb\<close>-side forward half of conjunct (2), assembled: kind-0/kind-1
+  decomposability of a nonempty \<open>t\<close> forces the \<^const>\<open>RightNodes\<close> shape that the
+  \<^const>\<open>domB\<close>-recursion would land on \<open>NatSet\<close> (the empirical equivalence (3)
+  above).  The converse and the \<^const>\<open>domB\<close>-side equivalence (3) remain blocked
+  on the deferred \<^const>\<open>domB\<close> termination, as documented above.\<close>
+lemma rnsub_kindable_imp_natshape:
+  assumes tne: "t \<noteq> Trm []"
+      and kab: "scb_kind0_able t \<or> scb_kind1_able t"
+  shows "Lng (RightNodes t) - 1 \<ge> 1
+         \<and> (RightNodes t ! (Lng (RightNodes t) - 1) = 0
+            \<or> (\<exists>k < Lng (RightNodes t) - 1.
+                 RightNodes t ! k < RightNodes t ! (Lng (RightNodes t) - 1)))"
+  using kab
+proof
+  assume "scb_kind0_able t"
+  thus ?thesis using rnsub_kind0_able_shape[OF tne] by blast
+next
+  assume "scb_kind1_able t"
+  thus ?thesis using rnsub_kind1_able_shape[OF tne] by blast
+qed
+
+
+
 end
