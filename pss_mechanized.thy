@@ -44497,5 +44497,615 @@ lemma kst_reduced_imp_condAB_monoT_core:
   by (rule condAB_all_cond[OF wf22_r1cross M mono e00 e10])
 
 
+text \<open>\<S>6.6 KEYSTONE FORWARD (GENERAL M) — Front A assembly (wf23-fwd).
+
+  Goal: \<open>kst_reduced_imp_condAB: M \<in> RT_PS \<Longrightarrow> RedCondA M \<and> RedCondB M\<close> for any
+  reduced \<open>M\<close> (the forward half of the \<S>6.6 keystone \<open>reduced \<longleftrightarrow> A\<and>B\<close>).
+
+  WLOG reduction over the \<open>T_PS\<close> trichotomy (\<open>zeroT\<close>/\<open>monoT\<close>/\<open>multiT\<close>), by strong
+  induction on \<open>Lng M\<close>:
+  \<^item> \<open>zeroT M\<close>: forward half of @{thm [source] kst_reduced_iff_cond_zeroT}.
+  \<^item> \<open>multiT M\<close>: each \<open>P\<close>-block \<open>P M ! J \<in> RT_PS\<close> (@{thm [source] m_6_6_P_reduced})
+    and is strictly shorter (\<open>kfwd_P_block_shorter\<close> below); IH gives
+    blockwise \<open>A\<and>B\<close>, lifted by @{thm [source] m_6_6_RedCond_concat_lift}.
+  \<^item> \<open>monoT M\<close>, \<open>m\<^sub>1\<^sub>0 = 0\<close>: if \<open>m\<^sub>0\<^sub>0 = 0\<close>, the keystone core
+    @{thm [source] kst_reduced_imp_condAB_monoT_core}; if \<open>m\<^sub>0\<^sub>0 \<noteq> 0\<close>, vacuous
+    (@{thm [source] kfwd_reduced_monoT_shift_vacuous}).
+  \<^item> \<open>monoT M\<close>, \<open>m\<^sub>1\<^sub>0 > 0\<close>: \<open>RedCondB\<close> is GREEN here
+    (\<open>kfwd_reduced_monoT_condB\<close> below); \<open>RedCondA\<close> is the SOLE residual.
+
+  The residual is supplied as a hypothesis \<open>condA_m10pos\<close> in
+  \<open>kst_reduced_imp_condAB_cond\<close>; the unconditional target
+  \<open>kst_reduced_imp_condAB\<close> cites it, see the residual note below.\<close>
+
+text \<open>Helper: every \<open>P\<close>-block of a \<open>multiT M\<close> is strictly shorter than \<open>M\<close>.
+  \<open>multiT M \<Longrightarrow> length (P M) > 1\<close> (@{thm [source] m_6_2_P_components_2}) and every block
+  is nonempty (@{thm [source] P_blocks_nonempty}); since \<open>concat (P M) = M\<close>
+  (@{thm [source] idxsum_concat_P}) the lengths sum to \<open>Lng M\<close> with \<open>\<ge> 2\<close> positive
+  summands, so each is \<open>< Lng M\<close>.\<close>
+
+lemma kfwd_P_block_shorter:
+  assumes M: "M \<in> T_PS" and multi: "multiT M" and J: "J < length (P M)"
+  shows "Lng (P M ! J) < Lng M"
+proof -
+  have Mne: "M \<noteq> []" using M by (simp add: T_PS_def)
+  let ?Q = "P M"
+  have len2: "1 < length ?Q" using multi m_6_2_P_components_2[OF M] by simp
+  have allne: "\<forall>B \<in> set ?Q. B \<noteq> []" by (rule P_blocks_nonempty[OF Mne])
+  have allpos: "\<forall>B \<in> set ?Q. 0 < length B"
+    using allne by auto
+  have sumQ: "sum_list (map length ?Q) = Lng M"
+    using idxsum_concat_P[of M] by (metis length_concat)
+  \<comment> \<open>Block \<open>J\<close> is one summand; the others (at least one, since \<open>length ?Q \<ge> 2\<close>)
+     are positive, so block \<open>J\<close> is strictly below the total.\<close>
+  have JinB: "?Q ! J \<in> set ?Q" using J by simp
+  \<comment> \<open>pick another block \<open>K \<noteq> J\<close>.\<close>
+  define K :: nat where "K \<equiv> (if J = 0 then 1 else 0)"
+  have K: "K < length ?Q" using len2 J unfolding K_def by (cases "J = 0") auto
+  have KneJ: "K \<noteq> J" unfolding K_def by (cases "J = 0") auto
+  have KinB: "?Q ! K \<in> set ?Q" using K by simp
+  have Kpos: "0 < length (?Q ! K)" using allpos KinB by blast
+  \<comment> \<open>\<open>length(?Q!J) + length(?Q!K) \<le> total\<close>: the two distinct summands are bounded by
+     the sum over \<open>{J,K}\<close>, itself \<le> the full sum over \<open>{..<length ?Q}\<close>.\<close>
+  have eq0: "sum_list (map length ?Q) = (\<Sum>i<length ?Q. length (?Q ! i))"
+    by (simp add: sum_list_sum_nth atLeast0LessThan)
+  have JK: "{J, K} \<subseteq> {..<length ?Q}" using J K by auto
+  have JneK: "J \<noteq> K" using KneJ by simp
+  have two_le: "length (?Q ! J) + length (?Q ! K) \<le> (\<Sum>i<length ?Q. length (?Q ! i))"
+  proof -
+    have "(\<Sum>i\<in>{J,K}. length (?Q ! i)) \<le> (\<Sum>i<length ?Q. length (?Q ! i))"
+      by (rule sum_mono2[OF finite_lessThan JK]) simp
+    moreover have "(\<Sum>i\<in>{J,K}. length (?Q ! i)) = length (?Q ! J) + length (?Q ! K)"
+      using JneK by simp
+    ultimately show ?thesis by simp
+  qed
+  have "Lng (?Q ! J) < length (?Q ! J) + length (?Q ! K)"
+    using Kpos by simp
+  also have "\<dots> \<le> (\<Sum>i<length ?Q. length (?Q ! i))" using two_le by simp
+  also have "\<dots> = sum_list (map length ?Q)" using eq0 by simp
+  also have "\<dots> = Lng M" by (rule sumQ)
+  finally show ?thesis .
+qed
+
+text \<open>Helper: a reduced \<open>monoT M\<close> has equal first column, \<open>m\<^sub>0\<^sub>0 = m\<^sub>1\<^sub>0\<close>.
+  This is the equality strengthening of @{thm [source] kst_reduced_row1_le_row0}:
+  in the \<open>m\<^sub>1\<^sub>0 > 0\<close> productive branch the rebase forces
+  \<open>entry (Red M) 0 0 = entry N 1 m\<^sub>1\<^sub>0 = entry (Red M) 1 0\<close>; with \<open>Red M = M\<close> the two
+  first-column entries coincide.  In the \<open>m\<^sub>1\<^sub>0 = 0\<close> branch either \<open>m\<^sub>0\<^sub>0 = 0\<close> (so
+  \<open>0 = 0\<close>) or \<open>m\<^sub>0\<^sub>0 \<noteq> 0\<close> is impossible (@{thm [source] kfwd_reduced_monoT_shift_vacuous}).\<close>
+
+lemma kfwd_reduced_monoT_diag00:
+  assumes M: "M \<in> RT_PS" and mono: "monoT M"
+  shows "entry M 0 0 = entry M 1 0"
+proof -
+  have MT: "M \<in> T_PS" using M by (simp add: RT_PS_def)
+  have redM: "Red M = M" using M by (simp add: RT_PS_def)
+  have Mne: "M \<noteq> []" using MT by (simp add: T_PS_def)
+  have nz: "\<not> zeroT M" using mono by (simp add: monoT_def)
+  have nmu: "\<not> multiT M" using mono by (simp add: multiT_def)
+  have dom: "Red_dom M" by (rule m_6_5_Red_welldef[OF MT])
+  let ?j1  = "Lng M - 1"
+  let ?m00 = "entry M 0 0"
+  let ?m10 = "entry M 1 0"
+  show "?m00 = ?m10"
+  proof (cases "?m10 = 0")
+    case True
+    \<comment> \<open>\<open>m\<^sub>1\<^sub>0 = 0\<close>: either \<open>m\<^sub>0\<^sub>0 = 0\<close> or the shift-vacuous contradiction.\<close>
+    show ?thesis
+    proof (cases "?m00 = 0")
+      case True thus ?thesis using \<open>?m10 = 0\<close> by simp
+    next
+      case False
+      from kfwd_reduced_monoT_shift_vacuous[OF M mono True False] show ?thesis by simp
+    qed
+  next
+    case False
+    hence c1p: "0 < ?m10" by simp
+    have nc: "\<not> (?m00 = 0 \<and> ?m10 = 0)" using c1p by simp
+    have MPT: "M \<in> PT_PS" using MT mono by (simp add: PT_PS_def)
+    let ?arg = "diagSeq 0 (?m10 - 1) @ (IncrFirst ^^ ?m10) M"
+    have funpow_ne: "(IncrFirst ^^ ?m10) M \<noteq> []"
+      using Mne by (metis Lng_funpow_IncrFirst length_0_conv)
+    have arg_T: "?arg \<in> T_PS" using funpow_ne by (simp add: T_PS_def)
+    let ?N = "Red ?arg"
+    let ?jN = "Lng ?N - 1"
+    have rM: "Red M = (let N = ?N; jN = ?jN in
+               if ?m10 \<le> jN \<and> seg N ?m10 jN \<in> PT_PS then
+                 map (\<lambda>j. (entry N 0 j - entry N 0 ?m10 + entry N 1 ?m10,
+                           entry N 1 j))
+                     [?m10..<Suc jN]
+               else M)"
+      using Red.psimps[OF dom] nz nmu nc c1p by (simp add: Let_def)
+    have segPT: "seg ?N ?m10 ?jN \<in> PT_PS"
+      using m_6_5_monoT_Red_m10pos[OF MPT c1p] by simp
+    have segne: "seg ?N ?m10 ?jN \<noteq> []"
+      using segPT by (simp add: PT_PS_def T_PS_def)
+    have m10_le: "?m10 \<le> ?jN"
+    proof -
+      have "0 < Lng (seg ?N ?m10 ?jN)"
+        using segne by (cases "seg ?N ?m10 ?jN") auto
+      hence "0 < Suc ?jN - ?m10" by (simp only: Lng_seg)
+      thus ?thesis by simp
+    qed
+    have then_case: "?m10 \<le> ?jN \<and> seg ?N ?m10 ?jN \<in> PT_PS"
+      using m10_le segPT by simp
+    have rM': "Red M = map (\<lambda>j. (entry ?N 0 j - entry ?N 0 ?m10
+                                  + entry ?N 1 ?m10, entry ?N 1 j))
+                           [?m10..<Suc ?jN]"
+      using rM then_case by (simp add: Let_def del: upt_Suc)
+    have len0: "0 < length [?m10..<Suc ?jN]" using m10_le by (simp del: upt_Suc)
+    have idx0: "[?m10..<Suc ?jN] ! 0 = ?m10"
+      using m10_le by (simp add: nth_upt del: upt_Suc)
+    have nth0: "(Red M) ! 0 = (\<lambda>j. (entry ?N 0 j - entry ?N 0 ?m10
+                                      + entry ?N 1 ?m10, entry ?N 1 j)) ?m10"
+      using rM' len0 idx0 by (simp add: nth_map del: upt_Suc)
+    have e_rM0: "entry (Red M) 0 0 = entry ?N 1 ?m10"
+      using nth0 unfolding entry_def by simp
+    have e_rM1: "entry (Red M) 1 0 = entry ?N 1 ?m10"
+      using nth0 unfolding entry_def by simp
+    have "?m00 = entry (Red M) 0 0" using redM by simp
+    also have "\<dots> = entry ?N 1 ?m10" using e_rM0 .
+    also have "\<dots> = entry (Red M) 1 0" using e_rM1 by simp
+    also have "\<dots> = ?m10" using redM by simp
+    finally show ?thesis .
+  qed
+qed
+
+text \<open>Helper: a \<open>monoT M\<close> has a row-0 parent at every interior column.  Convexity
+  (@{thm [source] m_5_1_ancestor_tree_1}) lifts \<open>leR M 0 0 (Lng M-1)\<close> to
+  \<open>leR M 0 0 j1\<close>, then @{thm [source] m_5_1_ancestor_basic_1} +
+  @{thm [source] m_5_1_parent_exists_1} produce the row-0 parent.\<close>
+
+lemma kfwd_monoT_hasParent_col:
+  assumes MT: "M \<in> T_PS" and mono: "monoT M" and j1pos: "0 < j1" and j1L: "j1 < Lng M"
+  shows "hasParent M 0 j1"
+proof -
+  have le0top: "leR M 0 0 (Lng M - 1)" using mono by (simp add: monoT_def)
+  have j1le: "j1 \<le> Lng M - 1" using j1L by linarith
+  have le0j1: "leR M 0 0 j1"
+    by (rule m_5_1_ancestor_tree_1[OF MT le0top zero_le j1le])
+  have e0lt: "entry M 0 0 < entry M 0 j1"
+    by (rule m_5_1_ancestor_basic_1[OF MT j1pos order.refl le0j1])
+  have "\<exists>j. 0 \<le> j \<and> j < j1 \<and> nextR M 0 j j1"
+    by (rule m_5_1_parent_exists_1[OF MT j1pos j1L e0lt])
+  hence "\<exists>j0. nextR M 0 j0 j1" by blast
+  thus ?thesis unfolding hasParent_def using idxsum_ex1_parent0_iff by blast
+qed
+
+text \<open>Helper: \<open>RedCondB\<close> for ANY reduced \<open>monoT M\<close>.  The sole row-0 parentless
+  column of a \<open>monoT M\<close> is column \<open>0\<close> (@{thm [source] kfwd_monoT_hasParent_col}),
+  where reducedness pins \<open>m\<^sub>0\<^sub>0 = m\<^sub>1\<^sub>0\<close> (@{thm [source] kfwd_reduced_monoT_diag00}).\<close>
+
+lemma kfwd_reduced_monoT_condB:
+  assumes M: "M \<in> RT_PS" and mono: "monoT M"
+  shows "RedCondB M"
+  unfolding RedCondB_def
+proof (intro allI impI)
+  have MT: "M \<in> T_PS" using M by (simp add: RT_PS_def)
+  fix j1' assume H: "\<not> hasParent M 0 j1' \<and> j1' \<le> Lng M - 1"
+  hence noP: "\<not> hasParent M 0 j1'" and hle: "j1' \<le> Lng M - 1" by simp_all
+  have Mne: "M \<noteq> []" using MT by (simp add: T_PS_def)
+  have LMpos: "0 < Lng M" using Mne by (cases M) auto
+  have j0: "j1' = 0"
+  proof (rule ccontr)
+    assume "j1' \<noteq> 0"
+    hence j1pos: "0 < j1'" by simp
+    have j1L: "j1' < Lng M" using hle LMpos by linarith
+    have "hasParent M 0 j1'" by (rule kfwd_monoT_hasParent_col[OF MT mono j1pos j1L])
+    thus False using noP by simp
+  qed
+  have "entry M 0 0 = entry M 1 0" by (rule kfwd_reduced_monoT_diag00[OF M mono])
+  thus "entry M 0 j1' = entry M 1 j1'" using j0 by simp
+qed
+
+text \<open>\<S>6.6 keystone FORWARD for GENERAL \<open>M\<close>, reduced to the single residual
+  \<open>condA_m10pos\<close>: \<open>RedCondA\<close> for a reduced \<open>monoT M\<close> with \<open>entry M 1 0 > 0\<close>.
+
+  Every other case is discharged GREEN (zeroT / multiT recursion / monoT core /
+  monoT shift-vacuous), and \<open>RedCondB\<close> is GREEN for the residual monoT m10>0 case
+  too (@{thm [source] kfwd_reduced_monoT_condB}).  Strong induction on \<open>Lng M\<close>;
+  the multiT branch applies the IH to each strictly-shorter, reduced \<open>P\<close>-block.\<close>
+
+lemma kst_reduced_imp_condAB_cond:
+  assumes condA_m10pos:
+    "\<And>N. N \<in> RT_PS \<Longrightarrow> monoT N \<Longrightarrow> 0 < entry N 1 0 \<Longrightarrow> RedCondA N"
+  assumes M0: "M \<in> RT_PS"
+  shows "RedCondA M \<and> RedCondB M"
+  using M0
+proof (induction M rule: measure_induct_rule[where f = Lng])
+  case (less M)
+  have M: "M \<in> RT_PS" by (rule less.prems)
+  have MT: "M \<in> T_PS" using M by (simp add: RT_PS_def)
+  have Mne: "M \<noteq> []" using MT by (simp add: T_PS_def)
+  show ?case
+  proof (cases "zeroT M")
+    case True
+    show ?thesis
+      using kst_reduced_iff_cond_zeroT[OF MT True] M by blast
+  next
+    case nz: False
+    show ?thesis
+    proof (cases "multiT M")
+      case True
+      \<comment> \<open>multiT: every block reduced and strictly shorter; IH then concat-lift.\<close>
+      have blocksAB: "\<forall>J < length (P M). RedCondA (P M ! J) \<and> RedCondB (P M ! J)"
+      proof (intro allI impI)
+        fix J assume J: "J < length (P M)"
+        have memB: "P M ! J \<in> set (P M)" using J by simp
+        have BT: "P M ! J \<in> T_PS"
+          using P_blocks_nonempty[OF Mne] memB by (auto simp: T_PS_def)
+        have JLng: "J < Lng (P M)" using J by simp
+        have BRT: "P M ! J \<in> RT_PS"
+          using m_6_6_P_reduced[OF MT] M JLng by blast
+        have shorter: "Lng (P M ! J) < Lng M"
+          by (rule kfwd_P_block_shorter[OF MT True J])
+        show "RedCondA (P M ! J) \<and> RedCondB (P M ! J)"
+          by (rule less.IH[OF shorter BRT])
+      qed
+      show ?thesis
+        by (rule m_6_6_RedCond_concat_lift[OF MT True blocksAB])
+    next
+      case nmu: False
+      have mono: "monoT M" using nz nmu by (simp add: monoT_def multiT_def)
+      show ?thesis
+      proof (cases "0 < entry M 1 0")
+        case True
+        \<comment> \<open>monoT, m10>0: RedCondB GREEN, RedCondA from the residual.\<close>
+        have condB: "RedCondB M" by (rule kfwd_reduced_monoT_condB[OF M mono])
+        have condA: "RedCondA M" by (rule condA_m10pos[OF M mono True])
+        show ?thesis using condA condB by blast
+      next
+        case False
+        hence e10: "entry M 1 0 = 0" by simp
+        show ?thesis
+        proof (cases "entry M 0 0 = 0")
+          case True
+          show ?thesis
+            by (rule kst_reduced_imp_condAB_monoT_core[OF M mono True e10])
+        next
+          case False
+          from kfwd_reduced_monoT_shift_vacuous[OF M mono e10 False]
+          show ?thesis by simp
+        qed
+      qed
+    qed
+  qed
+qed
+
+text \<open>RESIDUAL (Front A, wf23-fwd): the SOLE remaining obligation for the GENERAL
+  \<S>6.6 keystone forward is \<open>RedCondA\<close> for a reduced \<open>monoT M\<close> with \<open>entry M 1 0 > 0\<close>.
+
+  Empirically TRUE (0 counterexamples over all reduced monoT m10>0 sequences,
+  values \<le> 3, lengths \<le> 3; 44 such sequences, every one satisfies RedCondA;
+  and the full keystone \<open>reduced \<longleftrightarrow> A\<and>B\<close> has 0 forward failures over all 4368
+  T_PS sequences at maxlen 3, val 3).
+
+  Structure (article content.md 1156-1218, N-construction): for the reduced mono
+  M with \<open>m\<^sub>1\<^sub>0 > 0\<close>, the diagonal-prefixed \<open>N := diagSeq 0 (m\<^sub>1\<^sub>0-1) @ M\<close> is reduced,
+  mono and CORE (\<open>entry N 0 0 = entry N 1 0 = 0\<close>) by
+  @{thm [source] m_6_6_reduced_leftend} (with \<open>u = 0\<close>); the keystone core
+  @{thm [source] kst_reduced_imp_condAB_monoT_core} gives \<open>RedCondA N\<close>.  Each genuine
+  row-\<open>i\<close> parent of \<open>M\<close> transfers cleanly to a parent of \<open>N\<close> shifted by \<open>m\<^sub>1\<^sub>0\<close>
+  (verified: 0 transfer failures over the 44 sequences), with entries preserved,
+  so \<open>RedCondA N\<close> yields \<open>RedCondA M\<close>.  The diagonal junction only ADDS parents to
+  M-columns (never removes one), so it cannot break a genuine M-parent relation —
+  but mechanizing the \<open>nextR\<close> parent transfer across the \<open>diagSeq @ M\<close> junction is the
+  cut-anchored relation work flagged in docs/reducedness.md \<S>9-17 and is left as the
+  residual.  This is NOT circular: it cites only the GREEN core keystone and the
+  GREEN @{thm [source] m_6_6_reduced_leftend}, never \<open>Red_le\<close>/\<open>p_6_5_Red_monoT\<close>.\<close>
+
+text \<open>The GENERAL \<S>6.6 keystone forward, modulo the single residual hypothesis.
+  When \<open>condA_m10pos\<close> lands on HEAD this becomes unconditional.  Cites only GREEN
+  facts (no \<open>p_*\<close> stub, no goal self-reference).\<close>
+
+lemma kst_reduced_imp_condAB:
+  assumes condA_m10pos:
+    "\<And>N. N \<in> RT_PS \<Longrightarrow> monoT N \<Longrightarrow> 0 < entry N 1 0 \<Longrightarrow> RedCondA N"
+  assumes M: "M \<in> RT_PS"
+  shows "RedCondA M \<and> RedCondB M"
+  by (rule kst_reduced_imp_condAB_cond[OF condA_m10pos M])
+
+
+text \<open>\<S>6.6 KEYSTONE BACKWARD (monoT core) — foundational bricks (tag pss-wf23-bwd).
+  Target: \<open>M \<in> T\<^sub>PS \<Longrightarrow> monoT M \<Longrightarrow> entry M 0 0 = 0 \<Longrightarrow> entry M 1 0 = 0 \<Longrightarrow>
+  RedCondA M \<Longrightarrow> RedCondB M \<Longrightarrow> Red M = M\<close>.  Mirror of the forward keystone.
+  These bricks are pure-structural (no \<open>Red\<close> unfold) and so \<open>A4\<close>-independent.\<close>
+
+text \<open>Position 0 never has a parent (in either row): \<open>nextR M i j0 0\<close> demands
+  \<open>j0 < 0\<close>.  Used by the backward base \<open>M\<^bsub>1,0\<^esub>=0 \<and> RedCondB \<Longrightarrow> M\<^bsub>0,0\<^esub>=0\<close>
+  (content.md 1222) and by the \<open>RedCondB\<close> obligation of the rebase \<open>N\<close>.\<close>
+
+lemma m_6_6_no_parent_0:
+  shows "\<not> hasParent M i 0"
+proof -
+  have "\<not> (\<exists>j0. nextR M i j0 0)"
+  proof
+    assume "\<exists>j0. nextR M i j0 0"
+    then obtain j0 where "nextR M i j0 0" by blast
+    thus False
+      by (cases "i = 0")
+         (auto simp: nextR_def nextrel0_def nextrel1_def)
+  qed
+  thus ?thesis unfolding hasParent_def by blast
+qed
+
+text \<open>Backward base value (content.md 1222): \<open>RedCondB M \<Longrightarrow> M\<^bsub>0,0\<^esub> = M\<^bsub>1,0\<^esub>\<close>.
+  Position 0 has no row-0 parent (@{thm [source] m_6_6_no_parent_0}), so
+  \<open>RedCondB\<close> applies at \<open>j = 0\<close>.  Hence with \<open>M\<^bsub>1,0\<^esub> = 0\<close> we get \<open>M\<^bsub>0,0\<^esub> = 0\<close>.\<close>
+
+lemma m_6_6_RedCondB_row0_eq_row1_at0:
+  assumes M: "M \<in> T_PS" and condB: "RedCondB M"
+  shows "entry M 0 0 = entry M 1 0"
+proof -
+  have L: "0 \<le> Lng M - 1" by simp
+  have np: "\<not> hasParent M 0 0" by (rule m_6_6_no_parent_0)
+  show ?thesis
+    using condB np L unfolding RedCondB_def by blast
+qed
+
+lemma m_6_6_bwd_e00_from_e10:
+  assumes M: "M \<in> T_PS" and condB: "RedCondB M" and e10: "entry M 1 0 = 0"
+  shows "entry M 0 0 = 0"
+  using m_6_6_RedCondB_row0_eq_row1_at0[OF M condB] e10 by simp
+
+text \<open>The backward rebase \<open>N'\<close> of content.md 1224.  For a next-tie slice
+  \<open>seg M j'\<^sub>0 j'\<^sub>1\<close>, \<open>N'\<^bsub>j\<^esub> := (M\<^bsub>0,j'\<^sub>0+j\<^esub> - M\<^bsub>0,j'\<^sub>0\<^esub> + M\<^bsub>1,j'\<^sub>0\<^esub>, M\<^bsub>1,j'\<^sub>0+j\<^esub>)\<close>
+  (local index \<open>j = 0 .. j'\<^sub>1-j'\<^sub>0\<close>).  It shifts row-0 down by \<open>M\<^bsub>0,j'\<^sub>0\<^esub>-M\<^bsub>1,j'\<^sub>0\<^esub>\<close>
+  (well-defined in \<open>\<nat>\<^sup>2\<close> by condAB_coeff (2): \<open>M\<^bsub>1,j'\<^sub>0\<^esub>\<le>M\<^bsub>0,j'\<^sub>0\<^esub>\<close>).\<close>
+
+definition rebaseNp :: "pairseq \<Rightarrow> nat \<Rightarrow> nat \<Rightarrow> pairseq" where
+  "rebaseNp M j0' j1' =
+     map (\<lambda>j. (entry M 0 (j0' + j) - entry M 0 j0' + entry M 1 j0',
+               entry M 1 (j0' + j))) [0 ..< Suc (j1' - j0')]"
+
+lemma Lng_rebaseNp[simp]: "Lng (rebaseNp M j0' j1') = Suc (j1' - j0')"
+  by (simp add: rebaseNp_def)
+
+lemma rebaseNp_nth:
+  assumes "j < Suc (j1' - j0')"
+  shows "rebaseNp M j0' j1' ! j
+           = (entry M 0 (j0' + j) - entry M 0 j0' + entry M 1 j0',
+              entry M 1 (j0' + j))"
+proof -
+  have lt: "j < length [0 ..< Suc (j1' - j0')]" using assms by simp
+  have uj: "[0 ..< Suc (j1' - j0')] ! j = j"
+    using assms by (simp add: nth_upt del: upt_Suc)
+  show ?thesis
+    unfolding rebaseNp_def
+    by (simp add: nth_map[OF lt] uj del: upt_Suc)
+qed
+
+lemma entry_rebaseNp:
+  assumes "j < Suc (j1' - j0')"
+  shows "entry (rebaseNp M j0' j1') 0 j
+           = entry M 0 (j0' + j) - entry M 0 j0' + entry M 1 j0'"
+    and "entry (rebaseNp M j0' j1') 1 j = entry M 1 (j0' + j)"
+proof -
+  have nthj: "rebaseNp M j0' j1' ! j
+                = (entry M 0 (j0' + j) - entry M 0 j0' + entry M 1 j0',
+                   entry M 1 (j0' + j))"
+    by (rule rebaseNp_nth[OF assms])
+  have "entry (rebaseNp M j0' j1') 0 j = fst (rebaseNp M j0' j1' ! j)"
+    by (simp add: entry_def)
+  thus "entry (rebaseNp M j0' j1') 0 j
+          = entry M 0 (j0' + j) - entry M 0 j0' + entry M 1 j0'"
+    by (simp add: nthj)
+  have "entry (rebaseNp M j0' j1') 1 j = snd (rebaseNp M j0' j1' ! j)"
+    by (simp add: entry_def)
+  thus "entry (rebaseNp M j0' j1') 1 j = entry M 1 (j0' + j)"
+    by (simp add: nthj)
+qed
+
+text \<open>The diagonal prefix \<open>((j,j))\<^bsub>j=0\<^esub>\<^bsup>m-1\<^esup>\<close> of length \<open>m\<close>, encoded so that
+  \<open>m = 0\<close> gives the empty list (article's empty range, NOT \<open>diagSeq 0 (m-1)\<close>
+  which is \<open>[(0,0)]\<close> at \<open>m=0\<close> under nat subtraction).\<close>
+
+definition diagPre :: "nat \<Rightarrow> pairseq" where
+  "diagPre m = map (\<lambda>j. (j, j)) [0 ..< m]"
+
+lemma Lng_diagPre[simp]: "Lng (diagPre m) = m"
+  by (simp add: diagPre_def)
+
+lemma diagPre_nth: "k < m \<Longrightarrow> diagPre m ! k = (k, k)"
+  by (simp add: diagPre_def)
+
+lemma entry_diagPre: "k < m \<Longrightarrow> entry (diagPre m) i k = k"
+  by (simp add: diagPre_nth entry_def)
+
+text \<open>The backward induction column \<open>N := ((j,j))\<^bsub>j=0\<^esub>\<^bsup>M\<^bsub>1,j'\<^sub>0\<^esub>-1\<^esup> \<oplus> N'\<close>
+  (content.md 1226).  Its length is \<open>j'\<^sub>1 - j'\<^sub>0 + M\<^bsub>1,j'\<^sub>0\<^esub> + 1\<close>
+  (content.md 1228).  Uses \<open>diagPre\<close> so the prefix is empty when \<open>M\<^bsub>1,j'\<^sub>0\<^esub>=0\<close>.\<close>
+
+definition bwdN :: "pairseq \<Rightarrow> nat \<Rightarrow> nat \<Rightarrow> pairseq" where
+  "bwdN M j0' j1' = diagPre (entry M 1 j0') @ rebaseNp M j0' j1'"
+
+lemma Lng_bwdN: "Lng (bwdN M j0' j1') = entry M 1 j0' + Suc (j1' - j0')"
+  by (simp add: bwdN_def)
+
+lemma Lng_bwdN_zero:
+  assumes "entry M 1 j0' = 0"
+  shows "bwdN M j0' j1' = rebaseNp M j0' j1'"
+proof -
+  have "diagPre (entry M 1 j0') = diagPre 0" using assms by simp
+  also have "\<dots> = []" by (simp add: diagPre_def)
+  finally show ?thesis by (simp add: bwdN_def)
+qed
+
+text \<open>\<open>Lng N - 1 = j'\<^sub>1 - j'\<^sub>0 + M\<^bsub>1,j'\<^sub>0\<^esub>\<close> (content.md 1228).\<close>
+
+lemma Lng_bwdN_minus1:
+  shows "Lng (bwdN M j0' j1') - 1 = (j1' - j0') + entry M 1 j0'"
+  by (simp add: Lng_bwdN)
+
+text \<open>Entry transfer for the backward column \<open>N\<close>.  On the diagonal prefix
+  (\<open>k < M\<^bsub>1,j'\<^sub>0\<^esub>\<close>): \<open>N\<^bsub>i,k\<^esub> = k\<close>.  On the rebase part (\<open>k \<ge> M\<^bsub>1,j'\<^sub>0\<^esub>\<close>):
+  \<open>N\<^bsub>i,k\<^esub> = N'\<^bsub>i,k-M\<^bsub>1,j'\<^sub>0\<^esub>\<^esub>\<close>.\<close>
+
+lemma entry_bwdN_diag:
+  assumes "k < entry M 1 j0'"
+  shows "entry (bwdN M j0' j1') i k = k"
+proof -
+  have lp: "k < Lng (diagPre (entry M 1 j0'))" using assms by simp
+  have "entry (bwdN M j0' j1') i k = entry (diagPre (entry M 1 j0')) i k"
+    using lp by (simp add: bwdN_def entry_def nth_append)
+  thus ?thesis using entry_diagPre[OF assms] by simp
+qed
+
+lemma entry_bwdN_rebase:
+  assumes "entry M 1 j0' \<le> k"
+  shows "entry (bwdN M j0' j1') i k = entry (rebaseNp M j0' j1') i (k - entry M 1 j0')"
+proof -
+  have ge: "\<not> k < Lng (diagPre (entry M 1 j0'))" using assms by simp
+  show ?thesis
+    using ge by (simp add: bwdN_def entry_def nth_append)
+qed
+
+text \<open>Left end of the backward column is \<open>(0,0)\<close> (content.md 1230).\<close>
+
+lemma bwdN_left_end:
+  shows "entry (bwdN M j0' j1') 0 0 = 0 \<and> entry (bwdN M j0' j1') 1 0 = 0"
+proof (cases "entry M 1 j0' = 0")
+  case True
+  have e0: "entry (bwdN M j0' j1') 0 0 = entry (rebaseNp M j0' j1') 0 0"
+    using True by (simp add: entry_bwdN_rebase)
+  have e1: "entry (bwdN M j0' j1') 1 0 = entry (rebaseNp M j0' j1') 1 0"
+    using True by (simp add: entry_bwdN_rebase)
+  have lt: "(0::nat) < Suc (j1' - j0')" by simp
+  have r0: "entry (rebaseNp M j0' j1') 0 0
+              = entry M 0 (j0' + 0) - entry M 0 j0' + entry M 1 j0'"
+    by (rule entry_rebaseNp(1)[OF lt])
+  have r1: "entry (rebaseNp M j0' j1') 1 0 = entry M 1 (j0' + 0)"
+    by (rule entry_rebaseNp(2)[OF lt])
+  show ?thesis using e0 e1 r0 r1 True by simp
+next
+  case False
+  hence pos: "0 < entry M 1 j0'" by simp
+  have e0: "entry (bwdN M j0' j1') 0 0 = 0" by (rule entry_bwdN_diag[OF pos])
+  have e1: "entry (bwdN M j0' j1') 1 0 = 0" by (rule entry_bwdN_diag[OF pos])
+  show ?thesis using e0 e1 by simp
+qed
+
+text \<open>In a \<open>monoT\<close> sequence with \<open>M\<^bsub>0,0\<^esub>=0\<close>, every node \<open>k \<ge> 1\<close> has a unique
+  row-0 parent: \<open>monoT\<close> gives \<open>M\<^bsub>0,0\<^esub> < M\<^bsub>0,k\<^esub>\<close> (@{thm [source] m_6_2_multi_crit_23}),
+  so \<open>k\<close> is not a row-0 left-minimum (@{thm [source] idxsum_no_parent0_iff}).
+  Hence the only row-0-parentless node is \<open>0\<close>.\<close>
+
+lemma m_6_6_monoT_hasParent0:
+  assumes MT: "M \<in> T_PS" and mono: "monoT M" and e00: "entry M 0 0 = 0"
+    and k: "0 < k" and kL: "k < Lng M"
+  shows "hasParent M 0 k"
+proof -
+  have le0last: "leR M 0 0 (Lng M - 1)" using mono by (simp add: monoT_def)
+  have allpos: "\<forall>j. 0 < j \<and> j < Lng M \<longrightarrow> entry M 0 0 < entry M 0 j"
+    using m_6_2_multi_crit_23[OF MT] le0last by blast
+  have posk: "0 < entry M 0 k" using allpos k kL e00 by auto
+  \<comment> \<open>If \<open>k\<close> had no row-0 parent, then \<open>entry M 0 0 \<ge> entry M 0 k\<close> (left-minimum).\<close>
+  have "\<not> (\<not> hasParent M 0 k)"
+  proof
+    assume "\<not> hasParent M 0 k"
+    hence "\<not> (\<exists>!j0. nextR M 0 j0 k)" unfolding hasParent_def by simp
+    hence lm: "\<forall>j<k. entry M 0 j \<ge> entry M 0 k"
+      using idxsum_no_parent0_iff[OF MT kL] by simp
+    have "entry M 0 0 \<ge> entry M 0 k" using lm k by blast
+    thus False using posk e00 by simp
+  qed
+  thus ?thesis by simp
+qed
+
+text \<open>命題（簡約性と係数の関係）, backward base value support (content.md 1232):
+  a \<open>monoT\<close> sequence with \<open>M\<^bsub>0,0\<^esub> = M\<^bsub>1,0\<^esub>\<close> satisfies condition (B).  The only
+  row-0-parentless node is \<open>0\<close> (@{thm [source] m_6_6_monoT_hasParent0}), and there
+  \<open>M\<^bsub>0,0\<^esub> = M\<^bsub>1,0\<^esub>\<close> by hypothesis.  Fully structural — no \<open>Red\<close> unfold (A4-free).\<close>
+
+lemma m_6_6_monoT_RedCondB:
+  assumes MT: "M \<in> T_PS" and mono: "monoT M"
+    and e00: "entry M 0 0 = 0" and eq0: "entry M 0 0 = entry M 1 0"
+  shows "RedCondB M"
+  unfolding RedCondB_def
+proof (intro allI impI)
+  fix j1' :: nat
+  assume H: "\<not> hasParent M 0 j1' \<and> j1' \<le> Lng M - 1"
+  hence nhp: "\<not> hasParent M 0 j1'" and jle: "j1' \<le> Lng M - 1" by simp_all
+  have LM: "1 \<le> Lng M" using MT by (cases M) (auto simp: T_PS_def)
+  have jL: "j1' < Lng M" using jle LM by simp
+  show "entry M 0 j1' = entry M 1 j1'"
+  proof (cases "j1' = 0")
+    case True
+    show ?thesis using True e00 eq0 by simp
+  next
+    case False
+    hence "0 < j1'" by simp
+    hence "hasParent M 0 j1'" by (rule m_6_6_monoT_hasParent0[OF MT mono e00 _ jL])
+    thus ?thesis using nhp by contradiction
+  qed
+qed
+
+text \<open>The backward IH-decrease (content.md 1228): given the row-1 coefficient bound
+  \<open>M\<^bsub>1,j'\<^sub>0\<^esub> < j'\<^sub>0\<close> (supplied by condAB_coeff (3) at the next-tie \<open>j'\<^sub>0\<close>) and
+  \<open>j'\<^sub>1 \<le> j\<^sub>1\<close>, the backward column \<open>N\<close> is strictly shorter: \<open>Lng N - 1 < j\<^sub>1\<close>.
+  Hence the IH applies to \<open>N\<close>.  Pure arithmetic on @{thm [source] Lng_bwdN_minus1}.\<close>
+
+lemma bwdN_Lng_lt:
+  assumes m1lt: "entry M 1 j0' < j0'" and jord: "j0' \<le> j1'" and jle: "j1' \<le> j1"
+  shows "Lng (bwdN M j0' j1') - 1 < j1"
+proof -
+  have "Lng (bwdN M j0' j1') - 1 = (j1' - j0') + entry M 1 j0'"
+    by (rule Lng_bwdN_minus1)
+  also have "\<dots> < (j1' - j0') + j0'" using m1lt by simp
+  also have "(j1' - j0') + j0' = j1'" using jord by simp
+  finally show ?thesis using jle by simp
+qed
+
+text \<open>The \<open>IncrFirst\<close> relation between the slice and its rebase (content.md 1244):
+  \<open>seg M j'\<^sub>0 j'\<^sub>1 = IncrFirst\<^bsup>M\<^bsub>0,j'\<^sub>0\<^esub>-M\<^bsub>1,j'\<^sub>0\<^esub>\<^esup>(N')\<close>.  Holds whenever, on the
+  slice, \<open>M\<^bsub>1,j'\<^sub>0\<^esub> \<le> M\<^bsub>0,j'\<^sub>0\<^esub> \<le> M\<^bsub>0,j'\<^sub>0+k\<^esub>\<close> (condAB_coeff (2) + slice row-0
+  monotonicity).  This is the bridge that makes \<open>N'\<close>'s reduced/nextrel structure
+  inherit from the slice via \<open>Red\<close>'s \<open>IncrFirst\<close>-invariance.  Pure entrywise.\<close>
+
+lemma seg_eq_IncrFirst_rebaseNp:
+  assumes jord: "j0' \<le> j1'"
+    and c2: "entry M 1 j0' \<le> entry M 0 j0'"
+    and mono: "\<forall>k \<le> j1' - j0'. entry M 0 j0' \<le> entry M 0 (j0' + k)"
+  shows "seg M j0' j1' = (IncrFirst ^^ (entry M 0 j0' - entry M 1 j0')) (rebaseNp M j0' j1')"
+proof (rule nth_equalityI)
+  let ?d = "entry M 0 j0' - entry M 1 j0'"
+  let ?R = "(IncrFirst ^^ ?d) (rebaseNp M j0' j1')"
+  show Llen: "length (seg M j0' j1') = length ?R"
+    using Lng_seg[of M j0' j1'] Lng_rebaseNp[of M j0' j1'] jord by simp
+next
+  let ?d = "entry M 0 j0' - entry M 1 j0'"
+  let ?R = "(IncrFirst ^^ (entry M 0 j0' - entry M 1 j0')) (rebaseNp M j0' j1')"
+  fix k assume "k < length (seg M j0' j1')"
+  hence kL: "k < Suc (j1' - j0')" using Lng_seg[of M j0' j1'] jord by simp
+  have kLseg: "k < Lng (seg M j0' j1')" using kL jord by simp
+  have kLR: "k < Lng (rebaseNp M j0' j1')" using kL by simp
+  \<comment> \<open>Row 0.\<close>
+  have s0: "entry (seg M j0' j1') 0 k = entry M 0 (j0' + k)"
+    by (rule entry_seg[OF kLseg])
+  have r0: "entry ?R 0 k = entry (rebaseNp M j0' j1') 0 k + ?d"
+    using kLR by (rule entry_funpow_IncrFirst0)
+  have rb0: "entry (rebaseNp M j0' j1') 0 k
+               = entry M 0 (j0' + k) - entry M 0 j0' + entry M 1 j0'"
+    by (rule entry_rebaseNp(1)[OF kL])
+  have monk: "entry M 0 j0' \<le> entry M 0 (j0' + k)" using mono kL by simp
+  have R0: "entry ?R 0 k = entry M 0 (j0' + k)"
+    using r0 rb0 c2 monk by simp
+  \<comment> \<open>Row 1.\<close>
+  have s1: "entry (seg M j0' j1') 1 k = entry M 1 (j0' + k)"
+    by (rule entry_seg[OF kLseg])
+  have r1: "entry ?R 1 k = entry (rebaseNp M j0' j1') 1 k"
+    using kLR by (rule entry_funpow_IncrFirst1)
+  have rb1: "entry (rebaseNp M j0' j1') 1 k = entry M 1 (j0' + k)"
+    by (rule entry_rebaseNp(2)[OF kL])
+  have R1: "entry ?R 1 k = entry M 1 (j0' + k)" using r1 rb1 by simp
+  \<comment> \<open>Combine into pair equality.\<close>
+  have "seg M j0' j1' ! k = (entry (seg M j0' j1') 0 k, entry (seg M j0' j1') 1 k)"
+    by (simp add: entry_def)
+  also have "\<dots> = (entry M 0 (j0' + k), entry M 1 (j0' + k))" using s0 s1 by simp
+  also have "\<dots> = (entry ?R 0 k, entry ?R 1 k)" using R0 R1 by simp
+  also have "\<dots> = ?R ! k" by (simp add: entry_def)
+  finally show "seg M j0' j1' ! k = ?R ! k" .
+qed
+
 
 end
