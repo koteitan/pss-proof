@@ -48819,6 +48819,174 @@ next
 qed
 
 
+subsection \<open>§6.5 \<open>Red\<close>-invariance of ancestor order via the \<open>congR\<close> bridge (Front A)\<close>
+
+text \<open>
+  \<^bold>\<open>Empirical scoping correction (Front A, verified in python/red_model.py)\<close>.
+  The headline @{thm [source] p_6_5_Red_le} (\<open>leR M = leR (Red M)\<close>) is \<^emph>\<open>FALSE\<close>
+  on all of \<open>T_PS = {M. M \<noteq> []}\<close>, and remains FALSE under the hypothesis
+  \<open>RedCondA M\<close> \<^emph>\<open>alone\<close>: the minimal counterexample is \<open>M = (0,0)(0,1)\<close>
+  (\<open>multiT M\<close>, \<open>RedCondA M\<close> holds, \<open>RedCondB M\<close> fails), where
+  \<open>Red M = (0,0)(1,1)\<close>, so \<open>le0 M 0 1 = False\<close> but \<open>le0 (Red M) 0 1 = True\<close>.
+  Over the raw enumeration enum(4,2) \<open>RedCondA\<close>-alone breaks \<open>le0\<close>-invariance on
+  2502/4530 cases (all of them \<^emph>\<open>multiT\<close>).
+
+  \<^bold>\<open>True T_PS-scopings\<close> (python, enum(4,2)/(5,2)/(4,3), 0-fail):
+  \<^item> \<open>RedCondA M \<and> RedCondB M \<Longleftrightarrow> Red M = M\<close> (= the §6.6 keystone
+    @{thm [source] m_6_6_reduced_iff_cond}); there \<open>leR\<close>-invariance is \<^emph>\<open>trivial\<close>.
+  \<^item> \<open>RedCondA M \<and> monoT M \<Longrightarrow> congR M (Red M)\<close> — all three \<open>congR\<close> components
+    (\<open>Lng\<close>, \<open>nextrel0\<close>, row-1 entries) hold 0-fail; this is the \<^emph>\<open>non-trivial\<close>
+    scoping (it covers reduced \<^emph>\<open>and\<close> non-reduced monoT slices).
+  \<^item> \<open>anchored_slice M \<Longrightarrow> RedCondA M\<close> holds 2575/2575, and
+    \<open>anchored_slice M \<Longrightarrow> leR\<close>-invariance holds 2575/2575 (incl. 919 non-reduced
+    slices), but \<open>anchored_slice M \<Longrightarrow> RedCondB M\<close> only 1656/2575 — so the
+    anchored-slice bridge is genuinely stronger than the reduced (A\<and>B) case.
+
+  \<^bold>\<open>Assembly bricks below.\<close>  Once \<open>congR M (Red M)\<close> is established (the remaining
+  blocker; the natural route is the monoT branch of @{thm [source] cdn_red_cong}
+  via @{thm [source] congR_self_shiftRow0} / @{thm [source] nextrel0_rebaseRow0_eq}),
+  these convert it into the row-0 \<open>le0\<close>-invariance and the full \<open>leR\<close>-invariance
+  (= @{thm [source] p_6_5_Red_le}'s mechanized statement) using only the already
+  GREEN \<open>congR\<close>-projection lemmas.  They cite NO unproved \<open>p_*\<close> stub.\<close>
+
+text \<open>Row-0 fragment: \<open>congR\<close> transports \<open>le0\<close> verbatim (it shares \<open>Lng\<close> and
+  \<open>nextrel0\<close>, and \<open>le0\<close> is built solely from those).\<close>
+
+lemma m_6_5_congR_imp_le0_inv:
+  assumes R: "congR M (Red M)"
+  shows "le0 M j0 j1 = le0 (Red M) j0 j1"
+proof -
+  have L: "Lng M = Lng (Red M)" by (rule congR_Lng[OF R])
+  have N: "nextrel0 M = nextrel0 (Red M)" using R by (simp add: congR_def)
+  show ?thesis by (simp add: le0_def L N)
+qed
+
+text \<open>Step-relation fragment: \<open>congR\<close> shares \<open>nextrel0\<close> outright.\<close>
+
+lemma m_6_5_congR_imp_nextrel0_inv:
+  assumes R: "congR M (Red M)"
+  shows "nextrel0 M j0 j1 = nextrel0 (Red M) j0 j1"
+  using R by (simp add: congR_def)
+
+text \<open>Full bridge: \<open>congR\<close> transports the unified ancestor order \<open>leR\<close> at every
+  row \<open>i\<close> (via the GREEN point-free @{thm [source] congR_leR}).  This is exactly
+  the mechanized form of @{thm [source] p_6_5_Red_le}'s conclusion, modulo the
+  \<open>congR M (Red M)\<close> hypothesis.\<close>
+
+lemma m_6_5_congR_imp_leR_inv:
+  assumes R: "congR M (Red M)"
+  shows "leR M i j0 j1 = leR (Red M) i j0 j1"
+proof -
+  have "leR M = leR (Red M)" by (rule congR_leR[OF R])
+  thus ?thesis by simp
+qed
+
+text \<open>Row-1 fragment falls out of the same bridge (specialise \<open>i = 1\<close>): once
+  \<open>le0\<close> and the row-1 entries are shared, \<open>nextrel1\<close> and hence \<open>le1\<close> coincide.\<close>
+
+lemma m_6_5_congR_imp_le1_inv:
+  assumes R: "congR M (Red M)"
+  shows "le1 M j0 j1 = le1 (Red M) j0 j1"
+proof -
+  have "leR M 1 j0 j1 = leR (Red M) 1 j0 j1" by (rule m_6_5_congR_imp_leR_inv[OF R])
+  thus ?thesis by (simp add: leR_def)
+qed
+
+text \<open>
+  \<S>6.5 ROW-1 FRAGMENT of the ancestor-order Red-invariance (Front B).
+
+  The goal \<open>leR M i j0 j1 = leR (Red M) i j0 j1\<close> splits (via @{thm leR_def})
+  into a row-0 fragment (\<open>le0 M = le0 (Red M)\<close>) and a row-1 fragment
+  (\<open>le1 M = le1 (Red M)\<close>).  The row-1 relation \<open>nextrel1\<close> (@{thm nextrel1_def})
+  is built ENTIRELY from \<open>le0\<close> plus the row-1 entries \<open>entry \<cdot> 1 \<cdot>\<close>.  Hence,
+  once the row-0 fragment (\<open>le0\<close>-invariance) is in hand and the row-1 entries
+  agree column-wise, the row-1 fragment follows with no further reference to
+  \<open>Red\<close>.
+
+  We bank this as a clean, \<open>Red\<close>-independent abstract brick: it takes the
+  \<open>le0\<close>-equality (the row-0 fragment) and the column-wise row-1 equality as
+  explicit hypotheses, and concludes \<open>nextrel1\<close>-, \<open>le1\<close>-, and \<open>leR\<close>-equality.
+  This mirrors @{thm [source] tail_bump.leR_eq} but is decoupled from the
+  \<open>bumpv\<close> shape, so it composes with whatever route establishes \<open>le0\<close>-invariance
+  (e.g. Front A's row-0 fragment).
+\<close>
+
+lemma row1_le0_imp_nextrel1_eq:
+  assumes Llen: "Lng A = Lng X"
+    and le0eq: "le0 A = le0 X"
+    and row1:  "\<And>j. j < Lng X \<Longrightarrow> entry A 1 j = entry X 1 j"
+  shows "nextrel1 A = nextrel1 X"
+proof (intro ext)
+  fix a b
+  show "nextrel1 A a b = nextrel1 X a b"
+  proof (cases "a < Lng X \<and> b < Lng X")
+    case True
+    hence aX: "a < Lng X" and bX: "b < Lng X" by auto
+    have e1a: "entry A 1 a = entry X 1 a" by (rule row1[OF aX])
+    have e1b: "entry A 1 b = entry X 1 b" by (rule row1[OF bX])
+    \<comment> \<open>The universal tail of \<open>nextrel1\<close> is over \<open>le0\<close>-reachable \<open>j\<close>; on those
+        \<open>j < Lng X\<close>, so the row-1 entries agree.\<close>
+    have U: "(\<forall>j. a < j \<and> le0 X j b \<longrightarrow> entry A 1 b \<le> entry A 1 j)
+              = (\<forall>j. a < j \<and> le0 X j b \<longrightarrow> entry X 1 b \<le> entry X 1 j)"
+    proof (rule all_cong1)
+      fix j
+      show "(a < j \<and> le0 X j b \<longrightarrow> entry A 1 b \<le> entry A 1 j)
+          = (a < j \<and> le0 X j b \<longrightarrow> entry X 1 b \<le> entry X 1 j)"
+      proof (cases "a < j \<and> le0 X j b")
+        case True
+        hence jX: "j < Lng X" by (simp add: le0_def)
+        show ?thesis using e1b row1[OF jX] by simp
+      next
+        case False
+        thus ?thesis by blast
+      qed
+    qed
+    have "nextrel1 A a b =
+       (a < Lng X \<and> b < Lng X \<and> a < b \<and>
+        entry A 1 a < entry A 1 b \<and> le0 X a b \<and>
+        (\<forall>j. a < j \<and> le0 X j b \<longrightarrow> entry A 1 b \<le> entry A 1 j))"
+      unfolding nextrel1_def by (simp add: Llen le0eq)
+    also have "\<dots> =
+       (a < Lng X \<and> b < Lng X \<and> a < b \<and>
+        entry X 1 a < entry X 1 b \<and> le0 X a b \<and>
+        (\<forall>j. a < j \<and> le0 X j b \<longrightarrow> entry X 1 b \<le> entry X 1 j))"
+      using e1a e1b U by simp
+    also have "\<dots> = nextrel1 X a b"
+      unfolding nextrel1_def by (simp add: Llen le0eq)
+    finally show ?thesis .
+  next
+    case False
+    thus ?thesis by (auto simp: nextrel1_def Llen)
+  qed
+qed
+
+lemma row1_le0_imp_le1_eq:
+  assumes Llen: "Lng A = Lng X"
+    and le0eq: "le0 A = le0 X"
+    and row1:  "\<And>j. j < Lng X \<Longrightarrow> entry A 1 j = entry X 1 j"
+  shows "le1 A = le1 X"
+  by (intro ext)
+     (simp add: le1_def row1_le0_imp_nextrel1_eq[OF Llen le0eq row1] Llen)
+
+text \<open>
+  Assembling the two fragments: given \<open>Lng\<close>-equality, \<open>le0\<close>-equality (row-0
+  fragment) and column-wise row-1 agreement, the full ancestor order \<open>leR\<close>
+  coincides on both rows.  This is the shape of the \<S>6.5 conclusion; with
+  \<open>X = M\<close>, \<open>A = Red M\<close> it is exactly \<open>leR M = leR (Red M)\<close> once the row-0
+  fragment and the row-1 column agreement are supplied.
+\<close>
+
+lemma row1_le0_imp_leR_eq:
+  assumes Llen: "Lng A = Lng X"
+    and le0eq: "le0 A = le0 X"
+    and row1:  "\<And>j. j < Lng X \<Longrightarrow> entry A 1 j = entry X 1 j"
+  shows "leR A = leR X"
+proof (intro ext)
+  fix i j0 j1
+  show "leR A i j0 j1 = leR X i j0 j1"
+    by (cases "i = 0")
+       (simp_all add: leR_def le0eq row1_le0_imp_le1_eq[OF Llen le0eq row1])
+qed
 
 
 end
