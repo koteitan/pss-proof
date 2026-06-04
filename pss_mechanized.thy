@@ -44145,4 +44145,357 @@ qed
 
 
 
+
+section \<open>Front A (wf22) — non-circular \<open>r1cross\<close> via M's TRUNK structure\<close>
+
+text \<open>WF22 BRICK A (\<open>wf22_le0_off_last\<close>): the last branch block's left end \<open>off =
+  FirstNodes M ! Jstar\<close> row-0-reaches the last column \<open>j\<^sub>1 = Lng M - 1\<close>.  The last
+  block \<open>Br M ! Jstar = seg M off j\<^sub>1\<close> (@{thm [source] wf21_Br_eq_seg}) is \<open>monoT\<close>
+  (its length \<open>= Lng (NJ M Jstar) > 1\<close> for \<open>kk > 0\<close>, @{thm [source] Br_component_nonmulti}),
+  so its left end \<open>off\<close> is a row-0 ancestor of every later in-block index
+  (@{thm [source] le0_monoT_seg_into_list}).  SOUND — GREEN cites only.\<close>
+
+lemma wf22_le0_off_last:
+  assumes M: "M \<in> RT_PS" and mono: "monoT M"
+    and e00: "entry M 0 0 = 0" and e10: "entry M 1 0 = 0"
+    and tne: "TrMax M \<noteq> Lng M - 1"
+    and kkpos: "0 < Lng (NJ M (Lng (Br M) - 1)) - 1"
+  shows "le0 M (FirstNodes M ! (Lng (Br M) - 1)) (Lng M - 1)"
+proof -
+  have MT: "M \<in> T_PS" using M by (simp add: RT_PS_def)
+  have Mpt: "M \<in> PT_PS" using MT mono by (simp add: PT_PS_def)
+  have LMpos: "0 < Lng M" using MT by (cases M) (auto simp: T_PS_def)
+  have brne: "Br M \<noteq> []" using tne P_nonempty by (simp add: Br_def)
+  hence nBpos: "0 < Lng (Br M)" by (cases "Br M") auto
+  define Jstar where "Jstar \<equiv> Lng (Br M) - 1"
+  have JstarBr: "Jstar < Lng (Br M)" unfolding Jstar_def using nBpos by simp
+  define off where "off \<equiv> FirstNodes M ! Jstar"
+  \<comment> \<open>last block is the suffix segment \<open>seg M off j\<^sub>1\<close>.\<close>
+  have blkeq: "Br M ! Jstar = seg M off (Lng M - 1)"
+    using wf21_Br_eq_seg[OF Mpt brne] unfolding Jstar_def off_def by simp
+  \<comment> \<open>last block monoT (length \<open>> 1\<close> from \<open>kk > 0\<close>).\<close>
+  have Llast: "Lng (NJ M Jstar) = Lng (Br M ! Jstar)"
+    using conjunct1[OF conjunct2[OF conjunct2[OF kfwd_lastblock_locate[OF M mono e00 e10 tne]]]]
+    unfolding Jstar_def by simp
+  have kk': "1 < Lng (NJ M Jstar)" using kkpos unfolding Jstar_def by linarith
+  have lastgt1: "1 < Lng (Br M ! Jstar)" using kk' Llast by simp
+  have notz: "\<not> zeroT (Br M ! Jstar)" using lastgt1 by (simp add: zeroT_def)
+  have lastmono: "monoT (Br M ! Jstar)"
+    using Br_component_nonmulti[OF Mpt JstarBr] notz unfolding Jstar_def by blast
+  have segmono: "monoT (seg M off (Lng M - 1))" using lastmono blkeq by simp
+  \<comment> \<open>\<open>off \<le> Lng M - 1\<close> (block left end \<le> last column).\<close>
+  have offlt: "off < Lng M"
+  proof -
+    have tb: "TrMax M < FirstNodes M ! Jstar"
+      using m_6_4_FirstNodes_TrMax_Joints[OF Mpt JstarBr] by simp
+    have lastL: "Lng (Br M ! Jstar) = Suc (Lng M - 1) - off"
+      using blkeq by (simp only: Lng_seg)
+    show ?thesis using lastgt1 lastL LMpos by linarith
+  qed
+  have offle: "off \<le> Lng M - 1" using offlt by linarith
+  have beL: "Lng M - 1 < Lng M" using LMpos by linarith
+  \<comment> \<open>left end row-0-reaches the last index of the monoT block.\<close>
+  have "le0 M off (Lng M - 1)"
+    by (rule le0_monoT_seg_into_list[OF MT segmono offle order.refl beL])
+  thus ?thesis unfolding off_def Jstar_def .
+qed
+
+text \<open>WF22 BRICK B (\<open>wf22_off_row1val\<close>): the last block's left end row-1 value is
+  the branch coefficient \<open>npJ M Jstar\<close>, which is \<open>\<le> Joints M ! Jstar + 1\<close>.  This is
+  the head value of the last \<open>Red\<close>-block \<open>= IncrFirst\<^bsup>ee\<^esup>(Red (NJ M Jstar))\<close>; row 1 is
+  \<open>IncrFirst\<close>-invariant, the head is \<open>entry (Red (NJ M Jstar)) 1 0 = entry (NJ M Jstar) 1 0
+  = npJ M Jstar\<close>.  Replicates the (\<open>kk\<close>-free) head machinery of
+  @{thm [source] wf17_crossblock_row1}.  SOUND — GREEN cites only.\<close>
+
+lemma wf22_off_row1val:
+  assumes M: "M \<in> RT_PS" and mono: "monoT M"
+    and e00: "entry M 0 0 = 0" and e10: "entry M 1 0 = 0"
+    and tne: "TrMax M \<noteq> Lng M - 1"
+  shows "entry M 1 (FirstNodes M ! (Lng (Br M) - 1)) = npJ M (Lng (Br M) - 1)
+       \<and> npJ M (Lng (Br M) - 1) \<le> Joints M ! (Lng (Br M) - 1) + 1"
+proof -
+  have MT: "M \<in> T_PS" using M by (simp add: RT_PS_def)
+  have redM: "Red M = M" using M by (simp add: RT_PS_def)
+  have Mpt: "M \<in> PT_PS" using MT mono by (simp add: PT_PS_def)
+  have brne: "Br M \<noteq> []" using tne P_nonempty by (simp add: Br_def)
+  hence nBpos: "0 < Lng (Br M)" by (cases "Br M") auto
+  define Jstar where "Jstar \<equiv> Lng (Br M) - 1"
+  have JstarBr: "Jstar < Lng (Br M)" unfolding Jstar_def using nBpos by simp
+  define ee where "ee \<equiv> Joints M ! Jstar + 1 - npJ M Jstar"
+  define off where "off \<equiv> Suc (TrMax M)
+                  + Lng (concat (map (\<lambda>J. (IncrFirst ^^ (Joints M ! J + 1 - npJ M J))
+                                            (Red (NJ M J))) [0..<Jstar]))"
+  have offFN: "off = FirstNodes M ! Jstar"
+    unfolding off_def Jstar_def
+    by (rule wf17_off_eq_firstnode[OF M mono e00 e10 tne])
+  \<comment> \<open>\<open>M ! off\<close> is the head of the last \<open>Red\<close>-block \<open>(IncrFirst ^^ ee) (Red (NJ M Jstar))\<close>.\<close>
+  have dropoff: "drop off M = (IncrFirst ^^ ee) (Red (NJ M Jstar))"
+  proof -
+    have "drop off M = (IncrFirst ^^ (Joints M ! Jstar + 1 - npJ M Jstar)) (Red (NJ M Jstar))"
+      using conjunct1[OF kfwd_lastblock_locate[OF M mono e00 e10 tne]] redM
+      unfolding off_def Jstar_def by simp
+    thus ?thesis unfolding ee_def by simp
+  qed
+  have offlt: "off < Lng M"
+  proof -
+    have NJne: "NJ M Jstar \<noteq> []" by (simp add: NJ_def)
+    have NJpos: "0 < Lng (NJ M Jstar)" using NJne by (cases "NJ M Jstar") auto
+    have Llast: "Lng (NJ M Jstar) = Lng (Br M ! Jstar)"
+      using conjunct1[OF conjunct2[OF conjunct2[OF kfwd_lastblock_locate[OF M mono e00 e10 tne]]]]
+      unfolding Jstar_def by simp
+    have blkeq: "Br M ! Jstar = seg M (FirstNodes M ! Jstar) (Lng M - 1)"
+      using wf21_Br_eq_seg[OF Mpt brne] unfolding Jstar_def by simp
+    have LMpos: "0 < Lng M" using MT by (cases M) (auto simp: T_PS_def)
+    have lastL: "Lng (Br M ! Jstar) = Suc (Lng M - 1) - FirstNodes M ! Jstar"
+      using blkeq by (simp only: Lng_seg)
+    show ?thesis using NJpos Llast lastL LMpos offFN by linarith
+  qed
+  have Moff: "M ! off = ((IncrFirst ^^ ee) (Red (NJ M Jstar))) ! 0"
+  proof -
+    have "M ! off = drop off M ! 0" using offlt by simp
+    thus ?thesis using dropoff by simp
+  qed
+  have NJne: "NJ M Jstar \<noteq> []" by (simp add: NJ_def)
+  have NJT: "NJ M Jstar \<in> T_PS" using NJne by (simp add: T_PS_def)
+  have RNJne: "Red (NJ M Jstar) \<noteq> []"
+  proof -
+    have "Lng (Red (NJ M Jstar)) = Lng (NJ M Jstar)" by (rule m_6_5_Lng_Red[OF NJT])
+    thus ?thesis using NJne by (cases "NJ M Jstar") auto
+  qed
+  hence RNJpos: "0 < Lng (Red (NJ M Jstar))" by (cases "Red (NJ M Jstar)") auto
+  have blk1: "entry ((IncrFirst ^^ ee) (Red (NJ M Jstar))) 1 0
+              = entry (Red (NJ M Jstar)) 1 0"
+    by (rule entry_funpow_IncrFirst1[OF RNJpos])
+  have RNJ1: "entry (Red (NJ M Jstar)) 1 0 = npJ M Jstar"
+    using m_6_6_Red_leftend_1[OF NJT] entry_NJ_1_0[of M Jstar] e10 by simp
+  have eoff1: "entry M 1 off = npJ M Jstar"
+    using Moff blk1 RNJ1 by (simp add: entry_def)
+  have np_le: "npJ M Jstar \<le> Joints M ! Jstar + 1"
+    by (rule npJ_le_Joints_Suc[OF Mpt e10 JstarBr])
+  show ?thesis using eoff1 np_le offFN unfolding Jstar_def by simp
+qed
+
+text \<open>WF22 KEYSTONE (\<open>wf22_r1cross_factA\<close>): the row-1 cross-block \<open>kk > 0\<close> last-column
+  relation \<open>entry M 1 p + 1 = entry M 1 j\<^sub>1\<close>, derived NON-CIRCULARLY from M's trunk
+  structure (NOT N/IH), MODULO the single structural fact FACT A
+  (\<open>fa : parent M 1 j\<^sub>1 \<le> Joints M ! Jstar\<close>, Front B's \<open>wf22_row1parent_le_joint\<close>;
+  empirically 0-fail, 423/423 at maxlen 5).  Argument:
+   \<^item> \<open>p = parent M 1 j\<^sub>1 \<le> joint \<le> TrMax M\<close>, so \<open>entry M 1 p = p\<close>
+     (@{thm [source] ncons_diag_prefix_entry}) and \<open>nextrel1 M p j\<^sub>1\<close> gives
+     \<open>p = entry M 1 p < entry M 1 j\<^sub>1\<close> + minimality
+     (\<open>\<forall>q. p<q \<and> le0 M q j\<^sub>1 \<longrightarrow> entry M 1 q \<ge> entry M 1 j\<^sub>1\<close>).
+   \<^item> If \<open>p < joint\<close>: witness \<open>q = p+1 \<le> joint\<close>, \<open>le0 M (p+1) j\<^sub>1\<close>
+     (@{thm [source] slice_le0_to_index}), \<open>entry M 1 (p+1) = p+1\<close> (trunk).  Minimality:
+     \<open>entry M 1 j\<^sub>1 \<le> p+1\<close>.
+   \<^item> If \<open>p = joint\<close>: witness \<open>q = off = FirstNodes M ! Jstar > p\<close> (cross-block),
+     \<open>le0 M off j\<^sub>1\<close> (@{thm [source] wf22_le0_off_last}),
+     \<open>entry M 1 off = npJ M Jstar \<le> joint+1 = p+1\<close> (@{thm [source] wf22_off_row1val}).
+     Minimality: \<open>entry M 1 j\<^sub>1 \<le> p+1\<close>.
+   \<^item> Either way \<open>p < entry M 1 j\<^sub>1 \<le> p+1\<close>, so \<open>entry M 1 j\<^sub>1 = p+1 = entry M 1 p + 1\<close>.
+  SOUND — cites only GREEN bricks and the explicit FACT A hypothesis; no \<open>p_*\<close> stub,
+  no goal self-citation, no N/IH (non-circular per docs \<S>17).\<close>
+
+lemma wf22_r1cross_factA:
+  assumes M: "M \<in> RT_PS" and mono: "monoT M"
+    and e00: "entry M 0 0 = 0" and e10: "entry M 1 0 = 0"
+    and tne: "TrMax M \<noteq> Lng M - 1"
+    and kkpos: "0 < Lng (NJ M (Lng (Br M) - 1)) - 1"
+    and hp1: "hasParent M 1 (Lng M - 1)"
+    and pcross: "parent M 1 (Lng M - 1) < FirstNodes M ! (Lng (Br M) - 1)"
+    \<comment> \<open>FACT A (Front B \<open>wf22_row1parent_le_joint\<close>): the row-1 parent is \<le> the joint.\<close>
+    and fa: "parent M 1 (Lng M - 1) \<le> Joints M ! (Lng (Br M) - 1)"
+  shows "entry M 1 (parent M 1 (Lng M - 1)) + 1 = entry M 1 (Lng M - 1)"
+proof -
+  have MT: "M \<in> T_PS" using M by (simp add: RT_PS_def)
+  have Mpt: "M \<in> PT_PS" using MT mono by (simp add: PT_PS_def)
+  have LMpos: "0 < Lng M" using MT by (cases M) (auto simp: T_PS_def)
+  have brne: "Br M \<noteq> []" using tne P_nonempty by (simp add: Br_def)
+  hence nBpos: "0 < Lng (Br M)" by (cases "Br M") auto
+  define Jstar where "Jstar \<equiv> Lng (Br M) - 1"
+  have JstarBr: "Jstar < Lng (Br M)" unfolding Jstar_def using nBpos by simp
+  define j1 where "j1 \<equiv> Lng M - 1"
+  define p where "p \<equiv> parent M 1 j1"
+  define off where "off \<equiv> FirstNodes M ! Jstar"
+  define joint where "joint \<equiv> Joints M ! Jstar"
+  have pj: "p \<le> joint" using fa unfolding p_def j1_def joint_def Jstar_def .
+  have pcr: "p < off" using pcross unfolding p_def j1_def off_def Jstar_def .
+  \<comment> \<open>joint \<le> TrMax M (last joint sits in the diagonal trunk).\<close>
+  have jointTr: "joint \<le> TrMax M"
+    using m_6_4_FirstNodes_TrMax_Joints[OF Mpt JstarBr] unfolding joint_def by simp
+  have pTr: "p \<le> TrMax M" using pj jointTr by simp
+  \<comment> \<open>(1) trunk value of \<open>p\<close>.\<close>
+  have epp: "entry M 1 p = p"
+    unfolding p_def j1_def
+    by (rule ncons_diag_prefix_entry[OF M mono e00 e10 tne]) (use pTr in \<open>simp add: p_def j1_def\<close>)
+  \<comment> \<open>(2) \<open>nextrel1 M p j\<^sub>1\<close> from the parent.\<close>
+  have nr1: "nextrel1 M p j1"
+  proof -
+    obtain q where q: "nextR M 1 q j1" and uq: "\<And>r. nextR M 1 r j1 \<Longrightarrow> r = q"
+      using hp1 unfolding hasParent_def j1_def by blast
+    have "parent M 1 j1 = q" unfolding parent_def using q uq
+      by (blast intro: the1_equality)
+    hence "nextR M 1 p j1" using q unfolding p_def by simp
+    thus ?thesis by (simp add: nextR_def)
+  qed
+  have pltj1: "entry M 1 p < entry M 1 j1" using nr1 by (simp add: nextrel1_def)
+  have pj1gt: "p < entry M 1 j1" using pltj1 epp by simp
+  have minim: "\<And>q. p < q \<Longrightarrow> le0 M q j1 \<Longrightarrow> entry M 1 j1 \<le> entry M 1 q"
+    using nr1 unfolding nextrel1_def by blast
+  \<comment> \<open>(3) the witness, by the two sub-cases.\<close>
+  have ej1_le: "entry M 1 j1 \<le> p + 1"
+  proof (cases "p < joint")
+    case True
+    \<comment> \<open>witness \<open>q = p+1 \<le> joint\<close>: trunk value and \<open>le0\<close> from the slice.\<close>
+    have qle: "p + 1 \<le> joint" using True by simp
+    have qTr: "p + 1 \<le> TrMax M" using qle jointTr by simp
+    have eq1: "entry M 1 (p + 1) = p + 1"
+      by (rule ncons_diag_prefix_entry[OF M mono e00 e10 tne]) (use qTr in simp)
+    have j1le: "j1 \<le> Lng M - 1" unfolding j1_def by simp
+    have trlt: "TrMax M < Lng M - 1" using TrMax_bound[OF MT] tne by linarith
+    have qlt: "p + 1 < j1" using qTr trlt unfolding j1_def by linarith
+    have leq: "le0 M (p + 1) j1"
+      using slice_le0_to_index[OF Mpt brne _ qlt j1le]
+            qle unfolding joint_def Jstar_def j1_def by (simp add: leR_def)
+    have "entry M 1 j1 \<le> entry M 1 (p + 1)" by (rule minim) (use leq in auto)
+    thus ?thesis using eq1 by simp
+  next
+    case False
+    have peq: "p = joint" using pj False by simp
+    \<comment> \<open>witness \<open>q = off > p\<close>: \<open>le0\<close> from the last block, value \<open>npJ \<le> joint+1 = p+1\<close>.\<close>
+    have leoff: "le0 M off j1"
+      using wf22_le0_off_last[OF M mono e00 e10 tne kkpos]
+      unfolding off_def Jstar_def j1_def by simp
+    have eoff_le: "entry M 1 off \<le> p + 1"
+    proof -
+      have "entry M 1 off = npJ M Jstar \<and> npJ M Jstar \<le> joint + 1"
+        using wf22_off_row1val[OF M mono e00 e10 tne]
+        unfolding off_def Jstar_def joint_def by simp
+      thus ?thesis using peq by linarith
+    qed
+    have "entry M 1 j1 \<le> entry M 1 off" by (rule minim) (use pcr leoff in auto)
+    thus ?thesis using eoff_le by simp
+  qed
+  \<comment> \<open>(4) combine: \<open>p < entry M 1 j\<^sub>1 \<le> p+1\<close>.\<close>
+  have "entry M 1 j1 = p + 1" using pj1gt ej1_le by linarith
+  thus ?thesis using epp unfolding p_def j1_def by simp
+qed
+
+text \<open>WF22 FACT A (\<open>wf22_row1parent_le_joint\<close>): the row-1 cross-block parent of the
+  last column lies at or below the joint, \<open>p = parent M 1 j\<^sub>1 \<le> Joints M ! Jstar\<close>.
+  This is the structural fact the trunk-reachability route needs (empirically
+  0-fail, 423/423 at maxlen 5).  PROOF (non-circular, GREEN): \<open>p\<close> row-0-reaches
+  \<open>j\<^sub>1\<close> (from \<open>nextrel1 M p j\<^sub>1\<close>); truncate that path at the last-block start \<open>off =
+  FirstNodes M ! Jstar\<close> (@{thm [source] m_5_1_ancestor_tree_1}, since \<open>p < off \<le> j\<^sub>1\<close>)
+  to get \<open>le0 M p off\<close>; \<open>off\<close> has a UNIQUE row-0 parent \<open>= Joints M ! Jstar\<close>
+  (@{thm [source] m_6_4_mono_slice_next}, @{thm [source] Joints_nth}); so by parent
+  maximality (@{thm [source] parent_max}) \<open>p \<le> Joints M ! Jstar\<close>.  SOUND — GREEN cites.\<close>
+
+lemma wf22_row1parent_le_joint:
+  assumes M: "M \<in> RT_PS" and mono: "monoT M"
+    and e00: "entry M 0 0 = 0" and e10: "entry M 1 0 = 0"
+    and tne: "TrMax M \<noteq> Lng M - 1"
+    and hp1: "hasParent M 1 (Lng M - 1)"
+    and pcross: "parent M 1 (Lng M - 1) < FirstNodes M ! (Lng (Br M) - 1)"
+  shows "parent M 1 (Lng M - 1) \<le> Joints M ! (Lng (Br M) - 1)"
+proof -
+  have MT: "M \<in> T_PS" using M by (simp add: RT_PS_def)
+  have Mpt: "M \<in> PT_PS" using MT mono by (simp add: PT_PS_def)
+  have LMpos: "0 < Lng M" using MT by (cases M) (auto simp: T_PS_def)
+  have trlt: "TrMax M < Lng M - 1" using TrMax_bound[OF MT] tne by linarith
+  have brne: "Br M \<noteq> []" using tne P_nonempty by (simp add: Br_def)
+  hence nBpos: "0 < Lng (Br M)" by (cases "Br M") auto
+  define Jstar where "Jstar \<equiv> Lng (Br M) - 1"
+  have JstarBr: "Jstar < Lng (Br M)" unfolding Jstar_def using nBpos by simp
+  define j1 where "j1 \<equiv> Lng M - 1"
+  define p where "p \<equiv> parent M 1 j1"
+  define off where "off \<equiv> FirstNodes M ! Jstar"
+  have pcr: "p < off" using pcross unfolding p_def j1_def off_def Jstar_def .
+  \<comment> \<open>\<open>off \<le> j\<^sub>1\<close> and \<open>p < j\<^sub>1\<close>.\<close>
+  have offTr: "TrMax M < off"
+    using m_6_4_FirstNodes_TrMax_Joints[OF Mpt JstarBr] unfolding off_def by simp
+  \<comment> \<open>last block start \<open>off \<le> Lng M - 1 = j\<^sub>1\<close> (it is the entry of the last block).\<close>
+  have blkeq: "Br M ! Jstar = seg M off (Lng M - 1)"
+    using wf21_Br_eq_seg[OF Mpt brne] unfolding Jstar_def off_def by simp
+  have lastpos: "0 < Lng (Br M ! Jstar)"
+    using Br_component_nonempty[OF Mpt JstarBr] by (cases "Br M ! Jstar") auto
+  have offle: "off \<le> j1"
+  proof -
+    have "Lng (Br M ! Jstar) = Suc (Lng M - 1) - off" using blkeq by (simp only: Lng_seg)
+    thus ?thesis using lastpos LMpos unfolding j1_def by linarith
+  qed
+  \<comment> \<open>\<open>p\<close> row-0-reaches \<open>j\<^sub>1\<close> (from the row-1 parent edge).\<close>
+  have nr1: "nextrel1 M p j1"
+  proof -
+    obtain q where q: "nextR M 1 q j1" and uq: "\<And>r. nextR M 1 r j1 \<Longrightarrow> r = q"
+      using hp1 unfolding hasParent_def j1_def by blast
+    have "parent M 1 j1 = q" unfolding parent_def using q uq
+      by (blast intro: the1_equality)
+    hence "nextR M 1 p j1" using q unfolding p_def by simp
+    thus ?thesis by (simp add: nextR_def)
+  qed
+  have le0pj1: "leR M 0 p j1" using nr1 by (simp add: nextrel1_def leR_def)
+  \<comment> \<open>truncate the row-0 path at \<open>off\<close>: \<open>le0 M p off\<close>.\<close>
+  have le0poff: "leR M 0 p off"
+    by (rule m_5_1_ancestor_tree_1[OF MT le0pj1 less_imp_le_nat[OF pcr] offle])
+  \<comment> \<open>\<open>off\<close> has unique row-0 parent \<open>= Joints M ! Jstar\<close>.\<close>
+  have offexpand: "off = (TrMax M + 1) + IdxSum (P (seg M (TrMax M + 1) (Lng M - 1))) ! Jstar"
+  proof -
+    have brQ: "Br M = P (seg M (TrMax M + 1) (Lng M - 1))" using tne by (simp add: Br_def)
+    have "off = TrMax M + 1 + IdxSum (Br M) ! Jstar"
+      using FirstNodes_nth[OF JstarBr] unfolding off_def by simp
+    thus ?thesis using brQ by simp
+  qed
+  have JleP: "Jstar \<le> Lng (P (seg M (TrMax M + 1) (Lng M - 1))) - 1"
+  proof -
+    have brQ: "Br M = P (seg M (TrMax M + 1) (Lng M - 1))" using tne by (simp add: Br_def)
+    show ?thesis using JstarBr brQ by simp
+  qed
+  have j0pos: "0 < TrMax M + 1" by simp
+  have j0le: "TrMax M + 1 \<le> Lng M - 1" using trlt by simp
+  have hpoff: "hasParent M 0 off"
+    using m_6_4_mono_slice_next[OF Mpt j0pos j0le JleP] offexpand by simp
+  have jointoff: "Joints M ! Jstar = parent M 0 off"
+    using Joints_nth[OF JstarBr] unfolding off_def by simp
+  have nxoff: "nextR M 0 (Joints M ! Jstar) off"
+  proof -
+    have "\<exists>!j0. nextR M 0 j0 off" using hpoff by (simp add: hasParent_def)
+    hence "nextR M 0 (THE j0. nextR M 0 j0 off) off" by (rule theI')
+    thus ?thesis using jointoff by (simp add: parent_def)
+  qed
+  \<comment> \<open>parent maximality: \<open>p \<le> Joints M ! Jstar\<close>.\<close>
+  have "p \<le> Joints M ! Jstar"
+    by (rule parent_max[OF hpoff nxoff le0poff pcr])
+  thus ?thesis unfolding p_def j1_def Jstar_def .
+qed
+
+text \<open>WF22 \<open>r1cross\<close> (UNCONDITIONAL): the row-1 cross-block \<open>kk > 0\<close> last-column
+  relation, with FACT A (@{thm [source] wf22_row1parent_le_joint}) discharged.
+  This is exactly the residual hypothesis of @{thm [source] condAB_all_cond}.\<close>
+
+lemma wf22_r1cross:
+  assumes M: "M \<in> RT_PS" and mono: "monoT M"
+    and e00: "entry M 0 0 = 0" and e10: "entry M 1 0 = 0"
+    and tne: "TrMax M \<noteq> Lng M - 1"
+    and kkpos: "0 < Lng (NJ M (Lng (Br M) - 1)) - 1"
+    and hp1: "hasParent M 1 (Lng M - 1)"
+    and pcross: "parent M 1 (Lng M - 1) < FirstNodes M ! (Lng (Br M) - 1)"
+  shows "entry M 1 (parent M 1 (Lng M - 1)) + 1 = entry M 1 (Lng M - 1)"
+  by (rule wf22_r1cross_factA[OF M mono e00 e10 tne kkpos hp1 pcross
+        wf22_row1parent_le_joint[OF M mono e00 e10 tne hp1 pcross]])
+
+text \<open>\<S>6.6 KEYSTONE FORWARD (monoT core), UNCONDITIONAL.  The conditional skeleton
+  @{thm [source] condAB_all_cond} reduces every \<open>RedCondA\<close>/\<open>RedCondB\<close> obligation to
+  the single residual \<open>r1cross\<close> (row-1 cross-block \<open>kk>0\<close> last-column relation),
+  now discharged by @{thm [source] wf22_r1cross} via M's trunk-reachability
+  structure (non-circular, docs \<S>17).  This unblocks \<S>6.5 \<open>Red_le\<close> via the
+  \<open>reduced \<Longrightarrow> RedCondA \<Longrightarrow> red_le\<close> lead.  SOUND — GREEN cites only.\<close>
+
+lemma kst_reduced_imp_condAB_monoT_core:
+  assumes M: "M \<in> RT_PS" and mono: "monoT M"
+    and e00: "entry M 0 0 = 0" and e10: "entry M 1 0 = 0"
+  shows "RedCondA M \<and> RedCondB M"
+  by (rule condAB_all_cond[OF wf22_r1cross M mono e00 e10])
+
+
+
 end
