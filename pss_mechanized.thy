@@ -48989,4 +48989,59 @@ proof (intro ext)
 qed
 
 
+subsection \<open>§6.5 Anchored slices are never \<open>multiT\<close> (Front B reduction key)\<close>
+
+text \<open>
+  \<^bold>\<open>Reduction key (Front B, verified \<open>python/red_model.py\<close>, 463005 cases 0-fail
+  for the abstract \<open>le0\<close>-segment form; 2059 genuine anchored slices 0-fail).\<close>
+
+  An anchored slice \<open>M = seg S a b\<close> carries the hypothesis \<open>le0 S a b\<close>: index
+  \<open>a\<close> is a row-0 ancestor of \<open>b\<close> in \<open>S\<close>.  Transported to the slice (via the
+  GREEN @{thm [source] adm_le0_seg}), this says \<open>le0 M 0 (Lng M - 1)\<close>: the slice
+  is row-0 monotone from its first to its last index.  By the §6.2 criterion
+  @{thm [source] m_6_2_not_multi_iff_le} (\<open>\<not> multiT M \<longleftrightarrow> leR M 0 0 (Lng M-1)\<close>),
+  this is exactly \<open>\<not> multiT M\<close>.
+
+  \<^bold>\<open>Consequence.\<close>  Every anchored slice is \<open>zeroT\<close> or \<open>monoT\<close>; the \<open>multiT\<close>
+  branch of @{const Red} is \<^emph>\<open>never\<close> reached on the §6.5 domain.  Hence the
+  ancestor-order Red-invariance @{thm [source] p_6_5_Red_le} does \<^emph>\<open>not\<close> require
+  any multi-term \<open>P\<close>-block lift: it reduces to the single obligation
+  \<open>monoT M \<and> RedCondA M \<Longrightarrow> congR M (Red M)\<close> on the mono branch (the \<open>monoT\<close>-only
+  form \<^bold>\<open>without\<close> \<open>RedCondA\<close> is FALSE — counterexample \<open>M = (0,0)(1,2)\<close>,
+  \<open>Red M = (0,0)(1,1)\<close>, row-1 entry \<open>2 \<noteq> 1\<close>).  The \<open>zeroT\<close> case is trivial
+  (\<open>Lng = 1\<close>, \<open>Red M = [(0,0)]\<close>).\<close>
+
+lemma m_6_5_anchored_not_multiT:
+  assumes M: "M \<in> anchored_slice"
+  shows "\<not> multiT M"
+proof -
+  from M obtain S a b where ab: "a \<le> b" and bS: "b < Lng S"
+      and leS: "le0 S a b" and Mseg: "M = seg S a b"
+    unfolding anchored_slice_def by blast
+  have MT: "M \<in> T_PS" by (rule anchored_slice_imp_T_PS[OF M])
+  \<comment> \<open>The slice length is \<open>Suc b - a\<close>, so \<open>Lng M - 1 = b - a\<close>.\<close>
+  have LM: "Lng M = Suc b - a" using Mseg by simp
+  have LM1: "Lng M - 1 = b - a" using LM by simp
+  \<comment> \<open>Transport the anchor \<open>le0 S a b\<close> into the slice as \<open>le0 M 0 (b-a)\<close>.\<close>
+  have bnd0: "(0::nat) \<le> b - a" by simp
+  have bndba: "b - a \<le> b - a" by simp
+  have seg_to_S: "le0 (seg S a b) 0 (b - a) \<longleftrightarrow> le0 S (a + 0) (a + (b - a))"
+    by (rule adm_le0_seg[OF bS bnd0 bndba ab])
+  have abeq: "a + (b - a) = b" using ab by simp
+  have leM: "le0 M 0 (b - a)" using seg_to_S leS Mseg abeq by simp
+  \<comment> \<open>\<open>le0 M 0 (Lng M - 1)\<close> is exactly \<open>leR M 0 0 (Lng M - 1)\<close>, i.e. \<open>\<not> multiT M\<close>.\<close>
+  have leRM: "leR M 0 0 (Lng M - 1)" using leM LM1 by (simp add: leR_def)
+  show "\<not> multiT M" using m_6_2_not_multi_iff_le[OF MT] leRM by simp
+qed
+
+text \<open>Corollary: an anchored slice is \<open>zeroT\<close> or \<open>monoT\<close>.\<close>
+
+lemma m_6_5_anchored_zeroT_or_monoT:
+  assumes M: "M \<in> anchored_slice"
+  shows "zeroT M \<or> monoT M"
+  using m_6_5_anchored_not_multiT[OF M] by (simp add: multiT_def)
+
+
+
+
 end
