@@ -40226,4 +40226,209 @@ lemma incf_pow_parent:
   unfolding parent_def by (simp add: incf_pow_nextR[OF assms])
 
 
+
+section \<open>Front A (wf12) — keystone-forward last-block locate (STEP b)\<close>
+
+text \<open>
+  STEP (b): for a reduced \<open>monoT\<close> core \<open>M\<close> with \<open>M\<^sub>0 = (0,0)\<close> and
+  \<open>TrMax M \<noteq> Lng M - 1\<close> (so \<open>M = Red M\<close> is nontrunk and \<open>Br M \<noteq> []\<close>), the
+  @{thm [source] d_Red_core_nontrunk_unfold} decomposition
+    \<open>Red M = diagSeq 0 (TrMax M) @ concat (map (\<lambda>J. (IncrFirst ^^ e\<^sub>J) (Red (NJ M J)))
+                                              [0..<Lng (Br M)])\<close>
+  has, as its LAST concat block, \<open>(IncrFirst ^^ e\<^bsub>J\<^esub>) (Red (NJ M J\<^sup>*))\<close> at
+  \<open>J\<^sup>* = Lng (Br M) - 1\<close>; its left endpoint inside \<open>Red M\<close> is the offset
+    \<open>off = Suc (TrMax M) + Lng (concat (map blk [0..<J\<^sup>*]))\<close>,
+  and the suffix of \<open>Red M\<close> from \<open>off\<close> equals exactly that block.  Moreover the
+  underlying single branch \<open>NJ M J\<^sup>*\<close> is STRICTLY shorter than \<open>M\<close>
+  (\<open>Lng (NJ M J\<^sup>*) = Lng (Br M ! J\<^sup>*) \<le> Lng (concat (Br M)) = Lng M - 1 - TrMax M < Lng M\<close>).
+  This pins the last column \<open>Lng M - 1\<close> inside the IncrFirst-shifted last block,
+  the gateway to the \<open>condA_top\<close> witness-translation.\<close>
+
+text \<open>The last block of a nonempty mapped-concat is a suffix at the cumulative
+  offset of the earlier blocks.  Pure list algebra.\<close>
+lemma concat_map_last_block_drop:
+  assumes ne: "0 < n"
+  shows "drop (Lng (concat (map g [0..<n-1]))) (concat (map g [0..<n]))
+           = g (n-1)"
+proof -
+  have split: "[0..<n] = [0..<n-1] @ [n-1]"
+    using ne by (metis Suc_diff_1 upt_Suc_append zero_le)
+  have "concat (map g [0..<n]) = concat (map g [0..<n-1]) @ g (n-1)"
+    by (subst split) simp
+  thus ?thesis by simp
+qed
+
+lemma kfwd_lastblock_locate:
+  assumes M: "M \<in> RT_PS" and mono: "monoT M"
+    and e00: "entry M 0 0 = 0" and e10: "entry M 1 0 = 0"
+    and tne: "TrMax M \<noteq> Lng M - 1"
+  defines "blk \<equiv> (\<lambda>J. (IncrFirst ^^ (Joints M ! J + 1 - npJ M J)) (Red (NJ M J)))"
+  defines "Jstar \<equiv> Lng (Br M) - 1"
+  defines "off \<equiv> Suc (TrMax M) + Lng (concat (map blk [0..<Jstar]))"
+  shows "drop off (Red M) = blk Jstar
+       \<and> blk Jstar = (IncrFirst ^^ (Joints M ! Jstar + 1 - npJ M Jstar)) (Red (NJ M Jstar))
+       \<and> Lng (NJ M Jstar) = Lng (Br M ! Jstar)
+       \<and> Lng (NJ M Jstar) < Lng M
+       \<and> Lng (Br M) \<noteq> 0"
+proof -
+  have MT: "M \<in> T_PS" using M by (simp add: RT_PS_def)
+  have redM: "Red M = M" using M by (simp add: RT_PS_def)
+  have nz: "\<not> zeroT M" using mono by (simp add: monoT_def)
+  have nmu: "\<not> multiT M" using mono by (simp add: multiT_def)
+  have Mpt: "M \<in> PT_PS" using MT mono by (simp add: PT_PS_def)
+  have LMpos: "0 < Lng M" using MT by (cases M) (auto simp: T_PS_def)
+  \<comment> \<open>\<open>Br M \<noteq> []\<close> from nontrunk.\<close>
+  have brne: "Br M \<noteq> []" using tne P_nonempty by (simp add: Br_def)
+  hence nBpos: "0 < Lng (Br M)" by (cases "Br M") auto
+  have nBne: "Lng (Br M) \<noteq> 0" using nBpos by simp
+  have JstarBr: "Jstar < Lng (Br M)" unfolding Jstar_def using nBpos by simp
+  \<comment> \<open>Nontrunk unfold of \<open>Red M\<close>.\<close>
+  have rM: "Red M = diagSeq 0 (TrMax M) @ concat (map blk [0..<Lng (Br M)])"
+    unfolding blk_def by (rule d_Red_core_nontrunk_unfold[OF MT nz nmu e00 e10 tne])
+  \<comment> \<open>Length of the diagonal prefix.\<close>
+  have ldiag: "Lng (diagSeq 0 (TrMax M)) = Suc (TrMax M)" by simp
+  \<comment> \<open>Drop the diagonal prefix; then the last concat block is a suffix.\<close>
+  have drop_pre: "drop (Suc (TrMax M)) (Red M) = concat (map blk [0..<Lng (Br M)])"
+    by (simp add: rM ldiag)
+  have last_blk: "drop (Lng (concat (map blk [0..<Jstar])))
+                       (concat (map blk [0..<Lng (Br M)])) = blk Jstar"
+    using concat_map_last_block_drop[OF nBpos] unfolding Jstar_def by simp
+  have drop_off: "drop off (Red M) = blk Jstar"
+  proof -
+    have "drop off (Red M)
+            = drop (Lng (concat (map blk [0..<Jstar])))
+                   (drop (Suc (TrMax M)) (Red M))"
+      unfolding off_def by (simp add: add.commute)
+    also have "\<dots> = drop (Lng (concat (map blk [0..<Jstar])))
+                         (concat (map blk [0..<Lng (Br M)]))"
+      by (simp add: drop_pre)
+    also have "\<dots> = blk Jstar" by (rule last_blk)
+    finally show ?thesis .
+  qed
+  \<comment> \<open>Block identity (definitional).\<close>
+  have blk_id: "blk Jstar
+        = (IncrFirst ^^ (Joints M ! Jstar + 1 - npJ M Jstar)) (Red (NJ M Jstar))"
+    unfolding blk_def ..
+  \<comment> \<open>\<open>Lng (NJ M J\<^sup>*) = Lng (Br M ! J\<^sup>*)\<close>.\<close>
+  have brJne: "Br M ! Jstar \<noteq> []" by (rule Br_component_nonempty[OF Mpt JstarBr])
+  have lenNJ: "Lng (NJ M Jstar) = Lng (Br M ! Jstar)" using brJne by (rule Lng_NJ)
+  \<comment> \<open>Strict length bound: the single branch sits inside \<open>concat (Br M)\<close>, of total
+     length \<open>Lng M - 1 - TrMax M < Lng M\<close>.\<close>
+  have trlt: "TrMax M < Lng M - 1"
+    using TrMax_bound[OF MT] tne LMpos by linarith
+  have memBr: "Lng (Br M ! Jstar) \<in> set (map Lng (Br M))"
+    using JstarBr by (simp add: nth_mem)
+  have br_in_concat: "Lng (Br M ! Jstar) \<le> Lng (concat (Br M))"
+  proof -
+    have "Lng (Br M ! Jstar) \<le> sum_list (map Lng (Br M))"
+      by (rule member_le_sum_list[OF memBr]) simp
+    thus ?thesis by (simp add: length_concat)
+  qed
+  have concat_Br: "Lng (concat (Br M)) = Lng (seg M (TrMax M + 1) (Lng M - 1))"
+    using trlt by (simp add: Br_def poper_concat_P)
+  have "Lng (seg M (TrMax M + 1) (Lng M - 1)) = Suc (Lng M - 1) - (TrMax M + 1)"
+    by (simp only: Lng_seg)
+  also have "\<dots> = Lng M - 1 - TrMax M" using LMpos by simp
+  finally have lseg: "Lng (seg M (TrMax M + 1) (Lng M - 1)) = Lng M - 1 - TrMax M" .
+  have brlt: "Lng (Br M ! Jstar) < Lng M"
+    using br_in_concat concat_Br lseg LMpos by linarith
+  have NJlt: "Lng (NJ M Jstar) < Lng M" using lenNJ brlt by simp
+  show ?thesis using drop_off blk_id lenNJ NJlt nBne by blast
+qed
+
+
+section \<open>Front B (wf12) — global-last-\<open>Zsym\<close> alignment of the marked principal\<close>
+
+text \<open>
+  Front B (wf12).  The residual hypothesis \<open>length s\<^sub>0 = length s\<^sub>1\<close> of the GREEN
+  central \<open>c\<close>-equality @{thm [source] m_7_2_scb_c_unique} is the article's
+  "\<open>s = s\<^sub>i\<close>" (content.md 1896/1918): both marked principals begin at the unique
+  LAST occurrence of \<open>D\<^bsub>v\<^sub>0\<^esub>\<close> in \<open>t\<close>.  The GREEN brick below isolates the SOUND
+  kernel of that pinning that this round established: the marked principal of an
+  scb-shaped occurrence (all-\<open>)\<close> tail) and the canonical last principal of \<open>t\<close>
+  share the GLOBAL LAST \<open>Zsym\<close>, hence their pre-\<open>Zsym\<close> prefixes are EQUAL:
+
+    \<open>s \<frown> Dsym up # qpre = pre \<frown> Dsym u # fpre\<close>
+
+  where \<open>flatBT ap = qpre \<frown> Zsym # qpost\<close>, \<open>flatBT a = fpre \<frown> Zsym # fpost\<close> are the
+  last-\<open>Zsym\<close> splits.  This is the article's "\<open>t\<close> から \<open>)\<close> を除いた文字列の末尾は
+  \<open>D\<^sub>u 0\<close>" alignment (content.md 1884), and it is the spine equation feeding the
+  cut-pinning \<open>length s\<^sub>0 = length s\<^sub>1\<close>.
+
+  SOUNDNESS: cites only GREEN bricks (@{thm [source] rnsub_align_lastZ},
+  @{thm [source] rnsub_Zsym_in_flat}) and the library — never a \<open>p_*\<close> stub.
+
+  RESIDUAL / BLOCKER (reported, not faked).  The remaining step
+  \<open>rnsub_cut_ge_pre\<close> (\<open>length pre \<le> length s\<close>: the cut never lands strictly
+  before the canonical last-principal start) is NOT a recursion into the marked
+  principal's argument \<open>ap\<close>: empirically (\<open>/tmp/wf12_A.py\<close>, 0/3000 holds, but
+  the inner occurrence \<open>flatBT ap = rest' \<frown> flatBP(DB u a) \<frown> w\<close> obtained by
+  descending into \<open>ap\<close> yields only a LOWER bound \<open>length pre\<^bsub>ap\<^esub> \<le> length rest'\<close>
+  via the IH, never the contradiction \<open>length s < length pre \<Longrightarrow> False\<close>).  The
+  property \<open>length pre \<le> length s\<close> is FALSE for an arbitrary canonical-SHAPE
+  \<open>pre\<close> (1440/5880 violations) and even for \<open>pre = [] \<or> last pre = CM\<close> (1080
+  violations): it holds ONLY for the genuine canonical \<open>pre\<close> of
+  @{thm [source] rnsub_flat_pre_post}, whose distinguishing property is that
+  \<open>Dsym u # flatBT a\<close> is the LAST TOP-LEVEL component (its trailing \<open>CM\<close> is at
+  tuple-depth 0).  Proving \<open>rnsub_cut_ge_pre\<close> therefore needs a FIRST-component
+  unique-readability peel (descend into the first top-level principal when the
+  cut is strictly inside \<open>pre\<close>), not the argument recursion — a separate
+  multi-lemma program.  Once \<open>rnsub_cut_ge_pre\<close> is GREEN, the GREEN
+  @{thm [source] rnsub_cut_ge_pre_dichotomy} + a strong induction on \<open>length s\<close>
+  give \<open>rnsub_RN_pins_len\<close> and hence the UNCONDITIONAL conjuncts (4),(5).
+\<close>
+
+\<comment> \<open>An all-\<open>)\<close> string has no \<open>Zsym\<close> and remains all-\<open>)\<close> on prefixes/suffixes.\<close>
+lemma wf12_allRP_prefix:
+  "\<forall>x \<in> set (xs @ ys). x = RP \<Longrightarrow> (\<forall>x \<in> set xs. x = RP) \<and> (\<forall>x \<in> set ys. x = RP)"
+  by auto
+
+\<comment> \<open>GREEN spine-alignment brick.  For an scb-shaped principal occurrence
+   \<open>flatBT t0 = s @ flatBP P @ b\<close> (\<open>b\<close> all-\<open>)\<close>) and ANY canonical last-principal
+   split \<open>flatBT t0 = pre @ (Dsym u # flatBT a) @ post\<close> (\<open>post\<close> all-\<open>)\<close>), the
+   marked principal and the canonical principal share the GLOBAL LAST \<open>Zsym\<close>, so
+   their pre-\<open>Zsym\<close> prefixes coincide and their post-\<open>Zsym\<close> all-\<open>)\<close> tails coincide.
+   This is the article's末尾 \<open>D\<^sub>u 0\<close> alignment (content.md 1884), and the spine
+   equation underlying the cut-pinning.  Sound — cites only GREEN
+   @{thm [source] rnsub_align_lastZ}, @{thm [source] rnsub_Zsym_in_flat}.\<close>
+lemma rnsub_marked_canon_lastZ:
+  assumes occ: "flatBT t0 = s @ flatBP (DB up ap) @ b"
+      and bRP: "\<forall>x \<in> set b. x = RP"
+      and PP:  "flatBT t0 = pre @ (Dsym u # flatBT a) @ post"
+      and postRP: "\<forall>x \<in> set post. x = RP"
+  shows "\<exists>qpre qpost fpre fpost.
+            flatBT ap = qpre @ Zsym # qpost
+          \<and> flatBT a = fpre @ Zsym # fpost
+          \<and> (s @ Dsym up # qpre = pre @ Dsym u # fpre)
+          \<and> (qpost @ b = fpost @ post)"
+proof -
+  \<comment> \<open>Split each principal's argument at its last \<open>Zsym\<close>.\<close>
+  have "Zsym \<in> set (flatBT ap)" by (rule rnsub_Zsym_in_flat)
+  then obtain qpre qpost where
+    ap_split: "flatBT ap = qpre @ Zsym # qpost" and no_Z_qpost: "Zsym \<notin> set qpost"
+    by (meson split_list_last)
+  have "Zsym \<in> set (flatBT a)" by (rule rnsub_Zsym_in_flat)
+  then obtain fpre fpost where
+    a_split: "flatBT a = fpre @ Zsym # fpost" and no_Z_fpost: "Zsym \<notin> set fpost"
+    by (meson split_list_last)
+  have no_Z_b: "Zsym \<notin> set b" using bRP by auto
+  have no_Z_post: "Zsym \<notin> set post" using postRP by auto
+  \<comment> \<open>Two decompositions of \<open>flatBT t0\<close>, each \<open>(\<dots>) @ Zsym # (\<dots>)\<close> with a \<open>Zsym\<close>-free
+     tail; align at the global last \<open>Zsym\<close>.\<close>
+  have markedZ: "flatBT t0 = (s @ Dsym up # qpre) @ Zsym # (qpost @ b)"
+    using occ ap_split by simp
+  have canonZ: "flatBT t0 = (pre @ Dsym u # fpre) @ Zsym # (fpost @ post)"
+    using PP a_split by simp
+  have eqZ: "(s @ Dsym up # qpre) @ Zsym # (qpost @ b)
+           = (pre @ Dsym u # fpre) @ Zsym # (fpost @ post)"
+    using markedZ canonZ by simp
+  have noZ_qb: "Zsym \<notin> set (qpost @ b)" using no_Z_qpost no_Z_b by simp
+  have noZ_fp: "Zsym \<notin> set (fpost @ post)" using no_Z_fpost no_Z_post by simp
+  have al: "s @ Dsym up # qpre = pre @ Dsym u # fpre \<and> qpost @ b = fpost @ post"
+    using rnsub_align_lastZ[OF eqZ noZ_qb noZ_fp] .
+  show ?thesis using ap_split a_split al by blast
+qed
+
+
+
 end
