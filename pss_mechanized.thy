@@ -49042,6 +49042,298 @@ lemma m_6_5_anchored_zeroT_or_monoT:
   using m_6_5_anchored_not_multiT[OF M] by (simp add: multiT_def)
 
 
+subsection \<open>Front A: \<open>congR M (Red M)\<close> for \<open>RedCondA\<close>+\<open>monoT\<close> (mono mono-core for \<open>p_6_5_Red_le\<close>)\<close>
+
+text \<open>m: \<open>shiftRow0\<close> is \<open>rebaseRow0 m\<^sub>0\<^sub>0 0\<close>, and for \<open>monoT M\<close> the row-0 left end is
+  the row-0 minimum, so @{thm [source] RedCondA_rebaseRow0} carries \<open>RedCondA\<close>
+  across \<open>shiftRow0\<close>.\<close>
+
+lemma m_6_5_RedCondA_shiftRow0:
+  assumes MT: "M \<in> T_PS" and mono: "monoT M" and condA: "RedCondA M"
+  shows "RedCondA (shiftRow0 M)"
+proof -
+  have shr_eq: "shiftRow0 M = rebaseRow0 (entry M 0 0) 0 M"
+  proof (rule nth_equalityI)
+    show "Lng (shiftRow0 M) = Lng (rebaseRow0 (entry M 0 0) 0 M)" by simp
+  next
+    fix j assume "j < Lng (shiftRow0 M)"
+    hence jl: "j < Lng M" by simp
+    have s0: "entry (shiftRow0 M) 0 j = entry M 0 j - entry M 0 0"
+      by (rule entry_shiftRow0_0[OF jl])
+    have s1: "entry (shiftRow0 M) 1 j = entry M 1 j" by (rule entry_shiftRow0_1[OF jl])
+    have r0: "entry (rebaseRow0 (entry M 0 0) 0 M) 0 j = entry M 0 j - entry M 0 0"
+      using entry_rebaseRow0_0[OF jl] by simp
+    have r1: "entry (rebaseRow0 (entry M 0 0) 0 M) 1 j = entry M 1 j"
+      by (rule entry_rebaseRow0_1[OF jl])
+    show "shiftRow0 M ! j = rebaseRow0 (entry M 0 0) 0 M ! j"
+      using s0 s1 r0 r1 by (simp add: entry_def prod_eq_iff)
+  qed
+  have lb: "\<And>j. j < Lng M \<Longrightarrow> entry M 0 0 \<le> entry M 0 j"
+  proof -
+    fix j assume jl: "j < Lng M"
+    show "entry M 0 0 \<le> entry M 0 j"
+    proof (cases "0 < j")
+      case True
+      thus ?thesis using monoT_row0_min[OF MT mono True jl] by simp
+    next
+      case False thus ?thesis by simp
+    qed
+  qed
+  show ?thesis using RedCondA_rebaseRow0[OF lb condA] shr_eq by simp
+qed
+
+text \<open>m: trunk-core under \<open>RedCondA\<close> forces the consecutive diagonal.  In the
+  trunk every consecutive step \<open>k \<rightarrow> Suc k\<close> is a unique parent in both rows
+  (row 1 by @{thm [source] nextR1_unique}, row 0 because \<open>entry M 0\<close> strictly
+  increases on the trunk, @{thm [source] trunk_step_lt}, so the consecutive pair
+  is a \<open>nextrel0\<close> edge with a unique parent).  \<open>RedCondA\<close> then steps each row by
+  \<open>+1\<close>, and with \<open>entry M i 0 = 0\<close> the rows are the identity.\<close>
+
+lemma m_6_5_trunk_core_diag_row:
+  assumes MT: "M \<in> T_PS" and mono: "monoT M" and condA: "RedCondA M"
+    and c0: "entry M 0 0 = 0" and c1: "entry M 1 0 = 0"
+    and trunk: "TrMax M = Lng M - 1"
+  shows "\<forall>i\<le>1. \<forall>k<Lng M. entry M i k = k"
+proof (intro allI impI)
+  fix i k assume i: "i \<le> (1::nat)" and k: "k < Lng M"
+  have LMpos: "0 < Lng M" using MT by (cases M) (auto simp: T_PS_def)
+  have step: "\<And>j. j < TrMax M \<Longrightarrow> entry M i (Suc j) = entry M i j + 1"
+  proof -
+    fix j assume jTr: "j < TrMax M"
+    have jL: "Suc j < Lng M" using jTr trunk LMpos by linarith
+    have i01: "i = 0 \<or> i = 1" using i by linarith
+    \<comment> \<open>consecutive step is a unique row-\<open>i\<close> parent of \<open>Suc j\<close>.\<close>
+    have nxt: "nextR M i j (Suc j)"
+    proof (cases "i = 0")
+      case True
+      have lt: "entry M 0 j < entry M 0 (Suc j)" by (rule trunk_step_lt[OF MT _ jTr]) simp
+      have nr0: "nextrel0 M j (Suc j)"
+        unfolding nextrel0_def using jL lt by simp
+      thus ?thesis using True by (simp add: nextR_def)
+    next
+      case False
+      hence i1: "i = 1" using i by linarith
+      have "nextR M 1 j (j + 1)" by (rule TrMax_trunk_step[OF MT jTr])
+      hence "nextR M 1 j (Suc j)" by simp
+      thus ?thesis using i1 by simp
+    qed
+    have uniq: "\<And>j0. nextR M i j0 (Suc j) \<Longrightarrow> j0 = j"
+    proof -
+      fix j0 assume j0: "nextR M i j0 (Suc j)"
+      show "j0 = j" using i01
+      proof
+        assume "i = 0"
+        thus "j0 = j" using j0 nxt by (simp add: idxsum_parent0_unique)
+      next
+        assume "i = 1"
+        thus "j0 = j" using j0 nxt by (simp add: nextR1_unique)
+      qed
+    qed
+    have ex1: "\<exists>!j0. nextR M i j0 (Suc j)"
+      by (rule ex1I[where P="\<lambda>j0. nextR M i j0 (Suc j)" and a=j, OF nxt uniq])
+    have hp: "hasParent M i (Suc j)" unfolding hasParent_def using ex1 .
+    have par: "parent M i (Suc j) = j"
+      unfolding parent_def by (rule the1_equality[OF ex1 nxt])
+    have "entry M i (parent M i (Suc j)) + 1 = entry M i (Suc j)"
+      using condA i hp unfolding RedCondA_def by blast
+    thus "entry M i (Suc j) = entry M i j + 1" using par by simp
+  qed
+  \<comment> \<open>induct the \<open>+1\<close> step from the zero left end.\<close>
+  have base: "entry M i 0 = 0"
+  proof (cases "i = 0")
+    case True thus ?thesis using c0 by simp
+  next
+    case False
+    hence "i = 1" using i by linarith
+    thus ?thesis using c1 by simp
+  qed
+  have kTr: "k \<le> TrMax M" using k trunk LMpos by linarith
+  have "entry M i k = k"
+    using kTr
+  proof (induction k)
+    case 0 thus ?case using base by simp
+  next
+    case (Suc k)
+    have kTr': "k < TrMax M" using Suc.prems by simp
+    have ih: "entry M i k = k" using Suc.IH kTr' by simp
+    show ?case using step[OF kTr'] ih by simp
+  qed
+  thus "entry M i k = k" .
+qed
+
+text \<open>m: the trunk-core \<open>congR M (Red M)\<close> brick.  By the row-identity above \<open>M\<close> is
+  literally \<open>diagSeq 0 (Lng M-1)\<close>, and the trunk-core \<open>Red\<close> branch (with
+  \<open>m\<^sub>1\<^sub>0 = 0\<close>) outputs the same diagonal, so \<open>Red M = M\<close> and \<open>congR\<close> is reflexive.\<close>
+
+lemma m_6_5_congR_self_Red_trunk_core:
+  assumes MT: "M \<in> T_PS" and mono: "monoT M" and condA: "RedCondA M"
+    and c0: "entry M 0 0 = 0" and c1: "entry M 1 0 = 0"
+    and trunk: "TrMax M = Lng M - 1"
+  shows "congR M (Red M)"
+proof -
+  have LMpos: "0 < Lng M" using MT by (cases M) (auto simp: T_PS_def)
+  have rows: "\<forall>i\<le>1. \<forall>k<Lng M. entry M i k = k"
+    by (rule m_6_5_trunk_core_diag_row[OF MT mono condA c0 c1 trunk])
+  \<comment> \<open>\<open>M\<close> is literally the diagonal \<open>diagSeq 0 (Lng M-1)\<close>.\<close>
+  have Mdiag: "M = diagSeq 0 (Lng M - 1)"
+  proof (rule nth_equalityI)
+    have Ld: "Lng (diagSeq 0 (Lng M - 1)) = Lng M" using LMpos by (simp del: upt_Suc)
+    show "length M = length (diagSeq 0 (Lng M - 1))" using Ld by simp
+    fix k assume k: "k < length M"
+    hence kL: "k < Lng M" by simp
+    have e0: "entry M 0 k = k" using rows kL by simp
+    have e1: "entry M 1 k = k" using rows kL by simp
+    have "M ! k = (entry M 0 k, entry M 1 k)" by (rule entry_pair[symmetric])
+    hence Mk: "M ! k = (k, k)" using e0 e1 by simp
+    have db: "k < Suc (Lng M - 1) - 0" using kL LMpos by simp
+    have "diagSeq 0 (Lng M - 1) ! k = (0 + k, 0 + k)" by (rule diagSeq_nth[OF db])
+    thus "M ! k = diagSeq 0 (Lng M - 1) ! k" using Mk by simp
+  qed
+  \<comment> \<open>trunk-core \<open>Red\<close> branch outputs the same diagonal.\<close>
+  have dom: "Red_dom M" by (rule m_6_5_Red_welldef[OF MT])
+  have nz: "\<not> zeroT M" using mono by (simp add: monoT_def)
+  have nmu: "\<not> multiT M" using mono by (simp add: multiT_def)
+  have rM: "Red M = diagSeq (entry M 1 0) (entry M 1 0 + (Lng M - 1))"
+    using Red.psimps[OF dom] nz nmu c0 c1 trunk by (simp add: Let_def)
+  have "Red M = diagSeq 0 (Lng M - 1)" using rM c1 by simp
+  hence "Red M = M" using Mdiag by simp
+  thus ?thesis by (simp add: congR_refl)
+qed
+
+text \<open>FRONT B (tag pss-redle-assembly).  Target (1) \<open>m_6_5_anchored_imp_RedCondA\<close>
+  and target (2) \<open>m_6_5_Red_le\<close> = the headline \<open>p_6_5_Red_le\<close>.
+
+  \<^bold>\<open>Empirical truth-check\<close> (PYTHONPATH=python, red_model.py, /tmp/frontB_verify.py):
+  \<^item> \<open>ST_PS \<Longrightarrow> RedCondA\<close>: 136/136 PASS (0 fail).
+  \<^item> anchored slices from \<open>ST_PS\<close> (\<open>seg S a b\<close>, \<open>le0 S a b\<close>) \<Longrightarrow> \<open>RedCondA\<close>: 3208/3208 PASS.
+  \<^item> reduced-source anchored \<Longrightarrow> \<open>RedCondA\<close>: 3208/3208 PASS.
+  So both branches of \<open>anchored_slice\<close> satisfy \<open>RedCondA\<close>.\<close>
+
+
+subsection \<open>Target (1): anchored slices satisfy \<open>RedCondA\<close>\<close>
+
+text \<open>The \<^emph>\<open>reduced-and-mono\<close> branch (\<open>S \<in> RT_PS \<inter> PT_PS\<close>) is fully GREEN: \<open>S\<close>
+  reduced gives \<open>RedCondA S\<close> via the forward keystone
+  @{thm [source] kst_reduced_imp_condAB_uncond}, which the slice \<open>seg S a b\<close>
+  inherits via @{thm [source] fa_RedCondA_seg}.\<close>
+
+lemma m_6_5_anchored_reduced_imp_RedCondA:
+  assumes M: "M \<in> anchored_slice"
+    and src: "\<exists>S a b. S \<in> RT_PS \<and> S \<in> PT_PS \<and> a \<le> b \<and> b < Lng S
+                        \<and> le0 S a b \<and> M = seg S a b"
+  shows "RedCondA M"
+proof -
+  from src obtain S a b where SR: "S \<in> RT_PS" and ab: "a \<le> b"
+      and bS: "b < Lng S" and Mseg: "M = seg S a b" by blast
+  have ST: "S \<in> T_PS" using SR by (simp add: RT_PS_def)
+  have condS: "RedCondA S \<and> RedCondB S" by (rule kst_reduced_imp_condAB_uncond[OF SR])
+  hence condAS: "RedCondA S" by simp
+  have MT: "M \<in> T_PS" by (rule anchored_slice_imp_T_PS[OF M])
+  have segT: "seg S a b \<in> T_PS" using MT Mseg by simp
+  show ?thesis using Mseg fa_RedCondA_seg[OF ST segT bS condAS] by simp
+qed
+
+text \<open>The \<^emph>\<open>standard\<close> branch (\<open>S \<in> ST_PS\<close>) inherits \<open>RedCondA\<close> from \<open>S\<close> the same
+  way via @{thm [source] fa_RedCondA_seg}, ONCE \<open>S \<in> ST_PS \<Longrightarrow> RedCondA S\<close> is
+  available.  That fact (\<open>stdCA\<close>) is exactly @{thm [source] p_6_7_standard_reduced}
+  (\<open>ST_PS \<subseteq> RT_PS\<close>) composed with @{thm [source] kst_reduced_imp_condAB_uncond};
+  but \<open>p_6_7_standard_reduced\<close> is an UNPROVEN stub, so — per the soundness rule
+  — we do NOT cite it.  We carry \<open>stdCA\<close> as an EXPLICIT hypothesis to be
+  discharged when \<open>ST_PS \<subseteq> RT_PS\<close> (or the direct \<open>oper\<close>-preservation of
+  \<open>RedCondA\<close>) lands.  Empirically \<open>stdCA\<close> is 136/136 TRUE.\<close>
+
+lemma m_6_5_anchored_imp_RedCondA:
+  assumes M: "M \<in> anchored_slice"
+    and stdCA: "\<And>S. S \<in> ST_PS \<Longrightarrow> RedCondA S"
+  shows "RedCondA M"
+proof -
+  from M obtain S a b where SD: "S \<in> ST_PS \<or> (S \<in> RT_PS \<and> S \<in> PT_PS)"
+      and ab: "a \<le> b" and bS: "b < Lng S" and leS: "le0 S a b" and Mseg: "M = seg S a b"
+    unfolding anchored_slice_def by blast
+  have MT: "M \<in> T_PS" by (rule anchored_slice_imp_T_PS[OF M])
+  have segT: "seg S a b \<in> T_PS" using MT Mseg by simp
+  from SD show ?thesis
+  proof
+    assume SS: "S \<in> ST_PS"
+    have ST: "S \<in> T_PS" by (rule ST_PS_T_PS[OF SS])
+    have condAS: "RedCondA S" by (rule stdCA[OF SS])
+    show ?thesis using Mseg fa_RedCondA_seg[OF ST segT bS condAS] by simp
+  next
+    assume SR: "S \<in> RT_PS \<and> S \<in> PT_PS"
+    have src: "\<exists>S a b. S \<in> RT_PS \<and> S \<in> PT_PS \<and> a \<le> b \<and> b < Lng S
+                        \<and> le0 S a b \<and> M = seg S a b"
+      using SR ab bS leS Mseg by blast
+    show ?thesis by (rule m_6_5_anchored_reduced_imp_RedCondA[OF M src])
+  qed
+qed
+
+
+subsection \<open>Target (2): assembling \<open>m_6_5_Red_le\<close>\<close>
+
+text \<open>For a length-1 sequence the only in-range index pair is \<open>(0,0)\<close>, on which
+  both \<open>le0\<close> and \<open>le1\<close> are reflexively true; so \<open>leR\<close> is determined by \<open>Lng = 1\<close>
+  alone (\<open>leR A i j0 j1 \<longleftrightarrow> j0 = 0 \<and> j1 = 0\<close>), independent of the entries.\<close>
+
+lemma leR_Lng1_eq:
+  assumes L: "Lng A = 1"
+  shows "leR A i j0 j1 \<longleftrightarrow> (j0 = 0 \<and> j1 = 0)"
+proof (cases "j0 = 0 \<and> j1 = 0")
+  case True
+  have "le0 A 0 0" using L by (simp add: le0_def)
+  moreover have "le1 A 0 0" using L by (simp add: le1_def)
+  ultimately show ?thesis using True by (simp add: leR_def)
+next
+  case False
+  hence "\<not> (j0 < Lng A \<and> j1 < Lng A)" using L by auto
+  thus ?thesis using False by (auto simp: leR_def le0_def le1_def)
+qed
+
+text \<open>\<open>zeroT M\<close> branch: \<open>Red M = [(0,0)]\<close> (length 1) and \<open>Lng M = 1\<close>, so both
+  sides of the headline collapse to \<open>j0 = 0 \<and> j1 = 0\<close> by @{thm [source] leR_Lng1_eq}.\<close>
+
+lemma m_6_5_Red_le_zeroT:
+  assumes MT: "M \<in> T_PS" and z: "zeroT M"
+  shows "leR M i j0 j1 = leR (Red M) i j0 j1"
+proof -
+  have domM: "Red_dom M" by (rule m_6_5_Red_welldef[OF MT])
+  have LM1: "Lng M = 1" using z by (simp add: zeroT_def)
+  have rM: "Red M = [(0, 0)]" using Red.psimps[OF domM] z by simp
+  have LR1: "Lng (Red M) = 1" using rM by simp
+  show ?thesis using leR_Lng1_eq[OF LM1] leR_Lng1_eq[OF LR1] by simp
+qed
+
+text \<open>The headline \<open>m_6_5_Red_le\<close> = \<open>p_6_5_Red_le\<close>.  Case split via the GREEN
+  @{thm [source] m_6_5_anchored_zeroT_or_monoT}:
+  \<^item> \<open>zeroT M\<close>: discharged by @{thm [source] m_6_5_Red_le_zeroT}.
+  \<^item> \<open>monoT M\<close>: \<open>RedCondA M\<close> (target (1), under \<open>stdCA\<close>) feeds the mono congruence
+    hypothesis \<open>monoCong\<close> to give \<open>congR M (Red M)\<close>, then the GREEN bridge
+    @{thm [source] m_6_5_congR_imp_leR_inv}.
+
+  \<open>monoCong\<close> is \<open>m_6_5_congR_self_Red_monoT\<close> (Front A); \<open>stdCA\<close> is
+  \<open>ST_PS \<subseteq> RT_PS\<close> + the reduced keystone (= unproven \<open>p_6_7_standard_reduced\<close>).
+  Both carried as explicit hypotheses to keep the assembly SOUND; the body cites
+  only already-GREEN facts.\<close>
+
+lemma m_6_5_Red_le:
+  assumes M: "M \<in> anchored_slice"
+    and stdCA: "\<And>S. S \<in> ST_PS \<Longrightarrow> RedCondA S"
+    and monoCong: "\<And>N. N \<in> T_PS \<Longrightarrow> RedCondA N \<Longrightarrow> monoT N \<Longrightarrow> congR N (Red N)"
+  shows "leR M i j0 j1 = leR (Red M) i j0 j1"
+proof -
+  have MT: "M \<in> T_PS" by (rule anchored_slice_imp_T_PS[OF M])
+  from m_6_5_anchored_zeroT_or_monoT[OF M] show ?thesis
+  proof
+    assume z: "zeroT M"
+    show ?thesis by (rule m_6_5_Red_le_zeroT[OF MT z])
+  next
+    assume mn: "monoT M"
+    have condA: "RedCondA M" by (rule m_6_5_anchored_imp_RedCondA[OF M stdCA])
+    have R: "congR M (Red M)" by (rule monoCong[OF MT condA mn])
+    show ?thesis by (rule m_6_5_congR_imp_leR_inv[OF R])
+  qed
+qed
+
+
 
 
 end
