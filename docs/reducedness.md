@@ -297,3 +297,18 @@ keystone 緑後: `reduced⟹RedCondA⟹red_le`(877/0 lead)で §6.5 Red_le が u
 - 保存された edge + parent 一意性 ⟹ j'0-m+M1m が N 最終列の parent。RedCondA N(IH) ⟹ `N_{i,j'0-m+M1m}+1 = N_{i,last}`。entry 転送 `N_{i,j'0-m+M1m}=M_{i,j'0}`, `N_{i,last}=M_{i,j1}` ⟹ `M_{i,j'0}+1=M_{i,j1}`。**非循環**(edge 保存は構造的、値に依存しない)。
 - 原文 4 subcase: (a)j0=j'1=j1∧J1=0(対角単列), (b)j0<j'1=j1∧J1=0(N 構成,j'0≤j0/j0<j'0), (c)j'1=j1∧J1>0(IncrFirst^{M0m-M1m}恒等式;mono core では J1=0 ゆえ非該当), (d)j'1<j1(Pred 経由). mono core は J1=0(P M=[M])。
 - **要新ブリック**: ①生枝N の reduced/core/shorter(reduced_leftend を Red(Br M!Jstar) に), ②witness-edge 保存 M→N(seg/diag 構成での nextrel0/1 転送,red_le 不要), ③entry 転送。これらで row-1(及び全) cross-block を非循環に閉じる。NJ ベース wf16-19 brick は in-block には使えるが cross-block は生枝N へ切替。
+
+## 17. r1cross は N-construction ルートが本質的に循環、正しい論証は trunk-reachability (2026-06-04, wf21 後)
+
+**厳密化**: docs §16 の「edge 保存」ルートも実は循環と判明（wf21 で N=生枝版を試行して確定）:
+- N=diagSeq 0(M1m-1)@Red(B) の最終列 last_N の row-1 parent は、N の**対角列 index = (entry N 1 last_N - 1) = (entry M 1 j1 - 1)**（nextrel1 最小性: 対角 q が p<q<M1m で le0 N q last_N かつ entry N 1 q=q を満たし、最小性は値で決まる）。
+- これを p と同定するには entry M 1 j1=p+1（=goal）が必要。**RedCondA N を last_N に当てても (entry M 1 j1-1)+1=entry M 1 j1 の恒等式**で新情報なし。NJ版も生枝版も同じ循環。
+- **結論: N-construction/IH ルートは r1cross(row-1 trunk-parent 最終列, 34/423)では本質的に循環**。原文の witness 翻訳をこのケースにこの形で適用すると循環する（原文の解釈に gap か、別機構）。
+
+**green 済土台(wf21)**: `wf21_rawN_core`/`wf21_rawN_props`(生枝N reduced/core/shorter)・`wf21_Br_eq_seg`(Br M!Jstar=seg M off (Lng-1))・`wf21_Red_row1zero_leftend`。N 構成自体は健全だが r1cross を閉じない。
+
+**正しい論証方向(非循環、要実装)**: r1cross の +1 は N でなく **M の trunk 連続性 + reachability 単調性**から:
+- p=parent M 1 j1 ≤ TrMax M, entry M 1 p=p。trunk は diagSeq 0(TrMax M)=連続値。
+- **主張**: p+1≤TrMax M ⟹ le0 M(p+1)j1（reachability 単調性: le0 M p j1 ∧ trunk 連続 ⟹ le0 M(p+1)j1）⟹ p+1 がより近い row-1 候補で entry M 1(p+1)=p+1。nextrel1 最小性より entry M 1 j1 ≤ entry M 1(p+1)=p+1。かつ entry M 1 p=p<entry M 1 j1 ⟹ entry M 1 j1=p+1。
+- p+1>TrMax M(=p=TrMax M)の場合: 別途(entry M 1 j1=TrMax M+1 を branch head 構造から)。
+- 要 brick: **le0 reachability 単調性** `le0 M p j1 ∧ p<q≤TrMax M ⟹ le0 M q j1`(trunk 内の後続も同じ branch に到達)。候補: m_5_1_ancestor_tree_1(convexity)＋trunk diagonal の nextrel0 構造。**これが r1cross の真の鍵**(N-construction でない)。

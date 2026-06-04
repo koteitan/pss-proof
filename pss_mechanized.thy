@@ -43731,4 +43731,418 @@ proof -
 qed
 
 
+
+section \<open>Front A (wf21) — RAW-branch \<open>N\<close> for the non-circular \<open>r1cross\<close> route\<close>
+
+text \<open>WF21 BRICK 1 (\<open>wf21_rawN_core\<close>): the RAW last-branch diagonal-prefixed core.
+  The non-circular keystone route (docs/reducedness.md \<S>16, content.md 1182-1216)
+  uses, for the row-1 cross-block last-column witness, the RAW branch block
+  \<open>B := Br M ! J\<^sup>*\<close> (\<open>J\<^sup>* = Lng (Br M) - 1\<close>) rather than the head-replaced
+  \<open>NJ M J\<^sup>*\<close>.  With \<open>R\<^sup>B := Red B\<close> and the diagonal prefix \<open>diagSeq 0 (R\<^sup>B\<^bsub>1,0\<^esub>-1)\<close>,
+    \<open>N := (if 0 < R\<^sup>B\<^bsub>1,0\<^esub> then diagSeq 0 (R\<^sup>B\<^bsub>1,0\<^esub>-1) else []) @ R\<^sup>B\<close>
+  is reduced \<open>monoT\<close> with left end \<open>(0,0)\<close>.  This is the \<open>N\<close> reduced/core fact of the
+  raw route (article: "簡約性と左端の関係から \<open>N\<close> は簡約である").
+
+  STRUCTURE.  \<open>kkpos\<close> gives \<open>Lng (NJ M J\<^sup>*) > 1\<close>; since \<open>Lng (NJ M J\<^sup>*) = Lng B\<close>
+  (@{thm [source] Lng_NJ}) we get \<open>Lng B > 1\<close>, so \<open>\<not> zeroT B\<close>; with
+  @{thm [source] Br_component_nonmulti} this pins \<open>monoT B\<close>, hence \<open>B \<in> PT_PS\<close>.
+  Then \<open>R\<^sup>B = Red B\<close> is \<open>monoT\<close> (@{thm [source] m_6_5_Red_preserves_monoT}), reduced
+  (@{thm [source] idem_nonmulti}, \<open>B\<close> non-multi as it is mono), and has the SAME
+  row-1 left end as \<open>B\<close> (@{thm [source] m_6_6_Red_leftend_1}).  Finally
+  @{thm [source] m_6_6_reduced_leftend} (with \<open>u = 0\<close>) gives \<open>N\<close> reduced \<open>monoT\<close>,
+  and the diagonal prefix / @{thm [source] kst_reduced_row1_le_row0} pin its left end.
+
+  EMPIRICAL TRUTH-CHECK (\<open>python/_wf21_check.py\<close>, \<open>_wf21_redB.py\<close>: reduced \<open>monoT\<close>
+  cores maxlen 5 value \<le>3; all 34 row-1 cross-block \<open>kk>0\<close> cases): \<open>B\<close> monoT 34/34,
+  \<open>R\<^sup>B\<close> reduced+monoT 34/34, \<open>entry R\<^sup>B 1 0 = entry M 1 off\<close> 34/34, \<open>N\<close> reduced+monoT
+  +left-end-(0,0) 34/34.
+
+  SOUND — cites only GREEN @{thm [source] Br_component_nonmulti},
+  @{thm [source] m_6_5_Red_preserves_monoT}, @{thm [source] idem_nonmulti},
+  @{thm [source] m_6_6_Red_leftend_1}, @{thm [source] m_6_6_reduced_leftend},
+  @{thm [source] kst_reduced_row1_le_row0} and the library; no \<open>p_*\<close> stub, no goal
+  self-citation.\<close>
+
+lemma wf21_rawN_core:
+  assumes M: "M \<in> RT_PS" and mono: "monoT M"
+    and e00: "entry M 0 0 = 0" and e10: "entry M 1 0 = 0"
+    and tne: "TrMax M \<noteq> Lng M - 1"
+    and kkpos: "0 < Lng (NJ M (Lng (Br M) - 1)) - 1"
+    \<comment> \<open>The diagonal prefix is nonempty (\<open>R\<^sup>B\<^bsub>1,0\<^esub> > 0\<close>); empirically 34/34 in r1cross
+       (\<open>python/_wf21_fast.py\<close>: \<open>entry (Red B) 1 0 = 0\<close> never occurs in the row-1
+       cross-block \<open>kk>0\<close> domain — the last-column row-1 parent then exists).
+       Front A supplies it (as wf18/wf19 supply \<open>eRs10pos\<close>).\<close>
+    and eRBpos: "0 < entry (Red (Br M ! (Lng (Br M) - 1))) 1 0"
+  defines "Jstar \<equiv> Lng (Br M) - 1"
+  defines "B \<equiv> Br M ! Jstar"
+  defines "RB \<equiv> Red B"
+  defines "N \<equiv> diagSeq 0 (entry RB 1 0 - 1) @ RB"
+  shows "Red N = N \<and> monoT N \<and> entry N 0 0 = 0 \<and> entry N 1 0 = 0
+       \<and> B \<in> PT_PS \<and> RB \<in> RT_PS \<and> RB \<in> PT_PS \<and> entry RB 1 0 = entry B 1 0
+       \<and> 0 < entry RB 1 0"
+proof -
+  have MT: "M \<in> T_PS" using M by (simp add: RT_PS_def)
+  have Mpt: "M \<in> PT_PS" using MT mono by (simp add: PT_PS_def)
+  have brne: "Br M \<noteq> []" using tne P_nonempty by (simp add: Br_def)
+  hence nBpos: "0 < Lng (Br M)" by (cases "Br M") auto
+  have JBr: "Jstar < Lng (Br M)" unfolding Jstar_def using nBpos by simp
+  \<comment> \<open>\<open>B\<close> is nonempty and (with \<open>kkpos\<close>) has \<open>Lng B > 1\<close>, so \<open>monoT B\<close>.\<close>
+  have Bne: "B \<noteq> []" unfolding B_def by (rule Br_component_nonempty[OF Mpt JBr])
+  have LBeq: "Lng (NJ M Jstar) = Lng B" unfolding B_def by (rule Lng_NJ[OF Bne[unfolded B_def]])
+  have LBgt1: "1 < Lng B" using kkpos LBeq unfolding Jstar_def by linarith
+  have nzB: "\<not> zeroT B" using LBgt1 by (simp add: zeroT_def)
+  have monoB: "monoT B"
+    using Br_component_nonmulti[OF Mpt JBr] nzB unfolding B_def by blast
+  have BT: "B \<in> T_PS" using Bne by (simp add: T_PS_def)
+  have BPT: "B \<in> PT_PS" using BT monoB by (simp add: PT_PS_def)
+  \<comment> \<open>\<open>R\<^sup>B = Red B\<close> is monoT, reduced, with the same row-1 left end.\<close>
+  have monoRB: "monoT RB" unfolding RB_def by (rule m_6_5_Red_preserves_monoT[OF BPT])
+  have nmuB: "\<not> multiT B" using monoB by (simp add: multiT_def)
+  have redRB: "Red RB = RB" unfolding RB_def by (rule idem_nonmulti[OF BT nmuB])
+  have LRB: "Lng RB = Lng B" unfolding RB_def by (rule m_6_5_Lng_Red[OF BT])
+  have RBne: "RB \<noteq> []" using LRB Bne by (cases RB) auto
+  have RBT: "RB \<in> T_PS" using RBne by (simp add: T_PS_def)
+  have RBRT: "RB \<in> RT_PS" using RBT redRB by (simp add: RT_PS_def)
+  have RBPT: "RB \<in> PT_PS" using RBT monoRB by (simp add: PT_PS_def)
+  have e1RB: "entry RB 1 0 = entry B 1 0"
+    unfolding RB_def by (rule m_6_6_Red_leftend_1[OF BT])
+  have RBpos: "0 < entry RB 1 0" using eRBpos unfolding RB_def B_def Jstar_def by simp
+  \<comment> \<open>\<open>N\<close> reduced \<open>monoT\<close> via @{thm [source] m_6_6_reduced_leftend} (\<open>u = 0\<close>; the guard
+     fires since \<open>R\<^sup>B\<^bsub>1,0\<^esub> > 0\<close>).\<close>
+  have u0: "(0::nat) \<le> entry RB 1 0" by simp
+  have Nif: "N = (if (0::nat) < entry RB 1 0 then diagSeq 0 (entry RB 1 0 - 1) else []) @ RB"
+    unfolding N_def using RBpos by simp
+  have redmonoN: "Red N = N \<and> monoT N"
+    using m_6_6_reduced_leftend[OF RBRT RBPT u0] Nif by simp
+  have redN: "Red N = N" using redmonoN by simp
+  have monoN: "monoT N" using redmonoN by simp
+  \<comment> \<open>left end \<open>(0,0)\<close>: from the (nonempty) diagonal prefix head \<open>(0,0)\<close>.\<close>
+  have dpos: "0 < Lng (diagSeq 0 (entry RB 1 0 - 1))" using RBpos by simp
+  have eN00: "entry N 0 0 = 0"
+    unfolding N_def using dpos by (simp add: entry_def diagSeq_def nth_append)
+  have eN10: "entry N 1 0 = 0"
+    unfolding N_def using dpos by (simp add: entry_def diagSeq_def nth_append)
+  show ?thesis
+    using redN monoN eN00 eN10 BPT RBRT RBPT e1RB RBpos by blast
+qed
+
+
+text \<open>===== Front B: raw-branch \<open>N\<close> foundational bricks (tag pss-wf21-rawN) =====
+
+  The non-circular route of docs §16 builds, for the last-column cross-block
+  witness, the sequence \<open>N := (guarded diagSeq prefix) @ Red B\<close> where
+  \<open>B = Br M ! Jstar\<close> is the RAW last branch block (NOT the head-replaced
+  \<open>NJ M Jstar\<close>) and \<open>m = FirstNodes M ! Jstar\<close> is its left endpoint in \<open>M\<close>.
+  These bricks de-risk Front A's close.\<close>
+
+text \<open>\<open>wf21_Red_row1zero_leftend\<close>: if \<open>M\<close> is monoT with row-1 left end \<open>0\<close>, then
+  \<open>Red M\<close> has row-0 left end \<open>0\<close>.  Proof by \<open>Red.pinduct\<close> (modeled on
+  @{thm [source] m_6_5_Red_leftend_row0_min}): the core case opens with a
+  \<open>diagSeq 0 _\<close> prefix (value \<open>0\<close> at column \<open>0\<close>), the \<open>m\<^sub>1\<^sub>0=0, m\<^sub>0\<^sub>0>0\<close> shift case
+  recurses on \<open>shiftRow0 M\<close> (still row-1 leftend \<open>0\<close>, IH), and the \<open>m\<^sub>1\<^sub>0>0\<close> branch
+  is vacuous.  Truth-checked: 11/11 reduced monoT seqs with row-1 leftend \<open>0\<close>
+  have row-0 leftend \<open>0\<close>.\<close>
+
+lemma wf21_Red_row1zero_leftend:
+  assumes MT: "M \<in> T_PS" and monoM: "monoT M" and z0: "entry M 1 0 = 0"
+  shows "entry (Red M) 0 0 = 0"
+proof -
+  have domM: "Red_dom M" by (rule m_6_5_Red_welldef[OF MT])
+  have "M \<in> T_PS \<longrightarrow> monoT M \<longrightarrow> entry M 1 0 = 0 \<longrightarrow> entry (Red M) 0 0 = 0"
+    using domM
+  proof (induction M rule: Red.pinduct)
+    case (1 M)
+    note dom    = 1(1)
+    note IH_nc3 = 1(4)  \<comment> \<open>non-core m10=0 shift IH\<close>
+    show ?case
+    proof (rule impI, rule impI, rule impI)
+      assume MT': "M \<in> T_PS" and mono: "monoT M" and zr: "entry M 1 0 = 0"
+      have Mne: "M \<noteq> []" using MT' by (simp add: T_PS_def)
+      have LMpos: "0 < Lng M" using Mne by (cases M) auto
+      have nz: "\<not> zeroT M" using mono by (simp add: monoT_def)
+      have nmu: "\<not> multiT M" using mono by (simp add: multiT_def)
+      let ?j1  = "Lng M - 1"
+      let ?j1' = "TrMax M"
+      let ?m00 = "entry M 0 0"
+      let ?m10 = "entry M 1 0"
+      show "entry (Red M) 0 0 = 0"
+      proof (cases "?m00 = 0 \<and> ?m10 = 0")
+        case core: True
+        hence c0: "?m00 = 0" and c1: "?m10 = 0" by simp_all
+        show ?thesis
+        proof (cases "?j1' = ?j1")
+          case True
+          have rM: "Red M = diagSeq ?m10 (?m10 + ?j1)"
+            using Red.psimps[OF dom] nz nmu c0 c1 True by (simp add: Let_def)
+          have "entry (Red M) 0 0 = ?m10 + 0"
+            using rM entry_diagSeq[where a="?m10" and b="?m10 + ?j1" and j=0 and i=0]
+            by (simp add: LMpos)
+          thus ?thesis using c1 by simp
+        next
+          case tne: False
+          let ?tail = "concat (map (\<lambda>J.
+                    (IncrFirst ^^ (Joints M ! J + 1
+                        - (if entry (Br M ! J) 1 0 = 0 then 0
+                           else Suc (THE j. nextR M 1 j (FirstNodes M ! J)))))
+                      (Red ((entry M 0 0 + Joints M ! J + 1,
+                             entry M 1 0 + (if entry (Br M ! J) 1 0 = 0 then 0
+                                    else Suc (THE j. nextR M 1 j (FirstNodes M ! J))))
+                            # tl (Br M ! J))))
+                  [0..<Lng (Br M)])"
+          have rM: "Red M = diagSeq 0 ?j1' @ ?tail"
+            using Red.psimps[OF dom] nz nmu c0 c1 tne by (simp add: Let_def)
+          have "entry (Red M) 0 0 = entry (diagSeq 0 ?j1' @ ?tail) 0 0"
+            by (simp add: rM)
+          also have "\<dots> = 0"
+            by (rule entry_diagSeq_append_lo) simp
+          finally show ?thesis .
+        qed
+      next
+        case nc: False
+        show ?thesis
+        proof (cases "?m10 = 0")
+          case True
+          let ?shift = "map (\<lambda>j. (entry M 0 j - ?m00, entry M 1 j)) [0..<Suc ?j1]"
+          have rM: "Red M = Red ?shift"
+            using Red.psimps[OF dom] nz nmu nc True by (simp add: Let_def)
+          have shift_eq: "?shift = shiftRow0 M"
+            using LMpos by (simp add: shiftRow0_def)
+          have shift_T: "?shift \<in> T_PS" by (simp add: T_PS_def)
+          have shift_mono: "monoT ?shift"
+            using monoT_shiftRow0[OF MT' mono] shift_eq by simp
+          have shift_z: "entry ?shift 1 0 = 0"
+          proof -
+            have "entry (shiftRow0 M) 1 0 = entry M 1 0"
+              using LMpos by (rule entry_shiftRow0_1)
+            thus ?thesis using shift_eq zr by simp
+          qed
+          have IH': "entry (Red ?shift) 0 0 = 0"
+            using IH_nc3[OF nz nmu refl refl refl refl nc True] shift_T shift_mono shift_z
+            by blast
+          show ?thesis using IH' rM by simp
+        next
+          case False
+          \<comment> \<open>\<open>m\<^sub>1\<^sub>0 > 0\<close> contradicts \<open>entry M 1 0 = 0\<close>: vacuous.\<close>
+          thus ?thesis using zr by simp
+        qed
+      qed
+    qed
+  qed
+  thus ?thesis using MT monoM z0 by blast
+qed
+
+text \<open>\<open>wf21_Br_eq_seg\<close>: the last branch block \<open>Br M ! Jstar\<close> is exactly the
+  \<open>M\<close>-suffix \<open>seg M m (Lng M - 1)\<close> with \<open>m = FirstNodes M ! Jstar\<close>.  Hence
+  \<open>entry (Br M ! Jstar) i t = entry M i (m + t)\<close> — the bridge for the entry
+  transfers and the witness-edge preservation.  Truth-checked (red_model.py):
+  46 reduced mono nontrunk cores (mono last branch), all satisfy
+  \<open>Br M ! Jstar = seg M (FirstNodes M ! Jstar) (Lng M - 1)\<close>.\<close>
+
+lemma wf21_Br_eq_seg:
+  assumes M: "M \<in> PT_PS" and brne: "Br M \<noteq> []"
+  defines "Jstar \<equiv> Lng (Br M) - 1"
+  shows "Br M ! Jstar = seg M (FirstNodes M ! Jstar) (Lng M - 1)"
+proof -
+  have MT: "M \<in> T_PS" using M by (simp add: PT_PS_def)
+  have LMpos: "0 < Lng M" using MT by (cases M) (auto simp: T_PS_def)
+  have trne: "TrMax M \<noteq> Lng M - 1"
+  proof
+    assume "TrMax M = Lng M - 1"
+    hence "Br M = []" by (simp add: Br_def)
+    with brne show False by simp
+  qed
+  with TrMax_bound[OF MT] have trlt: "TrMax M < Lng M - 1" by linarith
+  let ?N = "seg M (TrMax M + 1) (Lng M - 1)"
+  have brQ: "Br M = P ?N" using trne by (simp add: Br_def)
+  have NLpos: "0 < Lng ?N" using trlt by simp
+  have Nne: "?N \<noteq> []" using NLpos length_greater_0_conv by blast
+  have NT: "?N \<in> T_PS" using Nne by (simp add: T_PS_def)
+  \<comment> \<open>\<open>Jstar\<close> is the last index of \<open>Br M = P ?N\<close>.\<close>
+  have nBpos: "0 < Lng (Br M)" using brne by (cases "Br M") auto
+  have JN: "Jstar < length (P ?N)" unfolding Jstar_def using nBpos brQ by simp
+  have Jle: "Jstar \<le> Lng (P ?N) - 1" using JN by (cases "P ?N") auto
+  have Jsuc: "Jstar + 1 = length (P ?N)"
+    unfolding Jstar_def using nBpos brQ by simp
+  \<comment> \<open>block = slice of \<open>?N\<close>.\<close>
+  have comp: "(P ?N) ! Jstar
+            = seg ?N (IdxSum (P ?N) ! Jstar) (IdxSum (P ?N) ! (Jstar + 1) - 1)"
+    by (rule m_6_4_P_IdxSum[OF NT Jle])
+  \<comment> \<open>right endpoint reaches the full length (cumulative sum at the end).\<close>
+  have total: "IdxSum (P ?N) ! (length (P ?N)) = Lng ?N"
+  proof -
+    have "IdxSum (P ?N) ! (length (P ?N)) = sum_list (map length (take (length (P ?N)) (P ?N)))"
+      by (simp add: idxsum_nth)
+    also have "\<dots> = sum_list (map length (P ?N))" by simp
+    also have "\<dots> = length (concat (P ?N))" by (simp add: length_concat)
+    also have "concat (P ?N) = ?N" by (rule idxsum_concat_P)
+    finally show ?thesis by simp
+  qed
+  have rb: "IdxSum (P ?N) ! (Jstar + 1) = Lng ?N" using total Jsuc by simp
+  let ?a = "IdxSum (P ?N) ! Jstar"
+  have blk: "Br M ! Jstar = seg ?N ?a (Lng ?N - 1)"
+    using comp rb brQ by simp
+  \<comment> \<open>compose the two suffix-segments via \<open>drop\<close>.\<close>
+  have seg1: "?N = drop (TrMax M + 1) M"
+    by (rule seg_to_last_eq_drop[OF LMpos])
+  have seg2: "seg ?N ?a (Lng ?N - 1) = drop ?a ?N"
+    by (rule seg_to_last_eq_drop[OF NLpos])
+  have dd: "drop ?a ?N = drop (TrMax M + 1 + ?a) M"
+    using seg1 by (simp add: drop_drop add.commute)
+  have segM: "drop (TrMax M + 1 + ?a) M = seg M (TrMax M + 1 + ?a) (Lng M - 1)"
+    by (rule seg_to_last_eq_drop[OF LMpos, symmetric])
+  have fn: "FirstNodes M ! Jstar = TrMax M + 1 + ?a"
+    using FirstNodes_nth[OF JN[unfolded brQ[symmetric]]] brQ by simp
+  show ?thesis
+    using blk seg2 dd segM fn by simp
+qed
+
+text \<open>\<open>wf21_rawN_props\<close>: the raw-branch \<open>N\<close> is reduced, mono, and has left end
+  \<open>(0,0)\<close>; its last index satisfies \<open>Lng N - 1 = (Lng M - 1) - m + entry M 1 m\<close>.
+  Here \<open>B = Br M ! Jstar\<close> is the raw last branch block (assumed \<open>monoT\<close> — the
+  cross-block witness case), \<open>m\<close> its left endpoint \<open>FirstNodes M ! Jstar\<close>, and
+  \<open>N = (if 0 < entry M 1 m then diagSeq 0 (entry M 1 m - 1) else []) @ Red B\<close> —
+  the guarded form matching @{thm [source] m_6_6_reduced_leftend} at \<open>u = 0\<close>.
+  The prefix length matches because
+  \<open>entry (Red B) 1 0 = entry B 1 0 = entry M 1 m\<close>
+  (@{thm [source] m_6_6_Red_leftend_1}, @{thm [source] wf21_Br_eq_seg}).
+  Reducedness/mono come from @{thm [source] m_6_6_reduced_leftend} applied to
+  \<open>Red B\<close> (in \<open>RT_PS \<inter> PT_PS\<close> by @{thm [source] idem_nonmulti} and
+  @{thm [source] m_6_5_Red_preserves_monoT}).  Truth-checked (red_model.py): all
+  329 reduced mono nontrunk cores (mono last branch, len \<le> 5, vals \<le> 3, incl.
+  the 17 \<open>entry M 1 m = 0\<close> cases at len \<le> 4) satisfy \<open>Red N = N\<close>, \<open>monoT N\<close>,
+  \<open>entry N 0 0 = entry N 1 0 = 0\<close>, and the \<open>Lng N - 1\<close> formula.\<close>
+
+lemma wf21_rawN_props:
+  assumes M: "M \<in> RT_PS" and mono: "monoT M"
+    and tne: "TrMax M \<noteq> Lng M - 1"
+    and monoB: "monoT (Br M ! (Lng (Br M) - 1))"
+  defines "Jstar \<equiv> Lng (Br M) - 1"
+  defines "B \<equiv> Br M ! Jstar"
+  defines "m \<equiv> FirstNodes M ! Jstar"
+  defines "N \<equiv> (if 0 < entry M 1 m then diagSeq 0 (entry M 1 m - 1) else []) @ Red B"
+  shows "Red N = N \<and> monoT N
+       \<and> entry N 0 0 = 0 \<and> entry N 1 0 = 0
+       \<and> Lng N - 1 = (Lng M - 1) - m + entry M 1 m
+       \<and> B = seg M m (Lng M - 1) \<and> entry B 1 0 = entry M 1 m
+       \<and> entry (Red B) 1 0 = entry M 1 m"
+proof -
+  have MT: "M \<in> T_PS" using M by (simp add: RT_PS_def)
+  have Mpt: "M \<in> PT_PS" using MT mono by (simp add: PT_PS_def)
+  have LMpos: "0 < Lng M" using MT by (cases M) (auto simp: T_PS_def)
+  \<comment> \<open>\<open>Br M \<noteq> []\<close>, \<open>Jstar\<close> valid index.\<close>
+  have brne: "Br M \<noteq> []" using tne P_nonempty by (simp add: Br_def)
+  hence nBpos: "0 < Lng (Br M)" by (cases "Br M") auto
+  have JBr: "Jstar < Lng (Br M)" unfolding Jstar_def using nBpos by simp
+  \<comment> \<open>\<open>B\<close> nonempty, in \<open>T_PS\<close>, mono \<Rightarrow> in \<open>PT_PS\<close>, non-multi.\<close>
+  have Bne: "B \<noteq> []" unfolding B_def Jstar_def
+    by (rule Br_component_nonempty[OF Mpt JBr[unfolded Jstar_def]])
+  have BT: "B \<in> T_PS" using Bne by (simp add: T_PS_def)
+  have monoB': "monoT B" using monoB unfolding B_def Jstar_def .
+  have Bpt: "B \<in> PT_PS" using BT monoB' by (simp add: PT_PS_def)
+  have Bnm: "\<not> multiT B" using monoB' by (simp add: multiT_def)
+  \<comment> \<open>\<open>Rs = Red B\<close> in \<open>T_PS\<close>, reduced (idempotence), mono.\<close>
+  let ?Rs = "Red B"
+  have LRs: "Lng ?Rs = Lng B" by (rule m_6_5_Lng_Red[OF BT])
+  have RsT: "?Rs \<in> T_PS"
+  proof -
+    have "?Rs \<noteq> []" using LRs Bne by (cases B) auto
+    thus ?thesis by (simp add: T_PS_def)
+  qed
+  have RsRT: "?Rs \<in> RT_PS"
+  proof -
+    have "Red (Red B) = Red B" by (rule idem_nonmulti[OF BT Bnm])
+    thus ?thesis using RsT by (simp add: RT_PS_def)
+  qed
+  have monoRs: "monoT ?Rs" by (rule m_6_5_Red_preserves_monoT[OF Bpt])
+  have RsPT: "?Rs \<in> PT_PS" using RsT monoRs by (simp add: PT_PS_def)
+  \<comment> \<open>\<open>B = seg M m (Lng M - 1)\<close>, so \<open>entry B 1 0 = entry M 1 m\<close>.\<close>
+  have Beq: "B = seg M m (Lng M - 1)"
+    unfolding B_def m_def Jstar_def
+    by (rule wf21_Br_eq_seg[OF Mpt brne])
+  have LBpos: "0 < Lng B" using Bne by (cases B) auto
+  have LsegPos: "0 < Lng (seg M m (Lng M - 1))" using LBpos Beq by simp
+  have mlt: "m < Lng M"
+  proof -
+    have "0 < Suc (Lng M - 1) - m" using LsegPos by simp
+    thus ?thesis using LMpos by linarith
+  qed
+  have eB10: "entry B 1 0 = entry M 1 m"
+  proof -
+    have "entry (seg M m (Lng M - 1)) 1 0 = entry M 1 (m + 0)"
+      by (rule entry_seg[OF LsegPos])
+    thus ?thesis using Beq by simp
+  qed
+  \<comment> \<open>\<open>entry (Red B) 1 0 = entry B 1 0 = entry M 1 m\<close>.\<close>
+  have eRs10: "entry ?Rs 1 0 = entry M 1 m"
+    using m_6_6_Red_leftend_1[OF BT] eB10 by simp
+  \<comment> \<open>\<open>N\<close> matches the \<open>m_6_6_reduced_leftend\<close> form at \<open>u = 0\<close>.\<close>
+  have Ndef': "N = (if 0 < entry M 1 m then diagSeq 0 (entry M 1 m - 1) else []) @ ?Rs"
+    unfolding N_def B_def Jstar_def by simp
+  have NeqA: "N = (if (0::nat) < entry ?Rs 1 0 then diagSeq 0 (entry ?Rs 1 0 - 1) else []) @ ?Rs"
+    using Ndef' eRs10 by simp
+  have z: "(0::nat) \<le> entry ?Rs 1 0" by simp
+  have rl: "Red ((if (0::nat) < entry ?Rs 1 0 then diagSeq 0 (entry ?Rs 1 0 - 1) else []) @ ?Rs)
+            = ((if (0::nat) < entry ?Rs 1 0 then diagSeq 0 (entry ?Rs 1 0 - 1) else []) @ ?Rs)
+            \<and> monoT ((if (0::nat) < entry ?Rs 1 0 then diagSeq 0 (entry ?Rs 1 0 - 1) else []) @ ?Rs)"
+    using m_6_6_reduced_leftend[OF RsRT RsPT z] by simp
+  have rN: "Red N = N \<and> monoT N" using rl NeqA by simp
+  \<comment> \<open>left end of \<open>N\<close>: in both guard branches, column 0 is \<open>(0,0)\<close>
+      (diagSeq prefix or \<open>Rs\<close> with \<open>entry Rs i 0 = 0\<close>).\<close>
+  have e0N: "entry N 0 0 = 0 \<and> entry N 1 0 = 0"
+  proof (cases "0 < entry M 1 m")
+    case True
+    have NeqU: "N = diagSeq 0 (entry M 1 m - 1) @ ?Rs" unfolding N_def B_def Jstar_def using True by simp
+    have c0: "entry (diagSeq 0 (entry M 1 m - 1) @ ?Rs) 0 0 = 0"
+      by (rule entry_diagSeq_append_lo[where i=0]) simp
+    have c1: "entry (diagSeq 0 (entry M 1 m - 1) @ ?Rs) 1 0 = 0"
+      by (rule entry_diagSeq_append_lo[where i=0]) simp
+    show ?thesis using NeqU c0 c1 by simp
+  next
+    case False
+    hence z': "entry M 1 m = 0" by simp
+    have NeqU: "N = ?Rs" unfolding N_def B_def Jstar_def using False by simp
+    \<comment> \<open>\<open>entry Rs 1 0 = entry M 1 m = 0\<close>; \<open>entry Rs 0 0 \<ge> entry Rs 1 0\<close> not needed:
+        \<open>Rs\<close> reduced mono with row-1 leftend 0 forces row-0 leftend 0.\<close>
+    have rs10: "entry ?Rs 1 0 = 0" using eRs10 z' by simp
+    \<comment> \<open>\<open>entry B 1 0 = entry M 1 m = 0\<close>, so \<open>Red B\<close> has row-0 leftend \<open>0\<close>.\<close>
+    have b10z: "entry B 1 0 = 0" using eB10 z' by simp
+    have rs00: "entry ?Rs 0 0 = 0"
+      by (rule wf21_Red_row1zero_leftend[OF BT monoB' b10z])
+    show ?thesis using NeqU rs00 rs10 by simp
+  qed
+  \<comment> \<open>length: \<open>Lng N - 1 = (Lng M - 1) - m + entry M 1 m\<close>.\<close>
+  have LB: "Lng B = Lng M - m"
+  proof -
+    have "Lng B = Suc (Lng M - 1) - m" using Beq by simp
+    thus ?thesis using mlt LMpos by linarith
+  qed
+  have LRsB: "Lng ?Rs = Lng M - m" using LRs LB by simp
+  have mpos: "0 < m"
+  proof -
+    have "FirstNodes M ! Jstar = TrMax M + 1 + IdxSum (Br M) ! Jstar"
+      by (rule FirstNodes_nth[OF JBr])
+    hence "m = TrMax M + 1 + IdxSum (Br M) ! Jstar" unfolding m_def by simp
+    thus ?thesis by simp
+  qed
+  have LNm1: "Lng N - 1 = (Lng M - 1) - m + entry M 1 m"
+  proof (cases "0 < entry M 1 m")
+    case True
+    have NeqU: "N = diagSeq 0 (entry M 1 m - 1) @ ?Rs" unfolding N_def B_def Jstar_def using True by simp
+    have LdiagN: "Lng (diagSeq 0 (entry M 1 m - 1)) = entry M 1 m"
+      using True by (simp add: diagSeq_def)
+    have "Lng N = entry M 1 m + (Lng M - m)" using NeqU LdiagN LRsB by simp
+    thus ?thesis using mlt mpos True by simp
+  next
+    case False
+    hence z': "entry M 1 m = 0" by simp
+    have NeqU: "N = ?Rs" unfolding N_def B_def Jstar_def using False by simp
+    have "Lng N = Lng M - m" using NeqU LRsB by simp
+    thus ?thesis using mlt mpos z' by simp
+  qed
+  show ?thesis
+    using rN e0N LNm1 Beq eB10 eRs10 by blast
+qed
+
+
+
 end
