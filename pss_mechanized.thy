@@ -40431,4 +40431,228 @@ qed
 
 
 
+
+section \<open>Front A (wf13) — keystone forward monoT core, full \<open>Lng\<close>-induction (Ncons)\<close>
+
+text \<open>Diagonal-prefix entry: for a reduced \<open>monoT\<close> core \<open>M\<close> (\<open>M\<^sub>0 = (0,0)\<close>) on the
+  core-NONTRUNK branch, the first \<open>Suc (TrMax M)\<close> columns of \<open>M = Red M\<close> are the
+  diagonal: \<open>entry M i p = p\<close> for \<open>p \<le> TrMax M\<close> and \<open>i \<le> 1\<close>.  Read off from
+  @{thm [source] d_Red_core_nontrunk_unfold} (\<open>M = diagSeq 0 (TrMax M) @ tail\<close>)
+  via @{thm [source] entry_diagSeq_append_lo}.\<close>
+
+lemma ncons_diag_prefix_entry:
+  assumes M: "M \<in> RT_PS" and mono: "monoT M"
+    and e00: "entry M 0 0 = 0" and e10: "entry M 1 0 = 0"
+    and tne: "TrMax M \<noteq> Lng M - 1"
+    and ple: "p \<le> TrMax M"
+  shows "entry M i p = p"
+proof -
+  have MT: "M \<in> T_PS" using M by (simp add: RT_PS_def)
+  have redM: "Red M = M" using M by (simp add: RT_PS_def)
+  have nz: "\<not> zeroT M" using mono by (simp add: monoT_def)
+  have nmu: "\<not> multiT M" using mono by (simp add: multiT_def)
+  have rM: "Red M = diagSeq 0 (TrMax M)
+             @ concat (map (\<lambda>J. (IncrFirst ^^ (Joints M ! J + 1 - npJ M J))
+                                    (Red (NJ M J)))
+                       [0..<Lng (Br M)])"
+    by (rule d_Red_core_nontrunk_unfold[OF MT nz nmu e00 e10 tne])
+  have "entry M i p = entry (diagSeq 0 (TrMax M)
+             @ concat (map (\<lambda>J. (IncrFirst ^^ (Joints M ! J + 1 - npJ M J))
+                                    (Red (NJ M J)))
+                       [0..<Lng (Br M)])) i p"
+    using rM redM by simp
+  also have "\<dots> = p" by (rule entry_diagSeq_append_lo[OF ple])
+  finally show ?thesis .
+qed
+
+text \<open>\<open>Pred M\<close> of a reduced \<open>monoT\<close> core on the NONTRUNK branch is again a reduced
+  \<open>monoT\<close> core, strictly shorter.  \<open>Pred M = seg M 0 (Lng M - 2)\<close>, and nontrunk
+  means \<open>TrMax M \<le> Lng M - 2\<close>, so @{thm [source] herd_6_6_reduced_slice} gives
+  reducedness, @{thm [source] m_6_2_mono_prefix} gives \<open>monoT\<close>, the left ends
+  inherit, and the length drops.\<close>
+
+lemma ncons_Pred_core:
+  assumes M: "M \<in> RT_PS" and mono: "monoT M"
+    and e00: "entry M 0 0 = 0" and e10: "entry M 1 0 = 0"
+    and tne: "TrMax M \<noteq> Lng M - 1" and L3: "2 < Lng M"
+  shows "Pred M \<in> RT_PS \<and> monoT (Pred M)
+           \<and> entry (Pred M) 0 0 = 0 \<and> entry (Pred M) 1 0 = 0
+           \<and> Lng (Pred M) < Lng M \<and> Pred M = seg M 0 (Lng M - 2)"
+proof -
+  have MT: "M \<in> T_PS" using M by (simp add: RT_PS_def)
+  have Mpt: "M \<in> PT_PS" using MT mono by (simp add: PT_PS_def)
+  have LMpos: "0 < Lng M" using MT by (cases M) (auto simp: T_PS_def)
+  have trlt: "TrMax M < Lng M - 1" using TrMax_bound[OF MT] tne by linarith
+  have L2: "1 < Lng M" using trlt LMpos by linarith
+  \<comment> \<open>\<open>Pred M = seg M 0 (Lng M - 2)\<close>.\<close>
+  have predbl: "Pred M = butlast M" using L2 by (simp add: Pred_def)
+  have predtake: "Pred M = take (Lng M - 1) M"
+    using L2 by (simp add: Pred_def butlast_conv_take)
+  have segtake: "seg M 0 (Lng M - 2) = take (Suc (Lng M - 2)) M"
+    by (rule seg_0_eq_take) (use L2 in linarith)
+  have suceq: "Suc (Lng M - 2) = Lng M - 1" using L2 by linarith
+  have segeq: "Pred M = seg M 0 (Lng M - 2)"
+    using predtake segtake suceq by simp
+  \<comment> \<open>reduced (slice heredity), with \<open>TrMax M \<le> Lng M - 2\<close>.\<close>
+  have tle: "TrMax M \<le> Lng M - 2" using trlt by linarith
+  have hi: "Lng M - 2 \<le> Lng M - 1" by simp
+  have predRT: "Pred M \<in> RT_PS"
+    using herd_6_6_reduced_slice[OF M refl tle hi] segeq by simp
+  \<comment> \<open>monoT (needs \<open>0 < Lng M - 2\<close>, i.e. \<open>2 < Lng M\<close>).\<close>
+  have predmono: "monoT (Pred M)"
+  proof -
+    have "monoT (seg M 0 (Lng M - 2))"
+      by (rule m_6_2_mono_prefix[OF Mpt _ _]) (use L3 in linarith)+
+    thus ?thesis using segeq by simp
+  qed
+  \<comment> \<open>left-end values inherit.\<close>
+  have LP: "Lng (Pred M) = Lng M - 1" using predbl by (simp add: length_butlast)
+  have z2: "(0::nat) \<le> Lng M - 2" by simp
+  have es00: "entry (Pred M) 0 0 = 0"
+    using kfwd_entry_Pred_eq[OF L2 z2, where i=0] e00 by simp
+  have es10: "entry (Pred M) 1 0 = 0"
+    using kfwd_entry_Pred_eq[OF L2 z2, where i=1] e10 by simp
+  have Llt: "Lng (Pred M) < Lng M" using LP LMpos L2 by linarith
+  show ?thesis using predRT predmono es00 es10 Llt segeq by blast
+qed
+
+
+text \<open>CONDITIONAL keystone forward (monoT core), modulo the last-column \<open>RedCondA\<close>
+  obligation \<open>condA_top\<close>.  Full \<open>measure_induct\<close> on \<open>Lng M\<close>:
+  the \<open>zeroT\<close>/length-1 base is vacuous (no parents), the TRUNK case is
+  @{thm [source] kfwd_reduced_core_trunk_condAB}, every \<open>RedCondA\<close>/\<open>RedCondB\<close>
+  witness strictly below the last column lifts to \<open>Pred M\<close> (reduced shorter core
+  by @{thm [source] ncons_Pred_core}) and uses the IH, the last-column \<open>RedCondB\<close>
+  witness is vacuous (@{thm [source] kfwd_monoT_hasParent_top}), and the
+  last-column \<open>RedCondA\<close> witness is the hypothesis \<open>condA_top\<close>.\<close>
+
+lemma kst_reduced_imp_condAB_monoT_core_cond:
+  assumes condA_top:
+    "\<And>N i. N \<in> RT_PS \<Longrightarrow> monoT N \<Longrightarrow> entry N 0 0 = 0 \<Longrightarrow> entry N 1 0 = 0
+       \<Longrightarrow> TrMax N \<noteq> Lng N - 1 \<Longrightarrow> i \<le> 1 \<Longrightarrow> hasParent N i (Lng N - 1)
+       \<Longrightarrow> entry N i (parent N i (Lng N - 1)) + 1 = entry N i (Lng N - 1)"
+  assumes M0: "M \<in> RT_PS" and mono0: "monoT M"
+    and e000: "entry M 0 0 = 0" and e100: "entry M 1 0 = 0"
+  shows "RedCondA M \<and> RedCondB M"
+  using M0 mono0 e000 e100
+proof (induction M rule: measure_induct_rule[where f = Lng])
+  case (less M)
+  have M: "M \<in> RT_PS" by (rule less.prems(1))
+  have mono: "monoT M" by (rule less.prems(2))
+  have e00: "entry M 0 0 = 0" by (rule less.prems(3))
+  have e10: "entry M 1 0 = 0" by (rule less.prems(4))
+  have MT: "M \<in> T_PS" using M by (simp add: RT_PS_def)
+  have LMpos: "0 < Lng M" using MT by (cases M) (auto simp: T_PS_def)
+  let ?j1 = "Lng M - 1"
+  show ?case
+  proof (cases "TrMax M = Lng M - 1")
+    case True
+    show ?thesis by (rule kfwd_reduced_core_trunk_condAB[OF M mono e00 e10 True])
+  next
+    case tne: False
+    have trlt: "TrMax M < Lng M - 1" using TrMax_bound[OF MT] tne by linarith
+    have L2: "1 < Lng M" using trlt LMpos by linarith
+    \<comment> \<open>--- RedCondA M ---\<close>
+    have condA: "RedCondA M"
+      unfolding RedCondA_def
+    proof (intro allI impI)
+      fix i j1' assume i: "i \<le> 1" and hp: "hasParent M i j1'"
+      have j1L: "j1' < Lng M"
+        using hp unfolding hasParent_def nextR_def nextrel0_def nextrel1_def
+        by (auto split: if_splits)
+      have par_lt: "parent M i j1' < j1'"
+      proof -
+        obtain q where q: "nextR M i q j1'"
+          and uq: "\<And>r. nextR M i r j1' \<Longrightarrow> r = q"
+          using hp unfolding hasParent_def by blast
+        have "parent M i j1' = q"
+          unfolding parent_def using q uq by (blast intro: the1_equality)
+        moreover have "q < j1'" using q
+          unfolding nextR_def nextrel0_def nextrel1_def by (auto split: if_splits)
+        ultimately show ?thesis by simp
+      qed
+      show "entry M i (parent M i j1') + 1 = entry M i j1'"
+      proof (cases "j1' = ?j1")
+        case top: True
+        have hp': "hasParent M i ?j1" using hp top by simp
+        have "entry M i (parent M i ?j1) + 1 = entry M i ?j1"
+          by (rule condA_top[OF M mono e00 e10 tne i hp'])
+        thus ?thesis using top by simp
+      next
+        case below: False
+        have jpos: "0 < j1'" using par_lt by linarith
+        have jle: "j1' \<le> Lng M - 2" using j1L below by linarith
+        have L3: "2 < Lng M" using jpos jle by linarith
+        \<comment> \<open>\<open>Pred M\<close> is a strictly shorter reduced \<open>monoT\<close> core (needs \<open>2 < Lng M\<close>).\<close>
+        have predRT: "Pred M \<in> RT_PS" and predmono: "monoT (Pred M)"
+          and pred00: "entry (Pred M) 0 0 = 0" and pred10: "entry (Pred M) 1 0 = 0"
+          and predLlt: "Lng (Pred M) < Lng M"
+          using ncons_Pred_core[OF M mono e00 e10 tne L3] by blast+
+        have condA_pred: "RedCondA (Pred M)"
+          using less.IH[OF predLlt predRT predmono pred00 pred10] by simp
+        have hpP: "hasParent (Pred M) i j1'"
+          using kfwd_hasParent_Pred_iff[OF MT L2 i jle] hp by simp
+        have parP: "parent (Pred M) i j1' = parent M i j1'"
+          by (rule kfwd_parent_Pred_eq[OF MT L2 i jle hp])
+        have parle: "parent M i j1' \<le> Lng M - 2" using par_lt jle by linarith
+        \<comment> \<open>relation in \<open>Pred M\<close> (IH), pulled back via entry-agreement.\<close>
+        have relP: "entry (Pred M) i (parent (Pred M) i j1') + 1
+                     = entry (Pred M) i j1'"
+          using condA_pred hpP i unfolding RedCondA_def by blast
+        have e_par: "entry (Pred M) i (parent M i j1') = entry M i (parent M i j1')"
+          by (rule kfwd_entry_Pred_eq[OF L2 parle])
+        have e_j1: "entry (Pred M) i j1' = entry M i j1'"
+          by (rule kfwd_entry_Pred_eq[OF L2 jle])
+        show ?thesis using relP parP e_par e_j1 by simp
+      qed
+    qed
+    \<comment> \<open>--- RedCondB M ---\<close>
+    have condB: "RedCondB M"
+      unfolding RedCondB_def
+    proof (intro allI impI)
+      fix j1' assume H: "\<not> hasParent M 0 j1' \<and> j1' \<le> Lng M - 1"
+      hence noP: "\<not> hasParent M 0 j1'" and hle: "j1' \<le> Lng M - 1" by simp_all
+      show "entry M 0 j1' = entry M 1 j1'"
+      proof (cases "j1' = ?j1")
+        case top: True
+        \<comment> \<open>last column always has a row-0 parent for monoT — contradiction.\<close>
+        have "hasParent M 0 ?j1" by (rule kfwd_monoT_hasParent_top[OF MT mono L2])
+        thus ?thesis using noP top by simp
+      next
+        case below: False
+        have jle: "j1' \<le> Lng M - 2" using hle below by linarith
+        show ?thesis
+        proof (cases "j1' = 0")
+          case True
+          show ?thesis using True e00 e10 by simp
+        next
+          case False
+          have jpos: "0 < j1'" using False by simp
+          have L3: "2 < Lng M" using jpos jle by linarith
+          have predRT: "Pred M \<in> RT_PS" and predmono: "monoT (Pred M)"
+            and pred00: "entry (Pred M) 0 0 = 0" and pred10: "entry (Pred M) 1 0 = 0"
+            and predLlt: "Lng (Pred M) < Lng M"
+            using ncons_Pred_core[OF M mono e00 e10 tne L3] by blast+
+          have LP: "Lng (Pred M) = Lng M - 1" using L2 by (simp add: Pred_def length_butlast)
+          have IHpred: "RedCondA (Pred M) \<and> RedCondB (Pred M)"
+            by (rule less.IH[OF predLlt predRT predmono pred00 pred10])
+          have noPP: "\<not> hasParent (Pred M) 0 j1'"
+            using kfwd_hasParent_Pred_iff[OF MT L2 _ jle] noP by simp
+          have hleP: "j1' \<le> Lng (Pred M) - 1" using jle LP by linarith
+          have relB: "entry (Pred M) 0 j1' = entry (Pred M) 1 j1'"
+            using IHpred noPP hleP unfolding RedCondB_def by blast
+          have e0: "entry (Pred M) 0 j1' = entry M 0 j1'"
+            by (rule kfwd_entry_Pred_eq[OF L2 jle])
+          have e1: "entry (Pred M) 1 j1' = entry M 1 j1'"
+            by (rule kfwd_entry_Pred_eq[OF L2 jle])
+          show ?thesis using relB e0 e1 by simp
+        qed
+      qed
+    qed
+    show ?thesis using condA condB by blast
+  qed
+qed
+
+
+
 end
