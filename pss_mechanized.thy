@@ -43524,4 +43524,211 @@ qed
 
 
 
+
+section \<open>Front B (wf20) — \<open>parpin\<close>: diagonal-prefix parent reconstruction of the last column\<close>
+
+text \<open>WF20 BRICK (\<open>parpin\<close>, structural half).  This is the diagonal-prefix
+  parent-reconstruction half of the \<open>parpin\<close> residual of @{thm [source] wf19_valpin}
+  (template @{thm [source] a1_if_npJ_Red_pos}).  For the diagonal-prefixed core
+  \<open>N = diagSeq 0 d \<oplus> R\<^sup>*\<close> (\<open>d = R\<^sup>*\<^bsub>1,0\<^esub>-1\<close>) of the keystone forward in-block
+  regime, the LAST column \<open>lastN = Lng N - 1 = Suc d + kk\<close> (\<open>kk = Lng R\<^sup>*-1\<close>)
+  acquires its row-1 parent FROM the diagonal prefix: it is the diagonal column at
+  index \<open>q = R\<^sup>*\<^bsub>1,kk\<^esub> - 1\<close> (whose row-1 value is \<open>q\<close>, a diagonal entry), PROVIDED
+  \<open>q \<le> d\<close> (i.e. \<open>R\<^sup>*\<^bsub>1,kk\<^esub> \<le> R\<^sup>*\<^bsub>1,0\<^esub>\<close>: the last branch-tail row-1 value is below the
+  branch head).
+
+  We assemble the \<open>nextrel1 N 1 q lastN\<close> EDGE explicitly (mirroring the
+  nextrel1/uniqueness construction of @{thm [source] a1_if_npJ_Red_pos}):
+  \<^item> the \<open>le0\<close> spine \<open>q \<rightarrow>\<^sup>* d \<rightarrow> Suc d \<rightarrow>\<^sup>* lastN\<close> through the diagonal prefix
+    (@{thm [source] le0_diagSeq_append_prefix}), a junction step (a @{const nextrel0}
+    step, valid since the tail head sits strictly above the diagonal:
+    \<open>R\<^sup>*\<^bsub>0,0\<^esub> \<ge> R\<^sup>*\<^bsub>1,0\<^esub> = Suc d > d\<close>), and the lifted tail spine
+    @{thm [source] poper_le0_drop} (\<open>drop (Suc d) N = R\<^sup>*\<close> by
+    @{thm [source] ecrux_drop_tail}, with \<open>le0 R\<^sup>* 0 kk\<close>);
+  \<^item> the value gap \<open>entry N 1 q = q < R\<^sup>*\<^bsub>1,kk\<^esub> = entry N 1 lastN\<close>;
+  \<^item> the minimality: any \<open>le0\<close>-ancestor \<open>x > q\<close> of \<open>lastN\<close> in \<open>N\<close> reads
+    \<open>entry N 1 x \<ge> R\<^sup>*\<^bsub>1,kk\<^esub>\<close> — on the diagonal (\<open>x \<le> d\<close>) because \<open>entry N 1 x = x \<ge> kk\<close>
+    (as \<open>x > q = R\<^sup>*\<^bsub>1,kk\<^esub>-1\<close>), and on the tail (\<open>x \<ge> Suc d\<close>) because
+    \<open>le0 N x lastN\<close> pulls back to \<open>le0 R\<^sup>* (x - Suc d) kk\<close> and the supplied
+    row-1 minimality of \<open>R\<^sup>*\<close>'s last column (\<open>tailmin\<close>) gives
+    \<open>entry R\<^sup>* 1 (x - Suc d) \<ge> R\<^sup>*\<^bsub>1,kk\<^esub>\<close>.
+  Parents in row 1 are unique (@{thm [source] nextR1_unique}), so
+  \<open>hasParent N 1 lastN\<close> with \<open>parent N 1 lastN = q\<close>, and the parent VALUE reads
+  \<open>entry N 1 (parent N 1 lastN) = q = R\<^sup>*\<^bsub>1,kk\<^esub> - 1\<close>.
+
+  EMPIRICAL TRUTH-CHECK (\<open>red_model.py\<close>, reduced \<open>monoT\<close> cores maxlen 5 value 3; the
+  34 row-1 cross-block \<open>kk>0\<close> cases of @{thm [source] wf19_valpin}).  Over those 34
+  cases: the side conditions \<open>q \<le> d\<close>, \<open>R\<^sup>*\<^bsub>1,0\<^esub> \<le> R\<^sup>*\<^bsub>0,0\<^esub>\<close>, \<open>le0 R\<^sup>* 0 kk\<close>, and the
+  row-1 tail minimality \<open>tailmin\<close> hold 0/34; the assembled facts \<open>nextrel1 N 1 q
+  lastN\<close>, \<open>hasParent N 1 lastN\<close>, \<open>parent N 1 lastN = q\<close> hold 0/34; and the parent
+  value \<open>entry N 1 (parent N 1 lastN) = q\<close> holds 0/34.  (The GENERAL form WITHOUT
+  the \<open>tailmin\<close> hypothesis is FALSE: 13397/15987 random \<open>(R\<^sup>*,d)\<close> pairs fail the
+  edge — the row-1 minimality of \<open>R\<^sup>*\<close>'s last column is genuinely required, so it is
+  carried as an explicit hypothesis rather than re-derived from \<open>R\<^sup>*\<close>'s reducedness
+  here.)
+
+  RESIDUAL (reported honestly, NOT faked — see [[subagent-worktree-pitfalls]]).
+  The literal \<open>parpin\<close> of @{thm [source] wf19_valpin} pins the parent value to the
+  cross-block parent \<open>p = parent M 1 (Lng M-1)\<close>; here it is pinned to
+  \<open>q = R\<^sup>*\<^bsub>1,kk\<^esub> - 1\<close>.  The identification \<open>q = p\<close> is EXACTLY
+  \<open>R\<^sup>*\<^bsub>1,kk\<^esub> = Suc p\<close>, which is the conclusion of @{thm [source] wf19_valpin} itself
+  (the keystone-forward cross-block \<open>r1cross\<close> obligation): deriving it here would be
+  circular, so it is NOT discharged in this brick.  Likewise the side conditions
+  (\<open>q \<le> d\<close>, \<open>R\<^sup>*\<^bsub>1,0\<^esub> \<le> R\<^sup>*\<^bsub>0,0\<^esub>\<close>, \<open>le0 R\<^sup>* 0 kk\<close>, \<open>tailmin\<close>) are properties of the
+  reduced \<open>R\<^sup>* = Red (NJ M J\<^sup>*)\<close>; they are TRUE (verified) but carried as hypotheses,
+  not re-derived from \<open>R\<^sup>*\<close>'s reducedness in this standalone brick.
+
+  SOUND — cites only GREEN @{thm [source] le0_diagSeq_append_prefix},
+  @{thm [source] poper_le0_drop}, @{thm [source] ecrux_drop_tail},
+  @{thm [source] entry_diagSeq_append_lo}, @{thm [source] wf17_entry_diag_tail},
+  @{thm [source] nextR1_unique}, the \<^const>\<open>nextrel1\<close>/\<^const>\<open>hasParent\<close>/\<^const>\<open>parent\<close>
+  definitions and the library; no \<open>p_*\<close> stub, and it does NOT cite
+  @{thm [source] wf19_valpin} nor any keystone goal (it pins to \<open>q\<close>, not to \<open>p\<close>).\<close>
+
+lemma wf20_parpin:
+  fixes Rs :: pairseq and d :: nat
+  defines "kk \<equiv> Lng Rs - 1"
+  defines "N \<equiv> diagSeq 0 d @ Rs"
+  defines "q \<equiv> entry Rs 1 kk - 1"
+  assumes Rspos: "0 < Lng Rs"
+    and ekkpos: "0 < entry Rs 1 kk"
+    and qled: "entry Rs 1 kk - 1 \<le> d"
+    and headge: "entry Rs 1 0 \<le> entry Rs 0 0"
+    and hd: "entry Rs 1 0 = Suc d"
+    and le0kk: "le0 Rs 0 kk"
+    and tailmin: "\<And>t. le0 Rs t kk \<Longrightarrow> entry Rs 1 kk \<le> entry Rs 1 t"
+  shows "nextrel1 N q (Lng N - 1)
+       \<and> hasParent N 1 (Lng N - 1)
+       \<and> parent N 1 (Lng N - 1) = q
+       \<and> entry N 1 (parent N 1 (Lng N - 1)) = q"
+proof -
+  \<comment> \<open>Basic length facts: \<open>Lng N = Suc d + Lng R\<^sup>*\<close>, \<open>lastN = Suc d + kk\<close>.\<close>
+  have lenN: "Lng N = Suc d + Lng Rs" unfolding N_def by simp
+  have kklt: "kk < Lng Rs" unfolding kk_def using Rspos by linarith
+  have lastNeq: "Lng N - 1 = Suc d + kk"
+    unfolding kk_def using lenN Rspos by linarith
+  have qle: "q \<le> d" unfolding q_def using qled by simp
+  have qlt: "q < Lng N" using qle lenN by linarith
+  have lastNlt: "Lng N - 1 < Lng N" using lenN Rspos by linarith
+  \<comment> \<open>Row-1 entries: \<open>entry N 1 q = q\<close> (diagonal), \<open>entry N 1 lastN = entry R\<^sup>* 1 kk\<close>.\<close>
+  have e1q: "entry N 1 q = q"
+    unfolding N_def
+    using entry_diagSeq_append_lo[where i=q and k=d and p=1 and rest=Rs, OF qle] .
+  have e1last: "entry N 1 (Lng N - 1) = entry Rs 1 kk"
+    using lastNeq wf17_entry_diag_tail[of d Rs 1 kk] unfolding N_def by simp
+  \<comment> \<open>The value gap: \<open>q = entry R\<^sup>* 1 kk - 1 < entry R\<^sup>* 1 kk = entry N 1 lastN\<close>.\<close>
+  have qval: "q < entry Rs 1 kk" unfolding q_def using ekkpos by linarith
+  have gap: "entry N 1 q < entry N 1 (Lng N - 1)"
+    using e1q e1last qval by simp
+  \<comment> \<open>\<open>le0\<close> spine \<open>q \<rightarrow>\<^sup>* d \<rightarrow> Suc d \<rightarrow>\<^sup>* lastN\<close>.\<close>
+  \<comment> \<open>(1) diagonal prefix piece \<open>q \<rightarrow>\<^sup>* d\<close>.\<close>
+  have le0_qd: "le0 N q d"
+    using le0_diagSeq_append_prefix[OF qle order.refl, of Rs] unfolding N_def .
+  have spine_qd: "(nextrel0 N)\<^sup>*\<^sup>* q d"
+    using le0_qd by (simp add: le0_def)
+  \<comment> \<open>(2) junction step \<open>d \<rightarrow> Suc d\<close>: the tail head sits strictly above the diagonal.\<close>
+  have e0d: "entry N 0 d = d"
+    unfolding N_def
+    using entry_diagSeq_append_lo[where i=d and k=d and p=0 and rest=Rs, OF order.refl] .
+  have e0sd: "entry N 0 (Suc d) = entry Rs 0 0"
+    unfolding N_def
+    using entry_diagSeq_append_junction[where k=d and rest=Rs and p=0] by simp
+  have dlt: "Suc d < Lng N" using lenN Rspos by linarith
+  have headgt: "d < entry Rs 0 0" using headge hd by linarith
+  have junc: "nextrel0 N d (Suc d)"
+    unfolding nextrel0_def
+  proof (intro conjI allI impI)
+    show "d < Lng N" using dlt by linarith
+    show "Suc d < Lng N" by (rule dlt)
+    show "d < Suc d" by simp
+    show "entry N 0 d < entry N 0 (Suc d)" using e0d e0sd headgt by simp
+    fix j assume "d < j \<and> j < Suc d"
+    thus "entry N 0 (Suc d) \<le> entry N 0 j" by simp
+  qed
+  have spine_dsd: "(nextrel0 N)\<^sup>*\<^sup>* d (Suc d)" using junc by (rule r_into_rtranclp)
+  \<comment> \<open>(3) lifted tail spine \<open>Suc d \<rightarrow>\<^sup>* lastN\<close> from \<open>le0 R\<^sup>* 0 kk\<close>.\<close>
+  have dropN: "drop (Suc d) N = Rs" unfolding N_def by (rule ecrux_drop_tail)
+  have tailrt0: "(nextrel0 Rs)\<^sup>*\<^sup>* 0 kk" using le0kk by (simp add: le0_def)
+  have spine_tail: "(nextrel0 N)\<^sup>*\<^sup>* (Suc d + 0) (Suc d + kk)"
+  proof -
+    have "(nextrel0 (drop (Suc d) N))\<^sup>*\<^sup>* 0 kk" using tailrt0 dropN by simp
+    thus ?thesis by (rule poper_le0_drop_fwd)
+  qed
+  have spine_sdlast: "(nextrel0 N)\<^sup>*\<^sup>* (Suc d) (Lng N - 1)"
+    using spine_tail lastNeq by simp
+  \<comment> \<open>Assemble the \<open>le0\<close> spine.\<close>
+  have rt_qlast: "(nextrel0 N)\<^sup>*\<^sup>* q (Lng N - 1)"
+    using spine_qd spine_dsd spine_sdlast by (meson rtranclp_trans)
+  have le0_qlast: "le0 N q (Lng N - 1)"
+    using rt_qlast qlt lastNlt by (simp add: le0_def)
+  \<comment> \<open>Minimality: any \<open>le0\<close>-ancestor \<open>x > q\<close> of \<open>lastN\<close> has \<open>entry N 1 x \<ge> entry R\<^sup>* 1 kk\<close>.\<close>
+  have minim: "\<And>x. q < x \<Longrightarrow> le0 N x (Lng N - 1)
+                  \<Longrightarrow> entry N 1 (Lng N - 1) \<le> entry N 1 x"
+  proof -
+    fix x assume xq: "q < x" and xle: "le0 N x (Lng N - 1)"
+    have xlt: "x < Lng N" using xle by (simp add: le0_def)
+    show "entry N 1 (Lng N - 1) \<le> entry N 1 x"
+    proof (cases "x \<le> d")
+      case True
+      \<comment> \<open>Diagonal column: \<open>entry N 1 x = x \<ge> kk_val\<close> since \<open>x > q = kk_val - 1\<close>.\<close>
+      have e1x: "entry N 1 x = x"
+        unfolding N_def
+        using entry_diagSeq_append_lo[where i=x and k=d and p=1 and rest=Rs, OF True] .
+      have "entry Rs 1 kk \<le> x" using xq unfolding q_def using ekkpos by linarith
+      thus ?thesis using e1x e1last by simp
+    next
+      case False
+      \<comment> \<open>Tail column: \<open>x = Suc d + a\<close>, pull back \<open>le0 N x lastN\<close> to \<open>le0 R\<^sup>* a kk\<close>.\<close>
+      hence dx: "Suc d \<le> x" by simp
+      define a where "a \<equiv> x - Suc d"
+      have xa: "x = Suc d + a" unfolding a_def using dx by simp
+      have alt: "a < Lng Rs" using xlt lenN xa by simp
+      have lift: "le0 N (Suc d + a) (Suc d + kk) = le0 Rs a kk"
+      proof -
+        have b1: "a < Lng N - Suc d" using alt lenN by simp
+        have b2: "kk < Lng N - Suc d" using kklt lenN by simp
+        have "le0 (drop (Suc d) N) a kk = le0 N (Suc d + a) (Suc d + kk)"
+          by (rule poper_le0_drop[OF b1 b2])
+        thus ?thesis using dropN by simp
+      qed
+      have le0a: "le0 Rs a kk"
+      proof -
+        have "le0 N (Suc d + a) (Suc d + kk)" using xle xa lastNeq by simp
+        thus ?thesis using lift by simp
+      qed
+      have e1xa: "entry N 1 x = entry Rs 1 a"
+        unfolding N_def xa using wf17_entry_diag_tail[of d Rs 1 a] by simp
+      have "entry Rs 1 kk \<le> entry Rs 1 a" using le0a by (rule tailmin)
+      thus ?thesis using e1xa e1last by simp
+    qed
+  qed
+  \<comment> \<open>Assemble \<open>nextrel1 N 1 q lastN\<close>.\<close>
+  have nr1: "nextrel1 N q (Lng N - 1)"
+    unfolding nextrel1_def
+  proof (intro conjI allI impI)
+    show "q < Lng N" by (rule qlt)
+    show "Lng N - 1 < Lng N" by (rule lastNlt)
+    show "q < Lng N - 1" using lastNeq qle by linarith
+    show "entry N 1 q < entry N 1 (Lng N - 1)" by (rule gap)
+    show "le0 N q (Lng N - 1)" by (rule le0_qlast)
+    fix x assume hx: "q < x \<and> le0 N x (Lng N - 1)"
+    show "entry N 1 (Lng N - 1) \<le> entry N 1 x" using hx minim by blast
+  qed
+  have nx1: "nextR N 1 q (Lng N - 1)" unfolding nextR_def using nr1 by simp
+  \<comment> \<open>Uniqueness via @{thm [source] nextR1_unique}.\<close>
+  have uq: "\<And>r. nextR N 1 r (Lng N - 1) \<Longrightarrow> r = q"
+  proof -
+    fix r assume "nextR N 1 r (Lng N - 1)"
+    thus "r = q" using nx1 by (rule nextR1_unique)
+  qed
+  have hpN: "hasParent N 1 (Lng N - 1)"
+    unfolding hasParent_def using nx1 uq by blast
+  have parN: "parent N 1 (Lng N - 1) = q"
+    unfolding parent_def using nx1 by (rule the_equality) (rule uq)
+  have parval: "entry N 1 (parent N 1 (Lng N - 1)) = q"
+    using parN e1q by simp
+  show ?thesis using nr1 hpN parN parval by blast
+qed
+
+
 end
