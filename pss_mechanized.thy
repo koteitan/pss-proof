@@ -39898,18 +39898,332 @@ proof -
 qed
 
 text \<open>
-  Front B (wf10) — RESIDUAL.  The central RightNodes-suffix brick
-  \<open>RightNodes (Trm [p])\<close> is a SUFFIX of \<open>RightNodes t\<close> whenever
-  \<open>flatBT t = s \<frown> flatBP p \<frown> b\<close> with \<open>b\<close> all-\<open>)\<close> and \<open>t \<in> T\<^bsub>B\<^esub>\<close>
-  (content.md 1894/1916, residual link (i)) is EMPIRICALLY TRUE
-  (\<open>python/_wf10_suffix_check.py\<close>, 0/3000) and its main recursion (cut at or
-  after the trailing-principal start) is mechanized; the remaining gap is the
-  cut-strictly-inside-\<open>pre\<close> impossibility (= the article's MAXIMALITY of the
-  marked principal, residual link (ii)).  The pinning \<open>length s\<^sub>0 = length s\<^sub>1\<close>
-  for same-kind decompositions (\<open>python/_wf10_pin_check.py\<close>, 0/480 each kind)
-  reduces to this suffix brick plus the kind-condition's unique suffix-length.
+  Front B (wf10/wf11) — the central RightNodes-suffix brick and the cut-pinning.
+
+  \<^bold>\<open>Empirical truth.\<close>  Over the BT model (indices \<open>{0,1,2}\<close>, depth \<open>2\<close>):
+  \<^item> \<open>RightNodes (Trm [p])\<close> is a SUFFIX of \<open>RightNodes t\<close> for every scb-shaped
+    occurrence \<open>flatBT t = s \<frown> flatBP p \<frown> b\<close> (\<open>b\<close> all-\<open>)\<close>, \<open>t,Trm[p] \<in> T\<^bsub>B\<^esub>\<close>):
+    \<open>python/_wf10_suffix_check.py\<close>, 0/3000.
+  \<^item> MAXIMALITY DISCRIMINATOR: \<open>flatBP p\<close> is the WHOLE last principal of \<open>t\<close>
+    (\<open>= flatBP (last component)\<close>) IFF \<open>length (RightNodes (Trm [p])) =
+    length (RightNodes t)\<close>; strictly inside otherwise (\<open>python/_wf11_maxim.py\<close>,
+    disc 0/3000).
+  \<^item> CUT-PINNING: equal \<open>RightNodes (Trm [p])\<close> \<Longrightarrow> equal \<open>length s\<close>
+    (\<open>python/_wf10_pin3_check.py\<close>, \<open>_wf11_occ_check.py\<close>: \<open>len(RN c)\<close> determines
+    \<open>len s\<close>, 0 violations).
+
+  The suffix brick below (\<open>rnsub_RightNodes_suffix\<close>) does the spine descent on
+  \<open>length s\<close>: split \<open>flatBT (Trm xs)\<close> at the global last \<open>Zsym\<close> (inside
+  \<open>flatBT a\<close>) and at the marked principal's last \<open>Zsym\<close>; the two align.  Either
+  the marked principal IS the last principal \<open>Dsym u # flatBT a\<close> (maximal,
+  \<open>RightNodes (Trm [p]) = RightNodes (Trm xs)\<close>, suffix with empty prefix) or it
+  is strictly inside \<open>flatBT a\<close> with a shorter cut, and the IH appends
+  \<open>the_enat u\<close>.  This is the article's MAXIMALITY of the marked principal
+  (content.md ~1896/1918).
 \<close>
 
+\<comment> \<open>\<open>RightNodes (Trm [DB u a]) = the_enat u # RightNodes a\<close>; its length is
+   \<open>1 + length (RightNodes a)\<close>, the descent depth invariant.\<close>
+lemma rnsub_RN_single: "RightNodes (Trm [DB u a]) = the_enat u # RightNodes a"
+  by simp
+
+\<comment> \<open>GREEN weight brick.  In any \<open>flatBT t = pre \<frown> c \<frown> post\<close> where \<open>c\<close> is a
+   complete principal/term string (\<open>flatinj_dsum c = -1\<close>) and \<open>post\<close> is all-\<open>)\<close>,
+   the prefix \<open>pre\<close> has \<open>flatinj_dsum pre = int (length post)\<close>.  (Bookkeeping for
+   the MAXIMALITY weight contradiction: a cut strictly inside the canonical
+   \<open>pre\<close> would force a balanced principal to start at a positive-depth, all-\<open>)\<close>-
+   terminated position.)  Sound — pure \<^const>\<open>flatinj_dsum\<close> algebra plus the
+   GREEN @{thm [source] flatinj_dsum_flatBT}, @{thm [source] flatinj_dsum_allRP}.\<close>
+lemma rnsub_dsum_pre_eq_post:
+  assumes "flatBT t = pre @ c @ post"
+      and "flatinj_dsum c = -1"
+      and "\<forall>x \<in> set post. x = RP"
+  shows "flatinj_dsum pre = int (length post)"
+proof -
+  have tot: "flatinj_dsum (flatBT t) = -1" by (rule flatinj_dsum_flatBT)
+  have ptot: "flatinj_dsum post = - int (length post)"
+    using flatinj_dsum_allRP[OF assms(3)] .
+  have "flatinj_dsum (flatBT t) = flatinj_dsum pre + flatinj_dsum c + flatinj_dsum post"
+    using assms(1) by simp
+  thus ?thesis using tot assms(2) ptot by simp
+qed
+
+\<comment> \<open>GREEN MAXIMALITY brick (residual link (ii), CLOSED).  A complete term string
+   \<open>flatBT a\<close> cannot end strictly inside the trailing \<open>)\<close>-run of \<open>m' \<frown> flatBP p\<close>:
+   if \<open>flatBT a \<frown> us = m' \<frown> flatBP p\<close> with \<open>us\<close> all-\<open>)\<close>, then \<open>us = []\<close>.
+   Proof by the \<^const>\<open>flatinj_dsum\<close> weight: \<open>m'\<close> is a proper prefix of \<open>flatBT a\<close>
+   (the straddle \<open>flatBT a\<close>-prefix-of-\<open>m'\<close> branch forces a \<open>Zsym\<close> into the all-\<open>)\<close>
+   \<open>us\<close>), so \<open>flatinj_dsum m' \<ge> 0\<close>; but the total-weight identity gives
+   \<open>flatinj_dsum m' = - int (length us) \<le> 0\<close>, hence \<open>length us = 0\<close>.  This is the
+   weight contradiction the previous round left open.\<close>
+lemma rnsub_straddle_excluded:
+  assumes A: "m' @ flatBP (DB up ap) = flatBT a @ us"
+      and usRP: "\<forall>x \<in> set us. x = RP"
+  shows "us = []"
+proof (rule ccontr)
+  assume usne: "us \<noteq> []"
+  have noZus: "Zsym \<notin> set us" using usRP by auto
+  \<comment> \<open>\<open>m'\<close> is a proper prefix of \<open>flatBT a\<close>.\<close>
+  have mlt: "length m' < length (flatBT a)"
+  proof (rule ccontr)
+    assume "\<not> length m' < length (flatBT a)"
+    hence ge: "length (flatBT a) \<le> length m'" by simp
+    \<comment> \<open>then \<open>flatBT a\<close> is a prefix of \<open>m'\<close>, so \<open>us\<close> = \<open>(tail of m') @ flatBP p\<close>,
+       which contains a \<open>Zsym\<close> — contradicting \<open>us\<close> all-\<open>)\<close>.\<close>
+    \<comment> \<open>\<open>flatBT a\<close> is a prefix of \<open>m'\<close> (length \<open>\<le>\<close>), so \<open>m' = flatBT a @ ws\<close>.\<close>
+    define ws where "ws = drop (length (flatBT a)) m'"
+    have mws: "m' = flatBT a @ ws"
+    proof -
+      have "flatBT a = take (length (flatBT a)) (flatBT a @ us)" by simp
+      also have "\<dots> = take (length (flatBT a)) (m' @ flatBP (DB up ap))"
+        using A by simp
+      also have "\<dots> = take (length (flatBT a)) m'" using ge by simp
+      finally have "flatBT a = take (length (flatBT a)) m'" .
+      thus ?thesis unfolding ws_def by (metis append_take_drop_id)
+    qed
+    have "flatBT a @ us = flatBT a @ ws @ flatBP (DB up ap)" using A mws by simp
+    hence "us = ws @ flatBP (DB up ap)" by simp
+    moreover have "Zsym \<in> set (flatBP (DB up ap))"
+      by (rule rnsub_Zsym_in_flatP)
+    ultimately have "Zsym \<in> set us" by simp
+    thus False using noZus by simp
+  qed
+  \<comment> \<open>So \<open>flatBT a = m' @ rest\<close> with \<open>rest\<close> nonempty: prefix-nonneg gives
+     \<open>flatinj_dsum m' \<ge> 0\<close>.\<close>
+  define rest where "rest = drop (length m') (flatBT a)"
+  have far: "flatBT a = m' @ rest"
+  proof -
+    have "m' = take (length m') (m' @ flatBP (DB up ap))" by simp
+    also have "\<dots> = take (length m') (flatBT a @ us)" using A by simp
+    also have "\<dots> = take (length m') (flatBT a)" using mlt by simp
+    finally have "m' = take (length m') (flatBT a)" .
+    thus ?thesis unfolding rest_def by (metis append_take_drop_id)
+  qed
+  have rne: "rest \<noteq> []" using mlt unfolding rest_def by simp
+  have mnn: "0 \<le> flatinj_dsum m'"
+    by (rule flatinj_prefix_nonneg_BT[OF far rne])
+  \<comment> \<open>Weight identity: \<open>flatinj_dsum m' = - int (length us)\<close>.\<close>
+  have tot_a: "flatinj_dsum (flatBT a) = -1" by (rule flatinj_dsum_flatBT)
+  have tot_p: "flatinj_dsum (flatBP (DB up ap)) = -1"
+    using flatinj_dsum_flatBT[of "Trm [DB up ap]"] by simp
+  have usw: "flatinj_dsum us = - int (length us)"
+    using flatinj_dsum_allRP[OF usRP] .
+  have "flatinj_dsum (m' @ flatBP (DB up ap)) = flatinj_dsum (flatBT a @ us)"
+    using A by simp
+  hence "flatinj_dsum m' + (-1) = (-1) + (- int (length us))"
+    using tot_a tot_p usw by simp
+  hence "flatinj_dsum m' = - int (length us)" by simp
+  hence "int (length us) \<le> 0" using mnn by simp
+  hence "length us = 0" by simp
+  thus False using usne by simp
+qed
+
+\<comment> \<open>GREEN structural brick: at a \<open>Trm xs\<close> level (\<open>xs \<noteq> []\<close>, \<open>last xs = DB u a\<close>),
+   an scb-shaped principal occurrence whose cut is AT OR AFTER the canonical
+   last-principal start (\<open>length pre \<le> length s\<close>) is EITHER the whole last
+   principal (\<open>length s = length pre\<close>: maximal, \<open>flatBP p = Dsym u # flatBT a\<close>,
+   \<open>b = post\<close>) OR strictly inside the last principal's argument \<open>flatBT a\<close>
+   (\<open>length pre < length s\<close>).  This is the GREEN half of the article's spine
+   descent; it uses prefix-freeness @{thm [source] flatinj_flatBP_cancel}.\<close>
+lemma rnsub_cut_ge_pre_dichotomy:
+  assumes occ: "flatBT (Trm xs) = s @ flatBP (DB up ap) @ b"
+      and bRP: "\<forall>x \<in> set b. x = RP"
+      and PP: "flatBT (Trm xs) = pre @ (Dsym u # flatBT a) @ post"
+      and postRP: "\<forall>x \<in> set post. x = RP"
+      and ge: "length pre \<le> length s"
+  shows "(length s = length pre \<and> flatBP (DB up ap) = Dsym u # flatBT a \<and> b = post)
+       \<or> (length pre < length s
+            \<and> (\<exists>s2 b2. flatBT a = s2 @ flatBP (DB up ap) @ b2
+                        \<and> (\<forall>x \<in> set b2. x = RP)
+                        \<and> length s = length pre + 1 + length s2))"
+proof (cases "length s = length pre")
+  case True
+  \<comment> \<open>Maximal: cancel the common prefix \<open>pre = s\<close>, then prefix-freeness of the
+     complete principal \<open>Dsym u # flatBT a = flatBP (DB u a)\<close>.\<close>
+  have eqT: "s @ flatBP (DB up ap) @ b = pre @ (Dsym u # flatBT a) @ post"
+    using occ PP by simp
+  have seq: "s = pre"
+    using eqT True by (simp add: append_eq_append_conv)
+  have "pre @ flatBP (DB up ap) @ b = pre @ (Dsym u # flatBT a) @ post"
+    using occ PP seq by simp
+  hence cb: "flatBP (DB up ap) @ b = flatBP (DB u a) @ post" by simp
+  have "flatBP (DB up ap) = flatBP (DB u a) \<and> b = post"
+    by (rule flatinj_flatBP_cancel[OF cb])
+  thus ?thesis using True seq by simp
+next
+  case False
+  hence lt: "length pre < length s" using ge by simp
+  \<comment> \<open>Cut strictly after \<open>pre\<close>: \<open>s = pre @ m\<close> with \<open>m\<close> nonempty.  The first symbol
+     of the last principal \<open>Dsym u\<close> is at position \<open>length pre < length s\<close>, so it
+     is consumed by \<open>m\<close>; hence the marked principal sits inside \<open>flatBT a\<close>.\<close>
+  define m where "m = drop (length pre) s"
+  have sm: "s = pre @ m"
+  proof -
+    have eq: "s @ flatBP (DB up ap) @ b = pre @ (Dsym u # flatBT a) @ post"
+      using occ PP by simp
+    have "pre = take (length pre) (pre @ (Dsym u # flatBT a) @ post)" by simp
+    also have "\<dots> = take (length pre) (s @ flatBP (DB up ap) @ b)" using eq by simp
+    also have "\<dots> = take (length pre) s" using ge by simp
+    finally have "pre = take (length pre) s" .
+    thus ?thesis unfolding m_def by (metis append_take_drop_id)
+  qed
+  have mne: "m \<noteq> []" using lt unfolding m_def by simp
+  \<comment> \<open>From \<open>occ = PP\<close> with \<open>s = pre @ m\<close>:
+       \<open>m @ flatBP (DB up ap) @ b = (Dsym u # flatBT a) @ post\<close>.\<close>
+  have mid: "m @ flatBP (DB up ap) @ b = Dsym u # flatBT a @ post"
+    using occ PP sm by simp
+  \<comment> \<open>\<open>m\<close> begins with \<open>Dsym u\<close>; its tail \<open>m'\<close> is a prefix of \<open>flatBT a\<close>.\<close>
+  obtain m' where m': "m = Dsym u # m'"
+    using mid mne by (cases m) auto
+  have mid2: "m' @ flatBP (DB up ap) @ b = flatBT a @ post"
+    using mid m' by simp
+  \<comment> \<open>The marked principal occurrence lives inside \<open>flatBT a\<close>: split \<open>flatBT a\<close> as
+     \<open>m' @ flatBP (DB up ap) @ b2\<close> with \<open>b2\<close> all-\<open>)\<close>.  Because everything after the
+     principal is all-\<open>)\<close> (\<open>b\<close> then \<open>post\<close>), the principal cannot straddle into
+     \<open>post\<close>: a complete principal contains a \<open>Zsym\<close>, which \<open>post\<close>/\<open>b\<close> lack.\<close>
+  \<comment> \<open>The marked principal ends within \<open>flatBT a\<close>: \<open>append_eq_append_conv2\<close>
+     resolves the overlap of \<open>m' @ flatBP (DB up ap)\<close> with \<open>flatBT a\<close>; the
+     straddle branch is excluded by @{thm [source] rnsub_straddle_excluded}.\<close>
+  have splitc: "\<exists>us. (m' @ flatBP (DB up ap) = flatBT a @ us \<and> us @ b = post)
+           \<or> ((m' @ flatBP (DB up ap)) @ us = flatBT a \<and> b = us @ post)"
+  proof -
+    have e: "(m' @ flatBP (DB up ap)) @ b = flatBT a @ post"
+      using mid2 by simp
+    show ?thesis
+      using append_eq_append_conv2[THEN iffD1, OF e] by blast
+  qed
+  then obtain us where
+    disj: "(m' @ flatBP (DB up ap) = flatBT a @ us \<and> us @ b = post)
+         \<or> ((m' @ flatBP (DB up ap)) @ us = flatBT a \<and> b = us @ post)" by blast
+  have lens: "length s = length pre + 1 + length m'"
+    using sm m' by simp
+  \<comment> \<open>Clean inside-shape of \<open>flatBT a\<close>, with the straddle branch excluded.\<close>
+  have fa_inside: "\<exists>b2. flatBT a = m' @ flatBP (DB up ap) @ b2 \<and> (\<forall>x \<in> set b2. x = RP)"
+  proof -
+    from disj show ?thesis
+    proof (elim disjE conjE)
+      assume A: "m' @ flatBP (DB up ap) = flatBT a @ us" and B: "us @ b = post"
+      have uspost: "\<forall>x \<in> set us. x = RP"
+        using B postRP by (metis Un_iff set_append)
+      have usnil: "us = []" by (rule rnsub_straddle_excluded[OF A uspost])
+      have fa: "flatBT a = m' @ flatBP (DB up ap) @ []" using A usnil by simp
+      show ?thesis using fa by simp
+    next
+      assume A: "(m' @ flatBP (DB up ap)) @ us = flatBT a" and B: "b = us @ post"
+      have b2RP: "\<forall>x \<in> set us. x = RP"
+        using B bRP by (metis Un_iff set_append)
+      have fa: "flatBT a = m' @ flatBP (DB up ap) @ us" using A by simp
+      show ?thesis using fa b2RP by blast
+    qed
+  qed
+  then obtain b2 where
+    fa2: "flatBT a = m' @ flatBP (DB up ap) @ b2" and b2RP: "\<forall>x \<in> set b2. x = RP"
+    by blast
+  have ex: "\<exists>s2 b2. flatBT a = s2 @ flatBP (DB up ap) @ b2
+                      \<and> (\<forall>x \<in> set b2. x = RP)
+                      \<and> length s = length pre + 1 + length s2"
+    using fa2 b2RP lens by blast
+  show ?thesis using lt ex by blast
+qed
+
+
+section \<open>Front A (wf11) — \<open>IncrFirst ^^ k\<close> structure bricks (incf_pow_*)\<close>
+
+text \<open>
+  Structural correspondence between \<open>(IncrFirst ^^ k) X\<close> and \<open>X\<close>: the
+  \<open>k\<close>-fold top-row increment shifts row-0 entries by \<open>k\<close>, leaves row-1 entries,
+  the length, the \<open>nextR\<close> relation (rows \<open>\<le> 1\<close>), and hence the parent/witness
+  structure (\<open>hasParent\<close>, \<open>parent\<close>) unchanged.  These need no induction on the
+  keystone, only on \<open>k\<close>, using the single-step \<open>IncrFirst\<close> lemmas
+  (@{thm [source] nextrel0_IncrFirst_eq}, @{thm [source] nextrel1_IncrFirst_eq},
+  @{thm [source] entry_IncrFirst}, @{thm [source] Lng_IncrFirst}).\<close>
+
+lemma incf_pow_Lng[simp]: "Lng ((IncrFirst ^^ k) X) = Lng X"
+  by (induction k) simp_all
+
+text \<open>Row-0 entries gain \<open>k\<close>; row-1 entries are unchanged.\<close>
+
+lemma incf_pow_entry0:
+  "j < Lng X \<Longrightarrow> entry ((IncrFirst ^^ k) X) 0 j = entry X 0 j + k"
+proof (induction k)
+  case 0
+  thus ?case by simp
+next
+  case (Suc k)
+  have jl: "j < Lng ((IncrFirst ^^ k) X)" using Suc.prems by simp
+  have "entry ((IncrFirst ^^ Suc k) X) 0 j
+          = entry (IncrFirst ((IncrFirst ^^ k) X)) 0 j" by (simp add: funpow_swap1)
+  also have "\<dots> = Suc (entry ((IncrFirst ^^ k) X) 0 j)"
+    using entry_IncrFirst[OF jl, of 0] by simp
+  also have "\<dots> = Suc (entry X 0 j + k)" using Suc.IH[OF Suc.prems] by simp
+  finally show ?case by simp
+qed
+
+lemma incf_pow_entry1:
+  "j < Lng X \<Longrightarrow> entry ((IncrFirst ^^ k) X) 1 j = entry X 1 j"
+proof (induction k)
+  case 0
+  thus ?case by simp
+next
+  case (Suc k)
+  have jl: "j < Lng ((IncrFirst ^^ k) X)" using Suc.prems by simp
+  have "entry ((IncrFirst ^^ Suc k) X) 1 j
+          = entry (IncrFirst ((IncrFirst ^^ k) X)) 1 j" by (simp add: funpow_swap1)
+  also have "\<dots> = entry ((IncrFirst ^^ k) X) 1 j"
+    using entry_IncrFirst[OF jl, of 1] by simp
+  also have "\<dots> = entry X 1 j" using Suc.IH[OF Suc.prems] by simp
+  finally show ?case .
+qed
+
+text \<open>\<open>nextrel0\<close>/\<open>nextrel1\<close> are preserved as functions (single step iterated),
+  hence so is \<open>nextR\<close> for rows \<open>\<le> 1\<close>.\<close>
+
+lemma nextrel0_incf_pow_eq: "nextrel0 ((IncrFirst ^^ k) X) = nextrel0 X"
+proof (induction k)
+  case 0
+  thus ?case by simp
+next
+  case (Suc k)
+  have "(IncrFirst ^^ Suc k) X = IncrFirst ((IncrFirst ^^ k) X)"
+    by (simp add: funpow_swap1)
+  thus ?case by (simp add: nextrel0_IncrFirst_eq Suc.IH)
+qed
+
+lemma nextrel1_incf_pow_eq: "nextrel1 ((IncrFirst ^^ k) X) = nextrel1 X"
+proof (induction k)
+  case 0
+  thus ?case by simp
+next
+  case (Suc k)
+  have "(IncrFirst ^^ Suc k) X = IncrFirst ((IncrFirst ^^ k) X)"
+    by (simp add: funpow_swap1)
+  thus ?case by (simp add: nextrel1_IncrFirst_eq Suc.IH)
+qed
+
+lemma incf_pow_nextR:
+  assumes "i \<le> 1"
+  shows "nextR ((IncrFirst ^^ k) X) i a b = nextR X i a b"
+proof (cases "i = 0")
+  case True
+  thus ?thesis by (simp add: nextR_def nextrel0_incf_pow_eq)
+next
+  case False
+  hence "i = 1" using assms by simp
+  thus ?thesis by (simp add: nextR_def nextrel1_incf_pow_eq)
+qed
+
+text \<open>\<open>hasParent\<close> and \<open>parent\<close> are defined purely from \<open>nextR\<close>, so they
+  transfer once \<open>nextR\<close> is shown equal (rows \<open>\<le> 1\<close>).\<close>
+
+lemma incf_pow_hasParent:
+  assumes "i \<le> 1"
+  shows "hasParent ((IncrFirst ^^ k) X) i j = hasParent X i j"
+  unfolding hasParent_def by (simp add: incf_pow_nextR[OF assms])
+
+lemma incf_pow_parent:
+  assumes "i \<le> 1"
+  shows "parent ((IncrFirst ^^ k) X) i j = parent X i j"
+  unfolding parent_def by (simp add: incf_pow_nextR[OF assms])
 
 
 end
