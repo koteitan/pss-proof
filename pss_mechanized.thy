@@ -39880,4 +39880,36 @@ qed
 
 
 
+
+\<comment> \<open>An all-\<open>)\<close> string has weight \<open>- length\<close> (each \<open>RP\<close> contributes \<open>-1\<close>).\<close>
+lemma flatinj_dsum_allRP:
+  "\<forall>x \<in> set w. x = RP \<Longrightarrow> flatinj_dsum w = - int (length w)"
+  by (induction w) auto
+
+\<comment> \<open>Front B (wf10): \<open>flatBP p\<close> always ends, after its rightmost-spine bottom
+   \<open>Zsym\<close>, in an all-\<open>)\<close> tail.  Hence it splits as \<open>q @ Zsym # r\<close> with \<open>r\<close>
+   all-\<open>)\<close> and \<open>Zsym \<notin> set r\<close> (the LAST \<open>Zsym\<close>).  Symmetric brick to
+   @{thm [source] rnsub_Zsym_in_flat}; we only need existence of such a split.\<close>
+lemma rnsub_flatBP_lastZ_split:
+  "\<exists>q r. flatBP p = q @ Zsym # r \<and> (Zsym \<notin> set r)"
+proof -
+  have "Zsym \<in> set (flatBP p)" by (rule rnsub_Zsym_in_flatP)
+  thus ?thesis by (meson split_list_last)
+qed
+
+text \<open>
+  Front B (wf10) — RESIDUAL.  The central RightNodes-suffix brick
+  \<open>RightNodes (Trm [p])\<close> is a SUFFIX of \<open>RightNodes t\<close> whenever
+  \<open>flatBT t = s \<frown> flatBP p \<frown> b\<close> with \<open>b\<close> all-\<open>)\<close> and \<open>t \<in> T\<^bsub>B\<^esub>\<close>
+  (content.md 1894/1916, residual link (i)) is EMPIRICALLY TRUE
+  (\<open>python/_wf10_suffix_check.py\<close>, 0/3000) and its main recursion (cut at or
+  after the trailing-principal start) is mechanized; the remaining gap is the
+  cut-strictly-inside-\<open>pre\<close> impossibility (= the article's MAXIMALITY of the
+  marked principal, residual link (ii)).  The pinning \<open>length s\<^sub>0 = length s\<^sub>1\<close>
+  for same-kind decompositions (\<open>python/_wf10_pin_check.py\<close>, 0/480 each kind)
+  reduces to this suffix brick plus the kind-condition's unique suffix-length.
+\<close>
+
+
+
 end
