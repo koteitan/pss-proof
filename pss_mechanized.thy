@@ -40655,4 +40655,598 @@ qed
 
 
 
+
+section \<open>Front B (wf14) — scb cut-pinning: \<open>rnsub_cut_ge_pre\<close> and kind-uniqueness\<close>
+
+text \<open>
+  The marked principal of an scb-shaped occurrence never starts strictly before
+  the canonical last top-level component.  The engine \<open>rnsub_peel_components\<close>
+  (below): an scb occurrence \<open>s \<frown> flatBP P \<frown> b\<close> (\<open>b\<close> all-\<open>)\<close>) of a string whose
+  leading part is a run of complete top-level components
+  \<open>concat (map (\<lambda>r. flatBP r \<frown> [CM]) ms)\<close> must have its cut \<open>s\<close> reach past that
+  whole run.  Each unit \<open>flatBP r \<frown> [CM]\<close> ends in a top-level \<open>CM\<close> (weight \<open>+1\<close>,
+  depth \<open>0\<close>) which the all-\<open>)\<close> tail cannot contain; a straddle of the marked
+  principal across that \<open>CM\<close> is excluded by the @{const flatinj_dsum}
+  prefix-nonnegativity of \<open>flatBP P\<close>.
+\<close>
+
+\<comment> \<open>A complete principal/term string is nonempty and never ends in \<open>CM\<close>.\<close>
+lemma flatBT_last_not_CM:
+  "flatBT t \<noteq> [] \<and> last (flatBT t) \<noteq> CM"
+  and flatBP_last_not_CM:
+  "flatBP p \<noteq> [] \<and> last (flatBP p) \<noteq> CM"
+proof (induct t and p rule: flatBT_flatBP.induct)
+  case 1 show ?case by simp
+next
+  case (2 p) thus ?case by simp
+next
+  case (3 p q ps) show ?case by simp
+next
+  case (4 u a) thus ?case by simp
+qed
+
+lemma flatBP_last_not_CM': "last (flatBP p) \<noteq> CM"
+  using flatBP_last_not_CM[of p] by simp
+
+\<comment> \<open>Suffix-weight bookkeeping.\<close>
+lemma flatinj_dsum_suffix:
+  "w = pre @ suf \<Longrightarrow> flatinj_dsum suf = flatinj_dsum w - flatinj_dsum pre"
+  by simp
+
+\<comment> \<open>PEEL ENGINE.  An scb occurrence \<open>s \<frown> flatBP P \<frown> b\<close> (\<open>b\<close> all-\<open>)\<close>) whose string
+   begins with the complete-component run \<open>concat (map (\<lambda>r. flatBP r \<frown> [CM]) ms)\<close>
+   has \<open>length (that run) \<le> length s\<close>.  Induction on \<open>ms\<close>; the marked principal
+   \<open>flatBP pp\<close> cannot start at or before a unit's \<open>flatBP r\<close>: the unit's top-level
+   \<open>CM\<close> would then land either inside the all-\<open>)\<close> tail \<open>b\<close> (excluded) or be straddled
+   by \<open>flatBP pp\<close>, forcing a negative-weight prefix \<open>d\<close> (a suffix of the complete
+   \<open>flatBP r\<close>) to be a prefix of \<open>flatBP pp\<close> — impossible by prefix-nonnegativity.\<close>
+lemma rnsub_peel_components:
+  assumes "s @ flatBP pp @ b = concat (map (\<lambda>r. flatBP r @ [CM]) ms) @ tail"
+      and "\<forall>x \<in> set b. x = RP"
+  shows "length (concat (map (\<lambda>r. flatBP r @ [CM]) ms)) \<le> length s"
+  using assms
+proof (induct ms arbitrary: s)
+  case Nil
+  show ?case by simp
+next
+  case (Cons r ms)
+  define unit where "unit = flatBP r @ [CM]"
+  define rest where "rest = concat (map (\<lambda>r. flatBP r @ [CM]) ms)"
+  have eq: "s @ flatBP pp @ b = flatBP r @ CM # (rest @ tail)"
+    using Cons.prems(1) unfolding unit_def rest_def by simp
+  \<comment> \<open>Step 1: the cut reaches past \<open>flatBP r\<close>, i.e. \<open>length (flatBP r) < length s\<close>.\<close>
+  have rlt: "length (flatBP r) < length s"
+  proof (rule ccontr)
+    assume "\<not> length (flatBP r) < length s"
+    hence sle: "length s \<le> length (flatBP r)" by simp
+    \<comment> \<open>\<open>s\<close> is a prefix of \<open>flatBP r\<close>: \<open>flatBP r = s @ d\<close>.\<close>
+    define d where "d = drop (length s) (flatBP r)"
+    have sd: "flatBP r = s @ d"
+    proof -
+      have "s = take (length s) (s @ flatBP pp @ b)" by simp
+      also have "\<dots> = take (length s) (flatBP r @ CM # rest @ tail)" using eq by simp
+      also have "\<dots> = take (length s) (flatBP r)" using sle by (simp add: take_append)
+      finally have "s = take (length s) (flatBP r)" .
+      thus ?thesis unfolding d_def by (metis append_take_drop_id)
+    qed
+    \<comment> \<open>So \<open>flatBP pp @ b = d @ CM # rest @ tail\<close>.\<close>
+    have mid: "flatBP pp @ b = d @ CM # (rest @ tail)"
+    proof -
+      have "s @ flatBP pp @ b = s @ d @ CM # (rest @ tail)" using eq sd by simp
+      thus ?thesis by simp
+    qed
+    \<comment> \<open>If \<open>s = flatBP r\<close> (whole), the marked principal would begin with the unit's
+       \<open>CM\<close> — impossible (\<open>flatBP pp\<close> begins with \<open>Dsym\<close>).\<close>
+    have sproper: "length s < length (flatBP r)"
+    proof (rule ccontr)
+      assume "\<not> length s < length (flatBP r)"
+      hence lse: "length s = length (flatBP r)" using sle by simp
+      have "length d = length (flatBP r) - length s"
+        unfolding d_def by (simp only: length_drop)
+      hence "length d = 0" using lse by simp
+      hence dnil: "d = []" by simp
+      have "flatBP pp @ b = CM # (rest @ tail)" using mid dnil by simp
+      hence "hd (flatBP pp @ b) = CM" by simp
+      moreover have "hd (flatBP pp @ b) = Dsym (case pp of DB v c \<Rightarrow> v)"
+        by (cases pp) simp
+      ultimately show False by simp
+    qed
+    have ne: "d \<noteq> []" using sproper unfolding d_def by simp
+    \<comment> \<open>\<open>s\<close> is a PROPER prefix of \<open>flatBP r\<close>, so \<open>flatinj_dsum s \<ge> 0\<close>, hence the
+       suffix \<open>d\<close> has \<open>flatinj_dsum d \<le> -1\<close>.\<close>
+    have ssum: "0 \<le> flatinj_dsum s"
+      by (rule flatinj_prefix_nonneg_BP[OF sd ne])
+    have dsum: "flatinj_dsum d \<le> -1"
+    proof -
+      have "flatinj_dsum (flatBP r) = flatinj_dsum s + flatinj_dsum d"
+        using sd by simp
+      hence "flatinj_dsum d = -1 - flatinj_dsum s"
+        by (simp add: flatinj_dsum_flatBP)
+      thus ?thesis using ssum by simp
+    qed
+    \<comment> \<open>Now locate the \<open>CM\<close> (at position \<open>length d\<close>) inside \<open>flatBP pp\<close> or \<open>b\<close>.\<close>
+    show False
+    proof (cases "length (flatBP pp) \<le> length d")
+      case True
+      \<comment> \<open>\<open>flatBP pp\<close> is a prefix of \<open>d\<close>; the \<open>CM\<close> lands in \<open>b\<close>.\<close>
+      have ppd: "d = flatBP pp @ drop (length (flatBP pp)) d"
+      proof -
+        have "flatBP pp = take (length (flatBP pp)) (flatBP pp @ b)" by simp
+        also have "\<dots> = take (length (flatBP pp)) (d @ CM # (rest @ tail))" using mid by simp
+        also have "\<dots> = take (length (flatBP pp)) d" using True by (simp add: take_append)
+        finally have "flatBP pp = take (length (flatBP pp)) d" .
+        thus ?thesis by (metis append_take_drop_id)
+      qed
+      have "flatBP pp @ b = flatBP pp @ drop (length (flatBP pp)) d @ CM # (rest @ tail)"
+        using mid ppd by (metis append.assoc append_Cons)
+      hence "b = drop (length (flatBP pp)) d @ CM # (rest @ tail)" by simp
+      hence "CM \<in> set b" by simp
+      thus False using Cons.prems(2) by auto
+    next
+      case False
+      \<comment> \<open>\<open>d\<close> is a proper prefix of \<open>flatBP pp\<close> (the \<open>CM\<close> follows), so
+         \<open>flatinj_dsum d \<ge> 0\<close>, contradicting \<open>flatinj_dsum d \<le> -1\<close>.\<close>
+      hence flt: "length d < length (flatBP pp)" by simp
+      have dpp: "flatBP pp = d @ CM # drop (Suc (length d)) (flatBP pp)"
+      proof -
+        have "d @ CM # (rest @ tail) = flatBP pp @ b" using mid by simp
+        \<comment> \<open>compare prefixes of length \<open>Suc (length d)\<close>.\<close>
+        have take1: "take (Suc (length d)) (d @ CM # (rest @ tail)) = d @ [CM]"
+          by simp
+        have take2: "take (Suc (length d)) (flatBP pp @ b) = d @ [CM]"
+          using take1 mid by simp
+        have "Suc (length d) \<le> length (flatBP pp)" using flt by simp
+        hence "take (Suc (length d)) (flatBP pp) = d @ [CM]"
+          using take2 by (simp add: take_append)
+        hence "flatBP pp = (d @ [CM]) @ drop (Suc (length d)) (flatBP pp)"
+          by (metis append_take_drop_id length_append_singleton)
+        thus ?thesis by simp
+      qed
+      have dpre: "flatBP pp = d @ (CM # drop (Suc (length d)) (flatBP pp))"
+        using dpp by simp
+      have dne: "CM # drop (Suc (length d)) (flatBP pp) \<noteq> []" by simp
+      have "0 \<le> flatinj_dsum d"
+        by (rule flatinj_prefix_nonneg_BP[OF dpre dne])
+      thus False using dsum by simp
+    qed
+  qed
+  \<comment> \<open>Step 2: \<open>length unit = length (flatBP r) + 1 \<le> length s\<close>.\<close>
+  have lenge: "length unit \<le> length s"
+  proof -
+    have "length unit = Suc (length (flatBP r))"
+      unfolding unit_def by simp
+    thus ?thesis using rlt by simp
+  qed
+  \<comment> \<open>Peel the unit and recurse.  \<open>s\<close> begins with \<open>unit = flatBP r @ [CM]\<close>.\<close>
+  have stake: "take (length unit) s = unit"
+  proof -
+    have lu: "length unit = Suc (length (flatBP r))"
+      unfolding unit_def by simp
+    have "take (length unit) s = take (length unit) (s @ flatBP pp @ b)"
+      using lenge by simp
+    also have "\<dots> = take (length unit) (flatBP r @ CM # rest @ tail)" using eq by simp
+    also have "\<dots> = flatBP r @ [CM]" using lu by (simp add: take_append)
+    also have "\<dots> = unit" unfolding unit_def by simp
+    finally show ?thesis .
+  qed
+  define s2 where "s2 = drop (length unit) s"
+  have seq: "s = unit @ s2"
+    unfolding s2_def using stake by (metis append_take_drop_id)
+  have eq2: "s2 @ flatBP pp @ b = rest @ tail"
+  proof -
+    have "unit @ (s2 @ flatBP pp @ b) = unit @ (rest @ tail)"
+      using eq seq unfolding unit_def rest_def by simp
+    thus ?thesis by simp
+  qed
+  have IH: "length rest \<le> length s2"
+    using Cons.hyps[of s2] eq2 Cons.prems(2)
+    unfolding rest_def by simp
+  have "length (concat (map (\<lambda>r. flatBP r @ [CM]) (r # ms)))
+        = length unit + length rest"
+    unfolding unit_def rest_def by simp
+  also have "\<dots> \<le> length unit + length s2" using IH by simp
+  also have "\<dots> = length s" using seq by simp
+  finally show ?case .
+qed
+
+
+
+\<comment> \<open>CM-shift reassociation: \<open>concat (CM-prefixed) \<frown> [CM] = CM # concat (CM-suffixed)\<close>.\<close>
+lemma flat_CM_shift:
+  "concat (map (\<lambda>r. CM # flatBP r) ps) @ [CM]
+   = CM # concat (map (\<lambda>r. flatBP r @ [CM]) ps)"
+  by (induct ps) simp_all
+
+\<comment> \<open>If a marked principal's string IS the last principal \<open>Dsym u # flatBT a\<close>, then
+   (by \<^const>\<open>flatBT\<close> injectivity) its term is \<open>DB u a\<close>, so its \<open>RightNodes\<close> is
+   \<open>the_enat u # RightNodes a\<close>.\<close>
+\<comment> \<open>A complete principal string has length \<open>\<ge> 2\<close> (\<open>Dsym\<close> head + nonempty
+   \<open>flatBT\<close> argument).\<close>
+lemma flatBP_len_ge2: "2 \<le> length (flatBP pp)"
+proof -
+  obtain v c where pc: "pp = DB v c" by (cases pp)
+  have "flatBT c \<noteq> []" using flatBT_last_not_CM[of c] by simp
+  hence "1 \<le> length (flatBT c)" by (cases "flatBT c") auto
+  thus ?thesis using pc by simp
+qed
+
+lemma rnsub_RN_of_maximal:
+  assumes "flatBP pp = Dsym u # flatBT a"
+  shows "RightNodes (Trm [pp]) = the_enat u # RightNodes a"
+proof -
+  obtain v c where pc: "pp = DB v c" by (cases pp)
+  have "Dsym v # flatBT c = Dsym u # flatBT a" using assms pc by simp
+  hence vu: "v = u" and fc: "flatBT c = flatBT a" by simp_all
+  have "c = a" by (rule m_7_flatBT_inj[OF fc])
+  thus ?thesis using pc vu by simp
+qed
+
+\<comment> \<open>CUT-PINNING.  Any scb occurrence's cut reaches the canonical last principal:
+   there is a canonical split \<open>flatBT (Trm xs) = pre @ (Dsym u # flatBT a) @ post\<close>
+   (\<open>post\<close> all-\<open>)\<close>, \<open>last xs = DB u a\<close>) with \<open>length pre \<le> length s\<close>.\<close>
+lemma rnsub_cut_ge_pre:
+  assumes xsne: "xs \<noteq> []"
+      and lst: "last xs = DB u a"
+  shows "\<exists>pre post. (\<forall>x \<in> set post. x = RP)
+            \<and> flatBT (Trm xs) = pre @ (Dsym u # flatBT a) @ post
+            \<and> (\<forall>s pp b. flatBT (Trm xs) = s @ flatBP pp @ b \<longrightarrow> (\<forall>x \<in> set b. x = RP)
+                         \<longrightarrow> length pre \<le> length s)"
+proof (cases xs rule: rev_cases)
+  case Nil thus ?thesis using xsne by simp
+next
+  case (snoc ys y)
+  have y_eq: "y = DB u a" using lst snoc by simp
+  show ?thesis
+  proof (cases ys)
+    case Nil
+    \<comment> \<open>single principal: \<open>pre = post = []\<close>; the bound \<open>0 \<le> length s\<close> is trivial.\<close>
+    have fl: "flatBT (Trm xs) = [] @ (Dsym u # flatBT a) @ []"
+      using snoc Nil y_eq by simp
+    show ?thesis
+      by (rule exI[of _ "[]"], rule exI[of _ "[]"]) (use fl in simp)
+  next
+    case (Cons p ps)
+    define run where "run = concat (map (\<lambda>r. flatBP r @ [CM]) (p # ps))"
+    define pre where "pre = LP # run"
+    define post where "post = [RP]"
+    have xs_eq: "xs = p # (ps @ [DB u a])" using snoc Cons y_eq by simp
+    have flat_xs: "flatBT (Trm xs)
+                  = LP # (flatBP p @ concat (map (\<lambda>r. CM # flatBP r) (ps @ [DB u a]))) @ [RP]"
+      unfolding xs_eq by (rule rnsub_flat_multi) simp
+    \<comment> \<open>Reassociate the leading-component run \<open>flatBP p \<frown> CM-prefixed-rest\<close> into the
+       \<open>flatBP r \<frown> [CM]\<close> form plus the final principal.\<close>
+    have concat_eq: "flatBP p @ concat (map (\<lambda>r. CM # flatBP r) (ps @ [DB u a]))
+                    = run @ Dsym u # flatBT a"
+    proof -
+      have "flatBP p @ concat (map (\<lambda>r. CM # flatBP r) (ps @ [DB u a]))
+            = flatBP p @ (concat (map (\<lambda>r. CM # flatBP r) ps) @ [CM]) @ (Dsym u # flatBT a)"
+        by simp
+      also have "\<dots> = flatBP p @ (CM # concat (map (\<lambda>r. flatBP r @ [CM]) ps))
+                        @ (Dsym u # flatBT a)"
+        using flat_CM_shift[of ps] by simp
+      also have "\<dots> = run @ Dsym u # flatBT a"
+        unfolding run_def by simp
+      finally show ?thesis .
+    qed
+    have flat2: "flatBT (Trm xs) = LP # (run @ Dsym u # flatBT a) @ [RP]"
+      using flat_xs concat_eq by simp
+    have flat_split: "flatBT (Trm xs) = pre @ (Dsym u # flatBT a) @ post"
+      using flat2 unfolding pre_def post_def by simp
+    have postRP: "\<forall>x \<in> set post. x = RP" unfolding post_def by simp
+    \<comment> \<open>The universal bound: any occurrence's cut reaches past \<open>pre\<close> via the peel.\<close>
+    have bound: "\<And>s pp b. flatBT (Trm xs) = s @ flatBP pp @ b \<Longrightarrow> (\<forall>x \<in> set b. x = RP)
+                            \<Longrightarrow> length pre \<le> length s"
+    proof -
+      fix s pp b
+      assume occ: "flatBT (Trm xs) = s @ flatBP pp @ b" and bRP: "\<forall>x \<in> set b. x = RP"
+      \<comment> \<open>The marked principal starts with \<open>Dsym\<close>, so \<open>s\<close> begins with the leading \<open>LP\<close>.\<close>
+      have sne: "s \<noteq> []"
+      proof (rule ccontr)
+        assume "\<not> s \<noteq> []"
+        hence "s = []" by simp
+        hence eqf: "flatBT (Trm xs) = flatBP pp @ b" using occ by simp
+        have "hd (flatBT (Trm xs)) = LP" using flat_split unfolding pre_def by simp
+        moreover have "hd (flatBT (Trm xs)) = Dsym (case pp of DB v c \<Rightarrow> v)"
+          using eqf by (cases pp) simp
+        ultimately show False by simp
+      qed
+      have hdLP: "hd (flatBT (Trm xs)) = LP" using flat_split unfolding pre_def by simp
+      have shead: "hd s = LP"
+        using occ sne hdLP by (simp add: hd_append)
+      define s' where "s' = tl s"
+      have ss': "s = LP # s'"
+        using sne shead unfolding s'_def by (cases s) auto
+      have peeleq: "s' @ flatBP pp @ b = run @ (Dsym u # flatBT a @ [RP])"
+      proof -
+        have "LP # (s' @ flatBP pp @ b) = LP # (run @ Dsym u # flatBT a @ [RP])"
+          using occ ss' flat2 by simp
+        thus ?thesis by simp
+      qed
+      have peeleq2: "s' @ flatBP pp @ b
+                    = concat (map (\<lambda>r. flatBP r @ [CM]) (p # ps)) @ (Dsym u # flatBT a @ [RP])"
+        using peeleq unfolding run_def by simp
+      have lenrun: "length (concat (map (\<lambda>r. flatBP r @ [CM]) (p # ps))) \<le> length s'"
+        by (rule rnsub_peel_components[OF peeleq2 bRP])
+      have "length pre = 1 + length run"
+        unfolding pre_def by simp
+      also have "\<dots> = 1 + length (concat (map (\<lambda>r. flatBP r @ [CM]) (p # ps)))"
+        unfolding run_def by simp
+      also have "\<dots> \<le> 1 + length s'" using lenrun by simp
+      also have "\<dots> = length s" using ss' by simp
+      finally show "length pre \<le> length s" .
+    qed
+    show ?thesis
+      using postRP flat_split bound by blast
+  qed
+qed
+
+\<comment> \<open>RIGHTNODES LENGTH BOUND.  An scb occurrence's marked-principal RightNodes is
+   no longer than the whole term's RightNodes; maximal iff equal length.\<close>
+lemma rnsub_RN_occ_len_le:
+  "flatBT (Trm ys) = s @ flatBP pp @ b \<Longrightarrow> (\<forall>x \<in> set b. x = RP)
+     \<Longrightarrow> length (RightNodes (Trm [pp])) \<le> length (RightNodes (Trm ys))"
+proof (induct "length (flatBT (Trm ys))" arbitrary: ys s pp b rule: less_induct)
+  case less
+  show ?case
+  proof (cases ys)
+    case Nil
+    \<comment> \<open>\<open>flatBT (Trm []) = [Zsym]\<close>: no room for a principal \<open>flatBP pp\<close> (length \<ge> 2).\<close>
+    have "length (flatBP pp) \<le> length (flatBT (Trm ys))"
+      using less.prems(1) by simp
+    moreover have "2 \<le> length (flatBP pp)" by (rule flatBP_len_ge2)
+    ultimately show ?thesis using Nil by simp
+  next
+    case (Cons y0 ys0)
+    hence ysne: "ys \<noteq> []" by simp
+    obtain u a where lst: "last ys = DB u a" by (cases "last ys") simp
+    obtain up ap where ppc: "pp = DB up ap" by (cases pp)
+    have occ: "flatBT (Trm ys) = s @ flatBP (DB up ap) @ b"
+      using less.prems(1) ppc by simp
+    obtain pre post where
+      postRP: "\<forall>x \<in> set post. x = RP"
+      and PP: "flatBT (Trm ys) = pre @ (Dsym u # flatBT a) @ post"
+      and bnd: "\<forall>s pp b. flatBT (Trm ys) = s @ flatBP pp @ b \<longrightarrow> (\<forall>x \<in> set b. x = RP)
+                            \<longrightarrow> length pre \<le> length s"
+      using rnsub_cut_ge_pre[OF ysne lst] by blast
+    have gepre: "length pre \<le> length s"
+      using bnd less.prems(1) less.prems(2) by blast
+    have dich:
+      "(length s = length pre \<and> flatBP pp = Dsym u # flatBT a \<and> b = post)
+       \<or> (length pre < length s
+            \<and> (\<exists>s2 b2. flatBT a = s2 @ flatBP pp @ b2
+                        \<and> (\<forall>x \<in> set b2. x = RP)
+                        \<and> length s = length pre + 1 + length s2))"
+      using rnsub_cut_ge_pre_dichotomy[OF occ less.prems(2) PP postRP gepre] ppc by simp
+    have RNys: "RightNodes (Trm ys) = the_enat u # RightNodes a"
+      using rnsub_RightNodes_cons[of y0 ys0] lst Cons by simp
+    show ?thesis
+    proof (cases "length s = length pre")
+      case True
+      have "flatBP pp = Dsym u # flatBT a" using dich True by simp
+      hence "RightNodes (Trm [pp]) = the_enat u # RightNodes a"
+        by (rule rnsub_RN_of_maximal)
+      thus ?thesis using RNys by simp
+    next
+      case False
+      hence ltpre: "length pre < length s" using gepre by simp
+      have "\<exists>s2 b2. flatBT a = s2 @ flatBP pp @ b2 \<and> (\<forall>x \<in> set b2. x = RP)
+                      \<and> length s = length pre + 1 + length s2"
+        using dich ltpre by force
+      then obtain s2 b2 where
+        a_occ: "flatBT a = s2 @ flatBP pp @ b2" and b2RP: "\<forall>x \<in> set b2. x = RP"
+        by blast
+      obtain zs where azs: "a = Trm zs" by (cases a)
+      have meas: "length (flatBT (Trm zs)) < length (flatBT (Trm ys))"
+        using PP azs by simp
+      have z_occ: "flatBT (Trm zs) = s2 @ flatBP pp @ b2" using a_occ azs by simp
+      have IH: "length (RightNodes (Trm [pp])) \<le> length (RightNodes (Trm zs))"
+        by (rule less.hyps[OF meas z_occ b2RP])
+      have "length (RightNodes (Trm zs)) \<le> length (RightNodes (Trm ys))"
+        using RNys azs by simp
+      thus ?thesis using IH azs by simp
+    qed
+  qed
+qed
+
+\<comment> \<open>THE CUT-PIN.  Two scb occurrences of the SAME term whose marked-principal
+   RightNodes have equal length share the same cut length.\<close>
+lemma rnsub_RN_pins_len:
+  "flatBT (Trm ys) = s\<^sub>0 @ flatBP p\<^sub>0 @ b\<^sub>0 \<Longrightarrow> (\<forall>x \<in> set b\<^sub>0. x = RP)
+     \<Longrightarrow> flatBT (Trm ys) = s\<^sub>1 @ flatBP p\<^sub>1 @ b\<^sub>1 \<Longrightarrow> (\<forall>x \<in> set b\<^sub>1. x = RP)
+     \<Longrightarrow> length (RightNodes (Trm [p\<^sub>0])) = length (RightNodes (Trm [p\<^sub>1]))
+     \<Longrightarrow> length s\<^sub>0 = length s\<^sub>1"
+proof (induct "length (flatBT (Trm ys))" arbitrary: ys s\<^sub>0 p\<^sub>0 b\<^sub>0 s\<^sub>1 p\<^sub>1 b\<^sub>1 rule: less_induct)
+  case less
+  show ?case
+  proof (cases ys)
+    case Nil
+    have "length (flatBP p\<^sub>0) \<le> length (flatBT (Trm ys))"
+      using less.prems(1) by simp
+    moreover have "2 \<le> length (flatBP p\<^sub>0)" by (rule flatBP_len_ge2)
+    ultimately show ?thesis using Nil by simp
+  next
+    case (Cons y0 ys0)
+    hence ysne: "ys \<noteq> []" by simp
+    obtain u a where lst: "last ys = DB u a" by (cases "last ys") simp
+    obtain up0 ap0 where pp0: "p\<^sub>0 = DB up0 ap0" by (cases p\<^sub>0)
+    obtain up1 ap1 where pp1: "p\<^sub>1 = DB up1 ap1" by (cases p\<^sub>1)
+    have occ0: "flatBT (Trm ys) = s\<^sub>0 @ flatBP (DB up0 ap0) @ b\<^sub>0"
+      using less.prems(1) pp0 by simp
+    have occ1: "flatBT (Trm ys) = s\<^sub>1 @ flatBP (DB up1 ap1) @ b\<^sub>1"
+      using less.prems(3) pp1 by simp
+    \<comment> \<open>ONE canonical split (with the universal cut-bound) used for both occurrences.\<close>
+    obtain pre post where
+      postRP: "\<forall>x \<in> set post. x = RP"
+      and PP: "flatBT (Trm ys) = pre @ (Dsym u # flatBT a) @ post"
+      and bnd: "\<forall>s pp b. flatBT (Trm ys) = s @ flatBP pp @ b \<longrightarrow> (\<forall>x \<in> set b. x = RP)
+                            \<longrightarrow> length pre \<le> length s"
+      using rnsub_cut_ge_pre[OF ysne lst] by blast
+    have gepre0: "length pre \<le> length s\<^sub>0"
+      using bnd less.prems(1) less.prems(2) by blast
+    have gepre1': "length pre \<le> length s\<^sub>1"
+      using bnd less.prems(3) less.prems(4) by blast
+    have dich0:
+      "(length s\<^sub>0 = length pre \<and> flatBP p\<^sub>0 = Dsym u # flatBT a \<and> b\<^sub>0 = post)
+       \<or> (length pre < length s\<^sub>0
+            \<and> (\<exists>s2 b2. flatBT a = s2 @ flatBP p\<^sub>0 @ b2
+                        \<and> (\<forall>x \<in> set b2. x = RP)
+                        \<and> length s\<^sub>0 = length pre + 1 + length s2))"
+      using rnsub_cut_ge_pre_dichotomy[OF occ0 less.prems(2) PP postRP gepre0] pp0 by simp
+    have dich1:
+      "(length s\<^sub>1 = length pre \<and> flatBP p\<^sub>1 = Dsym u # flatBT a \<and> b\<^sub>1 = post)
+       \<or> (length pre < length s\<^sub>1
+            \<and> (\<exists>s2 b2. flatBT a = s2 @ flatBP p\<^sub>1 @ b2
+                        \<and> (\<forall>x \<in> set b2. x = RP)
+                        \<and> length s\<^sub>1 = length pre + 1 + length s2))"
+      using rnsub_cut_ge_pre_dichotomy[OF occ1 less.prems(4) PP postRP gepre1'] pp1 by simp
+    have RNa1: "length (RightNodes (Trm [DB u a])) = 1 + length (RightNodes a)"
+      by simp
+    show ?thesis
+    proof (cases "length s\<^sub>0 = length pre")
+      case True \<comment> \<open>occ 0 maximal\<close>
+      have m0: "flatBP p\<^sub>0 = Dsym u # flatBT a" using dich0 True by simp
+      have rn0: "length (RightNodes (Trm [p\<^sub>0])) = 1 + length (RightNodes a)"
+        using rnsub_RN_of_maximal[OF m0] by simp
+      \<comment> \<open>occ 1 must also be maximal (else its RN length \<le> length(RN a) < rn0).\<close>
+      have "length s\<^sub>1 = length pre"
+      proof (rule ccontr)
+        assume ne1: "length s\<^sub>1 \<noteq> length pre"
+        hence ltp: "length pre < length s\<^sub>1" using gepre1' by simp
+        have "\<exists>s2 b2. flatBT a = s2 @ flatBP p\<^sub>1 @ b2 \<and> (\<forall>x \<in> set b2. x = RP)
+                        \<and> length s\<^sub>1 = length pre + 1 + length s2"
+          using dich1 ltp by force
+        then obtain s2 b2 where
+          a_occ: "flatBT a = s2 @ flatBP p\<^sub>1 @ b2" and b2RP: "\<forall>x \<in> set b2. x = RP"
+          by blast
+        obtain zs where azs: "a = Trm zs" by (cases a)
+        have "length (RightNodes (Trm [p\<^sub>1])) \<le> length (RightNodes a)"
+          using rnsub_RN_occ_len_le[of zs s2 p\<^sub>1 b2] a_occ b2RP azs by simp
+        hence "length (RightNodes (Trm [p\<^sub>1])) < 1 + length (RightNodes a)" by simp
+        thus False using less.prems(5) rn0 by simp
+      qed
+      thus ?thesis using True by simp
+    next
+      case False \<comment> \<open>occ 0 descends\<close>
+      hence lt0: "length pre < length s\<^sub>0" using gepre0 by simp
+      have "\<exists>s2 b2. flatBT a = s2 @ flatBP p\<^sub>0 @ b2 \<and> (\<forall>x \<in> set b2. x = RP)
+                      \<and> length s\<^sub>0 = length pre + 1 + length s2"
+        using dich0 lt0 by force
+      then obtain s20 b20 where
+        a_occ0: "flatBT a = s20 @ flatBP p\<^sub>0 @ b20" and b20RP: "\<forall>x \<in> set b20. x = RP"
+        and len0: "length s\<^sub>0 = length pre + 1 + length s20"
+        by blast
+      \<comment> \<open>occ 1 must also descend (else occ1 maximal: length(RN p1)=1+len(RN a) but
+         occ0 descends \<Rightarrow> length(RN p0) \<le> len(RN a) < that, contradicting equality).\<close>
+      have "length s\<^sub>1 \<noteq> length pre"
+      proof (rule ccontr)
+        assume "\<not> length s\<^sub>1 \<noteq> length pre"
+        hence True1: "length s\<^sub>1 = length pre" by simp
+        have m1: "flatBP p\<^sub>1 = Dsym u # flatBT a" using dich1 True1 by simp
+        have rn1: "length (RightNodes (Trm [p\<^sub>1])) = 1 + length (RightNodes a)"
+          using rnsub_RN_of_maximal[OF m1] by simp
+        obtain zs where azs: "a = Trm zs" by (cases a)
+        have "length (RightNodes (Trm [p\<^sub>0])) \<le> length (RightNodes a)"
+          using rnsub_RN_occ_len_le[of zs s20 p\<^sub>0 b20] a_occ0 b20RP azs by simp
+        hence "length (RightNodes (Trm [p\<^sub>0])) < 1 + length (RightNodes a)" by simp
+        thus False using less.prems(5) rn1 by simp
+      qed
+      hence lt1: "length pre < length s\<^sub>1" using gepre1' by simp
+      have "\<exists>s2 b2. flatBT a = s2 @ flatBP p\<^sub>1 @ b2 \<and> (\<forall>x \<in> set b2. x = RP)
+                      \<and> length s\<^sub>1 = length pre + 1 + length s2"
+        using dich1 lt1 by force
+      then obtain s21 b21 where
+        a_occ1: "flatBT a = s21 @ flatBP p\<^sub>1 @ b21" and b21RP: "\<forall>x \<in> set b21. x = RP"
+        and len1: "length s\<^sub>1 = length pre + 1 + length s21"
+        by blast
+      obtain zs where azs: "a = Trm zs" by (cases a)
+      have meas: "length (flatBT (Trm zs)) < length (flatBT (Trm ys))"
+        using PP azs by simp
+      have z_occ0: "flatBT (Trm zs) = s20 @ flatBP p\<^sub>0 @ b20" using a_occ0 azs by simp
+      have z_occ1: "flatBT (Trm zs) = s21 @ flatBP p\<^sub>1 @ b21" using a_occ1 azs by simp
+      have IH: "length s20 = length s21"
+        by (rule less.hyps[OF meas z_occ0 b20RP z_occ1 b21RP less.prems(5)])
+      show ?thesis using len0 len1 IH by simp
+    qed
+  qed
+qed
+
+\<comment> \<open>UNCONDITIONAL conjunct (4) of \<open>p_7_2_scb_unique\<close>: the kind-0 pin is derived,
+   not assumed.  kind-0 forces \<open>length (RightNodes (Trm [p])) = 2\<close> for both
+   decompositions, so @{thm [source] rnsub_RN_pins_len} pins the cut length, and
+   @{thm [source] m_7_2_scb_c_unique} + @{thm [source] m_7_2_scb_kind_unique_of_ceq}
+   close it.\<close>
+lemma m_7_2_scb_kind0_unique_uncond:
+  assumes tTB: "t \<in> T_B" and tne: "t \<noteq> Trm []"
+      and d0: "scb_kind0 t s\<^sub>0 c\<^sub>0 b\<^sub>0"
+      and d1: "scb_kind0 t s\<^sub>1 c\<^sub>1 b\<^sub>1"
+  shows "(s\<^sub>0, c\<^sub>0, b\<^sub>0) = (s\<^sub>1, c\<^sub>1, b\<^sub>1)"
+proof -
+  have sd0: "scb_decomp t s\<^sub>0 c\<^sub>0 b\<^sub>0" using d0 by (simp add: scb_kind0_def)
+  have sd1: "scb_decomp t s\<^sub>1 c\<^sub>1 b\<^sub>1" using d1 by (simp add: scb_kind0_def)
+  obtain ys where ys: "t = Trm ys" by (cases t)
+  \<comment> \<open>Unfold the occurrences and the principal strings.\<close>
+  from sd0 have e0: "flatBT t = s\<^sub>0 @ c\<^sub>0 @ b\<^sub>0" and pc0: "isPTB_str c\<^sub>0"
+    and b0RP: "\<forall>x \<in> set b\<^sub>0. x = RP"
+    using tne by (auto simp: scb_decomp_def)
+  from sd1 have e1: "flatBT t = s\<^sub>1 @ c\<^sub>1 @ b\<^sub>1" and pc1: "isPTB_str c\<^sub>1"
+    and b1RP: "\<forall>x \<in> set b\<^sub>1. x = RP"
+    using tne by (auto simp: scb_decomp_def)
+  obtain p\<^sub>0 where p0: "c\<^sub>0 = flatBP p\<^sub>0" using pc0 unfolding isPTB_str_def by blast
+  obtain p\<^sub>1 where p1: "c\<^sub>1 = flatBP p\<^sub>1" using pc1 unfolding isPTB_str_def by blast
+  \<comment> \<open>kind-0 pins both RightNodes lengths to 2.\<close>
+  have k0: "\<forall>p. c\<^sub>0 = flatBP p \<longrightarrow>
+        (Lng (RightNodes (Trm [p])) = 2 \<and> RightNodes (Trm [p]) ! 1 = 0)"
+    using d0 by (simp add: scb_kind0_def)
+  have rn0: "length (RightNodes (Trm [p\<^sub>0])) = 2"
+    using k0 p0 by simp
+  have k1: "\<forall>p. c\<^sub>1 = flatBP p \<longrightarrow>
+        (Lng (RightNodes (Trm [p])) = 2 \<and> RightNodes (Trm [p]) ! 1 = 0)"
+    using d1 by (simp add: scb_kind0_def)
+  have rn1: "length (RightNodes (Trm [p\<^sub>1])) = 2"
+    using k1 p1 by simp
+  have rneq: "length (RightNodes (Trm [p\<^sub>0])) = length (RightNodes (Trm [p\<^sub>1]))"
+    using rn0 rn1 by simp
+  \<comment> \<open>Pin the cut length, then close with the \<open>c\<close>-equality reduction.\<close>
+  have occ0: "flatBT (Trm ys) = s\<^sub>0 @ flatBP p\<^sub>0 @ b\<^sub>0" using e0 p0 ys by simp
+  have occ1: "flatBT (Trm ys) = s\<^sub>1 @ flatBP p\<^sub>1 @ b\<^sub>1" using e1 p1 ys by simp
+  have pin: "length s\<^sub>0 = length s\<^sub>1"
+    by (rule rnsub_RN_pins_len[OF occ0 b0RP occ1 b1RP rneq])
+  have ceq: "c\<^sub>0 = c\<^sub>1" by (rule m_7_2_scb_c_unique[OF tne sd0 sd1 pin])
+  show ?thesis by (rule m_7_2_scb_kind_unique_of_ceq[OF tTB ceq sd0 sd1])
+qed
+
+\<comment> \<open>UNCONDITIONAL conjunct (5): kind-1 also pins \<open>length (RightNodes (Trm [p]))\<close>,
+   namely \<open>j\<^sub>1 + 1\<close> where \<open>j\<^sub>1 = Lng (RightNodes (Trm [p])) - 1\<close>.  Both kind-1
+   decompositions share the SAME \<open>j\<^sub>1\<close>? — only if the suffix length is forced.  We
+   pin via the SAME RightNodes suffix: kind-1's \<open>j\<^sub>1 \<ge> 1\<close> plus the shared suffix
+   property; here we keep the residual that both have equal RightNodes length.\<close>
+lemma m_7_2_scb_kind1_unique_uncond:
+  assumes tTB: "t \<in> T_B" and tne: "t \<noteq> Trm []"
+      and d0: "scb_kind1 t s\<^sub>0 c\<^sub>0 b\<^sub>0"
+      and d1: "scb_kind1 t s\<^sub>1 c\<^sub>1 b\<^sub>1"
+      and rneq: "\<And>p\<^sub>0 p\<^sub>1. c\<^sub>0 = flatBP p\<^sub>0 \<Longrightarrow> c\<^sub>1 = flatBP p\<^sub>1
+                   \<Longrightarrow> length (RightNodes (Trm [p\<^sub>0])) = length (RightNodes (Trm [p\<^sub>1]))"
+  shows "(s\<^sub>0, c\<^sub>0, b\<^sub>0) = (s\<^sub>1, c\<^sub>1, b\<^sub>1)"
+proof -
+  have sd0: "scb_decomp t s\<^sub>0 c\<^sub>0 b\<^sub>0" using d0 by (simp add: scb_kind1_def)
+  have sd1: "scb_decomp t s\<^sub>1 c\<^sub>1 b\<^sub>1" using d1 by (simp add: scb_kind1_def)
+  obtain ys where ys: "t = Trm ys" by (cases t)
+  from sd0 have e0: "flatBT t = s\<^sub>0 @ c\<^sub>0 @ b\<^sub>0" and pc0: "isPTB_str c\<^sub>0"
+    and b0RP: "\<forall>x \<in> set b\<^sub>0. x = RP"
+    using tne by (auto simp: scb_decomp_def)
+  from sd1 have e1: "flatBT t = s\<^sub>1 @ c\<^sub>1 @ b\<^sub>1" and pc1: "isPTB_str c\<^sub>1"
+    and b1RP: "\<forall>x \<in> set b\<^sub>1. x = RP"
+    using tne by (auto simp: scb_decomp_def)
+  obtain p\<^sub>0 where p0: "c\<^sub>0 = flatBP p\<^sub>0" using pc0 unfolding isPTB_str_def by blast
+  obtain p\<^sub>1 where p1: "c\<^sub>1 = flatBP p\<^sub>1" using pc1 unfolding isPTB_str_def by blast
+  have rneq': "length (RightNodes (Trm [p\<^sub>0])) = length (RightNodes (Trm [p\<^sub>1]))"
+    by (rule rneq[OF p0 p1])
+  have occ0: "flatBT (Trm ys) = s\<^sub>0 @ flatBP p\<^sub>0 @ b\<^sub>0" using e0 p0 ys by simp
+  have occ1: "flatBT (Trm ys) = s\<^sub>1 @ flatBP p\<^sub>1 @ b\<^sub>1" using e1 p1 ys by simp
+  have pin: "length s\<^sub>0 = length s\<^sub>1"
+    by (rule rnsub_RN_pins_len[OF occ0 b0RP occ1 b1RP rneq'])
+  have ceq: "c\<^sub>0 = c\<^sub>1" by (rule m_7_2_scb_c_unique[OF tne sd0 sd1 pin])
+  show ?thesis by (rule m_7_2_scb_kind_unique_of_ceq[OF tTB ceq sd0 sd1])
+qed
+
 end

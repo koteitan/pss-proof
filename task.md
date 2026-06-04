@@ -59,7 +59,7 @@
       - ✅🚧 命題（scb分解の置換可能性）〔原文 literal は**偽**(反例 t0=c0=(),c1=複項; `m_7_2_scb_replaceable_counterexample` green)→**A12**。退化 `m_7_2_scb_replaceable_t0zero`/像条件つき補正 `m_7_2_scb_replaceable_corr_mod_image` green〕
       - ✅🚧 命題（scb分解の合成則）〔part(1) `m_7_2_scb_compose`(green)。part(2) は**原文どおりだと偽**(反例 t=Trm[],c=[Zsym]; `scbcomp_compose2_counterexample` green)→訂正版 `scbcomp_compose2_PT`(前提 isPTB_str c 追加)green。**A11**〕
       - ✅ 命題（scb分解の自明性の判定条件）〔`m_7_2_scb_triviality`(両 shows green)。t=c⟺自明分解⟺s=[]分解存在。converse は flatBT_inj+プレフィックス自由(`scbtriv_flat_append_RP_nil`)〕
-      - 🚨🚧 命題（scb分解の一意性）〔(1) `m_7_2_scb_unique_decomp`(green)。種一意性(4)(5)は**t=Trm[]で偽**→**A14**。`m_7_2_scb_c_unique`+`m_7_2_scb_kind0/1_unique` green(**脊柱 pinning length s0=s1 を仮定**、文字列 cancel `scbc_principal_cancel`+`flatinj_flatBP_cancel`)。**残＝pinning 導出**(RightNodes 脊柱、rnsub_* 多補題)＋(2)domB↔kind〕
+      - ✅🚧 命題（scb分解の一意性）〔(1) `m_7_2_scb_unique_decomp`/(4) `m_7_2_scb_kind0_unique_uncond`(**無条件 green**, t=Trm[] 除外=A14)。pinning 完成: `rnsub_cut_ge_pre`(暴走 by を prefix-nonneg 論法に置換)→`rnsub_RN_pins_len`→kind0 は RightNodes 長2固定で無条件化。(5) kind1 は `m_7_2_scb_kind1_unique_uncond`(RightNodes 長等式を residual に。kind1 は長さを a priori 固定しない)。残＝kind1 長 pin＋(2)domB↔kind〕
       - ✅ 系（加法と scb分解の関係）〔(1) `m_7_2_add_scb_conj1`/(2) `m_7_2_add_scb_conj2`(c→c'置換、scb一意性経由)green。(3) は**原文偽**(反例 `m_7_2_add_scb_conj3_counterexample`、D_v(t+c)出現の非一意性)→**A13**訂正済〕
       - 🚨 命題（scb分解と基本列の関係）
       - ✅ 命題（$\textrm{RightNodes}$ と部分表現の関係）〔`m_7_2_RightNodes_subexpr`、BT項レベル(spineSub)、§6独立〕
