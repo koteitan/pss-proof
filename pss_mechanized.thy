@@ -47481,6 +47481,385 @@ proof -
 qed
 
 
+text \<open>\<S>6.6 KEYSTONE BACKWARD monoT-core, GENERALIZED-INVARIANT REFORMULATION
+  (Front A, tag pss-bwdcore-G).  This banks the precise reduction of the SINGLE
+  residual of the entire \<S>6.6 keystone to a CLEAN, self-contained,
+  single-sequence identity \<open>G\<close> about the recursive arguments \<open>N\<^sub>J M J\<close>.
+
+  EMPIRICAL DISCOVERY (this worktree, \<open>/tmp/frontA_gen.py\<close>, \<open>/tmp/frontA_clean.py\<close>;
+  also \<open>/tmp/frontA_check2.py\<close> for the FALSE alternative):
+
+    G (TRUE, 0-fail / 392 cases, len\<le>4 vals\<le>3):
+      \<open>N \<in> T_PS\<close>, \<open>monoT N\<close>, \<open>RedCondA N\<close>, \<open>entry N 1 0 \<le> entry N 0 0\<close>
+        \<Longrightarrow> (IncrFirst ^^ (entry N 0 0 - entry N 1 0)) (Red N) = N.
+
+  G is the inverse-shift / IncrFirst-restore identity: \<open>Red\<close> lowers row 0 of a
+  monoT RedCondA-sequence by exactly \<open>e = entry N 0 0 - entry N 1 0\<close>, and
+  re-applying \<open>IncrFirst\<close> \<open>e\<close> times restores \<open>N\<close>.  Both hypotheses are essential:
+  WITHOUT \<open>RedCondA\<close> it fails 2918/3310 (\<open>/tmp/frontA_gen2.py\<close>).  Note the prior
+  round's suggested generalization \<open>Br (Red M) = Br M for monoT M with RedCondA M\<close>
+  (B not assumed) is FALSE: 285/384 fail on the row-shifted non-core sequences
+  (\<open>/tmp/frontA_check2.py\<close>); the correct invariant is the single-sequence G above,
+  which stays valid precisely because the \<open>e\<close> in the IncrFirst-power is tied to
+  \<open>N\<close>'s own head \<open>entry N 0 0 - entry N 1 0\<close>.
+
+  This lemma packages the keystone so that the ONLY remaining obligation is G
+  applied to each \<open>N\<^sub>J M J\<close>.  Cites only GREEN facts (@{thm [source]
+  entry_NJ_0_0}, @{thm [source] entry_NJ_1_0}, @{thm [source]
+  kst_bwdcore_master}); cites neither the goal nor any \<open>p_*\<close> stub.\<close>
+
+lemma kst_bwdcore_master_via_G:
+  assumes MT: "M \<in> T_PS" and mono: "monoT M"
+    and c0: "entry M 0 0 = 0" and c1: "entry M 1 0 = 0"
+    and condA: "RedCondA M"
+    and G: "\<And>J. J < Lng (Br M) \<Longrightarrow>
+        (IncrFirst ^^ (entry (NJ M J) 0 0 - entry (NJ M J) 1 0)) (Red (NJ M J)) = NJ M J"
+  shows "Red M = M"
+proof -
+  have M_PT: "M \<in> PT_PS" using MT mono by (simp add: PT_PS_def)
+  have blocks: "\<And>J. J < Lng (Br M) \<Longrightarrow>
+      (IncrFirst ^^ (Joints M ! J + 1 - npJ M J)) (Red (NJ M J)) = Br M ! J"
+  proof -
+    fix J assume JBr: "J < Lng (Br M)"
+    \<comment> \<open>the IncrFirst-power index matches \<open>entry (NJ M J) 0 0 - entry (NJ M J) 1 0\<close>
+        for a core \<open>M\<close>.\<close>
+    have e0: "entry (NJ M J) 0 0 = Joints M ! J + 1"
+      using entry_NJ_0_0[of M J] c0 by simp
+    have e1: "entry (NJ M J) 1 0 = npJ M J"
+      using entry_NJ_1_0[of M J] c1 by simp
+    have pow_eq: "entry (NJ M J) 0 0 - entry (NJ M J) 1 0 = Joints M ! J + 1 - npJ M J"
+      using e0 e1 by simp
+    \<comment> \<open>G applied to \<open>N\<^sub>J M J\<close> gives the IncrFirst-restore identity; \<open>NJ M J = Br M ! J\<close>.\<close>
+    have restore: "(IncrFirst ^^ (Joints M ! J + 1 - npJ M J)) (Red (NJ M J)) = NJ M J"
+      using G[OF JBr] pow_eq by simp
+    have njbr: "NJ M J = Br M ! J"
+    proof (cases "TrMax M = Lng M - 1")
+      case True
+      \<comment> \<open>trunk subcase: \<open>Br M = []\<close>, so the branch index is vacuous.\<close>
+      have "Br M = []" using True by (simp add: Br_def)
+      hence "Lng (Br M) = 0" by simp
+      thus ?thesis using JBr by simp
+    next
+      case False
+      show ?thesis by (rule kst_bwdcore_NJ_eq_Br[OF MT mono c0 c1 condA False JBr])
+    qed
+    show "(IncrFirst ^^ (Joints M ! J + 1 - npJ M J)) (Red (NJ M J)) = Br M ! J"
+      using restore njbr by simp
+  qed
+  show ?thesis by (rule kst_bwdcore_master[OF MT mono c0 c1 condA blocks])
+qed
+
+
+text \<open>\<S>6.6 KEYSTONE BACKWARD, G-INSTANCE WIRING (Front A, tag pss-bwdcore-G).
+  Confirms that the keystone's per-branch obligation is LITERALLY G specialised
+  to \<open>N\<^sub>J M J\<close> (with the IncrFirst-power read off \<open>N\<^sub>J M J\<close>'s own head): if a
+  generalized statement \<open>Gstmt\<close> of the shape
+
+    \<open>\<And>N. N \<in> T_PS \<Longrightarrow> monoT N \<Longrightarrow> RedCondA N \<Longrightarrow> entry N 1 0 \<le> entry N 0 0
+        \<Longrightarrow> (IncrFirst ^^ (entry N 0 0 - entry N 1 0)) (Red N) = N\<close>
+
+  is available, it discharges the keystone via @{thm [source]
+  kst_bwdcore_master_via_G}, provided each \<open>N\<^sub>J M J\<close> meets G's hypotheses
+  (\<open>N\<^sub>J M J \<in> T_PS\<close>, monoT-or-zeroT, RedCondA, row-1 \<open>\<le>\<close> row-0).  This is the
+  single open obligation that unblocks \<S>6.5 \<open>Red_le\<close>.  Cites only GREEN facts.\<close>
+
+lemma kst_bwdcore_master_of_Gstmt:
+  assumes MT: "M \<in> T_PS" and mono: "monoT M"
+    and c0: "entry M 0 0 = 0" and c1: "entry M 1 0 = 0"
+    and condA: "RedCondA M"
+    and Gstmt: "\<And>N. N \<in> T_PS \<Longrightarrow> monoT N \<Longrightarrow> RedCondA N
+        \<Longrightarrow> entry N 1 0 \<le> entry N 0 0
+        \<Longrightarrow> (IncrFirst ^^ (entry N 0 0 - entry N 1 0)) (Red N) = N"
+    and Ghyp: "\<And>J. J < Lng (Br M) \<Longrightarrow>
+        NJ M J \<in> T_PS \<and> monoT (NJ M J) \<and> RedCondA (NJ M J)
+          \<and> entry (NJ M J) 1 0 \<le> entry (NJ M J) 0 0"
+  shows "Red M = M"
+proof (rule kst_bwdcore_master_via_G[OF MT mono c0 c1 condA])
+  fix J assume JBr: "J < Lng (Br M)"
+  have h: "NJ M J \<in> T_PS \<and> monoT (NJ M J) \<and> RedCondA (NJ M J)
+            \<and> entry (NJ M J) 1 0 \<le> entry (NJ M J) 0 0"
+    by (rule Ghyp[OF JBr])
+  show "(IncrFirst ^^ (entry (NJ M J) 0 0 - entry (NJ M J) 1 0)) (Red (NJ M J)) = NJ M J"
+    by (rule Gstmt) (use h in auto)
+qed
+
+
+
+text \<open>\<S>6.6 KEYSTONE BACKWARD, INVERSE-SHIFT INFRASTRUCTURE (Front B, tag
+  pss-bwdcore-invshift).  The single residual of the backward monoT-core keystone
+  is the per-branch obligation \<open>(IncrFirst ^^ e\<^sub>J) (Red (N\<^sub>J M J)) = Br M ! J\<close>.
+  Since (GREEN) \<open>Br M!J = N\<^sub>J M J\<close> (@{thm [source] kst_bwdcore_NJ_eq_Br}) and
+  \<open>e\<^sub>J = Joints M!J + 1 - npJ M J = entry (N\<^sub>J M J) 0 0 - entry (N\<^sub>J M J) 1 0\<close>
+  (the head row0/row1 gap of the shifted block \<open>N\<^sub>J M J\<close>), the obligation is
+  EXACTLY the INVERSE-SHIFT identity
+    \<open>IncrFirst\<^bsup>m\<^sub>0\<^sub>0 - m\<^sub>1\<^sub>0\<^esup> (Red X) = X\<close>   for \<open>X = N\<^sub>J M J\<close>.
+  This is verified empirically (\<open>/tmp/fb_verify.py\<close>, \<open>/tmp/fb_gen3.py\<close>): over the
+  non-multi \<open>RedCondA\<close> sequences with \<open>m\<^sub>1\<^sub>0 \<le> m\<^sub>0\<^sub>0\<close> (len\<le>4, vals\<le>3) the
+  identity holds 396/396; over the 96 core-nontrunk A&B branches the obligation
+  holds 96/96, splitting into 58 \<open>npJ = 0\<close> (so \<open>m\<^sub>1\<^sub>0(N\<^sub>J) = 0\<close>) plus 37 zeroT
+  branches (also \<open>m\<^sub>1\<^sub>0 = 0\<close>) and 38 \<open>m\<^sub>1\<^sub>0 > 0\<close> branches.\<close>
+
+text \<open>The pure entry-algebra inverse of @{const shiftRow0}: raising row 0 back up by
+  \<open>m\<^sub>0\<^sub>0 = entry M 0 0\<close> via @{const IncrFirst} undoes the row-0 down-shift, provided
+  row 0 never underflowed (\<open>monoT M\<close> gives \<open>entry M 0 0 \<le> entry M 0 j\<close>, so
+  \<open>(entry M 0 j - m\<^sub>0\<^sub>0) + m\<^sub>0\<^sub>0 = entry M 0 j\<close>).  EMPIRICAL: 0-fail over all
+  non-multi sequences (\<open>/tmp/fb_alg.py\<close>, 10224 cases).\<close>
+
+lemma bwd_IncrFirst_m00_shiftRow0_monoT:
+  assumes MT: "M \<in> T_PS" and mono: "monoT M"
+  shows "(IncrFirst ^^ (entry M 0 0)) (shiftRow0 M) = M"
+proof (rule nth_equalityI)
+  let ?m00 = "entry M 0 0"
+  show "Lng ((IncrFirst ^^ ?m00) (shiftRow0 M)) = Lng M" by simp
+next
+  fix j assume jl0: "j < Lng ((IncrFirst ^^ (entry M 0 0)) (shiftRow0 M))"
+  let ?m00 = "entry M 0 0"
+  have jl: "j < Lng M" using jl0 by simp
+  have jsh: "j < Lng (shiftRow0 M)" using jl by simp
+  \<comment> \<open>row 0 (fst): \<open>(entry M 0 j - m\<^sub>0\<^sub>0) + m\<^sub>0\<^sub>0 = entry M 0 j\<close>.\<close>
+  have e0: "entry ((IncrFirst ^^ ?m00) (shiftRow0 M)) 0 j = entry M 0 j"
+  proof -
+    have "entry ((IncrFirst ^^ ?m00) (shiftRow0 M)) 0 j
+        = entry (shiftRow0 M) 0 j + ?m00"
+      by (rule entry_funpow_IncrFirst0[OF jsh])
+    also have "\<dots> = (entry M 0 j - ?m00) + ?m00"
+      using entry_shiftRow0_0[OF jl] by simp
+    also have "\<dots> = entry M 0 j"
+      using entry0_ge_min[OF MT mono jl] by simp
+    finally show ?thesis .
+  qed
+  \<comment> \<open>row 1 (snd): unchanged.\<close>
+  have e1: "entry ((IncrFirst ^^ ?m00) (shiftRow0 M)) 1 j = entry M 1 j"
+  proof -
+    have "entry ((IncrFirst ^^ ?m00) (shiftRow0 M)) 1 j
+        = entry (shiftRow0 M) 1 j"
+      by (rule entry_funpow_IncrFirst1[OF jsh])
+    also have "\<dots> = entry M 1 j" using entry_shiftRow0_1[OF jl] by simp
+    finally show ?thesis .
+  qed
+  show "(IncrFirst ^^ ?m00) (shiftRow0 M) ! j = M ! j"
+  proof -
+    have "fst ((IncrFirst ^^ ?m00) (shiftRow0 M) ! j) = fst (M ! j)"
+      using e0 by (simp add: entry_def)
+    moreover have "snd ((IncrFirst ^^ ?m00) (shiftRow0 M) ! j) = snd (M ! j)"
+      using e1 by (simp add: entry_def)
+    ultimately show ?thesis by (simp add: prod_eq_iff)
+  qed
+qed
+
+text \<open>The uniform inverse-shift entry algebra: raising row 0 back up by \<open>e\<close> via
+  @{const IncrFirst} undoes a uniform row-0 down-shift @{term "rebaseRow0 e 0 X"},
+  provided \<open>e\<close> is a row-0 lower bound of \<open>X\<close> (no nat-truncation).  This
+  generalises @{thm [source] bwd_IncrFirst_m00_shiftRow0_monoT} to an arbitrary
+  uniform shift amount \<open>e\<close>.\<close>
+
+lemma bwd_IncrFirst_e_rebaseRow0:
+  assumes lb: "\<And>j. j < Lng X \<Longrightarrow> e \<le> entry X 0 j"
+  shows "(IncrFirst ^^ e) (rebaseRow0 e 0 X) = X"
+proof (rule nth_equalityI)
+  show "Lng ((IncrFirst ^^ e) (rebaseRow0 e 0 X)) = Lng X" by simp
+next
+  fix j assume jl0: "j < Lng ((IncrFirst ^^ e) (rebaseRow0 e 0 X))"
+  have jl: "j < Lng X" using jl0 by simp
+  have jre: "j < Lng (rebaseRow0 e 0 X)" using jl by simp
+  have e0: "entry ((IncrFirst ^^ e) (rebaseRow0 e 0 X)) 0 j = entry X 0 j"
+  proof -
+    have "entry ((IncrFirst ^^ e) (rebaseRow0 e 0 X)) 0 j
+        = entry (rebaseRow0 e 0 X) 0 j + e"
+      by (rule entry_funpow_IncrFirst0[OF jre])
+    also have "\<dots> = (entry X 0 j - e + 0) + e"
+      using entry_rebaseRow0_0[OF jl] by simp
+    also have "\<dots> = entry X 0 j" using lb[OF jl] by simp
+    finally show ?thesis .
+  qed
+  have e1: "entry ((IncrFirst ^^ e) (rebaseRow0 e 0 X)) 1 j = entry X 1 j"
+  proof -
+    have "entry ((IncrFirst ^^ e) (rebaseRow0 e 0 X)) 1 j
+        = entry (rebaseRow0 e 0 X) 1 j"
+      by (rule entry_funpow_IncrFirst1[OF jre])
+    also have "\<dots> = entry X 1 j" using entry_rebaseRow0_1[OF jl] by simp
+    finally show ?thesis .
+  qed
+  show "(IncrFirst ^^ e) (rebaseRow0 e 0 X) ! j = X ! j"
+  proof -
+    have "fst ((IncrFirst ^^ e) (rebaseRow0 e 0 X) ! j) = fst (X ! j)"
+      using e0 by (simp add: entry_def)
+    moreover have "snd ((IncrFirst ^^ e) (rebaseRow0 e 0 X) ! j) = snd (X ! j)"
+      using e1 by (simp add: entry_def)
+    ultimately show ?thesis by (simp add: prod_eq_iff)
+  qed
+qed
+
+text \<open>\<S>6.6 KEYSTONE BACKWARD, INVERSE-SHIFT REDUCTION (Front B, tag
+  pss-bwdcore-invshift).  Reduces the inverse-shift identity
+  \<open>IncrFirst\<^bsup>e\<^esup> (Red X) = X\<close> (\<open>e = m\<^sub>0\<^sub>0 - m\<^sub>1\<^sub>0\<close>) to the UNIFORM \<open>Red\<close>-CHARACTERISATION
+    \<open>Red X = rebaseRow0 e 0 X\<close>      (= \<open>X\<close> with row 0 lowered uniformly by \<open>e\<close>).
+  EMPIRICAL (\<open>/tmp/fb_uniform.py\<close>): the uniform characterisation
+  \<open>Red X = rebaseRow0 (m\<^sub>0\<^sub>0-m\<^sub>1\<^sub>0) 0 X\<close> holds 1975/1975 over the non-multi
+  \<open>RedCondA\<close> sequences with \<open>m\<^sub>1\<^sub>0 \<le> m\<^sub>0\<^sub>0\<close> (len\<le>5, vals\<le>3).  Given that
+  characterisation and the lower-bound \<open>e \<le> entry X 0 j\<close> (from \<open>monoT\<close>:
+  \<open>e = m\<^sub>0\<^sub>0 - m\<^sub>1\<^sub>0 \<le> m\<^sub>0\<^sub>0 \<le> entry X 0 j\<close>), the inverse-shift identity follows by
+  pure entry algebra (@{thm [source] bwd_IncrFirst_e_rebaseRow0}).\<close>
+
+lemma bwd_invshift_from_uniform_Red:
+  assumes lb: "\<And>j. j < Lng X \<Longrightarrow> entry X 0 0 - entry X 1 0 \<le> entry X 0 j"
+    and redchar: "Red X = rebaseRow0 (entry X 0 0 - entry X 1 0) 0 X"
+  shows "(IncrFirst ^^ (entry X 0 0 - entry X 1 0)) (Red X) = X"
+proof -
+  let ?e = "entry X 0 0 - entry X 1 0"
+  have "(IncrFirst ^^ ?e) (Red X) = (IncrFirst ^^ ?e) (rebaseRow0 ?e 0 X)"
+    using redchar by simp
+  also have "\<dots> = X" by (rule bwd_IncrFirst_e_rebaseRow0[OF lb])
+  finally show ?thesis .
+qed
+
+text \<open>\<S>6.6 KEYSTONE BACKWARD INVERSE-SHIFT, zeroT BASE CASE (Front B, tag
+  pss-bwdcore-invshift).  For \<open>zeroT X\<close> (\<open>Lng X = 1\<close>, \<open>m\<^sub>1\<^sub>0 = 0\<close>, so
+  \<open>X = [(m\<^sub>0\<^sub>0,0)]\<close>) the \<open>Red\<close> base case gives \<open>Red X = [(0,0)] = rebaseRow0 m\<^sub>0\<^sub>0 0 X\<close>
+  and \<open>e = m\<^sub>0\<^sub>0 - 0 = m\<^sub>0\<^sub>0\<close>, so the inverse-shift identity is pure entry algebra.
+  This base case has NO IH dependency.  EMPIRICAL (\<open>/tmp/fb_gen3.py\<close>): part of
+  the 396/396 inverse-shift population (the 37 zeroT branches of the keystone).\<close>
+
+lemma bwd_invshift_zeroT:
+  assumes z: "zeroT X" and XT: "X \<in> T_PS"
+  shows "(IncrFirst ^^ (entry X 0 0 - entry X 1 0)) (Red X) = X"
+proof -
+  let ?e = "entry X 0 0 - entry X 1 0"
+  have c1: "entry X 1 0 = 0" using z by (simp add: zeroT_def)
+  have L1: "Lng X = 1" using z by (simp add: zeroT_def)
+  have e_m00: "?e = entry X 0 0" using c1 by simp
+  have domX: "Red_dom X" by (rule m_6_5_Red_welldef[OF XT])
+  have rX: "Red X = [(0, 0)]" using Red.psimps[OF domX] z by simp
+  \<comment> \<open>\<open>Red X = rebaseRow0 e 0 X\<close>: both are the single pair \<open>(0,0)\<close>.\<close>
+  have redchar: "Red X = rebaseRow0 ?e 0 X"
+  proof (rule nth_equalityI)
+    show "Lng (Red X) = Lng (rebaseRow0 ?e 0 X)" using rX L1 by simp
+  next
+    fix j assume "j < Lng (Red X)"
+    hence j0: "j = 0" using rX by simp
+    have e0: "entry (rebaseRow0 ?e 0 X) 0 0 = 0"
+      using entry_rebaseRow0_0[of 0 X ?e 0] L1 e_m00 by simp
+    have e1: "entry (rebaseRow0 ?e 0 X) 1 0 = 0"
+      using entry_rebaseRow0_1[of 0 X ?e 0] L1 c1 by simp
+    have "rebaseRow0 ?e 0 X ! 0 = (0, 0)"
+      using e0 e1 by (simp add: entry_def prod_eq_iff)
+    thus "Red X ! j = rebaseRow0 ?e 0 X ! j" using rX j0 by simp
+  qed
+  \<comment> \<open>lower bound: \<open>e = m\<^sub>0\<^sub>0 \<le> entry X 0 j\<close> (\<open>j = 0\<close> is the only index).\<close>
+  have lb: "\<And>j. j < Lng X \<Longrightarrow> ?e \<le> entry X 0 j"
+  proof -
+    fix j assume "j < Lng X"
+    hence "j = 0" using L1 by simp
+    thus "?e \<le> entry X 0 j" using e_m00 by simp
+  qed
+  show ?thesis by (rule bwd_invshift_from_uniform_Red[OF lb redchar])
+qed
+
+text \<open>\<S>6.6 KEYSTONE BACKWARD INVERSE-SHIFT, \<open>m\<^sub>1\<^sub>0 = 0\<close> monoT CASE (Front B, tag
+  pss-bwdcore-invshift).  For monoT \<open>X\<close> with \<open>m\<^sub>1\<^sub>0 = 0\<close> (so \<open>e = m\<^sub>0\<^sub>0\<close>),
+  @{thm [source] cdn_Red_shiftRow0_m10z} gives \<open>Red X = Red (shiftRow0 X)\<close>, and
+  \<open>shiftRow0 X\<close> is CORE (\<open>m\<^sub>0\<^sub>0 = m\<^sub>1\<^sub>0 = 0\<close>) and nu-smaller (it equals
+  \<open>coreReduce X\<close> when \<open>m\<^sub>1\<^sub>0 = 0\<close>, @{thm [source] nu_coreReduce_lt}).  GIVEN the
+  reducedness of \<open>shiftRow0 X\<close> (\<open>Red (shiftRow0 X) = shiftRow0 X\<close>) — supplied by
+  the core-keystone IH in the master nu-induction — the inverse-shift identity
+  follows: \<open>Red X = shiftRow0 X = rebaseRow0 m\<^sub>0\<^sub>0 0 X\<close>, then entry algebra.
+  EMPIRICAL (\<open>/tmp/fb_m10z_self.py\<close>): \<open>shiftRow0 X\<close> is core, has \<open>RedCondA\<close> &
+  \<open>RedCondB\<close>, and \<open>Red (shiftRow0 X) = shiftRow0 X\<close> 700/700 over the \<open>m\<^sub>1\<^sub>0 = 0\<close>
+  non-multi \<open>RedCondA\<close> population.\<close>
+
+lemma bwd_invshift_m10z_monoT:
+  assumes XT: "X \<in> T_PS" and mono: "monoT X" and c1: "entry X 1 0 = 0"
+    and shred: "Red (shiftRow0 X) = shiftRow0 X"
+  shows "(IncrFirst ^^ (entry X 0 0 - entry X 1 0)) (Red X) = X"
+proof -
+  let ?e = "entry X 0 0 - entry X 1 0"
+  have e_m00: "?e = entry X 0 0" using c1 by simp
+  \<comment> \<open>\<open>Red X = shiftRow0 X\<close>.\<close>
+  have rX: "Red X = shiftRow0 X"
+    using cdn_Red_shiftRow0_m10z[OF XT mono c1] shred by simp
+  \<comment> \<open>\<open>shiftRow0 X = rebaseRow0 m\<^sub>0\<^sub>0 0 X\<close>.\<close>
+  have shr_eq: "shiftRow0 X = rebaseRow0 (entry X 0 0) 0 X"
+  proof (rule nth_equalityI)
+    show "Lng (shiftRow0 X) = Lng (rebaseRow0 (entry X 0 0) 0 X)" by simp
+  next
+    fix j assume "j < Lng (shiftRow0 X)"
+    hence jl: "j < Lng X" by simp
+    have s0: "entry (shiftRow0 X) 0 j = entry X 0 j - entry X 0 0"
+      by (rule entry_shiftRow0_0[OF jl])
+    have s1: "entry (shiftRow0 X) 1 j = entry X 1 j" by (rule entry_shiftRow0_1[OF jl])
+    have r0: "entry (rebaseRow0 (entry X 0 0) 0 X) 0 j = entry X 0 j - entry X 0 0"
+      using entry_rebaseRow0_0[OF jl] by simp
+    have r1: "entry (rebaseRow0 (entry X 0 0) 0 X) 1 j = entry X 1 j"
+      by (rule entry_rebaseRow0_1[OF jl])
+    show "shiftRow0 X ! j = rebaseRow0 (entry X 0 0) 0 X ! j"
+      using s0 s1 r0 r1 by (simp add: entry_def prod_eq_iff)
+  qed
+  have redchar: "Red X = rebaseRow0 ?e 0 X" using rX shr_eq e_m00 by simp
+  \<comment> \<open>lower bound: \<open>e = m\<^sub>0\<^sub>0 \<le> entry X 0 j\<close> by \<open>monoT\<close>.\<close>
+  have lb: "\<And>j. j < Lng X \<Longrightarrow> ?e \<le> entry X 0 j"
+  proof -
+    fix j assume jl: "j < Lng X"
+    have "entry X 0 0 \<le> entry X 0 j" by (rule entry0_ge_min[OF XT mono jl])
+    thus "?e \<le> entry X 0 j" using e_m00 by simp
+  qed
+  show ?thesis by (rule bwd_invshift_from_uniform_Red[OF lb redchar])
+qed
+
+text \<open>\<S>6.6 KEYSTONE BACKWARD INVERSE-SHIFT, UNIFIED REDUCTION (Front B, tag
+  pss-bwdcore-invshift).  The CLEAN reduction of the inverse-shift identity to the
+  REDUCEDNESS of the rebased sequence \<open>Y = rebaseRow0 e 0 X\<close> (\<open>X\<close> with row 0
+  lowered uniformly by \<open>e = m\<^sub>0\<^sub>0 - m\<^sub>1\<^sub>0\<close>).  The mechanism, valid for BOTH
+  \<open>m\<^sub>1\<^sub>0 = 0\<close> and \<open>m\<^sub>1\<^sub>0 > 0\<close>:
+    \<^item> \<open>X = IncrFirst\<^bsup>e\<^esup> Y\<close>     (@{thm [source] bwd_IncrFirst_e_rebaseRow0}, pure
+       entry algebra, given \<open>e\<close> is a row-0 lower bound),
+    \<^item> \<open>Red X = Red (IncrFirst\<^bsup>e\<^esup> Y) = Red Y\<close>  (@{thm [source] a1_Red_funpow_IncrFirst}:
+       \<open>Red\<close> is \<open>IncrFirst\<close>-invariant),
+    \<^item> hence \<open>IncrFirst\<^bsup>e\<^esup> (Red X) = IncrFirst\<^bsup>e\<^esup> (Red Y) = IncrFirst\<^bsup>e\<^esup> Y = X\<close>,
+      using the supplied \<open>Red Y = Y\<close>.
+  This localises the ENTIRE per-branch obligation to: \<open>Red Y = Y\<close> for the rebased
+  \<open>Y\<close>.  EMPIRICAL (\<open>/tmp/fb_Yprops.py\<close>): over all 396 inverse-shift sequences,
+  \<open>Y = rebaseRow0 (m\<^sub>0\<^sub>0-m\<^sub>1\<^sub>0) 0 X\<close> is non-multi, has \<open>m\<^sub>0\<^sub>0(Y) = m\<^sub>1\<^sub>0(Y)\<close> (=
+  \<open>m\<^sub>1\<^sub>0(X)\<close>), satisfies \<open>RedCondA\<close> AND \<open>RedCondB\<close>, and is reduced
+  (\<open>Red Y = Y\<close>) 396/396.  So \<open>Red Y = Y\<close> is exactly the keystone-on-A&B
+  (@{thm [source] kst_condAB_imp_reduced_core_only}), conditional only on the
+  core-keystone \<open>core\<close>: for \<open>m\<^sub>1\<^sub>0(Y) = m\<^sub>1\<^sub>0(X) > 0\<close> the \<open>m\<^sub>1\<^sub>0>0\<close> branch
+  (@{thm [source] kst_condAB_imp_reduced_monoT_m10pos}); for \<open>m\<^sub>1\<^sub>0(X) = 0\<close>, \<open>Y\<close>
+  is core and \<open>Red Y = Y\<close> IS the core-keystone instance.\<close>
+
+lemma bwd_invshift_via_rebase:
+  assumes XT: "X \<in> T_PS"
+    and lb: "\<And>j. j < Lng X \<Longrightarrow> entry X 0 0 - entry X 1 0 \<le> entry X 0 j"
+    and Yred: "Red (rebaseRow0 (entry X 0 0 - entry X 1 0) 0 X)
+             = rebaseRow0 (entry X 0 0 - entry X 1 0) 0 X"
+  shows "(IncrFirst ^^ (entry X 0 0 - entry X 1 0)) (Red X) = X"
+proof -
+  let ?e = "entry X 0 0 - entry X 1 0"
+  let ?Y = "rebaseRow0 ?e 0 X"
+  \<comment> \<open>\<open>X = IncrFirst\<^bsup>e\<^esup> Y\<close> (pure entry algebra).\<close>
+  have XeqIY: "(IncrFirst ^^ ?e) ?Y = X" by (rule bwd_IncrFirst_e_rebaseRow0[OF lb])
+  \<comment> \<open>\<open>?Y \<in> T_PS\<close> (same length as \<open>X\<close>, which is nonempty).\<close>
+  have Xne: "X \<noteq> []" using XT by (simp add: T_PS_def)
+  have Yne: "?Y \<noteq> []"
+  proof
+    assume "?Y = []"
+    hence "Lng ?Y = 0" by simp
+    hence "Lng X = 0" by simp
+    thus False using Xne by simp
+  qed
+  have YT: "?Y \<in> T_PS" using Yne by (simp add: T_PS_def)
+  \<comment> \<open>\<open>Red X = Red Y\<close>: \<open>Red\<close> is \<open>IncrFirst\<close>-invariant.\<close>
+  have RedXeq: "Red X = Red ?Y"
+  proof -
+    have "Red X = Red ((IncrFirst ^^ ?e) ?Y)" using XeqIY by simp
+    also have "\<dots> = Red ?Y" by (rule a1_Red_funpow_IncrFirst[OF YT])
+    finally show ?thesis .
+  qed
+  \<comment> \<open>conclude.\<close>
+  have "(IncrFirst ^^ ?e) (Red X) = (IncrFirst ^^ ?e) (Red ?Y)" using RedXeq by simp
+  also have "\<dots> = (IncrFirst ^^ ?e) ?Y" using Yred by simp
+  also have "\<dots> = X" by (rule XeqIY)
+  finally show ?thesis .
+qed
 
 
 end
