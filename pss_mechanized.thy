@@ -41249,4 +41249,447 @@ proof -
   show ?thesis by (rule m_7_2_scb_kind_unique_of_ceq[OF tTB ceq sd0 sd1])
 qed
 
+
+
+section \<open>Front A (wf15) — \<open>condA_top\<close> in-block last-column entry transfer\<close>
+
+text \<open>WF15 BRICK 1 (in-block entry/index transfer).  For a reduced \<open>monoT\<close> core
+  \<open>M\<close> with \<open>M\<^sub>0=(0,0)\<close> on the core-NONTRUNK branch (\<open>TrMax M \<noteq> Lng M-1\<close>), the LAST
+  column \<open>Lng M-1\<close> of \<open>M = Red M\<close> sits inside the located last concat block
+  \<open>blk J\<^sup>* = (IncrFirst ^^ e\<^bsub>J\<^sup>*\<^esub>)(Red (NJ M J\<^sup>*))\<close> (from the GREEN
+  @{thm [source] kfwd_lastblock_locate}) at the block-local index \<open>Lng (NJ M J\<^sup>*)-1\<close>.
+  Hence \<open>entry M\<close> on the last column transfers, via the GREEN \<open>incf_pow_*\<close> bricks,
+  to \<open>entry (Red (NJ M J\<^sup>*))\<close> on ITS last column (row-0 shifted by \<open>e\<^bsub>J\<^sup>*\<^esub>\<close>, row-1
+  unchanged).  This is the pure entry/index half of the in-block witness
+  translation (content.md 1198-1216); SOUND — cites only GREEN
+  @{thm [source] kfwd_lastblock_locate}, @{thm [source] incf_pow_entry0},
+  @{thm [source] incf_pow_entry1}, @{thm [source] incf_pow_hasParent},
+  @{thm [source] incf_pow_parent} and the library.
+
+  The remaining (cross-block) half — translating \<open>hasParent\<close>/\<open>parent\<close> of \<open>M\<close>'s
+  LAST column to the block (a non-drop-local \<open>nextR\<close> correspondence) — is the
+  RESIDUAL; the block-internal \<open>hasParent\<close>/\<open>parent\<close> IncrFirst-invariance is banked
+  in conjuncts (5),(6) for assembly once that correspondence is supplied.\<close>
+
+lemma wf15_lastblock_entry_transfer:
+  assumes M: "M \<in> RT_PS" and mono: "monoT M"
+    and e00: "entry M 0 0 = 0" and e10: "entry M 1 0 = 0"
+    and tne: "TrMax M \<noteq> Lng M - 1"
+  defines "Jstar \<equiv> Lng (Br M) - 1"
+  defines "ee \<equiv> Joints M ! Jstar + 1 - npJ M Jstar"
+  defines "off \<equiv> Suc (TrMax M)
+                  + Lng (concat (map (\<lambda>J. (IncrFirst ^^ (Joints M ! J + 1 - npJ M J))
+                                            (Red (NJ M J))) [0..<Jstar]))"
+  defines "kk \<equiv> Lng (NJ M Jstar) - 1"
+  shows "Lng M - 1 = off + kk
+       \<and> Lng (NJ M Jstar) < Lng M
+       \<and> (entry M 0 (Lng M - 1) = entry (Red (NJ M Jstar)) 0 kk + ee)
+       \<and> (entry M 1 (Lng M - 1) = entry (Red (NJ M Jstar)) 1 kk)
+       \<and> (\<forall>i\<le>1. hasParent ((IncrFirst ^^ ee) (Red (NJ M Jstar))) i kk
+              = hasParent (Red (NJ M Jstar)) i kk)
+       \<and> (\<forall>i\<le>1. parent ((IncrFirst ^^ ee) (Red (NJ M Jstar))) i kk
+              = parent (Red (NJ M Jstar)) i kk)"
+proof -
+  let ?blk = "\<lambda>J. (IncrFirst ^^ (Joints M ! J + 1 - npJ M J)) (Red (NJ M J))"
+  have MT: "M \<in> T_PS" using M by (simp add: RT_PS_def)
+  have redM: "Red M = M" using M by (simp add: RT_PS_def)
+  have LMpos: "0 < Lng M" using MT by (cases M) (auto simp: T_PS_def)
+  have loc: "drop off (Red M) = ?blk Jstar
+       \<and> ?blk Jstar = (IncrFirst ^^ (Joints M ! Jstar + 1 - npJ M Jstar)) (Red (NJ M Jstar))
+       \<and> Lng (NJ M Jstar) = Lng (Br M ! Jstar)
+       \<and> Lng (NJ M Jstar) < Lng M
+       \<and> Lng (Br M) \<noteq> 0"
+    unfolding Jstar_def off_def
+    by (rule kfwd_lastblock_locate[OF M mono e00 e10 tne])
+  have dropoff: "drop off M = ?blk Jstar" using loc redM by simp
+  have NJlt: "Lng (NJ M Jstar) < Lng M" using loc by simp
+  have NJne: "NJ M Jstar \<noteq> []" by (simp add: NJ_def)
+  have NJT: "NJ M Jstar \<in> T_PS" using NJne by (simp add: T_PS_def)
+  have lRedNJ: "Lng (Red (NJ M Jstar)) = Lng (NJ M Jstar)"
+    by (rule m_6_5_Lng_Red[OF NJT])
+  have lblk: "Lng (?blk Jstar) = Lng (NJ M Jstar)" using lRedNJ by simp
+  have ldrop: "Lng (drop off M) = Lng M - off" by simp
+  have lenrel: "Lng M - off = Lng (NJ M Jstar)"
+    using dropoff ldrop lblk by simp
+  have NJpos: "0 < Lng (NJ M Jstar)" using NJne by (cases "NJ M Jstar") auto
+  have offle: "off \<le> Lng M" using lenrel NJpos by linarith
+  have Leq: "Lng M - 1 = off + kk"
+    unfolding kk_def using lenrel NJpos offle by linarith
+  have kkLT: "kk < Lng (Red (NJ M Jstar))"
+    unfolding kk_def using NJpos lRedNJ by linarith
+  have entoff: "\<And>i. entry M i (Lng M - 1) = entry (?blk Jstar) i kk"
+  proof -
+    fix i
+    have "M ! (Lng M - 1) = (drop off M) ! ((Lng M - 1) - off)"
+      using offle Leq by (simp add: nth_drop)
+    also have "\<dots> = (?blk Jstar) ! kk" using dropoff Leq by simp
+    finally have "M ! (Lng M - 1) = (?blk Jstar) ! kk" .
+    thus "entry M i (Lng M - 1) = entry (?blk Jstar) i kk"
+      by (simp add: entry_def)
+  qed
+  have e0: "entry M 0 (Lng M - 1) = entry (Red (NJ M Jstar)) 0 kk + ee"
+    using entoff[of 0] incf_pow_entry0[OF kkLT, of "Joints M ! Jstar + 1 - npJ M Jstar"]
+    unfolding ee_def by simp
+  have e1: "entry M 1 (Lng M - 1) = entry (Red (NJ M Jstar)) 1 kk"
+    using entoff[of 1] incf_pow_entry1[OF kkLT, of "Joints M ! Jstar + 1 - npJ M Jstar"]
+    by simp
+  have hp: "\<forall>i\<le>1. hasParent ((IncrFirst ^^ ee) (Red (NJ M Jstar))) i kk
+                  = hasParent (Red (NJ M Jstar)) i kk"
+    by (simp add: incf_pow_hasParent)
+  have pp: "\<forall>i\<le>1. parent ((IncrFirst ^^ ee) (Red (NJ M Jstar))) i kk
+                  = parent (Red (NJ M Jstar)) i kk"
+    by (simp add: incf_pow_parent)
+  show ?thesis using Leq NJlt e0 e1 hp pp by blast
+qed
+
+
+text \<open>WF15 BRICK 2 (in-block N-construction core: reduced + monoT + left end).
+  For a reduced \<open>monoT\<close> core \<open>M\<close> with \<open>M\<^sub>0=(0,0)\<close> on the nontrunk branch, the
+  last branch reduction \<open>R\<^sup>* := Red (NJ M J\<^sup>*)\<close> (\<open>J\<^sup>* = Lng (Br M)-1\<close>) is a reduced
+  \<open>T_PS\<close> sequence (idempotence of \<open>Red\<close> on the non-multi \<open>NJ\<close>); prepending the
+  diagonal \<open>diagSeq 0 (R\<^sup>*\<^bsub>1,0\<^esub>-1)\<close> yields the article \<open>N\<close>, which is reduced and
+  \<open>monoT\<close> with left end \<open>(0,0)\<close> via the GREEN @{thm [source] m_6_6_reduced_leftend}.
+  This is the article's "\<open>N\<close> は簡約である" + "\<open>N\<^sub>0 = (0,0)\<close>" step (content.md
+  1180-1186 / 1210-1212) for the in-block (\<open>J\<^sub>1>0\<close>) regime.  SOUND — cites only
+  GREEN @{thm [source] idem_nonmulti}, @{thm [source] m_6_5_Red_preserves_monoT},
+  @{thm [source] m_6_6_reduced_leftend}, @{thm [source] NJ_nonmulti},
+  @{thm [source] fin_Red_NJ_leftend} and the library; never a \<open>p_*\<close> stub.\<close>
+
+lemma wf15_inblock_N_core:
+  assumes M: "M \<in> RT_PS" and mono: "monoT M"
+    and e00: "entry M 0 0 = 0" and e10: "entry M 1 0 = 0"
+    and tne: "TrMax M \<noteq> Lng M - 1"
+    and nzNJ: "\<not> zeroT (NJ M (Lng (Br M) - 1))"
+  defines "Jstar \<equiv> Lng (Br M) - 1"
+  defines "Rs \<equiv> Red (NJ M Jstar)"
+  defines "N \<equiv> (if 0 < entry Rs 1 0 then diagSeq 0 (entry Rs 1 0 - 1) else []) @ Rs"
+  shows "Rs \<in> RT_PS \<and> Rs \<in> T_PS \<and> monoT Rs
+       \<and> entry Rs 0 0 = npJ M Jstar
+       \<and> Red N = N \<and> monoT N
+       \<and> entry N 0 0 = 0 \<and> entry N 1 0 = 0
+       \<and> N = (if 0 < entry Rs 1 0 then diagSeq 0 (entry Rs 1 0 - 1) else []) @ Rs"
+proof -
+  have MT: "M \<in> T_PS" using M by (simp add: RT_PS_def)
+  have Mpt: "M \<in> PT_PS" using MT mono by (simp add: PT_PS_def)
+  \<comment> \<open>\<open>Br M \<noteq> []\<close> so \<open>Jstar\<close> is a valid branch index.\<close>
+  have brne: "Br M \<noteq> []" using tne P_nonempty by (simp add: Br_def)
+  hence nBpos: "0 < Lng (Br M)" by (cases "Br M") auto
+  have JBr: "Jstar < Lng (Br M)" unfolding Jstar_def using nBpos by simp
+  have NJne: "NJ M Jstar \<noteq> []" by (simp add: NJ_def)
+  have NJT: "NJ M Jstar \<in> T_PS" using NJne by (simp add: T_PS_def)
+  have nm: "\<not> multiT (NJ M Jstar)" by (rule NJ_nonmulti[OF Mpt e00 e10 JBr])
+  have nzNJ': "\<not> zeroT (NJ M Jstar)" using nzNJ unfolding Jstar_def .
+  have monoNJ: "monoT (NJ M Jstar)" using nm nzNJ' by (simp add: multiT_def)
+  have NJPT: "NJ M Jstar \<in> PT_PS" using NJT monoNJ by (simp add: PT_PS_def)
+  \<comment> \<open>\<open>R\<^sup>*\<close> in \<open>T_PS\<close> (nonempty) and reduced (idempotence on non-multi).\<close>
+  have RsT: "Rs \<in> T_PS"
+  proof -
+    have "Lng (Red (NJ M Jstar)) = Lng (NJ M Jstar)" by (rule m_6_5_Lng_Red[OF NJT])
+    hence "Red (NJ M Jstar) \<noteq> []" using NJne by (cases "NJ M Jstar") auto
+    thus ?thesis unfolding Rs_def by (simp add: T_PS_def)
+  qed
+  have RsRT: "Rs \<in> RT_PS"
+  proof -
+    have "Red (Red (NJ M Jstar)) = Red (NJ M Jstar)" by (rule idem_nonmulti[OF NJT nm])
+    thus ?thesis using RsT unfolding Rs_def by (simp add: RT_PS_def)
+  qed
+  \<comment> \<open>left-end row 0 of \<open>R\<^sup>*\<close>.\<close>
+  have Rs00: "entry Rs 0 0 = npJ M Jstar"
+    unfolding Rs_def by (rule fin_Red_NJ_leftend[OF Mpt e00 e10 JBr])
+  \<comment> \<open>\<open>R\<^sup>*\<close> is monoT (non-zero branch).\<close>
+  have monoRs: "monoT Rs"
+    unfolding Rs_def by (rule m_6_5_Red_preserves_monoT[OF NJPT])
+  have RsPT: "Rs \<in> PT_PS" using RsT monoRs by (simp add: PT_PS_def)
+  show ?thesis
+  proof (cases "0 < entry Rs 1 0")
+    case False
+    \<comment> \<open>\<open>R\<^sup>*\<^bsub>1,0\<^esub> = 0\<close>: \<open>N = R\<^sup>*\<close>; \<open>m_6_6_reduced_leftend\<close> with \<open>u=0\<close> gives \<open>N = R\<^sup>*\<close>.\<close>
+    have Neq: "N = Rs" unfolding N_def using False by simp
+    have z: "(0::nat) \<le> entry Rs 1 0" by simp
+    have rl: "Red ((if (0::nat) < entry Rs 1 0 then diagSeq 0 (entry Rs 1 0 - 1) else []) @ Rs)
+              = ((if (0::nat) < entry Rs 1 0 then diagSeq 0 (entry Rs 1 0 - 1) else []) @ Rs)
+              \<and> monoT ((if (0::nat) < entry Rs 1 0 then diagSeq 0 (entry Rs 1 0 - 1) else []) @ Rs)"
+      using m_6_6_reduced_leftend[OF RsRT RsPT z] by simp
+    have rN: "Red N = N \<and> monoT N" using rl unfolding N_def by simp
+    have e1N: "entry N 1 0 = 0" using Neq False by simp
+    \<comment> \<open>row-0 left end: \<open>entry N 0 0 = entry Rs 0 0\<close>; but article needs it \<open>= 0\<close>.\<close>
+    have e0N: "entry N 0 0 = entry Rs 0 0" using Neq by simp
+    \<comment> \<open>\<open>entry Rs 1 0 = entry (NJ) 1 0 = npJ\<close>; here \<open>=0\<close>, so \<open>npJ=0\<close>.\<close>
+    have Rs10: "entry Rs 1 0 = npJ M Jstar"
+      unfolding Rs_def using m_6_6_Red_leftend_1[OF NJT] entry_NJ_1_0[of M Jstar] e10 by simp
+    have np0: "npJ M Jstar = 0" using False Rs10 by simp
+    have e0N0: "entry N 0 0 = 0" using e0N Rs00 np0 by simp
+    show ?thesis using RsRT RsT monoRs Rs00 rN e0N0 e1N N_def by blast
+  next
+    case True
+    have Neq: "N = diagSeq 0 (entry Rs 1 0 - 1) @ Rs" unfolding N_def using True by simp
+    have z: "(0::nat) \<le> entry Rs 1 0" by simp
+    have rl: "Red ((if (0::nat) < entry Rs 1 0 then diagSeq 0 (entry Rs 1 0 - 1) else []) @ Rs)
+              = ((if (0::nat) < entry Rs 1 0 then diagSeq 0 (entry Rs 1 0 - 1) else []) @ Rs)
+              \<and> monoT ((if (0::nat) < entry Rs 1 0 then diagSeq 0 (entry Rs 1 0 - 1) else []) @ Rs)"
+      using m_6_6_reduced_leftend[OF RsRT RsPT z] by simp
+    have rN: "Red N = N \<and> monoT N" using rl unfolding N_def by simp
+    \<comment> \<open>left end of \<open>diagSeq 0 (k) @ Rs\<close> is \<open>(0,0)\<close>.\<close>
+    have e0N0: "entry N 0 0 = 0"
+      using Neq entry_diagSeq_append_lo[where k="entry Rs 1 0 - 1" and i=0 and p=0
+        and rest=Rs] by simp
+    have e1N0: "entry N 1 0 = 0"
+      using Neq entry_diagSeq_append_lo[where k="entry Rs 1 0 - 1" and i=0 and p=1
+        and rest=Rs] by simp
+    show ?thesis using RsRT RsT monoRs Rs00 rN e0N0 e1N0 N_def by blast
+  qed
+qed
+
+section \<open>§7.2 kind-1 RightNodes length-pin (rnsub_kind1_len_pin)\<close>
+
+text \<open>
+  The marked-principal \<open>RightNodes\<close> of an scb occurrence is a SUFFIX
+  (\<open>drop k\<close>) of the whole term's \<open>RightNodes\<close> (content.md 1916,
+  \<open>RightNodes(c) = (RightNodes(t)_j)_{j=k}^{j_1}\<close>).  Mirrors the descent of
+  @{thm [source] rnsub_RN_occ_len_le} but tracks the start index as a \<open>drop\<close>
+  witness instead of a length bound.\<close>
+
+lemma rnsub_RN_occ_suffix:
+  "flatBT (Trm ys) = s @ flatBP pp @ b \<Longrightarrow> (\<forall>x \<in> set b. x = RP)
+     \<Longrightarrow> \<exists>k. RightNodes (Trm [pp]) = drop k (RightNodes (Trm ys))"
+proof (induct "length (flatBT (Trm ys))" arbitrary: ys s pp b rule: less_induct)
+  case less
+  show ?case
+  proof (cases ys)
+    case Nil
+    have "length (flatBP pp) \<le> length (flatBT (Trm ys))"
+      using less.prems(1) by simp
+    moreover have "2 \<le> length (flatBP pp)" by (rule flatBP_len_ge2)
+    ultimately show ?thesis using Nil by simp
+  next
+    case (Cons y0 ys0)
+    hence ysne: "ys \<noteq> []" by simp
+    obtain u a where lst: "last ys = DB u a" by (cases "last ys") simp
+    obtain up ap where ppc: "pp = DB up ap" by (cases pp)
+    have occ: "flatBT (Trm ys) = s @ flatBP (DB up ap) @ b"
+      using less.prems(1) ppc by simp
+    obtain pre post where
+      postRP: "\<forall>x \<in> set post. x = RP"
+      and PP: "flatBT (Trm ys) = pre @ (Dsym u # flatBT a) @ post"
+      and bnd: "\<forall>s pp b. flatBT (Trm ys) = s @ flatBP pp @ b \<longrightarrow> (\<forall>x \<in> set b. x = RP)
+                            \<longrightarrow> length pre \<le> length s"
+      using rnsub_cut_ge_pre[OF ysne lst] by blast
+    have gepre: "length pre \<le> length s"
+      using bnd less.prems(1) less.prems(2) by blast
+    have dich:
+      "(length s = length pre \<and> flatBP pp = Dsym u # flatBT a \<and> b = post)
+       \<or> (length pre < length s
+            \<and> (\<exists>s2 b2. flatBT a = s2 @ flatBP pp @ b2
+                        \<and> (\<forall>x \<in> set b2. x = RP)
+                        \<and> length s = length pre + 1 + length s2))"
+      using rnsub_cut_ge_pre_dichotomy[OF occ less.prems(2) PP postRP gepre] ppc by simp
+    have RNys: "RightNodes (Trm ys) = the_enat u # RightNodes a"
+      using rnsub_RightNodes_cons[of y0 ys0] lst Cons by simp
+    show ?thesis
+    proof (cases "length s = length pre")
+      case True
+      have "flatBP pp = Dsym u # flatBT a" using dich True by simp
+      hence "RightNodes (Trm [pp]) = the_enat u # RightNodes a"
+        by (rule rnsub_RN_of_maximal)
+      hence "RightNodes (Trm [pp]) = drop 0 (RightNodes (Trm ys))" using RNys by simp
+      thus ?thesis by blast
+    next
+      case False
+      hence ltpre: "length pre < length s" using gepre by simp
+      have "\<exists>s2 b2. flatBT a = s2 @ flatBP pp @ b2 \<and> (\<forall>x \<in> set b2. x = RP)
+                      \<and> length s = length pre + 1 + length s2"
+        using dich ltpre by force
+      then obtain s2 b2 where
+        a_occ: "flatBT a = s2 @ flatBP pp @ b2" and b2RP: "\<forall>x \<in> set b2. x = RP"
+        by blast
+      obtain zs where azs: "a = Trm zs" by (cases a)
+      have meas: "length (flatBT (Trm zs)) < length (flatBT (Trm ys))"
+        using PP azs by simp
+      have z_occ: "flatBT (Trm zs) = s2 @ flatBP pp @ b2" using a_occ azs by simp
+      obtain k where IH: "RightNodes (Trm [pp]) = drop k (RightNodes (Trm zs))"
+        using less.hyps[OF meas z_occ b2RP] by blast
+      have "RightNodes (Trm [pp]) = drop (Suc k) (RightNodes (Trm ys))"
+        using IH RNys azs by simp
+      thus ?thesis by blast
+    qed
+  qed
+qed
+
+text \<open>
+  Pure list index-pin: if a list \<open>R\<close> has two suffixes \<open>drop k\<^sub>0 R\<close>,
+  \<open>drop k\<^sub>1 R\<close> that each satisfy the kind-1 shape — first element
+  \<open>< last element\<close>, interior elements \<open>\<ge> last element\<close>, suffix length \<open>\<ge> 2\<close> —
+  then \<open>k\<^sub>0 = k\<^sub>1\<close>.  Both start indices are the LARGEST index \<open>< |R|-1\<close> whose
+  value is \<open>< R!(|R|-1)\<close>, hence equal.  (content.md 1916 maximality.)\<close>
+
+lemma rnsub_kind1_drop_index_pin:
+  fixes R :: "nat list"
+  assumes k0lt: "k\<^sub>0 < length R" and k1lt: "k\<^sub>1 < length R"
+      and len0: "2 \<le> length (drop k\<^sub>0 R)" and len1: "2 \<le> length (drop k\<^sub>1 R)"
+      and hd0: "(drop k\<^sub>0 R) ! 0 < (drop k\<^sub>0 R) ! (length (drop k\<^sub>0 R) - 1)"
+      and int0: "\<forall>j. 0 < j \<and> j < length (drop k\<^sub>0 R) - 1
+                    \<longrightarrow> (drop k\<^sub>0 R) ! j \<ge> (drop k\<^sub>0 R) ! (length (drop k\<^sub>0 R) - 1)"
+      and hd1: "(drop k\<^sub>1 R) ! 0 < (drop k\<^sub>1 R) ! (length (drop k\<^sub>1 R) - 1)"
+      and int1: "\<forall>j. 0 < j \<and> j < length (drop k\<^sub>1 R) - 1
+                    \<longrightarrow> (drop k\<^sub>1 R) ! j \<ge> (drop k\<^sub>1 R) ! (length (drop k\<^sub>1 R) - 1)"
+  shows "k\<^sub>0 = k\<^sub>1"
+proof -
+  define L where "L = length R - 1"
+  define U where "U = R ! L"
+  \<comment> \<open>The last element of every suffix is \<open>R ! L = U\<close>.\<close>
+  have last0: "(drop k\<^sub>0 R) ! (length (drop k\<^sub>0 R) - 1) = U"
+    using k0lt len0 unfolding U_def L_def by (simp add: nth_drop)
+  have last1: "(drop k\<^sub>1 R) ! (length (drop k\<^sub>1 R) - 1) = U"
+    using k1lt len1 unfolding U_def L_def by (simp add: nth_drop)
+  \<comment> \<open>Both start strictly before the last index \<open>L\<close>, with value \<open>< U\<close>.\<close>
+  have k0L: "k\<^sub>0 < L" using len0 unfolding L_def by simp
+  have k1L: "k\<^sub>1 < L" using len1 unfolding L_def by simp
+  have hd0R: "R ! k\<^sub>0 < U"
+    using hd0 last0 k0lt by (simp add: nth_drop)
+  have hd1R: "R ! k\<^sub>1 < U"
+    using hd1 last1 k1lt by (simp add: nth_drop)
+  \<comment> \<open>Interior positions of suffix \<open>i\<close>, translated to absolute indices in \<open>R\<close>,
+     have value \<open>\<ge> U\<close>: for \<open>k\<^sub>i < idx < L\<close>, \<open>R!idx \<ge> U\<close>.\<close>
+  have intR0: "\<And>idx. k\<^sub>0 < idx \<Longrightarrow> idx < L \<Longrightarrow> R ! idx \<ge> U"
+  proof -
+    fix idx assume a1: "k\<^sub>0 < idx" and a2: "idx < L"
+    have jrng: "0 < idx - k\<^sub>0 \<and> idx - k\<^sub>0 < length (drop k\<^sub>0 R) - 1"
+      using a1 a2 k0lt len0 unfolding L_def by simp
+    have "(drop k\<^sub>0 R) ! (idx - k\<^sub>0) \<ge> (drop k\<^sub>0 R) ! (length (drop k\<^sub>0 R) - 1)"
+      using int0 jrng by blast
+    moreover have "(drop k\<^sub>0 R) ! (idx - k\<^sub>0) = R ! idx"
+      using a1 a2 k0lt unfolding L_def by (simp add: nth_drop)
+    ultimately show "R ! idx \<ge> U" using last0 by simp
+  qed
+  have intR1: "\<And>idx. k\<^sub>1 < idx \<Longrightarrow> idx < L \<Longrightarrow> R ! idx \<ge> U"
+  proof -
+    fix idx assume a1: "k\<^sub>1 < idx" and a2: "idx < L"
+    have jrng: "0 < idx - k\<^sub>1 \<and> idx - k\<^sub>1 < length (drop k\<^sub>1 R) - 1"
+      using a1 a2 k1lt len1 unfolding L_def by simp
+    have "(drop k\<^sub>1 R) ! (idx - k\<^sub>1) \<ge> (drop k\<^sub>1 R) ! (length (drop k\<^sub>1 R) - 1)"
+      using int1 jrng by blast
+    moreover have "(drop k\<^sub>1 R) ! (idx - k\<^sub>1) = R ! idx"
+      using a1 a2 k1lt unfolding L_def by (simp add: nth_drop)
+    ultimately show "R ! idx \<ge> U" using last1 by simp
+  qed
+  \<comment> \<open>Trichotomy on \<open>k\<^sub>0\<close> vs \<open>k\<^sub>1\<close>; the strict cases contradict via the other's
+     interior \<open>\<ge> U\<close> against this one's start \<open>< U\<close>.\<close>
+  show "k\<^sub>0 = k\<^sub>1"
+  proof (rule ccontr)
+    assume "k\<^sub>0 \<noteq> k\<^sub>1"
+    then consider (lt) "k\<^sub>0 < k\<^sub>1" | (gt) "k\<^sub>1 < k\<^sub>0" by linarith
+    thus False
+    proof cases
+      case lt
+      have "R ! k\<^sub>1 \<ge> U" by (rule intR0[OF lt k1L])
+      thus False using hd1R by simp
+    next
+      case gt
+      have "R ! k\<^sub>0 \<ge> U" by (rule intR1[OF gt k0L])
+      thus False using hd0R by simp
+    qed
+  qed
+qed
+
+text \<open>
+  kind-1 length-pin (content.md 1916): two kind-1 scb-decompositions of the same
+  \<open>t \<noteq> Trm []\<close> have marked principals with EQUAL \<open>RightNodes\<close> length.  Each
+  marked-principal \<open>RightNodes\<close> is a suffix of \<open>RightNodes t\<close>
+  (@{thm [source] rnsub_RN_occ_suffix}), and the kind-1 shape pins the start index
+  (@{thm [source] rnsub_kind1_drop_index_pin}); equal start index gives equal
+  suffix length.\<close>
+
+lemma rnsub_kind1_len_pin:
+  assumes tne: "t \<noteq> Trm []"
+      and d0: "scb_kind1 t s\<^sub>0 c\<^sub>0 b\<^sub>0"
+      and d1: "scb_kind1 t s\<^sub>1 c\<^sub>1 b\<^sub>1"
+      and p0: "c\<^sub>0 = flatBP p\<^sub>0" and p1: "c\<^sub>1 = flatBP p\<^sub>1"
+  shows "length (RightNodes (Trm [p\<^sub>0])) = length (RightNodes (Trm [p\<^sub>1]))"
+proof -
+  have sd0: "scb_decomp t s\<^sub>0 c\<^sub>0 b\<^sub>0" using d0 by (simp add: scb_kind1_def)
+  have sd1: "scb_decomp t s\<^sub>1 c\<^sub>1 b\<^sub>1" using d1 by (simp add: scb_kind1_def)
+  obtain ys where ys: "t = Trm ys" by (cases t)
+  from sd0 have e0: "flatBT t = s\<^sub>0 @ c\<^sub>0 @ b\<^sub>0" and b0RP: "\<forall>x \<in> set b\<^sub>0. x = RP"
+    using tne by (auto simp: scb_decomp_def)
+  from sd1 have e1: "flatBT t = s\<^sub>1 @ c\<^sub>1 @ b\<^sub>1" and b1RP: "\<forall>x \<in> set b\<^sub>1. x = RP"
+    using tne by (auto simp: scb_decomp_def)
+  have occ0: "flatBT (Trm ys) = s\<^sub>0 @ flatBP p\<^sub>0 @ b\<^sub>0" using e0 p0 ys by simp
+  have occ1: "flatBT (Trm ys) = s\<^sub>1 @ flatBP p\<^sub>1 @ b\<^sub>1" using e1 p1 ys by simp
+  \<comment> \<open>Both marked-principal RightNodes are suffixes of \<open>RightNodes (Trm ys)\<close>.\<close>
+  obtain k\<^sub>0 where K0: "RightNodes (Trm [p\<^sub>0]) = drop k\<^sub>0 (RightNodes (Trm ys))"
+    using rnsub_RN_occ_suffix[OF occ0 b0RP] by blast
+  obtain k\<^sub>1 where K1: "RightNodes (Trm [p\<^sub>1]) = drop k\<^sub>1 (RightNodes (Trm ys))"
+    using rnsub_RN_occ_suffix[OF occ1 b1RP] by blast
+  define R where "R = RightNodes (Trm ys)"
+  \<comment> \<open>Abbreviate the two suffixes; \<open>r\<^sub>i = drop k\<^sub>i R\<close> blocks \<open>RightNodes.simps\<close> from
+     re-unfolding \<open>R\<close> during the shape extraction.\<close>
+  define r\<^sub>0 where "r\<^sub>0 = drop k\<^sub>0 R"
+  define r\<^sub>1 where "r\<^sub>1 = drop k\<^sub>1 R"
+  have r0eq: "RightNodes (Trm [p\<^sub>0]) = r\<^sub>0" using K0 R_def r\<^sub>0_def by simp
+  have r1eq: "RightNodes (Trm [p\<^sub>1]) = r\<^sub>1" using K1 R_def r\<^sub>1_def by simp
+  \<comment> \<open>Extract the kind-1 shape conditions on each suffix (\<open>r\<^sub>i\<close> opaque).  Pull the
+     universal \<open>\<forall>p. c = flatBP p \<longrightarrow> \<dots>\<close> from the def and instantiate at \<open>p\<^sub>i\<close>.\<close>
+  have all0: "\<forall>p. c\<^sub>0 = flatBP p \<longrightarrow>
+        (let r = RightNodes (Trm [p]); j1 = Lng r - 1 in
+         j1 \<ge> 1 \<and> r ! 0 < r ! j1 \<and> (\<forall>j. 0 < j \<and> j < j1 \<longrightarrow> r ! j \<ge> r ! j1))"
+    using d0 by (simp add: scb_kind1_def)
+  have all1: "\<forall>p. c\<^sub>1 = flatBP p \<longrightarrow>
+        (let r = RightNodes (Trm [p]); j1 = Lng r - 1 in
+         j1 \<ge> 1 \<and> r ! 0 < r ! j1 \<and> (\<forall>j. 0 < j \<and> j < j1 \<longrightarrow> r ! j \<ge> r ! j1))"
+    using d1 by (simp add: scb_kind1_def)
+  have sh0: "let r = r\<^sub>0; j1 = Lng r - 1 in
+         j1 \<ge> 1 \<and> r ! 0 < r ! j1 \<and> (\<forall>j. 0 < j \<and> j < j1 \<longrightarrow> r ! j \<ge> r ! j1)"
+    using all0[rule_format, OF p0] unfolding r0eq[symmetric] .
+  have sh1: "let r = r\<^sub>1; j1 = Lng r - 1 in
+         j1 \<ge> 1 \<and> r ! 0 < r ! j1 \<and> (\<forall>j. 0 < j \<and> j < j1 \<longrightarrow> r ! j \<ge> r ! j1)"
+    using all1[rule_format, OF p1] unfolding r1eq[symmetric] .
+  have sh0': "1 \<le> length r\<^sub>0 - 1 \<and> r\<^sub>0 ! 0 < r\<^sub>0 ! (length r\<^sub>0 - 1)
+              \<and> (\<forall>j. 0 < j \<and> j < length r\<^sub>0 - 1 \<longrightarrow> r\<^sub>0 ! j \<ge> r\<^sub>0 ! (length r\<^sub>0 - 1))"
+    using sh0 by (simp add: Let_def)
+  have sh1': "1 \<le> length r\<^sub>1 - 1 \<and> r\<^sub>1 ! 0 < r\<^sub>1 ! (length r\<^sub>1 - 1)
+              \<and> (\<forall>j. 0 < j \<and> j < length r\<^sub>1 - 1 \<longrightarrow> r\<^sub>1 ! j \<ge> r\<^sub>1 ! (length r\<^sub>1 - 1))"
+    using sh1 by (simp add: Let_def)
+  have len0: "2 \<le> length (drop k\<^sub>0 R)"
+    using sh0' r\<^sub>0_def by (simp; linarith)
+  have len1: "2 \<le> length (drop k\<^sub>1 R)"
+    using sh1' r\<^sub>1_def by (simp; linarith)
+  have hd0: "(drop k\<^sub>0 R) ! 0 < (drop k\<^sub>0 R) ! (length (drop k\<^sub>0 R) - 1)"
+    using sh0' r\<^sub>0_def by simp
+  have int0: "\<forall>j. 0 < j \<and> j < length (drop k\<^sub>0 R) - 1
+                  \<longrightarrow> (drop k\<^sub>0 R) ! j \<ge> (drop k\<^sub>0 R) ! (length (drop k\<^sub>0 R) - 1)"
+    using sh0' r\<^sub>0_def by simp
+  have hd1: "(drop k\<^sub>1 R) ! 0 < (drop k\<^sub>1 R) ! (length (drop k\<^sub>1 R) - 1)"
+    using sh1' r\<^sub>1_def by simp
+  have int1: "\<forall>j. 0 < j \<and> j < length (drop k\<^sub>1 R) - 1
+                  \<longrightarrow> (drop k\<^sub>1 R) ! j \<ge> (drop k\<^sub>1 R) ! (length (drop k\<^sub>1 R) - 1)"
+    using sh1' r\<^sub>1_def by simp
+  \<comment> \<open>The start indices are \<open>< length R\<close> (each suffix is nonempty).\<close>
+  have k0lt: "k\<^sub>0 < length R" using len0 by (cases "k\<^sub>0 < length R") simp_all
+  have k1lt: "k\<^sub>1 < length R" using len1 by (cases "k\<^sub>1 < length R") simp_all
+  have "k\<^sub>0 = k\<^sub>1"
+    by (rule rnsub_kind1_drop_index_pin[OF k0lt k1lt len0 len1 hd0 int0 hd1 int1])
+  hence "drop k\<^sub>0 R = drop k\<^sub>1 R" by simp
+  thus ?thesis using K0 K1 R_def by simp
+qed
+
+text \<open>
+  UNCONDITIONAL conjunct (5) of @{thm [source] p_7_2_scb_unique}: two kind-1
+  scb-decompositions of \<open>t \<in> T_B\<close>, \<open>t \<noteq> Trm []\<close> coincide.  The residual
+  RightNodes length-pin assumed by @{thm [source] m_7_2_scb_kind1_unique_uncond}
+  is now discharged by @{thm [source] rnsub_kind1_len_pin}.\<close>
+
+lemma m_7_2_scb_kind1_unique_uncond':
+  assumes tTB: "t \<in> T_B" and tne: "t \<noteq> Trm []"
+      and d0: "scb_kind1 t s\<^sub>0 c\<^sub>0 b\<^sub>0"
+      and d1: "scb_kind1 t s\<^sub>1 c\<^sub>1 b\<^sub>1"
+  shows "(s\<^sub>0, c\<^sub>0, b\<^sub>0) = (s\<^sub>1, c\<^sub>1, b\<^sub>1)"
+proof -
+  have rneq: "\<And>p\<^sub>0 p\<^sub>1. c\<^sub>0 = flatBP p\<^sub>0 \<Longrightarrow> c\<^sub>1 = flatBP p\<^sub>1
+                   \<Longrightarrow> length (RightNodes (Trm [p\<^sub>0])) = length (RightNodes (Trm [p\<^sub>1]))"
+    using rnsub_kind1_len_pin[OF tne d0 d1] by blast
+  show ?thesis
+    by (rule m_7_2_scb_kind1_unique_uncond[OF tTB tne d0 d1 rneq])
+qed
+
+
 end
