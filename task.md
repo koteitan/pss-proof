@@ -19,7 +19,7 @@
         - ✅🚧 補題（死枝[20]の到達不能性）〔= `p_6_5_monoT_Red`。**m10>0 ケース完全証明 `m_6_5_monoT_Red_m10pos`(green, 非循環)**。α 経由: leftend-min→PIECE3→BC0→monoT_Red。m10=0 はエンコーディング縮退で premise `0<m10` 補正(Red は m10>0 でのみ使用)。設計 `docs/red-le-domain.md §6-11`〕
       - ✅ 命題（$\textrm{Lng}$ の $\textrm{Red}$ 不変性）〔§6.5 下流の linchpin〕
       - ✅ 系（$\textrm{Red}$ が零項性を保つこと）
-      - 🚨 系（直系先祖の $\textrm{Red}$ 不変性）〔keystone・A4〕
+      - 🚨🚧 系（直系先祖の $\textrm{Red}$ 不変性）〔`p_6_5_Red_le`: M∈anchored_slice⟹leR M=leR(Red M)。**keystone(d) 完成で unblock**: reduced⟹RedCondA⟹red_le ルート(T_PS 877/0, anchored 776/0)。leR=le0/le1 合成、`cdn_red_cong`/`m_6_5_Red_leftend_row0_min` 等 green 再利用。A4(anchored scope, T_PS で偽)〕
       - ✅🚧 系（$\textrm{Red}$ が単項性を保つこと）〔forward `m_6_5_Red_preserves_monoT`(M∈PT_PS⟹monoT(Red M)) green、Red.pinduct+値単調性。逆向き(monoT(Red M)⟹monoT M)は残〕
       - 🚨 系（$P$ の $\textrm{Red}$ 同変性）〔A4〕
       - ✅ 命題（単項性と $\textrm{Red}$ の関係）〔`m_6_5_monoT_Red_m10pos`、m10>0(=Red 使用域)、dead-branch[20]不到達〕
