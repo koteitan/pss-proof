@@ -42621,4 +42621,907 @@ qed
 
 
 
+
+section \<open>Front B (wf19) — \<open>valpin\<close>: the last input for \<open>condA_top\<close> row-1 \<open>kk>0\<close> cross-block\<close>
+
+text \<open>WF19 BRICK (\<open>valpin\<close>).  The LAST missing input for @{thm [source]
+  wf18_crossblock_row1_kkpos}.  For a reduced \<open>monoT\<close> core \<open>M\<close> with \<open>M\<^sub>0 = (0,0)\<close>
+  on the NONTRUNK branch (\<open>TrMax M \<noteq> Lng M - 1\<close>), last branch \<open>J\<^sup>* = Lng (Br M)-1\<close>,
+  \<open>R\<^sup>* = Red (NJ M J\<^sup>*)\<close>, \<open>kk = Lng (NJ M J\<^sup>*)-1 > 0\<close>, last-column row-1 parent
+  CROSS-BLOCK (\<open>p = parent M 1 (Lng M-1) < FirstNodes M ! J\<^sup>*\<close>) and in the diagonal
+  trunk (\<open>p \<le> TrMax M\<close>), the value pin is
+  \<open>entry R\<^sup>* 1 kk = Suc p\<close>.
+
+  WHY THE \<open>kk=0\<close> ROUTE IS DEAD AND THE IH IS NEEDED.  In \<open>R\<^sup>*\<close> the last column
+  \<open>kk\<close> has NO row-1 parent (\<open>\<not> hasParent R\<^sup>* 1 kk\<close>, 34/34), so \<open>RedCondA R\<^sup>*\<close> is
+  VACUOUS at \<open>kk\<close>; the value \<open>p+1\<close> is pinned only after prefixing the diagonal
+  \<open>N = diagSeq 0 (R\<^sup>*\<^bsub>1,0\<^esub>-1) \<oplus> R\<^sup>*\<close>: the last column \<open>lastN = Lng N - 1\<close> then DOES
+  acquire a row-1 parent FROM the diagonal prefix (the diagonal column whose
+  row-1 value equals the parent value \<open>p\<close>), and \<open>RedCondA N\<close> — obtained by the
+  keystone IH on the strictly-shorter \<open>N\<close> (Front A supplies it as the explicit
+  hypothesis \<open>condA_N\<close>) — reads off \<open>entry N 1 (parent N 1 lastN) + 1
+  = entry N 1 lastN\<close>.  With the parent VALUE pin \<open>entry N 1 (parent N 1 lastN) = p\<close>
+  and the diagonal-tail entry identity \<open>entry N 1 lastN = entry R\<^sup>* 1 kk\<close>
+  (@{thm [source] wf17_entry_diag_tail}, \<open>lastN = Suc d + kk\<close>), this closes
+  \<open>entry R\<^sup>* 1 kk = p + 1 = Suc p\<close>.
+
+  EMPIRICAL TRUTH-CHECK (\<open>python/_wf19_valpin.py\<close>, reduced \<open>monoT\<close> cores maxlen 5
+  value 3; 34 row-1 cross-block \<open>kk>0\<close> cases).  Over those 34 cases: \<open>RedCondA N
+  \<and> RedCondB N\<close> 0/34, the parent-value pin \<open>hasParent N 1 lastN \<and> entry N 1
+  (parent N 1 lastN) = p\<close> 0/34, \<open>entry N 1 lastN = entry R\<^sup>* 1 kk\<close> 0/34,
+  \<open>entry R\<^sup>* 1 kk = Suc p\<close> 0/34, and \<open>\<not> hasParent R\<^sup>* 1 kk\<close> 0/34 (so the
+  one-step \<open>RedCondA R\<^sup>*\<close> read is genuinely vacuous).  The diagonal-parent index is
+  \<open>q = entry R\<^sup>* 1 kk - 1 = p\<close> with \<open>entry N 1 q = q\<close> (a diagonal column), and the
+  \<open>nextrel1 N 1 q lastN\<close> minimality holds 0/34.
+
+  RESIDUALS (reported honestly, NOT faked — see [[subagent-worktree-pitfalls]]).
+  Two facts are stated as EXPLICIT hypotheses (Front A supplies them; the keystone
+  IH delivers the first, the diagonal-prefix \<open>nextrel1\<close> structure the second):
+   - \<open>condA_N : RedCondA N\<close>.  The keystone IH on \<open>N\<close> (strictly shorter, left end
+     \<open>(0,0)\<close>); this is the only non-circular source of the value (\<open>RedCondA R\<^sup>*\<close>
+     itself is vacuous at \<open>kk\<close>).
+   - \<open>parpin : hasParent N 1 lastN \<and> entry N 1 (parent N 1 lastN) = p\<close>.  The
+     parent-VALUE pin of the last column of \<open>N\<close>: \<open>lastN\<close>'s unique row-1 parent in
+     \<open>N\<close> is the diagonal column at index \<open>q = entry R\<^sup>* 1 kk - 1\<close>, whose row-1 value
+     is \<open>q\<close>, and \<open>q = p\<close> (the diagonal-trunk value of the cross-block last-column
+     parent).  Pinning the \<open>nextrel1 N 1 q lastN\<close> EDGE and \<open>q = p\<close> is the
+     diagonal-prefix parent-reconstruction (template @{thm [source] a1_if_npJ_Red_pos}),
+     a separate multi-lemma program over the \<open>Rs\<close>-tail glued to the diagonal; it is
+     NOT discharged here.  Given it, this brick discharges everything else (the
+     diagonal-tail entry transfer, the \<open>RedCondA N\<close> application, the arithmetic)
+     and closes \<open>valpin\<close>.
+
+  SOUND — cites only GREEN @{thm [source] wf17_entry_diag_tail}, the \<open>RedCondA\<close>
+  definition and the library; no \<open>p_*\<close> stub, no goal self-citation
+  (\<open>RedCondA R\<^sup>*\<close> is vacuous at \<open>kk\<close>, so this does NOT cite the conclusion).\<close>
+
+lemma wf19_valpin:
+  assumes M: "M \<in> RT_PS" and mono: "monoT M"
+    and e00: "entry M 0 0 = 0" and e10: "entry M 1 0 = 0"
+    and tne: "TrMax M \<noteq> Lng M - 1"
+    and kkpos: "0 < Lng (NJ M (Lng (Br M) - 1)) - 1"
+    and hp1: "hasParent M 1 (Lng M - 1)"
+    and pcross: "parent M 1 (Lng M - 1) < FirstNodes M ! (Lng (Br M) - 1)"
+    and pTr: "parent M 1 (Lng M - 1) \<le> TrMax M"
+    \<comment> \<open>The diagonal prefix exists (\<open>R\<^sup>*\<^bsub>1,0\<^esub> > 0\<close>), so \<open>N\<close> carries the diagonal.\<close>
+    and eRs10pos: "0 < entry (Red (NJ M (Lng (Br M) - 1))) 1 0"
+    \<comment> \<open>Front A residual (IH): \<open>RedCondA N\<close> for the diagonal-prefixed core \<open>N\<close>.\<close>
+    and condA_N: "RedCondA ((if 0 < entry (Red (NJ M (Lng (Br M) - 1))) 1 0
+                              then diagSeq 0 (entry (Red (NJ M (Lng (Br M) - 1))) 1 0 - 1)
+                              else [])
+                            @ Red (NJ M (Lng (Br M) - 1)))"
+    \<comment> \<open>Front A residual (parent-value pin): the last column of \<open>N\<close> has a row-1 parent
+       whose row-1 value is \<open>p\<close>.\<close>
+    and parpin:
+      "hasParent ((if 0 < entry (Red (NJ M (Lng (Br M) - 1))) 1 0
+                    then diagSeq 0 (entry (Red (NJ M (Lng (Br M) - 1))) 1 0 - 1)
+                    else [])
+                  @ Red (NJ M (Lng (Br M) - 1))) 1
+                 (Lng ((if 0 < entry (Red (NJ M (Lng (Br M) - 1))) 1 0
+                         then diagSeq 0 (entry (Red (NJ M (Lng (Br M) - 1))) 1 0 - 1)
+                         else [])
+                       @ Red (NJ M (Lng (Br M) - 1))) - 1)
+       \<and> entry ((if 0 < entry (Red (NJ M (Lng (Br M) - 1))) 1 0
+                  then diagSeq 0 (entry (Red (NJ M (Lng (Br M) - 1))) 1 0 - 1)
+                  else [])
+                @ Red (NJ M (Lng (Br M) - 1))) 1
+               (parent ((if 0 < entry (Red (NJ M (Lng (Br M) - 1))) 1 0
+                          then diagSeq 0 (entry (Red (NJ M (Lng (Br M) - 1))) 1 0 - 1)
+                          else [])
+                        @ Red (NJ M (Lng (Br M) - 1))) 1
+                       (Lng ((if 0 < entry (Red (NJ M (Lng (Br M) - 1))) 1 0
+                               then diagSeq 0 (entry (Red (NJ M (Lng (Br M) - 1))) 1 0 - 1)
+                               else [])
+                             @ Red (NJ M (Lng (Br M) - 1))) - 1))
+         = parent M 1 (Lng M - 1)"
+  shows "entry (Red (NJ M (Lng (Br M) - 1))) 1 (Lng (NJ M (Lng (Br M) - 1)) - 1)
+           = Suc (parent M 1 (Lng M - 1))"
+proof -
+  define Jstar where "Jstar \<equiv> Lng (Br M) - 1"
+  define Rs where "Rs \<equiv> Red (NJ M Jstar)"
+  define kk where "kk \<equiv> Lng (NJ M Jstar) - 1"
+  define p where "p \<equiv> parent M 1 (Lng M - 1)"
+  define d where "d \<equiv> entry Rs 1 0 - 1"
+  define N where "N \<equiv> diagSeq 0 d @ Rs"
+  \<comment> \<open>\<open>R\<^sup>*\<close> is nonempty (\<open>NJ\<close> is a cons), so \<open>kk = Lng R\<^sup>* - 1\<close> and \<open>Lng N - 1 = Suc d + kk\<close>.\<close>
+  have NJne: "NJ M Jstar \<noteq> []" by (simp add: NJ_def)
+  have NJT: "NJ M Jstar \<in> T_PS" using NJne by (simp add: T_PS_def)
+  have lRs: "Lng Rs = Lng (NJ M Jstar)"
+    unfolding Rs_def by (rule m_6_5_Lng_Red[OF NJT])
+  have Rspos: "0 < Lng Rs" using lRs NJne by (cases "NJ M Jstar") auto
+  have kklt: "kk < Lng Rs" unfolding kk_def using lRs Rspos by linarith
+  \<comment> \<open>The article's if-form diagonal-prefixed core, in local names.\<close>
+  define Nif where
+    "Nif \<equiv> (if 0 < entry Rs 1 0 then diagSeq 0 (entry Rs 1 0 - 1) else []) @ Rs"
+  have eRs10pos': "0 < entry Rs 1 0"
+    using eRs10pos unfolding Rs_def Jstar_def by simp
+  \<comment> \<open>\<open>N\<close> coincides with the if-form (\<open>R\<^sup>*\<^bsub>1,0\<^esub> > 0\<close>).\<close>
+  have NNif: "Nif = N"
+    using eRs10pos' unfolding Nif_def N_def d_def by simp
+  \<comment> \<open>The two Front A residuals, folded into the local \<open>Nif\<close> abbreviation.\<close>
+  have condA_N': "RedCondA Nif"
+    using condA_N unfolding Nif_def Rs_def Jstar_def by simp
+  have parpin': "hasParent Nif 1 (Lng Nif - 1)
+                 \<and> entry Nif 1 (parent Nif 1 (Lng Nif - 1)) = p"
+    using parpin unfolding Nif_def Rs_def Jstar_def p_def by simp
+  \<comment> \<open>\<open>Lng N = Suc d + Lng R\<^sup>*\<close>, so the last column index is \<open>Suc d + kk\<close>.\<close>
+  have lenN: "Lng N = Suc d + Lng Rs" unfolding N_def by simp
+  have lastNeq: "Lng N - 1 = Suc d + kk"
+    unfolding kk_def using lenN lRs Rspos by linarith
+  \<comment> \<open>The diagonal-tail entry identity: row-1 value at \<open>lastN\<close> is \<open>R\<^sup>*\<close>'s at \<open>kk\<close>.\<close>
+  have etail: "entry N 1 (Lng N - 1) = entry Rs 1 kk"
+    using lastNeq wf17_entry_diag_tail[of d Rs 1 kk] unfolding N_def by simp
+  \<comment> \<open>The parent-value pin and \<open>RedCondA N\<close> (Front A residuals) in local names.\<close>
+  have hpN: "hasParent N 1 (Lng N - 1)"
+    using parpin' NNif by simp
+  have parval: "entry N 1 (parent N 1 (Lng N - 1)) = p"
+    using parpin' NNif by simp
+  have rcaN: "RedCondA N" using condA_N' NNif by simp
+  have relN: "entry N 1 (parent N 1 (Lng N - 1)) + 1 = entry N 1 (Lng N - 1)"
+    using rcaN hpN unfolding RedCondA_def by blast
+  \<comment> \<open>Chain: \<open>p + 1 = entry N 1 (parent ..) + 1 = entry N 1 lastN = entry R\<^sup>* 1 kk\<close>.\<close>
+  have "Suc p = entry N 1 (parent N 1 (Lng N - 1)) + 1" using parval by simp
+  also have "\<dots> = entry N 1 (Lng N - 1)" by (rule relN)
+  also have "\<dots> = entry Rs 1 kk" by (rule etail)
+  finally have "entry Rs 1 kk = Suc p" by simp
+  thus ?thesis unfolding Rs_def kk_def Jstar_def p_def .
+qed
+
+
+
+section \<open>Front A (wf19) — GLUE: \<open>Lng N < Lng M\<close>, in-block transfer, and \<open>condA_top_all\<close>\<close>
+
+text \<open>WF19 GLUE 1 (\<open>Lng N < Lng M\<close>).  For the in-block (\<open>J\<^sub>1>0\<close>) regime, the article
+  applies the IH to the diagonal-prefixed
+  \<open>N := (if 0 < R\<^sup>*\<^bsub>1,0\<^esub> then diagSeq 0 (R\<^sup>*\<^bsub>1,0\<^esub>-1) else []) @ R\<^sup>*\<close> of
+  @{thm [source] wf15_inblock_N_core} (\<open>R\<^sup>* = Red (NJ M J\<^sup>*)\<close>).  We have
+  \<open>Lng N = R\<^sup>*\<^bsub>1,0\<^esub> + Lng R\<^sup>*\<close> and \<open>Lng M = off + Lng R\<^sup>*\<close> (last-block start
+  @{thm [source] wf16_inblock_parent_corr}), so \<open>Lng N < Lng M \<longleftrightarrow> R\<^sup>*\<^bsub>1,0\<^esub> < off\<close>.
+  Now \<open>R\<^sup>*\<^bsub>1,0\<^esub> = npJ M J\<^sup>*\<close> (@{thm [source] m_6_6_Red_leftend_1},
+  @{thm [source] entry_NJ_1_0}) and \<open>off = FirstNodes M ! J\<^sup>* = TrMax M + 1 + IdxSum (Br M) ! J\<^sup>*\<close>
+  (@{thm [source] wf17_off_eq_firstnode}, @{thm [source] FirstNodes_nth}).  Two cases:
+  \<^item> \<open>J\<^sup>* = 0\<close>: \<open>IdxSum (Br M) ! 0 = 0\<close>, \<open>off = TrMax M + 1\<close>, and \<open>npJ M 0 \<le> TrMax M\<close>
+    (@{thm [source] s_npJ0_le_TrMax}), so \<open>npJ M 0 \<le> TrMax M < off\<close>.
+  \<^item> \<open>J\<^sup>* > 0\<close>: \<open>IdxSum (Br M) ! J\<^sup>* \<ge> 1\<close> (the earlier branch \<open>Br M ! 0\<close> is nonempty),
+    and \<open>npJ M J\<^sup>* \<le> Joints M ! J\<^sup>* + 1 \<le> TrMax M + 1\<close>
+    (@{thm [source] npJ_le_Joints_Suc}, @{thm [source] m_6_4_FirstNodes_TrMax_Joints}),
+    so \<open>npJ M J\<^sup>* \<le> TrMax M + 1 \<le> TrMax M + IdxSum (Br M) ! J\<^sup>* < off\<close>.
+  EMPIRICALLY \<open>0/423\<close> reduced \<open>monoT\<close> cores (val \<le>3, len \<le>5; \<open>python/_wf19_probe.py\<close>).
+  SOUND — cites only GREEN facts; never a \<open>p_*\<close> stub.\<close>
+
+lemma wf19_IdxSum_pos:
+  assumes M: "M \<in> PT_PS" and J: "J < Lng (Br M)" and Jpos: "0 < J"
+  shows "0 < IdxSum (Br M) ! J"
+proof -
+  have Jle: "J \<le> length (Br M)" using J by simp
+  have idx: "IdxSum (Br M) ! J = sum_list (map length (take J (Br M)))"
+    by (rule idxsum_nth[OF Jle])
+  have br0ne: "Br M ! 0 \<noteq> []" by (rule Br_component_nonempty[OF M]) (use J Jpos in linarith)
+  \<comment> \<open>\<open>Br M ! 0\<close> is a member of \<open>take J (Br M)\<close> (its head, as \<open>0 < J\<close>).\<close>
+  have br0in: "Br M ! 0 \<in> set (take J (Br M))"
+  proof -
+    have "Br M ! 0 = take J (Br M) ! 0" using Jpos J by simp
+    moreover have "0 < length (take J (Br M))" using Jpos J by simp
+    ultimately show ?thesis using nth_mem by metis
+  qed
+  have lenin: "length (Br M ! 0) \<in> set (map length (take J (Br M)))"
+    using br0in by simp
+  have le1: "length (Br M ! 0) \<le> sum_list (map length (take J (Br M)))"
+    by (rule member_le_sum_list[OF lenin]) simp
+  have pos1: "0 < length (Br M ! 0)" using br0ne by simp
+  have "0 < sum_list (map length (take J (Br M)))" using le1 pos1 by linarith
+  thus ?thesis using idx by simp
+qed
+
+lemma wf19_Lng_N_lt:
+  assumes M: "M \<in> RT_PS" and mono: "monoT M"
+    and e00: "entry M 0 0 = 0" and e10: "entry M 1 0 = 0"
+    and tne: "TrMax M \<noteq> Lng M - 1"
+    and nzNJ: "\<not> zeroT (NJ M (Lng (Br M) - 1))"
+  defines "Jstar \<equiv> Lng (Br M) - 1"
+  defines "Rs \<equiv> Red (NJ M Jstar)"
+  defines "N \<equiv> (if 0 < entry Rs 1 0 then diagSeq 0 (entry Rs 1 0 - 1) else []) @ Rs"
+  shows "Lng N < Lng M"
+proof -
+  have MT: "M \<in> T_PS" using M by (simp add: RT_PS_def)
+  have Mpt: "M \<in> PT_PS" using MT mono by (simp add: PT_PS_def)
+  have brne: "Br M \<noteq> []" using tne P_nonempty by (simp add: Br_def)
+  hence nBpos: "0 < Lng (Br M)" by (cases "Br M") auto
+  have JBr: "Jstar < Lng (Br M)" unfolding Jstar_def using nBpos by simp
+  have NJne: "NJ M Jstar \<noteq> []" by (simp add: NJ_def)
+  have NJT: "NJ M Jstar \<in> T_PS" using NJne by (simp add: T_PS_def)
+  \<comment> \<open>\<open>Lng Rs = Lng (NJ M Jstar)\<close> and \<open>Lng M = off + Lng Rs\<close>.\<close>
+  have lRs: "Lng Rs = Lng (NJ M Jstar)"
+    unfolding Rs_def by (rule m_6_5_Lng_Red[OF NJT])
+  define off where "off \<equiv> Suc (TrMax M)
+                  + Lng (concat (map (\<lambda>J. (IncrFirst ^^ (Joints M ! J + 1 - npJ M J))
+                                            (Red (NJ M J))) [0..<Jstar]))"
+  note B16 = wf16_inblock_parent_corr[OF M mono e00 e10 tne]
+  have Leq: "Lng M - 1 = off + (Lng (NJ M Jstar) - 1)"
+    using conjunct1[OF B16] unfolding off_def Jstar_def by simp
+  have NJpos: "0 < Lng (NJ M Jstar)" using NJne by (cases "NJ M Jstar") auto
+  have LM: "Lng M = off + Lng (NJ M Jstar)"
+    using Leq NJpos MT by (cases M) (auto simp: T_PS_def)
+  \<comment> \<open>\<open>off = FirstNodes M ! Jstar = TrMax M + 1 + IdxSum (Br M) ! Jstar\<close>.\<close>
+  have offFN: "off = FirstNodes M ! Jstar"
+    unfolding off_def Jstar_def by (rule wf17_off_eq_firstnode[OF M mono e00 e10 tne])
+  have offTr: "off = TrMax M + 1 + IdxSum (Br M) ! Jstar"
+    using offFN FirstNodes_nth[OF JBr] by simp
+  \<comment> \<open>\<open>entry Rs 1 0 = npJ M Jstar\<close>.\<close>
+  have e1Rs: "entry Rs 1 0 = npJ M Jstar"
+    unfolding Rs_def using m_6_6_Red_leftend_1[OF NJT] entry_NJ_1_0[of M Jstar] e10 by simp
+  \<comment> \<open>\<open>npJ M Jstar < off\<close>.\<close>
+  have npoff: "npJ M Jstar < off"
+  proof (cases "Jstar = 0")
+    case True
+    have np0: "npJ M 0 \<le> TrMax M" by (rule s_npJ0_le_TrMax[OF Mpt e10 brne])
+    have "IdxSum (Br M) ! 0 = sum_list (map length (take 0 (Br M)))"
+      by (rule idxsum_nth) simp
+    hence idx0: "IdxSum (Br M) ! Jstar = 0" using True by simp
+    show ?thesis using np0 offTr idx0 True by simp
+  next
+    case False
+    hence Jpos: "0 < Jstar" by simp
+    have idxpos: "0 < IdxSum (Br M) ! Jstar"
+      by (rule wf19_IdxSum_pos[OF Mpt JBr Jpos])
+    have nple: "npJ M Jstar \<le> Joints M ! Jstar + 1"
+      by (rule npJ_le_Joints_Suc[OF Mpt e10 JBr])
+    have jle: "Joints M ! Jstar \<le> TrMax M"
+      using m_6_4_FirstNodes_TrMax_Joints[OF Mpt JBr] by simp
+    show ?thesis using nple jle idxpos offTr by linarith
+  qed
+  \<comment> \<open>\<open>Lng N = entry Rs 1 0 + Lng Rs\<close>.\<close>
+  have LN: "Lng N = entry Rs 1 0 + Lng Rs"
+  proof (cases "0 < entry Rs 1 0")
+    case True
+    have "N = diagSeq 0 (entry Rs 1 0 - 1) @ Rs" unfolding N_def using True by simp
+    hence "Lng N = Lng (diagSeq 0 (entry Rs 1 0 - 1)) + Lng Rs" by simp
+    also have "\<dots> = (Suc (entry Rs 1 0 - 1) - 0) + Lng Rs" by simp
+    also have "\<dots> = entry Rs 1 0 + Lng Rs" using True by simp
+    finally show ?thesis .
+  next
+    case False
+    hence "N = Rs" unfolding N_def by simp
+    thus ?thesis using False by simp
+  qed
+  \<comment> \<open>Combine: \<open>Lng N = npJ + Lng Rs < off + Lng Rs = Lng M\<close>.\<close>
+  show ?thesis using LN e1Rs npoff lRs LM by linarith
+qed
+
+
+text \<open>WF19 GLUE 2 (in-block entry transfer at an arbitrary in-block column).  From
+  @{thm [source] wf16_inblock_parent_corr}'s \<open>drop off M = (IncrFirst ^^ ee) Rs\<close>,
+  every in-block column \<open>off + c\<close> (\<open>c < Lng Rs\<close>) reads the block value:
+  \<open>entry M 0 (off+c) = entry Rs 0 c + ee\<close>, \<open>entry M 1 (off+c) = entry Rs 1 c\<close>
+  (@{thm [source] incf_pow_entry0}, @{thm [source] incf_pow_entry1}).  SOUND.\<close>
+
+lemma wf19_inblock_entry:
+  assumes M: "M \<in> RT_PS" and mono: "monoT M"
+    and e00: "entry M 0 0 = 0" and e10: "entry M 1 0 = 0"
+    and tne: "TrMax M \<noteq> Lng M - 1"
+  defines "Jstar \<equiv> Lng (Br M) - 1"
+  defines "ee \<equiv> Joints M ! Jstar + 1 - npJ M Jstar"
+  defines "off \<equiv> Suc (TrMax M)
+                  + Lng (concat (map (\<lambda>J. (IncrFirst ^^ (Joints M ! J + 1 - npJ M J))
+                                            (Red (NJ M J))) [0..<Jstar]))"
+  defines "Rs \<equiv> Red (NJ M Jstar)"
+  assumes cLng: "c < Lng Rs"
+  shows "entry M 0 (off + c) = entry Rs 0 c + ee
+       \<and> entry M 1 (off + c) = entry Rs 1 c"
+proof -
+  note B16 = wf16_inblock_parent_corr[OF M mono e00 e10 tne]
+  have dropoff: "drop off M = (IncrFirst ^^ ee) Rs"
+    using conjunct1[OF conjunct2[OF conjunct2[OF conjunct2[OF B16]]]]
+    unfolding off_def Jstar_def ee_def Rs_def by simp
+  have LM: "Lng M - 1 = off + (Lng (NJ M Jstar) - 1)"
+    using conjunct1[OF B16] unfolding off_def Jstar_def by simp
+  have lRs: "Lng Rs = Lng (NJ M Jstar)"
+  proof -
+    have NJne: "NJ M Jstar \<noteq> []" by (simp add: NJ_def)
+    hence "NJ M Jstar \<in> T_PS" by (simp add: T_PS_def)
+    thus ?thesis unfolding Rs_def by (rule m_6_5_Lng_Red)
+  qed
+  have NJpos: "0 < Lng (NJ M Jstar)"
+  proof -
+    have "NJ M Jstar \<noteq> []" by (simp add: NJ_def)
+    thus ?thesis by (cases "NJ M Jstar") auto
+  qed
+  have LMpos: "0 < Lng M"
+  proof -
+    have "M \<in> T_PS" using M by (simp add: RT_PS_def)
+    thus ?thesis by (cases M) (auto simp: T_PS_def)
+  qed
+  have offc_lt: "off + c < Lng M"
+    using cLng lRs LM NJpos LMpos by linarith
+  \<comment> \<open>read \<open>M ! (off+c)\<close> from the dropped block.\<close>
+  have Moffc: "M ! (off + c) = ((IncrFirst ^^ ee) Rs) ! c"
+  proof -
+    have "M ! (off + c) = drop off M ! c"
+      using offc_lt by (simp add: add.commute)
+    thus ?thesis using dropoff by simp
+  qed
+  have e0: "entry M 0 (off + c) = entry ((IncrFirst ^^ ee) Rs) 0 c"
+    using Moffc by (simp add: entry_def)
+  have e1: "entry M 1 (off + c) = entry ((IncrFirst ^^ ee) Rs) 1 c"
+    using Moffc by (simp add: entry_def)
+  have b0: "entry ((IncrFirst ^^ ee) Rs) 0 c = entry Rs 0 c + ee"
+    by (rule incf_pow_entry0[OF cLng])
+  have b1: "entry ((IncrFirst ^^ ee) Rs) 1 c = entry Rs 1 c"
+    by (rule incf_pow_entry1[OF cLng])
+  show ?thesis using e0 e1 b0 b1 by simp
+qed
+
+
+text \<open>WF19 GLUE 3 (in-block last-column \<open>condA\<close> closer).  For an in-block parent
+  \<open>off \<le> p\<close> of the last column, GIVEN \<open>RedCondA Rs\<close> (supplied by the IH on the
+  diagonal-prefixed \<open>N\<close> via @{thm [source] wf17_RedCondA_diag_tail}), the
+  \<open>condA\<close> relation at the last column follows: @{thm [source] wf16_inblock_parent_corr}
+  maps the M-parent edge to a \<open>Rs\<close>-parent edge at \<open>kk\<close>, \<open>RedCondA Rs\<close> gives the
+  block-local relation \<open>entry Rs i (p-off) + 1 = entry Rs i kk\<close>, and the entry
+  transfers (last column from @{thm [source] wf16_inblock_parent_corr}, parent
+  column from @{thm [source] wf19_inblock_entry}) pull it back to \<open>M\<close> — the row-0
+  \<open>+ee\<close> shift cancels.  SOUND.\<close>
+
+lemma wf19_inblock_condA:
+  assumes M: "M \<in> RT_PS" and mono: "monoT M"
+    and e00: "entry M 0 0 = 0" and e10: "entry M 1 0 = 0"
+    and tne: "TrMax M \<noteq> Lng M - 1"
+    and rcaRs: "RedCondA (Red (NJ M (Lng (Br M) - 1)))"
+    and i: "i \<le> 1"
+    and hp: "hasParent M i (Lng M - 1)"
+    and pge: "Suc (TrMax M)
+                  + Lng (concat (map (\<lambda>J. (IncrFirst ^^ (Joints M ! J + 1 - npJ M J))
+                                            (Red (NJ M J)))
+                              [0..<Lng (Br M) - 1]))
+              \<le> parent M i (Lng M - 1)"
+  shows "entry M i (parent M i (Lng M - 1)) + 1 = entry M i (Lng M - 1)"
+proof -
+  define Jstar where "Jstar \<equiv> Lng (Br M) - 1"
+  define ee where "ee \<equiv> Joints M ! Jstar + 1 - npJ M Jstar"
+  define off where "off \<equiv> Suc (TrMax M)
+                  + Lng (concat (map (\<lambda>J. (IncrFirst ^^ (Joints M ! J + 1 - npJ M J))
+                                            (Red (NJ M J))) [0..<Jstar]))"
+  define Rs where "Rs \<equiv> Red (NJ M Jstar)"
+  define kk where "kk \<equiv> Lng (NJ M Jstar) - 1"
+  define p where "p \<equiv> parent M i (Lng M - 1)"
+  have pgeoff: "off \<le> p" using pge unfolding off_def p_def Jstar_def by simp
+  have rcaRs': "RedCondA Rs" using rcaRs unfolding Rs_def Jstar_def .
+  note B16 = wf16_inblock_parent_corr[OF M mono e00 e10 tne]
+  \<comment> \<open>length identity and \<open>kk < Lng Rs\<close>.\<close>
+  have Leq: "Lng M - 1 = off + kk"
+    using conjunct1[OF B16] unfolding off_def Jstar_def kk_def by simp
+  have kkLT: "kk < Lng Rs"
+    using conjunct1[OF conjunct2[OF B16]] unfolding Rs_def Jstar_def kk_def by simp
+  \<comment> \<open>parent \<open>p\<close> maps in-block to \<open>p - off = parent Rs i kk\<close>, with \<open>hasParent Rs i kk\<close>.\<close>
+  have parcorr: "hasParent Rs i kk \<and> parent Rs i kk = p - off"
+  proof -
+    have hpM: "hasParent M i (Lng M - 1)" by (rule hp)
+    have parM: "parent M i (Lng M - 1) = p" unfolding p_def ..
+    have C5: "\<forall>i\<le>1. \<forall>p. off \<le> p \<longrightarrow> hasParent M i (Lng M - 1) \<longrightarrow> parent M i (Lng M - 1) = p
+              \<longrightarrow> hasParent Rs i kk \<and> parent Rs i kk = p - off"
+      using conjunct1[OF conjunct2[OF conjunct2[OF conjunct2[OF conjunct2[OF conjunct2[OF B16]]]]]]
+      unfolding off_def Jstar_def Rs_def kk_def by simp
+    show ?thesis using C5 i pgeoff hpM parM by blast
+  qed
+  have hpRs: "hasParent Rs i kk" using parcorr by simp
+  have parRs: "parent Rs i kk = p - off" using parcorr by simp
+  have c_lt: "p - off < Lng Rs"
+  proof -
+    obtain q where q: "nextR Rs i q kk" and uq: "\<And>r. nextR Rs i r kk \<Longrightarrow> r = q"
+      using hpRs unfolding hasParent_def by blast
+    have parq: "parent Rs i kk = q"
+      unfolding parent_def using q uq by (rule the_equality)
+    have qlt: "q < kk" using q unfolding nextR_def nextrel0_def nextrel1_def
+      by (auto split: if_splits)
+    have "p - off = q" using parRs parq by simp
+    thus ?thesis using qlt kkLT by linarith
+  qed
+  \<comment> \<open>block-local \<open>condA\<close> relation at \<open>kk\<close> (from \<open>RedCondA Rs\<close>).\<close>
+  have relRs: "entry Rs i (parent Rs i kk) + 1 = entry Rs i kk"
+    using rcaRs' hpRs i unfolding RedCondA_def by blast
+  hence relRs': "entry Rs i (p - off) + 1 = entry Rs i kk" using parRs by simp
+  \<comment> \<open>entry transfers (both rows at the in-block parent column \<open>p = off + (p-off)\<close>).\<close>
+  have poff: "off + (p - off) = p" using pgeoff by simp
+  have c_lt': "p - off < Lng (Red (NJ M (Lng (Br M) - 1)))"
+    using c_lt unfolding Rs_def Jstar_def .
+  have T: "entry M 0 (off + (p - off)) = entry Rs 0 (p - off) + ee
+         \<and> entry M 1 (off + (p - off)) = entry Rs 1 (p - off)"
+    using wf19_inblock_entry[OF M mono e00 e10 tne c_lt']
+    unfolding off_def Jstar_def ee_def Rs_def by simp
+  have ep0: "entry M 0 p = entry Rs 0 (p - off) + ee"
+    using conjunct1[OF T] poff by simp
+  have ep1: "entry M 1 p = entry Rs 1 (p - off)"
+    using conjunct2[OF T] poff by simp
+  show ?thesis
+  proof (cases "i = 0")
+    case True
+    have ej1: "entry M 0 (Lng M - 1) = entry Rs 0 kk + ee"
+      using conjunct2[OF conjunct2[OF conjunct2[OF conjunct2[OF
+              conjunct2[OF conjunct2[OF conjunct2[OF B16]]]]]]]
+      unfolding ee_def Jstar_def Rs_def kk_def by simp
+    have "entry M 0 p + 1 = entry Rs 0 (p - off) + ee + 1" using ep0 by simp
+    also have "\<dots> = (entry Rs 0 (p - off) + 1) + ee" by simp
+    also have "\<dots> = entry Rs 0 kk + ee" using relRs' True by simp
+    also have "\<dots> = entry M 0 (Lng M - 1)" using ej1 by simp
+    finally show ?thesis unfolding p_def using True by simp
+  next
+    case False
+    hence i1: "i = 1" using i by simp
+    have ej1: "entry M 1 (Lng M - 1) = entry Rs 1 kk"
+      using conjunct1[OF conjunct2[OF conjunct2[OF conjunct2[OF conjunct2[OF
+              conjunct2[OF conjunct2[OF B16]]]]]]]
+      unfolding Jstar_def Rs_def kk_def by simp
+    have "entry M 1 p + 1 = entry Rs 1 (p - off) + 1" using ep1 by simp
+    also have "\<dots> = entry Rs 1 kk" using relRs' i1 by simp
+    also have "\<dots> = entry M 1 (Lng M - 1)" using ej1 by simp
+    finally show ?thesis unfolding p_def using i1 by simp
+  qed
+qed
+
+
+text \<open>WF19 GLUE 4 (row-0, \<open>kk>0\<close> ROUTING: the row-0 last-column parent is in-block).
+  When \<open>kk = Lng (NJ M J\<^sup>*)-1 > 0\<close>, \<open>Lng Rs > 1\<close>, so the reduced \<open>monoT\<close> branch
+  reduction \<open>Rs = Red (NJ M J\<^sup>*)\<close> has a row-0 parent of its own last column \<open>kk\<close>
+  (@{thm [source] kfwd_monoT_hasParent_top}).  By the @{thm [source] wf16_inblock_parent_corr}
+  \<open>nextR\<close>-correspondence (the \<open>\<longleftrightarrow>\<close> direction), that edge lifts to an in-block
+  M-edge \<open>nextR M 0 (off + q) (Lng M-1)\<close>, so the unique row-0 M-parent of the last
+  column is \<open>off + q \<ge> off\<close> — i.e. in-block.  This routes the row-0 \<open>kk>0\<close> case to
+  @{thm [source] wf19_inblock_condA}.  EMPIRICALLY \<open>206/206\<close> in-block
+  (\<open>python/_wf19_probe2.py\<close>).  SOUND.\<close>
+
+lemma wf19_r0_kkpos_inblock:
+  assumes M: "M \<in> RT_PS" and mono: "monoT M"
+    and e00: "entry M 0 0 = 0" and e10: "entry M 1 0 = 0"
+    and tne: "TrMax M \<noteq> Lng M - 1"
+    and kkpos: "0 < Lng (NJ M (Lng (Br M) - 1)) - 1"
+    and hp0: "hasParent M 0 (Lng M - 1)"
+  shows "Suc (TrMax M)
+                  + Lng (concat (map (\<lambda>J. (IncrFirst ^^ (Joints M ! J + 1 - npJ M J))
+                                            (Red (NJ M J)))
+                              [0..<Lng (Br M) - 1]))
+         \<le> parent M 0 (Lng M - 1)"
+proof -
+  define Jstar where "Jstar \<equiv> Lng (Br M) - 1"
+  define off where "off \<equiv> Suc (TrMax M)
+                  + Lng (concat (map (\<lambda>J. (IncrFirst ^^ (Joints M ! J + 1 - npJ M J))
+                                            (Red (NJ M J))) [0..<Jstar]))"
+  define Rs where "Rs \<equiv> Red (NJ M Jstar)"
+  define kk where "kk \<equiv> Lng (NJ M Jstar) - 1"
+  have MT: "M \<in> T_PS" using M by (simp add: RT_PS_def)
+  have Mpt: "M \<in> PT_PS" using MT mono by (simp add: PT_PS_def)
+  have brne: "Br M \<noteq> []" using tne P_nonempty by (simp add: Br_def)
+  hence nBpos: "0 < Lng (Br M)" by (cases "Br M") auto
+  have JBr: "Jstar < Lng (Br M)" unfolding Jstar_def using nBpos by simp
+  have NJne: "NJ M Jstar \<noteq> []" by (simp add: NJ_def)
+  have nm: "\<not> multiT (NJ M Jstar)" by (rule NJ_nonmulti[OF Mpt e00 e10 JBr])
+  have kkp: "0 < kk" using kkpos unfolding kk_def Jstar_def by simp
+  have nzNJ: "\<not> zeroT (NJ M Jstar)"
+  proof -
+    have "Lng (NJ M Jstar) \<noteq> 1" using kkp unfolding kk_def by linarith
+    thus ?thesis by (simp add: zeroT_def)
+  qed
+  have monoNJ: "monoT (NJ M Jstar)" using nm nzNJ by (simp add: multiT_def)
+  have NJT: "NJ M Jstar \<in> T_PS" using NJne by (simp add: T_PS_def)
+  have NJPT: "NJ M Jstar \<in> PT_PS" using NJT monoNJ by (simp add: PT_PS_def)
+  have monoRs: "monoT Rs" unfolding Rs_def by (rule m_6_5_Red_preserves_monoT[OF NJPT])
+  have lRs: "Lng Rs = Lng (NJ M Jstar)" unfolding Rs_def by (rule m_6_5_Lng_Red[OF NJT])
+  have NJpos: "0 < Lng (NJ M Jstar)" using NJne by (cases "NJ M Jstar") auto
+  have RsT: "Rs \<in> T_PS"
+  proof -
+    have "0 < Lng Rs" using lRs NJpos by simp
+    hence "Rs \<noteq> []" by (cases Rs) auto
+    thus ?thesis by (simp add: T_PS_def)
+  qed
+  have LRs1: "1 < Lng Rs" using kkp lRs unfolding kk_def by linarith
+  \<comment> \<open>\<open>kk = Lng Rs - 1\<close> is the last column of \<open>Rs\<close>; it has a row-0 parent.\<close>
+  have kkeq: "kk = Lng Rs - 1" using lRs unfolding kk_def by simp
+  have hpRs: "hasParent Rs 0 kk"
+    using kfwd_monoT_hasParent_top[OF RsT monoRs LRs1] kkeq by simp
+  obtain q where q: "nextR Rs 0 q kk" using hpRs unfolding hasParent_def by blast
+  \<comment> \<open>lift the \<open>Rs\<close>-edge at \<open>kk\<close> to an in-block M-edge via wf16 conjunct (5).\<close>
+  note B16 = wf16_inblock_parent_corr[OF M mono e00 e10 tne]
+  have corr: "\<forall>i\<le>1. \<forall>p. off \<le> p \<longrightarrow>
+                (nextR M i p (Lng M - 1) \<longleftrightarrow> nextR Rs i (p - off) kk)"
+    using conjunct1[OF conjunct2[OF conjunct2[OF conjunct2[OF conjunct2[OF B16]]]]]
+    unfolding off_def Jstar_def Rs_def kk_def by simp
+  have iff0: "nextR M 0 (off + q) (Lng M - 1) \<longleftrightarrow> nextR Rs 0 ((off + q) - off) kk"
+    using corr by simp
+  have nM: "nextR M 0 (off + q) (Lng M - 1)"
+    using iff0 q by simp
+  \<comment> \<open>uniqueness of the row-0 M-parent of the last column.\<close>
+  have uniqM: "\<And>r. nextR M 0 r (Lng M - 1) \<Longrightarrow> r = off + q"
+    using nM by (blast intro: idxsum_parent0_unique)
+  have exu: "\<exists>!r. nextR M 0 r (Lng M - 1)" using nM uniqM by blast
+  have parM: "parent M 0 (Lng M - 1) = off + q"
+    unfolding parent_def using nM by (rule the1_equality[OF exu])
+  show ?thesis using parM unfolding off_def Jstar_def by simp
+qed
+
+
+text \<open>WF19 GLUE 5 (row-1, \<open>kk=0\<close> ROUTING: the branch row-1 head is nonzero).
+  When \<open>kk = 0\<close> (singleton last block) and the last column has a ROW-1 parent, the
+  last-column row-1 value \<open>entry M 1 (Lng M-1) = entry Rs 1 0 = npJ M J\<^sup>*\<close>
+  (@{thm [source] wf16_inblock_parent_corr} row-1 conjunct, @{thm [source] m_6_6_Red_leftend_1},
+  @{thm [source] entry_NJ_1_0}) is \<open>> 0\<close> (a row-1 parent strictly lowers the value),
+  so \<open>npJ M J\<^sup>* \<noteq> 0\<close>, equivalently \<open>entry (Br M ! J\<^sup>*) 1 0 \<noteq> 0\<close> (\<^const>\<open>npJ\<close> def).
+  This supplies the \<open>brnz\<close> side-condition of @{thm [source] wf17_crossblock_row1}.
+  EMPIRICALLY \<open>0/123\<close> (\<open>brnz\<close> always holds when row-1 has a parent and \<open>kk=0\<close>).
+  SOUND.\<close>
+
+lemma wf19_brnz_of_r1_kk0:
+  assumes M: "M \<in> RT_PS" and mono: "monoT M"
+    and e00: "entry M 0 0 = 0" and e10: "entry M 1 0 = 0"
+    and tne: "TrMax M \<noteq> Lng M - 1"
+    and kk0: "Lng (NJ M (Lng (Br M) - 1)) = 1"
+    and hp1: "hasParent M 1 (Lng M - 1)"
+  shows "entry (Br M ! (Lng (Br M) - 1)) 1 0 \<noteq> 0"
+proof -
+  define Jstar where "Jstar \<equiv> Lng (Br M) - 1"
+  define Rs where "Rs \<equiv> Red (NJ M Jstar)"
+  define kk where "kk \<equiv> Lng (NJ M Jstar) - 1"
+  have NJne: "NJ M Jstar \<noteq> []" by (simp add: NJ_def)
+  have NJT: "NJ M Jstar \<in> T_PS" using NJne by (simp add: T_PS_def)
+  have kk0': "kk = 0" using kk0 unfolding kk_def Jstar_def by simp
+  \<comment> \<open>last-column row-1 value reads the block left end.\<close>
+  note B16 = wf16_inblock_parent_corr[OF M mono e00 e10 tne]
+  have e1: "entry M 1 (Lng M - 1) = entry Rs 1 kk"
+    using conjunct1[OF conjunct2[OF conjunct2[OF conjunct2[OF conjunct2[OF
+            conjunct2[OF conjunct2[OF B16]]]]]]]
+    unfolding Rs_def Jstar_def kk_def by simp
+  have eRs0: "entry Rs 1 0 = npJ M Jstar"
+    unfolding Rs_def using m_6_6_Red_leftend_1[OF NJT] entry_NJ_1_0[of M Jstar] e10 by simp
+  have eval: "entry M 1 (Lng M - 1) = npJ M Jstar"
+    using e1 eRs0 kk0' by simp
+  \<comment> \<open>a row-1 parent strictly lowers the value, so the last-column value is \<open>> 0\<close>.\<close>
+  obtain pp where pp: "nextR M 1 pp (Lng M - 1)"
+    using hp1 unfolding hasParent_def by blast
+  have "entry M 1 pp < entry M 1 (Lng M - 1)"
+    using pp unfolding nextR_def nextrel1_def by simp
+  hence vpos: "0 < entry M 1 (Lng M - 1)" by linarith
+  have nppos: "0 < npJ M Jstar" using vpos eval by simp
+  \<comment> \<open>\<open>npJ \<noteq> 0\<close> forces the \<^const>\<open>npJ\<close> else-branch, i.e. \<open>entry (Br M ! J\<^sup>*) 1 0 \<noteq> 0\<close>.\<close>
+  show ?thesis
+  proof (rule ccontr)
+    assume "\<not> entry (Br M ! (Lng (Br M) - 1)) 1 0 \<noteq> 0"
+    hence "entry (Br M ! Jstar) 1 0 = 0" unfolding Jstar_def by simp
+    hence "npJ M Jstar = 0" by (simp add: npJ_def)
+    thus False using nppos by simp
+  qed
+qed
+
+
+text \<open>WF19 GLUE 6 (transfer \<open>RedCondA\<close> from the diagonal-prefixed \<open>N\<close> to \<open>Rs\<close>).
+  The article \<open>N = (if 0 < R\<^sup>*\<^bsub>1,0\<^esub> then diagSeq 0 (R\<^sup>*\<^bsub>1,0\<^esub>-1) else []) @ R\<^sup>*\<close>
+  (@{thm [source] wf15_inblock_N_core}); given \<open>RedCondA N\<close> (from the IH applied to
+  the strictly-shorter \<open>N\<close>, @{thm [source] wf19_Lng_N_lt}), strip the diagonal
+  prefix (@{thm [source] wf17_RedCondA_diag_tail}) to obtain \<open>RedCondA R\<^sup>*\<close>.  SOUND.\<close>
+
+lemma wf19_RedCondA_Rs:
+  assumes rcaN: "RedCondA ((if 0 < entry Rs 1 0 then diagSeq 0 (entry Rs 1 0 - 1) else []) @ Rs)"
+  shows "RedCondA Rs"
+proof (cases "0 < entry Rs 1 0")
+  case True
+  have "RedCondA (diagSeq 0 (entry Rs 1 0 - 1) @ Rs)" using rcaN True by simp
+  thus ?thesis by (rule wf17_RedCondA_diag_tail)
+next
+  case False
+  thus ?thesis using rcaN by simp
+qed
+
+
+text \<open>WF19 ASSEMBLY — the \<S>6.6 keystone forward (monoT core), reduced to the SINGLE
+  residual row-1 cross-block \<open>kk>0\<close> relation \<open>r1cross\<close> (the value pin that Front B's
+  \<open>wf19_valpin\<close> supplies; @{thm [source] wf18_crossblock_row1_kkpos} derives it from
+  \<open>pTr + valpin\<close>).  All other last-column cases are CLOSED by the bricks:
+  \<^item> \<open>j\<^sub>1' < Lng M - 1\<close>: \<open>Pred M\<close>-lift + IH (as in @{thm [source] kst_reduced_imp_condAB_monoT_core_cond});
+  \<^item> \<open>kk = 0\<close> (cross): row-0 @{thm [source] wf17_crossblock_row0}, row-1
+    @{thm [source] wf17_crossblock_row1} (its \<open>brnz\<close> from @{thm [source] wf19_brnz_of_r1_kk0});
+  \<^item> \<open>kk > 0\<close> in-block: @{thm [source] wf19_inblock_condA} with \<open>RedCondA R\<^sup>*\<close> from the IH on
+    the diagonal-prefixed \<open>N\<close> (@{thm [source] wf15_inblock_N_core}, @{thm [source] wf19_Lng_N_lt},
+    @{thm [source] wf19_RedCondA_Rs}); row-0 \<open>kk>0\<close> is always in-block
+    (@{thm [source] wf19_r0_kkpos_inblock}).
+  \<^item> \<open>RedCondB\<close>: identical to the cond lemma (last column vacuous, below-last by Pred+IH).
+  SOUND — cites only GREEN bricks and the explicit \<open>r1cross\<close> residual; no \<open>p_*\<close> stub,
+  no goal self-citation.\<close>
+
+lemma condAB_all_cond:
+  assumes r1cross:
+    "\<And>N. N \<in> RT_PS \<Longrightarrow> monoT N \<Longrightarrow> entry N 0 0 = 0 \<Longrightarrow> entry N 1 0 = 0
+       \<Longrightarrow> TrMax N \<noteq> Lng N - 1
+       \<Longrightarrow> 0 < Lng (NJ N (Lng (Br N) - 1)) - 1
+       \<Longrightarrow> hasParent N 1 (Lng N - 1)
+       \<Longrightarrow> parent N 1 (Lng N - 1) < FirstNodes N ! (Lng (Br N) - 1)
+       \<Longrightarrow> entry N 1 (parent N 1 (Lng N - 1)) + 1 = entry N 1 (Lng N - 1)"
+  assumes M0: "M \<in> RT_PS" and mono0: "monoT M"
+    and e000: "entry M 0 0 = 0" and e100: "entry M 1 0 = 0"
+  shows "RedCondA M \<and> RedCondB M"
+  using M0 mono0 e000 e100
+proof (induction M rule: measure_induct_rule[where f = Lng])
+  case (less M)
+  have M: "M \<in> RT_PS" by (rule less.prems(1))
+  have mono: "monoT M" by (rule less.prems(2))
+  have e00: "entry M 0 0 = 0" by (rule less.prems(3))
+  have e10: "entry M 1 0 = 0" by (rule less.prems(4))
+  have MT: "M \<in> T_PS" using M by (simp add: RT_PS_def)
+  have LMpos: "0 < Lng M" using MT by (cases M) (auto simp: T_PS_def)
+  let ?j1 = "Lng M - 1"
+  show ?case
+  proof (cases "TrMax M = Lng M - 1")
+    case True
+    show ?thesis by (rule kfwd_reduced_core_trunk_condAB[OF M mono e00 e10 True])
+  next
+    case tne: False
+    have trlt: "TrMax M < Lng M - 1" using TrMax_bound[OF MT] tne by linarith
+    have L2: "1 < Lng M" using trlt LMpos by linarith
+    define off where "off \<equiv> Suc (TrMax M)
+                  + Lng (concat (map (\<lambda>J. (IncrFirst ^^ (Joints M ! J + 1 - npJ M J))
+                                            (Red (NJ M J))) [0..<Lng (Br M) - 1]))"
+    define kkM where "kkM \<equiv> Lng (NJ M (Lng (Br M) - 1)) - 1"
+    \<comment> \<open>--- RedCondA M ---\<close>
+    have condA: "RedCondA M"
+      unfolding RedCondA_def
+    proof (intro allI impI)
+      fix i j1' assume i: "i \<le> 1" and hp: "hasParent M i j1'"
+      have j1L: "j1' < Lng M"
+        using hp unfolding hasParent_def nextR_def nextrel0_def nextrel1_def
+        by (auto split: if_splits)
+      have par_lt: "parent M i j1' < j1'"
+      proof -
+        obtain q where q: "nextR M i q j1'"
+          and uq: "\<And>r. nextR M i r j1' \<Longrightarrow> r = q"
+          using hp unfolding hasParent_def by blast
+        have "parent M i j1' = q"
+          unfolding parent_def using q uq by (blast intro: the1_equality)
+        moreover have "q < j1'" using q
+          unfolding nextR_def nextrel0_def nextrel1_def by (auto split: if_splits)
+        ultimately show ?thesis by simp
+      qed
+      show "entry M i (parent M i j1') + 1 = entry M i j1'"
+      proof (cases "j1' = ?j1")
+        case top: True
+        have hpT: "hasParent M i ?j1" using hp top by simp
+        \<comment> \<open>route on \<open>kk = 0\<close> vs \<open>kk > 0\<close>, then row / in-block / cross.\<close>
+        show ?thesis
+        proof (cases "kkM = 0")
+          case kk0: True
+          have kk0': "Lng (NJ M (Lng (Br M) - 1)) = 1"
+          proof -
+            have "NJ M (Lng (Br M) - 1) \<noteq> []" by (simp add: NJ_def)
+            hence "0 < Lng (NJ M (Lng (Br M) - 1))" by (cases "NJ M (Lng (Br M) - 1)") auto
+            thus ?thesis using kk0 unfolding kkM_def by linarith
+          qed
+          show ?thesis
+          proof (cases "i = 0")
+            case True
+            have hp0: "hasParent M 0 ?j1" using hpT True by simp
+            note R = wf17_crossblock_row0[OF M mono e00 e10 tne kk0' hp0]
+            have parJ: "parent M 0 ?j1 = Joints M ! (Lng (Br M) - 1)"
+              using conjunct1[OF R] by simp
+            have eR: "entry M 0 ?j1 = entry M 0 (Joints M ! (Lng (Br M) - 1)) + 1"
+              using conjunct2[OF R] by simp
+            have "entry M 0 (parent M 0 ?j1) + 1 = entry M 0 (Joints M ! (Lng (Br M) - 1)) + 1"
+              using parJ by simp
+            also have "\<dots> = entry M 0 ?j1" using eR by simp
+            finally show ?thesis using top True by simp
+          next
+            case False
+            hence i1: "i = 1" using i by simp
+            have hp1: "hasParent M 1 ?j1" using hpT i1 by simp
+            have brnz: "entry (Br M ! (Lng (Br M) - 1)) 1 0 \<noteq> 0"
+              by (rule wf19_brnz_of_r1_kk0[OF M mono e00 e10 tne kk0' hp1])
+            note R = wf17_crossblock_row1[OF M mono e00 e10 tne kk0' brnz hp1]
+            have npeq: "npJ M (Lng (Br M) - 1) = parent M 1 ?j1 + 1"
+              using conjunct1[OF conjunct2[OF R]] by simp
+            have epar: "entry M 1 (parent M 1 ?j1) = parent M 1 ?j1"
+              using conjunct1[OF conjunct2[OF conjunct2[OF conjunct2[OF R]]]] by simp
+            have ej1: "entry M 1 ?j1 = npJ M (Lng (Br M) - 1)"
+              using conjunct2[OF conjunct2[OF conjunct2[OF conjunct2[OF R]]]] by simp
+            have "entry M 1 (parent M 1 ?j1) + 1 = parent M 1 ?j1 + 1" using epar by simp
+            also have "\<dots> = npJ M (Lng (Br M) - 1)" using npeq by simp
+            also have "\<dots> = entry M 1 ?j1" using ej1 by simp
+            finally show ?thesis using top i1 by simp
+          qed
+        next
+          case kkne: False
+          have kkpos: "0 < Lng (NJ M (Lng (Br M) - 1)) - 1"
+            using kkne unfolding kkM_def by simp
+          \<comment> \<open>get \<open>RedCondA R\<^sup>*\<close> from the IH on the strictly-shorter diagonal-prefixed \<open>N\<close>.\<close>
+          have nzNJ: "\<not> zeroT (NJ M (Lng (Br M) - 1))"
+          proof -
+            have "Lng (NJ M (Lng (Br M) - 1)) \<noteq> 1" using kkpos by linarith
+            thus ?thesis by (simp add: zeroT_def)
+          qed
+          define Rs where "Rs \<equiv> Red (NJ M (Lng (Br M) - 1))"
+          define N where "N \<equiv> (if 0 < entry Rs 1 0 then diagSeq 0 (entry Rs 1 0 - 1) else []) @ Rs"
+          have Ncore: "Red N = N \<and> monoT N \<and> entry N 0 0 = 0 \<and> entry N 1 0 = 0
+                     \<and> N = (if 0 < entry Rs 1 0 then diagSeq 0 (entry Rs 1 0 - 1) else []) @ Rs"
+            using wf15_inblock_N_core[OF M mono e00 e10 tne nzNJ]
+            unfolding Rs_def N_def by simp
+          have NT: "N \<in> T_PS"
+          proof -
+            have "Rs \<noteq> []"
+            proof -
+              have "NJ M (Lng (Br M) - 1) \<noteq> []" by (simp add: NJ_def)
+              hence "NJ M (Lng (Br M) - 1) \<in> T_PS" by (simp add: T_PS_def)
+              hence "Lng Rs = Lng (NJ M (Lng (Br M) - 1))"
+                unfolding Rs_def by (rule m_6_5_Lng_Red)
+              moreover have "0 < Lng (NJ M (Lng (Br M) - 1))"
+                by (simp add: NJ_def)
+              ultimately show ?thesis by (cases Rs) auto
+            qed
+            hence "N \<noteq> []" unfolding N_def by simp
+            thus ?thesis by (simp add: T_PS_def)
+          qed
+          have redN: "Red N = N" by (rule conjunct1[OF Ncore])
+          have monoN: "monoT N" by (rule conjunct1[OF conjunct2[OF Ncore]])
+          have eN00: "entry N 0 0 = 0" by (rule conjunct1[OF conjunct2[OF conjunct2[OF Ncore]]])
+          have eN10: "entry N 1 0 = 0"
+            by (rule conjunct1[OF conjunct2[OF conjunct2[OF conjunct2[OF Ncore]]]])
+          have NRT: "N \<in> RT_PS" using NT redN by (simp add: RT_PS_def)
+          have NLlt: "Lng N < Lng M"
+            using wf19_Lng_N_lt[OF M mono e00 e10 tne nzNJ] unfolding N_def Rs_def by simp
+          have IHN: "RedCondA N \<and> RedCondB N"
+            by (rule less.IH[OF NLlt NRT monoN eN00 eN10])
+          have Neq: "N = (if 0 < entry Rs 1 0 then diagSeq 0 (entry Rs 1 0 - 1) else []) @ Rs"
+            unfolding N_def ..
+          have rcaN: "RedCondA ((if 0 < entry Rs 1 0 then diagSeq 0 (entry Rs 1 0 - 1) else []) @ Rs)"
+            using IHN Neq by simp
+          have rcaRs: "RedCondA Rs" by (rule wf19_RedCondA_Rs[OF rcaN])
+          have rcaRs': "RedCondA (Red (NJ M (Lng (Br M) - 1)))" using rcaRs unfolding Rs_def .
+          \<comment> \<open>in-block vs cross.\<close>
+          show ?thesis
+          proof (cases "off \<le> parent M i ?j1")
+            case inb: True
+            have rel: "entry M i (parent M i ?j1) + 1 = entry M i ?j1"
+              by (rule wf19_inblock_condA[OF M mono e00 e10 tne rcaRs' i hpT])
+                 (use inb in \<open>simp add: off_def\<close>)
+            thus ?thesis using top by simp
+          next
+            case cross: False
+            have pcross: "parent M i ?j1 < off" using cross by simp
+            show ?thesis
+            proof (cases "i = 0")
+              case True
+              \<comment> \<open>row-0 \<open>kk>0\<close> is ALWAYS in-block — contradiction with \<open>cross\<close>.\<close>
+              have hp0: "hasParent M 0 ?j1" using hpT True by simp
+              have "off \<le> parent M 0 ?j1"
+                using wf19_r0_kkpos_inblock[OF M mono e00 e10 tne kkpos hp0]
+                unfolding off_def by simp
+              hence False using pcross True by simp
+              thus ?thesis ..
+            next
+              case False
+              hence i1: "i = 1" using i by simp
+              have hp1: "hasParent M 1 ?j1" using hpT i1 by simp
+              have pcr: "parent M 1 ?j1 < FirstNodes M ! (Lng (Br M) - 1)"
+                using pcross i1 wf17_off_eq_firstnode[OF M mono e00 e10 tne]
+                unfolding off_def by simp
+              have "entry M 1 (parent M 1 ?j1) + 1 = entry M 1 ?j1"
+                by (rule r1cross[OF M mono e00 e10 tne kkpos hp1 pcr])
+              thus ?thesis using top i1 by simp
+            qed
+          qed
+        qed
+      next
+        case below: False
+        have jpos: "0 < j1'" using par_lt by linarith
+        have jle: "j1' \<le> Lng M - 2" using j1L below by linarith
+        have L3: "2 < Lng M" using jpos jle by linarith
+        have predRT: "Pred M \<in> RT_PS" and predmono: "monoT (Pred M)"
+          and pred00: "entry (Pred M) 0 0 = 0" and pred10: "entry (Pred M) 1 0 = 0"
+          and predLlt: "Lng (Pred M) < Lng M"
+          using ncons_Pred_core[OF M mono e00 e10 tne L3] by blast+
+        have condA_pred: "RedCondA (Pred M)"
+          using less.IH[OF predLlt predRT predmono pred00 pred10] by simp
+        have hpP: "hasParent (Pred M) i j1'"
+          using kfwd_hasParent_Pred_iff[OF MT L2 i jle] hp by simp
+        have parP: "parent (Pred M) i j1' = parent M i j1'"
+          by (rule kfwd_parent_Pred_eq[OF MT L2 i jle hp])
+        have parle: "parent M i j1' \<le> Lng M - 2" using par_lt jle by linarith
+        have relP: "entry (Pred M) i (parent (Pred M) i j1') + 1
+                     = entry (Pred M) i j1'"
+          using condA_pred hpP i unfolding RedCondA_def by blast
+        have e_par: "entry (Pred M) i (parent M i j1') = entry M i (parent M i j1')"
+          by (rule kfwd_entry_Pred_eq[OF L2 parle])
+        have e_j1: "entry (Pred M) i j1' = entry M i j1'"
+          by (rule kfwd_entry_Pred_eq[OF L2 jle])
+        show ?thesis using relP parP e_par e_j1 by simp
+      qed
+    qed
+    \<comment> \<open>--- RedCondB M (identical to the cond lemma) ---\<close>
+    have condB: "RedCondB M"
+      unfolding RedCondB_def
+    proof (intro allI impI)
+      fix j1' assume H: "\<not> hasParent M 0 j1' \<and> j1' \<le> Lng M - 1"
+      hence noP: "\<not> hasParent M 0 j1'" and hle: "j1' \<le> Lng M - 1" by simp_all
+      show "entry M 0 j1' = entry M 1 j1'"
+      proof (cases "j1' = ?j1")
+        case top: True
+        have "hasParent M 0 ?j1" by (rule kfwd_monoT_hasParent_top[OF MT mono L2])
+        thus ?thesis using noP top by simp
+      next
+        case below: False
+        have jle: "j1' \<le> Lng M - 2" using hle below by linarith
+        show ?thesis
+        proof (cases "j1' = 0")
+          case True
+          show ?thesis using True e00 e10 by simp
+        next
+          case False
+          have jpos: "0 < j1'" using False by simp
+          have L3: "2 < Lng M" using jpos jle by linarith
+          have predRT: "Pred M \<in> RT_PS" and predmono: "monoT (Pred M)"
+            and pred00: "entry (Pred M) 0 0 = 0" and pred10: "entry (Pred M) 1 0 = 0"
+            and predLlt: "Lng (Pred M) < Lng M"
+            using ncons_Pred_core[OF M mono e00 e10 tne L3] by blast+
+          have LP: "Lng (Pred M) = Lng M - 1" using L2 by (simp add: Pred_def length_butlast)
+          have IHpred: "RedCondA (Pred M) \<and> RedCondB (Pred M)"
+            by (rule less.IH[OF predLlt predRT predmono pred00 pred10])
+          have noPP: "\<not> hasParent (Pred M) 0 j1'"
+            using kfwd_hasParent_Pred_iff[OF MT L2 _ jle] noP by simp
+          have hleP: "j1' \<le> Lng (Pred M) - 1" using jle LP by linarith
+          have relB: "entry (Pred M) 0 j1' = entry (Pred M) 1 j1'"
+            using IHpred noPP hleP unfolding RedCondB_def by blast
+          have e0: "entry (Pred M) 0 j1' = entry M 0 j1'"
+            by (rule kfwd_entry_Pred_eq[OF L2 jle])
+          have e1: "entry (Pred M) 1 j1' = entry M 1 j1'"
+            by (rule kfwd_entry_Pred_eq[OF L2 jle])
+          show ?thesis using relB e0 e1 by simp
+        qed
+      qed
+    qed
+    show ?thesis using condA condB by blast
+  qed
+qed
+
+
+text \<open>The \<S>6.6 keystone forward (monoT core) in the TARGET name form, reduced to the
+  single \<open>r1cross\<close> residual (Front B's \<open>wf19_valpin\<close>: the row-1 cross-block \<open>kk>0\<close>
+  value pin).  Once \<open>wf19_valpin\<close> lands on HEAD, @{thm [source] wf18_crossblock_row1_kkpos}
+  discharges \<open>r1cross\<close> (it derives the relation from \<open>pTr\<close> + \<open>valpin\<close>), making this
+  UNCONDITIONAL; the keystone then unblocks \<S>6.5 \<open>Red_le\<close> via the
+  \<open>reduced \<Longrightarrow> RedCondA \<Longrightarrow> red_le\<close> lead.  All other cases are GREEN here.\<close>
+
+lemma kst_reduced_imp_condAB_monoT_core_via_wf19:
+  assumes r1cross:
+    "\<And>N. N \<in> RT_PS \<Longrightarrow> monoT N \<Longrightarrow> entry N 0 0 = 0 \<Longrightarrow> entry N 1 0 = 0
+       \<Longrightarrow> TrMax N \<noteq> Lng N - 1
+       \<Longrightarrow> 0 < Lng (NJ N (Lng (Br N) - 1)) - 1
+       \<Longrightarrow> hasParent N 1 (Lng N - 1)
+       \<Longrightarrow> parent N 1 (Lng N - 1) < FirstNodes N ! (Lng (Br N) - 1)
+       \<Longrightarrow> entry N 1 (parent N 1 (Lng N - 1)) + 1 = entry N 1 (Lng N - 1)"
+  assumes M: "M \<in> RT_PS" and mono: "monoT M"
+    and e00: "entry M 0 0 = 0" and e10: "entry M 1 0 = 0"
+  shows "RedCondA M \<and> RedCondB M"
+  by (rule condAB_all_cond[OF r1cross M mono e00 e10])
+
+
+text \<open>The unconditional last-column \<open>condA_top\<close> witness translation (TARGET
+  \<open>condA_top_all\<close>) in conditional form: it is exactly the \<open>RedCondA\<close> half of
+  @{thm [source] kst_reduced_imp_condAB_monoT_core_via_wf19} read at the last column,
+  so it follows by projecting \<open>RedCondA M\<close> and unfolding \<^const>\<open>RedCondA\<close>.  This is
+  the witness consumed by @{thm [source] kst_reduced_imp_condAB_monoT_core_cond}.\<close>
+
+lemma condA_top_all_cond:
+  assumes r1cross:
+    "\<And>N. N \<in> RT_PS \<Longrightarrow> monoT N \<Longrightarrow> entry N 0 0 = 0 \<Longrightarrow> entry N 1 0 = 0
+       \<Longrightarrow> TrMax N \<noteq> Lng N - 1
+       \<Longrightarrow> 0 < Lng (NJ N (Lng (Br N) - 1)) - 1
+       \<Longrightarrow> hasParent N 1 (Lng N - 1)
+       \<Longrightarrow> parent N 1 (Lng N - 1) < FirstNodes N ! (Lng (Br N) - 1)
+       \<Longrightarrow> entry N 1 (parent N 1 (Lng N - 1)) + 1 = entry N 1 (Lng N - 1)"
+  assumes M: "M \<in> RT_PS" and mono: "monoT M"
+    and e00: "entry M 0 0 = 0" and e10: "entry M 1 0 = 0"
+    and tne: "TrMax M \<noteq> Lng M - 1" and i: "i \<le> 1"
+    and hp: "hasParent M i (Lng M - 1)"
+  shows "entry M i (parent M i (Lng M - 1)) + 1 = entry M i (Lng M - 1)"
+proof -
+  have rca: "RedCondA M"
+    by (rule conjunct1[OF condAB_all_cond[OF r1cross M mono e00 e10]])
+  show ?thesis using rca i hp unfolding RedCondA_def by blast
+qed
+
+
+
+
 end
