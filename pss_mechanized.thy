@@ -42527,4 +42527,98 @@ proof -
 qed
 
 
+
+section \<open>Front B (wf18) — \<open>condA_top\<close> ROW-1 CROSS-BLOCK at \<open>kk > 0\<close> (the last sub-case)\<close>
+
+text \<open>WF18.  The LAST \<open>condA_top\<close> sub-case: a reduced \<open>monoT\<close> core \<open>M\<close> with
+  \<open>M\<^sub>0 = (0,0)\<close> on the NONTRUNK branch (\<open>TrMax M \<noteq> Lng M - 1\<close>), last branch
+  \<open>J\<^sup>* = Lng (Br M) - 1\<close>, last-block start \<open>off = FirstNodes M ! J\<^sup>*\<close>,
+  \<open>kk = Lng (NJ M J\<^sup>*) - 1 > 0\<close>, and the ROW-1 parent of the last column is
+  CROSS-BLOCK: \<open>p := parent M 1 (Lng M - 1) < off\<close>.  Goal:
+  \<open>entry M 1 p + 1 = entry M 1 (Lng M - 1)\<close> (the \<open>RedCondA\<close> obligation at the last
+  column, row 1).
+
+  EMPIRICAL TRUTH-CHECK (\<open>python\<close> over reduced \<open>monoT\<close> cores, maxlen 5, value 3;
+  34 row-1 cross-block \<open>kk > 0\<close> cases).  The GOAL holds 0/34, and the chain below
+  holds: \<open>p \<le> TrMax M\<close> 0/34, \<open>entry M 1 p = p\<close> 0/34,
+  \<open>entry (Red (NJ M J\<^sup>*)) 1 kk = p + 1\<close> 0/34.  CRUCIALLY the kk=0 route is DEAD for
+  \<open>kk > 0\<close>: \<open>entry R\<^sup>* 1 kk = npJ M J\<^sup>*\<close> FAILS 3/34, \<open>p + 1 = npJ M J\<^sup>*\<close> FAILS 3/34,
+  \<open>parent M 1 off = p\<close> FAILS 3/34 (witness \<open>M = (0,0)(1,1)(2,0)(2,2)(3,1)\<close>, where
+  \<open>p = 0\<close>, \<open>npJ M J\<^sup>* = 2\<close>, \<open>entry M 1 (Lng M-1) = 1 = p+1\<close>); so the row-1 value at
+  the last column is \<open>p+1\<close>, NOT \<open>npJ\<close>, and the block-start parent differs from the
+  last-column parent.
+
+  STRUCTURE OF THE BRICK.  The two GREEN-derivable steps are banked here:
+    (i)  \<open>entry M 1 p = p\<close>: since the cross-block row-1 parent lies in the diagonal
+         trunk (hypothesis \<open>pTr : p \<le> TrMax M\<close>), @{thm [source] ncons_diag_prefix_entry}
+         pins \<open>entry M 1 p = p\<close>.
+    (ii) \<open>entry M 1 (Lng M - 1) = entry (Red (NJ M J\<^sup>*)) 1 kk\<close>: the last column's
+         row-1 value is the block-internal left-end-relative value, by the GREEN
+         in-block transfer @{thm [source] wf16_inblock_parent_corr} (its row-1
+         entry conjunct, IncrFirst-invariant on row 1).
+  Combining (i)+(ii) with the value pin \<open>valpin : entry (Red (NJ M J\<^sup>*)) 1 kk = Suc p\<close>
+  closes the goal: \<open>entry M 1 (Lng M-1) = entry R\<^sup>* 1 kk = Suc p = entry M 1 p + 1\<close>.
+
+  RESIDUAL (reported honestly, NOT faked — see [[subagent-worktree-pitfalls]]).
+  Two obligations are stated as EXPLICIT hypotheses, supplied by Front A:
+   - \<open>pTr : p \<le> TrMax M\<close>.  Empirically 0/34, but NOT derivable from \<open>p < off\<close>
+     alone (\<open>off = FirstNodes M ! J\<^sup>* > TrMax M\<close> leaves room for earlier blocks
+     between \<open>TrMax M\<close> and \<open>off\<close>); it requires that EARLIER blocks never row-1-parent
+     the last column, only the diagonal trunk does.  The kk=0 derivation
+     (\<open>p+1 = npJ \<le> Joints+1 \<le> TrMax+1\<close>) is INVALID here (\<open>p+1 = npJ\<close> fails 3/34).
+   - \<open>valpin : entry (Red (NJ M J\<^sup>*)) 1 kk = Suc p\<close>.  This is EQUIVALENT to the goal
+     (since \<open>entry M 1 (Lng M-1) = entry R\<^sup>* 1 kk\<close> by step (ii)).  It CANNOT be
+     obtained from \<open>RedCondA (Red (NJ M J\<^sup>*))\<close>: empirically \<open>kk\<close> has NO row-1 parent
+     in \<open>R\<^sup>*\<close> (34/34 \<open>\<not> hasParent R\<^sup>* 1 kk\<close>), so \<open>RedCondA R\<^sup>*\<close> is VACUOUS at \<open>kk\<close>.
+     The value \<open>p+1\<close> is the raw last branch-tail row-1 value (the tail of
+     \<open>Br M ! J\<^sup>*\<close>, unchanged by the \<open>NJ\<close> head and \<open>IncrFirst\<close>); it equals \<open>p+1\<close>
+     precisely because \<open>M\<close> is reduced (\<open>RedCondA M\<close> at the last column), which is
+     the keystone-forward fact under proof — so it is pinned only by the deeper
+     Red-reproduction structure / the IH applied to the diagonal-prefixed
+     \<open>N = diagSeq 0 (R\<^sup>*\<^bsub>1,0\<^esub>-1) \<oplus> R\<^sup>*\<close> at a column that DOES carry a parent, NOT
+     by a one-step \<open>RedCondA R\<^sup>*\<close> read at \<open>kk\<close>.
+
+  SOUND — cites only GREEN @{thm [source] ncons_diag_prefix_entry},
+  @{thm [source] wf16_inblock_parent_corr} and the library; no \<open>p_*\<close> stub, no goal
+  self-citation.\<close>
+
+lemma wf18_crossblock_row1_kkpos:
+  assumes M: "M \<in> RT_PS" and mono: "monoT M"
+    and e00: "entry M 0 0 = 0" and e10: "entry M 1 0 = 0"
+    and tne: "TrMax M \<noteq> Lng M - 1"
+    and kkpos: "0 < Lng (NJ M (Lng (Br M) - 1)) - 1"
+    and hp1: "hasParent M 1 (Lng M - 1)"
+    and pcross: "parent M 1 (Lng M - 1) < FirstNodes M ! (Lng (Br M) - 1)"
+    \<comment> \<open>Front A residual (R1): the cross-block row-1 parent lies in the diagonal trunk.\<close>
+    and pTr: "parent M 1 (Lng M - 1) \<le> TrMax M"
+    \<comment> \<open>Front A residual (R2): block-internal row-1 last value pin (the IH-supplied fact).\<close>
+    and valpin: "entry (Red (NJ M (Lng (Br M) - 1))) 1 (Lng (NJ M (Lng (Br M) - 1)) - 1)
+                   = Suc (parent M 1 (Lng M - 1))"
+  shows "entry M 1 (parent M 1 (Lng M - 1)) + 1 = entry M 1 (Lng M - 1)"
+proof -
+  define Jstar where "Jstar \<equiv> Lng (Br M) - 1"
+  define Rs where "Rs \<equiv> Red (NJ M Jstar)"
+  define kk where "kk \<equiv> Lng (NJ M Jstar) - 1"
+  define p where "p \<equiv> parent M 1 (Lng M - 1)"
+  \<comment> \<open>(i) the diagonal-trunk value of the cross-block parent.\<close>
+  have epp: "entry M 1 p = p"
+    unfolding p_def by (rule ncons_diag_prefix_entry[OF M mono e00 e10 tne pTr])
+  \<comment> \<open>(ii) the last column's row-1 value is the block-internal value at \<open>kk\<close>.\<close>
+  note B16 = wf16_inblock_parent_corr[OF M mono e00 e10 tne]
+  have e1: "entry M 1 (Lng M - 1) = entry Rs 1 kk"
+    using conjunct1[OF conjunct2[OF conjunct2[OF conjunct2[OF conjunct2[OF
+            conjunct2[OF conjunct2[OF B16]]]]]]]
+    unfolding Rs_def Jstar_def kk_def by simp
+  \<comment> \<open>Value pin (R2) at \<open>kk\<close>.\<close>
+  have ekk: "entry Rs 1 kk = Suc p"
+    unfolding Rs_def Jstar_def kk_def p_def by (rule valpin)
+  \<comment> \<open>Combine: \<open>entry M 1 p + 1 = Suc p = entry R\<^sup>* 1 kk = entry M 1 (Lng M-1)\<close>.\<close>
+  have "entry M 1 p + 1 = Suc p" using epp by simp
+  also have "\<dots> = entry Rs 1 kk" using ekk by simp
+  also have "\<dots> = entry M 1 (Lng M - 1)" using e1 by simp
+  finally show ?thesis unfolding p_def .
+qed
+
+
+
 end
