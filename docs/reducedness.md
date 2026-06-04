@@ -284,3 +284,16 @@ Red 定義より `= diagSeq 0 j₀`。任意の next-witness `(i,j'₀)<ᴹ(i,j'
 forward/backward とも IH は `Pred M` / 構成した `N`(Lng 厳減) に当てる二重帰納。
 keystone 緑後: `reduced⟹RedCondA⟹red_le`(877/0 lead)で §6.5 Red_le が unblock、
 さらに reduced_coeff(=reduced⟹(c))・reduced_oper・P_reduced が keystone 下流で連鎖。
+
+## 16. keystone forward condA_top: 循環の原因と非循環ルート (2026-06-04, wf20 後)
+
+**到達点**: keystone forward 全体を green conditional lemma `condAB_all_cond`(measure_induct on Lng M)に assemble 済、残 `r1cross`(row-1 cross-block kk>0, 34/423)一点。だが NJ ベースの N-construction では循環:
+
+**循環の正体(wf20 で確定)**: agents は N=diagSeq 0(entry Rs 1 0-1)@Rs (Rs=Red(NJ M Jstar)) の最終列 row-1 parent を**対角 index q=entry Rs 1 kk-1 で再構成**しようとした。だが q=p ⟺ entry Rs 1 kk=p+1 ⟺ goal そのもの。RedCondA N を最終列に当てても `q+1=entry Rs 1 kk` は q の定義の恒等式で新情報なし。`wf20_parpin`(green)は parent を q に pin するが q=p が循環。
+
+**非循環ルート(原文 content.md 1182-1216 精読で判明)**:
+- 原文の N は **`Red(P(seg M (j0+1) j1)_{J0})` = 生の枝ブロック `Red(Br M!Jstar)`**(NJ head-replaced でない)、`m := j1-Lng(Br M!Jstar)+1 = block start = off`、`N := diagSeq 0(M_{1,m}-1) @ Red(Br M!Jstar)`。簡約性と左端の関係(reduced_leftend)で N reduced、N_0=(0,0)、`Lng N-1 = j1-m+M_{1,m} < j1`。
+- **鍵は parent 再構成でなく witness EDGE 保存**: M の `(i,j'0)<Next_M(i,j1)` が N の `(i,j'0-m+M_{1,m})<Next_N(i,j1-m+M_{1,m}=Lng N-1)` に**構造的に保存**される(原文が各 subcase で明示的に主張)。trunk parent (j'0≤j0<m, 対角部) は j'0→j'0(N の対角列, N_{1,j'0}=j'0)。
+- 保存された edge + parent 一意性 ⟹ j'0-m+M1m が N 最終列の parent。RedCondA N(IH) ⟹ `N_{i,j'0-m+M1m}+1 = N_{i,last}`。entry 転送 `N_{i,j'0-m+M1m}=M_{i,j'0}`, `N_{i,last}=M_{i,j1}` ⟹ `M_{i,j'0}+1=M_{i,j1}`。**非循環**(edge 保存は構造的、値に依存しない)。
+- 原文 4 subcase: (a)j0=j'1=j1∧J1=0(対角単列), (b)j0<j'1=j1∧J1=0(N 構成,j'0≤j0/j0<j'0), (c)j'1=j1∧J1>0(IncrFirst^{M0m-M1m}恒等式;mono core では J1=0 ゆえ非該当), (d)j'1<j1(Pred 経由). mono core は J1=0(P M=[M])。
+- **要新ブリック**: ①生枝N の reduced/core/shorter(reduced_leftend を Red(Br M!Jstar) に), ②witness-edge 保存 M→N(seg/diag 構成での nextrel0/1 転送,red_le 不要), ③entry 転送。これらで row-1(及び全) cross-block を非循環に閉じる。NJ ベース wf16-19 brick は in-block には使えるが cross-block は生枝N へ切替。
