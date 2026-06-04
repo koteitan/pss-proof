@@ -46483,5 +46483,236 @@ proof (intro allI impI)
 qed
 
 
+text \<open>\<S>6.6 KEYSTONE BACKWARD (GENERAL M) — Front A assembly (wf24-bwd).
+
+  Mirror of the GREEN forward lift @{thm [source] kst_reduced_imp_condAB_cond}.
+  Goal: \<open>kst_condAB_imp_reduced: M \<in> T_PS \<Longrightarrow> RedCondA M \<Longrightarrow> RedCondB M \<Longrightarrow> Red M = M\<close>
+  for any \<open>M\<close> satisfying conditions (A) and (B), i.e. the backward half of the
+  \<S>6.6 keystone \<open>reduced \<longleftrightarrow> A\<and>B\<close>.
+
+  WLOG over the \<open>T_PS\<close> trichotomy, by strong induction on \<open>Lng M\<close>:
+  \<^item> \<open>zeroT M\<close>: backward half of @{thm [source] kst_reduced_iff_cond_zeroT}.
+  \<^item> \<open>multiT M\<close>: each \<open>P\<close>-block \<open>P M ! J\<close> inherits \<open>A\<and>B\<close>
+    (@{thm [source] m_6_6_RedCond_P_block}, the concat-lift direction) and is
+    strictly shorter (@{thm [source] kfwd_P_block_shorter}); the IH reduces every
+    block, and @{thm [source] m_6_6_P_reduced} reassembles \<open>Red M = M\<close>.
+  \<^item> \<open>monoT M\<close>, \<open>m\<^sub>1\<^sub>0 = 0\<close>: \<open>m\<^sub>0\<^sub>0 = 0\<close> by @{thm [source] m_6_6_bwd_e00_from_e10}, so the
+    keystone CORE applies (residual hypothesis \<open>core\<close>).
+  \<^item> \<open>monoT M\<close>, \<open>m\<^sub>1\<^sub>0 > 0\<close>: residual hypothesis \<open>monoT_m10pos\<close> (the diagonal-prefix
+    \<open>N = diagSeq 0 (m\<^sub>1\<^sub>0-1) @ M\<close> reduction, content.md 1260-1290).
+
+  The two residual hypotheses are exactly the monoT half of the backward
+  keystone; every OTHER case (zeroT / multiT recursion / monoT m10=0 collapse)
+  is discharged GREEN here.  Cites only GREEN facts (no \<open>p_*\<close> stub, no \<open>Red_le\<close>,
+  no goal self-reference).\<close>
+
+lemma kst_condAB_imp_reduced_cond:
+  assumes core:
+    "\<And>N. N \<in> T_PS \<Longrightarrow> monoT N \<Longrightarrow> entry N 0 0 = 0 \<Longrightarrow> entry N 1 0 = 0
+       \<Longrightarrow> RedCondA N \<Longrightarrow> RedCondB N \<Longrightarrow> Red N = N"
+  assumes monoT_m10pos:
+    "\<And>N. N \<in> T_PS \<Longrightarrow> monoT N \<Longrightarrow> 0 < entry N 1 0
+       \<Longrightarrow> RedCondA N \<Longrightarrow> RedCondB N \<Longrightarrow> Red N = N"
+  assumes M0: "M \<in> T_PS" and condA0: "RedCondA M" and condB0: "RedCondB M"
+  shows "Red M = M"
+  using M0 condA0 condB0
+proof (induction M rule: measure_induct_rule[where f = Lng])
+  case (less M)
+  have MT: "M \<in> T_PS" by (rule less.prems(1))
+  have condA: "RedCondA M" by (rule less.prems(2))
+  have condB: "RedCondB M" by (rule less.prems(3))
+  have Mne: "M \<noteq> []" using MT by (simp add: T_PS_def)
+  show ?case
+  proof (cases "zeroT M")
+    case True
+    \<comment> \<open>zeroT: backward half of the GREEN zeroT iff.\<close>
+    have "M \<in> RT_PS"
+      using kst_reduced_iff_cond_zeroT[OF MT True] condA condB by blast
+    thus ?thesis by (simp add: RT_PS_def)
+  next
+    case nz: False
+    show ?thesis
+    proof (cases "multiT M")
+      case True
+      \<comment> \<open>multiT: each block inherits \<open>A\<and>B\<close>, is shorter, reduced by IH; reassemble.\<close>
+      have blocksRT: "\<forall>J < Lng (P M). P M ! J \<in> RT_PS"
+      proof (intro allI impI)
+        fix J assume J: "J < Lng (P M)"
+        hence JL: "J < length (P M)" by simp
+        have memB: "P M ! J \<in> set (P M)" using JL by simp
+        have BT: "P M ! J \<in> T_PS"
+          using P_blocks_nonempty[OF Mne] memB by (auto simp: T_PS_def)
+        have BAB: "RedCondA (P M ! J) \<and> RedCondB (P M ! J)"
+          by (rule m_6_6_RedCond_P_block[OF MT True condA condB JL])
+        have shorter: "Lng (P M ! J) < Lng M"
+          by (rule kfwd_P_block_shorter[OF MT True JL])
+        have "Red (P M ! J) = P M ! J"
+          by (rule less.IH[OF shorter BT conjunct1[OF BAB] conjunct2[OF BAB]])
+        thus "P M ! J \<in> RT_PS" using BT by (simp add: RT_PS_def)
+      qed
+      have "M \<in> RT_PS" using m_6_6_P_reduced[OF MT] blocksRT by blast
+      thus ?thesis by (simp add: RT_PS_def)
+    next
+      case nmu: False
+      have mono: "monoT M" using nz nmu by (simp add: monoT_def multiT_def)
+      show ?thesis
+      proof (cases "0 < entry M 1 0")
+        case True
+        \<comment> \<open>monoT, m10>0: residual hypothesis.\<close>
+        show ?thesis by (rule monoT_m10pos[OF MT mono True condA condB])
+      next
+        case False
+        hence e10: "entry M 1 0 = 0" by simp
+        have e00: "entry M 0 0 = 0" by (rule m_6_6_bwd_e00_from_e10[OF MT condB e10])
+        \<comment> \<open>monoT, m10=0 \<Longrightarrow> m00=0: the keystone core.\<close>
+        show ?thesis by (rule core[OF MT mono e00 e10 condA condB])
+      qed
+    qed
+  qed
+qed
+
+text \<open>The GENERAL \<S>6.6 keystone BACKWARD, modulo the two monoT residual
+  hypotheses.  When the monoT core and monoT-m10>0 reductions land on HEAD this
+  becomes unconditional.  Cites only GREEN facts (no \<open>p_*\<close> stub, no goal
+  self-reference).\<close>
+
+text \<open>The GENERAL \<S>6.6 keystone IFF, modulo the same two residual hypotheses.
+  Combines the GREEN forward @{thm [source] kst_reduced_imp_condAB_uncond} with the
+  conditional backward @{thm [source] kst_condAB_imp_reduced_cond}.\<close>
+
+lemma m_6_6_reduced_iff_cond_cond:
+  assumes core:
+    "\<And>N. N \<in> T_PS \<Longrightarrow> monoT N \<Longrightarrow> entry N 0 0 = 0 \<Longrightarrow> entry N 1 0 = 0
+       \<Longrightarrow> RedCondA N \<Longrightarrow> RedCondB N \<Longrightarrow> Red N = N"
+  assumes monoT_m10pos:
+    "\<And>N. N \<in> T_PS \<Longrightarrow> monoT N \<Longrightarrow> 0 < entry N 1 0
+       \<Longrightarrow> RedCondA N \<Longrightarrow> RedCondB N \<Longrightarrow> Red N = N"
+  assumes M: "M \<in> T_PS"
+  shows "M \<in> RT_PS \<longleftrightarrow> RedCondA M \<and> RedCondB M"
+proof
+  assume "M \<in> RT_PS"
+  thus "RedCondA M \<and> RedCondB M" by (rule kst_reduced_imp_condAB_uncond)
+next
+  assume AB: "RedCondA M \<and> RedCondB M"
+  hence condA: "RedCondA M" and condB: "RedCondB M" by simp_all
+  have "Red M = M"
+    by (rule kst_condAB_imp_reduced_cond[OF core monoT_m10pos M condA condB])
+  thus "M \<in> RT_PS" using M by (simp add: RT_PS_def)
+qed
+
+
+
+
+text \<open>
+  m: §6.6 命題（簡約性と係数の関係）coefficient corollary.  For a REDUCED
+  \<open>M \<in> RT_PS\<close>, row 0 dominates row 1 at EVERY column \<open>j\<close>:
+  \<open>entry M 0 j \<ge> entry M 1 j\<close>.  This generalizes the column-0 case
+  @{thm [source] kst_reduced_row1_le_row0} to all columns, and unlike
+  @{thm [source] m_6_6_condAB_coeff} (Part 2) it needs NO core hypothesis
+  (\<open>entry M 0 0 = 0 \<and> entry M 1 0 = 0\<close>) — a general reduced \<open>M\<close> is not core.
+
+  Route: the FORWARD keystone @{thm [source] kst_reduced_imp_condAB_uncond}
+  gives \<open>RedCondA M \<and> RedCondB M\<close> unconditionally for \<open>M \<in> RT_PS\<close>.  Then strong
+  induction on \<open>j\<close>, splitting on whether column \<open>j\<close> has a row-1 parent:
+  \<^item> row-1 parent \<open>p\<^sub>1\<close> exists: \<open>entry M 1 j = entry M 1 p\<^sub>1 + 1\<close> (RedCondA),
+    \<open>leR M 0 p\<^sub>1 j\<close> (from \<open>nextR\<close>, @{thm [source] poper_nextR_imp_le0}), so
+    \<open>entry M 0 p\<^sub>1 < entry M 0 j\<close> (@{thm [source] m_5_1_ancestor_basic_1}); with
+    IH \<open>entry M 1 p\<^sub>1 \<le> entry M 0 p\<^sub>1\<close> we get the bound.
+  \<^item> no row-1 parent:
+      \<^item> no row-0 parent either: RedCondB pins \<open>entry M 0 j = entry M 1 j\<close>.
+      \<^item> row-0 parent \<open>p\<^sub>0\<close> exists: were \<open>entry M 1 p\<^sub>0 < entry M 1 j\<close>, then with
+        \<open>leR M 0 p\<^sub>0 j\<close> (\<open>nextR M 0 p\<^sub>0 j\<close>) @{thm [source] m_5_1_parent_exists_2}
+        would produce a row-1 parent of \<open>j\<close> — contradiction.  Hence
+        \<open>entry M 1 j \<le> entry M 1 p\<^sub>0\<close>; with IH \<open>entry M 1 p\<^sub>0 \<le> entry M 0 p\<^sub>0\<close> and
+        \<open>entry M 0 p\<^sub>0 < entry M 0 j\<close> the bound follows.
+  Empirically verified (red_charac enum maxlen3,val4): 0 failures.\<close>
+
+lemma m_6_6_reduced_coeff:
+  assumes M: "M \<in> RT_PS" and jL: "j < Lng M"
+  shows "entry M 0 j \<ge> entry M 1 j"
+proof -
+  have MT: "M \<in> T_PS" using M by (simp add: RT_PS_def)
+  have condAB: "RedCondA M \<and> RedCondB M"
+    by (rule kst_reduced_imp_condAB_uncond[OF M])
+  have condA: "RedCondA M" and condB: "RedCondB M" using condAB by simp_all
+  \<comment> \<open>RedCondA: a node equals its parent value plus one.\<close>
+  have condA_entry: "\<And>i j'. i \<le> 1 \<Longrightarrow> j' < Lng M \<Longrightarrow> hasParent M i j' \<Longrightarrow>
+      entry M i (parent M i j') + 1 = entry M i j'"
+    using condA unfolding RedCondA_def by blast
+  \<comment> \<open>The parent witness is an actual \<open>nextR\<close> edge.\<close>
+  have par_nextR: "\<And>i j'. hasParent M i j' \<Longrightarrow> nextR M i (parent M i j') j'"
+    unfolding hasParent_def parent_def by (rule theI')
+  \<comment> \<open>Main strong induction on the column \<open>j\<close>.\<close>
+  have key: "\<forall>j. j < Lng M \<longrightarrow> entry M 0 j \<ge> entry M 1 j"
+  proof (intro allI impI)
+    fix j assume "j < Lng M"
+    thus "entry M 0 j \<ge> entry M 1 j"
+    proof (induction j rule: less_induct)
+      case (less j)
+      show "entry M 0 j \<ge> entry M 1 j"
+      proof (cases "hasParent M 1 j")
+        case hp1: True
+        \<comment> \<open>Row-1 parent case (independent of core; mirrors @{thm [source] m_6_6_condAB_coeff} Part 2).\<close>
+        let ?p1 = "parent M 1 j"
+        have par1: "nextR M 1 ?p1 j" using par_nextR[OF hp1] .
+        have p1lt: "?p1 < j" and leR0p1j: "leR M 0 ?p1 j"
+          using poper_nextR_imp_le0[OF par1] by simp_all
+        have p1L: "?p1 < Lng M" using p1lt less.prems by linarith
+        have e1A: "entry M 1 ?p1 + 1 = entry M 1 j"
+          using condA_entry[of 1 j] hp1 less.prems by simp
+        have IH1: "entry M 0 ?p1 \<ge> entry M 1 ?p1" using less.IH[OF p1lt p1L] .
+        have e0lt: "entry M 0 ?p1 < entry M 0 j"
+          by (rule m_5_1_ancestor_basic_1[OF MT p1lt _ leR0p1j]) simp
+        from e1A IH1 e0lt show ?thesis by linarith
+      next
+        case hp1: False
+        show ?thesis
+        proof (cases "hasParent M 0 j")
+          case hp0: False
+          \<comment> \<open>No parent in either row: RedCondB pins row 0 = row 1.\<close>
+          have jle: "j \<le> Lng M - 1" using less.prems by linarith
+          have "entry M 0 j = entry M 1 j"
+            using condB hp0 jle unfolding RedCondB_def by blast
+          thus ?thesis by simp
+        next
+          case hp0: True
+          \<comment> \<open>Row-0 parent but no row-1 parent.\<close>
+          let ?p0 = "parent M 0 j"
+          have par0: "nextR M 0 ?p0 j" using par_nextR[OF hp0] .
+          have p0lt: "?p0 < j" and leR0p0j: "leR M 0 ?p0 j"
+            using poper_nextR_imp_le0[OF par0] by simp_all
+          have p0L: "?p0 < Lng M" using p0lt less.prems by linarith
+          \<comment> \<open>Were \<open>entry M 1 ?p0 < entry M 1 j\<close>, a row-1 parent of \<open>j\<close> would exist.\<close>
+          have e1le: "entry M 1 j \<le> entry M 1 ?p0"
+          proof (rule ccontr)
+            assume "\<not> entry M 1 j \<le> entry M 1 ?p0"
+            hence elt: "entry M 1 ?p0 < entry M 1 j" by simp
+            obtain j' where j'par: "?p0 \<le> j'" "j' < j" "nextR M 1 j' j"
+              using m_5_1_parent_exists_2[OF MT p0lt less.prems elt leR0p0j] by blast
+            \<comment> \<open>Such an edge means \<open>hasParent M 1 j\<close>, contradicting hp1.\<close>
+            have "hasParent M 1 j"
+              unfolding hasParent_def
+            proof (rule ex_ex1I)
+              show "\<exists>a. nextR M 1 a j" using j'par(3) by blast
+            next
+              fix a b assume "nextR M 1 a j" "nextR M 1 b j"
+              thus "a = b" by (rule nextR1_unique)
+            qed
+            thus False using hp1 by simp
+          qed
+          have IH0: "entry M 0 ?p0 \<ge> entry M 1 ?p0" using less.IH[OF p0lt p0L] .
+          have e0lt: "entry M 0 ?p0 < entry M 0 j"
+            by (rule m_5_1_ancestor_basic_1[OF MT p0lt _ leR0p0j]) simp
+          from e1le IH0 e0lt show ?thesis by linarith
+        qed
+      qed
+    qed
+  qed
+  show ?thesis using key jL by blast
+qed
+
+
+
+
 
 end
