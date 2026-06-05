@@ -55994,4 +55994,101 @@ proof -
 qed
 
 
+text \<open>§6.7 RESIDUAL 1 (tree), reduced to ONE crisp row-0 brick.  Given the spsy
+  domain facts and an interior node \<open>z\<close> (\<open>j\<^sub>0 < z < j\<^sub>1\<close>) with row-1 parent
+  \<open>p = parent N 1 z > j\<^sub>0\<close>, the well-formedness \<open>hasParent N 1 p \<and> parent N 1 p \<ge> j\<^sub>0\<close>
+  follows from the §5.1 ancestor-tree machinery alone PROVIDED the single row-0
+  reachability brick \<open>le0 N p j\<^sub>1\<close> (\<open>p\<close> reaches \<open>j\<^sub>1\<close> in row 0).  Route:
+    \<^item> \<open>m_5_1_ancestor_basic_2\<close> at \<open>(j\<^sub>0, p, j\<^sub>1)\<close> (using \<open>leR N 1 j\<^sub>0 j\<^sub>1\<close> from the root
+      edge \<open>nextrel1 N j\<^sub>0 j\<^sub>1\<close>, and \<open>leR N 0 p j\<^sub>1\<close> = the brick) gives
+      \<open>entry N 1 j\<^sub>0 < entry N 1 p\<close>, NON-circularly (NOT via \<open>Qprime_via_tree\<close>);
+    \<^item> \<open>m_5_1_ancestor_tree_1\<close> at \<open>(j\<^sub>0, p, z)\<close> (\<open>leR N 0 j\<^sub>0 z\<close>, \<open>j\<^sub>0 \<le> p \<le> z\<close>) gives
+      \<open>leR N 0 j\<^sub>0 p\<close>;
+    \<^item> \<open>m_5_1_parent_exists_2\<close> at \<open>(j\<^sub>0, p)\<close> then yields a row-1 parent of \<open>p\<close> in
+      \<open>[j\<^sub>0, p)\<close>, i.e. \<open>hasParent N 1 p\<close> and \<open>parent N 1 p \<ge> j\<^sub>0\<close>.
+  Empirically the brick holds 0-fail on genuine ST_PS (/tmp/_reach2.py: \<open>le0 N p j\<^sub>1\<close>
+  402/0); so does the conclusion (/tmp/_tree_oper.py 402/0).  Cites only §5.1
+  lemmas + le0 transitivity; no RedCond, no spsy, no via_spsy, no
+  \<open>Qprime_via_tree\<close>.\<close>
+
+lemma m_6_7_tree_wellformed:
+  fixes N :: pairseq
+  assumes L: "1 < Lng N"
+    and hp1: "hasParent N 1 (Lng N - 1)"
+    and j0lt: "parent N 1 (Lng N - 1) < Lng N - 1"
+    and zlo: "parent N 1 (Lng N - 1) < z"
+    and zhi: "z < Lng N - 1"
+    and hpz: "hasParent N 1 z"
+    and pge: "parent N 1 z \<ge> parent N 1 (Lng N - 1)"
+    and pgt: "parent N 1 z > parent N 1 (Lng N - 1)"
+    \<comment> \<open>RESIDUAL BRICK (row-0 reach): \<open>p = parent N 1 z\<close> reaches \<open>j\<^sub>1\<close> in row 0.
+       Empirically 0-fail on ST_PS (/tmp/_reach2.py 402/0).\<close>
+    and reach: "le0 N (parent N 1 z) (Lng N - 1)"
+  shows "hasParent N 1 (parent N 1 z)
+         \<and> parent N 1 (parent N 1 z) \<ge> parent N 1 (Lng N - 1)"
+proof -
+  let ?j1 = "Lng N - 1"  let ?j0 = "parent N 1 ?j1"  let ?p = "parent N 1 z"
+  have NT: "N \<in> T_PS" using L by (cases N) (auto simp: T_PS_def)
+  have zL: "z < Lng N" using zhi by linarith
+  have j1L: "?j1 < Lng N" using L by linarith
+  \<comment> \<open>the root edge \<open>nextrel1 N j\<^sub>0 j\<^sub>1\<close> (\<open>j\<^sub>0\<close> is the row-1 parent of \<open>j\<^sub>1\<close>)\<close>
+  have parRj1: "nextR N 1 ?j0 ?j1"
+    using hp1 unfolding hasParent_def parent_def by (rule theI')
+  have nr1j: "nextrel1 N ?j0 ?j1" using parRj1 by (simp add: nextR_def)
+  have le0j0j1: "le0 N ?j0 ?j1" using nr1j by (simp add: nextrel1_def)
+  have leR1j0j1: "leR N 1 ?j0 ?j1"
+    using nr1j unfolding leR_def le1_def
+    by (auto simp: nextrel1_def r_into_rtranclp)
+  \<comment> \<open>the parent edge \<open>nextrel1 N p z\<close>\<close>
+  have parRz: "nextR N 1 ?p z"
+    using hpz unfolding hasParent_def parent_def by (rule theI')
+  have nr1z: "nextrel1 N ?p z" using parRz by (simp add: nextR_def)
+  have le0pz: "le0 N ?p z" using nr1z by (simp add: nextrel1_def)
+  have plt: "?p < z" using nr1z by (simp add: nextrel1_def)
+  have pgtj0: "?j0 < ?p" using pgt .
+  have pltj1: "?p < ?j1" using plt zhi by linarith
+  have pL: "?p < Lng N" using pltj1 j1L by linarith
+  \<comment> \<open>\<open>leR N 0 j\<^sub>0 z\<close> by \<open>m_5_1_ancestor_tree_1\<close> (\<open>j\<^sub>0 \<le> z \<le> j\<^sub>1\<close>), then \<open>leR N 0 j\<^sub>0 p\<close>\<close>
+  have leR0j0j1: "leR N 0 ?j0 ?j1" using le0j0j1 by (simp add: leR_def)
+  have leR0j0z: "leR N 0 ?j0 z"
+  proof (rule m_5_1_ancestor_tree_1[OF NT leR0j0j1])
+    show "?j0 \<le> z" using zlo by linarith
+    show "z \<le> ?j1" using zhi by linarith
+  qed
+  have leR0j0p: "leR N 0 ?j0 ?p"
+  proof (rule m_5_1_ancestor_tree_1[OF NT leR0j0z])
+    show "?j0 \<le> ?p" using pgtj0 by linarith
+    show "?p \<le> z" using plt by linarith
+  qed
+  \<comment> \<open>\<open>leR N 0 p j\<^sub>1\<close> from the brick\<close>
+  have leR0pj1: "leR N 0 ?p ?j1" using reach by (simp add: leR_def)
+  \<comment> \<open>\<open>entry N 1 j\<^sub>0 < entry N 1 p\<close> NON-circularly via \<open>m_5_1_ancestor_basic_2\<close>\<close>
+  have e1lt: "entry N 1 ?j0 < entry N 1 ?p"
+    by (rule m_5_1_ancestor_basic_2[OF NT pgtj0 _ leR1j0j1 leR0pj1])
+       (use pltj1 in linarith)
+  \<comment> \<open>\<open>m_5_1_parent_exists_2\<close> yields a row-1 parent of \<open>p\<close> in \<open>[j\<^sub>0, p)\<close>\<close>
+  obtain j' where j'ge: "?j0 \<le> j'" and j'lt: "j' < ?p" and j'par: "nextR N 1 j' ?p"
+    using m_5_1_parent_exists_2[OF NT pgtj0 pL e1lt leR0j0p] by blast
+  have hpp: "hasParent N 1 ?p"
+    unfolding hasParent_def
+  proof (rule ex_ex1I)
+    show "\<exists>a. nextR N 1 a ?p" using j'par by blast
+  next
+    fix a b assume "nextR N 1 a ?p" "nextR N 1 b ?p"
+    thus "a = b" using nextR1_unique by blast
+  qed
+  have parp_eq: "parent N 1 ?p = j'"
+  proof -
+    have "(THE a. nextR N 1 a ?p) = j'"
+    proof (rule the1_equality)
+      show "\<exists>!a. nextR N 1 a ?p" using hpp unfolding hasParent_def .
+      show "nextR N 1 j' ?p" using j'par .
+    qed
+    thus ?thesis unfolding parent_def .
+  qed
+  have ppge: "parent N 1 ?p \<ge> ?j0" using parp_eq j'ge by simp
+  show ?thesis using hpp ppge by blast
+qed
+
+
 end
