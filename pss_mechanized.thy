@@ -56208,4 +56208,100 @@ proof -
 qed
 
 
+text \<open>§6.7 BRICK reduction (TREE route, SOUND) -- the row-0 reach \<open>le0 N p j\<^sub>1\<close>
+  for the row-1 parent \<open>p = parent N 1 z\<close> of an interior node \<open>z\<close>, STRICTLY above
+  the root \<open>j\<^sub>0\<close> (\<open>p > j\<^sub>0\<close>), follows from the SUB-RANGE \<open>+1\<close> ramp on \<open>[p, j\<^sub>1]\<close>:
+  \<open>entry N 0 (x+1) = entry N 0 x + 1\<close> for \<open>p \<le> x < j\<^sub>1\<close>.  This ramp makes
+  \<open>entry N 0\<close> strictly increasing on \<open>(p, j\<^sub>1]\<close>, so @{thm [source] le0_build}
+  chains \<open>p \<rightarrow>\<^sup>* j\<^sub>1\<close> in row 0.  EMPIRICALLY the consecutive-\<open>+1\<close> ramp on the
+  SUB-range \<open>[p, j\<^sub>1)\<close> holds 739/0 on the broad genuine ST_PS closure (it is the
+  SOUND replacement of the FALSE whole-tail \<open>tail_affine\<close> on \<open>[j\<^sub>0, j\<^sub>1]\<close>: the strict
+  condition \<open>p > j\<^sub>0\<close> excludes the degenerate flat-tail members, where the only
+  interior \<open>z\<close> has \<open>parent = j\<^sub>0\<close>, so this hypothesis is VACUOUS there).
+  Cites only @{thm [source] le0_build}; no spsy / sblk / via_spsy / RedCond / oper.\<close>
+
+lemma brick_from_subramp:
+  fixes N :: pairseq
+  assumes NT: "N \<in> T_PS"
+    and j1L: "Lng N - 1 < Lng N"
+    and pj1: "p < Lng N - 1"
+    and ramp: "\<And>x. p \<le> x \<Longrightarrow> x < Lng N - 1
+                  \<Longrightarrow> entry N 0 (Suc x) = Suc (entry N 0 x)"
+  shows "le0 N p (Lng N - 1)"
+proof -
+  let ?j1 = "Lng N - 1"
+  \<comment> \<open>the ramp gives \<open>entry N 0 (p+t) = entry N 0 p + t\<close> on \<open>[p, j\<^sub>1]\<close>\<close>
+  have ramp_abs: "\<And>t. p + t \<le> ?j1 \<Longrightarrow> entry N 0 (p + t) = entry N 0 p + t"
+  proof -
+    fix t assume "p + t \<le> ?j1"
+    thus "entry N 0 (p + t) = entry N 0 p + t"
+    proof (induction t)
+      case 0 show ?case by simp
+    next
+      case (Suc t)
+      have le1: "p + t \<le> ?j1" using Suc.prems by simp
+      have lt: "p + t < ?j1" using Suc.prems by simp
+      have pge: "p \<le> p + t" by simp
+      have "entry N 0 (Suc (p + t)) = Suc (entry N 0 (p + t))"
+        by (rule ramp[OF pge lt])
+      also have "entry N 0 (p + t) = entry N 0 p + t" using Suc.IH[OF le1] .
+      finally show ?case by simp
+    qed
+  qed
+  \<comment> \<open>strict row-0 increase on \<open>(p, j\<^sub>1]\<close>\<close>
+  have strict: "\<forall>j. p < j \<and> j \<le> ?j1 \<longrightarrow> entry N 0 p < entry N 0 j"
+  proof (intro allI impI)
+    fix j assume j: "p < j \<and> j \<le> ?j1"
+    obtain t where jt: "j = p + t" and tpos: "0 < t"
+      using j by (metis less_imp_add_positive)
+    have ple: "p + t \<le> ?j1" using j jt by simp
+    have "entry N 0 j = entry N 0 p + t" using ramp_abs[OF ple] jt by simp
+    thus "entry N 0 p < entry N 0 j" using tpos by simp
+  qed
+  have chain: "(nextrel0 N)\<^sup>*\<^sup>* p ?j1"
+    by (rule le0_build[OF NT j1L pj1 strict])
+  show ?thesis using chain pj1 j1L by (simp add: le0_def)
+qed
+
+
+text \<open>§6.7 RESIDUAL 1 (tree), reduced to the SOUND sub-range \<open>+1\<close> ramp on
+  \<open>[p, j\<^sub>1]\<close> (\<open>p = parent N 1 z > j\<^sub>0\<close>).  Combines @{thm [source] brick_from_subramp}
+  (sub-ramp \<open>\<Longrightarrow>\<close> the row-0 reach brick \<open>le0 N p j\<^sub>1\<close>) with
+  @{thm [source] m_6_7_tree_wellformed} (brick \<open>\<Longrightarrow>\<close> tree well-formedness).
+  Cites only @{thm [source] brick_from_subramp},
+  @{thm [source] m_6_7_tree_wellformed}; no spsy / sblk / via_spsy / RedCond / oper.\<close>
+
+lemma m_6_7_tree_wellformed_via_subramp:
+  fixes N :: pairseq
+  assumes L: "1 < Lng N"
+    and hp1: "hasParent N 1 (Lng N - 1)"
+    and j0lt: "parent N 1 (Lng N - 1) < Lng N - 1"
+    and zlo: "parent N 1 (Lng N - 1) < z"
+    and zhi: "z < Lng N - 1"
+    and hpz: "hasParent N 1 z"
+    and pge: "parent N 1 z \<ge> parent N 1 (Lng N - 1)"
+    and pgt: "parent N 1 z > parent N 1 (Lng N - 1)"
+    and ramp: "\<And>x. parent N 1 z \<le> x \<Longrightarrow> x < Lng N - 1
+                  \<Longrightarrow> entry N 0 (Suc x) = Suc (entry N 0 x)"
+  shows "hasParent N 1 (parent N 1 z)
+         \<and> parent N 1 (parent N 1 z) \<ge> parent N 1 (Lng N - 1)"
+proof -
+  let ?j1 = "Lng N - 1"  let ?j0 = "parent N 1 ?j1"  let ?p = "parent N 1 z"
+  have NT: "N \<in> T_PS" using L by (cases N) (auto simp: T_PS_def)
+  have j1L: "?j1 < Lng N" using L by linarith
+  \<comment> \<open>\<open>p = parent N 1 z\<close> is an interior tail node \<open>j\<^sub>0 < p < j\<^sub>1\<close>\<close>
+  have parRz: "nextR N 1 ?p z"
+    using hpz unfolding hasParent_def parent_def by (rule theI')
+  have nr1z: "nextrel1 N ?p z" using parRz by (simp add: nextR_def)
+  have plt: "?p < z" using nr1z by (simp add: nextrel1_def)
+  have pltj1: "?p < ?j1" using plt zhi by linarith
+  \<comment> \<open>the brick \<open>le0 N p j\<^sub>1\<close> from the sub-range ramp\<close>
+  have reach: "le0 N ?p ?j1"
+    by (rule brick_from_subramp[OF NT j1L pltj1 ramp])
+  \<comment> \<open>feed it to the already-GREEN tree well-formedness reduction\<close>
+  show ?thesis
+    by (rule m_6_7_tree_wellformed[OF L hp1 j0lt zlo zhi hpz pge pgt reach])
+qed
+
+
 end
