@@ -53801,4 +53801,363 @@ qed
 text \<open>Front B: §6.7/§6.5 cascade conditional on hpN+valley assembled.\<close>
 
 
+text \<open>§6.7 oper-tiling ROW-1 (Front A, i1=1) per-competitor BASE COMPARABILITY
+  \<open>comp\<close> (the input of @{thm [source] operCA_tiling_bcorr_valley_reduced}), REDUCED
+  to the two soundly-carried per-competitor OFFSET residuals:
+  \<^item> \<open>antimono\<close>: within-tiling row-0 anti-monotonicity \<open>base j \<le> y'\<close>
+    (\<open>(j-j\<^sub>0) mod w \<le> (y-j\<^sub>0) mod w\<close>; empirically 0-fail under the \<open>pstar<j\<close> barrier:
+    /tmp/fa_valley_route.py 136084/136084, and the violation analysis
+    /tmp/fa_why.py shows every anti-monotonicity violation has \<open>j \<le> pstar\<close>, so the
+    barrier excludes all of them; structurally cross-block competitors surviving
+    the barrier have \<open>pN < j\<^sub>0\<close>, /tmp/fa_pNlt.py 3424/3424), and
+  \<^item> \<open>pNbj\<close>: \<open>parent N 1 y' < base j\<close> (empirically 0-fail, same enumeration).
+  Given these two, the \<open>base j \<noteq> y'\<close> branch produces the first \<open>comp\<close> disjunct:
+  \<open>le0 N (base j) y'\<close> is the cross/same-block backward reflection
+  @{thm [source] oper_d1pos_ctx_period_le0Np} (instantiated at j's block-\<open>q\<^sub>j\<close>,
+  offset-\<open>s\<^sub>j\<close> decode, target span \<open>y'\<close>, with the strict offset bound
+  \<open>base j < y'\<close> from \<open>antimono\<close>+\<open>\<noteq>\<close>); the \<open>base j = y'\<close> branch is the second
+  disjunct directly.  This packages ALL of \<open>comp\<close>'s machinery, leaving the two
+  offset residuals as the sole obligations.\<close>
+
+lemma operCA_tiling_valley_comp_reduced:
+  assumes L: "1 < Lng N"
+    and notzero: "\<not> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0)"
+    and hp: "hasParent N (idx1 N (Lng N - 1)) (Lng N - 1)"
+    and i1z: "idx1 N (Lng N - 1) = 1"
+    and j0lt: "parent N (idx1 N (Lng N - 1)) (Lng N - 1) < Lng N - 1"
+    and ge: "parent N (idx1 N (Lng N - 1)) (Lng N - 1) \<le> j"
+    and reach: "le0 ((N::pairseq)[n]) j y"
+    and antimono: "(if j < parent N (idx1 N (Lng N - 1)) (Lng N - 1) then j
+                      else parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                           + (j - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                              mod (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)))
+                   \<le> parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                      + (y - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                         mod (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1))"
+    and pNbj: "parent N 1 (parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                  + (y - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                     mod (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)))
+                 < (if j < parent N (idx1 N (Lng N - 1)) (Lng N - 1) then j
+                    else parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                         + (j - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                            mod (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)))"
+  shows "parent N 1 (parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                       + (y - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                          mod (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)))
+                    < (if j < parent N (idx1 N (Lng N - 1)) (Lng N - 1) then j
+                       else parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                            + (j - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                               mod (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)))
+                  \<and> le0 N (if j < parent N (idx1 N (Lng N - 1)) (Lng N - 1) then j
+                          else parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                               + (j - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                                  mod (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)))
+                         (parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                            + (y - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                               mod (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)))
+                \<or> (if j < parent N (idx1 N (Lng N - 1)) (Lng N - 1) then j
+                    else parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                         + (j - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                            mod (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)))
+                   = parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                       + (y - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                          mod (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1))"
+proof -
+  let ?j1 = "Lng N - 1"  let ?i1 = "idx1 N ?j1"  let ?j0 = "parent N ?i1 ?j1"
+  let ?w = "?j1 - ?j0"
+  let ?Nn = "(N::pairseq)[n]"
+  let ?sy = "(y - ?j0) mod ?w"
+  let ?yp = "?j0 + ?sy"
+  let ?pN = "parent N 1 ?yp"
+  let ?sj = "(j - ?j0) mod ?w"
+  let ?qj = "(j - ?j0) div ?w"
+  let ?bj = "if j < ?j0 then j else ?j0 + ?sj"
+  have w0: "0 < ?w" using j0lt by linarith
+  have j0w1: "?j0 + ?w = ?j1" using j0lt by simp
+  have jge: "?j0 \<le> j" using ge by simp
+  have nge: "\<not> j < ?j0" using jge by simp
+  have bjeq: "?bj = ?j0 + ?sj" using nge by simp
+  \<comment> \<open>decode j: block \<open>q\<^sub>j\<close>, offset \<open>s\<^sub>j\<close>\<close>
+  have lenNn: "Lng ?Nn = ?j0 + n * ?w"
+    by (rule operB_gen_LngM[OF L notzero hp j0lt])
+  from reach have jlt: "j < Lng ?Nn" and ylt: "y < Lng ?Nn" and jley: "j \<le> y"
+    by (auto simp: le0_def nextrel0_rtrancl_mono)
+  have sjw: "?sj < ?w" using w0 by simp
+  have jmj: "j - ?j0 < n * ?w" using jlt lenNn jge by linarith
+  have qjn: "?qj < n" using less_mult_imp_div_less[OF jmj] .
+  have jsplit: "j = ?j0 + ?qj * ?w + ?sj"
+  proof -
+    have "?qj * ?w + ?sj = j - ?j0"
+      using div_mult_mod_eq[of "j - ?j0" ?w] by (simp add: mult.commute)
+    thus ?thesis using jge by linarith
+  qed
+  \<comment> \<open>\<open>y'\<close> bounds\<close>
+  have syw: "?sy < ?w" using w0 by simp
+  have ypj1: "?yp \<le> ?j1" using syw j0w1 by linarith
+  show ?thesis
+  proof (cases "?bj = ?yp")
+    case True
+    thus ?thesis by simp
+  next
+    case False
+    have bjlt: "?bj < ?yp" using antimono False nge by simp
+    \<comment> \<open>\<open>le0 N (base j) y'\<close> via the period backward reflection\<close>
+    have jy: "j < y"
+    proof -
+      have "j \<noteq> y"
+      proof
+        assume "j = y"
+        hence "?sj = ?sy" by simp
+        hence "?bj = ?yp" using bjeq by simp
+        thus False using False by simp
+      qed
+      thus ?thesis using jley by simp
+    qed
+    have j0reds: "?j0 + ?sj = parent N 1 (Lng N - 1) + ?sj" using i1z by simp
+    have j0'eq: "j = parent N 1 (Lng N - 1)
+                  + ?qj * (Lng N - 1 - parent N 1 (Lng N - 1)) + ?sj"
+      using jsplit i1z by simp
+    have shamteq: "?qj * (entry N 0 (Lng N - 1) - entry N 0 (?j0 + 0))
+                    = ?qj * (entry N 0 (Lng N - 1) - entry N 0 (parent N 1 (Lng N - 1)))"
+      using i1z by simp
+    have s0lt: "?sj < Lng N - 1 - parent N 1 (Lng N - 1)" using sjw i1z by simp
+    have j1redle: "?yp \<le> Lng N - 1" using ypj1 by simp
+    have j0j1red: "?j0 + ?sj < ?yp" using bjlt bjeq by simp
+    \<comment> \<open>key span ingredient: \<open>q\<^sub>j*w + s\<^sub>y \<le> y - j\<^sub>0\<close> (since \<open>q\<^sub>j \<le> q\<^sub>y\<close>)\<close>
+    obtain w where wdef: "?w = w" by blast
+    have w0w: "0 < w" using w0 wdef by simp
+    define qy where "qy = (y - ?j0) div w"
+    define sy' where "sy' = (y - ?j0) mod w"
+    have syeq: "?sy = sy'" using wdef sy'_def by simp
+    have qjeq: "?qj = (j - ?j0) div w" using wdef by simp
+    have qjw: "j = ?j0 + ?qj * w + ?sj" using jsplit wdef by simp
+    have ysplit2: "y = ?j0 + qy * w + sy'"
+    proof -
+      have "qy * w + sy' = y - ?j0"
+        using div_mult_mod_eq[of "y - ?j0" w] qy_def sy'_def by (simp add: mult.commute)
+      thus ?thesis using jge jley by linarith
+    qed
+    have jmy: "j - ?j0 \<le> y - ?j0" using jley jge by linarith
+    have qjqy: "?qj \<le> qy" using div_le_mono[OF jmy] qjeq qy_def by simp
+    have yge2: "?qj * w + sy' \<le> y - ?j0"
+    proof -
+      have "?qj * w \<le> qy * w" using qjqy mult_le_mono1 by simp
+      thus ?thesis using ysplit2 jge by linarith
+    qed
+    have j1redspan: "?yp \<le> (?j0 + ?sj) + (y - j)"
+    proof -
+      have j0y: "?j0 \<le> y" using jge jley by linarith
+      have ywge: "?j0 + ?qj * w + sy' \<le> y" using yge2 j0y by linarith
+      have "?yp = ?j0 + sy'" using syeq by simp
+      also have "?j0 + sy' \<le> (?j0 + ?sj) + (y - j)"
+        using ywge qjw bjlt bjeq syeq by linarith
+      finally show ?thesis .
+    qed
+    have j0lt1: "parent N 1 (Lng N - 1) < Lng N - 1" using j0lt i1z by simp
+    have le0bj: "le0 N (?j0 + ?sj) ?yp"
+      by (rule oper_d1pos_ctx_period_le0Np[OF L notzero hp i1z j0lt1 refl reach jy ylt
+            qjn s0lt j0reds j0'eq shamteq j1redle j0j1red j1redspan])
+    have le0bj': "le0 N ?bj ?yp" using le0bj bjeq by simp
+    show ?thesis using pNbj le0bj' by blast
+  qed
+qed
+
+
+
+text \<open>§6.7 hpN ASSEMBLY (Front B, \<open>i\<^sub>1=1\<close>): the period-base row-1 parent existence
+  \<open>hasParent N 1 (base y)\<close>, REDUCED to the single row-0 base-correspondence
+  hypothesis \<open>le0baseN : le0 N (base p) (base y)\<close> (\<open>p = parent (N[n]) 1 y\<close>).
+  The witness \<open>base p\<close> is the row-1 parent of \<open>base y\<close>: its row-1 \<open>N\<close>-entry equals
+  \<open>entry (N[n]) 1 p < entry (N[n]) 1 y = entry N 1 (base y)\<close> (period reading
+  @{thm [source] operCA_tiling_entry1_base'}), so it is a STRICTLY-smaller row-1
+  \<open>le0\<close>-predecessor; @{thm [source] m_5_1_parent_exists_2} then builds the
+  nearest-ancestor row-1 parent and @{thm [source] nextR1_unique} pins existence.
+  Empirically: witness 13062/13062, the three @{thm [source] m_5_1_parent_exists_2}
+  inputs 0-fail (/tmp/hpN_3props.py, /tmp/hpN_basep_check.py).  The remaining
+  \<open>le0baseN\<close> is the row-0 base-back: GREEN same-block (@{thm [source]
+  oper_d1pos_le0_base_back}), prefix-cross-block PENDING.\<close>
+
+lemma operCA_tiling_hpN_via_le0baseN:
+  assumes L: "1 < Lng N"
+    and notzero: "\<not> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0)"
+    and hp: "hasParent N (idx1 N (Lng N - 1)) (Lng N - 1)"
+    and i1z: "idx1 N (Lng N - 1) = 1"
+    and j0lt: "parent N (idx1 N (Lng N - 1)) (Lng N - 1) < Lng N - 1"
+    and ge: "parent N (idx1 N (Lng N - 1)) (Lng N - 1) \<le> y"
+    and hpny: "hasParent ((N::pairseq)[n]) 1 y"
+    and le0baseN: "le0 N (if parent ((N::pairseq)[n]) 1 y < parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                         then parent ((N::pairseq)[n]) 1 y
+                         else parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                           + (parent ((N::pairseq)[n]) 1 y - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                              mod (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)))
+                        (parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                           + (y - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                              mod (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)))"
+  shows "hasParent N 1 (parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                + (y - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                   mod (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)))"
+proof -
+  let ?j1 = "Lng N - 1"  let ?i1 = "idx1 N ?j1"  let ?j0 = "parent N ?i1 ?j1"
+  let ?w = "?j1 - ?j0"
+  let ?Nn = "(N::pairseq)[n]"
+  let ?p = "parent ?Nn 1 y"
+  let ?sy = "(y - ?j0) mod ?w"
+  let ?yp = "?j0 + ?sy"
+  let ?bp = "if ?p < ?j0 then ?p else ?j0 + (?p - ?j0) mod ?w"
+  have NT: "N \<in> T_PS" using L by (cases N) (auto simp: T_PS_def)
+  have w0: "0 < ?w" using j0lt by linarith
+  have j0w1: "?j0 + ?w = ?j1" using j0lt by simp
+  have lenNn: "Lng ?Nn = ?j0 + n * ?w"
+    by (rule operB_gen_LngM[OF L notzero hp j0lt])
+  \<comment> \<open>parent edge of \<open>y\<close> in \<open>N[n]\<close>\<close>
+  have nrely: "nextrel1 ?Nn ?p y"
+  proof -
+    have "\<exists>!a. nextR ?Nn 1 a y" using hpny unfolding hasParent_def by simp
+    hence "nextR ?Nn 1 ?p y" unfolding parent_def by (rule theI')
+    thus ?thesis by (simp add: nextR_def)
+  qed
+  from nrely have py: "?p < y" and pNn: "?p < Lng ?Nn" and yNn: "y < Lng ?Nn"
+    and e1py: "entry ?Nn 1 ?p < entry ?Nn 1 y"
+    by (auto simp: nextrel1_def)
+  have syw: "?sy < ?w" using w0 by simp
+  have ypj1: "?yp < ?j1" using syw j0w1 by linarith
+  have ypN: "?yp < Lng N" using ypj1 L by linarith
+  \<comment> \<open>row-1 entry readings: \<open>y\<close> reads base \<open>y'\<close>, \<open>p\<close> reads its base \<open>base p\<close>\<close>
+  have e1y: "entry ?Nn 1 y = entry N 1 ?yp"
+  proof -
+    have nge: "\<not> y < ?j0" using ge by simp
+    have "entry ?Nn 1 y = entry N 1 (if y < ?j0 then y else ?j0 + (y - ?j0) mod ?w)"
+      by (rule operCA_tiling_entry1_base'[OF L notzero hp j0lt yNn])
+    thus ?thesis using nge by simp
+  qed
+  have e1p: "entry ?Nn 1 ?p = entry N 1 ?bp"
+    by (rule operCA_tiling_entry1_base'[OF L notzero hp j0lt pNn])
+  \<comment> \<open>(1) strict row-1 increase at the bases\<close>
+  have e1lt: "entry N 1 ?bp < entry N 1 ?yp" using e1py e1p e1y by simp
+  \<comment> \<open>(2) \<open>base p < base y\<close> (\<open>\<le>\<close> from le0 mono, \<open>\<noteq>\<close> from the strict entries)\<close>
+  have bple: "?bp \<le> ?yp"
+  proof -
+    have "(nextrel0 N)\<^sup>*\<^sup>* ?bp ?yp" using le0baseN by (simp add: le0_def)
+    thus ?thesis by (rule nextrel0_rtrancl_mono)
+  qed
+  have bpneq: "?bp \<noteq> ?yp" using e1lt by force
+  have bplt: "?bp < ?yp" using bple bpneq by linarith
+  \<comment> \<open>(3) \<open>leR N 0 (base p) (base y)\<close> from the supplied \<open>le0baseN\<close>\<close>
+  have leR0: "leR N 0 ?bp ?yp" using le0baseN by (simp add: leR_def)
+  \<comment> \<open>build the nearest row-1 ancestor; uniqueness gives \<open>hasParent\<close>\<close>
+  obtain j' where "?bp \<le> j'" "j' < ?yp" and j'par: "nextR N 1 j' ?yp"
+    using m_5_1_parent_exists_2[OF NT bplt ypN e1lt leR0] by blast
+  have "hasParent N 1 ?yp"
+    unfolding hasParent_def
+  proof (rule ex_ex1I)
+    show "\<exists>j0. nextR N 1 j0 ?yp" using j'par by blast
+  next
+    fix a b assume "nextR N 1 a ?yp" "nextR N 1 b ?yp"
+    thus "a = b" using nextR1_unique by blast
+  qed
+  thus ?thesis by simp
+qed
+
+
+text \<open>§6.7 hpN \<open>le0baseN\<close> SAME-BLOCK discharge (Front B, \<open>i\<^sub>1=1\<close>): when the
+  \<open>N[n]\<close>-parent \<open>p = parent (N[n]) 1 y\<close> sits in the SAME period block \<open>q\<^sub>y\<close> as \<open>y\<close>
+  (i.e. \<open>j\<^sub>0 \<le> p\<close>; empirically 12426/12426 of the non-prefix cases), the row-0
+  reachability \<open>le0 (N[n]) p y\<close> projects to \<open>le0 N (base p) (base y)\<close> by the d1pos
+  base-back @{thm [source] oper_d1pos_le0_base_back} (offsets \<open>s\<^sub>p = (p-j\<^sub>0) mod w
+  < s\<^sub>y = (y-j\<^sub>0) mod w\<close>; the same-block offset-strictness holds since
+  \<open>p < y\<close>).\<close>
+
+lemma operCA_tiling_hpN_le0baseN_sameblock:
+  assumes L: "1 < Lng N"
+    and notzero: "\<not> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0)"
+    and hp: "hasParent N (idx1 N (Lng N - 1)) (Lng N - 1)"
+    and i1z: "idx1 N (Lng N - 1) = 1"
+    and j0lt: "parent N (idx1 N (Lng N - 1)) (Lng N - 1) < Lng N - 1"
+    and ge: "parent N (idx1 N (Lng N - 1)) (Lng N - 1) \<le> y"
+    and hpny: "hasParent ((N::pairseq)[n]) 1 y"
+    and pge: "parent N (idx1 N (Lng N - 1)) (Lng N - 1) \<le> parent ((N::pairseq)[n]) 1 y"
+    and sblk: "(parent ((N::pairseq)[n]) 1 y - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                 div (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+               = (y - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                 div (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1))"
+  shows "le0 N (if parent ((N::pairseq)[n]) 1 y < parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+               then parent ((N::pairseq)[n]) 1 y
+               else parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                 + (parent ((N::pairseq)[n]) 1 y - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                    mod (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)))
+              (parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                 + (y - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                    mod (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)))"
+proof -
+  let ?j1 = "Lng N - 1"  let ?i1 = "idx1 N ?j1"  let ?j0 = "parent N ?i1 ?j1"
+  let ?w = "?j1 - ?j0"
+  let ?Nn = "(N::pairseq)[n]"
+  let ?p = "parent ?Nn 1 y"
+  let ?sy = "(y - ?j0) mod ?w"  let ?qy = "(y - ?j0) div ?w"
+  let ?sp = "(?p - ?j0) mod ?w"  let ?qp = "(?p - ?j0) div ?w"
+  have j0eq1: "?j0 = parent N 1 ?j1" using i1z by simp
+  have j0lt1: "parent N 1 ?j1 < ?j1" using j0lt j0eq1 by simp
+  have w0: "0 < ?w" using j0lt by linarith
+  have j0w1: "?j0 + ?w = ?j1" using j0lt by simp
+  have lenNn: "Lng ?Nn = ?j0 + n * ?w"
+    by (rule operB_gen_LngM[OF L notzero hp j0lt])
+  \<comment> \<open>parent edge\<close>
+  have nrely: "nextrel1 ?Nn ?p y"
+  proof -
+    have "\<exists>!a. nextR ?Nn 1 a y" using hpny unfolding hasParent_def by simp
+    hence "nextR ?Nn 1 ?p y" unfolding parent_def by (rule theI')
+    thus ?thesis by (simp add: nextR_def)
+  qed
+  from nrely have py: "?p < y" and yNn: "y < Lng ?Nn"
+    and le0py: "le0 ?Nn ?p y"
+    by (auto simp: nextrel1_def)
+  have syw: "?sy < ?w" using w0 by simp
+  have spw: "?sp < ?w" using w0 by simp
+  have ymj: "y - ?j0 < n * ?w" using yNn lenNn ge by linarith
+  have qyn: "?qy < n" using less_mult_imp_div_less[OF ymj] .
+  \<comment> \<open>decode \<open>p\<close>, \<open>y\<close> in the SAME block \<open>q\<^sub>y\<close>\<close>
+  have psplit: "?p = ?j0 + ?qp * ?w + ?sp"
+  proof -
+    have "?qp * ?w + ?sp = ?p - ?j0"
+      using div_mult_mod_eq[of "?p - ?j0" ?w] by (simp add: mult.commute)
+    thus ?thesis using pge by linarith
+  qed
+  have ysplit: "y = ?j0 + ?qy * ?w + ?sy"
+  proof -
+    have "?qy * ?w + ?sy = y - ?j0"
+      using div_mult_mod_eq[of "y - ?j0" ?w] by (simp add: mult.commute)
+    thus ?thesis using ge by linarith
+  qed
+  have qpeq: "?qp = ?qy" using sblk by simp
+  have psplit': "?p = ?j0 + ?qy * ?w + ?sp" using psplit qpeq by simp
+  \<comment> \<open>offset strictness \<open>s\<^sub>p < s\<^sub>y\<close> from \<open>p < y\<close> in the same block\<close>
+  have spsy: "?sp < ?sy"
+  proof -
+    have "?j0 + ?qy * ?w + ?sp < ?j0 + ?qy * ?w + ?sy" using py psplit' ysplit by simp
+    thus ?thesis by simp
+  qed
+  \<comment> \<open>rewrite \<open>le0 (N[n]) p y\<close> into the block-\<open>q\<^sub>y\<close> offset form and apply base-back\<close>
+  have reach: "le0 ?Nn (parent N 1 ?j1 + ?qy * (?j1 - parent N 1 ?j1) + ?sp)
+                       (parent N 1 ?j1 + ?qy * (?j1 - parent N 1 ?j1) + ?sy)"
+  proof -
+    have e1: "parent N 1 ?j1 + ?qy * (?j1 - parent N 1 ?j1) + ?sp = ?p"
+      using psplit' j0eq1 by simp
+    have e2: "parent N 1 ?j1 + ?qy * (?j1 - parent N 1 ?j1) + ?sy = y"
+      using ysplit j0eq1 by simp
+    show ?thesis using le0py e1 e2 by simp
+  qed
+  have syw': "?sy < ?j1 - parent N 1 ?j1" using syw j0eq1 by simp
+  have baseback: "le0 N (parent N 1 ?j1 + ?sp) (parent N 1 ?j1 + ?sy)"
+    by (rule oper_d1pos_le0_base_back[OF L notzero hp i1z j0lt1 qyn spsy syw' reach])
+  \<comment> \<open>identify the abstract base columns: \<open>base p = j\<^sub>0 + s\<^sub>p\<close> (since \<open>p \<ge> j\<^sub>0\<close>),
+     \<open>base y = j\<^sub>0 + s\<^sub>y\<close>\<close>
+  have pnlt: "\<not> ?p < ?j0" using pge by simp
+  have basep_eq: "(if ?p < ?j0 then ?p else ?j0 + (?p - ?j0) mod ?w) = ?j0 + ?sp"
+    using pnlt by simp
+  show ?thesis using baseback basep_eq j0eq1 by simp
+qed
+
+
+
+
 end
