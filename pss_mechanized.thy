@@ -56091,4 +56091,121 @@ proof -
 qed
 
 
+text \<open>§6.7 BRICK reduction (attempt C) -- the row-0 reach \<open>le0 N q j\<^sub>1\<close> for an
+  interior tail node \<open>q\<close> (\<open>j\<^sub>0 < q < j\<^sub>1\<close>, \<open>j\<^sub>0 = parent N 1 j\<^sub>1\<close>, \<open>j\<^sub>1 = Lng N-1\<close>)
+  follows UNCONDITIONALLY from the single tail invariant \<open>tail_affine\<close>: that the
+  row-0 reading on the tail \<open>[j\<^sub>0, j\<^sub>1]\<close> is the affine ramp
+  \<open>entry N 0 x = entry N 0 j\<^sub>0 + (x - j\<^sub>0)\<close>.  Indeed the ramp makes \<open>entry N 0\<close>
+  strictly increasing on \<open>(q, j\<^sub>1]\<close>, so @{thm [source] le0_build} chains
+  \<open>q \<rightarrow>\<^sup>* j\<^sub>1\<close> in row 0.  EMPIRICALLY the ramp holds 142/0 and \<open>le0 N q j\<^sub>1\<close>
+  231/0 on genuine ST_PS (\<open>is_standard\<close> diag+oper closure), and BOTH are FALSE on
+  general T_PS, so \<open>tail_affine\<close> is the genuine ST_PS carrier of the brick.
+  Cites only @{thm [source] le0_build}; no spsy / sblk / via_spsy / RedCond / oper.\<close>
+
+lemma brick_from_tail_affine:
+  fixes N :: pairseq
+  assumes NT: "N \<in> T_PS"
+    and j0lt: "parent N 1 (Lng N - 1) < Lng N - 1"
+    and qlo: "parent N 1 (Lng N - 1) < q"
+    and qhi: "q < Lng N - 1"
+    and affine: "\<And>x. parent N 1 (Lng N - 1) \<le> x \<Longrightarrow> x \<le> Lng N - 1
+                   \<Longrightarrow> entry N 0 x = entry N 0 (parent N 1 (Lng N - 1)) + (x - parent N 1 (Lng N - 1))"
+  shows "le0 N q (Lng N - 1)"
+proof -
+  let ?j1 = "Lng N - 1"  let ?j0 = "parent N 1 ?j1"
+  have qj1: "q < ?j1" using qhi .
+  have j1L: "?j1 < Lng N" using j0lt by linarith
+  have qL: "q < Lng N" using qj1 j1L by linarith
+  have qge: "?j0 \<le> q" using qlo by linarith
+  \<comment> \<open>strict row-0 increase on \<open>(q, j\<^sub>1]\<close> from the affine ramp\<close>
+  have strict: "\<And>j. q < j \<Longrightarrow> j \<le> ?j1 \<Longrightarrow> entry N 0 q < entry N 0 j"
+  proof -
+    fix j assume jq: "q < j" and jj1: "j \<le> ?j1"
+    have qx: "?j0 \<le> q" using qge .
+    have qle: "q \<le> ?j1" using qj1 by linarith
+    have eq_q: "entry N 0 q = entry N 0 ?j0 + (q - ?j0)" by (rule affine[OF qx qle])
+    have jx: "?j0 \<le> j" using qx jq by linarith
+    have eq_j: "entry N 0 j = entry N 0 ?j0 + (j - ?j0)" by (rule affine[OF jx jj1])
+    have "q - ?j0 < j - ?j0" using jq qx by linarith
+    thus "entry N 0 q < entry N 0 j" using eq_q eq_j by linarith
+  qed
+  \<comment> \<open>build the row-0 chain \<open>q \<rightarrow>\<^sup>* j\<^sub>1\<close>\<close>
+  have chain: "(nextrel0 N)\<^sup>*\<^sup>* q ?j1"
+  proof (rule le0_build[OF NT j1L qj1])
+    show "\<forall>j. q < j \<and> j \<le> ?j1 \<longrightarrow> entry N 0 q < entry N 0 j"
+      using strict by blast
+  qed
+  show ?thesis using chain qL j1L by (simp add: le0_def)
+qed
+
+text \<open>§6.7 BRICK, tail-affine invariant -- DIAG base of the ST_PS induction
+  (attempt C), GREEN and trivial.  For \<open>N = diagSeq u v\<close> the row-0 reading is the
+  GLOBAL affine ramp \<open>entry N 0 x = u + x\<close> (@{thm [source] entry_diagSeq}); in
+  particular on the tail \<open>[j\<^sub>0, j\<^sub>1]\<close> it equals \<open>entry N 0 j\<^sub>0 + (x - j\<^sub>0)\<close>.
+  Non-circular: uses only @{thm [source] entry_diagSeq}; no spsy / sblk / oper.\<close>
+
+lemma tail_affine_diag:
+  fixes u v x :: nat
+  assumes uv: "u \<le> v"
+    and xge: "parent (diagSeq u v) 1 (Lng (diagSeq u v) - 1) \<le> x"
+    and xle: "x \<le> Lng (diagSeq u v) - 1"
+  shows "entry (diagSeq u v) 0 x
+           = entry (diagSeq u v) 0 (parent (diagSeq u v) 1 (Lng (diagSeq u v) - 1))
+             + (x - parent (diagSeq u v) 1 (Lng (diagSeq u v) - 1))"
+proof -
+  let ?N = "diagSeq u v"  let ?j1 = "Lng ?N - 1"  let ?j0 = "parent ?N 1 ?j1"
+  have lenN: "Lng ?N = Suc v - u" by simp
+  have j1eq: "?j1 = v - u" using lenN uv by simp
+  have xlt: "x < Suc v - u" using xle j1eq uv by linarith
+  have j0le: "?j0 \<le> x" using xge .
+  have j0lt: "?j0 < Suc v - u" using j0le xlt by linarith
+  have ex: "entry ?N 0 x = u + x" by (rule entry_diagSeq[OF xlt])
+  have ej0: "entry ?N 0 ?j0 = u + ?j0" by (rule entry_diagSeq[OF j0lt])
+  show ?thesis using ex ej0 j0le by linarith
+qed
+
+
+text \<open>§6.7 RESIDUAL 1 (tree), fully reduced to the single tail invariant
+  \<open>tail_affine\<close> (attempt C).  Combines @{thm [source] brick_from_tail_affine}
+  (tail-affine \<open>\<Longrightarrow>\<close> the row-0 reach brick \<open>le0 N p j\<^sub>1\<close>) with
+  @{thm [source] m_6_7_tree_wellformed} (brick \<open>\<Longrightarrow>\<close> tree well-formedness).
+  The ONLY hypothesis beyond the standard spsy-domain facts is \<open>tail_affine\<close>:
+  on the tail \<open>[j\<^sub>0, j\<^sub>1]\<close> the row-0 reading is the affine ramp
+  \<open>entry N 0 x = entry N 0 j\<^sub>0 + (x - j\<^sub>0)\<close> (empirically 142/0 on genuine ST_PS,
+  FALSE on general T_PS).  Cites only @{thm [source] brick_from_tail_affine},
+  @{thm [source] m_6_7_tree_wellformed}; no spsy / sblk / via_spsy / RedCond / oper.\<close>
+
+lemma m_6_7_tree_wellformed_via_affine:
+  fixes N :: pairseq
+  assumes L: "1 < Lng N"
+    and hp1: "hasParent N 1 (Lng N - 1)"
+    and j0lt: "parent N 1 (Lng N - 1) < Lng N - 1"
+    and zlo: "parent N 1 (Lng N - 1) < z"
+    and zhi: "z < Lng N - 1"
+    and hpz: "hasParent N 1 z"
+    and pge: "parent N 1 z \<ge> parent N 1 (Lng N - 1)"
+    and pgt: "parent N 1 z > parent N 1 (Lng N - 1)"
+    and affine: "\<And>x. parent N 1 (Lng N - 1) \<le> x \<Longrightarrow> x \<le> Lng N - 1
+                   \<Longrightarrow> entry N 0 x = entry N 0 (parent N 1 (Lng N - 1)) + (x - parent N 1 (Lng N - 1))"
+  shows "hasParent N 1 (parent N 1 z)
+         \<and> parent N 1 (parent N 1 z) \<ge> parent N 1 (Lng N - 1)"
+proof -
+  let ?j1 = "Lng N - 1"  let ?j0 = "parent N 1 ?j1"  let ?p = "parent N 1 z"
+  have NT: "N \<in> T_PS" using L by (cases N) (auto simp: T_PS_def)
+  \<comment> \<open>\<open>p = parent N 1 z\<close> is an interior tail node \<open>j\<^sub>0 < p < j\<^sub>1\<close>\<close>
+  have parRz: "nextR N 1 ?p z"
+    using hpz unfolding hasParent_def parent_def by (rule theI')
+  have nr1z: "nextrel1 N ?p z" using parRz by (simp add: nextR_def)
+  have plt: "?p < z" using nr1z by (simp add: nextrel1_def)
+  have pgtj0: "?j0 < ?p" using pgt .
+  have pltj1: "?p < ?j1" using plt zhi by linarith
+  \<comment> \<open>the brick \<open>le0 N p j\<^sub>1\<close> from the tail-affine invariant\<close>
+  have reach: "le0 N ?p ?j1"
+    by (rule brick_from_tail_affine[OF NT j0lt pgtj0 pltj1 affine])
+  \<comment> \<open>feed it to the already-GREEN tree well-formedness reduction\<close>
+  show ?thesis
+    by (rule m_6_7_tree_wellformed[OF L hp1 j0lt zlo zhi hpz pge pgt reach])
+qed
+
+
 end
