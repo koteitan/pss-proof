@@ -44,7 +44,7 @@
       - 🚨 系（$1$ 列ペア数列の基本性質）
     - 🚨 §6.7 標準形
       - ✅ 命題（標準形の階層和による表示）
-      - 🚨🤖 命題（標準形の簡約性）〔残差が**単一row-0 BRICKに収束**：`m_6_7_tree_wellformed`(green)で tree を§5.1祖先機構経由で **`le0 N z j1`(ST_PS tail全interiorがj1到達)** に還元(ST_PS.induct不要)。直接ルート(tree/bridge不要): BRICK[z=j0+sy]→m_5_1_ancestor_basic_2→Q→spsy_keystone_via_Q。残=**BRICK + sy_pos**のみ。BRICKはST_PS特有(一般T_PSで偽)、§6.4 trunk/§6.5 anchored_sliceで証明〕
+      - 🚨🤖 命題（標準形の簡約性）〔残差が**単一不変条件`tail_affine`に収束**：`brick_from_tail_affine`(green)でBRICKを **tail_affine: N∈ST_PS, x∈[j0,j1]⟹entry N 0 x=entry N 0 j0+(x−j0)(tailのrow-0が連続整数ランプ)** に還元。`tail_affine_diag`(diag基底)green。残=**tail_affine の oper step のみ**(N=M[m]: wM≥2でd0=wM kernel+oper_d1pos_entry0でM-tail IHへ)。これでBRICK→直接route→spsy無条件→cascade無条件達成〕
       - ✅ 命題（標準形の単項成分が標準形であること）
       - ✅ 命題（標準形の始切片への遺伝性）
     - ✅ §6.8 降順性
