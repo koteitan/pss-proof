@@ -54158,6 +54158,414 @@ proof -
 qed
 
 
+text \<open>§6.7 PREFIX ROW-0 PROJECTION (Front A, \<open>i\<^sub>1=1\<close>): a row-0 \<open>N[n]\<close>-chain from a
+  PREFIX source \<open>j < j\<^sub>0\<close> that reaches an active-slice target \<open>y \<ge> j\<^sub>0\<close> projects to a
+  row-0 \<open>N\<close>-chain from \<open>j\<close> to the period base \<open>y' = j\<^sub>0 + (y-j\<^sub>0) mod w\<close>.  Restrict the
+  ancestor path down to \<open>y'\<close> (\<open>m_5_1_ancestor_tree_1\<close>, \<open>j \<le> y' \<le> y\<close>), then transfer the
+  row-0 chain \<open>N[n] \<to> N\<close> on \<open>[0, y']\<close> where \<open>N[n]\<close> reads \<open>N\<close> verbatim (prefix
+  \<open>[0,j\<^sub>0)\<close> via @{thm [source] operB_gen_entry_prefix}; first active block \<open>[j\<^sub>0,j\<^sub>1)\<close>,
+  \<open>q=0\<close>, shift \<open>0\<close>, via @{thm [source] oper_gen_block_entry0}) — @{thm [source]
+  le0_prefix_row0}.  Empirically 558/558 (/tmp/fa_prefix_proj.py).  This is exactly the
+  prefix-cross residual of \<open>le0baseN\<close> (with \<open>j = parent (N[n]) 1 y < j\<^sub>0\<close>), unblocking
+  @{thm [source] operCA_tiling_hpN_via_le0baseN}.\<close>
+
+lemma operCA_tiling_le0_prefix_proj:
+  assumes L: "1 < Lng N"
+    and notzero: "\<not> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0)"
+    and hp: "hasParent N (idx1 N (Lng N - 1)) (Lng N - 1)"
+    and i1z: "idx1 N (Lng N - 1) = 1"
+    and j0lt: "parent N (idx1 N (Lng N - 1)) (Lng N - 1) < Lng N - 1"
+    and n1: "1 \<le> n"
+    and jpre: "j < parent N (idx1 N (Lng N - 1)) (Lng N - 1)"
+    and ge: "parent N (idx1 N (Lng N - 1)) (Lng N - 1) \<le> y"
+    and reach: "le0 ((N::pairseq)[n]) j y"
+  shows "le0 N j (parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+            + (y - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+               mod (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)))"
+proof -
+  let ?j1 = "Lng N - 1"  let ?i1 = "idx1 N ?j1"  let ?j0 = "parent N ?i1 ?j1"
+  let ?w = "?j1 - ?j0"
+  let ?Nn = "(N::pairseq)[n]"
+  let ?sy = "(y - ?j0) mod ?w"
+  let ?yp = "?j0 + ?sy"
+  have w0: "0 < ?w" using j0lt by linarith
+  have j0w1: "?j0 + ?w = ?j1" using j0lt by simp
+  have NT: "N \<in> T_PS" using L by (cases N) (auto simp: T_PS_def)
+  have NnT: "?Nn \<in> T_PS"
+    using poper_oper_nth0[OF NT L n1] by (cases ?Nn) (auto simp: T_PS_def)
+  \<comment> \<open>length and bounds\<close>
+  have lenNn: "Lng ?Nn = ?j0 + n * ?w"
+    by (rule operB_gen_LngM[OF L notzero hp j0lt])
+  from reach have jLNn: "j < Lng ?Nn" and yLNn: "y < Lng ?Nn" and jley: "j \<le> y"
+    by (auto simp: le0_def nextrel0_rtrancl_mono)
+  have syw: "?sy < ?w" using w0 by simp
+  have ypj1: "?yp < ?j1" using syw j0w1 by linarith
+  have ypN: "?yp < Lng N" using ypj1 L by linarith
+  have jyp: "j \<le> ?yp" using jpre by simp
+  have ypy: "?yp \<le> y"
+  proof -
+    have "?yp = ?j0 + ?sy" by simp
+    moreover have "?j0 + ?sy \<le> y"
+      using ge div_mult_mod_eq[of "y - ?j0" ?w] by linarith
+    ultimately show ?thesis by simp
+  qed
+  have ypLNn: "?yp < Lng ?Nn" using ypy yLNn by linarith
+  \<comment> \<open>(1) restrict the ancestor path \<open>j \<rightsquigarrow> y\<close> down to \<open>y'\<close>\<close>
+  have leRjy: "leR ?Nn 0 j y" using reach by (simp add: leR_def)
+  have leRjyp: "leR ?Nn 0 j ?yp"
+    by (rule m_5_1_ancestor_tree_1[OF NnT leRjy jyp ypy])
+  have le0Nnjyp: "le0 ?Nn j ?yp" using leRjyp by (simp add: leR_def)
+  \<comment> \<open>(2) row-0 agreement \<open>N[n] = N\<close> on \<open>[0, y']\<close>\<close>
+  have agree: "\<And>z. z \<le> ?yp \<Longrightarrow> entry ?Nn 0 z = entry N 0 z"
+  proof -
+    fix z assume zyp: "z \<le> ?yp"
+    show "entry ?Nn 0 z = entry N 0 z"
+    proof (cases "z < ?j0")
+      case True
+      show ?thesis by (rule operB_gen_entry_prefix[OF L notzero hp True])
+    next
+      case False
+      hence zj0: "?j0 \<le> z" by simp
+      have zlt: "z - ?j0 < ?w" using zyp zj0 syw by linarith
+      have n0: "0 < n" using n1 by simp
+      have "entry ?Nn 0 (?j0 + 0 * ?w + (z - ?j0))
+              = entry N 0 (?j0 + (z - ?j0))
+                + 0 * (if 0 < ?i1 then entry N 0 ?j1 - entry N 0 ?j0 else 0)"
+        by (rule oper_gen_block_entry0[OF L notzero hp j0lt n0 zlt])
+      hence "entry ?Nn 0 (?j0 + (z - ?j0)) = entry N 0 (?j0 + (z - ?j0))" by simp
+      thus ?thesis using zj0 by simp
+    qed
+  qed
+  \<comment> \<open>(3) transfer the chain \<open>N[n] \<to> N\<close>\<close>
+  show ?thesis
+    by (rule le0_prefix_row0[OF agree ypLNn ypN jyp order.refl le0Nnjyp])
+qed
+
+
+text \<open>§6.7 hpN PREFIX sub-case (Front A, \<open>i\<^sub>1=1\<close>): the period-base row-1 parent
+  existence \<open>hasParent N 1 (base y)\<close> when the \<open>N[n]\<close>-parent \<open>p = parent (N[n]) 1 y\<close>
+  sits in the verbatim PREFIX \<open>p < j\<^sub>0\<close>.  The \<open>le0baseN\<close> input of @{thm [source]
+  operCA_tiling_hpN_via_le0baseN} is then \<open>le0 N p (base y)\<close>, the row-0 prefix
+  projection @{thm [source] operCA_tiling_le0_prefix_proj} of the row-1 parent edge
+  \<open>le0 (N[n]) p y\<close>.  This discharges the prefix-cross-block residual that was PENDING
+  in @{thm [source] operCA_tiling_hpN_le0baseN_sameblock}'s comment.\<close>
+
+lemma operCA_tiling_hpN_prefix:
+  assumes L: "1 < Lng N"
+    and notzero: "\<not> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0)"
+    and hp: "hasParent N (idx1 N (Lng N - 1)) (Lng N - 1)"
+    and i1z: "idx1 N (Lng N - 1) = 1"
+    and j0lt: "parent N (idx1 N (Lng N - 1)) (Lng N - 1) < Lng N - 1"
+    and n1: "1 \<le> n"
+    and ge: "parent N (idx1 N (Lng N - 1)) (Lng N - 1) \<le> y"
+    and hpny: "hasParent ((N::pairseq)[n]) 1 y"
+    and ppre: "parent ((N::pairseq)[n]) 1 y < parent N (idx1 N (Lng N - 1)) (Lng N - 1)"
+  shows "hasParent N 1 (parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                + (y - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                   mod (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)))"
+proof -
+  let ?j1 = "Lng N - 1"  let ?i1 = "idx1 N ?j1"  let ?j0 = "parent N ?i1 ?j1"
+  let ?w = "?j1 - ?j0"
+  let ?Nn = "(N::pairseq)[n]"
+  let ?p = "parent ?Nn 1 y"
+  \<comment> \<open>row-1 parent edge of \<open>y\<close> in \<open>N[n]\<close> gives row-0 reachability \<open>le0 (N[n]) p y\<close>\<close>
+  have nrely: "nextrel1 ?Nn ?p y"
+  proof -
+    have "\<exists>!a. nextR ?Nn 1 a y" using hpny unfolding hasParent_def by simp
+    hence "nextR ?Nn 1 ?p y" unfolding parent_def by (rule theI')
+    thus ?thesis by (simp add: nextR_def)
+  qed
+  have le0py: "le0 ?Nn ?p y" using nrely by (simp add: nextrel1_def)
+  \<comment> \<open>prefix projection: \<open>le0 N p (base y)\<close>\<close>
+  have le0Npyp: "le0 N ?p (?j0 + (y - ?j0) mod ?w)"
+    by (rule operCA_tiling_le0_prefix_proj[OF L notzero hp i1z j0lt n1 ppre ge le0py])
+  \<comment> \<open>the \<open>le0baseN\<close> if-branch collapses to \<open>p\<close> since \<open>p < j\<^sub>0\<close>\<close>
+  have le0baseN: "le0 N (if ?p < ?j0 then ?p else ?j0 + (?p - ?j0) mod ?w)
+                       (?j0 + (y - ?j0) mod ?w)"
+    using le0Npyp ppre by simp
+  show ?thesis
+    by (rule operCA_tiling_hpN_via_le0baseN[OF L notzero hp i1z j0lt ge hpny le0baseN])
+qed
+
+
+text \<open>§6.7 hpN FULL assembly (Front A, \<open>i\<^sub>1=1\<close>), reduced to the SINGLE same-block
+  residual \<open>sblk\<close>.  Splits on where the \<open>N[n]\<close>-parent \<open>p = parent (N[n]) 1 y\<close> lands:
+  \<^item> PREFIX \<open>p < j\<^sub>0\<close>: @{thm [source] operCA_tiling_hpN_prefix} (now GREEN via the row-0
+    prefix projection).
+  \<^item> ACTIVE \<open>j\<^sub>0 \<le> p\<close>: @{thm [source] operCA_tiling_hpN_le0baseN_sameblock} then
+    @{thm [source] operCA_tiling_hpN_via_le0baseN}; the only obligation is \<open>sblk\<close>
+    (\<open>p\<close> sits in \<open>y\<close>'s period block, \<open>(p-j\<^sub>0) div w = (y-j\<^sub>0) div w\<close>) — empirically
+    13062/13062 the active case is same-block (/tmp/hpN_cases.py: 0 active cross-block).
+  Thus the whole \<open>hpN\<close> residual is exactly \<open>sblk\<close>.\<close>
+
+lemma operCA_tiling_hpN_via_sblk:
+  assumes L: "1 < Lng N"
+    and notzero: "\<not> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0)"
+    and hp: "hasParent N (idx1 N (Lng N - 1)) (Lng N - 1)"
+    and i1z: "idx1 N (Lng N - 1) = 1"
+    and j0lt: "parent N (idx1 N (Lng N - 1)) (Lng N - 1) < Lng N - 1"
+    and n1: "1 \<le> n"
+    and ge: "parent N (idx1 N (Lng N - 1)) (Lng N - 1) \<le> y"
+    and hpny: "hasParent ((N::pairseq)[n]) 1 y"
+    and sblk: "parent N (idx1 N (Lng N - 1)) (Lng N - 1) \<le> parent ((N::pairseq)[n]) 1 y
+               \<Longrightarrow> (parent ((N::pairseq)[n]) 1 y - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                     div (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                   = (y - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                     div (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1))"
+  shows "hasParent N 1 (parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                + (y - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                   mod (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)))"
+proof -
+  let ?j1 = "Lng N - 1"  let ?i1 = "idx1 N ?j1"  let ?j0 = "parent N ?i1 ?j1"
+  let ?w = "?j1 - ?j0"
+  let ?Nn = "(N::pairseq)[n]"
+  let ?p = "parent ?Nn 1 y"
+  show ?thesis
+  proof (cases "?p < ?j0")
+    case True
+    show ?thesis
+      by (rule operCA_tiling_hpN_prefix[OF L notzero hp i1z j0lt n1 ge hpny True])
+  next
+    case False
+    hence pge: "?j0 \<le> ?p" by simp
+    have sb: "(?p - ?j0) div ?w = (y - ?j0) div ?w" by (rule sblk[OF pge])
+    have le0baseN: "le0 N (if ?p < ?j0 then ?p else ?j0 + (?p - ?j0) mod ?w)
+                         (?j0 + (y - ?j0) mod ?w)"
+      by (rule operCA_tiling_hpN_le0baseN_sameblock[OF L notzero hp i1z j0lt ge hpny pge sb])
+    show ?thesis
+      by (rule operCA_tiling_hpN_via_le0baseN[OF L notzero hp i1z j0lt ge hpny le0baseN])
+  qed
+qed
+
+
+
+text \<open>§6.7 hpN \<open>le0baseN\<close> PREFIX discharge (Front B, \<open>i\<^sub>1=1\<close>): when the
+  \<open>N[n]\<close>-parent \<open>p = parent (N[n]) 1 y\<close> sits in the verbatim PREFIX \<open>[0, j\<^sub>0)\<close>
+  (\<open>p < j\<^sub>0\<close>, so \<open>base p = p\<close>), the row-0 reachability \<open>le0 (N[n]) p y\<close> projects to
+  \<open>le0 N p (base y)\<close>, where \<open>base y = j\<^sub>0 + (y-j\<^sub>0) mod w\<close>.  Route (mirror of
+  @{thm [source] oper_d1pos_le0_prefix_lift_fwd} backward):
+  (a) restrict the \<open>N[n]\<close> path \<open>p \<rightsquigarrow> y\<close> down to \<open>j\<^sub>0\<close> by
+      @{thm [source] m_5_1_ancestor_tree_1} (\<open>p \<le> j\<^sub>0 \<le> y\<close>), giving \<open>le0 (N[n]) p j\<^sub>0\<close>;
+  (b) row-0 prefix transfer \<open>N[n] \<rightarrow> N\<close> on \<open>[0, j\<^sub>0]\<close> via
+      @{thm [source] le0_prefix_row0} (the prefix is verbatim, the block-0 start
+      \<open>j\<^sub>0\<close> reads \<open>entry N 0 j\<^sub>0\<close>), giving \<open>le0 N p j\<^sub>0\<close>;
+  (c) within \<open>N\<close> itself, \<open>le0 N j\<^sub>0 (j\<^sub>0 + s\<^sub>y)\<close> for \<open>s\<^sub>y = (y-j\<^sub>0) mod w < w\<close> by
+      @{thm [source] le0_build} on the row-0 ancestry chain \<open>j\<^sub>0 \<rightsquigarrow> j\<^sub>1\<close>
+      (@{thm [source] le0_ances_aux});
+  compose (a)+(b)+(c) by @{thm [source] le0_trans}.  Empirically 1596/1596.\<close>
+
+lemma operCA_tiling_hpN_le0baseN_prefix:
+  assumes L: "1 < Lng N"
+    and notzero: "\<not> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0)"
+    and hp: "hasParent N (idx1 N (Lng N - 1)) (Lng N - 1)"
+    and i1z: "idx1 N (Lng N - 1) = 1"
+    and j0lt: "parent N (idx1 N (Lng N - 1)) (Lng N - 1) < Lng N - 1"
+    and ge: "parent N (idx1 N (Lng N - 1)) (Lng N - 1) \<le> y"
+    and hpny: "hasParent ((N::pairseq)[n]) 1 y"
+    and plt: "parent ((N::pairseq)[n]) 1 y < parent N (idx1 N (Lng N - 1)) (Lng N - 1)"
+  shows "le0 N (if parent ((N::pairseq)[n]) 1 y < parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+               then parent ((N::pairseq)[n]) 1 y
+               else parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                 + (parent ((N::pairseq)[n]) 1 y - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                    mod (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)))
+              (parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                 + (y - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                    mod (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)))"
+proof -
+  let ?j1 = "Lng N - 1"  let ?i1 = "idx1 N ?j1"  let ?j0 = "parent N ?i1 ?j1"
+  let ?w = "?j1 - ?j0"
+  let ?Nn = "(N::pairseq)[n]"
+  let ?p = "parent ?Nn 1 y"
+  let ?sy = "(y - ?j0) mod ?w"
+  let ?yp = "?j0 + ?sy"
+  have NT: "N \<in> T_PS" using L by (cases N) (auto simp: T_PS_def)
+  have i1z': "idx1 N ?j1 = 1" using i1z .
+  have j0lt1: "parent N 1 ?j1 < ?j1" using j0lt i1z by simp
+  have j0eq1: "?j0 = parent N 1 ?j1" using i1z by simp
+  have w0: "0 < ?w" using j0lt by linarith
+  have j0w1: "?j0 + ?w = ?j1" using j0lt by simp
+  have lenNn: "Lng ?Nn = ?j0 + n * ?w"
+    by (rule operB_gen_LngM[OF L notzero hp j0lt])
+  \<comment> \<open>parent edge of \<open>y\<close> in \<open>N[n]\<close>\<close>
+  have nrely: "nextrel1 ?Nn ?p y"
+  proof -
+    have "\<exists>!a. nextR ?Nn 1 a y" using hpny unfolding hasParent_def by simp
+    hence "nextR ?Nn 1 ?p y" unfolding parent_def by (rule theI')
+    thus ?thesis by (simp add: nextR_def)
+  qed
+  from nrely have py: "?p < y" and yNn: "y < Lng ?Nn"
+    and le0py: "le0 ?Nn ?p y"
+    by (auto simp: nextrel1_def)
+  \<comment> \<open>\<open>n \<ge> 1\<close> is forced: otherwise \<open>Lng (N[n]) = j\<^sub>0 \<le> y\<close> contradicts \<open>y < Lng (N[n])\<close>\<close>
+  have nw0: "0 < n * ?w" using ge yNn lenNn by linarith
+  have n1: "1 \<le> n" using nw0 by (cases n) auto
+  \<comment> \<open>various bounds\<close>
+  have syw: "?sy < ?w" using w0 by simp
+  have ypj1: "?yp < ?j1" using syw j0w1 by linarith
+  have ypN: "?yp < Lng N" using ypj1 L by linarith
+  have pj0: "?p < ?j0" using plt by simp
+  have j0N: "?j0 < Lng N" using j0lt L by linarith
+  have j0Nn: "?j0 < Lng ?Nn"
+  proof -
+    have "?j0 \<le> y" using ge by simp
+    thus ?thesis using yNn by linarith
+  qed
+  \<comment> \<open>(a) restrict the \<open>N[n]\<close> path \<open>p \<rightsquigarrow> y\<close> down to \<open>j\<^sub>0\<close>\<close>
+  have NnT: "?Nn \<in> T_PS" using yNn unfolding T_PS_def by (cases ?Nn) auto
+  have leRpy: "leR ?Nn 0 ?p y" using le0py by (simp add: leR_def)
+  have pj0le: "?p \<le> ?j0" using pj0 by simp
+  have j0yle: "?j0 \<le> y" using ge by simp
+  have leRpj0: "leR ?Nn 0 ?p ?j0"
+    by (rule m_5_1_ancestor_tree_1[OF NnT leRpy pj0le j0yle])
+  have le0Nnpj0: "le0 ?Nn ?p ?j0" using leRpj0 by (simp add: leR_def)
+  \<comment> \<open>(b) row-0 prefix agreement on \<open>[0, j\<^sub>0]\<close>: verbatim below \<open>j\<^sub>0\<close>, block-0 start at \<open>j\<^sub>0\<close>\<close>
+  have agree: "\<And>z. z \<le> ?j0 \<Longrightarrow> entry N 0 z = entry ((N::pairseq)[n]) 0 z"
+  proof -
+    fix z assume zj0: "z \<le> ?j0"
+    show "entry N 0 z = entry ((N::pairseq)[n]) 0 z"
+    proof (cases "z < ?j0")
+      case True
+      have zlt1: "z < parent N 1 ?j1" using True j0eq1 by simp
+      have "((N::pairseq)[n]) ! z = N ! z"
+        by (rule oper_d1pos_nth_prefix[OF L notzero hp i1z' zlt1])
+      thus ?thesis by (simp add: entry_def)
+    next
+      case False
+      hence zeq: "z = ?j0" using zj0 by simp
+      have k0n0: "(0::nat) < n" using n1 by simp
+      have w0': "(0::nat) < Lng N - 1 - parent N 1 ?j1" using j0lt1 by linarith
+      have "((N::pairseq)[n]) ! (parent N 1 ?j1 + 0 * (Lng N - 1 - parent N 1 ?j1) + 0)
+              = (entry N 0 (parent N 1 ?j1 + 0)
+                   + 0 * (entry N 0 (Lng N - 1) - entry N 0 (parent N 1 ?j1)),
+                 entry N 1 (parent N 1 ?j1 + 0))"
+        by (rule oper_d1pos_nth[OF L notzero hp i1z' j0lt1 k0n0 w0'])
+      hence "((N::pairseq)[n]) ! (parent N 1 ?j1)
+               = (entry N 0 (parent N 1 ?j1), entry N 1 (parent N 1 ?j1))" by simp
+      hence "((N::pairseq)[n]) ! ?j0 = (entry N 0 ?j0, entry N 1 ?j0)"
+        using j0eq1 by simp
+      thus ?thesis using zeq by (simp add: entry_def)
+    qed
+  qed
+  have agree': "\<And>z. z \<le> ?j0 \<Longrightarrow> entry ?Nn 0 z = entry N 0 z"
+    using agree by simp
+  have le0Npj0: "le0 N ?p ?j0"
+    by (rule le0_prefix_row0[OF agree' j0Nn j0N pj0le order.refl le0Nnpj0])
+  \<comment> \<open>(c) within \<open>N\<close>: \<open>le0 N j\<^sub>0 (j\<^sub>0 + s\<^sub>y)\<close> from the row-0 ancestry chain \<open>j\<^sub>0 \<rightsquigarrow> j\<^sub>1\<close>\<close>
+  have hp1: "hasParent N 1 ?j1" using hp i1z by simp
+  have parR0: "nextR N 1 (parent N 1 ?j1) ?j1"
+    using hp1 unfolding hasParent_def parent_def by (rule theI')
+  have parR: "nextR N 1 ?j0 ?j1" using parR0 j0eq1 by simp
+  have "leR N 0 ?j0 ?j1" using poper_nextR_imp_le0[OF parR] by simp
+  hence baseR: "(nextrel0 N)\<^sup>*\<^sup>* ?j0 ?j1" by (simp add: leR_def le0_def)
+  have ances: "\<forall>j. ?j0 < j \<and> j \<le> ?j1 \<longrightarrow> entry N 0 ?j0 < entry N 0 j"
+    by (rule le0_ances_aux[OF baseR])
+  have le0Nj0yp: "le0 N ?j0 ?yp"
+  proof (cases "?sy = 0")
+    case True
+    have "?j0 < Lng N" using j0N .
+    thus ?thesis using True by (simp add: le0_refl)
+  next
+    case False
+    hence j0lt': "?j0 < ?yp" by simp
+    have "(nextrel0 N)\<^sup>*\<^sup>* ?j0 ?yp"
+    proof (rule le0_build[OF NT ypN j0lt'])
+      show "\<forall>j. ?j0 < j \<and> j \<le> ?yp \<longrightarrow> entry N 0 ?j0 < entry N 0 j"
+        using ances ypj1 by auto
+    qed
+    thus ?thesis using j0lt' ypN by (simp add: le0_def)
+  qed
+  \<comment> \<open>compose (a)+(b)+(c)\<close>
+  have le0Npyp: "le0 N ?p ?yp" by (rule le0_trans[OF le0Npj0 le0Nj0yp])
+  have lhs: "(if ?p < ?j0 then ?p else ?j0 + (?p - ?j0) mod ?w) = ?p"
+    using pj0 by simp
+  show ?thesis using le0Npyp lhs by simp
+qed
+
+
+text \<open>§6.7 hpN \<open>le0baseN\<close> FULL (Front B, \<open>i\<^sub>1=1\<close>): the row-0 base-back
+  \<open>le0 N (base p) (base y)\<close> for BOTH branches, assembled by case split on the
+  \<open>N[n]\<close>-parent location \<open>p = parent (N[n]) 1 y\<close>:
+  \<^item> PREFIX \<open>p < j\<^sub>0\<close> : the UNCONDITIONAL @{thm [source] operCA_tiling_hpN_le0baseN_prefix};
+  \<^item> NON-PREFIX \<open>p \<ge> j\<^sub>0\<close> : the @{thm [source] operCA_tiling_hpN_le0baseN_sameblock},
+    which needs the same-block residual \<open>sblk\<close> (the \<open>N[n]\<close>-parent of \<open>y\<close> lies in
+    \<open>y\<close>'s period block, \<open>(p-j\<^sub>0) div w = (y-j\<^sub>0) div w\<close>).  Empirically the non-prefix
+    case is ALWAYS same-block (38856/38856), so \<open>sblk\<close> is the sole remaining
+    obligation of the full base-back; it is the d1pos argmin-coincidence brick.\<close>
+
+lemma operCA_tiling_hpN_le0baseN_full:
+  assumes L: "1 < Lng N"
+    and notzero: "\<not> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0)"
+    and hp: "hasParent N (idx1 N (Lng N - 1)) (Lng N - 1)"
+    and i1z: "idx1 N (Lng N - 1) = 1"
+    and j0lt: "parent N (idx1 N (Lng N - 1)) (Lng N - 1) < Lng N - 1"
+    and ge: "parent N (idx1 N (Lng N - 1)) (Lng N - 1) \<le> y"
+    and hpny: "hasParent ((N::pairseq)[n]) 1 y"
+    and sblk: "\<not> parent ((N::pairseq)[n]) 1 y < parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+               \<Longrightarrow> (parent ((N::pairseq)[n]) 1 y - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                     div (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                   = (y - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                     div (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1))"
+  shows "le0 N (if parent ((N::pairseq)[n]) 1 y < parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+               then parent ((N::pairseq)[n]) 1 y
+               else parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                 + (parent ((N::pairseq)[n]) 1 y - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                    mod (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)))
+              (parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                 + (y - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                    mod (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)))"
+proof (cases "parent ((N::pairseq)[n]) 1 y < parent N (idx1 N (Lng N - 1)) (Lng N - 1)")
+  case True
+  show ?thesis
+    by (rule operCA_tiling_hpN_le0baseN_prefix[OF L notzero hp i1z j0lt ge hpny True])
+next
+  case False
+  hence pge: "parent N (idx1 N (Lng N - 1)) (Lng N - 1) \<le> parent ((N::pairseq)[n]) 1 y"
+    by simp
+  have sblk': "(parent ((N::pairseq)[n]) 1 y - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                 div (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+               = (y - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                 div (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1))"
+    using sblk False by simp
+  show ?thesis
+    by (rule operCA_tiling_hpN_le0baseN_sameblock[OF L notzero hp i1z j0lt ge hpny pge sblk'])
+qed
+
+
+text \<open>§6.7 hpN reduced to the same-block residual \<open>sblk\<close> only (Front B, \<open>i\<^sub>1=1\<close>):
+  feeding the assembled base-back @{thm [source] operCA_tiling_hpN_le0baseN_full}
+  into @{thm [source] operCA_tiling_hpN_via_le0baseN} yields the hpN conclusion
+  \<open>hasParent N 1 (base y)\<close>, with the PREFIX branch fully discharged and the only
+  remaining hypothesis the non-prefix same-block fact \<open>sblk\<close>.\<close>
+
+lemma operCA_tiling_hpN_reduced_sblk:
+  assumes L: "1 < Lng N"
+    and notzero: "\<not> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0)"
+    and hp: "hasParent N (idx1 N (Lng N - 1)) (Lng N - 1)"
+    and i1z: "idx1 N (Lng N - 1) = 1"
+    and j0lt: "parent N (idx1 N (Lng N - 1)) (Lng N - 1) < Lng N - 1"
+    and ge: "parent N (idx1 N (Lng N - 1)) (Lng N - 1) \<le> y"
+    and hpny: "hasParent ((N::pairseq)[n]) 1 y"
+    and sblk: "\<not> parent ((N::pairseq)[n]) 1 y < parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+               \<Longrightarrow> (parent ((N::pairseq)[n]) 1 y - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                     div (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                   = (y - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                     div (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1))"
+  shows "hasParent N 1 (parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                + (y - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                   mod (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)))"
+proof -
+  have le0baseN: "le0 N (if parent ((N::pairseq)[n]) 1 y < parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                         then parent ((N::pairseq)[n]) 1 y
+                         else parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                           + (parent ((N::pairseq)[n]) 1 y - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                              mod (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)))
+                        (parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                           + (y - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                              mod (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)))"
+    by (rule operCA_tiling_hpN_le0baseN_full[OF L notzero hp i1z j0lt ge hpny sblk])
+  show ?thesis
+    by (rule operCA_tiling_hpN_via_le0baseN[OF L notzero hp i1z j0lt ge hpny le0baseN])
+qed
 
 
 end
