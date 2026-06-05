@@ -55844,4 +55844,154 @@ proof -
 qed
 
 
+text \<open>6.7 ASSEMBLY (attempt T) -- the spsy mod-inequality for one standard \<open>N\<close>,
+  taking exactly the two residuals \<open>tree\<close> (RESIDUAL 1) and \<open>bridge\<close> (RESIDUAL 2)
+  as named hypotheses.  This is the composition node: it shows that closing both
+  residuals (GREEN, for \<open>N \<in> ST_PS\<close>) discharges the per-\<open>N\<close> instance of the
+  \<open>spsy\<close> premise of @{thm [source] m_6_7_standard_reduced_via_spsy_valley} /
+  @{thm [source] m_6_5_ST_PS_imp_RedCondA_via_spsy_valley}, hence (with the FREE
+  \<open>valley\<close>) makes the whole cascade unconditional.
+
+  Route (no circular citation: cites only @{thm [source] spsy_keystone_via_Q},
+  @{thm [source] Qprime_via_tree}, and the two residual hypotheses):
+    \<^item> \<open>w = 1\<close>: the LEFT @{text Q}-disjunct is immediate.
+    \<^item> \<open>w > 1\<close>: set \<open>s\<^sub>y = (y-j\<^sub>0) mod w\<close>.  Here \<open>s\<^sub>y > 0\<close> is FORCED: the keystone
+      @{thm [source] spsy_keystone_via_Q} only ever uses the RIGHT @{text Q}
+      disjunct \<^emph>\<open>strictly\<close> (it derives \<open>entry N 1 j\<^sub>0 < entry N 1 (j\<^sub>0+s\<^sub>y)\<close> from
+      \<open>Q \<and> w>1\<close>), so a true \<open>Q\<close> under \<open>w>1\<close> requires \<open>s\<^sub>y > 0\<close> -- equivalently, the
+      arising \<open>y\<close> (which has a row-1 parent in \<open>N[n]\<close>) is never a period start.
+      That non-degeneracy \<open>s\<^sub>y > 0\<close> is supplied here as the named premise
+      @{text sy_pos} (empirically 0 counterexamples on genuine \<open>ST_PS\<close>:
+      \<open>sy=0 \<and> w>1\<close> never co-occurs with \<open>hasParent (N[n]) 1 y\<close> and \<open>p \<ge> j\<^sub>0\<close>,
+      /tmp/_sy0.py 0/402).  With \<open>s\<^sub>y > 0\<close>, \<open>bridge\<close> gives
+      \<open>hasParent N 1 (j\<^sub>0+s\<^sub>y)\<close> and \<open>parent N 1 (j\<^sub>0+s\<^sub>y) \<ge> j\<^sub>0\<close>; then
+      @{thm [source] Qprime_via_tree} at \<open>z = j\<^sub>0+s\<^sub>y\<close> (its \<open>tree\<close> premise is
+      RESIDUAL 1) yields \<open>entry N 1 j\<^sub>0 < entry N 1 (j\<^sub>0+s\<^sub>y)\<close>, the RIGHT
+      @{text Q}-disjunct.
+  Then @{thm [source] spsy_keystone_via_Q} consumes \<open>Q\<close>.\<close>
+
+lemma spsy_keystone_via_tree_bridge:
+  fixes N :: pairseq
+  assumes L: "1 < Lng N"
+    and notzero: "\<not> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0)"
+    and hp: "hasParent N (idx1 N (Lng N - 1)) (Lng N - 1)"
+    and i1z: "idx1 N (Lng N - 1) = 1"
+    and j0lt: "parent N (idx1 N (Lng N - 1)) (Lng N - 1) < Lng N - 1"
+    and ge: "parent N (idx1 N (Lng N - 1)) (Lng N - 1) \<le> y"
+    and hpny: "hasParent ((N::pairseq)[n]) 1 y"
+    and pge: "parent N (idx1 N (Lng N - 1)) (Lng N - 1) \<le> parent ((N::pairseq)[n]) 1 y"
+    \<comment> \<open>non-degeneracy of the arising \<open>y\<close> when \<open>w > 1\<close> (forced; see header)\<close>
+    and sy_pos: "1 < Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                 \<Longrightarrow> (y - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                       mod (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)) > 0"
+    \<comment> \<open>RESIDUAL 1 (tree), specialised to this \<open>N\<close> with \<open>j\<^sub>0 = parent N 1 (Lng N-1)\<close>,
+       \<open>j\<^sub>1 = Lng N - 1\<close>\<close>
+    and tree: "\<And>z. parent N 1 (Lng N - 1) < z \<Longrightarrow> z < Lng N - 1
+                  \<Longrightarrow> hasParent N 1 z
+                  \<Longrightarrow> parent N 1 z \<ge> parent N 1 (Lng N - 1)
+                  \<Longrightarrow> parent N 1 z > parent N 1 (Lng N - 1)
+                  \<Longrightarrow> hasParent N 1 (parent N 1 z)
+                      \<and> parent N 1 (parent N 1 z) \<ge> parent N 1 (Lng N - 1)"
+    \<comment> \<open>RESIDUAL 2 (bridge), specialised to this \<open>N,n,y\<close>; only the \<open>s\<^sub>y > 0\<close>
+       instance is needed\<close>
+    and bridge: "(y - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                      mod (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)) > 0
+                 \<Longrightarrow> hasParent N 1 (parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                        + (y - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                           mod (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)))
+                     \<and> parent N 1 (parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                        + (y - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                           mod (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)))
+                       \<ge> parent N (idx1 N (Lng N - 1)) (Lng N - 1)"
+  shows "(parent ((N::pairseq)[n]) 1 y - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+            mod (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+        \<le> (y - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+            mod (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1))"
+proof -
+  let ?j1 = "Lng N - 1"  let ?i1 = "idx1 N ?j1"  let ?j0 = "parent N ?i1 ?j1"
+  let ?w = "?j1 - ?j0"
+  let ?sy = "(y - ?j0) mod ?w"
+  have j0eq1: "?j0 = parent N 1 ?j1" using i1z by simp
+  \<comment> \<open>the @{text Q}-disjunction\<close>
+  have Q: "?w = 1 \<or> entry N 1 ?j0 < entry N 1 (?j0 + ?sy)"
+  proof (cases "?w = 1")
+    case True thus ?thesis by simp
+  next
+    case False
+    hence w1: "1 < ?w" using j0lt by linarith
+    have sy0: "?sy > 0" using sy_pos w1 by simp
+    have sygt: "0 < ?sy" using sy0 by simp
+    have hpzpge: "hasParent N 1 (?j0 + ?sy) \<and> parent N 1 (?j0 + ?sy) \<ge> ?j0"
+      using bridge sygt by blast
+    have hpz: "hasParent N 1 (?j0 + ?sy)" using hpzpge by simp
+    have pgez: "parent N 1 (?j0 + ?sy) \<ge> ?j0" using hpzpge by simp
+    have zlo: "?j0 < ?j0 + ?sy" using sygt by simp
+    have syw: "?sy < ?w" using w1 by simp
+    have j0w1: "?j0 + ?w = ?j1" using j0lt by simp
+    have zhi: "?j0 + ?sy < ?j1" using syw j0w1 by linarith
+    \<comment> \<open>specialise the keystone's \<open>j\<^sub>0,j\<^sub>1\<close> to the \<open>parent N 1 (Lng N-1)\<close> form\<close>
+    have zlo': "parent N 1 ?j1 < ?j0 + ?sy" using zlo j0eq1 by simp
+    have zhi': "?j0 + ?sy < Lng N - 1" using zhi by simp
+    have pgez': "parent N 1 (?j0 + ?sy) \<ge> parent N 1 ?j1" using pgez j0eq1 by simp
+    have strict: "entry N 1 (parent N 1 ?j1) < entry N 1 (?j0 + ?sy)"
+      by (rule Qprime_via_tree[OF tree zlo' zhi' hpz pgez'])
+    have "entry N 1 ?j0 < entry N 1 (?j0 + ?sy)" using strict j0eq1 by simp
+    thus ?thesis by blast
+  qed
+  show ?thesis
+    by (rule spsy_keystone_via_Q[OF L notzero hp i1z j0lt ge hpny pge Q])
+qed
+
+
+text \<open>6.7 RESIDUAL 1 (tree) -- DIAG base case (attempt T), GREEN and VACUOUS.
+
+  For \<open>N = diagSeq u v\<close> the row-1 ancestor tree of the tail is trivial: the row-1
+  predecessor of the last index \<open>j\<^sub>1 = Lng N - 1\<close> is the IMMEDIATELY preceding
+  index \<open>j\<^sub>1 - 1\<close> (the diagonal increases row-1 by exactly \<open>1\<close> each step), so
+  \<open>j\<^sub>0 = parent N 1 j\<^sub>1 = j\<^sub>1 - 1\<close> and the period \<open>w = j\<^sub>1 - j\<^sub>0 = 1\<close>.  Hence the
+  strict window \<open>j\<^sub>0 < z < j\<^sub>1\<close> is EMPTY and the tree premises \<open>j\<^sub>0 < z\<close>, \<open>z < j\<^sub>1\<close>
+  are contradictory; the conclusion holds vacuously.  This is the exact \<open>ST_PS.induct\<close>
+  base of @{text tree_wellformed} (RESIDUAL 1); the \<open>oper\<close> step (\<open>N = M[n]\<close>) is the
+  remaining open part.
+
+  Non-circular: uses only @{thm [source] nextR1_diagSeq} / @{thm [source] nextR1_unique}
+  (the same diagonal facts as @{thm [source] Qprime_diag}); no spsy, sblk, via_spsy,
+  RedCondA/RedCondB, oper.\<close>
+
+lemma tree_wellformed_diag:
+  fixes u v :: nat
+  assumes uv: "u \<le> v"
+    and L: "1 < Lng (diagSeq u v)"
+    and i1z: "idx1 (diagSeq u v) (Lng (diagSeq u v) - 1) = 1"
+    and hp: "hasParent (diagSeq u v) 1 (Lng (diagSeq u v) - 1)"
+    and zlo: "parent (diagSeq u v) 1 (Lng (diagSeq u v) - 1) < z"
+    and zhi: "z < Lng (diagSeq u v) - 1"
+    and hpz: "hasParent (diagSeq u v) 1 z"
+    and pge: "parent (diagSeq u v) 1 z \<ge> parent (diagSeq u v) 1 (Lng (diagSeq u v) - 1)"
+    and pgt: "parent (diagSeq u v) 1 z > parent (diagSeq u v) 1 (Lng (diagSeq u v) - 1)"
+  shows "hasParent (diagSeq u v) 1 (parent (diagSeq u v) 1 z)
+         \<and> parent (diagSeq u v) 1 (parent (diagSeq u v) 1 z)
+             \<ge> parent (diagSeq u v) 1 (Lng (diagSeq u v) - 1)"
+proof -
+  let ?N = "diagSeq u v"  let ?j1 = "Lng ?N - 1"
+  have lenN: "Lng ?N = Suc v - u" by simp
+  have j1eq: "?j1 = v - u" using lenN uv by simp
+  have j1pos: "0 < ?j1" using L by linarith
+  \<comment> \<open>the row-1 predecessor of \<open>j\<^sub>1\<close> is \<open>j\<^sub>1 - 1\<close> (diagonal increases by 1)\<close>
+  have suc: "Suc (?j1 - 1) = ?j1" using j1pos by simp
+  have rng: "Suc (?j1 - 1) < Suc v - u" using suc j1eq j1pos by linarith
+  have nR: "nextR ?N 1 (?j1 - 1) (Suc (?j1 - 1))" by (rule nextR1_diagSeq[OF rng])
+  have nRj1: "nextR ?N 1 (?j1 - 1) ?j1" using nR suc by simp
+  have parR: "nextR ?N 1 (parent ?N 1 ?j1) ?j1"
+    using hp unfolding hasParent_def parent_def by (rule theI')
+  have peq: "parent ?N 1 ?j1 = ?j1 - 1" by (rule nextR1_unique[OF parR nRj1])
+  \<comment> \<open>so the tail period \<open>w = j\<^sub>1 - (j\<^sub>1-1) = 1\<close>, and the window \<open>j\<^sub>0 < z < j\<^sub>1\<close> is empty\<close>
+  have "parent ?N 1 ?j1 < z" using zlo .
+  hence "?j1 - 1 < z" using peq by simp
+  hence "?j1 \<le> z" using j1pos by linarith
+  hence False using zhi by linarith
+  thus ?thesis by blast
+qed
+
+
 end
