@@ -49386,4 +49386,164 @@ proof -
 qed
 
 
+subsection \<open>Front B (tag pss-stps-condB): \<open>ST_PS \<Longrightarrow> RedCondB\<close> bricks and assembly\<close>
+
+text \<open>\<open>Pred\<close> preserves \<open>RedCondB\<close>.  A row-0 parentless column \<open>j1' \<le> Lng(Pred M)-1
+  = Lng M - 2\<close> of \<open>Pred M\<close> is, by @{thm [source] kfwd_hasParent_Pred_iff}, also
+  row-0 parentless in \<open>M\<close>, and \<open>j1' \<le> Lng M - 1\<close>; so \<open>RedCondB M\<close> gives
+  \<open>entry M 0 j1' = entry M 1 j1'\<close>, and entries agree below the last column
+  (@{thm [source] kfwd_entry_Pred_eq}).  For \<open>Lng M \<le> 1\<close>, \<open>Pred M = M\<close>.\<close>
+
+lemma RedCondB_Pred:
+  assumes MT: "M \<in> T_PS" and condB: "RedCondB M"
+  shows "RedCondB (Pred M)"
+proof (cases "Lng M \<le> 1")
+  case True
+  thus ?thesis using condB by (simp add: Pred_def)
+next
+  case False
+  hence L: "1 < Lng M" by simp
+  have LP: "Lng (Pred M) = Lng M - 1" using L by (simp add: Pred_def length_butlast)
+  show ?thesis
+    unfolding RedCondB_def
+  proof (intro allI impI)
+    fix j1' assume H: "\<not> hasParent (Pred M) 0 j1' \<and> j1' \<le> Lng (Pred M) - 1"
+    hence noPP: "\<not> hasParent (Pred M) 0 j1'" and hle: "j1' \<le> Lng (Pred M) - 1" by simp_all
+    have jle: "j1' \<le> Lng M - 2" using hle LP by linarith
+    have noP: "\<not> hasParent M 0 j1'"
+      using kfwd_hasParent_Pred_iff[OF MT L _ jle] noPP by simp
+    have hleM: "j1' \<le> Lng M - 1" using jle by linarith
+    have relB: "entry M 0 j1' = entry M 1 j1'"
+      using condB noP hleM unfolding RedCondB_def by blast
+    have e0: "entry (Pred M) 0 j1' = entry M 0 j1'" by (rule kfwd_entry_Pred_eq[OF L jle])
+    have e1: "entry (Pred M) 1 j1' = entry M 1 j1'" by (rule kfwd_entry_Pred_eq[OF L jle])
+    show "entry (Pred M) 0 j1' = entry (Pred M) 1 j1'" using relB e0 e1 by simp
+  qed
+qed
+
+text \<open>In the NON-TILING branches of \<open>oper\<close> (\<open>Lng M = 1\<close>, last column \<open>(0,0)\<close>, or
+  no unique row-\<open>i\<^sub>1\<close> parent of the last column), \<open>M[n] \<in> {M, Pred M}\<close>, so
+  \<open>RedCondB\<close> is preserved by @{thm [source] RedCondB_Pred} (mirror of
+  @{thm [source] RedCondA_oper_nontiling}).\<close>
+
+lemma RedCondB_oper_nontiling:
+  assumes MT: "M \<in> T_PS" and condB: "RedCondB M" and n1: "1 \<le> n"
+    and nontile: "Lng M - 1 = 0
+                  \<or> (entry M 0 (Lng M - 1) = 0 \<and> entry M 1 (Lng M - 1) = 0)
+                  \<or> \<not> hasParent M (idx1 M (Lng M - 1)) (Lng M - 1)"
+  shows "RedCondB ((M::pairseq)[n])"
+proof -
+  have "(M::pairseq)[n] = M \<or> (M::pairseq)[n] = Pred M"
+    using nontile by (auto simp: oper_def Let_def)
+  thus ?thesis
+  proof
+    assume "(M::pairseq)[n] = M"
+    thus ?thesis using condB by simp
+  next
+    assume "(M::pairseq)[n] = Pred M"
+    thus ?thesis using RedCondB_Pred[OF MT condB] by simp
+  qed
+qed
+
+text \<open>§6.7 standard \<open>\<Longrightarrow>\<close> \<open>RedCondA \<and> RedCondB\<close>, by \<open>ST_PS.induct\<close>.
+  The \<open>diag\<close> base is the GREEN @{thm [source] kfwd_condAB_diagSeq}.  The \<open>oper\<close>
+  step splits on the §5.3 case analysis: the three degenerate (NON-TILING)
+  branches preserve \<open>RedCondA\<close>/\<open>RedCondB\<close> via @{thm [source] RedCondA_oper_nontiling}
+  / @{thm [source] RedCondB_oper_nontiling} from the IH; the genuine TILING branch
+  is supplied by the explicit hypotheses \<open>operCA\<close>/\<open>operCB\<close> (= Front A's tiling
+  bricks), which receive the IH facts \<open>RedCondA M \<and> RedCondB M\<close>.  Empirically
+  (red_model.py, 285 ST_PS forms) both \<open>RedCondA\<close> and \<open>RedCondB\<close> hold with 0 fail.\<close>
+
+lemma m_6_7_standard_RedCondAB:
+  assumes Mst: "M \<in> ST_PS"
+    and operCA: "\<And>N n. \<lbrakk>N \<in> ST_PS; RedCondA N; RedCondB N; 1 \<le> n;
+                   \<not> (Lng N - 1 = 0
+                      \<or> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0)
+                      \<or> \<not> hasParent N (idx1 N (Lng N - 1)) (Lng N - 1))\<rbrakk>
+                  \<Longrightarrow> RedCondA ((N::pairseq)[n])"
+    and operCB: "\<And>N n. \<lbrakk>N \<in> ST_PS; RedCondA N; RedCondB N; 1 \<le> n;
+                   \<not> (Lng N - 1 = 0
+                      \<or> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0)
+                      \<or> \<not> hasParent N (idx1 N (Lng N - 1)) (Lng N - 1))\<rbrakk>
+                  \<Longrightarrow> RedCondB ((N::pairseq)[n])"
+  shows "RedCondA M \<and> RedCondB M"
+  using Mst
+proof (induct M rule: ST_PS.induct)
+  case (diag u v)
+  thus ?case by (rule kfwd_condAB_diagSeq)
+next
+  case (oper M n)
+  have MST: "M \<in> ST_PS" by (rule oper.hyps(1))
+  have MT: "M \<in> T_PS" by (rule ST_PS_T_PS[OF MST])
+  have condA: "RedCondA M" and condB: "RedCondB M" using oper.hyps(2) by simp_all
+  have n1: "1 \<le> n" by (rule oper.hyps(3))
+  let ?nontile = "Lng M - 1 = 0
+                  \<or> (entry M 0 (Lng M - 1) = 0 \<and> entry M 1 (Lng M - 1) = 0)
+                  \<or> \<not> hasParent M (idx1 M (Lng M - 1)) (Lng M - 1)"
+  show ?case
+  proof (cases ?nontile)
+    case True
+    have "RedCondA ((M::pairseq)[n])"
+      by (rule RedCondA_oper_nontiling[OF MT condA n1 True])
+    moreover have "RedCondB ((M::pairseq)[n])"
+      by (rule RedCondB_oper_nontiling[OF MT condB n1 True])
+    ultimately show ?thesis by blast
+  next
+    case False
+    have "RedCondA ((M::pairseq)[n])"
+      by (rule operCA[OF MST condA condB n1 False])
+    moreover have "RedCondB ((M::pairseq)[n])"
+      by (rule operCB[OF MST condA condB n1 False])
+    ultimately show ?thesis by blast
+  qed
+qed
+
+text \<open>§6.7 \<open>ST\<^sub>PS \<subseteq> RT\<^sub>PS\<close> (= mechanized @{thm [source] p_6_7_standard_reduced}).
+  Every standard form is in \<open>T\<^sub>PS\<close> (@{thm [source] ST_PS_T_PS}) and satisfies
+  \<open>RedCondA \<and> RedCondB\<close> (@{thm [source] m_6_7_standard_RedCondAB}), so by the §6.6
+  keystone @{thm [source] m_6_6_reduced_iff_cond} it is reduced.  Conditional on
+  the \<open>oper\<close>-tiling bricks \<open>operCA\<close>/\<open>operCB\<close> (Front A).\<close>
+
+lemma m_6_7_standard_reduced:
+  assumes operCA: "\<And>N n. \<lbrakk>N \<in> ST_PS; RedCondA N; RedCondB N; 1 \<le> n;
+                   \<not> (Lng N - 1 = 0
+                      \<or> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0)
+                      \<or> \<not> hasParent N (idx1 N (Lng N - 1)) (Lng N - 1))\<rbrakk>
+                  \<Longrightarrow> RedCondA ((N::pairseq)[n])"
+    and operCB: "\<And>N n. \<lbrakk>N \<in> ST_PS; RedCondA N; RedCondB N; 1 \<le> n;
+                   \<not> (Lng N - 1 = 0
+                      \<or> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0)
+                      \<or> \<not> hasParent N (idx1 N (Lng N - 1)) (Lng N - 1))\<rbrakk>
+                  \<Longrightarrow> RedCondB ((N::pairseq)[n])"
+  shows "ST_PS \<subseteq> RT_PS"
+proof
+  fix M assume M: "M \<in> ST_PS"
+  have MT: "M \<in> T_PS" by (rule ST_PS_T_PS[OF M])
+  have AB: "RedCondA M \<and> RedCondB M"
+    by (rule m_6_7_standard_RedCondAB[OF M operCA operCB])
+  show "M \<in> RT_PS" using m_6_6_reduced_iff_cond[OF MT] AB by blast
+qed
+
+text \<open>The \<open>stdCA\<close> residual of Front A's §6.5 assembly: \<open>M \<in> ST_PS \<Longrightarrow> RedCondA M\<close>,
+  immediate from @{thm [source] m_6_7_standard_RedCondAB} (conditional on the
+  same \<open>oper\<close>-tiling bricks).\<close>
+
+lemma m_6_5_ST_PS_imp_RedCondA:
+  assumes M: "M \<in> ST_PS"
+    and operCA: "\<And>N n. \<lbrakk>N \<in> ST_PS; RedCondA N; RedCondB N; 1 \<le> n;
+                   \<not> (Lng N - 1 = 0
+                      \<or> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0)
+                      \<or> \<not> hasParent N (idx1 N (Lng N - 1)) (Lng N - 1))\<rbrakk>
+                  \<Longrightarrow> RedCondA ((N::pairseq)[n])"
+    and operCB: "\<And>N n. \<lbrakk>N \<in> ST_PS; RedCondA N; RedCondB N; 1 \<le> n;
+                   \<not> (Lng N - 1 = 0
+                      \<or> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0)
+                      \<or> \<not> hasParent N (idx1 N (Lng N - 1)) (Lng N - 1))\<rbrakk>
+                  \<Longrightarrow> RedCondB ((N::pairseq)[n])"
+  shows "RedCondA M"
+  using m_6_7_standard_RedCondAB[OF M operCA operCB] by simp
+
+
+
+
 end
