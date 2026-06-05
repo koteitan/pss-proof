@@ -55706,4 +55706,142 @@ proof -
 qed
 
 
+text \<open>6.7 Qprime -- the pure-N crux of the whole 6.5/6.7 cascade, attempt R.
+
+  The keystone @{thm [source] spsy_keystone_via_Q} reduces the entire spsy
+  obligation to the base-sequence fact @{text Q}:
+  \<open>w = 1 \<or> entry N 1 j\<^sub>0 < entry N 1 (j\<^sub>0 + (y-j\<^sub>0) mod w)\<close>.  For the arising
+  @{text y} this in turn (via the bridge: @{text "hasParent N 1 (j\<^sub>0+s\<^sub>y)"},
+  \<open>parent N 1 (j\<^sub>0+s\<^sub>y) \<ge> j\<^sub>0\<close>) is exactly @{text Qprime} below, instantiated at
+  @{text "z = j\<^sub>0+s\<^sub>y"}.
+
+  @{text Qprime} is proved by @{text ST_PS.induct}.  Its @{text diag} base
+  (this lemma, @{text Qprime_diag}) is VACUOUS: for \<open>N = diagSeq u v\<close> the row-1
+  parent of the last index \<open>j\<^sub>1 = Lng N - 1\<close> is the IMMEDIATELY preceding index
+  \<open>j\<^sub>1 - 1\<close> (the diagonal is row-1 strictly increasing by 1, so the unique row-1
+  predecessor of \<open>j\<^sub>1\<close> is \<open>j\<^sub>1 - 1\<close>).  Hence the period \<open>w = j\<^sub>1 - (j\<^sub>1-1) = 1\<close>,
+  the strict @{text "j\<^sub>0 < z < j\<^sub>1"} window is empty, and the Qprime premise
+  \<open>j\<^sub>0 < z < Lng N - 1\<close> is contradictory.  Non-circular: uses only
+  @{thm [source] nextR1_diagSeq} / @{thm [source] nextR1_unique}, no spsy / sblk /
+  via_spsy / RedCond.\<close>
+
+lemma Qprime_diag:
+  fixes u v :: nat
+  assumes uv: "u \<le> v"
+    and L: "1 < Lng (diagSeq u v)"
+    and i1z: "idx1 (diagSeq u v) (Lng (diagSeq u v) - 1) = 1"
+    and hp: "hasParent (diagSeq u v) 1 (Lng (diagSeq u v) - 1)"
+    and zlo: "parent (diagSeq u v) 1 (Lng (diagSeq u v) - 1) < z"
+    and zhi: "z < Lng (diagSeq u v) - 1"
+    and w1: "1 < Lng (diagSeq u v) - 1
+                 - parent (diagSeq u v) 1 (Lng (diagSeq u v) - 1)"
+  shows "entry (diagSeq u v) 1
+              (parent (diagSeq u v) 1 (Lng (diagSeq u v) - 1)) < entry (diagSeq u v) 1 z"
+proof -
+  let ?N = "diagSeq u v"
+  let ?j1 = "Lng ?N - 1"
+  \<comment> \<open>\<open>Lng (diagSeq u v) = Suc v - u\<close>, and \<open>j\<^sub>1 = v - u\<close>\<close>
+  have lenN: "Lng ?N = Suc v - u" by simp
+  have j1eq: "?j1 = v - u" using lenN uv by simp
+  \<comment> \<open>\<open>j\<^sub>1 \<ge> 1\<close> from \<open>1 < Lng N\<close>\<close>
+  have j1pos: "0 < ?j1" using L by linarith
+  \<comment> \<open>the row-1 predecessor of \<open>j\<^sub>1\<close> is \<open>j\<^sub>1 - 1\<close> (diagonal increases by 1)\<close>
+  have suc: "Suc (?j1 - 1) = ?j1" using j1pos by simp
+  have rng: "Suc (?j1 - 1) < Suc v - u" using suc j1eq j1pos by linarith
+  have nR: "nextR ?N 1 (?j1 - 1) (Suc (?j1 - 1))"
+    by (rule nextR1_diagSeq[OF rng])
+  have nRj1: "nextR ?N 1 (?j1 - 1) ?j1" using nR suc by simp
+  \<comment> \<open>so the parent is exactly \<open>j\<^sub>1 - 1\<close> by uniqueness\<close>
+  have parR: "nextR ?N 1 (parent ?N 1 ?j1) ?j1"
+    using hp unfolding hasParent_def parent_def by (rule theI')
+  have peq: "parent ?N 1 ?j1 = ?j1 - 1" by (rule nextR1_unique[OF parR nRj1])
+  \<comment> \<open>hence the period \<open>w = j\<^sub>1 - (j\<^sub>1-1) = 1\<close>, contradicting \<open>w > 1\<close>\<close>
+  have weq: "?j1 - parent ?N 1 ?j1 = 1" using peq j1pos by linarith
+  show ?thesis using w1 weq by simp
+qed
+
+
+text \<open>6.7 Qprime CORE -- the genuinely-new framing (attempt R).
+
+  Empirically (red_model, 192/0 on standard N; 41 indirect instances all
+  closing): the pure-N fact @{text Qprime}
+    \<open>j\<^sub>0 < z < j\<^sub>1 \<Longrightarrow> hasParent N 1 z \<Longrightarrow> parent N 1 z \<ge> j\<^sub>0
+        \<Longrightarrow> entry N 1 j\<^sub>0 < entry N 1 z\<close>
+  (\<open>j\<^sub>0 = parent N 1 j\<^sub>1\<close>, \<open>j\<^sub>1 = Lng N - 1\<close>) is NOT a tiling/oper fact: it follows
+  by a PURE STRONG INDUCTION ON @{text z} inside a fixed @{text N}, with NO
+  @{text ST_PS.induct}, NO periodicity, NO oper step.
+
+  The recursion: let \<open>p = parent N 1 z\<close>.  The row-1 parent edge \<open>nextR N 1 p z\<close>
+  gives the base inequality \<open>entry N 1 p < entry N 1 z\<close> directly (def. of
+  @{const nextrel1}).
+    \<^item> if \<open>p = j\<^sub>0\<close>: \<open>entry N 1 j\<^sub>0 < entry N 1 z\<close> immediately.
+    \<^item> if \<open>p > j\<^sub>0\<close>: \<open>p\<close> is a SMALLER @{text Qprime} instance (\<open>j\<^sub>0 < p < z < j\<^sub>1\<close>,
+      @{text "hasParent N 1 p"}, \<open>parent N 1 p \<ge> j\<^sub>0\<close>), so the IH gives
+      \<open>entry N 1 j\<^sub>0 < entry N 1 p\<close>; chain with the base edge.
+
+  Empirically verified load-bearing facts for the \<open>p > j\<^sub>0\<close> branch (41/41 on
+  standard N, fA=fB=fC=0):
+    (A) @{text "hasParent N 1 p"}   (B) \<open>parent N 1 p \<ge> j\<^sub>0\<close>   (C) \<open>p < z\<close>.
+  (C) is structural (parent precedes child).  (A),(B) are the standardness
+  carrier and are the ONLY residual: they say the row-1 ancestor tree above
+  \<open>j\<^sub>0\<close> is well-formed (every row-1 reachable interior point of \<open>(j\<^sub>0,j\<^sub>1)\<close> has a
+  row-1 parent, itself \<open>\<ge> j\<^sub>0\<close>).  This lemma proves @{text Qprime} GREEN,
+  taking exactly (A),(B) as the named hypothesis @{text tree}.  The induction
+  skeleton is unconditional; the residual is isolated to @{text tree}.
+
+  Non-circular: uses only @{const nextrel1} / @{const parent} / @{const nextR}
+  and the strong induction.  No spsy, sblk, via_spsy, RedCond, oper, diag.\<close>
+
+lemma Qprime_via_tree:
+  fixes N :: pairseq
+  defines "j1 \<equiv> Lng N - 1"  and "j0 \<equiv> parent N 1 (Lng N - 1)"
+  assumes tree: "\<And>z. j0 < z \<Longrightarrow> z < j1 \<Longrightarrow> hasParent N 1 z
+                    \<Longrightarrow> parent N 1 z \<ge> j0 \<Longrightarrow> parent N 1 z > j0
+                    \<Longrightarrow> hasParent N 1 (parent N 1 z)
+                        \<and> parent N 1 (parent N 1 z) \<ge> j0"
+    and zlo: "j0 < z"  and zhi: "z < j1"
+    and hpz: "hasParent N 1 z"  and pge: "parent N 1 z \<ge> j0"
+  shows "entry N 1 j0 < entry N 1 z"
+proof -
+  \<comment> \<open>strong induction on the endpoint \<open>z\<close>; the four side-conditions travel along\<close>
+  have main: "\<And>z. j0 < z \<Longrightarrow> z < j1 \<Longrightarrow> hasParent N 1 z \<Longrightarrow> parent N 1 z \<ge> j0
+                  \<Longrightarrow> entry N 1 j0 < entry N 1 z"
+  proof -
+    fix z0 :: nat
+    show "j0 < z0 \<Longrightarrow> z0 < j1 \<Longrightarrow> hasParent N 1 z0 \<Longrightarrow> parent N 1 z0 \<ge> j0
+              \<Longrightarrow> entry N 1 j0 < entry N 1 z0"
+    proof (induction z0 rule: less_induct)
+      case (less z0)
+      let ?p = "parent N 1 z0"
+      \<comment> \<open>the row-1 parent edge of \<open>z0\<close>\<close>
+      have parR: "nextR N 1 ?p z0"
+        using less.prems(3) unfolding hasParent_def parent_def by (rule theI')
+      have nr1: "nextrel1 N ?p z0" using parR by (simp add: nextR_def)
+      have baseedge: "entry N 1 ?p < entry N 1 z0"
+        using nr1 by (simp add: nextrel1_def)
+      have plt: "?p < z0" using nr1 by (simp add: nextrel1_def)
+      show ?case
+      proof (cases "?p = j0")
+        case True
+        show ?thesis using baseedge True by simp
+      next
+        case False
+        have pgt: "?p > j0" using less.prems(4) False by linarith
+        \<comment> \<open>(A),(B): the residual tree facts give \<open>p\<close> a valid row-1 parent \<open>\<ge> j\<^sub>0\<close>\<close>
+        have AB: "hasParent N 1 ?p \<and> parent N 1 ?p \<ge> j0"
+          using tree[OF less.prems(1) less.prems(2) less.prems(3) less.prems(4) pgt] .
+        have hpp: "hasParent N 1 ?p" using AB by simp
+        have ppge: "parent N 1 ?p \<ge> j0" using AB by simp
+        \<comment> \<open>\<open>p\<close> is a strictly smaller @{text Qprime} instance: \<open>j\<^sub>0 < p < z0 < j\<^sub>1\<close>\<close>
+        have pj1: "?p < j1" using plt less.prems(2) by linarith
+        have IH: "entry N 1 j0 < entry N 1 ?p"
+          using less.IH[OF plt pgt pj1 hpp ppge] .
+        show ?thesis using IH baseedge by simp
+      qed
+    qed
+  qed
+  show ?thesis using main[OF zlo zhi hpz pge] .
+qed
+
+
 end
