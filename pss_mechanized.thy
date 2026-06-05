@@ -50023,6 +50023,371 @@ proof -
 qed
 
 
+text \<open>§6.7 oper-tiling brick (Front A, ROW 0): \<open>i\<^sub>1\<close>-AGNOSTIC STRICT period floor.
+  For a NON-trivial interior offset \<open>0 < s < w\<close> the row-0 base value strictly
+  exceeds the period start: \<open>entry N 0 j\<^sub>0 < entry N 0 (j\<^sub>0 + s)\<close>.  Mirrors
+  @{thm [source] oper_d1pos_strict_period_floor} but drops the \<open>idx1 = 1\<close>
+  assumption, deriving \<open>leR N 0 j\<^sub>0 j\<^sub>1\<close> directly from the (any-row) parent
+  relation @{thm [source] poper_nextR_imp_le0}.  Empirically 0-fail
+  (/tmp/frontA_floor.py: i1=0 4/4, i1=1 31/31).\<close>
+
+lemma oper_gen_strict_period_floor:
+  fixes N :: pairseq
+  assumes hp: "hasParent N (idx1 N (Lng N - 1)) (Lng N - 1)"
+    and j0lt: "parent N (idx1 N (Lng N - 1)) (Lng N - 1) < Lng N - 1"
+    and s0: "0 < s"
+    and sle: "s \<le> Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)"
+  shows "entry N 0 (parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+       < entry N 0 (parent N (idx1 N (Lng N - 1)) (Lng N - 1) + s)"
+proof -
+  let ?i1 = "idx1 N (Lng N - 1)"  let ?j0 = "parent N ?i1 (Lng N - 1)"
+  let ?j1 = "Lng N - 1"
+  have L: "1 < Lng N" using j0lt by linarith
+  have NT: "N \<in> T_PS" using L by (cases N) (auto simp: T_PS_def)
+  have parR: "nextR N ?i1 ?j0 ?j1"
+    using hp unfolding hasParent_def parent_def by (rule theI')
+  have le0: "leR N 0 ?j0 ?j1" using poper_nextR_imp_le0[OF parR] by simp
+  have mono: "monoT (seg N ?j0 ?j1)"
+    by (rule m_6_2_mono_ancestor_slice[OF NT j0lt le0])
+  have segT: "seg N ?j0 ?j1 \<in> T_PS" using j0lt by (auto simp: T_PS_def seg_def)
+  have leR0: "leR (seg N ?j0 ?j1) 0 0 (Lng (seg N ?j0 ?j1) - 1)"
+    using mono by (simp add: monoT_def)
+  have slt: "s < Lng (seg N ?j0 ?j1)" using sle j0lt by simp
+  have strictseg: "entry (seg N ?j0 ?j1) 0 0 < entry (seg N ?j0 ?j1) 0 s"
+    using m_6_2_multi_crit_23[OF segT] leR0 s0 slt by blast
+  have z0: "0 < Lng (seg N ?j0 ?j1)" using j0lt by simp
+  have e0: "entry (seg N ?j0 ?j1) 0 0 = entry N 0 ?j0"
+    using entry_seg[OF z0] by simp
+  have es: "entry (seg N ?j0 ?j1) 0 s = entry N 0 (?j0 + s)"
+    using entry_seg[OF slt] by simp
+  show ?thesis using strictseg e0 es by simp
+qed
+
+
+text \<open>§6.7 oper-tiling brick (Front A, ROW 0): the INTERIOR \<open>+1\<close> step.  For an
+  interior column \<open>x = j\<^sub>0 + q\<cdot>w + s\<close> (\<open>0 < s < w\<close>, \<open>q < n\<close>) of \<open>N[n]\<close> that has a
+  row-0 parent, the parent edge inherits the \<open>+1\<close> from \<open>RedCondA N\<close>.
+
+  Structure: the \<open>N[n]\<close>-parent \<open>p\<close> of \<open>x\<close> CANNOT lie below block-\<open>q\<close>'s start
+  \<open>B = j\<^sub>0 + q\<cdot>w\<close> — \<open>B\<close> carries the block floor \<open>e\<^sub>0(N,j\<^sub>0)+q\<cdot>d\<^sub>0\<close>, which is
+  STRICTLY below \<open>e\<^sub>0(N[n],x) = e\<^sub>0(N,j\<^sub>0+s)+q\<cdot>d\<^sub>0\<close> (the strict period floor, since
+  \<open>s>0\<close>), so a \<open>B\<close> inside the valley \<open>(p,x)\<close> would break the running-min.  Hence
+  \<open>B \<le> p\<close>, both endpoints (and the valley window) sit in block \<open>q\<close>, and the
+  uniform \<open>q\<cdot>d\<^sub>0\<close> shift cancels: \<open>nextrel0 (N[n]) p x\<close> reflects down to
+  \<open>nextrel0 N (j\<^sub>0+(p-B)) (j\<^sub>0+s)\<close>, so \<open>parent N 0 (j\<^sub>0+s) = p-B\<close>'s offset and
+  \<open>RedCondA N\<close> closes the step.  Empirically 0-fail (/tmp/frontA_ids.py: 210/210,
+  /tmp/frontA_revconf.py: in-block 210/210).\<close>
+
+lemma oper_gen_tiling_row0_interior:
+  assumes L: "1 < Lng N"
+    and notzero: "\<not> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0)"
+    and hp: "hasParent N (idx1 N (Lng N - 1)) (Lng N - 1)"
+    and j0lt: "parent N (idx1 N (Lng N - 1)) (Lng N - 1) < Lng N - 1"
+    and condA: "RedCondA N"
+    and qn: "q < n"
+    and s0: "0 < s"
+    and sw: "s < Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)"
+    and hpn: "hasParent ((N::pairseq)[n]) 0
+                (parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                   + q * (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)) + s)"
+  shows "entry ((N::pairseq)[n]) 0 (parent ((N::pairseq)[n]) 0
+                (parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                   + q * (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)) + s)) + 1
+       = entry ((N::pairseq)[n]) 0
+                (parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                   + q * (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)) + s)"
+proof -
+  let ?j1 = "Lng N - 1"  let ?i1 = "idx1 N ?j1"  let ?j0 = "parent N ?i1 ?j1"
+  let ?w = "?j1 - ?j0"
+  let ?d0 = "if 0 < ?i1 then entry N 0 ?j1 - entry N 0 ?j0 else 0"
+  let ?Nn = "(N::pairseq)[n]"
+  let ?B = "?j0 + q * ?w"  let ?x = "?B + s"  let ?u = "?j0 + s"
+  have w0: "0 < ?w" using j0lt by linarith
+  \<comment> \<open>block-\<open>q\<close> row-0 reading at any offset \<open>t < w\<close>\<close>
+  have blkq: "\<And>t. t < ?w \<Longrightarrow> entry ?Nn 0 (?B + t) = entry N 0 (?j0 + t) + q * ?d0"
+  proof -
+    fix t assume t: "t < ?w"
+    have "entry ?Nn 0 (?j0 + q * ?w + t) = entry N 0 (?j0 + t) + q * ?d0"
+      by (rule oper_gen_block_entry0[OF L notzero hp j0lt qn t])
+    thus "entry ?Nn 0 (?B + t) = entry N 0 (?j0 + t) + q * ?d0" by (simp add: add.assoc)
+  qed
+  have eBx: "entry ?Nn 0 ?x = entry N 0 ?u + q * ?d0" using blkq[OF sw] by (simp add: add.assoc)
+  have eBB: "entry ?Nn 0 ?B = entry N 0 ?j0 + q * ?d0" using blkq[of 0] w0 by simp
+  \<comment> \<open>obtain the unique \<open>N[n]\<close>-parent \<open>p\<close> of \<open>x\<close>\<close>
+  have exu: "\<exists>!p. nextrel0 ?Nn p ?x"
+    using hpn unfolding hasParent_def nextR_def by simp
+  obtain p where pP: "nextrel0 ?Nn p ?x"
+    and pU: "\<And>p'. nextrel0 ?Nn p' ?x \<Longrightarrow> p' = p"
+    using exu by blast
+  have pjx: "p < ?x" using pP by (simp add: nextrel0_def)
+  have valley: "\<And>j. p < j \<Longrightarrow> j < ?x \<Longrightarrow> entry ?Nn 0 ?x \<le> entry ?Nn 0 j"
+    using pP by (simp add: nextrel0_def)
+  \<comment> \<open>the strict floor: \<open>e\<^sub>0(N[n],B) < e\<^sub>0(N[n],x)\<close>\<close>
+  have sfloor: "entry N 0 ?j0 < entry N 0 ?u"
+    by (rule oper_gen_strict_period_floor[OF hp j0lt s0]) (use sw in simp)
+  have eBlt: "entry ?Nn 0 ?B < entry ?Nn 0 ?x" using eBB eBx sfloor by simp
+  \<comment> \<open>so \<open>B \<le> p\<close>: a strictly-lower \<open>B\<close> inside the valley would contradict it\<close>
+  have Bp: "?B \<le> p"
+  proof (rule ccontr)
+    assume "\<not> ?B \<le> p"
+    hence pB: "p < ?B" by simp
+    have Bx: "?B < ?x" using s0 by simp
+    have "entry ?Nn 0 ?x \<le> entry ?Nn 0 ?B" using valley[OF pB Bx] .
+    thus False using eBlt by simp
+  qed
+  \<comment> \<open>both endpoints in block \<open>q\<close>: \<open>p = B + (p-B)\<close> with \<open>p - B < s\<close>\<close>
+  have pxB: "p - ?B < s" using pjx Bp by linarith
+  have psw: "p - ?B < ?w" using pxB sw by linarith
+  have psplit: "p = ?B + (p - ?B)" using Bp by simp
+  have eP: "entry ?Nn 0 p = entry N 0 (?j0 + (p - ?B)) + q * ?d0"
+    using blkq[OF psw] psplit by simp
+  \<comment> \<open>down-transfer: \<open>nextrel0 N (j\<^sub>0+(p-B)) u\<close> (shift cancels)\<close>
+  let ?pn = "?j0 + (p - ?B)"
+  have ult: "?u < Lng N" using sw j0lt by linarith
+  have pnlt: "?pn < Lng N" using psw j0lt by linarith
+  have stepN: "nextrel0 N ?pn ?u"
+    unfolding nextrel0_def
+  proof (intro conjI allI impI)
+    show "?pn < Lng N" by (rule pnlt)
+    show "?u < Lng N" by (rule ult)
+    show "?pn < ?u" using pxB by simp
+    have "entry ?Nn 0 p < entry ?Nn 0 ?x" using pP by (simp add: nextrel0_def)
+    thus "entry N 0 ?pn < entry N 0 ?u" using eP eBx by simp
+  next
+    fix j assume jj: "?pn < j \<and> j < ?u"
+    hence jlo: "?pn < j" and jhi: "j < ?u" by simp_all
+    \<comment> \<open>map \<open>j = j\<^sub>0 + t\<close> back up to \<open>B + t\<close> in block \<open>q\<close>\<close>
+    have jge: "?j0 \<le> j" using jlo by linarith
+    let ?t = "j - ?j0"
+    have tsw: "?t < ?w" using jhi jge sw by linarith
+    have jt: "j = ?j0 + ?t" using jge by simp
+    have Btlo: "p < ?B + ?t" using jlo jge psplit by linarith
+    have Bthi: "?B + ?t < ?x" using jhi jge by linarith
+    have "entry ?Nn 0 ?x \<le> entry ?Nn 0 (?B + ?t)" using valley[OF Btlo Bthi] .
+    hence "entry N 0 ?u + q * ?d0 \<le> entry N 0 (?j0 + ?t) + q * ?d0"
+      using eBx blkq[OF tsw] by simp
+    thus "entry N 0 ?u \<le> entry N 0 j" using jt by simp
+  qed
+  \<comment> \<open>uniqueness of the \<open>N\<close>-parent transfers up, so \<open>parent N 0 u = pn\<close>\<close>
+  have uniqN: "\<And>p'. nextrel0 N p' ?u \<Longrightarrow> p' = ?pn"
+  proof -
+    fix p' assume Hp': "nextrel0 N p' ?u"
+    have p'u: "p' < ?u" using Hp' by (simp add: nextrel0_def)
+    have p'lt: "p' < Lng N" using Hp' by (simp add: nextrel0_def)
+    \<comment> \<open>lift \<open>p'\<close> into block \<open>q\<close> as \<open>B + (p' - j\<^sub>0)\<close>; it must be \<open>\<ge> j\<^sub>0\<close>\<close>
+    have p'j0: "?j0 \<le> p'"
+    proof (rule ccontr)
+      assume "\<not> ?j0 \<le> p'"
+      hence p'lo: "p' < ?j0" by simp
+      \<comment> \<open>row-0 valley in \<open>N\<close>: \<open>j\<^sub>0\<close> lies in \<open>(p',u)\<close> and the floor at \<open>j\<^sub>0\<close> is below \<open>u\<close>\<close>
+      have j0lo: "p' < ?j0" by (rule p'lo)
+      have j0hi: "?j0 < ?u" using s0 by simp
+      have "entry N 0 ?u \<le> entry N 0 ?j0" using Hp' j0lo j0hi by (simp add: nextrel0_def)
+      thus False using sfloor by simp
+    qed
+    let ?t' = "p' - ?j0"
+    have t'sw: "?t' < ?w" using p'u p'j0 sw by linarith
+    have p't: "p' = ?j0 + ?t'" using p'j0 by simp
+    \<comment> \<open>transfer \<open>nextrel0 N p' u\<close> up to \<open>nextrel0 (N[n]) (B + t') x\<close>\<close>
+    let ?P' = "?B + ?t'"
+    have LngNn: "Lng ?Nn = ?j0 + n * ?w"
+      using operB_gen_LngM[OF L notzero hp j0lt] by simp
+    obtain w where wdef: "?w = w" by blast
+    have Bwub: "?B + ?w \<le> Lng ?Nn"
+    proof -
+      have "Suc q \<le> n" using qn by simp
+      hence "Suc q * w \<le> n * w" by (rule mult_le_mono1)
+      hence "?j0 + q * w + w \<le> ?j0 + n * w" by simp
+      thus ?thesis using wdef LngNn by simp
+    qed
+    have P'lt: "?P' < Lng ?Nn"
+    proof -
+      have "?B + ?t' < ?B + ?w" by (rule add_strict_left_mono[OF t'sw])
+      thus ?thesis using Bwub by linarith
+    qed
+    have xlt: "?x < Lng ?Nn"
+    proof -
+      have "?B + s < ?B + ?w" by (rule add_strict_left_mono[OF sw])
+      thus ?thesis using Bwub by linarith
+    qed
+    have eP': "entry ?Nn 0 ?P' = entry N 0 p' + q * ?d0"
+      using blkq[OF t'sw] p't by simp
+    have stepNn: "nextrel0 ?Nn ?P' ?x"
+      unfolding nextrel0_def
+    proof (intro conjI allI impI)
+      show "?P' < Lng ?Nn" by (rule P'lt)
+      show "?x < Lng ?Nn" by (rule xlt)
+      show "?P' < ?x" using p'u p'j0 by linarith
+      have "entry N 0 p' < entry N 0 ?u" using Hp' by (simp add: nextrel0_def)
+      thus "entry ?Nn 0 ?P' < entry ?Nn 0 ?x" using eP' eBx by simp
+    next
+      fix j assume jj: "?P' < j \<and> j < ?x"
+      hence jlo: "?P' < j" and jhi: "j < ?x" by simp_all
+      have jge: "?B \<le> j" using jlo by linarith
+      let ?t = "j - ?B"
+      have tsw: "?t < ?w" using jhi jge sw by linarith
+      have jt: "j = ?B + ?t" using jge by simp
+      have lo': "?j0 + ?t' < ?j0 + ?t" using jlo jge p't by linarith
+      hence tlo: "?t' < ?t" by simp
+      have thi: "?j0 + ?t < ?u" using jhi jge by linarith
+      have "entry N 0 ?u \<le> entry N 0 (?j0 + ?t)"
+        using Hp' tlo thi p't by (simp add: nextrel0_def)
+      hence "entry N 0 ?u + q * ?d0 \<le> entry N 0 (?j0 + ?t) + q * ?d0" by simp
+      thus "entry ?Nn 0 ?x \<le> entry ?Nn 0 j" using eBx blkq[OF tsw] jt by simp
+    qed
+    have "?P' = p" using pU[OF stepNn] .
+    hence "?B + ?t' = ?B + (p - ?B)" using psplit by simp
+    hence "?t' = p - ?B" by simp
+    thus "p' = ?pn" using p't by simp
+  qed
+  \<comment> \<open>recast in \<open>nextR \<cdot> 0\<close> form\<close>
+  have stepNR: "nextR N 0 ?pn ?u" using stepN by (simp add: nextR_def)
+  have uniqNR: "\<And>p'. nextR N 0 p' ?u \<Longrightarrow> p' = ?pn"
+    using uniqN by (simp add: nextR_def)
+  have pPR: "nextR ?Nn 0 p ?x" using pP by (simp add: nextR_def)
+  have pUR: "\<And>p'. nextR ?Nn 0 p' ?x \<Longrightarrow> p' = p"
+    using pU by (simp add: nextR_def)
+  have hpN: "hasParent N 0 ?u"
+    unfolding hasParent_def using stepNR uniqNR by blast
+  have exu1N: "\<exists>!q. nextR N 0 q ?u" using stepNR uniqNR by blast
+  have parN: "parent N 0 ?u = ?pn"
+    unfolding parent_def[of N 0 ?u] using the1_equality[OF exu1N stepNR] .
+  have exu1Nn: "\<exists>!q. nextR ?Nn 0 q ?x" using pPR pUR by blast
+  have parNn: "parent ?Nn 0 ?x = p"
+    unfolding parent_def[of ?Nn 0 ?x] using the1_equality[OF exu1Nn pPR] .
+  \<comment> \<open>RedCondA N closes the \<open>+1\<close> step (shift cancels via \<open>eP\<close>, \<open>eBx\<close>)\<close>
+  have baseN: "entry N 0 (parent N 0 ?u) + 1 = entry N 0 ?u"
+    using condA[unfolded RedCondA_def, rule_format, of 0 ?u] hpN by simp
+  have "entry ?Nn 0 (parent ?Nn 0 ?x) + 1 = entry N 0 ?pn + q * ?d0 + 1"
+    using parNn eP by simp
+  also have "\<dots> = (entry N 0 ?pn + 1) + q * ?d0" by simp
+  also have "\<dots> = entry N 0 ?u + q * ?d0" using baseN parN by simp
+  also have "\<dots> = entry ?Nn 0 ?x" using eBx by simp
+  finally show ?thesis by (simp add: add.assoc)
+qed
+
+
+
+text \<open>§6.7 oper-tiling brick (Front B, ROW 1): row-1 \<open>RedCondA\<close> on the verbatim
+  PREFIX.  For a column \<open>x < j\<^sub>0\<close> of \<open>N[n]\<close> that HAS a row-1 parent, both the
+  parent \<open>p < x < j\<^sub>0\<close> and the whole \<open>nextrel1\<close>-window (\<open>le0\<close>-reachable predecessors
+  of \<open>x\<close>, which are \<open>\<le> x \<le> c\<close>) lie in the verbatim prefix \<open>[0,c]\<close> with \<open>c = x\<close>.
+  The list-level agreement \<open>(N[n]) ! j = N ! j\<close> for \<open>j < j\<^sub>0\<close>
+  (@{thm [source] oper_gen_nth_prefix}) lets @{thm [source] nextrel1_prefix_imp}
+  transfer the step both ways, so \<open>parent (N[n]) 1 x = parent N 1 x\<close> and
+  \<open>hasParent N 1 x\<close>; \<open>RedCondA N\<close> closes the \<open>+1\<close> step.\<close>
+
+lemma operCA_tiling_row1_prefix:
+  assumes L: "1 < Lng N"
+    and notzero: "\<not> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0)"
+    and hp: "hasParent N (idx1 N (Lng N - 1)) (Lng N - 1)"
+    and j0lt: "parent N (idx1 N (Lng N - 1)) (Lng N - 1) < Lng N - 1"
+    and condA: "RedCondA N"
+    and xj0: "x < parent N (idx1 N (Lng N - 1)) (Lng N - 1)"
+    and hpn: "hasParent ((N::pairseq)[n]) 1 x"
+  shows "entry ((N::pairseq)[n]) 1 (parent ((N::pairseq)[n]) 1 x) + 1
+       = entry ((N::pairseq)[n]) 1 x"
+proof -
+  let ?j1 = "Lng N - 1"  let ?i1 = "idx1 N ?j1"  let ?j0 = "parent N ?i1 ?j1"
+  let ?Nn = "(N::pairseq)[n]"
+  \<comment> \<open>list-level prefix agreement: \<open>(N[n]) ! j = N ! j\<close> for every \<open>j < j\<^sub>0\<close>\<close>
+  have nthpref: "\<And>j. j < ?j0 \<Longrightarrow> ?Nn ! j = N ! j"
+    using oper_gen_nth_prefix[OF L notzero hp] by blast
+  \<comment> \<open>length bounds: \<open>j\<^sub>0 \<le> Lng N\<close>, \<open>j\<^sub>0 \<le> Lng (N[n])\<close>\<close>
+  have j0LN: "?j0 < Lng N" using j0lt by linarith
+  have LngNn: "Lng ?Nn = ?j0 + n * (?j1 - ?j0)"
+    by (rule operB_gen_LngM[OF L notzero hp j0lt])
+  \<comment> \<open>obtain the unique \<open>N[n]\<close>-parent \<open>p\<close>\<close>
+  have exu: "\<exists>!q. nextrel1 ?Nn q x"
+    using hpn unfolding hasParent_def nextR_def by simp
+  obtain p where pP: "nextrel1 ?Nn p x"
+    and pU: "\<And>p'. nextrel1 ?Nn p' x \<Longrightarrow> p' = p"
+    using exu by blast
+  have px: "p < x" using pP by (simp add: nextrel1_def)
+  have xLNn: "x < Lng ?Nn" using pP by (simp add: nextrel1_def)
+  have xj0': "x < ?j0" using xj0 by simp
+  have xLN: "x < Lng N" using xj0' j0LN by linarith
+  have pj0: "p < ?j0" using px xj0' by linarith
+  \<comment> \<open>both endpoints are \<open>\<le> x\<close>; with \<open>c = x\<close> they sit in the agreement region\<close>
+  have cLNn: "x < Lng ?Nn" by (rule xLNn)
+  have cLN: "x < Lng N" by (rule xLN)
+  \<comment> \<open>agreement on \<open>[0,x]\<close> in BOTH directions (since \<open>x < j\<^sub>0\<close>)\<close>
+  have agNn: "\<And>j. j \<le> x \<Longrightarrow> ?Nn ! j = N ! j"
+  proof -
+    fix j assume "j \<le> x"
+    hence "j < ?j0" using xj0' by linarith
+    thus "?Nn ! j = N ! j" by (rule nthpref)
+  qed
+  have agN: "\<And>j. j \<le> x \<Longrightarrow> N ! j = ?Nn ! j"
+    using agNn by simp
+  \<comment> \<open>transfer the step to \<open>N\<close>\<close>
+  have stepN: "nextrel1 N p x"
+    by (rule nextrel1_prefix_imp[OF agNn cLNn cLN _ _ pP]) (use px in simp_all)
+  \<comment> \<open>uniqueness of the \<open>N\<close>-parent transfers back\<close>
+  have uniqN: "\<And>p'. nextrel1 N p' x \<Longrightarrow> p' = p"
+  proof -
+    fix p' assume Hp': "nextrel1 N p' x"
+    have p'x: "p' < x" using Hp' by (simp add: nextrel1_def)
+    have stepNn: "nextrel1 ?Nn p' x"
+      by (rule nextrel1_prefix_imp[OF agN cLN cLNn _ _ Hp']) (use p'x in simp_all)
+    show "p' = p" using pU[OF stepNn] .
+  qed
+  \<comment> \<open>recast in \<open>nextR \<cdot> 1\<close> form (matches \<open>parent_def\<close> / \<open>hasParent_def\<close>)\<close>
+  have stepNR: "nextR N 1 p x" using stepN by (simp add: nextR_def)
+  have uniqNR: "\<And>p'. nextR N 1 p' x \<Longrightarrow> p' = p"
+    using uniqN by (simp add: nextR_def)
+  have pPR: "nextR ?Nn 1 p x" using pP by (simp add: nextR_def)
+  have pUR: "\<And>p'. nextR ?Nn 1 p' x \<Longrightarrow> p' = p"
+    using pU by (simp add: nextR_def)
+  have hpN1: "hasParent N 1 x"
+    unfolding hasParent_def using stepNR uniqNR by blast
+  have parN: "parent N 1 x = p"
+    unfolding parent_def
+    by (rule the_equality[where P="\<lambda>q. nextR N 1 q x", OF stepNR uniqNR])
+  have parNn: "parent ?Nn 1 x = p"
+    unfolding parent_def
+    by (rule the_equality[where P="\<lambda>q. nextR ?Nn 1 q x", OF pPR pUR])
+  \<comment> \<open>RedCondA N closes the \<open>+1\<close> step; entries are verbatim on the prefix\<close>
+  have baseN: "entry N 1 (parent N 1 x) + 1 = entry N 1 x"
+    using condA[unfolded RedCondA_def, rule_format, of 1 x] hpN1 by simp
+  have epref: "\<And>j. j < ?j0 \<Longrightarrow> entry ?Nn 1 j = entry N 1 j"
+    using nthpref by (simp add: entry_def)
+  show ?thesis
+    using baseN parN parNn epref[OF pj0] epref[OF xj0'] by simp
+qed
+
+
+text \<open>§6.7 oper-tiling brick (Front B): ASSEMBLY of \<open>RedCondA (N[n])\<close> from the two
+  per-row obligations.  \<open>RedCondA M\<close> quantifies \<open>i \<le> 1\<close> over every \<open>j1'\<close> with a
+  row-\<open>i\<close> parent; since \<open>i \<in> {0,1}\<close>, it splits cleanly into the row-0 obligation
+  \<open>row0\<close> and the row-1 obligation \<open>row1\<close>, each ranging over all columns of \<open>N[n]\<close>.
+  This is the unconditional combinator: once both row obligations are GREEN
+  (row 0 = prefix @{thm [source] oper_tiling_row0_prefix} + within/boundary; row 1
+  = prefix @{thm [source] operCA_tiling_row1_prefix} + within/boundary), it yields
+  \<open>RedCondA (N[n])\<close> and hence discharges the \<open>operCA\<close> residual.\<close>
+
+lemma operCA_tiling_assemble:
+  assumes row0: "\<And>x. hasParent ((N::pairseq)[n]) 0 x
+                   \<Longrightarrow> entry ((N::pairseq)[n]) 0 (parent ((N::pairseq)[n]) 0 x) + 1
+                        = entry ((N::pairseq)[n]) 0 x"
+    and row1: "\<And>x. hasParent ((N::pairseq)[n]) 1 x
+                   \<Longrightarrow> entry ((N::pairseq)[n]) 1 (parent ((N::pairseq)[n]) 1 x) + 1
+                        = entry ((N::pairseq)[n]) 1 x"
+  shows "RedCondA ((N::pairseq)[n])"
+  unfolding RedCondA_def
+proof (intro allI impI)
+  fix i j1' assume i1: "i \<le> 1" and hpn: "hasParent ((N::pairseq)[n]) i j1'"
+  show "entry ((N::pairseq)[n]) i (parent ((N::pairseq)[n]) i j1') + 1
+          = entry ((N::pairseq)[n]) i j1'"
+  proof (cases "i = 0")
+    case True
+    thus ?thesis using row0[OF hpn[unfolded True]] by simp
+  next
+    case False
+    hence "i = 1" using i1 by simp
+    thus ?thesis using row1[OF hpn[unfolded \<open>i = 1\<close>]] by simp
+  qed
+qed
 
 
 end
