@@ -44,7 +44,7 @@
       - 🚨 系（$1$ 列ペア数列の基本性質）
     - 🚨 §6.7 標準形
       - ✅ 命題（標準形の階層和による表示）
-      - 🚨🤖 命題（標準形の簡約性）〔`spsy_keystone_via_Q`+`Qprime_via_tree`+`Qprime_diag`green。**Q'はz強帰納で証明**(oper周期性困難を消去！p=parent N1 z, p=j0で即/p>j0でIH連鎖)。残2: **tree**(標準形でrow-1到達内点は必ずparent≥j0=row-1祖先木整形性,(A)hasParent N1 pが標準性carrier)+**bridge**(N[n]arising→hasParent N1(j0+sy)∧parent≥j0,369/0構造的)。両者greenで無条件達成〕
+      - 🚨🤖 命題（標準形の簡約性）〔Q'をz強帰納で証明済(`Qprime_via_tree`)。assembly node`spsy_keystone_via_tree_bridge`+`tree_wellformed_diag`(diag基底)green。tree は帰納的ST_PSで240/0真。残=**tree oper step + bridge が同一brickに帰着＝d1=0 tilingの非循環row-1 reflection/confinement**(row-0 oper_d1pos_le0_confined鏡像,RedCondA不使用,qp=qyをST_PS構造で)。これでcascade無条件達成〕
       - ✅ 命題（標準形の単項成分が標準形であること）
       - ✅ 命題（標準形の始切片への遺伝性）
     - ✅ §6.8 降順性
