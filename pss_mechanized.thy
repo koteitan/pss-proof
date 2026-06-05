@@ -53260,5 +53260,545 @@ qed
 
 
 
+text \<open>§6.7 oper-tiling ROW-1 (Front A, i1=1) VALLEY reduced to per-competitor
+  BASE COMPARABILITY.  The valley obligation of @{thm [source]
+  operCA_tiling_bcorr_reduced} (any competitor j with pstar<j and le0 (N[n]) j y
+  has entry (N[n]) 1 y \<le> entry (N[n]) 1 j) is closed once each such competitor's
+  base (base j = if j<j0 then j else j0+(j-j0) mod w) satisfies EITHER base j = y'
+  (period base of y) OR (parent N 1 y' < base j \<and> le0 N (base j) y').  Route:
+  entry (N[n]) 1 j = entry N 1 (base j), entry (N[n]) 1 y = entry N 1 y'
+  (@{thm [source] operCA_tiling_entry1_base'}, row-1 periodicity); in the second
+  disjunct N's row-1 valley nextrel1 N (parent N 1 y') y' (from hpN) gives
+  entry N 1 y' \<le> entry N 1 (base j).  Empirically the disjunction holds 136084/136084
+  (/tmp/simple_route.py).\<close>
+
+lemma operCA_tiling_bcorr_valley_reduced:
+  assumes L: "1 < Lng N"
+    and notzero: "\<not> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0)"
+    and hp: "hasParent N (idx1 N (Lng N - 1)) (Lng N - 1)"
+    and j0lt: "parent N (idx1 N (Lng N - 1)) (Lng N - 1) < Lng N - 1"
+    and ge: "parent N (idx1 N (Lng N - 1)) (Lng N - 1) \<le> y"
+    and hpny: "hasParent ((N::pairseq)[n]) 1 y"
+    and hpN: "hasParent N 1 (parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                + (y - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                   mod (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)))"
+    and comp: "parent N 1 (parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                       + (y - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                          mod (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)))
+                    < (if j < parent N (idx1 N (Lng N - 1)) (Lng N - 1) then j
+                       else parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                            + (j - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                               mod (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)))
+                  \<and> le0 N (if j < parent N (idx1 N (Lng N - 1)) (Lng N - 1) then j
+                          else parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                               + (j - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                                  mod (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)))
+                         (parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                            + (y - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                               mod (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)))
+                \<or> (if j < parent N (idx1 N (Lng N - 1)) (Lng N - 1) then j
+                    else parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                         + (j - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                            mod (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)))
+                   = parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                       + (y - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                          mod (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1))"
+    and pstar_lt: "(if parent N 1 (parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                              + (y - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                                 mod (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)))
+                          < parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                       then parent N 1 (parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                              + (y - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                                 mod (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)))
+                       else parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                              + ((y - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                                 div (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)))
+                                * (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                              + (parent N 1 (parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                                    + (y - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                                       mod (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)))
+                                 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)))
+                        < j"
+    and reach: "le0 ((N::pairseq)[n]) j y"
+  shows "entry ((N::pairseq)[n]) 1 y \<le> entry ((N::pairseq)[n]) 1 j"
+proof -
+  let ?j1 = "Lng N - 1"  let ?i1 = "idx1 N ?j1"  let ?j0 = "parent N ?i1 ?j1"
+  let ?w = "?j1 - ?j0"
+  let ?Nn = "(N::pairseq)[n]"
+  let ?sy = "(y - ?j0) mod ?w"
+  let ?yp = "?j0 + ?sy"
+  let ?pN = "parent N 1 ?yp"
+  let ?bj = "if j < ?j0 then j else ?j0 + (j - ?j0) mod ?w"
+  have w0: "0 < ?w" using j0lt by linarith
+  have j0w1: "?j0 + ?w = ?j1" using j0lt by simp
+  \<comment> \<open>row-1 reading at y: entry (N[n]) 1 y = entry N 1 y'\<close>
+  have yNn: "y < Lng ?Nn"
+  proof -
+    have "\<exists>!a. nextR ?Nn 1 a y" using hpny unfolding hasParent_def by simp
+    hence "nextR ?Nn 1 (parent ?Nn 1 y) y" unfolding parent_def by (rule theI')
+    hence "nextrel1 ?Nn (parent ?Nn 1 y) y" by (simp add: nextR_def)
+    thus ?thesis by (simp add: nextrel1_def)
+  qed
+  have nge: "\<not> y < ?j0" using ge by simp
+  have e1y: "entry ?Nn 1 y = entry N 1 ?yp"
+  proof -
+    have "entry ?Nn 1 y = entry N 1 (if y < ?j0 then y else ?j0 + (y - ?j0) mod ?w)"
+      by (rule operCA_tiling_entry1_base'[OF L notzero hp j0lt yNn])
+    thus ?thesis using nge by simp
+  qed
+  \<comment> \<open>row-1 reading at j: entry (N[n]) 1 j = entry N 1 (base j)\<close>
+  have jNn: "j < Lng ?Nn" using reach by (simp add: le0_def)
+  have e1j: "entry ?Nn 1 j = entry N 1 ?bj"
+    by (rule operCA_tiling_entry1_base'[OF L notzero hp j0lt jNn])
+  \<comment> \<open>N's row-1 valley at y' from hpN\<close>
+  have hpN': "hasParent N 1 ?yp" using hpN by simp
+  have nrelN: "nextrel1 N ?pN ?yp"
+  proof -
+    have "\<exists>!a. nextR N 1 a ?yp" using hpN' unfolding hasParent_def by simp
+    hence "nextR N 1 ?pN ?yp" unfolding parent_def by (rule theI')
+    thus ?thesis by (simp add: nextR_def)
+  qed
+  have Nvalley: "\<And>c. ?pN < c \<Longrightarrow> le0 N c ?yp \<Longrightarrow> entry N 1 ?yp \<le> entry N 1 c"
+    using nrelN by (simp add: nextrel1_def)
+  \<comment> \<open>apply comparability\<close>
+  have disj: "(?pN < ?bj \<and> le0 N ?bj ?yp) \<or> ?bj = ?yp"
+    using comp by simp
+  have e1yle: "entry N 1 ?yp \<le> entry N 1 ?bj"
+  proof (cases "?bj = ?yp")
+    case True thus ?thesis by simp
+  next
+    case False
+    hence "?pN < ?bj \<and> le0 N ?bj ?yp" using disj by blast
+    thus ?thesis using Nvalley by blast
+  qed
+  show ?thesis using e1y e1j e1yle by simp
+qed
+
+
+
+text \<open>§6.7 oper-tiling ROW-1 (Front B): the FULL \<open>le0pstar\<close> input of
+  @{thm [source] operCA_tiling_bcorr_reduced}, by case split on whether the
+  period-base row-1 parent \<open>pN = parent N 1 y'\<close> lands in the active slice
+  (\<open>j\<^sub>0 \<le> pN\<close>, slice case via @{thm [source] operCA_tiling_bcorr_le0pstar_slice}) or
+  in the prefix (\<open>pN < j\<^sub>0\<close>, cross case via
+  @{thm [source] oper_d1pos_le0_prefix_lift_fwd}).  Both land
+  \<open>le0 (N[n]) pstar y\<close>.  Empirically the two subcases together are 1512/1512.\<close>
+
+lemma operCA_tiling_bcorr_le0pstar:
+  assumes L: "1 < Lng N"
+    and notzero: "\<not> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0)"
+    and hp: "hasParent N (idx1 N (Lng N - 1)) (Lng N - 1)"
+    and i1z: "idx1 N (Lng N - 1) = 1"
+    and j0lt: "parent N (idx1 N (Lng N - 1)) (Lng N - 1) < Lng N - 1"
+    and n1: "1 \<le> n"
+    and ge: "parent N (idx1 N (Lng N - 1)) (Lng N - 1) \<le> y"
+    and hpny: "hasParent ((N::pairseq)[n]) 1 y"
+    and hpN: "hasParent N 1 (parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                + (y - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                   mod (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)))"
+  shows "le0 ((N::pairseq)[n])
+            (if parent N 1 (parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                    + (y - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                       mod (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)))
+                < parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+             then parent N 1 (parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                    + (y - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                       mod (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)))
+             else parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                    + ((y - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                       div (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)))
+                      * (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                    + (parent N 1 (parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                          + (y - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                             mod (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)))
+                       - parent N (idx1 N (Lng N - 1)) (Lng N - 1)))
+            y"
+proof -
+  let ?j1 = "Lng N - 1"  let ?i1 = "idx1 N ?j1"  let ?j0 = "parent N ?i1 ?j1"
+  let ?w = "?j1 - ?j0"
+  let ?Nn = "(N::pairseq)[n]"
+  let ?qy = "(y - ?j0) div ?w"  let ?sy = "(y - ?j0) mod ?w"
+  let ?yp = "?j0 + ?sy"
+  let ?pN = "parent N 1 ?yp"
+  have w0: "0 < ?w" using j0lt by linarith
+  have j0w1: "?j0 + ?w = ?j1" using j0lt by simp
+  have lenNn: "Lng ?Nn = ?j0 + n * ?w"
+    by (rule operB_gen_LngM[OF L notzero hp j0lt])
+  have yge: "?j0 \<le> y" using ge by simp
+  \<comment> \<open>decode \<open>y\<close> for ranges\<close>
+  have nrely: "nextrel1 ?Nn (parent ?Nn 1 y) y"
+  proof -
+    have "\<exists>!a. nextR ?Nn 1 a y" using hpny unfolding hasParent_def by simp
+    hence "nextR ?Nn 1 (parent ?Nn 1 y) y" unfolding parent_def by (rule theI')
+    thus ?thesis by (simp add: nextR_def)
+  qed
+  from nrely have yNn: "y < Lng ?Nn" by (simp add: nextrel1_def)
+  have syw: "?sy < ?w" using w0 by simp
+  have ymj: "y - ?j0 < n * ?w" using yNn lenNn yge by linarith
+  have qyn: "?qy < n" using less_mult_imp_div_less[OF ymj] .
+  have ysplit: "y = ?j0 + ?qy * ?w + ?sy"
+  proof -
+    have "?qy * ?w + ?sy = y - ?j0"
+      using div_mult_mod_eq[of "y - ?j0" ?w] by (simp add: mult.commute)
+    thus ?thesis using yge by linarith
+  qed
+  have ypj1: "?yp < ?j1" using syw j0w1 by linarith
+  \<comment> \<open>extract \<open>nextrel1 N pN y'\<close> from \<open>hpN\<close>\<close>
+  have hpN': "hasParent N 1 ?yp" using hpN by simp
+  have nrelN: "nextrel1 N ?pN ?yp"
+  proof -
+    have "\<exists>!a. nextR N 1 a ?yp" using hpN' unfolding hasParent_def by simp
+    hence "nextR N 1 ?pN ?yp" unfolding parent_def by (rule theI')
+    thus ?thesis by (simp add: nextR_def)
+  qed
+  from nrelN have pNlt: "?pN < ?yp" and le0pNyp: "le0 N ?pN ?yp"
+    by (auto simp: nextrel1_def)
+  show ?thesis
+  proof (cases "?pN < ?j0")
+    case True
+    \<comment> \<open>PREFIX cross case: witness is \<open>pN\<close> itself, target \<open>le0 (N[n]) pN y\<close>\<close>
+    have j0eq: "parent N 1 ?j1 = ?j0" using i1z by simp
+    have jpre: "?pN < parent N 1 ?j1" using True j0eq by simp
+    have j0lt': "parent N 1 ?j1 < ?j1" using j0lt j0eq by simp
+    have xpge: "parent N 1 ?j1 \<le> ?yp" using yge j0eq ypj1 by simp
+    have xge: "parent N 1 ?j1 \<le> y" using yge j0eq by simp
+    have lift: "le0 ?Nn ?pN y"
+      by (rule oper_d1pos_le0_prefix_lift_fwd[OF L notzero hp i1z j0lt' n1
+            jpre xpge ypj1 le0pNyp xge yNn])
+    show ?thesis using True lift by simp
+  next
+    case False
+    hence pNge: "?j0 \<le> ?pN" by simp
+    have lift: "le0 ?Nn (?j0 + ?qy * ?w + (?pN - ?j0)) y"
+      by (rule operCA_tiling_bcorr_le0pstar_slice[OF L notzero hp i1z j0lt ge hpny hpN pNge])
+    show ?thesis using False lift by simp
+  qed
+qed
+
+
+text \<open>§6.7 oper-tiling \<open>RedCondA (N[n])\<close> for the genuine TILING branch, reduced to
+  the two SOUNDLY-CARRIED residuals \<open>hpN\<close> (the period-base row-1 parent existence,
+  empirically 3710/0 / 1512/1512) and \<open>valley\<close> (the row-1 nearest-ancestor
+  minimality of the lifted witness, Front A; empirically 0 bad).  Assembles
+  \<open>bcorr\<close> from @{thm [source] operCA_tiling_bcorr_reduced} (fed \<open>le0pstar\<close> via
+  @{thm [source] operCA_tiling_bcorr_le0pstar} and \<open>valley\<close>) and discharges
+  @{thm [source] operCA_tiling_via_bcorr}.  This is the FULL \<open>operCA\<close> brick of
+  @{thm [source] m_6_7_standard_RedCondAB} modulo \<open>hpN\<close> + \<open>valley\<close>.\<close>
+
+lemma operCA_tiling_cond_hpN_valley:
+  assumes L: "1 < Lng N"
+    and notzero: "\<not> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0)"
+    and hp: "hasParent N (idx1 N (Lng N - 1)) (Lng N - 1)"
+    and j0lt: "parent N (idx1 N (Lng N - 1)) (Lng N - 1) < Lng N - 1"
+    and condA: "RedCondA N"
+    and n1: "1 \<le> n"
+    and hpN: "\<And>y. parent N (idx1 N (Lng N - 1)) (Lng N - 1) \<le> y
+                 \<Longrightarrow> hasParent ((N::pairseq)[n]) 1 y
+                 \<Longrightarrow> idx1 N (Lng N - 1) = 1
+                 \<Longrightarrow> hasParent N 1 (parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                        + (y - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                           mod (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)))"
+    and valley: "\<And>y j. parent N (idx1 N (Lng N - 1)) (Lng N - 1) \<le> y
+                 \<Longrightarrow> hasParent ((N::pairseq)[n]) 1 y
+                 \<Longrightarrow> idx1 N (Lng N - 1) = 1
+                 \<Longrightarrow> (if parent N 1 (parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                              + (y - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                                 mod (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)))
+                          < parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                       then parent N 1 (parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                              + (y - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                                 mod (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)))
+                       else parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                              + ((y - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                                 div (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)))
+                                * (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                              + (parent N 1 (parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                                    + (y - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                                       mod (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)))
+                                 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)))
+                        < j
+                   \<Longrightarrow> le0 ((N::pairseq)[n]) j y
+                   \<Longrightarrow> entry ((N::pairseq)[n]) 1 y \<le> entry ((N::pairseq)[n]) 1 j"
+  shows "RedCondA ((N::pairseq)[n])"
+proof -
+  have bcorr: "\<And>y. parent N (idx1 N (Lng N - 1)) (Lng N - 1) \<le> y
+                 \<Longrightarrow> hasParent ((N::pairseq)[n]) 1 y
+                 \<Longrightarrow> idx1 N (Lng N - 1) = 1
+                 \<Longrightarrow> hasParent N 1 (parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                        + (y - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                           mod (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)))
+                   \<and> entry N 1 (if parent ((N::pairseq)[n]) 1 y
+                                  < parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                                then parent ((N::pairseq)[n]) 1 y
+                                else parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                                  + (parent ((N::pairseq)[n]) 1 y
+                                     - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                                    mod (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)))
+                       = entry N 1 (parent N 1 (parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                          + (y - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                             mod (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1))))"
+  proof -
+    fix y
+    assume ge: "parent N (idx1 N (Lng N - 1)) (Lng N - 1) \<le> y"
+       and hpny: "hasParent ((N::pairseq)[n]) 1 y"
+       and i1z: "idx1 N (Lng N - 1) = 1"
+    have hpNy: "hasParent N 1 (parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                  + (y - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                     mod (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)))"
+      by (rule hpN[OF ge hpny i1z])
+    have le0ps: "le0 ((N::pairseq)[n])
+            (if parent N 1 (parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                    + (y - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                       mod (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)))
+                < parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+             then parent N 1 (parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                    + (y - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                       mod (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)))
+             else parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                    + ((y - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                       div (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)))
+                      * (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                    + (parent N 1 (parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                          + (y - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                             mod (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)))
+                       - parent N (idx1 N (Lng N - 1)) (Lng N - 1)))
+            y"
+      by (rule operCA_tiling_bcorr_le0pstar[OF L notzero hp i1z j0lt n1 ge hpny hpNy])
+    show "hasParent N 1 (parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                  + (y - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                     mod (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)))
+            \<and> entry N 1 (if parent ((N::pairseq)[n]) 1 y
+                          < parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                        then parent ((N::pairseq)[n]) 1 y
+                        else parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                          + (parent ((N::pairseq)[n]) 1 y
+                             - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                            mod (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)))
+               = entry N 1 (parent N 1 (parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                  + (y - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                     mod (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1))))"
+      by (rule operCA_tiling_bcorr_reduced[OF L notzero hp i1z j0lt n1 ge hpny hpNy le0ps
+            valley[OF ge hpny i1z]])
+  qed
+  show ?thesis
+    by (rule operCA_tiling_via_bcorr[OF L notzero hp j0lt condA n1 bcorr])
+qed
+
+
+text \<open>§6.7 oper-tiling \<open>operCA\<close> brick in the EXACT shape of
+  @{thm [source] m_6_7_standard_RedCondAB}'s \<open>operCA\<close> hypothesis, with the tiling
+  side conditions \<open>L\<close>/\<open>notzero\<close>/\<open>hp\<close>/\<open>j0lt\<close> extracted from \<open>N \<in> ST_PS\<close> and the
+  non-degeneracy \<open>\<not> nontile\<close> (\<open>j0lt = parent < j\<^sub>1\<close> via @{thm [source]
+  poper_nextR_imp_le0}).  Conditional only on the two soundly-carried residuals
+  \<open>hpN\<close> (period-base row-1 parent existence) and \<open>valley\<close> (lifted row-1 minimality).\<close>
+
+lemma operCA_tiling_hpN_valley:
+  assumes hpN: "\<And>N n y. \<lbrakk>N \<in> ST_PS;
+                   \<not> (Lng N - 1 = 0
+                      \<or> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0)
+                      \<or> \<not> hasParent N (idx1 N (Lng N - 1)) (Lng N - 1));
+                   parent N (idx1 N (Lng N - 1)) (Lng N - 1) \<le> y;
+                   hasParent ((N::pairseq)[n]) 1 y;
+                   idx1 N (Lng N - 1) = 1\<rbrakk>
+                 \<Longrightarrow> hasParent N 1 (parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                        + (y - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                           mod (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)))"
+    and valley: "\<And>N n y j. \<lbrakk>N \<in> ST_PS;
+                   \<not> (Lng N - 1 = 0
+                      \<or> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0)
+                      \<or> \<not> hasParent N (idx1 N (Lng N - 1)) (Lng N - 1));
+                   parent N (idx1 N (Lng N - 1)) (Lng N - 1) \<le> y;
+                   hasParent ((N::pairseq)[n]) 1 y;
+                   idx1 N (Lng N - 1) = 1;
+                   (if parent N 1 (parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                              + (y - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                                 mod (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)))
+                          < parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                       then parent N 1 (parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                              + (y - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                                 mod (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)))
+                       else parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                              + ((y - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                                 div (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)))
+                                * (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                              + (parent N 1 (parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                                    + (y - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                                       mod (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)))
+                                 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)))
+                        < j;
+                   le0 ((N::pairseq)[n]) j y\<rbrakk>
+                   \<Longrightarrow> entry ((N::pairseq)[n]) 1 y \<le> entry ((N::pairseq)[n]) 1 j"
+    and Nst: "N \<in> ST_PS" and condA: "RedCondA N" and condB: "RedCondB N"
+    and n1: "1 \<le> n"
+    and tile: "\<not> (Lng N - 1 = 0
+                  \<or> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0)
+                  \<or> \<not> hasParent N (idx1 N (Lng N - 1)) (Lng N - 1))"
+  shows "RedCondA ((N::pairseq)[n])"
+proof -
+  have NT: "N \<in> T_PS" by (rule ST_PS_T_PS[OF Nst])
+  have L: "1 < Lng N" using tile by (cases "Lng N - 1 = 0") auto
+  have notzero: "\<not> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0)"
+    using tile by blast
+  have hp: "hasParent N (idx1 N (Lng N - 1)) (Lng N - 1)" using tile by blast
+  have parR: "nextR N (idx1 N (Lng N - 1)) (parent N (idx1 N (Lng N - 1)) (Lng N - 1)) (Lng N - 1)"
+    using hp unfolding hasParent_def parent_def by (rule theI')
+  have j0lt: "parent N (idx1 N (Lng N - 1)) (Lng N - 1) < Lng N - 1"
+    using poper_nextR_imp_le0[OF parR] by simp
+  show ?thesis
+  proof (rule operCA_tiling_cond_hpN_valley[OF L notzero hp j0lt condA n1])
+    fix y assume "parent N (idx1 N (Lng N - 1)) (Lng N - 1) \<le> y"
+      and "hasParent ((N::pairseq)[n]) 1 y" and "idx1 N (Lng N - 1) = 1"
+    thus "hasParent N 1 (parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+            + (y - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+               mod (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)))"
+      by (rule hpN[OF Nst tile])
+  next
+    fix y j
+    assume gy: "parent N (idx1 N (Lng N - 1)) (Lng N - 1) \<le> y"
+      and hpny: "hasParent ((N::pairseq)[n]) 1 y"
+      and i1z: "idx1 N (Lng N - 1) = 1"
+      and jbig: "(if parent N 1 (parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                              + (y - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                                 mod (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)))
+                          < parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                       then parent N 1 (parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                              + (y - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                                 mod (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)))
+                       else parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                              + ((y - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                                 div (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)))
+                                * (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                              + (parent N 1 (parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                                    + (y - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                                       mod (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)))
+                                 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)))
+                        < j"
+      and lej: "le0 ((N::pairseq)[n]) j y"
+    show "entry ((N::pairseq)[n]) 1 y \<le> entry ((N::pairseq)[n]) 1 j"
+      by (rule valley[OF Nst tile gy hpny i1z jbig lej])
+  qed
+qed
+
+
+text \<open>§6.7 \<open>ST\<^sub>PS \<subseteq> RT\<^sub>PS\<close> conditional on the two operCA residuals \<open>hpN\<close>/\<open>valley\<close>
+  only (\<open>operCB\<close> is the GREEN @{thm [source] operCB_tiling}).  Feeds
+  @{thm [source] m_6_7_standard_reduced} with \<open>operCA = operCA_tiling_hpN_valley\<close>
+  and \<open>operCB = operCB_tiling\<close>.\<close>
+
+lemma m_6_7_standard_reduced_hpN_valley:
+  assumes hpN: "\<And>N n y. \<lbrakk>N \<in> ST_PS;
+                   \<not> (Lng N - 1 = 0
+                      \<or> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0)
+                      \<or> \<not> hasParent N (idx1 N (Lng N - 1)) (Lng N - 1));
+                   parent N (idx1 N (Lng N - 1)) (Lng N - 1) \<le> y;
+                   hasParent ((N::pairseq)[n]) 1 y;
+                   idx1 N (Lng N - 1) = 1\<rbrakk>
+                 \<Longrightarrow> hasParent N 1 (parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                        + (y - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                           mod (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)))"
+    and valley: "\<And>N n y j. \<lbrakk>N \<in> ST_PS;
+                   \<not> (Lng N - 1 = 0
+                      \<or> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0)
+                      \<or> \<not> hasParent N (idx1 N (Lng N - 1)) (Lng N - 1));
+                   parent N (idx1 N (Lng N - 1)) (Lng N - 1) \<le> y;
+                   hasParent ((N::pairseq)[n]) 1 y;
+                   idx1 N (Lng N - 1) = 1;
+                   (if parent N 1 (parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                              + (y - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                                 mod (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)))
+                          < parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                       then parent N 1 (parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                              + (y - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                                 mod (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)))
+                       else parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                              + ((y - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                                 div (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)))
+                                * (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                              + (parent N 1 (parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                                    + (y - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                                       mod (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)))
+                                 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)))
+                        < j;
+                   le0 ((N::pairseq)[n]) j y\<rbrakk>
+                   \<Longrightarrow> entry ((N::pairseq)[n]) 1 y \<le> entry ((N::pairseq)[n]) 1 j"
+  shows "ST_PS \<subseteq> RT_PS"
+proof -
+  have operCA: "\<And>N n. \<lbrakk>N \<in> ST_PS; RedCondA N; RedCondB N; 1 \<le> n;
+                   \<not> (Lng N - 1 = 0
+                      \<or> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0)
+                      \<or> \<not> hasParent N (idx1 N (Lng N - 1)) (Lng N - 1))\<rbrakk>
+                  \<Longrightarrow> RedCondA ((N::pairseq)[n])"
+    by (rule operCA_tiling_hpN_valley[OF hpN valley])
+  have operCB: "\<And>N n. \<lbrakk>N \<in> ST_PS; RedCondA N; RedCondB N; 1 \<le> n;
+                   \<not> (Lng N - 1 = 0
+                      \<or> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0)
+                      \<or> \<not> hasParent N (idx1 N (Lng N - 1)) (Lng N - 1))\<rbrakk>
+                  \<Longrightarrow> RedCondB ((N::pairseq)[n])"
+    by (rule operCB_tiling)
+  show ?thesis by (rule m_6_7_standard_reduced[OF operCA operCB])
+qed
+
+
+text \<open>§6.5 \<open>stdCA\<close> residual \<open>M \<in> ST_PS \<Longrightarrow> RedCondA M\<close> conditional on \<open>hpN\<close>/\<open>valley\<close>
+  only, via @{thm [source] m_6_5_ST_PS_imp_RedCondA} with \<open>operCB = operCB_tiling\<close>.\<close>
+
+lemma m_6_5_ST_PS_imp_RedCondA_hpN_valley:
+  assumes hpN: "\<And>N n y. \<lbrakk>N \<in> ST_PS;
+                   \<not> (Lng N - 1 = 0
+                      \<or> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0)
+                      \<or> \<not> hasParent N (idx1 N (Lng N - 1)) (Lng N - 1));
+                   parent N (idx1 N (Lng N - 1)) (Lng N - 1) \<le> y;
+                   hasParent ((N::pairseq)[n]) 1 y;
+                   idx1 N (Lng N - 1) = 1\<rbrakk>
+                 \<Longrightarrow> hasParent N 1 (parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                        + (y - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                           mod (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)))"
+    and valley: "\<And>N n y j. \<lbrakk>N \<in> ST_PS;
+                   \<not> (Lng N - 1 = 0
+                      \<or> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0)
+                      \<or> \<not> hasParent N (idx1 N (Lng N - 1)) (Lng N - 1));
+                   parent N (idx1 N (Lng N - 1)) (Lng N - 1) \<le> y;
+                   hasParent ((N::pairseq)[n]) 1 y;
+                   idx1 N (Lng N - 1) = 1;
+                   (if parent N 1 (parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                              + (y - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                                 mod (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)))
+                          < parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                       then parent N 1 (parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                              + (y - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                                 mod (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)))
+                       else parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                              + ((y - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                                 div (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)))
+                                * (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                              + (parent N 1 (parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+                                    + (y - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+                                       mod (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)))
+                                 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)))
+                        < j;
+                   le0 ((N::pairseq)[n]) j y\<rbrakk>
+                   \<Longrightarrow> entry ((N::pairseq)[n]) 1 y \<le> entry ((N::pairseq)[n]) 1 j"
+    and M: "M \<in> ST_PS"
+  shows "RedCondA M"
+proof -
+  have operCA: "\<And>N n. \<lbrakk>N \<in> ST_PS; RedCondA N; RedCondB N; 1 \<le> n;
+                   \<not> (Lng N - 1 = 0
+                      \<or> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0)
+                      \<or> \<not> hasParent N (idx1 N (Lng N - 1)) (Lng N - 1))\<rbrakk>
+                  \<Longrightarrow> RedCondA ((N::pairseq)[n])"
+    by (rule operCA_tiling_hpN_valley[OF hpN valley])
+  have operCB: "\<And>N n. \<lbrakk>N \<in> ST_PS; RedCondA N; RedCondB N; 1 \<le> n;
+                   \<not> (Lng N - 1 = 0
+                      \<or> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0)
+                      \<or> \<not> hasParent N (idx1 N (Lng N - 1)) (Lng N - 1))\<rbrakk>
+                  \<Longrightarrow> RedCondB ((N::pairseq)[n])"
+    by (rule operCB_tiling)
+  show ?thesis by (rule m_6_5_ST_PS_imp_RedCondA[OF M operCA operCB])
+qed
+
+
+
+text \<open>Front B: §6.7/§6.5 cascade conditional on hpN+valley assembled.\<close>
+
 
 end
