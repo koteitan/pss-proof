@@ -20,7 +20,7 @@
         - ✅🚧 補題（死枝[20]の到達不能性）〔`m_6_5_monoT_Red_m10pos`(m10>0)〕
       - ✅ 命題（$\textrm{Lng}$ の $\textrm{Red}$ 不変性）
       - ✅ 系（$\textrm{Red}$ が零項性を保つこと）
-      - 🚨🤖 系（直系先祖の $\textrm{Red}$ 不変性）〔`m_6_5_Red_le` 条件付green、残2: congR m10>0 branch + ST_PS⟹RedCondA(→§6.7 bcorr)。A4〕
+      - 🚨🤖 系（直系先祖の $\textrm{Red}$ 不変性）〔`m_6_5_Red_le` 条件付green、残2: congR m10>0 branch + ST_PS⟹RedCondA(→§6.7 oper-tiling spsy+valley)。A4〕
       - ✅🚧 系（$\textrm{Red}$ が単項性を保つこと）〔forward `m_6_5_Red_preserves_monoT` green、逆向き残〕
       - 🚨 系（$P$ の $\textrm{Red}$ 同変性）〔A4〕
       - ✅ 命題（単項性と $\textrm{Red}$ の関係）〔`m_6_5_monoT_Red_m10pos`〕
@@ -44,7 +44,7 @@
       - 🚨 系（$1$ 列ペア数列の基本性質）
     - 🚨 §6.7 標準形
       - ✅ 命題（標準形の階層和による表示）
-      - 🚨🤖 命題（標準形の簡約性）〔`m_6_7_standard_reduced`(ST_PS⊆RT_PS) keystone 経由で条件付green、残 oper-tiling i1=1 単一 brick `bcorr`〕
+      - 🚨🤖 命題（標準形の簡約性）〔`m_6_7_standard_reduced`(ST_PS⊆RT_PS) keystone 経由で条件付green、残 oper-tiling i1=1 の spsy+valley〕
       - ✅ 命題（標準形の単項成分が標準形であること）
       - ✅ 命題（標準形の始切片への遺伝性）
     - ✅ §6.8 降順性
