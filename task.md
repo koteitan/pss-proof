@@ -13,13 +13,13 @@
     - ✅ §6.2 単項性
     - ✅ §6.3 許容性
     - ✅ §6.4 幹と枝
-    - 🚨🚧 §6.5 簡約化 〔下記8系は $T_{\textrm{PS}}$ で偽、係留切片で真 (correction A4)。**cluster は dead-branch[20] を中心に絡むが非循環＝破れると確定**。最難ボトルネックを値単調性不変量1つ `m_6_5_Red_leftend_row0_min` まで絞り込み済。設計 `docs/red-le-domain.md §6-10`〕
+    - 🚨🚧 §6.5 簡約化 〔下記8系は $T_{\textrm{PS}}$ で偽、係留切片(anchored_slice)で真 (correction A4)。`m_6_5_Red_leftend_row0_min`/`m_6_5_Red_IncrFirst`/`m_6_5_Red_Pred`/`m_6_5_Red_idem`/`m_6_5_monoT_Red_m10pos` 全 green。**§6.6 keystone 完成で `p_6_5_Red_le` ルート確定**: anchored⟹¬multiT(`m_6_5_anchored_not_multiT`)⟹zeroT/monoT、monoT は congR M (Red M) 経由。`m_6_5_Red_le` を 2残余(`congR_self_Red_monoT` の m10>0 branch + ST_PS⟹RedCondA)まで条件付 green 組立。後者は §6.7 `bcorr`(operCA-tiling i1=1) 単一 brick に集約済。**注意: `RedCondA⟹leR-inv` は T_PS で偽(2502/4530)、正しい橋は `congR M (Red M)`**。設計 `docs/red-le-domain.md §6-10`〕
       - ✅ 命題（$\textrm{Red}$ の well-defined 性）
       - ✅ 命題（$\textrm{Red}$ の $\textrm{IncrFirst}$ 不変性）〔`m_6_5_Red_IncrFirst`(green)。**cut-anchored engine 完成**: `cut_bump` locale + `fin_cut_bump_Red`(Red.pinduct, cut量化) + B2。更に master-key **`cdn_red_cong`**(green): `congR A X ⟹ Red A = Red X`(nextrel0+Lng+row1一致)。§6.5後半/§6.6 の唯一ボトルネックを解消。設計 `docs/reducedness.md §11-§12`〕
         - ✅🚧 補題（死枝[20]の到達不能性）〔= `p_6_5_monoT_Red`。**m10>0 ケース完全証明 `m_6_5_monoT_Red_m10pos`(green, 非循環)**。α 経由: leftend-min→PIECE3→BC0→monoT_Red。m10=0 はエンコーディング縮退で premise `0<m10` 補正(Red は m10>0 でのみ使用)。設計 `docs/red-le-domain.md §6-11`〕
       - ✅ 命題（$\textrm{Lng}$ の $\textrm{Red}$ 不変性）〔§6.5 下流の linchpin〕
       - ✅ 系（$\textrm{Red}$ が零項性を保つこと）
-      - 🚨🚧 系（直系先祖の $\textrm{Red}$ 不変性）〔`p_6_5_Red_le`: M∈anchored_slice⟹leR M=leR(Red M)。**keystone(d) 完成で unblock**: reduced⟹RedCondA⟹red_le ルート(T_PS 877/0, anchored 776/0)。leR=le0/le1 合成、`cdn_red_cong`/`m_6_5_Red_leftend_row0_min` 等 green 再利用。A4(anchored scope, T_PS で偽)〕
+      - 🚨🚧 系（直系先祖の $\textrm{Red}$ 不変性）〔`p_6_5_Red_le`: M∈anchored_slice⟹leR M=leR(Red M)。keystone 経由で `m_6_5_Red_le` を 2残余(monoCong=`congR_self_Red_monoT`、stdCA=ST_PS⟹RedCondA)まで条件付 green。bridge `congR M(Red M)⟹leR M=leR(Red M)`(=`m_6_5_congR_imp_leR_inv`)+row1 fragment green。残: ①`congR_self_Red_monoT` の m10>0 branch(coreReduce が RedCondA 不満→core-seq congR、ルート文書化) ②stdCA→§6.7 bcorr。A4(anchored scope, T_PS で偽)〕
       - ✅🚧 系（$\textrm{Red}$ が単項性を保つこと）〔forward `m_6_5_Red_preserves_monoT`(M∈PT_PS⟹monoT(Red M)) green、Red.pinduct+値単調性。逆向き(monoT(Red M)⟹monoT M)は残〕
       - 🚨 系（$P$ の $\textrm{Red}$ 同変性）〔A4〕
       - ✅ 命題（単項性と $\textrm{Red}$ の関係）〔`m_6_5_monoT_Red_m10pos`、m10>0(=Red 使用域)、dead-branch[20]不到達〕
@@ -43,7 +43,7 @@
       - 🚨 系（$1$ 列ペア数列の基本性質）
     - 🚨 §6.7 標準形
       - ✅ 命題（標準形の階層和による表示）
-      - 🚨 命題（標準形の簡約性）
+      - 🚨🚧 命題（標準形の簡約性）〔`p_6_7_standard_reduced`: ST_PS⊆RT_PS。**keystone 経由で ⟺ ∀M∈ST_PS.RedCondA∧RedCondB**。`m_6_7_standard_RedCondAB`/`m_6_7_standard_reduced`/`m_6_5_ST_PS_imp_RedCondA` を ST_PS.induct で条件付 green。diag=`kfwd_condAB_diagSeq`+`RedCondB_diagSeq`、oper 非tiling=`RedCondA/B_oper_nontiling`、oper tiling 残。**oper-tiling RedCondB=`operCB_tiling` 無条件 green、RedCondA=`operCA_tiling` を多数 brick で row-0 全完成+row-1 i1=0 完成、残 i1=1 を単一 brick `bcorr`(base-parent correspondence, forward witness+nextR1_unique)に集約**。bcorr 閉鎖で §6.7+§6.5 stdCA 同時無条件化〕
       - ✅ 命題（標準形の単項成分が標準形であること）
       - ✅ 命題（標準形の始切片への遺伝性）
     - ✅ §6.8 降順性
