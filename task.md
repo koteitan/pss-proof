@@ -44,7 +44,7 @@
       - 🚨 系（$1$ 列ペア数列の基本性質）
     - 🚨 §6.7 標準形
       - ✅ 命題（標準形の階層和による表示）
-      - 🚨🤖 命題（標準形の簡約性）〔`m_6_7_standard_reduced_via_spsy_valley`(ST_PS⊆RT_PS) owithin消化済(6a7ffb4)、残=単一keystone spsy（valleyは従属）。証明sk:nextrel1最大性+同一block witness z=bs+(base row1 parent-j0) via oper_d1pos_le0_offset_within（19020/0検証済）〕
+      - 🚨🤖 命題（標準形の簡約性）〔generic分岐`spsy_keystone_strict_blockstart`green(d690fc1,18945/19020)。残=tie排除「N∈ST_PS⟹entry(N[n])1 bs<entry(N[n])1 y」のみ(tie⟺非標準を369/0確認、ST_PS帰納で証明→spsy_keystone無条件→operCA→cascade無条件)〕
       - ✅ 命題（標準形の単項成分が標準形であること）
       - ✅ 命題（標準形の始切片への遺伝性）
     - ✅ §6.8 降順性
