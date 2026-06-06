@@ -58376,4 +58376,358 @@ qed
 
 
 
+
+text \<open>§6.7 fullramp: WIDTH-1 degenerate brick.  When the last block has width 1
+  (\<open>parent N 1 (Lng N - 1) = Lng N - 2\<close>), the per-step range \<open>[j\<^sub>0, j\<^sub>1)\<close> is the
+  single point \<open>x = Lng N - 2\<close> (forced by \<open>xlo\<close>/\<open>xhi\<close>), and the conclusion is
+  literally the \<open>laststep\<close> hypothesis.  Purely finite-arith; cites nothing.\<close>
+
+lemma fr_width1_step:
+  fixes N :: pairseq
+  assumes L: "1 < Lng N"
+    and j0eq: "parent N 1 (Lng N - 1) = Lng N - 2"
+    and laststep: "entry N 0 (Lng N - 1) = Suc (entry N 0 (Lng N - 2))"
+    and xlo: "parent N 1 (Lng N - 1) \<le> x"
+    and xhi: "x < Lng N - 1"
+  shows "entry N 0 (Suc x) = Suc (entry N 0 x)"
+proof -
+  have xj2: "x = Lng N - 2" using xlo xhi j0eq L by linarith
+  have sxj1: "Suc x = Lng N - 1" using xj2 L by linarith
+  show ?thesis using laststep xj2 sxj1 by simp
+qed
+
+
+text \<open>§6.7 fullramp: the BLOCK-REGION per-step ramp for the \<open>i\<^sub>1=1\<close> oper
+  \<open>N = M[n]\<close>.  Every row-0 step \<open>x \<to> x+1\<close> with \<open>x\<close> in the blocks region
+  \<open>[j\<^sub>0\<^sup>M, Lng N - 1)\<close> is exactly \<open>+1\<close>, given (a) the M-tail \<open>+1\<close> ramp on
+  \<open>[j\<^sub>0\<^sup>M, Lng M - 1]\<close> (the absolute form \<open>entry M 0 (j\<^sub>0\<^sup>M+t)=entry M 0 j\<^sub>0\<^sup>M+t\<close>,
+  i.e. \<open>fullramp(M)\<close>) and (b) the single \<open>laststep(M)\<close>.  A step is either
+  interior to a block (a shifted \<open>M\<close>-step, \<open>+1\<close> by the ramp) or a block boundary
+  (\<open>s = w-1\<close>, where the jump is \<open>entry M 0 j\<^sub>1\<^sup>M - entry M 0 (j\<^sub>1\<^sup>M-1) = +1\<close> by
+  \<open>laststep(M)\<close>).  Cites only @{thm [source] oper_d1pos_entry0} and
+  @{thm [source] oper_d1pos_LngM}; no spsy / sblk / RedCond / tail_affine.\<close>
+
+lemma fr_block_step:
+  fixes M :: pairseq
+  assumes L: "1 < Lng M"
+    and notzero: "\<not> (entry M 0 (Lng M - 1) = 0 \<and> entry M 1 (Lng M - 1) = 0)"
+    and hp: "hasParent M (idx1 M (Lng M - 1)) (Lng M - 1)"
+    and i1z: "idx1 M (Lng M - 1) = 1"
+    and j0lt: "parent M 1 (Lng M - 1) < Lng M - 1"
+    and n0: "0 < n"
+    and ramp: "\<And>t. t \<le> Lng M - 1 - parent M 1 (Lng M - 1)
+                 \<Longrightarrow> entry M 0 (parent M 1 (Lng M - 1) + t)
+                       = entry M 0 (parent M 1 (Lng M - 1)) + t"
+    and laststep: "entry M 0 (Lng M - 1) = Suc (entry M 0 (Lng M - 2))"
+    and xlo: "parent M 1 (Lng M - 1) \<le> x"
+    and xhi: "x < Lng ((M::pairseq)[n]) - 1"
+  shows "entry ((M::pairseq)[n]) 0 (Suc x) = Suc (entry ((M::pairseq)[n]) 0 x)"
+proof -
+  let ?j1 = "Lng M - 1"  let ?j0 = "parent M 1 ?j1"  let ?w = "?j1 - ?j0"
+  let ?Mn = "(M::pairseq)[n]"
+  let ?delta = "entry M 0 ?j1 - entry M 0 ?j0"
+  have w0: "0 < ?w" using j0lt by linarith
+  \<comment> \<open>\<open>delta = w\<close> from the M-tail ramp at offset \<open>w\<close>\<close>
+  have e_j1: "entry M 0 ?j1 = entry M 0 ?j0 + ?w"
+  proof -
+    have "entry M 0 (?j0 + ?w) = entry M 0 ?j0 + ?w" using ramp[of ?w] by simp
+    moreover have "?j0 + ?w = ?j1" using j0lt by simp
+    ultimately show ?thesis by simp
+  qed
+  have dw: "?delta = ?w" using e_j1 by simp
+  \<comment> \<open>length of \<open>N\<close>, hence \<open>j\<^sub>1\<^sup>N = j\<^sub>0 + n*w - 1\<close>\<close>
+  have lenN: "Lng ?Mn = ?j0 + n * ?w"
+    by (rule oper_d1pos_LngM[OF L notzero hp i1z j0lt])
+  \<comment> \<open>block coordinates of \<open>x\<close>\<close>
+  define d where "d = x - ?j0"
+  have xd: "x = ?j0 + d" using d_def xlo by simp
+  let ?q = "d div ?w"  let ?s = "d mod ?w"
+  have sw: "?s < ?w" using w0 by simp
+  have qsd: "?q * ?w + ?s = d"
+    using div_mult_mod_eq[of d ?w] by (simp add: mult.commute)
+  have xqs: "x = ?j0 + ?q * ?w + ?s" using xd qsd by simp
+  \<comment> \<open>\<open>x < j\<^sub>0 + n*w - 1\<close> gives \<open>d < n*w\<close>, hence \<open>q < n\<close>\<close>
+  have dlt: "d < n * ?w"
+  proof -
+    have "x < ?j0 + n * ?w - 1" using xhi lenN by simp
+    thus ?thesis using xd by linarith
+  qed
+  have qn: "?q < n" using less_mult_imp_div_less[OF dlt] .
+  \<comment> \<open>row-0 readback at \<open>x\<close>\<close>
+  have e_x: "entry ?Mn 0 x = entry M 0 (?j0 + ?s) + ?q * ?delta"
+    using oper_d1pos_entry0[OF L notzero hp i1z j0lt qn sw] xqs by simp
+  show ?thesis
+  proof (cases "Suc ?s = ?w")
+    case False
+    \<comment> \<open>INTERIOR step: same block \<open>q\<close>, offset \<open>s+1 < w\<close>\<close>
+    have ss: "Suc ?s < ?w" using sw False by simp
+    have sxqs: "Suc x = ?j0 + ?q * ?w + Suc ?s" using xqs by simp
+    have e_sx: "entry ?Mn 0 (Suc x) = entry M 0 (?j0 + Suc ?s) + ?q * ?delta"
+      using oper_d1pos_entry0[OF L notzero hp i1z j0lt qn ss] sxqs by simp
+    \<comment> \<open>the M-side interior step is \<open>+1\<close> by the ramp at \<open>s\<close> and \<open>s+1\<close>\<close>
+    have sle: "?s \<le> ?w" using sw by simp
+    have ssle: "Suc ?s \<le> ?w" using ss by simp
+    have eMs: "entry M 0 (?j0 + ?s) = entry M 0 ?j0 + ?s" using ramp[of ?s] sle by simp
+    have eMss: "entry M 0 (?j0 + Suc ?s) = entry M 0 ?j0 + Suc ?s"
+      using ramp[of "Suc ?s"] ssle by simp
+    have stepM: "entry M 0 (?j0 + Suc ?s) = Suc (entry M 0 (?j0 + ?s))"
+      using eMs eMss by simp
+    show ?thesis using e_x e_sx stepM by simp
+  next
+    case True
+    \<comment> \<open>BOUNDARY step: \<open>s = w-1\<close>, \<open>Suc x\<close> starts block \<open>q+1\<close> at offset 0\<close>
+    have sw1: "?s = ?w - 1" using True by simp
+    \<comment> \<open>\<open>x \<noteq> j\<^sub>1\<^sup>N\<close> forces \<open>q+1 < n\<close> (else \<open>x = j\<^sub>0 + n*w - 1 = j\<^sub>1\<^sup>N\<close>)\<close>
+    have q1n: "Suc ?q < n"
+    proof (rule ccontr)
+      assume "\<not> Suc ?q < n"
+      hence qn1: "Suc ?q = n" using qn by linarith
+      \<comment> \<open>abstract \<open>w\<close>, \<open>q\<close>, \<open>j\<^sub>0\<close> into opaque nats (CLAUDE.md: avoid re-expanding \<open>?w\<close>)\<close>
+      define W where "W = ?w"
+      define Q where "Q = ?q"
+      define J where "J = ?j0"
+      have W0: "0 < W" using w0 W_def by simp
+      have xJ: "x = J + (Q * W + (W - 1))" using xqs sw1 J_def W_def Q_def by simp
+      have lenNJ: "Lng ?Mn = J + n * W" using lenN J_def W_def by simp
+      have nQ: "n = Suc Q" using qn1 Q_def by simp
+      have step: "Q * W + (W - 1) = n * W - 1"
+      proof -
+        have "Q * W + (W - 1) = Q * W + W - 1" using W0 by simp
+        also have "\<dots> = Suc Q * W - 1" by simp
+        also have "\<dots> = n * W - 1" using nQ by simp
+        finally show ?thesis .
+      qed
+      have nw1: "1 \<le> n * W"
+      proof -
+        have "W \<le> n * W" using nQ by simp
+        thus ?thesis using W0 by linarith
+      qed
+      have "x = J + (n * W - 1)" using xJ step by simp
+      hence "x = J + n * W - 1" using nw1 by simp
+      hence "x = Lng ?Mn - 1" using lenNJ by simp
+      thus False using xhi by simp
+    qed
+    have sxqs: "Suc x = ?j0 + Suc ?q * ?w + 0"
+    proof -
+      have "Suc x = ?j0 + ?q * ?w + Suc ?s" using xqs by simp
+      also have "\<dots> = ?j0 + ?q * ?w + ?w" using True by simp
+      also have "\<dots> = ?j0 + Suc ?q * ?w + 0" by simp
+      finally show ?thesis .
+    qed
+    have e_sx: "entry ?Mn 0 (Suc x) = entry M 0 (?j0 + 0) + Suc ?q * ?delta"
+      using oper_d1pos_entry0[OF L notzero hp i1z j0lt q1n w0] sxqs by simp
+    \<comment> \<open>abstract \<open>w\<close>, \<open>q\<close>, \<open>entry M 0 j\<^sub>0\<close> into opaque nats so the decision procedure
+       never re-expands the \<open>?w = Lng M - Suc (parent ..)\<close> atom (CLAUDE.md gotcha)\<close>
+    define W where "W = ?w"
+    define Q where "Q = ?q"
+    define E where "E = entry M 0 ?j0"
+    have W0: "0 < W" using w0 W_def by simp
+    \<comment> \<open>read off both sides via \<open>delta = w\<close> and \<open>laststep(M)\<close>\<close>
+    have eMs: "entry M 0 (?j0 + ?s) = E + (W - 1)"
+      using ramp[of ?s] sw1 sw E_def W_def by simp
+    have lhs: "entry ?Mn 0 (Suc x) = E + Suc Q * W"
+      using e_sx dw E_def W_def Q_def by simp
+    have rhs: "entry ?Mn 0 x = E + (W - 1) + Q * W"
+      using e_x eMs dw E_def W_def Q_def by simp
+    have arith: "E + Suc Q * W = Suc (E + (W - 1) + Q * W)"
+      using W0 by simp
+    show ?thesis using lhs rhs arith by simp
+  qed
+qed
+
+
+text \<open>§6.7 fullramp: the PREFIX-REGION per-step ramp for the \<open>i\<^sub>1=1\<close> oper
+  \<open>N = M[n]\<close>.  In the prefix region \<open>[?, j\<^sub>0\<^sup>M)\<close> the \<open>N\<close>-entries read straight off
+  \<open>M\<close> (the prefix \<open>take j\<^sub>0\<^sup>M M\<close> is verbatim, @{thm [source] oper_d1pos_nth_prefix}),
+  and the boundary node \<open>j\<^sub>0\<^sup>M\<close> is block 0 offset 0 (\<open>entry N 0 j\<^sub>0\<^sup>M = entry M 0 j\<^sub>0\<^sup>M\<close>,
+  @{thm [source] oper_d1pos_entry0}).  Hence every step \<open>x \<to> x+1\<close> with
+  \<open>x < j\<^sub>0\<^sup>M\<close> equals the corresponding \<open>M\<close>-row-0 step, so the conclusion follows
+  from the supplied \<open>M\<close>-prefix \<open>+1\<close> step \<open>preM\<close>.  Cites only
+  @{thm [source] oper_d1pos_nth_prefix} and @{thm [source] oper_d1pos_entry0}; no
+  spsy / sblk / RedCond / tail_affine.\<close>
+
+lemma fr_prefix_step:
+  fixes M :: pairseq
+  assumes L: "1 < Lng M"
+    and notzero: "\<not> (entry M 0 (Lng M - 1) = 0 \<and> entry M 1 (Lng M - 1) = 0)"
+    and hp: "hasParent M (idx1 M (Lng M - 1)) (Lng M - 1)"
+    and i1z: "idx1 M (Lng M - 1) = 1"
+    and j0lt: "parent M 1 (Lng M - 1) < Lng M - 1"
+    and n0: "0 < n"
+    and xlt: "x < parent M 1 (Lng M - 1)"
+    and preM: "entry M 0 (Suc x) = Suc (entry M 0 x)"
+  shows "entry ((M::pairseq)[n]) 0 (Suc x) = Suc (entry ((M::pairseq)[n]) 0 x)"
+proof -
+  let ?j1 = "Lng M - 1"  let ?j0 = "parent M 1 ?j1"  let ?w = "?j1 - ?j0"
+  let ?Mn = "(M::pairseq)[n]"
+  have w0: "0 < ?w" using j0lt by linarith
+  \<comment> \<open>row-0 of \<open>N\<close> at \<open>x\<close> equals row-0 of \<open>M\<close> (prefix verbatim)\<close>
+  have e_x: "entry ?Mn 0 x = entry M 0 x"
+    using oper_d1pos_nth_prefix[OF L notzero hp i1z xlt, of n] by (simp add: entry_def)
+  show ?thesis
+  proof (cases "Suc x < ?j0")
+    case True
+    \<comment> \<open>both \<open>x\<close> and \<open>x+1\<close> in the verbatim prefix\<close>
+    have e_sx: "entry ?Mn 0 (Suc x) = entry M 0 (Suc x)"
+      using oper_d1pos_nth_prefix[OF L notzero hp i1z True, of n] by (simp add: entry_def)
+    show ?thesis using e_x e_sx preM by simp
+  next
+    case False
+    \<comment> \<open>boundary: \<open>x = j\<^sub>0 - 1\<close>, \<open>Suc x = j\<^sub>0\<close> is block 0 offset 0\<close>
+    have sxj0: "Suc x = ?j0" using xlt False by simp
+    have rb0: "entry ?Mn 0 (?j0 + 0 * ?w + 0)
+                 = entry M 0 (?j0 + 0) + 0 * (entry M 0 ?j1 - entry M 0 ?j0)"
+      by (rule oper_d1pos_entry0[OF L notzero hp i1z j0lt n0 w0])
+    have e_sx': "entry ?Mn 0 ?j0 = entry M 0 ?j0" using rb0 by simp
+    have e_sx: "entry ?Mn 0 (Suc x) = entry M 0 ?j0" using e_sx' sxj0 by simp
+    have "entry M 0 ?j0 = entry M 0 (Suc x)" using sxj0 by simp
+    thus ?thesis using e_x e_sx preM by simp
+  qed
+qed
+
+
+text \<open>§6.7 fullramp: the OPER per-step ramp for \<open>N = M[n]\<close>, ASSEMBLED from the
+  three region bricks.  Every step \<open>x \<to> x+1\<close> with \<open>j\<^sub>0\<^sup>N \<le> x < j\<^sub>1\<^sup>N\<close> is split
+  on \<open>x < j\<^sub>0\<^sup>M\<close> (prefix, @{thm [source] fr_prefix_step}, fed the supplied
+  \<open>M\<close>-prefix step) vs \<open>x \<ge> j\<^sub>0\<^sup>M\<close> (block region, @{thm [source] fr_block_step},
+  fed the \<open>M\<close>-tail ramp \<open>ramp\<close> and \<open>laststep(M)\<close>).  Cites only the two GREEN
+  region bricks; no spsy / sblk / RedCond / tail_affine.  The two supplied
+  premises \<open>ramp\<close> (the \<open>M\<close>-tail \<open>+1\<close> ramp, i.e. fullramp of \<open>M\<close>) and
+  \<open>preM\<close> (the \<open>M\<close>-prefix \<open>+1\<close> step on \<open>[j\<^sub>0\<^sup>N, j\<^sub>0\<^sup>M)\<close>) are the IH content plus the
+  named prefix-ramp residual.\<close>
+
+lemma fr_oper_step:
+  fixes M :: pairseq
+  assumes L: "1 < Lng M"
+    and notzero: "\<not> (entry M 0 (Lng M - 1) = 0 \<and> entry M 1 (Lng M - 1) = 0)"
+    and hp: "hasParent M (idx1 M (Lng M - 1)) (Lng M - 1)"
+    and i1z: "idx1 M (Lng M - 1) = 1"
+    and j0lt: "parent M 1 (Lng M - 1) < Lng M - 1"
+    and n0: "0 < n"
+    and ramp: "\<And>t. t \<le> Lng M - 1 - parent M 1 (Lng M - 1)
+                 \<Longrightarrow> entry M 0 (parent M 1 (Lng M - 1) + t)
+                       = entry M 0 (parent M 1 (Lng M - 1)) + t"
+    and laststep: "entry M 0 (Lng M - 1) = Suc (entry M 0 (Lng M - 2))"
+    and preM: "\<And>y. parent ((M::pairseq)[n]) 1 (Lng ((M::pairseq)[n]) - 1) \<le> y
+                 \<Longrightarrow> y < parent M 1 (Lng M - 1)
+                 \<Longrightarrow> entry M 0 (Suc y) = Suc (entry M 0 y)"
+    and xlo: "parent ((M::pairseq)[n]) 1 (Lng ((M::pairseq)[n]) - 1) \<le> x"
+    and xhi: "x < Lng ((M::pairseq)[n]) - 1"
+  shows "entry ((M::pairseq)[n]) 0 (Suc x) = Suc (entry ((M::pairseq)[n]) 0 x)"
+proof (cases "x < parent M 1 (Lng M - 1)")
+  case True
+  have stepM: "entry M 0 (Suc x) = Suc (entry M 0 x)" using preM[OF xlo True] .
+  show ?thesis
+    by (rule fr_prefix_step[OF L notzero hp i1z j0lt n0 True stepM])
+next
+  case False
+  have xge: "parent M 1 (Lng M - 1) \<le> x" using False by simp
+  show ?thesis
+    by (rule fr_block_step[OF L notzero hp i1z j0lt n0 ramp laststep xge xhi])
+qed
+
+
+text \<open>§6.7 fullramp: the GLOBAL per-step ramp of \<open>N = M[n]\<close> on \<open>[0, j\<^sub>1\<^sup>N)\<close>,
+  assembled from the GLOBAL per-step ramp of \<open>M\<close> on \<open>[0, j\<^sub>1\<^sup>M)\<close> (the strong
+  induction hypothesis) and \<open>laststep(M)\<close>.  A step \<open>x \<to> x+1\<close> with \<open>x < j\<^sub>0\<^sup>M\<close>
+  reads off the verbatim prefix (@{thm [source] fr_prefix_step}, fed the
+  \<open>M\<close>-global step at \<open>x\<close>), and a step with \<open>x \<ge> j\<^sub>0\<^sup>M\<close> is a block-region step
+  (@{thm [source] fr_block_step}, fed the \<open>M\<close>-tail ramp derived by cumulating
+  the \<open>M\<close>-global step on \<open>[j\<^sub>0\<^sup>M, j\<^sub>1\<^sup>M]\<close>).  Cites only the two GREEN region bricks;
+  no spsy / sblk / RedCond / tail_affine.  This is the genuine TILING oper step
+  of the global-ramp strong induction.\<close>
+
+lemma fr_global_oper:
+  fixes M :: pairseq
+  assumes L: "1 < Lng M"
+    and notzero: "\<not> (entry M 0 (Lng M - 1) = 0 \<and> entry M 1 (Lng M - 1) = 0)"
+    and hp: "hasParent M (idx1 M (Lng M - 1)) (Lng M - 1)"
+    and i1z: "idx1 M (Lng M - 1) = 1"
+    and j0lt: "parent M 1 (Lng M - 1) < Lng M - 1"
+    and n0: "0 < n"
+    and Mglob: "\<And>y. y < Lng M - 1 \<Longrightarrow> entry M 0 (Suc y) = Suc (entry M 0 y)"
+    and laststep: "entry M 0 (Lng M - 1) = Suc (entry M 0 (Lng M - 2))"
+    and xhi: "x < Lng ((M::pairseq)[n]) - 1"
+  shows "entry ((M::pairseq)[n]) 0 (Suc x) = Suc (entry ((M::pairseq)[n]) 0 x)"
+proof -
+  let ?j1 = "Lng M - 1"  let ?j0 = "parent M 1 ?j1"
+  \<comment> \<open>cumulate the M-global step to the absolute tail ramp on \<open>[j\<^sub>0, j\<^sub>1]\<close>\<close>
+  have ramp: "\<And>t. t \<le> ?j1 - ?j0 \<Longrightarrow> entry M 0 (?j0 + t) = entry M 0 ?j0 + t"
+  proof -
+    fix t assume "t \<le> ?j1 - ?j0"
+    thus "entry M 0 (?j0 + t) = entry M 0 ?j0 + t"
+    proof (induction t)
+      case 0 show ?case by simp
+    next
+      case (Suc t)
+      have lt: "?j0 + t < ?j1" using Suc.prems j0lt by linarith
+      have step: "entry M 0 (Suc (?j0 + t)) = Suc (entry M 0 (?j0 + t))"
+        by (rule Mglob[OF lt])
+      have ih: "entry M 0 (?j0 + t) = entry M 0 ?j0 + t" using Suc.IH Suc.prems by simp
+      show ?case using step ih by simp
+    qed
+  qed
+  show ?thesis
+  proof (cases "x < ?j0")
+    case True
+    have stepM: "entry M 0 (Suc x) = Suc (entry M 0 x)"
+      using Mglob[of x] True j0lt by simp
+    show ?thesis
+      by (rule fr_prefix_step[OF L notzero hp i1z j0lt n0 True stepM])
+  next
+    case False
+    have xge: "?j0 \<le> x" using False by simp
+    show ?thesis
+      by (rule fr_block_step[OF L notzero hp i1z j0lt n0 ramp laststep xge xhi])
+  qed
+qed
+
+text \<open>(fr bricks above land the DIAG-free tiling oper step of the global fullramp
+  strong induction; the non-tiling \<open>M[n] = Pred M\<close> sub-case is the named residual.)\<close>
+
+
+text \<open>§6.7 FULLRAMP, width-1 degenerate base.  When the last block has WIDTH 1,
+  i.e. \<open>parent N 1 (Lng N - 1) = Lng N - 2\<close>, the range \<open>[j\<^sub>0, j\<^sub>1)\<close> is the singleton
+  \<open>{Lng N - 2}\<close>, so the gated \<open>x\<close> is forced to \<open>x = Lng N - 2\<close> and the per-step ramp
+  conclusion is literally the \<open>laststep\<close> premise.  Cites nothing.\<close>
+
+lemma fr_wid1_trivial:
+  fixes N :: pairseq
+  assumes L: "1 < Lng N"
+    and laststep: "entry N 0 (Lng N - 1) = Suc (entry N 0 (Lng N - 2))"
+    and wid1: "parent N 1 (Lng N - 1) = Lng N - 2"
+    and xlo: "parent N 1 (Lng N - 1) \<le> x"
+    and xhi: "x < Lng N - 1"
+  shows "entry N 0 (Suc x) = Suc (entry N 0 x)"
+proof -
+  have xge: "Lng N - 2 \<le> x" using xlo wid1 by simp
+  have xlt: "x < Lng N - 1" using xhi .
+  have xeq: "x = Lng N - 2" using xge xlt L by linarith
+  have sxeq: "Suc x = Lng N - 1" using xeq L by simp
+  show ?thesis using laststep xeq sxeq by simp
+qed
+
+
+text \<open>§6.7 FULLRAMP from the endpoint at \<open>j\<^sub>0\<close>.  For a gated \<open>N \<in> ST\<^sub>PS\<close>, GIVEN the
+  single ENDPOINT slope-1 fact \<open>E\<^sub>{j\<^sub>0}\<close> (\<open>entry N 0 j\<^sub>1 = entry N 0 j\<^sub>0 + (j\<^sub>1 - j\<^sub>0)\<close>),
+  the row-0 step \<open>\<le> +1\<close> cap (@{thm [source] subramp_from_Ep}) forces EVERY step on
+  \<open>[j\<^sub>0, j\<^sub>1)\<close> to be exactly \<open>+1\<close> --- the per-step fullramp conclusion.  This is the
+  final glue of the spsy cascade: it converts the bridge output (Ez endpoint at
+  \<open>j\<^sub>0\<close> for \<open>N\<close>) into the @{thm [source] Ez_from_fullramp} /
+  @{thm [source] tree_from_fullramp} input shape.  Cites only the already-GREEN
+  @{thm [source] subramp_from_Ep}; no spsy / sblk / RedCond / oper-tiling /
+  tail_affine.\<close>
+
+lemma fr_ramp_from_Ep_at_j0:
+  fixes N :: pairseq
+  assumes N: "N \<in> ST_PS"
+    and j0lt: "parent N 1 (Lng N - 1) < Lng N - 1"
+    and Ep: "entry N 0 (Lng N - 1)
+               = entry N 0 (parent N 1 (Lng N - 1))
+                 + ((Lng N - 1) - parent N 1 (Lng N - 1))"
+    and xlo: "parent N 1 (Lng N - 1) \<le> x"
+    and xhi: "x < Lng N - 1"
+  shows "entry N 0 (Suc x) = Suc (entry N 0 x)"
+  by (rule subramp_from_Ep[OF N j0lt Ep xlo xhi])
+
 end
