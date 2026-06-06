@@ -59739,4 +59739,132 @@ text \<open>
   red_model.py (enum(3,3), 0-fail).
 \<close>
 
+
+subsection \<open>(vi) Wiring the \<open>shift\<close> residual to the \<open>operCA\<close>/\<open>operCB\<close> tiling bricks\<close>
+
+text \<open>
+  The discriminator of the lone \<open>shift\<close> residual, \<open>M[n] \<noteq> Pred M\<close>, is exactly the
+  \<^emph>\<open>non-degenerate\<close> (tiling) \<open>oper\<close> case.  In every one of the three degenerate
+  \<open>oper\<close>-branches \<open>M[n] = Pred M\<close>:
+  \<^item> \<open>Lng M - 1 = 0\<close>: \<open>M[n] = M\<close> (first @{const oper} branch) and \<open>Pred M = M\<close>
+    (@{const Pred} on \<open>Lng M \<le> 1\<close>), so \<open>M[n] = Pred M\<close>.
+  \<^item> \<open>M\<^bsub>j\<^sub>1\<^esub> = (0,0)\<close> or no unique parent (with \<open>Lng M > 1\<close>): \<open>M[n] = Pred M\<close> by
+    @{thm [source] oper_degenerate_eq_Pred}.
+  Hence \<open>M[n] \<noteq> Pred M\<close> forces the negation of the \<open>?nontile\<close> disjunction, the
+  exact \<open>\<not> ?nontile\<close> precondition of @{thm [source] m_6_7_standard_RedCondAB}'s
+  \<open>operCA\<close>/\<open>operCB\<close> hypotheses.
+\<close>
+
+lemma oper_nontile_eq_Pred:
+  assumes nontile: "Lng M - 1 = 0
+                    \<or> (entry M 0 (Lng M - 1) = 0 \<and> entry M 1 (Lng M - 1) = 0)
+                    \<or> \<not> hasParent M (idx1 M (Lng M - 1)) (Lng M - 1)"
+  shows "(M::pairseq)[n] = Pred M"
+proof (cases "Lng M - 1 = 0")
+  case True
+  hence "(M::pairseq)[n] = M" by (simp add: oper_def Let_def)
+  moreover have "Pred M = M" using True by (simp add: Pred_def)
+  ultimately show ?thesis by simp
+next
+  case False
+  hence L: "Lng M > 1" by simp
+  have D: "entry M 0 (Lng M - 1) = 0 \<and> entry M 1 (Lng M - 1) = 0
+           \<or> \<not> hasParent M (idx1 M (Lng M - 1)) (Lng M - 1)"
+    using nontile False by blast
+  show ?thesis by (rule oper_degenerate_eq_Pred[OF L D])
+qed
+
+text \<open>
+  The \<open>shift\<close> residual carried by @{thm [source] bf_m_6_7_standard_reduced_modulo_shift}
+  and @{thm [source] bf_stdCA_modulo_shift} is \<^emph>\<open>implied\<close> by the \<open>operCA\<close>/\<open>operCB\<close>
+  tiling bricks (Front A).  For a reduced \<open>M\<close> (\<open>Red M = M\<close>), the conclusion
+  \<open>(Red M)[n] = Red (M[n])\<close> collapses to \<open>M[n] = Red (M[n])\<close>, i.e. \<open>M[n]\<close> reduced.
+  Since \<open>M\<close> is reduced it satisfies \<open>RedCondA M \<and> RedCondB M\<close>
+  (@{thm [source] m_6_6_reduced_iff_cond}); the discriminator \<open>M[n] \<noteq> Pred M\<close>
+  gives \<open>\<not> ?nontile\<close> (@{thm [source] oper_nontile_eq_Pred}); so \<open>operCA\<close>/\<open>operCB\<close>
+  deliver \<open>RedCondA (M[n]) \<and> RedCondB (M[n])\<close>, whence \<open>M[n] \<in> RT\<^sub>PS\<close> by the §6.6
+  keystone.  This shows route B introduces \<^bold>\<open>no extra strength\<close> over the original
+  \<open>operCA\<close>/\<open>operCB\<close> route (@{thm [source] m_6_7_standard_reduced}): both bottom out
+  at the same tiling bricks (= the \<open>D(N)\<close> crux).
+\<close>
+
+lemma bf_shift_resid_via_operCAB:
+  assumes operCA: "\<And>N n. \<lbrakk>N \<in> ST_PS; RedCondA N; RedCondB N; 1 \<le> n;
+                   \<not> (Lng N - 1 = 0
+                      \<or> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0)
+                      \<or> \<not> hasParent N (idx1 N (Lng N - 1)) (Lng N - 1))\<rbrakk>
+                  \<Longrightarrow> RedCondA ((N::pairseq)[n])"
+    and operCB: "\<And>N n. \<lbrakk>N \<in> ST_PS; RedCondA N; RedCondB N; 1 \<le> n;
+                   \<not> (Lng N - 1 = 0
+                      \<or> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0)
+                      \<or> \<not> hasParent N (idx1 N (Lng N - 1)) (Lng N - 1))\<rbrakk>
+                  \<Longrightarrow> RedCondB ((N::pairseq)[n])"
+    and MST: "M \<in> ST_PS"
+    and Mred: "M \<in> RT_PS"
+    and n1: "1 \<le> n"
+    and shift: "(M::pairseq)[n] \<noteq> Pred M"
+  shows "(Red M)[n] = Red (M[n])"
+proof -
+  have redM: "Red M = M" using Mred by (simp add: RT_PS_def)
+  have MT: "M \<in> T_PS" using Mred by (simp add: RT_PS_def)
+  have AB_M: "RedCondA M \<and> RedCondB M"
+    using m_6_6_reduced_iff_cond[OF MT] Mred by blast
+  have nontile_false: "\<not> (Lng M - 1 = 0
+                          \<or> (entry M 0 (Lng M - 1) = 0 \<and> entry M 1 (Lng M - 1) = 0)
+                          \<or> \<not> hasParent M (idx1 M (Lng M - 1)) (Lng M - 1))"
+    using shift oper_nontile_eq_Pred by blast
+  have cA: "RedCondA ((M::pairseq)[n])"
+    by (rule operCA[OF MST conjunct1[OF AB_M] conjunct2[OF AB_M] n1 nontile_false])
+  have cB: "RedCondB ((M::pairseq)[n])"
+    by (rule operCB[OF MST conjunct1[OF AB_M] conjunct2[OF AB_M] n1 nontile_false])
+  have opST: "(M::pairseq)[n] \<in> ST_PS" by (rule ST_PS.oper[OF MST n1])
+  have opT: "(M::pairseq)[n] \<in> T_PS" by (rule ST_PS_T_PS[OF opST])
+  have opRed: "(M::pairseq)[n] \<in> RT_PS"
+    using m_6_6_reduced_iff_cond[OF opT] cA cB by blast
+  hence "Red ((M::pairseq)[n]) = (M::pairseq)[n]" by (simp add: RT_PS_def)
+  thus ?thesis using redM by simp
+qed
+
+text \<open>
+  Route B's standard-reducedness, \<^bold>\<open>conditional only on \<open>operCA\<close>/\<open>operCB\<close>\<close>: the
+  faithful (\<open>Red\<close>-\<open>oper\<close>-commutativity) chain
+  @{thm [source] bf_m_6_7_standard_reduced_modulo_shift} with its lone \<open>shift\<close>
+  residual discharged by @{thm [source] bf_shift_resid_via_operCAB}.  Same
+  premises as the original @{thm [source] m_6_7_standard_reduced}, confirming the
+  two routes converge.
+\<close>
+
+lemma bf_m_6_7_standard_reduced_via_operCAB:
+  assumes operCA: "\<And>N n. \<lbrakk>N \<in> ST_PS; RedCondA N; RedCondB N; 1 \<le> n;
+                   \<not> (Lng N - 1 = 0
+                      \<or> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0)
+                      \<or> \<not> hasParent N (idx1 N (Lng N - 1)) (Lng N - 1))\<rbrakk>
+                  \<Longrightarrow> RedCondA ((N::pairseq)[n])"
+    and operCB: "\<And>N n. \<lbrakk>N \<in> ST_PS; RedCondA N; RedCondB N; 1 \<le> n;
+                   \<not> (Lng N - 1 = 0
+                      \<or> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0)
+                      \<or> \<not> hasParent N (idx1 N (Lng N - 1)) (Lng N - 1))\<rbrakk>
+                  \<Longrightarrow> RedCondB ((N::pairseq)[n])"
+  shows "ST_PS \<subseteq> RT_PS"
+  by (rule bf_m_6_7_standard_reduced_modulo_shift,
+      rule bf_shift_resid_via_operCAB[OF operCA operCB])
+
+text \<open>\<open>stdCA\<close> on the faithful route, conditional only on \<open>operCA\<close>/\<open>operCB\<close>.\<close>
+
+lemma bf_stdCA_via_operCAB:
+  assumes operCA: "\<And>N n. \<lbrakk>N \<in> ST_PS; RedCondA N; RedCondB N; 1 \<le> n;
+                   \<not> (Lng N - 1 = 0
+                      \<or> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0)
+                      \<or> \<not> hasParent N (idx1 N (Lng N - 1)) (Lng N - 1))\<rbrakk>
+                  \<Longrightarrow> RedCondA ((N::pairseq)[n])"
+    and operCB: "\<And>N n. \<lbrakk>N \<in> ST_PS; RedCondA N; RedCondB N; 1 \<le> n;
+                   \<not> (Lng N - 1 = 0
+                      \<or> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0)
+                      \<or> \<not> hasParent N (idx1 N (Lng N - 1)) (Lng N - 1))\<rbrakk>
+                  \<Longrightarrow> RedCondB ((N::pairseq)[n])"
+    and S: "S \<in> ST_PS"
+  shows "RedCondA S"
+  by (rule bf_stdCA_modulo_shift[OF _ S],
+      rule bf_shift_resid_via_operCAB[OF operCA operCB])
+
 end
