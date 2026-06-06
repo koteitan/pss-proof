@@ -59978,4 +59978,73 @@ proof -
   thus ?thesis using gz by blast
 qed
 
+
+subsection \<open>(viii) §6.7 \<open>DISJ\<close> residual — WG reflection core (\<open>wg_reflect_core\<close>)\<close>
+
+text \<open>
+  The heart of the \<open>w > 1\<close> branch of \<open>disj\<close> (\<open>has_gz(M[n]) \<Longrightarrow> has_gz M\<close>): an
+  N-side row-1 parent edge \<open>nextrel1 (M[n]) p\<^sub>z z\<close> with both endpoints in the SAME
+  block \<open>q\<close> (\<open>p\<^sub>z = j\<^sub>0 + q\<cdot>w + sp\<close>, \<open>z = j\<^sub>0 + q\<cdot>w + s\<close>, \<open>sp < s < w\<close>) reflects to a
+  row-1 parent of the M-side child \<open>j\<^sub>0 + s\<close>: \<open>hasParent M 1 (j\<^sub>0 + s)\<close> with parent
+  \<open>\<ge> j\<^sub>0 + sp\<close>.  GREEN, RedCondA-free, NO boundary valley / NO row-1 tree / NO
+  \<open>D\<close>: it uses only the periodic row-1 read @{thm [source] oper_d1pos_entry1}, the
+  N\<rightarrow>M same-block \<open>le0\<close> reflection @{thm [source] oper_d1pos_le0_base_back}, the
+  §5.1 parent-existence criterion @{thm [source] m_5_1_parent_exists_2} and
+  uniqueness @{thm [source] nextR1_unique}.  Verified 162/0 on the broad ST_PS
+  closure (\<open>w > 1\<close> gated oper-steps).
+\<close>
+
+lemma wg_reflect_core:
+  fixes M :: pairseq and n q sp s :: nat
+  assumes MT: "M \<in> T_PS"
+    and L: "1 < Lng M"
+    and notzero: "\<not> (entry M 0 (Lng M - 1) = 0 \<and> entry M 1 (Lng M - 1) = 0)"
+    and hp: "hasParent M (idx1 M (Lng M - 1)) (Lng M - 1)"
+    and i1z: "idx1 M (Lng M - 1) = 1"
+    and j0lt: "parent M 1 (Lng M - 1) < Lng M - 1"
+    and qn: "q < n"
+    and sps: "sp < s"
+    and sw: "s < Lng M - 1 - parent M 1 (Lng M - 1)"
+    and edge: "nextrel1 ((M::pairseq)[n])
+                 (parent M 1 (Lng M - 1)
+                    + q * (Lng M - 1 - parent M 1 (Lng M - 1)) + sp)
+                 (parent M 1 (Lng M - 1)
+                    + q * (Lng M - 1 - parent M 1 (Lng M - 1)) + s)"
+  shows "hasParent M 1 (parent M 1 (Lng M - 1) + s)
+         \<and> parent M 1 (Lng M - 1) + sp \<le> parent M 1 (parent M 1 (Lng M - 1) + s)"
+proof -
+  let ?j1 = "Lng M - 1"  let ?j0 = "parent M 1 ?j1"
+  let ?w = "?j1 - ?j0"   let ?Mn = "(M::pairseq)[n]"
+  let ?pz = "?j0 + q * ?w + sp"  let ?z = "?j0 + q * ?w + s"
+  let ?pp = "?j0 + sp"   let ?zp = "?j0 + s"
+  have spw: "sp < ?w" using sps sw by linarith
+  \<comment> \<open>periodic row-1 reads: the two endpoints reflect to M-side columns\<close>
+  have e_pz: "entry ?Mn 1 ?pz = entry M 1 ?pp"
+    by (rule oper_d1pos_entry1[OF L notzero hp i1z j0lt qn spw])
+  have e_z: "entry ?Mn 1 ?z = entry M 1 ?zp"
+    by (rule oper_d1pos_entry1[OF L notzero hp i1z j0lt qn sw])
+  \<comment> \<open>decompose the N-side parent edge\<close>
+  have elt: "entry ?Mn 1 ?pz < entry ?Mn 1 ?z"
+    using edge by (simp add: nextrel1_def)
+  have eMlt: "entry M 1 ?pp < entry M 1 ?zp" using elt e_pz e_z by simp
+  have le0N: "le0 ?Mn ?pz ?z" using edge by (simp add: nextrel1_def)
+  \<comment> \<open>N\<rightarrow>M same-block \<open>le0\<close> reflection\<close>
+  have le0M: "le0 M ?pp ?zp"
+    by (rule oper_d1pos_le0_base_back[OF L notzero hp i1z j0lt qn sps sw le0N])
+  \<comment> \<open>§5.1 parent existence for the M-side child \<open>?zp\<close>\<close>
+  have zpL: "?zp < Lng M" using sw j0lt by linarith
+  have ppzp: "?pp < ?zp" using sps by simp
+  have leR: "leR M 0 ?pp ?zp" using le0M by (simp add: leR_def)
+  obtain j where j: "?pp \<le> j" "j < ?zp" "nextR M 1 j ?zp"
+    using m_5_1_parent_exists_2[OF MT ppzp zpL eMlt leR] by auto
+  \<comment> \<open>existence + uniqueness give \<open>hasParent\<close> and pin the parent value to \<open>j\<close>\<close>
+  have hpzp: "hasParent M 1 ?zp"
+    unfolding hasParent_def using j(3) nextR1_unique by blast
+  have parR: "nextR M 1 (parent M 1 ?zp) ?zp"
+    using hpzp unfolding hasParent_def parent_def by (rule theI')
+  have parj: "parent M 1 ?zp = j" by (rule nextR1_unique[OF parR j(3)])
+  have "?pp \<le> parent M 1 ?zp" using parj j(1) by simp
+  thus ?thesis using hpzp by simp
+qed
+
 end
