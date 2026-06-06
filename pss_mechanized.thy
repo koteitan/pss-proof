@@ -57640,4 +57640,114 @@ proof -
 qed
 
 
+lemma Ez_diag_base:
+  fixes a b :: nat
+  assumes ab: "a \<le> b"
+    and zle: "z \<le> Lng (diagSeq a b) - 1"
+  shows "entry (diagSeq a b) 0 (Lng (diagSeq a b) - 1)
+       = entry (diagSeq a b) 0 z + ((Lng (diagSeq a b) - 1) - z)"
+proof -
+  let ?N = "diagSeq a b"
+  let ?j1 = "Lng ?N - 1"
+  \<comment> \<open>\<open>Lng N = Suc b - a > 0\<close> since \<open>a \<le> b\<close>, so both endpoints are in range\<close>
+  have Lpos: "0 < Suc b - a" using ab by simp
+  have j1lt: "?j1 < Suc b - a" using Lpos by simp
+  have zlt: "z < Suc b - a" using zle Lpos by simp
+  have eN_j1: "entry ?N 0 ?j1 = a + ?j1"
+    by (rule entry_diagSeq[OF j1lt])
+  have eN_z: "entry ?N 0 z = a + z"
+    by (rule entry_diagSeq[OF zlt])
+  \<comment> \<open>slope-1 line: \<open>(a + j\<^sub>1) = (a + z) + (j\<^sub>1 - z)\<close> since \<open>z \<le> j\<^sub>1\<close>\<close>
+  show ?thesis using eN_j1 eN_z zle by simp
+qed
+
+
+lemma ez_inblock_lift:
+  fixes M :: pairseq
+  assumes L: "1 < Lng M"
+    and notzero: "\<not> (entry M 0 (Lng M - 1) = 0 \<and> entry M 1 (Lng M - 1) = 0)"
+    and hp: "hasParent M (idx1 M (Lng M - 1)) (Lng M - 1)"
+    and i1z: "idx1 M (Lng M - 1) = 1"
+    and j0lt: "parent M 1 (Lng M - 1) < Lng M - 1"
+    and qn: "q < n"
+    and s0: "0 < s"
+    and sw: "s < Lng M - 1 - parent M 1 (Lng M - 1)"
+    \<comment> \<open>the IH content: the M-side block \<open>[j\<^sub>0, j\<^sub>1]\<close> is an exact \<open>+1\<close> row-0 ramp\<close>
+    and ramp: "\<And>t. t \<le> Lng M - 1 - parent M 1 (Lng M - 1)
+                 \<Longrightarrow> entry M 0 (parent M 1 (Lng M - 1) + t)
+                       = entry M 0 (parent M 1 (Lng M - 1)) + t"
+  shows "entry ((M::pairseq)[n]) 0 (Lng ((M::pairseq)[n]) - 1)
+       = entry ((M::pairseq)[n]) 0
+              (parent M 1 (Lng M - 1)
+                 + q * (Lng M - 1 - parent M 1 (Lng M - 1)) + s)
+         + ((Lng ((M::pairseq)[n]) - 1)
+              - (parent M 1 (Lng M - 1)
+                   + q * (Lng M - 1 - parent M 1 (Lng M - 1)) + s))"
+proof -
+  let ?j1 = "Lng M - 1"  let ?j0 = "parent M 1 ?j1"  let ?w = "?j1 - ?j0"
+  let ?Mn = "(M::pairseq)[n]"
+  let ?d0 = "entry M 0 ?j1 - entry M 0 ?j0"
+  let ?z = "?j0 + q * ?w + s"          \<comment> \<open>the in-block column\<close>
+  let ?jN = "Lng ?Mn - 1"              \<comment> \<open>the N-endpoint\<close>
+  have w0: "0 < ?w" using j0lt by linarith
+  have n0: "0 < n" using qn by simp
+  \<comment> \<open>(1) length of \<open>N\<close>, and the endpoint as block \<open>n-1\<close>, offset \<open>w-1\<close>\<close>
+  have lenN: "Lng ?Mn = ?j0 + n * ?w"
+    by (rule oper_d1pos_LngM[OF L notzero hp i1z j0lt])
+  have jNflat: "Lng ?Mn = ?j0 + (n - 1) * ?w + ?w"
+  proof -
+    have "?j0 + n * ?w = ?j0 + (Suc (n - 1)) * ?w" using n0 by simp
+    also have "\<dots> = ?j0 + (n - 1) * ?w + ?w" by simp
+    finally show ?thesis using lenN by simp
+  qed
+  have jNeq: "?jN = ?j0 + (n - 1) * ?w + (?w - 1)"
+    using jNflat w0 by linarith
+  \<comment> \<open>(2) the IH-ramp at the two offsets \<open>s\<close> and \<open>w-1\<close>, and \<open>d\<^sub>0 = w\<close>\<close>
+  have e_s: "entry M 0 (?j0 + s) = entry M 0 ?j0 + s"
+    using ramp[of s] sw by simp
+  have e_wm1: "entry M 0 (?j0 + (?w - 1)) = entry M 0 ?j0 + (?w - 1)"
+    using ramp[of "?w - 1"] by simp
+  have e_w: "entry M 0 (?j0 + ?w) = entry M 0 ?j0 + ?w"
+    using ramp[of ?w] by simp
+  have j0pw: "?j0 + ?w = ?j1" using j0lt by simp
+  have d0w: "?d0 = ?w"
+  proof -
+    have "entry M 0 ?j1 = entry M 0 ?j0 + ?w" using e_w j0pw by simp
+    thus ?thesis by simp
+  qed
+  \<comment> \<open>(3) row-0 readback at \<open>z\<close> (in-block) and at the endpoint (block \<open>n-1\<close>, offset \<open>w-1\<close>)\<close>
+  have rb_z: "entry ?Mn 0 ?z = entry M 0 (?j0 + s) + q * ?d0"
+    by (rule oper_d1pos_entry0[OF L notzero hp i1z j0lt qn sw])
+  have wm1w: "?w - 1 < ?w" using w0 by simp
+  have nm1n: "n - 1 < n" using n0 by simp
+  have rb_end: "entry ?Mn 0 (?j0 + (n - 1) * ?w + (?w - 1))
+                  = entry M 0 (?j0 + (?w - 1)) + (n - 1) * ?d0"
+    by (rule oper_d1pos_entry0[OF L notzero hp i1z j0lt nm1n wm1w])
+  have e_end: "entry ?Mn 0 ?jN = entry M 0 ?j0 + (?w - 1) + (n - 1) * ?w"
+    using rb_end e_wm1 d0w jNeq by simp
+  have e_z: "entry ?Mn 0 ?z = entry M 0 ?j0 + s + q * ?w"
+    using rb_z e_s d0w by simp
+  \<comment> \<open>(4) the width \<open>jN - z\<close>, with \<open>z < jN\<close>\<close>
+  have qle_nm1: "q \<le> n - 1" using qn by simp
+  have width: "?jN - ?z = (n - 1) * ?w + (?w - 1) - (q * ?w + s)"
+    using jNeq by simp
+  \<comment> \<open>(5) close the endpoint equation by flat arithmetic\<close>
+  have rhs: "entry ?Mn 0 ?z + (?jN - ?z)
+             = entry M 0 ?j0 + s + q * ?w
+               + ((n - 1) * ?w + (?w - 1) - (q * ?w + s))"
+    using e_z width by simp
+  have qle: "q * ?w + s \<le> (n - 1) * ?w + (?w - 1)"
+  proof -
+    have "q * ?w \<le> (n - 1) * ?w" using qle_nm1 by (rule mult_le_mono1)
+    moreover have "s \<le> ?w - 1" using sw w0 by simp
+    ultimately show ?thesis by linarith
+  qed
+  have arith: "s + q * ?w + ((n - 1) * ?w + (?w - 1) - (q * ?w + s))
+                 = (?w - 1) + (n - 1) * ?w"
+    using qle by simp
+  show ?thesis
+    using rhs e_end arith by simp
+qed
+
+
 end
