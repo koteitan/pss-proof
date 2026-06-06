@@ -56304,4 +56304,418 @@ proof -
 qed
 
 
+lemma subramp_diag_base:
+  fixes u v :: nat
+  assumes x: "Suc x < Lng (diagSeq u v)"
+  shows "entry (diagSeq u v) 0 (Suc x) = Suc (entry (diagSeq u v) 0 x)"
+proof -
+  let ?N = "diagSeq u v"
+  have sx: "Suc x < Suc v - u" using x by simp
+  have lx: "x < Suc v - u" using sx by simp
+  have e1: "entry ?N 0 (Suc x) = u + Suc x" by (rule entry_diagSeq[OF sx])
+  have e0: "entry ?N 0 x = u + x" by (rule entry_diagSeq[OF lx])
+  show ?thesis using e1 e0 by simp
+qed
+
+
+text \<open>§6.7 SUBRAMP oper-step CORE (d0pos tiling readback, GREEN).  In the
+  \<open>i\<^sub>1=1\<close> tiling regime the operand \<open>M\<close> tiles \<open>[j\<^sub>0\<^sup>M, j\<^sub>1\<^sup>M)\<close> \<open>n\<close> times into
+  \<open>M[n]\<close> with the per-block row-0 shift \<open>d\<^sub>0 = entry M 0 j\<^sub>1\<^sup>M - entry M 0 j\<^sub>0\<^sup>M\<close>.
+  If \<open>M\<close>'s row-0 is a consecutive \<open>+1\<close> ramp on the WHOLE tail \<open>[j\<^sub>0\<^sup>M, j\<^sub>1\<^sup>M]\<close>
+  (every step from \<open>j\<^sub>0\<^sup>M\<close> up to and including the last step \<open>j\<^sub>1\<^sup>M-1 \<rightarrow> j\<^sub>1\<^sup>M\<close>),
+  then \<open>M[n]\<close>'s row-0 is a \<open>+1\<close> ramp on its OWN tail \<open>[j\<^sub>0\<^sup>M, Lng (M[n]) - 1)\<close>.
+  EMPIRICALLY 2047/0 on the broad ST_PS closure (the operand of every
+  strict-ancestor \<open>M[n]\<close> satisfies this whole-tail \<open>+1\<close> hypothesis).
+
+  Readback: with \<open>x = j\<^sub>0\<^sup>M + q\<cdot>w + s\<close> (\<open>q<n\<close>, \<open>0\<le>s<w\<close>), within a block
+  (\<open>s+1<w\<close>) the increment equals \<open>M\<close>'s in-tail step (\<open>+1\<close>); at a block boundary
+  (\<open>s=w-1\<close>, \<open>x+1 = j\<^sub>0\<^sup>M+(q+1)\<cdot>w\<close>, with \<open>q+1<n\<close>) the boundary reading
+  (@{thm [source] oper_d1pos_entry0_boundary}) gives the increment
+  \<open>entry M 0 j\<^sub>1\<^sup>M - entry M 0 (j\<^sub>1\<^sup>M-1) = +1\<close>, \<open>M\<close>'s last step.  Cites only the
+  GREEN \<open>oper_d1pos_entry0\<close> / \<open>_boundary\<close> readback bricks and
+  @{thm [source] oper_d1pos_LngM}; no spsy / sblk / RedCond.\<close>
+
+lemma subramp_oper_core:
+  fixes M :: pairseq and n :: nat
+  assumes L: "1 < Lng M"
+    and notzero: "\<not> (entry M 0 (Lng M - 1) = 0 \<and> entry M 1 (Lng M - 1) = 0)"
+    and hp: "hasParent M (idx1 M (Lng M - 1)) (Lng M - 1)"
+    and i1z: "idx1 M (Lng M - 1) = 1"
+    and j0lt: "parent M 1 (Lng M - 1) < Lng M - 1"
+    and Mramp: "\<And>y. parent M 1 (Lng M - 1) \<le> y \<Longrightarrow> y < Lng M - 1
+                  \<Longrightarrow> entry M 0 (Suc y) = Suc (entry M 0 y)"
+    and xlo: "parent M 1 (Lng M - 1) \<le> x"
+    and xhi: "x < Lng (M[n]) - 1"
+  shows "entry ((M::pairseq)[n]) 0 (Suc x) = Suc (entry (M[n]) 0 x)"
+proof -
+  let ?j1 = "Lng M - 1"  let ?j0 = "parent M 1 ?j1"  let ?w = "?j1 - ?j0"
+  let ?d0 = "entry M 0 ?j1 - entry M 0 ?j0"
+  have w0: "0 < ?w" using j0lt by linarith
+  have lenMn: "Lng (M[n]) = ?j0 + n * ?w"
+    using oper_d1pos_LngM[OF L notzero hp i1z j0lt] by simp
+  \<comment> \<open>\<open>d\<^sub>0 = w\<close>: \<open>M\<close>'s ramp on \<open>[j\<^sub>0, j\<^sub>1]\<close> gives slope 1, so \<open>entry M 0 j\<^sub>1 = entry M 0 j\<^sub>0 + w\<close>\<close>
+  have Mabs: "\<And>t. ?j0 + t \<le> ?j1 \<Longrightarrow> entry M 0 (?j0 + t) = entry M 0 ?j0 + t"
+  proof -
+    fix t assume "?j0 + t \<le> ?j1"
+    thus "entry M 0 (?j0 + t) = entry M 0 ?j0 + t"
+    proof (induction t)
+      case 0 show ?case by simp
+    next
+      case (Suc t)
+      have le1: "?j0 + t \<le> ?j1" using Suc.prems by simp
+      have lt: "?j0 + t < ?j1" using Suc.prems by simp
+      have ge: "?j0 \<le> ?j0 + t" by simp
+      have step: "entry M 0 (Suc (?j0 + t)) = Suc (entry M 0 (?j0 + t))"
+        by (rule Mramp[OF ge lt])
+      have ih: "entry M 0 (?j0 + t) = entry M 0 ?j0 + t" using Suc.IH[OF le1] .
+      show ?case using step ih by simp
+    qed
+  qed
+  have wle: "?j0 + ?w \<le> ?j1" using w0 by simp
+  have d0w: "?d0 = ?w"
+  proof -
+    have "entry M 0 (?j0 + ?w) = entry M 0 ?j0 + ?w" by (rule Mabs[OF wle])
+    moreover have "?j0 + ?w = ?j1" using j0lt by simp
+    ultimately have "entry M 0 ?j1 = entry M 0 ?j0 + ?w" by simp
+    thus ?thesis by simp
+  qed
+  \<comment> \<open>block decomposition of \<open>x\<close>: \<open>x = j\<^sub>0 + q\<cdot>w + s\<close>, \<open>q<n\<close>, \<open>s<w\<close>\<close>
+  have xge: "?j0 \<le> x" using xlo .
+  obtain r where xr: "x = ?j0 + r" using xge le_Suc_ex by blast
+  have rlt: "r < n * ?w"
+  proof -
+    have "?j0 + r < ?j0 + n * ?w - 1" using xhi xr lenMn by simp
+    thus ?thesis by linarith
+  qed
+  define q where "q = r div ?w"
+  define s where "s = r mod ?w"
+  have rqs: "r = q * ?w + s" using q_def s_def by (simp add: mult_div_mod_eq mult.commute)
+  have slt: "s < ?w" using w0 s_def by simp
+  have qn: "q < n" using rlt rqs slt w0
+    by (metis add.commute add_lessD1 div_eq_0_iff less_mult_imp_div_less mult.commute nat_neq_iff not_less0 q_def)
+  have xqs: "x = ?j0 + q * ?w + s" using xr rqs by (simp add: add.assoc)
+  \<comment> \<open>row-0 value at \<open>x\<close> (block \<open>q\<close>, offset \<open>s\<close>)\<close>
+  have ex: "entry (M[n]) 0 x = entry M 0 (?j0 + s) + q * ?d0"
+    using oper_d1pos_entry0[OF L notzero hp i1z j0lt qn slt] xqs by simp
+  show ?thesis
+  proof (cases "Suc s < ?w")
+    case True
+    \<comment> \<open>within block \<open>q\<close>: \<open>x+1 = j\<^sub>0 + q\<cdot>w + (s+1)\<close>\<close>
+    have xsuc: "Suc x = ?j0 + q * ?w + Suc s" using xqs by simp
+    have esx: "entry (M[n]) 0 (Suc x) = entry M 0 (?j0 + Suc s) + q * ?d0"
+      using oper_d1pos_entry0[OF L notzero hp i1z j0lt qn True] xsuc by simp
+    have sj0: "?j0 \<le> ?j0 + s" by simp
+    have sj1: "?j0 + s < ?j1" using slt by simp
+    have mstep: "entry M 0 (Suc (?j0 + s)) = Suc (entry M 0 (?j0 + s))"
+      by (rule Mramp[OF sj0 sj1])
+    have "entry (M[n]) 0 (Suc x) = entry M 0 (Suc (?j0 + s)) + q * ?d0"
+      using esx by simp
+    also have "\<dots> = Suc (entry M 0 (?j0 + s)) + q * ?d0" using mstep by simp
+    also have "\<dots> = Suc (entry M 0 (?j0 + s) + q * ?d0)" by simp
+    finally show ?thesis using ex by simp
+  next
+    case False
+    \<comment> \<open>block boundary: \<open>s = w-1\<close>, \<open>x+1 = j\<^sub>0 + (q+1)\<cdot>w\<close>\<close>
+    have sw1: "Suc s = ?w" using False slt by linarith
+    have xsuc: "Suc x = ?j0 + (q + 1) * ?w"
+    proof -
+      have "Suc x = ?j0 + q * ?w + Suc s" using xqs by simp
+      also have "\<dots> = ?j0 + q * ?w + ?w" using sw1 by simp
+      also have "\<dots> = ?j0 + (q + 1) * ?w" by (simp add: add.assoc)
+      finally show ?thesis .
+    qed
+    \<comment> \<open>\<open>q+1<n\<close> from \<open>x < Lng(M[n])-1\<close>\<close>
+    have xup: "?j0 + q * ?w + s < ?j0 + n * ?w - 1" using xhi xqs lenMn by simp
+    have q1n: "q + 1 < n"
+    proof -
+      have a: "q * ?w + s < n * ?w - 1" using xup by linarith
+      have b: "q * ?w + Suc s \<le> n * ?w - 1" using a by linarith
+      have c: "q * ?w + ?w \<le> n * ?w - 1" using b unfolding sw1[symmetric] .
+      have d: "Suc q * ?w \<le> n * ?w - 1" using c by (simp add: mult.commute)
+      have nwpos: "0 < n * ?w" using d w0 by (cases "n * ?w") auto
+      have e: "Suc q * ?w < n * ?w" using d nwpos by linarith
+      have "Suc q < n" using e w0 mult_less_cancel2[of "Suc q" ?w n] by blast
+      thus ?thesis by simp
+    qed
+    have esx: "entry (M[n]) 0 (?j0 + (q + 1) * ?w)
+             = entry M 0 ?j1 + q * ?d0"
+      using oper_d1pos_entry0_boundary[OF L notzero hp i1z j0lt q1n] by simp
+    \<comment> \<open>boundary increment \<open>= entry M 0 j\<^sub>1 - entry M 0 (j\<^sub>0+s) = +1\<close> (M's last step)\<close>
+    have s_eq: "?j0 + s = ?j1 - 1" using sw1 j0lt by simp
+    have j1pos: "0 < ?j1" using L by simp
+    have lastlo: "?j0 \<le> ?j1 - 1" using j0lt by simp
+    have lasthi: "?j1 - 1 < ?j1" using j1pos by simp
+    have mlast: "entry M 0 (Suc (?j1 - 1)) = Suc (entry M 0 (?j1 - 1))"
+      by (rule Mramp[OF lastlo lasthi])
+    have suc_j1: "Suc (?j1 - 1) = ?j1" using j1pos by simp
+    have ej1: "entry M 0 ?j1 = Suc (entry M 0 (?j0 + s))"
+      using mlast suc_j1 s_eq by simp
+    have "entry (M[n]) 0 (Suc x) = entry M 0 ?j1 + q * ?d0"
+      using esx xsuc by simp
+    also have "\<dots> = Suc (entry M 0 (?j0 + s)) + q * ?d0" using ej1 by simp
+    also have "\<dots> = Suc (entry M 0 (?j0 + s) + q * ?d0)" by simp
+    finally show ?thesis using ex by simp
+  qed
+qed
+
+
+lemma SkT_row0_step_le:
+  shows "N \<in> SkT_PS k \<Longrightarrow> Suc j < Lng N
+         \<Longrightarrow> entry N 0 (Suc j) \<le> Suc (entry N 0 j)"
+proof -
+  have "\<forall>N. N \<in> SkT_PS k \<longrightarrow>
+          (\<forall>j. Suc j < Lng N \<longrightarrow> entry N 0 (Suc j) \<le> Suc (entry N 0 j))"
+  proof (induction k)
+    case 0
+    show ?case
+    proof (intro allI impI)
+      fix N j
+      assume N0: "N \<in> SkT_PS 0" and A: "Suc j < Lng N"
+      from N0 obtain u v where Nuv: "N = diagSeq u v" and uv: "u \<le> v" by auto
+      have lt: "Suc j < Lng N" using A by simp
+      have jlt: "j < Suc v - u" using lt Nuv by simp
+      have sjlt: "Suc j < Suc v - u" using lt Nuv by simp
+      have e0j: "entry N 0 j = u + j" using Nuv jlt by (simp add: entry_diagSeq)
+      have e0sj: "entry N 0 (Suc j) = u + Suc j" using Nuv sjlt by (simp add: entry_diagSeq)
+      show "entry N 0 (Suc j) \<le> Suc (entry N 0 j)" using e0j e0sj by simp
+    qed
+  next
+    case (Suc k)
+    note IHk = Suc.IH
+    show ?case
+    proof (intro allI impI)
+      fix N j
+      assume NS: "N \<in> SkT_PS (Suc k)" and A: "Suc j < Lng N"
+      from NS obtain M n where Neq: "N = (M::pairseq)[n]"
+        and MS: "M \<in> SkT_PS k" and n1: "1 \<le> n" by auto
+      have MT: "M \<in> T_PS" using MS SkT_PS_subset_ST_PS ST_PS_T_PS by blast
+      from A have sjlt: "Suc j < Lng N" by simp
+      let ?j1 = "Lng M - 1"  let ?i1 = "idx1 M ?j1"  let ?j0 = "parent M ?i1 ?j1"
+      \<comment> \<open>Degenerate oper guards: \<open>N = Pred M\<close>.  Reduce adjacent increments to \<open>M\<close>, IH.\<close>
+      have pred_case: "N = Pred M \<Longrightarrow> entry N 0 (Suc j) \<le> Suc (entry N 0 j)"
+      proof -
+        assume Npred: "N = Pred M"
+        show "entry N 0 (Suc j) \<le> Suc (entry N 0 j)"
+        proof (cases "Lng M \<le> 1")
+          case True
+          hence "Pred M = M" by (simp add: Pred_def)
+          hence Nm: "N = M" using Npred by simp
+          have sjM: "Suc j < Lng M" using sjlt Nm by simp
+          have "entry M 0 (Suc j) \<le> Suc (entry M 0 j)" using IHk MS sjM by blast
+          thus ?thesis using Nm by simp
+        next
+          case False
+          hence Lgt: "1 < Lng M" by simp
+          hence Nbl: "N = butlast M" using Npred by (simp add: Pred_def)
+          have lbl: "Lng (butlast M) = Lng M - 1" by simp
+          have sjbl: "Suc j < Lng M - 1" using sjlt Nbl lbl by simp
+          have sjM: "Suc j < Lng M" using sjbl by simp
+          have jblbl: "j < length (butlast M)" using sjbl lbl by simp
+          have sjblbl: "Suc j < length (butlast M)" using sjbl lbl by simp
+          have ej: "entry N i j = entry M i j" for i
+            using Nbl jblbl by (simp add: entry_def nth_butlast)
+          have esj: "entry N i (Suc j) = entry M i (Suc j)" for i
+            using Nbl sjblbl by (simp add: entry_def nth_butlast)
+          have "entry M 0 (Suc j) \<le> Suc (entry M 0 j)" using IHk MS sjM by blast
+          thus ?thesis using ej esj by simp
+        qed
+      qed
+      show "entry N 0 (Suc j) \<le> Suc (entry N 0 j)"
+      proof (cases "?j1 = 0")
+        case True
+        hence Nm: "N = M" using Neq by (simp add: oper_def Let_def)
+        have "Lng M \<le> 1" using True by simp
+        hence "Pred M = M" by (simp add: Pred_def)
+        hence "N = Pred M" using Nm by simp
+        thus ?thesis using pred_case by simp
+      next
+        case j1pos: False
+        hence Lgt: "1 < Lng M" by simp
+        show ?thesis
+        proof (cases "entry M 0 ?j1 = 0 \<and> entry M 1 ?j1 = 0")
+          case True
+          hence "N = Pred M" using Neq j1pos by (simp add: oper_def Let_def)
+          thus ?thesis using pred_case by simp
+        next
+          case notzero: False
+          show ?thesis
+          proof (cases "hasParent M ?i1 ?j1")
+            case False
+            hence "N = Pred M" using Neq notzero j1pos by (simp add: oper_def Let_def)
+            thus ?thesis using pred_case by simp
+          next
+            case hp: True
+            \<comment> \<open>Expansion branch.  \<open>j\<^sub>0 < j\<^sub>1\<close>, \<open>w = j\<^sub>1 - j\<^sub>0 \<ge> 1\<close>.\<close>
+            have parR: "nextR M ?i1 ?j0 ?j1"
+              using hp unfolding hasParent_def parent_def by (rule theI')
+            have j0lt: "?j0 < ?j1" using poper_nextR_imp_le0[OF parR] by simp
+            let ?w = "?j1 - ?j0"
+            let ?d0 = "if 0 < ?i1 then entry M 0 ?j1 - entry M 0 ?j0 else 0"
+            have w1: "1 \<le> ?w" using j0lt by simp
+            have w0: "0 < ?w" using w1 by simp
+            have lenN: "Lng N = ?j0 + n * ?w"
+            proof -
+              let ?d1 = "if 1 < ?i1 then entry M 1 ?j1 - entry M 1 ?j0 else 0"
+              let ?Braw = "\<lambda>k. map (\<lambda>jj. (entry M 0 jj + k * ?d0, entry M 1 jj + k * ?d1)) [?j0..<?j1]"
+              have expand: "M[n] = take ?j0 M @ concat (map ?Braw [0..<n])"
+                by (rule poper_oper_expand[OF Lgt notzero hp, of n, unfolded Let_def])
+              have t: "length (take ?j0 M) = ?j0" using j0lt Lgt by simp
+              have lmap: "map Lng (map ?Braw [0..<n]) = replicate n ?w"
+              proof -
+                have "map Lng (map ?Braw [0..<n]) = map (\<lambda>k. ?w) [0..<n]" by simp
+                thus ?thesis by (simp add: map_replicate_const)
+              qed
+              have lc: "length (concat (map ?Braw [0..<n])) = n * ?w"
+                by (subst length_concat, subst lmap) (simp add: sum_list_replicate)
+              show ?thesis using expand t lc Neq by simp
+            qed
+            have blk0: "\<And>q s. q < n \<Longrightarrow> s < ?w \<Longrightarrow>
+                          entry N 0 (?j0 + q * ?w + s) = entry M 0 (?j0 + s) + q * ?d0"
+              using oper_gen_block_entry0[OF Lgt notzero hp j0lt] Neq by simp
+            have pre: "\<And>x i. x < ?j0 \<Longrightarrow> entry N i x = entry M i x"
+              using oper_gen_nth_prefix[OF Lgt notzero hp] Neq by (simp add: entry_def)
+            have sjN: "Suc j < ?j0 + n * ?w" using sjlt lenN by simp
+            show ?thesis
+            proof (cases "Suc j \<le> ?j0")
+              case prefix: True
+              have jlt: "j < ?j0" using prefix by simp
+              have ej: "entry N 0 j = entry M 0 j" using pre[OF jlt] by simp
+              have esj: "entry N 0 (Suc j) = entry M 0 (Suc j)"
+              proof (cases "Suc j < ?j0")
+                case True
+                show "entry N 0 (Suc j) = entry M 0 (Suc j)" using pre[OF True] by simp
+              next
+                case False
+                hence sjeq: "Suc j = ?j0" using prefix by linarith
+                have e0: "entry N 0 (?j0 + 0 * ?w + 0) = entry M 0 (?j0 + 0) + 0 * ?d0"
+                  by (rule blk0[OF _ ]) (use n1 w1 in auto)
+                show "entry N 0 (Suc j) = entry M 0 (Suc j)" using e0 sjeq by simp
+              qed
+              have sjM: "Suc j < Lng M" using prefix j0lt by simp
+              have "entry M 0 (Suc j) \<le> Suc (entry M 0 j)" using IHk MS sjM by blast
+              thus ?thesis using ej esj by simp
+            next
+              case AB: False
+              hence j0lej: "?j0 \<le> j" by simp
+              define s where "s = (j - ?j0) mod ?w"
+              define q where "q = (j - ?j0) div ?w"
+              have sw: "s < ?w" using w0 by (simp add: s_def)
+              have jsplit: "j = ?j0 + q * ?w + s"
+                using j0lej div_mult_mod_eq[of "j - ?j0" ?w]
+                by (simp add: s_def q_def algebra_simps)
+              have jblk: "j < ?j0 + n * ?w" using sjN by simp
+              have qn: "q < n"
+              proof -
+                have "q * ?w + s < n * ?w" using jblk jsplit by linarith
+                hence "q * ?w < n * ?w" using sw by linarith
+                thus ?thesis using w0 by simp
+              qed
+              show ?thesis
+              proof (cases "s + 1 < ?w")
+                case within: True
+                have sjsplit: "Suc j = ?j0 + q * ?w + (s + 1)" using jsplit by simp
+                have e0j: "entry N 0 j = entry M 0 (?j0 + s) + q * ?d0"
+                  using blk0[OF qn sw] jsplit by simp
+                have e0sj: "entry N 0 (Suc j) = entry M 0 (?j0 + (s+1)) + q * ?d0"
+                  using blk0[OF qn within] sjsplit by simp
+                have sjM: "Suc (?j0 + s) < Lng M" using within sw j0lt by simp
+                have "entry M 0 (Suc (?j0 + s)) \<le> Suc (entry M 0 (?j0 + s))"
+                  using IHk MS sjM by blast
+                hence "entry M 0 (?j0 + (s+1)) \<le> Suc (entry M 0 (?j0 + s))" by simp
+                thus ?thesis using e0j e0sj by simp
+              next
+                case boundary: False
+                have seq: "s = ?w - 1" using boundary sw by linarith
+                obtain WW where WWdef: "WW = ?w" and WW1: "1 \<le> WW" using w1 by blast
+                obtain JJ where JJdef: "JJ = ?j0" by blast
+                have jend: "j = JJ + q * WW + (WW - 1)"
+                  using jsplit seq WWdef JJdef by simp
+                have sjstart: "Suc j = JJ + (q+1) * WW + 0"
+                  using jend WW1 by (simp add: algebra_simps)
+                have sjstart': "Suc j = ?j0 + (q+1) * ?w + 0"
+                  using sjstart WWdef JJdef by simp
+                have q1n: "q + 1 < n"
+                proof -
+                  have sjNW: "Suc j < JJ + n * WW" using sjN WWdef JJdef by simp
+                  have "JJ + (q+1) * WW < JJ + n * WW" using sjNW sjstart by simp
+                  hence lt: "(q+1) * WW < n * WW" by simp
+                  have W0: "0 < WW" using WW1 by simp
+                  show ?thesis using lt W0 mult_less_cancel2[of "q+1" WW n] by simp
+                qed
+                have jend': "j = ?j0 + q * ?w + (?w - 1)"
+                  using jend WWdef JJdef by simp
+                have w1le: "?w - 1 < ?w" using w0 by simp
+                have j0w1: "?j0 + (?w - 1) = ?j1 - 1" using j0lt by simp
+                have e0j: "entry N 0 j = entry M 0 (?j1 - 1) + q * ?d0"
+                  using blk0[OF qn w1le] jend' j0w1 by simp
+                have e0sj: "entry N 0 (Suc j) = entry M 0 ?j0 + (q+1) * ?d0"
+                  using blk0[OF q1n w0] sjstart' by simp
+                show ?thesis
+                proof (cases "?i1 = 0")
+                  case i0: True
+                  hence d0z: "?d0 = 0" by simp
+                  have nr0: "nextrel0 M ?j0 ?j1" using parR i0 by (simp add: nextR_def)
+                  have lt0: "entry M 0 ?j0 < entry M 0 ?j1" using nr0 by (simp add: nextrel0_def)
+                  \<comment> \<open>Goal (\<open>d\<^sub>0=0\<close>): \<open>M\<^bsub>0,j\<^sub>0\<^esub> \<le> Suc M\<^bsub>0,j\<^sub>1-1\<^esub>\<close>.  \<open>w=1\<close>: \<open>j\<^sub>1-1=j\<^sub>0\<close>, trivial.
+                     \<open>w\<ge>2\<close>: \<open>j\<^sub>1-1\<close> interior so \<open>M\<^bsub>0,j\<^sub>1\<^esub> \<le> M\<^bsub>0,j\<^sub>1-1\<^esub>\<close> (nextrel0 descent), with
+                     \<open>M\<^bsub>0,j\<^sub>0\<^esub> < M\<^bsub>0,j\<^sub>1\<^esub>\<close>.\<close>
+                  have goal0: "entry M 0 ?j0 \<le> Suc (entry M 0 (?j1 - 1))"
+                  proof (cases "?w = 1")
+                    case wone: True
+                    have "?j1 - 1 = ?j0" using wone j0lt by simp
+                    thus ?thesis by simp
+                  next
+                    case wgt: False
+                    have w2: "2 \<le> ?w" using wgt w1 by linarith
+                    have interior: "?j0 < ?j1 - 1 \<and> ?j1 - 1 < ?j1" using w2 j0lt by linarith
+                    have ge: "entry M 0 ?j1 \<le> entry M 0 (?j1 - 1)"
+                      using nr0 interior by (simp add: nextrel0_def)
+                    show ?thesis using lt0 ge by linarith
+                  qed
+                  thus ?thesis using e0j e0sj d0z by simp
+                next
+                  case i1: False
+                  have i1one: "?i1 = 1"
+                    using i1 unfolding idx1_def by (cases "entry M 1 ?j1 > 0") simp_all
+                  have d0v: "?d0 = entry M 0 ?j1 - entry M 0 ?j0" using i1one by simp
+                  have nr1: "nextrel1 M ?j0 ?j1" using parR i1one by (simp add: nextR_def)
+                  have le0j: "le0 M ?j0 ?j1" using nr1 by (simp add: nextrel1_def)
+                  have le0r: "entry M 0 ?j0 \<le> entry M 0 ?j1"
+                    using le0j by (simp add: le0_def nextrel0_rtrancl_entry0_mono)
+                  \<comment> \<open>\<open>e0sj = M\<^bsub>0,j\<^sub>0\<^esub> + (q+1)\<cdot>d\<^sub>0 = (M\<^bsub>0,j\<^sub>1\<^esub>) + q\<cdot>d\<^sub>0\<close>; \<open>e0j = M\<^bsub>0,j\<^sub>1-1\<^esub> + q\<cdot>d\<^sub>0\<close>.
+                     IH on \<open>M\<close> at \<open>(j\<^sub>1-1, j\<^sub>1)\<close> gives \<open>M\<^bsub>0,j\<^sub>1\<^esub> \<le> Suc M\<^bsub>0,j\<^sub>1-1\<^esub>\<close>.\<close>
+                  have e0sj': "entry N 0 (Suc j) = entry M 0 ?j1 + q * ?d0"
+                    using e0sj d0v le0r by simp
+                  have j1ge1: "1 \<le> ?j1" using j0lt by linarith
+                  have sucj1: "Suc (?j1 - 1) = ?j1" using j1ge1 by simp
+                  have sjM: "Suc (?j1 - 1) < Lng M" using sucj1 Lgt by simp
+                  have IHadj: "entry M 0 (Suc (?j1 - 1)) \<le> Suc (entry M 0 (?j1 - 1))"
+                    using IHk MS sjM by blast
+                  have IHj1: "entry M 0 ?j1 \<le> Suc (entry M 0 (?j1 - 1))" using IHadj sucj1 by simp
+                  show ?thesis using e0j e0sj' IHj1 by simp
+                qed
+              qed
+            qed
+          qed
+        qed
+      qed
+    qed
+  qed
+  thus "N \<in> SkT_PS k \<Longrightarrow> Suc j < Lng N
+         \<Longrightarrow> entry N 0 (Suc j) \<le> Suc (entry N 0 j)" by blast
+qed
+
+text \<open>The step bound (S) lifted to \<open>ST\<^sub>PS\<close> via the stratification
+  @{thm [source] ST_PS_in_some_SkT}.\<close>
+
+lemma ST_row0_step_le:
+  assumes N: "N \<in> ST_PS" and sj: "Suc j < Lng N"
+  shows "entry N 0 (Suc j) \<le> Suc (entry N 0 j)"
+proof -
+  obtain k where Nk: "N \<in> SkT_PS k"
+    using N ST_PS_in_some_SkT unfolding in_some_SkT_def by blast
+  show ?thesis by (rule SkT_row0_step_le[OF Nk sj])
+qed
+
+
 end

@@ -44,7 +44,7 @@
       - 🚨 系（$1$ 列ペア数列の基本性質）
     - 🚨 §6.7 標準形
       - ✅ 命題（標準形の階層和による表示）
-      - 🚨🤖 命題（標準形の簡約性）〔tail_affine([j0,j1]全体ランプ)は**偽訂正**(degenerate族(0,0)(1,1)(1,1)等,前駆Mがidx1=0でd0=0 tiling;142/0はsampling artifact)→via_affine系は死蔵。正route=**tree route**: 実brick `le0 N p j1`(p=parent N1 z>j0)739/0真→`m_6_7_tree_wellformed`→tree、p=j0はQprime_via_treeのbase-edge分岐。残=実brick+bridge+sy_pos+valley→`spsy_keystone_via_tree_bridge`→cascade無条件。直接route(arising j0+sy)はdegenerateで偽(54CE)〕
+      - 🚨🤖 命題（標準形の簡約性）〔実brick→`brick_from_subramp`(green)で **subramp([p,j1]の+1ランプ,739/739)** へ還元。subramp=上界`ST_row0_step_le`(entry0(Suc x)≤Suc,6937/6937,**green**)+下界E_p(slope-1,entry N0 j1−entry N0 p==j1−p,739/739)。oper readback engine`subramp_oper_core`(2047/0)+diag`subramp_diag_base` green。残=**E_p下界をrow-1祖先のSkT_PS/強induction(K:slope1⟹ramp+truncation/short-tile, L:oper_gen_block_entry1でrow-1 unshifted readback)で完成**→subramp→tree→spsy→cascade無条件。+bridge+sy_pos+valley〕
       - ✅ 命題（標準形の単項成分が標準形であること）
       - ✅ 命題（標準形の始切片への遺伝性）
     - ✅ §6.8 降順性
