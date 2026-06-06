@@ -58149,4 +58149,127 @@ proof -
 qed
 
 
+text \<open>§6.7 IN-BLOCK IH-APPLICATION BRIDGE (attempt H).  This packages the two
+  M-side hypotheses that @{thm [source] ez_inblock_oper_step_via_strict} consumes
+  --- the endpoint slope-1 \<open>E\<^sub>z M (j\<^sub>0+s)\<close> AND the lower-segment strict \<open>+1\<close> step
+  on \<open>[j\<^sub>0, j\<^sub>0+s)\<close> --- directly from the strong-induction IH content presented as a
+  full \<open>+1\<close> row-0 ramp on the whole M-tail \<open>[j\<^sub>0, j\<^sub>1]\<close> (the \<open>fullramp(M)\<close> form
+  recommended by the prior round).  It then chains to deliver \<open>E\<^sub>z N\<close> at the
+  N-side in-block column \<open>j\<^sub>0 + q\<cdot>w + s\<close>.  Cites only the already-GREEN
+  @{thm [source] ez_inblock_oper_step_via_strict}; no spsy / sblk / RedCond /
+  oper-tiling / tail_affine.  EMPIRICALLY 0-fail on the broad ST_PS closure
+  (in-block gated z: 229/0, python/_bridge_H.py).\<close>
+
+lemma ez_inblock_oper_step_via_fullramp:
+  fixes M :: pairseq
+  assumes MST: "M \<in> ST_PS"
+    and L: "1 < Lng M"
+    and notzero: "\<not> (entry M 0 (Lng M - 1) = 0 \<and> entry M 1 (Lng M - 1) = 0)"
+    and hp: "hasParent M (idx1 M (Lng M - 1)) (Lng M - 1)"
+    and i1z: "idx1 M (Lng M - 1) = 1"
+    and j0lt: "parent M 1 (Lng M - 1) < Lng M - 1"
+    and qn: "q < n"
+    and s0: "0 < s"
+    and sw: "s < Lng M - 1 - parent M 1 (Lng M - 1)"
+    \<comment> \<open>the IH content: the whole M-tail \<open>[j\<^sub>0, j\<^sub>1]\<close> is an exact \<open>+1\<close> row-0 ramp\<close>
+    and ramp: "\<And>t. t \<le> Lng M - 1 - parent M 1 (Lng M - 1)
+                 \<Longrightarrow> entry M 0 (parent M 1 (Lng M - 1) + t)
+                       = entry M 0 (parent M 1 (Lng M - 1)) + t"
+  shows "entry ((M::pairseq)[n]) 0 (Lng ((M::pairseq)[n]) - 1)
+       = entry ((M::pairseq)[n]) 0
+              (parent M 1 (Lng M - 1)
+                 + q * (Lng M - 1 - parent M 1 (Lng M - 1)) + s)
+         + ((Lng ((M::pairseq)[n]) - 1)
+              - (parent M 1 (Lng M - 1)
+                   + q * (Lng M - 1 - parent M 1 (Lng M - 1)) + s))"
+proof -
+  let ?j1 = "Lng M - 1"  let ?j0 = "parent M 1 ?j1"
+  let ?z0 = "?j0 + s"
+  \<comment> \<open>the M-side child column \<open>?z0 = j\<^sub>0 + s\<close> is a strict interior point of \<open>M\<close>\<close>
+  have zlo: "?j0 < ?z0" using s0 by simp
+  have zhi: "?z0 < ?j1" using sw by linarith
+  \<comment> \<open>the endpoint slope-1 \<open>E\<^sub>z M ?z0\<close> from the M-tail ramp at offsets \<open>s\<close> and \<open>w\<close>\<close>
+  have e_s: "entry M 0 ?z0 = entry M 0 ?j0 + s"
+    using ramp[of s] sw by simp
+  have wle: "?j1 - ?j0 \<le> ?j1 - ?j0" by simp
+  have e_w: "entry M 0 (?j0 + (?j1 - ?j0)) = entry M 0 ?j0 + (?j1 - ?j0)"
+    using ramp[of "?j1 - ?j0"] by simp
+  have j0pw: "?j0 + (?j1 - ?j0) = ?j1" using j0lt by simp
+  have e_j1: "entry M 0 ?j1 = entry M 0 ?j0 + (?j1 - ?j0)"
+    using e_w j0pw by simp
+  have Ez0: "entry M 0 ?j1 = entry M 0 ?z0 + (?j1 - ?z0)"
+  proof -
+    have "entry M 0 ?z0 + (?j1 - ?z0) = entry M 0 ?j0 + s + (?j1 - (?j0 + s))"
+      using e_s by simp
+    also have "\<dots> = entry M 0 ?j0 + (?j1 - ?j0)" using zhi by simp
+    also have "\<dots> = entry M 0 ?j1" using e_j1 by simp
+    finally show ?thesis by simp
+  qed
+  \<comment> \<open>the lower-segment strict \<open>+1\<close> step on \<open>[j\<^sub>0, ?z0)\<close> from the same ramp\<close>
+  have lowstrict: "\<And>y. ?j0 \<le> y \<Longrightarrow> y < ?z0 \<Longrightarrow> entry M 0 y < entry M 0 (Suc y)"
+  proof -
+    fix y assume yl: "?j0 \<le> y" and yh: "y < ?z0"
+    define t where "t = y - ?j0"
+    have yt: "y = ?j0 + t" using t_def yl by simp
+    have tw: "t \<le> ?j1 - ?j0" using yh yt zhi by linarith
+    have tw1: "Suc t \<le> ?j1 - ?j0" using yh yt zhi by linarith
+    have ey: "entry M 0 y = entry M 0 ?j0 + t" using ramp[of t] tw yt by simp
+    have eSy: "entry M 0 (Suc y) = entry M 0 ?j0 + Suc t"
+    proof -
+      have "Suc y = ?j0 + Suc t" using yt by simp
+      thus ?thesis using ramp[of "Suc t"] tw1 by simp
+    qed
+    show "entry M 0 y < entry M 0 (Suc y)" using ey eSy by simp
+  qed
+  show ?thesis
+    by (rule ez_inblock_oper_step_via_strict
+          [OF MST L notzero hp i1z j0lt qn s0 sw zlo zhi Ez0 lowstrict])
+qed
+
+
+text \<open>§6.7 PREFIX IH-APPLICATION BRIDGE (attempt H).  Re-presents the M-side
+  IH input that @{thm [source] ez_prefix_oper_step_via_Ez} consumes (the endpoint
+  slope-1 \<open>E\<^sub>z M z\<close> at the prefix node \<open>z < j\<^sub>0\<close>) as the equivalent full \<open>+1\<close>
+  row-0 ramp on the M-tail \<open>[z, j\<^sub>1]\<close> from base \<open>z\<close> --- the same \<open>fullramp\<close> shape
+  used by the in-block bridge, so a single strong-induction IH (the M-tail ramp)
+  feeds BOTH oper arms.  Cites only the already-GREEN
+  @{thm [source] ez_prefix_oper_step_via_Ez} and
+  @{thm [source] le0_z_j1_from_Ez}; no spsy / sblk / RedCond / oper-tiling /
+  tail_affine.  EMPIRICALLY 0-fail (prefix gated z: 852/0, python/_bridge_H.py).\<close>
+
+lemma ez_prefix_oper_step_via_ramp:
+  fixes M :: pairseq
+  assumes MST: "M \<in> ST_PS"
+    and L: "1 < Lng M"
+    and notzero: "\<not> (entry M 0 (Lng M - 1) = 0 \<and> entry M 1 (Lng M - 1) = 0)"
+    and hp: "hasParent M (idx1 M (Lng M - 1)) (Lng M - 1)"
+    and i1z: "idx1 M (Lng M - 1) = 1"
+    and j0lt: "parent M 1 (Lng M - 1) < Lng M - 1"
+    and n0: "0 < n"
+    and zlt: "z < parent M 1 (Lng M - 1)"
+    \<comment> \<open>the IH content: \<open>+1\<close> row-0 ramp on the M-tail \<open>[z, j\<^sub>1]\<close> from base \<open>z\<close>\<close>
+    and ramp: "\<And>t. z + t \<le> Lng M - 1
+                 \<Longrightarrow> entry M 0 (z + t) = entry M 0 z + t"
+  shows "entry ((M::pairseq)[n]) 0 (Lng ((M::pairseq)[n]) - 1)
+       = entry ((M::pairseq)[n]) 0 z
+         + ((Lng ((M::pairseq)[n]) - 1) - z)"
+proof -
+  let ?j1 = "Lng M - 1"
+  have zj1: "z < ?j1" using zlt j0lt by linarith
+  \<comment> \<open>the endpoint slope-1 \<open>E\<^sub>z M z\<close> from the ramp at offset \<open>j\<^sub>1 - z\<close>\<close>
+  have EzM: "entry M 0 ?j1 = entry M 0 z + (?j1 - z)"
+  proof -
+    have "z + (?j1 - z) \<le> ?j1" using zj1 by simp
+    hence "entry M 0 (z + (?j1 - z)) = entry M 0 z + (?j1 - z)"
+      using ramp[of "?j1 - z"] by simp
+    moreover have "z + (?j1 - z) = ?j1" using zj1 by simp
+    ultimately show ?thesis by simp
+  qed
+  show ?thesis
+    by (rule ez_prefix_oper_step_via_Ez
+          [OF MST L notzero hp i1z j0lt n0 zlt EzM])
+qed
+
+
+
 end
