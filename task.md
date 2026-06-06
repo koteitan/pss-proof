@@ -20,7 +20,12 @@
         - ✅🚧 補題（死枝[20]の到達不能性）〔`m_6_5_monoT_Red_m10pos`(m10>0)〕
       - ✅ 命題（$\textrm{Lng}$ の $\textrm{Red}$ 不変性）
       - ✅ 系（$\textrm{Red}$ が零項性を保つこと）
-      - 🚨🤖 系（直系先祖の $\textrm{Red}$ 不変性）〔`m_6_5_Red_le` 条件付green、残2: congR m10>0 branch + ST_PS⟹RedCondA(→§6.7 単一keystone spsy)。A4〕
+      - 🚨🤖 系（直系先祖の $\textrm{Red}$ 不変性）〔`m_6_5_Red_le`(M∈anchored_slice⟹leR M=leR(Red M))、2仮説 stdCA+monoCong 条件付green、残2。A4〕
+        - ✅ zeroT 分岐〔`m_6_5_Red_le_zeroT`〕
+        - ✅ congR bridge: congR M (Red M)⟹leR 不変〔`m_6_5_congR_imp_leR_inv`/`row1_le0_imp_leR_eq`〕
+        - ✅ anchored⟹RedCondA (stdCA 経由)〔`m_6_5_anchored_imp_RedCondA`〕
+        - 🚨 残a monoCong: RedCondA N∧monoT N⟹congR N (Red N) の m10>0 branch
+        - 🚨🤖 残b stdCA: ST_PS⟹RedCondA〔`m_6_5_ST_PS_imp_RedCondA`、§6.7 keystone spsy→scalar Ez 経由〕
       - ✅🚧 系（$\textrm{Red}$ が単項性を保つこと）〔forward `m_6_5_Red_preserves_monoT` green、逆向き残〕
       - 🚨 系（$P$ の $\textrm{Red}$ 同変性）〔A4〕
       - ✅ 命題（単項性と $\textrm{Red}$ の関係）〔`m_6_5_monoT_Red_m10pos`〕
