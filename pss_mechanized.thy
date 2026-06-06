@@ -59372,4 +59372,200 @@ proof
   thus False using notDN by simp
 qed
 
+
+section \<open>§6.5–§6.7 article-faithful standard-reducedness skeleton (bf_)\<close>
+
+text \<open>
+  This block rebuilds the article's actual §6.5/§6.6/§6.7 chain for
+  \<open>ST\<^sub>PS \<subseteq> RT\<^sub>PS\<close> (標準形の簡約性), as opposed to the existing
+  @{thm [source] m_6_7_standard_reduced} which goes directly through the §6.6
+  keystone @{thm [source] m_6_6_reduced_iff_cond}.  The faithful chain is:
+
+    (i)  命題（\<open>Red\<close>と基本列の可換性）  @{text m_6_5_Red_oper}:
+           \<open>(Red M)[n] = Red (M[n])\<close>, by induction on \<open>j\<^sub>1 = Lng M - 1\<close>:
+           \<^item> \<open>j\<^sub>1 = 0\<close>: @{thm [source] roper_base_Lng1} (already GREEN);
+           \<^item> NON-SHIFT (\<open>oper\<close> degenerates to \<open>Pred\<close>): @{text bf_roper_nonshift}
+             — LIGHT, fully proved here from @{thm [source] m_6_5_Red_Pred};
+           \<^item> SHIFT (\<open>oper\<close> = \<open>G \<oplus> \<Oplus> B\<close>): the single HARD residual, isolated as the
+             named hypothesis @{text bf_roper_shift_resid}.
+    (ii) 簡約性が基本列で保たれること  @{text m_6_6_red_preserved_by_oper}:
+           \<open>M \<in> RT\<^sub>PS \<Longrightarrow> M[n] \<in> RT\<^sub>PS\<close>, from @{thm [source] m_6_5_Red_idem} (冪等性)
+           + (i).
+    (iii) 標準形の簡約性  @{text m_6_7_standard_reduced_faithful}:
+           \<open>ST\<^sub>PS \<subseteq> RT\<^sub>PS\<close>, by @{thm [source] ST_PS.induct} (diag base + oper step
+           via (ii)).
+    (iv) @{text bf_stdCA_faithful}: \<open>\<forall>S \<in> ST\<^sub>PS. RedCondA S\<close>, from (iii) +
+           @{thm [source] m_6_6_reduced_iff_cond}.
+\<close>
+
+subsection \<open>(i) \<open>Red\<close> と基本列の可換性 — non-shift (LIGHT) and assembly\<close>
+
+text \<open>
+  The LIGHT non-shift case.  When the \<open>operator[]\<close> step degenerates to
+  \<open>Pred\<close> on \<^emph>\<open>both\<close> \<open>M\<close> and \<open>Red M\<close> (the article's \<open>\<not> ((1,0) <\<^bsub>M\<^esub>\<^sup>Next (1,j\<^sub>1))\<close>
+  branch, where \<open>operator[]\<close> reduces to \<open>Pred\<close> by recursion), the commutativity
+  of \<open>Red\<close> with the fundamental sequence collapses to the commutativity of
+  \<open>Red\<close> with \<open>Pred\<close>, i.e. @{thm [source] m_6_5_Red_Pred}:
+    \<open>(Red M)[n] = Pred (Red M) = Red (Pred M) = Red (M[n])\<close>.
+\<close>
+
+lemma bf_roper_nonshift:
+  assumes MT: "M \<in> T_PS"
+    and opM: "(M::pairseq)[n] = Pred M"
+    and opR: "(Red M)[n] = Pred (Red M)"
+  shows "(Red M)[n] = Red (M[n])"
+proof -
+  have "(Red M)[n] = Pred (Red M)" by (rule opR)
+  also have "\<dots> = Red (Pred M)" by (rule m_6_5_Red_Pred[OF MT, symmetric])
+  also have "\<dots> = Red (M[n])" using opM by simp
+  finally show ?thesis .
+qed
+
+text \<open>
+  命題（\<open>Red\<close>と基本列の可換性）, assembled.  Article proof: induction on
+  \<open>j\<^sub>1 = Lng M - 1\<close> with a case split on \<open>(1,0) <\<^bsub>M\<^esub>\<^sup>Next (1,j\<^sub>1)\<close>.  In
+  mechanized terms the article's split is exactly the \<open>operator[]\<close> case split:
+  the step either degenerates (\<open>M[n] = Pred M\<close>) or performs the \<open>G \<oplus> \<Oplus> B\<close>
+  tiling (\<open>M[n] \<noteq> Pred M\<close>).
+
+  \<^item> Degenerate / NON-SHIFT (\<open>M[n] = Pred M\<close>; includes \<open>j\<^sub>1 = 0\<close> since then
+    \<open>Pred M = M = M[n]\<close>): closed by @{thm [source] bf_roper_nonshift} once the
+    \<open>Red\<close>-side also degenerates.  The \<open>Red\<close>-side degeneracy
+    \<open>(Red M)[n] = Pred (Red M)\<close> is the SECONDARY (light, structural) residual
+    \<open>predRdegen\<close> — it is the "\<open>Red\<close> commutes with the recursive \<open>operator[]\<close>
+    case-discriminator" fact the article folds into "\<open>Red\<close>と\<open>operator[]\<close>の
+    再帰的定義から".
+  \<^item> SHIFT (\<open>M[n] \<noteq> Pred M\<close>): the single HARD residual
+    @{text bf_roper_shift_resid} (\<open>shift_resid\<close>), the article's
+    "\<open>Red\<close>と\<open>Pred\<close>の可換性と\<open>B\<close>の定義から\<open>n\<close>に関する数学的帰納法" branch.  It
+    collapses to the existing \<open>operCA\<close> / \<open>has_gz \<Longrightarrow> D(N)\<close> periodic-tiling
+    machinery (e.g. @{thm [source] fc_D_oper}, @{thm [source] operB_gen_LngM}),
+    so the existing §6.7 \<open>spsy\<close>/\<open>operCA\<close> work plugs in here.
+\<close>
+
+lemma m_6_5_Red_oper:
+  fixes M :: pairseq and n :: nat
+  assumes MT: "M \<in> T_PS"
+    and predRdegen: "(M::pairseq)[n] = Pred M \<Longrightarrow> (Red M)[n] = Pred (Red M)"
+    and shift_resid: "(M::pairseq)[n] \<noteq> Pred M \<Longrightarrow> (Red M)[n] = Red (M[n])"
+  shows "(Red M)[n] = Red (M[n])"
+proof (cases "(M::pairseq)[n] = Pred M")
+  case True
+  show ?thesis by (rule bf_roper_nonshift[OF MT True predRdegen[OF True]])
+next
+  case False
+  show ?thesis by (rule shift_resid[OF False])
+qed
+
+
+subsection \<open>(ii) 簡約性が基本列で保たれること — \<open>m_6_6_red_preserved_by_oper\<close>\<close>
+
+text \<open>
+  簡約性が基本列で保たれること（§6.6）: \<open>M \<in> RT\<^sub>PS \<Longrightarrow> M[n] \<in> RT\<^sub>PS\<close>.
+  Article proof: \<open>Red\<close>の冪等性 (@{thm [source] m_6_5_Red_idem}) と
+  \<open>Red\<close>と基本列の可換性 (i).  Since \<open>M\<close> reduced means \<open>Red M = M\<close>, we have
+    \<open>M[n] = (Red M)[n] = Red (M[n])\<close>  [(i)],
+  so \<open>M[n]\<close> is a fixpoint of \<open>Red\<close>, i.e. reduced.
+
+  DOMAIN NOTE (correction A4).  The mechanized §6.5 corollaries
+  (@{thm [source] m_6_5_Red_idem}, and the \<open>Red\<close>-oper commutativity that
+  @{text shift_resid} packages) live on \<open>anchored_slice\<close>, not all of \<open>T\<^sub>PS\<close>.
+  A reduced \<open>M\<close> is its own whole slice \<open>seg M 0 (Lng M - 1)\<close>, but
+  \<open>anchored_slice\<close> additionally requires the anchor \<open>le0 M 0 (Lng M - 1)\<close>
+  (\<open>\<equiv> \<not> multiT M\<close>), which can FAIL for a general reduced/multi \<open>M\<close>.  Hence the
+  \<open>M \<in> anchored_slice\<close> hypothesis is carried explicitly here (named residual
+  \<open>Manch\<close>); see the report.  We also thread \<open>M[n] \<in> T_PS\<close> for the final
+  \<open>RT\<^sub>PS\<close> membership.
+\<close>
+
+lemma m_6_6_red_preserved_by_oper:
+  fixes M :: pairseq and n :: nat
+  assumes Mred: "M \<in> RT_PS"
+    and Manch: "M \<in> anchored_slice"
+    and opnT: "(M::pairseq)[n] \<in> T_PS"
+    and predRdegen: "(M::pairseq)[n] = Pred M \<Longrightarrow> (Red M)[n] = Pred (Red M)"
+    and shift_resid: "(M::pairseq)[n] \<noteq> Pred M \<Longrightarrow> (Red M)[n] = Red (M[n])"
+  shows "(M::pairseq)[n] \<in> RT_PS"
+proof -
+  have MT: "M \<in> T_PS" using Mred by (simp add: RT_PS_def)
+  have redM: "Red M = M" using Mred by (simp add: RT_PS_def)
+  \<comment> \<open>(i): \<open>(Red M)[n] = Red (M[n])\<close>\<close>
+  have comm: "(Red M)[n] = Red (M[n])"
+    by (rule m_6_5_Red_oper[OF MT predRdegen shift_resid])
+  \<comment> \<open>Rewrite the left with \<open>Red M = M\<close>: \<open>M[n] = Red (M[n])\<close>.\<close>
+  have fix_oper: "(M::pairseq)[n] = Red (M[n])" using comm redM by simp
+  hence "Red (M[n]) = (M::pairseq)[n]" by (rule sym)
+  thus ?thesis using opnT by (simp add: RT_PS_def)
+qed
+
+
+subsection \<open>(iii) 標準形の簡約性 — \<open>m_6_7_standard_reduced_faithful\<close>\<close>
+
+text \<open>
+  標準形の簡約性（§6.7）: \<open>ST\<^sub>PS \<subseteq> RT\<^sub>PS\<close>, by @{thm [source] ST_PS.induct}:
+  \<^item> diag base: \<open>diagSeq u v\<close> (\<open>u \<le> v\<close>) is reduced — supplied by the named base
+    fact \<open>diag_red\<close> (the article's "対角線は簡約である").
+  \<^item> oper step: from \<open>M \<in> RT\<^sub>PS\<close> (IH) and \<open>1 \<le> n\<close>, \<open>M[n] \<in> RT\<^sub>PS\<close> by (ii)
+    @{thm [source] m_6_6_red_preserved_by_oper}.
+  The §6.5 residuals (\<open>anchored_slice\<close> domain, \<open>predRdegen\<close>, \<open>shift_resid\<close>) are
+  threaded as universally-quantified hypotheses over the standard \<open>M\<close> that arise
+  in the induction.  Conditional on those residuals.
+\<close>
+
+lemma m_6_7_standard_reduced_faithful:
+  assumes diag_red: "\<And>u v. u \<le> v \<Longrightarrow> diagSeq u v \<in> RT_PS"
+    and anch: "\<And>M. M \<in> ST_PS \<Longrightarrow> M \<in> RT_PS \<Longrightarrow> M \<in> anchored_slice"
+    and predRdegen: "\<And>M n. \<lbrakk>M \<in> ST_PS; M \<in> RT_PS; 1 \<le> n; (M::pairseq)[n] = Pred M\<rbrakk>
+                       \<Longrightarrow> (Red M)[n] = Pred (Red M)"
+    and shift_resid: "\<And>M n. \<lbrakk>M \<in> ST_PS; M \<in> RT_PS; 1 \<le> n; (M::pairseq)[n] \<noteq> Pred M\<rbrakk>
+                       \<Longrightarrow> (Red M)[n] = Red (M[n])"
+  shows "ST_PS \<subseteq> RT_PS"
+proof
+  fix N assume N: "N \<in> ST_PS"
+  thus "N \<in> RT_PS"
+  proof (induct N rule: ST_PS.induct)
+    case (diag u v)
+    show ?case by (rule diag_red[OF diag.hyps])
+  next
+    case (oper M n)
+    have MST: "M \<in> ST_PS" by (rule oper.hyps(1))
+    have Mred: "M \<in> RT_PS" by (rule oper.hyps(2))
+    have n1: "1 \<le> n" by (rule oper.hyps(3))
+    have Manch: "M \<in> anchored_slice" by (rule anch[OF MST Mred])
+    have opST: "(M::pairseq)[n] \<in> ST_PS" by (rule ST_PS.oper[OF MST n1])
+    have opnT: "(M::pairseq)[n] \<in> T_PS" by (rule ST_PS_T_PS[OF opST])
+    show "(M::pairseq)[n] \<in> RT_PS"
+      by (rule m_6_6_red_preserved_by_oper[OF Mred Manch opnT
+              predRdegen[OF MST Mred n1] shift_resid[OF MST Mred n1]])
+  qed
+qed
+
+
+subsection \<open>(iv) \<open>stdCA\<close> — \<open>bf_stdCA_faithful\<close>\<close>
+
+text \<open>
+  \<open>stdCA\<close>: \<open>\<forall>S \<in> ST\<^sub>PS. RedCondA S\<close>.  From (iii) \<open>ST\<^sub>PS \<subseteq> RT\<^sub>PS\<close> and the §6.6
+  keystone 命題（簡約性と係数の関係） @{thm [source] m_6_6_reduced_iff_cond}
+  (簡約 \<longleftrightarrow> (A)\<and>(B)), whose (A)-component is \<open>RedCondA\<close>.  Same residuals as (iii).
+\<close>
+
+lemma bf_stdCA_faithful:
+  assumes diag_red: "\<And>u v. u \<le> v \<Longrightarrow> diagSeq u v \<in> RT_PS"
+    and anch: "\<And>M. M \<in> ST_PS \<Longrightarrow> M \<in> RT_PS \<Longrightarrow> M \<in> anchored_slice"
+    and predRdegen: "\<And>M n. \<lbrakk>M \<in> ST_PS; M \<in> RT_PS; 1 \<le> n; (M::pairseq)[n] = Pred M\<rbrakk>
+                       \<Longrightarrow> (Red M)[n] = Pred (Red M)"
+    and shift_resid: "\<And>M n. \<lbrakk>M \<in> ST_PS; M \<in> RT_PS; 1 \<le> n; (M::pairseq)[n] \<noteq> Pred M\<rbrakk>
+                       \<Longrightarrow> (Red M)[n] = Red (M[n])"
+    and S: "S \<in> ST_PS"
+  shows "RedCondA S"
+proof -
+  have sub: "ST_PS \<subseteq> RT_PS"
+    by (rule m_6_7_standard_reduced_faithful[OF diag_red anch predRdegen shift_resid])
+  have Sred: "S \<in> RT_PS" using sub S by blast
+  have ST: "S \<in> T_PS" by (rule ST_PS_T_PS[OF S])
+  have "RedCondA S \<and> RedCondB S"
+    using m_6_6_reduced_iff_cond[OF ST] Sred by blast
+  thus ?thesis by simp
+qed
+
 end
