@@ -59568,4 +59568,175 @@ proof -
   thus ?thesis by simp
 qed
 
+
+subsection \<open>(v) Residual discharge — \<open>diag_red\<close>, \<open>predRdegen\<close>, and the \<open>anch\<close> domain gap\<close>
+
+text \<open>
+  Three of the four named residuals carried by
+  @{thm [source] m_6_7_standard_reduced_faithful} are LIGHT and are discharged
+  here, leaving \<^emph>\<open>only\<close> the tiling \<open>shift\<close> case of \<open>Red\<close>-\<open>oper\<close>-commutativity.
+
+  \<^enum> \<open>diag_red\<close>: a diagonal \<open>diagSeq u v\<close> (\<open>u \<le> v\<close>) is reduced.  Discharged by
+    @{text bf_diagSeq_reduced} below, via the §6.6 keystone
+    @{thm [source] m_6_6_reduced_iff_cond} (簡約 \<longleftrightarrow> (A)\<and>(B)) and the GREEN
+    @{thm [source] kfwd_condAB_diagSeq} (the diagonal satisfies both \<open>RedCondA\<close>
+    and \<open>RedCondB\<close>).
+  \<^enum> \<open>predRdegen\<close>: when the \<open>oper\<close>-step degenerates on \<open>M\<close> (\<open>M[n] = Pred M\<close>) it
+    also degenerates on \<open>Red M\<close> (\<open>(Red M)[n] = Pred (Red M)\<close>).  At every site
+    where this is needed \<open>M\<close> is already \<^emph>\<open>reduced\<close> (\<open>M \<in> RT\<^sub>PS\<close>, i.e. \<open>Red M = M\<close>),
+    where it is \<^emph>\<open>trivial\<close>: \<open>(Red M)[n] = M[n] = Pred M = Pred (Red M)\<close>.
+    (Empirically, on a non-reduced \<open>M\<close> the bare \<open>predRdegen\<close> is FALSE — e.g.
+    \<open>M = (0,0)(0,1)\<close>, \<open>Red M = (0,0)(1,1)\<close>, where \<open>(Red M)[2] \<noteq> Pred (Red M)\<close> —
+    so it is discharged \<^emph>\<open>only\<close> at the reduced site, never globally.)
+  \<^enum> \<open>anch\<close> (DOMAIN GAP, correction A4): the skeleton threaded
+    \<open>M \<in> anchored_slice\<close> because it routed preservation through the
+    \<open>anchored_slice\<close>-scoped @{thm [source] m_6_5_Red_oper}, whose anchor
+    \<open>le0 M 0 (Lng M - 1) (\<equiv> \<not> multiT M)\<close> can FAIL for \<open>multiT\<close> standard forms.
+    Empirically (red_model.py) \<open>Red\<close>-\<open>oper\<close>-commutativity holds for ALL
+    reduced \<open>M\<close> including \<open>multiT\<close> ones, so \<open>anchored_slice\<close> is merely an
+    under-approximation.  We DISSOLVE the gap by stating preservation directly
+    on the reduced domain \<open>M \<in> RT\<^sub>PS\<close> (@{text bf_red_preserved_by_oper_ST}),
+    proving the non-shift branch trivially (reduced \<open>predRdegen\<close>) and carrying
+    \<^emph>\<open>only\<close> the \<open>ST\<^sub>PS\<close>-scoped \<open>shift\<close> case as the lone hypothesis.  No
+    \<open>anchored_slice\<close> appears.
+\<close>
+
+text \<open>
+  Residual 1 — \<open>diag_red\<close>: the diagonal \<open>diagSeq u v\<close> (\<open>u \<le> v\<close>) is reduced.
+\<close>
+
+lemma bf_diagSeq_reduced:
+  assumes uv: "u \<le> v"
+  shows "diagSeq u v \<in> RT_PS"
+proof -
+  have MT: "diagSeq u v \<in> T_PS"
+    using uv by (simp add: T_PS_def diagSeq_def del: upt_Suc)
+  have AB: "RedCondA (diagSeq u v) \<and> RedCondB (diagSeq u v)"
+    by (rule kfwd_condAB_diagSeq[OF uv])
+  show ?thesis
+    using m_6_6_reduced_iff_cond[OF MT] AB by blast
+qed
+
+text \<open>
+  Residual 2 — \<open>predRdegen\<close> at the reduced site is trivial.  Since \<open>Red M = M\<close>,
+  the \<open>oper\<close>-step degeneracy of \<open>M\<close> transfers verbatim to \<open>Red M\<close>.
+\<close>
+
+lemma bf_predRdegen_reduced:
+  assumes Mred: "M \<in> RT_PS"
+    and opM: "(M::pairseq)[n] = Pred M"
+  shows "(Red M)[n] = Pred (Red M)"
+proof -
+  have redM: "Red M = M" using Mred by (simp add: RT_PS_def)
+  show ?thesis using opM redM by simp
+qed
+
+text \<open>
+  The DOMAIN-GAP-FREE preservation step on the \<^emph>\<open>reduced\<close> domain.  For a reduced
+  \<open>M\<close> (\<open>M \<in> RT\<^sub>PS\<close>) and \<open>n \<ge> 1\<close> with \<open>M[n] \<in> T\<^sub>PS\<close>, \<open>M[n]\<close> is again reduced —
+  conditional ONLY on the \<open>shift\<close> case of \<open>Red\<close>-\<open>oper\<close>-commutativity on the
+  given (reduced) \<open>M\<close>.  No \<open>anchored_slice\<close> hypothesis.
+
+  Proof by the \<open>oper\<close>-step case split:
+  \<^item> NON-SHIFT (\<open>M[n] = Pred M\<close>): \<open>Red (M[n]) = Red (Pred M) = Pred (Red M)
+      = Pred M = M[n]\<close> using @{thm [source] m_6_5_Red_Pred} and \<open>Red M = M\<close>, so
+      \<open>M[n]\<close> is a \<open>Red\<close>-fixpoint, i.e. reduced.  (This folds in the trivial
+      reduced \<open>predRdegen\<close>.)
+  \<^item> SHIFT (\<open>M[n] \<noteq> Pred M\<close>): the lone hypothesis gives
+      \<open>(Red M)[n] = Red (M[n])\<close>; with \<open>Red M = M\<close> this reads
+      \<open>M[n] = Red (M[n])\<close>, i.e. \<open>M[n]\<close> reduced.
+\<close>
+
+lemma bf_red_preserved_by_oper_ST:
+  fixes M :: pairseq and n :: nat
+  assumes Mred: "M \<in> RT_PS"
+    and opnT: "(M::pairseq)[n] \<in> T_PS"
+    and shift_resid: "(M::pairseq)[n] \<noteq> Pred M \<Longrightarrow> (Red M)[n] = Red (M[n])"
+  shows "(M::pairseq)[n] \<in> RT_PS"
+proof -
+  have MT: "M \<in> T_PS" using Mred by (simp add: RT_PS_def)
+  have redM: "Red M = M" using Mred by (simp add: RT_PS_def)
+  have fix_oper: "Red (M[n]) = (M::pairseq)[n]"
+  proof (cases "(M::pairseq)[n] = Pred M")
+    case True
+    \<comment> \<open>NON-SHIFT: trivial reduced \<open>predRdegen\<close> + @{thm [source] m_6_5_Red_Pred}.\<close>
+    have "Red ((M::pairseq)[n]) = Red (Pred M)" using True by simp
+    also have "\<dots> = Pred (Red M)" by (rule m_6_5_Red_Pred[OF MT])
+    also have "\<dots> = Pred M" using redM by simp
+    also have "\<dots> = (M::pairseq)[n]" using True by simp
+    finally show ?thesis .
+  next
+    case False
+    \<comment> \<open>SHIFT: the lone residual on this (reduced) \<open>M\<close>.\<close>
+    have comm: "(Red M)[n] = Red ((M::pairseq)[n])" by (rule shift_resid[OF False])
+    have "(M::pairseq)[n] = Red ((M::pairseq)[n])" using comm redM by simp
+    thus ?thesis by (rule sym)
+  qed
+  thus ?thesis using opnT by (simp add: RT_PS_def)
+qed
+
+text \<open>
+  標準形の簡約性（§6.7）, the \<^bold>\<open>domain-gap-free\<close> chain: \<open>ST\<^sub>PS \<subseteq> RT\<^sub>PS\<close>, by
+  @{thm [source] ST_PS.induct}.  The diagonal base is now fully discharged
+  (@{thm [source] bf_diagSeq_reduced}); the \<open>oper\<close> step uses
+  @{thm [source] bf_red_preserved_by_oper_ST}.  The \<^emph>\<open>only\<close> remaining hypothesis
+  is the \<open>ST\<^sub>PS\<close>-scoped \<open>shift\<close> case of \<open>Red\<close>-\<open>oper\<close>-commutativity — NO
+  \<open>diag_red\<close>, NO \<open>predRdegen\<close>, NO \<open>anch\<close>/\<open>anchored_slice\<close>.
+\<close>
+
+lemma bf_m_6_7_standard_reduced_modulo_shift:
+  assumes shift_resid: "\<And>M n. \<lbrakk>M \<in> ST_PS; M \<in> RT_PS; 1 \<le> n; (M::pairseq)[n] \<noteq> Pred M\<rbrakk>
+                          \<Longrightarrow> (Red M)[n] = Red (M[n])"
+  shows "ST_PS \<subseteq> RT_PS"
+proof
+  fix N assume N: "N \<in> ST_PS"
+  thus "N \<in> RT_PS"
+  proof (induct N rule: ST_PS.induct)
+    case (diag u v)
+    show ?case by (rule bf_diagSeq_reduced[OF diag.hyps])
+  next
+    case (oper M n)
+    have MST: "M \<in> ST_PS" by (rule oper.hyps(1))
+    have Mred: "M \<in> RT_PS" by (rule oper.hyps(2))
+    have n1: "1 \<le> n" by (rule oper.hyps(3))
+    have opST: "(M::pairseq)[n] \<in> ST_PS" by (rule ST_PS.oper[OF MST n1])
+    have opnT: "(M::pairseq)[n] \<in> T_PS" by (rule ST_PS_T_PS[OF opST])
+    show "(M::pairseq)[n] \<in> RT_PS"
+      by (rule bf_red_preserved_by_oper_ST[OF Mred opnT shift_resid[OF MST Mred n1]])
+  qed
+qed
+
+text \<open>
+  \<open>stdCA\<close> on the domain-gap-free chain: \<open>\<forall>S \<in> ST\<^sub>PS. RedCondA S\<close>, conditional
+  ONLY on the \<open>ST\<^sub>PS\<close> \<open>shift\<close> residual.
+\<close>
+
+lemma bf_stdCA_modulo_shift:
+  assumes shift_resid: "\<And>M n. \<lbrakk>M \<in> ST_PS; M \<in> RT_PS; 1 \<le> n; (M::pairseq)[n] \<noteq> Pred M\<rbrakk>
+                          \<Longrightarrow> (Red M)[n] = Red (M[n])"
+    and S: "S \<in> ST_PS"
+  shows "RedCondA S"
+proof -
+  have sub: "ST_PS \<subseteq> RT_PS" by (rule bf_m_6_7_standard_reduced_modulo_shift[OF shift_resid])
+  have Sred: "S \<in> RT_PS" using sub S by blast
+  have ST: "S \<in> T_PS" by (rule ST_PS_T_PS[OF S])
+  have "RedCondA S \<and> RedCondB S"
+    using m_6_6_reduced_iff_cond[OF ST] Sred by blast
+  thus ?thesis by simp
+qed
+
+text \<open>
+  REMAINING RESIDUAL (the single crux; NOT closed here).  The \<open>shift\<close> case of
+  \<open>Red\<close>-\<open>oper\<close>-commutativity on \<open>ST\<^sub>PS\<close>:
+    \<open>M \<in> ST\<^sub>PS \<Longrightarrow> M \<in> RT\<^sub>PS \<Longrightarrow> 1 \<le> n \<Longrightarrow> M[n] \<noteq> Pred M \<Longrightarrow> (Red M)[n] = Red (M[n])\<close>.
+  The discriminator \<open>M[n] \<noteq> Pred M\<close> is exactly the tiling case
+    \<open>\<not> (Lng M - 1 = 0 \<or> (M\<^bsub>0,j\<^sub>1\<^esub> = 0 \<and> M\<^bsub>1,j\<^sub>1\<^esub> = 0) \<or> \<not> hasParent M (idx1 M j\<^sub>1) j\<^sub>1)\<close>
+  (the negation of the three degenerate \<open>oper\<close>-branches), i.e. the \<open>\<not> ?nontile\<close>
+  case of @{thm [source] m_6_7_standard_RedCondAB}.  It maps to the existing
+  \<open>operCA\<close>/\<open>operCB\<close> tiling machinery (@{thm [source] m_6_7_standard_RedCondAB},
+  @{thm [source] operB_gen_LngM}, the \<open>fc_D_oper\<close>/\<open>has_gz \<Longrightarrow> D(N)\<close> periodic-tiling
+  bricks of §6.7).  Verified non-vacuous and TRUE on all reduced \<open>M\<close> in
+  red_model.py (enum(3,3), 0-fail).
+\<close>
+
 end
