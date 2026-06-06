@@ -56908,4 +56908,79 @@ proof -
 qed
 
 
+text \<open>§6.7 \<open>tailReach\<close> FROM ROW-0 STRICT CONSECUTIVE INCREASE (GREEN, unconditional
+  pure row-0 chaining).  This isolates the EXACT remaining structural input of
+  @{thm [source] Ep_from_le0_tail}'s reachability hypothesis to a single clean
+  arithmetic fact: STRICT consecutive row-0 increase on the strict-ancestor tail
+  \<open>[p, j\<^sub>1)\<close> (\<open>entry N 0 x < entry N 0 (Suc x)\<close> for \<open>p \<le> x < j\<^sub>1\<close>).  EMPIRICALLY this
+  strict-increase fact holds 2977/0 on the broad ST_PS closure (the same population
+  on which \<open>tailReach\<close> itself is 19395/0); the consecutive nextrel0-chain reading
+  is verified (818/0 sampled), and via the global \<open>\<le> +1\<close> cap
+  (@{thm [source] ST_row0_step_le}) each such strict step is in fact EXACTLY \<open>+1\<close>.
+
+  Argument: a consecutive pair \<open>(x, Suc x)\<close> with \<open>Suc x < Lng N\<close> and
+  \<open>entry N 0 x < entry N 0 (Suc x)\<close> is a @{const nextrel0} edge (the
+  \<open>\<forall>j. x < j < Suc x \<longrightarrow> \<dots>\<close> minimality clause is vacuous), hence \<open>le0 N x (Suc x)\<close>.
+  Chaining these edges UPWARD from \<open>x\<close> to \<open>j\<^sub>1\<close> by induction on the remaining
+  distance \<open>j\<^sub>1 - x\<close> (@{thm [source] le0_trans}, base \<open>le0_refl\<close> at \<open>j\<^sub>1\<close>) yields
+  \<open>le0 N x j\<^sub>1\<close> for EVERY \<open>x\<close> on \<open>[p, j\<^sub>1)\<close> --- exactly the \<open>tailReach\<close> hypothesis
+  consumed by @{thm [source] Ep_from_le0_tail}.  Cites only @{thm [source] le0_def},
+  @{thm [source] nextrel0_def}, @{thm [source] le0_trans}, @{thm [source] le0_refl};
+  no spsy / sblk / via_spsy / RedCond / oper / tail_affine / parent-readback.
+  This reduces the row-0 reachability \<open>tailReach\<close> to the lone STRICT-INCREASE fact,
+  which the SkT_PS per-block tiling supplies (companion lower bound to the GREEN
+  per-step \<open>\<le> +1\<close> upper bound @{thm [source] SkT_row0_step_le}).\<close>
+
+lemma le0_step_consec:
+  fixes N :: pairseq
+  assumes sxL: "Suc x < Lng N"
+    and inc: "entry N 0 x < entry N 0 (Suc x)"
+  shows "le0 N x (Suc x)"
+proof -
+  have xL: "x < Lng N" using sxL by simp
+  have nr0: "nextrel0 N x (Suc x)"
+    using xL sxL inc by (auto simp: nextrel0_def)
+  have "(nextrel0 N)\<^sup>*\<^sup>* x (Suc x)" using nr0 by blast
+  thus ?thesis using xL sxL by (simp add: le0_def)
+qed
+
+lemma tailReach_from_row0_strict:
+  fixes N :: pairseq
+  assumes j1L: "Lng N - 1 < Lng N"
+    and strict: "\<And>y. p \<le> y \<Longrightarrow> y < Lng N - 1 \<Longrightarrow> entry N 0 y < entry N 0 (Suc y)"
+    and xlo: "p \<le> x"
+    and xhi: "x < Lng N - 1"
+  shows "le0 N x (Lng N - 1)"
+proof -
+  let ?j1 = "Lng N - 1"
+  \<comment> \<open>chain upward from any base \<open>b \<in> [p, j\<^sub>1)\<close> to \<open>j\<^sub>1\<close>, by induction on the gap \<open>j\<^sub>1 - b\<close>\<close>
+  have chain: "\<And>b. p \<le> b \<Longrightarrow> b \<le> ?j1 \<Longrightarrow> le0 N b ?j1"
+  proof -
+    fix b assume "p \<le> b" and "b \<le> ?j1"
+    then show "le0 N b ?j1"
+    proof (induction "?j1 - b" arbitrary: b)
+      case 0
+      \<comment> \<open>gap \<open>0\<close>: \<open>b = j\<^sub>1\<close>, reflexive\<close>
+      have "b = ?j1" using 0 by linarith
+      thus ?case using j1L by (simp add: le0_refl)
+    next
+      case (Suc d)
+      \<comment> \<open>gap \<open>Suc d\<close>: \<open>b < j\<^sub>1\<close>; strict step \<open>b \<rightarrow> Suc b\<close>, then IH on \<open>Suc b\<close>\<close>
+      have blt: "b < ?j1" using Suc.hyps(2) by linarith
+      have pb: "p \<le> b" using Suc.prems(1) .
+      have inc: "entry N 0 b < entry N 0 (Suc b)" by (rule strict[OF pb blt])
+      have sbL: "Suc b < Lng N" using blt by simp
+      have step: "le0 N b (Suc b)" by (rule le0_step_consec[OF sbL inc])
+      have dEq: "d = ?j1 - Suc b" using Suc.hyps(2) by linarith
+      have psb: "p \<le> Suc b" using pb by simp
+      have sble: "Suc b \<le> ?j1" using blt by simp
+      have rest: "le0 N (Suc b) ?j1" using Suc.hyps(1)[OF dEq psb sble] .
+      show ?case by (rule le0_trans[OF step rest])
+    qed
+  qed
+  have xle: "x \<le> ?j1" using xhi by simp
+  show ?thesis by (rule chain[OF xlo xle])
+qed
+
+
 end

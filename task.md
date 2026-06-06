@@ -44,7 +44,7 @@
       - 🚨 系（$1$ 列ペア数列の基本性質）
     - 🚨 §6.7 標準形
       - ✅ 命題（標準形の階層和による表示）
-      - 🚨🤖 命題（標準形の簡約性）〔`Ep_from_le0_tail`(green)でtree残差を**純row-0 reachability `tailReach`: N∈ST_PS, p=parent N1 z>j0, x∈[p,j1) ⟹ le0 N x j1(2977/0)** へ還元。row-1 parent readbackはRedCondA gatedで断念→row-0転換。tailReachは実brick(x=p)をsubsume。残=**tailReachをrow-0 confinement(oper_d1pos_le0_within/_confined,oper_gen_nth_prefix)+ST_PS.inductで証明**(prefix x<j0M跨ぎ注意)→E_p→subramp→tree→spsy→cascade無条件。+bridge+sy_pos+valley。green部品一覧: spsy_keystone_via_Q,Qprime_via_tree,m_6_7_tree_wellformed(_via_Ep),brick_from_subramp,subramp_oper_core,ST_row0_step_le,subramp_from_Ep,Ep_from_le0_tail〕
+      - 🚨🤖 命題（標準形の簡約性）〔`tailReach_from_row0_strict`(green)でtailReachを**`strict-increase`: N∈ST_PS, p=parent N1 z>j0, x∈[p,j1) ⟹ entry N 0 x<entry N 0(Suc x)(2977/0)** へ還元(consecutive nextrel0連鎖)。これは既green上界`SkT_row0_step_le`(56462,各step≤+1)の**下界companion**(各step≥+1→両者で=+1)。残=**strict-increaseをSkT_PS.inductでSkT_row0_step_le鏡映**(within:oper_gen_block_entry0でM-IH strict; boundary:d0>0=entry M0 j1M−entry M0 j0M>0をstrict parent edgeから)→tailReach→E_p→subramp→tree→spsy→cascade無条件。+bridge+sy_pos+valley〕
       - ✅ 命題（標準形の単項成分が標準形であること）
       - ✅ 命題（標準形の始切片への遺伝性）
     - ✅ §6.8 降順性
