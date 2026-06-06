@@ -53,7 +53,7 @@
         - ✅ Q' を z 強帰納で証明〔`Qprime_via_tree`〕
         - ✅ reach→le0 N z j1→scalar Ez 還元〔`reach_from_z_tail`/`le0_z_j1_from_Ez`/`m_6_7_tree_wellformed_via_Ez`〕
         - ✅ 内部 row-1 parent readback 無条件〔`oper_parent1_readback`〕
-        - 🚨🤖 残a Ez=gstrict=スカラーD(N)。緑~30本(bridges/fullramp_*/fr_*/gs_*/f2_*/cd_*/fc_*: D伝播 fc_D_oper, cd_tree_from_D 等)。crux=`has_gz(N)⟹D(N)`。within-N否定/forward le0否定(le0はflat生存)済。残=row-1 parent boundary readback(oper_parent1_readback_boundary cross-block valley)=open core
+        - 🚨🤖 B(原文忠実)構築: 標準形簡約性=単一残差(ST_PS shiftケース=operCA/D(N))に集約。緑: bf_m_6_7_standard_reduced_modulo_shift/bf_stdCA_modulo_shift/m_6_5_Red_oper/bf_red_preserved_by_oper_ST 他、軽残差(diag/predRdegen/anch)全消化。残=shift⟸operCA wire + D(N)crux(has_gz⟹D, open core)
         - 🚨 残b boundary valley (cross-block)〔`oper_parent1_readback_boundary` 無条件化〕
         - 🚨 残c assembly: bridge + sy_pos + valley
       - ✅ 命題（標準形の単項成分が標準形であること）
