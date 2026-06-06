@@ -54,8 +54,9 @@
         - ✅ reach→le0 N z j1→scalar Ez 還元〔`reach_from_z_tail`/`le0_z_j1_from_Ez`/`m_6_7_tree_wellformed_via_Ez`〕
         - ✅ 内部 row-1 parent readback 無条件〔`oper_parent1_readback`〕
         - ✅ B(原文忠実)構築: 標準形簡約性=operCA/operCBのみに集約(原ルートm_6_7_standard_reducedと収束=強度超過なし)。shift⟸operCA wire完了〔`oper_nontile_eq_Pred`/`bf_shift_resid_via_operCAB`/`bf_m_6_7_standard_reduced_via_operCAB`/`bf_stdCA_via_operCAB`〕。軽残差(diag/predRdegen/anch)も全消化済。残=D(N)crux(has_gz⟹D, open core)のみ
-        - 🚨 残b boundary valley (cross-block)〔`oper_parent1_readback_boundary` 無条件化〕
-        - 🚨 残c assembly: bridge + sy_pos + valley
+        - ✅ D(N)crux骨格〔`m_6_7_oper_gstrict`: ST_PS.cases forward assembly。D(N)=gatekeep+fccrux+fc_D_oper。残=2核のみ〕
+        - 🚨 核1 gatekeep: has_gz(M[n])⟹M gated(i1=1)。非gated(Pred/i1=0)で¬has_gz(864/0)だが親有でも偽あり=readback機構
+        - 🚨 核2 fccrux: gated M, has_gz(M[n])⟹D(M)(1653/0)。boundary row-1 parent readback(原 残b/残c と同核)
       - ✅ 命題（標準形の単項成分が標準形であること）
       - ✅ 命題（標準形の始切片への遺伝性）
     - ✅ §6.8 降順性
