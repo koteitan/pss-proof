@@ -56983,4 +56983,80 @@ proof -
 qed
 
 
+text \<open>§6.7 STRICT-INCREASE GROUNDWORK (attempt V).  The companion LOWER bound to
+  the GREEN per-step UPPER bound @{thm [source] SkT_row0_step_le}.  The new
+  ingredient (the only thing beyond the \<open>\<le>\<close> mirror) is \<open>d\<^sub>0 > 0\<close> at the
+  block-junction: when the root parent is a row-1 edge, the row-0 increment
+  across the parent slice is STRICTLY positive.  EMPIRICALLY 1575/0 on the broad
+  ST_PS closure (/tmp/_d0fam.py).  Cites only @{thm [source] le0_def},
+  @{thm [source] nextrel1_def}, @{thm [source] le0_ances_aux}: from
+  \<open>nextrel1 M j\<^sub>0 j\<^sub>1\<close> the embedded \<open>le0 M j\<^sub>0 j\<^sub>1\<close> is a row-0 rtrancl chain, and with
+  \<open>j\<^sub>0 < j\<^sub>1\<close> @{thm [source] le0_ances_aux} turns weak monotonicity into the STRICT
+  increase.\<close>
+
+lemma le0_strict_entry0:
+  fixes M :: pairseq
+  assumes le0: "le0 M a b"
+    and ab: "a < b"
+  shows "entry M 0 a < entry M 0 b"
+proof -
+  have chain: "(nextrel0 M)\<^sup>*\<^sup>* a b" using le0 by (simp add: le0_def)
+  have "\<forall>j. a < j \<and> j \<le> b \<longrightarrow> entry M 0 a < entry M 0 j"
+    by (rule le0_ances_aux[OF chain])
+  thus ?thesis using ab by simp
+qed
+
+lemma d0_pos_row1_parent:
+  fixes M :: pairseq
+  assumes nr1: "nextrel1 M j0 j1"
+    and ab: "j0 < j1"
+  shows "entry M 0 j0 < entry M 0 j1"
+proof -
+  have le0j: "le0 M j0 j1" using nr1 by (simp add: nextrel1_def)
+  show ?thesis by (rule le0_strict_entry0[OF le0j ab])
+qed
+
+
+text \<open>§6.7 WITHIN-BLOCK STRICT step (attempt V): the \<open>within\<close> case of the strict
+  mirror, in isolation.  For \<open>N = M[n]\<close>, two consecutive interior offsets
+  \<open>s, s+1\<close> of the SAME block \<open>q\<close> read off \<open>M\<close>'s row-0 entries shifted by the same
+  \<open>q\<cdot>d\<^sub>0\<close> (@{thm [source] oper_gen_block_entry0}), so the N-step at that junction is
+  EXACTLY the M-step \<open>(j\<^sub>0+s, j\<^sub>0+s+1)\<close>: it is strict iff M's is.  This is the
+  unconditional block-internal reduction (no \<open>d\<^sub>0\<close> needed); the residual
+  difficulty in the FULL strict-increase is confined to the inter-block junctions
+  and the prefix, where the d0pos family invariant (NOT a clean local invariant;
+  it is NOT closed under oper, /tmp/_inv.out 480 ctrex) must be threaded.\<close>
+
+lemma oper_within_block_strict:
+  fixes M :: pairseq
+  assumes L: "1 < Lng M"
+    and notzero: "\<not> (entry M 0 (Lng M - 1) = 0 \<and> entry M 1 (Lng M - 1) = 0)"
+    and hp: "hasParent M (idx1 M (Lng M - 1)) (Lng M - 1)"
+    and j0lt: "parent M (idx1 M (Lng M - 1)) (Lng M - 1) < Lng M - 1"
+    and q: "q < n"
+    and s1: "s + 1 < Lng M - 1 - parent M (idx1 M (Lng M - 1)) (Lng M - 1)"
+    and Mstep: "entry M 0 (parent M (idx1 M (Lng M - 1)) (Lng M - 1) + s)
+                  < entry M 0 (parent M (idx1 M (Lng M - 1)) (Lng M - 1) + (s + 1))"
+  shows "entry ((M::pairseq)[n]) 0
+              (parent M (idx1 M (Lng M - 1)) (Lng M - 1)
+                 + q * (Lng M - 1 - parent M (idx1 M (Lng M - 1)) (Lng M - 1)) + s)
+       < entry ((M::pairseq)[n]) 0
+              (parent M (idx1 M (Lng M - 1)) (Lng M - 1)
+                 + q * (Lng M - 1 - parent M (idx1 M (Lng M - 1)) (Lng M - 1)) + (s + 1))"
+proof -
+  let ?j0 = "parent M (idx1 M (Lng M - 1)) (Lng M - 1)"
+  let ?w = "Lng M - 1 - ?j0"
+  let ?d0 = "if 0 < idx1 M (Lng M - 1)
+               then entry M 0 (Lng M - 1) - entry M 0 ?j0 else 0"
+  have sw: "s < ?w" using s1 by simp
+  have e0s: "entry ((M::pairseq)[n]) 0 (?j0 + q * ?w + s)
+               = entry M 0 (?j0 + s) + q * ?d0"
+    by (rule oper_gen_block_entry0[OF L notzero hp j0lt q sw])
+  have e0s1: "entry ((M::pairseq)[n]) 0 (?j0 + q * ?w + (s + 1))
+               = entry M 0 (?j0 + (s + 1)) + q * ?d0"
+    by (rule oper_gen_block_entry0[OF L notzero hp j0lt q s1])
+  show ?thesis using e0s e0s1 Mstep by simp
+qed
+
+
 end

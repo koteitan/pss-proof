@@ -44,7 +44,7 @@
       - 🚨 系（$1$ 列ペア数列の基本性質）
     - 🚨 §6.7 標準形
       - ✅ 命題（標準形の階層和による表示）
-      - 🚨🤖 命題（標準形の簡約性）〔`tailReach_from_row0_strict`(green)でtailReachを**`strict-increase`: N∈ST_PS, p=parent N1 z>j0, x∈[p,j1) ⟹ entry N 0 x<entry N 0(Suc x)(2977/0)** へ還元(consecutive nextrel0連鎖)。これは既green上界`SkT_row0_step_le`(56462,各step≤+1)の**下界companion**(各step≥+1→両者で=+1)。残=**strict-increaseをSkT_PS.inductでSkT_row0_step_le鏡映**(within:oper_gen_block_entry0でM-IH strict; boundary:d0>0=entry M0 j1M−entry M0 j0M>0をstrict parent edgeから)→tailReach→E_p→subramp→tree→spsy→cascade無条件。+bridge+sy_pos+valley〕
+      - 🚨🤖 命題（標準形の簡約性）〔**決定的所見: row-0 detour(tail_affine→…→strict-increase)はrow-1 treeにcircle back**。strict-increaseはSkT_row0_step_leのstrict鏡映だがidx1=0 boundary(flat family)で破綻、gating(p>j0)はGLOBALでrow-1祖先木をencode、local invariant(allstrict&d0>0)はoperで閉じない(480ctrex,operがd0を0にcollapse)。green ingredient: d0_pos_row1_parent(d0>0), oper_within_block_strict, le0_strict_entry0。**残=fresh row-1 parent readback(`oper_parent1_readback`,非RedCondA): parent(M[n])1 z=parent M1(j0M+s)+q*w(内部2889/0,s=0境界要処理)** で tail のrow-1 tree構造を直接確立→fullramp/strict-increase/E_p/tree同時。これがcascade最後の核心(数百行のstructural induction)〕
       - ✅ 命題（標準形の単項成分が標準形であること）
       - ✅ 命題（標準形の始切片への遺伝性）
     - ✅ §6.8 降順性
