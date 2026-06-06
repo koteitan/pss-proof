@@ -56,7 +56,10 @@
         - ✅ B(原文忠実)構築: 標準形簡約性=operCA/operCBのみに集約(原ルートm_6_7_standard_reducedと収束=強度超過なし)。shift⟸operCA wire完了〔`oper_nontile_eq_Pred`/`bf_shift_resid_via_operCAB`/`bf_m_6_7_standard_reduced_via_operCAB`/`bf_stdCA_via_operCAB`〕。軽残差(diag/predRdegen/anch)も全消化済。残=D(N)crux(has_gz⟹D, open core)のみ
         - ✅ D(N)crux骨格(induct版)〔`m_6_7_oper_gstrict`: ST_PS.induct, IH=has_gz M⟹D M。D(N)=gatekeep+DISJ+fc_D_oper。w>1循環をIHで断つ〕
         - 🚨 核1 gatekeep: has_gz(M[n])⟹M gated(i1=1)。非gated(Pred/i1=0)で¬has_gz(864/0)
-        - 🚨 核2 DISJ: gated M, has_gz(M[n])⟹has_gz(M)∨D(M)(621/0)。w>1部=WG(gated z常にinterior→緑interior readback, boundary valley不要); w=1部=has_gz(M[n])⟹D(M)
+        - 🚨 核2 DISJ: gated M, has_gz(M[n])⟹has_gz(M)∨D(M)(621/0)。w>1部=WG; w=1部=has_gz(M[n])⟹D(M)
+          - ✅ WG反射コア〔`wg_reflect_core`: N側parent edge(同ブロック)→M側hasParent。緑interior readback+le0_base_back+m_5_1_parent_exists_2, 循環なし〕
+          - 🚨 WG wrapper: gated z→ブロック分解(j0N readback+局所性)→wg_reflect_core。部分補題A=hasParent M1(j1M-1)(101/0)
+          - 🚨 DISJ w=1部 + 核1 gatekeep
       - ✅ 命題（標準形の単項成分が標準形であること）
       - ✅ 命題（標準形の始切片への遺伝性）
     - ✅ §6.8 降順性
