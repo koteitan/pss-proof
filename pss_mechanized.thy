@@ -58954,4 +58954,240 @@ proof -
 qed
 
 
+
+text \<open>§6.7 WITHIN-N crux groundwork.  \<open>cd_D_from_consec_strict\<close>: if row-0 is
+  STRICTLY increasing at every consecutive step on \<open>[0, j\<^sub>1)\<close> then \<open>D(N)\<close> holds.
+  The ST_PS per-step UPPER cap (@{thm [source] ST_row0_step_le}) together with the
+  strict per-step LOWER bound forces every step to be EXACTLY \<open>+1\<close>, so the row-0
+  endpoint sits the full width above the base.  Cites only
+  @{thm [source] ST_row0_step_le}; no spsy / sblk / RedCond / tail_affine / oper.\<close>
+
+lemma cd_D_from_consec_strict:
+  fixes N :: pairseq
+  assumes N: "N \<in> ST_PS"
+    and L: "1 < Lng N"
+    and strict: "\<And>x. x < Lng N - 1 \<Longrightarrow> entry N 0 x < entry N 0 (Suc x)"
+  shows "entry N 0 (Lng N - 1) = entry N 0 0 + (Lng N - 1)"
+proof -
+  let ?j1 = "Lng N - 1"
+  \<comment> \<open>every step on \<open>[0, j\<^sub>1)\<close> is exactly \<open>+1\<close>: strict lower, cap upper\<close>
+  have step1: "\<And>x. x < ?j1 \<Longrightarrow> entry N 0 (Suc x) = Suc (entry N 0 x)"
+  proof -
+    fix x assume xj1: "x < ?j1"
+    have sxL: "Suc x < Lng N" using xj1 by linarith
+    have lo: "entry N 0 x < entry N 0 (Suc x)" by (rule strict[OF xj1])
+    have hi: "entry N 0 (Suc x) \<le> Suc (entry N 0 x)" by (rule ST_row0_step_le[OF N sxL])
+    show "entry N 0 (Suc x) = Suc (entry N 0 x)" using lo hi by linarith
+  qed
+  \<comment> \<open>accumulate the \<open>+1\<close> steps to the endpoint\<close>
+  have cum: "\<And>s. s \<le> ?j1 \<Longrightarrow> entry N 0 s = entry N 0 0 + s"
+  proof -
+    fix s assume "s \<le> ?j1"
+    thus "entry N 0 s = entry N 0 0 + s"
+    proof (induction s)
+      case 0 show ?case by simp
+    next
+      case (Suc s)
+      have sj1: "s < ?j1" using Suc.prems by linarith
+      have ih: "entry N 0 s = entry N 0 0 + s" using Suc.IH sj1 by linarith
+      have "entry N 0 (Suc s) = Suc (entry N 0 s)" by (rule step1[OF sj1])
+      thus ?case using ih by simp
+    qed
+  qed
+  show ?thesis by (rule cum[OF le_refl])
+qed
+
+
+text \<open>§6.7 WITHIN-N crux groundwork.  \<open>cd_le0_first_step\<close>: the FIRST edge of any
+  row-0 reach chain is strictly increasing at the immediate successor.  If
+  \<open>le0 N x b\<close> with \<open>x < b\<close>, the chain \<open>x \<rightarrow>\<^sup>* b\<close> has a first \<open>nextrel0\<close> edge
+  \<open>x \<rightarrow> x'\<close> (\<open>x < x'\<close>); its row-0 strict increase together with its valley clause
+  (every interior column \<open>\<ge> entry N 0 x'\<close>) makes \<open>entry N 0 (Suc x) > entry N 0 x\<close>.
+  EMPIRICALLY 52856/0.  Cites only @{thm [source] le0_def},
+  @{thm [source] nextrel0_def}; no spsy / sblk / RedCond / tail_affine / oper.\<close>
+
+lemma cd_le0_first_step:
+  fixes N :: pairseq
+  assumes le0: "le0 N x b"
+    and xb: "x < b"
+  shows "entry N 0 x < entry N 0 (Suc x)"
+proof -
+  have chain: "(nextrel0 N)\<^sup>*\<^sup>* x b" using le0 by (simp add: le0_def)
+  have xneb: "x \<noteq> b" using xb by simp
+  \<comment> \<open>peel the first edge \<open>x \<rightarrow> x'\<close> of the chain\<close>
+  from converse_rtranclpE[OF chain] obtain x'
+    where xx': "nextrel0 N x x'" and rest: "(nextrel0 N)\<^sup>*\<^sup>* x' b"
+    using xneb by metis
+  have xltx': "x < x'" using xx' by (simp add: nextrel0_def)
+  have inc: "entry N 0 x < entry N 0 x'" using xx' by (simp add: nextrel0_def)
+  have valley: "\<forall>j. x < j \<and> j < x' \<longrightarrow> entry N 0 j \<ge> entry N 0 x'"
+    using xx' by (simp add: nextrel0_def)
+  show ?thesis
+  proof (cases "Suc x = x'")
+    case True
+    show ?thesis using inc True by simp
+  next
+    case False
+    have "x < Suc x" by simp
+    moreover have "Suc x < x'" using xltx' False by linarith
+    ultimately have "entry N 0 (Suc x) \<ge> entry N 0 x'" using valley by blast
+    thus ?thesis using inc by linarith
+  qed
+qed
+
+
+text \<open>§6.7 WITHIN-N crux groundwork.  \<open>cd_D_from_reachend\<close>: \<open>D(N)\<close> from the
+  \<open>reachend\<close> reachability hypothesis --- EVERY column \<open>x < j\<^sub>1\<close> reaches the row-0
+  endpoint \<open>j\<^sub>1\<close> (\<open>le0 N x (Lng N-1)\<close>).  Each \<open>le0 N x j\<^sub>1\<close> gives, by
+  @{thm [source] cd_le0_first_step}, the consecutive strict increase
+  \<open>entry N 0 x < entry N 0 (Suc x)\<close>; @{thm [source] cd_D_from_consec_strict} then
+  upgrades (under the ST_PS \<open>\<le> +1\<close> cap) to the full-width endpoint \<open>D(N)\<close>.  Cites
+  only @{thm [source] cd_le0_first_step}, @{thm [source] cd_D_from_consec_strict};
+  no spsy / sblk / RedCond / tail_affine / oper.\<close>
+
+lemma cd_D_from_reachend:
+  fixes N :: pairseq
+  assumes N: "N \<in> ST_PS"
+    and L: "1 < Lng N"
+    and reach: "\<And>x. x < Lng N - 1 \<Longrightarrow> le0 N x (Lng N - 1)"
+  shows "entry N 0 (Lng N - 1) = entry N 0 0 + (Lng N - 1)"
+proof (rule cd_D_from_consec_strict[OF N L])
+  fix x assume xj1: "x < Lng N - 1"
+  have "le0 N x (Lng N - 1)" by (rule reach[OF xj1])
+  thus "entry N 0 x < entry N 0 (Suc x)" by (rule cd_le0_first_step[OF _ xj1])
+qed
+
+
+text \<open>§6.7 WITHIN-N crux, OUTPUT shape \<open>D(N)\<close>, reduced to the SINGLE
+  reachability input \<open>reachend\<close>.  \<open>cd_oper_gstrict_via_reachend\<close> packages the crux
+  @{text m_6_7_oper_gstrict} so that its conclusion \<open>D(N)\<close> follows GREEN from the
+  lone hypothesis \<open>reachend\<close> (every column \<open>x < j\<^sub>1\<close> reaches the row-0 endpoint
+  \<open>j\<^sub>1\<close> in row 0).  EMPIRICALLY \<open>has_gz(N) \<Longrightarrow> reachend\<close> holds 222/0 on the broad
+  ST_PS closure; \<open>reachend\<close> is thus the precise scalar carrier of the crux.  Cites
+  only @{thm [source] cd_D_from_reachend}; no spsy / sblk / RedCond / tail_affine /
+  oper.\<close>
+
+lemma cd_oper_gstrict_via_reachend:
+  fixes N :: pairseq
+  assumes N: "N \<in> ST_PS"
+    and L: "1 < Lng N"
+    and hp1: "hasParent N 1 (Lng N - 1)"
+    and i1z: "idx1 N (Lng N - 1) = 1"
+    and gz: "\<exists>z. parent N 1 (Lng N - 1) < z \<and> z < Lng N - 1
+                  \<and> hasParent N 1 z \<and> parent N 1 z > parent N 1 (Lng N - 1)"
+    and reachend: "\<And>x. x < Lng N - 1 \<Longrightarrow> le0 N x (Lng N - 1)"
+  shows "entry N 0 (Lng N - 1) = entry N 0 0 + (Lng N - 1)"
+  by (rule cd_D_from_reachend[OF N L reachend])
+
+
+text \<open>§6.7 WITHIN-N crux, TREE-clause output, reduced to the SINGLE reachability
+  input \<open>reachend\<close>.  \<open>cd_tree_via_reachend\<close>: from \<open>reachend\<close> the crux first yields
+  \<open>D(N)\<close> (@{thm [source] cd_D_from_reachend}); @{thm [source] f2_gstrict_from_D}
+  turns \<open>D(N)\<close> into the global row-0 \<open>+1\<close> ramp \<open>gstrict_full(N)\<close>; and
+  @{thm [source] gs_tree_from_gstrict} converts that into the §6.7 tree clause
+  (@{text m_6_7_tree_via_gstrict}).  Cites only the already-GREEN
+  @{thm [source] cd_D_from_reachend}, @{thm [source] f2_gstrict_from_D},
+  @{thm [source] gs_tree_from_gstrict}; no spsy / sblk / RedCond / tail_affine /
+  oper.\<close>
+
+lemma cd_tree_via_reachend:
+  fixes N :: pairseq
+  assumes N: "N \<in> ST_PS"
+    and L: "1 < Lng N"
+    and hp1: "hasParent N 1 (Lng N - 1)"
+    and j0lt: "parent N 1 (Lng N - 1) < Lng N - 1"
+    and zlo: "parent N 1 (Lng N - 1) < z"
+    and zhi: "z < Lng N - 1"
+    and hpz: "hasParent N 1 z"
+    and pge: "parent N 1 z \<ge> parent N 1 (Lng N - 1)"
+    and pgt: "parent N 1 z > parent N 1 (Lng N - 1)"
+    and reachend: "\<And>x. x < Lng N - 1 \<Longrightarrow> le0 N x (Lng N - 1)"
+  shows "hasParent N 1 (parent N 1 z)
+         \<and> parent N 1 (parent N 1 z) \<ge> parent N 1 (Lng N - 1)"
+proof -
+  have D: "entry N 0 (Lng N - 1) = entry N 0 0 + (Lng N - 1)"
+    by (rule cd_D_from_reachend[OF N L reachend])
+  have gstrict: "\<And>y. y < Lng N - 1 \<Longrightarrow> entry N 0 (Suc y) = Suc (entry N 0 y)"
+    by (rule f2_gstrict_from_D[OF N L D])
+  show ?thesis
+    by (rule gs_tree_from_gstrict[OF L hp1 j0lt zlo zhi hpz pge pgt gstrict])
+qed
+
+
+text \<open>§6.7 CD reduction brick 1 (GREEN, within-N row-0 chaining).  The scalar
+  crux \<open>D(N)\<close> (row-0 endpoint at base 0 sits at the full width:
+  \<open>entry N 0 j\<^sub>1 = entry N 0 0 + j\<^sub>1\<close>) follows from a SINGLE clean within-N
+  hypothesis: the row-0 sequence is STRICTLY consecutive-increasing on the whole
+  span \<open>[0, j\<^sub>1)\<close> (\<open>entry N 0 x < entry N 0 (Suc x)\<close> for every \<open>x < j\<^sub>1\<close>).  Chain:
+  @{thm [source] tailReach_from_row0_strict} (base \<open>p = 0\<close>) lifts the per-step
+  strict increase to \<open>le0 N x j\<^sub>1\<close> for every \<open>x \<in> [0, j\<^sub>1)\<close> (the \<open>tailReach\<close>
+  shape), then @{thm [source] Ep_from_le0_tail} (also \<open>p = 0\<close>) cumulates the
+  resulting exact \<open>+1\<close> ramp to the endpoint equation \<open>D(N)\<close>.  EMPIRICALLY the
+  strict-increase hypothesis holds 4248/0 on the broad gated ST_PS closure
+  (\<open>has_gz(N)\<close>), exactly the population on which \<open>D(N)\<close> holds 423/0.  Cites only
+  the already-GREEN @{thm [source] tailReach_from_row0_strict},
+  @{thm [source] Ep_from_le0_tail}; no spsy / sblk / via_spsy / RedCond / oper /
+  tail_affine.  This packages the entire \<open>D(N)\<close> crux as the lone within-N
+  strict-monotonicity input.\<close>
+
+lemma cd_D_from_strictmono:
+  fixes N :: pairseq
+  assumes N: "N \<in> ST_PS"
+    and L: "1 < Lng N"
+    and strict: "\<And>x. x < Lng N - 1 \<Longrightarrow> entry N 0 x < entry N 0 (Suc x)"
+  shows "entry N 0 (Lng N - 1) = entry N 0 0 + (Lng N - 1)"
+proof -
+  let ?j1 = "Lng N - 1"
+  have j1L: "?j1 < Lng N" using L by linarith
+  have p0: "(0::nat) < ?j1" using L by linarith
+  \<comment> \<open>per-step strict increase on \<open>[0, j\<^sub>1)\<close> in the base-0 (\<open>p \<le> y\<close>) shape\<close>
+  have strict0: "\<And>y. (0::nat) \<le> y \<Longrightarrow> y < ?j1 \<Longrightarrow> entry N 0 y < entry N 0 (Suc y)"
+    using strict by simp
+  \<comment> \<open>every \<open>x \<in> [0, j\<^sub>1)\<close> row-0-reaches the endpoint (the \<open>tailReach\<close> hypothesis)\<close>
+  have tailReach: "\<And>x. (0::nat) \<le> x \<Longrightarrow> x < ?j1 \<Longrightarrow> le0 N x ?j1"
+  proof -
+    fix x assume xlo: "(0::nat) \<le> x" and xhi: "x < ?j1"
+    show "le0 N x ?j1"
+      by (rule tailReach_from_row0_strict[OF j1L strict0 xlo xhi])
+  qed
+  \<comment> \<open>cumulate to the endpoint via the GREEN arithmetic glue at base 0\<close>
+  have Ep0: "entry N 0 ?j1 = entry N 0 0 + (?j1 - 0)"
+    by (rule Ep_from_le0_tail[OF N p0 tailReach])
+  show ?thesis using Ep0 by simp
+qed
+
+
+text \<open>§6.7 CD reduction brick 2 (GREEN, the spsy TREE clause from \<open>D(N)\<close>).  Given
+  the scalar crux \<open>D(N)\<close> for a gated \<open>N \<in> ST\<^sub>PS\<close> and a gated interior node \<open>z\<close>,
+  the spsy TREE conclusion follows: \<open>D(N)\<close> upgrades to the global per-step ramp
+  \<open>gstrict_full(N)\<close> via @{thm [source] f2_gstrict_from_D}, which
+  @{thm [source] gs_tree_from_gstrict} converts to the TREE clause (the row-1
+  parent of \<open>parent N 1 z\<close> exists and lands \<open>\<ge> j\<^sub>0\<close>).  This is exactly the \<open>tree\<close>
+  premise of @{thm [source] spsy_keystone_via_tree_bridge}; closing \<open>D(N)\<close>
+  (the lone residual crux \<open>m_6_7_oper_gstrict\<close>) therefore makes the whole spsy
+  cascade unconditional.  Cites only the already-GREEN
+  @{thm [source] f2_gstrict_from_D}, @{thm [source] gs_tree_from_gstrict}; no
+  spsy / sblk / via_spsy / RedCond / oper / tail_affine.\<close>
+
+lemma cd_tree_from_D:
+  fixes N :: pairseq
+  assumes N: "N \<in> ST_PS"
+    and L: "1 < Lng N"
+    and hp1: "hasParent N 1 (Lng N - 1)"
+    and j0lt: "parent N 1 (Lng N - 1) < Lng N - 1"
+    and zlo: "parent N 1 (Lng N - 1) < z"
+    and zhi: "z < Lng N - 1"
+    and hpz: "hasParent N 1 z"
+    and pge: "parent N 1 z \<ge> parent N 1 (Lng N - 1)"
+    and pgt: "parent N 1 z > parent N 1 (Lng N - 1)"
+    and D: "entry N 0 (Lng N - 1) = entry N 0 0 + (Lng N - 1)"
+  shows "hasParent N 1 (parent N 1 z)
+         \<and> parent N 1 (parent N 1 z) \<ge> parent N 1 (Lng N - 1)"
+proof -
+  have gstrict: "\<And>y. y < Lng N - 1 \<Longrightarrow> entry N 0 (Suc y) = Suc (entry N 0 y)"
+    by (rule f2_gstrict_from_D[OF N L D])
+  show ?thesis
+    by (rule gs_tree_from_gstrict[OF L hp1 j0lt zlo zhi hpz pge pgt gstrict])
+qed
+
 end
