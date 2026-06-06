@@ -58730,4 +58730,157 @@ lemma fr_ramp_from_Ep_at_j0:
   shows "entry N 0 (Suc x) = Suc (entry N 0 x)"
   by (rule subramp_from_Ep[OF N j0lt Ep xlo xhi])
 
+
+text \<open>§6.7 GS STEP B (assembly), CORE.  From the GLOBAL row-0 \<open>+1\<close> ramp
+  \<open>gstrict_full(N)\<close> (every step on \<open>[0, j\<^sub>1)\<close> is \<open>+1\<close>) the spsy TREE clause at any
+  gated interior \<open>z\<close> follows: restrict the global ramp to the tail \<open>[j\<^sub>0, j\<^sub>1)\<close> and
+  feed @{thm [source] tree_from_fullramp}.  Cites only the already-GREEN
+  @{thm [source] tree_from_fullramp}; no spsy / sblk / RedCond / tail_affine.\<close>
+
+lemma gs_tree_from_gstrict:
+  fixes N :: pairseq
+  assumes L: "1 < Lng N"
+    and hp1: "hasParent N 1 (Lng N - 1)"
+    and j0lt: "parent N 1 (Lng N - 1) < Lng N - 1"
+    and zlo: "parent N 1 (Lng N - 1) < z"
+    and zhi: "z < Lng N - 1"
+    and hpz: "hasParent N 1 z"
+    and pge: "parent N 1 z \<ge> parent N 1 (Lng N - 1)"
+    and pgt: "parent N 1 z > parent N 1 (Lng N - 1)"
+    and gstrict: "\<And>y. y < Lng N - 1 \<Longrightarrow> entry N 0 (Suc y) = Suc (entry N 0 y)"
+  shows "hasParent N 1 (parent N 1 z)
+         \<and> parent N 1 (parent N 1 z) \<ge> parent N 1 (Lng N - 1)"
+proof -
+  have ramp: "\<And>x. parent N 1 (Lng N - 1) \<le> x \<Longrightarrow> x < Lng N - 1
+                 \<Longrightarrow> entry N 0 (Suc x) = Suc (entry N 0 x)"
+    using gstrict by simp
+  show ?thesis
+    by (rule tree_from_fullramp[OF L hp1 j0lt zlo zhi hpz pge pgt ramp])
+qed
+
+
+text \<open>§6.7 GS, STEP B (assembly), Ep-form.  The spsy TREE clause from JUST the
+  ENDPOINT slope-1 fact \<open>E\<^sub>{j\<^sub>0}\<close> of \<open>N\<close> (no full \<open>gstrict_full\<close> needed): the
+  per-step tail ramp on \<open>[j\<^sub>0, j\<^sub>1)\<close> follows from \<open>E\<^sub>{j\<^sub>0}\<close> by the row-0 \<open>\<le> +1\<close>
+  cap (@{thm [source] fr_ramp_from_Ep_at_j0}, i.e. @{thm [source] subramp_from_Ep}),
+  then feed @{thm [source] tree_from_fullramp}.  This is the weakest-hypothesis
+  assembly: it needs only \<open>N \<in> ST\<^sub>PS\<close> and \<open>E\<^sub>{j\<^sub>0}\<close>.  Cites only already-GREEN
+  bricks; no spsy / sblk / RedCond / tail_affine.\<close>
+
+lemma gs_tree_from_Ep:
+  fixes N :: pairseq
+  assumes N: "N \<in> ST_PS"
+    and L: "1 < Lng N"
+    and hp1: "hasParent N 1 (Lng N - 1)"
+    and j0lt: "parent N 1 (Lng N - 1) < Lng N - 1"
+    and zlo: "parent N 1 (Lng N - 1) < z"
+    and zhi: "z < Lng N - 1"
+    and hpz: "hasParent N 1 z"
+    and pge: "parent N 1 z \<ge> parent N 1 (Lng N - 1)"
+    and pgt: "parent N 1 z > parent N 1 (Lng N - 1)"
+    and Ep: "entry N 0 (Lng N - 1)
+               = entry N 0 (parent N 1 (Lng N - 1))
+                 + ((Lng N - 1) - parent N 1 (Lng N - 1))"
+  shows "hasParent N 1 (parent N 1 z)
+         \<and> parent N 1 (parent N 1 z) \<ge> parent N 1 (Lng N - 1)"
+proof -
+  have ramp: "\<And>x. parent N 1 (Lng N - 1) \<le> x \<Longrightarrow> x < Lng N - 1
+                 \<Longrightarrow> entry N 0 (Suc x) = Suc (entry N 0 x)"
+    by (rule fr_ramp_from_Ep_at_j0[OF N j0lt Ep])
+  show ?thesis
+    by (rule tree_from_fullramp[OF L hp1 j0lt zlo zhi hpz pge pgt ramp])
+qed
+
+
+text \<open>§6.7 GS, STEP A DIAG case.  Row-0 of \<open>diagSeq a b\<close> is the \<open>+1\<close> ramp at
+  EVERY step, i.e. \<open>gstrict_full(diagSeq a b)\<close>.  Direct from
+  @{thm [source] fullramp_diag}; cites nothing else.\<close>
+
+lemma gs_diag_gstrict:
+  fixes a b :: nat
+  assumes ab: "a \<le> b"
+    and y: "y < Lng (diagSeq a b) - 1"
+  shows "entry (diagSeq a b) 0 (Suc y) = Suc (entry (diagSeq a b) 0 y)"
+  by (rule fullramp_diag[OF ab y])
+
+
+text \<open>§6.7 GS, STEP A OPER assembly.  GIVEN the global ramp \<open>gstrict_full(M)\<close> and
+  that \<open>M\<close> is gated (the five gate facts), \<open>gstrict_full(M[n])\<close> follows by applying
+  the GREEN per-step tiling brick @{thm [source] fr_global_oper} at each \<open>x\<close>.  The
+  \<open>laststep(M)\<close> premise of @{thm [source] fr_global_oper} is the \<open>y = Lng M - 2\<close>
+  instance of \<open>gstrict_full(M)\<close> (\<open>1 < Lng M\<close>).  Cites only the already-GREEN
+  @{thm [source] fr_global_oper}; no spsy / sblk / RedCond / tail_affine.  This
+  isolates the crux to obtaining \<open>gstrict_full(M)\<close> from \<open>has_gz(M[n])\<close>.\<close>
+
+lemma gs_oper_gstrict_from_M:
+  fixes M :: pairseq
+  assumes L: "1 < Lng M"
+    and notzero: "\<not> (entry M 0 (Lng M - 1) = 0 \<and> entry M 1 (Lng M - 1) = 0)"
+    and hp: "hasParent M (idx1 M (Lng M - 1)) (Lng M - 1)"
+    and i1z: "idx1 M (Lng M - 1) = 1"
+    and j0lt: "parent M 1 (Lng M - 1) < Lng M - 1"
+    and n0: "0 < n"
+    and Mglob: "\<And>y. y < Lng M - 1 \<Longrightarrow> entry M 0 (Suc y) = Suc (entry M 0 y)"
+    and xhi: "x < Lng ((M::pairseq)[n]) - 1"
+  shows "entry ((M::pairseq)[n]) 0 (Suc x) = Suc (entry ((M::pairseq)[n]) 0 x)"
+proof -
+  have lastlt: "Lng M - 2 < Lng M - 1" using L by linarith
+  have laststep: "entry M 0 (Lng M - 1) = Suc (entry M 0 (Lng M - 2))"
+  proof -
+    have "entry M 0 (Suc (Lng M - 2)) = Suc (entry M 0 (Lng M - 2))"
+      by (rule Mglob[OF lastlt])
+    moreover have "Suc (Lng M - 2) = Lng M - 1" using L by linarith
+    ultimately show ?thesis by simp
+  qed
+  show ?thesis
+    by (rule fr_global_oper[OF L notzero hp i1z j0lt n0 Mglob laststep xhi])
+qed
+
+
+text \<open>§6.7 GS, STEP A OPER reduction (wiring).  For the \<open>ST\<^sub>PS.induct\<close> oper case
+  \<open>N = M[n]\<close> this PACKAGES the full reduction of \<open>gstrict_full(M[n])\<close> to its two
+  genuine inputs: (i) the IH \<open>P(M)\<close> --- \<open>has_gz(M) \<Longrightarrow> gstrict_full(M)\<close> --- as
+  handed by @{thm [source] ST_PS.induct}, and (ii) the ONE residual BACKWARD
+  parent-reflection \<open>refl\<close> --- \<open>has_gz(M[n]) \<Longrightarrow> has_gz(M)\<close> --- together with the
+  five gate facts of \<open>M\<close> (which @{text "F3"} supplies from \<open>has_gz(M[n])\<close>).
+  Under \<open>has_gz(M[n])\<close>: fire \<open>refl\<close> to get \<open>has_gz(M)\<close>, fire the IH to get
+  \<open>gstrict_full(M)\<close>, then tile via @{thm [source] gs_oper_gstrict_from_M}.  Cites
+  only the GREEN @{thm [source] gs_oper_gstrict_from_M}; no spsy / sblk / RedCond
+  / tail_affine.  This is the exact green integration point of the crux: the SOLE
+  remaining open input is \<open>refl\<close> (equivalently fact @{text "F2"}).\<close>
+
+lemma gs_oper_gstrict_reduction:
+  fixes M :: pairseq
+  assumes L: "1 < Lng M"
+    and notzero: "\<not> (entry M 0 (Lng M - 1) = 0 \<and> entry M 1 (Lng M - 1) = 0)"
+    and hp: "hasParent M (idx1 M (Lng M - 1)) (Lng M - 1)"
+    and i1z: "idx1 M (Lng M - 1) = 1"
+    and j0lt: "parent M 1 (Lng M - 1) < Lng M - 1"
+    and n0: "0 < n"
+    and IH: "(\<exists>z. parent M 1 (Lng M - 1) < z \<and> z < Lng M - 1
+                  \<and> hasParent M 1 z \<and> parent M 1 z > parent M 1 (Lng M - 1))
+             \<Longrightarrow> (\<And>y. y < Lng M - 1 \<Longrightarrow> entry M 0 (Suc y) = Suc (entry M 0 y))"
+    and refl: "(\<exists>z. parent ((M::pairseq)[n]) 1 (Lng ((M::pairseq)[n]) - 1) < z
+                    \<and> z < Lng ((M::pairseq)[n]) - 1 \<and> hasParent ((M::pairseq)[n]) 1 z
+                    \<and> parent ((M::pairseq)[n]) 1 z
+                        > parent ((M::pairseq)[n]) 1 (Lng ((M::pairseq)[n]) - 1))
+               \<Longrightarrow> (\<exists>z. parent M 1 (Lng M - 1) < z \<and> z < Lng M - 1
+                        \<and> hasParent M 1 z \<and> parent M 1 z > parent M 1 (Lng M - 1))"
+    and gz: "\<exists>z. parent ((M::pairseq)[n]) 1 (Lng ((M::pairseq)[n]) - 1) < z
+                  \<and> z < Lng ((M::pairseq)[n]) - 1 \<and> hasParent ((M::pairseq)[n]) 1 z
+                  \<and> parent ((M::pairseq)[n]) 1 z
+                      > parent ((M::pairseq)[n]) 1 (Lng ((M::pairseq)[n]) - 1)"
+    and xhi: "x < Lng ((M::pairseq)[n]) - 1"
+  shows "entry ((M::pairseq)[n]) 0 (Suc x) = Suc (entry ((M::pairseq)[n]) 0 x)"
+proof -
+  have gzM: "\<exists>z. parent M 1 (Lng M - 1) < z \<and> z < Lng M - 1
+                  \<and> hasParent M 1 z \<and> parent M 1 z > parent M 1 (Lng M - 1)"
+    by (rule refl[OF gz])
+  have Mglob: "\<And>y. y < Lng M - 1 \<Longrightarrow> entry M 0 (Suc y) = Suc (entry M 0 y)"
+    by (rule IH[OF gzM])
+  show ?thesis
+    by (rule gs_oper_gstrict_from_M[OF L notzero hp i1z j0lt n0 Mglob xhi])
+qed
+
+
 end

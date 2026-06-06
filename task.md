@@ -53,7 +53,7 @@
         - ✅ Q' を z 強帰納で証明〔`Qprime_via_tree`〕
         - ✅ reach→le0 N z j1→scalar Ez 還元〔`reach_from_z_tail`/`le0_z_j1_from_Ez`/`m_6_7_tree_wellformed_via_Ez`〕
         - ✅ 内部 row-1 parent readback 無条件〔`oper_parent1_readback`〕
-        - 🚨🤖 残a scalar Ez（entry N0 j1=entry N0 z+(j1−z)）の row-1 tree induction
+        - 🚨🤖 残a Ez=fullramp=gstrict。緑: bridges/fullramp_diag/Ez_from_fullramp/tree_from_fullramp/subramp_from_Ep/fr_global_oper/fr_block_step/fr_prefix_step/fr_ramp_from_Ep_at_j0。残=crux `has_gz(M[n])⟹M row-0 strict`(484/0)→ST_PS.induct(退化はhas_gz偽で消滅)→tree clause
         - 🚨 残b boundary valley (cross-block)〔`oper_parent1_readback_boundary` 無条件化〕
         - 🚨 残c assembly: bridge + sy_pos + valley
       - ✅ 命題（標準形の単項成分が標準形であること）
