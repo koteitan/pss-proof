@@ -58883,4 +58883,75 @@ proof -
 qed
 
 
+
+text \<open>§6.7 F2 brick: \<open>gstrict_full(N)\<close> from the GLOBAL endpoint slope-1 fact at
+  base 0 (\<open>D(N)\<close>: \<open>entry N 0 (Lng N-1) = entry N 0 0 + (Lng N-1)\<close>).  This is the
+  \<open>p = 0\<close> instance of @{thm [source] subramp_from_Ep}: the per-step \<open>\<le> +1\<close> cap
+  (@{thm [source] ST_row0_step_le}) together with the full-width endpoint forces
+  EVERY step on \<open>[0, j\<^sub>1)\<close> to be exactly \<open>+1\<close>.  Cites only the already-GREEN
+  @{thm [source] subramp_from_Ep}; no spsy / sblk / RedCond / tail_affine.\<close>
+
+lemma f2_gstrict_from_D:
+  fixes N :: pairseq
+  assumes N: "N \<in> ST_PS"
+    and L: "1 < Lng N"
+    and D: "entry N 0 (Lng N - 1) = entry N 0 0 + (Lng N - 1)"
+    and y: "y < Lng N - 1"
+  shows "entry N 0 (Suc y) = Suc (entry N 0 y)"
+proof -
+  have p0: "(0::nat) < Lng N - 1" using L by linarith
+  have Ep: "entry N 0 (Lng N - 1) = entry N 0 0 + ((Lng N - 1) - 0)" using D by simp
+  show ?thesis by (rule subramp_from_Ep[OF N p0 Ep _ y]) simp
+qed
+
+
+text \<open>§6.7 F2 brick: \<open>D(diagSeq a b)\<close> --- the diagonal segment has its row-0
+  endpoint exactly \<open>(Lng - 1)\<close> above its base.  Direct from
+  @{thm [source] entry_diagSeq}.\<close>
+
+lemma f2_D_diag:
+  fixes a b :: nat
+  assumes ab: "a \<le> b"
+  shows "entry (diagSeq a b) 0 (Lng (diagSeq a b) - 1)
+       = entry (diagSeq a b) 0 0 + (Lng (diagSeq a b) - 1)"
+proof -
+  let ?N = "diagSeq a b"
+  have Lpos: "0 < Suc b - a" using ab by simp
+  have e0: "entry ?N 0 0 = a" using entry_diagSeq[of 0 b a 0] Lpos by simp
+  have hi: "Lng ?N - 1 < Suc b - a" using Lpos by simp
+  have ee: "entry ?N 0 (Lng ?N - 1) = a + (Lng ?N - 1)"
+    using entry_diagSeq[of "Lng ?N - 1" b a 0] hi by simp
+  show ?thesis using e0 ee by simp
+qed
+
+
+text \<open>§6.7 F2 brick: \<open>gstrict_full(M[n])\<close> from \<open>M \<in> ST\<^sub>PS\<close>, the five gate facts
+  of \<open>M\<close>, and the GLOBAL endpoint slope-1 \<open>D(M)\<close> at base 0.  \<open>D(M)\<close> upgrades to
+  the full per-step ramp \<open>gstrict_full(M)\<close> via @{thm [source] f2_gstrict_from_D}
+  (which needs \<open>M \<in> ST\<^sub>PS\<close>), then the GREEN tiling brick
+  @{thm [source] gs_oper_gstrict_from_M} delivers \<open>gstrict_full(M[n])\<close>.  Cites
+  only the GREEN @{thm [source] f2_gstrict_from_D},
+  @{thm [source] gs_oper_gstrict_from_M}; no spsy / sblk / RedCond / tail_affine.
+  This is the reduction of the oper-case goal to the SINGLE input \<open>D(M)\<close>.\<close>
+
+lemma f2_gstrict_oper_from_D_M:
+  fixes M :: pairseq
+  assumes MST: "M \<in> ST_PS"
+    and L: "1 < Lng M"
+    and notzero: "\<not> (entry M 0 (Lng M - 1) = 0 \<and> entry M 1 (Lng M - 1) = 0)"
+    and hp: "hasParent M (idx1 M (Lng M - 1)) (Lng M - 1)"
+    and i1z: "idx1 M (Lng M - 1) = 1"
+    and j0lt: "parent M 1 (Lng M - 1) < Lng M - 1"
+    and n0: "0 < n"
+    and DM: "entry M 0 (Lng M - 1) = entry M 0 0 + (Lng M - 1)"
+    and xhi: "x < Lng ((M::pairseq)[n]) - 1"
+  shows "entry ((M::pairseq)[n]) 0 (Suc x) = Suc (entry ((M::pairseq)[n]) 0 x)"
+proof -
+  have Mglob: "\<And>y. y < Lng M - 1 \<Longrightarrow> entry M 0 (Suc y) = Suc (entry M 0 y)"
+    by (rule f2_gstrict_from_D[OF MST L DM])
+  show ?thesis
+    by (rule gs_oper_gstrict_from_M[OF L notzero hp i1z j0lt n0 Mglob xhi])
+qed
+
+
 end
