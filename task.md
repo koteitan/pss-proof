@@ -49,7 +49,13 @@
       - 🚨 系（$1$ 列ペア数列の基本性質）
     - 🚨 §6.7 標準形
       - ✅ 命題（標準形の階層和による表示）
-      - 🚨🤖 命題（標準形の簡約性）〔**決定的所見: row-0 detour(tail_affine→…→strict-increase)はrow-1 treeにcircle back**。strict-increaseはSkT_row0_step_leのstrict鏡映だがidx1=0 boundary(flat family)で破綻、gating(p>j0)はGLOBALでrow-1祖先木をencode、local invariant(allstrict&d0>0)はoperで閉じない(480ctrex,operがd0を0にcollapse)。green ingredient: d0_pos_row1_parent(d0>0), oper_within_block_strict, le0_strict_entry0。reach(le0 N p j1)は`reach_from_z_tail`(green)で**le0 N z j1(子z到達)**へ還元(p除去)、`le0_z_j1_from_Ez`(green)で**scalar Ez: entry N 0 j1=entry N 0 z+(j1−z)(1117/0)**へ。**内部readback `oper_parent1_readback`無条件green達成**(valley予測者はc<j'で全て同一block閉込め=cross-block vacuous,18425/0; same-block N→M反映oper_d1pos_le0_base_back+M maximality)。`oper_parent1_readback_boundary`(s=0,閉形式parent M1 j0(q非依存)13010/0,green modulo boundary valley=cross-block未消化)。**残=Ez(scalar entry N0 j1=entry N0 z+(j1−z),interior z)のrow-1 tree induction(無条件内部readback使用)+ boundary valley(genuine cross-block)**。Ez⟹tree/le0 N z j1は全green wired〕
+      - 🚨🤖 命題（標準形の簡約性）〔`m_6_7_standard_reduced`(ST_PS⊆RT_PS)、keystone spsy 経由 条件付green、残=scalar Ez。memory `pss-67-spsy`〕
+        - ✅ Q' を z 強帰納で証明〔`Qprime_via_tree`〕
+        - ✅ reach→le0 N z j1→scalar Ez 還元〔`reach_from_z_tail`/`le0_z_j1_from_Ez`/`m_6_7_tree_wellformed_via_Ez`〕
+        - ✅ 内部 row-1 parent readback 無条件〔`oper_parent1_readback`〕
+        - 🚨🤖 残a scalar Ez（entry N0 j1=entry N0 z+(j1−z)）の row-1 tree induction
+        - 🚨 残b boundary valley (cross-block)〔`oper_parent1_readback_boundary` 無条件化〕
+        - 🚨 残c assembly: bridge + sy_pos + valley
       - ✅ 命題（標準形の単項成分が標準形であること）
       - ✅ 命題（標準形の始切片への遺伝性）
     - ✅ §6.8 降順性
