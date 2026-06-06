@@ -56718,4 +56718,126 @@ proof -
 qed
 
 
+text \<open>§6.7 SUBRAMP ARITHMETIC GLUE (GREEN, unconditional finite-arith).  For
+  \<open>N \<in> ST\<^sub>PS\<close> the row-0 step UPPER bound (@{thm [source] ST_row0_step_le}) gives
+  \<open>entry N 0 (x+1) \<le> entry N 0 x + 1\<close> on \<open>[p, j\<^sub>1)\<close>, hence cumulatively
+  \<open>entry N 0 x \<le> entry N 0 p + (x - p)\<close> for \<open>p \<le> x \<le> j\<^sub>1\<close>.  If, in addition, the
+  ENDPOINT slope-1 fact (@{text E_p}) holds --- the total over \<open>[p, j\<^sub>1]\<close> is the
+  full width: \<open>entry N 0 j\<^sub>1 = entry N 0 p + (j\<^sub>1 - p)\<close> --- then NO step can fall
+  short of \<open>+1\<close> (a deficit anywhere would make the endpoint strictly below the
+  width), so EVERY step on \<open>[p, j\<^sub>1)\<close> is EXACTLY \<open>+1\<close>: the precise sub-ramp
+  hypothesis of @{thm [source] brick_from_subramp} /
+  @{thm [source] m_6_7_tree_wellformed_via_subramp}.  EMPIRICALLY both the
+  per-step bound (21452/0) and the resulting \<open>+1\<close> sub-ramp (2977/0) hold on the
+  broad genuine ST_PS closure (depth\<ge>5, maxlen\<le>14).  Cites only
+  @{thm [source] ST_row0_step_le}; no spsy / sblk / RedCond / oper / tail_affine.\<close>
+
+lemma subramp_from_Ep:
+  fixes N :: pairseq
+  assumes N: "N \<in> ST_PS"
+    and pj1: "p < Lng N - 1"
+    and Ep: "entry N 0 (Lng N - 1) = entry N 0 p + ((Lng N - 1) - p)"
+    and xlo: "p \<le> x"
+    and xhi: "x < Lng N - 1"
+  shows "entry N 0 (Suc x) = Suc (entry N 0 x)"
+proof -
+  let ?j1 = "Lng N - 1"
+  \<comment> \<open>cumulative upper bound from the per-step \<open>\<le> +1\<close> reading, from any base \<open>b\<close>\<close>
+  have upper_from: "\<And>b s. b + s \<le> ?j1 \<Longrightarrow> entry N 0 (b + s) \<le> entry N 0 b + s"
+  proof -
+    fix b s assume "b + s \<le> ?j1"
+    thus "entry N 0 (b + s) \<le> entry N 0 b + s"
+    proof (induction s)
+      case 0 show ?case by simp
+    next
+      case (Suc s)
+      have le1: "b + s \<le> ?j1" using Suc.prems by simp
+      have ssj: "Suc (b + s) < Lng N" using Suc.prems by simp
+      have step: "entry N 0 (Suc (b + s)) \<le> Suc (entry N 0 (b + s))"
+        by (rule ST_row0_step_le[OF N ssj])
+      have ih: "entry N 0 (b + s) \<le> entry N 0 b + s" using Suc.IH[OF le1] .
+      have "entry N 0 (b + (Suc s)) = entry N 0 (Suc (b + s))" by simp
+      thus ?case using step ih by simp
+    qed
+  qed
+  \<comment> \<open>the upper bound, in absolute (\<open>y\<close>) form, for \<open>a \<le> y \<le> j\<^sub>1\<close>\<close>
+  have upper_abs: "\<And>a y. a \<le> y \<Longrightarrow> y \<le> ?j1 \<Longrightarrow> entry N 0 y \<le> entry N 0 a + (y - a)"
+  proof -
+    fix a y assume ay: "a \<le> y" and yj1: "y \<le> ?j1"
+    obtain s where ys: "y = a + s" using ay le_Suc_ex by blast
+    have "a + s \<le> ?j1" using ys yj1 by simp
+    from upper_from[OF this] have "entry N 0 (a + s) \<le> entry N 0 a + s" .
+    thus "entry N 0 y \<le> entry N 0 a + (y - a)" using ys by simp
+  qed
+  \<comment> \<open>every node on \<open>[p, j\<^sub>1]\<close> sits EXACTLY on the slope-1 line\<close>
+  have exact: "\<And>y. p \<le> y \<Longrightarrow> y \<le> ?j1 \<Longrightarrow> entry N 0 y = entry N 0 p + (y - p)"
+  proof -
+    fix y assume py: "p \<le> y" and yj1: "y \<le> ?j1"
+    have le_y: "entry N 0 y \<le> entry N 0 p + (y - p)" by (rule upper_abs[OF py yj1])
+    have le_rest: "entry N 0 ?j1 \<le> entry N 0 y + (?j1 - y)" by (rule upper_abs[OF yj1 le_refl])
+    have width_eq: "(y - p) + (?j1 - y) = ?j1 - p" using py yj1 by linarith
+    \<comment> \<open>width \<open>= E_p \<le> (line at y) + (rest) \<le> width\<close>, forcing equality at \<open>y\<close>\<close>
+    have squeeze: "entry N 0 p + (?j1 - p) \<le> entry N 0 y + (?j1 - y)"
+      using Ep le_rest by linarith
+    have ge_y: "entry N 0 p + (y - p) \<le> entry N 0 y"
+      using squeeze width_eq by linarith
+    show "entry N 0 y = entry N 0 p + (y - p)" using le_y ge_y by linarith
+  qed
+  \<comment> \<open>read off the \<open>+1\<close> step at \<open>x\<close>\<close>
+  have sxj1: "Suc x \<le> ?j1" using xhi by simp
+  have xj1: "x \<le> ?j1" using xhi by simp
+  have ex_x: "entry N 0 x = entry N 0 p + (x - p)" by (rule exact[OF xlo xj1])
+  have psx: "p \<le> Suc x" using xlo by simp
+  have ex_sx: "entry N 0 (Suc x) = entry N 0 p + (Suc x - p)" by (rule exact[OF psx sxj1])
+  have "Suc x - p = Suc (x - p)" using xlo by simp
+  thus ?thesis using ex_x ex_sx by simp
+qed
+
+
+text \<open>§6.7 RESIDUAL 1 (tree) -- COMPLETE ASSEMBLY modulo the endpoint slope-1
+  fact \<open>E_p\<close>.  Given the standard subramp-applicability hypotheses (interior
+  \<open>z\<close>, \<open>p = parent N 1 z > j\<^sub>0\<close>) AND the SINGLE remaining \<open>E_p\<close> input --- the
+  total row-0 rise over \<open>[p, j\<^sub>1]\<close> equals the width
+  (\<open>entry N 0 j\<^sub>1 = entry N 0 p + (j\<^sub>1 - p)\<close>, EMPIRICALLY 2977/0 on the broad
+  ST_PS closure) --- the tree well-formedness conclusion follows: the arithmetic
+  glue (@{thm [source] subramp_from_Ep}) upgrades \<open>E_p\<close> + the per-step \<open>\<le>+1\<close>
+  bound to the exact \<open>+1\<close> sub-ramp on \<open>[p, j\<^sub>1)\<close>, which
+  @{thm [source] m_6_7_tree_wellformed_via_subramp} converts to the tree.
+  Cites only @{thm [source] subramp_from_Ep},
+  @{thm [source] m_6_7_tree_wellformed_via_subramp}; no spsy / sblk / via_spsy /
+  RedCond / oper / tail_affine.  This reduces RESIDUAL 1 to the lone \<open>E_p\<close>
+  row-1-ancestor fact.\<close>
+
+lemma m_6_7_tree_wellformed_via_Ep:
+  fixes N :: pairseq
+  assumes N: "N \<in> ST_PS"
+    and L: "1 < Lng N"
+    and hp1: "hasParent N 1 (Lng N - 1)"
+    and j0lt: "parent N 1 (Lng N - 1) < Lng N - 1"
+    and zlo: "parent N 1 (Lng N - 1) < z"
+    and zhi: "z < Lng N - 1"
+    and hpz: "hasParent N 1 z"
+    and pge: "parent N 1 z \<ge> parent N 1 (Lng N - 1)"
+    and pgt: "parent N 1 z > parent N 1 (Lng N - 1)"
+    and Ep: "entry N 0 (Lng N - 1)
+               = entry N 0 (parent N 1 z) + ((Lng N - 1) - parent N 1 z)"
+  shows "hasParent N 1 (parent N 1 z)
+         \<and> parent N 1 (parent N 1 z) \<ge> parent N 1 (Lng N - 1)"
+proof -
+  let ?j1 = "Lng N - 1"  let ?j0 = "parent N 1 ?j1"  let ?p = "parent N 1 z"
+  \<comment> \<open>\<open>p = parent N 1 z\<close> is an interior tail node \<open>j\<^sub>0 < p < j\<^sub>1\<close>\<close>
+  have parRz: "nextR N 1 ?p z"
+    using hpz unfolding hasParent_def parent_def by (rule theI')
+  have nr1z: "nextrel1 N ?p z" using parRz by (simp add: nextR_def)
+  have plt: "?p < z" using nr1z by (simp add: nextrel1_def)
+  have pltj1: "?p < ?j1" using plt zhi by linarith
+  \<comment> \<open>the exact \<open>+1\<close> sub-ramp on \<open>[p, j\<^sub>1)\<close> via the arithmetic glue\<close>
+  have ramp: "\<And>x. ?p \<le> x \<Longrightarrow> x < ?j1 \<Longrightarrow> entry N 0 (Suc x) = Suc (entry N 0 x)"
+    by (rule subramp_from_Ep[OF N pltj1 Ep])
+  \<comment> \<open>convert to the tree via the already-GREEN sub-ramp reduction\<close>
+  show ?thesis
+    by (rule m_6_7_tree_wellformed_via_subramp[OF L hp1 j0lt zlo zhi hpz pge pgt ramp])
+qed
+
+
 end
