@@ -58272,4 +58272,108 @@ qed
 
 
 
+
+text \<open>§6.7 STRONG-INDUCTION INVARIANT pieces for \<open>E\<^sub>z\<close> (attempt G).
+
+  The strong/size induction on \<open>Lng N\<close> carries the FULLRAMP invariant: for a
+  gated \<open>N\<close> (interior row-1 ancestor structure) the WHOLE tail \<open>[j\<^sub>0, j\<^sub>1)\<close> is an
+  exact \<open>+1\<close> row-0 ramp.  The corollaries below convert the invariant to / from
+  the \<open>E\<^sub>z\<close> endpoint form and to the tree well-formedness clause, and supply the
+  \<open>diag\<close> base.  All RedCondA-free (cite only diagonal entry facts and the GREEN
+  @{thm [source] m_6_7_tree_wellformed_via_subramp}).\<close>
+
+text \<open>DIAG base of fullramp: the diagonal row 0 increases by exactly 1 each step
+  (\<open>entry (diagSeq a b) 0 j = a + j\<close>), so every step on \<open>[p, j\<^sub>1)\<close> is \<open>+1\<close>.\<close>
+
+lemma fullramp_diag:
+  fixes a b :: nat
+  assumes ab: "a \<le> b"
+    and xhi: "x < Lng (diagSeq a b) - 1"
+  shows "entry (diagSeq a b) 0 (Suc x) = Suc (entry (diagSeq a b) 0 x)"
+proof -
+  let ?N = "diagSeq a b"
+  have Lpos: "0 < Suc b - a" using ab by simp
+  have sxlt: "Suc x < Suc b - a" using xhi Lpos by simp
+  have xlt: "x < Suc b - a" using sxlt by simp
+  have e_x: "entry ?N 0 x = a + x" by (rule entry_diagSeq[OF xlt])
+  have e_sx: "entry ?N 0 (Suc x) = a + Suc x" by (rule entry_diagSeq[OF sxlt])
+  show ?thesis using e_x e_sx by simp
+qed
+
+
+text \<open>From the FULLRAMP invariant (the exact \<open>+1\<close> step on the whole tail
+  \<open>[j\<^sub>0, j\<^sub>1)\<close>) the \<open>E\<^sub>z\<close> endpoint slope-1 fact at any gated column \<open>z \<ge> j\<^sub>0\<close>
+  follows by cumulating the step from \<open>z\<close> to \<open>j\<^sub>1\<close>.\<close>
+
+lemma Ez_from_fullramp:
+  fixes N :: pairseq
+  assumes j0le: "parent N 1 (Lng N - 1) \<le> z"
+    and zhi: "z < Lng N - 1"
+    and ramp: "\<And>x. parent N 1 (Lng N - 1) \<le> x \<Longrightarrow> x < Lng N - 1
+                 \<Longrightarrow> entry N 0 (Suc x) = Suc (entry N 0 x)"
+  shows "entry N 0 (Lng N - 1) = entry N 0 z + ((Lng N - 1) - z)"
+proof -
+  let ?j1 = "Lng N - 1"
+  \<comment> \<open>cumulate the \<open>+1\<close> step from base \<open>z\<close> up to any \<open>z + t \<le> j\<^sub>1\<close>\<close>
+  have cum: "\<And>t. z + t \<le> ?j1 \<Longrightarrow> entry N 0 (z + t) = entry N 0 z + t"
+  proof -
+    fix t assume "z + t \<le> ?j1"
+    thus "entry N 0 (z + t) = entry N 0 z + t"
+    proof (induction t)
+      case 0 show ?case by simp
+    next
+      case (Suc t)
+      have le1: "z + t \<le> ?j1" using Suc.prems by simp
+      have lt: "z + t < ?j1" using Suc.prems by simp
+      have ge: "parent N 1 ?j1 \<le> z + t" using j0le by simp
+      have st: "entry N 0 (Suc (z + t)) = Suc (entry N 0 (z + t))"
+        by (rule ramp[OF ge lt])
+      have ih: "entry N 0 (z + t) = entry N 0 z + t" using Suc.IH[OF le1] .
+      show ?case using st ih by simp
+    qed
+  qed
+  have zj1: "z \<le> ?j1" using zhi by simp
+  have "z + (?j1 - z) \<le> ?j1" using zj1 by simp
+  hence "entry N 0 (z + (?j1 - z)) = entry N 0 z + (?j1 - z)" using cum by simp
+  moreover have "z + (?j1 - z) = ?j1" using zj1 by simp
+  ultimately show ?thesis by simp
+qed
+
+
+text \<open>From the FULLRAMP invariant the tree well-formedness clause follows at any
+  gated interior \<open>z\<close> with \<open>parent N 1 z > j\<^sub>0\<close>: restrict the whole-tail ramp to
+  \<open>[parent N 1 z, j\<^sub>1)\<close> (\<open>parent N 1 z \<ge> j\<^sub>0\<close> by \<open>pge\<close>) and feed
+  @{thm [source] m_6_7_tree_wellformed_via_subramp}.\<close>
+
+lemma tree_from_fullramp:
+  fixes N :: pairseq
+  assumes L: "1 < Lng N"
+    and hp1: "hasParent N 1 (Lng N - 1)"
+    and j0lt: "parent N 1 (Lng N - 1) < Lng N - 1"
+    and zlo: "parent N 1 (Lng N - 1) < z"
+    and zhi: "z < Lng N - 1"
+    and hpz: "hasParent N 1 z"
+    and pge: "parent N 1 z \<ge> parent N 1 (Lng N - 1)"
+    and pgt: "parent N 1 z > parent N 1 (Lng N - 1)"
+    and ramp: "\<And>x. parent N 1 (Lng N - 1) \<le> x \<Longrightarrow> x < Lng N - 1
+                 \<Longrightarrow> entry N 0 (Suc x) = Suc (entry N 0 x)"
+  shows "hasParent N 1 (parent N 1 z)
+         \<and> parent N 1 (parent N 1 z) \<ge> parent N 1 (Lng N - 1)"
+proof -
+  \<comment> \<open>the sub-range ramp on \<open>[parent N 1 z, j\<^sub>1)\<close> from the whole-tail ramp\<close>
+  have rampP: "\<And>x. parent N 1 z \<le> x \<Longrightarrow> x < Lng N - 1
+                 \<Longrightarrow> entry N 0 (Suc x) = Suc (entry N 0 x)"
+  proof -
+    fix x assume xlo: "parent N 1 z \<le> x" and xhi: "x < Lng N - 1"
+    have "parent N 1 (Lng N - 1) \<le> x" using pge xlo by simp
+    thus "entry N 0 (Suc x) = Suc (entry N 0 x)" using ramp xhi by simp
+  qed
+  show ?thesis
+    by (rule m_6_7_tree_wellformed_via_subramp
+          [OF L hp1 j0lt zlo zhi hpz pge pgt rampP])
+qed
+
+
+
+
 end
