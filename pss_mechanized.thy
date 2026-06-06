@@ -56840,4 +56840,72 @@ proof -
 qed
 
 
+text \<open>§6.7 E_p VIA THE row-0 le0-TAIL (GREEN bridge, unconditional finite-arith +
+  already-GREEN row-0 facts).  This isolates the EXACT remaining structural input
+  of \<open>E_p\<close> to a single clean reachability hypothesis and discharges everything
+  else.  The hypothesis \<open>tailReach\<close>: every index \<open>x\<close> on \<open>[p, j\<^sub>1)\<close> row-0-reaches
+  the endpoint \<open>j\<^sub>1 = Lng N - 1\<close> (\<open>le0 N x j\<^sub>1\<close>).  EMPIRICALLY this is exactly the
+  fact that holds 2977/0 on the broad ST_PS closure for \<open>p = parent N 1 z\<close> with
+  interior \<open>z\<close> (the row-1 ancestor structure forces it), while the unconditional
+  per-step UPPER bound (@{thm [source] ST_row0_step_le}) caps each step at \<open>+1\<close>.
+
+  Argument: from \<open>le0 N x j\<^sub>1\<close> the rtrancl chain \<open>x \<rightarrow>\<^sup>* j\<^sub>1\<close> gives, via
+  @{thm [source] le0_ances_aux} at \<open>j = Suc x\<close> (\<open>x < Suc x \<le> j\<^sub>1\<close>), the strict
+  increase \<open>entry N 0 x < entry N 0 (Suc x)\<close>, i.e. each step is \<open>\<ge> +1\<close>; combined
+  with the \<open>\<le> +1\<close> cap this pins EVERY step on \<open>[p, j\<^sub>1)\<close> to EXACTLY \<open>+1\<close>.
+  Cumulating from \<open>p\<close> yields the endpoint slope-1 equation \<open>E_p\<close>.  Cites only
+  @{thm [source] ST_row0_step_le}, @{thm [source] le0_ances_aux},
+  @{thm [source] le0_def}; no spsy / sblk / via_spsy / RedCond / oper /
+  tail_affine.  Feeds @{thm [source] subramp_from_Ep} /
+  @{thm [source] m_6_7_tree_wellformed_via_Ep} with no further glue.\<close>
+
+lemma Ep_from_le0_tail:
+  fixes N :: pairseq
+  assumes N: "N \<in> ST_PS"
+    and pj1: "p < Lng N - 1"
+    and tailReach: "\<And>x. p \<le> x \<Longrightarrow> x < Lng N - 1 \<Longrightarrow> le0 N x (Lng N - 1)"
+  shows "entry N 0 (Lng N - 1) = entry N 0 p + ((Lng N - 1) - p)"
+proof -
+  let ?j1 = "Lng N - 1"
+  \<comment> \<open>each step on \<open>[p, j\<^sub>1)\<close> is EXACTLY \<open>+1\<close>: strict \<open>\<ge>\<close> from le0-reach, cap \<open>\<le>\<close> from the step bound\<close>
+  have step1: "\<And>x. p \<le> x \<Longrightarrow> x < ?j1 \<Longrightarrow> entry N 0 (Suc x) = Suc (entry N 0 x)"
+  proof -
+    fix x assume xlo: "p \<le> x" and xhi: "x < ?j1"
+    have reach: "le0 N x ?j1" by (rule tailReach[OF xlo xhi])
+    have chain: "(nextrel0 N)\<^sup>*\<^sup>* x ?j1" using reach by (simp add: le0_def)
+    have ances: "\<forall>j. x < j \<and> j \<le> ?j1 \<longrightarrow> entry N 0 x < entry N 0 j"
+      by (rule le0_ances_aux[OF chain])
+    have sxle: "Suc x \<le> ?j1" using xhi by simp
+    have strict: "entry N 0 x < entry N 0 (Suc x)" using ances sxle by simp
+    have ssj: "Suc x < Lng N" using xhi by simp
+    have cap: "entry N 0 (Suc x) \<le> Suc (entry N 0 x)" by (rule ST_row0_step_le[OF N ssj])
+    show "entry N 0 (Suc x) = Suc (entry N 0 x)" using strict cap by simp
+  qed
+  \<comment> \<open>cumulate the exact \<open>+1\<close> ramp from \<open>p\<close>: \<open>entry N 0 (p+t) = entry N 0 p + t\<close> on \<open>[p, j\<^sub>1]\<close>\<close>
+  have ramp_abs: "\<And>t. p + t \<le> ?j1 \<Longrightarrow> entry N 0 (p + t) = entry N 0 p + t"
+  proof -
+    fix t assume "p + t \<le> ?j1"
+    thus "entry N 0 (p + t) = entry N 0 p + t"
+    proof (induction t)
+      case 0 show ?case by simp
+    next
+      case (Suc t)
+      have le1: "p + t \<le> ?j1" using Suc.prems by simp
+      have lt: "p + t < ?j1" using Suc.prems by simp
+      have pge: "p \<le> p + t" by simp
+      have "entry N 0 (Suc (p + t)) = Suc (entry N 0 (p + t))"
+        by (rule step1[OF pge lt])
+      also have "entry N 0 (p + t) = entry N 0 p + t" using Suc.IH[OF le1] .
+      finally show ?case by simp
+    qed
+  qed
+  \<comment> \<open>read off the endpoint \<open>j\<^sub>1 = p + (j\<^sub>1 - p)\<close>\<close>
+  have peq: "p + (?j1 - p) = ?j1" using pj1 by simp
+  have prem: "p + (?j1 - p) \<le> ?j1" using peq by simp
+  have "entry N 0 (p + (?j1 - p)) = entry N 0 p + (?j1 - p)"
+    by (rule ramp_abs[OF prem])
+  thus ?thesis using peq by simp
+qed
+
+
 end

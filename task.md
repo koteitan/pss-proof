@@ -44,7 +44,7 @@
       - 🚨 系（$1$ 列ペア数列の基本性質）
     - 🚨 §6.7 標準形
       - ✅ 命題（標準形の階層和による表示）
-      - 🚨🤖 命題（標準形の簡約性）〔subramp完成寸前。green: subramp_diag_base+subramp_oper_core(engine2047/0)+ST_row0_step_le(上界6937/6937)+subramp_from_Ep(squeeze)+m_6_7_tree_wellformed_via_Ep。**tree残差=E_p単独**(entry N0 j1=entry N0 p+(j1−p),端点slope-1,6409/0)。**E_pの欠落brick=`oper_parent1_readback`**(d1pos tilingでparent(M[n])1 z→parent M1(base z)閉形式;oper_gen_block_entry1はrow-1値のみ)。これ→SkT_PS.induct→E_p→subramp→tree→spsy→cascade無条件。+bridge+sy_pos+valley〕
+      - 🚨🤖 命題（標準形の簡約性）〔`Ep_from_le0_tail`(green)でtree残差を**純row-0 reachability `tailReach`: N∈ST_PS, p=parent N1 z>j0, x∈[p,j1) ⟹ le0 N x j1(2977/0)** へ還元。row-1 parent readbackはRedCondA gatedで断念→row-0転換。tailReachは実brick(x=p)をsubsume。残=**tailReachをrow-0 confinement(oper_d1pos_le0_within/_confined,oper_gen_nth_prefix)+ST_PS.inductで証明**(prefix x<j0M跨ぎ注意)→E_p→subramp→tree→spsy→cascade無条件。+bridge+sy_pos+valley。green部品一覧: spsy_keystone_via_Q,Qprime_via_tree,m_6_7_tree_wellformed(_via_Ep),brick_from_subramp,subramp_oper_core,ST_row0_step_le,subramp_from_Ep,Ep_from_le0_tail〕
       - ✅ 命題（標準形の単項成分が標準形であること）
       - ✅ 命題（標準形の始切片への遺伝性）
     - ✅ §6.8 降順性
