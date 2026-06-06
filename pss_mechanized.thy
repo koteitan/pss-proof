@@ -57059,4 +57059,264 @@ proof -
 qed
 
 
+lemma reach_from_z_tail:
+  fixes N :: pairseq
+  assumes hpz: "hasParent N 1 z"
+    and zj1: "le0 N z (Lng N - 1)"
+  shows "le0 N (parent N 1 z) (Lng N - 1)"
+proof -
+  let ?p = "parent N 1 z"
+  have parRz: "nextR N 1 ?p z"
+    using hpz unfolding hasParent_def parent_def by (rule theI')
+  have nr1z: "nextrel1 N ?p z" using parRz by (simp add: nextR_def)
+  have le0pz: "le0 N ?p z" using nr1z by (simp add: nextrel1_def)
+  show ?thesis by (rule le0_trans[OF le0pz zj1])
+qed
+
+
+text \<open>§6.7 RESIDUAL 1 (tree) via the INTERIOR-NODE reach \<open>le0 N z j\<^sub>1\<close>
+  (attempt X).  Combines @{thm [source] reach_from_z_tail} (the parent edge
+  carries \<open>p \<rightarrow>\<^sup>* z\<close>) with @{thm [source] m_6_7_tree_wellformed}.  This is the
+  cleanest single-hypothesis form: the entire §6.7 RESIDUAL 1 (tree) now hangs
+  on the lone reach FROM \<open>z\<close> \<open>le0 N z (Lng N - 1)\<close>, which the row-1 ancestor
+  structure forces (the interior row-1 node \<open>z\<close> with \<open>parent N 1 z > j\<^sub>0\<close> sits on
+  the row-0 ramp to the endpoint).  Cites only @{thm [source] reach_from_z_tail},
+  @{thm [source] m_6_7_tree_wellformed}; no spsy / sblk / via_spsy / RedCond /
+  oper / tail_affine.\<close>
+
+lemma m_6_7_tree_wellformed_via_z:
+  fixes N :: pairseq
+  assumes L: "1 < Lng N"
+    and hp1: "hasParent N 1 (Lng N - 1)"
+    and j0lt: "parent N 1 (Lng N - 1) < Lng N - 1"
+    and zlo: "parent N 1 (Lng N - 1) < z"
+    and zhi: "z < Lng N - 1"
+    and hpz: "hasParent N 1 z"
+    and pge: "parent N 1 z \<ge> parent N 1 (Lng N - 1)"
+    and pgt: "parent N 1 z > parent N 1 (Lng N - 1)"
+    and zj1: "le0 N z (Lng N - 1)"
+  shows "hasParent N 1 (parent N 1 z)
+         \<and> parent N 1 (parent N 1 z) \<ge> parent N 1 (Lng N - 1)"
+proof -
+  have reach: "le0 N (parent N 1 z) (Lng N - 1)"
+    by (rule reach_from_z_tail[OF hpz zj1])
+  show ?thesis
+    by (rule m_6_7_tree_wellformed[OF L hp1 j0lt zlo zhi hpz pge pgt reach])
+qed
+
+
+text \<open>§6.7 INTERIOR-NODE reach \<open>le0 N z j\<^sub>1\<close> FROM THE \<open>z\<close>-ENDPOINT slope-1 fact
+  (attempt X).  The single residual reach \<open>le0 N z (Lng N - 1)\<close> consumed by
+  @{thm [source] m_6_7_tree_wellformed_via_z} follows from the \<open>z\<close>-anchored
+  endpoint equation \<open>E\<^sub>z : entry N 0 j\<^sub>1 = entry N 0 z + (j\<^sub>1 - z)\<close> (the total
+  row-0 rise over \<open>[z, j\<^sub>1]\<close> equals the width).  The already-GREEN arithmetic glue
+  @{thm [source] subramp_from_Ep} (instantiated with base \<open>z\<close>) upgrades \<open>E\<^sub>z\<close> +
+  the per-step \<open>\<le> +1\<close> cap to the exact \<open>+1\<close> sub-ramp on \<open>[z, j\<^sub>1)\<close>; that
+  per-step strict increase chains (@{thm [source] tailReach_from_row0_strict}) to
+  \<open>le0 N z j\<^sub>1\<close>.  EMPIRICALLY \<open>E\<^sub>z\<close> holds 0-fail (1117/0) on the broad ST_PS
+  closure for interior \<open>z\<close> with \<open>parent N 1 z > j\<^sub>0\<close>.  Cites only
+  @{thm [source] subramp_from_Ep}, @{thm [source] tailReach_from_row0_strict};
+  no spsy / sblk / via_spsy / RedCond / oper / tail_affine.\<close>
+
+lemma le0_z_j1_from_Ez:
+  fixes N :: pairseq
+  assumes N: "N \<in> ST_PS"
+    and zj1lt: "z < Lng N - 1"
+    and Ez: "entry N 0 (Lng N - 1) = entry N 0 z + ((Lng N - 1) - z)"
+  shows "le0 N z (Lng N - 1)"
+proof -
+  let ?j1 = "Lng N - 1"
+  have j1L: "?j1 < Lng N" using zj1lt by linarith
+  \<comment> \<open>the exact \<open>+1\<close> sub-ramp on \<open>[z, j\<^sub>1)\<close> from the endpoint fact\<close>
+  have ramp: "\<And>x. z \<le> x \<Longrightarrow> x < ?j1 \<Longrightarrow> entry N 0 (Suc x) = Suc (entry N 0 x)"
+    by (rule subramp_from_Ep[OF N zj1lt Ez])
+  \<comment> \<open>read off the strict consecutive increase on \<open>[z, j\<^sub>1)\<close>\<close>
+  have strict: "\<And>y. z \<le> y \<Longrightarrow> y < ?j1 \<Longrightarrow> entry N 0 y < entry N 0 (Suc y)"
+  proof -
+    fix y assume yz: "z \<le> y" and yj1: "y < ?j1"
+    have "entry N 0 (Suc y) = Suc (entry N 0 y)" by (rule ramp[OF yz yj1])
+    thus "entry N 0 y < entry N 0 (Suc y)" by simp
+  qed
+  \<comment> \<open>chain the strict increase to the endpoint\<close>
+  show ?thesis
+    by (rule tailReach_from_row0_strict[OF j1L strict le_refl zj1lt])
+qed
+
+
+text \<open>§6.7 RESIDUAL 1 (tree) via the \<open>z\<close>-ENDPOINT slope-1 fact \<open>E\<^sub>z\<close>
+  (attempt X) --- the cleanest assembly.  Combines @{thm [source] le0_z_j1_from_Ez}
+  (\<open>E\<^sub>z \<Longrightarrow> le0 N z j\<^sub>1\<close>) with @{thm [source] m_6_7_tree_wellformed_via_z}
+  (\<open>le0 N z j\<^sub>1 \<Longrightarrow> tree\<close>, the parent edge supplies \<open>p \<rightarrow>\<^sup>* z\<close>).  The ENTIRE
+  §6.7 RESIDUAL 1 (tree) now hangs on the lone SCALAR endpoint equation
+  \<open>entry N 0 (Lng N - 1) = entry N 0 z + ((Lng N - 1) - z)\<close> at the interior row-1
+  node \<open>z\<close> (EMPIRICALLY 1117/0).  Cites only @{thm [source] le0_z_j1_from_Ez},
+  @{thm [source] m_6_7_tree_wellformed_via_z}; no spsy / sblk / via_spsy /
+  RedCond / oper / tail_affine.\<close>
+
+lemma m_6_7_tree_wellformed_via_Ez:
+  fixes N :: pairseq
+  assumes N: "N \<in> ST_PS"
+    and L: "1 < Lng N"
+    and hp1: "hasParent N 1 (Lng N - 1)"
+    and j0lt: "parent N 1 (Lng N - 1) < Lng N - 1"
+    and zlo: "parent N 1 (Lng N - 1) < z"
+    and zhi: "z < Lng N - 1"
+    and hpz: "hasParent N 1 z"
+    and pge: "parent N 1 z \<ge> parent N 1 (Lng N - 1)"
+    and pgt: "parent N 1 z > parent N 1 (Lng N - 1)"
+    and Ez: "entry N 0 (Lng N - 1) = entry N 0 z + ((Lng N - 1) - z)"
+  shows "hasParent N 1 (parent N 1 z)
+         \<and> parent N 1 (parent N 1 z) \<ge> parent N 1 (Lng N - 1)"
+proof -
+  have zj1: "le0 N z (Lng N - 1)"
+    by (rule le0_z_j1_from_Ez[OF N zhi Ez])
+  show ?thesis
+    by (rule m_6_7_tree_wellformed_via_z[OF L hp1 j0lt zlo zhi hpz pge pgt zj1])
+qed
+
+
+lemma oper_parent1_readback_interior:
+  fixes M :: pairseq
+  assumes L: "1 < Lng M"
+    and notzero: "\<not> (entry M 0 (Lng M - 1) = 0 \<and> entry M 1 (Lng M - 1) = 0)"
+    and hp: "hasParent M (idx1 M (Lng M - 1)) (Lng M - 1)"
+    and i1z: "idx1 M (Lng M - 1) = 1"
+    and j0lt: "parent M 1 (Lng M - 1) < Lng M - 1"
+    and qn: "q < n"
+    and s0: "0 < s"
+    and sw: "s < Lng M - 1 - parent M 1 (Lng M - 1)"
+    and hpMs: "hasParent M 1 (parent M 1 (Lng M - 1) + s)"
+    and pMge: "parent M 1 (parent M 1 (Lng M - 1) + s) \<ge> parent M 1 (Lng M - 1)"
+    \<comment> \<open>the ONE residual: the cross-block VALLEY clause of the readback edge\<close>
+    and valley: "\<And>j'. parent M 1 (parent M 1 (Lng M - 1) + s)
+                        + q * (Lng M - 1 - parent M 1 (Lng M - 1)) < j'
+                  \<Longrightarrow> le0 ((M::pairseq)[n]) j'
+                          (parent M 1 (Lng M - 1)
+                             + q * (Lng M - 1 - parent M 1 (Lng M - 1)) + s)
+                  \<Longrightarrow> entry ((M::pairseq)[n]) 1 j'
+                        \<ge> entry ((M::pairseq)[n]) 1
+                              (parent M 1 (Lng M - 1)
+                                 + q * (Lng M - 1 - parent M 1 (Lng M - 1)) + s)"
+  shows "parent ((M::pairseq)[n]) 1
+            (parent M 1 (Lng M - 1)
+               + q * (Lng M - 1 - parent M 1 (Lng M - 1)) + s)
+       = parent M 1 (parent M 1 (Lng M - 1) + s)
+           + q * (Lng M - 1 - parent M 1 (Lng M - 1))"
+proof -
+  let ?j1 = "Lng M - 1"  let ?j0 = "parent M 1 ?j1"  let ?w = "?j1 - ?j0"
+  let ?Mn = "(M::pairseq)[n]"
+  let ?u = "?j0 + s"           \<comment> \<open>the M-side child (offset \<open>s\<close>)\<close>
+  let ?pM = "parent M 1 ?u"    \<comment> \<open>the M-side row-1 parent of \<open>?u\<close>\<close>
+  let ?y = "?j0 + q * ?w + s"  \<comment> \<open>the N-side interior column\<close>
+  let ?c = "?pM + q * ?w"      \<comment> \<open>the candidate N-side parent\<close>
+  let ?sp = "?pM - ?j0"        \<comment> \<open>offset of \<open>?c\<close> in block \<open>q\<close>\<close>
+  have w0: "0 < ?w" using j0lt by linarith
+  have hpidx: "hasParent M (idx1 M ?j1) ?j1" using hp .
+  \<comment> \<open>the \<open>idx1\<close>-form of \<open>j0lt\<close> required by the block bricks, and the \<open>j\<^sub>0\<close> rewrite\<close>
+  have pj0eq: "parent M (idx1 M ?j1) ?j1 = ?j0" using i1z by simp
+  have j0lt': "parent M (idx1 M ?j1) ?j1 < ?j1" using j0lt pj0eq by simp
+  \<comment> \<open>the M-side row-1 parent edge \<open>nextrel1 M p\<^sub>M ?u\<close>\<close>
+  have parRMu: "nextR M 1 ?pM ?u"
+    using hpMs unfolding hasParent_def parent_def by (rule theI')
+  have nr1Mu: "nextrel1 M ?pM ?u" using parRMu by (simp add: nextR_def)
+  have eMlt: "entry M 1 ?pM < entry M 1 ?u" using nr1Mu by (simp add: nextrel1_def)
+  have le0Mu: "le0 M ?pM ?u" using nr1Mu by (simp add: nextrel1_def)
+  have pMlt: "?pM < ?u" using nr1Mu by (simp add: nextrel1_def)
+  \<comment> \<open>\<open>?pM\<close> lies in \<open>[j\<^sub>0, ?u)\<close>: offset \<open>?sp < s < w\<close>\<close>
+  have pMge': "?j0 \<le> ?pM" using pMge .
+  have spv: "?sp = ?pM - ?j0" by simp
+  have splt_s: "?sp < s" using pMlt pMge' by linarith
+  have spw: "?sp < ?w" using splt_s sw by linarith
+  have pM_eq: "?pM = ?j0 + ?sp" using pMge' by simp
+  \<comment> \<open>idx1-form offset bounds required by the block bricks (denominator via \<open>pj0eq\<close>)\<close>
+  have spw': "?sp < ?j1 - parent M (idx1 M ?j1) ?j1" using spw pj0eq by simp
+  have sw': "s < ?j1 - parent M (idx1 M ?j1) ?j1" using sw pj0eq by simp
+  \<comment> \<open>index identities reconciling the brick's \<open>idx1\<close>-form with \<open>?c, ?y, ?pM, ?u\<close>\<close>
+  have idxC: "parent M (idx1 M ?j1) ?j1
+                + q * (?j1 - parent M (idx1 M ?j1) ?j1) + ?sp = ?c"
+    using pj0eq pM_eq by (simp add: ac_simps)
+  have idxCr: "parent M (idx1 M ?j1) ?j1 + ?sp = ?pM"
+    using pj0eq pM_eq by simp
+  have idxY: "parent M (idx1 M ?j1) ?j1
+                + q * (?j1 - parent M (idx1 M ?j1) ?j1) + s = ?y"
+    using pj0eq by (simp add: ac_simps)
+  have idxYr: "parent M (idx1 M ?j1) ?j1 + s = ?u"
+    using pj0eq by simp
+  \<comment> \<open>(1) ENTRIES read back unshifted (\<open>d\<^sub>1 = 0\<close>)\<close>
+  have eC: "entry ?Mn 1 ?c = entry M 1 ?pM"
+  proof -
+    have raw: "entry ?Mn 1 (parent M (idx1 M ?j1) ?j1
+                 + q * (?j1 - parent M (idx1 M ?j1) ?j1) + ?sp)
+             = entry M 1 (parent M (idx1 M ?j1) ?j1 + ?sp)"
+      by (rule oper_gen_block_entry1[OF L notzero hpidx j0lt' qn spw'])
+    show ?thesis using raw idxC idxCr by simp
+  qed
+  have eY: "entry ?Mn 1 ?y = entry M 1 ?u"
+  proof -
+    have raw: "entry ?Mn 1 (parent M (idx1 M ?j1) ?j1
+                 + q * (?j1 - parent M (idx1 M ?j1) ?j1) + s)
+             = entry M 1 (parent M (idx1 M ?j1) ?j1 + s)"
+      by (rule oper_gen_block_entry1[OF L notzero hpidx j0lt' qn sw'])
+    show ?thesis using raw idxY idxYr by simp
+  qed
+  have elt: "entry ?Mn 1 ?c < entry ?Mn 1 ?y" using eC eY eMlt by simp
+  \<comment> \<open>(2) the row-0 \<open>le0\<close> edge \<open>le0 (M[n]) c y\<close> via the within-one-block brick\<close>
+  have basepath: "(nextrel0 M)\<^sup>*\<^sup>* (?j0 + ?sp) (?j0 + s)"
+    using le0Mu pM_eq by (simp add: le0_def)
+  have basepath': "(nextrel0 M)\<^sup>*\<^sup>* (parent M (idx1 M ?j1) ?j1 + ?sp)
+                                   (parent M (idx1 M ?j1) ?j1 + s)"
+    using basepath pj0eq by simp
+  have le0CY: "le0 ?Mn ?c ?y"
+  proof -
+    have raw: "le0 ?Mn (parent M (idx1 M ?j1) ?j1
+                  + q * (?j1 - parent M (idx1 M ?j1) ?j1) + ?sp)
+                 (parent M (idx1 M ?j1) ?j1
+                  + q * (?j1 - parent M (idx1 M ?j1) ?j1) + s)"
+      by (rule oper_d1pos_le0_offset_within
+            [OF L notzero hpidx j0lt' qn sw' basepath'])
+    from raw show ?thesis by (simp only: idxC idxY)
+  qed
+  have cltY: "?c < ?y"
+  proof -
+    have e1: "?c = ?j0 + q * ?w + ?sp" using pM_eq by (simp add: ac_simps)
+    have e2: "?y = ?j0 + q * ?w + s" by simp
+    show ?thesis using e1 e2 splt_s by simp
+  qed
+  \<comment> \<open>bounds: \<open>c, y < Lng (M[n])\<close> from \<open>le0CY\<close>\<close>
+  have cL: "?c < Lng ?Mn" using le0CY by (simp add: le0_def)
+  have yL: "?y < Lng ?Mn" using le0CY by (simp add: le0_def)
+  \<comment> \<open>(3) assemble the readback edge \<open>nextrel1 (M[n]) c y\<close> with the valley hypothesis\<close>
+  have nrCY: "nextrel1 ?Mn ?c ?y"
+    unfolding nextrel1_def
+  proof (intro conjI allI impI)
+    show "?c < Lng ?Mn" using cL .
+    show "?y < Lng ?Mn" using yL .
+    show "?c < ?y" using cltY .
+    show "entry ?Mn 1 ?c < entry ?Mn 1 ?y" using elt .
+    show "le0 ?Mn ?c ?y" using le0CY .
+  next
+    fix j' assume a: "?c < j' \<and> le0 ?Mn j' ?y"
+    have a1: "?c < j'" using a by simp
+    have a2: "le0 ?Mn j' ?y" using a by simp
+    show "entry ?Mn 1 ?y \<le> entry ?Mn 1 j'"
+      using valley[OF a1 a2] by simp
+  qed
+  \<comment> \<open>\<open>c\<close> IS the (unique) row-1 parent of \<open>y\<close> in \<open>M[n]\<close>\<close>
+  have hpY: "hasParent ?Mn 1 ?y"
+    unfolding hasParent_def
+  proof (rule ex_ex1I)
+    show "\<exists>a. nextR ?Mn 1 a ?y" using nrCY by (auto simp: nextR_def)
+  next
+    fix a b assume "nextR ?Mn 1 a ?y" "nextR ?Mn 1 b ?y"
+    thus "a = b" by (rule nextR1_unique)
+  qed
+  have "(THE a. nextR ?Mn 1 a ?y) = ?c"
+  proof (rule the1_equality)
+    show "\<exists>!a. nextR ?Mn 1 a ?y" using hpY unfolding hasParent_def .
+    show "nextR ?Mn 1 ?c ?y" using nrCY by (simp add: nextR_def)
+  qed
+  thus ?thesis unfolding parent_def .
+qed
+
+
 end
