@@ -59190,4 +59190,186 @@ proof -
     by (rule gs_tree_from_gstrict[OF L hp1 j0lt zlo zhi hpz pge pgt gstrict])
 qed
 
+
+text \<open>§6.7 FORWARD-CRUX brick (diag case).  \<open>fc_D_diag\<close>: the scalar crux \<open>D(N)\<close>
+  always holds for a diagonal segment \<open>N = diagSeq a b\<close> --- its row-0 endpoint is
+  exactly the width above its base.  This discharges the diag branch of the
+  ST_PS.cases contrapositive (\<open>~D(N)\<close> is vacuously false on diagonals).  Direct
+  from @{thm [source] f2_D_diag}; no spsy / sblk / RedCond / oper / tail_affine.\<close>
+
+lemma fc_D_diag:
+  fixes a b :: nat
+  assumes ab: "a \<le> b"
+  shows "entry (diagSeq a b) 0 (Lng (diagSeq a b) - 1)
+       = entry (diagSeq a b) 0 0 + (Lng (diagSeq a b) - 1)"
+  by (rule f2_D_diag[OF ab])
+
+
+text \<open>§6.7 FORWARD-CRUX brick (flat step from \<open>~D(M)\<close>).  \<open>fc_flat_step_from_notD\<close>:
+  for \<open>M \<in> ST\<^sub>PS\<close> with \<open>1 < Lng M\<close>, if \<open>D(M)\<close> FAILS (row-0 endpoint is NOT the full
+  width above the base) then there is a FLAT/non-increasing consecutive step
+  \<open>entry M 0 (Suc c) \<le> entry M 0 c\<close> at some column \<open>c < Lng M - 1\<close>.  Contrapositive
+  of @{thm [source] cd_D_from_consec_strict}: if EVERY consecutive step were
+  strict then \<open>D(M)\<close> would hold.  Cites only
+  @{thm [source] cd_D_from_consec_strict}; no spsy / sblk / RedCond / oper /
+  tail_affine.\<close>
+
+lemma fc_flat_step_from_notD:
+  fixes M :: pairseq
+  assumes MST: "M \<in> ST_PS"
+    and L: "1 < Lng M"
+    and notD: "entry M 0 (Lng M - 1) \<noteq> entry M 0 0 + (Lng M - 1)"
+  shows "\<exists>c. c < Lng M - 1 \<and> entry M 0 (Suc c) \<le> entry M 0 c"
+proof (rule ccontr)
+  assume "\<not> (\<exists>c. c < Lng M - 1 \<and> entry M 0 (Suc c) \<le> entry M 0 c)"
+  hence strict: "\<And>x. x < Lng M - 1 \<Longrightarrow> entry M 0 x < entry M 0 (Suc x)"
+    by force
+  have "entry M 0 (Lng M - 1) = entry M 0 0 + (Lng M - 1)"
+    by (rule cd_D_from_consec_strict[OF MST L strict])
+  thus False using notD by simp
+qed
+
+
+text \<open>§6.7 FORWARD-CRUX brick (D propagates through the oper).  \<open>fc_D_oper\<close>: for a
+  GATED \<open>M\<close> (\<open>1 < Lng M\<close>; endpoint not \<open>(0,0)\<close>; row-1 parent of the endpoint exists;
+  \<open>i\<^sub>1 = 1\<close>; \<open>j\<^sub>0 = parent M 1 (Lng M-1) < Lng M-1\<close>) with \<open>M \<in> ST\<^sub>PS\<close>, if the scalar
+  crux \<open>D(M)\<close> holds then \<open>D(M[n])\<close> holds for every \<open>n \<ge> 1\<close>.  This is the FORWARD
+  D-propagation through the periodic-row1 tiling.  Under \<open>D(M)\<close> the row-0 of \<open>M\<close> is
+  the exact \<open>+1\<close> ramp (@{thm [source] f2_gstrict_from_D}), so \<open>entry M 0 j\<^sub>0
+  = entry M 0 0 + j\<^sub>0\<close> and the block shift \<open>d\<^sub>0 = entry M 0 j\<^sub>1 - entry M 0 j\<^sub>0\<close>
+  equals the width \<open>w = j\<^sub>1 - j\<^sub>0\<close>.  The last column of \<open>M[n]\<close> (block \<open>n-1\<close>, offset
+  \<open>w-1\<close>) reads (@{thm [source] oper_d1pos_entry0})
+  \<open>entry M 0 (j\<^sub>1-1) + (n-1)\<cdot>w\<close>, the base column reads \<open>entry M 0 0\<close>
+  (@{thm [source] operB_gen_entry_prefix} when \<open>0 < j\<^sub>0\<close>, the block-0 read otherwise),
+  and the length is \<open>j\<^sub>0 + n\<cdot>w\<close> (@{thm [source] oper_d1pos_LngM}); the arithmetic then
+  closes \<open>D(M[n])\<close>.  Cites only the already-GREEN @{thm [source] f2_gstrict_from_D},
+  @{thm [source] oper_d1pos_entry0}, @{thm [source] oper_d1pos_LngM},
+  @{thm [source] operB_gen_entry_prefix}; no spsy / sblk / RedCond / tail_affine.\<close>
+
+lemma fc_D_oper:
+  fixes M :: pairseq
+  assumes MST: "M \<in> ST_PS"
+    and L: "1 < Lng M"
+    and notzero: "\<not> (entry M 0 (Lng M - 1) = 0 \<and> entry M 1 (Lng M - 1) = 0)"
+    and hp: "hasParent M (idx1 M (Lng M - 1)) (Lng M - 1)"
+    and i1z: "idx1 M (Lng M - 1) = 1"
+    and j0lt: "parent M 1 (Lng M - 1) < Lng M - 1"
+    and n1: "1 \<le> n"
+    and DM: "entry M 0 (Lng M - 1) = entry M 0 0 + (Lng M - 1)"
+  shows "entry ((M::pairseq)[n]) 0 (Lng ((M::pairseq)[n]) - 1)
+       = entry ((M::pairseq)[n]) 0 0 + (Lng ((M::pairseq)[n]) - 1)"
+proof -
+  let ?j1 = "Lng M - 1"  let ?j0 = "parent M 1 ?j1"
+  let ?Mn = "(M::pairseq)[n]"
+  let ?d0 = "entry M 0 ?j1 - entry M 0 ?j0"
+  \<comment> \<open>hold \<open>w\<close> abstract so no decision procedure sees the double-\<open>parent\<close> nat-sub\<close>
+  obtain w where wdef: "?j1 - ?j0 = w" by blast
+  have w0: "0 < w" using j0lt wdef by linarith
+  have n0: "0 < n" using n1 by simp
+  obtain m where mdef: "n = Suc m" using n0 by (cases n) auto
+  have j0le: "?j0 \<le> ?j1" using j0lt by linarith
+  have j1j0: "?j1 = ?j0 + w" using wdef j0le by linarith
+  \<comment> \<open>row-0 of \<open>M\<close> is the exact \<open>+1\<close> ramp under \<open>D(M)\<close>\<close>
+  have gstrict: "\<And>y. y < ?j1 \<Longrightarrow> entry M 0 (Suc y) = Suc (entry M 0 y)"
+    by (rule f2_gstrict_from_D[OF MST L DM])
+  have ramp: "\<And>y. y \<le> ?j1 \<Longrightarrow> entry M 0 y = entry M 0 0 + y"
+  proof -
+    fix y assume "y \<le> ?j1"
+    thus "entry M 0 y = entry M 0 0 + y"
+    proof (induction y)
+      case 0 show ?case by simp
+    next
+      case (Suc y)
+      have yj1: "y < ?j1" using Suc.prems by linarith
+      have ih: "entry M 0 y = entry M 0 0 + y" using Suc.IH yj1 by linarith
+      have "entry M 0 (Suc y) = Suc (entry M 0 y)" by (rule gstrict[OF yj1])
+      thus ?case using ih by simp
+    qed
+  qed
+  \<comment> \<open>the block shift equals the width\<close>
+  have e_j0: "entry M 0 ?j0 = entry M 0 0 + ?j0" by (rule ramp[OF j0le])
+  have e_j1: "entry M 0 ?j1 = entry M 0 0 + ?j1" using DM by simp
+  have d0w: "?d0 = w" using e_j0 e_j1 j0le wdef by simp
+  \<comment> \<open>length of \<open>M[n]\<close>, in abstract-\<open>w\<close> form\<close>
+  have lenMn: "Lng ?Mn = ?j0 + n * w"
+    using oper_d1pos_LngM[OF L notzero hp i1z j0lt] wdef by simp
+  have lenMn1: "Lng ?Mn - 1 = ?j0 + m * w + (w - 1)"
+  proof -
+    have "Lng ?Mn = ?j0 + (Suc m) * w" using lenMn mdef by simp
+    also have "\<dots> = ?j0 + m * w + w" by (simp add: algebra_simps)
+    finally have "Lng ?Mn = ?j0 + m * w + w" .
+    thus ?thesis using w0 by simp
+  qed
+  \<comment> \<open>read the last column as block \<open>m = n-1\<close>, offset \<open>w-1\<close>\<close>
+  have qn: "m < n" using mdef by simp
+  have sw: "w - 1 < ?j1 - ?j0" using w0 wdef by simp
+  have e_last0: "entry ?Mn 0 (?j0 + m * (?j1 - ?j0) + (w - 1))
+              = entry M 0 (?j0 + (w - 1)) + m * ?d0"
+    by (rule oper_d1pos_entry0[OF L notzero hp i1z j0lt qn sw])
+  have e_last: "entry ?Mn 0 (?j0 + m * w + (w - 1))
+              = entry M 0 (?j0 + (w - 1)) + m * w"
+    using e_last0 wdef d0w by simp
+  have j0w1: "?j0 + (w - 1) = ?j1 - 1" using w0 j1j0 by linarith
+  have e_j1m1: "entry M 0 (?j1 - 1) = entry M 0 0 + (?j1 - 1)"
+    using ramp[of "?j1 - 1"] by simp
+  have e_last': "entry ?Mn 0 (Lng ?Mn - 1) = entry M 0 0 + (?j1 - 1) + m * w"
+    using e_last lenMn1 j0w1 e_j1m1 by simp
+  \<comment> \<open>the base column reads \<open>entry M 0 0\<close>\<close>
+  have e_base: "entry ?Mn 0 0 = entry M 0 0"
+  proof (cases "0 < ?j0")
+    case True
+    have x0: "0 < parent M (idx1 M (Lng M - 1)) (Lng M - 1)" using True i1z by simp
+    show ?thesis by (rule operB_gen_entry_prefix[OF L notzero hp x0])
+  next
+    case False
+    hence j00: "?j0 = 0" by simp
+    have "entry ?Mn 0 (?j0 + 0 * (?j1 - ?j0) + 0) = entry M 0 (?j0 + 0) + 0 * ?d0"
+      by (rule oper_d1pos_entry0[OF L notzero hp i1z j0lt n0]) (use w0 wdef in simp)
+    thus ?thesis using j00 by simp
+  qed
+  \<comment> \<open>assemble \<open>D(M[n])\<close>\<close>
+  have width: "Lng ?Mn - 1 = ?j0 + m * w + (w - 1)" using lenMn1 .
+  have rhs: "entry ?Mn 0 0 + (Lng ?Mn - 1) = entry M 0 0 + (?j0 + m * w + (w - 1))"
+    using e_base width by simp
+  have arith: "entry M 0 0 + (?j1 - 1) + m * w
+             = entry M 0 0 + (?j0 + m * w + (w - 1))"
+  proof -
+    have "(?j1 - 1) + m * w = (?j0 + w - 1) + m * w" using j1j0 by simp
+    also have "\<dots> = ?j0 + m * w + (w - 1)" using w0 by simp
+    finally show ?thesis by simp
+  qed
+  show ?thesis using e_last' rhs arith by simp
+qed
+
+
+text \<open>§6.7 FORWARD-CRUX brick (contrapositive of D-propagation).
+  \<open>fc_notD_M_from_notD_oper\<close>: for a GATED \<open>M \<in> ST\<^sub>PS\<close> and \<open>n \<ge> 1\<close>, if \<open>D(M[n])\<close>
+  FAILS then \<open>D(M)\<close> FAILS.  This is the direct contrapositive of
+  @{thm [source] fc_D_oper}: had \<open>D(M)\<close> held, \<open>D(M[n])\<close> would too.  Empirically
+  \<open>gated(M) & ~D(M[n]) \<Longrightarrow> ~D(M)\<close> is 0-fail (red_model.py).  This is the FIRST
+  step of the gated branch of the ST_PS.cases contrapositive (it transports the
+  hypothesis \<open>~D(N)\<close>, \<open>N = M[n]\<close>, down to \<open>~D(M)\<close>, where the flat-step argument
+  @{text fc_flat_no_gz} then applies).  Cites only the already-GREEN
+  @{thm [source] fc_D_oper}; no spsy / sblk / RedCond / tail_affine.\<close>
+
+lemma fc_notD_M_from_notD_oper:
+  fixes M :: pairseq
+  assumes MST: "M \<in> ST_PS"
+    and L: "1 < Lng M"
+    and notzero: "\<not> (entry M 0 (Lng M - 1) = 0 \<and> entry M 1 (Lng M - 1) = 0)"
+    and hp: "hasParent M (idx1 M (Lng M - 1)) (Lng M - 1)"
+    and i1z: "idx1 M (Lng M - 1) = 1"
+    and j0lt: "parent M 1 (Lng M - 1) < Lng M - 1"
+    and n1: "1 \<le> n"
+    and notDN: "entry ((M::pairseq)[n]) 0 (Lng ((M::pairseq)[n]) - 1)
+                  \<noteq> entry ((M::pairseq)[n]) 0 0 + (Lng ((M::pairseq)[n]) - 1)"
+  shows "entry M 0 (Lng M - 1) \<noteq> entry M 0 0 + (Lng M - 1)"
+proof
+  assume DM: "entry M 0 (Lng M - 1) = entry M 0 0 + (Lng M - 1)"
+  have "entry ((M::pairseq)[n]) 0 (Lng ((M::pairseq)[n]) - 1)
+      = entry ((M::pairseq)[n]) 0 0 + (Lng ((M::pairseq)[n]) - 1)"
+    by (rule fc_D_oper[OF MST L notzero hp i1z j0lt n1 DM])
+  thus False using notDN by simp
+qed
+
 end
