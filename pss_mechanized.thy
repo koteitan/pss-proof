@@ -860,7 +860,7 @@ qed
 text \<open>§6.8 (b): \<open>P\<close> commutes with an iterated \<open>IncrFirst\<close> as a per-component map.
   Funpow-iterate of @{thm [source] m_6_2_P_IncrFirst} (\<open>P (IncrFirst M) = map IncrFirst (P M)\<close>);
   the step uses that one-step fact + \<open>map\<close>-compose.  Empirically 1155/1155
-  (@{file "python/notbrle_low_check.py"}, rank-stratified std).\<close>
+  (python/notbrle_low_check.py, rank-stratified std).\<close>
 
 lemma P_funpow_IncrFirst:
   shows "P ((IncrFirst ^^ s) X) = map (IncrFirst ^^ s) (P X)"
@@ -9772,7 +9772,7 @@ text \<open>§6.8 (a): the LOW SOURCE seg-shift identity (d0pos, \<open>i\<^sub>
   \<open>(IncrFirst^^(q\<cdot>\<delta>))\<close> applied.  This is the article's LOW source decomposition:
   in the §6.8 closure the base is \<open>N\<close> (\<open>M = N[n]\<close>), \<open>j\<^sub>0 = j\<^sub>-\<^sub>2\<^sup>N\<close>, the slice
   starts at \<open>j'\<^sub>0 = j\<^sub>0+q\<cdot>w+s\<^sub>0\<close> and ends at \<open>fnM-1 = j\<^sub>0+q\<cdot>w+e\<^sub>0\<close> (the LOW part stays
-  in one block, empirically 2132/2132, @{file "python/notbrle_low_check.py"}).
+  in one block, empirically 2132/2132, python/notbrle_low_check.py).
   Proof: nth-equality; each element reads off via @{thm [source] oper_d1pos_nth}
   (LHS) and @{thm [source] entry_funpow_IncrFirst0}/@{thm [source] entry_funpow_IncrFirst1}
   (RHS).  Empirically (a) holds 2132/2132 (same script, rank-stratified std gen).\<close>
@@ -23853,7 +23853,7 @@ proof -
                  this jlarge branch: \<open>j\<^sub>-\<^sub>2\<^sup>N = parent N 1 (Lng N-1) < Lng N-1 \<le> j'\<^sub>1\<close>
                  (\<open>j0Nlt\<close> + \<open>bge\<close>), so always \<open>j\<^sub>-\<^sub>2\<^sup>N < j'\<^sub>1\<close>.  Empirically confirmed
                  (0 of 1648 d0pos jlarge slices fall in A0; whole theorem also has
-                 0 descending failures — @{file "python/sk_68_d0pos_audit.py"}).
+                 0 descending failures — python/sk_68_d0pos_audit.py).
                  So the slice always crosses \<open>j\<^sub>-\<^sub>2\<^sup>N\<close>, leaving exactly the two genuine
                  hard regimes below, both funnelled to the single residual sorry.\<close>
               have j0Nltj1: "?j0N < j1'" using j0Nlt bge by linarith
@@ -57324,7 +57324,7 @@ text \<open>§6.7 INTERIOR row-1 parent READBACK, UNCONDITIONAL.  Discharges the
 
   KEY STRUCTURAL FACT (empirically 18425/0 on the broad ST\_PS closure, depth 4,
   base \<open>u 0..3 v u..6\<close>, maxlen 12, NOT is\_standard;
-  see @{file "python/_valley_check5.py"}): every \<open>le0\<close>-predecessor \<open>j'\<close> of the
+  see python/_valley_check5.py): every \<open>le0\<close>-predecessor \<open>j'\<close> of the
   interior column \<open>?y = j\<^sub>0+q\<cdot>w+s\<close> with \<open>?c = ?pM+q\<cdot>w < j'\<close> lies in the SAME
   block \<open>q\<close> (offset \<open>sp'\<close> with \<open>?sp < sp' \<le> s\<close>).  This is forced arithmetically:
   \<open>le0\<close> gives \<open>j' \<le> ?y\<close>, and \<open>?c < j'\<close> with \<open>?c, ?y\<close> both in block \<open>q\<close>
@@ -57459,7 +57459,7 @@ text \<open>§6.7 BOUNDARY (\<open>s = 0\<close>) row-1 parent READBACK (attempt
   \<open>p\<^sub>j = parent M 1 j\<^sub>0\<close> --- INDEPENDENTLY of the block index \<open>q\<close>:
   \<open>parent (M[n]) 1 (j\<^sub>0 + q\<cdot>w) = parent M 1 j\<^sub>0\<close>.  This is the clean closed form
   pinned EMPIRICALLY (0-fail on the broad ST\_PS closure, depth\<ge>5, base \<open>u 0..3
-  v u..6\<close>, maxlen 16, NOT is\_standard; @{file "python/_Z_main.py"}: q=0 3870/0,
+  v u..6\<close>, maxlen 16, NOT is\_standard; python/_Z_main.py: q=0 3870/0,
   q\<ge>1 7740/0; ingredients 11610/11610).  The candidate-edge ingredients are all
   GREEN/RedCondA-free:
   \<^item> the prefix-to-block-start row-0 reach \<open>le0 (M[n]) p\<^sub>j (j\<^sub>0+q\<cdot>w)\<close> assembled
@@ -57474,7 +57474,7 @@ text \<open>§6.7 BOUNDARY (\<open>s = 0\<close>) row-1 parent READBACK (attempt
   The SINGLE residual is the BOUNDARY VALLEY clause: unlike the interior case the
   lower cut \<open>p\<^sub>j\<close> sits in the prefix, so the valley predecessors are GENUINELY
   cross-block (prefix 21075, same-block 6450, cross-block 26172 on the closure;
-  @{file "python/_Z_readback.py"}) and the vacuity argument of
+  python/_Z_readback.py) and the vacuity argument of
   @{thm [source] oper_parent1_readback} does NOT apply.  We therefore take the
   boundary maximality as the ONE hypothesis, mirroring the shape of
   @{thm [source] oper_parent1_readback_interior}.  Cites only already-GREEN
@@ -57998,6 +57998,323 @@ proof -
   have "entry ?Mn 0 z + (?jN - z) = entry M 0 z + ((A - z) + B)"
     using rb_z width by simp
   thus ?thesis using e_end by simp
+qed
+
+
+lemma segReach_from_row0_strict:
+  fixes N :: pairseq
+  assumes bL: "b < Lng N"
+    and strict: "\<And>y. p \<le> y \<Longrightarrow> y < b \<Longrightarrow> entry N 0 y < entry N 0 (Suc y)"
+    and xlo: "p \<le> x"
+    and xhi: "x \<le> b"
+  shows "le0 N x b"
+proof -
+  \<comment> \<open>chain upward from any base \<open>c \<in> [p, b]\<close> to \<open>b\<close>, by induction on the gap \<open>b - c\<close>\<close>
+  have chain: "\<And>c. p \<le> c \<Longrightarrow> c \<le> b \<Longrightarrow> le0 N c b"
+  proof -
+    fix c assume "p \<le> c" and "c \<le> b"
+    then show "le0 N c b"
+    proof (induction "b - c" arbitrary: c)
+      case 0
+      have "c = b" using 0 by linarith
+      thus ?case using bL by (simp add: le0_refl)
+    next
+      case (Suc d)
+      have clt: "c < b" using Suc.hyps(2) by linarith
+      have pc: "p \<le> c" using Suc.prems(1) .
+      have inc: "entry N 0 c < entry N 0 (Suc c)" by (rule strict[OF pc clt])
+      have scL: "Suc c < Lng N" using clt bL by simp
+      have step: "le0 N c (Suc c)" by (rule le0_step_consec[OF scL inc])
+      have dEq: "d = b - Suc c" using Suc.hyps(2) by linarith
+      have psc: "p \<le> Suc c" using pc by simp
+      have scle: "Suc c \<le> b" using clt by simp
+      have rest: "le0 N (Suc c) b" using Suc.hyps(1)[OF dEq psc scle] .
+      show ?case by (rule le0_trans[OF step rest])
+    qed
+  qed
+  show ?thesis by (rule chain[OF xlo xhi])
+qed
+
+
+text \<open>§6.7 IN-BLOCK oper STEP for \<open>E\<^sub>z\<close> (attempt C): the combiner that feeds the
+  IH-supply @{thm [source] Mtail_ramp_from_Ez} into @{thm [source] ez_inblock_lift}.
+  For \<open>N = M[n]\<close> in the expansion case, and an IN-BLOCK column
+  \<open>z\<^sub>N = j\<^sub>0 + q\<cdot>w + s\<close> (\<open>q<n\<close>, \<open>0<s<w\<close>), the M-side IH-INPUT --- the endpoint
+  slope-1 \<open>E\<^sub>z M z\<close> at a gated M-node \<open>z\<close> whose row-1 parent is the block start
+  \<open>j\<^sub>0 = parent M 1 (Lng M-1)\<close>, plus the segment reachability \<open>le0 M x z\<close> on
+  \<open>[j\<^sub>0, z]\<close> --- yields the N-side endpoint slope-1 equation \<open>E\<^sub>z N z\<^sub>N\<close>:
+  \<open>entry N 0 (Lng N-1) = entry N 0 z\<^sub>N + ((Lng N-1) - z\<^sub>N)\<close>.
+  Route: @{thm [source] Mtail_ramp_from_Ez} converts the IH input to the whole
+  M-tail \<open>+1\<close> ramp on \<open>[j\<^sub>0, Lng M-1]\<close>, which is exactly the ramp hypothesis of
+  @{thm [source] ez_inblock_lift}.  Cites only those two already-GREEN bricks; no
+  spsy / sblk / RedCond / oper-tiling / tail_affine.  This is the IN-BLOCK arm of
+  the \<open>E\<^sub>z\<close> ST_PS.induct oper step (the s=0 boundary is vacuous for gated z; the
+  PREFIX \<open>z\<^sub>N < j\<^sub>0\<close> arm is the named residual).\<close>
+
+lemma ez_inblock_oper_step:
+  fixes M :: pairseq
+  assumes MST: "M \<in> ST_PS"
+    and L: "1 < Lng M"
+    and notzero: "\<not> (entry M 0 (Lng M - 1) = 0 \<and> entry M 1 (Lng M - 1) = 0)"
+    and hp: "hasParent M (idx1 M (Lng M - 1)) (Lng M - 1)"
+    and i1z: "idx1 M (Lng M - 1) = 1"
+    and j0lt: "parent M 1 (Lng M - 1) < Lng M - 1"
+    and qn: "q < n"
+    and s0: "0 < s"
+    and sw: "s < Lng M - 1 - parent M 1 (Lng M - 1)"
+    \<comment> \<open>the IH input on the M side: \<open>E\<^sub>z M z\<close> at a gated M-node \<open>z\<close> over \<open>j\<^sub>0\<close>\<close>
+    and zlo: "parent M 1 (Lng M - 1) < z"
+    and zhi: "z < Lng M - 1"
+    and Ez: "entry M 0 (Lng M - 1) = entry M 0 z + ((Lng M - 1) - z)"
+    and segReach: "\<And>x. parent M 1 (Lng M - 1) \<le> x \<Longrightarrow> x \<le> z \<Longrightarrow> le0 M x z"
+  shows "entry ((M::pairseq)[n]) 0 (Lng ((M::pairseq)[n]) - 1)
+       = entry ((M::pairseq)[n]) 0
+              (parent M 1 (Lng M - 1)
+                 + q * (Lng M - 1 - parent M 1 (Lng M - 1)) + s)
+         + ((Lng ((M::pairseq)[n]) - 1)
+              - (parent M 1 (Lng M - 1)
+                   + q * (Lng M - 1 - parent M 1 (Lng M - 1)) + s))"
+proof -
+  \<comment> \<open>the whole M-tail \<open>+1\<close> ramp from the IH input\<close>
+  have ramp: "\<And>t. t \<le> Lng M - 1 - parent M 1 (Lng M - 1)
+                 \<Longrightarrow> entry M 0 (parent M 1 (Lng M - 1) + t)
+                       = entry M 0 (parent M 1 (Lng M - 1)) + t"
+    by (rule Mtail_ramp_from_Ez[OF MST L j0lt zlo zhi Ez segReach])
+  \<comment> \<open>lift to the N-side in-block endpoint equation\<close>
+  show ?thesis
+    by (rule ez_inblock_lift[OF L notzero hp i1z j0lt qn s0 sw ramp])
+qed
+
+
+text \<open>§6.7 IN-BLOCK oper STEP for \<open>E\<^sub>z\<close> with the \<open>segReach\<close> input REPLACED by the
+  cleaner M-side ROW-0 \<open>+1\<close> STEP on the lower segment \<open>[j\<^sub>0, z)\<close> (attempt E).  The
+  \<open>segReach\<close> hypothesis of @{thm [source] ez_inblock_oper_step} (the row-0 reach
+  \<open>le0 M x z\<close> on \<open>[j\<^sub>0, z]\<close>) is exactly what the new GREEN brick
+  @{thm [source] segReach_from_row0_strict} produces from the per-consecutive
+  STRICT row-0 increase on \<open>[j\<^sub>0, z)\<close>.  That strict increase, together with the
+  endpoint slope-1 \<open>E\<^sub>z M z\<close> (which carries the per-step increase on \<open>[z, j\<^sub>1)\<close>),
+  is precisely the row-0 \<open>+1\<close> structure of the gated M-node \<open>z\<close> supplied by the
+  \<open>E\<^sub>z\<close> induction hypothesis on \<open>M\<close> (EMPIRICALLY 0-fail: for the N-side in-block
+  gated column the M-witness \<open>z\<^sub>0 = j\<^sub>0 + s\<close> is itself M-gated with \<open>E\<^sub>z M z\<^sub>0\<close> and
+  the strict step on \<open>[j\<^sub>0, z\<^sub>0)\<close> both holding).  Cites only the GREEN bricks
+  @{thm [source] segReach_from_row0_strict} and
+  @{thm [source] ez_inblock_oper_step}; no spsy / sblk / RedCond / oper-tiling /
+  tail_affine.\<close>
+
+lemma ez_inblock_oper_step_via_strict:
+  fixes M :: pairseq
+  assumes MST: "M \<in> ST_PS"
+    and L: "1 < Lng M"
+    and notzero: "\<not> (entry M 0 (Lng M - 1) = 0 \<and> entry M 1 (Lng M - 1) = 0)"
+    and hp: "hasParent M (idx1 M (Lng M - 1)) (Lng M - 1)"
+    and i1z: "idx1 M (Lng M - 1) = 1"
+    and j0lt: "parent M 1 (Lng M - 1) < Lng M - 1"
+    and qn: "q < n"
+    and s0: "0 < s"
+    and sw: "s < Lng M - 1 - parent M 1 (Lng M - 1)"
+    and zlo: "parent M 1 (Lng M - 1) < z"
+    and zhi: "z < Lng M - 1"
+    and Ez: "entry M 0 (Lng M - 1) = entry M 0 z + ((Lng M - 1) - z)"
+    \<comment> \<open>the M-side IH input on the LOWER segment: row-0 \<open>+1\<close> step on \<open>[j\<^sub>0, z)\<close>\<close>
+    and lowstrict: "\<And>y. parent M 1 (Lng M - 1) \<le> y \<Longrightarrow> y < z
+                        \<Longrightarrow> entry M 0 y < entry M 0 (Suc y)"
+  shows "entry ((M::pairseq)[n]) 0 (Lng ((M::pairseq)[n]) - 1)
+       = entry ((M::pairseq)[n]) 0
+              (parent M 1 (Lng M - 1)
+                 + q * (Lng M - 1 - parent M 1 (Lng M - 1)) + s)
+         + ((Lng ((M::pairseq)[n]) - 1)
+              - (parent M 1 (Lng M - 1)
+                   + q * (Lng M - 1 - parent M 1 (Lng M - 1)) + s))"
+proof -
+  let ?j1 = "Lng M - 1"  let ?j0 = "parent M 1 ?j1"
+  have zL: "z < Lng M" using zhi by simp
+  \<comment> \<open>the lower-segment reach from the strict step via the GREEN reach brick\<close>
+  have segReach: "\<And>x. ?j0 \<le> x \<Longrightarrow> x \<le> z \<Longrightarrow> le0 M x z"
+  proof -
+    fix x assume xlo: "?j0 \<le> x" and xz: "x \<le> z"
+    show "le0 M x z" by (rule segReach_from_row0_strict[OF zL lowstrict xlo xz])
+  qed
+  show ?thesis
+    by (rule ez_inblock_oper_step
+          [OF MST L notzero hp i1z j0lt qn s0 sw zlo zhi Ez segReach])
+qed
+
+
+lemma ez_prefix_lift:
+  fixes M :: pairseq
+  assumes L: "1 < Lng M"
+    and notzero: "\<not> (entry M 0 (Lng M - 1) = 0 \<and> entry M 1 (Lng M - 1) = 0)"
+    and hp: "hasParent M (idx1 M (Lng M - 1)) (Lng M - 1)"
+    and i1z: "idx1 M (Lng M - 1) = 1"
+    and j0lt: "parent M 1 (Lng M - 1) < Lng M - 1"
+    and n0: "0 < n"
+    and zlt: "z < parent M 1 (Lng M - 1)"
+    \<comment> \<open>the IH content: the M-side row-0 reading is the exact \<open>+1\<close> ramp on the whole
+       tail \<open>[z, Lng M-1]\<close> from base \<open>z\<close>\<close>
+    and ramp: "\<And>t. z + t \<le> Lng M - 1
+                 \<Longrightarrow> entry M 0 (z + t) = entry M 0 z + t"
+  shows "entry ((M::pairseq)[n]) 0 (Lng ((M::pairseq)[n]) - 1)
+       = entry ((M::pairseq)[n]) 0 z
+         + ((Lng ((M::pairseq)[n]) - 1) - z)"
+proof -
+  let ?j1 = "Lng M - 1"  let ?j0 = "parent M 1 ?j1"  let ?w = "?j1 - ?j0"
+  let ?Mn = "(M::pairseq)[n]"
+  let ?d0 = "entry M 0 ?j1 - entry M 0 ?j0"
+  let ?jN = "Lng ?Mn - 1"              \<comment> \<open>the N-endpoint\<close>
+  have w0: "0 < ?w" using j0lt by linarith
+  have zlej0: "z \<le> ?j0" using zlt by linarith
+  have zlej1: "z \<le> ?j1" using zlej0 j0lt by linarith
+  \<comment> \<open>(1) length of \<open>N\<close>, and the endpoint as block \<open>n-1\<close>, offset \<open>w-1\<close>\<close>
+  have lenN: "Lng ?Mn = ?j0 + n * ?w"
+    by (rule oper_d1pos_LngM[OF L notzero hp i1z j0lt])
+  have jNflat: "Lng ?Mn = ?j0 + (n - 1) * ?w + ?w"
+  proof -
+    have "?j0 + n * ?w = ?j0 + (Suc (n - 1)) * ?w" using n0 by simp
+    also have "\<dots> = ?j0 + (n - 1) * ?w + ?w" by simp
+    finally show ?thesis using lenN by simp
+  qed
+  have jNeq: "?jN = ?j0 + (n - 1) * ?w + (?w - 1)"
+    using jNflat w0 by linarith
+  \<comment> \<open>(2) ramp in ABSOLUTE form for any \<open>y \<in> [z, j\<^sub>1]\<close>, then read at \<open>j\<^sub>0\<close>, \<open>j\<^sub>1\<close>, \<open>j\<^sub>0+(w-1)\<close>\<close>
+  have ramp_abs: "\<And>y. z \<le> y \<Longrightarrow> y \<le> ?j1 \<Longrightarrow> entry M 0 y = entry M 0 z + (y - z)"
+  proof -
+    fix y assume zy: "z \<le> y" and yj1: "y \<le> ?j1"
+    obtain t where yt: "y = z + t" using zy le_Suc_ex by blast
+    have "z + t \<le> ?j1" using yt yj1 by simp
+    from ramp[OF this] have "entry M 0 (z + t) = entry M 0 z + t" .
+    thus "entry M 0 y = entry M 0 z + (y - z)" using yt by simp
+  qed
+  have e_j0: "entry M 0 ?j0 = entry M 0 z + (?j0 - z)"
+    by (rule ramp_abs[OF zlej0]) (use j0lt in linarith)
+  have e_j1: "entry M 0 ?j1 = entry M 0 z + (?j1 - z)"
+    by (rule ramp_abs[OF zlej1 le_refl])
+  have d0w: "?d0 = ?w"
+  proof -
+    have "entry M 0 ?j1 - entry M 0 ?j0
+            = (entry M 0 z + (?j1 - z)) - (entry M 0 z + (?j0 - z))"
+      using e_j0 e_j1 by simp
+    also have "\<dots> = (?j1 - z) - (?j0 - z)" by simp
+    also have "\<dots> = ?w" using zlej0 j0lt by simp
+    finally show ?thesis .
+  qed
+  \<comment> \<open>the slice value at offset \<open>w-1\<close> (still inside the ramp, \<open>j\<^sub>0+(w-1) \<le> j\<^sub>1\<close>).
+     AVOID handing the decision procedure a goal where \<open>?w = ?j1 - ?j0\<close> re-expands
+     the \<open>parent\<close> atom twice under nested nat-subtraction (CLAUDE.md gotcha): chain
+     through the cheap assoc step \<open>?j0 + (?w-1) = ?j0 + ?w - 1\<close> (w0-only) plus the
+     flat equation \<open>?j0 + ?w = ?j1\<close>.\<close>
+  have j0pw: "?j0 + ?w = ?j1" using j0lt by simp
+  have j0wm1assoc: "?j0 + (?w - 1) = ?j1 - 1"
+  proof -
+    have "?j0 + (?w - 1) = ?j0 + ?w - 1" using w0 by simp
+    also have "\<dots> = ?j1 - 1" using j0pw by simp
+    finally show ?thesis .
+  qed
+  have j0wm1le: "?j0 + (?w - 1) \<le> ?j1" using j0wm1assoc by simp
+  have zle_j0wm1: "z \<le> ?j0 + (?w - 1)"
+  proof -
+    have "z \<le> ?j1 - 1" using zlej0 j0lt by simp
+    thus ?thesis using j0wm1assoc by simp
+  qed
+  have e_wm1: "entry M 0 (?j0 + (?w - 1)) = entry M 0 z + (?j0 + (?w - 1) - z)"
+    by (rule ramp_abs[OF zle_j0wm1 j0wm1le])
+  \<comment> \<open>(3) row-0 readback at the endpoint (block \<open>n-1\<close>, offset \<open>w-1\<close>) and at \<open>z\<close> (prefix).
+     Abstract the block-base \<open>A = j\<^sub>0+(w-1)\<close> and carry \<open>B = (n-1)\<cdot>w\<close> as opaque nats
+     so the decision procedure never re-expands the \<open>?w = j\<^sub>1 - j\<^sub>0\<close> atom (CLAUDE.md).\<close>
+  have wm1w: "?w - 1 < ?w" using w0 by simp
+  have nm1n: "n - 1 < n" using n0 by simp
+  have rb_end: "entry ?Mn 0 (?j0 + (n - 1) * ?w + (?w - 1))
+                  = entry M 0 (?j0 + (?w - 1)) + (n - 1) * ?d0"
+    by (rule oper_d1pos_entry0[OF L notzero hp i1z j0lt nm1n wm1w])
+  define A where "A = ?j0 + (?w - 1)"
+  define B where "B = (n - 1) * ?w"
+  have jN_AB: "?jN = A + B" using jNeq by (simp add: A_def B_def add.commute add.left_commute)
+  have zleA: "z \<le> A" using zle_j0wm1 by (simp add: A_def)
+  have e_wm1A: "entry M 0 A = entry M 0 z + (A - z)" using e_wm1 by (simp add: A_def)
+  have rb_endA: "entry ?Mn 0 (A + B) = entry M 0 A + B"
+  proof -
+    have base: "entry ?Mn 0 (?j0 + (n - 1) * ?w + (?w - 1)) = entry M 0 A + B"
+      using rb_end d0w by (simp add: A_def B_def)
+    have idx: "?j0 + (n - 1) * ?w + (?w - 1) = A + B"
+      by (simp add: A_def B_def add.commute add.left_commute)
+    show ?thesis using base idx by simp
+  qed
+  have e_end: "entry ?Mn 0 ?jN = entry M 0 z + ((A - z) + B)"
+  proof -
+    have "entry ?Mn 0 ?jN = entry ?Mn 0 (A + B)" using jN_AB by simp
+    also have "\<dots> = entry M 0 A + B" using rb_endA .
+    also have "\<dots> = entry M 0 z + (A - z) + B" using e_wm1A by simp
+    finally show ?thesis by simp
+  qed
+  have rb_z: "entry ?Mn 0 z = entry M 0 z"
+  proof -
+    have "?Mn ! z = M ! z"
+      by (rule oper_d1pos_nth_prefix[OF L notzero hp i1z zlt])
+    thus ?thesis by (simp add: entry_def)
+  qed
+  \<comment> \<open>(4) the two closed forms coincide on the slope-1 line (opaque \<open>A\<close>, \<open>B\<close>)\<close>
+  have width: "?jN - z = (A - z) + B" using jN_AB zleA by simp
+  have "entry ?Mn 0 z + (?jN - z) = entry M 0 z + ((A - z) + B)"
+    using rb_z width by simp
+  thus ?thesis using e_end by simp
+qed
+
+
+text \<open>§6.7 PREFIX oper STEP for \<open>E\<^sub>z\<close> with the whole-tail ramp REPLACED by the
+  M-side ENDPOINT slope-1 \<open>E\<^sub>z M z\<close> (attempt E).  For \<open>N = M[n]\<close> and a PREFIX
+  column \<open>z < j\<^sub>0 = parent M 1 (Lng M-1)\<close> the input @{thm [source] ez_prefix_lift}
+  consumes is the exact \<open>+1\<close> row-0 ramp on the WHOLE M-tail \<open>[z, Lng M-1]\<close> from
+  base \<open>z\<close>.  That ramp is exactly @{thm [source] subramp_from_Ep} (base \<open>z\<close>)
+  cumulated: the per-step \<open>entry M 0 (Suc x) = Suc (entry M 0 x)\<close> on \<open>[z, j\<^sub>1)\<close>
+  is upgraded from the endpoint slope-1 \<open>E\<^sub>z M z\<close>
+  (\<open>entry M 0 (Lng M-1) = entry M 0 z + ((Lng M-1) - z)\<close>) via the global per-step
+  \<open>\<le> +1\<close> cap.  \<open>E\<^sub>z M z\<close> at the PREFIX node \<open>z\<close> (on \<open>M\<close>'s OWN endpoint) is the
+  natural M-side IH fact (EMPIRICALLY 0-fail on the broad ST_PS closure: for the
+  N-side prefix gated column the same column \<open>z < j\<^sub>0\<close> in \<open>M\<close> satisfies
+  \<open>E\<^sub>z M z\<close>).  Cites only @{thm [source] subramp_from_Ep} and
+  @{thm [source] ez_prefix_lift}; no spsy / sblk / RedCond / oper-tiling /
+  tail_affine.\<close>
+
+lemma ez_prefix_oper_step_via_Ez:
+  fixes M :: pairseq
+  assumes MST: "M \<in> ST_PS"
+    and L: "1 < Lng M"
+    and notzero: "\<not> (entry M 0 (Lng M - 1) = 0 \<and> entry M 1 (Lng M - 1) = 0)"
+    and hp: "hasParent M (idx1 M (Lng M - 1)) (Lng M - 1)"
+    and i1z: "idx1 M (Lng M - 1) = 1"
+    and j0lt: "parent M 1 (Lng M - 1) < Lng M - 1"
+    and n0: "0 < n"
+    and zlt: "z < parent M 1 (Lng M - 1)"
+    \<comment> \<open>the M-side IH input: the endpoint slope-1 \<open>E\<^sub>z M z\<close> at the prefix node \<open>z\<close>\<close>
+    and EzM: "entry M 0 (Lng M - 1) = entry M 0 z + ((Lng M - 1) - z)"
+  shows "entry ((M::pairseq)[n]) 0 (Lng ((M::pairseq)[n]) - 1)
+       = entry ((M::pairseq)[n]) 0 z
+         + ((Lng ((M::pairseq)[n]) - 1) - z)"
+proof -
+  let ?j1 = "Lng M - 1"
+  have zj1: "z < ?j1" using zlt j0lt by linarith
+  \<comment> \<open>the exact \<open>+1\<close> sub-ramp on \<open>[z, j\<^sub>1)\<close> from the endpoint slope-1\<close>
+  have step: "\<And>x. z \<le> x \<Longrightarrow> x < ?j1 \<Longrightarrow> entry M 0 (Suc x) = Suc (entry M 0 x)"
+    by (rule subramp_from_Ep[OF MST zj1 EzM])
+  \<comment> \<open>cumulate to the absolute \<open>+1\<close> ramp on \<open>[z, j\<^sub>1]\<close> from base \<open>z\<close>\<close>
+  have ramp: "\<And>t. z + t \<le> ?j1 \<Longrightarrow> entry M 0 (z + t) = entry M 0 z + t"
+  proof -
+    fix t assume "z + t \<le> ?j1"
+    thus "entry M 0 (z + t) = entry M 0 z + t"
+    proof (induction t)
+      case 0 show ?case by simp
+    next
+      case (Suc t)
+      have le1: "z + t \<le> ?j1" using Suc.prems by simp
+      have lt: "z + t < ?j1" using Suc.prems by simp
+      have ge: "z \<le> z + t" by simp
+      have st: "entry M 0 (Suc (z + t)) = Suc (entry M 0 (z + t))"
+        by (rule step[OF ge lt])
+      have ih: "entry M 0 (z + t) = entry M 0 z + t" using Suc.IH[OF le1] .
+      show ?case using st ih by simp
+    qed
+  qed
+  show ?thesis
+    by (rule ez_prefix_lift[OF L notzero hp i1z j0lt n0 zlt ramp])
 qed
 
 
