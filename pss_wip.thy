@@ -464,4 +464,35 @@ next
   qed
 qed
 
+text \<open>From the single scalar fact entry N1 j0 < entry N1(j0+s) (plus le0 N j0
+  (j0+s), which always holds via the tree property), BOTH hpMs (the base j0+s has
+  a row-1 parent) and pMge (that parent is >= j0) follow by m_5_1_parent_exists_2
+  (existence of a parent in [j0, j0+s)) and nextR1_unique.  This collapses the two
+  operCA residuals (hpMs + gate) for an interior base into ONE scalar inequality.\<close>
+
+lemma base_parent_from_entry_lt:
+  fixes N :: pairseq
+  assumes NT: "N \<in> T_PS"
+    and spos: "0 < s"
+    and bL: "parent N 1 (Lng N - 1) + s < Lng N"
+    and elt: "entry N 1 (parent N 1 (Lng N - 1))
+                < entry N 1 (parent N 1 (Lng N - 1) + s)"
+    and le0b: "le0 N (parent N 1 (Lng N - 1)) (parent N 1 (Lng N - 1) + s)"
+  shows "hasParent N 1 (parent N 1 (Lng N - 1) + s)
+       \<and> parent N 1 (Lng N - 1) \<le> parent N 1 (parent N 1 (Lng N - 1) + s)"
+proof -
+  let ?j0 = "parent N 1 (Lng N - 1)"
+  have j0lt: "?j0 < ?j0 + s" using spos by simp
+  have leRb: "leR N 0 ?j0 (?j0 + s)" using le0b by (simp add: leR_def)
+  have "\<exists>j. ?j0 \<le> j \<and> j < ?j0 + s \<and> nextR N 1 j (?j0 + s)"
+    by (rule m_5_1_parent_exists_2[OF NT j0lt bL elt leRb])
+  then obtain j where jge: "?j0 \<le> j" and nr: "nextR N 1 j (?j0 + s)" by blast
+  have hp: "hasParent N 1 (?j0 + s)"
+    unfolding hasParent_def using nr nextR1_unique by blast
+  have parR: "nextR N 1 (parent N 1 (?j0 + s)) (?j0 + s)"
+    using hp unfolding hasParent_def parent_def by (rule theI')
+  have peq: "parent N 1 (?j0 + s) = j" by (rule nextR1_unique[OF parR nr])
+  show ?thesis using hp peq jge by simp
+qed
+
 end
