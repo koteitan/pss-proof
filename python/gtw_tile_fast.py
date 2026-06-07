@@ -99,20 +99,22 @@ def tiling_branch(M):
 
 def fmt(M): return "".join(f"({a},{b})" for (a, b) in M)
 
-def build_closure(seeds, ns, maxlen, maxe):
+def build_closure(seeds, ns, maxlen, maxe, cap=8000):
     seen = set(); closure = []; frontier = []
     def maxent(M): return max((max(a, b) for (a, b) in M), default=0)
     for s in seeds:
         k = tuple(s)
         if k not in seen and Lng(s) <= maxlen and maxent(s) <= maxe:
             seen.add(k); frontier.append(s); closure.append(s)
-    while frontier:
+    while frontier and len(closure) < cap:
         nxt = []
         for M in frontier:
             for n in ns:
                 N = oper(M, n); k = tuple(N)
                 if k not in seen and Lng(N) <= maxlen and maxent(N) <= maxe:
                     seen.add(k); nxt.append(N); closure.append(N)
+                    if len(closure) >= cap: break
+            if len(closure) >= cap: break
         frontier = nxt
     return closure
 

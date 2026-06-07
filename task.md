@@ -49,19 +49,11 @@
       - 🚨 系（$1$ 列ペア数列の基本性質）
     - 🚨 §6.7 標準形
       - ✅ 命題（標準形の階層和による表示）
-      - 🚨🤖 命題（標準形の簡約性）〔`m_6_7_standard_reduced`(ST_PS⊆RT_PS)、keystone spsy 経由 条件付green、残=scalar Ez。memory `pss-67-spsy`〕
-        - ✅ Q' を z 強帰納で証明〔`Qprime_via_tree`〕
-        - ✅ reach→le0 N z j1→scalar Ez 還元〔`reach_from_z_tail`/`le0_z_j1_from_Ez`/`m_6_7_tree_wellformed_via_Ez`〕
-        - ✅ 内部 row-1 parent readback 無条件〔`oper_parent1_readback`〕
-        - ✅ B(原文忠実)構築: 標準形簡約性=operCA/operCBのみに集約(原ルートm_6_7_standard_reducedと収束=強度超過なし)。shift⟸operCA wire完了〔`oper_nontile_eq_Pred`/`bf_shift_resid_via_operCAB`/`bf_m_6_7_standard_reduced_via_operCAB`/`bf_stdCA_via_operCAB`〕。軽残差(diag/predRdegen/anch)も全消化済。残=D(N)crux(has_gz⟹D, open core)のみ
-        - ✅ D(N)crux骨格(induct版)〔`m_6_7_oper_gstrict`: ST_PS.induct, IH=has_gz M⟹D M。D(N)=gatekeep+DISJ+fc_D_oper。w>1循環をIHで断つ〕
-        - 🚨 核1 gatekeep: has_gz(M[n])⟹M gated(i1=1)。非gated(Pred/i1=0)で¬has_gz(864/0)
-        - 🚨 核2 DISJ: gated M, has_gz(M[n])⟹has_gz(M)∨D(M)(621/0)。w>1部=WG; w=1部=has_gz(M[n])⟹D(M)
-          - ✅ WG反射コア〔`wg_reflect_core`: N側parent edge(同ブロック)→M側hasParent。緑interior readback+le0_base_back+m_5_1_parent_exists_2, 循環なし〕
-          - ✅ WG foundation〔`oper_parent1_prefix_agree`: w=1 prefix verbatim parent一致〕
-        - 🎯 core=TreeWF (row-1 tree inheritance, ST_PS不変条件)に集約。全還元(C1/le0base/C1valley/A/wrapper/D(N))がここに底打ち
-          - ✅ TreeWF骨格〔`m_6_7_treewf`: ST_PS.induct, diag base vacuous + `treewf_oper_step` residual。invariant検証 diag18/0 step1971/0。IHがreadbackのM側gate供給〕
-          - 🚨 `treewf_oper_step`: TreeWF(K)⟹TreeWF(K[n])。4ケース(Lng=1/Pred/i1=0/i1=1)×interior z readback。これがcore本体(数百行)
+      - 🚨🤖 命題（標準形の簡約性）〔`m_6_7_standard_reduced`(ST_PS⊆RT_PS)、operCA/operCB のみ残。memory `pss-67-hasgz-refuted`〕
+        - ✅ B(原文忠実)構築: 標準形簡約性=operCA/operCBのみに集約。shift⟸operCA wire完了〔`bf_m_6_7_standard_reduced_via_operCAB`/`bf_stdCA_via_operCAB`/`m_6_7_standard_RedCondAB`〕
+        - 🚨🚨 **has_gz⟹D / D(N) / GTWF / TreeWF / spsy 系は全面無効化**: has_gz⟹D は ST_PS で**偽**(reduced反例 `(0,0)(1,1)(2,2)(2,1)`, depth~9)。"broad closure N/0" は全て depth≤4 artifact。memory `pss-67-hasgz-refuted` 必読。死蔵 green: `m_6_7_oper_gstrict`/GTWF skeleton(条件付で偽定理ではないが残差が偽=無用)
+        - 🎯 正しい残差=**operCA**(N∈ST_PS reduced ∧ tiling ⟹ RedCondA(N[n])) + **operCB**(同⟹RedCondB(N[n]))。RedCondA=局所+1条件(D(N)の大域ramp は誤り)。仮説に RedCondA N∧RedCondB N を持つ局所→局所含意
+        - 💡 新角度: row-1 RedCondA(N[n]) は green `oper_parent1_readback`(interior)+周期row-1+RedCondA(N) で各edge +1 が従う見込み(prior失敗は偽target D(N)相手だった)。残: s=0境界/row-0 ramp/prefix。検証: python/redcond_deep_audit.py
       - ✅ 命題（標準形の単項成分が標準形であること）
       - ✅ 命題（標準形の始切片への遺伝性）
     - ✅ §6.8 降順性
