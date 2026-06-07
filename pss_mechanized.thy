@@ -60181,4 +60181,52 @@ next
   show ?case by (rule treewf_oper_step[OF KST n1 IH])
 qed
 
+text \<open>
+  The \<open>oper\<close> step of @{thm [source] m_6_7_treewf}, split on the \<open>oper\<close> branches:
+  \<^item> \<open>Lng K - 1 = 0\<close>: \<open>K[n] = K\<close>, so \<open>TreeWF (K[n]) = TreeWF K\<close> (the IH).  GREEN.
+  \<^item> degenerate (\<open>K\<^bsub>j\<^sub>1\<^esub> = (0,0)\<close> or no parent): \<open>K[n] = Pred K\<close>
+    (@{thm [source] oper_nontile_eq_Pred}); reduced to the residual @{text treewf_pred}.
+  \<^item> tiling (\<open>1 < Lng K\<close>, endpoint \<open>\<noteq> (0,0)\<close>, \<open>hasParent\<close>): reduced to the residual
+    @{text treewf_tile}, the main readback case (\<open>i\<^sub>1 = 0/1\<close>), where \<open>TreeWF K\<close> (the
+    IH) supplies the M-side gate that @{thm [source] oper_parent1_readback} needs.
+\<close>
+
+lemma treewf_oper_step:
+  assumes treewf_pred:
+      "\<And>K. \<lbrakk>K \<in> ST_PS; TreeWF K; 1 < Lng K;
+             entry K 0 (Lng K - 1) = 0 \<and> entry K 1 (Lng K - 1) = 0
+             \<or> \<not> hasParent K (idx1 K (Lng K - 1)) (Lng K - 1)\<rbrakk>
+            \<Longrightarrow> TreeWF (Pred K)"
+    and treewf_tile:
+      "\<And>K n. \<lbrakk>K \<in> ST_PS; TreeWF K; 1 < Lng K;
+              \<not> (entry K 0 (Lng K - 1) = 0 \<and> entry K 1 (Lng K - 1) = 0);
+              hasParent K (idx1 K (Lng K - 1)) (Lng K - 1); 1 \<le> n\<rbrakk>
+             \<Longrightarrow> TreeWF ((K::pairseq)[n])"
+    and KST: "K \<in> ST_PS" and n1: "1 \<le> n" and IH: "TreeWF K"
+  shows "TreeWF ((K::pairseq)[n])"
+proof (cases "Lng K - 1 = 0")
+  case True
+  have "(K::pairseq)[n] = K" using True by (simp add: oper_def Let_def)
+  thus ?thesis using IH by simp
+next
+  case False
+  hence L: "1 < Lng K" by linarith
+  show ?thesis
+  proof (cases "entry K 0 (Lng K - 1) = 0 \<and> entry K 1 (Lng K - 1) = 0
+                \<or> \<not> hasParent K (idx1 K (Lng K - 1)) (Lng K - 1)")
+    case True
+    have nontile: "Lng K - 1 = 0
+                   \<or> (entry K 0 (Lng K - 1) = 0 \<and> entry K 1 (Lng K - 1) = 0)
+                   \<or> \<not> hasParent K (idx1 K (Lng K - 1)) (Lng K - 1)"
+      using True by blast
+    have eq: "(K::pairseq)[n] = Pred K" by (rule oper_nontile_eq_Pred[OF nontile])
+    show ?thesis using treewf_pred[OF KST IH L True] eq by simp
+  next
+    case False
+    hence nz: "\<not> (entry K 0 (Lng K - 1) = 0 \<and> entry K 1 (Lng K - 1) = 0)"
+      and hp: "hasParent K (idx1 K (Lng K - 1)) (Lng K - 1)" by auto
+    show ?thesis by (rule treewf_tile[OF KST IH L nz hp n1])
+  qed
+qed
+
 end
