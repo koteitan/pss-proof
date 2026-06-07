@@ -53,7 +53,10 @@
         - ✅ B(原文忠実)構築: 標準形簡約性=operCA/operCBのみに集約。shift⟸operCA wire完了〔`bf_m_6_7_standard_reduced_via_operCAB`/`bf_stdCA_via_operCAB`/`m_6_7_standard_RedCondAB`〕
         - 🚨🚨 **has_gz⟹D / D(N) / GTWF / TreeWF / spsy 系は全面無効化**: has_gz⟹D は ST_PS で**偽**(reduced反例 `(0,0)(1,1)(2,2)(2,1)`, depth~9)。"broad closure N/0" は全て depth≤4 artifact。memory `pss-67-hasgz-refuted` 必読。死蔵 green: `m_6_7_oper_gstrict`/GTWF skeleton(条件付で偽定理ではないが残差が偽=無用)
         - 🎯 正しい残差=**operCA**(N∈ST_PS reduced ∧ tiling ⟹ RedCondA(N[n])) + **operCB**(同⟹RedCondB(N[n]))。RedCondA=局所+1条件(D(N)の大域ramp は誤り)。仮説に RedCondA N∧RedCondB N を持つ局所→局所含意
-        - 💡 新角度: row-1 RedCondA(N[n]) は green `oper_parent1_readback`(interior)+周期row-1+RedCondA(N) で各edge +1 が従う見込み(prior失敗は偽target D(N)相手だった)。残: s=0境界/row-0 ramp/prefix。検証: python/redcond_deep_audit.py
+        - 💡 row-1 RedCondA(N[n]): prefix+interior(s>0)は green readback、block-start(s=0)は boundary readback の valley 残差
+        - 🎯🎯 boundary valley を**2 cross-level le0 反映補題**に clean 帰着(GTWF/D(N)不使用, non-circular): **H1**(block, `le0(N[n])(j0+q'w+s')(j0+qw) ⟺ le0 M(j0+s') j1`, 19740/0)→`nextrel1 M j0 j1` valley→entry M1(j0+s')≥entry M1 j1>entry M1 j0; **H2**(prefix, `le0(N[n]) j' (j0+qw) ⟺ le0 M j' j0`, 5210/0)→`nextrel1 M pj j0` valley→entry M1 j'≥entry M1 j0。検証: python/valley_fast.py(fast_pss, depth-17 robust)
+        - 🚀 高速経験ツール `python/fast_pss.py`(bitset le0, ~470x@L24)で深検証可能に。memory `pss-67-hasgz-refuted`
+        - 🚨 残=**H1⟹/H2⟹ の Isabelle 化**(cross-block le0 backward 反映)。template=`oper_d1pos_le0_base_back`(52606, same-block版)、素材=`oper_d1pos_le0_start_to_any`/`_blockstarts`/`_confined`。既存 operCA 機構(`operCA_tiling_within1_cond` 52716, RedCondA(N[n]) row-1 を bcorr brick まで還元済)とも合流
       - ✅ 命題（標準形の単項成分が標準形であること）
       - ✅ 命題（標準形の始切片への遺伝性）
     - ✅ §6.8 降順性
