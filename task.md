@@ -58,7 +58,8 @@
         - 🚀 高速経験ツール `python/fast_pss.py`(bitset le0, ~470x@L24)で深検証可能に。memory `pss-67-hasgz-refuted`
         - ✅ **H1/H2 + boundary valley + uncond readback GREEN(HEAD 4f48378)**: §6.7 core(~10 workflow を阻んだ cross-block boundary valley)を**非循環で証明完了**。`oper_d1pos_le0_cross_back`(H1, mechanized)/`oper_d1pos_le0_prefix_back`(H2)/`oper_boundary_valley`/`oper_parent1_readback_boundary_uncond`(pss_wip)。block-start row-1 親= pj 無条件確定。GTWF/D(N)/row-1 tree 不使用
         - ✅ **operCA = hpMs + gate に集約 GREEN(HEAD 8167ab3)**: `operCA_via_gate_hpMs`(operCA_tiling_cond + row0 green + within1[block-start `operCA_block_start_row1` / interior `operCA_interior_row1`])。RedCondA(N[n]) は2つの ST_PS 構造的事実のみに依存
-        - 🚨 残2(operCA): **gate**(N∈ST_PS, interior u, hasParent N1 u ⟹ parent N1 u≥j0=parent N1 j1。ST_PS不変条件 9840/0、局所偽 72CE ゆえ ST_PS.induct要。最終ノード依存で induction が awkward)+ **hpMs**(N[n]の block 列が親持⟹base 親持、reflection 15732/0)。+ **operCB**(RedCondB(N[n]), 未分解)→ `m_6_7_standard_reduced` 無条件
+        - 🚧 **gate skeleton green**(`gate_ST_PS`, HEAD 4375c80): diag base 証明済(vacuous, treewf_diag 流用)+ Lng=1 oper=IH。**tiling oper step=sorry**(残)
+        - 🚨 残=**gate∧hpMs 結合 ST_PS.induct**(相互依存, RedCondA 使用不可=循環)。interior 親 same-block(reduced 23920/0, 非reduced 偽4945CE=ST_PS依存)→ hpMs は `wg_reflect_core`(green)で同 block 反射、gate は readback-comparison。両者を1 induction で同時に。+ **operCB**(RedCondB(N[n]), 未分解)→ `m_6_7_standard_reduced` 無条件。memory `pss-67-hasgz-refuted` 末尾に設計
       - ✅ 命題（標準形の単項成分が標準形であること）
       - ✅ 命題（標準形の始切片への遺伝性）
     - ✅ §6.8 降順性
