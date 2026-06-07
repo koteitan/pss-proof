@@ -231,4 +231,43 @@ lemma oper_parent1_readback_boundary_uncond:
   by (rule oper_parent1_readback_boundary[OF L notzero hp i1z j0lt qn hpMj0 pjlt
         oper_boundary_valley[OF L notzero hp i1z j0lt hpMj0 qn]])
 
+text \<open>§6.7 operCA BLOCK-START row-1 \<open>+1\<close>: for a block start \<open>z = j\<^sub>0+q\<cdot>w\<close> of \<open>N[n]\<close>
+  whose fixed prefix parent \<open>p\<^sub>j = parent N 1 j\<^sub>0\<close> exists, RedCondA holds:
+  \<open>entry (N[n]) 1 (parent (N[n]) 1 z) + 1 = entry (N[n]) 1 z\<close>.  The parent is \<open>p\<^sub>j\<close>
+  (@{thm [source] oper_parent1_readback_boundary_uncond}); \<open>entry (N[n]) 1 p\<^sub>j =
+  entry N 1 p\<^sub>j\<close> (verbatim prefix), \<open>entry (N[n]) 1 z = entry N 1 j\<^sub>0\<close> (periodic), and
+  \<open>entry N 1 p\<^sub>j + 1 = entry N 1 j\<^sub>0\<close> is \<open>RedCondA N\<close> at \<open>j\<^sub>0\<close>.\<close>
+
+lemma operCA_block_start_row1:
+  fixes N :: pairseq
+  assumes L: "1 < Lng N"
+    and notzero: "\<not> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0)"
+    and hp: "hasParent N (idx1 N (Lng N - 1)) (Lng N - 1)"
+    and i1z: "idx1 N (Lng N - 1) = 1"
+    and j0lt: "parent N 1 (Lng N - 1) < Lng N - 1"
+    and qn: "q < n"
+    and hpMj0: "hasParent N 1 (parent N 1 (Lng N - 1))"
+    and pjlt: "parent N 1 (parent N 1 (Lng N - 1)) < parent N 1 (Lng N - 1)"
+    and condA: "RedCondA N"
+  shows "entry ((N::pairseq)[n]) 1
+            (parent ((N::pairseq)[n]) 1
+               (parent N 1 (Lng N - 1) + q * (Lng N - 1 - parent N 1 (Lng N - 1)))) + 1
+       = entry ((N::pairseq)[n]) 1
+            (parent N 1 (Lng N - 1) + q * (Lng N - 1 - parent N 1 (Lng N - 1)))"
+proof -
+  let ?j1 = "Lng N - 1"  let ?j0 = "parent N 1 ?j1"  let ?w = "?j1 - ?j0"
+  let ?Mn = "(N::pairseq)[n]"  let ?z = "?j0 + q * ?w"  let ?pj = "parent N 1 ?j0"
+  have w0: "0 < ?w" using j0lt by linarith
+  have pz: "parent ?Mn 1 ?z = ?pj"
+    by (rule oper_parent1_readback_boundary_uncond[OF L notzero hp i1z j0lt qn hpMj0 pjlt])
+  have ez: "entry ?Mn 1 ?z = entry N 1 ?j0"
+    using oper_d1pos_entry1[OF L notzero hp i1z j0lt qn w0] by simp
+  have pjpre: "?pj < parent N (idx1 N (Lng N - 1)) (Lng N - 1)" using pjlt i1z by simp
+  have epj: "entry ?Mn 1 ?pj = entry N 1 ?pj"
+    by (rule operB_gen_entry_prefix[OF L notzero hp pjpre])
+  have rca: "entry N 1 ?pj + 1 = entry N 1 ?j0"
+    using condA hpMj0 unfolding RedCondA_def by blast
+  show ?thesis using pz ez epj rca by simp
+qed
+
 end
