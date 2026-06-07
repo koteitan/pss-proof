@@ -270,4 +270,59 @@ proof -
   show ?thesis using pz ez epj rca by simp
 qed
 
+text \<open>§6.7 operCA INTERIOR row-1 \<open>+1\<close>: for an interior column \<open>x = j\<^sub>0+q\<cdot>w+s\<close>
+  (\<open>0<s<w\<close>) of \<open>N[n]\<close> whose base \<open>j\<^sub>0+s\<close> has a row-1 parent in \<open>N\<close> landing
+  \<open>\<ge> j\<^sub>0\<close> (the gate), RedCondA holds.  The parent is \<open>parent N 1 (j\<^sub>0+s) + q\<cdot>w\<close>
+  (@{thm [source] oper_parent1_readback}); periodic row-1 (@{thm [source]
+  oper_d1pos_entry1}) at both \<open>x\<close> and the parent reduces to \<open>RedCondA N\<close> at \<open>j\<^sub>0+s\<close>.\<close>
+
+lemma operCA_interior_row1:
+  fixes N :: pairseq
+  assumes L: "1 < Lng N"
+    and notzero: "\<not> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0)"
+    and hp: "hasParent N (idx1 N (Lng N - 1)) (Lng N - 1)"
+    and i1z: "idx1 N (Lng N - 1) = 1"
+    and j0lt: "parent N 1 (Lng N - 1) < Lng N - 1"
+    and condA: "RedCondA N"
+    and qn: "q < n"
+    and spos: "0 < s"
+    and sw: "s < Lng N - 1 - parent N 1 (Lng N - 1)"
+    and hpMs: "hasParent N 1 (parent N 1 (Lng N - 1) + s)"
+    and pMge: "parent N 1 (parent N 1 (Lng N - 1) + s) \<ge> parent N 1 (Lng N - 1)"
+  shows "entry ((N::pairseq)[n]) 1
+            (parent ((N::pairseq)[n]) 1
+               (parent N 1 (Lng N - 1) + q * (Lng N - 1 - parent N 1 (Lng N - 1)) + s)) + 1
+       = entry ((N::pairseq)[n]) 1
+            (parent N 1 (Lng N - 1) + q * (Lng N - 1 - parent N 1 (Lng N - 1)) + s)"
+proof -
+  let ?j1 = "Lng N - 1"  let ?j0 = "parent N 1 ?j1"  let ?w = "?j1 - ?j0"
+  let ?Mn = "(N::pairseq)[n]"  let ?x = "?j0 + q * ?w + s"
+  let ?sp = "parent N 1 (?j0 + s) - ?j0"
+  have w0: "0 < ?w" using j0lt by linarith
+  have pread: "parent ?Mn 1 ?x = parent N 1 (?j0 + s) + q * ?w"
+    by (rule oper_parent1_readback[OF L notzero hp i1z j0lt qn spos sw hpMs pMge])
+  have ex: "entry ?Mn 1 ?x = entry N 1 (?j0 + s)"
+    by (rule oper_d1pos_entry1[OF L notzero hp i1z j0lt qn sw])
+  have parRb: "nextR N 1 (parent N 1 (?j0 + s)) (?j0 + s)"
+    using hpMs unfolding hasParent_def parent_def by (rule theI')
+  have plt_b: "parent N 1 (?j0 + s) < ?j0 + s" using parRb by (simp add: nextR_def nextrel1_def)
+  have psp: "parent N 1 (?j0 + s) = ?j0 + ?sp" using pMge by simp
+  have spw: "?sp < ?w" using plt_b sw psp by linarith
+  have eparent: "entry ?Mn 1 (?j0 + q * ?w + ?sp) = entry N 1 (?j0 + ?sp)"
+    by (rule oper_d1pos_entry1[OF L notzero hp i1z j0lt qn spw])
+  have rca: "entry N 1 (parent N 1 (?j0 + s)) + 1 = entry N 1 (?j0 + s)"
+    using condA hpMs unfolding RedCondA_def by blast
+  have e1: "parent ?Mn 1 ?x = ?j0 + q * ?w + ?sp"
+    using pread psp by (simp add: ac_simps)
+  have lhs: "entry ?Mn 1 (parent ?Mn 1 ?x) = entry N 1 (parent N 1 (?j0 + s))"
+  proof -
+    have "entry ?Mn 1 (parent ?Mn 1 ?x) = entry ?Mn 1 (?j0 + q * ?w + ?sp)"
+      using e1 by simp
+    also have "\<dots> = entry N 1 (?j0 + ?sp)" using eparent .
+    also have "\<dots> = entry N 1 (parent N 1 (?j0 + s))" using psp by simp
+    finally show ?thesis .
+  qed
+  show ?thesis using lhs rca ex by simp
+qed
+
 end
