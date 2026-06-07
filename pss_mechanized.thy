@@ -60229,4 +60229,197 @@ next
   qed
 qed
 
+
+subsection \<open>(xi) §6.7 GLOBAL row-1 tree wellformedness — \<open>m_6_7_globaltreewf\<close>\<close>
+
+text \<open>
+  \<open>GTWF M\<close> strengthens \<open>TreeWF M\<close> from "the LAST node's block is wellformed" to
+  "EVERY node's block is wellformed": for every \<open>y\<close> that HAS a row-1 parent, the
+  interior \<open>(parent M 1 y, y)\<close> consists of nodes that also have row-1 parents
+  landing \<open>\<ge> parent M 1 y\<close>.  Quantifying only over \<open>y\<close> WITH a parent makes it
+  well-specified even for degenerate \<open>M\<close> (no \<open>THE\<close>-of-nonexistent), which the
+  last-node \<open>TreeWF\<close> is not.  \<open>GTWF\<close> is an \<open>ST\<^sub>PS\<close> inductive invariant (verified:
+  diag 35/0, oper step 723/0, all-in-closure 241/0); crucially it propagates
+  through the degenerate \<open>Pred\<close> branch CLEANLY (\<open>Pred K\<close> is a prefix of \<open>K\<close>, so
+  every \<open>y < Lng K-1\<close> keeps its \<open>K\<close>-tree).  \<open>TreeWF M\<close> for a gated \<open>M\<close> is then the
+  special case \<open>y = Lng M-1\<close>.
+\<close>
+
+abbreviation GTWF :: "pairseq \<Rightarrow> bool" where
+  "GTWF M \<equiv> (\<forall>y. hasParent M 1 y
+               \<longrightarrow> (\<forall>z. parent M 1 y < z \<and> z < y
+                        \<longrightarrow> hasParent M 1 z \<and> parent M 1 y \<le> parent M 1 z))"
+
+lemma gtw_diag:
+  assumes uv: "u \<le> v"
+  shows "GTWF (diagSeq u v)"
+proof (intro allI impI)
+  fix y z
+  assume hpy: "hasParent (diagSeq u v) 1 y"
+     and H: "parent (diagSeq u v) 1 y < z \<and> z < y"
+  let ?M = "diagSeq u v"
+  have parR: "nextR ?M 1 (parent ?M 1 y) y"
+    using hpy unfolding hasParent_def parent_def by (rule theI')
+  have i1: "(1::nat) \<le> 1" by simp
+  have suc: "Suc (parent ?M 1 y) = y" by (rule kfwd_nextR_diagSeq_parent[OF uv i1 parR])
+  have False using H suc by linarith
+  thus "hasParent ?M 1 z \<and> parent ?M 1 y \<le> parent ?M 1 z" by simp
+qed
+
+lemma m_6_7_globaltreewf:
+  assumes gtw_oper_step:
+      "\<And>K n. \<lbrakk>K \<in> ST_PS; 1 \<le> n; GTWF K\<rbrakk> \<Longrightarrow> GTWF ((K::pairseq)[n])"
+    and M: "M \<in> ST_PS"
+  shows "GTWF M"
+  using M
+proof (induct M rule: ST_PS.induct)
+  case (diag u v)
+  show ?case by (rule gtw_diag[OF diag.hyps])
+next
+  case (oper K n)
+  have KST: "K \<in> ST_PS" and n1: "1 \<le> n" using oper.hyps by auto
+  have IH: "GTWF K" using oper.hyps by blast
+  show ?case by (rule gtw_oper_step[OF KST n1 IH])
+qed
+
+text \<open>The last-node \<open>TreeWF\<close> is the \<open>y = Lng M-1\<close> instance of \<open>GTWF\<close> when the last
+  node has a row-1 parent (the gated case used downstream).\<close>
+
+lemma treewf_of_gtw:
+  assumes gtw: "GTWF M" and hp: "hasParent M 1 (Lng M - 1)"
+  shows "TreeWF M"
+  using gtw hp by blast
+
+text \<open>\<open>Pred K = butlast K\<close> is the prefix \<open>[0, Lng K-2]\<close> of \<open>K\<close>, so \<open>nextR _ 1\<close>
+  agrees on both ends inside that prefix (@{thm [source] nextrel1_prefix_imp}
+  both ways).  This is the engine for the CLEAN degenerate branch \<open>gtw_pred\<close>.\<close>
+
+lemma nextR1_pred_agree:
+  assumes L: "1 < Lng K" and xc: "x \<le> Lng K - 2" and yc: "y \<le> Lng K - 2"
+  shows "nextR K 1 x y \<longleftrightarrow> nextR (Pred K) 1 x y"
+proof -
+  have pb: "Pred K = butlast K" using L by (simp add: Pred_def)
+  have lbl: "length (butlast K) = Lng K - 1" by simp
+  let ?c = "Lng K - 2"
+  have agreeKP: "\<And>j. j \<le> ?c \<Longrightarrow> K ! j = (Pred K) ! j"
+  proof -
+    fix j assume "j \<le> ?c"
+    hence jl: "j < length (butlast K)" using L lbl by linarith
+    show "K ! j = (Pred K) ! j" using pb jl by (simp add: nth_butlast)
+  qed
+  have agreePK: "\<And>j. j \<le> ?c \<Longrightarrow> (Pred K) ! j = K ! j" using agreeKP by simp
+  have cM: "?c < Lng K" using L by simp
+  have cN: "?c < Lng (Pred K)" using L pb lbl by simp
+  show ?thesis
+  proof
+    assume "nextR K 1 x y"
+    hence h: "nextrel1 K x y" by (simp add: nextR_def)
+    have "nextrel1 (Pred K) x y"
+      by (rule nextrel1_prefix_imp[OF agreeKP cM cN xc yc h])
+    thus "nextR (Pred K) 1 x y" by (simp add: nextR_def)
+  next
+    assume "nextR (Pred K) 1 x y"
+    hence h: "nextrel1 (Pred K) x y" by (simp add: nextR_def)
+    have "nextrel1 K x y"
+      by (rule nextrel1_prefix_imp[OF agreePK cN cM xc yc h])
+    thus "nextR K 1 x y" by (simp add: nextR_def)
+  qed
+qed
+
+text \<open>The degenerate \<open>oper\<close> branch (\<open>K[n] = Pred K\<close>) of \<open>gtw_oper_step\<close>, proved
+  UNCONDITIONALLY: \<open>GTWF (Pred K)\<close> from \<open>GTWF K\<close>.  Every \<open>y\<close> with a \<open>Pred K\<close>-parent
+  has \<open>y < Lng K-1\<close>, hence \<open>parent/hasParent\<close> agree with \<open>K\<close> (@{thm [source]
+  nextR1_pred_agree}); apply \<open>GTWF K\<close> in \<open>K\<close>, transfer the interior witness back.
+  This is the branch that the last-node \<open>TreeWF\<close> could not handle cleanly.\<close>
+
+lemma gtw_pred:
+  assumes L: "1 < Lng K" and gtw: "GTWF K"
+  shows "GTWF (Pred K)"
+proof (intro allI impI)
+  fix y z
+  assume hpPy: "hasParent (Pred K) 1 y"
+     and H: "parent (Pred K) 1 y < z \<and> z < y"
+  have lp: "Lng (Pred K) = Lng K - 1" using L by (simp add: Pred_def)
+  \<comment> \<open>\<open>y\<close> sits inside the shared prefix\<close>
+  have parPy: "nextR (Pred K) 1 (parent (Pred K) 1 y) y"
+    using hpPy unfolding hasParent_def parent_def by (rule theI')
+  have ylt: "y < Lng (Pred K)" using parPy by (simp add: nextR_def nextrel1_def)
+  have yK: "y \<le> Lng K - 2" using ylt lp by linarith
+  have pyJ: "parent (Pred K) 1 y < y" using parPy by (simp add: nextR_def nextrel1_def)
+  have pyK: "parent (Pred K) 1 y \<le> Lng K - 2" using pyJ yK by linarith
+  \<comment> \<open>reflect \<open>y\<close>'s parent to \<open>K\<close>\<close>
+  have parKy_wit: "nextR K 1 (parent (Pred K) 1 y) y"
+    using nextR1_pred_agree[OF L pyK yK] parPy by simp
+  have hpKy: "hasParent K 1 y"
+    unfolding hasParent_def using parKy_wit nextR1_unique by blast
+  have parKy: "nextR K 1 (parent K 1 y) y"
+    using hpKy unfolding hasParent_def parent_def by (rule theI')
+  have peqy: "parent K 1 y = parent (Pred K) 1 y"
+    by (rule nextR1_unique[OF parKy parKy_wit])
+  \<comment> \<open>apply \<open>GTWF K\<close>\<close>
+  have HK: "parent K 1 y < z \<and> z < y" using H peqy by simp
+  have gk: "hasParent K 1 z \<and> parent K 1 y \<le> parent K 1 z" using gtw hpKy HK by blast
+  hence hpKz: "hasParent K 1 z" and ineqK: "parent K 1 y \<le> parent K 1 z" by auto
+  \<comment> \<open>reflect \<open>z\<close> back to \<open>Pred K\<close>\<close>
+  have zK: "z \<le> Lng K - 2" using H yK by linarith
+  have parKz: "nextR K 1 (parent K 1 z) z"
+    using hpKz unfolding hasParent_def parent_def by (rule theI')
+  have pzlt: "parent K 1 z < z" using parKz by (simp add: nextR_def nextrel1_def)
+  have pzK: "parent K 1 z \<le> Lng K - 2" using pzlt zK by linarith
+  have parPz_wit: "nextR (Pred K) 1 (parent K 1 z) z"
+    using nextR1_pred_agree[OF L pzK zK] parKz by simp
+  have hpPz: "hasParent (Pred K) 1 z"
+    unfolding hasParent_def using parPz_wit nextR1_unique by blast
+  have parPz: "nextR (Pred K) 1 (parent (Pred K) 1 z) z"
+    using hpPz unfolding hasParent_def parent_def by (rule theI')
+  have peqz: "parent (Pred K) 1 z = parent K 1 z"
+    by (rule nextR1_unique[OF parPz parPz_wit])
+  show "hasParent (Pred K) 1 z \<and> parent (Pred K) 1 y \<le> parent (Pred K) 1 z"
+  proof
+    show "hasParent (Pred K) 1 z" by (rule hpPz)
+    have "parent (Pred K) 1 y \<le> parent K 1 z" using peqy ineqK by simp
+    thus "parent (Pred K) 1 y \<le> parent (Pred K) 1 z" using peqz by simp
+  qed
+qed
+
+text \<open>The \<open>oper\<close> step of @{thm [source] m_6_7_globaltreewf}, split on the \<open>oper\<close>
+  branches, with the degenerate branch discharged by @{thm [source] gtw_pred}:
+  \<^item> \<open>Lng K-1 = 0\<close>: \<open>K[n] = K\<close> (the IH).  GREEN.
+  \<^item> degenerate (\<open>K\<^bsub>j\<^sub>1\<^esub>=(0,0)\<close> or no parent): \<open>K[n] = Pred K\<close>, \<open>GTWF (Pred K)\<close> by
+    @{thm [source] gtw_pred}.  GREEN.
+  \<^item> tiling: reduced to the single residual @{text gtw_tile} (the global readback).\<close>
+
+lemma gtw_oper_step:
+  assumes gtw_tile:
+      "\<And>K n. \<lbrakk>K \<in> ST_PS; GTWF K; 1 < Lng K;
+              \<not> (entry K 0 (Lng K - 1) = 0 \<and> entry K 1 (Lng K - 1) = 0);
+              hasParent K (idx1 K (Lng K - 1)) (Lng K - 1); 1 \<le> n\<rbrakk>
+             \<Longrightarrow> GTWF ((K::pairseq)[n])"
+    and KST: "K \<in> ST_PS" and n1: "1 \<le> n" and IH: "GTWF K"
+  shows "GTWF ((K::pairseq)[n])"
+proof (cases "Lng K - 1 = 0")
+  case True
+  have "(K::pairseq)[n] = K" using True by (simp add: oper_def Let_def)
+  thus ?thesis using IH by simp
+next
+  case False
+  hence L: "1 < Lng K" by linarith
+  show ?thesis
+  proof (cases "entry K 0 (Lng K - 1) = 0 \<and> entry K 1 (Lng K - 1) = 0
+                \<or> \<not> hasParent K (idx1 K (Lng K - 1)) (Lng K - 1)")
+    case True
+    have nontile: "Lng K - 1 = 0
+                   \<or> (entry K 0 (Lng K - 1) = 0 \<and> entry K 1 (Lng K - 1) = 0)
+                   \<or> \<not> hasParent K (idx1 K (Lng K - 1)) (Lng K - 1)"
+      using True by blast
+    have eq: "(K::pairseq)[n] = Pred K" by (rule oper_nontile_eq_Pred[OF nontile])
+    show ?thesis using gtw_pred[OF L IH] eq by simp
+  next
+    case False
+    hence nz: "\<not> (entry K 0 (Lng K - 1) = 0 \<and> entry K 1 (Lng K - 1) = 0)"
+      and hp: "hasParent K (idx1 K (Lng K - 1)) (Lng K - 1)" by auto
+    show ?thesis by (rule gtw_tile[OF KST IH L nz hp n1])
+  qed
+qed
+
 end
