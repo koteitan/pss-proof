@@ -60047,4 +60047,76 @@ proof -
   thus ?thesis using hpzp by simp
 qed
 
+
+subsection \<open>(ix) §6.7 \<open>DISJ\<close> \<open>w = 1\<close> foundation — verbatim prefix parent agreement\<close>
+
+text \<open>
+  In the tiling \<open>M[n]\<close> the prefix \<open>[0, j\<^sub>0)\<close> (\<open>j\<^sub>0 = parent M (idx\<^sub>1) (Lng M-1)\<close>)
+  is a VERBATIM copy of \<open>M\<close> (@{thm [source] oper_gen_nth_prefix}).  For a prefix
+  column \<open>z < j\<^sub>0\<close> the whole row-1 parent structure is determined inside that
+  agreement region — its \<open>le0\<close>-predecessors all sit at index \<open>\<le> z < j\<^sub>0\<close> — so
+  \<open>hasParent\<close> and \<open>parent\<close> at \<open>z\<close> COINCIDE between \<open>M[n]\<close> and \<open>M\<close>
+  (@{thm [source] nextrel1_prefix_imp} both ways).  This is the foundation of the
+  \<open>w = 1\<close> branch of \<open>disj\<close>, where every gated \<open>z\<close> of \<open>M[n]\<close> lies in this prefix
+  (verified 774/0, tail 0).  GREEN, no tiling-tail row-1 locality.
+\<close>
+
+lemma oper_parent1_prefix_agree:
+  fixes M :: pairseq and n z :: nat
+  assumes L: "1 < Lng M"
+    and notzero: "\<not> (entry M 0 (Lng M - 1) = 0 \<and> entry M 1 (Lng M - 1) = 0)"
+    and hp: "hasParent M (idx1 M (Lng M - 1)) (Lng M - 1)"
+    and j0lt: "parent M (idx1 M (Lng M - 1)) (Lng M - 1) < Lng M - 1"
+    and zlt: "z < parent M (idx1 M (Lng M - 1)) (Lng M - 1)"
+    and zL: "z < Lng ((M::pairseq)[n])"
+  shows "hasParent ((M::pairseq)[n]) 1 z = hasParent M 1 z
+         \<and> parent ((M::pairseq)[n]) 1 z = parent M 1 z"
+proof -
+  let ?j0 = "parent M (idx1 M (Lng M - 1)) (Lng M - 1)"
+  let ?Mn = "(M::pairseq)[n]"
+  have zLM: "z < Lng M" using zlt j0lt by linarith
+  have agree: "\<And>j. j \<le> z \<Longrightarrow> M ! j = ?Mn ! j"
+  proof -
+    fix j assume jz: "j \<le> z"
+    have "j < ?j0" using jz zlt by linarith
+    thus "M ! j = ?Mn ! j"
+      using oper_gen_nth_prefix[OF L notzero hp, of j n] by simp
+  qed
+  have agreeS: "\<And>j. j \<le> z \<Longrightarrow> ?Mn ! j = M ! j" using agree by simp
+  have nx_iff: "\<And>j0. nextR ?Mn 1 j0 z = nextR M 1 j0 z"
+  proof -
+    fix j0
+    show "nextR ?Mn 1 j0 z = nextR M 1 j0 z"
+    proof (cases "j0 \<le> z")
+      case True
+      have jz: "j0 \<le> z" by (rule True)
+      show ?thesis
+      proof
+        assume "nextR ?Mn 1 j0 z"
+        hence nr: "nextrel1 ?Mn j0 z" by (simp add: nextR_def)
+        have "nextrel1 M j0 z"
+          by (rule nextrel1_prefix_imp[OF agreeS zL zLM jz order.refl nr])
+        thus "nextR M 1 j0 z" by (simp add: nextR_def)
+      next
+        assume "nextR M 1 j0 z"
+        hence nr: "nextrel1 M j0 z" by (simp add: nextR_def)
+        have "nextrel1 ?Mn j0 z"
+          by (rule nextrel1_prefix_imp[OF agree zLM zL jz order.refl nr])
+        thus "nextR ?Mn 1 j0 z" by (simp add: nextR_def)
+      qed
+    next
+      case False
+      hence zj0: "z < j0" by simp
+      have "\<not> nextR ?Mn 1 j0 z" using zj0 by (auto simp: nextR_def nextrel1_def)
+      moreover have "\<not> nextR M 1 j0 z" using zj0 by (auto simp: nextR_def nextrel1_def)
+      ultimately show ?thesis by simp
+    qed
+  qed
+  have hpiff: "hasParent ?Mn 1 z = hasParent M 1 z"
+    unfolding hasParent_def using nx_iff by simp
+  have pariff: "parent ?Mn 1 z = parent M 1 z"
+    unfolding parent_def using nx_iff by simp
+  show ?thesis using hpiff pariff by blast
+qed
+
 end
