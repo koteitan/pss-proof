@@ -455,11 +455,54 @@ proof (induction "Lng N" arbitrary: N rule: less_induct)
     qed
   next
     case (oper M m)
-    \<comment> \<open>N = M[m], M in ST_PS, 1<=m.  IH (less.hyps) gives gate for shorter ST_PS
-       sequences, in particular gate(M) and gate(Pred M).  Tiling oper step: the
-       readback-comparison residual (design in memory pss-67-hasgz-refuted).\<close>
+    \<comment> \<open>N = M[m], M in ST_PS, 1<=m.  Superseded by cGTWF_ST_PS below (Pred-stable
+       all-k invariant): the gate is its k = Lng N-1 instance.\<close>
     show ?thesis sorry
   qed
+qed
+
+text \<open>cGTWF (conditional global tree wellformedness): for EVERY node k with a
+  row-1 parent, the parents of nodes in the open interval (parent k, k) (that
+  HAVE parents) land >= parent k -- i.e. the row-1 parent intervals are laminar
+  (non-crossing).  This is the TRUE, Pred-stable refinement of the (false) GTWF
+  (which wrongly required EXISTENCE of parents for ALL interior nodes).  It is an
+  ST_PS invariant (false for general sequences, e.g. (0,0)(1,1)(2,1)(2,2); deep
+  closure 18297/0), and being all-k it is preserved by Pred -- which resolves the
+  last-node-bound non-monotonicity that blocked the gate's measure induction.
+  The gate is the k = Lng N - 1 instance.  diag base vacuous (immediate-pred
+  parents); the oper step is the (true, hence provable) readback residual.\<close>
+
+abbreviation cGTWF :: "pairseq \<Rightarrow> bool" where
+  "cGTWF M \<equiv> (\<forall>k. hasParent M 1 k
+                 \<longrightarrow> (\<forall>u. parent M 1 k < u \<and> u < k \<and> hasParent M 1 u
+                          \<longrightarrow> parent M 1 k \<le> parent M 1 u))"
+
+lemma cGTWF_ST_PS:
+  assumes "N \<in> ST_PS"
+  shows "cGTWF N"
+  using assms
+proof (induct N rule: ST_PS.induct)
+  case (diag a b)
+  have uv: "a \<le> b" by (rule diag.hyps)
+  show ?case
+  proof (intro allI impI)
+    fix k u
+    let ?M = "diagSeq a b"
+    assume hpk: "hasParent ?M 1 k"
+       and H: "parent ?M 1 k < u \<and> u < k \<and> hasParent ?M 1 u"
+    have parR: "nextR ?M 1 (parent ?M 1 k) k"
+      using hpk unfolding hasParent_def parent_def by (rule theI')
+    have i1: "(1::nat) \<le> 1" by simp
+    have suc: "Suc (parent ?M 1 k) = k" by (rule kfwd_nextR_diagSeq_parent[OF uv i1 parR])
+    have False using H suc by linarith
+    thus "parent ?M 1 k \<le> parent ?M 1 u" by simp
+  qed
+next
+  case (oper M n)
+  \<comment> \<open>cGTWF(M[n]) from cGTWF(M) (oper.hyps).  TRUE target (cGTWF holds on all
+     ST_PS), so the readback oper step IS provable (unlike the false GTWF's
+     gtw_tile).  Design in memory pss-67-hasgz-refuted.\<close>
+  show ?case sorry
 qed
 
 text \<open>From the single scalar fact entry N1 j0 < entry N1(j0+s) (plus le0 N j0
