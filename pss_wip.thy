@@ -209,4 +209,26 @@ proof -
   qed
 qed
 
+text \<open>§6.7 oper-tiling BLOCK-START row-1 parent readback, UNCONDITIONAL: the
+  row-1 parent of a block start \<open>j\<^sub>0+q\<cdot>w\<close> of \<open>N[n]\<close> is the fixed prefix node
+  \<open>p\<^sub>j = parent N 1 j\<^sub>0\<close>, INDEPENDENT of the block \<open>q\<close>.  The valley residual of
+  @{thm [source] oper_parent1_readback_boundary} is now discharged by
+  @{thm [source] oper_boundary_valley}.\<close>
+
+lemma oper_parent1_readback_boundary_uncond:
+  fixes N :: pairseq
+  assumes L: "1 < Lng N"
+    and notzero: "\<not> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0)"
+    and hp: "hasParent N (idx1 N (Lng N - 1)) (Lng N - 1)"
+    and i1z: "idx1 N (Lng N - 1) = 1"
+    and j0lt: "parent N 1 (Lng N - 1) < Lng N - 1"
+    and qn: "q < n"
+    and hpMj0: "hasParent N 1 (parent N 1 (Lng N - 1))"
+    and pjlt: "parent N 1 (parent N 1 (Lng N - 1)) < parent N 1 (Lng N - 1)"
+  shows "parent ((N::pairseq)[n]) 1
+            (parent N 1 (Lng N - 1) + q * (Lng N - 1 - parent N 1 (Lng N - 1)))
+       = parent N 1 (parent N 1 (Lng N - 1))"
+  by (rule oper_parent1_readback_boundary[OF L notzero hp i1z j0lt qn hpMj0 pjlt
+        oper_boundary_valley[OF L notzero hp i1z j0lt hpMj0 qn]])
+
 end
