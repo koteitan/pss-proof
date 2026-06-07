@@ -57,7 +57,8 @@
         - 🎯🎯 boundary valley を**2 cross-level le0 反映補題**に clean 帰着(GTWF/D(N)不使用, non-circular): **H1**(block, `le0(N[n])(j0+q'w+s')(j0+qw) ⟺ le0 M(j0+s') j1`, 19740/0)→`nextrel1 M j0 j1` valley→entry M1(j0+s')≥entry M1 j1>entry M1 j0; **H2**(prefix, `le0(N[n]) j' (j0+qw) ⟺ le0 M j' j0`, 5210/0)→`nextrel1 M pj j0` valley→entry M1 j'≥entry M1 j0。検証: python/valley_fast.py(fast_pss, depth-17 robust)
         - 🚀 高速経験ツール `python/fast_pss.py`(bitset le0, ~470x@L24)で深検証可能に。memory `pss-67-hasgz-refuted`
         - ✅ **H1/H2 + boundary valley + uncond readback GREEN(HEAD 4f48378)**: §6.7 core(~10 workflow を阻んだ cross-block boundary valley)を**非循環で証明完了**。`oper_d1pos_le0_cross_back`(H1, mechanized)/`oper_d1pos_le0_prefix_back`(H2)/`oper_boundary_valley`/`oper_parent1_readback_boundary_uncond`(pss_wip)。block-start row-1 親= pj 無条件確定。GTWF/D(N)/row-1 tree 不使用
-        - 🚨 残=**operCA/operCB 組み立て**: RedCondA(N[n]) row-1 [prefix(green oper_parent1_prefix_agree)+block-start(uncond readback+RedCondA N)+interior(green oper_parent1_readback, M-side gate要)] + row-0 RedCondA + operCB。既存 `operCA_tiling_within1_cond`(52716, bcorr brick)と接続検討 → `m_6_7_standard_RedCondAB` の operCA/operCB discharge → `m_6_7_standard_reduced` 無条件
+        - ✅ **operCA = hpMs + gate に集約 GREEN(HEAD 8167ab3)**: `operCA_via_gate_hpMs`(operCA_tiling_cond + row0 green + within1[block-start `operCA_block_start_row1` / interior `operCA_interior_row1`])。RedCondA(N[n]) は2つの ST_PS 構造的事実のみに依存
+        - 🚨 残2(operCA): **gate**(N∈ST_PS, interior u, hasParent N1 u ⟹ parent N1 u≥j0=parent N1 j1。ST_PS不変条件 9840/0、局所偽 72CE ゆえ ST_PS.induct要。最終ノード依存で induction が awkward)+ **hpMs**(N[n]の block 列が親持⟹base 親持、reflection 15732/0)。+ **operCB**(RedCondB(N[n]), 未分解)→ `m_6_7_standard_reduced` 無条件
       - ✅ 命題（標準形の単項成分が標準形であること）
       - ✅ 命題（標準形の始切片への遺伝性）
     - ✅ §6.8 降順性

@@ -410,4 +410,58 @@ proof -
   qed
 qed
 
+text \<open>The GATE ST-PS invariant: for N in ST_PS, every interior column u
+  (j0 < u < j1, j0 = parent N 1 j1) with a row-1 parent has parent N 1 u >= j0.
+  This is the first residual of operCA (operCA_via_gate_hpMs).  It is an ST_PS
+  invariant (false for general reduced sequences, e.g. (0,0)(1,1)(2,1)(2,2)),
+  proved by ST_PS.induct.  diag base is vacuous (immediate-predecessor parents);
+  the oper step (tiling) is the readback-comparison residual (sorry below).\<close>
+
+lemma gate_ST_PS:
+  assumes "N \<in> ST_PS"
+  shows "\<forall>u. parent N 1 (Lng N - 1) < u \<and> u < Lng N - 1 \<and> hasParent N 1 u
+             \<longrightarrow> parent N 1 (Lng N - 1) \<le> parent N 1 u"
+  using assms
+proof (induct N rule: ST_PS.induct)
+  case (diag u v)
+  have uv: "u \<le> v" by (rule diag.hyps)
+  show ?case
+  proof (intro allI impI)
+    fix z
+    let ?M = "diagSeq u v"  let ?j1 = "Lng ?M - 1"
+    assume H: "parent ?M 1 ?j1 < z \<and> z < ?j1 \<and> hasParent ?M 1 z"
+    hence zlt: "z < ?j1" and zgt: "parent ?M 1 ?j1 < z" by auto
+    have L1: "1 < Lng ?M" using zlt by linarith
+    have lng: "Lng ?M = Suc v - u" by simp
+    have j1lt: "Suc (?j1 - 1) < Suc v - u" using L1 lng by simp
+    have nx: "nextR ?M 1 (?j1 - 1) (Suc (?j1 - 1))" by (rule nextR1_diagSeq[OF j1lt])
+    have suc: "Suc (?j1 - 1) = ?j1" using L1 by simp
+    have nxj1: "nextR ?M 1 (?j1 - 1) ?j1" using nx suc by simp
+    have hpj1: "hasParent ?M 1 ?j1" unfolding hasParent_def using nxj1 nextR1_unique by blast
+    have parR: "nextR ?M 1 (parent ?M 1 ?j1) ?j1"
+      using hpj1 unfolding hasParent_def parent_def by (rule theI')
+    have pj1: "parent ?M 1 ?j1 = ?j1 - 1" by (rule nextR1_unique[OF parR nxj1])
+    have False using zgt zlt pj1 by linarith
+    thus "parent ?M 1 ?j1 \<le> parent ?M 1 z" by simp
+  qed
+next
+  case (oper M m)
+  have IH: "\<forall>u. parent M 1 (Lng M - 1) < u \<and> u < Lng M - 1 \<and> hasParent M 1 u
+                 \<longrightarrow> parent M 1 (Lng M - 1) \<le> parent M 1 u"
+    using oper.hyps by blast
+  show ?case
+  proof (cases "Lng M - 1 = 0")
+    case True
+    have "(M::pairseq)[m] = M" using True by (simp add: oper_def Let_def)
+    thus ?thesis using IH by simp
+  next
+    case False
+    \<comment> \<open>TILING / Pred oper step: the readback-comparison residual.  For interior u'
+       of M[m], parent (M[m]) 1 u' (interior/boundary readback, gated by IH=gate(M))
+       compared to j0' = parent (M[m]) 1 (last) (readback of the last node).
+       Empirically the ST_PS invariant (gate on M[m]) holds (fast_pss 5942/0).\<close>
+    show ?thesis sorry
+  qed
+qed
+
 end
