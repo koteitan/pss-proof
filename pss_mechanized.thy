@@ -60119,4 +60119,66 @@ proof -
   show ?thesis using hpiff pariff by blast
 qed
 
+
+subsection \<open>(x) §6.7 row-1 tree inheritance — \<open>m_6_7_treewf\<close> (the core invariant)\<close>
+
+text \<open>
+  \<open>TreeWF M\<close>: in \<open>M\<close>, with \<open>j\<^sub>0 = parent M 1 (Lng M-1)\<close>, every interior column
+  \<open>z\<close> (\<open>j\<^sub>0 < z < Lng M-1\<close>) has a row-1 parent that lands \<open>\<ge> j\<^sub>0\<close>.  This is the
+  irreducible core of §6.7 (the "row-1 reachable parent-base inherited from \<open>M\<close>"
+  the analysis showed unavoidable).  It is an \<open>ST\<^sub>PS\<close> INDUCTIVE INVARIANT
+  (verified: diag base 18/0, oper step \<open>TreeWF K \<Longrightarrow> TreeWF (K[n])\<close> 1971/0 on the
+  broad closure).  The oper step is carried as the named residual
+  @{text treewf_oper_step}; once GREEN, \<open>TreeWF\<close> holds on all \<open>ST\<^sub>PS\<close> and (via
+  @{thm [source] oper_parent1_readback}, now applicable since \<open>TreeWF K\<close> supplies
+  its M-side gate) unblocks the \<open>j\<^sub>0\<close>-readback, the \<open>w>1\<close> wrapper and the \<open>D(N)\<close>
+  cascade.
+
+  \<open>diag\<close> base is VACUOUS: in a diagonal every parent is the immediate predecessor
+  (@{thm [source] kfwd_nextR_diagSeq_parent}: \<open>Suc j\<^sub>0 = j\<^sub>1\<close>), so the interior
+  interval \<open>(j\<^sub>1-1, j\<^sub>1)\<close> is empty.
+\<close>
+
+abbreviation TreeWF :: "pairseq \<Rightarrow> bool" where
+  "TreeWF M \<equiv> (\<forall>z. parent M 1 (Lng M - 1) < z \<and> z < Lng M - 1
+                    \<longrightarrow> hasParent M 1 z \<and> parent M 1 (Lng M - 1) \<le> parent M 1 z)"
+
+lemma treewf_diag:
+  assumes uv: "u \<le> v"
+  shows "TreeWF (diagSeq u v)"
+proof (intro allI impI)
+  fix z
+  let ?M = "diagSeq u v"  let ?j1 = "Lng ?M - 1"
+  assume H: "parent ?M 1 ?j1 < z \<and> z < ?j1"
+  hence zlt: "z < ?j1" and zgt: "parent ?M 1 ?j1 < z" by auto
+  have L1: "1 < Lng ?M" using zlt by linarith
+  have lng: "Lng ?M = Suc v - u" by simp
+  have j1lt: "Suc (?j1 - 1) < Suc v - u" using L1 lng by simp
+  have nx: "nextR ?M 1 (?j1 - 1) (Suc (?j1 - 1))" by (rule nextR1_diagSeq[OF j1lt])
+  have suc: "Suc (?j1 - 1) = ?j1" using L1 by simp
+  have nxj1: "nextR ?M 1 (?j1 - 1) ?j1" using nx suc by simp
+  have hpj1: "hasParent ?M 1 ?j1" unfolding hasParent_def using nxj1 nextR1_unique by blast
+  have parR: "nextR ?M 1 (parent ?M 1 ?j1) ?j1"
+    using hpj1 unfolding hasParent_def parent_def by (rule theI')
+  have pj1: "parent ?M 1 ?j1 = ?j1 - 1" by (rule nextR1_unique[OF parR nxj1])
+  have False using zgt zlt pj1 by linarith
+  thus "hasParent ?M 1 z \<and> parent ?M 1 ?j1 \<le> parent ?M 1 z" by simp
+qed
+
+lemma m_6_7_treewf:
+  assumes treewf_oper_step:
+      "\<And>K n. \<lbrakk>K \<in> ST_PS; 1 \<le> n; TreeWF K\<rbrakk> \<Longrightarrow> TreeWF ((K::pairseq)[n])"
+    and M: "M \<in> ST_PS"
+  shows "TreeWF M"
+  using M
+proof (induct M rule: ST_PS.induct)
+  case (diag u v)
+  show ?case by (rule treewf_diag[OF diag.hyps])
+next
+  case (oper K n)
+  have KST: "K \<in> ST_PS" and n1: "1 \<le> n" using oper.hyps by auto
+  have IH: "TreeWF K" using oper.hyps by blast
+  show ?case by (rule treewf_oper_step[OF KST n1 IH])
+qed
+
 end
