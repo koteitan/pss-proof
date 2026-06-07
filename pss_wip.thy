@@ -477,6 +477,49 @@ abbreviation cGTWF :: "pairseq \<Rightarrow> bool" where
                  \<longrightarrow> (\<forall>u. parent M 1 k < u \<and> u < k \<and> hasParent M 1 u
                           \<longrightarrow> parent M 1 k \<le> parent M 1 u))"
 
+text \<open>cGTWF is preserved by Pred: Pred M is the prefix [0, Lng M-2] of M, on which
+  \<open>nextR _ 1\<close> (hence parent / hasParent) agrees (@{thm [source] nextR1_pred_agree}),
+  so every k, u of Pred M keep their M-parents and the cGTWF clause transfers from
+  cGTWF M.  The Pred branch of the cGTWF oper step.\<close>
+
+lemma cgtw_pred:
+  assumes MT: "M \<in> T_PS" and L: "1 < Lng M" and cg: "cGTWF M"
+  shows "cGTWF (Pred M)"
+proof (intro allI impI)
+  fix k u
+  assume hpk: "hasParent (Pred M) 1 k"
+     and H: "parent (Pred M) 1 k < u \<and> u < k \<and> hasParent (Pred M) 1 u"
+  from H have ppku: "parent (Pred M) 1 k < u" and uk: "u < k"
+     and hpu: "hasParent (Pred M) 1 u" by auto
+  have lp: "Lng (Pred M) = Lng M - 1" using L by (simp add: Pred_def)
+  have parPk: "nextR (Pred M) 1 (parent (Pred M) 1 k) k"
+    using hpk unfolding hasParent_def parent_def by (rule theI')
+  have klt: "k < Lng (Pred M)" using parPk by (simp add: nextR_def nextrel1_def)
+  have kc: "k \<le> Lng M - 2" using klt lp by linarith
+  have ppk_lt: "parent (Pred M) 1 k < k" using parPk by (simp add: nextR_def nextrel1_def)
+  have ppkc: "parent (Pred M) 1 k \<le> Lng M - 2" using ppk_lt kc by linarith
+  have parMk: "nextR M 1 (parent (Pred M) 1 k) k"
+    using nextR1_pred_agree[OF L ppkc kc] parPk by simp
+  have hpMk: "hasParent M 1 k" unfolding hasParent_def using parMk nextR1_unique by blast
+  have parMk': "nextR M 1 (parent M 1 k) k"
+    using hpMk unfolding hasParent_def parent_def by (rule theI')
+  have peqk: "parent M 1 k = parent (Pred M) 1 k" by (rule nextR1_unique[OF parMk' parMk])
+  have uc: "u \<le> Lng M - 2" using uk kc by linarith
+  have parPu: "nextR (Pred M) 1 (parent (Pred M) 1 u) u"
+    using hpu unfolding hasParent_def parent_def by (rule theI')
+  have ppu_lt: "parent (Pred M) 1 u < u" using parPu by (simp add: nextR_def nextrel1_def)
+  have ppuc: "parent (Pred M) 1 u \<le> Lng M - 2" using ppu_lt uc by linarith
+  have parMu: "nextR M 1 (parent (Pred M) 1 u) u"
+    using nextR1_pred_agree[OF L ppuc uc] parPu by simp
+  have hpMu: "hasParent M 1 u" unfolding hasParent_def using parMu nextR1_unique by blast
+  have parMu': "nextR M 1 (parent M 1 u) u"
+    using hpMu unfolding hasParent_def parent_def by (rule theI')
+  have pequ: "parent M 1 u = parent (Pred M) 1 u" by (rule nextR1_unique[OF parMu' parMu])
+  have "parent M 1 k < u \<and> u < k \<and> hasParent M 1 u" using ppku uk hpMu peqk by simp
+  hence "parent M 1 k \<le> parent M 1 u" using cg hpMk by blast
+  thus "parent (Pred M) 1 k \<le> parent (Pred M) 1 u" using peqk pequ by simp
+qed
+
 lemma cGTWF_ST_PS:
   assumes "N \<in> ST_PS"
   shows "cGTWF N"
@@ -499,10 +542,32 @@ proof (induct N rule: ST_PS.induct)
   qed
 next
   case (oper M n)
-  \<comment> \<open>cGTWF(M[n]) from cGTWF(M) (oper.hyps).  TRUE target (cGTWF holds on all
-     ST_PS), so the readback oper step IS provable (unlike the false GTWF's
-     gtw_tile).  Design in memory pss-67-hasgz-refuted.\<close>
-  show ?case sorry
+  have IH: "cGTWF M" using oper.hyps by blast
+  have MST: "M \<in> ST_PS" using oper.hyps by blast
+  have MT: "M \<in> T_PS" by (rule ST_PS_T_PS[OF MST])
+  have n1: "1 \<le> n" using oper.hyps by blast
+  show ?case
+  proof (cases "Lng M - 1 = 0")
+    case True
+    have "(M::pairseq)[n] = M" using True by (simp add: oper_def Let_def)
+    thus ?thesis using IH by simp
+  next
+    case False
+    hence L: "1 < Lng M" by linarith
+    show ?thesis
+    proof (cases "Lng M - 1 = 0
+                  \<or> (entry M 0 (Lng M - 1) = 0 \<and> entry M 1 (Lng M - 1) = 0)
+                  \<or> \<not> hasParent M (idx1 M (Lng M - 1)) (Lng M - 1)")
+      case True
+      have "(M::pairseq)[n] = Pred M" by (rule oper_nontile_eq_Pred[OF True])
+      thus ?thesis using cgtw_pred[OF MT L IH] by simp
+    next
+      case False
+      \<comment> \<open>TILING: the (true, hence provable) readback residual cgtw_tile.
+         Design in memory pss-67-hasgz-refuted.\<close>
+      show ?thesis sorry
+    qed
+  qed
 qed
 
 text \<open>From the single scalar fact entry N1 j0 < entry N1(j0+s) (plus le0 N j0
