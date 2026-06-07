@@ -58,8 +58,10 @@
         - 🚨 核1 gatekeep: has_gz(M[n])⟹M gated(i1=1)。非gated(Pred/i1=0)で¬has_gz(864/0)
         - 🚨 核2 DISJ: gated M, has_gz(M[n])⟹has_gz(M)∨D(M)(621/0)。w>1部=WG; w=1部=has_gz(M[n])⟹D(M)
           - ✅ WG反射コア〔`wg_reflect_core`: N側parent edge(同ブロック)→M側hasParent。緑interior readback+le0_base_back+m_5_1_parent_exists_2, 循環なし〕
-          - 🚨 WG wrapper: gated z→ブロック分解(j0N readback+局所性)→wg_reflect_core。部分補題A=hasParent M1(j1M-1)(101/0)
-          - 🚨 DISJ w=1部 + 核1 gatekeep
+          - ✅ WG foundation〔`oper_parent1_prefix_agree`: w=1 prefix verbatim parent一致〕
+        - 🎯 core=TreeWF (row-1 tree inheritance, ST_PS不変条件)に集約。全還元(C1/le0base/C1valley/A/wrapper/D(N))がここに底打ち
+          - ✅ TreeWF骨格〔`m_6_7_treewf`: ST_PS.induct, diag base vacuous + `treewf_oper_step` residual。invariant検証 diag18/0 step1971/0。IHがreadbackのM側gate供給〕
+          - 🚨 `treewf_oper_step`: TreeWF(K)⟹TreeWF(K[n])。4ケース(Lng=1/Pred/i1=0/i1=1)×interior z readback。これがcore本体(数百行)
       - ✅ 命題（標準形の単項成分が標準形であること）
       - ✅ 命題（標準形の始切片への遺伝性）
     - ✅ §6.8 降順性
