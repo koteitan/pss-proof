@@ -325,4 +325,89 @@ proof -
   show ?thesis using lhs rca ex by simp
 qed
 
+text \<open>operCA assembled MODULO the two ST-PS structural facts hpMs (a block column
+  of N[n] with a row-1 parent has its base parented in N) and gate (interior
+  row-1 parents land at least j0).  RedCondA(N[n]) follows by operCA_tiling_cond:
+  row-0 is operCA_tiling_row0 (green); within1 splits on the block offset
+  s = (x-j0) mod w into operCA_block_start_row1 (s=0) and operCA_interior_row1
+  (s>0, fed gate).  The remaining operCA residual is exactly hpMs + gate.\<close>
+
+lemma operCA_via_gate_hpMs:
+  fixes N :: pairseq
+  assumes L: "1 < Lng N"
+    and notzero: "\<not> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0)"
+    and hp: "hasParent N (idx1 N (Lng N - 1)) (Lng N - 1)"
+    and i1z: "idx1 N (Lng N - 1) = 1"
+    and j0lt: "parent N 1 (Lng N - 1) < Lng N - 1"
+    and condA: "RedCondA N"
+    and n1: "1 \<le> n"
+    and hpMs: "\<And>y. parent N 1 (Lng N - 1) \<le> y \<Longrightarrow> y < Lng ((N::pairseq)[n])
+                 \<Longrightarrow> hasParent ((N::pairseq)[n]) 1 y
+                 \<Longrightarrow> hasParent N 1 (parent N 1 (Lng N - 1)
+                        + (y - parent N 1 (Lng N - 1))
+                           mod (Lng N - 1 - parent N 1 (Lng N - 1)))"
+    and gate: "\<And>u. parent N 1 (Lng N - 1) < u \<Longrightarrow> u < Lng N - 1 \<Longrightarrow> hasParent N 1 u
+                 \<Longrightarrow> parent N 1 (Lng N - 1) \<le> parent N 1 u"
+  shows "RedCondA ((N::pairseq)[n])"
+proof -
+  have j0lt': "parent N (idx1 N (Lng N - 1)) (Lng N - 1) < Lng N - 1" using j0lt i1z by simp
+  show ?thesis
+  proof (rule operCA_tiling_cond[OF L notzero hp j0lt' condA])
+    fix x assume "hasParent ((N::pairseq)[n]) 0 x"
+    thus "entry ((N::pairseq)[n]) 0 (parent ((N::pairseq)[n]) 0 x) + 1
+            = entry ((N::pairseq)[n]) 0 x"
+      by (rule operCA_tiling_row0[OF L notzero hp j0lt' condA n1])
+  next
+    fix x assume gex0: "parent N (idx1 N (Lng N - 1)) (Lng N - 1) \<le> x"
+      and hpx: "hasParent ((N::pairseq)[n]) 1 x"
+    let ?j1 = "Lng N - 1"  let ?j0 = "parent N 1 ?j1"  let ?w = "?j1 - ?j0"
+    let ?Mn = "(N::pairseq)[n]"
+    have w0: "0 < ?w" using j0lt by linarith
+    have gex: "?j0 \<le> x" using gex0 i1z by simp
+    have lenMn: "Lng ?Mn = ?j0 + n * ?w"
+      using oper_d1pos_LngM[OF L notzero hp i1z j0lt] by simp
+    have parRx: "nextR ?Mn 1 (parent ?Mn 1 x) x"
+      using hpx unfolding hasParent_def parent_def by (rule theI')
+    have xMn: "x < Lng ?Mn" using parRx by (simp add: nextR_def nextrel1_def)
+    define s where "s = (x - ?j0) mod ?w"
+    define q where "q = (x - ?j0) div ?w"
+    have sw: "s < ?w" using w0 by (simp add: s_def)
+    have decomp0: "q * ?w + s = x - ?j0" by (simp add: q_def s_def div_mult_mod_eq)
+    have decomp: "x = ?j0 + q * ?w + s" using decomp0 gex by simp
+    have qwlt: "q * ?w < n * ?w"
+    proof -
+      have "?j0 + q * ?w + s < ?j0 + n * ?w" using xMn lenMn decomp by simp
+      thus ?thesis by linarith
+    qed
+    have qn: "q < n"
+    proof (rule ccontr)
+      assume "\<not> q < n" hence "n \<le> q" by simp
+      hence "n * ?w \<le> q * ?w" by (rule mult_le_mono1)
+      thus False using qwlt by simp
+    qed
+    have hb: "hasParent N 1 (?j0 + s)"
+      using hpMs[OF gex xMn hpx] by (simp add: s_def)
+    show "entry ?Mn 1 (parent ?Mn 1 x) + 1 = entry ?Mn 1 x"
+    proof (cases "s = 0")
+      case True
+      have xeq: "x = ?j0 + q * ?w" using decomp True by simp
+      have hpMj0: "hasParent N 1 ?j0" using hb True by simp
+      have parRj0: "nextR N 1 (parent N 1 ?j0) ?j0"
+        using hpMj0 unfolding hasParent_def parent_def by (rule theI')
+      have pjlt: "parent N 1 ?j0 < ?j0" using parRj0 by (simp add: nextR_def nextrel1_def)
+      show ?thesis
+        using operCA_block_start_row1[OF L notzero hp i1z j0lt qn hpMj0 pjlt condA] xeq by simp
+    next
+      case False
+      have spos: "0 < s" using False by simp
+      have base_int: "?j0 < ?j0 + s" using spos by simp
+      have base_lt: "?j0 + s < ?j1" using sw by simp
+      have pMge: "?j0 \<le> parent N 1 (?j0 + s)" using gate[OF base_int base_lt hb] .
+      show ?thesis
+        using operCA_interior_row1[OF L notzero hp i1z j0lt condA qn spos sw hb pMge] decomp
+        by simp
+    qed
+  qed
+qed
+
 end
