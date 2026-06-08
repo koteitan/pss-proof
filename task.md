@@ -62,9 +62,9 @@
         - ✅ **operCA = hpMs + gate に集約 + scalar 化 GREEN**: `operCA_via_gate_hpMs`/`operCA_block_start_row1`/`operCA_interior_row1`/`base_parent_from_entry_lt`(hpMs+pMge を entry-fact `entry N1 j0<entry N1(j0+s)` 単一に集約)
         - 🚧 **gate skeleton green**(`gate_ST_PS` measure_induct, HEAD 415e920): diag 証明、tiling oper=sorry
         - 🎯 **gate の Pred 微妙性を cGTWF が解決**: `cGTWF(N):=∀k. hasParent N1 k⟶(∀u. parent N1 k<u<k ∧ hasParent N1 u⟶parent N1 u≥parent N1 k)` は TRUE Pred-stable ST_PS 不変条件(deep 18297/0)。旧 GTWF(存在要求=偽)の条件版=真。gate(k=j1)を含意、all-k で Pred-stable
-        - ✅ **逆 readback machinery 完全証明 GREEN(HEAD f0a8f1a + block-start)**: `oper_interior_parent_inblock`(dichotomy: interior 親は prefix か自 block、earlier 無、valley+H1)、`oper_interior_hasParent_base`(interior hpMs)、`oper_blockstart_hasParent_j0`(s=0 hpMs)。検証 depth-8 全 0 fail
-        - 🚨 残=**cgtw_tile**(cGTWF_ST_PS oper-tiling): **idx1 で2分岐**。idx1=1(d0>0, readback `oper_d1pos_*` = 設計済 k×u case 分析)/ idx1=0(d0=d1=0=同一コピー, `oper_d0zero_*`/`le0_confined`)。各 ~120行 cGTWF(M)[IH]+readback+gate。→ cGTWF_ST_PS 無条件 → gate
-        - 🚨 残=**配線**: hpMs(interior+block-start) を `operCA_via_gate_hpMs` の hpMs に、gate を cGTWF から投入 → RedCondA(N[n]) → operCA+operCB(green) → `m_6_7_standard_reduced`(ST_PS⊆RT_PS)。memory `pss-67-hasgz-refuted` 末尾に全設計
+        - ✅ **逆 readback machinery 完全証明 GREEN**: `oper_interior_parent_inblock`(dichotomy)、`oper_interior_hasParent_base`/`oper_blockstart_hasParent_j0`(hpMs)。検証 depth-8 全 0 fail
+        - ✅ **cGTWF_ST_PS idx1=1 + 配線 GREEN(HEAD 84959e2)**: `oper_d1pos_parent_class`(分類 readback helper)、`cgtw_tile_d1pos`(cGTWF tiling idx1=1)、`operCA_tiling_full`(RedCondA(N[n]) idx1=1: gate←cGTWF_ST_PS + hpMs packaging)、**`m_6_7_ST_PS_subseteq_RT_PS`: ST_PS⊆RT_PS を `m_6_7_standard_reduced[OF operCA_tiling_full operCB_tiling]` で証明(idx1=1)**
+        - 🚨 残=**idx1=0(d0zero=同一コピー)並行展開のみ**: 2 sorry = `cgtw_tile_d0zero`(cGTWF idx1=0) + `operCA_tiling_full` の idx1=0 枝。`oper_d0zero_*`族(`le0_confined`/`le0_base_fwd`/`entryi_base`、M[1]=Pred M、n=1 は cgtw_pred)で idx1=1 template を並行展開(d0zero reverse readback + parent-class + tile + operCA、~400行 mechanical)。**§6.7 標準形簡約性 = idx1=0 のみ残**。memory `pss-67-hasgz-refuted` 末尾に全設計
       - ✅ 命題（標準形の単項成分が標準形であること）
       - ✅ 命題（標準形の始切片への遺伝性）
     - ✅ §6.8 降順性
