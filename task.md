@@ -49,7 +49,7 @@
       - 🚨 系（$1$ 列ペア数列の基本性質）
     - 🚨 §6.7 標準形
       - ✅ 命題（標準形の階層和による表示）
-      - 🚨🤖 命題（標準形の簡約性）〔`m_6_7_standard_reduced`(ST_PS⊆RT_PS)、operCA/operCB のみ残。memory `pss-67-hasgz-refuted`〕
+      - 🚨🤖 命題（標準形の簡約性）〔**ST_PS⊆RT_PS = `m_6_7_ST_PS_subseteq_RT_PS` で idx1=1 GREEN(HEAD 84959e2)**。残= idx1=0(d0zero)の 2 sorry のみ。memory `pss-67-hasgz-refuted`〕
         - ✅ B(原文忠実)構築: 標準形簡約性=operCA/operCBのみに集約。shift⟸operCA wire完了〔`bf_m_6_7_standard_reduced_via_operCAB`/`bf_stdCA_via_operCAB`/`m_6_7_standard_RedCondAB`〕
         - 🚨🚨 **has_gz⟹D / D(N) / GTWF / TreeWF / spsy 系は全面無効化**: has_gz⟹D は ST_PS で**偽**(reduced反例 `(0,0)(1,1)(2,2)(2,1)`, depth~9)。"broad closure N/0" は全て depth≤4 artifact。memory `pss-67-hasgz-refuted` 必読。死蔵 green: `m_6_7_oper_gstrict`/GTWF skeleton(条件付で偽定理ではないが残差が偽=無用)
         - 🎯 正しい残差=**operCA**(N∈ST_PS reduced ∧ tiling ⟹ RedCondA(N[n])) + **operCB**(同⟹RedCondB(N[n]))。RedCondA=局所+1条件(D(N)の大域ramp は誤り)。仮説に RedCondA N∧RedCondB N を持つ局所→局所含意
