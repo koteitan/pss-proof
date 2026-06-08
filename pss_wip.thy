@@ -982,6 +982,106 @@ proof -
 qed
 
 
+text \<open>§6.7 d0zero PREFIX-PARENT EQUALITY (the keystone C for cgtw_tile_d0zero):
+  for the last row-0 block of a standard idx1=0 sequence (j0 = parent N 0 j1), an
+  INTERIOR column c = j0+s (0<s<w) whose row-1 parent escapes into the PREFIX
+  (parent N 1 c < j0) actually shares j0's own row-1 parent: parent N 1 c =
+  parent N 1 j0 (and j0 has a row-1 parent at all).  This is exactly what closes
+  the d0zero cGTWF worry case (two interior prefix-parent columns have EQUAL
+  parents).  cGTWF alone does not give it (the standard/reduced/cGTWF non-ST_PS
+  witness (0,0)(1,1)(2,2)(3,1)(3,0) violates it); the missing ingredient is the
+  ST_PS invariant Eglobal' (here as hypothesis E: entry N 1 j0 <= entry N 1 c).
+  Proof: L0 (le0 N j0 c) by the ancestor-tree linearity m_5_1_ancestor_tree_1;
+  the row-1 parent ps of c and j0 are both le0-ancestors of c, so linearly
+  ordered -> le0 N ps j0, giving hasParent N 1 j0 (m_5_1_parent_exists_2) with
+  entry N 1 ps < entry N 1 j0 = entry N 1 c (E + the c-valley collapse).  cGTWF
+  at c (z=j0) gives ps <= p0 := parent N 1 j0; then nextrel1 N p0 c holds
+  (entry p0 < entry j0 = entry c; le0 p0 c by transitivity; valley from ps<=p0 +
+  c's valley), so by uniqueness parent N 1 c = p0 = parent N 1 j0.\<close>
+
+lemma oper_d0zero_prefix_parent_eq:
+  fixes N :: pairseq
+  assumes L: "1 < Lng N"
+    and hp: "hasParent N (idx1 N (Lng N - 1)) (Lng N - 1)"
+    and i1z0: "idx1 N (Lng N - 1) = 0"
+    and cg: "cGTWF N"
+    and spos: "0 < s"
+    and sj1: "parent N 0 (Lng N - 1) + s < Lng N - 1"
+    and hpc: "hasParent N 1 (parent N 0 (Lng N - 1) + s)"
+    and pre: "parent N 1 (parent N 0 (Lng N - 1) + s) < parent N 0 (Lng N - 1)"
+    and E: "entry N 1 (parent N 0 (Lng N - 1)) \<le> entry N 1 (parent N 0 (Lng N - 1) + s)"
+  shows "hasParent N 1 (parent N 0 (Lng N - 1))
+         \<and> parent N 1 (parent N 0 (Lng N - 1) + s) = parent N 1 (parent N 0 (Lng N - 1))"
+proof -
+  let ?j1 = "Lng N - 1"  let ?j0 = "parent N 0 ?j1"  let ?c = "?j0 + s"
+  let ?ps = "parent N 1 ?c"
+  have NT: "N \<in> T_PS" using L by (cases N) (auto simp: T_PS_def)
+  have hp0: "hasParent N 0 ?j1" using hp i1z0 by simp
+  have parRj0j1: "nextR N 0 ?j0 ?j1" using hp0 unfolding hasParent_def parent_def by (rule theI')
+  have nr0: "nextrel0 N ?j0 ?j1" using parRj0j1 by (simp add: nextR_def)
+  have b0: "?j0 < Lng N \<and> ?j1 < Lng N" using nr0 unfolding nextrel0_def by blast
+  have le0j0j1: "le0 N ?j0 ?j1"
+    unfolding le0_def using b0 nr0 by (blast intro: r_into_rtranclp)
+  have j0ltj1: "?j0 < ?j1" using nr0 by (simp add: nextrel0_def)
+  have c_lt: "?c < ?j1" using sj1 by simp
+  have cle: "?c \<le> ?j1" using c_lt by simp
+  have j0c: "?j0 < ?c" using spos by simp
+  have j0c_le: "?j0 \<le> ?c" using j0c by simp
+  have j0Lng: "?j0 < Lng N" using b0 by simp
+  have cLng: "?c < Lng N" using c_lt b0 by simp
+  \<comment> \<open>L0: j0 reaches the interior column c (ancestor-tree linearity)\<close>
+  have leRj0j1: "leR N 0 ?j0 ?j1" using le0j0j1 by (simp add: leR_def)
+  have le0j0c: "le0 N ?j0 ?c"
+    using m_5_1_ancestor_tree_1[OF NT leRj0j1 le_add1 cle] by (simp add: leR_def)
+  \<comment> \<open>c's row-1 parent edge and its valley\<close>
+  have parRc: "nextR N 1 ?ps ?c" using hpc unfolding hasParent_def parent_def by (rule theI')
+  have nr1c: "nextrel1 N ?ps ?c" using parRc by (simp add: nextR_def)
+  have epsc: "entry N 1 ?ps < entry N 1 ?c" using nr1c by (simp add: nextrel1_def)
+  have le0psc: "le0 N ?ps ?c" using nr1c by (simp add: nextrel1_def)
+  have valleyc: "\<And>j. ?ps < j \<Longrightarrow> le0 N j ?c \<Longrightarrow> entry N 1 ?c \<le> entry N 1 j"
+    using nr1c unfolding nextrel1_def by blast
+  \<comment> \<open>the c-valley collapses entry at j0: entry j0 = entry c\<close>
+  have ecj0: "entry N 1 ?c \<le> entry N 1 ?j0" using valleyc[OF pre le0j0c] .
+  have e_eq: "entry N 1 ?j0 = entry N 1 ?c" using ecj0 E by simp
+  have e_ps_j0: "entry N 1 ?ps < entry N 1 ?j0" using epsc e_eq by simp
+  \<comment> \<open>ps and j0 are both le0-ancestors of c -> le0 N ps j0 (linearity)\<close>
+  have leRpsc: "leR N 0 ?ps ?c" using le0psc by (simp add: leR_def)
+  have psj0: "?ps \<le> ?j0" using pre by simp
+  have le0psj0: "le0 N ?ps ?j0"
+    using m_5_1_ancestor_tree_1[OF NT leRpsc psj0 j0c_le] by (simp add: leR_def)
+  \<comment> \<open>hence j0 has a row-1 parent\<close>
+  have leRpsj0: "leR N 0 ?ps ?j0" using le0psj0 by (simp add: leR_def)
+  have "\<exists>j. ?ps \<le> j \<and> j < ?j0 \<and> nextR N 1 j ?j0"
+    by (rule m_5_1_parent_exists_2[OF NT pre j0Lng e_ps_j0 leRpsj0])
+  then obtain jj where nrjj: "nextR N 1 jj ?j0" by blast
+  have hpj0: "hasParent N 1 ?j0"
+    unfolding hasParent_def using nrjj nextR1_unique by blast
+  let ?p0 = "parent N 1 ?j0"
+  have parRj0: "nextR N 1 ?p0 ?j0" using hpj0 unfolding hasParent_def parent_def by (rule theI')
+  have nr1j0: "nextrel1 N ?p0 ?j0" using parRj0 by (simp add: nextR_def)
+  have p0j0: "?p0 < ?j0" using nr1j0 by (simp add: nextrel1_def)
+  have ep0j0: "entry N 1 ?p0 < entry N 1 ?j0" using nr1j0 by (simp add: nextrel1_def)
+  have le0p0j0: "le0 N ?p0 ?j0" using nr1j0 by (simp add: nextrel1_def)
+  \<comment> \<open>cGTWF at c (z = j0): ps <= p0\<close>
+  have psp0: "?ps \<le> ?p0" using cg hpc pre j0c hpj0 by blast
+  \<comment> \<open>build nextrel1 N p0 c -> p0 = ps by uniqueness\<close>
+  have p0c: "?p0 < ?c" using p0j0 j0c by linarith
+  have p0Lng: "?p0 < Lng N" using p0j0 j0Lng by linarith
+  have le0p0c: "le0 N ?p0 ?c" using le0p0j0 le0j0c by (rule le0_trans)
+  have ep0c: "entry N 1 ?p0 < entry N 1 ?c" using ep0j0 e_eq by simp
+  have valleyp0: "\<forall>j. ?p0 < j \<and> le0 N j ?c \<longrightarrow> entry N 1 ?c \<le> entry N 1 j"
+  proof (intro allI impI)
+    fix j assume H: "?p0 < j \<and> le0 N j ?c"
+    have "?ps < j" using H psp0 by linarith
+    thus "entry N 1 ?c \<le> entry N 1 j" using valleyc H by blast
+  qed
+  have nr1p0c: "nextrel1 N ?p0 ?c"
+    unfolding nextrel1_def using p0Lng cLng p0c ep0c le0p0c valleyp0 by simp
+  have "nextR N 1 ?p0 ?c" using nr1p0c by (simp add: nextR_def)
+  hence "?p0 = ?ps" using parRc by (rule nextR1_unique)
+  thus ?thesis using hpj0 by simp
+qed
+
 text \<open>cgtw_tile, idx1 = 0 (d0zero) branch: M[n] is the prefix followed by n
   IDENTICAL copies of the slice (d0 = d1 = 0, @{thm [source] oper_d0zero_expand}).
   cGTWF transfers from cGTWF M via the confined-le0 / identical-copy structure.
