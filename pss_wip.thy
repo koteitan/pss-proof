@@ -428,12 +428,16 @@ abbreviation cGTWF :: "pairseq \<Rightarrow> bool" where
                           \<longrightarrow> parent M 1 k \<le> parent M 1 u))"
 
 text \<open>Eglobal' (the second ST_PS invariant, carried jointly with cGTWF): for every
-  row-0 Next edge a = parent M 0 b -> b, any interior column c (a < c < b) whose
-  row-1 parent escapes the block (parent M 1 c < a) has entry M 1 a <= entry M 1 c.
-  Genuine ST_PS invariant -- NOT implied by cGTWF/reduced/standard.\<close>
+  row-0 Next edge a = parent M 0 b -> b WHERE b IS ROW-1-TRIVIAL (entry M 1 b = 0),
+  any interior column c (a < c < b) whose row-1 parent escapes the block
+  (parent M 1 c < a) has entry M 1 a <= entry M 1 c.  Genuine ST_PS invariant --
+  NOT implied by cGTWF/reduced/standard, and the entry-1-trivial restriction on b
+  is ESSENTIAL (the unrestricted form is false on ST_PS at row-1-positive b).  The
+  b = j1 instance for an idx1=0 sequence (entry M 1 j1 = 0) is exactly what
+  cgtw_tile_d0zero needs.\<close>
 
 abbreviation Eglobal :: "pairseq \<Rightarrow> bool" where
-  "Eglobal M \<equiv> (\<forall>b. hasParent M 0 b
+  "Eglobal M \<equiv> (\<forall>b. hasParent M 0 b \<and> entry M 1 b = 0
                  \<longrightarrow> (\<forall>c. parent M 0 b < c \<and> c < b \<and> hasParent M 1 c
                           \<and> parent M 1 c < parent M 0 b
                           \<longrightarrow> entry M 1 (parent M 0 b) \<le> entry M 1 c))"
@@ -527,9 +531,10 @@ lemma Eglobal_pred:
   shows "Eglobal (Pred M)"
 proof (intro allI impI)
   fix b c
-  assume hpb: "hasParent (Pred M) 0 b"
+  assume Hb: "hasParent (Pred M) 0 b \<and> entry (Pred M) 1 b = 0"
      and H: "parent (Pred M) 0 b < c \<and> c < b \<and> hasParent (Pred M) 1 c
               \<and> parent (Pred M) 1 c < parent (Pred M) 0 b"
+  from Hb have hpb: "hasParent (Pred M) 0 b" and eb_pred: "entry (Pred M) 1 b = 0" by auto
   from H have pbc: "parent (Pred M) 0 b < c" and cb: "c < b"
     and hpc: "hasParent (Pred M) 1 c" and pc_lt: "parent (Pred M) 1 c < parent (Pred M) 0 b" by auto
   let ?c2 = "Lng M - 2"
@@ -569,8 +574,9 @@ proof (intro allI impI)
   \<comment> \<open>apply Eglobal M\<close>
   have a_lt_c: "parent M 0 b < c" using pbc peqb by simp
   have pc_lt_a: "parent M 1 c < parent M 0 b" using pc_lt peqb peqc by simp
+  have eb: "entry M 1 b = 0" using eb_pred ent[where i=1 and j=b] bc2 by simp
   have eM: "entry M 1 (parent M 0 b) \<le> entry M 1 c"
-    using eg hpMb a_lt_c cb hpMc pc_lt_a by blast
+    using eg hpMb eb a_lt_c cb hpMc pc_lt_a by blast
   have e1: "entry (Pred M) 1 (parent (Pred M) 0 b) = entry M 1 (parent M 0 b)"
     using ent[where i=1 and j="parent (Pred M) 0 b"] pbc2 peqb by simp
   have e2: "entry (Pred M) 1 c = entry M 1 c"
