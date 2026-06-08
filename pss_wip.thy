@@ -1384,5 +1384,173 @@ proof -
     unfolding hasParent_def using nr nextR1_unique by blast
 qed
 
+text \<open>§6.7 d0zero PARENT base-readback (the idx1=0 crux): the row-1 parent of an
+  interior column j0+q*w+s of M[n] is the lift of parent N1(j0+s) -- itself if it
+  is a prefix node, else translated into block q.  Built from the candidate via
+  uniqueness: le0 N pb (j0+s) lifts (oper_d0zero_le0_lift) to le0 (M[n]) c x, the
+  valley reflects every le0-pred j of x (j>c, so j is in block q by index bounds,
+  base j > pb) back by oper_d0zero_le0_base_fwd into the nextrel1 N pb (j0+s)
+  valley; rows read off periodically by oper_d0zero_entryi_base.\<close>
+
+lemma oper_d0zero_parent1_readback:
+  fixes N :: pairseq
+  assumes L: "1 < Lng N"
+    and notzero: "\<not> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0)"
+    and hp: "hasParent N (idx1 N (Lng N - 1)) (Lng N - 1)"
+    and i1z0: "idx1 N (Lng N - 1) = 0"
+    and j0lt: "parent N (idx1 N (Lng N - 1)) (Lng N - 1) < Lng N - 1"
+    and qn: "q < n"
+    and spos: "0 < s"
+    and sw: "s < Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)"
+    and hpb: "hasParent N 1 (parent N (idx1 N (Lng N - 1)) (Lng N - 1) + s)"
+  shows "parent ((N::pairseq)[n]) 1
+            (parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+               + q * (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)) + s)
+       = (if parent N 1 (parent N (idx1 N (Lng N - 1)) (Lng N - 1) + s)
+              < parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+          then parent N 1 (parent N (idx1 N (Lng N - 1)) (Lng N - 1) + s)
+          else parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+               + q * (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+               + (parent N 1 (parent N (idx1 N (Lng N - 1)) (Lng N - 1) + s)
+                  - parent N (idx1 N (Lng N - 1)) (Lng N - 1)))"
+proof -
+  let ?j1 = "Lng N - 1"  let ?j0 = "parent N (idx1 N (Lng N - 1)) ?j1"  let ?w = "?j1 - ?j0"
+  let ?Mn = "(N::pairseq)[n]"  let ?x = "?j0 + q * ?w + s"  let ?base = "?j0 + s"
+  let ?pb = "parent N 1 ?base"
+  let ?c = "if ?pb < ?j0 then ?pb else ?j0 + q * ?w + (?pb - ?j0)"
+  have w0: "0 < ?w" using j0lt by linarith
+  have basej1: "?base < ?j1" using sw by simp
+  have parRb: "nextR N 1 ?pb ?base" using hpb unfolding hasParent_def parent_def by (rule theI')
+  have nr1b: "nextrel1 N ?pb ?base" using parRb by (simp add: nextR_def)
+  have pblt: "?pb < ?base" using nr1b by (simp add: nextrel1_def)
+  have epb: "entry N 1 ?pb < entry N 1 ?base" using nr1b by (simp add: nextrel1_def)
+  have le0b: "le0 N ?pb ?base" using nr1b by (simp add: nextrel1_def)
+  have valleyb: "\<And>j. ?pb < j \<Longrightarrow> le0 N j ?base \<Longrightarrow> entry N 1 ?base \<le> entry N 1 j"
+    using nr1b unfolding nextrel1_def by blast
+  have pbsub: "?pb - ?j0 < ?w"
+  proof (cases "?pb < ?j0")
+    case True thus ?thesis using w0 by linarith
+  next
+    case False thus ?thesis using pblt sw by linarith
+  qed
+  \<comment> \<open>le0 (N[n]) c x is exactly the d0zero forward lift of le0 N pb base\<close>
+  have le0cx: "le0 ?Mn ?c ?x"
+    using oper_d0zero_le0_lift[OF L notzero hp i1z0 j0lt qn sw le0b] by simp
+  \<comment> \<open>base of c is pb, so its row-1 reading is entry N 1 pb\<close>
+  have cL: "?c < Lng ?Mn" using le0cx by (simp add: le0_def)
+  have basec: "(if ?c < ?j0 then ?c else ?j0 + (?c - ?j0) mod ?w) = ?pb"
+  proof (cases "?pb < ?j0")
+    case True thus ?thesis by simp
+  next
+    case False
+    hence cval: "?c = ?j0 + q * ?w + (?pb - ?j0)" by simp
+    have "(?c - ?j0) mod ?w = (q * ?w + (?pb - ?j0)) mod ?w" using cval by simp
+    also have "\<dots> = (?pb - ?j0) mod ?w" by simp
+    also have "\<dots> = ?pb - ?j0" using pbsub by simp
+    finally have cmod: "(?c - ?j0) mod ?w = ?pb - ?j0" .
+    moreover have "\<not> ?c < ?j0" using cval by simp
+    ultimately show ?thesis using False by simp
+  qed
+  have ec: "entry ?Mn 1 ?c = entry N 1 ?pb"
+  proof -
+    have "entry ?Mn 1 ?c = entry N 1 (if ?c < ?j0 then ?c else ?j0 + (?c - ?j0) mod ?w)"
+      by (rule oper_d0zero_entryi_base[OF L notzero hp i1z0 j0lt cL])
+    thus ?thesis using basec by simp
+  qed
+  have xL: "?x < Lng ?Mn" using le0cx by (simp add: le0_def)
+  have ex: "entry ?Mn 1 ?x = entry N 1 ?base"
+  proof -
+    have "entry ?Mn 1 ?x = entry N 1 (if ?x < ?j0 then ?x else ?j0 + (?x - ?j0) mod ?w)"
+      by (rule oper_d0zero_entryi_base[OF L notzero hp i1z0 j0lt xL])
+    moreover have "(?x - ?j0) mod ?w = s"
+    proof -
+      have "(?x - ?j0) mod ?w = (q * ?w + s) mod ?w" by simp
+      also have "\<dots> = s mod ?w" by simp
+      also have "\<dots> = s" using sw by simp
+      finally show ?thesis .
+    qed
+    moreover have "\<not> ?x < ?j0" by simp
+    ultimately show ?thesis by simp
+  qed
+  have ecx: "entry ?Mn 1 ?c < entry ?Mn 1 ?x" using ec ex epb by simp
+  have cxlt: "?c < ?x"
+  proof (cases "?pb < ?j0")
+    case True
+    have "?pb < ?j0 + q * ?w + s" using True spos by linarith
+    thus ?thesis using True by simp
+  next
+    case False
+    hence "?c = ?j0 + q * ?w + (?pb - ?j0)" by simp
+    moreover have "?pb - ?j0 < s" using pblt False by linarith
+    ultimately show ?thesis by simp
+  qed
+  \<comment> \<open>the valley: every le0-pred j of x above c has entry1 j >= entry1 x\<close>
+  have valley: "\<And>j. ?c < j \<Longrightarrow> le0 ?Mn j ?x \<Longrightarrow> entry ?Mn 1 ?x \<le> entry ?Mn 1 j"
+  proof -
+    fix j assume cj: "?c < j" and le0j: "le0 ?Mn j ?x"
+    have jx: "j \<le> ?x"
+    proof -
+      have "(nextrel0 ?Mn)\<^sup>*\<^sup>* j ?x" using le0j by (simp add: le0_def)
+      thus ?thesis by (rule nextrel0_rtrancl_mono)
+    qed
+    define bj where "bj = (if j < ?j0 then j else ?j0 + (j - ?j0) mod ?w)"
+    have le0Nbj: "le0 N bj ?base"
+    proof -
+      have "le0 N (if j < ?j0 then j else ?j0 + (j - ?j0) mod ?w) (?j0 + s)"
+        by (rule oper_d0zero_le0_base_fwd[OF L notzero hp i1z0 j0lt qn sw le0j])
+      thus ?thesis using bj_def by simp
+    qed
+    have pbbj: "?pb < bj"
+    proof (cases "?pb < ?j0")
+      case True
+      have cpb: "?c = ?pb" using \<open>?pb < ?j0\<close> by simp
+      show ?thesis
+      proof (cases "j < ?j0")
+        case True
+        hence "bj = j" by (simp add: bj_def)
+        thus ?thesis using cj cpb by simp
+      next
+        case False
+        hence "bj = ?j0 + (j - ?j0) mod ?w" by (simp add: bj_def)
+        thus ?thesis using \<open>?pb < ?j0\<close> by linarith
+      qed
+    next
+      case False
+      hence cge: "?c = ?j0 + q * ?w + (?pb - ?j0)" by simp
+      have jge: "?j0 \<le> j" using cj cge by linarith
+      have jblk: "?j0 + q * ?w \<le> j" using cj cge by linarith
+      have hi: "j - ?j0 - q * ?w \<le> s" using jx jblk by linarith
+      have off_lt: "j - ?j0 - q * ?w < ?w" using hi sw by linarith
+      have qwle: "q * ?w \<le> j - ?j0" using jblk by linarith
+      have jdec: "j - ?j0 = q * ?w + (j - ?j0 - q * ?w)" using qwle by linarith
+      have jr: "(j - ?j0) mod ?w = j - ?j0 - q * ?w"
+      proof -
+        have "(j - ?j0) mod ?w = (q * ?w + (j - ?j0 - q * ?w)) mod ?w" using jdec by simp
+        also have "\<dots> = (j - ?j0 - q * ?w) mod ?w" by simp
+        also have "\<dots> = j - ?j0 - q * ?w" using off_lt by simp
+        finally show ?thesis .
+      qed
+      have lo: "?pb - ?j0 < j - ?j0 - q * ?w" using cj cge by linarith
+      have bjeq: "bj = ?j0 + (j - ?j0 - q * ?w)" using jge jr by (simp add: bj_def)
+      thus ?thesis using lo False by linarith
+    qed
+    have "entry N 1 ?base \<le> entry N 1 bj" by (rule valleyb[OF pbbj le0Nbj])
+    moreover have "entry ?Mn 1 j = entry N 1 bj"
+    proof -
+      have jL: "j < Lng ?Mn" using jx xL by linarith
+      have "entry ?Mn 1 j = entry N 1 (if j < ?j0 then j else ?j0 + (j - ?j0) mod ?w)"
+        by (rule oper_d0zero_entryi_base[OF L notzero hp i1z0 j0lt jL])
+      thus ?thesis using bj_def by simp
+    qed
+    ultimately show "entry ?Mn 1 ?x \<le> entry ?Mn 1 j" using ex by simp
+  qed
+  have nr1cx: "nextrel1 ?Mn ?c ?x"
+    unfolding nextrel1_def using cL xL cxlt ecx le0cx valley by blast
+  have ncx: "nextR ?Mn 1 ?c ?x" using nr1cx by (simp add: nextR_def)
+  have hpx: "hasParent ?Mn 1 ?x" unfolding hasParent_def using ncx nextR1_unique by blast
+  have parRx: "nextR ?Mn 1 (parent ?Mn 1 ?x) ?x"
+    using hpx unfolding hasParent_def parent_def by (rule theI')
+  show ?thesis using nextR1_unique[OF parRx ncx] by simp
+qed
 
 end
