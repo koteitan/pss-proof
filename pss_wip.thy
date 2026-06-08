@@ -1331,7 +1331,6 @@ lemma oper_d0zero_interior_hasParent_base:
     and i1z0: "idx1 M (Lng M - 1) = 0"
     and j0lt: "parent M (idx1 M (Lng M - 1)) (Lng M - 1) < Lng M - 1"
     and qn: "q < n"
-    and spos: "0 < s"
     and sw: "s < Lng M - 1 - parent M (idx1 M (Lng M - 1)) (Lng M - 1)"
     and hpy: "hasParent ((M::pairseq)[n]) 1
                 (parent M (idx1 M (Lng M - 1)) (Lng M - 1)
@@ -1400,7 +1399,6 @@ lemma oper_d0zero_parent1_readback:
     and i1z0: "idx1 N (Lng N - 1) = 0"
     and j0lt: "parent N (idx1 N (Lng N - 1)) (Lng N - 1) < Lng N - 1"
     and qn: "q < n"
-    and spos: "0 < s"
     and sw: "s < Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)"
     and hpb: "hasParent N 1 (parent N (idx1 N (Lng N - 1)) (Lng N - 1) + s)"
   shows "parent ((N::pairseq)[n]) 1
@@ -1476,7 +1474,7 @@ proof -
   have cxlt: "?c < ?x"
   proof (cases "?pb < ?j0")
     case True
-    have "?pb < ?j0 + q * ?w + s" using True spos by linarith
+    have "?pb < ?j0 + q * ?w + s" using True by linarith
     thus ?thesis using True by simp
   next
     case False
@@ -1551,6 +1549,108 @@ proof -
   have parRx: "nextR ?Mn 1 (parent ?Mn 1 ?x) ?x"
     using hpx unfolding hasParent_def parent_def by (rule theI')
   show ?thesis using nextR1_unique[OF parRx ncx] by simp
+qed
+
+text \<open>§6.7 operCA, idx1 = 0 (d0zero) branch: RedCondA (N[n]) from N standard in
+  ST_PS.  operCA_tiling_cond and operCA_tiling_row0 are idx1-agnostic, so row-0 is
+  free; the within-block row-1 +1 is operCA_tiling_within1_via_reflect (also
+  idx1-agnostic) fed the d0zero readbacks: hpN by oper_d0zero_interior_hasParent_base
+  (s >= 0), ex by oper_d0zero_entryi_base, and ep by the base-readback
+  oper_d0zero_parent1_readback (whose lift has base pb = parent N1(j0+s)).\<close>
+
+lemma operCA_d0zero:
+  fixes N :: pairseq
+  assumes L: "1 < Lng N"
+    and notzero: "\<not> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0)"
+    and hp: "hasParent N (idx1 N (Lng N - 1)) (Lng N - 1)"
+    and i1z0: "idx1 N (Lng N - 1) = 0"
+    and j0lt: "parent N (idx1 N (Lng N - 1)) (Lng N - 1) < Lng N - 1"
+    and condA: "RedCondA N"
+    and n1: "1 \<le> n"
+  shows "RedCondA ((N::pairseq)[n])"
+proof (rule operCA_tiling_cond[OF L notzero hp j0lt condA])
+  fix x assume "hasParent ((N::pairseq)[n]) 0 x"
+  thus "entry ((N::pairseq)[n]) 0 (parent ((N::pairseq)[n]) 0 x) + 1
+          = entry ((N::pairseq)[n]) 0 x"
+    by (rule operCA_tiling_row0[OF L notzero hp j0lt condA n1])
+next
+  fix x
+  assume ge: "parent N (idx1 N (Lng N - 1)) (Lng N - 1) \<le> x"
+    and hpx: "hasParent ((N::pairseq)[n]) 1 x"
+  let ?j1 = "Lng N - 1"  let ?j0 = "parent N (idx1 N (Lng N - 1)) ?j1"  let ?w = "?j1 - ?j0"
+  let ?Mn = "(N::pairseq)[n]"
+  have w0: "0 < ?w" using j0lt by linarith
+  have lenMn: "Lng ?Mn = ?j0 + n * ?w"
+    using operB_gen_LngM[OF L notzero hp j0lt] by simp
+  have parRx: "nextR ?Mn 1 (parent ?Mn 1 x) x"
+    using hpx unfolding hasParent_def parent_def by (rule theI')
+  have xL: "x < Lng ?Mn" using parRx by (simp add: nextR_def nextrel1_def)
+  define q where "q = (x - ?j0) div ?w"
+  define s where "s = (x - ?j0) mod ?w"
+  have sw: "s < ?w" using w0 by (simp add: s_def)
+  have xdecomp: "x = ?j0 + q * ?w + s"
+  proof -
+    have "?j0 + q * ?w + s = ?j0 + ((x - ?j0) div ?w * ?w + (x - ?j0) mod ?w)"
+      unfolding q_def s_def by simp
+    also have "\<dots> = ?j0 + (x - ?j0)" by (simp add: div_mult_mod_eq)
+    also have "\<dots> = x" using ge by simp
+    finally show ?thesis by simp
+  qed
+  have qn: "q < n"
+  proof (rule ccontr)
+    assume "\<not> q < n" hence "n \<le> q" by simp
+    hence "n * ?w \<le> q * ?w" by (rule mult_le_mono1)
+    hence "?j0 + n * ?w \<le> x" using xdecomp by linarith
+    moreover have "x < ?j0 + n * ?w" using xL lenMn by simp
+    ultimately show False by linarith
+  qed
+  let ?base = "?j0 + s"
+  let ?pb = "parent N 1 ?base"
+  let ?c = "if ?pb < ?j0 then ?pb else ?j0 + q * ?w + (?pb - ?j0)"
+  have hpyf: "hasParent ?Mn 1 (?j0 + q * ?w + s)" using hpx xdecomp by simp
+  have hpN: "hasParent N 1 ?base"
+    by (rule oper_d0zero_interior_hasParent_base[OF L notzero hp i1z0 j0lt qn sw hpyf])
+  have parRb: "nextR N 1 ?pb ?base" using hpN unfolding hasParent_def parent_def by (rule theI')
+  have pblt: "?pb < ?base" using parRb by (simp add: nextR_def nextrel1_def)
+  have pbsub: "?pb - ?j0 < ?w" using pblt sw by linarith
+  \<comment> \<open>ex: row-1 of x reads off its base\<close>
+  have ex: "entry ?Mn 1 x = entry N 1 ?base"
+  proof -
+    have "entry ?Mn 1 x = entry N 1 (if x < ?j0 then x else ?j0 + (x - ?j0) mod ?w)"
+      by (rule oper_d0zero_entryi_base[OF L notzero hp i1z0 j0lt xL])
+    moreover have "(x - ?j0) mod ?w = s" using s_def by simp
+    moreover have "\<not> x < ?j0" using ge by simp
+    ultimately show ?thesis by simp
+  qed
+  \<comment> \<open>ep: row-1 of the N[n]-parent reads off parent N 1 base\<close>
+  have pread: "parent ?Mn 1 x = ?c"
+    using oper_d0zero_parent1_readback[OF L notzero hp i1z0 j0lt qn sw hpN] xdecomp by simp
+  have cL: "?c < Lng ?Mn"
+  proof -
+    have "parent ?Mn 1 x < Lng ?Mn" using parRx by (simp add: nextR_def nextrel1_def)
+    thus ?thesis using pread by simp
+  qed
+  have basec: "(if ?c < ?j0 then ?c else ?j0 + (?c - ?j0) mod ?w) = ?pb"
+  proof (cases "?pb < ?j0")
+    case True thus ?thesis by simp
+  next
+    case False
+    hence cval: "?c = ?j0 + q * ?w + (?pb - ?j0)" by simp
+    have "(?c - ?j0) mod ?w = (q * ?w + (?pb - ?j0)) mod ?w" using cval by simp
+    also have "\<dots> = (?pb - ?j0) mod ?w" by simp
+    also have "\<dots> = ?pb - ?j0" using pbsub by simp
+    finally have "(?c - ?j0) mod ?w = ?pb - ?j0" .
+    moreover have "\<not> ?c < ?j0" using cval by simp
+    ultimately show ?thesis using False by simp
+  qed
+  have ep: "entry ?Mn 1 (parent ?Mn 1 x) = entry N 1 ?pb"
+  proof -
+    have "entry ?Mn 1 ?c = entry N 1 (if ?c < ?j0 then ?c else ?j0 + (?c - ?j0) mod ?w)"
+      by (rule oper_d0zero_entryi_base[OF L notzero hp i1z0 j0lt cL])
+    thus ?thesis using basec pread by simp
+  qed
+  show "entry ?Mn 1 (parent ?Mn 1 x) + 1 = entry ?Mn 1 x"
+    by (rule operCA_tiling_within1_via_reflect[OF condA hpN ex ep])
 qed
 
 end
