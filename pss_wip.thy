@@ -427,6 +427,53 @@ abbreviation cGTWF :: "pairseq \<Rightarrow> bool" where
                  \<longrightarrow> (\<forall>u. parent M 1 k < u \<and> u < k \<and> hasParent M 1 u
                           \<longrightarrow> parent M 1 k \<le> parent M 1 u))"
 
+text \<open>Eglobal' (the second ST_PS invariant, carried jointly with cGTWF): for every
+  row-0 Next edge a = parent M 0 b -> b, any interior column c (a < c < b) whose
+  row-1 parent escapes the block (parent M 1 c < a) has entry M 1 a <= entry M 1 c.
+  Genuine ST_PS invariant -- NOT implied by cGTWF/reduced/standard.\<close>
+
+abbreviation Eglobal :: "pairseq \<Rightarrow> bool" where
+  "Eglobal M \<equiv> (\<forall>b. hasParent M 0 b
+                 \<longrightarrow> (\<forall>c. parent M 0 b < c \<and> c < b \<and> hasParent M 1 c
+                          \<and> parent M 1 c < parent M 0 b
+                          \<longrightarrow> entry M 1 (parent M 0 b) \<le> entry M 1 c))"
+
+text \<open>Row-0 analogue of @{thm [source] nextR1_pred_agree}: on the shared prefix
+  [0, Lng K-2] the row-0 Next edge agrees between K and Pred K (via
+  @{thm [source] nextrel0_prefix_imp}).  Used for Eglobal' Pred-stability.\<close>
+
+lemma nextR0_pred_agree:
+  assumes L: "1 < Lng K" and xc: "x \<le> Lng K - 2" and yc: "y \<le> Lng K - 2"
+  shows "nextR K 0 x y \<longleftrightarrow> nextR (Pred K) 0 x y"
+proof -
+  have pb: "Pred K = butlast K" using L by (simp add: Pred_def)
+  have lbl: "length (butlast K) = Lng K - 1" by simp
+  let ?c = "Lng K - 2"
+  have agreeKP: "\<And>j. j \<le> ?c \<Longrightarrow> K ! j = (Pred K) ! j"
+  proof -
+    fix j assume "j \<le> ?c"
+    hence jl: "j < length (butlast K)" using L lbl by linarith
+    show "K ! j = (Pred K) ! j" using pb jl by (simp add: nth_butlast)
+  qed
+  have agreePK: "\<And>j. j \<le> ?c \<Longrightarrow> (Pred K) ! j = K ! j" using agreeKP by simp
+  have cM: "?c < Lng K" using L by simp
+  have cN: "?c < Lng (Pred K)" using L pb lbl by simp
+  show ?thesis
+  proof
+    assume "nextR K 0 x y"
+    hence h: "nextrel0 K x y" by (simp add: nextR_def)
+    have "nextrel0 (Pred K) x y"
+      by (rule nextrel0_prefix_imp[OF agreeKP cN xc yc h])
+    thus "nextR (Pred K) 0 x y" by (simp add: nextR_def)
+  next
+    assume "nextR (Pred K) 0 x y"
+    hence h: "nextrel0 (Pred K) x y" by (simp add: nextR_def)
+    have "nextrel0 K x y"
+      by (rule nextrel0_prefix_imp[OF agreePK cM xc yc h])
+    thus "nextR K 0 x y" by (simp add: nextR_def)
+  qed
+qed
+
 text \<open>cGTWF is preserved by Pred: Pred M is the prefix [0, Lng M-2] of M, on which
   \<open>nextR _ 1\<close> (hence parent / hasParent) agrees (@{thm [source] nextR1_pred_agree}),
   so every k, u of Pred M keep their M-parents and the cGTWF clause transfers from
@@ -468,6 +515,68 @@ proof (intro allI impI)
   have "parent M 1 k < u \<and> u < k \<and> hasParent M 1 u" using ppku uk hpMu peqk by simp
   hence "parent M 1 k \<le> parent M 1 u" using cg hpMk by blast
   thus "parent (Pred M) 1 k \<le> parent (Pred M) 1 u" using peqk pequ by simp
+qed
+
+text \<open>Eglobal' is preserved by Pred: every row-0 edge a->b and interior column c of
+  Pred M lies in the shared prefix [0, Lng M-2], where row-0/row-1 Next edges and
+  entries agree with M (@{thm [source] nextR0_pred_agree}, @{thm [source]
+  nextR1_pred_agree}); the Eglobal' clause then transfers from Eglobal M.\<close>
+
+lemma Eglobal_pred:
+  assumes L: "1 < Lng M" and eg: "Eglobal M"
+  shows "Eglobal (Pred M)"
+proof (intro allI impI)
+  fix b c
+  assume hpb: "hasParent (Pred M) 0 b"
+     and H: "parent (Pred M) 0 b < c \<and> c < b \<and> hasParent (Pred M) 1 c
+              \<and> parent (Pred M) 1 c < parent (Pred M) 0 b"
+  from H have pbc: "parent (Pred M) 0 b < c" and cb: "c < b"
+    and hpc: "hasParent (Pred M) 1 c" and pc_lt: "parent (Pred M) 1 c < parent (Pred M) 0 b" by auto
+  let ?c2 = "Lng M - 2"
+  have lpm: "Lng (Pred M) = Lng M - 1" using L by (simp add: Pred_def)
+  have ent: "\<And>i j. j \<le> ?c2 \<Longrightarrow> entry (Pred M) i j = entry M i j"
+  proof -
+    fix i j assume jc: "j \<le> ?c2"
+    have pb: "Pred M = butlast M" using L by (simp add: Pred_def)
+    have "j < length (butlast M)" using jc L by simp
+    thus "entry (Pred M) i j = entry M i j" using pb by (simp add: entry_def nth_butlast)
+  qed
+  \<comment> \<open>row-0 edge a -> b lifts to M\<close>
+  have parPb: "nextR (Pred M) 0 (parent (Pred M) 0 b) b"
+    using hpb unfolding hasParent_def parent_def by (rule theI')
+  have blt: "b < Lng (Pred M)" using parPb by (simp add: nextR_def nextrel0_def)
+  have bc2: "b \<le> ?c2" using blt lpm by linarith
+  have pb_lt: "parent (Pred M) 0 b < b" using parPb by (simp add: nextR_def nextrel0_def)
+  have pbc2: "parent (Pred M) 0 b \<le> ?c2" using pb_lt bc2 by linarith
+  have parMb: "nextR M 0 (parent (Pred M) 0 b) b"
+    using nextR0_pred_agree[OF L pbc2 bc2] parPb by simp
+  have hpMb: "hasParent M 0 b" unfolding hasParent_def using parMb idxsum_parent0_unique by blast
+  have parMb': "nextR M 0 (parent M 0 b) b"
+    using hpMb unfolding hasParent_def parent_def by (rule theI')
+  have peqb: "parent M 0 b = parent (Pred M) 0 b" by (rule idxsum_parent0_unique[OF parMb' parMb])
+  \<comment> \<open>row-1 parent of c lifts to M\<close>
+  have cc2: "c \<le> ?c2" using cb bc2 by linarith
+  have parPc: "nextR (Pred M) 1 (parent (Pred M) 1 c) c"
+    using hpc unfolding hasParent_def parent_def by (rule theI')
+  have pc_lt': "parent (Pred M) 1 c < c" using parPc by (simp add: nextR_def nextrel1_def)
+  have pcc2: "parent (Pred M) 1 c \<le> ?c2" using pc_lt' cc2 by linarith
+  have parMc: "nextR M 1 (parent (Pred M) 1 c) c"
+    using nextR1_pred_agree[OF L pcc2 cc2] parPc by simp
+  have hpMc: "hasParent M 1 c" unfolding hasParent_def using parMc nextR1_unique by blast
+  have parMc': "nextR M 1 (parent M 1 c) c"
+    using hpMc unfolding hasParent_def parent_def by (rule theI')
+  have peqc: "parent M 1 c = parent (Pred M) 1 c" by (rule nextR1_unique[OF parMc' parMc])
+  \<comment> \<open>apply Eglobal M\<close>
+  have a_lt_c: "parent M 0 b < c" using pbc peqb by simp
+  have pc_lt_a: "parent M 1 c < parent M 0 b" using pc_lt peqb peqc by simp
+  have eM: "entry M 1 (parent M 0 b) \<le> entry M 1 c"
+    using eg hpMb a_lt_c cb hpMc pc_lt_a by blast
+  have e1: "entry (Pred M) 1 (parent (Pred M) 0 b) = entry M 1 (parent M 0 b)"
+    using ent[where i=1 and j="parent (Pred M) 0 b"] pbc2 peqb by simp
+  have e2: "entry (Pred M) 1 c = entry M 1 c"
+    using ent[where i=1 and j=c] cc2 by simp
+  show "entry (Pred M) 1 (parent (Pred M) 0 b) \<le> entry (Pred M) 1 c"
+    using eM e1 e2 by simp
 qed
 
 
