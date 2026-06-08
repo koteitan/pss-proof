@@ -601,4 +601,277 @@ proof -
   show ?thesis using hp peq jge by simp
 qed
 
+text \<open>§6.7 oper-tiling REVERSE READBACK — the \<open>parent_inblock\<close> DICHOTOMY: the row-1
+  parent of an INTERIOR column \<open>y = j\<^sub>0+q\<cdot>w+s\<close> (\<open>0<s<w\<close>) of \<open>N[n]\<close> lies either in
+  the PREFIX (\<open>< j\<^sub>0\<close>) or in y's OWN block \<open>q\<close> (\<open>(p-j\<^sub>0) div w = q\<close>); never in a
+  strictly-earlier block.  Proof: the block-q START c0 = j0+q*w ALWAYS reaches y
+  (le0 N j0 (j0+s) via the ancestor chain, lifted by
+  @{thm [source] oper_d0zero_le0_slice_lift}) and sits above p, so the parent's
+  valley forces (row-1) entry y <= entry N1 j0 (the fact 'star').  Then
+  sp = (p-j0) mod w = 0 contradicts the parent edge directly; sp > 0 lifts p to the
+  block-q start by the le0-ancestor chain and reflects (the H1 brick
+  @{thm [source] oper_d1pos_le0_cross_back}) to le0 N (j0+sp) j1, whose
+  nextrel1 N j0 j1 valley gives entry N1 j1 <= entry N1 (j0+sp) = entry1 p
+  < entry1 y <= entry N1 j0, contradicting entry N1 j0 < entry N1 j1.  Empirically
+  5544/5544 block-source parents are same-block, 0/5778 base-offset violations.
+  Unblocks the reverse readback (hpMs, oper_interior_hasParent_base below).\<close>
+
+lemma oper_interior_parent_inblock:
+  fixes N :: pairseq
+  assumes L: "1 < Lng N"
+    and notzero: "\<not> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0)"
+    and hp: "hasParent N (idx1 N (Lng N - 1)) (Lng N - 1)"
+    and i1z: "idx1 N (Lng N - 1) = 1"
+    and j0lt: "parent N 1 (Lng N - 1) < Lng N - 1"
+    and qn: "q < n"
+    and spos: "0 < s"
+    and sw: "s < Lng N - 1 - parent N 1 (Lng N - 1)"
+    and hpy: "hasParent ((N::pairseq)[n]) 1
+                (parent N 1 (Lng N - 1) + q * (Lng N - 1 - parent N 1 (Lng N - 1)) + s)"
+  shows "parent ((N::pairseq)[n]) 1
+            (parent N 1 (Lng N - 1) + q * (Lng N - 1 - parent N 1 (Lng N - 1)) + s)
+          < parent N 1 (Lng N - 1)
+       \<or> (parent N 1 (Lng N - 1)
+            \<le> parent ((N::pairseq)[n]) 1
+                 (parent N 1 (Lng N - 1) + q * (Lng N - 1 - parent N 1 (Lng N - 1)) + s)
+          \<and> (parent ((N::pairseq)[n]) 1
+                 (parent N 1 (Lng N - 1) + q * (Lng N - 1 - parent N 1 (Lng N - 1)) + s)
+              - parent N 1 (Lng N - 1))
+             div (Lng N - 1 - parent N 1 (Lng N - 1)) = q)"
+proof (rule ccontr)
+  let ?j1 = "Lng N - 1"  let ?j0 = "parent N 1 ?j1"  let ?w = "?j1 - ?j0"
+  let ?Mn = "(N::pairseq)[n]"  let ?y = "?j0 + q * ?w + s"  let ?c0 = "?j0 + q * ?w"
+  let ?p = "parent ?Mn 1 ?y"
+  assume "\<not> (?p < ?j0 \<or> (?j0 \<le> ?p \<and> (?p - ?j0) div ?w = q))"
+  hence pge: "?j0 \<le> ?p" and qpne: "(?p - ?j0) div ?w \<noteq> q" by auto
+  have w0: "0 < ?w" using j0lt by linarith
+  have n0: "0 < n" using qn by simp
+  have j0lt': "parent N (idx1 N (Lng N - 1)) (Lng N - 1) < Lng N - 1" using j0lt i1z by simp
+  have NT: "N \<in> T_PS" using L by (cases N) (auto simp: T_PS_def)
+  \<comment> \<open>the parent edge of y in N[n], its valley\<close>
+  have parRy: "nextR ?Mn 1 ?p ?y" using hpy unfolding hasParent_def parent_def by (rule theI')
+  have nr1y: "nextrel1 ?Mn ?p ?y" using parRy by (simp add: nextR_def)
+  have ple: "?p < ?y" using nr1y by (simp add: nextrel1_def)
+  have le0py: "le0 ?Mn ?p ?y" using nr1y by (simp add: nextrel1_def)
+  have epy: "entry ?Mn 1 ?p < entry ?Mn 1 ?y" using nr1y by (simp add: nextrel1_def)
+  have valleyP: "\<And>j. ?p < j \<Longrightarrow> le0 ?Mn j ?y \<Longrightarrow> entry ?Mn 1 ?y \<le> entry ?Mn 1 j"
+    using nr1y unfolding nextrel1_def by blast
+  \<comment> \<open>block decomposition of p; qp < q\<close>
+  define qp where "qp = (?p - ?j0) div ?w"
+  define sp where "sp = (?p - ?j0) mod ?w"
+  have spw: "sp < ?w" using w0 by (simp add: sp_def)
+  have pdecomp: "?p = ?j0 + qp * ?w + sp"
+  proof -
+    have "?j0 + qp * ?w + sp = ?j0 + ((?p - ?j0) div ?w * ?w + (?p - ?j0) mod ?w)"
+      unfolding qp_def sp_def by simp
+    also have "\<dots> = ?j0 + (?p - ?j0)" by (simp add: div_mult_mod_eq)
+    also have "\<dots> = ?p" using pge by simp
+    finally show ?thesis by simp
+  qed
+  have qple: "qp \<le> q"
+  proof (rule ccontr)
+    assume "\<not> qp \<le> q" hence "q + 1 \<le> qp" by simp
+    hence "(q + 1) * ?w \<le> qp * ?w" by (rule mult_le_mono1)
+    hence "?j0 + q * ?w + ?w \<le> ?p" using pdecomp by simp
+    moreover have "?p < ?j0 + q * ?w + s" using ple by simp
+    ultimately show False using sw by linarith
+  qed
+  have qpne': "qp \<noteq> q" using qpne qp_def by simp
+  have qq: "qp < q" using le_neq_implies_less[OF qple qpne'] .
+  have qpn: "qp < n" using qq qn by simp
+  have pc0: "?p < ?c0"
+  proof -
+    have qp1: "qp + 1 \<le> q" using qq by simp
+    have "qp * ?w + sp < (qp + 1) * ?w" using spw by simp
+    also have "\<dots> \<le> q * ?w" using qp1 by (rule mult_le_mono1)
+    finally show ?thesis using pdecomp by simp
+  qed
+  \<comment> \<open>the parent edge nextrel1 N j0 j1 (the block period) and its valley\<close>
+  have hpj1: "hasParent N 1 ?j1" using hp i1z by simp
+  have parj1: "nextR N 1 ?j0 ?j1" using hpj1 unfolding hasParent_def parent_def by (rule theI')
+  have nr1j1: "nextrel1 N ?j0 ?j1" using parj1 by (simp add: nextR_def)
+  have ej0j1: "entry N 1 ?j0 < entry N 1 ?j1" using nr1j1 by (simp add: nextrel1_def)
+  have le0j0j1: "le0 N ?j0 ?j1" using nr1j1 by (simp add: nextrel1_def)
+  have valleyJ1: "\<And>j. ?j0 < j \<Longrightarrow> le0 N j ?j1 \<Longrightarrow> entry N 1 ?j1 \<le> entry N 1 j"
+    using nr1j1 unfolding nextrel1_def by blast
+  \<comment> \<open>(*) the block-q START c0 always reaches y, lies above p: entry1 y <= entry N1 j0\<close>
+  have basej1: "?j0 + s \<le> ?j1" using sw by simp
+  have leRj0j1: "leR N 0 ?j0 ?j1" using le0j0j1 by (simp add: leR_def)
+  have le0j0base: "le0 N ?j0 (?j0 + s)"
+    using m_5_1_ancestor_tree_1[OF NT leRj0j1 le_add1 basej1] by (simp add: leR_def)
+  have a0: "parent N (idx1 N (Lng N - 1)) (Lng N - 1) \<le> ?j0" using i1z by simp
+  have bj1: "?j0 + s < Lng N - 1" using sw by simp
+  have c0lift: "le0 ?Mn
+       (parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+          + q * (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+          + (?j0 - parent N (idx1 N (Lng N - 1)) (Lng N - 1)))
+       (parent N (idx1 N (Lng N - 1)) (Lng N - 1)
+          + q * (Lng N - 1 - parent N (idx1 N (Lng N - 1)) (Lng N - 1))
+          + ((?j0 + s) - parent N (idx1 N (Lng N - 1)) (Lng N - 1)))"
+    by (rule oper_d0zero_le0_slice_lift[OF L notzero hp j0lt' qn a0 bj1 le0j0base])
+  have le0c0y: "le0 ?Mn ?c0 ?y" using c0lift i1z by simp
+  have e_c0: "entry ?Mn 1 ?c0 = entry N 1 ?j0"
+    using oper_d1pos_entry1[OF L notzero hp i1z j0lt qn w0] by simp
+  have star: "entry ?Mn 1 ?y \<le> entry N 1 ?j0"
+    using valleyP[OF pc0 le0c0y] e_c0 by simp
+  \<comment> \<open>periodic row-1 at p\<close>
+  have e_p: "entry ?Mn 1 ?p = entry N 1 (?j0 + sp)"
+    using oper_d1pos_entry1[OF L notzero hp i1z j0lt qpn spw] pdecomp by simp
+  show False
+  proof (cases "sp = 0")
+    case True
+    have "entry N 1 ?j0 < entry ?Mn 1 ?y" using epy e_p True by simp
+    thus False using star by simp
+  next
+    case False
+    hence sppos: "0 < sp" by simp
+    \<comment> \<open>le0(N[n]) p c0 (ancestor), then H1 reflect to le0 N (j0+sp) j1\<close>
+    have j0ltMn: "?j0 < Lng ?Mn"
+      using oper_d1pos_LngM[OF L notzero hp i1z j0lt] n0 w0 by simp
+    have NnT: "?Mn \<in> T_PS" using j0ltMn by (cases ?Mn) (auto simp: T_PS_def)
+    have pc0': "?p \<le> ?c0" using pc0 by simp
+    have c0y: "?c0 \<le> ?y" by simp
+    have le0pc0: "le0 ?Mn ?p ?c0"
+    proof -
+      have "leR ?Mn 0 ?p ?c0"
+        by (rule m_5_1_ancestor_tree_1[OF NnT _ pc0' c0y]) (use le0py in \<open>simp add: leR_def\<close>)
+      thus ?thesis by (simp add: leR_def)
+    qed
+    have reachH1: "le0 ?Mn (?j0 + qp * ?w + sp) (?j0 + q * ?w)" using le0pc0 pdecomp by simp
+    have le0spj1: "le0 N (?j0 + sp) ?j1"
+      by (rule oper_d1pos_le0_cross_back[OF L notzero hp i1z j0lt qq qn spw reachH1])
+    have j0lt_sp: "?j0 < ?j0 + sp" using sppos by simp
+    have ge1: "entry N 1 ?j1 \<le> entry N 1 (?j0 + sp)" using valleyJ1[OF j0lt_sp le0spj1] .
+    have "entry N 1 (?j0 + sp) < entry N 1 ?j0" using e_p epy star by simp
+    hence "entry N 1 ?j1 < entry N 1 ?j0" using ge1 by simp
+    thus False using ej0j1 by simp
+  qed
+qed
+
+
+text \<open>§6.7 oper-tiling REVERSE READBACK — hpMs (existence leg): an INTERIOR column
+  \<open>y = j\<^sub>0+q\<cdot>w+s\<close> (\<open>0<s<w\<close>) of \<open>N[n]\<close> with a row-1 parent has its base \<open>j\<^sub>0+s\<close>
+  parented in \<open>N\<close>.  The \<open>N[n]\<close>-parent \<open>p\<close> reflects (its base \<open>b\<close>) to a strictly
+  smaller-row1 \<open>le0\<close>-predecessor of \<open>j\<^sub>0+s\<close> in \<open>N\<close>, whence
+  @{thm [source] m_5_1_parent_exists_2} gives a parent.  PREFIX \<open>p<j\<^sub>0\<close>: \<open>le0 N p j\<^sub>0\<close>
+  (ancestor chain @{thm [source] m_5_1_ancestor_tree_1} + prefix verbatim
+  @{thm [source] oper_d1pos_le0_prefix_back} at block 0) then
+  \<open>le0 N j\<^sub>0 (j\<^sub>0+s)\<close> (ancestor inside \<open>nextrel1 N j\<^sub>0 j\<^sub>1\<close>) by
+  @{thm [source] le0_trans}; row-1 verbatim.  SAME-BLOCK \<open>(p-j\<^sub>0) div w = q\<close>:
+  \<open>sp = (p-j\<^sub>0) mod w < s\<close> from \<open>p<y\<close>, same-block reflection
+  @{thm [source] oper_d1pos_le0_base_back}; periodic row-1
+  @{thm [source] oper_d1pos_entry1}.  Block classification by
+  @{thm [source] oper_interior_parent_inblock}.\<close>
+
+lemma oper_interior_hasParent_base:
+  fixes N :: pairseq
+  assumes L: "1 < Lng N"
+    and notzero: "\<not> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0)"
+    and hp: "hasParent N (idx1 N (Lng N - 1)) (Lng N - 1)"
+    and i1z: "idx1 N (Lng N - 1) = 1"
+    and j0lt: "parent N 1 (Lng N - 1) < Lng N - 1"
+    and qn: "q < n"
+    and spos: "0 < s"
+    and sw: "s < Lng N - 1 - parent N 1 (Lng N - 1)"
+    and hpy: "hasParent ((N::pairseq)[n]) 1
+                (parent N 1 (Lng N - 1) + q * (Lng N - 1 - parent N 1 (Lng N - 1)) + s)"
+  shows "hasParent N 1 (parent N 1 (Lng N - 1) + s)"
+proof -
+  let ?j1 = "Lng N - 1"  let ?j0 = "parent N 1 ?j1"  let ?w = "?j1 - ?j0"
+  let ?Mn = "(N::pairseq)[n]"  let ?y = "?j0 + q * ?w + s"  let ?base = "?j0 + s"
+  let ?p = "parent ?Mn 1 ?y"
+  have w0: "0 < ?w" using j0lt by linarith
+  have n0: "0 < n" using qn by simp
+  have NT: "N \<in> T_PS" using L by (cases N) (auto simp: T_PS_def)
+  \<comment> \<open>the parent edge of \<open>y\<close> in \<open>N[n]\<close>\<close>
+  have parRy: "nextR ?Mn 1 ?p ?y"
+    using hpy unfolding hasParent_def parent_def by (rule theI')
+  have nr1y: "nextrel1 ?Mn ?p ?y" using parRy by (simp add: nextR_def)
+  have ple: "?p < ?y" using nr1y by (simp add: nextrel1_def)
+  have le0py: "le0 ?Mn ?p ?y" using nr1y by (simp add: nextrel1_def)
+  have epy: "entry ?Mn 1 ?p < entry ?Mn 1 ?y" using nr1y by (simp add: nextrel1_def)
+  \<comment> \<open>row-1 of \<open>y\<close> = row-1 of the base\<close>
+  have ey: "entry ?Mn 1 ?y = entry N 1 ?base"
+    by (rule oper_d1pos_entry1[OF L notzero hp i1z j0lt qn sw])
+  \<comment> \<open>\<open>base < Lng N\<close>, and \<open>le0 N j\<^sub>0 base\<close> (ancestor inside the \<open>nextrel1 N j\<^sub>0 j\<^sub>1\<close> edge)\<close>
+  have baseLt: "?base < Lng N" using sw j0lt by linarith
+  have hpj1: "hasParent N 1 ?j1" using hp i1z by simp
+  have parj1: "nextR N 1 ?j0 ?j1" using hpj1 unfolding hasParent_def parent_def by (rule theI')
+  have nr1j1: "nextrel1 N ?j0 ?j1" using parj1 by (simp add: nextR_def)
+  have le0j0j1: "le0 N ?j0 ?j1" using nr1j1 by (simp add: nextrel1_def)
+  have basej1: "?base \<le> ?j1" using sw by simp
+  have leRj0j1: "leR N 0 ?j0 ?j1" using le0j0j1 by (simp add: leR_def)
+  have j0base: "?j0 \<le> ?base" by simp
+  have le0j0base: "le0 N ?j0 ?base"
+    using m_5_1_ancestor_tree_1[OF NT leRj0j1 j0base basej1] by (simp add: leR_def)
+  \<comment> \<open>It suffices to exhibit a strictly-smaller-row1 \<open>le0\<close>-predecessor \<open>b\<close> of \<open>base\<close>\<close>
+  have suff: "\<And>b. b < ?base \<Longrightarrow> entry N 1 b < entry N 1 ?base \<Longrightarrow> le0 N b ?base
+                  \<Longrightarrow> hasParent N 1 ?base"
+  proof -
+    fix b assume bb: "b < ?base" and eb: "entry N 1 b < entry N 1 ?base"
+      and le0b: "le0 N b ?base"
+    have leRb: "leR N 0 b ?base" using le0b by (simp add: leR_def)
+    have "\<exists>j. b \<le> j \<and> j < ?base \<and> nextR N 1 j ?base"
+      by (rule m_5_1_parent_exists_2[OF NT bb baseLt eb leRb])
+    then obtain j where nr: "nextR N 1 j ?base" by blast
+    show "hasParent N 1 ?base"
+      unfolding hasParent_def using nr nextR1_unique by blast
+  qed
+  show ?thesis
+  proof (cases "?p < ?j0")
+    case True
+    \<comment> \<open>PREFIX: \<open>b = p\<close>; \<open>le0 N p j\<^sub>0\<close> via ancestor + prefix verbatim, then \<open>le0 N p base\<close>\<close>
+    have pj0: "?p \<le> ?j0" using True by simp
+    have j0y: "?j0 \<le> ?y" by simp
+    have lenMn: "Lng ?Mn = ?j0 + n * ?w"
+      using oper_d1pos_LngM[OF L notzero hp i1z j0lt] by simp
+    have j0ltMn: "?j0 < Lng ?Mn" using lenMn n0 w0 by simp
+    have NnT: "?Mn \<in> T_PS" using j0ltMn by (cases ?Mn) (auto simp: T_PS_def)
+    have le0pj0Mn: "le0 ?Mn ?p ?j0"
+    proof -
+      have "leR ?Mn 0 ?p ?j0"
+        by (rule m_5_1_ancestor_tree_1[OF NnT _ pj0 j0y]) (use le0py in \<open>simp add: leR_def\<close>)
+      thus ?thesis by (simp add: leR_def)
+    qed
+    \<comment> \<open>reflect to \<open>N\<close> via the prefix-back brick with block \<open>q = 0\<close> (target \<open>j\<^sub>0 + 0\<cdot>w = j\<^sub>0\<close>)\<close>
+    have reach0: "le0 ?Mn ?p (?j0 + 0 * ?w)" using le0pj0Mn by simp
+    have le0pj0: "le0 N ?p ?j0"
+      by (rule oper_d1pos_le0_prefix_back[OF L notzero hp i1z j0lt n0 True reach0])
+    have le0pbase: "le0 N ?p ?base" by (rule le0_trans[OF le0pj0 le0j0base])
+    have ep: "entry ?Mn 1 ?p = entry N 1 ?p"
+      by (rule operB_gen_entry_prefix[OF L notzero hp]) (use True i1z in simp)
+    have epbase: "entry N 1 ?p < entry N 1 ?base" using epy ey ep by simp
+    have pbase: "?p < ?base" using True spos by simp
+    show ?thesis by (rule suff[OF pbase epbase le0pbase])
+  next
+    case False
+    hence pge: "?j0 \<le> ?p" by simp
+    \<comment> \<open>SAME-BLOCK (by the dichotomy): \<open>p = j\<^sub>0+q\<cdot>w+sp\<close>, \<open>sp = (p-j\<^sub>0) mod w < s\<close>\<close>
+    have dq: "(?p - ?j0) div ?w = q"
+      using oper_interior_parent_inblock[OF L notzero hp i1z j0lt qn spos sw hpy] pge
+      by simp
+    define sp where "sp = (?p - ?j0) mod ?w"
+    have spw: "sp < ?w" using w0 by (simp add: sp_def)
+    have pdecomp: "?p = ?j0 + q * ?w + sp"
+    proof -
+      have "?j0 + q * ?w + sp = ?j0 + ((?p - ?j0) div ?w * ?w + (?p - ?j0) mod ?w)"
+        using dq sp_def by simp
+      also have "\<dots> = ?j0 + (?p - ?j0)" by (simp add: div_mult_mod_eq)
+      also have "\<dots> = ?p" using pge by simp
+      finally show ?thesis by simp
+    qed
+    have sps: "sp < s" using ple pdecomp by simp
+    \<comment> \<open>same-block le0 reflection and periodic row-1\<close>
+    have reachblk: "le0 ?Mn (?j0 + q * ?w + sp) (?j0 + q * ?w + s)" using le0py pdecomp by simp
+    have le0bbase: "le0 N (?j0 + sp) ?base"
+      by (rule oper_d1pos_le0_base_back[OF L notzero hp i1z j0lt qn sps sw reachblk])
+    have ebp: "entry ?Mn 1 (?j0 + q * ?w + sp) = entry N 1 (?j0 + sp)"
+      by (rule oper_d1pos_entry1[OF L notzero hp i1z j0lt qn spw])
+    have ebase: "entry N 1 (?j0 + sp) < entry N 1 ?base"
+      using epy ey ebp pdecomp by simp
+    have bbase: "?j0 + sp < ?base" using sps by simp
+    show ?thesis by (rule suff[OF bbase ebase le0bbase])
+  qed
+qed
+
 end
