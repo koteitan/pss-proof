@@ -1314,4 +1314,75 @@ text \<open>§6.7 standard-form reducedness ST_PS \<subseteq> RT_PS (the theorem
 lemma m_6_7_ST_PS_subseteq_RT_PS: "ST_PS \<subseteq> RT_PS"
   by (rule m_6_7_standard_reduced[OF operCA_tiling_full operCB_tiling])
 
+text \<open>§6.7 oper-tiling REVERSE READBACK, idx1 = 0 (d0zero): an interior column
+  j0+q*w+s (0<s<w) of M[n] with a row-1 parent has its base j0+s parented in M.
+  Cleaner than the d1pos case: the d0zero le0 reflection
+  @{thm [source] oper_d0zero_le0_base_fwd} sends ANY le0-predecessor p of the column
+  to le0 M (base p) (j0+s) uniformly (prefix and block via one if), and the row-1
+  reading is verbatim periodic @{thm [source] oper_d0zero_entryi_base}; the reflected
+  base p is then a strictly-smaller-row1 predecessor of j0+s, whence
+  @{thm [source] m_5_1_parent_exists_2}.\<close>
+
+lemma oper_d0zero_interior_hasParent_base:
+  fixes M :: pairseq
+  assumes L: "1 < Lng M"
+    and notzero: "\<not> (entry M 0 (Lng M - 1) = 0 \<and> entry M 1 (Lng M - 1) = 0)"
+    and hp: "hasParent M (idx1 M (Lng M - 1)) (Lng M - 1)"
+    and i1z0: "idx1 M (Lng M - 1) = 0"
+    and j0lt: "parent M (idx1 M (Lng M - 1)) (Lng M - 1) < Lng M - 1"
+    and qn: "q < n"
+    and spos: "0 < s"
+    and sw: "s < Lng M - 1 - parent M (idx1 M (Lng M - 1)) (Lng M - 1)"
+    and hpy: "hasParent ((M::pairseq)[n]) 1
+                (parent M (idx1 M (Lng M - 1)) (Lng M - 1)
+                   + q * (Lng M - 1 - parent M (idx1 M (Lng M - 1)) (Lng M - 1)) + s)"
+  shows "hasParent M 1 (parent M (idx1 M (Lng M - 1)) (Lng M - 1) + s)"
+proof -
+  let ?j1 = "Lng M - 1"  let ?j0 = "parent M (idx1 M (Lng M - 1)) ?j1"  let ?w = "?j1 - ?j0"
+  let ?Mn = "(M::pairseq)[n]"  let ?y = "?j0 + q * ?w + s"  let ?base = "?j0 + s"
+  let ?p = "parent ?Mn 1 ?y"
+  let ?bp = "if ?p < ?j0 then ?p else ?j0 + (?p - ?j0) mod ?w"
+  have w0: "0 < ?w" using j0lt by linarith
+  have NT: "M \<in> T_PS" using L by (cases M) (auto simp: T_PS_def)
+  have baseLt: "?base < Lng M" using sw j0lt by linarith
+  have parRy: "nextR ?Mn 1 ?p ?y" using hpy unfolding hasParent_def parent_def by (rule theI')
+  have nr1y: "nextrel1 ?Mn ?p ?y" using parRy by (simp add: nextR_def)
+  have ple: "?p < ?y" using nr1y by (simp add: nextrel1_def)
+  have le0py: "le0 ?Mn ?p ?y" using nr1y by (simp add: nextrel1_def)
+  have epy: "entry ?Mn 1 ?p < entry ?Mn 1 ?y" using nr1y by (simp add: nextrel1_def)
+  have yL: "?y < Lng ?Mn" using nr1y by (simp add: nextrel1_def)
+  have pL: "?p < Lng ?Mn" using ple yL by linarith
+  \<comment> \<open>row-1 reading of y is its base j0+s\<close>
+  have ymod: "(?y - ?j0) mod ?w = s"
+  proof -
+    have "?y - ?j0 = q * ?w + s" by simp
+    thus ?thesis using sw by simp
+  qed
+  have ey: "entry ?Mn 1 ?y = entry M 1 ?base"
+  proof -
+    have "entry ?Mn 1 ?y = entry M 1 (if ?y < ?j0 then ?y else ?j0 + (?y - ?j0) mod ?w)"
+      by (rule oper_d0zero_entryi_base[OF L notzero hp i1z0 j0lt yL])
+    thus ?thesis using ymod by simp
+  qed
+  have ep: "entry ?Mn 1 ?p = entry M 1 ?bp"
+    by (rule oper_d0zero_entryi_base[OF L notzero hp i1z0 j0lt pL])
+  have le0bp: "le0 M ?bp ?base"
+    by (rule oper_d0zero_le0_base_fwd[OF L notzero hp i1z0 j0lt qn sw le0py])
+  have ebp: "entry M 1 ?bp < entry M 1 ?base" using epy ep ey by simp
+  have bple: "?bp \<le> ?base"
+  proof -
+    have "(nextrel0 M)\<^sup>*\<^sup>* ?bp ?base" using le0bp by (simp add: le0_def)
+    thus ?thesis by (rule nextrel0_rtrancl_mono)
+  qed
+  have bpne: "?bp \<noteq> ?base" using ebp by auto
+  have bpbase: "?bp < ?base" using bple bpne by simp
+  have leRbp: "leR M 0 ?bp ?base" using le0bp by (simp add: leR_def)
+  have "\<exists>j. ?bp \<le> j \<and> j < ?base \<and> nextR M 1 j ?base"
+    by (rule m_5_1_parent_exists_2[OF NT bpbase baseLt ebp leRbp])
+  then obtain j where nr: "nextR M 1 j ?base" by blast
+  show "hasParent M 1 ?base"
+    unfolding hasParent_def using nr nextR1_unique by blast
+qed
+
+
 end
