@@ -1215,4 +1215,103 @@ next
   qed
 qed
 
+text \<open>§6.7 operCA, FULL (both i1): RedCondA (N[n]) for a tiling step from a
+  standard N in ST_PS.  i1 = 1 (d1pos) is discharged by
+  @{thm [source] operCA_via_gate_hpMs}, fed the gate (the k = j1 instance of
+  cGTWF N via @{thm [source] cGTWF_ST_PS}) and hpMs packaged from the reverse
+  readbacks (@{thm [source] oper_blockstart_hasParent_j0} for the block start,
+  @{thm [source] oper_interior_hasParent_base} for interior columns).  i1 = 0
+  (d0zero) is the residual operCA_d0zero (sorry).\<close>
+
+lemma operCA_tiling_full:
+  assumes Nst: "N \<in> ST_PS" and condA: "RedCondA N" and condB: "RedCondB N"
+    and n1: "1 \<le> n"
+    and tile: "\<not> (Lng N - 1 = 0
+                  \<or> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0)
+                  \<or> \<not> hasParent N (idx1 N (Lng N - 1)) (Lng N - 1))"
+  shows "RedCondA ((N::pairseq)[n])"
+proof -
+  from tile have ndeg: "Lng N - 1 \<noteq> 0"
+    and notzero: "\<not> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0)"
+    and hp: "hasParent N (idx1 N (Lng N - 1)) (Lng N - 1)" by auto
+  have L: "1 < Lng N" using ndeg by linarith
+  show ?thesis
+  proof (cases "idx1 N (Lng N - 1) = 1")
+    case True
+    note i1z = True
+    have hpj1: "hasParent N 1 (Lng N - 1)" using hp i1z by simp
+    have parRj1: "nextR N 1 (parent N 1 (Lng N - 1)) (Lng N - 1)"
+      using hpj1 unfolding hasParent_def parent_def by (rule theI')
+    have j0lt: "parent N 1 (Lng N - 1) < Lng N - 1"
+      using parRj1 by (simp add: nextR_def nextrel1_def)
+    have cg: "cGTWF N" by (rule cGTWF_ST_PS[OF Nst])
+    have gate: "\<And>u. parent N 1 (Lng N - 1) < u \<Longrightarrow> u < Lng N - 1 \<Longrightarrow> hasParent N 1 u
+                 \<Longrightarrow> parent N 1 (Lng N - 1) \<le> parent N 1 u"
+      using cg hpj1 by blast
+    have hpMs: "\<And>y. parent N 1 (Lng N - 1) \<le> y \<Longrightarrow> y < Lng ((N::pairseq)[n])
+                 \<Longrightarrow> hasParent ((N::pairseq)[n]) 1 y
+                 \<Longrightarrow> hasParent N 1 (parent N 1 (Lng N - 1)
+                        + (y - parent N 1 (Lng N - 1))
+                           mod (Lng N - 1 - parent N 1 (Lng N - 1)))"
+    proof -
+      fix y
+      assume yge: "parent N 1 (Lng N - 1) \<le> y" and yL: "y < Lng ((N::pairseq)[n])"
+        and hpy: "hasParent ((N::pairseq)[n]) 1 y"
+      let ?j1 = "Lng N - 1"  let ?j0 = "parent N 1 ?j1"  let ?w = "?j1 - ?j0"
+      have w0: "0 < ?w" using j0lt by linarith
+      have lenMn: "Lng ((N::pairseq)[n]) = ?j0 + n * ?w"
+        using oper_d1pos_LngM[OF L notzero hp i1z j0lt] by simp
+      define q where "q = (y - ?j0) div ?w"
+      define s where "s = (y - ?j0) mod ?w"
+      have sw: "s < ?w" using w0 by (simp add: s_def)
+      have ydecomp: "y = ?j0 + q * ?w + s"
+      proof -
+        have "?j0 + q * ?w + s = ?j0 + ((y - ?j0) div ?w * ?w + (y - ?j0) mod ?w)"
+          unfolding q_def s_def by simp
+        also have "\<dots> = ?j0 + (y - ?j0)" by (simp add: div_mult_mod_eq)
+        also have "\<dots> = y" using yge by simp
+        finally show ?thesis by simp
+      qed
+      have qn: "q < n"
+      proof (rule ccontr)
+        assume "\<not> q < n" hence "n \<le> q" by simp
+        hence "n * ?w \<le> q * ?w" by (rule mult_le_mono1)
+        hence "?j0 + n * ?w \<le> y" using ydecomp by linarith
+        moreover have "y < ?j0 + n * ?w" using yL lenMn by simp
+        ultimately show False by linarith
+      qed
+      show "hasParent N 1 (?j0 + (y - ?j0) mod ?w)"
+      proof (cases "s = 0")
+        case True
+        have ybs: "y = ?j0 + q * ?w" using ydecomp True by simp
+        have "hasParent N 1 ?j0"
+          by (rule oper_blockstart_hasParent_j0[OF L notzero hp i1z j0lt qn]) (use hpy ybs in simp)
+        thus ?thesis using True s_def by simp
+      next
+        case False
+        hence spos: "0 < s" by simp
+        have "hasParent N 1 (?j0 + s)"
+          by (rule oper_interior_hasParent_base[OF L notzero hp i1z j0lt qn spos sw])
+             (use hpy ydecomp in simp)
+        thus ?thesis using s_def by simp
+      qed
+    qed
+    show ?thesis
+      using operCA_via_gate_hpMs[OF L notzero hp i1z j0lt condA n1] hpMs gate by blast
+  next
+    case False
+    have i1z0: "idx1 N (Lng N - 1) = 0"
+      using False by (simp add: idx1_def split: if_split_asm)
+    show ?thesis sorry
+  qed
+qed
+
+text \<open>§6.7 standard-form reducedness ST_PS \<subseteq> RT_PS (the theorem
+  @{thm [source] m_6_7_standard_reduced}), now discharged: operCA by
+  @{thm [source] operCA_tiling_full} (modulo the i1 = 0 residuals) and operCB by
+  the green @{thm [source] operCB_tiling}.\<close>
+
+lemma m_6_7_ST_PS_subseteq_RT_PS: "ST_PS \<subseteq> RT_PS"
+  by (rule m_6_7_standard_reduced[OF operCA_tiling_full operCB_tiling])
+
 end
