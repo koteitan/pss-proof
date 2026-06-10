@@ -2949,4 +2949,135 @@ proof -
   qed
 qed
 
+
+text \<open>List reconstruction from entries, and the trunk prefix as a diagonal.\<close>
+
+lemma map_entry_id: "map (\<lambda>j. (entry M 0 j, entry M 1 j)) [0..<Lng M] = M"
+proof (rule nth_equalityI)
+  show "length (map (\<lambda>j. (entry M 0 j, entry M 1 j)) [0..<Lng M]) = length M" by simp
+next
+  fix j assume jL: "j < length (map (\<lambda>j. (entry M 0 j, entry M 1 j)) [0..<Lng M])"
+  have jM: "j < Lng M" using jL by simp
+  have "map (\<lambda>j. (entry M 0 j, entry M 1 j)) [0..<Lng M] ! j = (entry M 0 j, entry M 1 j)"
+    using jM by (simp del: upt_Suc)
+  thus "map (\<lambda>j. (entry M 0 j, entry M 1 j)) [0..<Lng M] ! j = M ! j"
+    by (simp add: entry_def prod_eq_iff)
+qed
+
+lemma trunk_take_eq_diagSeq:
+  assumes MT: "M \<in> T_PS"
+    and condA: "RedCondA M"
+    and m00: "entry M 0 0 = 0" and m10: "entry M 1 0 = 0"
+    and tlt: "TrMax M < Lng M"
+  shows "take (TrMax M + 1) M = diagSeq 0 (TrMax M)"
+proof (rule nth_equalityI)
+  show "length (take (TrMax M + 1) M) = length (diagSeq 0 (TrMax M))"
+    using tlt by (simp add: diagSeq_def)
+next
+  fix j assume jL: "j < length (take (TrMax M + 1) M)"
+  have jle: "j \<le> TrMax M" using jL by simp
+  have jM: "j < Lng M" using jle tlt by simp
+  have ent: "entry M 0 j = j \<and> entry M 1 j = j"
+    by (rule trunk_entries_diag[OF MT condA m00 m10 jle])
+  have Mj: "M ! j = (j, j)"
+    using ent by (simp add: entry_def prod_eq_iff)
+  have tj: "take (TrMax M + 1) M ! j = M ! j" using jL by simp
+  have jlt': "j < Suc (TrMax M)" using jle by simp
+  have dj: "diagSeq 0 (TrMax M) ! j = (j, j)"
+    using jlt' by (simp add: diagSeq_def del: upt_Suc)
+  show "take (TrMax M + 1) M ! j = diagSeq 0 (TrMax M) ! j" using tj Mj dj by simp
+qed
+
+text \<open>§6.5 monoCong CORE assembly: for a core mono RedCondA sequence, Red is the
+  IDENTITY.  Trunk-whole: M is the diagonal (the trunk-whole brick) and Red M is
+  that same diagonal.  Branches: each lifted block is the branch component
+  verbatim (@{thm [source] NJ_eq_BrJ} + @{thm [source] BrJ_block_identity}, the
+  rebase closed form for the strictly shorter component supplied by the
+  hypothesis IH), so Red M = take (TrMax+1) M @ drop (TrMax+1) M = M
+  (@{thm [source] trunk_take_eq_diagSeq}, @{thm [source] idxsum_concat_P},
+  @{thm [source] seg_to_last_eq_drop}).\<close>
+
+lemma Red_rebase_core:
+  assumes MT: "M \<in> T_PS"
+    and condA: "RedCondA M"
+    and mono: "monoT M"
+    and c0: "entry M 0 0 = 0" and c1: "entry M 1 0 = 0"
+    and IH: "\<And>X. Lng X < Lng M \<Longrightarrow> X \<in> T_PS \<Longrightarrow> RedCondA X \<Longrightarrow> \<not> multiT X
+              \<Longrightarrow> Red X = map (\<lambda>j. (entry X 0 j - entry X 0 0 + entry X 1 0,
+                                     entry X 1 j)) [0..<Lng X]"
+  shows "Red M = M"
+proof -
+  let ?j1 = "Lng M - 1"
+  have dom: "Red_dom M" by (rule m_6_5_Red_welldef[OF MT])
+  have nz: "\<not> zeroT M" using mono by (simp add: monoT_def)
+  have nmu: "\<not> multiT M" using mono by (simp add: multiT_def)
+  have MPT: "M \<in> PT_PS" using MT mono by (simp add: PT_PS_def)
+  have LMpos: "0 < Lng M" using MT by (cases M) (auto simp: T_PS_def)
+  show ?thesis
+  proof (cases "TrMax M = ?j1")
+    case tw: True
+    have Meq: "M = diagSeq 0 ?j1"
+      by (rule monoT_condA_trunkwhole_eq_diagSeq[OF MT condA c0 c1 tw])
+    have rM: "Red M = diagSeq (entry M 1 0) (entry M 1 0 + ?j1)"
+      using Red.psimps[OF dom] nz nmu c0 c1 tw by (simp add: Let_def)
+    show ?thesis using rM c1 Meq by simp
+  next
+    case tne: False
+    have tb: "TrMax M \<le> ?j1" by (rule TrMax_bound[OF MT])
+    have tlt: "TrMax M < ?j1" using tb tne by linarith
+    have tltL: "TrMax M < Lng M" using tlt by linarith
+    let ?N = "seg M (TrMax M + 1) ?j1"
+    have brQ: "Br M = P ?N" using tne by (simp add: Br_def)
+    have NL: "Lng ?N = Lng M - 1 - TrMax M" using tlt by simp
+    \<comment> \<open>the psimps branches form, with the blocks folded to npJ/NJ\<close>
+    have rM: "Red M = diagSeq 0 (TrMax M)
+                @ concat (map (\<lambda>J. (IncrFirst ^^ (Joints M ! J + 1 - npJ M J))
+                                     (Red (NJ M J))) [0..<Lng (Br M)])"
+      using Red.psimps[OF dom] nz nmu c0 c1 tne
+      by (simp add: Let_def NJ_def npJ_def)
+    \<comment> \<open>each lifted block is the branch component verbatim\<close>
+    have blk: "\<And>J. J < Lng (Br M) \<Longrightarrow>
+                 (IncrFirst ^^ (Joints M ! J + 1 - npJ M J)) (Red (NJ M J)) = Br M ! J"
+    proof -
+      fix J assume JBr: "J < Lng (Br M)"
+      have brne: "Br M ! J \<noteq> []" by (rule Br_component_nonempty[OF MPT JBr])
+      have BT: "Br M ! J \<in> T_PS" using brne by (simp add: T_PS_def)
+      have condABr: "RedCondA (Br M ! J)" by (rule RedCondA_BrJ[OF MPT condA JBr])
+      have nmBr: "\<not> multiT (Br M ! J)"
+        using Br_component_nonmulti[OF MPT JBr] by (auto simp: multiT_def)
+      have lb: "Lng (Br M ! J) < Lng M"
+      proof -
+        have JP: "J < length (P ?N)" using JBr brQ by simp
+        have "Lng (Br M ! J) \<le> Lng (concat (P ?N))"
+          using length_nth_le_concat[OF JP] brQ by simp
+        also have "\<dots> = Lng ?N" using idxsum_concat_P[of ?N] by simp
+        also have "\<dots> < Lng M" using NL tlt by linarith
+        finally show ?thesis .
+      qed
+      have IHJ: "Red (Br M ! J)
+                 = map (\<lambda>j. (entry (Br M ! J) 0 j - entry (Br M ! J) 0 0
+                               + entry (Br M ! J) 1 0,
+                             entry (Br M ! J) 1 j)) [0..<Lng (Br M ! J)]"
+        by (rule IH[OF lb BT condABr nmBr])
+      have nj: "NJ M J = Br M ! J" by (rule NJ_eq_BrJ[OF MPT condA c0 c1 JBr])
+      show "(IncrFirst ^^ (Joints M ! J + 1 - npJ M J)) (Red (NJ M J)) = Br M ! J"
+        using BrJ_block_identity[OF MPT condA c0 c1 JBr IHJ] nj by simp
+    qed
+    have maps: "map (\<lambda>J. (IncrFirst ^^ (Joints M ! J + 1 - npJ M J)) (Red (NJ M J)))
+                    [0..<Lng (Br M)]
+                = map (\<lambda>J. Br M ! J) [0..<Lng (Br M)]"
+      by (rule map_cong[OF refl]) (use blk in simp)
+    have mapsBr: "map (\<lambda>J. Br M ! J) [0..<Lng (Br M)] = Br M"
+      by (simp add: map_nth)
+    have ccBr: "concat (Br M) = ?N" using brQ idxsum_concat_P[of ?N] by simp
+    have diagTake: "diagSeq 0 (TrMax M) = take (TrMax M + 1) M"
+      using trunk_take_eq_diagSeq[OF MT condA c0 c1 tltL] by simp
+    have Ndrop: "?N = drop (TrMax M + 1) M"
+      by (rule seg_to_last_eq_drop[OF LMpos])
+    have "Red M = take (TrMax M + 1) M @ drop (TrMax M + 1) M"
+      using rM maps mapsBr ccBr diagTake Ndrop by simp
+    thus ?thesis by simp
+  qed
+qed
+
 end
