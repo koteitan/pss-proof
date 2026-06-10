@@ -1921,36 +1921,470 @@ proof -
 qed
 
 
-text \<open>§6.7 the ST_PS invariant Eglobal' at the last block (b = j1): for an idx1=0
-  standard sequence, an interior column j0+s of the last row-0 block whose row-1
-  parent escapes into the prefix has entry N 1 j0 <= entry N 1 (j0+s).  This is a
-  GENUINE ST_PS invariant -- NOT a consequence of cGTWF / reduced / standard (the
-  witness (0,0)(1,1)(2,2)(3,1)(3,0) is standard, reduced and cGTWF yet violates
-  it and is not ST_PS-reachable).  Verified empirically (ST_PS deep closure +
-  randomized chains, 0 violations).  It supplies the Eg hypothesis of
-  @{thm [source] cgtw_tile_d0zero}; proving it needs a joint induction
-  (cGTWF /\ Eglobal') over ST_PS.  RESIDUAL.\<close>
+text \<open>cgEg0 joint ST_PS invariant: cGTWF /\ Eglobal' carried together over the
+  ST_PS induction.  The two tiles each need BOTH halves of the IH -- the d0zero
+  cGTWF tile needs Eglobal' (its Eg hypothesis, the b = j1 instance), and the
+  d0zero Eglobal' tile needs cGTWF (for the keystone prefix-parent collapse) --
+  so they cannot be proved by separate inductions; the joint induction supplies
+  each tile the full pair @{term "cGTWF M \<and> Eglobal M"} for M.  Below, cGTWF_ST_PS
+  and Eglobal_ST_PS fall out as the two projections of cgEg0_ST_PS.\<close>
 
-lemma oper_d0zero_eglobal_j1:
-  assumes MST: "M \<in> ST_PS" and i1z0: "idx1 M (Lng M - 1) = 0"
-  shows "\<And>s. 0 < s \<Longrightarrow> parent M 0 (Lng M - 1) + s < Lng M - 1
-          \<Longrightarrow> hasParent M 1 (parent M 0 (Lng M - 1) + s)
-          \<Longrightarrow> parent M 1 (parent M 0 (Lng M - 1) + s) < parent M 0 (Lng M - 1)
-          \<Longrightarrow> entry M 1 (parent M 0 (Lng M - 1))
-              \<le> entry M 1 (parent M 0 (Lng M - 1) + s)"
+text \<open>Eglobal' tile, idx1 = 1 (d1pos) branch.  RESIDUAL (joint induction stub).\<close>
+lemma Eglobal_tile_d1pos:
+  fixes M :: pairseq
+  assumes L: "1 < Lng M"
+    and notzero: "\<not> (entry M 0 (Lng M - 1) = 0 \<and> entry M 1 (Lng M - 1) = 0)"
+    and hp: "hasParent M (idx1 M (Lng M - 1)) (Lng M - 1)"
+    and i1z: "idx1 M (Lng M - 1) = 1"
+    and cg: "cGTWF M"
+    and eg: "Eglobal M"
+    and n1: "1 \<le> n"
+  shows "Eglobal ((M::pairseq)[n])"
   sorry
 
-lemma cGTWF_ST_PS:
+text \<open>Eglobal' tile, idx1 = 0 (d0zero) branch.  RESIDUAL (joint induction stub).
+  Reduces each N[n]-instance to an M-instance via the base map (3 cases: all
+  prefix; a,c prefix with b a block-start (base b = j0); all in one copy block).
+  Verified empirically clean (python/_eg_tile_cases.py: 3 cases, all readbacks
+  hold).  The cross case a<j0, c>=j0 is excluded by the keystone collapse + the
+  block-start row-0 minimum.\<close>
+lemma Eglobal_tile_d0zero:
+  fixes M :: pairseq
+  assumes L: "1 < Lng M"
+    and notzero: "\<not> (entry M 0 (Lng M - 1) = 0 \<and> entry M 1 (Lng M - 1) = 0)"
+    and hp: "hasParent M (idx1 M (Lng M - 1)) (Lng M - 1)"
+    and i1z0: "idx1 M (Lng M - 1) = 0"
+    and cg: "cGTWF M"
+    and eg: "Eglobal M"
+    and n1: "1 \<le> n"
+  shows "Eglobal ((M::pairseq)[n])"
+proof -
+  let ?j1 = "Lng M - 1"  let ?j0 = "parent M (idx1 M (Lng M - 1)) (Lng M - 1)"
+  let ?w = "?j1 - ?j0"  let ?N = "(M::pairseq)[n]"
+  have hp0: "hasParent M 0 ?j1" using hp i1z0 by simp
+  have parRj0j1: "nextR M 0 ?j0 ?j1" using hp0 i1z0
+    unfolding hasParent_def parent_def by simp (rule theI')
+  have j0lt: "?j0 < ?j1" using parRj0j1 by (simp add: nextR_def nextrel0_def)
+  have w0: "0 < ?w" using j0lt by linarith
+  have nr0j1: "nextrel0 M ?j0 ?j1" using parRj0j1 by (simp add: nextR_def)
+  have j0eq: "?j0 = parent M 0 ?j1" using i1z0 by simp
+  have nr0j1u: "nextrel0 M (parent M 0 ?j1) ?j1" using nr0j1 j0eq by simp
+  have lenN: "Lng ?N = ?j0 + n * ?w" using operB_gen_LngM[OF L notzero hp j0lt] by simp
+  have e1j1: "entry M 1 ?j1 = 0" using i1z0 by (simp add: idx1_def split: if_split_asm)
+  \<comment> \<open>row-0 block minima\<close>
+  have minL: "\<And>s. s < ?w \<Longrightarrow> entry M 0 ?j0 \<le> entry M 0 (?j0 + s)"
+  proof -
+    fix s assume "s < ?w"
+    hence sw: "s < Lng M - 1 - parent M 0 ?j1" using j0eq by simp
+    have "entry M 0 (parent M 0 ?j1) \<le> entry M 0 (parent M 0 ?j1 + s)"
+      by (rule parent_block_entry0_min(1)[OF nr0j1u sw])
+    thus "entry M 0 ?j0 \<le> entry M 0 (?j0 + s)" using j0eq by simp
+  qed
+  have minS: "\<And>s. 0 < s \<Longrightarrow> s < ?w \<Longrightarrow> entry M 0 ?j0 < entry M 0 (?j0 + s)"
+  proof -
+    fix s assume sp: "0 < s" and "s < ?w"
+    hence sw: "s < Lng M - 1 - parent M 0 ?j1" using j0eq by simp
+    have "entry M 0 (parent M 0 ?j1) < entry M 0 (parent M 0 ?j1 + s)"
+      by (rule parent_block_entry0_min(2)[OF nr0j1u sw sp])
+    thus "entry M 0 ?j0 < entry M 0 (?j0 + s)" using j0eq by simp
+  qed
+  \<comment> \<open>Eg: the b = j1 instance of Eglobal M\<close>
+  have Eg: "\<And>s. 0 < s \<Longrightarrow> ?j0 + s < ?j1 \<Longrightarrow> hasParent M 1 (?j0 + s)
+              \<Longrightarrow> parent M 1 (?j0 + s) < ?j0 \<Longrightarrow> entry M 1 ?j0 \<le> entry M 1 (?j0 + s)"
+  proof -
+    fix s assume sp: "0 < s" and sj: "?j0 + s < ?j1"
+      and hps: "hasParent M 1 (?j0 + s)" and pre: "parent M 1 (?j0 + s) < ?j0"
+    from eg have egj1: "hasParent M 0 ?j1 \<and> entry M 1 ?j1 = 0 \<longrightarrow>
+        (\<forall>c. parent M 0 ?j1 < c \<and> c < ?j1 \<and> hasParent M 1 c
+              \<and> parent M 1 c < parent M 0 ?j1 \<longrightarrow> entry M 1 (parent M 0 ?j1) \<le> entry M 1 c)"
+      by blast
+    have allc0: "\<forall>c. parent M 0 ?j1 < c \<and> c < ?j1 \<and> hasParent M 1 c
+              \<and> parent M 1 c < parent M 0 ?j1 \<longrightarrow> entry M 1 (parent M 0 ?j1) \<le> entry M 1 c"
+      using egj1 hp0 e1j1 by blast
+    have allc: "\<forall>c. ?j0 < c \<and> c < ?j1 \<and> hasParent M 1 c \<and> parent M 1 c < ?j0
+                \<longrightarrow> entry M 1 ?j0 \<le> entry M 1 c"
+      using allc0 j0eq by simp
+    have c1: "?j0 < ?j0 + s" using sp by simp
+    show "entry M 1 ?j0 \<le> entry M 1 (?j0 + s)" using allc c1 sj hps pre by blast
+  qed
+  show "Eglobal ?N"
+  proof (intro allI impI)
+    fix b c
+    assume Hb: "hasParent ?N 0 b \<and> entry ?N 1 b = 0"
+    assume H: "parent ?N 0 b < c \<and> c < b \<and> hasParent ?N 1 c \<and> parent ?N 1 c < parent ?N 0 b"
+    let ?a = "parent ?N 0 b"
+    from Hb have hpNb: "hasParent ?N 0 b" and e1Nb: "entry ?N 1 b = 0" by auto
+    from H have ac: "?a < c" and cb: "c < b" and hpNc: "hasParent ?N 1 c"
+      and pca: "parent ?N 1 c < ?a" by auto
+    have parRb: "nextR ?N 0 ?a b" using hpNb unfolding hasParent_def parent_def by (rule theI')
+    have nr0Nab: "nextrel0 ?N ?a b" using parRb by (simp add: nextR_def)
+    have ab: "?a < b" using nr0Nab by (simp add: nextrel0_def)
+    have bN: "b < Lng ?N" using nr0Nab by (simp add: nextrel0_def)
+    have e0ab: "entry ?N 0 ?a < entry ?N 0 b" using nr0Nab by (simp add: nextrel0_def)
+    have valley0: "\<And>j. ?a < j \<Longrightarrow> j < b \<Longrightarrow> entry ?N 0 b \<le> entry ?N 0 j"
+      using nr0Nab by (simp add: nextrel0_def)
+    have aN: "?a < Lng ?N" using ab bN by linarith
+    have cN: "c < Lng ?N" using cb bN by linarith
+    have e1Nc_pos: "0 < entry ?N 1 c"
+    proof -
+      have "nextR ?N 1 (parent ?N 1 c) c" using hpNc unfolding hasParent_def parent_def by (rule theI')
+      hence "entry ?N 1 (parent ?N 1 c) < entry ?N 1 c" by (simp add: nextR_def nextrel1_def)
+      thus ?thesis by linarith
+    qed
+    show "entry ?N 1 ?a \<le> entry ?N 1 c"
+    proof (cases "b < ?j0")
+      case True
+      \<comment> \<open>C1: a < c < b < j0, all in the prefix\<close>
+      have cj0: "c < ?j0" using cb True by linarith
+      have aj0: "?a < ?j0" using ab True by linarith
+      have eNa: "entry ?N 1 ?a = entry M 1 ?a"
+        using oper_d0zero_entryi_base[OF L notzero hp i1z0 j0lt aN, of 1] aj0 by simp
+      have eNc: "entry ?N 1 c = entry M 1 c"
+        using oper_d0zero_entryi_base[OF L notzero hp i1z0 j0lt cN, of 1] cj0 by simp
+      have eNb: "entry ?N 1 b = entry M 1 b"
+        using oper_d0zero_entryi_base[OF L notzero hp i1z0 j0lt bN, of 1] True by simp
+      have e1Mb: "entry M 1 b = 0" using e1Nb eNb by simp
+      have qn0: "(0::nat) < n" using n1 by simp
+      have zcf: "b < ?j0 + (0 + 1) * ?w" using True w0 by linarith
+      have nrMab: "nextrel0 M ?a b"
+      proof -
+        have "nextrel0 M (if ?a < ?j0 then ?a else ?j0 + (?a - ?j0) mod ?w)
+                         (if b < ?j0 then b else ?j0 + (b - ?j0) mod ?w)"
+          by (rule oper_d0zero_nextrel0_base[OF L notzero hp i1z0 j0lt qn0 zcf nr0Nab])
+        thus ?thesis using aj0 True by simp
+      qed
+      have parRMb: "nextR M 0 ?a b" using nrMab by (simp add: nextR_def)
+      have hpMb: "hasParent M 0 b"
+        unfolding hasParent_def
+      proof (rule ex1I)
+        show "nextR M 0 ?a b" by (rule parRMb)
+      next
+        fix j assume "nextR M 0 j b" thus "j = ?a" using parRMb idxsum_parent0_unique by blast
+      qed
+      have pMb: "parent M 0 b = ?a"
+      proof -
+        have "nextR M 0 (parent M 0 b) b"
+          using hpMb unfolding hasParent_def parent_def by (rule theI')
+        thus ?thesis using parRMb by (rule idxsum_parent0_unique)
+      qed
+      have pa_c: "hasParent ?N 1 c = hasParent M 1 c \<and> parent ?N 1 c = parent M 1 c"
+        by (rule oper_parent1_prefix_agree[OF L notzero hp j0lt cj0 cN])
+      have hpMc: "hasParent M 1 c" using pa_c hpNc by simp
+      have pMc_lt: "parent M 1 c < ?a" using pa_c pca by simp
+      have cond: "parent M 0 b < c \<and> c < b \<and> hasParent M 1 c \<and> parent M 1 c < parent M 0 b"
+        using pMb ac cb hpMc pMc_lt by simp
+      have "entry M 1 (parent M 0 b) \<le> entry M 1 c" using eg hpMb e1Mb cond by blast
+      hence "entry M 1 ?a \<le> entry M 1 c" using pMb by simp
+      thus "entry ?N 1 ?a \<le> entry ?N 1 c" using eNa eNc by simp
+    next
+      case False
+      hence bge: "?j0 \<le> b" by simp
+      define qb where "qb = (b - ?j0) div ?w"
+      define sb where "sb = (b - ?j0) mod ?w"
+      have sbw: "sb < ?w" using w0 sb_def by simp
+      have bmj: "b - ?j0 < n * ?w" using bN lenN bge by linarith
+      have qbn: "qb < n" using less_mult_imp_div_less[OF bmj] qb_def by simp
+      have bsplit: "b = ?j0 + qb * ?w + sb"
+      proof -
+        have "qb * ?w + sb = b - ?j0"
+          using div_mult_mod_eq[of "b - ?j0" ?w] qb_def sb_def by (simp add: mult.commute)
+        thus ?thesis using bge by linarith
+      qed
+      have baseb: "?j0 + (b - ?j0) mod ?w = ?j0 + sb" using sb_def by simp
+      have eNb: "entry ?N 1 b = entry M 1 (?j0 + sb)"
+        using oper_d0zero_entryi_base[OF L notzero hp i1z0 j0lt bN, of 1] bge baseb by simp
+      have e1Msb: "entry M 1 (?j0 + sb) = 0" using e1Nb eNb by simp
+      have zcf: "b < ?j0 + (qb + 1) * ?w"
+      proof -
+        have "b = ?j0 + qb * ?w + sb" by (rule bsplit)
+        also have "\<dots> < ?j0 + qb * ?w + ?w" using sbw by (rule add_strict_left_mono)
+        also have "\<dots> = ?j0 + (qb + 1) * ?w" by (simp add: distrib_right)
+        finally show ?thesis .
+      qed
+      have nrMbase: "nextrel0 M (if ?a < ?j0 then ?a else ?j0 + (?a - ?j0) mod ?w) (?j0 + sb)"
+      proof -
+        have "nextrel0 M (if ?a < ?j0 then ?a else ?j0 + (?a - ?j0) mod ?w)
+                         (if b < ?j0 then b else ?j0 + (b - ?j0) mod ?w)"
+          by (rule oper_d0zero_nextrel0_base[OF L notzero hp i1z0 j0lt qbn zcf nr0Nab])
+        thus ?thesis using bge baseb by simp
+      qed
+      \<comment> \<open>position fact (A): a < j0 ==> b is a block-start (sb = 0)\<close>
+      have posA: "?a < ?j0 \<Longrightarrow> sb = 0"
+      proof -
+        assume alt: "?a < ?j0"
+        show "sb = 0"
+        proof (rule ccontr)
+        assume "sb \<noteq> 0"
+        hence sbp: "0 < sb" by simp
+        let ?bs = "?j0 + qb * ?w"
+        have bs_lt_b: "?bs < b" using bsplit sbp by linarith
+        have a_lt_bs: "?a < ?bs" using alt by linarith
+        have vb: "entry ?N 0 b \<le> entry ?N 0 ?bs" using valley0 a_lt_bs bs_lt_b by simp
+        have bsN: "?bs < Lng ?N"
+        proof -
+          have "qb * ?w < n * ?w" using mult_strict_right_mono[OF qbn w0] .
+          thus ?thesis using lenN by simp
+        qed
+        have bsmod: "?j0 + (?bs - ?j0) mod ?w = ?j0" by simp
+        have eNbs: "entry ?N 0 ?bs = entry M 0 ?j0"
+          using oper_d0zero_entryi_base[OF L notzero hp i1z0 j0lt bsN, of 0] bsmod by simp
+        have eNb0: "entry ?N 0 b = entry M 0 (?j0 + sb)"
+          using oper_d0zero_entryi_base[OF L notzero hp i1z0 j0lt bN, of 0] bge baseb by simp
+        have "entry M 0 ?j0 < entry M 0 (?j0 + sb)" using minS sbp sbw by simp
+        hence "entry ?N 0 ?bs < entry ?N 0 b" using eNbs eNb0 by simp
+        thus False using vb by simp
+        qed
+      qed
+      \<comment> \<open>position fact (B): j0 <= a ==> sb > 0\<close>
+      have posB: "?j0 \<le> ?a \<Longrightarrow> 0 < sb"
+      proof -
+        assume age: "?j0 \<le> ?a"
+        show "0 < sb"
+        proof (rule ccontr)
+        assume "\<not> 0 < sb"
+        hence sb0: "sb = 0" by simp
+        define sa where "sa = (?a - ?j0) mod ?w"
+        have basea: "?j0 + (?a - ?j0) mod ?w = ?j0 + sa" using sa_def by simp
+        have saw: "sa < ?w" using w0 sa_def by simp
+        have eNa0: "entry ?N 0 ?a = entry M 0 (?j0 + sa)"
+          using oper_d0zero_entryi_base[OF L notzero hp i1z0 j0lt aN, of 0] age basea by simp
+        have eNb0: "entry ?N 0 b = entry M 0 (?j0 + sb)"
+          using oper_d0zero_entryi_base[OF L notzero hp i1z0 j0lt bN, of 0] bge baseb by simp
+        have "entry M 0 ?j0 \<le> entry M 0 (?j0 + sa)" using minL saw by simp
+        moreover have "entry M 0 (?j0 + sb) = entry M 0 ?j0" using sb0 by simp
+        ultimately have "entry ?N 0 b \<le> entry ?N 0 ?a" using eNa0 eNb0 by simp
+        thus False using e0ab by simp
+        qed
+      qed
+      show "entry ?N 1 ?a \<le> entry ?N 1 c"
+      proof (cases "?a < ?j0")
+        case True
+        \<comment> \<open>C2: a < j0, b a block-start (base b = j0), c forced into the prefix\<close>
+        have sb0: "sb = 0" using posA True by simp
+        have e1Mj0: "entry M 1 ?j0 = 0" using e1Msb sb0 by simp
+        have nrMaj0: "nextrel0 M ?a ?j0" using nrMbase True sb0 by simp
+        have parRMj0: "nextR M 0 ?a ?j0" using nrMaj0 by (simp add: nextR_def)
+        have hpMj0b: "hasParent M 0 ?j0"
+          unfolding hasParent_def
+        proof (rule ex1I)
+          show "nextR M 0 ?a ?j0" by (rule parRMj0)
+        next
+          fix j assume "nextR M 0 j ?j0" thus "j = ?a" using parRMj0 idxsum_parent0_unique by blast
+        qed
+        have pMj0: "parent M 0 ?j0 = ?a"
+        proof -
+          have "nextR M 0 (parent M 0 ?j0) ?j0"
+            using hpMj0b unfolding hasParent_def parent_def by (rule theI')
+          thus ?thesis using parRMj0 by (rule idxsum_parent0_unique)
+        qed
+        \<comment> \<open>alpha: c < j0\<close>
+        have cj0: "c < ?j0"
+        proof (rule ccontr)
+          assume "\<not> c < ?j0" hence cge: "?j0 \<le> c" by simp
+          define sc where "sc = (c - ?j0) mod ?w"
+          have scw: "sc < ?w" using w0 sc_def by simp
+          have basec: "?j0 + (c - ?j0) mod ?w = ?j0 + sc" using sc_def by simp
+          note CC = oper_d0zero_parent_class[OF L notzero hp i1z0 j0lt hpNc]
+          from CC show False
+          proof (elim disjE conjE)
+            assume cc: "c < ?j0" and "parent ?N 1 c = parent M 1 c" and "parent M 1 c < ?j0"
+            from cc cge show False by simp
+          next
+            assume "?j0 \<le> c" and hpMsc: "hasParent M 1 (?j0 + (c - ?j0) mod ?w)"
+              and psclt: "parent M 1 (?j0 + (c - ?j0) mod ?w) < ?j0"
+              and "parent ?N 1 c = parent M 1 (?j0 + (c - ?j0) mod ?w)"
+            show False
+            proof (cases "sc = 0")
+              case True
+              have "entry ?N 1 c = entry M 1 (?j0 + sc)"
+                using oper_d0zero_entryi_base[OF L notzero hp i1z0 j0lt cN, of 1] cge basec by simp
+              hence "entry ?N 1 c = 0" using True e1Mj0 by simp
+              thus False using e1Nc_pos by simp
+            next
+              case False
+              hence scp: "0 < sc" by simp
+              have hpMsc': "hasParent M 1 (?j0 + sc)" using hpMsc basec by simp
+              have psclt': "parent M 1 (?j0 + sc) < ?j0" using psclt basec by simp
+              have scj1: "?j0 + sc < ?j1" using scw by simp
+              have E: "entry M 1 ?j0 \<le> entry M 1 (?j0 + sc)" using Eg[OF scp scj1 hpMsc' psclt'] .
+              have sj1': "parent M 0 ?j1 + sc < ?j1" using scj1 j0eq by simp
+              have hpc': "hasParent M 1 (parent M 0 ?j1 + sc)" using hpMsc' j0eq by simp
+              have pre': "parent M 1 (parent M 0 ?j1 + sc) < parent M 0 ?j1" using psclt' j0eq by simp
+              have E': "entry M 1 (parent M 0 ?j1) \<le> entry M 1 (parent M 0 ?j1 + sc)" using E j0eq by simp
+              have key: "hasParent M 1 (parent M 0 ?j1)
+                  \<and> parent M 1 (parent M 0 ?j1 + sc) = parent M 1 (parent M 0 ?j1)"
+                by (rule oper_d0zero_prefix_parent_eq[OF L hp i1z0 cg scp sj1' hpc' pre' E'])
+              have hpMj0': "hasParent M 1 ?j0" using key j0eq by simp
+              have "nextR M 1 (parent M 1 ?j0) ?j0"
+                using hpMj0' unfolding hasParent_def parent_def by (rule theI')
+              hence "entry M 1 (parent M 1 ?j0) < entry M 1 ?j0" by (simp add: nextR_def nextrel1_def)
+              thus False using e1Mj0 by simp
+            qed
+          next
+            assume "?j0 \<le> c" and "hasParent M 1 (?j0 + (c - ?j0) mod ?w)"
+              and "?j0 \<le> parent M 1 (?j0 + (c - ?j0) mod ?w)"
+              and pceq3: "parent ?N 1 c = ?j0 + ((c - ?j0) div ?w) * ?w
+                          + (parent M 1 (?j0 + (c - ?j0) mod ?w) - ?j0)"
+            have "?j0 \<le> parent ?N 1 c" using pceq3 by simp
+            moreover have "parent ?N 1 c < ?j0" using pca True by linarith
+            ultimately show False by simp
+          qed
+        qed
+        have eNa: "entry ?N 1 ?a = entry M 1 ?a"
+          using oper_d0zero_entryi_base[OF L notzero hp i1z0 j0lt aN, of 1] True by simp
+        have eNc: "entry ?N 1 c = entry M 1 c"
+          using oper_d0zero_entryi_base[OF L notzero hp i1z0 j0lt cN, of 1] cj0 by simp
+        have pa_c: "hasParent ?N 1 c = hasParent M 1 c \<and> parent ?N 1 c = parent M 1 c"
+          by (rule oper_parent1_prefix_agree[OF L notzero hp j0lt cj0 cN])
+        have hpMc: "hasParent M 1 c" using pa_c hpNc by simp
+        have pMc_lt: "parent M 1 c < ?a" using pa_c pca by simp
+        have cond: "parent M 0 ?j0 < c \<and> c < ?j0 \<and> hasParent M 1 c \<and> parent M 1 c < parent M 0 ?j0"
+          using pMj0 ac cj0 hpMc pMc_lt by simp
+        have "entry M 1 (parent M 0 ?j0) \<le> entry M 1 c" using eg hpMj0b e1Mj0 cond by blast
+        hence "entry M 1 ?a \<le> entry M 1 c" using pMj0 by simp
+        thus "entry ?N 1 ?a \<le> entry ?N 1 c" using eNa eNc by simp
+      next
+        case False
+        \<comment> \<open>C3: j0 <= a, b interior (sb > 0); a, b, c in one copy block\<close>
+        hence age: "?j0 \<le> ?a" by simp
+        have sbp: "0 < sb" using posB age by simp
+        define sa where "sa = (?a - ?j0) mod ?w"
+        define qa where "qa = (?a - ?j0) div ?w"
+        have saw: "sa < ?w" using w0 sa_def by simp
+        have basea: "?j0 + (?a - ?j0) mod ?w = ?j0 + sa" using sa_def by simp
+        have amj: "?a - ?j0 < n * ?w" using aN lenN age by linarith
+        have qan: "qa < n" using less_mult_imp_div_less[OF amj] qa_def by simp
+        have asplit: "?a = ?j0 + qa * ?w + sa"
+        proof -
+          have "qa * ?w + sa = ?a - ?j0"
+            using div_mult_mod_eq[of "?a - ?j0" ?w] qa_def sa_def by (simp add: mult.commute)
+          thus ?thesis using age by linarith
+        qed
+        \<comment> \<open>same block: qa = qb\<close>
+        have qa_le: "qa \<le> qb"
+        proof (rule ccontr)
+          assume "\<not> qa \<le> qb" hence "Suc qb \<le> qa" by simp
+          hence "(Suc qb) * ?w \<le> qa * ?w" by (rule mult_le_mono1)
+          hence ge: "?w + qb * ?w \<le> qa * ?w" by (simp add: mult_Suc)
+          have alt: "?j0 + qa * ?w + sa < b" using ab asplit by linarith
+          show False using alt ge bsplit sbw by linarith
+        qed
+        have qb_le: "qb \<le> qa"
+        proof (rule ccontr)
+          assume "\<not> qb \<le> qa" hence "Suc qa \<le> qb" by simp
+          hence "(Suc qa) * ?w \<le> qb * ?w" by (rule mult_le_mono1)
+          hence ge: "?w + qa * ?w \<le> qb * ?w" by (simp add: mult_Suc)
+          let ?bs = "?j0 + qb * ?w"
+          have bs_lt_b: "?bs < b" using bsplit sbp by linarith
+          have a_lt_bs: "?a < ?bs" using asplit saw ge by linarith
+          have vb: "entry ?N 0 b \<le> entry ?N 0 ?bs" using valley0 a_lt_bs bs_lt_b by simp
+          have bsN: "?bs < Lng ?N"
+          proof -
+            have "qb * ?w < n * ?w" using mult_strict_right_mono[OF qbn w0] .
+            thus ?thesis using lenN by simp
+          qed
+          have bsmod: "?j0 + (?bs - ?j0) mod ?w = ?j0" by simp
+          have eNbs: "entry ?N 0 ?bs = entry M 0 ?j0"
+            using oper_d0zero_entryi_base[OF L notzero hp i1z0 j0lt bsN, of 0] bsmod by simp
+          have eNb0: "entry ?N 0 b = entry M 0 (?j0 + sb)"
+            using oper_d0zero_entryi_base[OF L notzero hp i1z0 j0lt bN, of 0] bge baseb by simp
+          have "entry M 0 ?j0 < entry M 0 (?j0 + sb)" using minS sbp sbw by simp
+          hence "entry ?N 0 ?bs < entry ?N 0 b" using eNbs eNb0 by simp
+          thus False using vb by simp
+        qed
+        have qab: "qa = qb" using qa_le qb_le by simp
+        have bsplit': "b = ?j0 + qa * ?w + sb" using bsplit qab by simp
+        have sasb: "sa < sb" using asplit bsplit' ab by linarith
+        have nrMab2: "nextrel0 M (?j0 + sa) (?j0 + sb)" using nrMbase age basea by simp
+        have parRMbsb: "nextR M 0 (?j0 + sa) (?j0 + sb)" using nrMab2 by (simp add: nextR_def)
+        have hpMbsb: "hasParent M 0 (?j0 + sb)"
+          unfolding hasParent_def
+        proof (rule ex1I)
+          show "nextR M 0 (?j0 + sa) (?j0 + sb)" by (rule parRMbsb)
+        next
+          fix j assume "nextR M 0 j (?j0 + sb)"
+          thus "j = ?j0 + sa" using parRMbsb idxsum_parent0_unique by blast
+        qed
+        have pMbsb: "parent M 0 (?j0 + sb) = ?j0 + sa"
+        proof -
+          have "nextR M 0 (parent M 0 (?j0 + sb)) (?j0 + sb)"
+            using hpMbsb unfolding hasParent_def parent_def by (rule theI')
+          thus ?thesis using parRMbsb by (rule idxsum_parent0_unique)
+        qed
+        have cge: "?j0 \<le> c" using ac age by linarith
+        define sc where "sc = c - (?j0 + qa * ?w)"
+        have c_lo: "?j0 + qa * ?w + sa < c" using ac asplit by linarith
+        have c_hi: "c < ?j0 + qa * ?w + sb" using cb bsplit' by linarith
+        have cge2: "?j0 + qa * ?w \<le> c" using c_lo by linarith
+        have csplit: "c = ?j0 + qa * ?w + sc" using sc_def cge2 by simp
+        have scsa: "sa < sc" using csplit c_lo by linarith
+        have scsb: "sc < sb" using csplit c_hi by linarith
+        have scw: "sc < ?w" using scsb sbw by linarith
+        have cmj: "c - ?j0 = sc + qa * ?w" using csplit by simp
+        have scmod: "(c - ?j0) mod ?w = sc" using cmj scw by (simp add: mod_mult_self1)
+        have scdiv: "(c - ?j0) div ?w = qa"
+        proof -
+          have "(c - ?j0) div ?w = (sc + qa * ?w) div ?w" using cmj by simp
+          also have "\<dots> = qa" using scw by (simp add: div_mult_self1)
+          finally show ?thesis .
+        qed
+        have basec: "?j0 + (c - ?j0) mod ?w = ?j0 + sc" using scmod by simp
+        note CC = oper_d0zero_parent_class[OF L notzero hp i1z0 j0lt hpNc]
+        have Mfacts: "hasParent M 1 (?j0 + sc) \<and> parent M 1 (?j0 + sc) < ?j0 + sa"
+          using CC
+        proof (elim disjE conjE)
+          assume cc: "c < ?j0" and "parent ?N 1 c = parent M 1 c" and "parent M 1 c < ?j0"
+          from cc cge show ?thesis by simp
+        next
+          assume "?j0 \<le> c" and h: "hasParent M 1 (?j0 + (c - ?j0) mod ?w)"
+            and p: "parent M 1 (?j0 + (c - ?j0) mod ?w) < ?j0"
+            and "parent ?N 1 c = parent M 1 (?j0 + (c - ?j0) mod ?w)"
+          have "hasParent M 1 (?j0 + sc)" using h basec by simp
+          moreover have "parent M 1 (?j0 + sc) < ?j0 + sa" using p basec by simp
+          ultimately show ?thesis by simp
+        next
+          assume "?j0 \<le> c" and h: "hasParent M 1 (?j0 + (c - ?j0) mod ?w)"
+            and pge: "?j0 \<le> parent M 1 (?j0 + (c - ?j0) mod ?w)"
+            and peq: "parent ?N 1 c = ?j0 + ((c - ?j0) div ?w) * ?w
+                      + (parent M 1 (?j0 + (c - ?j0) mod ?w) - ?j0)"
+          have hM: "hasParent M 1 (?j0 + sc)" using h basec by simp
+          have peq2: "parent ?N 1 c = ?j0 + qa * ?w + (parent M 1 (?j0 + sc) - ?j0)"
+            using peq scdiv basec by simp
+          have "?j0 + qa * ?w + (parent M 1 (?j0 + sc) - ?j0) < ?j0 + qa * ?w + sa"
+            using peq2 pca asplit by linarith
+          hence "parent M 1 (?j0 + sc) - ?j0 < sa" by simp
+          hence "parent M 1 (?j0 + sc) < ?j0 + sa" using pge by linarith
+          thus ?thesis using hM by simp
+        qed
+        have hpMc2: "hasParent M 1 (?j0 + sc)" using Mfacts by simp
+        have pMc2: "parent M 1 (?j0 + sc) < ?j0 + sa" using Mfacts by simp
+        have cond: "parent M 0 (?j0 + sb) < ?j0 + sc \<and> ?j0 + sc < ?j0 + sb
+                    \<and> hasParent M 1 (?j0 + sc) \<and> parent M 1 (?j0 + sc) < parent M 0 (?j0 + sb)"
+          using pMbsb scsa scsb hpMc2 pMc2 by simp
+        have "entry M 1 (parent M 0 (?j0 + sb)) \<le> entry M 1 (?j0 + sc)"
+          using eg hpMbsb e1Msb cond by blast
+        hence le: "entry M 1 (?j0 + sa) \<le> entry M 1 (?j0 + sc)" using pMbsb by simp
+        have eNa: "entry ?N 1 ?a = entry M 1 (?j0 + sa)"
+          using oper_d0zero_entryi_base[OF L notzero hp i1z0 j0lt aN, of 1] age basea by simp
+        have eNc: "entry ?N 1 c = entry M 1 (?j0 + sc)"
+          using oper_d0zero_entryi_base[OF L notzero hp i1z0 j0lt cN, of 1] cge basec by simp
+        show "entry ?N 1 ?a \<le> entry ?N 1 c" using eNa eNc le by simp
+      qed
+    qed
+  qed
+qed
+
+lemma cgEg0_ST_PS:
   assumes "N \<in> ST_PS"
-  shows "cGTWF N"
+  shows "cGTWF N \<and> Eglobal N"
   using assms
 proof (induct N rule: ST_PS.induct)
   case (diag a b)
   have uv: "a \<le> b" by (rule diag.hyps)
-  show ?case
+  let ?M = "diagSeq a b"
+  have cgD: "cGTWF ?M"
   proof (intro allI impI)
     fix k u
-    let ?M = "diagSeq a b"
     assume hpk: "hasParent ?M 1 k"
        and H: "parent ?M 1 k < u \<and> u < k \<and> hasParent ?M 1 u"
     have parR: "nextR ?M 1 (parent ?M 1 k) k"
@@ -1960,9 +2394,24 @@ proof (induct N rule: ST_PS.induct)
     have False using H suc by linarith
     thus "parent ?M 1 k \<le> parent ?M 1 u" by simp
   qed
+  have egD: "Eglobal ?M"
+  proof (intro allI impI)
+    fix b' c
+    assume Hb: "hasParent ?M 0 b' \<and> entry ?M 1 b' = 0"
+       and H: "parent ?M 0 b' < c \<and> c < b' \<and> hasParent ?M 1 c
+               \<and> parent ?M 1 c < parent ?M 0 b'"
+    have hpb0: "hasParent ?M 0 b'" using Hb by blast
+    have parR0: "nextR ?M 0 (parent ?M 0 b') b'"
+      using hpb0 unfolding hasParent_def parent_def by (rule theI')
+    have i0: "(0::nat) \<le> 1" by simp
+    have suc: "Suc (parent ?M 0 b') = b'" by (rule kfwd_nextR_diagSeq_parent[OF uv i0 parR0])
+    have False using H suc by linarith
+    thus "entry ?M 1 (parent ?M 0 b') \<le> entry ?M 1 c" by simp
+  qed
+  show ?case using cgD egD by blast
 next
   case (oper M n)
-  have IH: "cGTWF M" using oper.hyps by blast
+  have IHc: "cGTWF M" and IHe: "Eglobal M" using oper.hyps by blast+
   have MST: "M \<in> ST_PS" using oper.hyps by blast
   have MT: "M \<in> T_PS" by (rule ST_PS_T_PS[OF MST])
   have n1: "1 \<le> n" using oper.hyps by blast
@@ -1970,7 +2419,7 @@ next
   proof (cases "Lng M - 1 = 0")
     case True
     have "(M::pairseq)[n] = M" using True by (simp add: oper_def Let_def)
-    thus ?thesis using IH by simp
+    thus ?thesis using IHc IHe by simp
   next
     case False
     hence L: "1 < Lng M" by linarith
@@ -1979,8 +2428,10 @@ next
                   \<or> (entry M 0 (Lng M - 1) = 0 \<and> entry M 1 (Lng M - 1) = 0)
                   \<or> \<not> hasParent M (idx1 M (Lng M - 1)) (Lng M - 1)")
       case True
-      have "(M::pairseq)[n] = Pred M" by (rule oper_nontile_eq_Pred[OF True])
-      thus ?thesis using cgtw_pred[OF MT L IH] by simp
+      have eqP: "(M::pairseq)[n] = Pred M" by (rule oper_nontile_eq_Pred[OF True])
+      have "cGTWF (Pred M)" by (rule cgtw_pred[OF MT L IHc])
+      moreover have "Eglobal (Pred M)" by (rule Eglobal_pred[OF L IHe])
+      ultimately show ?thesis using eqP by simp
     next
       case False
       have nz: "\<not> (entry M 0 (Lng M - 1) = 0 \<and> entry M 1 (Lng M - 1) = 0)" using False by blast
@@ -1988,18 +2439,53 @@ next
       show ?thesis
       proof (cases "idx1 M (Lng M - 1) = 1")
         case True
-        show ?thesis by (rule cgtw_tile_d1pos[OF L nz hpar True IH])
+        have "cGTWF ((M::pairseq)[n])" by (rule cgtw_tile_d1pos[OF L nz hpar True IHc])
+        moreover have "Eglobal ((M::pairseq)[n])"
+          by (rule Eglobal_tile_d1pos[OF L nz hpar True IHc IHe n1])
+        ultimately show ?thesis by blast
       next
         case False
         have i1z0: "idx1 M (Lng M - 1) = 0"
           using False by (simp add: idx1_def split: if_split_asm)
-        show ?thesis
-          by (rule cgtw_tile_d0zero[OF L nz hpar i1z0 IH
-                      oper_d0zero_eglobal_j1[OF MST i1z0]])
+        have e1j1: "entry M 1 (Lng M - 1) = 0"
+          using i1z0 by (simp add: idx1_def split: if_split_asm)
+        have hp0: "hasParent M 0 (Lng M - 1)" using hpar i1z0 by simp
+        \<comment> \<open>Eg: the b = j1 instance of Eglobal M (entry M 1 j1 = 0)\<close>
+        have Eg: "\<And>s. 0 < s \<Longrightarrow> parent M 0 (Lng M - 1) + s < Lng M - 1
+              \<Longrightarrow> hasParent M 1 (parent M 0 (Lng M - 1) + s)
+              \<Longrightarrow> parent M 1 (parent M 0 (Lng M - 1) + s) < parent M 0 (Lng M - 1)
+              \<Longrightarrow> entry M 1 (parent M 0 (Lng M - 1))
+                  \<le> entry M 1 (parent M 0 (Lng M - 1) + s)"
+        proof -
+          fix s assume sp: "0 < s"
+            and sj: "parent M 0 (Lng M - 1) + s < Lng M - 1"
+            and hps: "hasParent M 1 (parent M 0 (Lng M - 1) + s)"
+            and pre: "parent M 1 (parent M 0 (Lng M - 1) + s) < parent M 0 (Lng M - 1)"
+          have c1: "parent M 0 (Lng M - 1) < parent M 0 (Lng M - 1) + s" using sp by simp
+          show "entry M 1 (parent M 0 (Lng M - 1))
+                  \<le> entry M 1 (parent M 0 (Lng M - 1) + s)"
+            using IHe hp0 e1j1 c1 sj hps pre by blast
+        qed
+        have "cGTWF ((M::pairseq)[n])"
+          by (rule cgtw_tile_d0zero[OF L nz hpar i1z0 IHc Eg])
+        moreover have "Eglobal ((M::pairseq)[n])"
+          by (rule Eglobal_tile_d0zero[OF L nz hpar i1z0 IHc IHe n1])
+        ultimately show ?thesis by blast
       qed
     qed
   qed
 qed
+
+lemma cGTWF_ST_PS:
+  assumes "N \<in> ST_PS"
+  shows "cGTWF N"
+  using cgEg0_ST_PS[OF assms] by blast
+
+lemma Eglobal_ST_PS:
+  assumes "N \<in> ST_PS"
+  shows "Eglobal N"
+  using cgEg0_ST_PS[OF assms] by blast
+
 
 
 
