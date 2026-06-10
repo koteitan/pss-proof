@@ -3240,4 +3240,241 @@ proof -
   qed
 qed
 
+
+text \<open>§6.5 m10>0 brick (b3): TrMax characterization and the trunk of coreReduce.
+  The set in TrMax_def is a downward-closed interval, so TrMax is pinned by
+  "all steps below t" plus "stop at t"; the stop at TrMax itself is automatic.
+  For arg = diagSeq 0 (m-1) @ IncrFirst^m M the trunk runs through the diagonal,
+  the junction, and the IncrFirst-shifted image of M's trunk, giving
+  TrMax arg = m + TrMax M.\<close>
+
+lemma TrMax_bound_set:
+  assumes MT: "M \<in> T_PS"
+  shows "{j. \<forall>j'<j. nextR M 1 j' (j' + 1)} \<subseteq> {..Lng M - 1}"
+proof
+  fix j assume "j \<in> {j. \<forall>j'<j. nextR M 1 j' (j' + 1)}"
+  hence H: "\<forall>j'<j. nextR M 1 j' (j' + 1)" by simp
+  have LM: "Lng M > 0" using MT by (cases M) (auto simp: T_PS_def)
+  show "j \<in> {..Lng M - 1}"
+  proof (rule ccontr)
+    assume "j \<notin> {..Lng M - 1}"
+    hence "Lng M - 1 < j" by simp
+    hence "nextR M 1 (Lng M - 1) ((Lng M - 1) + 1)" using H by blast
+    hence "(Lng M - 1) + 1 < Lng M" by (simp add: nextR_def nextrel1_def)
+    thus False using LM by simp
+  qed
+qed
+
+lemma TrMax_eqI:
+  assumes MT: "M \<in> T_PS"
+    and steps: "\<And>j'. j' < t \<Longrightarrow> nextR M 1 j' (j' + 1)"
+    and stop: "t = Lng M - 1 \<or> \<not> nextR M 1 t (t + 1)"
+  shows "TrMax M = t"
+proof -
+  let ?S = "{j. \<forall>j'<j. nextR M 1 j' (j' + 1)}"
+  have sub: "?S \<subseteq> {..Lng M - 1}" by (rule TrMax_bound_set[OF MT])
+  have fin: "finite ?S" using sub by (rule finite_subset) simp
+  have tS: "t \<in> ?S" using steps by simp
+  have ne: "?S \<noteq> {}" using tS by blast
+  have tmax: "TrMax M = Max ?S" by (simp add: TrMax_def)
+  have ge: "t \<le> Max ?S" using fin tS by (rule Max_ge)
+  have le: "Max ?S \<le> t"
+  proof (rule ccontr)
+    assume "\<not> Max ?S \<le> t"
+    hence tlt: "t < Max ?S" by simp
+    have MS: "Max ?S \<in> ?S" using fin ne by (rule Max_in)
+    hence allst: "\<forall>j'<Max ?S. nextR M 1 j' (j' + 1)" by simp
+    have stept: "nextR M 1 t (t + 1)" using allst tlt by blast
+    from stop show False
+    proof
+      assume tj1: "t = Lng M - 1"
+      have "Max ?S \<le> Lng M - 1" using MS sub by auto
+      thus False using tlt tj1 by simp
+    next
+      assume "\<not> nextR M 1 t (t + 1)"
+      thus False using stept by simp
+    qed
+  qed
+  show ?thesis using tmax ge le by simp
+qed
+
+lemma TrMax_stop:
+  assumes MT: "M \<in> T_PS"
+  shows "\<not> nextR M 1 (TrMax M) (TrMax M + 1)"
+proof
+  assume step: "nextR M 1 (TrMax M) (TrMax M + 1)"
+  let ?S = "{j. \<forall>j'<j. nextR M 1 j' (j' + 1)}"
+  have sub: "?S \<subseteq> {..Lng M - 1}" by (rule TrMax_bound_set[OF MT])
+  have fin: "finite ?S" using sub by (rule finite_subset) simp
+  have ne: "?S \<noteq> {}" by blast
+  have MS: "Max ?S \<in> ?S" using fin ne by (rule Max_in)
+  have tmax: "TrMax M = Max ?S" by (simp add: TrMax_def)
+  have allst: "\<forall>j'<TrMax M. nextR M 1 j' (j' + 1)" using MS tmax by simp
+  have inS: "TrMax M + 1 \<in> ?S"
+  proof -
+    have "\<forall>j'<TrMax M + 1. nextR M 1 j' (j' + 1)"
+    proof (intro allI impI)
+      fix j' assume "j' < TrMax M + 1"
+      hence "j' < TrMax M \<or> j' = TrMax M" by linarith
+      thus "nextR M 1 j' (j' + 1)" using allst step by blast
+    qed
+    thus ?thesis by simp
+  qed
+  have "TrMax M + 1 \<le> Max ?S" using fin inS by (rule Max_ge)
+  thus False using tmax by simp
+qed
+
+lemma TrMax_coreReduce:
+  assumes MT: "M \<in> T_PS" and condA: "RedCondA M" and mono: "monoT M"
+    and pos: "0 < entry M 1 0"
+  shows "TrMax (diagSeq 0 (entry M 1 0 - 1) @ (IncrFirst ^^ entry M 1 0) M)
+         = entry M 1 0 + TrMax M"
+proof -
+  let ?m = "entry M 1 0"
+  let ?Y = "(IncrFirst ^^ ?m) M"
+  let ?A = "diagSeq 0 (?m - 1) @ ?Y"
+  have Mne: "M \<noteq> []" using MT by (simp add: T_PS_def)
+  have LMpos: "0 < Lng M" using Mne by (cases M) auto
+  have Ld: "Lng (diagSeq 0 (?m - 1)) = ?m" using pos by (simp del: upt_Suc)
+  have LY: "Lng ?Y = Lng M" by simp
+  have LA: "Lng ?A = ?m + Lng M" using Ld LY by simp
+  have LApos: "0 < Lng ?A" using LA LMpos by simp
+  have Ane: "?A \<noteq> []" using LApos length_greater_0_conv by blast
+  have AT: "?A \<in> T_PS" using Ane by (simp add: T_PS_def)
+  \<comment> \<open>entries of A: diagonal prefix and shifted tail\<close>
+  have eApre: "\<And>i p. p < ?m \<Longrightarrow> entry ?A i p = p"
+  proof -
+    fix i p assume pm: "p < ?m"
+    have "?A ! p = diagSeq 0 (?m - 1) ! p" using pm Ld by (simp add: nth_append)
+    also have "\<dots> = (p, p)" using pm pos by (simp add: diagSeq_def del: upt_Suc)
+    finally show "entry ?A i p = p" by (simp add: entry_def)
+  qed
+  have eAtail: "\<And>i k. k < Lng M \<Longrightarrow> entry ?A i (?m + k) = entry ?Y i k"
+  proof -
+    fix i k assume kM: "k < Lng M"
+    have "?A ! (?m + k) = ?Y ! k" using Ld by (simp add: nth_append)
+    thus "entry ?A i (?m + k) = entry ?Y i k" by (simp add: entry_def)
+  qed
+  \<comment> \<open>the M-part steps transfer through seg = drop and the IncrFirst invariance\<close>
+  have dropA: "drop ?m ?A = ?Y" using Ld by simp
+  have segA: "seg ?A ?m (Lng ?A - 1) = ?Y"
+    using seg_to_last_eq_drop[of ?A ?m] LA LMpos dropA by simp
+  have transfer: "\<And>k k'. k < Lng M \<Longrightarrow> k' < Lng M \<Longrightarrow>
+                   nextrel1 ?A (?m + k) (?m + k') = nextrel1 M k k'"
+  proof -
+    fix k k' assume kM: "k < Lng M" and kM': "k' < Lng M"
+    have bnd: "Lng ?A - 1 < Lng ?A" using LA LMpos by simp
+    have kS: "k < Lng (seg ?A ?m (Lng ?A - 1))" using segA kM by simp
+    have kS': "k' < Lng (seg ?A ?m (Lng ?A - 1))" using segA kM' by simp
+    have "nextrel1 (seg ?A ?m (Lng ?A - 1)) k k' = nextrel1 ?A (?m + k) (?m + k')"
+      by (rule adm_nextrel1_seg[OF bnd kS kS'])
+    moreover have "nextrel1 (seg ?A ?m (Lng ?A - 1)) k k' = nextrel1 M k k'"
+      using segA nextrel1_funpow_IncrFirst_eq[of ?m M] by simp
+    ultimately show "nextrel1 ?A (?m + k) (?m + k') = nextrel1 M k k'" by simp
+  qed
+  \<comment> \<open>steps below m + TrMax M\<close>
+  have tb: "TrMax M \<le> Lng M - 1" by (rule TrMax_bound[OF MT])
+  have steps: "\<And>j'. j' < ?m + TrMax M \<Longrightarrow> nextR ?A 1 j' (j' + 1)"
+  proof -
+    fix j' assume jlt: "j' < ?m + TrMax M"
+    show "nextR ?A 1 j' (j' + 1)"
+    proof (cases "j' + 1 < ?m")
+      case True
+      \<comment> \<open>inside the diagonal prefix\<close>
+      have jA: "j' < Lng ?A" and jA1: "j' + 1 < Lng ?A" using True LA by simp_all
+      have e0: "entry ?A 0 j' = j'" and e0': "entry ?A 0 (j' + 1) = j' + 1"
+        using eApre True by simp_all
+      have e1: "entry ?A 1 j' = j'" and e1': "entry ?A 1 (j' + 1) = j' + 1"
+        using eApre True by simp_all
+      have nr0: "nextrel0 ?A j' (j' + 1)"
+        unfolding nextrel0_def using jA jA1 e0 e0' by simp
+      have le0j: "le0 ?A j' (j' + 1)"
+        unfolding le0_def using jA jA1 nr0 by (blast intro: r_into_rtranclp)
+      have vall: "\<forall>j''. j' < j'' \<and> le0 ?A j'' (j' + 1) \<longrightarrow>
+                    entry ?A 1 j'' \<ge> entry ?A 1 (j' + 1)"
+      proof (intro allI impI)
+        fix j'' assume H: "j' < j'' \<and> le0 ?A j'' (j' + 1)"
+        have "j'' \<le> j' + 1" using H nextrel0_rtrancl_mono[of ?A j'' "j' + 1"]
+          by (simp add: le0_def)
+        hence "j'' = j' + 1" using H by simp
+        thus "entry ?A 1 j'' \<ge> entry ?A 1 (j' + 1)" by simp
+      qed
+      have "nextrel1 ?A j' (j' + 1)"
+        unfolding nextrel1_def using jA jA1 e1 e1' le0j vall by simp
+      thus ?thesis by (simp add: nextR_def)
+    next
+      case False
+      show ?thesis
+      proof (cases "j' < ?m")
+        case True
+        \<comment> \<open>the junction step m-1 -> m\<close>
+        have jeq: "j' = ?m - 1" using True False by linarith
+        have j1eq: "j' + 1 = ?m" using jeq pos by simp
+        have jA: "j' < Lng ?A" using True LA by simp
+        have jA1: "j' + 1 < Lng ?A" using j1eq LA LMpos by simp
+        have e0: "entry ?A 0 j' = j'" and e1: "entry ?A 1 j' = j'"
+          using eApre True by simp_all
+        have e0': "entry ?A 0 (j' + 1) = entry M 0 0 + ?m"
+          using eAtail[OF LMpos, of 0] j1eq entry_funpow_IncrFirst0[OF LMpos] by simp
+        have e1': "entry ?A 1 (j' + 1) = ?m"
+          using eAtail[OF LMpos, of 1] j1eq entry_funpow_IncrFirst1[OF LMpos] by simp
+        have lt0: "entry ?A 0 j' < entry ?A 0 (j' + 1)" using e0 e0' jeq pos by simp
+        have lt1: "entry ?A 1 j' < entry ?A 1 (j' + 1)" using e1 e1' jeq pos by simp
+        have nr0: "nextrel0 ?A j' (j' + 1)"
+          unfolding nextrel0_def using jA jA1 lt0 by simp
+        have le0j: "le0 ?A j' (j' + 1)"
+          unfolding le0_def using jA jA1 nr0 by (blast intro: r_into_rtranclp)
+        have vall: "\<forall>j''. j' < j'' \<and> le0 ?A j'' (j' + 1) \<longrightarrow>
+                      entry ?A 1 j'' \<ge> entry ?A 1 (j' + 1)"
+        proof (intro allI impI)
+          fix j'' assume H: "j' < j'' \<and> le0 ?A j'' (j' + 1)"
+          have "j'' \<le> j' + 1" using H nextrel0_rtrancl_mono[of ?A j'' "j' + 1"]
+            by (simp add: le0_def)
+          hence "j'' = j' + 1" using H by simp
+          thus "entry ?A 1 j'' \<ge> entry ?A 1 (j' + 1)" by simp
+        qed
+        have "nextrel1 ?A j' (j' + 1)"
+          unfolding nextrel1_def using jA jA1 lt1 le0j vall by simp
+        thus ?thesis by (simp add: nextR_def)
+      next
+        case mle: False
+        \<comment> \<open>inside the M-part: transfer M's trunk step\<close>
+        have jge: "?m \<le> j'" using mle by simp
+        define k where "k = j' - ?m"
+        have jk: "j' = ?m + k" using jge k_def by simp
+        have klt: "k < TrMax M" using jlt jk by simp
+        have kM: "k < Lng M" using klt tb LMpos by linarith
+        have kM1: "k + 1 < Lng M"
+        proof -
+          have "k + 1 \<le> TrMax M" using klt by simp
+          thus ?thesis using tb LMpos
+            using TrMax_trunk_step[OF MT klt] by (simp add: nextR_def nextrel1_def)
+        qed
+        have stepM: "nextR M 1 k (k + 1)" by (rule TrMax_trunk_step[OF MT klt])
+        have "nextrel1 M k (k + 1)" using stepM by (simp add: nextR_def)
+        hence "nextrel1 ?A (?m + k) (?m + k + 1)"
+          using transfer[OF kM kM1] by simp
+        thus ?thesis using jk by (simp add: nextR_def)
+      qed
+    qed
+  qed
+  \<comment> \<open>stop at m + TrMax M\<close>
+  have stop: "?m + TrMax M = Lng ?A - 1 \<or> \<not> nextR ?A 1 (?m + TrMax M) (?m + TrMax M + 1)"
+  proof (cases "TrMax M = Lng M - 1")
+    case True
+    have "?m + TrMax M = Lng ?A - 1" using True LA LMpos by linarith
+    thus ?thesis by blast
+  next
+    case False
+    have tlt: "TrMax M < Lng M - 1" using tb False by linarith
+    have tM: "TrMax M < Lng M" using tlt by linarith
+    have tM1: "TrMax M + 1 < Lng M" using tlt by linarith
+    have nstepM: "\<not> nextR M 1 (TrMax M) (TrMax M + 1)" by (rule TrMax_stop[OF MT])
+    have "\<not> nextrel1 ?A (?m + TrMax M) (?m + TrMax M + 1)"
+      using transfer[OF tM tM1] nstepM by (simp add: nextR_def)
+    thus ?thesis by (simp add: nextR_def)
+  qed
+  show ?thesis by (rule TrMax_eqI[OF AT steps stop])
+qed
+
 end
