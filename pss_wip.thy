@@ -3659,4 +3659,135 @@ proof -
   finally show ?thesis .
 qed
 
+
+text \<open>§6.5 m10>0 helpers for b5: le0 transfers between the M-part of coreReduce
+  and M, the trunk of coreReduce is a row-0 chain, and trunk row-1 entries of
+  coreReduce equal their index.\<close>
+
+lemma coreReduce_le0_back:
+  assumes MT: "M \<in> T_PS" and pos: "0 < entry M 1 0"
+    and kM': "k' < Lng M"
+    and r: "le0 (diagSeq 0 (entry M 1 0 - 1) @ (IncrFirst ^^ entry M 1 0) M)
+              (entry M 1 0 + k) (entry M 1 0 + k')"
+  shows "le0 M k k'"
+proof -
+  let ?m = "entry M 1 0"
+  let ?A = "diagSeq 0 (?m - 1) @ (IncrFirst ^^ ?m) M"
+  have Mne: "M \<noteq> []" using MT by (simp add: T_PS_def)
+  have LMpos: "0 < Lng M" using Mne by (cases M) auto
+  have bndA: "?m + k < Lng ?A \<and> ?m + k' < Lng ?A \<and> (nextrel0 ?A)\<^sup>*\<^sup>* (?m + k) (?m + k')"
+    using r by (simp add: le0_def)
+  have kM: "k < Lng M"
+  proof -
+    have Ld: "Lng (diagSeq 0 (?m - 1)) = ?m" using pos by (simp del: upt_Suc)
+    have "?m + k < ?m + Lng M" using bndA Ld by simp
+    thus ?thesis by simp
+  qed
+  have main: "\<And>z. (nextrel0 ?A)\<^sup>*\<^sup>* z (?m + k')
+                \<Longrightarrow> ?m \<le> z \<longrightarrow> (nextrel0 M)\<^sup>*\<^sup>* (z - ?m) k'"
+  proof -
+    fix z assume "(nextrel0 ?A)\<^sup>*\<^sup>* z (?m + k')"
+    thus "?m \<le> z \<longrightarrow> (nextrel0 M)\<^sup>*\<^sup>* (z - ?m) k'"
+    proof (induction rule: converse_rtranclp_induct)
+      case base show ?case by simp
+    next
+      case (step z w)
+      show ?case
+      proof (intro impI)
+        assume mz: "?m \<le> z"
+        have zw: "z < w" using step.hyps(1) by (simp add: nextrel0_def)
+        have wb: "w \<le> ?m + k'" using step.hyps(2) nextrel0_rtrancl_mono by blast
+        have mw: "?m \<le> w" using mz zw by linarith
+        have zM: "z - ?m < Lng M" using zw wb kM' mz by linarith
+        have wM: "w - ?m < Lng M" using wb kM' mw by linarith
+        have zsplit: "z = ?m + (z - ?m)" using mz by simp
+        have wsplit: "w = ?m + (w - ?m)" using mw by simp
+        have st: "nextrel0 ?A (?m + (z - ?m)) (?m + (w - ?m))"
+          using step.hyps(1) zsplit wsplit by simp
+        have "nextrel0 M (z - ?m) (w - ?m)"
+          using coreReduce_nextrel0_transfer[OF MT pos zM wM] st by simp
+        moreover have "(nextrel0 M)\<^sup>*\<^sup>* (w - ?m) k'" using step.IH mw by simp
+        ultimately show "(nextrel0 M)\<^sup>*\<^sup>* (z - ?m) k'"
+          by (rule converse_rtranclp_into_rtranclp)
+      qed
+    qed
+  qed
+  have "(nextrel0 M)\<^sup>*\<^sup>* k k'"
+  proof -
+    have "?m \<le> ?m + k" by simp
+    moreover have "(nextrel0 ?A)\<^sup>*\<^sup>* (?m + k) (?m + k')" using bndA by blast
+    ultimately have "(nextrel0 M)\<^sup>*\<^sup>* ((?m + k) - ?m) k'" using main by blast
+    thus ?thesis by simp
+  qed
+  thus ?thesis using kM kM' by (simp add: le0_def)
+qed
+
+lemma coreReduce_le0_fwd:
+  assumes MT: "M \<in> T_PS" and pos: "0 < entry M 1 0"
+    and r: "le0 M k k'"
+  shows "le0 (diagSeq 0 (entry M 1 0 - 1) @ (IncrFirst ^^ entry M 1 0) M)
+           (entry M 1 0 + k) (entry M 1 0 + k')"
+proof -
+  let ?m = "entry M 1 0"
+  let ?A = "diagSeq 0 (?m - 1) @ (IncrFirst ^^ ?m) M"
+  have kM: "k < Lng M" and kM': "k' < Lng M" and ch: "(nextrel0 M)\<^sup>*\<^sup>* k k'"
+    using r by (simp_all add: le0_def)
+  have Ld: "Lng (diagSeq 0 (?m - 1)) = ?m" using pos by (simp del: upt_Suc)
+  have LA: "Lng ?A = ?m + Lng M" using Ld by simp
+  have main: "(nextrel0 ?A)\<^sup>*\<^sup>* (?m + k) (?m + k')"
+    using ch kM
+  proof (induction rule: converse_rtranclp_induct)
+    case base show ?case by simp
+  next
+    case (step x y)
+    have xy: "x < y" using step.hyps(1) by (simp add: nextrel0_def)
+    have yM: "y < Lng M"
+    proof -
+      have "y \<le> k'" using step.hyps(2) nextrel0_rtrancl_mono by blast
+      thus ?thesis using kM' by linarith
+    qed
+    have xM: "x < Lng M" using xy yM by linarith
+    have "nextrel0 ?A (?m + x) (?m + y)"
+      using coreReduce_nextrel0_transfer[OF MT pos xM yM] step.hyps(1) by simp
+    moreover have "(nextrel0 ?A)\<^sup>*\<^sup>* (?m + y) (?m + k')" using step.IH yM by simp
+    ultimately show ?case by (rule converse_rtranclp_into_rtranclp)
+  qed
+  show ?thesis
+    unfolding le0_def using main LA kM kM' by simp
+qed
+
+lemma coreReduce_trunk_e1:
+  assumes MT: "M \<in> T_PS" and condA: "RedCondA M" and mono: "monoT M"
+    and pos: "0 < entry M 1 0"
+    and ple: "p \<le> TrMax (diagSeq 0 (entry M 1 0 - 1) @ (IncrFirst ^^ entry M 1 0) M)"
+  shows "entry (diagSeq 0 (entry M 1 0 - 1) @ (IncrFirst ^^ entry M 1 0) M) 1 p = p"
+proof -
+  let ?m = "entry M 1 0"
+  let ?A = "diagSeq 0 (?m - 1) @ (IncrFirst ^^ ?m) M"
+  have Mne: "M \<noteq> []" using MT by (simp add: T_PS_def)
+  have LMpos: "0 < Lng M" using Mne by (cases M) auto
+  have Ld: "Lng (diagSeq 0 (?m - 1)) = ?m" using pos by (simp del: upt_Suc)
+  have trA: "TrMax ?A = ?m + TrMax M" by (rule TrMax_coreReduce[OF MT condA mono pos])
+  show ?thesis
+  proof (cases "p < ?m")
+    case True
+    have "?A ! p = diagSeq 0 (?m - 1) ! p" using True Ld by (simp add: nth_append)
+    also have "\<dots> = (p, p)" using True pos by (simp add: diagSeq_def del: upt_Suc)
+    finally show ?thesis by (simp add: entry_def)
+  next
+    case False
+    define k where "k = p - ?m"
+    have pk: "p = ?m + k" using False k_def by simp
+    have kTr: "k \<le> TrMax M" using ple trA pk by simp
+    have tb: "TrMax M \<le> Lng M - 1" by (rule TrMax_bound[OF MT])
+    have kM: "k < Lng M" using kTr tb LMpos by linarith
+    have "?A ! p = ((IncrFirst ^^ ?m) M) ! k" using pk Ld by (simp add: nth_append)
+    hence "entry ?A 1 p = entry ((IncrFirst ^^ ?m) M) 1 k" by (simp add: entry_def)
+    also have "\<dots> = entry M 1 k" by (rule entry_funpow_IncrFirst1[OF kM])
+    also have "\<dots> = ?m + k"
+      using trunk_entries_offset[OF MT condA kTr] by simp
+    finally show ?thesis using pk by simp
+  qed
+qed
+
 end
