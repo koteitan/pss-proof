@@ -2849,4 +2849,104 @@ proof -
   show ?thesis using condABr brQ by simp
 qed
 
+text \<open>Head values of a branch component, read off @{thm [source] NJ_eq_BrJ}.\<close>
+
+lemma BrJ_head0:
+  assumes M: "M \<in> PT_PS"
+    and condA: "RedCondA M"
+    and m00: "entry M 0 0 = 0" and m10: "entry M 1 0 = 0"
+    and JBr: "J < Lng (Br M)"
+  shows "entry (Br M ! J) 0 0 = Joints M ! J + 1"
+  using NJ_eq_BrJ[OF M condA m00 m10 JBr] entry_NJ_0_0[of M J] m00 by simp
+
+lemma BrJ_head1:
+  assumes M: "M \<in> PT_PS"
+    and condA: "RedCondA M"
+    and m00: "entry M 0 0 = 0" and m10: "entry M 1 0 = 0"
+    and JBr: "J < Lng (Br M)"
+  shows "entry (Br M ! J) 1 0 = npJ M J"
+  using NJ_eq_BrJ[OF M condA m00 m10 JBr] entry_NJ_1_0[of M J] m10 by simp
+
+text \<open>§6.5 monoCong, per-block identity (the branches-case engine): if the branch
+  component satisfies the row-0 rebase closed form (the inductive hypothesis of
+  the upcoming m_6_5_Red_rebase), then its \<open>IncrFirst\<close>-lifted reduction is the
+  component VERBATIM -- the lift exponent \<open>e\<^sub>J = Joints!J + 1 - npJ = head\<^sub>0 - head\<^sub>1\<close>
+  exactly undoes the rebase (@{thm [source] BrJ_head0}, @{thm [source] BrJ_head1},
+  bounds @{thm [source] npJ_le_Joints_Suc} and @{thm [source] entry0_ge_min}).\<close>
+
+lemma BrJ_block_identity:
+  assumes M: "M \<in> PT_PS"
+    and condA: "RedCondA M"
+    and m00: "entry M 0 0 = 0" and m10: "entry M 1 0 = 0"
+    and JBr: "J < Lng (Br M)"
+    and IH: "Red (Br M ! J)
+             = map (\<lambda>j. (entry (Br M ! J) 0 j - entry (Br M ! J) 0 0
+                           + entry (Br M ! J) 1 0,
+                         entry (Br M ! J) 1 j))
+                   [0..<Lng (Br M ! J)]"
+  shows "(IncrFirst ^^ (Joints M ! J + 1 - npJ M J)) (Red (Br M ! J)) = Br M ! J"
+proof -
+  let ?B = "Br M ! J"  let ?h0 = "entry ?B 0 0"  let ?h1 = "entry ?B 1 0"
+  let ?e = "Joints M ! J + 1 - npJ M J"
+  have h0: "?h0 = Joints M ! J + 1" by (rule BrJ_head0[OF M condA m00 m10 JBr])
+  have h1: "?h1 = npJ M J" by (rule BrJ_head1[OF M condA m00 m10 JBr])
+  have nple: "npJ M J \<le> Joints M ! J + 1" by (rule npJ_le_Joints_Suc[OF M m10 JBr])
+  have h1h0: "?h1 \<le> ?h0" using h0 h1 nple by simp
+  have eEq: "?e = ?h0 - ?h1" using h0 h1 by simp
+  have brne: "?B \<noteq> []" by (rule Br_component_nonempty[OF M JBr])
+  have BT: "?B \<in> T_PS" using brne by (simp add: T_PS_def)
+  have Lpos: "0 < Lng ?B" using brne by (cases ?B) auto
+  have ge_h0: "\<And>j. j < Lng ?B \<Longrightarrow> ?h0 \<le> entry ?B 0 j"
+  proof -
+    fix j assume jL: "j < Lng ?B"
+    from Br_component_nonmulti[OF M JBr] show "?h0 \<le> entry ?B 0 j"
+    proof
+      assume "zeroT ?B"
+      hence "Lng ?B = 1" by (simp add: zeroT_def)
+      hence "j = 0" using jL by simp
+      thus ?thesis by simp
+    next
+      assume "monoT ?B"
+      thus ?thesis using entry0_ge_min[OF BT _ jL] by simp
+    qed
+  qed
+  have LRed: "Lng (Red ?B) = Lng ?B" using IH by simp
+  show ?thesis
+  proof (rule nth_equalityI)
+    show "length ((IncrFirst ^^ ?e) (Red ?B)) = length ?B"
+      using LRed Lng_funpow_IncrFirst by simp
+  next
+    fix j assume jL: "j < length ((IncrFirst ^^ ?e) (Red ?B))"
+    have jB: "j < Lng ?B" using jL LRed by simp
+    have jR: "j < Lng (Red ?B)" using jB LRed by simp
+    \<comment> \<open>entries of the reduced component (from the closed form)\<close>
+    have eR0: "entry (Red ?B) 0 j = entry ?B 0 j - ?h0 + ?h1"
+    proof -
+      have "(Red ?B) ! j = (entry ?B 0 j - ?h0 + ?h1, entry ?B 1 j)"
+        using IH jB by (simp del: upt_Suc)
+      thus ?thesis by (simp add: entry_def)
+    qed
+    have eR1: "entry (Red ?B) 1 j = entry ?B 1 j"
+    proof -
+      have "(Red ?B) ! j = (entry ?B 0 j - ?h0 + ?h1, entry ?B 1 j)"
+        using IH jB by (simp del: upt_Suc)
+      thus ?thesis by (simp add: entry_def)
+    qed
+    \<comment> \<open>entries after the lift\<close>
+    have eL0: "entry ((IncrFirst ^^ ?e) (Red ?B)) 0 j = entry ?B 0 j - ?h0 + ?h1 + ?e"
+      using entry_funpow_IncrFirst0[OF jR] eR0 by simp
+    have eL1: "entry ((IncrFirst ^^ ?e) (Red ?B)) 1 j = entry ?B 1 j"
+      using entry_funpow_IncrFirst1[OF jR] eR1 by simp
+    have arith: "entry ?B 0 j - ?h0 + ?h1 + ?e = entry ?B 0 j"
+      using ge_h0[OF jB] h1h0 eEq by linarith
+    have fstj: "fst (((IncrFirst ^^ ?e) (Red ?B)) ! j) = entry ?B 0 j"
+      using eL0 arith by (simp add: entry_def)
+    have sndj: "snd (((IncrFirst ^^ ?e) (Red ?B)) ! j) = entry ?B 1 j"
+      using eL1 by (simp add: entry_def)
+    have rhs: "?B ! j = (entry ?B 0 j, entry ?B 1 j)" by (simp add: entry_def)
+    show "((IncrFirst ^^ ?e) (Red ?B)) ! j = ?B ! j"
+      using fstj sndj rhs by (simp add: prod_eq_iff)
+  qed
+qed
+
 end
