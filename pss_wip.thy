@@ -4251,4 +4251,212 @@ proof -
     using entry_FirstNodes_eq_component_gen[OF M] JBr e0f by simp
 qed
 
+
+text \<open>§6.5 m10>0 stage-1 helpers for the final assembly (b7): IncrFirst as a pair
+  map, funpow invariances, the rebase as a pair map, and the BLOCK VALUE of the
+  coreReduce branches -- each lifted reduced block is the rebase image of the
+  M-branch component.\<close>
+
+lemma funpow_IncrFirst_as_map:
+  "(IncrFirst ^^ k) Z = map (\<lambda>p. (fst p + k, snd p)) Z"
+proof (induction k)
+  case 0 show ?case by (simp add: map_idI)
+next
+  case (Suc k)
+  show ?case using Suc.IH by (simp add: IncrFirst_def o_def)
+qed
+
+lemma multiT_funpow_IncrFirst: "multiT ((IncrFirst ^^ k) Z) = multiT Z"
+  by (induction k) (simp_all add: IncrFirst_multiT_eq)
+
+lemma rebase_as_pair_map:
+  "map (\<lambda>j. (entry Z 0 j - c0 + c1, entry Z 1 j)) [0..<Lng Z]
+   = map (\<lambda>p. (fst p - c0 + c1, snd p)) Z"
+proof (rule nth_equalityI)
+  show "length (map (\<lambda>j. (entry Z 0 j - c0 + c1, entry Z 1 j)) [0..<Lng Z])
+        = length (map (\<lambda>p. (fst p - c0 + c1, snd p)) Z)" by simp
+next
+  fix j assume "j < length (map (\<lambda>j. (entry Z 0 j - c0 + c1, entry Z 1 j)) [0..<Lng Z])"
+  hence jZ: "j < Lng Z" by simp
+  show "map (\<lambda>j. (entry Z 0 j - c0 + c1, entry Z 1 j)) [0..<Lng Z] ! j
+        = map (\<lambda>p. (fst p - c0 + c1, snd p)) Z ! j"
+    using jZ by (simp add: entry_def del: upt_Suc)
+qed
+
+lemma coreReduce_block_value:
+  assumes MT: "M \<in> T_PS" and condA: "RedCondA M" and mono: "monoT M"
+    and pos: "0 < entry M 1 0"
+    and JBr: "J < Lng (Br M)"
+    and IH: "Red ((IncrFirst ^^ entry M 1 0) (Br M ! J))
+             = map (\<lambda>j. (entry ((IncrFirst ^^ entry M 1 0) (Br M ! J)) 0 j
+                           - entry ((IncrFirst ^^ entry M 1 0) (Br M ! J)) 0 0
+                           + entry ((IncrFirst ^^ entry M 1 0) (Br M ! J)) 1 0,
+                         entry ((IncrFirst ^^ entry M 1 0) (Br M ! J)) 1 j))
+                   [0..<Lng ((IncrFirst ^^ entry M 1 0) (Br M ! J))]"
+  shows "(IncrFirst ^^ (Joints (diagSeq 0 (entry M 1 0 - 1)
+                                 @ (IncrFirst ^^ entry M 1 0) M) ! J + 1
+                        - npJ (diagSeq 0 (entry M 1 0 - 1)
+                                 @ (IncrFirst ^^ entry M 1 0) M) J))
+           (Red (NJ (diagSeq 0 (entry M 1 0 - 1) @ (IncrFirst ^^ entry M 1 0) M) J))
+         = map (\<lambda>p. (fst p - entry M 0 0 + entry M 1 0, snd p)) (Br M ! J)"
+proof -
+  let ?m = "entry M 1 0"  let ?c0 = "entry M 0 0"
+  let ?A = "diagSeq 0 (?m - 1) @ (IncrFirst ^^ ?m) M"
+  let ?B = "Br M ! J"
+  let ?X = "(IncrFirst ^^ ?m) ?B"
+  let ?jn = "Joints M ! J"
+  have MPT: "M \<in> PT_PS" using MT mono by (simp add: PT_PS_def)
+  have brMne: "?B \<noteq> []" by (rule Br_component_nonempty[OF MPT JBr])
+  have brMpos: "0 < Lng ?B" using brMne by (cases ?B) auto
+  have Xpos: "0 < Lng ?X" using brMpos by simp
+  have Xne: "?X \<noteq> []" using Xpos length_greater_0_conv by blast
+  have brA: "Br ?A = map (IncrFirst ^^ ?m) (Br M)"
+    by (rule Br_coreReduce[OF MT condA mono pos])
+  have brAJ: "Br ?A ! J = ?X" using brA JBr by simp
+  have jnA: "Joints ?A ! J = ?m + ?jn" by (rule Joints_coreReduce[OF MT condA mono pos JBr])
+  let ?b = "entry ?B 1 0"
+  have npA: "npJ ?A J = ?b" by (rule npJ_coreReduce[OF MT condA mono pos JBr])
+  have nple: "?b \<le> ?m + ?jn + 1"
+  proof -
+    have crM: "coreReduce M = ?A" by (rule coreReduce_m10pos_form[OF pos])
+    have monoA: "monoT ?A" using coreReduce_monoT_m10_pos[OF MT mono pos] crM by simp
+    have Mne: "M \<noteq> []" using MT by (simp add: T_PS_def)
+    have LMpos: "0 < Lng M" using Mne by (cases M) auto
+    have Ld: "Lng (diagSeq 0 (?m - 1)) = ?m" using pos by (simp del: upt_Suc)
+    have LA: "Lng ?A = ?m + Lng M" using Ld by simp
+    have LApos: "0 < Lng ?A" using LA LMpos by simp
+    have Ane: "?A \<noteq> []" using LApos length_greater_0_conv by blast
+    have AT: "?A \<in> T_PS" using Ane by (simp add: T_PS_def)
+    have APT: "?A \<in> PT_PS" using AT monoA by (simp add: PT_PS_def)
+    have e10A: "entry ?A 1 0 = 0"
+    proof -
+      have "?A ! 0 = diagSeq 0 (?m - 1) ! 0" using Ld pos by (simp add: nth_append)
+      also have "\<dots> = (0, 0)" using pos by (simp add: diagSeq_def del: upt_Suc)
+      finally show ?thesis by (simp add: entry_def)
+    qed
+    have JA: "J < Lng (Br ?A)" using JBr brA by simp
+    have "npJ ?A J \<le> Joints ?A ! J + 1"
+      by (rule npJ_le_Joints_Suc[OF APT e10A JA])
+    thus ?thesis using npA jnA by simp
+  qed
+  \<comment> \<open>head values of the shifted component\<close>
+  have h0B: "entry ?B 0 0 = ?c0 + ?jn + 1" by (rule BrJ_head0_gen[OF MPT condA JBr])
+  have h0X: "entry ?X 0 0 = ?c0 + ?jn + 1 + ?m"
+    using entry_funpow_IncrFirst0[OF brMpos] h0B by simp
+  have h1X: "entry ?X 1 0 = ?b"
+    using entry_funpow_IncrFirst1[OF brMpos] by simp
+  \<comment> \<open>NJ of A at J, and the head-lowering congruence\<close>
+  have e00A: "entry ?A 0 0 = 0"
+  proof -
+    have Ld: "Lng (diagSeq 0 (?m - 1)) = ?m" using pos by (simp del: upt_Suc)
+    have "?A ! 0 = diagSeq 0 (?m - 1) ! 0" using Ld pos by (simp add: nth_append)
+    also have "\<dots> = (0, 0)" using pos by (simp add: diagSeq_def del: upt_Suc)
+    finally show ?thesis by (simp add: entry_def)
+  qed
+  have e10A: "entry ?A 1 0 = 0"
+  proof -
+    have Ld: "Lng (diagSeq 0 (?m - 1)) = ?m" using pos by (simp del: upt_Suc)
+    have "?A ! 0 = diagSeq 0 (?m - 1) ! 0" using Ld pos by (simp add: nth_append)
+    also have "\<dots> = (0, 0)" using pos by (simp add: diagSeq_def del: upt_Suc)
+    finally show ?thesis by (simp add: entry_def)
+  qed
+  have NJA: "NJ ?A J = (?m + ?jn + 1, ?b) # tl ?X"
+    unfolding NJ_def using e00A e10A jnA npA brAJ by simp
+  have Xcons: "?X = (?c0 + ?jn + 1 + ?m, ?b) # tl ?X"
+  proof -
+    have c: "?X = hd ?X # tl ?X" using Xne by simp
+    have "hd ?X = (entry ?X 0 0, entry ?X 1 0)"
+      using Xne by (cases ?X) (auto simp: entry_def)
+    thus ?thesis using c h0X h1X by simp
+  qed
+  have strict: "\<And>q. 1 \<le> q \<Longrightarrow> q < Lng ((?c0 + ?jn + 1 + ?m, ?b) # tl ?X)
+                 \<Longrightarrow> ?c0 + ?jn + 1 + ?m < entry ((?c0 + ?jn + 1 + ?m, ?b) # tl ?X) 0 q"
+  proof -
+    fix q assume q1: "1 \<le> q" and qL: "q < Lng ((?c0 + ?jn + 1 + ?m, ?b) # tl ?X)"
+    have qX: "q < Lng ?X" using qL Xcons brMpos by simp
+    from Br_component_nonmulti[OF MPT JBr] show
+      "?c0 + ?jn + 1 + ?m < entry ((?c0 + ?jn + 1 + ?m, ?b) # tl ?X) 0 q"
+    proof
+      assume z: "zeroT ?B"
+      have "Lng ?B = 1" using z by (simp add: zeroT_def)
+      hence "Lng ?X = 1" by simp
+      thus ?thesis using q1 qX by simp
+    next
+      assume mB: "monoT ?B"
+      have XT: "?X \<in> T_PS" using Xne by (simp add: T_PS_def)
+      have monoX: "monoT ?X" by (induction ?m) (use mB in \<open>simp_all add: IncrFirst_monoT_eq\<close>)
+      have "entry ?X 0 0 < entry ?X 0 q" by (rule mono_tail_row0_strict[OF XT monoX q1 qX])
+      moreover have "entry ((?c0 + ?jn + 1 + ?m, ?b) # tl ?X) 0 q = entry ?X 0 q"
+        using Xcons by simp
+      ultimately show ?thesis using h0X by simp
+    qed
+  qed
+  have ab: "?m + ?jn + 1 \<le> ?c0 + ?jn + 1 + ?m" by simp
+  have cong: "congR (NJ ?A J) ?X"
+    using congR_head0_lower[OF ab strict] NJA Xcons by simp
+  have NJne: "NJ ?A J \<noteq> []" using NJA by simp
+  have NJT: "NJ ?A J \<in> T_PS" using NJne by (simp add: T_PS_def)
+  have redeq: "Red (NJ ?A J) = Red ?X" by (rule cdn_red_cong[OF cong NJT])
+  \<comment> \<open>arithmetic: lift exponent undoes the rebase down to the m00-normalization\<close>
+  have eJ: "Joints ?A ! J + 1 - npJ ?A J = ?m + ?jn + 1 - ?b" using jnA npA by simp
+  have IHmap: "Red ?X = map (\<lambda>p. (fst p - (?c0 + ?jn + 1 + ?m) + ?b, snd p)) ?X"
+    using IH rebase_as_pair_map[of ?X "entry ?X 0 0" "entry ?X 1 0"] h0X h1X by simp
+  have geB: "\<And>j. j < Lng ?B \<Longrightarrow> ?c0 + ?jn + 1 \<le> entry ?B 0 j"
+  proof -
+    fix j assume jB: "j < Lng ?B"
+    from Br_component_nonmulti[OF MPT JBr] show "?c0 + ?jn + 1 \<le> entry ?B 0 j"
+    proof
+      assume z: "zeroT ?B"
+      have "Lng ?B = 1" using z by (simp add: zeroT_def)
+      hence "j = 0" using jB by simp
+      thus ?thesis using h0B by simp
+    next
+      assume mB: "monoT ?B"
+      have BT: "?B \<in> T_PS" using brMne by (simp add: T_PS_def)
+      have "entry ?B 0 0 \<le> entry ?B 0 j" by (rule entry0_ge_min[OF BT mB jB])
+      thus ?thesis using h0B by simp
+    qed
+  qed
+  show ?thesis
+  proof -
+    have "(IncrFirst ^^ (Joints ?A ! J + 1 - npJ ?A J)) (Red (NJ ?A J))
+          = (IncrFirst ^^ (?m + ?jn + 1 - ?b)) (Red ?X)" using eJ redeq by simp
+    also have "\<dots> = map (\<lambda>p. (fst p + (?m + ?jn + 1 - ?b), snd p))
+                       (map (\<lambda>p. (fst p - (?c0 + ?jn + 1 + ?m) + ?b, snd p)) ?X)"
+      using IHmap funpow_IncrFirst_as_map by simp
+    also have "\<dots> = map (\<lambda>p. (fst p - ?c0 + ?m, snd p)) ?B"
+    proof -
+      have Xmap: "?X = map (\<lambda>p. (fst p + ?m, snd p)) ?B"
+        by (rule funpow_IncrFirst_as_map)
+      show ?thesis
+      proof (rule nth_equalityI)
+        show "length (map (\<lambda>p. (fst p + (?m + ?jn + 1 - ?b), snd p))
+                       (map (\<lambda>p. (fst p - (?c0 + ?jn + 1 + ?m) + ?b, snd p)) ?X))
+              = length (map (\<lambda>p. (fst p - ?c0 + ?m, snd p)) ?B)"
+          using Xmap by simp
+      next
+        fix j assume "j < length (map (\<lambda>p. (fst p + (?m + ?jn + 1 - ?b), snd p))
+                       (map (\<lambda>p. (fst p - (?c0 + ?jn + 1 + ?m) + ?b, snd p)) ?X))"
+        hence jB: "j < Lng ?B" by simp
+        have jX: "j < Lng ?X" using jB by simp
+        have xval: "fst (?X ! j) = fst (?B ! j) + ?m"
+          using Xmap jB by simp
+        have yval: "snd (?X ! j) = snd (?B ! j)"
+          using Xmap jB by simp
+        have gej: "?c0 + ?jn + 1 \<le> fst (?B ! j)"
+          using geB[OF jB] by (simp add: entry_def)
+        have arith: "fst (?B ! j) + ?m - (?c0 + ?jn + 1 + ?m) + ?b
+                       + (?m + ?jn + 1 - ?b)
+                     = fst (?B ! j) - ?c0 + ?m"
+          using gej nple by linarith
+        show "map (\<lambda>p. (fst p + (?m + ?jn + 1 - ?b), snd p))
+                (map (\<lambda>p. (fst p - (?c0 + ?jn + 1 + ?m) + ?b, snd p)) ?X) ! j
+              = map (\<lambda>p. (fst p - ?c0 + ?m, snd p)) ?B ! j"
+          using jX jB xval yval arith by simp
+      qed
+    qed
+    finally show ?thesis .
+  qed
+qed
+
 end
