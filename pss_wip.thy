@@ -3790,4 +3790,289 @@ proof -
   qed
 qed
 
+
+text \<open>§6.5 m10>0 brick (b5): the row-1 NJ head of a coreReduce branch equals the
+  component's row-1 head, npJ (coreReduce M) J = entry (Br (coreReduce M) ! J) 1 0.
+  The unique row-1 parent p of the first node lies on the coreReduce trunk
+  (largest-below through the joint), where row-1 entries equal the index.  If
+  p sits in the shifted M-part, the edge transfers to M and RedCondA M pins the
+  +1; if p sits in the diagonal prefix, no M-side ancestor has a smaller row-1
+  value (else its transfer would contradict uniqueness), and the edge from
+  index b-1 is constructed directly, so p = b-1 by uniqueness.\<close>
+
+lemma coreReduce_nextrel1_transfer:
+  assumes MT: "M \<in> T_PS" and pos: "0 < entry M 1 0"
+    and kM: "k < Lng M" and kM': "k' < Lng M"
+  shows "nextrel1 (diagSeq 0 (entry M 1 0 - 1) @ (IncrFirst ^^ entry M 1 0) M)
+            (entry M 1 0 + k) (entry M 1 0 + k')
+         = nextrel1 M k k'"
+proof -
+  let ?m = "entry M 1 0"
+  let ?Y = "(IncrFirst ^^ ?m) M"
+  let ?A = "diagSeq 0 (?m - 1) @ ?Y"
+  have Mne: "M \<noteq> []" using MT by (simp add: T_PS_def)
+  have LMpos: "0 < Lng M" using Mne by (cases M) auto
+  have Ld: "Lng (diagSeq 0 (?m - 1)) = ?m" using pos by (simp del: upt_Suc)
+  have LA: "Lng ?A = ?m + Lng M" using Ld by simp
+  have dropA: "drop ?m ?A = ?Y" using Ld by simp
+  have segA: "seg ?A ?m (Lng ?A - 1) = ?Y"
+    using seg_to_last_eq_drop[of ?A ?m] LA LMpos dropA by simp
+  have bnd: "Lng ?A - 1 < Lng ?A" using LA LMpos by simp
+  have kS: "k < Lng (seg ?A ?m (Lng ?A - 1))" using segA kM by simp
+  have kS': "k' < Lng (seg ?A ?m (Lng ?A - 1))" using segA kM' by simp
+  have "nextrel1 (seg ?A ?m (Lng ?A - 1)) k k' = nextrel1 ?A (?m + k) (?m + k')"
+    by (rule adm_nextrel1_seg[OF bnd kS kS'])
+  moreover have "nextrel1 (seg ?A ?m (Lng ?A - 1)) k k' = nextrel1 M k k'"
+    using segA nextrel1_funpow_IncrFirst_eq[of ?m M] by simp
+  ultimately show ?thesis by simp
+qed
+
+lemma npJ_coreReduce:
+  assumes MT: "M \<in> T_PS" and condA: "RedCondA M" and mono: "monoT M"
+    and pos: "0 < entry M 1 0"
+    and JBr: "J < Lng (Br M)"
+  shows "npJ (diagSeq 0 (entry M 1 0 - 1) @ (IncrFirst ^^ entry M 1 0) M) J
+         = entry (Br M ! J) 1 0"
+proof -
+  let ?m = "entry M 1 0"
+  let ?A = "diagSeq 0 (?m - 1) @ (IncrFirst ^^ ?m) M"
+  let ?b = "entry (Br M ! J) 1 0"
+  have MPT: "M \<in> PT_PS" using MT mono by (simp add: PT_PS_def)
+  have Mne: "M \<noteq> []" using MT by (simp add: T_PS_def)
+  have LMpos: "0 < Lng M" using Mne by (cases M) auto
+  have Ld: "Lng (diagSeq 0 (?m - 1)) = ?m" using pos by (simp del: upt_Suc)
+  have LA: "Lng ?A = ?m + Lng M" using Ld by simp
+  have LApos: "0 < Lng ?A" using LA LMpos by simp
+  have Ane: "?A \<noteq> []" using LApos length_greater_0_conv by blast
+  have AT: "?A \<in> T_PS" using Ane by (simp add: T_PS_def)
+  have crM: "coreReduce M = ?A" by (rule coreReduce_m10pos_form[OF pos])
+  have monoA: "monoT ?A" using coreReduce_monoT_m10_pos[OF MT mono pos] crM by simp
+  have brA: "Br ?A = map (IncrFirst ^^ ?m) (Br M)"
+    by (rule Br_coreReduce[OF MT condA mono pos])
+  have JA: "J < length (Br ?A)" using JBr brA by simp
+  have brMne: "Br M ! J \<noteq> []" by (rule Br_component_nonempty[OF MPT JBr])
+  have brMpos: "0 < Lng (Br M ! J)" using brMne by (cases "Br M ! J") auto
+  have brAJ: "Br ?A ! J = (IncrFirst ^^ ?m) (Br M ! J)" using brA JBr by simp
+  have br10A: "entry (Br ?A ! J) 1 0 = ?b"
+    using brAJ entry_funpow_IncrFirst1[OF brMpos] by simp
+  show ?thesis
+  proof (cases "?b = 0")
+    case True
+    thus ?thesis using br10A by (simp add: npJ_def)
+  next
+    case bne: False
+    have bpos: "0 < ?b" using bne by simp
+    let ?fnM = "FirstNodes M ! J"  let ?jnM = "Joints M ! J"
+    let ?fnA = "?m + ?fnM"
+    have fnTr: "?jnM \<le> TrMax M \<and> TrMax M < ?fnM"
+      by (rule m_6_4_FirstNodes_TrMax_Joints[OF MPT JBr])
+    have nxJM: "nextR M 0 ?jnM ?fnM" by (rule Joints_parent_nextR[OF MPT JBr])
+    have nr0M: "nextrel0 M ?jnM ?fnM" using nxJM by (simp add: nextR_def)
+    have jnML: "?jnM < Lng M" and fnML: "?fnM < Lng M"
+      using nr0M by (simp_all add: nextrel0_def)
+    have fnAmap: "FirstNodes ?A ! J = ?fnA"
+    proof -
+      have fnmap: "FirstNodes ?A = map ((+) ?m) (FirstNodes M)"
+        by (rule FirstNodes_coreReduce[OF MT condA mono pos])
+      have lenFN: "J < length (FirstNodes M)"
+        using JBr by (simp add: FirstNodes_def IdxSum_def)
+      show ?thesis using fnmap lenFN by simp
+    qed
+    have fnAL: "?fnA < Lng ?A" using fnML LA by simp
+    have e1fnM: "entry M 1 ?fnM = ?b"
+      using entry_FirstNodes_eq_component_gen[OF MPT] JBr by simp
+    have e1fnA: "entry ?A 1 ?fnA = ?b"
+    proof -
+      have "?A ! ?fnA = ((IncrFirst ^^ ?m) M) ! ?fnM" using Ld by (simp add: nth_append)
+      hence "entry ?A 1 ?fnA = entry ((IncrFirst ^^ ?m) M) 1 ?fnM" by (simp add: entry_def)
+      thus ?thesis using entry_funpow_IncrFirst1[OF fnML] e1fnM by simp
+    qed
+    have e10A: "entry ?A 1 0 = 0"
+    proof -
+      have "?A ! 0 = diagSeq 0 (?m - 1) ! 0" using Ld pos by (simp add: nth_append)
+      also have "\<dots> = (0, 0)" using pos by (simp add: diagSeq_def del: upt_Suc)
+      finally show ?thesis by (simp add: entry_def)
+    qed
+    have e10lt: "entry ?A 1 0 < entry ?A 1 ?fnA" using e10A e1fnA bpos by simp
+    have fnApos: "0 < ?fnA" using pos by simp
+    have le00: "leR ?A 0 0 ?fnA"
+    proof -
+      have root: "leR ?A 0 0 (Lng ?A - 1)" using monoA by (simp add: monoT_def)
+      have fle: "?fnA \<le> Lng ?A - 1" using fnAL by simp
+      show ?thesis by (rule m_5_1_ancestor_tree_1[OF AT root _ fle]) simp
+    qed
+    obtain p where pb: "p < ?fnA" and pc: "nextR ?A 1 p ?fnA"
+      using m_5_1_parent_exists_2[OF AT fnApos fnAL e10lt le00] by blast
+    have ex1: "\<exists>!x. nextR ?A 1 x ?fnA" using pc nextR1_unique by blast
+    have the_p: "(THE x. nextR ?A 1 x ?fnA) = p" by (rule the1_equality[OF ex1 pc])
+    have npval: "npJ ?A J = Suc p"
+      using br10A bne the_p fnAmap by (simp add: npJ_def)
+    \<comment> \<open>p lies on the trunk of A\<close>
+    have nr0A: "nextrel0 ?A (?m + ?jnM) ?fnA"
+      using coreReduce_nextrel0_transfer[OF MT pos jnML fnML] nr0M by simp
+    have nxA0: "nextR ?A 0 (?m + ?jnM) ?fnA" using nr0A by (simp add: nextR_def)
+    have le0pf: "leR ?A 0 p ?fnA"
+      using pc by (simp add: nextR_def nextrel1_def leR_def)
+    have e0plt: "entry ?A 0 p < entry ?A 0 ?fnA"
+      by (rule m_5_1_ancestor_basic_1[OF AT pb order.refl le0pf])
+    have p_le: "p \<le> ?m + ?jnM" by (rule nextR0_largest_below[OF nxA0 pb e0plt])
+    have trA: "TrMax ?A = ?m + TrMax M" by (rule TrMax_coreReduce[OF MT condA mono pos])
+    have pTrA: "p \<le> TrMax ?A" using p_le fnTr trA by linarith
+    have e1p: "entry ?A 1 p = p" by (rule coreReduce_trunk_e1[OF MT condA mono pos pTrA])
+    \<comment> \<open>conclude Suc p = b by the two positions of p\<close>
+    have sucp: "Suc p = ?b"
+    proof (cases "?m \<le> p")
+      case True
+      define k where "k = p - ?m"
+      have pk: "p = ?m + k" using True k_def by simp
+      have kTr: "k \<le> TrMax M" using pTrA trA pk by simp
+      have tb: "TrMax M \<le> Lng M - 1" by (rule TrMax_bound[OF MT])
+      have kM: "k < Lng M" using kTr tb LMpos by linarith
+      have nr1A: "nextrel1 ?A (?m + k) (?m + ?fnM)" using pc pk by (simp add: nextR_def)
+      have nr1M: "nextrel1 M k ?fnM"
+        using coreReduce_nextrel1_transfer[OF MT pos kM fnML] nr1A by simp
+      have nxM1: "nextR M 1 k ?fnM" using nr1M by (simp add: nextR_def)
+      have ex1M: "\<exists>!x. nextR M 1 x ?fnM" using nxM1 nextR1_unique by blast
+      have hpM: "hasParent M 1 ?fnM" unfolding hasParent_def by (rule ex1M)
+      have parM: "parent M 1 ?fnM = k"
+      proof -
+        have "nextR M 1 (parent M 1 ?fnM) ?fnM"
+          using hpM unfolding hasParent_def parent_def by (rule theI')
+        thus ?thesis using nxM1 by (rule nextR1_unique)
+      qed
+      have cA1: "entry M 1 (parent M 1 ?fnM) + 1 = entry M 1 ?fnM"
+        using condA hpM unfolding RedCondA_def by blast
+      have e1k: "entry M 1 k = ?m + k"
+        using trunk_entries_offset[OF MT condA kTr] by simp
+      have "?m + k + 1 = ?b" using cA1 parM e1k e1fnM by simp
+      thus ?thesis using pk by simp
+    next
+      case False
+      hence plt: "p < ?m" by simp
+      \<comment> \<open>no M-side le0-ancestor of the first node has a smaller row-1 value\<close>
+      have nosmall: "\<And>k. k < Lng M \<Longrightarrow> le0 M k ?fnM \<Longrightarrow> ?b \<le> entry M 1 k"
+      proof (rule ccontr)
+        fix k assume kM: "k < Lng M" and le0k: "le0 M k ?fnM"
+          and nb: "\<not> ?b \<le> entry M 1 k"
+        have elt: "entry M 1 k < entry M 1 ?fnM" using nb e1fnM by simp
+        have kfn: "k < ?fnM"
+        proof -
+          have "k \<le> ?fnM" using le0k nextrel0_rtrancl_mono[of M k ?fnM]
+            by (simp add: le0_def)
+          moreover have "k \<noteq> ?fnM" using elt by auto
+          ultimately show ?thesis by simp
+        qed
+        have leRk: "leR M 0 k ?fnM" using le0k by (simp add: leR_def)
+        obtain p' where pb': "p' < ?fnM" and pc': "nextR M 1 p' ?fnM"
+          using m_5_1_parent_exists_2[OF MT kfn fnML elt leRk] by blast
+        have pM': "p' < Lng M" using pb' fnML by linarith
+        have nr1A': "nextrel1 ?A (?m + p') (?m + ?fnM)"
+          using coreReduce_nextrel1_transfer[OF MT pos pM' fnML] pc'
+          by (simp add: nextR_def)
+        have "nextR ?A 1 (?m + p') ?fnA" using nr1A' by (simp add: nextR_def)
+        hence "?m + p' = p" using pc by (rule nextR1_unique)
+        thus False using plt by simp
+      qed
+      have bm: "?b \<le> ?m"
+      proof -
+        have le00M: "le0 M 0 ?fnM"
+        proof -
+          have root: "leR M 0 0 (Lng M - 1)" using mono by (simp add: monoT_def)
+          have fle: "?fnM \<le> Lng M - 1" using fnML by simp
+          have "leR M 0 0 ?fnM" by (rule m_5_1_ancestor_tree_1[OF MT root _ fle]) simp
+          thus ?thesis by (simp add: leR_def)
+        qed
+        show ?thesis using nosmall[OF LMpos le00M] by simp
+      qed
+      \<comment> \<open>the trunk of A is a row-0 chain, so b-1 reaches the joint\<close>
+      have trunk_le0: "\<And>a b'. a \<le> b' \<Longrightarrow> b' \<le> TrMax ?A \<Longrightarrow> le0 ?A a b'"
+      proof -
+        fix a b' show "a \<le> b' \<Longrightarrow> b' \<le> TrMax ?A \<Longrightarrow> le0 ?A a b'"
+        proof (induct b')
+          case 0
+          hence a0: "a = 0" by simp
+          have "(0::nat) < Lng ?A" using LApos .
+          thus ?case using a0 by (simp add: le0_def)
+        next
+          case (Suc b')
+          show ?case
+          proof (cases "a = Suc b'")
+            case True
+            have "Suc b' < Lng ?A"
+              using Suc.prems(2) TrMax_bound[OF AT] LApos by linarith
+            thus ?thesis using True by (simp add: le0_def)
+          next
+            case False
+            have ab: "a \<le> b'" using Suc.prems(1) False by simp
+            have bTr: "b' \<le> TrMax ?A" using Suc.prems(2) by simp
+            have IH: "le0 ?A a b'" by (rule Suc.hyps[OF ab bTr])
+            have st: "nextR ?A 1 b' (b' + 1)"
+              by (rule TrMax_trunk_step[OF AT]) (use Suc.prems(2) in simp)
+            have "le0 ?A b' (b' + 1)" using st by (simp add: nextR_def nextrel1_def)
+            hence "le0 ?A b' (Suc b')" by simp
+            thus ?thesis using IH le0_trans by blast
+          qed
+        qed
+      qed
+      have b1jn: "?b - 1 \<le> ?m + ?jnM" using bm by simp
+      have jnTrA: "?m + ?jnM \<le> TrMax ?A" using trA fnTr by simp
+      have le0b1jn: "le0 ?A (?b - 1) (?m + ?jnM)" by (rule trunk_le0[OF b1jn jnTrA])
+      have le0jnfn: "le0 ?A (?m + ?jnM) ?fnA"
+      proof -
+        have bnds: "?m + ?jnM < Lng ?A \<and> ?fnA < Lng ?A"
+          using nr0A by (simp add: nextrel0_def)
+        show ?thesis unfolding le0_def using bnds nr0A by (blast intro: r_into_rtranclp)
+      qed
+      have le0b1fn: "le0 ?A (?b - 1) ?fnA" using le0b1jn le0jnfn le0_trans by blast
+      \<comment> \<open>entries and valley for the constructed edge\<close>
+      have b1m: "?b - 1 < ?m" using bm bpos by simp
+      have e1b1: "entry ?A 1 (?b - 1) = ?b - 1"
+      proof -
+        have "?A ! (?b - 1) = diagSeq 0 (?m - 1) ! (?b - 1)"
+          using b1m Ld by (simp add: nth_append)
+        also have "\<dots> = (?b - 1, ?b - 1)" using b1m pos by (simp add: diagSeq_def del: upt_Suc)
+        finally show ?thesis by (simp add: entry_def)
+      qed
+      have e1b1lt: "entry ?A 1 (?b - 1) < entry ?A 1 ?fnA" using e1b1 e1fnA bpos by simp
+      have vall: "\<forall>j. ?b - 1 < j \<and> le0 ?A j ?fnA \<longrightarrow> entry ?A 1 j \<ge> entry ?A 1 ?fnA"
+      proof (intro allI impI)
+        fix j assume H: "?b - 1 < j \<and> le0 ?A j ?fnA"
+        from H have jgt: "?b - 1 < j" and jle0: "le0 ?A j ?fnA" by auto
+        show "entry ?A 1 j \<ge> entry ?A 1 ?fnA"
+        proof (cases "j < ?m")
+          case True
+          have "?A ! j = diagSeq 0 (?m - 1) ! j" using True Ld by (simp add: nth_append)
+          also have "\<dots> = (j, j)" using True pos by (simp add: diagSeq_def del: upt_Suc)
+          finally have "entry ?A 1 j = j" by (simp add: entry_def)
+          thus ?thesis using jgt bpos e1fnA by simp
+        next
+          case False
+          define k where "k = j - ?m"
+          have jk: "j = ?m + k" using False k_def by simp
+          have le0Aj: "le0 ?A (?m + k) (?m + ?fnM)" using jle0 jk by simp
+          have "le0 M k ?fnM" by (rule coreReduce_le0_back[OF MT pos fnML le0Aj])
+          moreover have kM: "k < Lng M"
+            using le0Aj LA by (simp add: le0_def)
+          ultimately have "?b \<le> entry M 1 k" using nosmall by blast
+          moreover have "entry ?A 1 j = entry M 1 k"
+          proof -
+            have "?A ! j = ((IncrFirst ^^ ?m) M) ! k" using jk Ld by (simp add: nth_append)
+            hence "entry ?A 1 j = entry ((IncrFirst ^^ ?m) M) 1 k" by (simp add: entry_def)
+            thus ?thesis using entry_funpow_IncrFirst1[OF kM] by simp
+          qed
+          ultimately show ?thesis using e1fnA by simp
+        qed
+      qed
+      have b1L: "?b - 1 < Lng ?A" using b1m LA by linarith
+      have b1fn: "?b - 1 < ?fnA" using b1m by simp
+      have nr1b1: "nextrel1 ?A (?b - 1) ?fnA"
+        unfolding nextrel1_def using b1L fnAL b1fn e1b1lt le0b1fn vall by simp
+      have "nextR ?A 1 (?b - 1) ?fnA" using nr1b1 by (simp add: nextR_def)
+      hence "?b - 1 = p" using pc by (rule nextR1_unique)
+      thus ?thesis using bpos by simp
+    qed
+    show ?thesis using npval sucp by simp
+  qed
+qed
+
 end
