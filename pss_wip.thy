@@ -2522,30 +2522,28 @@ proof -
   qed
 qed
 
-lemma monoT_condA_trunkwhole_eq_diagSeq:
+lemma trunk_entries_diag:
   assumes MT: "M \<in> T_PS"
     and condA: "RedCondA M"
     and m00: "entry M 0 0 = 0" and m10: "entry M 1 0 = 0"
-    and tw: "TrMax M = Lng M - 1"
-  shows "M = diagSeq 0 (Lng M - 1)"
+    and jle: "j \<le> TrMax M"
+  shows "entry M 0 j = j \<and> entry M 1 j = j"
 proof -
-  let ?j1 = "Lng M - 1"
-  have LM: "0 < Lng M" using MT by (cases M) (auto simp: T_PS_def)
-  have step1: "\<And>j. j < ?j1 \<Longrightarrow> nextR M 1 j (j + 1)"
-    using TrMax_trunk_step[OF MT] tw by simp
+  have step1: "\<And>j'. j' < TrMax M \<Longrightarrow> nextR M 1 j' (j' + 1)"
+    by (rule TrMax_trunk_step[OF MT])
   have condA1: "\<And>j. hasParent M 1 j \<Longrightarrow> entry M 1 (parent M 1 j) + 1 = entry M 1 j"
     using condA unfolding RedCondA_def by blast
   have condA0: "\<And>j. hasParent M 0 j \<Longrightarrow> entry M 0 (parent M 0 j) + 1 = entry M 0 j"
     using condA unfolding RedCondA_def by blast
-  \<comment> \<open>row-1 entries are the diagonal\<close>
-  have e1: "\<And>j. j \<le> ?j1 \<Longrightarrow> entry M 1 j = j"
+  \<comment> \<open>row-1 entries are the diagonal on the trunk\<close>
+  have e1: "\<And>j. j \<le> TrMax M \<Longrightarrow> entry M 1 j = j"
   proof -
-    fix j show "j \<le> ?j1 \<Longrightarrow> entry M 1 j = j"
+    fix j show "j \<le> TrMax M \<Longrightarrow> entry M 1 j = j"
     proof (induct j)
       case 0 show ?case using m10 by simp
     next
       case (Suc j)
-      have jlt: "j < ?j1" using Suc.prems by simp
+      have jlt: "j < TrMax M" using Suc.prems by simp
       have nr: "nextR M 1 j (j + 1)" by (rule step1[OF jlt])
       have hp: "hasParent M 1 (j + 1)"
         unfolding hasParent_def using nr nextR1_unique by blast
@@ -2558,22 +2556,22 @@ proof -
     qed
   qed
   \<comment> \<open>the trunk edge collapses to the adjacent row-0 step\<close>
-  have step0: "\<And>j. j < ?j1 \<Longrightarrow> nextrel0 M j (j + 1)"
+  have step0: "\<And>j. j < TrMax M \<Longrightarrow> nextrel0 M j (j + 1)"
   proof -
-    fix j assume jlt: "j < ?j1"
+    fix j assume jlt: "j < TrMax M"
     have nr1: "nextrel1 M j (j + 1)" using step1[OF jlt] by (simp add: nextR_def)
     have "le0 M j (j + 1)" using nr1 by (simp add: nextrel1_def)
     thus "nextrel0 M j (j + 1)" using le0_adjacent_step by simp
   qed
-  \<comment> \<open>row-0 entries are the diagonal\<close>
-  have e0: "\<And>j. j \<le> ?j1 \<Longrightarrow> entry M 0 j = j"
+  \<comment> \<open>row-0 entries are the diagonal on the trunk\<close>
+  have e0: "\<And>j. j \<le> TrMax M \<Longrightarrow> entry M 0 j = j"
   proof -
-    fix j show "j \<le> ?j1 \<Longrightarrow> entry M 0 j = j"
+    fix j show "j \<le> TrMax M \<Longrightarrow> entry M 0 j = j"
     proof (induct j)
       case 0 show ?case using m00 by simp
     next
       case (Suc j)
-      have jlt: "j < ?j1" using Suc.prems by simp
+      have jlt: "j < TrMax M" using Suc.prems by simp
       have nr0: "nextrel0 M j (j + 1)" by (rule step0[OF jlt])
       have e_lt: "entry M 0 j < entry M 0 (j + 1)" using nr0 by (simp add: nextrel0_def)
       have uniq: "\<And>a. nextrel0 M a (j + 1) \<Longrightarrow> a = j"
@@ -2609,21 +2607,129 @@ proof -
       thus ?case using Suc.hyps Suc.prems by simp
     qed
   qed
-  \<comment> \<open>assemble the list equality\<close>
+  show ?thesis using e0[OF jle] e1[OF jle] by simp
+qed
+
+lemma monoT_condA_trunkwhole_eq_diagSeq:
+  assumes MT: "M \<in> T_PS"
+    and condA: "RedCondA M"
+    and m00: "entry M 0 0 = 0" and m10: "entry M 1 0 = 0"
+    and tw: "TrMax M = Lng M - 1"
+  shows "M = diagSeq 0 (Lng M - 1)"
+proof -
+  let ?j1 = "Lng M - 1"
+  have LM: "0 < Lng M" using MT by (cases M) (auto simp: T_PS_def)
   show ?thesis
   proof (rule nth_equalityI)
     show "length M = length (diagSeq 0 ?j1)" using LM by (simp add: diagSeq_def)
   next
     fix j assume jL: "j < length M"
     have jle: "j \<le> ?j1" using jL by (cases M) auto
-    have fstj: "fst (M ! j) = j" using e0[OF jle] by (simp add: entry_def)
-    have sndj: "snd (M ! j) = j" using e1[OF jle] by (simp add: entry_def)
+    have jTr: "j \<le> TrMax M" using jle tw by simp
+    have ent: "entry M 0 j = j \<and> entry M 1 j = j"
+      by (rule trunk_entries_diag[OF MT condA m00 m10 jTr])
+    have fstj: "fst (M ! j) = j" using ent by (simp add: entry_def)
+    have sndj: "snd (M ! j) = j" using ent by (simp add: entry_def)
     have Mj: "M ! j = (j, j)" using fstj sndj by (simp add: prod_eq_iff)
     have jlt': "j < Suc ?j1" using jle by simp
     have dj: "diagSeq 0 ?j1 ! j = (j, j)"
       using jlt' by (simp add: diagSeq_def del: upt_Suc)
     show "M ! j = diagSeq 0 ?j1 ! j" using Mj dj by simp
   qed
+qed
+
+text \<open>§6.5 monoCong, branches brick: under RedCondA and a zero left end the
+  head replacement of \<open>N\<^sub>J\<close> is the IDENTITY -- \<open>NJ M J = Br M ! J\<close>.  The joint
+  sits on the trunk (@{thm [source] m_6_4_FirstNodes_TrMax_Joints}) where entries
+  equal indices (@{thm [source] trunk_entries_diag}), so RedCondA at the first
+  node pins its row-0 value to \<open>Joints!J + 1\<close>; likewise the row-1 parent of the
+  first node lies at \<open>p\<^sub>1 \<le> Joints!J \<le> TrMax\<close>
+  (@{thm [source] nextR0_largest_below}), so RedCondA pins the row-1 value to
+  \<open>Suc p\<^sub>1 = npJ M J\<close>.  Verified empirically (802 branch instances, 0 mismatches).
+  This collapses the branches case of monoCong to the branch components
+  themselves.\<close>
+
+lemma NJ_eq_BrJ:
+  assumes M: "M \<in> PT_PS"
+    and condA: "RedCondA M"
+    and m00: "entry M 0 0 = 0" and m10: "entry M 1 0 = 0"
+    and JBr: "J < Lng (Br M)"
+  shows "NJ M J = Br M ! J"
+proof -
+  have MT: "M \<in> T_PS" and monoM: "monoT M" using M by (simp_all add: PT_PS_def)
+  let ?f = "FirstNodes M ! J"  let ?jn = "Joints M ! J"
+  have fnTr: "?jn \<le> TrMax M \<and> TrMax M < ?f"
+    by (rule m_6_4_FirstNodes_TrMax_Joints[OF M JBr])
+  have jnTr: "?jn \<le> TrMax M" using fnTr by blast
+  have nxJ: "nextR M 0 ?jn ?f" by (rule Joints_parent_nextR[OF M JBr])
+  have fL: "?f < Lng M" using nxJ by (simp add: nextR_def nextrel0_def)
+  have brne: "Br M ! J \<noteq> []" by (rule Br_component_nonempty[OF M JBr])
+  \<comment> \<open>row-0 head value\<close>
+  have hp0: "hasParent M 0 ?f"
+    unfolding hasParent_def using nxJ idxsum_parent0_unique by blast
+  have par0: "parent M 0 ?f = ?jn"
+  proof -
+    have "nextR M 0 (parent M 0 ?f) ?f"
+      using hp0 unfolding hasParent_def parent_def by (rule theI')
+    thus ?thesis using nxJ by (rule idxsum_parent0_unique)
+  qed
+  have e0jn: "entry M 0 ?jn = ?jn"
+    using trunk_entries_diag[OF MT condA m00 m10 jnTr] by blast
+  have cA0: "entry M 0 (parent M 0 ?f) + 1 = entry M 0 ?f"
+    using condA hp0 unfolding RedCondA_def by blast
+  have e0f: "entry M 0 ?f = ?jn + 1" using cA0 par0 e0jn by simp
+  have head0: "entry (Br M ! J) 0 0 = ?jn + 1"
+    using entry_FirstNodes_eq_component_gen[OF M] JBr e0f by simp
+  \<comment> \<open>row-1 head value\<close>
+  have eBf1: "entry M 1 ?f = entry (Br M ! J) 1 0"
+    using entry_FirstNodes_eq_component_gen[OF M] JBr by simp
+  have head1: "entry (Br M ! J) 1 0 = npJ M J"
+  proof (cases "entry (Br M ! J) 1 0 = 0")
+    case True thus ?thesis by (simp add: npJ_def)
+  next
+    case nzbr: False
+    have fpos: "0 < ?f" using fnTr by linarith
+    have f1pos: "0 < entry M 1 ?f" using eBf1 nzbr by simp
+    have e10_lt: "entry M 1 0 < entry M 1 ?f" using m10 f1pos by simp
+    have le00f: "leR M 0 0 ?f"
+    proof -
+      have root: "leR M 0 0 (Lng M - 1)" using monoM by (simp add: monoT_def)
+      have fle: "?f \<le> Lng M - 1" using fL by simp
+      show ?thesis by (rule m_5_1_ancestor_tree_1[OF MT root _ fle]) simp
+    qed
+    obtain p1 where p1b: "p1 < ?f" and p1c: "nextR M 1 p1 ?f"
+      using m_5_1_parent_exists_2[OF MT fpos fL e10_lt le00f] by blast
+    have ex1: "\<exists>!j. nextR M 1 j ?f" using p1c nextR1_unique by blast
+    have the_p1: "(THE j. nextR M 1 j ?f) = p1" by (rule the1_equality[OF ex1 p1c])
+    have np: "npJ M J = Suc p1" using nzbr the_p1 by (simp add: npJ_def)
+    have le0p1f: "leR M 0 p1 ?f" using p1c by (simp add: nextR_def nextrel1_def leR_def)
+    have e0_p1f: "entry M 0 p1 < entry M 0 ?f"
+      by (rule m_5_1_ancestor_basic_1[OF MT p1b order.refl le0p1f])
+    have p1_le: "p1 \<le> ?jn" by (rule nextR0_largest_below[OF nxJ p1b e0_p1f])
+    have p1Tr: "p1 \<le> TrMax M" using p1_le jnTr by linarith
+    have e1p1: "entry M 1 p1 = p1"
+      using trunk_entries_diag[OF MT condA m00 m10 p1Tr] by blast
+    have hp1: "hasParent M 1 ?f" unfolding hasParent_def by (rule ex1)
+    have par1: "parent M 1 ?f = p1"
+    proof -
+      have "nextR M 1 (parent M 1 ?f) ?f"
+        using hp1 unfolding hasParent_def parent_def by (rule theI')
+      thus ?thesis using p1c by (rule nextR1_unique)
+    qed
+    have cA1: "entry M 1 (parent M 1 ?f) + 1 = entry M 1 ?f"
+      using condA hp1 unfolding RedCondA_def by blast
+    have e1f: "entry M 1 ?f = Suc p1" using cA1 par1 e1p1 by simp
+    show ?thesis using eBf1 e1f np by simp
+  qed
+  \<comment> \<open>assemble\<close>
+  have hdBr: "Br M ! J = (entry (Br M ! J) 0 0, entry (Br M ! J) 1 0) # tl (Br M ! J)"
+  proof -
+    have c: "Br M ! J = hd (Br M ! J) # tl (Br M ! J)" using brne by simp
+    have "hd (Br M ! J) = (entry (Br M ! J) 0 0, entry (Br M ! J) 1 0)"
+      using brne by (cases "Br M ! J") (auto simp: entry_def)
+    thus ?thesis using c by simp
+  qed
+  show ?thesis unfolding NJ_def using m00 m10 head0 head1 hdBr by simp
 qed
 
 end
