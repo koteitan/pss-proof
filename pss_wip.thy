@@ -3087,4 +3087,92 @@ proof -
   qed
 qed
 
+
+text \<open>§6.5 monoCong MAIN (closed form): for a non-multi RedCondA sequence, Red is
+  exactly the row-0 rebase by \<open>-m\<^sub>0\<^sub>0 + m\<^sub>1\<^sub>0\<close>.  Strong induction on Lng; zeroT
+  collapses to [(0,0)]; the core case is @{thm [source] Red_rebase_core}; the
+  shift case routes through shiftRow0 and the core case (components of the
+  shifted sequence are strictly shorter than M, so the master IH still feeds
+  the core engine).  The m10>0 case is the remaining residual (coreReduce
+  branch-structure bricks, see memory pss-65-monocong).
+  Empirically exhaustive: 12400 cases (len<=5, e<=3), 0 mismatches.\<close>
+
+lemma m_6_5_Red_rebase:
+  "M \<in> T_PS \<Longrightarrow> RedCondA M \<Longrightarrow> \<not> multiT M \<Longrightarrow>
+   Red M = map (\<lambda>j. (entry M 0 j - entry M 0 0 + entry M 1 0, entry M 1 j))
+               [0..<Lng M]"
+proof (induction M rule: measure_induct_rule[where f = Lng])
+  case (less M)
+  note MT = less.prems(1)
+  note condA = less.prems(2)
+  note nmu = less.prems(3)
+  have dom: "Red_dom M" by (rule m_6_5_Red_welldef[OF MT])
+  have Mne: "M \<noteq> []" using MT by (simp add: T_PS_def)
+  have LMpos: "0 < Lng M" using Mne by (cases M) auto
+  show ?case
+  proof (cases "zeroT M")
+    case z: True
+    have rM: "Red M = [(0, 0)]" using Red.psimps[OF dom] z by simp
+    have L1: "Lng M = 1" and e10: "entry M 1 0 = 0" using z by (simp_all add: zeroT_def)
+    have "map (\<lambda>j. (entry M 0 j - entry M 0 0 + entry M 1 0, entry M 1 j)) [0..<Lng M]
+          = [(0, 0)]" using L1 e10 by simp
+    thus ?thesis using rM by simp
+  next
+    case nz: False
+    have mono: "monoT M" using nz nmu by (simp add: multiT_def)
+    show ?thesis
+    proof (cases "entry M 1 0 = 0")
+      case m10z: True
+      show ?thesis
+      proof (cases "entry M 0 0 = 0")
+        case c0: True
+        have redid: "Red M = M"
+          by (rule Red_rebase_core[OF MT condA mono c0 m10z less.IH])
+        have maps: "map (\<lambda>j. (entry M 0 j - entry M 0 0 + entry M 1 0, entry M 1 j))
+                        [0..<Lng M]
+              = map (\<lambda>j. (entry M 0 j, entry M 1 j)) [0..<Lng M]"
+        proof (rule map_cong[OF refl])
+          fix x assume "x \<in> set [0..<Lng M]"
+          have e1z: "entry M (Suc 0) 0 = 0" using m10z by simp
+          show "(entry M 0 x - entry M 0 0 + entry M 1 0, entry M 1 x)
+                = (entry M 0 x, entry M 1 x)" using c0 e1z by simp
+        qed
+        have RHS: "map (\<lambda>j. (entry M 0 j - entry M 0 0 + entry M 1 0, entry M 1 j))
+                       [0..<Lng M] = M"
+          by (rule trans[OF maps map_entry_id])
+        show ?thesis by (simp only: redid RHS)
+      next
+        case c0n: False
+        let ?sh = "map (\<lambda>j. (entry M 0 j - entry M 0 0, entry M 1 j)) [0..<Suc (Lng M - 1)]"
+        have ncore: "\<not> (entry M 0 0 = 0 \<and> entry M 1 0 = 0)" using c0n by simp
+        have rM: "Red M = Red ?sh"
+          using Red.psimps[OF dom] nz nmu ncore m10z by (simp add: Let_def)
+        have sheq: "?sh = shiftRow0 M" using LMpos by (simp add: shiftRow0_def)
+        have shne: "shiftRow0 M \<noteq> []" using LMpos by (simp add: shiftRow0_def)
+        have shT: "shiftRow0 M \<in> T_PS" using shne by (simp add: T_PS_def)
+        have shMono: "monoT (shiftRow0 M)" by (rule monoT_shiftRow0[OF MT mono])
+        have shA: "RedCondA (shiftRow0 M)" by (rule RedCondA_shiftRow0[OF MT mono condA])
+        have sh00: "entry (shiftRow0 M) 0 0 = 0" using entry_shiftRow0_0[OF LMpos] by simp
+        have sh10: "entry (shiftRow0 M) 1 0 = 0"
+          using entry_shiftRow0_1[OF LMpos] m10z by simp
+        have IH': "\<And>X. Lng X < Lng (shiftRow0 M) \<Longrightarrow> X \<in> T_PS \<Longrightarrow> RedCondA X
+                    \<Longrightarrow> \<not> multiT X
+                    \<Longrightarrow> Red X = map (\<lambda>j. (entry X 0 j - entry X 0 0 + entry X 1 0,
+                                           entry X 1 j)) [0..<Lng X]"
+          using less.IH by simp
+        have redsh: "Red (shiftRow0 M) = shiftRow0 M"
+          by (rule Red_rebase_core[OF shT shA shMono sh00 sh10 IH'])
+        have "Red M = shiftRow0 M" using rM sheq redsh by simp
+        moreover have
+          "map (\<lambda>j. (entry M 0 j - entry M 0 0 + entry M 1 0, entry M 1 j)) [0..<Lng M]
+           = shiftRow0 M" using m10z by (simp add: shiftRow0_def)
+        ultimately show ?thesis by simp
+      qed
+    next
+      case m10p: False
+      show ?thesis sorry
+    qed
+  qed
+qed
+
 end
