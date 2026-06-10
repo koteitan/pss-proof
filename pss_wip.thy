@@ -3477,4 +3477,186 @@ proof -
   show ?thesis by (rule TrMax_eqI[OF AT steps stop])
 qed
 
+
+text \<open>§6.5 m10>0 brick (b4): the branch decomposition of coreReduce is the
+  IncrFirst-shifted branch decomposition of M, with FirstNodes and Joints
+  shifted by m.\<close>
+
+lemma funpow_IncrFirst_drop:
+  "drop k ((IncrFirst ^^ n) X) = (IncrFirst ^^ n) (drop k X)"
+  by (induction n) (simp_all add: IncrFirst_def drop_map)
+
+lemma length_funpow_IncrFirst: "length ((IncrFirst ^^ n) X) = length X"
+  by (induction n) (simp_all add: IncrFirst_def)
+
+lemma IdxSum_map_funpow_IncrFirst:
+  "IdxSum (map (IncrFirst ^^ n) Q) = IdxSum Q"
+proof -
+  have lens: "map length (map (IncrFirst ^^ n) Q) = map length Q"
+  proof (rule nth_equalityI)
+    show "length (map length (map (IncrFirst ^^ n) Q)) = length (map length Q)" by simp
+  next
+    fix i assume "i < length (map length (map (IncrFirst ^^ n) Q))"
+    hence iQ: "i < length Q" by simp
+    show "map length (map (IncrFirst ^^ n) Q) ! i = map length Q ! i"
+      using iQ length_funpow_IncrFirst by simp
+  qed
+  show ?thesis
+    unfolding IdxSum_def
+  proof (rule map_cong)
+    show "[0..<Suc (length (map (IncrFirst ^^ n) Q))] = [0..<Suc (length Q)]" by simp
+  next
+    fix J assume "J \<in> set [0..<Suc (length Q)]"
+    have "map length (take J (map (IncrFirst ^^ n) Q))
+          = take J (map length (map (IncrFirst ^^ n) Q))" by (simp add: take_map)
+    also have "\<dots> = take J (map length Q)" by (rule arg_cong[OF lens])
+    also have "\<dots> = map length (take J Q)" by (simp add: take_map)
+    finally show "sum_list (map length (take J (map (IncrFirst ^^ n) Q)))
+                  = sum_list (map length (take J Q))" by simp
+  qed
+qed
+
+lemma Br_coreReduce:
+  assumes MT: "M \<in> T_PS" and condA: "RedCondA M" and mono: "monoT M"
+    and pos: "0 < entry M 1 0"
+  shows "Br (diagSeq 0 (entry M 1 0 - 1) @ (IncrFirst ^^ entry M 1 0) M)
+         = map (IncrFirst ^^ entry M 1 0) (Br M)"
+proof -
+  let ?m = "entry M 1 0"
+  let ?Y = "(IncrFirst ^^ ?m) M"
+  let ?A = "diagSeq 0 (?m - 1) @ ?Y"
+  have Mne: "M \<noteq> []" using MT by (simp add: T_PS_def)
+  have LMpos: "0 < Lng M" using Mne by (cases M) auto
+  have Ld: "Lng (diagSeq 0 (?m - 1)) = ?m" using pos by (simp del: upt_Suc)
+  have LA: "Lng ?A = ?m + Lng M" using Ld by simp
+  have trA: "TrMax ?A = ?m + TrMax M" by (rule TrMax_coreReduce[OF MT condA mono pos])
+  show ?thesis
+  proof (cases "TrMax M = Lng M - 1")
+    case True
+    have aw: "TrMax ?A = Lng ?A - 1" using trA True LA LMpos by linarith
+    have "Br ?A = []" using aw by (simp add: Br_def)
+    moreover have "Br M = []" using True by (simp add: Br_def)
+    ultimately show ?thesis by simp
+  next
+    case False
+    have tb: "TrMax M \<le> Lng M - 1" by (rule TrMax_bound[OF MT])
+    have tlt: "TrMax M < Lng M - 1" using tb False by linarith
+    have awne: "TrMax ?A \<noteq> Lng ?A - 1" using trA LA LMpos tlt by linarith
+    have brA: "Br ?A = P (seg ?A (TrMax ?A + 1) (Lng ?A - 1))"
+      using awne by (simp add: Br_def)
+    have LApos: "0 < Lng ?A" using LA LMpos by simp
+    have segdropA: "seg ?A (TrMax ?A + 1) (Lng ?A - 1) = drop (TrMax ?A + 1) ?A"
+      by (rule seg_to_last_eq_drop[OF LApos])
+    have dropsplit: "drop (TrMax ?A + 1) ?A = drop (TrMax M + 1) ?Y"
+      using trA Ld by simp
+    have dropY: "drop (TrMax M + 1) ?Y = (IncrFirst ^^ ?m) (drop (TrMax M + 1) M)"
+      by (rule funpow_IncrFirst_drop)
+    have segdropM: "seg M (TrMax M + 1) (Lng M - 1) = drop (TrMax M + 1) M"
+      by (rule seg_to_last_eq_drop[OF LMpos])
+    have brM: "Br M = P (seg M (TrMax M + 1) (Lng M - 1))"
+      using False by (simp add: Br_def)
+    have "Br ?A = P ((IncrFirst ^^ ?m) (seg M (TrMax M + 1) (Lng M - 1)))"
+      using brA segdropA dropsplit dropY segdropM by simp
+    also have "\<dots> = map (IncrFirst ^^ ?m) (P (seg M (TrMax M + 1) (Lng M - 1)))"
+      by (rule P_funpow_IncrFirst)
+    finally show ?thesis using brM by simp
+  qed
+qed
+
+lemma FirstNodes_coreReduce:
+  assumes MT: "M \<in> T_PS" and condA: "RedCondA M" and mono: "monoT M"
+    and pos: "0 < entry M 1 0"
+  shows "FirstNodes (diagSeq 0 (entry M 1 0 - 1) @ (IncrFirst ^^ entry M 1 0) M)
+         = map ((+) (entry M 1 0)) (FirstNodes M)"
+proof -
+  let ?m = "entry M 1 0"
+  let ?A = "diagSeq 0 (?m - 1) @ (IncrFirst ^^ ?m) M"
+  have brA: "Br ?A = map (IncrFirst ^^ ?m) (Br M)"
+    by (rule Br_coreReduce[OF MT condA mono pos])
+  have idx: "IdxSum (Br ?A) = IdxSum (Br M)"
+    using brA IdxSum_map_funpow_IncrFirst by simp
+  have trA: "TrMax ?A = ?m + TrMax M" by (rule TrMax_coreReduce[OF MT condA mono pos])
+  have "FirstNodes ?A = map (\<lambda>x. TrMax ?A + 1 + x) (IdxSum (Br ?A))"
+    by (simp add: FirstNodes_def)
+  also have "\<dots> = map (\<lambda>x. TrMax ?A + 1 + x) (IdxSum (Br M))"
+    using idx by simp
+  also have "\<dots> = map (\<lambda>x. (?m + TrMax M) + 1 + x) (IdxSum (Br M))"
+    using trA by simp
+  also have "\<dots> = map (\<lambda>x. ?m + (TrMax M + 1 + x)) (IdxSum (Br M))"
+    by (rule map_cong[OF refl]) simp
+  also have "\<dots> = map ((+) ?m) (map (\<lambda>x. TrMax M + 1 + x) (IdxSum (Br M)))"
+    by (simp add: o_def)
+  finally show ?thesis by (simp add: FirstNodes_def)
+qed
+
+lemma coreReduce_nextrel0_transfer:
+  assumes MT: "M \<in> T_PS" and pos: "0 < entry M 1 0"
+    and kM: "k < Lng M" and kM': "k' < Lng M"
+  shows "nextrel0 (diagSeq 0 (entry M 1 0 - 1) @ (IncrFirst ^^ entry M 1 0) M)
+            (entry M 1 0 + k) (entry M 1 0 + k')
+         = nextrel0 M k k'"
+proof -
+  let ?m = "entry M 1 0"
+  let ?Y = "(IncrFirst ^^ ?m) M"
+  let ?A = "diagSeq 0 (?m - 1) @ ?Y"
+  have Mne: "M \<noteq> []" using MT by (simp add: T_PS_def)
+  have LMpos: "0 < Lng M" using Mne by (cases M) auto
+  have Ld: "Lng (diagSeq 0 (?m - 1)) = ?m" using pos by (simp del: upt_Suc)
+  have LA: "Lng ?A = ?m + Lng M" using Ld by simp
+  have dropA: "drop ?m ?A = ?Y" using Ld by simp
+  have segA: "seg ?A ?m (Lng ?A - 1) = ?Y"
+    using seg_to_last_eq_drop[of ?A ?m] LA LMpos dropA by simp
+  have bnd: "Lng ?A - 1 < Lng ?A" using LA LMpos by simp
+  have kS: "k < Lng (seg ?A ?m (Lng ?A - 1))" using segA kM by simp
+  have kS': "k' < Lng (seg ?A ?m (Lng ?A - 1))" using segA kM' by simp
+  have "nextrel0 (seg ?A ?m (Lng ?A - 1)) k k' = nextrel0 ?A (?m + k) (?m + k')"
+    by (rule adm_nextrel0_seg[OF bnd kS kS'])
+  moreover have "nextrel0 (seg ?A ?m (Lng ?A - 1)) k k' = nextrel0 M k k'"
+    using segA nextrel0_funpow_IncrFirst_eq[of ?m M] by simp
+  ultimately show ?thesis by simp
+qed
+
+lemma Joints_coreReduce:
+  assumes MT: "M \<in> T_PS" and condA: "RedCondA M" and mono: "monoT M"
+    and pos: "0 < entry M 1 0"
+    and JBr: "J < Lng (Br M)"
+  shows "Joints (diagSeq 0 (entry M 1 0 - 1) @ (IncrFirst ^^ entry M 1 0) M) ! J
+         = entry M 1 0 + Joints M ! J"
+proof -
+  let ?m = "entry M 1 0"
+  let ?A = "diagSeq 0 (?m - 1) @ (IncrFirst ^^ ?m) M"
+  have MPT: "M \<in> PT_PS" using MT mono by (simp add: PT_PS_def)
+  let ?fn = "FirstNodes M ! J"  let ?jn = "Joints M ! J"
+  have nxM: "nextR M 0 ?jn ?fn" by (rule Joints_parent_nextR[OF MPT JBr])
+  have nr0M: "nextrel0 M ?jn ?fn" using nxM by (simp add: nextR_def)
+  have jnM: "?jn < Lng M" and fnM: "?fn < Lng M"
+    using nr0M by (simp_all add: nextrel0_def)
+  have nr0A: "nextrel0 ?A (?m + ?jn) (?m + ?fn)"
+    using coreReduce_nextrel0_transfer[OF MT pos jnM fnM] nr0M by simp
+  have nxA: "nextR ?A 0 (?m + ?jn) (?m + ?fn)" using nr0A by (simp add: nextR_def)
+  have ex1A: "\<exists>!x. nextR ?A 0 x (?m + ?fn)"
+  proof (rule ex1I)
+    show "nextR ?A 0 (?m + ?jn) (?m + ?fn)" by (rule nxA)
+  next
+    fix x assume "nextR ?A 0 x (?m + ?fn)"
+    thus "x = ?m + ?jn" using nxA by (rule idxsum_parent0_unique)
+  qed
+  have brA: "Br ?A = map (IncrFirst ^^ ?m) (Br M)"
+    by (rule Br_coreReduce[OF MT condA mono pos])
+  have JA: "J < length (Br ?A)" using JBr brA by simp
+  have fnA: "FirstNodes ?A ! J = ?m + ?fn"
+  proof -
+    have fnmap: "FirstNodes ?A = map ((+) ?m) (FirstNodes M)"
+      by (rule FirstNodes_coreReduce[OF MT condA mono pos])
+    have lenFN: "J < length (FirstNodes M)"
+      using JBr by (simp add: FirstNodes_def IdxSum_def)
+    show ?thesis using fnmap lenFN by simp
+  qed
+  have "Joints ?A ! J = (THE x. nextR ?A 0 x (FirstNodes ?A ! J))"
+    using JA by (simp add: Joints_def)
+  also have "\<dots> = (THE x. nextR ?A 0 x (?m + ?fn))" using fnA by simp
+  also have "\<dots> = ?m + ?jn" by (rule the1_equality[OF ex1A nxA])
+  finally show ?thesis .
+qed
+
 end
