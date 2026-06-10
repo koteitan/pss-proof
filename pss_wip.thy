@@ -2432,4 +2432,137 @@ lemma RedCondAB_ST_PS:
   shows "RedCondA M \<and> RedCondB M"
   by (rule m_6_7_standard_RedCondAB[OF assms operCA_tiling_full operCB_tiling])
 
+
+section \<open>§6.5 monoCong bricks (towards m_6_5_congR_self_Red_monoT)\<close>
+
+text \<open>§6.5 monoCong, trunk-whole structure brick: a whole-trunk (TrMax = j1)
+  RedCondA sequence with zero left end IS the diagonal.  The trunk steps
+  @{thm [source] TrMax_trunk_step} give row-1 Next edges j -> j+1; RedCondA pins
+  entry1 j = j; the edge's le0 collapses to the single adjacent nextrel0 step
+  (index-monotonicity), whose valley at j kills all earlier row-0 parent
+  candidates, so RedCondA also pins entry0 j = j.  Closes the trunk-whole branch
+  of monoCong: Red M = diagSeq 0 j1 = M, congR by reflexivity.  Verified
+  empirically (len <= 4, e <= 3: 0 non-diagSeq trunk-whole instances).\<close>
+
+lemma le0_adjacent_step:
+  assumes le: "le0 M j (Suc j)"
+  shows "nextrel0 M j (Suc j)"
+proof -
+  have "(nextrel0 M)\<^sup>*\<^sup>* j (Suc j)" using le by (simp add: le0_def)
+  thus ?thesis
+  proof (cases rule: converse_rtranclpE)
+    case base thus ?thesis by simp
+  next
+    case (step z)
+    have jz: "j < z" using step(1) by (simp add: nextrel0_def)
+    have "z \<le> Suc j" by (rule nextrel0_rtrancl_mono[OF step(2)])
+    hence zeq: "z = Suc j" using jz by simp
+    show ?thesis using step(1) zeq by simp
+  qed
+qed
+
+lemma monoT_condA_trunkwhole_eq_diagSeq:
+  assumes MT: "M \<in> T_PS"
+    and condA: "RedCondA M"
+    and m00: "entry M 0 0 = 0" and m10: "entry M 1 0 = 0"
+    and tw: "TrMax M = Lng M - 1"
+  shows "M = diagSeq 0 (Lng M - 1)"
+proof -
+  let ?j1 = "Lng M - 1"
+  have LM: "0 < Lng M" using MT by (cases M) (auto simp: T_PS_def)
+  have step1: "\<And>j. j < ?j1 \<Longrightarrow> nextR M 1 j (j + 1)"
+    using TrMax_trunk_step[OF MT] tw by simp
+  have condA1: "\<And>j. hasParent M 1 j \<Longrightarrow> entry M 1 (parent M 1 j) + 1 = entry M 1 j"
+    using condA unfolding RedCondA_def by blast
+  have condA0: "\<And>j. hasParent M 0 j \<Longrightarrow> entry M 0 (parent M 0 j) + 1 = entry M 0 j"
+    using condA unfolding RedCondA_def by blast
+  \<comment> \<open>row-1 entries are the diagonal\<close>
+  have e1: "\<And>j. j \<le> ?j1 \<Longrightarrow> entry M 1 j = j"
+  proof -
+    fix j show "j \<le> ?j1 \<Longrightarrow> entry M 1 j = j"
+    proof (induct j)
+      case 0 show ?case using m10 by simp
+    next
+      case (Suc j)
+      have jlt: "j < ?j1" using Suc.prems by simp
+      have nr: "nextR M 1 j (j + 1)" by (rule step1[OF jlt])
+      have hp: "hasParent M 1 (j + 1)"
+        unfolding hasParent_def using nr nextR1_unique by blast
+      have parR: "nextR M 1 (parent M 1 (j + 1)) (j + 1)"
+        using hp unfolding hasParent_def parent_def by (rule theI')
+      have par: "parent M 1 (j + 1) = j" using parR nr by (rule nextR1_unique)
+      have "entry M 1 (parent M 1 (j + 1)) + 1 = entry M 1 (j + 1)" by (rule condA1[OF hp])
+      hence "entry M 1 j + 1 = entry M 1 (j + 1)" using par by simp
+      thus ?case using Suc.hyps Suc.prems by simp
+    qed
+  qed
+  \<comment> \<open>the trunk edge collapses to the adjacent row-0 step\<close>
+  have step0: "\<And>j. j < ?j1 \<Longrightarrow> nextrel0 M j (j + 1)"
+  proof -
+    fix j assume jlt: "j < ?j1"
+    have nr1: "nextrel1 M j (j + 1)" using step1[OF jlt] by (simp add: nextR_def)
+    have "le0 M j (j + 1)" using nr1 by (simp add: nextrel1_def)
+    thus "nextrel0 M j (j + 1)" using le0_adjacent_step by simp
+  qed
+  \<comment> \<open>row-0 entries are the diagonal\<close>
+  have e0: "\<And>j. j \<le> ?j1 \<Longrightarrow> entry M 0 j = j"
+  proof -
+    fix j show "j \<le> ?j1 \<Longrightarrow> entry M 0 j = j"
+    proof (induct j)
+      case 0 show ?case using m00 by simp
+    next
+      case (Suc j)
+      have jlt: "j < ?j1" using Suc.prems by simp
+      have nr0: "nextrel0 M j (j + 1)" by (rule step0[OF jlt])
+      have e_lt: "entry M 0 j < entry M 0 (j + 1)" using nr0 by (simp add: nextrel0_def)
+      have uniq: "\<And>a. nextrel0 M a (j + 1) \<Longrightarrow> a = j"
+      proof -
+        fix a assume nra: "nextrel0 M a (j + 1)"
+        have alt: "a < j + 1" using nra by (simp add: nextrel0_def)
+        show "a = j"
+        proof (rule ccontr)
+          assume "a \<noteq> j"
+          hence aj: "a < j" using alt by simp
+          have vall: "\<forall>j'. a < j' \<and> j' < j + 1 \<longrightarrow> entry M 0 j' \<ge> entry M 0 (j + 1)"
+            using nra unfolding nextrel0_def by blast
+          have cond: "a < j \<and> j < j + 1" using aj by simp
+          have "entry M 0 j \<ge> entry M 0 (j + 1)" using vall cond by blast
+          thus False using e_lt by simp
+        qed
+      qed
+      have nrR: "nextR M 0 j (j + 1)" using nr0 by (simp add: nextR_def)
+      have ex1: "\<exists>!a. nextR M 0 a (j + 1)"
+      proof (rule ex1I)
+        show "nextR M 0 j (j + 1)" by (rule nrR)
+      next
+        fix a assume "nextR M 0 a (j + 1)"
+        hence "nextrel0 M a (j + 1)" by (simp add: nextR_def)
+        thus "a = j" by (rule uniq)
+      qed
+      have hp: "hasParent M 0 (j + 1)" unfolding hasParent_def by (rule ex1)
+      have parR: "nextR M 0 (parent M 0 (j + 1)) (j + 1)"
+        using hp unfolding hasParent_def parent_def by (rule theI')
+      have par: "parent M 0 (j + 1) = j" using parR nrR by (rule idxsum_parent0_unique)
+      have "entry M 0 (parent M 0 (j + 1)) + 1 = entry M 0 (j + 1)" by (rule condA0[OF hp])
+      hence "entry M 0 j + 1 = entry M 0 (j + 1)" using par by simp
+      thus ?case using Suc.hyps Suc.prems by simp
+    qed
+  qed
+  \<comment> \<open>assemble the list equality\<close>
+  show ?thesis
+  proof (rule nth_equalityI)
+    show "length M = length (diagSeq 0 ?j1)" using LM by (simp add: diagSeq_def)
+  next
+    fix j assume jL: "j < length M"
+    have jle: "j \<le> ?j1" using jL by (cases M) auto
+    have fstj: "fst (M ! j) = j" using e0[OF jle] by (simp add: entry_def)
+    have sndj: "snd (M ! j) = j" using e1[OF jle] by (simp add: entry_def)
+    have Mj: "M ! j = (j, j)" using fstj sndj by (simp add: prod_eq_iff)
+    have jlt': "j < Suc ?j1" using jle by simp
+    have dj: "diagSeq 0 ?j1 ! j = (j, j)"
+      using jlt' by (simp add: diagSeq_def del: upt_Suc)
+    show "M ! j = diagSeq 0 ?j1 ! j" using Mj dj by simp
+  qed
+qed
+
 end
