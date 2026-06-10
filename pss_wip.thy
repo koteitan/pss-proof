@@ -2461,6 +2461,67 @@ proof -
   qed
 qed
 
+text \<open>§6.5 monoCong, shift brick: RedCondA survives the row-0 offset normalization
+  shiftRow0 (the m10 = 0, m00 > 0 branch of Red).  Parents are literally equal
+  (@{thm [source] congR_nextR} on @{thm [source] congR_self_shiftRow0}); the row-0
+  \<open>+1\<close> condition transfers because the uniform subtraction does not truncate
+  (@{thm [source] entry0_ge_min}: every row-0 entry is \<ge> the left end).\<close>
+
+lemma RedCondA_shiftRow0:
+  assumes MT: "M \<in> T_PS" and mono: "monoT M" and condA: "RedCondA M"
+  shows "RedCondA (shiftRow0 M)"
+proof -
+  let ?S = "shiftRow0 M"
+  have cong: "congR M ?S" by (rule congR_self_shiftRow0[OF MT mono])
+  have nxt: "nextR M = nextR ?S" by (rule congR_nextR[OF cong])
+  have hpa: "\<And>i j. hasParent ?S i j = hasParent M i j"
+    unfolding hasParent_def using nxt by simp
+  have par: "\<And>i j. parent ?S i j = parent M i j"
+    unfolding parent_def using nxt by simp
+  show ?thesis
+  unfolding RedCondA_def
+  proof (intro allI impI)
+    fix i j1' assume i1: "i \<le> 1" and hpS: "hasParent ?S i j1'"
+    have hpM: "hasParent M i j1'" using hpS hpa by simp
+    have parR: "nextR M i (parent M i j1') j1'"
+      using hpM unfolding hasParent_def parent_def by (rule theI')
+    have pj_jL: "parent M i j1' < j1' \<and> j1' < Lng M"
+    proof (cases "i = 0")
+      case True
+      have "nextrel0 M (parent M i j1') j1'" using parR True by (simp add: nextR_def)
+      thus ?thesis by (simp add: nextrel0_def)
+    next
+      case False
+      have "nextrel1 M (parent M i j1') j1'" using parR False by (simp add: nextR_def)
+      thus ?thesis by (simp add: nextrel1_def)
+    qed
+    have pj: "parent M i j1' < j1'" and jL: "j1' < Lng M" using pj_jL by auto
+    have pL: "parent M i j1' < Lng M" using pj jL by linarith
+    have plus1: "entry M i (parent M i j1') + 1 = entry M i j1'"
+      using condA i1 hpM unfolding RedCondA_def by blast
+    have goal: "entry ?S i (parent M i j1') + 1 = entry ?S i j1'"
+    proof (cases "i = 0")
+      case True
+      have lo_p: "entry M 0 0 \<le> entry M 0 (parent M i j1')"
+        by (rule entry0_ge_min[OF MT mono pL])
+      have eS_p: "entry ?S 0 (parent M i j1') = entry M 0 (parent M i j1') - entry M 0 0"
+        by (rule entry_shiftRow0_0[OF pL])
+      have eS_j: "entry ?S 0 j1' = entry M 0 j1' - entry M 0 0"
+        by (rule entry_shiftRow0_0[OF jL])
+      show ?thesis using True plus1 lo_p eS_p eS_j by simp
+    next
+      case False
+      hence i1': "i = 1" using i1 by simp
+      have eS_p: "entry ?S 1 (parent M i j1') = entry M 1 (parent M i j1')"
+        by (rule entry_shiftRow0_1[OF pL])
+      have eS_j: "entry ?S 1 j1' = entry M 1 j1'"
+        by (rule entry_shiftRow0_1[OF jL])
+      show ?thesis using i1' plus1 eS_p eS_j by simp
+    qed
+    show "entry ?S i (parent ?S i j1') + 1 = entry ?S i j1'" using goal par by simp
+  qed
+qed
+
 lemma monoT_condA_trunkwhole_eq_diagSeq:
   assumes MT: "M \<in> T_PS"
     and condA: "RedCondA M"
