@@ -2732,4 +2732,121 @@ proof -
   show ?thesis unfolding NJ_def using m00 m10 head0 head1 hdBr by simp
 qed
 
+text \<open>§6.5 monoCong, segment brick: RedCondA restricts to ANY in-bounds segment.
+  Parents inside a segment coincide with the ambient parents: the seg nextrel is
+  the verbatim restriction (@{thm [source] adm_nextrel0_seg} /
+  @{thm [source] adm_nextrel1_seg} -- le0 paths are index-increasing, hence
+  window-confined) and parents are globally unique
+  (@{thm [source] wf17_nextR_unique}), so the +1 condition transfers through
+  @{thm [source] entry_seg}.\<close>
+
+lemma RedCondA_seg:
+  assumes bnd: "j1' < Lng M" and condA: "RedCondA M"
+  shows "RedCondA (seg M j0' j1')"
+proof -
+  let ?S = "seg M j0' j1'"
+  show ?thesis
+  unfolding RedCondA_def
+  proof (intro allI impI)
+    fix i q assume i1: "i \<le> 1" and hpS: "hasParent ?S i q"
+    let ?p = "parent ?S i q"
+    have parRS: "nextR ?S i ?p q"
+      using hpS unfolding hasParent_def parent_def by (rule theI')
+    have pq_b: "?p < q \<and> q < Lng ?S"
+    proof (cases "i = 0")
+      case True
+      have "nextrel0 ?S ?p q" using parRS True by (simp add: nextR_def)
+      thus ?thesis by (simp add: nextrel0_def)
+    next
+      case False
+      have "nextrel1 ?S ?p q" using parRS False by (simp add: nextR_def)
+      thus ?thesis by (simp add: nextrel1_def)
+    qed
+    have qS: "q < Lng ?S" and pq: "?p < q" using pq_b by auto
+    have pS: "?p < Lng ?S" using pq qS by linarith
+    have nrM: "nextR M i (j0' + ?p) (j0' + q)"
+    proof (cases "i = 0")
+      case True
+      have "nextrel0 ?S ?p q" using parRS True by (simp add: nextR_def)
+      hence "nextrel0 M (j0' + ?p) (j0' + q)"
+        using adm_nextrel0_seg[OF bnd pS qS] by simp
+      thus ?thesis using True by (simp add: nextR_def)
+    next
+      case False
+      have "nextrel1 ?S ?p q" using parRS False by (simp add: nextR_def)
+      hence "nextrel1 M (j0' + ?p) (j0' + q)"
+        using adm_nextrel1_seg[OF bnd pS qS] by simp
+      thus ?thesis using False by (simp add: nextR_def)
+    qed
+    have ex1M: "\<exists>!x. nextR M i x (j0' + q)"
+    proof (rule ex1I)
+      show "nextR M i (j0' + ?p) (j0' + q)" by (rule nrM)
+    next
+      fix x assume "nextR M i x (j0' + q)"
+      thus "x = j0' + ?p" using nrM by (rule wf17_nextR_unique[OF i1])
+    qed
+    have hpM: "hasParent M i (j0' + q)" unfolding hasParent_def by (rule ex1M)
+    have parM: "parent M i (j0' + q) = j0' + ?p"
+      using the1_equality[OF ex1M nrM] by (simp add: parent_def)
+    have plus1: "entry M i (parent M i (j0' + q)) + 1 = entry M i (j0' + q)"
+      using condA i1 hpM unfolding RedCondA_def by blast
+    have eq_p: "entry ?S i ?p = entry M i (j0' + ?p)" using pS by (simp add: entry_seg)
+    have eq_q: "entry ?S i q = entry M i (j0' + q)" using qS by (simp add: entry_seg)
+    show "entry ?S i (parent ?S i q) + 1 = entry ?S i q"
+      using plus1 parM eq_p eq_q by simp
+  qed
+qed
+
+text \<open>§6.5 monoCong, branch-component brick: RedCondA descends to every branch
+  component -- Br M ! J is a segment of a segment of M
+  (@{thm [source] m_6_4_P_IdxSum}), so @{thm [source] RedCondA_seg} twice.\<close>
+
+lemma RedCondA_BrJ:
+  assumes M: "M \<in> PT_PS"
+    and condA: "RedCondA M"
+    and JBr: "J < Lng (Br M)"
+  shows "RedCondA (Br M ! J)"
+proof -
+  have MT: "M \<in> T_PS" using M by (simp add: PT_PS_def)
+  have brne: "Br M \<noteq> []" using JBr by (cases "Br M") auto
+  have tb: "TrMax M \<le> Lng M - 1" by (rule TrMax_bound[OF MT])
+  have trne: "TrMax M \<noteq> Lng M - 1"
+  proof
+    assume "TrMax M = Lng M - 1"
+    hence "Br M = []" by (simp add: Br_def)
+    thus False using brne by simp
+  qed
+  have trlt: "TrMax M < Lng M - 1" using tb trne by linarith
+  let ?N = "seg M (TrMax M + 1) (Lng M - 1)"
+  have brQ: "Br M = P ?N" using trne by (simp add: Br_def)
+  have LM: "0 < Lng M" using MT by (cases M) (auto simp: T_PS_def)
+  have bndN: "Lng M - 1 < Lng M" using LM by simp
+  have condAN: "RedCondA ?N" by (rule RedCondA_seg[OF bndN condA])
+  have NL: "Lng ?N = Lng M - 1 - TrMax M" using trlt by simp
+  have NLpos: "0 < Lng ?N" using trlt NL by simp
+  have Nne: "?N \<noteq> []" using NLpos length_greater_0_conv by blast
+  have NT: "?N \<in> T_PS" using Nne by (simp add: T_PS_def)
+  have JN: "J < length (P ?N)" using JBr brQ by simp
+  have Jle: "J \<le> Lng (P ?N) - 1" using JN by (cases "P ?N") auto
+  have comp: "(P ?N) ! J = seg ?N (IdxSum (P ?N) ! J) (IdxSum (P ?N) ! (J + 1) - 1)"
+    by (rule m_6_4_P_IdxSum[OF NT Jle])
+  have ub: "IdxSum (P ?N) ! (J + 1) - 1 < Lng ?N"
+  proof -
+    have j1len: "J + 1 \<le> length (P ?N)" using JN by simp
+    have val: "IdxSum (P ?N) ! (J + 1) = sum_list (map length (take (J + 1) (P ?N)))"
+      by (rule idxsum_nth[OF j1len])
+    have split: "sum_list (map length (P ?N))
+                 = sum_list (map length (take (J + 1) (P ?N)))
+                   + sum_list (map length (drop (J + 1) (P ?N)))"
+      by (metis append_take_drop_id map_append sum_list_append)
+    have tot: "sum_list (map length (P ?N)) = Lng ?N"
+      using idxsum_concat_P[of ?N] by (metis length_concat)
+    have le: "IdxSum (P ?N) ! (J + 1) \<le> Lng ?N" using val split tot by linarith
+    show ?thesis using le NLpos by linarith
+  qed
+  have condABr: "RedCondA ((P ?N) ! J)"
+    using comp RedCondA_seg[OF ub condAN] by simp
+  show ?thesis using condABr brQ by simp
+qed
+
 end
