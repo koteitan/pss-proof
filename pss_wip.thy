@@ -3175,4 +3175,69 @@ proof (induction M rule: measure_induct_rule[where f = Lng])
   qed
 qed
 
+
+text \<open>§6.5 m10>0 bricks (b1, b2): nextrel and RedCondA are invariant under
+  iterated IncrFirst (uniform row-0 shift).\<close>
+
+lemma nextrel0_funpow_IncrFirst_eq: "nextrel0 ((IncrFirst ^^ k) M) = nextrel0 M"
+  by (induction k) (simp_all add: nextrel0_IncrFirst_eq)
+
+lemma nextrel1_funpow_IncrFirst_eq: "nextrel1 ((IncrFirst ^^ k) M) = nextrel1 M"
+  by (induction k) (simp_all add: nextrel1_IncrFirst_eq)
+
+lemma nextR_funpow_IncrFirst_eq: "nextR ((IncrFirst ^^ k) M) = nextR M"
+proof (intro ext)
+  fix i a b
+  show "nextR ((IncrFirst ^^ k) M) i a b = nextR M i a b"
+    by (simp add: nextR_def nextrel0_funpow_IncrFirst_eq nextrel1_funpow_IncrFirst_eq)
+qed
+
+lemma RedCondA_funpow_IncrFirst:
+  assumes condA: "RedCondA M"
+  shows "RedCondA ((IncrFirst ^^ k) M)"
+proof -
+  let ?X = "(IncrFirst ^^ k) M"
+  have nxt: "nextR ?X = nextR M" by (rule nextR_funpow_IncrFirst_eq)
+  have hpa: "\<And>i j. hasParent ?X i j = hasParent M i j"
+    unfolding hasParent_def using nxt by simp
+  have par: "\<And>i j. parent ?X i j = parent M i j"
+    unfolding parent_def using nxt by simp
+  show ?thesis
+  unfolding RedCondA_def
+  proof (intro allI impI)
+    fix i q assume i1: "i \<le> 1" and hpX: "hasParent ?X i q"
+    have hpM: "hasParent M i q" using hpX hpa by simp
+    have parR: "nextR M i (parent M i q) q"
+      using hpM unfolding hasParent_def parent_def by (rule theI')
+    have pq_b: "parent M i q < q \<and> q < Lng M"
+    proof (cases "i = 0")
+      case True
+      have "nextrel0 M (parent M i q) q" using parR True by (simp add: nextR_def)
+      thus ?thesis by (simp add: nextrel0_def)
+    next
+      case False
+      have "nextrel1 M (parent M i q) q" using parR False by (simp add: nextR_def)
+      thus ?thesis by (simp add: nextrel1_def)
+    qed
+    have qL: "q < Lng M" and pq: "parent M i q < q" using pq_b by auto
+    have pL: "parent M i q < Lng M" using pq qL by linarith
+    have plus1: "entry M i (parent M i q) + 1 = entry M i q"
+      using condA i1 hpM unfolding RedCondA_def by blast
+    have goal: "entry ?X i (parent M i q) + 1 = entry ?X i q"
+    proof (cases "i = 0")
+      case True
+      show ?thesis
+        using entry_funpow_IncrFirst0[OF pL, of k] entry_funpow_IncrFirst0[OF qL, of k]
+              plus1 True by simp
+    next
+      case False
+      hence i1': "i = 1" using i1 by simp
+      show ?thesis
+        using entry_funpow_IncrFirst1[OF pL, of k] entry_funpow_IncrFirst1[OF qL, of k]
+              plus1 i1' by simp
+    qed
+    show "entry ?X i (parent ?X i q) + 1 = entry ?X i q" using goal par by simp
+  qed
+qed
+
 end
