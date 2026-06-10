@@ -20,12 +20,12 @@
         - ✅🚧 補題（死枝[20]の到達不能性）〔`m_6_5_monoT_Red_m10pos`(m10>0)〕
       - ✅ 命題（$\textrm{Lng}$ の $\textrm{Red}$ 不変性）
       - ✅ 系（$\textrm{Red}$ が零項性を保つこと）
-      - 🚨🤖 系（直系先祖の $\textrm{Red}$ 不変性）〔`m_6_5_Red_le`(M∈anchored_slice⟹leR M=leR(Red M))、2仮説 stdCA+monoCong 条件付green、残2。A4〕
+      - 🚨🤖 系（直系先祖の $\textrm{Red}$ 不変性）〔`m_6_5_Red_le`(M∈anchored_slice⟹leR M=leR(Red M))、残=monoCong のみ(stdCA は放電済)。A4〕
         - ✅ zeroT 分岐〔`m_6_5_Red_le_zeroT`〕
         - ✅ congR bridge: congR M (Red M)⟹leR 不変〔`m_6_5_congR_imp_leR_inv`/`row1_le0_imp_leR_eq`〕
         - ✅ anchored⟹RedCondA (stdCA 経由)〔`m_6_5_anchored_imp_RedCondA`〕
         - 🚨 残a monoCong: RedCondA N∧monoT N⟹congR N (Red N) の m10>0 branch
-        - 🚨🤖 残b stdCA: ST_PS⟹RedCondA〔`m_6_5_ST_PS_imp_RedCondA`、§6.7 keystone spsy→scalar Ez 経由〕
+        - ✅ 残b stdCA: ST_PS⟹RedCondA **放電済(HEAD: `stdCA_ST_PS`/`RedCondAB_ST_PS` 無条件)** — §6.7 gate-free operCAB 経由(spsy/Ez 経路は廃止)
       - ✅🚧 系（$\textrm{Red}$ が単項性を保つこと）〔forward `m_6_5_Red_preserves_monoT` green、逆向き残〕
       - 🚨 系（$P$ の $\textrm{Red}$ 同変性）〔A4〕
       - ✅ 命題（単項性と $\textrm{Red}$ の関係）〔`m_6_5_monoT_Red_m10pos`〕
@@ -47,9 +47,9 @@
       - ✅ 補題（条件 (A) と (B) と係数の基本性質）〔`m_6_6_condAB_coeff`〕
       - 🚨 系（直系先祖による切片と $\textrm{Red}$ と $\textrm{IncrFirst}$ の関係）
       - 🚨 系（$1$ 列ペア数列の基本性質）
-    - 🚨 §6.7 標準形
+    - ✅ §6.7 標準形
       - ✅ 命題（標準形の階層和による表示）
-      - 🚨🤖 命題（標準形の簡約性）〔**ST_PS⊆RT_PS = `m_6_7_ST_PS_subseteq_RT_PS` で idx1=1 GREEN(HEAD 84959e2)**。残= idx1=0(d0zero)の 2 sorry のみ。memory `pss-67-hasgz-refuted`〕
+      - ✅ 命題（標準形の簡約性）〔**ST_PS⊆RT_PS = `m_6_7_ST_PS_subseteq_RT_PS` 完全証明・sorry 0(HEAD e096355)**。決定打=原典の一行証明に忠実な **gate-free operCA**: gate(cGTWF k=j1)は我々の分解の人工物で一般 reduced で偽(405反例)、正解は escape readback(`oper_d1pos_parent1_readback_escape`: in-block 列の row-1 親が prefix へ逃げるケースの verbatim 読み戻し、無仮定 0/129万)+`operCA_escape_row1`+`operCA_d1pos`。cGTWF_ST_PS/oper_d0zero_eglobal_j1(旧 sorry)は削除。memory `pss-67-cgeg0`〕
         - ✅ B(原文忠実)構築: 標準形簡約性=operCA/operCBのみに集約。shift⟸operCA wire完了〔`bf_m_6_7_standard_reduced_via_operCAB`/`bf_stdCA_via_operCAB`/`m_6_7_standard_RedCondAB`〕
         - 🚨🚨 **has_gz⟹D / D(N) / GTWF / TreeWF / spsy 系は全面無効化**: has_gz⟹D は ST_PS で**偽**(reduced反例 `(0,0)(1,1)(2,2)(2,1)`, depth~9)。"broad closure N/0" は全て depth≤4 artifact。memory `pss-67-hasgz-refuted` 必読。死蔵 green: `m_6_7_oper_gstrict`/GTWF skeleton(条件付で偽定理ではないが残差が偽=無用)
         - 🎯 正しい残差=**operCA**(N∈ST_PS reduced ∧ tiling ⟹ RedCondA(N[n])) + **operCB**(同⟹RedCondB(N[n]))。RedCondA=局所+1条件(D(N)の大域ramp は誤り)。仮説に RedCondA N∧RedCondB N を持つ局所→局所含意
@@ -64,7 +64,8 @@
         - 🎯 **gate の Pred 微妙性を cGTWF が解決**: `cGTWF(N):=∀k. hasParent N1 k⟶(∀u. parent N1 k<u<k ∧ hasParent N1 u⟶parent N1 u≥parent N1 k)` は TRUE Pred-stable ST_PS 不変条件(deep 18297/0)。旧 GTWF(存在要求=偽)の条件版=真。gate(k=j1)を含意、all-k で Pred-stable
         - ✅ **逆 readback machinery 完全証明 GREEN**: `oper_interior_parent_inblock`(dichotomy)、`oper_interior_hasParent_base`/`oper_blockstart_hasParent_j0`(hpMs)。検証 depth-8 全 0 fail
         - ✅ **cGTWF_ST_PS idx1=1 + 配線 GREEN(HEAD 84959e2)**: `oper_d1pos_parent_class`(分類 readback helper)、`cgtw_tile_d1pos`(cGTWF tiling idx1=1)、`operCA_tiling_full`(RedCondA(N[n]) idx1=1: gate←cGTWF_ST_PS + hpMs packaging)、**`m_6_7_ST_PS_subseteq_RT_PS`: ST_PS⊆RT_PS を `m_6_7_standard_reduced[OF operCA_tiling_full operCB_tiling]` で証明(idx1=1)**
-        - 🚨 残=**idx1=0(d0zero=同一コピー)並行展開のみ**: 2 sorry = `cgtw_tile_d0zero`(cGTWF idx1=0) + `operCA_tiling_full` の idx1=0 枝。`oper_d0zero_*`族(`le0_confined`/`le0_base_fwd`/`entryi_base`、M[1]=Pred M、n=1 は cgtw_pred)で idx1=1 template を並行展開(d0zero reverse readback + parent-class + tile + operCA、~400行 mechanical)。**§6.7 標準形簡約性 = idx1=0 のみ残**。memory `pss-67-hasgz-refuted` 末尾に全設計
+        - ✅ **idx1=0(d0zero)full GREEN**: `oper_d0zero_*` readback 族+`cgtw_tile_d0zero`+`operCA_d0zero`
+        - ✅ **gate-free 化で完結(HEAD e096355)**: cGTWF/Eglobal' 系の ST_PS 不変量探索(all-b/LastBlock/j1-only/BlockEg/InvE の5世代、全て偽or非inductive)は不要だった — 原典 §6.7 の証明は「簡約性が基本列で保たれる」の一行で、RedCondA/B 保存は無仮定で成立(0違反/広域)。escape readback で operCA d1pos を cGTWF なしに再構成し sorry 消滅。教訓と系譜は memory `pss-67-cgeg0`。死蔵 green(cgtw_tile_*/Eglobal_pred/keystone/operCA_via_gate_hpMs)は prune 予定
       - ✅ 命題（標準形の単項成分が標準形であること）
       - ✅ 命題（標準形の始切片への遺伝性）
     - ✅ §6.8 降順性

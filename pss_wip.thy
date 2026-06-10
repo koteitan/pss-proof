@@ -2412,11 +2412,24 @@ qed
 
 
 text \<open>§6.7 standard-form reducedness ST_PS \<subseteq> RT_PS (the theorem
-  @{thm [source] m_6_7_standard_reduced}), now discharged: operCA by
-  @{thm [source] operCA_tiling_full} (modulo the i1 = 0 residuals) and operCB by
-  the green @{thm [source] operCB_tiling}.\<close>
+  @{thm [source] m_6_7_standard_reduced}), fully discharged: operCA by the
+  gate-free @{thm [source] operCA_tiling_full} and operCB by
+  @{thm [source] operCB_tiling}.  No sorry anywhere in this chain.\<close>
 
 lemma m_6_7_ST_PS_subseteq_RT_PS: "ST_PS \<subseteq> RT_PS"
   by (rule m_6_7_standard_reduced[OF operCA_tiling_full operCB_tiling])
+
+text \<open>§6.5 Front A's stdCA residual and the §6.7 joint RedCond invariant, both now
+  unconditional via the same discharged oper-tiling bricks.\<close>
+
+lemma stdCA_ST_PS:
+  assumes "M \<in> ST_PS"
+  shows "RedCondA M"
+  by (rule m_6_5_ST_PS_imp_RedCondA[OF assms operCA_tiling_full operCB_tiling])
+
+lemma RedCondAB_ST_PS:
+  assumes "M \<in> ST_PS"
+  shows "RedCondA M \<and> RedCondB M"
+  by (rule m_6_7_standard_RedCondAB[OF assms operCA_tiling_full operCB_tiling])
 
 end
