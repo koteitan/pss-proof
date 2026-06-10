@@ -4075,4 +4075,180 @@ proof -
   qed
 qed
 
+
+text \<open>§6.5 m10>0 brick (b6): lowering the row-0 head below the (strictly higher)
+  tail preserves the congR structure, and in a mono sequence every later row-0
+  value strictly exceeds the head (a tie column would be unreachable and
+  unspannable, breaking the trunk chain).  Together with the general branch
+  head value this lets the master key cdn_red_cong identify Red (NJ A J) with
+  Red (Br A ! J) in the m10>0 assembly.\<close>
+
+lemma mono_tail_row0_strict:
+  assumes XT: "X \<in> T_PS" and mono: "monoT X"
+    and q1: "1 \<le> q" and qL: "q < Lng X"
+  shows "entry X 0 0 < entry X 0 q"
+proof (rule ccontr)
+  assume nlt: "\<not> entry X 0 0 < entry X 0 q"
+  have ge: "entry X 0 0 \<le> entry X 0 q" by (rule entry0_ge_min[OF XT mono qL])
+  have eq: "entry X 0 q = entry X 0 0" using nlt ge by simp
+  have conf: "\<And>y. (nextrel0 X)\<^sup>*\<^sup>* 0 y \<Longrightarrow> y < q"
+  proof -
+    fix y assume "(nextrel0 X)\<^sup>*\<^sup>* 0 y"
+    thus "y < q"
+    proof (induction rule: rtranclp_induct)
+      case base show ?case using q1 by simp
+    next
+      case (step p y)
+      have pq: "p < q" by (rule step.IH)
+      have py: "p < y" and yL: "y < Lng X"
+        using step.hyps(2) by (simp_all add: nextrel0_def)
+      have eplt: "entry X 0 p < entry X 0 y"
+        using step.hyps(2) by (simp add: nextrel0_def)
+      have pL: "p < Lng X" using py yL by linarith
+      have pge: "entry X 0 0 \<le> entry X 0 p" by (rule entry0_ge_min[OF XT mono pL])
+      show ?case
+      proof (rule ccontr)
+        assume "\<not> y < q"
+        hence yq: "q \<le> y" by simp
+        show False
+        proof (cases "y = q")
+          case True
+          show False using eplt eq pge True by simp
+        next
+          case False
+          hence qy: "q < y" using yq by simp
+          have vall: "\<forall>j. p < j \<and> j < y \<longrightarrow> entry X 0 j \<ge> entry X 0 y"
+            using step.hyps(2) unfolding nextrel0_def by blast
+          have "entry X 0 q \<ge> entry X 0 y" using vall pq qy by blast
+          hence "entry X 0 y \<le> entry X 0 0" using eq by simp
+          thus False using eplt pge by simp
+        qed
+      qed
+    qed
+  qed
+  have Xne: "X \<noteq> []" using XT by (simp add: T_PS_def)
+  have LXpos: "0 < Lng X" using Xne by (cases X) auto
+  have "le0 X 0 (Lng X - 1)" using mono by (simp add: monoT_def leR_def)
+  hence "(nextrel0 X)\<^sup>*\<^sup>* 0 (Lng X - 1)" by (simp add: le0_def)
+  hence "Lng X - 1 < q" by (rule conf)
+  thus False using qL by linarith
+qed
+
+lemma congR_head0_lower:
+  assumes ab: "a \<le> b"
+    and strict: "\<And>q. 1 \<le> q \<Longrightarrow> q < Lng ((b, h) # T) \<Longrightarrow> b < entry ((b, h) # T) 0 q"
+  shows "congR ((a, h) # T) ((b, h) # T)"
+proof -
+  let ?Aa = "(a, h) # T"  let ?X = "(b, h) # T"
+  have L: "Lng ?Aa = Lng ?X" by simp
+  have e1: "\<And>j. j < Lng ?X \<Longrightarrow> entry ?Aa 1 j = entry ?X 1 j"
+  proof -
+    fix j assume "j < Lng ?X"
+    show "entry ?Aa 1 j = entry ?X 1 j"
+      by (cases j) (simp_all add: entry_def)
+  qed
+  have e0tail: "\<And>j. 1 \<le> j \<Longrightarrow> entry ?Aa 0 j = entry ?X 0 j"
+  proof -
+    fix j assume "1 \<le> (j::nat)"
+    then obtain j' where "j = Suc j'" by (cases j) auto
+    thus "entry ?Aa 0 j = entry ?X 0 j" by (simp add: entry_def)
+  qed
+  have nxt: "nextrel0 ?Aa = nextrel0 ?X"
+  proof (intro ext)
+    fix p q
+    show "nextrel0 ?Aa p q = nextrel0 ?X p q"
+    proof (cases "p = 0")
+      case True
+      show ?thesis
+      proof (cases "0 < q \<and> q < Lng ?X")
+        case qok: True
+        have q1: "1 \<le> q" and qL: "q < Lng ?X" using qok by auto
+        have eq_q: "entry ?Aa 0 q = entry ?X 0 q" using e0tail[OF q1] .
+        have bq: "b < entry ?X 0 q" by (rule strict[OF q1 qL])
+        have aq: "a < entry ?X 0 q" using ab bq by linarith
+        have headA: "entry ?Aa 0 0 = a" and headX: "entry ?X 0 0 = b"
+          by (simp_all add: entry_def)
+        have vAX: "(\<forall>j. 0 < j \<and> j < q \<longrightarrow> entry ?Aa 0 j \<ge> entry ?Aa 0 q)
+                   = (\<forall>j. 0 < j \<and> j < q \<longrightarrow> entry ?X 0 j \<ge> entry ?X 0 q)"
+        proof -
+          have "\<And>j. 0 < j \<and> j < q \<Longrightarrow>
+                  (entry ?Aa 0 j \<ge> entry ?Aa 0 q) = (entry ?X 0 j \<ge> entry ?X 0 q)"
+          proof -
+            fix j assume H: "0 < j \<and> j < q"
+            have "entry ?Aa 0 j = entry ?X 0 j" using e0tail H by simp
+            thus "(entry ?Aa 0 j \<ge> entry ?Aa 0 q) = (entry ?X 0 j \<ge> entry ?X 0 q)"
+              using eq_q by simp
+          qed
+          thus ?thesis by blast
+        qed
+        show ?thesis
+          unfolding nextrel0_def
+          using True qok headA headX aq bq eq_q vAX by auto
+      next
+        case False
+        hence "\<not> (p < q \<and> q < Lng ?X)" using True by auto
+        thus ?thesis unfolding nextrel0_def using L by auto
+      qed
+    next
+      case pn0: False
+      hence p1: "1 \<le> p" by simp
+      show ?thesis
+      proof (cases "p < q \<and> q < Lng ?X \<and> p < Lng ?X")
+        case ok: True
+        have ep: "entry ?Aa 0 p = entry ?X 0 p" using e0tail[OF p1] .
+        have eq_q: "entry ?Aa 0 q = entry ?X 0 q"
+          using e0tail ok p1 by simp
+        have vAX: "(\<forall>j. p < j \<and> j < q \<longrightarrow> entry ?Aa 0 j \<ge> entry ?Aa 0 q)
+                   = (\<forall>j. p < j \<and> j < q \<longrightarrow> entry ?X 0 j \<ge> entry ?X 0 q)"
+        proof -
+          have "\<And>j. p < j \<and> j < q \<Longrightarrow>
+                  (entry ?Aa 0 j \<ge> entry ?Aa 0 q) = (entry ?X 0 j \<ge> entry ?X 0 q)"
+          proof -
+            fix j assume H: "p < j \<and> j < q"
+            have "1 \<le> j" using H p1 by linarith
+            hence "entry ?Aa 0 j = entry ?X 0 j" using e0tail by simp
+            thus "(entry ?Aa 0 j \<ge> entry ?Aa 0 q) = (entry ?X 0 j \<ge> entry ?X 0 q)"
+              using eq_q by simp
+          qed
+          thus ?thesis by blast
+        qed
+        show ?thesis unfolding nextrel0_def using ok ep eq_q vAX L by auto
+      next
+        case False
+        thus ?thesis unfolding nextrel0_def using L by auto
+      qed
+    qed
+  qed
+  show ?thesis unfolding congR_def using L nxt e1 by simp
+qed
+
+lemma BrJ_head0_gen:
+  assumes M: "M \<in> PT_PS"
+    and condA: "RedCondA M"
+    and JBr: "J < Lng (Br M)"
+  shows "entry (Br M ! J) 0 0 = entry M 0 0 + Joints M ! J + 1"
+proof -
+  have MT: "M \<in> T_PS" using M by (simp add: PT_PS_def)
+  let ?f = "FirstNodes M ! J"  let ?jn = "Joints M ! J"
+  have fnTr: "?jn \<le> TrMax M \<and> TrMax M < ?f"
+    by (rule m_6_4_FirstNodes_TrMax_Joints[OF M JBr])
+  have jnTr: "?jn \<le> TrMax M" using fnTr by blast
+  have nxJ: "nextR M 0 ?jn ?f" by (rule Joints_parent_nextR[OF M JBr])
+  have hp0: "hasParent M 0 ?f"
+    unfolding hasParent_def using nxJ idxsum_parent0_unique by blast
+  have par0: "parent M 0 ?f = ?jn"
+  proof -
+    have "nextR M 0 (parent M 0 ?f) ?f"
+      using hp0 unfolding hasParent_def parent_def by (rule theI')
+    thus ?thesis using nxJ by (rule idxsum_parent0_unique)
+  qed
+  have e0jn: "entry M 0 ?jn = entry M 0 0 + ?jn"
+    using trunk_entries_offset[OF MT condA jnTr] by blast
+  have cA0: "entry M 0 (parent M 0 ?f) + 1 = entry M 0 ?f"
+    using condA hp0 unfolding RedCondA_def by blast
+  have e0f: "entry M 0 ?f = entry M 0 0 + ?jn + 1" using cA0 par0 e0jn by simp
+  show ?thesis
+    using entry_FirstNodes_eq_component_gen[OF M] JBr e0f by simp
+qed
+
 end
