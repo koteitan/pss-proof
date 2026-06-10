@@ -20,11 +20,11 @@
         - ✅🚧 補題（死枝[20]の到達不能性）〔`m_6_5_monoT_Red_m10pos`(m10>0)〕
       - ✅ 命題（$\textrm{Lng}$ の $\textrm{Red}$ 不変性）
       - ✅ 系（$\textrm{Red}$ が零項性を保つこと）
-      - 🚨🤖 系（直系先祖の $\textrm{Red}$ 不変性）〔`m_6_5_Red_le`(M∈anchored_slice⟹leR M=leR(Red M))、残=monoCong のみ(stdCA は放電済)。A4〕
+      - ✅ 系（直系先祖の $\textrm{Red}$ 不変性）〔**`m_6_5_Red_le_final` 無条件で完結(HEAD)**。鍵=閉形式 `m_6_5_Red_rebase`: 非複項∧RedCondA ⟹ Red M = row0一律rebase(-m00+m10)。経験12,400例全数0違反。memory `pss-65-monocong`〕
         - ✅ zeroT 分岐〔`m_6_5_Red_le_zeroT`〕
         - ✅ congR bridge: congR M (Red M)⟹leR 不変〔`m_6_5_congR_imp_leR_inv`/`row1_le0_imp_leR_eq`〕
         - ✅ anchored⟹RedCondA (stdCA 経由)〔`m_6_5_anchored_imp_RedCondA`〕
-        - 🚨 残a monoCong: RedCondA N∧monoT N⟹congR N (Red N) の m10>0 branch
+        - ✅ 残a monoCong: **`m_6_5_congR_self_Red_monoT` 完全証明**。m10>0 は coreReduce 構造補題群(TrMax/Br/Joints/npJ_coreReduce + 头部下げ congR + cdn_red_cong)で閉
         - ✅ 残b stdCA: ST_PS⟹RedCondA **放電済(HEAD: `stdCA_ST_PS`/`RedCondAB_ST_PS` 無条件)** — §6.7 gate-free operCAB 経由(spsy/Ez 経路は廃止)
       - ✅🚧 系（$\textrm{Red}$ が単項性を保つこと）〔forward `m_6_5_Red_preserves_monoT` green、逆向き残〕
       - 🚨 系（$P$ の $\textrm{Red}$ 同変性）〔A4〕
