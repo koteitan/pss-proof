@@ -4753,4 +4753,61 @@ qed
 
 
 
+
+text \<open>§6.5 monoCong COROLLARIES: the original congR target, and the headline
+  系（直系先祖の Red 不変性） m_6_5_Red_le now UNCONDITIONAL -- its two carried
+  hypotheses are discharged by @{thm [source] stdCA_ST_PS} (the gate-free §6.7
+  bricks) and the closed form @{thm [source] m_6_5_Red_rebase}.\<close>
+
+lemma congR_funpow_IncrFirst: "congR Z ((IncrFirst ^^ k) Z)"
+  unfolding congR_def
+proof (intro conjI allI impI)
+  show "Lng Z = Lng ((IncrFirst ^^ k) Z)" by simp
+next
+  show "nextrel0 Z = nextrel0 ((IncrFirst ^^ k) Z)"
+    using nextrel0_funpow_IncrFirst_eq by simp
+next
+  fix j assume "j < Lng ((IncrFirst ^^ k) Z)"
+  hence "j < Lng Z" by simp
+  thus "entry Z 1 j = entry ((IncrFirst ^^ k) Z) 1 j"
+    using entry_funpow_IncrFirst1 by simp
+qed
+
+lemma m_6_5_congR_self_Red_monoT:
+  assumes MT: "M \<in> T_PS" and condA: "RedCondA M" and mono: "monoT M"
+  shows "congR M (Red M)"
+proof -
+  let ?m = "entry M 1 0"  let ?c0 = "entry M 0 0"
+  have nmu: "\<not> multiT M" using mono by (simp add: multiT_def)
+  have red: "Red M = map (\<lambda>j. (entry M 0 j - ?c0 + ?m, entry M 1 j)) [0..<Lng M]"
+    by (rule m_6_5_Red_rebase[OF MT condA nmu])
+  have redmap: "Red M = map (\<lambda>p. (fst p - ?c0 + ?m, snd p)) M"
+    using red rebase_as_pair_map by simp
+  have fcomp: "map (\<lambda>p. (fst p - ?c0 + ?m, snd p)) M = (IncrFirst ^^ ?m) (shiftRow0 M)"
+  proof -
+    have sh: "shiftRow0 M = map (\<lambda>p. (fst p - ?c0, snd p)) M"
+      using rebase_as_pair_map[of M ?c0 0] by (simp add: shiftRow0_def)
+    have "(IncrFirst ^^ ?m) (shiftRow0 M)
+          = map (\<lambda>p. (fst p + ?m, snd p)) (map (\<lambda>p. (fst p - ?c0, snd p)) M)"
+      using sh funpow_IncrFirst_as_map by simp
+    also have "\<dots> = map (\<lambda>p. (fst p - ?c0 + ?m, snd p)) M" by simp
+    finally show ?thesis by simp
+  qed
+  have c1: "congR M (shiftRow0 M)" by (rule congR_self_shiftRow0[OF MT mono])
+  have c2: "congR (shiftRow0 M) ((IncrFirst ^^ ?m) (shiftRow0 M))"
+    by (rule congR_funpow_IncrFirst)
+  have "congR M ((IncrFirst ^^ ?m) (shiftRow0 M))" by (rule congR_trans[OF c1 c2])
+  thus ?thesis using redmap fcomp by simp
+qed
+
+lemma m_6_5_Red_le_final:
+  assumes M: "M \<in> anchored_slice"
+  shows "leR M i j0 j1 = leR (Red M) i j0 j1"
+proof -
+  have stdCA: "\<And>S. S \<in> ST_PS \<Longrightarrow> RedCondA S" by (rule stdCA_ST_PS)
+  have monoCong: "\<And>N. N \<in> T_PS \<Longrightarrow> RedCondA N \<Longrightarrow> monoT N \<Longrightarrow> congR N (Red N)"
+    by (rule m_6_5_congR_self_Red_monoT)
+  show ?thesis by (rule m_6_5_Red_le[OF M stdCA monoCong])
+qed
+
 end
