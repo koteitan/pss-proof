@@ -2522,12 +2522,11 @@ proof -
   qed
 qed
 
-lemma trunk_entries_diag:
+lemma trunk_entries_offset:
   assumes MT: "M \<in> T_PS"
     and condA: "RedCondA M"
-    and m00: "entry M 0 0 = 0" and m10: "entry M 1 0 = 0"
     and jle: "j \<le> TrMax M"
-  shows "entry M 0 j = j \<and> entry M 1 j = j"
+  shows "entry M 0 j = entry M 0 0 + j \<and> entry M 1 j = entry M 1 0 + j"
 proof -
   have step1: "\<And>j'. j' < TrMax M \<Longrightarrow> nextR M 1 j' (j' + 1)"
     by (rule TrMax_trunk_step[OF MT])
@@ -2536,11 +2535,11 @@ proof -
   have condA0: "\<And>j. hasParent M 0 j \<Longrightarrow> entry M 0 (parent M 0 j) + 1 = entry M 0 j"
     using condA unfolding RedCondA_def by blast
   \<comment> \<open>row-1 entries are the diagonal on the trunk\<close>
-  have e1: "\<And>j. j \<le> TrMax M \<Longrightarrow> entry M 1 j = j"
+  have e1: "\<And>j. j \<le> TrMax M \<Longrightarrow> entry M 1 j = entry M 1 0 + j"
   proof -
-    fix j show "j \<le> TrMax M \<Longrightarrow> entry M 1 j = j"
+    fix j show "j \<le> TrMax M \<Longrightarrow> entry M 1 j = entry M 1 0 + j"
     proof (induct j)
-      case 0 show ?case using m10 by simp
+      case 0 show ?case by simp
     next
       case (Suc j)
       have jlt: "j < TrMax M" using Suc.prems by simp
@@ -2564,11 +2563,11 @@ proof -
     thus "nextrel0 M j (j + 1)" using le0_adjacent_step by simp
   qed
   \<comment> \<open>row-0 entries are the diagonal on the trunk\<close>
-  have e0: "\<And>j. j \<le> TrMax M \<Longrightarrow> entry M 0 j = j"
+  have e0: "\<And>j. j \<le> TrMax M \<Longrightarrow> entry M 0 j = entry M 0 0 + j"
   proof -
-    fix j show "j \<le> TrMax M \<Longrightarrow> entry M 0 j = j"
+    fix j show "j \<le> TrMax M \<Longrightarrow> entry M 0 j = entry M 0 0 + j"
     proof (induct j)
-      case 0 show ?case using m00 by simp
+      case 0 show ?case by simp
     next
       case (Suc j)
       have jlt: "j < TrMax M" using Suc.prems by simp
@@ -2609,6 +2608,14 @@ proof -
   qed
   show ?thesis using e0[OF jle] e1[OF jle] by simp
 qed
+
+lemma trunk_entries_diag:
+  assumes MT: "M \<in> T_PS"
+    and condA: "RedCondA M"
+    and m00: "entry M 0 0 = 0" and m10: "entry M 1 0 = 0"
+    and jle: "j \<le> TrMax M"
+  shows "entry M 0 j = j \<and> entry M 1 j = j"
+  using trunk_entries_offset[OF MT condA jle] m00 m10 by simp
 
 lemma monoT_condA_trunkwhole_eq_diagSeq:
   assumes MT: "M \<in> T_PS"
