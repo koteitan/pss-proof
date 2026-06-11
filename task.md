@@ -89,8 +89,8 @@
       - ✅ **定義** `Trans`/`Mark`（相互再帰 `function`、termination 後回し）
       - ✅🚧 命題（$\textrm{Trans}$ の well-defined 性）〔**totality on RT_PS green**: `m_7_3_Trans_welldef`/`m_7_3_Mark_welldef`(Trans_Mark_dom, Lng 強帰納)。⚠️原典の一行証明は Red 冪等性(T_PS で偽=A4)を暗黙使用→T_PS 全域は不成立見込み、使用箇所(RT/ST)は RT_PS 域で十分。残=THE/SOME(unflatBT/scb選択)の正当化は各命題側で。memory `pss-73-trans-wd`〕
       - ✅ 命題（$2$ 列ペア数列の基本性質）〔**全5部 green**: `m_7_3_twoColumn_Trans`/`_Marked`/`_Mark`(条件 (I)/(III)/(VI) 3分岐、scb-SOME=([],[])、unflatBT∘flat=id、psimps 評価パターンは memory `pss-73-trans-wd`)〕
-      - 🚨 命題（$\textrm{Trans}$ の $(\textrm{IncrFirst},\textrm{Red})$ 不変 $P$ 同変性）
-      - 🚨 命題（$\textrm{Mark}$ の $(\textrm{IncrFirst},\textrm{Red},P)$ 不変性）
+      - ✅🚧 命題（$\textrm{Trans}$ の $(\textrm{IncrFirst},\textrm{Red})$ 不変 $P$ 同変性）〔(1)不変性 green: `m_7_3_Trans_Red`/`m_7_3_Trans_IncrFirst`(域=Red M∈RT_PS, A4型補正)。残=(2)P同変性〕
+      - ✅🚧 命題（$\textrm{Mark}$ の $(\textrm{IncrFirst},\textrm{Red},P)$ 不変性）〔(1) green: `m_7_3_Mark_Red`/`m_7_3_Mark_IncrFirst`(同域)。残=P 部〕
       - 🚨 命題（$\textrm{Trans}$ が零項性を保つこと）
       - 🚨 命題（$c_1$ と $c_2$ の大小関係）
       - 🚨 命題（$\textrm{Pred}$ の $\textrm{Trans}$ に関する降下性）
