@@ -1108,4 +1108,107 @@ next
   case (4 u a) thus ?case by auto
 qed
 
+
+text \<open>Marked-pair bookkeeping for the \<open>Trans\<close>/\<open>Mark\<close> value invariant: the
+  recursion's \<open>Mark (Pred M) \<dots>\<close> calls stay inside \<open>Marked\<close>.  Empirically
+  0/1,575 and 0/2,313 (anchor: ancestor-interval property
+  @{thm [source] m_5_1_ancestor_tree_1} + verbatim prefix transfer
+  @{thm [source] le0_prefix_agree} / @{thm [source] nextR1_pred_agree}).\<close>
+
+lemma adm_Pred_transfer:
+  assumes L: "1 < Lng M" and mlt: "m < Lng M - 1" and a: "adm M m"
+  shows "adm (Pred M) m"
+proof -
+  have pb: "Pred M = butlast M" using L by (simp add: Pred_def)
+  have LP: "Lng (Pred M) = Lng M - 1" using pb by simp
+  show ?thesis
+  proof (cases "m + 1 < Lng M - 1")
+    case True
+    have "\<not> nadm (Pred M) m"
+    proof
+      assume n: "nadm (Pred M) m"
+      have "\<not> m > Lng (Pred M)" using mlt LP by simp
+      hence pair: "nextR (Pred M) 1 (m - 1) m \<and> nextR (Pred M) 1 m (m + 1)"
+        using n by (simp add: nadm_def)
+      have b1: "m - 1 \<le> Lng M - 2" and b2: "m \<le> Lng M - 2"
+        and b3: "m + 1 \<le> Lng M - 2" using True by simp_all
+      have "nextR M 1 (m - 1) m \<and> nextR M 1 m (m + 1)"
+        using pair nextR1_pred_agree[OF L b1 b2] nextR1_pred_agree[OF L b2 b3]
+        by simp
+      hence "nadm M m" by (simp add: nadm_def)
+      thus False using a by (simp add: adm_def)
+    qed
+    thus ?thesis by (simp add: adm_def)
+  next
+    case False
+    \<comment> \<open>\<open>m + 1 \<ge> Lng (Pred M)\<close>: the second \<open>nextR\<close> of \<open>nadm\<close> is out of range\<close>
+    have "\<not> nextR (Pred M) 1 m (m + 1)"
+      using False LP by (auto simp: nextR_def nextrel1_def)
+    hence "\<not> nadm (Pred M) m" using mlt LP by (auto simp: nadm_def)
+    thus ?thesis by (simp add: adm_def)
+  qed
+qed
+
+lemma Marked_Pred:
+  assumes MT: "M \<in> T_PS" and L: "1 < Lng M"
+    and mM: "(M, m) \<in> Marked" and mlt: "m < Lng M - 1"
+  shows "(Pred M, m) \<in> Marked"
+proof -
+  from mM have admM: "adm M m" and leM: "leR M 0 m (Lng M - 1)"
+    by (auto simp: Marked_def)
+  have pb: "Pred M = butlast M" using L by (simp add: Pred_def)
+  have LP: "Lng (Pred M) = Lng M - 1" using pb by simp
+  have PT: "Pred M \<in> T_PS"
+  proof -
+    have "0 < Lng (Pred M)" using LP L by simp
+    thus ?thesis using length_greater_0_conv by (fastforce simp: T_PS_def)
+  qed
+  have le2: "leR M 0 m (Lng M - 2)"
+    by (rule m_5_1_ancestor_tree_1[OF MT leM]) (use mlt in linarith)+
+  have leP: "le0 (Pred M) m (Lng M - 2)"
+  proof (rule le0_prefix_agree[of "Lng M - 2" M "Pred M"])
+    show "\<And>j. j \<le> Lng M - 2 \<Longrightarrow> M ! j = Pred M ! j"
+      using pb L by (simp add: nth_butlast)
+    show "Lng M - 2 < Lng M" using L by linarith
+    show "Lng M - 2 < Lng (Pred M)" using LP L by linarith
+    show "m \<le> Lng M - 2" using mlt by linarith
+    show "Lng M - 2 \<le> Lng M - 2" by simp
+    show "le0 M m (Lng M - 2)" using le2 by (simp add: leR_def)
+  qed
+  have admP: "adm (Pred M) m" by (rule adm_Pred_transfer[OF L mlt admM])
+  show ?thesis using PT admP leP LP
+    by (simp add: Marked_def leR_def numeral_2_eq_2)
+qed
+
+lemma Marked_Pred_Adm:
+  assumes MT: "M \<in> T_PS" and L: "1 < Lng M"
+    and hp: "hasParent M 0 (Lng M - 1)"
+  shows "(Pred M, Adm M (parent M 0 (Lng M - 1))) \<in> Marked"
+proof -
+  let ?j1 = "Lng M - 1"  let ?jp = "parent M 0 ?j1"  let ?a = "Adm M ?jp"
+  have parR: "nextR M 0 ?jp ?j1"
+    using hp unfolding hasParent_def parent_def by (rule theI')
+  have jplt: "?jp < ?j1" using parR by (simp add: nextR_def nextrel0_def)
+  have jpb: "?jp \<le> Lng M - 1" using jplt by simp
+  have admA: "adm M ?a" by (rule adm_Adm_adm)
+  have aLe: "?a \<le> ?jp" by (rule adm_Adm_le)
+  have alt: "?a < ?j1" using aLe jplt by linarith
+  \<comment> \<open>row-1 ancestry to \<open>?jp\<close>, then the row-0 parent step to \<open>?j1\<close>\<close>
+  have le1a: "leR M 1 ?a ?jp" by (rule adm_row1_ancestry[OF MT jpb])
+  have le0a: "leR M 0 ?a ?jp" by (rule m_le1_imp_le0[OF le1a])
+  have "le0 M ?a ?j1"
+  proof -
+    have st: "nextrel0 M ?jp ?j1" using parR by (simp add: nextR_def)
+    have "(nextrel0 M)\<^sup>*\<^sup>* ?a ?jp" using le0a by (simp add: leR_def le0_def)
+    hence "(nextrel0 M)\<^sup>*\<^sup>* ?a ?j1" using st by (rule rtranclp.rtrancl_into_rtrancl)
+    moreover have "?a < Lng M" using alt by linarith
+    moreover have "?j1 < Lng M" using L by linarith
+    ultimately show ?thesis by (simp add: le0_def)
+  qed
+  hence leMa: "leR M 0 ?a ?j1" by (simp add: leR_def)
+  show ?thesis
+    by (rule Marked_Pred[OF MT L _ alt])
+       (use MT admA leMa in \<open>simp add: Marked_def\<close>)
+qed
+
 end
