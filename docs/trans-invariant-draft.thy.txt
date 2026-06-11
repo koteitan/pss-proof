@@ -1,0 +1,108 @@
+
+section \<open>§7.3 the Trans/Mark VALUE invariant (well-definedness, value part):
+  \<open>(Trans M, Mark M m) \<in> T\<^sub>B\<^sup>Marked\<close> on \<open>RT\<^sub>PS\<close>\<close>
+
+text \<open>Joint \<open>Lng\<close> strong induction (article: the defining side condition of
+  the recursion, content 2046).  All bricks are in place: psimps evaluation,
+  @{thm [source] scb_replace_principal}, @{thm [source] dfree_flat_BT},
+  @{thm [source] scb_SOME_self} / \<open>someI_ex\<close>, the Marked transfers and the
+  last-component \<open>MarkedB\<close> transfer.\<close>
+
+lemma Trans_Mark_invariant_aux:
+  "M \<in> RT_PS \<longrightarrow> dfree_BT (Trans M)
+     \<and> (\<forall>m. (M, m) \<in> Marked
+            \<longrightarrow> dfree_BT (Mark M m) \<and> (Trans M, Mark M m) \<in> MarkedB)"
+proof (induction M rule: measure_induct_rule[where f=Lng])
+  case (less M)
+  show ?case
+  proof (rule impI)
+    assume MR: "M \<in> RT_PS"
+    have MT: "M \<in> T_PS" using MR by (simp add: RT_PS_def)
+    have Mne: "M \<noteq> []" using MT by (simp add: T_PS_def)
+    have L1: "1 \<le> Lng M" using Mne by (cases M) auto
+    have domT: "Trans_Mark_dom (Inl M)" by (rule m_7_3_Trans_welldef[OF MR])
+    have domK: "\<And>m. Trans_Mark_dom (Inr (M, m))" by (rule m_7_3_Mark_welldef[OF MR])
+    show "dfree_BT (Trans M)
+       \<and> (\<forall>m. (M, m) \<in> Marked
+              \<longrightarrow> dfree_BT (Mark M m) \<and> (Trans M, Mark M m) \<in> MarkedB)"
+    proof (cases "Lng M = 1")
+      case True
+      obtain v where Mv: "M = [(v, v)]"
+        using m_6_6_oneColumn[OF MT] MR True by auto
+      have tv: "Trans M = (if v = 0 then 0\<^sub>B else Dpt (enat v) 0\<^sub>B)"
+        using Mv Trans_singleton by simp
+      have kv: "\<And>m. Mark M m = (if v = 0 then 0\<^sub>B else Dpt (enat v) 0\<^sub>B)"
+        using Mv Mark_singleton by simp
+      have df: "dfree_BT (if v = 0 then 0\<^sub>B else Dpt (enat v) 0\<^sub>B)"
+        by simp
+      have mb: "((if v = 0 then 0\<^sub>B else Dpt (enat v) 0\<^sub>B),
+                 (if v = 0 then 0\<^sub>B else Dpt (enat v) 0\<^sub>B)) \<in> MarkedB"
+      proof (cases "v = 0")
+        case True
+        have "scb_decomp 0\<^sub>B [] (flatBT (0\<^sub>B::BT)) []" by (simp add: scb_decomp_def)
+        thus ?thesis using True unfolding MarkedB_def by auto
+      next
+        case False
+        have "scb_decomp (Dpt (enat v) 0\<^sub>B) [] (flatBT (Dpt (enat v) 0\<^sub>B)) []"
+          by (rule scb_decomp_self) (rule isPTB_str_Dpt, simp_all)
+        thus ?thesis using False unfolding MarkedB_def by auto
+      qed
+      show ?thesis using tv kv df mb by simp
+    next
+      case False
+      have L: "1 < Lng M" using L1 False by linarith
+      have Lgt1: "\<not> Lng M \<le> Suc 0" using L by simp
+      have j1v1: "0 < Lng M - 1" using L by simp
+      show ?thesis
+      proof (cases "monoT M")
+        case mono: True
+        \<comment> \<open>the (B) branch\<close>
+        have predRT: "Pred M \<in> RT_PS" by (rule Pred_RT_PS[OF MR])
+        have predLng: "Lng (Pred M) < Lng M" using L by (simp add: Pred_def)
+        note IHp = less.IH[OF predLng, THEN mp, OF predRT]
+        have hp: "hasParent M 0 (Lng M - 1)"
+          by (rule monoT_hasParent0_last[OF MT mono L])
+        show ?thesis
+        proof (cases "Trans (Pred M) = 0\<^sub>B")
+          case t1z: True
+          let ?b = "entry M 1 (Lng M - 1)"
+          have tv: "Trans M = Dpt 0 (Dpt (enat ?b) 0\<^sub>B)"
+            using Trans.psimps[OF domT] MR Lgt1 mono t1z by (simp add: Let_def)
+          have kv: "\<And>m. Mark M m = (if m = 0 then Dpt 0 (Dpt (enat ?b) 0\<^sub>B)
+                                    else Dpt (enat ?b) 0\<^sub>B)"
+            using Mark.psimps[OF domK] MR Lgt1 mono t1z by (simp add: Let_def)
+          have df: "dfree_BT (Dpt 0 (Dpt (enat ?b) 0\<^sub>B))"
+               and df2: "dfree_BT (Dpt (enat ?b) 0\<^sub>B)"
+            by (simp_all add: zero_enat_def)
+          have mb1: "(Dpt 0 (Dpt (enat ?b) 0\<^sub>B), Dpt 0 (Dpt (enat ?b) 0\<^sub>B)) \<in> MarkedB"
+          proof -
+            have "scb_decomp (Dpt 0 (Dpt (enat ?b) 0\<^sub>B)) []
+                    (flatBT (Dpt 0 (Dpt (enat ?b) 0\<^sub>B))) []"
+              by (rule scb_decomp_self)
+                 (rule isPTB_str_Dpt, simp_all add: zero_enat_def)
+            thus ?thesis unfolding MarkedB_def by auto
+          qed
+          have mb2: "(Dpt 0 (Dpt (enat ?b) 0\<^sub>B), Dpt (enat ?b) 0\<^sub>B) \<in> MarkedB"
+          proof -
+            have "flatBT (Dpt 0 (Dpt (enat ?b) 0\<^sub>B))
+                  = [Dsym 0] @ flatBT (Dpt (enat ?b) 0\<^sub>B) @ []" by simp
+            hence "scb_decomp (Dpt 0 (Dpt (enat ?b) 0\<^sub>B)) [Dsym 0]
+                     (flatBT (Dpt (enat ?b) 0\<^sub>B)) []"
+              unfolding scb_decomp_def
+              using isPTB_str_Dpt[of "enat ?b" "0\<^sub>B"] by simp
+            thus ?thesis unfolding MarkedB_def by auto
+          qed
+          show ?thesis using tv kv df df2 mb1 mb2 by simp
+        next
+          case t1ne: False
+          \<comment> \<open>the hard (B) branch: defer to a dedicated lemma in the next pass\<close>
+          show ?thesis sorry
+        qed
+      next
+        case nmono: False
+        \<comment> \<open>the (C) multiT branch: defer to a dedicated pass\<close>
+        show ?thesis sorry
+      qed
+    qed
+  qed
+qed
