@@ -265,4 +265,35 @@ lemma m_7_3_Mark_welldef:
   shows "Trans_Mark_dom (Inr (M, m))"
   using Trans_Mark_dom_RT_PS_aux assms by blast
 
+
+text \<open>First value bricks on the new domain: \<open>Trans\<close>/\<open>Mark\<close> on reduced
+  singletons \<open>[(v,v)]\<close> (= all reduced length-1 sequences,
+  @{thm [source] m_6_6_oneColumn}), via the (A) branch of the recursion.\<close>
+
+lemma Trans_singleton:
+  "Trans [(v, v)] = (if v = 0 then 0\<^sub>B else Dpt (enat v) 0\<^sub>B)"
+proof -
+  have RT: "[(v, v)] \<in> RT_PS"
+  proof -
+    have "([(v, v)]::pairseq) \<in> T_PS" by (simp add: T_PS_def)
+    thus ?thesis using m_6_6_oneColumn[of "[(v, v)]"] by auto
+  qed
+  have dom: "Trans_Mark_dom (Inl [(v, v)])" by (rule m_7_3_Trans_welldef[OF RT])
+  show ?thesis
+    using Trans.psimps[OF dom] RT by (simp add: entry_def)
+qed
+
+lemma Mark_singleton:
+  "Mark [(v, v)] m = (if v = 0 then 0\<^sub>B else Dpt (enat v) 0\<^sub>B)"
+proof -
+  have RT: "[(v, v)] \<in> RT_PS"
+  proof -
+    have "([(v, v)]::pairseq) \<in> T_PS" by (simp add: T_PS_def)
+    thus ?thesis using m_6_6_oneColumn[of "[(v, v)]"] by auto
+  qed
+  have dom: "Trans_Mark_dom (Inr ([(v, v)], m))" by (rule m_7_3_Mark_welldef[OF RT])
+  show ?thesis
+    using Mark.psimps[OF dom] RT by (simp add: entry_def)
+qed
+
 end
