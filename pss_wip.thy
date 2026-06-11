@@ -709,4 +709,32 @@ proof -
   finally show ?thesis .
 qed
 
+
+section \<open>§7.3 value-invariant prerequisite: the scb image-existence lemma,
+  brick 1 (balance pinning)\<close>
+
+text \<open>A balanced (well-formed) prefix with an all-\<open>RP\<close> remainder exhausts the
+  string: from @{thm [source] m_7_1_paren_balance} the \<open>(\<close>/\<open>)\<close> counts of both
+  \<open>flat t\<close> and \<open>flat c\<close> agree, so the all-\<open>RP\<close> remainder has length 0.
+  (Pins the \<open>s = []\<close> occurrence of the image lemma to the whole term.)\<close>
+
+lemma scbimg_prefix_whole:
+  assumes tT: "t \<in> T_B" and cT: "c \<in> T_B"
+    and eq: "flatBT t = flatBT c @ b"
+    and rb: "\<forall>x \<in> set b. x = RP"
+  shows "b = []"
+proof -
+  have bt: "length (filter (\<lambda>x. x = LP) (flatBT t))
+            = length (filter (\<lambda>x. x = RP) (flatBT t))"
+    by (rule m_7_1_paren_balance[OF tT])
+  have bc: "length (filter (\<lambda>x. x = LP) (flatBT c))
+            = length (filter (\<lambda>x. x = RP) (flatBT c))"
+    by (rule m_7_1_paren_balance[OF cT])
+  have lb: "length (filter (\<lambda>x. x = LP) b) = 0"
+    using rb by (auto simp: filter_empty_conv)
+  have rbn: "length (filter (\<lambda>x. x = RP) b) = length b"
+    using rb by (induction b) auto
+  show ?thesis using bt bc lb rbn by (simp add: eq)
+qed
+
 end
