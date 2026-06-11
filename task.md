@@ -26,27 +26,27 @@
         - ✅ anchored⟹RedCondA (stdCA 経由)〔`m_6_5_anchored_imp_RedCondA`〕
         - ✅ 残a monoCong: **`m_6_5_congR_self_Red_monoT` 完全証明**。m10>0 は coreReduce 構造補題群(TrMax/Br/Joints/npJ_coreReduce + 头部下げ congR + cdn_red_cong)で閉
         - ✅ 残b stdCA: ST_PS⟹RedCondA **放電済(HEAD: `stdCA_ST_PS`/`RedCondAB_ST_PS` 無条件)** — §6.7 gate-free operCAB 経由(spsy/Ez 経路は廃止)
-      - ✅🚧 系（$\textrm{Red}$ が単項性を保つこと）〔forward `m_6_5_Red_preserves_monoT` green、逆向き残〕
-      - 🚨 系（$P$ の $\textrm{Red}$ 同変性）〔A4〕
+      - ✅ 系（$\textrm{Red}$ が単項性を保つこと）〔両方向。`m_6_5_Red_preserves_monoT`+`m_6_5_Red_monoT_final`〕
+      - ✅ 系（$P$ の $\textrm{Red}$ 同変性）〔A4。`m_6_5_P_Red_final`: anchored は非複項なので両辺 singleton〕
       - ✅ 命題（単項性と $\textrm{Red}$ の関係）〔`m_6_5_monoT_Red_m10pos`〕
       - ✅ 命題（$\textrm{Red}$ の冪等性）〔`m_6_5_Red_idem`〕
       - ✅ 命題（$\textrm{Red}$ と $\textrm{Pred}$ の可換性）〔`m_6_5_Red_Pred`〕
         - ✅🚧 補題（死枝[20]の到達不能性）〔`m_6_5_monoT_Red_m10pos`〕
-      - 🚨🚧 命題（$\textrm{Red}$ と基本列の可換性）〔A4。base green、帰納段 blocked〕
-      - 🚨 命題（$\textrm{Red}$ が許容性を保つこと）〔A4〕
-      - 🚨 系（許容化の $\textrm{Red}$ 不変性）〔A4〕
-      - 🚨 系（$\textrm{Red}$ が基点を保つこと）〔A4〕
-    - 🚨🚧 §6.6 簡約性 〔keystone `m_6_6_reduced_iff_cond` 完全無条件 green。docs `reducedness.md`〕
+      - 🚨🚧 命題（$\textrm{Red}$ と基本列の可換性）〔A4。**§6.5/§6.6 最後の残り**。方針: oper-rebase可換(値レベル)+i1=0/j0=0 の同一ブロック反復(multi化)は P 成分毎、他は閉形式。oper単項性は保存されない反例 (0,0)(1,0)[2]=(0,0)(0,0) あり〕
+      - ✅ 命題（$\textrm{Red}$ が許容性を保つこと）〔A4。`m_6_5_Red_adm_final`: congR(`m_6_5_congR_self_Red_anchored`)で nadm/adm 移送〕
+      - ✅ 系（許容化の $\textrm{Red}$ 不変性）〔A4。`m_6_5_admof_Red_final`〕
+      - ✅ 系（$\textrm{Red}$ が基点を保つこと）〔A4。`m_6_5_Red_marked_final`(adm移送+`m_6_5_Red_le_final`)〕
+    - ✅ §6.6 簡約性 〔**全項目完了(2026-06-11)**。keystone `m_6_6_reduced_iff_cond`。docs `reducedness.md`〕
       - ✅ 命題（簡約性の切片への遺伝性）〔`herd_6_6_reduced_slice`、A5補正 $j'_0=0$〕
-      - 🚨 命題（$P$ が簡約性を保つこと）
-      - 🚨 命題（簡約性が基本列で保たれること）
+      - ✅ 命題（$P$ が簡約性を保つこと）〔`m_6_6_P_reduced`: Lng_Red+concat blockwise(`concat_eq_concat_iff`)〕
+      - ✅ 命題（簡約性が基本列で保たれること）〔**`m_6_6_reduced_oper`: RT_PS 全域で M[n]∈RT_PS**。keystone+T_PS一般 tiling(`operCA_tiling_T`/`operCB_tiling_T`: 旧 Nst は非空導出のみ→`operB_gen_LngM` で置換)+nontiling。経験 0/100,344(reduced 33,448個, len≤6,e≤3, keystone判定でRed不要)〕
       - ✅ 命題（簡約性と係数の関係）〔keystone `m_6_6_reduced_iff_cond` 完全無条件 green。memory `pss-66-keystone-done`/docs `reducedness.md`〕
       - ✅ 補題（$\textrm{Red}$ と左端の関係）(1)(2)〔`m_6_6_Red_leftend_2`〕
-      - 🚨 補題（簡約性と係数の基本性質）
+      - ✅ 補題（簡約性と係数の基本性質）〔`m_6_6_reduced_coeff`: reduced_leftend で頭(0,0)正規化→keystone→condAB_coeff(2)。複項は P 成分毎〕
       - ✅ 補題（簡約性と左端の関係）〔`m_6_6_reduced_leftend`〕
       - ✅ 補題（条件 (A) と (B) と係数の基本性質）〔`m_6_6_condAB_coeff`〕
-      - 🚨 系（直系先祖による切片と $\textrm{Red}$ と $\textrm{IncrFirst}$ の関係）
-      - 🚨 系（$1$ 列ペア数列の基本性質）
+      - ✅ 系（直系先祖による切片と $\textrm{Red}$ と $\textrm{IncrFirst}$ の関係）〔A2。`m_6_6_ancestor_slice_Red_IncrFirst`: 閉形式で N=rebase(seg)、readback は算術、Red N=N は cdn_red_cong+congR_funpow_IncrFirst(原典の M' 条件(B)検証を迂回)〕
+      - ✅ 系（$1$ 列ペア数列の基本性質）〔`m_6_6_oneColumn`/`Red_singleton`: Red [(a,b)]=[(b,b)]〕
     - ✅ §6.7 標準形
       - ✅ 命題（標準形の階層和による表示）
       - ✅ 命題（標準形の簡約性）〔**ST_PS⊆RT_PS = `m_6_7_ST_PS_subseteq_RT_PS` 完全証明・sorry 0(HEAD e096355)**。決定打=原典の一行証明に忠実な **gate-free operCA**: gate(cGTWF k=j1)は我々の分解の人工物で一般 reduced で偽(405反例)、正解は escape readback(`oper_d1pos_parent1_readback_escape`: in-block 列の row-1 親が prefix へ逃げるケースの verbatim 読み戻し、無仮定 0/129万)+`operCA_escape_row1`+`operCA_d1pos`。cGTWF_ST_PS/oper_d0zero_eglobal_j1(旧 sorry)は削除。memory `pss-67-cgeg0`〕

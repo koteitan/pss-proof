@@ -49606,8 +49606,8 @@ text \<open>§6.7 oper-tiling brick (Front B): the genuine TILING branch of \<op
     row-0 running-min in \<open>N\<close> (every \<open>y<u\<close> lies in the verbatim region), so
     \<open>RedCondB N\<close> gives \<open>e\<^sub>0(N,u)=e\<^sub>1(N,u)\<close>.  Empirically 0-fail (red_model.py).\<close>
 
-lemma operCB_tiling:
-  assumes Nst: "N \<in> ST_PS" and condA: "RedCondA N" and condB: "RedCondB N"
+lemma operCB_tiling_T:
+  assumes NT: "N \<in> T_PS" and condB: "RedCondB N"
     and n1: "1 \<le> n"
     and tile: "\<not> (Lng N - 1 = 0
                   \<or> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0)
@@ -49618,7 +49618,6 @@ proof -
   let ?w = "Lng N - 1 - ?j0"
   let ?d0 = "if 0 < ?i1 then entry N 0 ?j1 - entry N 0 ?j0 else 0"
   let ?Nn = "(N::pairseq)[n]"
-  have NT: "N \<in> T_PS" by (rule ST_PS_T_PS[OF Nst])
   have L: "1 < Lng N" using tile by (cases "Lng N - 1 = 0") auto
   have notzero: "\<not> (entry N 0 ?j1 = 0 \<and> entry N 1 ?j1 = 0)" using tile by blast
   have hp: "hasParent N ?i1 ?j1" using tile by blast
@@ -49626,10 +49625,15 @@ proof -
     using hp unfolding hasParent_def parent_def by (rule theI')
   have j0lt: "?j0 < ?j1" using poper_nextR_imp_le0[OF parR] by simp
   have w0: "0 < ?w" using j0lt by linarith
-  have NnST: "?Nn \<in> ST_PS" by (rule ST_PS.oper[OF Nst n1])
-  have NnT: "?Nn \<in> T_PS" by (rule ST_PS_T_PS[OF NnST])
   have LngNn: "Lng ?Nn = ?j0 + n * ?w"
     by (rule operB_gen_LngM[OF L notzero hp j0lt])
+  have NnT: "?Nn \<in> T_PS"
+  proof -
+    have "0 < n * ?w" using w0 n1 by simp
+    hence "0 < Lng ?Nn" using LngNn by simp
+    hence "?Nn \<noteq> []" using length_greater_0_conv by blast
+    thus ?thesis by (simp add: T_PS_def)
+  qed
   \<comment> \<open>prefix-region entries of \<open>N[n]\<close> are verbatim, on both rows\<close>
   have pref0: "\<And>y i. y < ?j0 \<Longrightarrow> entry ?Nn i y = entry N i y"
     using operB_gen_entry_prefix[OF L notzero hp] by blast
@@ -49742,6 +49746,20 @@ proof -
     qed
   qed
 qed
+
+text \<open>The original \<open>ST\<^sub>PS\<close>-interface form (kept for the
+  @{thm [source] m_6_7_standard_reduced} plumbing); the standardness and
+  \<open>RedCondA\<close> hypotheses are not actually needed
+  (@{thm [source] operCB_tiling_T}).\<close>
+
+lemma operCB_tiling:
+  assumes Nst: "N \<in> ST_PS" and condA: "RedCondA N" and condB: "RedCondB N"
+    and n1: "1 \<le> n"
+    and tile: "\<not> (Lng N - 1 = 0
+                  \<or> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0)
+                  \<or> \<not> hasParent N (idx1 N (Lng N - 1)) (Lng N - 1))"
+  shows "RedCondB ((N::pairseq)[n])"
+  by (rule operCB_tiling_T[OF ST_PS_T_PS[OF Nst] condB n1 tile])
 
 
 text \<open>§6.7 oper-tiling brick (Front A): \<open>i\<^sub>1\<close>-AGNOSTIC within-block \<open>nextrel0\<close>
