@@ -1597,4 +1597,36 @@ proof -
   qed
 qed
 
+
+text \<open>The combined transfer: \<open>MarkedB\<close> membership depends only on the last
+  principal component (used for the \<open>+\<^sub>B\<close> assembly in the (C) branch of the
+  \<open>Trans\<close>/\<open>Mark\<close> value invariant).\<close>
+
+lemma MarkedB_last_component_transfer:
+  assumes uc: "(u, c) \<in> MarkedB" and une: "u \<noteq> Trm []"
+    and lc: "last (untrm u) = last (untrm w)"
+    and wne: "untrm w \<noteq> []"
+  shows "(w, c) \<in> MarkedB"
+proof -
+  from uc obtain s b where d: "scb_decomp u s (flatBT c) b"
+    by (auto simp: MarkedB_def)
+  have ipt: "isPTB_str (flatBT c)" using d une by (simp add: scb_decomp_def)
+  then obtain p where pf: "dfree_BP p" and pfl: "flatBT c = flatBP p"
+    by (auto simp: isPTB_str_def)
+  have cp: "c = Trm [p]"
+  proof -
+    have "flatBT c = flatBT (Trm [p])" using pfl by simp
+    thus ?thesis by (rule m_7_flatBT_inj)
+  qed
+  have d': "scb_decomp u s (flatBT (Trm [p])) b" using d cp by simp
+  obtain sc bc where comp: "flatBP (last (untrm u)) = sc @ flatBP p @ bc"
+      and rbc: "\<forall>x \<in> set bc. x = RP"
+    using scb_to_last_component[OF d' une] by blast
+  have comp': "flatBP (last (untrm w)) = sc @ flatBP p @ bc"
+    using comp lc by simp
+  have "\<exists>s' b'. scb_decomp w s' (flatBT (Trm [p])) b'"
+    by (rule scb_from_last_component[OF comp' rbc wne pf])
+  thus ?thesis using cp by (auto simp: MarkedB_def)
+qed
+
 end
