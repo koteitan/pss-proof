@@ -749,4 +749,159 @@ proof -
   thus ?thesis using sne by (cases s) auto
 qed
 
+
+text \<open>Brick 3 (the join sweep): in a \<open>CM\<close>-joined component list closed by the
+  outer \<open>RP\<close>, an occurrence of a principal string \<open>flatBP cp\<close> with all-\<open>RP\<close>
+  tail \<open>b\<close> lies inside a single component, and only the LAST one — crossing a
+  component boundary would give the occurrence a proper prefix of negative
+  \<open>flatinj_dsum\<close> (the component suffix), contradicting
+  @{thm [source] flatinj_prefix_nonneg_BP}.  The component is then replaced
+  via the supplied (inductive) replacement hypothesis.\<close>
+
+lemma scbimg_join:
+  assumes IHr: "\<And>r s b. r \<in> set rs \<Longrightarrow> flatBP r = s @ flatBP cp @ b
+                  \<Longrightarrow> \<forall>x \<in> set b. x = RP
+                  \<Longrightarrow> \<exists>r'. flatBP r' = s @ flatBP cp' @ b"
+    and eq: "concat (map (\<lambda>r. CM # flatBP r) rs) @ [RP] = s @ flatBP cp @ b"
+    and rb: "\<forall>x \<in> set b. x = RP"
+  shows "\<exists>rs'. length rs' = length rs
+             \<and> concat (map (\<lambda>r. CM # flatBP r) rs') @ [RP] = s @ flatBP cp' @ b"
+  using IHr eq rb
+proof (induction rs arbitrary: s b)
+  case Nil
+  \<comment> \<open>\<open>[RP] = s @ flatBP cp @ b\<close>: but \<open>flatBP cp\<close> starts with \<open>Dsym\<close>.\<close>
+  obtain w cb where cpw: "cp = DB w cb" by (cases cp) auto
+  show ?case
+    using Nil.prems(2) cpw by (cases s) auto
+next
+  case (Cons r0 rs)
+  obtain w cb where cpw: "cp = DB w cb" by (cases cp) auto
+  have fchd: "flatBP cp = Dsym w # flatBT cb" using cpw by simp
+  \<comment> \<open>peel the leading \<open>CM\<close>\<close>
+  have eq0: "CM # flatBP r0 @ concat (map (\<lambda>r. CM # flatBP r) rs) @ [RP]
+             = s @ flatBP cp @ b"
+    using Cons.prems(2) by simp
+  have sne: "s \<noteq> []"
+  proof
+    assume "s = []"
+    hence "CM = Dsym w" using eq0 fchd by simp
+    thus False by simp
+  qed
+  then obtain s1 where ss: "s = CM # s1"
+    using eq0 by (cases s) auto
+  have eq1: "flatBP r0 @ concat (map (\<lambda>r. CM # flatBP r) rs) @ [RP]
+             = s1 @ flatBP cp @ b"
+    using eq0 ss by simp
+  \<comment> \<open>split at the end of \<open>flatBP r0\<close>\<close>
+  from append_eq_append_conv2[THEN iffD1, OF eq1]
+  obtain us where split:
+      "flatBP r0 = s1 @ us \<and> us @ concat (map (\<lambda>r. CM # flatBP r) rs) @ [RP]
+                              = flatBP cp @ b
+     \<or> flatBP r0 @ us = s1 \<and> concat (map (\<lambda>r. CM # flatBP r) rs) @ [RP]
+                              = us @ flatBP cp @ b" by blast
+  show ?case
+  proof (cases "flatBP r0 @ us = s1 \<and> concat (map (\<lambda>r. CM # flatBP r) rs) @ [RP]
+                              = us @ flatBP cp @ b")
+    case True
+    \<comment> \<open>occurrence beyond \<open>r0\<close>: recurse into the tail join\<close>
+    have IHtail: "\<And>r s b. r \<in> set rs \<Longrightarrow> flatBP r = s @ flatBP cp @ b
+                    \<Longrightarrow> \<forall>x \<in> set b. x = RP
+                    \<Longrightarrow> \<exists>r'. flatBP r' = s @ flatBP cp' @ b"
+    proof -
+      fix r s b
+      assume "r \<in> set rs" "flatBP r = s @ flatBP cp @ b" "\<forall>x \<in> set b. x = RP"
+      thus "\<exists>r'. flatBP r' = s @ flatBP cp' @ b"
+        using Cons.prems(1)[of r s b] by simp
+    qed
+    have tail: "concat (map (\<lambda>r. CM # flatBP r) rs) @ [RP] = us @ flatBP cp @ b"
+      using True by simp
+    have "\<exists>rs'. length rs' = length rs
+              \<and> concat (map (\<lambda>r. CM # flatBP r) rs') @ [RP] = us @ flatBP cp' @ b"
+      by (rule Cons.IH[OF IHtail tail Cons.prems(3)])
+    then obtain rs' where rs': "length rs' = length rs"
+        "concat (map (\<lambda>r. CM # flatBP r) rs') @ [RP] = us @ flatBP cp' @ b" by blast
+    have "concat (map (\<lambda>r. CM # flatBP r) (r0 # rs')) @ [RP]
+          = CM # flatBP r0 @ us @ flatBP cp' @ b" using rs' by simp
+    also have "\<dots> = s @ flatBP cp' @ b" using ss True by simp
+    finally show ?thesis using rs' by (intro exI[of _ "r0 # rs'"]) simp
+  next
+    case False
+    with split have inr0: "flatBP r0 = s1 @ us"
+        and rest: "us @ concat (map (\<lambda>r. CM # flatBP r) rs) @ [RP] = flatBP cp @ b"
+      by auto
+    \<comment> \<open>split \<open>fc\<close> against \<open>us\<close>\<close>
+    from append_eq_append_conv2[THEN iffD1, OF rest[symmetric]]
+    obtain vs where split2:
+        "flatBP cp = us @ vs \<and> vs @ b = concat (map (\<lambda>r. CM # flatBP r) rs) @ [RP]
+       \<or> flatBP cp @ vs = us \<and> b = vs @ concat (map (\<lambda>r. CM # flatBP r) rs) @ [RP]"
+      by blast
+    show ?thesis
+    proof (cases "flatBP cp @ vs = us \<and> b = vs @ concat (map (\<lambda>r. CM # flatBP r) rs) @ [RP]")
+      case True
+      \<comment> \<open>occurrence wholly inside \<open>r0\<close>: tail of \<open>b\<close> forces \<open>rs = []\<close>\<close>
+      have ball: "\<forall>x \<in> set (vs @ concat (map (\<lambda>r. CM # flatBP r) rs) @ [RP]). x = RP"
+        using True Cons.prems(3) by simp
+      have rsnil: "rs = []"
+      proof (cases rs)
+        case (Cons r1 rs1)
+        hence "CM \<in> set (concat (map (\<lambda>r. CM # flatBP r) rs))" by simp
+        thus ?thesis using ball by auto
+      qed simp
+      have vsRP: "\<forall>x \<in> set vs. x = RP" using ball by auto
+      have r0eq: "flatBP r0 = s1 @ flatBP cp @ vs" using inr0 True by simp
+      obtain r0' where r0': "flatBP r0' = s1 @ flatBP cp' @ vs"
+        using Cons.prems(1)[of r0 s1 vs] r0eq vsRP by auto
+      have "concat (map (\<lambda>r. CM # flatBP r) [r0']) @ [RP]
+            = CM # s1 @ flatBP cp' @ vs @ [RP]" using r0' by simp
+      also have "\<dots> = s @ flatBP cp' @ b" using ss True rsnil by simp
+      finally show ?thesis using rsnil by (intro exI[of _ "[r0']"]) simp
+    next
+      case False
+      with split2 have fcsplit: "flatBP cp = us @ vs"
+          and vsb: "vs @ b = concat (map (\<lambda>r. CM # flatBP r) rs) @ [RP]" by auto
+      \<comment> \<open>crossing: \<open>us\<close> is a PROPER suffix-piece of \<open>r0\<close> and a proper prefix of
+          \<open>fc\<close> with negative depth-sum — contradiction\<close>
+      have vsne: "vs \<noteq> []"
+      proof
+        assume v0: "vs = []"
+        hence "flatBP cp = us" using fcsplit by simp
+        hence "b = concat (map (\<lambda>r. CM # flatBP r) rs) @ [RP]" using vsb v0 by simp
+        \<comment> \<open>then the whole tail join is in \<open>b\<close>: \<open>rs = []\<close> as above, so
+            \<open>flatBP r0 = s1 @ flatBP cp\<close> with \<open>vs = []\<close> — covered by the
+            inside-\<open>r0\<close> case, contradicting \<open>False\<close>\<close>
+        hence "flatBP cp @ vs = us \<and> b = vs @ concat (map (\<lambda>r. CM # flatBP r) rs) @ [RP]"
+          using fcsplit v0 vsb by simp
+        thus False using False by simp
+      qed
+      have usne_or: "us = [] \<or> us \<noteq> []" by simp
+      show ?thesis
+      proof (cases "us = []")
+        case True
+        \<comment> \<open>\<open>fc = vs\<close> begins exactly at the tail join, whose head is \<open>CM\<close> or \<open>RP\<close>\<close>
+        have "flatBP cp = vs" using fcsplit True by simp
+        hence hd: "hd (vs @ b) = Dsym w" using fchd vsne by (cases vs) auto
+        have "hd (concat (map (\<lambda>r. CM # flatBP r) rs) @ [RP]) = CM
+              \<or> hd (concat (map (\<lambda>r. CM # flatBP r) rs) @ [RP]) = RP"
+          by (cases rs) auto
+        thus ?thesis using vsb hd by auto
+      next
+        case False
+        have dsus_neg: "flatinj_dsum us < 0"
+        proof -
+          have "flatinj_dsum (flatBP r0) = -1"
+            by (rule flatinj_dsum_flatBP)
+          moreover have "0 \<le> flatinj_dsum s1"
+            using flatinj_prefix_nonneg_BP[OF inr0] False by simp
+          moreover have "flatinj_dsum (flatBP r0) = flatinj_dsum s1 + flatinj_dsum us"
+            using inr0 by simp
+          ultimately show ?thesis by simp
+        qed
+        have "0 \<le> flatinj_dsum us"
+          using flatinj_prefix_nonneg_BP[OF fcsplit] vsne by simp
+        thus ?thesis using dsus_neg by simp
+      qed
+    qed
+  qed
+qed
+
 end
