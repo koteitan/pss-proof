@@ -14,7 +14,7 @@
     - ✅ §6.2 単項性
     - ✅ §6.3 許容性
     - ✅ §6.4 幹と枝
-    - 🚨🚧 §6.5 簡約化 〔8系は anchored_slice で真(A4)。docs `red-le-domain.md`〕
+    - ✅ §6.5 簡約化 〔**全項目完了(2026-06-11)**。8系は anchored_slice で真(A4)。docs `red-le-domain.md`〕
       - ✅ 命題（$\textrm{Red}$ の well-defined 性）
       - ✅ 命題（$\textrm{Red}$ の $\textrm{IncrFirst}$ 不変性）〔`m_6_5_Red_IncrFirst`/`cdn_red_cong`〕
         - ✅🚧 補題（死枝[20]の到達不能性）〔`m_6_5_monoT_Red_m10pos`(m10>0)〕
@@ -32,7 +32,7 @@
       - ✅ 命題（$\textrm{Red}$ の冪等性）〔`m_6_5_Red_idem`〕
       - ✅ 命題（$\textrm{Red}$ と $\textrm{Pred}$ の可換性）〔`m_6_5_Red_Pred`〕
         - ✅🚧 補題（死枝[20]の到達不能性）〔`m_6_5_monoT_Red_m10pos`〕
-      - 🚨🚧 命題（$\textrm{Red}$ と基本列の可換性）〔A4。**§6.5/§6.6 最後の残り**。方針: oper-rebase可換(値レベル)+i1=0/j0=0 の同一ブロック反復(multi化)は P 成分毎、他は閉形式。oper単項性は保存されない反例 (0,0)(1,0)[2]=(0,0)(0,0) あり〕
+      - ✅ 命題（$\textrm{Red}$ と基本列の可換性）〔A4。**`m_6_5_Red_oper_final`: 原典と逆順で n 帰納不要**。(Red M)[n]=rebase(M)[n]=rebase(M[n])(oper-rebase可換 `oper_rebase_commute`)、Red(M[n])=Red(rebase(M[n]))(`congR_rebaseRow0`+床+`cdn_red_cong`)、rebase(M[n])=(Red M)[n] は reduced(`m_6_6_reduced_oper`)の不動点。経験 0/1,824×3(`red_oper_anchored_audit.py`)〕
       - ✅ 命題（$\textrm{Red}$ が許容性を保つこと）〔A4。`m_6_5_Red_adm_final`: congR(`m_6_5_congR_self_Red_anchored`)で nadm/adm 移送〕
       - ✅ 系（許容化の $\textrm{Red}$ 不変性）〔A4。`m_6_5_admof_Red_final`〕
       - ✅ 系（$\textrm{Red}$ が基点を保つこと）〔A4。`m_6_5_Red_marked_final`(adm移送+`m_6_5_Red_le_final`)〕
