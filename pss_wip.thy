@@ -4810,4 +4810,67 @@ proof -
   show ?thesis by (rule m_6_5_Red_le[OF M stdCA monoCong])
 qed
 
+section \<open>§6.5 系（\<open>Red\<close>が単項性を保つこと）/ 系（\<open>P\<close>の\<open>Red\<close>同変性） — A4 final forms\<close>
+
+text \<open>On \<open>anchored_slice\<close> the \<open>multiT\<close> branch of \<open>Red\<close> is unreachable
+  (@{thm [source] m_6_5_anchored_not_multiT}), so both corollaries collapse:
+  \<^item> 系（\<open>Red\<close>が単項性を保つこと） \<open>monoT M \<longleftrightarrow> monoT (Red M)\<close>: forward is the
+    keystone @{thm [source] m_6_5_Red_preserves_monoT}; backward, \<open>M\<close> is
+    \<open>zeroT\<close> or \<open>monoT\<close> and \<open>zeroT\<close> transfers both ways
+    (@{thm [source] m_6_5_Red_zeroT}).
+  \<^item> 系（\<open>P\<close>の\<open>Red\<close>同変性） \<open>P (Red M) = map Red (P M)\<close>: both \<open>M\<close> and \<open>Red M\<close>
+    are non-multi, so both sides are singletons \<open>[Red M]\<close>
+    (@{thm [source] poper_P_nonmulti}).\<close>
+
+lemma m_6_5_Red_monoT_final:
+  assumes M: "M \<in> anchored_slice"
+  shows "monoT M \<longleftrightarrow> monoT (Red M)"
+proof -
+  have MT: "M \<in> T_PS" by (rule anchored_slice_imp_T_PS[OF M])
+  show ?thesis
+  proof
+    assume mono: "monoT M"
+    have "M \<in> PT_PS" using MT mono by (simp add: PT_PS_def)
+    thus "monoT (Red M)" by (rule m_6_5_Red_preserves_monoT)
+  next
+    assume monoR: "monoT (Red M)"
+    have "\<not> zeroT M"
+    proof
+      assume "zeroT M"
+      hence "zeroT (Red M)" using m_6_5_Red_zeroT[OF MT] by simp
+      thus False using monoR by (simp add: monoT_def)
+    qed
+    thus "monoT M" using m_6_5_anchored_zeroT_or_monoT[OF M] by simp
+  qed
+qed
+
+lemma m_6_5_Red_not_multiT:
+  assumes M: "M \<in> anchored_slice"
+  shows "\<not> multiT (Red M)"
+proof -
+  have MT: "M \<in> T_PS" by (rule anchored_slice_imp_T_PS[OF M])
+  show ?thesis
+  proof (cases "zeroT M")
+    case True
+    hence "zeroT (Red M)" using m_6_5_Red_zeroT[OF MT] by simp
+    thus ?thesis by (simp add: multiT_def)
+  next
+    case False
+    hence "monoT M" using m_6_5_anchored_zeroT_or_monoT[OF M] by simp
+    hence "monoT (Red M)" using m_6_5_Red_monoT_final[OF M] by simp
+    thus ?thesis by (simp add: multiT_def)
+  qed
+qed
+
+lemma m_6_5_P_Red_final:
+  assumes M: "M \<in> anchored_slice"
+  shows "P (Red M) = map Red (P M)"
+proof -
+  have nmu: "\<not> multiT M" by (rule m_6_5_anchored_not_multiT[OF M])
+  have PM: "P M = [M]" using nmu by (intro poper_P_nonmulti) simp
+  have PR: "P (Red M) = [Red M]"
+    using m_6_5_Red_not_multiT[OF M] by (intro poper_P_nonmulti) simp
+  show ?thesis by (simp add: PM PR)
+qed
+
 end
