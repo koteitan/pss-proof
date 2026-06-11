@@ -296,4 +296,12 @@ proof -
     using Mark.psimps[OF dom] RT by (simp add: entry_def)
 qed
 
+
+text \<open>\<open>unflatBT\<close> inverts \<open>flatBT\<close> (by @{thm [source] m_7_flatBT_inj}); this is
+  how the \<open>s\<^sub>1 c\<^sub>2 b\<^sub>1\<close> concatenations in \<open>Trans\<close>/\<open>Mark\<close> evaluate.\<close>
+
+lemma unflatBT_flat: "unflatBT (flatBT t) = t"
+  unfolding unflatBT_def
+  by (rule the_equality) (auto intro: m_7_flatBT_inj)
+
 end
