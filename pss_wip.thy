@@ -1057,4 +1057,55 @@ next
   qed
 qed
 
+
+text \<open>The corrected scb replacement (A12, now with the image hypothesis
+  DISCHARGED by @{thm [source] scbimg_image_BT}): replacing the principal
+  middle of an scb-decomposition yields a term with the corresponding
+  scb-decomposition.\<close>
+
+lemma scb_replace_principal:
+  assumes d: "scb_decomp t s (flatBT (Trm [cp])) b"
+    and pc': "isPTB_str (flatBT (Trm [cp']))"
+  shows "\<exists>t'. flatBT t' = s @ flatBT (Trm [cp']) @ b
+            \<and> scb_decomp t' s (flatBT (Trm [cp'])) b"
+proof -
+  from d have eq: "flatBT t = s @ flatBP cp @ b"
+    and rb: "\<forall>x \<in> set b. x = RP"
+    by (auto simp: scb_decomp_def)
+  obtain t' where t': "flatBT t' = s @ flatBP cp' @ b"
+    using scbimg_image_BT[OF eq rb] by blast
+  have "scb_decomp t' s (flatBT (Trm [cp'])) b"
+    unfolding scb_decomp_def using t' pc' rb by simp
+  thus ?thesis using t' by auto
+qed
+
+text \<open>\<open>dfree\<close> reads off the flat string: no \<open>Dsym \<infinity>\<close> letters.  Transfers
+  \<open>T\<^sub>B\<close>-membership to terms built by string surgery.\<close>
+
+lemma dfree_flat_BT: "dfree_BT t \<longleftrightarrow> (\<forall>v. Dsym v \<in> set (flatBT t) \<longrightarrow> v \<noteq> \<infinity>)"
+  and dfree_flat_BP: "dfree_BP p \<longleftrightarrow> (\<forall>v. Dsym v \<in> set (flatBP p) \<longrightarrow> v \<noteq> \<infinity>)"
+proof (induct t and p rule: flatBT_flatBP.induct)
+  case 1 show ?case by simp
+next
+  case (2 p) thus ?case by simp
+next
+  case (3 p q ps)
+  have "dfree_BT (Trm (p # q # ps))
+        \<longleftrightarrow> (dfree_BP p \<and> (\<forall>r \<in> set (q # ps). dfree_BP r))" by simp
+  also have "\<dots> \<longleftrightarrow> ((\<forall>v. Dsym v \<in> set (flatBP p) \<longrightarrow> v \<noteq> \<infinity>)
+        \<and> (\<forall>r \<in> set (q # ps). \<forall>v. Dsym v \<in> set (flatBP r) \<longrightarrow> v \<noteq> \<infinity>))"
+    using 3(1) 3(2) by blast
+  also have "\<dots> \<longleftrightarrow> (\<forall>v. Dsym v \<in> set (flatBT (Trm (p # q # ps))) \<longrightarrow> v \<noteq> \<infinity>)"
+  proof -
+    have sf: "set (flatBT (Trm (p # q # ps)))
+          = {LP, RP} \<union> set (flatBP p)
+            \<union> (\<Union>r \<in> set (q # ps). insert CM (set (flatBP r)))"
+      by auto
+    show ?thesis unfolding sf by auto
+  qed
+  finally show ?case .
+next
+  case (4 u a) thus ?case by auto
+qed
+
 end
