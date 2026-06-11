@@ -4873,4 +4873,210 @@ proof -
   show ?thesis by (simp add: PM PR)
 qed
 
+section \<open>§6.5 命題（\<open>Red\<close>が許容性を保つこと）/ 系（許容化の\<open>Red\<close>不変性）/
+  系（\<open>Red\<close>が基点を保つこと） — A4 final forms\<close>
+
+text \<open>The unified anchored self-congruence: \<open>congR M (Red M)\<close> for any anchored
+  slice (the \<open>zeroT\<close> branch is immediate from \<open>Red M = [(0,0)]\<close>; the \<open>monoT\<close>
+  branch is @{thm [source] m_6_5_congR_self_Red_monoT} with \<open>RedCondA\<close> supplied
+  by the anchored characterization).  Since \<open>nadm\<close>/\<open>adm\<close>/\<open>AdmSet\<close>/\<open>Adm\<close> depend
+  only on \<open>Lng\<close> and \<open>nextR\<close>, all admissibility notions transfer along \<open>congR\<close>.
+  Empirically: AdmSet equality + Marked transfer 0/432 anchored slices.\<close>
+
+lemma m_6_5_congR_self_Red_anchored:
+  assumes M: "M \<in> anchored_slice"
+  shows "congR M (Red M)"
+proof -
+  have MT: "M \<in> T_PS" by (rule anchored_slice_imp_T_PS[OF M])
+  show ?thesis
+  proof (cases "zeroT M")
+    case True
+    have domM: "Red_dom M" by (rule m_6_5_Red_welldef[OF MT])
+    have rM: "Red M = [(0, 0)]" using Red.psimps[OF domM] True by simp
+    have L1: "Lng M = 1" using True by (simp add: zeroT_def)
+    have e1: "entry M 1 0 = 0" using True by (simp add: zeroT_def)
+    have n0: "nextrel0 M = nextrel0 [(0, 0)]"
+      by (rule ext, rule ext) (auto simp: nextrel0_def L1)
+    show ?thesis using L1 e1 n0 by (simp add: rM congR_def entry_def)
+  next
+    case False
+    hence mono: "monoT M" using m_6_5_anchored_zeroT_or_monoT[OF M] by simp
+    have condA: "RedCondA M"
+      by (rule m_6_5_anchored_imp_RedCondA[OF M stdCA_ST_PS])
+    show ?thesis by (rule m_6_5_congR_self_Red_monoT[OF MT condA mono])
+  qed
+qed
+
+lemma m_6_5_adm_Red_eq:
+  assumes M: "M \<in> anchored_slice"
+  shows "adm M = adm (Red M)"
+proof -
+  have c: "congR M (Red M)" by (rule m_6_5_congR_self_Red_anchored[OF M])
+  have L: "Lng M = Lng (Red M)" by (rule congR_Lng[OF c])
+  have n: "nextR M = nextR (Red M)" by (rule congR_nextR[OF c])
+  show ?thesis by (rule ext) (simp add: adm_def nadm_def L n)
+qed
+
+lemma m_6_5_Red_adm_final:
+  assumes M: "M \<in> anchored_slice"
+  shows "AdmSet M = AdmSet (Red M)"
+  using m_6_5_adm_Red_eq[OF M] by (simp add: AdmSet_def)
+
+lemma m_6_5_admof_Red_final:
+  assumes M: "M \<in> anchored_slice"
+  shows "Adm M j = Adm (Red M) j"
+  using m_6_5_adm_Red_eq[OF M] by (simp add: Adm_def)
+
+lemma m_6_5_Red_marked_final:
+  assumes Mm: "(M, m) \<in> Marked" and M: "M \<in> anchored_slice"
+  shows "(Red M, m) \<in> Marked"
+proof -
+  have MT: "M \<in> T_PS" by (rule anchored_slice_imp_T_PS[OF M])
+  have admM: "adm M m" and leM: "leR M 0 m (Lng M - 1)"
+    using Mm by (auto simp: Marked_def)
+  have L: "Lng (Red M) = Lng M" by (rule m_6_5_Lng_Red[OF MT])
+  have RT: "Red M \<in> T_PS"
+  proof -
+    have "M \<noteq> []" using MT by (simp add: T_PS_def)
+    hence "0 < Lng M" by (cases M) auto
+    hence "0 < Lng (Red M)" using L by simp
+    hence "Red M \<noteq> []" using length_greater_0_conv by blast
+    thus ?thesis by (simp add: T_PS_def)
+  qed
+  have admR: "adm (Red M) m"
+    using admM by (simp add: m_6_5_adm_Red_eq[OF M, symmetric])
+  have leRR: "leR (Red M) 0 m (Lng (Red M) - 1)"
+    using m_6_5_Red_le_final[OF M, of 0 m "Lng M - 1"] leM L by simp
+  show ?thesis using RT admR leRR by (simp add: Marked_def)
+qed
+
+section \<open>§6.6 系（\<open>1\<close>列ペア数列の基本性質） / 命題（\<open>P\<close>が簡約性を保つこと）\<close>
+
+text \<open>The value of \<open>Red\<close> on singletons, via the closed form
+  @{thm [source] m_6_5_Red_rebase} (a singleton is \<open>zeroT\<close> or \<open>monoT\<close> with
+  vacuous \<open>RedCondA\<close>): \<open>Red [(a,b)] = [(b,b)]\<close>.\<close>
+
+lemma Red_singleton: "Red [(a, b)] = [(b, b)]"
+proof -
+  let ?M = "[(a, b)]"
+  have MT: "?M \<in> T_PS" by (simp add: T_PS_def)
+  have domM: "Red_dom ?M" by (rule m_6_5_Red_welldef[OF MT])
+  show ?thesis
+  proof (cases "b = 0")
+    case True
+    hence z: "zeroT ?M" by (simp add: zeroT_def entry_def)
+    show ?thesis using Red.psimps[OF domM] z True by simp
+  next
+    case False
+    hence nz: "\<not> zeroT ?M" by (simp add: zeroT_def entry_def)
+    have mono: "monoT ?M"
+    proof -
+      have "le0 ?M 0 0" by (simp add: le0_def)
+      thus ?thesis using nz by (simp add: monoT_def leR_def)
+    qed
+    have nmu: "\<not> multiT ?M" using mono by (simp add: multiT_def)
+    have condA: "RedCondA ?M"
+    proof -
+      have "\<And>i j1'. \<not> hasParent ?M i j1'"
+        by (auto simp: hasParent_def nextR_def nextrel0_def nextrel1_def)
+      thus ?thesis by (simp add: RedCondA_def)
+    qed
+    have "Red ?M = map (\<lambda>j. (entry ?M 0 j - entry ?M 0 0 + entry ?M 1 0,
+                              entry ?M 1 j)) [0..<Lng ?M]"
+      by (rule m_6_5_Red_rebase[OF MT condA nmu])
+    thus ?thesis by (simp add: entry_def)
+  qed
+qed
+
+text \<open>系（\<open>1\<close>列ペア数列の基本性質）: the reduced length-1 sequences are exactly
+  the diagonal singletons \<open>[(v,v)]\<close>.\<close>
+
+lemma m_6_6_oneColumn:
+  assumes MT: "M \<in> T_PS"
+  shows "(Lng M = 1 \<and> M \<in> RT_PS) \<longleftrightarrow> (\<exists>v. M = [(v, v)])"
+proof
+  assume L: "Lng M = 1 \<and> M \<in> RT_PS"
+  then obtain a b where Mab: "M = [(a, b)]" by (cases M) auto
+  have "M = Red M" using L by (simp add: RT_PS_def)
+  also have "Red M = [(b, b)]" using Mab Red_singleton by simp
+  finally show "\<exists>v. M = [(v, v)]" by blast
+next
+  assume "\<exists>v. M = [(v, v)]"
+  then obtain v where Mv: "M = [(v, v)]" by blast
+  have "Red M = M" using Mv Red_singleton by simp
+  thus "Lng M = 1 \<and> M \<in> RT_PS" using MT Mv by (simp add: RT_PS_def)
+qed
+
+text \<open>命題（\<open>P\<close>が簡約性を保つこと）: \<open>M\<close> is reduced iff every \<open>P\<close>-component is.
+  In the \<open>multiT\<close> branch \<open>Red M = concat (map Red (P M))\<close> and
+  \<open>concat (P M) = M\<close>; since \<open>Red\<close> preserves component lengths
+  (@{thm [source] m_6_5_Lng_Red}), \<open>Red M = M\<close> is equivalent to the blockwise
+  fixpoint by @{thm [source] concat_eq_concat_iff}.\<close>
+
+lemma m_6_6_P_reduced:
+  assumes MT: "M \<in> T_PS"
+  shows "M \<in> RT_PS \<longleftrightarrow> (\<forall>J < Lng (P M). P M ! J \<in> RT_PS)"
+proof (cases "multiT M \<and> 1 < Lng M")
+  case False
+  have PM: "P M = [M]" by (rule poper_P_nonmulti[OF False])
+  show ?thesis using MT by (auto simp: PM)
+next
+  case True
+  hence mu: "multiT M" by simp
+  have nz: "\<not> zeroT M" using mu by (simp add: multiT_def)
+  have domM: "Red_dom M" by (rule m_6_5_Red_welldef[OF MT])
+  have rM: "Red M = concat (map Red (P M))"
+    using Red.psimps[OF domM] mu nz by simp
+  have cP: "concat (P M) = M" by (rule poper_concat_P)
+  have compT: "\<And>J. J < Lng (P M) \<Longrightarrow> P M ! J \<in> T_PS"
+  proof -
+    fix J assume "J < Lng (P M)"
+    hence "0 < Lng (P M ! J)" by (rule idxsum_P_component_nonempty[OF MT])
+    hence "P M ! J \<noteq> []" using length_greater_0_conv by blast
+    thus "P M ! J \<in> T_PS" by (simp add: T_PS_def)
+  qed
+  have ziplen: "\<forall>(x, y) \<in> set (zip (map Red (P M)) (P M)). Lng x = Lng y"
+  proof (rule ballI)
+    fix p assume p: "p \<in> set (zip (map Red (P M)) (P M))"
+    obtain x y where pxy: "p = (x, y)" by (cases p) auto
+    from p pxy obtain i where iL: "i < Lng (P M)"
+        and xi: "x = Red (P M ! i)" and yi: "y = P M ! i"
+      by (auto simp: in_set_zip)
+    have "Lng (Red (P M ! i)) = Lng (P M ! i)"
+      by (rule m_6_5_Lng_Red[OF compT[OF iL]])
+    thus "case p of (x, y) \<Rightarrow> Lng x = Lng y" using pxy xi yi by simp
+  qed
+  have lenmap: "Lng (map Red (P M)) = Lng (P M)" by simp
+  have blockwise: "Red M = M \<longleftrightarrow> map Red (P M) = P M"
+  proof -
+    have "Red M = M \<longleftrightarrow> concat (map Red (P M)) = concat (P M)"
+      using rM cP by simp
+    also have "\<dots> \<longleftrightarrow> map Red (P M) = P M"
+      by (rule concat_eq_concat_iff[OF ziplen lenmap])
+    finally show ?thesis .
+  qed
+  show ?thesis
+  proof
+    assume "M \<in> RT_PS"
+    hence "map Red (P M) = P M" using blockwise by (simp add: RT_PS_def)
+    hence "\<And>J. J < Lng (P M) \<Longrightarrow> Red (P M ! J) = P M ! J"
+      by (metis nth_map)
+    thus "\<forall>J < Lng (P M). P M ! J \<in> RT_PS"
+      using compT by (simp add: RT_PS_def)
+  next
+    assume comps: "\<forall>J < Lng (P M). P M ! J \<in> RT_PS"
+    have "map Red (P M) = P M"
+    proof (rule nth_equalityI)
+      show "Lng (map Red (P M)) = Lng (P M)" by simp
+    next
+      fix J assume "J < Lng (map Red (P M))"
+      hence JL: "J < Lng (P M)" by simp
+      have "Red (P M ! J) = P M ! J" using comps JL by (simp add: RT_PS_def)
+      thus "map Red (P M) ! J = P M ! J" using JL by simp
+    qed
+    hence "Red M = M" using blockwise by simp
+    thus "M \<in> RT_PS" using MT by (simp add: RT_PS_def)
+  qed
+qed
+
 end
