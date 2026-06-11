@@ -1629,4 +1629,24 @@ proof -
   thus ?thesis using cp by (auto simp: MarkedB_def)
 qed
 
+
+text \<open>A mono sequence's last column has a (unique) row-0 parent: its row-0
+  entry strictly exceeds the left end (@{thm [source] m_5_1_ancestor_basic_1}),
+  so it is not a running minimum (@{thm [source] idxsum_no_parent0_iff}).\<close>
+
+lemma monoT_hasParent0_last:
+  assumes MT: "M \<in> T_PS" and mono: "monoT M" and L: "1 < Lng M"
+  shows "hasParent M 0 (Lng M - 1)"
+proof -
+  have j1lt: "Lng M - 1 < Lng M" using L by simp
+  have leM: "leR M 0 0 (Lng M - 1)" using mono by (simp add: monoT_def)
+  have "entry M 0 0 < entry M 0 (Lng M - 1)"
+    by (rule m_5_1_ancestor_basic_1[OF MT _ order.refl leM]) (use L in linarith)
+  hence "\<not> (\<forall>j < Lng M - 1. entry M 0 j \<ge> entry M 0 (Lng M - 1))"
+    using L by (auto intro!: exI[of _ 0])
+  thus ?thesis
+    using idxsum_no_parent0_iff[OF MT j1lt]
+    unfolding hasParent_def by blast
+qed
+
 end
