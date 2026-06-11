@@ -5079,4 +5079,244 @@ next
   qed
 qed
 
+section \<open>§6.6 補題（簡約性と係数の基本性質）\<close>
+
+text \<open>Head of a reduced mono sequence is diagonal: from \<open>Red M = M\<close> and the
+  closed form @{thm [source] m_6_5_Red_rebase} at \<open>j = 0\<close>.\<close>
+
+lemma reduced_mono_head_diag:
+  assumes M: "M \<in> RT_PS" and mono: "monoT M"
+  shows "entry M 0 0 = entry M 1 0"
+proof -
+  have MT: "M \<in> T_PS" using M by (simp add: RT_PS_def)
+  have condA: "RedCondA M" using m_6_6_reduced_iff_cond[OF MT] M by simp
+  have nmu: "\<not> multiT M" using mono by (simp add: multiT_def)
+  have rb: "Red M = map (\<lambda>j. (entry M 0 j - entry M 0 0 + entry M 1 0,
+                               entry M 1 j)) [0..<Lng M]"
+    by (rule m_6_5_Red_rebase[OF MT condA nmu])
+  have red: "Red M = M" using M by (simp add: RT_PS_def)
+  have L0: "0 < Lng M" using MT by (cases M) (auto simp: T_PS_def)
+  have Mmap: "M = map (\<lambda>j. (entry M 0 j - entry M 0 0 + entry M 1 0,
+                             entry M 1 j)) [0..<Lng M]"
+    by (rule trans[OF red[symmetric] rb])
+  have "M ! 0 = (entry M 0 0 - entry M 0 0 + entry M 1 0, entry M 1 0)"
+    using arg_cong[OF Mmap, of "\<lambda>xs. xs ! 0"] L0 by (simp del: upt_Suc)
+  hence "fst (M ! 0) = entry M 1 0" by simp
+  thus ?thesis by (simp add: entry_def)
+qed
+
+text \<open>補題（簡約性と係数の基本性質）, non-multi core: every pair of a reduced
+  zero/mono sequence has \<open>snd \<le> fst\<close>.  Route: prepend the diagonal
+  (@{thm [source] m_6_6_reduced_leftend}, \<open>u = 0\<close>) to normalize the head to
+  \<open>(0,0)\<close>, then the keystone + @{thm [source] m_6_6_condAB_coeff} (2).\<close>
+
+lemma reduced_nonmulti_coeff_set:
+  assumes M: "M \<in> RT_PS" and nmu: "\<not> multiT M"
+  shows "\<forall>p \<in> set M. snd p \<le> fst p"
+proof (cases "zeroT M")
+  case True
+  have MT: "M \<in> T_PS" using M by (simp add: RT_PS_def)
+  have domM: "Red_dom M" by (rule m_6_5_Red_welldef[OF MT])
+  have "Red M = [(0, 0)]" using Red.psimps[OF domM] True by simp
+  hence "M = [(0, 0)]" using M by (simp add: RT_PS_def)
+  thus ?thesis by simp
+next
+  case False
+  hence mono: "monoT M" using nmu by (simp add: multiT_def)
+  have MT: "M \<in> T_PS" using M by (simp add: RT_PS_def)
+  have MPT: "M \<in> PT_PS" using MT mono by (simp add: PT_PS_def)
+  let ?v = "entry M 1 0"
+  define N where "N = (if 0 < ?v then diagSeq 0 (?v - 1) else []) @ M"
+  have ule0: "(0::nat) \<le> ?v" by simp
+  have RL: "Red N = N \<and> monoT N"
+    using m_6_6_reduced_leftend[OF M MPT ule0] N_def by simp
+  have Mne: "M \<noteq> []" using MT by (simp add: T_PS_def)
+  have Nne: "N \<noteq> []" using Mne by (simp add: N_def)
+  have NT: "N \<in> T_PS" using Nne by (simp add: T_PS_def)
+  have NR: "N \<in> RT_PS" using RL NT by (simp add: RT_PS_def)
+  have condAN: "RedCondA N" and condBN: "RedCondB N"
+    using m_6_6_reduced_iff_cond[OF NT] NR by auto
+  have e00N: "entry N 0 0 = 0" and e10N: "entry N 1 0 = 0"
+  proof -
+    show "entry N 0 0 = 0"
+    proof (cases "0 < ?v")
+      case True
+      have Ld: "0 < Lng (diagSeq 0 (?v - 1))" by (simp add: diagSeq_def)
+      have "N ! 0 = diagSeq 0 (?v - 1) ! 0" using True Ld by (simp add: N_def nth_append)
+      also have "\<dots> = (0, 0)" by (simp add: diagSeq_def del: upt_Suc)
+      finally show ?thesis by (simp add: entry_def)
+    next
+      case False
+      hence v0: "?v = 0" by simp
+      have NM: "N = M" using False by (simp add: N_def)
+      have "entry M 0 0 = ?v" using reduced_mono_head_diag[OF M mono] by simp
+      thus ?thesis using NM v0 by simp
+    qed
+  next
+    show "entry N 1 0 = 0"
+    proof (cases "0 < ?v")
+      case True
+      have Ld: "0 < Lng (diagSeq 0 (?v - 1))" by (simp add: diagSeq_def)
+      have "N ! 0 = diagSeq 0 (?v - 1) ! 0" using True Ld by (simp add: N_def nth_append)
+      also have "\<dots> = (0, 0)" by (simp add: diagSeq_def del: upt_Suc)
+      finally show ?thesis by (simp add: entry_def)
+    next
+      case False
+      thus ?thesis by (simp add: N_def)
+    qed
+  qed
+  have coeffN: "\<forall>j \<le> Lng N - 1. entry N 0 j \<ge> entry N 1 j"
+    using m_6_6_condAB_coeff[OF NT e00N e10N condAN] condBN by blast
+  show ?thesis
+  proof
+    fix p assume "p \<in> set M"
+    hence "p \<in> set N" by (simp add: N_def)
+    then obtain j where jL: "j < Lng N" and pj: "p = N ! j"
+      by (auto simp: in_set_conv_nth)
+    have "j \<le> Lng N - 1" using jL by simp
+    hence "entry N 1 j \<le> entry N 0 j" using coeffN by blast
+    thus "snd p \<le> fst p" using pj by (simp add: entry_def)
+  qed
+qed
+
+text \<open>補題（簡約性と係数の基本性質）, full form: in a reduced sequence row 0
+  dominates row 1 (multiT case via componentwise reduction
+  @{thm [source] m_6_6_P_reduced} + the non-multi classification
+  @{thm [source] m_6_2_P_components_1}).\<close>
+
+lemma m_6_6_reduced_coeff_set:
+  assumes M: "M \<in> RT_PS"
+  shows "\<forall>p \<in> set M. snd p \<le> fst p"
+proof (cases "multiT M")
+  case False
+  thus ?thesis using reduced_nonmulti_coeff_set[OF M] by simp
+next
+  case True
+  have MT: "M \<in> T_PS" using M by (simp add: RT_PS_def)
+  show ?thesis
+  proof
+    fix p assume "p \<in> set M"
+    hence "p \<in> set (concat (P M))" by (simp add: poper_concat_P)
+    then obtain K where Kin: "K \<in> set (P M)" and pK: "p \<in> set K" by auto
+    obtain J where JL: "J < Lng (P M)" and KJ: "K = P M ! J"
+      using Kin by (auto simp: in_set_conv_nth)
+    have KR: "K \<in> RT_PS"
+      using m_6_6_P_reduced[OF MT] M JL KJ by simp
+    have "zeroT K \<or> monoT K" using m_6_2_P_components_1[OF MT] Kin by blast
+    hence Knmu: "\<not> multiT K" by (auto simp: multiT_def)
+    show "snd p \<le> fst p"
+      using reduced_nonmulti_coeff_set[OF KR Knmu] pK by blast
+  qed
+qed
+
+lemma m_6_6_reduced_coeff:
+  assumes M: "M \<in> RT_PS" and jL: "j < Lng M"
+  shows "entry M 1 j \<le> entry M 0 j"
+proof -
+  have "M ! j \<in> set M" using jL by (rule nth_mem)
+  hence "snd (M ! j) \<le> fst (M ! j)" using m_6_6_reduced_coeff_set[OF M] by blast
+  thus ?thesis by (simp add: entry_def)
+qed
+
+section \<open>§6.6 系（直系先祖による切片と\<open>Red\<close>と\<open>IncrFirst\<close>の関係） (correction A2)\<close>
+
+text \<open>For reduced \<open>M\<close> and an ancestor-anchored window \<open>j0' < j1'\<close>, the slice
+  reads back from its reduction by \<open>IncrFirst\<^bsup>M\<^bsub>0,j0'\<^esub>-M\<^bsub>1,j0'\<^esub>\<^esup>\<close>.  Route
+  (simpler than the article's (A)/(B) verification for \<open>M'\<close>): the closed form
+  @{thm [source] m_6_5_Red_rebase} evaluates \<open>N = Red S\<close> to the rebase of \<open>S\<close>
+  directly; the readback \<open>S = IncrFirst\<^sup>k N\<close> is then nat arithmetic from the
+  anchor row-0 minimality (@{thm [source] m_5_1_ancestor_basic_1}) and
+  簡約性と係数の基本性質 (@{thm [source] m_6_6_reduced_coeff}); and
+  \<open>Red N = Red (IncrFirst\<^sup>k N) = Red S = N\<close> by
+  @{thm [source] cdn_red_cong} + @{thm [source] congR_funpow_IncrFirst}.\<close>
+
+lemma m_6_6_ancestor_slice_Red_IncrFirst:
+  assumes M: "M \<in> RT_PS" and j01: "j0' < j1'" and j1L: "j1' \<le> Lng M - 1"
+    and anc: "leR M 0 j0' j1'"
+  defines "N \<equiv> Red (seg M j0' j1')"
+  shows "Red N = N \<and> monoT N
+       \<and> seg M j0' j1' = (IncrFirst ^^ (entry M 0 j0' - entry M 1 j0')) N"
+proof -
+  have MT: "M \<in> T_PS" using M by (simp add: RT_PS_def)
+  have Lpos: "0 < Lng M" using MT by (cases M) (auto simp: T_PS_def)
+  have j1lt: "j1' < Lng M" using j1L Lpos by linarith
+  let ?S = "seg M j0' j1'"
+  let ?e0 = "entry M 0 j0'"  let ?e1 = "entry M 1 j0'"
+  let ?k = "?e0 - ?e1"
+  have monoS: "monoT ?S" by (rule m_6_2_mono_ancestor_slice[OF MT j01 anc])
+  have LS: "Lng ?S = Suc j1' - j0'" by simp
+  have LSpos: "0 < Lng ?S" using j01 by simp
+  have Sne: "?S \<noteq> []" using LSpos length_greater_0_conv by blast
+  have ST: "?S \<in> T_PS" using Sne by (simp add: T_PS_def)
+  have condAM: "RedCondA M" using m_6_6_reduced_iff_cond[OF MT] M by simp
+  have condAS: "RedCondA ?S" by (rule RedCondA_seg[OF j1lt condAM])
+  have nmuS: "\<not> multiT ?S" using monoS by (simp add: multiT_def)
+  have rb: "Red ?S = map (\<lambda>j. (entry ?S 0 j - entry ?S 0 0 + entry ?S 1 0,
+                                entry ?S 1 j)) [0..<Lng ?S]"
+    by (rule m_6_5_Red_rebase[OF ST condAS nmuS])
+  have e00S: "entry ?S 0 0 = ?e0" using LSpos by (simp add: entry_seg)
+  have e10S: "entry ?S 1 0 = ?e1" using LSpos by (simp add: entry_seg)
+  have j0lt: "j0' < Lng M" using j01 j1lt by linarith
+  have cf: "?e1 \<le> ?e0" by (rule m_6_6_reduced_coeff[OF M j0lt])
+  have minS: "\<And>j. j < Lng ?S \<Longrightarrow> ?e0 \<le> entry ?S 0 j"
+  proof -
+    fix j assume jS: "j < Lng ?S"
+    show "?e0 \<le> entry ?S 0 j"
+    proof (cases "j = 0")
+      case True thus ?thesis using e00S by simp
+    next
+      case False
+      have ej: "entry ?S 0 j = entry M 0 (j0' + j)" using jS by (simp add: entry_seg)
+      have jj: "j0' < j0' + j" using False by simp
+      have jb: "j0' + j \<le> j1'" using jS LS by linarith
+      have "entry M 0 j0' < entry M 0 (j0' + j)"
+        by (rule m_5_1_ancestor_basic_1[OF MT jj jb anc])
+      thus ?thesis using ej by simp
+    qed
+  qed
+  have NL: "Lng N = Lng ?S" unfolding N_def using rb by simp
+  have NT: "N \<in> T_PS"
+  proof -
+    have "0 < Lng N" using NL LSpos by simp
+    hence "N \<noteq> []" using length_greater_0_conv by blast
+    thus ?thesis by (simp add: T_PS_def)
+  qed
+  have Nnth: "\<And>j. j < Lng ?S \<Longrightarrow>
+                N ! j = (entry ?S 0 j - ?e0 + ?e1, entry ?S 1 j)"
+    unfolding N_def using rb e00S e10S by simp
+  have main: "?S = (IncrFirst ^^ ?k) N"
+  proof (rule nth_equalityI)
+    show "Lng ?S = Lng ((IncrFirst ^^ ?k) N)"
+      using NL funpow_IncrFirst_as_map by simp
+  next
+    fix j assume jS: "j < Lng ?S"
+    have jN: "j < Lng N" using jS NL by simp
+    have lhs: "?S ! j = (entry ?S 0 j, entry ?S 1 j)"
+      by (simp add: entry_def)
+    have rhs: "(IncrFirst ^^ ?k) N ! j = (fst (N ! j) + ?k, snd (N ! j))"
+      using funpow_IncrFirst_as_map jN by simp
+    have fstv: "fst (N ! j) + ?k = entry ?S 0 j"
+    proof -
+      have "fst (N ! j) = entry ?S 0 j - ?e0 + ?e1" using Nnth[OF jS] by simp
+      moreover have "entry ?S 0 j - ?e0 + ?e1 + (?e0 - ?e1) = entry ?S 0 j"
+        using minS[OF jS] cf by linarith
+      ultimately show ?thesis by simp
+    qed
+    have sndv: "snd (N ! j) = entry ?S 1 j" using Nnth[OF jS] by simp
+    show "?S ! j = (IncrFirst ^^ ?k) N ! j"
+      using lhs rhs fstv sndv by simp
+  qed
+  have SPT: "?S \<in> PT_PS" using ST monoS by (simp add: PT_PS_def)
+  have monoN: "monoT N" unfolding N_def by (rule m_6_5_Red_preserves_monoT[OF SPT])
+  have redN: "Red N = N"
+  proof -
+    have "Red N = Red ((IncrFirst ^^ ?k) N)"
+      by (rule cdn_red_cong[OF congR_funpow_IncrFirst NT])
+    also have "\<dots> = Red ?S" using main by simp
+    also have "\<dots> = N" unfolding N_def ..
+    finally show ?thesis .
+  qed
+  show ?thesis using redN monoN main by simp
+qed
+
 end
