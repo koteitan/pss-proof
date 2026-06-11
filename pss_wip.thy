@@ -1306,4 +1306,295 @@ proof -
     using KT admK leK by (simp add: Marked_def leR_def)
 qed
 
+
+text \<open>\<open>MarkedB\<close> depends only on the LAST principal component: the all-\<open>RP\<close>
+  tail pins the marked occurrence into the last component (the
+  @{thm [source] scbimg_join} crossing analysis, as an extractor), and a
+  component-level occurrence lifts into any term sharing that last component
+  (in particular across \<open>+\<^sub>B\<close>: the (C) branch of the \<open>Trans\<close>/\<open>Mark\<close>
+  invariant).\<close>
+
+lemma scbext_join:
+  assumes eq: "concat (map (\<lambda>r. CM # flatBP r) rs) @ [RP] = s @ flatBP cp @ b"
+    and rb: "\<forall>x \<in> set b. x = RP"
+  shows "\<exists>sc bc. flatBP (last rs) = sc @ flatBP cp @ bc \<and> (\<forall>x \<in> set bc. x = RP)"
+  using eq rb
+proof (induction rs arbitrary: s b)
+  case Nil
+  obtain w cb where cpw: "cp = DB w cb" by (cases cp) auto
+  show ?case using Nil.prems(1) cpw by (cases s) auto
+next
+  case (Cons r0 rs)
+  obtain w cb where cpw: "cp = DB w cb" by (cases cp) auto
+  have fchd: "flatBP cp = Dsym w # flatBT cb" using cpw by simp
+  have eq0: "CM # flatBP r0 @ concat (map (\<lambda>r. CM # flatBP r) rs) @ [RP]
+             = s @ flatBP cp @ b"
+    using Cons.prems(1) by simp
+  have sne: "s \<noteq> []"
+  proof
+    assume "s = []"
+    hence "CM = Dsym w" using eq0 fchd by simp
+    thus False by simp
+  qed
+  then obtain s1 where ss: "s = CM # s1" using eq0 by (cases s) auto
+  have eq1: "flatBP r0 @ concat (map (\<lambda>r. CM # flatBP r) rs) @ [RP]
+             = s1 @ flatBP cp @ b"
+    using eq0 ss by simp
+  from append_eq_append_conv2[THEN iffD1, OF eq1]
+  obtain us where split:
+      "flatBP r0 = s1 @ us \<and> us @ concat (map (\<lambda>r. CM # flatBP r) rs) @ [RP]
+                              = flatBP cp @ b
+     \<or> flatBP r0 @ us = s1 \<and> concat (map (\<lambda>r. CM # flatBP r) rs) @ [RP]
+                              = us @ flatBP cp @ b" by blast
+  show ?case
+  proof (cases "flatBP r0 @ us = s1 \<and> concat (map (\<lambda>r. CM # flatBP r) rs) @ [RP]
+                              = us @ flatBP cp @ b")
+    case True
+    have rsne: "rs \<noteq> []"
+    proof
+      assume "rs = []"
+      hence "[RP] = us @ flatBP cp @ b" using True by simp
+      thus False using fchd by (cases us) auto
+    qed
+    have "\<exists>sc bc. flatBP (last rs) = sc @ flatBP cp @ bc \<and> (\<forall>x \<in> set bc. x = RP)"
+      using Cons.IH True Cons.prems(2) by blast
+    thus ?thesis using rsne by simp
+  next
+    case False
+    with split have inr0: "flatBP r0 = s1 @ us"
+        and rest: "us @ concat (map (\<lambda>r. CM # flatBP r) rs) @ [RP] = flatBP cp @ b" by auto
+    from append_eq_append_conv2[THEN iffD1, OF rest[symmetric]]
+    obtain vs where split2:
+        "flatBP cp = us @ vs \<and> vs @ b = concat (map (\<lambda>r. CM # flatBP r) rs) @ [RP]
+       \<or> flatBP cp @ vs = us \<and> b = vs @ concat (map (\<lambda>r. CM # flatBP r) rs) @ [RP]"
+      by blast
+    show ?thesis
+    proof (cases "flatBP cp @ vs = us \<and> b = vs @ concat (map (\<lambda>r. CM # flatBP r) rs) @ [RP]")
+      case True
+      have ball: "\<forall>x \<in> set (vs @ concat (map (\<lambda>r. CM # flatBP r) rs) @ [RP]). x = RP"
+        using True Cons.prems(2) by simp
+      have rsnil: "rs = []"
+      proof (cases rs)
+        case (Cons r1 rs1)
+        hence "CM \<in> set (concat (map (\<lambda>r. CM # flatBP r) rs))" by simp
+        thus ?thesis using ball by auto
+      qed simp
+      have vsRP: "\<forall>x \<in> set vs. x = RP" using ball by auto
+      have "flatBP r0 = s1 @ flatBP cp @ vs" using inr0 True by simp
+      thus ?thesis using rsnil vsRP by auto
+    next
+      case False
+      with split2 have fcsplit: "flatBP cp = us @ vs"
+          and jrest: "vs @ b = concat (map (\<lambda>r. CM # flatBP r) rs) @ [RP]" by auto
+      have False
+      proof (cases "us = []")
+        case True
+        hence "vs = Dsym w # flatBT cb" using fcsplit fchd by simp
+        hence "hd (vs @ b) = Dsym w" by simp
+        moreover have "vs @ b = concat (map (\<lambda>r. CM # flatBP r) rs) @ [RP]"
+          using jrest by simp
+        moreover have "hd (concat (map (\<lambda>r. CM # flatBP r) rs) @ [RP]) = CM
+              \<or> hd (concat (map (\<lambda>r. CM # flatBP r) rs) @ [RP]) = RP"
+          by (cases rs) auto
+        ultimately show False by auto
+      next
+        case usne: False
+        have vsne: "vs \<noteq> []"
+        proof
+          assume v0: "vs = []"
+          hence "flatBP cp = us \<and> b = concat (map (\<lambda>r. CM # flatBP r) rs) @ [RP]"
+            using fcsplit jrest by simp
+          thus False using False v0 by simp
+        qed
+        have "flatinj_dsum us < 0"
+        proof -
+          have "flatinj_dsum (flatBP r0) = -1" by (rule flatinj_dsum_flatBP)
+          moreover have "0 \<le> flatinj_dsum s1"
+            using flatinj_prefix_nonneg_BP[OF inr0 usne] .
+          moreover have "flatinj_dsum (flatBP r0) = flatinj_dsum s1 + flatinj_dsum us"
+            using inr0 by simp
+          ultimately show ?thesis by simp
+        qed
+        moreover have "0 \<le> flatinj_dsum us"
+          using flatinj_prefix_nonneg_BP[OF fcsplit vsne] .
+        ultimately show False by simp
+      qed
+      thus ?thesis ..
+    qed
+  qed
+qed
+
+text \<open>Destructor: an scb-decomposition pins to the last principal component.\<close>
+
+lemma scb_to_last_component:
+  assumes d: "scb_decomp u s (flatBT (Trm [cp])) b" and une: "u \<noteq> Trm []"
+  shows "\<exists>sc bc. flatBP (last (untrm u)) = sc @ flatBP cp @ bc
+               \<and> (\<forall>x \<in> set bc. x = RP)"
+proof -
+  from d have eq: "flatBT u = s @ flatBP cp @ b" and rb: "\<forall>x \<in> set b. x = RP"
+    by (auto simp: scb_decomp_def)
+  obtain w cb where cpw: "cp = DB w cb" by (cases cp) auto
+  show ?thesis
+  proof (cases u)
+    case (Trm ps)
+    show ?thesis
+    proof (cases ps)
+      case Nil thus ?thesis using Trm une by simp
+    next
+      case (Cons p0 ps1)
+      show ?thesis
+      proof (cases ps1)
+        case Nil
+        \<comment> \<open>single component: the decomposition is already component-level\<close>
+        have "flatBP p0 = s @ flatBP cp @ b" using eq Trm Cons Nil by simp
+        thus ?thesis using Trm Cons Nil rb by auto
+      next
+        case (Cons q ps2)
+        have eq3: "LP # (flatBP p0
+              @ concat (map (\<lambda>r. CM # flatBP r) (q # ps2))) @ [RP]
+              = s @ flatBP cp @ b"
+          using eq Trm \<open>ps = p0 # ps1\<close> Cons by simp
+        have sne: "s \<noteq> []"
+        proof
+          assume "s = []"
+          hence "LP = Dsym w" using eq3 cpw by simp
+          thus False by simp
+        qed
+        then obtain s1 where ss: "s = LP # s1" using eq3 by (cases s) auto
+        have eq4: "flatBP p0 @ concat (map (\<lambda>r. CM # flatBP r) (q # ps2)) @ [RP]
+              = s1 @ flatBP cp @ b"
+          using eq3 ss by simp
+        \<comment> \<open>first-component occurrence is impossible; join occurrence extracts\<close>
+        from append_eq_append_conv2[THEN iffD1, OF eq4]
+        obtain us where split:
+            "flatBP p0 = s1 @ us \<and> us @ concat (map (\<lambda>r. CM # flatBP r) (q # ps2)) @ [RP]
+                                    = flatBP cp @ b
+           \<or> flatBP p0 @ us = s1 \<and> concat (map (\<lambda>r. CM # flatBP r) (q # ps2)) @ [RP]
+                                    = us @ flatBP cp @ b" by blast
+        show ?thesis
+        proof (cases "flatBP p0 @ us = s1
+              \<and> concat (map (\<lambda>r. CM # flatBP r) (q # ps2)) @ [RP]
+                = us @ flatBP cp @ b")
+          case True
+          have "\<exists>sc bc. flatBP (last (q # ps2)) = sc @ flatBP cp @ bc
+                      \<and> (\<forall>x \<in> set bc. x = RP)"
+            using scbext_join True rb by blast
+          thus ?thesis using Trm \<open>ps = p0 # ps1\<close> Cons by simp
+        next
+          case False
+          with split have inp: "flatBP p0 = s1 @ us"
+              and rest: "us @ concat (map (\<lambda>r. CM # flatBP r) (q # ps2)) @ [RP]
+                         = flatBP cp @ b" by auto
+          from append_eq_append_conv2[THEN iffD1, OF rest[symmetric]]
+          obtain vs where split2:
+              "flatBP cp = us @ vs
+                 \<and> vs @ b = concat (map (\<lambda>r. CM # flatBP r) (q # ps2)) @ [RP]
+             \<or> flatBP cp @ vs = us
+                 \<and> b = vs @ concat (map (\<lambda>r. CM # flatBP r) (q # ps2)) @ [RP]"
+            by blast
+          have False
+          proof (cases "flatBP cp @ vs = us
+                \<and> b = vs @ concat (map (\<lambda>r. CM # flatBP r) (q # ps2)) @ [RP]")
+            case True
+            hence "CM \<in> set b" by auto
+            thus False using rb by auto
+          next
+            case False
+            with split2 have fcsplit: "flatBP cp = us @ vs"
+                and jrest: "vs @ b
+                  = concat (map (\<lambda>r. CM # flatBP r) (q # ps2)) @ [RP]" by auto
+            show False
+            proof (cases "us = []")
+              case True
+              hence "vs = Dsym w # flatBT cb" using fcsplit cpw by simp
+              hence "hd (vs @ b) = Dsym w" by simp
+              moreover have "hd (concat (map (\<lambda>r. CM # flatBP r) (q # ps2)) @ [RP]) = CM"
+                by simp
+              ultimately show False using jrest by simp
+            next
+              case usne: False
+              have vsne: "vs \<noteq> []"
+              proof
+                assume v0: "vs = []"
+                hence "flatBP cp @ vs = us \<and> b
+                  = vs @ concat (map (\<lambda>r. CM # flatBP r) (q # ps2)) @ [RP]"
+                  using fcsplit jrest by simp
+                thus False using False by simp
+              qed
+              have "flatinj_dsum us < 0"
+              proof -
+                have "flatinj_dsum (flatBP p0) = -1" by (rule flatinj_dsum_flatBP)
+                moreover have "0 \<le> flatinj_dsum s1"
+                  using flatinj_prefix_nonneg_BP[OF inp usne] .
+                moreover have "flatinj_dsum (flatBP p0)
+                  = flatinj_dsum s1 + flatinj_dsum us" using inp by simp
+                ultimately show ?thesis by simp
+              qed
+              moreover have "0 \<le> flatinj_dsum us"
+                using flatinj_prefix_nonneg_BP[OF fcsplit vsne] .
+              ultimately show False by simp
+            qed
+          qed
+          thus ?thesis ..
+        qed
+      qed
+    qed
+  qed
+qed
+
+text \<open>Constructor: a component-level occurrence lifts into any term sharing
+  that last component.\<close>
+
+lemma scb_from_last_component:
+  assumes comp: "flatBP (last (untrm w)) = sc @ flatBP cp @ bc"
+    and rb: "\<forall>x \<in> set bc. x = RP"
+    and wne: "untrm w \<noteq> []"
+    and pc: "dfree_BP cp"
+  shows "\<exists>s' b'. scb_decomp w s' (flatBT (Trm [cp])) b'"
+proof -
+  obtain ws where wTrm: "w = Trm ws" by (cases w) auto
+  have ipt: "isPTB_str (flatBT (Trm [cp])) \<or> True" by simp
+  show ?thesis
+  proof (cases ws)
+    case Nil thus ?thesis using wTrm wne by simp
+  next
+    case (Cons p0 ps1)
+    show ?thesis
+    proof (cases ps1)
+      case Nil
+      have "flatBT w = sc @ flatBP cp @ bc"
+        using wTrm Cons Nil comp by simp
+      hence "scb_decomp w sc (flatBT (Trm [cp])) bc"
+        unfolding scb_decomp_def using rb pc
+        by (auto simp: isPTB_str_def intro: exI[of _ cp])
+      thus ?thesis by blast
+    next
+      case (Cons q ps2)
+      have lastc: "last ws = last (q # ps2)" using \<open>ws = p0 # ps1\<close> Cons by simp
+      have joinsnoc: "concat (map (\<lambda>r. CM # flatBP r) (q # ps2))
+            = concat (map (\<lambda>r. CM # flatBP r) (butlast (q # ps2)))
+              @ CM # flatBP (last (q # ps2))"
+      proof -
+        have "q # ps2 = butlast (q # ps2) @ [last (q # ps2)]"
+          by (simp add: append_butlast_last_id)
+        thus ?thesis by (metis concat_append list.simps(8) list.simps(9)
+                               map_append append_Nil2 concat.simps(1) concat.simps(2))
+      qed
+      have "flatBT w = LP # (flatBP p0
+            @ concat (map (\<lambda>r. CM # flatBP r) (q # ps2))) @ [RP]"
+        using wTrm \<open>ws = p0 # ps1\<close> Cons by simp
+      also have "\<dots> = (LP # flatBP p0
+            @ concat (map (\<lambda>r. CM # flatBP r) (butlast (q # ps2)))
+            @ CM # sc) @ flatBP cp @ (bc @ [RP])"
+        using joinsnoc comp wTrm lastc \<open>ws = p0 # ps1\<close> by simp
+      finally have "scb_decomp w (LP # flatBP p0
+            @ concat (map (\<lambda>r. CM # flatBP r) (butlast (q # ps2)))
+            @ CM # sc) (flatBT (Trm [cp])) (bc @ [RP])"
+        unfolding scb_decomp_def using rb pc
+        by (auto simp: isPTB_str_def intro: exI[of _ cp])
+      thus ?thesis by blast
+    qed
+  qed
+qed
+
 end
