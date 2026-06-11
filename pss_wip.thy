@@ -1649,4 +1649,51 @@ proof -
     unfolding hasParent_def by blast
 qed
 
+
+text \<open>Three small \<open>MarkedB\<close>/scb helpers for the value-invariant assembly:
+  lifting a decomposition through a principal head, through a right summand
+  of \<open>+\<^sub>B\<close>, and the \<open>BP\<close>-level principal replacement (principality of the
+  replaced term).\<close>
+
+lemma scb_Dpt_lift:
+  assumes d: "scb_decomp X s c b" and ipt: "isPTB_str c"
+  shows "scb_decomp (Dpt v X) (Dsym v # s) c b"
+proof -
+  from d have "flatBT X = s @ c @ b" and "\<forall>x \<in> set b. x = RP"
+    by (auto simp: scb_decomp_def)
+  moreover have "flatBT (Dpt v X) = Dsym v # flatBT X" by simp
+  ultimately show ?thesis using ipt by (simp add: scb_decomp_def)
+qed
+
+lemma MarkedB_addBT_right:
+  assumes mb: "(X, c) \<in> MarkedB" and Xne: "X \<noteq> 0\<^sub>B"
+  shows "(Y +\<^sub>B X, c) \<in> MarkedB"
+proof -
+  obtain as where Yt: "Y = Trm as" by (cases Y) auto
+  obtain bs where Xt: "X = Trm bs" by (cases X) auto
+  have bsne: "bs \<noteq> []" using Xne Xt by simp
+  have lastEq: "last (untrm X) = last (untrm (Y +\<^sub>B X))"
+    using Yt Xt bsne by simp
+  have wne: "untrm (Y +\<^sub>B X) \<noteq> []" using Yt Xt bsne by simp
+  show ?thesis
+    by (rule MarkedB_last_component_transfer[OF mb _ lastEq wne])
+       (use Xne Xt in simp)
+qed
+
+lemma scb_replace_principal_BP:
+  assumes d: "scb_decomp (Trm [p0]) s (flatBT (Trm [cp])) b"
+    and pc': "isPTB_str (flatBT (Trm [cp']))"
+  shows "\<exists>p'. flatBP p' = s @ flatBT (Trm [cp']) @ b
+            \<and> scb_decomp (Trm [p']) s (flatBT (Trm [cp'])) b"
+proof -
+  from d have eq: "flatBP p0 = s @ flatBP cp @ b"
+    and rb: "\<forall>x \<in> set b. x = RP"
+    by (auto simp: scb_decomp_def)
+  obtain p' where p': "flatBP p' = s @ flatBP cp' @ b"
+    using scbimg_image_BP[OF eq rb] by blast
+  have "scb_decomp (Trm [p']) s (flatBT (Trm [cp'])) b"
+    unfolding scb_decomp_def using p' pc' rb by simp
+  thus ?thesis using p' by auto
+qed
+
 end
