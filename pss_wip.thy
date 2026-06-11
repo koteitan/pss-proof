@@ -904,4 +904,157 @@ next
   qed
 qed
 
+
+text \<open>The image-existence lemma (§7.3 value-invariant prerequisite): replacing
+  the principal middle of an scb-style split (all-\<open>RP\<close> tail) by any other
+  principal string stays inside the image of \<open>flatBT\<close>.  Empirically 0/7,224
+  (python/scb_image_audit.py).\<close>
+
+lemma scbimg_image_BT:
+  "flatBT t = s @ flatBP cp @ b \<Longrightarrow> \<forall>x \<in> set b. x = RP
+   \<Longrightarrow> \<exists>t'. flatBT t' = s @ flatBP cp' @ b"
+  and scbimg_image_BP:
+  "flatBP p = s @ flatBP cp @ b \<Longrightarrow> \<forall>x \<in> set b. x = RP
+   \<Longrightarrow> \<exists>p'. flatBP p' = s @ flatBP cp' @ b"
+proof (induct t and p arbitrary: s b and s b rule: flatBT_flatBP.induct)
+  case (1 s b)
+  obtain w cb where cpw: "cp = DB w cb" by (cases cp) auto
+  show ?case using 1(1) cpw by (cases s) auto
+next
+  case (2 p s b)
+  have "flatBP p = s @ flatBP cp @ b" using 2(2) by simp
+  then obtain p' where "flatBP p' = s @ flatBP cp' @ b"
+    using 2(1) 2(3) by blast
+  thus ?case by (intro exI[of _ "Trm [p']"]) simp
+next
+  case (3 p q ps s b)
+  obtain w cb where cpw: "cp = DB w cb" by (cases cp) auto
+  have fchd: "flatBP cp = Dsym w # flatBT cb" using cpw by simp
+  let ?JOIN = "concat (map (\<lambda>r. CM # flatBP r) (q # ps))"
+  have flat3: "flatBT (Trm (p # q # ps)) = LP # (flatBP p @ ?JOIN) @ [RP]" by simp
+  have sne: "s \<noteq> []"
+  proof
+    assume "s = []"
+    hence "LP = Dsym w" using 3(3) fchd flat3 by simp
+    thus False by simp
+  qed
+  then obtain s1 where ss: "s = LP # s1" using 3(3) flat3 by (cases s) auto
+  have eq1: "flatBP p @ ?JOIN @ [RP] = s1 @ flatBP cp @ b"
+    using 3(3) flat3 ss by simp
+  from append_eq_append_conv2[THEN iffD1, OF eq1]
+  obtain us where split:
+      "flatBP p = s1 @ us \<and> us @ ?JOIN @ [RP] = flatBP cp @ b
+     \<or> flatBP p @ us = s1 \<and> ?JOIN @ [RP] = us @ flatBP cp @ b" by blast
+  show ?case
+  proof (cases "flatBP p @ us = s1 \<and> ?JOIN @ [RP] = us @ flatBP cp @ b")
+    case True
+    \<comment> \<open>occurrence in the join: brick 3\<close>
+    have IHr: "\<And>r s b. r \<in> set (q # ps) \<Longrightarrow> flatBP r = s @ flatBP cp @ b
+                 \<Longrightarrow> \<forall>x \<in> set b. x = RP
+                 \<Longrightarrow> \<exists>r'. flatBP r' = s @ flatBP cp' @ b"
+    proof -
+      fix r s b
+      assume rin: "r \<in> set (q # ps)" and req: "flatBP r = s @ flatBP cp @ b"
+        and rrb: "\<forall>x \<in> set b. x = RP"
+      show "\<exists>r'. flatBP r' = s @ flatBP cp' @ b"
+        using 3(2) rin req rrb by blast
+    qed
+    have "\<exists>rs'. length rs' = length (q # ps)
+              \<and> concat (map (\<lambda>r. CM # flatBP r) rs') @ [RP] = us @ flatBP cp' @ b"
+    proof (rule scbimg_join[where cp = cp])
+      fix r s b
+      assume "r \<in> set (q # ps)" "flatBP r = s @ flatBP cp @ b"
+        "\<forall>x \<in> set b. x = RP"
+      thus "\<exists>r'. flatBP r' = s @ flatBP cp' @ b" by (rule IHr)
+    next
+      show "concat (map (\<lambda>r. CM # flatBP r) (q # ps)) @ [RP]
+            = us @ flatBP cp @ b" using True by simp
+    next
+      show "\<forall>x \<in> set b. x = RP" by (rule 3(4))
+    qed
+    then obtain rs' where rs': "length rs' = length (q # ps)"
+        "concat (map (\<lambda>r. CM # flatBP r) rs') @ [RP] = us @ flatBP cp' @ b"
+      by blast
+    obtain r1' rest' where rsc: "rs' = r1' # rest'"
+      using rs' by (cases rs') auto
+    have "flatBT (Trm (p # r1' # rest'))
+          = LP # (flatBP p @ concat (map (\<lambda>r. CM # flatBP r) rs')) @ [RP]"
+      using rsc by simp
+    also have "\<dots> = LP # flatBP p @ (concat (map (\<lambda>r. CM # flatBP r) rs') @ [RP])"
+      by simp
+    also have "\<dots> = LP # flatBP p @ us @ flatBP cp' @ b" using rs'(2) by simp
+    also have "\<dots> = s @ flatBP cp' @ b" using ss True by simp
+    finally show ?thesis by blast
+  next
+    case False
+    with split have inp: "flatBP p = s1 @ us"
+        and rest: "us @ ?JOIN @ [RP] = flatBP cp @ b" by auto
+    \<comment> \<open>occurrence (purportedly) inside the FIRST component: impossible\<close>
+    from append_eq_append_conv2[THEN iffD1, OF rest]
+    obtain vs where split2:
+        "us = flatBP cp @ vs \<and> vs @ ?JOIN @ [RP] = b
+       \<or> us @ vs = flatBP cp \<and> ?JOIN @ [RP] = vs @ b" by blast
+    have False
+    proof (cases "us = flatBP cp @ vs \<and> vs @ ?JOIN @ [RP] = b")
+      case True
+      hence "CM \<in> set b" by auto
+      thus False using 3(4) by auto
+    next
+      case False
+      with split2 have fcsplit: "us @ vs = flatBP cp"
+          and jrest: "?JOIN @ [RP] = vs @ b" by auto
+      show False
+      proof (cases "us = []")
+        case True
+        hence "vs = flatBP cp" using fcsplit by simp
+        hence hdD: "hd (vs @ b) = Dsym w" using fchd by simp
+        have "vs @ b = CM # flatBP q @ concat (map (\<lambda>r. CM # flatBP r) ps) @ [RP]"
+          using jrest by simp
+        hence "hd (vs @ b) = CM" by simp
+        thus False using hdD by simp
+      next
+        case usne: False
+        have vsne: "vs \<noteq> []"
+        proof
+          assume v0: "vs = []"
+          hence "?JOIN @ [RP] = b" using jrest by simp
+          hence "CM \<in> set b" by auto
+          thus False using 3(4) by auto
+        qed
+        have "flatinj_dsum us < 0"
+        proof -
+          have "flatinj_dsum (flatBP p) = -1" by (rule flatinj_dsum_flatBP)
+          moreover have "0 \<le> flatinj_dsum s1"
+            using flatinj_prefix_nonneg_BP[OF inp usne] .
+          moreover have "flatinj_dsum (flatBP p) = flatinj_dsum s1 + flatinj_dsum us"
+            using inp by simp
+          ultimately show ?thesis by simp
+        qed
+        moreover have "0 \<le> flatinj_dsum us"
+          using flatinj_prefix_nonneg_BP[OF fcsplit[symmetric] vsne] .
+        ultimately show False by simp
+      qed
+    qed
+    thus ?thesis ..
+  qed
+next
+  case (4 u a s b)
+  show ?case
+  proof (cases "s = []")
+    case True
+    have "flatBP (DB u a) @ [] = flatBP cp @ b" using 4(2) True by simp
+    hence "flatBP (DB u a) = flatBP cp \<and> [] = b"
+      using flatinj_flatBP_cancel by blast
+    thus ?thesis using True by (intro exI[of _ cp']) simp
+  next
+    case False
+    have "Dsym u # flatBT a = s @ flatBP cp @ b" using 4(2) by simp
+    then obtain s1 where ss: "s = Dsym u # s1" and aeq: "flatBT a = s1 @ flatBP cp @ b"
+      using False by (cases s) auto
+    obtain a' where "flatBT a' = s1 @ flatBP cp' @ b"
+      using 4(1)[OF aeq 4(3)] by blast
+    thus ?thesis using ss by (intro exI[of _ "DB u a'"]) simp
+  qed
+qed
+
 end
