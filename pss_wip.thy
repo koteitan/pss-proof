@@ -1211,4 +1211,99 @@ proof -
        (use MT admA leMa in \<open>simp add: Marked_def\<close>)
 qed
 
+
+text \<open>Marked bookkeeping for the (C) multiT branch: a marked column of a multi
+  \<open>M\<close> lies in the LAST \<open>P\<close>-component (directly from \<open>Pcut\<close> being the LEAST
+  anchored cut), and restricts to a marked column of it.
+  Empirically 0/6,080.\<close>
+
+lemma multi_Marked_last_component:
+  assumes MT: "M \<in> T_PS" and mu: "multiT M"
+    and mM: "(M, m) \<in> Marked"
+  shows "Pcut M \<le> m" and "(drop (Pcut M) M, m - Pcut M) \<in> Marked"
+proof -
+  have L: "1 < Lng M" by (rule multiT_imp_Lng_gt1[OF MT mu])
+  from mM have admM: "adm M m" and leM: "leR M 0 m (Lng M - 1)"
+    by (auto simp: Marked_def)
+  have mlt: "m < Lng M" using leM by (simp add: leR_def le0_def)
+  have m0: "0 < m"
+  proof (rule ccontr)
+    assume "\<not> 0 < m"
+    hence "leR M 0 0 (Lng M - 1)" using leM by simp
+    thus False using m_6_2_not_multi_iff_le[OF MT] mu by simp
+  qed
+  show cut: "Pcut M \<le> m"
+    unfolding Pcut_def
+    by (rule Least_le) (use m0 mlt leM in linarith)
+  \<comment> \<open>now the component view\<close>
+  let ?j0 = "Pcut M"  let ?j1 = "Lng M - 1"  let ?K = "drop ?j0 M"
+  have Mne: "M \<noteq> []" using MT by (simp add: T_PS_def)
+  have L0: "0 < Lng M" using L by linarith
+  have segK: "?K = seg M ?j0 ?j1" using seg_to_last_eq_drop[OF L0] by simp
+  have cb: "0 < ?j0 \<and> ?j0 \<le> ?j1" using Pcut_le[OF L] by simp
+  have j1lt: "?j1 < Lng M" using L by simp
+  have LK: "Lng ?K = Lng M - ?j0" by simp
+  have KT: "?K \<in> T_PS"
+  proof -
+    have "0 < Lng ?K" using LK cb L by linarith
+    thus ?thesis using length_greater_0_conv by (fastforce simp: T_PS_def)
+  qed
+  \<comment> \<open>le0 restricts to the component window\<close>
+  have leK: "le0 ?K (m - ?j0) (Lng ?K - 1)"
+  proof -
+    have b1: "m - ?j0 \<le> ?j1 - ?j0" using mlt by linarith
+    have b2: "?j1 - ?j0 \<le> ?j1 - ?j0" by simp
+    have "le0 (seg M ?j0 ?j1) (m - ?j0) (?j1 - ?j0)
+          \<longleftrightarrow> le0 M (?j0 + (m - ?j0)) (?j0 + (?j1 - ?j0))"
+      by (rule adm_le0_seg[OF j1lt b1 b2]) (use cb in linarith)
+    moreover have "?j0 + (m - ?j0) = m" using cut by simp
+    moreover have "?j0 + (?j1 - ?j0) = ?j1" using cb by linarith
+    ultimately have "le0 (seg M ?j0 ?j1) (m - ?j0) (?j1 - ?j0)"
+      using leM by (simp add: leR_def)
+    moreover have "Lng ?K - 1 = ?j1 - ?j0" using LK cb by linarith
+    ultimately show ?thesis using segK by simp
+  qed
+  \<comment> \<open>admissibility restricts (last component: the right edges align)\<close>
+  have admK: "adm ?K (m - ?j0)"
+  proof -
+    have "\<not> nadm ?K (m - ?j0)"
+    proof
+      assume n: "nadm ?K (m - ?j0)"
+      have mb: "m - ?j0 \<le> Lng ?K" using LK mlt by linarith
+      hence pair: "nextR ?K 1 (m - ?j0 - 1) (m - ?j0)
+                 \<and> nextR ?K 1 (m - ?j0) (m - ?j0 + 1)"
+        using n by (simp add: nadm_def)
+      have r2: "nextrel1 ?K (m - ?j0) (m - ?j0 + 1)"
+        using pair by (simp add: nextR_def)
+      have ub: "m - ?j0 + 1 < Lng ?K" using r2 by (simp add: nextrel1_def)
+      have b0: "m - ?j0 - 1 < Lng (seg M ?j0 ?j1)"
+        and b1: "m - ?j0 < Lng (seg M ?j0 ?j1)"
+        and b2: "m - ?j0 + 1 < Lng (seg M ?j0 ?j1)"
+        using ub segK by simp_all
+      have t1: "nextrel1 M (?j0 + (m - ?j0 - 1)) (?j0 + (m - ?j0))"
+        using pair adm_nextrel1_seg[OF j1lt b0 b1] segK by (simp add: nextR_def)
+      have t2: "nextrel1 M (?j0 + (m - ?j0)) (?j0 + (m - ?j0 + 1))"
+        using r2 adm_nextrel1_seg[OF j1lt b1 b2] segK by simp
+      have e1: "?j0 + (m - ?j0) = m" using cut by simp
+      have "nextrel1 M (m - 1) m"
+      proof (cases "m - ?j0 = 0")
+        case True
+        \<comment> \<open>then \<open>t1\<close> is \<open>nextrel1 M m m\<close>, impossible\<close>
+        have "nextrel1 M m m" using t1 True e1 by simp
+        thus ?thesis by (simp add: nextrel1_def)
+      next
+        case False
+        have "?j0 + (m - ?j0 - 1) = m - 1" using cut False by linarith
+        thus ?thesis using t1 e1 by simp
+      qed
+      moreover have "nextrel1 M m (m + 1)" using t2 e1 cut by simp
+      ultimately have "nadm M m" by (simp add: nadm_def nextR_def)
+      thus False using admM by (simp add: adm_def)
+    qed
+    thus ?thesis by (simp add: adm_def)
+  qed
+  show "(?K, m - ?j0) \<in> Marked"
+    using KT admK leK by (simp add: Marked_def leR_def)
+qed
+
 end
