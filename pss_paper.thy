@@ -1108,7 +1108,7 @@ text \<open>翻訳写像 \<open>Trans\<close> / \<open>Mark\<close> (§7.3, arti
   catch-all \<open>function\<close> and \<open>pat_completeness\<close>, leaving the conditional \<open>psimps\<close>.
   The article's \<open>\<Sigma>\<close>-string connective \<open>s c b\<close> is realised by \<open>unflatBT\<close>.\<close>
 
-function Trans :: "pairseq \<Rightarrow> BT" and Mark :: "pairseq \<Rightarrow> nat \<Rightarrow> BT" where
+function (domintros) Trans :: "pairseq \<Rightarrow> BT" and Mark :: "pairseq \<Rightarrow> nat \<Rightarrow> BT" where
   "Trans M =
      (if M \<notin> RT_PS then Trans (Red M)
       else let j1 = Lng M - 1 in
