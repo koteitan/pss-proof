@@ -304,4 +304,36 @@ lemma unflatBT_flat: "unflatBT (flatBT t) = t"
   unfolding unflatBT_def
   by (rule the_equality) (auto intro: m_7_flatBT_inj)
 
+
+text \<open>Evaluating the \<open>SOME\<close> scb-extraction of \<open>Trans\<close>/\<open>Mark\<close> in the trivial
+  case \<open>t\<^sub>1 = c\<^sub>1\<close> (e.g. both \<open>D\<^sub>v 0\<close>): the unique \<open>(s,b)\<close> is \<open>([], [])\<close>
+  (@{thm [source] m_7_2_scb_unique_sb}).\<close>
+
+lemma isPTB_str_Dpt:
+  assumes "v \<noteq> \<infinity>" and "dfree_BT t"
+  shows "isPTB_str (flatBT (Dpt v t))"
+proof -
+  have "dfree_BP (DB v t)" using assms by simp
+  moreover have "flatBT (Dpt v t) = flatBP (DB v t)" by simp
+  ultimately show ?thesis unfolding isPTB_str_def by blast
+qed
+
+lemma scb_decomp_self:
+  assumes "isPTB_str (flatBT t)"
+  shows "scb_decomp t [] (flatBT t) []"
+  using assms by (simp add: scb_decomp_def)
+
+lemma scb_SOME_self:
+  assumes pt: "isPTB_str (flatBT t)" and tne: "t \<noteq> Trm []"
+  shows "(SOME sb. scb_decomp t (fst sb) (flatBT t) (snd sb)) = ([], [])"
+proof (rule some_equality)
+  show "scb_decomp t (fst ([], [])) (flatBT t) (snd ([], []))"
+    using scb_decomp_self[OF pt] by simp
+next
+  fix sb assume h: "scb_decomp t (fst sb) (flatBT t) (snd sb)"
+  have "fst sb = [] \<and> snd sb = []"
+    using m_7_2_scb_unique_sb[OF h scb_decomp_self[OF pt] tne] by simp
+  thus "sb = ([], [])" by (cases sb) auto
+qed
+
 end
