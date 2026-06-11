@@ -87,7 +87,7 @@
       - ✅ 命題（$\textrm{RightNodes}$ と部分表現の関係）〔`m_7_2_RightNodes_subexpr`、BT項レベル(spineSub)、§6独立〕
     - 🚨 §7.3 翻訳写像
       - ✅ **定義** `Trans`/`Mark`（相互再帰 `function`、termination 後回し）
-      - 🚨 命題（$\textrm{Trans}$ の well-defined 性）
+      - ✅🚧 命題（$\textrm{Trans}$ の well-defined 性）〔**totality on RT_PS green**: `m_7_3_Trans_welldef`/`m_7_3_Mark_welldef`(Trans_Mark_dom, Lng 強帰納)。⚠️原典の一行証明は Red 冪等性(T_PS で偽=A4)を暗黙使用→T_PS 全域は不成立見込み、使用箇所(RT/ST)は RT_PS 域で十分。残=THE/SOME(unflatBT/scb選択)の正当化は各命題側で。memory `pss-73-trans-wd`〕
       - 🚨 命題（$2$ 列ペア数列の基本性質）
       - 🚨 命題（$\textrm{Trans}$ の $(\textrm{IncrFirst},\textrm{Red})$ 不変 $P$ 同変性）
       - 🚨 命題（$\textrm{Mark}$ の $(\textrm{IncrFirst},\textrm{Red},P)$ 不変性）
