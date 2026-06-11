@@ -737,4 +737,16 @@ proof -
   show ?thesis using bt bc lb rbn by (simp add: eq)
 qed
 
+
+text \<open>Brick 2: descent through a principal head — a non-initial occurrence in
+  \<open>flat (Trm [DB v u]) = Dsym v # flat u\<close> lies in the body \<open>u\<close>.\<close>
+
+lemma scbimg_principal_descend:
+  assumes eq: "flatBT (Trm [DB v u]) = s @ fc @ b" and sne: "s \<noteq> []"
+  shows "\<exists>s'. s = Dsym v # s' \<and> flatBT u = s' @ fc @ b"
+proof -
+  have "Dsym v # flatBT u = s @ fc @ b" using eq by simp
+  thus ?thesis using sne by (cases s) auto
+qed
+
 end
