@@ -1696,4 +1696,343 @@ proof -
   thus ?thesis using p' by auto
 qed
 
+
+text \<open>\<open>MarkedB\<close> through a principal head.\<close>
+
+lemma MarkedB_Dpt_lift:
+  assumes mb: "(X, c) \<in> MarkedB" and ipt: "isPTB_str (flatBT c)"
+  shows "(Dpt v X, c) \<in> MarkedB"
+proof -
+  from mb obtain s b where "scb_decomp X s (flatBT c) b"
+    by (auto simp: MarkedB_def)
+  hence "scb_decomp (Dpt v X) (Dsym v # s) (flatBT c) b"
+    by (rule scb_Dpt_lift[OF _ ipt])
+  thus ?thesis unfolding MarkedB_def by auto
+qed
+
+text \<open>The hard (B) branch of the \<open>Trans\<close>/\<open>Mark\<close> value invariant
+  (\<open>monoT M\<close>, \<open>t\<^sub>1 \<noteq> 0\<close>), as a dedicated lemma taking the induction
+  hypotheses for \<open>Pred M\<close> as named assumptions.\<close>
+
+lemma trans_inv_B_hard:
+  assumes MR: "M \<in> RT_PS" and mono: "monoT M" and L: "1 < Lng M"
+    and t1ne: "Trans (Pred M) \<noteq> 0\<^sub>B"
+    and IHt1: "dfree_BT (Trans (Pred M))"
+    and IHmk: "\<And>m'. (Pred M, m') \<in> Marked
+                 \<Longrightarrow> dfree_BT (Mark (Pred M) m')
+                   \<and> (Trans (Pred M), Mark (Pred M) m') \<in> MarkedB"
+  shows "dfree_BT (Trans M) \<and> Trans M \<noteq> 0\<^sub>B
+       \<and> (\<forall>m. (M, m) \<in> Marked
+              \<longrightarrow> dfree_BT (Mark M m) \<and> (Trans M, Mark M m) \<in> MarkedB)"
+proof -
+  have MT: "M \<in> T_PS" using MR by (simp add: RT_PS_def)
+  have Lgt1: "\<not> Lng M \<le> Suc 0" using L by simp
+  have domT: "Trans_Mark_dom (Inl M)" by (rule m_7_3_Trans_welldef[OF MR])
+  have domK: "\<And>m. Trans_Mark_dom (Inr (M, m))" by (rule m_7_3_Mark_welldef[OF MR])
+  have hp: "hasParent M 0 (Lng M - 1)" by (rule monoT_hasParent0_last[OF MT mono L])
+  let ?t1 = "Trans (Pred M)"
+  let ?bv = "entry M 1 (Lng M - 1)"
+  define jp where "jp = parent M 0 (Lng M - 1)"
+  define c1 where "c1 = Mark (Pred M) (Adm M jp)"
+  define vv where "vv = bpHeadV c1"
+  define tt2 where "tt2 = bpHeadT c1"
+  define JJ1 where "JJ1 = Lng (PB tt2) - 1"
+  define pj where "pj = PB tt2 ! JJ1"
+  define ldj where "ldj = (bpHeadV pj = enat (entry M 1 jp))"
+  define tt3 where "tt3 = (if ldj then SigmaB (take JJ1 (PB tt2)) else tt2)"
+  define tt4 where "tt4 = (if ldj then bpHeadT pj else tt2)"
+  define c2 where "c2 = (if transCondI M \<or> transCondIII M \<or> transCondV M
+                         then Dpt vv (tt2 +\<^sub>B Dpt (enat ?bv) 0\<^sub>B)
+                         else if transCondVI M
+                         then Dpt vv (Dpt (enat ?bv) 0\<^sub>B)
+                         else if tt2 = 0\<^sub>B
+                         then Dpt vv (Dpt (enat (entry M 1 jp)) (Dpt (enat ?bv) 0\<^sub>B))
+                         else Dpt vv (tt3 +\<^sub>B Dpt (enat (entry M 1 jp))
+                                            (tt4 +\<^sub>B Dpt (enat ?bv) 0\<^sub>B)))"
+  define sb1 where "sb1 = (SOME sb. scb_decomp ?t1 (fst sb) (flatBT c1) (snd sb))"
+  have trans_val: "Trans M = unflatBT (fst sb1 @ flatBT c2 @ snd sb1)"
+    using Trans.psimps[OF domT] MR Lgt1 mono t1ne
+    unfolding Let_def jp_def[symmetric] c1_def[symmetric] vv_def[symmetric]
+              tt2_def[symmetric] JJ1_def[symmetric] pj_def[symmetric]
+              ldj_def[symmetric] tt3_def[symmetric] tt4_def[symmetric]
+              c2_def[symmetric] sb1_def[symmetric]
+    by simp
+  \<comment> \<open>induction facts for \<open>c\<^sub>1\<close>\<close>
+  have mkdA: "(Pred M, Adm M jp) \<in> Marked"
+    using Marked_Pred_Adm[OF MT L hp] jp_def by simp
+  have c1df: "dfree_BT c1" and mb1: "(?t1, c1) \<in> MarkedB"
+    using IHmk[OF mkdA] c1_def by auto
+  have t1neT: "?t1 \<noteq> Trm []" using t1ne by simp
+  \<comment> \<open>the SOME decomposition exists\<close>
+  have exsb: "\<exists>sb. scb_decomp ?t1 (fst sb) (flatBT c1) (snd sb)"
+    using mb1 unfolding MarkedB_def by auto
+  have dsome: "scb_decomp ?t1 (fst sb1) (flatBT c1) (snd sb1)"
+    unfolding sb1_def by (rule someI_ex[OF exsb])
+  \<comment> \<open>\<open>c\<^sub>1\<close> is a principal dfree term\<close>
+  have iptc1: "isPTB_str (flatBT c1)"
+    using dsome t1neT by (simp add: scb_decomp_def)
+  then obtain pc where pcf: "dfree_BP pc" and pcl: "flatBT c1 = flatBP pc"
+    by (auto simp: isPTB_str_def)
+  have c1p: "c1 = Trm [pc]"
+  proof -
+    have "flatBT c1 = flatBT (Trm [pc])" using pcl by simp
+    thus ?thesis by (rule m_7_flatBT_inj)
+  qed
+  obtain wv tb where pcw: "pc = DB wv tb" by (cases pc) auto
+  have vvv: "vv = wv" using vv_def c1p pcw by simp
+  have tt2v: "tt2 = tb" using tt2_def c1p pcw by simp
+  have wvne: "wv \<noteq> \<infinity>" and tbdf: "dfree_BT tb" using pcf pcw by auto
+  \<comment> \<open>\<open>c\<^sub>2\<close> is a principal dfree term ending (spine-wise) in \<open>D\<^bsub>?bv\<^esub> 0\<close>\<close>
+  have c2shape: "\<exists>X. c2 = Dpt vv X \<and> dfree_BT X \<and> (X, Dpt (enat ?bv) 0\<^sub>B) \<in> MarkedB"
+  proof -
+    have selfb: "(Dpt (enat ?bv) 0\<^sub>B, Dpt (enat ?bv) 0\<^sub>B) \<in> MarkedB"
+    proof -
+      have "scb_decomp (Dpt (enat ?bv) 0\<^sub>B) [] (flatBT (Dpt (enat ?bv) 0\<^sub>B)) []"
+        by (rule scb_decomp_self) (rule isPTB_str_Dpt, simp_all)
+      thus ?thesis unfolding MarkedB_def by auto
+    qed
+    have iptb: "isPTB_str (flatBT (Dpt (enat ?bv) 0\<^sub>B))"
+      by (rule isPTB_str_Dpt) simp_all
+    have dbne: "Dpt (enat ?bv) 0\<^sub>B \<noteq> 0\<^sub>B" by simp
+    consider (A) "transCondI M \<or> transCondIII M \<or> transCondV M"
+      | (VI) "\<not> (transCondI M \<or> transCondIII M \<or> transCondV M)" "transCondVI M"
+      | (Z) "\<not> (transCondI M \<or> transCondIII M \<or> transCondV M)" "\<not> transCondVI M"
+            "tt2 = 0\<^sub>B"
+      | (E) "\<not> (transCondI M \<or> transCondIII M \<or> transCondV M)" "\<not> transCondVI M"
+            "tt2 \<noteq> 0\<^sub>B"
+      by blast
+    thus ?thesis
+    proof cases
+      case A
+      have x: "c2 = Dpt vv (tt2 +\<^sub>B Dpt (enat ?bv) 0\<^sub>B)" using A c2_def by simp
+      have df: "dfree_BT (tt2 +\<^sub>B Dpt (enat ?bv) 0\<^sub>B)"
+        using tt2v tbdf by (cases tb) auto
+      have mb: "(tt2 +\<^sub>B Dpt (enat ?bv) 0\<^sub>B, Dpt (enat ?bv) 0\<^sub>B) \<in> MarkedB"
+        by (rule MarkedB_addBT_right[OF selfb dbne])
+      show ?thesis using x df mb by blast
+    next
+      case VI
+      have x: "c2 = Dpt vv (Dpt (enat ?bv) 0\<^sub>B)" using VI c2_def by simp
+      have mb: "(Dpt (enat ?bv) 0\<^sub>B, Dpt (enat ?bv) 0\<^sub>B) \<in> MarkedB" by (rule selfb)
+      show ?thesis using x mb by auto
+    next
+      case Z
+      have x: "c2 = Dpt vv (Dpt (enat (entry M 1 jp)) (Dpt (enat ?bv) 0\<^sub>B))"
+        using Z c2_def by simp
+      have mb: "(Dpt (enat (entry M 1 jp)) (Dpt (enat ?bv) 0\<^sub>B),
+                 Dpt (enat ?bv) 0\<^sub>B) \<in> MarkedB"
+        by (rule MarkedB_Dpt_lift[OF selfb iptb])
+      show ?thesis using x mb by auto
+    next
+      case E
+      have x: "c2 = Dpt vv (tt3 +\<^sub>B Dpt (enat (entry M 1 jp))
+                                   (tt4 +\<^sub>B Dpt (enat ?bv) 0\<^sub>B))"
+        using E c2_def by simp
+      have df3: "dfree_BT tt3"
+      proof -
+        have "dfree_BT (SigmaB (take JJ1 (PB tb)))"
+          using tbdf by (cases tb) (auto simp: SigmaB_def PB_def dest!: in_set_takeD)
+        thus ?thesis using tt3_def tt2v tbdf by simp
+      qed
+      have df4: "dfree_BT tt4"
+      proof -
+        have tbne: "untrm tb \<noteq> []" using E(3) tt2v by (cases tb) auto
+        have inr: "JJ1 < Lng (PB tb)"
+          using JJ1_def tt2v tbne by (simp add: PB_def)
+        have "pj \<in> set (PB tb)" using pj_def tt2v inr by simp
+        hence "dfree_BT pj" using tbdf by (cases tb) (auto simp: PB_def)
+        hence "dfree_BT (bpHeadT pj)" by (cases pj rule: bpHeadT.cases) auto
+        thus ?thesis using tt4_def tt2v tbdf by simp
+      qed
+      have dfsum: "dfree_BT (tt4 +\<^sub>B Dpt (enat ?bv) 0\<^sub>B)"
+        using df4 by (cases tt4) auto
+      have mbin: "(tt4 +\<^sub>B Dpt (enat ?bv) 0\<^sub>B, Dpt (enat ?bv) 0\<^sub>B) \<in> MarkedB"
+        by (rule MarkedB_addBT_right[OF selfb dbne])
+      have mbmid: "(Dpt (enat (entry M 1 jp)) (tt4 +\<^sub>B Dpt (enat ?bv) 0\<^sub>B),
+                    Dpt (enat ?bv) 0\<^sub>B) \<in> MarkedB"
+        by (rule MarkedB_Dpt_lift[OF mbin iptb])
+      have mbout: "(tt3 +\<^sub>B Dpt (enat (entry M 1 jp)) (tt4 +\<^sub>B Dpt (enat ?bv) 0\<^sub>B),
+                    Dpt (enat ?bv) 0\<^sub>B) \<in> MarkedB"
+        by (rule MarkedB_addBT_right[OF mbmid]) simp
+      have dfall: "dfree_BT (tt3 +\<^sub>B Dpt (enat (entry M 1 jp))
+                                    (tt4 +\<^sub>B Dpt (enat ?bv) 0\<^sub>B))"
+        using df3 dfsum by (cases tt3) auto
+      show ?thesis using x mbout dfall by blast
+    qed
+  qed
+  obtain X2 where c2X: "c2 = Dpt vv X2" and X2df: "dfree_BT X2"
+      and X2mb: "(X2, Dpt (enat ?bv) 0\<^sub>B) \<in> MarkedB"
+    using c2shape by blast
+  have c2df: "dfree_BT c2" using c2X X2df wvne vvv by simp
+  have iptc2: "isPTB_str (flatBT c2)"
+    using c2X by (intro isPTB_str_Dpt[of vv X2, folded c2X])
+                 (use wvne vvv X2df in simp_all)
+  have c2mb: "(c2, Dpt (enat ?bv) 0\<^sub>B) \<in> MarkedB"
+  proof -
+    have iptb: "isPTB_str (flatBT (Dpt (enat ?bv) 0\<^sub>B))"
+      by (rule isPTB_str_Dpt) simp_all
+    show ?thesis using MarkedB_Dpt_lift[OF X2mb iptb] c2X by simp
+  qed
+  obtain pc2 where c2p: "c2 = Trm [pc2]" using c2X by auto
+  \<comment> \<open>the replaced \<open>Trans\<close> value\<close>
+  have dsome': "scb_decomp ?t1 (fst sb1) (flatBT (Trm [pc])) (snd sb1)"
+    using dsome c1p by simp
+  have iptc2': "isPTB_str (flatBT (Trm [pc2]))" using iptc2 c2p by simp
+  obtain t' where t'f: "flatBT t' = fst sb1 @ flatBT (Trm [pc2]) @ snd sb1"
+      and t'd: "scb_decomp t' (fst sb1) (flatBT (Trm [pc2])) (snd sb1)"
+    using scb_replace_principal[OF dsome' iptc2'] by blast
+  have transM: "Trans M = t'"
+    using trans_val t'f c2p unflatBT_flat[of t'] by simp
+  \<comment> \<open>dfree and nonzero\<close>
+  have sb_sub: "set (fst sb1) \<subseteq> set (flatBT ?t1)"
+      and bb_sub: "set (snd sb1) \<subseteq> set (flatBT ?t1)"
+    using dsome by (auto simp: scb_decomp_def)
+  have t'df: "dfree_BT t'"
+  proof -
+    have "\<And>v'. Dsym v' \<in> set (flatBT t') \<Longrightarrow> v' \<noteq> \<infinity>"
+    proof -
+      fix v' assume "Dsym v' \<in> set (flatBT t')"
+      hence "Dsym v' \<in> set (flatBT ?t1) \<or> Dsym v' \<in> set (flatBT c2)"
+        using t'f c2p sb_sub bb_sub by auto
+      thus "v' \<noteq> \<infinity>"
+        using IHt1 c2df dfree_flat_BT by blast
+    qed
+    thus ?thesis using dfree_flat_BT by blast
+  qed
+  have t'ne: "t' \<noteq> 0\<^sub>B"
+  proof
+    assume "t' = 0\<^sub>B"
+    hence z: "flatBT t' = [Zsym]" by simp
+    have pc2v: "pc2 = DB vv X2" using c2p c2X by simp
+    have "Dsym vv \<in> set (flatBP pc2)" using pc2v by simp
+    hence "Dsym vv \<in> set (flatBT t')" using t'f by simp
+    thus False using z by simp
+  qed
+  \<comment> \<open>the Mark values\<close>
+  have markB: "\<And>m. (M, m) \<in> Marked
+       \<Longrightarrow> dfree_BT (Mark M m) \<and> (Trans M, Mark M m) \<in> MarkedB"
+  proof -
+    fix m assume mM: "(M, m) \<in> Marked"
+    \<comment> \<open>the fallback value \<open>D\<^bsub>?bv\<^esub> 0\<close> always satisfies both conjuncts\<close>
+    have fb_df: "dfree_BT (Dpt (enat ?bv) 0\<^sub>B)" by simp
+    have fb_mb: "(Trans M, Dpt (enat ?bv) 0\<^sub>B) \<in> MarkedB"
+    proof -
+      from c2mb obtain s2x b2x where d2x: "scb_decomp c2 s2x (flatBT (Dpt (enat ?bv) 0\<^sub>B)) b2x"
+        by (auto simp: MarkedB_def)
+      have "scb_decomp t' (fst sb1 @ s2x) (flatBT (Dpt (enat ?bv) 0\<^sub>B)) (b2x @ snd sb1)"
+        by (rule m_7_2_scb_compose[OF _ _ d2x])
+           (use c2p t'd in auto)
+      thus ?thesis using transM unfolding MarkedB_def by auto
+    qed
+    show "dfree_BT (Mark M m) \<and> (Trans M, Mark M m) \<in> MarkedB"
+    proof (cases "m < Lng M - 1")
+      case False
+      have "Mark M m = Dpt (enat ?bv) 0\<^sub>B"
+        using Mark.psimps[OF domK] MR Lgt1 mono t1ne False
+        unfolding Let_def jp_def[symmetric] c1_def[symmetric]
+        by simp
+      thus ?thesis using fb_df fb_mb by simp
+    next
+      case mlt: True
+      define c0 where "c0 = Mark (Pred M) m"
+      define sm1 where "sm1 = (SOME sb. scb_decomp c0 (fst sb) (flatBT c1) (snd sb))"
+      have mark_val_raw: "Mark M m = (if (Mark (Pred M) m, c1) \<in> MarkedB
+            then unflatBT
+                   (fst (SOME sb. scb_decomp (Mark (Pred M) m) (fst sb)
+                                    (flatBT c1) (snd sb))
+                    @ flatBT c2
+                    @ snd (SOME sb. scb_decomp (Mark (Pred M) m) (fst sb)
+                                      (flatBT c1) (snd sb)))
+            else Dpt (enat ?bv) 0\<^sub>B)"
+        using Mark.psimps[OF domK] MR Lgt1 mono t1ne mlt
+        unfolding Let_def jp_def[symmetric] c1_def[symmetric] vv_def[symmetric]
+                  tt2_def[symmetric] JJ1_def[symmetric] pj_def[symmetric]
+                  ldj_def[symmetric] tt3_def[symmetric] tt4_def[symmetric]
+                  c2_def[symmetric]
+        by simp
+      have mark_val: "Mark M m = (if (c0, c1) \<in> MarkedB
+            then unflatBT (fst sm1 @ flatBT c2 @ snd sm1)
+            else Dpt (enat ?bv) 0\<^sub>B)"
+        using mark_val_raw by (simp add: c0_def sm1_def)
+      show ?thesis
+      proof (cases "(c0, c1) \<in> MarkedB")
+        case False
+        thus ?thesis using mark_val fb_df fb_mb by simp
+      next
+        case mbc: True
+        have mPred: "(Pred M, m) \<in> Marked"
+          by (rule Marked_Pred[OF MT L mM mlt])
+        have c0df: "dfree_BT c0" and mb0: "(?t1, c0) \<in> MarkedB"
+          using IHmk[OF mPred] c0_def by auto
+        \<comment> \<open>\<open>c\<^sub>0\<close> is principal\<close>
+        from mb0 obtain s0 b0 where d0: "scb_decomp ?t1 s0 (flatBT c0) b0"
+          by (auto simp: MarkedB_def)
+        have iptc0: "isPTB_str (flatBT c0)"
+          using d0 t1neT by (simp add: scb_decomp_def)
+        then obtain pc0 where pc0f: "dfree_BP pc0" and pc0l: "flatBT c0 = flatBP pc0"
+          by (auto simp: isPTB_str_def)
+        have c0p: "c0 = Trm [pc0]"
+        proof -
+          have "flatBT c0 = flatBT (Trm [pc0])" using pc0l by simp
+          thus ?thesis by (rule m_7_flatBT_inj)
+        qed
+        \<comment> \<open>the \<open>SOME\<close> for \<open>c\<^sub>0\<close>\<close>
+        have exsm: "\<exists>sb. scb_decomp c0 (fst sb) (flatBT c1) (snd sb)"
+          using mbc unfolding MarkedB_def by auto
+        have dsm: "scb_decomp c0 (fst sm1) (flatBT c1) (snd sm1)"
+          unfolding sm1_def by (rule someI_ex[OF exsm])
+        have dsm': "scb_decomp (Trm [pc0]) (fst sm1) (flatBT (Trm [pc])) (snd sm1)"
+          using dsm c0p c1p by simp
+        \<comment> \<open>the replaced \<open>Mark\<close> value (principal)\<close>
+        obtain pm where pmf: "flatBP pm = fst sm1 @ flatBT (Trm [pc2]) @ snd sm1"
+            and pmd: "scb_decomp (Trm [pm]) (fst sm1) (flatBT (Trm [pc2])) (snd sm1)"
+          using scb_replace_principal_BP[OF dsm' iptc2'] by blast
+        have markM: "Mark M m = Trm [pm]"
+        proof -
+          have "flatBT (Trm [pm]) = fst sm1 @ flatBT c2 @ snd sm1"
+            using pmf c2p by simp
+          thus ?thesis
+            using mark_val mbc unflatBT_flat[of "Trm [pm]"] by simp
+        qed
+        \<comment> \<open>dfree of the replaced value\<close>
+        have sm_sub: "set (fst sm1) \<subseteq> set (flatBT c0)"
+            and bm_sub: "set (snd sm1) \<subseteq> set (flatBT c0)"
+          using dsm by (auto simp: scb_decomp_def)
+        have mmdf: "dfree_BT (Trm [pm])"
+        proof -
+          have "\<And>v'. Dsym v' \<in> set (flatBT (Trm [pm])) \<Longrightarrow> v' \<noteq> \<infinity>"
+          proof -
+            fix v' assume "Dsym v' \<in> set (flatBT (Trm [pm]))"
+            hence "Dsym v' \<in> set (flatBT c0) \<or> Dsym v' \<in> set (flatBT c2)"
+              using pmf c2p sm_sub bm_sub by auto
+            thus "v' \<noteq> \<infinity>" using c0df c2df dfree_flat_BT by blast
+          qed
+          thus ?thesis using dfree_flat_BT by blast
+        qed
+        \<comment> \<open>coherence: the two-step decomposition equals the direct one\<close>
+        have comp: "scb_decomp ?t1 (s0 @ fst sm1) (flatBT c1) (snd sm1 @ b0)"
+          by (rule m_7_2_scb_compose[OF _ _ dsm]) (use c0p d0 in auto)
+        have coh: "fst sb1 = s0 @ fst sm1 \<and> snd sb1 = snd sm1 @ b0"
+          by (rule m_7_2_scb_unique_sb[OF dsome comp t1neT])
+        have t'flat: "flatBT t' = s0 @ flatBT (Trm [pm]) @ b0"
+          using t'f coh pmf c2p by simp
+        have b0rp: "\<forall>x \<in> set b0. x = RP"
+          using d0 by (simp add: scb_decomp_def)
+        have iptm: "isPTB_str (flatBT (Trm [pm]))"
+        proof -
+          have "dfree_BP pm"
+            using mmdf by simp
+          thus ?thesis using isPTB_str_def by auto
+        qed
+        have "scb_decomp t' s0 (flatBT (Trm [pm])) b0"
+          unfolding scb_decomp_def using t'flat iptm b0rp by simp
+        hence "(Trans M, Mark M m) \<in> MarkedB"
+          using transM markM unfolding MarkedB_def by auto
+        thus ?thesis using mmdf markM by simp
+      qed
+    qed
+  qed
+  show ?thesis using transM t'df t'ne markB by auto
+qed
+
 end
