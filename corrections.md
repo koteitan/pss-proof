@@ -424,3 +424,13 @@ yaBMS で経験的検証済）はブロック $n$ 個でこの訂正後の式と
 **訂正案**: (3)(4)(5) の前提に「\(t \neq ()\)」を追加する。
 
 **形式化での扱い**: 種一意性 (4)(5) を「中央成分の一致 \(c_0=c_1\) への健全な還元」`m_7_2_scb_kind_unique_of_ceq`（`m_7_2_scb_unique_decomp` 経由、`t≠()` 下で \(c_0=c_1\) から1行）として機械化・緑。残る \(c_0=c_1\)（原文の「\(c\) は `RightNodes` 脊柱で固定される最大の真部分項文字列」content.md ~1900–1960）は別途の多補題プログラム。
+
+## A15. §7.3 命題（Trans の well-defined 性）および (IncrFirst,Red) 不変性: 定義域は \(T_{\textrm{PS}}\) 全体でなく「\(\textrm{Red}(M)\) が簡約」の範囲
+
+**所在**: §7.3「命題（\(\textrm{Trans}\) の well-defined 性）」(content.md 2182) と「命題（\(\textrm{Trans}\) の \((\textrm{IncrFirst},\textrm{Red})\) 不変 \(P\) 同変性」「命題（\(\textrm{Mark}\) の \((\textrm{IncrFirst},\textrm{Red},P)\) 不変性」の \(\textrm{Red}\)/\(\textrm{IncrFirst}\) 部。
+
+**観察**: \(\textrm{Trans}\)/\(\textrm{Mark}\) の非簡約枝は \(\textrm{Trans}(M) := \textrm{Trans}(\textrm{Red}(M))\)（長さ不変）であり、再帰の停止には \(\textrm{Red}(M)\) が簡約であること（= \(\textrm{Red}\) の冪等性）が要る。しかし冪等性は [[A4]] のとおり \(T_{\textrm{PS}}\) 全体では**偽**であり、\(\textrm{Red}(\textrm{Red}(M)) \neq \textrm{Red}(M)\) なる \(M\) では (D) 枝が簡約に到達せず、原文の「\(\textrm{Lng}(M)\) に関する数学的帰納法より即座」は成立しない（帰納の measure が下がらない）。
+
+**訂正案**: well-defined 性の主張を「\(\textrm{Red}(M)\) が簡約である \(M\)（特に簡約ペア数列・標準形・[[A4]] の祖先 anchored 切片）上で \(\textrm{Trans}\)/\(\textrm{Mark}\) が一意に定まる」へ弱める。\((\textrm{IncrFirst},\textrm{Red})\) 不変性も同域で述べる。原文の §7.3–§8 における使用箇所はすべて簡約／標準形上なのでこの範囲で足りる。
+
+**形式化での扱い**: `m_7_3_Trans_welldef`/`m_7_3_Mark_welldef`（totality on \(RT_{\textrm{PS}}\)、\(\textrm{Lng}\) 強帰納）、`m_7_3_Trans_Red`/`m_7_3_Mark_Red`/`m_7_3_Trans_IncrFirst`/`m_7_3_Mark_IncrFirst`（域 \(\textrm{Red}(M) \in RT_{\textrm{PS}}\)）として機械化・緑。
