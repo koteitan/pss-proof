@@ -5,7 +5,7 @@ BT terms: ('T', [list of BP]); BP: ('D', v, BT). v is an int (enat embedding).
 (invariant (Trans M, Mark M m) ∈ T_B^Marked, zeroT, c1<c2, Pred-descent...).
 """
 import sys
-sys.path.insert(0, '/home/koteitan/proofs/pss-proof/wt-gtw/python')
+sys.path.insert(0, '/home/koteitan/proofs/pss-proof/git/python')
 from red_model import (Red, Lng, entry, P, monoT, zeroT, le0, leR, seg,
                        parent, hasParent)
 import red_model as rm
