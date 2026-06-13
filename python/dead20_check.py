@@ -12,7 +12,7 @@ their recursive sub-calls, counting how often the m10>0 case is reached and
 whether the dead branch is ever taken.
 """
 import sys, itertools
-sys.path.insert(0, '/home/koteitan/pss-proof/python')
+sys.path.insert(0, '/home/koteitan/proofs/pss-proof/python')
 from red_model import (Lng, entry, zeroT, multiT, monoT, P, TrMax, Br,
                        FirstNodes, Joints, THE_nextR, diagSeq, IncrFirst,
                        funpow, seg, is_standard, fmt)

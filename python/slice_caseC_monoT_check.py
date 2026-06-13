@@ -1,7 +1,7 @@
 # Focused caseC empirical check: is seg M ?a j1' monoT in every caseC witness?
 # (Y proposed a "monoT route" for caseC closure; this verifies the precondition.)
 import sys, itertools
-sys.path.insert(0, '/home/koteitan/pss-proof/python')
+sys.path.insert(0, '/home/koteitan/proofs/pss-proof/python')
 from red_model import (Lng, entry, seg, oper, P, Br, TrMax, FirstNodes,
                        is_standard, parent, idx1, le0, leR, monoT, hasParent)
 
