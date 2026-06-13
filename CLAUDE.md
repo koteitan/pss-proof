@@ -129,6 +129,14 @@ Import chain: `pss_defs` ← `pss_paper` ← `pss_mechanized`.
 - Prototype large new definitions (§6.5 `Red`, §7 Buchholz, …) in a **separate
   git worktree** to keep `main` green, then integrate (`git worktree add <dir>
   HEAD` is detached and creates no branch).
+- **Worktree location** (2026-06-13): create every new worktree under
+  `~/proofs/pss-proof/<worktree>/` (i.e. **alongside `git/`, not in `~/`**).
+  `git worktree add ~/proofs/pss-proof/wt-<name> HEAD`. Rationale: keeps every
+  Isabelle session rooted in the same parent so `tmp/` symlinks (`<wt>/tmp ->
+  ..`) resolve to the canonical external sources (`content.md`, `original.html`,
+  `yaBMS/`, …), and isbman heap-isolation slugs stay under one tree. **Do not**
+  create worktrees in `~/` or anywhere else — those leak past the parent's
+  `tmp/` symlink and break the build.
 - For parallel proving with agents, use worktree isolation (independent heaps).
   After integrating, remove the worktree AND delete its branch with
   `git branch -D worktree-agent-<id>`.
