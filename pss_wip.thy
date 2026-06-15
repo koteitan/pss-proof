@@ -2035,4 +2035,175 @@ proof -
   show ?thesis using transM t'df t'ne markB by auto
 qed
 
+
+text \<open>The (C) multiT branch of the \<open>Trans\<close>/\<open>Mark\<close> value invariant, as a
+  dedicated lemma taking the induction hypotheses for the two smaller
+  recursion arguments — the diagonal prefix \<open>take (Pcut M) M\<close> and the last
+  \<open>P\<close>-component \<open>drop (Pcut M) M\<close>.  \<open>Trans M = Trans A +\<^sub>B (\<dots>)\<close> appends a
+  non-empty right summand, and \<open>MarkedB\<close> reduces to that summand
+  (@{thm [source] MarkedB_addBT_right}).\<close>
+
+lemma trans_inv_C:
+  assumes MR: "M \<in> RT_PS" and mu: "multiT M"
+    and dfTA: "dfree_BT (Trans (take (Pcut M) M))"
+    and dfTJ: "dfree_BT (Trans (drop (Pcut M) M))"
+    and nzTJ: "\<not> zeroT (drop (Pcut M) M) \<Longrightarrow> Trans (drop (Pcut M) M) \<noteq> 0\<^sub>B"
+    and IHmkJ: "\<And>m'. (drop (Pcut M) M, m') \<in> Marked
+                 \<Longrightarrow> dfree_BT (Mark (drop (Pcut M) M) m')
+                   \<and> (Trans (drop (Pcut M) M), Mark (drop (Pcut M) M) m') \<in> MarkedB"
+  shows "dfree_BT (Trans M) \<and> Trans M \<noteq> 0\<^sub>B
+       \<and> (\<forall>m. (M, m) \<in> Marked
+              \<longrightarrow> dfree_BT (Mark M m) \<and> (Trans M, Mark M m) \<in> MarkedB)"
+proof -
+  have MT: "M \<in> T_PS" using MR by (simp add: RT_PS_def)
+  have L: "1 < Lng M" by (rule multiT_imp_Lng_gt1[OF MT mu])
+  have Lgt1: "\<not> Lng M \<le> Suc 0" using L by simp
+  have nmono: "\<not> monoT M" using mu by (simp add: multiT_def)
+  have domT: "Trans_Mark_dom (Inl M)" by (rule m_7_3_Trans_welldef[OF MR])
+  have domK: "\<And>m. Trans_Mark_dom (Inr (M, m))" by (rule m_7_3_Mark_welldef[OF MR])
+  let ?A = "take (Pcut M) M"
+  let ?PJ = "drop (Pcut M) M"
+  \<comment> \<open>identify the def's PJ / j0 / prefix with their \<open>Pcut\<close>-forms\<close>
+  have PJeq: "P M ! (Lng (P M) - 1) = ?PJ"
+    by (rule trans_multiT_last_component(1)[OF MT mu])
+  have j0eq: "Lng M - 1 - Lng (P M ! (Lng (P M) - 1)) + 1 = Pcut M"
+    by (rule trans_multiT_last_component(2)[OF MT mu])
+  have cut: "0 < Pcut M \<and> Pcut M \<le> Lng M - 1" using Pcut_le[OF L] by simp
+  \<comment> \<open>seg/offset equalities in \<open>drop\<close>-form (so they apply AFTER @{thm PJeq}
+     has rewritten \<open>P M ! \<dots>\<close> to \<open>?PJ\<close>, without simp splitting the inner if)\<close>
+  have LdJ: "Lng (drop (Pcut M) M) = Lng M - Pcut M" by simp
+  have Aeq2: "seg M 0 (Lng M - 1 - Lng (drop (Pcut M) M) + 1 - 1) = ?A"
+  proof -
+    have "Lng M - 1 - Lng (drop (Pcut M) M) + 1 - 1 = Pcut M - 1"
+      using LdJ cut by linarith
+    moreover have "seg M 0 (Pcut M - 1) = take (Suc (Pcut M - 1)) M"
+      by (rule seg_0_eq_take) (use cut L in linarith)
+    moreover have "Suc (Pcut M - 1) = Pcut M" using cut by simp
+    ultimately show ?thesis by simp
+  qed
+  have meq2: "\<And>m. m - (Lng M - 1 - Lng (drop (Pcut M) M) + 1) = m - Pcut M"
+  proof -
+    fix m
+    have "Lng M - 1 - Lng (drop (Pcut M) M) + 1 = Pcut M"
+      using LdJ cut by linarith
+    thus "m - (Lng M - 1 - Lng (drop (Pcut M) M) + 1) = m - Pcut M" by simp
+  qed
+  \<comment> \<open>the two recursion values.  Collapse only the OUTER ifs with \<open>simp only\<close>
+     (full \<open>simp\<close> pushes the inner if-condition into the branches and rewrites
+     \<open>Lng PJ\<close> differently per branch), then rewrite the raw form by \<open>unfolding\<close>
+     (no if-splitting) and close with @{thm refl}.\<close>
+  have c1: "(M \<notin> RT_PS) = False" using MR by simp
+  have c2: "(Lng M - 1 = 0) = False" using L by simp
+  have c3: "monoT M = False" using nmono by simp
+  have transM: "Trans M = (if ?PJ = [(0, 0)] then Trans ?A +\<^sub>B Dpt 0 0\<^sub>B
+                           else Trans ?A +\<^sub>B Trans ?PJ)"
+  proof -
+    have raw: "Trans M =
+        (if P M ! (Lng (P M) - 1) = [(0, 0)]
+         then Trans (seg M 0 (Lng M - 1 - Lng (P M ! (Lng (P M) - 1)) + 1 - 1))
+                +\<^sub>B Dpt 0 0\<^sub>B
+         else Trans (seg M 0 (Lng M - 1 - Lng (P M ! (Lng (P M) - 1)) + 1 - 1))
+                +\<^sub>B Trans (P M ! (Lng (P M) - 1)))"
+      by (subst Trans.psimps[OF domT]) (simp only: c1 c2 c3 if_False Let_def)
+    show ?thesis unfolding raw PJeq Aeq2 ..
+  qed
+  have markM: "\<And>m. Mark M m = (if ?PJ = [(0, 0)] then Dpt 0 0\<^sub>B
+                               else Mark ?PJ (m - Pcut M))"
+  proof -
+    fix m
+    have raw: "Mark M m =
+        (if P M ! (Lng (P M) - 1) = [(0, 0)] then Dpt 0 0\<^sub>B
+         else Mark (P M ! (Lng (P M) - 1))
+                (m - (Lng M - 1 - Lng (P M ! (Lng (P M) - 1)) + 1)))"
+      by (subst Mark.psimps[OF domK]) (simp only: c1 c2 c3 if_False Let_def)
+    show "Mark M m = (if ?PJ = [(0, 0)] then Dpt 0 0\<^sub>B else Mark ?PJ (m - Pcut M))"
+      unfolding raw PJeq meq2 ..
+  qed
+  \<comment> \<open>dfree / nonzero of the right-appended term\<close>
+  have dfadd: "\<And>a b. dfree_BT a \<Longrightarrow> dfree_BT b \<Longrightarrow> dfree_BT (a +\<^sub>B b)"
+  proof -
+    fix a b assume da: "dfree_BT a" and db: "dfree_BT b"
+    obtain as where a: "a = Trm as" by (cases a)
+    obtain bs where b: "b = Trm bs" by (cases b)
+    show "dfree_BT (a +\<^sub>B b)" using da db a b by auto
+  qed
+  have nzadd: "\<And>a b. b \<noteq> 0\<^sub>B \<Longrightarrow> a +\<^sub>B b \<noteq> 0\<^sub>B"
+  proof -
+    fix a b assume bne: "b \<noteq> 0\<^sub>B"
+    obtain as where a: "a = Trm as" by (cases a)
+    obtain bs where b: "b = Trm bs" by (cases b)
+    have "bs \<noteq> []" using bne b by auto
+    thus "a +\<^sub>B b \<noteq> 0\<^sub>B" using a b by auto
+  qed
+  have dfD0: "dfree_BT (Dpt 0 0\<^sub>B)" by (simp add: zero_enat_def)
+  have nzD0: "Dpt 0 0\<^sub>B \<noteq> 0\<^sub>B" by simp
+  \<comment> \<open>the last component is reduced and (in the else case) non-zero-term\<close>
+  have Pne: "P M \<noteq> []" by (rule P_nonempty)
+  have J1lt: "Lng (P M) - 1 < Lng (P M)" using Pne by (cases "P M") auto
+  have PJRT: "?PJ \<in> RT_PS"
+    using m_6_6_P_reduced[OF MT] MR J1lt PJeq by auto
+  have PJT: "?PJ \<in> T_PS" using PJRT by (simp add: RT_PS_def)
+  have nzPJ: "?PJ \<noteq> [(0, 0)] \<Longrightarrow> \<not> zeroT ?PJ"
+  proof
+    assume ne: "?PJ \<noteq> [(0, 0)]" and z: "zeroT ?PJ"
+    have L1: "Lng ?PJ = 1" using z by (simp add: zeroT_def)
+    then obtain v where v: "?PJ = [(v, v)]"
+      using m_6_6_oneColumn[OF PJT] PJRT by auto
+    have "entry ?PJ 1 0 = 0" using z by (simp add: zeroT_def)
+    hence "v = 0" using v by (simp add: entry_def)
+    thus False using ne v by simp
+  qed
+  \<comment> \<open>Trans M dfree and nonzero\<close>
+  have dfT_nzT: "dfree_BT (Trans M) \<and> Trans M \<noteq> 0\<^sub>B"
+  proof (cases "?PJ = [(0, 0)]")
+    case True
+    have tv: "Trans M = Trans ?A +\<^sub>B Dpt 0 0\<^sub>B" using transM True by simp
+    have "dfree_BT (Trans ?A +\<^sub>B Dpt 0 0\<^sub>B)" by (rule dfadd[OF dfTA dfD0])
+    moreover have "Trans ?A +\<^sub>B Dpt 0 0\<^sub>B \<noteq> 0\<^sub>B" by (rule nzadd[OF nzD0])
+    ultimately show ?thesis using tv by simp
+  next
+    case False
+    have tv: "Trans M = Trans ?A +\<^sub>B Trans ?PJ" using transM False by simp
+    have nz: "Trans ?PJ \<noteq> 0\<^sub>B" using nzTJ[OF nzPJ[OF False]] .
+    have "dfree_BT (Trans ?A +\<^sub>B Trans ?PJ)" by (rule dfadd[OF dfTA dfTJ])
+    moreover have "Trans ?A +\<^sub>B Trans ?PJ \<noteq> 0\<^sub>B" by (rule nzadd[OF nz])
+    ultimately show ?thesis using tv by simp
+  qed
+  \<comment> \<open>the Mark values and MarkedB membership\<close>
+  have markB: "\<And>m. (M, m) \<in> Marked
+       \<Longrightarrow> dfree_BT (Mark M m) \<and> (Trans M, Mark M m) \<in> MarkedB"
+  proof -
+    fix m assume mM: "(M, m) \<in> Marked"
+    show "dfree_BT (Mark M m) \<and> (Trans M, Mark M m) \<in> MarkedB"
+    proof (cases "?PJ = [(0, 0)]")
+      case True
+      have kv: "Mark M m = Dpt 0 0\<^sub>B" using markM True by simp
+      have tv: "Trans M = Trans ?A +\<^sub>B Dpt 0 0\<^sub>B" using transM True by simp
+      have self: "(Dpt 0 0\<^sub>B, Dpt 0 0\<^sub>B) \<in> MarkedB"
+      proof -
+        have "scb_decomp (Dpt 0 0\<^sub>B) [] (flatBT (Dpt 0 0\<^sub>B)) []"
+          by (rule scb_decomp_self) (rule isPTB_str_Dpt, simp_all add: zero_enat_def)
+        thus ?thesis unfolding MarkedB_def by auto
+      qed
+      have "(Trans ?A +\<^sub>B Dpt 0 0\<^sub>B, Dpt 0 0\<^sub>B) \<in> MarkedB"
+        by (rule MarkedB_addBT_right[OF self nzD0])
+      thus ?thesis using kv tv dfD0 by simp
+    next
+      case False
+      have kv: "Mark M m = Mark ?PJ (m - Pcut M)" using markM False by simp
+      have tv: "Trans M = Trans ?A +\<^sub>B Trans ?PJ" using transM False by simp
+      have mPJ: "(?PJ, m - Pcut M) \<in> Marked"
+        by (rule multi_Marked_last_component(2)[OF MT mu mM])
+      have ih: "dfree_BT (Mark ?PJ (m - Pcut M))
+                \<and> (Trans ?PJ, Mark ?PJ (m - Pcut M)) \<in> MarkedB"
+        by (rule IHmkJ[OF mPJ])
+      have nz: "Trans ?PJ \<noteq> 0\<^sub>B" using nzTJ[OF nzPJ[OF False]] .
+      have "(Trans ?A +\<^sub>B Trans ?PJ, Mark ?PJ (m - Pcut M)) \<in> MarkedB"
+        by (rule MarkedB_addBT_right[OF conjunct2[OF ih] nz])
+      thus ?thesis using kv tv ih by simp
+    qed
+  qed
+  show ?thesis using dfT_nzT markB by blast
+qed
+
 end
