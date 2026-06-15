@@ -2206,4 +2206,179 @@ proof -
   show ?thesis using dfT_nzT markB by blast
 qed
 
+
+section \<open>§7.3 命題（\<open>Trans\<close>の well-defined 性）— the VALUE part:
+  \<open>(Trans M, Mark M m) \<in> T\<^sub>B\<^sup>Marked\<close> on \<open>RT\<^sub>PS\<close>\<close>
+
+text \<open>The article's well-definedness side condition (content 2044/2182), the
+  simultaneous \<open>Lng\<close>-induction invariant.  Carries the auxiliary nonzero-ness
+  \<open>\<not> zeroT M \<longrightarrow> Trans M \<noteq> 0\<close> needed by the (C) branch (the right summand of
+  \<open>+\<^sub>B\<close> must be nonzero for @{thm [source] MarkedB_addBT_right}).  The three
+  productive branches are the dedicated lemmas
+  @{thm [source] trans_inv_B_hard} / @{thm [source] trans_inv_C} and the
+  inline (A)/(B)\<open>t\<^sub>1=0\<close> base cases.\<close>
+
+lemma Trans_Mark_invariant_aux:
+  "M \<in> RT_PS \<longrightarrow> dfree_BT (Trans M)
+     \<and> (\<not> zeroT M \<longrightarrow> Trans M \<noteq> 0\<^sub>B)
+     \<and> (\<forall>m. (M, m) \<in> Marked
+            \<longrightarrow> dfree_BT (Mark M m) \<and> (Trans M, Mark M m) \<in> MarkedB)"
+proof (induction M rule: measure_induct_rule[where f=Lng])
+  case (less M)
+  show ?case
+  proof (rule impI)
+    assume MR: "M \<in> RT_PS"
+    have MT: "M \<in> T_PS" using MR by (simp add: RT_PS_def)
+    have Mne: "M \<noteq> []" using MT by (simp add: T_PS_def)
+    have domT: "Trans_Mark_dom (Inl M)" by (rule m_7_3_Trans_welldef[OF MR])
+    have domK: "\<And>m. Trans_Mark_dom (Inr (M, m))" by (rule m_7_3_Mark_welldef[OF MR])
+    show "dfree_BT (Trans M) \<and> (\<not> zeroT M \<longrightarrow> Trans M \<noteq> 0\<^sub>B)
+        \<and> (\<forall>m. (M, m) \<in> Marked
+               \<longrightarrow> dfree_BT (Mark M m) \<and> (Trans M, Mark M m) \<in> MarkedB)"
+    proof (cases "Lng M = 1")
+      case True
+      \<comment> \<open>(A) length 1: \<open>M = [(v,v)]\<close>\<close>
+      obtain v where Mv: "M = [(v, v)]"
+        using m_6_6_oneColumn[OF MT] MR True by auto
+      have tv: "Trans M = (if v = 0 then 0\<^sub>B else Dpt (enat v) 0\<^sub>B)"
+        using Mv Trans_singleton by simp
+      have kv: "\<And>m. Mark M m = (if v = 0 then 0\<^sub>B else Dpt (enat v) 0\<^sub>B)"
+        using Mv Mark_singleton by simp
+      have zc: "zeroT M = (v = 0)" using Mv by (simp add: zeroT_def entry_def)
+      have df: "dfree_BT (if v = 0 then 0\<^sub>B else Dpt (enat v) 0\<^sub>B)" by simp
+      have nzc: "\<not> zeroT M \<longrightarrow> Trans M \<noteq> 0\<^sub>B"
+        using zc tv by simp
+      have mb: "((if v = 0 then 0\<^sub>B else Dpt (enat v) 0\<^sub>B),
+                 (if v = 0 then 0\<^sub>B else Dpt (enat v) 0\<^sub>B)) \<in> MarkedB"
+      proof (cases "v = 0")
+        case True
+        have "scb_decomp 0\<^sub>B [] (flatBT (0\<^sub>B::BT)) []" by (simp add: scb_decomp_def)
+        thus ?thesis using True unfolding MarkedB_def by auto
+      next
+        case False
+        have "scb_decomp (Dpt (enat v) 0\<^sub>B) [] (flatBT (Dpt (enat v) 0\<^sub>B)) []"
+          by (rule scb_decomp_self) (rule isPTB_str_Dpt, simp_all)
+        thus ?thesis using False unfolding MarkedB_def by auto
+      qed
+      show ?thesis using tv kv df nzc mb by simp
+    next
+      case notone: False
+      have L: "1 < Lng M" using Mne notone by (cases M) auto
+      have Lgt1: "\<not> Lng M \<le> Suc 0" using L by simp
+      have nzM: "\<not> zeroT M" using notone by (auto simp: zeroT_def)
+      show ?thesis
+      proof (cases "monoT M")
+        case mono: True
+        \<comment> \<open>(B) mono branch\<close>
+        have predRT: "Pred M \<in> RT_PS" by (rule Pred_RT_PS[OF MR])
+        have predLng: "Lng (Pred M) < Lng M" using L by (simp add: Pred_def)
+        note IHp = less.IH[OF predLng, THEN mp, OF predRT]
+        show ?thesis
+        proof (cases "Trans (Pred M) = 0\<^sub>B")
+          case t1z: True
+          \<comment> \<open>(B) \<open>t\<^sub>1 = 0\<close>\<close>
+          let ?b = "entry M 1 (Lng M - 1)"
+          have tv: "Trans M = Dpt 0 (Dpt (enat ?b) 0\<^sub>B)"
+            using Trans.psimps[OF domT] MR Lgt1 mono t1z by (simp add: Let_def)
+          have kv: "\<And>m. Mark M m = (if m = 0 then Dpt 0 (Dpt (enat ?b) 0\<^sub>B)
+                                    else Dpt (enat ?b) 0\<^sub>B)"
+            using Mark.psimps[OF domK] MR Lgt1 mono t1z by (simp add: Let_def)
+          have df: "dfree_BT (Dpt 0 (Dpt (enat ?b) 0\<^sub>B))"
+               and df2: "dfree_BT (Dpt (enat ?b) 0\<^sub>B)"
+            by (simp_all add: zero_enat_def)
+          have nzT: "Trans M \<noteq> 0\<^sub>B" using tv by simp
+          have mb1: "(Dpt 0 (Dpt (enat ?b) 0\<^sub>B), Dpt 0 (Dpt (enat ?b) 0\<^sub>B)) \<in> MarkedB"
+          proof -
+            have "scb_decomp (Dpt 0 (Dpt (enat ?b) 0\<^sub>B)) []
+                    (flatBT (Dpt 0 (Dpt (enat ?b) 0\<^sub>B))) []"
+              by (rule scb_decomp_self)
+                 (rule isPTB_str_Dpt, simp_all add: zero_enat_def)
+            thus ?thesis unfolding MarkedB_def by auto
+          qed
+          have mb2: "(Dpt 0 (Dpt (enat ?b) 0\<^sub>B), Dpt (enat ?b) 0\<^sub>B) \<in> MarkedB"
+          proof -
+            have "flatBT (Dpt 0 (Dpt (enat ?b) 0\<^sub>B))
+                  = [Dsym 0] @ flatBT (Dpt (enat ?b) 0\<^sub>B) @ []" by simp
+            hence "scb_decomp (Dpt 0 (Dpt (enat ?b) 0\<^sub>B)) [Dsym 0]
+                     (flatBT (Dpt (enat ?b) 0\<^sub>B)) []"
+              unfolding scb_decomp_def
+              using isPTB_str_Dpt[of "enat ?b" "0\<^sub>B"] by simp
+            thus ?thesis unfolding MarkedB_def by auto
+          qed
+          show ?thesis using tv kv df df2 nzT mb1 mb2 nzM by simp
+        next
+          case t1ne: False
+          \<comment> \<open>(B) \<open>t\<^sub>1 \<noteq> 0\<close>: the dedicated hard-branch lemma\<close>
+          have IHt1: "dfree_BT (Trans (Pred M))" using IHp by simp
+          have IHmk: "\<And>m'. (Pred M, m') \<in> Marked
+                       \<Longrightarrow> dfree_BT (Mark (Pred M) m')
+                         \<and> (Trans (Pred M), Mark (Pred M) m') \<in> MarkedB"
+            using IHp by simp
+          have res: "dfree_BT (Trans M) \<and> Trans M \<noteq> 0\<^sub>B
+              \<and> (\<forall>m. (M, m) \<in> Marked
+                     \<longrightarrow> dfree_BT (Mark M m) \<and> (Trans M, Mark M m) \<in> MarkedB)"
+            by (rule trans_inv_B_hard[OF MR mono L t1ne IHt1 IHmk])
+          show ?thesis using res by blast
+        qed
+      next
+        case nmono: False
+        \<comment> \<open>(C) multiT branch: the dedicated lemma\<close>
+        have muM: "multiT M" using nzM nmono by (simp add: multiT_def)
+        have cut: "0 < Pcut M \<and> Pcut M \<le> Lng M - 1" using Pcut_le[OF L] by simp
+        have Acut_RT: "take (Pcut M) M \<in> RT_PS"
+          by (rule trans_multiT_prefix_RT_PS[OF MR muM])
+        have LA: "Lng (take (Pcut M) M) < Lng M"
+        proof -
+          have "Pcut M < Lng M" using cut L by linarith
+          thus ?thesis by (simp add: min_def)
+        qed
+        have PJeq: "P M ! (Lng (P M) - 1) = drop (Pcut M) M"
+          by (rule trans_multiT_last_component(1)[OF MT muM])
+        have Pne: "P M \<noteq> []" by (rule P_nonempty)
+        have J1lt: "Lng (P M) - 1 < Lng (P M)" using Pne by (cases "P M") auto
+        have PJ_RT: "drop (Pcut M) M \<in> RT_PS"
+          using m_6_6_P_reduced[OF MT] MR J1lt PJeq by auto
+        have LPJ: "Lng (drop (Pcut M) M) < Lng M"
+        proof -
+          have "Lng (drop (Pcut M) M) = Lng M - Pcut M" by simp
+          thus ?thesis using cut L by linarith
+        qed
+        note IHA = less.IH[OF LA, THEN mp, OF Acut_RT]
+        note IHJ = less.IH[OF LPJ, THEN mp, OF PJ_RT]
+        have dfTA: "dfree_BT (Trans (take (Pcut M) M))" using IHA by simp
+        have dfTJ: "dfree_BT (Trans (drop (Pcut M) M))" using IHJ by simp
+        have nzTJ: "\<not> zeroT (drop (Pcut M) M) \<Longrightarrow> Trans (drop (Pcut M) M) \<noteq> 0\<^sub>B"
+          using IHJ by simp
+        have IHmkJ: "\<And>m'. (drop (Pcut M) M, m') \<in> Marked
+                     \<Longrightarrow> dfree_BT (Mark (drop (Pcut M) M) m')
+                       \<and> (Trans (drop (Pcut M) M), Mark (drop (Pcut M) M) m')
+                          \<in> MarkedB"
+          using IHJ by simp
+        have res: "dfree_BT (Trans M) \<and> Trans M \<noteq> 0\<^sub>B
+            \<and> (\<forall>m. (M, m) \<in> Marked
+                   \<longrightarrow> dfree_BT (Mark M m) \<and> (Trans M, Mark M m) \<in> MarkedB)"
+          by (rule trans_inv_C[OF MR muM dfTA dfTJ nzTJ IHmkJ])
+        show ?thesis using res by blast
+      qed
+    qed
+  qed
+qed
+
+text \<open>The article's well-definedness value-part, as clean corollaries.\<close>
+
+lemma m_7_3_Trans_in_T_B:
+  assumes "M \<in> RT_PS"
+  shows "Trans M \<in> T_B"
+  using Trans_Mark_invariant_aux assms by (simp add: T_B_def)
+
+lemma m_7_3_Mark_in_T_B:
+  assumes "M \<in> RT_PS" and "(M, m) \<in> Marked"
+  shows "Mark M m \<in> T_B"
+  using Trans_Mark_invariant_aux assms by (simp add: T_B_def)
+
+lemma m_7_3_Trans_Mark_MarkedB:
+  assumes "M \<in> RT_PS" and "(M, m) \<in> Marked"
+  shows "(Trans M, Mark M m) \<in> MarkedB"
+  using Trans_Mark_invariant_aux assms by simp
+
 end
