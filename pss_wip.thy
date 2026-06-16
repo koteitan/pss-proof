@@ -2828,4 +2828,54 @@ lemma Lng_PB_Dpt [simp]: "Lng (PB (Dpt v t)) = 1"
 lemma transC2_single_principal: "Lng (PB (transC2 M)) = 1"
   by (simp add: transC2_def Let_def)
 
+
+section \<open>§7.3 \<open>c\<^sub>1\<close> is a single principal term (claim (1) of \<open>p_7_3_c1_c2\<close>)\<close>
+
+text \<open>A flat string that IS a principal term's flat (\<open>isPTB_str\<close>) has exactly one
+  principal component (\<open>c = Trm [p]\<close> by injectivity of @{const flatBT}).\<close>
+
+lemma isPTB_str_imp_Lng_PB_1:
+  assumes "isPTB_str (flatBT c)"
+  shows "Lng (PB c) = 1"
+proof -
+  from assms obtain p where p: "flatBT c = flatBP p"
+    by (auto simp: isPTB_str_def)
+  have "flatBT c = flatBT (Trm [p])" using p by simp
+  hence "c = Trm [p]" by (rule m_7_flatBT_inj)
+  thus ?thesis by (simp add: PB_def)
+qed
+
+text \<open>Claim (1) of 命題（\<open>c\<^sub>1\<close>と\<open>c\<^sub>2\<close>の大小関係） (content.md 2270): under the
+  recursion's branch conditions (\<open>M\<close> reduced \<open>\<and>\<close> mono, \<open>j\<^sub>1 > 0\<close>, \<open>t\<^sub>1 \<noteq> 0\<close>),
+  \<open>c\<^sub>1 = Mark(Pred M)(j\<^sub>-\<^sub>1)\<close> is a single principal term.  Article reason
+  (content.md 2110): \<open>(t\<^sub>1, c\<^sub>1) \<in> T\<^bsub>B\<^esub>\<^sup>Marked\<close> and \<open>t\<^sub>1 \<noteq> 0\<close> give \<open>c\<^sub>1 \<in> PT\<^bsub>B\<^esub>\<close>.
+  Here \<open>(t\<^sub>1, c\<^sub>1) \<in> MarkedB\<close> comes from the value invariant on \<open>Pred M\<close> with the
+  \<open>c\<^sub>1\<close>-call membership @{thm [source] Marked_Pred_Adm}, and the scb-decomposition's
+  \<open>isPTB_str\<close> side condition (valid since \<open>t\<^sub>1 \<noteq> 0\<^sub>B\<close>) pins \<open>c\<^sub>1\<close> to one principal.\<close>
+
+lemma transC1_single_principal:
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS"
+    and J1: "transJ1 M > 0" and T1: "transT1 M \<noteq> 0\<^sub>B"
+  shows "Lng (PB (transC1 M)) = 1"
+proof -
+  have MT: "M \<in> T_PS" using MP by (simp add: PT_PS_def)
+  have mono: "monoT M" using MP by (simp add: PT_PS_def)
+  have L: "1 < Lng M" using J1 by (simp add: transJ1_def)
+  have hp: "hasParent M 0 (Lng M - 1)" by (rule monoT_hasParent0_last[OF MT mono L])
+  have mkd: "(Pred M, Adm M (parent M 0 (Lng M - 1))) \<in> Marked"
+    by (rule Marked_Pred_Adm[OF MT L hp])
+  have predRT: "Pred M \<in> RT_PS" by (rule Pred_RT_PS[OF MR])
+  have c1eq: "transC1 M = Mark (Pred M) (Adm M (parent M 0 (Lng M - 1)))"
+    by (simp add: transC1_def transJm1_def transJ0_def transJ1_def)
+  have t1ne: "Trans (Pred M) \<noteq> 0\<^sub>B" using T1 by (simp add: transT1_def)
+  have inv: "(Trans (Pred M), Mark (Pred M) (Adm M (parent M 0 (Lng M - 1)))) \<in> MarkedB"
+    using Trans_Mark_invariant_aux predRT mkd by blast
+  then obtain s b where
+    sd: "scb_decomp (Trans (Pred M)) s (flatBT (transC1 M)) b"
+    using c1eq by (auto simp: MarkedB_def)
+  have "isPTB_str (flatBT (transC1 M))"
+    using sd t1ne by (simp add: scb_decomp_def)
+  thus ?thesis by (rule isPTB_str_imp_Lng_PB_1)
+qed
+
 end
