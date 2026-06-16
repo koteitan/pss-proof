@@ -3216,4 +3216,109 @@ proof -
   qed
 qed
 
+text \<open>If \<open>t\<close> is a nonzero term whose first principal node-value \<open>bpHeadV t\<close> is
+  strictly below \<open>w\<close>, then \<open>t\<close> is \<open>lessBT\<close>-below the single principal \<open>D\<^bsub>w\<^esub> 0\<^bsub>B\<^esub>\<close>:
+  the very first principal of \<open>t\<close> already loses on its node value.\<close>
+
+lemma lessBT_bpHeadV_lt:
+  assumes "t \<noteq> 0\<^sub>B" and "bpHeadV t < w"
+  shows "lessBT t (Dpt w 0\<^sub>B)"
+proof -
+  obtain ps where t: "t = Trm ps" by (cases t)
+  have psne: "ps \<noteq> []" using \<open>t \<noteq> 0\<^sub>B\<close> t by auto
+  obtain p ps' where ps: "ps = p # ps'" using psne by (cases ps) auto
+  obtain v u where p: "p = DB v u" by (cases p)
+  have hv: "bpHeadV t = v" using t ps p by simp
+  hence vw: "v < w" using \<open>bpHeadV t < w\<close> by simp
+  have "lessBP (DB v u) (DB w 0\<^sub>B)" using vw by simp
+  hence "lessBT (Trm (DB v u # ps')) (Trm [DB w 0\<^sub>B])" by simp
+  thus ?thesis using t ps p by simp
+qed
+
+text \<open>Condition-VI half of \<open>c\<^sub>1 < c\<^sub>2\<close> reduced to its only non-admissible
+  sub-case: a Mark second-index bound (\<open>NAbound\<close>).  The admissible sub-case is
+  discharged here outright (it forces \<open>transT2 M = 0\<^bsub>B\<^esub>\<close>).\<close>
+
+lemma transC1_lessBT_transC2_modNA:
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS"
+    and J1pos: "transJ1 M > 0" and T1: "transT1 M \<noteq> 0\<^sub>B"
+    and NAbound: "transCondVI M \<Longrightarrow> \<not> adm M (transJ0 M) \<Longrightarrow> transT2 M \<noteq> 0\<^sub>B
+                    \<Longrightarrow> bpHeadV (transT2 M) < enat (entry M 1 (transJ1 M))"
+  shows "lessBT (transC1 M) (transC2 M)"
+proof -
+  have MT: "M \<in> T_PS" using MP by (simp add: PT_PS_def)
+  have mono: "monoT M" using MP by (simp add: PT_PS_def)
+  have L: "1 < Lng M" using J1pos by (simp add: transJ1_def)
+  have predRT: "Pred M \<in> RT_PS" by (rule Pred_RT_PS[OF MR])
+  have VIfact: "transCondVI M \<Longrightarrow>
+                  lessBT (transT2 M) (Dpt (enat (entry M 1 (transJ1 M))) 0\<^sub>B)"
+  proof -
+    assume VI: "transCondVI M"
+    define Dj1 where "Dj1 = Dpt (enat (entry M 1 (transJ1 M))) 0\<^sub>B"
+    show "lessBT (transT2 M) Dj1"
+    proof (cases "transT2 M = 0\<^sub>B")
+      case True
+      have "lessBT (Trm []) Dj1" by (simp add: Dj1_def)
+      thus ?thesis using True by simp
+    next
+      case t2ne: False
+      show ?thesis
+      proof (cases "adm M (transJ0 M)")
+        case adm: True
+        \<comment> \<open>admissible sub-case: \<open>transT2 M = 0\<^bsub>B\<^esub>\<close>, contradicting \<open>t2ne\<close>\<close>
+        have j0eq: "transJ0 M = Lng M - 2"
+        proof -
+          have "parent M 0 (Lng M - 1) + 1 = Lng M - 1"
+            using VI by (simp add: transCondVI_def)
+          moreover have "transJ0 M = parent M 0 (Lng M - 1)"
+            by (simp add: transJ0_def transJ1_def)
+          ultimately show ?thesis by simp
+        qed
+        have jm1eq: "transJm1 M = transJ0 M"
+          using adm by (simp add: transJm1_def Adm_def)
+        have hp: "hasParent M 0 (Lng M - 1)"
+          by (rule monoT_hasParent0_last[OF MT mono L])
+        have mkd0: "(Pred M, Adm M (parent M 0 (Lng M - 1))) \<in> Marked"
+          by (rule Marked_Pred_Adm[OF MT L hp])
+        have parj0: "parent M 0 (Lng M - 1) = transJ0 M"
+          by (simp add: transJ0_def transJ1_def)
+        have admj0: "Adm M (transJ0 M) = transJ0 M"
+          using adm by (simp add: Adm_def)
+        have mkd: "(Pred M, transJ0 M) \<in> Marked"
+          using mkd0 parj0 admj0 by simp
+        have lngPred: "Lng (Pred M) - 1 = transJ0 M"
+          using L j0eq by (simp add: Pred_def)
+        have mkd': "(Pred M, Lng (Pred M) - 1) \<in> Marked"
+          using mkd lngPred by simp
+        have nzPred: "\<not> zeroT (Pred M)"
+        proof
+          assume "zeroT (Pred M)"
+          hence "Trans (Pred M) = 0\<^sub>B" using m_7_3_Trans_zeroT[OF predRT] by simp
+          thus False using T1 by (simp add: transT1_def)
+        qed
+        have markval: "Mark (Pred M) (Lng (Pred M) - 1)
+                         = Dpt (enat (entry (Pred M) 1 (Lng (Pred M) - 1))) 0\<^sub>B"
+          by (rule Mark_rightmost1_forward[OF predRT nzPred mkd'])
+        have markj0: "Mark (Pred M) (transJm1 M)
+                        = Dpt (enat (entry (Pred M) 1 (Lng (Pred M) - 1))) 0\<^sub>B"
+          using markval lngPred jm1eq by simp
+        have "transT2 M = bpHeadT (Mark (Pred M) (transJm1 M))"
+          by (simp add: transT2_def transC1_def)
+        also have "\<dots> = bpHeadT (Dpt (enat (entry (Pred M) 1 (Lng (Pred M) - 1))) 0\<^sub>B)"
+          using markj0 by simp
+        also have "\<dots> = 0\<^sub>B" by simp
+        finally have "transT2 M = 0\<^sub>B" .
+        thus ?thesis using t2ne by simp
+      next
+        case nadm: False
+        have hbound: "bpHeadV (transT2 M) < enat (entry M 1 (transJ1 M))"
+          by (rule NAbound[OF VI nadm t2ne])
+        show ?thesis unfolding Dj1_def
+          by (rule lessBT_bpHeadV_lt[OF t2ne hbound])
+      qed
+    qed
+  qed
+  show ?thesis by (rule transC1_lessBT_transC2[OF MR MP J1pos T1 VIfact])
+qed
+
 end
