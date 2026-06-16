@@ -4162,4 +4162,180 @@ proof (induction N arbitrary: m rule: measure_induct_rule[where f=Lng])
   qed
 qed
 
+
+section \<open>§7.3 NAbound: condition-VI structural bound (Lemma B) and assembly\<close>
+
+text \<open>Lemma B: when \<open>j\<^sub>0\<close> is non-\<open>M\<close>-admissible, the indices in \<open>(Adm M j\<^sub>0, j\<^sub>0]\<close> are
+  all non-admissible, so by the \<open>nadm \<Longrightarrow> nextR\<^sub>1 \<Longrightarrow> strict row-1 increase\<close> chain
+  row-1 is non-decreasing on \<open>[Adm M j\<^sub>0, j\<^sub>0]\<close>; hence its max there is \<open>M\<^bsub>1,j\<^sub>0\<^esub>\<close>.\<close>
+
+lemma viB_suffix_max:
+  assumes nadm0: "\<not> adm M j0" and j0lt: "j0 < Lng M"
+  shows "Max ((\<lambda>j. entry M 1 j) ` {Adm M j0 .. j0}) \<le> entry M 1 j0"
+proof -
+  let ?jm1 = "Adm M j0"
+  have admdef: "?jm1 = Max {j'. adm M j' \<and> j' < j0}"
+    using nadm0 by (simp add: Adm_def)
+  have fin: "finite {j'. adm M j' \<and> j' < j0}"
+    by (rule finite_subset[of _ "{0..<j0}"]) auto
+  \<comment> \<open>every index strictly above \<open>?jm1\<close> up to \<open>j\<^sub>0\<close> is non-admissible\<close>
+  have nonadm_seg: "\<And>j'. ?jm1 < j' \<Longrightarrow> j' \<le> j0 \<Longrightarrow> \<not> adm M j'"
+  proof -
+    fix j' assume a: "?jm1 < j'" and b: "j' \<le> j0"
+    show "\<not> adm M j'"
+    proof (cases "j' = j0")
+      case True thus ?thesis using nadm0 by simp
+    next
+      case False
+      hence jlt: "j' < j0" using b by simp
+      show ?thesis
+      proof
+        assume "adm M j'"
+        hence "j' \<in> {j'. adm M j' \<and> j' < j0}" using jlt by simp
+        hence "j' \<le> ?jm1" using fin admdef by simp
+        thus False using a by simp
+      qed
+    qed
+  qed
+  \<comment> \<open>the strict-increase step\<close>
+  have step: "\<And>j. ?jm1 \<le> j \<Longrightarrow> j < j0 \<Longrightarrow> entry M 1 j < entry M 1 (Suc j)"
+  proof -
+    fix j assume jge: "?jm1 \<le> j" and jlt: "j < j0"
+    have "?jm1 < Suc j" using jge by simp
+    moreover have "Suc j \<le> j0" using jlt by simp
+    ultimately have "\<not> adm M (Suc j)" by (rule nonadm_seg)
+    hence nadmS: "nadm M (Suc j)" by (simp add: adm_def)
+    have "Suc j \<le> Lng M" using jlt j0lt by simp
+    hence "nextR M 1 (Suc j - 1) (Suc j)" using nadmS by (simp add: nadm_def)
+    hence "nextrel1 M j (Suc j)" by (simp add: nextR_def)
+    thus "entry M 1 j < entry M 1 (Suc j)" by (simp add: nextrel1_def)
+  qed
+  \<comment> \<open>hence monotone up to \<open>j\<^sub>0\<close>\<close>
+  have mono: "\<And>a. ?jm1 \<le> a \<Longrightarrow> a \<le> j0 \<Longrightarrow> entry M 1 a \<le> entry M 1 j0"
+  proof -
+    fix a assume A: "?jm1 \<le> a" and B: "a \<le> j0"
+    from B A show "entry M 1 a \<le> entry M 1 j0"
+    proof (induction "j0 - a" arbitrary: a)
+      case 0 hence "a = j0" by simp thus ?case by simp
+    next
+      case (Suc d)
+      have alt: "a < j0" using Suc.hyps(2) Suc.prems(1) by linarith
+      have "entry M 1 a < entry M 1 (Suc a)" by (rule step[OF Suc.prems(2) alt])
+      moreover have "entry M 1 (Suc a) \<le> entry M 1 j0"
+      proof (rule Suc.hyps(1))
+        show "d = j0 - Suc a" using Suc.hyps(2) by simp
+        show "Suc a \<le> j0" using alt by simp
+        show "?jm1 \<le> Suc a" using Suc.prems(2) by simp
+      qed
+      ultimately show ?case by simp
+    qed
+  qed
+  have adm0: "adm M 0" by (simp add: adm_def nadm_def nextR_def nextrel1_def)
+  have j0pos: "0 < j0" using nadm0 adm0 by (cases "j0 = 0") auto
+  have nemax: "{j'. adm M j' \<and> j' < j0} \<noteq> {}" using adm0 j0pos by auto
+  have jm1lt: "?jm1 < j0"
+  proof -
+    have "Max {j'. adm M j' \<and> j' < j0} \<in> {j'. adm M j' \<and> j' < j0}"
+      by (rule Max_in[OF fin nemax])
+    thus ?thesis using admdef by simp
+  qed
+  have fin2: "finite ((\<lambda>j. entry M 1 j) ` {?jm1 .. j0})" by simp
+  have ne2: "(\<lambda>j. entry M 1 j) ` {?jm1 .. j0} \<noteq> {}" using jm1lt by auto
+  have "\<forall>x \<in> (\<lambda>j. entry M 1 j) ` {?jm1 .. j0}. x \<le> entry M 1 j0"
+    using mono by auto
+  thus ?thesis using fin2 ne2 by (simp add: Max_le_iff)
+qed
+
+text \<open>NAbound: the non-admissible condition-VI Mark second-index bound, discharged
+  by the keystone @{thm [source] Mark_flatIdx_bound} (on \<open>Pred M\<close> at \<open>j\<^sub>-\<^sub>1\<close>) and
+  Lemma B @{thm [source] viB_suffix_max}.\<close>
+
+lemma NAbound_holds:
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS" and T1: "transT1 M \<noteq> 0\<^sub>B"
+    and VI: "transCondVI M" and nadm: "\<not> adm M (transJ0 M)" and t2nz: "transT2 M \<noteq> 0\<^sub>B"
+  shows "bpHeadV (transT2 M) < enat (entry M 1 (transJ1 M))"
+proof -
+  have MT: "M \<in> T_PS" using MP by (simp add: PT_PS_def)
+  have mono: "monoT M" using MP by (simp add: PT_PS_def)
+  have VIc: "entry M 1 (Lng M - 1) > 0
+           \<and> entry M 1 (parent M 0 (Lng M - 1)) + 1 = entry M 1 (Lng M - 1)
+           \<and> parent M 0 (Lng M - 1) + 1 = Lng M - 1"
+    using VI by (simp add: transCondVI_def)
+  have L: "1 < Lng M" using VIc by linarith
+  let ?j0 = "transJ0 M"  let ?j1 = "transJ1 M"  let ?jm1 = "transJm1 M"
+  have j1eq: "?j1 = Lng M - 1" by (simp add: transJ1_def)
+  have j0eq: "?j0 = parent M 0 (Lng M - 1)" by (simp add: transJ0_def transJ1_def)
+  have jm1eq: "?jm1 = Adm M ?j0" by (simp add: transJm1_def transJ0_def transJ1_def)
+  have j0val: "?j0 = Lng M - 2" using VIc j0eq by linarith
+  have j0lt: "?j0 < Lng M" using j0val L by simp
+  have predRT: "Pred M \<in> RT_PS" by (rule Pred_RT_PS[OF MR])
+  have hp: "hasParent M 0 (Lng M - 1)" by (rule monoT_hasParent0_last[OF MT mono L])
+  have mkjm1: "(Pred M, ?jm1) \<in> Marked"
+    using Marked_Pred_Adm[OF MT L hp] j0eq jm1eq by simp
+  have c1eq: "transC1 M = Mark (Pred M) ?jm1" by (simp add: transC1_def transJm1_def)
+  \<comment> \<open>\<open>c\<^sub>1 \<noteq> 0\<close> and principal-list form\<close>
+  have J1p: "transJ1 M > 0" using L by (simp add: transJ1_def)
+  have pc1: "Lng (PB (transC1 M)) = 1" by (rule transC1_single_principal[OF MR MP J1p T1])
+  have c1ne: "transC1 M \<noteq> 0\<^sub>B" using pc1 by (auto simp: PB_def)
+  obtain p ps where c1form: "transC1 M = Trm (p # ps)"
+  proof -
+    obtain xs where xs: "transC1 M = Trm xs" by (cases "transC1 M")
+    have "xs \<noteq> []" using c1ne xs by auto
+    then obtain p ps where "xs = p # ps" by (cases xs) auto
+    thus thesis using xs that by simp
+  qed
+  \<comment> \<open>\<open>bpHeadV t\<^sub>2 \<in> flatIdx c\<^sub>1\<close>\<close>
+  have hv_in: "bpHeadV (transT2 M) \<in> flatIdx (transC1 M)"
+  proof -
+    have "bpHeadV (transT2 M) \<in> flatIdx (transT2 M)" by (rule bpHeadV_in_flatIdx[OF t2nz])
+    moreover have "flatIdx (transT2 M) \<subseteq> flatIdx (transC1 M)"
+      unfolding transT2_def using flatIdx_bpHeadT_sub[OF c1form] by simp
+    ultimately show ?thesis by auto
+  qed
+  \<comment> \<open>Lemma A on \<open>Pred M\<close> at \<open>?jm1\<close>\<close>
+  have LPred: "Lng (Pred M) - 1 = ?j0" using j0val L by (simp add: Pred_def)
+  have bound: "\<forall>v \<in> flatIdx (Mark (Pred M) ?jm1).
+                  v \<le> enat (Max ((\<lambda>j. entry (Pred M) 1 j) ` {?jm1 .. Lng (Pred M) - 1}))"
+    using Mark_flatIdx_bound mkjm1 predRT by blast
+  \<comment> \<open>entries of \<open>Pred M\<close> agree with \<open>M\<close> up to \<open>?j0\<close>\<close>
+  have entryagree: "\<And>j. j \<le> ?j0 \<Longrightarrow> entry (Pred M) 1 j = entry M 1 j"
+  proof -
+    fix j assume "j \<le> ?j0"
+    hence "j < Lng M - 1" using j0val L by simp
+    thus "entry (Pred M) 1 j = entry M 1 j"
+      using L by (simp add: Pred_def entry_def nth_butlast)
+  qed
+  have maxeq: "(\<lambda>j. entry (Pred M) 1 j) ` {?jm1 .. Lng (Pred M) - 1}
+             = (\<lambda>j. entry M 1 j) ` {?jm1 .. ?j0}"
+    by (rule image_cong) (use LPred entryagree in auto)
+  \<comment> \<open>Lemma B\<close>
+  have lemB: "Max ((\<lambda>j. entry M 1 j) ` {?jm1 .. ?j0}) \<le> entry M 1 ?j0"
+    using viB_suffix_max[OF nadm j0lt] jm1eq by simp
+  \<comment> \<open>combine to \<open>\<le> M\<^bsub>1,j\<^sub>0\<^esub>\<close>\<close>
+  have step1: "bpHeadV (transT2 M) \<le> enat (entry M 1 ?j0)"
+  proof -
+    have "bpHeadV (transT2 M)
+          \<le> enat (Max ((\<lambda>j. entry (Pred M) 1 j) ` {?jm1 .. Lng (Pred M) - 1}))"
+      using hv_in c1eq bound by auto
+    also have "\<dots> = enat (Max ((\<lambda>j. entry M 1 j) ` {?jm1 .. ?j0}))" using maxeq by simp
+    also have "\<dots> \<le> enat (entry M 1 ?j0)" using lemB by simp
+    finally show ?thesis .
+  qed
+  \<comment> \<open>\<open>M\<^bsub>1,j\<^sub>0\<^esub> < M\<^bsub>1,j\<^sub>1\<^esub>\<close>\<close>
+  have lt: "entry M 1 ?j0 < entry M 1 ?j1"
+  proof -
+    have "entry M 1 ?j0 + 1 = entry M 1 ?j1" using VIc j0eq j1eq by simp
+    thus ?thesis by simp
+  qed
+  show ?thesis using step1 lt by (metis enat_ord_simps(2) le_less_trans)
+qed
+
+text \<open>命題（\<open>c\<^sub>1\<close>と\<open>c\<^sub>2\<close>の大小関係）claim (3), now UNCONDITIONAL: \<open>lessBT c\<^sub>1 c\<^sub>2\<close>.\<close>
+
+lemma transC1_lessBT_transC2_full:
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS"
+    and J1pos: "transJ1 M > 0" and T1: "transT1 M \<noteq> 0\<^sub>B"
+  shows "lessBT (transC1 M) (transC2 M)"
+  by (rule transC1_lessBT_transC2_modNA[OF MR MP J1pos T1 NAbound_holds[OF MR MP T1]])
+
 end
