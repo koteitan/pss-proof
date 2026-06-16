@@ -2814,4 +2814,18 @@ next
   qed
 qed
 
+
+section \<open>§7.3 \<open>c\<^sub>2\<close> is a single principal term (claim (2) of \<open>p_7_3_c1_c2\<close>)\<close>
+
+text \<open>\<open>transC2 M\<close> is unconditionally of the form \<open>D\<^sub>v(\<dots>)\<close> (every branch of the
+  case definition is \<open>Dpt v _\<close>), hence has exactly one principal component.
+  This discharges claim (2) of the article's 命題（\<open>c\<^sub>1\<close>と\<open>c\<^sub>2\<close>の大小関係）
+  (content.md 2270) with no hypotheses.\<close>
+
+lemma Lng_PB_Dpt [simp]: "Lng (PB (Dpt v t)) = 1"
+  by (simp add: PB_def)
+
+lemma transC2_single_principal: "Lng (PB (transC2 M)) = 1"
+  by (simp add: transC2_def Let_def)
+
 end
