@@ -77,7 +77,7 @@
       - ✅🚧 命題（$\textrm{Mark}$ の $(\textrm{IncrFirst},\textrm{Red},P)$ 不変性）〔(1) green: `m_7_3_Mark_Red`/`m_7_3_Mark_IncrFirst`(同域)。残=P 部〕
       - ✅ 命題（$\textrm{Trans}$ が零項性を保つこと）〔`m_7_3_Trans_zeroT`: `M∈RT_PS ⟹ (zeroT M ⟷ Trans M = 0)`。⟸=値不変量 `Trans_Mark_invariant_aux` の `¬zeroT⟶Trans≠0` 対偶、⟹=`m_6_6_oneColumn` で `[(0,0)]` 帰着+`Trans_singleton`。域は RT_PS(A15: 原典 T_PS だが Trans 域=RT_PS)〕
       - ✅ 命題（$c_1$ と $c_2$ の大小関係）〔**完全達成**: claim(1)(2)=`transC1/transC2_single_principal`、claim(3)=`transC1_lessBT_transC2_full`(無条件 `lessBT c1 c2`)。NAbound(VI 非許容枝)を `Mark_flatIdx_bound`(Mark インデックス suffix 上界、593行 keystone)+`viB_suffix_max`(Lemma B: 非許容で row-1 が `[Adm j0,j0]` 上非減少)で討伐。memory `pss-73-ordering-chain`〕
-      - 🚧 命題（$\textrm{Pred}$ の $\textrm{Trans}$ に関する降下性）〔土台 ✅(`scbext_lessBT`+`lessBT_addBT_*`)。mono=scbext∘c1c2(3)、multi=append∘IH。c1c2(3) 待ち〕
+      - ✅ 命題（$\textrm{Pred}$ の $\textrm{Trans}$ に関する降下性）〔**完全達成** `m_7_3_Pred_Trans_descend`(RT_PS, Lng>1): `lessBT(Trans(Pred M))(Trans M)`。Lng 強帰納 — mono t1≠0=`scbext_lessBT`∘`transC1_lessBT_transC2_full`、multi=`lessBT_addBT_self`/`_mono_right`∘IH(補助 `Trans_Pred_multi_last`)〕
       - 🚨 命題（右端第 $1$ 基点の $\textrm{Mark}$ の基本性質）
       - 🚨 系（$\textrm{Mark}$ の左端の基本性質）
       - 🚨 系（条件 (II) か (IV) の下で $t_2$ が $0$ でないこと）
