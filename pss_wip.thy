@@ -3415,4 +3415,158 @@ proof
   ultimately show "v \<in> flatIdx c\<^sub>0 \<union> flatIdx c" by (auto simp: flatIdx_def)
 qed
 
+text \<open>\<open>bpHeadT t\<close> is a sub-term, so its indices are among \<open>t\<close>'s.\<close>
+
+lemma flatIdx_bpHeadT_sub:
+  assumes "t = Trm (p # ps)"
+  shows "flatIdx (bpHeadT t) \<subseteq> flatIdx t"
+proof -
+  obtain v u where p: "p = DB v u" by (cases p)
+  have "bpHeadT t = u" using assms p by simp
+  moreover have "flatIdx u \<subseteq> flatIdx (Trm (DB v u # ps))"
+    by (cases ps) (auto simp: flatIdx_def)
+  ultimately show ?thesis using assms p by simp
+qed
+
+text \<open>Surgery-position relationships (the mono \<open>m < j\<^sub>1\<close> branch of \<open>Mark\<close>): the
+  mark \<open>m\<close> sits at or below the row-0 parent \<open>j\<^sub>p\<close> of \<open>j\<^sub>1\<close> and its
+  admissibilization \<open>j\<^sub>-\<^sub>1 = Adm N j\<^sub>p\<close>.\<close>
+
+lemma surg_parent_ge:
+  assumes mk: "(N, m) \<in> Marked" and mono: "monoT N" and L: "1 < Lng N"
+    and mlt: "m < Lng N - 1"
+  shows "m \<le> parent N 0 (Lng N - 1)"
+proof -
+  have NT: "N \<in> T_PS" using mk by (simp add: Marked_def)
+  have hp: "hasParent N 0 (Lng N - 1)" by (rule monoT_hasParent0_last[OF NT mono L])
+  have nxt: "nextR N 0 (parent N 0 (Lng N - 1)) (Lng N - 1)"
+    using hp unfolding hasParent_def parent_def by (rule theI')
+  have le: "leR N 0 m (Lng N - 1)" using mk by (simp add: Marked_def)
+  show ?thesis by (rule parent_max[OF hp nxt le mlt])
+qed
+
+lemma surg_adm_ge:
+  assumes adm: "adm N m" and le: "m \<le> j"
+  shows "m \<le> Adm N j"
+proof (cases "adm N j")
+  case True thus ?thesis using le by (simp add: Adm_def)
+next
+  case False
+  hence Adm: "Adm N j = Max {j'. adm N j' \<and> j' < j}" by (simp add: Adm_def)
+  have mlt: "m < j" using le False adm by (cases "m = j") auto
+  have fin: "finite {j'. adm N j' \<and> j' < j}"
+    by (rule finite_subset[of _ "{0..<j}"]) auto
+  have mem: "m \<in> {j'. adm N j' \<and> j' < j}" using adm mlt by simp
+  have "m \<le> Max {j'. adm N j' \<and> j' < j}" by (rule Max_ge[OF fin mem])
+  thus ?thesis using Adm by simp
+qed
+
+text \<open>Every index of \<open>c\<^sub>2 = transC2 N\<close> lies in \<open>c\<^sub>1 = transC1 N\<close> or is one of the two
+  explicit row-1 entries \<open>N\<^bsub>1,j\<^sub>1\<^esub>\<close>, \<open>N\<^bsub>1,j\<^sub>p\<^esub>\<close> introduced by the definition.  Every
+  branch is \<open>D\<^bsub>v\<^esub>(\<dots>)\<close> with \<open>v = bpHeadV c\<^sub>1\<close>, and the inner term is built from
+  \<open>t\<^sub>2 = bpHeadT c\<^sub>1\<close> (or sub-sums/last-principal of it) plus \<open>D\<^bsub>N\<^sub>1\<^sub>,\<^sub>j\<^sub>1\<^esub>\<close>/\<open>D\<^bsub>N\<^sub>1\<^sub>,\<^sub>j\<^sub>p\<^esub>\<close>.\<close>
+
+lemma flatIdx_transC2_sub:
+  assumes c1ne: "transC1 N \<noteq> 0\<^sub>B" and t2TB: "transT2 N \<in> T_B"
+  shows "flatIdx (transC2 N)
+           \<subseteq> flatIdx (transC1 N)
+              \<union> {enat (entry N 1 (transJ1 N)), enat (entry N 1 (transJ0 N))}"
+proof -
+  obtain xs where xs: "transC1 N = Trm xs" by (cases "transC1 N")
+  have "xs \<noteq> []" using c1ne xs by auto
+  then obtain p ps where "xs = p # ps" by (cases xs) auto
+  hence c1form: "transC1 N = Trm (p # ps)" using xs by simp
+  \<comment> \<open>\<open>v = transV N = bpHeadV c\<^sub>1 \<in> flatIdx c\<^sub>1\<close>\<close>
+  have vin: "transV N \<in> flatIdx (transC1 N)"
+    unfolding transV_def by (rule bpHeadV_in_flatIdx[OF c1ne])
+  \<comment> \<open>\<open>flatIdx t\<^sub>2 \<subseteq> flatIdx c\<^sub>1\<close>\<close>
+  have t2sub: "flatIdx (transT2 N) \<subseteq> flatIdx (transC1 N)"
+    unfolding transT2_def using flatIdx_bpHeadT_sub[OF c1form] by simp
+  \<comment> \<open>\<open>SigmaB(take k (PB t\<^sub>2))\<close> and any \<open>PB t\<^sub>2 ! k\<close> have indices within \<open>t\<^sub>2\<close>\<close>
+  have sigsub: "\<And>k. flatIdx (SigmaB (take k (PB (transT2 N)))) \<subseteq> flatIdx (transT2 N)"
+  proof -
+    fix k
+    have "flatIdx (SigmaB (take k (PB (transT2 N))))
+          = (\<Union>t \<in> set (take k (PB (transT2 N))). flatIdx t)" by (rule flatIdx_SigmaB)
+    also have "\<dots> \<subseteq> (\<Union>t \<in> set (PB (transT2 N)). flatIdx t)"
+      using set_take_subset by fastforce
+    also have "\<dots> = flatIdx (SigmaB (PB (transT2 N)))" by (rule flatIdx_SigmaB[symmetric])
+    also have "\<dots> = flatIdx (transT2 N)" using m_7_1_term_components[OF t2TB] by simp
+    finally show "flatIdx (SigmaB (take k (PB (transT2 N)))) \<subseteq> flatIdx (transT2 N)" .
+  qed
+  have pjsub: "\<And>k. k < Lng (PB (transT2 N)) \<Longrightarrow> flatIdx (PB (transT2 N) ! k) \<subseteq> flatIdx (transT2 N)"
+  proof -
+    fix k assume "k < Lng (PB (transT2 N))"
+    hence "PB (transT2 N) ! k \<in> set (PB (transT2 N))" by (rule nth_mem)
+    hence "flatIdx (PB (transT2 N) ! k) \<subseteq> (\<Union>t \<in> set (PB (transT2 N)). flatIdx t)" by auto
+    also have "\<dots> = flatIdx (transT2 N)"
+      using flatIdx_SigmaB[symmetric] m_7_1_term_components[OF t2TB] by simp
+    finally show "flatIdx (PB (transT2 N) ! k) \<subseteq> flatIdx (transT2 N)" .
+  qed
+  have bpHeadT_pj: "\<And>k. k < Lng (PB (transT2 N))
+        \<Longrightarrow> flatIdx (bpHeadT (PB (transT2 N) ! k)) \<subseteq> flatIdx (transT2 N)"
+  proof -
+    fix k assume k: "k < Lng (PB (transT2 N))"
+    have "PB (transT2 N) ! k \<in> set (PB (transT2 N))" using k by (rule nth_mem)
+    then obtain q where q: "PB (transT2 N) ! k = Trm [q]" by (auto simp: PB_def)
+    have "flatIdx (bpHeadT (PB (transT2 N) ! k)) \<subseteq> flatIdx (PB (transT2 N) ! k)"
+      using flatIdx_bpHeadT_sub[OF q] by simp
+    thus "flatIdx (bpHeadT (PB (transT2 N) ! k)) \<subseteq> flatIdx (transT2 N)"
+      using pjsub[OF k] by blast
+  qed
+  \<comment> \<open>now bound \<open>flatIdx (transC2 N)\<close> branch by branch\<close>
+  let ?j1 = "enat (entry N 1 (transJ1 N))"  let ?jp = "enat (entry N 1 (transJ0 N))"
+  let ?Dj1 = "Dpt (enat (entry N 1 (transJ1 N))) 0\<^sub>B"
+  have inner: "flatIdx (transC2 N) \<subseteq> insert (transV N) (flatIdx (transT2 N) \<union> {?j1, ?jp})"
+  proof (cases "transCondI N \<or> transCondIII N \<or> transCondV N")
+    case True
+    hence "transC2 N = Dpt (transV N) (transT2 N +\<^sub>B ?Dj1)"
+      by (simp add: transC2_def Let_def)
+    thus ?thesis by (auto simp: flatIdx_addBT flatIdx_Dpt)
+  next
+    case notA: False
+    show ?thesis
+    proof (cases "transCondVI N")
+      case True
+      hence "transC2 N = Dpt (transV N) ?Dj1" using notA
+        by (simp add: transC2_def Let_def)
+      thus ?thesis by (auto simp: flatIdx_Dpt)
+    next
+      case notVI: False
+      show ?thesis
+      proof (cases "transT2 N = 0\<^sub>B")
+        case True
+        hence "transC2 N = Dpt (transV N) (Dpt (enat (entry N 1 (transJ0 N))) ?Dj1)"
+          using notA notVI by (simp add: transC2_def Let_def)
+        thus ?thesis by (auto simp: flatIdx_Dpt)
+      next
+        case t2nz: False
+        have J1lt: "Lng (PB (transT2 N)) - 1 < Lng (PB (transT2 N))"
+          using m_7_1_term_components[OF t2TB] t2nz by (cases "Lng (PB (transT2 N))") auto
+        have b1: "flatIdx (SigmaB (take (Lng (PB (transT2 N)) - 1) (PB (transT2 N)))) \<subseteq> flatIdx (transT2 N)"
+          by (rule sigsub)
+        have b2: "flatIdx (bpHeadT (PB (transT2 N) ! (Lng (PB (transT2 N)) - 1))) \<subseteq> flatIdx (transT2 N)"
+          by (rule bpHeadT_pj[OF J1lt])
+        show ?thesis
+        proof (cases "bpHeadV (PB (transT2 N) ! (Lng (PB (transT2 N)) - 1)) = enat (entry N 1 (transJ0 N))")
+          case leftDj0: True
+          hence "transC2 N = Dpt (transV N)
+                   (SigmaB (take (Lng (PB (transT2 N)) - 1) (PB (transT2 N)))
+                    +\<^sub>B Dpt (enat (entry N 1 (transJ0 N)))
+                          (bpHeadT (PB (transT2 N) ! (Lng (PB (transT2 N)) - 1)) +\<^sub>B ?Dj1))"
+            using notA notVI t2nz by (simp add: transC2_def Let_def)
+          thus ?thesis using b1 b2 by (auto simp: flatIdx_addBT flatIdx_Dpt)
+        next
+          case False
+          hence "transC2 N = Dpt (transV N)
+                   (transT2 N +\<^sub>B Dpt (enat (entry N 1 (transJ0 N))) (transT2 N +\<^sub>B ?Dj1))"
+            using notA notVI t2nz by (simp add: transC2_def Let_def)
+          thus ?thesis by (auto simp: flatIdx_addBT flatIdx_Dpt)
+        qed
+      qed
+    qed
+  qed
+  show ?thesis using inner vin t2sub by auto
+qed
+
 end
