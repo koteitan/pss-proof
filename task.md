@@ -94,7 +94,7 @@
       - ✅ 命題（$\textrm{Adm}_M$ と $<_M^{\textrm{NextAdm}}$ の関係）
       - 🚨 命題（$\textrm{Trans}$ と $<_M^{\textrm{NextAdm}}$ の関係）
       - 🚨 系（$\textrm{Mark}$ と $<_M^{\textrm{NextAdm}}$ の関係）
-      - 🚨 系（$\textrm{Trans}$ の $\textrm{Mark}$ と $\textrm{Pred}$ による表示）
+      - ✅ 系（$\textrm{Trans}$ の $\textrm{Mark}$ と $\textrm{Pred}$ による表示）〔`m_7_4_Trans_Mark_Pred`(= `p_7_4_Trans_Mark_Pred`, content 2490): (M,m)∈Marked, m<Lng-1 ⟹ ∃! sb で Trans(Pred M) を Mark(Pred M)m の周りに、Trans M を Mark M m の周りに同位置 scb 分解。Lng 強帰納 — mono surgery transport(`scb_replace_principal_BP`+`m_7_2_scb_compose`+`m_7_2_scb_unique_sb`)/multi は共有 prefix を `scb_addBT_left` で持ち上げ。921行。§7.4→§8 の橋〕
       - 🚨 系（$\textrm{Trans}$ の $\textrm{Mark}$ と切片による表示）
       - 🚨 系（$\textrm{RightNodes}$ と $\textrm{Mark}$ の関係）
       - 🚨 命題（$\textrm{RightNodes}$ と $\textrm{RightAnces}$ の関係）〔`RightAnces` 新定義要〕
