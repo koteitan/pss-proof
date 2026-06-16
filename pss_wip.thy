@@ -2878,4 +2878,165 @@ proof -
   thus ?thesis by (rule isPTB_str_imp_Lng_PB_1)
 qed
 
+
+section \<open>§7.3 命題（右端第1基点の \<open>Mark\<close> の基本性質）— content.md 2294 (forward)\<close>
+
+text \<open>For a NON-zero reduced pair sequence \<open>M\<close>, the rightmost mark
+  \<open>m = j\<^sub>1 = Lng M - 1\<close> is the single principal \<open>D\<^bsub>M\<^bsub>1,j\<^sub>1\<^esub>\<^esub> 0\<close>.  Proved by
+  \<open>Lng\<close>-strong induction, evaluating \<open>Mark M (Lng M - 1)\<close> by the conditional
+  recursion @{thm [source] Mark.psimps} (domain from
+  @{thm [source] m_7_3_Mark_welldef}), collapsing only the OUTER ifs to reach
+  the wanted branch.  The excluded zero base \<open>[(0,0)]\<close> is the sole counterexample
+  (correction A17), hence the \<open>\<not> zeroT M\<close> hypothesis.\<close>
+
+lemma Mark_rightmost1_forward:
+  assumes "M \<in> RT_PS" and "\<not> zeroT M" and "(M, Lng M - 1) \<in> Marked"
+  shows "Mark M (Lng M - 1) = Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B"
+proof -
+  have "M \<in> RT_PS \<longrightarrow> \<not> zeroT M \<longrightarrow> (M, Lng M - 1) \<in> Marked
+        \<longrightarrow> Mark M (Lng M - 1) = Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B"
+  proof (induction M rule: measure_induct_rule[where f=Lng])
+    case (less M)
+    show ?case
+    proof (intro impI)
+      assume MR: "M \<in> RT_PS" and nzM: "\<not> zeroT M" and mM: "(M, Lng M - 1) \<in> Marked"
+      have MT: "M \<in> T_PS" using MR by (simp add: RT_PS_def)
+      have Mne: "M \<noteq> []" using MT by (simp add: T_PS_def)
+      have domK: "\<And>m. Trans_Mark_dom (Inr (M, m))" by (rule m_7_3_Mark_welldef[OF MR])
+      let ?j1 = "Lng M - 1"
+      show "Mark M ?j1 = Dpt (enat (entry M 1 ?j1)) 0\<^sub>B"
+      proof (cases "Lng M = 1")
+        case True
+        \<comment> \<open>(A) base length 1, \<open>j\<^sub>1 = 0\<close>: \<open>M = [(v,v)]\<close> with \<open>v > 0\<close>\<close>
+        obtain v where Mv: "M = [(v, v)]"
+          using m_6_6_oneColumn[OF MT] MR True by auto
+        have v0: "v \<noteq> 0" using nzM Mv by (simp add: zeroT_def entry_def)
+        have j10: "?j1 = 0" using True by simp
+        have "Mark M ?j1 = Dpt (enat v) 0\<^sub>B" using Mv Mark_singleton v0 j10 by simp
+        moreover have "entry M 1 ?j1 = v" using Mv j10 by (simp add: entry_def)
+        ultimately show ?thesis by simp
+      next
+        case notone: False
+        have L: "1 < Lng M" using Mne notone by (cases M) auto
+        have Lgt1: "\<not> Lng M \<le> Suc 0" using L by simp
+        have j1pos: "0 < ?j1" using L by simp
+        show ?thesis
+        proof (cases "monoT M")
+          case mono: True
+          have predRT: "Pred M \<in> RT_PS" by (rule Pred_RT_PS[OF MR])
+          show ?thesis
+          proof (cases "Trans (Pred M) = 0\<^sub>B")
+            case t1z: True
+            \<comment> \<open>(B) mono, \<open>t\<^sub>1 = 0\<close>: branch yields \<open>Dpt (entry M 1 j\<^sub>1) 0\<close> since \<open>j\<^sub>1 \<noteq> 0\<close>\<close>
+            have kv: "Mark M ?j1 = (if ?j1 = 0 then Dpt 0 (Dpt (enat (entry M 1 ?j1)) 0\<^sub>B)
+                                    else Dpt (enat (entry M 1 ?j1)) 0\<^sub>B)"
+              using Mark.psimps[OF domK] MR Lgt1 mono t1z by (simp add: Let_def)
+            show ?thesis using kv j1pos by simp
+          next
+            case t1ne: False
+            \<comment> \<open>(B) mono, \<open>t\<^sub>1 \<noteq> 0\<close>: outer \<open>if m < j\<^sub>1\<close> is False (\<open>m = j\<^sub>1\<close>)\<close>
+            have c1: "(M \<notin> RT_PS) = False" using MR by simp
+            have c2: "(?j1 = 0) = False" using j1pos by simp
+            have c3: "monoT M = True" using mono by simp
+            have c4: "(Trans (Pred M) = 0\<^sub>B) = False" using t1ne by simp
+            have c5: "(?j1 < ?j1) = False" by simp
+            show ?thesis
+              by (subst Mark.psimps[OF domK])
+                 (simp only: c1 c2 c3 c4 c5 if_False if_True Let_def)
+          qed
+        next
+          case nmono: False
+          \<comment> \<open>(C) multiT branch\<close>
+          have muM: "multiT M" using nzM nmono by (simp add: multiT_def)
+          have cut: "0 < Pcut M \<and> Pcut M \<le> ?j1" using Pcut_le[OF L] by simp
+          let ?PJ = "drop (Pcut M) M"
+          have PJeq: "P M ! (Lng (P M) - 1) = ?PJ"
+            by (rule trans_multiT_last_component(1)[OF MT muM])
+          have LdJ: "Lng (drop (Pcut M) M) = Lng M - Pcut M" by simp
+          have meq2: "\<And>m. m - (?j1 - Lng (drop (Pcut M) M) + 1) = m - Pcut M"
+          proof -
+            fix m
+            have "?j1 - Lng (drop (Pcut M) M) + 1 = Pcut M"
+              using LdJ Pcut_le[OF L] by linarith
+            thus "m - (?j1 - Lng (drop (Pcut M) M) + 1) = m - Pcut M" by simp
+          qed
+          have c1: "(M \<notin> RT_PS) = False" using MR by simp
+          have c2: "(?j1 = 0) = False" using j1pos by simp
+          have c3: "monoT M = False" using nmono by simp
+          have markM: "\<And>m. Mark M m = (if ?PJ = [(0, 0)] then Dpt 0 0\<^sub>B
+                                        else Mark ?PJ (m - Pcut M))"
+          proof -
+            fix m
+            have raw: "Mark M m =
+                (if P M ! (Lng (P M) - 1) = [(0, 0)] then Dpt 0 0\<^sub>B
+                 else Mark (P M ! (Lng (P M) - 1))
+                        (m - (?j1 - Lng (P M ! (Lng (P M) - 1)) + 1)))"
+              by (subst Mark.psimps[OF domK]) (simp only: c1 c2 c3 if_False Let_def)
+            show "Mark M m = (if ?PJ = [(0, 0)] then Dpt 0 0\<^sub>B else Mark ?PJ (m - Pcut M))"
+              unfolding raw PJeq meq2 ..
+          qed
+          \<comment> \<open>last column of \<open>?PJ\<close> = last column of \<open>M\<close>\<close>
+          have LPJ: "Lng ?PJ = Lng M - Pcut M" by simp
+          have PJne: "?PJ \<noteq> []" using cut LPJ L by (cases ?PJ) auto
+          have lastcol: "entry ?PJ 1 (Lng ?PJ - 1) = entry M 1 ?j1"
+          proof -
+            have pl: "Pcut M < Lng M" using cut L by linarith
+            have idx: "Pcut M + (Lng ?PJ - 1) = ?j1" using LPJ cut pl by linarith
+            have "?PJ ! (Lng ?PJ - 1) = M ! (Pcut M + (Lng ?PJ - 1))"
+              by (rule nth_drop) (use LPJ cut pl in linarith)
+            also have "\<dots> = M ! ?j1" using idx by simp
+            finally have "?PJ ! (Lng ?PJ - 1) = M ! ?j1" .
+            thus ?thesis by (simp add: entry_def)
+          qed
+          show ?thesis
+          proof (cases "?PJ = [(0, 0)]")
+            case True
+            \<comment> \<open>last column is \<open>(0,0)\<close>, so \<open>entry M 1 j\<^sub>1 = 0\<close>\<close>
+            have "entry ?PJ 1 (Lng ?PJ - 1) = 0" using True by (simp add: entry_def)
+            hence e0: "entry M 1 ?j1 = 0" using lastcol by simp
+            have "Mark M ?j1 = Dpt 0 0\<^sub>B" using markM True by simp
+            thus ?thesis using e0 by (simp add: zero_enat_def)
+          next
+            case False
+            \<comment> \<open>recurse into \<open>?PJ\<close> (smaller \<open>Lng\<close>) via the IH\<close>
+            have Pne: "P M \<noteq> []" by (rule P_nonempty)
+            have J1lt: "Lng (P M) - 1 < Lng (P M)" using Pne by (cases "P M") auto
+            have PJRT: "?PJ \<in> RT_PS"
+              using m_6_6_P_reduced[OF MT] MR J1lt PJeq by auto
+            have PJT: "?PJ \<in> T_PS" using PJRT by (simp add: RT_PS_def)
+            have nzPJ: "\<not> zeroT ?PJ"
+            proof
+              assume z: "zeroT ?PJ"
+              have L1: "Lng ?PJ = 1" using z by (simp add: zeroT_def)
+              then obtain v where v: "?PJ = [(v, v)]"
+                using m_6_6_oneColumn[OF PJT] PJRT by auto
+              have "entry ?PJ 1 0 = 0" using z by (simp add: zeroT_def)
+              hence "v = 0" using v by (simp add: entry_def)
+              thus False using False v by simp
+            qed
+            have LPJlt: "Lng ?PJ < Lng M" using LPJ cut L by linarith
+            have mPJ: "(?PJ, Lng ?PJ - 1) \<in> Marked"
+            proof -
+              have "(?PJ, ?j1 - Pcut M) \<in> Marked"
+                by (rule multi_Marked_last_component(2)[OF MT muM mM])
+              moreover have "?j1 - Pcut M = Lng ?PJ - 1" using LPJ cut L by linarith
+              ultimately show ?thesis by simp
+            qed
+            have IH: "Mark ?PJ (Lng ?PJ - 1)
+                      = Dpt (enat (entry ?PJ 1 (Lng ?PJ - 1))) 0\<^sub>B"
+              using less.IH[OF LPJlt] PJRT nzPJ mPJ by blast
+            have meq: "?j1 - Pcut M = Lng ?PJ - 1" using LPJ cut L by linarith
+            have "Mark M ?j1 = Mark ?PJ (?j1 - Pcut M)" using markM False by simp
+            also have "\<dots> = Mark ?PJ (Lng ?PJ - 1)" using meq by simp
+            also have "\<dots> = Dpt (enat (entry ?PJ 1 (Lng ?PJ - 1))) 0\<^sub>B" using IH .
+            also have "\<dots> = Dpt (enat (entry M 1 ?j1)) 0\<^sub>B" using lastcol by simp
+            finally show ?thesis .
+          qed
+        qed
+      qed
+    qed
+  qed
+  thus ?thesis using assms by blast
+qed
+
 end
