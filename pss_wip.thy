@@ -2412,4 +2412,39 @@ next
   thus "zeroT M" using t by blast
 qed
 
+
+section \<open>Term-level \<open>lessBT\<close> facts about \<open>+\<^sub>B\<close> (end-context inequality extension)\<close>
+
+text \<open>The building blocks of the article's 部分表現の不等式の延長性 (content.md 1749)
+  for the special case of an \<^emph>\<open>end\<close>-context (\<open>b = ()\<close>): appending on the right of
+  a principal-term list.  (E1) appending a non-zero term strictly increases;
+  (E2) \<open>+\<^sub>B\<close> is strictly monotone in its right argument.  Both are purely
+  lexicographic facts about @{const lessBT} (\<open>+\<^sub>B\<close> = list \<open>@\<close> on the principal
+  lists), proved by induction on the common prefix.  Used by the §7.3 \<open>Pred\<close>-on-
+  \<open>Trans\<close> descent (the multi-recursion step \<open>Trans M = Trans A +\<^sub>B (\<dots>)\<close>).\<close>
+
+lemma lessBT_addBT_self:
+  assumes "c \<noteq> 0\<^sub>B"
+  shows "lessBT t (t +\<^sub>B c)"
+proof -
+  obtain ts where t: "t = Trm ts" by (cases t)
+  obtain cs where c: "c = Trm cs" by (cases c)
+  have cs: "cs \<noteq> []" using assms c by auto
+  have "lessBT (Trm ts) (Trm (ts @ cs))"
+    by (induction ts) (simp_all add: cs)
+  thus ?thesis using t c by simp
+qed
+
+lemma lessBT_addBT_mono_right:
+  assumes "lessBT a b"
+  shows "lessBT (t +\<^sub>B a) (t +\<^sub>B b)"
+proof -
+  obtain ts where t: "t = Trm ts" by (cases t)
+  obtain as where a: "a = Trm as" by (cases a)
+  obtain bs where b: "b = Trm bs" by (cases b)
+  have "lessBT (Trm (ts @ as)) (Trm (ts @ bs))"
+    using assms a b by (induction ts) simp_all
+  thus ?thesis using t a b by simp
+qed
+
 end
