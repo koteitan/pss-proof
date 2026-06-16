@@ -82,7 +82,7 @@
       - ✅ 系（$\textrm{Mark}$ の左端の基本性質）〔`Mark_leftend_form`: Mark N m=0 ∨ Dpt(enat(N_{1,m}))t(左端=N_{1,m}, 単項or零)。Lng 強帰納、surgery 枝は新不変量 `Mark_MarkedB_nest`((M,m),(M,m')∈Marked,m≤m'⟹(Mark M m,Mark M m')∈MarkedB, scb合成)で処理。§7.4/§8 で再利用〕
       - 🚨 系（条件 (II) か (IV) の下で $t_2$ が $0$ でないこと）
       - ✅ 命題（右端第 $2$ 基点の $\textrm{Mark}$ の基本性質）〔`m_7_3_Mark_rightmost2`: m=j_{-1}=jm1 で c0=Mark(Pred M)(jm1)=transC1 M=c1 → (c1,c1)∈MarkedB(`scb_decomp_self`)・scb 自明(`scb_SOME_self`) → Mark M jm1 = unflatBT(flat c2) = transC2 M。surgery 評価は `Mark_leftend_form` 鏡像〕
-      - 🚨 命題（$\textrm{Trans}$ の最左単項成分の左端の基本性質）
+      - 🚧 命題（$\textrm{Trans}$ の最左単項成分の左端の基本性質）〔核 `m_7_3_Trans_leftend`✅: `bpHeadV(Trans M)=enat(M_{1,0})`(RT_PS, Lng強帰納、surgery=`Mark_leftend_form`鏡像/multi=addBT先頭、副産物 `reduced_e10_zero`)。残=(1)(2)(3)の完全形(最左単項成分=Trans(P0)、左端2文字)〕
       - ⚠️ 命題（$\textrm{Trans}$ が単項性を保つこと）〔**訂正 A16: 原文のまま偽**。反例 $(0,0)(0,0)$(複項だが $\textrm{Trans}=D_0 0$ 単項)。先頭 P 成分 $P(M)_0$ が零項のとき再帰的定義が先頭零項を $0$ に吸収し $\Sigma_B$ 表示(2236)/単項性命題(2358)と矛盾。$\textrm{Trans}$ 定義は原文に忠実(バグでない)。機械化は「$P(M)_0$ 非零項」前提下のみ可。memory `pss-73-trans-monoT-false`〕
       - 🚨 系（$\textrm{Trans}$ と非可算基数の関係）〔基数概念要〕
       - 🚨 系（左端第 $1$ 基点の $\textrm{Mark}$ の基本性質）
