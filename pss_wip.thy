@@ -3321,4 +3321,98 @@ proof -
   show ?thesis by (rule transC1_lessBT_transC2[OF MR MP J1pos T1 VIfact])
 qed
 
+
+section \<open>§7.3 NAbound prerequisite: index-set of a \<open>BT\<close> term (\<open>flatIdx\<close>)\<close>
+
+text \<open>\<open>flatIdx t\<close> = the set of \<open>D\<close>-indices occurring anywhere in \<open>t\<close>, read off the
+  flat string (so a substring containment of \<open>flatBT\<close> immediately bounds it).
+  The keystone for NAbound is a suffix-max bound on the indices of \<open>Mark N m\<close>.\<close>
+
+definition flatIdx :: "BT \<Rightarrow> enat set" where
+  "flatIdx t = {v. Dsym v \<in> set (flatBT t)}"
+
+lemma flatIdx_zero [simp]: "flatIdx 0\<^sub>B = {}"
+  by (simp add: flatIdx_def)
+
+text \<open>The \<open>Dsym\<close>-letters of a tuple are the union over its principal components.\<close>
+
+lemma flatIdx_Trm: "flatIdx (Trm xs) = (\<Union>p \<in> set xs. {v. Dsym v \<in> set (flatBP p)})"
+proof (cases xs)
+  case Nil thus ?thesis by (simp add: flatIdx_def)
+next
+  case (Cons p rest)
+  show ?thesis
+  proof (cases rest)
+    case Nil thus ?thesis using Cons by (simp add: flatIdx_def)
+  next
+    case (Cons q ps)
+    have "set (flatBT (Trm (p # q # ps)))
+          = {LP, RP} \<union> set (flatBP p)
+            \<union> (\<Union>r \<in> set (q # ps). insert CM (set (flatBP r)))"
+      by auto
+    thus ?thesis using \<open>xs = p # rest\<close> \<open>rest = q # ps\<close>
+      by (auto simp: flatIdx_def)
+  qed
+qed
+
+lemma flatIdx_Dpt [simp]: "flatIdx (Dpt v t) = insert v (flatIdx t)"
+  by (auto simp: flatIdx_def)
+
+lemma flatIdx_addBT [simp]: "flatIdx (a +\<^sub>B b) = flatIdx a \<union> flatIdx b"
+proof -
+  obtain as where a: "a = Trm as" by (cases a)
+  obtain bs where b: "b = Trm bs" by (cases b)
+  have "a +\<^sub>B b = Trm (as @ bs)" using a b by simp
+  thus ?thesis using a b by (simp add: flatIdx_Trm)
+qed
+
+lemma flatIdx_SigmaB: "flatIdx (SigmaB ts) = (\<Union>t \<in> set ts. flatIdx t)"
+proof -
+  have "flatIdx (SigmaB ts) = (\<Union>p \<in> set (concat (map untrm ts)). {v. Dsym v \<in> set (flatBP p)})"
+    by (simp add: SigmaB_def flatIdx_Trm)
+  also have "\<dots> = (\<Union>t \<in> set ts. \<Union>p \<in> set (untrm t). {v. Dsym v \<in> set (flatBP p)})"
+    by auto
+  also have "\<dots> = (\<Union>t \<in> set ts. flatIdx t)"
+  proof -
+    have "\<And>t. flatIdx t = (\<Union>p \<in> set (untrm t). {v. Dsym v \<in> set (flatBP p)})"
+      by (metis flatIdx_Trm untrm.simps untrm.cases)
+    thus ?thesis by simp
+  qed
+  finally show ?thesis .
+qed
+
+text \<open>The leftmost index \<open>bpHeadV t\<close> occurs in \<open>t\<close>.\<close>
+
+lemma bpHeadV_in_flatIdx:
+  assumes "t \<noteq> 0\<^sub>B" shows "bpHeadV t \<in> flatIdx t"
+proof -
+  obtain ps where t: "t = Trm ps" by (cases t)
+  have "ps \<noteq> []" using assms t by auto
+  then obtain p ps' where ps: "ps = p # ps'" by (cases ps) auto
+  obtain v u where p: "p = DB v u" by (cases p)
+  have "bpHeadV t = v" using t ps p by simp
+  moreover have "v \<in> flatIdx t"
+    using t ps p by (auto simp: flatIdx_Trm)
+  ultimately show ?thesis by simp
+qed
+
+text \<open>A flat-string containment (all-\<open>RP\<close> tail) bounds \<open>flatIdx\<close>: if
+  \<open>flatBT t = s \<frown> flatBT c \<frown> b\<close> with \<open>b\<close> all-\<open>RP\<close> and \<open>s\<close> a prefix of the flat of
+  some term \<open>c\<^sub>0\<close>, then every index of \<open>t\<close> lies in \<open>flatIdx c\<^sub>0 \<union> flatIdx c\<close>.\<close>
+
+lemma flatIdx_scb_sub:
+  assumes "flatBT t = s @ flatBT c @ b"
+    and "flatBT c\<^sub>0 = s @ flatBT c\<^sub>1 @ b\<^sub>0"
+    and "\<forall>x \<in> set b. x = RP"
+  shows "flatIdx t \<subseteq> flatIdx c\<^sub>0 \<union> flatIdx c"
+proof
+  fix v assume "v \<in> flatIdx t"
+  hence "Dsym v \<in> set (flatBT t)" by (simp add: flatIdx_def)
+  hence "Dsym v \<in> set s \<union> set (flatBT c) \<union> set b" using assms(1) by auto
+  moreover have "Dsym v \<notin> set b" using assms(3) by auto
+  ultimately have "Dsym v \<in> set s \<union> set (flatBT c)" by auto
+  moreover have "set s \<subseteq> set (flatBT c\<^sub>0)" using assms(2) by auto
+  ultimately show "v \<in> flatIdx c\<^sub>0 \<union> flatIdx c" by (auto simp: flatIdx_def)
+qed
+
 end
