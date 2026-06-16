@@ -3039,4 +3039,181 @@ proof -
   thus ?thesis using assms by blast
 qed
 
+
+section \<open>§7.3 \<open>c\<^sub>1 < c\<^sub>2\<close> (claim (3) of 命題（\<open>c\<^sub>1\<close>と\<open>c\<^sub>2\<close>の大小関係）, content.md 2270)\<close>
+
+text \<open>Three helpers, then the main strict-inequality lemma.  The hard
+  condition-VI sub-fact (\<open>t\<^sub>2 < D\<^bsub>M\<^bsub>1,j\<^sub>1\<^esub>\<^esub> 0\<close>) is isolated as the hypothesis
+  \<open>VIfact\<close>; every other branch is discharged structurally.\<close>
+
+lemma lessBT_Dpt_same [simp]: "lessBT (Dpt v a) (Dpt v b) = lessBT a b"
+  by simp
+
+lemma principal_reconstruct:
+  assumes "Lng (PB c) = 1" shows "c = Dpt (bpHeadV c) (bpHeadT c)"
+proof -
+  obtain ps where cps: "c = Trm ps" by (cases c)
+  from assms have "length ps = 1" by (simp add: PB_def cps)
+  then obtain p where psp: "ps = [p]" by (cases ps) auto
+  obtain w u where pwu: "p = DB w u" by (cases p)
+  show ?thesis using cps psp pwu by simp
+qed
+
+lemma SigmaB_snoc: "SigmaB (xs @ [x]) = SigmaB xs +\<^sub>B x"
+  by (cases x) (simp add: SigmaB_def)
+
+lemma transC1_lessBT_transC2:
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS"
+    and J1pos: "transJ1 M > 0" and T1: "transT1 M \<noteq> 0\<^sub>B"
+    and VIfact: "transCondVI M \<Longrightarrow>
+                   lessBT (transT2 M) (Dpt (enat (entry M 1 (transJ1 M))) 0\<^sub>B)"
+  shows "lessBT (transC1 M) (transC2 M)"
+proof -
+  define t2 where "t2 = transT2 M"
+  define j1 where "j1 = transJ1 M"
+  define jp where "jp = transJ0 M"
+  define Dj1 where "Dj1 = Dpt (enat (entry M 1 j1)) 0\<^sub>B"
+  have Dj1ne: "Dj1 \<noteq> 0\<^sub>B" by (simp add: Dj1_def)
+  \<comment> \<open>1. \<open>c\<^sub>1\<close> is a single principal term\<close>
+  have pc1: "Lng (PB (transC1 M)) = 1"
+    by (rule transC1_single_principal[OF MR MP J1pos T1])
+  \<comment> \<open>2. \<open>c\<^sub>1 = D\<^bsub>v\<^esub> t\<^sub>2\<close>\<close>
+  have c1eq: "transC1 M = Dpt (transV M) t2"
+    using principal_reconstruct[OF pc1]
+    by (simp add: transV_def transT2_def t2_def)
+  \<comment> \<open>3. \<open>t\<^sub>2 \<in> T\<^bsub>B\<^esub>\<close>\<close>
+  have MT: "M \<in> T_PS" using MP by (simp add: PT_PS_def)
+  have mono: "monoT M" using MP by (simp add: PT_PS_def)
+  have L: "1 < Lng M" using J1pos by (simp add: transJ1_def)
+  have hp: "hasParent M 0 (Lng M - 1)" by (rule monoT_hasParent0_last[OF MT mono L])
+  have mkd: "(Pred M, Adm M (parent M 0 (Lng M - 1))) \<in> Marked"
+    by (rule Marked_Pred_Adm[OF MT L hp])
+  have predRT: "Pred M \<in> RT_PS" by (rule Pred_RT_PS[OF MR])
+  have c1val: "transC1 M = Mark (Pred M) (Adm M (parent M 0 (Lng M - 1)))"
+    by (simp add: transC1_def transJm1_def transJ0_def transJ1_def)
+  have c1TB: "transC1 M \<in> T_B"
+    using m_7_3_Mark_in_T_B[OF predRT mkd] c1val by simp
+  have t2TB: "t2 \<in> T_B"
+    using c1TB unfolding c1eq by (auto simp: T_B_def)
+  \<comment> \<open>4. case split, reducing each branch of \<open>transC2\<close>\<close>
+  show ?thesis
+  proof (cases "transCondI M \<or> transCondIII M \<or> transCondV M")
+    case True
+    have c2: "transC2 M = Dpt (transV M) (t2 +\<^sub>B Dj1)"
+      using True
+      by (simp add: transC2_def Let_def transV_def transT2_def transJ1_def Dj1_def
+                    j1_def t2_def)
+    have "lessBT t2 (t2 +\<^sub>B Dj1)" by (rule lessBT_addBT_self[OF Dj1ne])
+    thus ?thesis using c1eq c2 by simp
+  next
+    case notA: False
+    show ?thesis
+    proof (cases "transCondVI M")
+      case True
+      have c2: "transC2 M = Dpt (transV M) Dj1"
+        using notA True
+        by (simp add: transC2_def Let_def transV_def transJ1_def Dj1_def j1_def)
+      have "lessBT t2 Dj1"
+        using VIfact[OF True] by (simp add: t2_def j1_def Dj1_def)
+      thus ?thesis using c1eq c2 by simp
+    next
+      case notVI: False
+      show ?thesis
+      proof (cases "t2 = 0\<^sub>B")
+        case True
+        have c2: "transC2 M
+                  = Dpt (transV M) (Dpt (enat (entry M 1 jp)) Dj1)"
+          using notA notVI True
+          by (simp add: transC2_def Let_def transV_def transT2_def transJ1_def
+                        transJ0_def Dj1_def j1_def jp_def t2_def)
+        have "lessBT t2 (Dpt (enat (entry M 1 jp)) Dj1)"
+          using True by simp
+        thus ?thesis using c1eq c2 by simp
+      next
+        case t2ne: False
+        define J1 where "J1 = Lng (PB t2) - 1"
+        define pj where "pj = PB t2 ! J1"
+        \<comment> \<open>\<open>PB t\<^sub>2 \<noteq> []\<close>\<close>
+        have lng_ne: "Lng (PB t2) \<noteq> 0"
+          using m_7_1_term_components[OF t2TB] t2ne by auto
+        have pbne: "PB t2 \<noteq> []" using lng_ne by auto
+        \<comment> \<open>split off the last component\<close>
+        have splitlast: "PB t2 = take J1 (PB t2) @ [pj]"
+        proof -
+          have "take J1 (PB t2) = butlast (PB t2)"
+            by (simp add: J1_def butlast_conv_take)
+          moreover have "pj = last (PB t2)"
+            using pbne by (simp add: pj_def J1_def last_conv_nth)
+          ultimately show ?thesis
+            using append_butlast_last_id[OF pbne] by simp
+        qed
+        have t2split: "t2 = SigmaB (take J1 (PB t2)) +\<^sub>B pj"
+        proof -
+          have "t2 = SigmaB (PB t2)" using m_7_1_term_components[OF t2TB] by simp
+          also have "\<dots> = SigmaB (take J1 (PB t2) @ [pj])"
+            using splitlast by simp
+          also have "\<dots> = SigmaB (take J1 (PB t2)) +\<^sub>B pj"
+            by (rule SigmaB_snoc)
+          finally show ?thesis .
+        qed
+        \<comment> \<open>\<open>pj\<close> is a single principal term\<close>
+        have pjprinc: "Lng (PB pj) = 1"
+        proof -
+          have Jlt: "J1 < length (untrm t2)"
+            using pbne by (simp add: J1_def PB_def)
+          have "pj = (map (\<lambda>p. Trm [p]) (untrm t2)) ! J1"
+            by (simp add: pj_def PB_def)
+          also have "\<dots> = Trm [untrm t2 ! J1]" using Jlt by simp
+          finally show ?thesis by (simp add: PB_def)
+        qed
+        have pjrec: "pj = Dpt (bpHeadV pj) (bpHeadT pj)"
+          by (rule principal_reconstruct[OF pjprinc])
+        show ?thesis
+        proof (cases "bpHeadV pj = enat (entry M 1 jp)")
+          case leftDj0: True
+          have c2: "transC2 M
+                    = Dpt (transV M)
+                        (SigmaB (take J1 (PB t2))
+                          +\<^sub>B Dpt (enat (entry M 1 jp))
+                                (bpHeadT pj +\<^sub>B Dj1))"
+            using notA notVI t2ne leftDj0
+            by (simp add: transC2_def Let_def transV_def transT2_def transJ1_def
+                          transJ0_def Dj1_def j1_def jp_def t2_def J1_def pj_def)
+          \<comment> \<open>\<open>pj = D\<^bsub>M\<^bsub>1,jp\<^esub>\<^esub> (bpHeadT pj)\<close>, so \<open>t\<^sub>2 = \<Sigma>(prefix) + pj\<close>\<close>
+          have pjval: "pj = Dpt (enat (entry M 1 jp)) (bpHeadT pj)"
+            using pjrec leftDj0 by simp
+          have t2eq: "t2 = SigmaB (take J1 (PB t2))
+                            +\<^sub>B Dpt (enat (entry M 1 jp)) (bpHeadT pj)"
+            using t2split pjval by simp
+          have inner: "lessBT (Dpt (enat (entry M 1 jp)) (bpHeadT pj))
+                              (Dpt (enat (entry M 1 jp)) (bpHeadT pj +\<^sub>B Dj1))"
+            using lessBT_addBT_self[OF Dj1ne] by simp
+          have "lessBT
+                  (SigmaB (take J1 (PB t2))
+                    +\<^sub>B Dpt (enat (entry M 1 jp)) (bpHeadT pj))
+                  (SigmaB (take J1 (PB t2))
+                    +\<^sub>B Dpt (enat (entry M 1 jp)) (bpHeadT pj +\<^sub>B Dj1))"
+            by (rule lessBT_addBT_mono_right[OF inner])
+          hence "lessBT t2
+                  (SigmaB (take J1 (PB t2))
+                    +\<^sub>B Dpt (enat (entry M 1 jp)) (bpHeadT pj +\<^sub>B Dj1))"
+            using t2eq by simp
+          thus ?thesis using c1eq c2 by simp
+        next
+          case leftDj0: False
+          have c2: "transC2 M
+                    = Dpt (transV M)
+                        (t2 +\<^sub>B Dpt (enat (entry M 1 jp)) (t2 +\<^sub>B Dj1))"
+            using notA notVI t2ne leftDj0
+            by (simp add: transC2_def Let_def transV_def transT2_def transJ1_def
+                          transJ0_def Dj1_def j1_def jp_def t2_def J1_def pj_def)
+          have "lessBT t2 (t2 +\<^sub>B Dpt (enat (entry M 1 jp)) (t2 +\<^sub>B Dj1))"
+            by (rule lessBT_addBT_self) simp
+          thus ?thesis using c1eq c2 by simp
+        qed
+      qed
+    qed
+  qed
+qed
+
 end
