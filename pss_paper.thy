@@ -1382,7 +1382,7 @@ text \<open>\<open>RightAnces : T\<^bsub>PS\<^esub> \<to> \<nat>\<^bsup><\<omega
   \<open>j\<^sub>0 = parent M 0 j\<^sub>1\<close>, \<open>j\<^sub>-\<^sub>1 = Adm M j\<^sub>0\<close>).  Independent of \<open>Trans\<close>/\<open>Mark\<close>;
   termination deferred (like \<open>Trans\<close>/\<open>RightNodes\<close>).\<close>
 
-function RightAnces :: "pairseq \<Rightarrow> nat list" where
+function (domintros) RightAnces :: "pairseq \<Rightarrow> nat list" where
   "RightAnces M =
      (if M \<notin> RT_PS then RightAnces (Red M)
       else let j1 = Lng M - 1 in
