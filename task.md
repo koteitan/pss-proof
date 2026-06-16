@@ -76,7 +76,7 @@
       - ✅🚧 命題（$\textrm{Trans}$ の $(\textrm{IncrFirst},\textrm{Red})$ 不変 $P$ 同変性）〔(1)不変性 green: `m_7_3_Trans_Red`/`m_7_3_Trans_IncrFirst`(域=Red M∈RT_PS, A4型補正)。残=(2)P同変性〕
       - ✅🚧 命題（$\textrm{Mark}$ の $(\textrm{IncrFirst},\textrm{Red},P)$ 不変性）〔(1) green: `m_7_3_Mark_Red`/`m_7_3_Mark_IncrFirst`(同域)。残=P 部〕
       - ✅ 命題（$\textrm{Trans}$ が零項性を保つこと）〔`m_7_3_Trans_zeroT`: `M∈RT_PS ⟹ (zeroT M ⟷ Trans M = 0)`。⟸=値不変量 `Trans_Mark_invariant_aux` の `¬zeroT⟶Trans≠0` 対偶、⟹=`m_6_6_oneColumn` で `[(0,0)]` 帰着+`Trans_singleton`。域は RT_PS(A15: 原典 T_PS だが Trans 域=RT_PS)〕
-      - 🚧 命題（$c_1$ と $c_2$ の大小関係）〔claim(1)(2)✅。claim(3) `transC1_lessBT_transC2`✅(全枝、VIfact 仮説に分離)。VIfact の許容枝✅(`transC1_lessBT_transC2_modNA`、`Mark_rightmost1_forward` で t2=0)。**残る唯一の核 = `NAbound`**: VI 非許容枝で `bpHeadV(transT2 M) < entry M 1 (transJ1 M)`(33/442、Mark 第2階index、RightNodes 構造要)。memory `pss-73-ordering-chain`〕
+      - ✅ 命題（$c_1$ と $c_2$ の大小関係）〔**完全達成**: claim(1)(2)=`transC1/transC2_single_principal`、claim(3)=`transC1_lessBT_transC2_full`(無条件 `lessBT c1 c2`)。NAbound(VI 非許容枝)を `Mark_flatIdx_bound`(Mark インデックス suffix 上界、593行 keystone)+`viB_suffix_max`(Lemma B: 非許容で row-1 が `[Adm j0,j0]` 上非減少)で討伐。memory `pss-73-ordering-chain`〕
       - 🚧 命題（$\textrm{Pred}$ の $\textrm{Trans}$ に関する降下性）〔土台 ✅(`scbext_lessBT`+`lessBT_addBT_*`)。mono=scbext∘c1c2(3)、multi=append∘IH。c1c2(3) 待ち〕
       - 🚨 命題（右端第 $1$ 基点の $\textrm{Mark}$ の基本性質）
       - 🚨 系（$\textrm{Mark}$ の左端の基本性質）
