@@ -59,7 +59,7 @@
     - 🚨 §7.1 Buchholzの表記系
       - ✅ 命題（順序数項のカッコの個数が左右で等しいこと）
       - ✅ 命題（順序数項の単項成分の基本性質）
-      - 🚨 命題（部分表現の不等式の延長性）〔encoding 判断要、保留〕
+      - ✅ 命題（部分表現の不等式の延長性）〔`scbext_lessBT`/`scbext_lessBP`(+補助 `scbjoin_lessBT`): scb 位置(共通 prefix `s`/全 RP tail `b`)で主表現 `cp` を `cp'` に置換、`lessBP cp cp' ⟹ lessBT t t'`。`flatBT_flatBP.induct` 相互帰納で `scbimg_image_BT`/`scbimg_join` を鏡像。経験検証 114000/0。Pred 降下性・Mark 順序保存・§8 基本列交換の共通土台〕
       - ✅ [Buc1] Lemma 2.1（`<` が `T` 上の狭義全順序）
     - 🚨🚧 §7.2 scb分解 〔`m_7_flatBT_inj` 完成〕
       - ✅🚧 命題（scb分解の置換可能性）〔原文偽→A12。`m_7_2_scb_replaceable_corr_mod_image`〕
