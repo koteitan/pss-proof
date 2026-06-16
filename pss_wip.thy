@@ -7904,4 +7904,226 @@ proof -
   qed
 qed
 
+
+section \<open>§7.4 系（\<open>RightNodes\<close> と \<open>Mark\<close> の関係） — m_7_4_RightNodes_Mark\<close>
+
+text \<open>Helper: an iterated \<open>Pred\<close> on a reduced sequence stays reduced
+  (@{thm [source] Pred_RT_PS} iterated).\<close>
+
+lemma Pred_pow_RT_PS:
+  assumes "M \<in> RT_PS"
+  shows "(Pred ^^ k) M \<in> RT_PS"
+proof (induction k)
+  case 0
+  thus ?case using assms by simp
+next
+  case (Suc k)
+  have step: "(Pred ^^ Suc k) M = Pred ((Pred ^^ k) M)"
+    by (simp only: funpow.simps o_apply)
+  show ?case unfolding step by (rule Pred_RT_PS[OF Suc.IH])
+qed
+
+text \<open>Helper: a trunk-anchored initial slice \<open>seg M 0 m\<close> (\<open>m \<le> Lng M - 1\<close>) of a
+  reduced \<open>M\<close> is reduced.  This is @{thm [source] herd_6_6_reduced_slice} without
+  its \<open>TrMax M \<le> m\<close> hypothesis (empirically unneeded): \<open>seg M 0 m = (Pred ^^ k) M\<close>
+  for \<open>k = Lng M - 1 - m\<close> (@{thm [source] herd_Pred_pow_take}), and iterated
+  \<open>Pred\<close> preserves reducedness (@{thm [source] Pred_pow_RT_PS}).\<close>
+
+lemma seg_0_RT_PS:
+  assumes M: "M \<in> RT_PS" and hi: "m \<le> Lng M - 1"
+  shows "seg M 0 m \<in> RT_PS"
+proof -
+  have MT: "M \<in> T_PS" using M by (simp add: RT_PS_def)
+  have LMpos: "0 < Lng M" using MT by (cases M) (auto simp: T_PS_def)
+  let ?k = "Lng M - 1 - m"
+  have kLt: "?k < Lng M" using LMpos by linarith
+  have LmkE: "Lng M - ?k = Suc m" using hi LMpos by linarith
+  have segtake: "seg M 0 m = take (Suc m) M"
+    by (rule seg_0_eq_take) (use hi LMpos in linarith)
+  have segpow: "seg M 0 m = (Pred ^^ ?k) M"
+  proof -
+    have "(Pred ^^ ?k) M = take (Lng M - ?k) M" by (rule herd_Pred_pow_take[OF kLt])
+    also have "\<dots> = take (Suc m) M" using LmkE by simp
+    finally show ?thesis using segtake by simp
+  qed
+  show ?thesis using segpow Pred_pow_RT_PS[OF M, of ?k] by simp
+qed
+
+text \<open>Helper: the §7.2 \<open>RightNodes\<close>-subexpression engine
+  (@{thm [source] m_7_2_RightNodes_subexpr}) without its \<open>t \<in> PT\<^bsub>B\<^esub>\<close>
+  (\<open>\<exists>p. t = Trm [p]\<close>) hypothesis.  The principality of the substituted body \<open>t\<close>
+  is never used in the engine's proof (only \<open>t \<in> T\<^bsub>B\<^esub>\<close> via the spine
+  substitution bricks @{thm [source] rnsub_flat_main},
+  @{thm [source] rnsub_RightNodes_spineSub}, @{thm [source] rnsub_RightNodes_t0_lastv}),
+  but it is needed here because the body of \<open>Mark M m\<close> is in general a multi
+  term (empirically 47/140 marked cases), not principal.\<close>
+
+lemma m_7_4_RightNodes_subexpr_gen:
+  fixes v :: nat
+  assumes tTB: "t \<in> T_B"
+    and bRP: "\<forall>x \<in> set b. x = RP"
+    and t0TB: "t\<^sub>0 \<in> T_B" and flat0: "flatBT t\<^sub>0 = s @ flatBT (Dpt (enat v) 0\<^sub>B) @ b"
+  shows "\<exists>!aa. RightNodes (spineSub t\<^sub>0 t) = fst aa @ [v] @ snd aa
+            \<and> RightNodes t\<^sub>0 = fst aa @ [v]
+            \<and> RightNodes (Dpt (enat v) t) = [v] @ snd aa"
+proof -
+  have Hf: "flatBT t\<^sub>0 = s @ Dsym (enat v) # Zsym # b"
+    using flat0 by simp
+  have t0_ne: "t\<^sub>0 \<noteq> Trm []"
+  proof
+    assume "t\<^sub>0 = Trm []"
+    hence "flatBT t\<^sub>0 = [Zsym]" by simp
+    thus False using flat0 by (cases s) auto
+  qed
+  have rn1: "RightNodes (spineSub t\<^sub>0 t) = RightNodes t\<^sub>0 @ RightNodes t"
+    using rnsub_RightNodes_spineSub[OF t0_ne] by blast
+  have rn0_last: "\<exists>a0. RightNodes t\<^sub>0 = a0 @ [v]"
+    using rnsub_RightNodes_t0_lastv Hf bRP t0TB by blast
+  then obtain a0 where rn0: "RightNodes t\<^sub>0 = a0 @ [v]" by blast
+  define a1 where "a1 = RightNodes t"
+  have rnDvt: "RightNodes (Dpt (enat v) t) = [v] @ a1"
+    unfolding a1_def by simp
+  have rnt1: "RightNodes (spineSub t\<^sub>0 t) = a0 @ [v] @ a1"
+    using rn1 rn0 unfolding a1_def by simp
+  show "\<exists>!aa. RightNodes (spineSub t\<^sub>0 t) = fst aa @ [v] @ snd aa
+            \<and> RightNodes t\<^sub>0 = fst aa @ [v]
+            \<and> RightNodes (Dpt (enat v) t) = [v] @ snd aa"
+  proof (rule ex1I[of _ "(a0, a1)"])
+    show "RightNodes (spineSub t\<^sub>0 t) = fst (a0,a1) @ [v] @ snd (a0,a1)
+        \<and> RightNodes t\<^sub>0 = fst (a0,a1) @ [v]
+        \<and> RightNodes (Dpt (enat v) t) = [v] @ snd (a0,a1)"
+      using rnt1 rn0 rnDvt by simp
+  next
+    fix aa
+    assume "RightNodes (spineSub t\<^sub>0 t) = fst aa @ [v] @ snd aa
+          \<and> RightNodes t\<^sub>0 = fst aa @ [v]
+          \<and> RightNodes (Dpt (enat v) t) = [v] @ snd aa"
+    hence f0: "RightNodes t\<^sub>0 = fst aa @ [v]"
+      and fD: "RightNodes (Dpt (enat v) t) = [v] @ snd aa" by auto
+    have "fst aa = a0" using f0 rn0 by simp
+    moreover have "snd aa = a1" using fD rnDvt by simp
+    ultimately show "aa = (a0, a1)" by (cases aa) simp
+  qed
+qed
+
+text \<open>系（\<open>RightNodes\<close> と \<open>Mark\<close> の関係） (§7.4, content.md 2691): for a marked
+  reduced \<open>(M,m)\<close> with \<open>0 < m < Lng M - 1\<close>, the marked value \<open>Mark M m\<close> sits as a
+  common subexpression splitting \<open>RightNodes (Trans M)\<close> at the row-1 entry
+  \<open>M\<^bsub>1,m\<^esub>\<close>.  Article: immediate from @{thm [source] m_7_4_Trans_Mark_seg} (the
+  common scb position), @{thm [source] Mark_leftend_form} (left end of \<open>Mark M m\<close>
+  is \<open>D\<^bsub>M\<^bsub>1,m\<^esub>\<^esub>\<close>), and the \<open>RightNodes\<close>-subexpression engine
+  (@{thm [source] m_7_4_RightNodes_subexpr_gen}).\<close>
+
+lemma m_7_4_RightNodes_Mark:
+  assumes "(M, m) \<in> Marked" and "M \<in> RT_PS" and "0 < m" and "m < Lng M - 1"
+  shows "\<exists>a0 a1. RightNodes (Trans M) = a0 @ [entry M 1 m] @ a1
+              \<and> RightNodes (Trans (seg M 0 m)) = a0 @ [entry M 1 m]
+              \<and> RightNodes (Mark M m) = [entry M 1 m] @ a1"
+proof -
+  let ?v = "entry M 1 m"
+  have MT: "M \<in> T_PS" using assms(2) by (simp add: RT_PS_def)
+  have L0: "1 < Lng M" using assms(3) assms(4) by linarith
+  \<comment> \<open>the common scb position \<open>(s,b)\<close> from \<open>m_7_4_Trans_Mark_seg\<close>\<close>
+  have exSB: "\<exists>sb. scb_decomp (Trans (seg M 0 m)) (fst sb)
+                  (flatBT (Dpt (enat ?v) 0\<^sub>B)) (snd sb)
+              \<and> scb_decomp (Trans M) (fst sb) (flatBT (Mark M m)) (snd sb)"
+    using m_7_4_Trans_Mark_seg[OF assms(1) assms(2) assms(3) assms(4)]
+    by (rule ex1_implies_ex)
+  obtain sb where
+    SB: "scb_decomp (Trans (seg M 0 m)) (fst sb)
+            (flatBT (Dpt (enat ?v) 0\<^sub>B)) (snd sb)"
+        "scb_decomp (Trans M) (fst sb) (flatBT (Mark M m)) (snd sb)"
+    using exSB by blast
+  define s where "s = fst sb"
+  define b where "b = snd sb"
+  have Dseg: "scb_decomp (Trans (seg M 0 m)) s (flatBT (Dpt (enat ?v) 0\<^sub>B)) b"
+    using SB(1) s_def b_def by simp
+  have DM: "scb_decomp (Trans M) s (flatBT (Mark M m)) b"
+    using SB(2) s_def b_def by simp
+  have flat0: "flatBT (Trans (seg M 0 m)) = s @ flatBT (Dpt (enat ?v) 0\<^sub>B) @ b"
+    using Dseg by (simp add: scb_decomp_def)
+  have bRP: "\<forall>x \<in> set b. x = RP"
+    using Dseg by (simp add: scb_decomp_def)
+  have flatM: "flatBT (Trans M) = s @ flatBT (Mark M m) @ b"
+    using DM by (simp add: scb_decomp_def)
+  \<comment> \<open>\<open>Trans M \<noteq> Trm []\<close> (else its flat would be \<open>[Zsym]\<close>, no \<open>Dsym\<close>)\<close>
+  have nzM: "\<not> zeroT M" using L0 by (auto simp: zeroT_def)
+  have tMne: "Trans M \<noteq> Trm []"
+    using m_7_3_Trans_zeroT[OF assms(2)] nzM by auto
+  \<comment> \<open>so the scb middle \<open>flatBT (Mark M m)\<close> is a principal-term string\<close>
+  have iptM: "isPTB_str (flatBT (Mark M m))"
+    using DM tMne by (simp add: scb_decomp_def)
+  \<comment> \<open>hence \<open>Mark M m \<noteq> 0\<^sub>B\<close>: its flat is not \<open>[Zsym]\<close>\<close>
+  have markNZ: "Mark M m \<noteq> 0\<^sub>B"
+  proof
+    assume z: "Mark M m = 0\<^sub>B"
+    have "isPTB_str [Zsym]" using iptM z by simp
+    then obtain p where "flatBP p = [Zsym]" unfolding isPTB_str_def by auto
+    thus False by (cases p) simp
+  qed
+  \<comment> \<open>left end of \<open>Mark M m\<close> is \<open>D\<^bsub>v\<^esub>\<close>: \<open>Mark M m = Dpt (enat v) t'\<close>\<close>
+  obtain t' where markform: "Mark M m = Dpt (enat ?v) t'"
+    using Mark_leftend_form assms(1) assms(2) markNZ by blast
+  have markeq: "Dpt (enat ?v) t' = Mark M m" using markform by simp
+  \<comment> \<open>body \<open>t' \<in> T\<^bsub>B\<^esub>\<close> (from \<open>Mark M m \<in> T\<^bsub>B\<^esub>\<close>)\<close>
+  have markTB: "Mark M m \<in> T_B"
+    by (rule m_7_3_Mark_in_T_B[OF assms(2) assms(1)])
+  have t'TB: "t' \<in> T_B"
+    using markTB markform by (simp add: T_B_def)
+  \<comment> \<open>\<open>Trans (seg M 0 m) \<in> T\<^bsub>B\<^esub>\<close>: the slice is reduced\<close>
+  have segRT: "seg M 0 m \<in> RT_PS"
+    by (rule seg_0_RT_PS[OF assms(2)]) (use assms(4) in linarith)
+  have segTB: "Trans (seg M 0 m) \<in> T_B"
+    by (rule m_7_3_Trans_in_T_B[OF segRT])
+  \<comment> \<open>apply the (principality-free) subexpression engine with \<open>t := t'\<close>\<close>
+  have exUA: "\<exists>aa. RightNodes (spineSub (Trans (seg M 0 m)) t') = fst aa @ [?v] @ snd aa
+                 \<and> RightNodes (Trans (seg M 0 m)) = fst aa @ [?v]
+                 \<and> RightNodes (Dpt (enat ?v) t') = [?v] @ snd aa"
+    using m_7_4_RightNodes_subexpr_gen[OF t'TB bRP segTB flat0]
+    by (rule ex1_implies_ex)
+  obtain aa where
+    UA: "RightNodes (spineSub (Trans (seg M 0 m)) t') = fst aa @ [?v] @ snd aa"
+        "RightNodes (Trans (seg M 0 m)) = fst aa @ [?v]"
+        "RightNodes (Dpt (enat ?v) t') = [?v] @ snd aa"
+    using exUA by blast
+  define a0 where "a0 = fst aa"
+  define a1 where "a1 = snd aa"
+  have rnSeg: "RightNodes (Trans (seg M 0 m)) = a0 @ [?v]"
+    using UA(2) a0_def by simp
+  have rnMark: "RightNodes (Mark M m) = [?v] @ a1"
+  proof -
+    have "RightNodes (Mark M m) = RightNodes (Dpt (enat ?v) t')"
+      using markform by simp
+    also have "\<dots> = [?v] @ snd aa" using UA(3) .
+    finally show ?thesis using a1_def by simp
+  qed
+  \<comment> \<open>the substituted term \<open>spineSub (Trans (seg M 0 m)) t'\<close> is \<open>Trans M\<close>,
+      by \<open>flatBT\<close> injectivity\<close>
+  have flatSub: "flatBT (spineSub (Trans (seg M 0 m)) t')
+               = s @ Dsym (enat ?v) # flatBT t' @ b"
+  proof -
+    have Hf: "flatBT (Trans (seg M 0 m)) = s @ Dsym (enat ?v) # Zsym # b"
+      using flat0 by simp
+    have "flatBT (spineSub (Trans (seg M 0 m)) t')
+            = s @ Dsym (enat ?v) # flatBT t' @ b \<and> spineSub (Trans (seg M 0 m)) t' \<in> T_B"
+      using rnsub_flat_main Hf bRP segTB t'TB by blast
+    thus ?thesis by simp
+  qed
+  have flatSub2: "flatBT (spineSub (Trans (seg M 0 m)) t') = flatBT (Trans M)"
+  proof -
+    have "flatBT (Trans M) = s @ flatBT (Mark M m) @ b" using flatM .
+    also have "flatBT (Mark M m) = flatBT (Dpt (enat ?v) t')"
+      using markform by simp
+    also have "\<dots> = Dsym (enat ?v) # flatBT t'" by simp
+    finally have "flatBT (Trans M) = s @ Dsym (enat ?v) # flatBT t' @ b" by simp
+    thus ?thesis using flatSub by simp
+  qed
+  have subEq: "spineSub (Trans (seg M 0 m)) t' = Trans M"
+    using flatSub2 by (rule m_7_flatBT_inj)
+  have rnTrans: "RightNodes (Trans M) = a0 @ [?v] @ a1"
+    using UA(1) subEq a0_def a1_def by simp
+  show ?thesis using rnTrans rnSeg rnMark by blast
+qed
+
+
 end
