@@ -76,8 +76,8 @@
       - ✅🚧 命題（$\textrm{Trans}$ の $(\textrm{IncrFirst},\textrm{Red})$ 不変 $P$ 同変性）〔(1)不変性 green: `m_7_3_Trans_Red`/`m_7_3_Trans_IncrFirst`(域=Red M∈RT_PS, A4型補正)。残=(2)P同変性〕
       - ✅🚧 命題（$\textrm{Mark}$ の $(\textrm{IncrFirst},\textrm{Red},P)$ 不変性）〔(1) green: `m_7_3_Mark_Red`/`m_7_3_Mark_IncrFirst`(同域)。残=P 部〕
       - ✅ 命題（$\textrm{Trans}$ が零項性を保つこと）〔`m_7_3_Trans_zeroT`: `M∈RT_PS ⟹ (zeroT M ⟷ Trans M = 0)`。⟸=値不変量 `Trans_Mark_invariant_aux` の `¬zeroT⟶Trans≠0` 対偶、⟹=`m_6_6_oneColumn` で `[(0,0)]` 帰着+`Trans_singleton`。域は RT_PS(A15: 原典 T_PS だが Trans 域=RT_PS)〕
-      - 🚨 命題（$c_1$ と $c_2$ の大小関係）
-      - 🚨 命題（$\textrm{Pred}$ の $\textrm{Trans}$ に関する降下性）
+      - 🚧 命題（$c_1$ と $c_2$ の大小関係）〔claim(1)(2) ✅ `transC1_single_principal`/`transC2_single_principal`(PB長=1)。残 claim(3) `lessBT c1 c2`: I/III/V=`lessBT_addBT_self`、t2=0自明、else=append入れ子で手段あり、**VI枝のみ Mark構造補題要**(`lessBT t2 (D_{M1j1}0)`、密結合クラスタ)。memory `pss-73-ordering-chain`〕
+      - 🚧 命題（$\textrm{Pred}$ の $\textrm{Trans}$ に関する降下性）〔土台 ✅(`scbext_lessBT`+`lessBT_addBT_*`)。mono=scbext∘c1c2(3)、multi=append∘IH。c1c2(3) 待ち〕
       - 🚨 命題（右端第 $1$ 基点の $\textrm{Mark}$ の基本性質）
       - 🚨 系（$\textrm{Mark}$ の左端の基本性質）
       - 🚨 系（条件 (II) か (IV) の下で $t_2$ が $0$ でないこと）
