@@ -8949,4 +8949,49 @@ lemma m_7_4_RightAnces_RightNodes:
   by (rule ra_RightAnces_RightNodes_RT[rule_format, OF assms])
 
 
+text \<open>\<open>RightNodes\<close> of a term is empty iff the term is \<open>0\<close>: a non-empty principal
+  list has a \<open>DB\<close>-headed last component, contributing a head node.\<close>
+
+lemma rnsub_RightNodes_empty_iff: "RightNodes t = [] \<longleftrightarrow> t = 0\<^sub>B"
+proof
+  assume h: "RightNodes t = []"
+  obtain xs where t: "t = Trm xs" by (cases t)
+  show "t = 0\<^sub>B"
+  proof (cases xs)
+    case Nil thus ?thesis using t by simp
+  next
+    case (Cons a as)
+    hence ne: "xs \<noteq> []" by simp
+    obtain u b where lb: "last xs = DB u b" by (cases "last xs") auto
+    have "RightNodes (Trm xs) = RightNodes (Trm [last xs])"
+      using ne by (rule rnsub_RightNodes_last)
+    also have "\<dots> = the_enat u # RightNodes b" by (simp add: lb)
+    finally have "RightNodes (Trm xs) = the_enat u # RightNodes b" .
+    hence False using h t by simp
+    thus ?thesis ..
+  qed
+next
+  assume "t = 0\<^sub>B" thus "RightNodes t = []" by simp
+qed
+
+text \<open>系（非零項の \<open>RightAnces\<close> が非空であること） (§7.4, 2809), discharging
+  @{thm [source] p_7_4_RightAnces_zeroT}.  On \<open>RT\<^bsub>PS\<^esub>\<close> (cf.
+  @{thm [source] m_7_4_RightAnces_RightNodes}): immediate from the
+  \<open>RightAnces\<close>=\<open>RightNodes\<circ>Trans\<close> correspondence, the empty-\<open>RightNodes\<close>
+  characterisation, and @{thm [source] m_7_3_Trans_zeroT}.\<close>
+
+lemma m_7_4_RightAnces_zeroT:
+  assumes "M \<in> RT_PS"
+  shows "zeroT M \<longleftrightarrow> RightAnces M = []"
+proof -
+  have "RightAnces M = RightNodes (Trans M)"
+    by (rule m_7_4_RightAnces_RightNodes[OF assms])
+  moreover have "RightNodes (Trans M) = [] \<longleftrightarrow> Trans M = 0\<^sub>B"
+    by (rule rnsub_RightNodes_empty_iff)
+  moreover have "Trans M = 0\<^sub>B \<longleftrightarrow> zeroT M"
+    using m_7_3_Trans_zeroT[OF assms] by blast
+  ultimately show ?thesis by simp
+qed
+
+
 end
