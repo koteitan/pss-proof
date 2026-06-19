@@ -482,3 +482,15 @@ yaBMS で経験的検証済）はブロック $n$ 個でこの訂正後の式と
 **訂正案**: 命題の仮定に「\(j\) は \(M\)-許容」（\((M,j)\in\textrm{Marked}\)）を追加。これは \(\textrm{Mark}\) の定義域制約の明示化であり、下流（§8）の使用箇所はすべて許容基点上。
 
 **形式化での扱い**: `m_7_4_Mark_nextAdm`（`pss_wip.thy`）は \(M\in RT_{\textrm{PS}}\)・\((M,j)\in\textrm{Marked}\) を仮定し、エンジン補題 `Mark_nest_common_marked`（両列 Marked で \(\textrm{Mark}\,m\) を \(\textrm{Mark}\,m'\) 周りに一意 scb 分解、`m_7_4_Trans_Mark_Pred` の合成 + `m_7_2_scb_unique_sb` で位置固定）に \(m=j,\,m'=j_0\) を代入して得る（\(j\le j_0\) は `le0`→`nextrel0_rtrancl_mono`、\(j_0<\textrm{Lng}\,M-1\) は `nextAdm`）。[[A17]] と同根（原文が暗黙に許容/非零項を仮定するエッジ）。
+
+## A19. §7.4 命題（Mark が順序関係を保つこと）: 結論 (2) の対が反転している
+
+**所在**: §7.4「命題（\(\textrm{Mark}\) が順序関係を保つこと）」(content.md 2466)。原文は \((M,m_0),(M,m_1)\in T_{\textrm{PS}}^{\textrm{Marked}}\) に対し「(1) \(m_0<m_1\)」と「(2) \(\textrm{Mark}(M,m_1)\neq\textrm{Mark}(M,m_0)\) かつ \((\textrm{Mark}(M,m_1),\textrm{Mark}(M,m_0))\in T_{\textrm{B}}^{\textrm{Marked}}\)」の同値を主張する。
+
+**観察**: \(T_{\textrm{B}}^{\textrm{Marked}}=\{(t,c)\mid (s,c,b)\,\text{が}\,t\,\text{の scb 分解}\}\)(content.md 1834)は **(whole, block)** の規約(\(c\) は \(t\) の部分=被覆される側、cf. 1936 \((t+c,c)\))。一方 \(\textrm{Mark}(M,m)\) は \(m\) が小さいほど大きい(\(\textrm{Mark}(M,0)=\textrm{Trans}(M)\) 最大、\(\textrm{Mark}(M,j_1)=D_{M_{1,j_1}}0\) 最小)。よって \(m_0<m_1\) では \(\textrm{Mark}(M,m_0)\) が whole、\(\textrm{Mark}(M,m_1)\) が block で、正しい対は \((\textrm{Mark}(M,m_0),\textrm{Mark}(M,m_1))\in T_{\textrm{B}}^{\textrm{Marked}}\)。原文の \((\textrm{Mark}(M,m_1),\textrm{Mark}(M,m_0))\) は **whole と block が逆**。
+
+**確認(機械証明による)**: `Mark_MarkedB_nest`(green): \((M,m),(M,m')\in\textrm{Marked}\wedge m\le m'\wedge M\in RT_{\textrm{PS}}\Rightarrow(\textrm{Mark}\,M\,m,\textrm{Mark}\,M\,m')\in\textrm{MarkedB}\)。すなわち小 index が whole。`MarkedB_antisym`(green)より両向きの nest は項の一致を強制するので、\(m_0<m_1\)(狭義, 像が相異なる)では原文の逆向き対は偽。
+
+**訂正案**: (2) を \((\textrm{Mark}(M,m_0),\textrm{Mark}(M,m_1))\in T_{\textrm{B}}^{\textrm{Marked}}\) に修正(単純な左右取り違え)。
+
+**形式化での扱い**: `m_7_4_Mark_order`(機械化予定)は訂正後の向きで述べる。nest 方向=`Mark_MarkedB_nest`、(2)⟹(1)=`MarkedB_antisym`、(1)⟹(2) の相異性(\(\textrm{Mark}\) の marked 列上の単射性)は右スパイン長狭義減少(`m_7_4_RightNodes_Mark`)経由が見込み(未完)。
