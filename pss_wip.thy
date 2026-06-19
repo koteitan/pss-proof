@@ -8994,6 +8994,183 @@ proof -
 qed
 
 
+text \<open>§7.4 keystone (towards "Mark preserves order"): a \<open>monoT\<close> reduced sequence
+  of length \<open>> 1\<close> has \<open>RightNodes (Trans M)\<close> of length \<open>\<ge> 2\<close>.  \<open>Trans M\<close> is a
+  single principal \<open>Trm [DB u a]\<close> (@{thm [source] Trans_PT_single}); its
+  right-spine has length \<open>1 + length (RightNodes a)\<close>, so it suffices to show the
+  inner argument \<open>a \<noteq> 0\<^bsub>B\<^esub>\<close>.  In the \<open>t\<^sub>1 = 0\<close> branch \<open>Trans M = D\<^bsub>0\<^esub>(D\<^bsub>bv\<^esub> 0)\<close>
+  has inner \<open>D\<^bsub>bv\<^esub> 0 \<noteq> 0\<close>; in the \<open>t\<^sub>1 \<noteq> 0\<close> (surgery) branch \<open>flatBT (Trans M)\<close>
+  embeds \<open>flatBT (transC2 M)\<close> (length \<open>\<ge> 3\<close>), forcing \<open>length (flatBT a) \<ge> 2\<close>,
+  hence \<open>a \<noteq> 0\<close>.\<close>
+
+lemma Trans_mono_RN_ge2:
+  assumes MR: "M \<in> RT_PS" and mono: "monoT M" and L: "1 < Lng M"
+  shows "2 \<le> length (RightNodes (Trans M))"
+proof -
+  have MT: "M \<in> T_PS" using MR by (simp add: RT_PS_def)
+  have Mne: "M \<noteq> []" using MT by (simp add: T_PS_def)
+  have nzM: "\<not> zeroT M" using mono by (simp add: monoT_def)
+  have tMne: "Trans M \<noteq> 0\<^sub>B" using m_7_3_Trans_zeroT[OF MR] nzM by blast
+  \<comment> \<open>\<open>Trans M\<close> is a single principal \<open>Trm [DB u a]\<close>\<close>
+  obtain p where Tp: "Trans M = Trm [p]"
+    using Trans_PT_single[THEN mp, THEN mp, THEN mp, OF MR mono tMne] by blast
+  obtain u a where pua: "p = DB u a" by (cases p)
+  have TM: "Trans M = Trm [DB u a]" using Tp pua by simp
+  have rnM: "RightNodes (Trans M) = the_enat u # RightNodes a"
+    using TM by simp
+  \<comment> \<open>suffices: the inner argument \<open>a\<close> is nonzero\<close>
+  have suff: "a \<noteq> 0\<^sub>B \<Longrightarrow> 2 \<le> length (RightNodes (Trans M))"
+  proof -
+    assume "a \<noteq> 0\<^sub>B"
+    hence "RightNodes a \<noteq> []" by (simp add: rnsub_RightNodes_empty_iff)
+    thus ?thesis using rnM by (cases "RightNodes a") auto
+  qed
+  have domT: "Trans_Mark_dom (Inl M)" by (rule m_7_3_Trans_welldef[OF MR])
+  have Lgt1: "\<not> Lng M \<le> Suc 0" using L by simp
+  let ?j1 = "Lng M - 1"
+  show ?thesis
+  proof (cases "Trans (Pred M) = 0\<^sub>B")
+    case t1z: True
+    \<comment> \<open>\<open>Trans M = D\<^bsub>0\<^esub>(D\<^bsub>bv\<^esub> 0)\<close>, inner \<open>= D\<^bsub>bv\<^esub> 0 \<noteq> 0\<close>\<close>
+    have tv: "Trans M = Dpt 0 (Dpt (enat (entry M 1 ?j1)) 0\<^sub>B)"
+      using Trans.psimps[OF domT] MR Lgt1 mono t1z by (simp add: Let_def)
+    have "Trm [DB u a] = Trm [DB 0 (Dpt (enat (entry M 1 ?j1)) 0\<^sub>B)]"
+      using TM tv by simp
+    hence "a = Dpt (enat (entry M 1 ?j1)) 0\<^sub>B" by simp
+    hence "a \<noteq> 0\<^sub>B" by simp
+    thus ?thesis by (rule suff)
+  next
+    case t1ne: False
+    \<comment> \<open>surgery branch: replicate the \<open>flatBT (Trans M)\<close> = \<open>fst sb1 @ flatBT c2 @ snd sb1\<close> derivation\<close>
+    have predRT: "Pred M \<in> RT_PS" by (rule Pred_RT_PS[OF MR])
+    have hp: "hasParent M 0 ?j1" by (rule monoT_hasParent0_last[OF MT mono L])
+    let ?t1 = "Trans (Pred M)"
+    let ?bv = "entry M 1 (Lng M - 1)"
+    define jp where "jp = parent M 0 (Lng M - 1)"
+    define c1 where "c1 = Mark (Pred M) (Adm M jp)"
+    define vv where "vv = bpHeadV c1"
+    define tt2 where "tt2 = bpHeadT c1"
+    define JJ1 where "JJ1 = Lng (PB tt2) - 1"
+    define pj where "pj = PB tt2 ! JJ1"
+    define ldj where "ldj = (bpHeadV pj = enat (entry M 1 jp))"
+    define tt3 where "tt3 = (if ldj then SigmaB (take JJ1 (PB tt2)) else tt2)"
+    define tt4 where "tt4 = (if ldj then bpHeadT pj else tt2)"
+    define c2 where "c2 = (if transCondI M \<or> transCondIII M \<or> transCondV M
+                           then Dpt vv (tt2 +\<^sub>B Dpt (enat ?bv) 0\<^sub>B)
+                           else if transCondVI M
+                           then Dpt vv (Dpt (enat ?bv) 0\<^sub>B)
+                           else if tt2 = 0\<^sub>B
+                           then Dpt vv (Dpt (enat (entry M 1 jp))
+                                        (Dpt (enat ?bv) 0\<^sub>B))
+                           else Dpt vv (tt3 +\<^sub>B Dpt (enat (entry M 1 jp))
+                                              (tt4 +\<^sub>B Dpt (enat ?bv) 0\<^sub>B)))"
+    define sb1 where
+      "sb1 = (SOME sb. scb_decomp ?t1 (fst sb) (flatBT c1) (snd sb))"
+    have trans_val: "Trans M = unflatBT (fst sb1 @ flatBT c2 @ snd sb1)"
+      using Trans.psimps[OF domT] MR Lgt1 mono t1ne
+      unfolding Let_def jp_def[symmetric] c1_def[symmetric] vv_def[symmetric]
+                tt2_def[symmetric] JJ1_def[symmetric] pj_def[symmetric]
+                ldj_def[symmetric] tt3_def[symmetric] tt4_def[symmetric]
+                c2_def[symmetric] sb1_def[symmetric]
+      by simp
+    have transJ1eq: "transJ1 M = ?j1" by (simp add: transJ1_def)
+    have transJ0eq: "transJ0 M = jp"
+      by (simp add: transJ0_def transJ1_def jp_def)
+    have transJm1eq: "transJm1 M = Adm M jp"
+      by (simp add: transJm1_def transJ0eq)
+    have c1eqT: "c1 = transC1 M"
+      by (simp add: c1_def transC1_def transJm1eq)
+    have c2eqT: "c2 = transC2 M"
+      unfolding c2_def transC2_def Let_def
+        vv_def tt2_def c1eqT transV_def transT2_def
+        JJ1_def pj_def ldj_def tt3_def tt4_def transJ1_def transJ0eq
+      by simp
+    have mkjm1: "(Pred M, Adm M jp) \<in> Marked"
+      using Marked_Pred_Adm[OF MT L hp] jp_def by simp
+    have NP: "M \<in> PT_PS" using MT mono by (simp add: PT_PS_def)
+    have J1pos: "transJ1 M > 0" using L by (simp add: transJ1_def)
+    have T1ne: "transT1 M \<noteq> 0\<^sub>B" using t1ne by (simp add: transT1_def)
+    have pc1: "Lng (PB (transC1 M)) = 1"
+      by (rule transC1_single_principal[OF MR NP J1pos T1ne])
+    have c1ne: "transC1 M \<noteq> 0\<^sub>B"
+    proof
+      assume "transC1 M = 0\<^sub>B"
+      thus False using pc1 by (simp add: PB_def)
+    qed
+    have c1TB: "transC1 M \<in> T_B"
+      using m_7_3_Mark_in_T_B[OF predRT mkjm1]
+            c1eqT[symmetric] c1_def by simp
+    have c1Dpt: "transC1 M = Dpt (transV M) (transT2 M)"
+      using principal_reconstruct[OF pc1] by (simp add: transV_def transT2_def)
+    have c1Dsym: "flatBT c1 = Dsym (transV M) # flatBT (transT2 M)"
+      using c1eqT c1Dpt by simp
+    have vvT: "vv = transV M" by (simp add: vv_def transV_def c1eqT)
+    have bpc2: "bpHeadV c2 = transV M"
+    proof -
+      have "bpHeadV c2 = vv" by (simp add: c2_def)
+      thus ?thesis using vvT by simp
+    qed
+    have c2pc1: "Lng (PB c2) = 1"
+      using transC2_single_principal c2eqT by simp
+    have c2Dpt: "c2 = Dpt (transV M) (bpHeadT c2)"
+      using principal_reconstruct[OF c2pc1] bpc2 by simp
+    have c2Dsym: "flatBT c2 = Dsym (transV M) # flatBT (bpHeadT c2)"
+      by (subst c2Dpt) (rule flatBT_principal_head)
+    \<comment> \<open>\<open>flatBT (transC2 M)\<close> has length \<open>\<ge> 3\<close> (inner \<open>bpHeadT c2 \<noteq> 0\<close>)\<close>
+    have c2tail_ne: "bpHeadT c2 \<noteq> 0\<^sub>B"
+      using transC2_inner_nonzero[of M] c2eqT by simp
+    have lenc2: "3 \<le> length (flatBT c2)"
+    proof -
+      have "2 \<le> length (flatBT (bpHeadT c2))"
+        by (rule flatBT_len_ge2[OF c2tail_ne])
+      thus ?thesis using c2Dsym by simp
+    qed
+    \<comment> \<open>the surgery output flattens to \<open>fst sb1 @ flatBT c2 @ snd sb1\<close>\<close>
+    have inv1: "(Trans (Pred M), c1) \<in> MarkedB"
+      using m_7_3_Trans_Mark_MarkedB[OF predRT mkjm1] c1_def by simp
+    have exsb: "\<exists>sb. scb_decomp ?t1 (fst sb) (flatBT c1) (snd sb)"
+      using inv1 unfolding MarkedB_def by auto
+    have dsb: "scb_decomp ?t1 (fst sb1) (flatBT c1) (snd sb1)"
+      unfolding sb1_def by (rule someI_ex[OF exsb])
+    have c2df: "dfree_BT c2"
+    proof -
+      have vne: "transV M \<noteq> \<infinity>" using c1TB c1Dpt by (auto simp: T_B_def)
+      have t2df: "dfree_BT (transT2 M)" using c1TB c1Dpt by (auto simp: T_B_def)
+      show ?thesis using dfree_transC2[OF vne t2df] c2eqT by simp
+    qed
+    obtain pc2 where c2p: "c2 = Trm [pc2]"
+      using principal_reconstruct[OF c2pc1] by (metis BT.exhaust untrm.simps)
+    have iptc2': "isPTB_str (flatBT (Trm [pc2]))"
+    proof -
+      have "dfree_BT (Trm [pc2])" using c2df c2p by simp
+      then obtain q where "pc2 = q" and "dfree_BP q" by auto
+      thus ?thesis by (auto simp: isPTB_str_def)
+    qed
+    obtain pc1' where c1p: "c1 = Trm [pc1']"
+      using principal_reconstruct[OF pc1] c1eqT by (metis BT.exhaust untrm.simps)
+    have dsb': "scb_decomp ?t1 (fst sb1) (flatBT (Trm [pc1'])) (snd sb1)"
+      using dsb c1p by simp
+    obtain t' where t'f: "flatBT t' = fst sb1 @ flatBT (Trm [pc2]) @ snd sb1"
+        and t'd: "scb_decomp t' (fst sb1) (flatBT (Trm [pc2])) (snd sb1)"
+      using scb_replace_principal[OF dsb' iptc2'] by blast
+    have transMp: "Trans M = t'"
+      using trans_val t'f c2p unflatBT_flat[of t'] by simp
+    have flatTM: "flatBT (Trans M) = fst sb1 @ flatBT c2 @ snd sb1"
+      using transMp t'f c2p by simp
+    \<comment> \<open>\<open>length (flatBT (Trans M)) \<ge> 3\<close>, and \<open>flatBT (Trans M) = Dsym u # flatBT a\<close>\<close>
+    have flatlen3: "3 \<le> length (flatBT (Trans M))"
+      using flatTM lenc2 by simp
+    have flatTMua: "flatBT (Trans M) = Dsym u # flatBT a"
+      using TM by simp
+    have "2 \<le> length (flatBT a)"
+      using flatlen3 flatTMua by simp
+    hence "flatBT a \<noteq> [Zsym]" by auto
+    hence "a \<noteq> 0\<^sub>B" by auto
+    thus ?thesis by (rule suff)
+  qed
+qed
+
+
 text \<open>命題（\<open>Trans\<close>と\<open><\<^bsub>M\<^esub>\<^sup>NextAdm\<close>の関係） (§7.4), discharging
   @{thm [source] p_7_4_Trans_nextAdm}.  On \<open>RT\<^bsub>PS\<^esub>\<close> (cf.
   @{thm [source] m_7_4_Trans_Mark_Pred}): the unique NextAdm-parent \<open>j\<^sub>0\<close> of
@@ -9440,6 +9617,132 @@ proof -
     moreover have "2 \<le> length (RightNodes (Mark M m0))"
       by (rule Mark_interior_RN_ge2[OF MR m0M pos m0lt])
     ultimately show ?thesis by auto
+  qed
+qed
+
+
+text \<open>The marked image at a positive column \<open>m > 0\<close> differs from the marked image
+  at column \<open>0\<close> (which is \<open>Trans M\<close>, @{thm [source] ra_Mark0_eq_Trans}).  At
+  column \<open>0\<close> the sequence is \<open>monoT\<close>, so \<open>RightNodes (Trans M)\<close> has length \<open>\<ge> 2\<close>
+  (@{thm [source] Trans_mono_RN_ge2}); for \<open>0 < m\<close> the interior case strictly
+  shrinks the right-spine and the rightmost case has length \<open>1\<close>, so they cannot
+  coincide.\<close>
+
+lemma Mark0_ne_Mark:
+  assumes MR: "M \<in> RT_PS" and m0M: "(M, 0) \<in> Marked" and mM: "(M, m) \<in> Marked"
+    and pos: "0 < m"
+  shows "Mark M m \<noteq> Trans M"
+proof -
+  have MT: "M \<in> T_PS" using MR by (simp add: RT_PS_def)
+  have le00: "leR M 0 0 (Lng M - 1)" using m0M by (simp add: Marked_def)
+  have lem: "leR M 0 m (Lng M - 1)" using mM by (simp add: Marked_def)
+  have mlt: "m < Lng M" using lem by (simp add: leR_def le0_def)
+  have mle: "m \<le> Lng M - 1" using mlt by linarith
+  have L: "1 < Lng M" using pos mlt by linarith
+  have nzM: "\<not> zeroT M" using L by (auto simp: zeroT_def)
+  have monoM: "monoT M" using nzM le00 by (simp add: monoT_def)
+  \<comment> \<open>\<open>Mark M 0 = Trans M\<close>\<close>
+  have mk0: "Mark M 0 = Trans M"
+    using ra_Mark0_eq_Trans[THEN mp, THEN mp, OF m0M MR] .
+  have rnTM: "2 \<le> length (RightNodes (Trans M))"
+    by (rule Trans_mono_RN_ge2[OF MR monoM L])
+  show ?thesis
+  proof (cases "m < Lng M - 1")
+    case True
+    \<comment> \<open>interior: \<open>RightNodes (Mark M m)\<close> shorter than \<open>RightNodes (Trans M)\<close>\<close>
+    obtain a0 a1 where
+          RT: "RightNodes (Trans M) = a0 @ [entry M 1 m] @ a1"
+      and Sseg: "RightNodes (Trans (seg M 0 m)) = a0 @ [entry M 1 m]"
+      and RMark: "RightNodes (Mark M m) = [entry M 1 m] @ a1"
+      using m_7_4_RightNodes_Mark[OF mM MR pos True] by blast
+    \<comment> \<open>\<open>seg M 0 m\<close> is mono reduced of length \<open>m+1 \<ge> 2\<close>, so its \<open>Trans\<close> has \<open>RightNodes \<ge> 2\<close>\<close>
+    have segRT: "seg M 0 m \<in> RT_PS" by (rule seg_0_RT_PS[OF MR mle])
+    have segm0: "(seg M 0 m, 0) \<in> Marked"
+    proof -
+      have "(seg M 0 m, (0::nat) - 0) \<in> Marked"
+        by (rule m_6_3_marked_slice[OF m0M]) (use pos mle in auto)
+      thus ?thesis by simp
+    qed
+    have Lseg: "Lng (seg M 0 m) = Suc m" using mlt by simp
+    have segL: "1 < Lng (seg M 0 m)" using pos Lseg by simp
+    have segnz: "\<not> zeroT (seg M 0 m)" using segL by (auto simp: zeroT_def)
+    have segle00: "leR (seg M 0 m) 0 0 (Lng (seg M 0 m) - 1)"
+      using segm0 by (simp add: Marked_def)
+    have segmono: "monoT (seg M 0 m)" using segnz segle00 by (simp add: monoT_def)
+    have rnseg: "2 \<le> length (RightNodes (Trans (seg M 0 m)))"
+      by (rule Trans_mono_RN_ge2[OF segRT segmono segL])
+    \<comment> \<open>\<open>RightNodes (Trans (seg M 0 m)) = a0 @ [entry M 1 m]\<close>, so \<open>a0 \<noteq> []\<close>\<close>
+    have a0ne: "a0 \<noteq> []"
+    proof
+      assume "a0 = []"
+      hence "RightNodes (Trans (seg M 0 m)) = [entry M 1 m]" using Sseg by simp
+      thus False using rnseg by simp
+    qed
+    have lenTM: "length (RightNodes (Trans M)) = length a0 + 1 + length a1"
+      using RT by simp
+    have lenMark: "length (RightNodes (Mark M m)) = 1 + length a1"
+      using RMark by simp
+    have "length (RightNodes (Mark M m)) < length (RightNodes (Trans M))"
+      using lenTM lenMark a0ne by (cases a0) auto
+    thus ?thesis by auto
+  next
+    case False
+    hence meq: "m = Lng M - 1" using mle by simp
+    have "Mark M m = Dpt (enat (entry M 1 m)) 0\<^sub>B"
+      using m_7_3_Mark_rightmost1[OF mM MR nzM] meq by simp
+    hence "length (RightNodes (Mark M m)) = 1" by (simp add: rnsub_RightNodes_Dpt)
+    thus ?thesis using rnTM by auto
+  qed
+qed
+
+
+text \<open>命題 (§7.4, 訂正 A19): \<open>Mark\<close> preserves the column order.  For marked
+  columns \<open>m\<^sub>0, m\<^sub>1\<close>, \<open>m\<^sub>0 < m\<^sub>1\<close> iff the marked images differ and \<open>Mark M m\<^sub>0\<close>
+  nests \<open>Mark M m\<^sub>1\<close> in \<open>MarkedB\<close> (pair order \<open>(Mark M m\<^sub>0, Mark M m\<^sub>1)\<close>).\<close>
+
+lemma m_7_4_Mark_order:
+  assumes MR: "M \<in> RT_PS" and m0M: "(M, m0) \<in> Marked" and m1M: "(M, m1) \<in> Marked"
+  shows "(m0 < m1) \<longleftrightarrow> (Mark M m1 \<noteq> Mark M m0 \<and> (Mark M m0, Mark M m1) \<in> MarkedB)"
+proof
+  assume lt: "m0 < m1"
+  have m0le: "m0 \<le> m1" using lt by simp
+  have nest: "(Mark M m0, Mark M m1) \<in> MarkedB"
+    using Mark_MarkedB_nest[THEN mp, THEN mp, THEN mp, THEN mp, OF m0M m1M m0le MR] .
+  have m1le: "m1 \<le> Lng M - 1"
+  proof -
+    have "leR M 0 m1 (Lng M - 1)" using m1M by (simp add: Marked_def)
+    hence "m1 < Lng M" by (simp add: leR_def le0_def)
+    thus ?thesis by linarith
+  qed
+  have distinct: "Mark M m1 \<noteq> Mark M m0"
+  proof (cases "0 < m0")
+    case True
+    show ?thesis using Mark_distinct[OF MR m0M m1M True lt m1le] by auto
+  next
+    case False
+    hence m00: "m0 = 0" by simp
+    have m1pos: "0 < m1" using lt m00 by simp
+    have "Mark M m1 \<noteq> Trans M"
+      using Mark0_ne_Mark[OF MR _ m1M m1pos] m0M m00 by simp
+    moreover have "Mark M m0 = Trans M"
+      using ra_Mark0_eq_Trans[THEN mp, THEN mp, OF _ MR] m0M m00 by simp
+    ultimately show ?thesis by simp
+  qed
+  show "Mark M m1 \<noteq> Mark M m0 \<and> (Mark M m0, Mark M m1) \<in> MarkedB"
+    using distinct nest by simp
+next
+  assume H: "Mark M m1 \<noteq> Mark M m0 \<and> (Mark M m0, Mark M m1) \<in> MarkedB"
+  have neM: "Mark M m1 \<noteq> Mark M m0" using H by simp
+  have nest01: "(Mark M m0, Mark M m1) \<in> MarkedB" using H by simp
+  show "m0 < m1"
+  proof (rule ccontr)
+    assume "\<not> m0 < m1"
+    hence m1le0: "m1 \<le> m0" by simp
+    have nest10: "(Mark M m1, Mark M m0) \<in> MarkedB"
+      using Mark_MarkedB_nest[THEN mp, THEN mp, THEN mp, THEN mp, OF m1M m0M m1le0 MR] .
+    have "Mark M m0 = Mark M m1"
+      by (rule MarkedB_antisym[OF nest01 nest10])
+    thus False using neM by simp
   qed
 qed
 
