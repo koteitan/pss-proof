@@ -87,7 +87,7 @@
       - 🚨 系（$\textrm{Trans}$ と非可算基数の関係）〔基数概念要〕
       - 🚨 系（左端第 $1$ 基点の $\textrm{Mark}$ の基本性質）
       - 🚨 系（$s_1$ と $b_1$ の空性と基点の関係）〔def 内部記号露出要〕
-      - 🚧 命題（$\textrm{Mark}$ が順序関係を保つこと）〔**補正 A19**(原典(2)の対 (Mark m₁,Mark m₀) は whole/block 逆、正=(Mark m₀,Mark m₁))。構成要素: nest=`Mark_MarkedB_nest`✅(m≤m'⟹(Mark m,Mark m')∈MarkedB, 小index=whole)、反対称=`MarkedB_antisym`✅(flatBT長+`m_7_flatBT_inj`、(2)⟹(1)用)。**残=単射性**(m₀<m₁⟹Mark m₀≠Mark m₁、(1)⟹(2)用): 右スパイン長狭義減少(`m_7_4_RightNodes_Mark`の a0(m) 長 monotone)経由が見込みだが Lng 帰納要、未完。pss_paper 転記も未〕
+      - 🚧 命題（$\textrm{Mark}$ が順序関係を保つこと）〔**補正 A19**(原典(2)の対 whole/block 逆)。構成要素: nest=`Mark_MarkedB_nest`✅、反対称=`MarkedB_antisym`✅((2)⟹(1)用)、**単射性 0<m₀ 完了**: `Mark_distinct`✅(0<m₀<m₁≤Lng-1⟹Mark m₀≠Mark m₁)。核=`RightNodes_seg_len_strict_mono`✅(g(m)=|RightNodes(Trans(seg M 0 m))| 狭義単調、N=seg M 0 m₁ の m₀ に `m_7_4_RightNodes_Mark`、差分 a1'≠[] は `Mark_tail_nonzero`、**entry 値に非依存**)+ `Mark_interior_RN_ge2`(tail≠0⟹spine≥2)。右端 m₁=Lng-1 は spine長1 vs ≥2。**残=m₀=0 コーナー**(Mark M 0=Trans M、経験で entry M 1 0=entry M 1 m₁ が142件→長さ/先頭で区別不可、深い strict-nesting 構造帰納要。経験では Mark 単射 違反0=主張は真)。+ iff 組立 + pss_paper 転記(A19向き)〕
       - 🚨 系（$s_{-1}$ と $b_{-1}$ の空性と基点の関係）
       - 🚨 命題（$\textrm{Mark}$ の $\textrm{Trans}$ による表示）
     - 🚨 §7.4 許容的親子関係
