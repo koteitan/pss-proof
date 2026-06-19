@@ -92,8 +92,8 @@
       - 🚨 命題（$\textrm{Mark}$ の $\textrm{Trans}$ による表示）
     - 🚨 §7.4 許容的親子関係
       - ✅ 命題（$\textrm{Adm}_M$ と $<_M^{\textrm{NextAdm}}$ の関係）
-      - 🚨 命題（$\textrm{Trans}$ と $<_M^{\textrm{NextAdm}}$ の関係）
-      - 🚨 系（$\textrm{Mark}$ と $<_M^{\textrm{NextAdm}}$ の関係）
+      - ✅ 命題（$\textrm{Trans}$ と $<_M^{\textrm{NextAdm}}$ の関係）〔`m_7_4_Trans_nextAdm`(= `p_7_4_Trans_nextAdm`, RT_PS): ∃!j0 nextAdm M 0 j0 (Lng M-1) ⟹ Trans(Pred M)/Trans M を Mark(Pred M)j0/Mark M j0 周りに同位置 scb 分解。NextAdm 親 j0=THE は `nextAdm_def`(leR∧adm∧<)から (M,j0)∈Marked かつ j0<Lng M-1 を満たす⟹`m_7_4_Trans_Mark_Pred` を m=j0 で適用するだけ。連言射影は `na unfolding nextAdm_def by blast`(auto/simp は THE項+∀で発散、要注意)。T_PS 形は §6 ブロッカー経由〕
+      - 🚨 系（$\textrm{Mark}$ と $<_M^{\textrm{NextAdm}}$ の関係）〔engine `Mark_nest_common_marked`(wt-na、両列 Marked で Mark m を Mark m' 周りに scb)まで。wrapper は paper が `leR M 0 j j0` のみ仮定する一方 engine は adm M j 要求の差異(j 非許容可)を要解決〕
       - ✅ 系（$\textrm{Trans}$ の $\textrm{Mark}$ と $\textrm{Pred}$ による表示）〔`m_7_4_Trans_Mark_Pred`(= `p_7_4_Trans_Mark_Pred`, content 2490): (M,m)∈Marked, m<Lng-1 ⟹ ∃! sb で Trans(Pred M) を Mark(Pred M)m の周りに、Trans M を Mark M m の周りに同位置 scb 分解。Lng 強帰納 — mono surgery transport(`scb_replace_principal_BP`+`m_7_2_scb_compose`+`m_7_2_scb_unique_sb`)/multi は共有 prefix を `scb_addBT_left` で持ち上げ。921行。§7.4→§8 の橋〕
       - ✅ 系（$\textrm{Trans}$ の $\textrm{Mark}$ と切片による表示）〔`m_7_4_Trans_Mark_seg`(= `p_7_4_Trans_Mark_seg`, content 2646): 0<m<Lng-1 で同位置 sb が D_{M1m}0 を Trans(seg M 0 m) に、Mark M m を Trans M に入れる。`m_7_4_Trans_Mark_Pred` の系、Lng 帰納で M→Pred M に潰す(切片一致 seg M 0 m=seg(Pred M)0m)、基底=`Mark_rightmost1_forward`、整列=`m_7_2_scb_unique_sb`〕
       - ✅ 系（$\textrm{RightNodes}$ と $\textrm{Mark}$ の関係）〔`m_7_4_RightNodes_Mark`(= `p_7_4_RightNodes_Mark`): 0<m<Lng-1 で RightNodes(Trans M)=a0@[M1m]@a1 / RightNodes(Trans(seg M 0 m))=a0@[M1m] / RightNodes(Mark M m)=[M1m]@a1。`m_7_4_Trans_Mark_seg`(共通scb)+ spine置換engine。一般化補助: `m_7_4_RightNodes_subexpr_gen`(主表現性仮定除去)・`seg_0_RT_PS`(TrMax仮定除去, Pred^^k経由)・`Pred_pow_RT_PS`〕
