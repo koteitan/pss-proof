@@ -470,3 +470,15 @@ yaBMS で経験的検証済）はブロック $n$ 個でこの訂正後の式と
 **訂正案**: §7.3 の基点・順序命題の前提に「\(M\) は非零項」（または \(M \in RT_{\textrm{PS}} \cap PT_{\textrm{PS}}\)）を追加。使用箇所はすべて非零項上なので十分。
 
 **メタ観察**: §7.3 は \(\textrm{Trans}\)/\(\textrm{Mark}\) の再帰的定義の**零項基底枝**（\(M_0 = (0,0) \Rightarrow 0\)）と、主表現としての \(D_0 0\)（="+1"）の二重性により、零項を明示除外しないと多くの命題が崩れる（[[A16]] 単項性命題、本 A17 基点系）。形式化は一貫して \(\neg\textrm{zeroT}\)／\(RT_{\textrm{PS}} \cap PT_{\textrm{PS}}\) 域で機械化する方針。
+
+## A18. §7.4 系（Mark と \(<_M^{\textrm{NextAdm}}\) の関係）: 仮定の祖先 \(j\) に「\(M\) 許容（\((M,j)\in\textrm{Marked}\)）」を補う必要
+
+**所在**: §7.4「系（\(\textrm{Mark}\) と \(<_M^{\textrm{NextAdm}}\) の関係）」(content.md 付近、`p_7_4_Mark_nextAdm`)。原文は「\(j_1=\textrm{Lng}\,M-1\) の一意な NextAdm 親 \(j_0\) と、\((0,j)\le_M(0,j_0)\) なる任意の \(j\) について \(\textrm{Mark}(M,j)\) が \(\textrm{Mark}(M,j_0)\) 周りに scb 分解される」と述べる。
+
+**観察**: 仮定 \((0,j)\le_M(0,j_0)\)(= `leR M 0 j j0` = 行0祖先 `le0`)は \(j\) の**許容性を含意しない**。\(\textrm{Mark}\) の定義域は \(RT_{\textrm{PS}}^{\textrm{Marked}}\)（許容基点列）なので、\(\textrm{Mark}(M,j)\) が原文の「marked 列の像」である為には \((M,j)\in\textrm{Marked}\)（特に \(\textrm{adm}\,M\,j\)）が必要。
+
+**経験的確認**: 簡約列の閉包（`enum_reduced_tiling(maxlen=5,maxe=3)`、長さ\(\ge2\) で 1465 件、全件で \(j_1\) の NextAdm 親が一意）を走査し、\(j_0\) の行0祖先 \(j\le_M j_0\) で \(\neg\textrm{adm}\,M\,j\) となる**反例 25 件**を確認。最小例 \(M=((0,0),(1,1),(2,2),(3,1))\)、\(j_0=2\)、非許容祖先 \(j=1\)（`python/_admj_audit.py`）。よって原文のままでは \(\textrm{Mark}(M,j)\) が定義域外の対象を指す。
+
+**訂正案**: 命題の仮定に「\(j\) は \(M\)-許容」（\((M,j)\in\textrm{Marked}\)）を追加。これは \(\textrm{Mark}\) の定義域制約の明示化であり、下流（§8）の使用箇所はすべて許容基点上。
+
+**形式化での扱い**: `m_7_4_Mark_nextAdm`（`pss_wip.thy`）は \(M\in RT_{\textrm{PS}}\)・\((M,j)\in\textrm{Marked}\) を仮定し、エンジン補題 `Mark_nest_common_marked`（両列 Marked で \(\textrm{Mark}\,m\) を \(\textrm{Mark}\,m'\) 周りに一意 scb 分解、`m_7_4_Trans_Mark_Pred` の合成 + `m_7_2_scb_unique_sb` で位置固定）に \(m=j,\,m'=j_0\) を代入して得る（\(j\le j_0\) は `le0`→`nextrel0_rtrancl_mono`、\(j_0<\textrm{Lng}\,M-1\) は `nextAdm`）。[[A17]] と同根（原文が暗黙に許容/非零項を仮定するエッジ）。
