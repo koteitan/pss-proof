@@ -11158,6 +11158,49 @@ text \<open>§8.1 補題 part(1), the conjuncts NOT involving the A20-guarded sl
   representation \<open>Mark M m = Trans (seg M m (Lng M - 1))\<close> (content.md 2490),
   currently unproven, and is NOT discharged here.\<close>
 
+text \<open>§7.4 「\<open>Mark\<close> の \<open>Trans\<close> による表示」 (content.md 2490) の橋渡し補題:
+  後方スライス \<open>S = seg M m (Lng M - 1)\<close> について \<open>Mark S 0 = Trans S\<close> が
+  既存補題のみから無条件に従う。\<open>S\<close> は一般には \<open>RT\<^bsub>PS\<^esub>\<close> に属さない(reduced で
+  ない)ので、\<open>Red S\<close> を経由する: @{thm [source] m_6_6_ancestor_slice_Red_IncrFirst}
+  により \<open>Red S\<close> は monoT かつ \<open>RT\<^bsub>PS\<^esub>\<close> に属し、ゆえに \<open>(Red S, 0) \<in> Marked\<close>。
+  @{thm [source] ra_Mark0_eq_Trans} で \<open>Mark (Red S) 0 = Trans (Red S)\<close>、これを
+  @{thm [source] Mark_slice_eq_Red} / @{thm [source] Trans_slice_eq_Red} で
+  \<open>S\<close> へ持ち上げる。これにより、表示 \<open>Mark M m = Trans S\<close> は
+  \<open>Mark M m = Mark S 0\<close> (parent の言う fact2)と同値になる。\<close>
+
+lemma m_7_4_Mark0_slice_eq_Trans:
+  assumes mM: "(M, m) \<in> Marked" and MR: "M \<in> RT_PS" and mlt: "m < Lng M - 1"
+  shows "Mark (seg M m (Lng M - 1)) 0 = Trans (seg M m (Lng M - 1))"
+proof -
+  let ?j1 = "Lng M - 1"
+  let ?S = "seg M m ?j1"
+  let ?N = "Red ?S"
+  \<comment> \<open>slice hypotheses, read off the \<open>Marked\<close> membership of \<open>m\<close>\<close>
+  have leM: "leR M 0 m (Lng M - 1)" using mM by (simp add: Marked_def)
+  have mj1: "m < ?j1" using mlt .
+  have j1le: "?j1 \<le> Lng M - 1" by simp
+  \<comment> \<open>\<open>Red ?S\<close> is monoT and reduced; the slice equals \<open>(IncrFirst^k) (Red ?S)\<close>\<close>
+  have anc: "Red ?N = ?N \<and> monoT ?N
+           \<and> ?S = (IncrFirst ^^ (entry M 0 m - entry M 1 m)) ?N"
+    by (rule m_6_6_ancestor_slice_Red_IncrFirst[OF MR mj1 j1le leM])
+  have monoN: "monoT ?N" using anc by simp
+  have NR: "?N \<in> RT_PS" using slice_Red_in_RT_PS[OF MR mj1 j1le leM] by simp
+  have NT: "?N \<in> T_PS" using NR by (simp add: RT_PS_def)
+  \<comment> \<open>\<open>(Red ?S, 0) \<in> Marked\<close>: \<open>adm N 0\<close> always, \<open>le0 N 0 (Lng N - 1)\<close> from monoT\<close>
+  have le0N: "leR ?N 0 0 (Lng ?N - 1)" using monoN by (simp add: monoT_def)
+  have admN0: "adm ?N 0" by (rule adm_index0)
+  have N0M: "(?N, 0) \<in> Marked" using NT admN0 le0N by (simp add: Marked_def)
+  \<comment> \<open>\<open>Mark (Red ?S) 0 = Trans (Red ?S)\<close> by the index-0 representation\<close>
+  have key: "Mark ?N 0 = Trans ?N" using ra_Mark0_eq_Trans N0M NR by simp
+  \<comment> \<open>lift through \<open>Red\<close> to the slice itself\<close>
+  have mk: "Mark ?S 0 = Mark ?N 0"
+    by (rule Mark_slice_eq_Red[OF MR mj1 j1le leM])
+  have tr: "Trans ?S = Trans ?N"
+    by (rule Trans_slice_eq_Red[OF MR mj1 j1le leM])
+  show ?thesis using mk tr key by simp
+qed
+
+
 lemma m_8_1_c1_around_part1_noeq:
   fixes M :: pairseq
   defines "j1 \<equiv> Lng M - 1"
