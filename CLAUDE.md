@@ -125,7 +125,11 @@ Import chain: `pss_defs` ← `pss_paper` ← `pss_mechanized`.
 ## Workflow
 
 - **Commits do not need confirmation** (write the message in `commit-msg.txt`).
-  **Commit messages are in English.** **`git push` always needs the user's OK.**
+  **Commit messages are in English.** **`git push` is the USER's action — never
+  run it, and NEVER ask/prompt about it** (no "should I push?", no "push or
+  continue?"). The user pushes when they want; just keep committing and working.
+  Do NOT end turns with questions or option-choices (no asking permission, no
+  "go か別か") — work autonomously and continue (2026-06-20 ユーザー明示).
 - Prototype large new definitions (§6.5 `Red`, §7 Buchholz, …) in a **separate
   git worktree** to keep `main` green, then integrate (`git worktree add <dir>
   HEAD` is detached and creates no branch).
