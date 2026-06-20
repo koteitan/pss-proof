@@ -11387,4 +11387,284 @@ proof -
 qed
 
 
+text \<open>§7.4 keystone, the boundary \<open>m = j\<^sub>1 - 1\<close> sub-case of the \<open>monoT\<close> stage
+  (content.md 2495–2540): the backward slice \<open>seg M m (Lng M - 1)\<close> then has
+  length 2, so its reduction \<open>N = Red (seg M m (Lng M - 1))\<close> is a reduced
+  two-column \<open>monoT\<close> sequence, and \<open>Trans (seg M m (Lng M - 1))\<close> evaluates to the
+  explicit closed form \<open>D\<^bsub>M\<^bsub>1,m\<^esub>\<^esub> D\<^bsub>M\<^bsub>1,j\<^sub>1\<^esub>\<^esub> 0\<close> via the two-column lemma
+  (@{thm [source] m_7_3_twoColumn_Trans}) lifted through \<open>Red\<close>
+  (@{thm [source] Trans_slice_eq_Red}).  Row 1 is preserved by \<open>Red\<close>
+  (\<open>seg = (IncrFirst ^^ k) N\<close>, @{thm [source] entry_funpow_IncrFirst1}).\<close>
+
+lemma m_7_4_Trans_slice_2col:
+  assumes mM: "(M, m) \<in> Marked" and MR: "M \<in> RT_PS"
+    and mj1: "m = Lng M - 2" and L: "1 < Lng M - 1"
+  shows "Trans (seg M m (Lng M - 1))
+       = Dpt (enat (entry M 1 m)) (Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B)"
+proof -
+  let ?j1 = "Lng M - 1"
+  let ?S = "seg M m ?j1"
+  let ?N = "Red ?S"
+  let ?k = "entry M 0 m - entry M 1 m"
+  \<comment> \<open>slice hypotheses from \<open>Marked\<close> membership\<close>
+  have leM: "leR M 0 m ?j1" using mM by (simp add: Marked_def)
+  have mlt: "m < ?j1" using mj1 L by linarith
+  have j1le: "?j1 \<le> Lng M - 1" by simp
+  \<comment> \<open>\<open>N\<close> reduced, monoT, \<open>seg = (IncrFirst ^^ k) N\<close>\<close>
+  have anc: "Red ?N = ?N \<and> monoT ?N \<and> ?S = (IncrFirst ^^ ?k) ?N"
+    by (rule m_6_6_ancestor_slice_Red_IncrFirst[OF MR mlt j1le leM])
+  have monoN: "monoT ?N" using anc by simp
+  have segIF: "?S = (IncrFirst ^^ ?k) ?N" using anc by simp
+  have NR: "?N \<in> RT_PS" using slice_Red_in_RT_PS[OF MR mlt j1le leM] by simp
+  \<comment> \<open>length of slice and of \<open>N\<close> is 2\<close>
+  have LS: "Lng ?S = 2" using mj1 L by simp
+  have LN: "Lng ?N = 2"
+  proof -
+    have "Lng ?S = Lng ((IncrFirst ^^ ?k) ?N)" using segIF by simp
+    also have "\<dots> = Lng ?N" by (rule Lng_funpow_IncrFirst)
+    finally show ?thesis using LS by simp
+  qed
+  \<comment> \<open>two-column \<open>Trans\<close> value of \<open>N\<close>\<close>
+  have transN: "Trans ?N
+      = Dpt (enat (entry ?N 1 0)) (Dpt (enat (entry ?N 1 1)) 0\<^sub>B)"
+    by (rule m_7_3_twoColumn_Trans[OF NR monoN LN])
+  \<comment> \<open>row-1 of \<open>N\<close> equals row-1 of the slice (\<open>IncrFirst\<close> preserves row 1)\<close>
+  have e1N0: "entry ?N 1 0 = entry M 1 m"
+  proof -
+    have "entry ?S 1 0 = entry ((IncrFirst ^^ ?k) ?N) 1 0" using segIF by simp
+    also have "\<dots> = entry ?N 1 0"
+      by (rule entry_funpow_IncrFirst1) (use LN in linarith)
+    finally have a: "entry ?S 1 0 = entry ?N 1 0" .
+    have b: "entry ?S 1 0 = entry M 1 m"
+      using entry_seg[of 0 M m ?j1 1] LS by simp
+    show ?thesis using a b by simp
+  qed
+  have e1N1: "entry ?N 1 1 = entry M 1 ?j1"
+  proof -
+    have "entry ?S 1 1 = entry ((IncrFirst ^^ ?k) ?N) 1 1" using segIF by simp
+    also have "\<dots> = entry ?N 1 1"
+      by (rule entry_funpow_IncrFirst1) (use LN in linarith)
+    finally have a: "entry ?S 1 1 = entry ?N 1 1" .
+    have idx: "m + 1 = ?j1" using mj1 L by linarith
+    have b: "entry ?S 1 1 = entry M 1 ?j1"
+      using entry_seg[of 1 M m ?j1 1] LS idx by simp
+    show ?thesis using a b by simp
+  qed
+  \<comment> \<open>lift \<open>Trans\<close> through \<open>Red\<close> to the slice\<close>
+  have tr: "Trans ?S = Trans ?N"
+    by (rule Trans_slice_eq_Red[OF MR mlt j1le leM])
+  show ?thesis using tr transN e1N0 e1N1 by simp
+qed
+
+
+text \<open>§7.4 keystone, the \<open>c\<^sub>0\<close> value at the boundary \<open>m = j\<^sub>1 - 1\<close> of the
+  \<open>monoT\<close> stage: there \<open>m\<close> is the rightmost index of \<open>Pred M\<close>
+  (\<open>m = Lng (Pred M) - 1\<close>), so the replaced surgery component
+  \<open>c\<^sub>0 = Mark (Pred M) m\<close> collapses to the single principal term
+  \<open>D\<^bsub>M\<^bsub>1,m\<^esub>\<^esub> 0\<close> by the rightmost-basepoint characterization
+  (@{thm [source] m_7_3_Mark_rightmost1}).\<close>
+
+lemma m_7_4_Mark_Pred_boundary:
+  assumes mM: "(M, m) \<in> Marked" and MR: "M \<in> RT_PS"
+    and mj1: "m = Lng M - 2" and L: "1 < Lng M - 1"
+  shows "Mark (Pred M) m = Dpt (enat (entry M 1 m)) 0\<^sub>B"
+proof -
+  have MT: "M \<in> T_PS" using MR by (simp add: RT_PS_def)
+  have L1: "1 < Lng M" using L by linarith
+  have predRT: "Pred M \<in> RT_PS" by (rule Pred_RT_PS[OF MR])
+  have pb: "Pred M = butlast M" using L1 by (simp add: Pred_def)
+  have LP: "Lng (Pred M) = Lng M - 1" using pb by simp
+  have mlt: "m < Lng M - 1" using mj1 L by linarith
+  \<comment> \<open>\<open>(Pred M, m) \<in> Marked\<close> and \<open>m\<close> is the rightmost index of \<open>Pred M\<close>\<close>
+  have mP: "(Pred M, m) \<in> Marked" by (rule Marked_Pred[OF MT L1 mM mlt])
+  have mlast: "m = Lng (Pred M) - 1" using LP mj1 L by linarith
+  \<comment> \<open>\<open>Pred M\<close> is non-zero (\<open>Lng \<ge> 2\<close>)\<close>
+  have nzP: "\<not> zeroT (Pred M)"
+  proof -
+    have "1 < Lng (Pred M)" using LP L by linarith
+    thus ?thesis by (auto simp: zeroT_def)
+  qed
+  \<comment> \<open>rightmost-basepoint form of \<open>Mark (Pred M) m\<close>\<close>
+  have rm: "Mark (Pred M) m = Dpt (enat (entry (Pred M) 1 m)) 0\<^sub>B"
+    using m_7_3_Mark_rightmost1[OF mP predRT nzP] mlast by simp
+  \<comment> \<open>row-1 entry survives \<open>butlast\<close> (\<open>m < Lng (Pred M)\<close>)\<close>
+  have e1: "entry (Pred M) 1 m = entry M 1 m"
+  proof -
+    have "m < length (butlast M)" using LP mlast L by simp
+    thus ?thesis using pb by (simp add: entry_def nth_butlast)
+  qed
+  show ?thesis using rm e1 by simp
+qed
+
+
+text \<open>§7.4 keystone, the \<open>monoT\<close> boundary case \<open>m = j\<^sub>1 - 1\<close> fully assembled.
+  At the boundary the marked index \<open>m\<close> is itself the second basepoint
+  \<open>transJm1 M\<close>: the row-0 parent of \<open>j\<^sub>1\<close> is \<open>m\<close> (adjacent, marked), and \<open>m\<close> is
+  admissible (from \<open>Marked\<close>), so \<open>Adm M (parent M 0 j\<^sub>1) = m\<close>.  Hence
+  @{thm [source] m_7_3_Mark_rightmost2} evaluates \<open>Mark M m = transC2 M\<close>, the
+  two-column slice value @{thm [source] m_7_4_Trans_slice_2col} computes
+  \<open>Trans (seg M m (Lng M - 1)) = D\<^bsub>M\<^bsub>1,m\<^esub>\<^esub> D\<^bsub>M\<^bsub>1,j\<^sub>1\<^esub>\<^esub> 0\<close>, and the two coincide
+  because at the boundary \<open>c\<^sub>2 = transC2 M\<close> collapses to that same closed form
+  (its \<open>c\<^sub>1 = Mark (Pred M) m = D\<^bsub>M\<^bsub>1,m\<^esub>\<^esub> 0\<close> by @{thm [source] m_7_4_Mark_Pred_boundary},
+  so \<open>v = M\<^bsub>1,m\<^esub>\<close>, \<open>t\<^sub>2 = 0\<close>).\<close>
+
+lemma m_7_4_Mark_Trans_repr_monoT_boundary:
+  assumes mM: "(M, m) \<in> Marked" and MR: "M \<in> RT_PS" and mono: "monoT M"
+    and mj1: "m = Lng M - 2" and L: "1 < Lng M - 1"
+  shows "Mark M m = Trans (seg M m (Lng M - 1))"
+proof -
+  have MT: "M \<in> T_PS" using MR by (simp add: RT_PS_def)
+  have MP: "M \<in> PT_PS" using MT mono by (simp add: PT_PS_def)
+  have L1: "1 < Lng M" using L by linarith
+  let ?j1 = "Lng M - 1"
+  \<comment> \<open>\<open>m = j\<^sub>1 - 1\<close>, adjacent to \<open>j\<^sub>1\<close>\<close>
+  have mlt: "m < ?j1" using mj1 L by linarith
+  have adj: "?j1 = Suc m" using mj1 L by linarith
+  \<comment> \<open>\<open>(M, m) \<in> Marked\<close> gives \<open>adm M m\<close> and \<open>le0 M m j\<^sub>1\<close>\<close>
+  have admM: "adm M m" using mM by (simp add: Marked_def)
+  have leM: "leR M 0 m ?j1" using mM by (simp add: Marked_def)
+  have le0m: "le0 M m ?j1" using leM by (simp add: leR_def)
+  \<comment> \<open>row-0 parent of \<open>j\<^sub>1\<close> is \<open>m\<close>: adjacency gives \<open>nextrel0 M m j\<^sub>1\<close>, uniqueness from \<open>hasParent\<close>\<close>
+  have nr0: "nextrel0 M m ?j1"
+    using le0_adjacent_step[of M m] le0m adj by simp
+  have hp: "hasParent M 0 ?j1" by (rule monoT_hasParent0_last[OF MT mono L1])
+  have parj0: "parent M 0 ?j1 = m"
+  proof -
+    have ex1: "\<exists>!j. nextR M 0 j ?j1"
+      using hp by (simp add: hasParent_def)
+    have wit: "nextR M 0 m ?j1" using nr0 by (simp add: nextR_def)
+    show ?thesis unfolding parent_def
+      using the1_equality[OF ex1 wit] .
+  qed
+  \<comment> \<open>\<open>m\<close> is admissible, so \<open>Adm M (parent M 0 j\<^sub>1) = m\<close>, i.e. \<open>transJm1 M = m\<close>\<close>
+  have transJm1eq: "transJm1 M = m"
+    using admM parj0 by (simp add: transJm1_def transJ0_def transJ1_def Adm_def)
+  \<comment> \<open>\<open>transJ1 M > 0\<close> and \<open>transT1 M \<noteq> 0\<close> (\<open>Pred M\<close> is non-zero since \<open>Lng \<ge> 3\<close>)\<close>
+  have J1pos: "transJ1 M > 0" using L by (simp add: transJ1_def)
+  have predRT: "Pred M \<in> RT_PS" by (rule Pred_RT_PS[OF MR])
+  have nzPred: "\<not> zeroT (Pred M)"
+  proof -
+    have "Lng (Pred M) = Lng M - 1" using L1 by (simp add: Pred_def)
+    hence "1 < Lng (Pred M)" using L by linarith
+    thus ?thesis by (auto simp: zeroT_def)
+  qed
+  have T1: "transT1 M \<noteq> 0\<^sub>B"
+    using m_7_3_Trans_zeroT[OF predRT] nzPred by (simp add: transT1_def)
+  \<comment> \<open>\<open>Mark M m = transC2 M\<close> via the second-basepoint evaluation\<close>
+  have markC2: "Mark M m = transC2 M"
+    using m_7_3_Mark_rightmost2[OF MR MP J1pos T1] transJm1eq by simp
+  \<comment> \<open>\<open>transC2 M\<close> collapses to the closed two-column form\<close>
+  have c0val: "Mark (Pred M) m = Dpt (enat (entry M 1 m)) 0\<^sub>B"
+    by (rule m_7_4_Mark_Pred_boundary[OF mM MR mj1 L])
+  have c1val: "transC1 M = Dpt (enat (entry M 1 m)) 0\<^sub>B"
+    using c0val transJm1eq by (simp add: transC1_def)
+  have vval: "transV M = enat (entry M 1 m)"
+    using c1val by (simp add: transV_def)
+  have t2val: "transT2 M = 0\<^sub>B"
+    using c1val by (simp add: transT2_def)
+  \<comment> \<open>\<open>j\<^sub>0 = m\<close> is admissible, so condition (I) or (III) fires (\<open>transCondV\<close>/(VI) too land here)\<close>
+  have admj0: "adm M (transJ0 M)"
+    using admM parj0 by (simp add: transJ0_def transJ1_def)
+  have c2val: "transC2 M
+      = Dpt (enat (entry M 1 m)) (Dpt (enat (entry M 1 ?j1)) 0\<^sub>B)"
+  proof (cases "transCondI M \<or> transCondIII M \<or> transCondV M")
+    case True
+    have "transC2 M = Dpt (transV M) (transT2 M +\<^sub>B Dpt (enat (entry M 1 ?j1)) 0\<^sub>B)"
+      unfolding transC2_def Let_def transJ1_def using True by simp
+    thus ?thesis using vval t2val by simp
+  next
+    case notIIIV: False
+    show ?thesis
+    proof (cases "transCondVI M")
+      case True
+      have "transC2 M = Dpt (transV M) (Dpt (enat (entry M 1 ?j1)) 0\<^sub>B)"
+        unfolding transC2_def Let_def transJ1_def using notIIIV True by simp
+      thus ?thesis using vval by simp
+    next
+      case notVI: False
+      \<comment> \<open>this branch is impossible: at the boundary (I)/(III)/(VI) always fires\<close>
+      have condA: "RedCondA M" using m_6_6_reduced_iff_cond[OF MT] MR by auto
+      \<comment> \<open>\<open>\<not> (I)\<close> with \<open>adm\<close> forces \<open>b > 0\<close>; \<open>\<not> (III)\<close> forces \<open>v\<^sub>p < b\<close>\<close>
+      have bpos: "entry M 1 ?j1 > 0"
+      proof (rule ccontr)
+        assume "\<not> entry M 1 ?j1 > 0"
+        hence "entry M 1 ?j1 = 0" by simp
+        hence "transCondI M" using admj0 by (simp add: transCondI_def transJ0_def transJ1_def)
+        thus False using notIIIV by blast
+      qed
+      have vplt: "entry M 1 m < entry M 1 ?j1"
+      proof (rule ccontr)
+        assume "\<not> entry M 1 m < entry M 1 ?j1"
+        hence ge: "entry M 1 (parent M 0 ?j1) \<ge> entry M 1 ?j1" using parj0 by simp
+        hence "transCondIII M" using bpos admj0
+          by (simp add: transCondIII_def transJ0_def transJ1_def)
+        thus False using notIIIV by blast
+      qed
+      \<comment> \<open>row-1 next-relation \<open>m \<rightarrow> j\<^sub>1\<close> (valley trivial: no index strictly between)\<close>
+      have mltL: "m < Lng M" using mlt L1 by linarith
+      have j1ltL: "?j1 < Lng M" using L1 by linarith
+      have valley: "\<forall>j. m < j \<and> le0 M j ?j1 \<longrightarrow> entry M 1 j \<ge> entry M 1 ?j1"
+      proof (intro allI impI)
+        fix j assume h: "m < j \<and> le0 M j ?j1"
+        have "(nextrel0 M)\<^sup>*\<^sup>* j ?j1" using h by (simp add: le0_def)
+        hence "j \<le> ?j1" by (rule nextrel0_rtrancl_mono)
+        moreover have "m < j" using h by simp
+        ultimately have "j = ?j1" using adj by linarith
+        thus "entry M 1 j \<ge> entry M 1 ?j1" by simp
+      qed
+      have nr1: "nextrel1 M m ?j1"
+        unfolding nextrel1_def
+        using mltL j1ltL mlt vplt le0m valley by blast
+      have wit1: "nextR M 1 m ?j1" using nr1 by (simp add: nextR_def)
+      have uniq: "\<And>j. nextR M 1 j ?j1 \<Longrightarrow> j = m"
+      proof -
+        fix j assume "nextR M 1 j ?j1"
+        hence nj: "nextrel1 M j ?j1" by (simp add: nextR_def)
+        show "j = m"
+        proof (rule ccontr)
+          assume jne: "j \<noteq> m"
+          have jlt: "j < ?j1" using nj by (simp add: nextrel1_def)
+          have "j < m \<or> m < j" using jne by linarith
+          thus False
+          proof
+            assume "m < j" thus False using jlt adj by linarith
+          next
+            assume jm: "j < m"
+            \<comment> \<open>then \<open>m\<close> lies strictly between \<open>j\<close> and \<open>j\<^sub>1\<close> with \<open>le0 M m j\<^sub>1\<close>,\<close>
+            \<comment> \<open>so the \<open>nextrel1\<close> valley at \<open>j\<close> forces \<open>entry M 1 m \<ge> entry M 1 j\<^sub>1\<close>\<close>
+            have "j < m \<and> le0 M m ?j1" using jm le0m by simp
+            hence "entry M 1 m \<ge> entry M 1 ?j1"
+              using nj by (simp add: nextrel1_def)
+            thus False using vplt by simp
+          qed
+        qed
+      qed
+      have ex1: "\<exists>!j. nextR M 1 j ?j1"
+      proof (rule ex1I)
+        show "nextR M 1 m ?j1" by (rule wit1)
+      next
+        fix j assume "nextR M 1 j ?j1" thus "j = m" by (rule uniq)
+      qed
+      have hp1: "hasParent M 1 ?j1"
+        unfolding hasParent_def by (rule ex1)
+      have par1: "parent M 1 ?j1 = m"
+        unfolding parent_def by (rule the1_equality[OF ex1 wit1])
+      \<comment> \<open>RedCondA at the row-1 parent: \<open>entry M 1 m + 1 = entry M 1 j\<^sub>1\<close>\<close>
+      have step: "entry M 1 (parent M 1 ?j1) + 1 = entry M 1 ?j1"
+        using condA[unfolded RedCondA_def, rule_format, of 1 ?j1] hp1 by simp
+      have vp1: "entry M 1 m + 1 = entry M 1 ?j1" using step par1 by simp
+      have "transCondVI M"
+        unfolding transCondVI_def transJ0_def transJ1_def
+        using bpos vp1 parj0 adj by simp
+      thus ?thesis using notVI by blast
+    qed
+  qed
+  \<comment> \<open>the slice's \<open>Trans\<close> is the same closed form\<close>
+  have rhs: "Trans (seg M m ?j1)
+      = Dpt (enat (entry M 1 m)) (Dpt (enat (entry M 1 ?j1)) 0\<^sub>B)"
+    by (rule m_7_4_Trans_slice_2col[OF mM MR mj1 L])
+  show ?thesis using markC2 c2val rhs by simp
+qed
+
+
 end
