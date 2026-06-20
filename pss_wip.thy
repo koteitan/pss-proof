@@ -11667,4 +11667,145 @@ proof -
 qed
 
 
+text \<open>§7.4 keystone, \<open>monoT\<close> interior helper (1): the predecessor of the
+  reduced slice \<open>N = Red (seg M m j\<^sub>1)\<close> is the reduction of the shorter slice
+  \<open>seg M m (j\<^sub>1 - 1)\<close>.  Combines \<open>Pred (seg M m j\<^sub>1) = seg M m (j\<^sub>1 - 1)\<close> (a
+  \<open>butlast\<close>/\<open>seg\<close> computation, valid for \<open>m < j\<^sub>1\<close>) with the \<open>Red\<close>/\<open>Pred\<close>
+  commutativity @{thm [source] m_6_5_Red_Pred}.\<close>
+
+lemma m_7_4_Pred_Red_slice:
+  assumes mj1: "m < j1"
+  shows "Pred (Red (seg M m j1)) = Red (seg M m (j1 - 1))"
+proof -
+  let ?S = "seg M m j1"
+  have LS: "Lng ?S = Suc j1 - m" by simp
+  have LSgt1: "1 < Lng ?S" using mj1 by simp
+  have segne: "?S \<noteq> []" using LSgt1 by (cases ?S) auto
+  have ST: "?S \<in> T_PS" using segne by (simp add: T_PS_def)
+  \<comment> \<open>\<open>Pred (seg M m j\<^sub>1) = butlast (seg M m j\<^sub>1) = seg M m (j\<^sub>1 - 1)\<close>\<close>
+  have predseg: "Pred ?S = seg M m (j1 - 1)"
+  proof -
+    have pb: "Pred ?S = butlast ?S" using LSgt1 by (simp add: Pred_def)
+    have Lbut: "Lng (butlast (seg M m j1)) = Suc (j1 - 1) - m" using mj1 by simp
+    have "butlast (seg M m j1) = seg M m (j1 - 1)"
+    proof (rule nth_equalityI)
+      show "length (butlast (seg M m j1)) = length (seg M m (j1 - 1))"
+        using mj1 by simp
+    next
+      fix i assume "i < length (butlast (seg M m j1))"
+      hence ilt: "i < j1 - m" using mj1 by simp
+      have lhs: "butlast (seg M m j1) ! i = seg M m j1 ! i"
+        using ilt by (simp add: nth_butlast)
+      have a: "seg M m j1 ! i = M ! (m + i)"
+        using ilt unfolding seg_def by (simp del: upt_Suc)
+      have b: "seg M m (j1 - 1) ! i = M ! (m + i)"
+        using ilt mj1 unfolding seg_def by (simp del: upt_Suc)
+      show "butlast (seg M m j1) ! i = seg M m (j1 - 1) ! i"
+        using lhs a b by simp
+    qed
+    thus ?thesis using pb by simp
+  qed
+  have "Pred (Red ?S) = Red (Pred ?S)" by (rule m_6_5_Red_Pred[OF ST, symmetric])
+  also have "\<dots> = Red (seg M m (j1 - 1))" using predseg by simp
+  finally show ?thesis .
+qed
+
+
+text \<open>§7.4 keystone, \<open>monoT\<close> interior helper (2): the \<open>Trans\<close> of the predecessor
+  of the reduced slice \<open>N = Red (seg M m j\<^sub>1)\<close> equals the \<open>Trans\<close> of the shorter
+  slice \<open>seg M m (j\<^sub>1 - 1) = seg M m (Lng M - 2)\<close> (= \<open>transT1 N\<close> readback).
+  Uses helper (1) and @{thm [source] Trans_slice_eq_Red} on the \<open>[m, j\<^sub>1-1]\<close> slice.
+  IH-free.\<close>
+
+lemma m_7_4_Trans_PredN:
+  assumes mM: "(M, m) \<in> Marked" and MR: "M \<in> RT_PS" and mint: "m < Lng M - 2"
+  shows "Trans (Pred (Red (seg M m (Lng M - 1)))) = Trans (seg M m (Lng M - 2))"
+proof -
+  have MT: "M \<in> T_PS" using MR by (simp add: RT_PS_def)
+  let ?j1 = "Lng M - 1"
+  have L: "2 < Lng M" using mint by linarith
+  have mj1: "m < ?j1" using mint by linarith
+  \<comment> \<open>helper (1): \<open>Pred N = Red (seg M m (j\<^sub>1 - 1))\<close>\<close>
+  have predN: "Pred (Red (seg M m ?j1)) = Red (seg M m (?j1 - 1))"
+    by (rule m_7_4_Pred_Red_slice[OF mj1])
+  have j1m1: "?j1 - 1 = Lng M - 2" by simp
+  \<comment> \<open>\<open>leR M 0 m (j\<^sub>1 - 1)\<close> by descending the endpoint of \<open>leR M 0 m j\<^sub>1\<close>\<close>
+  have leM: "leR M 0 m ?j1" using mM by (simp add: Marked_def)
+  have leM': "leR M 0 m (?j1 - 1)"
+    by (rule m_5_1_ancestor_tree_1[OF MT leM]) (use mint in linarith)+
+  have mlt': "m < ?j1 - 1" using mint by linarith
+  have j1le': "?j1 - 1 \<le> Lng M - 1" by simp
+  \<comment> \<open>\<open>Trans (Red (seg M m (j\<^sub>1-1))) = Trans (seg M m (j\<^sub>1-1))\<close>\<close>
+  have tr: "Trans (seg M m (?j1 - 1)) = Trans (Red (seg M m (?j1 - 1)))"
+    by (rule Trans_slice_eq_Red[OF MR mlt' j1le' leM'])
+  have "Trans (Pred (Red (seg M m ?j1))) = Trans (Red (seg M m (?j1 - 1)))"
+    using predN by simp
+  also have "\<dots> = Trans (seg M m (?j1 - 1))" using tr by simp
+  also have "\<dots> = Trans (seg M m (Lng M - 2))" using j1m1 by simp
+  finally show ?thesis .
+qed
+
+
+text \<open>§7.4 keystone, \<open>monoT\<close> interior helper (3): a backward slice of \<open>Pred M\<close>
+  that ends strictly before the last column of \<open>M\<close> coincides with the same
+  slice of \<open>M\<close> (the dropped last entry is past the slice).  \<open>a \<le> b < Lng M - 1\<close>.\<close>
+
+lemma m_7_4_seg_Pred_eq:
+  assumes L: "1 < Lng M" and ab: "a \<le> b" and blt: "b < Lng M - 1"
+  shows "seg (Pred M) a b = seg M a b"
+proof (rule nth_equalityI)
+  have pb: "Pred M = butlast M" using L by (simp add: Pred_def)
+  have LP: "Lng (Pred M) = Lng M - 1" using pb by simp
+  show "length (seg (Pred M) a b) = length (seg M a b)" by simp
+next
+  have pb: "Pred M = butlast M" using L by (simp add: Pred_def)
+  fix i assume "i < length (seg (Pred M) a b)"
+  hence ilt: "i < Suc b - a" by simp
+  have ai: "a + i \<le> b" using ilt ab by linarith
+  have abound: "a + i < Lng M - 1" using ai blt by linarith
+  have lhs: "seg (Pred M) a b ! i = Pred M ! (a + i)"
+    using ilt unfolding seg_def by (simp del: upt_Suc)
+  also have "\<dots> = M ! (a + i)"
+    using pb abound by (simp add: nth_butlast)
+  also have "\<dots> = seg M a b ! i"
+    using ilt unfolding seg_def by (simp del: upt_Suc)
+  finally show "seg (Pred M) a b ! i = seg M a b ! i" .
+qed
+
+
+text \<open>§7.4 keystone, \<open>monoT\<close> interior identity (1): \<open>c\<^sub>0\<^bsup>M\<^esup> = transT1 N\<close>,
+  i.e. \<open>Mark (Pred M) m = Trans (Pred N)\<close> where \<open>N = Red (seg M m (Lng M-1))\<close>.
+  Takes the keystone instantiated at \<open>Pred M\<close> (the strong-induction hypothesis,
+  passed verbatim) and chains it through helpers (2),(3):
+  \<open>Mark (Pred M) m = Trans (seg (Pred M) m (Lng (Pred M)-1))
+       = Trans (seg M m (Lng M-2)) = Trans (Pred N)\<close>.  Empirically exact
+  (repr3/repr4: 0 violations on monoT interior \<open>0<m<j\<^sub>1-1\<close>).\<close>
+
+lemma m_7_4_interior_id1:
+  assumes mM: "(M, m) \<in> Marked" and MR: "M \<in> RT_PS" and mint: "m < Lng M - 2"
+    and ihPred: "Mark (Pred M) m = Trans (seg (Pred M) m (Lng (Pred M) - 1))"
+  shows "Mark (Pred M) m = Trans (Pred (Red (seg M m (Lng M - 1))))"
+proof -
+  have MT: "M \<in> T_PS" using MR by (simp add: RT_PS_def)
+  let ?j1 = "Lng M - 1"
+  have L: "2 < Lng M" using mint by linarith
+  have L1: "1 < Lng M" using L by linarith
+  have pb: "Pred M = butlast M" using L1 by (simp add: Pred_def)
+  have LP: "Lng (Pred M) = Lng M - 1" using pb by simp
+  have LPm1: "Lng (Pred M) - 1 = Lng M - 2" using LP by simp
+  \<comment> \<open>the slice of \<open>Pred M\<close> equals the slice of \<open>M\<close> (helper (3))\<close>
+  have mle: "m \<le> Lng M - 2" using mint by linarith
+  have blt: "(Lng M - 2) < Lng M - 1" using L by linarith
+  have segP: "seg (Pred M) m (Lng (Pred M) - 1) = seg M m (Lng M - 2)"
+    using m_7_4_seg_Pred_eq[OF L1 mle blt] LPm1 by simp
+  \<comment> \<open>chain: IH on \<open>Pred M\<close> \<open>\<leadsto>\<close> slice \<open>\<leadsto>\<close> helper (2)\<close>
+  have a: "Mark (Pred M) m = Trans (seg M m (Lng M - 2))"
+    using ihPred segP by simp
+  have b: "Trans (Pred (Red (seg M m ?j1))) = Trans (seg M m (Lng M - 2))"
+    by (rule m_7_4_Trans_PredN[OF mM MR mint])
+  show ?thesis using a b by simp
+qed
+
+\<comment> \<open>§7.4 monoT interior: helpers (1)-(3) + identity (1) green; (2)/(3) pending.\<close>
+
 end
