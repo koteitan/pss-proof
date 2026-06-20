@@ -1575,10 +1575,15 @@ proof -
             = concat (map (\<lambda>r. CM # flatBP r) (butlast (q # ps2)))
               @ CM # flatBP (last (q # ps2))"
       proof -
-        have "q # ps2 = butlast (q # ps2) @ [last (q # ps2)]"
+        have eq: "q # ps2 = butlast (q # ps2) @ [last (q # ps2)]"
           by (simp add: append_butlast_last_id)
-        thus ?thesis by (metis concat_append list.simps(8) list.simps(9)
-                               map_append append_Nil2 concat.simps(1) concat.simps(2))
+        have "concat (map (\<lambda>r. CM # flatBP r) (q # ps2))
+            = concat (map (\<lambda>r. CM # flatBP r) (butlast (q # ps2) @ [last (q # ps2)]))"
+          using eq by (rule arg_cong[where f="\<lambda>xs. concat (map (\<lambda>r. CM # flatBP r) xs)"])
+        also have "\<dots> = concat (map (\<lambda>r. CM # flatBP r) (butlast (q # ps2)))
+                      @ CM # flatBP (last (q # ps2))"
+          by simp
+        finally show ?thesis .
       qed
       have "flatBT w = LP # (flatBP p0
             @ concat (map (\<lambda>r. CM # flatBP r) (q # ps2))) @ [RP]"
