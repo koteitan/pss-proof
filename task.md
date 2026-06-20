@@ -103,6 +103,7 @@
     - 🚨 §8.1 条件 (I) の下での展開規則
       - 🚨 命題（条件 (I) の下での $\textrm{Trans}$ と基本列の交換関係）
       - ✅ 補題（公差 $(1,1)$ のペア数列の $\textrm{Trans}$ の基本性質）〔`m_8_1_diagSeq_Trans`(= `p_8_1_diagSeq_Trans`, content 2837): u<v ⟹ Trans(diagSeq u v) = D_u D_v 0(v-u 非依存)。v 帰納、base=`m_7_3_twoColumn_Trans`、step は **j₋₁=0**(`Adm_parent0_last_diagSeq`/`nadm_diagSeq_interior`/`parent0_last_diagSeq`)で scb 自明(`scb_SOME_self`)→ 条件(VI)→ c2=D_u D_v 0。helper `monoT_diagSeq_lt` 等。経験45/45〕
+      - ✅ 系（$\textrm{Pred}$ が公差 $(1,1)$ のペア数列の $\textrm{Trans}$ の基本性質）〔`m_8_1_Pred_diagSeq_Trans`(= `p_8_1_Pred_diagSeq_Trans`, content 2871): Trans(diagSeq u v @ [(w',w)]) の4ケース(D_u D_v D_w 0 等)。Pred=diagSeq u v, t1=D_u D_v 0(`m_8_1_diagSeq_Trans`)、左端基点=`ra_Mark0_eq_Trans`/右端=`m_7_3_Mark_rightmost1`、各ケース c1/c2 surgery。append形補助多数(RedCondA/B_diagApp/monoT_diagApp/Adm_diagApp_*/scb_SOME_Du_Dv 等)。経験 全4ケース violations 0〕
       - 🚨 補題（条件 (I) か (III) の下での $c_1$ 前後の具体表示）
     - 🚨 §8.2 強単項性
       - 🚨 命題（標準形の直系先祖による切片の簡約化の強単項性）

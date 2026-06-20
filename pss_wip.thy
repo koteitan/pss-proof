@@ -10017,4 +10017,956 @@ next
 qed
 
 
+section \<open>§8.1 系（\<open>Pred\<close>が公差\<open>(1,1)\<close>のペア数列の\<open>Trans\<close>）— content.md 2871\<close>
+
+text \<open>Helpers for \<open>M = diagSeq u v @ [(w',w)]\<close> (the article's
+  \<open>((j,j))\<^bsub>j=u\<^esub>\<^bsup>v\<^esup> \<oplus> (w',w)\<close>).  \<open>Lng M = Suc v - u + 1\<close>; the diagonal prefix
+  carries \<open>entry M i j = u + j\<close> for \<open>j \<le> v - u\<close>, and the appended last column
+  \<open>j\<^sub>1 = v - u + 1\<close> has \<open>entry M 0 j\<^sub>1 = w'\<close>, \<open>entry M 1 j\<^sub>1 = w\<close>.\<close>
+
+lemma Lng_diagApp:
+  assumes uv: "u \<le> v"
+  shows "Lng (diagSeq u v @ [(w', w)]) = Suc v - u + 1"
+  using uv by simp
+
+lemma entry_diagApp_lo:
+  assumes "j \<le> v - u" and uv: "u \<le> v"
+  shows "entry (diagSeq u v @ [(w', w)]) i j = u + j"
+proof -
+  let ?D = "diagSeq u v"
+  have lt: "j < length ?D" using assms by simp
+  have aj: "j < Suc v - u" using assms by simp
+  have "(?D @ [(w', w)]) ! j = ?D ! j" using lt by (simp add: nth_append)
+  also have "\<dots> = (u + j, u + j)" using diagSeq_nth[OF aj] by simp
+  finally show ?thesis by (simp add: entry_def)
+qed
+
+lemma entry_diagApp_last0:
+  assumes uv: "u \<le> v"
+  shows "entry (diagSeq u v @ [(w', w)]) 0 (Suc v - u) = w'"
+proof -
+  let ?D = "diagSeq u v"
+  have L: "length ?D = Suc v - u" by simp
+  have "(?D @ [(w', w)]) ! (Suc v - u) = [(w', w)] ! 0"
+    using L by (simp add: nth_append)
+  thus ?thesis by (simp add: entry_def)
+qed
+
+lemma entry_diagApp_last1:
+  assumes uv: "u \<le> v"
+  shows "entry (diagSeq u v @ [(w', w)]) 1 (Suc v - u) = w"
+proof -
+  let ?D = "diagSeq u v"
+  have L: "length ?D = Suc v - u" by simp
+  have "(?D @ [(w', w)]) ! (Suc v - u) = [(w', w)] ! 0"
+    using L by (simp add: nth_append)
+  thus ?thesis by (simp add: entry_def)
+qed
+
+lemma Pred_diagApp:
+  assumes uv: "u \<le> v"
+  shows "Pred (diagSeq u v @ [(w', w)]) = diagSeq u v"
+proof -
+  have L: "1 < Lng (diagSeq u v @ [(w', w)])" using uv by simp
+  have "Pred (diagSeq u v @ [(w', w)]) = butlast (diagSeq u v @ [(w', w)])"
+    using L by (simp add: Pred_def)
+  thus ?thesis by simp
+qed
+
+text \<open>The row-0 nearest ancestor of the last index \<open>j\<^sub>1 = Suc v - u\<close> of
+  \<open>M = diagSeq u v @ [(w',w)]\<close> is \<open>w' - u - 1\<close>, uniformly for \<open>u < w' \<le> Suc v\<close>
+  (covers all four cases: \<open>w' = v+1\<close> gives \<open>v - u\<close>; \<open>w' \<le> v\<close> gives the prefix
+  index whose row-0 value \<open>w'-1\<close> directly precedes \<open>w'\<close>).\<close>
+
+lemma nextrel0_diagApp_parent:
+  assumes uv: "u < v" and wlo: "u < w'" and whi: "w' \<le> Suc v"
+  shows "nextrel0 (diagSeq u v @ [(w', w)]) (w' - u - 1) (Suc v - u)"
+proof -
+  let ?M = "diagSeq u v @ [(w', w)]"
+  let ?jp = "w' - u - 1"
+  let ?j1 = "Suc v - u"
+  have uvle: "u \<le> v" using uv by simp
+  have L: "Lng ?M = Suc v - u + 1" using uvle by (rule Lng_diagApp)
+  have jplev: "?jp \<le> v - u" using wlo whi by simp
+  have jpL: "?jp < Lng ?M" using L jplev by simp
+  have j1L: "?j1 < Lng ?M" using L by simp
+  have jplt: "?jp < ?j1" using wlo whi by simp
+  have e_jp: "entry ?M 0 ?jp = u + ?jp" using jplev uvle by (rule entry_diagApp_lo)
+  have e_jp': "entry ?M 0 ?jp = w' - 1" using e_jp wlo by simp
+  have e_j1: "entry ?M 0 ?j1 = w'" using uvle entry_diagApp_last0 by simp
+  have lt: "entry ?M 0 ?jp < entry ?M 0 ?j1" using e_jp' e_j1 wlo by simp
+  have gap: "\<forall>j. ?jp < j \<and> j < ?j1 \<longrightarrow> entry ?M 0 j \<ge> entry ?M 0 ?j1"
+  proof (intro allI impI)
+    fix j assume jj: "?jp < j \<and> j < ?j1"
+    hence jlev: "j \<le> v - u" using uvle by linarith
+    have "entry ?M 0 j = u + j" using jlev uvle by (rule entry_diagApp_lo)
+    moreover have "u + j \<ge> w'" using jj wlo by linarith
+    ultimately show "entry ?M 0 j \<ge> entry ?M 0 ?j1" using e_j1 by simp
+  qed
+  show ?thesis unfolding nextrel0_def using jpL j1L jplt lt gap by simp
+qed
+
+lemma nextR0_diagApp_last_unique:
+  assumes uv: "u < v" and wlo: "u < w'" and whi: "w' \<le> Suc v"
+    and hp: "nextR (diagSeq u v @ [(w', w)]) 0 j (Suc v - u)"
+  shows "j = w' - u - 1"
+proof -
+  let ?M = "diagSeq u v @ [(w', w)]"
+  let ?jp = "w' - u - 1"
+  let ?j1 = "Suc v - u"
+  have uvle: "u \<le> v" using uv by simp
+  have e_j1: "entry ?M 0 ?j1 = w'" using uvle entry_diagApp_last0 by simp
+  have nrj: "nextrel0 ?M j ?j1" using hp by (simp add: nextR_def)
+  hence jlt1: "j < ?j1" and elt: "entry ?M 0 j < entry ?M 0 ?j1"
+    and noint: "\<forall>j'. j < j' \<and> j' < ?j1 \<longrightarrow> entry ?M 0 j' \<ge> entry ?M 0 ?j1"
+    by (auto simp: nextrel0_def)
+  have jlev: "j \<le> v - u" using jlt1 uvle by simp
+  have ej: "entry ?M 0 j = u + j" using jlev uvle by (rule entry_diagApp_lo)
+  have jw: "u + j < w'" using ej elt e_j1 by simp
+  show "j = ?jp"
+  proof (rule ccontr)
+    assume "j \<noteq> ?jp"
+    hence "j < ?jp" using jw wlo by simp
+    hence mid: "j < ?jp \<and> ?jp < ?j1" using wlo whi by simp
+    have jplev: "?jp \<le> v - u" using wlo whi by simp
+    have ejp: "entry ?M 0 ?jp = w' - 1"
+      using entry_diagApp_lo[where i=0, OF jplev uvle] wlo by simp
+    have "entry ?M 0 ?jp < entry ?M 0 ?j1" using ejp e_j1 wlo by simp
+    moreover have "entry ?M 0 ?jp \<ge> entry ?M 0 ?j1" using noint mid by simp
+    ultimately show False by simp
+  qed
+qed
+
+lemma parent0_diagApp:
+  assumes uv: "u < v" and wlo: "u < w'" and whi: "w' \<le> Suc v"
+  shows "parent (diagSeq u v @ [(w', w)]) 0 (Suc v - u) = w' - u - 1"
+proof -
+  let ?M = "diagSeq u v @ [(w', w)]"
+  let ?jp = "w' - u - 1"
+  let ?j1 = "Suc v - u"
+  have nr: "nextrel0 ?M ?jp ?j1" by (rule nextrel0_diagApp_parent[OF uv wlo whi])
+  have nrR: "nextR ?M 0 ?jp ?j1" using nr by (simp add: nextR_def)
+  have ex1: "\<exists>!j. nextR ?M 0 j ?j1"
+  proof (rule ex1I)
+    show "nextR ?M 0 ?jp ?j1" by (rule nrR)
+  next
+    fix j assume "nextR ?M 0 j ?j1"
+    thus "j = ?jp" by (rule nextR0_diagApp_last_unique[OF uv wlo whi])
+  qed
+  show ?thesis unfolding parent_def by (rule the1_equality[OF ex1 nrR])
+qed
+
+text \<open>Spine row-0 reachability for the append: prefix indices \<open>a \<le> b \<le> v-u\<close> are
+  le0-related (the diagonal prefix carries consecutive nextrel0 steps).\<close>
+
+lemma nextrel0_diagApp_step:
+  assumes "j < v - u" and uv: "u \<le> v"
+  shows "nextrel0 (diagSeq u v @ [(w', w)]) j (Suc j)"
+proof -
+  let ?M = "diagSeq u v @ [(w', w)]"
+  have L: "Lng ?M = Suc v - u + 1" using uv by (rule Lng_diagApp)
+  have sjlt: "Suc j < Lng ?M" using assms L by simp
+  have jlt: "j < Lng ?M" using assms L by simp
+  have jlev: "j \<le> v - u" using assms by simp
+  have sjlev: "Suc j \<le> v - u" using assms by simp
+  have ej: "entry ?M 0 j = u + j" using jlev uv by (rule entry_diagApp_lo)
+  have esj: "entry ?M 0 (Suc j) = u + Suc j" using sjlev uv by (rule entry_diagApp_lo)
+  have noint: "\<forall>j'. j < j' \<and> j' < Suc j \<longrightarrow> entry ?M 0 j' \<ge> entry ?M 0 (Suc j)" by auto
+  show ?thesis unfolding nextrel0_def using sjlt jlt ej esj noint by simp
+qed
+
+lemma le0_diagApp_prefix:
+  assumes ab: "a \<le> b" and bv: "b \<le> v - u" and uv: "u \<le> v"
+  shows "le0 (diagSeq u v @ [(w', w)]) a b"
+proof -
+  let ?M = "diagSeq u v @ [(w', w)]"
+  have L: "Lng ?M = Suc v - u + 1" using uv by (rule Lng_diagApp)
+  from ab obtain d where d: "b = a + d" using le_Suc_ex by blast
+  have "a + d \<le> v - u \<Longrightarrow> (nextrel0 ?M)\<^sup>*\<^sup>* a (a + d)"
+  proof (induction d)
+    case 0 show ?case by simp
+  next
+    case (Suc d)
+    have le: "a + d \<le> v - u" using Suc.prems by simp
+    have rt: "(nextrel0 ?M)\<^sup>*\<^sup>* a (a + d)" using Suc.IH le by simp
+    have lt: "a + d < v - u" using Suc.prems by simp
+    have step: "nextrel0 ?M (a + d) (Suc (a + d))"
+      using lt uv by (rule nextrel0_diagApp_step)
+    show ?case using rt step by (simp add: rtranclp.rtrancl_into_rtrancl)
+  qed
+  hence rt: "(nextrel0 ?M)\<^sup>*\<^sup>* a b" using bv d by simp
+  have aL: "a < Lng ?M" using ab bv L by simp
+  have bL: "b < Lng ?M" using bv L by simp
+  show ?thesis unfolding le0_def using aL bL rt by simp
+qed
+
+text \<open>Confinement of \<open>le0\<close>-predecessors of the last index \<open>j\<^sub>1 = Suc v - u\<close>:
+  any \<open>j\<close> with \<open>le0 M j j\<^sub>1\<close> is either \<open>j\<^sub>1\<close> itself or lies on the spine
+  (\<open>j \<le> j\<^sub>p = w'-u-1\<close>), since \<open>j\<^sub>p\<close> is the unique immediate row-0 predecessor.\<close>
+
+lemma le0_diagApp_pred_confine:
+  assumes uv: "u < v" and wlo: "u < w'" and whi: "w' \<le> Suc v"
+    and h: "le0 (diagSeq u v @ [(w', w)]) j (Suc v - u)"
+  shows "j \<le> w' - u - 1 \<or> j = Suc v - u"
+proof -
+  let ?M = "diagSeq u v @ [(w', w)]"
+  let ?jp = "w' - u - 1"
+  let ?j1 = "Suc v - u"
+  have rt: "(nextrel0 ?M)\<^sup>*\<^sup>* j ?j1" using h by (simp add: le0_def)
+  show ?thesis
+  proof (cases "j = ?j1")
+    case True thus ?thesis by simp
+  next
+    case False
+    \<comment> \<open>strip the last step \<open>a \<rightarrow> j\<^sub>1\<close>; that \<open>a\<close> is the unique parent \<open>j\<^sub>p\<close>\<close>
+    from rt show ?thesis
+    proof (cases rule: rtranclp.cases)
+      case rtrancl_refl
+      thus ?thesis using False by simp
+    next
+      case (rtrancl_into_rtrancl a)
+      have aj1: "nextrel0 ?M a ?j1" by (rule rtrancl_into_rtrancl(2))
+      have ja: "(nextrel0 ?M)\<^sup>*\<^sup>* j a" by (rule rtrancl_into_rtrancl(1))
+      have "nextR ?M 0 a ?j1" using aj1 by (simp add: nextR_def)
+      hence "a = ?jp" by (rule nextR0_diagApp_last_unique[OF uv wlo whi])
+      hence "(nextrel0 ?M)\<^sup>*\<^sup>* j ?jp" using ja by simp
+      hence "j \<le> ?jp" by (rule nextrel0_rtrancl_mono)
+      thus ?thesis by simp
+    qed
+  qed
+qed
+
+text \<open>Prefix row-\<open>i\<close> parents are consecutive: for an interior index
+  \<open>0 < j\<^sub>1' \<le> v - u\<close>, any row-\<open>i\<close> parent is \<open>j\<^sub>1' - 1\<close>.\<close>
+
+lemma nextR_diagApp_prefix_parent:
+  assumes uv: "u < v" and i: "i \<le> 1" and j1lev: "j1' \<le> v - u" and j1pos: "0 < j1'"
+    and nx: "nextR (diagSeq u v @ [(w', w)]) i p j1'"
+  shows "Suc p = j1'"
+proof -
+  let ?M = "diagSeq u v @ [(w', w)]"
+  have uvle: "u \<le> v" using uv by simp
+  have ej1: "entry ?M i j1' = u + j1'" using j1lev uvle by (rule entry_diagApp_lo)
+  consider (r0) "i = 0" | (r1) "i = 1" using i by linarith
+  thus ?thesis
+  proof cases
+    case r0
+    have nr0: "nextrel0 ?M p j1'" using nx r0 by (simp add: nextR_def)
+    hence lt: "p < j1'"
+      and univ: "\<forall>j. p < j \<and> j < j1' \<longrightarrow> entry ?M 0 j \<ge> entry ?M 0 j1'"
+      by (auto simp: nextrel0_def)
+    show ?thesis
+    proof (rule ccontr)
+      assume "Suc p \<noteq> j1'"
+      hence pm: "p < j1' - 1" using lt by linarith
+      have mid: "p < j1' - 1 \<and> j1' - 1 < j1'" using pm j1pos by linarith
+      have m1lev: "j1' - 1 \<le> v - u" using j1lev by simp
+      have em: "entry ?M 0 (j1' - 1) = u + (j1' - 1)" using m1lev uvle by (rule entry_diagApp_lo)
+      have "entry ?M 0 (j1' - 1) < entry ?M 0 j1'" using em ej1 j1pos r0 by simp
+      moreover have "entry ?M 0 (j1' - 1) \<ge> entry ?M 0 j1'" using univ mid by blast
+      ultimately show False by simp
+    qed
+  next
+    case r1
+    have nr1: "nextrel1 ?M p j1'" using nx r1 by (simp add: nextR_def)
+    hence lt: "p < j1'"
+      and univ: "\<forall>j. p < j \<and> le0 ?M j j1' \<longrightarrow> entry ?M 1 j \<ge> entry ?M 1 j1'"
+      by (auto simp: nextrel1_def)
+    show ?thesis
+    proof (rule ccontr)
+      assume "Suc p \<noteq> j1'"
+      hence pm: "p < j1' - 1" using lt by linarith
+      have m1lev: "j1' - 1 \<le> v - u" using j1lev by simp
+      have le0mid: "le0 ?M (j1' - 1) j1'"
+        using le0_diagApp_prefix[OF _ j1lev uvle, of "j1' - 1"] by simp
+      have mid: "p < j1' - 1 \<and> le0 ?M (j1' - 1) j1'" using pm le0mid by simp
+      have em: "entry ?M 1 (j1' - 1) = u + (j1' - 1)" using m1lev uvle by (rule entry_diagApp_lo)
+      have "entry ?M 1 (j1' - 1) < entry ?M 1 j1'" using em ej1 j1pos r1 by simp
+      moreover have "entry ?M 1 (j1' - 1) \<ge> entry ?M 1 j1'" using univ mid by blast
+      ultimately show False by simp
+    qed
+  qed
+qed
+
+text \<open>The last-index row-1 parent (when it exists) is at entry \<open>w - 1\<close>, so
+  \<open>RedCondA\<close> at \<open>(1, j\<^sub>1)\<close> holds; this needs \<open>w \<le> w'\<close> (true in all four cases).\<close>
+
+lemma nextR1_diagApp_last:
+  assumes uv: "u < v" and wlo: "u < w'" and whi: "w' \<le> Suc v" and wle: "w \<le> w'"
+    and nx: "nextR (diagSeq u v @ [(w', w)]) 1 p (Suc v - u)"
+  shows "entry (diagSeq u v @ [(w', w)]) 1 p + 1 = w"
+proof -
+  let ?M = "diagSeq u v @ [(w', w)]"
+  let ?jp = "w' - u - 1"
+  let ?j1 = "Suc v - u"
+  have uvle: "u \<le> v" using uv by simp
+  have ej1: "entry ?M 1 ?j1 = w" using uvle entry_diagApp_last1 by simp
+  have nr1: "nextrel1 ?M p ?j1" using nx by (simp add: nextR_def)
+  hence lt: "p < ?j1" and elt: "entry ?M 1 p < entry ?M 1 ?j1"
+    and le0p: "le0 ?M p ?j1"
+    and univ: "\<forall>j. p < j \<and> le0 ?M j ?j1 \<longrightarrow> entry ?M 1 j \<ge> entry ?M 1 ?j1"
+    by (auto simp: nextrel1_def)
+  \<comment> \<open>\<open>p\<close> is on the spine (\<open>\<le> j\<^sub>p\<close>), so \<open>entry M 1 p = u + p\<close>\<close>
+  have pconf: "p \<le> ?jp" using le0_diagApp_pred_confine[OF uv wlo whi le0p] lt by simp
+  have plev: "p \<le> v - u" using pconf wlo whi by linarith
+  have ep: "entry ?M 1 p = u + p" using plev uvle by (rule entry_diagApp_lo)
+  have upw: "u + p < w" using ep elt ej1 by simp
+  \<comment> \<open>\<open>p + 1 \<le> w - u \<le> w' - u = j\<^sub>p + 1\<close>, so \<open>p + 1 \<le> j\<^sub>p\<close> or \<open>p = j\<^sub>p\<close>\<close>
+  show "entry ?M 1 p + 1 = w"
+  proof (cases "Suc p \<le> ?jp")
+    case True
+    \<comment> \<open>\<open>p+1\<close> is on the spine and reaches \<open>j\<^sub>1\<close>; the univ forces \<open>u + p + 1 \<ge> w\<close>\<close>
+    have sple: "Suc p \<le> v - u" using True wlo whi by linarith
+    have le0sp_jp: "le0 ?M (Suc p) ?jp"
+      using le0_diagApp_prefix[OF True _ uvle] wlo whi by simp
+    have jpj1: "nextrel0 ?M ?jp ?j1" by (rule nextrel0_diagApp_parent[OF uv wlo whi])
+    have rt_sp_jp: "(nextrel0 ?M)\<^sup>*\<^sup>* (Suc p) ?jp" using le0sp_jp by (simp add: le0_def)
+    have rt_sp_j1: "(nextrel0 ?M)\<^sup>*\<^sup>* (Suc p) ?j1"
+      using rt_sp_jp jpj1 by (simp add: rtranclp.rtrancl_into_rtrancl)
+    have L: "Lng ?M = Suc v - u + 1" using uvle by (rule Lng_diagApp)
+    have spL: "Suc p < Lng ?M" using sple L by simp
+    have j1L: "?j1 < Lng ?M" using L by simp
+    have le0sp: "le0 ?M (Suc p) ?j1" unfolding le0_def using spL j1L rt_sp_j1 by simp
+    have esp: "entry ?M 1 (Suc p) = u + Suc p" using sple uvle by (rule entry_diagApp_lo)
+    have "entry ?M 1 (Suc p) \<ge> entry ?M 1 ?j1" using univ le0sp by simp
+    hence "u + Suc p \<ge> w" using esp ej1 by simp
+    thus ?thesis using ep upw by simp
+  next
+    case False
+    hence "p = ?jp" using pconf by simp
+    have "entry ?M 1 ?jp = w' - 1"
+      using entry_diagApp_lo[of ?jp v u w' w 1] wlo whi uvle by simp
+    moreover have "w' - 1 < w" using upw ep \<open>p = ?jp\<close> by simp
+    ultimately have "w' \<le> w" using wlo by simp
+    hence "w' = w" using wle by simp
+    thus ?thesis using ep \<open>p = ?jp\<close> \<open>entry ?M 1 ?jp = w' - 1\<close> wlo by simp
+  qed
+qed
+
+text \<open>\<open>M = diagSeq u v @ [(w',w)]\<close> satisfies \<open>RedCondA\<close> and \<open>RedCondB\<close>, hence
+  (with @{thm [source] m_6_6_reduced_iff_cond}) is reduced.  Hypotheses
+  \<open>u < w' \<le> Suc v\<close> and \<open>w \<le> w'\<close> are met by all four cases of the corollary.\<close>
+
+lemma RedCondA_diagApp:
+  assumes uv: "u < v" and wlo: "u < w'" and whi: "w' \<le> Suc v" and wle: "w \<le> w'"
+  shows "RedCondA (diagSeq u v @ [(w', w)])"
+  unfolding RedCondA_def
+proof (intro allI impI)
+  let ?M = "diagSeq u v @ [(w', w)]"
+  let ?j1 = "Suc v - u"
+  have uvle: "u \<le> v" using uv by simp
+  have L: "Lng ?M = Suc v - u + 1" using uvle by (rule Lng_diagApp)
+  fix i j1' assume i: "i \<le> 1" and hp: "hasParent ?M i j1'"
+  have exu: "\<exists>!q. nextR ?M i q j1'" using hp by (simp add: hasParent_def)
+  have par: "nextR ?M i (parent ?M i j1') j1'"
+    unfolding parent_def using exu by (rule theI')
+  let ?p = "parent ?M i j1'"
+  have j1L: "j1' < Lng ?M"
+    using par by (cases "i = 0") (auto simp: nextR_def nextrel0_def nextrel1_def)
+  have j1le: "j1' \<le> ?j1" using j1L L by simp
+  show "entry ?M i ?p + 1 = entry ?M i j1'"
+  proof (cases "j1' = ?j1")
+    case True
+    show ?thesis
+    proof (cases "i = 0")
+      case True
+      \<comment> \<open>row 0 at the last index: parent is \<open>w'-u-1\<close>, entry \<open>w'-1\<close>, \<open>+1 = w'\<close>\<close>
+      have "?p = w' - u - 1"
+        using nextR0_diagApp_last_unique[OF uv wlo whi] par \<open>j1' = ?j1\<close> True by simp
+      moreover have "entry ?M 0 (w' - u - 1) = w' - 1"
+        using entry_diagApp_lo[of "w'-u-1" v u w' w 0] wlo whi uvle by simp
+      moreover have "entry ?M 0 ?j1 = w'" using uvle entry_diagApp_last0 by simp
+      ultimately show ?thesis using \<open>j1' = ?j1\<close> True wlo by simp
+    next
+      case False
+      hence i1: "i = 1" using i by linarith
+      have nx: "nextR ?M 1 ?p ?j1" using par \<open>j1' = ?j1\<close> i1 by simp
+      have "entry ?M 1 ?p + 1 = w" by (rule nextR1_diagApp_last[OF uv wlo whi wle nx])
+      moreover have "entry ?M 1 ?j1 = w" using uvle entry_diagApp_last1 by simp
+      ultimately show ?thesis using \<open>j1' = ?j1\<close> i1 by simp
+    qed
+  next
+    case False
+    hence j1lt: "j1' < ?j1" using j1le by simp
+    hence j1lev: "j1' \<le> v - u" by linarith
+    have j1pos: "0 < j1'"
+    proof (rule ccontr)
+      assume "\<not> 0 < j1'"
+      hence "j1' = 0" by simp
+      thus False using par by (cases "i = 0") (auto simp: nextR_def nextrel0_def nextrel1_def)
+    qed
+    have suc: "Suc ?p = j1'" by (rule nextR_diagApp_prefix_parent[OF uv i j1lev j1pos par])
+    have plev: "?p \<le> v - u" using suc j1lev by linarith
+    have ep: "entry ?M i ?p = u + ?p" using plev uvle by (rule entry_diagApp_lo)
+    have ej: "entry ?M i j1' = u + j1'" using j1lev uvle by (rule entry_diagApp_lo)
+    show ?thesis using ep ej suc by simp
+  qed
+qed
+
+lemma RedCondB_diagApp:
+  assumes uv: "u < v" and wlo: "u < w'" and whi: "w' \<le> Suc v"
+  shows "RedCondB (diagSeq u v @ [(w', w)])"
+  unfolding RedCondB_def
+proof (intro allI impI)
+  let ?M = "diagSeq u v @ [(w', w)]"
+  let ?j1 = "Suc v - u"
+  have uvle: "u \<le> v" using uv by simp
+  have L: "Lng ?M = Suc v - u + 1" using uvle by (rule Lng_diagApp)
+  fix j1' assume H: "\<not> hasParent ?M 0 j1' \<and> j1' \<le> Lng ?M - 1"
+  hence noP: "\<not> hasParent ?M 0 j1'" and hle: "j1' \<le> ?j1" using L by simp_all
+  \<comment> \<open>both the last index (parent \<open>w'-u-1\<close>) and any interior \<open>j1' > 0\<close> have a
+      unique row-0 parent; so a parentless \<open>j1'\<close> must be \<open>0\<close>\<close>
+  have "j1' = 0"
+  proof (rule ccontr)
+    assume "j1' \<noteq> 0"
+    hence j1pos: "0 < j1'" by simp
+    show False
+    proof (cases "j1' = ?j1")
+      case True
+      have nr: "nextrel0 ?M (w'-u-1) ?j1" by (rule nextrel0_diagApp_parent[OF uv wlo whi])
+      have nx: "nextR ?M 0 (w'-u-1) ?j1" using nr by (simp add: nextR_def)
+      have "hasParent ?M 0 ?j1" unfolding hasParent_def
+        using nx nextR0_diagApp_last_unique[OF uv wlo whi] by blast
+      thus False using noP True by simp
+    next
+      case False
+      hence j1lt: "j1' < ?j1" using hle by simp
+      hence j1lev: "j1' \<le> v - u" by linarith
+      have m1lt: "j1' - 1 < v - u" using j1lev j1pos by linarith
+      have sm1: "Suc (j1' - 1) = j1'" using j1pos by simp
+      have step: "nextrel0 ?M (j1' - 1) j1'"
+        using nextrel0_diagApp_step[of "j1' - 1" v u w' w, OF m1lt uvle] sm1 by simp
+      have nx: "nextR ?M 0 (j1' - 1) j1'" using step by (simp add: nextR_def)
+      have uniq: "\<And>q. nextR ?M 0 q j1' \<Longrightarrow> q = j1' - 1"
+      proof -
+        fix q assume nq: "nextR ?M 0 q j1'"
+        have "Suc q = j1'"
+          by (rule nextR_diagApp_prefix_parent[OF uv _ j1lev j1pos nq]) simp
+        thus "q = j1' - 1" by simp
+      qed
+      have "hasParent ?M 0 j1'" unfolding hasParent_def using nx uniq by blast
+      thus False using noP by simp
+    qed
+  qed
+  thus "entry ?M 0 j1' = entry ?M 1 j1'"
+    using entry_diagApp_lo[of 0 v u w' w 0] entry_diagApp_lo[of 0 v u w' w 1] uvle by simp
+qed
+
+lemma reduced_diagApp:
+  assumes uv: "u < v" and wlo: "u < w'" and whi: "w' \<le> Suc v" and wle: "w \<le> w'"
+  shows "diagSeq u v @ [(w', w)] \<in> RT_PS"
+proof -
+  let ?M = "diagSeq u v @ [(w', w)]"
+  have MT: "?M \<in> T_PS" by (simp add: T_PS_def)
+  have A: "RedCondA ?M" by (rule RedCondA_diagApp[OF uv wlo whi wle])
+  have B: "RedCondB ?M" by (rule RedCondB_diagApp[OF uv wlo whi])
+  show ?thesis using m_6_6_reduced_iff_cond[OF MT] A B by blast
+qed
+
+text \<open>\<open>M = diagSeq u v @ [(w',w)]\<close> is mono (the row-0 trunk runs \<open>0 \<to>\<^sup>* j\<^sub>p \<to> j\<^sub>1\<close>).\<close>
+
+text \<open>Index \<open>0\<close> is always admissible (the lower row-1 step \<open>nextR M 1 0 0\<close> is
+  impossible, so \<open>0\<close> cannot be non-admissible).\<close>
+
+lemma adm_index0: "adm M 0"
+proof -
+  have "\<not> nextrel1 M 0 0" by (simp add: nextrel1_def)
+  hence "\<not> nextR M 1 (0 - 1) 0" by (simp add: nextR_def)
+  thus ?thesis by (simp add: adm_def nadm_def)
+qed
+
+text \<open>The last index \<open>Lng M - 1\<close> is always admissible (the upper row-1 step
+  \<open>nextR M 1 (Lng M - 1) (Lng M)\<close> is impossible since \<open>Lng M < Lng M\<close>).\<close>
+
+lemma adm_lastindex: "adm M (Lng M - 1)"
+proof -
+  have nlt: "\<not> (Lng M - 1) + 1 < Lng M" by linarith
+  have "\<not> nextrel1 M (Lng M - 1) ((Lng M - 1) + 1)"
+    using nlt by (simp add: nextrel1_def)
+  hence "\<not> nextR M 1 (Lng M - 1) ((Lng M - 1) + 1)" by (simp add: nextR_def)
+  thus ?thesis by (simp add: adm_def nadm_def)
+qed
+
+lemma monoT_diagApp:
+  assumes uv: "u < v" and wlo: "u < w'" and whi: "w' \<le> Suc v"
+  shows "monoT (diagSeq u v @ [(w', w)])"
+proof -
+  let ?M = "diagSeq u v @ [(w', w)]"
+  let ?jp = "w' - u - 1"
+  let ?j1 = "Suc v - u"
+  have uvle: "u \<le> v" using uv by simp
+  have L: "Lng ?M = Suc v - u + 1" using uvle by (rule Lng_diagApp)
+  have Lne1: "Lng ?M \<noteq> 1" using L uv by simp
+  have nz: "\<not> zeroT ?M" using Lne1 by (simp add: zeroT_def)
+  have jplev: "?jp \<le> v - u" using wlo whi by linarith
+  have le0_0jp: "le0 ?M 0 ?jp" by (rule le0_diagApp_prefix[OF _ jplev uvle]) simp
+  have rt0jp: "(nextrel0 ?M)\<^sup>*\<^sup>* 0 ?jp" using le0_0jp by (simp add: le0_def)
+  have jpj1: "nextrel0 ?M ?jp ?j1" by (rule nextrel0_diagApp_parent[OF uv wlo whi])
+  have rt0j1: "(nextrel0 ?M)\<^sup>*\<^sup>* 0 ?j1"
+    using rt0jp jpj1 by (simp add: rtranclp.rtrancl_into_rtrancl)
+  have j1L: "?j1 < Lng ?M" using L by simp
+  have le0: "le0 ?M 0 ?j1" unfolding le0_def using j1L rt0j1 by simp
+  have "leR ?M 0 0 (Lng ?M - 1)" using le0 L by (simp add: leR_def)
+  thus ?thesis using nz by (simp add: monoT_def)
+qed
+
+text \<open>Row-1 consecutive \<open><\<^sup>Next\<close>-step on the diagonal prefix of the append
+  (\<open>j + 1 \<le> v - u\<close>).\<close>
+
+lemma nextR1_diagApp_spine:
+  assumes j: "Suc j \<le> v - u" and uv: "u \<le> v"
+  shows "nextR (diagSeq u v @ [(w', w)]) 1 j (Suc j)"
+proof -
+  let ?M = "diagSeq u v @ [(w', w)]"
+  have L: "Lng ?M = Suc v - u + 1" using uv by (rule Lng_diagApp)
+  have sjL: "Suc j < Lng ?M" using j L by simp
+  have jlev: "j \<le> v - u" using j by simp
+  have ej: "entry ?M 0 j = u + j" "entry ?M 1 j = u + j" using jlev uv
+    by (auto simp: entry_diagApp_lo)
+  have esj: "entry ?M 0 (Suc j) = u + Suc j" "entry ?M 1 (Suc j) = u + Suc j" using j uv
+    by (auto simp: entry_diagApp_lo)
+  show ?thesis by (rule nextR1_consecutive[OF sjL]) (use ej esj in simp_all)
+qed
+
+text \<open>Interior spine index \<open>0 < j < v - u\<close> is non-admissible (both row-1 steps).\<close>
+
+lemma nadm_diagApp_interior:
+  assumes j0: "0 < j" and jlt: "j < v - u" and uv: "u \<le> v"
+  shows "nadm (diagSeq u v @ [(w', w)]) j"
+proof -
+  let ?M = "diagSeq u v @ [(w', w)]"
+  have nx1: "nextR ?M 1 (j - 1) j"
+    using nextR1_diagApp_spine[of "j - 1" v u w' w] j0 jlt uv by simp
+  have nx2: "nextR ?M 1 j (Suc j)"
+    using nextR1_diagApp_spine[of j v u w' w] jlt uv by simp
+  show ?thesis unfolding nadm_def using nx1 nx2 j0 by simp
+qed
+
+text \<open>For cases (2)/(3)/(4) (\<open>w' \<le> v\<close>), \<open>Adm M j\<^sub>p = 0\<close> (\<open>j\<^sub>p = w'-u-1\<close> is interior
+  or \<open>0\<close>, and below it only \<open>0\<close> is admissible).\<close>
+
+lemma Adm_diagApp_parent_lo:
+  assumes uv: "u < v" and wlo: "u < w'" and whi: "w' \<le> v"
+  shows "Adm (diagSeq u v @ [(w', w)]) (w' - u - 1) = 0"
+proof -
+  let ?M = "diagSeq u v @ [(w', w)]"
+  let ?jp = "w' - u - 1"
+  have uvle: "u \<le> v" using uv by simp
+  have adm0: "adm ?M 0" by (rule adm_index0)
+  show ?thesis
+  proof (cases "?jp = 0")
+    case True
+    show ?thesis using True adm0 by (simp add: Adm_def)
+  next
+    case False
+    hence jppos: "0 < ?jp" by simp
+    have jplt: "?jp < v - u" using wlo whi by linarith
+    have nadmjp: "\<not> adm ?M ?jp"
+      using nadm_diagApp_interior[OF jppos jplt uvle] by (simp add: adm_def)
+    have Admd: "Adm ?M ?jp = Max {j'. adm ?M j' \<and> j' < ?jp}"
+      using nadmjp by (simp add: Adm_def)
+    have only0: "{j'. adm ?M j' \<and> j' < ?jp} = {0}"
+    proof (rule set_eqI, rule iffI)
+      fix j' assume "j' \<in> {j'. adm ?M j' \<and> j' < ?jp}"
+      hence aj: "adm ?M j'" and jl: "j' < ?jp" by auto
+      show "j' \<in> {0}"
+      proof (rule ccontr)
+        assume "j' \<notin> {0}"
+        hence j'pos: "0 < j'" by simp
+        have "j' < v - u" using jl jplt by linarith
+        hence "nadm ?M j'" using nadm_diagApp_interior[OF j'pos _ uvle] by simp
+        thus False using aj by (simp add: adm_def)
+      qed
+    next
+      fix j' assume "j' \<in> {0::nat}"
+      thus "j' \<in> {j'. adm ?M j' \<and> j' < ?jp}" using adm0 jppos by simp
+    qed
+    show ?thesis using Admd only0 by simp
+  qed
+qed
+
+text \<open>For case (1) (\<open>w' = Suc v\<close>, \<open>u < w \<le> v\<close>), the row-0 parent
+  \<open>j\<^sub>p = v - u = j\<^sub>1 - 1\<close> is itself admissible (the step \<open>j\<^sub>p \<to> j\<^sub>1\<close> fails since
+  \<open>w \<le> v\<close>), so \<open>Adm M j\<^sub>p = j\<^sub>p\<close>.\<close>
+
+lemma adm_diagApp_parent_hi:
+  assumes uv: "u < v" and wle: "w \<le> v"
+  shows "adm (diagSeq u v @ [(Suc v, w)]) (v - u)"
+proof -
+  let ?M = "diagSeq u v @ [(Suc v, w)]"
+  let ?jp = "v - u"
+  have uvle: "u \<le> v" using uv by simp
+  have L: "Lng ?M = Suc v - u + 1" using uvle by (rule Lng_diagApp)
+  \<comment> \<open>the step \<open>j\<^sub>p \<to> j\<^sub>p + 1 = j\<^sub>1\<close> fails: \<open>entry M 1 j\<^sub>p = v \<ge> w = entry M 1 j\<^sub>1\<close>\<close>
+  have ejp: "entry ?M 1 ?jp = v" using entry_diagApp_lo[of ?jp v u "Suc v" w 1] uvle by simp
+  have sjeq: "Suc ?jp = Suc v - u" using uvle by simp
+  have ej1: "entry ?M 1 (Suc ?jp) = w"
+    using entry_diagApp_last1[OF uvle, of "Suc v" w] sjeq by simp
+  have "\<not> nextrel1 ?M ?jp (Suc ?jp)"
+  proof
+    assume "nextrel1 ?M ?jp (Suc ?jp)"
+    hence "entry ?M 1 ?jp < entry ?M 1 (Suc ?jp)" by (simp add: nextrel1_def)
+    thus False using ejp ej1 wle by simp
+  qed
+  hence "\<not> nextR ?M 1 ?jp (Suc ?jp)" by (simp add: nextR_def)
+  thus ?thesis by (simp add: adm_def nadm_def)
+qed
+
+text \<open>The non-trivial scb-\<open>SOME\<close> for case (1): \<open>t\<^sub>1 = D\<^sub>u (D\<^sub>v 0)\<close> decomposes at
+  \<open>c\<^sub>1 = D\<^sub>v 0\<close> with \<open>s\<^sub>1 = [D\<^sub>u]\<close>, \<open>b\<^sub>1 = []\<close>.\<close>
+
+lemma scb_decomp_Du_Dv:
+  "scb_decomp (Dpt (enat u) (Dpt (enat v) 0\<^sub>B)) [Dsym (enat u)] (flatBT (Dpt (enat v) 0\<^sub>B)) []"
+proof -
+  have fl: "flatBT (Dpt (enat u) (Dpt (enat v) 0\<^sub>B))
+            = [Dsym (enat u)] @ flatBT (Dpt (enat v) 0\<^sub>B) @ []" by simp
+  have pt: "isPTB_str (flatBT (Dpt (enat v) 0\<^sub>B))"
+    by (rule isPTB_str_Dpt) simp_all
+  show ?thesis unfolding scb_decomp_def using fl pt by simp
+qed
+
+lemma scb_SOME_Du_Dv:
+  "(SOME sb. scb_decomp (Dpt (enat u) (Dpt (enat v) 0\<^sub>B)) (fst sb)
+                (flatBT (Dpt (enat v) 0\<^sub>B)) (snd sb)) = ([Dsym (enat u)], [])"
+proof (rule some_equality)
+  show "scb_decomp (Dpt (enat u) (Dpt (enat v) 0\<^sub>B)) (fst ([Dsym (enat u)], []))
+          (flatBT (Dpt (enat v) 0\<^sub>B)) (snd ([Dsym (enat u)], []))"
+    using scb_decomp_Du_Dv by simp
+next
+  fix sb assume h: "scb_decomp (Dpt (enat u) (Dpt (enat v) 0\<^sub>B)) (fst sb)
+                       (flatBT (Dpt (enat v) 0\<^sub>B)) (snd sb)"
+  have tne: "Dpt (enat u) (Dpt (enat v) 0\<^sub>B) \<noteq> Trm []" by simp
+  have "fst sb = [Dsym (enat u)] \<and> snd sb = []"
+    using m_7_2_scb_unique_sb[OF h scb_decomp_Du_Dv tne] by simp
+  thus "sb = ([Dsym (enat u)], [])" by (cases sb) auto
+qed
+
+text \<open>系（\<open>Pred\<close>が公差\<open>(1,1)\<close>のペア数列の\<open>Trans\<close>の基本性質） (§8.1, article 2871),
+  discharging @{thm [source] p_8_1_Pred_diagSeq_Trans}.  For \<open>M = diagSeq u v
+  @ [(w',w)]\<close> (mono, reduced) with \<open>Pred M = diagSeq u v\<close> and \<open>t\<^sub>1 = D\<^sub>u D\<^sub>v 0\<close>
+  (@{thm [source] m_8_1_diagSeq_Trans}): four cases compute the row-0 parent
+  \<open>j\<^sub>p = w'-u-1\<close>, the second basepoint \<open>j\<^sub>-\<^sub>1\<close>, \<open>c\<^sub>1\<close> and the c2-surgery.\<close>
+
+lemma m_8_1_Pred_diagSeq_Trans:
+  assumes "u < v"
+  shows
+    "(w' = v + 1 \<and> u < w \<and> w \<le> v
+        \<longrightarrow> Trans (diagSeq u v @ [(w', w)])
+              = Dpt (enat u) (Dpt (enat v) (Dpt (enat w) 0\<^sub>B)))
+   \<and> (u < w' \<and> w' \<le> v \<and> w = w'
+        \<longrightarrow> Trans (diagSeq u v @ [(w', w)])
+              = Dpt (enat u) (Dpt (enat v) 0\<^sub>B +\<^sub>B Dpt (enat w) 0\<^sub>B))
+   \<and> (u + 1 < w' \<and> w' \<le> v \<and> w < w'
+        \<longrightarrow> Trans (diagSeq u v @ [(w', w)])
+              = Dpt (enat u) (Dpt (enat v) 0\<^sub>B
+                    +\<^sub>B Dpt (enat (w' - 1)) (Dpt (enat v) 0\<^sub>B +\<^sub>B Dpt (enat w) 0\<^sub>B)))
+   \<and> (u + 1 = w' \<and> w < w'
+        \<longrightarrow> Trans (diagSeq u v @ [(w', w)])
+              = Dpt (enat u) (Dpt (enat v) 0\<^sub>B +\<^sub>B Dpt (enat w) 0\<^sub>B))"
+proof -
+  have uv: "u < v" by (rule assms)
+  have uvle: "u \<le> v" using uv by simp
+  let ?D = "diagSeq u v"
+  \<comment> \<open>shared facts about \<open>Pred M = ?D\<close>\<close>
+  have PR: "?D \<in> RT_PS" by (rule bf_diagSeq_reduced[OF uvle])
+  have PT: "?D \<in> T_PS" using PR by (simp add: RT_PS_def)
+  have Pmono: "monoT ?D" by (rule monoT_diagSeq_lt[OF uv])
+  have LD: "Lng ?D = Suc v - u" by simp
+  have t1v: "Trans ?D = Dpt (enat u) (Dpt (enat v) 0\<^sub>B)" by (rule m_8_1_diagSeq_Trans[OF uv])
+  have t1ne: "Trans ?D \<noteq> 0\<^sub>B" using t1v by simp
+  \<comment> \<open>left-end basepoint \<open>(?D, 0) \<in> Marked\<close>, value \<open>Trans ?D = D\<^sub>u D\<^sub>v 0\<close>\<close>
+  have D0M: "(?D, 0) \<in> Marked"
+  proof -
+    have padm0: "adm ?D 0" by (rule adm_index0)
+    have ple: "leR ?D 0 0 (Lng ?D - 1)" using Pmono by (simp add: monoT_def)
+    show ?thesis using PT padm0 ple by (simp add: Marked_def)
+  qed
+  have mark0: "Mark ?D 0 = Dpt (enat u) (Dpt (enat v) 0\<^sub>B)"
+    using ra_Mark0_eq_Trans[THEN mp, THEN mp, OF D0M PR] t1v by simp
+  \<comment> \<open>right-end basepoint \<open>(?D, v-u) \<in> Marked\<close>, value \<open>D\<^sub>v 0\<close>\<close>
+  have LDne1: "Lng ?D \<noteq> 1" using LD uv by simp
+  have nzD: "\<not> zeroT ?D" using LDne1 by (simp add: zeroT_def)
+  have DjM: "(?D, Lng ?D - 1) \<in> Marked"
+  proof -
+    have padm: "adm ?D (Lng ?D - 1)" by (rule adm_lastindex)
+    have LDpos: "Lng ?D - 1 < Lng ?D" using LD uv by simp
+    have ple: "leR ?D 0 (Lng ?D - 1) (Lng ?D - 1)"
+      using LDpos by (simp add: leR_def le0_def)
+    show ?thesis using PT padm ple by (simp add: Marked_def)
+  qed
+  have e1Dj: "entry ?D 1 (Lng ?D - 1) = v" using LD uv by (simp add: entry_diagSeq)
+  have markRight: "Mark ?D (Lng ?D - 1) = Dpt (enat v) 0\<^sub>B"
+    using Mark_rightmost1_forward[OF PR nzD DjM] e1Dj by simp
+  show ?thesis
+  proof (intro conjI impI)
+    \<comment> \<open>------------------------------------------------------------------ case (1)\<close>
+    assume H1: "w' = v + 1 \<and> u < w \<and> w \<le> v"
+    hence w'eq: "w' = Suc v" and uw: "u < w" and wv: "w \<le> v" by auto
+    let ?M = "?D @ [(w', w)]"
+    let ?j1 = "Suc v - u"
+    have wlo: "u < w'" using w'eq uv by simp
+    have whi: "w' \<le> Suc v" using w'eq by simp
+    have wle: "w \<le> w'" using w'eq wv by simp
+    have MR: "?M \<in> RT_PS" by (rule reduced_diagApp[OF uv wlo whi wle])
+    have MT: "?M \<in> T_PS" using MR by (simp add: RT_PS_def)
+    have mono: "monoT ?M" by (rule monoT_diagApp[OF uv wlo whi])
+    have domT: "Trans_Mark_dom (Inl ?M)" by (rule m_7_3_Trans_welldef[OF MR])
+    have LM: "Lng ?M = Suc v - u + 1" using uvle by (rule Lng_diagApp)
+    have Lgt1: "1 < Lng ?M" using LM uv by simp
+    have Lgt1': "\<not> Lng ?M \<le> Suc 0" using Lgt1 by simp
+    have predM: "Pred ?M = ?D" by (rule Pred_diagApp[OF uvle])
+    have j1eq: "Lng ?M - 1 = ?j1" using LM by simp
+    \<comment> \<open>parent and second basepoint\<close>
+    have jp: "parent ?M 0 (Lng ?M - 1) = w' - u - 1"
+      using parent0_diagApp[OF uv wlo whi] j1eq by simp
+    have jpval: "w' - u - 1 = v - u" using w'eq by simp
+    have admpv: "adm ?M (v - u)"
+    proof -
+      have "adm (?D @ [(Suc v, w)]) (v - u)" by (rule adm_diagApp_parent_hi[OF uv wv])
+      thus ?thesis using w'eq by simp
+    qed
+    have admjp: "Adm ?M (parent ?M 0 (Lng ?M - 1)) = v - u"
+      using admpv jp jpval by (simp add: Adm_def)
+    \<comment> \<open>\<open>c\<^sub>1 = Mark (?D) (v-u) = Mark (?D) (Lng ?D - 1) = D\<^sub>v 0\<close>\<close>
+    have c1v: "Mark (Pred ?M) (Adm ?M (parent ?M 0 (Lng ?M - 1))) = Dpt (enat v) 0\<^sub>B"
+    proof -
+      have "Mark ?D (v - u) = Dpt (enat v) 0\<^sub>B" using markRight LD by simp
+      thus ?thesis using predM admjp by simp
+    qed
+    have t1vM: "Trans (Pred ?M) = Dpt (enat u) (Dpt (enat v) 0\<^sub>B)" using predM t1v by simp
+    have t1neM: "Trans (Pred ?M) \<noteq> 0\<^sub>B" using t1vM by simp
+    \<comment> \<open>row-1 entries at \<open>j\<^sub>1\<close>, \<open>j\<^sub>p\<close>\<close>
+    have e1j1: "entry ?M 1 (Lng ?M - 1) = w"
+      using entry_diagApp_last1[OF uvle] j1eq by simp
+    have e1jp: "entry ?M 1 (parent ?M 0 (Lng ?M - 1)) = v"
+      using jp jpval entry_diagApp_lo[of "v-u" v u w' w 1] uvle by simp
+    \<comment> \<open>condition (III) fires (\<open>w > 0\<close>, \<open>v \<ge> w\<close>, \<open>j\<^sub>p\<close> admissible)\<close>
+    have admp: "adm ?M (parent ?M 0 (Lng ?M - 1))" using admpv jp jpval by simp
+    have condIII: "transCondIII ?M"
+      unfolding transCondIII_def using e1j1 e1jp uw wv admp by simp
+    have IorIIIorV: "transCondI ?M \<or> transCondIII ?M \<or> transCondV ?M" using condIII by simp
+    \<comment> \<open>\<open>v\<^bsup>M\<^esup> = v\<close>, \<open>t\<^sub>2 = 0\<close>\<close>
+    have bvc1: "bpHeadV (Mark (Pred ?M) (Adm ?M (parent ?M 0 (Lng ?M - 1)))) = enat v"
+      using c1v by simp
+    have btc1: "bpHeadT (Mark (Pred ?M) (Adm ?M (parent ?M 0 (Lng ?M - 1)))) = 0\<^sub>B"
+      using c1v by simp
+    \<comment> \<open>scb-\<open>SOME\<close> of \<open>t\<^sub>1 = D\<^sub>u D\<^sub>v 0\<close> at \<open>c\<^sub>1 = D\<^sub>v 0\<close> is \<open>([D\<^sub>u], [])\<close>\<close>
+    have somev: "(SOME sb. scb_decomp (Trans (Pred ?M)) (fst sb)
+                    (flatBT (Dpt (enat v) 0\<^sub>B)) (snd sb)) = ([Dsym (enat u)], [])"
+      using scb_SOME_Du_Dv[of u v] t1vM by simp
+    have j1pos: "Lng ?M - 1 \<noteq> 0" using Lgt1 by simp
+    have notle: "\<not> w' \<le> u" using wlo by simp
+    \<comment> \<open>unfold the mono branch; \<open>c\<^sub>2 = D\<^sub>v (0 + D\<^sub>w 0) = D\<^sub>v (D\<^sub>w 0)\<close>\<close>
+    have trans_val: "Trans ?M = unflatBT ([Dsym (enat u)]
+                       @ flatBT (Dpt (enat v) (0\<^sub>B +\<^sub>B Dpt (enat w) 0\<^sub>B)) @ [])"
+      using Trans.psimps[OF domT] MR Lgt1' j1pos mono t1neM c1v somev IorIIIorV
+            jp admjp bvc1 btc1 e1j1
+      by (simp add: Let_def)
+    have flateq: "[Dsym (enat u)] @ flatBT (Dpt (enat v) (0\<^sub>B +\<^sub>B Dpt (enat w) 0\<^sub>B)) @ []
+            = flatBT (Dpt (enat u) (Dpt (enat v) (Dpt (enat w) 0\<^sub>B)))" by simp
+    have "Trans ?M = unflatBT (flatBT (Dpt (enat u) (Dpt (enat v) (Dpt (enat w) 0\<^sub>B))))"
+      by (simp only: trans_val flateq)
+    thus "Trans ?M = Dpt (enat u) (Dpt (enat v) (Dpt (enat w) 0\<^sub>B))"
+      by (simp only: unflatBT_flat)
+  next
+    \<comment> \<open>------------------------------------------------------------------ case (2)\<close>
+    assume H2: "u < w' \<and> w' \<le> v \<and> w = w'"
+    hence wlo: "u < w'" and w'v: "w' \<le> v" and ww': "w = w'" by auto
+    let ?M = "?D @ [(w', w)]"
+    let ?j1 = "Suc v - u"
+    have whi: "w' \<le> Suc v" using w'v by simp
+    have wle: "w \<le> w'" using ww' by simp
+    have MR: "?M \<in> RT_PS" by (rule reduced_diagApp[OF uv wlo whi wle])
+    have mono: "monoT ?M" by (rule monoT_diagApp[OF uv wlo whi])
+    have domT: "Trans_Mark_dom (Inl ?M)" by (rule m_7_3_Trans_welldef[OF MR])
+    have LM: "Lng ?M = Suc v - u + 1" using uvle by (rule Lng_diagApp)
+    have Lgt1: "1 < Lng ?M" using LM uv by simp
+    have Lgt1': "\<not> Lng ?M \<le> Suc 0" using Lgt1 by simp
+    have predM: "Pred ?M = ?D" by (rule Pred_diagApp[OF uvle])
+    have j1eq: "Lng ?M - 1 = ?j1" using LM by simp
+    have jp: "parent ?M 0 (Lng ?M - 1) = w' - u - 1"
+      using parent0_diagApp[OF uv wlo whi] j1eq by simp
+    have admjp: "Adm ?M (parent ?M 0 (Lng ?M - 1)) = 0"
+      using jp Adm_diagApp_parent_lo[OF uv wlo w'v] by simp
+    \<comment> \<open>\<open>c\<^sub>1 = Mark (?D) 0 = D\<^sub>u D\<^sub>v 0\<close>\<close>
+    have c1v: "Mark (Pred ?M) (Adm ?M (parent ?M 0 (Lng ?M - 1)))
+                 = Dpt (enat u) (Dpt (enat v) 0\<^sub>B)"
+      using predM admjp mark0 by simp
+    have t1vM: "Trans (Pred ?M) = Dpt (enat u) (Dpt (enat v) 0\<^sub>B)" using predM t1v by simp
+    have t1neM: "Trans (Pred ?M) \<noteq> 0\<^sub>B" using t1vM by simp
+    have e1j1: "entry ?M 1 (Lng ?M - 1) = w" using entry_diagApp_last1[OF uvle] j1eq by simp
+    have e1jp: "entry ?M 1 (parent ?M 0 (Lng ?M - 1)) = w' - 1"
+      using jp entry_diagApp_lo[of "w'-u-1" v u w' w 1] wlo w'v uvle by simp
+    \<comment> \<open>condition (V): \<open>w = w' > 0\<close>, \<open>(w'-1)+1 = w'\<close>, \<open>j\<^sub>p+1 < j\<^sub>1\<close>\<close>
+    have condV: "transCondV ?M"
+    proof -
+      have a: "entry ?M 1 (Lng ?M - 1) > 0" using e1j1 ww' wlo by simp
+      have b: "entry ?M 1 (parent ?M 0 (Lng ?M - 1)) + 1 = entry ?M 1 (Lng ?M - 1)"
+        using e1jp e1j1 ww' wlo by simp
+      have c: "parent ?M 0 (Lng ?M - 1) + 1 < Lng ?M - 1"
+        using jp j1eq wlo w'v by linarith
+      show ?thesis unfolding transCondV_def using a b c by simp
+    qed
+    have IorIIIorV: "transCondI ?M \<or> transCondIII ?M \<or> transCondV ?M" using condV by simp
+    have bvc1: "bpHeadV (Mark (Pred ?M) (Adm ?M (parent ?M 0 (Lng ?M - 1)))) = enat u"
+      using c1v by simp
+    have btc1: "bpHeadT (Mark (Pred ?M) (Adm ?M (parent ?M 0 (Lng ?M - 1)))) = Dpt (enat v) 0\<^sub>B"
+      using c1v by simp
+    \<comment> \<open>scb-\<open>SOME\<close> is trivial (\<open>c\<^sub>1 = t\<^sub>1\<close>)\<close>
+    have somev: "(SOME sb. scb_decomp (Trans (Pred ?M)) (fst sb)
+                    (flatBT (Dpt (enat u) (Dpt (enat v) 0\<^sub>B))) (snd sb)) = ([], [])"
+    proof -
+      have pt: "isPTB_str (flatBT (Dpt (enat u) (Dpt (enat v) 0\<^sub>B)))"
+        by (rule isPTB_str_Dpt) simp_all
+      show ?thesis using scb_SOME_self[OF pt] t1vM by simp
+    qed
+    have j1pos: "Lng ?M - 1 \<noteq> 0" using Lgt1 by simp
+    have trans_val: "Trans ?M = unflatBT (flatBT
+                       (Dpt (enat u) (Dpt (enat v) 0\<^sub>B +\<^sub>B Dpt (enat w) 0\<^sub>B)))"
+      using Trans.psimps[OF domT] MR Lgt1' j1pos mono t1neM c1v somev IorIIIorV
+            jp admjp bvc1 btc1 e1j1
+      by (simp add: Let_def)
+    show "Trans ?M = Dpt (enat u) (Dpt (enat v) 0\<^sub>B +\<^sub>B Dpt (enat w) 0\<^sub>B)"
+      by (simp only: trans_val unflatBT_flat)
+  next
+    \<comment> \<open>------------------------------------------------------------------ case (3)\<close>
+    assume H3: "u + 1 < w' \<and> w' \<le> v \<and> w < w'"
+    hence wgt: "u + 1 < w'" and w'v: "w' \<le> v" and ww': "w < w'" by auto
+    let ?M = "?D @ [(w', w)]"
+    let ?j1 = "Suc v - u"
+    have wlo: "u < w'" using wgt by simp
+    have whi: "w' \<le> Suc v" using w'v by simp
+    have wle: "w \<le> w'" using ww' by simp
+    have MR: "?M \<in> RT_PS" by (rule reduced_diagApp[OF uv wlo whi wle])
+    have mono: "monoT ?M" by (rule monoT_diagApp[OF uv wlo whi])
+    have domT: "Trans_Mark_dom (Inl ?M)" by (rule m_7_3_Trans_welldef[OF MR])
+    have LM: "Lng ?M = Suc v - u + 1" using uvle by (rule Lng_diagApp)
+    have Lgt1: "1 < Lng ?M" using LM uv by simp
+    have Lgt1': "\<not> Lng ?M \<le> Suc 0" using Lgt1 by simp
+    have predM: "Pred ?M = ?D" by (rule Pred_diagApp[OF uvle])
+    have j1eq: "Lng ?M - 1 = ?j1" using LM by simp
+    have jp: "parent ?M 0 (Lng ?M - 1) = w' - u - 1"
+      using parent0_diagApp[OF uv wlo whi] j1eq by simp
+    have admjp: "Adm ?M (parent ?M 0 (Lng ?M - 1)) = 0"
+      using jp Adm_diagApp_parent_lo[OF uv wlo w'v] by simp
+    have c1v: "Mark (Pred ?M) (Adm ?M (parent ?M 0 (Lng ?M - 1)))
+                 = Dpt (enat u) (Dpt (enat v) 0\<^sub>B)"
+      using predM admjp mark0 by simp
+    have t1vM: "Trans (Pred ?M) = Dpt (enat u) (Dpt (enat v) 0\<^sub>B)" using predM t1v by simp
+    have t1neM: "Trans (Pred ?M) \<noteq> 0\<^sub>B" using t1vM by simp
+    have e1j1: "entry ?M 1 (Lng ?M - 1) = w" using entry_diagApp_last1[OF uvle] j1eq by simp
+    have e1jp: "entry ?M 1 (parent ?M 0 (Lng ?M - 1)) = w' - 1"
+      using jp entry_diagApp_lo[of "w'-u-1" v u w' w 1] wlo w'v uvle by simp
+    \<comment> \<open>none of (I),(III),(V),(VI) fire: \<open>j\<^sub>p\<close> is non-admissible interior and
+        \<open>w \<noteq> w'\<close>; the final \<open>else\<close> (with \<open>t\<^sub>2 = D\<^sub>v 0 \<noteq> 0\<close>) applies\<close>
+    have jppos: "parent ?M 0 (Lng ?M - 1) > 0" using jp wgt by linarith
+    have jplt: "parent ?M 0 (Lng ?M - 1) < v - u" using jp wlo w'v by linarith
+    have nadmjp: "\<not> adm ?M (parent ?M 0 (Lng ?M - 1))"
+      using nadm_diagApp_interior[OF jppos jplt uvle] by (simp add: adm_def)
+    have notI: "\<not> transCondI ?M"
+      using nadmjp by (simp add: transCondI_def)
+    have notIII: "\<not> transCondIII ?M"
+      using nadmjp by (simp add: transCondIII_def)
+    have notV: "\<not> transCondV ?M"
+      using e1jp e1j1 ww' by (simp add: transCondV_def)
+    have notVI: "\<not> transCondVI ?M"
+      using e1jp e1j1 ww' by (simp add: transCondVI_def)
+    have notIIIV: "\<not> (transCondI ?M \<or> transCondIII ?M \<or> transCondV ?M)"
+      using notI notIII notV by simp
+    have bvc1: "bpHeadV (Mark (Pred ?M) (Adm ?M (parent ?M 0 (Lng ?M - 1)))) = enat u"
+      using c1v by simp
+    have btc1: "bpHeadT (Mark (Pred ?M) (Adm ?M (parent ?M 0 (Lng ?M - 1)))) = Dpt (enat v) 0\<^sub>B"
+      using c1v by simp
+    \<comment> \<open>\<open>t\<^sub>2 = D\<^sub>v 0\<close>: \<open>J\<^sub>1 = 0\<close>, \<open>pj = D\<^sub>v 0\<close>, \<open>leftDj0 = (v = w'-1) = False\<close>\<close>
+    have vne: "enat v \<noteq> enat (entry ?M 1 (parent ?M 0 (Lng ?M - 1)))"
+      using e1jp w'v wlo by simp
+    have somev: "(SOME sb. scb_decomp (Trans (Pred ?M)) (fst sb)
+                    (flatBT (Dpt (enat u) (Dpt (enat v) 0\<^sub>B))) (snd sb)) = ([], [])"
+    proof -
+      have pt: "isPTB_str (flatBT (Dpt (enat u) (Dpt (enat v) 0\<^sub>B)))"
+        by (rule isPTB_str_Dpt) simp_all
+      show ?thesis using scb_SOME_self[OF pt] t1vM by simp
+    qed
+    have j1pos: "Lng ?M - 1 \<noteq> 0" using Lgt1 by simp
+    \<comment> \<open>unfold the mono branch; the final-\<open>else\<close> \<open>c\<^sub>2 = D\<^sub>u(D\<^sub>v 0 + D\<^bsub>w'-1\<^esub>(D\<^sub>v 0 + D\<^sub>w 0))\<close>\<close>
+    have trans_val: "Trans ?M = unflatBT (flatBT
+                       (Dpt (enat u) (Dpt (enat v) 0\<^sub>B
+                          +\<^sub>B Dpt (enat (w' - 1)) (Dpt (enat v) 0\<^sub>B +\<^sub>B Dpt (enat w) 0\<^sub>B))))"
+      using Trans.psimps[OF domT] MR Lgt1' j1pos mono t1neM c1v somev
+            notIIIV notVI jp admjp bvc1 btc1 e1j1 e1jp vne
+      by (simp add: Let_def PB_def SigmaB_def)
+    show "Trans ?M = Dpt (enat u) (Dpt (enat v) 0\<^sub>B
+            +\<^sub>B Dpt (enat (w' - 1)) (Dpt (enat v) 0\<^sub>B +\<^sub>B Dpt (enat w) 0\<^sub>B))"
+      by (simp only: trans_val unflatBT_flat)
+  next
+    \<comment> \<open>------------------------------------------------------------------ case (4)\<close>
+    assume H4: "u + 1 = w' \<and> w < w'"
+    hence w'eq: "w' = u + 1" and ww': "w < w'" by auto
+    let ?M = "?D @ [(w', w)]"
+    let ?j1 = "Suc v - u"
+    have wlo: "u < w'" using w'eq by simp
+    have whi: "w' \<le> Suc v" using w'eq uvle by simp
+    have wle: "w \<le> w'" using ww' by simp
+    have wleu: "w \<le> u" using ww' w'eq by simp
+    have MR: "?M \<in> RT_PS" by (rule reduced_diagApp[OF uv wlo whi wle])
+    have mono: "monoT ?M" by (rule monoT_diagApp[OF uv wlo whi])
+    have domT: "Trans_Mark_dom (Inl ?M)" by (rule m_7_3_Trans_welldef[OF MR])
+    have LM: "Lng ?M = Suc v - u + 1" using uvle by (rule Lng_diagApp)
+    have Lgt1: "1 < Lng ?M" using LM uv by simp
+    have Lgt1': "\<not> Lng ?M \<le> Suc 0" using Lgt1 by simp
+    have predM: "Pred ?M = ?D" by (rule Pred_diagApp[OF uvle])
+    have j1eq: "Lng ?M - 1 = ?j1" using LM by simp
+    have jp: "parent ?M 0 (Lng ?M - 1) = 0"
+      using parent0_diagApp[OF uv wlo whi] j1eq w'eq by simp
+    have admjp: "Adm ?M (parent ?M 0 (Lng ?M - 1)) = 0"
+    proof -
+      have "adm ?M 0" by (rule adm_index0)
+      thus ?thesis using jp by (simp add: Adm_def)
+    qed
+    have c1v: "Mark (Pred ?M) (Adm ?M (parent ?M 0 (Lng ?M - 1)))
+                 = Dpt (enat u) (Dpt (enat v) 0\<^sub>B)"
+      using predM admjp mark0 by simp
+    have t1vM: "Trans (Pred ?M) = Dpt (enat u) (Dpt (enat v) 0\<^sub>B)" using predM t1v by simp
+    have t1neM: "Trans (Pred ?M) \<noteq> 0\<^sub>B" using t1vM by simp
+    have e1j1: "entry ?M 1 (Lng ?M - 1) = w" using entry_diagApp_last1[OF uvle] j1eq by simp
+    have e1jp: "entry ?M 1 (parent ?M 0 (Lng ?M - 1)) = u"
+      using jp entry_diagApp_lo[of 0 v u w' w 1] uvle by simp
+    have admp0: "adm ?M (parent ?M 0 (Lng ?M - 1))"
+      using jp by (simp add: adm_index0)
+    \<comment> \<open>condition (I) (\<open>w = 0\<close>) or (III) (\<open>0 < w \<le> u\<close>); both put us in the
+        \<open>I \<or> III \<or> V\<close> branch\<close>
+    have IorIIIorV: "transCondI ?M \<or> transCondIII ?M \<or> transCondV ?M"
+    proof (cases "w = 0")
+      case True
+      have "transCondI ?M" unfolding transCondI_def using e1j1 True admp0 by simp
+      thus ?thesis by simp
+    next
+      case False
+      have "transCondIII ?M" unfolding transCondIII_def
+        using e1j1 e1jp False wleu admp0 by simp
+      thus ?thesis by simp
+    qed
+    have bvc1: "bpHeadV (Mark (Pred ?M) (Adm ?M (parent ?M 0 (Lng ?M - 1)))) = enat u"
+      using c1v by simp
+    have btc1: "bpHeadT (Mark (Pred ?M) (Adm ?M (parent ?M 0 (Lng ?M - 1)))) = Dpt (enat v) 0\<^sub>B"
+      using c1v by simp
+    have somev: "(SOME sb. scb_decomp (Trans (Pred ?M)) (fst sb)
+                    (flatBT (Dpt (enat u) (Dpt (enat v) 0\<^sub>B))) (snd sb)) = ([], [])"
+    proof -
+      have pt: "isPTB_str (flatBT (Dpt (enat u) (Dpt (enat v) 0\<^sub>B)))"
+        by (rule isPTB_str_Dpt) simp_all
+      show ?thesis using scb_SOME_self[OF pt] t1vM by simp
+    qed
+    have j1pos: "Lng ?M - 1 \<noteq> 0" using Lgt1 by simp
+    have trans_val: "Trans ?M = unflatBT (flatBT
+                       (Dpt (enat u) (Dpt (enat v) 0\<^sub>B +\<^sub>B Dpt (enat w) 0\<^sub>B)))"
+      using Trans.psimps[OF domT] MR Lgt1' j1pos mono t1neM c1v somev IorIIIorV
+            jp admjp bvc1 btc1 e1j1
+      by (simp add: Let_def)
+    show "Trans ?M = Dpt (enat u) (Dpt (enat v) 0\<^sub>B +\<^sub>B Dpt (enat w) 0\<^sub>B)"
+      by (simp only: trans_val unflatBT_flat)
+  qed
+qed
+
+
 end
