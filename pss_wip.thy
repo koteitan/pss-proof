@@ -13201,4 +13201,60 @@ lemma m_7_4_Mark_Trans_repr:
 
 \<comment> \<open>§7.4 keystone m_7_4_Mark_Trans_repr fully proven (no axiom gap).\<close>
 
+
+text \<open>§8.1 補題 part(1) full form (content.md 2949), now that the §7.4 Mark-Trans
+  representation @{thm [source] m_7_4_Mark_Trans_repr} is available: the
+  A20-guarded slice equality \<open>j\<^sub>0 < j\<^sub>1 - 1 \<longrightarrow> Trans (seg M j\<^sub>0 (j\<^sub>1-1)) = c\<^sub>1\<close> is
+  discharged by applying the representation to \<open>Pred M\<close> at index \<open>j\<^sub>0\<close> (here
+  \<open>jm1 = Adm M j\<^sub>0 = j\<^sub>0\<close> since \<open>adm M j\<^sub>0\<close>), the remaining conjuncts coming from
+  @{thm [source] m_8_1_c1_around_part1_noeq}.  A20: the slice equality is FALSE for
+  the singleton slice \<open>j\<^sub>0 = j\<^sub>1 - 1\<close>, hence the guard.\<close>
+
+lemma m_8_1_c1_around_part1:
+  fixes M :: pairseq
+  defines "j1 \<equiv> Lng M - 1"
+  defines "j0 \<equiv> parent M 0 j1"
+  defines "jm1 \<equiv> Adm M j0"
+  defines "c1 \<equiv> Mark (Pred M) jm1"
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS"
+    and admj0: "adm M j0" and j1gt: "j1 > 1"
+    and ge: "entry M 1 j0 \<ge> entry M 1 j1"
+  shows "Trans (Pred M) \<noteq> 0\<^sub>B
+       \<and> (transCondI M \<or> transCondIII M)
+       \<and> (j0 < j1 - 1 \<longrightarrow> Trans (seg M j0 (j1 - 1)) = c1)
+       \<and> c1 \<in> T_B \<and> (\<exists>p. c1 = Trm [p])"
+proof -
+  have MT: "M \<in> T_PS" using MR by (simp add: RT_PS_def)
+  have mono: "monoT M" using MP by (simp add: PT_PS_def)
+  have L: "1 < Lng M" using j1gt by (simp add: j1_def)
+  have predRT: "Pred M \<in> RT_PS" by (rule Pred_RT_PS[OF MR])
+  have predb: "Pred M = butlast M" using L by (simp add: Pred_def)
+  have LP: "Lng (Pred M) = Lng M - 1" using predb by simp
+  have hp: "hasParent M 0 (Lng M - 1)" by (rule monoT_hasParent0_last[OF MT mono L])
+  have j0eq: "j0 = parent M 0 (Lng M - 1)" by (simp add: j0_def j1_def)
+  have jm1eq: "jm1 = j0" using admj0 by (simp add: jm1_def Adm_def)
+  have markedJ0: "(Pred M, j0) \<in> Marked"
+    using Marked_Pred_Adm[OF MT L hp] j0eq jm1eq jm1_def by simp
+  have c1eq: "c1 = Mark (Pred M) j0" using jm1eq c1_def by simp
+  \<comment> \<open>the A20-guarded slice equality via @{thm m_7_4_Mark_Trans_repr}\<close>
+  have sliceq: "j0 < j1 - 1 \<longrightarrow> Trans (seg M j0 (j1 - 1)) = c1"
+  proof
+    assume g: "j0 < j1 - 1"
+    have LPm1: "Lng (Pred M) - 1 = j1 - 1" using LP j1_def by simp
+    have j0ltP: "j0 < Lng (Pred M) - 1" using g LPm1 by simp
+    have repr: "Mark (Pred M) j0 = Trans (seg (Pred M) j0 (Lng (Pred M) - 1))"
+      by (rule m_7_4_Mark_Trans_repr[OF markedJ0 predRT j0ltP])
+    have segeq: "seg (Pred M) j0 (j1 - 1) = seg M j0 (j1 - 1)"
+      by (rule m_7_4_seg_Pred_eq[OF L]) (use g j1_def j1gt in linarith)+
+    show "Trans (seg M j0 (j1 - 1)) = c1"
+      using repr segeq LPm1 c1eq by simp
+  qed
+  have rest: "Trans (Pred M) \<noteq> 0\<^sub>B \<and> (transCondI M \<or> transCondIII M)
+            \<and> c1 \<in> T_B \<and> (\<exists>p. c1 = Trm [p])"
+    using m_8_1_c1_around_part1_noeq[OF MR MP admj0[unfolded j0_def j1_def]
+            j1gt[unfolded j1_def] ge[unfolded j0_def j1_def]]
+    by (simp add: j1_def j0_def jm1_def c1_def)
+  show ?thesis using rest sliceq by blast
+qed
+
 end
