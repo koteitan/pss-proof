@@ -11258,4 +11258,133 @@ proof -
 qed
 
 
+text \<open>§7.4 keystone「\<open>Mark\<close> の \<open>Trans\<close> による表示」(content.md 2490) の multiT
+  分岐の還元ステップ。\<open>multiT M\<close> のとき、許容的内部添字 \<open>m\<close> の \<open>Mark M m\<close> は
+  最後の \<open>P\<close>-成分 \<open>PJ = drop (Pcut M) M\<close> 上の \<open>Mark PJ (m - Pcut M)\<close> に等しく
+  (@{thm [source] multi_Marked_last_component}, Mark の (C) 分岐)、後方スライス
+  \<open>seg M m (Lng M - 1)\<close> もまた \<open>PJ\<close> の対応スライス
+  \<open>seg PJ (m - Pcut M) (Lng PJ - 1)\<close> に一致する(@{thm [source] seg_of_seg})。
+  さらに \<open>PJ \<in> RT_PS\<close>、\<open>(PJ, m - Pcut M) \<in> Marked\<close>、\<open>Lng PJ < Lng M\<close>、
+  \<open>m - Pcut M < Lng PJ - 1\<close> が成り立つので、表示 \<open>Mark M m = Trans (seg M m \<dots>)\<close>
+  は、より短い \<open>PJ\<close> 上の同じ表示へ完全に還元される(強帰納法の multiT ステップ)。
+  経験的検証: maxlen \<le> 4, maxe \<le> 3 の reduced multi で内部許容 \<open>m\<close> 違反 0 件。
+  ここで \<open>PJ \<noteq> [(0,0)]\<close>(内部 \<open>m\<close> なら \<open>Lng PJ \<ge> 2\<close>)。\<close>
+
+lemma m_7_4_repr_multiT_step:
+  assumes MR: "M \<in> RT_PS" and mu: "multiT M"
+    and mM: "(M, m) \<in> Marked" and mlt: "m < Lng M - 1"
+  defines "PJ \<equiv> drop (Pcut M) M"
+  shows "Mark M m = Mark PJ (m - Pcut M)
+       \<and> seg M m (Lng M - 1) = seg PJ (m - Pcut M) (Lng PJ - 1)
+       \<and> PJ \<in> RT_PS \<and> (PJ, m - Pcut M) \<in> Marked
+       \<and> Lng PJ < Lng M \<and> m - Pcut M < Lng PJ - 1"
+proof -
+  have MT: "M \<in> T_PS" using MR by (simp add: RT_PS_def)
+  have L: "1 < Lng M" by (rule multiT_imp_Lng_gt1[OF MT mu])
+  have cut: "0 < Pcut M \<and> Pcut M \<le> Lng M - 1" using Pcut_le[OF L] by simp
+  have cle: "Pcut M \<le> m" by (rule multi_Marked_last_component(1)[OF MT mu mM])
+  \<comment> \<open>length of the last component and \<open>m\<close> in range\<close>
+  let ?j1 = "Lng M - 1"
+  have LPJ: "Lng PJ = Lng M - Pcut M" using PJ_def by simp
+  have mltL: "m < Lng M" using mlt by linarith
+  \<comment> \<open>(1) Mark reduction via the (C) branch (non-\<open>[(0,0)]\<close> since interior \<open>m\<close>)\<close>
+  have PJne00: "PJ \<noteq> [(0,0)]"
+  proof
+    assume z: "PJ = [(0,0)]"
+    have "Lng PJ = 1" using z by simp
+    hence "Pcut M = Lng M - 1" using LPJ cut L by linarith
+    thus False using cle mlt by linarith
+  qed
+  have PJeq: "P M ! (Lng (P M) - 1) = PJ"
+    using trans_multiT_last_component(1)[OF MT mu] PJ_def by simp
+  have j0eq: "Lng M - 1 - Lng (P M ! (Lng (P M) - 1)) + 1 = Pcut M"
+    by (rule trans_multiT_last_component(2)[OF MT mu])
+  have domK: "\<And>m'. Trans_Mark_dom (Inr (M, m'))" by (rule m_7_3_Mark_welldef[OF MR])
+  have nmono: "\<not> monoT M" using mu by (simp add: multiT_def)
+  have c1: "(M \<notin> RT_PS) = False" using MR by simp
+  have c2: "(Lng M - 1 = 0) = False" using L by simp
+  have c3: "monoT M = False" using nmono by simp
+  have meqj0: "m - (Lng M - 1 - Lng (P M ! (Lng (P M) - 1)) + 1) = m - Pcut M"
+    using j0eq by simp
+  have PJne00': "P M ! (Lng (P M) - 1) \<noteq> [(0, 0)]" using PJne00 PJeq by simp
+  have markM: "Mark M m = Mark PJ (m - Pcut M)"
+  proof -
+    have raw: "Mark M m =
+        (if P M ! (Lng (P M) - 1) = [(0, 0)] then Dpt 0 0\<^sub>B
+         else Mark (P M ! (Lng (P M) - 1))
+                (m - (Lng M - 1 - Lng (P M ! (Lng (P M) - 1)) + 1)))"
+      by (subst Mark.psimps[OF domK]) (simp only: c1 c2 c3 if_False Let_def)
+    have "Mark M m = Mark (P M ! (Lng (P M) - 1))
+                       (m - (Lng M - 1 - Lng (P M ! (Lng (P M) - 1)) + 1))"
+      using raw PJne00' by (simp only: if_False)
+    also have "\<dots> = Mark PJ (m - Pcut M)" using PJeq meqj0 by simp
+    finally show ?thesis .
+  qed
+  \<comment> \<open>(2) slice composition: \<open>seg M m ?j1 = seg PJ (m - Pcut M) (Lng PJ - 1)\<close>\<close>
+  have segPJ: "PJ = seg M (Pcut M) ?j1"
+  proof -
+    have "0 < Lng M" using L by linarith
+    hence "seg M (Pcut M) (Lng M - 1) = drop (Pcut M) M"
+      by (rule seg_to_last_eq_drop)
+    thus ?thesis using PJ_def by simp
+  qed
+  have segcomp: "seg M m ?j1 = seg PJ (m - Pcut M) (Lng PJ - 1)"
+  proof -
+    have a_le_b: "Pcut M \<le> ?j1" using cut by simp
+    have d_le: "Lng PJ - 1 \<le> ?j1 - Pcut M" using LPJ cut by linarith
+    have step: "seg (seg M (Pcut M) ?j1) (m - Pcut M) (Lng PJ - 1)
+        = seg M (Pcut M + (m - Pcut M)) (Pcut M + (Lng PJ - 1))"
+      by (rule seg_of_seg[OF a_le_b d_le])
+    have e1: "Pcut M + (m - Pcut M) = m" using cle by simp
+    have e2: "Pcut M + (Lng PJ - 1) = ?j1" using LPJ cut by linarith
+    have "seg PJ (m - Pcut M) (Lng PJ - 1) = seg M m ?j1"
+      using step segPJ e1 e2 by simp
+    thus ?thesis by simp
+  qed
+  \<comment> \<open>(3) \<open>PJ \<in> RT_PS\<close>, \<open>(PJ, m - Pcut M) \<in> Marked\<close>, length / index bounds\<close>
+  have Pne: "P M \<noteq> []" by (rule P_nonempty)
+  have J1lt: "Lng (P M) - 1 < Lng (P M)" using Pne by (cases "P M") auto
+  have PJRT: "PJ \<in> RT_PS"
+    using m_6_6_P_reduced[OF MT] MR J1lt PJeq by auto
+  have mPJ: "(PJ, m - Pcut M) \<in> Marked"
+    using multi_Marked_last_component(2)[OF MT mu mM] PJ_def by simp
+  have LngPJlt: "Lng PJ < Lng M" using LPJ cut by linarith
+  have mPJlt: "m - Pcut M < Lng PJ - 1" using LPJ cut cle mlt by linarith
+  show ?thesis
+    using markM segcomp PJRT mPJ LngPJlt mPJlt by blast
+qed
+
+
+text \<open>§7.4 keystone「\<open>Mark\<close> の \<open>Trans\<close> による表示」(content.md 2490)。
+  \<open>(M,m) \<in> Marked\<close>, \<open>M \<in> RT_PS\<close>, \<open>m < Lng M - 1\<close> のとき
+  \<open>Mark M m = Trans (seg M m (Lng M - 1))\<close>。
+  橋渡し補題 @{thm [source] m_7_4_Mark0_slice_eq_Trans} により目標は
+  \<open>Mark M m = Mark (seg M m (Lng M - 1)) 0\<close> (fact2) と同値である。
+  ここでは \<open>m = 0\<close> の場合と、\<open>multiT M\<close> から最後の \<open>P\<close>-成分への還元
+  (@{thm [source] m_7_4_repr_multiT_step}) を用いて、\<open>Lng M\<close> に関する強帰納法で
+  「\<open>m = 0\<close> または、その還元を有限回適用して到達する成分が \<open>m' = 0\<close> で評価される」
+  範囲を扱う。すなわち追加仮定 \<open>m = 0\<close> を置いた完全証明(\<open>monoT\<close> の内部
+  \<open>m > 0\<close> ステージは未了 — 報告参照)。\<close>
+
+lemma m_7_4_Mark_Trans_repr_m0:
+  assumes mM: "(M, 0) \<in> Marked" and MR: "M \<in> RT_PS" and mlt: "0 < Lng M - 1"
+  shows "Mark M 0 = Trans (seg M 0 (Lng M - 1))"
+proof -
+  have MT: "M \<in> T_PS" using MR by (simp add: RT_PS_def)
+  have L: "1 < Lng M" using mlt by linarith
+  have L0: "0 < Lng M" using L by linarith
+  \<comment> \<open>\<open>seg M 0 (Lng M - 1) = M\<close>\<close>
+  have segM: "seg M 0 (Lng M - 1) = M"
+  proof -
+    have "seg M 0 (Lng M - 1) = take (Suc (Lng M - 1)) M"
+      by (rule seg_0_eq_take) (use L in linarith)
+    also have "Suc (Lng M - 1) = Lng M" using L by simp
+    finally show ?thesis by simp
+  qed
+  \<comment> \<open>\<open>Mark M 0 = Trans M\<close> by the index-0 representation\<close>
+  have key: "Mark M 0 = Trans M" using ra_Mark0_eq_Trans mM MR by simp
+  show ?thesis using key segM by simp
+qed
+
+
 end
