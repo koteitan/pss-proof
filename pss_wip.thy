@@ -11808,4 +11808,339 @@ qed
 
 \<comment> \<open>§7.4 monoT interior: helpers (1)-(3) + identity (1) green; (2)/(3) pending.\<close>
 
+
+section \<open>§7.4 monoT-interior basepoint index-shift bridge (A)\<close>
+
+text \<open>The basepoint indices/entries of \<open>N = Red (seg M m j\<^sub>1)\<close> equal those of
+  \<open>M\<close> shifted by \<open>-m\<close>.  Two transports compose:
+  \<^item> (S\<leftrightarrow>M) a backward slice \<open>S = seg M m j\<^sub>1\<close> sees the same parent/admissibility
+    structure as \<open>M\<close>, offset by \<open>m\<close> (slice bridge @{thm [source] rcpb_nextR_seg},
+    parents are globally unique so an in-slice parent IS the \<open>M\<close>-parent);
+  \<^item> (S\<leftrightarrow>N) \<open>S = (IncrFirst^^k) N\<close> (@{thm [source] m_6_6_ancestor_slice_Red_IncrFirst}),
+    and \<open>IncrFirst\<close> preserves \<open>nextR\<close> (@{thm [source] nextR_funpow_IncrFirst_eq}),
+    hence \<open>parent\<close>/\<open>hasParent\<close>/\<open>adm\<close>/\<open>Adm\<close>, and row-1 entries
+    (@{thm [source] entry_funpow_IncrFirst1}).\<close>
+
+text \<open>\<open>parent\<close>/\<open>hasParent\<close>/\<open>adm\<close>/\<open>Adm\<close> are \<open>(IncrFirst^^k)\<close>-invariant
+  (all are defined purely from \<open>nextR\<close>, which is invariant).\<close>
+
+lemma parent_funpow_IncrFirst_eq:
+  "parent ((IncrFirst ^^ k) M) i j = parent M i j"
+  unfolding parent_def using nextR_funpow_IncrFirst_eq[of k M] by simp
+
+lemma hasParent_funpow_IncrFirst_eq:
+  "hasParent ((IncrFirst ^^ k) M) i j = hasParent M i j"
+  unfolding hasParent_def using nextR_funpow_IncrFirst_eq[of k M] by simp
+
+lemma nadm_funpow_IncrFirst_eq:
+  "nadm ((IncrFirst ^^ k) M) j = nadm M j"
+  unfolding nadm_def using nextR_funpow_IncrFirst_eq[of k M]
+  by (simp add: Lng_funpow_IncrFirst)
+
+lemma adm_funpow_IncrFirst_eq:
+  "adm ((IncrFirst ^^ k) M) j = adm M j"
+  unfolding adm_def using nadm_funpow_IncrFirst_eq[of k M] by simp
+
+lemma Adm_funpow_IncrFirst_eq:
+  "Adm ((IncrFirst ^^ k) M) j = Adm M j"
+  unfolding Adm_def using adm_funpow_IncrFirst_eq[of k M]
+  by (simp cong: Collect_cong)
+
+text \<open>General-slice parent bridge.  In a backward slice \<open>S = seg M m b\<close> with
+  \<open>b < Lng M\<close>, if \<open>S\<close> has a row-\<open>i\<close> parent of a local column \<open>jl\<close> then \<open>M\<close> has
+  the offset-shifted parent and the values correspond.  (Direction S\<Rightarrow>M;
+  the M-parent is necessarily in-slice because row parents are globally unique.)
+  Extracted from the internal argument of @{thm [source] fa_RedCondA_seg}.\<close>
+
+lemma repr_parent_seg_to_M:
+  assumes i: "i \<le> (1::nat)" and bL: "b < Lng M"
+    and hp: "hasParent (seg M m b) i jl"
+  shows "hasParent M i (m + jl) \<and> parent M i (m + jl) = m + parent (seg M m b) i jl"
+proof -
+  let ?S = "seg M m b"
+  have ex1: "\<exists>!pl. nextR ?S i pl jl" using hp by (simp add: hasParent_def)
+  then obtain pl0 where pl0: "nextR ?S i pl0 jl"
+    and uS: "\<And>pl'. nextR ?S i pl' jl \<Longrightarrow> pl' = pl0" by blast
+  have jlS: "jl < Lng ?S" and plS: "pl0 < Lng ?S" and plj: "pl0 < jl"
+    using pl0 by (cases "i = 0"; simp_all add: nextR_def nextrel0_def nextrel1_def)+
+  have pS: "parent ?S i jl = pl0"
+    unfolding parent_def
+    by (rule the_equality[where P="\<lambda>pl. nextR ?S i pl jl", OF pl0 uS])
+  have nM: "nextR M i (m + pl0) (m + jl)"
+    using rcpb_nextR_seg[OF bL i plS jlS] pl0 by simp
+  have uniqM: "\<And>p'. nextR M i p' (m + jl) \<Longrightarrow> p' = m + pl0"
+  proof -
+    fix p' assume Hp: "nextR M i p' (m + jl)"
+    show "p' = m + pl0"
+    proof (cases "i = 0")
+      case True
+      have h0: "nextR M 0 p' (m + jl)" using Hp True by simp
+      have n0: "nextR M 0 (m + pl0) (m + jl)" using nM True by simp
+      show ?thesis by (rule idxsum_parent0_unique[OF h0 n0])
+    next
+      case False
+      hence i1: "i = 1" using i by simp
+      have h1: "nextR M 1 p' (m + jl)" using Hp i1 by simp
+      have n1: "nextR M 1 (m + pl0) (m + jl)" using nM i1 by simp
+      show ?thesis by (rule nextR1_unique[OF h1 n1])
+    qed
+  qed
+  have pM: "parent M i (m + jl) = m + pl0"
+    unfolding parent_def
+    by (rule the_equality[where P="\<lambda>p. nextR M i p (m + jl)", OF nM uniqM])
+  have hpM: "hasParent M i (m + jl)"
+    unfolding hasParent_def using nM uniqM by blast
+  show ?thesis using hpM pM pS by simp
+qed
+
+text \<open>Converse direction (M\<Rightarrow>S): if \<open>M\<close> has a row-\<open>i\<close> parent of \<open>m+jl\<close> that lies
+  inside the slice (\<open>m \<le> parent\<close>) then the slice has the corresponding parent.\<close>
+
+lemma repr_parent_M_to_seg:
+  assumes i: "i \<le> (1::nat)" and bL: "b < Lng M"
+    and jlS: "jl < Lng (seg M m b)"
+    and hpM: "hasParent M i (m + jl)"
+    and anc: "m \<le> parent M i (m + jl)"
+  shows "hasParent (seg M m b) i jl
+         \<and> parent (seg M m b) i jl = parent M i (m + jl) - m"
+proof -
+  let ?S = "seg M m b"
+  obtain p where pM: "nextR M i p (m + jl)"
+    and uM: "\<And>p'. nextR M i p' (m + jl) \<Longrightarrow> p' = p"
+    using hpM by (auto simp: hasParent_def)
+  have peq: "parent M i (m + jl) = p"
+    unfolding parent_def
+    by (rule the_equality[where P="\<lambda>p. nextR M i p (m + jl)", OF pM uM])
+  have mp: "m \<le> p" using anc peq by simp
+  then obtain pl where ple: "p = m + pl" by (metis le_add_diff_inverse)
+  have pj: "p < m + jl" using pM
+    by (cases "i = 0") (auto simp: nextR_def nextrel0_def nextrel1_def)
+  have plj: "pl < jl" using ple pj by simp
+  have plS: "pl < Lng ?S" using plj jlS by simp
+  have nS: "nextR ?S i pl jl"
+    using rcpb_nextR_seg[OF bL i plS jlS] pM ple by simp
+  have uS: "\<And>pl'. nextR ?S i pl' jl \<Longrightarrow> pl' = pl"
+  proof -
+    fix pl' assume H: "nextR ?S i pl' jl"
+    have plS': "pl' < Lng ?S" and pljj: "pl' < jl"
+      using H by (cases "i = 0"; simp_all add: nextR_def nextrel0_def nextrel1_def)+
+    have "nextR M i (m + pl') (m + jl)"
+      using rcpb_nextR_seg[OF bL i plS' jlS] H by simp
+    hence "m + pl' = p" using uM by simp
+    thus "pl' = pl" using ple by simp
+  qed
+  have hpS: "hasParent ?S i jl" unfolding hasParent_def using nS uS by blast
+  have pS: "parent ?S i jl = pl"
+    unfolding parent_def
+    by (rule the_equality[where P="\<lambda>pl. nextR ?S i pl jl", OF nS uS])
+  show ?thesis using hpS pS ple peq by simp
+qed
+
+text \<open>(A.1) \<open>transJ0\<close> shift: \<open>transJ0 N = transJ0 M - m\<close> where \<open>N = Red(seg M m j\<^sub>1)\<close>,
+  \<open>j\<^sub>1 = Lng M - 1\<close>.  Hyp \<open>anc0 : m \<le> parent M 0 j\<^sub>1\<close> (the leR-anchoring, which the
+  monoT-interior assembly supplies); \<open>hp : hasParent M 0 j\<^sub>1\<close>.\<close>
+
+lemma repr_transJ0_shift:
+  assumes MR: "M \<in> RT_PS" and mint: "m < Lng M - 2"
+    and leM: "leR M 0 m (Lng M - 1)"
+    and hp: "hasParent M 0 (Lng M - 1)"
+    and anc0: "m \<le> parent M 0 (Lng M - 1)"
+  shows "transJ0 (Red (seg M m (Lng M - 1))) = transJ0 M - m"
+proof -
+  have MT: "M \<in> T_PS" using MR by (simp add: RT_PS_def)
+  let ?j1 = "Lng M - 1"  let ?S = "seg M m ?j1"  let ?N = "Red ?S"
+  have L: "2 < Lng M" using mint by linarith
+  have mj1: "m < ?j1" using mint by linarith
+  have j1L: "?j1 \<le> Lng M - 1" by simp
+  have j1lt: "?j1 < Lng M" using L by linarith
+  \<comment> \<open>\<open>S = (IncrFirst^^k) N\<close>, and \<open>Lng N = Lng S = Suc j\<^sub>1 - m\<close>\<close>
+  define k where "k = entry M 0 m - entry M 1 m"
+  have segeq: "?S = (IncrFirst ^^ k) ?N"
+    using m_6_6_ancestor_slice_Red_IncrFirst[OF MR mj1 j1L leM] k_def by simp
+  have LS: "Lng ?S = Suc ?j1 - m" by simp
+  have LNS: "Lng ?N = Lng ?S"
+    using arg_cong[OF segeq, of Lng] by (simp add: Lng_funpow_IncrFirst)
+  have LN: "Lng ?N = Suc ?j1 - m" using LNS LS by simp
+  have LNm1: "Lng ?N - 1 = ?j1 - m" using LN mj1 by simp
+  \<comment> \<open>local last column \<open>jl = j\<^sub>1 - m\<close>, with \<open>m + jl = j\<^sub>1\<close>\<close>
+  have jlS: "?j1 - m < Lng ?S" using mj1 by simp
+  have mjl: "m + (?j1 - m) = ?j1" using mj1 by simp
+  \<comment> \<open>(M\<Rightarrow>S): slice has the parent, shifted\<close>
+  have hpMjl: "hasParent M 0 (m + (?j1 - m))" using hp mjl by simp
+  have ancjl: "m \<le> parent M 0 (m + (?j1 - m))" using anc0 mjl by simp
+  have sS: "hasParent ?S 0 (?j1 - m)
+            \<and> parent ?S 0 (?j1 - m) = parent M 0 (m + (?j1 - m)) - m"
+    by (rule repr_parent_M_to_seg[OF _ j1lt jlS hpMjl ancjl]) simp
+  have pSeg: "parent ?S 0 (?j1 - m) = parent M 0 ?j1 - m"
+    using sS mjl by simp
+  \<comment> \<open>(S\<leftrightarrow>N): \<open>parent\<close> invariant under \<open>IncrFirst^^k\<close>\<close>
+  have pN: "parent ?N 0 (?j1 - m) = parent ?S 0 (?j1 - m)"
+    using segeq parent_funpow_IncrFirst_eq[of k ?N 0 "?j1 - m"] by simp
+  have "transJ0 ?N = parent ?N 0 (Lng ?N - 1)" by (simp add: transJ0_def transJ1_def)
+  also have "\<dots> = parent ?N 0 (?j1 - m)" using LNm1 by simp
+  also have "\<dots> = parent M 0 ?j1 - m" using pN pSeg by simp
+  also have "\<dots> = transJ0 M - m" by (simp add: transJ0_def transJ1_def)
+  finally show ?thesis .
+qed
+
+text \<open>(A.3) row-1 entry shift: \<open>entry N 1 i = entry M 1 (m+i)\<close> for in-range \<open>i\<close>.
+  (Stated as A.3 first since A.2 \<open>transJm1\<close> reuses A.1.)\<close>
+
+lemma repr_entry1_shift:
+  assumes MR: "M \<in> RT_PS" and mint: "m < Lng M - 2"
+    and leM: "leR M 0 m (Lng M - 1)"
+    and il: "i < Lng (Red (seg M m (Lng M - 1)))"
+  shows "entry (Red (seg M m (Lng M - 1))) 1 i = entry M 1 (m + i)"
+proof -
+  have MT: "M \<in> T_PS" using MR by (simp add: RT_PS_def)
+  let ?j1 = "Lng M - 1"  let ?S = "seg M m ?j1"  let ?N = "Red ?S"
+  have L: "2 < Lng M" using mint by linarith
+  have mj1: "m < ?j1" using mint by linarith
+  have j1L: "?j1 \<le> Lng M - 1" by simp
+  define k where "k = entry M 0 m - entry M 1 m"
+  have segeq: "?S = (IncrFirst ^^ k) ?N"
+    using m_6_6_ancestor_slice_Red_IncrFirst[OF MR mj1 j1L leM] k_def by simp
+  have LS: "Lng ?S = Suc ?j1 - m" by simp
+  have LNS: "Lng ?N = Lng ?S"
+    using arg_cong[OF segeq, of Lng] by (simp add: Lng_funpow_IncrFirst)
+  have LN: "Lng ?N = Suc ?j1 - m" using LNS LS by simp
+  have iN: "i < Lng ?N" using il by simp
+  have iS: "i < Lng ?S" using iN LN LS by simp
+  \<comment> \<open>row-1 entry: \<open>S\<leftrightarrow>N\<close> (\<open>IncrFirst^^k\<close> preserves row 1), then \<open>S\<leftrightarrow>M\<close> (\<open>entry_seg\<close>)\<close>
+  have eN: "entry ?S 1 i = entry ?N 1 i"
+    using segeq entry_funpow_IncrFirst1[OF iN, of k] by simp
+  have eM: "entry ?S 1 i = entry M 1 (m + i)" using iS by (simp add: entry_seg)
+  show ?thesis using eN eM by simp
+qed
+
+text \<open>(A.2) \<open>transJm1\<close> shift: \<open>transJm1 N = transJm1 M - m\<close>.  Reuses A.1
+  (\<open>transJ0\<close> shift) inside the \<open>Adm\<close> slice lemma @{thm [source] m_6_3_admof_slice}.\<close>
+
+lemma repr_transJm1_shift:
+  assumes mM: "(M, m) \<in> Marked" and MR: "M \<in> RT_PS" and mint: "m < Lng M - 2"
+    and leM: "leR M 0 m (Lng M - 1)"
+    and hp: "hasParent M 0 (Lng M - 1)"
+    and anc0: "m \<le> parent M 0 (Lng M - 1)"
+    and j0lt: "parent M 0 (Lng M - 1) < Lng M - 1"
+  shows "transJm1 (Red (seg M m (Lng M - 1))) = transJm1 M - m"
+proof -
+  have MT: "M \<in> T_PS" using MR by (simp add: RT_PS_def)
+  let ?j1 = "Lng M - 1"  let ?S = "seg M m ?j1"  let ?N = "Red ?S"
+  let ?j0 = "parent M 0 ?j1"
+  have L: "2 < Lng M" using mint by linarith
+  have mj1: "m < ?j1" using mint by linarith
+  have j1L: "?j1 \<le> Lng M - 1" by simp
+  define k where "k = entry M 0 m - entry M 1 m"
+  have segeq: "?S = (IncrFirst ^^ k) ?N"
+    using m_6_6_ancestor_slice_Red_IncrFirst[OF MR mj1 j1L leM] k_def by simp
+  \<comment> \<open>A.1: \<open>transJ0 N = transJ0 M - m\<close>, i.e. \<open>parent N 0 (Lng N -1) = ?j0 - m\<close>\<close>
+  have j0N: "transJ0 ?N = transJ0 M - m"
+    by (rule repr_transJ0_shift[OF MR mint leM hp anc0])
+  have j0Neq: "transJ0 ?N = ?j0 - m" using j0N by (simp add: transJ0_def transJ1_def)
+  \<comment> \<open>transport \<open>Adm\<close> through \<open>IncrFirst^^k\<close> then slice\<close>
+  have AdmN: "Adm ?N (?j0 - m) = Adm ?S (?j0 - m)"
+    using segeq Adm_funpow_IncrFirst_eq[of k ?N "?j0 - m"] by simp
+  \<comment> \<open>need \<open>m \<le> Adm M ?j0\<close>: \<open>m\<close> is \<open>M\<close>-admissible and \<open>m \<le> ?j0\<close>, so by maximality\<close>
+  have mAdm: "adm M m" using mM by (simp add: Marked_def)
+  have mAdmJ0: "m \<le> Adm M ?j0" by (rule adm_Adm_max[OF mAdm anc0])
+  have AdmSlice: "Adm ?S (?j0 - m) = Adm M ?j0 - m"
+    by (rule m_6_3_admof_slice[OF MT mAdmJ0 j0lt j1L])
+  have "transJm1 ?N = Adm ?N (transJ0 ?N)" by (simp add: transJm1_def)
+  also have "\<dots> = Adm ?N (?j0 - m)" using j0Neq by simp
+  also have "\<dots> = Adm ?S (?j0 - m)" using AdmN by simp
+  also have "\<dots> = Adm M ?j0 - m" using AdmSlice by simp
+  also have "\<dots> = transJm1 M - m" by (simp add: transJm1_def transJ0_def transJ1_def)
+  finally show ?thesis .
+qed
+
+\<comment> \<open>§7.4 monoT interior (A): shift lemmas transJ0/transJm1/entry1 done.\<close>
+
+
+section \<open>§7.4 monoT-interior identity (2): \<open>transC1 M = transC1 N\<close> (B)\<close>
+
+text \<open>Identity (2): \<open>transC1 M = transC1 N\<close>, where \<open>N = Red(seg M m j\<^sub>1)\<close>.
+  \<open>transC1 M = Mark (Pred M) (transJm1 M)\<close> and
+  \<open>transC1 N = Mark (Pred N) (transJm1 N)\<close>.  By (A.2) \<open>transJm1 N = transJm1 M - m\<close>;
+  the marked indices satisfy \<open>transJm1 M = m + transJm1 N\<close> (the \<open>M\<close>-anchoring
+  \<open>m \<le> transJm1 M\<close> holds in the assembly).  Reduce to the \<open>Mark\<close>-on-\<open>Pred\<close>
+  index-shift \<open>Mark (Pred N) j = Mark (Pred M) (m + j)\<close> at \<open>j = transJm1 N\<close>,
+  empirically exact (repr5: 9 monoT-interior cases, 0 violations).
+
+  This \<open>Mark\<close>-shift is the \<open>Mark\<close> companion of the keystone (a reduced backward
+  slice's \<open>Mark\<close> = the parent's \<open>Mark\<close> at the shifted index), itself an
+  inductive sub-keystone.  Stated here as an explicit hypothesis \<open>markShift\<close>
+  (induction-ready, mirroring how @{thm [source] m_7_4_interior_id1} takes
+  \<open>ihPred\<close>), so id2 is a callable green lemma; the assembly discharges
+  \<open>markShift\<close> from the strong-induction hypothesis.\<close>
+
+lemma m_7_4_interior_id2:
+  assumes MR: "M \<in> RT_PS" and mint: "m < Lng M - 2"
+    and leM: "leR M 0 m (Lng M - 1)"
+    and hp: "hasParent M 0 (Lng M - 1)"
+    and anc0: "m \<le> parent M 0 (Lng M - 1)"
+    and j0lt: "parent M 0 (Lng M - 1) < Lng M - 1"
+    and mM: "(M, m) \<in> Marked"
+    and ancJm1: "m \<le> transJm1 M"
+    and markShift: "Mark (Pred (Red (seg M m (Lng M - 1)))) (transJm1 M - m)
+                    = Mark (Pred M) (transJm1 M)"
+  shows "transC1 M = transC1 (Red (seg M m (Lng M - 1)))"
+proof -
+  let ?j1 = "Lng M - 1"  let ?N = "Red (seg M m ?j1)"
+  \<comment> \<open>(A.2): \<open>transJm1 N = transJm1 M - m\<close>\<close>
+  have jm1N: "transJm1 ?N = transJm1 M - m"
+    by (rule repr_transJm1_shift[OF mM MR mint leM hp anc0 j0lt])
+  \<comment> \<open>unfold both \<open>transC1\<close> and apply the \<open>Mark\<close>-shift\<close>
+  have "transC1 ?N = Mark (Pred ?N) (transJm1 ?N)" by (simp add: transC1_def)
+  also have "\<dots> = Mark (Pred ?N) (transJm1 M - m)" using jm1N by simp
+  also have "\<dots> = Mark (Pred M) (transJm1 M)" by (rule markShift)
+  also have "\<dots> = transC1 M" by (simp add: transC1_def)
+  finally show ?thesis ..
+qed
+
+\<comment> \<open>§7.4 monoT interior (B): id2 green (reduces to the Mark-on-Pred index-shift).\<close>
+
+
+section \<open>§7.4 monoT-interior identity (3): \<open>transC2 M = transC2 N\<close> (C)\<close>
+
+text \<open>\<open>transC2 M\<close> (pss_paper.thy 1203-1217) references \<open>M\<close> only through six atoms
+  — \<open>transJ1 M\<close>, \<open>transJ0 M\<close>, \<open>transV M\<close>, \<open>transT2 M\<close>, \<open>entry M 1 (transJ0 M)\<close>,
+  \<open>entry M 1 (transJ1 M)\<close> — and the four predicates \<open>transCondI/III/V/VI M\<close>.
+  All correspond to their \<open>N\<close>-counterparts (\<open>N = Red(seg M m j\<^sub>1)\<close>):
+  \<^item> \<open>transV/transT2\<close> agree because \<open>transC1 M = transC1 N\<close> (id2, B);
+  \<^item> the two row-1 entries agree by (A.3) at the shifted indices
+    (\<open>entry N 1 (transJ0 N) = entry M 1 (transJ0 M)\<close> since \<open>transJ0 N = transJ0 M - m\<close>
+     and \<open>m + (transJ0 M - m) = transJ0 M\<close> as \<open>m \<le> transJ0 M\<close>;
+     \<open>entry N 1 (transJ1 N) = entry M 1 (transJ1 M)\<close> since \<open>transJ1 N = j\<^sub>1 - m\<close>);
+  \<^item> the four \<open>transCond\<close> predicates correspond — empirically exact (repr5: 9
+    monoT-interior cases, 0 viol).
+  Given those, \<open>transC2 M\<close> and \<open>transC2 N\<close> are the SAME \<open>let\<close>-expression, hence
+  equal.  Stated with the atom/condition correspondences as explicit hypotheses
+  (the structural collapse is unconditional); the \<open>transCond\<close>-correspondence and
+  the entry/transV/transT2 facts are discharged in the assembly from (A)/(B).\<close>
+
+lemma m_7_4_interior_id3:
+  fixes M N :: pairseq
+  assumes c1eq: "transC1 M = transC1 N"
+    and ej0:  "entry N 1 (transJ0 N) = entry M 1 (transJ0 M)"
+    and ej1:  "entry N 1 (transJ1 N) = entry M 1 (transJ1 M)"
+    and cI:   "transCondI N   = transCondI M"
+    and cIII: "transCondIII N = transCondIII M"
+    and cV:   "transCondV N   = transCondV M"
+    and cVI:  "transCondVI N  = transCondVI M"
+  shows "transC2 M = transC2 N"
+proof -
+  \<comment> \<open>\<open>transV/transT2\<close> from \<open>transC1\<close>\<close>
+  have vEq: "transV N = transV M" using c1eq by (simp add: transV_def)
+  have t2Eq: "transT2 N = transT2 M" using c1eq by (simp add: transT2_def)
+  \<comment> \<open>expand both \<open>let\<close>-bodies, then rewrite every composite \<open>N\<close>-atom to its
+     \<open>M\<close>-counterpart (\<open>transV/transT2\<close>, the two \<open>entry\<close>s, the four conditions)\<close>
+  show ?thesis
+    unfolding transC2_def Let_def
+    by (simp only: vEq t2Eq ej0 ej1 cI cIII cV cVI)
+qed
+
+\<comment> \<open>§7.4 monoT interior (C): id3 structural collapse green; atom/cond
+   correspondences (A.3 entries + transCond) supplied as hyps for the assembly.
+   (A) transJ0/transJm1/entry1 shift unconditional; (B) id2 / (C) id3 callable.\<close>
+
 end
