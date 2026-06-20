@@ -56,7 +56,7 @@
       - ✅ 命題（標準形の切片と $\textrm{Br}$ の降順性の関係）〔`m_6_8_standard_slice_Br_descending`。docs `slice-Br-descending.md`〕
       - ✅ 命題（標準形の単項成分が降順であること）
   - 🚨 §7 Buchholzの表記系への翻訳
-    - 🚨 §7.1 Buchholzの表記系
+    - ✅ §7.1 Buchholzの表記系
       - ✅ 命題（順序数項のカッコの個数が左右で等しいこと）
       - ✅ 命題（順序数項の単項成分の基本性質）
       - ✅ 命題（部分表現の不等式の延長性）〔`scbext_lessBT`/`scbext_lessBP`(+補助 `scbjoin_lessBT`): scb 位置(共通 prefix `s`/全 RP tail `b`)で主表現 `cp` を `cp'` に置換、`lessBP cp cp' ⟹ lessBT t t'`。`flatBT_flatBP.induct` 相互帰納で `scbimg_image_BT`/`scbimg_join` を鏡像。経験検証 114000/0。Pred 降下性・Mark 順序保存・§8 基本列交換の共通土台〕
