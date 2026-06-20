@@ -11074,4 +11074,145 @@ proof -
 qed
 
 
+text \<open>§8.1 補題 part(2) (content.md 2933, A20/A21-guarded form): for the unique
+  next-parent \<open>j\<^sub>0'\<close> of \<open>j\<^sub>0 = parent M 0 (Lng M - 1)\<close>, with \<open>j\<^sub>-\<^sub>1' = Adm M j\<^sub>0'\<close>,
+  we have \<open>j\<^sub>0' \<le> j\<^sub>1 - 2\<close>, \<open>(Pred M, j\<^sub>-\<^sub>1') \<in> Marked\<close> and
+  \<open>(seg M j\<^sub>-\<^sub>1' (j\<^sub>1 - 1), j\<^sub>0 - j\<^sub>-\<^sub>1') \<in> Marked\<close>.  Standalone green; the slice
+  heredity is @{thm [source] m_6_3_marked_slice}, the \<open>Pred\<close> heredity
+  @{thm [source] Marked_Pred}, the admissibility ancestry chain mirrors
+  @{thm [source] Marked_Pred_Adm}.\<close>
+
+lemma m_8_1_c1_around_part2:
+  fixes M :: pairseq
+  defines "j1 \<equiv> Lng M - 1"
+  defines "j0 \<equiv> parent M 0 j1"
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS"
+    and admj0: "adm M j0" and j1gt: "j1 > 1"
+    and np: "nextR M 0 j0' j0"
+  defines "jm1' \<equiv> Adm M j0'"
+  shows "j0' \<le> j1 - 2
+       \<and> (Pred M, jm1') \<in> Marked
+       \<and> (seg M jm1' (j1 - 1), j0 - jm1') \<in> Marked"
+proof -
+  have MT: "M \<in> T_PS" using MR by (simp add: RT_PS_def)
+  have mono: "monoT M" using MP by (simp add: PT_PS_def)
+  have L: "1 < Lng M" using j1gt by (simp add: j1_def)
+  have j1lt: "j1 < Lng M" using L by (simp add: j1_def)
+  \<comment> \<open>\<open>j\<^sub>0\<close> is the row-0 parent of \<open>j\<^sub>1\<close>\<close>
+  have hp: "hasParent M 0 j1" using monoT_hasParent0_last[OF MT mono L] j1_def by simp
+  have parj0: "nextR M 0 j0 j1"
+    using hp unfolding hasParent_def j0_def parent_def j1_def by (rule theI')
+  have j0ltj1: "j0 < j1" and j0Mleq: "leR M 0 j0 j1"
+    using poper_nextR_imp_le0[OF parj0] by simp_all
+  have le0j0: "le0 M j0 j1" using j0Mleq by (simp add: leR_def)
+  \<comment> \<open>\<open>j\<^sub>0'\<close> is a row-0 ancestor of \<open>j\<^sub>0\<close>, strictly below it\<close>
+  have j0'ltj0: "j0' < j0" and j0'Mleq: "leR M 0 j0' j0"
+    using poper_nextR_imp_le0[OF np] by simp_all
+  have le0j0': "le0 M j0' j0" using j0'Mleq by (simp add: leR_def)
+  \<comment> \<open>\<open>j\<^sub>0' \<le> j\<^sub>1 - 2\<close>\<close>
+  have j0'leq: "j0' \<le> j1 - 2" using j0'ltj0 j0ltj1 by linarith
+  \<comment> \<open>admissibilization \<open>jm1' = Adm M j0' \<le> j0'\<close>, admissible\<close>
+  have admA: "adm M jm1'" using jm1'_def by (simp add: adm_Adm_adm)
+  have aLe: "jm1' \<le> j0'" using jm1'_def by (simp add: adm_Adm_le)
+  have jm1'ltj0: "jm1' < j0" using aLe j0'ltj0 by linarith
+  have jm1'ltj1: "jm1' < j1" using jm1'ltj0 j0ltj1 by linarith
+  \<comment> \<open>row-1 ancestry \<open>jm1' \<le>\<^sub>1 j\<^sub>0'\<close>, hence \<open>jm1' \<le>\<^sub>0 j\<^sub>0'\<close>, then \<open>\<le>\<^sub>0 j\<^sub>1\<close>\<close>
+  have j0'b: "j0' \<le> Lng M - 1" using j0'ltj0 j0ltj1 j1lt j1_def by linarith
+  have le1a: "leR M 1 jm1' j0'" using adm_row1_ancestry[OF MT j0'b] jm1'_def by simp
+  have le0a: "leR M 0 jm1' j0'" by (rule m_le1_imp_le0[OF le1a])
+  have le0aj0: "le0 M jm1' j0"
+  proof -
+    have "(nextrel0 M)\<^sup>*\<^sup>* jm1' j0'" using le0a by (simp add: leR_def le0_def)
+    moreover have "(nextrel0 M)\<^sup>*\<^sup>* j0' j0" using le0j0' by (simp add: le0_def)
+    ultimately have "(nextrel0 M)\<^sup>*\<^sup>* jm1' j0" by simp
+    moreover have "jm1' < Lng M" using jm1'ltj1 j1lt by linarith
+    moreover have "j0 < Lng M" using j0ltj1 j1lt by linarith
+    ultimately show ?thesis by (simp add: le0_def)
+  qed
+  have le0aj1: "le0 M jm1' j1"
+    using le0_trans[OF le0aj0 le0j0] by simp
+  have leMaj1: "leR M 0 jm1' j1" using le0aj1 by (simp add: leR_def)
+  \<comment> \<open>\<open>(M, jm1') \<in> Marked\<close>\<close>
+  have markedAj1: "(M, jm1') \<in> Marked"
+    using MT admA leMaj1 j1_def by (simp add: Marked_def)
+  \<comment> \<open>(Pred M, jm1') \<in> Marked via @{thm Marked_Pred}\<close>
+  have predA: "(Pred M, jm1') \<in> Marked"
+    using Marked_Pred[OF MT L markedAj1] jm1'ltj1 j1_def by simp
+  \<comment> \<open>(M, j0) \<in> Marked, then slice heredity to the segment\<close>
+  have markedJ0: "(M, j0) \<in> Marked"
+    using MT admj0 j0Mleq j1_def by (simp add: Marked_def)
+  have segMk: "(seg M jm1' (j1 - 1), j0 - jm1') \<in> Marked"
+  proof (rule m_6_3_marked_slice[OF markedJ0])
+    show "jm1' \<le> j0" using jm1'ltj0 by linarith
+    show "j0 \<le> j1 - 1" using j0ltj1 by linarith
+    show "j1 - 1 \<le> Lng M - 1" using j1_def by simp
+  qed
+  show ?thesis using j0'leq predA segMk by blast
+qed
+
+
+text \<open>§8.1 補題 part(1), the conjuncts NOT involving the A20-guarded slice
+  equality (content.md 2949–2955): \<open>Trans (Pred M) \<noteq> 0\<close>, \<open>condI \<or> condIII\<close>,
+  \<open>c\<^sub>1 \<in> T_B\<close> and \<open>c\<^sub>1\<close> principal.  Standalone green.  The guarded conjunct
+  \<open>j\<^sub>0 < j\<^sub>1 - 1 \<longrightarrow> Trans (seg M j\<^sub>0 (j\<^sub>1 - 1)) = c\<^sub>1\<close> requires the §7.4 Mark–Trans
+  representation \<open>Mark M m = Trans (seg M m (Lng M - 1))\<close> (content.md 2490),
+  currently unproven, and is NOT discharged here.\<close>
+
+lemma m_8_1_c1_around_part1_noeq:
+  fixes M :: pairseq
+  defines "j1 \<equiv> Lng M - 1"
+  defines "j0 \<equiv> parent M 0 j1"
+  defines "jm1 \<equiv> Adm M j0"
+  defines "c1 \<equiv> Mark (Pred M) jm1"
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS"
+    and admj0: "adm M j0" and j1gt: "j1 > 1"
+    and ge: "entry M 1 j0 \<ge> entry M 1 j1"
+  shows "Trans (Pred M) \<noteq> 0\<^sub>B
+       \<and> (transCondI M \<or> transCondIII M)
+       \<and> c1 \<in> T_B \<and> (\<exists>p. c1 = Trm [p])"
+proof -
+  have MT: "M \<in> T_PS" using MR by (simp add: RT_PS_def)
+  have mono: "monoT M" using MP by (simp add: PT_PS_def)
+  have L: "1 < Lng M" using j1gt by (simp add: j1_def)
+  have predRT: "Pred M \<in> RT_PS" by (rule Pred_RT_PS[OF MR])
+  have predb: "Pred M = butlast M" using L by (simp add: Pred_def)
+  have LP: "Lng (Pred M) = Lng M - 1" using predb by simp
+  \<comment> \<open>\<open>j\<^sub>0\<close> is the row-0 parent of \<open>j\<^sub>1 = Lng M - 1\<close>; \<open>adm M j\<^sub>0\<close> gives \<open>jm1 = j\<^sub>0\<close>\<close>
+  have hp: "hasParent M 0 (Lng M - 1)" by (rule monoT_hasParent0_last[OF MT mono L])
+  have j0eq: "j0 = parent M 0 (Lng M - 1)" by (simp add: j0_def j1_def)
+  have jm1eq: "jm1 = j0" using admj0 by (simp add: jm1_def Adm_def)
+  \<comment> \<open>(1a) \<open>Trans (Pred M) \<noteq> 0\<close>: \<open>Pred M\<close> is non-zero (\<open>Lng > 1\<close>)\<close>
+  have nzPred: "\<not> zeroT (Pred M)"
+  proof -
+    have "1 < Lng (Pred M)" using LP j1gt j1_def by linarith
+    thus ?thesis by (auto simp: zeroT_def)
+  qed
+  have t1ne: "Trans (Pred M) \<noteq> 0\<^sub>B"
+    using m_7_3_Trans_zeroT[OF predRT] nzPred by blast
+  \<comment> \<open>(1b) condition (I) or (III)\<close>
+  have condIorIII: "transCondI M \<or> transCondIII M"
+  proof (cases "entry M 1 (Lng M - 1) = 0")
+    case True
+    have "transCondI M" using True admj0 j0eq by (simp add: transCondI_def)
+    thus ?thesis by blast
+  next
+    case False
+    hence pos: "entry M 1 (Lng M - 1) > 0" by simp
+    have ge': "entry M 1 (parent M 0 (Lng M - 1)) \<ge> entry M 1 (Lng M - 1)"
+      using ge by (simp add: j0_def j1_def)
+    have "transCondIII M" using pos ge' admj0 j0eq by (simp add: transCondIII_def)
+    thus ?thesis by blast
+  qed
+  \<comment> \<open>(1c) \<open>c\<^sub>1 = Mark (Pred M) j\<^sub>0\<close> is in \<open>T_B\<close> and principal\<close>
+  have markedJ0: "(Pred M, j0) \<in> Marked"
+    using Marked_Pred_Adm[OF MT L hp] j0eq jm1eq jm1_def by simp
+  have c1eq: "c1 = Mark (Pred M) j0" using jm1eq c1_def by simp
+  have c1TB: "c1 \<in> T_B"
+    using m_7_3_Mark_in_T_B[OF predRT markedJ0] c1eq by simp
+  have c1princ: "\<exists>p. c1 = Trm [p]"
+    using mark_marked_principal(1)[OF predRT markedJ0 t1ne] c1eq by simp
+  show ?thesis using t1ne condIorIII c1TB c1princ by blast
+qed
+
+
 end
