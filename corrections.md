@@ -494,3 +494,25 @@ yaBMS で経験的検証済）はブロック $n$ 個でこの訂正後の式と
 **訂正案**: (2) を \((\textrm{Mark}(M,m_0),\textrm{Mark}(M,m_1))\in T_{\textrm{B}}^{\textrm{Marked}}\) に修正(単純な左右取り違え)。
 
 **形式化での扱い**: `m_7_4_Mark_order`(機械化予定)は訂正後の向きで述べる。nest 方向=`Mark_MarkedB_nest`、(2)⟹(1)=`MarkedB_antisym`、(1)⟹(2) の相異性(\(\textrm{Mark}\) の marked 列上の単射性)は右スパイン長狭義減少(`m_7_4_RightNodes_Mark`)経由が見込み(未完)。
+
+## A20. §8.1 補題（条件(I)か(III)の下での c_1 前後の具体表示）part(1): 単項切片で「c_1 = Trans(切片)」が偽
+
+**所在**: §8.1「補題（条件(I)か(III)の下での \(c_1\) 前後の具体表示）」(content.md 2923) の (1)。原文は \(c_1 = \textrm{Mark}(\textrm{Pred}(M),j_{-1}) = \textrm{Trans}((M_j)_{j=j_0}^{j_1-1})\) とする(2955)。
+
+**観察**: \(j_0 = j_1-1\)(切片 \((M_j)_{j=j_0}^{j_1-1}\) が単項 \([M_{j_0}]\))かつ \(M_{0,j_0} > M_{1,j_0}\)(非簡約)のとき偽。中間ステップ「\(\textrm{Mark}(\textrm{Pred}(M),j_0) = \textrm{Trans}(\text{切片})\)」は **Mark の Trans 表示**([[A19]] 隣、content 2490)の境界条件 \(j_1-m>0\) を破る(\(m=j_0=j_1-1\) で \(j_1-m=0\))。\(\textrm{Trans}\) は \((\textrm{IncrFirst},\textrm{Red})\) 不変で非簡約単項を rebase し row-0 頭を落とす(\(\to 0_B\))一方、\(c_1=\textrm{Mark}\) は \(D_{M_{1,j_0}}\) 頭を保持する。
+
+**経験的確認(独立検証)**: 最小反例 \(M = ((0,0),(1,0),(2,0))\)(**条件(I)**, \(M_{1,j_1}=0\))。\(j_1=2, j_0=1, j_{-1}=1\)、切片 \(=[(1,0)]\)、\(\textrm{Trans}([(1,0)]) = 0_B\) だが \(c_1 = D_0 0 \neq 0_B\)。`python/c1around_cex_audit.py`。条件(I)走査で 5/26 が part(1) 違反。
+
+**訂正案**: part(1) の \(\textrm{Trans}(\text{切片}) = c_1\) に \(j_0 < j_1-1\)(切片が非単項)を課す、または \(c_1\) 等式を \(\textrm{Red}\) を法として述べる。\(c_1 = \textrm{Mark}(\textrm{Pred}(M),j_{-1})\)・\(c_1\in PT_B\)・\(t_1\neq0\)・条件(I)∨(III) の他の連言は成立。
+
+## A21. §8.1 同補題 part(5): 条件(III)のとき基本列ブロックの親 \(j_0^N = j'_0\) が偽
+
+**所在**: 同補題 (5)(content.md 2945-2947)。\(N := (M[n]_j)_{j=0}^{j_0+(n-1)(j_1-j_0)}\) について \(j_0^N = j'_0\)(すなわち \(\textrm{parent}\,N\,0\,(\textrm{Lng}\,N-1) = j'_0\))等を主張。
+
+**観察**: part(5) の周期性論法は基本列ブロックが正しい row-0 シフトで複製され \(\textrm{idx}\) が周期境界に乗ることを要し、これは **条件(I)**(\(M_{1,j_1}=0\))でのみ成立。条件(III)では偽。
+
+**経験的確認(独立検証)**: 最小反例 \(M = ((0,0),(1,1),(2,1))\)(**条件(III)**)。\(j_1=2,j_0=1\)、一意 next-parent \(j'_0=0\)、\(n=2\) で \(M[2]=((0,0),(1,1),(2,0),(3,1))\)、\(\textrm{idx}=2\)、\(N=((0,0),(1,1),(2,0))\)、\(\textrm{parent}\,N\,0\,2 = 1 \neq 0 = j'_0\)。条件(III)-only 走査で 18/18 が part(5) 違反、条件(I) では 0/26。
+
+**訂正案**: part(5) を \(\textrm{transCondI}\,M\) に限定する(下流の `p_8_1_Trans_fseq_condI` は条件(I)下でのみ本補題を使う)。
+
+**形式化での扱い**: `m_8_1_condI_III_c1_around`(機械化予定)は A20/A21 訂正後の形(part(1) に \(j_0<j_1-1\) ガード or Red 法、part(5) を transCondI 限定)で述べる。part(2)(3)(4) は経験違反0で `m_6_3_marked_slice` + slice-Red-IncrFirst([[A19]]隣の `m_6_6_ancestor_slice_Red_IncrFirst`)+ diagSeq Trans 補題で証明可。pss_paper.thy:1650 の statement 修正が前提。
