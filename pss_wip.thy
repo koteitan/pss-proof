@@ -10969,4 +10969,109 @@ proof -
 qed
 
 
+section \<open>§8 infra: Trans/Mark of a non-reduced ancestor slice = of its Red\<close>
+
+text \<open>Foundational §8 helpers: an ancestor slice \<open>seg M j0' j1'\<close> equals
+  \<open>(IncrFirst^^k)(Red (seg M j0' j1'))\<close> (@{thm [source] m_6_6_ancestor_slice_Red_IncrFirst}),
+  and \<open>Trans\<close>/\<open>Mark\<close> are \<open>IncrFirst\<close>-invariant, so \<open>Trans\<close>/\<open>Mark\<close> of the (possibly
+  non-reduced) slice coincide with those of its reduced form \<open>Red (seg \<dots>)\<close>, which
+  is reduced+mono and computable.  Unblocks §8.1 c1-around parts (1g)/(3)/(4) and
+  the §7.4 Mark-Trans representation.\<close>
+
+lemma T_PS_funpow_IncrFirst:
+  "M \<in> T_PS \<Longrightarrow> (IncrFirst ^^ k) M \<in> T_PS"
+proof (induction k)
+  case 0 thus ?case by simp
+next
+  case (Suc k)
+  have "(IncrFirst ^^ k) M \<in> T_PS" using Suc by simp
+  hence "IncrFirst ((IncrFirst ^^ k) M) \<in> T_PS" by (simp add: T_PS_def IncrFirst_def)
+  thus ?case by simp
+qed
+
+lemma Trans_funpow_IncrFirst:
+  assumes MT: "M \<in> T_PS" and RR: "Red M \<in> RT_PS"
+  shows "Trans ((IncrFirst ^^ k) M) = Trans M"
+proof (induction k)
+  case 0 thus ?case by simp
+next
+  case (Suc k)
+  let ?N = "(IncrFirst ^^ k) M"
+  have NT: "?N \<in> T_PS" using MT by (rule T_PS_funpow_IncrFirst)
+  have RN: "Red ?N \<in> RT_PS" using a1_Red_funpow_IncrFirst[OF MT] RR by simp
+  have "(IncrFirst ^^ Suc k) M = IncrFirst ?N" by simp
+  hence "Trans ((IncrFirst ^^ Suc k) M) = Trans (IncrFirst ?N)" by simp
+  also have "\<dots> = Trans ?N" by (rule m_7_3_Trans_IncrFirst[OF NT RN])
+  also have "\<dots> = Trans M" using Suc.IH by simp
+  finally show ?case .
+qed
+
+lemma Mark_funpow_IncrFirst:
+  assumes MT: "M \<in> T_PS" and RR: "Red M \<in> RT_PS"
+  shows "Mark ((IncrFirst ^^ k) M) m = Mark M m"
+proof (induction k)
+  case 0 thus ?case by simp
+next
+  case (Suc k)
+  let ?N = "(IncrFirst ^^ k) M"
+  have NT: "?N \<in> T_PS" using MT by (rule T_PS_funpow_IncrFirst)
+  have RN: "Red ?N \<in> RT_PS" using a1_Red_funpow_IncrFirst[OF MT] RR by simp
+  have "(IncrFirst ^^ Suc k) M = IncrFirst ?N" by simp
+  hence "Mark ((IncrFirst ^^ Suc k) M) m = Mark (IncrFirst ?N) m" by simp
+  also have "\<dots> = Mark ?N m" by (rule m_7_3_Mark_IncrFirst[OF NT RN])
+  also have "\<dots> = Mark M m" using Suc.IH by simp
+  finally show ?case .
+qed
+
+lemma slice_Red_in_RT_PS:
+  assumes "M \<in> RT_PS" and "j0' < j1'" and "j1' \<le> Lng M - 1" and "leR M 0 j0' j1'"
+  shows "Red (seg M j0' j1') \<in> RT_PS \<and> seg M j0' j1' \<in> T_PS \<and> Red (seg M j0' j1') \<in> T_PS"
+proof -
+  have segne: "seg M j0' j1' \<noteq> []" using assms(2) by (simp add: seg_def)
+  hence segT: "seg M j0' j1' \<in> T_PS" by (simp add: T_PS_def)
+  have rel: "Red (Red (seg M j0' j1')) = Red (seg M j0' j1')"
+    using m_6_6_ancestor_slice_Red_IncrFirst[OF assms] by simp
+  have lng: "Lng (Red (seg M j0' j1')) = Lng (seg M j0' j1')"
+    by (rule m_6_5_Lng_Red[OF segT])
+  have "0 < Lng (seg M j0' j1')" using segne by (cases "seg M j0' j1'") auto
+  hence "0 < Lng (Red (seg M j0' j1'))" using lng by simp
+  hence "Red (seg M j0' j1') \<noteq> []" by (cases "Red (seg M j0' j1')") auto
+  hence redT: "Red (seg M j0' j1') \<in> T_PS" by (simp add: T_PS_def)
+  have "Red (seg M j0' j1') \<in> RT_PS" using redT rel by (simp add: RT_PS_def)
+  thus ?thesis using segT redT by simp
+qed
+
+lemma Trans_slice_eq_Red:
+  assumes "M \<in> RT_PS" and "j0' < j1'" and "j1' \<le> Lng M - 1" and "leR M 0 j0' j1'"
+  shows "Trans (seg M j0' j1') = Trans (Red (seg M j0' j1'))"
+proof -
+  let ?S = "seg M j0' j1'"  let ?N = "Red ?S"
+  let ?k = "entry M 0 j0' - entry M 1 j0'"
+  have segeq: "?S = (IncrFirst ^^ ?k) ?N"
+    using m_6_6_ancestor_slice_Red_IncrFirst[OF assms] by simp
+  have NR: "?N \<in> RT_PS" using slice_Red_in_RT_PS[OF assms] by simp
+  have NT: "?N \<in> T_PS" using NR by (simp add: RT_PS_def)
+  have RN: "Red ?N \<in> RT_PS" using NR by (simp add: RT_PS_def)
+  have "Trans ?S = Trans ((IncrFirst ^^ ?k) ?N)" using segeq by simp
+  also have "\<dots> = Trans ?N" by (rule Trans_funpow_IncrFirst[OF NT RN])
+  finally show ?thesis .
+qed
+
+lemma Mark_slice_eq_Red:
+  assumes "M \<in> RT_PS" and "j0' < j1'" and "j1' \<le> Lng M - 1" and "leR M 0 j0' j1'"
+  shows "Mark (seg M j0' j1') m = Mark (Red (seg M j0' j1')) m"
+proof -
+  let ?S = "seg M j0' j1'"  let ?N = "Red ?S"
+  let ?k = "entry M 0 j0' - entry M 1 j0'"
+  have segeq: "?S = (IncrFirst ^^ ?k) ?N"
+    using m_6_6_ancestor_slice_Red_IncrFirst[OF assms] by simp
+  have NR: "?N \<in> RT_PS" using slice_Red_in_RT_PS[OF assms] by simp
+  have NT: "?N \<in> T_PS" using NR by (simp add: RT_PS_def)
+  have RN: "Red ?N \<in> RT_PS" using NR by (simp add: RT_PS_def)
+  have "Mark ?S m = Mark ((IncrFirst ^^ ?k) ?N) m" using segeq by simp
+  also have "\<dots> = Mark ?N m" by (rule Mark_funpow_IncrFirst[OF NT RN])
+  finally show ?thesis .
+qed
+
+
 end
