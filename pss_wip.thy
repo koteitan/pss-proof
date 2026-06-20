@@ -9747,4 +9747,269 @@ next
 qed
 
 
+section \<open>§8.1 補題（公差\<open>(1,1)\<close>のペア数列の\<open>Trans\<close>）, article 2837\<close>
+
+text \<open>Helper: a diagonal segment \<open>diagSeq u v\<close> with \<open>u < v\<close> is mono (\<open>\<not> zeroT\<close>
+  and \<open>(0,0) \<le>\<^bsub>M\<^esub> (0, Lng-1)\<close> by row-0 reachability along consecutive steps).\<close>
+
+lemma monoT_diagSeq_lt:
+  assumes uv: "u < v"
+  shows "monoT (diagSeq u v)"
+proof -
+  let ?M = "diagSeq u v"
+  have L: "Lng ?M = Suc v - u" by simp
+  have Lgt1: "1 < Lng ?M" using uv L by simp
+  have nz: "\<not> zeroT ?M" using Lgt1 by (simp add: zeroT_def)
+  have j1lt: "Lng ?M - 1 < Lng ?M" using Lgt1 by simp
+  have j1lt': "Lng ?M - 1 < Suc v - u" using j1lt L by simp
+  have rt: "(nextrel0 ?M)\<^sup>*\<^sup>* 0 (Lng ?M - 1)"
+    by (rule nextrel0_diagSeq_rtrancl[OF j1lt']) simp
+  have "le0 ?M 0 (Lng ?M - 1)" using rt j1lt by (simp add: le0_def)
+  hence "leR ?M 0 0 (Lng ?M - 1)" by (simp add: leR_def)
+  thus ?thesis using nz by (simp add: monoT_def)
+qed
+
+text \<open>Helper: on a diagonal segment, an interior index \<open>0 < j < Lng-1\<close> is
+  non-admissible (the row-1 chain links both \<open>j-1 \<to> j\<close> and \<open>j \<to> j+1\<close>).\<close>
+
+lemma nadm_diagSeq_interior:
+  assumes j0: "0 < j" and jlt: "j < Lng (diagSeq u v) - 1"
+  shows "nadm (diagSeq u v) j"
+proof -
+  let ?M = "diagSeq u v"
+  have L: "Lng ?M = Suc v - u" by simp
+  have sjlt: "Suc j < Suc v - u" using jlt L by simp
+  have pjlt: "Suc (j - 1) < Suc v - u" using j0 sjlt by simp
+  have nx1: "nextR ?M 1 (j - 1) j"
+    using nextR1_diagSeq[OF pjlt] j0 by simp
+  have nx2: "nextR ?M 1 j (Suc j)" by (rule nextR1_diagSeq[OF sjlt])
+  show ?thesis unfolding nadm_def using nx1 nx2 by simp
+qed
+
+text \<open>Helper: on a diagonal segment with \<open>u < v\<close>, the row-0 parent of the last
+  index \<open>j\<^sub>1 = Lng-1\<close> is \<open>j\<^sub>1 - 1\<close> (the consecutive predecessor).\<close>
+
+lemma parent0_last_diagSeq:
+  assumes uv: "u < v"
+  shows "parent (diagSeq u v) 0 (Lng (diagSeq u v) - 1) = Lng (diagSeq u v) - 1 - 1"
+proof -
+  let ?M = "diagSeq u v"
+  let ?j1 = "Lng ?M - 1"
+  have L: "Lng ?M = Suc v - u" by simp
+  have Lgt1: "1 < Lng ?M" using uv L by simp
+  have sucj1: "Suc (?j1 - 1) = ?j1" using Lgt1 by simp
+  have step: "Suc (?j1 - 1) < Suc v - u" using sucj1 Lgt1 L by simp
+  have nr: "nextrel0 ?M (?j1 - 1) ?j1"
+    using nextrel0_diagSeq_step[OF step] sucj1 by simp
+  have j1lt: "?j1 < Suc v - u" using Lgt1 L by simp
+  have uniq: "\<And>j. nextR ?M 0 j ?j1 \<Longrightarrow> j = ?j1 - 1"
+  proof -
+    fix j assume "nextR ?M 0 j ?j1"
+    hence nrj: "nextrel0 ?M j ?j1" by (simp add: nextR_def)
+    hence jlt1: "j < ?j1" and jLng: "j < Lng ?M"
+      by (auto simp: nextrel0_def)
+    show "j = ?j1 - 1"
+    proof (rule ccontr)
+      assume "j \<noteq> ?j1 - 1"
+      hence "j < ?j1 - 1" using jlt1 by simp
+      hence mid: "j < ?j1 - 1 \<and> ?j1 - 1 < ?j1" using sucj1 by simp
+      \<comment> \<open>\<open>?j1-1\<close> is a strictly-interior index, so the gap-min condition fails\<close>
+      have lt: "?j1 - 1 < Suc v - u" using sucj1 j1lt by simp
+      have e_mid: "entry ?M 0 (?j1 - 1) = u + (?j1 - 1)"
+        using entry_diagSeq[OF lt] by simp
+      have e_j1: "entry ?M 0 ?j1 = u + ?j1"
+        using entry_diagSeq[OF j1lt] by simp
+      have "entry ?M 0 (?j1 - 1) < entry ?M 0 ?j1"
+        using e_mid e_j1 sucj1 by simp
+      moreover have "entry ?M 0 (?j1 - 1) \<ge> entry ?M 0 ?j1"
+        using nrj mid by (simp add: nextrel0_def)
+      ultimately show False by simp
+    qed
+  qed
+  have nrR: "nextR ?M 0 (?j1 - 1) ?j1" using nr by (simp add: nextR_def)
+  have ex1: "\<exists>!j. nextR ?M 0 j ?j1"
+  proof (rule ex1I)
+    show "nextR ?M 0 (?j1 - 1) ?j1" by (rule nrR)
+  next
+    fix j assume "nextR ?M 0 j ?j1"
+    thus "j = ?j1 - 1" by (rule uniq)
+  qed
+  show ?thesis unfolding parent_def
+    by (rule the1_equality[OF ex1 nrR])
+qed
+
+text \<open>Helper: on a diagonal segment with \<open>u < v\<close>, admissibilizing the parent of
+  the last index lands at \<open>0\<close> (\<open>j\<^sub>-\<^sub>1 = 0\<close>): the only admissible index strictly
+  below \<open>j\<^sub>1 - 1\<close> is \<open>0\<close> (all interior indices are non-admissible).\<close>
+
+lemma Adm_parent0_last_diagSeq:
+  assumes uv: "u < v"
+  shows "Adm (diagSeq u v) (Lng (diagSeq u v) - 1 - 1) = 0"
+proof -
+  let ?M = "diagSeq u v"
+  let ?j0 = "Lng ?M - 1 - 1"
+  have L: "Lng ?M = Suc v - u" by simp
+  have Lgt1: "1 < Lng ?M" using uv L by simp
+  have adm0: "adm ?M 0" by (simp add: adm_def nadm_def nextR_def nextrel1_def)
+  show ?thesis
+  proof (cases "?j0 = 0")
+    case True
+    show ?thesis using True adm0 by (simp add: Adm_def)
+  next
+    case False
+    hence j0pos: "0 < ?j0" by simp
+    have j0lt: "?j0 < Lng ?M - 1" using Lgt1 by simp
+    have nadm0: "\<not> adm ?M ?j0"
+      using nadm_diagSeq_interior[OF j0pos j0lt] by (simp add: adm_def)
+    have Admd: "Adm ?M ?j0 = Max {j'. adm ?M j' \<and> j' < ?j0}"
+      using nadm0 by (simp add: Adm_def)
+    have fin: "finite {j'. adm ?M j' \<and> j' < ?j0}"
+      by (rule finite_subset[of _ "{0..<?j0}"]) auto
+    \<comment> \<open>only \<open>0\<close> is admissible below \<open>?j0\<close>: any \<open>0 < j' < ?j0\<close> is interior, hence nadm\<close>
+    have only0: "{j'. adm ?M j' \<and> j' < ?j0} = {0}"
+    proof (rule set_eqI, rule iffI)
+      fix j' assume "j' \<in> {j'. adm ?M j' \<and> j' < ?j0}"
+      hence aj: "adm ?M j'" and jl: "j' < ?j0" by auto
+      show "j' \<in> {0}"
+      proof (rule ccontr)
+        assume "j' \<notin> {0}"
+        hence j'pos: "0 < j'" by simp
+        have "j' < Lng ?M - 1" using jl j0lt by simp
+        hence "nadm ?M j'" using nadm_diagSeq_interior[OF j'pos] by simp
+        thus False using aj by (simp add: adm_def)
+      qed
+    next
+      fix j' assume "j' \<in> {0::nat}"
+      hence "j' = 0" by simp
+      thus "j' \<in> {j'. adm ?M j' \<and> j' < ?j0}" using adm0 j0pos by simp
+    qed
+    show ?thesis using Admd only0 by simp
+  qed
+qed
+
+text \<open>補題（公差\<open>(1,1)\<close>のペア数列の\<open>Trans\<close>） (§8.1, article 2837): for every
+  \<open>u < v\<close>, \<open>Trans (((j,j))\<^bsub>j=u\<^esub>\<^bsup>v\<^esup>) = D\<^sub>u D\<^sub>v 0\<close> \<open>-\<close> independent of \<open>v - u\<close>.
+  Induction on \<open>v\<close>; base \<open>v = Suc u\<close> is the two-column case
+  (@{thm [source] m_7_3_twoColumn_Trans}); step unfolds the mono branch of
+  \<open>Trans\<close> at \<open>j\<^sub>-\<^sub>1 = 0\<close> (so \<open>c\<^sub>1 = Mark (Pred M) 0 = Trans (Pred M)\<close>, the trivial
+  scb \<open>s\<^sub>1 = b\<^sub>1 = ()\<close>) under condition (VI), where \<open>c\<^sub>2 = D\<^bsub>v\<^esub>\<^bsup>M\<^esup> D\<^bsub>M\<^bsub>1,j\<^sub>1\<^esub>\<^esub> 0
+  = D\<^sub>u D\<^sub>v 0\<close>.\<close>
+
+lemma m_8_1_diagSeq_Trans:
+  assumes "u < v"
+  shows "Trans (diagSeq u v) = Dpt (enat u) (Dpt (enat v) 0\<^sub>B)"
+  using assms
+proof (induction v)
+  case 0
+  thus ?case by simp
+next
+  case (Suc v)
+  show ?case
+  proof (cases "u = v")
+    case True
+    \<comment> \<open>base case: \<open>diagSeq u (Suc u)\<close>, a two-column sequence\<close>
+    let ?M = "diagSeq u (Suc u)"
+    have uSu: "u \<le> Suc u" by simp
+    have MR: "?M \<in> RT_PS" by (rule bf_diagSeq_reduced[OF uSu])
+    have mono: "monoT ?M" by (rule monoT_diagSeq_lt) simp
+    have L2: "Lng ?M = 2" by simp
+    have e10: "entry ?M 1 0 = u" by (simp add: entry_diagSeq)
+    have e11: "entry ?M 1 1 = Suc u" by (simp add: entry_diagSeq)
+    have "Trans ?M = Dpt (enat (entry ?M 1 0)) (Dpt (enat (entry ?M 1 1)) 0\<^sub>B)"
+      by (rule m_7_3_twoColumn_Trans[OF MR mono L2])
+    thus ?thesis using True e10 e11 by simp
+  next
+    case False
+    hence uv: "u < v" using Suc.prems by simp
+    let ?M = "diagSeq u (Suc v)"
+    let ?j1 = "Lng ?M - 1"
+    have L: "Lng ?M = Suc (Suc v) - u" by simp
+    have Lgt1: "1 < Lng ?M" using Suc.prems L by simp
+    have Lgt1': "\<not> Lng ?M \<le> Suc 0" using Lgt1 by simp
+    have MR: "?M \<in> RT_PS" using uv by (intro bf_diagSeq_reduced) simp
+    have MT: "?M \<in> T_PS" using MR by (simp add: RT_PS_def)
+    have mono: "monoT ?M" by (rule monoT_diagSeq_lt[OF Suc.prems])
+    have domT: "Trans_Mark_dom (Inl ?M)" by (rule m_7_3_Trans_welldef[OF MR])
+    \<comment> \<open>\<open>Pred ?M = diagSeq u v\<close>; IH gives \<open>t\<^sub>1 = Trans (Pred ?M) = D\<^sub>u D\<^sub>v 0\<close>\<close>
+    have predM: "Pred ?M = diagSeq u v" using uv by (intro Pred_diagSeq_Suc) simp
+    have PR: "diagSeq u v \<in> RT_PS" by (rule bf_diagSeq_reduced) (use uv in simp)
+    have t1v: "Trans (Pred ?M) = Dpt (enat u) (Dpt (enat v) 0\<^sub>B)"
+      using predM Suc.IH[OF uv] by simp
+    have t1ne: "Trans (Pred ?M) \<noteq> 0\<^sub>B" using t1v by simp
+    \<comment> \<open>structural indices: \<open>j\<^sub>1 = Lng-1\<close>, \<open>j\<^sub>0 = parent = j\<^sub>1-1\<close>, \<open>j\<^sub>-\<^sub>1 = Adm j\<^sub>0 = 0\<close>\<close>
+    have jp: "parent ?M 0 ?j1 = ?j1 - 1" by (rule parent0_last_diagSeq[OF Suc.prems])
+    have admjp: "Adm ?M (parent ?M 0 ?j1) = 0"
+      using jp Adm_parent0_last_diagSeq[OF Suc.prems] by simp
+    \<comment> \<open>\<open>c\<^sub>1 = Mark (Pred ?M) 0 = Trans (Pred ?M) = D\<^sub>u D\<^sub>v 0\<close>\<close>
+    have predMarked0: "(Pred ?M, 0) \<in> Marked"
+    proof -
+      have PT: "diagSeq u v \<in> T_PS" using PR by (simp add: RT_PS_def)
+      have padm0: "adm (diagSeq u v) 0"
+        by (simp add: adm_def nadm_def nextR_def nextrel1_def)
+      have pmono: "monoT (diagSeq u v)" by (rule monoT_diagSeq_lt[OF uv])
+      have ple: "leR (diagSeq u v) 0 0 (Lng (diagSeq u v) - 1)"
+        using pmono by (simp add: monoT_def)
+      show ?thesis using PT padm0 ple predM by (simp add: Marked_def)
+    qed
+    have c1v: "Mark (Pred ?M) (Adm ?M (parent ?M 0 ?j1)) = Dpt (enat u) (Dpt (enat v) 0\<^sub>B)"
+    proof -
+      have "Mark (Pred ?M) 0 = Trans (Pred ?M)"
+        using ra_Mark0_eq_Trans[THEN mp, THEN mp, OF predMarked0] predM PR by simp
+      thus ?thesis using admjp t1v by simp
+    qed
+    \<comment> \<open>scb is trivial: \<open>s\<^sub>1 = b\<^sub>1 = ()\<close> since \<open>c\<^sub>1 = t\<^sub>1\<close>\<close>
+    have somev: "(SOME sb. scb_decomp (Trans (Pred ?M)) (fst sb)
+                    (flatBT (Dpt (enat u) (Dpt (enat v) 0\<^sub>B))) (snd sb)) = ([], [])"
+    proof -
+      have pt: "isPTB_str (flatBT (Dpt (enat u) (Dpt (enat v) (0\<^sub>B))))"
+        by (rule isPTB_str_Dpt) simp_all
+      show ?thesis using scb_SOME_self[OF pt] t1v by simp
+    qed
+    \<comment> \<open>row-1 entries at \<open>j\<^sub>1\<close> and \<open>j\<^sub>0\<close>\<close>
+    have e1j1: "entry ?M 1 ?j1 = Suc v"
+      using Lgt1 by (simp add: entry_diagSeq)
+    have e1jp: "entry ?M 1 (?j1 - 1) = v"
+      using Lgt1 L by (simp add: entry_diagSeq)
+    \<comment> \<open>condition (VI) fires: \<open>M\<^bsub>1,j\<^sub>1\<^esub> = Suc v > 0\<close>, \<open>M\<^bsub>1,j\<^sub>0\<^esub>+1 = v+1 = Suc v\<close>,
+        and \<open>j\<^sub>0 + 1 = j\<^sub>1\<close>\<close>
+    have condVI: "transCondVI ?M"
+    proof -
+      have a: "entry ?M 1 ?j1 > 0" using e1j1 by simp
+      have b: "entry ?M 1 (parent ?M 0 ?j1) + 1 = entry ?M 1 ?j1"
+        using jp e1jp e1j1 by simp
+      have c: "parent ?M 0 ?j1 + 1 = ?j1" using jp Lgt1 by simp
+      show ?thesis unfolding transCondVI_def using a b c by simp
+    qed
+    have notI: "\<not> (transCondI ?M \<or> transCondIII ?M \<or> transCondV ?M)"
+    proof -
+      have "\<not> transCondI ?M" using e1j1 by (simp add: transCondI_def)
+      moreover have "\<not> transCondV ?M"
+        using condVI by (simp add: transCondV_def transCondVI_def)
+      moreover have "\<not> transCondIII ?M"
+      proof -
+        have "entry ?M 1 (parent ?M 0 ?j1) < entry ?M 1 ?j1"
+          using jp e1jp e1j1 by simp
+        thus ?thesis by (simp add: transCondIII_def)
+      qed
+      ultimately show ?thesis by blast
+    qed
+    \<comment> \<open>\<open>v\<^bsup>M\<^esup> = bpHeadV c\<^sub>1 = u\<close>; under (VI) the body \<open>t\<^sub>2\<close> is irrelevant\<close>
+    have bvc1: "bpHeadV (Mark (Pred ?M) (Adm ?M (parent ?M 0 ?j1))) = enat u"
+      using c1v by simp
+    \<comment> \<open>the \<open>j\<^sub>1 = 0\<close> guard is false: \<open>?j\<^sub>1 = Suc v - u > 0\<close>\<close>
+    have j1pos: "Lng ?M - 1 \<noteq> 0" using Lgt1 by simp
+    have notle: "\<not> Suc v \<le> u" using Suc.prems by simp
+    \<comment> \<open>unfold the mono branch of \<open>Trans\<close> via @{thm Trans.psimps}\<close>
+    have trans_val: "Trans ?M = unflatBT (flatBT (Dpt (enat u) (Dpt (enat (Suc v)) 0\<^sub>B)))"
+      using Trans.psimps[OF domT] MR Lgt1' j1pos notle mono t1ne t1v c1v somev notI condVI
+            jp admjp bvc1 e1j1
+      by (simp add: Let_def)
+    have ufl: "unflatBT (flatBT (Dpt (enat u) (Dpt (enat (Suc v)) 0\<^sub>B)))
+               = Dpt (enat u) (Dpt (enat (Suc v)) 0\<^sub>B)"
+      by (rule unflatBT_flat)
+    show ?thesis using trans_val ufl by simp
+  qed
+qed
+
+
 end
