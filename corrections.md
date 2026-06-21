@@ -411,7 +411,7 @@ yaBMS で経験的検証済）はブロック $n$ 個でこの訂正後の式と
 
 **訂正案**: (3) の前提に「\(s_1\frown D_v\,\textrm{flat}(t+c)\frown b_1\) の \(D_v(t+c)\) 出現と \((s_0,\textrm{flat}(c),b_0)\) の \(c\) 出現が一致する」旨（例えば \(s_0 = s_1\frown D_v\,(\textrm{flat}\,t)\) 型の整合条件、あるいは \(u_1\) のマーク一意性）を追加する。原文の用途（Trans の整礎性証明）では当該出現は構成的に一致しているため、その文脈では主張は正しい。
 
-**形式化での扱い**: **証明失敗**。 (1) は原文どおり成立し `m_7_2_add_scb_conj1` として証明済。(3) の literal 形を反例 `m_7_2_add_scb_conj3_counterexample` として機械化した。(2)（\(c\to c'\) 置換の単純版）は `m_7_2_add_scb_conj2` として証明済。いずれも本体ビルド緑。 **(3) の補正版は未証明**（反例 `m_7_2_add_scb_conj3_counterexample` のみ機械化。整合前提つき (3) の証明は未着手）。
+**形式化での扱い**: **未証明**。 (1) は原文どおり成立し `m_7_2_add_scb_conj1` として証明済。(3) の literal 形を反例 `m_7_2_add_scb_conj3_counterexample` として機械化した。(2)（\(c\to c'\) 置換の単純版）は `m_7_2_add_scb_conj2` として証明済。いずれも本体ビルド緑。 **(3) の補正版は未証明**（反例 `m_7_2_add_scb_conj3_counterexample` のみ機械化。整合前提つき (3) の証明は未着手）。
 
 ## A14. §7.2 命題（scb分解の一意性）(3)(4)(5): 空項 \(t=()\) で偽（[[A11]]–[[A13]] と同根） [軽微]
 
@@ -514,7 +514,7 @@ yaBMS で経験的検証済）はブロック $n$ 個でこの訂正後の式と
 
 **訂正案**: part(1) の \(\textrm{Trans}(\text{切片}) = c_1\) に \(j_0 < j_1-1\)(切片が非単項)を課す、または \(c_1\) 等式を \(\textrm{Red}\) を法として述べる。\(c_1 = \textrm{Mark}(\textrm{Pred}(M),j_{-1})\)・\(c_1\in PT_B\)・\(t_1\neq0\)・条件(I)∨(III) の他の連言は成立。
 
-**形式化での扱い**: **証明失敗**。 （c1-around 訂正の part(1) A20ガード。全体 `m_8_1_condI_III_c1_around` 未。memory `pss-81-c1around`。[[A21]] 参照）。
+**形式化での扱い**: **未証明**。 （c1-around 訂正の part(1) A20ガード。全体 `m_8_1_condI_III_c1_around` 未。memory `pss-81-c1around`。[[A21]] 参照）。
 
 ## A21. §8.1 同補題 part(5): 条件(III)のとき基本列ブロックの親 \(j_0^N = j'_0\) が偽
 
@@ -526,7 +526,7 @@ yaBMS で経験的検証済）はブロック $n$ 個でこの訂正後の式と
 
 **訂正案**: part(5) を \(\textrm{transCondI}\,M\) に限定する(下流の `p_8_1_Trans_fseq_condI` は条件(I)下でのみ本補題を使う)。
 
-**形式化での扱い**: **証明失敗**。 （全体）。part(1)full=`m_8_1_c1_around_part1`、part(2)=`m_8_1_c1_around_part2`、part(3-2)=`m_8_1_c1_around_part3_2`（空虚）は証明済だが、(3-1)/(4-1)/(4-2)/(5) が未で、訂正後の全体 `m_8_1_condI_III_c1_around` は未証明。memory `pss-81-c1around`。
+**形式化での扱い**: **未証明**。 （全体）。part(1)full=`m_8_1_c1_around_part1`、part(2)=`m_8_1_c1_around_part2`、part(3-2)=`m_8_1_c1_around_part3_2`（空虚）は証明済だが、(3-1)/(4-1)/(4-2)/(5) が未で、訂正後の全体 `m_8_1_condI_III_c1_around` は未証明。memory `pss-81-c1around`。
 
 ## A22 — §8.3 補題（第0種型基本列の基本不等式）の右辺添字脱落 [軽微]
 
