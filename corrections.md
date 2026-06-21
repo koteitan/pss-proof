@@ -516,3 +516,13 @@ yaBMS で経験的検証済）はブロック $n$ 個でこの訂正後の式と
 **訂正案**: part(5) を \(\textrm{transCondI}\,M\) に限定する(下流の `p_8_1_Trans_fseq_condI` は条件(I)下でのみ本補題を使う)。
 
 **形式化での扱い**: `m_8_1_condI_III_c1_around`(機械化予定)は A20/A21 訂正後の形(part(1) に \(j_0<j_1-1\) ガード or Red 法、part(5) を transCondI 限定)で述べる。part(2)(3)(4) は経験違反0で `m_6_3_marked_slice` + slice-Red-IncrFirst([[A19]]隣の `m_6_6_ancestor_slice_Red_IncrFirst`)+ diagSeq Trans 補題で証明可。pss_paper.thy:1650 の statement 修正が前提。
+
+## A22 — §8.3 補題（第0種型基本列の基本不等式）の右辺添字脱落
+
+**該当**: pss_paper.thy の `p_8_3_kind0_base_ineq`(article 3972「第0種型基本列の基本不等式」)。
+
+**問題**: statement が右辺の列添字を \(M[n]_{0,\ q'(j_1-j_0)+r'}\) と書くが、原典の**証明本体**は \(M[n]_{0,\ j_0+q'(j_1-j_0)+r'}\)(= \(M_{j_0+r'}\))を用いている。statement で \(j_0+\) が脱落しており、そのままでは**偽**。
+
+**経験的確認**: maxlen5 maxe3 で反例多数(独立検証、sweep agent)。
+
+**訂正案**: 右辺添字に \(j_0+\) を補い \(M[n]_{0,\ j_0+q'(j_1-j_0)+r'}\) とする。機械化 `m_8_3_kind0_base_ineq` はこの訂正形(`entry (M[n]) 0 (j0 + q'*(j1-j0) + r')`)で証明済(green, sorry 0)。

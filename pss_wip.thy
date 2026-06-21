@@ -13310,4 +13310,1580 @@ proof (intro impI)
     by (rule FalseE)
 qed
 
+
+(* ===== integrated from wt-73 ===== *)
+
+section \<open>§7.3 系（条件(II)か(IV)の下で \<open>t\<^sub>2\<close> が \<open>0\<close> でないこと）— content.md 2310\<close>
+
+text \<open>If \<open>j\<close> is non-\<open>M\<close>-admissible then its admissibilization \<open>Adm\<^sub>M(j)\<close> is the
+  largest admissible index strictly below \<open>j\<close>, hence \<open>< j\<close>.  (\<open>j = 0\<close> is always
+  admissible, so a non-admissible \<open>j\<close> is \<open>> 0\<close>, and \<open>0\<close> witnesses the set whose
+  \<open>Max\<close> defines \<open>Adm\<close>.)\<close>
+
+lemma nadm_Adm_lt:
+  assumes "\<not> adm M j"
+  shows "Adm M j < j"
+proof -
+  have nad: "nadm M j" using assms by (simp add: adm_def)
+  have jpos: "j > 0"
+  proof (rule ccontr)
+    assume "\<not> j > 0"
+    hence "j = 0" by simp
+    thus False using nad adm_index0 by (simp add: adm_def)
+  qed
+  let ?S = "{j'. adm M j' \<and> j' < j}"
+  have fin: "finite ?S" by simp
+  have ne: "?S \<noteq> {}" using adm_index0 jpos by auto
+  have AdmEq: "Adm M j = Max ?S" using assms by (simp add: Adm_def)
+  have "Max ?S \<in> ?S" using fin ne by (rule Max_in)
+  hence "Max ?S < j" by simp
+  thus ?thesis using AdmEq by simp
+qed
+
+text \<open>系（条件(II)か(IV)の下で \<open>t\<^sub>2\<close> が \<open>0\<close> でないこと）.  For
+  \<open>M \<in> RT\<^bsub>PS\<^esub> \<inter> PT\<^bsub>PS\<^esub>\<close> with \<open>t\<^sub>1 \<noteq> 0\<close>, under condition (II) or (IV) the second
+  body component \<open>t\<^sub>2 = transT2 M = bpHeadT (transC1 M)\<close> is non-zero.  Proof: under
+  (II)/(IV) the row-0 parent \<open>j\<^sub>0 = transJ0 M\<close> is non-\<open>M\<close>-admissible, so the
+  basepoint \<open>j\<^sub>-\<^sub>1 = transJm1 M = Adm\<^sub>M(j\<^sub>0)\<close> is strictly below \<open>j\<^sub>0\<close>; with
+  \<open>j\<^sub>0 < j\<^sub>1\<close> (parent ancestry) this puts \<open>j\<^sub>-\<^sub>1 < Lng (Pred M) - 1\<close>, so \<open>c\<^sub>1\<close> is NOT
+  the rightmost-basepoint shape \<open>D\<^bsub>M\<^bsub>1,j\<^sub>-\<^sub>1\<^esub>\<^esub> 0\<close> (@{thm [source] Mark_tail_nonzero}).
+  But \<open>c\<^sub>1 = D\<^bsub>v\<^esub> t\<^sub>2\<close> with leftmost head \<open>v = M\<^bsub>1,j\<^sub>-\<^sub>1\<^esub>\<close>
+  (@{thm [source] Mark_leftend_form}); were \<open>t\<^sub>2 = 0\<close> then \<open>c\<^sub>1 = D\<^bsub>M\<^bsub>1,j\<^sub>-\<^sub>1\<^esub>\<^esub> 0\<close>,
+  the excluded shape.  Hence \<open>t\<^sub>2 \<noteq> 0\<close>.\<close>
+
+lemma m_7_3_t2_nonzero_condIIorIV:
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS"
+    and J1pos: "transJ1 M > 0" and T1: "transT1 M \<noteq> 0\<^sub>B"
+    and cond: "transCondII M \<or> transCondIV M"
+  shows "transT2 M \<noteq> 0\<^sub>B"
+proof
+  assume t2z: "transT2 M = 0\<^sub>B"
+  have MT: "M \<in> T_PS" using MP by (simp add: PT_PS_def)
+  have mono: "monoT M" using MP by (simp add: PT_PS_def)
+  have L: "1 < Lng M" using J1pos by (simp add: transJ1_def)
+  have predRT: "Pred M \<in> RT_PS" by (rule Pred_RT_PS[OF MR])
+  have hp: "hasParent M 0 (Lng M - 1)" by (rule monoT_hasParent0_last[OF MT mono L])
+  \<comment> \<open>positional abbreviations\<close>
+  let ?j1 = "Lng M - 1"
+  let ?jp = "parent M 0 ?j1"
+  have jpeq: "transJ0 M = ?jp" by (simp add: transJ0_def transJ1_def)
+  have jm1eq: "transJm1 M = Adm M ?jp" by (simp add: transJm1_def jpeq)
+  \<comment> \<open>(II)/(IV) both assert \<open>\<not> adm M j\<^sub>0\<close>\<close>
+  have nadmjp: "\<not> adm M ?jp"
+    using cond by (auto simp: transCondII_def transCondIV_def)
+  \<comment> \<open>\<open>j\<^sub>-\<^sub>1 = Adm\<^sub>M(j\<^sub>0) < j\<^sub>0 < j\<^sub>1\<close>\<close>
+  have jm1ltjp: "transJm1 M < ?jp"
+    using nadm_Adm_lt[OF nadmjp] jm1eq by simp
+  have parR: "nextR M 0 ?jp ?j1"
+    using hp unfolding hasParent_def parent_def by (rule theI')
+  have jplt: "?jp < ?j1" using parR by (simp add: nextR_def nextrel0_def)
+  have jm1small: "transJm1 M < Lng (Pred M) - 1"
+  proof -
+    have LP: "Lng (Pred M) = Lng M - 1" using L by (simp add: Pred_def)
+    \<comment> \<open>\<open>j\<^sub>-\<^sub>1 < j\<^sub>0 < j\<^sub>1\<close> gives \<open>j\<^sub>-\<^sub>1 \<le> j\<^sub>0 - 1 \<le> j\<^sub>1 - 2 = Lng (Pred M) - 1\<close>, strict\<close>
+    have "transJm1 M < ?j1 - 1" using jm1ltjp jplt by linarith
+    thus ?thesis using LP by simp
+  qed
+  \<comment> \<open>\<open>(Pred M, j\<^sub>-\<^sub>1) \<in> Marked\<close>\<close>
+  have mkd: "(Pred M, transJm1 M) \<in> Marked"
+    using Marked_Pred_Adm[OF MT L hp] jm1eq by simp
+  \<comment> \<open>\<open>c\<^sub>1\<close> is a single principal term \<open>D\<^bsub>v\<^esub> t\<^sub>2\<close>\<close>
+  have pc1: "Lng (PB (transC1 M)) = 1"
+    by (rule transC1_single_principal[OF MR MP J1pos T1])
+  have c1Dpt: "transC1 M = Dpt (transV M) (transT2 M)"
+    using principal_reconstruct[OF pc1]
+    by (simp add: transV_def transT2_def)
+  have c1mark: "transC1 M = Mark (Pred M) (transJm1 M)"
+    by (simp add: transC1_def)
+  \<comment> \<open>leftmost head of \<open>c\<^sub>1\<close> is \<open>D\<^bsub>(Pred M)\<^bsub>1,j\<^sub>-\<^sub>1\<^esub>\<^esub>\<close>\<close>
+  have c1ne: "transC1 M \<noteq> 0\<^sub>B" using c1Dpt by simp
+  have lf: "Mark (Pred M) (transJm1 M) = 0\<^sub>B
+            \<or> (\<exists>t. Mark (Pred M) (transJm1 M)
+                    = Dpt (enat (entry (Pred M) 1 (transJm1 M))) t)"
+    using Mark_leftend_form mkd predRT by blast
+  have c1left: "transV M = enat (entry (Pred M) 1 (transJm1 M))"
+  proof -
+    from lf c1mark c1ne obtain t where
+      "transC1 M = Dpt (enat (entry (Pred M) 1 (transJm1 M))) t" by auto
+    thus ?thesis using c1Dpt by simp
+  qed
+  \<comment> \<open>so \<open>t\<^sub>2 = 0\<close> would give \<open>c\<^sub>1 = D\<^bsub>(Pred M)\<^bsub>1,j\<^sub>-\<^sub>1\<^esub>\<^esub> 0\<close> — the excluded shape\<close>
+  have c1form: "Mark (Pred M) (transJm1 M)
+                  = Dpt (enat (entry (Pred M) 1 (transJm1 M))) 0\<^sub>B"
+    using c1mark c1Dpt c1left t2z by simp
+  have "Mark (Pred M) (transJm1 M)
+          \<noteq> Dpt (enat (entry (Pred M) 1 (transJm1 M))) 0\<^sub>B"
+    using Mark_tail_nonzero mkd predRT jm1small by blast
+  thus False using c1form by simp
+qed
+
+
+section \<open>§7.3 系（左端第\<open>1\<close>基点の \<open>Mark\<close> の基本性質）— content.md 2417\<close>
+
+text \<open>For \<open>M \<in> RT\<^bsub>PS\<^esub> \<inter> PT\<^bsub>PS\<^esub>\<close>: (1) the column-\<open>0\<close> basepoint is marked, and
+  (2) among all basepoints \<open>m\<close>, the marked value equals \<open>Trans M\<close> exactly when
+  \<open>m = 0\<close>.  The forward direction (\<open>m = 0 \<Longrightarrow> Mark M 0 = Trans M\<close>) is
+  @{thm [source] ra_Mark0_eq_Trans}; the reverse (\<open>m > 0 \<Longrightarrow> Mark M m \<noteq> Trans M\<close>)
+  is @{thm [source] Mark0_ne_Mark} (the article's \<open>Mark\<close>-order-preservation
+  applied at \<open>m\<^sub>0 = 0 < m\<^sub>1 = m\<close>).\<close>
+
+lemma m_7_3_Mark_leftmost1:
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS"
+  shows "(M, 0) \<in> Marked"
+    and "(M, m) \<in> Marked \<Longrightarrow> (Mark M m = Trans M) \<longleftrightarrow> (m = 0)"
+proof -
+  have MT: "M \<in> T_PS" using MP by (simp add: PT_PS_def)
+  have mono: "monoT M" using MP by (simp add: PT_PS_def)
+  have leM0: "leR M 0 0 (Lng M - 1)" using mono by (simp add: monoT_def)
+  show m0M: "(M, 0) \<in> Marked"
+    using MT leM0 adm_index0 by (simp add: Marked_def)
+  assume mM: "(M, m) \<in> Marked"
+  show "(Mark M m = Trans M) \<longleftrightarrow> (m = 0)"
+  proof
+    assume "Mark M m = Trans M"
+    show "m = 0"
+    proof (rule ccontr)
+      assume "m \<noteq> 0"
+      hence pos: "0 < m" by simp
+      have "Mark M m \<noteq> Trans M" by (rule Mark0_ne_Mark[OF MR m0M mM pos])
+      thus False using \<open>Mark M m = Trans M\<close> by simp
+    qed
+  next
+    assume "m = 0"
+    thus "Mark M m = Trans M"
+      using ra_Mark0_eq_Trans m0M MR by simp
+  qed
+qed
+
+
+section \<open>§7.3 \<open>Pred\<close> preserves \<open>PT\<^bsub>PS\<^esub>\<close> on the \<open>t\<^sub>1 \<noteq> 0\<close> branch (helper for (d)/(e))\<close>
+
+text \<open>For \<open>M \<in> RT\<^bsub>PS\<^esub> \<inter> PT\<^bsub>PS\<^esub>\<close> with \<open>j\<^sub>1 > 0\<close> and \<open>t\<^sub>1 = Trans (Pred M) \<noteq> 0\<close>, the
+  predecessor \<open>Pred M\<close> is again reduced and mono.  Reducedness is
+  @{thm [source] Pred_RT_PS}; monotonicity is the article's
+  「単項性の始切片への遺伝性」, here via @{thm [source] m_6_2_mono_prefix}
+  (length-\<open>1\<close> case from \<open>t\<^sub>1 \<noteq> 0\<close>).\<close>
+
+lemma Pred_PT_PS_t1ne:
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS"
+    and J1pos: "transJ1 M > 0" and T1: "transT1 M \<noteq> 0\<^sub>B"
+  shows "Pred M \<in> RT_PS" and "Pred M \<in> PT_PS"
+proof -
+  have MT: "M \<in> T_PS" using MP by (simp add: PT_PS_def)
+  have mono: "monoT M" using MP by (simp add: PT_PS_def)
+  have L: "1 < Lng M" using J1pos by (simp add: transJ1_def)
+  show predRT: "Pred M \<in> RT_PS" by (rule Pred_RT_PS[OF MR])
+  have predT: "Pred M \<in> T_PS" using predRT by (simp add: RT_PS_def)
+  have t1ne: "Trans (Pred M) \<noteq> 0\<^sub>B" using T1 by (simp add: transT1_def)
+  have predb: "Pred M = butlast M" using L by (simp add: Pred_def)
+  have predmono: "monoT (Pred M)"
+  proof (cases "Lng (Pred M) = 1")
+    case True
+    obtain v where Pv: "Pred M = [(v, v)]"
+      using m_6_6_oneColumn[OF predT] predRT True by auto
+    have "Trans (Pred M) = (if v = 0 then 0\<^sub>B else Dpt (enat v) 0\<^sub>B)"
+      using Pv Trans_singleton[of v] by simp
+    hence vnz: "v \<noteq> 0" using t1ne by (cases "v = 0") auto
+    have nz: "\<not> zeroT (Pred M)" using Pv vnz by (simp add: zeroT_def entry_def)
+    have "leR (Pred M) 0 0 (Lng (Pred M) - 1)"
+      using True by (simp add: leR_def le0_def)
+    thus ?thesis using nz by (simp add: monoT_def)
+  next
+    case False
+    have L2: "1 < Lng M - 1" using L False predb by simp
+    have j0pos: "0 < Lng M - 2" using L2 by simp
+    have j0lt: "Lng M - 2 < Lng M" using L by simp
+    have mp: "monoT (seg M 0 (Lng M - 2))"
+      by (rule m_6_2_mono_prefix[OF MP j0pos j0lt])
+    have "seg M 0 (Lng M - 2) = butlast M"
+    proof -
+      have suc: "Suc (Lng M - 2) \<le> Lng M" using L2 by simp
+      have "seg M 0 (Lng M - 2) = take (Suc (Lng M - 2)) M"
+        by (rule seg_0_eq_take[OF suc])
+      also have "Suc (Lng M - 2) = Lng M - 1" using L2 by simp
+      also have "take (Lng M - 1) M = butlast M" by (simp add: butlast_conv_take)
+      finally show ?thesis .
+    qed
+    thus ?thesis using mp predb by simp
+  qed
+  show "Pred M \<in> PT_PS" using predT predmono by (simp add: PT_PS_def)
+qed
+
+
+section \<open>§7.3 系（\<open>s\<^sub>1\<close> と \<open>b\<^sub>1\<close> の空性と基点の関係）— content.md 2444\<close>
+
+text \<open>With \<open>s\<^sub>1, b\<^sub>1\<close> the scb-decomposition that the \<open>Trans\<close> recursion uses to match
+  \<open>c\<^sub>1\<close> inside \<open>t\<^sub>1 = Trans (Pred M)\<close> (the \<open>SOME\<close> of @{thm [source] Trans.psimps}),
+  the following are equivalent for \<open>M \<in> RT\<^bsub>PS\<^esub> \<inter> PT\<^bsub>PS\<^esub>\<close> (with \<open>j\<^sub>1 > 0\<close>,
+  \<open>t\<^sub>1 \<noteq> 0\<close>): (1) \<open>j\<^sub>-\<^sub>1 = 0\<close>; (2) \<open>s\<^sub>1 = ()\<close>, \<open>c\<^sub>1 = t\<^sub>1\<close>, \<open>b\<^sub>1 = ()\<close>.  Both reduce
+  to \<open>c\<^sub>1 = t\<^sub>1\<close>: by 系（左端第\<open>1\<close>基点の \<open>Mark\<close> の基本性質）(2) applied to \<open>Pred M\<close>,
+  \<open>c\<^sub>1 = Mark (Pred M) j\<^sub>-\<^sub>1 = Trans (Pred M) = t\<^sub>1 \<longleftrightarrow> j\<^sub>-\<^sub>1 = 0\<close>; and given \<open>c\<^sub>1 = t\<^sub>1\<close>,
+  the scb-\<open>SOME\<close> is the trivial self-decomposition \<open>([],[])\<close>
+  (@{thm [source] scb_SOME_self}).\<close>
+
+lemma m_7_3_s1_b1_empty:
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS"
+    and J1pos: "transJ1 M > 0" and T1: "transT1 M \<noteq> 0\<^sub>B"
+  defines "sb1 \<equiv> (SOME sb. scb_decomp (transT1 M) (fst sb)
+                              (flatBT (transC1 M)) (snd sb))"
+  shows "(transJm1 M = 0)
+           \<longleftrightarrow> (fst sb1 = [] \<and> transC1 M = transT1 M \<and> snd sb1 = [])"
+proof -
+  have MT: "M \<in> T_PS" using MP by (simp add: PT_PS_def)
+  have mono: "monoT M" using MP by (simp add: PT_PS_def)
+  have predRT: "Pred M \<in> RT_PS" by (rule Pred_PT_PS_t1ne(1)[OF MR MP J1pos T1])
+  have predPT: "Pred M \<in> PT_PS" by (rule Pred_PT_PS_t1ne(2)[OF MR MP J1pos T1])
+  have L: "1 < Lng M" using J1pos by (simp add: transJ1_def)
+  have hp: "hasParent M 0 (Lng M - 1)" by (rule monoT_hasParent0_last[OF MT mono L])
+  \<comment> \<open>\<open>c\<^sub>1 = Mark (Pred M) j\<^sub>-\<^sub>1\<close>, \<open>t\<^sub>1 = Trans (Pred M)\<close>\<close>
+  have c1mark: "transC1 M = Mark (Pred M) (transJm1 M)" by (simp add: transC1_def)
+  have t1eq: "transT1 M = Trans (Pred M)" by (simp add: transT1_def)
+  \<comment> \<open>\<open>(Pred M, j\<^sub>-\<^sub>1) \<in> Marked\<close>\<close>
+  have mkd: "(Pred M, transJm1 M) \<in> Marked"
+    using Marked_Pred_Adm[OF MT L hp] by (simp add: transJm1_def transJ0_def transJ1_def)
+  \<comment> \<open>core equivalence: \<open>c\<^sub>1 = t\<^sub>1 \<longleftrightarrow> j\<^sub>-\<^sub>1 = 0\<close> (左端第\<open>1\<close>基点, on \<open>Pred M\<close>)\<close>
+  have core: "(transC1 M = transT1 M) \<longleftrightarrow> (transJm1 M = 0)"
+    using m_7_3_Mark_leftmost1(2)[OF predRT predPT mkd] c1mark t1eq by simp
+  show ?thesis
+  proof
+    assume "transJm1 M = 0"
+    hence c1t1: "transC1 M = transT1 M" using core by simp
+    \<comment> \<open>\<open>c\<^sub>1\<close> single principal, so scb-\<open>SOME\<close> against itself is \<open>([],[])\<close>\<close>
+    have pc1: "Lng (PB (transC1 M)) = 1"
+      by (rule transC1_single_principal[OF MR MP J1pos T1])
+    have c1Dpt: "transC1 M = Dpt (transV M) (transT2 M)"
+      using principal_reconstruct[OF pc1] by (simp add: transV_def transT2_def)
+    have mkdC: "(Pred M, transJm1 M) \<in> Marked" using mkd .
+    have c1TB: "transC1 M \<in> T_B"
+      using m_7_3_Mark_in_T_B[OF predRT mkdC] c1mark by simp
+    have vne: "transV M \<noteq> \<infinity>" using c1TB c1Dpt by (auto simp: T_B_def)
+    have t2df: "dfree_BT (transT2 M)" using c1TB c1Dpt by (auto simp: T_B_def)
+    have c1p: "transC1 M = Trm [DB (transV M) (transT2 M)]" using c1Dpt by simp
+    have iptc1: "isPTB_str (flatBT (transC1 M))"
+    proof -
+      have "dfree_BP (DB (transV M) (transT2 M))" using vne t2df by simp
+      moreover have "flatBT (transC1 M) = flatBP (DB (transV M) (transT2 M))"
+        using c1p by simp
+      ultimately show ?thesis unfolding isPTB_str_def by blast
+    qed
+    have c1ne: "transC1 M \<noteq> Trm []" using c1p by simp
+    have "(SOME sb. scb_decomp (transC1 M) (fst sb)
+                      (flatBT (transC1 M)) (snd sb)) = ([], [])"
+      by (rule scb_SOME_self[OF iptc1 c1ne])
+    hence sbself: "sb1 = ([], [])" using c1t1 by (simp add: sb1_def)
+    show "fst sb1 = [] \<and> transC1 M = transT1 M \<and> snd sb1 = []"
+      using sbself c1t1 by simp
+  next
+    assume "fst sb1 = [] \<and> transC1 M = transT1 M \<and> snd sb1 = []"
+    hence "transC1 M = transT1 M" by simp
+    thus "transJm1 M = 0" using core by simp
+  qed
+qed
+
+
+section \<open>§7.3 系（\<open>s\<^sub>-\<^sub>1\<close> と \<open>b\<^sub>-\<^sub>1\<close> の空性と基点の関係）— content.md 2470\<close>
+
+text \<open>For a basepoint \<open>(N, m) \<in> Marked\<close> of a reduced mono \<open>N\<close> with the \<open>Trans\<close>
+  recursion symbols of the parent \<open>M\<close> (so \<open>N = Pred M\<close>, \<open>c\<^sub>1 = Mark N j\<^sub>-\<^sub>1\<close>,
+  \<open>c\<^sub>0 = Mark N m\<close>), the scb-decomposition \<open>s\<^sub>-\<^sub>1 c\<^sub>0 b\<^sub>-\<^sub>1 = c\<^sub>1\<close> (\<open>c\<^sub>0\<close> nested inside
+  \<open>c\<^sub>1\<close>, valid for \<open>j\<^sub>-\<^sub>1 \<le> m\<close>) is
+  trivial exactly at the basepoint: (1) \<open>m = j\<^sub>-\<^sub>1\<close> \<longleftrightarrow> (2) \<open>s\<^sub>-\<^sub>1 = ()\<close> and
+  \<open>b\<^sub>-\<^sub>1 = ()\<close>.  The core is \<open>c\<^sub>0 = c\<^sub>1 \<longleftrightarrow> m = j\<^sub>-\<^sub>1\<close> (\<open>Mark\<close> is injective on
+  basepoints, @{thm [source] m_7_4_Mark_order}); given \<open>c\<^sub>0 = c\<^sub>1\<close> the scb-\<open>SOME\<close>
+  is the trivial self-decomposition (@{thm [source] scb_SOME_self}).\<close>
+
+lemma m_7_3_sm1_bm1_empty:
+  assumes NR: "N \<in> RT_PS"
+    and mM: "(N, m) \<in> Marked" and jm1M: "(N, jm1) \<in> Marked"
+    and jle: "jm1 \<le> m"
+    and c1ne: "Mark N jm1 \<noteq> Trm []"
+    and iptc1: "isPTB_str (flatBT (Mark N jm1))"
+  defines "sbm1 \<equiv> (SOME sb. scb_decomp (Mark N jm1) (fst sb)
+                               (flatBT (Mark N m)) (snd sb))"
+  shows "(m = jm1) \<longleftrightarrow> (fst sbm1 = [] \<and> snd sbm1 = [])"
+proof -
+  \<comment> \<open>core: \<open>Mark N m = Mark N jm1 \<longleftrightarrow> m = jm1\<close> (\<open>Mark\<close> injective on basepoints)\<close>
+  have core: "(Mark N m = Mark N jm1) \<longleftrightarrow> (m = jm1)"
+  proof
+    assume eqc: "Mark N m = Mark N jm1"
+    show "m = jm1"
+    proof (rule ccontr)
+      assume mne: "m \<noteq> jm1"
+      hence gt: "jm1 < m" using jle by linarith
+      have "Mark N m \<noteq> Mark N jm1"
+        using m_7_4_Mark_order[OF NR jm1M mM] gt by simp
+      thus False using eqc by simp
+    qed
+  next
+    assume "m = jm1" thus "Mark N m = Mark N jm1" by simp
+  qed
+  show ?thesis
+  proof
+    assume "m = jm1"
+    hence c0c1: "Mark N m = Mark N jm1" by simp
+    have "(SOME sb. scb_decomp (Mark N jm1) (fst sb)
+                      (flatBT (Mark N jm1)) (snd sb)) = ([], [])"
+      by (rule scb_SOME_self[OF iptc1 c1ne])
+    hence "sbm1 = ([], [])" using c0c1 by (simp add: sbm1_def)
+    thus "fst sbm1 = [] \<and> snd sbm1 = []" by simp
+  next
+    assume triv: "fst sbm1 = [] \<and> snd sbm1 = []"
+    \<comment> \<open>at \<open>jm1 \<le> m\<close>, \<open>c\<^sub>0 = Mark N m\<close> nests in \<open>c\<^sub>1 = Mark N jm1\<close> (\<open>s\<^sub>-\<^sub>1 c\<^sub>0 b\<^sub>-\<^sub>1 = c\<^sub>1\<close>),
+        so a decomposition exists and the \<open>SOME\<close> is real; with trivial \<open>s,b\<close> it
+        forces \<open>c\<^sub>0 = c\<^sub>1\<close>\<close>
+    have ex: "\<exists>s b. scb_decomp (Mark N jm1) s (flatBT (Mark N m)) b"
+    proof (cases "m = jm1")
+      case True
+      have "scb_decomp (Mark N jm1) [] (flatBT (Mark N jm1)) []"
+        by (rule scb_decomp_self[OF iptc1])
+      thus ?thesis using True by blast
+    next
+      case False
+      hence gt: "jm1 < m" using jle by linarith
+      have "(Mark N jm1, Mark N m) \<in> MarkedB"
+        using m_7_4_Mark_order[OF NR jm1M mM] gt by simp
+      thus ?thesis by (simp add: MarkedB_def)
+    qed
+    obtain s b where "scb_decomp (Mark N jm1) s (flatBT (Mark N m)) b" using ex by blast
+    hence dec: "scb_decomp (Mark N jm1) (fst sbm1) (flatBT (Mark N m)) (snd sbm1)"
+      unfolding sbm1_def
+      by (rule someI[where P="\<lambda>sb. scb_decomp (Mark N jm1) (fst sb)
+                                     (flatBT (Mark N m)) (snd sb)"
+                     and x="(s,b)", simplified])
+    \<comment> \<open>with trivial \<open>s,b\<close> the matched string equals \<open>c\<^sub>1\<close>: \<open>flatBT c\<^sub>1 = flatBT c\<^sub>0\<close>\<close>
+    have "flatBT (Mark N jm1) = flatBT (Mark N m)"
+      using dec triv by (simp add: scb_decomp_def)
+    hence "Mark N jm1 = Mark N m" by (rule m_7_flatBT_inj)
+    thus "m = jm1" using core by simp
+  qed
+qed
+
+
+(* ===== integrated from wt-s3 ===== *)
+
+section \<open>§8.3 条件(II)の下での展開規則 — kind-0 fundamental sequence (round 1)\<close>
+
+text \<open>Shared kind-0 (\<open>i\<^sub>1 = 0\<close>) facts: from \<open>hasParent M 0 (Lng M-1)\<close> and
+  \<open>M\<^bsub>1,Lng M-1\<^esub> = 0\<close> we get \<open>idx1 M (Lng M-1) = 0\<close>, the row-0 parent step
+  \<open>nextrel0 M j\<^sub>0 (Lng M-1)\<close>, \<open>j\<^sub>0 < Lng M-1\<close>, and \<open>\<not>(M\<^bsub>0,j\<^sub>1\<^esub>=0 \<and> M\<^bsub>1,j\<^sub>1\<^esub>=0)\<close>
+  (the \<open>notzero\<close> discriminator), so the §6.8 d0zero oper machinery applies.\<close>
+
+lemma kind0_parent_facts:
+  assumes hp0: "hasParent M 0 (Lng M - 1)"
+    and e1z: "entry M 1 (Lng M - 1) = 0"
+  shows "idx1 M (Lng M - 1) = 0"
+    and "nextrel0 M (parent M 0 (Lng M - 1)) (Lng M - 1)"
+    and "parent M 0 (Lng M - 1) < Lng M - 1"
+    and "\<not> (entry M 0 (Lng M - 1) = 0 \<and> entry M 1 (Lng M - 1) = 0)"
+    and "hasParent M (idx1 M (Lng M - 1)) (Lng M - 1)"
+    and "1 < Lng M"
+proof -
+  let ?j1 = "Lng M - 1"  let ?j0 = "parent M 0 ?j1"
+  show i1z: "idx1 M ?j1 = 0" using e1z by (simp add: idx1_def)
+  have parR: "nextR M 0 ?j0 ?j1"
+    using hp0 unfolding hasParent_def parent_def by (rule theI')
+  show parR0: "nextrel0 M ?j0 ?j1" using parR by (simp add: nextR_def)
+  show j0lt: "?j0 < ?j1" using parR0 by (simp add: nextrel0_def)
+  have e0lt: "entry M 0 ?j0 < entry M 0 ?j1" using parR0 by (simp add: nextrel0_def)
+  thus notzero: "\<not> (entry M 0 ?j1 = 0 \<and> entry M 1 ?j1 = 0)" by linarith
+  show "hasParent M (idx1 M ?j1) ?j1" using hp0 i1z by simp
+  show "1 < Lng M" using j0lt by linarith
+qed
+
+text \<open>補題（第\<open>0\<close>種型基本列の基本不等式） (§8.3, article 3972) — CORRECTED form
+  (correction A22 below).  The article's STATEMENT writes the right-hand index as
+  \<open>q'(j\<^sub>1-j\<^sub>0)+r'\<close>, but its own PROOF uses \<open>j\<^sub>0+q'(j\<^sub>1-j\<^sub>0)+r'\<close>
+  ("\<open>M[n]_{j\<^sub>0+q'(j\<^sub>1-j\<^sub>0)+r'} = M_{j\<^sub>0+r'}\<close>"); the \<open>j\<^sub>0+\<close> was dropped in the
+  statement.  Here we prove the proof's (true) index form.  Holds for all
+  \<open>M \<in> T\<^bsub>PS\<^esub>\<close>.\<close>
+
+lemma m_8_3_kind0_base_ineq:
+  fixes M :: pairseq
+  assumes "M \<in> T_PS" "0 < n" "0 < r'"
+    and hp0: "hasParent M 0 (Lng M - 1)"
+    and e1z: "entry M 1 (Lng M - 1) = 0"
+    and qn: "q \<le> n - 1" and qpn: "q' \<le> n - 1"
+    and rp: "r' < (Lng M - 1) - parent M 0 (Lng M - 1)"
+  shows "entry (M[n]) 0 (parent M 0 (Lng M - 1)
+                          + q * ((Lng M - 1) - parent M 0 (Lng M - 1)))
+       < entry (M[n]) 0 (parent M 0 (Lng M - 1)
+                          + q' * ((Lng M - 1) - parent M 0 (Lng M - 1)) + r')"
+proof -
+  let ?j1 = "Lng M - 1"  let ?j0 = "parent M 0 ?j1"  let ?w = "?j1 - ?j0"
+  note F = kind0_parent_facts[OF hp0 e1z]
+  have i1z: "idx1 M ?j1 = 0" by (rule F(1))
+  have parR0: "nextrel0 M ?j0 ?j1" by (rule F(2))
+  have j0lt: "?j0 < ?j1" by (rule F(3))
+  have notzero: "\<not> (entry M 0 ?j1 = 0 \<and> entry M 1 ?j1 = 0)" by (rule F(4))
+  have hp: "hasParent M (idx1 M ?j1) ?j1" by (rule F(5))
+  have L: "1 < Lng M" by (rule F(6))
+  have w0: "0 < ?w" using j0lt by linarith
+  \<comment> \<open>index bounds: both LHS- and RHS-block index \<open>q,q' \<le> n-1\<close> are \<open>< n\<close>\<close>
+  have qlt: "q < n" using qn \<open>0 < n\<close> by linarith
+  have qplt: "q' < n" using qpn \<open>0 < n\<close> by linarith
+  \<comment> \<open>LHS: block \<open>q\<close>, offset \<open>0\<close>\<close>
+  have lhs: "entry (M[n]) 0 (?j0 + q * ?w) = entry M 0 ?j0"
+  proof -
+    have "(M[n]) ! (?j0 + q * ?w + 0) = M ! (?j0 + 0)"
+      by (rule oper_d0zero_nth[OF L notzero hp i1z j0lt qlt]) (use w0 in simp)
+    thus ?thesis by (simp add: entry_def)
+  qed
+  \<comment> \<open>RHS: block \<open>q'\<close>, offset \<open>r'\<close>\<close>
+  have rhs: "entry (M[n]) 0 (?j0 + q' * ?w + r') = entry M 0 (?j0 + r')"
+  proof -
+    have "(M[n]) ! (?j0 + q' * ?w + r') = M ! (?j0 + r')"
+      by (rule oper_d0zero_nth[OF L notzero hp i1z j0lt qplt rp])
+    thus ?thesis by (simp add: entry_def)
+  qed
+  \<comment> \<open>the block-start row-0 minimum is strictly below the interior offset \<open>r'\<close>\<close>
+  have lt: "entry M 0 ?j0 < entry M 0 (?j0 + r')"
+    by (rule parent_block_entry0_min(2)[OF parR0 rp \<open>0 < r'\<close>])
+  show ?thesis using lhs rhs lt by simp
+qed
+
+
+(* ===== integrated from wt-s4 ===== *)
+
+section \<open>§8.4 条件(III)/(IV) 展開規則 — round-1 sweep (memory pss-section-priority)\<close>
+
+text \<open>Helper: one step of the fundamental sequence equals \<open>Pred\<close> for any non-empty
+  \<open>M\<close>.  Empirically \<open>M[1] = Pred M\<close> holds for every pair sequence (tested
+  exhaustively over short sequences).  For \<open>Lng M > 1\<close> this is the existing
+  @{thm [source] m_5_3_pred_is_oper1}; for \<open>Lng M \<le> 1\<close> both sides are \<open>M\<close>.\<close>
+
+lemma m_8_4_oper1_eq_Pred:
+  assumes "M \<in> T_PS"
+  shows "M[1] = Pred M"
+proof (cases "Lng M > 1")
+  case True
+  thus ?thesis using assms by (simp add: m_5_3_pred_is_oper1)
+next
+  case False
+  hence le1: "Lng M \<le> 1" by simp
+  have Mne: "M \<noteq> []" using assms by (simp add: T_PS_def)
+  have Lpos: "Lng M > 0" using Mne by (cases M) auto
+  have L1: "Lng M = 1" using le1 Lpos by linarith
+  hence j1z: "Lng M - 1 = 0" by simp
+  have "M[1] = M"
+    unfolding oper_def Let_def using j1z by simp
+  moreover have "Pred M = M" using le1 by (simp add: Pred_def)
+  ultimately show ?thesis by simp
+qed
+
+text \<open>Helper: iterating the \<open>[1]\<close>-fundamental-sequence \<open>k\<close> times on a \<open>T\<^bsub>PS\<^esub>\<close>
+  sequence \<open>X\<close> with \<open>k \<le> Lng X\<close> drops the last \<open>k\<close> entries, i.e. equals
+  \<open>take (Lng X - k) X\<close>.  Each step is \<open>Pred\<close> (drop-last) by
+  @{thm [source] m_8_4_oper1_eq_Pred}; the front-peeling \<open>funpow\<close> recursion keeps
+  the argument in \<open>T\<^bsub>PS\<^esub>\<close> via @{thm [source] Pred_preserves_T_PS}.\<close>
+
+lemma m_8_4_oper1_funpow_take:
+  assumes "X \<in> T_PS" "k < Lng X"
+  shows "((\<lambda>N. N[1]) ^^ k) X = take (Lng X - k) X"
+  using assms
+proof (induction k arbitrary: X)
+  case 0
+  show ?case by simp
+next
+  case (Suc k)
+  have XT: "X \<in> T_PS" by (rule Suc.prems(1))
+  have klt: "Suc k < Lng X" by (rule Suc.prems(2))
+  hence Lgt1: "Lng X > 1" by simp
+  have step: "X[1] = Pred X" by (rule m_8_4_oper1_eq_Pred[OF XT])
+  have PredT: "Pred X \<in> T_PS" by (rule Pred_preserves_T_PS[OF XT])
+  \<comment> \<open>peel one \<open>[1]\<close> off the front of the \<open>funpow\<close>: \<open>(f^^Suc k) X = (f^^k) (f X)\<close>\<close>
+  have beta: "(\<lambda>N. N[1]) X = Pred X" using step by simp
+  have unfold: "((\<lambda>N. N[1]) ^^ Suc k) X = ((\<lambda>N. N[1]) ^^ k) (Pred X)"
+    by (subst funpow_Suc_right, subst o_apply, subst beta, rule refl)
+  \<comment> \<open>\<open>Pred X = take (Lng X - 1) X\<close> (genuine \<open>butlast\<close> since \<open>Lng X > 1\<close>)\<close>
+  have predtake: "Pred X = take (Lng X - 1) X"
+    using Lgt1 by (simp add: Pred_def butlast_conv_take)
+  have LngPred: "Lng (Pred X) = Lng X - 1" using predtake by simp
+  have kle': "k < Lng (Pred X)" using klt LngPred by simp
+  have IH: "((\<lambda>N. N[1]) ^^ k) (Pred X) = take (Lng (Pred X) - k) (Pred X)"
+    by (rule Suc.IH[OF PredT kle'])
+  have "((\<lambda>N. N[1]) ^^ Suc k) X = ((\<lambda>N. N[1]) ^^ k) (Pred X)"
+    by (rule unfold)
+  also have "\<dots> = take (Lng (Pred X) - k) (Pred X)" by (rule IH)
+  also have "\<dots> = take (Lng X - 1 - k) (take (Lng X - 1) X)"
+    using predtake LngPred by simp
+  also have "\<dots> = take (Lng X - 1 - k) X"
+    by (simp add: take_take min_def)
+  also have "\<dots> = take (Lng X - Suc k) X" by simp
+  finally show ?case .
+qed
+
+text \<open>Helper: the general (row-1 parent) branch form of \<open>M[n]\<close>.  When \<open>j\<^sub>1 = Lng M
+  - 1 > 0\<close>, \<open>M\<^bsub>1,j\<^sub>1\<^esub> > 0\<close> (so \<open>i\<^sub>1 = 1\<close>) and \<open>j\<^sub>1\<close> has a unique row-1 parent
+  \<open>j\<^sub>0\<close>, the fundamental sequence is the trunk \<open>take j\<^sub>0 M\<close> followed by \<open>n\<close>
+  copies of the \<open>k\<close>-shifted branch \<open>(M\<^bsub>0,j\<^esub>+k\<delta>\<^sub>0, M\<^bsub>1,j\<^esub>)\<^bsub>j=j\<^sub>0\<^esub>\<^bsup>j\<^sub>1-1\<^esup>\<close>.
+  (\<open>\<delta>\<^sub>1 = 0\<close> since \<open>i\<^sub>1 = 1\<close>.)\<close>
+
+lemma m_8_4_oper_genform:
+  assumes "Lng M - 1 > 0"
+    and "entry M 1 (Lng M - 1) > 0"
+    and "hasParent M 1 (Lng M - 1)"
+  shows "M[n] =
+     take (parent M 1 (Lng M - 1)) M @
+     concat (map (\<lambda>k. map (\<lambda>j. (entry M 0 j + k * (entry M 0 (Lng M - 1) - entry M 0 (parent M 1 (Lng M - 1))),
+                                  entry M 1 j))
+                          [parent M 1 (Lng M - 1)..<Lng M - 1])
+                 [0..<n])"
+proof -
+  let ?j1 = "Lng M - 1"
+  let ?i1 = "idx1 M ?j1"
+  let ?j0 = "parent M ?i1 ?j1"
+  have j1pos: "?j1 \<noteq> 0" using assms(1) by simp
+  have notbothzero: "\<not> (entry M 0 ?j1 = 0 \<and> entry M 1 ?j1 = 0)"
+    using assms(2) by simp
+  have i1: "?i1 = 1" using assms(2) by (simp add: idx1_def)
+  have hasp: "hasParent M ?i1 ?j1" using assms(3) i1 by simp
+  have nhasp: "\<not> \<not> hasParent M ?i1 ?j1" using hasp by simp
+  \<comment> \<open>collapse the three nested \<open>if\<close>s of \<open>oper_def\<close> in order; \<open>d\<^sub>0/d\<^sub>1\<close> simplify via \<open>i\<^sub>1 = 1\<close>\<close>
+  have d0: "(if 0 < ?i1 then entry M 0 ?j1 - entry M 0 ?j0 else 0)
+            = entry M 0 ?j1 - entry M 0 ?j0" using i1 by simp
+  have d1: "(if 1 < ?i1 then entry M 1 ?j1 - entry M 1 ?j0 else 0) = 0" using i1 by simp
+  have "M[n] = take ?j0 M @
+        concat (map (\<lambda>k. map (\<lambda>j. (entry M 0 j + k * (if 0 < ?i1 then entry M 0 ?j1 - entry M 0 ?j0 else 0),
+                                     entry M 1 j + k * (if 1 < ?i1 then entry M 1 ?j1 - entry M 1 ?j0 else 0)))
+                              [?j0..<?j1])
+                   [0..<n])"
+    unfolding oper_def Let_def
+    by (simp only: if_not_P[OF j1pos] if_not_P[OF notbothzero] if_not_P[OF nhasp])
+  also have "\<dots> = take ?j0 M @
+        concat (map (\<lambda>k. map (\<lambda>j. (entry M 0 j + k * (entry M 0 ?j1 - entry M 0 ?j0),
+                                     entry M 1 j))
+                              [?j0..<?j1])
+                   [0..<n])"
+    by (simp only: d0 d1 mult_0_right add_0_right)
+  finally show ?thesis using i1 by simp
+qed
+
+text \<open>Helper: under the general branch conditions, \<open>M[n+1] = M[n] @ B\<^sub>n\<close>, where
+  the appended block \<open>B\<^sub>n\<close> has length \<open>j\<^sub>1 - j\<^sub>0\<close> (\<open>j\<^sub>0 = parent M 1 j\<^sub>1\<close>).  This is
+  the \<open>[0..<Suc n] = [0..<n] @ [n]\<close> split of the \<open>concat\<close> in
+  @{thm [source] m_8_4_oper_genform}.\<close>
+
+lemma m_8_4_oper_Suc_append:
+  assumes "Lng M - 1 > 0"
+    and "entry M 1 (Lng M - 1) > 0"
+    and "hasParent M 1 (Lng M - 1)"
+  shows "\<exists>B. M[n+1] = M[n] @ B \<and> length B = (Lng M - 1) - parent M 1 (Lng M - 1)"
+proof -
+  let ?j1 = "Lng M - 1"
+  let ?j0 = "parent M 1 ?j1"
+  let ?d0 = "entry M 0 ?j1 - entry M 0 ?j0"
+  let ?blk = "\<lambda>k. map (\<lambda>j. (entry M 0 j + k * ?d0, entry M 1 j)) [?j0..<?j1]"
+  have gn: "M[n] = take ?j0 M @ concat (map ?blk [0..<n])"
+    by (rule m_8_4_oper_genform[OF assms])
+  have gsn: "M[n+1] = take ?j0 M @ concat (map ?blk [0..<n+1])"
+    by (rule m_8_4_oper_genform[OF assms])
+  have split: "[0..<n+1] = [0..<n] @ [n]" by simp
+  have "concat (map ?blk [0..<n+1]) = concat (map ?blk [0..<n]) @ ?blk n"
+    using split by simp
+  hence "M[n+1] = (take ?j0 M @ concat (map ?blk [0..<n])) @ ?blk n"
+    using gsn by simp
+  hence eq: "M[n+1] = M[n] @ ?blk n" using gn by simp
+  have lenblk: "length (?blk n) = ?j1 - ?j0" by simp
+  show ?thesis using eq lenblk by blast
+qed
+
+text \<open>命題（条件(III)か(IV)の下での基本列の基本性質）(§8.4), part (1):
+  \<open>M[n] = ((\<lambda>N. N[1]) ^^ (j\<^sub>1 - j\<^sub>-\<^sub>2)) (M[n+1])\<close> with \<open>j\<^sub>-\<^sub>2 = parent M 1 j\<^sub>1\<close>.
+  Each \<open>[1]\<close> step is \<open>Pred\<close> (drop last), so iterating \<open>j\<^sub>1 - j\<^sub>-\<^sub>2\<close> times peels off
+  exactly the block by which \<open>M[n+1]\<close> extends \<open>M[n]\<close>
+  (@{thm [source] m_8_4_oper_Suc_append}).  Discharges part (1) of
+  @{thm [source] p_8_4_oper_basic}.\<close>
+
+lemma m_8_4_oper_basic_part1:
+  assumes "M \<in> ST_PS" "M \<in> PT_PS" "n \<ge> 1"
+    and "hasParent M 1 (Lng M - 1)"
+    and "Lng M - 1 > 1"
+    and "transCondIII M \<or> transCondIV M"
+  shows "M[n] = ((\<lambda>N. N[1]) ^^ ((Lng M - 1) - parent M 1 (Lng M - 1))) (M[n+1])"
+proof -
+  let ?j1 = "Lng M - 1"
+  let ?j0 = "parent M 1 ?j1"
+  have j1pos: "?j1 > 0" using assms(5) by simp
+  \<comment> \<open>\<open>entry M 1 j\<^sub>1 > 0\<close> from condition (III)/(IV)\<close>
+  have e1pos: "entry M 1 ?j1 > 0"
+    using assms(6) by (auto simp: transCondIII_def transCondIV_def)
+  \<comment> \<open>\<open>M[n+1] = M[n] @ B\<close> with \<open>length B = j\<^sub>1 - j\<^sub>0\<close>\<close>
+  obtain B where decomp: "M[n+1] = M[n] @ B"
+      and lenB: "length B = ?j1 - ?j0"
+    using m_8_4_oper_Suc_append[OF j1pos e1pos assms(4)] by blast
+  \<comment> \<open>\<open>M[n], M[n+1] \<in> T\<^bsub>PS\<^esub>\<close> (both in \<open>ST\<^bsub>PS\<^esub>\<close>); in particular \<open>M[n]\<close> non-empty\<close>
+  have MnST: "M[n+1] \<in> ST_PS"
+    using assms(1) by (intro ST_PS.oper) simp_all
+  have MnT: "M[n+1] \<in> T_PS" using MnST ST_PS_T_PS by blast
+  have Mn1ST: "M[n] \<in> ST_PS"
+    using assms(1,3) by (intro ST_PS.oper) simp_all
+  have Mn1ne: "M[n] \<noteq> []" using Mn1ST ST_PS_T_PS by (auto simp: T_PS_def)
+  have Mn1pos: "Lng (M[n]) > 0" using Mn1ne by (cases "M[n]") auto
+  \<comment> \<open>the peel count \<open>k = j\<^sub>1 - j\<^sub>0\<close> is \<open>< Lng (M[n+1])\<close> (since \<open>M[n]\<close> is non-empty)\<close>
+  have lenrel: "Lng (M[n+1]) = Lng (M[n]) + (?j1 - ?j0)"
+    using decomp lenB by simp
+  have kle: "(?j1 - ?j0) < Lng (M[n+1])" using lenrel Mn1pos by simp
+  \<comment> \<open>iterate \<open>[1]\<close> = drop-last \<open>j\<^sub>1 - j\<^sub>0\<close> times\<close>
+  have "((\<lambda>N. N[1]) ^^ (?j1 - ?j0)) (M[n+1])
+        = take (Lng (M[n+1]) - (?j1 - ?j0)) (M[n+1])"
+    by (rule m_8_4_oper1_funpow_take[OF MnT kle])
+  also have "Lng (M[n+1]) - (?j1 - ?j0) = Lng (M[n])" using lenrel by simp
+  also have "take (Lng (M[n])) (M[n+1]) = M[n]"
+    using decomp by simp
+  finally show ?thesis by simp
+qed
+
+
+(* ===== integrated from wt-s6 ===== *)
+
+section \<open>§8.6 補題（公差\<open>(1,0)\<close>のペア数列の\<open>Trans\<close>の基本性質） — content.md 5496\<close>
+
+text \<open>The reduced-canonical 公差\<open>(1,0)\<close> sequence
+  \<open>rcseq u j\<^sub>1 = ((u+j, u))\<^bsub>j=0\<^esub>\<^bsup>j\<^sub>1\<^esup> = map (\<lambda>j. (u+j,u)) [0..<Suc j\<^sub>1]\<close>: row 0
+  runs \<open>u, u+1, \<dots>, u+j\<^sub>1\<close> (strictly increasing, parent \<open>= j-1\<close>), row 1 is the
+  constant \<open>u\<close>.  This is the \<open>Red\<close>-normal form of the article's general
+  \<open>((m+j,u))\<^bsub>j=0\<^esub>\<^bsup>j\<^sub>1\<^esup>\<close> (the first column is forced to start at \<open>u\<close>; see the
+  bridge note at the discharging lemma).  \<open>Trans (rcseq u j\<^sub>1) = D\<^sub>u\<^bsup>j\<^sub>1+1\<^esup> 0\<close>
+  (\<open>0\<close> if \<open>j\<^sub>1 = u = 0\<close>).\<close>
+
+abbreviation rcseq :: "nat \<Rightarrow> nat \<Rightarrow> pairseq" where
+  "rcseq u j1 \<equiv> map (\<lambda>j. (u + j, u)) [0..<Suc j1]"
+
+text \<open>The iterated principal \<open>D\<^sub>u\<^bsup>k\<^esup> 0\<close>.\<close>
+
+abbreviation Dpow :: "nat \<Rightarrow> nat \<Rightarrow> BT" where
+  "Dpow u k \<equiv> (Dpt (enat u) ^^ k) 0\<^sub>B"
+
+lemma Lng_rcseq[simp]: "Lng (rcseq u j1) = Suc j1"
+  by (simp del: upt_Suc)
+
+lemma rcseq_nth:
+  assumes "j < Suc j1"
+  shows "rcseq u j1 ! j = (u + j, u)"
+  using assms by (simp add: nth_upt del: upt_Suc)
+
+lemma entry0_rcseq:
+  assumes "j < Suc j1"
+  shows "entry (rcseq u j1) 0 j = u + j"
+  using rcseq_nth[OF assms] by (simp add: entry_def)
+
+lemma entry1_rcseq:
+  assumes "j < Suc j1"
+  shows "entry (rcseq u j1) 1 j = u"
+  using rcseq_nth[OF assms] by (simp add: entry_def)
+
+lemma rcseq_Suc_snoc:
+  "rcseq u (Suc j1) = rcseq u j1 @ [(u + Suc j1, u)]"
+  by (simp add: upt_Suc_append del: upt_Suc)
+
+lemma Pred_rcseq_Suc:
+  "Pred (rcseq u (Suc j1)) = rcseq u j1"
+proof -
+  have Lgt1: "1 < Lng (rcseq u (Suc j1))" by simp
+  have "Pred (rcseq u (Suc j1)) = butlast (rcseq u (Suc j1))"
+    using Lgt1 by (simp add: Pred_def)
+  also have "\<dots> = butlast (rcseq u j1 @ [(u + Suc j1, u)])"
+    by (simp only: rcseq_Suc_snoc)
+  also have "\<dots> = rcseq u j1" by (simp only: butlast_snoc)
+  finally show ?thesis .
+qed
+
+text \<open>Row-0 consecutive \<open><\<^sup>Next\<close>-step: \<open>(0,j) <\<^bsub>rcseq\<^esub>\<^sup>Next (0,j+1)\<close> (row 0 is
+  strictly increasing by \<open>1\<close>).\<close>
+
+lemma nextrel0_rcseq_step:
+  assumes "Suc j < Suc j1"
+  shows "nextrel0 (rcseq u j1) j (Suc j)"
+proof -
+  let ?M = "rcseq u j1"
+  have jlt: "j < Suc j1" using assms by simp
+  have sjlt: "Suc j < Suc j1" using assms by simp
+  have ej:  "entry ?M 0 j = u + j"      using entry0_rcseq[OF jlt] by simp
+  have esj: "entry ?M 0 (Suc j) = u + Suc j" using entry0_rcseq[OF sjlt] by simp
+  have lt: "entry ?M 0 j < entry ?M 0 (Suc j)" using ej esj by simp
+  have noint: "\<forall>jj. j < jj \<and> jj < Suc j \<longrightarrow> entry ?M 0 jj \<ge> entry ?M 0 (Suc j)"
+    by auto
+  show ?thesis unfolding nextrel0_def using jlt sjlt lt noint by simp
+qed
+
+lemma nextrel0_rcseq_rtrancl:
+  assumes "j1' < Suc j1"
+  shows "(nextrel0 (rcseq u j1))\<^sup>*\<^sup>* 0 j1'"
+  using assms
+proof (induction j1')
+  case 0
+  show ?case by simp
+next
+  case (Suc j1')
+  have "(nextrel0 (rcseq u j1))\<^sup>*\<^sup>* 0 j1'" using Suc by simp
+  moreover have "nextrel0 (rcseq u j1) j1' (Suc j1')"
+    by (rule nextrel0_rcseq_step[OF Suc.prems])
+  ultimately show ?case by (simp add: rtranclp.rtrancl_into_rtrancl)
+qed
+
+lemma monoT_rcseq:
+  assumes "0 < j1"
+  shows "monoT (rcseq u j1)"
+proof -
+  let ?M = "rcseq u j1"
+  have Lgt1: "1 < Lng ?M" using assms by simp
+  have nz: "\<not> zeroT ?M" using Lgt1 by (simp add: zeroT_def)
+  have j1lt: "j1 < Suc j1" by simp
+  have rt: "(nextrel0 ?M)\<^sup>*\<^sup>* 0 j1" by (rule nextrel0_rcseq_rtrancl[OF j1lt])
+  have "le0 ?M 0 (Lng ?M - 1)" using rt by (simp add: le0_def)
+  hence "leR ?M 0 0 (Lng ?M - 1)" by (simp add: leR_def)
+  thus ?thesis using nz by (simp add: monoT_def)
+qed
+
+text \<open>Every index of \<open>rcseq\<close> is admissible: row 1 is constant, so the row-1
+  \<open><\<^sup>Next\<close>-step (which needs \<open>M\<^bsub>1,j-1\<^esub> < M\<^bsub>1,j\<^esub>\<close>) never fires.\<close>
+
+lemma adm_rcseq:
+  assumes "j \<le> j1"
+  shows "adm (rcseq u j1) j"
+proof -
+  have jle: "\<not> j > Lng (rcseq u j1)" using assms by simp
+  have "\<not> nextrel1 (rcseq u j1) (j - 1) j"
+  proof
+    assume "nextrel1 (rcseq u j1) (j - 1) j"
+    hence lt: "entry (rcseq u j1) 1 (j - 1) < entry (rcseq u j1) 1 j"
+      and jlt: "j < Lng (rcseq u j1)" by (simp_all add: nextrel1_def)
+    have a: "entry (rcseq u j1) 1 (j - 1) = u" using entry1_rcseq jlt by simp
+    have b: "entry (rcseq u j1) 1 j = u" using entry1_rcseq jlt by simp
+    show False using lt a b by simp
+  qed
+  hence "\<not> nextR (rcseq u j1) 1 (j - 1) j" by (simp add: nextR_def)
+  thus ?thesis using jle by (simp add: adm_def nadm_def)
+qed
+
+text \<open>Row-1 has no parents (constant row 1).\<close>
+
+lemma not_hasParent1_rcseq: "\<not> hasParent (rcseq u j1) 1 j1'"
+proof
+  assume "hasParent (rcseq u j1) 1 j1'"
+  then obtain a where "nextR (rcseq u j1) 1 a j1'" by (auto simp: hasParent_def)
+  hence nr: "nextrel1 (rcseq u j1) a j1'" by (simp add: nextR_def)
+  hence lt: "entry (rcseq u j1) 1 a < entry (rcseq u j1) 1 j1'"
+    and alt: "a < Lng (rcseq u j1)" and j1lt: "j1' < Lng (rcseq u j1)"
+    by (simp_all add: nextrel1_def)
+  have "entry (rcseq u j1) 1 a = u" using entry1_rcseq alt by simp
+  moreover have "entry (rcseq u j1) 1 j1' = u" using entry1_rcseq j1lt by simp
+  ultimately show False using lt by simp
+qed
+
+text \<open>Row-0 next-step characterisation: \<open>(0,a) <\<^bsub>rcseq\<^esub>\<^sup>Next (0,b)\<close> iff
+  \<open>0 < b < Suc j\<^sub>1\<close> and \<open>a = b - 1\<close> (row 0 is strictly increasing by 1, so the
+  gap-min condition forces the consecutive predecessor).\<close>
+
+lemma nextrel0_rcseq_iff:
+  "nextrel0 (rcseq u j1) a b \<longleftrightarrow> (0 < b \<and> b < Suc j1 \<and> a = b - 1)"
+proof
+  assume nr: "nextrel0 (rcseq u j1) a b"
+  hence alt: "a < Suc j1" and blt: "b < Suc j1" and ab: "a < b"
+    and lt: "entry (rcseq u j1) 0 a < entry (rcseq u j1) 0 b"
+    and gap: "\<forall>j. a < j \<and> j < b \<longrightarrow> entry (rcseq u j1) 0 j \<ge> entry (rcseq u j1) 0 b"
+    by (simp_all add: nextrel0_def)
+  have bpos: "0 < b" using ab by simp
+  have "a = b - 1"
+  proof (rule ccontr)
+    assume "a \<noteq> b - 1"
+    hence mid: "a < b - 1" using ab by simp
+    have midlt: "b - 1 < Suc j1" using blt by simp
+    have e_mid: "entry (rcseq u j1) 0 (b - 1) = u + (b - 1)" using entry0_rcseq[OF midlt] by simp
+    have e_b: "entry (rcseq u j1) 0 b = u + b" using entry0_rcseq[OF blt] by simp
+    have lt2: "entry (rcseq u j1) 0 (b - 1) < entry (rcseq u j1) 0 b"
+      using e_mid e_b bpos by simp
+    moreover have "entry (rcseq u j1) 0 (b - 1) \<ge> entry (rcseq u j1) 0 b"
+      using gap mid bpos by simp
+    ultimately show False by simp
+  qed
+  thus "0 < b \<and> b < Suc j1 \<and> a = b - 1" using bpos blt by simp
+next
+  assume "0 < b \<and> b < Suc j1 \<and> a = b - 1"
+  hence bpos: "0 < b" and blt: "b < Suc j1" and aeq: "a = b - 1" by auto
+  have "Suc (b - 1) < Suc j1" using bpos blt by simp
+  thus "nextrel0 (rcseq u j1) a b"
+    using nextrel0_rcseq_step[of "b-1" j1 u] aeq bpos by simp
+qed
+
+lemma hasParent0_rcseq:
+  assumes "0 < j1'" and "j1' < Suc j1"
+  shows "hasParent (rcseq u j1) 0 j1' \<and> parent (rcseq u j1) 0 j1' = j1' - 1"
+proof -
+  have ex1: "\<exists>!a. nextR (rcseq u j1) 0 a j1'"
+  proof (rule ex1I)
+    show "nextR (rcseq u j1) 0 (j1' - 1) j1'"
+      using nextrel0_rcseq_iff[of u j1 "j1'-1" j1'] assms by (simp add: nextR_def)
+  next
+    fix a assume "nextR (rcseq u j1) 0 a j1'"
+    hence "nextrel0 (rcseq u j1) a j1'" by (simp add: nextR_def)
+    thus "a = j1' - 1" using nextrel0_rcseq_iff[of u j1 a j1'] by simp
+  qed
+  have hp: "hasParent (rcseq u j1) 0 j1'" using ex1 by (simp add: hasParent_def)
+  have par: "parent (rcseq u j1) 0 j1' = j1' - 1"
+    unfolding parent_def
+    using nextrel0_rcseq_iff[of u j1 "j1'-1" j1'] assms ex1
+    by (auto simp: nextR_def intro: the1_equality)
+  show ?thesis using hp par by simp
+qed
+
+lemma not_hasParent0_rcseq_0: "\<not> hasParent (rcseq u j1) 0 0"
+proof
+  assume "hasParent (rcseq u j1) 0 0"
+  then obtain a where "nextR (rcseq u j1) 0 a 0" by (auto simp: hasParent_def)
+  hence "nextrel0 (rcseq u j1) a 0" by (simp add: nextR_def)
+  thus False using nextrel0_rcseq_iff[of u j1 a 0] by simp
+qed
+
+text \<open>\<open>rcseq u j\<^sub>1 \<in> RT_PS\<close> (reduced): RedCondA (row 0 increments by 1, row 1
+  parentless) and RedCondB (only \<open>j = 0\<close> is parentless and there \<open>u = u\<close>).\<close>
+
+lemma RedCondA_rcseq: "RedCondA (rcseq u j1)"
+  unfolding RedCondA_def
+proof (intro allI impI)
+  fix i j1' assume ile: "i \<le> 1" and hp: "hasParent (rcseq u j1) i j1'"
+  show "entry (rcseq u j1) i (parent (rcseq u j1) i j1') + 1 = entry (rcseq u j1) i j1'"
+  proof (cases "i = 0")
+    case True
+    have hp0: "hasParent (rcseq u j1) 0 j1'" using hp True by simp
+    obtain a where nr: "nextR (rcseq u j1) 0 a j1'" using hp0 by (auto simp: hasParent_def)
+    hence "nextrel0 (rcseq u j1) a j1'" by (simp add: nextR_def)
+    hence cond: "0 < j1' \<and> j1' < Suc j1 \<and> a = j1' - 1"
+      using nextrel0_rcseq_iff[of u j1 a j1'] by simp
+    hence hpp: "hasParent (rcseq u j1) 0 j1' \<and> parent (rcseq u j1) 0 j1' = j1' - 1"
+      using hasParent0_rcseq[of j1' j1 u] by simp
+    have j1'lt: "j1' < Suc j1" using cond by simp
+    have pj1'lt: "j1' - 1 < Suc j1" using j1'lt by linarith
+    have e_p: "entry (rcseq u j1) 0 (j1' - 1) = u + (j1' - 1)" using entry0_rcseq[OF pj1'lt] by simp
+    have e_j: "entry (rcseq u j1) 0 j1' = u + j1'" using entry0_rcseq[OF j1'lt] by simp
+    show ?thesis using True hpp e_p e_j cond by simp
+  next
+    case False
+    hence "i = 1" using ile by simp
+    hence "hasParent (rcseq u j1) 1 j1'" using hp by simp
+    thus ?thesis using not_hasParent1_rcseq by simp
+  qed
+qed
+
+lemma RedCondB_rcseq: "RedCondB (rcseq u j1)"
+  unfolding RedCondB_def
+proof (intro allI impI)
+  fix j1' assume h: "\<not> hasParent (rcseq u j1) 0 j1' \<and> j1' \<le> Lng (rcseq u j1) - 1"
+  hence nhp: "\<not> hasParent (rcseq u j1) 0 j1'" and jle: "j1' \<le> j1" by simp_all
+  have j1'lt: "j1' < Suc j1" using jle by simp
+  have "j1' = 0"
+  proof (rule ccontr)
+    assume "j1' \<noteq> 0"
+    hence "0 < j1'" by simp
+    hence "hasParent (rcseq u j1) 0 j1'"
+      using hasParent0_rcseq[of j1' j1 u] j1'lt by simp
+    thus False using nhp by simp
+  qed
+  thus "entry (rcseq u j1) 0 j1' = entry (rcseq u j1) 1 j1'"
+    using entry0_rcseq[of 0 j1 u] entry1_rcseq[of 0 j1 u] by simp
+qed
+
+lemma rcseq_RT_PS: "rcseq u j1 \<in> RT_PS"
+proof -
+  have MT: "rcseq u j1 \<in> T_PS" by (simp add: T_PS_def)
+  show ?thesis
+    using m_6_6_reduced_iff_cond[OF MT] RedCondA_rcseq RedCondB_rcseq by blast
+qed
+
+text \<open>The tower \<open>D\<^sub>u\<^bsup>k\<^esup> 0\<close> and its flat string.\<close>
+
+lemma Dpow_Suc: "Dpow u (Suc k) = Dpt (enat u) (Dpow u k)"
+  by simp
+
+lemma flat_Dpow: "flatBT (Dpow u k) = replicate k (Dsym (enat u)) @ [Zsym]"
+proof (induction k)
+  case 0
+  show ?case by simp
+next
+  case (Suc k)
+  have "flatBT (Dpow u (Suc k)) = flatBT (Dpt (enat u) (Dpow u k))" by simp
+  also have "\<dots> = Dsym (enat u) # flatBT (Dpow u k)" by simp
+  also have "\<dots> = Dsym (enat u) # (replicate k (Dsym (enat u)) @ [Zsym])"
+    using Suc.IH by simp
+  also have "\<dots> = replicate (Suc k) (Dsym (enat u)) @ [Zsym]" by simp
+  finally show ?case .
+qed
+
+lemma Dpow_dfree: "dfree_BT (Dpow u k)"
+proof (induction k)
+  case 0
+  show ?case by simp
+next
+  case (Suc k)
+  have "Dpow u (Suc k) = Dpt (enat u) (Dpow u k)" by simp
+  thus ?case using Suc.IH by simp
+qed
+
+text \<open>scb-decomposition of the tower \<open>D\<^sub>u\<^bsup>Suc k\<^esup> 0\<close> at the trailing single
+  principal \<open>c\<^sub>1 = D\<^sub>u 0\<close>: \<open>s\<^sub>1 = (D\<^sub>u)\<^bsup>k\<^esup>\<close>, \<open>b\<^sub>1 = ()\<close>.\<close>
+
+lemma scb_decomp_Dpow:
+  "scb_decomp (Dpow u (Suc k)) (replicate k (Dsym (enat u)))
+              (flatBT (Dpt (enat u) 0\<^sub>B)) []"
+proof -
+  have fl: "flatBT (Dpow u (Suc k))
+            = replicate k (Dsym (enat u)) @ flatBT (Dpt (enat u) 0\<^sub>B) @ []"
+  proof -
+    have rep: "replicate (Suc k) (Dsym (enat u)) = replicate k (Dsym (enat u)) @ [Dsym (enat u)]"
+      by (simp only: replicate_Suc replicate_append_same[symmetric])
+    have "flatBT (Dpow u (Suc k)) = replicate (Suc k) (Dsym (enat u)) @ [Zsym]"
+      by (rule flat_Dpow)
+    also have "\<dots> = (replicate k (Dsym (enat u)) @ [Dsym (enat u)]) @ [Zsym]"
+      by (simp only: rep)
+    also have "\<dots> = replicate k (Dsym (enat u)) @ [Dsym (enat u), Zsym]"
+      by simp
+    also have "\<dots> = replicate k (Dsym (enat u)) @ flatBT (Dpt (enat u) 0\<^sub>B) @ []"
+      by (simp add: rnsub_flat_Dpt0)
+    finally show ?thesis .
+  qed
+  have pt: "isPTB_str (flatBT (Dpt (enat u) 0\<^sub>B))"
+    by (rule isPTB_str_Dpt) simp_all
+  show ?thesis unfolding scb_decomp_def using fl pt by simp
+qed
+
+lemma scb_SOME_Dpow:
+  "(SOME sb. scb_decomp (Dpow u (Suc k)) (fst sb)
+                (flatBT (Dpt (enat u) 0\<^sub>B)) (snd sb)) = (replicate k (Dsym (enat u)), [])"
+proof (rule some_equality)
+  show "scb_decomp (Dpow u (Suc k)) (fst (replicate k (Dsym (enat u)), []))
+          (flatBT (Dpt (enat u) 0\<^sub>B)) (snd (replicate k (Dsym (enat u)), []))"
+    using scb_decomp_Dpow by simp
+next
+  fix sb assume h: "scb_decomp (Dpow u (Suc k)) (fst sb)
+                       (flatBT (Dpt (enat u) 0\<^sub>B)) (snd sb)"
+  have tne: "Dpow u (Suc k) \<noteq> Trm []" by simp
+  have "fst sb = replicate k (Dsym (enat u)) \<and> snd sb = []"
+    using m_7_2_scb_unique_sb[OF h scb_decomp_Dpow tne] by simp
+  thus "sb = (replicate k (Dsym (enat u)), [])" by (cases sb) auto
+qed
+
+text \<open>The right-end basepoint of \<open>rcseq u j\<^sub>1\<close> has \<open>Mark = D\<^sub>u 0\<close>
+  (\<open>M\<^bsub>1,j\<^sub>1\<^esub> = u\<close>, via @{thm [source] Mark_rightmost1_forward}).\<close>
+
+lemma Marked_rcseq_last:
+  assumes "0 < j1"
+  shows "(rcseq u j1, Lng (rcseq u j1) - 1) \<in> Marked"
+proof -
+  let ?M = "rcseq u j1"
+  have MT: "?M \<in> T_PS" by (simp add: T_PS_def)
+  have padm: "adm ?M (Lng ?M - 1)" by (rule adm_rcseq) simp
+  have LMpos: "Lng ?M - 1 < Lng ?M" using assms by simp
+  have ple: "leR ?M 0 (Lng ?M - 1) (Lng ?M - 1)"
+    using LMpos by (simp add: leR_def le0_def)
+  show ?thesis using MT padm ple by (simp add: Marked_def)
+qed
+
+lemma Mark_rcseq_last:
+  assumes "0 < j1"
+  shows "Mark (rcseq u j1) (Lng (rcseq u j1) - 1) = Dpt (enat u) 0\<^sub>B"
+proof -
+  let ?M = "rcseq u j1"
+  have MR: "?M \<in> RT_PS" by (rule rcseq_RT_PS)
+  have nz: "\<not> zeroT ?M" using assms by (simp add: zeroT_def)
+  have mM: "(?M, Lng ?M - 1) \<in> Marked" by (rule Marked_rcseq_last[OF assms])
+  have e1: "entry ?M 1 (Lng ?M - 1) = u"
+    using entry1_rcseq[of "Lng ?M - 1" j1 u] assms by simp
+  show ?thesis using Mark_rightmost1_forward[OF MR nz mM] e1 by simp
+qed
+
+text \<open>命題: \<open>Trans (rcseq u j\<^sub>1) = D\<^sub>u\<^bsup>j\<^sub>1+1\<^esup> 0\<close> (\<open>0\<close> if \<open>j\<^sub>1 = u = 0\<close>).
+  Induction on \<open>j\<^sub>1\<close>; the \<open>monoT\<close> step fires condition (I) (\<open>u = 0\<close>) or (III)
+  (\<open>u > 0\<close>): \<open>c\<^sub>1 = Mark (Pred) j\<^sub>p = D\<^sub>u 0\<close>, \<open>c\<^sub>2 = D\<^sub>u (D\<^sub>u 0)\<close>, and the scb surgery
+  splices \<open>(D\<^sub>u)\<^bsup>j\<^sub>1\<^esup>\<close> in front (@{thm [source] scb_SOME_Dpow}).\<close>
+
+lemma m_8_6_rcseq_Trans:
+  "Trans (rcseq u j1) = (if j1 = 0 \<and> u = 0 then 0\<^sub>B else Dpow u (Suc j1))"
+proof (induction j1)
+  case 0
+  let ?M = "rcseq u 0"
+  have MR: "?M \<in> RT_PS" by (rule rcseq_RT_PS)
+  have M0: "?M = [(u, u)]" by simp
+  have "Trans [(u, u)] = (if u = 0 then 0\<^sub>B else Dpt (enat u) 0\<^sub>B)" by (rule Trans_singleton)
+  thus ?case using M0 by simp
+next
+  case (Suc j1)
+  let ?M = "rcseq u (Suc j1)"
+  let ?j1 = "Lng ?M - 1"
+  have MR: "?M \<in> RT_PS" by (rule rcseq_RT_PS)
+  have MT: "?M \<in> T_PS" by (simp add: T_PS_def)
+  have mono: "monoT ?M" by (rule monoT_rcseq) simp
+  have domT: "Trans_Mark_dom (Inl ?M)" by (rule m_7_3_Trans_welldef[OF MR])
+  have LM: "Lng ?M = Suc (Suc j1)" by simp
+  have Lgt1: "1 < Lng ?M" by simp
+  have Lgt1': "\<not> Lng ?M \<le> Suc 0" using Lgt1 by simp
+  have j1pos: "?j1 \<noteq> 0" using LM by simp
+  have j1eq: "?j1 = Suc j1" using LM by simp
+  have predM: "Pred ?M = rcseq u j1" by (rule Pred_rcseq_Suc)
+  \<comment> \<open>row-1 entries and parent\<close>
+  have e1j1: "entry ?M 1 ?j1 = u"
+    using entry1_rcseq[of ?j1 "Suc j1" u] j1eq by simp
+  have jp: "parent ?M 0 ?j1 = ?j1 - 1"
+    using hasParent0_rcseq[of ?j1 "Suc j1" u] j1eq by simp
+  have admjp_le: "?j1 - 1 \<le> Suc j1" using j1eq by simp
+  have admjp: "Adm ?M (parent ?M 0 ?j1) = ?j1 - 1"
+    using jp adm_rcseq[OF admjp_le, of u] by (simp add: Adm_def)
+  show ?case
+  proof (cases "j1 = 0 \<and> u = 0")
+    case True
+    \<comment> \<open>\<open>t\<^sub>1 = Trans (Pred) = 0\<close>: the \<open>t\<^sub>1 = 0\<close> branch gives \<open>D\<^sub>0 (D\<^sub>0 0)\<close>\<close>
+    have t1z: "Trans (Pred ?M) = 0\<^sub>B" using predM Suc.IH True by simp
+    have "Trans ?M = Dpt 0 (Dpt (enat (entry ?M 1 ?j1)) 0\<^sub>B)"
+      using Trans.psimps[OF domT] MR Lgt1' j1pos mono t1z by (simp add: Let_def)
+    also have "\<dots> = Dpow u (Suc (Suc j1))" using True e1j1 by (simp add: zero_enat_def)
+    finally show ?thesis using True by simp
+  next
+    case False
+    \<comment> \<open>\<open>t\<^sub>1 = Trans (Pred) = D\<^sub>u\<^bsup>j\<^sub>1+1\<^esup> 0 \<noteq> 0\<close>\<close>
+    have t1v: "Trans (Pred ?M) = Dpow u (Suc j1)" using predM Suc.IH False by simp
+    have t1ne: "Trans (Pred ?M) \<noteq> 0\<^sub>B" using t1v by simp
+    \<comment> \<open>\<open>c\<^sub>1 = Mark (Pred) (Adm j\<^sub>p) = D\<^sub>u 0\<close> (right-end basepoint of \<open>Pred\<close>)\<close>
+    have predj1pos: "0 < j1 \<or> u > 0" using False by auto
+    have c1v: "Mark (Pred ?M) (Adm ?M (parent ?M 0 ?j1)) = Dpt (enat u) 0\<^sub>B"
+    proof (cases "j1 = 0")
+      case True
+      \<comment> \<open>\<open>Pred = rcseq u 0 = [(u,u)]\<close>, \<open>j\<^sub>p = 0\<close>, \<open>Mark [(u,u)] 0 = D\<^sub>u 0\<close> (u>0)\<close>
+      have ug: "0 < u" using False True by simp
+      have admjp0: "Adm ?M (parent ?M 0 ?j1) = 0" using admjp True j1eq by simp
+      have "Mark (Pred ?M) 0 = Dpt (enat u) 0\<^sub>B"
+        using predM True Mark_singleton ug by simp
+      thus ?thesis using admjp0 by simp
+    next
+      case False
+      have j1g: "0 < j1" using False by simp
+      have predlast: "Lng (rcseq u j1) - 1 = ?j1 - 1" using j1eq by simp
+      have "Mark (rcseq u j1) (Lng (rcseq u j1) - 1) = Dpt (enat u) 0\<^sub>B"
+        by (rule Mark_rcseq_last[OF j1g])
+      thus ?thesis using predM admjp predlast by simp
+    qed
+    have bvc1: "bpHeadV (Mark (Pred ?M) (Adm ?M (parent ?M 0 ?j1))) = enat u"
+      using c1v by simp
+    have btc1: "bpHeadT (Mark (Pred ?M) (Adm ?M (parent ?M 0 ?j1))) = 0\<^sub>B"
+      using c1v by simp
+    \<comment> \<open>condition (I) (\<open>u = 0\<close>) or (III) (\<open>u > 0\<close>) fires; either way the \<open>c\<^sub>2\<close>
+        branch is \<open>D\<^sub>u (t\<^sub>2 +\<^sub>B D\<^sub>u 0)\<close> with \<open>t\<^sub>2 = 0\<close>, i.e. \<open>D\<^sub>u (D\<^sub>u 0) = D\<^sub>u\<^bsup>2\<^esup> 0\<close>\<close>
+    have admp: "adm ?M (parent ?M 0 ?j1)" using jp adm_rcseq[OF admjp_le, of u] by simp
+    have IorIIIorV: "transCondI ?M \<or> transCondIII ?M \<or> transCondV ?M"
+    proof (cases "u = 0")
+      case True
+      have "transCondI ?M" unfolding transCondI_def using e1j1 True admp by simp
+      thus ?thesis by simp
+    next
+      case False
+      have e1jp: "entry ?M 1 (parent ?M 0 ?j1) = u"
+        using jp entry1_rcseq[of "?j1 - 1" "Suc j1" u] j1eq by simp
+      have "transCondIII ?M"
+        unfolding transCondIII_def using e1j1 e1jp False admp by simp
+      thus ?thesis by simp
+    qed
+    \<comment> \<open>the scb-\<open>SOME\<close> of the tower \<open>t\<^sub>1 = D\<^sub>u\<^bsup>j\<^sub>1+1\<^esup> 0\<close> at \<open>c\<^sub>1 = D\<^sub>u 0\<close>
+        is \<open>((D\<^sub>u)\<^bsup>j\<^sub>1\<^esup>, ())\<close>\<close>
+    have somev: "(SOME sb. scb_decomp (Trans (Pred ?M)) (fst sb)
+                    (flatBT (Dpt (enat u) 0\<^sub>B)) (snd sb)) = (replicate j1 (Dsym (enat u)), [])"
+      using scb_SOME_Dpow[where u=u and k=j1] t1v by simp
+    \<comment> \<open>unfold the mono branch; \<open>c\<^sub>2 = D\<^sub>u (0 +\<^sub>B D\<^sub>u 0) = D\<^sub>u\<^bsup>2\<^esup> 0\<close>\<close>
+    have trans_val: "Trans ?M = unflatBT (replicate j1 (Dsym (enat u))
+                       @ flatBT (Dpt (enat u) (0\<^sub>B +\<^sub>B Dpt (enat u) 0\<^sub>B)) @ [])"
+      using Trans.psimps[OF domT] MR Lgt1' j1pos mono t1ne c1v somev IorIIIorV
+            jp admjp bvc1 btc1 e1j1
+      by (simp add: Let_def)
+    have flateq: "replicate j1 (Dsym (enat u))
+                    @ flatBT (Dpt (enat u) (0\<^sub>B +\<^sub>B Dpt (enat u) 0\<^sub>B)) @ []
+                  = flatBT (Dpow u (Suc (Suc j1)))"
+    proof -
+      have c2eq: "Dpt (enat u) (0\<^sub>B +\<^sub>B Dpt (enat u) 0\<^sub>B) = Dpow u (Suc (Suc 0))"
+        by simp
+      have fl2: "flatBT (Dpow u (Suc (Suc 0)))
+                 = replicate (Suc (Suc 0)) (Dsym (enat u)) @ [Zsym]"
+        by (rule flat_Dpow)
+      have repcomb: "replicate j1 (Dsym (enat u)) @ replicate (Suc (Suc 0)) (Dsym (enat u))
+                     = replicate (Suc (Suc j1)) (Dsym (enat u))"
+        by (simp only: replicate_add[symmetric]) simp
+      have "replicate j1 (Dsym (enat u))
+              @ flatBT (Dpt (enat u) (0\<^sub>B +\<^sub>B Dpt (enat u) 0\<^sub>B)) @ []
+            = replicate j1 (Dsym (enat u)) @ flatBT (Dpow u (Suc (Suc 0))) @ []"
+        by (simp only: c2eq)
+      also have "\<dots> = (replicate j1 (Dsym (enat u))
+                        @ replicate (Suc (Suc 0)) (Dsym (enat u))) @ [Zsym]"
+        by (simp only: fl2 append_Nil2 append_assoc)
+      also have "\<dots> = replicate (Suc (Suc j1)) (Dsym (enat u)) @ [Zsym]"
+        by (simp only: repcomb)
+      also have "\<dots> = flatBT (Dpow u (Suc (Suc j1)))" by (simp only: flat_Dpow)
+      finally show ?thesis .
+    qed
+    have "Trans ?M = unflatBT (flatBT (Dpow u (Suc (Suc j1))))"
+      by (simp only: trans_val flateq)
+    also have "\<dots> = Dpow u (Suc (Suc j1))" by (rule unflatBT_flat)
+    finally show ?thesis using False by simp
+  qed
+qed
+
+
+text \<open>Bridge to the article's general 公差\<open>(1,0)\<close> sequence
+  \<open>cseq m u j\<^sub>1 = ((m+j, u))\<^bsub>j=0\<^esub>\<^bsup>j\<^sub>1\<^esup>\<close> (arbitrary first-column offset \<open>m\<close>).
+  Its \<open>Red\<close>-normal form is \<open>rcseq u j\<^sub>1\<close> (the first column is rebased to start at
+  \<open>u\<close>): by @{thm [source] m_6_5_Red_rebase}, since the row-0 offset is
+  \<open>(m+j)-m+u = u+j\<close>.\<close>
+
+abbreviation cseq :: "nat \<Rightarrow> nat \<Rightarrow> nat \<Rightarrow> pairseq" where
+  "cseq m u j1 \<equiv> map (\<lambda>j. (m + j, u)) [0..<Suc j1]"
+
+lemma Lng_cseq[simp]: "Lng (cseq m u j1) = Suc j1"
+  by (simp del: upt_Suc)
+
+lemma cseq_nth:
+  assumes "j < Suc j1"
+  shows "cseq m u j1 ! j = (m + j, u)"
+  using assms by (simp add: nth_upt del: upt_Suc)
+
+lemma entry0_cseq:
+  assumes "j < Suc j1"
+  shows "entry (cseq m u j1) 0 j = m + j"
+  using cseq_nth[OF assms] by (simp add: entry_def)
+
+lemma entry1_cseq:
+  assumes "j < Suc j1"
+  shows "entry (cseq m u j1) 1 j = u"
+  using cseq_nth[OF assms] by (simp add: entry_def)
+
+lemma nextrel0_cseq_iff:
+  "nextrel0 (cseq m u j1) a b \<longleftrightarrow> (0 < b \<and> b < Suc j1 \<and> a = b - 1)"
+proof
+  assume nr: "nextrel0 (cseq m u j1) a b"
+  hence blt: "b < Suc j1" and ab: "a < b"
+    and gap: "\<forall>j. a < j \<and> j < b \<longrightarrow> entry (cseq m u j1) 0 j \<ge> entry (cseq m u j1) 0 b"
+    by (simp_all add: nextrel0_def)
+  have bpos: "0 < b" using ab by simp
+  have "a = b - 1"
+  proof (rule ccontr)
+    assume "a \<noteq> b - 1"
+    hence mid: "a < b - 1" using ab by simp
+    have midlt: "b - 1 < Suc j1" using blt by simp
+    have e_mid: "entry (cseq m u j1) 0 (b - 1) = m + (b - 1)" using entry0_cseq[OF midlt] by simp
+    have e_b: "entry (cseq m u j1) 0 b = m + b" using entry0_cseq[OF blt] by simp
+    have "entry (cseq m u j1) 0 (b - 1) < entry (cseq m u j1) 0 b"
+      using e_mid e_b bpos by simp
+    moreover have "entry (cseq m u j1) 0 (b - 1) \<ge> entry (cseq m u j1) 0 b"
+      using gap mid bpos by simp
+    ultimately show False by simp
+  qed
+  thus "0 < b \<and> b < Suc j1 \<and> a = b - 1" using bpos blt by simp
+next
+  assume "0 < b \<and> b < Suc j1 \<and> a = b - 1"
+  hence bpos: "0 < b" and blt: "b < Suc j1" and aeq: "a = b - 1" by auto
+  let ?M = "cseq m u j1"
+  have jlt: "b - 1 < Suc j1" using blt by simp
+  have sjlt: "b < Suc j1" using blt by simp
+  have ej:  "entry ?M 0 (b - 1) = m + (b - 1)" using entry0_cseq[OF jlt] by simp
+  have esj: "entry ?M 0 b = m + b" using entry0_cseq[OF sjlt] by simp
+  have lt: "entry ?M 0 (b-1) < entry ?M 0 b" using ej esj bpos by simp
+  have noint: "\<forall>jj. (b-1) < jj \<and> jj < b \<longrightarrow> entry ?M 0 jj \<ge> entry ?M 0 b"
+    using bpos by auto
+  show "nextrel0 (cseq m u j1) a b"
+    unfolding nextrel0_def using jlt sjlt lt noint aeq bpos by simp
+qed
+
+lemma not_hasParent1_cseq: "\<not> hasParent (cseq m u j1) 1 j1'"
+proof
+  assume "hasParent (cseq m u j1) 1 j1'"
+  then obtain a where "nextR (cseq m u j1) 1 a j1'" by (auto simp: hasParent_def)
+  hence nr: "nextrel1 (cseq m u j1) a j1'" by (simp add: nextR_def)
+  hence lt: "entry (cseq m u j1) 1 a < entry (cseq m u j1) 1 j1'"
+    and alt: "a < Lng (cseq m u j1)" and j1lt: "j1' < Lng (cseq m u j1)"
+    by (simp_all add: nextrel1_def)
+  have "entry (cseq m u j1) 1 a = u" using entry1_cseq alt by simp
+  moreover have "entry (cseq m u j1) 1 j1' = u" using entry1_cseq j1lt by simp
+  ultimately show False using lt by simp
+qed
+
+lemma hasParent0_cseq:
+  assumes "0 < j1'" and "j1' < Suc j1"
+  shows "hasParent (cseq m u j1) 0 j1' \<and> parent (cseq m u j1) 0 j1' = j1' - 1"
+proof -
+  have ex1: "\<exists>!a. nextR (cseq m u j1) 0 a j1'"
+  proof (rule ex1I)
+    show "nextR (cseq m u j1) 0 (j1' - 1) j1'"
+      using nextrel0_cseq_iff[of m u j1 "j1'-1" j1'] assms by (simp add: nextR_def)
+  next
+    fix a assume "nextR (cseq m u j1) 0 a j1'"
+    hence "nextrel0 (cseq m u j1) a j1'" by (simp add: nextR_def)
+    thus "a = j1' - 1" using nextrel0_cseq_iff[of m u j1 a j1'] by simp
+  qed
+  have hp: "hasParent (cseq m u j1) 0 j1'" using ex1 by (simp add: hasParent_def)
+  have par: "parent (cseq m u j1) 0 j1' = j1' - 1"
+    unfolding parent_def
+    using nextrel0_cseq_iff[of m u j1 "j1'-1" j1'] assms ex1
+    by (auto simp: nextR_def intro: the1_equality)
+  show ?thesis using hp par by simp
+qed
+
+lemma RedCondA_cseq: "RedCondA (cseq m u j1)"
+  unfolding RedCondA_def
+proof (intro allI impI)
+  fix i j1' assume ile: "i \<le> 1" and hp: "hasParent (cseq m u j1) i j1'"
+  show "entry (cseq m u j1) i (parent (cseq m u j1) i j1') + 1 = entry (cseq m u j1) i j1'"
+  proof (cases "i = 0")
+    case True
+    have hp0: "hasParent (cseq m u j1) 0 j1'" using hp True by simp
+    obtain a where nr: "nextR (cseq m u j1) 0 a j1'" using hp0 by (auto simp: hasParent_def)
+    hence "nextrel0 (cseq m u j1) a j1'" by (simp add: nextR_def)
+    hence cond: "0 < j1' \<and> j1' < Suc j1 \<and> a = j1' - 1"
+      using nextrel0_cseq_iff[of m u j1 a j1'] by simp
+    hence hpp: "hasParent (cseq m u j1) 0 j1' \<and> parent (cseq m u j1) 0 j1' = j1' - 1"
+      using hasParent0_cseq[of j1' j1 m u] by simp
+    have j1'lt: "j1' < Suc j1" using cond by simp
+    have pj1'lt: "j1' - 1 < Suc j1" using j1'lt by linarith
+    have e_p: "entry (cseq m u j1) 0 (j1' - 1) = m + (j1' - 1)" using entry0_cseq[OF pj1'lt] by simp
+    have e_j: "entry (cseq m u j1) 0 j1' = m + j1'" using entry0_cseq[OF j1'lt] by simp
+    show ?thesis using True hpp e_p e_j cond by simp
+  next
+    case False
+    hence "i = 1" using ile by simp
+    hence "hasParent (cseq m u j1) 1 j1'" using hp by simp
+    thus ?thesis using not_hasParent1_cseq by simp
+  qed
+qed
+
+lemma not_zeroT_cseq:
+  assumes "0 < j1 \<or> 0 < u"
+  shows "\<not> zeroT (cseq m u j1)"
+proof (cases "0 < j1")
+  case True
+  thus ?thesis by (simp add: zeroT_def)
+next
+  case False
+  hence j10: "j1 = 0" by simp
+  have ug: "0 < u" using assms j10 by simp
+  have "entry (cseq m u j1) 1 0 = u" using entry1_cseq[of 0 j1 m u] by simp
+  thus ?thesis using ug j10 by (simp add: zeroT_def)
+qed
+
+lemma monoT_cseq:
+  assumes "0 < j1"
+  shows "monoT (cseq m u j1)"
+proof -
+  let ?M = "cseq m u j1"
+  have nz: "\<not> zeroT ?M" using assms by (simp add: zeroT_def)
+  have gen: "\<And>k. k < Suc j1 \<Longrightarrow> (nextrel0 ?M)\<^sup>*\<^sup>* 0 k"
+  proof -
+    fix k assume "k < Suc j1"
+    thus "(nextrel0 ?M)\<^sup>*\<^sup>* 0 k"
+    proof (induction k)
+      case 0 show ?case by simp
+    next
+      case (Suc k)
+      have "(nextrel0 ?M)\<^sup>*\<^sup>* 0 k" using Suc by simp
+      moreover have "nextrel0 ?M k (Suc k)"
+        using nextrel0_cseq_iff[of m u j1 k "Suc k"] Suc.prems by simp
+      ultimately show ?case by (simp add: rtranclp.rtrancl_into_rtrancl)
+    qed
+  qed
+  have j1lt: "j1 < Suc j1" by simp
+  have rt: "(nextrel0 ?M)\<^sup>*\<^sup>* 0 j1" by (rule gen[OF j1lt])
+  have "le0 ?M 0 (Lng ?M - 1)" using rt by (simp add: le0_def)
+  hence "leR ?M 0 0 (Lng ?M - 1)" by (simp add: leR_def)
+  thus ?thesis using nz by (simp add: monoT_def)
+qed
+
+lemma not_multiT_cseq: "\<not> multiT (cseq m u j1)"
+proof (cases "0 < j1")
+  case True
+  have "monoT (cseq m u j1)" by (rule monoT_cseq[OF True])
+  thus ?thesis by (simp add: multiT_def)
+next
+  case False
+  hence j10: "j1 = 0" by simp
+  show ?thesis
+  proof (cases "0 < u")
+    case True
+    have disj: "0 < (0::nat) \<or> 0 < u" using True by simp
+    have "monoT (cseq m u 0)"
+    proof -
+      have nz: "\<not> zeroT (cseq m u 0)" by (rule not_zeroT_cseq[OF disj])
+      have "leR (cseq m u 0) 0 0 (Lng (cseq m u 0) - 1)"
+        by (simp add: leR_def le0_def)
+      thus ?thesis using nz by (simp add: monoT_def)
+    qed
+    hence "monoT (cseq m u j1)" using j10 by simp
+    thus ?thesis by (simp add: multiT_def)
+  next
+    case False
+    hence u0: "u = 0" by simp
+    have "zeroT (cseq m u j1)" using j10 u0
+      by (simp add: zeroT_def entry_def)
+    thus ?thesis by (simp add: multiT_def)
+  qed
+qed
+
+text \<open>\<open>Red (cseq m u j\<^sub>1) = rcseq u j\<^sub>1\<close>: the row-0 offset rebases to
+  \<open>(m+j) - m + u = u + j\<close> (@{thm [source] m_6_5_Red_rebase}).\<close>
+
+lemma Red_cseq: "Red (cseq m u j1) = rcseq u j1"
+proof -
+  have MT: "cseq m u j1 \<in> T_PS" by (simp add: T_PS_def)
+  have "Red (cseq m u j1)
+        = map (\<lambda>j. (entry (cseq m u j1) 0 j - entry (cseq m u j1) 0 0
+                      + entry (cseq m u j1) 1 0, entry (cseq m u j1) 1 j))
+              [0..<Lng (cseq m u j1)]"
+    by (rule m_6_5_Red_rebase[OF MT RedCondA_cseq not_multiT_cseq])
+  also have "\<dots> = map (\<lambda>j. (entry (cseq m u j1) 0 j - entry (cseq m u j1) 0 0
+                      + entry (cseq m u j1) 1 0, entry (cseq m u j1) 1 j))
+                    [0..<Suc j1]"
+    by (simp only: Lng_cseq)
+  also have "\<dots> = map (\<lambda>j. (u + j, u)) [0..<Suc j1]"
+  proof (rule map_cong[OF refl])
+    fix j assume jmem: "j \<in> set [0..<Suc j1]"
+    have jlt: "j < Suc j1" using jmem by auto
+    have e0j: "entry (cseq m u j1) 0 j = m + j" using entry0_cseq[OF jlt] by simp
+    have e00: "entry (cseq m u j1) 0 0 = m" using entry0_cseq[of 0 j1 m u] by simp
+    have e10: "entry (cseq m u j1) 1 0 = u" using entry1_cseq[of 0 j1 m u] by simp
+    have e1j: "entry (cseq m u j1) 1 j = u" using entry1_cseq[OF jlt] by simp
+    show "(entry (cseq m u j1) 0 j - entry (cseq m u j1) 0 0 + entry (cseq m u j1) 1 0,
+           entry (cseq m u j1) 1 j) = (u + j, u)"
+      using e0j e00 e10 e1j by simp
+  qed
+  finally show ?thesis by simp
+qed
+
+text \<open>命題（公差\<open>(1,0)\<close>のペア数列の\<open>Trans\<close>の基本性質） (§8.6, content.md 5496),
+  discharging @{thm [source] p_8_6_const2nd_Trans}: bridge the article's general
+  \<open>M = cseq m u j\<^sub>1\<close> to its \<open>Red\<close>-normal form \<open>rcseq u j\<^sub>1\<close> via
+  @{thm [source] Red_cseq} and the \<open>Red\<close>-invariance of \<open>Trans\<close>, then apply
+  @{thm [source] m_8_6_rcseq_Trans}.\<close>
+
+lemma m_8_6_const2nd_Trans:
+  "(j1 = 0 \<and> u = 0 \<longrightarrow> Trans (cseq m u j1) = 0\<^sub>B)
+ \<and> (j1 > 0 \<or> u > 0 \<longrightarrow> Trans (cseq m u j1) = Dpow u (j1 + 1))"
+proof -
+  have RR: "Red (cseq m u j1) \<in> RT_PS" using Red_cseq rcseq_RT_PS by simp
+  have "Trans (cseq m u j1) = Trans (Red (cseq m u j1))" by (rule m_7_3_Trans_Red[OF RR])
+  also have "\<dots> = Trans (rcseq u j1)" using Red_cseq by simp
+  also have "\<dots> = (if j1 = 0 \<and> u = 0 then 0\<^sub>B else Dpow u (Suc j1))"
+    by (rule m_8_6_rcseq_Trans)
+  finally have key: "Trans (cseq m u j1) = (if j1 = 0 \<and> u = 0 then 0\<^sub>B else Dpow u (Suc j1))" .
+  show ?thesis using key by auto
+qed
+
+
+(* ===== integrated from wt-s7 ===== *)
+
+section \<open>§8.7 OT (ordinal-term) infrastructure\<close>
+
+text \<open>Basic facts about \<open>lessBT\<close> against \<open>0\<^sub>B\<close> and the membership conditions
+  for ordinal terms.  These are the independent OT-side lemmas of §8.7.\<close>
+
+lemma lessBT_Zero_right [simp]: "\<not> lessBT t (Trm [])"
+proof (cases t)
+  case (Trm ps) thus ?thesis by (cases ps) simp_all
+qed
+
+lemma lessBT_Zero_left [simp]: "lessBT (Trm []) t \<longleftrightarrow> t \<noteq> Trm []"
+proof (cases t)
+  case (Trm ps) thus ?thesis by (cases ps) simp_all
+qed
+
+text \<open>\<open>GBT\<close> / \<open>GBP\<close> of a \<open>Dpt\<close>.\<close>
+
+lemma GBT_Dpt:
+  "GBT u (Dpt v b) = (if u \<le> v then insert b (GBT u b) else {})"
+  by simp
+
+lemma GBT_Zero [simp]: "GBT u (Trm []) = {}"
+  by simp
+
+lemma GBT_Dpt_Zero: "GBT u (Dpt v (Trm [])) = (if u \<le> v then {Trm []} else {})"
+  by (simp add: GBT_Dpt)
+
+text \<open>\<open>isOT_BP\<close> of a \<open>D\<^sub>v 0\<close>: always an OT-principal, since \<open>0\<close> is OT and
+  \<open>G\<^sub>v 0 = \<emptyset>\<close>.\<close>
+
+lemma isOT_BP_Dpt_Zero [simp]: "isOT_BP (DB v (Trm []))"
+  by simp
+
+lemma isOT_BT_Dpt_Zero [simp]: "isOT_BT (Dpt v (Trm []))"
+  by simp
+
+text \<open>\<open>D\<^sub>u (D\<^sub>v 0)\<close> is an OT principal: \<open>D\<^sub>v 0\<close> is OT, and
+  \<open>G\<^sub>u (D\<^sub>v 0) \<subseteq> {0}\<close> with \<open>0 < D\<^sub>v 0\<close>.\<close>
+
+lemma isOT_BP_Dpt_Dpt_Zero: "isOT_BP (DB u (Dpt v (Trm [])))"
+proof -
+  have "\<forall>x \<in> GBT u (Dpt v (Trm [])). lessBT x (Dpt v (Trm []))"
+  proof
+    fix x assume "x \<in> GBT u (Dpt v (Trm []))"
+    then have "x = Trm []"
+      by (simp add: GBT_Dpt_Zero split: if_splits)
+    thus "lessBT x (Dpt v (Trm []))" by simp
+  qed
+  thus ?thesis by simp
+qed
+
+text \<open>\<open>dfree\<close> of \<open>D\<^sub>u 0\<close> and \<open>D\<^sub>u (D\<^sub>v 0)\<close> (finite indices).\<close>
+
+lemma dfree_BT_Dpt_enat_Zero [simp]: "dfree_BT (Dpt (enat u) (Trm []))"
+  by simp
+
+lemma dfree_BT_Dpt_enat_Dpt_enat_Zero [simp]:
+  "dfree_BT (Dpt (enat u) (Dpt (enat v) (Trm [])))"
+  by simp
+
+text \<open>Example membership (1): \<open>D\<^sub>u 0 \<in> OT\<^bsub>B\<^esub>\<close>.\<close>
+
+lemma m_8_7_OT_ex1: "Dpt (enat u) (Trm []) \<in> OT_B"
+  by (simp add: OT_B_def OT_def T_B_def)
+
+text \<open>Example membership (2): \<open>D\<^sub>u (D\<^sub>v 0) \<in> OT\<^bsub>B\<^esub>\<close>.\<close>
+
+lemma m_8_7_OT_ex2: "Dpt (enat u) (Dpt (enat v) (Trm [])) \<in> OT_B"
+  by (simp add: OT_B_def OT_def T_B_def isOT_BP_Dpt_Dpt_Zero)
+
+text \<open>\<open>multBT a n\<close> appends \<open>n\<close> copies of \<open>a\<close>'s principal list.\<close>
+
+lemma concat_replicate_comm:
+  "concat (replicate n ps) @ ps = ps @ concat (replicate n ps)"
+  by (induction n) simp_all
+
+lemma untrm_multBT:
+  "multBT (Trm ps) n = Trm (concat (replicate n ps))"
+  by (induction n) (simp_all add: addBT.simps concat_replicate_comm)
+
+text \<open>\<open>descP\<close> of a list of equal principals (a power of one principal): a
+  constant list is descending.\<close>
+
+lemma descP_replicate_general: "descP (replicate n p)"
+proof (induction n)
+  case 0 thus ?case by simp
+next
+  case (Suc m)
+  show ?case
+  proof (cases m)
+    case 0 thus ?thesis by simp
+  next
+    case (Suc k)
+    have "replicate (Suc m) p = p # p # replicate k p"
+      using Suc by simp
+    moreover have "descP (p # replicate k p) = descP (replicate (Suc k) p)"
+      by simp
+    ultimately show ?thesis
+      using Suc.IH Suc by (simp add: descP.simps)
+  qed
+qed
+
+text \<open>Example membership (3): \<open>(D\<^sub>u 0)\<times>(n-1) \<in> OT\<^bsub>B\<^esub>\<close>.\<close>
+
+lemma m_8_7_OT_ex3:
+  assumes "n \<ge> 1"
+  shows "multBT (Dpt (enat u) (Trm [])) (n - 1) \<in> OT_B"
+proof -
+  let ?p = "DB (enat u) (Trm [])"
+  have mt: "multBT (Dpt (enat u) (Trm [])) (n - 1)
+              = Trm (concat (replicate (n - 1) [?p]))"
+    by (simp add: untrm_multBT)
+  have cc: "concat (replicate (n - 1) [?p]) = replicate (n - 1) ?p"
+    by (induction n) (simp_all)
+  have isot: "isOT_BT (Trm (replicate (n - 1) ?p))"
+    by (simp add: descP_replicate_general)
+  have df: "dfree_BT (Trm (replicate (n - 1) ?p))"
+    by simp
+  show ?thesis
+    using mt cc isot df by (simp add: OT_B_def OT_def T_B_def)
+qed
+
+text \<open>Example membership (4): \<open>D\<^sub>u\<^sup>n 0 \<in> OT\<^bsub>B\<^esub>\<close> (the \<open>n\<close>-fold \<open>D\<^sub>u\<close> of \<open>0\<close>).\<close>
+
+text \<open>The tower \<open>D\<^sub>u\<^sup>k 0\<close> is strictly below \<open>D\<^sub>u (D\<^sub>u\<^sup>k 0)\<close>: by induction on \<open>k\<close>,
+  using \<open>lessBP (DB u s') (DB u s) = lessBT s' s\<close>.\<close>
+
+lemma lessBT_funpow_step:
+  "lessBT ((Dpt (enat u) ^^ k) (Trm [])) (Dpt (enat u) ((Dpt (enat u) ^^ k) (Trm [])))"
+proof (induction k)
+  case 0 thus ?case by simp
+next
+  case (Suc m)
+  let ?s = "(Dpt (enat u) ^^ m) (Trm [])"
+  have "(Dpt (enat u) ^^ Suc m) (Trm []) = Dpt (enat u) ?s" by simp
+  have "lessBT (Dpt (enat u) ?s) (Dpt (enat u) (Dpt (enat u) ?s))
+          = lessBT ?s (Dpt (enat u) ?s)"
+    by simp
+  thus ?case using Suc.IH by simp
+qed
+
+lemma isOT_BT_Dpt_funpow:
+  "isOT_BT ((Dpt (enat u) ^^ n) (Trm []))"
+proof (induction n)
+  case 0 thus ?case by simp
+next
+  case (Suc m)
+  let ?t = "(Dpt (enat u) ^^ m) (Trm [])"
+  have ot: "isOT_BT ?t" using Suc.IH .
+  have "((Dpt (enat u) ^^ Suc m) (Trm [])) = Dpt (enat u) ?t"
+    by simp
+  moreover have "isOT_BP (DB (enat u) ?t)"
+  proof -
+    have "\<forall>x \<in> GBT (enat u) ?t. lessBT x ?t"
+    proof
+      fix x assume xin: "x \<in> GBT (enat u) ?t"
+      \<comment> \<open>\<open>?t = D\<^sub>u^m 0\<close>; \<open>G\<^sub>u (D\<^sub>u^m 0)\<close> consists of the deeper \<open>D\<^sub>u^k 0\<close> (k<m),
+         each strictly less than \<open>?t\<close>.  We show by induction on \<open>m\<close>.\<close>
+      thus "lessBT x ?t"
+      proof -
+        have "\<And>x. x \<in> GBT (enat u) ((Dpt (enat u) ^^ m) (Trm []))
+                  \<Longrightarrow> lessBT x ((Dpt (enat u) ^^ m) (Trm []))"
+        proof (induction m)
+          case 0 thus ?case by simp
+        next
+          case (Suc k)
+          let ?s = "(Dpt (enat u) ^^ k) (Trm [])"
+          have eq: "(Dpt (enat u) ^^ Suc k) (Trm []) = Dpt (enat u) ?s"
+            by simp
+          from Suc.prems eq have
+            "x \<in> GBT (enat u) (Dpt (enat u) ?s)" by simp
+          then have "x \<in> insert ?s (GBT (enat u) ?s)"
+            by (simp add: GBT_Dpt)
+          then consider "x = ?s" | "x \<in> GBT (enat u) ?s" by blast
+          thus ?case
+          proof cases
+            case 1
+            have "lessBT ?s (Dpt (enat u) ?s)"
+              by (rule lessBT_funpow_step)
+            thus ?thesis using 1 eq by simp
+          next
+            case 2
+            then have "lessBT x ?s" using Suc.IH by blast
+            moreover have "lessBT ?s (Dpt (enat u) ?s)"
+              by (rule lessBT_funpow_step)
+            ultimately have "lessBT x (Dpt (enat u) ?s)"
+              by (rule lessBT_trans)
+            thus ?thesis using eq by simp
+          qed
+        qed
+        thus ?thesis using xin by blast
+      qed
+    qed
+    thus ?thesis using ot by simp
+  qed
+  ultimately show ?case by simp
+qed
+
+lemma m_8_7_OT_ex4: "(Dpt (enat u) ^^ n) (Trm []) \<in> OT_B"
+proof -
+  have df: "dfree_BT ((Dpt (enat u) ^^ n) (Trm []))"
+    by (induction n) simp_all
+  show ?thesis
+    using isOT_BT_Dpt_funpow df by (simp add: OT_B_def OT_def T_B_def)
+qed
+
+text \<open>命題（順序数項の基本例） (§8.7, article 6066): the four basic memberships.\<close>
+
+lemma m_8_7_OT_examples:
+  shows "Dpt (enat u) 0\<^sub>B \<in> OT_B"
+    and "Dpt (enat u) (Dpt (enat v) 0\<^sub>B) \<in> OT_B"
+    and "n \<ge> 1 \<Longrightarrow> multBT (Dpt (enat u) 0\<^sub>B) (n - 1) \<in> OT_B"
+    and "(Dpt (enat u) ^^ n) 0\<^sub>B \<in> OT_B"
+  using m_8_7_OT_ex1 m_8_7_OT_ex2 m_8_7_OT_ex3 m_8_7_OT_ex4 by simp_all
+
 end
