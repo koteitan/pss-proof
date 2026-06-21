@@ -90,7 +90,7 @@
       - ✅ 命題（$\textrm{Mark}$ が順序関係を保つこと）〔`m_7_4_Mark_order`(A19)。memory `pss-74-nextadm`〕
       - ✅ 系（$s_{-1}$ と $b_{-1}$ の空性と基点の関係）〔`m_7_3_sm1_bm1_empty`(jm1≤m ガード)〕
       - ✅ 命題（$\textrm{Mark}$ の $\textrm{Trans}$ による表示）〔`m_7_4_Mark_Trans_repr`(content 2490, 57498ea)。memory `pss-74-nextadm`〕
-    - 🚨 §7.4 許容的親子関係
+    - ✅ §7.4 許容的親子関係
       - ✅ 命題（$\textrm{Adm}_M$ と $<_M^{\textrm{NextAdm}}$ の関係）
       - ✅ 命題（$\textrm{Trans}$ と $<_M^{\textrm{NextAdm}}$ の関係）〔`m_7_4_Trans_nextAdm`(RT_PS)〕
       - ✅ 系（$\textrm{Mark}$ と $<_M^{\textrm{NextAdm}}$ の関係）〔`m_7_4_Mark_nextAdm`(A18)。memory `pss-74-nextadm`〕
