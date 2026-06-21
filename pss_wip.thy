@@ -13257,4 +13257,57 @@ proof -
   show ?thesis using rest sliceq by blast
 qed
 
+
+text \<open>§8.1 lemma part (3-2) (content.md 2935).  Under the c1-around hypotheses
+  and a next-parent j0' of j0 with j0'+1 = j0 (sub-case (3)), the guard of (3-2)
+  -- jm1' < j0' (i.e. j0' is non-M-admissible) and entry M 1 j0' >= entry M 1 j0
+  -- is VACUOUSLY FALSE.  Empirically: over the ST_PS closure (maxlen <= 10)
+  there are 200 adjacent next-parent cases, 18 with j0' non-admissible, and in 0
+  of those does entry M 1 j0' >= entry M 1 j0 hold.
+  Proof: Adm M j0' < j0' forces not (adm M j0'), hence nadm M j0'; with
+  j0' < Lng M (from nextR) this gives nextR M 1 j0' (j0'+1), i.e.
+  nextrel1 M j0' j0 (since j0'+1 = j0), so entry M 1 j0' < entry M 1 j0,
+  contradicting the guard.  Hence the implication holds vacuously, for ANY RHS.\<close>
+
+lemma m_8_1_c1_around_part3_2:
+  fixes M :: pairseq
+  defines "j1 \<equiv> Lng M - 1"
+  defines "j0 \<equiv> parent M 0 j1"
+  defines "jm1 \<equiv> Adm M j0"
+  defines "c1 \<equiv> Mark (Pred M) jm1"
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS"
+    and admj0: "adm M j0" and j1gt: "j1 > 1"
+    and ge: "entry M 1 j0 \<ge> entry M 1 j1"
+    and np: "nextR M 0 j0' j0"
+  defines "jm1' \<equiv> Adm M j0'"
+  shows "j0' + 1 = j0 \<longrightarrow>
+           (jm1' < j0' \<and> entry M 1 j0' \<ge> entry M 1 j0)
+             \<longrightarrow> Mark (Pred M) jm1'
+                   = Dpt (enat (entry M 1 jm1')) (Dpt (enat (entry M 1 j0')) c1)"
+proof (intro impI)
+  assume adj: "j0' + 1 = j0"
+  assume guard: "jm1' < j0' \<and> entry M 1 j0' \<ge> entry M 1 j0"
+  \<comment> \<open>\<open>j\<^sub>0' < Lng M\<close> from the next-relation\<close>
+  have j0'lt: "j0' < Lng M" using np by (simp add: nextR_def nextrel0_def)
+  \<comment> \<open>\<open>jm1' = Adm M j0' < j0'\<close> forces \<open>\<not> adm M j0'\<close>\<close>
+  have notadm: "\<not> adm M j0'"
+  proof
+    assume "adm M j0'"
+    hence "Adm M j0' = j0'" by (simp add: Adm_def)
+    thus False using guard jm1'_def by simp
+  qed
+  \<comment> \<open>\<open>nadm M j0'\<close>; \<open>j0' \<le> Lng M\<close>, so the second disjunct fires\<close>
+  have nad: "nadm M j0'" using notadm by (simp add: adm_def)
+  have notgt: "\<not> j0' > Lng M" using j0'lt by simp
+  have pair: "nextR M 1 (j0' - 1) j0' \<and> nextR M 1 j0' (j0' + 1)"
+    using nad notgt by (simp add: nadm_def)
+  have nr1: "nextrel1 M j0' (j0' + 1)" using pair by (simp add: nextR_def)
+  \<comment> \<open>with \<open>j\<^sub>0'+1 = j\<^sub>0\<close> this is \<open>nextrel1 M j\<^sub>0' j\<^sub>0\<close>, giving \<open>e1 j\<^sub>0' < e1 j\<^sub>0\<close>\<close>
+  have lt1: "entry M 1 j0' < entry M 1 j0" using nr1 adj by (simp add: nextrel1_def)
+  have False using lt1 guard by linarith
+  thus "Mark (Pred M) jm1'
+          = Dpt (enat (entry M 1 jm1')) (Dpt (enat (entry M 1 j0')) c1)"
+    by (rule FalseE)
+qed
+
 end
