@@ -48,7 +48,7 @@
       - 🚨 命題（条件 (I) の下での $\textrm{Trans}$ と基本列の交換関係）
       - ✅ 補題（公差 $(1,1)$ のペア数列の $\textrm{Trans}$ の基本性質）〔`m_8_1_diagSeq_Trans`〕
       - ✅ 系（$\textrm{Pred}$ が公差 $(1,1)$ のペア数列の $\textrm{Trans}$ の基本性質）〔`m_8_1_Pred_diagSeq_Trans`〕
-      - 🚨 補題（条件 (I) か (III) の下での $c_1$ 前後の具体表示）〔part(1)(2)(3-2)(5)✅+engine`Mark_adjacent_form`✅/残(3-1)=adm補題1本・(4-1)(4-2)=gap-fold engine(A20/A21)〕
+      - 🚨🤖 補題（条件 (I) か (III) の下での $c_1$ 前後の具体表示）〔part(1)(2)(3-2)(5)✅+`Mark_adjacent_form`✅+(4-1)(4-2)uniqueness✅/残(3-1)(4-1)(4-2)=keystone`Mark_nadm_const`1本に収束(A20/A21)〕
     - 🚨 §8.2 強単項性
       - ✅ 命題（標準形の直系先祖による切片の簡約化の強単項性）〔`m_8_2_standard_slice_Red_strongmono`〕
       - 🚨 命題（条件 (II) か (IV) の下での終切片と $\textrm{Trans}$ の関係）
