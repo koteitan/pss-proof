@@ -80,15 +80,15 @@
       - ✅ 命題（$\textrm{Pred}$ の $\textrm{Trans}$ に関する降下性）〔`m_7_3_Pred_Trans_descend`〕
       - ✅ 命題（右端第 $1$ 基点の $\textrm{Mark}$ の基本性質）〔完全iff `m_7_3_Mark_rightmost1`(A17)〕
       - ✅ 系（$\textrm{Mark}$ の左端の基本性質）〔`Mark_leftend_form`/`Mark_MarkedB_nest`〕
-      - 🚨 系（条件 (II) か (IV) の下で $t_2$ が $0$ でないこと）
+      - ✅ 系（条件 (II) か (IV) の下で $t_2$ が $0$ でないこと）〔`m_7_3_t2_nonzero_condIIorIV`〕
       - ✅ 命題（右端第 $2$ 基点の $\textrm{Mark}$ の基本性質）〔`m_7_3_Mark_rightmost2`〕
       - 🚨🚧 命題（$\textrm{Trans}$ の最左単項成分の左端の基本性質）〔核 `m_7_3_Trans_leftend`✅。残=(1)(2)(3)完全形〕
       - ⚠️ 命題（$\textrm{Trans}$ が単項性を保つこと）〔訂正A16: 原文偽(反例(0,0)(0,0))。memory `pss-73-trans-monoT-false`〕
       - 🚨 系（$\textrm{Trans}$ と非可算基数の関係）〔基数概念要〕
-      - 🚨 系（左端第 $1$ 基点の $\textrm{Mark}$ の基本性質）
-      - 🚨 系（$s_1$ と $b_1$ の空性と基点の関係）〔def 内部記号露出要〕
+      - ✅ 系（左端第 $1$ 基点の $\textrm{Mark}$ の基本性質）〔`m_7_3_Mark_leftmost1`〕
+      - ✅ 系（$s_1$ と $b_1$ の空性と基点の関係）〔`m_7_3_s1_b1_empty`〕
       - ✅ 命題（$\textrm{Mark}$ が順序関係を保つこと）〔`m_7_4_Mark_order`(A19)。memory `pss-74-nextadm`〕
-      - 🚨 系（$s_{-1}$ と $b_{-1}$ の空性と基点の関係）
+      - ✅ 系（$s_{-1}$ と $b_{-1}$ の空性と基点の関係）〔`m_7_3_sm1_bm1_empty`(jm1≤m ガード)〕
       - ✅ 命題（$\textrm{Mark}$ の $\textrm{Trans}$ による表示）〔`m_7_4_Mark_Trans_repr`(content 2490, 57498ea)。memory `pss-74-nextadm`〕
     - 🚨 §7.4 許容的親子関係
       - ✅ 命題（$\textrm{Adm}_M$ と $<_M^{\textrm{NextAdm}}$ の関係）
@@ -115,7 +115,7 @@
       - 🚨 補題（条件 (V) の下での終切片と $\textrm{Trans}$ の関係）
     - 🚨 §8.3 条件 (II) の下での展開規則
       - 🚨 命題（条件 (II) の下での $\textrm{Trans}$ と基本列の交換関係）
-      - 🚨 補題（第 $0$ 種型基本列の基本不等式）
+      - ✅ 補題（第 $0$ 種型基本列の基本不等式）〔`m_8_3_kind0_base_ineq`(A22訂正)〕
       - 🚨 補題（第 $0$ 種型基本列の基本分岐規則）
       - 🚨 補題（第 $0$ 種型基本列の基本基点関係）
     - 🚨 §8.4 条件 (III) か (IV) の下での展開規則
@@ -144,5 +144,5 @@
       - 🚨 補題（順序数項の共終数の遺伝性）
       - 🚨 補題（順序数項の末尾項の零化可能性）
       - 🚨 補題（$\textrm{Pred}$ と $[0]$ の関係）
-      - 🚨 補題（順序数項の基本例）
+      - ✅ 補題（順序数項の基本例）〔`m_8_7_OT_examples`〕
       - 🚨 補題（$\textrm{Trans}$ が標準形を保つこと）
