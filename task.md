@@ -3,71 +3,23 @@
 ## 注意事項
 - 進捗ツリー以外をこのページに書かない。
 - **各アイテムはアイテムを区別する情報のみを１行で。それ以上は書かない**（討伐補題名 or blocker を短く。設計の詳細は docs/・memory へ）。
+- 子がすべて ✅ のノードは子を畳む（子を書かない）。
 - 下記の反例以外のマークを増やさない
   - 凡例: **各項目には必ず 🚨（未証明）または ✅（証明済）を付ける**（司令マーカー）。 / 🚨🤖＝ agent 作業中
 
 ## 進捗ツリー
 - 🚨 定理（標準形ペア数列システムの停止性）[§8.7 主結果]
   - ✅ §5 定式化
-  - ✅ §6 ペア数列の基本性質 〔全節完了(2026-06-11)〕
-    - ✅ §6.1 最上行のインクリメント
-    - ✅ §6.2 単項性
-    - ✅ §6.3 許容性
-    - ✅ §6.4 幹と枝
-    - ✅ §6.5 簡約化 〔docs `red-le-domain.md`〕
-      - ✅ 命題（$\textrm{Red}$ の well-defined 性）
-      - ✅ 命題（$\textrm{Red}$ の $\textrm{IncrFirst}$ 不変性）〔`m_6_5_Red_IncrFirst`〕
-        - ✅🚧 補題（死枝[20]の到達不能性）〔`m_6_5_monoT_Red_m10pos`〕
-      - ✅ 命題（$\textrm{Lng}$ の $\textrm{Red}$ 不変性）
-      - ✅ 系（$\textrm{Red}$ が零項性を保つこと）
-      - ✅ 系（直系先祖の $\textrm{Red}$ 不変性）〔`m_6_5_Red_le_final` 無条件。memory `pss-65-monocong`〕
-        - ✅ zeroT 分岐〔`m_6_5_Red_le_zeroT`〕
-        - ✅ congR bridge〔`m_6_5_congR_imp_leR_inv`〕
-        - ✅ anchored⟹RedCondA〔`m_6_5_anchored_imp_RedCondA`〕
-        - ✅ 残a monoCong〔`m_6_5_congR_self_Red_monoT`〕
-        - ✅ 残b stdCA〔`stdCA_ST_PS`/`RedCondAB_ST_PS`〕
-      - ✅ 系（$\textrm{Red}$ が単項性を保つこと）〔`m_6_5_Red_monoT_final`〕
-      - ✅ 系（$P$ の $\textrm{Red}$ 同変性）〔`m_6_5_P_Red_final`〕
-      - ✅ 命題（単項性と $\textrm{Red}$ の関係）〔`m_6_5_monoT_Red_m10pos`〕
-      - ✅ 命題（$\textrm{Red}$ の冪等性）〔`m_6_5_Red_idem`〕
-      - ✅ 命題（$\textrm{Red}$ と $\textrm{Pred}$ の可換性）〔`m_6_5_Red_Pred`〕
-        - ✅🚧 補題（死枝[20]の到達不能性）〔`m_6_5_monoT_Red_m10pos`〕
-      - ✅ 命題（$\textrm{Red}$ と基本列の可換性）〔`m_6_5_Red_oper_final`。memory `pss-65-66-cleared`〕
-      - ✅ 命題（$\textrm{Red}$ が許容性を保つこと）〔`m_6_5_Red_adm_final`〕
-      - ✅ 系（許容化の $\textrm{Red}$ 不変性）〔`m_6_5_admof_Red_final`〕
-      - ✅ 系（$\textrm{Red}$ が基点を保つこと）〔`m_6_5_Red_marked_final`〕
-    - ✅ §6.6 簡約性 〔keystone `m_6_6_reduced_iff_cond`。docs `reducedness.md`〕
-      - ✅ 命題（簡約性の切片への遺伝性）〔`herd_6_6_reduced_slice`(A5)〕
-      - ✅ 命題（$P$ が簡約性を保つこと）〔`m_6_6_P_reduced`〕
-      - ✅ 命題（簡約性が基本列で保たれること）〔`m_6_6_reduced_oper`。memory `pss-65-66-cleared`〕
-      - ✅ 命題（簡約性と係数の関係）〔`m_6_6_reduced_iff_cond`。memory `pss-66-keystone-done`〕
-      - ✅ 補題（$\textrm{Red}$ と左端の関係）〔`m_6_6_Red_leftend_2`〕
-      - ✅ 補題（簡約性と係数の基本性質）〔`m_6_6_reduced_coeff`〕
-      - ✅ 補題（簡約性と左端の関係）〔`m_6_6_reduced_leftend`〕
-      - ✅ 補題（条件 (A) と (B) と係数の基本性質）〔`m_6_6_condAB_coeff`〕
-      - ✅ 系（直系先祖による切片と $\textrm{Red}$ と $\textrm{IncrFirst}$ の関係）〔A2。`m_6_6_ancestor_slice_Red_IncrFirst`〕
-      - ✅ 系（$1$ 列ペア数列の基本性質）〔`m_6_6_oneColumn`/`Red_singleton`〕
-    - ✅ §6.7 標準形
-      - ✅ 命題（標準形の階層和による表示）
-      - ✅ 命題（標準形の簡約性）〔ST_PS⊆RT_PS=`m_6_7_ST_PS_subseteq_RT_PS`(e096355)。memory `pss-67-cgeg0`〕
-      - ✅ 命題（標準形の単項成分が標準形であること）
-      - ✅ 命題（標準形の始切片への遺伝性）
-    - ✅ §6.8 降順性
-      - ✅ 命題（標準形の切片と $\textrm{Br}$ の降順性の関係）〔`m_6_8_standard_slice_Br_descending`。docs `slice-Br-descending.md`〕
-      - ✅ 命題（標準形の単項成分が降順であること）
+  - ✅ §6 ペア数列の基本性質 〔全節完了(2026-06-11)。docs `reducedness.md`/`red-le-domain.md`/`slice-Br-descending.md`〕
   - 🚨 §7 Buchholzの表記系への翻訳
     - ✅ §7.1 Buchholzの表記系
-      - ✅ 命題（順序数項のカッコの個数が左右で等しいこと）
-      - ✅ 命題（順序数項の単項成分の基本性質）
-      - ✅ 命題（部分表現の不等式の延長性）〔`scbext_lessBT`/`scbext_lessBP`〕
-      - ✅ [Buc1] Lemma 2.1（`<` が `T` 上の狭義全順序）
     - 🚨🚧 §7.2 scb分解 〔`m_7_flatBT_inj` 完成〕
       - ✅🚧 命題（scb分解の置換可能性）〔A12。`m_7_2_scb_replaceable_corr_mod_image`〕
       - ✅🚧 命題（scb分解の合成則）〔`m_7_2_scb_compose`/A11 `scbcomp_compose2_PT`〕
       - ✅ 命題（scb分解の自明性の判定条件）〔`m_7_2_scb_triviality`〕
       - ✅🚧 命題（scb分解の一意性）〔(1)(3)(4)(5) green(A14)。残(2)=domB termination〕
       - ✅ 系（加法と scb分解の関係）〔(1)(2) green/(3) A13〕
-      - 🚨 命題（scb分解と基本列の関係）
+      - 🚨 命題（scb分解と基本列の関係）〔`operB` の (domintros) 欠落でブロック。memory `pss-8-sweep`〕
       - ✅ 命題（$\textrm{RightNodes}$ と部分表現の関係）〔`m_7_2_RightNodes_subexpr`〕
     - 🚨 §7.3 翻訳写像
       - ✅ **定義** `Trans`/`Mark`（相互再帰 `function`）
@@ -82,7 +34,7 @@
       - ✅ 系（$\textrm{Mark}$ の左端の基本性質）〔`Mark_leftend_form`/`Mark_MarkedB_nest`〕
       - ✅ 系（条件 (II) か (IV) の下で $t_2$ が $0$ でないこと）〔`m_7_3_t2_nonzero_condIIorIV`〕
       - ✅ 命題（右端第 $2$ 基点の $\textrm{Mark}$ の基本性質）〔`m_7_3_Mark_rightmost2`〕
-      - 🚨🚧 命題（$\textrm{Trans}$ の最左単項成分の左端の基本性質）〔核 `m_7_3_Trans_leftend`✅。残=(1)(2)(3)完全形〕
+      - 🚨🤖 命題（$\textrm{Trans}$ の最左単項成分の左端の基本性質）〔核 `m_7_3_Trans_leftend`✅。残=(1)(2)(3)完全形🤖〕
       - ⚠️ 命題（$\textrm{Trans}$ が単項性を保つこと）〔訂正A16: 原文偽(反例(0,0)(0,0))。memory `pss-73-trans-monoT-false`〕
       - 🚨 系（$\textrm{Trans}$ と非可算基数の関係）〔基数概念要〕
       - ✅ 系（左端第 $1$ 基点の $\textrm{Mark}$ の基本性質）〔`m_7_3_Mark_leftmost1`〕
@@ -91,26 +43,18 @@
       - ✅ 系（$s_{-1}$ と $b_{-1}$ の空性と基点の関係）〔`m_7_3_sm1_bm1_empty`(jm1≤m ガード)〕
       - ✅ 命題（$\textrm{Mark}$ の $\textrm{Trans}$ による表示）〔`m_7_4_Mark_Trans_repr`(content 2490, 57498ea)。memory `pss-74-nextadm`〕
     - ✅ §7.4 許容的親子関係
-      - ✅ 命題（$\textrm{Adm}_M$ と $<_M^{\textrm{NextAdm}}$ の関係）
-      - ✅ 命題（$\textrm{Trans}$ と $<_M^{\textrm{NextAdm}}$ の関係）〔`m_7_4_Trans_nextAdm`(RT_PS)〕
-      - ✅ 系（$\textrm{Mark}$ と $<_M^{\textrm{NextAdm}}$ の関係）〔`m_7_4_Mark_nextAdm`(A18)。memory `pss-74-nextadm`〕
-      - ✅ 系（$\textrm{Trans}$ の $\textrm{Mark}$ と $\textrm{Pred}$ による表示）〔`m_7_4_Trans_Mark_Pred`(content 2490)〕
-      - ✅ 系（$\textrm{Trans}$ の $\textrm{Mark}$ と切片による表示）〔`m_7_4_Trans_Mark_seg`(content 2646)〕
-      - ✅ 系（$\textrm{RightNodes}$ と $\textrm{Mark}$ の関係）〔`m_7_4_RightNodes_Mark`〕
-      - ✅ 命題（$\textrm{RightNodes}$ と $\textrm{RightAnces}$ の関係）〔`m_7_4_RightAnces_RightNodes`(RT_PS)。memory `pss-74-nextadm`〕
-      - ✅ 系（非零項の $\textrm{RightAnces}$ が非空であること）〔`m_7_4_RightAnces_zeroT`(RT_PS)〕
   - 🚨 §8 停止性
     - 🚨 §8.1 条件 (I) の下での展開規則
       - 🚨 命題（条件 (I) の下での $\textrm{Trans}$ と基本列の交換関係）
       - ✅ 補題（公差 $(1,1)$ のペア数列の $\textrm{Trans}$ の基本性質）〔`m_8_1_diagSeq_Trans`〕
       - ✅ 系（$\textrm{Pred}$ が公差 $(1,1)$ のペア数列の $\textrm{Trans}$ の基本性質）〔`m_8_1_Pred_diagSeq_Trans`〕
-      - 🚨🤖 補題（条件 (I) か (III) の下での $c_1$ 前後の具体表示）〔`p_8_1_condI_III_c1_around`(A20/A21)。part(1)(2)(3-2)✅/残(3-1)(4-1)(4-2)🤖fp+part(5)。memory `pss-81-c1around`〕
+      - 🚨🤖 補題（条件 (I) か (III) の下での $c_1$ 前後の具体表示）〔`p_8_1_condI_III_c1_around`(A20/A21)。part(1)(2)(3-2)✅/残(3-1)(4-1)(4-2)+part(5)。memory `pss-81-c1around`〕
     - 🚨 §8.2 強単項性
-      - 🚨 命題（標準形の直系先祖による切片の簡約化の強単項性）
+      - ✅ 命題（標準形の直系先祖による切片の簡約化の強単項性）〔`m_8_2_standard_slice_Red_strongmono`〕
       - 🚨 命題（条件 (II) か (IV) の下での終切片と $\textrm{Trans}$ の関係）
       - 🚨 補題（強単項性の切片への遺伝性）
       - 🚨 補題（部分表現の単項成分と $\textrm{Pred}$ の関係）
-      - 🚨 補題（強単項性の下での部分表現の単項成分の基本性質）
+      - 🚨 補題（強単項性の下での部分表現の単項成分の基本性質）〔clause(1) `m_8_2_subexpr_leftend_unique`✅。残(2)(3)(4)=leBT下界〕
       - 🚨 補題（条件 (V) の下での右端の親の基本性質）
       - 🚨 補題（条件 (V) の下での終切片と $\textrm{Trans}$ の関係）
     - 🚨 §8.3 条件 (II) の下での展開規則
@@ -134,11 +78,11 @@
       - 🚨 補題（条件 (V) の下での各種 scb分解）〔def 内部記号露出要〕
     - 🚨 §8.6 条件 (VI) の下での展開規則
       - 🚨 命題（条件 (VI) の下での $\textrm{Trans}$ と基本列の交換関係）
-      - 🚨 補題（公差 $(1,0)$ のペア数列の $\textrm{Trans}$ の基本性質）
-      - 🚨 補題（公差 $(1,1)$ のペア数列の $\textrm{Trans}$ の展開規則）
+      - ✅ 補題（公差 $(1,0)$ のペア数列の $\textrm{Trans}$ の基本性質）〔`m_8_6_const2nd_Trans_paper`〕
+      - ✅ 補題（公差 $(1,1)$ のペア数列の $\textrm{Trans}$ の展開規則）〔`m_8_6_diagSeq_Trans_oper_paper`〕
       - 🚨 補題（順序数項の末尾単項の零化可能性）
     - 🚨 §8.7 主結果
-      - 🚨 補題（公差 $(0,0)$ のペア数列の $\textrm{Trans}$ の基本性質）
+      - ✅ 補題（公差 $(0,0)$ のペア数列の $\textrm{Trans}$ の基本性質）〔`m_8_7_const00_Trans`〕
       - 🚨 補題（基本列の降下性）
       - 🚨 補題（順序数項の再帰構造）
       - 🚨 補題（順序数項の共終数の遺伝性）
