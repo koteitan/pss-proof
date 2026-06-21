@@ -18724,4 +18724,76 @@ lemma Mark_adjacent_form:
   shows "Mark M a = Dpt (enat (entry M 1 a)) (Mark M (a + 1))"
   using Mark_adjacent_form_aux MR mA mA1 aub by blast
 
+
+text \<open>§8.1 (4-1)/(4-2) uniqueness kernel.  Right-cancellation of \<open>+\<^sub>B\<close> under a
+  common \<open>Dpt\<close>-head: since \<open>a +\<^sub>B c = Trm (untrm a @ untrm c)\<close>, equality of two
+  \<open>D\<^bsub>v\<^esub>(a +\<^sub>B c)\<close> forces \<open>a = b\<close> by list right-cancellation.  This is the engine
+  that turns "the value HAS shape \<open>D\<^bsub>v\<^esub>(t +\<^sub>B c)\<close>" into the article's \<open>\<exists>!t\<close>.\<close>
+
+lemma Dpt_addBT_right_cancel:
+  assumes "Dpt v (a +\<^sub>B c) = Dpt v (b +\<^sub>B c)"
+  shows "a = b"
+proof -
+  have "DB v (a +\<^sub>B c) = DB v (b +\<^sub>B c)" using assms by simp
+  hence "a +\<^sub>B c = b +\<^sub>B c" by simp
+  hence "Trm (untrm a @ untrm c) = Trm (untrm b @ untrm c)"
+    by (cases a; cases b; cases c) simp_all
+  hence "untrm a @ untrm c = untrm b @ untrm c" by simp
+  hence "untrm a = untrm b" by simp
+  thus "a = b" by (cases a; cases b) simp_all
+qed
+
+text \<open>Packaging: if the value \<open>X\<close> equals \<open>D\<^bsub>v\<^esub>(t\<^sub>0 +\<^sub>B c)\<close> for some witness \<open>t\<^sub>0\<close>,
+  then there is a UNIQUE \<open>t\<close> with \<open>X = D\<^bsub>v\<^esub>(t +\<^sub>B c)\<close> (existence = the witness,
+  uniqueness = @{thm [source] Dpt_addBT_right_cancel}).\<close>
+
+lemma ex1_Dpt_addBT:
+  assumes "X = Dpt v (t\<^sub>0 +\<^sub>B c)"
+  shows "\<exists>!t. X = Dpt v (t +\<^sub>B c)"
+proof (rule ex1I[of _ t\<^sub>0])
+  show "X = Dpt v (t\<^sub>0 +\<^sub>B c)" by (rule assms)
+next
+  fix t assume "X = Dpt v (t +\<^sub>B c)"
+  hence "Dpt v (t +\<^sub>B c) = Dpt v (t\<^sub>0 +\<^sub>B c)" using assms by simp
+  thus "t = t\<^sub>0" by (rule Dpt_addBT_right_cancel)
+qed
+
+text \<open>The analogous \<open>\<exists>!\<close> packaging for the (4-2) two-layer body.  If
+  \<open>X = D\<^bsub>v\<^esub>(t\<^sub>3\<^sup>0 +\<^sub>B D\<^bsub>w\<^esub>(t\<^sub>4\<^sup>0 +\<^sub>B c))\<close> for a witness pair, then the pair
+  \<open>(t\<^sub>3,t\<^sub>4)\<close> is uniquely determined.  Uniqueness: the outer \<open>Dpt v\<close>/\<open>+\<^sub>B\<close>
+  cancel \<open>t\<^sub>3\<close> against the common right summand \<open>D\<^bsub>w\<^esub>(\<dots>)\<close>, and the inner
+  \<open>Dpt w\<close>/\<open>+\<^sub>B\<close> cancel \<open>t\<^sub>4\<close> against the common \<open>c\<close>.  NOTE: outer cancellation
+  needs the right summand \<open>D\<^bsub>w\<^esub>(t\<^sub>4 +\<^sub>B c)\<close> to be a SINGLE principal component so
+  that the component-list suffix is shared; this holds because it is a \<open>Dpt\<close>.\<close>
+
+lemma ex1_Dpt_addBT_two:
+  assumes "X = Dpt v (t3\<^sub>0 +\<^sub>B Dpt w (t4\<^sub>0 +\<^sub>B c))"
+  shows "\<exists>!t34. X = Dpt v (fst t34 +\<^sub>B Dpt w (snd t34 +\<^sub>B c))"
+proof (rule ex1I[of _ "(t3\<^sub>0, t4\<^sub>0)"])
+  show "X = Dpt v (fst (t3\<^sub>0, t4\<^sub>0) +\<^sub>B Dpt w (snd (t3\<^sub>0, t4\<^sub>0) +\<^sub>B c))"
+    using assms by simp
+next
+  fix t34 :: "BT \<times> BT"
+  obtain a b where ab: "t34 = (a, b)" by (cases t34)
+  assume "X = Dpt v (fst t34 +\<^sub>B Dpt w (snd t34 +\<^sub>B c))"
+  hence eq: "Dpt v (a +\<^sub>B Dpt w (b +\<^sub>B c)) = Dpt v (t3\<^sub>0 +\<^sub>B Dpt w (t4\<^sub>0 +\<^sub>B c))"
+    using assms ab by simp
+  \<comment> \<open>strip the outer \<open>D\<^bsub>v\<^esub>\<close>, then compare component lists\<close>
+  have bodyeq: "a +\<^sub>B Dpt w (b +\<^sub>B c) = t3\<^sub>0 +\<^sub>B Dpt w (t4\<^sub>0 +\<^sub>B c)"
+    using eq by simp
+  have listeq: "untrm a @ [DB w (b +\<^sub>B c)] = untrm t3\<^sub>0 @ [DB w (t4\<^sub>0 +\<^sub>B c)]"
+    using bodyeq by (cases a; cases t3\<^sub>0) simp_all
+  \<comment> \<open>the right summands are single principal components: last elements coincide\<close>
+  have lasteq: "DB w (b +\<^sub>B c) = DB w (t4\<^sub>0 +\<^sub>B c)"
+    using listeq by (simp add: append_eq_append_conv)
+  hence "b +\<^sub>B c = t4\<^sub>0 +\<^sub>B c" by simp
+  hence "Trm (untrm b @ untrm c) = Trm (untrm t4\<^sub>0 @ untrm c)"
+    by (cases b; cases t4\<^sub>0; cases c) simp_all
+  hence beq: "b = t4\<^sub>0" by (cases b; cases t4\<^sub>0) simp_all
+  \<comment> \<open>prefixes coincide too\<close>
+  have "untrm a = untrm t3\<^sub>0" using listeq by (simp add: append_eq_append_conv)
+  hence aeq: "a = t3\<^sub>0" by (cases a; cases t3\<^sub>0) simp_all
+  thus "t34 = (t3\<^sub>0, t4\<^sub>0)" using ab aeq beq by simp
+qed
+
 end
