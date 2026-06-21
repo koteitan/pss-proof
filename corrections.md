@@ -526,3 +526,9 @@ yaBMS で経験的検証済）はブロック $n$ 個でこの訂正後の式と
 **経験的確認**: maxlen5 maxe3 で反例多数(独立検証、sweep agent)。
 
 **訂正案**: 右辺添字に \(j_0+\) を補い \(M[n]_{0,\ j_0+q'(j_1-j_0)+r'}\) とする。機械化 `m_8_3_kind0_base_ineq` はこの訂正形(`entry (M[n]) 0 (j0 + q'*(j1-j0) + r')`)で証明済(green, sorry 0)。
+
+## C1（明確化、訂正ではない） — §7.3「Trans の最左単項成分の左端」clause (3) の "D_u" の解釈
+
+**該当**: §7.3 命題（Trans の最左単項成分の左端の基本性質）clause (3)（content.md 2342）。原文は「左端2文字は \(D_{M_{1,0}} D_u\)」と書く。
+
+**明確化**: 機械化 `m_7_3_Trans_leftmost`(pss_wip)では clause (3) を `∃t. PB(Trans M)!0 = Dpt(enat(entry M 1 0)) t ∧ t ≠ 0⇩B` と表現し、第2文字 "\(D_u\)" を**非零余項 t の tree-head `bpHeadV(t)`** として読む。理由(経験的: monoT 314/360 ケース)は **t が複数の主表現成分を持ちうる**(= 単一 Dpt ではない)ため。原文の "\(D_u\)" を `t = Dpt w t'` の単一 Dpt と literal に取ると**偽**になる。`bpHeadV(t)`(t≠0 で存在)が忠実な読み。原文は偽ではなく、解釈の明確化のみ。

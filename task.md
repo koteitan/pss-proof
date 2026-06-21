@@ -34,7 +34,7 @@
       - ✅ 系（$\textrm{Mark}$ の左端の基本性質）〔`Mark_leftend_form`/`Mark_MarkedB_nest`〕
       - ✅ 系（条件 (II) か (IV) の下で $t_2$ が $0$ でないこと）〔`m_7_3_t2_nonzero_condIIorIV`〕
       - ✅ 命題（右端第 $2$ 基点の $\textrm{Mark}$ の基本性質）〔`m_7_3_Mark_rightmost2`〕
-      - 🚨🤖 命題（$\textrm{Trans}$ の最左単項成分の左端の基本性質）〔核 `m_7_3_Trans_leftend`✅。残=(1)(2)(3)完全形🤖〕
+      - ✅ 命題（$\textrm{Trans}$ の最左単項成分の左端の基本性質）〔`m_7_3_Trans_leftmost`((1)(2)(3)完全形, clause(3)明確化C1)〕
       - ⚠️ 命題（$\textrm{Trans}$ が単項性を保つこと）〔訂正A16: 原文偽(反例(0,0)(0,0))。memory `pss-73-trans-monoT-false`〕
       - 🚨 系（$\textrm{Trans}$ と非可算基数の関係）〔基数概念要〕
       - ✅ 系（左端第 $1$ 基点の $\textrm{Mark}$ の基本性質）〔`m_7_3_Mark_leftmost1`〕
