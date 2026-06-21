@@ -35,7 +35,7 @@
       - ✅ 系（条件 (II) か (IV) の下で $t_2$ が $0$ でないこと）〔`m_7_3_t2_nonzero_condIIorIV`〕
       - ✅ 命題（右端第 $2$ 基点の $\textrm{Mark}$ の基本性質）〔`m_7_3_Mark_rightmost2`〕
       - ✅ 命題（$\textrm{Trans}$ の最左単項成分の左端の基本性質）〔`m_7_3_Trans_leftmost`((1)(2)(3)完全形, clause(3)明確化C1)〕
-      - ⚠️ 命題（$\textrm{Trans}$ が単項性を保つこと）〔訂正A16: 原文偽(反例(0,0)(0,0))。memory `pss-73-trans-monoT-false`〕
+      - ✅ 命題（$\textrm{Trans}$ が単項性を保つこと）〔`m_7_3_Trans_monoT`(A16訂正: P₀非零項前提の iff)。memory `pss-73-trans-monoT-false`〕
       - 🚨 系（$\textrm{Trans}$ と非可算基数の関係）〔基数概念要〕
       - ✅ 系（左端第 $1$ 基点の $\textrm{Mark}$ の基本性質）〔`m_7_3_Mark_leftmost1`〕
       - ✅ 系（$s_1$ と $b_1$ の空性と基点の関係）〔`m_7_3_s1_b1_empty`〕

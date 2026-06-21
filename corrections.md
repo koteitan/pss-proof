@@ -459,6 +459,13 @@ yaBMS で経験的検証済）はブロック $n$ 個でこの訂正後の式と
 
 **形式化での扱い**: `Trans` 定義（`pss_paper.thy` 1137–1140 複項枝）は原文の**再帰的定義に忠実**（緑の値不変量 `Trans_Mark_invariant_aux`・`m_7_3_Trans_zeroT` はこの忠実な `Trans` 上で成立）。`p_7_3_Trans_monoT` / `p_7_3_Trans_IncrFirst_Red`(2) は上記訂正前提の下でのみ機械化可能（先頭零項枝を除外）。
 
+**追補（2026-06-21, 例外枝の転記形も偽 → 制限 iff で確定・無条件証明済み）**:
+当初 `p_7_3_Trans_monoT` に例外選言を補って
+\[\textrm{monoT}(M) \iff \big(\textrm{Lng}(P_{\textrm{B}}(\textrm{Trans}\,M)) = 1 \,\lor\, (\textrm{zeroT}(P(M)_0) \land \textrm{Lng}(P(M)) = 2)\big)\]
+と転記したが、**この補正形そのものも偽**（`python/_step0_monoT_restricted.py` で reduced 列 maxlen≤5 を全数: **転記形 53 反例**, うち代表 \(M = ((0,0),(0,0),(1,1))\) は複項なのに \(\textrm{Trans}\,M\) が単項で、かつ右選言が真 → 同値が破れる。例外選言が**逆向き**に付いていた）。正しい経験的真形（同データで reduced 1269 件・**反例 0**）は先頭 P 成分非零項への制限 iff:
+\[M \in RT_{\textrm{PS}} \,\land\, \neg\textrm{zeroT}(P(M)_0) \ \Longrightarrow\ \big(\textrm{monoT}(M) \iff \textrm{Lng}(P_{\textrm{B}}(\textrm{Trans}\,M)) = 1\big).\]
+この制限形を `pss_wip.thy` の `m_7_3_Trans_monoT` として **無条件に証明済み**（前提は \(M \in RT_{\textrm{PS}}\) と \(\neg\textrm{zeroT}(P(M)_0)\) のみ; 偽命題や仮定偽装なし、緑 "Finished PSS"）。順方向は `Trans_PT_single`（単項 ⇒ \(\textrm{Trans}\,M\) 単一主成分）、逆方向は対偶: 複項枝の \(\textrm{Trans}\,M = \textrm{Trans}(A) +_{\textrm{B}} (\cdots)\) 分解で両被加数が主成分非空 ⇒ \(\textrm{Lng}(P_{\textrm{B}}) \ge 2\)。`pss_paper.thy` の `p_7_3_Trans_monoT` 文面もこの制限形に訂正（sorry 保持）。
+
 ## A17. §7.3 命題（右端第1基点の Mark の基本性質）ほか §7.3 順序系: 零項基底 \(((0,0))\) での例外（A16 と同根の系統的零項エッジ）
 
 **所在**: §7.3「命題（右端第\(1\)基点の Mark の基本性質）」(content.md 2294) ほか、Mark の基点・順序を \(D_{M_{1,m}} 0\) 等の主表現で特徴づける §7.3 命題群。形式化では `p_7_3_Mark_rightmost1` 等。

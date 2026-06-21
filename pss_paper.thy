@@ -1279,12 +1279,20 @@ lemma p_7_3_Mark_rightmost1:
   sorry
 
 text \<open>命題（\<open>Trans\<close>が単項性を保つこと） (§7.3, 2358).  A \<open>BT\<close> term is principal
-  (\<open>\<in> PT\<^bsub>B\<^esub>\<close>) iff it has a single principal component, i.e. \<open>Lng (P\<^bsub>B\<^esub> t) = 1\<close>.\<close>
+  (\<open>\<in> PT\<^bsub>B\<^esub>\<close>) iff it has a single principal component, i.e. \<open>Lng (P\<^bsub>B\<^esub> t) = 1\<close>.
+
+  CORRECTION A16: the transcribed exceptional-disjunct form
+  \<open>monoT M \<longleftrightarrow> (Lng (PB (Trans M)) = 1 \<or> (zeroT (P M ! 0) \<and> Lng (P M) = 2))\<close>
+  is FALSE (53 counterexamples, e.g. \<open>M = [(0,0),(0,0),(1,1)]\<close> is \<open>multiT\<close> but
+  \<open>Trans M\<close> is single AND the right disjunct holds — the disjunct was added in the
+  wrong direction).  The empirically true form (1269 reduced cases, 0 CEX)
+  restricts to a non-zero first \<open>P\<close>-component: under \<open>\<not> zeroT (P M ! 0)\<close>,
+  \<open>monoT M \<longleftrightarrow> Lng (PB (Trans M)) = 1\<close>.  Stated \<open>RT\<^bsub>PS\<^esub>\<close>-restricted (the §7.3
+  convention; \<open>M \<in> T\<^bsub>PS\<^esub>\<close> reduces to \<open>Red M \<in> RT\<^bsub>PS\<^esub>\<close> with \<open>Trans (Red M) = Trans M\<close>).\<close>
 
 lemma p_7_3_Trans_monoT:
-  assumes "M \<in> T_PS"
-  shows "monoT M \<longleftrightarrow>
-           (Lng (PB (Trans M)) = 1 \<or> (zeroT (P M ! 0) \<and> Lng (P M) = 2))"
+  assumes "M \<in> RT_PS" "\<not> zeroT (P M ! 0)"
+  shows "monoT M \<longleftrightarrow> Lng (PB (Trans M)) = 1"
   sorry
 
 
