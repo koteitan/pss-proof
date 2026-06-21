@@ -18097,4 +18097,631 @@ proof -
   show ?thesis using base idxeq by simp
 qed
 
+
+
+text \<open>§8.1 c1-around part(5) assembly helpers.\<close>
+
+text \<open>If \<open>adm\<close> agrees pointwise on \<open>[0,b]\<close> between two sequences, their
+  admissibilisation \<open>Adm\<close> of \<open>b\<close> coincides.  (\<open>Adm M b = if adm M b then b
+  else Max{j'. adm M j' \<and> j' < b}\<close>; both the head test and the \<open>Max\<close>-set are
+  determined by \<open>adm _ j\<close> for \<open>j \<le> b\<close>.)\<close>
+
+lemma Adm_eq_of_adm_below:
+  assumes agree: "\<And>j. j \<le> b \<Longrightarrow> adm M j = adm K j"
+  shows "Adm M b = Adm K b"
+proof -
+  have setEq: "{j'. adm M j' \<and> j' < b} = {j'. adm K j' \<and> j' < b}"
+  proof
+    show "{j'. adm M j' \<and> j' < b} \<subseteq> {j'. adm K j' \<and> j' < b}"
+      using agree by auto
+    show "{j'. adm K j' \<and> j' < b} \<subseteq> {j'. adm M j' \<and> j' < b}"
+      using agree by auto
+  qed
+  show ?thesis using agree[of b] setEq by (simp add: Adm_def)
+qed
+
+text \<open>\<open>adm\<close> transfers across a shared prefix \<open>[0,c]\<close> (both directions), for an
+  interior index \<open>j\<close> with \<open>j+1 \<le> c\<close>: \<open>nadm\<close> reduces to the two row-1 edges
+  \<open>(j-1)\<to>j\<close>, \<open>j\<to>(j+1)\<close>, which lie inside the agreement region and transfer by
+  @{thm [source] nextrel1_prefix_imp}.\<close>
+
+lemma adm_prefix_agree_eq:
+  assumes agree: "\<And>x. x \<le> c \<Longrightarrow> M ! x = K ! x"
+    and cM: "c < Lng M" and cK: "c < Lng K"
+    and jc: "j + 1 \<le> c"
+  shows "adm M j = adm K j"
+proof -
+  have agree': "\<And>x. x \<le> c \<Longrightarrow> K ! x = M ! x" using agree by simp
+  have jLM: "j < Lng M" using jc cM by linarith
+  have jLK: "j < Lng K" using jc cK by linarith
+  have notgtM: "\<not> j > Lng M" using jLM by simp
+  have notgtK: "\<not> j > Lng K" using jLK by simp
+  have edges: "(nextR M 1 (j - 1) j \<and> nextR M 1 j (j + 1))
+             = (nextR K 1 (j - 1) j \<and> nextR K 1 j (j + 1))"
+  proof
+    assume H: "nextR M 1 (j - 1) j \<and> nextR M 1 j (j + 1)"
+    have e1: "nextrel1 K (j - 1) j"
+      by (rule nextrel1_prefix_imp[OF agree cM cK _ _ ]) (use H jc in \<open>auto simp: nextR_def\<close>)
+    have e2: "nextrel1 K j (j + 1)"
+      by (rule nextrel1_prefix_imp[OF agree cM cK _ _ ]) (use H jc in \<open>auto simp: nextR_def\<close>)
+    show "nextR K 1 (j - 1) j \<and> nextR K 1 j (j + 1)"
+      using e1 e2 by (simp add: nextR_def)
+  next
+    assume H: "nextR K 1 (j - 1) j \<and> nextR K 1 j (j + 1)"
+    have e1: "nextrel1 M (j - 1) j"
+      by (rule nextrel1_prefix_imp[OF agree' cK cM _ _ ]) (use H jc in \<open>auto simp: nextR_def\<close>)
+    have e2: "nextrel1 M j (j + 1)"
+      by (rule nextrel1_prefix_imp[OF agree' cK cM _ _ ]) (use H jc in \<open>auto simp: nextR_def\<close>)
+    show "nextR M 1 (j - 1) j \<and> nextR M 1 j (j + 1)"
+      using e1 e2 by (simp add: nextR_def)
+  qed
+  have "nadm M j = nadm K j"
+    unfolding nadm_def using notgtM notgtK edges by simp
+  thus ?thesis by (simp add: adm_def)
+qed
+
+text \<open>§8.1 c1-around part (5) (content.md 2995, A21 = under condition (I)).
+  For \<open>n > 1\<close>, with \<open>N = seg (M[n]) 0 idx\<close>, \<open>idx = j\<^sub>0 + (n-1)\<cdot>w\<close> (the last
+  block start of the condition-(I) fundamental sequence), all seven conjuncts
+  hold.  Assembled from the round-4 d0zero infrastructure: conjunct (1) =
+  @{thm [source] m_8_3_kind0_base_basepoint}(1); (2) =
+  @{thm [source] oper_d0zero_prefix_to_lastblock}; (3) = @{thm [source] Lng_seg};
+  (4) = parent uniqueness + @{thm [source] repr_parent_M_to_seg}; (5) =
+  @{thm [source] m_6_3_admof_slice} (seg side) + the prefix \<open>adm\<close>-transfer
+  @{thm [source] adm_prefix_agree_eq}/@{thm [source] Adm_eq_of_adm_below} (M[n]
+  side); (6) = \<open>Pred N = M[n-1] \<in> RT\<^bsub>PS\<^esub>\<close> nonzero via
+  @{thm [source] m_7_3_Trans_zeroT}; (7) = block-start spacing
+  \<open>j\<^sub>0' + 1 < idx\<close> kills the \<open>transCondVI\<close> spacing conjunct.\<close>
+
+lemma m_8_1_c1_around_part5:
+  fixes M :: pairseq
+  defines "j1 \<equiv> Lng M - 1"
+  defines "j0 \<equiv> parent M 0 j1"
+  defines "jm1 \<equiv> Adm M j0"
+  defines "c1 \<equiv> Mark (Pred M) jm1"
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS"
+    and admj0: "adm M j0" and j1gt: "j1 > 1"
+    and ge: "entry M 1 j0 \<ge> entry M 1 j1"
+    and condI: "transCondI M"
+    and np: "nextR M 0 j0' j0"
+  defines "jm1' \<equiv> Adm M j0'"
+  shows "\<forall>n. n > 1 \<longrightarrow>
+          (let N = seg (M[n]) 0 (j0 + (n - 1) * (j1 - j0)) in
+            (M[n], j0 + (n - 1) * (j1 - j0)) \<in> Marked
+            \<and> nextR (M[n]) 0 j0' (j0 + (n - 1) * (j1 - j0))
+            \<and> Lng N - 1 = j0 + (n - 1) * (j1 - j0)
+            \<and> parent N 0 (Lng N - 1) = j0'
+            \<and> Adm N (parent N 0 (Lng N - 1)) = jm1'
+            \<and> Trans (Pred N) \<noteq> 0\<^sub>B
+            \<and> \<not> transCondVI N)"
+proof (intro allI impI)
+  fix n :: nat assume n2: "n > 1"
+  have n1: "1 \<le> n" using n2 by simp
+  have MT: "M \<in> T_PS" using MR by (simp add: RT_PS_def)
+  have mono: "monoT M" using MP by (simp add: PT_PS_def)
+  have L: "1 < Lng M" using j1gt by (simp add: j1_def)
+  have hp0: "hasParent M 0 (Lng M - 1)" by (rule monoT_hasParent0_last[OF MT mono L])
+  have e1z: "entry M 1 (Lng M - 1) = 0" using condI by (simp add: transCondI_def)
+  \<comment> \<open>local abbreviations matching the infrastructure\<close>
+  define jj1 where "jj1 = Lng M - 1"
+  define jj0 where "jj0 = parent M 0 jj1"
+  define w   where "w   = jj1 - jj0"
+  define idx where "idx = jj0 + (n - 1) * w"
+  define Mn  where "Mn  = (M::pairseq)[n]"
+  have jj1eq: "jj1 = j1" by (simp add: jj1_def j1_def)
+  have jj0eq: "jj0 = j0" by (simp add: jj0_def jj1eq j0_def)
+  have idxeq: "idx = j0 + (n - 1) * (j1 - j0)"
+    by (simp add: idx_def w_def jj0eq jj1eq)
+  note F = kind0_parent_facts[OF hp0 e1z]
+  \<comment> \<open>literal-form facts (\<open>Lng M - 1\<close>, not folded into \<open>jj1\<close>) for the
+     infrastructure lemmas, which unify against \<open>Lng M - 1\<close>\<close>
+  have i1z: "idx1 M (Lng M - 1) = 0" by (rule F(1))
+  have notzero: "\<not> (entry M 0 (Lng M - 1) = 0 \<and> entry M 1 (Lng M - 1) = 0)" by (rule F(4))
+  have hp: "hasParent M (idx1 M (Lng M - 1)) (Lng M - 1)" by (rule F(5))
+  have j0lt: "jj0 < jj1" using F(3) jj0_def jj1_def by simp
+  have w0: "0 < w" using j0lt by (simp add: w_def)
+  have MnRT: "Mn \<in> RT_PS" using m_6_6_reduced_oper[OF MR n1] Mn_def by simp
+  have MnT: "Mn \<in> T_PS" using MnRT by (simp add: RT_PS_def)
+  have lenMn: "Lng Mn = jj0 + n * w"
+    using Lng_operI[OF hp0 e1z] Mn_def jj0_def jj1_def w_def by simp
+  \<comment> \<open>\<open>idx < Lng Mn\<close> and \<open>w \<le> idx\<close>, \<open>jj0 \<le> idx - 1 < idx\<close>\<close>
+  have nm1: "0 < n - 1" using n2 by simp
+  have idxlt: "idx < Lng Mn"
+  proof -
+    have "(n - 1) * w < n * w" using n2 w0 by (simp add: mult_strict_right_mono)
+    thus ?thesis using lenMn idx_def by simp
+  qed
+  have wqw: "w \<le> (n - 1) * w"
+  proof -
+    have one_le: "1 \<le> n - 1" using n2 by simp
+    have "1 * w \<le> (n - 1) * w" by (rule mult_le_mono1[OF one_le])
+    thus ?thesis by simp
+  qed
+  have idxge: "w \<le> idx" using wqw idx_def by linarith
+  have j0lt_idx: "jj0 < idx" using wqw w0 idx_def by linarith
+  \<comment> \<open>\<open>idx \<ge> jj0 + w = jj1 > 1\<close> (from \<open>j1 > 1\<close>)\<close>
+  have jj1gt1: "1 < jj1" using j1gt jj1eq by simp
+  have idx_ge_jj1: "jj1 \<le> idx"
+  proof -
+    have "jj0 + w = jj1" using j0lt by (simp add: w_def)
+    thus ?thesis using wqw idx_def by linarith
+  qed
+  have idxgt1: "1 < idx" using idx_ge_jj1 jj1gt1 by linarith
+  \<comment> \<open>================= N and its length =================\<close>
+  define N where "N = seg Mn 0 idx"
+  have idxSuc: "Suc idx \<le> Lng Mn" using idxlt by simp
+  have Ntake: "N = take (Suc idx) Mn" using seg_0_eq_take[OF idxSuc] N_def by simp
+  have LN: "Lng N = Suc idx" using Ntake idxSuc by simp
+  have LNm1: "Lng N - 1 = idx" using LN by simp
+  \<comment> \<open>================= conjunct (1): basepoint marked =================\<close>
+  have n0: "0 < n" using n2 by simp
+  have conj1: "(Mn, idx) \<in> Marked"
+  proof -
+    have base: "(M[n], parent M 0 (Lng M - 1)
+                      + (n-1) * ((Lng M - 1) - parent M 0 (Lng M - 1))) \<in> Marked
+                \<and> M[n] \<in> RT_PS"
+      using m_8_3_kind0_base_basepoint(1)[OF MR n0 hp0 e1z] n2 by simp
+    have ix: "parent M 0 (Lng M - 1)
+                + (n-1) * ((Lng M - 1) - parent M 0 (Lng M - 1)) = idx"
+      by (simp add: idx_def w_def jj0_def jj1_def)
+    show ?thesis using base ix Mn_def by simp
+  qed
+  \<comment> \<open>================= conjunct (2): nextR Mn 0 j0' idx =================\<close>
+  have j0'lt_j0: "j0' < jj0" using np jj0eq by (simp add: nextR_def nextrel0_def)
+  have stepM0: "nextrel0 M j0' (parent M 0 (Lng M - 1))"
+    using np jj0eq jj0_def jj1_def by (simp add: nextR_def)
+  have j0lt': "parent M 0 (Lng M - 1) < Lng M - 1"
+    using j0lt jj0_def jj1_def by simp
+  have ap': "j0' < parent M 0 (Lng M - 1)"
+    using j0'lt_j0 jj0_def jj1_def by simp
+  have conj2: "nextR Mn 0 j0' idx"
+  proof -
+    have cross: "nextrel0 Mn j0'
+                   (parent M 0 (Lng M - 1)
+                      + (n - 1) * (Lng M - 1 - parent M 0 (Lng M - 1)))"
+      using oper_d0zero_prefix_to_lastblock[OF L notzero hp i1z j0lt' n0 ap' stepM0] Mn_def
+      by simp
+    have ix: "parent M 0 (Lng M - 1)
+                + (n - 1) * (Lng M - 1 - parent M 0 (Lng M - 1)) = idx"
+      by (simp add: idx_def w_def jj0_def jj1_def)
+    show ?thesis using cross ix by (simp add: nextR_def)
+  qed
+  \<comment> \<open>================= conjunct (3): Lng N - 1 = idx =================\<close>
+  have conj3: "Lng N - 1 = idx" by (rule LNm1)
+  \<comment> \<open>================= conjunct (4): parent N 0 (Lng N-1) = j0' =================\<close>
+  have hpMn: "hasParent Mn 0 idx"
+  proof -
+    have uq: "\<And>p'. nextR Mn 0 p' idx \<Longrightarrow> p' = j0'"
+      using conj2 by (metis idxsum_parent0_unique)
+    show ?thesis unfolding hasParent_def using conj2 uq by blast
+  qed
+  have parMn: "parent Mn 0 idx = j0'"
+  proof -
+    have uq: "\<And>p'. nextR Mn 0 p' idx \<Longrightarrow> p' = j0'"
+      using conj2 by (metis idxsum_parent0_unique)
+    show ?thesis unfolding parent_def
+      by (rule the_equality[where P="\<lambda>p. nextR Mn 0 p idx", OF conj2 uq])
+  qed
+  have parNseg: "hasParent N 0 idx \<and> parent N 0 idx = parent Mn 0 idx - 0"
+  proof -
+    have idxltMn: "idx < Lng Mn" by (rule idxlt)
+    have jlS: "idx < Lng (seg Mn 0 idx)" using LN N_def by simp
+    have hpMn0: "hasParent Mn 0 (0 + idx)" using hpMn by simp
+    have anc: "0 \<le> parent Mn 0 (0 + idx)" by simp
+    have res: "hasParent (seg Mn 0 idx) 0 idx
+               \<and> parent (seg Mn 0 idx) 0 idx = parent Mn 0 (0 + idx) - 0"
+      by (rule repr_parent_M_to_seg[OF _ idxltMn jlS hpMn0 anc]) simp
+    show ?thesis using res N_def by simp
+  qed
+  have conj4: "parent N 0 (Lng N - 1) = j0'"
+    using parNseg parMn LNm1 by simp
+  \<comment> \<open>================= conjunct (5): Adm N (parent ..) = jm1' =================\<close>
+  \<comment> \<open>step (5a): seg side, \<open>Adm N j0' = Adm Mn j0'\<close> via @{thm m_6_3_admof_slice}\<close>
+  have admofN: "Adm N j0' = Adm Mn j0'"
+  proof -
+    have j0'lt_idx: "j0' < idx" using j0'lt_j0 j0lt_idx by linarith
+    have idxle: "idx \<le> Lng Mn - 1" using idxlt by linarith
+    have "Adm (seg Mn 0 idx) (j0' - 0) = Adm Mn j0' - 0"
+      by (rule m_6_3_admof_slice[OF MnT _ j0'lt_idx idxle]) simp
+    thus ?thesis using N_def by simp
+  qed
+  \<comment> \<open>step (5b): prefix side, \<open>Adm Mn j0' = Adm M j0'\<close>\<close>
+  have admMn_M: "Adm Mn j0' = Adm M j0'"
+  proof -
+    have agree: "\<And>x. x \<le> jj0 \<Longrightarrow> Mn ! x = M ! x"
+      using oper_d0zero_nth_le_parent[OF L notzero hp i1z n1] jj0_def jj1_def Mn_def by simp
+    have j0lt_M: "jj0 < Lng M" using j0lt jj1_def by linarith
+    have j0lt_Mn: "jj0 < Lng Mn" using lenMn w0 n2 by simp
+    have admeq: "\<And>j. j \<le> j0' \<Longrightarrow> adm Mn j = adm M j"
+    proof -
+      fix j assume jle: "j \<le> j0'"
+      have jc: "j + 1 \<le> jj0" using jle j0'lt_j0 by linarith
+      show "adm Mn j = adm M j"
+        by (rule adm_prefix_agree_eq[OF agree j0lt_Mn j0lt_M jc])
+    qed
+    show ?thesis by (rule Adm_eq_of_adm_below[OF admeq])
+  qed
+  have conj5: "Adm N (parent N 0 (Lng N - 1)) = jm1'"
+    using conj4 admofN admMn_M jm1'_def by simp
+  \<comment> \<open>================= conjunct (6): \<open>Trans (Pred N) \<noteq> 0\<^sub>B\<close> =================\<close>
+  \<comment> \<open>\<open>Pred N = take idx Mn = M[n-1]\<close>, which is reduced and has length \<open>idx > 1\<close>.\<close>
+  have predN: "Pred N = M[n - 1]"
+  proof -
+    have LNgt1: "1 < Lng N" using LN idxge w0 by linarith
+    have "Pred N = butlast N" using LNgt1 by (simp add: Pred_def)
+    also have "\<dots> = take idx Mn" using Ntake butlast_take[OF idxSuc] by simp
+    also have "\<dots> = M[n - 1]"
+    proof -
+      have suc: "Suc (n - 1) = n" using n1 by simp
+      have app: "Mn = M[n - 1] @ map ((!) M) [parent M 0 (Lng M - 1)..<Lng M - 1]"
+        using operI_Suc_append[OF hp0 e1z, of "n - 1"] suc Mn_def by simp
+      have Lpre: "Lng (M[n - 1]) = idx"
+        using Lng_operI[OF hp0 e1z, of "n - 1"] jj0_def jj1_def w_def idx_def by simp
+      have "take idx Mn = take (Lng (M[n - 1])) (M[n - 1] @ map ((!) M) [parent M 0 (Lng M - 1)..<Lng M - 1])"
+        using app Lpre by simp
+      also have "\<dots> = M[n - 1]" by simp
+      finally show ?thesis .
+    qed
+    finally show ?thesis .
+  qed
+  have predNRT: "Pred N \<in> RT_PS"
+    using predN m_6_6_reduced_oper[OF MR, of "n - 1"] nm1 by simp
+  have conj6: "Trans (Pred N) \<noteq> 0\<^sub>B"
+  proof -
+    have Lpre: "Lng (Pred N) = idx" using predN Lng_operI[OF hp0 e1z, of "n-1"]
+      jj0_def jj1_def w_def idx_def by simp
+    have nz: "\<not> zeroT (Pred N)" using Lpre idxgt1 by (simp add: zeroT_def)
+    show ?thesis using m_7_3_Trans_zeroT[OF predNRT] nz by blast
+  qed
+  \<comment> \<open>================= conjunct (7): \<not> transCondVI N =================\<close>
+  have conj7: "\<not> transCondVI N"
+  proof
+    assume vi: "transCondVI N"
+    have "parent N 0 (Lng N - 1) + 1 = Lng N - 1" using vi by (simp add: transCondVI_def)
+    hence "j0' + 1 = idx" using conj4 LNm1 by simp
+    moreover have "j0' + 1 < idx" using j0'lt_j0 j0lt_idx by linarith
+    ultimately show False by simp
+  qed
+  \<comment> \<open>================= assemble =================\<close>
+  \<comment> \<open>bridge the goal's literal terms to the local abbreviations\<close>
+  have idxg: "j0 + (n - 1) * (j1 - j0) = idx" by (rule idxeq[symmetric])
+  have Mng: "(M[n]) = Mn" by (simp add: Mn_def)
+  show "let N = seg (M[n]) 0 (j0 + (n - 1) * (j1 - j0)) in
+          (M[n], j0 + (n - 1) * (j1 - j0)) \<in> Marked
+          \<and> nextR (M[n]) 0 j0' (j0 + (n - 1) * (j1 - j0))
+          \<and> Lng N - 1 = j0 + (n - 1) * (j1 - j0)
+          \<and> parent N 0 (Lng N - 1) = j0'
+          \<and> Adm N (parent N 0 (Lng N - 1)) = jm1'
+          \<and> Trans (Pred N) \<noteq> 0\<^sub>B
+          \<and> \<not> transCondVI N"
+    unfolding Let_def Mng idxg N_def[symmetric]
+    using conj1 conj2 conj3 conj4 conj5 conj6 conj7 by simp
+qed
+
+
+
+section \<open>§8.1 c1-around engine: \<open>Trans\<close> front-peel and \<open>Mark\<close>-adjacency\<close>
+
+text \<open>A marked block \<open>Mark N k\<close> of a non-zero reduced \<open>N\<close> is a principal-term
+  string: \<open>(Trans N, Mark N k) \<in> MarkedB\<close> gives an scb-decomposition of
+  \<open>Trans N\<close> with middle \<open>flatBT (Mark N k)\<close>, and \<open>Trans N \<noteq> Trm []\<close>, so the
+  middle is \<open>isPTB_str\<close>.\<close>
+
+lemma Mark_marked_isPTB:
+  assumes NR: "N \<in> RT_PS" and kN: "(N, k) \<in> Marked" and nz: "\<not> zeroT N"
+  shows "isPTB_str (flatBT (Mark N k))"
+proof -
+  have mb: "(Trans N, Mark N k) \<in> MarkedB"
+    by (rule m_7_3_Trans_Mark_MarkedB[OF NR kN])
+  obtain s b where d: "scb_decomp (Trans N) s (flatBT (Mark N k)) b"
+    using mb by (auto simp: MarkedB_def)
+  have tNne: "Trans N \<noteq> Trm []"
+    using m_7_3_Trans_zeroT[OF NR] nz by auto
+  show ?thesis using d tNne by (simp add: scb_decomp_def)
+qed
+
+text \<open>Engine (Trans front-peel).  For a reduced \<open>S\<close> whose two leftmost columns
+  \<open>0,1\<close> are both marked, \<open>Trans S\<close> peels its leftmost column:
+  \<open>Trans S = D\<^bsub>S\<^bsub>1,0\<^esub>\<^esub> (Mark S 1)\<close>.  Proof by strong \<open>Lng\<close>-induction.  Base
+  \<open>Lng S = 2\<close>: \<open>S\<close> is \<open>monoT\<close> (from \<open>(S,0) \<in> Marked\<close>), \<open>Trans S = D\<^bsub>S\<^bsub>1,0\<^esub>\<^esub> D\<^bsub>S\<^bsub>1,1\<^esub>\<^esub> 0\<close>
+  (two-column) and \<open>Mark S 1 = D\<^bsub>S\<^bsub>1,1\<^esub>\<^esub> 0\<close> (rightmost basepoint).  Step
+  \<open>Lng S \<ge> 3\<close>: \<open>(Pred S, 0),(Pred S, 1) \<in> Marked\<close>, so by IH
+  \<open>Mark (Pred S) 0 = Trans (Pred S) = D\<^bsub>S\<^bsub>1,0\<^esub>\<^esub> (Mark (Pred S) 1)\<close>, which is the
+  scb-position \<open>([D\<^bsub>S\<^bsub>1,0\<^esub>\<^esub>], [])\<close> of \<open>Mark (Pred S) 1\<close> inside \<open>Mark (Pred S) 0\<close>.
+  @{thm [source] Mark_nest_common_marked} (\<open>m = 0\<close>, \<open>m' = 1\<close>) transports the SAME
+  position to \<open>Mark S 0 = Trans S\<close>, giving \<open>Trans S = D\<^bsub>S\<^bsub>1,0\<^esub>\<^esub> (Mark S 1)\<close>.
+  Empirically exact (42+ marked-adjacent reduced cases, 0 violations).\<close>
+
+lemma Trans_front_peel:
+  "S \<in> RT_PS \<longrightarrow> (S, 0) \<in> Marked \<longrightarrow> (S, 1) \<in> Marked
+     \<longrightarrow> Trans S = Dpt (enat (entry S 1 0)) (Mark S 1)"
+proof (induction S rule: measure_induct_rule[where f=Lng])
+  case (less S)
+  show ?case
+  proof (intro impI)
+    assume SR: "S \<in> RT_PS" and m0: "(S, 0) \<in> Marked" and m1: "(S, 1) \<in> Marked"
+    have ST: "S \<in> T_PS" using SR by (simp add: RT_PS_def)
+    have Sne: "S \<noteq> []" using ST by (simp add: T_PS_def)
+    \<comment> \<open>\<open>(S,1) \<in> Marked\<close> forces \<open>1 < Lng S\<close>\<close>
+    have le1: "leR S 0 1 (Lng S - 1)" using m1 by (simp add: Marked_def)
+    have L1: "1 < Lng S"
+      using le1 by (simp add: leR_def le0_def)
+    have nzS: "\<not> zeroT S" using L1 by (auto simp: zeroT_def)
+    \<comment> \<open>\<open>S\<close> is monoT: \<open>(S,0) \<in> Marked\<close> gives \<open>leR S 0 0 (Lng S - 1)\<close>\<close>
+    have mono: "monoT S"
+      using m0 nzS by (simp add: monoT_def Marked_def)
+    show "Trans S = Dpt (enat (entry S 1 0)) (Mark S 1)"
+    proof (cases "Lng S = 2")
+      case L2: True
+      \<comment> \<open>base case: two-column \<open>Trans\<close> + rightmost \<open>Mark\<close>\<close>
+      have transval: "Trans S = Dpt (enat (entry S 1 0)) (Dpt (enat (entry S 1 1)) 0\<^sub>B)"
+        by (rule m_7_3_twoColumn_Trans[OF SR mono L2])
+      have rm: "Mark S 1 = Dpt (enat (entry S 1 1)) 0\<^sub>B"
+      proof -
+        have "1 = Lng S - 1" using L2 by simp
+        thus ?thesis using m_7_3_Mark_rightmost1[OF m1 SR nzS] by simp
+      qed
+      show ?thesis using transval rm by simp
+    next
+      case notL2: False
+      have L3: "2 < Lng S" using L1 notL2 by linarith
+      \<comment> \<open>\<open>Pred S\<close> facts\<close>
+      have predRT: "Pred S \<in> RT_PS" by (rule Pred_RT_PS[OF SR])
+      have predb: "Pred S = butlast S" using L1 by (simp add: Pred_def)
+      have LP: "Lng (Pred S) = Lng S - 1" using predb by simp
+      have LPlt: "Lng (Pred S) < Lng S" using LP L1 by simp
+      have LP1: "1 < Lng (Pred S)" using LP L3 by linarith
+      have mP0: "(Pred S, 0) \<in> Marked"
+        by (rule Marked_Pred[OF ST L1 m0]) (use L1 in linarith)
+      have mP1: "(Pred S, 1) \<in> Marked"
+        by (rule Marked_Pred[OF ST L1 m1]) (use L3 in linarith)
+      \<comment> \<open>row-1 leftmost entry preserved by \<open>butlast\<close>\<close>
+      have e10: "entry (Pred S) 1 0 = entry S 1 0"
+      proof -
+        have "0 < length (butlast S)" using L1 by simp
+        thus ?thesis using predb by (simp add: entry_def nth_butlast)
+      qed
+      \<comment> \<open>IH on \<open>Pred S\<close>\<close>
+      have ihP: "Trans (Pred S) = Dpt (enat (entry S 1 0)) (Mark (Pred S) 1)"
+        using less.IH[OF LPlt] predRT mP0 mP1 e10 by simp
+      \<comment> \<open>\<open>Mark _ 0 = Trans _\<close> on both \<open>Pred S\<close> and \<open>S\<close>\<close>
+      have markP0: "Mark (Pred S) 0 = Trans (Pred S)"
+        using ra_Mark0_eq_Trans mP0 predRT by blast
+      have markS0: "Mark S 0 = Trans S"
+        using ra_Mark0_eq_Trans m0 SR by blast
+      \<comment> \<open>the scb-position of \<open>Mark (Pred S) 1\<close> in \<open>Mark (Pred S) 0\<close> is \<open>([D\<^bsub>S\<^bsub>1,0\<^esub>\<^esub>], [])\<close>\<close>
+      have iptP1: "isPTB_str (flatBT (Mark (Pred S) 1))"
+      proof -
+        have nzP: "\<not> zeroT (Pred S)" using LP1 by (auto simp: zeroT_def)
+        show ?thesis by (rule Mark_marked_isPTB[OF predRT mP1 nzP])
+      qed
+      have selfP1: "scb_decomp (Mark (Pred S) 1) [] (flatBT (Mark (Pred S) 1)) []"
+        by (rule scb_decomp_self[OF iptP1])
+      have dP: "scb_decomp (Mark (Pred S) 0) [Dsym (enat (entry S 1 0))]
+                  (flatBT (Mark (Pred S) 1)) []"
+      proof -
+        have "scb_decomp (Dpt (enat (entry S 1 0)) (Mark (Pred S) 1))
+                 (Dsym (enat (entry S 1 0)) # []) (flatBT (Mark (Pred S) 1)) []"
+          by (rule scb_Dpt_lift[OF selfP1 iptP1])
+        thus ?thesis using markP0 ihP by simp
+      qed
+      \<comment> \<open>common scb-position for \<open>Pred S\<close> and \<open>S\<close>\<close>
+      have nest: "\<exists>!sb.
+          scb_decomp (Mark (Pred S) 0) (fst sb) (flatBT (Mark (Pred S) 1)) (snd sb)
+        \<and> scb_decomp (Mark S 0) (fst sb) (flatBT (Mark S 1)) (snd sb)"
+        by (rule Mark_nest_common_marked[OF SR m0 m1 _ _]) (use L3 in linarith)+
+      obtain sb where
+        sbP: "scb_decomp (Mark (Pred S) 0) (fst sb) (flatBT (Mark (Pred S) 1)) (snd sb)"
+        and sbS: "scb_decomp (Mark S 0) (fst sb) (flatBT (Mark S 1)) (snd sb)"
+        using nest by blast
+      \<comment> \<open>uniqueness of \<open>(s,b)\<close> for the \<open>c = flatBT (Mark (Pred S) 1)\<close> middle pins \<open>sb\<close>\<close>
+      have predNZ: "Mark (Pred S) 0 \<noteq> Trm []"
+      proof -
+        have "Trans (Pred S) \<noteq> Trm []"
+          using m_7_3_Trans_zeroT[OF predRT] LP1
+          by (auto simp: zeroT_def)
+        thus ?thesis using markP0 by simp
+      qed
+      have sbeq: "fst sb = [Dsym (enat (entry S 1 0))] \<and> snd sb = []"
+        using m_7_2_scb_unique_sb[OF sbP dP predNZ] by simp
+      \<comment> \<open>so \<open>Mark S 0\<close> decomposes at the same position\<close>
+      have dS: "scb_decomp (Mark S 0) [Dsym (enat (entry S 1 0))] (flatBT (Mark S 1)) []"
+        using sbS sbeq by simp
+      have flatS: "flatBT (Mark S 0)
+                 = [Dsym (enat (entry S 1 0))] @ flatBT (Mark S 1) @ []"
+        using dS by (simp add: scb_decomp_def)
+      have "flatBT (Mark S 0) = flatBT (Dpt (enat (entry S 1 0)) (Mark S 1))"
+        using flatS by simp
+      hence "Mark S 0 = Dpt (enat (entry S 1 0)) (Mark S 1)"
+        by (rule m_7_flatBT_inj)
+      thus ?thesis using markS0 by simp
+    qed
+  qed
+qed
+
+text \<open>§8.1 c1-around adjacency engine \<open>Mark_adjacent_form\<close> (content.md 2933,
+  parts (3-1)/(4-1)/(4-2) building block).  For a reduced \<open>M\<close> with two adjacent
+  marked columns \<open>a, a+1\<close> (with \<open>a+1 < j\<^sub>1\<close>), \<open>Mark M a\<close> peels its head into
+  \<open>D\<^bsub>M\<^bsub>1,a\<^esub>\<^esub> (Mark M (a+1))\<close>.  Proof: the \<open>Mark\<close>-\<open>Trans\<close> representation
+  @{thm [source] m_7_4_Mark_Trans_repr} value-izes \<open>Mark M a = Trans (seg M a j\<^sub>1)\<close>
+  and \<open>Mark M (a+1) = Trans (seg M (a+1) j\<^sub>1) = Mark (seg M a j\<^sub>1) 1\<close>; the engine
+  @{thm [source] Trans_front_peel} on the slice \<open>seg M a j\<^sub>1\<close> peels the head.
+  The disjunction guard \<open>adm M a \<or> M\<^bsub>1,a\<^esub>+1 = M\<^bsub>1,a+1\<^esub>\<close> is part of the article
+  statement; it is implied by the two markedness hypotheses (kept for fidelity).\<close>
+
+text \<open>Rightmost-adjacent peel: when \<open>k, k+1\<close> are both marked and \<open>k+1\<close> is the
+  RIGHTMOST column of \<open>Q\<close>, \<open>Mark Q k\<close> peels into \<open>D\<^bsub>Q\<^bsub>1,k\<^esub>\<^esub> (Mark Q (k+1))\<close>.
+  Proof: the two-column slice value @{thm [source] m_7_4_Trans_slice_2col} gives
+  \<open>Mark Q k = Trans (seg Q k (Lng Q - 1)) = D\<^bsub>Q\<^bsub>1,k\<^esub>\<^esub> D\<^bsub>Q\<^bsub>1,k+1\<^esub>\<^esub> 0\<close>, while
+  @{thm [source] m_7_3_Mark_rightmost1} gives \<open>Mark Q (k+1) = D\<^bsub>Q\<^bsub>1,k+1\<^esub>\<^esub> 0\<close>.\<close>
+
+lemma Mark_rightmost_adjacent_peel:
+  assumes QR: "Q \<in> RT_PS"
+    and mk: "(Q, k) \<in> Marked" and mk1: "(Q, k + 1) \<in> Marked"
+    and kj1: "k + 1 = Lng Q - 1" and L: "1 < Lng Q"
+  shows "Mark Q k = Dpt (enat (entry Q 1 k)) (Mark Q (k + 1))"
+proof -
+  have QT: "Q \<in> T_PS" using QR by (simp add: RT_PS_def)
+  have nzQ: "\<not> zeroT Q" using L by (auto simp: zeroT_def)
+  have klt: "k < Lng Q - 1" using kj1 by linarith
+  \<comment> \<open>\<open>Trans (seg Q k (Lng Q - 1))\<close> is the two-column closed form\<close>
+  have slice2: "Trans (seg Q k (Lng Q - 1))
+      = Dpt (enat (entry Q 1 k)) (Dpt (enat (entry Q 1 (Lng Q - 1))) 0\<^sub>B)"
+  proof (cases "1 < Lng Q - 1")
+    case True
+    have kbnd: "k = Lng Q - 2" using kj1 by simp
+    show ?thesis by (rule m_7_4_Trans_slice_2col[OF mk QR kbnd True])
+  next
+    case False
+    \<comment> \<open>\<open>Lng Q = 2\<close>, \<open>k = 0\<close>, the slice is \<open>Q\<close> itself; \<open>monoT Q\<close> from \<open>(Q,0)\<close>\<close>
+    have L2: "Lng Q = 2" using L False by linarith
+    have k0: "k = 0" using kj1 L2 by simp
+    have mono: "monoT Q"
+      using mk k0 nzQ by (simp add: monoT_def Marked_def)
+    have segQ: "seg Q k (Lng Q - 1) = Q"
+    proof -
+      have "seg Q 0 (Lng Q - 1) = take (Suc (Lng Q - 1)) Q"
+        by (rule seg_0_eq_take) (use L in linarith)
+      also have "Suc (Lng Q - 1) = Lng Q" using L by simp
+      finally show ?thesis using k0 by simp
+    qed
+    have "Trans Q = Dpt (enat (entry Q 1 0)) (Dpt (enat (entry Q 1 1)) 0\<^sub>B)"
+      by (rule m_7_3_twoColumn_Trans[OF QR mono L2])
+    thus ?thesis using segQ k0 L2 by simp
+  qed
+  \<comment> \<open>\<open>Mark Q k = Trans (seg Q k (Lng Q - 1))\<close>\<close>
+  have reprK: "Mark Q k = Trans (seg Q k (Lng Q - 1))"
+    by (rule m_7_4_Mark_Trans_repr[OF mk QR klt])
+  \<comment> \<open>rightmost basepoint form of \<open>Mark Q (k+1)\<close>\<close>
+  have rm: "Mark Q (k + 1) = Dpt (enat (entry Q 1 (k + 1))) 0\<^sub>B"
+    using m_7_3_Mark_rightmost1[OF mk1 QR nzQ] kj1 by simp
+  have e1: "entry Q 1 (Lng Q - 1) = entry Q 1 (k + 1)" using kj1 by simp
+  show ?thesis using reprK slice2 rm e1 by simp
+qed
+
+text \<open>§8.1 c1-around adjacency engine \<open>Mark_adjacent_form\<close> (content.md 2933,
+  parts (3-1)/(4-1)/(4-2) building block).  For a reduced \<open>M\<close> with two adjacent
+  marked columns \<open>a, a+1\<close> (with \<open>a+1 < j\<^sub>1\<close>), \<open>Mark M a\<close> peels its head into
+  \<open>D\<^bsub>M\<^bsub>1,a\<^esub>\<^esub> (Mark M (a+1))\<close>.  Proof by strong \<open>Lng\<close>-induction with the same
+  scb-position transport as @{thm [source] Trans_front_peel}: on \<open>Pred M\<close> the
+  relation \<open>Mark (Pred M) a = D\<^bsub>M\<^bsub>1,a\<^esub>\<^esub> (Mark (Pred M) (a+1))\<close> holds either by the
+  IH (interior \<open>a+1 < Lng (Pred M) - 1\<close>) or by
+  @{thm [source] Mark_rightmost_adjacent_peel} (boundary \<open>a+1 = Lng (Pred M) - 1\<close>);
+  @{thm [source] Mark_nest_common_marked} (\<open>m = a\<close>, \<open>m' = a+1\<close>) transports the
+  position \<open>([D\<^bsub>M\<^bsub>1,a\<^esub>\<^esub>], [])\<close> to \<open>Mark M a\<close>.  The disjunction guard
+  \<open>adm M a \<or> M\<^bsub>1,a\<^esub>+1 = M\<^bsub>1,a+1\<^esub>\<close> is part of the article statement; it is implied
+  by the two markedness hypotheses (kept for fidelity).  Empirically exact
+  (66+ marked-adjacent reduced cases, 0 violations).\<close>
+
+lemma Mark_adjacent_form_aux:
+  "M \<in> RT_PS \<longrightarrow> (\<forall>a. (M, a) \<in> Marked \<longrightarrow> (M, a + 1) \<in> Marked
+       \<longrightarrow> a + 1 < Lng M - 1
+       \<longrightarrow> Mark M a = Dpt (enat (entry M 1 a)) (Mark M (a + 1)))"
+proof (induction M rule: measure_induct_rule[where f=Lng])
+  case (less M)
+  show ?case
+  proof (intro impI allI)
+    fix a
+    assume MR: "M \<in> RT_PS" and mA: "(M, a) \<in> Marked" and mA1: "(M, a + 1) \<in> Marked"
+      and aub: "a + 1 < Lng M - 1"
+    have MT: "M \<in> T_PS" using MR by (simp add: RT_PS_def)
+    have a1lt: "a + 1 < Lng M - 1" using aub .
+    have L1: "1 < Lng M" using aub by linarith
+    have L3: "2 < Lng M" using aub by linarith
+    \<comment> \<open>\<open>Pred M\<close> facts\<close>
+    have predRT: "Pred M \<in> RT_PS" by (rule Pred_RT_PS[OF MR])
+    have predb: "Pred M = butlast M" using L1 by (simp add: Pred_def)
+    have LP: "Lng (Pred M) = Lng M - 1" using predb by simp
+    have LPlt: "Lng (Pred M) < Lng M" using LP L1 by simp
+    have aP: "(Pred M, a) \<in> Marked"
+      by (rule Marked_Pred[OF MT L1 mA]) (use aub in linarith)
+    have a1P: "(Pred M, a + 1) \<in> Marked"
+      by (rule Marked_Pred[OF MT L1 mA1]) (use aub in linarith)
+    \<comment> \<open>row-1 entry of \<open>a\<close> preserved by \<open>butlast\<close>\<close>
+    have e1a: "entry (Pred M) 1 a = entry M 1 a"
+    proof -
+      have "a < length (butlast M)" using aub by simp
+      thus ?thesis using predb by (simp add: entry_def nth_butlast)
+    qed
+    \<comment> \<open>relation on \<open>Pred M\<close>: IH (interior) or rightmost peel (boundary)\<close>
+    have relP: "Mark (Pred M) a
+              = Dpt (enat (entry M 1 a)) (Mark (Pred M) (a + 1))"
+    proof (cases "a + 1 < Lng (Pred M) - 1")
+      case interior: True
+      have "Mark (Pred M) a = Dpt (enat (entry (Pred M) 1 a)) (Mark (Pred M) (a + 1))"
+        using less.IH[OF LPlt] predRT aP a1P interior by blast
+      thus ?thesis using e1a by simp
+    next
+      case False
+      have a1bnd: "a + 1 = Lng (Pred M) - 1"
+      proof -
+        have "a + 1 \<le> Lng (Pred M) - 1"
+        proof -
+          have "leR (Pred M) 0 (a + 1) (Lng (Pred M) - 1)"
+            using a1P by (simp add: Marked_def)
+          hence "a + 1 < Lng (Pred M)" by (simp add: leR_def le0_def)
+          thus ?thesis by linarith
+        qed
+        thus ?thesis using False by linarith
+      qed
+      have LPL: "1 < Lng (Pred M)" using LP L3 by linarith
+      have "Mark (Pred M) a
+            = Dpt (enat (entry (Pred M) 1 a)) (Mark (Pred M) (a + 1))"
+        by (rule Mark_rightmost_adjacent_peel[OF predRT aP a1P a1bnd LPL])
+      thus ?thesis using e1a by simp
+    qed
+    \<comment> \<open>\<open>Mark _ a\<close> on \<open>Pred M\<close>/\<open>M\<close> are related by a common scb-position\<close>
+    have nz1P: "isPTB_str (flatBT (Mark (Pred M) (a + 1)))"
+    proof -
+      have nzP: "\<not> zeroT (Pred M)"
+      proof - have "1 < Lng (Pred M)" using LP L3 by linarith
+        thus ?thesis by (auto simp: zeroT_def) qed
+      show ?thesis by (rule Mark_marked_isPTB[OF predRT a1P nzP])
+    qed
+    have selfP1: "scb_decomp (Mark (Pred M) (a + 1)) []
+                    (flatBT (Mark (Pred M) (a + 1))) []"
+      by (rule scb_decomp_self[OF nz1P])
+    have dP: "scb_decomp (Mark (Pred M) a) [Dsym (enat (entry M 1 a))]
+                (flatBT (Mark (Pred M) (a + 1))) []"
+    proof -
+      have "scb_decomp (Dpt (enat (entry M 1 a)) (Mark (Pred M) (a + 1)))
+               (Dsym (enat (entry M 1 a)) # []) (flatBT (Mark (Pred M) (a + 1))) []"
+        by (rule scb_Dpt_lift[OF selfP1 nz1P])
+      thus ?thesis using relP by simp
+    qed
+    have ale: "a \<le> a + 1" by simp
+    have nest: "\<exists>!sb.
+        scb_decomp (Mark (Pred M) a) (fst sb) (flatBT (Mark (Pred M) (a + 1))) (snd sb)
+      \<and> scb_decomp (Mark M a) (fst sb) (flatBT (Mark M (a + 1))) (snd sb)"
+      by (rule Mark_nest_common_marked[OF MR mA mA1 ale a1lt])
+    obtain sb where
+      sbP: "scb_decomp (Mark (Pred M) a) (fst sb) (flatBT (Mark (Pred M) (a + 1))) (snd sb)"
+      and sbM: "scb_decomp (Mark M a) (fst sb) (flatBT (Mark M (a + 1))) (snd sb)"
+      using nest by blast
+    \<comment> \<open>\<open>Mark (Pred M) a \<noteq> Trm []\<close> (its left end is \<open>D\<^bsub>M\<^bsub>1,a\<^esub>\<^esub>\<close>)\<close>
+    have predANZ: "Mark (Pred M) a \<noteq> Trm []"
+      using relP by simp
+    have sbeq: "fst sb = [Dsym (enat (entry M 1 a))] \<and> snd sb = []"
+      using m_7_2_scb_unique_sb[OF sbP dP predANZ] by simp
+    have dM: "scb_decomp (Mark M a) [Dsym (enat (entry M 1 a))]
+                (flatBT (Mark M (a + 1))) []"
+      using sbM sbeq by simp
+    have flatM: "flatBT (Mark M a)
+               = [Dsym (enat (entry M 1 a))] @ flatBT (Mark M (a + 1)) @ []"
+      using dM by (simp add: scb_decomp_def)
+    have "flatBT (Mark M a) = flatBT (Dpt (enat (entry M 1 a)) (Mark M (a + 1)))"
+      using flatM by simp
+    thus "Mark M a = Dpt (enat (entry M 1 a)) (Mark M (a + 1))"
+      by (rule m_7_flatBT_inj)
+  qed
+qed
+
+lemma Mark_adjacent_form:
+  assumes MR: "M \<in> RT_PS"
+    and mA: "(M, a) \<in> Marked" and mA1: "(M, a + 1) \<in> Marked"
+    and aub: "a + 1 < Lng M - 1"
+    and guard: "adm M a \<or> entry M 1 a + 1 = entry M 1 (a + 1)"
+  shows "Mark M a = Dpt (enat (entry M 1 a)) (Mark M (a + 1))"
+  using Mark_adjacent_form_aux MR mA mA1 aub by blast
+
 end
