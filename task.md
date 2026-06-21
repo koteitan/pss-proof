@@ -9,47 +9,47 @@
 ## 進捗ツリー
 - 🚨 定理（標準形ペア数列システムの停止性）[§8.7 主結果]
   - ✅ §5 定式化
-  - ✅ §6 ペア数列の基本性質 〔**全節完了(2026-06-11)**: §6.2–§6.8 の全命題/補題/系が green〕
+  - ✅ §6 ペア数列の基本性質 〔全節完了(2026-06-11)〕
     - ✅ §6.1 最上行のインクリメント
     - ✅ §6.2 単項性
     - ✅ §6.3 許容性
     - ✅ §6.4 幹と枝
-    - ✅ §6.5 簡約化 〔**全項目完了(2026-06-11)**。8系は anchored_slice で真(A4)。docs `red-le-domain.md`〕
+    - ✅ §6.5 簡約化 〔docs `red-le-domain.md`〕
       - ✅ 命題（$\textrm{Red}$ の well-defined 性）
-      - ✅ 命題（$\textrm{Red}$ の $\textrm{IncrFirst}$ 不変性）〔`m_6_5_Red_IncrFirst`/`cdn_red_cong`〕
-        - ✅🚧 補題（死枝[20]の到達不能性）〔`m_6_5_monoT_Red_m10pos`(m10>0)〕
+      - ✅ 命題（$\textrm{Red}$ の $\textrm{IncrFirst}$ 不変性）〔`m_6_5_Red_IncrFirst`〕
+        - ✅🚧 補題（死枝[20]の到達不能性）〔`m_6_5_monoT_Red_m10pos`〕
       - ✅ 命題（$\textrm{Lng}$ の $\textrm{Red}$ 不変性）
       - ✅ 系（$\textrm{Red}$ が零項性を保つこと）
-      - ✅ 系（直系先祖の $\textrm{Red}$ 不変性）〔**`m_6_5_Red_le_final` 無条件で完結(HEAD)**。鍵=閉形式 `m_6_5_Red_rebase`: 非複項∧RedCondA ⟹ Red M = row0一律rebase(-m00+m10)。経験12,400例全数0違反。memory `pss-65-monocong`〕
+      - ✅ 系（直系先祖の $\textrm{Red}$ 不変性）〔`m_6_5_Red_le_final` 無条件。memory `pss-65-monocong`〕
         - ✅ zeroT 分岐〔`m_6_5_Red_le_zeroT`〕
-        - ✅ congR bridge: congR M (Red M)⟹leR 不変〔`m_6_5_congR_imp_leR_inv`/`row1_le0_imp_leR_eq`〕
-        - ✅ anchored⟹RedCondA (stdCA 経由)〔`m_6_5_anchored_imp_RedCondA`〕
-        - ✅ 残a monoCong: **`m_6_5_congR_self_Red_monoT` 完全証明**。m10>0 は coreReduce 構造補題群(TrMax/Br/Joints/npJ_coreReduce + 头部下げ congR + cdn_red_cong)で閉
-        - ✅ 残b stdCA: ST_PS⟹RedCondA **放電済(HEAD: `stdCA_ST_PS`/`RedCondAB_ST_PS` 無条件)** — §6.7 gate-free operCAB 経由(spsy/Ez 経路は廃止)
-      - ✅ 系（$\textrm{Red}$ が単項性を保つこと）〔両方向。`m_6_5_Red_preserves_monoT`+`m_6_5_Red_monoT_final`〕
-      - ✅ 系（$P$ の $\textrm{Red}$ 同変性）〔A4。`m_6_5_P_Red_final`: anchored は非複項なので両辺 singleton〕
+        - ✅ congR bridge〔`m_6_5_congR_imp_leR_inv`〕
+        - ✅ anchored⟹RedCondA〔`m_6_5_anchored_imp_RedCondA`〕
+        - ✅ 残a monoCong〔`m_6_5_congR_self_Red_monoT`〕
+        - ✅ 残b stdCA〔`stdCA_ST_PS`/`RedCondAB_ST_PS`〕
+      - ✅ 系（$\textrm{Red}$ が単項性を保つこと）〔`m_6_5_Red_monoT_final`〕
+      - ✅ 系（$P$ の $\textrm{Red}$ 同変性）〔`m_6_5_P_Red_final`〕
       - ✅ 命題（単項性と $\textrm{Red}$ の関係）〔`m_6_5_monoT_Red_m10pos`〕
       - ✅ 命題（$\textrm{Red}$ の冪等性）〔`m_6_5_Red_idem`〕
       - ✅ 命題（$\textrm{Red}$ と $\textrm{Pred}$ の可換性）〔`m_6_5_Red_Pred`〕
         - ✅🚧 補題（死枝[20]の到達不能性）〔`m_6_5_monoT_Red_m10pos`〕
-      - ✅ 命題（$\textrm{Red}$ と基本列の可換性）〔A4。**`m_6_5_Red_oper_final`: 原典と逆順で n 帰納不要**。(Red M)[n]=rebase(M)[n]=rebase(M[n])(oper-rebase可換 `oper_rebase_commute`)、Red(M[n])=Red(rebase(M[n]))(`congR_rebaseRow0`+床+`cdn_red_cong`)、rebase(M[n])=(Red M)[n] は reduced(`m_6_6_reduced_oper`)の不動点。経験 0/1,824×3(`red_oper_anchored_audit.py`)〕
-      - ✅ 命題（$\textrm{Red}$ が許容性を保つこと）〔A4。`m_6_5_Red_adm_final`: congR(`m_6_5_congR_self_Red_anchored`)で nadm/adm 移送〕
-      - ✅ 系（許容化の $\textrm{Red}$ 不変性）〔A4。`m_6_5_admof_Red_final`〕
-      - ✅ 系（$\textrm{Red}$ が基点を保つこと）〔A4。`m_6_5_Red_marked_final`(adm移送+`m_6_5_Red_le_final`)〕
-    - ✅ §6.6 簡約性 〔**全項目完了(2026-06-11)**。keystone `m_6_6_reduced_iff_cond`。docs `reducedness.md`〕
-      - ✅ 命題（簡約性の切片への遺伝性）〔`herd_6_6_reduced_slice`、A5補正 $j'_0=0$〕
-      - ✅ 命題（$P$ が簡約性を保つこと）〔`m_6_6_P_reduced`: Lng_Red+concat blockwise(`concat_eq_concat_iff`)〕
-      - ✅ 命題（簡約性が基本列で保たれること）〔**`m_6_6_reduced_oper`: RT_PS 全域で M[n]∈RT_PS**。keystone+T_PS一般 tiling(`operCA_tiling_T`/`operCB_tiling_T`: 旧 Nst は非空導出のみ→`operB_gen_LngM` で置換)+nontiling。経験 0/100,344(reduced 33,448個, len≤6,e≤3, keystone判定でRed不要)〕
-      - ✅ 命題（簡約性と係数の関係）〔keystone `m_6_6_reduced_iff_cond` 完全無条件 green。memory `pss-66-keystone-done`/docs `reducedness.md`〕
-      - ✅ 補題（$\textrm{Red}$ と左端の関係）(1)(2)〔`m_6_6_Red_leftend_2`〕
-      - ✅ 補題（簡約性と係数の基本性質）〔`m_6_6_reduced_coeff`: reduced_leftend で頭(0,0)正規化→keystone→condAB_coeff(2)。複項は P 成分毎〕
+      - ✅ 命題（$\textrm{Red}$ と基本列の可換性）〔`m_6_5_Red_oper_final`。memory `pss-65-66-cleared`〕
+      - ✅ 命題（$\textrm{Red}$ が許容性を保つこと）〔`m_6_5_Red_adm_final`〕
+      - ✅ 系（許容化の $\textrm{Red}$ 不変性）〔`m_6_5_admof_Red_final`〕
+      - ✅ 系（$\textrm{Red}$ が基点を保つこと）〔`m_6_5_Red_marked_final`〕
+    - ✅ §6.6 簡約性 〔keystone `m_6_6_reduced_iff_cond`。docs `reducedness.md`〕
+      - ✅ 命題（簡約性の切片への遺伝性）〔`herd_6_6_reduced_slice`(A5)〕
+      - ✅ 命題（$P$ が簡約性を保つこと）〔`m_6_6_P_reduced`〕
+      - ✅ 命題（簡約性が基本列で保たれること）〔`m_6_6_reduced_oper`。memory `pss-65-66-cleared`〕
+      - ✅ 命題（簡約性と係数の関係）〔`m_6_6_reduced_iff_cond`。memory `pss-66-keystone-done`〕
+      - ✅ 補題（$\textrm{Red}$ と左端の関係）〔`m_6_6_Red_leftend_2`〕
+      - ✅ 補題（簡約性と係数の基本性質）〔`m_6_6_reduced_coeff`〕
       - ✅ 補題（簡約性と左端の関係）〔`m_6_6_reduced_leftend`〕
       - ✅ 補題（条件 (A) と (B) と係数の基本性質）〔`m_6_6_condAB_coeff`〕
-      - ✅ 系（直系先祖による切片と $\textrm{Red}$ と $\textrm{IncrFirst}$ の関係）〔A2。`m_6_6_ancestor_slice_Red_IncrFirst`: 閉形式で N=rebase(seg)、readback は算術、Red N=N は cdn_red_cong+congR_funpow_IncrFirst(原典の M' 条件(B)検証を迂回)〕
-      - ✅ 系（$1$ 列ペア数列の基本性質）〔`m_6_6_oneColumn`/`Red_singleton`: Red [(a,b)]=[(b,b)]〕
+      - ✅ 系（直系先祖による切片と $\textrm{Red}$ と $\textrm{IncrFirst}$ の関係）〔A2。`m_6_6_ancestor_slice_Red_IncrFirst`〕
+      - ✅ 系（$1$ 列ペア数列の基本性質）〔`m_6_6_oneColumn`/`Red_singleton`〕
     - ✅ §6.7 標準形
       - ✅ 命題（標準形の階層和による表示）
-      - ✅ 命題（標準形の簡約性）〔**ST_PS⊆RT_PS = `m_6_7_ST_PS_subseteq_RT_PS` 完全証明・sorry 0(HEAD e096355)**。決定打=原典の一行証明に忠実な **gate-free operCA**: gate(cGTWF k=j1)は我々の分解の人工物で一般 reduced で偽(405反例)、正解は escape readback(`oper_d1pos_parent1_readback_escape`: in-block 列の row-1 親が prefix へ逃げるケースの verbatim 読み戻し、無仮定 0/129万)+`operCA_escape_row1`+`operCA_d1pos`。cGTWF_ST_PS/oper_d0zero_eglobal_j1(旧 sorry)は削除。memory `pss-67-cgeg0`〕
+      - ✅ 命題（標準形の簡約性）〔ST_PS⊆RT_PS=`m_6_7_ST_PS_subseteq_RT_PS`(e096355)。memory `pss-67-cgeg0`〕
       - ✅ 命題（標準形の単項成分が標準形であること）
       - ✅ 命題（標準形の始切片への遺伝性）
     - ✅ §6.8 降順性
@@ -59,52 +59,52 @@
     - ✅ §7.1 Buchholzの表記系
       - ✅ 命題（順序数項のカッコの個数が左右で等しいこと）
       - ✅ 命題（順序数項の単項成分の基本性質）
-      - ✅ 命題（部分表現の不等式の延長性）〔`scbext_lessBT`/`scbext_lessBP`(+補助 `scbjoin_lessBT`): scb 位置(共通 prefix `s`/全 RP tail `b`)で主表現 `cp` を `cp'` に置換、`lessBP cp cp' ⟹ lessBT t t'`。`flatBT_flatBP.induct` 相互帰納で `scbimg_image_BT`/`scbimg_join` を鏡像。経験検証 114000/0。Pred 降下性・Mark 順序保存・§8 基本列交換の共通土台〕
+      - ✅ 命題（部分表現の不等式の延長性）〔`scbext_lessBT`/`scbext_lessBP`〕
       - ✅ [Buc1] Lemma 2.1（`<` が `T` 上の狭義全順序）
     - 🚨🚧 §7.2 scb分解 〔`m_7_flatBT_inj` 完成〕
-      - ✅🚧 命題（scb分解の置換可能性）〔原文偽→A12。`m_7_2_scb_replaceable_corr_mod_image`〕
-      - ✅🚧 命題（scb分解の合成則）〔part1 `m_7_2_scb_compose`、part2 原文偽→A11 `scbcomp_compose2_PT`〕
+      - ✅🚧 命題（scb分解の置換可能性）〔A12。`m_7_2_scb_replaceable_corr_mod_image`〕
+      - ✅🚧 命題（scb分解の合成則）〔`m_7_2_scb_compose`/A11 `scbcomp_compose2_PT`〕
       - ✅ 命題（scb分解の自明性の判定条件）〔`m_7_2_scb_triviality`〕
-      - ✅🚧 命題（scb分解の一意性）〔(1)(3)(4)(5) 無条件 green(t=Trm[]除外=A14)。残(2)domB↔kindable(domB termination blocked)〕
-      - ✅ 系（加法と scb分解の関係）〔(1)(2) green、(3) 原文偽→A13〕
+      - ✅🚧 命題（scb分解の一意性）〔(1)(3)(4)(5) green(A14)。残(2)=domB termination〕
+      - ✅ 系（加法と scb分解の関係）〔(1)(2) green/(3) A13〕
       - 🚨 命題（scb分解と基本列の関係）
-      - ✅ 命題（$\textrm{RightNodes}$ と部分表現の関係）〔`m_7_2_RightNodes_subexpr`、BT項レベル(spineSub)、§6独立〕
+      - ✅ 命題（$\textrm{RightNodes}$ と部分表現の関係）〔`m_7_2_RightNodes_subexpr`〕
     - 🚨 §7.3 翻訳写像
-      - ✅ **定義** `Trans`/`Mark`（相互再帰 `function`、termination 後回し）
-      - ✅ 命題（$\textrm{Trans}$ の well-defined 性）〔**完全証明(RT_PS 域、補正 A15)**: 停止性 `m_7_3_Trans_welldef`/`m_7_3_Mark_welldef` + 値域 `(Trans,Mark)∈T_B^Marked` `Trans_Mark_invariant_aux`(系 `m_7_3_Trans_in_T_B`/`m_7_3_Mark_in_T_B`/`m_7_3_Trans_Mark_MarkedB`) + function package の一意性。⚠️原典の一行証明は Red 冪等性(T_PS で偽=A4)を暗黙使用→域は RT_PS(使用箇所 RT/ST で十分)。値部=Lng 強帰納((A)/(B)t1=0 inline、(B)t1≠0 `trans_inv_B_hard`、(C)multi `trans_inv_C`)、側ブリック=`scbimg_image_BT`/`scb_replace_principal`/`dfree_flat`/Marked-Pred/最終成分機構。memory `pss-73-trans-wd`〕
-      - ✅ 命題（$2$ 列ペア数列の基本性質）〔**全5部 green**: `m_7_3_twoColumn_Trans`/`_Marked`/`_Mark`(条件 (I)/(III)/(VI) 3分岐、scb-SOME=([],[])、unflatBT∘flat=id、psimps 評価パターンは memory `pss-73-trans-wd`)〕
-      - ✅🚧 命題（$\textrm{Trans}$ の $(\textrm{IncrFirst},\textrm{Red})$ 不変 $P$ 同変性）〔(1)不変性 green: `m_7_3_Trans_Red`/`m_7_3_Trans_IncrFirst`(域=Red M∈RT_PS, A4型補正)。残=(2)P同変性〕
-      - ✅🚧 命題（$\textrm{Mark}$ の $(\textrm{IncrFirst},\textrm{Red},P)$ 不変性）〔(1) green: `m_7_3_Mark_Red`/`m_7_3_Mark_IncrFirst`(同域)。残=P 部〕
-      - ✅ 命題（$\textrm{Trans}$ が零項性を保つこと）〔`m_7_3_Trans_zeroT`: `M∈RT_PS ⟹ (zeroT M ⟷ Trans M = 0)`。⟸=値不変量 `Trans_Mark_invariant_aux` の `¬zeroT⟶Trans≠0` 対偶、⟹=`m_6_6_oneColumn` で `[(0,0)]` 帰着+`Trans_singleton`。域は RT_PS(A15: 原典 T_PS だが Trans 域=RT_PS)〕
-      - ✅ 命題（$c_1$ と $c_2$ の大小関係）〔**完全達成**: claim(1)(2)=`transC1/transC2_single_principal`、claim(3)=`transC1_lessBT_transC2_full`(無条件 `lessBT c1 c2`)。NAbound(VI 非許容枝)を `Mark_flatIdx_bound`(Mark インデックス suffix 上界、593行 keystone)+`viB_suffix_max`(Lemma B: 非許容で row-1 が `[Adm j0,j0]` 上非減少)で討伐。memory `pss-73-ordering-chain`〕
-      - ✅ 命題（$\textrm{Pred}$ の $\textrm{Trans}$ に関する降下性）〔**完全達成** `m_7_3_Pred_Trans_descend`(RT_PS, Lng>1): `lessBT(Trans(Pred M))(Trans M)`。Lng 強帰納 — mono t1≠0=`scbext_lessBT`∘`transC1_lessBT_transC2_full`、multi=`lessBT_addBT_self`/`_mono_right`∘IH(補助 `Trans_Pred_multi_last`)〕
-      - ✅ 命題（右端第 $1$ 基点の $\textrm{Mark}$ の基本性質）〔**完全 iff** `m_7_3_Mark_rightmost1`(¬zeroT, 訂正A17): m=Lng-1 ⟺ Mark M m=D_{M1m}0。順方向=`Mark_rightmost1_forward`、逆向き=`Mark_tail_nonzero`(m<j1⟹tail≠0、surgery は flatBT長カウント、補助 `transC2_inner_nonzero`)∘`Mark_leftend_form`〕
-      - ✅ 系（$\textrm{Mark}$ の左端の基本性質）〔`Mark_leftend_form`: Mark N m=0 ∨ Dpt(enat(N_{1,m}))t(左端=N_{1,m}, 単項or零)。Lng 強帰納、surgery 枝は新不変量 `Mark_MarkedB_nest`((M,m),(M,m')∈Marked,m≤m'⟹(Mark M m,Mark M m')∈MarkedB, scb合成)で処理。§7.4/§8 で再利用〕
+      - ✅ **定義** `Trans`/`Mark`（相互再帰 `function`）
+      - ✅ 命題（$\textrm{Trans}$ の well-defined 性）〔`Trans_Mark_invariant_aux`(RT_PS域,A15)。memory `pss-73-trans-wd`〕
+      - ✅ 命題（$2$ 列ペア数列の基本性質）〔`m_7_3_twoColumn_Trans`/`_Marked`/`_Mark`〕
+      - ✅🚧 命題（$\textrm{Trans}$ の $(\textrm{IncrFirst},\textrm{Red})$ 不変 $P$ 同変性）〔(1) `m_7_3_Trans_Red`/`_IncrFirst` green。残=(2)P同変性〕
+      - ✅🚧 命題（$\textrm{Mark}$ の $(\textrm{IncrFirst},\textrm{Red},P)$ 不変性）〔(1) `m_7_3_Mark_Red`/`_IncrFirst` green。残=P部〕
+      - ✅ 命題（$\textrm{Trans}$ が零項性を保つこと）〔`m_7_3_Trans_zeroT`(RT_PS,A15)〕
+      - ✅ 命題（$c_1$ と $c_2$ の大小関係）〔`transC1_lessBT_transC2_full`。memory `pss-73-ordering-chain`〕
+      - ✅ 命題（$\textrm{Pred}$ の $\textrm{Trans}$ に関する降下性）〔`m_7_3_Pred_Trans_descend`〕
+      - ✅ 命題（右端第 $1$ 基点の $\textrm{Mark}$ の基本性質）〔完全iff `m_7_3_Mark_rightmost1`(A17)〕
+      - ✅ 系（$\textrm{Mark}$ の左端の基本性質）〔`Mark_leftend_form`/`Mark_MarkedB_nest`〕
       - 🚨 系（条件 (II) か (IV) の下で $t_2$ が $0$ でないこと）
-      - ✅ 命題（右端第 $2$ 基点の $\textrm{Mark}$ の基本性質）〔`m_7_3_Mark_rightmost2`: m=j_{-1}=jm1 で c0=Mark(Pred M)(jm1)=transC1 M=c1 → (c1,c1)∈MarkedB(`scb_decomp_self`)・scb 自明(`scb_SOME_self`) → Mark M jm1 = unflatBT(flat c2) = transC2 M。surgery 評価は `Mark_leftend_form` 鏡像〕
-      - 🚨🚧 命題（$\textrm{Trans}$ の最左単項成分の左端の基本性質）〔核 `m_7_3_Trans_leftend`✅: `bpHeadV(Trans M)=enat(M_{1,0})`(RT_PS, Lng強帰納、surgery=`Mark_leftend_form`鏡像/multi=addBT先頭、副産物 `reduced_e10_zero`)。残=(1)(2)(3)の完全形(最左単項成分=Trans(P0)、左端2文字)〕
-      - ⚠️ 命題（$\textrm{Trans}$ が単項性を保つこと）〔**訂正 A16: 原文のまま偽**。反例 $(0,0)(0,0)$(複項だが $\textrm{Trans}=D_0 0$ 単項)。先頭 P 成分 $P(M)_0$ が零項のとき再帰的定義が先頭零項を $0$ に吸収し $\Sigma_B$ 表示(2236)/単項性命題(2358)と矛盾。$\textrm{Trans}$ 定義は原文に忠実(バグでない)。機械化は「$P(M)_0$ 非零項」前提下のみ可。memory `pss-73-trans-monoT-false`〕
+      - ✅ 命題（右端第 $2$ 基点の $\textrm{Mark}$ の基本性質）〔`m_7_3_Mark_rightmost2`〕
+      - 🚨🚧 命題（$\textrm{Trans}$ の最左単項成分の左端の基本性質）〔核 `m_7_3_Trans_leftend`✅。残=(1)(2)(3)完全形〕
+      - ⚠️ 命題（$\textrm{Trans}$ が単項性を保つこと）〔訂正A16: 原文偽(反例(0,0)(0,0))。memory `pss-73-trans-monoT-false`〕
       - 🚨 系（$\textrm{Trans}$ と非可算基数の関係）〔基数概念要〕
       - 🚨 系（左端第 $1$ 基点の $\textrm{Mark}$ の基本性質）
       - 🚨 系（$s_1$ と $b_1$ の空性と基点の関係）〔def 内部記号露出要〕
-      - ✅ 命題（$\textrm{Mark}$ が順序関係を保つこと）〔`m_7_4_Mark_order`(= `p_7_4_Mark_order`相当, RT_PS, **補正 A19**: 原典(2)の対 (Mark m₁,Mark m₀) は whole/block 逆、正=(Mark m₀,Mark m₁)): m₀<m₁ ⟺ Mark m₁≠Mark m₀ ∧ (Mark m₀,Mark m₁)∈MarkedB。⟹=`Mark_MarkedB_nest`(nest)+単射性、⟸=`Mark_MarkedB_nest`+`MarkedB_antisym`(背理法)。**単射性**: 0<m₀=`Mark_distinct`(核 `RightNodes_seg_len_strict_mono`: g(m)狭義単調, entry非依存 + `Mark_interior_RN_ge2`)、**m₀=0=`Mark0_ne_Mark`**(Mark M 0=Trans M、(M,0)∈Marked⟹**monoT M**(leR M 0 0(Lng-1)=mono)→seg M 0 m も mono→keystone **`Trans_mono_RN_ge2`**(mono,Lng≥2⟹|RightNodes(Trans)|≥2: `Trans_PT_single`単項化+transT1 split, t1≠0 は surgery flatBT(Trans)=s1@flatBT c2@b1 で |flat c2|≥3)→g(m)≥2→長さ区別)。経験 Mark 単射 違反0 で主張確認(A19/m₀=0 含む)〕
+      - ✅ 命題（$\textrm{Mark}$ が順序関係を保つこと）〔`m_7_4_Mark_order`(A19)。memory `pss-74-nextadm`〕
       - 🚨 系（$s_{-1}$ と $b_{-1}$ の空性と基点の関係）
-      - ✅ 命題（$\textrm{Mark}$ の $\textrm{Trans}$ による表示）〔`m_7_4_Mark_Trans_repr`(= `p_7_4_Mark_Trans_repr`, content 2490): 完全証明・無仮定・sorry 0(57498ea)。memory `pss-74-nextadm`〕
+      - ✅ 命題（$\textrm{Mark}$ の $\textrm{Trans}$ による表示）〔`m_7_4_Mark_Trans_repr`(content 2490, 57498ea)。memory `pss-74-nextadm`〕
     - 🚨 §7.4 許容的親子関係
       - ✅ 命題（$\textrm{Adm}_M$ と $<_M^{\textrm{NextAdm}}$ の関係）
-      - ✅ 命題（$\textrm{Trans}$ と $<_M^{\textrm{NextAdm}}$ の関係）〔`m_7_4_Trans_nextAdm`(= `p_7_4_Trans_nextAdm`, RT_PS): ∃!j0 nextAdm M 0 j0 (Lng M-1) ⟹ Trans(Pred M)/Trans M を Mark(Pred M)j0/Mark M j0 周りに同位置 scb 分解。NextAdm 親 j0=THE は `nextAdm_def`(leR∧adm∧<)から (M,j0)∈Marked かつ j0<Lng M-1 を満たす⟹`m_7_4_Trans_Mark_Pred` を m=j0 で適用するだけ。連言射影は `na unfolding nextAdm_def by blast`(auto/simp は THE項+∀で発散、要注意)。T_PS 形は §6 ブロッカー経由〕
-      - ✅ 系（$\textrm{Mark}$ と $<_M^{\textrm{NextAdm}}$ の関係）〔`m_7_4_Mark_nextAdm`(= `p_7_4_Mark_nextAdm`, RT_PS, **補正 A18**): engine `Mark_nest_common_marked`(両列 Marked・m≤m'<Lng-1 で Mark m を Mark m' 周りに一意 scb 分解。`m_7_4_Trans_Mark_Pred` を m/m' に適用→`m_7_2_scb_compose`合成→`m_7_2_scb_unique_sb`で共通位置(sP=sM,bP=bM)固定。補助 `mark_marked_principal`=Trans≠0 の marked 像は単項)に m=j,m'=j0 代入。**A18**: paper は `leR M 0 j j0` のみ仮定だが経験検証で非許容祖先 j の反例25件(`(0,0)(1,1)(2,2)(3,1)`,j0=2,j=1)→Mark 定義域制約で `(M,j)∈Marked` を補う。j≤j0=`nextrel0_rtrancl_mono`/j0<Lng-1=`nextAdm`〕
-      - ✅ 系（$\textrm{Trans}$ の $\textrm{Mark}$ と $\textrm{Pred}$ による表示）〔`m_7_4_Trans_Mark_Pred`(= `p_7_4_Trans_Mark_Pred`, content 2490): (M,m)∈Marked, m<Lng-1 ⟹ ∃! sb で Trans(Pred M) を Mark(Pred M)m の周りに、Trans M を Mark M m の周りに同位置 scb 分解。Lng 強帰納 — mono surgery transport(`scb_replace_principal_BP`+`m_7_2_scb_compose`+`m_7_2_scb_unique_sb`)/multi は共有 prefix を `scb_addBT_left` で持ち上げ。921行。§7.4→§8 の橋〕
-      - ✅ 系（$\textrm{Trans}$ の $\textrm{Mark}$ と切片による表示）〔`m_7_4_Trans_Mark_seg`(= `p_7_4_Trans_Mark_seg`, content 2646): 0<m<Lng-1 で同位置 sb が D_{M1m}0 を Trans(seg M 0 m) に、Mark M m を Trans M に入れる。`m_7_4_Trans_Mark_Pred` の系、Lng 帰納で M→Pred M に潰す(切片一致 seg M 0 m=seg(Pred M)0m)、基底=`Mark_rightmost1_forward`、整列=`m_7_2_scb_unique_sb`〕
-      - ✅ 系（$\textrm{RightNodes}$ と $\textrm{Mark}$ の関係）〔`m_7_4_RightNodes_Mark`(= `p_7_4_RightNodes_Mark`): 0<m<Lng-1 で RightNodes(Trans M)=a0@[M1m]@a1 / RightNodes(Trans(seg M 0 m))=a0@[M1m] / RightNodes(Mark M m)=[M1m]@a1。`m_7_4_Trans_Mark_seg`(共通scb)+ spine置換engine。一般化補助: `m_7_4_RightNodes_subexpr_gen`(主表現性仮定除去)・`seg_0_RT_PS`(TrMax仮定除去, Pred^^k経由)・`Pred_pow_RT_PS`〕
-      - ✅ 命題（$\textrm{RightNodes}$ と $\textrm{RightAnces}$ の関係）〔`m_7_4_RightAnces_RightNodes`(= `p_7_4_RightAnces_RightNodes`, content 2745): **RT_PS 限定**で RightAnces M = RightNodes(Trans M)。`RightAnces`(domintros)定義域全域性 `RightAnces_dom_RT`(Lng強帰納, mirror Trans dom)+ RT_PS 版本体 `ra_RightAnces_RightNodes_RT`(Lng強帰納4分岐: 単項/mono+zeroT(Pred)/mono一般(j₋₁=0 は新補題 `ra_Mark0_eq_Trans`, j₋₁>0 は `m_7_4_RightNodes_Mark`分割+IH)/multi は最終P成分+IH)。補助 `ra_RightNodes_transC2_tail`(transC2 の4枝の RightNodes)。**T_PS 形は §6 P-Red-equivariance(一般 Red 冪等性 `Red M∈RT_PS`、`p_6_5_Red_idem` は anchored_slice 限定 sorry)解決後に Red 経由で持ち上げ可** — `m_7_3_Trans_Red` の RT_PS 前例に合致〕
-      - ✅ 系（非零項の $\textrm{RightAnces}$ が非空であること）〔`m_7_4_RightAnces_zeroT`(= `p_7_4_RightAnces_zeroT`, content 2809, RT_PS): zeroT M ⟺ RightAnces M = []。`m_7_4_RightAnces_RightNodes` + RightNodes 空性 `rnsub_RightNodes_empty_iff`(RightNodes t=[]⟺t=0_B、非空主表現リストは DB 頭の last 成分で頭ノードを生む)+ `m_7_3_Trans_zeroT` から導出。T_PS 形は同じ §6 ブロッカー経由〕
+      - ✅ 命題（$\textrm{Trans}$ と $<_M^{\textrm{NextAdm}}$ の関係）〔`m_7_4_Trans_nextAdm`(RT_PS)〕
+      - ✅ 系（$\textrm{Mark}$ と $<_M^{\textrm{NextAdm}}$ の関係）〔`m_7_4_Mark_nextAdm`(A18)。memory `pss-74-nextadm`〕
+      - ✅ 系（$\textrm{Trans}$ の $\textrm{Mark}$ と $\textrm{Pred}$ による表示）〔`m_7_4_Trans_Mark_Pred`(content 2490)〕
+      - ✅ 系（$\textrm{Trans}$ の $\textrm{Mark}$ と切片による表示）〔`m_7_4_Trans_Mark_seg`(content 2646)〕
+      - ✅ 系（$\textrm{RightNodes}$ と $\textrm{Mark}$ の関係）〔`m_7_4_RightNodes_Mark`〕
+      - ✅ 命題（$\textrm{RightNodes}$ と $\textrm{RightAnces}$ の関係）〔`m_7_4_RightAnces_RightNodes`(RT_PS)。memory `pss-74-nextadm`〕
+      - ✅ 系（非零項の $\textrm{RightAnces}$ が非空であること）〔`m_7_4_RightAnces_zeroT`(RT_PS)〕
   - 🚨 §8 停止性
     - 🚨 §8.1 条件 (I) の下での展開規則
       - 🚨 命題（条件 (I) の下での $\textrm{Trans}$ と基本列の交換関係）
-      - ✅ 補題（公差 $(1,1)$ のペア数列の $\textrm{Trans}$ の基本性質）〔`m_8_1_diagSeq_Trans`(= `p_8_1_diagSeq_Trans`, content 2837): u<v ⟹ Trans(diagSeq u v) = D_u D_v 0(v-u 非依存)。v 帰納、base=`m_7_3_twoColumn_Trans`、step は **j₋₁=0**(`Adm_parent0_last_diagSeq`/`nadm_diagSeq_interior`/`parent0_last_diagSeq`)で scb 自明(`scb_SOME_self`)→ 条件(VI)→ c2=D_u D_v 0。helper `monoT_diagSeq_lt` 等。経験45/45〕
-      - ✅ 系（$\textrm{Pred}$ が公差 $(1,1)$ のペア数列の $\textrm{Trans}$ の基本性質）〔`m_8_1_Pred_diagSeq_Trans`(= `p_8_1_Pred_diagSeq_Trans`, content 2871): Trans(diagSeq u v @ [(w',w)]) の4ケース(D_u D_v D_w 0 等)。Pred=diagSeq u v, t1=D_u D_v 0(`m_8_1_diagSeq_Trans`)、左端基点=`ra_Mark0_eq_Trans`/右端=`m_7_3_Mark_rightmost1`、各ケース c1/c2 surgery。append形補助多数(RedCondA/B_diagApp/monoT_diagApp/Adm_diagApp_*/scb_SOME_Du_Dv 等)。経験 全4ケース violations 0〕
-      - 🚨🤖 補題（条件 (I) か (III) の下での $c_1$ 前後の具体表示）〔`p_8_1_condI_III_c1_around`(content 2933, 5part大連言, 補正A20/A21=corrections.md): part(1)full/(2)/(3-2空虚)✅(15c8119/032ea8d/5302644)。残=(3-1)(4-1)(4-2)🤖fp+part(5)M[n]周期性。memory `pss-81-c1around`〕
+      - ✅ 補題（公差 $(1,1)$ のペア数列の $\textrm{Trans}$ の基本性質）〔`m_8_1_diagSeq_Trans`〕
+      - ✅ 系（$\textrm{Pred}$ が公差 $(1,1)$ のペア数列の $\textrm{Trans}$ の基本性質）〔`m_8_1_Pred_diagSeq_Trans`〕
+      - 🚨🤖 補題（条件 (I) か (III) の下での $c_1$ 前後の具体表示）〔`p_8_1_condI_III_c1_around`(A20/A21)。part(1)(2)(3-2)✅/残(3-1)(4-1)(4-2)🤖fp+part(5)。memory `pss-81-c1around`〕
     - 🚨 §8.2 強単項性
       - 🚨 命題（標準形の直系先祖による切片の簡約化の強単項性）
       - 🚨 命題（条件 (II) か (IV) の下での終切片と $\textrm{Trans}$ の関係）
