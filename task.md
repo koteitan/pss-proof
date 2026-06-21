@@ -13,11 +13,11 @@
   - ✅ §6 ペア数列の基本性質 〔全節完了(2026-06-11)。docs `reducedness.md`/`red-le-domain.md`/`slice-Br-descending.md`〕
   - 🚨 §7 Buchholzの表記系への翻訳
     - ✅ §7.1 Buchholzの表記系
-    - 🚨🚧 §7.2 scb分解 〔`m_7_flatBT_inj` 完成〕
-      - ✅🚧 命題（scb分解の置換可能性）〔A12。`m_7_2_scb_replaceable_corr_mod_image`〕
-      - ✅🚧 命題（scb分解の合成則）〔`m_7_2_scb_compose`/A11 `scbcomp_compose2_PT`〕
+    - 🚨 §7.2 scb分解 〔`m_7_flatBT_inj` 完成〕
+      - ✅ 命題（scb分解の置換可能性）〔A12。`m_7_2_scb_replaceable_corr_mod_image`〕
+      - ✅ 命題（scb分解の合成則）〔`m_7_2_scb_compose`/A11 `scbcomp_compose2_PT`〕
       - ✅ 命題（scb分解の自明性の判定条件）〔`m_7_2_scb_triviality`〕
-      - ✅🚧 命題（scb分解の一意性）〔(1)(3)(4)(5) green(A14)。残(2)=domB termination〕
+      - 🚨 命題（scb分解の一意性）〔(1)(3)(4)(5) green(A14)。残(2)=domB termination〕
       - ✅ 系（加法と scb分解の関係）〔(1)(2) green/(3) A13〕
       - 🚨 命題（scb分解と基本列の関係）〔`operB` の (domintros) 欠落でブロック。memory `pss-8-sweep`〕
       - ✅ 命題（$\textrm{RightNodes}$ と部分表現の関係）〔`m_7_2_RightNodes_subexpr`〕
@@ -25,8 +25,8 @@
       - ✅ **定義** `Trans`/`Mark`（相互再帰 `function`）
       - ✅ 命題（$\textrm{Trans}$ の well-defined 性）〔`Trans_Mark_invariant_aux`(RT_PS域,A15)。memory `pss-73-trans-wd`〕
       - ✅ 命題（$2$ 列ペア数列の基本性質）〔`m_7_3_twoColumn_Trans`/`_Marked`/`_Mark`〕
-      - ✅🚧 命題（$\textrm{Trans}$ の $(\textrm{IncrFirst},\textrm{Red})$ 不変 $P$ 同変性）〔(1) `m_7_3_Trans_Red`/`_IncrFirst` green。残=(2)P同変性〕
-      - ✅🚧 命題（$\textrm{Mark}$ の $(\textrm{IncrFirst},\textrm{Red},P)$ 不変性）〔(1) `m_7_3_Mark_Red`/`_IncrFirst` green。残=P部〕
+      - 🚨 命題（$\textrm{Trans}$ の $(\textrm{IncrFirst},\textrm{Red})$ 不変 $P$ 同変性）〔(1) `m_7_3_Trans_Red`/`_IncrFirst` green。残=(2)P同変性〕
+      - 🚨 命題（$\textrm{Mark}$ の $(\textrm{IncrFirst},\textrm{Red},P)$ 不変性）〔(1) `m_7_3_Mark_Red`/`_IncrFirst` green。残=P部〕
       - ✅ 命題（$\textrm{Trans}$ が零項性を保つこと）〔`m_7_3_Trans_zeroT`(RT_PS,A15)〕
       - ✅ 命題（$c_1$ と $c_2$ の大小関係）〔`transC1_lessBT_transC2_full`。memory `pss-73-ordering-chain`〕
       - ✅ 命題（$\textrm{Pred}$ の $\textrm{Trans}$ に関する降下性）〔`m_7_3_Pred_Trans_descend`〕
