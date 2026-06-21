@@ -17642,4 +17642,459 @@ qed
 
 
 
+section \<open>§8.7 \<open>dom\<close>-heredity and \<open>OT\<close>-heredity along an scb-occurrence\<close>
+
+text \<open>Two distinguishing facts about \<open>NatSet\<close>: it is neither \<open>{0}\<close> nor any
+  \<open>T\<^sub>u\<close>.  \<open>numBT 1 = D\<^sub>0 0 \<in> NatSet\<close> separates it from \<open>{0}\<close>; the principal
+  \<open>D\<^sub>0 1\<close> (nonzero body) lies in every \<open>T\<^sub>u\<close> but is not a numeral, so it
+  separates \<open>NatSet\<close> from \<open>T\<^sub>u\<close>.\<close>
+
+lemma numBT_inj: "numBT m = numBT n \<Longrightarrow> m = n"
+  by (auto simp: numBT_def dest: arg_cong[where f="\<lambda>t. length (untrm t)"])
+
+lemma numBT_Suc0_ne_zero: "numBT (Suc 0) \<noteq> Trm []"
+  by (simp add: numBT_def)
+
+lemma NatSet_neq_zero: "NatSet \<noteq> {Trm []}"
+proof
+  assume H: "NatSet = {Trm []}"
+  have m: "numBT (Suc 0) \<in> NatSet" by (simp add: NatSet_def)
+  with H have "numBT (Suc 0) \<in> {Trm []}" by simp
+  hence "numBT (Suc 0) = Trm []" by simp
+  with numBT_Suc0_ne_zero show False by simp
+qed
+
+lemma NatSet_neq_TBv: "NatSet \<noteq> TBv (enat u)"
+proof
+  assume H: "NatSet = TBv (enat u)"
+  let ?w = "Trm [DB 0 (Trm [DB 0 (Trm [])])]"
+  have inT: "?w \<in> TBv (enat u)" by (simp add: TBv_def)
+  have "?w \<in> NatSet" using H inT by simp
+  then obtain n where wn: "Trm [DB 0 (Trm [DB 0 (Trm [])])] = Trm (replicate n (DB 0 (Trm [])))"
+    by (auto simp: NatSet_def numBT_def)
+  hence leq: "[DB 0 (Trm [DB 0 (Trm [])])] = replicate n (DB 0 (Trm []))" by simp
+  have "DB 0 (Trm [DB 0 (Trm [])]) \<in> set (replicate n (DB 0 (Trm [])))"
+    using leq by (metis list.set_intros(1))
+  hence "DB 0 (Trm [DB 0 (Trm [])]) = DB 0 (Trm [])"
+    by (auto split: if_splits)
+  thus False by simp
+qed
+
+text \<open>The propagation step: if \<open>domB b = NatSet\<close> and \<open>b \<noteq> 0\<close>, then any
+  single principal \<open>D\<^sub>v b\<close> over it also has \<open>domB = NatSet\<close>.  By
+  @{thm [source] domB_unfold} on the single-component branch: \<open>db = NatSet\<close>
+  is neither \<open>{0}\<close> (@{thm [source] NatSet_neq_zero}) nor any \<open>T\<^sub>u\<close>
+  (@{thm [source] NatSet_neq_TBv}), so it lands in the \<open>else db\<close> branch.\<close>
+
+lemma domB_principal_NatSet:
+  assumes db: "domB b = NatSet" and bne: "b \<noteq> Trm []"
+  shows "domB (Trm [DB v b]) = NatSet"
+proof -
+  have "domB (Trm [DB v b]) =
+          (let db = domB b in
+           if db = {Trm []} then NatSet
+           else if (\<exists>u. v \<le> enat u \<and> db = TBv (enat u)) then NatSet
+           else db)"
+    using bne by (subst domB_unfold) simp
+  also have "\<dots> = NatSet"
+    using db NatSet_neq_zero NatSet_neq_TBv by (auto simp: Let_def)
+  finally show ?thesis .
+qed
+
+text \<open>\<open>domB\<close> reads only the last principal component (the multi-branch of
+  @{thm [source] domB_unfold} collapses to the last component; the single and
+  empty cases are trivial).\<close>
+
+lemma domB_last_component:
+  assumes ne: "xs \<noteq> []"
+  shows "domB (Trm xs) = domB (Trm [last xs])"
+proof (cases xs)
+  case Nil thus ?thesis using ne by simp
+next
+  case (Cons p0 ps1)
+  show ?thesis
+  proof (cases ps1)
+    case Nil thus ?thesis using Cons by simp
+  next
+    case (Cons q ps2)
+    obtain v bb where p0eq: "p0 = DB v bb" by (cases p0)
+    have unf: "domB (Trm (p0 # q # ps2)) = domB (Trm [last (p0 # q # ps2)])"
+      unfolding p0eq by (subst domB_unfold) (simp only: BT.case list.case BP.case)
+    thus ?thesis using \<open>xs = p0 # ps1\<close> Cons by simp
+  qed
+qed
+
+text \<open>\<open>dom\<close>-heredity (\<open>m_8_7_OT_dom_hereditary\<close>, article 5962).  The all-\<open>RP\<close>
+  tail pins the occurrence of \<open>flat t'\<close> onto the RIGHT spine of \<open>t\<close>
+  (@{thm [source] scb_to_last_component}); \<open>domB\<close> only reads the right spine
+  (@{thm [source] domB_last_component}), so \<open>NatSet\<close> propagates up via
+  @{thm [source] domB_principal_NatSet}.  No \<open>operB\<close> totality is used —
+  \<open>domB\<close> alone (now unconditional).\<close>
+
+lemma domB_hereditary_aux:
+  "\<And>s b. scb_decomp t s (flatBT (Trm [cp])) b \<Longrightarrow> domB (Trm [cp]) = NatSet
+        \<Longrightarrow> dfree_BP cp \<Longrightarrow> domB t = NatSet"
+proof (induction t rule: measure_induct_rule[where f=size])
+  case (less t s b)
+  have tne: "t \<noteq> Trm []"
+  proof
+    assume z: "t = Trm []"
+    have "flatBT t = s @ flatBP cp @ b" using less.prems(1) by (simp add: scb_decomp_def)
+    moreover have "flatBT t = [Zsym]" using z by simp
+    moreover obtain w cb where "cp = DB w cb" by (cases cp) auto
+    ultimately show False by (cases s) auto
+  qed
+  \<comment> \<open>pin the occurrence into the last component of \<open>t\<close>\<close>
+  obtain sc bc where comp: "flatBP (last (untrm t)) = sc @ flatBP cp @ bc"
+      and rbc: "\<forall>x \<in> set bc. x = RP"
+    using scb_to_last_component[OF less.prems(1) tne] by blast
+  obtain w lb where lpw: "last (untrm t) = DB w lb"
+    by (cases "last (untrm t)") auto
+  \<comment> \<open>\<open>domB t = domB (Trm [last component])\<close>\<close>
+  obtain ts where tT: "t = Trm ts" by (cases t) auto
+  have tsne: "ts \<noteq> []" using tne tT by auto
+  have domLast: "domB t = domB (Trm [last ts])"
+    unfolding tT by (rule domB_last_component[OF tsne])
+  have lastEq: "last ts = DB w lb" using lpw tT by simp
+  \<comment> \<open>the occurrence sits in \<open>flatBP (DB w lb) = Dsym w # flatBT lb\<close>\<close>
+  have flateq: "Dsym w # flatBT lb = sc @ flatBP cp @ bc"
+    using comp lpw by simp
+  obtain w' cb' where cpw: "cp = DB w' cb'" by (cases cp) auto
+  show ?case
+  proof (cases "sc = []")
+    case True
+    \<comment> \<open>whole component: \<open>cp = DB w lb\<close>, so \<open>Trm [last ts] = Trm [cp]\<close>\<close>
+    have e: "flatBP (DB w lb) @ [] = flatBP cp @ bc"
+      using flateq True by simp
+    have "flatBP (DB w lb) = flatBP cp \<and> [] = bc"
+      using flatinj_flatBP_cancel[OF e] by blast
+    hence "DB w lb = cp" using m_7_flatBT_inj cpw by simp
+    hence "domB (Trm [last ts]) = domB (Trm [cp])" using lastEq by simp
+    thus ?thesis using domLast less.prems(2) by simp
+  next
+    case False
+    \<comment> \<open>occurrence inside the body \<open>lb\<close>: descend\<close>
+    obtain sc1 where sc1: "sc = Dsym w # sc1"
+      using flateq False by (cases sc) auto
+    have aeq: "flatBT lb = sc1 @ flatBP cp @ bc"
+      using flateq sc1 by simp
+    have lbne: "lb \<noteq> Trm []"
+    proof
+      assume "lb = Trm []"
+      hence "flatBT lb = [Zsym]" by simp
+      thus False using aeq cpw by (cases sc1) auto
+    qed
+    have scbLb: "scb_decomp lb sc1 (flatBT (Trm [cp])) bc"
+      unfolding scb_decomp_def using aeq rbc less.prems(3)
+      by (auto simp: isPTB_str_def intro: exI[of _ cp])
+    \<comment> \<open>\<open>size lb < size t\<close>\<close>
+    have szlt: "size lb < size t"
+      using rnsub_size_arg_lt'[of ts w lb] lastEq tsne tT by simp
+    have domLb: "domB lb = NatSet"
+      by (rule less.IH[OF szlt scbLb less.prems(2) less.prems(3)])
+    have "domB (Trm [DB w lb]) = NatSet"
+      by (rule domB_principal_NatSet[OF domLb lbne])
+    hence "domB (Trm [last ts]) = NatSet" using lastEq by simp
+    thus ?thesis using domLast by simp
+  qed
+qed
+
+lemma m_8_7_OT_dom_hereditary:
+  assumes "t \<in> T_B" "t' \<in> T_B" "domB t' = NatSet" "scb_decomp t s (flatBT t') b"
+  shows "domB t = NatSet"
+proof -
+  have tne: "t \<noteq> Trm []"
+  proof
+    assume z: "t = Trm []"
+    \<comment> \<open>\<open>domB t' = NatSet\<close> forces \<open>t' \<noteq> 0\<close>, hence \<open>flat t'\<close> is a principal
+        string, which cannot occur inside \<open>flat (Trm []) = [Zsym]\<close>.\<close>
+    have t'ne: "t' \<noteq> Trm []"
+    proof
+      assume "t' = Trm []"
+      hence "domB t' = {}" by (subst domB_unfold) simp
+      thus False using assms(3) by (auto simp: NatSet_def)
+    qed
+    \<comment> \<open>\<open>[Zsym] = s @ flat t' @ b\<close> forces (by length) \<open>flat t' = [Zsym]\<close>, i.e.
+        \<open>t' = 0\<close> — contradiction.\<close>
+    have eq: "[Zsym] = s @ flatBT t' @ b"
+      using assms(4) z by (simp add: scb_decomp_def)
+    have ftne: "flatBT t' \<noteq> []" by (rule flatBT_nonempty)
+    have lensum: "length s + length (flatBT t') + length b = Suc 0"
+      using arg_cong[where f=length, OF eq] by (simp add: add.assoc)
+    have ftge: "length (flatBT t') \<ge> 1" using ftne by (cases "flatBT t'") auto
+    have s0: "s = []" using lensum ftge by (cases s) auto
+    have b0: "b = []" using lensum ftge by (cases b) auto
+    have "flatBT t' = [Zsym]" using eq s0 b0 by simp
+    hence "flatBT t' = flatBT (Trm [])" by simp
+    hence "t' = Trm []" by (rule m_7_flatBT_inj)
+    thus False using t'ne by simp
+  qed
+  have ipt: "isPTB_str (flatBT t')"
+    using assms(4) tne by (auto simp: scb_decomp_def)
+  then obtain p where pf: "dfree_BP p" and pfl: "flatBT t' = flatBP p"
+    by (auto simp: isPTB_str_def)
+  have t'p: "t' = Trm [p]"
+  proof -
+    have "flatBT t' = flatBT (Trm [p])" using pfl by simp
+    thus ?thesis by (rule m_7_flatBT_inj)
+  qed
+  have d': "scb_decomp t s (flatBT (Trm [p])) b" using assms(4) t'p by simp
+  have dp: "domB (Trm [p]) = NatSet" using assms(3) t'p by simp
+  show ?thesis by (rule domB_hereditary_aux[OF d' dp pf])
+qed
+
+text \<open>\<open>OT\<close>-heredity (\<open>m_8_7_OT_scb_recursive\<close>, article 5953).  Same right-spine
+  pinning (@{thm [source] scb_to_last_component}): the occurring component is a
+  genuine right-spine subterm of \<open>t\<close>, and \<open>isOT_BT\<close>/\<open>isOT_BP\<close> are hereditary
+  downward (every principal component of an \<open>OT\<close> term, and the body of an
+  \<open>OT\<close> principal, is again \<open>OT\<close>).  No \<open>domB\<close>/\<open>operB\<close> needed.\<close>
+
+lemma isOT_BT_last: "isOT_BT (Trm ps) \<Longrightarrow> ps \<noteq> [] \<Longrightarrow> isOT_BT (Trm [last ps])"
+proof -
+  assume H: "isOT_BT (Trm ps)" and ne: "ps \<noteq> []"
+  have "last ps \<in> set ps" using ne by simp
+  hence "isOT_BP (last ps)" using H by simp
+  thus "isOT_BT (Trm [last ps])" by simp
+qed
+
+lemma OT_hereditary_aux:
+  "\<And>s b. scb_decomp t s (flatBT (Trm [cp])) b \<Longrightarrow> isOT_BT t
+        \<Longrightarrow> dfree_BP cp \<Longrightarrow> isOT_BT (Trm [cp])"
+proof (induction t rule: measure_induct_rule[where f=size])
+  case (less t s b)
+  have tne: "t \<noteq> Trm []"
+  proof
+    assume z: "t = Trm []"
+    have "flatBT t = s @ flatBP cp @ b" using less.prems(1) by (simp add: scb_decomp_def)
+    moreover have "flatBT t = [Zsym]" using z by simp
+    moreover obtain w cb where "cp = DB w cb" by (cases cp) auto
+    ultimately show False by (cases s) auto
+  qed
+  obtain sc bc where comp: "flatBP (last (untrm t)) = sc @ flatBP cp @ bc"
+      and rbc: "\<forall>x \<in> set bc. x = RP"
+    using scb_to_last_component[OF less.prems(1) tne] by blast
+  obtain ts where tT: "t = Trm ts" by (cases t) auto
+  have tsne: "ts \<noteq> []" using tne tT by auto
+  have lastOT: "isOT_BT (Trm [last ts])"
+    using isOT_BT_last[OF _ tsne] less.prems(2) tT by simp
+  obtain w lb where lpw: "last (untrm t) = DB w lb"
+    by (cases "last (untrm t)") auto
+  have lastEq: "last ts = DB w lb" using lpw tT by simp
+  have flateq: "Dsym w # flatBT lb = sc @ flatBP cp @ bc"
+    using comp lpw by simp
+  obtain w' cb' where cpw: "cp = DB w' cb'" by (cases cp) auto
+  show ?case
+  proof (cases "sc = []")
+    case True
+    have e: "flatBP (DB w lb) @ [] = flatBP cp @ bc"
+      using flateq True by simp
+    have "flatBP (DB w lb) = flatBP cp \<and> [] = bc"
+      using flatinj_flatBP_cancel[OF e] by blast
+    hence "DB w lb = cp" using m_7_flatBT_inj cpw by simp
+    thus ?thesis using lastOT lastEq by simp
+  next
+    case False
+    obtain sc1 where sc1: "sc = Dsym w # sc1"
+      using flateq False by (cases sc) auto
+    have aeq: "flatBT lb = sc1 @ flatBP cp @ bc"
+      using flateq sc1 by simp
+    have scbLb: "scb_decomp lb sc1 (flatBT (Trm [cp])) bc"
+      unfolding scb_decomp_def using aeq rbc less.prems(3)
+      by (auto simp: isPTB_str_def intro: exI[of _ cp])
+    have lbOT: "isOT_BT lb"
+    proof -
+      have "isOT_BP (DB w lb)" using lastOT lastEq by simp
+      thus ?thesis by simp
+    qed
+    have szlt: "size lb < size t"
+      using rnsub_size_arg_lt'[of ts w lb] lastEq tsne tT by simp
+    show ?thesis by (rule less.IH[OF szlt scbLb lbOT less.prems(3)])
+  qed
+qed
+
+lemma m_8_7_OT_scb_recursive:
+  assumes "t \<in> OT_B" "c \<in> T_B" "scb_decomp t s (flatBT c) b"
+  shows "c \<in> OT"
+proof (cases "t = Trm []")
+  case True
+  \<comment> \<open>\<open>t = 0\<close>: the only \<open>c\<close> whose flat occurs in \<open>flat 0 = [Zsym]\<close> is \<open>c = 0\<close>,
+      which is \<open>\<in> OT\<close> by (OT1).\<close>
+  have flatc: "[Zsym] = s @ flatBT c @ b"
+    using assms(3) True by (simp add: scb_decomp_def)
+  obtain cs where cT: "c = Trm cs" by (cases c) auto
+  have "c = Trm []"
+  proof (cases cs)
+    case Nil thus ?thesis using cT by simp
+  next
+    case (Cons p0 ps1)
+    show ?thesis
+    proof (cases ps1)
+      case Nil \<comment> \<open>\<open>c = Trm [p0]\<close>: \<open>flat c = flatBP p0\<close> starts with \<open>Dsym\<close>\<close>
+      obtain u a where p0: "p0 = DB u a" by (cases p0)
+      have "Dsym u \<in> set [Zsym]"
+        using flatc cT \<open>cs = p0 # ps1\<close> Nil p0 by (cases s) auto
+      thus ?thesis by simp
+    next
+      case (Cons q ps2) \<comment> \<open>multi: \<open>flat c\<close> starts with \<open>LP\<close>\<close>
+      have "LP \<in> set [Zsym]"
+        using flatc cT \<open>cs = p0 # ps1\<close> Cons by (cases s) auto
+      thus ?thesis by simp
+    qed
+  qed
+  thus ?thesis by (simp add: OT_def)
+next
+  case tne: False
+  have tOT: "isOT_BT t" using assms(1) by (simp add: OT_B_def OT_def)
+  have ipt: "isPTB_str (flatBT c)"
+    using assms(3) tne by (auto simp: scb_decomp_def)
+  then obtain p where pf: "dfree_BP p" and pfl: "flatBT c = flatBP p"
+    by (auto simp: isPTB_str_def)
+  have cp: "c = Trm [p]"
+  proof -
+    have "flatBT c = flatBT (Trm [p])" using pfl by simp
+    thus ?thesis by (rule m_7_flatBT_inj)
+  qed
+  have d': "scb_decomp t s (flatBT (Trm [p])) b" using assms(3) cp by simp
+  have "isOT_BT (Trm [p])"
+    by (rule OT_hereditary_aux[OF d' tOT pf])
+  thus ?thesis using cp by (simp add: OT_def)
+qed
+
+
+
+text \<open>For an IMMEDIATE successor target \<open>b = a+1\<close>, the \<open>nextrel1\<close> minimality
+  quantifier (\<open>\<forall>j. a<j \<and> le0 M j b \<longrightarrow> M\<^bsub>1,j\<^esub> \<ge> M\<^bsub>1,b\<^esub>\<close>) holds VACUOUSLY:
+  \<open>le0\<close> is monotone (\<open>le0 M j b \<Longrightarrow> j \<le> b\<close>, @{thm [source] nextrel0_rtrancl_mono}),
+  so any \<open>j>a=b-1\<close> with \<open>le0 M j b\<close> already equals \<open>b\<close>.  Hence \<open>nextrel1 M a (a+1)\<close>
+  reduces to the three plain conjuncts: in-range, strict row-1 increase, and
+  \<open>le0 M a (a+1)\<close>.  (Empirically 0-fail, /tmp/min2.py.)\<close>
+
+lemma nextrel1_adjacent:
+  assumes ab: "a + 1 < Lng M"
+    and e1: "entry M 1 a < entry M 1 (a + 1)"
+    and reach: "le0 M a (a + 1)"
+  shows "nextrel1 M a (a + 1)"
+proof -
+  have aL: "a < Lng M" using ab by linarith
+  have minim: "\<forall>j. a < j \<and> le0 M j (a + 1) \<longrightarrow> entry M 1 j \<ge> entry M 1 (a + 1)"
+  proof (intro allI impI)
+    fix j assume H: "a < j \<and> le0 M j (a + 1)"
+    hence "(nextrel0 M)\<^sup>*\<^sup>* j (a + 1)" by (simp add: le0_def)
+    hence "j \<le> a + 1" by (rule nextrel0_rtrancl_mono)
+    hence "j = a + 1" using H by linarith
+    thus "entry M 1 j \<ge> entry M 1 (a + 1)" by simp
+  qed
+  show ?thesis unfolding nextrel1_def using aL ab e1 reach minim by simp
+qed
+
+
+text \<open>§8.1 c1-around part(5) keystone: \<open>adm (N[n]) idx\<close> at an INTER-BLOCK boundary
+  \<open>idx = j\<^sub>0 + q\<cdot>w\<close> (block start of block \<open>q\<close>, \<open>1 \<le> q < n\<close>) of the condition-(I)
+  (d0zero) fundamental sequence.  The decisive fact is purely row-0: the block
+  start \<open>idx\<close> is a FRESH row-0 block minimum (it carries \<open>N\<^bsub>0,j\<^sub>0\<^esub>\<close>, the block
+  minimum), so it is row-0-UNREACHABLE from its immediate predecessor \<open>idx-1\<close>
+  (the last column of block \<open>q-1\<close>): by block-confinement
+  @{thm [source] oper_d0zero_le0_confined}, every \<open>(nextrel0 N[n])\<^sup>*\<^sup>*\<close>-successor of
+  \<open>idx-1\<close> stays \<open>< j\<^sub>0 + q\<cdot>w = idx\<close>, so \<open>\<not> le0 (N[n]) (idx-1) idx\<close>.  A \<open>nextrel1\<close>
+  edge \<open>(idx-1) \<to> idx\<close> would need that \<open>le0\<close>, so it cannot exist; hence
+  \<open>\<not> nadm (N[n]) idx\<close>, i.e. \<open>adm (N[n]) idx\<close>.  (Empirically: edge \<open>idx-1 \<to> idx\<close>
+  never fires in the part(5) context, 0/7518, and its \<open>le0\<close> is always false,
+  /tmp/edge1_why.py.)\<close>
+
+lemma oper_d0zero_nadm_blockstart:
+  fixes N :: pairseq
+  assumes hp0: "hasParent N 0 (Lng N - 1)" and e1z: "entry N 1 (Lng N - 1) = 0"
+    and q1: "1 \<le> q" and qn: "q < n"
+  shows "adm ((N::pairseq)[n])
+            (parent N 0 (Lng N - 1) + q * (Lng N - 1 - parent N 0 (Lng N - 1)))"
+proof -
+  let ?j1 = "Lng N - 1"  let ?j0 = "parent N 0 ?j1"  let ?w = "?j1 - ?j0"
+  let ?Nn = "(N::pairseq)[n]"  let ?idx = "?j0 + q * ?w"
+  note F = kind0_parent_facts[OF hp0 e1z]
+  have i1z: "idx1 N ?j1 = 0" by (rule F(1))
+  have j0lt: "?j0 < ?j1" by (rule F(3))
+  have notzero: "\<not> (entry N 0 ?j1 = 0 \<and> entry N 1 ?j1 = 0)" by (rule F(4))
+  have hp: "hasParent N (idx1 N ?j1) ?j1" by (rule F(5))
+  have L: "1 < Lng N" by (rule F(6))
+  have j0lt': "parent N (idx1 N ?j1) ?j1 < ?j1" using j0lt i1z by simp
+  have w0: "0 < ?w" using j0lt by linarith
+  have lenNn: "Lng ?Nn = ?j0 + n * ?w" by (rule Lng_operI[OF hp0 e1z])
+  \<comment> \<open>\<open>idx\<close> is a valid (in-range) block start; \<open>idx-1\<close> sits in block \<open>q-1 \<ge> 0\<close>\<close>
+  have idxlt: "?idx < Lng ?Nn"
+  proof -
+    have "q * ?w < n * ?w" using qn w0 by (simp add: mult_strict_right_mono)
+    thus ?thesis using lenNn by linarith
+  qed
+  have wqw: "?w \<le> q * ?w"
+  proof -
+    have "?w = 1 * ?w" by simp
+    also have "\<dots> \<le> q * ?w" using q1 by (rule mult_le_mono1)
+    finally show ?thesis .
+  qed
+  have idxge: "?w \<le> ?idx" using wqw by linarith
+  have predge: "?j0 \<le> ?idx - 1" using wqw w0 by linarith
+  have predlt: "?idx - 1 < Lng ?Nn" using idxlt by linarith
+  \<comment> \<open>block-confinement: every row-0 successor of \<open>idx-1\<close> stays \<open>< j\<^sub>0 + q\<cdot>w = idx\<close>\<close>
+  have notle0: "\<not> le0 ?Nn (?idx - 1) ?idx"
+  proof
+    assume "le0 ?Nn (?idx - 1) ?idx"
+    hence chain: "(nextrel0 ?Nn)\<^sup>*\<^sup>* (?idx - 1) ?idx" by (simp add: le0_def)
+    have conf: "?idx < ?j0 + ((?idx - 1 - ?j0) div ?w + 1) * ?w"
+      by (rule oper_d0zero_le0_confined[OF L notzero hp i1z predge predlt chain])
+    \<comment> \<open>\<open>(idx-1 - j\<^sub>0) div w = q-1\<close>, so the bound is exactly \<open>j\<^sub>0 + q\<cdot>w = idx\<close>\<close>
+    have dmq: "(?idx - 1 - ?j0) div ?w = q - 1"
+    proof -
+      have eq: "?idx - 1 - ?j0 = (q - 1) * ?w + (?w - 1)"
+      proof -
+        have a: "?idx - 1 - ?j0 = q * ?w - 1" by (simp add: add.commute)
+        have b: "(q - 1) * ?w + (?w - 1) = q * ?w - ?w + (?w - 1)"
+          using q1 by (simp add: diff_mult_distrib)
+        have c: "q * ?w - ?w + (?w - 1) = q * ?w - 1" using wqw w0 by linarith
+        show ?thesis using a b c by simp
+      qed
+      have wm1: "?w - 1 < ?w" using w0 by linarith
+      have w0': "?w \<noteq> 0" using w0 by simp
+      have "(?idx - 1 - ?j0) div ?w = ((?w - 1) + (q - 1) * ?w) div ?w"
+        using eq by (simp add: add.commute)
+      also have "\<dots> = (q - 1) + (?w - 1) div ?w"
+        by (rule div_mult_self1[OF w0'])
+      also have "\<dots> = q - 1" using wm1 by simp
+      finally show ?thesis .
+    qed
+    have qeq: "(q - 1) + 1 = q" using q1 by simp
+    have "?idx < ?j0 + ((q - 1) + 1) * ?w" using conf dmq by simp
+    hence "?idx < ?j0 + q * ?w" using qeq by simp
+    thus False by simp
+  qed
+  \<comment> \<open>hence no \<open>nextrel1\<close> edge \<open>idx-1 \<to> idx\<close>, so \<open>\<not> nadm\<close>\<close>
+  have noedge: "\<not> nextrel1 ?Nn (?idx - 1) ?idx"
+    using notle0 by (auto simp: nextrel1_def)
+  have "\<not> nadm ?Nn ?idx"
+  proof (cases "?idx > Lng ?Nn")
+    case True thus ?thesis using idxlt by simp
+  next
+    case False
+    show ?thesis unfolding nadm_def using noedge False by (auto simp: nextR_def)
+  qed
+  thus ?thesis by (simp add: adm_def)
+qed
+
+
+text \<open>§8.1 c1-around part(5) base reachability: in a standard parent step
+  \<open>nextrel0 N j\<^sub>0 (Lng N - 1)\<close>, the block start \<open>j\<^sub>0\<close> row-0-reaches the column
+  \<open>j\<^sub>1-1\<close> (the last interior column of the block): a special case of
+  @{thm [source] parent_block_le0} at offset \<open>s = (j\<^sub>1-1) - j\<^sub>0\<close>.\<close>
+
+lemma parent_block_le0_pred:
+  assumes parR: "nextrel0 N (parent N 0 (Lng N - 1)) (Lng N - 1)"
+  shows "le0 N (parent N 0 (Lng N - 1)) (Lng N - 1 - 1)"
+proof -
+  let ?j1 = "Lng N - 1"  let ?j0 = "parent N 0 ?j1"
+  have j0lt: "?j0 < ?j1" using parR by (simp add: nextrel0_def)
+  have s: "?j1 - 1 - ?j0 < ?j1 - ?j0" using j0lt by linarith
+  have base: "le0 N ?j0 (?j0 + (?j1 - 1 - ?j0))" by (rule parent_block_le0[OF parR s])
+  have idxeq: "?j0 + (?j1 - 1 - ?j0) = ?j1 - 1" using j0lt by linarith
+  show ?thesis using base idxeq by simp
+qed
+
 end
