@@ -44,7 +44,7 @@ $$F_M(n) := F_{M[n]}(f(n))$$
 - (3) $F_M(n) = F_{M[n]}(f(n))$
 - （$\textrm{Lng}(M)=1$ の場合は $M[n]=M$ で自明なので除外して差し支えない）
 
-**形式化での扱い****証明成功**。
+**形式化での扱い**: **証明成功**。
 
 `pss_paper.thy` の `p_5_4_F_oper_dom` / `p_5_4_F_oper_val` を訂正版
 （$\textrm{Lng}\,M > 1$, 第2引数 $f\,n$）で記述し、`pss_mechanized.thy` の
@@ -70,7 +70,7 @@ $M_{0,j'_0} - M_{1,j'_0}$ を用いており、$m$ は $j'_0$ の誤記と判断
 
 $(M_j)_{j=j'_0}^{j'_1} = \textrm{IncrFirst}^{M_{0,j'_0} - M_{1,j'_0}}(N)$
 
-**形式化での扱い** **証明成功**。 （`m_6_6_ancestor_slice_Red_IncrFirst`・green、§6.6 ✅、§7/§8 で多用）。
+**形式化での扱い**: **証明成功**。 （`m_6_6_ancestor_slice_Red_IncrFirst`・green、§6.6 ✅、§7/§8 で多用）。
 
 `pss_paper.thy` の `p_6_6_ancestor_slice_Red_IncrFirst` を訂正版
 （指数 $\textrm{entry}\,M\,0\,j'_0 - \textrm{entry}\,M\,1\,j'_0$）で記述。
@@ -103,7 +103,7 @@ $$M = (0,0)(1,1)(2,1)(3,1)(2,0)$$
 
 (4) を削除（(1)(2)(3) のみ残す）。
 
-**形式化での扱い****証明成功**。
+**形式化での扱い**: **証明成功**。
 
 `pss_paper.thy` の `p_6_4_FirstNodes_Joints_mono` を (1)(2)(3) のみに弱め、
 `m_6_4_FirstNodes_Joints_mono`（= 既証明 `m_6_4_FirstNodes_Joints_mono_aux`）で discharge。
@@ -239,7 +239,7 @@ $\textrm{Red}$ と $\textrm{Pred}$ の可換性は真だが、それだけでは
 $j'_0 = 0 \le \textrm{TrMax}(M) \le j'_1 \le j_1$ なら全数で成立（失敗0）。$j'_0 \le \textrm{TrMax}$ では
 26/7380（うち標準形 11）失敗。最終的な必要十分前提は **保留中**。
 
-**形式化での扱い（保留中）** **証明成功**。 （補正形 `herd_6_6_reduced_slice`($j'_0=0$)・green、§6.6 ✅）。
+**形式化での扱い**: **証明成功**。 （補正形 `herd_6_6_reduced_slice`($j'_0=0$)・green、§6.6 ✅）。
 
 `pss_paper.thy` の `p_6_6_reduced_slice` の前提を補正（暫定 $j'_0=0$）。`reduced_oper`・
 `P_reduced`・`reduced_iff_cond`（簡約 ⟺ 条件A∧B）・`Red_leftend_1` は $T_{\textrm{PS}}$ 全体で真。
