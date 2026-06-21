@@ -734,7 +734,7 @@ text \<open>
   termination ([Buc1] Lemma 3.2, induction on the length of \<open>a\<close>) is deferred.
 \<close>
 
-function
+function (domintros)
   domB :: "BT \<Rightarrow> BT set" and
   operB :: "BT \<Rightarrow> BT \<Rightarrow> BT" and
   xseq :: "BT \<Rightarrow> enat \<Rightarrow> nat \<Rightarrow> BT"
