@@ -48,7 +48,7 @@
       - 🚨 命題（条件 (I) の下での $\textrm{Trans}$ と基本列の交換関係）
       - ✅ 補題（公差 $(1,1)$ のペア数列の $\textrm{Trans}$ の基本性質）〔`m_8_1_diagSeq_Trans`〕
       - ✅ 系（$\textrm{Pred}$ が公差 $(1,1)$ のペア数列の $\textrm{Trans}$ の基本性質）〔`m_8_1_Pred_diagSeq_Trans`〕
-      - 🚨 補題（条件 (I) か (III) の下での $c_1$ 前後の具体表示）〔part(1)(2)(3-2)✅/残(3-1)(4-1)(4-2)=`Mark_nest_suffix_form`要・part(5)=nextrel1 ブロック反射要(A20/A21)〕
+      - 🚨 補題（条件 (I) か (III) の下での $c_1$ 前後の具体表示）〔part(1)(2)(3-2)✅/残(3-1)(4-1)(4-2)=`Mark_adjacent_form`+非許容列fold要・part(5)=infra✅で組み立て残(conj6,7)(A20/A21)〕
     - 🚨 §8.2 強単項性
       - ✅ 命題（標準形の直系先祖による切片の簡約化の強単項性）〔`m_8_2_standard_slice_Red_strongmono`〕
       - 🚨 命題（条件 (II) か (IV) の下での終切片と $\textrm{Trans}$ の関係）
@@ -84,8 +84,8 @@
     - 🚨 §8.7 主結果
       - ✅ 補題（公差 $(0,0)$ のペア数列の $\textrm{Trans}$ の基本性質）〔`m_8_7_const00_Trans`〕
       - 🚨 補題（基本列の降下性）
-      - 🚨 補題（順序数項の再帰構造）
-      - 🚨 補題（順序数項の共終数の遺伝性）
+      - ✅ 補題（順序数項の再帰構造）〔`m_8_7_OT_scb_recursive`〕
+      - ✅ 補題（順序数項の共終数の遺伝性）〔`m_8_7_OT_dom_hereditary`〕
       - 🚨 補題（順序数項の末尾項の零化可能性）
       - 🚨 補題（$\textrm{Pred}$ と $[0]$ の関係）
       - ✅ 補題（順序数項の基本例）〔`m_8_7_OT_examples`〕
