@@ -70,7 +70,7 @@ $M_{0,j'_0} - M_{1,j'_0}$ を用いており、$m$ は $j'_0$ の誤記と判断
 
 $(M_j)_{j=j'_0}^{j'_1} = \textrm{IncrFirst}^{M_{0,j'_0} - M_{1,j'_0}}(N)$
 
-**形式化での扱い**
+**形式化での扱い** **証明成功**（`m_6_6_ancestor_slice_Red_IncrFirst`・green、§6.6 ✅、§7/§8 で多用）。
 
 `pss_paper.thy` の `p_6_6_ancestor_slice_Red_IncrFirst` を訂正版
 （指数 $\textrm{entry}\,M\,0\,j'_0 - \textrm{entry}\,M\,1\,j'_0$）で記述。
@@ -201,7 +201,7 @@ $a \le b$ で $(0,a) \le_S (0,b)$ なるものに対し $M = (S_j)_{j=a}^{b}$ �
 - §7 各使用箇所の $N$ は $(M_j)_{j=lo}^{j_1}$ 型で、$lo$ は $j_1$ の親/先祖/許容先祖
   （$<^{\textrm{NextAdm}}$ が $\le_M$ を含むことより行0係留）＝上記定義域に入る。
 
-**形式化での扱い（保留中）**
+**形式化での扱い**: **証明成功**。§6.5 系（直系先祖の Red 不変性）は anchored 係留切片の補正域のもと `m_6_5_Red_le_final` 等として無条件完結（[[A10]] で循環解消、§6.5 全項 green）。docs `red-le-domain.md`。
 
 当面は補正済み定義域（先祖係留切片）で言明のみ（`sorry`）とし、8系を同様に制限する。
 証明は本プロジェクト最難（論文の一行 $\textrm{Lng}$ 帰納は $\textrm{Lng}=2$ で偽となり不成立）。
@@ -239,7 +239,7 @@ $\textrm{Red}$ と $\textrm{Pred}$ の可換性は真だが、それだけでは
 $j'_0 = 0 \le \textrm{TrMax}(M) \le j'_1 \le j_1$ なら全数で成立（失敗0）。$j'_0 \le \textrm{TrMax}$ では
 26/7380（うち標準形 11）失敗。最終的な必要十分前提は **保留中**。
 
-**形式化での扱い（保留中）**
+**形式化での扱い（保留中）** **証明成功**（補正形 `herd_6_6_reduced_slice`($j'_0=0$)・green、§6.6 ✅）。
 
 `pss_paper.thy` の `p_6_6_reduced_slice` の前提を補正（暫定 $j'_0=0$）。`reduced_oper`・
 `P_reduced`・`reduced_iff_cond`（簡約 ⟺ 条件A∧B）・`Red_leftend_1` は $T_{\textrm{PS}}$ 全体で真。
@@ -286,7 +286,7 @@ $$\textrm{diagSeq}(u,v) = \textrm{Pred}(\textrm{diagSeq}(u,v{+}1)) = (\textrm{di
 §6.7 に追加（証明は上記対角列拡張）し、当該箇所で先頭部分を $S_{k-1}\subseteq S_k$ により $S_k$ とする一文を補う。
 命題の主張は原文どおり（同ランク $S_k$）。
 
-**形式化での扱い**
+**形式化での扱い**: **証明成功**。`m_6_7_standard_P_components`（`SkT_PS_mono` + k×Lng 辞書式帰納）として証明済・green。
 
 `SkT_PS_mono`（済）を用いて `pss_paper.thy` の `p_6_7_standard_P_components`（同ランク $S_k$）を、
 $k$ × $\textrm{Lng}$ の辞書式帰納で証明する（先頭は単調性、末尾は $\textrm{Lng}$ 減少の内側帰納）。詳細は
@@ -311,7 +311,7 @@ $k$ × $\textrm{Lng}$ の辞書式帰納で証明する（先頭は単調性、�
 $M'\in ST_{\textrm{PS}}$ は成り立たないので、降順性を「$M'$ が標準形」へ帰着させる経路は使えず、原文どおり
 $k_0$ 帰納＋$\textrm{Br}$-under-oper 分解を要する。
 
-**形式化での扱い**: `monoT(seg M j0' j1')`（`m_6_2_mono_ancestor_slice`）と `descending(Br ...)` の行0部
+**形式化での扱い**: **証明成功**。§6.8 `m_6_8_standard_slice_Br_descending`（行0=`m_6_4_P_leftend_mono`、行1 tie-break も完了）として証明済・green。docs `slice-Br-descending.md`。
 （`m_6_4_P_leftend_mono` を枝セグメント $\in T_{\textrm{PS}}$ に適用）は確保済。残るは Br 成分の行1 tie-break
 （$k$ 帰納＋Br-under-oper、設計 `docs/slice-Br-descending.md`）。
 
@@ -411,7 +411,7 @@ yaBMS で経験的検証済）はブロック $n$ 個でこの訂正後の式と
 
 **訂正案**: (3) の前提に「\(s_1\frown D_v\,\textrm{flat}(t+c)\frown b_1\) の \(D_v(t+c)\) 出現と \((s_0,\textrm{flat}(c),b_0)\) の \(c\) 出現が一致する」旨（例えば \(s_0 = s_1\frown D_v\,(\textrm{flat}\,t)\) 型の整合条件、あるいは \(u_1\) のマーク一意性）を追加する。原文の用途（Trans の整礎性証明）では当該出現は構成的に一致しているため、その文脈では主張は正しい。
 
-**形式化での扱い**: (1) は原文どおり成立し `m_7_2_add_scb_conj1` として証明済。(3) の literal 形を反例 `m_7_2_add_scb_conj3_counterexample` として機械化した。(2)（\(c\to c'\) 置換の単純版）は `m_7_2_add_scb_conj2` として証明済。いずれも本体ビルド緑。
+**形式化での扱い**: (1) は原文どおり成立し `m_7_2_add_scb_conj1` として証明済。(3) の literal 形を反例 `m_7_2_add_scb_conj3_counterexample` として機械化した。(2)（\(c\to c'\) 置換の単純版）は `m_7_2_add_scb_conj2` として証明済。いずれも本体ビルド緑。 **(3) の補正版は未証明**（反例 `m_7_2_add_scb_conj3_counterexample` のみ機械化。整合前提つき (3) の証明は未着手）。
 
 ## A14. §7.2 命題（scb分解の一意性）(3)(4)(5): 空項 \(t=()\) で偽（[[A11]]–[[A13]] と同根） [軽微]
 
@@ -423,7 +423,7 @@ yaBMS で経験的検証済）はブロック $n$ 個でこの訂正後の式と
 
 **訂正案**: (3)(4)(5) の前提に「\(t \neq ()\)」を追加する。
 
-**形式化での扱い**: 種一意性 (4)(5) を「中央成分の一致 \(c_0=c_1\) への健全な還元」`m_7_2_scb_kind_unique_of_ceq`（`m_7_2_scb_unique_decomp` 経由、`t≠()` 下で \(c_0=c_1\) から1行）として機械化・緑。残る \(c_0=c_1\)（原文の「\(c\) は `RightNodes` 脊柱で固定される最大の真部分項文字列」content.md ~1900–1960）は別途の多補題プログラム。
+**形式化での扱い**: 種一意性 (4)(5) を「中央成分の一致 \(c_0=c_1\) への健全な還元」`m_7_2_scb_kind_unique_of_ceq`（`m_7_2_scb_unique_decomp` 経由、`t≠()` 下で \(c_0=c_1\) から1行）として機械化・緑。残る \(c_0=c_1\)（原文の「\(c\) は `RightNodes` 脊柱で固定される最大の真部分項文字列」content.md ~1900–1960）は別途の多補題プログラム。 **（再確認）(4)(5) は無条件版 `m_7_2_scb_kind0_unique_uncond`/`m_7_2_scb_kind1_unique_uncond` として証明成功・green（c0=c1 解消済）。**
 
 ## A15. §7.3 命題（Trans の well-defined 性）および (IncrFirst,Red) 不変性: 定義域は \(T_{\textrm{PS}}\) 全体でなく「\(\textrm{Red}(M)\) が簡約」の範囲
 
@@ -457,7 +457,7 @@ yaBMS で経験的検証済）はブロック $n$ 個でこの訂正後の式と
 
 **訂正案**: (a) \(\Sigma_{\textrm{B}}\) 表示と単項性命題に前提「\(P(M)_0\) は零項でない」を追加する、または (b) 再帰的定義の複項枝の基底を \(\textrm{Trans}(((0,0))) \mapsto D_0 0\)（成分文脈）に変える。\(\textrm{Trans}\) の値そのものは再帰的定義 (a) を正とするのが自然（形式化 `Trans` はこれに忠実）。下流の使用（§8 の標準形停止性）が \(P(M)_0\) 零項枝に依存するかは要確認。
 
-**形式化での扱い**: `Trans` 定義（`pss_paper.thy` 1137–1140 複項枝）は原文の**再帰的定義に忠実**（緑の値不変量 `Trans_Mark_invariant_aux`・`m_7_3_Trans_zeroT` はこの忠実な `Trans` 上で成立）。`p_7_3_Trans_monoT` / `p_7_3_Trans_IncrFirst_Red`(2) は上記訂正前提の下でのみ機械化可能（先頭零項枝を除外）。
+**形式化での扱い**: `Trans` 定義（`pss_paper.thy` 1137–1140 複項枝）は原文の**再帰的定義に忠実**（緑の値不変量 `Trans_Mark_invariant_aux`・`m_7_3_Trans_zeroT` はこの忠実な `Trans` 上で成立）。`p_7_3_Trans_monoT` / `p_7_3_Trans_IncrFirst_Red`(2) は上記訂正前提の下でのみ機械化可能（先頭零項枝を除外）。 **（再確認）訂正形は証明成功**（`m_7_3_Trans_monoT`、P0非零項制限、fc60f0b。下記 追補参照）。
 
 **追補（2026-06-21, 例外枝の転記形も偽 → 制限 iff で確定・無条件証明済み）**:
 当初 `p_7_3_Trans_monoT` に例外選言を補って
@@ -477,6 +477,8 @@ yaBMS で経験的検証済）はブロック $n$ 個でこの訂正後の式と
 **訂正案**: §7.3 の基点・順序命題の前提に「\(M\) は非零項」（または \(M \in RT_{\textrm{PS}} \cap PT_{\textrm{PS}}\)）を追加。使用箇所はすべて非零項上なので十分。
 
 **メタ観察**: §7.3 は \(\textrm{Trans}\)/\(\textrm{Mark}\) の再帰的定義の**零項基底枝**（\(M_0 = (0,0) \Rightarrow 0\)）と、主表現としての \(D_0 0\)（="+1"）の二重性により、零項を明示除外しないと多くの命題が崩れる（[[A16]] 単項性命題、本 A17 基点系）。形式化は一貫して \(\neg\textrm{zeroT}\)／\(RT_{\textrm{PS}} \cap PT_{\textrm{PS}}\) 域で機械化する方針。
+
+**形式化での扱い**: **証明成功**（`m_7_3_Mark_rightmost1` ほか §7.3 順序系、A17 補正込み・green）。
 
 ## A18. §7.4 系（Mark と \(<_M^{\textrm{NextAdm}}\) の関係）: 仮定の祖先 \(j\) に「\(M\) 許容（\((M,j)\in\textrm{Marked}\)）」を補う必要
 
@@ -500,7 +502,7 @@ yaBMS で経験的検証済）はブロック $n$ 個でこの訂正後の式と
 
 **訂正案**: (2) を \((\textrm{Mark}(M,m_0),\textrm{Mark}(M,m_1))\in T_{\textrm{B}}^{\textrm{Marked}}\) に修正(単純な左右取り違え)。
 
-**形式化での扱い**: `m_7_4_Mark_order`(機械化予定)は訂正後の向きで述べる。nest 方向=`Mark_MarkedB_nest`、(2)⟹(1)=`MarkedB_antisym`、(1)⟹(2) の相異性(\(\textrm{Mark}\) の marked 列上の単射性)は右スパイン長狭義減少(`m_7_4_RightNodes_Mark`)経由が見込み(未完)。
+**形式化での扱い**: **証明成功**。`m_7_4_Mark_order`（pss_wip, RT_PS, 訂正後の向き）。nest=`Mark_MarkedB_nest`、(2)⟹(1)=`MarkedB_antisym`、(1)⟹(2) の単射性=`Mark_distinct`/`Mark0_ne_Mark`（右スパイン長狭義減少）。memory `pss-74-nextadm`。
 
 ## A20. §8.1 補題（条件(I)か(III)の下での c_1 前後の具体表示）part(1): 単項切片で「c_1 = Trans(切片)」が偽
 
@@ -512,6 +514,8 @@ yaBMS で経験的検証済）はブロック $n$ 個でこの訂正後の式と
 
 **訂正案**: part(1) の \(\textrm{Trans}(\text{切片}) = c_1\) に \(j_0 < j_1-1\)(切片が非単項)を課す、または \(c_1\) 等式を \(\textrm{Red}\) を法として述べる。\(c_1 = \textrm{Mark}(\textrm{Pred}(M),j_{-1})\)・\(c_1\in PT_B\)・\(t_1\neq0\)・条件(I)∨(III) の他の連言は成立。
 
+**形式化での扱い**: **未証明**（c1-around 訂正の part(1) A20ガード。全体 `m_8_1_condI_III_c1_around` 未。memory `pss-81-c1around`。[[A21]] 参照）。
+
 ## A21. §8.1 同補題 part(5): 条件(III)のとき基本列ブロックの親 \(j_0^N = j'_0\) が偽
 
 **所在**: 同補題 (5)(content.md 2945-2947)。\(N := (M[n]_j)_{j=0}^{j_0+(n-1)(j_1-j_0)}\) について \(j_0^N = j'_0\)(すなわち \(\textrm{parent}\,N\,0\,(\textrm{Lng}\,N-1) = j'_0\))等を主張。
@@ -522,7 +526,7 @@ yaBMS で経験的検証済）はブロック $n$ 個でこの訂正後の式と
 
 **訂正案**: part(5) を \(\textrm{transCondI}\,M\) に限定する(下流の `p_8_1_Trans_fseq_condI` は条件(I)下でのみ本補題を使う)。
 
-**形式化での扱い**: `m_8_1_condI_III_c1_around`(機械化予定)は A20/A21 訂正後の形(part(1) に \(j_0<j_1-1\) ガード or Red 法、part(5) を transCondI 限定)で述べる。part(2)(3)(4) は経験違反0で `m_6_3_marked_slice` + slice-Red-IncrFirst([[A19]]隣の `m_6_6_ancestor_slice_Red_IncrFirst`)+ diagSeq Trans 補題で証明可。pss_paper.thy:1650 の statement 修正が前提。
+**形式化での扱い**: **未証明**（全体）。part(1)full=`m_8_1_c1_around_part1`、part(2)=`m_8_1_c1_around_part2`、part(3-2)=`m_8_1_c1_around_part3_2`（空虚）は証明済だが、(3-1)/(4-1)/(4-2)/(5) が未で、訂正後の全体 `m_8_1_condI_III_c1_around` は未証明。memory `pss-81-c1around`。
 
 ## A22 — §8.3 補題（第0種型基本列の基本不等式）の右辺添字脱落 [軽微]
 
@@ -534,8 +538,12 @@ yaBMS で経験的検証済）はブロック $n$ 個でこの訂正後の式と
 
 **訂正案**: 右辺添字に \(j_0+\) を補い \(M[n]_{0,\ j_0+q'(j_1-j_0)+r'}\) とする。機械化 `m_8_3_kind0_base_ineq` はこの訂正形(`entry (M[n]) 0 (j0 + q'*(j1-j0) + r')`)で証明済(green, sorry 0)。
 
+**形式化での扱い**: **証明成功**（`m_8_3_kind0_base_ineq`、訂正形 `j0+…`・green）。
+
 ## C1（明確化、訂正ではない） — §7.3「Trans の最左単項成分の左端」clause (3) の "D_u" の解釈 [軽微]
 
 **該当**: §7.3 命題（Trans の最左単項成分の左端の基本性質）clause (3)（content.md 2342）。原文は「左端2文字は \(D_{M_{1,0}} D_u\)」と書く。
 
 **明確化**: 機械化 `m_7_3_Trans_leftmost`(pss_wip)では clause (3) を `∃t. PB(Trans M)!0 = Dpt(enat(entry M 1 0)) t ∧ t ≠ 0⇩B` と表現し、第2文字 "\(D_u\)" を**非零余項 t の tree-head `bpHeadV(t)`** として読む。理由(経験的: monoT 314/360 ケース)は **t が複数の主表現成分を持ちうる**(= 単一 Dpt ではない)ため。原文の "\(D_u\)" を `t = Dpt w t'` の単一 Dpt と literal に取ると**偽**になる。`bpHeadV(t)`(t≠0 で存在)が忠実な読み。原文は偽ではなく、解釈の明確化のみ。
+
+**形式化での扱い**: **証明成功**（`m_7_3_Trans_leftmost`、clause(3) はこの明確化形・green）。
