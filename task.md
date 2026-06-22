@@ -18,9 +18,9 @@
       - ✅ 命題（scb分解の置換可能性）〔A12。`m_7_2_scb_replaceable_corr_mod_image`〕
       - ✅ 命題（scb分解の合成則）〔`m_7_2_scb_compose`/A11 `scbcomp_compose2_PT`〕
       - ✅ 命題（scb分解の自明性の判定条件）〔`m_7_2_scb_triviality`〕
-      - 🚨 命題（scb分解の一意性）〔(1)(3)(4)(5) green(A14)。残(2)=domB termination〕
+      - 🚨🤖 命題（scb分解の一意性）〔(1)(3)(4)(5) green(A14)。残(2)=domB↔kind-able、`domB_unfold`で解禁(stale: 旧「domB termination待ち」)〕
       - ✅ 系（加法と scb分解の関係）〔(1)(2) green/(3) A13〕
-      - 🚨 命題（scb分解と基本列の関係）〔`operB` の (domintros) 欠落でブロック。memory `pss-8-sweep`〕
+      - 🚨🤖 命題（scb分解と基本列の関係）〔(domintros)付与済(stale注記)。(1)(1-2)=後続型 operB_dom 有限導出で到達可、(2)=xseq/Lemma3.2 要確認〕
       - ✅ 命題（$\textrm{RightNodes}$ と部分表現の関係）〔`m_7_2_RightNodes_subexpr`〕
     - 🚨 §7.3 翻訳写像
       - ✅ **定義** `Trans`/`Mark`（相互再帰 `function`）
@@ -54,7 +54,7 @@
       - ✅ 命題（標準形の直系先祖による切片の簡約化の強単項性）〔`m_8_2_standard_slice_Red_strongmono`〕
       - 🚨 命題（条件 (II) か (IV) の下での終切片と $\textrm{Trans}$ の関係）
       - 🚨 補題（強単項性の切片への遺伝性）
-      - 🚨🤖 補題（部分表現の単項成分と $\textrm{Pred}$ の関係）〔setup+Adm0節(1)(2)(4)core+bridge✅(節mapping: I/III/V→1,¬leftDj0→2,leftDj0→4)/残=幾何bridge+Adm>0+BASE+組立(§8.2 keystone)〕
+      - 🚨🤖 補題（部分表現の単項成分と $\textrm{Pred}$ の関係）〔Adm0枝`..._Adm0`✅(4 guard条件付)+bridge群✅/残=guard discharge+BASE(diagSeq)+Admpos(IH)+組立(§8.2 keystone)〕
       - 🚨 補題（強単項性の下での部分表現の単項成分の基本性質）〔clause(1) `m_8_2_subexpr_leftend_unique`✅。残(2)(3)(4)=leBT下界〕
       - 🚨 補題（条件 (V) の下での右端の親の基本性質）
       - 🚨 補題（条件 (V) の下での終切片と $\textrm{Trans}$ の関係）
