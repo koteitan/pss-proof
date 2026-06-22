@@ -20960,4 +20960,312 @@ proof -
   qed
 qed
 
+
+
+text \<open>§8.2 Adm0 guard-discharge support: the row-0 "valley" at the last column.
+  For \<open>monoT M \<in> T\<^bsub>PS\<^esub>\<close> with \<open>1 < Lng M\<close>, the row-0 parent \<open>jp = parent M 0 j\<^sub>1\<close>
+  (\<open>j\<^sub>1 = Lng M - 1\<close>) is the unique immediate row-0 ancestor: any \<open>j\<close> with
+  \<open>jp < j\<close> and \<open>le0 M j j\<^sub>1\<close> equals \<open>j\<^sub>1\<close>.  Proof: strip the last \<open>nextrel0\<close>
+  step \<open>a \<rightarrow> j\<^sub>1\<close> of the chain \<open>j \<rightarrow>* j\<^sub>1\<close>; by uniqueness of the parent
+  (@{thm [source] monoT_hasParent0_last}) \<open>a = jp\<close>, so \<open>j \<le> jp\<close>
+  (@{thm [source] nextrel0_rtrancl_mono}) — contradicting \<open>jp < j\<close>.\<close>
+
+lemma row0_valley_last:
+  assumes MT: "M \<in> T_PS" and mono: "monoT M" and L: "1 < Lng M"
+    and jh: "parent M 0 (Lng M - 1) < j" and leh: "le0 M j (Lng M - 1)"
+  shows "j = Lng M - 1"
+proof -
+  let ?j1 = "Lng M - 1"  let ?jp = "parent M 0 ?j1"
+  have hp: "hasParent M 0 ?j1" by (rule monoT_hasParent0_last[OF MT mono L])
+  have ex1: "\<exists>!j0. nextR M 0 j0 ?j1" using hp by (simp add: hasParent_def)
+  have parR: "nextR M 0 ?jp ?j1"
+    using hp unfolding hasParent_def parent_def by (rule theI')
+  have rt: "(nextrel0 M)\<^sup>*\<^sup>* j ?j1" using leh by (simp add: le0_def)
+  show ?thesis
+  proof (cases "j = ?j1")
+    case True thus ?thesis by simp
+  next
+    case False
+    from rt show ?thesis
+    proof (cases rule: rtranclp.cases)
+      case rtrancl_refl
+      thus ?thesis using False by simp
+    next
+      case (rtrancl_into_rtrancl a)
+      have aj1: "nextrel0 M a ?j1" by (rule rtrancl_into_rtrancl(2))
+      have ja: "(nextrel0 M)\<^sup>*\<^sup>* j a" by (rule rtrancl_into_rtrancl(1))
+      have "nextR M 0 a ?j1" using aj1 by (simp add: nextR_def)
+      moreover have "nextR M 0 ?jp ?j1" by (rule parR)
+      ultimately have "a = ?jp" using ex1 by (metis (full_types))
+      hence "(nextrel0 M)\<^sup>*\<^sup>* j ?jp" using ja by simp
+      hence "j \<le> ?jp" by (rule nextrel0_rtrancl_mono)
+      thus ?thesis using jh by linarith
+    qed
+  qed
+qed
+
+
+text \<open>§8.2 Adm0 guard-discharge support: the universal row-1 bound at the last
+  column.  For reduced \<open>monoT M\<close> (\<open>M \<in> RT\<^bsub>PS\<^esub> \<inter> PT\<^bsub>PS\<^esub>\<close>) with \<open>1 < Lng M\<close>,
+  \<open>jp = parent M 0 j\<^sub>1\<close>: either \<open>M\<^bsub>1,j\<^sub>0\<^esub> \<ge> M\<^bsub>1,j\<^sub>1\<^esub>\<close>, or \<open>M\<^bsub>1,j\<^sub>0\<^esub> + 1 = M\<^bsub>1,j\<^sub>1\<^esub>\<close>.
+  In the strict-decrease case \<open>M\<^bsub>1,j\<^sub>0\<^esub> < M\<^bsub>1,j\<^sub>1\<^esub>\<close>, \<open>jp\<close> is also the row-1 parent
+  of \<open>j\<^sub>1\<close> (the row-0 valley @{thm [source] row0_valley_last} kills every
+  intermediate row-0 ancestor), so \<open>RedCondA\<close> at row 1 forces \<open>M\<^bsub>1,j\<^sub>0\<^esub>+1 = M\<^bsub>1,j\<^sub>1\<^esub>\<close>.
+  Empirically exact (reduced \<inter> monoT, length \<le> 6: 0 violations).\<close>
+
+lemma row1_last_bound:
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS" and L: "1 < Lng M"
+  shows "entry M 1 (parent M 0 (Lng M - 1)) \<ge> entry M 1 (Lng M - 1)
+       \<or> entry M 1 (parent M 0 (Lng M - 1)) + 1 = entry M 1 (Lng M - 1)"
+proof (cases "entry M 1 (parent M 0 (Lng M - 1)) \<ge> entry M 1 (Lng M - 1)")
+  case True thus ?thesis by blast
+next
+  case False
+  have MT: "M \<in> T_PS" using MP by (simp add: PT_PS_def)
+  have mono: "monoT M" using MP by (simp add: PT_PS_def)
+  let ?j1 = "Lng M - 1"  let ?jp = "parent M 0 ?j1"
+  have e1lt: "entry M 1 ?jp < entry M 1 ?j1" using False by simp
+  \<comment> \<open>\<open>jp\<close> is the row-0 parent: \<open>nextrel0 M jp j\<^sub>1\<close>, \<open>jp < j\<^sub>1\<close>, \<open>le0 M jp j\<^sub>1\<close>\<close>
+  have hp0: "hasParent M 0 ?j1" by (rule monoT_hasParent0_last[OF MT mono L])
+  have parR: "nextR M 0 ?jp ?j1"
+    using hp0 unfolding hasParent_def parent_def by (rule theI')
+  have nr0: "nextrel0 M ?jp ?j1" using parR by (simp add: nextR_def)
+  have jplt: "?jp < ?j1" using nr0 by (simp add: nextrel0_def)
+  have jpL: "?jp < Lng M" using jplt L by linarith
+  have j1L: "?j1 < Lng M" using L by linarith
+  have le0jp: "le0 M ?jp ?j1"
+    unfolding le0_def using jpL j1L nr0 by simp
+  \<comment> \<open>row-1 valley at \<open>jp\<close>: any \<open>j\<close> with \<open>jp < j\<close> and \<open>le0 M j j\<^sub>1\<close> is \<open>j\<^sub>1\<close>\<close>
+  have valley: "\<forall>j. ?jp < j \<and> le0 M j ?j1 \<longrightarrow> entry M 1 j \<ge> entry M 1 ?j1"
+  proof (intro allI impI)
+    fix j assume h: "?jp < j \<and> le0 M j ?j1"
+    have "j = ?j1" using row0_valley_last[OF MT mono L] h by blast
+    thus "entry M 1 j \<ge> entry M 1 ?j1" by simp
+  qed
+  have nr1: "nextrel1 M ?jp ?j1"
+    unfolding nextrel1_def using jpL j1L jplt e1lt le0jp valley by blast
+  have wit1: "nextR M 1 ?jp ?j1" using nr1 by (simp add: nextR_def)
+  \<comment> \<open>uniqueness of the row-1 parent \<open>jp\<close>\<close>
+  have uniq: "\<And>k. nextR M 1 k ?j1 \<Longrightarrow> k = ?jp"
+  proof -
+    fix k assume "nextR M 1 k ?j1"
+    hence nk: "nextrel1 M k ?j1" by (simp add: nextR_def)
+    have kj1: "k < ?j1" using nk by (simp add: nextrel1_def)
+    have le0k: "le0 M k ?j1" using nk by (simp add: nextrel1_def)
+    show "k = ?jp"
+    proof (rule ccontr)
+      assume kne: "k \<noteq> ?jp"
+      have "k < ?jp \<or> ?jp < k" using kne by linarith
+      thus False
+      proof
+        assume "?jp < k"
+        \<comment> \<open>then \<open>k = j\<^sub>1\<close> by the valley, contradicting \<open>k < j\<^sub>1\<close>\<close>
+        have "k = ?j1" using row0_valley_last[OF MT mono L] \<open>?jp < k\<close> le0k by blast
+        thus False using kj1 by simp
+      next
+        assume klt: "k < ?jp"
+        \<comment> \<open>\<open>jp\<close> lies strictly between \<open>k\<close> and \<open>j\<^sub>1\<close> with \<open>le0 M jp j\<^sub>1\<close>, so the\<close>
+        \<comment> \<open>row-1 valley at \<open>k\<close> forces \<open>M\<^bsub>1,jp\<^esub> \<ge> M\<^bsub>1,j\<^sub>1\<^esub>\<close> — contradicting \<open>e1lt\<close>\<close>
+        have "k < ?jp \<and> le0 M ?jp ?j1" using klt le0jp by simp
+        hence "entry M 1 ?jp \<ge> entry M 1 ?j1"
+          using nk by (simp add: nextrel1_def)
+        thus False using e1lt by simp
+      qed
+    qed
+  qed
+  have ex1: "\<exists>!k. nextR M 1 k ?j1"
+    using wit1 uniq by blast
+  have hp1: "hasParent M 1 ?j1" unfolding hasParent_def by (rule ex1)
+  have par1: "parent M 1 ?j1 = ?jp"
+  proof -
+    have "parent M 1 ?j1 = (THE k. nextR M 1 k ?j1)" by (simp add: parent_def)
+    also have "\<dots> = ?jp" by (rule the1_equality[OF ex1 wit1])
+    finally show ?thesis .
+  qed
+  \<comment> \<open>RedCondA at the row-1 parent: \<open>M\<^bsub>1,jp\<^esub> + 1 = M\<^bsub>1,j\<^sub>1\<^esub>\<close>\<close>
+  have condA: "RedCondA M" using m_6_6_reduced_iff_cond[OF MT] MR by auto
+  have "entry M 1 (parent M 1 ?j1) + 1 = entry M 1 ?j1"
+    using condA[unfolded RedCondA_def, rule_format, of 1 ?j1] hp1 by simp
+  hence "entry M 1 ?jp + 1 = entry M 1 ?j1" using par1 by simp
+  thus ?thesis by blast
+qed
+
+
+text \<open>§8.2 Adm0 guard-discharge: in the \<open>\<not>(I\<or>III\<or>V)\<close>, \<open>\<not>VI\<close> branch (\<open>notA\<close>,
+  \<open>notVI\<close>) condition (II) or (IV) holds.  The six conditions partition the last
+  column by \<open>M\<^bsub>1,j\<^sub>1\<^esub>\<close> vs \<open>0\<close>, \<open>M\<^bsub>1,j\<^sub>0\<^esub>\<close> vs \<open>M\<^bsub>1,j\<^sub>1\<^esub>\<close>, and \<open>adm M j\<^sub>0\<close>.  The
+  universal row-1 bound @{thm [source] row1_last_bound} kills the only "gap"
+  (\<open>M\<^bsub>1,j\<^sub>1\<^esub> > 0\<close> with \<open>M\<^bsub>1,j\<^sub>0\<^esub> < M\<^bsub>1,j\<^sub>1\<^esub>\<close> not consecutive): it forces
+  \<open>M\<^bsub>1,j\<^sub>0\<^esub> \<ge> M\<^bsub>1,j\<^sub>1\<^esub>\<close> or \<open>M\<^bsub>1,j\<^sub>0\<^esub>+1 = M\<^bsub>1,j\<^sub>1\<^esub>\<close>; the latter is (V) (if \<open>j\<^sub>0+1<j\<^sub>1\<close>)
+  or (VI) (if \<open>j\<^sub>0+1=j\<^sub>1\<close>), both excluded.  And \<open>adm M j\<^sub>0\<close> would put \<open>M\<close> in
+  (I)/(III)/(V)/(VI) (again via @{thm [source] row1_last_bound}), so \<open>\<not> adm M j\<^sub>0\<close>;
+  thus (II) (when \<open>M\<^bsub>1,j\<^sub>1\<^esub>=0\<close>) or (IV) (when \<open>M\<^bsub>1,j\<^sub>1\<^esub>>0\<close>, \<open>M\<^bsub>1,j\<^sub>0\<^esub> \<ge> M\<^bsub>1,j\<^sub>1\<^esub>\<close>).
+  Empirically exact (reduced \<inter> monoT, length \<le> 6: 0 violations).\<close>
+
+lemma m_8_2_condII_or_condIV:
+  fixes M :: pairseq
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS" and L: "1 < Lng M"
+    and notA: "\<not> (transCondI M \<or> transCondIII M \<or> transCondV M)"
+    and notVI: "\<not> transCondVI M"
+  shows "transCondII M \<or> transCondIV M"
+proof -
+  have MT: "M \<in> T_PS" using MP by (simp add: PT_PS_def)
+  have mono: "monoT M" using MP by (simp add: PT_PS_def)
+  let ?j1 = "Lng M - 1"  let ?jp = "parent M 0 ?j1"
+  \<comment> \<open>\<open>jp < j\<^sub>1\<close> (row-0 parent of the last column)\<close>
+  have hp0: "hasParent M 0 ?j1" by (rule monoT_hasParent0_last[OF MT mono L])
+  have parR: "nextR M 0 ?jp ?j1"
+    using hp0 unfolding hasParent_def parent_def by (rule theI')
+  have jplt: "?jp < ?j1" using parR by (simp add: nextR_def nextrel0_def)
+  \<comment> \<open>the universal row-1 bound\<close>
+  have bnd: "entry M 1 ?jp \<ge> entry M 1 ?j1 \<or> entry M 1 ?jp + 1 = entry M 1 ?j1"
+    by (rule row1_last_bound[OF MR MP L])
+  \<comment> \<open>\<open>\<not> adm M jp\<close>: else (I)/(III)/(V)/(VI) would fire\<close>
+  have nadmjp: "\<not> adm M ?jp"
+  proof
+    assume adm: "adm M ?jp"
+    have "transCondI M \<or> transCondIII M \<or> transCondV M \<or> transCondVI M"
+    proof (cases "entry M 1 ?j1 = 0")
+      case True
+      hence "transCondI M" using adm by (simp add: transCondI_def)
+      thus ?thesis by blast
+    next
+      case False
+      hence pos: "entry M 1 ?j1 > 0" by simp
+      show ?thesis
+      proof (cases "entry M 1 ?jp \<ge> entry M 1 ?j1")
+        case True
+        hence "transCondIII M" using pos adm by (simp add: transCondIII_def)
+        thus ?thesis by blast
+      next
+        case False
+        hence "entry M 1 ?jp + 1 = entry M 1 ?j1" using bnd by simp
+        thus ?thesis
+        proof (cases "?jp + 1 < ?j1")
+          case True
+          hence "transCondV M"
+            using pos \<open>entry M 1 ?jp + 1 = entry M 1 ?j1\<close>
+            by (simp add: transCondV_def)
+          thus ?thesis by blast
+        next
+          case False
+          hence "?jp + 1 = ?j1" using jplt by linarith
+          hence "transCondVI M"
+            using pos \<open>entry M 1 ?jp + 1 = entry M 1 ?j1\<close>
+            by (simp add: transCondVI_def)
+          thus ?thesis by blast
+        qed
+      qed
+    qed
+    thus False using notA notVI by blast
+  qed
+  \<comment> \<open>now (II) or (IV)\<close>
+  show ?thesis
+  proof (cases "entry M 1 ?j1 = 0")
+    case True
+    hence "transCondII M" using nadmjp by (simp add: transCondII_def)
+    thus ?thesis by blast
+  next
+    case False
+    hence pos: "entry M 1 ?j1 > 0" by simp
+    have ge: "entry M 1 ?jp \<ge> entry M 1 ?j1"
+    proof (rule ccontr)
+      assume "\<not> entry M 1 ?jp \<ge> entry M 1 ?j1"
+      hence eq1: "entry M 1 ?jp + 1 = entry M 1 ?j1" using bnd by simp
+      show False
+      proof (cases "?jp + 1 < ?j1")
+        case True
+        hence "transCondV M" using pos eq1 by (simp add: transCondV_def)
+        thus False using notA by blast
+      next
+        case False
+        hence "?jp + 1 = ?j1" using jplt by linarith
+        hence "transCondVI M" using pos eq1 by (simp add: transCondVI_def)
+        thus False using notVI by blast
+      qed
+    qed
+    hence "transCondIV M" using pos nadmjp by (simp add: transCondIV_def)
+    thus ?thesis by blast
+  qed
+qed
+
+
+text \<open>§8.2 Adm0 guard \<open>nadmj0\<close> = \<open>\<not> adm M j\<^sub>0'\<close>, made unconditional in the
+  \<open>notA\<close>/\<open>notVI\<close> branch.  Both (II) and (IV) assert \<open>\<not> adm M (transJ0 M)\<close>
+  (@{thm [source] m_8_2_condII_or_condIV}); since \<open>j\<^sub>0' = transJ0 M\<close> in the Adm0
+  geometry (@{thm [source] m_8_2_j0eq_Adm0}) this is exactly \<open>nadmj0\<close>.\<close>
+
+lemma m_8_2_nadmj0_notAVI:
+  fixes M :: pairseq
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS" and L: "1 < Lng M"
+    and notA: "\<not> (transCondI M \<or> transCondIII M \<or> transCondV M)"
+    and notVI: "\<not> transCondVI M"
+  shows "\<not> adm M (transJ0 M)"
+proof -
+  have "transCondII M \<or> transCondIV M"
+    by (rule m_8_2_condII_or_condIV[OF MR MP L notA notVI])
+  thus ?thesis
+    by (auto simp: transCondII_def transCondIV_def transJ0_def transJ1_def)
+qed
+
+
+text \<open>§8.2 Adm0 guard \<open>t2ne\<close> = \<open>transT2 M \<noteq> 0\<^sub>B\<close>, made unconditional in the
+  \<open>notA\<close>/\<open>notVI\<close> branch.  (II)/(IV) hold (@{thm [source] m_8_2_condII_or_condIV}),
+  so the corollary @{thm [source] m_7_3_t2_nonzero_condIIorIV} applies (with
+  \<open>transJ1 M > 0\<close> and \<open>transT1 M \<noteq> 0\<close> from \<open>1 < Lng (Pred M)\<close>).\<close>
+
+lemma m_8_2_t2ne_notAVI:
+  fixes M :: pairseq
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS" and L: "1 < Lng M"
+    and j1gt: "Lng M - 1 > 1"
+    and notA: "\<not> (transCondI M \<or> transCondIII M \<or> transCondV M)"
+    and notVI: "\<not> transCondVI M"
+  shows "transT2 M \<noteq> 0\<^sub>B"
+proof -
+  have J1pos: "transJ1 M > 0" using L by (simp add: transJ1_def)
+  have predRT: "Pred M \<in> RT_PS" by (rule Pred_RT_PS[OF MR])
+  have nzPred: "\<not> zeroT (Pred M)"
+  proof -
+    have "Lng (Pred M) = Lng M - 1" using L by (simp add: Pred_def)
+    hence "1 < Lng (Pred M)" using j1gt by linarith
+    thus ?thesis by (auto simp: zeroT_def)
+  qed
+  have T1: "transT1 M \<noteq> 0\<^sub>B"
+    using m_7_3_Trans_zeroT[OF predRT] nzPred by (simp add: transT1_def)
+  have cond: "transCondII M \<or> transCondIV M"
+    by (rule m_8_2_condII_or_condIV[OF MR MP L notA notVI])
+  show ?thesis by (rule m_7_3_t2_nonzero_condIIorIV[OF MR MP J1pos T1 cond])
+qed
+
+
+text \<open>§8.2 Adm0 clause-(1) guard \<open>gB\<close> in the (I)/(III) sub-cases: both assert
+  \<open>adm M (parent M 0 (Lng M - 1)) = adm M j\<^sub>0'\<close> (the second \<open>gB\<close> disjunct).
+  (The (V) sub-case needs the last-column diagonal \<open>M\<^bsub>0,j\<^sub>1\<^esub> = M\<^bsub>1,j\<^sub>1\<^esub>\<close>, which is
+  a separate reducedness fact, not covered here.)\<close>
+
+lemma m_8_2_gB_condIorIII:
+  fixes M :: pairseq
+  assumes cond: "transCondI M \<or> transCondIII M"
+  shows "adm M (parent M 0 (Lng M - 1))"
+  using cond by (auto simp: transCondI_def transCondIII_def)
+
+
+text \<open>§8.2 Adm0 clause-(2) guard \<open>e0gt\<close> = \<open>M\<^bsub>0,j\<^sub>1\<^esub> > M\<^bsub>1,j\<^sub>1\<^esub>\<close> in the
+  \<open>M\<^bsub>1,j\<^sub>1\<^esub> = 0\<close> sub-case (which is exactly condition (II)): \<open>monoT M\<close> gives
+  \<open>M\<^bsub>0,0\<^esub> < M\<^bsub>0,j\<^sub>1\<^esub>\<close> (@{thm [source] m_5_1_ancestor_basic_1}), so
+  \<open>M\<^bsub>0,j\<^sub>1\<^esub> > M\<^bsub>0,0\<^esub> \<ge> 0 = M\<^bsub>1,j\<^sub>1\<^esub>\<close>.  (The \<open>M\<^bsub>1,j\<^sub>1\<^esub> > 0\<close> sub-case (IV) needs
+  row-0/row-1 dominance at \<open>j\<^sub>0\<close>, a separate reducedness fact.)\<close>
+
+lemma m_8_2_e0gt_e1zero:
+  fixes M :: pairseq
+  assumes MT: "M \<in> T_PS" and mono: "monoT M" and L: "1 < Lng M"
+    and e1z: "entry M 1 (Lng M - 1) = 0"
+  shows "entry M 0 (Lng M - 1) > entry M 1 (Lng M - 1)"
+proof -
+  have leM: "leR M 0 0 (Lng M - 1)" using mono by (simp add: monoT_def)
+  have "entry M 0 0 < entry M 0 (Lng M - 1)"
+    by (rule m_5_1_ancestor_basic_1[OF MT _ order.refl leM]) (use L in linarith)
+  thus ?thesis using e1z by simp
+qed
+
 end
