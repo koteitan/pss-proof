@@ -54,7 +54,7 @@
       - ✅ 命題（標準形の直系先祖による切片の簡約化の強単項性）〔`m_8_2_standard_slice_Red_strongmono`〕
       - 🚨 命題（条件 (II) か (IV) の下での終切片と $\textrm{Trans}$ の関係）
       - 🚨 補題（強単項性の切片への遺伝性）
-      - 🚨🤖 補題（部分表現の単項成分と $\textrm{Pred}$ の関係）〔Adm0枝`..._Adm0`✅(4 guard条件付)+bridge群✅/残=guard discharge+BASE(diagSeq)+Admpos(IH)+組立(§8.2 keystone)〕
+      - 🚨🤖 補題（部分表現の単項成分と $\textrm{Pred}$ の関係）〔Adm0枝✅+guard 2/4(nadmj0/t2ne)✅/残=row0/1 dominance(gB/e0gt用)+BASE(diagSeq)+Admpos(IH)+組立(§8.2 keystone)〕
       - 🚨 補題（強単項性の下での部分表現の単項成分の基本性質）〔clause(1) `m_8_2_subexpr_leftend_unique`✅。残(2)(3)(4)=leBT下界〕
       - 🚨 補題（条件 (V) の下での右端の親の基本性質）
       - 🚨 補題（条件 (V) の下での終切片と $\textrm{Trans}$ の関係）
