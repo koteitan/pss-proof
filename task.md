@@ -18,7 +18,7 @@
       - ✅ 命題（scb分解の置換可能性）〔A12。`m_7_2_scb_replaceable_corr_mod_image`〕
       - ✅ 命題（scb分解の合成則）〔`m_7_2_scb_compose`/A11 `scbcomp_compose2_PT`〕
       - ✅ 命題（scb分解の自明性の判定条件）〔`m_7_2_scb_triviality`〕
-      - 🚨🤖 命題（scb分解の一意性）〔(1)(3)(4)(5) green(A14)。残(2)=domB↔kind-able、`domB_unfold`で解禁(stale: 旧「domB termination待ち」)〕
+      - 🚨 命題（scb分解の一意性）〔(1)(2)(3)(4) green(t≠Trm[] A14、(2)=`m_7_2_scb_unique_domB` domB_unfold で解禁)。残=(5)kind1一意性が rneq 追加前提付〕
       - ✅ 系（加法と scb分解の関係）〔(1)(2) green/(3) A13〕
       - 🚨🤖 命題（scb分解と基本列の関係）〔(domintros)付与済(stale注記)。(1)(1-2)=後続型 operB_dom 有限導出で到達可、(2)=xseq/Lemma3.2 要確認〕
       - ✅ 命題（$\textrm{RightNodes}$ と部分表現の関係）〔`m_7_2_RightNodes_subexpr`〕
