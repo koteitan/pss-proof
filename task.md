@@ -80,13 +80,13 @@
       - 🚨 命題（条件 (VI) の下での $\textrm{Trans}$ と基本列の交換関係）
       - ✅ 補題（公差 $(1,0)$ のペア数列の $\textrm{Trans}$ の基本性質）〔`m_8_6_const2nd_Trans_paper`〕
       - ✅ 補題（公差 $(1,1)$ のペア数列の $\textrm{Trans}$ の展開規則）〔`m_8_6_diagSeq_Trans_oper_paper`〕
-      - 🚨 補題（順序数項の末尾単項の零化可能性）
+      - 🚨 補題（順序数項の末尾単項の零化可能性）〔`trailing_principal_annihilable`。operB(Lemma3.2)展開待ち〕
     - 🚨 §8.7 主結果
       - ✅ 補題（公差 $(0,0)$ のペア数列の $\textrm{Trans}$ の基本性質）〔`m_8_7_const00_Trans`〕
-      - 🚨 補題（基本列の降下性）
+      - 🚨 補題（基本列の降下性）〔`fseq_descend`。§8.1-8.6 交換則連鎖待ち〕
       - ✅ 補題（順序数項の再帰構造）〔`m_8_7_OT_scb_recursive`〕
       - ✅ 補題（順序数項の共終数の遺伝性）〔`m_8_7_OT_dom_hereditary`〕
-      - 🚨 補題（順序数項の末尾項の零化可能性）
-      - 🚨 補題（$\textrm{Pred}$ と $[0]$ の関係）
+      - 🚨 補題（順序数項の末尾項の零化可能性）〔`OT_tail_annihilable`。operB(Lemma3.2)展開待ち〕
+      - 🚨 補題（$\textrm{Pred}$ と $[0]$ の関係）〔`Pred_oper0`。operB(Lemma3.2)展開待ち〕
       - ✅ 補題（順序数項の基本例）〔`m_8_7_OT_examples`〕
-      - 🚨 補題（$\textrm{Trans}$ が標準形を保つこと）
+      - 🚨 補題（$\textrm{Trans}$ が標準形を保つこと）〔`Trans_preserves_OT`。`fseq_descend`連鎖待ち〕
