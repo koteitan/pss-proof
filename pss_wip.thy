@@ -21268,4 +21268,44 @@ proof -
   thus ?thesis using e1z by simp
 qed
 
+
+
+text \<open>§8.2 Adm0 clause-(2) guard \<open>e0gt\<close> = \<open>M\<^bsub>0,j\<^sub>1\<^esub> > M\<^bsub>1,j\<^sub>1\<^esub>\<close> in the (IV)
+  sub-case (\<open>M\<^bsub>1,j\<^sub>1\<^esub> > 0\<close>, \<open>M\<^bsub>1,j\<^sub>0\<^esub> \<ge> M\<^bsub>1,j\<^sub>1\<^esub>\<close>, \<open>\<not> adm M j\<^sub>0\<close>).  The row-0
+  parent step (@{thm [source] RedCondA_def}) gives \<open>M\<^bsub>0,j\<^sub>1\<^esub> = M\<^bsub>0,j\<^sub>0\<^esub> + 1\<close> with
+  \<open>j\<^sub>0 = parent M 0 j\<^sub>1\<close> (\<open>hasParent M 0 j\<^sub>1\<close> for a \<open>monoT M\<close>).  Row-0/row-1
+  dominance at \<open>j\<^sub>0\<close> (@{thm [source] m_6_6_reduced_coeff}) gives
+  \<open>M\<^bsub>0,j\<^sub>0\<^esub> \<ge> M\<^bsub>1,j\<^sub>0\<^esub> \<ge> M\<^bsub>1,j\<^sub>1\<^esub>\<close> (the last by (IV)), so
+  \<open>M\<^bsub>0,j\<^sub>1\<^esub> = M\<^bsub>0,j\<^sub>0\<^esub> + 1 \<ge> M\<^bsub>1,j\<^sub>1\<^esub> + 1 > M\<^bsub>1,j\<^sub>1\<^esub>\<close>.
+  Empirically exact (reduced \<inter> monoT, length \<le> 4: condIV cases, 0 violations).\<close>
+
+lemma m_8_2_e0gt_condIV:
+  fixes M :: pairseq
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS" and L: "1 < Lng M"
+    and cond: "transCondIV M"
+  shows "entry M 0 (Lng M - 1) > entry M 1 (Lng M - 1)"
+proof -
+  have MT: "M \<in> T_PS" using MP by (simp add: PT_PS_def)
+  have mono: "monoT M" using MP by (simp add: PT_PS_def)
+  let ?j1 = "Lng M - 1"  let ?jp = "parent M 0 ?j1"
+  \<comment> \<open>(IV): \<open>M\<^bsub>1,j\<^sub>0\<^esub> \<ge> M\<^bsub>1,j\<^sub>1\<^esub>\<close>\<close>
+  have ge1: "entry M 1 ?jp \<ge> entry M 1 ?j1"
+    using cond by (simp add: transCondIV_def)
+  \<comment> \<open>row-0 parent of the last column\<close>
+  have hp0: "hasParent M 0 ?j1" by (rule monoT_hasParent0_last[OF MT mono L])
+  have parR: "nextR M 0 ?jp ?j1"
+    using hp0 unfolding hasParent_def parent_def by (rule theI')
+  have jplt: "?jp < ?j1" using parR by (simp add: nextR_def nextrel0_def)
+  have jpL: "?jp < Lng M" using jplt L by linarith
+  have j1L: "?j1 < Lng M" using L by linarith
+  \<comment> \<open>RedCondA row 0: \<open>M\<^bsub>0,j\<^sub>1\<^esub> = M\<^bsub>0,j\<^sub>0\<^esub> + 1\<close>\<close>
+  have condA: "RedCondA M" using m_6_6_reduced_iff_cond[OF MT] MR by auto
+  have e0step: "entry M 0 ?jp + 1 = entry M 0 ?j1"
+    using condA[unfolded RedCondA_def, rule_format, of 0 ?j1] hp0 by simp
+  \<comment> \<open>row-0/row-1 dominance at \<open>j\<^sub>0\<close>\<close>
+  have dom: "entry M 0 ?jp \<ge> entry M 1 ?jp"
+    by (rule m_6_6_reduced_coeff[OF MR jpL])
+  from e0step ge1 dom show ?thesis by linarith
+qed
+
 end
