@@ -49,12 +49,12 @@
       - 🚨 命題（条件 (I) の下での $\textrm{Trans}$ と基本列の交換関係）
       - ✅ 補題（公差 $(1,1)$ のペア数列の $\textrm{Trans}$ の基本性質）〔`m_8_1_diagSeq_Trans`〕
       - ✅ 系（$\textrm{Pred}$ が公差 $(1,1)$ のペア数列の $\textrm{Trans}$ の基本性質）〔`m_8_1_Pred_diagSeq_Trans`〕
-      - 🚨🤖 補題（条件 (I) か (III) の下での $c_1$ 前後の具体表示）〔part(1)(2)(3-2)(5)✅+`Mark_adjacent_form`✅+(4-1)(4-2)uniqueness✅/残(3-1)(4-1)(4-2)=keystone`Mark_nadm_const`1本に収束(A20/A21)〕
+      - 🚨 補題（条件 (I) か (III) の下での $c_1$ 前後の具体表示）〔part(1)(2)(3-2)(5)✅+`Mark_adjacent_form`+keystone`Mark_nadm_const`✅/残(3-1)(4-1)(4-2)=marked→nadm first-step peel 1本(A20/A21)〕
     - 🚨 §8.2 強単項性
       - ✅ 命題（標準形の直系先祖による切片の簡約化の強単項性）〔`m_8_2_standard_slice_Red_strongmono`〕
       - 🚨 命題（条件 (II) か (IV) の下での終切片と $\textrm{Trans}$ の関係）
       - 🚨 補題（強単項性の切片への遺伝性）
-      - 🚨 補題（部分表現の単項成分と $\textrm{Pred}$ の関係）
+      - 🚨 補題（部分表現の単項成分と $\textrm{Pred}$ の関係）〔setup`m_8_2_subexpr_component_Pred_setup`✅/full=$j_1-\textrm{TrMax}$帰納残(§8.2 keystone)〕
       - 🚨 補題（強単項性の下での部分表現の単項成分の基本性質）〔clause(1) `m_8_2_subexpr_leftend_unique`✅。残(2)(3)(4)=leBT下界〕
       - 🚨 補題（条件 (V) の下での右端の親の基本性質）
       - 🚨 補題（条件 (V) の下での終切片と $\textrm{Trans}$ の関係）
