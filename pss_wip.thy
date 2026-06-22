@@ -21308,4 +21308,684 @@ proof -
   from e0step ge1 dom show ?thesis by linarith
 qed
 
+
+
+section \<open>§7.2 dom-可分解性 (p_7_2_scb_unique conjunct (2)) — domB side now unblocked\<close>
+
+text \<open>
+  Conjunct (2) of \<open>p_7_2_scb_unique\<close>: for \<open>t \<in> T\<^bsub>B\<^esub>\<close>,
+    \<open>domB t = NatSet \<longleftrightarrow> (scb_kind0_able t \<or> scb_kind1_able t)\<close>.
+  (For \<open>t = Trm []\<close>: LHS = \<open>{} \<noteq> NatSet\<close>, RHS holds vacuously — correction A14 —
+   but the BARE statement is still true at \<open>Trm []\<close> in BOTH directions? No:
+   at \<open>Trm []\<close> the RHS holds (vacuous scb_decomp) while LHS is false, so the
+   article-faithful (2) carries \<open>t \<noteq> Trm []\<close>.  We state it exactly as the
+   article: with the \<open>t \<noteq> Trm []\<close> side-condition.)
+
+  Previously blocked on \<open>domB\<close> termination; now \<open>domB_dom_all\<close>/\<open>domB_unfold\<close>
+  (proven this session) make \<open>domB\<close> total and unfoldable, so the \<open>domB\<close> side is
+  reachable by right-spine induction.
+
+  Empirically (\<open>check_dom2.py\<close>, BT model, indices \<open>{0,1,2}\<close>, depth 3, width 2,
+  ~22M nonempty terms, 0 mismatches) the two-sided characterization is, with
+  \<open>R = RightNodes t\<close>, \<open>j\<^sub>1 = Lng R - 1\<close>:
+    \<open>domB t = NatSet \<longleftrightarrow> j\<^sub>1 \<ge> 1 \<and> (R!j\<^sub>1 = 0 \<or> (\<exists>k < j\<^sub>1. R!k < R!j\<^sub>1))\<close>
+  and the same RHS-shape \<longleftrightarrow> \<open>scb_kind0_able t \<or> scb_kind1_able t\<close>.  The
+  \<open>\<Rightarrow>\<close>-direction of the latter (kind-able \<Rightarrow> shape) is the GREEN
+  @{thm [source] rnsub_kindable_imp_natshape} (in \<open>pss_mechanized\<close>).
+\<close>
+
+\<comment> \<open>The \<open>RightNodes\<close>-shape predicate that characterizes \<open>domB t = NatSet\<close>.\<close>
+definition rnNatShape :: "nat list \<Rightarrow> bool" where
+  "rnNatShape R \<longleftrightarrow> length R \<ge> 2
+       \<and> (R ! (length R - 1) = 0 \<or> (\<exists>k < length R - 1. R ! k < R ! (length R - 1)))"
+
+\<comment> \<open>\<open>TBv\<close> is injective on finite indices: distinct \<open>enat\<close> levels give distinct
+   index sets (\<open>D\<^bsub>n'\<^esub> 0\<close> separates \<open>T\<^bsub>n\<^esub>\<close> from \<open>T\<^bsub>n'\<^esub>\<close> when \<open>n < n'\<close>).\<close>
+lemma TBv_enat_inj:
+  assumes "TBv (enat m) = TBv (enat n)"
+  shows "m = n"
+proof (rule ccontr)
+  assume "m \<noteq> n"
+  then consider "m < n" | "n < m" by linarith
+  thus False
+  proof cases
+    case 1
+    have "Trm [DB (enat n) (Trm [])] \<in> TBv (enat n)" by (simp add: TBv_def)
+    hence "Trm [DB (enat n) (Trm [])] \<in> TBv (enat m)" using assms by simp
+    hence "enat n \<le> enat m" by (simp add: TBv_def)
+    thus False using 1 by simp
+  next
+    case 2
+    have "Trm [DB (enat m) (Trm [])] \<in> TBv (enat m)" by (simp add: TBv_def)
+    hence "Trm [DB (enat m) (Trm [])] \<in> TBv (enat n)" using assms by simp
+    hence "enat m \<le> enat n" by (simp add: TBv_def)
+    thus False using 2 by simp
+  qed
+qed
+
+\<comment> \<open>\<open>{Trm []} \<noteq> TBv (enat u)\<close>: \<open>D\<^bsub>u+1\<^esub> 0 \<in> T\<^bsub>u+1\<^esub> \<subseteq> ... \<close> no — directly:
+   \<open>Trm [] = {Trm []}\<close> is a singleton containing \<open>0\<close>, while \<open>TBv\<close> contains \<open>0\<close>
+   too, so separate by a nonzero member.  \<open>D\<^bsub>u\<^esub> 0 \<in> TBv (enat u)\<close> but \<open>\<noteq> Trm []\<close>.\<close>
+lemma zero_set_neq_TBv: "{Trm []} \<noteq> TBv (enat u)"
+proof
+  assume H: "{Trm []} = TBv (enat u)"
+  have "Trm [DB (enat u) (Trm [])] \<in> TBv (enat u)" by (simp add: TBv_def)
+  hence "Trm [DB (enat u) (Trm [])] \<in> {Trm []}" using H by simp
+  thus False by simp
+qed
+
+text \<open>The master classification of \<open>domB t\<close> in terms of \<open>R = RightNodes t\<close>, by
+  strong induction along the right spine (\<open>domB\<close> and \<open>RightNodes\<close> both read only
+  the last principal component).  For \<open>t \<in> T\<^bsub>B\<^esub>\<close>, \<open>t \<noteq> 0\<close>, with \<open>m = last R\<close>:
+  \<^item> if \<open>rnNatShape R\<close> then \<open>domB t = NatSet\<close>;
+  \<^item> else if \<open>m = 0\<close> then \<open>domB t = {Trm []}\<close> (and \<open>R = [0]\<close>);
+  \<^item> else \<open>domB t = TBv (enat (m - 1))\<close>.\<close>
+lemma domB_classify_RN:
+  "t \<in> T_B \<Longrightarrow> t \<noteq> Trm [] \<Longrightarrow>
+       (rnNatShape (RightNodes t) \<longrightarrow> domB t = NatSet)
+     \<and> (\<not> rnNatShape (RightNodes t) \<and> last (RightNodes t) = 0
+          \<longrightarrow> domB t = {Trm []})
+     \<and> (\<not> rnNatShape (RightNodes t) \<and> last (RightNodes t) \<noteq> 0
+          \<longrightarrow> domB t = TBv (enat (last (RightNodes t) - 1)))"
+proof (induction t rule: measure_induct_rule[where f=size])
+  case (less t)
+  obtain ys where ys: "t = Trm ys" by (cases t)
+  have ysne: "ys \<noteq> []" using less.prems(2) ys by auto
+  \<comment> \<open>reduce \<open>domB\<close> and \<open>RightNodes\<close> to the last principal component\<close>
+  obtain u a where lastp: "last ys = DB u a"
+    by (cases "last ys")
+  have domLast: "domB t = domB (Trm [DB u a])"
+    unfolding ys using domB_last_component[OF ysne] lastp by simp
+  have RNlast: "RightNodes t = the_enat u # RightNodes a"
+    unfolding ys using rnsub_RightNodes_last[OF ysne] lastp by simp
+  \<comment> \<open>\<open>T\<^bsub>B\<^esub>\<close> facts about the last principal\<close>
+  have ufin: "u \<noteq> \<infinity>" and aTB: "a \<in> T_B"
+    using rnsub_TB_last[OF _ ysne lastp] less.prems(1) ys by auto
+  obtain un where un: "u = enat un" using ufin by (cases u) auto
+  have uthe: "the_enat u = un" using un by simp
+  let ?Ra = "RightNodes a"
+  let ?R = "RightNodes t"
+  have Rcons: "?R = un # ?Ra" using RNlast uthe by simp
+  show ?case
+  proof (cases "a = Trm []")
+    case True
+    \<comment> \<open>bottom of the spine: single principal over \<open>0\<close>, \<open>R = [un]\<close>\<close>
+    have Ra0: "?Ra = []" using True by simp
+    have Req: "?R = [un]" using Rcons Ra0 by simp
+    have notshape: "\<not> rnNatShape ?R" using Req by (simp add: rnNatShape_def)
+    have lastR: "last ?R = un" using Req by simp
+    have domeval: "domB (Trm [DB u a]) =
+          (if un = 0 then {Trm []} else TBv (enat (un - 1)))"
+    proof -
+      have "domB (Trm [DB u a]) =
+              (if a = Trm [] then
+                 (if u = 0 then {Trm []}
+                  else if u = \<infinity> then NatSet
+                  else TBv (enat (the_enat u - 1)))
+               else (let db = domB a in
+                     if db = {Trm []} then NatSet
+                     else if (\<exists>u'. u \<le> enat u' \<and> db = TBv (enat u')) then NatSet
+                     else db))"
+        by (subst domB_unfold) (simp only: BT.case list.case BP.case)
+      also have "\<dots> = (if un = 0 then {Trm []} else TBv (enat (un - 1)))"
+        using True ufin un uthe by (simp add: zero_enat_def)
+      finally show ?thesis .
+    qed
+    show ?thesis
+    proof (cases "un = 0")
+      case True
+      have "domB t = {Trm []}" using domLast domeval True by simp
+      thus ?thesis using notshape lastR True by simp
+    next
+      case False
+      have "domB t = TBv (enat (un - 1))" using domLast domeval False by simp
+      thus ?thesis using notshape lastR False by simp
+    qed
+  next
+    case False
+    \<comment> \<open>recursive step: descend into \<open>a\<close>, apply IH\<close>
+    have szlt: "size a < size t"
+      using rnsub_size_arg_lt'[OF lastp ysne] ys by simp
+    have ane: "a \<noteq> Trm []" using False .
+    have IH: "(rnNatShape ?Ra \<longrightarrow> domB a = NatSet)
+            \<and> (\<not> rnNatShape ?Ra \<and> last ?Ra = 0 \<longrightarrow> domB a = {Trm []})
+            \<and> (\<not> rnNatShape ?Ra \<and> last ?Ra \<noteq> 0
+                 \<longrightarrow> domB a = TBv (enat (last ?Ra - 1)))"
+      using less.IH[OF szlt aTB ane] by simp
+    have Rane: "?Ra \<noteq> []"
+    proof -
+      obtain w c where "last (untrm a) = DB w c"
+        by (cases "last (untrm a)")
+      moreover obtain zs where "a = Trm zs" by (cases a)
+      ultimately show ?thesis using ane by (cases zs) auto
+    qed
+    have lenRa1: "length ?Ra \<ge> 1" using Rane by (cases ?Ra) auto
+    \<comment> \<open>the \<open>domB\<close> evaluation at the principal level (nonzero body branch)\<close>
+    have domeval: "domB (Trm [DB u a]) =
+          (let db = domB a in
+           if db = {Trm []} then NatSet
+           else if (\<exists>u'. u \<le> enat u' \<and> db = TBv (enat u')) then NatSet
+           else db)"
+      using ane by (subst domB_unfold) (simp only: BT.case list.case BP.case if_False)
+    \<comment> \<open>last of \<open>?R\<close> equals last of \<open>?Ra\<close>\<close>
+    have lastReq: "last ?R = last ?Ra" using Rcons Rane by simp
+    \<comment> \<open>case split on the IH classification of \<open>domB a\<close>\<close>
+    show ?thesis
+    proof (cases "rnNatShape ?Ra")
+      case True
+      \<comment> \<open>\<open>domB a = NatSet\<close>; then so is the principal (else-db branch)\<close>
+      have da: "domB a = NatSet" using IH True by simp
+      have dt: "domB t = NatSet"
+        using domLast domeval da NatSet_neq_zero NatSet_neq_TBv
+        by (auto simp: Let_def)
+      \<comment> \<open>and the parent shape holds too (NAT propagates up the spine)\<close>
+      have shapeP: "rnNatShape ?R"
+      proof -
+        have len2: "length ?Ra \<ge> 2"
+          using True unfolding rnNatShape_def by simp
+        have disj: "?Ra ! (length ?Ra - 1) = 0
+                    \<or> (\<exists>k < length ?Ra - 1. ?Ra ! k < ?Ra ! (length ?Ra - 1))"
+          using True unfolding rnNatShape_def by simp
+        \<comment> \<open>shift indices by one for the cons \<open>?R = un # ?Ra\<close>\<close>
+        have lenR: "length ?R = length ?Ra + 1" using Rcons by simp
+        have RaNe: "?Ra \<noteq> []" using len2 by (cases ?Ra) auto
+        have lastRR: "?R ! (length ?R - 1) = ?Ra ! (length ?Ra - 1)"
+        proof -
+          have "?R ! (length ?R - 1) = last ?R"
+            using Rcons by (simp add: last_conv_nth)
+          also have "\<dots> = last ?Ra" using Rcons RaNe by simp
+          also have "\<dots> = ?Ra ! (length ?Ra - 1)"
+            using RaNe by (simp add: last_conv_nth)
+          finally show ?thesis .
+        qed
+        from disj show ?thesis
+        proof
+          assume z: "?Ra ! (length ?Ra - 1) = 0"
+          have lenR2: "length ?R \<ge> 2" using lenR len2 by simp
+          have "?R ! (length ?R - 1) = 0" using lastRR z by simp
+          thus ?thesis using lenR2 unfolding rnNatShape_def by simp
+        next
+          assume "\<exists>k < length ?Ra - 1. ?Ra ! k < ?Ra ! (length ?Ra - 1)"
+          then obtain k where klt: "k < length ?Ra - 1"
+            and lt: "?Ra ! k < ?Ra ! (length ?Ra - 1)" by blast
+          have lenR2: "length ?R \<ge> 2" using lenR len2 by simp
+          have rsk: "?R ! (Suc k) = ?Ra ! k" using Rcons by simp
+          have sklt: "Suc k < length ?R - 1" using klt lenR by simp
+          have "?R ! (Suc k) < ?R ! (length ?R - 1)"
+            using rsk lt lastRR by simp
+          thus ?thesis using lenR2 sklt unfolding rnNatShape_def by blast
+        qed
+      qed
+      show ?thesis using dt shapeP by simp
+    next
+      case False
+      \<comment> \<open>\<open>domB a\<close> is \<open>{Trm []}\<close> or \<open>TBv (enat (last ?Ra - 1))\<close>\<close>
+      let ?m = "last ?Ra"
+      show ?thesis
+      proof (cases "?m = 0")
+        case True
+        \<comment> \<open>\<open>domB a = {Trm []}\<close>; principal hits the \<open>db = {Trm []}\<close> branch \<Rightarrow> NatSet\<close>
+        have da: "domB a = {Trm []}" using IH False True by simp
+        have dt: "domB t = NatSet"
+          using domLast domeval da by (simp add: Let_def)
+        \<comment> \<open>parent shape: last of \<open>?R\<close> is \<open>0\<close>, length \<open>\<ge> 2\<close>\<close>
+        have lenR: "length ?R \<ge> 2" using Rcons lenRa1 by simp
+        have RNe: "?R \<noteq> []" using lenR by (cases ?R) auto
+        have lastRa0: "last ?Ra = 0" using True by simp
+        have "?R ! (length ?R - 1) = last ?R" using RNe by (simp add: last_conv_nth)
+        also have "\<dots> = last ?Ra" using lastReq by simp
+        also have "\<dots> = 0" using lastRa0 by simp
+        finally have "?R ! (length ?R - 1) = 0" .
+        hence shapeP: "rnNatShape ?R" using lenR unfolding rnNatShape_def by simp
+        show ?thesis using dt shapeP by simp
+      next
+        case False
+        note mne = False
+        \<comment> \<open>\<open>domB a = TBv (enat (?m - 1))\<close>; the \<open>v \<le> u'\<close> test decides NAT vs TBv\<close>
+        have da: "domB a = TBv (enat (?m - 1))"
+          using IH \<open>\<not> rnNatShape ?Ra\<close> mne by simp
+        \<comment> \<open>the existential test \<open>\<exists>u'. u \<le> enat u' \<and> domB a = TBv (enat u')\<close>
+           reduces, by \<open>TBv\<close> injectivity, to \<open>un \<le> ?m - 1\<close>\<close>
+        have testeq: "(\<exists>u'. u \<le> enat u' \<and> domB a = TBv (enat u'))
+                        \<longleftrightarrow> un \<le> ?m - 1"
+        proof
+          assume "\<exists>u'. u \<le> enat u' \<and> domB a = TBv (enat u')"
+          then obtain u' where ule: "u \<le> enat u'" and "domB a = TBv (enat u')" by blast
+          hence "TBv (enat (?m - 1)) = TBv (enat u')" using da by simp
+          hence "?m - 1 = u'" by (rule TBv_enat_inj)
+          thus "un \<le> ?m - 1" using ule un by simp
+        next
+          assume "un \<le> ?m - 1"
+          hence "u \<le> enat (?m - 1)" using un by simp
+          thus "\<exists>u'. u \<le> enat u' \<and> domB a = TBv (enat u')" using da by blast
+        qed
+        have dazero: "domB a \<noteq> {Trm []}"
+          using da zero_set_neq_TBv[of "?m - 1"] by auto
+        \<comment> \<open>value of the let-expression in terms of the test result\<close>
+        have letval: "domB (Trm [DB u a]) =
+              (if (\<exists>u'. u \<le> enat u' \<and> domB a = TBv (enat u')) then NatSet
+               else domB a)"
+          using domeval dazero by (simp add: Let_def)
+        show ?thesis
+        proof (cases "un \<le> ?m - 1")
+          case True
+          note ule = True
+          \<comment> \<open>test fires \<Rightarrow> \<open>domB t = NatSet\<close>; parent shape holds (\<open>un < ?m\<close>)\<close>
+          have testT: "\<exists>u'. u \<le> enat u' \<and> domB a = TBv (enat u')"
+            using testeq ule by simp
+          have dt: "domB t = NatSet"
+          proof -
+            have "domB t = domB (Trm [DB u a])" by (rule domLast)
+            also have "\<dots> = NatSet" using letval testT by simp
+            finally show ?thesis .
+          qed
+          \<comment> \<open>\<open>un \<le> ?m - 1 < ?m\<close> (since \<open>?m \<noteq> 0\<close>), and \<open>?m = last ?R = ?R!(len-1)\<close>\<close>
+          have unlt: "un < ?m" using ule mne by simp
+          have lenR: "length ?R \<ge> 2" using Rcons lenRa1 by simp
+          have RNe: "?R \<noteq> []" using lenR by (cases ?R) auto
+          have lastposR: "?R ! (length ?R - 1) = ?m"
+          proof -
+            have "?R ! (length ?R - 1) = last ?R" using RNe by (simp add: last_conv_nth)
+            also have "\<dots> = last ?Ra" using lastReq by simp
+            finally show ?thesis by simp
+          qed
+          have "?R ! 0 = un" using Rcons by simp
+          hence "?R ! 0 < ?R ! (length ?R - 1)" using unlt lastposR by simp
+          moreover have "(0::nat) < length ?R - 1" using lenR by simp
+          ultimately have shapeP: "rnNatShape ?R"
+            using lenR unfolding rnNatShape_def by blast
+          show ?thesis using dt shapeP by simp
+        next
+          case False
+          note nule = False
+          \<comment> \<open>test fails \<Rightarrow> \<open>domB t = domB a = TBv (enat (?m - 1))\<close>; NOT shape\<close>
+          have testF: "\<not> (\<exists>u'. u \<le> enat u' \<and> domB a = TBv (enat u'))"
+            using testeq nule by simp
+          have dt: "domB t = TBv (enat (?m - 1))"
+          proof -
+            have "domB t = domB (Trm [DB u a])" by (rule domLast)
+            also have "\<dots> = domB a" using letval testF by simp
+            also have "\<dots> = TBv (enat (?m - 1))" by (rule da)
+            finally show ?thesis .
+          qed
+          \<comment> \<open>parent is NOT shape: last \<open>= ?m \<noteq> 0\<close> and every earlier entry \<open>\<ge> ?m\<close>\<close>
+          have notshapeRa: "\<not> rnNatShape ?Ra" using \<open>\<not> rnNatShape ?Ra\<close> .
+          have lenR0: "length ?R \<ge> 2" using Rcons lenRa1 by simp
+          have RNe0: "?R \<noteq> []" using lenR0 by (cases ?R) auto
+          have lastposR: "?R ! (length ?R - 1) = ?m"
+          proof -
+            have "?R ! (length ?R - 1) = last ?R" using RNe0 by (simp add: last_conv_nth)
+            also have "\<dots> = last ?Ra" using lastReq by simp
+            finally show ?thesis by simp
+          qed
+          have notshapeP: "\<not> rnNatShape ?R"
+          proof
+            assume rns: "rnNatShape ?R"
+            have len2: "length ?R \<ge> 2"
+              using rns unfolding rnNatShape_def by simp
+            have rdisj: "?R ! (length ?R - 1) = 0
+                          \<or> (\<exists>k < length ?R - 1. ?R ! k < ?R ! (length ?R - 1))"
+              using rns unfolding rnNatShape_def by simp
+            \<comment> \<open>last \<open>= ?m \<noteq> 0\<close>, so the disjunct must be \<open>?R ! k < ?m\<close>\<close>
+            have lnz: "?R ! (length ?R - 1) \<noteq> 0" using lastposR mne by simp
+            obtain k where klt: "k < length ?R - 1"
+              and ltk0: "?R ! k < ?R ! (length ?R - 1)"
+              using rdisj lnz by blast
+            have ltk: "?R ! k < ?m" using ltk0 lastposR by simp
+            \<comment> \<open>derive a witness against \<open>\<not> rnNatShape ?Ra\<close> or against \<open>un \<ge> ?m\<close>\<close>
+            show False
+            proof (cases k)
+              case 0
+              have "?R ! 0 = un" using Rcons by simp
+              hence "un < ?m" using ltk 0 by simp
+              thus False using nule by simp
+            next
+              case (Suc k0)
+              \<comment> \<open>\<open>?R ! (Suc k0) = ?Ra ! k0\<close>, with \<open>k0 < length ?Ra - 1\<close>\<close>
+              have lenR: "length ?R = length ?Ra + 1" using Rcons by simp
+              have RaK: "?R ! (Suc k0) = ?Ra ! k0" using Rcons by simp
+              have k0lt: "k0 < length ?Ra - 1" using klt Suc lenR by simp
+              have lastRaeq: "?Ra ! (length ?Ra - 1) = ?m"
+                using Rane last_conv_nth[OF Rane] by simp
+              \<comment> \<open>\<open>?Ra ! k0 = ?R ! (Suc k0) < ?m = ?Ra ! (length ?Ra - 1)\<close>:
+                 this makes \<open>rnNatShape ?Ra\<close>, contradicting \<open>\<not> rnNatShape ?Ra\<close>\<close>
+              have len2Ra: "length ?Ra \<ge> 2" using k0lt by linarith
+              have "?Ra ! k0 < ?Ra ! (length ?Ra - 1)"
+                using RaK Suc ltk lastRaeq by simp
+              hence "rnNatShape ?Ra" using k0lt len2Ra
+                unfolding rnNatShape_def by blast
+              thus False using notshapeRa by simp
+            qed
+          qed
+          have lastRm: "last ?R = ?m" using lastReq by simp
+          show ?thesis using dt notshapeP lastRm mne
+            by simp
+        qed
+      qed
+    qed
+  qed
+qed
+
+text \<open>Bridge: the \<open>RightNodes\<close>-shape used in @{thm [source] rnNatShape_def} agrees
+  with the \<open>scb\<close>-side shape of @{thm [source] rnsub_kindable_imp_natshape}
+  (\<open>Lng R - 1 \<ge> 1\<close> i.e. \<open>length R \<ge> 2\<close>; and the \<open>R!j\<^sub>1 = 0 \<or> \<exists>k<j\<^sub>1. \<dots>\<close> disjunct).\<close>
+
+lemma rnNatShape_iff_natshape:
+  "rnNatShape R \<longleftrightarrow>
+     (Lng R - 1 \<ge> 1
+      \<and> (R ! (Lng R - 1) = 0
+         \<or> (\<exists>k < Lng R - 1. R ! k < R ! (Lng R - 1))))"
+  unfolding rnNatShape_def
+  by (cases "length R") auto
+
+text \<open>The \<open>domB t = NatSet \<Rightarrow> shape\<close> and \<open>shape \<Rightarrow> domB t = NatSet\<close> halves, packaged.\<close>
+
+lemma domB_NatSet_iff_rnNatShape:
+  assumes "t \<in> T_B" "t \<noteq> Trm []"
+  shows "domB t = NatSet \<longleftrightarrow> rnNatShape (RightNodes t)"
+proof
+  assume "domB t = NatSet"
+  \<comment> \<open>if NOT shape, the classification gives \<open>{Trm []}\<close> or \<open>TBv\<close>, both \<noteq> NatSet\<close>
+  show "rnNatShape (RightNodes t)"
+  proof (rule ccontr)
+    assume ns: "\<not> rnNatShape (RightNodes t)"
+    have cl: "(\<not> rnNatShape (RightNodes t) \<and> last (RightNodes t) = 0
+                \<longrightarrow> domB t = {Trm []})
+            \<and> (\<not> rnNatShape (RightNodes t) \<and> last (RightNodes t) \<noteq> 0
+                \<longrightarrow> domB t = TBv (enat (last (RightNodes t) - 1)))"
+      using domB_classify_RN[OF assms] by simp
+    show False
+    proof (cases "last (RightNodes t) = 0")
+      case True
+      hence "domB t = {Trm []}" using cl ns by simp
+      thus False using \<open>domB t = NatSet\<close> NatSet_neq_zero by simp
+    next
+      case False
+      hence "domB t = TBv (enat (last (RightNodes t) - 1))" using cl ns by simp
+      thus False using \<open>domB t = NatSet\<close> NatSet_neq_TBv by simp
+    qed
+  qed
+next
+  assume "rnNatShape (RightNodes t)"
+  thus "domB t = NatSet" using domB_classify_RN[OF assms] by simp
+qed
+
+text \<open>The \<open>scb\<close>-side converse \<open>shape \<Rightarrow> scb_kind0_able \<or> scb_kind1_able\<close> for a
+  nonempty \<open>t \<in> T\<^bsub>B\<^esub>\<close>.  From \<open>rnNatShape (RightNodes t)\<close> we obtain a marked
+  right-spine principal whose own \<open>RightNodes\<close> is a length-\<open>(j+1)\<close> suffix of
+  \<open>R = RightNodes t\<close> realizing a kind-0 (last \<open>= 0\<close>) or kind-1 (some earlier \<open><\<close>
+  last) decomposition.  The right-spine principals' \<open>RightNodes\<close> are exactly the
+  \<open>drop\<close>-suffixes of \<open>R\<close>, materialized below by an scb-decomposition.\<close>
+
+\<comment> \<open>Constructive converse engine: every right-spine descent depth \<open>j\<close> of a
+   nonempty \<open>t \<in> T\<^bsub>B\<^esub>\<close> is realized by an scb-decomposition whose marked
+   principal \<open>Trm [p]\<close> has \<open>RightNodes (Trm [p]) = drop j (RightNodes t)\<close>.
+   Base \<open>j = 0\<close>: the last component (via @{thm [source] scb_from_last_component}).
+   Step: descend into the body \<open>a\<close> of the last principal, lift back by prefixing
+   \<open>Dsym u\<close> to the surgery prefix.\<close>
+lemma scb_suffix_realized:
+  "\<And>j. t \<in> T_B \<Longrightarrow> t \<noteq> Trm [] \<Longrightarrow> j < length (RightNodes t) \<Longrightarrow>
+       \<exists>p s b. dfree_BP p
+             \<and> scb_decomp t s (flatBP p) b
+             \<and> RightNodes (Trm [p]) = drop j (RightNodes t)"
+proof (induction t rule: measure_induct_rule[where f=size])
+  case (less t j)
+  obtain ys where ys: "t = Trm ys" by (cases t)
+  have ysne: "ys \<noteq> []" using less.prems(2) ys by auto
+  obtain u a where lastp: "last ys = DB u a"
+    by (cases "last ys")
+  have RNlast: "RightNodes t = the_enat u # RightNodes a"
+    unfolding ys using rnsub_RightNodes_last[OF ysne] lastp by simp
+  have ufin: "u \<noteq> \<infinity>" and aTB: "a \<in> T_B"
+    using rnsub_TB_last[OF _ ysne lastp] less.prems(1) ys by auto
+  have dfree_last: "dfree_BP (DB u a)"
+    using ufin aTB by (simp add: T_B_def)
+  show ?case
+  proof (cases j)
+    case 0
+    \<comment> \<open>marked principal = last component \<open>DB u a\<close>; surgery at component level\<close>
+    have comp: "flatBP (last (untrm t)) = [] @ flatBP (DB u a) @ []"
+      using ys lastp by simp
+    have rb: "\<forall>x \<in> set ([]::Sym list). x = RP" by simp
+    have wne: "untrm t \<noteq> []" using ys ysne by simp
+    obtain s' b' where d: "scb_decomp t s' (flatBT (Trm [DB u a])) b'"
+      using scb_from_last_component[OF comp rb wne dfree_last] by blast
+    have dd: "scb_decomp t s' (flatBP (DB u a)) b'" using d by simp
+    have rn: "RightNodes (Trm [DB u a]) = drop j (RightNodes t)"
+      using RNlast 0 by simp
+    show ?thesis using dfree_last dd rn by blast
+  next
+    case (Suc j0)
+    \<comment> \<open>descend into the body \<open>a\<close> at depth \<open>j0\<close>\<close>
+    have szlt: "size a < size t"
+      using rnsub_size_arg_lt'[OF lastp ysne] ys by simp
+    have ane: "a \<noteq> Trm []"
+    proof
+      assume z: "a = Trm []"
+      have "RightNodes a = []" using z by simp
+      hence "length (RightNodes t) = 1" using RNlast by simp
+      thus False using less.prems(3) Suc by simp
+    qed
+    have j0lt: "j0 < length (RightNodes a)"
+      using less.prems(3) Suc RNlast by simp
+    obtain p s' b' where pf: "dfree_BP p"
+        and da: "scb_decomp a s' (flatBP p) b'"
+        and rna: "RightNodes (Trm [p]) = drop j0 (RightNodes a)"
+      using less.IH[OF szlt aTB ane j0lt] by blast
+    \<comment> \<open>lift the occurrence in \<open>a\<close> back to the last component of \<open>t\<close>\<close>
+    from da have occa: "flatBT a = s' @ flatBP p @ b'"
+      and bRP: "\<forall>x \<in> set b'. x = RP"
+      by (auto simp: scb_decomp_def)
+    have comp: "flatBP (last (untrm t)) = (Dsym u # s') @ flatBP p @ b'"
+      using ys lastp occa by simp
+    have wne: "untrm t \<noteq> []" using ys ysne by simp
+    obtain s'' b'' where d: "scb_decomp t s'' (flatBT (Trm [p])) b''"
+      using scb_from_last_component[OF comp bRP wne pf] by blast
+    have dd: "scb_decomp t s'' (flatBP p) b''" using d by simp
+    have rn: "RightNodes (Trm [p]) = drop j (RightNodes t)"
+      using rna RNlast Suc by simp
+    show ?thesis using pf dd rn by blast
+  qed
+qed
+
+text \<open>The \<open>scb\<close>-side converse \<open>shape \<Rightarrow> scb_kind0_able \<or> scb_kind1_able\<close> for a
+  nonempty \<open>t \<in> T\<^bsub>B\<^esub>\<close>.  Choose the marked-principal depth as the witness index of
+  @{thm [source] rnNatShape_def}: for the \<open>R!j\<^sub>1 = 0\<close> disjunct take the principal
+  at depth \<open>j\<^sub>1 - 1\<close> (its \<^const>\<open>RightNodes\<close> is the length-2 suffix \<open>[R!(j\<^sub>1-1), 0]\<close>,
+  giving \<^const>\<open>scb_kind0\<close>); for the \<open>R!k < R!j\<^sub>1\<close> disjunct take depth \<open>k\<close>.\<close>
+
+\<comment> \<open>kind-0 helper: a principal whose \<^const>\<open>RightNodes\<close> is a length-2 suffix
+   \<open>[w, 0]\<close> realizes \<^const>\<open>scb_kind0\<close>.\<close>
+lemma scb_kind0_of_suffix:
+  assumes pf: "dfree_BP p"
+      and d: "scb_decomp t s (flatBP p) b"
+      and rn: "RightNodes (Trm [p]) = [w, 0]"
+  shows "scb_kind0 t s (flatBP p) b"
+  unfolding scb_kind0_def
+proof (rule conjI)
+  show "scb_decomp t s (flatBP p) b" by (rule d)
+next
+  show "\<forall>q. flatBP p = flatBP q \<longrightarrow>
+          (Lng (RightNodes (Trm [q])) = 2 \<and> RightNodes (Trm [q]) ! 1 = 0)"
+  proof (intro allI impI)
+    fix q assume cq: "flatBP p = flatBP q"
+    have "flatBT (Trm [p]) = flatBT (Trm [q])" using cq by simp
+    hence "Trm [p] = Trm [q]" by (rule m_7_flatBT_inj)
+    hence "RightNodes (Trm [q]) = [w, 0]" using rn by simp
+    thus "Lng (RightNodes (Trm [q])) = 2 \<and> RightNodes (Trm [q]) ! 1 = 0" by simp
+  qed
+qed
+
+\<comment> \<open>kind-1 helper: a principal whose \<^const>\<open>RightNodes\<close> suffix \<open>r\<close> has \<open>j\<^sub>1 \<ge> 1\<close>,
+   \<open>r!0 < r!j\<^sub>1\<close> and \<open>r!j\<^sub>1\<close> a running minimum on \<open>(0, j\<^sub>1)\<close> realizes \<^const>\<open>scb_kind1\<close>.\<close>
+lemma scb_kind1_of_suffix:
+  assumes pf: "dfree_BP p"
+      and d: "scb_decomp t s (flatBP p) b"
+      and rn: "let r = RightNodes (Trm [p]); j1 = Lng r - 1 in
+                 j1 \<ge> 1 \<and> r ! 0 < r ! j1 \<and> (\<forall>j. 0 < j \<and> j < j1 \<longrightarrow> r ! j \<ge> r ! j1)"
+  shows "scb_kind1 t s (flatBP p) b"
+  unfolding scb_kind1_def
+proof (rule conjI)
+  show "scb_decomp t s (flatBP p) b" by (rule d)
+next
+  show "\<forall>q. flatBP p = flatBP q \<longrightarrow>
+          (let r = RightNodes (Trm [q]); j1 = Lng r - 1 in
+             j1 \<ge> 1 \<and> r ! 0 < r ! j1 \<and> (\<forall>j. 0 < j \<and> j < j1 \<longrightarrow> r ! j \<ge> r ! j1))"
+  proof (intro allI impI)
+    fix q assume cq: "flatBP p = flatBP q"
+    have "flatBT (Trm [p]) = flatBT (Trm [q])" using cq by simp
+    hence "Trm [p] = Trm [q]" by (rule m_7_flatBT_inj)
+    hence "RightNodes (Trm [q]) = RightNodes (Trm [p])" by simp
+    thus "let r = RightNodes (Trm [q]); j1 = Lng r - 1 in
+            j1 \<ge> 1 \<and> r ! 0 < r ! j1 \<and> (\<forall>j. 0 < j \<and> j < j1 \<longrightarrow> r ! j \<ge> r ! j1)"
+      using rn by (simp add: Let_def)
+  qed
+qed
+
+lemma rnNatShape_imp_kindable:
+  assumes tTB: "t \<in> T_B" and tne: "t \<noteq> Trm []"
+      and shape: "rnNatShape (RightNodes t)"
+  shows "scb_kind0_able t \<or> scb_kind1_able t"
+proof -
+  define R where "R = RightNodes t"
+  define j1 where "j1 = length R - 1"
+  have len2: "length R \<ge> 2" using shape unfolding rnNatShape_def R_def by simp
+  have j1ge1: "j1 \<ge> 1" using len2 unfolding j1_def by simp
+  have disj: "R ! j1 = 0 \<or> (\<exists>k < j1. R ! k < R ! j1)"
+    using shape unfolding rnNatShape_def R_def j1_def by simp
+  from disj show ?thesis
+  proof
+    assume z: "R ! j1 = 0"
+    \<comment> \<open>kind-0: marked principal at depth \<open>j1 - 1\<close>, suffix \<open>[R!(j1-1), R!j1] = [w,0]\<close>\<close>
+    have jm1lt: "j1 - 1 < length R" using j1ge1 len2 unfolding j1_def by simp
+    obtain p s b where pf: "dfree_BP p"
+        and d: "scb_decomp t s (flatBP p) b"
+        and rn: "RightNodes (Trm [p]) = drop (j1 - 1) R"
+      using scb_suffix_realized[OF tTB tne, of "j1 - 1"] jm1lt
+      unfolding R_def by blast
+    have dropeq: "drop (j1 - 1) R = [R ! (j1 - 1), R ! j1]"
+    proof -
+      have e1: "j1 - 1 < length R" using jm1lt .
+      have e2: "Suc (j1 - 1) = j1" using j1ge1 by simp
+      have e3: "Suc j1 = length R" using len2 unfolding j1_def by simp
+      have j1lt: "j1 < length R" using e3 by simp
+      have step1: "drop (j1 - 1) R = R ! (j1 - 1) # drop j1 R"
+        using e1 e2 Cons_nth_drop_Suc[OF e1] by simp
+      have step2: "drop j1 R = R ! j1 # drop (Suc j1) R"
+        using Cons_nth_drop_Suc[OF j1lt] by simp
+      have step3: "drop (Suc j1) R = []" using e3 by simp
+      show ?thesis using step1 step2 step3 by simp
+    qed
+    have rn2: "RightNodes (Trm [p]) = [R ! (j1 - 1), 0]" using rn dropeq z by simp
+    have "scb_kind0 t s (flatBP p) b" by (rule scb_kind0_of_suffix[OF pf d rn2])
+    hence "scb_kind0_able t" by blast
+    thus ?thesis by blast
+  next
+    assume "\<exists>k < j1. R ! k < R ! j1"
+    then obtain k where klt: "k < j1" and kw: "R ! k < R ! j1" by blast
+    \<comment> \<open>kind-1: marked principal at depth \<open>k\<close>; its suffix \<open>r = drop k R\<close> has
+       \<open>r!0 = R!k\<close>, \<open>r!(len-1) = R!j1\<close>, and \<open>r!(len-1)\<close> a running min? No — kind1
+       does NOT need a running minimum at the chosen \<open>k\<close>; but the literal
+       definition quantifies \<open>\<forall>j. 0<j<j1\<^bsup>r\<^esup>. r!j \<ge> r!j1\<^bsup>r\<^esup>\<close>.  This may FAIL for an
+       arbitrary \<open>k\<close>.  So pick \<open>k\<close> as the LAST index \<open>< j1\<close> with \<open>R!k < R!j1\<close>;
+       then every \<open>k < i < j1\<close> has \<open>R!i \<ge> R!j1\<close>.\<close>
+    define k0 where "k0 = Max {k. k < j1 \<and> R ! k < R ! j1}"
+    have fin: "finite {k. k < j1 \<and> R ! k < R ! j1}" by simp
+    have ne: "{k. k < j1 \<and> R ! k < R ! j1} \<noteq> {}" using klt kw by auto
+    have k0mem: "k0 < j1 \<and> R ! k0 < R ! j1"
+      using Max_in[OF fin ne] unfolding k0_def by blast
+    have k0lt: "k0 < j1" using k0mem by simp
+    have k0w: "R ! k0 < R ! j1" using k0mem by simp
+    have k0max: "\<forall>i. k0 < i \<and> i < j1 \<longrightarrow> R ! i \<ge> R ! j1"
+    proof (intro allI impI)
+      fix i assume "k0 < i \<and> i < j1"
+      hence ki: "k0 < i" and ij1: "i < j1" by auto
+      show "R ! i \<ge> R ! j1"
+      proof (rule ccontr)
+        assume "\<not> R ! i \<ge> R ! j1"
+        hence "R ! i < R ! j1" by simp
+        hence "i \<in> {k. k < j1 \<and> R ! k < R ! j1}" using ij1 by simp
+        hence "i \<le> k0" using Max_ge[OF fin] unfolding k0_def by simp
+        thus False using ki by simp
+      qed
+    qed
+    have k0ltlen: "k0 < length R" using k0lt unfolding j1_def using len2 by simp
+    obtain p s b where pf: "dfree_BP p"
+        and d: "scb_decomp t s (flatBP p) b"
+        and rn: "RightNodes (Trm [p]) = drop k0 R"
+      using scb_suffix_realized[OF tTB tne, of k0] k0ltlen
+      unfolding R_def by blast
+    define r where "r = RightNodes (Trm [p])"
+    have rdrop: "r = drop k0 R" using rn r_def by simp
+    have lenr: "length r = length R - k0" using rdrop k0ltlen by simp
+    have rj1id: "Lng r - 1 = j1 - k0"
+      using lenr unfolding j1_def by simp
+    have j1rge1: "Lng r - 1 \<ge> 1" using k0lt rj1id by simp
+    \<comment> \<open>\<open>r ! 0 = R ! k0\<close>; \<open>r ! (Lng r - 1) = R ! j1\<close>\<close>
+    have r0: "r ! 0 = R ! k0" using rdrop k0ltlen by (simp add: nth_drop)
+    have rj1: "r ! (Lng r - 1) = R ! j1"
+    proof -
+      have "Lng r - 1 = j1 - k0" using rj1id .
+      have "r ! (j1 - k0) = R ! (k0 + (j1 - k0))"
+        using rdrop k0ltlen k0lt unfolding j1_def
+        by (simp add: nth_drop)
+      moreover have "k0 + (j1 - k0) = j1" using k0lt by simp
+      ultimately show ?thesis using rj1id by simp
+    qed
+    have hd_lt: "r ! 0 < r ! (Lng r - 1)" using r0 rj1 k0w by simp
+    \<comment> \<open>running-min on \<open>(0, Lng r - 1)\<close>: \<open>r!j = R!(k0+j) \<ge> R!j1 = r!(Lng r-1)\<close>\<close>
+    have runmin: "\<forall>j. 0 < j \<and> j < Lng r - 1 \<longrightarrow> r ! j \<ge> r ! (Lng r - 1)"
+    proof (intro allI impI)
+      fix jj assume "0 < jj \<and> jj < Lng r - 1"
+      hence jjpos: "0 < jj" and jjlt: "jj < Lng r - 1" by auto
+      have jjlt': "jj < j1 - k0" using jjlt rj1id by simp
+      have idx: "r ! jj = R ! (k0 + jj)"
+        using rdrop k0ltlen jjlt' k0lt unfolding j1_def
+        by (simp add: nth_drop)
+      have lo: "k0 < k0 + jj" using jjpos by simp
+      have hi: "k0 + jj < j1" using jjlt' by simp
+      have "R ! (k0 + jj) \<ge> R ! j1" using k0max lo hi by simp
+      thus "r ! jj \<ge> r ! (Lng r - 1)" using idx rj1 by simp
+    qed
+    have rcond: "let r = RightNodes (Trm [p]); j1 = Lng r - 1 in
+                   j1 \<ge> 1 \<and> r ! 0 < r ! j1 \<and> (\<forall>j. 0 < j \<and> j < j1 \<longrightarrow> r ! j \<ge> r ! j1)"
+      using j1rge1 hd_lt runmin unfolding r_def by (simp add: Let_def)
+    have "scb_kind1 t s (flatBP p) b" by (rule scb_kind1_of_suffix[OF pf d rcond])
+    hence "scb_kind1_able t" by blast
+    thus ?thesis by blast
+  qed
+qed
+
+
+text \<open>Conjunct (2) of @{thm [source] p_7_2_scb_unique}, NOW UNBLOCKED (the
+  \<open>domB\<close>-side is reachable via @{thm [source] domB_unfold}/@{thm [source] domB_dom_all}).
+  Assembles the \<open>domB\<close>-side equivalence
+  @{thm [source] domB_NatSet_iff_rnNatShape} with the two \<open>scb\<close>-side directions:
+  \<open>\<Rightarrow>\<close> = @{thm [source] rnNatShape_imp_kindable}, and \<open>\<Leftarrow>\<close> via the GREEN forward
+  @{thm [source] rnsub_kindable_imp_natshape} (\<open>pss_mechanized\<close>) bridged by
+  @{thm [source] rnNatShape_iff_natshape}.  Carries the article's \<open>t \<noteq> Trm []\<close>
+  side-condition (correction A14).\<close>
+
+lemma m_7_2_scb_unique_domB:
+  assumes tTB: "t \<in> T_B" and tne: "t \<noteq> Trm []"
+  shows "(domB t = NatSet) \<longleftrightarrow> (scb_kind0_able t \<or> scb_kind1_able t)"
+proof
+  assume "domB t = NatSet"
+  hence shape: "rnNatShape (RightNodes t)"
+    using domB_NatSet_iff_rnNatShape[OF tTB tne] by simp
+  thus "scb_kind0_able t \<or> scb_kind1_able t"
+    by (rule rnNatShape_imp_kindable[OF tTB tne])
+next
+  assume kab: "scb_kind0_able t \<or> scb_kind1_able t"
+  \<comment> \<open>forward (GREEN, pss_mechanized): kind-able \<Rightarrow> RightNodes natshape\<close>
+  have natshape: "Lng (RightNodes t) - 1 \<ge> 1
+        \<and> (RightNodes t ! (Lng (RightNodes t) - 1) = 0
+           \<or> (\<exists>k < Lng (RightNodes t) - 1.
+                RightNodes t ! k < RightNodes t ! (Lng (RightNodes t) - 1)))"
+    by (rule rnsub_kindable_imp_natshape[OF tne kab])
+  hence "rnNatShape (RightNodes t)" by (simp add: rnNatShape_iff_natshape)
+  thus "domB t = NatSet"
+    using domB_NatSet_iff_rnNatShape[OF tTB tne] by simp
+qed
+
 end
