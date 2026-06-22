@@ -18796,4 +18796,511 @@ next
   thus "t34 = (t3\<^sub>0, t4\<^sub>0)" using ab aeq beq by simp
 qed
 
+
+
+text \<open>§8.1 keystone helper (1a): in the \<open>monoT M\<close>, \<open>t\<^sub>1 \<noteq> 0\<close> regime the
+  \<open>Mark M m\<close> recursion exposes \<open>Mark M m\<close> as a function of \<open>Mark (Pred M) m\<close>
+  ALONE: the locals \<open>c\<^sub>1, c\<^sub>2, ?bv\<close> are independent of \<open>m\<close>.  Hence two indices
+  with equal \<open>Mark (Pred M) \<cdot>\<close> have equal \<open>Mark M \<cdot>\<close>.  The unfolding mirrors the
+  \<open>mark_val_raw\<close> step inside @{thm [source] trans_inv_B_hard}.\<close>
+
+lemma Mark_monoT_via_Pred:
+  assumes MR: "M \<in> RT_PS" and mono: "monoT M" and L: "1 < Lng M"
+    and t1ne: "Trans (Pred M) \<noteq> 0\<^sub>B"
+    and mlt: "m < Lng M - 1" and m'lt: "m' < Lng M - 1"
+    and peq: "Mark (Pred M) m = Mark (Pred M) m'"
+  shows "Mark M m = Mark M m'"
+proof -
+  have MT: "M \<in> T_PS" using MR by (simp add: RT_PS_def)
+  have Lgt1: "\<not> Lng M \<le> Suc 0" using L by simp
+  have domK: "\<And>m. Trans_Mark_dom (Inr (M, m))" by (rule m_7_3_Mark_welldef[OF MR])
+  let ?bv = "entry M 1 (Lng M - 1)"
+  define jp where "jp = parent M 0 (Lng M - 1)"
+  define c1 where "c1 = Mark (Pred M) (Adm M jp)"
+  define vv where "vv = bpHeadV c1"
+  define tt2 where "tt2 = bpHeadT c1"
+  define JJ1 where "JJ1 = Lng (PB tt2) - 1"
+  define pj where "pj = PB tt2 ! JJ1"
+  define ldj where "ldj = (bpHeadV pj = enat (entry M 1 jp))"
+  define tt3 where "tt3 = (if ldj then SigmaB (take JJ1 (PB tt2)) else tt2)"
+  define tt4 where "tt4 = (if ldj then bpHeadT pj else tt2)"
+  define c2 where "c2 = (if transCondI M \<or> transCondIII M \<or> transCondV M
+                         then Dpt vv (tt2 +\<^sub>B Dpt (enat ?bv) 0\<^sub>B)
+                         else if transCondVI M
+                         then Dpt vv (Dpt (enat ?bv) 0\<^sub>B)
+                         else if tt2 = 0\<^sub>B
+                         then Dpt vv (Dpt (enat (entry M 1 jp)) (Dpt (enat ?bv) 0\<^sub>B))
+                         else Dpt vv (tt3 +\<^sub>B Dpt (enat (entry M 1 jp))
+                                            (tt4 +\<^sub>B Dpt (enat ?bv) 0\<^sub>B)))"
+  \<comment> \<open>the recursion exposes \<open>Mark M n\<close> as a function of \<open>Mark (Pred M) n\<close> alone\<close>
+  have mark_raw: "\<And>n. n < Lng M - 1 \<Longrightarrow>
+        Mark M n = (if (Mark (Pred M) n, c1) \<in> MarkedB
+              then unflatBT
+                     (fst (SOME sb. scb_decomp (Mark (Pred M) n) (fst sb)
+                                      (flatBT c1) (snd sb))
+                      @ flatBT c2
+                      @ snd (SOME sb. scb_decomp (Mark (Pred M) n) (fst sb)
+                                        (flatBT c1) (snd sb)))
+              else Dpt (enat ?bv) 0\<^sub>B)"
+  proof -
+    fix n :: nat assume nlt: "n < Lng M - 1"
+    show "Mark M n = (if (Mark (Pred M) n, c1) \<in> MarkedB
+              then unflatBT
+                     (fst (SOME sb. scb_decomp (Mark (Pred M) n) (fst sb)
+                                      (flatBT c1) (snd sb))
+                      @ flatBT c2
+                      @ snd (SOME sb. scb_decomp (Mark (Pred M) n) (fst sb)
+                                        (flatBT c1) (snd sb)))
+              else Dpt (enat ?bv) 0\<^sub>B)"
+      using Mark.psimps[OF domK] MR Lgt1 mono t1ne nlt
+      unfolding Let_def jp_def[symmetric] c1_def[symmetric] vv_def[symmetric]
+                tt2_def[symmetric] JJ1_def[symmetric] pj_def[symmetric]
+                ldj_def[symmetric] tt3_def[symmetric] tt4_def[symmetric]
+                c2_def[symmetric]
+      by simp
+  qed
+  have e1: "Mark M m = (if (Mark (Pred M) m, c1) \<in> MarkedB
+              then unflatBT
+                     (fst (SOME sb. scb_decomp (Mark (Pred M) m) (fst sb)
+                                      (flatBT c1) (snd sb))
+                      @ flatBT c2
+                      @ snd (SOME sb. scb_decomp (Mark (Pred M) m) (fst sb)
+                                        (flatBT c1) (snd sb)))
+              else Dpt (enat ?bv) 0\<^sub>B)"
+    by (rule mark_raw[OF mlt])
+  have e2: "Mark M m' = (if (Mark (Pred M) m', c1) \<in> MarkedB
+              then unflatBT
+                     (fst (SOME sb. scb_decomp (Mark (Pred M) m') (fst sb)
+                                      (flatBT c1) (snd sb))
+                      @ flatBT c2
+                      @ snd (SOME sb. scb_decomp (Mark (Pred M) m') (fst sb)
+                                        (flatBT c1) (snd sb)))
+              else Dpt (enat ?bv) 0\<^sub>B)"
+    by (rule mark_raw[OF m'lt])
+  show ?thesis using e1 e2 peq by simp
+qed
+
+
+text \<open>§8.1 keystone (STEP 1b): a non-admissible index \<open>k\<close> (with
+  \<open>1 \<le> k\<close>, \<open>k+1 \<le> Lng Q - 1\<close>) has \<open>Mark Q k = Mark Q (k+1)\<close>.  Proof by strong
+  \<open>Lng\<close>-induction.  In the \<open>monoT\<close>/\<open>t\<^sub>1 \<noteq> 0\<close> branch with \<open>k+1 < Lng Q - 1\<close>,
+  non-admissibility of \<open>k\<close> passes to \<open>Pred Q\<close> (by @{thm [source] nextR1_pred_agree}),
+  the full-bound IH gives \<open>Mark (Pred Q) k = Mark (Pred Q)(k+1)\<close> (covering both the
+  interior and the rightmost-on-\<open>Pred Q\<close> sub-cases uniformly), and
+  @{thm [source] Mark_monoT_via_Pred} closes.  At the rightmost index
+  \<open>k+1 = Lng Q - 1\<close> (\<open>k = Lng (Pred Q) - 1\<close>), \<open>Mark Q (k+1)\<close> is the fallback
+  \<open>D\<^bsub>e\<^sub>1 j\<^sub>1\<^esub> 0\<close>; for \<open>Mark Q k\<close> the membership test \<open>(c\<^sub>0,c\<^sub>1) \<in> MarkedB\<close> FAILS, since
+  \<open>c\<^sub>0 = Mark (Pred Q) k = D\<^bsub>e\<^sub>1 k\<^esub> 0\<close> (rightmost on \<open>Pred Q\<close>) while \<open>c\<^sub>1\<close> is a
+  marked value at \<open>Adm Q j\<^sub>0 < k\<close> with non-rightmost left-end form
+  (@{thm [source] Mark_leftend_form} + @{thm [source] m_7_3_Mark_rightmost1} give
+  \<open>c\<^sub>0 \<noteq> c\<^sub>1\<close>; @{thm [source] Mark_MarkedB_nest} + @{thm [source] MarkedB_antisym}
+  then exclude \<open>(c\<^sub>0,c\<^sub>1) \<in> MarkedB\<close>), so \<open>Mark Q k\<close> is the same fallback.  The
+  \<open>t\<^sub>1 = 0\<close> branch evaluates both to \<open>D\<^bsub>e\<^sub>1 j\<^sub>1\<^esub> 0\<close>; the \<open>multiT\<close> branch shifts to
+  \<open>P\<^sub>J = drop (Pcut Q) Q\<close>.  Empirically exact (279 nadm-instances, 0 failures).\<close>
+
+lemma Mark_nadm_const:
+  "Q \<in> RT_PS \<longrightarrow> 1 \<le> k \<longrightarrow> k + 1 \<le> Lng Q - 1 \<longrightarrow> \<not> adm Q k
+     \<longrightarrow> Mark Q k = Mark Q (k + 1)"
+proof (induction Q arbitrary: k rule: measure_induct_rule[where f=Lng])
+  case (less Q)
+  show ?case
+  proof (intro impI)
+    assume QR: "Q \<in> RT_PS" and k1: "1 \<le> k" and kub: "k + 1 \<le> Lng Q - 1"
+      and nadmk: "\<not> adm Q k"
+    have QT: "Q \<in> T_PS" using QR by (simp add: RT_PS_def)
+    have L: "1 < Lng Q" using kub k1 by linarith
+    have Lgt1: "\<not> Lng Q \<le> Suc 0" using L by simp
+    have domK: "\<And>m. Trans_Mark_dom (Inr (Q, m))" by (rule m_7_3_Mark_welldef[OF QR])
+    let ?j1 = "Lng Q - 1"
+    have klt: "k < ?j1" using kub by linarith
+    have k1le: "k + 1 \<le> ?j1" using kub by simp
+    show "Mark Q k = Mark Q (k + 1)"
+    proof (cases "monoT Q")
+      case mono: True
+      have predRT: "Pred Q \<in> RT_PS" by (rule Pred_RT_PS[OF QR])
+      have predb: "Pred Q = butlast Q" using L by (simp add: Pred_def)
+      have LP: "Lng (Pred Q) = Lng Q - 1" using predb by simp
+      have LPlt: "Lng (Pred Q) < Lng Q" using LP L by simp
+      show ?thesis
+      proof (cases "Trans (Pred Q) = 0\<^sub>B")
+        case t1z: True
+        \<comment> \<open>\<open>t\<^sub>1 = 0\<close>: both \<open>k, k+1 \<ge> 1\<close> give the fallback \<open>D\<^bsub>e\<^sub>1 j\<^sub>1\<^esub> 0\<close>\<close>
+        have kv: "\<And>m. Mark Q m = (if m = 0 then Dpt 0 (Dpt (enat (entry Q 1 ?j1)) 0\<^sub>B)
+                              else Dpt (enat (entry Q 1 ?j1)) 0\<^sub>B)"
+          using Mark.psimps[OF domK] QR Lgt1 mono t1z by (simp add: Let_def)
+        have "Mark Q k = Dpt (enat (entry Q 1 ?j1)) 0\<^sub>B" using kv k1 by simp
+        moreover have "Mark Q (k + 1) = Dpt (enat (entry Q 1 ?j1)) 0\<^sub>B" using kv by simp
+        ultimately show ?thesis by simp
+      next
+        case t1ne: False
+        show ?thesis
+        proof (cases "k + 1 < Lng Q - 1")
+          case interior: True
+          have k1lt: "k + 1 < ?j1" using interior by simp
+          \<comment> \<open>\<open>t\<^sub>1 \<noteq> 0\<close>, interior: non-admissibility passes to \<open>Pred Q\<close>, IH, then 1a\<close>
+          have nadmPk: "\<not> adm (Pred Q) k"
+          proof
+            assume "adm (Pred Q) k"
+            hence "\<not> nadm (Pred Q) k" by (simp add: adm_def)
+            have nadmQk: "nadm Q k" using nadmk by (simp add: adm_def)
+            have b0: "k - 1 \<le> Lng Q - 2" using interior by simp
+            have b1: "k \<le> Lng Q - 2" using interior by simp
+            have b2: "k + 1 \<le> Lng Q - 2" using interior by simp
+            have notgt: "\<not> k > Lng Q" using klt by simp
+            have pair: "nextR Q 1 (k - 1) k \<and> nextR Q 1 k (k + 1)"
+              using nadmQk notgt by (simp add: nadm_def)
+            have pairP: "nextR (Pred Q) 1 (k - 1) k \<and> nextR (Pred Q) 1 k (k + 1)"
+              using pair nextR1_pred_agree[OF L b0 b1] nextR1_pred_agree[OF L b1 b2]
+              by simp
+            have "\<not> k > Lng (Pred Q)" using interior LP by simp
+            hence "nadm (Pred Q) k" using pairP by (simp add: nadm_def)
+            thus False using \<open>\<not> nadm (Pred Q) k\<close> by simp
+          qed
+          have IH: "Mark (Pred Q) k = Mark (Pred Q) (k + 1)"
+          proof -
+            have "k + 1 \<le> Lng (Pred Q) - 1" using interior LP by simp
+            thus ?thesis
+              using less.IH[OF LPlt] predRT k1 nadmPk by blast
+          qed
+          have mk: "k < Lng Q - 1" using klt by simp
+          have mk1: "k + 1 < Lng Q - 1" using k1lt by simp
+          show ?thesis
+            by (rule Mark_monoT_via_Pred[OF QR mono L t1ne mk mk1 IH])
+        next
+          case False
+          \<comment> \<open>rightmost index \<open>k+1 = Lng Q - 1\<close>: both equal the fallback \<open>D\<^bsub>e\<^sub>1 j\<^sub>1\<^esub> 0\<close>\<close>
+          have krm: "k + 1 = ?j1" using False k1le by linarith
+          have keq: "k = Lng (Pred Q) - 1" using krm LP by simp
+          \<comment> \<open>\<open>Mark Q (k+1)\<close> is the fallback (\<open>k+1 = j\<^sub>1\<close> not \<open>< j\<^sub>1\<close>)\<close>
+          have hp: "hasParent Q 0 (Lng Q - 1)" by (rule monoT_hasParent0_last[OF QT mono L])
+          have val_k1: "Mark Q (k + 1) = Dpt (enat (entry Q 1 ?j1)) 0\<^sub>B"
+            using Mark.psimps[OF domK] QR Lgt1 mono t1ne krm
+            by (simp add: Let_def)
+          \<comment> \<open>\<open>Mark Q k\<close>: unfold to the conditional on \<open>(c\<^sub>0,c\<^sub>1) \<in> MarkedB\<close>\<close>
+          let ?jp = "parent Q 0 (Lng Q - 1)"
+          let ?c1 = "Mark (Pred Q) (Adm Q ?jp)"
+          let ?c0 = "Mark (Pred Q) k"
+          have predT: "Pred Q \<in> T_PS" using predRT by (simp add: RT_PS_def)
+          have LPgt: "1 < Lng (Pred Q)"
+          proof - have "k \<ge> 1" using k1 by simp
+            thus ?thesis using keq by linarith qed
+          have predNZ: "\<not> zeroT (Pred Q)" using LPgt by (auto simp: zeroT_def)
+          \<comment> \<open>\<open>(Pred Q, k)\<close> is marked: \<open>k\<close> is the last index of \<open>Pred Q\<close>\<close>
+          have markPk: "(Pred Q, k) \<in> Marked"
+          proof -
+            have admk: "adm (Pred Q) k" using keq adm_lastindex by simp
+            have klt': "k < Lng (Pred Q)" using keq LPgt by linarith
+            have lek: "leR (Pred Q) 0 k (Lng (Pred Q) - 1)"
+              using keq leR_refl[where i=0 and M="Pred Q" and j=k] klt' by simp
+            show ?thesis using predT admk lek by (simp add: Marked_def)
+          qed
+          \<comment> \<open>\<open>(Pred Q, Adm Q j\<^sub>0)\<close> is marked, with \<open>Adm Q j\<^sub>0 < k\<close>\<close>
+          have markPa: "(Pred Q, Adm Q ?jp) \<in> Marked"
+            using Marked_Pred_Adm[OF QT L hp] by simp
+          have parR: "nextR Q 0 ?jp (Lng Q - 1)"
+            using hp unfolding hasParent_def parent_def by (rule theI')
+          have jplt: "?jp < Lng Q - 1" using parR by (simp add: nextR_def nextrel0_def)
+          have admale: "Adm Q ?jp \<le> ?jp" by (rule adm_Adm_le)
+          have jple: "?jp \<le> k" using jplt keq LP by linarith
+          \<comment> \<open>\<open>Adm Q j\<^sub>0 < k\<close>: if \<open>j\<^sub>0 < k\<close> via \<open>admale\<close>; if \<open>j\<^sub>0 = k\<close> then \<open>k\<close> is
+              nadm so \<open>Adm Q k < k\<close> (@{thm [source] nadm_Adm_lt})\<close>
+          have alt: "Adm Q ?jp < k"
+          proof (cases "?jp = k")
+            case True
+            have "Adm Q k < k" by (rule nadm_Adm_lt[OF nadmk])
+            thus ?thesis using True by simp
+          next
+            case False
+            hence "?jp < k" using jple by linarith
+            thus ?thesis using admale by linarith
+          qed
+          \<comment> \<open>\<open>c\<^sub>0 = D\<^bsub>e\<^sub>1 k\<^esub> 0\<close> (rightmost on \<open>Pred Q\<close>)\<close>
+          have c0val: "?c0 = Dpt (enat (entry (Pred Q) 1 k)) 0\<^sub>B"
+            using m_7_3_Mark_rightmost1[OF markPk predRT predNZ] keq by simp
+          \<comment> \<open>\<open>c\<^sub>0 \<noteq> c\<^sub>1\<close>: else \<open>c\<^sub>1\<close> is the rightmost shape at \<open>Adm Q j\<^sub>0\<close>, impossible\<close>
+          have c0nec1: "?c0 \<noteq> ?c1"
+          proof
+            assume eqc: "?c0 = ?c1"
+            have c1d: "?c1 = Dpt (enat (entry (Pred Q) 1 k)) 0\<^sub>B"
+              by (rule trans[OF eqc[symmetric] c0val])
+            have c1ne0: "?c1 \<noteq> 0\<^sub>B" using c1d by simp
+            have "?c1 = 0\<^sub>B \<or> (\<exists>t. ?c1 = Dpt (enat (entry (Pred Q) 1 (Adm Q ?jp))) t)"
+              using Mark_leftend_form[of "Pred Q" "Adm Q ?jp", THEN mp, THEN mp,
+                     OF markPa predRT] .
+            then obtain t where c1form: "?c1 = Dpt (enat (entry (Pred Q) 1 (Adm Q ?jp))) t"
+              using c1ne0 by blast
+            \<comment> \<open>matching \<open>D\<^bsub>e\<^sub>1 k\<^esub> 0 = D\<^bsub>e\<^sub>1(Adm)\<^esub> t\<close> forces \<open>t = 0\<close>\<close>
+            have "Dpt (enat (entry (Pred Q) 1 k)) 0\<^sub>B
+                = Dpt (enat (entry (Pred Q) 1 (Adm Q ?jp))) t"
+              by (rule trans[OF c1d[symmetric] c1form])
+            hence t0: "t = 0\<^sub>B" by simp
+            have "?c1 = Dpt (enat (entry (Pred Q) 1 (Adm Q ?jp))) 0\<^sub>B"
+              using c1form t0 by simp
+            hence "Adm Q ?jp = Lng (Pred Q) - 1"
+              using m_7_3_Mark_rightmost1[OF markPa predRT predNZ] by simp
+            thus False using alt keq by linarith
+          qed
+          \<comment> \<open>nest gives \<open>(c\<^sub>1, c\<^sub>0) \<in> MarkedB\<close>; antisym then excludes \<open>(c\<^sub>0, c\<^sub>1)\<close>\<close>
+          have alt_le: "Adm Q ?jp \<le> k" using alt by simp
+          have nestC: "(?c1, ?c0) \<in> MarkedB"
+            using Mark_MarkedB_nest[of "Pred Q" "Adm Q ?jp" k,
+                   THEN mp, THEN mp, THEN mp, THEN mp,
+                   OF markPa markPk alt_le predRT] .
+          have notMB: "(?c0, ?c1) \<notin> MarkedB"
+          proof
+            assume a: "(?c0, ?c1) \<in> MarkedB"
+            have "?c0 = ?c1" by (rule MarkedB_antisym[OF a nestC])
+            thus False using c0nec1 by simp
+          qed
+          \<comment> \<open>unfold \<open>Mark Q k\<close>: the test fails, fallback fires.  Abstract the
+              \<open>m\<close>-independent locals via @{thm [source] Mark_monoT_via_Pred}'s scheme.\<close>
+          have val_k: "Mark Q k = Dpt (enat (entry Q 1 ?j1)) 0\<^sub>B"
+          proof -
+            have mk: "k < Lng Q - 1" using klt by simp
+            define jp where "jp = parent Q 0 (Lng Q - 1)"
+            define c1 where "c1 = Mark (Pred Q) (Adm Q jp)"
+            define vv where "vv = bpHeadV c1"
+            define tt2 where "tt2 = bpHeadT c1"
+            define JJ1 where "JJ1 = Lng (PB tt2) - 1"
+            define pj where "pj = PB tt2 ! JJ1"
+            define ldj where "ldj = (bpHeadV pj = enat (entry Q 1 jp))"
+            define tt3 where "tt3 = (if ldj then SigmaB (take JJ1 (PB tt2)) else tt2)"
+            define tt4 where "tt4 = (if ldj then bpHeadT pj else tt2)"
+            define c2 where "c2 = (if transCondI Q \<or> transCondIII Q \<or> transCondV Q
+                         then Dpt vv (tt2 +\<^sub>B Dpt (enat (entry Q 1 ?j1)) 0\<^sub>B)
+                         else if transCondVI Q
+                         then Dpt vv (Dpt (enat (entry Q 1 ?j1)) 0\<^sub>B)
+                         else if tt2 = 0\<^sub>B
+                         then Dpt vv (Dpt (enat (entry Q 1 jp)) (Dpt (enat (entry Q 1 ?j1)) 0\<^sub>B))
+                         else Dpt vv (tt3 +\<^sub>B Dpt (enat (entry Q 1 jp))
+                                            (tt4 +\<^sub>B Dpt (enat (entry Q 1 ?j1)) 0\<^sub>B)))"
+            have c1id: "c1 = ?c1" by (simp add: c1_def jp_def)
+            have raw: "Mark Q k = (if (Mark (Pred Q) k, c1) \<in> MarkedB
+                  then unflatBT
+                         (fst (SOME sb. scb_decomp (Mark (Pred Q) k) (fst sb)
+                                          (flatBT c1) (snd sb))
+                          @ flatBT c2
+                          @ snd (SOME sb. scb_decomp (Mark (Pred Q) k) (fst sb)
+                                            (flatBT c1) (snd sb)))
+                  else Dpt (enat (entry Q 1 ?j1)) 0\<^sub>B)"
+              using Mark.psimps[OF domK] QR Lgt1 mono t1ne mk
+              unfolding Let_def jp_def[symmetric] c1_def[symmetric] vv_def[symmetric]
+                        tt2_def[symmetric] JJ1_def[symmetric] pj_def[symmetric]
+                        ldj_def[symmetric] tt3_def[symmetric] tt4_def[symmetric]
+                        c2_def[symmetric]
+              by simp
+            have "(Mark (Pred Q) k, c1) \<notin> MarkedB" using notMB c1id by simp
+            thus ?thesis using raw by simp
+          qed
+          show ?thesis using val_k val_k1 by simp
+        qed
+      qed
+    next
+      case nmono: False
+      \<comment> \<open>\<open>multiT Q\<close>: shift to \<open>P\<^sub>J = drop (Pcut Q) Q\<close>\<close>
+      have nzQ: "\<not> zeroT Q" using L by (auto simp: zeroT_def)
+      have mu: "multiT Q" using nmono nzQ by (simp add: multiT_def)
+      have domKQ: "\<And>m. Trans_Mark_dom (Inr (Q, m))" by (rule m_7_3_Mark_welldef[OF QR])
+      let ?PJ = "drop (Pcut Q) Q"
+      have Pne: "P Q \<noteq> []" by (rule P_nonempty)
+      have J1lt: "Lng (P Q) - 1 < Lng (P Q)" using Pne by (cases "P Q") auto
+      have PJeq: "P Q ! (Lng (P Q) - 1) = ?PJ"
+        by (rule trans_multiT_last_component(1)[OF QT mu])
+      have PJRT: "?PJ \<in> RT_PS"
+        using m_6_6_P_reduced[OF QT] QR J1lt PJeq by auto
+      have cut: "0 < Pcut Q \<and> Pcut Q \<le> Lng Q - 1" using Pcut_le[OF L] by simp
+      have c1: "(Q \<notin> RT_PS) = False" using QR by simp
+      have c2: "(Lng Q - 1 = 0) = False" using L by simp
+      have c3: "monoT Q = False" using nmono by simp
+      have LdJ0: "Lng ?PJ = Lng Q - Pcut Q" by simp
+      have meq2: "\<And>m. m - (Lng Q - 1 - Lng (drop (Pcut Q) Q) + 1) = m - Pcut Q"
+      proof -
+        fix m
+        have "Lng Q - 1 - Lng (drop (Pcut Q) Q) + 1 = Pcut Q"
+          using LdJ0 cut by linarith
+        thus "m - (Lng Q - 1 - Lng (drop (Pcut Q) Q) + 1) = m - Pcut Q" by simp
+      qed
+      have markM: "\<And>m. Mark Q m = (if ?PJ = [(0, 0)] then Dpt 0 0\<^sub>B
+                                   else Mark ?PJ (m - Pcut Q))"
+      proof -
+        fix m
+        have raw: "Mark Q m =
+            (if P Q ! (Lng (P Q) - 1) = [(0, 0)] then Dpt 0 0\<^sub>B
+             else Mark (P Q ! (Lng (P Q) - 1))
+                    (m - (Lng Q - 1 - Lng (P Q ! (Lng (P Q) - 1)) + 1)))"
+          by (subst Mark.psimps[OF domKQ]) (simp only: c1 c2 c3 if_False Let_def)
+        show "Mark Q m = (if ?PJ = [(0, 0)] then Dpt 0 0\<^sub>B else Mark ?PJ (m - Pcut Q))"
+          unfolding raw PJeq meq2 ..
+      qed
+      show ?thesis
+      proof (cases "?PJ = [(0, 0)]")
+        case True
+        have "Mark Q k = Dpt 0 0\<^sub>B" using markM[of k] True by simp
+        moreover have "Mark Q (k + 1) = Dpt 0 0\<^sub>B" using markM[of "k+1"] True by simp
+        ultimately show ?thesis by simp
+      next
+        case PJne: False
+        have LdJ: "Lng ?PJ = Lng Q - Pcut Q" by simp
+        have LPJlt: "Lng ?PJ < Lng Q" using cut L LdJ by linarith
+        show ?thesis
+        proof (cases "Pcut Q \<le> k")
+          case cutk0: True
+          \<comment> \<open>\<open>k\<close> sits inside the last component; first strengthen to \<open>Pcut Q < k\<close>\<close>
+          have nadmQk0: "nadm Q k" using nadmk by (simp add: adm_def)
+          have notgt0: "\<not> k > Lng Q" using klt by simp
+          have pair0: "nextR Q 1 (k - 1) k \<and> nextR Q 1 k (k + 1)"
+            using nadmQk0 notgt0 by (simp add: nadm_def)
+          \<comment> \<open>row-1 predecessor gives row-0 ancestry \<open>k-1 \<rightarrow> k\<close>\<close>
+          have le0pred: "le0 Q (k - 1) k"
+            using pair0 by (simp add: nextR_def nextrel1_def)
+          have cutk: "Pcut Q < k"
+          proof (rule ccontr)
+            assume "\<not> Pcut Q < k"
+            hence keq: "k = Pcut Q" using cutk0 by simp
+            \<comment> \<open>then \<open>k = Pcut Q\<close> anchors to the last column\<close>
+            have anchK: "le0 Q k (Lng Q - 1)"
+              using Pcut_le[OF L] keq by (simp add: leR_def)
+            have anchPred: "le0 Q (k - 1) (Lng Q - 1)"
+              by (rule le0_trans[OF le0pred anchK])
+            have predlt: "k - 1 < Lng Q" using klt by linarith
+            have j1lt: "Lng Q - 1 < Lng Q" using L by linarith
+            show False
+            proof (cases "k - 1 = 0")
+              case True
+              hence "leR Q 0 0 (Lng Q - 1)" using anchPred by (simp add: leR_def)
+              thus False using m_6_2_not_multi_iff_le[OF QT] mu by simp
+            next
+              case False
+              hence pos: "0 < k - 1" by simp
+              have leRk1: "leR Q 0 (k - 1) (Lng Q - 1)" using anchPred by (simp add: leR_def)
+              have Pk1: "0 < k - 1 \<and> k - 1 \<le> Lng Q - 1 \<and> leR Q 0 (k - 1) (Lng Q - 1)"
+                using pos klt leRk1 by simp
+              have "Pcut Q \<le> k - 1"
+                unfolding Pcut_def
+                by (rule Least_le[where P = "\<lambda>j. 0 < j \<and> j \<le> Lng Q - 1 \<and> leR Q 0 j (Lng Q - 1)",
+                                  OF Pk1])
+              thus False using keq k1 by linarith
+            qed
+          qed
+          have kk: "k - Pcut Q + 1 = (k + 1) - Pcut Q" using cutk by simp
+          have nadmJ: "\<not> adm ?PJ (k - Pcut Q)"
+          proof
+            assume admJ: "adm ?PJ (k - Pcut Q)"
+            have nadmQk: "nadm Q k" using nadmk by (simp add: adm_def)
+            have notgt: "\<not> k > Lng Q" using klt by simp
+            have pair: "nextR Q 1 (k - 1) k \<and> nextR Q 1 k (k + 1)"
+              using nadmQk notgt by (simp add: nadm_def)
+            have e0: "k - 1 = Pcut Q + (k - Pcut Q - 1)" using cutk k1 by simp
+            have e1d: "k = Pcut Q + (k - Pcut Q)" using cutk by simp
+            have e2d: "k + 1 = Pcut Q + (k - Pcut Q + 1)" using cutk by simp
+            \<comment> \<open>bounds for @{thm [source] poper_nextR_drop}\<close>
+            have bA: "k - Pcut Q - 1 < Lng Q - Pcut Q" using klt cutk by linarith
+            have bB: "k - Pcut Q < Lng Q - Pcut Q" using klt cutk by linarith
+            have bC: "k - Pcut Q + 1 < Lng Q - Pcut Q" using k1le cutk by linarith
+            have p1: "nextR ?PJ 1 (k - Pcut Q - 1) (k - Pcut Q)"
+              using pair poper_nextR_drop[OF bA bB, of 1] e0 e1d by simp
+            have p2: "nextR ?PJ 1 (k - Pcut Q) (k - Pcut Q + 1)"
+              using pair poper_nextR_drop[OF bB bC, of 1] e1d e2d by simp
+            have notgtJ: "\<not> k - Pcut Q > Lng ?PJ" using klt LdJ by simp
+            have "k - Pcut Q - 1 = (k - Pcut Q) - 1" by simp
+            hence "nadm ?PJ (k - Pcut Q)" using p1 p2 notgtJ by (simp add: nadm_def)
+            thus False using admJ by (simp add: adm_def)
+          qed
+          have kJ1: "1 \<le> k - Pcut Q" using cutk by linarith
+          have kJub: "(k - Pcut Q) + 1 \<le> Lng ?PJ - 1"
+          proof -
+            have "k + 1 \<le> Lng Q - 1" using k1le by simp
+            thus ?thesis using cutk LdJ by linarith
+          qed
+          have IHJ: "Mark ?PJ (k - Pcut Q) = Mark ?PJ ((k - Pcut Q) + 1)"
+            using less.IH[OF LPJlt] PJRT kJ1 kJub nadmJ by blast
+          have v1: "Mark Q k = Mark ?PJ (k - Pcut Q)" using markM[of k] PJne by simp
+          have v2: "Mark Q (k + 1) = Mark ?PJ ((k + 1) - Pcut Q)"
+            using markM[of "k+1"] PJne by simp
+          show ?thesis using v1 v2 IHJ kk by simp
+        next
+          case False
+          \<comment> \<open>\<open>k < Pcut Q\<close>: nat-subtraction floors both shifts; \<open>k+1 \<le> Pcut Q\<close>\<close>
+          hence klp: "k < Pcut Q" by simp
+          have v1: "Mark Q k = Mark ?PJ (k - Pcut Q)" using markM[of k] PJne by simp
+          have v2: "Mark Q (k + 1) = Mark ?PJ ((k + 1) - Pcut Q)"
+            using markM[of "k+1"] PJne by simp
+          have z1: "k - Pcut Q = 0" using klp by simp
+          have z2: "(k + 1) - Pcut Q = 0" using klp by simp
+          show ?thesis using v1 v2 z1 z2 by simp
+        qed
+      qed
+    qed
+  qed
+qed
+
+
+
+text \<open>§8.2 補題（部分表現の単項成分と \<open>Pred\<close> の関係）, the UNCONDITIONAL setup
+  facts the article (content.md 3360-3453) derives before its 4-clause case
+  split.  For \<open>M \<in> RT\<^bsub>PS\<^esub> \<inter> PT\<^bsub>PS\<^esub>\<close> with \<open>Br M \<noteq> []\<close> and \<open>j\<^sub>1 = Lng M - 1 > 1\<close>,
+  set \<open>J\<^sub>1 = Lng(Br M) - 1\<close> (a valid \<open>Br M\<close> index), \<open>j'\<^sub>0 = Joints M\<^bsub>J\<^sub>1\<^esub>\<close>,
+  \<open>j'\<^sub>1 = FirstNodes M\<^bsub>J\<^sub>1\<^esub>\<close>.  Then:
+  (a) \<open>j'\<^sub>1 < Lng M\<close> (so \<open>j'\<^sub>1 \<le> j\<^sub>1\<close>); (b) \<open>j'\<^sub>0 \<le> TrMax M < j'\<^sub>1\<close>;
+  (c) \<open>j'\<^sub>0 = parent M 0 j'\<^sub>1\<close> and \<open>nextR M 0 j'\<^sub>0 j'\<^sub>1\<close>;
+  (d) \<open>Pred M \<in> RT\<^bsub>PS\<^esub>\<close> and \<open>\<not> zeroT (Pred M)\<close> and \<open>Trans (Pred M) \<noteq> 0\<close>
+      (so the \<open>Trans\<close>-recursion conditions (I)-(VI) are meaningful);
+  (e) \<open>TrMax M < j\<^sub>1\<close>.
+  These are exactly the "簡約性と係数の関係 / FirstNodes・TrMax・Joints の関係 /
+  Pred が零項でなく Trans が零項性を保つ" preamble of the article proof; reused by
+  the \<open>j\<^sub>1 - TrMax\<close> induction's base and step.  No new axiom: every fact is a
+  consequence of @{thm [source] m_6_4_FirstNodes_TrMax_Joints},
+  @{thm [source] a1_FN_lt}, @{thm [source] Joints_parent_nextR},
+  @{thm [source] Pred_RT_PS} and @{thm [source] m_7_3_Trans_zeroT}.\<close>
+
+lemma m_8_2_subexpr_component_Pred_setup:
+  fixes M :: pairseq
+  defines "j1 \<equiv> Lng M - 1"
+  defines "J1 \<equiv> Lng (Br M) - 1"
+  defines "j0' \<equiv> Joints M ! J1"
+  defines "j1' \<equiv> FirstNodes M ! J1"
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS" and Brne: "Br M \<noteq> []"
+    and j1gt: "j1 > 1"
+  shows "j1' < Lng M"
+    and "j1' \<le> j1"
+    and "j0' \<le> TrMax M"
+    and "TrMax M < j1'"
+    and "j0' = parent M 0 j1'"
+    and "nextR M 0 j0' j1'"
+    and "Pred M \<in> RT_PS"
+    and "\<not> zeroT (Pred M)"
+    and "Trans (Pred M) \<noteq> 0\<^sub>B"
+    and "TrMax M < j1"
+proof -
+  have MT: "M \<in> T_PS" using MP by (simp add: PT_PS_def)
+  have mono: "monoT M" using MP by (simp add: PT_PS_def)
+  have L: "1 < Lng M" using j1gt by (simp add: j1_def)
+  \<comment> \<open>\<open>J\<^sub>1\<close> is a valid \<open>Br M\<close> index\<close>
+  have BrL: "Lng (Br M) > 0" using Brne by (cases "Br M") auto
+  have JBr: "J1 < Lng (Br M)" using BrL by (simp add: J1_def)
+  \<comment> \<open>(c) parent / nextR via Joints characterisation\<close>
+  have jp: "j0' = parent M 0 j1'" using JBr by (simp add: j0'_def j1'_def Joints_nth)
+  show parenteq: "j0' = parent M 0 j1'" by (rule jp)
+  have nr: "nextR M 0 (Joints M ! J1) (FirstNodes M ! J1)"
+    by (rule Joints_parent_nextR[OF MP JBr])
+  show nrR: "nextR M 0 j0' j1'" using nr by (simp add: j0'_def j1'_def)
+  \<comment> \<open>(a) \<open>j'\<^sub>1 < Lng M\<close>\<close>
+  show j1L: "j1' < Lng M" using a1_FN_lt[OF MP JBr] by (simp add: j1'_def)
+  thus j1le: "j1' \<le> j1" by (simp add: j1_def)
+  \<comment> \<open>(b) \<open>j'\<^sub>0 \<le> TrMax M < j'\<^sub>1\<close>\<close>
+  have tj: "Joints M ! J1 \<le> TrMax M \<and> TrMax M < FirstNodes M ! J1"
+    by (rule m_6_4_FirstNodes_TrMax_Joints[OF MP JBr])
+  show j0le: "j0' \<le> TrMax M" using tj by (simp add: j0'_def)
+  show trj1: "TrMax M < j1'" using tj by (simp add: j1'_def)
+  \<comment> \<open>(e) \<open>TrMax M < j\<^sub>1\<close>\<close>
+  show "TrMax M < j1" using trj1 j1le by linarith
+  \<comment> \<open>(d) \<open>Pred M\<close> reduced, nonzero, \<open>Trans (Pred M) \<noteq> 0\<close>\<close>
+  show predRT: "Pred M \<in> RT_PS" by (rule Pred_RT_PS[OF MR])
+  have predb: "Pred M = butlast M" using L by (simp add: Pred_def)
+  have LP: "Lng (Pred M) = Lng M - 1" using predb by simp
+  have LPgt1: "Lng (Pred M) > 1" using LP j1gt by (simp add: j1_def)
+  show nzP: "\<not> zeroT (Pred M)" using LPgt1 by (simp add: zeroT_def)
+  show "Trans (Pred M) \<noteq> 0\<^sub>B" using m_7_3_Trans_zeroT[OF predRT] nzP by blast
+qed
+
 end
