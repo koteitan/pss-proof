@@ -20560,4 +20560,404 @@ proof -
   show ?thesis using j1eq gA gB core' by blast
 qed
 
+
+
+
+text \<open>§8.2 Adm0 geometric bridge, support: \<open>TrMax M + 1\<close> is \<open>M\<close>-admissible.
+  The row-1 trunk chain breaks exactly at \<open>TrMax M\<close>: if
+  \<open>nextR M 1 (TrMax M) (TrMax M + 1)\<close> held, then combined with the trunk steps
+  below \<open>TrMax M\<close> (@{thm [source] TrMax_trunk_step}) every \<open>j' < TrMax M + 1\<close>
+  would step, forcing \<open>TrMax M + 1 \<le> TrMax M\<close> by @{thm [source] le_TrMax_intro}
+  — impossible.  So the \<open>nadm\<close> second conjunct fails, and \<open>TrMax M + 1 \<le> Lng M\<close>
+  (@{thm [source] TrMax_bound}) kills the first disjunct.  Holds for all
+  \<open>M \<in> T\<^bsub>PS\<^esub>\<close>.\<close>
+
+lemma adm_TrMax_succ:
+  assumes T: "M \<in> T_PS"
+  shows "adm M (TrMax M + 1)"
+proof -
+  have LM: "Lng M > 0" using T by (cases M) (auto simp: T_PS_def)
+  have tb: "TrMax M \<le> Lng M - 1" by (rule TrMax_bound[OF T])
+  \<comment> \<open>the trunk step at \<open>TrMax M\<close> cannot hold\<close>
+  have nostep: "\<not> nextR M 1 (TrMax M) (TrMax M + 1)"
+  proof
+    assume st: "nextR M 1 (TrMax M) (TrMax M + 1)"
+    have allstep: "\<forall>j'<TrMax M + 1. nextR M 1 j' (j' + 1)"
+    proof (intro allI impI)
+      fix j' assume "j' < TrMax M + 1"
+      hence "j' < TrMax M \<or> j' = TrMax M" by linarith
+      thus "nextR M 1 j' (j' + 1)"
+      proof
+        assume "j' < TrMax M" thus ?thesis by (rule TrMax_trunk_step[OF T])
+      next
+        assume "j' = TrMax M" thus ?thesis using st by simp
+      qed
+    qed
+    from le_TrMax_intro[OF T allstep] show False by simp
+  qed
+  \<comment> \<open>and \<open>TrMax M + 1\<close> is within range\<close>
+  have notgt: "\<not> (TrMax M + 1 > Lng M)" using tb LM by linarith
+  show "adm M (TrMax M + 1)"
+    unfolding adm_def nadm_def using nostep notgt by simp
+qed
+
+
+text \<open>§8.2 keystone geometric bridge H3: in the \<open>Adm\<close>-zero regime
+  \<open>transJm1 M = Adm M (transJ0 M) = 0\<close> the row-0 parent of the last column is in
+  the trunk: \<open>parent M 0 (Lng M - 1) \<le> TrMax M\<close>.  \<open>Adm M jp = 0\<close> means the only
+  \<open>M\<close>-admissible index \<open>\<le> jp\<close> is \<open>0\<close> (@{thm [source] adm_Adm_max}); but if
+  \<open>jp > TrMax M\<close> then \<open>TrMax M + 1 \<le> jp\<close> is a nonzero admissible index
+  (@{thm [source] adm_TrMax_succ}) — contradiction.  This discharges the
+  \<open>parTr\<close> hypothesis of @{thm [source] m_8_2_lastbranch_eq_j1} unconditionally in
+  the Adm-zero branch.  Empirically exact (yaBMS-standard \<open>\<inter>\<close> reduced \<open>\<inter>\<close> monoT,
+  length \<le> 6: 147/147 Adm0 cases, 0 violations).\<close>
+
+lemma m_8_2_parent_le_TrMax_Adm0:
+  fixes M :: pairseq
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS"
+    and Adm0: "transJm1 M = 0"
+  shows "parent M 0 (Lng M - 1) \<le> TrMax M"
+proof (rule ccontr)
+  have MT: "M \<in> T_PS" using MP by (simp add: PT_PS_def)
+  have Adm0': "Adm M (parent M 0 (Lng M - 1)) = 0"
+    using Adm0 by (simp add: transJm1_def transJ0_def transJ1_def)
+  assume "\<not> parent M 0 (Lng M - 1) \<le> TrMax M"
+  hence gt: "TrMax M < parent M 0 (Lng M - 1)" by simp
+  hence le: "TrMax M + 1 \<le> parent M 0 (Lng M - 1)" by simp
+  have a: "adm M (TrMax M + 1)" by (rule adm_TrMax_succ[OF MT])
+  have "TrMax M + 1 \<le> Adm M (parent M 0 (Lng M - 1))"
+    by (rule adm_Adm_max[OF a le])
+  thus False using Adm0' by simp
+qed
+
+
+text \<open>§8.2 keystone bridge, Adm0 \<open>j\<^sub>1' = j\<^sub>1\<close> unconditionally.  Combining H3
+  (@{thm [source] m_8_2_parent_le_TrMax_Adm0}) with the last-branch bridge
+  (@{thm [source] m_8_2_lastbranch_eq_j1}): in the Adm-zero branch the last
+  branch's first node is the last column.\<close>
+
+lemma m_8_2_j1eq_Adm0:
+  fixes M :: pairseq
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS" and Brne: "Br M \<noteq> []"
+    and j1gt: "Lng M - 1 > 1"
+    and Adm0: "transJm1 M = 0"
+  shows "FirstNodes M ! (Lng (Br M) - 1) = Lng M - 1"
+proof -
+  have parTr: "parent M 0 (Lng M - 1) \<le> TrMax M"
+    by (rule m_8_2_parent_le_TrMax_Adm0[OF MR MP Adm0])
+  show ?thesis by (rule m_8_2_lastbranch_eq_j1[OF MR MP Brne j1gt parTr])
+qed
+
+
+text \<open>§8.2 keystone bridge, Adm0 \<open>j\<^sub>0' = transJ0 M\<close> unconditionally.  Since
+  \<open>j\<^sub>1' = j\<^sub>1 = Lng M - 1\<close> (@{thm [source] m_8_2_j1eq_Adm0}), the last branch's joint
+  \<open>Joints M ! J\<^sub>1 = parent M 0 (FirstNodes M ! J\<^sub>1) = parent M 0 (Lng M - 1)
+  = transJ0 M\<close> (@{thm [source] Joints_nth}).\<close>
+
+lemma m_8_2_j0eq_Adm0:
+  fixes M :: pairseq
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS" and Brne: "Br M \<noteq> []"
+    and j1gt: "Lng M - 1 > 1"
+    and Adm0: "transJm1 M = 0"
+  shows "Joints M ! (Lng (Br M) - 1) = transJ0 M"
+proof -
+  have BrL: "Lng (Br M) > 0" using Brne by (cases "Br M") auto
+  have JBr: "Lng (Br M) - 1 < length (Br M)" using BrL by simp
+  have j1eq: "FirstNodes M ! (Lng (Br M) - 1) = Lng M - 1"
+    by (rule m_8_2_j1eq_Adm0[OF MR MP Brne j1gt Adm0])
+  have "Joints M ! (Lng (Br M) - 1) = parent M 0 (FirstNodes M ! (Lng (Br M) - 1))"
+    by (rule Joints_nth[OF JBr])
+  also have "\<dots> = parent M 0 (Lng M - 1)" using j1eq by simp
+  also have "\<dots> = transJ0 M" by (simp add: transJ0_def transJ1_def)
+  finally show ?thesis .
+qed
+
+
+text \<open>§8.2 Adm0 support: the row-1 trunk step at \<open>TrMax M\<close> always fails.  If it
+  held, every \<open>j' < TrMax M + 1\<close> would step (with @{thm [source] TrMax_trunk_step}
+  below), forcing \<open>TrMax M + 1 \<le> TrMax M\<close> (@{thm [source] le_TrMax_intro}).\<close>
+
+lemma nextR1_TrMax_fail:
+  assumes T: "M \<in> T_PS"
+  shows "\<not> nextR M 1 (TrMax M) (TrMax M + 1)"
+proof
+  assume st: "nextR M 1 (TrMax M) (TrMax M + 1)"
+  have allstep: "\<forall>j'<TrMax M + 1. nextR M 1 j' (j' + 1)"
+  proof (intro allI impI)
+    fix j' assume "j' < TrMax M + 1"
+    hence "j' < TrMax M \<or> j' = TrMax M" by linarith
+    thus "nextR M 1 j' (j' + 1)"
+    proof
+      assume "j' < TrMax M" thus ?thesis by (rule TrMax_trunk_step[OF T])
+    next
+      assume "j' = TrMax M" thus ?thesis using st by simp
+    qed
+  qed
+  from le_TrMax_intro[OF T allstep] show False by simp
+qed
+
+
+text \<open>§8.2 Adm0 support: \<open>TrMax M\<close> itself is \<open>M\<close>-admissible.  The \<open>nadm\<close> second
+  conjunct needs the step \<open>nextR M 1 (TrMax M) (TrMax M + 1)\<close>, which fails
+  (@{thm [source] nextR1_TrMax_fail}); the first disjunct \<open>TrMax M > Lng M\<close> is
+  killed by @{thm [source] TrMax_bound}.  Holds for all \<open>M \<in> T\<^bsub>PS\<^esub>\<close>.\<close>
+
+lemma adm_TrMax:
+  assumes T: "M \<in> T_PS"
+  shows "adm M (TrMax M)"
+proof -
+  have LM: "Lng M > 0" using T by (cases M) (auto simp: T_PS_def)
+  have tb: "TrMax M \<le> Lng M - 1" by (rule TrMax_bound[OF T])
+  have notgt: "\<not> (TrMax M > Lng M)" using tb LM by linarith
+  have nostep: "\<not> nextR M 1 (TrMax M) (TrMax M + 1)" by (rule nextR1_TrMax_fail[OF T])
+  show "adm M (TrMax M)"
+    unfolding adm_def nadm_def using notgt nostep by simp
+qed
+
+
+text \<open>§8.2 keystone clause (1) guard \<open>gA\<close>, Adm0 branch.  \<open>gA\<close> is
+  \<open>TrMax M = 0 \<or> Joints M ! J\<^sub>1 < TrMax M\<close>.  Since \<open>Joints M ! J\<^sub>1 = transJ0 M = jp\<close>
+  (@{thm [source] m_8_2_j0eq_Adm0}), it reduces to \<open>TrMax M = 0 \<or> jp < TrMax M\<close>.
+  From \<open>Adm M jp = 0\<close>: if \<open>0 < TrMax M\<close> and \<open>TrMax M \<le> jp\<close> then the admissible
+  index \<open>TrMax M\<close> (@{thm [source] adm_TrMax}) is a nonzero index \<open>\<le> jp\<close>, forcing
+  \<open>Adm M jp \<ge> TrMax M > 0\<close> (@{thm [source] adm_Adm_max}) — contradiction.  So
+  \<open>TrMax M = 0 \<or> jp < TrMax M\<close>.  Empirically exact (yaBMS-standard \<open>\<inter>\<close> reduced
+  \<open>\<inter>\<close> monoT, length \<le> 5: 0 violations).\<close>
+
+lemma m_8_2_gA_Adm0:
+  fixes M :: pairseq
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS" and Brne: "Br M \<noteq> []"
+    and j1gt: "Lng M - 1 > 1"
+    and Adm0: "transJm1 M = 0"
+  shows "TrMax M = 0 \<or> Joints M ! (Lng (Br M) - 1) < TrMax M"
+proof -
+  have MT: "M \<in> T_PS" using MP by (simp add: PT_PS_def)
+  define jp where "jp = parent M 0 (Lng M - 1)"
+  have Adm0': "Adm M jp = 0"
+    using Adm0 by (simp add: transJm1_def transJ0_def transJ1_def jp_def)
+  have j0eq: "Joints M ! (Lng (Br M) - 1) = jp"
+    using m_8_2_j0eq_Adm0[OF MR MP Brne j1gt Adm0]
+    by (simp add: transJ0_def transJ1_def jp_def)
+  \<comment> \<open>\<open>TrMax M = 0\<close> or \<open>jp < TrMax M\<close>\<close>
+  have "TrMax M = 0 \<or> jp < TrMax M"
+  proof (rule ccontr)
+    assume "\<not> (TrMax M = 0 \<or> jp < TrMax M)"
+    hence pos: "0 < TrMax M" and ge: "TrMax M \<le> jp" by auto
+    have a: "adm M (TrMax M)" by (rule adm_TrMax[OF MT])
+    have "TrMax M \<le> Adm M jp" by (rule adm_Adm_max[OF a ge])
+    thus False using Adm0' pos by simp
+  qed
+  thus ?thesis using j0eq by simp
+qed
+
+
+text \<open>§8.2 Adm0: \<open>transCondVI M\<close> is vacuous.  \<open>transCondVI\<close> requires
+  \<open>parent M 0 (Lng M - 1) + 1 = Lng M - 1\<close> (\<open>jp + 1 = j\<^sub>1\<close>).  But Adm0 yields
+  \<open>TrMax M = 0 \<or> jp < TrMax M\<close> (@{thm [source] m_8_2_gA_Adm0} reasoning) with
+  \<open>jp \<le> TrMax M\<close> (H3, @{thm [source] m_8_2_parent_le_TrMax_Adm0}) and
+  \<open>TrMax M < Lng M - 1\<close> (\<open>Br M \<noteq> []\<close>): in either case \<open>jp + 1 < Lng M - 1\<close> (or
+  \<open>jp = 0\<close> with \<open>Lng M - 1 > 1\<close>), so \<open>jp + 1 \<noteq> Lng M - 1\<close>.  Empirically exact:
+  even on \<open>monoT\<close>-only (dropping reduced/standard), \<open>Adm0 \<and> jp+1=j\<^sub>1\<close> has 0
+  cases.\<close>
+
+lemma m_8_2_notVI_Adm0:
+  fixes M :: pairseq
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS" and Brne: "Br M \<noteq> []"
+    and j1gt: "Lng M - 1 > 1"
+    and Adm0: "transJm1 M = 0"
+  shows "\<not> transCondVI M"
+proof -
+  have MT: "M \<in> T_PS" using MP by (simp add: PT_PS_def)
+  define jp where "jp = parent M 0 (Lng M - 1)"
+  \<comment> \<open>\<open>Br M \<noteq> []\<close> gives \<open>TrMax M < Lng M - 1\<close>\<close>
+  have tb: "TrMax M \<le> Lng M - 1" by (rule TrMax_bound[OF MT])
+  have trne: "TrMax M \<noteq> Lng M - 1"
+  proof
+    assume "TrMax M = Lng M - 1"
+    hence "Br M = []" by (simp add: Br_def)
+    thus False using Brne by simp
+  qed
+  have trlt: "TrMax M < Lng M - 1" using tb trne by linarith
+  \<comment> \<open>H3: \<open>jp \<le> TrMax M\<close>\<close>
+  have h3: "jp \<le> TrMax M"
+    using m_8_2_parent_le_TrMax_Adm0[OF MR MP Adm0] by (simp add: jp_def)
+  \<comment> \<open>gA-shape: \<open>TrMax M = 0 \<or> jp < TrMax M\<close>\<close>
+  have BrL: "Lng (Br M) > 0" using Brne by (cases "Br M") auto
+  have gA: "TrMax M = 0 \<or> Joints M ! (Lng (Br M) - 1) < TrMax M"
+    by (rule m_8_2_gA_Adm0[OF MR MP Brne j1gt Adm0])
+  have j0eq: "Joints M ! (Lng (Br M) - 1) = jp"
+    using m_8_2_j0eq_Adm0[OF MR MP Brne j1gt Adm0]
+    by (simp add: transJ0_def transJ1_def jp_def)
+  have gA': "TrMax M = 0 \<or> jp < TrMax M" using gA j0eq by simp
+  \<comment> \<open>in either case \<open>jp + 1 \<noteq> Lng M - 1\<close>\<close>
+  have neq: "jp + 1 \<noteq> Lng M - 1"
+  proof (cases "TrMax M = 0")
+    case True
+    hence "jp = 0" using h3 by simp
+    thus ?thesis using j1gt by simp
+  next
+    case False
+    hence "jp < TrMax M" using gA' by simp
+    hence "jp + 1 \<le> TrMax M" by simp
+    thus ?thesis using trlt by linarith
+  qed
+  show "\<not> transCondVI M"
+    unfolding transCondVI_def using neq by (simp add: jp_def)
+qed
+
+
+text \<open>§8.2 keystone, Adm0 branch assembled into the 4-clause disjunction.
+  For \<open>M \<in> RT\<^bsub>PS\<^esub> \<inter> PT\<^bsub>PS\<^esub>\<close>, \<open>Br M \<noteq> []\<close>, \<open>j\<^sub>1 = Lng M - 1 > 1\<close>, and
+  \<open>transJm1 M = 0\<close> (the \<open>Adm M (transJ0 M) = 0\<close> regime).  Everything geometric is
+  discharged: \<open>j\<^sub>1' = j\<^sub>1\<close> (@{thm [source] m_8_2_j1eq_Adm0}),
+  \<open>j\<^sub>0' = transJ0 M\<close> (@{thm [source] m_8_2_j0eq_Adm0}), the clause-(1) guard \<open>gA\<close>
+  (@{thm [source] m_8_2_gA_Adm0}), and \<open>\<not> transCondVI M\<close>
+  (@{thm [source] m_8_2_notVI_Adm0}).  The transC2 sub-case split — cond I/III/V
+  \<rightarrow> clause (1) (@{thm [source] m_8_2_subexpr_component_Pred_Adm0_clause1_keystone}),
+  \<open>\<not>leftDj0\<close> \<rightarrow> clause (2) (@{thm [source] m_8_2_subexpr_component_Pred_Adm0_clause2_core}),
+  \<open>leftDj0\<close> \<rightarrow> clause (4) (@{thm [source] m_8_2_subexpr_component_Pred_Adm0_clause4_core});
+  the cond VI sub-case is vacuous (@{thm [source] m_8_2_notVI_Adm0}).
+  The remaining per-clause guards stay as empirically-exact hypotheses (all with
+  0 violations on yaBMS-standard \<open>\<inter>\<close> reduced \<open>\<inter>\<close> monoT, length \<le> 5): the
+  clause-(1) guard \<open>gB\<close> (exactly a conjunct of clause (1)'s conclusion; 46/46 in
+  Adm0\<open>\<inter>\<close>condA), \<open>transT2 M \<noteq> 0\<^sub>B\<close> (\<open>t2ne\<close>, for the clause (2)/(4) cores; 7/7 in the
+  \<open>\<not>\<close>condA branch — the \<open>t\<^sub>2 = 0\<close> sub-case is vacuous), and the clause-(2) guards
+  \<open>e0gt\<close> = \<open>M\<^bsub>0,j\<^sub>1'\<^esub> > M\<^bsub>1,j\<^sub>1'\<^esub>\<close>, \<open>nadmj0\<close> = \<open>\<not> adm M j\<^sub>0'\<close> (4/4 in the clause (2)
+  sub-case).\<close>
+
+lemma m_8_2_subexpr_component_Pred_Adm0:
+  fixes M :: pairseq
+  defines "j1 \<equiv> Lng M - 1"
+  defines "J1 \<equiv> Lng (Br M) - 1"
+  defines "j0' \<equiv> Joints M ! J1"
+  defines "j1' \<equiv> FirstNodes M ! J1"
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS" and Brne: "Br M \<noteq> []"
+    and j1gt: "j1 > 1"
+    and Adm0: "transJm1 M = 0"
+    and gB: "entry M 0 j1' = entry M 1 j1' \<or> adm M j0'"
+    and t2ne: "transT2 M \<noteq> 0\<^sub>B"
+    and e0gt: "entry M 0 j1' > entry M 1 j1'"
+    and nadmj0: "\<not> adm M j0'"
+  shows
+    "(j1' = j1 \<and> (TrMax M = 0 \<or> j0' < TrMax M)
+        \<and> (entry M 0 j1' = entry M 1 j1' \<or> adm M j0')
+        \<and> (\<exists>!t1. Trans (Pred M) = Dpt (enat (entry M 1 0)) t1
+              \<and> Trans M = Dpt (enat (entry M 1 0))
+                            (t1 +\<^sub>B Dpt (enat (entry M 1 j1')) 0\<^sub>B)))
+   \<or> (j1' = j1 \<and> entry M 0 j1' > entry M 1 j1' \<and> \<not> adm M j0'
+        \<and> (\<exists>!t12. Trans (Pred M) = Dpt (enat (entry M 1 0)) (fst t12)
+              \<and> Trans M = Dpt (enat (entry M 1 0))
+                            (fst t12 +\<^sub>B Dpt (enat (entry M 1 j0')) (snd t12))))
+   \<or> (\<exists>!t123. Trans (Pred M)
+                = Dpt (enat (entry M 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M 1 j1')) (fst (snd t123)))
+            \<and> Trans M = Dpt (enat (entry M 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M 1 j1')) (snd (snd t123))))
+   \<or> (\<exists>!t123. Trans (Pred M)
+                = Dpt (enat (entry M 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M 1 j0')) (fst (snd t123)))
+            \<and> Trans M = Dpt (enat (entry M 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M 1 j0')) (snd (snd t123))))"
+proof -
+  have j1gt': "Lng M - 1 > 1" using j1gt by (simp add: j1_def)
+  \<comment> \<open>geometric bridges (all discharged in Adm0)\<close>
+  have j1eq: "j1' = j1"
+    using m_8_2_j1eq_Adm0[OF MR MP Brne j1gt' Adm0]
+    by (simp add: j1'_def J1_def j1_def)
+  have j0eqJ: "j0' = transJ0 M"
+    using m_8_2_j0eq_Adm0[OF MR MP Brne j1gt' Adm0]
+    by (simp add: j0'_def J1_def)
+  have j0eq: "j0' = parent M 0 (Lng M - 1)"
+    using j0eqJ by (simp add: transJ0_def transJ1_def)
+  have gA: "TrMax M = 0 \<or> j0' < TrMax M"
+    using m_8_2_gA_Adm0[OF MR MP Brne j1gt' Adm0] by (simp add: j0'_def J1_def)
+  have notVI: "\<not> transCondVI M" by (rule m_8_2_notVI_Adm0[OF MR MP Brne j1gt' Adm0])
+  \<comment> \<open>case-split on the transC2 sub-case\<close>
+  show ?thesis
+  proof (cases "transCondI M \<or> transCondIII M \<or> transCondV M")
+    case condA: True
+    \<comment> \<open>clause (1): use the keystone clause-(1) packaging\<close>
+    have key:
+      "FirstNodes M ! (Lng (Br M) - 1) = Lng M - 1
+       \<and> (TrMax M = 0 \<or> Joints M ! (Lng (Br M) - 1) < TrMax M)
+       \<and> (entry M 0 (FirstNodes M ! (Lng (Br M) - 1))
+            = entry M 1 (FirstNodes M ! (Lng (Br M) - 1))
+          \<or> adm M (Joints M ! (Lng (Br M) - 1)))
+       \<and> (\<exists>!t1. Trans (Pred M) = Dpt (enat (entry M 1 0)) t1
+             \<and> Trans M = Dpt (enat (entry M 1 0))
+                           (t1 +\<^sub>B Dpt (enat (entry M 1 (FirstNodes M ! (Lng (Br M) - 1)))) 0\<^sub>B))"
+    proof (rule m_8_2_subexpr_component_Pred_Adm0_clause1_keystone
+             [OF MR MP j1gt' Adm0 condA])
+      show "FirstNodes M ! (Lng (Br M) - 1) = Lng M - 1"
+        using j1eq by (simp add: j1'_def J1_def j1_def)
+    next
+      show "TrMax M = 0 \<or> Joints M ! (Lng (Br M) - 1) < TrMax M"
+        using gA by (simp add: j0'_def J1_def)
+    next
+      show "entry M 0 (FirstNodes M ! (Lng (Br M) - 1))
+              = entry M 1 (FirstNodes M ! (Lng (Br M) - 1))
+            \<or> adm M (Joints M ! (Lng (Br M) - 1))"
+        using gB by (simp add: j0'_def j1'_def J1_def)
+    qed
+    \<comment> \<open>rewrite the packaging back to \<open>j\<^sub>0'\<close> / \<open>j\<^sub>1'\<close> and inject as clause (1)\<close>
+    have cl1:
+      "j1' = j1 \<and> (TrMax M = 0 \<or> j0' < TrMax M)
+        \<and> (entry M 0 j1' = entry M 1 j1' \<or> adm M j0')
+        \<and> (\<exists>!t1. Trans (Pred M) = Dpt (enat (entry M 1 0)) t1
+              \<and> Trans M = Dpt (enat (entry M 1 0))
+                            (t1 +\<^sub>B Dpt (enat (entry M 1 j1')) 0\<^sub>B))"
+      unfolding j1'_def j0'_def J1_def j1_def using key by blast
+    thus ?thesis by blast
+  next
+    case notA: False
+    \<comment> \<open>\<open>\<not>(I\<or>III\<or>V)\<close>, \<open>\<not>VI\<close>, \<open>t\<^sub>2 \<noteq> 0\<close>: split on \<open>leftDj0\<close>\<close>
+    show ?thesis
+    proof (cases "bpHeadV (PB (transT2 M) ! (Lng (PB (transT2 M)) - 1))
+                    = enat (entry M 1 (transJ0 M))")
+      case isleft: True
+      \<comment> \<open>clause (4)\<close>
+      have cl4:
+        "\<exists>!t123. Trans (Pred M)
+              = Dpt (enat (entry M 1 0))
+                  (fst t123 +\<^sub>B Dpt (enat (entry M 1 (transJ0 M))) (fst (snd t123)))
+            \<and> Trans M
+              = Dpt (enat (entry M 1 0))
+                  (fst t123 +\<^sub>B Dpt (enat (entry M 1 (transJ0 M))) (snd (snd t123)))"
+        by (rule m_8_2_subexpr_component_Pred_Adm0_clause4_core
+                  [OF MR MP j1gt' Adm0 notA notVI t2ne isleft])
+      have cl4j0: "\<exists>!t123. Trans (Pred M)
+              = Dpt (enat (entry M 1 0))
+                  (fst t123 +\<^sub>B Dpt (enat (entry M 1 j0')) (fst (snd t123)))
+            \<and> Trans M
+              = Dpt (enat (entry M 1 0))
+                  (fst t123 +\<^sub>B Dpt (enat (entry M 1 j0')) (snd (snd t123)))"
+        using cl4 unfolding j0eqJ .
+      thus ?thesis by blast
+    next
+      case notleft: False
+      \<comment> \<open>clause (2)\<close>
+      have nl: "bpHeadV (PB (transT2 M) ! (Lng (PB (transT2 M)) - 1))
+                  \<noteq> enat (entry M 1 (transJ0 M))" using notleft by simp
+      have cl2:
+        "\<exists>!t12. Trans (Pred M) = Dpt (enat (entry M 1 0)) (fst t12)
+              \<and> Trans M = Dpt (enat (entry M 1 0))
+                            (fst t12 +\<^sub>B Dpt (enat (entry M 1 (transJ0 M))) (snd t12))"
+        by (rule m_8_2_subexpr_component_Pred_Adm0_clause2_core
+                  [OF MR MP j1gt' Adm0 notA notVI t2ne nl])
+      have cl2j0:
+        "\<exists>!t12. Trans (Pred M) = Dpt (enat (entry M 1 0)) (fst t12)
+              \<and> Trans M = Dpt (enat (entry M 1 0))
+                            (fst t12 +\<^sub>B Dpt (enat (entry M 1 j0')) (snd t12))"
+        using cl2 unfolding j0eqJ .
+      have cl2':
+        "j1' = j1 \<and> entry M 0 j1' > entry M 1 j1' \<and> \<not> adm M j0'
+          \<and> (\<exists>!t12. Trans (Pred M) = Dpt (enat (entry M 1 0)) (fst t12)
+              \<and> Trans M = Dpt (enat (entry M 1 0))
+                            (fst t12 +\<^sub>B Dpt (enat (entry M 1 j0')) (snd t12)))"
+        using j1eq e0gt nadmj0 cl2j0 by blast
+      thus ?thesis by blast
+    qed
+  qed
+qed
+
 end
