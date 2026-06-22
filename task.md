@@ -49,7 +49,7 @@
       - 🚨 命題（条件 (I) の下での $\textrm{Trans}$ と基本列の交換関係）
       - ✅ 補題（公差 $(1,1)$ のペア数列の $\textrm{Trans}$ の基本性質）〔`m_8_1_diagSeq_Trans`〕
       - ✅ 系（$\textrm{Pred}$ が公差 $(1,1)$ のペア数列の $\textrm{Trans}$ の基本性質）〔`m_8_1_Pred_diagSeq_Trans`〕
-      - 🚨🤖 補題（条件 (I) か (III) の下での $c_1$ 前後の具体表示）〔part(1)(2)(3-1)(3-2)(5)✅+`Mark_gap_peel`✅/残=(4-1)(4-2)=`Mark_right_nest`(+B成分suffix-nest engine,flatBT-scb不適,583/583)+ex1_Dpt(A20/A21)〕
+      - 🚨🤖 補題（条件 (I) か (III) の下での $c_1$ 前後の具体表示）〔part(1)(2)(3-1)(3-2)(5)✅+`Mark_gap_peel`✅/残=(4-1)(4-2)=(4-1)幾何限定の右nest engine(広義Mark_right_nestは偽r11、b=最終列の親+[RP]suffix)+ex1_Dpt(A20/A21)〕
     - 🚨 §8.2 強単項性
       - ✅ 命題（標準形の直系先祖による切片の簡約化の強単項性）〔`m_8_2_standard_slice_Red_strongmono`〕
       - 🚨 命題（条件 (II) か (IV) の下での終切片と $\textrm{Trans}$ の関係）
