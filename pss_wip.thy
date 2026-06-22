@@ -20150,4 +20150,414 @@ proof (intro impI)
     using peel e1jm1' c1eq by simp
 qed
 
+
+
+
+text \<open>§8.2 keystone, value core of the Adm-zero \<open>\<not>leftDj0\<close> sub-case (clause (2)
+  shape).  In this branch \<open>transJm1 M = 0\<close>, so @{thm [source] Trans_eq_transC2_Adm0}
+  gives \<open>Trans M = transC2 M\<close>, and (as in clause (1)) \<open>transC1 M = Trans (Pred M)\<close>
+  is a single principal \<open>D\<^bsub>v\<^esub> t\<^sub>2\<close> with \<open>v = entry M 1 0\<close>.  Under
+  \<open>\<not>(I\<or>III\<or>V) \<and> \<not>VI \<and> t\<^sub>2 \<noteq> 0 \<and> \<not>leftDj0\<close> the \<open>transC2 M\<close> body is
+  \<open>D\<^bsub>v\<^esub>(t\<^sub>2 +\<^sub>B D\<^bsub>M\<^bsub>1,jp\<^esub>\<^esub>(t\<^sub>2 +\<^sub>B D\<^bsub>M\<^bsub>1,j\<^sub>1\<^esub>\<^esub> 0))\<close> with \<open>jp = transJ0 M\<close>, so with
+  \<open>fst t12 := t\<^sub>2\<close> and \<open>snd t12 := t\<^sub>2 +\<^sub>B D\<^bsub>M\<^bsub>1,j\<^sub>1\<^esub>\<^esub> 0\<close> we obtain exactly the clause (2)
+  right-hand side of @{thm [source] p_8_2_subexpr_component_Pred} (taking
+  \<open>j\<^sub>0' = transJ0 M\<close>).  Empirically (trans_model over reduced principal terms,
+  length \<le> 6): the Adm-zero \<open>\<not>leftDj0\<close> sub-case is exactly clause (2) (90 cases).\<close>
+
+lemma m_8_2_subexpr_component_Pred_Adm0_clause2_core:
+  fixes M :: pairseq
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS"
+    and j1gt: "Lng M - 1 > 1"
+    and Adm0: "transJm1 M = 0"
+    and notA: "\<not> (transCondI M \<or> transCondIII M \<or> transCondV M)"
+    and notVI: "\<not> transCondVI M"
+    and t2ne: "transT2 M \<noteq> 0\<^sub>B"
+    and notleft: "bpHeadV (PB (transT2 M) ! (Lng (PB (transT2 M)) - 1))
+                    \<noteq> enat (entry M 1 (transJ0 M))"
+  shows "\<exists>!t12. Trans (Pred M) = Dpt (enat (entry M 1 0)) (fst t12)
+            \<and> Trans M = Dpt (enat (entry M 1 0))
+                          (fst t12 +\<^sub>B Dpt (enat (entry M 1 (transJ0 M))) (snd t12))"
+proof -
+  have mono: "monoT M" using MP by (simp add: PT_PS_def)
+  have L: "1 < Lng M" using j1gt by simp
+  have J1pos: "transJ1 M > 0" using L by (simp add: transJ1_def)
+  \<comment> \<open>\<open>t\<^sub>1 \<noteq> 0\<close>\<close>
+  have predRT: "Pred M \<in> RT_PS" by (rule Pred_RT_PS[OF MR])
+  have predb: "Pred M = butlast M" using L by (simp add: Pred_def)
+  have LP: "Lng (Pred M) = Lng M - 1" using predb by simp
+  have LPgt1: "Lng (Pred M) > 1" using LP j1gt by simp
+  have nzP: "\<not> zeroT (Pred M)" using LPgt1 by (simp add: zeroT_def)
+  have t1ne0: "Trans (Pred M) \<noteq> 0\<^sub>B" using m_7_3_Trans_zeroT[OF predRT] nzP by blast
+  have T1: "transT1 M \<noteq> 0\<^sub>B" using t1ne0 by (simp add: transT1_def)
+  \<comment> \<open>(a) scb-strings collapse: \<open>c\<^sub>1 = Trans (Pred M)\<close>\<close>
+  have c1t1: "transC1 M = transT1 M"
+    using m_7_3_s1_b1_empty[OF MR MP J1pos T1] Adm0 by metis
+  have c1eqTP: "transC1 M = Trans (Pred M)" using c1t1 by (simp add: transT1_def)
+  \<comment> \<open>(b) \<open>c\<^sub>1 = D\<^bsub>v\<^esub> t\<^sub>2\<close>\<close>
+  have pc1: "Lng (PB (transC1 M)) = 1"
+    by (rule transC1_single_principal[OF MR MP J1pos T1])
+  have c1Dpt: "transC1 M = Dpt (transV M) (transT2 M)"
+    using principal_reconstruct[OF pc1] by (simp add: transV_def transT2_def)
+  \<comment> \<open>(c) \<open>v = entry M 1 0\<close>\<close>
+  have hv: "bpHeadV (Trans (Pred M)) = enat (entry (Pred M) 1 0)"
+    using m_7_3_Trans_leftend predRT by blast
+  have e10P: "entry (Pred M) 1 0 = entry M 1 0"
+    using L by (simp add: predb entry_def nth_butlast)
+  have veq: "transV M = enat (entry M 1 0)"
+    using c1eqTP hv e10P by (simp add: transV_def)
+  \<comment> \<open>(d) \<open>Trans (Pred M) = D\<^bsub>entry M 1 0\<^esub> t\<^sub>2\<close>\<close>
+  have TPeq: "Trans (Pred M) = Dpt (enat (entry M 1 0)) (transT2 M)"
+    using c1eqTP c1Dpt veq by simp
+  \<comment> \<open>(e) \<open>Trans M = transC2 M\<close>, expanded in the \<open>\<not>leftDj0\<close> sub-case\<close>
+  have TMc2: "Trans M = transC2 M"
+    by (rule Trans_eq_transC2_Adm0[OF MR MP J1pos T1 Adm0])
+  define t2 where "t2 = transT2 M"
+  define Dj1 where "Dj1 = Dpt (enat (entry M 1 (transJ1 M))) 0\<^sub>B"
+  define JJ1 where "JJ1 = Lng (PB t2) - 1"
+  define pj where "pj = PB t2 ! JJ1"
+  \<comment> \<open>the \<open>transC2\<close> body in the final \<open>else\<close> with \<open>\<not>leftDj0\<close> (verbatim def unfold)\<close>
+  have c2val: "transC2 M
+        = Dpt (transV M)
+            (t2 +\<^sub>B Dpt (enat (entry M 1 (transJ0 M))) (t2 +\<^sub>B Dj1))"
+  proof -
+    have nl: "\<not> (bpHeadV (PB t2 ! (Lng (PB t2) - 1)) = enat (entry M 1 (transJ0 M)))"
+      using notleft by (simp add: t2_def)
+    show ?thesis
+      using notA notVI t2ne nl
+      by (simp add: transC2_def Let_def transV_def transT2_def transJ1_def
+                    transJ0_def Dj1_def t2_def JJ1_def pj_def)
+  qed
+  have TMeq: "Trans M = Dpt (enat (entry M 1 0))
+                  (t2 +\<^sub>B Dpt (enat (entry M 1 (transJ0 M))) (t2 +\<^sub>B Dj1))"
+    using TMc2 c2val veq by simp
+  have TPeq': "Trans (Pred M) = Dpt (enat (entry M 1 0)) t2"
+    using TPeq by (simp add: t2_def)
+  \<comment> \<open>existence with \<open>(fst,snd) := (t\<^sub>2, t\<^sub>2 +\<^sub>B Dj1)\<close>, uniqueness from cancellation\<close>
+  show ?thesis
+  proof (rule ex1I[where a="(t2, t2 +\<^sub>B Dj1)"])
+    show "Trans (Pred M) = Dpt (enat (entry M 1 0)) (fst (t2, t2 +\<^sub>B Dj1))
+          \<and> Trans M = Dpt (enat (entry M 1 0))
+                        (fst (t2, t2 +\<^sub>B Dj1)
+                          +\<^sub>B Dpt (enat (entry M 1 (transJ0 M))) (snd (t2, t2 +\<^sub>B Dj1)))"
+      using TPeq' TMeq by simp
+  next
+    fix t12 :: "BT \<times> BT"
+    obtain a b where ab: "t12 = (a, b)" by (cases t12)
+    assume "Trans (Pred M) = Dpt (enat (entry M 1 0)) (fst t12)
+          \<and> Trans M = Dpt (enat (entry M 1 0))
+                        (fst t12 +\<^sub>B Dpt (enat (entry M 1 (transJ0 M))) (snd t12))"
+    hence aeqP: "Trans (Pred M) = Dpt (enat (entry M 1 0)) a"
+      and TMab: "Trans M = Dpt (enat (entry M 1 0))
+                   (a +\<^sub>B Dpt (enat (entry M 1 (transJ0 M))) b)"
+      using ab by simp_all
+    \<comment> \<open>\<open>a = t\<^sub>2\<close> from \<open>Trans (Pred M)\<close>\<close>
+    have aeq: "a = t2"
+      using aeqP TPeq' by simp
+    \<comment> \<open>\<open>b = t\<^sub>2 +\<^sub>B Dj1\<close> from \<open>Trans M\<close> (strip outer \<open>D\<^bsub>v\<^esub>\<close> and the shared prefix \<open>t\<^sub>2\<close>)\<close>
+    have eq1: "Dpt (enat (entry M 1 0))
+                 (t2 +\<^sub>B Dpt (enat (entry M 1 (transJ0 M))) b)
+               = Dpt (enat (entry M 1 0))
+                 (t2 +\<^sub>B Dpt (enat (entry M 1 (transJ0 M))) (t2 +\<^sub>B Dj1))"
+      using TMab aeq TMeq by simp
+    have eq2: "t2 +\<^sub>B Dpt (enat (entry M 1 (transJ0 M))) b
+               = t2 +\<^sub>B Dpt (enat (entry M 1 (transJ0 M))) (t2 +\<^sub>B Dj1)"
+      using eq1 by simp
+    have listeq: "untrm t2 @ [DB (enat (entry M 1 (transJ0 M))) b]
+                = untrm t2 @ [DB (enat (entry M 1 (transJ0 M))) (t2 +\<^sub>B Dj1)]"
+      using eq2 by (cases t2) simp_all
+    have "DB (enat (entry M 1 (transJ0 M))) b
+          = DB (enat (entry M 1 (transJ0 M))) (t2 +\<^sub>B Dj1)"
+      using listeq by (simp add: append_eq_append_conv)
+    hence beq: "b = t2 +\<^sub>B Dj1" by simp
+    show "t12 = (t2, t2 +\<^sub>B Dj1)" using ab aeq beq by simp
+  qed
+qed
+
+
+
+text \<open>§8.2 keystone, value core of the Adm-zero \<open>leftDj0\<close> sub-case (clause (4)
+  shape).  Here \<open>transJm1 M = 0\<close> gives \<open>Trans M = transC2 M\<close> and
+  \<open>transC1 M = Trans (Pred M) = D\<^bsub>v\<^esub> t\<^sub>2\<close> with \<open>v = entry M 1 0\<close>.  Writing
+  \<open>J\<^sup>* = Lng (PB t\<^sub>2) - 1\<close>, \<open>pj = PB t\<^sub>2 ! J\<^sup>*\<close>, the \<open>leftDj0\<close> hypothesis
+  \<open>bpHeadV pj = entry M 1 jp\<close> (\<open>jp = transJ0 M\<close>) makes \<open>pj = D\<^bsub>M\<^bsub>1,jp\<^esub>\<^esub>(bpHeadT pj)\<close>,
+  so \<open>t\<^sub>2 = \<Sigma>(prefix) +\<^sub>B D\<^bsub>M\<^bsub>1,jp\<^esub>\<^esub>(bpHeadT pj)\<close>, and the \<open>transC2 M\<close> body becomes
+  \<open>\<Sigma>(prefix) +\<^sub>B D\<^bsub>M\<^bsub>1,jp\<^esub>\<^esub>(bpHeadT pj +\<^sub>B D\<^bsub>M\<^bsub>1,j\<^sub>1\<^esub>\<^esub> 0)\<close>.  Taking
+  \<open>fst t123 := \<Sigma>(prefix)\<close>, \<open>fst (snd t123) := bpHeadT pj\<close>,
+  \<open>snd (snd t123) := bpHeadT pj +\<^sub>B D\<^bsub>M\<^bsub>1,j\<^sub>1\<^esub>\<^esub> 0\<close> gives exactly the clause (4) shape
+  (index \<open>j\<^sub>0' = transJ0 M\<close>).  Empirically (trans_model, length \<le> 6): the Adm-zero
+  \<open>leftDj0\<close> sub-case is exactly clause (4) (96 cases).\<close>
+
+lemma m_8_2_subexpr_component_Pred_Adm0_clause4_core:
+  fixes M :: pairseq
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS"
+    and j1gt: "Lng M - 1 > 1"
+    and Adm0: "transJm1 M = 0"
+    and notA: "\<not> (transCondI M \<or> transCondIII M \<or> transCondV M)"
+    and notVI: "\<not> transCondVI M"
+    and t2ne: "transT2 M \<noteq> 0\<^sub>B"
+    and isleft: "bpHeadV (PB (transT2 M) ! (Lng (PB (transT2 M)) - 1))
+                    = enat (entry M 1 (transJ0 M))"
+  shows "\<exists>!t123. Trans (Pred M)
+            = Dpt (enat (entry M 1 0))
+                (fst t123 +\<^sub>B Dpt (enat (entry M 1 (transJ0 M))) (fst (snd t123)))
+          \<and> Trans M
+            = Dpt (enat (entry M 1 0))
+                (fst t123 +\<^sub>B Dpt (enat (entry M 1 (transJ0 M))) (snd (snd t123)))"
+proof -
+  have mono: "monoT M" using MP by (simp add: PT_PS_def)
+  have L: "1 < Lng M" using j1gt by simp
+  have J1pos: "transJ1 M > 0" using L by (simp add: transJ1_def)
+  have predRT: "Pred M \<in> RT_PS" by (rule Pred_RT_PS[OF MR])
+  have predb: "Pred M = butlast M" using L by (simp add: Pred_def)
+  have LP: "Lng (Pred M) = Lng M - 1" using predb by simp
+  have LPgt1: "Lng (Pred M) > 1" using LP j1gt by simp
+  have nzP: "\<not> zeroT (Pred M)" using LPgt1 by (simp add: zeroT_def)
+  have t1ne0: "Trans (Pred M) \<noteq> 0\<^sub>B" using m_7_3_Trans_zeroT[OF predRT] nzP by blast
+  have T1: "transT1 M \<noteq> 0\<^sub>B" using t1ne0 by (simp add: transT1_def)
+  have c1t1: "transC1 M = transT1 M"
+    using m_7_3_s1_b1_empty[OF MR MP J1pos T1] Adm0 by metis
+  have c1eqTP: "transC1 M = Trans (Pred M)" using c1t1 by (simp add: transT1_def)
+  have pc1: "Lng (PB (transC1 M)) = 1"
+    by (rule transC1_single_principal[OF MR MP J1pos T1])
+  have c1Dpt: "transC1 M = Dpt (transV M) (transT2 M)"
+    using principal_reconstruct[OF pc1] by (simp add: transV_def transT2_def)
+  have hv: "bpHeadV (Trans (Pred M)) = enat (entry (Pred M) 1 0)"
+    using m_7_3_Trans_leftend predRT by blast
+  have e10P: "entry (Pred M) 1 0 = entry M 1 0"
+    using L by (simp add: predb entry_def nth_butlast)
+  have veq: "transV M = enat (entry M 1 0)"
+    using c1eqTP hv e10P by (simp add: transV_def)
+  have TPeq: "Trans (Pred M) = Dpt (enat (entry M 1 0)) (transT2 M)"
+    using c1eqTP c1Dpt veq by simp
+  have TMc2: "Trans M = transC2 M"
+    by (rule Trans_eq_transC2_Adm0[OF MR MP J1pos T1 Adm0])
+  \<comment> \<open>names matching @{thm [source] transC1_lessBT_transC2}\<close>
+  define t2 where "t2 = transT2 M"
+  define jp where "jp = transJ0 M"
+  define Dj1 where "Dj1 = Dpt (enat (entry M 1 (transJ1 M))) 0\<^sub>B"
+  define J1 where "J1 = Lng (PB t2) - 1"
+  define pj where "pj = PB t2 ! J1"
+  define pref where "pref = SigmaB (take J1 (PB t2))"
+  define u where "u = bpHeadT pj"
+  \<comment> \<open>\<open>t\<^sub>2 \<in> T\<^bsub>B\<^esub>\<close>, last principal splits off\<close>
+  have MT: "M \<in> T_PS" using MP by (simp add: PT_PS_def)
+  have hp: "hasParent M 0 (Lng M - 1)" by (rule monoT_hasParent0_last[OF MT mono L])
+  have mkd: "(Pred M, Adm M (parent M 0 (Lng M - 1))) \<in> Marked"
+    by (rule Marked_Pred_Adm[OF MT L hp])
+  have c1val: "transC1 M = Mark (Pred M) (Adm M (parent M 0 (Lng M - 1)))"
+    by (simp add: transC1_def transJm1_def transJ0_def transJ1_def)
+  have c1TB: "transC1 M \<in> T_B"
+    using m_7_3_Mark_in_T_B[OF predRT mkd] c1val by simp
+  have t2TB: "t2 \<in> T_B"
+    using c1TB unfolding c1Dpt t2_def[symmetric] by (auto simp: T_B_def)
+  have lng_ne: "Lng (PB t2) \<noteq> 0"
+    using m_7_1_term_components[OF t2TB] t2ne by (auto simp: t2_def)
+  have pbne: "PB t2 \<noteq> []" using lng_ne by auto
+  have splitlast: "PB t2 = take J1 (PB t2) @ [pj]"
+  proof -
+    have "take J1 (PB t2) = butlast (PB t2)"
+      by (simp add: J1_def butlast_conv_take)
+    moreover have "pj = last (PB t2)"
+      using pbne by (simp add: pj_def J1_def last_conv_nth)
+    ultimately show ?thesis
+      using append_butlast_last_id[OF pbne] by simp
+  qed
+  have t2split: "t2 = pref +\<^sub>B pj"
+  proof -
+    have "t2 = SigmaB (PB t2)" using m_7_1_term_components[OF t2TB] by (simp add: t2_def)
+    also have "\<dots> = SigmaB (take J1 (PB t2) @ [pj])" using splitlast by simp
+    also have "\<dots> = SigmaB (take J1 (PB t2)) +\<^sub>B pj" by (rule SigmaB_snoc)
+    finally show ?thesis by (simp add: pref_def)
+  qed
+  \<comment> \<open>\<open>pj\<close> is a single principal, \<open>= D\<^bsub>M\<^bsub>1,jp\<^esub>\<^esub> u\<close> (\<open>leftDj0\<close>)\<close>
+  have pjprinc: "Lng (PB pj) = 1"
+  proof -
+    have Jlt: "J1 < length (untrm t2)"
+      using pbne by (simp add: J1_def PB_def)
+    have "pj = (map (\<lambda>p. Trm [p]) (untrm t2)) ! J1" by (simp add: pj_def PB_def)
+    also have "\<dots> = Trm [untrm t2 ! J1]" using Jlt by simp
+    finally show ?thesis by (simp add: PB_def)
+  qed
+  have pjrec: "pj = Dpt (bpHeadV pj) (bpHeadT pj)"
+    by (rule principal_reconstruct[OF pjprinc])
+  have leftfact: "bpHeadV pj = enat (entry M 1 jp)"
+    using isleft by (simp add: pj_def J1_def t2_def jp_def)
+  have pjval: "pj = Dpt (enat (entry M 1 jp)) u"
+    using pjrec leftfact by (simp add: u_def)
+  have t2eq: "t2 = pref +\<^sub>B Dpt (enat (entry M 1 jp)) u"
+    using t2split pjval by simp
+  \<comment> \<open>\<open>transC2 M\<close> body in the \<open>leftDj0\<close> branch\<close>
+  have c2val: "transC2 M
+        = Dpt (transV M)
+            (pref +\<^sub>B Dpt (enat (entry M 1 jp)) (u +\<^sub>B Dj1))"
+  proof -
+    have nl: "bpHeadV (PB t2 ! (Lng (PB t2) - 1)) = enat (entry M 1 (transJ0 M))"
+      using isleft by (simp add: t2_def)
+    show ?thesis
+      using notA notVI t2ne nl
+      by (simp add: transC2_def Let_def transV_def transT2_def transJ1_def
+                    transJ0_def Dj1_def t2_def J1_def pj_def pref_def u_def jp_def)
+  qed
+  have TMeq: "Trans M = Dpt (enat (entry M 1 0))
+                  (pref +\<^sub>B Dpt (enat (entry M 1 jp)) (u +\<^sub>B Dj1))"
+    using TMc2 c2val veq by simp
+  have TPeq': "Trans (Pred M)
+        = Dpt (enat (entry M 1 0)) (pref +\<^sub>B Dpt (enat (entry M 1 jp)) u)"
+    using TPeq t2eq by (simp add: t2_def)
+  \<comment> \<open>existence with \<open>(pref, u, u +\<^sub>B Dj1)\<close>, uniqueness via @{thm [source] ex1_Dpt_addBT_two}\<close>
+  have jpT: "jp = transJ0 M" by (simp add: jp_def)
+  show ?thesis
+  proof (rule ex1I[where a="(pref, u, u +\<^sub>B Dj1)"])
+    show "Trans (Pred M)
+          = Dpt (enat (entry M 1 0))
+              (fst (pref, u, u +\<^sub>B Dj1)
+                +\<^sub>B Dpt (enat (entry M 1 (transJ0 M))) (fst (snd (pref, u, u +\<^sub>B Dj1))))
+        \<and> Trans M
+          = Dpt (enat (entry M 1 0))
+              (fst (pref, u, u +\<^sub>B Dj1)
+                +\<^sub>B Dpt (enat (entry M 1 (transJ0 M))) (snd (snd (pref, u, u +\<^sub>B Dj1))))"
+      using TPeq' TMeq jpT by simp
+  next
+    fix t123 :: "BT \<times> BT \<times> BT"
+    obtain a bc where abc: "t123 = (a, bc)" by (cases t123)
+    obtain b c where bc: "bc = (b, c)" by (cases bc)
+    assume "Trans (Pred M)
+            = Dpt (enat (entry M 1 0))
+                (fst t123 +\<^sub>B Dpt (enat (entry M 1 (transJ0 M))) (fst (snd t123)))
+          \<and> Trans M
+            = Dpt (enat (entry M 1 0))
+                (fst t123 +\<^sub>B Dpt (enat (entry M 1 (transJ0 M))) (snd (snd t123)))"
+    hence eqP: "Trans (Pred M)
+                = Dpt (enat (entry M 1 0))
+                    (a +\<^sub>B Dpt (enat (entry M 1 jp)) b)"
+      and eqM: "Trans M
+                = Dpt (enat (entry M 1 0))
+                    (a +\<^sub>B Dpt (enat (entry M 1 jp)) c)"
+      using abc bc jpT by simp_all
+    \<comment> \<open>\<open>a = pref\<close>, \<open>b = u\<close> from \<open>Trans (Pred M)\<close>\<close>
+    have eP: "Dpt (enat (entry M 1 0)) (a +\<^sub>B Dpt (enat (entry M 1 jp)) b)
+            = Dpt (enat (entry M 1 0)) (pref +\<^sub>B Dpt (enat (entry M 1 jp)) u)"
+      using eqP TPeq' by simp
+    have listP: "untrm a @ [DB (enat (entry M 1 jp)) b]
+               = untrm pref @ [DB (enat (entry M 1 jp)) u]"
+      using eP by (cases a; cases pref) simp_all
+    have aeq: "a = pref" using listP by (cases a; cases pref) (simp_all add: append_eq_append_conv)
+    have beq: "b = u" using listP by (simp add: append_eq_append_conv)
+    \<comment> \<open>\<open>c = u +\<^sub>B Dj1\<close> from \<open>Trans M\<close>\<close>
+    have eM: "Dpt (enat (entry M 1 0)) (a +\<^sub>B Dpt (enat (entry M 1 jp)) c)
+            = Dpt (enat (entry M 1 0)) (pref +\<^sub>B Dpt (enat (entry M 1 jp)) (u +\<^sub>B Dj1))"
+      using eqM TMeq by simp
+    have listM: "untrm pref @ [DB (enat (entry M 1 jp)) c]
+               = untrm pref @ [DB (enat (entry M 1 jp)) (u +\<^sub>B Dj1)]"
+      using eM aeq by (cases pref) simp_all
+    have ceq: "c = u +\<^sub>B Dj1" using listM by (simp add: append_eq_append_conv)
+    show "t123 = (pref, u, u +\<^sub>B Dj1)" using abc bc aeq beq ceq by simp
+  qed
+qed
+
+
+
+text \<open>§8.2 keystone geometric bridge: in the \<open>Adm M (transJ0 M) = 0\<close> regime the
+  last branch is a single column, so the last branch's first node coincides with
+  the last column: \<open>FirstNodes M ! (Lng (Br M) - 1) = Lng M - 1\<close>.  Factored through
+  the hypothesis \<open>parent M 0 (Lng M - 1) \<le> TrMax M\<close> (which the \<open>Adm0\<close> regime supplies).  Proof by contradiction: if
+  the last branch had length \<open>> 1\<close> (\<open>j\<^sub>1' < Lng M - 1\<close>), it is a \<open>monoT\<close> block, so
+  its left end \<open>j\<^sub>1'\<close> row-0-reaches the last column with strictly smaller row-0
+  entry; then @{thm [source] nextR0_largest_below} forces the row-0 parent of the
+  last column to be \<open>\<ge> j\<^sub>1' > TrMax M\<close>, contradicting the hypothesis.  Empirically
+  exact (trans_model, length \<le> 5: 0 violations of \<open>parent \<le> TrMax \<longleftrightarrow> j\<^sub>1' = j\<^sub>1\<close>).\<close>
+
+lemma m_8_2_lastbranch_eq_j1:
+  fixes M :: pairseq
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS" and Brne: "Br M \<noteq> []"
+    and j1gt: "Lng M - 1 > 1"
+    and parTr: "parent M 0 (Lng M - 1) \<le> TrMax M"
+  shows "FirstNodes M ! (Lng (Br M) - 1) = Lng M - 1"
+proof -
+  have MT: "M \<in> T_PS" using MP by (simp add: PT_PS_def)
+  have mono: "monoT M" using MP by (simp add: PT_PS_def)
+  have L: "1 < Lng M" using j1gt by simp
+  define Jstar where "Jstar = Lng (Br M) - 1"
+  have BrL: "Lng (Br M) > 0" using Brne by (cases "Br M") auto
+  have JBr: "Jstar < Lng (Br M)" unfolding Jstar_def using BrL by simp
+  define j1' where "j1' = FirstNodes M ! Jstar"
+  \<comment> \<open>setup facts: \<open>TrMax M < j\<^sub>1' < Lng M\<close>\<close>
+  have j1'lt: "j1' < Lng M" using a1_FN_lt[OF MP JBr] by (simp add: j1'_def)
+  have trj1: "TrMax M < j1'"
+    using m_6_4_FirstNodes_TrMax_Joints[OF MP JBr] by (simp add: j1'_def)
+  have j1'le: "j1' \<le> Lng M - 1" using j1'lt by linarith
+  show "FirstNodes M ! (Lng (Br M) - 1) = Lng M - 1"
+  proof (rule ccontr)
+    assume "FirstNodes M ! (Lng (Br M) - 1) \<noteq> Lng M - 1"
+    hence jne: "j1' \<noteq> Lng M - 1" by (simp add: j1'_def Jstar_def)
+    have j1lt: "j1' < Lng M - 1" using j1'le jne by linarith
+    \<comment> \<open>last branch is the suffix segment \<open>seg M j\<^sub>1' (Lng M - 1)\<close>\<close>
+    have blkeq: "Br M ! Jstar = seg M j1' (Lng M - 1)"
+      using wf21_Br_eq_seg[OF MP Brne] unfolding Jstar_def j1'_def by simp
+    have lastlen: "Lng (Br M ! Jstar) = Suc (Lng M - 1) - j1'"
+      using blkeq by (simp only: Lng_seg)
+    have lastgt1: "1 < Lng (Br M ! Jstar)" using lastlen j1lt L by linarith
+    have notz: "\<not> zeroT (Br M ! Jstar)" using lastgt1 by (simp add: zeroT_def)
+    have lastmono: "monoT (Br M ! Jstar)"
+      using Br_component_nonmulti[OF MP JBr] notz by blast
+    have segmono: "monoT (seg M j1' (Lng M - 1))" using lastmono blkeq by simp
+    \<comment> \<open>\<open>j\<^sub>1'\<close> row-0-reaches the last column\<close>
+    have beL: "Lng M - 1 < Lng M" using L by linarith
+    have le0last: "le0 M j1' (Lng M - 1)"
+      by (rule le0_monoT_seg_into_list[OF MT segmono j1'le order.refl beL])
+    have leRlast: "leR M 0 j1' (Lng M - 1)" using le0last by (simp add: leR_def)
+    \<comment> \<open>strict row-0 entry increase\<close>
+    have entlt: "entry M 0 j1' < entry M 0 (Lng M - 1)"
+      by (rule m_5_1_ancestor_basic_1[OF MT j1lt order.refl leRlast])
+    \<comment> \<open>the row-0 parent of the last column is \<open>\<ge> j\<^sub>1'\<close>\<close>
+    have hp: "hasParent M 0 (Lng M - 1)" by (rule monoT_hasParent0_last[OF MT mono L])
+    have parR: "nextR M 0 (parent M 0 (Lng M - 1)) (Lng M - 1)"
+      using hp unfolding hasParent_def parent_def by (rule theI')
+    have "j1' \<le> parent M 0 (Lng M - 1)"
+      by (rule nextR0_largest_below[OF parR j1lt entlt])
+    thus False using parTr trj1 by linarith
+  qed
+qed
+
+
+
+text \<open>§8.2 keystone clause (1), assembled.  Lifts the value core
+  @{thm [source] m_8_2_subexpr_component_Pred_Adm0_clause1} (stated with
+  \<open>entry M 1 (Lng M - 1)\<close>) to the keystone clause (1) shape (stated with
+  \<open>entry M 1 j\<^sub>1'\<close>) using the geometric bridge \<open>j\<^sub>1' = Lng M - 1\<close>
+  (@{thm [source] m_8_2_lastbranch_eq_j1}), and packages the two clause-(1)
+  guards \<open>gA\<close>, \<open>gB\<close> (supplied as hypotheses; both are empirically exact for the
+  Adm-zero cond-I/III/V sub-case, trans_model length \<le> 5).\<close>
+
+lemma m_8_2_subexpr_component_Pred_Adm0_clause1_keystone:
+  fixes M :: pairseq
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS"
+    and j1gt: "Lng M - 1 > 1"
+    and Adm0: "transJm1 M = 0"
+    and condA: "transCondI M \<or> transCondIII M \<or> transCondV M"
+    and j1eq: "FirstNodes M ! (Lng (Br M) - 1) = Lng M - 1"
+    and gA: "TrMax M = 0 \<or> Joints M ! (Lng (Br M) - 1) < TrMax M"
+    and gB: "entry M 0 (FirstNodes M ! (Lng (Br M) - 1))
+               = entry M 1 (FirstNodes M ! (Lng (Br M) - 1))
+             \<or> adm M (Joints M ! (Lng (Br M) - 1))"
+  shows "FirstNodes M ! (Lng (Br M) - 1) = Lng M - 1
+       \<and> (TrMax M = 0 \<or> Joints M ! (Lng (Br M) - 1) < TrMax M)
+       \<and> (entry M 0 (FirstNodes M ! (Lng (Br M) - 1))
+            = entry M 1 (FirstNodes M ! (Lng (Br M) - 1))
+          \<or> adm M (Joints M ! (Lng (Br M) - 1)))
+       \<and> (\<exists>!t1. Trans (Pred M) = Dpt (enat (entry M 1 0)) t1
+             \<and> Trans M = Dpt (enat (entry M 1 0))
+                           (t1 +\<^sub>B Dpt (enat (entry M 1 (FirstNodes M ! (Lng (Br M) - 1)))) 0\<^sub>B))"
+proof -
+  have core: "\<exists>!t1. Trans (Pred M) = Dpt (enat (entry M 1 0)) t1
+                \<and> Trans M = Dpt (enat (entry M 1 0))
+                              (t1 +\<^sub>B Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B)"
+    by (rule m_8_2_subexpr_component_Pred_Adm0_clause1[OF MR MP j1gt Adm0 condA])
+  have core': "\<exists>!t1. Trans (Pred M) = Dpt (enat (entry M 1 0)) t1
+                \<and> Trans M = Dpt (enat (entry M 1 0))
+                              (t1 +\<^sub>B Dpt (enat (entry M 1 (FirstNodes M ! (Lng (Br M) - 1)))) 0\<^sub>B)"
+    using core j1eq by simp
+  show ?thesis using j1eq gA gB core' by blast
+qed
+
 end
