@@ -19303,4 +19303,119 @@ proof -
   show "Trans (Pred M) \<noteq> 0\<^sub>B" using m_7_3_Trans_zeroT[OF predRT] nzP by blast
 qed
 
+
+
+text \<open>§8.1 c1-around engine, STEP B preliminary: \<open>Mark\<close> telescopes across a
+  non-admissible run.  If every index \<open>k\<close> in \<open>[c..<d]\<close> is \<open>\<ge> 1\<close> and
+  non-admissible (and \<open>d \<le> Lng Q - 1\<close>), then \<open>Mark Q c = Mark Q d\<close>, by iterating
+  the green keystone @{thm [source] Mark_nadm_const}.  Induction on \<open>d\<close>.\<close>
+
+lemma Mark_nadm_telescope:
+  "Q \<in> RT_PS \<longrightarrow> c \<le> d \<longrightarrow> d \<le> Lng Q - 1
+     \<longrightarrow> (\<forall>k. c \<le> k \<and> k < d \<longrightarrow> 1 \<le> k \<and> \<not> adm Q k)
+     \<longrightarrow> Mark Q c = Mark Q d"
+proof (induction d)
+  case 0
+  show ?case by (intro impI) simp
+next
+  case (Suc d)
+  show ?case
+  proof (intro impI)
+    assume QR: "Q \<in> RT_PS" and cle: "c \<le> Suc d" and dub: "Suc d \<le> Lng Q - 1"
+      and run: "\<forall>k. c \<le> k \<and> k < Suc d \<longrightarrow> 1 \<le> k \<and> \<not> adm Q k"
+    show "Mark Q c = Mark Q (Suc d)"
+    proof (cases "c = Suc d")
+      case True
+      thus ?thesis by simp
+    next
+      case False
+      have cled: "c \<le> d" using cle False by simp
+      have dub': "d \<le> Lng Q - 1" using dub by simp
+      have run': "\<forall>k. c \<le> k \<and> k < d \<longrightarrow> 1 \<le> k \<and> \<not> adm Q k"
+        using run by simp
+      have IHd: "Mark Q c = Mark Q d"
+        using Suc.IH QR cled dub' run' by blast
+      \<comment> \<open>final step \<open>Mark Q d = Mark Q (Suc d)\<close> via @{thm [source] Mark_nadm_const}\<close>
+      have dge1: "1 \<le> d" and ndadm: "\<not> adm Q d"
+        using run cled False by auto
+      have dp1: "d + 1 \<le> Lng Q - 1" using dub by simp
+      have stepd: "Mark Q d = Mark Q (d + 1)"
+        using Mark_nadm_const QR dge1 dp1 ndadm by blast
+      show ?thesis using IHd stepd by simp
+    qed
+  qed
+qed
+
+text \<open>§8.2 step engine: in the \<open>monoT\<close>, \<open>t\<^sub>1 \<noteq> 0\<close> branch, when the second
+  basepoint \<open>j\<^sub>-\<^sub>1 = transJm1 M\<close> is \<open>0\<close> the scb-decomposition strings
+  \<open>(s\<^sub>1, b\<^sub>1)\<close> are both empty (@{thm [source] m_7_3_s1_b1_empty}), so \<open>Trans M\<close>
+  collapses to exactly \<open>transC2 M\<close>.  This is the value-level identity behind the
+  keystone's \<open>Adm M j\<^sub>0' = 0\<close> branch (clauses (1)/(2)); it sidesteps the scb
+  surgery entirely.\<close>
+
+lemma Trans_eq_transC2_Adm0:
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS"
+    and J1pos: "transJ1 M > 0" and T1: "transT1 M \<noteq> 0\<^sub>B"
+    and Adm0: "transJm1 M = 0"
+  shows "Trans M = transC2 M"
+proof -
+  have MT: "M \<in> T_PS" using MP by (simp add: PT_PS_def)
+  have mono: "monoT M" using MP by (simp add: PT_PS_def)
+  have L: "1 < Lng M" using J1pos by (simp add: transJ1_def)
+  have Lgt1: "\<not> Lng M \<le> Suc 0" using L by simp
+  have domT: "Trans_Mark_dom (Inl M)" by (rule m_7_3_Trans_welldef[OF MR])
+  have t1ne: "Trans (Pred M) \<noteq> 0\<^sub>B" using T1 by (simp add: transT1_def)
+  \<comment> \<open>bind the def-internal \<open>let\<close> symbols to the \<open>transX\<close> accessors\<close>
+  let ?bv = "entry M 1 (Lng M - 1)"
+  define jp where "jp = parent M 0 (Lng M - 1)"
+  define c1 where "c1 = Mark (Pred M) (Adm M jp)"
+  define vv where "vv = bpHeadV c1"
+  define tt2 where "tt2 = bpHeadT c1"
+  define JJ1 where "JJ1 = Lng (PB tt2) - 1"
+  define pj where "pj = PB tt2 ! JJ1"
+  define ldj where "ldj = (bpHeadV pj = enat (entry M 1 jp))"
+  define tt3 where "tt3 = (if ldj then SigmaB (take JJ1 (PB tt2)) else tt2)"
+  define tt4 where "tt4 = (if ldj then bpHeadT pj else tt2)"
+  define c2 where "c2 = (if transCondI M \<or> transCondIII M \<or> transCondV M
+                         then Dpt vv (tt2 +\<^sub>B Dpt (enat ?bv) 0\<^sub>B)
+                         else if transCondVI M
+                         then Dpt vv (Dpt (enat ?bv) 0\<^sub>B)
+                         else if tt2 = 0\<^sub>B
+                         then Dpt vv (Dpt (enat (entry M 1 jp)) (Dpt (enat ?bv) 0\<^sub>B))
+                         else Dpt vv (tt3 +\<^sub>B Dpt (enat (entry M 1 jp))
+                                            (tt4 +\<^sub>B Dpt (enat ?bv) 0\<^sub>B)))"
+  define sb1 where "sb1 = (SOME sb. scb_decomp (Trans (Pred M)) (fst sb) (flatBT c1) (snd sb))"
+  have trans_val: "Trans M = unflatBT (fst sb1 @ flatBT c2 @ snd sb1)"
+    using Trans.psimps[OF domT] MR Lgt1 mono t1ne
+    unfolding Let_def jp_def[symmetric] c1_def[symmetric] vv_def[symmetric]
+              tt2_def[symmetric] JJ1_def[symmetric] pj_def[symmetric]
+              ldj_def[symmetric] tt3_def[symmetric] tt4_def[symmetric]
+              c2_def[symmetric] sb1_def[symmetric]
+    by simp
+  \<comment> \<open>identify \<open>c2\<close> with \<open>transC2 M\<close> (verbatim copies of the \<open>let\<close> bindings)\<close>
+  have jpT: "jp = transJ0 M" by (simp add: jp_def transJ0_def transJ1_def)
+  have c1T: "c1 = transC1 M" by (simp add: c1_def transC1_def transJm1_def jpT)
+  have vvT: "vv = transV M" by (simp add: vv_def transV_def c1T)
+  have tt2T: "tt2 = transT2 M" by (simp add: tt2_def transT2_def c1T)
+  have JJ1T: "JJ1 = Lng (PB (transT2 M)) - 1" by (simp add: JJ1_def tt2T)
+  have pjT: "pj = PB (transT2 M) ! (Lng (PB (transT2 M)) - 1)"
+    by (simp add: pj_def tt2T JJ1T)
+  have ldjT: "ldj = (bpHeadV (PB (transT2 M) ! (Lng (PB (transT2 M)) - 1))
+                       = enat (entry M 1 (transJ0 M)))"
+    by (simp add: ldj_def pjT jpT)
+  have c2T: "c2 = transC2 M"
+    by (simp add: c2_def transC2_def Let_def vvT tt2T jpT
+                  transV_def transT2_def transJ1_def
+                  tt3_def tt4_def ldjT pjT JJ1T)
+  \<comment> \<open>the scb-strings are empty when \<open>j\<^sub>-\<^sub>1 = 0\<close>\<close>
+  have sb1T: "sb1 = (SOME sb. scb_decomp (transT1 M) (fst sb) (flatBT (transC1 M)) (snd sb))"
+    by (simp add: sb1_def c1T transT1_def)
+  have empty: "fst sb1 = [] \<and> transC1 M = transT1 M \<and> snd sb1 = []"
+    using m_7_3_s1_b1_empty[OF MR MP J1pos T1] Adm0 sb1T by metis
+  have fe: "fst sb1 = []" and be: "snd sb1 = []" using empty by simp_all
+  have "Trans M = unflatBT (flatBT (transC2 M))" using trans_val fe be c2T by simp
+  thus ?thesis by (simp add: unflatBT_flat)
+qed
+
+
 end
