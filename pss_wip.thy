@@ -19500,4 +19500,654 @@ proof -
   qed
 qed
 
+
+
+text \<open>§8.1 c1-around STEP 1 support: \<open>Adm N j = 0\<close> when every index in \<open>1..j\<close> is
+  non-admissible (the only admissible index \<open>\<le> j\<close> is \<open>0\<close>).\<close>
+
+lemma Adm_eq_0_of_nadm_below:
+  assumes nadm: "\<And>k. 1 \<le> k \<Longrightarrow> k \<le> j \<Longrightarrow> \<not> adm N k"
+  shows "Adm N j = 0"
+proof (cases "adm N j")
+  case True
+  \<comment> \<open>only possible if \<open>j = 0\<close> (otherwise \<open>nadm\<close> at \<open>j\<close>)\<close>
+  have "j = 0" using True nadm[of j] by (cases "j = 0") auto
+  thus ?thesis using True by (simp add: Adm_def)
+next
+  case False
+  have set_eq: "{j'. adm N j' \<and> j' < j} = {0}"
+  proof
+    show "{j'. adm N j' \<and> j' < j} \<subseteq> {0}"
+    proof
+      fix x assume "x \<in> {j'. adm N j' \<and> j' < j}"
+      hence ax: "adm N x" and xlt: "x < j" by auto
+      show "x \<in> {0}"
+      proof (cases "x = 0")
+        case True thus ?thesis by simp
+      next
+        case False
+        hence "1 \<le> x" by simp
+        moreover have "x \<le> j" using xlt by simp
+        ultimately have "\<not> adm N x" by (rule nadm)
+        thus ?thesis using ax by simp
+      qed
+    qed
+    show "{0} \<subseteq> {j'. adm N j' \<and> j' < j}"
+    proof
+      fix x assume "x \<in> {0::nat}"
+      hence x0: "x = 0" by simp
+      have adm0: "adm N 0" by (simp add: adm_def nadm_def nextR_def nextrel1_def)
+      have jpos: "0 < j"
+      proof (rule ccontr)
+        assume "\<not> 0 < j"
+        hence "j = 0" by simp
+        thus False using False adm0 by simp
+      qed
+      show "x \<in> {j'. adm N j' \<and> j' < j}" using x0 adm0 jpos by simp
+    qed
+  qed
+  have "Adm N j = Max {j'. adm N j' \<and> j' < j}" using False by (simp add: Adm_def)
+  also have "\<dots> = Max {0}" using set_eq by simp
+  also have "\<dots> = 0" by simp
+  finally show ?thesis .
+qed
+
+
+text \<open>§8.1 c1-around STEP 1 keystone (2-tower of a gap slice).  For a reduced
+  \<open>N\<close> (\<open>N \<in> RT_PS\<close>) whose first and last columns are marked and every interior
+  column \<open>0 < k < Lng N - 1\<close> is non-admissible, \<open>Trans N\<close> collapses to the two
+  basepoint tower \<open>D\<^bsub>N\<^bsub>1,0\<^esub>\<^esub> (D\<^bsub>N\<^bsub>1,j\<^sub>1\<^esub>\<^esub> 0)\<close>.  Proof by strong \<open>Lng\<close>-induction.
+  \<open>monoT N\<close> holds (column 0 marked); base \<open>Lng N = 2\<close> is the two-column \<open>Trans\<close>.
+  Step \<open>Lng N \<ge> 3\<close>: \<open>transJm1 N = 0\<close> (all of \<open>1..j\<^sub>0\<close> non-admissible), so
+  @{thm [source] Trans_eq_transC2_Adm0} gives \<open>Trans N = transC2 N\<close>; the IH on
+  \<open>Pred N\<close> (same gap structure, last index now \<open>j\<^sub>1 - 1\<close>) evaluates
+  \<open>c\<^sub>1 = Trans (Pred N) = D\<^bsub>N\<^bsub>1,0\<^esub>\<^esub>(D\<^bsub>N\<^bsub>1,j\<^sub>1\<^sub>-\<^sub>1\<^esub>\<^esub> 0)\<close>, hence \<open>v = N\<^bsub>1,0\<^esub>\<close> and
+  \<open>t\<^sub>2 = D\<^bsub>N\<^bsub>1,j\<^sub>1\<^sub>-\<^sub>1\<^esub>\<^esub> 0\<close>; the surviving condition is (VI) (and \<open>t\<^sub>2 = 0\<close> never with
+  conditions (I)/(III)/(V)), collapsing \<open>c\<^sub>2\<close> to the tower.  Empirically exact
+  (1178 gap-slice cases, 0 violations).\<close>
+
+lemma Trans_gap_2tower:
+  "N \<in> RT_PS \<longrightarrow> (N, 0) \<in> Marked \<longrightarrow> (N, Lng N - 1) \<in> Marked
+     \<longrightarrow> 1 < Lng N
+     \<longrightarrow> (\<forall>k. 0 < k \<and> k < Lng N - 1 \<longrightarrow> \<not> adm N k)
+     \<longrightarrow> Trans N = Dpt (enat (entry N 1 0)) (Dpt (enat (entry N 1 (Lng N - 1))) 0\<^sub>B)"
+proof (induction N rule: measure_induct_rule[where f=Lng])
+  case (less N)
+  show ?case
+  proof (intro impI)
+    assume NR: "N \<in> RT_PS" and m0: "(N, 0) \<in> Marked"
+      and mlast: "(N, Lng N - 1) \<in> Marked" and L: "1 < Lng N"
+      and gap: "\<forall>k. 0 < k \<and> k < Lng N - 1 \<longrightarrow> \<not> adm N k"
+    have NT: "N \<in> T_PS" using NR by (simp add: RT_PS_def)
+    have nzN: "\<not> zeroT N" using L by (auto simp: zeroT_def)
+    have mono: "monoT N" using m0 nzN by (simp add: monoT_def Marked_def)
+    have NP: "N \<in> PT_PS" using NT mono by (simp add: PT_PS_def)
+    let ?j1 = "Lng N - 1"
+    show "Trans N = Dpt (enat (entry N 1 0)) (Dpt (enat (entry N 1 ?j1)) 0\<^sub>B)"
+    proof (cases "Lng N = 2")
+      case L2: True
+      show ?thesis
+      proof -
+        have "Trans N = Dpt (enat (entry N 1 0)) (Dpt (enat (entry N 1 1)) 0\<^sub>B)"
+          by (rule m_7_3_twoColumn_Trans[OF NR mono L2])
+        thus ?thesis using L2 by simp
+      qed
+    next
+      case notL2: False
+      have L3: "2 < Lng N" using L notL2 by linarith
+      \<comment> \<open>\<open>Pred N\<close> facts\<close>
+      have predRT: "Pred N \<in> RT_PS" by (rule Pred_RT_PS[OF NR])
+      have predb: "Pred N = butlast N" using L by (simp add: Pred_def)
+      have LP: "Lng (Pred N) = Lng N - 1" using predb by simp
+      have LPlt: "Lng (Pred N) < Lng N" using LP L by simp
+      have LP1: "1 < Lng (Pred N)" using LP L3 by linarith
+      have nzPred: "\<not> zeroT (Pred N)" using LP1 by (auto simp: zeroT_def)
+      have t1ne: "Trans (Pred N) \<noteq> 0\<^sub>B"
+        using m_7_3_Trans_zeroT[OF predRT] nzPred by simp
+      \<comment> \<open>parent of last, and \<open>transJm1 N = 0\<close>\<close>
+      have hp: "hasParent N 0 (Lng N - 1)" by (rule monoT_hasParent0_last[OF NT mono L])
+      let ?jp = "parent N 0 ?j1"
+      have parR: "nextR N 0 ?jp ?j1"
+        using hp unfolding hasParent_def parent_def by (rule theI')
+      have jplt: "?jp < ?j1" using parR by (simp add: nextR_def nextrel0_def)
+      have nadm_below: "\<And>k. 1 \<le> k \<Longrightarrow> k \<le> ?jp \<Longrightarrow> \<not> adm N k"
+      proof -
+        fix k assume k1: "1 \<le> k" and kjp: "k \<le> ?jp"
+        have "0 < k \<and> k < ?j1" using k1 kjp jplt by linarith
+        thus "\<not> adm N k" using gap by blast
+      qed
+      have Adm0: "transJm1 N = 0"
+        using Adm_eq_0_of_nadm_below[OF nadm_below]
+        by (simp add: transJm1_def transJ0_def transJ1_def)
+      \<comment> \<open>\<open>Trans N = transC2 N\<close>\<close>
+      have J1pos: "transJ1 N > 0" using L by (simp add: transJ1_def)
+      have T1: "transT1 N \<noteq> 0\<^sub>B" using t1ne by (simp add: transT1_def)
+      have transC2val: "Trans N = transC2 N"
+        by (rule Trans_eq_transC2_Adm0[OF NR NP J1pos T1 Adm0])
+      \<comment> \<open>\<open>c\<^sub>1 = Trans (Pred N)\<close> from \<open>transJm1 N = 0\<close> and \<open>(Pred N, 0) \<in> Marked\<close>\<close>
+      have mP0: "(Pred N, 0) \<in> Marked"
+        by (rule Marked_Pred[OF NT L m0]) (use L in linarith)
+      have c1eq: "transC1 N = Trans (Pred N)"
+      proof -
+        have "transC1 N = Mark (Pred N) 0"
+          using Adm0 by (simp add: transC1_def)
+        also have "\<dots> = Trans (Pred N)"
+          using ra_Mark0_eq_Trans mP0 predRT by blast
+        finally show ?thesis .
+      qed
+      \<comment> \<open>IH on \<open>Pred N\<close>: same gap structure, last index \<open>Lng (Pred N) - 1 = j\<^sub>1 - 1\<close>\<close>
+      have mPlast: "(Pred N, Lng (Pred N) - 1) \<in> Marked"
+      proof -
+        have admL: "adm (Pred N) (Lng (Pred N) - 1)" by (rule adm_lastindex)
+        have predPT: "Pred N \<in> T_PS" using predRT by (simp add: RT_PS_def)
+        have jlt: "Lng (Pred N) - 1 < Lng (Pred N)" using LP1 by linarith
+        have lek: "leR (Pred N) 0 (Lng (Pred N) - 1) (Lng (Pred N) - 1)"
+          by (rule leR_refl) (use jlt in auto)
+        show ?thesis using predPT admL lek by (simp add: Marked_def)
+      qed
+      have gapP: "\<forall>k. 0 < k \<and> k < Lng (Pred N) - 1 \<longrightarrow> \<not> adm (Pred N) k"
+      proof (intro allI impI)
+        fix k assume hk: "0 < k \<and> k < Lng (Pred N) - 1"
+        have k0: "0 < k" and kub: "k < Lng (Pred N) - 1" using hk by simp_all
+        have kltN: "k < ?j1 - 1" using kub LP by simp
+        have nadmN: "\<not> adm N k" using gap k0 kltN by simp
+        \<comment> \<open>non-admissibility passes from \<open>N\<close> to \<open>Pred N\<close> at interior \<open>k\<close>\<close>
+        have nadmNk: "nadm N k" using nadmN by (simp add: adm_def)
+        have b0: "k - 1 \<le> Lng N - 2" using kltN LP by linarith
+        have b1: "k \<le> Lng N - 2" using kltN LP by linarith
+        have b2: "k + 1 \<le> Lng N - 2" using kltN LP by linarith
+        have notgt: "\<not> k > Lng N" using kltN LP by linarith
+        have pair: "nextR N 1 (k - 1) k \<and> nextR N 1 k (k + 1)"
+          using nadmNk notgt by (simp add: nadm_def)
+        have pairP: "nextR (Pred N) 1 (k - 1) k \<and> nextR (Pred N) 1 k (k + 1)"
+          using pair nextR1_pred_agree[OF L b0 b1] nextR1_pred_agree[OF L b1 b2]
+          by simp
+        have "\<not> k > Lng (Pred N)" using kub by linarith
+        hence "nadm (Pred N) k" using pairP by (simp add: nadm_def)
+        thus "\<not> adm (Pred N) k" by (simp add: adm_def)
+      qed
+      have ihPred: "Trans (Pred N)
+          = Dpt (enat (entry (Pred N) 1 0))
+                (Dpt (enat (entry (Pred N) 1 (Lng (Pred N) - 1))) 0\<^sub>B)"
+        using less.IH[OF LPlt] predRT mP0 mPlast LP1 gapP by blast
+      \<comment> \<open>row-1 entries of \<open>Pred N\<close> equal those of \<open>N\<close> (\<open>butlast\<close> preserves)\<close>
+      have e1P0: "entry (Pred N) 1 0 = entry N 1 0"
+      proof -
+        have "0 < length (butlast N)" using L by simp
+        thus ?thesis using predb by (simp add: entry_def nth_butlast)
+      qed
+      have e1Plast: "entry (Pred N) 1 (Lng (Pred N) - 1) = entry N 1 (?j1 - 1)"
+      proof -
+        have idx: "Lng (Pred N) - 1 = ?j1 - 1" using LP by simp
+        have "Lng (Pred N) - 1 < length (butlast N)" using LP1 LP by simp
+        thus ?thesis using predb idx by (simp add: entry_def nth_butlast)
+      qed
+      have c1tower: "transC1 N
+          = Dpt (enat (entry N 1 0)) (Dpt (enat (entry N 1 (?j1 - 1))) 0\<^sub>B)"
+        using c1eq ihPred e1P0 e1Plast by simp
+      \<comment> \<open>\<open>v = N\<^bsub>1,0\<^esub>\<close>, \<open>t\<^sub>2 = D\<^bsub>N\<^bsub>1,j\<^sub>1\<^sub>-\<^sub>1\<^esub>\<^esub> 0 \<noteq> 0\<close>\<close>
+      have vval: "transV N = enat (entry N 1 0)"
+        using c1tower by (simp add: transV_def)
+      have t2val: "transT2 N = Dpt (enat (entry N 1 (?j1 - 1))) 0\<^sub>B"
+        using c1tower by (simp add: transT2_def)
+      \<comment> \<open>the last interior index \<open>j\<^sub>1 - 1\<close> is non-admissible, hence is the row-1
+          (and row-0) parent of \<open>j\<^sub>1\<close>; this gives adjacency \<open>j\<^sub>0 + 1 = j\<^sub>1\<close> and
+          condition (VI)\<close>
+      have predidx1: "0 < ?j1 - 1 \<and> ?j1 - 1 < ?j1" using L3 by linarith
+      have nadm_pred: "\<not> adm N (?j1 - 1)" using gap predidx1 by blast
+      have nadmN1: "nadm N (?j1 - 1)" using nadm_pred by (simp add: adm_def)
+      have notgt1: "\<not> ?j1 - 1 > Lng N" using L by linarith
+      have pred_pair: "nextR N 1 (?j1 - 1 - 1) (?j1 - 1) \<and> nextR N 1 (?j1 - 1) (?j1 - 1 + 1)"
+        using nadmN1 notgt1 by (simp add: nadm_def)
+      have jj: "?j1 - 1 + 1 = ?j1" using L by simp
+      have nr1last: "nextR N 1 (?j1 - 1) ?j1" using pred_pair jj by simp
+      have nrel1last: "nextrel1 N (?j1 - 1) ?j1" using nr1last by (simp add: nextR_def)
+      \<comment> \<open>row-1 ancestry gives row-0 ancestry, and adjacency makes it \<open>nextrel0\<close>\<close>
+      have le0last: "le0 N (?j1 - 1) ?j1"
+        using nrel1last by (simp add: nextrel1_def)
+      have sucj1: "?j1 = Suc (?j1 - 1)" using L by simp
+      have nrel0last: "nextrel0 N (?j1 - 1) ?j1"
+      proof -
+        have "le0 N (?j1 - 1) (Suc (?j1 - 1))" using le0last sucj1 by simp
+        hence "nextrel0 N (?j1 - 1) (Suc (?j1 - 1))" by (rule le0_adjacent_step)
+        thus ?thesis using sucj1 by simp
+      qed
+      \<comment> \<open>uniqueness of the row-0 parent: \<open>parent N 0 j\<^sub>1 = j\<^sub>1 - 1\<close>\<close>
+      have parjp: "?jp = ?j1 - 1"
+      proof -
+        have ex1: "\<exists>!j. nextR N 0 j ?j1" using hp by (simp add: hasParent_def)
+        have wit: "nextR N 0 (?j1 - 1) ?j1" using nrel0last by (simp add: nextR_def)
+        show ?thesis unfolding parent_def using the1_equality[OF ex1 wit] .
+      qed
+      have adj: "?jp + 1 = ?j1" using parjp L by simp
+      \<comment> \<open>RedCondA on the row-1 parent gives \<open>N\<^bsub>1,j\<^sub>1\<^sub>-\<^sub>1\<^esub> + 1 = N\<^bsub>1,j\<^sub>1\<^esub>\<close>\<close>
+      have condA: "RedCondA N" using m_6_6_reduced_iff_cond[OF NT] NR by auto
+      have wit1: "nextR N 1 (?j1 - 1) ?j1" by (rule nr1last)
+      have uniq1: "\<And>j. nextR N 1 j ?j1 \<Longrightarrow> j = ?j1 - 1"
+      proof -
+        fix j assume nj: "nextR N 1 j ?j1"
+        hence nrel: "nextrel1 N j ?j1" by (simp add: nextR_def)
+        show "j = ?j1 - 1"
+        proof (rule ccontr)
+          assume jne: "j \<noteq> ?j1 - 1"
+          have jlt: "j < ?j1" using nrel by (simp add: nextrel1_def)
+          have jlt1: "j < ?j1 - 1" using jlt jne by linarith
+          \<comment> \<open>\<open>j\<^sub>1 - 1\<close> lies strictly between \<open>j\<close> and \<open>j\<^sub>1\<close> with \<open>le0 N (j\<^sub>1-1) j\<^sub>1\<close>,\<close>
+          \<comment> \<open>so the valley clause forces \<open>N\<^bsub>1,j\<^sub>1\<^sub>-\<^sub>1\<^esub> \<ge> N\<^bsub>1,j\<^sub>1\<^esub>\<close>, contradicting \<open>nextrel1\<close>\<close>
+          have between: "j < ?j1 - 1 \<and> le0 N (?j1 - 1) ?j1" using jlt1 le0last by simp
+          have ge: "entry N 1 (?j1 - 1) \<ge> entry N 1 ?j1"
+            using nrel between by (simp add: nextrel1_def)
+          have lt: "entry N 1 (?j1 - 1) < entry N 1 ?j1"
+            using nrel1last by (simp add: nextrel1_def)
+          show False using ge lt by simp
+        qed
+      qed
+      have ex1row1: "\<exists>!j. nextR N 1 j ?j1"
+      proof (rule ex1I)
+        show "nextR N 1 (?j1 - 1) ?j1" by (rule wit1)
+      next
+        fix j assume "nextR N 1 j ?j1" thus "j = ?j1 - 1" by (rule uniq1)
+      qed
+      have hp1: "hasParent N 1 ?j1" unfolding hasParent_def by (rule ex1row1)
+      have par1: "parent N 1 ?j1 = ?j1 - 1"
+        unfolding parent_def by (rule the1_equality[OF ex1row1 wit1])
+      have stepA: "entry N 1 (parent N 1 ?j1) + 1 = entry N 1 ?j1"
+        using condA[unfolded RedCondA_def, rule_format, of 1 ?j1] hp1 by simp
+      have vp1: "entry N 1 (?j1 - 1) + 1 = entry N 1 ?j1" using stepA par1 by simp
+      have bpos: "entry N 1 ?j1 > 0" using vp1 by linarith
+      \<comment> \<open>condition (VI) holds\<close>
+      have condVI: "transCondVI N"
+        unfolding transCondVI_def transJ0_def transJ1_def
+        using bpos vp1 parjp adj by simp
+      \<comment> \<open>\<open>transC2 N\<close> collapses to the two-basepoint tower\<close>
+      have c2tower: "transC2 N = Dpt (transV N) (Dpt (enat (entry N 1 ?j1)) 0\<^sub>B)"
+      proof -
+        have notIIIV: "\<not> (transCondI N \<or> transCondIII N \<or> transCondV N)"
+          using condVI by (auto simp: transCondI_def transCondIII_def transCondV_def
+                                       transCondVI_def transJ0_def transJ1_def)
+        show ?thesis
+          unfolding transC2_def Let_def transJ1_def
+          using notIIIV condVI by simp
+      qed
+      show ?thesis using transC2val c2tower vval by simp
+    qed
+  qed
+qed
+
+
+text \<open>§8.1 c1-around STEP 1 (rightmost gap peel).  For \<open>Q \<in> RT_PS\<close> with a marked
+  column \<open>a\<close>, the rightmost marked column \<open>b = Lng Q - 1\<close>, \<open>a < b\<close>, and every
+  index in the gap \<open>a < k < b\<close> non-admissible, \<open>Mark Q a = D\<^bsub>Q\<^bsub>1,a\<^esub>\<^esub> (Mark Q b)\<close>.
+  The interior @{thm [source] Mark_nest_common_marked} transport drops the
+  rightmost \<open>b\<close>; instead value-ize via @{thm [source] m_7_4_Mark_Trans_repr}
+  (\<open>Mark Q a = Trans (seg Q a (Lng Q - 1))\<close>), reduce the slice
+  (@{thm [source] Trans_slice_eq_Red}), and apply @{thm [source] Trans_gap_2tower}
+  to \<open>N = Red (seg Q a (Lng Q - 1))\<close> (which inherits the end-marked /
+  interior-non-admissible structure through the \<open>IncrFirst\<close> slice bridge);
+  \<open>Mark Q b\<close> is the rightmost basepoint @{thm [source] m_7_3_Mark_rightmost1}.\<close>
+
+lemma Mark_gap_rightmost_peel:
+  assumes QR: "Q \<in> RT_PS"
+    and ma: "(Q, a) \<in> Marked" and mb: "(Q, b) \<in> Marked"
+    and bj1: "b = Lng Q - 1" and ab: "a < b"
+    and gap: "\<forall>k. a < k \<and> k < b \<longrightarrow> \<not> adm Q k"
+  shows "Mark Q a = Dpt (enat (entry Q 1 a)) (Mark Q b)"
+proof -
+  have QT: "Q \<in> T_PS" using QR by (simp add: RT_PS_def)
+  have L: "1 < Lng Q" using ab bj1 by linarith
+  let ?j1 = "Lng Q - 1"
+  have alt: "a < ?j1" using ab bj1 by simp
+  have nzQ: "\<not> zeroT Q" using L by (auto simp: zeroT_def)
+  \<comment> \<open>\<open>Mark Q b\<close> is the rightmost basepoint\<close>
+  have markb: "Mark Q b = Dpt (enat (entry Q 1 b)) 0\<^sub>B"
+    using m_7_3_Mark_rightmost1[OF mb QR nzQ] bj1 by simp
+  \<comment> \<open>\<open>Mark Q a = Trans (seg Q a (Lng Q - 1))\<close>\<close>
+  have reprA: "Mark Q a = Trans (seg Q a ?j1)"
+    by (rule m_7_4_Mark_Trans_repr[OF ma QR alt])
+  \<comment> \<open>slice facts\<close>
+  have leMa: "leR Q 0 a ?j1" using ma by (simp add: Marked_def)
+  have j1le: "?j1 \<le> Lng Q - 1" by simp
+  let ?S = "seg Q a ?j1"  let ?N = "Red ?S"
+  let ?k = "entry Q 0 a - entry Q 1 a"
+  have transSeqRed: "Trans ?S = Trans ?N"
+    by (rule Trans_slice_eq_Red[OF QR alt j1le leMa])
+  have anc: "Red ?N = ?N \<and> monoT ?N \<and> ?S = (IncrFirst ^^ ?k) ?N"
+    by (rule m_6_6_ancestor_slice_Red_IncrFirst[OF QR alt j1le leMa])
+  have monoN: "monoT ?N" using anc by simp
+  have segIF: "?S = (IncrFirst ^^ ?k) ?N" using anc by simp
+  have NR: "?N \<in> RT_PS" using slice_Red_in_RT_PS[OF QR alt j1le leMa] by simp
+  have NT: "?N \<in> T_PS" using NR by (simp add: RT_PS_def)
+  have LS: "Lng ?S = Suc ?j1 - a" using alt by (simp add: seg_def)
+  have LN: "Lng ?N = Lng ?S"
+    using arg_cong[OF segIF, of Lng] by (simp add: Lng_funpow_IncrFirst)
+  have LNval: "Lng ?N = Suc ?j1 - a" using LN LS by simp
+  have LN1: "1 < Lng ?N" using LNval alt by simp
+  \<comment> \<open>endpoints of \<open>N\<close> are marked\<close>
+  have N0M: "(?N, 0) \<in> Marked"
+  proof -
+    have adm0: "adm ?N 0" by (simp add: adm_def nadm_def nextR_def nextrel1_def)
+    have le00: "leR ?N 0 0 (Lng ?N - 1)" using monoN by (simp add: monoT_def)
+    show ?thesis using NT adm0 le00 by (simp add: Marked_def)
+  qed
+  have NlastM: "(?N, Lng ?N - 1) \<in> Marked"
+  proof -
+    have admL: "adm ?N (Lng ?N - 1)" by (rule adm_lastindex)
+    have leL: "leR ?N 0 (Lng ?N - 1) (Lng ?N - 1)"
+      by (rule leR_refl) (use LN1 in auto)
+    show ?thesis using NT admL leL by (simp add: Marked_def)
+  qed
+  \<comment> \<open>interior of \<open>N\<close> is non-admissible: \<open>adm\<close> is \<open>IncrFirst\<close>-invariant, and the
+      slice bridge maps \<open>adm (seg Q a j\<^sub>1) k \<leftrightarrow> adm Q (a + k)\<close> on the interior\<close>
+  have gapN: "\<forall>k. 0 < k \<and> k < Lng ?N - 1 \<longrightarrow> \<not> adm ?N k"
+  proof (intro allI impI)
+    fix k assume hk: "0 < k \<and> k < Lng ?N - 1"
+    have k0: "0 < k" and kub: "k < Lng ?N - 1" using hk by simp_all
+    have kSlt: "k < Lng ?S" using kub LN by simp
+    have admNS: "adm ?N k = adm ?S k"
+      using segIF adm_funpow_IncrFirst_eq[of ?k ?N k] by simp
+    \<comment> \<open>\<open>nadm\<close> on the slice from \<open>nadm Q (a + k)\<close> via the row-1 bridge\<close>
+    have akub: "a + k < ?j1" using kub LN LS by linarith
+    have akint: "a < a + k \<and> a + k < b" using k0 akub bj1 by simp
+    have nadmQ: "\<not> adm Q (a + k)" using gap akint by blast
+    have admSeq: "adm ?S k = adm Q (a + k)"
+    proof -
+      have eqv: "nadm ?S k = nadm Q (a + k)"
+      proof -
+        have kk: "k < Lng ?S" using kSlt .
+        have akL: "a + k < Lng Q" using akub L by linarith
+        \<comment> \<open>both \<open>k - 1, k, k + 1\<close> are valid slice indices\<close>
+        have j1ltL: "?j1 < Lng Q" using L by linarith
+        have km1S: "k - 1 < Lng ?S" using kSlt by linarith
+        have kp1S: "k + 1 < Lng ?S" using kub LN LS alt by linarith
+        have b1: "nextR ?S 1 (k - 1) k = nextR Q 1 (a + (k - 1)) (a + k)"
+          using adm_nextrel1_seg[OF j1ltL km1S kk]
+          by (simp add: nextR_def)
+        have b2: "nextR ?S 1 k (k + 1) = nextR Q 1 (a + k) (a + (k + 1))"
+          using adm_nextrel1_seg[OF j1ltL kk kp1S]
+          by (simp add: nextR_def)
+        have e1: "a + (k - 1) = a + k - 1" using k0 by simp
+        have e2: "a + (k + 1) = a + k + 1" by simp
+        have ngtS: "\<not> k > Lng ?S" using kSlt by simp
+        have ngtQ: "\<not> a + k > Lng Q" using akL by simp
+        show ?thesis
+          unfolding nadm_def using b1 b2 e1 e2 ngtS ngtQ by simp
+      qed
+      thus ?thesis by (simp add: adm_def)
+    qed
+    have "adm ?N k = adm Q (a + k)" using admNS admSeq by simp
+    thus "\<not> adm ?N k" using nadmQ by simp
+  qed
+  \<comment> \<open>apply the 2-tower keystone\<close>
+  have tower: "Trans ?N
+      = Dpt (enat (entry ?N 1 0)) (Dpt (enat (entry ?N 1 (Lng ?N - 1))) 0\<^sub>B)"
+    using Trans_gap_2tower NR N0M NlastM LN1 gapN by blast
+  \<comment> \<open>row-1 entries of \<open>N\<close> equal those of \<open>Q\<close> at \<open>a\<close> / \<open>b\<close>\<close>
+  have e1N0: "entry ?N 1 0 = entry Q 1 a"
+  proof -
+    have a1: "entry ?S 1 0 = entry ((IncrFirst ^^ ?k) ?N) 1 0" using segIF by simp
+    have a2: "entry ((IncrFirst ^^ ?k) ?N) 1 0 = entry ?N 1 0"
+      by (rule entry_funpow_IncrFirst1) (use LN1 in linarith)
+    have a3: "entry ?S 1 0 = entry Q 1 a"
+      using entry_seg[of 0 Q a ?j1 1] LS alt by simp
+    show ?thesis using a1 a2 a3 by simp
+  qed
+  have e1Nlast: "entry ?N 1 (Lng ?N - 1) = entry Q 1 b"
+  proof -
+    have idx: "Lng ?N - 1 = ?j1 - a" using LNval by simp
+    have lt: "Lng ?N - 1 < Lng ?S" using LN1 LN by linarith
+    have a1: "entry ?S 1 (Lng ?N - 1) = entry ((IncrFirst ^^ ?k) ?N) 1 (Lng ?N - 1)"
+      using segIF by simp
+    have a2: "entry ((IncrFirst ^^ ?k) ?N) 1 (Lng ?N - 1) = entry ?N 1 (Lng ?N - 1)"
+      by (rule entry_funpow_IncrFirst1) (use LN1 in linarith)
+    have a3: "entry ?S 1 (Lng ?N - 1) = entry Q 1 (a + (?j1 - a))"
+      using entry_seg[of "Lng ?N - 1" Q a ?j1 1] LS idx lt by simp
+    have a4: "a + (?j1 - a) = b" using alt bj1 by simp
+    show ?thesis using a1 a2 a3 a4 by simp
+  qed
+  have "Trans ?S = Dpt (enat (entry Q 1 a)) (Dpt (enat (entry Q 1 b)) 0\<^sub>B)"
+    using transSeqRed tower e1N0 e1Nlast by simp
+  thus ?thesis using reprA markb by simp
+qed
+
+
+text \<open>§8.1 c1-around STEP 2 (general gap peel).  For \<open>Q \<in> RT_PS\<close> with two marked
+  columns \<open>a < b \<le> Lng Q - 1\<close> and every interior index \<open>a < k < b\<close>
+  non-admissible, \<open>Mark Q a = D\<^bsub>Q\<^bsub>1,a\<^esub>\<^esub> (Mark Q b)\<close>.  Strong \<open>Lng\<close>-induction.  At
+  \<open>b = Lng Q - 1\<close> this is @{thm [source] Mark_gap_rightmost_peel}; for the interior
+  \<open>b < Lng Q - 1\<close> the relation transports from \<open>Pred Q\<close> (IH on the interior /
+  @{thm [source] Mark_gap_rightmost_peel} on \<open>Pred Q\<close> when \<open>b\<close> becomes its
+  rightmost) via the common scb-position @{thm [source] Mark_nest_common_marked}
+  (same engine as @{thm [source] Mark_adjacent_form_aux}).\<close>
+
+lemma Mark_gap_peel:
+  "Q \<in> RT_PS \<longrightarrow> (\<forall>a b. (Q, a) \<in> Marked \<longrightarrow> (Q, b) \<in> Marked
+       \<longrightarrow> a < b \<longrightarrow> b \<le> Lng Q - 1
+       \<longrightarrow> (\<forall>k. a < k \<and> k < b \<longrightarrow> \<not> adm Q k)
+       \<longrightarrow> Mark Q a = Dpt (enat (entry Q 1 a)) (Mark Q b))"
+proof (induction Q rule: measure_induct_rule[where f=Lng])
+  case (less Q)
+  show ?case
+  proof (intro impI allI)
+    fix a b
+    assume QR: "Q \<in> RT_PS" and ma: "(Q, a) \<in> Marked" and mb: "(Q, b) \<in> Marked"
+      and ab: "a < b" and bub: "b \<le> Lng Q - 1"
+      and gap: "\<forall>k. a < k \<and> k < b \<longrightarrow> \<not> adm Q k"
+    have QT: "Q \<in> T_PS" using QR by (simp add: RT_PS_def)
+    have L1: "1 < Lng Q" using ab bub by linarith
+    show "Mark Q a = Dpt (enat (entry Q 1 a)) (Mark Q b)"
+    proof (cases "b = Lng Q - 1")
+      case rm: True
+      show ?thesis by (rule Mark_gap_rightmost_peel[OF QR ma mb rm ab gap])
+    next
+      case interior: False
+      have bint: "b < Lng Q - 1" using bub interior by linarith
+      \<comment> \<open>\<open>Pred Q\<close> facts\<close>
+      have predRT: "Pred Q \<in> RT_PS" by (rule Pred_RT_PS[OF QR])
+      have predb: "Pred Q = butlast Q" using L1 by (simp add: Pred_def)
+      have LP: "Lng (Pred Q) = Lng Q - 1" using predb by simp
+      have LPlt: "Lng (Pred Q) < Lng Q" using LP L1 by simp
+      have aP: "(Pred Q, a) \<in> Marked"
+        by (rule Marked_Pred[OF QT L1 ma]) (use ab bint in linarith)
+      have bP: "(Pred Q, b) \<in> Marked"
+        by (rule Marked_Pred[OF QT L1 mb]) (use bint in linarith)
+      \<comment> \<open>row-1 entry of \<open>a\<close> preserved by \<open>butlast\<close>\<close>
+      have e1a: "entry (Pred Q) 1 a = entry Q 1 a"
+      proof -
+        have "a < length (butlast Q)" using ab bint by simp
+        thus ?thesis using predb by (simp add: entry_def nth_butlast)
+      qed
+      \<comment> \<open>gap non-admissibility passes to \<open>Pred Q\<close> on the interior\<close>
+      have gapP: "\<forall>k. a < k \<and> k < b \<longrightarrow> \<not> adm (Pred Q) k"
+      proof (intro allI impI)
+        fix k assume hk: "a < k \<and> k < b"
+        have ka: "a < k" and kb: "k < b" using hk by simp_all
+        have nadmQ: "\<not> adm Q k" using gap hk by blast
+        have nadmQk: "nadm Q k" using nadmQ by (simp add: adm_def)
+        have kge1: "1 \<le> k" using ka by simp
+        have kj1: "k < Lng Q - 1" using kb bint by linarith
+        have b0: "k - 1 \<le> Lng Q - 2" using kj1 by linarith
+        have b1: "k \<le> Lng Q - 2" using kj1 by linarith
+        have b2: "k + 1 \<le> Lng Q - 2" using kb bint by linarith
+        have notgt: "\<not> k > Lng Q" using kj1 by linarith
+        have pair: "nextR Q 1 (k - 1) k \<and> nextR Q 1 k (k + 1)"
+          using nadmQk notgt by (simp add: nadm_def)
+        have pairP: "nextR (Pred Q) 1 (k - 1) k \<and> nextR (Pred Q) 1 k (k + 1)"
+          using pair nextR1_pred_agree[OF L1 b0 b1] nextR1_pred_agree[OF L1 b1 b2]
+          by simp
+        have "\<not> k > Lng (Pred Q)" using kj1 LP by linarith
+        hence "nadm (Pred Q) k" using pairP by (simp add: nadm_def)
+        thus "\<not> adm (Pred Q) k" by (simp add: adm_def)
+      qed
+      \<comment> \<open>the relation on \<open>Pred Q\<close>: IH (interior) or rightmost peel (boundary)\<close>
+      have relP: "Mark (Pred Q) a = Dpt (enat (entry Q 1 a)) (Mark (Pred Q) b)"
+      proof (cases "b < Lng (Pred Q) - 1")
+        case bPint: True
+        have bub': "b \<le> Lng (Pred Q) - 1" using bPint by linarith
+        have "Mark (Pred Q) a = Dpt (enat (entry (Pred Q) 1 a)) (Mark (Pred Q) b)"
+          using less.IH[OF LPlt] predRT aP bP ab bub' gapP by blast
+        thus ?thesis using e1a by simp
+      next
+        case bPbnd: False
+        have bPrm: "b = Lng (Pred Q) - 1"
+        proof -
+          have "b < Lng (Pred Q)"
+          proof -
+            have "leR (Pred Q) 0 b (Lng (Pred Q) - 1)"
+              using bP by (simp add: Marked_def)
+            thus ?thesis by (simp add: leR_def le0_def)
+          qed
+          thus ?thesis using bPbnd by linarith
+        qed
+        have "Mark (Pred Q) a
+            = Dpt (enat (entry (Pred Q) 1 a)) (Mark (Pred Q) b)"
+          by (rule Mark_gap_rightmost_peel[OF predRT aP bP bPrm ab gapP])
+        thus ?thesis using e1a by simp
+      qed
+      \<comment> \<open>transport \<open>Pred Q\<close> \<open>\<rightarrow>\<close> \<open>Q\<close> by the common scb-position\<close>
+      have nzbP: "isPTB_str (flatBT (Mark (Pred Q) b))"
+      proof -
+        have nzP: "\<not> zeroT (Pred Q)"
+        proof - have "1 < Lng (Pred Q)" using LP L1 bint ab by linarith
+          thus ?thesis by (auto simp: zeroT_def) qed
+        show ?thesis by (rule Mark_marked_isPTB[OF predRT bP nzP])
+      qed
+      have selfbP: "scb_decomp (Mark (Pred Q) b) [] (flatBT (Mark (Pred Q) b)) []"
+        by (rule scb_decomp_self[OF nzbP])
+      have dP: "scb_decomp (Mark (Pred Q) a) [Dsym (enat (entry Q 1 a))]
+                  (flatBT (Mark (Pred Q) b)) []"
+      proof -
+        have "scb_decomp (Dpt (enat (entry Q 1 a)) (Mark (Pred Q) b))
+                 (Dsym (enat (entry Q 1 a)) # []) (flatBT (Mark (Pred Q) b)) []"
+          by (rule scb_Dpt_lift[OF selfbP nzbP])
+        thus ?thesis using relP by simp
+      qed
+      have ale: "a \<le> b" using ab by simp
+      have nest: "\<exists>!sb.
+          scb_decomp (Mark (Pred Q) a) (fst sb) (flatBT (Mark (Pred Q) b)) (snd sb)
+        \<and> scb_decomp (Mark Q a) (fst sb) (flatBT (Mark Q b)) (snd sb)"
+        by (rule Mark_nest_common_marked[OF QR ma mb ale bint])
+      obtain sb where
+        sbP: "scb_decomp (Mark (Pred Q) a) (fst sb) (flatBT (Mark (Pred Q) b)) (snd sb)"
+        and sbQ: "scb_decomp (Mark Q a) (fst sb) (flatBT (Mark Q b)) (snd sb)"
+        using nest by blast
+      have predANZ: "Mark (Pred Q) a \<noteq> Trm []" using relP by simp
+      have sbeq: "fst sb = [Dsym (enat (entry Q 1 a))] \<and> snd sb = []"
+        using m_7_2_scb_unique_sb[OF sbP dP predANZ] by simp
+      have dQ: "scb_decomp (Mark Q a) [Dsym (enat (entry Q 1 a))]
+                  (flatBT (Mark Q b)) []"
+        using sbQ sbeq by simp
+      have flatQ: "flatBT (Mark Q a)
+                 = [Dsym (enat (entry Q 1 a))] @ flatBT (Mark Q b) @ []"
+        using dQ by (simp add: scb_decomp_def)
+      have "flatBT (Mark Q a) = flatBT (Dpt (enat (entry Q 1 a)) (Mark Q b))"
+        using flatQ by simp
+      thus ?thesis by (rule m_7_flatBT_inj)
+    qed
+  qed
+qed
+
+
+text \<open>§8.1 c1-around part (3-1) (content.md 2935).  In the adjacent next-parent
+  sub-case \<open>j\<^sub>0' + 1 = j\<^sub>0\<close>, \<open>Mark (Pred M) j'\<^sub>-\<^sub>1 = D\<^bsub>M\<^bsub>1,j'\<^sub>-\<^sub>1\<^esub>\<^esub> c\<^sub>1\<close>.  Setup
+  mirrors @{thm [source] m_8_1_c1_around_part2}: \<open>j'\<^sub>-\<^sub>1 = Adm M j\<^sub>0'\<close> and \<open>j\<^sub>0\<close>
+  are both marked on \<open>Pred M\<close>, and the gap \<open>j'\<^sub>-\<^sub>1 < k < j\<^sub>0 = j\<^sub>0' + 1\<close> (i.e.
+  \<open>j'\<^sub>-\<^sub>1 < k \<le> j\<^sub>0'\<close>) is non-admissible because \<open>j'\<^sub>-\<^sub>1\<close> is the largest admissible
+  index \<open>\<le> j\<^sub>0'\<close>; @{thm [source] Mark_gap_peel} on \<open>Pred M\<close> closes it
+  (\<open>c\<^sub>1 = Mark (Pred M) j\<^sub>-\<^sub>1 = Mark (Pred M) j\<^sub>0\<close> as \<open>adm M j\<^sub>0\<close> makes \<open>j\<^sub>-\<^sub>1 = j\<^sub>0\<close>).\<close>
+
+lemma m_8_1_c1_around_part3_1:
+  fixes M :: pairseq
+  defines "j1 \<equiv> Lng M - 1"
+  defines "j0 \<equiv> parent M 0 j1"
+  defines "jm1 \<equiv> Adm M j0"
+  defines "c1 \<equiv> Mark (Pred M) jm1"
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS"
+    and admj0: "adm M j0" and j1gt: "j1 > 1"
+    and ge: "entry M 1 j0 \<ge> entry M 1 j1"
+    and np: "nextR M 0 j0' j0"
+  defines "jm1' \<equiv> Adm M j0'"
+  shows "j0' + 1 = j0 \<longrightarrow>
+           (jm1' = j0' \<or> entry M 1 j0' + 1 = entry M 1 j0)
+             \<longrightarrow> Mark (Pred M) jm1' = Dpt (enat (entry M 1 jm1')) c1"
+proof (intro impI)
+  assume adj: "j0' + 1 = j0"
+  assume guard: "jm1' = j0' \<or> entry M 1 j0' + 1 = entry M 1 j0"
+  have MT: "M \<in> T_PS" using MR by (simp add: RT_PS_def)
+  have mono: "monoT M" using MP by (simp add: PT_PS_def)
+  have L: "1 < Lng M" using j1gt by (simp add: j1_def)
+  have j1lt: "j1 < Lng M" using L by (simp add: j1_def)
+  have predRT: "Pred M \<in> RT_PS" by (rule Pred_RT_PS[OF MR])
+  have predb: "Pred M = butlast M" using L by (simp add: Pred_def)
+  have LP: "Lng (Pred M) = Lng M - 1" using predb by simp
+  \<comment> \<open>\<open>j\<^sub>0\<close> is the row-0 parent of \<open>j\<^sub>1\<close>; \<open>j\<^sub>0 < j\<^sub>1\<close>; \<open>j\<^sub>0' < j\<^sub>0\<close>\<close>
+  have hp: "hasParent M 0 j1" using monoT_hasParent0_last[OF MT mono L] j1_def by simp
+  have parj0: "nextR M 0 j0 j1"
+    using hp unfolding hasParent_def j0_def parent_def j1_def by (rule theI')
+  have j0ltj1: "j0 < j1" and j0Mleq: "leR M 0 j0 j1"
+    using poper_nextR_imp_le0[OF parj0] by simp_all
+  have j0'ltj0: "j0' < j0" using poper_nextR_imp_le0[OF np] by simp
+  \<comment> \<open>\<open>jm1 = j0\<close> (since \<open>adm M j0\<close>), so \<open>c\<^sub>1 = Mark (Pred M) j0\<close>\<close>
+  have jm1eq: "jm1 = j0" using admj0 by (simp add: jm1_def Adm_def)
+  have c1eq: "c1 = Mark (Pred M) j0" using jm1eq c1_def by simp
+  \<comment> \<open>part(2) facts: \<open>(Pred M, jm1') \<in> Marked\<close>, \<open>jm1' \<le> j0' < j0\<close>\<close>
+  have aLe: "jm1' \<le> j0'" using jm1'_def by (simp add: adm_Adm_le)
+  have jm1'ltj0: "jm1' < j0" using aLe j0'ltj0 by linarith
+  have part2: "j0' \<le> j1 - 2 \<and> (Pred M, jm1') \<in> Marked
+             \<and> (seg M jm1' (j1 - 1), j0 - jm1') \<in> Marked"
+    using m_8_1_c1_around_part2[OF MR MP admj0[unfolded j0_def j1_def]
+            j1gt[unfolded j1_def] np[unfolded j0_def j1_def]]
+    by (simp add: j1_def j0_def jm1'_def)
+  have predA: "(Pred M, jm1') \<in> Marked" using part2 by simp
+  \<comment> \<open>\<open>(Pred M, j0) \<in> Marked\<close>\<close>
+  have markedJ0: "(M, j0) \<in> Marked"
+    using MT admj0 j0Mleq j1_def by (simp add: Marked_def)
+  have predJ0: "(Pred M, j0) \<in> Marked"
+    using Marked_Pred[OF MT L markedJ0] j0ltj1 j1_def by simp
+  \<comment> \<open>\<open>j\<^sub>0 \<le> Lng (Pred M) - 1\<close>\<close>
+  have j0ub: "j0 \<le> Lng (Pred M) - 1" using j0ltj1 LP j1_def by linarith
+  \<comment> \<open>gap \<open>jm1' < k < j0 = j0' + 1\<close> is non-admissible: \<open>jm1' = Adm M j0'\<close> is the
+      largest admissible index \<open>\<le> j0'\<close>, and \<open>k \<le> j0'\<close>\<close>
+  have gap: "\<forall>k. jm1' < k \<and> k < j0 \<longrightarrow> \<not> adm (Pred M) k"
+  proof (intro allI impI)
+    fix k assume hk: "jm1' < k \<and> k < j0"
+    have klt: "k < j0" and kgt: "jm1' < k" using hk by simp_all
+    have kle0': "k \<le> j0'" using klt adj by linarith
+    \<comment> \<open>\<open>k\<close> is non-admissible in \<open>M\<close>: it sits strictly above \<open>Adm M j0'\<close>, \<open>\<le> j0'\<close>\<close>
+    have nadmM: "\<not> adm M k"
+    proof
+      assume admk: "adm M k"
+      have "k \<le> Adm M j0'" by (rule adm_Adm_max[OF admk kle0'])
+      thus False using kgt jm1'_def by simp
+    qed
+    \<comment> \<open>pass non-admissibility to \<open>Pred M\<close> (\<open>k\<close> interior, \<open>k + 1 \<le> Lng M - 2\<close>)\<close>
+    have kj1: "k < j1" using klt j0ltj1 by linarith
+    have kj1m1: "k < Lng M - 1" using kj1 j1_def by simp
+    have kp1le: "k + 1 \<le> Lng M - 1" using kj1m1 by simp
+    have nadmMk: "nadm M k" using nadmM by (simp add: adm_def)
+    have b0: "k - 1 \<le> Lng M - 2" using kj1m1 by linarith
+    have b1: "k \<le> Lng M - 2" using kj1m1 by linarith
+    have b2: "k + 1 \<le> Lng M - 2" using klt j0ltj1 j1_def by linarith
+    have notgt: "\<not> k > Lng M" using kj1m1 by linarith
+    have pair: "nextR M 1 (k - 1) k \<and> nextR M 1 k (k + 1)"
+      using nadmMk[unfolded nadm_def] notgt by blast
+    have pairP: "nextR (Pred M) 1 (k - 1) k \<and> nextR (Pred M) 1 k (k + 1)"
+      using pair nextR1_pred_agree[OF L b0 b1] nextR1_pred_agree[OF L b1 b2]
+      by simp
+    have "\<not> k > Lng (Pred M)" using kj1m1 LP by linarith
+    hence "nadm (Pred M) k" using pairP by (simp add: nadm_def)
+    thus "\<not> adm (Pred M) k" by (simp add: adm_def)
+  qed
+  \<comment> \<open>apply @{thm [source] Mark_gap_peel} on \<open>Pred M\<close>\<close>
+  have peel: "Mark (Pred M) jm1' = Dpt (enat (entry (Pred M) 1 jm1')) (Mark (Pred M) j0)"
+    using Mark_gap_peel predRT predA predJ0 jm1'ltj0 j0ub gap by blast
+  \<comment> \<open>row-1 entry of \<open>jm1'\<close> preserved by \<open>butlast\<close>\<close>
+  have e1jm1': "entry (Pred M) 1 jm1' = entry M 1 jm1'"
+  proof -
+    have "jm1' < length (butlast M)" using jm1'ltj0 j0ltj1 j1lt j1_def LP by simp
+    thus ?thesis using predb by (simp add: entry_def nth_butlast)
+  qed
+  show "Mark (Pred M) jm1' = Dpt (enat (entry M 1 jm1')) c1"
+    using peel e1jm1' c1eq by simp
+qed
+
 end
