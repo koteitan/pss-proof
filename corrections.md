@@ -24,6 +24,10 @@
 
 ### 訂正案
 
+$\textrm{Lng}(M) = 1$ のとき:
+- (2) $(M[n],n) \in \textrm{Dom}(F)$
+- (3) $(M,n) \in \textrm{Dom}(F)$ かつ $(M[n],n) \in \textrm{Dom}(F)$ かつ $F_M(n) = F_{M[n]}(n)$
+
 $\textrm{Lng}(M) > 1$ のとき:
 - (2) $(M[n],f(n)) \in \textrm{Dom}(F)$
 - (3) $(M,n) \in \textrm{Dom}(F)$ かつ $(M[n],f(n)) \in \textrm{Dom}(F)$ かつ $F_M(n) = F_{M[n]}(f(n))$
