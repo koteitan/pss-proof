@@ -22270,6 +22270,22 @@ proof (cases p)
     using operB_d0succ_unfold[OF assms, of z] DB by simp
 qed
 
+text \<open>Multi-component peel from the bare \<open>operB\<close>-domain (no \<open>d0succ\<close> needed):
+  for a \<open>\<ge> 2\<close>-principal term \<open>operB\<close> splits off all but the last component.
+  We \<open>cases\<close> on the head \<open>p\<close> first so the nested \<open>list\<close>/\<open>BP\<close> \<open>case\<close> in
+  @{thm [source] operB.psimps} reduces concretely (a bare \<open>simp\<close> stalls on the
+  abstract head \<open>case p of DB v b \<Rightarrow> \<dots>\<close>).\<close>
+
+lemma operB_dom_multi_peel:
+  assumes "domB_operB_xseq_dom (Inr (Inl (Trm (p # q # rest), z)))"
+  shows "operB (Trm (p # q # rest)) z
+           = addBT (Trm (butlast (p # q # rest))) (operB (Trm [last (p # q # rest)]) z)"
+proof (cases p)
+  case (DB v b)
+  show ?thesis
+    using operB.psimps[OF assms] DB by simp
+qed
+
 text \<open>\<open>numNat (numBT n) = n\<close>; \<open>multBT a 1 = a\<close>.\<close>
 
 lemma numNat_numBT: "numNat (numBT n) = n"
@@ -22409,6 +22425,639 @@ proof -
       using x0 Cons by (cases "multBT (Dpt (enat v) t\<^sub>1) (n + 1)") simp
     finally show ?thesis .
   qed
+qed
+
+section \<open>§7.2 p_7_2_scb_fseq conjunct (1-2): lifting operB through an scb-decomp\<close>
+
+text \<open>The body \<open>BODY = t\<^sub>0 + D\<^sub>v(t\<^sub>1 + D\<^sub>0 0)\<close> of the marked principal has
+  \<open>domB BODY = NatSet\<close>: its last principal is \<open>D\<^sub>v(t\<^sub>1 + D\<^sub>0 0)\<close>, whose body
+  \<open>t\<^sub>1 + D\<^sub>0 0\<close> ends in \<open>D\<^sub>0 0\<close> (so \<open>domB = {0}\<close>), giving \<open>domB(D\<^sub>v \<dots>) = NatSet\<close>;
+  \<open>domB\<close> reads only the last component.\<close>
+
+lemma domB_succ_inner_NatSet:
+  "domB (Dpt (enat v) (t\<^sub>1 +\<^sub>B Dpt 0 0\<^sub>B)) = NatSet"
+proof -
+  let ?b = "t\<^sub>1 +\<^sub>B Dpt 0 0\<^sub>B"
+  have ends: "endsD00 ?b" by (rule endsD00_addD00)
+  have bne: "?b \<noteq> Trm []" by (cases t\<^sub>1) simp
+  have db0: "domB ?b = {Trm []}" by (rule domB_endsD00[OF ends])
+  show ?thesis
+    by (subst domB_unfold)
+       (simp add: bne db0 Let_def NatSet_neq_zero NatSet_neq_TBv)
+qed
+
+lemma succ_body_ne: "t\<^sub>0 +\<^sub>B Dpt (enat v) (t\<^sub>1 +\<^sub>B Dpt 0 0\<^sub>B) \<noteq> Trm []"
+  by (cases t\<^sub>0) simp
+
+lemma domB_succ_body_NatSet:
+  "domB (t\<^sub>0 +\<^sub>B Dpt (enat v) (t\<^sub>1 +\<^sub>B Dpt 0 0\<^sub>B)) = NatSet"
+proof -
+  let ?single = "Dpt (enat v) (t\<^sub>1 +\<^sub>B Dpt 0 0\<^sub>B)"
+  obtain xs where x0: "t\<^sub>0 = Trm xs" by (cases t\<^sub>0)
+  have body: "t\<^sub>0 +\<^sub>B ?single = Trm (xs @ [DB (enat v) (t\<^sub>1 +\<^sub>B Dpt 0 0\<^sub>B)])"
+    using x0 by simp
+  have ne: "xs @ [DB (enat v) (t\<^sub>1 +\<^sub>B Dpt 0 0\<^sub>B)] \<noteq> []" by simp
+  have "domB (t\<^sub>0 +\<^sub>B ?single)
+          = domB (Trm [last (xs @ [DB (enat v) (t\<^sub>1 +\<^sub>B Dpt 0 0\<^sub>B)])])"
+    unfolding body by (rule domB_last_component[OF ne])
+  also have "\<dots> = domB ?single" by simp
+  also have "\<dots> = NatSet" by (rule domB_succ_inner_NatSet)
+  finally show ?thesis .
+qed
+
+lemma d0succ_succ_inner: "d0succ (Dpt (enat v) (t\<^sub>1 +\<^sub>B Dpt 0 0\<^sub>B))"
+proof -
+  let ?b = "t\<^sub>1 +\<^sub>B Dpt 0 0\<^sub>B"
+  have bne: "?b \<noteq> Trm []" by (cases t\<^sub>1) simp
+  have ends: "endsD00 ?b" by (rule endsD00_addD00)
+  have ds_b: "d0succ ?b" by (rule d0succ_addD00)
+  show ?thesis by (rule d0succ_single_nonzero[OF bne ends ds_b])
+qed
+
+lemma d0succ_succ_body: "d0succ (t\<^sub>0 +\<^sub>B Dpt (enat v) (t\<^sub>1 +\<^sub>B Dpt 0 0\<^sub>B))"
+proof -
+  obtain xs where x0: "t\<^sub>0 = Trm xs" by (cases t\<^sub>0)
+  have lst: "last (xs @ [DB (enat v) (t\<^sub>1 +\<^sub>B Dpt 0 0\<^sub>B)]) = DB (enat v) (t\<^sub>1 +\<^sub>B Dpt 0 0\<^sub>B)"
+    by simp
+  have ds_single: "d0succ (Dpt (enat v) (t\<^sub>1 +\<^sub>B Dpt 0 0\<^sub>B))" by (rule d0succ_succ_inner)
+  hence "d0succ (Trm [last (xs @ [DB (enat v) (t\<^sub>1 +\<^sub>B Dpt 0 0\<^sub>B)])])" using lst by simp
+  hence "d0succ (Trm (xs @ [DB (enat v) (t\<^sub>1 +\<^sub>B Dpt 0 0\<^sub>B)]))"
+    by (simp add: d0succ_def)
+  thus ?thesis using x0 by simp
+qed
+
+text \<open>The marked principal \<open>c\<^sub>0 = D\<^sub>u BODY\<close> is \<open>d0succ\<close> with \<open>domB = NatSet\<close>.\<close>
+
+text \<open>The marked principal \<open>c\<^sub>0 = D\<^sub>u BODY\<close> is NOT \<open>d0succ\<close> (its body ends in
+  \<open>D\<^sub>v(\<dots>)\<close>, not \<open>D\<^sub>0 0\<close>), so \<open>operB_d0succ_unfold\<close> does not apply.  But
+  \<open>domB BODY = NatSet\<close> and \<open>operB BODY z\<close> is defined (conjunct (1)), so the single
+  \<open>D\<^sub>u\<close>-step is in \<open>operB\<close>'s domain: we extend the domain one principal up over a
+  body whose \<open>operB\<close> is already defined and whose \<open>domB = NatSet\<close>.  The taken
+  branch is the \<open>else\<close> (\<open>db = NatSet \<noteq> {0}, \<noteq> T\<^sub>u\<close>), giving \<open>D\<^sub>u(operB b z)\<close>.\<close>
+
+lemma operB_dom_NatSet_principal:
+  assumes db: "domB b = NatSet" and bne: "b \<noteq> Trm []"
+    and domb: "domB_operB_xseq_dom (Inr (Inl (b, z)))"
+  shows "domB_operB_xseq_dom (Inr (Inl (Trm [DB v b], z)))"
+proof (rule domB_operB_xseq.domintros(2))
+  \<comment> \<open>(0) \<open>domB b\<close> total\<close>
+  show "domB_operB_xseq_dom (Inl x2)"
+    if "Trm [DB v b] = Trm [DB x1 x2]" "x2 \<noteq> Trm []" for x1 x2
+    by (rule domB_dom_all)
+next
+  \<comment> \<open>(1) \<open>db = {0}\<close> branch: vacuous (\<open>domB b = NatSet \<noteq> {0}\<close>)\<close>
+  show "domB_operB_xseq_dom (Inr (Inl (x2, Trm [])))"
+    if "Trm [DB v b] = Trm [DB x1 x2]" "x2 \<noteq> Trm []" "{Trm []} = domB x2" for x1 x2
+  proof -
+    have "x2 = b" using that(1) by simp
+    hence "{Trm []} = NatSet" using that(3) db by simp
+    thus ?thesis using NatSet_neq_zero by simp
+  qed
+next
+  \<comment> \<open>(2) \<open>xseq\<close>-guard: \<open>db = T\<^sub>u\<close> vacuous (\<open>NatSet \<noteq> T\<^sub>u\<close>)\<close>
+  show "xb = Trm []"
+    if "Trm [DB v b] = Trm [DB x1 x2]" "x2 \<noteq> Trm []" "x1 \<le> enat u"
+       "domB x2 = TBv (enat u)"
+       "\<not> domB_operB_xseq_dom (Inr (Inr (x2, enat (tbvIdx (TBv (enat u))), numNat z)))"
+       "xb \<in> TBv (enat u)" for x1 x2 u xb
+  proof -
+    have "x2 = b" using that(1) by simp
+    hence "NatSet = TBv (enat u)" using that(4) db by simp
+    thus ?thesis using NatSet_neq_TBv by simp
+  qed
+next
+  \<comment> \<open>(3) \<open>0 \<in> T\<^sub>u\<close>\<close>
+  show "Trm [] \<in> TBv (enat u)"
+    if "Trm [DB v b] = Trm [DB x1 x2]" "x2 \<noteq> Trm []" "x1 \<le> enat u"
+       "domB x2 = TBv (enat u)"
+       "\<not> domB_operB_xseq_dom (Inr (Inr (x2, enat (tbvIdx (TBv (enat u))), numNat z)))"
+       for x1 x2 u
+    by (simp add: TBv_def)
+next
+  \<comment> \<open>(4) inner \<open>xseq\<close> guard: vacuous\<close>
+  show "xb = Trm []"
+    if "Trm [DB v b] = Trm [DB x1 x2]" "x2 \<noteq> Trm []" "x1 \<le> enat u"
+       "domB x2 = TBv (enat u)"
+       "\<not> domB_operB_xseq_dom (Inr (Inl (x2, xseq x2 (enat (tbvIdx (TBv (enat u)))) (numNat z))))"
+       "xb \<in> TBv (enat u)" for x1 x2 u xb
+  proof -
+    have "x2 = b" using that(1) by simp
+    hence "NatSet = TBv (enat u)" using that(4) db by simp
+    thus ?thesis using NatSet_neq_TBv by simp
+  qed
+next
+  \<comment> \<open>(5) \<open>0 \<in> T\<^sub>u\<close> again\<close>
+  show "Trm [] \<in> TBv (enat u)"
+    if "Trm [DB v b] = Trm [DB x1 x2]" "x2 \<noteq> Trm []" "x1 \<le> enat u"
+       "domB x2 = TBv (enat u)"
+       "\<not> domB_operB_xseq_dom (Inr (Inl (x2, xseq x2 (enat (tbvIdx (TBv (enat u)))) (numNat z))))"
+       for x1 x2 u
+    by (simp add: TBv_def)
+next
+  \<comment> \<open>(6) \<open>else\<close>-branch guard side-condition: under \<open>\<not> dom(operB b z)\<close>, every
+     \<open>xb \<in> domB b\<close> is \<open>0\<close>.  But \<open>dom(operB b z)\<close> HOLDS (\<open>domb\<close>), so the hypothesis
+     \<open>\<not> dom\<close> is false and the premise is vacuous.\<close>
+  show "xb = Trm []"
+    if "Trm [DB v b] = Trm [DB x1 x2]" "x2 \<noteq> Trm []"
+       "\<forall>u. x1 \<le> enat u \<longrightarrow> domB x2 \<noteq> TBv (enat u)"
+       "\<not> domB_operB_xseq_dom (Inr (Inl (x2, z)))"
+       "xb \<in> domB x2" for x1 x2 xb
+  proof -
+    have "x2 = b" using that(1) by simp
+    hence "\<not> domB_operB_xseq_dom (Inr (Inl (b, z)))" using that(4) by simp
+    thus ?thesis using domb by simp
+  qed
+next
+  \<comment> \<open>(7) \<open>0 \<in> domB b\<close> else-guard: same, vacuous via \<open>domb\<close>\<close>
+  show "Trm [] \<in> domB x2"
+    if "Trm [DB v b] = Trm [DB x1 x2]" "x2 \<noteq> Trm []"
+       "\<forall>u. x1 \<le> enat u \<longrightarrow> domB x2 \<noteq> TBv (enat u)"
+       "\<not> domB_operB_xseq_dom (Inr (Inl (x2, z)))" for x1 x2
+  proof -
+    have "x2 = b" using that(1) by simp
+    hence "\<not> domB_operB_xseq_dom (Inr (Inl (b, z)))" using that(4) by simp
+    thus ?thesis using domb by simp
+  qed
+next
+  \<comment> \<open>(8) two-component multi: vacuous (\<open>a\<close> is single)\<close>
+  show "domB_operB_xseq_dom (Inr (Inl (Trm [x21a], z)))"
+    if "Trm [DB v b] = Trm [DB x1 x2, x21a]" for x1 x2 x21a
+    using that by simp
+next
+  \<comment> \<open>(9) \<open>(\<ge>3)\<close>-component multi: vacuous (\<open>a\<close> is single)\<close>
+  show "domB_operB_xseq_dom (Inr (Inl (Trm [last x22a], z)))"
+    if "Trm [DB v b] = Trm (DB x1 x2 # x21a # x22a)" "x22a \<noteq> []" for x1 x2 x21a x22a
+    using that(1) by simp
+qed
+
+text \<open>\<open>operB\<close> on a single principal over a \<open>NatSet\<close> body with defined \<open>operB\<close>:
+  the \<open>else\<close> branch, \<open>operB (D\<^sub>v b) z = D\<^sub>v(operB b z)\<close>.\<close>
+
+lemma operB_NatSet_principal_unfold:
+  assumes db: "domB b = NatSet" and bne: "b \<noteq> Trm []"
+    and domb: "domB_operB_xseq_dom (Inr (Inl (b, z)))"
+  shows "operB (Trm [DB v b]) z = Dprin v (operB b z)"
+proof -
+  have dom: "domB_operB_xseq_dom (Inr (Inl (Trm [DB v b], z)))"
+    by (rule operB_dom_NatSet_principal[OF db bne domb])
+  have "operB (Trm [DB v b]) z
+          = (let dbb = domB b in
+             if dbb = {Trm []} then multBT (Dprin v (operB b (Trm []))) (numNat z + 1)
+             else if (\<exists>u. v \<le> enat u \<and> dbb = TBv (enat u))
+                  then Dprin v (operB b (xseq b (enat (tbvIdx dbb)) (numNat z)))
+             else Dprin v (operB b z))"
+    using operB.psimps[OF dom] bne by simp
+  also have "\<dots> = Dprin v (operB b z)"
+    using db NatSet_neq_zero NatSet_neq_TBv by (simp add: Let_def)
+  finally show ?thesis .
+qed
+
+text \<open>\<open>operB\<close> on the marked principal \<open>c\<^sub>0 = D\<^sub>u BODY\<close>: \<open>BODY\<close> is \<open>d0succ\<close>
+  (\<open>operB BODY z\<close> defined) with \<open>domB BODY = NatSet\<close>; the \<open>D\<^sub>u\<close>-step is the \<open>else\<close>
+  branch \<open>D\<^sub>u(operB BODY z)\<close>; conjunct (1) evaluates \<open>operB BODY (numBT n)\<close>.\<close>
+
+lemma m_7_2_scb_fseq_inner:
+  fixes u v n :: nat
+  assumes "t\<^sub>0 \<in> T_B" "t\<^sub>1 \<in> T_B"
+  shows "operB (Dpt (enat u) (t\<^sub>0 +\<^sub>B Dpt (enat v) (t\<^sub>1 +\<^sub>B Dpt 0 0\<^sub>B))) (numBT n)
+           = Dpt (enat u) (t\<^sub>0 +\<^sub>B multBT (Dpt (enat v) t\<^sub>1) (n + 1))"
+proof -
+  let ?BODY = "t\<^sub>0 +\<^sub>B Dpt (enat v) (t\<^sub>1 +\<^sub>B Dpt 0 0\<^sub>B)"
+  have bne: "?BODY \<noteq> Trm []" by (rule succ_body_ne)
+  have db: "domB ?BODY = NatSet" by (rule domB_succ_body_NatSet)
+  have ds_body: "d0succ ?BODY" by (rule d0succ_succ_body)
+  have domb: "domB_operB_xseq_dom (Inr (Inl (?BODY, numBT n)))"
+    by (rule operB_dom_d0succ[OF ds_body])
+  have "operB (Dpt (enat u) ?BODY) (numBT n) = Dprin (enat u) (operB ?BODY (numBT n))"
+    by (rule operB_NatSet_principal_unfold[OF db bne domb])
+  also have "operB ?BODY (numBT n) = t\<^sub>0 +\<^sub>B multBT (Dpt (enat v) t\<^sub>1) (n + 1)"
+    by (rule m_7_2_scb_fseq_succ[OF assms])
+  finally show ?thesis by simp
+qed
+
+text \<open>\<open>operB\<close>-domain for a multi-component term reduces to the last component
+  (the only operB recursive call in the multi-branch).\<close>
+
+lemma operB_dom_multi:
+  assumes "domB_operB_xseq_dom (Inr (Inl (Trm [last (p0 # q # qs)], z)))"
+  shows "domB_operB_xseq_dom (Inr (Inl (Trm (p0 # q # qs), z)))"
+proof (rule domB_operB_xseq.domintros(2))
+  show "domB_operB_xseq_dom (Inl x2)"
+    if "Trm (p0 # q # qs) = Trm [DB x1 x2]" "x2 \<noteq> Trm []" for x1 x2
+    using that(1) by simp
+next
+  show "domB_operB_xseq_dom (Inr (Inl (x2, Trm [])))"
+    if "Trm (p0 # q # qs) = Trm [DB x1 x2]" "x2 \<noteq> Trm []" "{Trm []} = domB x2" for x1 x2
+    using that(1) by simp
+next
+  show "xb = Trm []"
+    if "Trm (p0 # q # qs) = Trm [DB x1 x2]" "x2 \<noteq> Trm []" "x1 \<le> enat u"
+       "domB x2 = TBv (enat u)"
+       "\<not> domB_operB_xseq_dom (Inr (Inr (x2, enat (tbvIdx (TBv (enat u))), numNat z)))"
+       "xb \<in> TBv (enat u)" for x1 x2 u xb
+    using that(1) by simp
+next
+  show "Trm [] \<in> TBv (enat u)"
+    if "Trm (p0 # q # qs) = Trm [DB x1 x2]" "x2 \<noteq> Trm []" "x1 \<le> enat u"
+       "domB x2 = TBv (enat u)"
+       "\<not> domB_operB_xseq_dom (Inr (Inr (x2, enat (tbvIdx (TBv (enat u))), numNat z)))"
+       for x1 x2 u
+    using that(1) by simp
+next
+  show "xb = Trm []"
+    if "Trm (p0 # q # qs) = Trm [DB x1 x2]" "x2 \<noteq> Trm []" "x1 \<le> enat u"
+       "domB x2 = TBv (enat u)"
+       "\<not> domB_operB_xseq_dom (Inr (Inl (x2, xseq x2 (enat (tbvIdx (TBv (enat u)))) (numNat z))))"
+       "xb \<in> TBv (enat u)" for x1 x2 u xb
+    using that(1) by simp
+next
+  show "Trm [] \<in> TBv (enat u)"
+    if "Trm (p0 # q # qs) = Trm [DB x1 x2]" "x2 \<noteq> Trm []" "x1 \<le> enat u"
+       "domB x2 = TBv (enat u)"
+       "\<not> domB_operB_xseq_dom (Inr (Inl (x2, xseq x2 (enat (tbvIdx (TBv (enat u)))) (numNat z))))"
+       for x1 x2 u
+    using that(1) by simp
+next
+  show "xb = Trm []"
+    if "Trm (p0 # q # qs) = Trm [DB x1 x2]" "x2 \<noteq> Trm []"
+       "\<forall>u. x1 \<le> enat u \<longrightarrow> domB x2 \<noteq> TBv (enat u)"
+       "\<not> domB_operB_xseq_dom (Inr (Inl (x2, z)))"
+       "xb \<in> domB x2" for x1 x2 xb
+    using that(1) by simp
+next
+  show "Trm [] \<in> domB x2"
+    if "Trm (p0 # q # qs) = Trm [DB x1 x2]" "x2 \<noteq> Trm []"
+       "\<forall>u. x1 \<le> enat u \<longrightarrow> domB x2 \<noteq> TBv (enat u)"
+       "\<not> domB_operB_xseq_dom (Inr (Inl (x2, z)))" for x1 x2
+    using that(1) by simp
+next
+  \<comment> \<open>(8) two-component multi \<open>Trm [p, q]\<close>: here \<open>qs = []\<close>, \<open>last = x21a\<close>\<close>
+  show "domB_operB_xseq_dom (Inr (Inl (Trm [x21a], z)))"
+    if "Trm (p0 # q # qs) = Trm [DB x1 x2, x21a]" for x1 x2 x21a
+  proof -
+    have qs0: "qs = []" and qeq: "q = x21a" using that by auto
+    have "last (p0 # q # qs) = x21a" using qs0 qeq by simp
+    thus ?thesis using assms by simp
+  qed
+next
+  \<comment> \<open>(9) \<open>(\<ge>3)\<close>-component multi: \<open>last x22a = last (p0#q#qs)\<close>\<close>
+  show "domB_operB_xseq_dom (Inr (Inl (Trm [last x22a], z)))"
+    if "Trm (p0 # q # qs) = Trm (DB x1 x2 # x21a # x22a)" "x22a \<noteq> []" for x1 x2 x21a x22a
+  proof -
+    have "q = x21a" and "qs = x22a" using that(1) by auto
+    hence "last x22a = last (p0 # q # qs)" using that(2) by simp
+    thus ?thesis using assms by simp
+  qed
+qed
+
+text \<open>\<open>operB\<close>-domain heredity UP the right spine.\<close>
+
+lemma operB_dom_spine_aux:
+  "\<And>s b. scb_decomp t s (flatBT (Trm [cp])) b
+        \<Longrightarrow> domB (Trm [cp]) = NatSet \<Longrightarrow> dfree_BP cp
+        \<Longrightarrow> domB_operB_xseq_dom (Inr (Inl (Trm [cp], z)))
+        \<Longrightarrow> domB_operB_xseq_dom (Inr (Inl (t, z)))"
+proof (induction t rule: measure_induct_rule[where f=size])
+  case (less t s b)
+  have tne: "t \<noteq> Trm []"
+  proof
+    assume z: "t = Trm []"
+    have "flatBT t = s @ flatBP cp @ b" using less.prems(1) by (simp add: scb_decomp_def)
+    moreover have "flatBT t = [Zsym]" using z by simp
+    moreover obtain w cb where "cp = DB w cb" by (cases cp) auto
+    ultimately show False by (cases s) auto
+  qed
+  obtain sc bc where comp: "flatBP (last (untrm t)) = sc @ flatBP cp @ bc"
+      and rbc: "\<forall>x \<in> set bc. x = RP"
+    using scb_to_last_component[OF less.prems(1) tne] by blast
+  obtain w lb where lpw: "last (untrm t) = DB w lb"
+    by (cases "last (untrm t)") auto
+  obtain ts where tT: "t = Trm ts" by (cases t) auto
+  have tsne: "ts \<noteq> []" using tne tT by auto
+  have lastEq: "last ts = DB w lb" using lpw tT by simp
+  have flateq: "Dsym w # flatBT lb = sc @ flatBP cp @ bc"
+    using comp lpw by simp
+  obtain w' cb' where cpw: "cp = DB w' cb'" by (cases cp) auto
+  have domLast: "domB_operB_xseq_dom (Inr (Inl (Trm [DB w lb], z)))"
+  proof (cases "sc = []")
+    case True
+    have e: "flatBP (DB w lb) @ [] = flatBP cp @ bc" using flateq True by simp
+    have "flatBP (DB w lb) = flatBP cp \<and> [] = bc"
+      using flatinj_flatBP_cancel[OF e] by blast
+    hence cpEq: "DB w lb = cp" using m_7_flatBT_inj cpw by simp
+    show ?thesis using cpEq less.prems(4) by simp
+  next
+    case False
+    obtain sc1 where sc1: "sc = Dsym w # sc1"
+      using flateq False by (cases sc) auto
+    have aeq: "flatBT lb = sc1 @ flatBP cp @ bc" using flateq sc1 by simp
+    have lbne: "lb \<noteq> Trm []"
+    proof
+      assume "lb = Trm []"
+      hence "flatBT lb = [Zsym]" by simp
+      thus False using aeq cpw by (cases sc1) auto
+    qed
+    have scbLb: "scb_decomp lb sc1 (flatBT (Trm [cp])) bc"
+      unfolding scb_decomp_def using aeq rbc less.prems(3)
+      by (auto simp: isPTB_str_def intro: exI[of _ cp])
+    have szlt: "size lb < size t"
+      using rnsub_size_arg_lt'[of ts w lb] lastEq tsne tT by simp
+    have domLb: "domB_operB_xseq_dom (Inr (Inl (lb, z)))"
+      by (rule less.IH[OF szlt scbLb less.prems(2) less.prems(3) less.prems(4)])
+    have domLbNat: "domB lb = NatSet"
+      by (rule domB_hereditary_aux[OF scbLb less.prems(2) less.prems(3)])
+    show ?thesis
+      by (rule operB_dom_NatSet_principal[OF domLbNat lbne domLb])
+  qed
+  show ?case
+  proof (cases "tl ts")
+    case Nil
+    have ts1: "ts = [DB w lb]" using tsne lastEq Nil by (cases ts) auto
+    show ?thesis using domLast tT ts1 by simp
+  next
+    case (Cons q qs)
+    obtain p0 where tdecomp: "ts = p0 # q # qs" using Cons tsne by (cases ts) auto
+    have lastp: "last (p0 # q # qs) = DB w lb" using lastEq tdecomp tT by simp
+    have domLast': "domB_operB_xseq_dom (Inr (Inl (Trm [last (p0 # q # qs)], z)))"
+      using domLast lastp by simp
+    have "domB_operB_xseq_dom (Inr (Inl (Trm (p0 # q # qs), z)))"
+      by (rule operB_dom_multi[OF domLast'])
+    thus ?thesis using tT tdecomp by simp
+  qed
+qed
+
+text \<open>Flat of a multi-component term with last component peeled off:
+  \<open>flat(Trm(rs@[p])) = Wpre rs @ flatBP p @ [RP]\<close>, \<open>rs \<noteq> []\<close>.  The wrapper
+  \<open>Wpre rs\<close> depends only on \<open>rs\<close>, so it is identical for \<open>t\<close> and \<open>operB t z\<close>.\<close>
+
+definition Wpre :: "BP list \<Rightarrow> Sym list" where
+  "Wpre rs = LP # flatBP (hd rs) @ concat (map (\<lambda>r. CM # flatBP r) (tl rs)) @ [CM]"
+
+lemma flatBT_multi_last:
+  assumes "rs \<noteq> []"
+  shows "flatBT (Trm (rs @ [p])) = Wpre rs @ flatBP p @ [RP]"
+proof -
+  obtain p0 ps where rs: "rs = p0 # ps" using assms by (cases rs) auto
+  have "flatBT (Trm ((p0 # ps) @ [p]))
+          = LP # (flatBP p0 @ concat (map (\<lambda>r. CM # flatBP r) (ps @ [p]))) @ [RP]"
+    by (cases "ps @ [p]") simp_all
+  also have "\<dots> = LP # flatBP p0 @ concat (map (\<lambda>r. CM # flatBP r) ps) @ (CM # flatBP p) @ [RP]"
+    by simp
+  also have "\<dots> = Wpre (p0 # ps) @ flatBP p @ [RP]"
+    by (simp add: Wpre_def)
+  finally show ?thesis using rs by simp
+qed
+
+text \<open>Spine-descent flat identity (the outer lift).  Extra hypothesis: the marked
+  principal's \<open>operB\<close>-image is a single principal \<open>Trm [rp]\<close> (true for our \<open>cp\<close>,
+  whose image is \<open>D\<^sub>u(\<dots>)\<close>); this keeps the multi-component flat clean.\<close>
+
+lemma operB_scb_spine:
+  "\<And>s b. scb_decomp t s (flatBT (Trm [cp])) b
+        \<Longrightarrow> domB (Trm [cp]) = NatSet \<Longrightarrow> dfree_BP cp
+        \<Longrightarrow> domB_operB_xseq_dom (Inr (Inl (Trm [cp], z)))
+        \<Longrightarrow> operB (Trm [cp]) z = Trm [rp]
+        \<Longrightarrow> flatBT (operB t z) = s @ flatBT (operB (Trm [cp]) z) @ b"
+proof (induction t rule: measure_induct_rule[where f=size])
+  case (less t s b)
+  have tne: "t \<noteq> Trm []"
+  proof
+    assume z: "t = Trm []"
+    have "flatBT t = s @ flatBP cp @ b" using less.prems(1) by (simp add: scb_decomp_def)
+    moreover have "flatBT t = [Zsym]" using z by simp
+    moreover obtain w cb where "cp = DB w cb" by (cases cp) auto
+    ultimately show False by (cases s) auto
+  qed
+  obtain sc bc where comp: "flatBP (last (untrm t)) = sc @ flatBP cp @ bc"
+      and rbc: "\<forall>x \<in> set bc. x = RP"
+    using scb_to_last_component[OF less.prems(1) tne] by blast
+  obtain w lb where lpw: "last (untrm t) = DB w lb"
+    by (cases "last (untrm t)") auto
+  obtain ts where tT: "t = Trm ts" by (cases t) auto
+  have tsne: "ts \<noteq> []" using tne tT by auto
+  have lastEq: "last ts = DB w lb" using lpw tT by simp
+  have flateq: "Dsym w # flatBT lb = sc @ flatBP cp @ bc"
+    using comp lpw by simp
+  obtain w' cb' where cpw: "cp = DB w' cb'" by (cases cp) auto
+  have flatt: "flatBT t = s @ flatBP cp @ b"
+    using less.prems(1) by (simp add: scb_decomp_def)
+  have iptcp: "isPTB_str (flatBT (Trm [cp]))"
+    using less.prems(3) by (auto simp: isPTB_str_def)
+  have rb: "\<forall>x \<in> set b. x = RP" using less.prems(1) by (simp add: scb_decomp_def)
+  have ds_t: "domB_operB_xseq_dom (Inr (Inl (t, z)))"
+    by (rule operB_dom_spine_aux[OF less.prems(1) less.prems(2) less.prems(3) less.prems(4)])
+  have operimg: "flatBT (operB (Trm [cp]) z) = flatBP rp"
+    using less.prems(5) by simp
+  show ?case
+  proof (cases "sc = []")
+    case True
+    have e: "flatBP (DB w lb) @ [] = flatBP cp @ bc" using flateq True by simp
+    have cancel: "flatBP (DB w lb) = flatBP cp \<and> [] = bc"
+      using flatinj_flatBP_cancel[OF e] by blast
+    have cpEq: "DB w lb = cp" using cancel m_7_flatBT_inj cpw by simp
+    show ?thesis
+    proof (cases "tl ts")
+      case Nil
+      have ts1: "ts = [DB w lb]" using tsne lastEq Nil by (cases ts) auto
+      have tcp: "t = Trm [cp]" using tT ts1 cpEq by simp
+      have "flatBT t = flatBP cp" using tcp by simp
+      hence ecollapse: "s @ flatBP cp @ b = flatBP cp" using flatt by simp
+      have "length s + length b = 0"
+      proof -
+        have "length s + length (flatBP cp) + length b = length (flatBP cp)"
+          using ecollapse by (metis length_append add.assoc)
+        thus ?thesis by simp
+      qed
+      hence sb: "s = [] \<and> b = []" by simp
+      show ?thesis using tcp sb by simp
+    next
+      case (Cons q qs)
+      obtain p0 where tdecomp: "ts = p0 # q # qs" using Cons tsne by (cases ts) auto
+      let ?rs = "butlast (p0 # q # qs)"
+      have rsne: "?rs \<noteq> []" by simp
+      have lastp: "last (p0 # q # qs) = DB w lb" using lastEq tdecomp tT by simp
+      have lr: "p0 # q # qs = ?rs @ [DB w lb]"
+        using lastp by (metis append_butlast_last_id list.distinct(1))
+      have ds_t': "domB_operB_xseq_dom (Inr (Inl (Trm (p0 # q # qs), z)))"
+        using ds_t tT tdecomp by simp
+      have peelP: "operB (Trm (p0 # q # qs)) z
+                    = addBT (Trm ?rs) (operB (Trm [last (p0 # q # qs)]) z)"
+        by (rule operB_dom_multi_peel[OF ds_t'])
+      have peel: "operB t z
+                    = addBT (Trm ?rs) (operB (Trm [last (p0 # q # qs)]) z)"
+        using peelP tT tdecomp by simp
+      have opercp: "operB (Trm [last (p0 # q # qs)]) z = Trm [rp]"
+        using lastp cpEq less.prems(5) by simp
+      have operT: "operB t z = Trm (?rs @ [rp])"
+        using peel opercp tdecomp by simp
+      \<comment> \<open>flat of \<open>t\<close>: \<open>s = Wpre ?rs\<close>, \<open>b = [RP]\<close>\<close>
+      have flatt2: "flatBT t = Wpre ?rs @ flatBP (DB w lb) @ [RP]"
+      proof -
+        have "flatBT t = flatBT (Trm (?rs @ [DB w lb]))"
+          using tT tdecomp arg_cong[where f="\<lambda>xs. flatBT (Trm xs)", OF lr] by simp
+        also have "\<dots> = Wpre ?rs @ flatBP (DB w lb) @ [RP]"
+          by (rule flatBT_multi_last[OF rsne])
+        finally show ?thesis .
+      qed
+      have flatcp: "flatBT t = Wpre ?rs @ flatBP cp @ [RP]"
+        using flatt2 cpEq by simp
+      have scbWpre: "scb_decomp t (Wpre ?rs) (flatBT (Trm [cp])) [RP]"
+        unfolding scb_decomp_def using flatcp iptcp by simp
+      have sbeq: "s = Wpre ?rs \<and> b = [RP]"
+        by (rule m_7_2_scb_unique_sb[OF less.prems(1) scbWpre tne])
+      \<comment> \<open>flat of \<open>operB t z\<close>\<close>
+      have "flatBT (operB t z) = Wpre ?rs @ flatBP rp @ [RP]"
+        using operT flatBT_multi_last[OF rsne, of rp] by simp
+      also have "\<dots> = Wpre ?rs @ flatBT (operB (Trm [cp]) z) @ [RP]"
+        using operimg by simp
+      also have "\<dots> = s @ flatBT (operB (Trm [cp]) z) @ b" using sbeq by simp
+      finally show ?thesis .
+    qed
+  next
+    case False
+    obtain sc1 where sc1: "sc = Dsym w # sc1"
+      using flateq False by (cases sc) auto
+    have aeq: "flatBT lb = sc1 @ flatBP cp @ bc" using flateq sc1 by simp
+    have lbne: "lb \<noteq> Trm []"
+    proof
+      assume "lb = Trm []"
+      hence "flatBT lb = [Zsym]" by simp
+      thus False using aeq cpw by (cases sc1) auto
+    qed
+    have scbLb: "scb_decomp lb sc1 (flatBT (Trm [cp])) bc"
+      unfolding scb_decomp_def using aeq rbc less.prems(3)
+      by (auto simp: isPTB_str_def intro: exI[of _ cp])
+    have szlt: "size lb < size t"
+      using rnsub_size_arg_lt'[of ts w lb] lastEq tsne tT by simp
+    have domLbNat: "domB lb = NatSet"
+      by (rule domB_hereditary_aux[OF scbLb less.prems(2) less.prems(3)])
+    have domLb: "domB_operB_xseq_dom (Inr (Inl (lb, z)))"
+      by (rule operB_dom_spine_aux[OF scbLb less.prems(2) less.prems(3) less.prems(4)])
+    have ih: "flatBT (operB lb z) = sc1 @ flatBT (operB (Trm [cp]) z) @ bc"
+      by (rule less.IH[OF szlt scbLb less.prems(2) less.prems(3) less.prems(4) less.prems(5)])
+    have unfoldLast: "operB (Trm [DB w lb]) z = Dprin w (operB lb z)"
+      by (rule operB_NatSet_principal_unfold[OF domLbNat lbne domLb])
+    show ?thesis
+    proof (cases "tl ts")
+      case Nil
+      have ts1: "ts = [DB w lb]" using tsne lastEq Nil by (cases ts) auto
+      have tsingle: "t = Trm [DB w lb]" using tT ts1 by simp
+      have flatOp: "flatBT (operB t z) = Dsym w # flatBT (operB lb z)"
+        using unfoldLast tsingle by simp
+      have flatOp2: "flatBT (operB t z) = (Dsym w # sc1) @ flatBT (operB (Trm [cp]) z) @ bc"
+        using flatOp ih by simp
+      have scbT: "scb_decomp t (Dsym w # sc1) (flatBT (Trm [cp])) bc"
+        using scb_Dpt_lift[OF scbLb iptcp] tsingle by simp
+      have sbeq: "s = Dsym w # sc1 \<and> b = bc"
+        by (rule m_7_2_scb_unique_sb[OF less.prems(1) scbT tne])
+      show ?thesis using flatOp2 sbeq by simp
+    next
+      case (Cons q qs)
+      obtain p0 where tdecomp: "ts = p0 # q # qs" using Cons tsne by (cases ts) auto
+      let ?rs = "butlast (p0 # q # qs)"
+      have rsne: "?rs \<noteq> []" by simp
+      have lastp: "last (p0 # q # qs) = DB w lb" using lastEq tdecomp tT by simp
+      have lr: "p0 # q # qs = ?rs @ [DB w lb]"
+        using lastp by (metis append_butlast_last_id list.distinct(1))
+      have ds_t': "domB_operB_xseq_dom (Inr (Inl (Trm (p0 # q # qs), z)))"
+        using ds_t tT tdecomp by simp
+      have peelP: "operB (Trm (p0 # q # qs)) z
+                    = addBT (Trm ?rs) (operB (Trm [last (p0 # q # qs)]) z)"
+        by (rule operB_dom_multi_peel[OF ds_t'])
+      have peel: "operB t z
+                    = addBT (Trm ?rs) (operB (Trm [last (p0 # q # qs)]) z)"
+        using peelP tT tdecomp by simp
+      have innerOp: "operB (Trm [last (p0 # q # qs)]) z = Dprin w (operB lb z)"
+        using lastp unfoldLast by simp
+      have operT: "operB t z = Trm (?rs @ [DB w (operB lb z)])"
+        using peel innerOp tdecomp by simp
+      have flatt2: "flatBT t = Wpre ?rs @ (Dsym w # flatBT lb) @ [RP]"
+      proof -
+        have e1: "flatBT t = flatBT (Trm (?rs @ [DB w lb]))"
+          using tT tdecomp arg_cong[where f="\<lambda>xs. flatBT (Trm xs)", OF lr] by simp
+        also have "\<dots> = Wpre ?rs @ flatBP (DB w lb) @ [RP]"
+          by (rule flatBT_multi_last[OF rsne])
+        also have "\<dots> = Wpre ?rs @ (Dsym w # flatBT lb) @ [RP]" by simp
+        finally show ?thesis .
+      qed
+      have flatcp: "flatBT t = (Wpre ?rs @ (Dsym w # sc1)) @ flatBP cp @ (bc @ [RP])"
+        using flatt2 aeq by simp
+      have scbWpre: "scb_decomp t (Wpre ?rs @ (Dsym w # sc1)) (flatBT (Trm [cp])) (bc @ [RP])"
+        unfolding scb_decomp_def using flatcp iptcp rbc by auto
+      have sbeq: "s = Wpre ?rs @ (Dsym w # sc1) \<and> b = bc @ [RP]"
+        by (rule m_7_2_scb_unique_sb[OF less.prems(1) scbWpre tne])
+      have "flatBT (operB t z) = Wpre ?rs @ (Dsym w # flatBT (operB lb z)) @ [RP]"
+        using operT flatBT_multi_last[OF rsne, of "DB w (operB lb z)"] by simp
+      also have "\<dots> = Wpre ?rs @ (Dsym w # sc1 @ flatBT (operB (Trm [cp]) z) @ bc) @ [RP]"
+        using ih by simp
+      also have "\<dots> = (Wpre ?rs @ (Dsym w # sc1)) @ flatBT (operB (Trm [cp]) z) @ (bc @ [RP])"
+        by simp
+      also have "\<dots> = s @ flatBT (operB (Trm [cp]) z) @ b" using sbeq by simp
+      finally show ?thesis .
+    qed
+  qed
+qed
+
+text \<open>\<open>dfree_BT\<close> distributes over \<open>+\<^sub>B\<close> (append of two \<open>Trm\<close>s) and is
+  preserved by \<open>*\<^sub>B\<close> (iterated \<open>+\<^sub>B\<close>).\<close>
+
+lemma dfree_BT_addBT:
+  "dfree_BT (a +\<^sub>B b) \<longleftrightarrow> dfree_BT a \<and> dfree_BT b"
+  by (cases a; cases b) auto
+
+lemma dfree_BT_multBT:
+  assumes "dfree_BT a"
+  shows "dfree_BT (multBT a k)"
+  by (induction k) (simp_all add: zero_enat_def dfree_BT_addBT assms)
+
+text \<open>命題（scb分解と基本列の関係） (§7.2), conjunct (1-2).\<close>
+
+lemma m_7_2_scb_fseq_scb:
+  fixes u v n :: nat
+  assumes t0: "t\<^sub>0 \<in> T_B" and t1: "t\<^sub>1 \<in> T_B" and tT: "t \<in> T_B"
+    and d: "scb_decomp t s
+              (flatBT (Dpt (enat u) (t\<^sub>0 +\<^sub>B Dpt (enat v) (t\<^sub>1 +\<^sub>B Dpt 0 0\<^sub>B)))) b"
+  shows "scb_decomp (operB t (numBT n)) s
+           (flatBT (Dpt (enat u) (t\<^sub>0 +\<^sub>B multBT (Dpt (enat v) t\<^sub>1) (n + 1)))) b"
+proof -
+  let ?BODY = "t\<^sub>0 +\<^sub>B Dpt (enat v) (t\<^sub>1 +\<^sub>B Dpt 0 0\<^sub>B)"
+  let ?cp = "DB (enat u) ?BODY"
+  let ?RHS = "Dpt (enat u) (t\<^sub>0 +\<^sub>B multBT (Dpt (enat v) t\<^sub>1) (n + 1))"
+  have dcp: "scb_decomp t s (flatBT (Trm [?cp])) b" using d by simp
+  have domcp: "domB (Trm [?cp]) = NatSet"
+    by (rule domB_principal_NatSet[OF domB_succ_body_NatSet succ_body_ne])
+  have df0: "dfree_BT t\<^sub>0" using t0 by (simp add: T_B_def)
+  have df1: "dfree_BT t\<^sub>1" using t1 by (simp add: T_B_def)
+  have dfBody: "dfree_BT ?BODY"
+  proof -
+    obtain xs where x0: "t\<^sub>0 = Trm xs" by (cases t\<^sub>0)
+    have "dfree_BT (Trm (xs @ [DB (enat v) (t\<^sub>1 +\<^sub>B Dpt 0 0\<^sub>B)]))"
+      using df0 df1 x0 by (cases t\<^sub>1) (auto simp: zero_enat_def)
+    thus ?thesis using x0 by simp
+  qed
+  have dfreecp: "dfree_BP ?cp" using dfBody by simp
+  have bne: "?BODY \<noteq> Trm []" by (rule succ_body_ne)
+  have ds_body: "d0succ ?BODY" by (rule d0succ_succ_body)
+  have domb: "domB_operB_xseq_dom (Inr (Inl (?BODY, numBT n)))"
+    by (rule operB_dom_d0succ[OF ds_body])
+  have domcpz: "domB_operB_xseq_dom (Inr (Inl (Trm [?cp], numBT n)))"
+    by (rule operB_dom_NatSet_principal[OF domB_succ_body_NatSet bne domb])
+  have opercp: "operB (Trm [?cp]) (numBT n) = ?RHS"
+    using m_7_2_scb_fseq_inner[OF t0 t1] by simp
+  have oprp: "operB (Trm [?cp]) (numBT n) = Trm [DB (enat u) (t\<^sub>0 +\<^sub>B multBT (Dpt (enat v) t\<^sub>1) (n + 1))]"
+    using opercp by simp
+  have flatid: "flatBT (operB t (numBT n)) = s @ flatBT (operB (Trm [?cp]) (numBT n)) @ b"
+    by (rule operB_scb_spine[OF dcp domcp dfreecp domcpz oprp])
+  have flatid2: "flatBT (operB t (numBT n)) = s @ flatBT ?RHS @ b"
+    using flatid opercp by simp
+  have dfDv1: "dfree_BT (Dpt (enat v) t\<^sub>1)" using df1 by simp
+  have dfRHSbody: "dfree_BT (t\<^sub>0 +\<^sub>B multBT (Dpt (enat v) t\<^sub>1) (n + 1))"
+    using df0 dfDv1 by (simp add: dfree_BT_addBT dfree_BT_multBT)
+  have iptRHS: "isPTB_str (flatBT ?RHS)"
+    by (rule isPTB_str_Dpt[OF _ dfRHSbody]) simp
+  have rbS: "\<forall>x \<in> set b. x = RP" using d by (simp add: scb_decomp_def)
+  show ?thesis
+    unfolding scb_decomp_def using flatid2 iptRHS rbS by simp
 qed
 
 
