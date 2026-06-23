@@ -23,7 +23,6 @@
 - (3) $(M,n) \in \textrm{Dom}(F)$ かつ $(M[n],n) \in \textrm{Dom}(F)$ かつ $F_M(n) = F_{M[n]}(n)$
 
 ### 訂正案
-
 $\textrm{Lng}(M) = 1$ のとき:
 - (2) $(M[n],n) \in \textrm{Dom}(F)$
 - (3) $(M,n) \in \textrm{Dom}(F)$ かつ $(M[n],n) \in \textrm{Dom}(F)$ かつ $F_M(n) = F_{M[n]}(n)$
@@ -63,7 +62,6 @@ $$F_M(n) := F_{M[n]}(f(n))$$
 $(M_j)_{j=j'_0}^{j'_1} = \textrm{IncrFirst}^{M_{0,m} - M_{1,m}}(N)$
 
 ### 訂正案
-
 $(M_j)_{j=j'_0}^{j'_1} = \textrm{IncrFirst}^{M_{0,j'_0} - M_{1,j'_0}}(N)$
 
 ### 原文の問題点
@@ -86,7 +84,6 @@ $M_{0,j'_0} - M_{1,j'_0}$ を用いており、$m$ は $j'_0$ の誤記と判断
 (4) 任意の $i \in \{0,1\}$ に対し $M_{i,\textrm{Joints}(M)_{J'_0}} > M_{i,\textrm{Joints}(M)_{J'_1}}$ である。
 
 ### 訂正案
-
 (4) を削除。
 
 ### 原文の問題点
@@ -120,7 +117,6 @@ $$M = (0,0)(1,1)(2,1)(3,1)(2,0)$$
 $\leq_{\textrm{Red}(M)}$ は一致する。
 
 ### 訂正案
-
 系（直系先祖の $\textrm{Red}$ 不変性）: $S \in \textrm{ST}_{\textrm{PS}}$（または $S \in \textrm{RT}_{\textrm{PS}} \cap \textrm{PT}_{\textrm{PS}}$）と $a \le b$, $(0,a) \le_S (0,b)$ に対する $M = (S_j)_{j=a}^{b}$ に限り、$\leq_M$ と $\leq_{\textrm{Red}(M)}$ は一致する。
 
 ### 原文の問題点
@@ -203,7 +199,6 @@ $j'_0,j'_1 \in \mathbb{N}$ に対し $j'_0 \le \textrm{TrMax}(M) \le j'_1 \le j_
 $(M_j)_{j=j'_0}^{j'_1}$ は簡約である。
 
 ### 訂正案
-
 任意の $M \in RT_{\textrm{PS}}$ に対し、$j_1 := \textrm{Lng}(M)-1$ と置くと、任意の $j'_1 \in \mathbb{N}$ に対し $\textrm{TrMax}(M) \le j'_1 \le j_1$ ならば $(M_j)_{j=0}^{j'_1}$ は簡約である。
 
 ### 原文の問題点
@@ -233,13 +228,13 @@ $\textrm{Red}$ と $\textrm{Pred}$ の可換性は真だが、それだけでは
 
 ### 原文
 任意の $k \in \mathbb{N}$ と $M \in S_kT_{\textrm{PS}}$ に対し、$P(M) \in S_kT_{\textrm{PS}}^{<\omega}$ である。
-（命題そのものは**真**。忠実モデルで $k \le 5$・計 3000+ 要素まで違反 0。訂正不要。）
 
 ### 訂正案
-
 補題（標準形の階層の単調性）: $S_{k-1}T_{\textrm{PS}} \subseteq S_kT_{\textrm{PS}}$。
 
 ### 原文の問題点
+（命題そのものは**真**。忠実モデルで $k \le 5$・計 3000+ 要素まで違反 0。訂正不要。）
+
 > $(P(M')_J)_{J=0}^{J_0-1} \in S_{k_0-1}T_{\textrm{PS}}^{<\omega}$ であり、$P(M')_{J_0} \in S_{k_0-1}T_{\textrm{PS}}$
 > より帰納法の仮定から $P(P(M')_{J_0}[n]) \in S_{k_0-1}T_{\textrm{PS}}^{<\omega}$ であるので、
 > $P(M) \in S_{k_0-1}T_{\textrm{PS}}^{<\omega}$ である。
@@ -273,13 +268,13 @@ $k$ × $\textrm{Lng}$ の辞書式帰納で証明する（先頭は単調性、�
 §6.8「降順性」, 命題（標準形の切片と $\textrm{Br}$ の降順性の関係）の証明本体
 （単項性を示した直後、$k_0$ 帰納を宣言する一文）。
 
+### 原文
 > $M$ が単項であるという条件下で**$M'$ が標準形となること**を $k_0$ に関する数学的帰納法で示す。
 
 ### 訂正案
-
 $M$ が単項であるという条件下で $\textrm{Br}(M')$ が降順となることを $k_0$ に関する数学的帰納法で示す。
 
-### 問題点
+### 原文の問題点
 この一文は帰納法で示す対象を「$M'$ が標準形（$\in ST_{\textrm{PS}}$）」と述べているが、
 
 - 命題の結論は「$M'$ は単項かつ $\textrm{Br}(M')$ は降順」であって「$M'$ が標準形」ではない。
@@ -298,14 +293,14 @@ $M$ が単項であるという条件下で $\textrm{Br}(M')$ が降順となる
 §6.8「降順性」, 命題（標準形の切片と Br の降順性の関係）の証明本体、
 $N_{1,j_1^N}=0$ の場合の冒頭（$M$ をブロック分解する一文）。
 
+### 原文
 > $M = (N_j)_{j=0}^{j_0^N-1} \bigoplus_{\mathbb{N}^2} ((N_j)_{j=j_0^N}^{j_1^N-1})_{k=0}^{n-1}$ であり、
 > $j_1 = j_0^N+(n+1)(j_1^N-j_0^N)-1$ である。
 
 ### 訂正案
-
 $j_1 = j_0^N + n(j_1^N-j_0^N) - 1$
 
-### 問題点
+### 原文の問題点
 同じ一文の $M$ の分解は、長さ $j_0^N$ の前半 $(N_j)_{j=0}^{j_0^N-1}$ に続けて、
 それぞれ長さ $j_1^N-j_0^N$ のブロック $(N_j)_{j=j_0^N}^{j_1^N-1}$ を $k=0,\dots,n-1$ の **$n$ 個**連結している。
 よって $\textrm{Lng}(M) = j_0^N + n(j_1^N-j_0^N)$、$j_1 = \textrm{Lng}(M)-1 = j_0^N + n(j_1^N-j_0^N) - 1$ となり、
@@ -320,13 +315,13 @@ yaBMS で経験的検証済）はブロック $n$ 個でこの訂正後の式と
 ### 位置
 §8.2「強単項性」, 写像 LastStep の定義（\(J_1\) を置く一文）。
 
+### 原文
 > \(J_1 := \textrm{Lng}(\textrm{Br}(M))\)と置く。… \((\textrm{Br}(M)_{J_1})_{0,0} = (\textrm{Br}(M)_{J_1})_{1,0}\)ならば…
 
 ### 訂正案
-
 $J_1 := \textrm{Lng}(\textrm{Br}(M)) - 1$。$\textrm{Br}(M) = ()$ ならば $\textrm{LastStep}(M) = 0$。
 
-### 問題点
+### 原文の問題点
 \(\textrm{Br}(M)\) の添字は \(0,\dots,\textrm{Lng}(\textrm{Br}(M))-1\) の範囲。\(J_1 := \textrm{Lng}(\textrm{Br}(M))\) と置くと \(\textrm{Br}(M)_{J_1}\) は範囲外。直後の「\(J_1 = 0\) ならば」も \(\textrm{Lng}(\textrm{Br}(M)) = 0\)（\(\textrm{Br}(M)\) が空）の意図と読め、\(J_1\) は最終成分の添字 \(\textrm{Lng}(\textrm{Br}(M))-1\) を指すべき。
 
 ### 形式化での扱い
@@ -337,16 +332,16 @@ $J_1 := \textrm{Lng}(\textrm{Br}(M)) - 1$。$\textrm{Br}(M) = ()$ ならば $\te
 ### 位置
 §6.5「簡約化」の以下の命題群と、それらに付された簡潔な証明（「即座に従う」「\(\textrm{Red}\) の再帰的定義より従う」等）。
 
+### 原文
 - 命題（単項性と \(\textrm{Red}\) の関係）— 証明: 「直系先祖の \(\textrm{Red}\) 不変性より従う」
 - 系（直系先祖の \(\textrm{Red}\) 不変性）— 証明: 「\(\textrm{Lng}(M)\) に関する数学的帰納法から即座に従う」
 - 命題（\(\textrm{Red}\) の \(\textrm{IncrFirst}\) 不変性）/（\(\textrm{Red}\) と \(\textrm{Pred}\) の可換性）— 証明: 「\(\textrm{Red}\) の再帰的定義より」
 - \(\textrm{Red}\) の定義中の脚注 **[19]/[20]**（\(M_{1,0}>0\) の場合の \(\textrm{Red}(M):=M\) の分岐）— 「後の命題により、この分岐は生じない」
 
 ### 訂正案
-
 脚注[19]/[20]の不到達（命題（単項性と $\textrm{Red}$ の関係））を、系（直系先祖の $\textrm{Red}$ 不変性）を経由せず独立に証明し、それを起点に他の命題を導く。
 
-### 観察（依存関係）
+### 原文の問題点
 これらの証明が参照する依存を辿ると、次のように互いに依存している。
 
 - 脚注[19]/[20]の分岐が生じないこと（\(M_{1,0} \le j_N\) かつ \((N_j)_{j=M_{1,0}}^{j_N} \in PT_{\textrm{PS}}\)）は、命題（単項性と \(\textrm{Red}\) の関係）が主張する内容である。
@@ -364,13 +359,13 @@ $J_1 := \textrm{Lng}(\textrm{Br}(M)) - 1$。$\textrm{Br}(M) = ()$ ならば $\te
 ### 位置
 §7.2「命題（scb分解の合成則）」の (2)。形式化では `p_7_2_scb_compose` の第2主張に対応する。
 
+### 原文
 > (2) \((s,c,b)\) が \(t\) の scb分解ならば \((D_v s, c, b)\) は \(D_v t\) の scb分解である。
 
 ### 訂正案
-
 (2) $(s,c,b)$ が $t$ の scb分解で $c$ が主表現列（`isPTB_str c`）ならば、$(D_v s, c, b)$ は $D_v t$ の scb分解である。
 
-### 観察
+### 原文の問題点
 scb分解 \((s,c,b)\) の定義は、対象項が空項 \(()\)（`Trm []`）でない限り、中央成分 \(c\) が主表現列（principal、`isPTB_str c`、すなわち先頭が `Dsym` で始まる平坦化文字列）であることを要求する。一方、対象が空項 \(()\) のときはこの主表現条件が課されない。
 
 このため、\(t = ()\) の場合に (2) は反例を持つ。\(t=()\), \(s=()\), \(c=(Zsym)\), \(b=()\) を取ると \((s,c,b)\) は \(t=()\) の scb分解である（\(t=()\) なので \(c\) への主表現条件は不要、`flatBT () = () = s\frown c\frown b` は \(c=(Zsym)\) では成り立たないため厳密には \(c\) の取り方に注意が必要だが、定義上 \(t=()\) で主表現条件が外れる帰結として中央成分が主表現でない分解が許容され得る点が問題の核）。しかし \(D_v t = D_v() \neq ()\) は常に非空項なので、その scb分解 \((D_v s, c, b)\) は \(c\) が主表現列であることを要求する。\(c=(Zsym)\) は主表現列ではない（主表現の平坦化は必ず `Dsym` で始まり `Zsym` で始まることはない）ので、(2) の結論は成り立たない。
@@ -383,13 +378,13 @@ scb分解 \((s,c,b)\) の定義は、対象項が空項 \(()\)（`Trm []`）で�
 ### 位置
 §7.2「命題（scb分解の置換可能性）」。形式化では `p_7_2_scb_replaceable`。
 
+### 原文
 > \(c_0, c_1 \in T_{\textrm{B}}\)、\((c_0\) が主表現列でない\() \vee (c_1\) が主表現列\()\)、\(t_0 \in T_{\textrm{B}}\)、\((s, \textrm{flat}(c_0), b)\) が \(t_0\) の scb分解であるとする。このとき \(t_1 \in T_{\textrm{B}}\) が存在して \(\textrm{flat}(t_1) = s\frown\textrm{flat}(c_1)\frown b\) かつ \((s, \textrm{flat}(c_1), b)\) が \(t_1\) の scb分解となる。
 
 ### 訂正案
-
 $c_0, c_1 \in T_{\textrm{B}}$、$t_0 \in T_{\textrm{B}}$、$t_0 \neq ()$、$(s, \textrm{flat}(c_0), b)$ が $t_0$ の scb分解であるとする。このとき $t_1 \in T_{\textrm{B}}$ が存在して $\textrm{flat}(t_1) = s\frown\textrm{flat}(c_1)\frown b$ かつ $(s, \textrm{flat}(c_1), b)$ が $t_1$ の scb分解となる。
 
-### 観察
+### 原文の問題点
 scb分解の主表現条件は、対象項が空項 \(()\) のときのみ外れる（[[A11]] と同じ穴）。原文の選言前提 \((\neg\textrm{principal}(c_0)) \vee \textrm{principal}(c_1)\) は、\(c_0 = ()\)（\(\neg\textrm{principal}\) で左成立）のとき \(c_1\) が**非主表現（複項）でも満たされてしまう**。
 
 反例: \(t_0 = c_0 = ()\)（空項）、\(s=b=()\)、\(c_1 = D_0() \cdot D_1()\)（複項＝2項のタプル、非主表現）。前提はすべて成立（\((s,\textrm{flat}(c_0),b)\) は \(t_0=()\) の scb分解、選言前提は左で成立）。だが結論の \(t_1\) は \(\textrm{flat}(t_1)=\textrm{flat}(c_1)\) と flat の単射性（`m_7_flatBT_inj`）から \(t_1 = c_1\) に限られ、\(c_1 \neq ()\) なので scb分解 \((s,\textrm{flat}(c_1),b)\) は \(\textrm{principal}(\textrm{flat}(c_1))\) を要求するが、\(c_1\) は複項ゆえ偽。よって結論が成り立たない。
@@ -402,13 +397,13 @@ scb分解の主表現条件は、対象項が空項 \(()\) のときのみ外れ
 ### 位置
 §7.2「系（加法とscb分解の関係）」の (3)。形式化では `p_7_2_add_scb` の第3主張。
 
+### 原文
 > \(c' \in T_{\textrm{B}}\) が主表現、\(u_1 \in T_{\textrm{B}}\)、\(\textrm{flat}(u_1) = s_1 \frown D_v\,\textrm{flat}(t+c) \frown b_1\)、\((s_0, \textrm{flat}(c), b_0)\) が \(u_1\) の scb分解であるとき、ある \(u_1'\) が存在して \(\textrm{flat}(u_1') = s_1 \frown D_v\,\textrm{flat}(t+c') \frown b_1\) かつ \((s_0, \textrm{flat}(c'), b_0)\) が \(u_1'\) の scb分解となる。
 
 ### 訂正案
-
 $c' \in T_{\textrm{B}}$ が主表現、$u_1 \in T_{\textrm{B}}$、$\textrm{flat}(u_1) = s_1 \frown D_v\,\textrm{flat}(t+c) \frown b_1$、$(s_0, \textrm{flat}(c), b_0)$ が $u_1$ の scb分解、**かつ $s_0 = s_1 \frown D_v\,\textrm{flat}(t)$**（2 出現の一致）であるとき、ある $u_1'$ が存在して $\textrm{flat}(u_1') = s_1 \frown D_v\,\textrm{flat}(t+c') \frown b_1$ かつ $(s_0, \textrm{flat}(c'), b_0)$ が $u_1'$ の scb分解となる。
 
-### 観察
+### 原文の問題点
 主張は暗黙に「\(s_1 \frown D_v\,\textrm{flat}(t+c) \frown b_1\) で指す \(D_v(t+c)\) の出現と、\((s_0,\textrm{flat}(c),b_0)\) が指す \(c\) の出現が**同一の部分項**」を仮定しているが、これは前提から従わない。\(u_1\) が \(D_v(t+c)\) と別の \(c\) を**両方**部分項に持つとき、第1主表現を \(s_1\,D_v\dots b_1\) で、第2主表現の \(c\) を \((s_0,\textrm{flat}(c),b_0)\) で指す配置が成立し、\(c\to c'\) 置換後に要求される2つの flat 文字列が食い違う。
 
 反例: \(t=0\), \(c=D_0 0\), \(c'=D_0(D_0 0)\), \(v=0\), \(u_1=(D_0(D_0 0), D_0 0)\)（2主表現タプル）。\(s_1\,D_v\,\textrm{flat}(t+c)\,b_1\) は**第1**主表現を、\((s_0,\textrm{flat}(c),b_0)\) は**第2**主表現を指す。結論の \(u_1'\) は \(\textrm{flat}(u_1')=s_1\,D_v\,\textrm{flat}(t+c')\,b_1\)（第1側置換）と \(\textrm{flat}(u_1')=s_0\,\textrm{flat}(c')\,b_0\)（第2側置換）を同時に満たす必要があるが、両文字列は相異なるので flat の単射性（`m_7_flatBT_inj`）より存在しない。
@@ -421,11 +416,17 @@ $c' \in T_{\textrm{B}}$ が主表現、$u_1 \in T_{\textrm{B}}$、$\textrm{flat}
 ### 位置
 §7.2「命題（scb分解の一意性）」の (3) 種の排他性・(4) 第\(0\)種の一意性・(5) 第\(1\)種の一意性。形式化では `p_7_2_scb_unique` の第3〜5主張。
 
-### 訂正案
+### 原文
+(3) $t$ は第$0$種scb分解可能でないか、または $t$ は第$1$種scb分解可能でない。
 
+(4) $t$ の第$0$種scb分解は一意である。
+
+(5) $t$ の第$1$種scb分解は一意である。
+
+### 訂正案
 (3)(4)(5) の前提に「$t \neq ()$」を追加する。
 
-### 観察
+### 原文の問題点
 A11–A13 と同じく、対象が空項 \(()\)（`Trm []`、\(\textrm{flat}=[Zsym]\)）のとき scb分解の主表現条件が外れる。このため \(t=()\) では中央成分 \(c\) が主表現でない分解（例 \((s,c,b)=([],[Zsym],[])\) と \(([Zsym],[],[])\)）が両立し、その第\(0\)/第\(1\)種条件（`RightNodes` 条件）が**空虚に**成立してしまう。よって (4)(5) の一意性も (3) の排他性も \(t=()\) で破れる。
 
 ### 経験的確認
@@ -439,11 +440,13 @@ A11–A13 と同じく、対象が空項 \(()\)（`Trm []`、\(\textrm{flat}=[Zs
 ### 位置
 §7.3「命題（\(\textrm{Trans}\) の well-defined 性）」(content.md 2182) と「命題（\(\textrm{Trans}\) の \((\textrm{IncrFirst},\textrm{Red})\) 不変 \(P\) 同変性」「命題（\(\textrm{Mark}\) の \((\textrm{IncrFirst},\textrm{Red},P)\) 不変性」の \(\textrm{Red}\)/\(\textrm{IncrFirst}\) 部。
 
-### 訂正案
+### 原文
+命題（$\textrm{Trans}$ のwell-defined性）: 上の条件を全て満たす写像 $\textrm{Trans}$ と $\textrm{Mark}$ が一意に存在する。
 
+### 訂正案
 $\textrm{Red}(M)$ が簡約である $M$（簡約ペア数列・標準形・[[A4]] の祖先 anchored 切片）に対し $\textrm{Trans}/\textrm{Mark}$ が一意に定まり、$(\textrm{IncrFirst},\textrm{Red})$ 不変性が成り立つ。
 
-### 観察
+### 原文の問題点
 \(\textrm{Trans}\)/\(\textrm{Mark}\) の非簡約枝は \(\textrm{Trans}(M) := \textrm{Trans}(\textrm{Red}(M))\)（長さ不変）であり、再帰の停止には \(\textrm{Red}(M)\) が簡約であること（= \(\textrm{Red}\) の冪等性）が要る。しかし冪等性は [[A4]] のとおり \(T_{\textrm{PS}}\) 全体では**偽**であり、\(\textrm{Red}(\textrm{Red}(M)) \neq \textrm{Red}(M)\) なる \(M\) では (D) 枝が簡約に到達せず、原文の「\(\textrm{Lng}(M)\) に関する数学的帰納法より即座」は成立しない（帰納の measure が下がらない）。
 
 ### 形式化での扱い
@@ -454,11 +457,17 @@ $\textrm{Red}(M)$ が簡約である $M$（簡約ペア数列・標準形・[[A4
 ### 位置
 §7.3「命題（\(\textrm{Trans}\) が単項性を保つこと）」(content.md 2358) と「命題（\(\textrm{Trans}\) の \((\textrm{IncrFirst},\textrm{Red})\) 不変 \(P\) 同変性）」(2) の \(\Sigma_{\textrm{B}}\) 表示 (content.md 2236)。形式化では `p_7_3_Trans_monoT` と `p_7_3_Trans_IncrFirst_Red` の (2) 部。
 
-### 訂正案
+### 原文
+任意の $M \in T_{\textrm{PS}}$ に対し、以下は同値である：
 
+(1) $M$ は単項である。
+
+(2) $\textrm{Trans}(M)$ は単項であるか、$P(M)_0$ が零項でありかつ $\textrm{Lng}(P(M)) = 2$ である。
+
+### 訂正案
 $M \in RT_{\textrm{PS}} \land \neg\textrm{zeroT}(P(M)_0)$ の下で、$\Sigma_{\textrm{B}}$ 表示および単項性命題 (2) を述べる。
 
-### 観察
+### 原文の問題点
 \(\textrm{Trans}\) の**再帰的定義の複項枝**(content.md 2158–2172) は
 \(\textrm{Trans}(M) := \textrm{Trans}((M_j)_{j=0}^{j_0-1}) + (\,D_0 0 \text{ or } \textrm{Trans}(P(M)_{J_1})\,)\)
 であり、先頭 P 成分 \(P(M)_0\) が零項のとき接頭辞 \((M_j)_{j=0}^{j_0-1}\) が長さ \(1\) の \(((0,0))\) になると基底枝より \(\textrm{Trans}(((0,0))) = 0\)（\(D_0 0\) ではなく \(0\)）に**吸収**される。一方
@@ -493,11 +502,13 @@ ST_PS 閉包（diagSeq から \(M[n], n\ge1\) で BFS、7046 個）で違反は�
 ### 位置
 §7.3「命題（右端第\(1\)基点の Mark の基本性質）」(content.md 2294) ほか、Mark の基点・順序を \(D_{M_{1,m}} 0\) 等の主表現で特徴づける §7.3 命題群。形式化では `p_7_3_Mark_rightmost1` 等。
 
-### 訂正案
+### 原文
+$m = j_1$ であることと $\textrm{Mark}(M,m) = D_{M_{1,m}} 0$ であることは同値である。
 
+### 訂正案
 §7.3 の基点・順序命題の前提に「$M$ は非零項」（$M \in RT_{\textrm{PS}} \cap PT_{\textrm{PS}}$）を追加する。
 
-### 観察
+### 原文の問題点
 \(M = ((0,0))\)（零項、\(\in RT_{\textrm{PS}}\)）で \(m = 0 = j_1\) のとき、\(\textrm{Mark}(M,0) = 0\)（零項基底枝）であって \(D_{M_{1,0}} 0 = D_0 0 \neq 0\) ではない。よって「\(m = j_1 \Leftrightarrow \textrm{Mark}(M,m) = D_{M_{1,m}} 0\)」は \(M\) 零項で偽（左真・右偽）。[[A16]] と同じく原文が暗黙に非零項（genuine な単項以上）を仮定している系統的エッジ。
 
 ### 経験的確認
@@ -512,13 +523,15 @@ ST_PS 閉包で \((M,m) \in \textrm{Marked}\) を走査、違反は \(M = ((0,0)
 ## A18. §7.4 系（Mark と \(<_M^{\textrm{NextAdm}}\) の関係）: 仮定の祖先 \(j\) に「\(M\) 許容（\((M,j)\in\textrm{Marked}\)）」を補う必要
 
 ### 位置
-§7.4「系（\(\textrm{Mark}\) と \(<_M^{\textrm{NextAdm}}\) の関係）」(content.md 付近、`p_7_4_Mark_nextAdm`)。原文は「\(j_1=\textrm{Lng}\,M-1\) の一意な NextAdm 親 \(j_0\) と、\((0,j)\le_M(0,j_0)\) なる任意の \(j\) について \(\textrm{Mark}(M,j)\) が \(\textrm{Mark}(M,j_0)\) 周りに scb 分解される」と述べる。
+§7.4「系（$\textrm{Mark}$ と $<_M^{\textrm{NextAdm}}$ の関係）」(content.md 付近、`p_7_4_Mark_nextAdm`)。
+
+### 原文
+$j_1=\textrm{Lng}\,M-1$ の一意な NextAdm 親 $j_0$ と、$(0,j)\le_M(0,j_0)$ なる任意の $j$ について、$\textrm{Mark}(M,j)$ は $\textrm{Mark}(M,j_0)$ の周りに scb 分解される。
 
 ### 訂正案
-
 命題の仮定に「$j$ は $M$-許容（$(M,j)\in\textrm{Marked}$）」を追加する。
 
-### 観察
+### 原文の問題点
 仮定 \((0,j)\le_M(0,j_0)\)(= `leR M 0 j j0` = 行0祖先 `le0`)は \(j\) の**許容性を含意しない**。\(\textrm{Mark}\) の定義域は \(RT_{\textrm{PS}}^{\textrm{Marked}}\)（許容基点列）なので、\(\textrm{Mark}(M,j)\) が原文の「marked 列の像」である為には \((M,j)\in\textrm{Marked}\)（特に \(\textrm{adm}\,M\,j\)）が必要。
 
 ### 経験的確認
@@ -530,13 +543,15 @@ ST_PS 閉包で \((M,m) \in \textrm{Marked}\) を走査、違反は \(M = ((0,0)
 ## A19. §7.4 命題（Mark が順序関係を保つこと）: 結論 (2) の対が反転している
 
 ### 位置
-§7.4「命題（\(\textrm{Mark}\) が順序関係を保つこと）」(content.md 2466)。原文は \((M,m_0),(M,m_1)\in T_{\textrm{PS}}^{\textrm{Marked}}\) に対し「(1) \(m_0<m_1\)」と「(2) \(\textrm{Mark}(M,m_1)\neq\textrm{Mark}(M,m_0)\) かつ \((\textrm{Mark}(M,m_1),\textrm{Mark}(M,m_0))\in T_{\textrm{B}}^{\textrm{Marked}}\)」の同値を主張する。
+§7.4「命題（$\textrm{Mark}$ が順序関係を保つこと）」(content.md 2466)。
+
+### 原文
+$(M,m_0),(M,m_1)\in T_{\textrm{PS}}^{\textrm{Marked}}$ に対し、次は同値: (1) $m_0<m_1$。 (2) $\textrm{Mark}(M,m_1)\neq\textrm{Mark}(M,m_0)$ かつ $(\textrm{Mark}(M,m_1),\textrm{Mark}(M,m_0))\in T_{\textrm{B}}^{\textrm{Marked}}$。
 
 ### 訂正案
-
 (2) $(\textrm{Mark}(M,m_0),\textrm{Mark}(M,m_1)) \in T_{\textrm{B}}^{\textrm{Marked}}$
 
-### 観察
+### 原文の問題点
 \(T_{\textrm{B}}^{\textrm{Marked}}=\{(t,c)\mid (s,c,b)\,\text{が}\,t\,\text{の scb 分解}\}\)(content.md 1834)は **(whole, block)** の規約(\(c\) は \(t\) の部分=被覆される側、cf. 1936 \((t+c,c)\))。一方 \(\textrm{Mark}(M,m)\) は \(m\) が小さいほど大きい(\(\textrm{Mark}(M,0)=\textrm{Trans}(M)\) 最大、\(\textrm{Mark}(M,j_1)=D_{M_{1,j_1}}0\) 最小)。よって \(m_0<m_1\) では \(\textrm{Mark}(M,m_0)\) が whole、\(\textrm{Mark}(M,m_1)\) が block で、正しい対は \((\textrm{Mark}(M,m_0),\textrm{Mark}(M,m_1))\in T_{\textrm{B}}^{\textrm{Marked}}\)。原文の \((\textrm{Mark}(M,m_1),\textrm{Mark}(M,m_0))\) は **whole と block が逆**。
 
 ### 確認(機械証明による)
@@ -548,13 +563,15 @@ ST_PS 閉包で \((M,m) \in \textrm{Marked}\) を走査、違反は \(M = ((0,0)
 ## A20. §8.1 補題（条件(I)か(III)の下での c_1 前後の具体表示）part(1): 単項切片で「c_1 = Trans(切片)」が偽
 
 ### 位置
-§8.1「補題（条件(I)か(III)の下での \(c_1\) 前後の具体表示）」(content.md 2923) の (1)。原文は \(c_1 = \textrm{Mark}(\textrm{Pred}(M),j_{-1}) = \textrm{Trans}((M_j)_{j=j_0}^{j_1-1})\) とする(2955)。
+§8.1「補題（条件(I)か(III)の下での $c_1$ 前後の具体表示）」(content.md 2923) の (1)(content.md 2955)。
+
+### 原文
+$c_1 = \textrm{Mark}(\textrm{Pred}(M),j_{-1}) = \textrm{Trans}((M_j)_{j=j_0}^{j_1-1})$
 
 ### 訂正案
-
 part(1) の $\textrm{Trans}(\text{切片}) = c_1$ に「$j_0 < j_1-1$（切片が非単項）」を課す。
 
-### 観察
+### 原文の問題点
 \(j_0 = j_1-1\)(切片 \((M_j)_{j=j_0}^{j_1-1}\) が単項 \([M_{j_0}]\))かつ \(M_{0,j_0} > M_{1,j_0}\)(非簡約)のとき偽。中間ステップ「\(\textrm{Mark}(\textrm{Pred}(M),j_0) = \textrm{Trans}(\text{切片})\)」は **Mark の Trans 表示**([[A19]] 隣、content 2490)の境界条件 \(j_1-m>0\) を破る(\(m=j_0=j_1-1\) で \(j_1-m=0\))。\(\textrm{Trans}\) は \((\textrm{IncrFirst},\textrm{Red})\) 不変で非簡約単項を rebase し row-0 頭を落とす(\(\to 0_B\))一方、\(c_1=\textrm{Mark}\) は \(D_{M_{1,j_0}}\) 頭を保持する。
 
 ### 経験的確認(独立検証)
@@ -566,13 +583,15 @@ part(1) の $\textrm{Trans}(\text{切片}) = c_1$ に「$j_0 < j_1-1$（切片�
 ## A21. §8.1 同補題 part(5): 条件(III)のとき基本列ブロックの親 \(j_0^N = j'_0\) が偽
 
 ### 位置
-同補題 (5)(content.md 2945-2947)。\(N := (M[n]_j)_{j=0}^{j_0+(n-1)(j_1-j_0)}\) について \(j_0^N = j'_0\)(すなわち \(\textrm{parent}\,N\,0\,(\textrm{Lng}\,N-1) = j'_0\))等を主張。
+§8.1「補題（条件(I)か(III)の下での $c_1$ 前後の具体表示）」(content.md 2923) の (5)(content.md 2945-2947)。
+
+### 原文
+$N := (M[n]_j)_{j=0}^{j_0+(n-1)(j_1-j_0)}$ について、$j_0^N = j'_0$（$\textrm{parent}\,N\,0\,(\textrm{Lng}\,N-1) = j'_0$）である。
 
 ### 訂正案
-
 part(5) を「$\textrm{transCondI}\,M$」に限定する。
 
-### 観察
+### 原文の問題点
 part(5) の周期性論法は基本列ブロックが正しい row-0 シフトで複製され \(\textrm{idx}\) が周期境界に乗ることを要し、これは **条件(I)**(\(M_{1,j_1}=0\))でのみ成立。条件(III)では偽。
 
 ### 経験的確認(独立検証)
@@ -586,11 +605,13 @@ part(5) の周期性論法は基本列ブロックが正しい row-0 シフト�
 ### 位置
 pss_paper.thy の `p_8_3_kind0_base_ineq`(article 3972「第0種型基本列の基本不等式」)。
 
-### 訂正案
+### 原文
+$M[n]_{0,\ q'(j_1-j_0)+r'}$
 
+### 訂正案
 $M[n]_{0,\ j_0+q'(j_1-j_0)+r'}$
 
-### 問題
+### 原文の問題点
 statement が右辺の列添字を \(M[n]_{0,\ q'(j_1-j_0)+r'}\) と書くが、原典の**証明本体**は \(M[n]_{0,\ j_0+q'(j_1-j_0)+r'}\)(= \(M_{j_0+r'}\))を用いている。statement で \(j_0+\) が脱落しており、そのままでは**偽**。
 
 ### 経験的確認
@@ -608,7 +629,6 @@ maxlen5 maxe3 で反例多数(独立検証、sweep agent)。
 > すなわち[Buc1] ([].4) (ii)の場合分けにおいて、各 \(i \in \mathbb{N}\) に対し \(x_i\) を「\(i = 0\) ならば \(x_i = D_u 0\)、\(i > 0\) ならば \(x_i = b[D_u x_{i-1}]\)」と定め、\(a[n]\) の定義を \(D_v b[x_n]\) に変えるということである。
 
 ### 訂正案
-
 > すなわち[Buc1] ([].4) (ii)の場合分けにおいて、各 \(i \in \mathbb{N}\) に対し \(x_i\) を「\(i = 0\) ならば \(x_i = D_u 0\)、\(i > 0\) ならば \(x_i = b[D_u x_{i-1}]\)」と定め、\(a[n]\) の定義を \(D_v x_n\) に変えるということである。
 
 ### 原文の問題点
@@ -630,7 +650,10 @@ maxlen5 maxe3 で反例多数(独立検証、sweep agent)。
 ## C1（明確化、訂正ではない） — §7.3「Trans の最左単項成分の左端」clause (3) の "D_u" の解釈 [軽微]
 
 ### 位置
-§7.3 命題（Trans の最左単項成分の左端の基本性質）clause (3)（content.md 2342）。原文は「左端2文字は \(D_{M_{1,0}} D_u\)」と書く。
+§7.3 命題（$\textrm{Trans}$ の最左単項成分の左端の基本性質）clause (3)（content.md 2342）。
+
+### 原文
+左端2文字は $D_{M_{1,0}} D_u$ である。
 
 ### 明確化
 機械化 `m_7_3_Trans_leftmost`(pss_wip)では clause (3) を `∃t. PB(Trans M)!0 = Dpt(enat(entry M 1 0)) t ∧ t ≠ 0⇩B` と表現し、第2文字 "\(D_u\)" を**非零余項 t の tree-head `bpHeadV(t)`** として読む。理由(経験的: monoT 314/360 ケース)は **t が複数の主表現成分を持ちうる**(= 単一 Dpt ではない)ため。原文の "\(D_u\)" を `t = Dpt w t'` の単一 Dpt と literal に取ると**偽**になる。`bpHeadV(t)`(t≠0 で存在)が忠実な読み。原文は偽ではなく、解釈の明確化のみ。
