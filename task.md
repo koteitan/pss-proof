@@ -21,7 +21,7 @@
     - ✅ 系（加法と scb分解の関係）〔(1)(2) green/(3) A13〕
     - 🚨 命題（scb分解と基本列の関係）
       - ✅ (1) `m_7_2_scb_fseq_succ`（後続型 operB_dom 有限導出、Lemma3.2 回避）
-      - 🚨🤖 (1-2) scb 保存
+      - 🚨 (1-2) scb 保存（内側keystone緑/外側 line22850 `by` ハング、要タクティク差替）
       - 🚨 (2) xseq/Lemma3.2 要確認
     - ✅ 命題（$\textrm{RightNodes}$ と部分表現の関係）〔`m_7_2_RightNodes_subexpr`〕
   - 🚨 §7.3 翻訳写像
@@ -53,7 +53,7 @@
     - ✅ 系（$\textrm{Pred}$ が公差 $(1,1)$ のペア数列の $\textrm{Trans}$ の基本性質）〔`m_8_1_Pred_diagSeq_Trans`〕
     - 🚨 補題（条件 (I) か (III) の下での $c_1$ 前後の具体表示）（A20/A21）
       - ✅ part(1)(2)(3-1)(3-2)(5) + `Mark_gap_peel` engine
-      - 🚨🤖 (4-1)(4-2)：(4-1)幾何限定の右 nest engine(広義 Mark_right_nest は偽 r11、b=最終列の親+[RP]suffix)+ ex1_Dpt
+      - 🚨 (4-1)(4-2)：scbrepl_image残差は`gensurg_main`/`m_7_2_add_scb_conj3_image`で討伐済→残=front-peel reframing(右 nest engine, b=最終列親+[RP]suffix)
   - 🚨 §8.2 強単項性
     - ✅ 命題（標準形の直系先祖による切片の簡約化の強単項性）〔`m_8_2_standard_slice_Red_strongmono`〕
     - 🚨 命題（条件 (II) か (IV) の下での終切片と $\textrm{Trans}$ の関係）
@@ -61,7 +61,7 @@
     - 🚨 補題（部分表現の単項成分と $\textrm{Pred}$ の関係）(§8.2 keystone)
       - ✅ Adm0 枝 + guard 3/4 (nadmj0/t2ne/e0gt)
       - 🚨 gB-condV (`m_8_2_nadm_diag`=nadm 予の零列、ST_PS 固有)
-      - 🚨🤖 BASE + Admpos
+      - 🚨 BASE(w=0値=`m_8_1_diagApp_w0_Trans`済)/Admpos(s1≠[]でscb-surgery深、IH前提helper要)
       - 🚨 組立
     - 🚨 補題（強単項性の下での部分表現の単項成分の基本性質）
       - ✅ (1) `m_8_2_subexpr_leftend_unique`

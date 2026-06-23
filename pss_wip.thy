@@ -22657,4 +22657,107 @@ proof -
   show ?thesis unfolding raw PJeq meq2 ..
 qed
 
+
+text \<open>§8.2 BASE-case companion: the \<open>w = 0\<close> last column missing from
+  @{thm [source] m_8_1_Pred_diagSeq_Trans}.  For \<open>M = diagSeq u v @ [(v+1, 0)]\<close>
+  (\<open>u < v\<close>), \<open>Trans M = D\<^sub>u (D\<^sub>v (D\<^sub>0 0))\<close>.  Structurally identical to case (1)
+  of @{thm [source] m_8_1_Pred_diagSeq_Trans} (\<open>w' = v+1\<close>, \<open>c\<^sub>1 = D\<^sub>v 0\<close>,
+  \<open>scb_SOME = ([D\<^sub>u], [])\<close>), except the firing condition is (I) — \<open>M\<^bsub>1,j\<^sub>1\<^esub> = 0\<close>
+  with \<open>j\<^sub>p\<close> admissible — rather than (III), since the row-1 last entry is \<open>w = 0\<close>.
+  This fills the only gap in the BASE-case diagonal family of the §8.2 keystone:
+  the \<open>j\<^sub>1 - TrMax\<close>-minimal sequences \<open>M = diagSeq 0 (j\<^sub>1-1) @ [last]\<close> whose last
+  row-1 entry is \<open>0\<close>.  Empirically (trans_model, length \<le> 6): exact.\<close>
+
+lemma m_8_1_diagApp_w0_Trans:
+  assumes uv: "u < v"
+  shows "Trans (diagSeq u v @ [(Suc v, 0)])
+           = Dpt (enat u) (Dpt (enat v) (Dpt (enat 0) 0\<^sub>B))"
+proof -
+  have uvle: "u \<le> v" using uv by simp
+  let ?D = "diagSeq u v"
+  \<comment> \<open>shared facts about \<open>Pred M = ?D\<close> (mirroring @{thm [source] m_8_1_Pred_diagSeq_Trans})\<close>
+  have PR: "?D \<in> RT_PS" by (rule bf_diagSeq_reduced[OF uvle])
+  have PT: "?D \<in> T_PS" using PR by (simp add: RT_PS_def)
+  have Pmono: "monoT ?D" by (rule monoT_diagSeq_lt[OF uv])
+  have LD: "Lng ?D = Suc v - u" by simp
+  have t1v: "Trans ?D = Dpt (enat u) (Dpt (enat v) 0\<^sub>B)" by (rule m_8_1_diagSeq_Trans[OF uv])
+  \<comment> \<open>right-end basepoint \<open>(?D, v-u) \<in> Marked\<close>, value \<open>D\<^sub>v 0\<close>\<close>
+  have LDne1: "Lng ?D \<noteq> 1" using LD uv by simp
+  have nzD: "\<not> zeroT ?D" using LDne1 by (simp add: zeroT_def)
+  have DjM: "(?D, Lng ?D - 1) \<in> Marked"
+  proof -
+    have padm: "adm ?D (Lng ?D - 1)" by (rule adm_lastindex)
+    have LDpos: "Lng ?D - 1 < Lng ?D" using LD uv by simp
+    have ple: "leR ?D 0 (Lng ?D - 1) (Lng ?D - 1)"
+      using LDpos by (simp add: leR_def le0_def)
+    show ?thesis using PT padm ple by (simp add: Marked_def)
+  qed
+  have e1Dj: "entry ?D 1 (Lng ?D - 1) = v" using LD uv by (simp add: entry_diagSeq)
+  have markRight: "Mark ?D (Lng ?D - 1) = Dpt (enat v) 0\<^sub>B"
+    using Mark_rightmost1_forward[OF PR nzD DjM] e1Dj by simp
+  \<comment> \<open>------ the append \<open>M = ?D @ [(Suc v, 0)]\<close> ------\<close>
+  let ?M = "?D @ [(Suc v, 0)]"
+  let ?j1 = "Suc v - u"
+  have wlo: "u < Suc v" using uv by simp
+  have whi: "Suc v \<le> Suc v" by simp
+  have wle: "(0::nat) \<le> Suc v" by simp
+  have MR: "?M \<in> RT_PS" by (rule reduced_diagApp[OF uv wlo whi wle])
+  have MT: "?M \<in> T_PS" using MR by (simp add: RT_PS_def)
+  have mono: "monoT ?M" by (rule monoT_diagApp[OF uv wlo whi])
+  have domT: "Trans_Mark_dom (Inl ?M)" by (rule m_7_3_Trans_welldef[OF MR])
+  have LM: "Lng ?M = Suc v - u + 1" using uvle by (rule Lng_diagApp)
+  have Lgt1: "1 < Lng ?M" using LM uv by simp
+  have Lgt1': "\<not> Lng ?M \<le> Suc 0" using Lgt1 by simp
+  have predM: "Pred ?M = ?D" by (rule Pred_diagApp[OF uvle])
+  have j1eq: "Lng ?M - 1 = ?j1" using LM by simp
+  \<comment> \<open>parent and second basepoint (\<open>jp = v - u\<close>, admissible)\<close>
+  have jp: "parent ?M 0 (Lng ?M - 1) = Suc v - u - 1"
+    using parent0_diagApp[OF uv wlo whi] j1eq by simp
+  have jpval: "Suc v - u - 1 = v - u" by simp
+  have admpv: "adm ?M (v - u)"
+  proof -
+    have "adm (?D @ [(Suc v, 0)]) (v - u)" by (rule adm_diagApp_parent_hi[OF uv]) simp
+    thus ?thesis by simp
+  qed
+  have admp: "adm ?M (parent ?M 0 (Lng ?M - 1))" using admpv jp jpval by simp
+  have admjp: "Adm ?M (parent ?M 0 (Lng ?M - 1)) = v - u"
+    using admpv jp jpval by (simp add: Adm_def)
+  \<comment> \<open>\<open>c\<^sub>1 = Mark (?D) (v-u) = Mark (?D) (Lng ?D - 1) = D\<^sub>v 0\<close>\<close>
+  have c1v: "Mark (Pred ?M) (Adm ?M (parent ?M 0 (Lng ?M - 1))) = Dpt (enat v) 0\<^sub>B"
+  proof -
+    have "Mark ?D (v - u) = Dpt (enat v) 0\<^sub>B" using markRight LD by simp
+    thus ?thesis using predM admjp by simp
+  qed
+  have t1vM: "Trans (Pred ?M) = Dpt (enat u) (Dpt (enat v) 0\<^sub>B)" using predM t1v by simp
+  have t1neM: "Trans (Pred ?M) \<noteq> 0\<^sub>B" using t1vM by simp
+  \<comment> \<open>row-1 entries: \<open>M\<^bsub>1,j\<^sub>1\<^esub> = 0\<close>, \<open>M\<^bsub>1,j\<^sub>p\<^esub> = v\<close>\<close>
+  have e1j1: "entry ?M 1 (Lng ?M - 1) = 0"
+    using entry_diagApp_last1[OF uvle] j1eq by simp
+  \<comment> \<open>condition (I) fires: \<open>M\<^bsub>1,j\<^sub>1\<^esub> = 0\<close> and \<open>j\<^sub>p\<close> admissible\<close>
+  have condI: "transCondI ?M"
+    unfolding transCondI_def using e1j1 admp by simp
+  have IorIIIorV: "transCondI ?M \<or> transCondIII ?M \<or> transCondV ?M" using condI by simp
+  \<comment> \<open>\<open>v\<^bsup>M\<^esup> = v\<close>, \<open>t\<^sub>2 = 0\<close>\<close>
+  have bvc1: "bpHeadV (Mark (Pred ?M) (Adm ?M (parent ?M 0 (Lng ?M - 1)))) = enat v"
+    using c1v by simp
+  have btc1: "bpHeadT (Mark (Pred ?M) (Adm ?M (parent ?M 0 (Lng ?M - 1)))) = 0\<^sub>B"
+    using c1v by simp
+  \<comment> \<open>scb-\<open>SOME\<close> of \<open>t\<^sub>1 = D\<^sub>u D\<^sub>v 0\<close> at \<open>c\<^sub>1 = D\<^sub>v 0\<close> is \<open>([D\<^sub>u], [])\<close>\<close>
+  have somev: "(SOME sb. scb_decomp (Trans (Pred ?M)) (fst sb)
+                  (flatBT (Dpt (enat v) 0\<^sub>B)) (snd sb)) = ([Dsym (enat u)], [])"
+    using scb_SOME_Du_Dv[of u v] t1vM by simp
+  have j1pos: "Lng ?M - 1 \<noteq> 0" using Lgt1 by simp
+  \<comment> \<open>unfold the mono branch; condition (I) gives \<open>c\<^sub>2 = D\<^sub>v (0 + D\<^sub>0 0) = D\<^sub>v (D\<^sub>0 0)\<close>\<close>
+  have trans_val: "Trans ?M = unflatBT ([Dsym (enat u)]
+                     @ flatBT (Dpt (enat v) (0\<^sub>B +\<^sub>B Dpt (enat 0) 0\<^sub>B)) @ [])"
+    using Trans.psimps[OF domT] MR Lgt1' j1pos mono t1neM c1v somev IorIIIorV
+          jp admjp bvc1 btc1 e1j1
+    by (simp add: Let_def)
+  have flateq: "[Dsym (enat u)] @ flatBT (Dpt (enat v) (0\<^sub>B +\<^sub>B Dpt (enat 0) 0\<^sub>B)) @ []
+          = flatBT (Dpt (enat u) (Dpt (enat v) (Dpt (enat 0) 0\<^sub>B)))" by simp
+  have "Trans ?M = unflatBT (flatBT (Dpt (enat u) (Dpt (enat v) (Dpt (enat 0) 0\<^sub>B))))"
+    by (simp only: trans_val flateq)
+  thus ?thesis by (simp only: unflatBT_flat)
+qed
+
 end
