@@ -23449,4 +23449,119 @@ proof -
               align_pre align_s align_b align_post align_pre' image])
 qed
 
+
+text \<open>§8.2 Admpos-branch reusable helper: the scb-surgery value identity packaged
+  out of the @{thm [source] trans_inv_B_hard} engine.  In the \<open>monoT M\<close>,
+  \<open>t\<^sub>1 = Trans (Pred M) \<noteq> 0\<close> branch, \<open>Trans M\<close> is obtained from \<open>Trans (Pred M)\<close> by
+  replacing the nested marked component \<open>c\<^sub>1 = transC1 M\<close> (an scb-decomposition site
+  of \<open>Trans (Pred M)\<close>) by \<open>c\<^sub>2 = transC2 M\<close>, keeping the surrounding scb-strings
+  \<open>s\<^sub>1\<close> (prefix) and \<open>b\<^sub>1\<close> (a string of right-parens, suffix) fixed.  This is the
+  value-level engine fact behind both the \<open>Adm0\<close> branch (where additionally
+  \<open>s\<^sub>1 = b\<^sub>1 = []\<close> by @{thm [source] m_7_3_s1_b1_empty}) and the \<open>Admpos\<close> branch
+  (clauses (3)/(4)), where \<open>s\<^sub>1\<close> is in general nonempty so the collapse does not
+  apply.  Empirically (trans_model, length \<le> 6): the scb-decomposition exists and
+  the surgery identity holds on all 583 \<open>Admpos\<close> cases (0 violations), and \<open>s\<^sub>1\<close> is
+  nonempty in every one.  Proven unconditionally; the keystone @{thm [source]
+  Trans_Mark_invariant_aux} supplies the \<open>MarkedB\<close> membership that makes the
+  scb-decomposition exist (so the keystone IH on \<open>Pred M\<close> is discharged from the
+  global invariant rather than carried as a separate hypothesis).\<close>
+
+lemma trans_surgery_value:
+  fixes M :: pairseq
+  assumes MR: "M \<in> RT_PS" and mono: "monoT M" and L: "1 < Lng M"
+    and t1ne: "Trans (Pred M) \<noteq> 0\<^sub>B"
+  shows "\<exists>s1 b1. scb_decomp (Trans (Pred M)) s1 (flatBT (transC1 M)) b1
+              \<and> (\<forall>x \<in> set b1. x = RP)
+              \<and> Trans M = unflatBT (s1 @ flatBT (transC2 M) @ b1)"
+proof -
+  have MT: "M \<in> T_PS" using MR by (simp add: RT_PS_def)
+  have Lgt1: "\<not> Lng M \<le> Suc 0" using L by simp
+  have domT: "Trans_Mark_dom (Inl M)" by (rule m_7_3_Trans_welldef[OF MR])
+  have hp: "hasParent M 0 (Lng M - 1)" by (rule monoT_hasParent0_last[OF MT mono L])
+  let ?t1 = "Trans (Pred M)"
+  let ?bv = "entry M 1 (Lng M - 1)"
+  define jp where "jp = parent M 0 (Lng M - 1)"
+  define c1 where "c1 = Mark (Pred M) (Adm M jp)"
+  define vv where "vv = bpHeadV c1"
+  define tt2 where "tt2 = bpHeadT c1"
+  define JJ1 where "JJ1 = Lng (PB tt2) - 1"
+  define pj where "pj = PB tt2 ! JJ1"
+  define ldj where "ldj = (bpHeadV pj = enat (entry M 1 jp))"
+  define tt3 where "tt3 = (if ldj then SigmaB (take JJ1 (PB tt2)) else tt2)"
+  define tt4 where "tt4 = (if ldj then bpHeadT pj else tt2)"
+  define c2 where "c2 = (if transCondI M \<or> transCondIII M \<or> transCondV M
+                         then Dpt vv (tt2 +\<^sub>B Dpt (enat ?bv) 0\<^sub>B)
+                         else if transCondVI M
+                         then Dpt vv (Dpt (enat ?bv) 0\<^sub>B)
+                         else if tt2 = 0\<^sub>B
+                         then Dpt vv (Dpt (enat (entry M 1 jp)) (Dpt (enat ?bv) 0\<^sub>B))
+                         else Dpt vv (tt3 +\<^sub>B Dpt (enat (entry M 1 jp))
+                                            (tt4 +\<^sub>B Dpt (enat ?bv) 0\<^sub>B)))"
+  define sb1 where "sb1 = (SOME sb. scb_decomp ?t1 (fst sb) (flatBT c1) (snd sb))"
+  have trans_val: "Trans M = unflatBT (fst sb1 @ flatBT c2 @ snd sb1)"
+    using Trans.psimps[OF domT] MR Lgt1 mono t1ne
+    unfolding Let_def jp_def[symmetric] c1_def[symmetric] vv_def[symmetric]
+              tt2_def[symmetric] JJ1_def[symmetric] pj_def[symmetric]
+              ldj_def[symmetric] tt3_def[symmetric] tt4_def[symmetric]
+              c2_def[symmetric] sb1_def[symmetric]
+    by simp
+  \<comment> \<open>identify \<open>c\<^sub>1\<close>/\<open>c\<^sub>2\<close> with the \<open>transC1\<close>/\<open>transC2\<close> accessors (verbatim \<open>let\<close>s)\<close>
+  have jpT: "jp = transJ0 M" by (simp add: jp_def transJ0_def transJ1_def)
+  have c1T: "c1 = transC1 M" by (simp add: c1_def transC1_def transJm1_def jpT)
+  have vvT: "vv = transV M" by (simp add: vv_def transV_def c1T)
+  have tt2T: "tt2 = transT2 M" by (simp add: tt2_def transT2_def c1T)
+  have JJ1T: "JJ1 = Lng (PB (transT2 M)) - 1" by (simp add: JJ1_def tt2T)
+  have pjT: "pj = PB (transT2 M) ! (Lng (PB (transT2 M)) - 1)"
+    by (simp add: pj_def tt2T JJ1T)
+  have ldjT: "ldj = (bpHeadV (PB (transT2 M) ! (Lng (PB (transT2 M)) - 1))
+                       = enat (entry M 1 (transJ0 M)))"
+    by (simp add: ldj_def pjT jpT)
+  have c2T: "c2 = transC2 M"
+    by (simp add: c2_def transC2_def Let_def vvT tt2T jpT
+                  transV_def transT2_def transJ1_def
+                  tt3_def tt4_def ldjT pjT JJ1T)
+  \<comment> \<open>the scb-decomposition exists from the proven \<open>MarkedB\<close> invariant on \<open>Pred M\<close>\<close>
+  have predRT: "Pred M \<in> RT_PS" by (rule Pred_RT_PS[OF MR])
+  have mkdA: "(Pred M, Adm M jp) \<in> Marked"
+    using Marked_Pred_Adm[OF MT L hp] jp_def by simp
+  have mb1: "(?t1, c1) \<in> MarkedB"
+    using m_7_3_Trans_Mark_MarkedB[OF predRT mkdA] c1_def by simp
+  have exsb: "\<exists>sb. scb_decomp ?t1 (fst sb) (flatBT c1) (snd sb)"
+    using mb1 unfolding MarkedB_def by auto
+  have dsome: "scb_decomp ?t1 (fst sb1) (flatBT c1) (snd sb1)"
+    unfolding sb1_def by (rule someI_ex[OF exsb])
+  \<comment> \<open>\<open>b\<^sub>1\<close> is a string of right-parens (scb_decomp \<open>b\<close>-clause)\<close>
+  have bRP: "\<forall>x \<in> set (snd sb1). x = RP"
+    using dsome by (simp add: scb_decomp_def)
+  have dsomeT: "scb_decomp (Trans (Pred M)) (fst sb1) (flatBT (transC1 M)) (snd sb1)"
+    using dsome unfolding c1T .
+  have transT: "Trans M = unflatBT (fst sb1 @ flatBT (transC2 M) @ snd sb1)"
+    using trans_val unfolding c2T .
+  have conj: "scb_decomp (Trans (Pred M)) (fst sb1) (flatBT (transC1 M)) (snd sb1)
+              \<and> (\<forall>x \<in> set (snd sb1). x = RP)
+              \<and> Trans M = unflatBT (fst sb1 @ flatBT (transC2 M) @ snd sb1)"
+    using dsomeT bRP transT by blast
+  show ?thesis
+    by (rule exI[where x="fst sb1"], rule exI[where x="snd sb1"], rule conj)
+qed
+
+text \<open>Corollary of @{thm [source] trans_surgery_value} specialised to the keystone
+  domain hypotheses (\<open>M \<in> RT\<^bsub>PS\<^esub> \<inter> PT\<^bsub>PS\<^esub>\<close>, \<open>j\<^sub>1 = Lng M - 1 > 1\<close>, \<open>transT1 M \<noteq> 0\<close>),
+  matching the \<open>transJ1\<close>/\<open>transT1\<close> accessor phrasing used by the §8.2 keystone and
+  by @{thm [source] transC1_lessBT_transC2}.\<close>
+
+lemma trans_surgery_value_keystone:
+  fixes M :: pairseq
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS"
+    and J1pos: "transJ1 M > 0" and T1: "transT1 M \<noteq> 0\<^sub>B"
+  shows "\<exists>s1 b1. scb_decomp (Trans (Pred M)) s1 (flatBT (transC1 M)) b1
+              \<and> (\<forall>x \<in> set b1. x = RP)
+              \<and> Trans M = unflatBT (s1 @ flatBT (transC2 M) @ b1)"
+proof -
+  have mono: "monoT M" using MP by (simp add: PT_PS_def)
+  have L: "1 < Lng M" using J1pos by (simp add: transJ1_def)
+  have t1ne: "Trans (Pred M) \<noteq> 0\<^sub>B" using T1 by (simp add: transT1_def)
+  show ?thesis by (rule trans_surgery_value[OF MR mono L t1ne])
+qed
+
 end
