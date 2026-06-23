@@ -23409,4 +23409,44 @@ proof -
   thus ?thesis by (simp only: unflatBT_flat)
 qed
 
+
+section \<open>§7.2 系（加法とscb分解の関係） (3) — UNCONDITIONAL (A13, image residual discharged)\<close>
+
+text \<open>
+  The corrected corollary (3) @{thm [source] m_7_2_add_scb_conj3} carried one
+  residual hypothesis: the image-membership of the spliced flat string
+  \<open>∃u\<^sub>1'∈T\<^bsub>B\<^esub>. flatBT u\<^sub>1' = s\<^sub>1 @ (D\<^sub>v # flatBT (t+c')) @ b\<^sub>1\<close>.  That residual is now
+  the proven UNCONDITIONAL lemma @{thm [source] m_7_2_add_scb_conj3_image}
+  (right-spine surgery via \<open>gensurg_image_BT\<close>), whose premises are exactly
+  \<open>t,c',u\<^sub>1 ∈ T\<^bsub>B\<^esub>\<close> and the occurrence equation \<open>flatBT u\<^sub>1 = s\<^sub>1 @ (D\<^sub>v # flatBT (t+c)) @ b\<^sub>1\<close>
+  — all available here as \<open>tTB\<close>, \<open>c'TB\<close>, \<open>u1TB\<close>, \<open>hyp1\<close>.  Discharging it makes
+  the corollary unconditional.  No new hypotheses, same conclusion as
+  @{thm [source] m_7_2_add_scb_conj3} minus the \<open>image\<close> premise.
+\<close>
+
+lemma m_7_2_add_scb_conj3_uncond:
+  assumes tTB: "t \<in> T_B" and cTB: "c \<in> T_B" and cp: "\<exists>p. c = Trm [p]"
+      and c'TB: "c' \<in> T_B" and c'p: "\<exists>p. c' = Trm [p]"
+      and u1TB: "u\<^sub>1 \<in> T_B"
+      and hyp1: "flatBT u\<^sub>1 = s\<^sub>1 @ (Dsym (enat v) # flatBT (t +\<^sub>B c)) @ b\<^sub>1"
+      and hyp0: "scb_decomp u\<^sub>1 s\<^sub>0 (flatBT c) b\<^sub>0"
+      \<comment> \<open>ALIGNMENT (A13): occ.2's \<open>c\<close> is the trailing principal of occ.1's \<open>t+c\<close>.\<close>
+      and align_pre: "flatBT (t +\<^sub>B c) = pre @ flatBT c @ post"
+      and align_s: "s\<^sub>0 = s\<^sub>1 @ (Dsym (enat v) # pre)"
+      and align_b: "b\<^sub>0 = post @ b\<^sub>1"
+      and align_post: "\<forall>x \<in> set post. x = RP"
+      and align_pre': "flatBT (t +\<^sub>B c') = pre @ flatBT c' @ post"
+  shows "\<exists>u\<^sub>1'. u\<^sub>1' \<in> T_B
+             \<and> flatBT u\<^sub>1' = s\<^sub>1 @ (Dsym (enat v) # flatBT (t +\<^sub>B c')) @ b\<^sub>1
+             \<and> scb_decomp u\<^sub>1' s\<^sub>0 (flatBT c') b\<^sub>0"
+proof -
+  \<comment> \<open>Discharge the image residual UNCONDITIONALLY via @{thm m_7_2_add_scb_conj3_image}.\<close>
+  have image: "\<exists>u\<^sub>1'. u\<^sub>1' \<in> T_B
+                    \<and> flatBT u\<^sub>1' = s\<^sub>1 @ (Dsym (enat v) # flatBT (t +\<^sub>B c')) @ b\<^sub>1"
+    by (rule m_7_2_add_scb_conj3_image[OF tTB c'TB u1TB hyp1])
+  show ?thesis
+    by (rule m_7_2_add_scb_conj3[OF tTB cTB cp c'TB c'p u1TB hyp1 hyp0
+              align_pre align_s align_b align_post align_pre' image])
+qed
+
 end

@@ -18,7 +18,7 @@
     - ✅ 命題（scb分解の合成則）〔`m_7_2_scb_compose`/A11 `scbcomp_compose2_PT`〕
     - ✅ 命題（scb分解の自明性の判定条件）〔`m_7_2_scb_triviality`〕
     - ✅ 命題（scb分解の一意性）〔(1)-(4) A14・(2)=`m_7_2_scb_unique_domB`、(5)=`m_7_2_scb_unique_kind1`(rneq内部discharge)〕
-    - ✅ 系（加法と scb分解の関係）〔(1)(2) green/(3) A13〕
+    - ✅ 系（加法と scb分解の関係）〔(1)(2) green/(3) A13 無条件化 `m_7_2_add_scb_conj3_uncond`〕
     - 🚨 命題（scb分解と基本列の関係）
       - ✅ (1) `m_7_2_scb_fseq_succ`（後続型 operB_dom 有限導出、Lemma3.2 回避）
       - ✅ (1-2) scb 保存 `m_7_2_scb_fseq_scb`（hang修正=length-collapse/`operB_dom_multi_peel`/`dfree_BT_addBT`）
