@@ -19,11 +19,11 @@
     - ✅ 命題（scb分解の自明性の判定条件）〔`m_7_2_scb_triviality`〕
     - 🚨 命題（scb分解の一意性）
       - ✅ (1)(2)(3)(4)（t≠Trm[] A14、(2)=`m_7_2_scb_unique_domB` domB_unfold で解禁）
-      - 🚨 (5) kind1 一意性が rneq 追加前提付
+      - 🚨🤖 (5) kind1 一意性が rneq 追加前提付
     - ✅ 系（加法と scb分解の関係）〔(1)(2) green/(3) A13〕
     - 🚨 命題（scb分解と基本列の関係）
       - ✅ (1) `m_7_2_scb_fseq_succ`（後続型 operB_dom 有限導出、Lemma3.2 回避）
-      - 🚨 (1-2) scb 保存
+      - 🚨🤖 (1-2) scb 保存
       - 🚨 (2) xseq/Lemma3.2 要確認
     - ✅ 命題（$\textrm{RightNodes}$ と部分表現の関係）〔`m_7_2_RightNodes_subexpr`〕
   - 🚨 §7.3 翻訳写像
@@ -32,10 +32,10 @@
     - ✅ 命題（$2$ 列ペア数列の基本性質）〔`m_7_3_twoColumn_Trans`/`_Marked`/`_Mark`〕
     - 🚨 命題（$\textrm{Trans}$ の $(\textrm{IncrFirst},\textrm{Red})$ 不変 $P$ 同変性）
       - ✅ (1) `m_7_3_Trans_Red`/`_IncrFirst`
-      - 🚨 (2) P 同変性
+      - 🚨🤖 (2) P 同変性
     - 🚨 命題（$\textrm{Mark}$ の $(\textrm{IncrFirst},\textrm{Red},P)$ 不変性）
       - ✅ (1) `m_7_3_Mark_Red`/`_IncrFirst`
-      - 🚨 P 部
+      - 🚨🤖 P 部
     - ✅ 命題（$\textrm{Trans}$ が零項性を保つこと）〔`m_7_3_Trans_zeroT`(RT_PS,A15)〕
     - ✅ 命題（$c_1$ と $c_2$ の大小関係）〔`transC1_lessBT_transC2_full`。memory `pss-73-ordering-chain`〕
     - ✅ 命題（$\textrm{Pred}$ の $\textrm{Trans}$ に関する降下性）〔`m_7_3_Pred_Trans_descend`〕
