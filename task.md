@@ -22,7 +22,7 @@
     - 🚨 命題（scb分解と基本列の関係）
       - ✅ (1) `m_7_2_scb_fseq_succ`（後続型 operB_dom 有限導出、Lemma3.2 回避）
       - ✅ (1-2) scb 保存 `m_7_2_scb_fseq_scb`（hang修正=length-collapse/`operB_dom_multi_peel`/`dfree_BT_addBT`）
-      - 🚨 (2) xseq/Lemma3.2：A23で([].4)(ii)訂正確定(`a[n]=D_v xₙ`、106/106検証)、operB定義追従後に解禁見込み
+      - 🚨🤖 (2) xseq/Lemma3.2：A23で([].4)(ii)訂正確定(`a[n]=D_v xₙ`、106/106検証)、operB定義追従後に解禁見込み
     - ✅ 命題（$\textrm{RightNodes}$ と部分表現の関係）〔`m_7_2_RightNodes_subexpr`〕
   - 🚨 §7.3 翻訳写像
     - ✅ **定義** `Trans`/`Mark`（相互再帰 `function`）
@@ -39,7 +39,7 @@
     - ✅ 命題（右端第 $2$ 基点の $\textrm{Mark}$ の基本性質）〔`m_7_3_Mark_rightmost2`〕
     - ✅ 命題（$\textrm{Trans}$ の最左単項成分の左端の基本性質）〔`m_7_3_Trans_leftmost`((1)(2)(3)完全形, clause(3)明確化C1)〕
     - ✅ 命題（$\textrm{Trans}$ が単項性を保つこと）〔`m_7_3_Trans_monoT`(A16訂正: P₀非零項前提の iff)。memory `pss-73-trans-monoT-false`〕
-    - 🚨 系（$\textrm{Trans}$ と非可算基数の関係）〔組合せ的(Trans M=D_v0 ⟺ M=((v,v))等)、基数は名前のみ、既存green補題で到達可〕
+    - 🚨🤖 系（$\textrm{Trans}$ と非可算基数の関係）〔組合せ的(Trans M=D_v0 ⟺ M=((v,v))等)、基数は名前のみ、既存green補題で到達可〕
     - ✅ 系（左端第 $1$ 基点の $\textrm{Mark}$ の基本性質）〔`m_7_3_Mark_leftmost1`〕
     - ✅ 系（$s_1$ と $b_1$ の空性と基点の関係）〔`m_7_3_s1_b1_empty`〕
     - ✅ 命題（$\textrm{Mark}$ が順序関係を保つこと）〔`m_7_4_Mark_order`(A19)。memory `pss-74-nextadm`〕
