@@ -22,7 +22,7 @@
     - 🚨 命題（scb分解と基本列の関係）
       - ✅ (1) `m_7_2_scb_fseq_succ`（後続型 operB_dom 有限導出、Lemma3.2 回避）
       - ✅ (1-2) scb 保存 `m_7_2_scb_fseq_scb`（hang修正=length-collapse/`operB_dom_multi_peel`/`dfree_BT_addBT`）
-      - 🚨 (2) xseq/Lemma3.2 要確認
+      - 🚨 (2) xseq/Lemma3.2：A23で([].4)(ii)訂正確定(`a[n]=D_v xₙ`、106/106検証)、operB定義追従後に解禁見込み
     - ✅ 命題（$\textrm{RightNodes}$ と部分表現の関係）〔`m_7_2_RightNodes_subexpr`〕
   - 🚨 §7.3 翻訳写像
     - ✅ **定義** `Trans`/`Mark`（相互再帰 `function`）
