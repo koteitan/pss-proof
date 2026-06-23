@@ -23564,4 +23564,120 @@ proof -
   show ?thesis by (rule trans_surgery_value[OF MR mono L t1ne])
 qed
 
+
+text \<open>§8.2 keystone Admpos branch, sub-step (a) — nested-site shape.  Both the
+  marked principal \<open>c\<^sub>1 = transC1 M\<close> and its surgical replacement
+  \<open>c\<^sub>2 = transC2 M\<close> are single principal \<open>T\<^bsub>B\<^esub>\<close>-terms with the SAME head
+  \<open>v = transV M\<close>: \<open>c\<^sub>1 = D\<^sub>v (transT2 M)\<close> and \<open>c\<^sub>2 = D\<^sub>v (bpHeadT (transC2 M))\<close>.  For
+  \<open>c\<^sub>1\<close> this is @{thm [source] transC1_single_principal} + reconstruction; for \<open>c\<^sub>2\<close>
+  it is immediate from the verbatim \<open>let\<close> body of @{const transC2}, whose every
+  branch is \<open>D\<^bsub>(transV M)\<^esub> (\<dots>)\<close>.  This is the invariant that makes the surgical
+  substitution \<open>flatBT c\<^sub>1 \<leadsto> flatBT c\<^sub>2\<close> (from @{thm [source] trans_surgery_value})
+  replace a single principal node-body by another with the same head, keeping the
+  enclosing string a well-formed term string.  Empirically exact (trans_model,
+  \<open>RT\<^bsub>PS\<^esub> \<inter> PT\<^bsub>PS\<^esub>\<close> monoT, length \<le> 5, all 67 \<open>transJm1 M > 0\<close> Admpos cases: 0
+  share-head violations).\<close>
+
+lemma transC2_single_principal_head:
+  fixes M :: pairseq
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS"
+    and J1pos: "transJ1 M > 0" and T1: "transT1 M \<noteq> 0\<^sub>B"
+  shows "transC1 M = Dpt (transV M) (transT2 M)"
+    and "transC2 M = Dpt (transV M) (bpHeadT (transC2 M))"
+    and "bpHeadV (transC1 M) = transV M"
+    and "bpHeadV (transC2 M) = transV M"
+proof -
+  \<comment> \<open>c1 single principal, reconstruct\<close>
+  have pc1: "Lng (PB (transC1 M)) = 1"
+    by (rule transC1_single_principal[OF MR MP J1pos T1])
+  show c1eq: "transC1 M = Dpt (transV M) (transT2 M)"
+    using principal_reconstruct[OF pc1] by (simp add: transV_def transT2_def)
+  show "bpHeadV (transC1 M) = transV M" by (simp add: transV_def)
+  \<comment> \<open>c2: every branch of the transC2 body is Dpt (transV M) (..)\<close>
+  let ?j1 = "transJ1 M"
+  let ?jp = "transJ0 M"
+  let ?v  = "transV M"
+  let ?t2 = "transT2 M"
+  let ?J1 = "Lng (PB ?t2) - 1"
+  let ?pj = "PB ?t2 ! ?J1"
+  let ?ld = "(bpHeadV ?pj = enat (entry M 1 ?jp))"
+  let ?t3 = "(if ?ld then SigmaB (take ?J1 (PB ?t2)) else ?t2)"
+  let ?t4 = "(if ?ld then bpHeadT ?pj else ?t2)"
+  have c2body: "\<exists>body. transC2 M = Dpt (transV M) body"
+    unfolding transC2_def Let_def
+    by (simp only: transV_def[symmetric] transT2_def[symmetric] transJ1_def[symmetric]
+                   transJ0_def[symmetric] split: if_split) blast
+  then obtain body where c2b: "transC2 M = Dpt (transV M) body" by blast
+  have hv2: "bpHeadV (transC2 M) = transV M" using c2b by simp
+  show "bpHeadV (transC2 M) = transV M" by (rule hv2)
+  have bt2: "bpHeadT (transC2 M) = body" using c2b by simp
+  show "transC2 M = Dpt (transV M) (bpHeadT (transC2 M))"
+    using c2b bt2 by simp
+qed
+
+
+text \<open>§8.2 keystone Admpos branch, surgery localization (combines sub-step (a)
+  with @{thm [source] trans_surgery_value}).  In the \<open>monoT\<close>, \<open>t\<^sub>1 \<noteq> 0\<close> regime
+  there are shared scb-strings \<open>s\<^sub>1\<close> (a \<open>\<Sigma>\<close>-string) and \<open>b\<^sub>1\<close> (a run of \<open>\<^bold>)\<close>)
+  and a single head \<open>v = transV M\<close> and bodies \<open>t\<^sub>2 = transT2 M\<close>, \<open>body\<^sub>2\<close> with
+  \<^item> \<open>Trans (Pred M) = unflatBT (s\<^sub>1 @ flatBT (D\<^sub>v t\<^sub>2) @ b\<^sub>1)\<close>,
+  \<^item> \<open>Trans M       = unflatBT (s\<^sub>1 @ flatBT (D\<^sub>v body\<^sub>2) @ b\<^sub>1)\<close>,
+  and \<open>(s\<^sub>1, flatBT (D\<^sub>v t\<^sub>2), b\<^sub>1)\<close> is an scb-decomposition of \<open>Trans (Pred M)\<close>.
+  So \<open>Trans M\<close> arises from \<open>Trans (Pred M)\<close> by replacing a SINGLE marked principal
+  \<open>D\<^sub>v t\<^sub>2\<close> by \<open>D\<^sub>v body\<^sub>2\<close> — same head \<open>v\<close>, same enclosing \<open>s\<^sub>1\<close>/\<open>b\<^sub>1\<close> wrappers.
+  This is the maximal value-level localization that holds with no geometric input;
+  the §8.2 keystone clauses (3)/(4) then read off a TOP-body split at the
+  last-branch head \<open>entry M 1 j\<^sub>1'\<close> / \<open>entry M 1 j\<^sub>0'\<close>, which is a SEPARATE geometric
+  step (see the blocker note in the agent report).  Empirically exact: trans_model,
+  \<open>RT\<^bsub>PS\<^esub> \<inter> PT\<^bsub>PS\<^esub>\<close> monoT, length \<le> 5, all 67 \<open>transJm1 M > 0\<close> Admpos cases —
+  0 violations of the surgery identity and 0 of the same-head invariant.\<close>
+
+lemma trans_surgery_localized:
+  fixes M :: pairseq
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS"
+    and J1pos: "transJ1 M > 0" and T1: "transT1 M \<noteq> 0\<^sub>B"
+  shows "\<exists>s1 b1 body2.
+            scb_decomp (Trans (Pred M)) s1 (flatBT (Dpt (transV M) (transT2 M))) b1
+          \<and> (\<forall>x \<in> set b1. x = RP)
+          \<and> Trans (Pred M) = unflatBT (s1 @ flatBT (Dpt (transV M) (transT2 M)) @ b1)
+          \<and> Trans M = unflatBT (s1 @ flatBT (Dpt (transV M) body2) @ b1)
+          \<and> transC1 M = Dpt (transV M) (transT2 M)
+          \<and> transC2 M = Dpt (transV M) body2"
+proof -
+  have mono: "monoT M" using MP by (simp add: PT_PS_def)
+  have L: "1 < Lng M" using J1pos by (simp add: transJ1_def)
+  have t1ne: "Trans (Pred M) \<noteq> 0\<^sub>B" using T1 by (simp add: transT1_def)
+  \<comment> \<open>nested-site shape (sub-step (a))\<close>
+  have c1eq: "transC1 M = Dpt (transV M) (transT2 M)"
+    by (rule transC2_single_principal_head(1)[OF MR MP J1pos T1])
+  have c2eq: "transC2 M = Dpt (transV M) (bpHeadT (transC2 M))"
+    by (rule transC2_single_principal_head(2)[OF MR MP J1pos T1])
+  define body2 where "body2 = bpHeadT (transC2 M)"
+  have c2eq': "transC2 M = Dpt (transV M) body2" using c2eq body2_def by simp
+  \<comment> \<open>the shared surgery strings from @{thm [source] trans_surgery_value}\<close>
+  obtain s1 b1 where
+    dsd: "scb_decomp (Trans (Pred M)) s1 (flatBT (transC1 M)) b1"
+    and bRP: "\<forall>x \<in> set b1. x = RP"
+    and tM: "Trans M = unflatBT (s1 @ flatBT (transC2 M) @ b1)"
+    using trans_surgery_value[OF MR mono L t1ne] by blast
+  \<comment> \<open>read back \<open>Trans (Pred M)\<close> from the scb-decomposition (flat is injective)\<close>
+  have flatTP: "flatBT (Trans (Pred M)) = s1 @ flatBT (transC1 M) @ b1"
+    using dsd by (simp add: scb_decomp_def)
+  have TPunf: "Trans (Pred M) = unflatBT (s1 @ flatBT (transC1 M) @ b1)"
+    using flatTP unflatBT_flat[of "Trans (Pred M)"] by simp
+  \<comment> \<open>assemble, rewriting transC1 M / transC2 M to the Dpt (transV M) (..) shapes\<close>
+  show ?thesis
+  proof (intro exI conjI)
+    show "scb_decomp (Trans (Pred M)) s1 (flatBT (Dpt (transV M) (transT2 M))) b1"
+      using dsd c1eq by simp
+    show "\<forall>x \<in> set b1. x = RP" by (rule bRP)
+    show "Trans (Pred M) = unflatBT (s1 @ flatBT (Dpt (transV M) (transT2 M)) @ b1)"
+      using TPunf c1eq by simp
+    show "Trans M = unflatBT (s1 @ flatBT (Dpt (transV M) body2) @ b1)"
+      using tM c2eq' by simp
+    show "transC1 M = Dpt (transV M) (transT2 M)" by (rule c1eq)
+    show "transC2 M = Dpt (transV M) body2" by (rule c2eq')
+  qed
+qed
+
 end

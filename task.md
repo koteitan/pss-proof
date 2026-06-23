@@ -53,7 +53,7 @@
     - ✅ 系（$\textrm{Pred}$ が公差 $(1,1)$ のペア数列の $\textrm{Trans}$ の基本性質）〔`m_8_1_Pred_diagSeq_Trans`〕
     - 🚨 補題（条件 (I) か (III) の下での $c_1$ 前後の具体表示）（A20/A21）
       - ✅ part(1)(2)(3-1)(3-2)(5) + `Mark_gap_peel` engine
-      - 🚨🤖 (4-1)(4-2)：scaffolding緑(`m_8_1_c1_around_part4_setup/_1/_2`、wt-c1around)、残=各1個 slicepeel sorry(Trans後方スライス前ブロック peel)
+      - 🚨 (4-1)(4-2)：scaffolding緑(`m_8_1_c1_around_part4_setup/_1/_2`、wt-c1around)、残=slicepeel sorry 2個(slice N=seg M jm1' j0 へ Adm0解析移植 Sub-lemma A/B)。(4-1)真58/0、(4-2)ガード経験vacuous
   - 🚨 §8.2 強単項性
     - ✅ 命題（標準形の直系先祖による切片の簡約化の強単項性）〔`m_8_2_standard_slice_Red_strongmono`〕
     - 🚨 命題（条件 (II) か (IV) の下での終切片と $\textrm{Trans}$ の関係）
@@ -61,7 +61,7 @@
     - 🚨 補題（部分表現の単項成分と $\textrm{Pred}$ の関係）(§8.2 keystone)
       - ✅ Adm0 枝 + guard 3/4 (nadmj0/t2ne/e0gt)
       - 🚨 gB-condV (`m_8_2_nadm_diag`=nadm 予の零列、ST_PS 固有)
-      - 🚨🤖 BASE(w=0値=`m_8_1_diagApp_w0_Trans`済)/Admpos(string-level surgery `trans_surgery_value`緑、残=value-level ∃!t123 lift)
+      - 🚨 BASE済/Admpos: localization緑(`trans_surgery_value`/`trans_surgery_localized`)、残=value-level lift(§8.2幾何 j1'≠transJ1 が 24/67 で blocked)
       - 🚨 組立
     - 🚨 補題（強単項性の下での部分表現の単項成分の基本性質）
       - ✅ (1) `m_8_2_subexpr_leftend_unique`
