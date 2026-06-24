@@ -25969,4 +25969,492 @@ proof -
   thus ?thesis using uv by simp
 qed
 
+
+section \<open>§8.6 末尾単項の零化可能性 — the clean-descent one-\<open>[0]\<close>-step peel
+  (\<open>v = 0 \<or> u \<ge> v\<close>), and the \<open>t' = 0\<close> iterated annihilation\<close>
+
+text \<open>The §8.6 補題（順序数項の末尾単項の零化可能性） (content.md 5621) as literally
+  transcribed (\<open>p_8_6_trailing_principal_annihilable\<close>) is FALSE for a general
+  \<open>t' \<in> T\<^bsub>B\<^esub>\<close> with \<open>u < v\<close>: the marked principal \<open>D\<^sub>u(t' + D\<^sub>v 0)\<close> has a
+  multi-component body whose \<open>operB\<close>-image takes the \<open>([].4)(ii)\<close> \<open>xseq\<close>-tower
+  branch, NOT the trailing peel.  Counterexample \<open>D\<^sub>0(D\<^sub>1 0 + D\<^sub>1 0) = D\<^sub>0((D\<^sub>1 0, D\<^sub>1 0))\<close>:
+  one \<open>[0]\<close>-step gives \<open>D\<^sub>0(D\<^sub>0 0)\<close>, NOT \<open>D\<^sub>0(D\<^sub>1 0) = D\<^sub>u t'\<close> nor
+  \<open>D\<^sub>0(D\<^sub>1 0 + D\<^sub>0 0) = D\<^sub>u(t' + D\<^bsub>v-1\<^esub> 0)\<close> (the article's one-step disjunction).
+  Empirically the literal statement holds only 142/252 over a \<open>T\<^bsub>B\<^esub>\<close> sample
+  (operB modelled by \<open>python/buchholz.py\<close>; see correction A25).
+
+  The CLEAN-DESCENT regime \<open>v = 0 \<or> u \<ge> v\<close> makes the \<open>[0]\<close>-step descend through
+  the body via \<open>([].4)(i)\<close>/\<open>([].4)(iii)\<close>, peeling exactly the trailing \<open>+ D\<^sub>v 0\<close>
+  in ONE step (\<open>operB (D\<^sub>u(t' + D\<^sub>v 0)) [0] = D\<^sub>u t'\<close>), true for ALL \<open>t' \<in> T\<^bsub>B\<^esub>\<close>
+  (validated 370/370, operB modelled by \<open>python/buchholz.py\<close>).  This is the form the
+  article's \<open>v = 0\<close> base case and the \<open>u \<ge> v\<close> instantiations actually use.\<close>
+
+text \<open>\<open>domB (t' + D\<^sub>v 0) = T\<^bsub>v-1\<^esub>\<close> for \<open>0 < v\<close> (\<open>domB\<close> reads the last component).\<close>
+
+lemma domB_addBT_Dv0:
+  assumes vpos: "0 < v"
+  shows "domB (t' +\<^sub>B Dpt (enat v) 0\<^sub>B) = TBv (enat (v - 1))"
+proof -
+  obtain xs where x: "t' = Trm xs" by (cases t')
+  have body: "t' +\<^sub>B Dpt (enat v) 0\<^sub>B = Trm (xs @ [DB (enat v) (Trm [])])"
+    using x by simp
+  have ne: "xs @ [DB (enat v) (Trm [])] \<noteq> []" by simp
+  have "domB (t' +\<^sub>B Dpt (enat v) 0\<^sub>B) = domB (Trm [last (xs @ [DB (enat v) (Trm [])])])"
+    unfolding body by (rule domB_last_component[OF ne])
+  also have "\<dots> = domB (Dpt (enat v) 0\<^sub>B)" by simp
+  also have "\<dots> = TBv (enat (v - 1))" by (rule domB_Dw0[OF vpos])
+  finally show ?thesis .
+qed
+
+text \<open>\<open>operB\<close>-domain of \<open>t' + D\<^sub>v 0\<close> at \<open>numBT 0\<close>: the last component is the
+  zero-body principal \<open>D\<^sub>v 0\<close> (@{thm [source] operB_dom_Dv0}), lifted over the
+  (possibly multi-component) prefix by @{thm [source] operB_dom_multi}; the
+  single-component case is \<open>t' = 0\<close>, \<open>t' + D\<^sub>v 0 = D\<^sub>v 0\<close> directly.\<close>
+
+lemma operB_dom_addBT_Dv0:
+  "domB_operB_xseq_dom (Inr (Inl (t' +\<^sub>B Dpt (enat v) 0\<^sub>B, numBT 0)))"
+proof -
+  obtain xs where x: "t' = Trm xs" by (cases t')
+  show ?thesis
+  proof (cases xs)
+    case Nil
+    have "t' +\<^sub>B Dpt (enat v) 0\<^sub>B = Dpt (enat v) 0\<^sub>B" using x Nil by simp
+    thus ?thesis using operB_dom_Dv0[of "enat v" "numBT 0"] by simp
+  next
+    case (Cons p ps)
+    obtain q rest where qr: "ps @ [DB (enat v) (Trm [])] = q # rest"
+      by (cases "ps @ [DB (enat v) (Trm [])]") auto
+    have be: "t' +\<^sub>B Dpt (enat v) 0\<^sub>B = Trm (p # q # rest)" using x Cons qr by simp
+    have pqr: "p # q # rest = p # ps @ [DB (enat v) (Trm [])]" using qr by simp
+    have lst: "last (p # q # rest) = DB (enat v) (Trm [])" using pqr by simp
+    have domLast: "domB_operB_xseq_dom (Inr (Inl (Trm [last (p # q # rest)], numBT 0)))"
+      using operB_dom_Dv0[of "enat v" "numBT 0"] lst by simp
+    have "domB_operB_xseq_dom (Inr (Inl (Trm (p # q # rest), numBT 0)))"
+      by (rule operB_dom_multi[OF domLast])
+    thus ?thesis using be by simp
+  qed
+qed
+
+text \<open>The clean-descent one-\<open>[0]\<close>-step peel: for \<open>v = 0 \<or> u \<ge> v\<close>,
+  \<open>operB (D\<^sub>u(t' + D\<^sub>v 0)) [0] = D\<^sub>u t'\<close>.  \<open>v = 0\<close>: \<open>t' + D\<^sub>0 0\<close> ends in \<open>D\<^sub>0 0\<close>,
+  the \<open>([].4)(i)\<close> successor branch (@{thm [source] operB_single_succ}) gives
+  \<open>(D\<^sub>u t')\<cdot>1 = D\<^sub>u t'\<close>.  \<open>0 < v \<le> u\<close>: \<open>domB(t' + D\<^sub>v 0) = T\<^bsub>v-1\<^esub>\<close> with head
+  \<open>u > v-1\<close>, so @{thm [source] operB_TBv_principal_unfold} descends to
+  \<open>D\<^sub>u(operB (t' + D\<^sub>v 0) [0])\<close>, and the trailing \<open>D\<^sub>v 0\<close> peels to \<open>t'\<close>
+  (@{thm [source] operB_peel_trailing_Dv0} for \<open>t' \<noteq> 0\<close>;
+  @{thm [source] operB_Dv0_num0} for \<open>t' = 0\<close>).\<close>
+
+lemma m_8_6_trailing_principal_peel:
+  assumes uv: "v = 0 \<or> u \<ge> v"
+  shows "operB (Dpt (enat u) (t' +\<^sub>B Dpt (enat v) 0\<^sub>B)) (numBT 0) = Dpt (enat u) t'"
+proof (cases "v = 0")
+  case True
+  have e: "t' +\<^sub>B Dpt (enat v) 0\<^sub>B = t' +\<^sub>B Dpt 0 0\<^sub>B"
+    using True by (simp add: zero_enat_def)
+  have "operB (Dpt (enat u) (t' +\<^sub>B Dpt 0 0\<^sub>B)) (numBT 0)
+          = multBT (Dpt (enat u) t') (numNat (numBT 0) + 1)"
+    by (rule operB_single_succ)
+  also have "\<dots> = multBT (Dpt (enat u) t') (Suc 0)" by (simp add: numNat_numBT)
+  also have "\<dots> = Dpt (enat u) t'" by (rule multBT_1)
+  finally show ?thesis using e by simp
+next
+  case False
+  hence vpos: "0 < v" by simp
+  hence vu: "v \<le> u" using uv by simp
+  let ?body = "t' +\<^sub>B Dpt (enat v) 0\<^sub>B"
+  have db: "domB ?body = TBv (enat (v - 1))" by (rule domB_addBT_Dv0[OF vpos])
+  have bne: "?body \<noteq> Trm []" by (cases t') simp
+  have mw: "enat (v - 1) < enat u" using vpos vu by simp
+  have domc: "domB_operB_xseq_dom (Inr (Inl (?body, numBT 0)))"
+    by (rule operB_dom_addBT_Dv0)
+  have step: "operB (Trm [DB (enat u) ?body]) (numBT 0) = Dprin (enat u) (operB ?body (numBT 0))"
+    by (rule operB_TBv_principal_unfold[OF db bne mw domc])
+  have inner: "operB ?body (numBT 0) = t'"
+  proof (cases "t' = 0\<^sub>B")
+    case True
+    have "?body = Dpt (enat v) 0\<^sub>B" using True by simp
+    thus ?thesis using operB_Dv0_num0[of "enat v"] True by simp
+  next
+    case False
+    show ?thesis by (rule operB_peel_trailing_Dv0[OF False]) simp
+  qed
+  show ?thesis using step inner by simp
+qed
+
+text \<open>Iterated annihilation of the \<open>t' = 0\<close> form \<open>D\<^sub>u(D\<^sub>w 0)\<close> down to \<open>D\<^sub>u 0\<close>
+  (\<open>0 < k \<le> w + 1\<close>) is @{thm [source] operB_iter_Du_Dw0} above.  The
+  clean-descent peel @{thm [source] m_8_6_trailing_principal_peel} is its
+  one-step \<open>+ D\<^sub>v 0\<close> generalisation in the regime where the literal §8.6 lemma
+  is true; combined they discharge the article's induction in that regime.\<close>
+
+
+section \<open>§8.3 命題（条件(II)の下での\<open>Trans\<close>と基本列の交換関係）— leaf (\<open>n = 1\<close>) descent\<close>
+
+text \<open>The \<open>n = 1\<close> base case of the §8.3 proposition
+  @{thm [source] p_8_3_TransCondII_oper_descend}: for \<open>M \<in> ST\<^bsub>PS\<^esub> \<inter> PT\<^bsub>PS\<^esub>\<close>
+  with \<open>Lng M - 1 > 1\<close>, \<open>lessBT (Trans (M[1])) (Trans M)\<close>.
+
+  This is the article's base case (content.md 4038): \<open>M[1] = Pred M\<close>
+  (@{thm [source] m_8_4_oper1_eq_Pred}, \<open>M \<in> T\<^bsub>PS\<^esub>\<close> from
+  @{thm [source] ST_PS_T_PS}), so the descent is exactly the §7.3
+  \<open>Pred\<close>-on-\<open>Trans\<close> descent @{thm [source] m_7_3_Pred_Trans_descend}
+  (\<open>M \<in> RT\<^bsub>PS\<^esub>\<close> from @{thm [source] m_6_7_ST_PS_subseteq_RT_PS}; \<open>1 < Lng M\<close>
+  from \<open>Lng M - 1 > 1\<close>).  Empirically (\<open>python/_83_descend3.py\<close>): on the canonical
+  condition-(II) member \<open>(0,0)(1,1)(2,2)(2,0)\<close>, \<open>Trans (M[1]) = D\<^sub>0(D\<^sub>2 0)\<close> is
+  strictly below \<open>Trans M = D\<^sub>0(D\<^sub>2 0 + D\<^sub>1(D\<^sub>2 0 + D\<^sub>0 0))\<close>; the full statement
+  (all \<open>n\<close>) holds 0 failures on every reduced \<open>monoT\<close> condition-(II) member tested.
+
+  The condition-(II)/\<open>PT\<^bsub>PS\<^esub>\<close> hypotheses are not needed for the leaf case (it is
+  pure \<open>Pred\<close> descent), but are kept to mirror the article statement.\<close>
+
+lemma m_8_3_TransCondII_oper1_descend:
+  fixes M :: pairseq
+  assumes MST: "M \<in> ST_PS" and MP: "M \<in> PT_PS"
+    and j1: "Lng M - 1 > 1"
+    and cond: "transCondII M"
+  shows "lessBT (Trans (M[1])) (Trans M)"
+proof -
+  have MT: "M \<in> T_PS" by (rule ST_PS_T_PS[OF MST])
+  have MR: "M \<in> RT_PS" using MST m_6_7_ST_PS_subseteq_RT_PS by blast
+  have L: "1 < Lng M" using j1 by linarith
+  have oper1: "M[1] = Pred M" by (rule m_8_4_oper1_eq_Pred[OF MT])
+  have "lessBT (Trans (Pred M)) (Trans M)"
+    using m_7_3_Pred_Trans_descend[rule_format, OF MR L] .
+  thus ?thesis unfolding oper1 .
+qed
+
+
+section \<open>§8.2 keystone Admpos branch, STEP 1: confinement \<open>\<rightarrow>\<close> body-split
+  (value-level, geometry-free)\<close>
+
+text \<open>A non-zero \<open>BT\<close> splits as a prefix \<open>+\<^sub>B\<close> its last principal component,
+  \<open>t = SigmaB (butlast (PB t)) +\<^sub>B Dpt (bpHeadV (last (PB t))) (bpHeadT (last (PB t)))\<close>.
+  Pure list algebra on @{const SigmaB} / @{const PB}.\<close>
+
+lemma BT_split_last_principal:
+  assumes tne: "t \<noteq> 0\<^sub>B"
+  shows "t = SigmaB (butlast (PB t))
+              +\<^sub>B Dpt (bpHeadV (last (PB t))) (bpHeadT (last (PB t)))"
+proof -
+  obtain ps where tps: "t = Trm ps" by (cases t)
+  have psne: "ps \<noteq> []" using tne tps by auto
+  have PBt: "PB t = map (\<lambda>p. Trm [p]) ps" by (simp add: PB_def tps)
+  have PBne: "PB t \<noteq> []" using psne by (simp add: PBt)
+  obtain w u where lastp: "last ps = DB w u" by (cases "last ps")
+  have lastPB: "last (PB t) = Trm [DB w u]"
+    using psne by (simp add: PBt last_map lastp)
+  have hv: "bpHeadV (last (PB t)) = w" using lastPB by simp
+  have ht: "bpHeadT (last (PB t)) = u" using lastPB by simp
+  have splitps: "ps = butlast ps @ [DB w u]"
+    using psne lastp by (metis append_butlast_last_id)
+  have bl: "butlast (PB t) = map (\<lambda>p. Trm [p]) (butlast ps)"
+    by (simp add: PBt map_butlast)
+  have sigmaPre: "\<And>qs::BP list. SigmaB (map (\<lambda>p. Trm [p]) qs) = Trm qs"
+  proof -
+    fix qs :: "BP list"
+    show "SigmaB (map (\<lambda>p. Trm [p]) qs) = Trm qs"
+      by (induct qs) (auto simp: SigmaB_def)
+  qed
+  have preTrm: "SigmaB (butlast (PB t)) = Trm (butlast ps)"
+    unfolding bl by (rule sigmaPre)
+  have "SigmaB (butlast (PB t)) +\<^sub>B Dpt w u = Trm (butlast ps) +\<^sub>B Trm [DB w u]"
+    using preTrm by simp
+  also have "\<dots> = Trm (butlast ps @ [DB w u])" by simp
+  also have "\<dots> = Trm ps" using splitps by simp
+  finally show ?thesis using tps hv ht by simp
+qed
+
+
+lemma flatBP_inj: "flatBP p = flatBP q \<Longrightarrow> p = q"
+proof -
+  assume "flatBP p = flatBP q"
+  hence "flatBT (Trm [p]) = flatBT (Trm [q])" by simp
+  hence "Trm [p] = Trm [q]" by (rule m_7_flatBT_inj)
+  thus "p = q" by simp
+qed
+
+text \<open>STEP 1 ENGINE.  A single outer principal \<open>X = D\<^bsub>e10\<^esub> BP\<close> (\<open>BP \<noteq> 0\<close>) whose
+  scb-surgery site \<open>D\<^sub>v t\<^sub>2\<close> is strictly nested (\<open>X \<noteq> D\<^sub>v t\<^sub>2\<close>), with replacement
+  \<open>D\<^sub>v body\<^sub>2\<close> (a dfree principal) producing \<open>Y\<close>: the surgery is confined to the
+  LAST top-component of \<open>BP\<close>, so \<open>BP = pre +\<^sub>B D\<^sub>w u\<^sub>2\<close> and
+  \<open>Y = D\<^bsub>e10\<^esub>(pre +\<^sub>B D\<^sub>w u\<^sub>3)\<close> for a shared prefix \<open>pre\<close> and a shared last-component
+  head \<open>w\<close>.  Confinement-alignment is pinned by uniqueness of the scb-decomposition
+  (@{thm [source] m_7_2_scb_unique_sb}): the two decompositions of \<open>BP\<close> at
+  \<open>flatBT (D\<^sub>v t\<^sub>2)\<close> — the surgical one \<open>(s\<^sub>1', \<dots>, b\<^sub>1)\<close> and the last-component one
+  \<open>(PRE @ sc, \<dots>, bc @ POST)\<close> — coincide.\<close>
+
+lemma scb_outer_surgery_split:
+  fixes e10 v :: enat and BP body2 t2 :: BT and s1 b1 :: "Sym list"
+  assumes BPne: "BP \<noteq> 0\<^sub>B"
+    and dd: "scb_decomp (Dpt e10 BP) s1 (flatBT (Dpt v t2)) b1"
+    and dfv: "dfree_BP (DB v body2)"
+    and ne: "Dpt e10 BP \<noteq> Dpt v t2"
+    and Yflat: "flatBT Y = s1 @ flatBT (Dpt v body2) @ b1"
+  shows "\<exists>pre w u2 u3.
+            BP = pre +\<^sub>B Dpt w u2
+          \<and> Y = Dpt e10 (pre +\<^sub>B Dpt w u3)"
+proof -
+  have Xflat: "flatBT (Dpt e10 BP) = s1 @ flatBP (DB v t2) @ b1"
+    using dd by (simp add: scb_decomp_def)
+  have b1RP: "\<forall>x \<in> set b1. x = RP" using dd by (simp add: scb_decomp_def)
+  have iptv: "isPTB_str (flatBT (Dpt v t2))" using dd by (simp add: scb_decomp_def)
+  \<comment> \<open>\<open>s\<^sub>1 \<noteq> []\<close> (else cancel to \<open>X = D\<^sub>v t\<^sub>2\<close>)\<close>
+  have s1ne: "s1 \<noteq> []"
+  proof
+    assume s0: "s1 = []"
+    have "flatBP (DB e10 BP) @ [] = flatBP (DB v t2) @ b1"
+      using Xflat s0 by simp
+    hence cc: "flatBP (DB e10 BP) = flatBP (DB v t2) \<and> [] = b1"
+      using flatinj_flatBP_cancel by blast
+    have "DB e10 BP = DB v t2" using flatBP_inj cc by blast
+    hence "Dpt e10 BP = Dpt v t2" by simp
+    thus False using ne by simp
+  qed
+  have hd0: "flatBT (Dpt e10 BP) = Dsym e10 # flatBT BP" by simp
+  obtain s1' where s1': "s1 = Dsym e10 # s1'"
+    using s1ne Xflat hd0 by (cases s1) auto
+  have BPdec: "flatBT BP = s1' @ flatBP (DB v t2) @ b1"
+    using Xflat hd0 s1' by simp
+  have dBP: "scb_decomp BP s1' (flatBT (Dpt v t2)) b1"
+    unfolding scb_decomp_def using BPdec b1RP iptv by simp
+  \<comment> \<open>last-component confinement on \<open>BP\<close>\<close>
+  have BPne': "BP \<noteq> Trm []" using BPne by simp
+  obtain sc bc where lcomp: "flatBP (last (untrm BP)) = sc @ flatBP (DB v t2) @ bc"
+      and bcRP: "\<forall>x \<in> set bc. x = RP"
+    using scb_to_last_component[OF dBP BPne'] by auto
+  \<comment> \<open>split \<open>BP = pre +\<^sub>B D\<^sub>w u\<^sub>2\<close>\<close>
+  define pre where "pre = SigmaB (butlast (PB BP))"
+  define w   where "w = bpHeadV (last (PB BP))"
+  define u2  where "u2 = bpHeadT (last (PB BP))"
+  have BPsplit: "BP = pre +\<^sub>B Dpt w u2"
+    using BT_split_last_principal[OF BPne] by (simp add: pre_def w_def u2_def)
+  obtain ps where psBP: "BP = Trm ps" by (cases BP)
+  have psne: "ps \<noteq> []" using BPne psBP by auto
+  have lastform: "last (untrm BP) = DB w u2"
+  proof -
+    obtain a b where lp: "last ps = DB a b" by (cases "last ps")
+    have "last (PB BP) = Trm [DB a b]"
+      using psne by (simp add: PB_def psBP last_map lp)
+    hence "w = a \<and> u2 = b" by (simp add: w_def u2_def)
+    thus ?thesis using psBP lp by simp
+  qed
+  have lcomp2: "flatBP (DB w u2) = sc @ flatBP (DB v t2) @ bc"
+    using lcomp lastform by simp
+  \<comment> \<open>multi-last wrappers\<close>
+  define PRE where "PRE = (if butlast ps = [] then [] else Wpre (butlast ps))"
+  define POST where "POST = (if butlast ps = [] then [] else [RP])"
+  have psform: "ps = butlast ps @ [DB w u2]"
+    using psne lastform psBP by (metis append_butlast_last_id untrm.simps)
+  have flatBP_split: "flatBT BP = PRE @ flatBP (DB w u2) @ POST"
+  proof (cases "butlast ps = []")
+    case True
+    have "ps = [DB w u2]" using psform True by simp
+    thus ?thesis using psBP True by (simp add: PRE_def POST_def)
+  next
+    case False
+    have "flatBT BP = flatBT (Trm (butlast ps @ [DB w u2]))"
+      using psBP psform by simp
+    also have "\<dots> = Wpre (butlast ps) @ flatBP (DB w u2) @ [RP]"
+      by (rule flatBT_multi_last[OF False])
+    finally show ?thesis using False by (simp add: PRE_def POST_def)
+  qed
+  have altdec: "flatBT BP = (PRE @ sc) @ flatBP (DB v t2) @ (bc @ POST)"
+    using flatBP_split lcomp2 by simp
+  have POSTrp: "\<forall>x \<in> set POST. x = RP" by (simp add: POST_def)
+  have bcPOSTrp: "\<forall>x \<in> set (bc @ POST). x = RP" using bcRP POSTrp by auto
+  have dBP2: "scb_decomp BP (PRE @ sc) (flatBT (Dpt v t2)) (bc @ POST)"
+    unfolding scb_decomp_def using altdec bcPOSTrp iptv by simp
+  have uniq: "s1' = PRE @ sc \<and> b1 = bc @ POST"
+    by (rule m_7_2_scb_unique_sb[OF dBP dBP2 BPne'])
+  \<comment> \<open>surgered last component, head \<open>w\<close>\<close>
+  obtain lc' where lc'flat: "flatBP lc' = sc @ flatBP (DB v body2) @ bc"
+    using scbimg_image_BP[OF lcomp2 bcRP, of "DB v body2"] by blast
+  have lc'head: "\<exists>u3. lc' = DB w u3"
+  proof -
+    obtain a b where lc'ab: "lc' = DB a b" by (cases lc')
+    have e1: "Dsym a # flatBT b = sc @ flatBP (DB v body2) @ bc"
+      using lc'flat lc'ab by simp
+    have e2: "Dsym w # flatBT u2 = sc @ flatBP (DB v t2) @ bc"
+      using lcomp2 by simp
+    have "Dsym a = Dsym w"
+    proof (cases sc)
+      case Nil
+      have "Dsym a = Dsym v" using e1 Nil by simp
+      moreover have "Dsym w = Dsym v" using e2 Nil by simp
+      ultimately show ?thesis by simp
+    next
+      case (Cons x xs)
+      have "Dsym a = x" using e1 Cons by simp
+      moreover have "Dsym w = x" using e2 Cons by simp
+      ultimately show ?thesis by simp
+    qed
+    thus ?thesis using lc'ab by auto
+  qed
+  obtain u3 where u3: "lc' = DB w u3" using lc'head by blast
+  define BM' where "BM' = pre +\<^sub>B Dpt w u3"
+  have sigmaPre: "\<And>qs::BP list. SigmaB (map (\<lambda>p. Trm [p]) qs) = Trm qs"
+  proof -
+    fix qs :: "BP list"
+    show "SigmaB (map (\<lambda>p. Trm [p]) qs) = Trm qs"
+      by (induct qs) (auto simp: SigmaB_def)
+  qed
+  have PBBP: "PB BP = map (\<lambda>p. Trm [p]) ps" by (simp add: PB_def psBP)
+  have blBP: "butlast (PB BP) = map (\<lambda>p. Trm [p]) (butlast ps)"
+    by (simp add: PBBP map_butlast)
+  have preTrm: "pre = Trm (butlast ps)"
+    unfolding pre_def blBP by (rule sigmaPre)
+  have BM'ps: "BM' = Trm (butlast ps @ [DB w u3])"
+    using preTrm by (simp add: BM'_def)
+  have flatBM': "flatBT BM' = PRE @ flatBP (DB w u3) @ POST"
+  proof (cases "butlast ps = []")
+    case True
+    have "BM' = Trm [DB w u3]" using BM'ps True by simp
+    thus ?thesis using True by (simp add: PRE_def POST_def)
+  next
+    case False
+    have "flatBT BM' = flatBT (Trm (butlast ps @ [DB w u3]))" using BM'ps by simp
+    also have "\<dots> = Wpre (butlast ps) @ flatBP (DB w u3) @ [RP]"
+      by (rule flatBT_multi_last[OF False])
+    finally show ?thesis using False by (simp add: PRE_def POST_def)
+  qed
+  have flatBM'2: "flatBT BM' = PRE @ sc @ flatBP (DB v body2) @ bc @ POST"
+    using flatBM' lc'flat u3 by simp
+  have Yflat2: "flatBT Y = Dsym e10 # (s1' @ flatBP (DB v body2) @ b1)"
+    using Yflat s1' by simp
+  have "s1' @ flatBP (DB v body2) @ b1
+          = (PRE @ sc) @ flatBP (DB v body2) @ (bc @ POST)"
+    using uniq by simp
+  also have "\<dots> = PRE @ sc @ flatBP (DB v body2) @ bc @ POST" by simp
+  also have "\<dots> = flatBT BM'" using flatBM'2 by simp
+  finally have inner: "s1' @ flatBP (DB v body2) @ b1 = flatBT BM'" .
+  have "flatBT Y = Dsym e10 # flatBT BM'" using Yflat2 inner by simp
+  also have "\<dots> = flatBT (Dpt e10 BM')" by simp
+  finally have "flatBT Y = flatBT (Dpt e10 BM')" .
+  hence Yeq: "Y = Dpt e10 BM'" by (rule m_7_flatBT_inj)
+  show ?thesis
+    using BPsplit Yeq by (auto simp: BM'_def)
+qed
+
+text \<open>STEP 1 (body-split for the Admpos branch).  For \<open>M \<in> RT\<^bsub>PS\<^esub> \<inter> PT\<^bsub>PS\<^esub>\<close>,
+  \<open>j\<^sub>1 = Lng M - 1 > 1\<close>, \<open>transJm1 M > 0\<close>, \<open>Trans (Pred M) \<noteq> 0\<close>: both
+  \<open>Trans (Pred M)\<close> and \<open>Trans M\<close> are the SAME outer principal \<open>D\<^bsub>M\<^bsub>1,0\<^esub>\<^esub>(\<dots>)\<close>
+  whose bodies share a prefix \<open>pre\<close> and a common trailing-principal head \<open>w\<close>:
+  \<open>Trans (Pred M) = D\<^bsub>M\<^bsub>1,0\<^esub>\<^esub>(pre +\<^sub>B D\<^sub>w u\<^sub>2)\<close>, \<open>Trans M = D\<^bsub>M\<^bsub>1,0\<^esub>\<^esub>(pre +\<^sub>B D\<^sub>w u\<^sub>3)\<close>.
+  Geometry-free (the identification \<open>w \<in> {entry M 1 j'\<^sub>1, entry M 1 j'\<^sub>0}\<close> is the
+  separate §7.4 step).  Empirically exact (trans_model, \<open>RT\<^bsub>PS\<^esub> \<inter> PT\<^bsub>PS\<^esub>\<close> monoT,
+  length \<le> 6, all 1794 \<open>transJm1 M > 0\<close> cases — 0 violations of the body-split).\<close>
+
+lemma trans_admpos_body_split:
+  fixes M :: pairseq
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS"
+    and j1gt: "Lng M - 1 > 1"
+    and Admpos: "transJm1 M > 0"
+    and t1ne: "Trans (Pred M) \<noteq> 0\<^sub>B"
+  shows "\<exists>pre w u2 u3.
+            Trans (Pred M) = Dpt (enat (entry M 1 0)) (pre +\<^sub>B Dpt w u2)
+          \<and> Trans M       = Dpt (enat (entry M 1 0)) (pre +\<^sub>B Dpt w u3)"
+proof -
+  have mono: "monoT M" using MP by (simp add: PT_PS_def)
+  have L: "1 < Lng M" using j1gt by simp
+  have J1pos: "transJ1 M > 0" using L by (simp add: transJ1_def)
+  have T1: "transT1 M \<noteq> 0\<^sub>B" using t1ne by (simp add: transT1_def)
+  have predRT: "Pred M \<in> RT_PS" by (rule Pred_PT_PS_t1ne(1)[OF MR MP J1pos T1])
+  have predPT: "Pred M \<in> PT_PS" by (rule Pred_PT_PS_t1ne(2)[OF MR MP J1pos T1])
+  have MT: "M \<in> T_PS" using MP by (simp add: PT_PS_def)
+  have hp: "hasParent M 0 (Lng M - 1)" by (rule monoT_hasParent0_last[OF MT mono L])
+  \<comment> \<open>\<open>transC1 M \<noteq> Trans (Pred M)\<close> in Admpos (left-end first basepoint)\<close>
+  have c1mark: "transC1 M = Mark (Pred M) (transJm1 M)" by (simp add: transC1_def)
+  have mkd: "(Pred M, transJm1 M) \<in> Marked"
+    using Marked_Pred_Adm[OF MT L hp]
+    by (simp add: transJm1_def transJ0_def transJ1_def)
+  have c1ne_tP: "transC1 M \<noteq> Trans (Pred M)"
+  proof -
+    have "(Mark (Pred M) (transJm1 M) = Trans (Pred M)) \<longleftrightarrow> (transJm1 M = 0)"
+      by (rule m_7_3_Mark_leftmost1(2)[OF predRT predPT mkd])
+    thus ?thesis using Admpos c1mark by simp
+  qed
+  \<comment> \<open>outer principals\<close>
+  have outP: "Trans (Pred M) = Dpt (enat (entry M 1 0)) (bpHeadT (Trans (Pred M)))"
+    by (rule trans_admpos_outer_principal(1)[OF MR MP j1gt t1ne])
+  have outM: "Trans M = Dpt (enat (entry M 1 0)) (bpHeadT (Trans M))"
+    by (rule trans_admpos_outer_principal(2)[OF MR MP j1gt t1ne])
+  define e10 where "e10 = enat (entry M 1 0)"
+  define BP where "BP = bpHeadT (Trans (Pred M))"
+  have TP: "Trans (Pred M) = Dpt e10 BP" using outP by (simp add: e10_def BP_def)
+  \<comment> \<open>surgery localization\<close>
+  obtain s1 b1 body2 where
+    dsd: "scb_decomp (Trans (Pred M)) s1 (flatBT (Dpt (transV M) (transT2 M))) b1"
+    and bRP: "\<forall>x \<in> set b1. x = RP"
+    and tM: "Trans M = unflatBT (s1 @ flatBT (Dpt (transV M) body2) @ b1)"
+    and c1eq: "transC1 M = Dpt (transV M) (transT2 M)"
+    and c2eq: "transC2 M = Dpt (transV M) body2"
+    using trans_surgery_localized[OF MR MP J1pos T1] by blast
+  define v where "v = transV M"
+  define t2 where "t2 = transT2 M"
+  \<comment> \<open>\<open>transC1 M \<in> T\<^bsub>B\<^esub>\<close>: \<open>v \<noteq> \<infinity>\<close>, \<open>t\<^sub>2\<close> dfree\<close>
+  have c1val: "transC1 M = Mark (Pred M) (Adm M (parent M 0 (Lng M - 1)))"
+    by (simp add: transC1_def transJm1_def transJ0_def transJ1_def)
+  have mkd': "(Pred M, Adm M (parent M 0 (Lng M - 1))) \<in> Marked"
+    by (rule Marked_Pred_Adm[OF MT L hp])
+  have c1TB: "transC1 M \<in> T_B"
+    using m_7_3_Mark_in_T_B[OF predRT mkd'] c1val by simp
+  have vne: "transV M \<noteq> \<infinity>" using c1TB c1eq by (auto simp: T_B_def)
+  have t2df: "dfree_BT (transT2 M)" using c1TB c1eq by (auto simp: T_B_def)
+  have c2df: "dfree_BT (transC2 M)" by (rule dfree_transC2[OF vne t2df])
+  have dfv: "dfree_BP (DB v body2)"
+    using c2df c2eq by (simp add: v_def)
+  \<comment> \<open>\<open>X = D\<^bsub>e10\<^esub> BP\<close>, decomp\<close>
+  have ddX: "scb_decomp (Dpt e10 BP) s1 (flatBT (Dpt v t2)) b1"
+    using dsd TP by (simp add: v_def t2_def)
+  have ne: "Dpt e10 BP \<noteq> Dpt v t2"
+  proof -
+    have "Dpt v t2 = transC1 M" using c1eq by (simp add: v_def t2_def)
+    moreover have "transC1 M \<noteq> Trans (Pred M)" by (rule c1ne_tP)
+    ultimately have "Dpt v t2 \<noteq> Trans (Pred M)" by simp
+    hence "Dpt v t2 \<noteq> Dpt e10 BP" using TP by simp
+    thus ?thesis by (rule not_sym)
+  qed
+  \<comment> \<open>\<open>BP \<noteq> 0\<close> (length argument)\<close>
+  have iptv: "isPTB_str (flatBT (Dpt v t2))" using ddX by (simp add: scb_decomp_def)
+  have flat2: "length (flatBT (Dpt v t2)) \<ge> 2"
+    using flatBT_len_ge2[of "Dpt v t2"] by simp
+  have Xfl: "flatBT (Dpt e10 BP) = s1 @ flatBT (Dpt v t2) @ b1"
+    using ddX by (simp add: scb_decomp_def)
+  have BPne: "BP \<noteq> 0\<^sub>B"
+  proof
+    assume BP0: "BP = 0\<^sub>B"
+    have fl0: "flatBT (Dpt e10 BP) = [Dsym e10, Zsym]" using BP0 by simp
+    have eqstr: "[Dsym e10, Zsym] = s1 @ flatBT (Dpt v t2) @ b1"
+      using fl0 Xfl by simp
+    have "length ([Dsym e10, Zsym]::Sym list)
+            = length s1 + length (flatBT (Dpt v t2)) + length b1"
+      using arg_cong[OF eqstr, of length] by simp
+    hence lensum: "length s1 + length (flatBT (Dpt v t2)) + length b1 = 2" by simp
+    have "length s1 = 0 \<and> length b1 = 0" using lensum flat2 by linarith
+    hence s0: "s1 = []" and b0: "b1 = []" by simp_all
+    have "flatBT (Dpt e10 BP) = flatBT (Dpt v t2)" using Xfl s0 b0 by simp
+    hence "Dpt e10 BP = Dpt v t2" by (rule m_7_flatBT_inj)
+    thus False using ne by simp
+  qed
+  \<comment> \<open>\<open>Y = Trans M\<close>, flat form via the surgery image\<close>
+  have XflBP: "flatBT (Dpt e10 BP) = s1 @ flatBP (DB v t2) @ b1"
+    using Xfl by simp
+  obtain t' where t'flat: "flatBT t' = s1 @ flatBP (DB v body2) @ b1"
+    using scbimg_image_BT[OF XflBP bRP, of "DB v body2"] by blast
+  have t'flat': "flatBT t' = s1 @ flatBT (Dpt v body2) @ b1" using t'flat by simp
+  have tMt': "Trans M = t'"
+  proof -
+    have "Trans M = unflatBT (flatBT t')" using tM t'flat' by (simp add: v_def)
+    also have "\<dots> = t'" by (rule unflatBT_flat)
+    finally show ?thesis .
+  qed
+  have Yflat: "flatBT (Trans M) = s1 @ flatBT (Dpt v body2) @ b1"
+    using tMt' t'flat' by simp
+  obtain pre w u2 u3 where
+    sp1: "BP = pre +\<^sub>B Dpt w u2" and sp2: "Trans M = Dpt e10 (pre +\<^sub>B Dpt w u3)"
+    using scb_outer_surgery_split[OF BPne ddX dfv ne Yflat] by blast
+  show ?thesis
+    using sp1 sp2 TP by (auto simp: e10_def)
+qed
+
 end

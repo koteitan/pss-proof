@@ -675,6 +675,38 @@ xseq タワーは \(x_0 = D_{v-1} 0\)（基底、\(s_0,b_0\) に包まれない�
 ### 形式化での扱い
 **\(s_0=b_0=()\) の基本ケースを証明済**: `m_7_2_scb_fseq_kind1_basic`（`pss_wip.thy`、A23 適用後の `operB_kind1_unfold` + xseq タワー `flatBT_Dprin_funpow_tower`）。これは下流 §8.6/§8.7 零化（`trailing_principal_annihilable`/`OT_tail_annihilable`/`Pred_oper0`）が実際に消費する load-bearing なケース。一般形（非空 \(s_0,b_0\)）は上記訂正形が真。`p_7_2_scb_fseq` の paper sorry は原文（偽形）のままなので別途反映が必要。
 
+## A25. §8.6 補題（順序数項の末尾単項の零化可能性）は一般の \(t' \in T_{\textrm{B}}\)・\(u < v\) で偽（\(([\,].4)(ii)\) xseq タワーが \(t'\) を破壊）
+
+### 位置
+§8.6 補題（順序数項の末尾単項の零化可能性）（content.md 5621）と、その \(v>0\) 帰納段の一段補題（content.md 5646）。
+
+### 原文
+> 任意の\(t,t' \in T_{\textrm{B}}\)と\(s,b \in \Sigma^{< \omega}\)と\(u,v \in \mathbb{N}\)に対し、\((s,D_u(t' + D_v 0),b)\)が\(t\)のscb分解であるならば、ある\(k \in \mathbb{N}\)が存在して\(0 < k \leq v+1\)かつ\((s,D_u t',b)\)が\(t[0]^k\)のscb分解である。
+
+加えて \(v>0\) 段の「\((s,D_u t',b)\)または\((s,D_u(t' + D_{v-1} 0),b)\)が\(t[0]\)のscb分解である」という一段選言。
+
+### 訂正案
+> 任意の\(t,t' \in T_{\textrm{B}}\)と\(s,b \in \Sigma^{< \omega}\)と\(u,v \in \mathbb{N}\)に対し、\((s,D_u(t' + D_v 0),b)\)が\(t\)のscb分解でありかつ \(v = 0\) または \(u \ge v\) であるならば、\((s,D_u t',b)\)が\(t[0]\)のscb分解である。
+
+（注: 一般 \(t'\) でこの一段剥がしが成立する領域は \(v = 0 \lor u \ge v\) のみ。\(u < v\) を含む元の主張全体は xseq タワーによる \(t'\) 破壊で偽であり、§8.6/§8.7 の本来の零化（任意 \(u<v\)）は別経路 [Buc1] Lemma 3.2a を要する。下記参照。）
+
+### 原文の問題点
+\(u < v\) かつ \(t' \neq 0\) のとき、印付き主項 \(D_u(t' + D_v 0)\) の本体 \(t' + D_v 0\) は複項で \(\textrm{dom}(t' + D_v 0) = \textrm{dom}(D_v 0) = T_{v-1}\) ゆえ、\(u \le v-1\) で \([0]\) は \(([\,].4)(ii)\) の xseq タワー枝を取り、本体全体を巻き込んで \(t'\) を破壊する（末尾 \(+ D_v 0\) を素直に剥がさない）。よって結論の \((s,D_u t',b)\) にも \(v>0\) 段の選言にも入らない。
+真である領域は \(v = 0\) または \(u \ge v\)（\([0]\) が \(([\,].4)(i)/(iii)\) で本体に降りる「クリーン降下」領域）のみ。
+
+### 経験的確認
+（`python/_annih_model.py`, operB を `buchholz.py`(A23適用後) でモデル化）:
+
+| 領域 | 命題（\(s=b=()\), \(t'\) は \(T_{\textrm{B}}\) 標本） |
+|---|---|
+| 無制限（\(u\) 任意, \(v\) 任意） | 142/252（偽） |
+| \(v=0 \lor u \ge v\)（クリーン降下、一段 \(k=1\)） | 370/370（真） |
+
+反例 \(c_2 = D_0(D_1 0 + D_1 0) = D_0((D_1 0, D_1 0)) \in OT_{\textrm{B}}\)（\(u=0,v=1,t'=D_1 0\)）, \([0]\): 実際 \(= D_0(D_0 0)\)。一方 \(D_u t' = D_0(D_1 0)\)、\(D_u(t'+D_{v-1}0) = D_u(t'+D_0 0) = D_0((D_1 0, D_0 0))\)。いずれとも不一致。
+
+### 形式化での扱い
+偽の文字どおりの主張 `p_8_6_trailing_principal_annihilable` は証明しない（paper sorry のまま）。クリーン降下領域 \(v=0 \lor u \ge v\) の一段剥がし `operB (D_u(t' + D_v 0)) [0] = D_u t'` を `m_8_6_trailing_principal_peel`（`pss_wip.thy`）として証明済（任意 \(t' \in T_{\textrm{B}}\)、`operB_single_succ`/`operB_TBv_principal_unfold`+`operB_peel_trailing_Dv0`）。\(t'=0\) 形 \(D_u(D_w 0)\) の \(k \le w+1\) 反復零化は既証 `operB_iter_Du_Dw0`。なお下流 §8.7（`OT_tail_annihilable`/`Pred_oper0`）の全 scb 版は OT 整礎帰納（[Buc1] Lemma 3.2a \(t[n]<t\) は本プロジェクトで未証）と paper sorry（`p_7_2_scb_compose`/`p_7_2_scb_replaceable`）に依存するため別途。
+
 ## C1（明確化、訂正ではない） — §7.3「Trans の最左単項成分の左端」clause (3) の "D_u" の解釈 [軽微]
 
 ### 位置
