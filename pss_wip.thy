@@ -24634,4 +24634,268 @@ proof -
   finally show ?thesis .
 qed
 
+
+section \<open>§8.6/§8.7 \<open>[0]\<close>-零化 (annihilation): atomic single-step \<open>operB \<dash> (numBT 0)\<close> facts\<close>
+
+text \<open>The \<open>[0]\<close> operation is \<open>\<lambda>a. operB a (numBT 0)\<close>.  Since \<open>numBT 0 = Trm [] = 0\<^sub>B\<close>
+  and \<open>numNat (numBT 0) = 0\<close>, the atomic step facts below evaluate \<open>operB\<close> on the
+  trailing \<open>D\<^sub>v 0\<close> principal that the §8.6/§8.7 零化可能性 lemmas peel.  These are
+  the \<open>(D\<^sub>v 0)[0] = 0\<close> identity (article §8.7 proof) and the one-step trailing
+  peel \<open>(t' + D\<^sub>v 0)[0] = t'\<close> (\<open>t' \<noteq> 0\<close>), the core computation of the article's
+  零化可能性 induction.\<close>
+
+text \<open>\<open>operB\<close>-domain on a single zero-body principal \<open>D\<^sub>v 0\<close>: every
+  \<open>domintros(2)\<close> obligation carries the premise \<open>x2 \<noteq> 0\<close> with \<open>x2 = 0\<close>, so all
+  recursion premises are vacuous except \<open>domB\<close>-totality (template: the \<open>c = 0\<close>
+  branch of @{thm [source] operB_dom_TBv_body}).\<close>
+
+lemma operB_dom_Dv0:
+  "domB_operB_xseq_dom (Inr (Inl (Dpt v 0\<^sub>B, z)))"
+proof (rule domB_operB_xseq.domintros(2))
+  show "domB_operB_xseq_dom (Inl x2)"
+    if "Trm [DB v (Trm [])] = Trm [DB x1 x2]" "x2 \<noteq> Trm []" for x1 x2
+    by (rule domB_dom_all)
+qed simp_all
+
+text \<open>\<open>(D\<^sub>v 0)[0] = 0\<close> for finite \<open>v\<close> (\<open>v \<noteq> \<infinity>\<close>): the empty-body branch returns
+  \<open>0\<close> when \<open>v = 0\<close> (\<open>([].1)\<close>) and returns \<open>z = numBT 0 = 0\<close> when \<open>0 < v < \<infinity>\<close>
+  (\<open>([].2)\<close>).  (The \<open>v = \<infinity>\<close> case is excluded: it would give \<open>D\<^bsub>n+1\<^esub>0\<close>.)\<close>
+
+lemma operB_Dv0_num0:
+  assumes "v \<noteq> \<infinity>"
+  shows "operB (Dpt v 0\<^sub>B) (numBT 0) = 0\<^sub>B"
+proof -
+  have dom: "domB_operB_xseq_dom (Inr (Inl (Dpt v 0\<^sub>B, z)))" for z
+    by (rule operB_dom_Dv0)
+  have n0: "numBT 0 = Trm []" by (simp add: numBT_def)
+  have "operB (Trm [DB v (Trm [])]) (numBT 0)
+          = (if v = 0 then Trm []
+             else if v = \<infinity> then Dprin (enat (numNat (numBT 0) + 1)) (Trm [])
+             else numBT 0)"
+    using operB.psimps[OF dom] by simp
+  also have "\<dots> = Trm []" using assms n0 by simp
+  finally show ?thesis by simp
+qed
+
+text \<open>One \<open>[0]\<close>-step peels a trailing \<open>D\<^sub>v 0\<close> off a NON-zero left part:
+  \<open>(t' +\<^sub>B D\<^sub>v 0)[0] = t'\<close> for \<open>t' \<noteq> 0\<close>, \<open>v \<noteq> \<infinity>\<close>.  Then \<open>t' +\<^sub>B D\<^sub>v 0\<close> is a
+  multi-component term, \<open>operB\<close> splits off the last component \<open>D\<^sub>v 0\<close>
+  (@{thm [source] operB_dom_multi_peel}), which \<open>[0]\<close>-evaluates to \<open>0\<close>
+  (@{thm [source] operB_Dv0_num0}); the remaining \<open>butlast = t'\<close>.\<close>
+
+lemma operB_peel_trailing_Dv0:
+  assumes tne: "t' \<noteq> 0\<^sub>B" and vfin: "v \<noteq> \<infinity>"
+  shows "operB (t' +\<^sub>B Dpt v 0\<^sub>B) (numBT 0) = t'"
+proof -
+  obtain xs where x: "t' = Trm xs" by (cases t')
+  have xne: "xs \<noteq> []" using tne x by auto
+  obtain p ps where ps: "xs = p # ps" using xne by (cases xs) auto
+  \<comment> \<open>\<open>t' +\<^sub>B D\<^sub>v 0 = Trm (p # q # rest)\<close> with last \<open>= D\<^sub>v 0\<close>\<close>
+  obtain q rest where qr: "ps @ [DB v (Trm [])] = q # rest"
+    by (cases "ps @ [DB v (Trm [])]") auto
+  have be: "t' +\<^sub>B Dpt v 0\<^sub>B = Trm (p # q # rest)" using x ps qr by simp
+  have pqr: "p # q # rest = p # ps @ [DB v (Trm [])]" using qr by simp
+  have lst: "last (p # q # rest) = DB v (Trm [])" using pqr by simp
+  have but: "butlast (p # q # rest) = p # ps"
+    using pqr by (simp add: butlast_append)
+  \<comment> \<open>operB-domain of the multi term: last component \<open>D\<^sub>v 0\<close> via
+     @{thm [source] operB_dom_Dv0}, lifted by @{thm [source] operB_dom_multi}\<close>
+  have domLast: "domB_operB_xseq_dom (Inr (Inl (Trm [last (p # q # rest)], numBT 0)))"
+    using operB_dom_Dv0[of v "numBT 0"] lst by simp
+  have domMulti: "domB_operB_xseq_dom (Inr (Inl (Trm (p # q # rest), numBT 0)))"
+    by (rule operB_dom_multi[OF domLast])
+  \<comment> \<open>peel off the last component\<close>
+  have peel: "operB (Trm (p # q # rest)) (numBT 0)
+                = addBT (Trm (butlast (p # q # rest)))
+                        (operB (Trm [last (p # q # rest)]) (numBT 0))"
+    by (rule operB_dom_multi_peel[OF domMulti])
+  have base: "operB (Trm [last (p # q # rest)]) (numBT 0) = Trm []"
+    using operB_Dv0_num0[OF vfin] lst by simp
+  have "operB (t' +\<^sub>B Dpt v 0\<^sub>B) (numBT 0) = addBT (Trm (p # ps)) (Trm [])"
+    using be peel but base by simp
+  also have "\<dots> = Trm (p # ps)" by simp
+  finally show ?thesis using x ps by simp
+qed
+
+
+subsection \<open>§8.7 \<open>[0]\<close>-零化 of a nested principal \<open>D\<^sub>u(D\<^sub>w 0)\<close>\<close>
+
+text \<open>The genuine inductive content of the §8.7 末尾項の零化可能性 lemma in its
+  \<open>t' = 0\<close> form: \<open>D\<^sub>u(D\<^sub>w 0)\<close> is annihilated to \<open>D\<^sub>u 0\<close> by iterating \<open>[0]\<close>
+  \<open>k \<le> w+1\<close> times.  Two single-step laws drive it:
+  the kind-1 (\<open>([].4)(ii)\<close>) descent \<open>D\<^sub>u(D\<^sub>w 0)[0] = D\<^sub>u(D\<^bsub>w-1\<^esub>0)\<close> when \<open>u < w\<close>,
+  and the collapse \<open>D\<^sub>u(D\<^sub>w 0)[0] = D\<^sub>u 0\<close> when \<open>w \<le> u\<close>.\<close>
+
+text \<open>\<open>domB(D\<^sub>w 0) = T\<^bsub>w-1\<^esub>\<close> for \<open>0 < w\<close> (\<open>([].2)\<close>).\<close>
+
+lemma domB_Dw0:
+  assumes "0 < w"
+  shows "domB (Dpt (enat w) 0\<^sub>B) = TBv (enat (w - 1))"
+proof -
+  have "enat w \<noteq> 0" using assms by (simp add: zero_enat_def)
+  moreover have "enat w \<noteq> \<infinity>" by simp
+  ultimately show ?thesis by (subst domB_unfold) simp
+qed
+
+text \<open>\<open>xseq b u 0 = D\<^sub>u 0\<close> (the base of the \<open>x\<close>-tower; no recursion, fired from
+  the \<open>xseq\<close>-domain @{thm [source] xseq_dom_TBv_body}).\<close>
+
+lemma xseq_eval_0:
+  assumes db: "domB b = TBv (enat u')"
+  shows "xseq b u 0 = Dprin u (Trm [])"
+proof -
+  have dom: "domB_operB_xseq_dom (Inr (Inr (b, u, 0)))"
+    by (rule xseq_dom_TBv_body[OF db])
+  show ?thesis using xseq.psimps[OF dom] by simp
+qed
+
+text \<open>Kind-1 descent: \<open>u < w \<Longrightarrow> D\<^sub>u(D\<^sub>w 0)[0] = D\<^sub>u(D\<^bsub>w-1\<^esub>0)\<close>.\<close>
+
+lemma operB_Du_Dw0_kind1:
+  assumes uw: "u < w"
+  shows "operB (Dpt (enat u) (Dpt (enat w) 0\<^sub>B)) (numBT 0)
+           = Dpt (enat u) (Dpt (enat (w - 1)) 0\<^sub>B)"
+proof -
+  have w0: "0 < w" using uw by simp
+  have db: "domB (Dpt (enat w) 0\<^sub>B) = TBv (enat (w - 1))" by (rule domB_Dw0[OF w0])
+  have vu: "enat u \<le> enat (w - 1)" using uw by simp
+  have bne: "Dpt (enat w) 0\<^sub>B \<noteq> Trm []" by simp
+  have "operB (Trm [DB (enat u) (Dpt (enat w) 0\<^sub>B)]) (numBT 0)
+          = Dprin (enat u) (xseq (Dpt (enat w) 0\<^sub>B) (enat (w - 1)) (numNat (numBT 0)))"
+    by (rule operB_kind1_unfold[OF db vu bne])
+  also have "\<dots> = Dprin (enat u) (xseq (Dpt (enat w) 0\<^sub>B) (enat (w - 1)) 0)"
+    by (simp add: numNat_numBT)
+  also have "\<dots> = Dprin (enat u) (Dprin (enat (w - 1)) (Trm []))"
+    using xseq_eval_0[OF db] by simp
+  finally show ?thesis by simp
+qed
+
+text \<open>Collapse at the floor: \<open>0 < w \<le> u \<Longrightarrow> D\<^sub>u(D\<^sub>w 0)[0] = D\<^sub>u 0\<close>.
+  \<open>domB(D\<^sub>w 0) = T\<^bsub>w-1\<^esub> \<noteq> {0}\<close> and the kind-1 guard \<open>u \<le> w-1\<close> FAILS
+  (\<open>w \<le> u\<close>), so the \<open>([].4)(iii)\<close> \<open>else\<close>-branch \<open>D\<^sub>u(operB(D\<^sub>w 0) 0)\<close> fires,
+  and \<open>operB(D\<^sub>w 0)(numBT 0) = 0\<close> (@{thm [source] operB_Dv0_num0}).\<close>
+
+lemma operB_Du_Dw0_base:
+  assumes w0: "0 < w" and wu: "w \<le> u"
+  shows "operB (Dpt (enat u) (Dpt (enat w) 0\<^sub>B)) (numBT 0) = Dpt (enat u) 0\<^sub>B"
+proof -
+  let ?b = "Dpt (enat w) 0\<^sub>B"
+  have db: "domB ?b = TBv (enat (w - 1))" by (rule domB_Dw0[OF w0])
+  have bne: "?b \<noteq> Trm []" by simp
+  have nz: "domB ?b \<noteq> {Trm []}" using db zero_set_neq_TBv by auto
+  have nguard: "\<not> (\<exists>u'. enat u \<le> enat u' \<and> domB ?b = TBv (enat u'))"
+  proof
+    assume "\<exists>u'. enat u \<le> enat u' \<and> domB ?b = TBv (enat u')"
+    then obtain u' where le: "enat u \<le> enat u'" and eq: "domB ?b = TBv (enat u')"
+      by blast
+    have "TBv (enat (w - 1)) = TBv (enat u')" using db eq by simp
+    hence "w - 1 = u'" by (rule TBv_enat_inj)
+    hence "u \<le> w - 1" using le by simp
+    thus False using w0 wu by simp
+  qed
+  \<comment> \<open>\<open>domB(D\<^sub>u(D\<^sub>w 0)) = T\<^bsub>w-1\<^esub>\<close>: \<open>([].4)(iii)\<close> \<open>else\<close>-branch (guards fail).
+     The negated kind-1 guard does not collapse its \<open>if\<close> under \<open>simp\<close>
+     (CLAUDE.md gotcha), so discharge it with @{thm [source] if_not_P}.\<close>
+  have dbOut: "domB (Trm [DB (enat u) ?b]) = TBv (enat (w - 1))"
+  proof -
+    have "domB (Trm [DB (enat u) ?b])
+            = (let dbb = domB ?b in
+               if dbb = {Trm []} then NatSet
+               else if (\<exists>u'. enat u \<le> enat u' \<and> dbb = TBv (enat u')) then NatSet
+               else dbb)"
+      using bne by (subst domB_unfold) simp
+    also have "\<dots> = (if (\<exists>u'. enat u \<le> enat u' \<and> domB ?b = TBv (enat u')) then NatSet
+                     else domB ?b)"
+      using nz by (simp add: Let_def)
+    also have "\<dots> = domB ?b" by (rule if_not_P[OF nguard])
+    also have "\<dots> = TBv (enat (w - 1))" by (rule db)
+    finally show ?thesis .
+  qed
+  have dom: "domB_operB_xseq_dom (Inr (Inl (Trm [DB (enat u) ?b], numBT 0)))"
+    by (rule operB_dom_TBv_body[OF dbOut])
+  have "operB (Trm [DB (enat u) ?b]) (numBT 0)
+          = (let dbb = domB ?b in
+             if dbb = {Trm []} then multBT (Dprin (enat u) (operB ?b (Trm []))) (numNat (numBT 0) + 1)
+             else if (\<exists>u'. enat u \<le> enat u' \<and> dbb = TBv (enat u'))
+                  then Dprin (enat u) (xseq ?b (enat (tbvIdx dbb)) (numNat (numBT 0)))
+             else Dprin (enat u) (operB ?b (numBT 0)))"
+    using operB.psimps[OF dom] bne by simp
+  also have "\<dots> = (if (\<exists>u'. enat u \<le> enat u' \<and> domB ?b = TBv (enat u'))
+                   then Dprin (enat u) (xseq ?b (enat (tbvIdx (domB ?b))) (numNat (numBT 0)))
+                   else Dprin (enat u) (operB ?b (numBT 0)))"
+    using nz by (simp add: Let_def)
+  also have "\<dots> = Dprin (enat u) (operB ?b (numBT 0))"
+    by (rule if_not_P[OF nguard])
+  also have "operB ?b (numBT 0) = 0\<^sub>B"
+    using operB_Dv0_num0[of "enat w"] by simp
+  finally show ?thesis by simp
+qed
+
+text \<open>Floor at \<open>w = 0\<close>: \<open>D\<^sub>u(D\<^sub>0 0)[0] = D\<^sub>u 0\<close> (the \<open>([].4)(i)\<close> branch, via
+  @{thm [source] operB_single_succ} with \<open>t' = 0\<close>).\<close>
+
+lemma operB_Du_D00:
+  "operB (Dpt (enat u) (Dpt 0 0\<^sub>B)) (numBT 0) = Dpt (enat u) 0\<^sub>B"
+proof -
+  have "Dpt (enat u) (Dpt 0 0\<^sub>B) = Dpt (enat u) (0\<^sub>B +\<^sub>B Dpt 0 0\<^sub>B)" by simp
+  hence "operB (Dpt (enat u) (Dpt 0 0\<^sub>B)) (numBT 0)
+           = multBT (Dpt (enat u) 0\<^sub>B) (numNat (numBT 0) + 1)"
+    using operB_single_succ[of "enat u" "0\<^sub>B" "numBT 0"] by simp
+  also have "\<dots> = multBT (Dpt (enat u) 0\<^sub>B) (Suc 0)" by (simp add: numNat_numBT)
+  also have "\<dots> = Dpt (enat u) 0\<^sub>B" by (rule multBT_1)
+  finally show ?thesis .
+qed
+
+text \<open>Iterated \<open>[0]\<close> annihilates \<open>D\<^sub>u(D\<^sub>w 0)\<close> to \<open>D\<^sub>u 0\<close> in \<open>0 < k \<le> w+1\<close> steps.
+  Strong induction on \<open>w\<close>: if \<open>w \<le> u\<close>, one step
+  (@{thm [source] operB_Du_Dw0_base} / @{thm [source] operB_Du_D00}); if \<open>u < w\<close>,
+  one kind-1 descent (@{thm [source] operB_Du_Dw0_kind1}) to \<open>D\<^sub>u(D\<^bsub>w-1\<^esub>0)\<close>,
+  then the IH at \<open>w-1\<close>.\<close>
+
+lemma operB_iter_Du_Dw0:
+  "\<exists>k. 0 < k \<and> k \<le> w + 1
+      \<and> ((\<lambda>a. operB a (numBT 0)) ^^ k) (Dpt (enat u) (Dpt (enat w) 0\<^sub>B))
+          = Dpt (enat u) 0\<^sub>B"
+proof (induction w rule: less_induct)
+  case (less w)
+  let ?op = "\<lambda>a. operB a (numBT 0)"
+  show ?case
+  proof (cases "w \<le> u")
+    case True
+    \<comment> \<open>one step lands on \<open>D\<^sub>u 0\<close>\<close>
+    have step: "?op (Dpt (enat u) (Dpt (enat w) 0\<^sub>B)) = Dpt (enat u) 0\<^sub>B"
+    proof (cases "w = 0")
+      case True
+      thus ?thesis using operB_Du_D00[of u] by (simp add: zero_enat_def)
+    next
+      case False
+      hence "0 < w" by simp
+      thus ?thesis using operB_Du_Dw0_base[OF _ True] by simp
+    qed
+    have "(?op ^^ 1) (Dpt (enat u) (Dpt (enat w) 0\<^sub>B)) = Dpt (enat u) 0\<^sub>B"
+      using step by simp
+    thus ?thesis by (intro exI[of _ 1]) simp
+  next
+    case False
+    hence uw: "u < w" by simp
+    have w0: "0 < w" using uw by simp
+    \<comment> \<open>kind-1 descent then IH at \<open>w-1\<close>\<close>
+    have step: "?op (Dpt (enat u) (Dpt (enat w) 0\<^sub>B)) = Dpt (enat u) (Dpt (enat (w - 1)) 0\<^sub>B)"
+      using operB_Du_Dw0_kind1[OF uw] by simp
+    obtain k where kpos: "0 < k" and kle: "k \<le> (w - 1) + 1"
+      and kval: "(?op ^^ k) (Dpt (enat u) (Dpt (enat (w - 1)) 0\<^sub>B)) = Dpt (enat u) 0\<^sub>B"
+      using less.IH[of "w - 1"] w0 by auto
+    have "(?op ^^ (Suc k)) (Dpt (enat u) (Dpt (enat w) 0\<^sub>B))
+            = (?op ^^ k) (?op (Dpt (enat u) (Dpt (enat w) 0\<^sub>B)))"
+      by (simp add: funpow_Suc_right comp_def del: funpow.simps)
+    also have "\<dots> = (?op ^^ k) (Dpt (enat u) (Dpt (enat (w - 1)) 0\<^sub>B))"
+      using step by simp
+    also have "\<dots> = Dpt (enat u) 0\<^sub>B" using kval by simp
+    finally have "(?op ^^ (Suc k)) (Dpt (enat u) (Dpt (enat w) 0\<^sub>B)) = Dpt (enat u) 0\<^sub>B" .
+    moreover have "0 < Suc k" by simp
+    moreover have "Suc k \<le> w + 1" using kle w0 by simp
+    ultimately show ?thesis by (intro exI[of _ "Suc k"]) blast
+  qed
+qed
+
 end
