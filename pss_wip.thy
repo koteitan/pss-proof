@@ -23632,6 +23632,240 @@ proof -
 qed
 
 
+text \<open>§8.2 keystone Adm0 branch, clause (1) guard \<open>gB\<close> discharged unconditionally
+  on the cond-I/III/V sub-case (the entire condA branch of
+  @{thm [source] m_8_2_subexpr_component_Pred_Adm0}).  This is the article's
+  "\<open>M\<close>が条件(I)か(III)を満たすならば\<open>j'\<^sub>0 = j\<^sub>0\<close>は\<open>M\<close>許容である / \<open>M\<close>が条件(V)を満たすならば
+  \<open>M\<^bsub>0,j'\<^sub>1\<^esub> = M\<^bsub>1,j'\<^sub>1\<^esub>\<close>" step (content.md 3360).  Concretely, with \<open>j'\<^sub>1 = FirstNodes M ! J\<^sub>1\<close>
+  and \<open>j'\<^sub>0 = Joints M ! J\<^sub>1\<close> (\<open>J\<^sub>1 = Lng(Br M)-1\<close>),
+  \<open>M\<^bsub>0,j'\<^sub>1\<^esub> = M\<^bsub>1,j'\<^sub>1\<^esub> \<or> adm M j'\<^sub>0\<close>:
+  \<^item> cond-I/cond-III directly assert \<open>adm M (parent M 0 (Lng M-1))\<close>, which in the
+    Adm0 branch equals \<open>adm M j'\<^sub>0\<close> (@{thm [source] m_8_2_j0eq_Adm0}) — second disjunct;
+  \<^item> cond-V forces the first disjunct: with \<open>j'\<^sub>1 = j\<^sub>1 = Lng M-1\<close>
+    (@{thm [source] m_8_2_j1eq_Adm0}) and \<open>j\<^sub>p = parent M 0 j\<^sub>1 \<le> TrMax M\<close>
+    (@{thm [source] m_8_2_parent_le_TrMax_Adm0}), the trunk is a diagonal
+    (@{thm [source] trunk_entries_offset}, \<open>M\<^bsub>0,j\<^sub>p\<^esub> = M\<^bsub>1,j\<^sub>p\<^esub>\<close> since \<open>M\<^bsub>0,0\<^esub> = M\<^bsub>1,0\<^esub>\<close>
+    by RedCondB at the root), so \<open>M\<^bsub>0,j\<^sub>1\<^esub> = M\<^bsub>0,j\<^sub>p\<^esub>+1\<close> (RedCondA at the row-0 parent)
+    \<open>= M\<^bsub>1,j\<^sub>p\<^esub>+1 = M\<^bsub>1,j\<^sub>1\<^esub>\<close> (cond-V).  This discharges the \<open>gB\<close> hypothesis of
+  @{thm [source] m_8_2_subexpr_component_Pred_Adm0_clause1_keystone} /
+  @{thm [source] m_8_2_subexpr_component_Pred_Adm0} on the whole condA branch.
+  Empirically exact (reduced \<inter> monoT, length \<le> 6: 0 violations of either disjunct;
+  the cond-V chain checked step-by-step at length 5).\<close>
+
+lemma m_8_2_gB_Adm0_condA:
+  fixes M :: pairseq
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS" and Brne: "Br M \<noteq> []"
+    and j1gt: "Lng M - 1 > 1"
+    and Adm0: "transJm1 M = 0"
+    and condA: "transCondI M \<or> transCondIII M \<or> transCondV M"
+  shows "entry M 0 (FirstNodes M ! (Lng (Br M) - 1))
+           = entry M 1 (FirstNodes M ! (Lng (Br M) - 1))
+         \<or> adm M (Joints M ! (Lng (Br M) - 1))"
+proof -
+  have MT: "M \<in> T_PS" using MP by (simp add: PT_PS_def)
+  have mono: "monoT M" using MP by (simp add: PT_PS_def)
+  have L: "1 < Lng M" using j1gt by simp
+  let ?j1 = "Lng M - 1"
+  let ?jp = "parent M 0 ?j1"
+  \<comment> \<open>geometric bridges from the Adm0 branch\<close>
+  have j1eq: "FirstNodes M ! (Lng (Br M) - 1) = ?j1"
+    by (rule m_8_2_j1eq_Adm0[OF MR MP Brne j1gt Adm0])
+  have j0eq: "Joints M ! (Lng (Br M) - 1) = ?jp"
+    using m_8_2_j0eq_Adm0[OF MR MP Brne j1gt Adm0]
+    by (simp add: transJ0_def transJ1_def)
+  show ?thesis
+  proof (cases "transCondV M")
+    case condV: True
+    \<comment> \<open>cond-V: the first disjunct \<open>M\<^bsub>0,j'\<^sub>1\<^esub> = M\<^bsub>1,j'\<^sub>1\<^esub>\<close>\<close>
+    have condABcond: "RedCondA M \<and> RedCondB M"
+      using m_6_6_reduced_iff_cond[OF MT] MR by simp
+    have condA': "RedCondA M" using condABcond by simp
+    have condB: "RedCondB M" using condABcond by simp
+    \<comment> \<open>\<open>j\<^sub>p \<le> TrMax M\<close>\<close>
+    have jpTr: "?jp \<le> TrMax M"
+      using m_8_2_parent_le_TrMax_Adm0[OF MR MP Adm0] .
+    \<comment> \<open>\<open>M\<^bsub>0,0\<^esub> = M\<^bsub>1,0\<^esub>\<close> via RedCondB at the (parentless) root\<close>
+    have noPar00: "\<not> hasParent M 0 0"
+      by (auto simp: hasParent_def nextR_def nextrel0_def)
+    have e00_e10: "entry M 0 0 = entry M 1 0"
+      using condB noPar00 L by (auto simp: RedCondB_def)
+    \<comment> \<open>trunk is a diagonal: \<open>M\<^bsub>0,j\<^sub>p\<^esub> = M\<^bsub>1,j\<^sub>p\<^esub>\<close>\<close>
+    have off: "entry M 0 ?jp = entry M 0 0 + ?jp \<and> entry M 1 ?jp = entry M 1 0 + ?jp"
+      by (rule trunk_entries_offset[OF MT condA' jpTr])
+    have e0jp_e1jp: "entry M 0 ?jp = entry M 1 ?jp"
+      using off e00_e10 by simp
+    \<comment> \<open>RedCondA at the row-0 parent of \<open>j\<^sub>1\<close>\<close>
+    have hp0: "hasParent M 0 ?j1" by (rule monoT_hasParent0_last[OF MT mono L])
+    have rcA0: "entry M 0 ?jp + 1 = entry M 0 ?j1"
+      using condA'[unfolded RedCondA_def, rule_format, of 0 ?j1] hp0 by simp
+    \<comment> \<open>cond-V: \<open>M\<^bsub>1,j\<^sub>p\<^esub>+1 = M\<^bsub>1,j\<^sub>1\<^esub>\<close>\<close>
+    have condVstep: "entry M 1 ?jp + 1 = entry M 1 ?j1"
+      using condV by (simp add: transCondV_def)
+    \<comment> \<open>combine: \<open>M\<^bsub>0,j\<^sub>1\<^esub> = M\<^bsub>0,j\<^sub>p\<^esub>+1 = M\<^bsub>1,j\<^sub>p\<^esub>+1 = M\<^bsub>1,j\<^sub>1\<^esub>\<close>\<close>
+    have e0j1_e1j1: "entry M 0 ?j1 = entry M 1 ?j1"
+      using rcA0 e0jp_e1jp condVstep by simp
+    have "entry M 0 (FirstNodes M ! (Lng (Br M) - 1))
+            = entry M 1 (FirstNodes M ! (Lng (Br M) - 1))"
+      using e0j1_e1j1 j1eq by simp
+    thus ?thesis by blast
+  next
+    case notV: False
+    \<comment> \<open>cond-I or cond-III: the second disjunct \<open>adm M j'\<^sub>0\<close>\<close>
+    have condIorIII: "transCondI M \<or> transCondIII M" using condA notV by blast
+    have admjp: "adm M ?jp"
+      using condIorIII by (auto simp: transCondI_def transCondIII_def)
+    have "adm M (Joints M ! (Lng (Br M) - 1))" using admjp j0eq by simp
+    thus ?thesis by blast
+  qed
+qed
+
+
+text \<open>§8.2 keystone Adm0 branch, \<open>gB\<close>-free.  Identical to
+  @{thm [source] m_8_2_subexpr_component_Pred_Adm0} except the clause-(1) guard
+  \<open>gB\<close> (\<open>M\<^bsub>0,j'\<^sub>1\<^esub> = M\<^bsub>1,j'\<^sub>1\<^esub> \<or> adm M j'\<^sub>0\<close>) is now discharged internally on the condA
+  branch by @{thm [source] m_8_2_gB_Adm0_condA} rather than carried as a
+  hypothesis.  The remaining clause-(2) guards \<open>t\<^sub>2 \<noteq> 0\<close>, \<open>M\<^bsub>0,j'\<^sub>1\<^esub> > M\<^bsub>1,j'\<^sub>1\<^esub>\<close>,
+  \<open>\<not> adm M j'\<^sub>0\<close> stay (they belong to the cond-II/IV clause-(2) sub-case and are
+  separate empirical guards — see the agent report's other blocker).\<close>
+
+lemma m_8_2_subexpr_component_Pred_Adm0_nogB:
+  fixes M :: pairseq
+  defines "j1 \<equiv> Lng M - 1"
+  defines "J1 \<equiv> Lng (Br M) - 1"
+  defines "j0' \<equiv> Joints M ! J1"
+  defines "j1' \<equiv> FirstNodes M ! J1"
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS" and Brne: "Br M \<noteq> []"
+    and j1gt: "j1 > 1"
+    and Adm0: "transJm1 M = 0"
+    and t2ne: "transT2 M \<noteq> 0\<^sub>B"
+    and e0gt: "entry M 0 j1' > entry M 1 j1'"
+    and nadmj0: "\<not> adm M j0'"
+  shows
+    "(j1' = j1 \<and> (TrMax M = 0 \<or> j0' < TrMax M)
+        \<and> (entry M 0 j1' = entry M 1 j1' \<or> adm M j0')
+        \<and> (\<exists>!t1. Trans (Pred M) = Dpt (enat (entry M 1 0)) t1
+              \<and> Trans M = Dpt (enat (entry M 1 0))
+                            (t1 +\<^sub>B Dpt (enat (entry M 1 j1')) 0\<^sub>B)))
+   \<or> (j1' = j1 \<and> entry M 0 j1' > entry M 1 j1' \<and> \<not> adm M j0'
+        \<and> (\<exists>!t12. Trans (Pred M) = Dpt (enat (entry M 1 0)) (fst t12)
+              \<and> Trans M = Dpt (enat (entry M 1 0))
+                            (fst t12 +\<^sub>B Dpt (enat (entry M 1 j0')) (snd t12))))
+   \<or> (\<exists>!t123. Trans (Pred M)
+                = Dpt (enat (entry M 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M 1 j1')) (fst (snd t123)))
+            \<and> Trans M = Dpt (enat (entry M 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M 1 j1')) (snd (snd t123))))
+   \<or> (\<exists>!t123. Trans (Pred M)
+                = Dpt (enat (entry M 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M 1 j0')) (fst (snd t123)))
+            \<and> Trans M = Dpt (enat (entry M 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M 1 j0')) (snd (snd t123))))"
+proof -
+  have j1gt': "Lng M - 1 > 1" using j1gt by (simp add: j1_def)
+  \<comment> \<open>geometric bridges (all discharged in Adm0)\<close>
+  have j1eq: "j1' = j1"
+    using m_8_2_j1eq_Adm0[OF MR MP Brne j1gt' Adm0]
+    by (simp add: j1'_def J1_def j1_def)
+  have j0eqJ: "j0' = transJ0 M"
+    using m_8_2_j0eq_Adm0[OF MR MP Brne j1gt' Adm0]
+    by (simp add: j0'_def J1_def)
+  have notVI: "\<not> transCondVI M" by (rule m_8_2_notVI_Adm0[OF MR MP Brne j1gt' Adm0])
+  show ?thesis
+  proof (cases "transCondI M \<or> transCondIII M \<or> transCondV M")
+    case condA: True
+    \<comment> \<open>discharge \<open>gB\<close> from @{thm [source] m_8_2_gB_Adm0_condA}, then run the parent\<close>
+    have gBe: "entry M 0 (FirstNodes M ! (Lng (Br M) - 1))
+                 = entry M 1 (FirstNodes M ! (Lng (Br M) - 1))
+               \<or> adm M (Joints M ! (Lng (Br M) - 1))"
+      by (rule m_8_2_gB_Adm0_condA[OF MR MP Brne j1gt' Adm0 condA])
+    have t2nee: "transT2 M \<noteq> 0\<^sub>B" using t2ne .
+    have e0gte: "entry M 0 (FirstNodes M ! (Lng (Br M) - 1))
+                   > entry M 1 (FirstNodes M ! (Lng (Br M) - 1))"
+      using e0gt unfolding j1'_def J1_def .
+    have nadmj0e: "\<not> adm M (Joints M ! (Lng (Br M) - 1))"
+      using nadmj0 unfolding j0'_def J1_def .
+    have parent_result:
+      "(FirstNodes M ! (Lng (Br M) - 1) = Lng M - 1
+          \<and> (TrMax M = 0 \<or> Joints M ! (Lng (Br M) - 1) < TrMax M)
+          \<and> (entry M 0 (FirstNodes M ! (Lng (Br M) - 1))
+               = entry M 1 (FirstNodes M ! (Lng (Br M) - 1))
+             \<or> adm M (Joints M ! (Lng (Br M) - 1)))
+          \<and> (\<exists>!t1. Trans (Pred M) = Dpt (enat (entry M 1 0)) t1
+                \<and> Trans M = Dpt (enat (entry M 1 0))
+                              (t1 +\<^sub>B Dpt (enat (entry M 1 (FirstNodes M ! (Lng (Br M) - 1)))) 0\<^sub>B)))
+       \<or> (FirstNodes M ! (Lng (Br M) - 1) = Lng M - 1
+          \<and> entry M 0 (FirstNodes M ! (Lng (Br M) - 1))
+              > entry M 1 (FirstNodes M ! (Lng (Br M) - 1))
+          \<and> \<not> adm M (Joints M ! (Lng (Br M) - 1))
+          \<and> (\<exists>!t12. Trans (Pred M) = Dpt (enat (entry M 1 0)) (fst t12)
+                \<and> Trans M = Dpt (enat (entry M 1 0))
+                              (fst t12 +\<^sub>B Dpt (enat (entry M 1 (Joints M ! (Lng (Br M) - 1)))) (snd t12))))
+       \<or> (\<exists>!t123. Trans (Pred M)
+                  = Dpt (enat (entry M 1 0))
+                      (fst t123 +\<^sub>B Dpt (enat (entry M 1 (FirstNodes M ! (Lng (Br M) - 1)))) (fst (snd t123)))
+              \<and> Trans M = Dpt (enat (entry M 1 0))
+                      (fst t123 +\<^sub>B Dpt (enat (entry M 1 (FirstNodes M ! (Lng (Br M) - 1)))) (snd (snd t123))))
+       \<or> (\<exists>!t123. Trans (Pred M)
+                  = Dpt (enat (entry M 1 0))
+                      (fst t123 +\<^sub>B Dpt (enat (entry M 1 (Joints M ! (Lng (Br M) - 1)))) (fst (snd t123)))
+              \<and> Trans M = Dpt (enat (entry M 1 0))
+                      (fst t123 +\<^sub>B Dpt (enat (entry M 1 (Joints M ! (Lng (Br M) - 1)))) (snd (snd t123))))"
+      by (rule m_8_2_subexpr_component_Pred_Adm0[OF MR MP Brne j1gt' Adm0 gBe t2nee e0gte nadmj0e])
+    show ?thesis
+      using parent_result unfolding j1_def J1_def j0'_def j1'_def .
+  next
+    case notA: False
+    \<comment> \<open>condA false: inline the clause (2)/(4) split (does not use \<open>gB\<close>)\<close>
+    show ?thesis
+    proof (cases "bpHeadV (PB (transT2 M) ! (Lng (PB (transT2 M)) - 1))
+                    = enat (entry M 1 (transJ0 M))")
+      case isleft: True
+      \<comment> \<open>clause (4)\<close>
+      have cl4:
+        "\<exists>!t123. Trans (Pred M)
+              = Dpt (enat (entry M 1 0))
+                  (fst t123 +\<^sub>B Dpt (enat (entry M 1 (transJ0 M))) (fst (snd t123)))
+            \<and> Trans M
+              = Dpt (enat (entry M 1 0))
+                  (fst t123 +\<^sub>B Dpt (enat (entry M 1 (transJ0 M))) (snd (snd t123)))"
+        by (rule m_8_2_subexpr_component_Pred_Adm0_clause4_core
+                  [OF MR MP j1gt' Adm0 notA notVI t2ne isleft])
+      have cl4j0: "\<exists>!t123. Trans (Pred M)
+              = Dpt (enat (entry M 1 0))
+                  (fst t123 +\<^sub>B Dpt (enat (entry M 1 j0')) (fst (snd t123)))
+            \<and> Trans M
+              = Dpt (enat (entry M 1 0))
+                  (fst t123 +\<^sub>B Dpt (enat (entry M 1 j0')) (snd (snd t123)))"
+        using cl4 unfolding j0eqJ .
+      thus ?thesis by blast
+    next
+      case notleft: False
+      \<comment> \<open>clause (2)\<close>
+      have nl: "bpHeadV (PB (transT2 M) ! (Lng (PB (transT2 M)) - 1))
+                  \<noteq> enat (entry M 1 (transJ0 M))" using notleft by simp
+      have cl2:
+        "\<exists>!t12. Trans (Pred M) = Dpt (enat (entry M 1 0)) (fst t12)
+              \<and> Trans M = Dpt (enat (entry M 1 0))
+                            (fst t12 +\<^sub>B Dpt (enat (entry M 1 (transJ0 M))) (snd t12))"
+        by (rule m_8_2_subexpr_component_Pred_Adm0_clause2_core
+                  [OF MR MP j1gt' Adm0 notA notVI t2ne nl])
+      have cl2j0:
+        "\<exists>!t12. Trans (Pred M) = Dpt (enat (entry M 1 0)) (fst t12)
+              \<and> Trans M = Dpt (enat (entry M 1 0))
+                            (fst t12 +\<^sub>B Dpt (enat (entry M 1 j0')) (snd t12))"
+        using cl2 unfolding j0eqJ .
+      have cl2':
+        "j1' = j1 \<and> entry M 0 j1' > entry M 1 j1' \<and> \<not> adm M j0'
+          \<and> (\<exists>!t12. Trans (Pred M) = Dpt (enat (entry M 1 0)) (fst t12)
+              \<and> Trans M = Dpt (enat (entry M 1 0))
+                            (fst t12 +\<^sub>B Dpt (enat (entry M 1 j0')) (snd t12)))"
+        using j1eq e0gt nadmj0 cl2j0 by blast
+      thus ?thesis by blast
+    qed
+  qed
+qed
+
+
 section \<open>§7.3 系（\<open>Trans\<close>と非可算基数の関係）: \<open>Trans M = D\<^bsub>v\<^esub> 0 \<longleftrightarrow> M\<close> is one of the two
   canonical witnesses (content.md 2372)\<close>
 
@@ -24032,6 +24266,372 @@ next
     hence "M = [(v,v)]" using M0col by simp
     thus ?thesis using v0 by simp
   qed
+qed
+
+
+section \<open>§7.1 [Buc1] Lemma 3.2: termination of the \<open>xseq\<close> tower (\<open>operB\<close> kind-1)\<close>
+
+text \<open>The genuine \<open>([].4)(ii)\<close> case of \<open>operB\<close>: the body \<open>b\<close> has
+  \<open>domB b = T\<^bsub>u\<^esub>\<close> (\<open>= TBv (enat u)\<close>) and the head index \<open>v \<le> u\<close>, so the
+  \<open>xseq\<close>-branch fires, building the fundamental-sequence tower
+  \<open>x\<^sub>n\<close> (\<open>= xseq b u n\<close>) with \<open>x\<^sub>0 = D\<^sub>u 0\<close>, \<open>x\<^bsub>k+1\<^esub> = operB b (D\<^sub>u x\<^sub>k)\<close>.
+
+  The termination ([Buc1] Lemma 3.2, induction on the length of the argument)
+  rests on a single structural fact, validated 354/354 in
+  \<open>python/_xseq_operB_TBv.py\<close>: for ANY \<open>b\<close> with \<open>domB b = T\<^bsub>u\<^esub>\<close>,
+  evaluating \<open>operB b z\<close> recurses ONLY via the \<open>else\<close>/\<open>(iii)\<close> branch
+  (\<open>D\<^sub>w(operB c z)\<close>, body strictly smaller, \<open>domB c = T\<^bsub>u\<^esub>\<close> again) and the
+  \<open>[].2\<close> base case (\<open>c = 0\<close>, returns \<open>z\<close>) — NEVER the \<open>xseq\<close> branch, NEVER
+  the \<open>mult\<close>/\<open>db = {0}\<close> branch.  Hence \<open>operB b z\<close> is defined for EVERY \<open>z\<close>
+  by plain structural induction on \<open>size b\<close>, independently of \<open>z\<close>.\<close>
+
+text \<open>Structural decomposition of a single principal whose \<open>domB\<close> is some
+  \<open>T\<^bsub>u\<^esub>\<close> with non-zero body: \<open>domB (D\<^sub>w c) = T\<^bsub>u\<^esub>\<close>, \<open>c \<noteq> 0\<close> forces
+  \<open>domB c = T\<^bsub>u\<^esub>\<close> and the strict inequality \<open>u < w\<close> (so the \<open>else\<close> guard of
+  \<open>operB\<close>/\<open>domB\<close> is taken: no \<open>u'\<close> with \<open>w \<le> u'\<close> has \<open>T\<^bsub>u\<^esub> = T\<^bsub>u'\<^esub>\<close>).\<close>
+
+lemma domB_single_TBv_struct:
+  assumes db: "domB (Trm [DB w c]) = TBv (enat u)" and cne: "c \<noteq> Trm []"
+  shows "domB c = TBv (enat u) \<and> \<not> (\<exists>u'. w \<le> enat u' \<and> domB c = TBv (enat u'))"
+proof -
+  have unf: "domB (Trm [DB w c]) =
+               (let dbc = domB c in
+                if dbc = {Trm []} then NatSet
+                else if (\<exists>u'. w \<le> enat u' \<and> dbc = TBv (enat u')) then NatSet
+                else dbc)"
+    using cne by (subst domB_unfold) simp
+  \<comment> \<open>the result \<open>T\<^bsub>u\<^esub>\<close> is neither \<open>{0}\<close> nor \<open>NatSet\<close>, so the final \<open>else dbc\<close>
+     branch is taken: \<open>dbc = T\<^bsub>u\<^esub>\<close> and the guard is false\<close>
+  have nz: "domB c \<noteq> {Trm []}"
+  proof
+    assume "domB c = {Trm []}"
+    hence "domB (Trm [DB w c]) = NatSet" using unf by (simp add: Let_def)
+    hence "NatSet = TBv (enat u)" using db by simp
+    thus False using NatSet_neq_TBv by simp
+  qed
+  have nguard: "\<not> (\<exists>u'. w \<le> enat u' \<and> domB c = TBv (enat u'))"
+  proof
+    assume "\<exists>u'. w \<le> enat u' \<and> domB c = TBv (enat u')"
+    hence "domB (Trm [DB w c]) = NatSet" using unf nz by (simp add: Let_def)
+    hence "NatSet = TBv (enat u)" using db by simp
+    thus False using NatSet_neq_TBv by simp
+  qed
+  have "domB (Trm [DB w c]) = domB c" using unf nz nguard by (simp add: Let_def)
+  hence "domB c = TBv (enat u)" using db by simp
+  thus ?thesis using nguard by simp
+qed
+
+text \<open>Lemma A (\<open>operB\<close>-totality on a \<open>T\<^bsub>u\<^esub>\<close>-body): if \<open>domB b = T\<^bsub>u\<^esub>\<close> then
+  \<open>operB b z\<close> is defined for every \<open>z\<close>.  Strong induction on \<open>size b\<close>;
+  the single recursive \<open>operB\<close>-call is the \<open>else\<close>-branch \<open>operB c z\<close> on a
+  strictly smaller body \<open>c\<close> with \<open>domB c = T\<^bsub>u\<^esub>\<close>; the \<open>xseq\<close>- and \<open>mult\<close>-arm
+  obligations are vacuous (their guards force \<open>{0} = T\<^bsub>u\<^esub>\<close> or \<open>w \<le> u\<close> against
+  @{thm [source] domB_single_TBv_struct}); the \<open>else\<close>-guard obligations are
+  vacuous because their \<open>\<not> dom (operB c z)\<close> hypothesis contradicts the IH.\<close>
+
+lemma operB_dom_TBv_body:
+  "domB b = TBv (enat u) \<Longrightarrow> domB_operB_xseq_dom (Inr (Inl (b, z)))"
+proof (induction b arbitrary: u z rule: measure_induct_rule[where f=size])
+  case (less b u z)
+  obtain xs where bxs: "b = Trm xs" by (cases b)
+  show ?case
+  proof (cases xs)
+    case Nil
+    \<comment> \<open>\<open>b = 0\<close>: \<open>domB 0 = {} \<noteq> T\<^bsub>u\<^esub>\<close> (the latter contains \<open>0\<close>), contradiction\<close>
+    have "domB b = {}" using bxs Nil by (subst domB_unfold) simp
+    hence "TBv (enat u) = {}" using less.prems by simp
+    moreover have "Trm [] \<in> TBv (enat u)" by (simp add: TBv_def)
+    ultimately show ?thesis by simp
+  next
+    case (Cons p0 ps1)
+    show ?thesis
+    proof (cases ps1)
+      case (Cons q ps2)
+      \<comment> \<open>multi-component: peel to last via @{thm [source] operB_dom_multi};
+         \<open>domB (Trm [last]) = T\<^bsub>u\<^esub>\<close> and \<open>size (Trm [last]) < size b\<close>\<close>
+      have xseq_eq: "xs = p0 # q # ps2" using \<open>xs = p0 # ps1\<close> Cons by simp
+      have ne: "xs \<noteq> []" using xseq_eq by simp
+      have dlast: "domB (Trm [last (p0 # q # ps2)]) = TBv (enat u)"
+        using less.prems bxs domB_last_component[OF ne] xseq_eq by simp
+      \<comment> \<open>\<open>last\<close> is a single component among \<open>\<ge> 2\<close>, so strictly smaller\<close>
+      have lastin: "last (p0 # q # ps2) \<in> set (q # ps2)"
+        by (cases ps2) auto
+      have szlast: "size (last (p0 # q # ps2)) \<le> size_list size (q # ps2)"
+        by (rule size_list_estimation'[OF lastin order_refl])
+      have szpos: "0 < size p0" by (cases p0) simp
+      have core: "size (last (p0 # q # ps2)) < size p0 + size_list size (q # ps2)"
+        using szlast szpos by linarith
+      have eL: "size (Trm [last (p0 # q # ps2)] :: BT)
+                  = Suc (Suc (size (last (p0 # q # ps2))))" by simp
+      have eR: "size (Trm (p0 # q # ps2) :: BT)
+                  = Suc (Suc (size p0 + size_list size (q # ps2)))" by simp
+      have szlt: "size (Trm [last (p0 # q # ps2)] :: BT) < size b"
+        using core eL eR bxs xseq_eq by simp
+      have domLast': "domB_operB_xseq_dom (Inr (Inl (Trm [last (p0 # q # ps2)], z)))"
+        by (rule less.IH[OF szlt dlast])
+      have "domB_operB_xseq_dom (Inr (Inl (Trm (p0 # q # ps2), z)))"
+        by (rule operB_dom_multi[OF domLast'])
+      thus ?thesis using bxs xseq_eq by simp
+    next
+      case Nil
+      \<comment> \<open>single principal \<open>b = Trm [DB w c]\<close>\<close>
+      obtain w c where p0eq: "p0 = DB w c" by (cases p0)
+      have beq: "b = Trm [DB w c]" using bxs \<open>xs = p0 # ps1\<close> Nil p0eq by simp
+      have dbWc: "domB (Trm [DB w c]) = TBv (enat u)" using less.prems beq by simp
+      show ?thesis
+      proof (cases "c = Trm []")
+        case True
+        \<comment> \<open>\<open>c = 0\<close>: every \<open>domintros(2)\<close> obligation has premise \<open>x2 \<noteq> 0\<close> with
+           \<open>x2 = c = 0\<close>, so all are vacuous except \<open>domB\<close>-totality\<close>
+        show ?thesis
+          unfolding beq True
+        proof (rule domB_operB_xseq.domintros(2))
+          show "domB_operB_xseq_dom (Inl x2)"
+            if "Trm [DB w (Trm [])] = Trm [DB x1 x2]" "x2 \<noteq> Trm []" for x1 x2
+            by (rule domB_dom_all)
+        qed (use True in \<open>simp_all\<close>)
+      next
+        case False
+        have struct: "domB c = TBv (enat u)
+                        \<and> \<not> (\<exists>u'. w \<le> enat u' \<and> domB c = TBv (enat u'))"
+          by (rule domB_single_TBv_struct[OF dbWc False])
+        have dc: "domB c = TBv (enat u)" using struct by (rule conjunct1)
+        have nguard: "\<not> (\<exists>u'. w \<le> enat u' \<and> domB c = TBv (enat u'))"
+          using struct by (rule conjunct2)
+        have szc: "size c < size b" using beq by simp
+        have domc: "domB_operB_xseq_dom (Inr (Inl (c, z)))"
+          by (rule less.IH[OF szc dc])
+        show ?thesis
+          unfolding beq
+        proof (rule domB_operB_xseq.domintros(2))
+          \<comment> \<open>(0) \<open>domB c\<close> total\<close>
+          show "domB_operB_xseq_dom (Inl x2)"
+            if "Trm [DB w c] = Trm [DB x1 x2]" "x2 \<noteq> Trm []" for x1 x2
+            by (rule domB_dom_all)
+        next
+          \<comment> \<open>(1) \<open>db = {0}\<close> branch: \<open>domB c = T\<^bsub>u\<^esub> \<noteq> {0}\<close>\<close>
+          show "domB_operB_xseq_dom (Inr (Inl (x2, Trm [])))"
+            if "Trm [DB w c] = Trm [DB x1 x2]" "x2 \<noteq> Trm []" "{Trm []} = domB x2"
+            for x1 x2
+          proof -
+            have "x2 = c" using that(1) by simp
+            hence "{Trm []} = TBv (enat u)" using that(3) dc by simp
+            thus ?thesis using zero_set_neq_TBv by simp
+          qed
+        next
+          \<comment> \<open>(2) \<open>xseq\<close>-guard: \<open>domB c = T\<^bsub>u'\<^esub>\<close>, \<open>w \<le> u'\<close> impossible by @{thm [source] nguard}\<close>
+          show "xb = Trm []"
+            if "Trm [DB w c] = Trm [DB x1 x2]" "x2 \<noteq> Trm []" "x1 \<le> enat u'"
+               "domB x2 = TBv (enat u')"
+               "\<not> domB_operB_xseq_dom
+                    (Inr (Inr (x2, enat (tbvIdx (TBv (enat u'))), numNat z)))"
+               "xb \<in> TBv (enat u')" for x1 x2 u' xb
+          proof -
+            have "x2 = c" "x1 = w" using that(1) by simp_all
+            hence "\<exists>u'. w \<le> enat u' \<and> domB c = TBv (enat u')"
+              using that(3,4) by blast
+            thus ?thesis using nguard by simp
+          qed
+        next
+          \<comment> \<open>(3) \<open>0 \<in> T\<^bsub>u'\<^esub>\<close>: same vacuous guard\<close>
+          show "Trm [] \<in> TBv (enat u')"
+            if "Trm [DB w c] = Trm [DB x1 x2]" "x2 \<noteq> Trm []" "x1 \<le> enat u'"
+               "domB x2 = TBv (enat u')"
+               "\<not> domB_operB_xseq_dom
+                    (Inr (Inr (x2, enat (tbvIdx (TBv (enat u'))), numNat z)))"
+               for x1 x2 u'
+            by (simp add: TBv_def)
+        next
+          \<comment> \<open>(6) \<open>else\<close>-guard: \<open>\<not> dom (operB c z)\<close> contradicts the IH @{thm [source] domc}\<close>
+          show "xb = Trm []"
+            if "Trm [DB w c] = Trm [DB x1 x2]" "x2 \<noteq> Trm []"
+               "\<forall>u'. x1 \<le> enat u' \<longrightarrow> domB x2 \<noteq> TBv (enat u')"
+               "\<not> domB_operB_xseq_dom (Inr (Inl (x2, z)))"
+               "xb \<in> domB x2" for x1 x2 xb
+          proof -
+            have "x2 = c" using that(1) by simp
+            hence "\<not> domB_operB_xseq_dom (Inr (Inl (c, z)))" using that(4) by simp
+            thus ?thesis using domc by simp
+          qed
+        next
+          \<comment> \<open>(7) \<open>0 \<in> domB c\<close> else-guard: same, vacuous via @{thm [source] domc}\<close>
+          show "Trm [] \<in> domB x2"
+            if "Trm [DB w c] = Trm [DB x1 x2]" "x2 \<noteq> Trm []"
+               "\<forall>u'. x1 \<le> enat u' \<longrightarrow> domB x2 \<noteq> TBv (enat u')"
+               "\<not> domB_operB_xseq_dom (Inr (Inl (x2, z)))" for x1 x2
+          proof -
+            have "x2 = c" using that(1) by simp
+            hence "\<not> domB_operB_xseq_dom (Inr (Inl (c, z)))" using that(4) by simp
+            thus ?thesis using domc by simp
+          qed
+        next
+          \<comment> \<open>(8) two-component multi: vacuous (single principal)\<close>
+          show "domB_operB_xseq_dom (Inr (Inl (Trm [x21a], z)))"
+            if "Trm [DB w c] = Trm [DB x1 x2, x21a]" for x1 x2 x21a
+            using that by simp
+        next
+          \<comment> \<open>(9) \<open>(\<ge>3)\<close>-component multi: vacuous (single principal)\<close>
+          show "domB_operB_xseq_dom (Inr (Inl (Trm [last x22a], z)))"
+            if "Trm [DB w c] = Trm (DB x1 x2 # x21a # x22a)" "x22a \<noteq> []"
+            for x1 x2 x21a x22a
+            using that(1) by simp
+        qed
+      qed
+    qed
+  qed
+qed
+
+text \<open>\<open>tbvIdx (T\<^bsub>u\<^esub>) = u\<close>: the index is recovered uniquely by injectivity
+  of \<open>TBv\<close> on finite levels (@{thm [source] TBv_enat_inj}).\<close>
+
+lemma tbvIdx_TBv: "tbvIdx (TBv (enat u)) = u"
+  unfolding tbvIdx_def
+  by (rule the_equality) (auto dest: TBv_enat_inj)
+
+text \<open>Lemma B ([Buc1] Lemma 3.2, the \<open>xseq\<close> tower): for a body \<open>b\<close> with
+  \<open>domB b = T\<^bsub>u'\<^esub>\<close>, the tower \<open>xseq b u i\<close> is defined for every \<open>u\<close> and \<open>i\<close>.
+  Induction on \<open>i\<close> (the length of the argument \<open>a\<close> in [Buc1]); the two
+  \<open>domintros(3)\<close> obligations are the inner \<open>xseq b u nat\<close> (IH, smaller index)
+  and \<open>operB b (D\<^sub>u (xseq b u nat))\<close> (defined for every second argument by
+  @{thm [source] operB_dom_TBv_body}).\<close>
+
+lemma xseq_dom_TBv_body:
+  assumes db: "domB b = TBv (enat u')"
+  shows "domB_operB_xseq_dom (Inr (Inr (b, u, i)))"
+proof (induction i)
+  case 0
+  show ?case
+    by (rule domB_operB_xseq.domintros(3)) simp_all
+next
+  case (Suc i)
+  show ?case
+  proof (rule domB_operB_xseq.domintros(3))
+    \<comment> \<open>(1) inner \<open>xseq b u nat\<close>: \<open>nat = i\<close> by the case split, IH\<close>
+    show "domB_operB_xseq_dom (Inr (Inr (b, u, nat)))"
+      if "Suc i = Suc nat" for nat
+      using Suc.IH that by simp
+  next
+    \<comment> \<open>(2) \<open>operB b (D\<^sub>u (xseq b u nat))\<close>: defined for any second arg, Lemma A\<close>
+    show "domB_operB_xseq_dom (Inr (Inl (b, Dpt u (xseq b u nat))))"
+      if "Suc i = Suc nat" for nat
+      by (rule operB_dom_TBv_body[OF db])
+  qed
+qed
+
+text \<open>Lemma C (kind-1 \<open>operB\<close>-domain): the genuine \<open>([].4)(ii)\<close> principal
+  \<open>D\<^sub>v b\<close> with \<open>domB b = T\<^bsub>u\<^esub>\<close> and \<open>v \<le> u\<close> is in \<open>operB\<close>'s domain.  The
+  \<open>xseq\<close>-arm side conditions ((2)/(3)) are discharged by Lemma B
+  (@{thm [source] xseq_dom_TBv_body}): their \<open>\<not> dom (xseq \<dots>)\<close> hypothesis is
+  false, so they are vacuous; the \<open>db = {0}\<close> and \<open>else\<close> arms are vacuous
+  because \<open>domB b = T\<^bsub>u\<^esub>\<close> with \<open>v \<le> u\<close>.\<close>
+
+lemma operB_dom_kind1:
+  assumes db: "domB b = TBv (enat u)" and vu: "v \<le> enat u" and bne: "b \<noteq> Trm []"
+  shows "domB_operB_xseq_dom (Inr (Inl (Trm [DB v b], z)))"
+proof (rule domB_operB_xseq.domintros(2))
+  \<comment> \<open>(0) \<open>domB b\<close> total\<close>
+  show "domB_operB_xseq_dom (Inl x2)"
+    if "Trm [DB v b] = Trm [DB x1 x2]" "x2 \<noteq> Trm []" for x1 x2
+    by (rule domB_dom_all)
+next
+  \<comment> \<open>(1) \<open>db = {0}\<close>: \<open>domB b = T\<^bsub>u\<^esub> \<noteq> {0}\<close>\<close>
+  show "domB_operB_xseq_dom (Inr (Inl (x2, Trm [])))"
+    if "Trm [DB v b] = Trm [DB x1 x2]" "x2 \<noteq> Trm []" "{Trm []} = domB x2" for x1 x2
+  proof -
+    have "x2 = b" using that(1) by simp
+    hence "{Trm []} = TBv (enat u)" using that(3) db by simp
+    thus ?thesis using zero_set_neq_TBv by simp
+  qed
+next
+  \<comment> \<open>(2) \<open>xseq\<close>-guard: \<open>\<not> dom (xseq b u' (numNat z))\<close> is FALSE (Lemma B)\<close>
+  show "xb = Trm []"
+    if "Trm [DB v b] = Trm [DB x1 x2]" "x2 \<noteq> Trm []" "x1 \<le> enat u'"
+       "domB x2 = TBv (enat u')"
+       "\<not> domB_operB_xseq_dom
+            (Inr (Inr (x2, enat (tbvIdx (TBv (enat u'))), numNat z)))"
+       "xb \<in> TBv (enat u')" for x1 x2 u' xb
+  proof -
+    have "x2 = b" using that(1) by simp
+    hence "domB b = TBv (enat u')" using that(4) by simp
+    \<comment> \<open>the inner \<open>xseq\<close> tower IS defined (Lemma B), contradicting the hypothesis\<close>
+    have "domB_operB_xseq_dom
+            (Inr (Inr (b, enat (tbvIdx (TBv (enat u'))), numNat z)))"
+      by (rule xseq_dom_TBv_body[OF \<open>domB b = TBv (enat u')\<close>])
+    hence "domB_operB_xseq_dom
+             (Inr (Inr (x2, enat (tbvIdx (TBv (enat u'))), numNat z)))"
+      using \<open>x2 = b\<close> by simp
+    thus ?thesis using that(5) by simp
+  qed
+next
+  \<comment> \<open>(3) \<open>0 \<in> T\<^bsub>u'\<^esub>\<close>: trivially\<close>
+  show "Trm [] \<in> TBv (enat u')"
+    if "Trm [DB v b] = Trm [DB x1 x2]" "x2 \<noteq> Trm []" "x1 \<le> enat u'"
+       "domB x2 = TBv (enat u')"
+       "\<not> domB_operB_xseq_dom
+            (Inr (Inr (x2, enat (tbvIdx (TBv (enat u'))), numNat z)))"
+       for x1 x2 u'
+    by (simp add: TBv_def)
+next
+  \<comment> \<open>(6) \<open>else\<close>-guard: \<open>\<forall>u'. v \<le> u' \<longrightarrow> domB b \<noteq> T\<^bsub>u'\<^esub>\<close> is FALSE
+     (take \<open>u' = u\<close>: \<open>v \<le> u\<close> and \<open>domB b = T\<^bsub>u\<^esub>\<close>)\<close>
+  show "xb = Trm []"
+    if "Trm [DB v b] = Trm [DB x1 x2]" "x2 \<noteq> Trm []"
+       "\<forall>u'. x1 \<le> enat u' \<longrightarrow> domB x2 \<noteq> TBv (enat u')"
+       "\<not> domB_operB_xseq_dom (Inr (Inl (x2, z)))"
+       "xb \<in> domB x2" for x1 x2 xb
+  proof -
+    have "x2 = b" "x1 = v" using that(1) by simp_all
+    hence "v \<le> enat u \<longrightarrow> domB b \<noteq> TBv (enat u)" using that(3) by blast
+    thus ?thesis using vu db by simp
+  qed
+next
+  \<comment> \<open>(7) \<open>0 \<in> domB b\<close> else-guard: same FALSE premise\<close>
+  show "Trm [] \<in> domB x2"
+    if "Trm [DB v b] = Trm [DB x1 x2]" "x2 \<noteq> Trm []"
+       "\<forall>u'. x1 \<le> enat u' \<longrightarrow> domB x2 \<noteq> TBv (enat u')"
+       "\<not> domB_operB_xseq_dom (Inr (Inl (x2, z)))" for x1 x2
+  proof -
+    have "x2 = b" "x1 = v" using that(1) by simp_all
+    hence "v \<le> enat u \<longrightarrow> domB b \<noteq> TBv (enat u)" using that(3) by blast
+    thus ?thesis using vu db by simp
+  qed
+next
+  \<comment> \<open>(8) two-component multi: vacuous (single principal)\<close>
+  show "domB_operB_xseq_dom (Inr (Inl (Trm [x21a], z)))"
+    if "Trm [DB v b] = Trm [DB x1 x2, x21a]" for x1 x2 x21a
+    using that by simp
+next
+  \<comment> \<open>(9) \<open>(\<ge>3)\<close>-component multi: vacuous (single principal)\<close>
+  show "domB_operB_xseq_dom (Inr (Inl (Trm [last x22a], z)))"
+    if "Trm [DB v b] = Trm (DB x1 x2 # x21a # x22a)" "x22a \<noteq> []" for x1 x2 x21a x22a
+    using that(1) by simp
+qed
+
+text \<open>The kind-1 \<open>operB\<close> unfold: \<open>operB (D\<^sub>v b) z = D\<^sub>v (xseq b (tbvIdx (domB b)) (numNat z))\<close>
+  when \<open>domB b = T\<^bsub>u\<^esub>\<close> and \<open>v \<le> u\<close> (the \<open>([].4)(ii)\<close> fundamental sequence).\<close>
+
+lemma operB_kind1_unfold:
+  assumes db: "domB b = TBv (enat u)" and vu: "v \<le> enat u" and bne: "b \<noteq> Trm []"
+  shows "operB (Trm [DB v b]) z = Dprin v (xseq b (enat u) (numNat z))"
+proof -
+  have dom: "domB_operB_xseq_dom (Inr (Inl (Trm [DB v b], z)))"
+    by (rule operB_dom_kind1[OF db vu bne])
+  have guard: "(\<exists>u'. v \<le> enat u' \<and> domB b = TBv (enat u'))" using db vu by blast
+  have "operB (Trm [DB v b]) z
+          = (let dbb = domB b in
+             if dbb = {Trm []} then multBT (Dprin v (operB b (Trm []))) (numNat z + 1)
+             else if (\<exists>u'. v \<le> enat u' \<and> dbb = TBv (enat u'))
+                  then Dprin v (xseq b (enat (tbvIdx dbb)) (numNat z))
+             else Dprin v (operB b z))"
+    using operB.psimps[OF dom] bne by simp
+  also have "\<dots> = Dprin v (xseq b (enat (tbvIdx (domB b))) (numNat z))"
+  proof -
+    have nz: "domB b \<noteq> {Trm []}" using db zero_set_neq_TBv by auto
+    show ?thesis using nz guard by (simp add: Let_def)
+  qed
+  also have "\<dots> = Dprin v (xseq b (enat u) (numNat z))"
+    using db tbvIdx_TBv by simp
+  finally show ?thesis .
 qed
 
 end

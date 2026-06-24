@@ -22,7 +22,7 @@
     - 🚨 命題（scb分解と基本列の関係）
       - ✅ (1) `m_7_2_scb_fseq_succ`（後続型 operB_dom 有限導出、Lemma3.2 回避）
       - ✅ (1-2) scb 保存 `m_7_2_scb_fseq_scb`（hang修正=length-collapse/`operB_dom_multi_peel`/`dfree_BT_addBT`）
-      - 🚨 (2) xseq/Lemma3.2：A23 operB定義適用済(緑)。残=`domB_operB_xseq` の `Inr(Inr)` 枝(xseqタワー有限終了=[Buc1]Lemma3.2)未構築でブロック
+      - 🚨 (2) xseq/Lemma3.2：operB域 解禁(`operB_dom_kind1`/`xseq_dom_TBv_body`/`operB_kind1_unfold`=[Buc1]Lemma3.2 構造的証明済)、conjunct適用待ち
     - ✅ 命題（$\textrm{RightNodes}$ と部分表現の関係）〔`m_7_2_RightNodes_subexpr`〕
   - 🚨 §7.3 翻訳写像
     - ✅ **定義** `Trans`/`Mark`（相互再帰 `function`）
@@ -59,9 +59,9 @@
     - 🚨 命題（条件 (II) か (IV) の下での終切片と $\textrm{Trans}$ の関係）
     - 🚨 補題（強単項性の切片への遺伝性）
     - 🚨 補題（部分表現の単項成分と $\textrm{Pred}$ の関係）(§8.2 keystone)
-      - ✅ Adm0 枝 + guard 3/4 (nadmj0/t2ne/e0gt)
-      - 🚨 gB-condV (`m_8_2_nadm_diag`=nadm 予の零列、ST_PS 固有)
-      - 🚨 BASE済/Admpos: localization緑(`trans_surgery_value`/`trans_surgery_localized`)、残=value-level lift(§8.2幾何 j1'≠transJ1 が 24/67 で blocked)
+      - ✅ Adm0 枝(gB-free組立 `m_8_2_subexpr_component_Pred_Adm0_nogB`) + guard 3/4 (nadmj0/t2ne/e0gt)
+      - ✅ gB-condV (`m_8_2_gB_Adm0_condA` 無条件 discharge)
+      - 🚨 Admpos枝(clause3/4): j1'=transJ1 lift は誤標的(少数派)。正路=entry M 1 j1'(FirstNodes)で (j1−TrMax) 帰納(article 3400-3440)
       - 🚨 組立
     - 🚨 補題（強単項性の下での部分表現の単項成分の基本性質）
       - ✅ (1) `m_8_2_subexpr_leftend_unique`
@@ -91,13 +91,13 @@
     - 🚨 命題（条件 (VI) の下での $\textrm{Trans}$ と基本列の交換関係）
     - ✅ 補題（公差 $(1,0)$ のペア数列の $\textrm{Trans}$ の基本性質）〔`m_8_6_const2nd_Trans_paper`〕
     - ✅ 補題（公差 $(1,1)$ のペア数列の $\textrm{Trans}$ の展開規則）〔`m_8_6_diagSeq_Trans_oper_paper`〕
-    - 🚨 補題（順序数項の末尾単項の零化可能性）〔`trailing_principal_annihilable`。operB(Lemma3.2)展開待ち〕
+    - 🚨 補題（順序数項の末尾単項の零化可能性）〔`trailing_principal_annihilable`。operB展開解禁(`operB_kind1_unfold`)、適用待ち〕
   - 🚨 §8.7 主結果
     - ✅ 補題（公差 $(0,0)$ のペア数列の $\textrm{Trans}$ の基本性質）〔`m_8_7_const00_Trans`〕
     - 🚨 補題（基本列の降下性）〔`fseq_descend`。§8.1-8.6 交換則連鎖待ち〕
     - ✅ 補題（順序数項の再帰構造）〔`m_8_7_OT_scb_recursive`〕
     - ✅ 補題（順序数項の共終数の遺伝性）〔`m_8_7_OT_dom_hereditary`〕
-    - 🚨 補題（順序数項の末尾項の零化可能性）〔`OT_tail_annihilable`。operB(Lemma3.2)展開待ち〕
-    - 🚨 補題（$\textrm{Pred}$ と $[0]$ の関係）〔`Pred_oper0`。operB(Lemma3.2)展開待ち〕
+    - 🚨 補題（順序数項の末尾項の零化可能性）〔`OT_tail_annihilable`。operB展開解禁(`operB_kind1_unfold`)、適用待ち〕
+    - 🚨 補題（$\textrm{Pred}$ と $[0]$ の関係）〔`Pred_oper0`。operB展開解禁(`operB_kind1_unfold`)、適用待ち〕
     - ✅ 補題（順序数項の基本例）〔`m_8_7_OT_examples`〕
     - 🚨 補題（$\textrm{Trans}$ が標準形を保つこと）〔`Trans_preserves_OT`。`fseq_descend`連鎖待ち〕
