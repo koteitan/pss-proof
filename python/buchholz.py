@@ -124,20 +124,19 @@ def bracket(a, z):
         return mul([D(v, bracket(b, ZERO))], n+1)
     if db == 'N' or (isinstance(db, tuple) and v > db[1]):   # ([].4)(iii) dom(a)=dom(b)
         return [D(v, bracket(b, z))]
-    # ([].4)(ii) dom(b)=T_u, v<=u<ω, [Buc2] modification: x_0=D_u 0, x_i=b[D_u x_{i-1}], a[n]=D_v b[x_n]
-    # CAVEAT (under investigation): implemented verbatim from the article footnote
-    # (content.md 6427).  But buchholz_audit.py finds Lemma 3.2a (a[z]<a) FAILING here
-    # for non-principal b (e.g. a=D_0((D_1 0,D_1 0))): the outer b[x_n] is applied with
-    # x_n = b[..] ∈ T_{u+1}, i.e. x_n ∉ dom(b)=T_u, so it is out of domain and grows.
-    # The [Buc1] original a[n]=D_v b[D_u b[1]] keeps the outer argument D_u-wrapped
-    # (∈ T_u=dom b); the literal [Buc2] reading here loses that.  Needs [Buc1] p.203 study
-    # (a[n]=D_v(x_n) restores 3.2a empirically, but that is a guess).  Cases 0/1/2/3/5 and
-    # (i)/(iii) ARE validated; the order < is fully validated (Lemma 2.1).
+    # ([].4)(ii) dom(b)=T_u, v<=u<ω, [Buc2] modification: x_0=D_u 0, x_i=b[D_u x_{i-1}], a[n]=D_v x_n
+    # A23 (APPLIED): the article footnote (content.md 6427) literally reads a[n]=D_v b[x_n],
+    # but that outer b[.] is a DOUBLED application that escapes dom(b)=T_u: x_n=b[..]∈T_{u+1},
+    # so x_n∉dom(b)=T_u and the term grows, breaking Lemma 3.2a (a[z]<a).  Counterexample
+    # a=D_0((D_1 0,D_1 0)) (see buc_ii_check.py 'literal': 3/106).  Dropping the outer b[.]
+    # (a[n]=D_v x_n) restores well-definedness and Lemmas 3.2a/b/c: validated 106/106 in
+    # python/buc_ii_check.py (reading 'fix_xn').  Cases 0/1/2/3/5 and (i)/(iii) are likewise
+    # validated; the order < is fully validated (Lemma 2.1).
     u = db[1]; n = nat_value(z)
     x = [D(u, ZERO)]                                  # x_0 = D_u 0  (term)
     for _ in range(n):
         x = bracket(b, [D(u, x)])                     # x_i = b[D_u x_{i-1}]
-    return [D(v, bracket(b, x))]
+    return [D(v, x)]                                  # a[n] = D_v x_n  (A23)
 
 # ---- pretty printer ----
 def fmt(a):
