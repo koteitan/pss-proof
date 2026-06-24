@@ -22,29 +22,11 @@
     - 🚨 命題（scb分解と基本列の関係）
       - ✅ (1) `m_7_2_scb_fseq_succ`（後続型 operB_dom 有限導出、Lemma3.2 回避）
       - ✅ (1-2) scb 保存 `m_7_2_scb_fseq_scb`（hang修正=length-collapse/`operB_dom_multi_peel`/`dfree_BT_addBT`）
-      - 🚨 (2) xseq/Lemma3.2：基本ケース(s0=b0=())✅ `m_7_2_scb_fseq_kind1_basic`(operB_kind1_unfold+xseqタワー)=下流§8.6/8.7が消費。一般形は原文偽→**訂正A24**((n+1)重複過剰)、非空s0/b0は未証明
+      - 🚨 (2) xseq/Lemma3.2(kind1)：原文式は偽→**訂正A24**((n+1)重複過剰)。訂正形を入力で2分:
+        - ✅ A 単純形(s0=b0=())：`m_7_2_scb_fseq_kind1_basic`(operB_kind1_unfold+xseqタワー)。下流§8.6/8.7が消費
+        - 🚨 B 一般形(非空s0/b0)：訂正A24形は真だが未証明
     - ✅ 命題（$\textrm{RightNodes}$ と部分表現の関係）〔`m_7_2_RightNodes_subexpr`〕
-  - 🚨 §7.3 翻訳写像
-    - ✅ **定義** `Trans`/`Mark`（相互再帰 `function`）
-    - ✅ 命題（$\textrm{Trans}$ の well-defined 性）〔`Trans_Mark_invariant_aux`(RT_PS域,A15)。memory `pss-73-trans-wd`〕
-    - ✅ 命題（$2$ 列ペア数列の基本性質）〔`m_7_3_twoColumn_Trans`/`_Marked`/`_Mark`〕
-    - ✅ 命題（$\textrm{Trans}$ の $(\textrm{IncrFirst},\textrm{Red})$ 不変 $P$ 同変性）〔(1)`m_7_3_Trans_Red`/`_IncrFirst`・(2)`m_7_3_Trans_P_equivariance`(A16 ¬zeroT P₀)〕
-    - ✅ 命題（$\textrm{Mark}$ の $(\textrm{IncrFirst},\textrm{Red},P)$ 不変性）〔(1)`m_7_3_Mark_Red`/`_IncrFirst`・P部=`m_7_3_Mark_P_invariance`(A4 RT_PS)〕
-    - ✅ 命題（$\textrm{Trans}$ が零項性を保つこと）〔`m_7_3_Trans_zeroT`(RT_PS,A15)〕
-    - ✅ 命題（$c_1$ と $c_2$ の大小関係）〔`transC1_lessBT_transC2_full`。memory `pss-73-ordering-chain`〕
-    - ✅ 命題（$\textrm{Pred}$ の $\textrm{Trans}$ に関する降下性）〔`m_7_3_Pred_Trans_descend`〕
-    - ✅ 命題（右端第 $1$ 基点の $\textrm{Mark}$ の基本性質）〔完全iff `m_7_3_Mark_rightmost1`(A17)〕
-    - ✅ 系（$\textrm{Mark}$ の左端の基本性質）〔`Mark_leftend_form`/`Mark_MarkedB_nest`〕
-    - ✅ 系（条件 (II) か (IV) の下で $t_2$ が $0$ でないこと）〔`m_7_3_t2_nonzero_condIIorIV`〕
-    - ✅ 命題（右端第 $2$ 基点の $\textrm{Mark}$ の基本性質）〔`m_7_3_Mark_rightmost2`〕
-    - ✅ 命題（$\textrm{Trans}$ の最左単項成分の左端の基本性質）〔`m_7_3_Trans_leftmost`((1)(2)(3)完全形, clause(3)明確化C1)〕
-    - ✅ 命題（$\textrm{Trans}$ が単項性を保つこと）〔`m_7_3_Trans_monoT`(A16訂正: P₀非零項前提の iff)。memory `pss-73-trans-monoT-false`〕
-    - ✅ 系（$\textrm{Trans}$ と非可算基数の関係）〔`m_7_3_Trans_Dv0_iff`(RT_PS): Trans M=D_v0 ⟺ M=[(0,0),(0,0)](v=0)∨[(v,v)](v>0)〕
-    - ✅ 系（左端第 $1$ 基点の $\textrm{Mark}$ の基本性質）〔`m_7_3_Mark_leftmost1`〕
-    - ✅ 系（$s_1$ と $b_1$ の空性と基点の関係）〔`m_7_3_s1_b1_empty`〕
-    - ✅ 命題（$\textrm{Mark}$ が順序関係を保つこと）〔`m_7_4_Mark_order`(A19)。memory `pss-74-nextadm`〕
-    - ✅ 系（$s_{-1}$ と $b_{-1}$ の空性と基点の関係）〔`m_7_3_sm1_bm1_empty`(jm1≤m ガード)〕
-    - ✅ 命題（$\textrm{Mark}$ の $\textrm{Trans}$ による表示）〔`m_7_4_Mark_Trans_repr`(content 2490, 57498ea)。memory `pss-74-nextadm`〕
+  - ✅ §7.3 翻訳写像 〔全21項完了: Trans/Mark定義+well-def(A15)+2列+P同変性(A16)+零項/単項性(A16)保存+順序チェーン(c1c2/Pred降下/左右端基点rightmost1-2/leftmost1)+s1b1/sm1bm1空性+Mark左端/順序保存(A19)/Trans表示+Trans-非可算基数系(`m_7_3_Trans_Dv0_iff`)。memory pss-73-trans-wd/-ordering-chain/-trans-monoT-false/pss-74-nextadm〕
   - ✅ §7.4 許容的親子関係
 - 🚨 §8 停止性
   - 🚨 §8.1 条件 (I) の下での展開規則
