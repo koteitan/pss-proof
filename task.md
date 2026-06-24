@@ -11,23 +11,7 @@
 ## 進捗ツリー
 - ✅ §5 定式化
 - ✅ §6 ペア数列の基本性質 〔全節完了(2026-06-11)。docs `reducedness.md`/`red-le-domain.md`/`slice-Br-descending.md`〕
-- 🚨 §7 Buchholzの表記系への翻訳
-  - ✅ §7.1 Buchholzの表記系
-  - 🚨 §7.2 scb分解 〔`m_7_flatBT_inj` 完成〕
-    - ✅ 命題（scb分解の置換可能性）〔A12。`m_7_2_scb_replaceable_corr_mod_image`〕
-    - ✅ 命題（scb分解の合成則）〔`m_7_2_scb_compose`/A11 `scbcomp_compose2_PT`〕
-    - ✅ 命題（scb分解の自明性の判定条件）〔`m_7_2_scb_triviality`〕
-    - ✅ 命題（scb分解の一意性）〔(1)-(4) A14・(2)=`m_7_2_scb_unique_domB`、(5)=`m_7_2_scb_unique_kind1`(rneq内部discharge)〕
-    - ✅ 系（加法と scb分解の関係）〔(1)(2) green/(3) A13 無条件化 `m_7_2_add_scb_conj3_uncond`〕
-    - 🚨 命題（scb分解と基本列の関係）
-      - ✅ (1) `m_7_2_scb_fseq_succ`（後続型 operB_dom 有限導出、Lemma3.2 回避）
-      - ✅ (1-2) scb 保存 `m_7_2_scb_fseq_scb`（hang修正=length-collapse/`operB_dom_multi_peel`/`dfree_BT_addBT`）
-      - 🚨 (2) xseq/Lemma3.2(kind1)：原文式は偽→**訂正A24**((n+1)重複過剰)。訂正形を入力で2分:
-        - ✅ A 単純形(s0=b0=())：`m_7_2_scb_fseq_kind1_basic`(operB_kind1_unfold+xseqタワー)。下流§8.6/8.7が消費
-        - 🚨 B 一般形(非空s0/b0)：訂正A24形は真だが未証明
-    - ✅ 命題（$\textrm{RightNodes}$ と部分表現の関係）〔`m_7_2_RightNodes_subexpr`〕
-  - ✅ §7.3 翻訳写像 〔全21項完了: Trans/Mark定義+well-def(A15)+2列+P同変性(A16)+零項/単項性(A16)保存+順序チェーン(c1c2/Pred降下/左右端基点rightmost1-2/leftmost1)+s1b1/sm1bm1空性+Mark左端/順序保存(A19)/Trans表示+Trans-非可算基数系(`m_7_3_Trans_Dv0_iff`)。memory pss-73-trans-wd/-ordering-chain/-trans-monoT-false/pss-74-nextadm〕
-  - ✅ §7.4 許容的親子関係
+- ✅ §7 Buchholzの表記系への翻訳 〔全節完了(2026-06-25、訂正A24 modulo): §7.1 表記系・§7.2 scb分解(置換可能性A12/合成則A11/自明性/一意性A14/加法A13/基本列(2)=kind1 `m_7_2_scb_fseq_kind1_basic`+`_general`(原文偽→訂正A24形)/RightNodes)・§7.3 翻訳写像(Trans/Mark全21項、A15/A16/A17/A19)・§7.4 許容的親子(A18)。memory pss-73-*/pss-74-nextadm/pss-operB-lemma32〕
 - 🚨 §8 停止性
   - 🚨 §8.1 条件 (I) の下での展開規則
     - 🚨 命題（条件 (I) の下での $\textrm{Trans}$ と基本列の交換関係）
@@ -43,7 +27,7 @@
     - 🚨 補題（部分表現の単項成分と $\textrm{Pred}$ の関係）(§8.2 keystone)
       - ✅ Adm0 枝(gB-free組立 `m_8_2_subexpr_component_Pred_Adm0_nogB`) + guard 3/4 (nadmj0/t2ne/e0gt)
       - ✅ gB-condV (`m_8_2_gB_Adm0_condA` 無条件 discharge)
-      - 🚨 Admpos枝(clause3/4): 後半✅(`m_8_2_subexpr_component_Pred_clause34_of_witness`=witness方程式→4節disjunction、`ex1_Dpt_addBT_triple`)。残=前半witness生成(j1−TrMax帰納+surgery confinement、transC1が末尾principalに深ネスト678/1789)
+      - 🚨 Admpos枝(clause3/4): 後半✅(`_clause34_of_witness`+`ex1_Dpt_addBT_triple`)、outer principal✅(`trans_admpos_outer_principal`=両Trans=D_{M1,0}(·))。残=witness生成2手(confinement→body-split + geometry→w同定(§7.4)、surgery site=bare-top1116+nested678)
       - 🚨 組立
     - 🚨 補題（強単項性の下での部分表現の単項成分の基本性質）
       - ✅ (1) `m_8_2_subexpr_leftend_unique`
