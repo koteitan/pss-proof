@@ -11,7 +11,7 @@
 ## 進捗ツリー
 - ✅ §5 定式化
 - ✅ §6 ペア数列の基本性質 〔全節完了(2026-06-11)。docs `reducedness.md`/`red-le-domain.md`/`slice-Br-descending.md`〕
-- ✅ §7 Buchholzの表記系への翻訳 〔全節完了(2026-06-25、訂正A24 modulo): §7.1 表記系・§7.2 scb分解(置換可能性A12/合成則A11/自明性/一意性A14/加法A13/基本列(2)=kind1 `m_7_2_scb_fseq_kind1_basic`+`_general`(原文偽→訂正A24形)/RightNodes)・§7.3 翻訳写像(Trans/Mark全21項、A15/A16/A17/A19)・§7.4 許容的親子(A18)。memory pss-73-*/pss-74-nextadm/pss-operB-lemma32〕
+- ✅ §7 Buchholzの表記系への翻訳 
 - 🚨 §8 停止性
   - 🚨 §8.1 条件 (I) の下での展開規則
     - 🚨 命題（条件 (I) の下での $\textrm{Trans}$ と基本列の交換関係）
@@ -27,7 +27,7 @@
     - 🚨 補題（部分表現の単項成分と $\textrm{Pred}$ の関係）(§8.2 keystone)
       - ✅ Adm0 枝(gB-free組立 `m_8_2_subexpr_component_Pred_Adm0_nogB`) + guard 3/4 (nadmj0/t2ne/e0gt)
       - ✅ gB-condV (`m_8_2_gB_Adm0_condA` 無条件 discharge)
-      - 🚨 Admpos枝(clause3/4): 後半✅(`_clause34_of_witness`+`ex1_Dpt_addBT_triple`)、outer principal✅(`trans_admpos_outer_principal`=両Trans=D_{M1,0}(·))。残=witness生成2手(confinement→body-split + geometry→w同定(§7.4)、surgery site=bare-top1116+nested678)
+      - 🚨🤖 Admpos枝(clause3/4): 後半✅+outer principal✅(`trans_admpos_outer_principal`)。残=witness生成2手(confinement→body-split + geometry→w同定§7.4)を agent 作業中
       - 🚨 組立
     - 🚨 補題（強単項性の下での部分表現の単項成分の基本性質）
       - ✅ (1) `m_8_2_subexpr_leftend_unique`
@@ -35,7 +35,7 @@
     - 🚨 補題（条件 (V) の下での右端の親の基本性質）
     - 🚨 補題（条件 (V) の下での終切片と $\textrm{Trans}$ の関係）
   - 🚨 §8.3 条件 (II) の下での展開規則
-    - 🚨 命題（条件 (II) の下での $\textrm{Trans}$ と基本列の交換関係）
+    - 🚨🤖 命題（条件 (II) の下での $\textrm{Trans}$ と基本列の交換関係）〔`p_8_3_TransCondII_oper_descend`=lessBT、kind0 building blocks 利用→ agent 作業中〕
     - ✅ 補題（第 $0$ 種型基本列の基本不等式）〔`m_8_3_kind0_base_ineq`(A22訂正)〕
     - ✅ 補題（第 $0$ 種型基本列の基本分岐規則）〔`m_8_3_kind0_branch_rule`〕
     - ✅ 補題（第 $0$ 種型基本列の基本基点関係）〔`m_8_3_kind0_base_basepoint`〕
@@ -57,13 +57,13 @@
     - 🚨 命題（条件 (VI) の下での $\textrm{Trans}$ と基本列の交換関係）
     - ✅ 補題（公差 $(1,0)$ のペア数列の $\textrm{Trans}$ の基本性質）〔`m_8_6_const2nd_Trans_paper`〕
     - ✅ 補題（公差 $(1,1)$ のペア数列の $\textrm{Trans}$ の展開規則）〔`m_8_6_diagSeq_Trans_oper_paper`〕
-    - 🚨 補題（順序数項の末尾単項の零化可能性）〔`trailing_principal_annihilable`。[0]-零化中核 green(`operB_iter_Du_Dw0`/`operB_peel_trailing_Dv0`等、t'=0形)。残=T_w/kind-1 scb-spine transport(=§7.2 scb_fseq(2))。t'≠0 で項等式は偽(321/2861)〕
+    - 🚨🤖 補題（順序数項の末尾単項の零化可能性）〔`trailing_principal_annihilable`。scb-spine transport `m_7_2_scb_fseq_kind1_general` 解禁→ agent 作業中〕
   - 🚨 §8.7 主結果
     - ✅ 補題（公差 $(0,0)$ のペア数列の $\textrm{Trans}$ の基本性質）〔`m_8_7_const00_Trans`〕
     - 🚨 補題（基本列の降下性）〔`fseq_descend`。§8.1-8.6 交換則連鎖待ち〕
     - ✅ 補題（順序数項の再帰構造）〔`m_8_7_OT_scb_recursive`〕
     - ✅ 補題（順序数項の共終数の遺伝性）〔`m_8_7_OT_dom_hereditary`〕
-    - 🚨 補題（順序数項の末尾項の零化可能性）〔`OT_tail_annihilable`。[0]-零化中核 green、残=T_w scb-spine transport(=§7.2 scb_fseq(2))〕
-    - 🚨 補題（$\textrm{Pred}$ と $[0]$ の関係）〔`Pred_oper0`。同上(T_w scb-spine=§7.2 scb_fseq(2) 待ち)〕
+    - 🚨🤖 補題（順序数項の末尾項の零化可能性）〔`OT_tail_annihilable`。scb-spine transport 解禁→ agent 作業中〕
+    - 🚨🤖 補題（$\textrm{Pred}$ と $[0]$ の関係）〔`Pred_oper0`。scb-spine transport 解禁→ agent 作業中〕
     - ✅ 補題（順序数項の基本例）〔`m_8_7_OT_examples`〕
     - 🚨 補題（$\textrm{Trans}$ が標準形を保つこと）〔`Trans_preserves_OT`。`fseq_descend`連鎖待ち〕
