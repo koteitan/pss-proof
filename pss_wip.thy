@@ -25103,4 +25103,134 @@ proof -
   thus ?thesis using uv by simp
 qed
 
+
+text \<open>§8.2 keystone Admpos branch, value-level uniqueness packager for the
+  clause-(3)/(4) shape.  Given a witness pair of equations
+  \<open>Trans (Pred M) = D\<^sub>v(t\<^sub>1 +\<^sub>B D\<^sub>w t\<^sub>2)\<close> and \<open>Trans M = D\<^sub>v(t\<^sub>1 +\<^sub>B D\<^sub>w t\<^sub>3)\<close>
+  (same outer head \<open>v\<close>, same shared body-prefix \<open>t\<^sub>1\<close>, same split head \<open>w\<close>),
+  the triple \<open>t\<^sub>1\<^sub>2\<^sub>3 = (t\<^sub>1, t\<^sub>2, t\<^sub>3)\<close> is uniquely determined.  This is the exact
+  \<open>\<exists>!t\<^sub>1\<^sub>2\<^sub>3\<close> shape that clauses (3) (\<open>w = entry M 1 j'\<^sub>1\<close>) and (4)
+  (\<open>w = entry M 1 j'\<^sub>0\<close>) of the keystone assert; the Admpos-branch assembly
+  supplies the two witness equations (from the strong-induction hypothesis on
+  \<open>Pred M\<close> plus the marked-component surgery lift) and applies this packager.
+  Uniqueness: each split-head principal \<open>D\<^sub>w \<dots>\<close> is the single trailing
+  component of the body, so \<open>append_eq_append_conv\<close> reads off the shared prefix
+  \<open>t\<^sub>1\<close> and the bodies \<open>t\<^sub>2\<close>/\<open>t\<^sub>3\<close> (cf. the Adm0 clause-(4) core
+  @{thm [source] m_8_2_subexpr_component_Pred_Adm0_clause4_core}, which inlines
+  this argument).  Pure algebra on \<open>BT\<close>, no domain hypotheses.\<close>
+
+lemma ex1_Dpt_addBT_triple:
+  assumes "TP = Dpt v (t1 +\<^sub>B Dpt w t2)"
+      and "TM = Dpt v (t1 +\<^sub>B Dpt w t3)"
+  shows "\<exists>!t123. TP = Dpt v (fst t123 +\<^sub>B Dpt w (fst (snd t123)))
+              \<and> TM = Dpt v (fst t123 +\<^sub>B Dpt w (snd (snd t123)))"
+proof (rule ex1I[where a="(t1, t2, t3)"])
+  show "TP = Dpt v (fst (t1, t2, t3) +\<^sub>B Dpt w (fst (snd (t1, t2, t3))))
+      \<and> TM = Dpt v (fst (t1, t2, t3) +\<^sub>B Dpt w (snd (snd (t1, t2, t3))))"
+    using assms by simp
+next
+  fix t123 :: "BT \<times> BT \<times> BT"
+  obtain a bc where abc: "t123 = (a, bc)" by (cases t123)
+  obtain b c where bc: "bc = (b, c)" by (cases bc)
+  assume "TP = Dpt v (fst t123 +\<^sub>B Dpt w (fst (snd t123)))
+        \<and> TM = Dpt v (fst t123 +\<^sub>B Dpt w (snd (snd t123)))"
+  hence eqP: "TP = Dpt v (a +\<^sub>B Dpt w b)"
+    and eqM: "TM = Dpt v (a +\<^sub>B Dpt w c)"
+    using abc bc by simp_all
+  \<comment> \<open>\<open>a = t\<^sub>1\<close>, \<open>b = t\<^sub>2\<close> from \<open>TP\<close>\<close>
+  have eP: "Dpt v (a +\<^sub>B Dpt w b) = Dpt v (t1 +\<^sub>B Dpt w t2)"
+    using eqP assms(1) by simp
+  have listP: "untrm a @ [DB w b] = untrm t1 @ [DB w t2]"
+    using eP by (cases a; cases t1) simp_all
+  have aeq: "a = t1" using listP by (cases a; cases t1) (simp_all add: append_eq_append_conv)
+  have beq: "b = t2" using listP by (simp add: append_eq_append_conv)
+  \<comment> \<open>\<open>c = t\<^sub>3\<close> from \<open>TM\<close> (sharing prefix \<open>a = t\<^sub>1\<close>)\<close>
+  have eM: "Dpt v (a +\<^sub>B Dpt w c) = Dpt v (t1 +\<^sub>B Dpt w t3)"
+    using eqM assms(2) by simp
+  have listM: "untrm t1 @ [DB w c] = untrm t1 @ [DB w t3]"
+    using eM aeq by (cases t1) simp_all
+  have ceq: "c = t3" using listM by (simp add: append_eq_append_conv)
+  show "t123 = (t1, t2, t3)" using abc bc aeq beq ceq by simp
+qed
+
+
+text \<open>§8.2 keystone Admpos branch, clause-(3)/(4) ASSEMBLY from the witness
+  equations.  This is the second half of the Admpos induction step: once the
+  shared body-prefix \<open>t\<^sub>1\<close>, the split head \<open>w\<close>, and the bodies \<open>t\<^sub>2\<close>/\<open>t\<^sub>3\<close> are in
+  hand — i.e. the value-level identities
+  \<open>Trans (Pred M) = D\<^bsub>M\<^bsub>1,0\<^esub>\<^esub>(t\<^sub>1 +\<^sub>B D\<^sub>w t\<^sub>2)\<close> and \<open>Trans M = D\<^bsub>M\<^bsub>1,0\<^esub>\<^esub>(t\<^sub>1 +\<^sub>B D\<^sub>w t\<^sub>3)\<close>
+  with \<open>w \<in> {entry M 1 j'\<^sub>1, entry M 1 j'\<^sub>0}\<close> — the keystone's full 4-clause
+  disjunction follows, landing in clause (3) (when \<open>w = entry M 1 j'\<^sub>1\<close>) or clause
+  (4) (when \<open>w = entry M 1 j'\<^sub>0\<close>), via the uniqueness packager
+  @{thm [source] ex1_Dpt_addBT_triple}.  Empirically the witness disjunction is
+  EXACT on the whole Admpos branch (trans_model, \<open>RT\<^bsub>PS\<^esub> \<inter> PT\<^bsub>PS\<^esub>\<close> monoT,
+  \<open>transJm1 M > 0\<close>, length \<le> 6: all 1794 cases split as \<open>w = entry M 1 j'\<^sub>1\<close>
+  (1440, clause 3) or \<open>w = entry M 1 j'\<^sub>0\<close> (354, clause 4), 0 failures).  The
+  remaining (deep) obligation is to PRODUCE these two witness equations: the
+  strong induction on \<open>n = j\<^sub>1 - TrMax M\<close> supplies \<open>Trans (Pred M)\<close>'s top-body
+  split from the IH, and the marked-component surgery lift
+  (@{thm [source] trans_surgery_localized} + @{thm [source] MarkedB_addBT_right}
+  confining the surgery site \<open>transC1 M = Mark (Pred M) (transJm1 M)\<close> WITHIN the
+  trailing top-body principal \<open>D\<^sub>w t\<^sub>2\<close> — empirically the surgery site is strictly
+  nested inside \<open>D\<^sub>w t\<^sub>2\<close> in 678/1789 deep cases, never the bare top principal)
+  produces \<open>Trans M\<close>'s.  That confinement step is the precise residual blocker.\<close>
+
+lemma m_8_2_subexpr_component_Pred_clause34_of_witness:
+  fixes M :: pairseq
+  defines "j1 \<equiv> Lng M - 1"
+  defines "J1 \<equiv> Lng (Br M) - 1"
+  defines "j0' \<equiv> Joints M ! J1"
+  defines "j1' \<equiv> FirstNodes M ! J1"
+  assumes wsplit: "w = entry M 1 j1' \<or> w = entry M 1 j0'"
+    and witP: "Trans (Pred M) = Dpt (enat (entry M 1 0)) (t1 +\<^sub>B Dpt (enat w) t2)"
+    and witM: "Trans M = Dpt (enat (entry M 1 0)) (t1 +\<^sub>B Dpt (enat w) t3)"
+  shows
+    "(j1' = j1 \<and> (TrMax M = 0 \<or> j0' < TrMax M)
+        \<and> (entry M 0 j1' = entry M 1 j1' \<or> adm M j0')
+        \<and> (\<exists>!t1. Trans (Pred M) = Dpt (enat (entry M 1 0)) t1
+              \<and> Trans M = Dpt (enat (entry M 1 0))
+                            (t1 +\<^sub>B Dpt (enat (entry M 1 j1')) 0\<^sub>B)))
+   \<or> (j1' = j1 \<and> entry M 0 j1' > entry M 1 j1' \<and> \<not> adm M j0'
+        \<and> (\<exists>!t12. Trans (Pred M) = Dpt (enat (entry M 1 0)) (fst t12)
+              \<and> Trans M = Dpt (enat (entry M 1 0))
+                            (fst t12 +\<^sub>B Dpt (enat (entry M 1 j0')) (snd t12))))
+   \<or> (\<exists>!t123. Trans (Pred M)
+                = Dpt (enat (entry M 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M 1 j1')) (fst (snd t123)))
+            \<and> Trans M = Dpt (enat (entry M 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M 1 j1')) (snd (snd t123))))
+   \<or> (\<exists>!t123. Trans (Pred M)
+                = Dpt (enat (entry M 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M 1 j0')) (fst (snd t123)))
+            \<and> Trans M = Dpt (enat (entry M 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M 1 j0')) (snd (snd t123))))"
+  using wsplit
+proof
+  assume w1: "w = entry M 1 j1'"
+  have TPw: "Trans (Pred M) = Dpt (enat (entry M 1 0)) (t1 +\<^sub>B Dpt (enat (entry M 1 j1')) t2)"
+    using witP w1 by simp
+  have TMw: "Trans M = Dpt (enat (entry M 1 0)) (t1 +\<^sub>B Dpt (enat (entry M 1 j1')) t3)"
+    using witM w1 by simp
+  have cl3: "\<exists>!t123. Trans (Pred M)
+                = Dpt (enat (entry M 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M 1 j1')) (fst (snd t123)))
+            \<and> Trans M = Dpt (enat (entry M 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M 1 j1')) (snd (snd t123)))"
+    by (rule ex1_Dpt_addBT_triple[OF TPw TMw])
+  thus ?thesis by blast
+next
+  assume w0: "w = entry M 1 j0'"
+  have TPw: "Trans (Pred M) = Dpt (enat (entry M 1 0)) (t1 +\<^sub>B Dpt (enat (entry M 1 j0')) t2)"
+    using witP w0 by simp
+  have TMw: "Trans M = Dpt (enat (entry M 1 0)) (t1 +\<^sub>B Dpt (enat (entry M 1 j0')) t3)"
+    using witM w0 by simp
+  have cl4: "\<exists>!t123. Trans (Pred M)
+                = Dpt (enat (entry M 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M 1 j0')) (fst (snd t123)))
+            \<and> Trans M = Dpt (enat (entry M 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M 1 j0')) (snd (snd t123)))"
+    by (rule ex1_Dpt_addBT_triple[OF TPw TMw])
+  thus ?thesis by blast
+qed
+
 end
