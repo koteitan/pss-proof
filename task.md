@@ -65,7 +65,7 @@
     - 🚨 補題（基本列の降下性）〔`fseq_descend`。§8.1-8.6 交換則連鎖待ち〕
     - ✅ 補題（順序数項の再帰構造）〔`m_8_7_OT_scb_recursive`〕
     - ✅ 補題（順序数項の共終数の遺伝性）〔`m_8_7_OT_dom_hereditary`〕
-    - 🚨 補題（順序数項の末尾項の零化可能性）〔`OT_tail_annihilable`。[Buc1]Lemma3.2a(OT整礎帰納)待ち(A25系)〕
-    - 🚨 補題（$\textrm{Pred}$ と $[0]$ の関係）〔`Pred_oper0`。[Buc1]Lemma3.2a + `p_7_2_scb_compose`/`_replaceable` 待ち〕
+    - 🚨 補題（順序数項の末尾項の零化可能性）〔**原文偽→訂正A26**(ネスト印付き主項で偽、CEX D_0(D_1(D_1 0))、A25同型)。top-level正領域 core✅ `m_8_7_toplevel_Dw0_annihilate`(+`operB_dist_trailing_single`)。残=一般body は OT_B の [0] 閉包(別buc1引用要)〕
+    - 🚨 補題（$\textrm{Pred}$ と $[0]$ の関係）〔`Pred_oper0`。cond(II)/(IV) がネスト印付き主項=A26偽領域に適用、二重ブロック(OT閉包+ネスト)〕
     - ✅ 補題（順序数項の基本例）〔`m_8_7_OT_examples`〕
     - 🚨 補題（$\textrm{Trans}$ が標準形を保つこと）〔`Trans_preserves_OT`。`fseq_descend`連鎖待ち〕

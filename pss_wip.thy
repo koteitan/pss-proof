@@ -26556,4 +26556,220 @@ proof -
     by (intro exI[of _ pre] exI[of _ u2] exI[of _ u3]) (rule body)
 qed
 
+
+section \<open>§8.7 末尾項の零化可能性 — A26 correction and the provable TOP-LEVEL slice\<close>
+
+text \<open>\<^bold>\<open>CORRECTION A26\<close> (\<open>p_8_7_OT_tail_annihilable\<close> is FALSE on \<open>OT\<^bsub>B\<^esub>\<close> for a
+  \<^bold>\<open>nested\<close> marked principal).  The §8.7 補題（順序数項の末尾項の零化可能性）
+  (content.md 5971) literally claims: for \<open>t \<in> OT\<^bsub>B\<^esub>\<close>, \<open>t' \<in> T\<^bsub>B\<^esub>\<close> and any
+  scb-decomposition \<open>(s, D\<^sub>u t', b)\<close> of \<open>t\<close>, some \<open>k\<close> makes \<open>(s, D\<^sub>u 0, b)\<close> an
+  scb-decomposition of \<open>t[0]\<^sup>k\<close>.  This is FALSE when the marked principal
+  \<open>D\<^sub>u t'\<close> sits \<^bold>\<open>strictly below an outer principal\<close> of \<open>t\<close>: operating \<open>t[0]\<close>
+  enters that outer principal's recursion (the \<open>([].4)(ii)\<close> \<open>xseq\<close>-tower /
+  collapse), which does NOT cleanly reduce the inner marked principal — the SAME
+  failure mode as the §8.6 correction A25, now on standard ordinal terms.
+
+  \<^bold>\<open>Counterexample\<close> (verified \<open>python/_87_tail_annihilable.py\<close>, model
+  \<open>python/buchholz.py\<close>):  \<open>t = D\<^sub>0(D\<^sub>1(D\<^sub>1 0)) \<in> OT\<^bsub>B\<^esub>\<close>, marked principal
+  \<open>D\<^sub>u t' = D\<^sub>1(D\<^sub>1 0)\<close> (\<open>u = 1\<close>, \<open>t' = D\<^sub>1 0 \<in> T\<^bsub>B\<^esub>\<close>), with
+  \<open>s = "D\<^sub>0"\<close>, \<open>b = ""\<close>:  \<open>(s, D\<^sub>1(D\<^sub>1 0), b)\<close> IS a valid scb-decomposition of \<open>t\<close>
+  (the inner \<open>D\<^sub>1(D\<^sub>1 0)\<close> is on the right spine), but the \<open>[0]\<close>-trajectory is
+  \<open>D\<^sub>0(D\<^sub>1(D\<^sub>1 0)) \<rightarrow> D\<^sub>0(D\<^sub>0 0) \<rightarrow> D\<^sub>0 0 \<rightarrow> 0\<close>, which NEVER passes through
+  \<open>D\<^sub>0(D\<^sub>1 0)\<close>; so NO \<open>k\<close> makes \<open>(s, D\<^sub>1 0, b) = ("D\<^sub>0", D\<^sub>1 0, "")\<close> an
+  scb-decomposition of \<open>t[0]\<^sup>k\<close>.  The outer \<open>D\<^sub>0\<close> with \<open>dom(D\<^sub>1(D\<^sub>1 0)) = T\<^sub>0\<close> and
+  \<open>0 \<le> 0\<close> takes the \<open>([].4)(ii)\<close> branch, mangling the body.
+
+  EMPIRICALLY (\<open>_87_tail_annihilable.py\<close>, exhaustive \<open>OT\<^bsub>B\<^esub>\<close> sample,
+  \<open>max_idx=2, depth=3, width=2, size\<le>9\<close>): the literal lemma holds 719/742, the
+  23 failures ALL have a nested marked principal.  Restricting the marked
+  principal to the \<^bold>\<open>top level\<close> of \<open>t\<close> (the rightmost component of \<open>t\<close> itself,
+  with \<open>b\<close> closing only the top tuple) it holds 371/371 — the \<^bold>\<open>corrected\<close>
+  statement.  The corrected top-level form decomposes (validated, same script)
+  into an isolated annihilation \<open>(D\<^sub>u t')[0]\<^sup>k = D\<^sub>u 0\<close> on the rightmost
+  component plus the \<open>([].5)\<close> distribution \<open>(q + r)[0] = q + r[0]\<close>
+  (\<open>r \<noteq> 0\<close>, 342/342) lifting it over the prefix \<open>q\<close>.
+
+  Below we mechanize the regime-INDEPENDENT pieces of that corrected form that
+  the existing machinery discharges with no new [Buc1] axiom:
+  (a) the \<open>([].5)\<close> distribution law @{text operB_dist_trailing_single}; and
+  (b) the top-level iterated annihilation @{text m_8_7_toplevel_Dw0_annihilate}
+      for the LEAF body shape \<open>t' = D\<^sub>w 0\<close> (the \<open>operB_iter_Du_Dw0\<close> trajectory),
+      i.e. \<open>(q + D\<^sub>u(D\<^sub>w 0))[0]\<^sup>k = q + D\<^sub>u 0\<close>.
+  The fully general top-level body \<open>t' \<in> OT\<^bsub>B\<^esub>\<close> additionally needs OT-closure
+  under \<open>[0]\<close> (i.e. \<open>OT\<^bsub>B\<^esub>\<close> is \<open>[0]\<close>-stable, a [Buc1] fact NOT among the two
+  cited \<open>buc1_*\<close> lemmas) to run @{thm [source] buc1_3_2a_fseq_lt} as the descent
+  at each step; that closure is the residual blocker and is left OUT (the
+  target is NOT axiomatised here).\<close>
+
+text \<open>The \<open>([].5)\<close> distribution / trailing-component peel: for a NON-zero term
+  \<open>q\<close> and a single trailing principal \<open>Trm [p]\<close> whose \<open>operB \<dots> [0]\<close> is
+  dom-defined, \<open>operB (q +\<^sub>B Trm [p]) [0] = q +\<^sub>B operB (Trm [p]) [0]\<close>.  \<open>q +\<^sub>B Trm [p]\<close>
+  is a multi-component term (\<open>q \<noteq> 0\<close>); @{thm [source] operB_dom_multi_peel}
+  peels its last component \<open>p\<close>, leaving \<open>butlast = untrm q\<close>.\<close>
+
+lemma operB_dist_trailing_single:
+  assumes qne: "q \<noteq> 0\<^sub>B"
+    and dom: "domB_operB_xseq_dom (Inr (Inl (Trm [p], numBT 0)))"
+  shows "operB (q +\<^sub>B Trm [p]) (numBT 0) = q +\<^sub>B operB (Trm [p]) (numBT 0)"
+proof -
+  obtain qs where q: "q = Trm qs" by (cases q)
+  have qsne: "qs \<noteq> []" using qne q by auto
+  obtain q0 qr where q0: "qs = q0 # qr" using qsne by (cases qs) auto
+  \<comment> \<open>\<open>q +\<^sub>B Trm [p] = Trm (q0 # qr @ [p])\<close>, a \<open>\<ge>2\<close>-component term\<close>
+  obtain r1 rest where r1: "qr @ [p] = r1 # rest"
+    by (cases "qr @ [p]") auto
+  have be: "q +\<^sub>B Trm [p] = Trm (q0 # r1 # rest)" using q q0 r1 by simp
+  have pqr: "q0 # r1 # rest = q0 # qr @ [p]" using r1 by simp
+  have lst: "last (q0 # r1 # rest) = p" using pqr by simp
+  have but: "butlast (q0 # r1 # rest) = q0 # qr"
+    using pqr by (simp add: butlast_append)
+  \<comment> \<open>dom of the multi term from dom of its last component \<open>Trm [p]\<close>\<close>
+  have domLast: "domB_operB_xseq_dom (Inr (Inl (Trm [last (q0 # r1 # rest)], numBT 0)))"
+    using dom lst by simp
+  have domMulti: "domB_operB_xseq_dom (Inr (Inl (Trm (q0 # r1 # rest), numBT 0)))"
+    by (rule operB_dom_multi[OF domLast])
+  have peel: "operB (Trm (q0 # r1 # rest)) (numBT 0)
+                = addBT (Trm (butlast (q0 # r1 # rest)))
+                        (operB (Trm [last (q0 # r1 # rest)]) (numBT 0))"
+    by (rule operB_dom_multi_peel[OF domMulti])
+  have "operB (q +\<^sub>B Trm [p]) (numBT 0)
+          = addBT (Trm (q0 # qr)) (operB (Trm [p]) (numBT 0))"
+    using be peel lst but by simp
+  also have "\<dots> = q +\<^sub>B operB (Trm [p]) (numBT 0)"
+    using q q0 by (cases "operB (Trm [p]) (numBT 0)") simp
+  finally show ?thesis .
+qed
+
+text \<open>\<open>operB\<close>-dom of the leaf principal \<open>D\<^sub>u(D\<^sub>w 0)\<close> at \<open>[0]\<close> (\<open>0 < w\<close>): its
+  \<open>domB = T\<^bsub>w-1\<^esub>\<close> (the \<open>dbOut\<close> computation of @{thm [source] operB_Du_Dw0_base}),
+  whence @{thm [source] operB_dom_TBv_body}.\<close>
+
+lemma operB_dom_Du_Dw0:
+  assumes w0: "0 < w"
+  shows "domB_operB_xseq_dom (Inr (Inl (Trm [DB (enat u) (Dpt (enat w) 0\<^sub>B)], numBT 0)))"
+proof -
+  let ?b = "Dpt (enat w) 0\<^sub>B"
+  have db: "domB ?b = TBv (enat (w - 1))" by (rule domB_Dw0[OF w0])
+  have bne: "?b \<noteq> Trm []" by simp
+  have nz: "domB ?b \<noteq> {Trm []}" using db zero_set_neq_TBv by auto
+  show ?thesis
+  proof (cases "enat u \<le> enat (w - 1)")
+    case True
+    \<comment> \<open>\<open>([].4)(ii)\<close> \<open>xseq\<close>-tower branch (\<open>v = u \<le> w-1 = dom-index\<close>):
+        operB-dom via @{thm [source] operB_dom_kind1}\<close>
+    show ?thesis by (rule operB_dom_kind1[OF db True bne])
+  next
+    case False
+    \<comment> \<open>\<open>([].4)(iii)\<close> \<open>else\<close>-branch (\<open>u > w-1\<close>): \<open>domB = T\<^bsub>w-1\<^esub>\<close>,
+        operB-dom via @{thm [source] operB_dom_TBv_body}\<close>
+    have nguard: "\<not> (\<exists>u'. enat u \<le> enat u' \<and> domB ?b = TBv (enat u'))"
+    proof
+      assume "\<exists>u'. enat u \<le> enat u' \<and> domB ?b = TBv (enat u')"
+      then obtain u' where le: "enat u \<le> enat u'" and eq: "domB ?b = TBv (enat u')" by blast
+      have "w - 1 = u'" using db eq TBv_enat_inj by simp
+      thus False using False le by simp
+    qed
+    have dbb: "domB (Trm [DB (enat u) ?b]) = TBv (enat (w - 1))"
+    proof -
+      have "domB (Trm [DB (enat u) ?b])
+              = (let dbb = domB ?b in
+                 if dbb = {Trm []} then NatSet
+                 else if (\<exists>u'. enat u \<le> enat u' \<and> dbb = TBv (enat u')) then NatSet
+                 else dbb)"
+        using bne by (subst domB_unfold) simp
+      also have "\<dots> = (if (\<exists>u'. enat u \<le> enat u' \<and> domB ?b = TBv (enat u')) then NatSet
+                       else domB ?b)"
+        using nz by (simp add: Let_def)
+      also have "\<dots> = domB ?b" by (rule if_not_P[OF nguard])
+      also have "\<dots> = TBv (enat (w - 1))" by (rule db)
+      finally show ?thesis .
+    qed
+    show ?thesis by (rule operB_dom_TBv_body[OF dbb])
+  qed
+qed
+
+
+text \<open>\<open>operB\<close>-dom of the leaf principal \<open>D\<^sub>u(D\<^sub>w 0)\<close> at \<open>[0]\<close> for ALL \<open>w\<close>:
+  \<open>w = 0\<close> ends in \<open>D\<^sub>0 0\<close> (a \<open>d0succ\<close> term, @{thm [source] operB_dom_d0succ});
+  \<open>0 < w\<close> via @{thm [source] operB_dom_Du_Dw0}.\<close>
+
+lemma operB_dom_Du_Dw0_any:
+  "domB_operB_xseq_dom (Inr (Inl (Dpt (enat u) (Dpt (enat w) 0\<^sub>B), numBT 0)))"
+proof (cases "w = 0")
+  case True
+  have ds0: "d0succ (Dpt (enat 0) 0\<^sub>B)"
+    using d0succ_addD00[of "0\<^sub>B"] by (simp add: zero_enat_def)
+  have bne: "Dpt (enat 0) 0\<^sub>B \<noteq> 0\<^sub>B" by (simp add: zero_enat_def)
+  have ends: "endsD00 (Dpt (enat 0) 0\<^sub>B)"
+    using endsD00_addD00[of "0\<^sub>B"] by (simp add: zero_enat_def)
+  have ds: "d0succ (Dpt (enat u) (Dpt (enat 0) 0\<^sub>B))"
+    by (rule d0succ_single_nonzero[OF bne ends ds0])
+  have "domB_operB_xseq_dom (Inr (Inl (Dpt (enat u) (Dpt (enat 0) 0\<^sub>B), numBT 0)))"
+    by (rule operB_dom_d0succ[OF ds])
+  thus ?thesis using True by simp
+next
+  case False
+  hence "0 < w" by simp
+  thus ?thesis using operB_dom_Du_Dw0[of w u] by simp
+qed
+
+text \<open>The TOP-LEVEL iterated annihilation (corrected §8.7 末尾項の零化可能性,
+  leaf body \<open>t' = D\<^sub>w 0\<close>): for a NON-zero prefix \<open>q\<close>, some \<open>k\<close> makes
+  \<open>(q +\<^sub>B D\<^sub>u(D\<^sub>w 0))[0]\<^sup>k = q +\<^sub>B D\<^sub>u 0\<close>.  Mirrors @{thm [source] operB_iter_Du_Dw0}:
+  each \<open>[0]\<close>-step distributes over the trailing principal
+  (@{thm [source] operB_dist_trailing_single}, dom by
+  @{thm [source] operB_dom_Du_Dw0_any}), reducing the trailing
+  \<open>D\<^sub>u(D\<^sub>w 0)\<close> through the same kind-1 / collapse trajectory.\<close>
+
+lemma m_8_7_toplevel_Dw0_annihilate:
+  assumes qne: "q \<noteq> 0\<^sub>B"
+  shows "\<exists>k. ((\<lambda>a. operB a (numBT 0)) ^^ k)
+              (q +\<^sub>B Dpt (enat u) (Dpt (enat w) 0\<^sub>B)) = q +\<^sub>B Dpt (enat u) 0\<^sub>B"
+proof (induction w rule: less_induct)
+  case (less w)
+  let ?op = "\<lambda>a. operB a (numBT 0)"
+  \<comment> \<open>one \<open>[0]\<close>-step on the whole \<open>q +\<^sub>B D\<^sub>u(D\<^sub>w 0)\<close> distributes to the trailing principal\<close>
+  have dist: "?op (q +\<^sub>B Dpt (enat u) (Dpt (enat w) 0\<^sub>B))
+                = q +\<^sub>B ?op (Dpt (enat u) (Dpt (enat w) 0\<^sub>B))"
+    by (rule operB_dist_trailing_single[OF qne operB_dom_Du_Dw0_any])
+  show ?case
+  proof (cases "w \<le> u")
+    case True
+    \<comment> \<open>trailing principal collapses to \<open>D\<^sub>u 0\<close> in one step\<close>
+    have step: "?op (Dpt (enat u) (Dpt (enat w) 0\<^sub>B)) = Dpt (enat u) 0\<^sub>B"
+    proof (cases "w = 0")
+      case True
+      thus ?thesis using operB_Du_D00[of u] by (simp add: zero_enat_def)
+    next
+      case False
+      hence "0 < w" by simp
+      thus ?thesis using operB_Du_Dw0_base[OF _ True] by simp
+    qed
+    have "(?op ^^ 1) (q +\<^sub>B Dpt (enat u) (Dpt (enat w) 0\<^sub>B)) = q +\<^sub>B Dpt (enat u) 0\<^sub>B"
+      using dist step by simp
+    thus ?thesis by (intro exI[of _ 1]) simp
+  next
+    case False
+    hence uw: "u < w" by simp
+    have w0: "0 < w" using uw by simp
+    \<comment> \<open>trailing principal descends one kind-1 step to \<open>D\<^sub>u(D\<^bsub>w-1\<^esub>0)\<close>\<close>
+    have step: "?op (Dpt (enat u) (Dpt (enat w) 0\<^sub>B)) = Dpt (enat u) (Dpt (enat (w - 1)) 0\<^sub>B)"
+      using operB_Du_Dw0_kind1[OF uw] by simp
+    have stepq: "?op (q +\<^sub>B Dpt (enat u) (Dpt (enat w) 0\<^sub>B))
+                   = q +\<^sub>B Dpt (enat u) (Dpt (enat (w - 1)) 0\<^sub>B)"
+      using dist step by simp
+    obtain k where kval:
+      "(?op ^^ k) (q +\<^sub>B Dpt (enat u) (Dpt (enat (w - 1)) 0\<^sub>B)) = q +\<^sub>B Dpt (enat u) 0\<^sub>B"
+      using less.IH[of "w - 1"] w0 by auto
+    have "(?op ^^ (Suc k)) (q +\<^sub>B Dpt (enat u) (Dpt (enat w) 0\<^sub>B))
+            = (?op ^^ k) (?op (q +\<^sub>B Dpt (enat u) (Dpt (enat w) 0\<^sub>B)))"
+      by (simp add: funpow_Suc_right comp_def del: funpow.simps)
+    also have "\<dots> = (?op ^^ k) (q +\<^sub>B Dpt (enat u) (Dpt (enat (w - 1)) 0\<^sub>B))"
+      using stepq by simp
+    also have "\<dots> = q +\<^sub>B Dpt (enat u) 0\<^sub>B" using kval by simp
+    finally show ?thesis by (intro exI[of _ "Suc k"]) blast
+  qed
+qed
+
+
 end
