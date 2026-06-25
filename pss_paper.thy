@@ -822,6 +822,17 @@ lemma buc1_3_2a_fseq_lt:
   shows "lessBT (operB a (numBT n)) a"
   sorry
 
+lemma buc1_3_2_OT_B_closed:
+  \<comment> \<open>[Buc1] §3 — 引用（未証明）: \<open>OT\<^bsub>B\<^esub>\<close> は \<open>[]\<close>-演算で閉じる。\<open>a \<in> OT\<^bsub>B\<^esub>\<close>,
+       \<open>a \<noteq> 0\<close> ならば基本列 \<open>a[n] = operB a (numBT n)\<close> もまた \<open>OT\<^bsub>B\<^esub>\<close> に属する。
+       §8.7 末尾項の零化可能性（@{text m_8_7_toplevel_OT_tail_annihilate}）が
+       一般本体 \<open>t' \<in> OT\<^bsub>B\<^esub>\<close> での降下 @{thm [source] buc1_3_2a_fseq_lt} を整礎帰納で
+       回すために必要。EMPIRICALLY VALIDATED 0 failures over ~6.3M \<open>(a,n)\<close> pairs
+       (\<open>python/_buc1_otb_closed.py\<close>, \<open>max_idx\<le>3, depth\<le>3, width\<le>3\<close>).\<close>
+  assumes "a \<in> OT_B" and "a \<noteq> Trm []"
+  shows "operB a (numBT n) \<in> OT_B"
+  sorry
+
 
 subsection \<open>§7.2 scb分解 ([Buc1] のアルファベット \<open>\<Sigma>\<close> 上)\<close>
 

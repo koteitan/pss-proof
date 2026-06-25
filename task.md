@@ -14,7 +14,7 @@
 - ✅ §6 ペア数列の基本性質 〔全節完了(2026-06-11)。docs `reducedness.md`/`red-le-domain.md`/`slice-Br-descending.md`〕
 - ✅ §7 Buchholzの表記系への翻訳 
 - 🚨 §8 停止性
-  - 📘 [Buc1] 外部引用(sorry): `buc1_2_2_OT_B_wf`(OT_B整礎,Lemma2.2)/`buc1_3_2a_fseq_lt`(a[n]<a,Lemma3.2a)。§8降下・停止性が参照。後で証明
+  - 📘 [Buc1] 外部引用(sorry): `buc1_2_2_OT_B_wf`(OT_B整礎,2.2)/`buc1_3_2a_fseq_lt`(a[n]<a,3.2a)/`buc1_3_2_OT_B_closed`(a[n]∈OT_B,§3閉包,6.3M検証)。§8降下・停止性が参照。後で証明
   - 🚨 §8.1 条件 (I) の下での展開規則
     - 🚨 命題（条件 (I) の下での $\textrm{Trans}$ と基本列の交換関係）
     - ✅ 補題（公差 $(1,1)$ のペア数列の $\textrm{Trans}$ の基本性質）〔`m_8_1_diagSeq_Trans`〕
@@ -29,7 +29,7 @@
     - 🚨 補題（部分表現の単項成分と $\textrm{Pred}$ の関係）(§8.2 keystone)
       - ✅ Adm0 枝(gB-free組立 `m_8_2_subexpr_component_Pred_Adm0_nogB`) + guard 3/4 (nadmj0/t2ne/e0gt)
       - ✅ gB-condV (`m_8_2_gB_Adm0_condA` 無条件 discharge)
-      - 🚨🤖 Admpos枝(clause3/4): body-split✅(`trans_admpos_body_split_wfin`)。残=w-id帰納(keystone-by-induction、FirstNodes/Joints transport)+full組立 を agent 作業中
+      - 🚨 Admpos枝(clause3/4): Adm0完全✅(`_Adm0_full`、guard内部導出)+Admpos✅(`_Admpos_of_wid`、w-id仮説に還元)。残=**w-id ただ1つ**=§6.4 FirstNodes/Joints値転送(across P-blocks、1794/1794、原文3432-3433)
       - 🚨 組立
     - 🚨 補題（強単項性の下での部分表現の単項成分の基本性質）
       - ✅ (1) `m_8_2_subexpr_leftend_unique`
@@ -65,7 +65,7 @@
     - 🚨 補題（基本列の降下性）〔`fseq_descend`。**clean領域で到達可**(零化使用は5747 leaf のみ、既存clean補題+`buc1_3_2a`)。条件I-V/VI交換則連鎖が本体〕
     - ✅ 補題（順序数項の再帰構造）〔`m_8_7_OT_scb_recursive`〕
     - ✅ 補題（順序数項の共終数の遺伝性）〔`m_8_7_OT_dom_hereditary`〕
-    - 🚨🤖 補題（順序数項の末尾項の零化可能性）〔訂正A26。top-level core✅ `m_8_7_toplevel_Dw0_annihilate`。一般top-level(buc1 OT閉包追加+WF帰納)を agent 作業中〕
+    - 🚨 補題（順序数項の末尾項の零化可能性）〔訂正A26。top-level正領域✅(`m_8_7_toplevel_OT_tail_annihilate`(OT_B,<)WF帰納/`_succ_peel`原文t_2+D_w0形/`_Dw0_annihilate`)。残=完全一般化は operB全域性(Lemma3.2)依存〕
     - 🚨 補題（$\textrm{Pred}$ と $[0]$ の関係）〔**原文偽→訂正A27**(標準入力で偽、CEX M=(0,0)(1,1)(2,1)、Trans=D_0(D_1(D_1 0))、22/71失敗)。leaf限定形のみ真。停止性は迂回(↓Trans_preserves_OT)〕
     - ✅ 補題（順序数項の基本例）〔`m_8_7_OT_examples`〕
     - 🚨 補題（$\textrm{Trans}$ が標準形を保つこと）〔`Trans_preserves_OT`。偽の`Pred_oper0`を迂回し**6325 Σ_B降下和ルート**で(独立に真151/151、[Buc1]OT2+降下性)〕

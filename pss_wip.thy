@@ -26772,4 +26772,387 @@ proof (induction w rule: less_induct)
 qed
 
 
+section \<open>§8.2 keystone closure: \<open>m_8_2_subexpr_component_Pred\<close> assembly\<close>
+
+text \<open>§8.2 keystone Adm0 branch, fully guard-free.  Replaces the three guard
+  assumptions \<open>t\<^sub>2 \<noteq> 0\<close>, \<open>M\<^bsub>0,j'\<^sub>1\<^esub> > M\<^bsub>1,j'\<^sub>1\<^esub>\<close>, \<open>\<not> adm M j'\<^sub>0\<close> of
+  @{thm [source] m_8_2_subexpr_component_Pred_Adm0_nogB} by INTERNAL derivation
+  in the \<open>\<not>condA\<close> sub-branch (where they hold; under condA they may fail but are
+  not needed — clause (1) is reached without them).  Discharges:
+  \<^item> condA (I\<or>III\<or>V) \<rightarrow> clause (1) via
+    @{thm [source] m_8_2_subexpr_component_Pred_Adm0_clause1_keystone} with
+    \<open>gA\<close>/\<open>gB\<close> from @{thm [source] m_8_2_gA_Adm0}/@{thm [source] m_8_2_gB_Adm0_condA};
+  \<^item> \<not>condA \<rightarrow> derive \<open>notVI\<close> (@{thm [source] m_8_2_notVI_Adm0}), then
+    \<open>t\<^sub>2 \<noteq> 0\<close> (@{thm [source] m_8_2_t2ne_notAVI}),
+    \<open>\<not> adm M j'\<^sub>0\<close> (@{thm [source] m_8_2_nadmj0_notAVI}),
+    \<open>M\<^bsub>0,j'\<^sub>1\<^esub> > M\<^bsub>1,j'\<^sub>1\<^esub>\<close> (cond II \<rightarrow> @{thm [source] m_8_2_e0gt_e1zero},
+    cond IV \<rightarrow> @{thm [source] m_8_2_e0gt_condIV}), then split into clause
+    (2)/(4) via the \<open>leftDj0\<close> case-split.  All guards now derived, so the
+    Adm0 branch is unconditional (modulo the keystone's own assumptions).\<close>
+
+lemma m_8_2_subexpr_component_Pred_Adm0_full:
+  fixes M :: pairseq
+  defines "j1 \<equiv> Lng M - 1"
+  defines "J1 \<equiv> Lng (Br M) - 1"
+  defines "j0' \<equiv> Joints M ! J1"
+  defines "j1' \<equiv> FirstNodes M ! J1"
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS" and Brne: "Br M \<noteq> []"
+    and j1gt: "j1 > 1"
+    and Adm0: "transJm1 M = 0"
+  shows
+    "(j1' = j1 \<and> (TrMax M = 0 \<or> j0' < TrMax M)
+        \<and> (entry M 0 j1' = entry M 1 j1' \<or> adm M j0')
+        \<and> (\<exists>!t1. Trans (Pred M) = Dpt (enat (entry M 1 0)) t1
+              \<and> Trans M = Dpt (enat (entry M 1 0))
+                            (t1 +\<^sub>B Dpt (enat (entry M 1 j1')) 0\<^sub>B)))
+   \<or> (j1' = j1 \<and> entry M 0 j1' > entry M 1 j1' \<and> \<not> adm M j0'
+        \<and> (\<exists>!t12. Trans (Pred M) = Dpt (enat (entry M 1 0)) (fst t12)
+              \<and> Trans M = Dpt (enat (entry M 1 0))
+                            (fst t12 +\<^sub>B Dpt (enat (entry M 1 j0')) (snd t12))))
+   \<or> (\<exists>!t123. Trans (Pred M)
+                = Dpt (enat (entry M 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M 1 j1')) (fst (snd t123)))
+            \<and> Trans M = Dpt (enat (entry M 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M 1 j1')) (snd (snd t123))))
+   \<or> (\<exists>!t123. Trans (Pred M)
+                = Dpt (enat (entry M 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M 1 j0')) (fst (snd t123)))
+            \<and> Trans M = Dpt (enat (entry M 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M 1 j0')) (snd (snd t123))))"
+proof -
+  have MT: "M \<in> T_PS" using MP by (simp add: PT_PS_def)
+  have mono: "monoT M" using MP by (simp add: PT_PS_def)
+  have L: "1 < Lng M" using j1gt by (simp add: j1_def)
+  have j1gt': "Lng M - 1 > 1" using j1gt by (simp add: j1_def)
+  \<comment> \<open>geometric bridges (Adm0)\<close>
+  have j1eq: "j1' = j1"
+    using m_8_2_j1eq_Adm0[OF MR MP Brne j1gt' Adm0]
+    by (simp add: j1'_def J1_def j1_def)
+  have j0eqJ: "j0' = transJ0 M"
+    using m_8_2_j0eq_Adm0[OF MR MP Brne j1gt' Adm0]
+    by (simp add: j0'_def J1_def)
+  have notVI: "\<not> transCondVI M" by (rule m_8_2_notVI_Adm0[OF MR MP Brne j1gt' Adm0])
+  show ?thesis
+  proof (cases "transCondI M \<or> transCondIII M \<or> transCondV M")
+    case condA: True
+    have gA: "TrMax M = 0 \<or> Joints M ! (Lng (Br M) - 1) < TrMax M"
+      by (rule m_8_2_gA_Adm0[OF MR MP Brne j1gt' Adm0])
+    have gB: "entry M 0 (FirstNodes M ! (Lng (Br M) - 1))
+                 = entry M 1 (FirstNodes M ! (Lng (Br M) - 1))
+               \<or> adm M (Joints M ! (Lng (Br M) - 1))"
+      by (rule m_8_2_gB_Adm0_condA[OF MR MP Brne j1gt' Adm0 condA])
+    have j1eqK: "FirstNodes M ! (Lng (Br M) - 1) = Lng M - 1"
+      using j1eq by (simp add: j1'_def J1_def j1_def)
+    have key:
+      "FirstNodes M ! (Lng (Br M) - 1) = Lng M - 1
+       \<and> (TrMax M = 0 \<or> Joints M ! (Lng (Br M) - 1) < TrMax M)
+       \<and> (entry M 0 (FirstNodes M ! (Lng (Br M) - 1))
+            = entry M 1 (FirstNodes M ! (Lng (Br M) - 1))
+          \<or> adm M (Joints M ! (Lng (Br M) - 1)))
+       \<and> (\<exists>!t1. Trans (Pred M) = Dpt (enat (entry M 1 0)) t1
+             \<and> Trans M = Dpt (enat (entry M 1 0))
+                           (t1 +\<^sub>B Dpt (enat (entry M 1 (FirstNodes M ! (Lng (Br M) - 1)))) 0\<^sub>B))"
+      by (rule m_8_2_subexpr_component_Pred_Adm0_clause1_keystone
+               [OF MR MP j1gt' Adm0 condA j1eqK gA gB])
+    have cl1:
+      "j1' = j1 \<and> (TrMax M = 0 \<or> j0' < TrMax M)
+        \<and> (entry M 0 j1' = entry M 1 j1' \<or> adm M j0')
+        \<and> (\<exists>!t1. Trans (Pred M) = Dpt (enat (entry M 1 0)) t1
+              \<and> Trans M = Dpt (enat (entry M 1 0))
+                            (t1 +\<^sub>B Dpt (enat (entry M 1 j1')) 0\<^sub>B))"
+      unfolding j1'_def j0'_def J1_def j1_def using key by blast
+    thus ?thesis by blast
+  next
+    case notA: False
+    \<comment> \<open>derive the three guards in the \<open>\<not>condA\<close> regime\<close>
+    have t2ne: "transT2 M \<noteq> 0\<^sub>B" by (rule m_8_2_t2ne_notAVI[OF MR MP L j1gt' notA notVI])
+    have nadmj0J: "\<not> adm M (transJ0 M)" by (rule m_8_2_nadmj0_notAVI[OF MR MP L notA notVI])
+    have nadmj0: "\<not> adm M j0'" using nadmj0J by (simp add: j0eqJ)
+    \<comment> \<open>\<open>e0gt\<close>: cond II (e1=0) or cond IV (e1>0)\<close>
+    have condIIorIV: "transCondII M \<or> transCondIV M"
+      by (rule m_8_2_condII_or_condIV[OF MR MP L notA notVI])
+    have e0gtj1: "entry M 0 (Lng M - 1) > entry M 1 (Lng M - 1)"
+    proof (cases "transCondII M")
+      case condII: True
+      have e1z: "entry M 1 (Lng M - 1) = 0"
+        using condII by (simp add: transCondII_def)
+      show ?thesis by (rule m_8_2_e0gt_e1zero[OF MT mono L e1z])
+    next
+      case False
+      hence condIV: "transCondIV M" using condIIorIV by blast
+      show ?thesis by (rule m_8_2_e0gt_condIV[OF MR MP L condIV])
+    qed
+    have e0gt: "entry M 0 j1' > entry M 1 j1'"
+      using e0gtj1 j1eq by (simp add: j1_def)
+    \<comment> \<open>split on \<open>leftDj0\<close>: clause (4) vs clause (2)\<close>
+    show ?thesis
+    proof (cases "bpHeadV (PB (transT2 M) ! (Lng (PB (transT2 M)) - 1))
+                    = enat (entry M 1 (transJ0 M))")
+      case isleft: True
+      have cl4:
+        "\<exists>!t123. Trans (Pred M)
+              = Dpt (enat (entry M 1 0))
+                  (fst t123 +\<^sub>B Dpt (enat (entry M 1 (transJ0 M))) (fst (snd t123)))
+            \<and> Trans M
+              = Dpt (enat (entry M 1 0))
+                  (fst t123 +\<^sub>B Dpt (enat (entry M 1 (transJ0 M))) (snd (snd t123)))"
+        by (rule m_8_2_subexpr_component_Pred_Adm0_clause4_core
+                  [OF MR MP j1gt' Adm0 notA notVI t2ne isleft])
+      have cl4j0: "\<exists>!t123. Trans (Pred M)
+              = Dpt (enat (entry M 1 0))
+                  (fst t123 +\<^sub>B Dpt (enat (entry M 1 j0')) (fst (snd t123)))
+            \<and> Trans M
+              = Dpt (enat (entry M 1 0))
+                  (fst t123 +\<^sub>B Dpt (enat (entry M 1 j0')) (snd (snd t123)))"
+        using cl4 unfolding j0eqJ .
+      thus ?thesis by blast
+    next
+      case notleft: False
+      have nl: "bpHeadV (PB (transT2 M) ! (Lng (PB (transT2 M)) - 1))
+                  \<noteq> enat (entry M 1 (transJ0 M))" using notleft by simp
+      have cl2:
+        "\<exists>!t12. Trans (Pred M) = Dpt (enat (entry M 1 0)) (fst t12)
+              \<and> Trans M = Dpt (enat (entry M 1 0))
+                            (fst t12 +\<^sub>B Dpt (enat (entry M 1 (transJ0 M))) (snd t12))"
+        by (rule m_8_2_subexpr_component_Pred_Adm0_clause2_core
+                  [OF MR MP j1gt' Adm0 notA notVI t2ne nl])
+      have cl2j0:
+        "\<exists>!t12. Trans (Pred M) = Dpt (enat (entry M 1 0)) (fst t12)
+              \<and> Trans M = Dpt (enat (entry M 1 0))
+                            (fst t12 +\<^sub>B Dpt (enat (entry M 1 j0')) (snd t12))"
+        using cl2 unfolding j0eqJ .
+      have cl2':
+        "j1' = j1 \<and> entry M 0 j1' > entry M 1 j1' \<and> \<not> adm M j0'
+          \<and> (\<exists>!t12. Trans (Pred M) = Dpt (enat (entry M 1 0)) (fst t12)
+              \<and> Trans M = Dpt (enat (entry M 1 0))
+                            (fst t12 +\<^sub>B Dpt (enat (entry M 1 j0')) (snd t12)))"
+        using j1eq e0gt nadmj0 cl2j0 by blast
+      thus ?thesis by blast
+    qed
+  qed
+qed
+
+
+text \<open>§8.2 keystone Admpos branch, reduced to the w-identification.  Given the
+  w-id residual \<open>RightNodes (Trans M) ! 1 \<in> {entry M 1 j'\<^sub>1, entry M 1 j'\<^sub>0}\<close> as a
+  hypothesis, the Admpos branch (\<open>transJm1 M > 0\<close>) of the keystone follows
+  directly: STEP 1 (@{thm [source] trans_admpos_body_split_wfin}) supplies the
+  common-prefix witness with the finite head \<open>w' = RightNodes (Trans M) ! 1\<close>, and
+  @{thm [source] m_8_2_subexpr_component_Pred_clause34_of_witness} packages it as
+  clause (3)/(4).  The w-id hypothesis is exactly the residual the article
+  discharges by the keystone induction on \<open>j\<^sub>1 - TrMax(M)\<close> applied to \<open>Pred M\<close>;
+  empirically (trans_model, \<open>RT\<^bsub>PS\<^esub> \<inter> PT\<^bsub>PS\<^esub>\<close> monoT, len \<le> 6) it holds in all
+  1794 Admpos cases (1440 clause-3 \<open>= e\<^sub>1\<^sub>,\<^sub>j'\<^sub>1\<close>, 354 clause-4 \<open>= e\<^sub>1\<^sub>,\<^sub>j'\<^sub>0\<close>,
+  0 violations; \<open>python/_82k_wid.py\<close>).\<close>
+
+lemma m_8_2_subexpr_component_Pred_Admpos_of_wid:
+  fixes M :: pairseq
+  defines "j1 \<equiv> Lng M - 1"
+  defines "J1 \<equiv> Lng (Br M) - 1"
+  defines "j0' \<equiv> Joints M ! J1"
+  defines "j1' \<equiv> FirstNodes M ! J1"
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS"
+    and j1gt: "j1 > 1"
+    and Admpos: "transJm1 M > 0"
+    and t1ne: "Trans (Pred M) \<noteq> 0\<^sub>B"
+    and wid: "RightNodes (Trans M) ! 1 = entry M 1 j1'
+                \<or> RightNodes (Trans M) ! 1 = entry M 1 j0'"
+  shows
+    "(j1' = j1 \<and> (TrMax M = 0 \<or> j0' < TrMax M)
+        \<and> (entry M 0 j1' = entry M 1 j1' \<or> adm M j0')
+        \<and> (\<exists>!t1. Trans (Pred M) = Dpt (enat (entry M 1 0)) t1
+              \<and> Trans M = Dpt (enat (entry M 1 0))
+                            (t1 +\<^sub>B Dpt (enat (entry M 1 j1')) 0\<^sub>B)))
+   \<or> (j1' = j1 \<and> entry M 0 j1' > entry M 1 j1' \<and> \<not> adm M j0'
+        \<and> (\<exists>!t12. Trans (Pred M) = Dpt (enat (entry M 1 0)) (fst t12)
+              \<and> Trans M = Dpt (enat (entry M 1 0))
+                            (fst t12 +\<^sub>B Dpt (enat (entry M 1 j0')) (snd t12))))
+   \<or> (\<exists>!t123. Trans (Pred M)
+                = Dpt (enat (entry M 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M 1 j1')) (fst (snd t123)))
+            \<and> Trans M = Dpt (enat (entry M 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M 1 j1')) (snd (snd t123))))
+   \<or> (\<exists>!t123. Trans (Pred M)
+                = Dpt (enat (entry M 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M 1 j0')) (fst (snd t123)))
+            \<and> Trans M = Dpt (enat (entry M 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M 1 j0')) (snd (snd t123))))"
+proof -
+  have j1gt': "Lng M - 1 > 1" using j1gt by (simp add: j1_def)
+  \<comment> \<open>STEP 1: common-prefix witness with finite head \<open>w' = RightNodes (Trans M) ! 1\<close>\<close>
+  obtain pre u2 u3 where
+    body: "(let w' = RightNodes (Trans M) ! 1 in
+              Trans (Pred M) = Dpt (enat (entry M 1 0)) (pre +\<^sub>B Dpt (enat w') u2)
+            \<and> Trans M       = Dpt (enat (entry M 1 0)) (pre +\<^sub>B Dpt (enat w') u3)
+            \<and> RightNodes (Trans M) ! 1 = RightAnces M ! 1)"
+    using trans_admpos_body_split_wfin[OF MR MP j1gt' Admpos t1ne] by blast
+  define w' where "w' = RightNodes (Trans M) ! 1"
+  have witP: "Trans (Pred M) = Dpt (enat (entry M 1 0)) (pre +\<^sub>B Dpt (enat w') u2)"
+    using body unfolding Let_def w'_def by blast
+  have witM: "Trans M = Dpt (enat (entry M 1 0)) (pre +\<^sub>B Dpt (enat w') u3)"
+    using body unfolding Let_def w'_def by blast
+  \<comment> \<open>w-id: the finite head equals one of the two basepoints' row-1 entries\<close>
+  have wsplit: "w' = entry M 1 j1' \<or> w' = entry M 1 j0'"
+    using wid unfolding w'_def .
+  \<comment> \<open>package as clause (3)/(4) via the witness keystone\<close>
+  have wsplitK: "w' = entry M 1 (FirstNodes M ! (Lng (Br M) - 1))
+                  \<or> w' = entry M 1 (Joints M ! (Lng (Br M) - 1))"
+    using wsplit by (simp add: j1'_def j0'_def J1_def)
+  have key:
+    "(FirstNodes M ! (Lng (Br M) - 1) = Lng M - 1
+        \<and> (TrMax M = 0 \<or> Joints M ! (Lng (Br M) - 1) < TrMax M)
+        \<and> (entry M 0 (FirstNodes M ! (Lng (Br M) - 1))
+             = entry M 1 (FirstNodes M ! (Lng (Br M) - 1))
+           \<or> adm M (Joints M ! (Lng (Br M) - 1)))
+        \<and> (\<exists>!t1. Trans (Pred M) = Dpt (enat (entry M 1 0)) t1
+              \<and> Trans M = Dpt (enat (entry M 1 0))
+                            (t1 +\<^sub>B Dpt (enat (entry M 1 (FirstNodes M ! (Lng (Br M) - 1)))) 0\<^sub>B)))
+   \<or> (FirstNodes M ! (Lng (Br M) - 1) = Lng M - 1
+        \<and> entry M 0 (FirstNodes M ! (Lng (Br M) - 1)) > entry M 1 (FirstNodes M ! (Lng (Br M) - 1))
+        \<and> \<not> adm M (Joints M ! (Lng (Br M) - 1))
+        \<and> (\<exists>!t12. Trans (Pred M) = Dpt (enat (entry M 1 0)) (fst t12)
+              \<and> Trans M = Dpt (enat (entry M 1 0))
+                            (fst t12 +\<^sub>B Dpt (enat (entry M 1 (Joints M ! (Lng (Br M) - 1)))) (snd t12))))
+   \<or> (\<exists>!t123. Trans (Pred M)
+                = Dpt (enat (entry M 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M 1 (FirstNodes M ! (Lng (Br M) - 1)))) (fst (snd t123)))
+            \<and> Trans M = Dpt (enat (entry M 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M 1 (FirstNodes M ! (Lng (Br M) - 1)))) (snd (snd t123))))
+   \<or> (\<exists>!t123. Trans (Pred M)
+                = Dpt (enat (entry M 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M 1 (Joints M ! (Lng (Br M) - 1)))) (fst (snd t123)))
+            \<and> Trans M = Dpt (enat (entry M 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M 1 (Joints M ! (Lng (Br M) - 1)))) (snd (snd t123))))"
+    by (rule m_8_2_subexpr_component_Pred_clause34_of_witness[OF wsplitK witP witM])
+  show ?thesis
+    using key unfolding j1_def J1_def j0'_def j1'_def .
+qed
+
+
+subsection \<open>§8.7 末尾項の零化可能性 — corrected TOP-LEVEL general body (WF induction)\<close>
+
+text \<open>
+  The corrected top-level §8.7 末尾項の零化可能性 (content.md 5971), value-level
+  form, GENERAL body \<open>t' \<in> OT\<^bsub>B\<^esub>\<close>.  The article proves it by well-founded
+  induction on \<open>t'\<close> over \<open>(OT\<^bsub>B\<^esub>,<)\<close> ([Buc1] Lemma 2.2 = @{thm [source]
+  buc1_2_2_OT_B_wf}); at each step the marked principal \<open>D\<^sub>u t'\<close>, under a single
+  \<open>[0]\<close>-step, descends to \<open>D\<^sub>u t''\<close> for some \<open>t'' \<in> OT\<^bsub>B\<^esub>\<close> with \<open>t'' < t'\<close>
+  (the descent \<open>t'' < t'\<close> is @{thm [source] buc1_3_2a_fseq_lt} and the stay-in
+  \<open>OT\<^bsub>B\<^esub>\<close> is the newly-cited closure @{thm [source] buc1_3_2_OT_B_closed}),
+  and the IH at \<open>t''\<close> finishes.
+
+  We mechanize the WELL-FOUNDED INDUCTION SKELETON of that argument as a reusable
+  engine.  It takes, as its driving hypothesis, the single-\<open>[0]\<close>-step body
+  descent \<open>step\<close>: for every non-zero \<open>r \<in> OT\<^bsub>B\<^esub>\<close> the trailing principal
+  \<open>D\<^sub>u r\<close> reduces (over the prefix \<open>q\<close>) to \<open>q +\<^sub>B D\<^sub>u r'\<close> with \<open>r' \<in> OT\<^bsub>B\<^esub>\<close>
+  and \<open>r' < r\<close>.  The skeleton then iterates to \<open>q +\<^sub>B D\<^sub>u 0\<close>, using
+  \<open>buc1_2_2_OT_B_wf\<close> as the induction relation.  The \<open>step\<close> hypothesis is exactly
+  the article's "([].4)(i)/(ii)/(iii) + ([].5) give some \<open>n\<close> with
+  \<open>(s,D\<^sub>u(t'[n]),b)\<close> an scb-decomp of \<open>t[0]\<close>"; its closure/descent halves are the
+  two cited \<open>buc1_*\<close> facts, so the engine is regime-INDEPENDENT.  (The remaining,
+  un-cited ingredient that would discharge \<open>step\<close> outright for ALL \<open>t' \<in> OT\<^bsub>B\<^esub>\<close>
+  is \<open>operB\<close>-totality on \<open>OT\<^bsub>B\<^esub>\<close> = [Buc1] Lemma 3.2, NOT among the cited
+  \<open>buc1_*\<close>; this is the precise residual, see the report.)
+
+  EMPIRICALLY (\<open>python/_buc1_toplift.py\<close>): the value-level conclusion
+  \<open>\<exists>k. (op\<^sup>k)(q +\<^sub>B D\<^sub>u t') = q +\<^sub>B D\<^sub>u 0\<close> holds 89100/89100; the single-step
+  descent shape (\<open>operB(D\<^sub>u t')[0] = D\<^sub>u t''\<close>, same head, \<open>t'' \<in> OT\<^bsub>B\<^esub>\<close>,
+  \<open>t'' < t'\<close>) holds 2338125/2338125 (\<open>python/_buc1_dustep.py\<close>).\<close>
+
+lemma m_8_7_toplevel_OT_tail_annihilate:
+  assumes t'OT: "t' \<in> OT_B"
+    and step: "\<And>r. r \<in> OT_B \<Longrightarrow> r \<noteq> 0\<^sub>B \<Longrightarrow>
+                  \<exists>r'. operB (q +\<^sub>B Dpt (enat u) r) (numBT 0) = q +\<^sub>B Dpt (enat u) r'
+                     \<and> r' \<in> OT_B \<and> lessBT r' r"
+  shows "\<exists>k. ((\<lambda>a. operB a (numBT 0)) ^^ k) (q +\<^sub>B Dpt (enat u) t')
+              = q +\<^sub>B Dpt (enat u) 0\<^sub>B"
+  using t'OT
+proof (induction t' rule: wf_induct_rule[OF buc1_2_2_OT_B_wf])
+  case (1 t')
+  let ?op = "\<lambda>a. operB a (numBT 0)"
+  show ?case
+  proof (cases "t' = 0\<^sub>B")
+    case True
+    \<comment> \<open>already \<open>q +\<^sub>B D\<^sub>u 0\<close>; \<open>k = 0\<close>\<close>
+    have "(?op ^^ 0) (q +\<^sub>B Dpt (enat u) t') = q +\<^sub>B Dpt (enat u) 0\<^sub>B"
+      using True by simp
+    thus ?thesis by blast
+  next
+    case False
+    \<comment> \<open>one \<open>[0]\<close>-step descends the body to \<open>t'' < t'\<close> in \<open>OT\<^bsub>B\<^esub>\<close>\<close>
+    obtain t'' where st: "?op (q +\<^sub>B Dpt (enat u) t') = q +\<^sub>B Dpt (enat u) t''"
+      and t''OT: "t'' \<in> OT_B" and t''lt: "lessBT t'' t'"
+      using step[OF "1.prems" False] by blast
+    \<comment> \<open>\<open>(t'', t') \<in> {(a,b). a \<in> OT\<^bsub>B\<^esub> \<and> b \<in> OT\<^bsub>B\<^esub> \<and> a < b}\<close>: feed the IH\<close>
+    have rel: "(t'', t') \<in> {(a, b). a \<in> OT_B \<and> b \<in> OT_B \<and> lessBT a b}"
+      using t''OT "1.prems" t''lt by simp
+    obtain k where kval:
+      "(?op ^^ k) (q +\<^sub>B Dpt (enat u) t'') = q +\<^sub>B Dpt (enat u) 0\<^sub>B"
+      using "1.IH"[OF rel t''OT] by blast
+    have "(?op ^^ (Suc k)) (q +\<^sub>B Dpt (enat u) t')
+            = (?op ^^ k) (?op (q +\<^sub>B Dpt (enat u) t'))"
+      by (simp add: funpow_Suc_right comp_def del: funpow.simps)
+    also have "\<dots> = (?op ^^ k) (q +\<^sub>B Dpt (enat u) t'')" using st by simp
+    also have "\<dots> = q +\<^sub>B Dpt (enat u) 0\<^sub>B" using kval by simp
+    finally show ?thesis by blast
+  qed
+qed
+
+text \<open>The article's EXACT §8.7 trailing-body shape \<open>t\<^sub>2 + D\<^sub>w 0\<close> (the marked
+  principal \<open>D\<^sub>u(t\<^sub>2 + D\<^sub>w 0)\<close>, \<open>t\<^sub>2 + D\<^bsub>M\<^sub>1\<^sub>,\<^sub>j\<^sub>1\<^esub> 0\<close> in the Pred relation),
+  clean-regime one-step peel over a non-zero prefix: for \<open>w = 0 \<or> u \<ge> w\<close>,
+  a single \<open>[0]\<close> annihilates the trailing \<open>D\<^sub>w 0\<close>, giving \<open>q +\<^sub>B D\<^sub>u t\<^sub>2\<close>.
+  Fully proved (no engine hypothesis): @{thm [source] operB_dist_trailing_single}
+  (dom by @{thm [source] operB_dom_addBT_Dv0} lifted through the trailing principal)
+  distributes the step over the prefix, and @{thm [source] m_8_6_trailing_principal_peel}
+  collapses \<open>D\<^sub>u(t\<^sub>2 + D\<^sub>w 0)[0] = D\<^sub>u t\<^sub>2\<close>.  EMPIRICALLY 144000/0
+  (\<open>w = 0 \<or> u \<ge> w\<close> regime over \<open>OT\<^bsub>B\<^esub>\<close> prefixes/bodies).\<close>
+
+lemma m_8_7_toplevel_succ_peel:
+  assumes qne: "q \<noteq> 0\<^sub>B" and uw: "w = 0 \<or> u \<ge> w"
+  shows "operB (q +\<^sub>B Dpt (enat u) (t\<^sub>2 +\<^sub>B Dpt (enat w) 0\<^sub>B)) (numBT 0)
+           = q +\<^sub>B Dpt (enat u) t\<^sub>2"
+proof -
+  \<comment> \<open>operB-dom of the trailing principal \<open>D\<^sub>u(t\<^sub>2 + D\<^sub>w 0)\<close> at \<open>[0]\<close>\<close>
+  have dom: "domB_operB_xseq_dom
+               (Inr (Inl (Dpt (enat u) (t\<^sub>2 +\<^sub>B Dpt (enat w) 0\<^sub>B), numBT 0)))"
+  proof (cases "w = 0")
+    case True
+    \<comment> \<open>\<open>t\<^sub>2 + D\<^sub>0 0\<close> is a \<open>d0succ\<close> term; \<open>D\<^sub>u(\<dots>)\<close> too\<close>
+    have e: "t\<^sub>2 +\<^sub>B Dpt (enat w) 0\<^sub>B = t\<^sub>2 +\<^sub>B Dpt 0 0\<^sub>B"
+      using True by (simp add: zero_enat_def)
+    have bne: "t\<^sub>2 +\<^sub>B Dpt 0 0\<^sub>B \<noteq> 0\<^sub>B" by (cases t\<^sub>2) simp
+    have ends: "endsD00 (t\<^sub>2 +\<^sub>B Dpt 0 0\<^sub>B)" by (rule endsD00_addD00)
+    have ds: "d0succ (t\<^sub>2 +\<^sub>B Dpt 0 0\<^sub>B)" by (rule d0succ_addD00)
+    have ds2: "d0succ (Dpt (enat u) (t\<^sub>2 +\<^sub>B Dpt 0 0\<^sub>B))"
+      by (rule d0succ_single_nonzero[OF bne ends ds])
+    have "domB_operB_xseq_dom (Inr (Inl (Dpt (enat u) (t\<^sub>2 +\<^sub>B Dpt 0 0\<^sub>B), numBT 0)))"
+      by (rule operB_dom_d0succ[OF ds2])
+    thus ?thesis using e by simp
+  next
+    case False
+    hence wpos: "0 < w" by simp
+    hence wu: "w \<le> u" using uw by simp
+    let ?body = "t\<^sub>2 +\<^sub>B Dpt (enat w) 0\<^sub>B"
+    have db: "domB ?body = TBv (enat (w - 1))" by (rule domB_addBT_Dv0[OF wpos])
+    have bne: "?body \<noteq> Trm []" by (cases t\<^sub>2) simp
+    have mw: "enat (w - 1) < enat u" using wpos wu by simp
+    have domc: "domB_operB_xseq_dom (Inr (Inl (?body, numBT 0)))"
+      by (rule operB_dom_addBT_Dv0)
+    have domprin: "domB_operB_xseq_dom (Inr (Inl (Trm [DB (enat u) ?body], numBT 0)))"
+      by (rule operB_dom_TBv_principal_aux[OF db bne mw domc])
+    thus ?thesis by simp
+  qed
+  \<comment> \<open>distribute the \<open>[0]\<close>-step over the prefix \<open>q\<close>\<close>
+  have dist: "operB (q +\<^sub>B Dpt (enat u) (t\<^sub>2 +\<^sub>B Dpt (enat w) 0\<^sub>B)) (numBT 0)
+                = q +\<^sub>B operB (Dpt (enat u) (t\<^sub>2 +\<^sub>B Dpt (enat w) 0\<^sub>B)) (numBT 0)"
+    by (rule operB_dist_trailing_single[OF qne dom])
+  \<comment> \<open>collapse the trailing principal\<close>
+  have peel: "operB (Dpt (enat u) (t\<^sub>2 +\<^sub>B Dpt (enat w) 0\<^sub>B)) (numBT 0)
+                = Dpt (enat u) t\<^sub>2"
+    by (rule m_8_6_trailing_principal_peel[OF uw])
+  show ?thesis using dist peel by simp
+qed
+
+
 end

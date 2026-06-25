@@ -707,6 +707,31 @@ xseq タワーは \(x_0 = D_{v-1} 0\)（基底、\(s_0,b_0\) に包まれない�
 ### 形式化での扱い
 偽の文字どおりの主張 `p_8_6_trailing_principal_annihilable` は証明しない（paper sorry のまま）。クリーン降下領域 \(v=0 \lor u \ge v\) の一段剥がし `operB (D_u(t' + D_v 0)) [0] = D_u t'` を `m_8_6_trailing_principal_peel`（`pss_wip.thy`）として証明済（任意 \(t' \in T_{\textrm{B}}\)、`operB_single_succ`/`operB_TBv_principal_unfold`+`operB_peel_trailing_Dv0`）。\(t'=0\) 形 \(D_u(D_w 0)\) の \(k \le w+1\) 反復零化は既証 `operB_iter_Du_Dw0`。なお下流 §8.7（`OT_tail_annihilable`/`Pred_oper0`）の全 scb 版は OT 整礎帰納（[Buc1] Lemma 3.2a \(t[n]<t\) は本プロジェクトで未証）と paper sorry（`p_7_2_scb_compose`/`p_7_2_scb_replaceable`）に依存するため別途。
 
+## A27. §8.7 補題（\(\textrm{Pred}\)と\([0]\)の関係）は標準入力で偽（停止性定理は別ルートで健全）
+
+### 位置
+§8.7 補題（\(\textrm{Pred}\)と\([0]\)の関係）（content.md 6017）。\(\textrm{Trans}(M)\) の OT 所属（\(\textrm{Trans}\)が標準形を保つこと、6122）の証明中で使用。
+
+### 原文
+> 任意の\(M \in RT_{\textrm{PS}} \cap PT_{\textrm{B}}\)に対し、\(\textrm{Trans}\)の再帰的定義中に導入した記号を用いると、\(j_1 > 1\)かつ\(M\)が条件(VI)を満たさずかつ\(\textrm{Trans}(M)\)が順序数項であるならば、ある\(k \in \mathbb{N}\)が存在して\(\textrm{Trans}(M)[0]^k = t_1\)である。
+
+（\(t_1 = \textrm{Trans}(\textrm{Pred}(M))\)。）
+
+### 訂正案
+> （一般形は偽につき削除。）\(\textrm{Trans}\)が標準形を保つことの証明は本補題を経由せず、content.md 6202/6325 の分岐（\(\textrm{Trans}(M) = \Sigma_{\textrm{B}}(a_0 \oplus a_1)\) を順序数項の降下和として直接構成、[Buc1] OT2 + 基本列の降下性）で OT 所属を示す。本補題が真であるのは印付き主項が top-level（最右・非ネスト）のクリーン領域に限る。
+
+### 原文の問題点
+A25/A26 と同一機構。証明（6028）は §8.6 零化を本体 \(t_2\) が**ネストした**印付き主項 \(D_v(t_2 + D_{M_{1,j_1}} 0)\) に適用するが、\(v \le u\) のとき \([0]\) は \(([\,].4)(ii)\) xseq タワー枝を取り \(t_2\) を破壊する。結論 \(\textrm{Trans}(M)[0]^k = t_1\) が成り立たない。
+
+### 反例
+\(M = (0,0)(1,1)(2,1)\)（標準・条件III・\(j_1=2>1\)・¬条件VI、全仮説成立）。\(\textrm{Trans}(M) = D_0(D_1(D_1 0)) \in OT_{\textrm{B}}\)、\(t_1 = \textrm{Trans}(\textrm{Pred}(M)) = D_0(D_1 0) \in OT_{\textrm{B}}\)。実軌道 \(D_0(D_1(D_1 0)) \to D_0(D_0 0) \to D_0 0 \to 0\) は \(D_0(D_1 0)\) を**通らない**ので、どの \(k\) でも \(\textrm{Trans}(M)[0]^k = t_1\) は偽。
+
+### 経験的確認
+（`python/trans_model.py` の実行可能 Trans/operB、標準入力 yaBMS 確認済）: literal は標準・条件I/III/V ホスト **22/71 失敗**。一方 \(\textrm{Trans}(M)\in OT_{\textrm{B}}\)（OT 所属の結論自体）は **151/151 真**（6325 ルートで独立に成立）。
+
+### 形式化での扱い
+**偽の `p_8_7_Pred_oper0` は原文形で証明しない**（paper sorry 据置）。`p_8_7_Trans_preserves_OT` は 6325 の Σ_B 降下和ルートで証明する（偽の \(\textrm{Pred}(N)=M\) 恒等式を迂回）。クリーン領域の零化は `m_8_7_toplevel_OT_tail_annihilate`/`m_8_7_toplevel_succ_peel`/`m_8_7_toplevel_Dw0_annihilate`（`pss_wip.thy`）で証明済。**原文の停止性定理自体は真**（descent 柱は clean 領域で足り、OT 所属柱は 6325 ルート）。memory `pss-8-endgame-route` 参照。
+
 ## C1（明確化、訂正ではない） — §7.3「Trans の最左単項成分の左端」clause (3) の "D_u" の解釈 [軽微]
 
 ### 位置
