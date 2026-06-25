@@ -7,12 +7,14 @@
 - 下記の反例以外のマークを増やさない
   - 凡例: **各項目には必ず 🚨（未証明）または ✅（証明済）を付ける**（司令マーカー）。
   - 🚨🤖 ＝ agent 作業中
+  - 📘 ＝ [Buc1] 引用 sorry（外部結果、原文も証明せず引用のみ。後で埋める。`buc1_*`）
 
 ## 進捗ツリー
 - ✅ §5 定式化
 - ✅ §6 ペア数列の基本性質 〔全節完了(2026-06-11)。docs `reducedness.md`/`red-le-domain.md`/`slice-Br-descending.md`〕
 - ✅ §7 Buchholzの表記系への翻訳 
 - 🚨 §8 停止性
+  - 📘 [Buc1] 外部引用(sorry): `buc1_2_2_OT_B_wf`(OT_B整礎,Lemma2.2)/`buc1_3_2a_fseq_lt`(a[n]<a,Lemma3.2a)。§8降下・停止性が参照。後で証明
   - 🚨 §8.1 条件 (I) の下での展開規則
     - 🚨 命題（条件 (I) の下での $\textrm{Trans}$ と基本列の交換関係）
     - ✅ 補題（公差 $(1,1)$ のペア数列の $\textrm{Trans}$ の基本性質）〔`m_8_1_diagSeq_Trans`〕
@@ -27,7 +29,7 @@
     - 🚨 補題（部分表現の単項成分と $\textrm{Pred}$ の関係）(§8.2 keystone)
       - ✅ Adm0 枝(gB-free組立 `m_8_2_subexpr_component_Pred_Adm0_nogB`) + guard 3/4 (nadmj0/t2ne/e0gt)
       - ✅ gB-condV (`m_8_2_gB_Adm0_condA` 無条件 discharge)
-      - 🚨 Admpos枝(clause3/4): STEP1 confinement→body-split✅(`trans_admpos_body_split`/engine`scb_outer_surgery_split`、1794/1794)。残=STEP2 geometry w同定(w∈{e1j1',e1j0'}、§7.4 RightNodes/RightAnces連鎖)→`clause34_of_witness`で閉
+      - 🚨 Admpos枝(clause3/4): body-split✅(`trans_admpos_body_split_wfin`=有限head w'=RightNodes(Trans M)!1)。残=w同定が帰納的(w∈{e1j1',e1j0'}、FirstNodes/Joints index transport、keystone-by-induction必要)。Adm0組立もsub-lemma case-split要
       - 🚨 組立
     - 🚨 補題（強単項性の下での部分表現の単項成分の基本性質）
       - ✅ (1) `m_8_2_subexpr_leftend_unique`

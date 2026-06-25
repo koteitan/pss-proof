@@ -26457,4 +26457,103 @@ proof -
     using sp1 sp2 TP by (auto simp: e10_def)
 qed
 
+
+text \<open>§8.2 STEP 2 bridge (w-identification, finiteness + \<open>RightNodes\<close> position).
+  The body-split @{thm [source] trans_admpos_body_split} produces a common trailing
+  principal head \<open>w :: enat\<close>.  This bridge re-expresses STEP 1's conclusion with a
+  FINITE head \<open>w' :: nat\<close> (\<open>w = enat w'\<close>, since \<open>Trans M\<close> is d-free) and pins \<open>w'\<close> to
+  the second \<open>RightNodes\<close> entry of \<open>Trans M\<close>: \<open>w' = RightNodes (Trans M) ! 1\<close>.  By
+  @{thm [source] m_7_4_RightAnces_RightNodes} this equals \<open>RightAnces M ! 1\<close>, so the
+  remaining §7.4 w-identification reduces to the pure list/geometry obligation
+  \<open>RightNodes (Trans M) ! 1 \<in> {entry M 1 j'\<^sub>1, entry M 1 j'\<^sub>0}\<close>.  Empirically exact
+  (trans_model, \<open>RT\<^bsub>PS\<^esub> \<inter> PT\<^bsub>PS\<^esub>\<close> monoT, length \<le> 6, all 1794 \<open>transJm1 M > 0\<close>
+  cases: \<open>w = RightNodes (Trans M) ! 1\<close> and \<open>\<in> {e\<^sub>1\<^sub>,\<^sub>j\<^sub>1\<^sub>', e\<^sub>1\<^sub>,\<^sub>j\<^sub>0\<^sub>'}\<close> with 0
+  violations).\<close>
+
+lemma trans_admpos_body_split_wfin:
+  fixes M :: pairseq
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS"
+    and j1gt: "Lng M - 1 > 1"
+    and Admpos: "transJm1 M > 0"
+    and t1ne: "Trans (Pred M) \<noteq> 0\<^sub>B"
+  shows "\<exists>pre u2 u3.
+            (let w' = RightNodes (Trans M) ! 1 in
+               Trans (Pred M) = Dpt (enat (entry M 1 0)) (pre +\<^sub>B Dpt (enat w') u2)
+             \<and> Trans M       = Dpt (enat (entry M 1 0)) (pre +\<^sub>B Dpt (enat w') u3)
+             \<and> RightNodes (Trans M) ! 1 = RightAnces M ! 1)"
+proof -
+  obtain pre w u2 u3 where
+    sp1: "Trans (Pred M) = Dpt (enat (entry M 1 0)) (pre +\<^sub>B Dpt w u2)"
+    and sp2: "Trans M    = Dpt (enat (entry M 1 0)) (pre +\<^sub>B Dpt w u3)"
+    using trans_admpos_body_split[OF MR MP j1gt Admpos t1ne] by blast
+  \<comment> \<open>\<open>Trans M\<close> is d-free, so the trailing head \<open>w\<close> is finite (\<open>w = enat (the_enat w)\<close>)\<close>
+  have dfTM: "dfree_BT (Trans M)"
+    using Trans_Mark_invariant_aux[rule_format, OF MR] by blast
+  \<comment> \<open>the trailing principal \<open>D\<^sub>w u\<^sub>3\<close> is non-zero, so its head shows up in \<open>RightNodes\<close>\<close>
+  have nzDw: "Dpt w u3 \<noteq> 0\<^sub>B" by simp
+  have rnInner: "RightNodes (pre +\<^sub>B Dpt w u3) = the_enat w # RightNodes u3"
+  proof -
+    have "RightNodes (pre +\<^sub>B Dpt w u3) = RightNodes (Dpt w u3)"
+      by (rule ra_RightNodes_addBT_right[OF nzDw])
+    thus ?thesis by (simp add: ra_RightNodes_Dpt_gen)
+  qed
+  have rnTM: "RightNodes (Trans M)
+                = entry M 1 0 # the_enat w # RightNodes u3"
+  proof -
+    have "RightNodes (Trans M)
+            = the_enat (enat (entry M 1 0)) # RightNodes (pre +\<^sub>B Dpt w u3)"
+      using sp2 by (simp only: ra_RightNodes_Dpt_gen)
+    thus ?thesis using rnInner by simp
+  qed
+  have rn1: "RightNodes (Trans M) ! 1 = the_enat w" using rnTM by simp
+  \<comment> \<open>finiteness: the \<open>Dsym w\<close> letter occurs in \<open>flatBT (Trans M)\<close>, hence \<open>w \<noteq> \<infinity>\<close>\<close>
+  have wfin: "w \<noteq> \<infinity>"
+  proof -
+    have flsplit: "flatBT (Trans M)
+        = Dsym (enat (entry M 1 0)) # flatBT (pre +\<^sub>B Dpt w u3)"
+      using sp2 by simp
+    obtain ps where ps: "pre = Trm ps" by (cases pre)
+    have predBT: "pre +\<^sub>B Dpt w u3 = Trm (ps @ [DB w u3])" using ps by simp
+    have wIn: "Dsym w \<in> set (flatBT (pre +\<^sub>B Dpt w u3))"
+    proof (cases "ps = []")
+      case True
+      have "flatBT (pre +\<^sub>B Dpt w u3) = Dsym w # flatBT u3"
+        using predBT True by simp
+      thus ?thesis by simp
+    next
+      case False
+      have "flatBT (pre +\<^sub>B Dpt w u3) = Wpre ps @ flatBP (DB w u3) @ [RP]"
+        using predBT flatBT_multi_last[OF False] by simp
+      moreover have "Dsym w \<in> set (flatBP (DB w u3))" by simp
+      ultimately show ?thesis by simp
+    qed
+    hence "Dsym w \<in> set (flatBT (Trans M))" using flsplit by simp
+    thus ?thesis using dfTM by (simp add: dfree_flat_BT)
+  qed
+  have weq: "w = enat (the_enat w)" using wfin by (cases w) auto
+  \<comment> \<open>re-express STEP 1 with the finite head \<open>w' = the_enat w = RightNodes (Trans M) ! 1\<close>\<close>
+  define w' where "w' = RightNodes (Trans M) ! 1"
+  have w'eq: "w' = the_enat w" using rn1 by (simp add: w'_def)
+  have wenat: "w = enat w'" using weq w'eq by simp
+  have raM: "RightAnces M = RightNodes (Trans M)" by (rule m_7_4_RightAnces_RightNodes[OF MR])
+  have sp1': "Trans (Pred M) = Dpt (enat (entry M 1 0)) (pre +\<^sub>B Dpt (enat w') u2)"
+    using sp1 wenat by simp
+  have sp2': "Trans M = Dpt (enat (entry M 1 0)) (pre +\<^sub>B Dpt (enat w') u3)"
+    using sp2 wenat by simp
+  have rnra1: "RightNodes (Trans M) ! 1 = RightAnces M ! 1" using raM by simp
+  let ?wn = "RightNodes (Trans M) ! 1"
+  have sp1n: "Trans (Pred M) = Dpt (enat (entry M 1 0)) (pre +\<^sub>B Dpt (enat ?wn) u2)"
+    using sp1' by (simp add: w'_def)
+  have sp2n: "Trans M = Dpt (enat (entry M 1 0)) (pre +\<^sub>B Dpt (enat ?wn) u3)"
+    using sp2' by (simp add: w'_def)
+  have body:
+    "(let w' = RightNodes (Trans M) ! 1 in
+        Trans (Pred M) = Dpt (enat (entry M 1 0)) (pre +\<^sub>B Dpt (enat w') u2)
+      \<and> Trans M       = Dpt (enat (entry M 1 0)) (pre +\<^sub>B Dpt (enat w') u3)
+      \<and> RightNodes (Trans M) ! 1 = RightAnces M ! 1)"
+    unfolding Let_def using sp1n sp2n rnra1 by blast
+  show ?thesis
+    by (intro exI[of _ pre] exI[of _ u2] exI[of _ u3]) (rule body)
+qed
+
 end

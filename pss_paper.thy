@@ -801,6 +801,27 @@ lemma p_7_1_term_components:
   shows "(Lng (PB t) = 0 \<longleftrightarrow> t = Trm []) \<and> SigmaB (PB t) = t"
   sorry
 
+text \<open>[Buc1] の外部補題（\<^bold>\<open>引用\<close>）。原文（P進大好きbot「ペア数列の停止性」）はこれらを
+  Buchholz [Buc1] から引用し、\<^bold>\<open>証明していない\<close>。忠実性方針（原作にない原始的要素を
+  導入しない）に従い、ここでも引用として \<open>sorry\<close> で立てる（証明は後日埋める、2026-06-25
+  ユーザー判断「いったん faithful に、あとで埋める」）。\<^bold>\<open>下流（§8 の交換則・停止性）は
+  これらを正当な外部結果として参照してよい\<close>（名前 \<open>buc1_*\<close> がこの引用ステータスを示す）。
+  \<^item> [Buc1] Lemma 2.2: \<open>(OT\<^bsub>B\<^esub>, <)\<close> は整礎（停止性の最終的なソース）。
+  \<^item> [Buc1] Lemma 3.2 (a): \<open>a \<in> OT\<^bsub>B\<^esub>\<close> かつ \<open>a \<noteq> 0\<close> ならば基本列は狭義下降
+    \<open>a[n] < a\<close>（\<open>a[n] = operB a (numBT n)\<close>）。〔§8.3/§8.4/§8.6 の \<open>Trans\<close>×基本列
+    交換則の降下と §8.7 停止性が依存〕\<close>
+
+lemma buc1_2_2_OT_B_wf:
+  \<comment> \<open>[Buc1] Lemma 2.2 — 引用（未証明）。\<open>{(a,b). a < b}\<close> on \<open>OT\<^bsub>B\<^esub>\<close> の整礎性。\<close>
+  "wf {(a, b). a \<in> OT_B \<and> b \<in> OT_B \<and> lessBT a b}"
+  sorry
+
+lemma buc1_3_2a_fseq_lt:
+  \<comment> \<open>[Buc1] Lemma 3.2 (a) — 引用（未証明）。基本列の狭義下降 \<open>a[n] < a\<close>。\<close>
+  assumes "a \<in> OT_B" and "a \<noteq> Trm []"
+  shows "lessBT (operB a (numBT n)) a"
+  sorry
+
 
 subsection \<open>§7.2 scb分解 ([Buc1] のアルファベット \<open>\<Sigma>\<close> 上)\<close>
 
