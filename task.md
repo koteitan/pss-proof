@@ -21,7 +21,7 @@
     - ✅ 系（$\textrm{Pred}$ が公差 $(1,1)$ のペア数列の $\textrm{Trans}$ の基本性質）〔`m_8_1_Pred_diagSeq_Trans`〕
     - 🚨 補題（条件 (I) か (III) の下での $c_1$ 前後の具体表示）（A20/A21）
       - ✅ part(1)(2)(3-1)(3-2)(5) + `Mark_gap_peel` engine
-      - 🚨 (4-1)(4-2)：slicepeel sorry 2個(slice-RT、wt-c1around)。memory `pss-81-c1around`
+      - 🚨🤖 (4-1)(4-2)：slicepeel sorry 2個(現main+§7.4機構で再挑戦、wt-c1a)。memory `pss-81-c1around`
   - 🚨 §8.2 強単項性
     - ✅ 命題（標準形の直系先祖による切片の簡約化の強単項性）〔`m_8_2_standard_slice_Red_strongmono`〕
     - 🚨 命題（条件 (II) か (IV) の下での終切片と $\textrm{Trans}$ の関係）
@@ -30,7 +30,7 @@
       - ✅ Adm0 枝(gB-free組立 `m_8_2_subexpr_component_Pred_Adm0_nogB`) + guard 3/4 (nadmj0/t2ne/e0gt)
       - ✅ gB-condV (`m_8_2_gB_Adm0_condA` 無条件 discharge)
       - 🚨 Admpos枝: 両half✅(`_Adm0_full`/`_Admpos_of_wid`)、残=w-id(§6.4 transport)
-      - 🚨 組立：keystone⟸w-id 済 `m_8_2_subexpr_component_Pred_of_wid`、残=w-id
+      - 🚨🤖 組立：keystone⟸w-id 済 `m_8_2_subexpr_component_Pred_of_wid`、残=w-id 討伐中
     - 🚨 補題（強単項性の下での部分表現の単項成分の基本性質）
       - ✅ (1) `m_8_2_subexpr_leftend_unique`
       - 🚨 (2)(3)(4) leBT 下界（keystone依存で workflow 行き詰まり）
@@ -68,4 +68,4 @@
     - 🚨 補題（順序数項の末尾項の零化可能性）〔原文偽=A26、top-level✅ `m_8_7_toplevel_OT_tail_annihilate`、残=operB全域性〕
     - 🚨 補題（$\textrm{Pred}$ と $[0]$ の関係）〔原文偽=A27、停止性は6325ルートで迂回〕
     - ✅ 補題（順序数項の基本例）〔`m_8_7_OT_examples`〕
-    - 🚨 補題（$\textrm{Trans}$ が標準形を保つこと）〔`Trans_preserves_OT`。6325 Σ_B降下和ルート〕
+    - 🚨🤖 補題（$\textrm{Trans}$ が標準形を保つこと）〔`Trans_preserves_OT`。6325 Σ_B降下和ルート〕
