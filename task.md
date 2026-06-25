@@ -24,18 +24,18 @@
       - 🚨 (4-1)(4-2)：scaffolding緑(`m_8_1_c1_around_part4_setup/_1/_2`、wt-c1around)、残=slicepeel sorry 2個(slice N=seg M jm1' j0 へ Adm0解析移植 Sub-lemma A/B)。(4-1)真58/0、(4-2)ガード経験vacuous
   - 🚨 §8.2 強単項性
     - ✅ 命題（標準形の直系先祖による切片の簡約化の強単項性）〔`m_8_2_standard_slice_Red_strongmono`〕
-    - 🚨 命題（条件 (II) か (IV) の下での終切片と $\textrm{Trans}$ の関係）
-    - 🚨 補題（強単項性の切片への遺伝性）
+    - 🚨🤖 命題（条件 (II) か (IV) の下での終切片と $\textrm{Trans}$ の関係）
+    - 🚨🤖 補題（強単項性の切片への遺伝性）
     - 🚨 補題（部分表現の単項成分と $\textrm{Pred}$ の関係）(§8.2 keystone)
       - ✅ Adm0 枝(gB-free組立 `m_8_2_subexpr_component_Pred_Adm0_nogB`) + guard 3/4 (nadmj0/t2ne/e0gt)
       - ✅ gB-condV (`m_8_2_gB_Adm0_condA` 無条件 discharge)
-      - 🚨 Admpos枝(clause3/4): Adm0完全✅(`_Adm0_full`、guard内部導出)+Admpos✅(`_Admpos_of_wid`、w-id仮説に還元)。残=**w-id ただ1つ**=§6.4 FirstNodes/Joints値転送(across P-blocks、1794/1794、原文3432-3433)
+      - 🚨 Admpos枝(clause3/4): Adm0完全✅(`_Adm0_full`)+Admpos✅(`_Admpos_of_wid`)。残=**w-id ただ1つ**=§6.4 FirstNodes/Joints値転送(across P-blocks、1794/1794、原文3432-3433)。⚠️workflow1パス未割=要専用§6.4開発
       - 🚨 組立
     - 🚨 補題（強単項性の下での部分表現の単項成分の基本性質）
       - ✅ (1) `m_8_2_subexpr_leftend_unique`
-      - 🚨 (2)(3)(4) leBT 下界
-    - 🚨 補題（条件 (V) の下での右端の親の基本性質）
-    - 🚨 補題（条件 (V) の下での終切片と $\textrm{Trans}$ の関係）
+      - 🚨 (2)(3)(4) leBT 下界（keystone依存で workflow 行き詰まり）
+    - 🚨🤖 補題（条件 (V) の下での右端の親の基本性質）
+    - 🚨🤖 補題（条件 (V) の下での終切片と $\textrm{Trans}$ の関係）
   - 🚨 §8.3 条件 (II) の下での展開規則
     - 🚨 命題（条件 (II) の下での $\textrm{Trans}$ と基本列の交換関係）〔n=1 case✅ `m_8_3_TransCondII_oper1_descend`(M[1]=Pred M)。full-n は [Buc1]Lemma3.2a(a[n]<a) + `p_8_2_condIIIV` 待ち〕
     - ✅ 補題（第 $0$ 種型基本列の基本不等式）〔`m_8_3_kind0_base_ineq`(A22訂正)〕
