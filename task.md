@@ -29,7 +29,7 @@
     - 🚨 補題（部分表現の単項成分と $\textrm{Pred}$ の関係）(§8.2 keystone)
       - ✅ Adm0 枝(gB-free組立 `m_8_2_subexpr_component_Pred_Adm0_nogB`) + guard 3/4 (nadmj0/t2ne/e0gt)
       - ✅ gB-condV (`m_8_2_gB_Adm0_condA` 無条件 discharge)
-      - 🚨 Admpos枝(clause3/4): body-split✅(`trans_admpos_body_split_wfin`=有限head w'=RightNodes(Trans M)!1)。残=w同定が帰納的(w∈{e1j1',e1j0'}、FirstNodes/Joints index transport、keystone-by-induction必要)。Adm0組立もsub-lemma case-split要
+      - 🚨🤖 Admpos枝(clause3/4): body-split✅(`trans_admpos_body_split_wfin`)。残=w-id帰納(keystone-by-induction、FirstNodes/Joints transport)+full組立 を agent 作業中
       - 🚨 組立
     - 🚨 補題（強単項性の下での部分表現の単項成分の基本性質）
       - ✅ (1) `m_8_2_subexpr_leftend_unique`
@@ -62,10 +62,10 @@
     - 🚨 補題（順序数項の末尾単項の零化可能性）〔**原文偽→訂正A25**(u<v で xseq タワーが t' 破壊、CEX D_0((D_1 0,D_1 0)))。正領域 v=0∨u≥v は✅ `m_8_6_trailing_principal_peel`。full は [Buc1]Lemma3.2a 待ち〕
   - 🚨 §8.7 主結果
     - ✅ 補題（公差 $(0,0)$ のペア数列の $\textrm{Trans}$ の基本性質）〔`m_8_7_const00_Trans`〕
-    - 🚨 補題（基本列の降下性）〔`fseq_descend`。§8.1-8.6 交換則連鎖待ち〕
+    - 🚨 補題（基本列の降下性）〔`fseq_descend`。**clean領域で到達可**(零化使用は5747 leaf のみ、既存clean補題+`buc1_3_2a`)。条件I-V/VI交換則連鎖が本体〕
     - ✅ 補題（順序数項の再帰構造）〔`m_8_7_OT_scb_recursive`〕
     - ✅ 補題（順序数項の共終数の遺伝性）〔`m_8_7_OT_dom_hereditary`〕
-    - 🚨 補題（順序数項の末尾項の零化可能性）〔**原文偽→訂正A26**(ネスト印付き主項で偽、CEX D_0(D_1(D_1 0))、A25同型)。top-level正領域 core✅ `m_8_7_toplevel_Dw0_annihilate`(+`operB_dist_trailing_single`)。残=一般body は OT_B の [0] 閉包(別buc1引用要)〕
-    - 🚨 補題（$\textrm{Pred}$ と $[0]$ の関係）〔`Pred_oper0`。cond(II)/(IV) がネスト印付き主項=A26偽領域に適用、二重ブロック(OT閉包+ネスト)〕
+    - 🚨🤖 補題（順序数項の末尾項の零化可能性）〔訂正A26。top-level core✅ `m_8_7_toplevel_Dw0_annihilate`。一般top-level(buc1 OT閉包追加+WF帰納)を agent 作業中〕
+    - 🚨 補題（$\textrm{Pred}$ と $[0]$ の関係）〔**原文偽→訂正A27**(標準入力で偽、CEX M=(0,0)(1,1)(2,1)、Trans=D_0(D_1(D_1 0))、22/71失敗)。leaf限定形のみ真。停止性は迂回(↓Trans_preserves_OT)〕
     - ✅ 補題（順序数項の基本例）〔`m_8_7_OT_examples`〕
-    - 🚨 補題（$\textrm{Trans}$ が標準形を保つこと）〔`Trans_preserves_OT`。`fseq_descend`連鎖待ち〕
+    - 🚨 補題（$\textrm{Trans}$ が標準形を保つこと）〔`Trans_preserves_OT`。偽の`Pred_oper0`を迂回し**6325 Σ_B降下和ルート**で(独立に真151/151、[Buc1]OT2+降下性)〕
