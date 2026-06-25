@@ -27765,4 +27765,212 @@ proof -
 qed
 
 
+text \<open>§8.1 命題（条件(I)の下での\<open>Trans\<close>と基本列の交換関係）の降下部 (2) — content.md 2829/2833.
+  This is conclusion (2) \<open>Trans(M[n]) < Trans(M)\<close> of
+  @{thm [source] p_8_1_Trans_fseq_condI}, reduced to the commutation (1)
+  \<open>Trans(M[n]) = Trans(M)[n-1] = operB (Trans M) (numBT (n-1))\<close> (taken here as the
+  hypothesis \<open>commute\<close> — its proof is the long §8.1 c1-around assembly,
+  parts (1)–(5): @{thm [source] m_8_1_c1_around_part1} …
+  @{thm [source] m_8_1_c1_around_part5}, plus an induction-on-\<open>n\<close> glue not yet
+  written).  GIVEN (1), the descent is exactly the [Buc1] Lemma 3.2(a)
+  fundamental-sequence strict descent @{thm [source] buc1_3_2a_fseq_lt}
+  (\<open>a \<in> OT\<^bsub>B\<^esub>, a \<noteq> 0 \<Longrightarrow> a[k] < a\<close>) at \<open>a = Trans M\<close>, \<open>k = n-1\<close>.
+  Two side conditions are required to apply it:
+  \<^item> \<open>Trans M \<noteq> 0\<^sub>B\<close> — discharged here from \<open>j\<^sub>1 = Lng M - 1 > 1\<close> (so \<open>Lng M \<noteq> 1\<close>,
+    hence \<open>\<not> zeroT M\<close>) via the proved @{thm [source] m_7_3_Trans_zeroT};
+  \<^item> \<open>Trans M \<in> OT\<^bsub>B\<^esub>\<close> — kept as the hypothesis \<open>OT\<close>; the general "\<open>Trans\<close> lands in
+    \<open>OT\<^bsub>B\<^esub>\<close>" membership for a reduced mono \<open>M\<close> is not yet a mechanized lemma.
+  Cites only proved/legitimate-external facts (\<open>buc1_*\<close> is an [Buc1] citation,
+  see pss_paper.thy 804–823); no forward/circular reference to \<open>p_8_1_*\<close>.\<close>
+
+lemma m_8_1_Trans_fseq_condI_descent:
+  assumes MR: "M \<in> RT_PS"
+    and j1: "Lng M - 1 > 1"
+    and OT: "Trans M \<in> OT_B"
+    and commute: "Trans (M[n]) = operB (Trans M) (numBT (n - 1))"
+  shows "lessBT (Trans (M[n])) (Trans M)"
+proof -
+  have "Lng M \<noteq> 1" using j1 by linarith
+  hence nz: "\<not> zeroT M" by (simp add: zeroT_def)
+  have tz: "Trans M \<noteq> 0\<^sub>B" using m_7_3_Trans_zeroT[OF MR] nz by blast
+  have L: "lessBT (operB (Trans M) (numBT (n - 1))) (Trans M)"
+    by (rule buc1_3_2a_fseq_lt[OF OT tz])
+  show ?thesis using L commute by simp
+qed
+
+
+section \<open>§8.3 命題（条件(II)の下での \<open>Trans\<close> と基本列の交換関係）, conclusion (4):
+  descent ENGINE for general \<open>n\<close>\<close>
+
+text \<open>Headline conclusion (4) of @{thm [source] p_8_3_TransCondII_oper_descend}:
+  for \<open>M \<in> ST\<^bsub>PS\<^esub> \<inter> PT\<^bsub>PS\<^esub>\<close>, \<open>n > 0\<close>, \<open>j\<^sub>1 = Lng M - 1 > 1\<close>, condition (II),
+  \<open>Trans(M[n]) <\<^bsub>B\<^esub> Trans(M)\<close>.
+
+  The article proves (4) by mathematical induction on \<open>n\<close> THROUGH conclusion (2)
+  \<open>Trans(M[n]) = Trans(M)[m\<^sub>n]\<close> (\<open>m\<^sub>n = n-1\<close> or \<open>n-2\<close>, content.md 3964): for the
+  \<open>m\<^sub>n \<ge> 0\<close> branch (which, since \<open>m\<^sub>n \<ge> 0\<close> for every \<open>n \<ge> 1\<close> except the
+  \<open>m\<^sub>n = -1\<close> case at \<open>n = 1\<close>) the translation of the \<open>n\<close>-th expansion IS a
+  Buchholz-side fundamental-sequence step \<open>Trans(M)[m\<^sub>n] = operB (Trans M) (numBT m\<^sub>n)\<close>,
+  and fundamental-sequence steps strictly descend by [Buc1] Lemma 3.2(a)
+  (@{thm [source] buc1_3_2a_fseq_lt}); the \<open>m\<^sub>n = -1\<close> case is exactly \<open>n = 1\<close>,
+  already discharged by @{thm [source] m_8_3_TransCondII_oper1_descend}.
+
+  Conclusion (2) is stated over the INTERNAL \<open>Trans\<close>-recursion locals
+  \<open>s\<^sub>1, c\<^sub>1, c\<^sub>2, t\<^sub>2, t\<^sub>3, t\<^sub>4, v, J\<^sub>1\<close>, which the article's MODELLING NOTE at
+  \<open>p_8_3_TransCondII_oper_descend\<close> (pss_paper §8.3) explicitly DEFERS to the
+  mechanization "where these locals will be defined" — they are not yet exposed
+  as Isabelle functions.  We therefore mechanize the regime-independent DESCENT
+  ENGINE: GIVEN the two remaining residuals as clean hypotheses, the full-\<open>n\<close>
+  descent follows.  The two residuals are exactly:
+    \<^item> \<open>TOT\<close>: \<open>Trans M \<in> OT\<^bsub>B\<^esub>\<close> — the §8.7 \<open>p_8_7_Trans_preserves_OT\<close>, itself
+      still an unproven placeholder in pss_paper; and
+    \<^item> \<open>exch\<close>: conclusion (2) in exposed form, \<open>\<exists>k. Trans(M[n]) = operB (Trans M) (numBT k)\<close>
+      for the \<open>m\<^sub>n \<ge> 0\<close> branch (\<open>n > 1\<close>).
+  The third ingredient \<open>Trans M \<noteq> 0\<^sub>B\<close> ("特に \<open>Trans(M) \<noteq> 0\<close>", content.md 4034)
+  is discharged HERE from \<open>Lng M - 1 > 1\<close> via @{thm [source] m_7_3_Trans_zeroT}
+  (\<open>\<not> zeroT M\<close> since \<open>Lng M \<noteq> 1\<close>), so it is NOT a residual.
+
+  Audit (agent-workflow rule 4): cites only the already-proven
+  @{thm [source] m_8_3_TransCondII_oper1_descend}, @{thm [source] m_7_3_Trans_zeroT},
+  @{thm [source] m_6_7_ST_PS_subseteq_RT_PS}, and the legitimate external [Buc1]
+  citation @{thm [source] buc1_3_2a_fseq_lt} (downstream §8 may reference the
+  \<open>buc1_*\<close> facts as external results, per the pss_paper §7.1 note).  No circular
+  use of \<open>p_8_3_TransCondII_oper_descend\<close> itself.\<close>
+
+lemma m_8_3_TransCondII_oper_descend_engine:
+  fixes M :: pairseq
+  assumes MST: "M \<in> ST_PS" and MP: "M \<in> PT_PS"
+    and j1: "Lng M - 1 > 1"
+    and cond: "transCondII M"
+    and n0: "0 < n"
+    and TOT: "Trans M \<in> OT_B"
+    and exch: "1 < n \<Longrightarrow> \<exists>k. Trans (M[n]) = operB (Trans M) (numBT k)"
+  shows "lessBT (Trans (M[n])) (Trans M)"
+proof -
+  have MR: "M \<in> RT_PS" using MST m_6_7_ST_PS_subseteq_RT_PS by blast
+  \<comment> \<open>\<open>Lng M - 1 > 1\<close> forces \<open>Lng M \<noteq> 1\<close>, so \<open>M\<close> is not a zero-term, so
+     \<open>Trans M \<noteq> 0\<^sub>B\<close> by @{thm [source] m_7_3_Trans_zeroT}\<close>
+  have notz: "\<not> zeroT M"
+  proof
+    assume "zeroT M"
+    hence "Lng M = 1" by (simp add: zeroT_def)
+    with j1 show False by simp
+  qed
+  have Tne: "Trans M \<noteq> 0\<^sub>B" using m_7_3_Trans_zeroT[OF MR] notz by blast
+  show ?thesis
+  proof (cases "n = 1")
+    case True
+    \<comment> \<open>\<open>m\<^sub>n = -1\<close> / \<open>n = 1\<close> branch: the already-proven \<open>oper1\<close> descent\<close>
+    thus ?thesis
+      using m_8_3_TransCondII_oper1_descend[OF MST MP j1 cond] by simp
+  next
+    case False
+    \<comment> \<open>\<open>m\<^sub>n \<ge> 0\<close> branch (\<open>n > 1\<close>): \<open>Trans(M[n])\<close> is a Buchholz fundamental-sequence
+       step of \<open>Trans M\<close>, which strictly descends by [Buc1] Lemma 3.2(a)\<close>
+    hence n1: "1 < n" using n0 by presburger
+    obtain k where ke: "Trans (M[n]) = operB (Trans M) (numBT k)"
+      using exch[OF n1] by blast
+    have "lessBT (operB (Trans M) (numBT k)) (Trans M)"
+      by (rule buc1_3_2a_fseq_lt[OF TOT Tne])
+    thus ?thesis using ke by simp
+  qed
+qed
+
+
+section \<open>§8.2 keystone assembly: \<open>m_8_2_subexpr_component_Pred_of_wid\<close>
+  (full keystone reduced to the single w-identification residual)\<close>
+
+text \<open>§8.2 keystone (§8.2 補題（部分表現の単項成分と\<open>Pred\<close>の関係）, content.md 3360),
+  assembled from its two proven halves and reduced to the single residual
+  hypothesis \<open>wid\<close> (the §7.4 w-identification
+  \<open>RightNodes (Trans M) ! 1 \<in> {entry M 1 j'\<^sub>1, entry M 1 j'\<^sub>0}\<close>):
+
+  \<^item> @{thm [source] m_8_2_subexpr_component_Pred_Adm0_full} discharges the
+    \<open>transJm1 M = 0\<close> (Adm0) branch UNCONDITIONALLY (no w-id, no \<open>t\<^sub>1 \<noteq> 0\<close>);
+  \<^item> @{thm [source] m_8_2_subexpr_component_Pred_Admpos_of_wid} discharges the
+    \<open>transJm1 M > 0\<close> (Admpos) branch from \<open>wid\<close> plus \<open>t\<^sub>1 = Trans (Pred M) \<noteq> 0\<close>;
+    here \<open>t\<^sub>1 \<noteq> 0\<close> is derived INTERNALLY: \<open>j\<^sub>1 = Lng M - 1 > 1\<close> makes
+    \<open>Lng (Pred M) = Lng M - 1 > 1\<close>, so \<open>\<not> zeroT (Pred M)\<close>, whence
+    \<open>Trans (Pred M) \<noteq> 0\<close> by @{thm [source] m_7_3_Trans_zeroT}.
+
+  This is the article keystone modulo exactly the w-identification, which the
+  article discharges by its induction on \<open>j\<^sub>1 - TrMax(M)\<close> applied to \<open>Pred M\<close>
+  (content.md 3432-3435: the IH gives a unique \<open>i \<in> {0,1}\<close> with
+  \<open>Trans (Pred M) = D\<^bsub>M\<^sub>1\<^sub>,\<^sub>0\<^esub>(t\<^sub>1 + D\<^bsub>M\<^sub>1\<^sub>,\<^sub>j'\<^sub>i\<^esub> t\<^sub>2)\<close>, after the §6.4 \<open>P\<close>/\<open>IdxSum\<close>
+  value-transport of the basepoints across the \<open>Pred\<close> P-block boundary).
+  Empirically (\<open>python/_82k_wid.py\<close>, trans_model, \<open>RT\<^bsub>PS\<^esub> \<inter> PT\<^bsub>PS\<^esub>\<close> monoT, len \<le> 6)
+  the w-id holds in all 1794 Admpos cases (0 violations).\<close>
+
+lemma m_8_2_subexpr_component_Pred_of_wid:
+  fixes M :: pairseq
+  defines "j1 \<equiv> Lng M - 1"
+  defines "J1 \<equiv> Lng (Br M) - 1"
+  defines "j0' \<equiv> Joints M ! J1"
+  defines "j1' \<equiv> FirstNodes M ! J1"
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS" and Brne: "Br M \<noteq> []"
+    and j1gt: "j1 > 1"
+    and wid: "RightNodes (Trans M) ! 1 = entry M 1 j1'
+                \<or> RightNodes (Trans M) ! 1 = entry M 1 j0'"
+  shows
+    "(j1' = j1 \<and> (TrMax M = 0 \<or> j0' < TrMax M)
+        \<and> (entry M 0 j1' = entry M 1 j1' \<or> adm M j0')
+        \<and> (\<exists>!t1. Trans (Pred M) = Dpt (enat (entry M 1 0)) t1
+              \<and> Trans M = Dpt (enat (entry M 1 0))
+                            (t1 +\<^sub>B Dpt (enat (entry M 1 j1')) 0\<^sub>B)))
+   \<or> (j1' = j1 \<and> entry M 0 j1' > entry M 1 j1' \<and> \<not> adm M j0'
+        \<and> (\<exists>!t12. Trans (Pred M) = Dpt (enat (entry M 1 0)) (fst t12)
+              \<and> Trans M = Dpt (enat (entry M 1 0))
+                            (fst t12 +\<^sub>B Dpt (enat (entry M 1 j0')) (snd t12))))
+   \<or> (\<exists>!t123. Trans (Pred M)
+                = Dpt (enat (entry M 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M 1 j1')) (fst (snd t123)))
+            \<and> Trans M = Dpt (enat (entry M 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M 1 j1')) (snd (snd t123))))
+   \<or> (\<exists>!t123. Trans (Pred M)
+                = Dpt (enat (entry M 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M 1 j0')) (fst (snd t123)))
+            \<and> Trans M = Dpt (enat (entry M 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M 1 j0')) (snd (snd t123))))"
+proof -
+  have j1gt': "Lng M - 1 > 1" using j1gt by (simp add: j1_def)
+  show ?thesis
+  proof (cases "transJm1 M = 0")
+    case Adm0: True
+    show ?thesis
+      using m_8_2_subexpr_component_Pred_Adm0_full[OF MR MP Brne j1gt' Adm0]
+      unfolding j1_def J1_def j0'_def j1'_def .
+  next
+    case False
+    hence Admpos: "transJm1 M > 0" by simp
+    \<comment> \<open>derive \<open>t\<^sub>1 = Trans (Pred M) \<noteq> 0\<close> from \<open>Lng (Pred M) = Lng M - 1 > 1\<close>\<close>
+    have L: "1 < Lng M" using j1gt by (simp add: j1_def)
+    have predRT: "Pred M \<in> RT_PS" by (rule Pred_RT_PS[OF MR])
+    have Lpred: "Lng (Pred M) = Lng M - 1"
+    proof -
+      have "\<not> Lng M \<le> Suc 0" using L by linarith
+      hence "Pred M = butlast M" by (simp add: Pred_def)
+      thus ?thesis by simp
+    qed
+    have nzPred: "\<not> zeroT (Pred M)"
+    proof -
+      have "Lng (Pred M) > 1" using Lpred j1gt' by simp
+      thus ?thesis by (simp add: zeroT_def)
+    qed
+    have t1ne: "Trans (Pred M) \<noteq> 0\<^sub>B"
+    proof
+      assume "Trans (Pred M) = 0\<^sub>B"
+      hence "zeroT (Pred M)" using m_7_3_Trans_zeroT[OF predRT] by simp
+      thus False using nzPred by simp
+    qed
+    \<comment> \<open>w-id in raw form for @{thm [source] m_8_2_subexpr_component_Pred_Admpos_of_wid}\<close>
+    have wid': "RightNodes (Trans M) ! 1 = entry M 1 (FirstNodes M ! (Lng (Br M) - 1))
+                  \<or> RightNodes (Trans M) ! 1 = entry M 1 (Joints M ! (Lng (Br M) - 1))"
+      using wid unfolding j1'_def j0'_def J1_def .
+    show ?thesis
+      using m_8_2_subexpr_component_Pred_Admpos_of_wid[OF MR MP j1gt' Admpos t1ne wid']
+      unfolding j1_def J1_def j0'_def j1'_def .
+  qed
+qed
+
+
 end
