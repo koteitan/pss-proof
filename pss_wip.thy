@@ -27973,4 +27973,389 @@ proof -
 qed
 
 
+text \<open>§8.7 補題（\<open>Trans\<close>が標準形を保つこと）— 部分的成果 (article 6122).
+  原文の完全な主張 \<open>M \<in> ST\<^bsub>PS\<^esub> \<Longrightarrow> Trans M \<in> OT\<^bsub>B\<^esub>\<close> は \<open>k\<^sub>0 := \<min>{k. M \<in>
+  S\<^sub>kT\<^bsub>PS\<^esub>}\<close> に関する数学的帰納法で示される。ここでは二つのクリーンな成分を確立する:
+  \<^item> \<open>T\<^bsub>B\<^esub>\<close>-半分（\<open>Trans M \<in> T\<^bsub>B\<^esub>\<close>, 全 \<open>ST\<^bsub>PS\<^esub>\<close> 上）— \<open>m_8_7_Trans_in_T_B_ST\<close>;
+  \<^item> \<open>OT\<^bsub>B\<^esub>\<close>-全体の基底段 \<open>k\<^sub>0 = 0\<close>（\<open>M \<in> S\<^sub>0T\<^bsub>PS\<^esub>\<close>, article 6133）—
+    \<open>m_8_7_Trans_preserves_OT_base\<close>; 加えて帰納段の単項クリーン枝を
+    \<open>m_8_7_Trans_cnst_OT\<close> / \<open>m_8_7_Trans_rcseq_OT\<close> で被覆する。
+  帰納段（\<open>k\<^sub>0 > 0\<close>）は \<open>Trans\<close>×基本列の交換則 \<open>Trans(M[n]) = operB (Trans M) (numBT _)\<close>
+  に基づく降順和の合成 \<open>Trans(M) = \<Sigma>\<^bsub>B\<^esub>(a\<^sub>0 \<oplus> a\<^sub>1)\<close>（article 6325）を要する。
+  その交換則は §8.1/§8.3/§8.5/§8.6 に分かれ（条件(I)–(VI)別、pss_paper の
+  \<open>p_8_1_*\<close>/\<open>p_8_3_*\<close>/\<dots> はまだ未証明スタブ）、しかもその一部は本補題（\<open>Trans M \<in> OT\<^bsub>B\<^esub>\<close>）
+  を OT 側条件として参照する（@{text m_8_1_Trans_fseq_condI_descent} /
+  @{text m_8_3_TransCondII_oper_descend_engine}）。従って帰納段はここでは未完。\<close>
+
+text \<open>\<open>0 = Trm [] \<in> OT\<^bsub>B\<^esub>\<close>: vacuously \<open>isOT_BT\<close> and \<open>D\<^sub>\<omega>\<close>-free.\<close>
+
+lemma m_8_7_OT_zero: "0\<^sub>B \<in> OT_B"
+  by (simp add: OT_B_def OT_def T_B_def)
+
+text \<open>§8.7 — \<open>Trans が標準形を保つこと\<close> の \<open>T\<^bsub>B\<^esub>\<close>-半分（全 \<open>ST\<^bsub>PS\<^esub>\<close> 上）.
+  \<open>ST\<^bsub>PS\<^esub> \<subseteq> RT\<^bsub>PS\<^esub>\<close>（@{thm [source] m_6_7_ST_PS_subseteq_RT_PS}）が
+  \<open>Trans\<close> 値不変量 @{thm [source] m_7_3_Trans_in_T_B} を発火させる。\<close>
+
+lemma m_8_7_Trans_in_T_B_ST:
+  assumes "M \<in> ST_PS"
+  shows "Trans M \<in> T_B"
+proof -
+  have "M \<in> RT_PS" using assms m_6_7_ST_PS_subseteq_RT_PS by blast
+  thus ?thesis by (rule m_7_3_Trans_in_T_B)
+qed
+
+text \<open>§8.7 基底段 \<open>k\<^sub>0 = 0\<close>（article 6133）: \<open>M \<in> S\<^sub>0T\<^bsub>PS\<^esub>\<close>, すなわち \<open>M = diagSeq u v\<close>
+  (\<open>u \<le> v\<close>) に対し
+  \<^item> \<open>u = v = 0\<close> ならば \<open>Trans M = 0 \<in> OT\<^bsub>B\<^esub>\<close>（@{thm [source] m_8_7_OT_zero}）;
+  \<^item> \<open>u = v > 0\<close> ならば \<open>Trans M = D\<^sub>u 0 \<in> OT\<^bsub>B\<^esub>\<close>（@{thm [source] m_8_7_OT_ex1}）;
+  \<^item> \<open>u < v\<close> ならば \<open>Trans M = D\<^sub>u D\<^sub>v 0 \<in> OT\<^bsub>B\<^esub>\<close>（@{thm [source] m_8_1_diagSeq_Trans}
+    と @{thm [source] m_8_7_OT_ex2}）.
+  単項の場合は \<open>diagSeq u u = [(u,u)]\<close> から @{thm [source] Trans_singleton}.\<close>
+
+lemma m_8_7_Trans_preserves_OT_base:
+  assumes "M \<in> SkT_PS 0"
+  shows "Trans M \<in> OT_B"
+proof -
+  from assms obtain u v where M: "M = diagSeq u v" and uv: "u \<le> v" by auto
+  show ?thesis
+  proof (cases "u = v")
+    case True
+    have diag1: "diagSeq u v = [(u, u)]" using True by (simp add: diagSeq_def)
+    have tval: "Trans M = (if u = 0 then 0\<^sub>B else Dpt (enat u) 0\<^sub>B)"
+      using M diag1 Trans_singleton by simp
+    show ?thesis
+    proof (cases "u = 0")
+      case True thus ?thesis using tval m_8_7_OT_zero by simp
+    next
+      case False thus ?thesis using tval m_8_7_OT_ex1 by simp
+    qed
+  next
+    case False
+    hence uv': "u < v" using uv by simp
+    have "Trans M = Dpt (enat u) (Dpt (enat v) 0\<^sub>B)"
+      using M m_8_1_diagSeq_Trans[OF uv'] by simp
+    thus ?thesis using m_8_7_OT_ex2 by simp
+  qed
+qed
+
+text \<open>§8.7 帰納段の \<open>clean leaf\<close> 群（article 6679–6719, \<open>N\<close> 単項）。原文の帰納段
+  \<open>M = N[n]\<close>, \<open>Pred(N) \<noteq> M\<close>, \<open>N\<close> 単項では \<open>M = N[n]\<close> が公差 \<open>(0,0)\<close> または \<open>(1,0)\<close>
+  の明示的ペア数列になる枝が四つある（\<open>t\<^sub>1 = 0\<close> の二枝、条件(I)/(VI) で \<open>j\<^sub>1 = 1\<close> の
+  二枝）。これらは \<open>N\<close> の構造や（未証明の）交換則・偽の \<open>Pred_oper0\<close> を一切経由せず、
+  明示的な族 \<open>cnst\<close>/\<open>rcseq\<close> の \<open>Trans\<close> を直接評価してクリーンに閉じる:
+  \<^item> \<open>N = ((0,0),(1,0))\<close>: \<open>M = ((0,0))\<^bsub>0\<^esub>\<^bsup>n-1\<^esup> = cnst 0 (n-1)\<close>;
+  \<^item> 条件(I), \<open>j\<^sub>1=1\<close>, \<open>N = ((u,u),(u+1,0))\<close>: \<open>M = ((u,u))\<^bsub>0\<^esub>\<^bsup>n-1\<^esup> = cnst u (n-1)\<close>;
+  \<^item> \<open>N = ((0,0),(1,1))\<close>: \<open>M = ((j,0))\<^bsub>0\<^esub>\<^bsup>n-1\<^esup> = rcseq 0 (n-1)\<close>;
+  \<^item> 条件(VI), \<open>j\<^sub>1=1\<close>, \<open>N = ((u,u),(u+1,u+1))\<close>: \<open>M = ((u+j,u))\<^bsub>0\<^esub>\<^bsup>n-1\<^esup> = rcseq u (n-1)\<close>.\<close>
+
+text \<open>\<open>D\<^sub>u 0\<close> を \<open>k\<close> 個並べた末尾複項 \<open>(D\<^sub>u 0)\<times>k \<in> OT\<^bsub>B\<^esub>\<close>（任意の \<open>k\<close>）。
+  @{thm [source] m_8_7_OT_ex3} を \<open>n := Suc k\<close> で適用。\<close>
+
+lemma m_8_7_multBT_Dpt_OT: "multBT (Dpt (enat u) 0\<^sub>B) k \<in> OT_B"
+  using m_8_7_OT_ex3[where n="Suc k" and u=u] by simp
+
+text \<open>公差 \<open>(0,0)\<close> の \<open>Trans\<close> 基本性質 + OT_B: \<open>Trans (cnst u m) \<in> OT\<^bsub>B\<^esub>\<close>.
+  @{thm [source] m_8_7_cnst_Trans} で \<open>Trans (cnst u m)\<close> は \<open>(D\<^sub>u 0)\<times>m\<close>
+  (\<open>u=0\<close>) または \<open>(D\<^sub>u 0)\<times>(m+1)\<close> (\<open>u>0\<close>)、いずれも @{thm [source] m_8_7_multBT_Dpt_OT}.
+  原文 article 6683（\<open>cnst 0 (n-1)\<close>）と 6690（\<open>cnst u (n-1)\<close>）を被覆。\<close>
+
+lemma m_8_7_Trans_cnst_OT: "Trans (cnst u m) \<in> OT_B"
+proof (cases "u = 0")
+  case True
+  have eq: "Trans (cnst u m) = multBT (Dpt (enat u) 0\<^sub>B) m"
+    using m_8_7_cnst_Trans True by simp
+  show ?thesis unfolding eq by (rule m_8_7_multBT_Dpt_OT)
+next
+  case False
+  have eq: "Trans (cnst u m) = multBT (Dpt (enat u) 0\<^sub>B) (Suc m)"
+    using m_8_7_cnst_Trans False by simp
+  show ?thesis unfolding eq by (rule m_8_7_multBT_Dpt_OT)
+qed
+
+text \<open>公差 \<open>(1,0)\<close> の \<open>Trans\<close> 基本性質 + OT_B: \<open>Trans (rcseq u m) \<in> OT\<^bsub>B\<^esub>\<close>.
+  @{thm [source] m_8_6_rcseq_Trans} で \<open>Trans (rcseq u m)\<close> は \<open>0\<close> (\<open>m=u=0\<close>) または
+  \<open>D\<^sub>u\<^bsup>m+1\<^esup> 0\<close>、いずれも @{thm [source] m_8_7_OT_zero} / @{thm [source] m_8_7_OT_ex4}.
+  原文 article 6684（\<open>rcseq 0 (n-1)\<close>）と 6715（\<open>rcseq u (n-1)\<close>）を被覆。\<close>
+
+lemma m_8_7_Trans_rcseq_OT: "Trans (rcseq u m) \<in> OT_B"
+proof (cases "m = 0 \<and> u = 0")
+  case True
+  have eq: "Trans (rcseq u m) = 0\<^sub>B"
+    unfolding m_8_6_rcseq_Trans using True by simp
+  show ?thesis unfolding eq by (rule m_8_7_OT_zero)
+next
+  case False
+  have eq: "Trans (rcseq u m) = (Dpt (enat u) ^^ Suc m) 0\<^sub>B"
+    using m_8_6_rcseq_Trans False by simp
+  show ?thesis unfolding eq by (rule m_8_7_OT_ex4)
+qed
+
+
+section \<open>§8.2 keystone w-identification: the inductive descent of the second
+  \<open>RightNodes\<close> entry across \<open>Pred\<close>\<close>
+
+text \<open>§8.2 w-identification, inductive-descent step (content.md 3432-3435).  In the
+  Admpos regime (\<open>transJm1 M > 0\<close>) the body-split
+  @{thm [source] trans_admpos_body_split} produces a COMMON outer principal
+  \<open>D\<^bsub>M\<^sub>1\<^sub>,\<^sub>0\<^esub>\<close> and a COMMON trailing principal head \<open>w\<close> shared by \<open>Trans (Pred M)\<close>
+  and \<open>Trans M\<close>: \<open>Trans (Pred M) = D\<^bsub>M\<^sub>1\<^sub>,\<^sub>0\<^esub>(pre + D\<^sub>w u\<^sub>2)\<close>,
+  \<open>Trans M = D\<^bsub>M\<^sub>1\<^sub>,\<^sub>0\<^esub>(pre + D\<^sub>w u\<^sub>3)\<close>.  Since the trailing principal \<open>D\<^sub>w \<dots>\<close> is
+  non-zero, \<open>RightNodes\<close> (which follows the last principal component) reads its
+  head \<open>the_enat w\<close> at index \<open>1\<close> of BOTH transforms.  Hence the second
+  \<open>RightNodes\<close> entry is invariant under \<open>Pred\<close>:
+  \<open>RightNodes (Trans M) ! 1 = RightNodes (Trans (Pred M)) ! 1\<close>.
+
+  This is the article's inductive step: the keystone w-identification reduces the
+  index-\<open>1\<close> right node of \<open>Trans M\<close> to that of \<open>Trans (Pred M)\<close>, which the
+  induction (on \<open>j\<^sub>1 - TrMax(M)\<close>) then identifies against the \<open>Pred\<close>-block
+  geometry.  Verified exactly in \<open>python/_wid_check.py\<close> (trans_model,
+  \<open>RT\<^bsub>PS\<^esub> \<inter> PT\<^bsub>PS\<^esub>\<close> monoT, length \<le> 6): 1794/1794 Admpos cases, 0 violations.\<close>
+
+lemma m_8_2_wid_step:
+  fixes M :: pairseq
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS"
+    and j1gt: "Lng M - 1 > 1"
+    and Admpos: "transJm1 M > 0"
+    and t1ne: "Trans (Pred M) \<noteq> 0\<^sub>B"
+  shows "RightNodes (Trans M) ! 1 = RightNodes (Trans (Pred M)) ! 1"
+proof -
+  obtain pre w u2 u3 where
+    sp1: "Trans (Pred M) = Dpt (enat (entry M 1 0)) (pre +\<^sub>B Dpt w u2)"
+    and sp2: "Trans M    = Dpt (enat (entry M 1 0)) (pre +\<^sub>B Dpt w u3)"
+    using trans_admpos_body_split[OF MR MP j1gt Admpos t1ne] by blast
+  have nzDw3: "Dpt w u3 \<noteq> 0\<^sub>B" by simp
+  have nzDw2: "Dpt w u2 \<noteq> 0\<^sub>B" by simp
+  have rnInnerM: "RightNodes (pre +\<^sub>B Dpt w u3) = the_enat w # RightNodes u3"
+  proof -
+    have "RightNodes (pre +\<^sub>B Dpt w u3) = RightNodes (Dpt w u3)"
+      by (rule ra_RightNodes_addBT_right[OF nzDw3])
+    thus ?thesis by (simp add: ra_RightNodes_Dpt_gen)
+  qed
+  have rnInnerP: "RightNodes (pre +\<^sub>B Dpt w u2) = the_enat w # RightNodes u2"
+  proof -
+    have "RightNodes (pre +\<^sub>B Dpt w u2) = RightNodes (Dpt w u2)"
+      by (rule ra_RightNodes_addBT_right[OF nzDw2])
+    thus ?thesis by (simp add: ra_RightNodes_Dpt_gen)
+  qed
+  have rnTM: "RightNodes (Trans M) = entry M 1 0 # the_enat w # RightNodes u3"
+  proof -
+    have "RightNodes (Trans M)
+            = the_enat (enat (entry M 1 0)) # RightNodes (pre +\<^sub>B Dpt w u3)"
+      using sp2 by (simp only: ra_RightNodes_Dpt_gen)
+    thus ?thesis using rnInnerM by simp
+  qed
+  have rnTP: "RightNodes (Trans (Pred M)) = entry M 1 0 # the_enat w # RightNodes u2"
+  proof -
+    have "RightNodes (Trans (Pred M))
+            = the_enat (enat (entry M 1 0)) # RightNodes (pre +\<^sub>B Dpt w u2)"
+      using sp1 by (simp only: ra_RightNodes_Dpt_gen)
+    thus ?thesis using rnInnerP by simp
+  qed
+  have rn1M: "RightNodes (Trans M) ! 1 = the_enat w" using rnTM by simp
+  have rn1P: "RightNodes (Trans (Pred M)) ! 1 = the_enat w" using rnTP by simp
+  show ?thesis using rn1M rn1P by simp
+qed
+
+text \<open>§8.2 w-identification, reduction form.  Given the Admpos hypotheses and the
+  TRANSPORTED \<open>Pred\<close>-fact — that the index-\<open>1\<close> right node of \<open>Trans (Pred M)\<close>,
+  MEASURED against \<open>M\<close>'s own last-branch nodes \<open>j'\<^sub>1 = FirstNodes(M)\<^bsub>J\<^sub>1\<^esub>\<close>,
+  \<open>j'\<^sub>0 = Joints(M)\<^bsub>J\<^sub>1\<^esub>\<close> (\<open>J\<^sub>1 = Lng(Br M)-1\<close>), already lies in
+  \<open>{M\<^bsub>1,j'\<^sub>1\<^esub>, M\<^bsub>1,j'\<^sub>0\<^esub>}\<close> — the keystone residual \<open>wid\<close> follows immediately from
+  @{thm [source] m_8_2_wid_step}.  This isolates the remaining work to exactly the
+  §6.4 \<open>Pred\<close>-block value-transport (the hypothesis \<open>predRN\<close>): see the report /
+  \<open>python/_wid_check.py\<close> for why \<open>wid\<close>-for-\<open>Pred M\<close> ALONE is insufficient for that
+  transport (the \<open>FirstNodes(Pred M)\<^bsub>J'\<^sub>1\<^esub>\<close> row-1 entry escapes \<open>M\<close>'s node set in
+  123/1794 cases; the \<open>Joints\<close> side is universally in-set).\<close>
+
+lemma m_8_2_wid_of_predRN:
+  fixes M :: pairseq
+  defines "J1 \<equiv> Lng (Br M) - 1"
+  defines "j0' \<equiv> Joints M ! J1"
+  defines "j1' \<equiv> FirstNodes M ! J1"
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS"
+    and j1gt: "Lng M - 1 > 1"
+    and Admpos: "transJm1 M > 0"
+    and t1ne: "Trans (Pred M) \<noteq> 0\<^sub>B"
+    and predRN: "RightNodes (Trans (Pred M)) ! 1 = entry M 1 j1'
+                  \<or> RightNodes (Trans (Pred M)) ! 1 = entry M 1 j0'"
+  shows "RightNodes (Trans M) ! 1 = entry M 1 j1'
+          \<or> RightNodes (Trans M) ! 1 = entry M 1 j0'"
+  using m_8_2_wid_step[OF MR MP j1gt Admpos t1ne] predRN by simp
+
+
+text \<open>Read-off helper: the second \<open>RightNodes\<close> entry of an outer principal whose
+  body has a trailing principal \<open>D\<^bsub>b\<^esub>\<close> is exactly \<open>b\<close>.  (\<open>D\<^sub>b s \<noteq> 0\<close>, so
+  \<open>RightNodes\<close> — which follows the last principal — reads its head.)\<close>
+
+lemma rn1_outer_inner_trailing:
+  "RightNodes (Dpt (enat a) (pre +\<^sub>B Dpt (enat b) s)) ! 1 = b"
+proof -
+  have nz: "Dpt (enat b) s \<noteq> 0\<^sub>B" by simp
+  have inner: "RightNodes (pre +\<^sub>B Dpt (enat b) s) = b # RightNodes s"
+  proof -
+    have "RightNodes (pre +\<^sub>B Dpt (enat b) s) = RightNodes (Dpt (enat b) s)"
+      by (rule ra_RightNodes_addBT_right[OF nz])
+    thus ?thesis by (simp add: ra_RightNodes_Dpt_gen)
+  qed
+  have "RightNodes (Dpt (enat a) (pre +\<^sub>B Dpt (enat b) s))
+          = a # b # RightNodes s"
+    using inner by (simp add: ra_RightNodes_Dpt_gen)
+  thus ?thesis by simp
+qed
+
+text \<open>§8.2 w-identification, READ-OFF.  The keystone conclusion (the four-case
+  disjunction of @{thm [source] m_8_2_subexpr_component_Pred_of_wid}) pins
+  \<open>Trans M = D\<^bsub>M\<^sub>1\<^sub>,\<^sub>0\<^esub>(\<dots> + D\<^bsub>M\<^sub>1\<^sub>,\<^sub>b\<^esub> \<dots>)\<close> with \<open>b \<in> {j'\<^sub>1, j'\<^sub>0}\<close> in EVERY case;
+  hence the second \<open>RightNodes\<close> entry — i.e. the residual \<open>wid\<close> — is read off
+  directly.  This is how the induction extracts \<open>wid (Pred M)\<close> from the
+  keystone-IH applied to \<open>Pred M\<close>.\<close>
+
+lemma m_8_2_keystone_imp_wid:
+  fixes M :: pairseq
+  defines "j1 \<equiv> Lng M - 1"
+  defines "J1 \<equiv> Lng (Br M) - 1"
+  defines "j0' \<equiv> Joints M ! J1"
+  defines "j1' \<equiv> FirstNodes M ! J1"
+  assumes key:
+    "(j1' = j1 \<and> (TrMax M = 0 \<or> j0' < TrMax M)
+        \<and> (entry M 0 j1' = entry M 1 j1' \<or> adm M j0')
+        \<and> (\<exists>!t1. Trans (Pred M) = Dpt (enat (entry M 1 0)) t1
+              \<and> Trans M = Dpt (enat (entry M 1 0))
+                            (t1 +\<^sub>B Dpt (enat (entry M 1 j1')) 0\<^sub>B)))
+   \<or> (j1' = j1 \<and> entry M 0 j1' > entry M 1 j1' \<and> \<not> adm M j0'
+        \<and> (\<exists>!t12. Trans (Pred M) = Dpt (enat (entry M 1 0)) (fst t12)
+              \<and> Trans M = Dpt (enat (entry M 1 0))
+                            (fst t12 +\<^sub>B Dpt (enat (entry M 1 j0')) (snd t12))))
+   \<or> (\<exists>!t123. Trans (Pred M)
+                = Dpt (enat (entry M 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M 1 j1')) (fst (snd t123)))
+            \<and> Trans M = Dpt (enat (entry M 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M 1 j1')) (snd (snd t123))))
+   \<or> (\<exists>!t123. Trans (Pred M)
+                = Dpt (enat (entry M 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M 1 j0')) (fst (snd t123)))
+            \<and> Trans M = Dpt (enat (entry M 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M 1 j0')) (snd (snd t123))))"
+  shows "RightNodes (Trans M) ! 1 = entry M 1 j1'
+          \<or> RightNodes (Trans M) ! 1 = entry M 1 j0'"
+  using key
+proof (elim disjE)
+  assume A: "j1' = j1 \<and> (TrMax M = 0 \<or> j0' < TrMax M)
+        \<and> (entry M 0 j1' = entry M 1 j1' \<or> adm M j0')
+        \<and> (\<exists>!t1. Trans (Pred M) = Dpt (enat (entry M 1 0)) t1
+              \<and> Trans M = Dpt (enat (entry M 1 0))
+                            (t1 +\<^sub>B Dpt (enat (entry M 1 j1')) 0\<^sub>B))"
+  from A obtain t1 where
+    T: "Trans M = Dpt (enat (entry M 1 0)) (t1 +\<^sub>B Dpt (enat (entry M 1 j1')) 0\<^sub>B)"
+    by (blast dest: ex1_implies_ex)
+  have "RightNodes (Trans M) ! 1 = entry M 1 j1'"
+    unfolding T by (rule rn1_outer_inner_trailing)
+  thus ?thesis by simp
+next
+  assume A: "j1' = j1 \<and> entry M 0 j1' > entry M 1 j1' \<and> \<not> adm M j0'
+        \<and> (\<exists>!t12. Trans (Pred M) = Dpt (enat (entry M 1 0)) (fst t12)
+              \<and> Trans M = Dpt (enat (entry M 1 0))
+                            (fst t12 +\<^sub>B Dpt (enat (entry M 1 j0')) (snd t12)))"
+  from A obtain t12 where
+    T: "Trans M = Dpt (enat (entry M 1 0)) (fst t12 +\<^sub>B Dpt (enat (entry M 1 j0')) (snd t12))"
+    by (blast dest: ex1_implies_ex)
+  have "RightNodes (Trans M) ! 1 = entry M 1 j0'"
+    unfolding T by (rule rn1_outer_inner_trailing)
+  thus ?thesis by simp
+next
+  assume A: "\<exists>!t123. Trans (Pred M)
+                = Dpt (enat (entry M 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M 1 j1')) (fst (snd t123)))
+            \<and> Trans M = Dpt (enat (entry M 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M 1 j1')) (snd (snd t123)))"
+  from A obtain t123 where
+    C: "Trans (Pred M) = Dpt (enat (entry M 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M 1 j1')) (fst (snd t123)))
+        \<and> Trans M = Dpt (enat (entry M 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M 1 j1')) (snd (snd t123)))"
+    by (blast dest: ex1_implies_ex)
+  have T: "Trans M = Dpt (enat (entry M 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M 1 j1')) (snd (snd t123)))"
+    using C by simp
+  have "RightNodes (Trans M) ! 1 = entry M 1 j1'"
+    unfolding T by (rule rn1_outer_inner_trailing)
+  thus ?thesis by simp
+next
+  assume A: "\<exists>!t123. Trans (Pred M)
+                = Dpt (enat (entry M 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M 1 j0')) (fst (snd t123)))
+            \<and> Trans M = Dpt (enat (entry M 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M 1 j0')) (snd (snd t123)))"
+  from A obtain t123 where
+    C: "Trans (Pred M) = Dpt (enat (entry M 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M 1 j0')) (fst (snd t123)))
+        \<and> Trans M = Dpt (enat (entry M 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M 1 j0')) (snd (snd t123)))"
+    by (blast dest: ex1_implies_ex)
+  have T: "Trans M = Dpt (enat (entry M 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M 1 j0')) (snd (snd t123)))"
+    using C by simp
+  have "RightNodes (Trans M) ! 1 = entry M 1 j0'"
+    unfolding T by (rule rn1_outer_inner_trailing)
+  thus ?thesis by simp
+qed
+
+text \<open>§8.2 w-identification, ASSEMBLY (Admpos, \<open>Br (Pred M) \<noteq> []\<close>).  Given
+  \<open>wid (Pred M)\<close> (read off the keystone-IH on \<open>Pred M\<close>, indices
+  \<open>JN = Lng(Br(Pred M))-1\<close>) the residual \<open>wid (M)\<close> follows from the descent
+  @{thm [source] m_8_2_wid_step} and the three §6.4 \<open>Pred\<close>-block value-transports of
+  the team-lead decomposition, supplied here as named hypotheses:
+  \<^item> \<open>jt\<close> — (A) JOINTS transport (empirically ALWAYS, 1794/1794);
+  \<^item> \<open>ft\<close> — (B) FIRSTNODES transport, valid when \<open>j'\<^sub>1 \<noteq> Lng M-1\<close> (\<open>j1eq=False\<close>);
+  \<^item> \<open>cp\<close> — the \<open>j1eq=True \<Longrightarrow> JOINTS-clause selection\<close> COUPLING
+    (the hard core; empirically 291/291).
+  All three are TRUE (verified \<open>python/_wid_check.py\<close>); this lemma is the GREEN
+  glue that closes \<open>wid\<close> once they are discharged.\<close>
+
+lemma m_8_2_wid_of_predwid:
+  fixes M :: pairseq
+  defines "J1 \<equiv> Lng (Br M) - 1"
+  defines "j0' \<equiv> Joints M ! J1"
+  defines "j1' \<equiv> FirstNodes M ! J1"
+  defines "JN \<equiv> Lng (Br (Pred M)) - 1"
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS"
+    and j1gt: "Lng M - 1 > 1"
+    and Admpos: "transJm1 M > 0"
+    and t1ne: "Trans (Pred M) \<noteq> 0\<^sub>B"
+    and predwid: "RightNodes (Trans (Pred M)) ! 1 = entry (Pred M) 1 (FirstNodes (Pred M) ! JN)
+                  \<or> RightNodes (Trans (Pred M)) ! 1 = entry (Pred M) 1 (Joints (Pred M) ! JN)"
+    and jt: "entry (Pred M) 1 (Joints (Pred M) ! JN) = entry M 1 j0'"
+    and ft: "FirstNodes M ! J1 \<noteq> Lng M - 1
+                \<Longrightarrow> entry (Pred M) 1 (FirstNodes (Pred M) ! JN) = entry M 1 j1'"
+    and cp: "FirstNodes M ! J1 = Lng M - 1
+                \<Longrightarrow> RightNodes (Trans (Pred M)) ! 1 = entry (Pred M) 1 (Joints (Pred M) ! JN)"
+  shows "RightNodes (Trans M) ! 1 = entry M 1 j1'
+          \<or> RightNodes (Trans M) ! 1 = entry M 1 j0'"
+proof -
+  have step: "RightNodes (Trans M) ! 1 = RightNodes (Trans (Pred M)) ! 1"
+    by (rule m_8_2_wid_step[OF MR MP j1gt Admpos t1ne])
+  show ?thesis
+  proof (cases "FirstNodes M ! J1 = Lng M - 1")
+    case j1eq: True
+    have "RightNodes (Trans (Pred M)) ! 1 = entry (Pred M) 1 (Joints (Pred M) ! JN)"
+      by (rule cp[OF j1eq])
+    also have "\<dots> = entry M 1 j0'" by (rule jt)
+    finally show ?thesis using step by simp
+  next
+    case j1ne: False
+    from predwid show ?thesis
+    proof
+      assume "RightNodes (Trans (Pred M)) ! 1 = entry (Pred M) 1 (FirstNodes (Pred M) ! JN)"
+      also have "entry (Pred M) 1 (FirstNodes (Pred M) ! JN) = entry M 1 j1'"
+        by (rule ft[OF j1ne])
+      finally show ?thesis using step by simp
+    next
+      assume "RightNodes (Trans (Pred M)) ! 1 = entry (Pred M) 1 (Joints (Pred M) ! JN)"
+      also have "entry (Pred M) 1 (Joints (Pred M) ! JN) = entry M 1 j0'" by (rule jt)
+      finally show ?thesis using step by simp
+    qed
+  qed
+qed
+
+
 end
