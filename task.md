@@ -16,7 +16,7 @@
 - 🚨 §8 停止性
   - 📘 [Buc1] 引用sorry: `buc1_2_2_OT_B_wf`/`buc1_3_2a_fseq_lt`/`buc1_3_2_OT_B_closed`
   - 🚨 §8.1 条件 (I) の下での展開規則
-    - 🚨 命題（条件 (I) の下での $\textrm{Trans}$ と基本列の交換関係）
+    - 🚨 命題（条件 (I) の下での $\textrm{Trans}$ と基本列の交換関係）〔降下⟸交換則+OT `m_8_1_Trans_fseq_condI_descent`、残=交換則+OT〕
     - ✅ 補題（公差 $(1,1)$ のペア数列の $\textrm{Trans}$ の基本性質）〔`m_8_1_diagSeq_Trans`〕
     - ✅ 系（$\textrm{Pred}$ が公差 $(1,1)$ のペア数列の $\textrm{Trans}$ の基本性質）〔`m_8_1_Pred_diagSeq_Trans`〕
     - 🚨 補題（条件 (I) か (III) の下での $c_1$ 前後の具体表示）（A20/A21）
@@ -30,14 +30,14 @@
       - ✅ Adm0 枝(gB-free組立 `m_8_2_subexpr_component_Pred_Adm0_nogB`) + guard 3/4 (nadmj0/t2ne/e0gt)
       - ✅ gB-condV (`m_8_2_gB_Adm0_condA` 無条件 discharge)
       - 🚨 Admpos枝: 両half✅(`_Adm0_full`/`_Admpos_of_wid`)、残=w-id(§6.4 transport)
-      - 🚨 組立
+      - 🚨 組立：keystone⟸w-id 済 `m_8_2_subexpr_component_Pred_of_wid`、残=w-id
     - 🚨 補題（強単項性の下での部分表現の単項成分の基本性質）
       - ✅ (1) `m_8_2_subexpr_leftend_unique`
       - 🚨 (2)(3)(4) leBT 下界（keystone依存で workflow 行き詰まり）
     - 🚨 補題（条件 (V) の下での右端の親の基本性質）
     - 🚨 補題（条件 (V) の下での終切片と $\textrm{Trans}$ の関係）
   - 🚨 §8.3 条件 (II) の下での展開規則
-    - 🚨 命題（条件 (II) の下での $\textrm{Trans}$ と基本列の交換関係）〔n=1✅ `m_8_3_TransCondII_oper1_descend`、full-n=buc1_3_2a+condIIIV待ち〕
+    - 🚨 命題（条件 (II) の下での $\textrm{Trans}$ と基本列の交換関係）〔降下⟸exch+OT `m_8_3_TransCondII_oper_descend_engine`、残=exch+OT〕
     - ✅ 補題（第 $0$ 種型基本列の基本不等式）〔`m_8_3_kind0_base_ineq`(A22訂正)〕
     - ✅ 補題（第 $0$ 種型基本列の基本分岐規則）〔`m_8_3_kind0_branch_rule`〕
     - ✅ 補題（第 $0$ 種型基本列の基本基点関係）〔`m_8_3_kind0_base_basepoint`〕
