@@ -30,7 +30,7 @@
       - ✅ Adm0 枝(gB-free組立 `m_8_2_subexpr_component_Pred_Adm0_nogB`) + guard 3/4 (nadmj0/t2ne/e0gt)
       - ✅ gB-condV (`m_8_2_gB_Adm0_condA` 無条件 discharge)
       - 🚨 Admpos枝: 両half✅(`_Adm0_full`/`_Admpos_of_wid`)、残=w-id(§6.4 transport)
-      - 🚨 組立：keystone⟸w-id 済、w-id⟸転送A/B+coupling グルー済 `m_8_2_wid_of_predwid`、残=転送A/B/coupling
+      - 🚨🤖 組立：keystone⟸w-id 済、w-id⟸転送A/B+coupling グルー済、転送A/B討伐中(残=coupling)
     - 🚨 補題（強単項性の下での部分表現の単項成分の基本性質）
       - ✅ (1) `m_8_2_subexpr_leftend_unique`
       - 🚨 (2)(3)(4) leBT 下界（keystone依存で workflow 行き詰まり）
