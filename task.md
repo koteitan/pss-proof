@@ -24,8 +24,8 @@
       - 🚨 (4-1)(4-2)：slicepeel sorry 2個(slice-RT、wt-c1around)。memory `pss-81-c1around`
   - 🚨 §8.2 強単項性
     - ✅ 命題（標準形の直系先祖による切片の簡約化の強単項性）〔`m_8_2_standard_slice_Red_strongmono`〕
-    - 🚨🤖 命題（条件 (II) か (IV) の下での終切片と $\textrm{Trans}$ の関係）
-    - 🚨🤖 補題（強単項性の切片への遺伝性）
+    - 🚨 命題（条件 (II) か (IV) の下での終切片と $\textrm{Trans}$ の関係）
+    - ✅ 補題（強単項性の切片への遺伝性）〔`m_8_2_strongmono_slice`〕
     - 🚨 補題（部分表現の単項成分と $\textrm{Pred}$ の関係）(§8.2 keystone)
       - ✅ Adm0 枝(gB-free組立 `m_8_2_subexpr_component_Pred_Adm0_nogB`) + guard 3/4 (nadmj0/t2ne/e0gt)
       - ✅ gB-condV (`m_8_2_gB_Adm0_condA` 無条件 discharge)
@@ -34,8 +34,8 @@
     - 🚨 補題（強単項性の下での部分表現の単項成分の基本性質）
       - ✅ (1) `m_8_2_subexpr_leftend_unique`
       - 🚨 (2)(3)(4) leBT 下界（keystone依存で workflow 行き詰まり）
-    - 🚨🤖 補題（条件 (V) の下での右端の親の基本性質）
-    - 🚨🤖 補題（条件 (V) の下での終切片と $\textrm{Trans}$ の関係）
+    - 🚨 補題（条件 (V) の下での右端の親の基本性質）
+    - 🚨 補題（条件 (V) の下での終切片と $\textrm{Trans}$ の関係）
   - 🚨 §8.3 条件 (II) の下での展開規則
     - 🚨 命題（条件 (II) の下での $\textrm{Trans}$ と基本列の交換関係）〔n=1✅ `m_8_3_TransCondII_oper1_descend`、full-n=buc1_3_2a+condIIIV待ち〕
     - ✅ 補題（第 $0$ 種型基本列の基本不等式）〔`m_8_3_kind0_base_ineq`(A22訂正)〕
