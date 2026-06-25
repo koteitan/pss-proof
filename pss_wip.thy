@@ -27155,4 +27155,614 @@ proof -
 qed
 
 
+text \<open>§8.2 補題（強単項性の切片への遺伝性） (content.md 3328) — building block:
+  the \<open>monoT\<close> and \<open>reduced\<close> (\<open>\<in> RT\<^bsub>PS\<^esub>\<close>) parts of \<open>seg M j0' j1' \<in> DT\<^bsub>PS\<^esub>\<close>.
+
+  monoT is @{thm [source] m_6_4_mono_slice} verbatim (the article's mono argument).
+  For reducedness: the slice's trunk root \<open>j0' \<le> Joints M ! J\<^sub>1 \<le> TrMax M\<close> lies on
+  \<open>M\<close>'s trunk, which (since \<open>M \<in> RT\<^bsub>PS\<^esub>\<close>) is a diagonal \<open>M\<^bsub>j\<^esub> = (M\<^bsub>1,0\<^esub>+j, M\<^bsub>1,0\<^esub>+j)\<close>
+  (@{thm [source] trunk_entries_offset} + the reduced-root diagonal \<open>M\<^bsub>0,0\<^esub> = M\<^bsub>1,0\<^esub>\<close>),
+  so \<open>entry M 0 j0' = entry M 1 j0'\<close>, i.e. the \<open>IncrFirst\<close>-shift exponent
+  \<open>k = M\<^bsub>0,j0'\<^esub> - M\<^bsub>1,j0'\<^esub> = 0\<close> in @{thm [source] m_6_6_ancestor_slice_Red_IncrFirst}.
+  Hence \<open>seg M j0' j1' = Red (seg M j0' j1') \<in> RT\<^bsub>PS\<^esub>\<close>.\<close>
+
+lemma m_8_2_strongmono_slice_mono_reduced:
+  fixes M :: pairseq
+  defines "J1 \<equiv> Lng (Br M) - 1"
+  assumes M: "M \<in> DT_PS" and lt: "j0' < j1'" and j1L: "j1' \<le> Lng M - 1"
+    and j0le: "j0' \<le> Joints M ! J1"
+  shows "seg M j0' j1' \<in> RT_PS \<and> monoT (seg M j0' j1')"
+proof -
+  have MR: "M \<in> RT_PS" using M by (simp add: DT_PS_def)
+  have MT: "M \<in> T_PS" using MR by (simp add: RT_PS_def)
+  have monoM: "monoT M" using M by (simp add: DT_PS_def)
+  have MP: "M \<in> PT_PS" using MT monoM by (simp add: PT_PS_def)
+  have Lpos: "0 < Lng M" using MT by (cases M) (auto simp: T_PS_def)
+  have j1lt: "j1' < Lng M" using j1L Lpos by linarith
+  let ?S = "seg M j0' j1'"
+  \<comment> \<open>(1) mono part: the article's \<open>M'\<close> is mono\<close>
+  have monoS: "monoT ?S"
+    by (rule m_6_4_mono_slice[OF MP lt j1L j0le[unfolded J1_def]])
+  \<comment> \<open>(2) \<open>j0' \<le> TrMax M\<close>: either \<open>Br M = []\<close> (whole trunk, \<open>TrMax M = Lng M - 1\<close>)
+      or via \<open>Joints M ! J\<^sub>1 \<le> TrMax M\<close>\<close>
+  have j0Tr: "j0' \<le> TrMax M"
+  proof (cases "Br M = []")
+    case True
+    have trmax: "TrMax M = Lng M - 1"
+    proof (rule ccontr)
+      assume "TrMax M \<noteq> Lng M - 1"
+      hence "Br M = P (seg M (TrMax M + 1) (Lng M - 1))" by (simp add: Br_def)
+      moreover have "P (seg M (TrMax M + 1) (Lng M - 1)) \<noteq> []" by (rule P_nonempty)
+      ultimately show False using True by simp
+    qed
+    show ?thesis using lt j1L trmax by linarith
+  next
+    case False
+    have J1L: "J1 < Lng (Br M)" using False by (simp add: J1_def)
+    have "Joints M ! J1 \<le> TrMax M"
+      using m_6_4_FirstNodes_TrMax_Joints[OF MP J1L] by simp
+    thus ?thesis using j0le by (simp add: J1_def)
+  qed
+  \<comment> \<open>(3) the reduced trunk is a diagonal: \<open>entry M 0 j0' = entry M 1 j0'\<close>\<close>
+  have condA: "RedCondA M" using m_6_6_reduced_iff_cond[OF MT] MR by simp
+  have condB: "RedCondB M" using m_6_6_reduced_iff_cond[OF MT] MR by simp
+  have noPar00: "\<not> hasParent M 0 0"
+    by (auto simp: hasParent_def nextR_def nextrel0_def)
+  have e00_e10: "entry M 0 0 = entry M 1 0"
+    using condB noPar00 Lpos by (auto simp: RedCondB_def)
+  have offs: "entry M 0 j0' = entry M 0 0 + j0' \<and> entry M 1 j0' = entry M 1 0 + j0'"
+    by (rule trunk_entries_offset[OF MT condA j0Tr])
+  have ediag: "entry M 0 j0' = entry M 1 j0'" using offs e00_e10 by simp
+  \<comment> \<open>(4) \<open>leR M 0 j0' j1'\<close> from \<open>monoT ?S\<close> via @{thm [source] adm_le0_seg}\<close>
+  have leR: "leR M 0 j0' j1'"
+  proof -
+    have ne: "\<not> zeroT ?S" and le0S: "le0 ?S 0 (Lng ?S - 1)"
+      using monoS by (simp_all add: monoT_def leR_def)
+    have lng: "Lng ?S - 1 = j1' - j0'" using lt by simp
+    have le0S': "le0 ?S 0 (j1' - j0')" using le0S lng by simp
+    have a0: "(0::nat) \<le> j1' - j0'" by simp
+    have b0: "j1' - j0' \<le> j1' - j0'" by simp
+    have j0j1: "j0' \<le> j1'" using lt by simp
+    have eqv: "le0 ?S 0 (j1' - j0') \<longleftrightarrow> le0 M (j0' + 0) (j0' + (j1' - j0'))"
+      by (rule adm_le0_seg[OF j1lt a0 b0 j0j1])
+    have "le0 M j0' j1'" using le0S' eqv lt by simp
+    thus ?thesis by (simp add: leR_def)
+  qed
+  \<comment> \<open>(5) \<open>k = 0\<close> so \<open>?S = Red ?S\<close> (@{thm [source] m_6_6_ancestor_slice_Red_IncrFirst})\<close>
+  have anc: "Red (Red ?S) = Red ?S \<and> monoT (Red ?S)
+       \<and> ?S = (IncrFirst ^^ (entry M 0 j0' - entry M 1 j0')) (Red ?S)"
+    by (rule m_6_6_ancestor_slice_Red_IncrFirst[OF MR lt j1L leR])
+  have kzero: "entry M 0 j0' - entry M 1 j0' = 0" using ediag by simp
+  have segRed: "?S = Red ?S" using anc kzero by simp
+  \<comment> \<open>assemble \<open>?S \<in> RT\<^bsub>PS\<^esub>\<close>\<close>
+  have Sne: "?S \<noteq> []" using lt by (simp add: seg_def)
+  have ST: "?S \<in> T_PS" using Sne by (simp add: T_PS_def)
+  have SR: "?S \<in> RT_PS" using ST segRed by (simp add: RT_PS_def)
+  show ?thesis using SR monoS by simp
+qed
+
+
+text \<open>§8.2 linchpin for the \<open>descending (Br)\<close> part: \<open>P\<close> of a COLUMN-prefix taken at
+  a \<open>P\<close>-component boundary equals the corresponding prefix of \<open>P M\<close>.  Concretely, if
+  \<open>c = IdxSum (P M) ! K\<close> (the left end of the \<open>K\<close>-th component) then
+  \<open>P (take c M) = take K (P M)\<close>.  This is the structural «\<open>P\<close>-is-prefix-stable at a
+  cut» fact; the \<open>multiT\<close> step uses @{thm [source] P.simps} which peels the last
+  \<open>Pcut\<close> block, and a sub-induction on \<open>K\<close> threads the boundary down the trunk.\<close>
+
+lemma P_take_at_boundary:
+  assumes MT: "M \<in> T_PS" and K1: "1 \<le> K" and KL: "K \<le> length (P M)"
+  shows "P (take (IdxSum (P M) ! K) M) = take K (P M)"
+  using MT K1 KL
+proof (induction M arbitrary: K rule: P.induct)
+  case (1 M)
+  show ?case
+  proof (cases "multiT M \<and> 1 < Lng M")
+    case multi: True
+    let ?c = "Pcut M"
+    have L: "1 < Lng M" using multi by simp
+    have multiM: "multiT M" using multi by simp
+    have step: "P M = P (take ?c M) @ [drop ?c M]"
+      using multi by (subst P.simps) simp
+    have cut: "0 < ?c \<and> ?c \<le> Lng M - 1 \<and> leR M 0 ?c (Lng M - 1)"
+      by (rule Pcut_le[OF L])
+    hence c0: "0 < ?c" and cj1: "?c \<le> Lng M - 1" by simp_all
+    have cL: "?c < Lng M" using cj1 L by simp
+    have preTPS: "take ?c M \<in> T_PS"
+      using c0 cL by (cases "take ?c M") (auto simp: T_PS_def)
+    have lenPM: "length (P M) = Suc (length (P (take ?c M)))"
+      using step by simp
+    show ?thesis
+    proof (cases "K = length (P M)")
+      case Klast: True
+      \<comment> \<open>boundary at the very end: \<open>IdxSum (P M) ! K = Lng M\<close>, \<open>take = M\<close>, \<open>take K (P M) = P M\<close>\<close>
+      have idxend: "IdxSum (P M) ! K = Lng M"
+      proof -
+        have "IdxSum (P M) ! length (P M) = sum_list (map length (P M))"
+          by (simp add: idxsum_nth)
+        also have "\<dots> = length (concat (P M))" by (simp add: length_concat)
+        also have "concat (P M) = M" by (rule idxsum_concat_P)
+        finally show ?thesis using Klast by simp
+      qed
+      have "take (IdxSum (P M) ! K) M = M" using idxend by simp
+      moreover have "take K (P M) = P M" using Klast by simp
+      ultimately show ?thesis by simp
+    next
+      case Knl: False
+      have Kle: "K \<le> length (P (take ?c M))" using "1.prems"(3) lenPM Knl by simp
+      \<comment> \<open>the boundary lies in the \<open>butlast\<close> part, so IdxSum agrees with the prefix\<close>
+      have idxeq: "IdxSum (P M) ! K = IdxSum (P (take ?c M)) ! K"
+      proof -
+        have "IdxSum (P M) ! K = sum_list (map length (take K (P M)))"
+          using "1.prems"(3) by (simp add: idxsum_nth)
+        also have "take K (P M) = take K (P (take ?c M))"
+          using Kle step by (simp add: append_eq_conv_conj)
+        also have "sum_list (map length (take K (P (take ?c M)))) = IdxSum (P (take ?c M)) ! K"
+          using Kle by (simp add: idxsum_nth)
+        finally show ?thesis .
+      qed
+      \<comment> \<open>IH on the \<open>butlast\<close> prefix \<open>take ?c M\<close>\<close>
+      have IH: "P (take (IdxSum (P (take ?c M)) ! K) (take ?c M)) = take K (P (take ?c M))"
+        using "1.IH"[OF multi preTPS "1.prems"(2) Kle] .
+      \<comment> \<open>the boundary value is \<open>\<le> ?c\<close>, so the outer \<open>take\<close> coincides with the inner\<close>
+      have bnd: "IdxSum (P (take ?c M)) ! K \<le> ?c"
+      proof -
+        have lenpre: "Lng (take ?c M) = ?c" using cL by simp
+        have "IdxSum (P (take ?c M)) ! K \<le> length (take ?c M)"
+        proof -
+          let ?Q = "P (take ?c M)"
+          have sumtake: "sum_list (map length (take K ?Q)) \<le> sum_list (map length ?Q)"
+          proof -
+            have "sum_list (map length ?Q)
+                = sum_list (map length (take K ?Q)) + sum_list (map length (drop K ?Q))"
+              by (metis append_take_drop_id map_append sum_list_append)
+            thus ?thesis by linarith
+          qed
+          have "IdxSum ?Q ! K = sum_list (map length (take K ?Q))"
+            using Kle by (simp add: idxsum_nth)
+          also have "\<dots> \<le> sum_list (map length ?Q)" by (rule sumtake)
+          also have "\<dots> = length (concat ?Q)" by (simp add: length_concat)
+          also have "concat ?Q = take ?c M" by (rule idxsum_concat_P)
+          finally show ?thesis .
+        qed
+        thus ?thesis using lenpre by simp
+      qed
+      have outer: "take (IdxSum (P (take ?c M)) ! K) M = take (IdxSum (P (take ?c M)) ! K) (take ?c M)"
+        using bnd by (simp add: min.absorb2)
+      have "P (take (IdxSum (P M) ! K) M)
+            = P (take (IdxSum (P (take ?c M)) ! K) M)" using idxeq by simp
+      also have "\<dots> = P (take (IdxSum (P (take ?c M)) ! K) (take ?c M))"
+        using outer by simp
+      also have "\<dots> = take K (P (take ?c M))" using IH .
+      also have "\<dots> = take K (P M)" using step Kle by (simp add: append_eq_conv_conj)
+      finally show ?thesis .
+    qed
+  next
+    case nonmulti: False
+    hence PM: "P M = [M]" by (subst P.simps) (simp only: if_not_P if_False)
+    have Lpos: "0 < Lng M" using "1.prems"(1) by (cases M) (auto simp: T_PS_def)
+    have "K = 1" using "1.prems"(2) "1.prems"(3) PM by simp
+    show ?thesis
+    proof -
+      have idx1: "IdxSum (P M) ! 1 = Lng M"
+      proof -
+        have "IdxSum (P M) ! 1 = sum_list (map length (take 1 (P M)))"
+          using PM by (simp add: idxsum_nth)
+        also have "\<dots> = length M" using PM by simp
+        finally show ?thesis by simp
+      qed
+      have "take (IdxSum (P M) ! K) M = M" using \<open>K = 1\<close> idx1 by simp
+      moreover have "take K (P M) = P M" using \<open>K = 1\<close> PM by simp
+      ultimately show ?thesis by simp
+    qed
+  qed
+qed
+
+
+text \<open>Corollary: the component PREFIX \<open>take J (P (take c Y))\<close> equals \<open>take J (P Y)\<close>
+  for every \<open>J < length (P (take c Y))\<close>.  Proof by strong induction on \<open>J\<close>: a
+  non-last component of \<open>P (take c Y)\<close> is a FULL component of \<open>P Y\<close> (its left-end
+  boundary \<open>b = IdxSum (P (take c Y)) ! J\<close> sits at \<open>\<le> c\<close>, and @{thm [source]
+  P_take_at_boundary} on both \<open>take c Y\<close> and \<open>Y\<close> at the matched boundary \<open>b\<close> gives the
+  same prefix).\<close>
+
+lemma P_take_prefix_eq:
+  assumes MT: "Y \<in> T_PS" and cY: "c \<le> Lng Y" and J: "J < length (P (take c Y))"
+  shows "take J (P (take c Y)) = take J (P Y)"
+proof -
+  show ?thesis using J
+  proof (induction J rule: less_induct)
+    case (less J)
+    show ?case
+    proof (cases J)
+      case 0
+      thus ?thesis by simp
+    next
+      case (Suc J0)
+      let ?b = "IdxSum (P (take c Y)) ! J"
+      have Jge1: "1 \<le> J" using Suc by simp
+      have JleP: "J \<le> length (P (take c Y))" using less.prems by simp
+      \<comment> \<open>\<open>J \<ge> 1\<close> forces \<open>length (P (take c Y)) \<ge> 2\<close>, so \<open>take c Y \<noteq> []\<close> and \<open>c > 0\<close>\<close>
+      have cpos: "0 < c"
+      proof (rule ccontr)
+        assume "\<not> 0 < c" hence "c = 0" by simp
+        hence "P (take c Y) = P ([]::pairseq)" by simp
+        also have "\<dots> = [[]]" by (subst P.simps) simp
+        finally have "length (P (take c Y)) = 1" by simp
+        thus False using less.prems Jge1 by linarith
+      qed
+      have McT: "take c Y \<in> T_PS" using cpos cY by (cases "take c Y") (auto simp: T_PS_def)
+      have lenY: "Lng (take c Y) = c" using cY by simp
+      \<comment> \<open>boundary \<open>b\<close> at index \<open>J\<close> is \<open>\<le> c\<close>\<close>
+      have bnd: "?b \<le> c"
+      proof -
+        have "?b = sum_list (map length (take J (P (take c Y))))"
+          using JleP by (simp add: idxsum_nth)
+        also have "\<dots> \<le> sum_list (map length (P (take c Y)))"
+        proof -
+          have "sum_list (map length (P (take c Y)))
+              = sum_list (map length (take J (P (take c Y))))
+                + sum_list (map length (drop J (P (take c Y))))"
+            by (metis append_take_drop_id map_append sum_list_append)
+          thus ?thesis by linarith
+        qed
+        also have "\<dots> = length (concat (P (take c Y)))" by (simp add: length_concat)
+        also have "concat (P (take c Y)) = take c Y" by (rule idxsum_concat_P)
+        finally show ?thesis using lenY by simp
+      qed
+      \<comment> \<open>boundary lemma on \<open>take c Y\<close> at index \<open>J\<close>: \<open>P (take b (take c Y)) = take J (P (take c Y))\<close>\<close>
+      have eqA: "P (take ?b (take c Y)) = take J (P (take c Y))"
+        by (rule P_take_at_boundary[OF McT Jge1 JleP])
+      have takebb: "take ?b (take c Y) = take ?b Y" using bnd by (simp add: min.absorb2)
+      \<comment> \<open>\<open>b\<close> is a left-minimum of \<open>take c Y\<close>, hence of \<open>Y\<close>; so it is a boundary \<open>IdxSum (P Y) ! K'\<close>\<close>
+      have Jm1: "J - 1 < length (P (take c Y))" using less.prems by linarith
+      have lm: "?b \<le> Lng (take c Y) - 1 \<and> (\<forall>j < ?b. entry (take c Y) 0 j \<ge> entry (take c Y) 0 ?b)"
+        by (rule idxsum_leftend_lmin[OF McT less.prems])
+      have ble: "?b \<le> c - 1" using lm lenY by simp
+      have brange: "?b < c" using ble cpos by linarith
+      have entriesM: "\<And>j. j < c \<Longrightarrow> entry (take c Y) 0 j = entry Y 0 j"
+        using cY by (auto simp: entry_def)
+      have lminY: "\<forall>j < ?b. entry Y 0 j \<ge> entry Y 0 ?b"
+      proof (intro allI impI)
+        fix j assume jb: "j < ?b"
+        hence jc: "j < c" using brange by simp
+        have "entry (take c Y) 0 j \<ge> entry (take c Y) 0 ?b" using lm jb by blast
+        thus "entry Y 0 j \<ge> entry Y 0 ?b" using entriesM[OF jc] entriesM[OF brange] by simp
+      qed
+      have brangeY: "?b \<le> Lng Y - 1" using brange cY by linarith
+      obtain K' where K'L: "K' < length (P Y)" and K'eq: "IdxSum (P Y) ! K' = ?b"
+        using idxsum_lmin_leftend[OF MT brangeY lminY] by blast
+      have K'1: "1 \<le> K'"
+      proof (rule ccontr)
+        assume "\<not> 1 \<le> K'" hence "K' = 0" by simp
+        hence "?b = 0" using K'eq by (simp add: idxsum_nth)
+        \<comment> \<open>but \<open>?b = IdxSum (P (take c Y)) ! J\<close> with \<open>J \<ge> 1\<close> is \<open>> 0\<close> (strictly increasing)\<close>
+        moreover have "0 < ?b"
+        proof -
+          have len0: "0 < length (P (take c Y))" using less.prems Jge1 by linarith
+          have c0lt: "0 < length (P (take c Y) ! 0)"
+            by (rule idxsum_P_component_nonempty[OF McT len0])
+          have d1: "IdxSum (P (take c Y)) ! 1 = IdxSum (P (take c Y)) ! 0 + length (P (take c Y) ! 0)"
+            using idxsum_diff[OF len0] by simp
+          have b1pos: "0 < IdxSum (P (take c Y)) ! 1"
+            using d1 c0lt by (simp add: idxsum_nth)
+          have "IdxSum (P (take c Y)) ! 1 \<le> IdxSum (P (take c Y)) ! J"
+            by (rule idxsum_mono[OF Jge1 JleP])
+          thus ?thesis using b1pos by simp
+        qed
+        ultimately show False by simp
+      qed
+      have eqB: "P (take ?b Y) = take K' (P Y)"
+        using P_take_at_boundary[OF MT K'1 less_imp_le_nat[OF K'L]] K'eq by simp
+      \<comment> \<open>so \<open>take J (P (take c Y)) = take K' (P Y)\<close>; both prefixes, equal lists \<Rightarrow> \<open>J = K'\<close> below\<close>
+      have chain: "take J (P (take c Y)) = take K' (P Y)"
+        using eqA takebb eqB by simp
+      \<comment> \<open>lengths: \<open>length (take J ..) = J\<close>, \<open>length (take K' ..) = K'\<close> (both in range) \<Rightarrow> \<open>J = K'\<close>\<close>
+      have JK': "J = K'"
+      proof -
+        have l1: "length (take J (P (take c Y))) = J" using less.prems by simp
+        have l2: "length (take K' (P Y)) = K'" using K'L by simp
+        show ?thesis using chain l1 l2 by simp
+      qed
+      \<comment> \<open>finally \<open>take J (P Y) = take K' (P Y) = take J (P (take c Y))\<close>\<close>
+      show ?thesis using chain JK' by simp
+    qed
+  qed
+qed
+
+
+text \<open>§8.2 trunk alignment: for an ancestor slice rooted on the trunk
+  (\<open>j0' \<le> TrMax M\<close>) that reaches strictly past the trunk end (\<open>TrMax M < j1'\<close>),
+  the slice's trunk is exactly \<open>M\<close>'s trunk shifted left by \<open>j0'\<close>:
+  \<open>TrMax (seg M j0' j1') = TrMax M - j0'\<close>.  Below-trunk row-1 steps transfer via
+  @{thm [source] adm_nextR1_seg} from @{thm [source] TrMax_trunk_step}, and the
+  stop step is @{thm [source] TrMax_stop}.\<close>
+
+lemma TrMax_seg_ancestor:
+  assumes MT: "M \<in> T_PS" and j0Tr: "j0' \<le> TrMax M"
+    and Trlt: "TrMax M < j1'" and j1L: "j1' < Lng M"
+  shows "TrMax (seg M j0' j1') = TrMax M - j0'"
+proof -
+  let ?S = "seg M j0' j1'"
+  have j0lt: "j0' < j1'" using j0Tr Trlt by linarith
+  have LS: "Lng ?S = Suc j1' - j0'" by (rule Lng_seg)
+  have McT: "?S \<in> T_PS" using j0lt by (cases ?S) (auto simp: seg_def T_PS_def)
+  let ?n = "TrMax M - j0'"
+  have nlt: "?n < Lng ?S" using LS j0Tr Trlt by linarith
+  have n1lt: "?n + 1 < Lng ?S" using LS j0Tr Trlt by linarith
+  show ?thesis
+  proof (rule TrMax_eqI[OF McT])
+    fix j' assume jn: "j' < ?n"
+    have a: "j' < Lng ?S" using jn nlt by linarith
+    have b: "j' + 1 < Lng ?S" using jn n1lt by linarith
+    have shift: "nextR ?S 1 j' (j' + 1) \<longleftrightarrow> nextR M 1 (j0' + j') (j0' + (j' + 1))"
+      by (rule adm_nextR1_seg[OF j1L a b])
+    have inTr: "j0' + j' < TrMax M" using jn j0Tr by linarith
+    have "nextR M 1 (j0' + j') ((j0' + j') + 1)" by (rule TrMax_trunk_step[OF MT inTr])
+    hence "nextR M 1 (j0' + j') (j0' + (j' + 1))" by (simp add: add.assoc)
+    thus "nextR ?S 1 j' (j' + 1)" using shift by simp
+  next
+    have a: "?n < Lng ?S" by (rule nlt)
+    have b: "?n + 1 < Lng ?S" by (rule n1lt)
+    have shift: "nextR ?S 1 ?n (?n + 1) \<longleftrightarrow> nextR M 1 (j0' + ?n) (j0' + (?n + 1))"
+      by (rule adm_nextR1_seg[OF j1L a b])
+    have e1: "j0' + ?n = TrMax M" using j0Tr by simp
+    have e2: "j0' + (?n + 1) = TrMax M + 1" using j0Tr by simp
+    have Trlt': "TrMax M < Lng M - 1" using Trlt j1L by linarith
+    have "\<not> nextR M 1 (TrMax M) (TrMax M + 1)" by (rule TrMax_stop[OF MT Trlt'])
+    hence "\<not> nextR M 1 (j0' + ?n) (j0' + (?n + 1))" using e1 e2 by simp
+    thus "\<not> nextR ?S 1 ?n (?n + 1)" using shift by simp
+  qed
+qed
+
+
+text \<open>§8.2 補題（強単項性の切片への遺伝性） (content.md 3328), discharging
+  @{thm [source] p_8_2_strongmono_slice}: for \<open>M \<in> DT\<^bsub>PS\<^esub>\<close> and a trunk-rooted
+  ancestor slice \<open>M' = (M\<^sub>j)\<^bsub>j=j'\<^sub>0\<^esub>\<^bsup>j'\<^sub>1\<^esup>\<close> with \<open>j'\<^sub>0 \<le> Joints(M)\<^bsub>J\<^sub>1\<^esub>\<close>,
+  \<open>M' \<in> DT\<^bsub>PS\<^esub>\<close>.
+
+  Assembly: \<open>monoT M'\<close> and \<open>M' \<in> RT\<^bsub>PS\<^esub>\<close> are
+  @{thm [source] m_8_2_strongmono_slice_mono_reduced}; \<open>descending (Br M')\<close> uses
+  @{thm [source] descending_Br_of_FN_tiebreak}, whose row-1 tie-break at the
+  \<open>FirstNodes M'\<close> positions transfers to \<open>M\<close>'s (from \<open>descending (Br M)\<close>) via the
+  branch correspondence \<open>FirstNodes M' ! J = FirstNodes M ! J - j'\<^sub>0\<close>: the trunk
+  shifts left by \<open>j'\<^sub>0\<close> (@{thm [source] TrMax_seg_ancestor}) and the branch
+  \<open>IdxSum\<close> positions are prefix-stable (@{thm [source] P_take_prefix_eq}).\<close>
+
+lemma m_8_2_strongmono_slice:
+  fixes M :: pairseq
+  defines "J1 \<equiv> Lng (Br M) - 1"
+  assumes M: "M \<in> DT_PS" and lt: "j0' < j1'" and j1L: "j1' \<le> Lng M - 1"
+    and j0le: "j0' \<le> Joints M ! J1"
+  shows "seg M j0' j1' \<in> DT_PS"
+proof -
+  have MR: "M \<in> RT_PS" using M by (simp add: DT_PS_def)
+  have MT: "M \<in> T_PS" using MR by (simp add: RT_PS_def)
+  have monoM: "monoT M" using M by (simp add: DT_PS_def)
+  have descBrM: "descending (Br M)" using M by (simp add: DT_PS_def)
+  have MP: "M \<in> PT_PS" using MT monoM by (simp add: PT_PS_def)
+  have Lpos: "0 < Lng M" using MT by (cases M) (auto simp: T_PS_def)
+  have j1lt: "j1' < Lng M" using j1L Lpos by linarith
+  let ?S = "seg M j0' j1'"
+  \<comment> \<open>reduced + mono parts\<close>
+  have mr: "?S \<in> RT_PS \<and> monoT ?S"
+    by (rule m_8_2_strongmono_slice_mono_reduced[OF M lt j1L j0le[unfolded J1_def]])
+  have SR: "?S \<in> RT_PS" using mr by simp
+  have monoS: "monoT ?S" using mr by simp
+  have ST: "?S \<in> T_PS" using SR by (simp add: RT_PS_def)
+  have SP: "?S \<in> PT_PS" using ST monoS by (simp add: PT_PS_def)
+  \<comment> \<open>\<open>j0' \<le> TrMax M\<close> (as in @{thm [source] m_8_2_strongmono_slice_mono_reduced})\<close>
+  have j0Tr: "j0' \<le> TrMax M"
+  proof (cases "Br M = []")
+    case True
+    have trmax: "TrMax M = Lng M - 1"
+    proof (rule ccontr)
+      assume "TrMax M \<noteq> Lng M - 1"
+      hence "Br M = P (seg M (TrMax M + 1) (Lng M - 1))" by (simp add: Br_def)
+      moreover have "P (seg M (TrMax M + 1) (Lng M - 1)) \<noteq> []" by (rule P_nonempty)
+      ultimately show False using True by simp
+    qed
+    show ?thesis using lt j1L trmax by linarith
+  next
+    case False
+    have J1Lbr: "J1 < Lng (Br M)" using False by (simp add: J1_def)
+    have "Joints M ! J1 \<le> TrMax M"
+      using m_6_4_FirstNodes_TrMax_Joints[OF MP J1Lbr] by simp
+    thus ?thesis using j0le by (simp add: J1_def)
+  qed
+  \<comment> \<open>descending (Br M')\<close>
+  have descS: "descending (Br ?S)"
+  proof (cases "Br ?S = []")
+    case True thus ?thesis by (simp add: descending_def)
+  next
+    case BrSne: False
+    \<comment> \<open>nonempty branch forces \<open>j1' > TrMax M\<close> (else the slice is all trunk)\<close>
+    have Trltj1: "TrMax M < j1'"
+    proof (rule ccontr)
+      assume "\<not> TrMax M < j1'"
+      hence j1Tr: "j1' \<le> TrMax M" by simp
+      \<comment> \<open>then every \<open>k \<in> [j0', j1']\<close> is on the trunk, so \<open>?S\<close> is a diagonal, \<open>Br ?S = []\<close>\<close>
+      have trun: "TrMax ?S = Lng ?S - 1"
+      proof -
+        have LS: "Lng ?S = Suc j1' - j0'" by (rule Lng_seg)
+        have all: "\<forall>j'<Lng ?S - 1. nextR ?S 1 j' (j' + 1)"
+        proof (intro allI impI)
+          fix j' assume jl: "j' < Lng ?S - 1"
+          have a: "j' < Lng ?S" using jl by linarith
+          have b: "j' + 1 < Lng ?S" using jl by linarith
+          have shift: "nextR ?S 1 j' (j' + 1) \<longleftrightarrow> nextR M 1 (j0' + j') (j0' + (j' + 1))"
+            by (rule adm_nextR1_seg[OF j1lt a b])
+          have inTr: "j0' + j' < TrMax M" using jl LS j1Tr by linarith
+          have "nextR M 1 (j0' + j') ((j0' + j') + 1)" by (rule TrMax_trunk_step[OF MT inTr])
+          hence "nextR M 1 (j0' + j') (j0' + (j' + 1))" by (simp add: add.assoc)
+          thus "nextR ?S 1 j' (j' + 1)" using shift by simp
+        qed
+        have le: "Lng ?S - 1 \<le> TrMax ?S" by (rule le_TrMax_intro[OF ST all])
+        have ge: "TrMax ?S \<le> Lng ?S - 1" by (rule TrMax_bound[OF ST])
+        show ?thesis using le ge by simp
+      qed
+      hence "Br ?S = []" by (simp add: Br_def)
+      thus False using BrSne by simp
+    qed
+    \<comment> \<open>trunk alignment and the branch identification \<open>Br ?S = P (take c Y)\<close>, \<open>Br M = P Y\<close>\<close>
+    have trS: "TrMax ?S = TrMax M - j0'"
+      by (rule TrMax_seg_ancestor[OF MT j0Tr Trltj1 j1lt])
+    \<comment> \<open>\<open>Br M = P Y\<close> with \<open>Y = seg M (TrMax M + 1) (Lng M - 1)\<close>\<close>
+    have TrneM: "TrMax M \<noteq> Lng M - 1" using Trltj1 j1L by linarith
+    have BrM_eq: "Br M = P (seg M (TrMax M + 1) (Lng M - 1))"
+      using TrneM by (simp add: Br_def)
+    \<comment> \<open>\<open>Br ?S = P (seg M (TrMax M + 1) j1')\<close>\<close>
+    have LSm1: "Lng ?S - 1 = j1' - j0'" using lt by simp
+    have TrSne: "TrMax ?S \<noteq> Lng ?S - 1" using trS LSm1 Trltj1 j0Tr by linarith
+    have BrS_eq: "Br ?S = P (seg M (j0' + TrMax ?S + 1) j1')"
+      by (rule Br_seg_reshape[OF lt j1lt TrSne])
+    have startEq: "j0' + TrMax ?S + 1 = TrMax M + 1" using trS j0Tr by simp
+    have BrS_eq2: "Br ?S = P (seg M (TrMax M + 1) j1')"
+      using BrS_eq startEq by simp
+    \<comment> \<open>\<open>seg M (TrMax M + 1) j1' = take c Y\<close> with \<open>c = Suc j1' - (TrMax M + 1)\<close>\<close>
+    let ?Y = "seg M (TrMax M + 1) (Lng M - 1)"
+    let ?c = "Suc j1' - (TrMax M + 1)"
+    have segTake: "seg M (TrMax M + 1) j1' = take ?c ?Y"
+    proof -
+      have c1: "1 \<le> ?c" using Trltj1 by linarith
+      have cb: "?c \<le> Suc (Lng M - 1) - (TrMax M + 1)" using j1L by linarith
+      have "take ?c ?Y = seg M (TrMax M + 1) ((TrMax M + 1) + ?c - 1)"
+        by (rule take_seg[OF c1 cb])
+      moreover have "(TrMax M + 1) + ?c - 1 = j1'" using Trltj1 by linarith
+      ultimately show ?thesis by simp
+    qed
+    have TrltL: "TrMax M < Lng M - 1" using TrneM TrMax_bound[OF MT] by linarith
+    have YT: "?Y \<in> T_PS"
+    proof -
+      have "Lng ?Y > 0" using TrltL by (simp add: Lng_seg)
+      hence "?Y \<noteq> []" using length_greater_0_conv by blast
+      thus ?thesis by (simp add: T_PS_def)
+    qed
+    have cY: "?c \<le> Lng ?Y" using j1L TrltL by (simp add: Lng_seg)
+    \<comment> \<open>component PREFIX (first \<open>J\<close> FULL components) agrees with \<open>M\<close>'s, per \<open>J < length (Br ?S)\<close>\<close>
+    have takeEqBr: "\<And>J. J < length (Br ?S) \<Longrightarrow> take J (Br ?S) = take J (Br M)"
+    proof -
+      fix J assume JL: "J < length (Br ?S)"
+      have JLc: "J < length (P (take ?c ?Y))" using JL BrS_eq2 segTake by simp
+      have "take J (P (take ?c ?Y)) = take J (P ?Y)"
+        by (rule P_take_prefix_eq[OF YT cY JLc])
+      thus "take J (Br ?S) = take J (Br M)" using BrS_eq2 segTake BrM_eq by simp
+    qed
+    \<comment> \<open>\<open>IdxSum\<close> positions agree with \<open>M\<close>'s (left-ends depend only on the FULL prefix)\<close>
+    have YBr: "Br M = P ?Y" using BrM_eq by simp
+    have idxeq: "\<And>J. J < length (Br ?S) \<Longrightarrow> IdxSum (Br ?S) ! J = IdxSum (Br M) ! J
+                  \<and> J < length (Br M)"
+    proof -
+      fix J assume JL: "J < length (Br ?S)"
+      have lenJS: "J \<le> length (Br ?S)" using JL by linarith
+      have takeEq: "take J (Br ?S) = take J (Br M)" by (rule takeEqBr[OF JL])
+      \<comment> \<open>the prefix sum at \<open>J\<close> agrees\<close>
+      have idxJeq: "IdxSum (Br ?S) ! J = sum_list (map length (take J (Br M)))"
+      proof -
+        have "IdxSum (Br ?S) ! J = sum_list (map length (take J (Br ?S)))"
+          using lenJS by (simp add: idxsum_nth)
+        thus ?thesis using takeEq by simp
+      qed
+      \<comment> \<open>\<open>J < length (Br M)\<close>: the \<open>J\<close>-th left-end of \<open>Br ?S\<close> is a left-minimum of \<open>Y\<close>
+          below \<open>c\<close>, so \<open>Br M = P Y\<close> has a component there\<close>
+      have McT2: "take ?c ?Y \<in> T_PS"
+      proof -
+        have cpos: "0 < ?c" using Trltj1 by linarith
+        have "Lng (take ?c ?Y) = ?c" using cY by simp
+        hence "0 < Lng (take ?c ?Y)" using cpos by simp
+        hence "take ?c ?Y \<noteq> []" using length_greater_0_conv by blast
+        thus ?thesis by (simp add: T_PS_def)
+      qed
+      have JLc: "J < length (P (take ?c ?Y))" using JL BrS_eq2 segTake by simp
+      let ?bJ = "IdxSum (Br ?S) ! J"
+      have BrSP: "Br ?S = P (take ?c ?Y)" using BrS_eq2 segTake by simp
+      have lm: "?bJ \<le> Lng (take ?c ?Y) - 1
+              \<and> (\<forall>j < ?bJ. entry (take ?c ?Y) 0 j \<ge> entry (take ?c ?Y) 0 ?bJ)"
+        using idxsum_leftend_lmin[OF McT2] JLc BrSP by simp
+      have cposc: "0 < ?c" using Trltj1 by linarith
+      have lenc: "Lng (take ?c ?Y) = ?c" using cY by simp
+      have bJlt: "?bJ < ?c" using lm[THEN conjunct1] lenc cposc by linarith
+      have JltM: "J < length (Br M)"
+      proof (rule ccontr)
+        assume "\<not> J < length (Br M)"
+        hence Jge: "length (Br M) \<le> J" by simp
+        \<comment> \<open>then \<open>take J (Br M) = Br M\<close>, so \<open>?bJ = length (concat (Br M)) = Lng Y\<close>, but \<open>?bJ < c \<le> Lng Y\<close>\<close>
+        have "?bJ = sum_list (map length (take J (Br M)))" by (rule idxJeq)
+        also have "take J (Br M) = Br M" using Jge by simp
+        also have "sum_list (map length (Br M)) = length (concat (Br M))"
+          by (simp add: length_concat)
+        also have "concat (Br M) = ?Y" using YBr by (simp add: idxsum_concat_P)
+        finally have "?bJ = Lng ?Y" by simp
+        thus False using bJlt cY by linarith
+      qed
+      have "IdxSum (Br ?S) ! J = IdxSum (Br M) ! J"
+        using idxJeq JltM by (simp add: idxsum_nth less_imp_le_nat)
+      thus "IdxSum (Br ?S) ! J = IdxSum (Br M) ! J \<and> J < length (Br M)"
+        using JltM by simp
+    qed
+    have lenBr: "\<And>J. J < length (Br ?S) \<Longrightarrow> J < length (Br M)"
+      using idxeq by simp
+    have fnEq: "\<And>J. J < length (Br ?S) \<Longrightarrow> j0' + FirstNodes ?S ! J = FirstNodes M ! J"
+    proof -
+      fix J assume JL: "J < length (Br ?S)"
+      have JM: "J < length (Br M)" by (rule lenBr[OF JL])
+      have idxJ: "IdxSum (Br ?S) ! J = IdxSum (Br M) ! J" using idxeq[OF JL] by simp
+      have a: "FirstNodes ?S ! J = TrMax ?S + 1 + IdxSum (Br ?S) ! J"
+        by (rule FirstNodes_nth[OF JL])
+      have b: "FirstNodes M ! J = TrMax M + 1 + IdxSum (Br M) ! J"
+        by (rule FirstNodes_nth[OF JM])
+      have "j0' + FirstNodes ?S ! J = j0' + TrMax ?S + 1 + IdxSum (Br ?S) ! J"
+        using a by simp
+      also have "\<dots> = TrMax M + 1 + IdxSum (Br M) ! J"
+        using startEq idxJ by simp
+      also have "\<dots> = FirstNodes M ! J" using b by simp
+      finally show "j0' + FirstNodes ?S ! J = FirstNodes M ! J" .
+    qed
+    have entryEq: "\<And>i J. J < length (Br ?S)
+                     \<Longrightarrow> entry ?S i (FirstNodes ?S ! J) = entry M i (FirstNodes M ! J)"
+    proof -
+      fix i J assume JL: "J < length (Br ?S)"
+      have JLbr: "J < Lng (Br ?S)" using JL by simp
+      have rng: "FirstNodes ?S ! J < Lng ?S" by (rule a1_FN_lt[OF SP JLbr])
+      have "entry ?S i (FirstNodes ?S ! J) = entry M i (j0' + FirstNodes ?S ! J)"
+        by (rule entry_seg[OF rng])
+      also have "\<dots> = entry M i (FirstNodes M ! J)" using fnEq[OF JL] by simp
+      finally show "entry ?S i (FirstNodes ?S ! J) = entry M i (FirstNodes M ! J)" .
+    qed
+    \<comment> \<open>the tie-break, transferred to \<open>M\<close> via the branch correspondence\<close>
+    show ?thesis
+    proof (rule descending_Br_of_FN_tiebreak[OF SP])
+      fix J0 J1' assume J0le: "J0 \<le> J1'" and J1lt: "J1' < length (Br ?S)"
+        and eqFN: "entry ?S 0 (FirstNodes ?S ! J0) = entry ?S 0 (FirstNodes ?S ! J1')"
+      have J0lt: "J0 < length (Br ?S)" using J0le J1lt by linarith
+      have J1M: "J1' < length (Br M)" by (rule lenBr[OF J1lt])
+      have J0M: "J0 < length (Br M)" using J0le J1M by linarith
+      have eqFNM: "entry M 0 (FirstNodes M ! J0) = entry M 0 (FirstNodes M ! J1')"
+        using eqFN entryEq[OF J0lt] entryEq[OF J1lt] by simp
+      \<comment> \<open>row-0 of \<open>M\<close>'s branch components matches at \<open>FirstNodes\<close>, and \<open>descending (Br M)\<close>
+          gives the row-1 inequality\<close>
+      have c0J0: "entry M 0 (FirstNodes M ! J0) = entry (Br M ! J0) 0 0"
+        by (rule entry_FirstNodes_eq_component_gen[OF MP J0M])
+      have c0J1: "entry M 0 (FirstNodes M ! J1') = entry (Br M ! J1') 0 0"
+        by (rule entry_FirstNodes_eq_component_gen[OF MP J1M])
+      have c1J0: "entry M 1 (FirstNodes M ! J0) = entry (Br M ! J0) 1 0"
+        by (rule entry_FirstNodes_eq_component_gen[OF MP J0M])
+      have c1J1: "entry M 1 (FirstNodes M ! J1') = entry (Br M ! J1') 1 0"
+        by (rule entry_FirstNodes_eq_component_gen[OF MP J1M])
+      have eqBr0: "entry (Br M ! J0) 0 0 = entry (Br M ! J1') 0 0"
+        using eqFNM c0J0 c0J1 by simp
+      have J1brM: "J1' \<le> Lng (Br M) - 1" using J1M by (cases "Br M") auto
+      have cdomM: "cdom (Br M ! J0) (Br M ! J1')"
+        by (rule descending_cdomD[OF descBrM J0le]) (simp add: J1M)
+      have "entry (Br M ! J1') 1 0 \<le> entry (Br M ! J0) 1 0"
+        using cdomM eqBr0 by (simp add: cdom_def)
+      hence "entry M 1 (FirstNodes M ! J1') \<le> entry M 1 (FirstNodes M ! J0)"
+        using c1J0 c1J1 by simp
+      thus "entry ?S 1 (FirstNodes ?S ! J1') \<le> entry ?S 1 (FirstNodes ?S ! J0)"
+        using entryEq[OF J0lt] entryEq[OF J1lt] by simp
+    qed
+  qed
+  show ?thesis using SR monoS descS by (simp add: DT_PS_def)
+qed
+
+
 end
