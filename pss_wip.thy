@@ -29981,4 +29981,383 @@ proof -
 qed
 
 
+text \<open>§8.2 keystone — \<open>chainOK\<close>, the recursive Pred-descent predicate.
+
+  The §8.2 keystone residual \<open>cpU\<close> was reduced (cf. @{thm [source] m_8_2_cpU_of_widTrMaxM})
+  to the single landing equation
+  \<open>widTrM M : RightNodes (Trans M) ! 1 = entry M 1 (TrMax M)\<close> (\<open>M\<close> lands on its
+  trunk-max basepoint).  The naive local sufficient condition
+  \<open>Admpos M \<and> j\<^sub>1eq M \<Longrightarrow> widTrM M\<close> is FALSE (counterexample of length 4,
+  \<open>M = (0,0)(1,0)(1,1)(2,0)\<close>): \<open>widTrM\<close> is NOT a local property, it depends on the
+  whole \<open>Pred\<close>-descent.  The correct device is the recursive predicate
+
+    \<open>chainOK M = Admpos M \<and> good M \<and> (Br (Pred M) = [] \<or> chainOK (Pred M))\<close>,
+    \<open>Admpos M \<equiv> transJm1 M > 0\<close>,   \<open>good M \<equiv> Br M \<noteq> [] \<and> Lng M - 1 > 1\<close>,
+
+  "the \<open>Pred\<close>-descent stays \<open>Admpos\<close>+\<open>good\<close> until \<open>Br (Pred ..) = []\<close>".  It is
+  well-founded by the descending measure \<open>Lng\<close> (\<open>Lng (Pred M) < Lng M\<close>).
+  Empirically \<open>chainOK M \<Longrightarrow> widTrM M\<close> (524/524) and
+  \<open>j\<^sub>1eq M \<and> Br (Pred M) \<noteq> [] \<and> good M \<Longrightarrow> chainOK M\<close> (291/291); the latter is the
+  remaining hard core (non-local admissibility propagation).\<close>
+
+function chainOK :: "pairseq \<Rightarrow> bool" where
+  "chainOK M = (if transJm1 M > 0 \<and> Br M \<noteq> [] \<and> Lng M - 1 > 1
+                then Br (Pred M) = [] \<or> chainOK (Pred M)
+                else False)"
+  by pat_completeness auto
+termination
+  by (relation "measure Lng") (auto simp: Pred_def)
+
+declare chainOK.simps[simp del]
+
+text \<open>§8.2 \<open>chainOK M \<Longrightarrow> widTrM M\<close> (GOAL (2)).  Well-founded induction on \<open>Lng\<close>.
+  \<^item> BASE \<open>Br (Pred M) = []\<close>: \<open>Pred M\<close> is all-trunk = a diagonal (@{thm [source]
+    baseU_Br_empty_TrMax}, @{thm [source] baseU_alltrunk_Trans_RN1}), so its
+    index-1 right node is \<open>(Pred M)\<^bsub>1,Lng(Pred M)-1\<^esub> = M\<^bsub>1,Lng M-2\<^esub>\<close>
+    (@{thm [source] wid_entry1_Pred_agree}); descent
+    @{thm [source] m_8_2_wid_step} carries it to \<open>RightNodes(Trans M)!1\<close>, and
+    \<open>TrMax M = Lng M - 2\<close> (@{thm [source] TrMax_Pred}) closes \<open>widTrM\<close>.
+  \<^item> STEP \<open>Br (Pred M) \<noteq> []\<close>: then \<open>chainOK (Pred M)\<close>, the IH gives
+    \<open>widTrM (Pred M)\<close>; @{thm [source] m_8_2_wid_step} and \<open>TrMax (Pred M) = TrMax M\<close>
+    plus the row-1 \<open>Pred\<close>-agreement push it up to \<open>widTrM M\<close>.\<close>
+
+lemma m_8_2_chainOK_imp_widTrM:
+  assumes "chainOK M" and "M \<in> RT_PS" and "M \<in> PT_PS"
+  shows "RightNodes (Trans M) ! 1 = entry M 1 (TrMax M)"
+  using assms
+proof (induction "Lng M" arbitrary: M rule: less_induct)
+  case (less M)
+  note cOK = less.prems(1) and MR = less.prems(2) and MP = less.prems(3)
+  have MT: "M \<in> T_PS" using MP by (simp add: PT_PS_def)
+  have mono: "monoT M" using MP by (simp add: PT_PS_def)
+  \<comment> \<open>unfold \<open>chainOK M\<close> exactly once (the \<open>[of M]\<close> instance does not touch \<open>Pred M\<close>)\<close>
+  have rhs: "if transJm1 M > 0 \<and> Br M \<noteq> [] \<and> Lng M - 1 > 1
+             then Br (Pred M) = [] \<or> chainOK (Pred M) else False"
+    using cOK[unfolded chainOK.simps[of M]] .
+  have Admpos: "transJm1 M > 0" and Brne: "Br M \<noteq> []" and j1gt: "Lng M - 1 > 1"
+       and disj: "Br (Pred M) = [] \<or> chainOK (Pred M)"
+    using rhs by (auto split: if_splits)
+  have L: "1 < Lng M" using j1gt by linarith
+  have nmu: "\<not> multiT M" using mono by (simp add: multiT_def)
+  have Lpred: "Lng (Pred M) = Lng M - 1"
+  proof -
+    have "\<not> Lng M \<le> Suc 0" using L by linarith
+    hence "Pred M = butlast M" by (simp add: Pred_def)
+    thus ?thesis by simp
+  qed
+  have LP2: "1 < Lng (Pred M)" using Lpred j1gt by linarith
+  have nzP: "\<not> zeroT (Pred M)" using LP2 by (simp add: zeroT_def)
+  have predRT: "Pred M \<in> RT_PS" by (rule Pred_RT_PS[OF MR])
+  have predT: "Pred M \<in> T_PS" using predRT by (simp add: RT_PS_def)
+  have nmuP: "\<not> multiT (Pred M)" by (rule nonmulti_Pred[OF MT nmu L])
+  have monoP: "monoT (Pred M)" using nzP nmuP by (simp add: multiT_def)
+  have predPT: "Pred M \<in> PT_PS" using predT monoP by (simp add: PT_PS_def)
+  have t1ne: "Trans (Pred M) \<noteq> 0\<^sub>B"
+  proof
+    assume "Trans (Pred M) = 0\<^sub>B"
+    hence "zeroT (Pred M)" using m_7_3_Trans_zeroT[OF predRT] by simp
+    thus False using nzP by simp
+  qed
+  have rnstep: "RightNodes (Trans M) ! 1 = RightNodes (Trans (Pred M)) ! 1"
+    by (rule m_8_2_wid_step[OF MR MP j1gt Admpos t1ne])
+  have tb: "TrMax M \<le> Lng M - 1" by (rule TrMax_bound[OF MT])
+  have trne: "TrMax M \<noteq> Lng M - 1"
+  proof
+    assume "TrMax M = Lng M - 1"
+    hence "Br M = []" by (simp add: Br_def)
+    thus False using Brne by simp
+  qed
+  have trlt: "TrMax M < Lng M - 1" using tb trne by linarith
+  show ?case
+  proof (cases "Br (Pred M) = []")
+    case A: True
+    \<comment> \<open>BASE: \<open>Pred M\<close> all-trunk diagonal; \<open>widTrM\<close> holds directly\<close>
+    have trPred: "TrMax (Pred M) = Lng (Pred M) - 1" by (rule baseU_Br_empty_TrMax[OF A])
+    have rnPred: "RightNodes (Trans (Pred M)) ! 1 = entry (Pred M) 1 (Lng (Pred M) - 1)"
+      by (rule baseU_alltrunk_Trans_RN1[OF predRT monoP trPred LP2])
+    have e_agree: "entry (Pred M) 1 (Lng (Pred M) - 1) = entry M 1 (Lng M - 2)"
+    proof -
+      have idx: "Lng (Pred M) - 1 = Lng M - 2" using Lpred by simp
+      have lt: "Lng M - 2 < Lng M - 1" using j1gt by linarith
+      have "entry (Pred M) 1 (Lng M - 2) = entry M 1 (Lng M - 2)"
+        by (rule wid_entry1_Pred_agree[OF L lt])
+      thus ?thesis using idx by simp
+    qed
+    have rn1val: "RightNodes (Trans M) ! 1 = entry M 1 (Lng M - 2)"
+      using rnstep rnPred e_agree by simp
+    have trMeq: "TrMax M = Lng M - 2"
+    proof -
+      have "TrMax (Pred M) = TrMax M" by (rule TrMax_Pred[OF MT L trne])
+      thus ?thesis using trPred Lpred by simp
+    qed
+    show ?thesis using rn1val trMeq by simp
+  next
+    case notA: False
+    \<comment> \<open>STEP: \<open>chainOK (Pred M)\<close>, descend via the keystone IH\<close>
+    have chainOK_pred: "chainOK (Pred M)" using disj notA by blast
+    have meas: "Lng (Pred M) < Lng M" using Lpred L by linarith
+    have IH: "RightNodes (Trans (Pred M)) ! 1 = entry (Pred M) 1 (TrMax (Pred M))"
+      by (rule less.hyps[OF meas chainOK_pred predRT predPT])
+    have trMP: "TrMax (Pred M) = TrMax M" by (rule TrMax_Pred[OF MT L trne])
+    have eagree: "entry (Pred M) 1 (TrMax M) = entry M 1 (TrMax M)"
+      by (rule wid_entry1_Pred_agree[OF L trlt])
+    have "RightNodes (Trans M) ! 1 = entry (Pred M) 1 (TrMax (Pred M))"
+      using rnstep IH by simp
+    also have "\<dots> = entry (Pred M) 1 (TrMax M)" using trMP by simp
+    also have "\<dots> = entry M 1 (TrMax M)" using eagree by simp
+    finally show ?thesis .
+  qed
+qed
+
+text \<open>§8.2 \<open>cpU\<close> discharged from \<open>chainOK M\<close> (GOAL (4) modulo the residual).
+  Combining @{thm [source] m_8_2_chainOK_imp_widTrM} (\<open>chainOK \<Longrightarrow> widTrM\<close>) with
+  @{thm [source] m_8_2_cpU_of_widTrMaxM} (\<open>widTrM \<Longrightarrow> cpU\<close>) gives the \<open>cpU\<close>
+  coupling unconditionally on \<open>chainOK M\<close>.  This pins the entire §8.2 keystone
+  residual to the SINGLE clean predicate fact \<open>j\<^sub>1eq M \<Longrightarrow> chainOK M\<close>.\<close>
+
+lemma m_8_2_cpU_of_chainOK:
+  fixes M :: pairseq
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS" and Brne: "Br M \<noteq> []"
+    and j1gt: "Lng M - 1 > 1" and Admpos: "transJm1 M > 0" and brP: "Br (Pred M) \<noteq> []"
+    and j1eq: "FirstNodes M ! (Lng (Br M) - 1) = Lng M - 1"
+    and cOK: "chainOK M"
+  shows "RightNodes (Trans (Pred M)) ! 1
+           = entry (Pred M) 1 (Joints (Pred M) ! (Lng (Br (Pred M)) - 1))"
+proof -
+  have widTrM: "RightNodes (Trans M) ! 1 = entry M 1 (TrMax M)"
+    by (rule m_8_2_chainOK_imp_widTrM[OF cOK MR MP])
+  show ?thesis
+    by (rule m_8_2_cpU_of_widTrMaxM[OF MR MP Brne j1gt Admpos brP j1eq widTrM])
+qed
+
+text \<open>§8.2 keystone, reduced to the SOLE residual \<open>j\<^sub>1eq \<Longrightarrow> chainOK\<close>.  This is the
+  strongest current reduction of the §8.2 keystone (= paper
+  @{thm [source] p_8_2_subexpr_component_Pred}, pss_paper.thy 1520): both
+  \<open>baseU\<close> and the \<open>widTrM\<close>-half of \<open>cpU\<close> are discharged unconditionally; the only
+  remaining hypothesis is the recursive-predicate fact
+  \<open>j\<^sub>1eq M' \<and> Admpos M' \<and> good M' \<and> Br (Pred M') \<noteq> [] \<Longrightarrow> chainOK M'\<close>
+  (the non-local admissibility-propagation hard core, empirically 291/291).\<close>
+
+lemma m_8_2_subexpr_component_Pred_via_chainOK:
+  fixes M :: pairseq
+  defines "j1 \<equiv> Lng M - 1"
+  defines "J1 \<equiv> Lng (Br M) - 1"
+  defines "j0' \<equiv> Joints M ! J1"
+  defines "j1' \<equiv> FirstNodes M ! J1"
+  assumes chainOKres: "\<And>M'. M' \<in> RT_PS \<Longrightarrow> M' \<in> PT_PS \<Longrightarrow> Br M' \<noteq> [] \<Longrightarrow> Lng M' - 1 > 1
+                  \<Longrightarrow> transJm1 M' > 0 \<Longrightarrow> Br (Pred M') \<noteq> []
+                  \<Longrightarrow> FirstNodes M' ! (Lng (Br M') - 1) = Lng M' - 1
+                  \<Longrightarrow> chainOK M'"
+    and MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS" and Brne: "Br M \<noteq> []" and j1gt: "j1 > 1"
+  shows
+    "(j1' = j1 \<and> (TrMax M = 0 \<or> j0' < TrMax M)
+        \<and> (entry M 0 j1' = entry M 1 j1' \<or> adm M j0')
+        \<and> (\<exists>!t1. Trans (Pred M) = Dpt (enat (entry M 1 0)) t1
+              \<and> Trans M = Dpt (enat (entry M 1 0))
+                            (t1 +\<^sub>B Dpt (enat (entry M 1 j1')) 0\<^sub>B)))
+   \<or> (j1' = j1 \<and> entry M 0 j1' > entry M 1 j1' \<and> \<not> adm M j0'
+        \<and> (\<exists>!t12. Trans (Pred M) = Dpt (enat (entry M 1 0)) (fst t12)
+              \<and> Trans M = Dpt (enat (entry M 1 0))
+                            (fst t12 +\<^sub>B Dpt (enat (entry M 1 j0')) (snd t12))))
+   \<or> (\<exists>!t123. Trans (Pred M)
+                = Dpt (enat (entry M 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M 1 j1')) (fst (snd t123)))
+            \<and> Trans M = Dpt (enat (entry M 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M 1 j1')) (snd (snd t123))))
+   \<or> (\<exists>!t123. Trans (Pred M)
+                = Dpt (enat (entry M 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M 1 j0')) (fst (snd t123)))
+            \<and> Trans M = Dpt (enat (entry M 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M 1 j0')) (snd (snd t123))))"
+proof -
+  have cpU: "\<And>M'. M' \<in> RT_PS \<Longrightarrow> M' \<in> PT_PS \<Longrightarrow> Br M' \<noteq> [] \<Longrightarrow> Lng M' - 1 > 1
+                  \<Longrightarrow> transJm1 M' > 0 \<Longrightarrow> Br (Pred M') \<noteq> []
+                  \<Longrightarrow> FirstNodes M' ! (Lng (Br M') - 1) = Lng M' - 1
+                  \<Longrightarrow> RightNodes (Trans (Pred M')) ! 1
+                       = entry (Pred M') 1 (Joints (Pred M') ! (Lng (Br (Pred M')) - 1))"
+  proof -
+    fix M' :: pairseq
+    assume a1: "M' \<in> RT_PS" and a2: "M' \<in> PT_PS" and a3: "Br M' \<noteq> []"
+      and a4: "Lng M' - 1 > 1" and a5: "transJm1 M' > 0" and a6: "Br (Pred M') \<noteq> []"
+      and a7: "FirstNodes M' ! (Lng (Br M') - 1) = Lng M' - 1"
+    have cOK': "chainOK M'" by (rule chainOKres[OF a1 a2 a3 a4 a5 a6 a7])
+    show "RightNodes (Trans (Pred M')) ! 1
+            = entry (Pred M') 1 (Joints (Pred M') ! (Lng (Br (Pred M')) - 1))"
+      by (rule m_8_2_cpU_of_chainOK[OF a1 a2 a3 a4 a5 a6 a7 cOK'])
+  qed
+  have j1gt': "Lng M - 1 > 1" using j1gt by (simp add: j1_def)
+  show ?thesis
+    using m_8_2_subexpr_component_Pred_final[OF cpU MR MP Brne j1gt']
+    unfolding j1_def J1_def j0'_def j1'_def .
+qed
+
+
+text \<open>§8.1 part(4) condition determination for the (4-2) guard (content.md 3036).
+  In the part(4)-setup context, under the (4-2) guard
+  \<open>j'\<^sub>-\<^sub>1 < j'\<^sub>0 \<and> M\<^bsub>1,j'\<^sub>0\<^esub> \<ge> M\<^bsub>1,j\<^sub>0\<^esub>\<close>, the reduced back-slice
+  \<open>N = Red ((M\<^sub>j)\<^bsub>j=j'\<^sub>-\<^sub>1\<^esub>\<^sup>j\<^sub>0)\<close> satisfies condition (II) or (IV): its row-0
+  parent \<open>j\<^sub>0\<^sup>N = j'\<^sub>0 - j'\<^sub>-\<^sub>1 > 0\<close> is NON-\<open>N\<close>-admissible (since
+  \<open>j\<^sub>-\<^sub>1\<^sup>N = Adm\<^sub>N(j\<^sub>0\<^sup>N) = 0 \<noteq> j\<^sub>0\<^sup>N\<close>), and \<open>N\<^bsub>1,j\<^sub>0\<^sup>N\<^esub> = M\<^bsub>1,j'\<^sub>0\<^esub> \<ge> M\<^bsub>1,j\<^sub>0\<^esub> = N\<^bsub>1,j\<^sub>1\<^sup>N\<^esub>\<close>
+  (II if \<open>N\<^bsub>1,j\<^sub>1\<^sup>N\<^esub> = 0\<close>, IV otherwise).  This is the cond-determination half of
+  the §8.1 (4-2) \<open>slicepeel\<close> existence (the article's "\<open>j\<^sub>0\<^sup>N\<close> is non-\<open>N\<close>-admissible
+  ... \<open>N\<close> satisfies (II) or (IV)").  Route: view \<open>N\<close> as the back-slice of the
+  prefix \<open>M' = (M\<^sub>j)\<^bsub>j=0\<^esub>\<^bsup>j\<^sub>0\<^esup>\<close> (last column \<open>j\<^sub>0\<close>) and transport the conditions
+  through @{thm [source] repr_transCond_atoms}; the (II)/(IV) split is DIRECT
+  from the guard (no exhaustiveness needed).  Empirically exact
+  (\<open>c1around_part4_audit\<close>: 32/32 in the (4-2) regime, 0 violations).\<close>
+
+lemma m_8_1_c1_around_part4_cond42:
+  fixes M :: pairseq
+  defines "j1 \<equiv> Lng M - 1"
+  defines "j0 \<equiv> parent M 0 j1"
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS"
+    and admj0: "adm M j0" and j1gt: "j1 > 1"
+    and np: "nextR M 0 j0' j0"
+    and adj: "j0' + 1 < j0"
+  defines "jm1' \<equiv> Adm M j0'"
+  shows "jm1' < j0' \<and> entry M 1 j0' \<ge> entry M 1 j0
+           \<longrightarrow> transCondII (Red (seg M jm1' j0)) \<or> transCondIV (Red (seg M jm1' j0))"
+proof -
+  have MT: "M \<in> T_PS" using MR by (simp add: RT_PS_def)
+  have mono: "monoT M" using MP by (simp add: PT_PS_def)
+  have L: "1 < Lng M" using j1gt by (simp add: j1_def)
+  have j1lt: "j1 < Lng M" using L by (simp add: j1_def)
+  have j1eq: "j1 = Lng M - 1" by (simp add: j1_def)
+  have hp: "hasParent M 0 j1" using monoT_hasParent0_last[OF MT mono L] j1_def by simp
+  have parj0: "nextR M 0 j0 j1"
+    using hp unfolding hasParent_def j0_def parent_def j1_def by (rule theI')
+  have j0ltj1: "j0 < j1" and j0Mleq: "leR M 0 j0 j1"
+    using poper_nextR_imp_le0[OF parj0] by simp_all
+  have le0j0: "le0 M j0 j1" using j0Mleq by (simp add: leR_def)
+  have j0'ltj0: "j0' < j0" and j0'Mleq: "leR M 0 j0' j0"
+    using poper_nextR_imp_le0[OF np] by simp_all
+  have le0j0': "le0 M j0' j0" using j0'Mleq by (simp add: leR_def)
+  have aLe: "jm1' \<le> j0'" using jm1'_def by (simp add: adm_Adm_le)
+  have admA: "adm M jm1'" using jm1'_def by (simp add: adm_Adm_adm)
+  have jm1'ltj0: "jm1' < j0" using aLe j0'ltj0 by linarith
+  have jm1'ltj1: "jm1' < j1" using jm1'ltj0 j0ltj1 by linarith
+  have j0ltLM: "j0 < Lng M" using j0ltj1 j1lt by linarith
+  have j0leLM1: "j0 \<le> Lng M - 1" using j0ltj1 j1eq by linarith
+  have j0'b: "j0' \<le> Lng M - 1" using j0'ltj0 j0leLM1 by linarith
+  have le1a: "leR M 1 jm1' j0'" using adm_row1_ancestry[OF MT j0'b] jm1'_def by simp
+  have le0a: "leR M 0 jm1' j0'" by (rule m_le1_imp_le0[OF le1a])
+  have le0aj0: "le0 M jm1' j0"
+  proof -
+    have "(nextrel0 M)\<^sup>*\<^sup>* jm1' j0'" using le0a by (simp add: leR_def le0_def)
+    moreover have "(nextrel0 M)\<^sup>*\<^sup>* j0' j0" using le0j0' by (simp add: le0_def)
+    ultimately have "(nextrel0 M)\<^sup>*\<^sup>* jm1' j0" by simp
+    moreover have "jm1' < Lng M" using jm1'ltj1 j1lt by linarith
+    ultimately show ?thesis using j0ltLM by (simp add: le0_def)
+  qed
+  have le0aj1: "le0 M jm1' j1" using le0_trans[OF le0aj0 le0j0] by simp
+  have leMaj1: "leR M 0 jm1' j1" using le0aj1 by (simp add: leR_def)
+  have markedA: "(M, jm1') \<in> Marked"
+    using MT admA leMaj1 j1eq by (simp add: Marked_def)
+  have MpR: "seg M 0 j0 \<in> RT_PS" by (rule seg_0_RT_PS[OF MR j0leLM1])
+  have LMp: "Lng (seg M 0 j0) = Suc j0" by simp
+  have LMp1: "Lng (seg M 0 j0) - 1 = j0" by simp
+  have segseg: "seg (seg M 0 j0) jm1' j0 = seg M jm1' j0"
+  proof -
+    have "seg (seg M 0 j0) jm1' j0 = seg M (0 + jm1') (0 + j0)"
+      by (rule seg_of_seg[where a=0 and b=j0]) auto
+    thus ?thesis by simp
+  qed
+  have segN: "seg M jm1' j0 = seg (seg M 0 j0) jm1' (Lng (seg M 0 j0) - 1)"
+    using segseg LMp1 by simp
+  have hpj0: "hasParent M 0 j0" unfolding hasParent_def
+    by (metis np idxsum_ex1_parent0_iff)
+  have pj0: "parent M 0 j0 = j0'"
+    unfolding parent_def
+  proof (rule the_equality)
+    show "nextR M 0 j0' j0" by (rule np)
+  next
+    fix y assume "nextR M 0 y j0"
+    thus "y = j0'" using np idxsum_parent0_unique by blast
+  qed
+  have jlS: "j0 < Lng (seg M 0 j0)" using LMp by simp
+  have hpM0: "hasParent M 0 (0 + j0)" using hpj0 by simp
+  have ancM0: "(0::nat) \<le> parent M 0 (0 + j0)" by simp
+  have segpar: "hasParent (seg M 0 j0) 0 j0
+              \<and> parent (seg M 0 j0) 0 j0 = parent M 0 (0 + j0) - 0"
+    by (rule repr_parent_M_to_seg[OF _ j0ltLM jlS hpM0 ancM0]) simp
+  have hpMpj0: "hasParent (seg M 0 j0) 0 j0" using segpar by simp
+  have pMpj0: "parent (seg M 0 j0) 0 j0 = j0'" using segpar pj0 by simp
+  have markedMp: "(seg M 0 j0, jm1') \<in> Marked"
+  proof -
+    have "(seg M 0 j0, jm1' - 0) \<in> Marked"
+      by (rule m_6_3_marked_slice[OF markedA _ _ j0leLM1]) (use jm1'ltj0 in auto)
+    thus ?thesis by simp
+  qed
+  have mintp: "jm1' < Lng (seg M 0 j0) - 2" using LMp aLe adj by linarith
+  have leMp: "leR (seg M 0 j0) 0 jm1' (Lng (seg M 0 j0) - 1)"
+    using markedMp by (simp add: Marked_def)
+  have hpp: "hasParent (seg M 0 j0) 0 (Lng (seg M 0 j0) - 1)"
+    using hpMpj0 LMp1 by simp
+  have anc0p: "jm1' \<le> parent (seg M 0 j0) 0 (Lng (seg M 0 j0) - 1)"
+    using pMpj0 LMp1 aLe by simp
+  have j0ltp: "parent (seg M 0 j0) 0 (Lng (seg M 0 j0) - 1) < Lng (seg M 0 j0) - 1"
+    using pMpj0 LMp1 j0'ltj0 by simp
+  have AdmMp: "Adm (seg M 0 j0) j0' = jm1'"
+  proof -
+    have "Adm (seg M 0 j0) j0' = Adm M j0'"
+      by (rule m_6_3_Adm_prefix_slice[OF MT j0'ltj0 j0leLM1])
+    thus ?thesis using jm1'_def by simp
+  qed
+  \<comment> \<open>back-slice cond atoms via the §7.4 representation bundle (M' = seg M 0 j0)\<close>
+  note B = repr_transCond_atoms[OF markedMp MpR mintp leMp hpp anc0p j0ltp]
+  let ?N = "Red (seg (seg M 0 j0) jm1' (Lng (seg M 0 j0) - 1))"
+  have RedEq: "Red (seg M jm1' j0) = ?N" using arg_cong[OF segN, of Red] .
+  \<comment> \<open>translate the M'-side atoms to M-entries\<close>
+  have es_j0: "entry (seg M 0 j0) 1 j0 = entry M 1 j0"
+    using entry_seg[where M=M and a=0 and b=j0 and i=1 and j=j0] jlS by simp
+  have es_j0': "entry (seg M 0 j0) 1 j0' = entry M 1 j0'"
+  proof -
+    have "j0' < Lng (seg M 0 j0)" using j0'ltj0 LMp by simp
+    thus ?thesis using entry_seg[where M=M and a=0 and b=j0 and i=1 and j=j0'] by simp
+  qed
+  have pNeq: "parent (seg M 0 j0) 0 (Lng (seg M 0 j0) - 1) = j0'"
+    using pMpj0 LMp1 by metis
+  have admeq: "adm (seg M 0 j0) j0' \<longleftrightarrow> jm1' = j0'"
+  proof
+    assume "adm (seg M 0 j0) j0'"
+    hence "Adm (seg M 0 j0) j0' = j0'" by (simp add: Adm_def)
+    thus "jm1' = j0'" using AdmMp by simp
+  next
+    assume e: "jm1' = j0'"
+    have "adm (seg M 0 j0) (Adm (seg M 0 j0) j0')" by (rule adm_Adm_adm)
+    thus "adm (seg M 0 j0) j0'" using AdmMp e by simp
+  qed
+  \<comment> \<open>the three N-atoms appearing in cond (II)/(IV), as M-entries\<close>
+  have entN: "entry ?N 1 (Lng ?N - 1) = entry M 1 j0"
+    using B(3) es_j0 LMp1 by metis
+  have eparN: "entry ?N 1 (parent ?N 0 (Lng ?N - 1)) = entry M 1 j0'"
+    using B(4) pNeq es_j0' by metis
+  have admN: "adm ?N (parent ?N 0 (Lng ?N - 1)) \<longleftrightarrow> jm1' = j0'"
+    using B(5) pNeq admeq by metis
+  have cII: "transCondII ?N \<longleftrightarrow> entry M 1 j0 = 0 \<and> jm1' \<noteq> j0'"
+    using entN admN by (simp add: transCondII_def)
+  have cIV: "transCondIV ?N
+               \<longleftrightarrow> entry M 1 j0 > 0 \<and> entry M 1 j0' \<ge> entry M 1 j0 \<and> jm1' \<noteq> j0'"
+    using entN eparN admN by (simp add: transCondIV_def)
+  show "jm1' < j0' \<and> entry M 1 j0' \<ge> entry M 1 j0
+          \<longrightarrow> transCondII (Red (seg M jm1' j0)) \<or> transCondIV (Red (seg M jm1' j0))"
+  proof (intro impI)
+    assume g: "jm1' < j0' \<and> entry M 1 j0' \<ge> entry M 1 j0"
+    have ne: "jm1' \<noteq> j0'" using g by simp
+    have ge': "entry M 1 j0' \<ge> entry M 1 j0" using g by simp
+    show "transCondII (Red (seg M jm1' j0)) \<or> transCondIV (Red (seg M jm1' j0))"
+    proof (cases "entry M 1 j0 = 0")
+      case True
+      have "transCondII ?N" using cII True ne by simp
+      thus ?thesis using RedEq by simp
+    next
+      case False
+      hence "entry M 1 j0 > 0" by simp
+      have "transCondIV ?N" using cIV \<open>entry M 1 j0 > 0\<close> ge' ne by simp
+      thus ?thesis using RedEq by simp
+    qed
+  qed
+qed
+
+
 end
