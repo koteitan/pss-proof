@@ -18,7 +18,7 @@
   - 🚨 §8.1 条件 (I) の下での展開規則
     - 🚨 命題（条件 (I) の下での $\textrm{Trans}$ と基本列の交換関係）
       - ✅ 降下⟸交換則(1)+OT〔`m_8_1_Trans_fseq_condI_descent`〕
-      - 🚨 交換則(1)本体：n=1✅〔`m_8_1_Trans_fseq_condI_n1`〕、残=general-n帰納
+      - 🚨🤖 交換則(1)本体：n=1✅〔`m_8_1_Trans_fseq_condI_n1`〕、残=general-n帰納（workflow）
       - 🚨 OT所属（→§8.7）
     - ✅ 補題（公差 $(1,1)$ のペア数列の $\textrm{Trans}$ の基本性質）〔`m_8_1_diagSeq_Trans`〕
     - ✅ 系（$\textrm{Pred}$ が公差 $(1,1)$ のペア数列の $\textrm{Trans}$ の基本性質）〔`m_8_1_Pred_diagSeq_Trans`〕
@@ -30,7 +30,7 @@
     - ✅ 補題（部分表現の単項成分と $\textrm{Pred}$ の関係）(§8.2 keystone)〔`m_8_2_keystone` = 無条件 `p_8_2_subexpr_component_Pred`〕
     - 🚨 補題（強単項性の下での部分表現の単項成分の基本性質）
       - ✅ (1) `m_8_2_subexpr_leftend_unique`
-      - 🚨 (2)(3)(4) leBT：構造還元✅〔`_strongmono_of_witness`〕、残=witness生成帰納
+      - 🚨🤖 (2)(3)(4) leBT：構造還元✅〔`_strongmono_of_witness`〕、残=witness生成帰納（workflow）
     - 🚨 補題（条件 (V) の下での右端の親の基本性質）
     - 🚨 補題（条件 (V) の下での終切片と $\textrm{Trans}$ の関係）
   - 🚨 §8.3 条件 (II) の下での展開規則
