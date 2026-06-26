@@ -29728,4 +29728,257 @@ proof -
 qed
 
 
+text \<open>§8.2 w-identification with the \<open>baseU\<close> residual DISCHARGED unconditionally by
+  @{thm [source] m_8_2_baseU}.  Strictly stronger than @{thm [source] m_8_2_wid}:
+  of the two universal residuals of @{thm [source] m_8_2_wid}, only the genuine
+  hard-core coupling \<open>cpU\<close> (the \<open>j\<^sub>1eq \<Longrightarrow> Joints-side\<close> selection) remains as a
+  premise; the induction-base residual \<open>baseU\<close> is now closed.\<close>
+
+lemma m_8_2_wid_uncond:
+  fixes M :: pairseq
+  assumes cpU: "\<And>M'. M' \<in> RT_PS \<Longrightarrow> M' \<in> PT_PS \<Longrightarrow> Br M' \<noteq> [] \<Longrightarrow> Lng M' - 1 > 1
+                  \<Longrightarrow> transJm1 M' > 0 \<Longrightarrow> Br (Pred M') \<noteq> []
+                  \<Longrightarrow> FirstNodes M' ! (Lng (Br M') - 1) = Lng M' - 1
+                  \<Longrightarrow> RightNodes (Trans (Pred M')) ! 1
+                       = entry (Pred M') 1 (Joints (Pred M') ! (Lng (Br (Pred M')) - 1))"
+    and MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS" and Brne: "Br M \<noteq> []" and j1gt: "Lng M - 1 > 1"
+  shows "RightNodes (Trans M) ! 1 = entry M 1 (FirstNodes M ! (Lng (Br M) - 1))
+          \<or> RightNodes (Trans M) ! 1 = entry M 1 (Joints M ! (Lng (Br M) - 1))"
+  by (rule m_8_2_wid[OF cpU m_8_2_baseU MR MP Brne j1gt])
+
+text \<open>§8.2 w-identification with \<open>baseU\<close> discharged, and the remaining \<open>cpU\<close>
+  coupling RE-EXPRESSED as the SINGLE clean equation
+  \<open>widTrM : RightNodes (Trans M') ! 1 = entry M' 1 (TrMax M')\<close> in the
+  \<open>j\<^sub>1eq\<close>/\<open>Admpos\<close> geometry (via @{thm [source] m_8_2_cpU_of_widTrMaxM}).  This pins
+  the entire residual of the §8.2 keystone to the one trunk-max landing equation
+  \<open>widTrM\<close>, which is exactly the inductive hard core (empirically 291/291 in the
+  invocation regime; see the blocker note below — it does NOT hold for all
+  \<open>Admpos\<close> \<open>M'\<close>, only for the \<open>j\<^sub>1eq\<close>-chain-reachable ones).\<close>
+
+lemma m_8_2_wid_uncond_widTrM:
+  fixes M :: pairseq
+  assumes widTrMU: "\<And>M'. M' \<in> RT_PS \<Longrightarrow> M' \<in> PT_PS \<Longrightarrow> Br M' \<noteq> [] \<Longrightarrow> Lng M' - 1 > 1
+                  \<Longrightarrow> transJm1 M' > 0
+                  \<Longrightarrow> FirstNodes M' ! (Lng (Br M') - 1) = Lng M' - 1
+                  \<Longrightarrow> RightNodes (Trans M') ! 1 = entry M' 1 (TrMax M')"
+    and MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS" and Brne: "Br M \<noteq> []" and j1gt: "Lng M - 1 > 1"
+  shows "RightNodes (Trans M) ! 1 = entry M 1 (FirstNodes M ! (Lng (Br M) - 1))
+          \<or> RightNodes (Trans M) ! 1 = entry M 1 (Joints M ! (Lng (Br M) - 1))"
+proof -
+  have cpU: "\<And>M'. M' \<in> RT_PS \<Longrightarrow> M' \<in> PT_PS \<Longrightarrow> Br M' \<noteq> [] \<Longrightarrow> Lng M' - 1 > 1
+                  \<Longrightarrow> transJm1 M' > 0 \<Longrightarrow> Br (Pred M') \<noteq> []
+                  \<Longrightarrow> FirstNodes M' ! (Lng (Br M') - 1) = Lng M' - 1
+                  \<Longrightarrow> RightNodes (Trans (Pred M')) ! 1
+                       = entry (Pred M') 1 (Joints (Pred M') ! (Lng (Br (Pred M')) - 1))"
+  proof -
+    fix M' :: pairseq
+    assume a1: "M' \<in> RT_PS" and a2: "M' \<in> PT_PS" and a3: "Br M' \<noteq> []"
+      and a4: "Lng M' - 1 > 1" and a5: "transJm1 M' > 0" and a6: "Br (Pred M') \<noteq> []"
+      and a7: "FirstNodes M' ! (Lng (Br M') - 1) = Lng M' - 1"
+    have w: "RightNodes (Trans M') ! 1 = entry M' 1 (TrMax M')"
+      by (rule widTrMU[OF a1 a2 a3 a4 a5 a7])
+    show "RightNodes (Trans (Pred M')) ! 1
+            = entry (Pred M') 1 (Joints (Pred M') ! (Lng (Br (Pred M')) - 1))"
+      by (rule m_8_2_cpU_of_widTrMaxM[OF a1 a2 a3 a4 a5 a6 a7 w])
+  qed
+  show ?thesis by (rule m_8_2_wid_uncond[OF cpU MR MP Brne j1gt])
+qed
+
+text \<open>§8.2 keystone (§8.2 補題（部分表現の単項成分と\<open>Pred\<close>の関係）, content.md 3360),
+  = paper @{thm [source] p_8_2_subexpr_component_Pred} (pss_paper.thy 1520), with the
+  \<open>baseU\<close> residual of @{thm [source] m_8_2_subexpr_component_Pred} DISCHARGED.  Only the
+  single hard-core \<open>cpU\<close> coupling (equivalently the one \<open>widTrM\<close> equation, cf.
+  @{thm [source] m_8_2_wid_uncond_widTrM}) remains as a premise; this is the strongest
+  unconditional reduction of the §8.2 keystone.\<close>
+
+lemma m_8_2_subexpr_component_Pred_final:
+  fixes M :: pairseq
+  defines "j1 \<equiv> Lng M - 1"
+  defines "J1 \<equiv> Lng (Br M) - 1"
+  defines "j0' \<equiv> Joints M ! J1"
+  defines "j1' \<equiv> FirstNodes M ! J1"
+  assumes cpU: "\<And>M'. M' \<in> RT_PS \<Longrightarrow> M' \<in> PT_PS \<Longrightarrow> Br M' \<noteq> [] \<Longrightarrow> Lng M' - 1 > 1
+                  \<Longrightarrow> transJm1 M' > 0 \<Longrightarrow> Br (Pred M') \<noteq> []
+                  \<Longrightarrow> FirstNodes M' ! (Lng (Br M') - 1) = Lng M' - 1
+                  \<Longrightarrow> RightNodes (Trans (Pred M')) ! 1
+                       = entry (Pred M') 1 (Joints (Pred M') ! (Lng (Br (Pred M')) - 1))"
+    and MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS" and Brne: "Br M \<noteq> []" and j1gt: "j1 > 1"
+  shows
+    "(j1' = j1 \<and> (TrMax M = 0 \<or> j0' < TrMax M)
+        \<and> (entry M 0 j1' = entry M 1 j1' \<or> adm M j0')
+        \<and> (\<exists>!t1. Trans (Pred M) = Dpt (enat (entry M 1 0)) t1
+              \<and> Trans M = Dpt (enat (entry M 1 0))
+                            (t1 +\<^sub>B Dpt (enat (entry M 1 j1')) 0\<^sub>B)))
+   \<or> (j1' = j1 \<and> entry M 0 j1' > entry M 1 j1' \<and> \<not> adm M j0'
+        \<and> (\<exists>!t12. Trans (Pred M) = Dpt (enat (entry M 1 0)) (fst t12)
+              \<and> Trans M = Dpt (enat (entry M 1 0))
+                            (fst t12 +\<^sub>B Dpt (enat (entry M 1 j0')) (snd t12))))
+   \<or> (\<exists>!t123. Trans (Pred M)
+                = Dpt (enat (entry M 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M 1 j1')) (fst (snd t123)))
+            \<and> Trans M = Dpt (enat (entry M 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M 1 j1')) (snd (snd t123))))
+   \<or> (\<exists>!t123. Trans (Pred M)
+                = Dpt (enat (entry M 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M 1 j0')) (fst (snd t123)))
+            \<and> Trans M = Dpt (enat (entry M 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M 1 j0')) (snd (snd t123))))"
+proof -
+  have j1gt': "Lng M - 1 > 1" using j1gt by (simp add: j1_def)
+  have wid: "RightNodes (Trans M) ! 1 = entry M 1 (FirstNodes M ! (Lng (Br M) - 1))
+              \<or> RightNodes (Trans M) ! 1 = entry M 1 (Joints M ! (Lng (Br M) - 1))"
+    by (rule m_8_2_wid_uncond[OF cpU MR MP Brne j1gt'])
+  show ?thesis
+    using m_8_2_subexpr_component_Pred_of_wid[OF MR MP Brne j1gt' wid]
+    unfolding j1_def J1_def j0'_def j1'_def .
+qed
+
+
+text \<open>§6.3 B1: \<open>Adm\<close>-prefix invariance.  For a prefix slice \<open>seg M 0 b\<close> and a
+  strictly interior row-0 index \<open>c < b\<close>, the admissibilization is unchanged:
+  \<open>Adm (seg M 0 b) c = Adm M c\<close>.  This is the \<open>j\<^sub>0' = 0\<close> special case of the
+  back-slice admissibilization heredity @{thm [source] m_6_3_admof_slice}: with
+  the slice starting at \<open>0\<close>, the shift vanishes.\<close>
+
+lemma m_6_3_Adm_prefix_slice:
+  assumes MT: "M \<in> T_PS" and cb: "c < b" and bL: "b \<le> Lng M - 1"
+  shows "Adm (seg M 0 b) c = Adm M c"
+proof -
+  have le0: "(0::nat) \<le> Adm M c" by simp
+  have "Adm (seg M 0 b) (c - 0) = Adm M c - 0"
+    by (rule m_6_3_admof_slice[OF MT le0 cb bL])
+  thus ?thesis by simp
+qed
+
+
+text \<open>§8.1 part(4) Adm-zero foundation (content.md 3021).  In the part(4)-setup
+  context — the back-slice \<open>N = (M\<^sub>j)\<^bsub>j=j'\<^sub>-\<^sub>1\<^esub>\<^sup>j\<^sub>0\<close> ending at the interior column
+  \<open>j\<^sub>0\<close>, under the gap guard \<open>j'\<^sub>0 + 1 < j\<^sub>0\<close> — the reduct \<open>Red N\<close> is in the Adm-zero
+  regime: \<open>transJm1 (Red N) = 0\<close>.  This is the article's
+  \<open>j\<^sub>-\<^sub>1\<^sup>N = Adm\<^sub>N(j\<^sub>0\<^sup>N) = Adm\<^sub>M(j'\<^sub>0) - j'\<^sub>-\<^sub>1 = 0\<close> step.  Route: view \<open>N\<close> as the
+  back-slice \<open>seg M' j'\<^sub>-\<^sub>1 (Lng M' - 1)\<close> of the prefix \<open>M' = seg M 0 j\<^sub>0\<close> (so its
+  last column is \<open>j\<^sub>0\<close>), apply the \<open>transJm1\<close>-shift
+  @{thm [source] repr_transJm1_shift} to \<open>M'\<close> (giving
+  \<open>transJm1 (Red N) = transJm1 M' - j'\<^sub>-\<^sub>1\<close>), then evaluate \<open>transJm1 M' = j'\<^sub>-\<^sub>1\<close> via
+  \<open>transJ0 M' = parent M' 0 (Lng M' - 1) = j'\<^sub>0\<close> (@{thm [source] repr_parent_M_to_seg})
+  and the \<open>Adm\<close>-prefix invariance \<open>Adm M' j'\<^sub>0 = Adm M j'\<^sub>0 = j'\<^sub>-\<^sub>1\<close>
+  (@{thm [source] m_6_3_Adm_prefix_slice}).\<close>
+
+lemma m_8_1_c1_around_part4_Adm0:
+  fixes M :: pairseq
+  defines "j1 \<equiv> Lng M - 1"
+  defines "j0 \<equiv> parent M 0 j1"
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS"
+    and admj0: "adm M j0" and j1gt: "j1 > 1"
+    and np: "nextR M 0 j0' j0"
+    and adj: "j0' + 1 < j0"
+  defines "jm1' \<equiv> Adm M j0'"
+  shows "transJm1 (Red (seg M jm1' j0)) = 0"
+proof -
+  have MT: "M \<in> T_PS" using MR by (simp add: RT_PS_def)
+  have mono: "monoT M" using MP by (simp add: PT_PS_def)
+  have L: "1 < Lng M" using j1gt by (simp add: j1_def)
+  have j1lt: "j1 < Lng M" using L by (simp add: j1_def)
+  have j1eq: "j1 = Lng M - 1" by (simp add: j1_def)
+  have hp: "hasParent M 0 j1" using monoT_hasParent0_last[OF MT mono L] j1_def by simp
+  have parj0: "nextR M 0 j0 j1"
+    using hp unfolding hasParent_def j0_def parent_def j1_def by (rule theI')
+  have j0ltj1: "j0 < j1" and j0Mleq: "leR M 0 j0 j1"
+    using poper_nextR_imp_le0[OF parj0] by simp_all
+  have le0j0: "le0 M j0 j1" using j0Mleq by (simp add: leR_def)
+  have j0'ltj0: "j0' < j0" and j0'Mleq: "leR M 0 j0' j0"
+    using poper_nextR_imp_le0[OF np] by simp_all
+  have le0j0': "le0 M j0' j0" using j0'Mleq by (simp add: leR_def)
+  have aLe: "jm1' \<le> j0'" using jm1'_def by (simp add: adm_Adm_le)
+  have admA: "adm M jm1'" using jm1'_def by (simp add: adm_Adm_adm)
+  have jm1'ltj0: "jm1' < j0" using aLe j0'ltj0 by linarith
+  have jm1'ltj1: "jm1' < j1" using jm1'ltj0 j0ltj1 by linarith
+  have j0ltLM: "j0 < Lng M" using j0ltj1 j1lt by linarith
+  have j0leLM1: "j0 \<le> Lng M - 1" using j0ltj1 j1eq by linarith
+  \<comment> \<open>\<open>(M, jm1') \<in> Marked\<close>\<close>
+  have j0'b: "j0' \<le> Lng M - 1" using j0'ltj0 j0leLM1 by linarith
+  have le1a: "leR M 1 jm1' j0'" using adm_row1_ancestry[OF MT j0'b] jm1'_def by simp
+  have le0a: "leR M 0 jm1' j0'" by (rule m_le1_imp_le0[OF le1a])
+  have le0aj0: "le0 M jm1' j0"
+  proof -
+    have "(nextrel0 M)\<^sup>*\<^sup>* jm1' j0'" using le0a by (simp add: leR_def le0_def)
+    moreover have "(nextrel0 M)\<^sup>*\<^sup>* j0' j0" using le0j0' by (simp add: le0_def)
+    ultimately have "(nextrel0 M)\<^sup>*\<^sup>* jm1' j0" by simp
+    moreover have "jm1' < Lng M" using jm1'ltj1 j1lt by linarith
+    ultimately show ?thesis using j0ltLM by (simp add: le0_def)
+  qed
+  have le0aj1: "le0 M jm1' j1" using le0_trans[OF le0aj0 le0j0] by simp
+  have leMaj1: "leR M 0 jm1' j1" using le0aj1 by (simp add: leR_def)
+  have markedA: "(M, jm1') \<in> Marked"
+    using MT admA leMaj1 j1eq by (simp add: Marked_def)
+  \<comment> \<open>prefix slice \<open>M' = seg M 0 j\<^sub>0\<close>, \<open>Lng M' = Suc j\<^sub>0\<close>\<close>
+  have MpR: "seg M 0 j0 \<in> RT_PS" by (rule seg_0_RT_PS[OF MR j0leLM1])
+  have LMp: "Lng (seg M 0 j0) = Suc j0" by simp
+  have LMp1: "Lng (seg M 0 j0) - 1 = j0" by simp
+  \<comment> \<open>\<open>N = seg M jm1' j\<^sub>0 = seg M' jm1' (Lng M' - 1)\<close>\<close>
+  have segseg: "seg (seg M 0 j0) jm1' j0 = seg M jm1' j0"
+  proof -
+    have "seg (seg M 0 j0) jm1' j0 = seg M (0 + jm1') (0 + j0)"
+      by (rule seg_of_seg[where a=0 and b=j0]) auto
+    thus ?thesis by simp
+  qed
+  have segN: "seg M jm1' j0 = seg (seg M 0 j0) jm1' (Lng (seg M 0 j0) - 1)"
+    using segseg LMp1 by simp
+  \<comment> \<open>\<open>hasParent\<close> / \<open>parent\<close> of \<open>j\<^sub>0\<close> in \<open>M\<close> and the prefix slice\<close>
+  have hpj0: "hasParent M 0 j0" unfolding hasParent_def
+    by (metis np idxsum_ex1_parent0_iff)
+  have pj0: "parent M 0 j0 = j0'"
+    unfolding parent_def
+  proof (rule the_equality)
+    show "nextR M 0 j0' j0" by (rule np)
+  next
+    fix y assume "nextR M 0 y j0"
+    thus "y = j0'" using np idxsum_parent0_unique by blast
+  qed
+  have jlS: "j0 < Lng (seg M 0 j0)" using LMp by simp
+  have hpM0: "hasParent M 0 (0 + j0)" using hpj0 by simp
+  have ancM0: "(0::nat) \<le> parent M 0 (0 + j0)" by simp
+  have segpar: "hasParent (seg M 0 j0) 0 j0
+              \<and> parent (seg M 0 j0) 0 j0 = parent M 0 (0 + j0) - 0"
+    by (rule repr_parent_M_to_seg[OF _ j0ltLM jlS hpM0 ancM0]) simp
+  have hpMpj0: "hasParent (seg M 0 j0) 0 j0" using segpar by simp
+  have pMpj0: "parent (seg M 0 j0) 0 j0 = j0'" using segpar pj0 by simp
+  \<comment> \<open>\<open>(M', jm1') \<in> Marked\<close>\<close>
+  have markedMp: "(seg M 0 j0, jm1') \<in> Marked"
+  proof -
+    have "(seg M 0 j0, jm1' - 0) \<in> Marked"
+      by (rule m_6_3_marked_slice[OF markedA _ _ j0leLM1]) (use jm1'ltj0 in auto)
+    thus ?thesis by simp
+  qed
+  \<comment> \<open>premises of the \<open>transJm1\<close>-shift for \<open>M' = seg M 0 j\<^sub>0\<close>, \<open>m = jm1'\<close>\<close>
+  have mintp: "jm1' < Lng (seg M 0 j0) - 2" using LMp aLe adj by linarith
+  have leMp: "leR (seg M 0 j0) 0 jm1' (Lng (seg M 0 j0) - 1)"
+    using markedMp by (simp add: Marked_def)
+  have hpp: "hasParent (seg M 0 j0) 0 (Lng (seg M 0 j0) - 1)"
+    using hpMpj0 LMp1 by simp
+  have anc0p: "jm1' \<le> parent (seg M 0 j0) 0 (Lng (seg M 0 j0) - 1)"
+    using pMpj0 LMp1 aLe by simp
+  have j0ltp: "parent (seg M 0 j0) 0 (Lng (seg M 0 j0) - 1) < Lng (seg M 0 j0) - 1"
+    using pMpj0 LMp1 j0'ltj0 by simp
+  have shiftres: "transJm1 (Red (seg (seg M 0 j0) jm1' (Lng (seg M 0 j0) - 1)))
+                = transJm1 (seg M 0 j0) - jm1'"
+    by (rule repr_transJm1_shift[OF markedMp MpR mintp leMp hpp anc0p j0ltp])
+  \<comment> \<open>\<open>transJm1 M' = jm1'\<close> via \<open>transJ0 M' = j'\<^sub>0\<close> and \<open>Adm\<close>-prefix invariance\<close>
+  have transJ0Mp: "transJ0 (seg M 0 j0) = j0'"
+    using pMpj0 LMp1 by (simp add: transJ0_def transJ1_def)
+  have AdmMp: "Adm (seg M 0 j0) j0' = jm1'"
+  proof -
+    have "Adm (seg M 0 j0) j0' = Adm M j0'"
+      by (rule m_6_3_Adm_prefix_slice[OF MT j0'ltj0 j0leLM1])
+    thus ?thesis using jm1'_def by simp
+  qed
+  have transJm1Mp: "transJm1 (seg M 0 j0) = jm1'"
+    using transJ0Mp AdmMp by (simp add: transJm1_def)
+  \<comment> \<open>assemble: \<open>transJm1 (Red N) = transJm1 M' - jm1' = 0\<close>\<close>
+  have res: "transJm1 (Red (seg M jm1' j0)) = transJm1 (seg M 0 j0) - jm1'"
+    using shiftres segN by simp
+  show ?thesis using res transJm1Mp by simp
+qed
+
+
 end
