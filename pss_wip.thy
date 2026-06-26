@@ -32847,4 +32847,232 @@ proof -
 qed
 
 
+text \<open>§8.1 命題（条件(I)の下での\<open>Trans\<close>と基本列の交換関係）(i), GENERAL \<open>n\<close>,
+  \<open>j\<^sub>0 = 0\<close> (multi-copy) branch — structural backbone (content.md 3119-3128).
+  When the row-0 nearest ancestor of the last index is the root
+  (\<open>j\<^sub>0 = parent M 0 (Lng M-1) = 0\<close>), the kind-0 (condition-(I)) one-step append
+  block \<open>B = M\<^bsub>[j\<^sub>0..<j\<^sub>1]\<^esub>\<close> of @{thm [source] operI_Suc_append} is EXACTLY \<open>Pred M\<close>:
+  \<open>B = M\<^bsub>[0..<Lng M-1]\<^esub> = take (Lng M-1) M = butlast M = Pred M\<close>.\<close>
+
+lemma m_8_1_condI_B_eq_Pred_j0zero:
+  fixes M :: pairseq
+  assumes hp0: "hasParent M 0 (Lng M - 1)"
+    and e1z: "entry M 1 (Lng M - 1) = 0"
+    and j0z: "parent M 0 (Lng M - 1) = 0"
+  shows "map ((!) M) [parent M 0 (Lng M - 1) ..< Lng M - 1] = Pred M"
+proof -
+  let ?j1 = "Lng M - 1"
+  note F = kind0_parent_facts[OF hp0 e1z]
+  have L: "1 < Lng M" by (rule F(6))
+  have ntheq: "map ((!) M) [0..<?j1] = take ?j1 M"
+  proof (rule nth_equalityI)
+    show "length (map ((!) M) [0..<?j1]) = length (take ?j1 M)" using L by simp
+  next
+    fix i assume "i < length (map ((!) M) [0..<?j1])"
+    hence ij: "i < ?j1" by simp
+    have a: "map ((!) M) [0..<?j1] ! i = M ! i" using ij by simp
+    have b: "take ?j1 M ! i = M ! i" using ij by (simp add: nth_take)
+    show "map ((!) M) [0..<?j1] ! i = take ?j1 M ! i" using a b by simp
+  qed
+  have tkbut: "take ?j1 M = butlast M" by (simp add: butlast_conv_take)
+  have predeq: "butlast M = Pred M" using L by (simp add: Pred_def)
+  have "map ((!) M) [parent M 0 ?j1 ..< ?j1] = map ((!) M) [0..<?j1]"
+    using j0z by simp
+  also have "\<dots> = take ?j1 M" by (rule ntheq)
+  also have "\<dots> = Pred M" using tkbut predeq by simp
+  finally show ?thesis .
+qed
+
+text \<open>§8.1 \<open>j\<^sub>0 = 0\<close> branch: the fundamental sequence is a pure \<open>n\<close>-fold copy of
+  \<open>Pred M\<close>, \<open>M[n] = (Pred M)\<^bsup>n\<^esup>\<close> (\<open>take j\<^sub>0 M = take 0 M = []\<close> in
+  @{thm [source] oper_d0zero_expand}, \<open>B = Pred M\<close> by
+  @{thm [source] m_8_1_condI_B_eq_Pred_j0zero}).  This is the LHS structural input
+  to the \<open>j\<^sub>0 = 0\<close> half of \<open>stepT\<close>; the §8.6 @{thm [source] Trans_runseq} is its
+  common-difference-\<open>(1,1)\<close> instance.\<close>
+
+lemma m_8_1_condI_oper_pow_j0zero:
+  fixes M :: pairseq
+  assumes hp0: "hasParent M 0 (Lng M - 1)"
+    and e1z: "entry M 1 (Lng M - 1) = 0"
+    and j0z: "parent M 0 (Lng M - 1) = 0"
+  shows "M[n] = concat (replicate n (Pred M))"
+proof -
+  let ?j1 = "Lng M - 1"
+  note F = kind0_parent_facts[OF hp0 e1z]
+  have L: "1 < Lng M" by (rule F(6))
+  have notzero: "\<not> (entry M 0 ?j1 = 0 \<and> entry M 1 ?j1 = 0)" by (rule F(4))
+  have hp: "hasParent M (idx1 M ?j1) ?j1" by (rule F(5))
+  have i1z: "idx1 M ?j1 = 0" by (rule F(1))
+  have ex: "M[n] = take (parent M 0 ?j1) M
+                    @ concat (replicate n (map ((!) M) [parent M 0 ?j1 ..< ?j1]))"
+    by (rule oper_d0zero_expand[OF L notzero hp i1z])
+  have tk0: "take (parent M 0 ?j1) M = []" using j0z by simp
+  have Beq: "map ((!) M) [parent M 0 ?j1 ..< ?j1] = Pred M"
+    by (rule m_8_1_condI_B_eq_Pred_j0zero[OF hp0 e1z j0z])
+  show ?thesis using ex tk0 Beq by simp
+qed
+
+text \<open>§8.1 condition-(I) commutation, Buchholz-side LOCAL value (content.md 3111,
+  3127, 3186).  The marked principal of \<open>Trans M\<close> under condition (I) is
+  \<open>c\<^sub>2 = D\<^bsub>v\<^esub>(t\<^sub>2 +\<^sub>B D\<^sub>0 0)\<close> (@{thm [source] m_8_1_operB_numBT0_Pred}); the fundamental
+  sequence collapses its trailing \<open>D\<^sub>0 0\<close> and produces \<open>Suc k\<close> copies of the
+  reduced principal \<open>c\<^sub>1 = D\<^bsub>v\<^esub> t\<^sub>2\<close>: \<open>operB c\<^sub>2 (numBT k) = c\<^sub>1 *\<^sub>B (k+1)\<close>
+  (@{thm [source] operB_single_succ}, \<open>numNat (numBT k) = k\<close>).  This is the
+  per-step RHS value that \<open>stepT\<close> must match on the LHS.\<close>
+
+lemma m_8_1_operB_condI_c2_value:
+  fixes v :: nat
+  shows "operB (Dpt (enat v) (t\<^sub>2 +\<^sub>B Dpt 0 0\<^sub>B)) (numBT k)
+           = multBT (Dpt (enat v) t\<^sub>2) (Suc k)"
+proof -
+  have "operB (Dpt (enat v) (t\<^sub>2 +\<^sub>B Dpt 0 0\<^sub>B)) (numBT k)
+          = multBT (Dpt (enat v) t\<^sub>2) (numNat (numBT k) + 1)"
+    by (rule operB_single_succ)
+  also have "\<dots> = multBT (Dpt (enat v) t\<^sub>2) (Suc k)" by (simp add: numNat_numBT)
+  finally show ?thesis .
+qed
+
+text \<open>§8.1 \<open>j\<^sub>0 = 0\<close> branch: the per-step residual \<open>stepT\<close> of
+  @{thm [source] m_8_1_Trans_fseq_condI_comm_append_reduce} reduces to the pure
+  multi-copy \<open>Trans\<close>-additivity.  Since \<open>B = Pred M\<close> and
+  \<open>M[k] @ B = M[Suc k] = (Pred M)\<^bsup>k+1\<^esup>\<close>
+  (@{thm [source] operI_Suc_append}, @{thm [source] m_8_1_condI_oper_pow_j0zero}),
+  \<open>stepT k\<close> is EXACTLY \<open>Trans ((Pred M)\<^bsup>k+1\<^esup>) = operB (Trans M) (numBT k)\<close>.  This is
+  the \<open>j\<^sub>0 = 0\<close> companion of the (general-\<open>B\<close>) reduce lemma; the remaining
+  obligation \<open>add\<close> is the §8.6-@{thm [source] Trans_runseq}-style copy-additivity
+  generalised off the common-difference-\<open>(1,1)\<close> case (THE blocker).\<close>
+
+lemma m_8_1_stepT_j0zero_of_additivity:
+  fixes M :: pairseq
+  assumes hp0: "hasParent M 0 (Lng M - 1)"
+    and e1z: "entry M 1 (Lng M - 1) = 0"
+    and j0z: "parent M 0 (Lng M - 1) = 0"
+    and add: "\<And>m. 1 \<le> m \<Longrightarrow>
+                Trans (concat (replicate (Suc m) (Pred M))) = operB (Trans M) (numBT m)"
+    and k1: "1 \<le> k"
+  shows "Trans ((M[k]) @ map ((!) M) [parent M 0 (Lng M - 1) ..< Lng M - 1])
+           = operB (Trans M) (numBT k)"
+proof -
+  let ?B = "map ((!) M) [parent M 0 (Lng M - 1) ..< Lng M - 1]"
+  have ap: "(M[k]) @ ?B = M[Suc k]"
+    using operI_Suc_append[OF hp0 e1z, of k] by simp
+  have pow: "M[Suc k] = concat (replicate (Suc k) (Pred M))"
+    by (rule m_8_1_condI_oper_pow_j0zero[OF hp0 e1z j0z])
+  have arg: "(M[k]) @ ?B = concat (replicate (Suc k) (Pred M))" using ap pow by simp
+  have "Trans ((M[k]) @ ?B) = Trans (concat (replicate (Suc k) (Pred M)))"
+    using arg by (rule arg_cong)
+  also have "\<dots> = operB (Trans M) (numBT k)" by (rule add[OF k1])
+  finally show ?thesis .
+qed
+
+
+text \<open>§8.2 witness-induction GLUE.  The bound-producing witness statement of
+  @{thm [source] p_8_2_subexpr_component_strongmono} (pss_paper.thy 1560) is proved
+  by strong induction on \<open>n = Lng M - 1 - TrMax M\<close>; the recursive step lifts the
+  IH lower bound on the principal components \<open>P\<^bsub>B\<^esub>\<close> of the \<open>Pred M\<close> witness across
+  the keystone (@{thm [source] m_8_2_keystone}) clause-(3)/(4) replacement
+  \<open>Trans M = D\<^bsub>M\<^bsub>1,0\<^esub>\<^esub>(p +\<^sub>B D\<^bsub>x\<^esub> q\<^sub>2)\<close>, \<open>Trans (Pred M) = D\<^bsub>M\<^bsub>1,0\<^esub>\<^esub>(p +\<^sub>B D\<^bsub>x\<^esub> q\<^sub>1)\<close>.
+  The four lemmas below are the mechanical engine of that lift; they are
+  domain-free facts about \<open>P\<^bsub>B\<^esub>\<close>/\<open>leBT\<close>/\<open>+\<^sub>B\<close> and the \<open>FirstNodes\<close>/\<open>IdxSum\<close>
+  arithmetic, isolating the remaining (deep) content into the threshold
+  monotonicity \<open>thr \<le> thr'\<close> and the index translations
+  (@{thm [source] wid_BrLen_Pred}, @{thm [source] wid_FNJ_Pred_at_JPm1}).\<close>
+
+text \<open>\<open>FirstNodes M ! 0 = TrMax M + 1\<close>: the first branch's first node sits one past
+  the trunk maximum (since \<open>IdxSum (Br M) ! 0 = 0\<close>).\<close>
+
+lemma wit_FirstNodes0: "FirstNodes M ! 0 = TrMax M + 1"
+proof -
+  have l: "0 < length (IdxSum (Br M))" by (simp add: IdxSum_def)
+  have i0: "IdxSum (Br M) ! 0 = 0" by (simp add: idxsum_nth)
+  have "FirstNodes M ! 0 = TrMax M + 1 + IdxSum (Br M) ! 0"
+    unfolding FirstNodes_def by (simp add: nth_map[OF l])
+  thus ?thesis by (simp add: i0)
+qed
+
+text \<open>§8.2 witness-induction SMALL FACT (article 3504-3520, the \<open>j'\<^sub>1 = j\<^sub>1\<close>
+  sub-case of the recursive step): if the last branch's first node is the right
+  end (\<open>j\<^sub>1' = j\<^sub>1\<close>) and the measure \<open>n = Lng M - 1 - TrMax M\<close> exceeds 1
+  (\<open>TrMax M < Lng M - 2\<close>), then \<open>Br M\<close> has \<open>\<ge> 2\<close> branches (\<open>J\<^sub>1 = Lng (Br M) - 1 > 0\<close>),
+  for a single branch would force \<open>FirstNodes M ! 0 = TrMax M + 1 = Lng M - 1\<close>,
+  i.e. \<open>n = 1\<close>.\<close>
+
+lemma wit_J1pos:
+  fixes M :: pairseq
+  assumes Brne: "Br M \<noteq> []"
+    and j1eq: "FirstNodes M ! (Lng (Br M) - 1) = Lng M - 1"
+    and n: "TrMax M < Lng M - 2"
+  shows "0 < Lng (Br M) - 1"
+proof (rule ccontr)
+  assume "\<not> 0 < Lng (Br M) - 1"
+  hence z: "Lng (Br M) - 1 = 0" by simp
+  have "FirstNodes M ! 0 = Lng M - 1" using j1eq z by simp
+  moreover have "FirstNodes M ! 0 = TrMax M + 1" by (rule wit_FirstNodes0)
+  ultimately have "TrMax M + 1 = Lng M - 1" by simp
+  thus False using n by linarith
+qed
+
+text \<open>§8.2 witness lift, RELAX: lowering the principal-component lower bound from
+  \<open>D\<^bsub>thr'\<^esub> 0\<close> to \<open>D\<^bsub>thr\<^esub> 0\<close> when \<open>thr \<le> thr'\<close> (each \<open>p \<in> P\<^bsub>B\<^esub> a\<close> is a single
+  principal \<open>D\<^bsub>v\<^esub> c\<close>, so the bound is \<open>thr \<le> v\<close> via @{thm [source] leBT_Dpt0_iff}).\<close>
+
+lemma wit_PB_relax:
+  assumes L: "\<forall>r\<in>set (PB a). leBT (Dpt (enat thr') 0\<^sub>B) r"
+    and le: "thr \<le> thr'"
+  shows "\<forall>r\<in>set (PB a). leBT (Dpt (enat thr) 0\<^sub>B) r"
+proof
+  fix r assume rin: "r \<in> set (PB a)"
+  then obtain p where rp: "r = Trm [p]" by (auto simp: PB_def)
+  obtain v c where pvc: "p = DB v c" by (cases p)
+  have rv: "r = Dpt v c" using rp pvc by simp
+  have lr0: "leBT (Dpt (enat thr') 0\<^sub>B) r" using L rin by blast
+  have lr: "leBT (Dpt (enat thr') 0\<^sub>B) (Dpt v c)" using lr0 rv by simp
+  have h1: "enat thr' \<le> v" by (rule leBT_Dpt0_iff[THEN iffD1, OF lr])
+  have h2: "enat thr \<le> enat thr'" using le by simp
+  have h3: "enat thr \<le> v" using h2 h1 by (rule order_trans)
+  have "leBT (Dpt (enat thr) 0\<^sub>B) (Dpt v c)"
+    by (rule leBT_Dpt0_iff[THEN iffD2, OF h3])
+  thus "leBT (Dpt (enat thr) 0\<^sub>B) r" using rv by simp
+qed
+
+text \<open>§8.2 witness lift, TAIL: appending one new principal \<open>D\<^bsub>x\<^esub> q\<close> (head \<open>x \<ge> thr\<close>)
+  preserves the lower bound \<open>D\<^bsub>thr\<^esub> 0\<close>; \<open>P\<^bsub>B\<^esub>\<close> distributes over \<open>+\<^sub>B\<close>
+  (@{thm [source] PB_addBT_app}) and is a singleton on \<open>D\<^bsub>x\<^esub> q\<close>.\<close>
+
+lemma wit_PB_tail_bound:
+  assumes L: "\<forall>r\<in>set (PB p). leBT (Dpt (enat thr) 0\<^sub>B) r"
+    and c: "thr \<le> x"
+  shows "\<forall>r\<in>set (PB (p +\<^sub>B Dpt (enat x) q)). leBT (Dpt (enat thr) 0\<^sub>B) r"
+proof -
+  have eq: "PB (p +\<^sub>B Dpt (enat x) q) = PB p @ [Dpt (enat x) q]"
+    by (simp add: PB_addBT_app PB_Dpt_single)
+  have lex: "enat thr \<le> enat x" using c by simp
+  have new: "leBT (Dpt (enat thr) 0\<^sub>B) (Dpt (enat x) q)"
+    by (rule leBT_Dpt0_iff[THEN iffD2, OF lex])
+  show ?thesis using eq L new by auto
+qed
+
+text \<open>§8.2 witness lift, STEP: the keystone clause-(3)/(4) shape transport.  Given
+  the IH lower bound \<open>D\<^bsub>thr'\<^esub> 0\<close> on \<open>P\<^bsub>B\<^esub>(p +\<^sub>B D\<^bsub>x\<^esub> q\<^sub>1)\<close> (the \<open>Pred M\<close> witness),
+  with \<open>thr \<le> thr'\<close> (threshold monotonicity \<open>M \<to> Pred M\<close>) and \<open>thr \<le> x\<close> (the new
+  branch head dominates the \<open>M\<close>-threshold), the \<open>M\<close> witness \<open>p +\<^sub>B D\<^bsub>x\<^esub> q\<^sub>2\<close> obeys the
+  lower bound \<open>D\<^bsub>thr\<^esub> 0\<close>.  This is the per-step bound the witness induction needs;
+  the keystone (@{thm [source] m_8_2_keystone}) supplies \<open>p,x,q\<^sub>1,q\<^sub>2\<close> and the
+  leftend uniqueness (@{thm [source] m_8_2_subexpr_leftend_unique}) supplies the
+  equality of the two \<open>p +\<^sub>B D\<^bsub>x\<^esub> _\<close> witnesses with the IH/keystone decompositions.\<close>
+
+lemma wit_step_lift:
+  assumes ih: "\<forall>r\<in>set (PB (p +\<^sub>B Dpt (enat x) q1)). leBT (Dpt (enat thr') 0\<^sub>B) r"
+    and le1: "thr \<le> thr'" and le2: "thr \<le> x"
+  shows "\<forall>r\<in>set (PB (p +\<^sub>B Dpt (enat x) q2)). leBT (Dpt (enat thr) 0\<^sub>B) r"
+proof -
+  have split: "set (PB (p +\<^sub>B Dpt (enat x) q1)) = set (PB p) \<union> {Dpt (enat x) q1}"
+    by (simp add: PB_addBT_app PB_Dpt_single)
+  have onp: "\<forall>r\<in>set (PB p). leBT (Dpt (enat thr') 0\<^sub>B) r" using ih split by auto
+  have onp': "\<forall>r\<in>set (PB p). leBT (Dpt (enat thr) 0\<^sub>B) r"
+    by (rule wit_PB_relax[OF onp le1])
+  show ?thesis by (rule wit_PB_tail_bound[OF onp' le2])
+qed
+
+
 end
