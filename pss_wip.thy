@@ -28358,4 +28358,509 @@ proof -
 qed
 
 
+
+text \<open>§8.2 w-identification transports (jt/ft): clean (\<open>m\<^sub>0\<^sub>0\<close>/\<open>m\<^sub>1\<^sub>0\<close>-free) ports of the
+  \<open>Br (Pred M)\<close> prefix machinery, plus the joint/first-node transports feeding
+  the \<open>jt\<close>/\<open>ft\<close> hypotheses of @{thm [source] m_8_2_wid_of_predwid}.  The existing
+  @{thm [source] m_6_6_Br_Pred} (and its \<open>rpred_*\<close> derivatives) carry vestigial
+  \<open>entry M 0 0 = 0\<close>, \<open>entry M 1 0 = 0\<close> hypotheses that are NEVER used in their
+  proof bodies, but which fail for general reduced \<open>monoT\<close> sequences
+  (e.g. \<open>(1,1)(2,2)(3,0)(3,0)\<close>); so we re-derive the chain without them.\<close>
+
+lemma wid_Br_Pred:
+  assumes M: "M \<in> T_PS"
+    and br: "TrMax M \<noteq> Lng M - 1" and L: "1 < Lng M"
+  shows "Br (Pred M) =
+           butlast (Br M)
+           @ (if Lng (last (Br M)) \<le> 1 then [] else [butlast (last (Br M))])"
+proof -
+  let ?t = "TrMax M"
+  let ?j0 = "TrMax M + 1"
+  let ?S = "seg M ?j0 (Lng M - 1)"
+  have tb: "?t \<le> Lng M - 1" by (rule TrMax_bound[OF M])
+  with br have tlt: "?t < Lng M - 1" by linarith
+  have j0lt: "?j0 < Lng M" using tlt by linarith
+  have LMpos: "0 < Lng M" using L by linarith
+  have Sdrop: "?S = drop ?j0 M" using LMpos by (rule seg_to_last_eq_drop)
+  have Sne: "?S \<noteq> []" using j0lt unfolding Sdrop by simp
+  have ST: "?S \<in> T_PS" using Sne by (simp add: T_PS_def)
+  have LS: "Lng ?S = Lng M - ?j0" by (simp add: Sdrop)
+  have brM: "Br M = P ?S" using br by (simp add: Br_def)
+  have predbl: "Pred M = butlast M" using L by (simp add: Pred_def)
+  have predT: "Pred M \<in> T_PS" by (rule Pred_preserves_T_PS[OF M])
+  have LP: "Lng (Pred M) = Lng M - 1" using L by (simp add: predbl)
+  have trP: "TrMax (Pred M) = ?t" by (rule TrMax_Pred[OF M L br])
+  have SpredEq: "seg (Pred M) ?j0 (Lng (Pred M) - 1) = butlast ?S"
+  proof -
+    have Ppos: "0 < Lng (Pred M)" using LP tlt by linarith
+    have "seg (Pred M) ?j0 (Lng (Pred M) - 1) = drop ?j0 (Pred M)"
+      using Ppos by (rule seg_to_last_eq_drop)
+    also have "\<dots> = drop ?j0 (butlast M)" by (simp add: predbl)
+    also have "\<dots> = butlast (drop ?j0 M)" by (simp add: butlast_drop)
+    also have "drop ?j0 M = ?S" by (rule Sdrop[symmetric])
+    finally show ?thesis .
+  qed
+  show ?thesis
+  proof (cases "Lng ?S = 1")
+    case True
+    have treq: "?t = Lng M - 2" using True LS j0lt by simp
+    have tPeq: "TrMax (Pred M) = Lng (Pred M) - 1" using trP treq LP tlt by simp
+    have brPM: "Br (Pred M) = []" using tPeq by (simp add: Br_def)
+    have PS1: "P ?S = [?S]"
+    proof -
+      have "\<not> multiT ?S"
+      proof (cases "zeroT ?S")
+        case True thus ?thesis by (simp add: multiT_def)
+      next
+        case False
+        have "monoT ?S" using True \<open>Lng ?S = 1\<close> False
+          by (simp add: monoT_def leR_def le0_def)
+        thus ?thesis by (simp add: multiT_def)
+      qed
+      thus ?thesis by (subst P.simps) simp
+    qed
+    have brMeq: "Br M = [?S]" using brM PS1 by simp
+    have lastle: "Lng (last (Br M)) \<le> 1" using brMeq True by simp
+    show ?thesis using brPM brMeq lastle by simp
+  next
+    case False
+    have LSpos: "0 < Lng ?S" using Sne by (cases ?S) auto
+    have LSgt1: "1 < Lng ?S" using False LSpos by linarith
+    have trne: "?t < Lng M - 2" using LSgt1 LS j0lt by simp
+    have tPne: "TrMax (Pred M) \<noteq> Lng (Pred M) - 1" using trP trne LP tlt by simp
+    have "Br (Pred M) = P (seg (Pred M) (TrMax (Pred M) + 1) (Lng (Pred M) - 1))"
+      using tPne by (simp add: Br_def)
+    also have "\<dots> = P (seg (Pred M) ?j0 (Lng (Pred M) - 1))" by (simp add: trP)
+    also have "\<dots> = P (butlast ?S)" by (rule arg_cong[OF SpredEq])
+    also have "butlast ?S = Pred ?S" using LSgt1 by (simp add: Pred_def)
+    finally have brPM: "Br (Pred M) = P (Pred ?S)" .
+    have dec: "P (Pred ?S) =
+                 butlast (P ?S)
+                 @ (if Lng (last (P ?S)) \<le> 1 then [] else [butlast (last (P ?S))])"
+      by (rule m_6_6_P_Pred_decomp[OF ST LSgt1])
+    show ?thesis using brPM dec by (simp add: brM)
+  qed
+qed
+
+lemma wid_JBr_Pred_imp:
+  assumes M: "M \<in> T_PS"
+    and br: "TrMax M \<noteq> Lng M - 1" and L: "1 < Lng M"
+    and JBr: "J < Lng (Br (Pred M))"
+  shows "J < Lng (Br M)"
+proof -
+  have brMne: "Br M \<noteq> []"
+  proof -
+    have "Br M = P (seg M (TrMax M + 1) (Lng M - 1))" using br by (simp add: Br_def)
+    moreover have "0 < Lng (seg M (TrMax M + 1) (Lng M - 1))"
+    proof -
+      have tb: "TrMax M \<le> Lng M - 1" by (rule TrMax_bound[OF M])
+      with br have "TrMax M < Lng M - 1" by linarith
+      thus ?thesis using L by (simp add: Lng_seg)
+    qed
+    ultimately show ?thesis by (metis P_nonempty)
+  qed
+  have brEq: "Br (Pred M) =
+           butlast (Br M)
+           @ (if Lng (last (Br M)) \<le> 1 then [] else [butlast (last (Br M))])"
+    by (rule wid_Br_Pred[OF M br L])
+  show ?thesis
+  proof (cases "Lng (last (Br M)) \<le> 1")
+    case True
+    hence "Br (Pred M) = butlast (Br M)" using brEq by simp
+    hence "J < Lng (butlast (Br M))" using JBr by simp
+    thus ?thesis using brMne by simp
+  next
+    case False
+    hence "Br (Pred M) = butlast (Br M) @ [butlast (last (Br M))]" using brEq by simp
+    hence "J < Lng (butlast (Br M)) + 1" using JBr by simp
+    thus ?thesis using brMne by simp
+  qed
+qed
+
+lemma wid_FirstNodes_Pred:
+  assumes M: "M \<in> T_PS" and mono: "monoT M"
+    and br: "TrMax M \<noteq> Lng M - 1" and L: "1 < Lng M"
+    and JBr: "J < Lng (Br (Pred M))"
+  shows "FirstNodes (Pred M) ! J = FirstNodes M ! J"
+proof -
+  have trP: "TrMax (Pred M) = TrMax M" by (rule TrMax_Pred[OF M L br])
+  obtain ext where ext: "Br (Pred M) = butlast (Br M) @ ext"
+    using wid_Br_Pred[OF M br L] by blast
+  have brMne: "Br M \<noteq> []"
+  proof -
+    have "Br M = P (seg M (TrMax M + 1) (Lng M - 1))" using br by (simp add: Br_def)
+    moreover have "0 < Lng (seg M (TrMax M + 1) (Lng M - 1))"
+    proof -
+      have tb: "TrMax M \<le> Lng M - 1" by (rule TrMax_bound[OF M])
+      with br have "TrMax M < Lng M - 1" by linarith
+      thus ?thesis using L by (simp add: Lng_seg)
+    qed
+    ultimately show ?thesis by (metis P_nonempty)
+  qed
+  have Jle: "J \<le> Lng (Br M) - 1"
+  proof -
+    have brEq: "Br (Pred M) =
+             butlast (Br M)
+             @ (if Lng (last (Br M)) \<le> 1 then [] else [butlast (last (Br M))])"
+      by (rule wid_Br_Pred[OF M br L])
+    show ?thesis
+    proof (cases "Lng (last (Br M)) \<le> 1")
+      case True
+      hence "Br (Pred M) = butlast (Br M)" using brEq by simp
+      hence "J < Lng (butlast (Br M))" using JBr by simp
+      thus ?thesis using brMne by simp
+    next
+      case False
+      hence "Br (Pred M) = butlast (Br M) @ [butlast (last (Br M))]" using brEq by simp
+      hence "J < Lng (butlast (Br M)) + 1" using JBr by simp
+      thus ?thesis using brMne by simp
+    qed
+  qed
+  have JleL: "J \<le> length (Br M) - 1" using Jle by simp
+  have idxeq: "IdxSum (Br (Pred M)) ! J = IdxSum (Br M) ! J"
+  proof -
+    have JleBut: "J \<le> length (butlast (Br M))" using Jle brMne by simp
+    have "IdxSum (Br (Pred M)) ! J = IdxSum (butlast (Br M)) ! J"
+      using ext by (simp add: rpred_IdxSum_prefix_append[OF JleBut])
+    also have "\<dots> = IdxSum (Br M) ! J"
+      by (rule rpred_IdxSum_butlast[OF JleL brMne])
+    finally show ?thesis .
+  qed
+  have fnP: "FirstNodes (Pred M) ! J = TrMax (Pred M) + 1 + IdxSum (Br (Pred M)) ! J"
+    by (rule FirstNodes_nth[OF JBr])
+  have JM: "J < Lng (Br M)" using Jle brMne by (cases "Br M") auto
+  have fnM: "FirstNodes M ! J = TrMax M + 1 + IdxSum (Br M) ! J"
+    by (rule FirstNodes_nth[OF JM])
+  show ?thesis using fnP fnM trP idxeq by simp
+qed
+
+lemma wid_Joints_Pred:
+  assumes M: "M \<in> T_PS" and mono: "monoT M"
+    and br: "TrMax M \<noteq> Lng M - 1" and L: "1 < Lng M"
+    and JBr: "J < Lng (Br (Pred M))"
+  shows "Joints (Pred M) ! J = Joints M ! J"
+proof -
+  have MP: "M \<in> PT_PS" using M mono by (simp add: PT_PS_def)
+  have predT: "Pred M \<in> T_PS" by (rule Pred_preserves_T_PS[OF M])
+  have JM: "J < Lng (Br M)" by (rule wid_JBr_Pred_imp[OF M br L JBr])
+  have predbl: "Pred M = butlast M" using L by (simp add: Pred_def)
+  have nz: "\<not> zeroT M" using L by (simp add: zeroT_def)
+  have nmu: "\<not> multiT M" using mono by (simp add: multiT_def)
+  have nzP: "\<not> zeroT (Pred M)"
+  proof -
+    have LP: "Lng (Pred M) = Lng M - 1" using L by (simp add: predbl)
+    have brPne: "Br (Pred M) \<noteq> []" using JBr by auto
+    have tneP: "TrMax (Pred M) \<noteq> Lng (Pred M) - 1"
+    proof
+      assume "TrMax (Pred M) = Lng (Pred M) - 1"
+      hence "Br (Pred M) = []" by (simp add: Br_def)
+      with brPne show False by simp
+    qed
+    have LPgt: "1 < Lng (Pred M)"
+    proof (rule ccontr)
+      assume "\<not> 1 < Lng (Pred M)"
+      hence "Lng (Pred M) \<le> 1" by simp
+      moreover have "0 < Lng (Pred M)" using LP L by linarith
+      ultimately have "Lng (Pred M) = 1" by linarith
+      hence "TrMax (Pred M) = Lng (Pred M) - 1"
+        using TrMax_bound[OF predT] by simp
+      thus False using tneP by simp
+    qed
+    thus ?thesis by (simp add: zeroT_def)
+  qed
+  have nmuP: "\<not> multiT (Pred M)" by (rule nonmulti_Pred[OF M nmu L])
+  have monoP: "monoT (Pred M)" using nzP nmuP by (simp add: multiT_def)
+  have MPP: "Pred M \<in> PT_PS" using predT monoP by (simp add: PT_PS_def)
+  let ?f = "FirstNodes M ! J"
+  have fnP: "FirstNodes (Pred M) ! J = ?f"
+    by (rule wid_FirstNodes_Pred[OF M mono br L JBr])
+  have hpP: "hasParent (Pred M) 0 ?f"
+    using rpred_hasParent_FirstNodes[OF MPP JBr] fnP by simp
+  have nxM: "nextR M 0 (Joints M ! J) ?f" by (rule Joints_parent_nextR[OF MP JM])
+  have jM_le: "Joints M ! J \<le> TrMax M \<and> TrMax M < ?f"
+    by (rule m_6_4_FirstNodes_TrMax_Joints[OF MP JM])
+  have f_lt_M: "?f < Lng M" using nxM by (simp add: nextR_def nextrel0_def)
+  have f_lt_P: "?f < Lng (Pred M)"
+  proof -
+    have fnP2: "FirstNodes (Pred M) ! J < Lng (Pred M)"
+      using Joints_parent_nextR[OF MPP JBr] by (simp add: nextR_def nextrel0_def)
+    thus ?thesis using fnP by simp
+  qed
+  have agree0: "\<And>j. j \<le> ?f \<Longrightarrow> entry M 0 j = entry (Pred M) 0 j"
+  proof -
+    fix j assume "j \<le> ?f"
+    hence "j < Lng (Pred M)" using f_lt_P by linarith
+    thus "entry M 0 j = entry (Pred M) 0 j"
+      by (simp add: predbl entry_def nth_butlast)
+  qed
+  have jMle_f: "Joints M ! J \<le> ?f" using jM_le by linarith
+  have nxMrel: "nextrel0 M (Joints M ! J) ?f" using nxM by (simp add: nextR_def)
+  have nxMP: "nextR (Pred M) 0 (Joints M ! J) ?f"
+  proof -
+    have "nextrel0 (Pred M) (Joints M ! J) ?f"
+      by (rule nextrel0_prefix_row0[OF agree0 f_lt_P jMle_f order.refl nxMrel])
+    thus ?thesis by (simp add: nextR_def)
+  qed
+  have jP_eq: "Joints (Pred M) ! J = parent (Pred M) 0 ?f"
+    using JBr fnP by (simp add: Joints_nth)
+  have exu: "\<exists>!j0. nextR (Pred M) 0 j0 ?f"
+    using hpP by (simp add: hasParent_def)
+  have "parent (Pred M) 0 ?f = Joints M ! J"
+    unfolding parent_def
+    by (rule the1_equality[OF exu nxMP])
+  thus ?thesis using jP_eq by simp
+qed
+
+text \<open>§8.2 jt/ft support: a trunk-interior index \<open>1 \<le> k < TrMax M\<close> is
+  \<open>M\<close>-non-admissible (both row-1 trunk steps at \<open>k-1\<close> and \<open>k\<close> hold).\<close>
+
+lemma wid_adm_trunk_interior_False:
+  assumes T: "M \<in> T_PS" and k1: "1 \<le> k" and kT: "k < TrMax M"
+  shows "\<not> adm M k"
+proof -
+  have s1: "nextR M 1 k (k + 1)" by (rule TrMax_trunk_step[OF T kT])
+  have km1lt: "k - 1 < TrMax M" using kT by linarith
+  have s2: "nextR M 1 (k - 1) ((k - 1) + 1)" by (rule TrMax_trunk_step[OF T km1lt])
+  have keq: "(k - 1) + 1 = k" using k1 by linarith
+  have s2': "nextR M 1 (k - 1) k" using s2 keq by simp
+  have "nadm M k" unfolding nadm_def using s1 s2' by simp
+  thus ?thesis by (simp add: adm_def)
+qed
+
+text \<open>§8.2 jt support: in the \<open>Admpos\<close> regime, if the row-0 parent of the last
+  column lies in the trunk (\<open>transJ0 M \<le> TrMax M\<close>, the case-B / \<open>j\<^sub>1' = j\<^sub>1\<close>
+  geometry), then it is exactly \<open>TrMax M\<close>.  Otherwise \<open>Adm M (transJ0 M)\<close> would be
+  a positive \<open>M\<close>-admissible index strictly inside the trunk, contradicting
+  @{thm [source] wid_adm_trunk_interior_False}.\<close>
+
+lemma wid_transJ0_eq_TrMax:
+  assumes T: "M \<in> T_PS" and jple: "transJ0 M \<le> TrMax M" and Admpos: "transJm1 M > 0"
+  shows "transJ0 M = TrMax M"
+proof -
+  have admA: "adm M (Adm M (transJ0 M))" by (rule adm_Adm_adm)
+  have leA: "Adm M (transJ0 M) \<le> transJ0 M" by (rule adm_Adm_le)
+  have posA: "0 < Adm M (transJ0 M)" using Admpos by (simp add: transJm1_def)
+  have k1: "1 \<le> Adm M (transJ0 M)" using posA by simp
+  have "\<not> transJ0 M < TrMax M"
+  proof
+    assume jplt: "transJ0 M < TrMax M"
+    have kT: "Adm M (transJ0 M) < TrMax M" using leA jplt by linarith
+    have "\<not> adm M (Adm M (transJ0 M))" by (rule wid_adm_trunk_interior_False[OF T k1 kT])
+    thus False using admA by simp
+  qed
+  thus ?thesis using jple by linarith
+qed
+
+text \<open>§8.2 jt/ft support: the predecessor agrees with \<open>M\<close> on row-1 entries strictly
+  left of the dropped last column.\<close>
+
+lemma wid_entry1_Pred_agree:
+  assumes L: "1 < Lng M" and j: "j < Lng M - 1"
+  shows "entry (Pred M) 1 j = entry M 1 j"
+  using L j by (simp add: Pred_def entry_def nth_butlast)
+
+text \<open>§8.2 ft transport (CONDITIONAL on \<open>j\<^sub>1' \<noteq> j\<^sub>1\<close>, the last branch has length
+  \<open>> 1\<close>): the predecessor's last first-node carries the same row-1 entry as \<open>M\<close>'s.
+  In this regime \<open>Lng (Br (Pred M)) = Lng (Br M)\<close>, so \<open>JN = J\<^sub>1\<close>, and
+  @{thm [source] wid_FirstNodes_Pred} identifies the two first nodes; the row-1
+  entry agrees by @{thm [source] wid_entry1_Pred_agree} since \<open>FirstNodes M ! J\<^sub>1
+  < Lng M - 1\<close>.  Feeds the \<open>ft\<close> hypothesis of @{thm [source] m_8_2_wid_of_predwid}.\<close>
+
+lemma m_8_2_ft_transport:
+  fixes M :: pairseq
+  defines "J1 \<equiv> Lng (Br M) - 1"
+  defines "j1' \<equiv> FirstNodes M ! J1"
+  defines "JN \<equiv> Lng (Br (Pred M)) - 1"
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS" and Brne: "Br M \<noteq> []"
+    and j1gt: "Lng M - 1 > 1"
+    and brP: "Br (Pred M) \<noteq> []"
+    and j1ne: "FirstNodes M ! J1 \<noteq> Lng M - 1"
+  shows "entry (Pred M) 1 (FirstNodes (Pred M) ! JN) = entry M 1 j1'"
+proof -
+  have MT: "M \<in> T_PS" using MP by (simp add: PT_PS_def)
+  have mono: "monoT M" using MP by (simp add: PT_PS_def)
+  have L: "1 < Lng M" using j1gt by simp
+  have tb: "TrMax M \<le> Lng M - 1" by (rule TrMax_bound[OF MT])
+  have trne: "TrMax M \<noteq> Lng M - 1"
+  proof
+    assume "TrMax M = Lng M - 1"
+    hence "Br M = []" by (simp add: Br_def)
+    thus False using Brne by simp
+  qed
+  have trlt: "TrMax M < Lng M - 1" using tb trne by linarith
+  have BrL: "Lng (Br M) > 0" using Brne by (cases "Br M") auto
+  have JBr1: "J1 < Lng (Br M)" unfolding J1_def using BrL by simp
+  \<comment> \<open>the last branch is the suffix segment; its length \<open>> 1\<close> in the \<open>j\<^sub>1' \<noteq> j\<^sub>1\<close> regime\<close>
+  have lastnth: "last (Br M) = Br M ! J1" using Brne unfolding J1_def
+    by (simp add: last_conv_nth)
+  have blkeq: "Br M ! J1 = seg M j1' (Lng M - 1)"
+    using wf21_Br_eq_seg[OF MP Brne] unfolding J1_def j1'_def by simp
+  have j1'lt: "j1' < Lng M" using a1_FN_lt[OF MP JBr1] unfolding j1'_def by simp
+  have j1'le: "j1' \<le> Lng M - 1" using j1'lt by linarith
+  have j1'ne: "j1' \<noteq> Lng M - 1" using j1ne by (simp add: j1'_def)
+  have j1'lt2: "j1' < Lng M - 1" using j1'le j1'ne by (simp add: less_le)
+  have lastlen: "Lng (Br M ! J1) = Suc (Lng M - 1) - j1'" using blkeq by (simp only: Lng_seg)
+  have lastgt1: "1 < Lng (last (Br M))"
+  proof -
+    have "Lng (last (Br M)) = Suc (Lng M - 1) - j1'" using lastnth lastlen by simp
+    thus ?thesis using j1'lt2 L by linarith
+  qed
+  have notle: "\<not> Lng (last (Br M)) \<le> 1" using lastgt1 by simp
+  \<comment> \<open>\<open>Br (Pred M) = butlast (Br M) @ [butlast (last (Br M))]\<close>, hence \<open>JN = J\<^sub>1\<close>\<close>
+  have brEq: "Br (Pred M) =
+           butlast (Br M)
+           @ (if Lng (last (Br M)) \<le> 1 then [] else [butlast (last (Br M))])"
+    by (rule wid_Br_Pred[OF MT trne L])
+  have brPeq: "Br (Pred M) = butlast (Br M) @ [butlast (last (Br M))]"
+    using brEq notle by simp
+  have lenP: "Lng (Br (Pred M)) = Lng (Br M)" using brPeq BrL by simp
+  have JNeq: "JN = J1" unfolding JN_def J1_def using lenP by simp
+  have JBrP: "JN < Lng (Br (Pred M))" using brP unfolding JN_def by (cases "Br (Pred M)") auto
+  \<comment> \<open>identify first nodes and transport the row-1 entry\<close>
+  have fnP: "FirstNodes (Pred M) ! JN = FirstNodes M ! JN"
+    by (rule wid_FirstNodes_Pred[OF MT mono trne L JBrP])
+  have fnsame: "FirstNodes (Pred M) ! JN = j1'" using fnP JNeq unfolding j1'_def by simp
+  have e1: "entry (Pred M) 1 j1' = entry M 1 j1'"
+    by (rule wid_entry1_Pred_agree[OF L j1'lt2])
+  show ?thesis using fnsame e1 by simp
+qed
+
+text \<open>§8.2 jt transport (UNCONDITIONAL): the predecessor's last joint carries the
+  same row-1 entry as \<open>M\<close>'s last joint.  \<open>j\<^sub>1' \<noteq> j\<^sub>1\<close> (case A) reduces to
+  @{thm [source] wid_Joints_Pred} at \<open>JN = J\<^sub>1\<close>; \<open>j\<^sub>1' = j\<^sub>1\<close> (case B) uses the
+  \<open>Admpos\<close> collapse \<open>transJ0 M = TrMax M\<close> (@{thm [source] wid_transJ0_eq_TrMax}) and
+  joint monotonicity to force both \<open>Joints M ! (J\<^sub>1-1)\<close> and \<open>Joints M ! J\<^sub>1\<close> to be
+  \<open>TrMax M\<close>.  Both joints lie in the trunk, so the row-1 entry transports via
+  @{thm [source] wid_entry1_Pred_agree}.  Feeds the \<open>jt\<close> hypothesis of
+  @{thm [source] m_8_2_wid_of_predwid}.\<close>
+
+lemma m_8_2_jt_transport:
+  fixes M :: pairseq
+  defines "J1 \<equiv> Lng (Br M) - 1"
+  defines "j0' \<equiv> Joints M ! J1"
+  defines "JN \<equiv> Lng (Br (Pred M)) - 1"
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS" and Brne: "Br M \<noteq> []"
+    and j1gt: "Lng M - 1 > 1"
+    and Admpos: "transJm1 M > 0"
+    and brP: "Br (Pred M) \<noteq> []"
+  shows "entry (Pred M) 1 (Joints (Pred M) ! JN) = entry M 1 j0'"
+proof -
+  have MT: "M \<in> T_PS" using MP by (simp add: PT_PS_def)
+  have mono: "monoT M" using MP by (simp add: PT_PS_def)
+  have L: "1 < Lng M" using j1gt by simp
+  have tb: "TrMax M \<le> Lng M - 1" by (rule TrMax_bound[OF MT])
+  have trne: "TrMax M \<noteq> Lng M - 1"
+  proof
+    assume "TrMax M = Lng M - 1"
+    hence "Br M = []" by (simp add: Br_def)
+    thus False using Brne by simp
+  qed
+  have trlt: "TrMax M < Lng M - 1" using tb trne by linarith
+  have BrL: "Lng (Br M) > 0" using Brne by (cases "Br M") auto
+  have JBr1: "J1 < Lng (Br M)" unfolding J1_def using BrL by simp
+  have lastnth: "last (Br M) = Br M ! J1" using Brne unfolding J1_def
+    by (simp add: last_conv_nth)
+  have blkeq: "Br M ! J1 = seg M (FirstNodes M ! J1) (Lng M - 1)"
+    using wf21_Br_eq_seg[OF MP Brne] unfolding J1_def by simp
+  have fn1lt: "FirstNodes M ! J1 < Lng M" using a1_FN_lt[OF MP JBr1] by simp
+  have fn1le: "FirstNodes M ! J1 \<le> Lng M - 1" using fn1lt by linarith
+  have lastlen: "Lng (Br M ! J1) = Suc (Lng M - 1) - FirstNodes M ! J1"
+    using blkeq by (simp only: Lng_seg)
+  \<comment> \<open>the last joint lies in the trunk: \<open>j\<^sub>0' \<le> TrMax M < Lng M - 1\<close>\<close>
+  have j0tr: "j0' \<le> TrMax M"
+    using m_6_4_FirstNodes_TrMax_Joints[OF MP JBr1] by (simp add: j0'_def)
+  have j0lt: "j0' < Lng M - 1" using j0tr trlt by linarith
+  have JBrP: "JN < Lng (Br (Pred M))" using brP unfolding JN_def by (cases "Br (Pred M)") auto
+  \<comment> \<open>predecessor's last joint = \<open>M\<close>'s joint at the same prefix index \<open>JN\<close>\<close>
+  have jPN: "Joints (Pred M) ! JN = Joints M ! JN"
+    by (rule wid_Joints_Pred[OF MT mono trne L JBrP])
+  show ?thesis
+  proof (cases "FirstNodes M ! J1 = Lng M - 1")
+    case j1eq: True
+    \<comment> \<open>case B: last branch is a singleton; \<open>Lng (Br (Pred M)) = Lng (Br M) - 1\<close>, so \<open>JN = J\<^sub>1 - 1\<close>\<close>
+    have lasteq1: "Lng (last (Br M)) = 1"
+    proof -
+      have "Lng (last (Br M)) = Suc (Lng M - 1) - FirstNodes M ! J1"
+        using lastnth lastlen by simp
+      thus ?thesis using j1eq by simp
+    qed
+    have le1: "Lng (last (Br M)) \<le> 1" using lasteq1 by simp
+    have brEq: "Br (Pred M) =
+             butlast (Br M)
+             @ (if Lng (last (Br M)) \<le> 1 then [] else [butlast (last (Br M))])"
+      by (rule wid_Br_Pred[OF MT trne L])
+    have brPeq: "Br (Pred M) = butlast (Br M)" using brEq le1 by simp
+    have lenP: "Lng (Br (Pred M)) = Lng (Br M) - 1" using brPeq by simp
+    have BrL2: "Lng (Br M) \<ge> 2"
+    proof -
+      have "butlast (Br M) \<noteq> []" using brP brPeq by simp
+      hence "Lng (butlast (Br M)) > 0" by (cases "butlast (Br M)") auto
+      hence "Lng (Br M) - 1 > 0" by simp
+      thus ?thesis by linarith
+    qed
+    have J1pos: "J1 \<ge> 1" unfolding J1_def using BrL2 by linarith
+    have JNeq: "JN = J1 - 1" unfolding JN_def J1_def using lenP by simp
+    \<comment> \<open>\<open>j\<^sub>0' = transJ0 M = TrMax M\<close> (Admpos collapse)\<close>
+    have j0transJ0: "j0' = transJ0 M"
+    proof -
+      have "j0' = parent M 0 (FirstNodes M ! J1)"
+        using Joints_nth[OF JBr1] by (simp add: j0'_def)
+      also have "\<dots> = parent M 0 (Lng M - 1)" using j1eq by simp
+      also have "\<dots> = transJ0 M" by (simp add: transJ0_def transJ1_def)
+      finally show ?thesis .
+    qed
+    have jpleTr: "transJ0 M \<le> TrMax M" using j0transJ0 j0tr by simp
+    have j0Tr: "transJ0 M = TrMax M" by (rule wid_transJ0_eq_TrMax[OF MT jpleTr Admpos])
+    have j0eqTr: "j0' = TrMax M" using j0transJ0 j0Tr by simp
+    have j1eqTr: "Joints M ! J1 = TrMax M" using j0eqTr by (simp add: j0'_def)
+    \<comment> \<open>the second-to-last joint also collapses to \<open>TrMax M\<close>\<close>
+    have lt: "J1 - 1 < J1" using J1pos by linarith
+    have jmono: "Joints M ! (J1 - 1) \<ge> Joints M ! J1"
+      using m_6_4_FirstNodes_Joints_mono_aux[OF MP lt JBr1] by simp
+    have jge: "Joints M ! (J1 - 1) \<ge> TrMax M" using jmono j1eqTr by linarith
+    have JBr1m: "J1 - 1 < Lng (Br M)" using JBr1 by linarith
+    have jle: "Joints M ! (J1 - 1) \<le> TrMax M"
+      using m_6_4_FirstNodes_TrMax_Joints[OF MP JBr1m] by simp
+    have jJN_Tr: "Joints M ! JN = TrMax M"
+    proof -
+      have "Joints M ! (J1 - 1) = TrMax M" using jge jle by linarith
+      thus ?thesis using JNeq by simp
+    qed
+    have e1: "entry (Pred M) 1 (TrMax M) = entry M 1 (TrMax M)"
+      by (rule wid_entry1_Pred_agree[OF L trlt])
+    have "entry (Pred M) 1 (Joints (Pred M) ! JN) = entry (Pred M) 1 (TrMax M)"
+      using jPN jJN_Tr by simp
+    also have "\<dots> = entry M 1 (TrMax M)" by (rule e1)
+    also have "\<dots> = entry M 1 j0'" using j0eqTr by simp
+    finally show ?thesis .
+  next
+    case j1ne: False
+    \<comment> \<open>case A: last branch length \<open>> 1\<close>; \<open>Lng (Br (Pred M)) = Lng (Br M)\<close>, so \<open>JN = J\<^sub>1\<close>\<close>
+    have fn1lt2: "FirstNodes M ! J1 < Lng M - 1" using fn1le j1ne by (simp add: less_le)
+    have lastgt1: "1 < Lng (last (Br M))"
+    proof -
+      have "Lng (last (Br M)) = Suc (Lng M - 1) - FirstNodes M ! J1"
+        using lastnth lastlen by simp
+      thus ?thesis using fn1lt2 L by linarith
+    qed
+    have notle: "\<not> Lng (last (Br M)) \<le> 1" using lastgt1 by simp
+    have brEq: "Br (Pred M) =
+             butlast (Br M)
+             @ (if Lng (last (Br M)) \<le> 1 then [] else [butlast (last (Br M))])"
+      by (rule wid_Br_Pred[OF MT trne L])
+    have brPeq: "Br (Pred M) = butlast (Br M) @ [butlast (last (Br M))]"
+      using brEq notle by simp
+    have lenP: "Lng (Br (Pred M)) = Lng (Br M)" using brPeq BrL by simp
+    have JNeq: "JN = J1" unfolding JN_def J1_def using lenP by simp
+    have jJN_j0: "Joints M ! JN = j0'" using JNeq by (simp add: j0'_def)
+    have e1: "entry (Pred M) 1 j0' = entry M 1 j0'"
+      by (rule wid_entry1_Pred_agree[OF L j0lt])
+    have "entry (Pred M) 1 (Joints (Pred M) ! JN) = entry (Pred M) 1 j0'"
+      using jPN jJN_j0 by simp
+    also have "\<dots> = entry M 1 j0'" by (rule e1)
+    finally show ?thesis .
+  qed
+qed
+
+
 end
