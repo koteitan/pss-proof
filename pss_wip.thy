@@ -33271,4 +33271,206 @@ proof -
 qed
 
 
+text \<open>§8.2 strong-monomiality, REDUCTION to two clean head bounds.  The three
+  conditional lower bounds (2)/(3)/(4) of @{thm [source] p_8_2_subexpr_component_strongmono}
+  collapse to TWO facts about the witness \<open>a\<close> (\<open>Trans M = D\<^bsub>M\<^sub>1\<^sub>,\<^sub>0\<^esub> a\<close>):
+  \<^item> \<open>factA\<close>: EVERY principal component head of \<open>a\<close> is \<open>\<ge> M\<^bsub>1,j\<^sub>0'\<^esub>\<close>
+    (this single UNCONDITIONAL bound yields BOTH clause (3) — threshold \<open>M\<^bsub>1,j\<^sub>0'\<^esub>\<close>
+    directly — AND clause (4), since clause (4) fires only when \<open>j\<^sub>0' = TrMax M\<close>,
+    where \<open>M\<^bsub>1,TrMax M\<^esub> = M\<^bsub>1,j\<^sub>0'\<^esub>\<close>);
+  \<^item> \<open>factB\<close>: under clause (2)'s side condition, EVERY principal head is \<open>\<ge> M\<^bsub>1,j\<^sub>1'\<^esub>\<close>.
+  Empirically verified (\<open>python/_lebt_witness_check.py\<close>): across 630 \<open>DT\<^bsub>PS\<^esub>\<close> terms
+  (\<open>Lng \<le> 8\<close>) all three clauses fire (w2:263, w3:13, w4:354) and BOTH facts hold
+  with zero violations.  This lemma is the GREEN glue feeding
+  @{thm [source] m_8_2_subexpr_component_strongmono_of_witness}.\<close>
+
+lemma m_8_2_subexpr_component_strongmono_of_factAB:
+  fixes M :: pairseq
+  assumes MD: "M \<in> DT_PS" and Brne: "Br M \<noteq> []"
+    and w1: "Trans M = Dpt (enat (entry M 1 0)) a"
+    and factA: "\<forall>p\<in>set (PB a).
+                  leBT (Dpt (enat (entry M 1 (Joints M ! (Lng (Br M) - 1)))) 0\<^sub>B) p"
+    and factB: "(Joints M ! (Lng (Br M) - 1) = 0
+                  \<or> entry M 0 (FirstNodes M ! (Lng (Br M) - 1))
+                      = entry M 1 (FirstNodes M ! (Lng (Br M) - 1)))
+                  \<Longrightarrow> (\<forall>p\<in>set (PB a).
+                        leBT (Dpt (enat (entry M 1 (FirstNodes M ! (Lng (Br M) - 1)))) 0\<^sub>B) p)"
+  shows "\<exists>!t'.
+      Trans M = Dpt (enat (entry M 1 0)) t'
+    \<and> ((Joints M ! (Lng (Br M) - 1) = 0
+          \<or> entry M 0 (FirstNodes M ! (Lng (Br M) - 1))
+              = entry M 1 (FirstNodes M ! (Lng (Br M) - 1)))
+         \<longrightarrow> (\<forall>p\<in>set (PB t').
+                leBT (Dpt (enat (entry M 1 (FirstNodes M ! (Lng (Br M) - 1)))) 0\<^sub>B) p))
+    \<and> ((0 < Joints M ! (Lng (Br M) - 1)
+          \<and> Joints M ! (Lng (Br M) - 1) < TrMax M
+          \<and> entry M 0 (FirstNodes M ! (Lng (Br M) - 1))
+              > entry M 1 (FirstNodes M ! (Lng (Br M) - 1)))
+         \<longrightarrow> (\<forall>p\<in>set (PB t').
+                leBT (Dpt (enat (entry M 1 (Joints M ! (Lng (Br M) - 1)))) 0\<^sub>B) p))
+    \<and> ((0 < Joints M ! (Lng (Br M) - 1) \<and> Joints M ! (Lng (Br M) - 1) = TrMax M)
+         \<longrightarrow> (\<forall>p\<in>set (PB t'). leBT (Dpt (enat (entry M 1 (TrMax M))) 0\<^sub>B) p))"
+proof -
+  have w3: "(0 < Joints M ! (Lng (Br M) - 1)
+              \<and> Joints M ! (Lng (Br M) - 1) < TrMax M
+              \<and> entry M 0 (FirstNodes M ! (Lng (Br M) - 1))
+                  > entry M 1 (FirstNodes M ! (Lng (Br M) - 1)))
+              \<Longrightarrow> (\<forall>p\<in>set (PB a).
+                    leBT (Dpt (enat (entry M 1 (Joints M ! (Lng (Br M) - 1)))) 0\<^sub>B) p)"
+    using factA by simp
+  have w4: "(0 < Joints M ! (Lng (Br M) - 1) \<and> Joints M ! (Lng (Br M) - 1) = TrMax M)
+              \<Longrightarrow> (\<forall>p\<in>set (PB a). leBT (Dpt (enat (entry M 1 (TrMax M))) 0\<^sub>B) p)"
+  proof -
+    assume "0 < Joints M ! (Lng (Br M) - 1) \<and> Joints M ! (Lng (Br M) - 1) = TrMax M"
+    hence "TrMax M = Joints M ! (Lng (Br M) - 1)" by simp
+    thus "\<forall>p\<in>set (PB a). leBT (Dpt (enat (entry M 1 (TrMax M))) 0\<^sub>B) p"
+      using factA by simp
+  qed
+  show ?thesis
+    by (rule m_8_2_subexpr_component_strongmono_of_witness[OF MD Brne w1 factB w3 w4])
+qed
+
+text \<open>§8.2 FactA — the RECURSIVE STEP of the strong-monomiality lower-bound
+  induction (article 3478-3601), isolated as a self-contained conditional lemma.
+  GOAL (FactA): every principal component head of the witness \<open>a\<close>
+  (\<open>Trans M = D\<^bsub>M\<^sub>1\<^sub>,\<^sub>0\<^esub> a\<close>) is \<open>\<ge> M\<^bsub>1,j\<^sub>0'\<^esub>\<close>; this single unconditional bound yields
+  BOTH clauses (3) and (4) of @{thm [source] p_8_2_subexpr_component_strongmono}.
+
+  Given the keystone four-case disjunction \<open>key\<close> (the closed
+  @{thm [source] m_8_2_keystone}), in EVERY case \<open>Trans M = D\<^bsub>M\<^sub>1\<^sub>,\<^sub>0\<^esub>(p +\<^sub>B D\<^bsub>x\<^esub> q\<^sub>2)\<close>
+  with \<open>x = RightNodes(Trans M)\<^bsub>1\<^esub>\<close> and \<open>set (P\<^bsub>B\<^esub> p) \<subseteq> set (P\<^bsub>B\<^esub> a')\<close> (\<open>a' = \<close> the
+  \<open>Pred M\<close> witness): cases (1)/(2) have \<open>a' = p\<close>, cases (3)/(4) \<open>a' = p +\<^sub>B D\<^bsub>x\<^esub> q\<^sub>1\<close>.
+  The IH bound on \<open>P\<^bsub>B\<^esub> a'\<close> at threshold \<open>thr'\<close> therefore covers \<open>P\<^bsub>B\<^esub> p\<close>; relaxing
+  to \<open>thr = M\<^bsub>1,j\<^sub>0'\<^esub>\<close> (@{thm [source] wit_PB_relax}, needs \<open>thr \<le> thr'\<close>) and adding the
+  trailing \<open>D\<^bsub>x\<^esub> q\<^sub>2\<close> (@{thm [source] wit_PB_tail_bound}, needs \<open>thr \<le> x\<close>) gives the
+  \<open>M\<close> bound.  The two numeric side conditions \<open>thr \<le> thr'\<close> (threshold monotonicity,
+  empirically 0 violations) and \<open>thr \<le> RightNodes(Trans M)\<^bsub>1\<^esub>\<close> (new-head dominance,
+  0 violations) are the residual content supplied by the caller.\<close>
+
+lemma m_8_2_factA_step:
+  fixes M :: pairseq
+  defines "j1 \<equiv> Lng M - 1"
+  defines "J1 \<equiv> Lng (Br M) - 1"
+  defines "j0' \<equiv> Joints M ! J1"
+  defines "j1' \<equiv> FirstNodes M ! J1"
+  assumes aW: "Trans M = Dpt (enat (entry M 1 0)) a"
+    and predW: "Trans (Pred M) = Dpt (enat (entry M 1 0)) aP"
+    and ihA: "\<forall>r\<in>set (PB aP). leBT (Dpt (enat thr') 0\<^sub>B) r"
+    and thrmono: "entry M 1 j0' \<le> thr'"
+    and newdom: "entry M 1 j0' \<le> RightNodes (Trans M) ! 1"
+    and key:
+    "(j1' = j1 \<and> (TrMax M = 0 \<or> j0' < TrMax M)
+        \<and> (entry M 0 j1' = entry M 1 j1' \<or> adm M j0')
+        \<and> (\<exists>!t1. Trans (Pred M) = Dpt (enat (entry M 1 0)) t1
+              \<and> Trans M = Dpt (enat (entry M 1 0))
+                            (t1 +\<^sub>B Dpt (enat (entry M 1 j1')) 0\<^sub>B)))
+   \<or> (j1' = j1 \<and> entry M 0 j1' > entry M 1 j1' \<and> \<not> adm M j0'
+        \<and> (\<exists>!t12. Trans (Pred M) = Dpt (enat (entry M 1 0)) (fst t12)
+              \<and> Trans M = Dpt (enat (entry M 1 0))
+                            (fst t12 +\<^sub>B Dpt (enat (entry M 1 j0')) (snd t12))))
+   \<or> (\<exists>!t123. Trans (Pred M)
+                = Dpt (enat (entry M 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M 1 j1')) (fst (snd t123)))
+            \<and> Trans M = Dpt (enat (entry M 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M 1 j1')) (snd (snd t123))))
+   \<or> (\<exists>!t123. Trans (Pred M)
+                = Dpt (enat (entry M 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M 1 j0')) (fst (snd t123)))
+            \<and> Trans M = Dpt (enat (entry M 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M 1 j0')) (snd (snd t123))))"
+  shows "\<forall>r\<in>set (PB a). leBT (Dpt (enat (entry M 1 j0')) 0\<^sub>B) r"
+proof -
+  \<comment> \<open>uniform tail-closing block: \<open>a = p +\<^sub>B D\<^bsub>x\<^esub> q\<^sub>2\<close>, prefix covered by the IH\<close>
+  have close: "\<And>p x q2. a = p +\<^sub>B Dpt (enat x) q2 \<Longrightarrow> set (PB p) \<subseteq> set (PB aP)
+                \<Longrightarrow> \<forall>r\<in>set (PB a). leBT (Dpt (enat (entry M 1 j0')) 0\<^sub>B) r"
+  proof -
+    fix p x q2
+    assume ad: "a = p +\<^sub>B Dpt (enat x) q2" and sub: "set (PB p) \<subseteq> set (PB aP)"
+    have onp1: "\<forall>r\<in>set (PB p). leBT (Dpt (enat thr') 0\<^sub>B) r" using ihA sub by blast
+    have onp2: "\<forall>r\<in>set (PB p). leBT (Dpt (enat (entry M 1 j0')) 0\<^sub>B) r"
+      by (rule wit_PB_relax[OF onp1 thrmono])
+    have rn: "RightNodes (Trans M) ! 1 = x"
+      using aW ad rn1_outer_inner_trailing[of "entry M 1 0" p x q2] by simp
+    have thx: "entry M 1 j0' \<le> x" using newdom rn by simp
+    have "\<forall>r\<in>set (PB (p +\<^sub>B Dpt (enat x) q2)). leBT (Dpt (enat (entry M 1 j0')) 0\<^sub>B) r"
+      by (rule wit_PB_tail_bound[OF onp2 thx])
+    thus "\<forall>r\<in>set (PB a). leBT (Dpt (enat (entry M 1 j0')) 0\<^sub>B) r" using ad by simp
+  qed
+  from key show ?thesis
+  proof (elim disjE)
+    \<comment> \<open>case (1): \<open>a' = p = t1\<close>, \<open>a = t1 +\<^sub>B D\<^bsub>M\<^sub>1\<^sub>,\<^sub>j\<^sub>1'\<^esub> 0\<close>\<close>
+    assume A: "j1' = j1 \<and> (TrMax M = 0 \<or> j0' < TrMax M)
+        \<and> (entry M 0 j1' = entry M 1 j1' \<or> adm M j0')
+        \<and> (\<exists>!t1. Trans (Pred M) = Dpt (enat (entry M 1 0)) t1
+              \<and> Trans M = Dpt (enat (entry M 1 0))
+                            (t1 +\<^sub>B Dpt (enat (entry M 1 j1')) 0\<^sub>B))"
+    from A obtain t1 where
+      C: "Trans (Pred M) = Dpt (enat (entry M 1 0)) t1"
+      and T: "Trans M = Dpt (enat (entry M 1 0)) (t1 +\<^sub>B Dpt (enat (entry M 1 j1')) 0\<^sub>B)"
+      by (blast dest: ex1_implies_ex)
+    have ad: "a = t1 +\<^sub>B Dpt (enat (entry M 1 j1')) 0\<^sub>B" using aW T by simp
+    have aPeq: "aP = t1" using predW C by simp
+    have sub: "set (PB t1) \<subseteq> set (PB aP)" by (simp add: aPeq)
+    show ?thesis by (rule close[OF ad sub])
+  next
+    \<comment> \<open>case (2): \<open>a' = p = fst t12\<close>, \<open>a = p +\<^sub>B D\<^bsub>M\<^sub>1\<^sub>,\<^sub>j\<^sub>0'\<^esub>(snd t12)\<close>\<close>
+    assume A: "j1' = j1 \<and> entry M 0 j1' > entry M 1 j1' \<and> \<not> adm M j0'
+        \<and> (\<exists>!t12. Trans (Pred M) = Dpt (enat (entry M 1 0)) (fst t12)
+              \<and> Trans M = Dpt (enat (entry M 1 0))
+                            (fst t12 +\<^sub>B Dpt (enat (entry M 1 j0')) (snd t12)))"
+    from A obtain t12 where
+      C: "Trans (Pred M) = Dpt (enat (entry M 1 0)) (fst t12)"
+      and T: "Trans M = Dpt (enat (entry M 1 0))
+                          (fst t12 +\<^sub>B Dpt (enat (entry M 1 j0')) (snd t12))"
+      by (blast dest: ex1_implies_ex)
+    have ad: "a = fst t12 +\<^sub>B Dpt (enat (entry M 1 j0')) (snd t12)" using aW T by simp
+    have aPeq: "aP = fst t12" using predW C by simp
+    have sub: "set (PB (fst t12)) \<subseteq> set (PB aP)" by (simp add: aPeq)
+    show ?thesis by (rule close[OF ad sub])
+  next
+    \<comment> \<open>case (3): \<open>a' = p +\<^sub>B D\<^bsub>M\<^sub>1\<^sub>,\<^sub>j\<^sub>1'\<^esub>(fst(snd t123))\<close>, same head as \<open>a\<close>\<close>
+    assume A: "\<exists>!t123. Trans (Pred M)
+                = Dpt (enat (entry M 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M 1 j1')) (fst (snd t123)))
+            \<and> Trans M = Dpt (enat (entry M 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M 1 j1')) (snd (snd t123)))"
+    from A obtain t123 where
+      C: "Trans (Pred M) = Dpt (enat (entry M 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M 1 j1')) (fst (snd t123)))"
+      and T: "Trans M = Dpt (enat (entry M 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M 1 j1')) (snd (snd t123)))"
+      by (blast dest: ex1_implies_ex)
+    have ad: "a = fst t123 +\<^sub>B Dpt (enat (entry M 1 j1')) (snd (snd t123))"
+      using aW T by simp
+    have aPeq: "aP = fst t123 +\<^sub>B Dpt (enat (entry M 1 j1')) (fst (snd t123))"
+      using predW C by simp
+    have sub: "set (PB (fst t123)) \<subseteq> set (PB aP)"
+      by (auto simp: aPeq PB_addBT_app PB_Dpt_single)
+    show ?thesis by (rule close[OF ad sub])
+  next
+    \<comment> \<open>case (4): \<open>a' = p +\<^sub>B D\<^bsub>M\<^sub>1\<^sub>,\<^sub>j\<^sub>0'\<^esub>(fst(snd t123))\<close>, same head as \<open>a\<close>\<close>
+    assume A: "\<exists>!t123. Trans (Pred M)
+                = Dpt (enat (entry M 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M 1 j0')) (fst (snd t123)))
+            \<and> Trans M = Dpt (enat (entry M 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M 1 j0')) (snd (snd t123)))"
+    from A obtain t123 where
+      C: "Trans (Pred M) = Dpt (enat (entry M 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M 1 j0')) (fst (snd t123)))"
+      and T: "Trans M = Dpt (enat (entry M 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M 1 j0')) (snd (snd t123)))"
+      by (blast dest: ex1_implies_ex)
+    have ad: "a = fst t123 +\<^sub>B Dpt (enat (entry M 1 j0')) (snd (snd t123))"
+      using aW T by simp
+    have aPeq: "aP = fst t123 +\<^sub>B Dpt (enat (entry M 1 j0')) (fst (snd t123))"
+      using predW C by simp
+    have sub: "set (PB (fst t123)) \<subseteq> set (PB aP)"
+      by (auto simp: aPeq PB_addBT_app PB_Dpt_single)
+    show ?thesis by (rule close[OF ad sub])
+  qed
+qed
+
+
+
+
 end
