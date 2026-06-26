@@ -16,7 +16,10 @@
 - 🚨 §8 停止性
   - 📘 [Buc1] 引用sorry: `buc1_2_2_OT_B_wf`/`buc1_3_2a_fseq_lt`/`buc1_3_2_OT_B_closed`
   - 🚨 §8.1 条件 (I) の下での展開規則
-    - 🚨 命題（条件 (I) の下での $\textrm{Trans}$ と基本列の交換関係）〔降下⟸交換則+OT `m_8_1_Trans_fseq_condI_descent`、残=交換則+OT〕
+    - 🚨 命題（条件 (I) の下での $\textrm{Trans}$ と基本列の交換関係）
+      - ✅ 降下⟸交換則(1)+OT〔`m_8_1_Trans_fseq_condI_descent`〕
+      - 🚨 交換則(1)本体（→(4-1)(4-2)）
+      - 🚨 OT所属（→§8.7）
     - ✅ 補題（公差 $(1,1)$ のペア数列の $\textrm{Trans}$ の基本性質）〔`m_8_1_diagSeq_Trans`〕
     - ✅ 系（$\textrm{Pred}$ が公差 $(1,1)$ のペア数列の $\textrm{Trans}$ の基本性質）〔`m_8_1_Pred_diagSeq_Trans`〕
     - 🚨 補題（条件 (I) か (III) の下での $c_1$ 前後の具体表示）（A20/A21）
@@ -27,17 +30,24 @@
     - 🚨 命題（条件 (II) か (IV) の下での終切片と $\textrm{Trans}$ の関係）
     - ✅ 補題（強単項性の切片への遺伝性）〔`m_8_2_strongmono_slice`〕
     - 🚨 補題（部分表現の単項成分と $\textrm{Pred}$ の関係）(§8.2 keystone)
-      - ✅ Adm0 枝(gB-free組立 `m_8_2_subexpr_component_Pred_Adm0_nogB`) + guard 3/4 (nadmj0/t2ne/e0gt)
-      - ✅ gB-condV (`m_8_2_gB_Adm0_condA` 無条件 discharge)
-      - 🚨 Admpos枝: 両half✅(`_Adm0_full`/`_Admpos_of_wid`)、残=w-id(§6.4 transport)
-      - 🚨🤖 組立：keystone⟸w-id 済、グルー済、転送A(jt)/B(ft)討伐中(workflow)、残=coupling
+      - ✅ Adm0 枝〔`m_8_2_subexpr_component_Pred_Adm0_nogB`〕+ guard 3/4
+      - ✅ gB-condV〔`m_8_2_gB_Adm0_condA`〕
+      - ✅ Admpos 両half〔`_Adm0_full`/`_Admpos_of_wid`〕
+      - 🚨 w-id 討伐 → keystone 組立
+        - ✅ 還元グルー〔`m_8_2_wid_of_predwid`〕
+        - 🚨🤖 転送A(jt)〔`m_8_2_jt_transport`〕（workflow）
+        - 🚨🤖 転送B(ft)〔`m_8_2_ft_transport`〕（workflow）
+        - 🚨 coupling（j1eq=True⟹Joints選択）
     - 🚨 補題（強単項性の下での部分表現の単項成分の基本性質）
       - ✅ (1) `m_8_2_subexpr_leftend_unique`
       - 🚨 (2)(3)(4) leBT 下界（keystone依存で workflow 行き詰まり）
     - 🚨 補題（条件 (V) の下での右端の親の基本性質）
     - 🚨 補題（条件 (V) の下での終切片と $\textrm{Trans}$ の関係）
   - 🚨 §8.3 条件 (II) の下での展開規則
-    - 🚨 命題（条件 (II) の下での $\textrm{Trans}$ と基本列の交換関係）〔降下⟸exch+OT `m_8_3_TransCondII_oper_descend_engine`、残=exch+OT〕
+    - 🚨 命題（条件 (II) の下での $\textrm{Trans}$ と基本列の交換関係）
+      - ✅ 降下⟸exch+OT〔`m_8_3_TransCondII_oper_descend_engine`〕
+      - 🚨 exch（交換則）
+      - 🚨 OT所属（→§8.7）
     - ✅ 補題（第 $0$ 種型基本列の基本不等式）〔`m_8_3_kind0_base_ineq`(A22訂正)〕
     - ✅ 補題（第 $0$ 種型基本列の基本分岐規則）〔`m_8_3_kind0_branch_rule`〕
     - ✅ 補題（第 $0$ 種型基本列の基本基点関係）〔`m_8_3_kind0_base_basepoint`〕
@@ -59,13 +69,21 @@
     - 🚨 命題（条件 (VI) の下での $\textrm{Trans}$ と基本列の交換関係）
     - ✅ 補題（公差 $(1,0)$ のペア数列の $\textrm{Trans}$ の基本性質）〔`m_8_6_const2nd_Trans_paper`〕
     - ✅ 補題（公差 $(1,1)$ のペア数列の $\textrm{Trans}$ の展開規則）〔`m_8_6_diagSeq_Trans_oper_paper`〕
-    - 🚨 補題（順序数項の末尾単項の零化可能性）〔原文偽=A25、clean領域✅ `m_8_6_trailing_principal_peel`〕
+    - 🚨 補題（順序数項の末尾単項の零化可能性）（原文偽=A25）
+      - ✅ clean領域〔`m_8_6_trailing_principal_peel`〕
+      - 🚨 一般領域（原文偽）
   - 🚨 §8.7 主結果
     - ✅ 補題（公差 $(0,0)$ のペア数列の $\textrm{Trans}$ の基本性質）〔`m_8_7_const00_Trans`〕
     - 🚨 補題（基本列の降下性）〔`fseq_descend`。clean到達可、条件I-V/VI交換則連鎖が本体〕
     - ✅ 補題（順序数項の再帰構造）〔`m_8_7_OT_scb_recursive`〕
     - ✅ 補題（順序数項の共終数の遺伝性）〔`m_8_7_OT_dom_hereditary`〕
-    - 🚨 補題（順序数項の末尾項の零化可能性）〔原文偽=A26、top-level✅ `m_8_7_toplevel_OT_tail_annihilate`、残=operB全域性〕
+    - 🚨 補題（順序数項の末尾項の零化可能性）（原文偽=A26）
+      - ✅ top-level〔`m_8_7_toplevel_OT_tail_annihilate`〕
+      - 🚨 一般化（operB 全域性）
     - 🚨 補題（$\textrm{Pred}$ と $[0]$ の関係）〔原文偽=A27、停止性は6325ルートで迂回〕
     - ✅ 補題（順序数項の基本例）〔`m_8_7_OT_examples`〕
-    - 🚨 補題（$\textrm{Trans}$ が標準形を保つこと）〔clean部✅(rank0/T_B/単項leaf `m_8_7_Trans_*`)、残=交換則依存(I/II/VI)+III/IV偽+Σ_B複項〕
+    - 🚨 補題（$\textrm{Trans}$ が標準形を保つこと）
+      - ✅ clean部（rank0/T_B/単項leaf）〔`m_8_7_Trans_*`〕
+      - 🚨 交換則依存(I/II/VI)
+      - 🚨 III/IV（原文偽 A27）
+      - 🚨 Σ_B複項分解
