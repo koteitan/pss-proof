@@ -31,7 +31,7 @@
           - 🚨 B2-b clause shape
             - ✅ 4-1〔`m_8_1_c1_around_part4_TransN_41`〕
             - 🚨 4-2（depth-2）
-          - 🚨 B2-c add_scb splice（`m_7_2_add_scb_conj3_uncond`、最難）
+          - 🚨🤖 B2-c add_scb splice（`m_7_2_add_scb_conj3_uncond`、最難、workflow）
   - 🚨 §8.2 強単項性
     - ✅ 命題（標準形の直系先祖による切片の簡約化の強単項性）〔`m_8_2_standard_slice_Red_strongmono`〕
     - 🚨 命題（条件 (II) か (IV) の下での終切片と $\textrm{Trans}$ の関係）
@@ -46,7 +46,7 @@
         - ✅ 転送B(ft)〔`m_8_2_ft_transport`〕
         - ✅ 帰納組立〔`m_8_2_subexpr_component_Pred_final`、cpU のみ条件付（baseU discharge済）〕
         - ✅ baseU〔`m_8_2_baseU`〕
-        - 🚨 cpU=widTrM=chainOK⟸descAdm 済、残=`j1eq⟹descAdm`(branch親≥TrMax)
+        - 🚨🤖 cpU=...=chainOK⟸descAdm 済、残=`j1eq⟹descAdm`(branch親≥TrMax、workflow)
     - 🚨 補題（強単項性の下での部分表現の単項成分の基本性質）
       - ✅ (1) `m_8_2_subexpr_leftend_unique`
       - 🚨 (2)(3)(4) leBT 下界（keystone依存で workflow 行き詰まり）
