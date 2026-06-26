@@ -24,7 +24,7 @@
     - ✅ 系（$\textrm{Pred}$ が公差 $(1,1)$ のペア数列の $\textrm{Trans}$ の基本性質）〔`m_8_1_Pred_diagSeq_Trans`〕
     - 🚨 補題（条件 (I) か (III) の下での $c_1$ 前後の具体表示）（A20/A21）
       - ✅ part(1)(2)(3-1)(3-2)(5) + `Mark_gap_peel` engine
-      - 🚨🤖 (4-1)(4-2)：slicepeel sorry 2個討伐中(workflow)。memory `pss-81-c1around`
+      - 🚨 (4-1)(4-2)：slicepeel sorry 2個。depth-1 head 判明、残=front-block Trans(N)計算。memory `pss-81-c1around`
   - 🚨 §8.2 強単項性
     - ✅ 命題（標準形の直系先祖による切片の簡約化の強単項性）〔`m_8_2_standard_slice_Red_strongmono`〕
     - 🚨 命題（条件 (II) か (IV) の下での終切片と $\textrm{Trans}$ の関係）
@@ -35,8 +35,8 @@
       - ✅ Admpos 両half〔`_Adm0_full`/`_Admpos_of_wid`〕
       - 🚨 w-id 討伐 → keystone 組立
         - ✅ 還元グルー〔`m_8_2_wid_of_predwid`〕
-        - 🚨🤖 転送A(jt)〔`m_8_2_jt_transport`〕（workflow）
-        - 🚨🤖 転送B(ft)〔`m_8_2_ft_transport`〕（workflow）
+        - ✅ 転送A(jt)〔`m_8_2_jt_transport`〕
+        - ✅ 転送B(ft)〔`m_8_2_ft_transport`〕
         - 🚨 coupling（j1eq=True⟹Joints選択）
     - 🚨 補題（強単項性の下での部分表現の単項成分の基本性質）
       - ✅ (1) `m_8_2_subexpr_leftend_unique`
