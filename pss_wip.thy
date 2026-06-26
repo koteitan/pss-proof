@@ -32346,4 +32346,313 @@ proof (intro impI)
 qed
 
 
+text \<open>§8.1 命題（条件(I)の下での Trans と基本列の交換関係）の n=1 基底 (content.md 3111).
+  The n=1 base case of the commutation @{thm [source] p_8_1_Trans_fseq_condI} (i):
+  \<open>Trans (M[1]) = operB (Trans M) (numBT 0)\<close>.  Since \<open>M[1] = Pred M\<close>
+  (@{thm [source] m_8_4_oper1_eq_Pred}), this is the Buchholz-side identity
+  \<open>operB (Trans M) (numBT 0) = Trans (Pred M)\<close>: under condition (I) the marked
+  principal \<open>c\<^sub>2 = D\<^bsub>v\<^esub>(t\<^sub>2 +\<^sub>B D\<^sub>0 0)\<close> of \<open>Trans M\<close> is collapsed by \<open>operB \<cdot> (numBT 0)\<close>
+  to \<open>D\<^bsub>v\<^esub> t\<^sub>2 = c\<^sub>1\<close> (one copy, @{thm [source] operB_single_succ}/@{thm [source] multBT_1}),
+  while the surrounding scb context \<open>(s\<^sub>1, b\<^sub>1)\<close> is transported unchanged by
+  @{thm [source] operB_scb_spine}; the result \<open>s\<^sub>1 c\<^sub>1 b\<^sub>1 = t\<^sub>1 = Trans(Pred M)\<close>.
+
+  The shared scb decomposition (the same \<open>(s\<^sub>1,b\<^sub>1)\<close> carries \<open>c\<^sub>1\<close> in \<open>t\<^sub>1\<close> and
+  \<open>c\<^sub>2\<close> in \<open>Trans M\<close>) is rebuilt here mirroring the mono surgery branch of
+  @{thm [source] m_7_3_Pred_Trans_descend} / @{thm [source] trans_inv_B_hard}.
+  Audit: cites only proven facts (\<open>Trans_Mark_invariant_aux\<close>, \<open>operB_*\<close>,
+  \<open>m_7_2_*\<close>, \<open>transC*\<close>, \<open>m_7_flatBT_inj\<close>); no forward/circular use of \<open>p_8_1_*\<close>.\<close>
+
+lemma m_8_1_operB_numBT0_Pred:
+  fixes M :: pairseq
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS"
+    and L: "1 < Lng M" and T1: "Trans (Pred M) \<noteq> 0\<^sub>B"
+    and condI: "transCondI M"
+  shows "operB (Trans M) (numBT 0) = Trans (Pred M)"
+proof -
+  have MT: "M \<in> T_PS" using MR by (simp add: RT_PS_def)
+  have mono: "monoT M" using MP by (simp add: PT_PS_def)
+  have Lgt1: "\<not> Lng M \<le> Suc 0" using L by simp
+  have domT: "Trans_Mark_dom (Inl M)" by (rule m_7_3_Trans_welldef[OF MR])
+  have predRT: "Pred M \<in> RT_PS" by (rule Pred_RT_PS[OF MR])
+  have t1ne: "Trans (Pred M) \<noteq> 0\<^sub>B" using T1 .
+  have IHmk: "\<And>m'. (Pred M, m') \<in> Marked
+               \<Longrightarrow> (Trans (Pred M), Mark (Pred M) m') \<in> MarkedB"
+    using Trans_Mark_invariant_aux predRT by blast
+  have hp: "hasParent M 0 (Lng M - 1)" by (rule monoT_hasParent0_last[OF MT mono L])
+  let ?t1 = "Trans (Pred M)"
+  let ?bv = "entry M 1 (Lng M - 1)"
+  have bv0: "?bv = 0" using condI by (simp add: transCondI_def)
+  define jp where "jp = parent M 0 (Lng M - 1)"
+  define c1 where "c1 = Mark (Pred M) (Adm M jp)"
+  define vv where "vv = bpHeadV c1"
+  define tt2 where "tt2 = bpHeadT c1"
+  define JJ1 where "JJ1 = Lng (PB tt2) - 1"
+  define pj where "pj = PB tt2 ! JJ1"
+  define ldj where "ldj = (bpHeadV pj = enat (entry M 1 jp))"
+  define tt3 where "tt3 = (if ldj then SigmaB (take JJ1 (PB tt2)) else tt2)"
+  define tt4 where "tt4 = (if ldj then bpHeadT pj else tt2)"
+  define c2 where "c2 = (if transCondI M \<or> transCondIII M \<or> transCondV M
+                         then Dpt vv (tt2 +\<^sub>B Dpt (enat ?bv) 0\<^sub>B)
+                         else if transCondVI M
+                         then Dpt vv (Dpt (enat ?bv) 0\<^sub>B)
+                         else if tt2 = 0\<^sub>B
+                         then Dpt vv (Dpt (enat (entry M 1 jp)) (Dpt (enat ?bv) 0\<^sub>B))
+                         else Dpt vv (tt3 +\<^sub>B Dpt (enat (entry M 1 jp))
+                                            (tt4 +\<^sub>B Dpt (enat ?bv) 0\<^sub>B)))"
+  define sb1 where "sb1 = (SOME sb. scb_decomp ?t1 (fst sb) (flatBT c1) (snd sb))"
+  have trans_val: "Trans M = unflatBT (fst sb1 @ flatBT c2 @ snd sb1)"
+    using Trans.psimps[OF domT] MR Lgt1 mono t1ne
+    unfolding Let_def jp_def[symmetric] c1_def[symmetric] vv_def[symmetric]
+              tt2_def[symmetric] JJ1_def[symmetric] pj_def[symmetric]
+              ldj_def[symmetric] tt3_def[symmetric] tt4_def[symmetric]
+              c2_def[symmetric] sb1_def[symmetric]
+    by simp
+  \<comment> \<open>identify \<open>c\<^sub>1 = transC1 M\<close>, \<open>c\<^sub>2 = transC2 M\<close>\<close>
+  have transJ1eq: "transJ1 M = Lng M - 1" by (simp add: transJ1_def)
+  have transJ0eq: "transJ0 M = jp" by (simp add: transJ0_def transJ1_def jp_def)
+  have transJm1eq: "transJm1 M = Adm M jp" by (simp add: transJm1_def transJ0eq)
+  have c1eqT: "c1 = transC1 M" by (simp add: c1_def transC1_def transJm1eq)
+  have c2eqT: "c2 = transC2 M"
+    unfolding c2_def transC2_def Let_def
+      vv_def tt2_def c1eqT transV_def transT2_def
+      JJ1_def pj_def ldj_def tt3_def tt4_def transJ1_def transJ0eq
+    by simp
+  \<comment> \<open>SOME decomposition of \<open>t\<^sub>1\<close> at \<open>flatBT c\<^sub>1\<close>\<close>
+  have mkdA: "(Pred M, Adm M jp) \<in> Marked"
+    using Marked_Pred_Adm[OF MT L hp] jp_def by simp
+  have mb1: "(?t1, c1) \<in> MarkedB" using IHmk[OF mkdA] c1_def by simp
+  have t1neT: "?t1 \<noteq> Trm []" using t1ne by simp
+  have exsb: "\<exists>sb. scb_decomp ?t1 (fst sb) (flatBT c1) (snd sb)"
+    using mb1 unfolding MarkedB_def by auto
+  have dsome: "scb_decomp ?t1 (fst sb1) (flatBT c1) (snd sb1)"
+    unfolding sb1_def by (rule someI_ex[OF exsb])
+  \<comment> \<open>\<open>c\<^sub>1 = Trm [pc]\<close>\<close>
+  have iptc1: "isPTB_str (flatBT c1)"
+    using dsome t1neT by (simp add: scb_decomp_def)
+  then obtain pc where pcf: "dfree_BP pc" and pcl: "flatBT c1 = flatBP pc"
+    by (auto simp: isPTB_str_def)
+  have c1p: "c1 = Trm [pc]"
+  proof -
+    have "flatBT c1 = flatBT (Trm [pc])" using pcl by simp
+    thus ?thesis by (rule m_7_flatBT_inj)
+  qed
+  obtain wv tb where pcw: "pc = DB wv tb" by (cases pc) auto
+  have vvv: "vv = wv" using vv_def c1p pcw by simp
+  have tt2v: "tt2 = tb" using tt2_def c1p pcw by simp
+  have wvne: "wv \<noteq> \<infinity>" and tbdf: "dfree_BT tb" using pcf pcw by auto
+  \<comment> \<open>\<open>c\<^sub>1 = D\<^bsub>vv\<^esub> tt2\<close>\<close>
+  have c1Dpt: "c1 = Dpt vv tt2" using c1p pcw vvv tt2v by simp
+  \<comment> \<open>\<open>c\<^sub>2 = Trm [pc2]\<close>, single-principal reconstruction\<close>
+  have NP: "M \<in> PT_PS" using MP .
+  have J1pos: "transJ1 M > 0" using L by (simp add: transJ1_def)
+  have T1ne: "transT1 M \<noteq> 0\<^sub>B" using t1ne by (simp add: transT1_def)
+  have c2pc1: "Lng (PB (transC2 M)) = 1" by (rule transC2_single_principal)
+  have c2recon: "transC2 M = Dpt (bpHeadV (transC2 M)) (bpHeadT (transC2 M))"
+    by (rule principal_reconstruct[OF c2pc1])
+  obtain pc2 where c2p: "c2 = Trm [pc2]"
+    using c2recon c2eqT by (metis BT.exhaust untrm.simps)
+  \<comment> \<open>\<open>c\<^sub>2\<close> is dfree, ending in \<open>D\<^sub>0 0\<close> (condition I form)\<close>
+  have vne: "transV M \<noteq> \<infinity>"
+  proof -
+    have c1TB: "transC1 M \<in> T_B"
+      using m_7_3_Mark_in_T_B[OF predRT mkdA] transJm1eq[symmetric]
+      by (simp add: transC1_def)
+    have c1Dpt': "transC1 M = Dpt (transV M) (transT2 M)"
+      using principal_reconstruct[OF transC1_single_principal[OF MR NP J1pos T1ne]]
+      by (simp add: transV_def transT2_def)
+    thus ?thesis using c1TB unfolding c1Dpt' by (auto simp: T_B_def)
+  qed
+  have t2df: "dfree_BT (transT2 M)"
+  proof -
+    have c1TB: "transC1 M \<in> T_B"
+      using m_7_3_Mark_in_T_B[OF predRT mkdA] transJm1eq[symmetric]
+      by (simp add: transC1_def)
+    have c1Dpt': "transC1 M = Dpt (transV M) (transT2 M)"
+      using principal_reconstruct[OF transC1_single_principal[OF MR NP J1pos T1ne]]
+      by (simp add: transV_def transT2_def)
+    thus ?thesis using c1TB unfolding c1Dpt' by (auto simp: T_B_def)
+  qed
+  have c2df: "dfree_BT c2" using dfree_transC2[OF vne t2df] c2eqT by simp
+  have dfreecp: "dfree_BP pc2" using c2df c2p by simp
+  \<comment> \<open>condition I: \<open>c\<^sub>2 = D\<^bsub>vv\<^esub>(tt2 +\<^sub>B D\<^sub>0 0)\<close>\<close>
+  have condA: "transCondI M \<or> transCondIII M \<or> transCondV M" using condI by blast
+  have c2eq: "c2 = Dpt vv (tt2 +\<^sub>B Dpt 0 0\<^sub>B)"
+    using condA bv0 c2_def by (simp add: zero_enat_def)
+  \<comment> \<open>\<open>domB c\<^sub>2 = NatSet\<close>, \<open>d0succ c\<^sub>2\<close>, operB domain.  Reproved generically in the
+     head \<open>vv\<close> (the library @{thm [source] domB_succ_inner_NatSet} fixes \<open>enat v\<close>;
+     here the head is left abstract, the \<open>db = {0}\<close> branch ignores it).\<close>
+  have domc2: "domB c2 = NatSet"
+  proof -
+    let ?b = "tt2 +\<^sub>B Dpt 0 0\<^sub>B"
+    have ends: "endsD00 ?b" by (rule endsD00_addD00)
+    have bne: "?b \<noteq> Trm []" by (cases tt2) simp
+    have db0: "domB ?b = {Trm []}" by (rule domB_endsD00[OF ends])
+    show ?thesis unfolding c2eq
+      by (subst domB_unfold)
+         (simp add: bne db0 Let_def NatSet_neq_zero NatSet_neq_TBv)
+  qed
+  have d0c2: "d0succ c2"
+  proof -
+    have bne: "tt2 +\<^sub>B Dpt 0 0\<^sub>B \<noteq> Trm []" by (cases tt2) simp
+    have ends: "endsD00 (tt2 +\<^sub>B Dpt 0 0\<^sub>B)" by (rule endsD00_addD00)
+    have ds_b: "d0succ (tt2 +\<^sub>B Dpt 0 0\<^sub>B)" by (rule d0succ_addD00)
+    show ?thesis unfolding c2eq by (rule d0succ_single_nonzero[OF bne ends ds_b])
+  qed
+  have domdom: "domB_operB_xseq_dom (Inr (Inl (c2, numBT 0)))"
+    by (rule operB_dom_d0succ[OF d0c2])
+  \<comment> \<open>\<open>operB c\<^sub>2 (numBT 0) = D\<^bsub>vv\<^esub> tt2 = c\<^sub>1\<close>\<close>
+  have operc2: "operB c2 (numBT 0) = Dpt vv tt2"
+  proof -
+    have "operB c2 (numBT 0) = multBT (Dpt vv tt2) (numNat (numBT 0) + 1)"
+      unfolding c2eq by (rule operB_single_succ)
+    also have "\<dots> = multBT (Dpt vv tt2) (Suc 0)" by (simp add: numNat_numBT)
+    also have "\<dots> = Dpt vv tt2" by (rule multBT_1)
+    finally show ?thesis .
+  qed
+  have operc2c1: "operB c2 (numBT 0) = c1" using operc2 c1Dpt by simp
+  \<comment> \<open>scb decomposition of \<open>Trans M\<close> at \<open>c\<^sub>2\<close> (shared context \<open>sb1\<close>)\<close>
+  have dsome': "scb_decomp ?t1 (fst sb1) (flatBT (Trm [pc])) (snd sb1)"
+    using dsome c1p by simp
+  have iptc2: "isPTB_str (flatBT (Trm [pc2]))"
+    using dfreecp by (auto simp: isPTB_str_def)
+  obtain t' where t'f: "flatBT t' = fst sb1 @ flatBT (Trm [pc2]) @ snd sb1"
+      and t'd: "scb_decomp t' (fst sb1) (flatBT (Trm [pc2])) (snd sb1)"
+    using scb_replace_principal[OF dsome' iptc2] by blast
+  have transM: "Trans M = t'"
+    using trans_val t'f c2p unflatBT_flat[of t'] by simp
+  have dcp: "scb_decomp (Trans M) (fst sb1) (flatBT (Trm [pc2])) (snd sb1)"
+    using t'd transM by simp
+  have domcp: "domB (Trm [pc2]) = NatSet" using domc2 c2p by simp
+  have oprp: "operB (Trm [pc2]) (numBT 0) = Trm [pc]"
+    using operc2c1 c2p c1p by simp
+  \<comment> \<open>operB transports through the scb context (spine lemma)\<close>
+  have domdomp: "domB_operB_xseq_dom (Inr (Inl (Trm [pc2], numBT 0)))"
+    using domdom c2p by simp
+  have flatid: "flatBT (operB (Trans M) (numBT 0))
+                  = fst sb1 @ flatBT (operB (Trm [pc2]) (numBT 0)) @ snd sb1"
+    by (rule operB_scb_spine[OF dcp domcp dfreecp domdomp oprp])
+  have flat1: "flatBT ?t1 = fst sb1 @ flatBP pc @ snd sb1"
+    using dsome c1p by (simp add: scb_decomp_def)
+  have "flatBT (operB (Trans M) (numBT 0)) = fst sb1 @ flatBT (Trm [pc]) @ snd sb1"
+    using flatid oprp by simp
+  also have "\<dots> = fst sb1 @ flatBP pc @ snd sb1" by simp
+  also have "\<dots> = flatBT ?t1" using flat1 by simp
+  finally have "flatBT (operB (Trans M) (numBT 0)) = flatBT (Trans (Pred M))" .
+  thus "operB (Trans M) (numBT 0) = Trans (Pred M)" by (rule m_7_flatBT_inj)
+qed
+
+text \<open>§8.1 命題（条件(I)の下での Trans と基本列の交換関係）(i) の n=1 基底
+  (content.md 3111).  Specialises @{thm [source] p_8_1_Trans_fseq_condI} (i)
+  to \<open>n = 1\<close>: \<open>Trans (M[1]) = operB (Trans M) (numBT 0)\<close>.\<close>
+
+lemma m_8_1_Trans_fseq_condI_n1:
+  fixes M :: pairseq
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS"
+    and j1: "Lng M - 1 > 1" and condI: "transCondI M"
+  shows "Trans (M[1]) = operB (Trans M) (numBT 0)"
+proof -
+  have MT: "M \<in> T_PS" using MR by (simp add: RT_PS_def)
+  have L: "1 < Lng M" using j1 by linarith
+  have predRT: "Pred M \<in> RT_PS" by (rule Pred_RT_PS[OF MR])
+  have predb: "Pred M = butlast M" using L by (simp add: Pred_def)
+  have LP: "Lng (Pred M) = Lng M - 1" using predb by simp
+  have LPne: "Lng (Pred M) \<noteq> 1" using LP j1 by linarith
+  have nzP: "\<not> zeroT (Pred M)" using LPne by (simp add: zeroT_def)
+  have T1: "Trans (Pred M) \<noteq> 0\<^sub>B"
+    using Trans_Mark_invariant_aux predRT nzP by blast
+  have oper1: "M[1] = Pred M" by (rule m_8_4_oper1_eq_Pred[OF MT])
+  have "Trans (M[1]) = Trans (Pred M)" using oper1 by simp
+  also have "\<dots> = operB (Trans M) (numBT 0)"
+    using m_8_1_operB_numBT0_Pred[OF MR MP L T1 condI] by simp
+  finally show ?thesis .
+qed
+
+
+text \<open>§8.2 strong-monomiality lower bounds — structural helpers (paper
+  @{thm [source] p_8_2_subexpr_component_strongmono}, pss_paper.thy 1560,
+  article 3454).  The three conditional lower bounds (2)/(3)/(4) compare a
+  threshold \<open>D\<^sub>x 0\<close> against every principal component \<open>p \<in> P\<^bsub>B\<^esub> t'\<close>; since each
+  such \<open>p\<close> is itself a single principal \<open>D\<^bsub>v\<^esub> c\<close>, the comparison collapses to the
+  head value (\<open>D\<^sub>x 0 \<le> D\<^sub>v c \<longleftrightarrow> x \<le> v\<close>).  \<open>P\<^bsub>B\<^esub>\<close> distributes over \<open>+\<^sub>B\<close> and is a
+  singleton on a \<open>D\<^bsub>v\<^esub> c\<close>.\<close>
+
+lemma PB_Dpt_single: "PB (Dpt v t) = [Dpt v t]"
+  by (simp add: PB_def)
+
+lemma PB_addBT_app: "PB (a +\<^sub>B b) = PB a @ PB b"
+  by (cases a; cases b) (simp add: PB_def)
+
+lemma leBT_Dpt0_iff: "leBT (Dpt (enat x) 0\<^sub>B) (Dpt v c) \<longleftrightarrow> enat x \<le> v"
+proof -
+  have lt: "lessBT (Dpt (enat x) 0\<^sub>B) (Dpt v c)
+            \<longleftrightarrow> (enat x < v \<or> (enat x = v \<and> c \<noteq> 0\<^sub>B))"
+    by (cases c) auto
+  have eq: "(Dpt (enat x) 0\<^sub>B = Dpt v c) \<longleftrightarrow> (enat x = v \<and> c = 0\<^sub>B)"
+    by auto
+  show ?thesis by (auto simp: lt eq le_less)
+qed
+
+text \<open>§8.2 — \<open>\<exists>!\<close>-wrapper reducing the strong-monomiality lower-bound lemma
+  (paper @{thm [source] p_8_2_subexpr_component_strongmono}, pss_paper.thy 1560)
+  to the EXISTENCE of a single witness \<open>a\<close> for the leftend decomposition
+  \<open>Trans M = D\<^bsub>M\<^sub>1\<^sub>,\<^sub>0\<^esub> a\<close> that also satisfies the three conditional lower bounds
+  (2)/(3)/(4).  The \<open>\<exists>!\<close> uniqueness across the full four-conjunction is inherited
+  from clause (1) ALONE via @{thm [source] m_8_2_subexpr_leftend_unique}: any
+  \<open>t'\<close> meeting the conjunction meets clause (1), hence equals \<open>a\<close>.  This isolates
+  the remaining content (the bound-producing induction on \<open>j\<^sub>1 - TrMax M\<close>,
+  base @{thm [source] m_8_1_Pred_diagSeq_Trans}, recursive step the now-closed
+  keystone @{thm [source] m_8_2_keystone}) entirely into the witness hypotheses
+  \<open>w2\<close>/\<open>w3\<close>/\<open>w4\<close>.\<close>
+
+lemma m_8_2_subexpr_component_strongmono_of_witness:
+  fixes M :: pairseq
+  defines "J1 \<equiv> Lng (Br M) - 1"
+  defines "j0' \<equiv> Joints M ! J1"
+  defines "j1' \<equiv> FirstNodes M ! J1"
+  assumes MD: "M \<in> DT_PS" and Brne: "Br M \<noteq> []"
+    and w1: "Trans M = Dpt (enat (entry M 1 0)) a"
+    and w2: "(j0' = 0 \<or> entry M 0 j1' = entry M 1 j1')
+              \<Longrightarrow> (\<forall>p\<in>set (PB a). leBT (Dpt (enat (entry M 1 j1')) 0\<^sub>B) p)"
+    and w3: "(0 < j0' \<and> j0' < TrMax M \<and> entry M 0 j1' > entry M 1 j1')
+              \<Longrightarrow> (\<forall>p\<in>set (PB a). leBT (Dpt (enat (entry M 1 j0')) 0\<^sub>B) p)"
+    and w4: "(0 < j0' \<and> j0' = TrMax M)
+              \<Longrightarrow> (\<forall>p\<in>set (PB a). leBT (Dpt (enat (entry M 1 (TrMax M))) 0\<^sub>B) p)"
+  shows "\<exists>!t'.
+      Trans M = Dpt (enat (entry M 1 0)) t'
+    \<and> ((j0' = 0 \<or> entry M 0 j1' = entry M 1 j1')
+         \<longrightarrow> (\<forall>p\<in>set (PB t'). leBT (Dpt (enat (entry M 1 j1')) 0\<^sub>B) p))
+    \<and> ((0 < j0' \<and> j0' < TrMax M \<and> entry M 0 j1' > entry M 1 j1')
+         \<longrightarrow> (\<forall>p\<in>set (PB t'). leBT (Dpt (enat (entry M 1 j0')) 0\<^sub>B) p))
+    \<and> ((0 < j0' \<and> j0' = TrMax M)
+         \<longrightarrow> (\<forall>p\<in>set (PB t'). leBT (Dpt (enat (entry M 1 (TrMax M))) 0\<^sub>B) p))"
+proof -
+  obtain b where ub: "\<And>y. Trans M = Dpt (enat (entry M 1 0)) y \<Longrightarrow> y = b"
+    using m_8_2_subexpr_leftend_unique[OF MD] by (auto simp: Ex1_def)
+  show ?thesis
+  proof (rule ex1I[where a=a])
+    show "Trans M = Dpt (enat (entry M 1 0)) a
+      \<and> ((j0' = 0 \<or> entry M 0 j1' = entry M 1 j1')
+           \<longrightarrow> (\<forall>p\<in>set (PB a). leBT (Dpt (enat (entry M 1 j1')) 0\<^sub>B) p))
+      \<and> ((0 < j0' \<and> j0' < TrMax M \<and> entry M 0 j1' > entry M 1 j1')
+           \<longrightarrow> (\<forall>p\<in>set (PB a). leBT (Dpt (enat (entry M 1 j0')) 0\<^sub>B) p))
+      \<and> ((0 < j0' \<and> j0' = TrMax M)
+           \<longrightarrow> (\<forall>p\<in>set (PB a). leBT (Dpt (enat (entry M 1 (TrMax M))) 0\<^sub>B) p))"
+      using w1 w2 w3 w4 by blast
+  next
+    fix t'
+    assume A: "Trans M = Dpt (enat (entry M 1 0)) t'
+      \<and> ((j0' = 0 \<or> entry M 0 j1' = entry M 1 j1')
+           \<longrightarrow> (\<forall>p\<in>set (PB t'). leBT (Dpt (enat (entry M 1 j1')) 0\<^sub>B) p))
+      \<and> ((0 < j0' \<and> j0' < TrMax M \<and> entry M 0 j1' > entry M 1 j1')
+           \<longrightarrow> (\<forall>p\<in>set (PB t'). leBT (Dpt (enat (entry M 1 j0')) 0\<^sub>B) p))
+      \<and> ((0 < j0' \<and> j0' = TrMax M)
+           \<longrightarrow> (\<forall>p\<in>set (PB t'). leBT (Dpt (enat (entry M 1 (TrMax M))) 0\<^sub>B) p))"
+    have c1: "Trans M = Dpt (enat (entry M 1 0)) t'" using A by simp
+    have "t' = b" by (rule ub[OF c1])
+    moreover have "a = b" by (rule ub[OF w1])
+    ultimately show "t' = a" by simp
+  qed
+qed
+
+
 end
