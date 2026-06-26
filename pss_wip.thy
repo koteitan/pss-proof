@@ -32655,4 +32655,196 @@ proof -
 qed
 
 
+text \<open>§8.1 命題（条件(I)の下での \<open>Trans\<close> と基本列の交換関係）(i), GENERAL \<open>n\<close> —
+  the induction-on-\<open>n\<close> scaffolding of @{thm [source] p_8_1_Trans_fseq_condI} (i),
+  reduced to the single per-step pair-sequence residual (content.md 3119-3128 for
+  \<open>j\<^sub>0 = 0\<close>, 3130-3260 for \<open>j\<^sub>0 > 0\<close>).
+
+  GOAL: \<open>Trans (M[n]) = operB (Trans M) (numBT (n-1))\<close> for \<open>M \<in> RT\<^bsub>PS\<^esub> \<inter> PT\<^bsub>PS\<^esub>\<close>,
+  \<open>j\<^sub>1 = Lng M - 1 > 1\<close>, condition (I).  The article proves it by induction on \<open>n\<close>.
+
+  This lemma discharges the two regime-independent halves of that induction and
+  exposes the remaining content as ONE clean hypothesis \<open>stepT\<close>:
+  \<^item> BASE \<open>n = 1\<close>: \<open>Trans (M[1]) = operB (Trans M) (numBT 0)\<close>, the fully proven
+    @{thm [source] m_8_1_Trans_fseq_condI_n1};
+  \<^item> the pair-sequence ONE-STEP append \<open>M[k+1] = M[k] @ B\<close>, \<open>B = M\<^bsub>[j\<^sub>0..<j\<^sub>1]\<^esub>\<close>, the
+    fully proven kind-0 (condition-(I), \<open>M\<^bsub>1,j\<^sub>1\<^esub> = 0\<close>) expansion
+    @{thm [source] operI_Suc_append} (here \<open>hasParent M 0 j\<^sub>1\<close> from \<open>monoT\<close> via
+    @{thm [source] monoT_hasParent0_last}, \<open>M\<^bsub>1,j\<^sub>1\<^esub> = 0\<close> from \<open>transCondI\<close>).
+  Given those, the commutation reduces EXACTLY to \<open>stepT\<close>: for every \<open>k \<ge> 1\<close>,
+  \<open>Trans (M[k] @ B) = operB (Trans M) (numBT k)\<close>.
+
+  REMAINING BLOCKER = \<open>stepT\<close>, which is the article's induction step.  Its
+  Buchholz-side value \<open>operB (Trans M) (numBT k)\<close> is ALREADY mechanized: under
+  condition (I) the marked principal of \<open>Trans M\<close> is \<open>c\<^sub>2 = D\<^sub>v(t\<^sub>2 +\<^sub>B D\<^sub>0 0)\<close>, so
+  @{thm [source] m_7_2_scb_fseq_scb} / @{thm [source] m_7_2_scb_fseq_succ} give
+  \<open>operB (Trans M) (numBT k) = s\<^sub>1 (D\<^sub>v t\<^sub>2)\<cdot>(k+1) b\<^sub>1\<close> from any scb-decomposition of
+  \<open>Trans M\<close> at \<open>c\<^sub>2\<close> (the c1-around closed form, @{thm [source] m_8_1_c1_around_part1}
+  \<dots> @{thm [source] m_8_1_c1_around_part5}).  The genuinely missing content is the
+  LHS closed form \<open>Trans (M[k] @ B) = s\<^sub>1 (D\<^sub>v t\<^sub>2)\<cdot>(k+1) b\<^sub>1\<close>, i.e. the dual
+  marking-nesting induction tracking \<open>Mark (M[n], j'\<^sub>-\<^sub>1)\<close> (content.md 3160-3260)
+  for \<open>j\<^sub>0 > 0\<close>, and the multi-copy additivity \<open>Trans (M[n]) = (D\<^sub>v t\<^sub>2)\<cdot>n\<close> for
+  \<open>j\<^sub>0 = 0\<close> (the general analogue of the §8.6 @{thm [source] Trans_runseq}
+  induction, \<open>M[n] = (Pred M)\<^bsup>n\<^esup>\<close> via @{thm [source] operI_Suc_append}).
+
+  Audit (agent-workflow rule 4): cites only the already-proven
+  @{thm [source] m_8_1_Trans_fseq_condI_n1}, @{thm [source] operI_Suc_append},
+  @{thm [source] monoT_hasParent0_last}; no forward/circular use of
+  \<open>p_8_1_Trans_fseq_condI\<close> itself.\<close>
+
+lemma m_8_1_Trans_fseq_condI_comm_append_reduce:
+  fixes M :: pairseq
+  defines "B \<equiv> map ((!) M) [parent M 0 (Lng M - 1) ..< Lng M - 1]"
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS"
+    and j1: "Lng M - 1 > 1" and condI: "transCondI M"
+    and stepT: "\<And>k. 1 \<le> k \<Longrightarrow> Trans ((M[k]) @ B) = operB (Trans M) (numBT k)"
+    and n1: "1 \<le> n"
+  shows "Trans (M[n]) = operB (Trans M) (numBT (n - 1))"
+proof -
+  have MT: "M \<in> T_PS" using MR by (simp add: RT_PS_def)
+  have mono: "monoT M" using MP by (simp add: PT_PS_def)
+  have L: "1 < Lng M" using j1 by linarith
+  have hp0: "hasParent M 0 (Lng M - 1)" by (rule monoT_hasParent0_last[OF MT mono L])
+  have e1z: "entry M 1 (Lng M - 1) = 0" using condI by (simp add: transCondI_def)
+  show ?thesis
+  proof (cases n)
+    case 0
+    thus ?thesis using n1 by simp
+  next
+    case (Suc k)
+    show ?thesis
+    proof (cases "k = 0")
+      case True
+      have "Trans (M[1]) = operB (Trans M) (numBT 0)"
+        by (rule m_8_1_Trans_fseq_condI_n1[OF MR MP j1 condI])
+      thus ?thesis using Suc True by simp
+    next
+      case False
+      hence k1: "1 \<le> k" by simp
+      have ap: "M[Suc k] = (M[k]) @ B"
+        using operI_Suc_append[OF hp0 e1z, of k] B_def by simp
+      have "Trans (M[Suc k]) = Trans ((M[k]) @ B)" using ap by simp
+      also have "\<dots> = operB (Trans M) (numBT k)" by (rule stepT[OF k1])
+      finally show ?thesis using Suc by simp
+    qed
+  qed
+qed
+
+
+text \<open>§8.2 witness-induction SUB-BLOCKER: the \<open>Br\<close>/\<open>FirstNodes\<close>/\<open>Joints\<close> index
+  mapping between \<open>M\<close> and \<open>Pred M\<close> (article 3504-3520).  The recursive step of
+  the bound-producing induction (paper @{thm [source]
+  p_8_2_subexpr_component_strongmono}) applies the IH to \<open>Pred M\<close>, whose branch
+  index \<open>J'\<^sub>1 = Lng(Br(Pred M))-1\<close> must be related to \<open>M\<close>'s \<open>J\<^sub>1 = Lng(Br M)-1\<close>.
+  The geometric core: by @{thm [source] wid_Br_Pred} the new \<open>Br(Pred M)\<close> is
+  \<open>butlast(Br M)\<close> with the last branch's last column trimmed iff that last branch
+  is a single column; and by @{thm [source] wf21_Br_eq_seg} the last branch is the
+  suffix segment \<open>seg M j'\<^sub>1 (Lng M-1)\<close>, length \<open>Lng M - j'\<^sub>1\<close>, which is \<open>\<le> 1\<close> iff
+  \<open>j'\<^sub>1 = Lng M - 1\<close>.  Hence \<open>Lng(Br(Pred M)) = Lng(Br M) - 1\<close> when \<open>j'\<^sub>1 = j\<^sub>1\<close> and
+  \<open>= Lng(Br M)\<close> otherwise — i.e. \<open>J'\<^sub>1 = J\<^sub>1-1\<close> resp. \<open>J\<^sub>1\<close>.\<close>
+
+lemma wid_BrLen_Pred:
+  fixes M :: pairseq
+  assumes MP: "M \<in> PT_PS" and Brne: "Br M \<noteq> []" and L: "1 < Lng M"
+  shows "Lng (Br (Pred M)) =
+           (if FirstNodes M ! (Lng (Br M) - 1) = Lng M - 1
+            then Lng (Br M) - 1 else Lng (Br M))"
+proof -
+  have MT: "M \<in> T_PS" using MP by (simp add: PT_PS_def)
+  define Jstar where "Jstar = Lng (Br M) - 1"
+  have BrL: "0 < Lng (Br M)" using Brne by (cases "Br M") auto
+  have JBr: "Jstar < Lng (Br M)" unfolding Jstar_def using BrL by simp
+  define j1' where "j1' = FirstNodes M ! Jstar"
+  have br: "TrMax M \<noteq> Lng M - 1"
+  proof
+    assume "TrMax M = Lng M - 1"
+    hence "Br M = []" by (simp add: Br_def)
+    with Brne show False by simp
+  qed
+  \<comment> \<open>last branch = suffix segment, length \<open>Lng M - j'\<^sub>1\<close>\<close>
+  have blkeq: "Br M ! Jstar = seg M j1' (Lng M - 1)"
+    using wf21_Br_eq_seg[OF MP Brne] unfolding Jstar_def j1'_def by simp
+  have lastlen: "Lng (last (Br M)) = Suc (Lng M - 1) - j1'"
+  proof -
+    have lc: "last (Br M) = Br M ! Jstar"
+      using Brne unfolding Jstar_def by (simp add: last_conv_nth)
+    have "Lng (last (Br M)) = Lng (seg M j1' (Lng M - 1))" using lc blkeq by simp
+    thus ?thesis by simp
+  qed
+  have j1'lt: "j1' < Lng M" using a1_FN_lt[OF MP JBr] by (simp add: j1'_def)
+  have j1'le: "j1' \<le> Lng M - 1" using j1'lt by linarith
+  have brPred: "Br (Pred M) =
+           butlast (Br M)
+           @ (if Lng (last (Br M)) \<le> 1 then [] else [butlast (last (Br M))])"
+    by (rule wid_Br_Pred[OF MT br L])
+  have butl: "Lng (butlast (Br M)) = Lng (Br M) - 1" by simp
+  show ?thesis
+  proof (cases "FirstNodes M ! (Lng (Br M) - 1) = Lng M - 1")
+    case True
+    hence j1eq: "j1' = Lng M - 1" by (simp add: j1'_def Jstar_def)
+    have lle: "Lng (last (Br M)) \<le> 1" using lastlen j1eq L by linarith
+    have "Br (Pred M) = butlast (Br M)" using brPred lle by simp
+    hence "Lng (Br (Pred M)) = Lng (Br M) - 1" using butl by simp
+    thus ?thesis using True by simp
+  next
+    case False
+    hence jne: "j1' \<noteq> Lng M - 1" by (simp add: j1'_def Jstar_def)
+    have j1lt: "j1' < Lng M - 1" using j1'le jne by linarith
+    have lgt': "\<not> Lng (last (Br M)) \<le> 1" using lastlen j1lt L by linarith
+    have brP: "Br (Pred M) = butlast (Br M) @ [butlast (last (Br M))]"
+      using brPred lgt' by simp
+    have "Lng (Br (Pred M)) = Lng (butlast (Br M)) + 1" using brP by simp
+    also have "\<dots> = Lng (Br M)" using butl BrL by simp
+    finally show ?thesis using False by simp
+  qed
+qed
+
+text \<open>§8.2: the article's index mapping \<open>J'\<^sub>1 = J\<^sub>1-1\<close> (if \<open>j'\<^sub>1 = j\<^sub>1\<close>) or \<open>J\<^sub>1\<close>
+  (article 3504-3520), as the value of \<open>J'\<^sub>1 = Lng(Br(Pred M))-1\<close>.  Pure
+  arithmetic corollary of @{thm [source] wid_BrLen_Pred}.\<close>
+
+lemma wid_JPm1_map:
+  fixes M :: pairseq
+  assumes MP: "M \<in> PT_PS" and Brne: "Br M \<noteq> []" and L: "1 < Lng M"
+  shows "Lng (Br (Pred M)) - 1 =
+           (if FirstNodes M ! (Lng (Br M) - 1) = Lng M - 1
+            then (Lng (Br M) - 1) - 1 else Lng (Br M) - 1)"
+  using wid_BrLen_Pred[OF MP Brne L] by simp
+
+text \<open>§8.2: at the inherited last-branch index \<open>J'\<^sub>1 = Lng(Br(Pred M))-1\<close> the
+  \<open>FirstNodes\<close>/\<open>Joints\<close> of \<open>Pred M\<close> agree with those of \<open>M\<close>
+  (@{thm [source] wid_FirstNodes_Pred} / @{thm [source] wid_Joints_Pred} at that
+  index), the agreement the recursive IH application needs.  The hypothesis
+  \<open>Br(Pred M) \<noteq> []\<close> is exactly the \<open>n > 1\<close> regime of the witness induction
+  (\<open>Lng M - 1 - TrMax M > 1\<close>).\<close>
+
+lemma wid_FNJ_Pred_at_JPm1:
+  fixes M :: pairseq
+  assumes MP: "M \<in> PT_PS" and Brne: "Br M \<noteq> []" and L: "1 < Lng M"
+    and BrneP: "Br (Pred M) \<noteq> []"
+  shows "FirstNodes (Pred M) ! (Lng (Br (Pred M)) - 1)
+           = FirstNodes M ! (Lng (Br (Pred M)) - 1)
+       \<and> Joints (Pred M) ! (Lng (Br (Pred M)) - 1)
+           = Joints M ! (Lng (Br (Pred M)) - 1)"
+proof -
+  have MT: "M \<in> T_PS" using MP by (simp add: PT_PS_def)
+  have mono: "monoT M" using MP by (simp add: PT_PS_def)
+  have br: "TrMax M \<noteq> Lng M - 1"
+  proof
+    assume "TrMax M = Lng M - 1"
+    hence "Br M = []" by (simp add: Br_def)
+    with Brne show False by simp
+  qed
+  have JBrP: "Lng (Br (Pred M)) - 1 < Lng (Br (Pred M))"
+    using BrneP by (cases "Br (Pred M)") auto
+  have FN: "FirstNodes (Pred M) ! (Lng (Br (Pred M)) - 1)
+              = FirstNodes M ! (Lng (Br (Pred M)) - 1)"
+    by (rule wid_FirstNodes_Pred[OF MT mono br L JBrP])
+  have JN: "Joints (Pred M) ! (Lng (Br (Pred M)) - 1)
+              = Joints M ! (Lng (Br (Pred M)) - 1)"
+    by (rule wid_Joints_Pred[OF MT mono br L JBrP])
+  show ?thesis using FN JN by blast
+qed
+
+
 end
