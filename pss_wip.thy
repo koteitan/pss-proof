@@ -33075,4 +33075,200 @@ proof -
 qed
 
 
+text \<open>§8.2 GOAL1 support — a col-0/col-1-head congruence for @{const descending}.
+  @{const descending} inspects each component \<open>Q ! J\<close> ONLY through its first
+  column, via @{term "entry (Q!J) 0 0"} and @{term "entry (Q!J) 1 0"}.  Hence any
+  list \<open>R\<close> that (i) is no longer than \<open>Q\<close> and (ii) agrees with \<open>Q\<close> on those two
+  heads for every in-range index inherits descending-ness.  This is the abstract
+  fact that lets \<open>butlast\<close>/last-column-trim preserve \<open>descending (Br \<cdot>)\<close>.\<close>
+
+lemma descending_col0_cong:
+  assumes len: "Lng R \<le> Lng Q"
+    and ag: "\<And>J. J < Lng R \<Longrightarrow>
+                 entry (R ! J) 0 0 = entry (Q ! J) 0 0
+               \<and> entry (R ! J) 1 0 = entry (Q ! J) 1 0"
+    and D: "descending Q"
+  shows "descending R"
+proof (unfold descending_def, intro allI impI)
+  fix J0 J1
+  assume H: "J0 \<le> J1 \<and> J1 \<le> Lng R - 1"
+  show "entry (R ! J0) 0 0 \<ge> entry (R ! J1) 0 0
+      \<and> (entry (R ! J0) 0 0 = entry (R ! J1) 0 0
+           \<longrightarrow> entry (R ! J0) 1 0 \<ge> entry (R ! J1) 1 0)"
+  proof (cases "J0 = J1")
+    case True
+    thus ?thesis by simp
+  next
+    case False
+    with H have lt: "J0 < J1" by simp
+    hence J1pos: "0 < J1" by simp
+    have J1ltR: "J1 < Lng R" using H J1pos by linarith
+    have J0ltR: "J0 < Lng R" using lt J1ltR by linarith
+    have a0: "entry (R ! J0) 0 0 = entry (Q ! J0) 0 0"
+      and a1: "entry (R ! J0) 1 0 = entry (Q ! J0) 1 0"
+      using ag[OF J0ltR] by auto
+    have b0: "entry (R ! J1) 0 0 = entry (Q ! J1) 0 0"
+      and b1: "entry (R ! J1) 1 0 = entry (Q ! J1) 1 0"
+      using ag[OF J1ltR] by auto
+    have J1leQ: "J1 \<le> Lng Q - 1" using J1ltR len by linarith
+    have DQ: "entry (Q ! J0) 0 0 \<ge> entry (Q ! J1) 0 0
+            \<and> (entry (Q ! J0) 0 0 = entry (Q ! J1) 0 0
+                 \<longrightarrow> entry (Q ! J0) 1 0 \<ge> entry (Q ! J1) 1 0)"
+      using D H J1leQ unfolding descending_def by blast
+    show ?thesis using DQ a0 a1 b0 b1 by simp
+  qed
+qed
+
+text \<open>§8.2 GOAL1 support — \<open>Br (Pred M)\<close> and \<open>Br M\<close> agree on each branch's
+  col-0/col-1 head.  By @{thm [source] wid_Br_Pred} the new branch list is
+  \<open>butlast (Br M)\<close>, optionally with the last branch's LAST column trimmed.  Both
+  operations leave column \<open>0\<close> of every retained branch untouched, so the two heads
+  that @{const descending} reads are preserved.\<close>
+
+lemma wid_Br_Pred_col0_agree:
+  assumes M: "M \<in> T_PS" and br: "TrMax M \<noteq> Lng M - 1" and L: "1 < Lng M"
+    and J: "J < Lng (Br (Pred M))"
+  shows "entry (Br (Pred M) ! J) 0 0 = entry (Br M ! J) 0 0
+       \<and> entry (Br (Pred M) ! J) 1 0 = entry (Br M ! J) 1 0"
+proof -
+  have BMne: "Br M \<noteq> []"
+  proof -
+    have e: "Br M = P (seg M (TrMax M + 1) (Lng M - 1))" using br by (simp add: Br_def)
+    have tb: "TrMax M \<le> Lng M - 1" by (rule TrMax_bound[OF M])
+    with br have "TrMax M < Lng M - 1" by linarith
+    hence "0 < Lng (seg M (TrMax M + 1) (Lng M - 1))" using L by (simp add: Lng_seg)
+    thus ?thesis using e by (metis P_nonempty)
+  qed
+  have brP: "Br (Pred M) =
+       butlast (Br M) @ (if Lng (last (Br M)) \<le> 1 then [] else [butlast (last (Br M))])"
+    by (rule wid_Br_Pred[OF M br L])
+  let ?BM = "Br M"
+  let ?bl = "butlast ?BM"
+  have lbl: "Lng ?bl = Lng ?BM - 1" by simp
+  show ?thesis
+  proof (cases "Lng (last ?BM) \<le> 1")
+    case True
+    have brPeq: "Br (Pred M) = ?bl" using brP True by simp
+    have Jbl: "J < Lng ?bl" using J brPeq by simp
+    have "Br (Pred M) ! J = ?bl ! J" using brPeq by simp
+    also have "\<dots> = ?BM ! J" using Jbl by (simp add: nth_butlast)
+    finally have "Br (Pred M) ! J = ?BM ! J" .
+    thus ?thesis by simp
+  next
+    case False
+    have brPeq: "Br (Pred M) = ?bl @ [butlast (last ?BM)]" using brP False by simp
+    have Jlt: "J < Lng ?bl + 1" using J brPeq by simp
+    show ?thesis
+    proof (cases "J < Lng ?bl")
+      case True
+      have "Br (Pred M) ! J = (?bl @ [butlast (last ?BM)]) ! J" using brPeq by simp
+      also have "\<dots> = ?bl ! J" using True by (simp add: nth_append)
+      also have "\<dots> = ?BM ! J" using True by (simp add: nth_butlast)
+      finally have "Br (Pred M) ! J = ?BM ! J" .
+      thus ?thesis by simp
+    next
+      case False
+      have Jeq: "J = Lng ?bl" using Jlt False by simp
+      have JBM: "J = Lng ?BM - 1" using Jeq lbl by simp
+      have "Br (Pred M) ! J = (?bl @ [butlast (last ?BM)]) ! J" using brPeq by simp
+      also have "\<dots> = butlast (last ?BM)" using Jeq by (simp add: nth_append)
+      finally have lhs: "Br (Pred M) ! J = butlast (last ?BM)" .
+      have rhs: "?BM ! J = last ?BM" using JBM BMne by (simp add: last_conv_nth)
+      have Llast: "1 < Lng (last ?BM)" using \<open>\<not> Lng (last ?BM) \<le> 1\<close> by simp
+      have bl0: "butlast (last ?BM) ! 0 = (last ?BM) ! 0"
+      proof -
+        have "0 < Lng (butlast (last ?BM))" using Llast by simp
+        thus ?thesis by (simp add: nth_butlast)
+      qed
+      have c0: "entry (Br (Pred M) ! J) 0 0 = entry (Br M ! J) 0 0"
+        using lhs rhs bl0 by (simp add: entry_def)
+      have c1: "entry (Br (Pred M) ! J) 1 0 = entry (Br M ! J) 1 0"
+        using lhs rhs bl0 by (simp add: entry_def)
+      show ?thesis using c0 c1 by blast
+    qed
+  qed
+qed
+
+text \<open>§8.2 GOAL1 support — \<open>Lng (Br (Pred M)) \<le> Lng (Br M)\<close>: \<open>butlast\<close> drops one
+  branch and the optional trimmed branch adds back at most one.\<close>
+
+lemma wid_Br_Pred_lenle:
+  assumes M: "M \<in> T_PS" and br: "TrMax M \<noteq> Lng M - 1" and L: "1 < Lng M"
+  shows "Lng (Br (Pred M)) \<le> Lng (Br M)"
+proof -
+  have BMne: "Br M \<noteq> []"
+  proof -
+    have e: "Br M = P (seg M (TrMax M + 1) (Lng M - 1))" using br by (simp add: Br_def)
+    have tb: "TrMax M \<le> Lng M - 1" by (rule TrMax_bound[OF M])
+    with br have "TrMax M < Lng M - 1" by linarith
+    hence "0 < Lng (seg M (TrMax M + 1) (Lng M - 1))" using L by (simp add: Lng_seg)
+    thus ?thesis using e by (metis P_nonempty)
+  qed
+  have brP: "Br (Pred M) =
+       butlast (Br M) @ (if Lng (last (Br M)) \<le> 1 then [] else [butlast (last (Br M))])"
+    by (rule wid_Br_Pred[OF M br L])
+  have "Lng (Br (Pred M)) \<le> Lng (butlast (Br M)) + 1"
+    using brP by (simp split: if_splits)
+  also have "\<dots> = Lng (Br M)" using BMne by (cases "Br M") auto
+  finally show ?thesis .
+qed
+
+text \<open>§8.2 GOAL1 (corrected, gating helper for the witness induction).
+
+  CORRECTION (empirical, python/_clause3.py): the literal claim
+  \<open>M \<in> DT\<^bsub>PS\<^esub> \<Longrightarrow> Br M \<noteq> [] \<Longrightarrow> Pred M \<in> DT\<^bsub>PS\<^esub>\<close> is FALSE.  Counterexample
+  \<open>M = (0,0)(1,0)\<close>: it is reduced, \<open>monoT\<close>, with \<open>Br M = [(1,0)] \<noteq> []\<close> (descending),
+  so \<open>M \<in> DT\<^bsub>PS\<^esub>\<close>; but \<open>Pred M = (0,0)\<close> is \<open>zeroT\<close>, hence not \<open>monoT\<close> and
+  \<open>\<notin> DT\<^bsub>PS\<^esub>\<close>.  The failure is confined to \<open>Lng M = 2\<close> (\<open>Pred M\<close> collapses to a
+  single zero column).  Adding \<open>1 < Lng (Pred M)\<close> (equivalently \<open>2 < Lng M\<close>, the
+  measure-\<open>> 1\<close> regime the witness recursion actually uses) makes it TRUE; the
+  recursion only invokes the IH on \<open>Pred M\<close> when \<open>Br (Pred M) \<noteq> []\<close>, which already
+  forces \<open>1 < Lng (Pred M)\<close>.
+
+  Route (matches the task design): \<open>DT\<^bsub>PS\<^esub> = RT\<^bsub>PS\<^esub> \<inter> monoT \<inter> descending (Br \<cdot>)\<close>.
+  Reducedness is preserved by @{thm [source] Pred_RT_PS}; \<open>monoT (Pred M)\<close> from
+  \<open>\<not> multiT\<close> (@{thm [source] nonmulti_Pred}) and \<open>\<not> zeroT\<close> (\<open>1 < Lng (Pred M)\<close>);
+  \<open>descending (Br (Pred M))\<close> from @{thm [source] descending_col0_cong} fed by the
+  col-0 agreement (@{thm [source] wid_Br_Pred_col0_agree}) and the length bound
+  (@{thm [source] wid_Br_Pred_lenle}).\<close>
+
+lemma descending_Br_Pred:
+  assumes MD: "M \<in> DT_PS" and Brne: "Br M \<noteq> []" and Lp: "1 < Lng (Pred M)"
+  shows "Pred M \<in> DT_PS"
+proof -
+  have MR: "M \<in> RT_PS" and mono: "monoT M" and descBr: "descending (Br M)"
+    using MD by (auto simp: DT_PS_def)
+  have MT: "M \<in> T_PS" using MR by (simp add: RT_PS_def)
+  have nmu: "\<not> multiT M" using mono by (simp add: multiT_def)
+  have br: "TrMax M \<noteq> Lng M - 1"
+  proof
+    assume "TrMax M = Lng M - 1"
+    hence "Br M = []" by (simp add: Br_def)
+    with Brne show False by simp
+  qed
+  have L: "1 < Lng M"
+  proof (rule ccontr)
+    assume "\<not> 1 < Lng M"
+    hence le: "Lng M \<le> 1" by simp
+    hence "Pred M = M" by (simp add: Pred_def)
+    with Lp le show False by simp
+  qed
+  \<comment> \<open>(1) reducedness\<close>
+  have predRT: "Pred M \<in> RT_PS" by (rule Pred_RT_PS[OF MR])
+  \<comment> \<open>(2) mono: \<open>\<not> multiT\<close> + \<open>\<not> zeroT\<close>\<close>
+  have nmuP: "\<not> multiT (Pred M)" by (rule nonmulti_Pred[OF MT nmu L])
+  have nzP: "\<not> zeroT (Pred M)" using Lp by (auto simp: zeroT_def)
+  have monoP: "monoT (Pred M)" using nzP nmuP by (simp add: multiT_def)
+  \<comment> \<open>(3) descending of the new branch list\<close>
+  have lenle: "Lng (Br (Pred M)) \<le> Lng (Br M)" by (rule wid_Br_Pred_lenle[OF MT br L])
+  have agg: "\<And>J. J < Lng (Br (Pred M)) \<Longrightarrow>
+                  entry (Br (Pred M) ! J) 0 0 = entry (Br M ! J) 0 0
+                \<and> entry (Br (Pred M) ! J) 1 0 = entry (Br M ! J) 1 0"
+    by (rule wid_Br_Pred_col0_agree[OF MT br L])
+  have descP: "descending (Br (Pred M))"
+    by (rule descending_col0_cong[OF lenle agg descBr])
+  show ?thesis using predRT monoP descP by (simp add: DT_PS_def)
+qed
+
+
 end
