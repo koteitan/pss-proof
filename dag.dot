@@ -1,292 +1,151 @@
 digraph pss {
   rankdir=TB;   /* 前提(上) → 結論(下)、ゴール §8.7 を最下段に */
-  graph [nodesep=0.18, ranksep=0.6, bgcolor="#1e1e1e"];
-  node [fontcolor="#eaeaea", color="#666666"];
-  edge [color="#7a7a7a", arrowsize=0.6];
-  node [shape=box, style=filled, fontsize=10, fontname="sans"];
+  graph [nodesep=0.18, ranksep=0.55, bgcolor="#1e1e1e"];
+  node [fontcolor="#eaeaea", color="#666666", shape=box, style=filled, fontsize=10, fontname="sans"];
   edge [color="#888888", arrowsize=0.6];
-  G [label="✅緑=証明済  🚨赤=未証明  🚧橙=作業中/再定式化\n矢印 X→Y = X を使って Y を証明\n□=原文の命題  ○=原文に無い補助/分解/内部", shape=note, fillcolor="#2a2a2a"];
+  G [label="✅緑=証明済  🚨赤=未証明  📘=[Buc1]引用sorry\n矢印 X→Y = X を使って Y を証明\n□=原文命題  ○=補助/分解/内部\n(task.md の現状を反映)", shape=note, fillcolor="#2a2a2a"];
 
-  /* 原文に無い命題(我々の補助補題・証明内分解・内部)=楕円; 原文の命題=矩形(既定) */
-  c_base [shape=ellipse]; c_A [shape=ellipse]; c_B [shape=ellipse]; c_C [shape=ellipse]; c_d0pos [shape=ellipse];
-  Z1 [shape=ellipse]; Z2 [shape=ellipse]; Z3 [shape=ellipse]; Z4 [shape=ellipse];
-  Z6 [shape=ellipse]; Z7 [shape=ellipse];
-  d_brle [shape=ellipse]; d_mono [shape=ellipse]; d_split [shape=ellipse];
-  d_low [shape=ellipse]; d_dapp [shape=ellipse]; d_wire [shape=ellipse];
-  d_collapse [shape=ellipse]; d_regA [shape=ellipse]; d_anchor [shape=ellipse]; d_anchorco [shape=ellipse];
-  SkTmono [shape=ellipse]; dead20 [shape=ellipse];
+  /* color classes: green #2e5d34 / red #6b2b30 / buc1 #2a4d6b */
 
-  /* ===== color classes ===== */
-  /* green #2e5d34, red #6b2b30, orange #7a5320 */
+  /* ===================== 基礎 (task.md で畳まれた完了節) ===================== */
+  F5 [label="§5 定式化", fillcolor="#2e5d34"];
+  F6 [label="§6 ペア数列の基本性質", fillcolor="#2e5d34"];
+  F7 [label="§7 Buchholz表記系への翻訳", fillcolor="#2e5d34"];
+  buc1 [label="§8 [Buc1]引用sorry\nOT_B_wf / fseq_lt / OT_B_closed", fillcolor="#2a4d6b"];
 
-  /* ===================== §8.7 主結果 (ROOT) ===================== */
-    T87 [label="§8.7 停止性定理", fillcolor="#6b2b30"];
-    a_const00 [label="§8.7 公差(0,0)Trans", fillcolor="#6b2b30"];
-    a_fseq [label="§8.7 基本列降下", fillcolor="#6b2b30"];
-    a_otrec [label="§8.7 OT再帰構造", fillcolor="#6b2b30"];
-    a_otdom [label="§8.7 OT共終数遺伝", fillcolor="#6b2b30"];
-    a_ottail [label="§8.7 OT末尾零化", fillcolor="#6b2b30"];
-    a_pred0 [label="§8.7 Pred と[0]", fillcolor="#6b2b30"];
-    a_otex [label="§8.7 OT基本例", fillcolor="#2e5d34"];
-    a_transOT [label="§8.7 Trans標準形保存", fillcolor="#6b2b30"];
+  /* ===================== §8.7 主結果 (ROOT/sink) ===================== */
+  T87 [label="§8.7 停止性定理", fillcolor="#6b2b30"];
+  a_const00 [label="§8.7 公差(0,0)Trans", fillcolor="#2e5d34"];
+  a_fseq [label="§8.7 基本列の降下性", fillcolor="#6b2b30"];
+  a_otrec [label="§8.7 OT再帰構造", fillcolor="#2e5d34"];
+  a_otdom [label="§8.7 OT共終数遺伝", fillcolor="#2e5d34"];
+  a_ottail [label="§8.7 OT末尾項零化", fillcolor="#6b2b30"];
+  a_ottail_top [label="§8.7 末尾零化 top-level\nm_8_7_toplevel_OT_tail_annihilate", shape=ellipse, fillcolor="#2e5d34"];
+  a_ottail_gen [label="§8.7 末尾零化 一般(operB全域)", shape=ellipse, fillcolor="#6b2b30"];
+  a_pred0 [label="§8.7 Pred と[0] (原文偽A27/迂回)", fillcolor="#6b2b30"];
+  a_otex [label="§8.7 OT基本例", fillcolor="#2e5d34"];
+  a_transOT [label="§8.7 Trans が標準形を保つ", fillcolor="#6b2b30"];
+  a_transOT_clean [label="§8.7 Trans-OT clean部\nrank0/T_B/単項leaf", shape=ellipse, fillcolor="#2e5d34"];
+  a_transOT_comm [label="§8.7 Trans-OT 交換則依存(I/II/VI)", shape=ellipse, fillcolor="#6b2b30"];
+  a_transOT_34 [label="§8.7 Trans-OT III/IV(原文偽)", shape=ellipse, fillcolor="#6b2b30"];
+  a_transOT_sig [label="§8.7 Trans-OT Σ_B複項分解", shape=ellipse, fillcolor="#6b2b30"];
 
-  /* ===================== §8.2 強単項性 (critical) ===================== */
-    p82_sm [label="§8.2 切片Red強単項", fillcolor="#6b2b30"];
-    p82_t24 [label="§8.2 終切片Trans(II/IV)", fillcolor="#6b2b30"];
-    p82_smsl [label="§8.2 強単項切片遺伝", fillcolor="#6b2b30"];
-    p82_cPred [label="§8.2 部分表現成分Pred", fillcolor="#6b2b30"];
-    p82_csm [label="§8.2 部分表現成分強単項", fillcolor="#6b2b30"];
-    p82_vpar [label="§8.2 condV右端親", fillcolor="#6b2b30"];
-    p82_vt [label="§8.2 condV終切片Trans", fillcolor="#6b2b30"];
+  /* ===================== §8.1 条件(I) ===================== */
+  p81_prop [label="§8.1 命題 条件(I)Trans×基本列", fillcolor="#6b2b30"];
+  p81_desc [label="§8.1 降下⟸交換則(1)+OT\nm_8_1_Trans_fseq_condI_descent", shape=ellipse, fillcolor="#2e5d34"];
+  p81_comm [label="§8.1 交換則(1)本体", shape=ellipse, fillcolor="#6b2b30"];
+  p81_ot [label="§8.1 OT所属(→§8.7)", shape=ellipse, fillcolor="#6b2b30"];
+  p81_d11 [label="§8.1 公差(1,1)Trans\nm_8_1_diagSeq_Trans", fillcolor="#2e5d34"];
+  p81_pd [label="§8.1 Pred公差(1,1)", fillcolor="#2e5d34"];
+  p81_c1 [label="§8.1 c1前後(I/III) (A20/A21)", fillcolor="#6b2b30"];
+  p81_parts [label="§8.1 part(1)(2)(3-1)(3-2)(5)\n+Mark_gap_peel", shape=ellipse, fillcolor="#2e5d34"];
+  p81_sp [label="§8.1 (4-1)(4-2) slicepeel", shape=ellipse, fillcolor="#6b2b30"];
+  p81_sp_found [label="§8.1 setup/head/Nred/B1/Adm0", shape=ellipse, fillcolor="#2e5d34"];
+  p81_b2 [label="§8.1 B2 → part4_1/4_2", shape=ellipse, fillcolor="#6b2b30"];
+  p81_cond42 [label="§8.1 B2-a cond(II/IV)\nm_8_1_c1_around_part4_cond42", shape=ellipse, fillcolor="#2e5d34"];
+  p81_cond135 [label="§8.1 B2-a cond(I/III/V)", shape=ellipse, fillcolor="#6b2b30"];
+  p81_b2b [label="§8.1 B2-b clause shape", shape=ellipse, fillcolor="#6b2b30"];
+  p81_b2c [label="§8.1 B2-c add_scb splice (最難)", shape=ellipse, fillcolor="#6b2b30"];
 
-  /* ===================== §8.1/3/4/5/6 展開規則 ===================== */
-    p81_ex [label="§8.1 Trans×基本列(I)", fillcolor="#6b2b30"];
-    p81_d11 [label="§8.1 公差(1,1)Trans", fillcolor="#6b2b30"];
-    p81_pd [label="§8.1 Pred公差(1,1)", fillcolor="#6b2b30"];
-    p81_c1 [label="§8.1 c1前後(I/III)", fillcolor="#6b2b30"];
-    p83_ex [label="§8.3 Trans×基本列(II)", fillcolor="#6b2b30"];
-    p83_iq [label="§8.3 第0種不等式", fillcolor="#6b2b30"];
-    p83_br [label="§8.3 第0種分岐", fillcolor="#6b2b30"];
-    p83_mk [label="§8.3 第0種基点", fillcolor="#6b2b30"];
-    p84_ex [label="§8.4 Trans×基本列(III/IV)", fillcolor="#6b2b30"];
-    p84_na [label="§8.4 右端非許容先祖", fillcolor="#6b2b30"];
-    p84_rp [label="§8.4 右端置換Trans", fillcolor="#6b2b30"];
-    p84_rule [label="§8.4 展開規則基本", fillcolor="#6b2b30"];
-    p84_scb [label="§8.4 Trans×scb", fillcolor="#6b2b30"];
-    p84_sl [label="§8.4 切片scb分解", fillcolor="#6b2b30"];
-    p84_sv [label="§8.4 各種scb(III-V)", fillcolor="#6b2b30"];
-    p84_s4 [label="§8.4 各種scb(III/IV)", fillcolor="#6b2b30"];
-    p84_fs [label="§8.4 基本列基本", fillcolor="#6b2b30"];
-    p85_ex [label="§8.5 Trans×基本列(V)", fillcolor="#6b2b30"];
-    p85_jf [label="§8.5 Joints/FN/t2", fillcolor="#6b2b30"];
-    p85_scb [label="§8.5 各種scb(V)", fillcolor="#6b2b30"];
-    p86_ex [label="§8.6 Trans×基本列(VI)", fillcolor="#6b2b30"];
-    p86_d10 [label="§8.6 公差(1,0)Trans", fillcolor="#6b2b30"];
-    p86_d11 [label="§8.6 公差(1,1)展開", fillcolor="#6b2b30"];
-    p86_an [label="§8.6 末尾単項零化", fillcolor="#6b2b30"];
+  /* ===================== §8.2 強単項性 ===================== */
+  p82_sm [label="§8.2 切片Red強単項\nm_8_2_standard_slice_Red_strongmono", fillcolor="#2e5d34"];
+  p82_t24 [label="§8.2 終切片Trans(II/IV)", fillcolor="#6b2b30"];
+  p82_smsl [label="§8.2 強単項切片遺伝\nm_8_2_strongmono_slice", fillcolor="#2e5d34"];
+  p82_key [label="§8.2 keystone 部分表現成分Pred", fillcolor="#6b2b30"];
+  p82_adm0 [label="§8.2 Adm0枝+guard\nm_8_2_..._Adm0_nogB", shape=ellipse, fillcolor="#2e5d34"];
+  p82_gb [label="§8.2 gB-condV\nm_8_2_gB_Adm0_condA", shape=ellipse, fillcolor="#2e5d34"];
+  p82_half [label="§8.2 Admpos両half\n_Adm0_full/_Admpos_of_wid", shape=ellipse, fillcolor="#2e5d34"];
+  p82_wid [label="§8.2 w-id討伐→keystone組立", shape=ellipse, fillcolor="#6b2b30"];
+  p82_glue [label="§8.2 還元グルー\nm_8_2_wid_of_predwid", shape=ellipse, fillcolor="#2e5d34"];
+  p82_jt [label="§8.2 転送A(jt)\nm_8_2_jt_transport", shape=ellipse, fillcolor="#2e5d34"];
+  p82_ft [label="§8.2 転送B(ft)\nm_8_2_ft_transport", shape=ellipse, fillcolor="#2e5d34"];
+  p82_ind [label="§8.2 帰納組立(cpUのみ条件付)\nm_8_2_subexpr_component_Pred_final", shape=ellipse, fillcolor="#2e5d34"];
+  p82_baseU [label="§8.2 baseU\nm_8_2_baseU", shape=ellipse, fillcolor="#2e5d34"];
+  p82_cpU [label="§8.2 cpU=widTrM=chainOK\n残=j1eq⟹chainOK", shape=ellipse, fillcolor="#6b2b30"];
+  p82_csm [label="§8.2 部分表現成分 強単項基本", fillcolor="#6b2b30"];
+  p82_csm1 [label="§8.2 (1)leftend_unique", shape=ellipse, fillcolor="#2e5d34"];
+  p82_csm234 [label="§8.2 (2)(3)(4)leBT下界", shape=ellipse, fillcolor="#6b2b30"];
+  p82_vpar [label="§8.2 condV右端親", fillcolor="#6b2b30"];
+  p82_vt [label="§8.2 condV終切片Trans", fillcolor="#6b2b30"];
 
-  /* ===================== §7.3 翻訳写像 ===================== */
-    transdef [label="§7.3 Trans/Mark定義", fillcolor="#2e5d34"];
-    p73_wd [label="§7.3 Trans well-def", fillcolor="#6b2b30"];
-    p73_2col [label="§7.3 2列性", fillcolor="#6b2b30"];
-    p73_Pinv [label="§7.3 Trans P同変", fillcolor="#6b2b30"];
-    p73_Mkinv [label="§7.3 Mark不変", fillcolor="#6b2b30"];
-    p73_zero [label="§7.3 Trans零項保存", fillcolor="#6b2b30"];
-    p73_c1c2 [label="§7.3 c1<c2", fillcolor="#6b2b30"];
-    p73_pred [label="§7.3 Pred降下", fillcolor="#6b2b30"];
-    p73_mono [label="§7.3 Trans単項保存", fillcolor="#2e5d34"];
-    p73_mk1 [label="§7.3 右端1基点Mark", fillcolor="#6b2b30"];
-    p73_mk2 [label="§7.3 右端2基点Mark", fillcolor="#6b2b30"];
-    p73_etc [label="§7.3 Mark他諸性質", fillcolor="#6b2b30"];
+  /* ===================== §8.3 条件(II) ===================== */
+  p83_prop [label="§8.3 命題 条件(II)Trans×基本列", fillcolor="#6b2b30"];
+  p83_desc [label="§8.3 降下⟸exch+OT\nm_8_3_TransCondII_oper_descend_engine", shape=ellipse, fillcolor="#2e5d34"];
+  p83_exch [label="§8.3 exch(交換則)", shape=ellipse, fillcolor="#6b2b30"];
+  p83_ot [label="§8.3 OT所属(→§8.7)", shape=ellipse, fillcolor="#6b2b30"];
+  p83_k0 [label="§8.3 第0種型 不等式/分岐/基点", fillcolor="#2e5d34"];
 
-  /* ===================== §7.4 許容的親子 ===================== */
-    p74_adm [label="§7.4 Adm-NextAdm", fillcolor="#2e5d34"];
-    p74_tna [label="§7.4 Trans-NextAdm", fillcolor="#6b2b30"];
-    p74_mna [label="§7.4 Mark-NextAdm", fillcolor="#6b2b30"];
-    p74_tmp [label="§7.4 Trans=Mark·Pred", fillcolor="#6b2b30"];
-    p74_tms [label="§7.4 Trans=Mark·切片", fillcolor="#6b2b30"];
-    p74_rnm [label="§7.4 RN-Mark", fillcolor="#6b2b30"];
-    p74_rnra [label="§7.4 RN-RightAnces", fillcolor="#6b2b30"];
-    p74_razero [label="§7.4 RightAnces非空", fillcolor="#6b2b30"];
+  /* ===================== §8.4 条件(III/IV) ===================== */
+  p84_ex [label="§8.4 命題 条件(III/IV)Trans×基本列", fillcolor="#6b2b30"];
+  p84_na [label="§8.4 右端非許容先祖", fillcolor="#6b2b30"];
+  p84_rp [label="§8.4 右端置換Trans(III-V)", fillcolor="#6b2b30"];
+  p84_rule [label="§8.4 展開規則基本(III-VI)", fillcolor="#6b2b30"];
+  p84_scb [label="§8.4 Trans×scb(III-VI)", fillcolor="#6b2b30"];
+  p84_sl [label="§8.4 切片scb分解(III-V)", fillcolor="#6b2b30"];
+  p84_sv [label="§8.4 各種scb(III-V)", fillcolor="#6b2b30"];
+  p84_s4 [label="§8.4 各種scb(III/IV)", fillcolor="#6b2b30"];
+  p84_fs [label="§8.4 基本列基本\nm_8_4_oper_basic_part1", fillcolor="#2e5d34"];
 
-  /* ===================== §7.2 scb 分解 ===================== */
-    s_repl [label="§7.2 scb置換可能", fillcolor="#6b2b30"];
-    s_comp [label="§7.2 scb合成則", fillcolor="#6b2b30"];
-    s_triv [label="§7.2 scb自明判定", fillcolor="#6b2b30"];
-    s_uniq [label="§7.2 scb一意性", fillcolor="#6b2b30"];
-    s_add [label="§7.2 加法とscb", fillcolor="#6b2b30"];
-    s_fseq [label="§7.2 scbと基本列", fillcolor="#6b2b30"];
-    s_rn [label="§7.2 RN-部分表現", fillcolor="#6b2b30"];
+  /* ===================== §8.5 条件(V) ===================== */
+  p85_ex [label="§8.5 命題 条件(V)Trans×基本列", fillcolor="#6b2b30"];
+  p85_jf [label="§8.5 Joints/FN/t2", fillcolor="#6b2b30"];
+  p85_scb [label="§8.5 各種scb(V)", fillcolor="#6b2b30"];
 
-  /* ===================== §7.1 Buchholz表記 ===================== */
-    p71_par [label="§7.1 括弧均衡", fillcolor="#2e5d34"];
-    p71_tc [label="§7.1 単項成分", fillcolor="#2e5d34"];
-    p71_ext [label="§7.1 不等式延長", fillcolor="#6b2b30"];
-    lem21 [label="§7.1 Lem2.1 全順序", fillcolor="#2e5d34"];
-    lem22 [label="§7.1 Lem2.2 整礎性", fillcolor="#6b2b30"];
-
-  /* ===================== §6.8 降順性 ===================== */
-    p68_p1 [label="§6.8 切片Br降順(prop1)済", fillcolor="#2e5d34"];
-    p68_p2 [label="§6.8 標準形P成分降順", fillcolor="#2e5d34"];
-    c_base [label="§6.8 base k=0", fillcolor="#2e5d34"];
-    c_A [label="§6.8 caseA", fillcolor="#2e5d34"];
-    c_B [label="§6.8 caseB", fillcolor="#2e5d34"];
-    c_C [label="§6.8 caseC", fillcolor="#2e5d34"];
-    c_d0pos [label="§6.8 d0pos(済)", fillcolor="#2e5d34"];
-
-  /* d0pos infra Z1-Z7 (oper_d1pos_* helpers, all green) */
-    Z1 [label="d0pos Z1 expand/Lng", fillcolor="#2e5d34"];
-    Z2 [label="d0pos Z2 nth/entry", fillcolor="#2e5d34"];
-    Z3 [label="d0pos Z3 confined*", fillcolor="#2e5d34"];
-    Z4 [label="d0pos Z4 period", fillcolor="#2e5d34"];
-    Z6 [label="d0pos Z6 block単調", fillcolor="#2e5d34"];
-    Z7 [label="d0pos Z7 le0_blockstarts", fillcolor="#2e5d34"];
-  /* d0pos closure: brle (single-comp) PROVEN; ¬brle (multi) bricks green + wiring pending */
-    d_brle [label="d0pos brle単一(済)\n descending_Br_of_branch_le0", fillcolor="#2e5d34"];
-    d_mono [label="d0pos monoT_seg_of_le0", fillcolor="#2e5d34"];
-    d_split [label="¬brle P分割 notbrle_P_split", fillcolor="#2e5d34"];
-    d_low [label="¬brle LOW機構\n P_funpow/LOW_source/LOW_eq", fillcolor="#2e5d34"];
-    d_dapp [label="¬brle descending_shift/map_IncrFirst", fillcolor="#2e5d34"];
-    d_collapse [label="across-block P-collapse(済)\n oper_d1pos_collapse", fillcolor="#2e5d34"];
-    d_regA [label="regime A keystone(済)\n nth_low_verbatim/TrEq_regA/Br_align_regA", fillcolor="#2e5d34"];
-    d_anchor [label="FirstNodes-anchor 同定(済)\n branch_anchor/collapse_concrete/butl/lowshift_regB", fillcolor="#2e5d34"];
-    d_anchorco [label="anchor一致+lowshift+tail(済)\n P_butlast_take_at_anchor/anchor_coincide_regA/tail_junction", fillcolor="#2e5d34"];
-    d_wire [label="¬brle 同定stub(済)\n 4セルcase-split", fillcolor="#2e5d34"];
-
-  /* ===================== §6.7 標準形 ===================== */
-    p67_un [label="§6.7 ST=∪SkT", fillcolor="#2e5d34"];
-    p67_red [label="§6.7 標準形簡約性", fillcolor="#6b2b30"];
-    p67_Pc [label="§6.7 標準形P成分∈Sk", fillcolor="#2e5d34"];
-    p67_pre [label="§6.7 標準形始切片", fillcolor="#2e5d34"];
-    SkTmono [label="§6.7 SkT単調 Sk⊆Sk+1", fillcolor="#2e5d34"];
-
-  /* ===================== §6.6 簡約性 ===================== */
-    p66_sl [label="§6.6 簡約切片遺伝(A5)", fillcolor="#6b2b30"];
-    p66_P [label="§6.6 P簡約保存", fillcolor="#6b2b30"];
-    p66_op [label="§6.6 簡約基本列保存", fillcolor="#6b2b30"];
-    p66_iff [label="§6.6 簡約⟺A∧B", fillcolor="#6b2b30"];
-    p66_le1 [label="§6.6 Red左端(1)", fillcolor="#2e5d34"];
-    p66_coef [label="§6.6 簡約と係数", fillcolor="#6b2b30"];
-    p66_le [label="§6.6 簡約と左端", fillcolor="#6b2b30"];
-    p66_AB [label="§6.6 条件A/B係数", fillcolor="#2e5d34"];
-    p66_ari [label="§6.6 先祖切片RedIncr", fillcolor="#6b2b30"];
-    p66_1c [label="§6.6 1列基本性質", fillcolor="#6b2b30"];
-
-  /* ===================== §6.5 簡約化 Red ===================== */
-    r_wd [label="§6.5 Red well-def", fillcolor="#2e5d34"];
-    r_incr [label="§6.5 Red IncrFirst不変", fillcolor="#7a5320"];
-    r_lng [label="§6.5 Lng Red不変", fillcolor="#2e5d34"];
-    r_zero [label="§6.5 Red零項保存", fillcolor="#2e5d34"];
-    r_le [label="§6.5 先祖Red不変(keystone)", fillcolor="#6b2b30"];
-    r_mono [label="§6.5 Red単項保存", fillcolor="#6b2b30"];
-    r_PRed [label="§6.5 P Red同変", fillcolor="#6b2b30"];
-    r_idem [label="§6.5 Red冪等", fillcolor="#6b2b30"];
-    r_pred [label="§6.5 Red·Pred可換", fillcolor="#7a5320"];
-    r_oper [label="§6.5 Red·基本列可換", fillcolor="#6b2b30"];
-    r_adm [label="§6.5 Red許容保存", fillcolor="#6b2b30"];
-    r_admof [label="§6.5 許容化Red不変", fillcolor="#6b2b30"];
-    r_mark [label="§6.5 Red基点保存", fillcolor="#6b2b30"];
-    r_mRed [label="§6.5 単項とRed", fillcolor="#2e5d34"];
-    dead20 [label="§6.5 死枝[20]到達不能", fillcolor="#2e5d34"];
-
-  /* ===================== §6.1-6.4 (全✅) ===================== */
-    p64_idx [label="§6.4 P-IdxSum", fillcolor="#2e5d34"];
-    p64_idxc [label="§6.4 P-IdxSum合成", fillcolor="#2e5d34"];
-    p64_lend [label="§6.4 P成分左端単調", fillcolor="#2e5d34"];
-    p64_next [label="§6.4 単項成分Next", fillcolor="#2e5d34"];
-    p64_ftj [label="§6.4 FN/TrMax/Joints", fillcolor="#2e5d34"];
-    p64_ftjm [label="§6.4 FN/Joints単調(A3)", fillcolor="#2e5d34"];
-    p64_sl [label="§6.4 単項切片遺伝", fillcolor="#2e5d34"];
-    p62_crit [label="§6.2 複項判定", fillcolor="#2e5d34"];
-    p62_pre [label="§6.2 単項始切片", fillcolor="#2e5d34"];
-    p62_anc [label="§6.2 単項先祖切片", fillcolor="#2e5d34"];
-    p62_Pinv [label="§6.2 P IncrFirst同変", fillcolor="#2e5d34"];
-    p62_Pnm [label="§6.2 P成分非複項", fillcolor="#2e5d34"];
-    p62_Padd [label="§6.2 P加法性", fillcolor="#2e5d34"];
-    p62_Pop [label="§6.2 P と基本列", fillcolor="#2e5d34"];
-    p62_nmop [label="§6.2 非複項と基本列", fillcolor="#2e5d34"];
-    p63_sl [label="§6.3 許容切片", fillcolor="#2e5d34"];
-    p63_of [label="§6.3 許容化切片", fillcolor="#2e5d34"];
-    p63_mk [label="§6.3 基点切片", fillcolor="#2e5d34"];
-    p61 [label="§6.1 ≤_M IncrFirst不変", fillcolor="#2e5d34"];
-    p5_pex [label="§6.1 親の存在", fillcolor="#2e5d34"];
-    p5_pb [label="§6.1 親の基本性質", fillcolor="#2e5d34"];
-    p5_ab [label="§6.1 先祖基本", fillcolor="#2e5d34"];
-    p5_at [label="§6.1 先祖木構造", fillcolor="#2e5d34"];
-    p5_pred [label="§6.1 Pred=[1]", fillcolor="#2e5d34"];
-    p5_F [label="§6.1 F_M基本列(A1)", fillcolor="#2e5d34"];
+  /* ===================== §8.6 条件(VI) ===================== */
+  p86_ex [label="§8.6 命題 条件(VI)Trans×基本列", fillcolor="#6b2b30"];
+  p86_d10 [label="§8.6 公差(1,0)Trans\nm_8_6_const2nd_Trans_paper", fillcolor="#2e5d34"];
+  p86_d11 [label="§8.6 公差(1,1)展開\nm_8_6_diagSeq_Trans_oper_paper", fillcolor="#2e5d34"];
+  p86_an [label="§8.6 末尾単項零化(原文偽A25)", fillcolor="#6b2b30"];
+  p86_an_clean [label="§8.6 末尾単項零化 clean\nm_8_6_trailing_principal_peel", shape=ellipse, fillcolor="#2e5d34"];
+  p86_an_gen [label="§8.6 末尾単項零化 一般(原文偽)", shape=ellipse, fillcolor="#6b2b30"];
 
   /* ===================== EDGES (前提 → 結論) ===================== */
-  /* --- §8.7 root (sink) --- */
+  /* 基礎 → §8 全交換命題・§8.7補助 */
+  {F5 F6 F7} -> {p81_prop p82_key p83_prop p84_ex p85_ex p86_ex
+                 a_const00 a_otrec a_otdom a_otex a_transOT_clean};
+  buc1 -> {T87 p81_desc p83_desc a_transOT};
+
+  /* §8.7 root (sink) */
   {a_const00 a_fseq a_otrec a_otdom a_ottail a_pred0 a_otex a_transOT} -> T87;
-  {p81_ex p83_ex p84_ex p85_ex p86_ex p82_sm} -> T87;
+  {p81_prop p83_prop p84_ex p85_ex p86_ex p82_sm} -> T87;
+  a_ottail_top -> a_ottail; a_ottail_gen -> a_ottail;
+  {a_transOT_clean a_transOT_comm a_transOT_34 a_transOT_sig} -> a_transOT;
+  /* 降下性は §8.1-8.6 の交換則連鎖が本体; OT所属も交換則依存 */
+  {p81_prop p83_prop p84_ex p85_ex p86_ex} -> a_fseq;
+  {p81_comm p83_exch} -> a_transOT_comm;
+  {p81_ot p83_ot} -> a_transOT;
 
-  /* --- critical path --- */
-  p68_p1 -> p82_sm;
+  /* §8.1 */
+  {p81_desc p81_comm p81_ot} -> p81_prop;
+  {p81_d11 p81_pd p81_c1} -> p81_prop;
+  p81_comm -> p81_c1;   /* 交換則本体は c1前後具体表示経由 */
+  {p81_parts p81_sp} -> p81_c1;
+  {p81_sp_found p81_b2} -> p81_sp;
+  {p81_cond42 p81_cond135 p81_b2b p81_b2c} -> p81_b2;
+
+  /* §8.2 */
+  p82_key -> {p82_sm p82_csm p82_t24};
   p82_sm -> p82_smsl;
-  transdef -> {p82_t24 p82_csm p82_cPred p82_vpar p82_vt};
-  p71_tc -> p82_csm;
+  {p82_adm0 p82_gb p82_half p82_wid} -> p82_key;
+  {p82_glue p82_jt p82_ft p82_ind p82_baseU p82_cpU} -> p82_wid;
+  {p82_csm1 p82_csm234} -> p82_csm;
+  p82_key -> p82_csm234;   /* leBT 下界は keystone 依存 */
+  {p82_vpar p82_vt} -> T87;
+  p82_t24 -> T87;
+  p82_smsl -> T87;
+  p82_sm -> {p83_prop p84_ex};
 
-  /* --- §6.8 prop1 internal --- */
-  {c_base c_A c_B c_C c_d0pos} -> p68_p1;
-  {p62_Padd p62_Pnm p62_crit p64_idx p64_next p64_ftj p64_lend} -> {c_A c_B c_C};
-  p67_Pc -> p68_p1;
-  {d_brle d_wire} -> c_d0pos;
-  d_mono -> d_brle;
-  {d_split d_low d_dapp d_collapse d_regA d_anchor d_anchorco} -> d_wire;
-  d_anchor -> d_anchorco;
-  {d_split d_low d_mono} -> d_collapse;
-  {d_collapse d_split} -> d_anchor;
-  Z1 -> Z2; Z2 -> Z3; Z2 -> Z4; Z1 -> Z3; Z1 -> Z4; Z2 -> Z6; Z6 -> Z7;
-  {Z2 Z4} -> d_low; d_mono -> d_split; {Z6 Z7} -> d_split;
-  p67_Pc -> p68_p2; p62_Pop -> p68_p2;
-  SkTmono -> p67_Pc;
+  /* §8.3 */
+  {p83_desc p83_exch p83_ot} -> p83_prop;
+  p83_k0 -> p83_prop;
 
-  /* --- §6.5 internal (A4 / dead20) --- */
-  r_lng -> r_zero;
-  dead20 -> r_incr;
-  dead20 -> r_pred;
-  dead20 -> r_mRed;
-  r_le -> {r_mono r_PRed r_idem r_oper r_adm r_admof r_mark};
-  r_wd -> r_le;
-
-  /* --- §6.6 --- */
-  r_lng -> p66_le1;
-  p62_Padd -> {p66_P p66_op p66_iff};
-  r_incr -> p66_ari;
-
-  /* --- §6.7 --- */
-  p62_pre -> p67_un;
-  p5_pred -> p67_pre;
-  p66_iff -> p67_red;
-
-  /* --- §7.1 → §7.2 → §7.3 → §7.4 --- */
-  {p71_par p71_tc} -> lem21;
-  lem21 -> lem22;
-  p71_ext -> {s_comp s_uniq};
-  {lem21 p71_tc} -> {s_repl s_comp s_triv s_uniq s_add s_fseq s_rn};
-  transdef -> {p73_wd p73_2col p73_Pinv p73_Mkinv p73_zero p73_c1c2 p73_pred p73_mono p73_mk1 p73_mk2 p73_etc};
-  {s_repl s_comp s_triv s_uniq s_add s_fseq s_rn} -> {p73_Pinv p73_pred p73_etc};
-  {p73_etc p74_adm} -> {p74_tna p74_mna p74_tmp p74_tms p74_rnm p74_rnra p74_razero};
-
-  /* --- §7.3/§7.4 Trans/Mark 諸性質 → §8 展開規則 --- */
-  {p73_wd p73_2col p73_Pinv p73_Mkinv p73_zero p73_c1c2 p73_pred p73_mono p73_mk1 p73_mk2 p73_etc
-   p74_tna p74_mna p74_tmp p74_tms p74_rnm p74_rnra p74_razero} -> {p81_ex p83_ex p84_ex p85_ex p86_ex};
-
-  /* --- §8.x: 定義+補助補題 → 各節の主交換命題 → T87 --- */
-  transdef -> {p81_ex p81_d11 p81_pd p81_c1
-               p83_ex p83_iq p83_br p83_mk
-               p84_ex p84_na p84_rp p84_rule p84_scb p84_sl p84_sv p84_s4 p84_fs
-               p85_ex p85_jf p85_scb  p86_ex p86_d10 p86_d11 p86_an};
-  {p81_d11 p81_pd p81_c1} -> p81_ex;
-  {p83_iq p83_br p83_mk} -> p83_ex;
+  /* §8.4 */
   {p84_na p84_rp p84_rule p84_scb p84_sl p84_sv p84_s4 p84_fs} -> p84_ex;
+
+  /* §8.5 */
   {p85_jf p85_scb} -> p85_ex;
+
+  /* §8.6 */
   {p86_d10 p86_d11 p86_an} -> p86_ex;
-  s_uniq -> p84_ex; s_fseq -> p85_ex; p82_sm -> {p83_ex p84_ex};
-
-  /* --- §8.2 残りの補題 → T87 --- */
-  {p82_t24 p82_smsl p82_cPred p82_csm p82_vpar p82_vt} -> T87;
-
-  /* --- §8.7 補助 → T87(既), 整礎性も寄与 --- */
-  {transdef lem21 lem22} -> {a_const00 a_fseq a_otrec a_otdom a_ottail a_pred0 a_otex a_transOT};
-
-  /* --- §6.x foundations (sources) --- */
-  {p5_pex p61} -> {p62_crit p62_pre p62_anc p62_Pinv p62_Pnm p62_Padd p62_Pop p62_nmop};
-  {p62_Padd p62_crit} -> {p64_idx p64_idxc p64_lend p64_next p64_ftj p64_ftjm p64_sl};
-  p5_pb -> {p63_sl p63_of p63_mk};
-  p5_pex -> {p5_pb p5_ab p5_at};
-
-  /* --- coarse 下流配線: T87 以外の dead-end を解消 (節間, 向き=前提→結論) --- */
-  {p5_ab p5_at} -> p62_anc;
-  p5_F -> a_pred0;
-  {p62_Pinv p62_anc p62_nmop} -> p68_p1;
-  {p64_idxc p64_ftjm p64_sl} -> p68_p1;
-  p63_sl -> r_adm; p63_of -> r_admof; p63_mk -> r_mark;
-  {r_mono r_PRed r_idem r_oper r_zero r_adm r_admof r_mark r_pred r_mRed} -> p73_Pinv;
-  {p62_Padd r_lng} -> {p66_coef p66_le p66_AB p66_1c p66_sl};
-  {p66_P p66_op p66_le1 p66_ari p66_coef p66_le p66_AB p66_1c p66_sl} -> p67_red;
-  {p67_un p67_pre p67_red} -> p68_p1;
-  p68_p2 -> p82_sm;
-
+  {p86_an_clean p86_an_gen} -> p86_an;
 }
