@@ -37,7 +37,7 @@
       - ✅ (1) `m_8_2_subexpr_leftend_unique`
       - 🚨 (2)(3)(4) leBT
         - ✅ widH/det〔`m_8_2_widH`/`m_8_2_det`〕
-        - 🚨 factBlem driver 組立
+        - 🚨🤖 factBlem driver 組立
     - 🚨 補題（条件 (V) の下での右端の親の基本性質）
     - 🚨 補題（条件 (V) の下での終切片と $\textrm{Trans}$ の関係）
   - 🚨 §8.3 条件 (II) の下での展開規則
@@ -84,5 +84,5 @@
       - ✅ 還元 isOT⟸R1/R2/R3〔`m_8_7_OT_via_body`+`descP_snoc`/`m_8_7_isOT_BT_snoc_leBT`〕
       - ✅ 4-case dispatcher〔`m_8_7_OT_keystone_step`、step→{det,[Buc1]}〕
       - ✅ wid/det〔=§8.2 widH、`m_8_2_widH`/`m_8_2_det`〕
-      - 🚨 R2 descP-step wiring〔widH 解禁〕
+      - 🚨🤖 R2 descP-step wiring〔widH 解禁〕
       - 📘 R3 = [Buc1] OT2/GBT〔`buc1_*`〕
