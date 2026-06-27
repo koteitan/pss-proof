@@ -23,7 +23,7 @@
       - ✅ 降下⟸交換則(1)+OT〔`m_8_1_Trans_fseq_condI_descent`〕
       - 🚨 交換則(1)本体〔stepT還元=`m_8_1_Trans_fseq_condI_comm_append_reduce`〕
         - ✅ stepT j0=0（copy-additivity）〔`m_8_1_Trans_replicate_pred_condI`〕
-        - 🚨🤖 stepT j0>0〔残=marking-nesting surgery {base2,step2,botU}+itercond+dM〕
+        - 🚨 stepT j0>0〔残=marking-nesting surgery {base2,step2,botU}+itercond+dM〕
       - 🚨 OT所属（→§8.7）
     - ✅ 補題（公差 $(1,1)$ のペア数列の $\textrm{Trans}$ の基本性質）〔`m_8_1_diagSeq_Trans`〕
     - ✅ 系（$\textrm{Pred}$ が公差 $(1,1)$ のペア数列の $\textrm{Trans}$ の基本性質）〔`m_8_1_Pred_diagSeq_Trans`〕
@@ -36,8 +36,8 @@
     - 🚨 補題（強単項性の下での部分表現の単項成分の基本性質）
       - ✅ (1) `m_8_2_subexpr_leftend_unique`
       - 🚨 (2)(3)(4) leBT
-        - ✅ value bound〔`m_8_2_branch_row1_le_TrMax`〕
-        - 🚨🤖 det case-4 構造link「case-4⟹j0'=TrMax」
+        - ✅ widH/det〔`m_8_2_widH`/`m_8_2_det`〕
+        - 🚨 factBlem driver 組立
     - 🚨 補題（条件 (V) の下での右端の親の基本性質）
     - 🚨 補題（条件 (V) の下での終切片と $\textrm{Trans}$ の関係）
   - 🚨 §8.3 条件 (II) の下での展開規則
@@ -49,7 +49,7 @@
     - ✅ 補題（第 $0$ 種型基本列の基本分岐規則）〔`m_8_3_kind0_branch_rule`〕
     - ✅ 補題（第 $0$ 種型基本列の基本基点関係）〔`m_8_3_kind0_base_basepoint`〕
   - 🚨 §8.4 条件 (III) か (IV) の下での展開規則
-    - 🚨🤖 命題（条件 (III) か (IV) の下での $\textrm{Trans}$ と基本列の交換関係）〔残=marking-nesting surgery {base2,step2,botU}、condIV=A27〕
+    - 🚨 命題（条件 (III) か (IV) の下での $\textrm{Trans}$ と基本列の交換関係）〔残=marking-nesting surgery {base2,step2,botU}、condIV=A27〕
     - 🚨 補題（右端の非許容直系先祖の基本性質）
     - 🚨 補題（条件 (III)〜(V) の下での右端の置き換えと $\textrm{Trans}$ の関係）
     - 🚨 補題（条件 (III)〜(VI) の下での展開規則の基本性質）
@@ -59,7 +59,7 @@
     - 🚨 補題（条件 (III) か (IV) の下での各種 scb分解）
     - ✅ 補題（条件 (III) か (IV) の下での基本列の基本性質）〔`m_8_4_oper_basic_part1`(= `p_8_4_oper_basic`)〕
   - 🚨 §8.5 条件 (V) の下での展開規則
-    - 🚨🤖 命題（条件 (V) の下での $\textrm{Trans}$ と基本列の交換関係）〔残=marking-nesting surgery {base2,step2,botU}〕
+    - 🚨 命題（条件 (V) の下での $\textrm{Trans}$ と基本列の交換関係）〔残=marking-nesting surgery {base2,step2,botU}〕
     - 🚨 補題（条件 (V) の下での $\textrm{Joints}$ と $\textrm{FirstNodes}$ と $t_2$ の基本性質）
     - 🚨 補題（条件 (V) の下での各種 scb分解）〔def 内部記号露出要〕
   - 🚨 §8.6 条件 (VI) の下での展開規則
@@ -79,10 +79,10 @@
       - 🚨 一般化（operB 全域性）
     - 🚨 補題（$\textrm{Pred}$ と $[0]$ の関係）〔原文偽=A27、停止性は6325ルートで迂回〕
     - ✅ 補題（順序数項の基本例）〔`m_8_7_OT_examples`〕
-    - 🚨 補題（$\textrm{Trans}$ が標準形を保つこと）= OT所属〔残=strong-Lng帰納組立+det+[Buc1]〕
+    - 🚨 補題（$\textrm{Trans}$ が標準形を保つこと）= OT所属〔残=strong-Lng帰納組立+R2 wiring+[Buc1]〕
       - ✅ clean部（rank0/T_B/単項leaf）〔`m_8_7_Trans_*`〕
       - ✅ 還元 isOT⟸R1/R2/R3〔`m_8_7_OT_via_body`+`descP_snoc`/`m_8_7_isOT_BT_snoc_leBT`〕
       - ✅ 4-case dispatcher〔`m_8_7_OT_keystone_step`、step→{det,[Buc1]}〕
-      - 🚨 R2 descP-step＝dispatcher resid の det 部（=L81 wid/det）
-      - 🚨🤖 wid〔=§8.2 leBT/L35、残=det case-4構造link〕
+      - ✅ wid/det〔=§8.2 widH、`m_8_2_widH`/`m_8_2_det`〕
+      - 🚨 R2 descP-step wiring〔widH 解禁〕
       - 📘 R3 = [Buc1] OT2/GBT〔`buc1_*`〕
