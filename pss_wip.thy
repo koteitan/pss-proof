@@ -33809,6 +33809,151 @@ proof -
   show ?thesis by (rule gen[OF MD Brne aW j0pos])
 qed
 
+text \<open>§8.2 newdom (factA's keystone-case-(1) head dominance), Admpos BULK.
+  Strong induction on Lng M.  The Adm0 case (\<open>transJm1 M = 0\<close>) is isolated as the
+  residual hypothesis \<open>adm0H\<close>; the Admpos bulk is discharged: \<open>RightNodes\<close> is
+  preserved \<open>Pred M \<to> M\<close> (@{thm [source] m_8_2_wid_step}), and
+  \<open>RightNodes (Trans (Pred M)) ! 1 \<ge> M\<^bsub>1,j\<^sub>0'\<^esub>\<close> follows either from the all-trunk
+  read-off (@{thm [source] baseU_alltrunk_Trans_RN1}, \<open>j\<^sub>0' \<le> TrMax M\<close>) when
+  \<open>Br (Pred M) = []\<close>, or from the IH + @{thm [source] m_8_2_thrmono} when
+  \<open>Br (Pred M) \<noteq> []\<close>.\<close>
+
+lemma m_8_2_newdom:
+  fixes M :: pairseq
+  assumes adm0H: "\<And>M'. M' \<in> DT_PS \<Longrightarrow> Br M' \<noteq> [] \<Longrightarrow> 0 < Joints M' ! (Lng (Br M') - 1)
+                     \<Longrightarrow> transJm1 M' = 0
+                     \<Longrightarrow> entry M' 1 (Joints M' ! (Lng (Br M') - 1))
+                          \<le> RightNodes (Trans M') ! 1"
+    and MD: "M \<in> DT_PS" and Brne: "Br M \<noteq> []"
+    and j0pos: "0 < Joints M ! (Lng (Br M) - 1)"
+  shows "entry M 1 (Joints M ! (Lng (Br M) - 1)) \<le> RightNodes (Trans M) ! 1"
+proof -
+  have gen: "M \<in> DT_PS \<Longrightarrow> Br M \<noteq> [] \<Longrightarrow> 0 < Joints M ! (Lng (Br M) - 1)
+              \<Longrightarrow> entry M 1 (Joints M ! (Lng (Br M) - 1)) \<le> RightNodes (Trans M) ! 1" for M
+  proof (induction "Lng M" arbitrary: M rule: less_induct)
+    case (less M)
+    have MDl: "M \<in> DT_PS" by (rule less.prems(1))
+    have Brnel: "Br M \<noteq> []" by (rule less.prems(2))
+    have j0posl: "0 < Joints M ! (Lng (Br M) - 1)" by (rule less.prems(3))
+    have MR: "M \<in> RT_PS" and mono: "monoT M" using MDl by (auto simp: DT_PS_def)
+    have MT: "M \<in> T_PS" using MR by (simp add: RT_PS_def)
+    have MP: "M \<in> PT_PS" using MT mono by (simp add: PT_PS_def)
+    have condA: "RedCondA M" using m_6_6_reduced_iff_cond[OF MT] MR by simp
+    have brTr: "TrMax M \<noteq> Lng M - 1"
+    proof
+      assume "TrMax M = Lng M - 1"
+      hence "Br M = []" by (simp add: Br_def)
+      thus False using Brnel by simp
+    qed
+    have tb: "TrMax M \<le> Lng M - 1" by (rule TrMax_bound[OF MT])
+    have trlt: "TrMax M < Lng M - 1" using tb brTr by linarith
+    have BrL: "0 < Lng (Br M)" using Brnel by (cases "Br M") auto
+    have J1Br: "Lng (Br M) - 1 < Lng (Br M)" using BrL by simp
+    have j0le: "Joints M ! (Lng (Br M) - 1) \<le> TrMax M"
+      using m_6_4_FirstNodes_TrMax_Joints[OF MP J1Br] by simp
+    have Trpos: "0 < TrMax M" using j0posl j0le by linarith
+    have Lge3: "2 < Lng M" using Trpos trlt by linarith
+    have Lge2: "1 < Lng M" using Lge3 by simp
+    have e1j0: "entry M 1 (Joints M ! (Lng (Br M) - 1))
+                  = entry M 1 0 + Joints M ! (Lng (Br M) - 1)"
+      using trunk_entries_offset[OF MT condA j0le] by simp
+    show ?case
+    proof (cases "transJm1 M = 0")
+      case True
+      show ?thesis by (rule adm0H[OF MDl Brnel j0posl True])
+    next
+      case False
+      have Admpos: "transJm1 M > 0" using False by simp
+      have j1gt: "Lng M - 1 > 1" using Lge3 by simp
+      have predRT: "Pred M \<in> RT_PS" by (rule Pred_RT_PS[OF MR])
+      have LPeq: "Lng (Pred M) = Lng M - 1" using Lge2 by (simp add: Pred_def)
+      have LPg1: "1 < Lng (Pred M)" using LPeq Lge3 by simp
+      have nzP: "\<not> zeroT (Pred M)" using LPg1 by (simp add: zeroT_def)
+      have t1ne: "Trans (Pred M) \<noteq> 0\<^sub>B" using m_7_3_Trans_zeroT[OF predRT] nzP by blast
+      have RNeq: "RightNodes (Trans M) ! 1 = RightNodes (Trans (Pred M)) ! 1"
+        by (rule m_8_2_wid_step[OF MR MP j1gt Admpos t1ne])
+      have e10P: "entry (Pred M) 1 0 = entry M 1 0"
+        using Lge2 by (simp add: Pred_def entry_def nth_butlast)
+      have predDT: "Pred M \<in> DT_PS" by (rule descending_Br_Pred[OF MDl Brnel LPg1])
+      have predmono: "monoT (Pred M)" using predDT by (simp add: DT_PS_def)
+      have bound: "entry M 1 (Joints M ! (Lng (Br M) - 1)) \<le> RightNodes (Trans (Pred M)) ! 1"
+      proof (cases "Br (Pred M) = []")
+        case True
+        have TrPe: "TrMax (Pred M) = Lng (Pred M) - 1" by (rule baseU_Br_empty_TrMax[OF True])
+        have TrP: "TrMax (Pred M) = TrMax M" by (rule TrMax_Pred[OF MT Lge2 brTr])
+        have TrM2: "TrMax M = Lng M - 2" using TrP TrPe LPeq by simp
+        have RNP: "RightNodes (Trans (Pred M)) ! 1 = entry (Pred M) 1 (Lng (Pred M) - 1)"
+          by (rule baseU_alltrunk_Trans_RN1[OF predRT predmono TrPe LPg1])
+        have lastlt: "Lng (Pred M) - 1 < Lng (Pred M)" using LPg1 by simp
+        have diagEnt: "entry (Pred M) 1 (Lng (Pred M) - 1)
+                        = entry (Pred M) 1 0 + (Lng (Pred M) - 1)"
+          using baseU_alltrunk_diag_entry[OF predRT predmono TrPe lastlt] by simp
+        have RNPval: "RightNodes (Trans (Pred M)) ! 1 = entry M 1 0 + TrMax M"
+          using RNP diagEnt e10P LPeq TrM2 by simp
+        have "entry M 1 (Joints M ! (Lng (Br M) - 1)) = entry M 1 0 + Joints M ! (Lng (Br M) - 1)"
+          by (rule e1j0)
+        also have "\<dots> \<le> entry M 1 0 + TrMax M" using j0le by simp
+        also have "\<dots> = RightNodes (Trans (Pred M)) ! 1" using RNPval by simp
+        finally show ?thesis .
+      next
+        case False
+        have BrPne': "Br (Pred M) \<noteq> []" using False by simp
+        have LPlt: "Lng (Pred M) < Lng M" using LPeq Lge2 by simp
+        define J1 where "J1 = Lng (Br M) - 1"
+        define JN where "JN = Lng (Br (Pred M)) - 1"
+        have JNeq: "JN = (if FirstNodes M ! (Lng (Br M) - 1) = Lng M - 1 then J1 - 1 else J1)"
+          using wid_JPm1_map[OF MP Brnel Lge2] by (simp add: JN_def J1_def)
+        have JNleJ1: "JN \<le> J1" using JNeq by (simp split: if_splits)
+        have J1lt: "J1 < Lng (Br M)" using BrL by (simp add: J1_def)
+        have j0M: "0 < Joints M ! J1" using j0posl by (simp add: J1_def)
+        have idxle: "Joints M ! J1 \<le> Joints M ! JN"
+          by (rule m_8_2_joint_idx_mono[OF MDl JNleJ1 J1lt])
+        have j0N: "0 < Joints M ! JN" using j0M idxle by linarith
+        have widFNJ: "FirstNodes (Pred M) ! JN = FirstNodes M ! JN
+                      \<and> Joints (Pred M) ! JN = Joints M ! JN"
+          using wid_FNJ_Pred_at_JPm1[OF MP Brnel Lge2 BrPne'] by (simp add: JN_def)
+        have j0Npred: "0 < Joints (Pred M) ! (Lng (Br (Pred M)) - 1)"
+          using j0N widFNJ unfolding JN_def by simp
+        have ihP: "entry (Pred M) 1 (Joints (Pred M) ! (Lng (Br (Pred M)) - 1))
+                     \<le> RightNodes (Trans (Pred M)) ! 1"
+          by (rule less.hyps[OF LPlt predDT BrPne' j0Npred])
+        have JNlt: "JN < Lng (Br M)" using JNleJ1 J1lt by linarith
+        have jNleTr: "Joints M ! JN \<le> TrMax M"
+          using m_6_4_FirstNodes_TrMax_Joints[OF MP JNlt] by simp
+        have jNltL: "Joints M ! JN < Lng M - 1" using jNleTr trlt by linarith
+        have entryAgreeJN: "entry (Pred M) 1 (Joints (Pred M) ! JN) = entry M 1 (Joints M ! JN)"
+        proof -
+          have "entry (Pred M) 1 (Joints (Pred M) ! JN) = entry (Pred M) 1 (Joints M ! JN)"
+            using widFNJ by simp
+          also have "\<dots> = entry M 1 (Joints M ! JN)"
+            by (rule wid_entry1_Pred_agree[OF Lge2 jNltL])
+          finally show ?thesis .
+        qed
+        have thrm: "entry M 1 (Joints M ! J1)
+                      \<le> entry (Pred M) 1 (Joints (Pred M) ! (Lng (Br (Pred M)) - 1))"
+        proof -
+          have "entry M 1 (Joints M ! J1) \<le> entry M 1 (Joints M ! JN)"
+            by (rule m_8_2_thrmono[OF MDl JNleJ1 J1lt])
+          also have "\<dots> = entry (Pred M) 1 (Joints (Pred M) ! JN)"
+            using entryAgreeJN by simp
+          also have "\<dots> = entry (Pred M) 1 (Joints (Pred M) ! (Lng (Br (Pred M)) - 1))"
+            by (simp add: JN_def)
+          finally show ?thesis .
+        qed
+        have "entry M 1 (Joints M ! (Lng (Br M) - 1))
+                = entry M 1 (Joints M ! J1)" by (simp add: J1_def)
+        also have "\<dots> \<le> entry (Pred M) 1 (Joints (Pred M) ! (Lng (Br (Pred M)) - 1))"
+          by (rule thrm)
+        also have "\<dots> \<le> RightNodes (Trans (Pred M)) ! 1" by (rule ihP)
+        finally show ?thesis .
+      qed
+      show ?thesis using bound RNeq by simp
+    qed
+  qed
+  show ?thesis by (rule gen[OF MD Brne j0pos])
+qed
+
+
 text \<open>§8.2 strong-monomiality lower bounds — ASSEMBLY of the paper proposition
   @{thm [source] p_8_2_subexpr_component_strongmono} (pss_paper.thy 1560).  The
   unique leftend witness \<open>a\<close> (@{thm [source] m_8_2_subexpr_leftend_unique})
@@ -33816,16 +33961,18 @@ text \<open>§8.2 strong-monomiality lower bounds — ASSEMBLY of the paper prop
   @{thm [source] m_8_2_factA} and the conditional factB (clause (2)) by
   \<open>factBlem\<close>; @{thm [source] m_8_2_subexpr_component_strongmono_of_factAB} packages
   both (with the \<open>\<exists>!\<close> uniqueness inherited from clause (1)) into the paper \<open>\<exists>!\<close>.
-  RESIDUALS isolated as hypotheses: \<open>newdomH\<close> (factA's keystone-case-(1) head
-  dominance, empirically 0-violations on all \<open>DT\<^bsub>PS\<^esub>\<close> \<open>Lng \<le> 8\<close>) and \<open>factBlem\<close>
-  (clause (2), the \<open>cp\<close>/\<open>ft\<close> condition+threshold transport across \<open>Pred\<close>).\<close>
+  factA's keystone-case-(1) head dominance \<open>newdomH\<close> is now DISCHARGED by the
+  proven @{thm [source] m_8_2_newdom} (Admpos bulk) down to the Adm0 sub-residual
+  \<open>adm0H\<close>.  RESIDUALS isolated as hypotheses: \<open>adm0H\<close> (the \<open>transJm1 M = 0\<close>
+  sub-case of newdom) and \<open>factBlem\<close> (clause (2), the \<open>cp\<close>/\<open>ft\<close> condition+threshold
+  transport across \<open>Pred\<close>).\<close>
 
 lemma m_8_2_subexpr_component_strongmono:
   fixes M :: pairseq
-  assumes newdomH: "\<And>M'. M' \<in> DT_PS \<Longrightarrow> Br M' \<noteq> [] \<Longrightarrow> 1 < Lng M'
-                       \<Longrightarrow> 0 < Joints M' ! (Lng (Br M') - 1)
-                       \<Longrightarrow> entry M' 1 (Joints M' ! (Lng (Br M') - 1))
-                            \<le> RightNodes (Trans M') ! 1"
+  assumes adm0H: "\<And>M'. M' \<in> DT_PS \<Longrightarrow> Br M' \<noteq> [] \<Longrightarrow> 0 < Joints M' ! (Lng (Br M') - 1)
+                     \<Longrightarrow> transJm1 M' = 0
+                     \<Longrightarrow> entry M' 1 (Joints M' ! (Lng (Br M') - 1))
+                          \<le> RightNodes (Trans M') ! 1"
     and factBlem: "\<And>b. Trans M = Dpt (enat (entry M 1 0)) b
                      \<Longrightarrow> (Joints M ! (Lng (Br M) - 1) = 0
                           \<or> entry M 0 (FirstNodes M ! (Lng (Br M) - 1))
@@ -33849,6 +33996,16 @@ lemma m_8_2_subexpr_component_strongmono:
     \<and> ((0 < Joints M ! (Lng (Br M) - 1) \<and> Joints M ! (Lng (Br M) - 1) = TrMax M)
          \<longrightarrow> (\<forall>p\<in>set (PB t'). leBT (Dpt (enat (entry M 1 (TrMax M))) 0\<^sub>B) p))"
 proof -
+  have newdomH: "\<And>M'. M' \<in> DT_PS \<Longrightarrow> Br M' \<noteq> [] \<Longrightarrow> 1 < Lng M'
+                    \<Longrightarrow> 0 < Joints M' ! (Lng (Br M') - 1)
+                    \<Longrightarrow> entry M' 1 (Joints M' ! (Lng (Br M') - 1))
+                         \<le> RightNodes (Trans M') ! 1"
+  proof -
+    fix M' assume a1: "M' \<in> DT_PS" and a2: "Br M' \<noteq> []"
+      and a3: "1 < Lng M'" and a4: "0 < Joints M' ! (Lng (Br M') - 1)"
+    show "entry M' 1 (Joints M' ! (Lng (Br M') - 1)) \<le> RightNodes (Trans M') ! 1"
+      by (rule m_8_2_newdom[OF adm0H a1 a2 a4])
+  qed
   obtain a where aW: "Trans M = Dpt (enat (entry M 1 0)) a"
     using m_8_2_subexpr_leftend_unique[OF MD] by (auto simp: Ex1_def)
   have factA: "0 < Joints M ! (Lng (Br M) - 1)
@@ -34279,6 +34436,198 @@ proof -
                     (t\<^sub>0 +\<^sub>B multBT (Dpt (enat v) t\<^sub>1) (k + 1))) @ b)"
     by (rule lhs[OF k1])
   show ?thesis using ap RHS LHS by simp
+qed
+
+text \<open>§8.1 \<open>j\<^sub>0 > 0\<close>: the residual \<open>lhs\<close> of @{thm [source]
+  m_8_1_stepT_j0pos_of_lhs_closed} reduced from the whole closed form to a SINGLE
+  per-step marking-nesting \<open>step\<close>.  The induction BASE is now fully proven:
+  \<open>Trans (M[1]) = operB (Trans M) (numBT 0)\<close> (@{thm [source]
+  m_8_1_Trans_fseq_condI_n1}, the \<open>M[1] = Pred M\<close> base) folded through
+  @{thm [source] operB_marked_scb_value} at \<open>n = 0\<close> gives the closed form with one
+  copy \<open>(D\<^bsub>v\<^esub> t\<^sub>1)\<cdot>1\<close>.  The induction GLUE is proven.  RESIDUAL = \<open>step\<close>: the single
+  c1-around / Mark-nesting surgery adding ONE more \<open>D\<^bsub>v\<^esub> t\<^sub>1\<close> copy across one oper
+  step (content.md 3160-3260; the proven single-step pieces are
+  @{thm [source] m_8_1_c1_around_part4_1}, @{thm [source] m_8_1_c1_around_part4_2},
+  @{thm [source] m_7_4_Mark_Trans_repr}).\<close>
+
+lemma m_8_1_lhs_j0pos_of_step:
+  fixes M :: pairseq and u v :: nat
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS"
+    and j1: "1 < Lng M - 1" and condI: "transCondI M"
+    and t0: "t\<^sub>0 \<in> T_B" and t1: "t\<^sub>1 \<in> T_B" and tT: "Trans M \<in> T_B"
+    and dM: "scb_decomp (Trans M) s
+               (flatBT (Dpt (enat u) (t\<^sub>0 +\<^sub>B Dpt (enat v) (t\<^sub>1 +\<^sub>B Dpt 0 0\<^sub>B)))) b"
+    and step: "\<And>n. Trans (M[Suc n])
+                  = unflatBT (s @ flatBT (Dpt (enat u)
+                         (t\<^sub>0 +\<^sub>B multBT (Dpt (enat v) t\<^sub>1) (n + 1))) @ b)
+                \<Longrightarrow> Trans (M[Suc (Suc n)])
+                  = unflatBT (s @ flatBT (Dpt (enat u)
+                         (t\<^sub>0 +\<^sub>B multBT (Dpt (enat v) t\<^sub>1) (Suc n + 1))) @ b)"
+    and k1: "1 \<le> k"
+  shows "Trans (M[Suc k])
+           = unflatBT (s @ flatBT (Dpt (enat u)
+                  (t\<^sub>0 +\<^sub>B multBT (Dpt (enat v) t\<^sub>1) (k + 1))) @ b)"
+proof -
+  have gen: "Trans (M[Suc n])
+               = unflatBT (s @ flatBT (Dpt (enat u)
+                      (t\<^sub>0 +\<^sub>B multBT (Dpt (enat v) t\<^sub>1) (n + 1))) @ b)" for n
+  proof (induction n)
+    case 0
+    have "Trans (M[Suc 0]) = operB (Trans M) (numBT 0)"
+      using m_8_1_Trans_fseq_condI_n1[OF MR MP j1 condI] by simp
+    also have "\<dots> = unflatBT (s @ flatBT (Dpt (enat u)
+                       (t\<^sub>0 +\<^sub>B multBT (Dpt (enat v) t\<^sub>1) (0 + 1))) @ b)"
+      by (rule operB_marked_scb_value[OF t0 t1 tT dM])
+    finally show ?case by simp
+  next
+    case (Suc n)
+    show ?case by (rule step[OF Suc.IH])
+  qed
+  show ?thesis by (rule gen)
+qed
+
+text \<open>§8.1 \<open>j\<^sub>0 > 0\<close> \<open>stepT\<close>, reduced to the single per-step residual \<open>step\<close>
+  (chains @{thm [source] m_8_1_lhs_j0pos_of_step} into @{thm [source]
+  m_8_1_stepT_j0pos_of_lhs_closed}).  So the ENTIRE \<open>j\<^sub>0 > 0\<close> branch of the §8.1
+  commutation \<open>stepT\<close> now rests on \<open>dM\<close> (from the c1-around closed form) plus the
+  single Mark-nesting step \<open>step\<close>.\<close>
+
+lemma m_8_1_stepT_j0pos_of_step:
+  fixes M :: pairseq and u v :: nat
+  defines "B \<equiv> map ((!) M) [parent M 0 (Lng M - 1) ..< Lng M - 1]"
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS"
+    and j1: "1 < Lng M - 1" and condI: "transCondI M"
+    and t0: "t\<^sub>0 \<in> T_B" and t1: "t\<^sub>1 \<in> T_B" and tT: "Trans M \<in> T_B"
+    and dM: "scb_decomp (Trans M) s
+               (flatBT (Dpt (enat u) (t\<^sub>0 +\<^sub>B Dpt (enat v) (t\<^sub>1 +\<^sub>B Dpt 0 0\<^sub>B)))) b"
+    and step: "\<And>n. Trans (M[Suc n])
+                  = unflatBT (s @ flatBT (Dpt (enat u)
+                         (t\<^sub>0 +\<^sub>B multBT (Dpt (enat v) t\<^sub>1) (n + 1))) @ b)
+                \<Longrightarrow> Trans (M[Suc (Suc n)])
+                  = unflatBT (s @ flatBT (Dpt (enat u)
+                         (t\<^sub>0 +\<^sub>B multBT (Dpt (enat v) t\<^sub>1) (Suc n + 1))) @ b)"
+    and k1: "1 \<le> k"
+  shows "Trans ((M[k]) @ B) = operB (Trans M) (numBT k)"
+proof -
+  have MT: "M \<in> T_PS" using MR by (simp add: RT_PS_def)
+  have mono: "monoT M" using MP by (simp add: PT_PS_def)
+  have L: "1 < Lng M" using j1 by linarith
+  have hp0: "hasParent M 0 (Lng M - 1)" by (rule monoT_hasParent0_last[OF MT mono L])
+  have e1z: "entry M 1 (Lng M - 1) = 0" using condI by (simp add: transCondI_def)
+  have lhs: "Trans (M[Suc j])
+               = unflatBT (s @ flatBT (Dpt (enat u)
+                      (t\<^sub>0 +\<^sub>B multBT (Dpt (enat v) t\<^sub>1) (j + 1))) @ b)" if "1 \<le> j" for j
+    by (rule m_8_1_lhs_j0pos_of_step[OF MR MP j1 condI t0 t1 tT dM step that])
+  show ?thesis
+    unfolding B_def
+    by (rule m_8_1_stepT_j0pos_of_lhs_closed[OF hp0 e1z t0 t1 tT dM lhs k1])
+qed
+
+text \<open>§8.1 \<open>j\<^sub>0 > 0\<close> structural prerequisite (reusable): the condition-(I)
+  (kind-0, \<open>d0zero\<close>) fundamental-sequence iterate \<open>M[k]\<close> is MONOTONE when the last
+  column's row-0 parent is interior (\<open>j\<^sub>0 > 0\<close>).  Column \<open>0\<close> reaches the last column
+  of \<open>M[k]\<close> by: (a) \<open>le\<^sub>0 M 0 j\<^sub>0\<close> (the unique last edge into \<open>j\<^sub>1\<close> is the parent
+  step \<open>j\<^sub>0 \<to> j\<^sub>1\<close>, so the \<open>M\<close>-monotone chain \<open>0 \<to>\<^sup>* j\<^sub>1\<close> passes through \<open>j\<^sub>0\<close>),
+  (b) lift to the last block start \<open>j\<^sub>0 + (k-1)w\<close> via @{thm [source]
+  oper_d0zero_le0_lift}, (c) reach the end via @{thm [source]
+  oper_d0zero_lastblock_to_end}.  (For \<open>j\<^sub>0 = 0\<close> the iterate is instead multiT —
+  cf. @{thm [source] operI_j0zero_trans_step}.)\<close>
+
+lemma monoT_operI_j0pos:
+  fixes M :: pairseq
+  assumes mono: "monoT M"
+    and hp0: "hasParent M 0 (Lng M - 1)"
+    and e1z: "entry M 1 (Lng M - 1) = 0"
+    and j0pos: "0 < parent M 0 (Lng M - 1)"
+    and k1: "1 \<le> k"
+  shows "monoT (M[k])"
+proof -
+  let ?j1 = "Lng M - 1"  let ?j0 = "parent M 0 ?j1"  let ?w = "?j1 - ?j0"
+  let ?N = "M[k]"
+  note F = kind0_parent_facts[OF hp0 e1z]
+  have i1z: "idx1 M ?j1 = 0" by (rule F(1))
+  have parR: "nextrel0 M ?j0 ?j1" by (rule F(2))
+  have j0lt: "?j0 < ?j1" by (rule F(3))
+  have notzero: "\<not> (entry M 0 ?j1 = 0 \<and> entry M 1 ?j1 = 0)" by (rule F(4))
+  have hp: "hasParent M (idx1 M ?j1) ?j1" by (rule F(5))
+  have L: "1 < Lng M" by (rule F(6))
+  have w0: "0 < ?w" using j0lt by linarith
+  have j1lt: "?j1 < Lng M" using L by simp
+  have j0ltL: "?j0 < Lng M" using j0lt j1lt by linarith
+  have j1pos: "0 < ?j1" using j0pos j0lt by linarith
+  \<comment> \<open>(a) \<open>le\<^sub>0 M 0 j\<^sub>0\<close>: last edge into \<open>j\<^sub>1\<close> is the unique parent \<open>j\<^sub>0\<close>\<close>
+  have le0j1: "le0 M 0 ?j1" using mono by (simp add: monoT_def leR_def)
+  have chj1: "(nextrel0 M)\<^sup>*\<^sup>* 0 ?j1" using le0j1 by (simp add: le0_def)
+  have ch0j0: "(nextrel0 M)\<^sup>*\<^sup>* 0 ?j0" using chj1
+  proof (cases rule: rtranclp.cases)
+    case rtrancl_refl
+    thus ?thesis using j1pos by simp
+  next
+    case (rtrancl_into_rtrancl b)
+    have ch0b: "(nextrel0 M)\<^sup>*\<^sup>* 0 b" by (rule rtrancl_into_rtrancl(1))
+    have be: "nextrel0 M b ?j1" by (rule rtrancl_into_rtrancl(2))
+    have uniq: "\<exists>!j. nextR M 0 j ?j1" using hp i1z by (simp add: hasParent_def)
+    have nb: "nextR M 0 b ?j1" using be by (simp add: nextR_def)
+    have nj0: "nextR M 0 ?j0 ?j1" using parR by (simp add: nextR_def)
+    have "b = ?j0" using uniq nb nj0 by (metis (full_types))
+    thus ?thesis using ch0b by simp
+  qed
+  have le0j0: "le0 M 0 ?j0"
+  proof (unfold le0_def, intro conjI)
+    show "0 < Lng M" using L by linarith
+    show "?j0 < Lng M" by (rule j0ltL)
+    show "(nextrel0 M)\<^sup>*\<^sup>* 0 ?j0" by (rule ch0j0)
+  qed
+  \<comment> \<open>(b) lift to the last block start \<open>j\<^sub>0 + (k-1)w\<close>\<close>
+  have j0lt': "parent M (idx1 M ?j1) ?j1 < ?j1" using j0lt i1z by simp
+  have qn: "k - 1 < k" using k1 by simp
+  have sx0: "(0::nat) < Lng M - 1 - parent M (idx1 M ?j1) ?j1" using w0 i1z by simp
+  have reach0: "le0 M 0 (parent M (idx1 M ?j1) ?j1 + 0)" using le0j0 i1z by simp
+  have lblk: "le0 ?N 0 (?j0 + (k - 1) * ?w)"
+  proof -
+    have "le0 ?N
+            (if (0::nat) < parent M (idx1 M ?j1) ?j1 then 0
+               else parent M (idx1 M ?j1) ?j1
+                  + (k - 1) * (Lng M - 1 - parent M (idx1 M ?j1) ?j1)
+                  + (0 - parent M (idx1 M ?j1) ?j1))
+            (parent M (idx1 M ?j1) ?j1
+               + (k - 1) * (Lng M - 1 - parent M (idx1 M ?j1) ?j1) + 0)"
+      by (rule oper_d0zero_le0_lift[OF L notzero hp i1z j0lt' qn sx0 reach0])
+    thus ?thesis using i1z j0pos by simp
+  qed
+  \<comment> \<open>(c) last block start reaches the end\<close>
+  have n0: "0 < k" using k1 by simp
+  have lastblk: "le0 ?N (?j0 + (k - 1) * ?w) (Lng ?N - 1)"
+  proof -
+    have "le0 (M[k]) (parent M 0 ?j1 + (k - 1) * (?j1 - parent M 0 ?j1))
+                     (Lng (M[k]) - 1)"
+      by (rule oper_d0zero_lastblock_to_end[OF L notzero hp i1z j0lt n0])
+    thus ?thesis by simp
+  qed
+  \<comment> \<open>length, transitivity, \<open>\<not> zeroT\<close>, conclude\<close>
+  have Lk: "Lng ?N = ?j0 + k * ?w"
+  proof -
+    have "Lng (M[k]) = parent M 0 ?j1 + k * (?j1 - parent M 0 ?j1)"
+      by (rule Lng_operI[OF hp0 e1z])
+    thus ?thesis by simp
+  qed
+  have wkw: "?w \<le> k * ?w"
+  proof -
+    have "1 * ?w \<le> k * ?w" using k1 by (rule mult_le_mono1)
+    thus ?thesis by simp
+  qed
+  have LkN: "1 < Lng ?N" using Lk j0pos w0 wkw by linarith
+  have le0full: "le0 ?N 0 (Lng ?N - 1)"
+  proof (unfold le0_def, intro conjI)
+    show "0 < Lng ?N" using LkN by linarith
+    show "Lng ?N - 1 < Lng ?N" using LkN by linarith
+    have a: "(nextrel0 ?N)\<^sup>*\<^sup>* 0 (?j0 + (k - 1) * ?w)" using lblk by (simp add: le0_def)
+    have b: "(nextrel0 ?N)\<^sup>*\<^sup>* (?j0 + (k - 1) * ?w) (Lng ?N - 1)"
+      using lastblk by (simp add: le0_def)
+    show "(nextrel0 ?N)\<^sup>*\<^sup>* 0 (Lng ?N - 1)" using a b by (rule rtranclp_trans)
+  qed
+  have nz: "\<not> zeroT ?N" using LkN by (simp add: zeroT_def)
+  show ?thesis using nz le0full by (simp add: monoT_def leR_def)
 qed
 
 
