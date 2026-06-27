@@ -33880,4 +33880,86 @@ proof -
 qed
 
 
+text \<open>§8.1 condition-(I) commutation, \<open>j\<^sub>0 > 0\<close> (marking-nesting) branch
+  (content.md 3130-3260).  Unlike \<open>j\<^sub>0 = 0\<close> (a pure top-level copy-additivity), for
+  \<open>j\<^sub>0 > 0\<close> the iterate \<open>M[Suc k]\<close> is MONOTONE (single trunk \<open>M\<^bsub>[..j\<^sub>0)\<^esub>\<close> with the
+  branch block \<open>B = M\<^bsub>[j\<^sub>0..j\<^sub>1)\<^esub>\<close> repeated \<open>Suc k\<close> times), so \<open>Trans (M[Suc k])\<close> goes
+  through the mono/marking-surgery branch: the trunk scb-strings \<open>(s,b)\<close> stay fixed
+  and the marked principal's inner body accumulates \<open>k+1\<close> branch copies
+  \<open>D\<^bsub>v\<^esub> t\<^sub>1\<close> nested inside \<open>D\<^bsub>u\<^esub>(t\<^sub>0 +\<^sub>B \<dots>)\<close>.  Empirically (trans_model over
+  all length-3..4 reduced cond-(I), \<open>j\<^sub>0 > 0\<close> sequences): the closed form holds
+  exactly, \<open>Trans (M[k] @ B) = operB (Trans M) (numBT k)\<close> for \<open>k = 1..4\<close>, 35/35.\<close>
+
+text \<open>RHS value (Buchholz side), GENERAL marked principal: if \<open>t\<close> has an
+  scb-decomposition at the condition-(I) marked principal
+  \<open>D\<^bsub>u\<^esub>(t\<^sub>0 +\<^sub>B D\<^bsub>v\<^esub>(t\<^sub>1 +\<^sub>B D\<^sub>0 0))\<close>, its fundamental sequence collapses the trailing
+  \<open>D\<^sub>0 0\<close> and folds the inner principal: \<open>operB t (numBT n) = s @ D\<^bsub>u\<^esub>(t\<^sub>0 +\<^sub>B
+  (D\<^bsub>v\<^esub> t\<^sub>1)\<cdot>(n+1)) @ b\<close>.  Just @{thm [source] m_7_2_scb_fseq_scb} read back through
+  @{thm [source] unflatBT_flat}.\<close>
+
+lemma operB_marked_scb_value:
+  fixes u v n :: nat
+  assumes t0: "t\<^sub>0 \<in> T_B" and t1: "t\<^sub>1 \<in> T_B" and tT: "t \<in> T_B"
+    and d: "scb_decomp t s
+              (flatBT (Dpt (enat u) (t\<^sub>0 +\<^sub>B Dpt (enat v) (t\<^sub>1 +\<^sub>B Dpt 0 0\<^sub>B)))) b"
+  shows "operB t (numBT n)
+           = unflatBT (s @ flatBT (Dpt (enat u)
+                          (t\<^sub>0 +\<^sub>B multBT (Dpt (enat v) t\<^sub>1) (n + 1))) @ b)"
+proof -
+  have d2: "scb_decomp (operB t (numBT n)) s
+              (flatBT (Dpt (enat u) (t\<^sub>0 +\<^sub>B multBT (Dpt (enat v) t\<^sub>1) (n + 1)))) b"
+    by (rule m_7_2_scb_fseq_scb[OF t0 t1 tT d])
+  have fe: "flatBT (operB t (numBT n))
+              = s @ flatBT (Dpt (enat u)
+                       (t\<^sub>0 +\<^sub>B multBT (Dpt (enat v) t\<^sub>1) (n + 1))) @ b"
+    using d2 by (simp add: scb_decomp_def)
+  have "operB t (numBT n) = unflatBT (flatBT (operB t (numBT n)))"
+    by (simp add: unflatBT_flat)
+  also have "\<dots> = unflatBT (s @ flatBT (Dpt (enat u)
+                       (t\<^sub>0 +\<^sub>B multBT (Dpt (enat v) t\<^sub>1) (n + 1))) @ b)"
+    using fe by simp
+  finally show ?thesis .
+qed
+
+text \<open>§8.1 \<open>j\<^sub>0 > 0\<close> \<open>stepT\<close> REDUCTION (the parallel of @{thm [source]
+  m_8_1_stepT_j0zero_of_additivity}).  Given (i) an scb-decomposition \<open>dM\<close> of
+  \<open>Trans M\<close> at its condition-(I) marked principal \<open>c\<^sub>2 = D\<^bsub>u\<^esub>(t\<^sub>0 +\<^sub>B D\<^bsub>v\<^esub>(t\<^sub>1 +\<^sub>B D\<^sub>0 0))\<close>
+  (supplied by the c1-around closed form @{thm [source] m_8_1_c1_around_part4_1} /
+  @{thm [source] m_8_1_c1_around_part4_2}), and (ii) the LHS marking-nesting
+  closed form \<open>lhs\<close> for \<open>Trans (M[Suc k])\<close> (the genuine remaining content, content.md
+  3160-3260), the per-step residual \<open>stepT\<close> follows: the Buchholz side is folded by
+  @{thm [source] operB_marked_scb_value}, and the pair-sequence side is the
+  one-step append \<open>M[k] @ B = M[Suc k]\<close> (@{thm [source] operI_Suc_append}).  The
+  RESIDUAL is exactly \<open>lhs\<close> — the dual of the \<open>j\<^sub>0 = 0\<close> additivity
+  @{thm [source] m_8_1_Trans_replicate_pred_condI}, one level down inside the
+  marked principal.\<close>
+
+lemma m_8_1_stepT_j0pos_of_lhs_closed:
+  fixes M :: pairseq and u v :: nat
+  defines "B \<equiv> map ((!) M) [parent M 0 (Lng M - 1) ..< Lng M - 1]"
+  assumes hp0: "hasParent M 0 (Lng M - 1)"
+    and e1z: "entry M 1 (Lng M - 1) = 0"
+    and t0: "t\<^sub>0 \<in> T_B" and t1: "t\<^sub>1 \<in> T_B" and tT: "Trans M \<in> T_B"
+    and dM: "scb_decomp (Trans M) s
+               (flatBT (Dpt (enat u) (t\<^sub>0 +\<^sub>B Dpt (enat v) (t\<^sub>1 +\<^sub>B Dpt 0 0\<^sub>B)))) b"
+    and lhs: "\<And>k. 1 \<le> k \<Longrightarrow> Trans (M[Suc k])
+                = unflatBT (s @ flatBT (Dpt (enat u)
+                       (t\<^sub>0 +\<^sub>B multBT (Dpt (enat v) t\<^sub>1) (k + 1))) @ b)"
+    and k1: "1 \<le> k"
+  shows "Trans ((M[k]) @ B) = operB (Trans M) (numBT k)"
+proof -
+  have ap: "(M[k]) @ B = M[Suc k]"
+    using operI_Suc_append[OF hp0 e1z, of k] B_def by simp
+  have RHS: "operB (Trans M) (numBT k)
+             = unflatBT (s @ flatBT (Dpt (enat u)
+                    (t\<^sub>0 +\<^sub>B multBT (Dpt (enat v) t\<^sub>1) (k + 1))) @ b)"
+    by (rule operB_marked_scb_value[OF t0 t1 tT dM])
+  have LHS: "Trans (M[Suc k])
+             = unflatBT (s @ flatBT (Dpt (enat u)
+                    (t\<^sub>0 +\<^sub>B multBT (Dpt (enat v) t\<^sub>1) (k + 1))) @ b)"
+    by (rule lhs[OF k1])
+  show ?thesis using ap RHS LHS by simp
+qed
+
+
 end
