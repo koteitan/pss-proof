@@ -33274,22 +33274,27 @@ qed
 text \<open>§8.2 strong-monomiality, REDUCTION to two clean head bounds.  The three
   conditional lower bounds (2)/(3)/(4) of @{thm [source] p_8_2_subexpr_component_strongmono}
   collapse to TWO facts about the witness \<open>a\<close> (\<open>Trans M = D\<^bsub>M\<^sub>1\<^sub>,\<^sub>0\<^esub> a\<close>):
-  \<^item> \<open>factA\<close>: EVERY principal component head of \<open>a\<close> is \<open>\<ge> M\<^bsub>1,j\<^sub>0'\<^esub>\<close>
-    (this single UNCONDITIONAL bound yields BOTH clause (3) — threshold \<open>M\<^bsub>1,j\<^sub>0'\<^esub>\<close>
-    directly — AND clause (4), since clause (4) fires only when \<open>j\<^sub>0' = TrMax M\<close>,
-    where \<open>M\<^bsub>1,TrMax M\<^esub> = M\<^bsub>1,j\<^sub>0'\<^esub>\<close>);
+  \<^item> \<open>factA\<close>: WHEN \<open>0 < j\<^sub>0'\<close>, every principal component head of \<open>a\<close> is \<open>\<ge> M\<^bsub>1,j\<^sub>0'\<^esub>\<close>
+    (this bound yields BOTH clause (3) — threshold \<open>M\<^bsub>1,j\<^sub>0'\<^esub>\<close> directly — AND clause
+    (4), since clause (4) fires only when \<open>j\<^sub>0' = TrMax M\<close>, where
+    \<open>M\<^bsub>1,TrMax M\<^esub> = M\<^bsub>1,j\<^sub>0'\<^esub>\<close>).  The \<open>0 < j\<^sub>0'\<close> guard is ESSENTIAL: the unconditional
+    \<open>j\<^sub>0' = 0\<close> bound is FALSE on (non-reachable) \<open>DT\<^bsub>PS\<^esub>\<close> terms such as
+    \<open>(1,1)(2,0)(2,0)\<close> (\<open>brute python check\<close>: 29/59 \<open>Lng-3\<close> failures, ALL at \<open>j\<^sub>0' = 0\<close>),
+    but \<open>of_factAB\<close> only consumes \<open>factA\<close> through clauses (3)/(4), both of which carry
+    \<open>0 < j\<^sub>0'\<close>;
   \<^item> \<open>factB\<close>: under clause (2)'s side condition, EVERY principal head is \<open>\<ge> M\<^bsub>1,j\<^sub>1'\<^esub>\<close>.
-  Empirically verified (\<open>python/_lebt_witness_check.py\<close>): across 630 \<open>DT\<^bsub>PS\<^esub>\<close> terms
-  (\<open>Lng \<le> 8\<close>) all three clauses fire (w2:263, w3:13, w4:354) and BOTH facts hold
-  with zero violations.  This lemma is the GREEN glue feeding
-  @{thm [source] m_8_2_subexpr_component_strongmono_of_witness}.\<close>
+  Empirically verified (brute force over ALL \<open>DT\<^bsub>PS\<^esub>\<close> terms \<open>Lng \<le> 4\<close>, \<open>V = 5\<close>):
+  conditional \<open>factA\<close> and \<open>factB\<close> hold with ZERO violations; all three clauses fire
+  (clause (3) needs \<open>TrMax \<ge> 2\<close>, i.e. \<open>Lng \<ge> 4\<close>).  This lemma is the GREEN glue
+  feeding @{thm [source] m_8_2_subexpr_component_strongmono_of_witness}.\<close>
 
 lemma m_8_2_subexpr_component_strongmono_of_factAB:
   fixes M :: pairseq
   assumes MD: "M \<in> DT_PS" and Brne: "Br M \<noteq> []"
     and w1: "Trans M = Dpt (enat (entry M 1 0)) a"
-    and factA: "\<forall>p\<in>set (PB a).
-                  leBT (Dpt (enat (entry M 1 (Joints M ! (Lng (Br M) - 1)))) 0\<^sub>B) p"
+    and factA: "0 < Joints M ! (Lng (Br M) - 1)
+                  \<Longrightarrow> (\<forall>p\<in>set (PB a).
+                        leBT (Dpt (enat (entry M 1 (Joints M ! (Lng (Br M) - 1)))) 0\<^sub>B) p)"
     and factB: "(Joints M ! (Lng (Br M) - 1) = 0
                   \<or> entry M 0 (FirstNodes M ! (Lng (Br M) - 1))
                       = entry M 1 (FirstNodes M ! (Lng (Br M) - 1)))
@@ -33317,14 +33322,24 @@ proof -
                   > entry M 1 (FirstNodes M ! (Lng (Br M) - 1)))
               \<Longrightarrow> (\<forall>p\<in>set (PB a).
                     leBT (Dpt (enat (entry M 1 (Joints M ! (Lng (Br M) - 1)))) 0\<^sub>B) p)"
-    using factA by simp
+  proof -
+    assume "0 < Joints M ! (Lng (Br M) - 1)
+              \<and> Joints M ! (Lng (Br M) - 1) < TrMax M
+              \<and> entry M 0 (FirstNodes M ! (Lng (Br M) - 1))
+                  > entry M 1 (FirstNodes M ! (Lng (Br M) - 1))"
+    hence "0 < Joints M ! (Lng (Br M) - 1)" by simp
+    thus "\<forall>p\<in>set (PB a).
+            leBT (Dpt (enat (entry M 1 (Joints M ! (Lng (Br M) - 1)))) 0\<^sub>B) p"
+      by (rule factA)
+  qed
   have w4: "(0 < Joints M ! (Lng (Br M) - 1) \<and> Joints M ! (Lng (Br M) - 1) = TrMax M)
               \<Longrightarrow> (\<forall>p\<in>set (PB a). leBT (Dpt (enat (entry M 1 (TrMax M))) 0\<^sub>B) p)"
   proof -
-    assume "0 < Joints M ! (Lng (Br M) - 1) \<and> Joints M ! (Lng (Br M) - 1) = TrMax M"
-    hence "TrMax M = Joints M ! (Lng (Br M) - 1)" by simp
+    assume A: "0 < Joints M ! (Lng (Br M) - 1) \<and> Joints M ! (Lng (Br M) - 1) = TrMax M"
+    hence pos: "0 < Joints M ! (Lng (Br M) - 1)" by simp
+    have "TrMax M = Joints M ! (Lng (Br M) - 1)" using A by simp
     thus "\<forall>p\<in>set (PB a). leBT (Dpt (enat (entry M 1 (TrMax M))) 0\<^sub>B) p"
-      using factA by simp
+      using factA[OF pos] by simp
   qed
   show ?thesis
     by (rule m_8_2_subexpr_component_strongmono_of_witness[OF MD Brne w1 factB w3 w4])
@@ -33544,6 +33559,311 @@ proof -
   finally show ?thesis .
 qed
 
+text \<open>§8.2 JOINT INDEX MONOTONICITY: corollary of @{thm [source] m_8_2_thrmono} +
+  the trunk offset.  Both joints lie on the trunk, where
+  \<open>M\<^bsub>1,Joints M ! J\<^esub> = M\<^bsub>1,0\<^esub> + Joints M ! J\<close> (@{thm [source] trunk_entries_offset}); cancelling
+  \<open>M\<^bsub>1,0\<^esub>\<close> turns the row-1 inequality of \<open>thrmono\<close> into the index inequality
+  \<open>Joints M ! J\<^sub>1 \<le> Joints M ! JN\<close>.  Used in the witness induction to activate the
+  IH on \<open>Pred M\<close>: \<open>0 < Joints M ! J\<^sub>1\<close> gives \<open>0 < Joints M ! JN\<close>
+  (\<open>= Joints (Pred M) ! JN\<close> via @{thm [source] wid_FNJ_Pred_at_JPm1}).\<close>
+
+lemma m_8_2_joint_idx_mono:
+  fixes M :: pairseq
+  assumes MD: "M \<in> DT_PS" and JNJ1: "JN \<le> J1" and J1Br: "J1 < Lng (Br M)"
+  shows "Joints M ! J1 \<le> Joints M ! JN"
+proof -
+  have MR: "M \<in> RT_PS" and mono: "monoT M" using MD by (auto simp: DT_PS_def)
+  have MT: "M \<in> T_PS" using MR by (simp add: RT_PS_def)
+  have MP: "M \<in> PT_PS" using MT mono by (simp add: PT_PS_def)
+  have condA: "RedCondA M" using m_6_6_reduced_iff_cond[OF MT] MR by simp
+  have JNBr: "JN < Lng (Br M)" using JNJ1 J1Br by linarith
+  have jleJ1: "Joints M ! J1 \<le> TrMax M"
+    using m_6_4_FirstNodes_TrMax_Joints[OF MP J1Br] by simp
+  have jleJN: "Joints M ! JN \<le> TrMax M"
+    using m_6_4_FirstNodes_TrMax_Joints[OF MP JNBr] by simp
+  have offJ1: "entry M 1 (Joints M ! J1) = entry M 1 0 + Joints M ! J1"
+    using trunk_entries_offset[OF MT condA jleJ1] by simp
+  have offJN: "entry M 1 (Joints M ! JN) = entry M 1 0 + Joints M ! JN"
+    using trunk_entries_offset[OF MT condA jleJN] by simp
+  have "entry M 1 (Joints M ! J1) \<le> entry M 1 (Joints M ! JN)"
+    by (rule m_8_2_thrmono[OF MD JNJ1 J1Br])
+  thus "Joints M ! J1 \<le> Joints M ! JN" using offJ1 offJN by simp
+qed
+
+text \<open>§8.2 FactA BASE (all-trunk \<open>Br (Pred M) = []\<close>).  Unified with the recursive
+  step through @{thm [source] m_8_2_factA_step}: \<open>Pred M\<close> is the offset diagonal
+  \<open>diagSeq M\<^bsub>1,0\<^esub> (M\<^bsub>1,0\<^esub>+TrMax M)\<close> (@{thm [source] baseU_alltrunk_diag_entry} +
+  @{thm [source] diagSeq_nth}), so \<open>Trans (Pred M) = D\<^bsub>M\<^sub>1\<^sub>,\<^sub>0\<^esub>(D\<^bsub>v\<^esub> 0)\<close> with
+  \<open>v = M\<^bsub>1,0\<^esub>+TrMax M\<close> (@{thm [source] m_8_1_diagSeq_Trans}); the single-principal IH
+  bound (\<open>thr' = v\<close>) is trivial, and \<open>thrmono\<close> reduces to \<open>j\<^sub>0' \<le> TrMax M\<close>.  \<open>newdom\<close>
+  is the same residual as in the step.\<close>
+
+lemma m_8_2_factA_base:
+  fixes M :: pairseq and a :: BT
+  assumes MD: "M \<in> DT_PS" and Brne: "Br M \<noteq> []" and BrPe: "Br (Pred M) = []"
+    and aW: "Trans M = Dpt (enat (entry M 1 0)) a"
+    and j0pos: "0 < Joints M ! (Lng (Br M) - 1)"
+    and newdom: "entry M 1 (Joints M ! (Lng (Br M) - 1)) \<le> RightNodes (Trans M) ! 1"
+  shows "\<forall>p\<in>set (PB a). leBT (Dpt (enat (entry M 1 (Joints M ! (Lng (Br M) - 1)))) 0\<^sub>B) p"
+proof -
+  have MR: "M \<in> RT_PS" and mono: "monoT M" using MD by (auto simp: DT_PS_def)
+  have MT: "M \<in> T_PS" using MR by (simp add: RT_PS_def)
+  have MP: "M \<in> PT_PS" using MT mono by (simp add: PT_PS_def)
+  have condA: "RedCondA M" using m_6_6_reduced_iff_cond[OF MT] MR by simp
+  have brTr: "TrMax M \<noteq> Lng M - 1"
+  proof
+    assume "TrMax M = Lng M - 1"
+    hence "Br M = []" by (simp add: Br_def)
+    thus False using Brne by simp
+  qed
+  have BrL: "0 < Lng (Br M)" using Brne by (cases "Br M") auto
+  have J1Br: "Lng (Br M) - 1 < Lng (Br M)" using BrL by simp
+  have j0le: "Joints M ! (Lng (Br M) - 1) \<le> TrMax M"
+    using m_6_4_FirstNodes_TrMax_Joints[OF MP J1Br] by simp
+  have Trpos: "0 < TrMax M" using j0pos j0le by linarith
+  have tb: "TrMax M \<le> Lng M - 1" by (rule TrMax_bound[OF MT])
+  have trlt: "TrMax M < Lng M - 1" using tb brTr by linarith
+  have Lge3: "2 < Lng M" using Trpos trlt by linarith
+  have Lge2: "1 < Lng M" using Lge3 by simp
+  \<comment> \<open>\<open>TrMax M = Lng M - 2\<close>\<close>
+  have LPeq: "Lng (Pred M) = Lng M - 1" using Lge2 by (simp add: Pred_def)
+  have TrP: "TrMax (Pred M) = TrMax M" by (rule TrMax_Pred[OF MT Lge2 brTr])
+  have TrPe: "TrMax (Pred M) = Lng (Pred M) - 1" by (rule baseU_Br_empty_TrMax[OF BrPe])
+  have TrM2: "TrMax M = Lng M - 2" using TrP TrPe LPeq by simp
+  \<comment> \<open>\<open>Pred M\<close> is reduced, mono, all-trunk\<close>
+  have LPg1: "1 < Lng (Pred M)" using LPeq Lge3 by simp
+  have predDT: "Pred M \<in> DT_PS" by (rule descending_Br_Pred[OF MD Brne LPg1])
+  have predRT: "Pred M \<in> RT_PS" using predDT by (simp add: DT_PS_def)
+  have predmono: "monoT (Pred M)" using predDT by (simp add: DT_PS_def)
+  define u where "u = entry M 1 0"
+  define v where "v = u + TrMax M"
+  have uPred: "entry (Pred M) 1 0 = u"
+    using Lge2 by (simp add: u_def Pred_def entry_def nth_butlast)
+  have uv: "u < v" using Trpos by (simp add: v_def)
+  \<comment> \<open>\<open>Pred M = diagSeq u v\<close>\<close>
+  have predDiag: "Pred M = diagSeq u v"
+  proof (rule nth_equalityI)
+    have "length (diagSeq u v) = Suc v - u" by simp
+    also have "\<dots> = Suc (TrMax M)" by (simp add: v_def)
+    also have "\<dots> = Lng M - 1" using TrM2 Lge3 by simp
+    also have "\<dots> = length (Pred M)" using LPeq by simp
+    finally show "length (Pred M) = length (diagSeq u v)" by simp
+  next
+    fix i assume "i < length (Pred M)"
+    hence iL: "i < Lng (Pred M)" by simp
+    have di: "entry (Pred M) 0 i = entry (Pred M) 1 0 + i
+              \<and> entry (Pred M) 1 i = entry (Pred M) 1 0 + i"
+      by (rule baseU_alltrunk_diag_entry[OF predRT predmono TrPe iL])
+    have "Pred M ! i = (entry (Pred M) 0 i, entry (Pred M) 1 i)" by (simp add: entry_def)
+    hence Pi: "Pred M ! i = (u + i, u + i)" using di uPred by simp
+    have ilt: "i < Suc v - u" using iL LPeq TrM2 Lge3 by (simp add: v_def)
+    have "diagSeq u v ! i = (u + i, u + i)" by (rule diagSeq_nth[OF ilt])
+    thus "Pred M ! i = diagSeq u v ! i" using Pi by simp
+  qed
+  have predTrans: "Trans (Pred M) = Dpt (enat u) (Dpt (enat v) 0\<^sub>B)"
+    using m_8_1_diagSeq_Trans[OF uv] predDiag by simp
+  have predW: "Trans (Pred M) = Dpt (enat (entry M 1 0)) (Dpt (enat v) 0\<^sub>B)"
+    using predTrans by (simp add: u_def)
+  \<comment> \<open>single-principal IH bound (\<open>thr' = v\<close>) and threshold monotonicity\<close>
+  have ihA: "\<forall>r\<in>set (PB (Dpt (enat v) 0\<^sub>B)). leBT (Dpt (enat v) 0\<^sub>B) r"
+    by (simp add: PB_Dpt_single leBT_Dpt0_iff)
+  have e1j0: "entry M 1 (Joints M ! (Lng (Br M) - 1)) = u + Joints M ! (Lng (Br M) - 1)"
+    using trunk_entries_offset[OF MT condA j0le] by (simp add: u_def)
+  have thrmono: "entry M 1 (Joints M ! (Lng (Br M) - 1)) \<le> v"
+    using e1j0 j0le by (simp add: v_def)
+  have j1gt: "Lng M - 1 > 1" using Lge3 by simp
+  show ?thesis
+    by (rule m_8_2_factA_step[OF aW predW ihA thrmono newdom
+            m_8_2_keystone[OF MR MP Brne j1gt]])
+qed
+
+
+text \<open>§8.2 FactA DRIVER — the strong-induction assembly of the conditional factA
+  (when the last joint is positive, every principal head of the leftend witness
+  is at least the row-1 entry at that joint).  Induction on the length of M.  ONE
+  residual hypothesis isolates the genuine remaining content: newdomH (the
+  keystone-case-(1) head dominance, factA_step's last hypothesis).  The all-trunk
+  base is discharged by the proven @{thm [source] m_8_2_factA_base}.  The Lng-2
+  case is vacuous; the recursive step applies the IH on Pred M (gated by
+  @{thm [source] descending_Br_Pred}) through @{thm [source] m_8_2_factA_step},
+  discharging the side conditions via @{thm [source] m_8_2_thrmono} /
+  @{thm [source] m_8_2_joint_idx_mono} and the index translations
+  @{thm [source] wid_JPm1_map} / @{thm [source] wid_FNJ_Pred_at_JPm1}.\<close>
+
+lemma m_8_2_factA:
+  fixes M :: pairseq and a :: BT
+  assumes newdomH: "\<And>M'. M' \<in> DT_PS \<Longrightarrow> Br M' \<noteq> [] \<Longrightarrow> 1 < Lng M'
+                       \<Longrightarrow> 0 < Joints M' ! (Lng (Br M') - 1)
+                       \<Longrightarrow> entry M' 1 (Joints M' ! (Lng (Br M') - 1)) \<le> RightNodes (Trans M') ! 1"
+    and MD: "M \<in> DT_PS" and Brne: "Br M \<noteq> []"
+    and aW: "Trans M = Dpt (enat (entry M 1 0)) a"
+    and j0pos: "0 < Joints M ! (Lng (Br M) - 1)"
+  shows "\<forall>p\<in>set (PB a). leBT (Dpt (enat (entry M 1 (Joints M ! (Lng (Br M) - 1)))) 0\<^sub>B) p"
+proof -
+  have gen: "M \<in> DT_PS \<Longrightarrow> Br M \<noteq> [] \<Longrightarrow> Trans M = Dpt (enat (entry M 1 0)) a
+                \<Longrightarrow> 0 < Joints M ! (Lng (Br M) - 1)
+                \<Longrightarrow> (\<forall>p\<in>set (PB a).
+                      leBT (Dpt (enat (entry M 1 (Joints M ! (Lng (Br M) - 1)))) 0\<^sub>B) p)" for M a
+  proof (induction "Lng M" arbitrary: M a rule: less_induct)
+    case (less M a)
+    have MDl: "M \<in> DT_PS" by (rule less.prems(1))
+    have Brnel: "Br M \<noteq> []" by (rule less.prems(2))
+    have aWl: "Trans M = Dpt (enat (entry M 1 0)) a" by (rule less.prems(3))
+    have j0posl: "0 < Joints M ! (Lng (Br M) - 1)" by (rule less.prems(4))
+    have MR: "M \<in> RT_PS" and mono: "monoT M" using MDl by (auto simp: DT_PS_def)
+    have MT: "M \<in> T_PS" using MR by (simp add: RT_PS_def)
+    have MP: "M \<in> PT_PS" using MT mono by (simp add: PT_PS_def)
+    have brTr: "TrMax M \<noteq> Lng M - 1"
+    proof
+      assume "TrMax M = Lng M - 1"
+      hence "Br M = []" by (simp add: Br_def)
+      thus False using Brnel by simp
+    qed
+    have tb: "TrMax M \<le> Lng M - 1" by (rule TrMax_bound[OF MT])
+    have trlt: "TrMax M < Lng M - 1" using tb brTr by linarith
+    have Lge2: "1 < Lng M" using trlt by linarith
+    \<comment> \<open>last branch index\<close>
+    have BrL: "0 < Lng (Br M)" using Brnel by (cases "Br M") auto
+    have J1Br: "Lng (Br M) - 1 < Lng (Br M)" using BrL by simp
+    show ?case
+    proof (cases "Br (Pred M) = []")
+      case True
+      have newdomB: "entry M 1 (Joints M ! (Lng (Br M) - 1)) \<le> RightNodes (Trans M) ! 1"
+        by (rule newdomH[OF MDl Brnel Lge2 j0posl])
+      show ?thesis by (rule m_8_2_factA_base[OF MDl Brnel True aWl j0posl newdomB])
+    next
+      case BrPne: False
+      have BrPne': "Br (Pred M) \<noteq> []" using BrPne by simp
+      \<comment> \<open>\<open>Br (Pred M) \<noteq> []\<close> forces \<open>Lng (Pred M) \<ge> 2\<close>, hence \<open>Lng M > 2\<close>\<close>
+      have LPeq: "Lng (Pred M) = Lng M - 1" using Lge2 by (simp add: Pred_def)
+      have LP0: "0 < Lng (Pred M)" using LPeq Lge2 by simp
+      have predT: "Pred M \<in> T_PS" using LP0 by (cases "Pred M") (auto simp: T_PS_def)
+      have brTrP: "TrMax (Pred M) \<noteq> Lng (Pred M) - 1"
+      proof
+        assume "TrMax (Pred M) = Lng (Pred M) - 1"
+        hence "Br (Pred M) = []" by (simp add: Br_def)
+        thus False using BrPne' by simp
+      qed
+      have tbP: "TrMax (Pred M) \<le> Lng (Pred M) - 1" by (rule TrMax_bound[OF predT])
+      have LPg1: "1 < Lng (Pred M)" using brTrP tbP LP0 by linarith
+      have j1gt: "Lng M - 1 > 1" using LPg1 LPeq by simp
+      have LPlt: "Lng (Pred M) < Lng M" using LPeq Lge2 by simp
+      have predDT: "Pred M \<in> DT_PS" by (rule descending_Br_Pred[OF MDl Brnel LPg1])
+      \<comment> \<open>the \<open>Pred M\<close> leftend witness \<open>aP\<close>\<close>
+      have e10P: "entry (Pred M) 1 0 = entry M 1 0"
+        using Lge2 by (simp add: Pred_def entry_def nth_butlast)
+      obtain aP where predW0: "Trans (Pred M) = Dpt (enat (entry (Pred M) 1 0)) aP"
+        using m_8_2_subexpr_leftend_unique[OF predDT] by (auto simp: Ex1_def)
+      have predW: "Trans (Pred M) = Dpt (enat (entry M 1 0)) aP" using predW0 e10P by simp
+      \<comment> \<open>index relations \<open>JN \<le> J\<^sub>1\<close> and \<open>0 < Joints M ! JN\<close>\<close>
+      define J1 where "J1 = Lng (Br M) - 1"
+      define JN where "JN = Lng (Br (Pred M)) - 1"
+      have JNeq: "JN = (if FirstNodes M ! (Lng (Br M) - 1) = Lng M - 1 then J1 - 1 else J1)"
+        using wid_JPm1_map[OF MP Brnel Lge2] by (simp add: JN_def J1_def)
+      have JNleJ1: "JN \<le> J1" using JNeq by (simp split: if_splits)
+      have J1lt: "J1 < Lng (Br M)" using BrL by (simp add: J1_def)
+      have j0M: "0 < Joints M ! J1" using j0posl by (simp add: J1_def)
+      have idxle: "Joints M ! J1 \<le> Joints M ! JN"
+        by (rule m_8_2_joint_idx_mono[OF MDl JNleJ1 J1lt])
+      have j0N: "0 < Joints M ! JN" using j0M idxle by linarith
+      have widFNJ: "FirstNodes (Pred M) ! JN = FirstNodes M ! JN
+                    \<and> Joints (Pred M) ! JN = Joints M ! JN"
+        using wid_FNJ_Pred_at_JPm1[OF MP Brnel Lge2 BrPne'] by (simp add: JN_def)
+      have j0Npred: "0 < Joints (Pred M) ! (Lng (Br (Pred M)) - 1)"
+        using j0N widFNJ unfolding JN_def by simp
+      \<comment> \<open>IH on \<open>Pred M\<close>\<close>
+      have ihA0: "\<forall>p\<in>set (PB aP).
+                    leBT (Dpt (enat (entry (Pred M) 1
+                            (Joints (Pred M) ! (Lng (Br (Pred M)) - 1)))) 0\<^sub>B) p"
+        by (rule less.hyps[OF LPlt predDT BrPne' predW0 j0Npred])
+      have ihA: "\<forall>p\<in>set (PB aP).
+                   leBT (Dpt (enat (entry (Pred M) 1 (Joints (Pred M) ! JN))) 0\<^sub>B) p"
+        using ihA0 by (simp add: JN_def)
+      \<comment> \<open>threshold monotonicity, translated to the \<open>Pred M\<close> threshold\<close>
+      have JNlt: "JN < Lng (Br M)" using JNleJ1 J1lt by linarith
+      have jNleTr: "Joints M ! JN \<le> TrMax M"
+        using m_6_4_FirstNodes_TrMax_Joints[OF MP JNlt] by simp
+      have jNltL: "Joints M ! JN < Lng M - 1" using jNleTr trlt by linarith
+      have entryAgreeJN: "entry (Pred M) 1 (Joints (Pred M) ! JN) = entry M 1 (Joints M ! JN)"
+      proof -
+        have "entry (Pred M) 1 (Joints (Pred M) ! JN) = entry (Pred M) 1 (Joints M ! JN)"
+          using widFNJ by simp
+        also have "\<dots> = entry M 1 (Joints M ! JN)"
+          by (rule wid_entry1_Pred_agree[OF Lge2 jNltL])
+        finally show ?thesis .
+      qed
+      have thrmono: "entry M 1 (Joints M ! J1) \<le> entry (Pred M) 1 (Joints (Pred M) ! JN)"
+      proof -
+        have "entry M 1 (Joints M ! J1) \<le> entry M 1 (Joints M ! JN)"
+          by (rule m_8_2_thrmono[OF MDl JNleJ1 J1lt])
+        thus ?thesis using entryAgreeJN by simp
+      qed
+      \<comment> \<open>new-head dominance (residual) and the keystone disjunction\<close>
+      have newdom: "entry M 1 (Joints M ! J1) \<le> RightNodes (Trans M) ! 1"
+        using newdomH[OF MDl Brnel Lge2 j0posl] by (simp add: J1_def)
+      show ?thesis
+        by (rule m_8_2_factA_step[OF aWl predW ihA thrmono[unfolded J1_def]
+                newdom[unfolded J1_def] m_8_2_keystone[OF MR MP Brnel j1gt]])
+    qed
+  qed
+  show ?thesis by (rule gen[OF MD Brne aW j0pos])
+qed
+
+text \<open>§8.2 strong-monomiality lower bounds — ASSEMBLY of the paper proposition
+  @{thm [source] p_8_2_subexpr_component_strongmono} (pss_paper.thy 1560).  The
+  unique leftend witness \<open>a\<close> (@{thm [source] m_8_2_subexpr_leftend_unique})
+  satisfies the conditional factA (clauses (3)/(4)) by the proven driver
+  @{thm [source] m_8_2_factA} and the conditional factB (clause (2)) by
+  \<open>factBlem\<close>; @{thm [source] m_8_2_subexpr_component_strongmono_of_factAB} packages
+  both (with the \<open>\<exists>!\<close> uniqueness inherited from clause (1)) into the paper \<open>\<exists>!\<close>.
+  RESIDUALS isolated as hypotheses: \<open>newdomH\<close> (factA's keystone-case-(1) head
+  dominance, empirically 0-violations on all \<open>DT\<^bsub>PS\<^esub>\<close> \<open>Lng \<le> 8\<close>) and \<open>factBlem\<close>
+  (clause (2), the \<open>cp\<close>/\<open>ft\<close> condition+threshold transport across \<open>Pred\<close>).\<close>
+
+lemma m_8_2_subexpr_component_strongmono:
+  fixes M :: pairseq
+  assumes newdomH: "\<And>M'. M' \<in> DT_PS \<Longrightarrow> Br M' \<noteq> [] \<Longrightarrow> 1 < Lng M'
+                       \<Longrightarrow> 0 < Joints M' ! (Lng (Br M') - 1)
+                       \<Longrightarrow> entry M' 1 (Joints M' ! (Lng (Br M') - 1))
+                            \<le> RightNodes (Trans M') ! 1"
+    and factBlem: "\<And>b. Trans M = Dpt (enat (entry M 1 0)) b
+                     \<Longrightarrow> (Joints M ! (Lng (Br M) - 1) = 0
+                          \<or> entry M 0 (FirstNodes M ! (Lng (Br M) - 1))
+                              = entry M 1 (FirstNodes M ! (Lng (Br M) - 1)))
+                     \<Longrightarrow> (\<forall>p\<in>set (PB b).
+                           leBT (Dpt (enat (entry M 1 (FirstNodes M ! (Lng (Br M) - 1)))) 0\<^sub>B) p)"
+    and MD: "M \<in> DT_PS" and Brne: "Br M \<noteq> []"
+  shows "\<exists>!t'.
+      Trans M = Dpt (enat (entry M 1 0)) t'
+    \<and> ((Joints M ! (Lng (Br M) - 1) = 0
+          \<or> entry M 0 (FirstNodes M ! (Lng (Br M) - 1))
+              = entry M 1 (FirstNodes M ! (Lng (Br M) - 1)))
+         \<longrightarrow> (\<forall>p\<in>set (PB t').
+                leBT (Dpt (enat (entry M 1 (FirstNodes M ! (Lng (Br M) - 1)))) 0\<^sub>B) p))
+    \<and> ((0 < Joints M ! (Lng (Br M) - 1)
+          \<and> Joints M ! (Lng (Br M) - 1) < TrMax M
+          \<and> entry M 0 (FirstNodes M ! (Lng (Br M) - 1))
+              > entry M 1 (FirstNodes M ! (Lng (Br M) - 1)))
+         \<longrightarrow> (\<forall>p\<in>set (PB t').
+                leBT (Dpt (enat (entry M 1 (Joints M ! (Lng (Br M) - 1)))) 0\<^sub>B) p))
+    \<and> ((0 < Joints M ! (Lng (Br M) - 1) \<and> Joints M ! (Lng (Br M) - 1) = TrMax M)
+         \<longrightarrow> (\<forall>p\<in>set (PB t'). leBT (Dpt (enat (entry M 1 (TrMax M))) 0\<^sub>B) p))"
+proof -
+  obtain a where aW: "Trans M = Dpt (enat (entry M 1 0)) a"
+    using m_8_2_subexpr_leftend_unique[OF MD] by (auto simp: Ex1_def)
+  have factA: "0 < Joints M ! (Lng (Br M) - 1)
+                 \<Longrightarrow> (\<forall>p\<in>set (PB a).
+                       leBT (Dpt (enat (entry M 1 (Joints M ! (Lng (Br M) - 1)))) 0\<^sub>B) p)"
+    by (rule m_8_2_factA[OF newdomH MD Brne aW])
+  have factB: "(Joints M ! (Lng (Br M) - 1) = 0
+                 \<or> entry M 0 (FirstNodes M ! (Lng (Br M) - 1))
+                     = entry M 1 (FirstNodes M ! (Lng (Br M) - 1)))
+                 \<Longrightarrow> (\<forall>p\<in>set (PB a).
+                       leBT (Dpt (enat (entry M 1 (FirstNodes M ! (Lng (Br M) - 1)))) 0\<^sub>B) p)"
+    by (rule factBlem[OF aW])
+  show ?thesis
+    by (rule m_8_2_subexpr_component_strongmono_of_factAB[OF MD Brne aW factA factB])
+qed
 
 text \<open>§8.1 additivity infrastructure (for @{thm [source]
   m_8_1_stepT_j0zero_of_additivity}).  The condition-(I), \<open>j\<^sub>0 = 0\<close> fundamental
