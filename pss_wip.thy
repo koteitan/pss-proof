@@ -35354,6 +35354,433 @@ proof -
 qed
 
 
+text \<open>§8.2 factB helper — general-row entry agreement across \<open>Pred\<close>.  For
+  \<open>j < Lng M - 1\<close>, \<open>Pred M = butlast M\<close> keeps column \<open>j\<close> unchanged, so both rows of
+  \<open>entry\<close> agree (the row-1 case is @{thm [source] wid_entry1_Pred_agree}; this is the
+  row-agnostic version used by the factB driver for the leaf threshold transport).\<close>
+
+lemma wid_entry_Pred_agree:
+  fixes M :: pairseq
+  assumes L: "1 < Lng M" and j: "j < Lng M - 1"
+  shows "entry (Pred M) i j = entry M i j"
+  using L j by (simp add: Pred_def entry_def nth_butlast)
+
+text \<open>§8.2 factB helper — \<open>FirstNodes\<close> is STRICTLY increasing across adjacent branch
+  indices.  \<open>FirstNodes M ! J = TrMax M + 1 + IdxSum (Br M) ! J\<close>
+  (@{thm [source] FirstNodes_nth}), and the cumulative \<open>IdxSum\<close> jumps by the
+  (positive, @{thm [source] idxsum_P_component_nonempty}) length of branch \<open>J\<close> at
+  the next index, so \<open>FirstNodes M ! J < FirstNodes M ! (Suc J)\<close>.  In the factB
+  case-B (\<open>j\<^sub>1' = Lng M - 1\<close>) this gives the earlier first node \<open>FirstNodes M ! JN\<close>
+  (\<open>JN = J\<^sub>1-1\<close>) strictly below \<open>Lng M - 1\<close>, enabling the \<open>Pred\<close> entry agreement.\<close>
+
+lemma wid_FN_Suc_lt:
+  fixes M :: pairseq
+  assumes MP: "M \<in> PT_PS" and SucJlt: "Suc J < Lng (Br M)"
+  shows "FirstNodes M ! J < FirstNodes M ! (Suc J)"
+proof -
+  have MT: "M \<in> T_PS" using MP by (simp add: PT_PS_def)
+  have JBr: "J < Lng (Br M)" using SucJlt by simp
+  have brTr: "TrMax M \<noteq> Lng M - 1"
+  proof
+    assume "TrMax M = Lng M - 1"
+    hence "Br M = []" by (simp add: Br_def)
+    with JBr show False by simp
+  qed
+  have tb: "TrMax M \<le> Lng M - 1" by (rule TrMax_bound[OF MT])
+  with brTr have trlt: "TrMax M < Lng M - 1" by linarith
+  let ?N = "seg M (TrMax M + 1) (Lng M - 1)"
+  have brQ: "Br M = P ?N" using brTr by (simp add: Br_def)
+  have NLpos: "Lng ?N > 0" using trlt by simp
+  have Nne: "?N \<noteq> []" using NLpos length_greater_0_conv by blast
+  have NT: "?N \<in> T_PS" using Nne by (simp add: T_PS_def)
+  have JP: "J < length (P ?N)" using JBr brQ by simp
+  have lenpos: "0 < Lng (P ?N ! J)" by (rule idxsum_P_component_nonempty[OF NT JP])
+  have lenBrJ: "0 < Lng (Br M ! J)" using lenpos brQ by simp
+  have take_eq: "take (Suc J) (Br M) = take J (Br M) @ [Br M ! J]"
+    using JBr by (simp add: take_Suc_conv_app_nth)
+  have a1: "IdxSum (Br M) ! J = sum_list (map length (take J (Br M)))"
+    using JBr by (simp add: idxsum_nth)
+  have a2: "IdxSum (Br M) ! (Suc J) = sum_list (map length (take (Suc J) (Br M)))"
+    using SucJlt by (simp add: idxsum_nth)
+  have idsuc: "IdxSum (Br M) ! (Suc J) = IdxSum (Br M) ! J + Lng (Br M ! J)"
+    using a1 a2 take_eq by simp
+  have idlt: "IdxSum (Br M) ! J < IdxSum (Br M) ! (Suc J)" using idsuc lenBrJ by simp
+  show ?thesis using idlt FirstNodes_nth[OF JBr] FirstNodes_nth[OF SucJlt] by simp
+qed
+
+text \<open>§8.2 factB BASE for the degenerate two-column host (\<open>Lng M = 2\<close>).  Here
+  \<open>TrMax M = 0\<close>, the single branch is column 1 (\<open>j\<^sub>1' = FirstNodes M ! (Lng(Br M)-1)
+  = 1\<close>), and @{thm [source] m_7_3_twoColumn_Trans} gives
+  \<open>Trans M = D\<^bsub>M\<^sub>1\<^sub>,\<^sub>0\<^esub>(D\<^bsub>M\<^sub>1\<^sub>,\<^sub>1\<^esub> 0)\<close>, so the witness \<open>a = D\<^bsub>M\<^sub>1\<^sub>,\<^sub>1\<^esub> 0\<close> is a single
+  principal whose head equals the leaf threshold — the factB bound holds by
+  reflexivity, with no side condition.  This is the \<open>Lng M - 1 \<le> 1\<close> base the driver
+  handles separately from @{thm [source] m_8_2_factB_base} (which needs \<open>2 < Lng M\<close>).\<close>
+
+lemma m_8_2_factB_base2:
+  fixes M :: pairseq and a :: BT
+  assumes MR: "M \<in> RT_PS" and mono: "monoT M" and L2: "Lng M = 2" and Brne: "Br M \<noteq> []"
+    and aW: "Trans M = Dpt (enat (entry M 1 0)) a"
+  shows "\<forall>p\<in>set (PB a). leBT (Dpt (enat (entry M 1 (FirstNodes M ! (Lng (Br M) - 1)))) 0\<^sub>B) p"
+proof -
+  have MT: "M \<in> T_PS" using MR by (simp add: RT_PS_def)
+  have QP: "M \<in> PT_PS" using MT mono by (simp add: PT_PS_def)
+  have Tr0: "TrMax M = 0"
+  proof -
+    have "TrMax M \<le> Lng M - 1" by (rule TrMax_bound[OF MT])
+    moreover have "TrMax M \<noteq> Lng M - 1" using Brne by (auto simp: Br_def)
+    ultimately show ?thesis using L2 by simp
+  qed
+  have BrL: "0 < Lng (Br M)" using Brne by (cases "Br M") auto
+  have J1Br: "Lng (Br M) - 1 < Lng (Br M)" using BrL by simp
+  have FNlo: "TrMax M < FirstNodes M ! (Lng (Br M) - 1)"
+    using m_6_4_FirstNodes_TrMax_Joints[OF QP J1Br] by simp
+  have FNhi: "FirstNodes M ! (Lng (Br M) - 1) < Lng M" by (rule a1_FN_lt[OF QP J1Br])
+  have FN1: "FirstNodes M ! (Lng (Br M) - 1) = 1" using FNlo FNhi Tr0 L2 by linarith
+  have T: "Trans M = Dpt (enat (entry M 1 0)) (Dpt (enat (entry M 1 1)) 0\<^sub>B)"
+    by (rule m_7_3_twoColumn_Trans[OF MR mono L2])
+  have aeq: "a = Dpt (enat (entry M 1 1)) 0\<^sub>B" using aW T by simp
+  show ?thesis
+  proof
+    fix p assume "p \<in> set (PB a)"
+    hence "p \<in> set (PB (Dpt (enat (entry M 1 1)) 0\<^sub>B))" using aeq by simp
+    hence pe: "p = Dpt (enat (entry M 1 1)) 0\<^sub>B" by (simp add: PB_Dpt_single)
+    have "leBT (Dpt (enat (entry M 1 1)) 0\<^sub>B) (Dpt (enat (entry M 1 1)) 0\<^sub>B)"
+      by (simp add: leBT_Dpt0_iff)
+    thus "leBT (Dpt (enat (entry M 1 (FirstNodes M ! (Lng (Br M) - 1)))) 0\<^sub>B) p"
+      using pe FN1 by simp
+  qed
+qed
+
+
+text \<open>§8.2 factB DRIVER — the clause-(2) lower bound, UNCONDITIONALLY proven.
+  Under the clause-(2) side condition \<open>C(M)\<close> (\<open>j\<^sub>0' = 0 \<or> M\<^bsub>0,j\<^sub>1'\<^esub> = M\<^bsub>1,j\<^sub>1'\<^esub>\<close>),
+  every principal component head of the leftend witness \<open>a\<close> (\<open>Trans M = D\<^bsub>M\<^sub>1\<^sub>,\<^sub>0\<^esub> a\<close>)
+  is \<open>\<ge> M\<^bsub>1,j\<^sub>1'\<^esub>\<close> (\<open>j\<^sub>1' = FirstNodes M ! (Lng(Br M)-1)\<close>, the clause-(2) leaf).  Strong
+  induction on \<open>Lng M\<close>, mirroring @{thm [source] m_8_2_factA}.  Base: \<open>Lng M = 2\<close>
+  (@{thm [source] m_8_2_factB_base2}) and all-trunk \<open>Pred\<close>
+  (@{thm [source] m_8_2_factB_base}, \<open>thrmono\<close> via
+  @{thm [source] m_8_2_branch_row1_le_TrMax}, \<open>newdom\<close> = the now-unconditional
+  @{thm [source] m_8_2_widH}).  Step (@{thm [source] m_8_2_factB_step}): the IH
+  supplies \<open>prefixB\<close> (the \<open>Pred M\<close> witness bound at the leaf), produced by the
+  C-descent — index map @{thm [source] wid_JPm1_map} /
+  @{thm [source] wid_FNJ_Pred_at_JPm1}:
+  \<^item> \<open>j\<^sub>1' \<noteq> Lng M - 1\<close> (\<open>JN = J\<^sub>1\<close>): \<open>C(Pred M) = C(M)\<close>, factB IH at the same leaf;
+  \<^item> \<open>j\<^sub>1' = Lng M - 1\<close> (\<open>JN = J\<^sub>1-1\<close>), split on \<open>(Br M ! JN)\<^bsub>0,0\<^esub>\<close> vs \<open>(Br M ! J\<^sub>1)\<^bsub>0,0\<^esub>\<close>:
+    STRICT — @{thm [source] m_8_2_factA_uncond} on \<open>Pred M\<close> (joint positive via
+    @{thm [source] m_8_2_branch_col0_val}, threshold \<open>\<ge> M\<^bsub>1,j\<^sub>1'\<^esub>\<close> via reducedness
+    @{thm [source] m_6_6_reduced_coeff}); TIE — \<open>C(Pred M)\<close> holds (joint-equality from
+    @{thm [source] m_8_2_branch_col0_val}, or the balanced branch from the tie-break
+    @{thm [source] m_8_2_branch_row1_tiebreak}), factB IH, threshold via tie-break.
+  EMPIRICALLY validated: 0 failures over the reachable \<open>DT\<^bsub>PS\<^esub>\<close>
+  (\<open>python/_factb_descent.py\<close>, Lng \<le> 6 K=2 / Lng \<le> 4 K=3, 543+119 step cases).\<close>
+
+lemma m_8_2_factB:
+  fixes M :: pairseq and a :: BT
+  assumes MD: "M \<in> DT_PS" and Brne: "Br M \<noteq> []"
+    and aW: "Trans M = Dpt (enat (entry M 1 0)) a"
+    and C: "Joints M ! (Lng (Br M) - 1) = 0
+            \<or> entry M 0 (FirstNodes M ! (Lng (Br M) - 1))
+                = entry M 1 (FirstNodes M ! (Lng (Br M) - 1))"
+  shows "\<forall>p\<in>set (PB a).
+           leBT (Dpt (enat (entry M 1 (FirstNodes M ! (Lng (Br M) - 1)))) 0\<^sub>B) p"
+proof -
+  have gen: "M \<in> DT_PS \<Longrightarrow> Br M \<noteq> [] \<Longrightarrow> Trans M = Dpt (enat (entry M 1 0)) a
+              \<Longrightarrow> (Joints M ! (Lng (Br M) - 1) = 0
+                   \<or> entry M 0 (FirstNodes M ! (Lng (Br M) - 1))
+                       = entry M 1 (FirstNodes M ! (Lng (Br M) - 1)))
+              \<Longrightarrow> (\<forall>p\<in>set (PB a).
+                    leBT (Dpt (enat (entry M 1 (FirstNodes M ! (Lng (Br M) - 1)))) 0\<^sub>B) p)"
+    for M a
+  proof (induction "Lng M" arbitrary: M a rule: less_induct)
+    case (less M a)
+    have MDl: "M \<in> DT_PS" by (rule less.prems(1))
+    have Brnel: "Br M \<noteq> []" by (rule less.prems(2))
+    have aWl: "Trans M = Dpt (enat (entry M 1 0)) a" by (rule less.prems(3))
+    have Cl: "Joints M ! (Lng (Br M) - 1) = 0
+              \<or> entry M 0 (FirstNodes M ! (Lng (Br M) - 1))
+                  = entry M 1 (FirstNodes M ! (Lng (Br M) - 1))" by (rule less.prems(4))
+    have MR: "M \<in> RT_PS" and mono: "monoT M" using MDl by (auto simp: DT_PS_def)
+    have MT: "M \<in> T_PS" using MR by (simp add: RT_PS_def)
+    have MP: "M \<in> PT_PS" using MT mono by (simp add: PT_PS_def)
+    have condA: "RedCondA M" using m_6_6_reduced_iff_cond[OF MT] MR by simp
+    have brTr: "TrMax M \<noteq> Lng M - 1"
+    proof
+      assume "TrMax M = Lng M - 1"
+      hence "Br M = []" by (simp add: Br_def)
+      thus False using Brnel by simp
+    qed
+    have tb: "TrMax M \<le> Lng M - 1" by (rule TrMax_bound[OF MT])
+    have trlt: "TrMax M < Lng M - 1" using tb brTr by linarith
+    have Lge2: "1 < Lng M" using trlt by linarith
+    have BrL: "0 < Lng (Br M)" using Brnel by (cases "Br M") auto
+    have J1Br: "Lng (Br M) - 1 < Lng (Br M)" using BrL by simp
+    let ?J1 = "Lng (Br M) - 1"
+    let ?j1' = "FirstNodes M ! (Lng (Br M) - 1)"
+    have j1'lt: "?j1' < Lng M" by (rule a1_FN_lt[OF MP J1Br])
+    show ?case
+    proof (cases "2 < Lng M")
+      case False
+      have L2: "Lng M = 2" using Lge2 False by simp
+      show ?thesis by (rule m_8_2_factB_base2[OF MR mono L2 Brnel aWl])
+    next
+      case lenge3: True
+      have j1gt: "Lng M - 1 > 1" using lenge3 by simp
+      have widH: "entry M 1 ?j1' \<le> RightNodes (Trans M) ! 1"
+        by (rule m_8_2_widH[OF MDl Brnel j1gt])
+      show ?thesis
+      proof (cases "Br (Pred M) = []")
+        case BrPe: True
+        have thrmono: "entry M 1 ?j1' \<le> entry M 1 0 + TrMax M"
+        proof -
+          have "entry M 1 ?j1' \<le> entry M 1 (TrMax M)"
+            by (rule m_8_2_branch_row1_le_TrMax[OF MDl J1Br])
+          also have "\<dots> = entry M 1 0 + TrMax M"
+            using trunk_entries_offset[OF MT condA order.refl] by simp
+          finally show ?thesis .
+        qed
+        show ?thesis
+          by (rule m_8_2_factB_base[OF MDl Brnel BrPe lenge3 aWl thrmono widH])
+      next
+        case BrPne: False
+        have BrPne': "Br (Pred M) \<noteq> []" using BrPne by simp
+        have LPeq: "Lng (Pred M) = Lng M - 1" using Lge2 by (simp add: Pred_def)
+        have LP0: "0 < Lng (Pred M)" using LPeq Lge2 by simp
+        have predT: "Pred M \<in> T_PS" using LP0 by (cases "Pred M") (auto simp: T_PS_def)
+        have brTrP: "TrMax (Pred M) \<noteq> Lng (Pred M) - 1"
+        proof
+          assume "TrMax (Pred M) = Lng (Pred M) - 1"
+          hence "Br (Pred M) = []" by (simp add: Br_def)
+          thus False using BrPne' by simp
+        qed
+        have tbP: "TrMax (Pred M) \<le> Lng (Pred M) - 1" by (rule TrMax_bound[OF predT])
+        have LPg1: "1 < Lng (Pred M)" using brTrP tbP LP0 by linarith
+        have LPlt: "Lng (Pred M) < Lng M" using LPeq Lge2 by simp
+        have predDT: "Pred M \<in> DT_PS" by (rule descending_Br_Pred[OF MDl Brnel LPg1])
+        have predMR: "Pred M \<in> RT_PS" using predDT by (simp add: DT_PS_def)
+        have predmono: "monoT (Pred M)" using predDT by (simp add: DT_PS_def)
+        have e10P: "entry (Pred M) 1 0 = entry M 1 0"
+          using Lge2 by (simp add: Pred_def entry_def nth_butlast)
+        obtain aP where predW0: "Trans (Pred M) = Dpt (enat (entry (Pred M) 1 0)) aP"
+          using m_8_2_subexpr_leftend_unique[OF predDT] by (auto simp: Ex1_def)
+        have predW: "Trans (Pred M) = Dpt (enat (entry M 1 0)) aP" using predW0 e10P by simp
+        let ?JN = "Lng (Br (Pred M)) - 1"
+        have JNeq: "?JN = (if ?j1' = Lng M - 1 then ?J1 - 1 else ?J1)"
+          by (rule wid_JPm1_map[OF MP Brnel Lge2])
+        have JNleJ1: "?JN \<le> ?J1" using JNeq by (simp split: if_splits)
+        have JNlt: "?JN < Lng (Br M)" using JNleJ1 J1Br by linarith
+        have widFNJ: "FirstNodes (Pred M) ! ?JN = FirstNodes M ! ?JN
+                      \<and> Joints (Pred M) ! ?JN = Joints M ! ?JN"
+          by (rule wid_FNJ_Pred_at_JPm1[OF MP Brnel Lge2 BrPne'])
+        have brvalJN: "entry (Br M ! ?JN) 0 0 = entry M 1 0 + Joints M ! ?JN + 1"
+          by (rule m_8_2_branch_col0_val[OF MDl JNlt])
+        have brvalJ1: "entry (Br M ! ?J1) 0 0 = entry M 1 0 + Joints M ! ?J1 + 1"
+          by (rule m_8_2_branch_col0_val[OF MDl J1Br])
+        have c0JN: "entry M 0 (FirstNodes M ! ?JN) = entry (Br M ! ?JN) 0 0"
+          by (rule entry_FirstNodes_eq_component_gen[OF MP JNlt])
+        have c1JN: "entry M 1 (FirstNodes M ! ?JN) = entry (Br M ! ?JN) 1 0"
+          by (rule entry_FirstNodes_eq_component_gen[OF MP JNlt])
+        have c0J1: "entry M 0 ?j1' = entry (Br M ! ?J1) 0 0"
+          by (rule entry_FirstNodes_eq_component_gen[OF MP J1Br])
+        have c1J1: "entry M 1 ?j1' = entry (Br M ! ?J1) 1 0"
+          by (rule entry_FirstNodes_eq_component_gen[OF MP J1Br])
+        have jtJNleTr: "Joints M ! ?JN \<le> TrMax M"
+          using m_6_4_FirstNodes_TrMax_Joints[OF MP JNlt] by simp
+        have jtJNltLM: "Joints M ! ?JN < Lng M - 1" using jtJNleTr trlt by linarith
+        \<comment> \<open>the IH-fed leaf bound on the \<open>Pred M\<close> witness\<close>
+        have prefixB: "\<forall>r\<in>set (PB aP). leBT (Dpt (enat (entry M 1 ?j1')) 0\<^sub>B) r"
+        proof (cases "?j1' = Lng M - 1")
+          case j1ne: False
+          \<comment> \<open>CASE A: \<open>JN = J\<^sub>1\<close>, the condition transports verbatim\<close>
+          have JNJ1: "?JN = ?J1" using JNeq j1ne by simp
+          have j1'lt2: "?j1' < Lng M - 1" using j1'lt j1ne Lge2 by linarith
+          have fnP: "FirstNodes (Pred M) ! ?JN = ?j1'" using widFNJ JNJ1 by simp
+          have e0P: "entry (Pred M) 0 ?j1' = entry M 0 ?j1'"
+            by (rule wid_entry_Pred_agree[OF Lge2 j1'lt2])
+          have e1P: "entry (Pred M) 1 ?j1' = entry M 1 ?j1'"
+            by (rule wid_entry_Pred_agree[OF Lge2 j1'lt2])
+          have CP: "Joints (Pred M) ! ?JN = 0
+                    \<or> entry (Pred M) 0 (FirstNodes (Pred M) ! ?JN)
+                        = entry (Pred M) 1 (FirstNodes (Pred M) ! ?JN)"
+          proof (rule Cl[THEN disjE])
+            assume "Joints M ! (Lng (Br M) - 1) = 0"
+            hence "Joints M ! ?JN = 0" using JNJ1 by simp
+            thus ?thesis using widFNJ by simp
+          next
+            assume "entry M 0 ?j1' = entry M 1 ?j1'"
+            thus ?thesis using fnP e0P e1P by simp
+          qed
+          have ih: "\<forall>r\<in>set (PB aP).
+                      leBT (Dpt (enat (entry (Pred M) 1
+                              (FirstNodes (Pred M) ! (Lng (Br (Pred M)) - 1)))) 0\<^sub>B) r"
+            by (rule less.hyps[OF LPlt predDT BrPne' predW0 CP])
+          have thr_ih: "entry (Pred M) 1 (FirstNodes (Pred M) ! (Lng (Br (Pred M)) - 1))
+                          = entry M 1 ?j1'"
+            using fnP e1P by simp
+          show ?thesis using ih thr_ih by simp
+        next
+          case j1eq: True
+          \<comment> \<open>CASE B: \<open>JN = J\<^sub>1 - 1\<close>, the leaf is the right end\<close>
+          have BrLenP: "Lng (Br (Pred M)) = ?J1"
+            using wid_BrLen_Pred[OF MP Brnel Lge2] j1eq by simp
+          have J1pos: "0 < ?J1" using BrPne' BrLenP by (cases "Br (Pred M)") auto
+          have JNJ1: "?JN = ?J1 - 1" using JNeq j1eq by simp
+          have SucJN: "Suc ?JN = ?J1" using JNJ1 J1pos by linarith
+          have SucJNlt: "Suc ?JN < Lng (Br M)" using SucJN J1Br by simp
+          have fnJNlt: "FirstNodes M ! ?JN < FirstNodes M ! (Suc ?JN)"
+            by (rule wid_FN_Suc_lt[OF MP SucJNlt])
+          have fnJNltLM: "FirstNodes M ! ?JN < Lng M - 1"
+          proof -
+            have "FirstNodes M ! (Suc ?JN) = ?j1'" using SucJN by simp
+            hence "FirstNodes M ! ?JN < ?j1'" using fnJNlt by simp
+            thus ?thesis using j1eq by simp
+          qed
+          have fnJNlt2: "FirstNodes M ! ?JN < Lng M" using fnJNltLM by simp
+          have descBrM: "descending (Br M)" using MDl by (simp add: DT_PS_def)
+          have cdomJN: "cdom (Br M ! ?JN) (Br M ! ?J1)"
+            by (rule descending_cdomD[OF descBrM JNleJ1 J1Br])
+          have row0ge: "entry (Br M ! ?J1) 0 0 \<le> entry (Br M ! ?JN) 0 0"
+            using cdomJN by (simp add: cdom_def)
+          show ?thesis
+          proof (cases "entry (Br M ! ?J1) 0 0 < entry (Br M ! ?JN) 0 0")
+            case strict: True
+            \<comment> \<open>STRICT: factA on \<open>Pred M\<close> with a positive joint\<close>
+            have jtgt: "Joints M ! ?J1 < Joints M ! ?JN"
+              using strict brvalJN brvalJ1 by linarith
+            have j0NposM: "0 < Joints M ! ?JN" using jtgt by linarith
+            have j0Npos': "0 < Joints (Pred M) ! (Lng (Br (Pred M)) - 1)"
+              using j0NposM widFNJ by simp
+            have ihA: "\<forall>p\<in>set (PB aP).
+                         leBT (Dpt (enat (entry (Pred M) 1
+                                 (Joints (Pred M) ! (Lng (Br (Pred M)) - 1)))) 0\<^sub>B) p"
+              by (rule m_8_2_factA_uncond[OF predDT BrPne' predW0 j0Npos'])
+            have thr_ihA: "entry (Pred M) 1 (Joints (Pred M) ! (Lng (Br (Pred M)) - 1))
+                             = entry M 1 (Joints M ! ?JN)"
+            proof -
+              have "entry (Pred M) 1 (Joints (Pred M) ! (Lng (Br (Pred M)) - 1))
+                      = entry (Pred M) 1 (Joints M ! ?JN)" using widFNJ by simp
+              also have "\<dots> = entry M 1 (Joints M ! ?JN)"
+                by (rule wid_entry_Pred_agree[OF Lge2 jtJNltLM])
+              finally show ?thesis .
+            qed
+            have e1jtJN: "entry M 1 (Joints M ! ?JN) = entry M 1 0 + Joints M ! ?JN"
+              using trunk_entries_offset[OF MT condA jtJNleTr] by simp
+            have thrge: "entry M 1 ?j1' \<le> entry M 1 (Joints M ! ?JN)"
+            proof -
+              have "entry M 1 ?j1' \<le> entry M 0 ?j1'" by (rule m_6_6_reduced_coeff[OF MR j1'lt])
+              also have "\<dots> = entry M 1 0 + Joints M ! ?J1 + 1" using c0J1 brvalJ1 by simp
+              also have "\<dots> \<le> entry M 1 0 + Joints M ! ?JN" using jtgt by linarith
+              also have "\<dots> = entry M 1 (Joints M ! ?JN)" using e1jtJN by simp
+              finally show ?thesis .
+            qed
+            have ihA': "\<forall>p\<in>set (PB aP).
+                          leBT (Dpt (enat (entry M 1 (Joints M ! ?JN))) 0\<^sub>B) p"
+              using ihA thr_ihA by simp
+            show ?thesis by (rule wit_PB_relax[OF ihA' thrge])
+          next
+            case False
+            \<comment> \<open>TIE: factB IH at the earlier leaf, threshold via tie-break\<close>
+            have tieEq: "entry (Br M ! ?JN) 0 0 = entry (Br M ! ?J1) 0 0"
+              using row0ge False by linarith
+            have tie1: "entry (Br M ! ?J1) 1 0 \<le> entry (Br M ! ?JN) 1 0"
+              by (rule m_8_2_branch_row1_tiebreak[OF MDl JNleJ1 J1Br tieEq])
+            have CP: "Joints (Pred M) ! ?JN = 0
+                      \<or> entry (Pred M) 0 (FirstNodes (Pred M) ! ?JN)
+                          = entry (Pred M) 1 (FirstNodes (Pred M) ! ?JN)"
+            proof (rule Cl[THEN disjE])
+              assume "Joints M ! (Lng (Br M) - 1) = 0"
+              hence j0z: "Joints M ! ?J1 = 0" by simp
+              have "Joints M ! ?JN = 0" using tieEq brvalJN brvalJ1 j0z by linarith
+              thus ?thesis using widFNJ by simp
+            next
+              assume "entry M 0 ?j1' = entry M 1 ?j1'"
+              hence balJ1: "entry (Br M ! ?J1) 0 0 = entry (Br M ! ?J1) 1 0"
+                using c0J1 c1J1 by simp
+              have coeffJN: "entry (Br M ! ?JN) 1 0 \<le> entry (Br M ! ?JN) 0 0"
+                using m_6_6_reduced_coeff[OF MR fnJNlt2] c0JN c1JN by simp
+              have eqJN: "entry (Br M ! ?JN) 1 0 = entry (Br M ! ?JN) 0 0"
+              proof -
+                have "entry (Br M ! ?JN) 0 0 = entry (Br M ! ?J1) 1 0" using tieEq balJ1 by simp
+                also have "\<dots> \<le> entry (Br M ! ?JN) 1 0" using tie1 by simp
+                finally have "entry (Br M ! ?JN) 0 0 \<le> entry (Br M ! ?JN) 1 0" .
+                thus ?thesis using coeffJN by linarith
+              qed
+              have "entry (Pred M) 0 (FirstNodes (Pred M) ! ?JN)
+                      = entry (Pred M) 1 (FirstNodes (Pred M) ! ?JN)"
+                using widFNJ wid_entry_Pred_agree[OF Lge2 fnJNltLM, of 0]
+                      wid_entry_Pred_agree[OF Lge2 fnJNltLM, of 1] c0JN c1JN eqJN by simp
+              thus ?thesis by simp
+            qed
+            have ih: "\<forall>r\<in>set (PB aP).
+                        leBT (Dpt (enat (entry (Pred M) 1
+                                (FirstNodes (Pred M) ! (Lng (Br (Pred M)) - 1)))) 0\<^sub>B) r"
+              by (rule less.hyps[OF LPlt predDT BrPne' predW0 CP])
+            have thr_ih: "entry (Pred M) 1 (FirstNodes (Pred M) ! (Lng (Br (Pred M)) - 1))
+                            = entry M 1 (FirstNodes M ! ?JN)"
+            proof -
+              have "entry (Pred M) 1 (FirstNodes (Pred M) ! (Lng (Br (Pred M)) - 1))
+                      = entry (Pred M) 1 (FirstNodes M ! ?JN)" using widFNJ by simp
+              also have "\<dots> = entry M 1 (FirstNodes M ! ?JN)"
+                by (rule wid_entry_Pred_agree[OF Lge2 fnJNltLM])
+              finally show ?thesis .
+            qed
+            have thrge: "entry M 1 ?j1' \<le> entry M 1 (FirstNodes M ! ?JN)"
+            proof -
+              have "entry M 1 ?j1' = entry (Br M ! ?J1) 1 0" using c1J1 by simp
+              also have "\<dots> \<le> entry (Br M ! ?JN) 1 0" using tie1 by simp
+              also have "\<dots> = entry M 1 (FirstNodes M ! ?JN)" using c1JN by simp
+              finally show ?thesis .
+            qed
+            have ih': "\<forall>r\<in>set (PB aP).
+                         leBT (Dpt (enat (entry M 1 (FirstNodes M ! ?JN))) 0\<^sub>B) r"
+              using ih thr_ih by simp
+            show ?thesis by (rule wit_PB_relax[OF ih' thrge])
+          qed
+        qed
+        show ?thesis
+          by (rule m_8_2_factB_step[OF MR MP Brnel j1gt aWl predW prefixB widH])
+      qed
+    qed
+  qed
+  show ?thesis by (rule gen[OF MD Brne aW C])
+qed
+
+text \<open>§8.2 strong-monomiality proposition — UNCONDITIONAL.  The factB clause-(2)
+  lower bound is now fully discharged by @{thm [source] m_8_2_factB}, so the
+  \<open>factBlem\<close> hypothesis of @{thm [source] m_8_2_subexpr_component_strongmono} is
+  removed: for every \<open>M \<in> DT\<^bsub>PS\<^esub>\<close> with a non-empty branch list the unique leftend
+  witness satisfies all three conditional principal-component lower bounds of the
+  article's strong-monomiality proposition \<open>p_8_2_subexpr_component_strongmono\<close>.\<close>
+
+lemma m_8_2_subexpr_component_strongmono_uncond:
+  fixes M :: pairseq
+  assumes MD: "M \<in> DT_PS" and Brne: "Br M \<noteq> []"
+  shows "\<exists>!t'.
+      Trans M = Dpt (enat (entry M 1 0)) t'
+    \<and> ((Joints M ! (Lng (Br M) - 1) = 0
+          \<or> entry M 0 (FirstNodes M ! (Lng (Br M) - 1))
+              = entry M 1 (FirstNodes M ! (Lng (Br M) - 1)))
+         \<longrightarrow> (\<forall>p\<in>set (PB t').
+                leBT (Dpt (enat (entry M 1 (FirstNodes M ! (Lng (Br M) - 1)))) 0\<^sub>B) p))
+    \<and> ((0 < Joints M ! (Lng (Br M) - 1)
+          \<and> Joints M ! (Lng (Br M) - 1) < TrMax M
+          \<and> entry M 0 (FirstNodes M ! (Lng (Br M) - 1))
+              > entry M 1 (FirstNodes M ! (Lng (Br M) - 1)))
+         \<longrightarrow> (\<forall>p\<in>set (PB t').
+                leBT (Dpt (enat (entry M 1 (Joints M ! (Lng (Br M) - 1)))) 0\<^sub>B) p))
+    \<and> ((0 < Joints M ! (Lng (Br M) - 1) \<and> Joints M ! (Lng (Br M) - 1) = TrMax M)
+         \<longrightarrow> (\<forall>p\<in>set (PB t'). leBT (Dpt (enat (entry M 1 (TrMax M))) 0\<^sub>B) p))"
+proof -
+  have factBlem: "\<And>b. Trans M = Dpt (enat (entry M 1 0)) b
+                     \<Longrightarrow> (Joints M ! (Lng (Br M) - 1) = 0
+                          \<or> entry M 0 (FirstNodes M ! (Lng (Br M) - 1))
+                              = entry M 1 (FirstNodes M ! (Lng (Br M) - 1)))
+                     \<Longrightarrow> (\<forall>p\<in>set (PB b).
+                           leBT (Dpt (enat (entry M 1 (FirstNodes M ! (Lng (Br M) - 1)))) 0\<^sub>B) p)"
+    by (rule m_8_2_factB[OF MD Brne])
+  show ?thesis by (rule m_8_2_subexpr_component_strongmono[OF factBlem MD Brne])
+qed
+
+
 text \<open>§8.7 OT-closure building blocks (surgery-FREE).  These are the structural
   closure rules of \<open>isOT_BT\<close> needed by the inductive step of OT membership.  They
   isolate the three residuals of the Pred-recursion reduction (recurse on \<open>Trans
@@ -37796,4 +38223,112 @@ proof -
               conjunct1[OF conjunct2[OF R]] conjunct2[OF conjunct2[OF R]]])
   qed
 qed
+
+text \<open>§8.7 round-8 OT-membership induction infrastructure (surgery-FREE).
+
+  \<open>m_8_7_Pred_ST_PS\<close>: \<open>ST\<^bsub>PS\<^esub>\<close> is closed under \<open>Pred\<close> (for \<open>Lng M > 1\<close>).  This is
+  the induction prerequisite for the strong-\<open>Lng\<close> recursion of the §8.7 main result:
+  \<open>Pred M = take (Lng M - 1) M = seg M 0 (Lng M - 2)\<close>, an initial segment, hence in
+  \<open>ST\<^bsub>PS\<^esub>\<close> by @{thm [source] m_6_7_standard_prefix}.  With \<open>Lng (Pred M) = Lng M - 1 <
+  Lng M\<close> the IH \<open>Trans (Pred M) \<in> OT\<^bsub>B\<^esub>\<close> is available at every step.\<close>
+
+lemma m_8_7_Pred_ST_PS:
+  assumes M: "M \<in> ST_PS" and L: "Lng M > 1"
+  shows "Pred M \<in> ST_PS"
+proof -
+  have le: "Lng M - 2 \<le> Lng M - 1" by simp
+  have segst: "seg M 0 (Lng M - 2) \<in> ST_PS"
+    by (rule m_6_7_standard_prefix[OF M le])
+  have lM: "Suc (Lng M - 2) \<le> Lng M" using L by simp
+  have e1: "seg M 0 (Lng M - 2) = take (Suc (Lng M - 2)) M"
+    by (rule seg_0_eq_take[OF lM])
+  have e2: "Suc (Lng M - 2) = Lng M - 1" using L by simp
+  have e3: "take (Lng M - 1) M = Pred M"
+    using L by (simp add: Pred_def butlast_conv_take)
+  have "Pred M = seg M 0 (Lng M - 2)" using e1 e2 e3 by simp
+  thus ?thesis using segst by simp
+qed
+
+text \<open>\<open>G\<^bsub>B\<^esub>\<close>-condition support: \<open>GBT\<close> distributes over \<open>+\<^sub>B\<close> (concatenation of the
+  principal lists), since \<open>GBT v (Trm zs) = \<Union>p\<in>set zs. GBP v p\<close>.\<close>
+
+lemma m_8_7_GBT_addBT:
+  "GBT v (a +\<^sub>B b) = GBT v a \<union> GBT v b"
+proof -
+  obtain as where a: "a = Trm as" by (cases a)
+  obtain bs where b: "b = Trm bs" by (cases b)
+  have "GBT v (Trm (as @ bs)) = GBT v (Trm as) \<union> GBT v (Trm bs)" by simp
+  thus ?thesis using a b by simp
+qed
+
+text \<open>§8.7 keystone OUTER \<open>G\<^bsub>B\<^esub>\<close>-condition reduction (R3-outer brick).  The outer
+  \<open>G\<^bsub>B\<^esub>\<close>-condition for the keystone body \<open>Trm ps +\<^sub>B D\<^bsub>x\<^esub> q\<close> follows from the SAME
+  condition for the IH prefix body \<open>Trm ps\<close> (banked from \<open>Trans (Pred M) \<in> OT\<^bsub>B\<^esub>\<close> —
+  its outer principal \<open>D\<^bsub>v\<^sub>0\<^esub>(Trm ps)\<close> is \<open>isOT_BP\<close>) PLUS the appended principal's
+  own cofinality clause \<open>appg\<close>.  Mechanism: every \<open>y \<in> GBT v\<^sub>0 (Trm ps)\<close> is \<open><\<close>
+  \<open>Trm ps\<close> (IH) and \<open>Trm ps < Trm ps +\<^sub>B D\<^bsub>x\<^esub> q\<close> (@{thm [source] lessBT_addBT_self}),
+  so \<open>< \<close> the full body by @{thm [source] lessBT_trans}; the appended part \<open>appg\<close>
+  handles the new principal directly.  This isolates the \<open>gbt\<close> residual of the
+  dispatcher to the local appended-principal cofinality \<open>appg\<close>.\<close>
+
+lemma m_8_7_gbt_outer_reduce:
+  fixes v0 :: enat
+  assumes ihg: "\<forall>y\<in>GBT v0 (Trm ps). lessBT y (Trm ps)"
+    and appg: "\<forall>y\<in>GBT v0 (Dpt (enat x) q). lessBT y (Trm ps +\<^sub>B Dpt (enat x) q)"
+  shows "\<forall>y\<in>GBT v0 (Trm ps +\<^sub>B Dpt (enat x) q).
+            lessBT y (Trm ps +\<^sub>B Dpt (enat x) q)"
+proof
+  fix y assume yin: "y \<in> GBT v0 (Trm ps +\<^sub>B Dpt (enat x) q)"
+  have yU: "y \<in> GBT v0 (Trm ps) \<union> GBT v0 (Dpt (enat x) q)"
+    using yin by (simp only: m_8_7_GBT_addBT)
+  have ycase: "y \<in> GBT v0 (Trm ps) \<or> y \<in> GBT v0 (Dpt (enat x) q)"
+    using yU by blast
+  show "lessBT y (Trm ps +\<^sub>B Dpt (enat x) q)"
+    using ycase
+  proof
+    assume "y \<in> GBT v0 (Trm ps)"
+    hence ylt: "lessBT y (Trm ps)" using ihg by blast
+    have pslt: "lessBT (Trm ps) (Trm ps +\<^sub>B Dpt (enat x) q)"
+      by (rule lessBT_addBT_self) simp
+    show ?thesis by (rule lessBT_trans[OF ylt pslt])
+  next
+    assume "y \<in> GBT v0 (Dpt (enat x) q)"
+    thus ?thesis using appg by blast
+  qed
+qed
+
+text \<open>§8.7 keystone OT-membership STEP at the \<open>OT\<^bsub>B\<^esub>\<close> level (induction-ready
+  wrapper).  Packages the keystone dispatcher @{thm [source] m_8_7_OT_keystone_step}
+  for use in the strong-\<open>Lng\<close> induction of the §8.7 main result: from \<open>M \<in> ST\<^bsub>PS\<^esub>\<close>
+  (giving \<open>RT\<^bsub>PS\<^esub>\<close>/\<open>PT\<^bsub>PS\<^esub>\<close>), the IH \<open>Trans (Pred M) \<in> OT\<^bsub>B\<^esub>\<close>, and the packaged
+  per-case residual \<open>resid\<close>, conclude \<open>Trans M \<in> OT\<^bsub>B\<^esub>\<close>.  The \<open>T\<^bsub>B\<^esub>\<close> half is
+  @{thm [source] m_8_7_OT_B_of_isOT_BT}.  This is the monoT, \<open>Br M \<noteq> []\<close> branch of
+  the induction step (the all-trunk / multiT branches use the §8.7 base lemmas and
+  the multi-split).\<close>
+
+lemma m_8_7_Trans_OT_step_keystone:
+  fixes M :: pairseq
+  assumes MST: "M \<in> ST_PS" and Mmono: "monoT M" and Brne: "Br M \<noteq> []"
+    and j1gt: "Lng M - 1 > 1"
+    and ihOT: "Trans (Pred M) \<in> OT_B"
+    and resid:
+      "\<And>x q ps r.
+          Trans (Pred M) = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B r) \<Longrightarrow>
+          Trans M = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B Dpt (enat x) q) \<Longrightarrow>
+          isOT_BP (DB (enat x) q)
+          \<and> (ps \<noteq> [] \<longrightarrow> leBT (Dpt (enat x) q) (Trm [last ps]))
+          \<and> (\<forall>y\<in>GBT (enat (entry M 1 0)) (Trm ps +\<^sub>B Dpt (enat x) q).
+                 lessBT y (Trm ps +\<^sub>B Dpt (enat x) q))"
+  shows "Trans M \<in> OT_B"
+proof -
+  have MR: "M \<in> RT_PS" using MST m_6_7_ST_PS_subseteq_RT_PS by blast
+  have MT: "M \<in> T_PS" using MR by (simp add: RT_PS_def)
+  have MP: "M \<in> PT_PS" using MT Mmono by (simp add: PT_PS_def)
+  have ihBT: "isOT_BT (Trans (Pred M))"
+    using ihOT by (simp add: OT_B_def OT_def)
+  have "isOT_BT (Trans M)"
+    by (rule m_8_7_OT_keystone_step[OF MR MP Brne j1gt ihBT resid])
+  thus ?thesis by (rule m_8_7_OT_B_of_isOT_BT[OF MST])
+qed
+
 end
