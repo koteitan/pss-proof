@@ -33,11 +33,7 @@
     - 🚨 命題（条件 (II) か (IV) の下での終切片と $\textrm{Trans}$ の関係）
     - ✅ 補題（強単項性の切片への遺伝性）〔`m_8_2_strongmono_slice`〕
     - ✅ 補題（部分表現の単項成分と $\textrm{Pred}$ の関係）(§8.2 keystone)〔`m_8_2_keystone` = 無条件 `p_8_2_subexpr_component_Pred`〕
-    - 🚨 補題（強単項性の下での部分表現の単項成分の基本性質）
-      - ✅ (1) `m_8_2_subexpr_leftend_unique`
-      - 🚨 (2)(3)(4) leBT
-        - ✅ widH/det〔`m_8_2_widH`/`m_8_2_det`〕
-        - 🚨🤖 factBlem driver 組立
+    - ✅ 補題（強単項性の下での部分表現の単項成分の基本性質）〔`m_8_2_subexpr_component_strongmono_uncond`〕
     - 🚨 補題（条件 (V) の下での右端の親の基本性質）
     - 🚨 補題（条件 (V) の下での終切片と $\textrm{Trans}$ の関係）
   - 🚨 §8.3 条件 (II) の下での展開規則
@@ -79,10 +75,11 @@
       - 🚨 一般化（operB 全域性）
     - 🚨 補題（$\textrm{Pred}$ と $[0]$ の関係）〔原文偽=A27、停止性は6325ルートで迂回〕
     - ✅ 補題（順序数項の基本例）〔`m_8_7_OT_examples`〕
-    - 🚨 補題（$\textrm{Trans}$ が標準形を保つこと）= OT所属〔残=strong-Lng帰納組立+R2 wiring+[Buc1]〕
+    - 🚨 補題（$\textrm{Trans}$ が標準形を保つこと）= OT所属〔残=R2 dstep+R3 newOT/gbt+帰納組立〕
       - ✅ clean部（rank0/T_B/単項leaf）〔`m_8_7_Trans_*`〕
       - ✅ 還元 isOT⟸R1/R2/R3〔`m_8_7_OT_via_body`+`descP_snoc`/`m_8_7_isOT_BT_snoc_leBT`〕
       - ✅ 4-case dispatcher〔`m_8_7_OT_keystone_step`、step→{det,[Buc1]}〕
       - ✅ wid/det〔=§8.2 widH、`m_8_2_widH`/`m_8_2_det`〕
-      - 🚨🤖 R2 descP-step wiring〔widH 解禁〕
-      - 📘 R3 = [Buc1] OT2/GBT〔`buc1_*`〕
+      - ✅ 帰納 infra〔`m_8_7_Pred_ST_PS`/`m_8_7_Trans_OT_step_keystone`〕
+      - 🚨 R2 dstep〔Trans(Pred)右spine bound+tail〕
+      - 📘 R3 newOT/gbt〔OT-recursive scb or 新[Buc1] OT2、既存`buc1_*`不足〕
