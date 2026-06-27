@@ -74,8 +74,9 @@
       - 🚨 一般化（operB 全域性）
     - 🚨 補題（$\textrm{Pred}$ と $[0]$ の関係）〔原文偽=A27、停止性は6325ルートで迂回〕
     - ✅ 補題（順序数項の基本例）〔`m_8_7_OT_examples`〕
-    - 🚨 補題（$\textrm{Trans}$ が標準形を保つこと）
+    - 🚨🤖 補題（$\textrm{Trans}$ が標準形を保つこと）= OT所属〔**surgery-free** keystone Pred再帰、原文の循環M[n]ルート迂回〕
       - ✅ clean部（rank0/T_B/単項leaf）〔`m_8_7_Trans_*`〕
-      - 🚨 交換則依存(I/II/VI)
-      - 🚨 III/IV（原文偽 A27）
-      - 🚨 Σ_B複項分解
+      - ✅ 還元 isOT⟸R1/R2/R3〔`m_8_7_OT_via_body`+`descP_snoc`/`m_8_7_isOT_BT_snoc_leBT`〕
+      - 🚨🤖 R2 descP-step（90%非wid機械化中＋wid 10%）、workflow
+      - 🚨 wid（universal bottleneck=§8.2/§8.7/descent 共有）
+      - 📘 R3 = [Buc1] OT2/GBT〔`buc1_*`〕
