@@ -34351,6 +34351,121 @@ proof -
 qed
 
 
+text \<open>§8.2 factA, UNCONDITIONAL.  The driver @{thm [source] m_8_2_factA} has a
+  single universal residual \<open>newdomH\<close> (the keystone-case-(1) head dominance);
+  this is now FULLY PROVEN as @{thm [source] m_8_2_newdom}.  Discharging it makes
+  factA unconditional.  (factA is the joint-threshold lower bound used by clauses
+  (3)/(4) of the paper strong-monomiality proposition, and — via the strict
+  sub-case — by the factB prefix recursion.)\<close>
+
+lemma m_8_2_factA_uncond:
+  fixes M :: pairseq and a :: BT
+  assumes MD: "M \<in> DT_PS" and Brne: "Br M \<noteq> []"
+    and aW: "Trans M = Dpt (enat (entry M 1 0)) a"
+    and j0pos: "0 < Joints M ! (Lng (Br M) - 1)"
+  shows "\<forall>p\<in>set (PB a). leBT (Dpt (enat (entry M 1 (Joints M ! (Lng (Br M) - 1)))) 0\<^sub>B) p"
+proof -
+  have newdomH: "\<And>M'. M' \<in> DT_PS \<Longrightarrow> Br M' \<noteq> [] \<Longrightarrow> 1 < Lng M'
+                    \<Longrightarrow> 0 < Joints M' ! (Lng (Br M') - 1)
+                    \<Longrightarrow> entry M' 1 (Joints M' ! (Lng (Br M') - 1))
+                         \<le> RightNodes (Trans M') ! 1"
+  proof -
+    fix M' :: pairseq assume a1: "M' \<in> DT_PS" and a2: "Br M' \<noteq> []"
+      and a3: "1 < Lng M'" and a4: "0 < Joints M' ! (Lng (Br M') - 1)"
+    show "entry M' 1 (Joints M' ! (Lng (Br M') - 1)) \<le> RightNodes (Trans M') ! 1"
+      by (rule m_8_2_newdom[OF a1 a2 a4])
+  qed
+  show ?thesis by (rule m_8_2_factA[OF newdomH MD Brne aW j0pos])
+qed
+
+
+text \<open>§8.2 w-identification (2-way disjunction), UNCONDITIONAL.  Now that the §8.2
+  keystone @{thm [source] m_8_2_keystone} is closed without the \<open>cpU\<close>/\<open>baseU\<close>
+  residuals, the second \<open>RightNodes\<close> entry of \<open>Trans M\<close> lands in
+  \<open>{M\<^bsub>1,j\<^sub>1'\<^esub>, M\<^bsub>1,j\<^sub>0'\<^esub>}\<close> directly via @{thm [source] m_8_2_keystone_imp_wid}, with no
+  induction and no universal side hypothesis.  (This is the disjunction; the
+  determination of WHICH side — \<open>widH\<close> — is the genuine §8.2 residual.)\<close>
+
+lemma m_8_2_wid_full:
+  fixes M :: pairseq
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS" and Brne: "Br M \<noteq> []"
+    and j1gt: "Lng M - 1 > 1"
+  shows "RightNodes (Trans M) ! 1 = entry M 1 (FirstNodes M ! (Lng (Br M) - 1))
+          \<or> RightNodes (Trans M) ! 1 = entry M 1 (Joints M ! (Lng (Br M) - 1))"
+  by (rule m_8_2_keystone_imp_wid[OF m_8_2_keystone[OF MR MP Brne j1gt]])
+
+
+text \<open>§8.2 factB STEP, isolated.  The factB clause-(2) recursion closes a single
+  \<open>Pred\<close>-step through the abstract-threshold engine @{thm [source] m_8_2_wit_step_thr}
+  with the threshold PINNED at the leaf \<open>thr = thr' = M\<^bsub>1,j\<^sub>1'\<^esub>\<close>
+  (\<open>j\<^sub>1' = FirstNodes M ! (Lng (Br M)-1)\<close>): the IH supplies \<open>prefixB\<close> (the leaf bound
+  on the \<open>Pred M\<close> witness body \<open>aP\<close>), \<open>thrmono\<close> is reflexivity, and the new-head
+  dominance is exactly the §8.2 residual \<open>widH\<close>.  The four-case keystone
+  @{thm [source] m_8_2_keystone} (now unconditional) supplies the \<open>key\<close>
+  disjunction.  This isolates factB(M) to {prefixB(Pred M), widH(M)}.\<close>
+
+lemma m_8_2_factB_step:
+  fixes M :: pairseq and a aP :: BT
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS" and Brne: "Br M \<noteq> []"
+    and j1gt: "Lng M - 1 > 1"
+    and aW: "Trans M = Dpt (enat (entry M 1 0)) a"
+    and predW: "Trans (Pred M) = Dpt (enat (entry M 1 0)) aP"
+    and prefixB: "\<forall>r\<in>set (PB aP).
+                    leBT (Dpt (enat (entry M 1 (FirstNodes M ! (Lng (Br M) - 1)))) 0\<^sub>B) r"
+    and widH: "entry M 1 (FirstNodes M ! (Lng (Br M) - 1)) \<le> RightNodes (Trans M) ! 1"
+  shows "\<forall>r\<in>set (PB a).
+           leBT (Dpt (enat (entry M 1 (FirstNodes M ! (Lng (Br M) - 1)))) 0\<^sub>B) r"
+  by (rule m_8_2_wit_step_thr[OF aW predW prefixB order.refl widH
+          m_8_2_keystone[OF MR MP Brne j1gt]])
+
+
+text \<open>§8.2 widH reduced to the single clause-exclusion determination, NO condition
+  C.  Combining the now-unconditional 2-way disjunction
+  @{thm [source] m_8_2_wid_full} (\<open>RightNodes(Trans M)\<^bsub>1\<^esub> \<in> {M\<^bsub>1,j\<^sub>1'\<^esub>, M\<^bsub>1,j\<^sub>0'\<^esub>}\<close>)
+  with the now-unconditional joint dominance @{thm [source] m_8_2_newdom}
+  (\<open>M\<^bsub>1,j\<^sub>0'\<^esub> \<le> RightNodes(Trans M)\<^bsub>1\<^esub>\<close>, for \<open>j\<^sub>0' > 0\<close>), the keystone residual \<open>widH\<close>
+  (\<open>M\<^bsub>1,j\<^sub>1'\<^esub> \<le> RightNodes(Trans M)\<^bsub>1\<^esub>\<close>) holds OUTRIGHT whenever \<open>M\<^bsub>1,j\<^sub>1'\<^esub> \<le> M\<^bsub>1,j\<^sub>0'\<^esub>\<close>
+  (then \<open>newdom\<close> closes it), and otherwise (\<open>M\<^bsub>1,j\<^sub>0'\<^esub> < M\<^bsub>1,j\<^sub>1'\<^esub>\<close>, the problematic
+  case) reduces to the single determination \<open>det\<close>: the disjunction lands on the
+  first-node side, \<open>RightNodes(Trans M)\<^bsub>1\<^esub> = M\<^bsub>1,j\<^sub>1'\<^esub>\<close>.  This isolates the entire
+  §8.2 residual — the genuinely recursive keystone clause-(4) exclusion (the
+  \<open>j\<^sub>0' = TrMax\<close>/Admpos boundary) — to that one named implication, with condition C
+  and the joint side both discharged.\<close>
+
+lemma m_8_2_widH_of_j1side:
+  fixes M :: pairseq
+  assumes MD: "M \<in> DT_PS" and Brne: "Br M \<noteq> []" and j1gt: "Lng M - 1 > 1"
+    and j0pos: "0 < Joints M ! (Lng (Br M) - 1)"
+    and det: "entry M 1 (Joints M ! (Lng (Br M) - 1))
+                  < entry M 1 (FirstNodes M ! (Lng (Br M) - 1))
+                \<Longrightarrow> RightNodes (Trans M) ! 1
+                      = entry M 1 (FirstNodes M ! (Lng (Br M) - 1))"
+  shows "entry M 1 (FirstNodes M ! (Lng (Br M) - 1)) \<le> RightNodes (Trans M) ! 1"
+proof -
+  have MR: "M \<in> RT_PS" and mono: "monoT M" using MD by (auto simp: DT_PS_def)
+  have MT: "M \<in> T_PS" using MR by (simp add: RT_PS_def)
+  have MP: "M \<in> PT_PS" using MT mono by (simp add: PT_PS_def)
+  have wid: "RightNodes (Trans M) ! 1 = entry M 1 (FirstNodes M ! (Lng (Br M) - 1))
+              \<or> RightNodes (Trans M) ! 1 = entry M 1 (Joints M ! (Lng (Br M) - 1))"
+    by (rule m_8_2_wid_full[OF MR MP Brne j1gt])
+  have nd: "entry M 1 (Joints M ! (Lng (Br M) - 1)) \<le> RightNodes (Trans M) ! 1"
+    by (rule m_8_2_newdom[OF MD Brne j0pos])
+  show ?thesis
+  proof (cases "entry M 1 (Joints M ! (Lng (Br M) - 1))
+                  < entry M 1 (FirstNodes M ! (Lng (Br M) - 1))")
+    case True
+    have "RightNodes (Trans M) ! 1 = entry M 1 (FirstNodes M ! (Lng (Br M) - 1))"
+      by (rule det[OF True])
+    thus ?thesis by simp
+  next
+    case False
+    hence "entry M 1 (FirstNodes M ! (Lng (Br M) - 1))
+             \<le> entry M 1 (Joints M ! (Lng (Br M) - 1))" by simp
+    thus ?thesis using nd by linarith
+  qed
+qed
+
+
 text \<open>§8.7 OT-closure building blocks (surgery-FREE).  These are the structural
   closure rules of \<open>isOT_BT\<close> needed by the inductive step of OT membership.  They
   isolate the three residuals of the Pred-recursion reduction (recurse on \<open>Trans
@@ -35439,6 +35554,54 @@ lemma leBT_Dpt_mono:
   assumes "leBT a b" shows "leBT (Dpt v a) (Dpt v b)"
   using assms by (cases "a = b") (auto simp: lessBT_Dpt_same)
 
+text \<open>§8.4/§8.5 kind-1 LEAF-CONGRUENCE ENGINE (reusable).  The §8.4/§8.5 INEQUALITY
+  bound \<open>leBT (Trans (M[m])) (operB (Trans M) (numBT j))\<close> follows, once the LHS
+  context recurrence \<open>Trans (M[m]) = C\<^bsup>m\<^esup>[leaf]\<close> is in hand, by iterating a monotone
+  context \<open>C\<close> down to the deepest leaf, where \<open>leBT 0\<^sub>B X\<close> holds for every \<open>X\<close>.
+  The atoms below package exactly that iteration: \<open>leBT_Zero_left_any\<close>
+  is the leaf base, \<open>leBT_funpow_mono\<close> lifts any monotone context
+  across the \<open>m\<close>-fold nesting (used with @{thm [source] leBT_Dpt_mono} to obtain
+  the \<open>Dpt\<close>-context specializations), and \<open>leBT_funpow_common\<close> is the
+  combined consequence: two \<open>C\<close>-towers with a \<open>0\<^sub>B\<close>-bottomed LHS are \<open>leBT\<close>-comparable.\<close>
+
+lemma leBT_Zero_left_any: "leBT 0\<^sub>B t"
+  by (cases "t = 0\<^sub>B") (auto simp: lessBT_Zero_left)
+
+lemma leBT_refl: "leBT a a"
+  by simp
+
+lemma leBT_trans:
+  assumes "leBT a b" and "leBT b c" shows "leBT a c"
+  using assms by (metis lessBT_trans)
+
+lemma leBT_funpow_mono:
+  assumes mono: "\<And>x y. leBT x y \<Longrightarrow> leBT (C x) (C y)"
+    and ab: "leBT a b"
+  shows "leBT ((C ^^ k) a) ((C ^^ k) b)"
+proof (induction k)
+  case 0 thus ?case using ab by simp
+next
+  case (Suc k)
+  have "leBT (C ((C ^^ k) a)) (C ((C ^^ k) b))" by (rule mono[OF Suc.IH])
+  thus ?case by simp
+qed
+
+lemma leBT_Dpt_funpow_mono:
+  assumes "leBT a b" shows "leBT ((Dpt v ^^ k) a) ((Dpt v ^^ k) b)"
+proof (induction k)
+  case 0 thus ?case using assms by simp
+next
+  case (Suc k)
+  have "leBT (Dpt v ((Dpt v ^^ k) a)) (Dpt v ((Dpt v ^^ k) b))"
+    by (rule leBT_Dpt_mono[OF Suc.IH])
+  thus ?case by simp
+qed
+
+lemma leBT_funpow_common:
+  assumes mono: "\<And>x y. leBT x y \<Longrightarrow> leBT (C x) (C y)"
+  shows "leBT ((C ^^ k) 0\<^sub>B) ((C ^^ k) X)"
+  by (rule leBT_funpow_mono[OF mono leBT_Zero_left_any])
+
 text \<open>§8.1 kind-0 marking-nesting SURGERY CORE, the \<open>w = 1\<close> condition-(I)
   (\<open>v = 0\<close>) single-step.  Empirically the \<open>w = 1\<close> condition-(I), \<open>j\<^sub>0 > 0\<close> iterate
   has \<open>Trans(M[k]) = D\<^bsub>u\<^esub>((D\<^sub>0 0)\<^bsup>k\<^esup>)\<close> (the \<open>v = 0\<close>, \<open>t\<^sub>0 = t\<^sub>1 = 0\<close> closed form), and
@@ -35560,6 +35723,90 @@ proof -
                          (multBT (Dpt (enat v) 0\<^sub>B) (Suc n) +\<^sub>B Dpt (enat v) 0\<^sub>B)"
     using tm by (simp only: ueq t1eq z)
   show ?thesis using tm2 by simp
+qed
+
+text \<open>§8.1 \<open>j\<^sub>0 > 0\<close>, \<open>w = 1\<close> STRUCTURAL Pred reduction: for the condition-(I)
+  (kind-0, d0zero) oper whose branch block has width \<open>w = 1\<close>, the predecessor of
+  the \<open>Suc k\<close>-th iterate is the \<open>k\<close>-th iterate, \<open>Pred (M[Suc k]) = M[k]\<close>.  By the
+  one-step append @{thm [source] operI_Suc_append}, \<open>M[Suc k] = M[k] @ B\<close> with
+  \<open>B = map ((!) M) [j\<^sub>0 ..< j\<^sub>1]\<close>; when \<open>w = j\<^sub>1 - j\<^sub>0 = 1\<close> the block \<open>B\<close> is the single
+  column \<open>[M ! j\<^sub>0]\<close>, so \<open>Pred = butlast\<close> strips exactly that column.  This is the
+  clean structural ingredient behind the \<open>w = 1\<close> case of the §8.1 \<open>j\<^sub>0 > 0\<close>
+  marking-nesting \<open>step\<close>: it turns the value-level core's \<open>predCF\<close> premise
+  (\<open>Trans (Pred N) = \<dots>\<close>) into the induction hypothesis \<open>Trans (M[Suc n]) = \<dots>\<close>.\<close>
+
+lemma m_8_1_operI_Pred_w1:
+  fixes M :: pairseq and k :: nat
+  assumes hp0: "hasParent M 0 (Lng M - 1)"
+    and e1z: "entry M 1 (Lng M - 1) = 0"
+    and w1: "Lng M - 1 - parent M 0 (Lng M - 1) = 1"
+    and j0pos: "0 < parent M 0 (Lng M - 1)"
+  shows "Pred (M[Suc k]) = M[k]"
+proof -
+  let ?j1 = "Lng M - 1"  let ?j0 = "parent M 0 ?j1"
+  let ?B = "map ((!) M) [?j0..<?j1]"
+  have ap: "M[Suc k] = M[k] @ ?B"
+    using operI_Suc_append[OF hp0 e1z, of k] by simp
+  have blen: "length ?B = 1" using w1 by simp
+  have Bne: "?B \<noteq> []" using blen by auto
+  have bbl: "butlast ?B = []" using blen by (simp add: butlast_conv_take)
+  have LSk: "Lng (M[Suc k]) = ?j0 + Suc k"
+    using Lng_operI[OF hp0 e1z, of "Suc k"] w1 by simp
+  have L1: "1 < Lng (M[Suc k])" using LSk j0pos by linarith
+  have "Pred (M[Suc k]) = butlast (M[Suc k])" using L1 by (simp add: Pred_def)
+  also have "\<dots> = M[k] @ butlast ?B" using ap Bne by (simp add: butlast_append)
+  also have "\<dots> = M[k]" using bbl by simp
+  finally show ?thesis .
+qed
+
+text \<open>§8.1 \<open>j\<^sub>0 > 0\<close>, \<open>w = 1\<close> Adm0 marking-nesting STEP, assembled.  This wires the
+  value-level surgery core @{thm [source] m_8_1_step_w1_nesting} to the actual
+  iterate \<open>N = M[Suc (Suc n)]\<close> for the width-\<open>1\<close>, \<open>j\<^sub>0 > 0\<close> condition-(I) oper:
+  \<open>N \<in> RT\<^bsub>PS\<^esub>\<close> (@{thm [source] m_6_6_reduced_oper}), \<open>monoT N\<close> (@{thm [source]
+  monoT_operI_j0pos}), the last-column row-1 value \<open>v = entry M 1 (j\<^sub>1 - 1)\<close>
+  (@{thm [source] entry_operI_d0zero_last}) and the predecessor identity
+  \<open>Pred N = M[Suc n]\<close> (@{thm [source] m_8_1_operI_Pred_w1}) are all discharged here;
+  the IH supplies \<open>Trans (M[Suc n]) = D\<^bsub>u\<^esub>((D\<^bsub>v\<^esub> 0)\<^bsup>Suc n\<^esup>)\<close>.  The ONLY remaining
+  residual is the iterate-condition hypothesis \<open>itercond\<close> — that the iterate
+  \<open>N = M[Suc (Suc n)]\<close> is itself Adm0 (\<open>transJm1 N = 0\<close>) and of class I/III/V — which
+  is the article's basepoint-tracking sub-lemma (content.md 3178, "(5)").\<close>
+
+lemma m_8_1_step_w1_Adm0_closed:
+  fixes M :: pairseq and n :: nat
+  defines "v \<equiv> entry M 1 (Lng M - 1 - 1)"
+  defines "u \<equiv> entry M 1 0"
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS"
+    and hp0: "hasParent M 0 (Lng M - 1)"
+    and e1z: "entry M 1 (Lng M - 1) = 0"
+    and w1: "Lng M - 1 - parent M 0 (Lng M - 1) = 1"
+    and j0pos: "0 < parent M 0 (Lng M - 1)"
+    and itercond: "transJm1 (M[Suc (Suc n)]) = 0
+                   \<and> (transCondI (M[Suc (Suc n)]) \<or> transCondIII (M[Suc (Suc n)])
+                       \<or> transCondV (M[Suc (Suc n)]))"
+    and IH: "Trans (M[Suc n]) = Dpt (enat u) (multBT (Dpt (enat v) 0\<^sub>B) (Suc n))"
+  shows "Trans (M[Suc (Suc n)])
+           = Dpt (enat u) (multBT (Dpt (enat v) 0\<^sub>B) (Suc (Suc n)))"
+proof -
+  let ?N = "M[Suc (Suc n)]"
+  have mono: "monoT M" using MP by (simp add: PT_PS_def)
+  have NR: "?N \<in> RT_PS" by (rule m_6_6_reduced_oper[OF MR]) simp
+  have monoN: "monoT ?N" by (rule monoT_operI_j0pos[OF mono hp0 e1z j0pos]) simp
+  have NT: "?N \<in> T_PS" using NR by (simp add: RT_PS_def)
+  have NP: "?N \<in> PT_PS" using NT monoN by (simp add: PT_PS_def)
+  have LN: "Lng ?N = parent M 0 (Lng M - 1) + Suc (Suc n)"
+    using Lng_operI[OF hp0 e1z, of "Suc (Suc n)"] w1 by simp
+  have j1gtN: "Lng ?N - 1 > 1" using LN j0pos by linarith
+  have Adm0N: "transJm1 ?N = 0" using itercond by simp
+  have condAN: "transCondI ?N \<or> transCondIII ?N \<or> transCondV ?N" using itercond by simp
+  have e_last: "entry ?N 1 (Lng ?N - 1) = entry M 1 (Lng M - 1 - 1)"
+    by (rule entry_operI_d0zero_last[OF hp0 e1z]) simp
+  have elastN: "entry ?N 1 (Lng ?N - 1) = v" using e_last by (simp add: v_def)
+  have predN: "Pred ?N = M[Suc n]"
+    by (rule m_8_1_operI_Pred_w1[OF hp0 e1z w1 j0pos])
+  have predCF: "Trans (Pred ?N) = Dpt (enat u) (multBT (Dpt (enat v) 0\<^sub>B) (Suc n))"
+    using predN IH by simp
+  show ?thesis
+    by (rule m_8_1_step_w1_nesting[OF NR NP j1gtN Adm0N condAN elastN predCF])
 qed
 
 
