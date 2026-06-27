@@ -20,7 +20,7 @@
       - ✅ 降下⟸交換則(1)+OT〔`m_8_1_Trans_fseq_condI_descent`〕
       - 🚨 交換則(1)本体〔stepT還元=`m_8_1_Trans_fseq_condI_comm_append_reduce`〕
         - ✅ stepT j0=0（copy-additivity）〔`m_8_1_Trans_replicate_pred_condI`〕
-        - 🚨🤖 stepT j0>0（残=step surgery〔w=1 jpN変動+w>1 block-descent〕、monoT(M[k])/RHS/lhs→step還元済、workflow）
+        - 🚨 stepT j0>0（w=1 step→単一残差 itercond 還元〔`m_8_1_step_w1_Adm0_closed`/`m_8_1_operI_Pred_w1`〕、残=itercond+general step(任意scb prefix/suffix)+dM導出）
       - 🚨 OT所属（→§8.7）
     - ✅ 補題（公差 $(1,1)$ のペア数列の $\textrm{Trans}$ の基本性質）〔`m_8_1_diagSeq_Trans`〕
     - ✅ 系（$\textrm{Pred}$ が公差 $(1,1)$ のペア数列の $\textrm{Trans}$ の基本性質）〔`m_8_1_Pred_diagSeq_Trans`〕
@@ -32,19 +32,19 @@
     - ✅ 補題（部分表現の単項成分と $\textrm{Pred}$ の関係）(§8.2 keystone)〔`m_8_2_keystone` = 無条件 `p_8_2_subexpr_component_Pred`〕
     - 🚨 補題（強単項性の下での部分表現の単項成分の基本性質）
       - ✅ (1) `m_8_2_subexpr_leftend_unique`
-      - 🚨🤖 (2)(3)(4) leBT：paper命題assembled〔`m_8_2_subexpr_component_strongmono`〕factA+newdom完全証明、残=widH（=universal wid、factBlem⟸widH⟸wid）、workflow
+      - 🚨 (2)(3)(4) leBT：factA/wid 2-way disjunction 無条件化〔`m_8_2_factA_uncond`/`m_8_2_wid_full`〕、widH→単一含意 det 還元〔`m_8_2_widH_of_j1side`/`m_8_2_factB_step`〕。det=keystone clause-4排除(Admpos/j0'=TrMax 不可避再帰)
     - 🚨 補題（条件 (V) の下での右端の親の基本性質）
     - 🚨 補題（条件 (V) の下での終切片と $\textrm{Trans}$ の関係）
   - 🚨 §8.3 条件 (II) の下での展開規則
     - 🚨 命題（条件 (II) の下での $\textrm{Trans}$ と基本列の交換関係）
       - ✅ 降下⟸exch+OT〔`m_8_3_TransCondII_oper_descend_engine`〕
-      - 🚨🤖 exch（交換則）：kind-0共有 marking-nesting へ還元済〔`m_8_3_exch_of_lhs_closed`、=§8.1 step 残差〕
+      - 🚨 exch（交換則）：kind-0共有 marking-nesting へ還元済〔`m_8_3_exch_of_lhs_closed`、=§8.1 step 残差(L23)、wt-k0完了後に同機構〕
       - 🚨 OT所属（→§8.7）
     - ✅ 補題（第 $0$ 種型基本列の基本不等式）〔`m_8_3_kind0_base_ineq`(A22訂正)〕
     - ✅ 補題（第 $0$ 種型基本列の基本分岐規則）〔`m_8_3_kind0_branch_rule`〕
     - ✅ 補題（第 $0$ 種型基本列の基本基点関係）〔`m_8_3_kind0_base_basepoint`〕
   - 🚨 §8.4 条件 (III) か (IV) の下での展開規則
-    - 🚨🤖 命題（条件 (III) か (IV) の下での $\textrm{Trans}$ と基本列の交換関係）：inequality形(≤)〔`m_8_4_exch_of_lhs_closed`〕、残=kind-1 LHS context nesting(leaf-agnostic)、condIV=A27
+    - 🚨 命題（条件 (III) か (IV) の下での $\textrm{Trans}$ と基本列の交換関係）：inequality形(≤)〔`m_8_4_exch_of_lhs_closed`〕、leaf-congruence engine済〔`leBT_funpow_*`〕、残=lhs context recurrence(Trans(M[m])=C^m)、condIV=A27
     - 🚨 補題（右端の非許容直系先祖の基本性質）
     - 🚨 補題（条件 (III)〜(V) の下での右端の置き換えと $\textrm{Trans}$ の関係）
     - 🚨 補題（条件 (III)〜(VI) の下での展開規則の基本性質）
@@ -54,7 +54,7 @@
     - 🚨 補題（条件 (III) か (IV) の下での各種 scb分解）
     - ✅ 補題（条件 (III) か (IV) の下での基本列の基本性質）〔`m_8_4_oper_basic_part1`(= `p_8_4_oper_basic`)〕
   - 🚨 §8.5 条件 (V) の下での展開規則
-    - 🚨🤖 命題（条件 (V) の下での $\textrm{Trans}$ と基本列の交換関係）：inequality形(≤)+engine〔`m_8_5_exch_of_lhs_closed`(index bug修正)/`m_8_5_TransCondV_oper_descend_engine`〕、残=kind-1 LHS context nesting
+    - 🚨 命題（条件 (V) の下での $\textrm{Trans}$ と基本列の交換関係）：inequality形(≤)+engine〔`m_8_5_exch_of_lhs_closed`/`m_8_5_TransCondV_oper_descend_engine`〕、残=lhs context recurrence（=kind-0 step 同深度）
     - 🚨 補題（条件 (V) の下での $\textrm{Joints}$ と $\textrm{FirstNodes}$ と $t_2$ の基本性質）
     - 🚨 補題（条件 (V) の下での各種 scb分解）〔def 内部記号露出要〕
   - 🚨 §8.6 条件 (VI) の下での展開規則
@@ -74,9 +74,9 @@
       - 🚨 一般化（operB 全域性）
     - 🚨 補題（$\textrm{Pred}$ と $[0]$ の関係）〔原文偽=A27、停止性は6325ルートで迂回〕
     - ✅ 補題（順序数項の基本例）〔`m_8_7_OT_examples`〕
-    - 🚨🤖 補題（$\textrm{Trans}$ が標準形を保つこと）= OT所属〔**surgery-free** keystone Pred再帰、原文の循環M[n]ルート迂回〕
+    - 🚨 補題（$\textrm{Trans}$ が標準形を保つこと）= OT所属〔**surgery-free** keystone Pred再帰、原文の循環M[n]ルート迂回〕
       - ✅ clean部（rank0/T_B/単項leaf）〔`m_8_7_Trans_*`〕
       - ✅ 還元 isOT⟸R1/R2/R3〔`m_8_7_OT_via_body`+`descP_snoc`/`m_8_7_isOT_BT_snoc_leBT`〕
-      - 🚨🤖 R2 descP-step（90%非wid機械化中＋wid 10%）、workflow
-      - 🚨 wid（universal bottleneck=§8.2/§8.7/descent 共有）
+      - 🚨 R2 descP-step（wid head判定=L81 widと共有、wt-wid完了後／非wid機械化は未割当）
+      - 🚨 wid（=§8.2 widH/L35 と同一、det に還元済〔`m_8_2_widH_of_j1side`〕。det=keystone clause-4排除、不可避再帰）
       - 📘 R3 = [Buc1] OT2/GBT〔`buc1_*`〕
