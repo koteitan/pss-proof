@@ -33809,22 +33809,20 @@ proof -
   show ?thesis by (rule gen[OF MD Brne aW j0pos])
 qed
 
-text \<open>§8.2 newdom (factA's keystone-case-(1) head dominance), Admpos BULK.
-  Strong induction on Lng M.  The Adm0 case (\<open>transJm1 M = 0\<close>) is isolated as the
-  residual hypothesis \<open>adm0H\<close>; the Admpos bulk is discharged: \<open>RightNodes\<close> is
-  preserved \<open>Pred M \<to> M\<close> (@{thm [source] m_8_2_wid_step}), and
-  \<open>RightNodes (Trans (Pred M)) ! 1 \<ge> M\<^bsub>1,j\<^sub>0'\<^esub>\<close> follows either from the all-trunk
-  read-off (@{thm [source] baseU_alltrunk_Trans_RN1}, \<open>j\<^sub>0' \<le> TrMax M\<close>) when
-  \<open>Br (Pred M) = []\<close>, or from the IH + @{thm [source] m_8_2_thrmono} when
-  \<open>Br (Pred M) \<noteq> []\<close>.\<close>
+text \<open>§8.2 newdom — factA's keystone-case-(1) head dominance, FULLY PROVEN.
+  Strong induction on Lng M.  The Pred-side bound (joint row-1 entry at most
+  RightNodes(Trans(Pred M))!1) is established first (all-trunk read-off or
+  IH + m_8_2_thrmono).  Admpos: RightNodes is preserved Pred-to-M
+  (@{thm [source] m_8_2_wid_step}).  Adm0: the keystone disjunction — cases (2)/(4)
+  give RightNodes!1 = the joint entry (trivial); case (1) forces non-admissibility
+  of the joint (since the joint equals transJ0 M when j1' = j1 and transJm1 M = 0),
+  hence row-0 = row-1 at j1', so the joint entry = the leaf entry minus 1
+  (@{thm [source] m_8_2_joint_row1_eq}); case (3) shares the trailing head with
+  Pred M, closed by the Pred bound.\<close>
 
 lemma m_8_2_newdom:
   fixes M :: pairseq
-  assumes adm0H: "\<And>M'. M' \<in> DT_PS \<Longrightarrow> Br M' \<noteq> [] \<Longrightarrow> 0 < Joints M' ! (Lng (Br M') - 1)
-                     \<Longrightarrow> transJm1 M' = 0
-                     \<Longrightarrow> entry M' 1 (Joints M' ! (Lng (Br M') - 1))
-                          \<le> RightNodes (Trans M') ! 1"
-    and MD: "M \<in> DT_PS" and Brne: "Br M \<noteq> []"
+  assumes MD: "M \<in> DT_PS" and Brne: "Br M \<noteq> []"
     and j0pos: "0 < Joints M ! (Lng (Br M) - 1)"
   shows "entry M 1 (Joints M ! (Lng (Br M) - 1)) \<le> RightNodes (Trans M) ! 1"
 proof -
@@ -33854,99 +33852,209 @@ proof -
     have Trpos: "0 < TrMax M" using j0posl j0le by linarith
     have Lge3: "2 < Lng M" using Trpos trlt by linarith
     have Lge2: "1 < Lng M" using Lge3 by simp
+    have j1gt: "Lng M - 1 > 1" using Lge3 by simp
     have e1j0: "entry M 1 (Joints M ! (Lng (Br M) - 1))
                   = entry M 1 0 + Joints M ! (Lng (Br M) - 1)"
       using trunk_entries_offset[OF MT condA j0le] by simp
+    \<comment> \<open>\<open>Pred M\<close> facts (unconditional)\<close>
+    have predRT: "Pred M \<in> RT_PS" by (rule Pred_RT_PS[OF MR])
+    have LPeq: "Lng (Pred M) = Lng M - 1" using Lge2 by (simp add: Pred_def)
+    have LPg1: "1 < Lng (Pred M)" using LPeq Lge3 by simp
+    have nzP: "\<not> zeroT (Pred M)" using LPg1 by (simp add: zeroT_def)
+    have t1ne: "Trans (Pred M) \<noteq> 0\<^sub>B" using m_7_3_Trans_zeroT[OF predRT] nzP by blast
+    have e10P: "entry (Pred M) 1 0 = entry M 1 0"
+      using Lge2 by (simp add: Pred_def entry_def nth_butlast)
+    have predDT: "Pred M \<in> DT_PS" by (rule descending_Br_Pred[OF MDl Brnel LPg1])
+    have predmono: "monoT (Pred M)" using predDT by (simp add: DT_PS_def)
+    \<comment> \<open>the Pred-side bound \<open>M\<^bsub>1,j\<^sub>0'\<^esub> \<le> RightNodes(Trans(Pred M))\<^bsub>1\<^esub>\<close>\<close>
+    have bound: "entry M 1 (Joints M ! (Lng (Br M) - 1)) \<le> RightNodes (Trans (Pred M)) ! 1"
+    proof (cases "Br (Pred M) = []")
+      case True
+      have TrPe: "TrMax (Pred M) = Lng (Pred M) - 1" by (rule baseU_Br_empty_TrMax[OF True])
+      have TrP: "TrMax (Pred M) = TrMax M" by (rule TrMax_Pred[OF MT Lge2 brTr])
+      have TrM2: "TrMax M = Lng M - 2" using TrP TrPe LPeq by simp
+      have RNP: "RightNodes (Trans (Pred M)) ! 1 = entry (Pred M) 1 (Lng (Pred M) - 1)"
+        by (rule baseU_alltrunk_Trans_RN1[OF predRT predmono TrPe LPg1])
+      have lastlt: "Lng (Pred M) - 1 < Lng (Pred M)" using LPg1 by simp
+      have diagEnt: "entry (Pred M) 1 (Lng (Pred M) - 1)
+                      = entry (Pred M) 1 0 + (Lng (Pred M) - 1)"
+        using baseU_alltrunk_diag_entry[OF predRT predmono TrPe lastlt] by simp
+      have RNPval: "RightNodes (Trans (Pred M)) ! 1 = entry M 1 0 + TrMax M"
+        using RNP diagEnt e10P LPeq TrM2 by simp
+      have "entry M 1 (Joints M ! (Lng (Br M) - 1)) = entry M 1 0 + Joints M ! (Lng (Br M) - 1)"
+        by (rule e1j0)
+      also have "\<dots> \<le> entry M 1 0 + TrMax M" using j0le by simp
+      also have "\<dots> = RightNodes (Trans (Pred M)) ! 1" using RNPval by simp
+      finally show ?thesis .
+    next
+      case False
+      have BrPne': "Br (Pred M) \<noteq> []" using False by simp
+      have LPlt: "Lng (Pred M) < Lng M" using LPeq Lge2 by simp
+      define J1 where "J1 = Lng (Br M) - 1"
+      define JN where "JN = Lng (Br (Pred M)) - 1"
+      have JNeq: "JN = (if FirstNodes M ! (Lng (Br M) - 1) = Lng M - 1 then J1 - 1 else J1)"
+        using wid_JPm1_map[OF MP Brnel Lge2] by (simp add: JN_def J1_def)
+      have JNleJ1: "JN \<le> J1" using JNeq by (simp split: if_splits)
+      have J1lt: "J1 < Lng (Br M)" using BrL by (simp add: J1_def)
+      have j0M: "0 < Joints M ! J1" using j0posl by (simp add: J1_def)
+      have idxle: "Joints M ! J1 \<le> Joints M ! JN"
+        by (rule m_8_2_joint_idx_mono[OF MDl JNleJ1 J1lt])
+      have j0N: "0 < Joints M ! JN" using j0M idxle by linarith
+      have widFNJ: "FirstNodes (Pred M) ! JN = FirstNodes M ! JN
+                    \<and> Joints (Pred M) ! JN = Joints M ! JN"
+        using wid_FNJ_Pred_at_JPm1[OF MP Brnel Lge2 BrPne'] by (simp add: JN_def)
+      have j0Npred: "0 < Joints (Pred M) ! (Lng (Br (Pred M)) - 1)"
+        using j0N widFNJ unfolding JN_def by simp
+      have ihP: "entry (Pred M) 1 (Joints (Pred M) ! (Lng (Br (Pred M)) - 1))
+                   \<le> RightNodes (Trans (Pred M)) ! 1"
+        by (rule less.hyps[OF LPlt predDT BrPne' j0Npred])
+      have JNlt: "JN < Lng (Br M)" using JNleJ1 J1lt by linarith
+      have jNleTr: "Joints M ! JN \<le> TrMax M"
+        using m_6_4_FirstNodes_TrMax_Joints[OF MP JNlt] by simp
+      have jNltL: "Joints M ! JN < Lng M - 1" using jNleTr trlt by linarith
+      have entryAgreeJN: "entry (Pred M) 1 (Joints (Pred M) ! JN) = entry M 1 (Joints M ! JN)"
+      proof -
+        have "entry (Pred M) 1 (Joints (Pred M) ! JN) = entry (Pred M) 1 (Joints M ! JN)"
+          using widFNJ by simp
+        also have "\<dots> = entry M 1 (Joints M ! JN)"
+          by (rule wid_entry1_Pred_agree[OF Lge2 jNltL])
+        finally show ?thesis .
+      qed
+      have thrm: "entry M 1 (Joints M ! J1)
+                    \<le> entry (Pred M) 1 (Joints (Pred M) ! (Lng (Br (Pred M)) - 1))"
+      proof -
+        have "entry M 1 (Joints M ! J1) \<le> entry M 1 (Joints M ! JN)"
+          by (rule m_8_2_thrmono[OF MDl JNleJ1 J1lt])
+        also have "\<dots> = entry (Pred M) 1 (Joints (Pred M) ! JN)"
+          using entryAgreeJN by simp
+        also have "\<dots> = entry (Pred M) 1 (Joints (Pred M) ! (Lng (Br (Pred M)) - 1))"
+          by (simp add: JN_def)
+        finally show ?thesis .
+      qed
+      have "entry M 1 (Joints M ! (Lng (Br M) - 1)) = entry M 1 (Joints M ! J1)"
+        by (simp add: J1_def)
+      also have "\<dots> \<le> entry (Pred M) 1 (Joints (Pred M) ! (Lng (Br (Pred M)) - 1))"
+        by (rule thrm)
+      also have "\<dots> \<le> RightNodes (Trans (Pred M)) ! 1" by (rule ihP)
+      finally show ?thesis .
+    qed
+    \<comment> \<open>\<open>j\<^sub>0' = (Br M\<^bsub>J\<^sub>1\<^esub>)\<^bsub>0,0\<^esub> - 1\<close> read-off, and the \<open>FirstNodes\<close> row-0 identity\<close>
+    have row1j0: "entry M 1 (Joints M ! (Lng (Br M) - 1))
+                    = entry (Br M ! (Lng (Br M) - 1)) 0 0 - 1"
+      by (rule m_8_2_joint_row1_eq[OF MDl J1Br])
+    have c0FN: "entry M 0 (FirstNodes M ! (Lng (Br M) - 1))
+                  = entry (Br M ! (Lng (Br M) - 1)) 0 0"
+      by (rule entry_FirstNodes_eq_component_gen[OF MP J1Br])
     show ?case
     proof (cases "transJm1 M = 0")
-      case True
-      show ?thesis by (rule adm0H[OF MDl Brnel j0posl True])
+      case Adm0: True
+      from m_8_2_keystone[OF MR MP Brnel j1gt] show ?thesis
+      proof (elim disjE)
+        \<comment> \<open>keystone case (1): \<open>RightNodes\<^bsub>1\<^esub> = M\<^bsub>1,j\<^sub>1'\<^esub>\<close>; \<open>\<not>adm j\<^sub>0'\<close> forces \<open>e0 = e1\<close> at \<open>j\<^sub>1'\<close>\<close>
+        assume A: "FirstNodes M ! (Lng (Br M) - 1) = Lng M - 1
+            \<and> (TrMax M = 0 \<or> Joints M ! (Lng (Br M) - 1) < TrMax M)
+            \<and> (entry M 0 (FirstNodes M ! (Lng (Br M) - 1)) = entry M 1 (FirstNodes M ! (Lng (Br M) - 1))
+                \<or> adm M (Joints M ! (Lng (Br M) - 1)))
+            \<and> (\<exists>!t1. Trans (Pred M) = Dpt (enat (entry M 1 0)) t1
+                  \<and> Trans M = Dpt (enat (entry M 1 0))
+                                (t1 +\<^sub>B Dpt (enat (entry M 1 (FirstNodes M ! (Lng (Br M) - 1)))) 0\<^sub>B))"
+        have j1eq: "FirstNodes M ! (Lng (Br M) - 1) = Lng M - 1" using A by simp
+        from A obtain t1 where
+          T: "Trans M = Dpt (enat (entry M 1 0))
+                (t1 +\<^sub>B Dpt (enat (entry M 1 (FirstNodes M ! (Lng (Br M) - 1)))) 0\<^sub>B)"
+          by (blast dest: ex1_implies_ex)
+        have rn1: "RightNodes (Trans M) ! 1 = entry M 1 (FirstNodes M ! (Lng (Br M) - 1))"
+          using T rn1_outer_inner_trailing[of "entry M 1 0" t1
+                  "entry M 1 (FirstNodes M ! (Lng (Br M) - 1))" "0\<^sub>B"] by simp
+        \<comment> \<open>\<open>\<not> adm M j\<^sub>0'\<close> from \<open>transJm1 M = 0\<close> and \<open>j\<^sub>0' = transJ0 M\<close>\<close>
+        have jeq: "Joints M ! (Lng (Br M) - 1) = transJ0 M"
+        proof -
+          have "Joints M ! (Lng (Br M) - 1) = parent M 0 (FirstNodes M ! (Lng (Br M) - 1))"
+            by (rule Joints_nth[OF J1Br])
+          also have "\<dots> = parent M 0 (Lng M - 1)" using j1eq by simp
+          also have "\<dots> = transJ0 M" by (simp add: transJ0_def transJ1_def)
+          finally show ?thesis .
+        qed
+        have nadm: "\<not> adm M (Joints M ! (Lng (Br M) - 1))"
+        proof
+          assume "adm M (Joints M ! (Lng (Br M) - 1))"
+          hence "Adm M (Joints M ! (Lng (Br M) - 1)) = Joints M ! (Lng (Br M) - 1)"
+            by (simp add: Adm_def)
+          hence "transJm1 M = Joints M ! (Lng (Br M) - 1)"
+            using jeq by (simp add: transJm1_def)
+          thus False using Adm0 j0posl by simp
+        qed
+        have e0e1: "entry M 0 (FirstNodes M ! (Lng (Br M) - 1))
+                      = entry M 1 (FirstNodes M ! (Lng (Br M) - 1))"
+          using A nadm by blast
+        have "entry M 1 (Joints M ! (Lng (Br M) - 1))
+                = entry (Br M ! (Lng (Br M) - 1)) 0 0 - 1" by (rule row1j0)
+        also have "\<dots> = entry M 0 (FirstNodes M ! (Lng (Br M) - 1)) - 1" using c0FN by simp
+        also have "\<dots> = entry M 1 (FirstNodes M ! (Lng (Br M) - 1)) - 1" using e0e1 by simp
+        also have "\<dots> \<le> entry M 1 (FirstNodes M ! (Lng (Br M) - 1))" by simp
+        also have "\<dots> = RightNodes (Trans M) ! 1" using rn1 by simp
+        finally show ?thesis .
+      next
+        \<comment> \<open>keystone case (2): \<open>RightNodes\<^bsub>1\<^esub> = M\<^bsub>1,j\<^sub>0'\<^esub>\<close>, trivial\<close>
+        assume A: "FirstNodes M ! (Lng (Br M) - 1) = Lng M - 1
+            \<and> entry M 0 (FirstNodes M ! (Lng (Br M) - 1)) > entry M 1 (FirstNodes M ! (Lng (Br M) - 1))
+            \<and> \<not> adm M (Joints M ! (Lng (Br M) - 1))
+            \<and> (\<exists>!t12. Trans (Pred M) = Dpt (enat (entry M 1 0)) (fst t12)
+                  \<and> Trans M = Dpt (enat (entry M 1 0))
+                                (fst t12 +\<^sub>B Dpt (enat (entry M 1 (Joints M ! (Lng (Br M) - 1)))) (snd t12)))"
+        from A obtain t12 where
+          T: "Trans M = Dpt (enat (entry M 1 0))
+                (fst t12 +\<^sub>B Dpt (enat (entry M 1 (Joints M ! (Lng (Br M) - 1)))) (snd t12))"
+          by (blast dest: ex1_implies_ex)
+        have rn1: "RightNodes (Trans M) ! 1 = entry M 1 (Joints M ! (Lng (Br M) - 1))"
+          using T rn1_outer_inner_trailing[of "entry M 1 0" "fst t12"
+                  "entry M 1 (Joints M ! (Lng (Br M) - 1))" "snd t12"] by simp
+        show ?thesis using rn1 by simp
+      next
+        \<comment> \<open>keystone case (3): trailing head \<open>M\<^bsub>1,j\<^sub>1'\<^esub>\<close> shared with \<open>Pred M\<close>; close by \<open>bound\<close>\<close>
+        assume A: "\<exists>!t123. Trans (Pred M)
+                      = Dpt (enat (entry M 1 0))
+                          (fst t123 +\<^sub>B Dpt (enat (entry M 1 (FirstNodes M ! (Lng (Br M) - 1)))) (fst (snd t123)))
+                  \<and> Trans M = Dpt (enat (entry M 1 0))
+                          (fst t123 +\<^sub>B Dpt (enat (entry M 1 (FirstNodes M ! (Lng (Br M) - 1)))) (snd (snd t123)))"
+        from A obtain t123 where
+          C: "Trans (Pred M) = Dpt (enat (entry M 1 0))
+                (fst t123 +\<^sub>B Dpt (enat (entry M 1 (FirstNodes M ! (Lng (Br M) - 1)))) (fst (snd t123)))"
+          and T: "Trans M = Dpt (enat (entry M 1 0))
+                (fst t123 +\<^sub>B Dpt (enat (entry M 1 (FirstNodes M ! (Lng (Br M) - 1)))) (snd (snd t123)))"
+          by (blast dest: ex1_implies_ex)
+        have rn1M: "RightNodes (Trans M) ! 1 = entry M 1 (FirstNodes M ! (Lng (Br M) - 1))"
+          using T rn1_outer_inner_trailing[of "entry M 1 0" "fst t123"
+                  "entry M 1 (FirstNodes M ! (Lng (Br M) - 1))" "snd (snd t123)"] by simp
+        have rn1P: "RightNodes (Trans (Pred M)) ! 1 = entry M 1 (FirstNodes M ! (Lng (Br M) - 1))"
+          using C rn1_outer_inner_trailing[of "entry M 1 0" "fst t123"
+                  "entry M 1 (FirstNodes M ! (Lng (Br M) - 1))" "fst (snd t123)"] by simp
+        have "entry M 1 (Joints M ! (Lng (Br M) - 1)) \<le> RightNodes (Trans (Pred M)) ! 1"
+          by (rule bound)
+        thus ?thesis using rn1P rn1M by simp
+      next
+        \<comment> \<open>keystone case (4): \<open>RightNodes\<^bsub>1\<^esub> = M\<^bsub>1,j\<^sub>0'\<^esub>\<close>, trivial\<close>
+        assume A: "\<exists>!t123. Trans (Pred M)
+                      = Dpt (enat (entry M 1 0))
+                          (fst t123 +\<^sub>B Dpt (enat (entry M 1 (Joints M ! (Lng (Br M) - 1)))) (fst (snd t123)))
+                  \<and> Trans M = Dpt (enat (entry M 1 0))
+                          (fst t123 +\<^sub>B Dpt (enat (entry M 1 (Joints M ! (Lng (Br M) - 1)))) (snd (snd t123)))"
+        from A obtain t123 where
+          C: "Trans (Pred M) = Dpt (enat (entry M 1 0))
+                (fst t123 +\<^sub>B Dpt (enat (entry M 1 (Joints M ! (Lng (Br M) - 1)))) (fst (snd t123)))"
+          and T: "Trans M = Dpt (enat (entry M 1 0))
+                (fst t123 +\<^sub>B Dpt (enat (entry M 1 (Joints M ! (Lng (Br M) - 1)))) (snd (snd t123)))"
+          by (blast dest: ex1_implies_ex)
+        have rn1: "RightNodes (Trans M) ! 1 = entry M 1 (Joints M ! (Lng (Br M) - 1))"
+          using T rn1_outer_inner_trailing[of "entry M 1 0" "fst t123"
+                  "entry M 1 (Joints M ! (Lng (Br M) - 1))" "snd (snd t123)"] by simp
+        show ?thesis using rn1 by simp
+      qed
     next
       case False
       have Admpos: "transJm1 M > 0" using False by simp
-      have j1gt: "Lng M - 1 > 1" using Lge3 by simp
-      have predRT: "Pred M \<in> RT_PS" by (rule Pred_RT_PS[OF MR])
-      have LPeq: "Lng (Pred M) = Lng M - 1" using Lge2 by (simp add: Pred_def)
-      have LPg1: "1 < Lng (Pred M)" using LPeq Lge3 by simp
-      have nzP: "\<not> zeroT (Pred M)" using LPg1 by (simp add: zeroT_def)
-      have t1ne: "Trans (Pred M) \<noteq> 0\<^sub>B" using m_7_3_Trans_zeroT[OF predRT] nzP by blast
       have RNeq: "RightNodes (Trans M) ! 1 = RightNodes (Trans (Pred M)) ! 1"
         by (rule m_8_2_wid_step[OF MR MP j1gt Admpos t1ne])
-      have e10P: "entry (Pred M) 1 0 = entry M 1 0"
-        using Lge2 by (simp add: Pred_def entry_def nth_butlast)
-      have predDT: "Pred M \<in> DT_PS" by (rule descending_Br_Pred[OF MDl Brnel LPg1])
-      have predmono: "monoT (Pred M)" using predDT by (simp add: DT_PS_def)
-      have bound: "entry M 1 (Joints M ! (Lng (Br M) - 1)) \<le> RightNodes (Trans (Pred M)) ! 1"
-      proof (cases "Br (Pred M) = []")
-        case True
-        have TrPe: "TrMax (Pred M) = Lng (Pred M) - 1" by (rule baseU_Br_empty_TrMax[OF True])
-        have TrP: "TrMax (Pred M) = TrMax M" by (rule TrMax_Pred[OF MT Lge2 brTr])
-        have TrM2: "TrMax M = Lng M - 2" using TrP TrPe LPeq by simp
-        have RNP: "RightNodes (Trans (Pred M)) ! 1 = entry (Pred M) 1 (Lng (Pred M) - 1)"
-          by (rule baseU_alltrunk_Trans_RN1[OF predRT predmono TrPe LPg1])
-        have lastlt: "Lng (Pred M) - 1 < Lng (Pred M)" using LPg1 by simp
-        have diagEnt: "entry (Pred M) 1 (Lng (Pred M) - 1)
-                        = entry (Pred M) 1 0 + (Lng (Pred M) - 1)"
-          using baseU_alltrunk_diag_entry[OF predRT predmono TrPe lastlt] by simp
-        have RNPval: "RightNodes (Trans (Pred M)) ! 1 = entry M 1 0 + TrMax M"
-          using RNP diagEnt e10P LPeq TrM2 by simp
-        have "entry M 1 (Joints M ! (Lng (Br M) - 1)) = entry M 1 0 + Joints M ! (Lng (Br M) - 1)"
-          by (rule e1j0)
-        also have "\<dots> \<le> entry M 1 0 + TrMax M" using j0le by simp
-        also have "\<dots> = RightNodes (Trans (Pred M)) ! 1" using RNPval by simp
-        finally show ?thesis .
-      next
-        case False
-        have BrPne': "Br (Pred M) \<noteq> []" using False by simp
-        have LPlt: "Lng (Pred M) < Lng M" using LPeq Lge2 by simp
-        define J1 where "J1 = Lng (Br M) - 1"
-        define JN where "JN = Lng (Br (Pred M)) - 1"
-        have JNeq: "JN = (if FirstNodes M ! (Lng (Br M) - 1) = Lng M - 1 then J1 - 1 else J1)"
-          using wid_JPm1_map[OF MP Brnel Lge2] by (simp add: JN_def J1_def)
-        have JNleJ1: "JN \<le> J1" using JNeq by (simp split: if_splits)
-        have J1lt: "J1 < Lng (Br M)" using BrL by (simp add: J1_def)
-        have j0M: "0 < Joints M ! J1" using j0posl by (simp add: J1_def)
-        have idxle: "Joints M ! J1 \<le> Joints M ! JN"
-          by (rule m_8_2_joint_idx_mono[OF MDl JNleJ1 J1lt])
-        have j0N: "0 < Joints M ! JN" using j0M idxle by linarith
-        have widFNJ: "FirstNodes (Pred M) ! JN = FirstNodes M ! JN
-                      \<and> Joints (Pred M) ! JN = Joints M ! JN"
-          using wid_FNJ_Pred_at_JPm1[OF MP Brnel Lge2 BrPne'] by (simp add: JN_def)
-        have j0Npred: "0 < Joints (Pred M) ! (Lng (Br (Pred M)) - 1)"
-          using j0N widFNJ unfolding JN_def by simp
-        have ihP: "entry (Pred M) 1 (Joints (Pred M) ! (Lng (Br (Pred M)) - 1))
-                     \<le> RightNodes (Trans (Pred M)) ! 1"
-          by (rule less.hyps[OF LPlt predDT BrPne' j0Npred])
-        have JNlt: "JN < Lng (Br M)" using JNleJ1 J1lt by linarith
-        have jNleTr: "Joints M ! JN \<le> TrMax M"
-          using m_6_4_FirstNodes_TrMax_Joints[OF MP JNlt] by simp
-        have jNltL: "Joints M ! JN < Lng M - 1" using jNleTr trlt by linarith
-        have entryAgreeJN: "entry (Pred M) 1 (Joints (Pred M) ! JN) = entry M 1 (Joints M ! JN)"
-        proof -
-          have "entry (Pred M) 1 (Joints (Pred M) ! JN) = entry (Pred M) 1 (Joints M ! JN)"
-            using widFNJ by simp
-          also have "\<dots> = entry M 1 (Joints M ! JN)"
-            by (rule wid_entry1_Pred_agree[OF Lge2 jNltL])
-          finally show ?thesis .
-        qed
-        have thrm: "entry M 1 (Joints M ! J1)
-                      \<le> entry (Pred M) 1 (Joints (Pred M) ! (Lng (Br (Pred M)) - 1))"
-        proof -
-          have "entry M 1 (Joints M ! J1) \<le> entry M 1 (Joints M ! JN)"
-            by (rule m_8_2_thrmono[OF MDl JNleJ1 J1lt])
-          also have "\<dots> = entry (Pred M) 1 (Joints (Pred M) ! JN)"
-            using entryAgreeJN by simp
-          also have "\<dots> = entry (Pred M) 1 (Joints (Pred M) ! (Lng (Br (Pred M)) - 1))"
-            by (simp add: JN_def)
-          finally show ?thesis .
-        qed
-        have "entry M 1 (Joints M ! (Lng (Br M) - 1))
-                = entry M 1 (Joints M ! J1)" by (simp add: J1_def)
-        also have "\<dots> \<le> entry (Pred M) 1 (Joints (Pred M) ! (Lng (Br (Pred M)) - 1))"
-          by (rule thrm)
-        also have "\<dots> \<le> RightNodes (Trans (Pred M)) ! 1" by (rule ihP)
-        finally show ?thesis .
-      qed
       show ?thesis using bound RNeq by simp
     qed
   qed
@@ -33961,19 +34069,14 @@ text \<open>§8.2 strong-monomiality lower bounds — ASSEMBLY of the paper prop
   @{thm [source] m_8_2_factA} and the conditional factB (clause (2)) by
   \<open>factBlem\<close>; @{thm [source] m_8_2_subexpr_component_strongmono_of_factAB} packages
   both (with the \<open>\<exists>!\<close> uniqueness inherited from clause (1)) into the paper \<open>\<exists>!\<close>.
-  factA's keystone-case-(1) head dominance \<open>newdomH\<close> is now DISCHARGED by the
-  proven @{thm [source] m_8_2_newdom} (Admpos bulk) down to the Adm0 sub-residual
-  \<open>adm0H\<close>.  RESIDUALS isolated as hypotheses: \<open>adm0H\<close> (the \<open>transJm1 M = 0\<close>
-  sub-case of newdom) and \<open>factBlem\<close> (clause (2), the \<open>cp\<close>/\<open>ft\<close> condition+threshold
-  transport across \<open>Pred\<close>).\<close>
+  factA's keystone-case-(1) head dominance is now FULLY DISCHARGED by the proven
+  @{thm [source] m_8_2_newdom} (both Admpos via @{thm [source] m_8_2_wid_step} and
+  Adm0 via the keystone disjunction).  The ONLY remaining residual hypothesis is
+  \<open>factBlem\<close> (clause (2), the \<open>cp\<close>/\<open>ft\<close> condition+threshold transport across \<open>Pred\<close>).\<close>
 
 lemma m_8_2_subexpr_component_strongmono:
   fixes M :: pairseq
-  assumes adm0H: "\<And>M'. M' \<in> DT_PS \<Longrightarrow> Br M' \<noteq> [] \<Longrightarrow> 0 < Joints M' ! (Lng (Br M') - 1)
-                     \<Longrightarrow> transJm1 M' = 0
-                     \<Longrightarrow> entry M' 1 (Joints M' ! (Lng (Br M') - 1))
-                          \<le> RightNodes (Trans M') ! 1"
-    and factBlem: "\<And>b. Trans M = Dpt (enat (entry M 1 0)) b
+  assumes factBlem: "\<And>b. Trans M = Dpt (enat (entry M 1 0)) b
                      \<Longrightarrow> (Joints M ! (Lng (Br M) - 1) = 0
                           \<or> entry M 0 (FirstNodes M ! (Lng (Br M) - 1))
                               = entry M 1 (FirstNodes M ! (Lng (Br M) - 1)))
@@ -34004,7 +34107,7 @@ proof -
     fix M' assume a1: "M' \<in> DT_PS" and a2: "Br M' \<noteq> []"
       and a3: "1 < Lng M'" and a4: "0 < Joints M' ! (Lng (Br M') - 1)"
     show "entry M' 1 (Joints M' ! (Lng (Br M') - 1)) \<le> RightNodes (Trans M') ! 1"
-      by (rule m_8_2_newdom[OF adm0H a1 a2 a4])
+      by (rule m_8_2_newdom[OF a1 a2 a4])
   qed
   obtain a where aW: "Trans M = Dpt (enat (entry M 1 0)) a"
     using m_8_2_subexpr_leftend_unique[OF MD] by (auto simp: Ex1_def)
