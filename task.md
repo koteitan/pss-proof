@@ -38,7 +38,7 @@
   - 🚨 §8.3 条件 (II) の下での展開規則
     - 🚨 命題（条件 (II) の下での $\textrm{Trans}$ と基本列の交換関係）
       - ✅ 降下⟸exch+OT〔`m_8_3_TransCondII_oper_descend_engine`〕
-      - 🚨 exch（交換則）：kind-0共有 marking-nesting へ還元済〔`m_8_3_exch_of_lhs_closed`、=§8.1 step 残差(L23)、wt-k0完了後に同機構〕
+      - 🚨 exch（交換則）：marking-nesting recurrence へ還元〔`m_8_3_exch_of_lhs_closed`、=§8.1 step/§8.4/§8.5 共有残差(L23/L47/L57)〕
       - 🚨 OT所属（→§8.7）
     - ✅ 補題（第 $0$ 種型基本列の基本不等式）〔`m_8_3_kind0_base_ineq`(A22訂正)〕
     - ✅ 補題（第 $0$ 種型基本列の基本分岐規則）〔`m_8_3_kind0_branch_rule`〕
@@ -77,6 +77,6 @@
     - 🚨 補題（$\textrm{Trans}$ が標準形を保つこと）= OT所属〔**step を {det,[Buc1]} に還元**: 4-case dispatcher `m_8_7_OT_keystone_step`/`m_8_7_OT_step_prefix`。残=strong-Lng帰納組立+det+[Buc1]〕
       - ✅ clean部（rank0/T_B/単項leaf）〔`m_8_7_Trans_*`〕
       - ✅ 還元 isOT⟸R1/R2/R3〔`m_8_7_OT_via_body`+`descP_snoc`/`m_8_7_isOT_BT_snoc_leBT`〕
-      - 🚨 R2 descP-step（wid head判定=L81 widと共有、wt-wid完了後／非wid機械化は未割当）
+      - 🚨 R2 descP-step＝dispatcher resid の det 部（=L81 wid/det）
       - 🚨🤖 wid（=§8.2 widH/L35 と同一、det→case-4排除。残=case4、wf wcd80psjk wt-det2）
       - 📘 R3 = [Buc1] OT2/GBT〔`buc1_*`〕
