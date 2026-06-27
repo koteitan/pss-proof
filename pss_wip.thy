@@ -35970,6 +35970,20 @@ text \<open>§8.4/§8.5 KIND-1 LHS context recurrence, REDUCTION to the pure FLA
   remaining genuine content to \<open>flatdec\<close> (the marking-nesting context recurrence)
   alone.\<close>
 
+text \<open>WARNING (2026-06-27): \<open>flatdec\<close> as stated below is FALSE / unsatisfiable — do
+  NOT attempt to prove it.  Empirically refuted on the exact target domain (standard
+  \<open>ST\<^bsub>PS\<^esub>\<close> condIII/condV, yaBMS \<open>bms -s\<close>): 0/15 (condIII), 0/18 (condV).  Root cause:
+  the deepest leaf of \<open>Trans (M[m])\<close> is the body's MARKED principal \<open>D\<^sub>v 0\<close>, NOT the
+  fundamental-sequence bottom \<open>D\<^bsub>v-1\<^esub> 0\<close>; since \<open>v > v-1\<close>, no single \<open>cp \<le> D\<^bsub>v-1\<^esub> 0\<close>
+  can sit at the middle (witness condIII \<open>M=(0,0)(1,1)(2,1)\<close>: \<open>Trans (M[2]) =
+  D\<^sub>0(D\<^sub>1(D\<^sub>0(D\<^sub>1 0)))\<close>, deepest leaf \<open>D\<^sub>1 0 = D\<^sub>v 0\<close>).  Hence
+  \<open>m_8_45_lhs_of_flat_decomp\<close> is SOUND but VACUOUS and cannot discharge \<open>lhs\<close>.  The
+  downstream conclusion \<open>\<exists>j. leBT (Trans (M[m])) (operB (Trans M) (numBT j))\<close> IS true
+  (15/15, 18/18, witness \<open>j = m\<close>).  CORRECTED target for a future attempt:
+  \<open>flatBT(Trans (M[m])) = S\<^bsub>m-1\<^esub> \<frown> flat\<^bsub>BP\<^esub>(D\<^sub>v 0) \<frown> B\<^bsub>m-1\<^esub>\<close> (leaf \<open>= D\<^sub>v 0\<close>
+  exactly) plus a flat-to-nested readback turning \<open>S\<^sub>j/B\<^sub>j\<close> into a \<open>funpow\<close> context so
+  @{thm [source] leBT_funpow_mono} bridges to \<open>leBT\<close> one level deeper.\<close>
+
 lemma m_8_45_lhs_of_flat_decomp:
   fixes M :: pairseq and u v :: nat
   assumes tT: "Trans M \<in> T_B" and uv: "u < v" and bodyT: "body \<in> T_B"
@@ -36057,4 +36071,157 @@ proof -
 qed
 
 
+text \<open>§8.7 OT-membership STEP — PREFIX case (keystone cases (3)/(4)), surgery-FREE.
+  The analog of @{thm [source] m_8_7_Trans_preserves_OT_step} (which covers case (1),
+  where the common prefix \<open>p\<close> is the WHOLE body of \<open>Trans (Pred M)\<close>) for the cases
+  where \<open>p\<close> is a PROPER left prefix of the body of \<open>Trans (Pred M)\<close>
+  (\<open>Trans (Pred M) = D\<^bsub>M\<^sub>1\<^sub>,\<^sub>0\<^esub>(p +\<^sub>B r)\<close> for some trailing \<open>r\<close>).  In every keystone
+  case \<open>Trans M = D\<^bsub>M\<^sub>1\<^sub>,\<^sub>0\<^esub>(p +\<^sub>B D\<^bsub>x\<^esub> q)\<close> with the SAME prefix \<open>p\<close>; \<open>isOT_BT p\<close>
+  (R1) follows from the IH @{term \<open>isOT_BT (Trans (Pred M))\<close>} by peeling the outer
+  \<open>D\<^bsub>M\<^sub>1\<^sub>,\<^sub>0\<^esub>\<close> (@{thm [source] isOT_BT_Dpt_body}) and dropping the trailing \<open>r\<close>
+  (@{thm [source] isOT_BT_addBT_left}).  The remaining inputs are exactly the
+  Pred-recursion residuals: \<open>newOT\<close> (R3-inner, [Buc1] OT2), \<open>dstep\<close> (R2, the descP
+  head-determination supplied by \<open>det\<close>/wid), and \<open>gbt\<close> (R3-outer, [Buc1] OT2).\<close>
+
+lemma m_8_7_OT_step_prefix:
+  fixes M :: pairseq and ps :: "BP list" and r q :: BT and x :: nat
+  assumes predW: "Trans (Pred M) = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B r)"
+    and dec: "Trans M = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B Dpt (enat x) q)"
+    and ihOT: "isOT_BT (Trans (Pred M))"
+    and newOT: "isOT_BP (DB (enat x) q)"
+    and dstep: "ps \<noteq> [] \<longrightarrow> leBT (Dpt (enat x) q) (Trm [last ps])"
+    and gbt: "\<forall>y\<in>GBT (enat (entry M 1 0)) (Trm ps +\<^sub>B Dpt (enat x) q).
+                 lessBT y (Trm ps +\<^sub>B Dpt (enat x) q)"
+  shows "isOT_BT (Trans M)"
+proof -
+  have bodyOT: "isOT_BT (Trm ps +\<^sub>B r)"
+    using isOT_BT_Dpt_body[OF ihOT[unfolded predW]] .
+  have pOT: "isOT_BT (Trm ps)" by (rule isOT_BT_addBT_left[OF bodyOT])
+  show ?thesis by (rule m_8_7_OT_step_uniform[OF dec pOT newOT dstep gbt])
+qed
+
+
+
+text \<open>§8.7 OT-membership keystone STEP DISPATCHER — the full 4-case Pred-recursion
+  wiring (surgery-FREE), modulo a single packaged residual.  The keystone
+  @{thm [source] m_8_2_keystone} four-way disjunction is uniform under OT: in EVERY
+  case \<open>Trans M = D\<^bsub>M\<^sub>1\<^sub>,\<^sub>0\<^esub>(p +\<^sub>B D\<^bsub>x\<^esub> q)\<close> with the SAME prefix \<open>p\<close> that the body of
+  \<open>Trans (Pred M)\<close> begins with (\<open>Trans (Pred M) = D\<^bsub>M\<^sub>1\<^sub>,\<^sub>0\<^esub>(p +\<^sub>B r)\<close>; \<open>r = 0\<^sub>B\<close> in
+  cases (1)/(2) where \<open>p\<close> is the WHOLE body, \<open>r\<close> the trailing principal in cases
+  (3)/(4) where \<open>p\<close> is a proper prefix) and head \<open>x \<in> {M\<^bsub>1,j\<^sub>1'\<^esub>, M\<^bsub>1,j\<^sub>0'\<^esub>}\<close>.  Given the
+  IH @{term \<open>isOT_BT (Trans (Pred M))\<close>} and the packaged residual \<open>resid\<close> — for the
+  ACTUAL decomposition that fires, the R3 OT2 clauses (\<open>newOT\<close>: the appended principal
+  is \<open>isOT_BP\<close>; \<open>gbt\<close>: the outer \<open>G\<^bsub>B\<^esub>\<close>-condition) and the R2 descP head-step
+  (\<open>dstep\<close>, supplied by \<open>det\<close>/wid) — @{thm [source] m_8_7_OT_step_prefix} closes each
+  branch.  This is the §8.7 OT induction step in full: \<open>resid\<close> packages exactly the
+  \<open>det\<close>-residual (R2) plus the [Buc1] OT2 citations (R3), so \<open>Trans M \<in> OT\<^bsub>B\<^esub>\<close>
+  follows from \<open>Trans (Pred M) \<in> OT\<^bsub>B\<^esub>\<close> by the keystone Pred-recursion once \<open>det\<close>
+  is available.\<close>
+
+lemma m_8_7_OT_keystone_step:
+  fixes M :: pairseq
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS" and Brne: "Br M \<noteq> []"
+    and j1gt: "Lng M - 1 > 1"
+    and ihOT: "isOT_BT (Trans (Pred M))"
+    and resid:
+      "\<And>x q ps r.
+          Trans (Pred M) = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B r) \<Longrightarrow>
+          Trans M = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B Dpt (enat x) q) \<Longrightarrow>
+          isOT_BP (DB (enat x) q)
+          \<and> (ps \<noteq> [] \<longrightarrow> leBT (Dpt (enat x) q) (Trm [last ps]))
+          \<and> (\<forall>y\<in>GBT (enat (entry M 1 0)) (Trm ps +\<^sub>B Dpt (enat x) q).
+                 lessBT y (Trm ps +\<^sub>B Dpt (enat x) q))"
+  shows "isOT_BT (Trans M)"
+proof -
+  let ?v0 = "entry M 1 0"
+  let ?j1' = "FirstNodes M ! (Lng (Br M) - 1)"
+  let ?j0' = "Joints M ! (Lng (Br M) - 1)"
+  from m_8_2_keystone[OF MR MP Brne j1gt] show ?thesis
+  proof (elim disjE)
+    \<comment> \<open>case (1): \<open>p\<close> = whole body of \<open>Trans (Pred M)\<close>, trailing \<open>D\<^bsub>M\<^sub>1\<^sub>,\<^sub>j\<^sub>1'\<^esub> 0\<close>\<close>
+    assume A: "FirstNodes M ! (Lng (Br M) - 1) = Lng M - 1
+        \<and> (TrMax M = 0 \<or> Joints M ! (Lng (Br M) - 1) < TrMax M)
+        \<and> (entry M 0 (FirstNodes M ! (Lng (Br M) - 1)) = entry M 1 (FirstNodes M ! (Lng (Br M) - 1))
+            \<or> adm M (Joints M ! (Lng (Br M) - 1)))
+        \<and> (\<exists>!t1. Trans (Pred M) = Dpt (enat (entry M 1 0)) t1
+              \<and> Trans M = Dpt (enat (entry M 1 0))
+                            (t1 +\<^sub>B Dpt (enat (entry M 1 (FirstNodes M ! (Lng (Br M) - 1)))) 0\<^sub>B))"
+    from A obtain t1 where
+      P: "Trans (Pred M) = Dpt (enat ?v0) t1"
+      and T: "Trans M = Dpt (enat ?v0) (t1 +\<^sub>B Dpt (enat (entry M 1 ?j1')) 0\<^sub>B)"
+      by (blast dest: ex1_implies_ex)
+    obtain ps where ps: "t1 = Trm ps" by (cases t1)
+    have P': "Trans (Pred M) = Dpt (enat ?v0) (Trm ps +\<^sub>B Trm [])" using P ps by simp
+    have T': "Trans M = Dpt (enat ?v0) (Trm ps +\<^sub>B Dpt (enat (entry M 1 ?j1')) 0\<^sub>B)"
+      using T ps by simp
+    note R = resid[OF P' T']
+    show ?thesis
+      by (rule m_8_7_OT_step_prefix[OF P' T' ihOT conjunct1[OF R]
+              conjunct1[OF conjunct2[OF R]] conjunct2[OF conjunct2[OF R]]])
+  next
+    \<comment> \<open>case (2): \<open>p\<close> = whole body, trailing \<open>D\<^bsub>M\<^sub>1\<^sub>,\<^sub>j\<^sub>0'\<^esub> (snd t12)\<close>\<close>
+    assume A: "FirstNodes M ! (Lng (Br M) - 1) = Lng M - 1
+        \<and> entry M 0 (FirstNodes M ! (Lng (Br M) - 1)) > entry M 1 (FirstNodes M ! (Lng (Br M) - 1))
+        \<and> \<not> adm M (Joints M ! (Lng (Br M) - 1))
+        \<and> (\<exists>!t12. Trans (Pred M) = Dpt (enat (entry M 1 0)) (fst t12)
+              \<and> Trans M = Dpt (enat (entry M 1 0))
+                            (fst t12 +\<^sub>B Dpt (enat (entry M 1 (Joints M ! (Lng (Br M) - 1)))) (snd t12)))"
+    from A obtain t12 where
+      P: "Trans (Pred M) = Dpt (enat ?v0) (fst t12)"
+      and T: "Trans M = Dpt (enat ?v0) (fst t12 +\<^sub>B Dpt (enat (entry M 1 ?j0')) (snd t12))"
+      by (blast dest: ex1_implies_ex)
+    obtain ps where ps: "fst t12 = Trm ps" by (cases "fst t12")
+    have P': "Trans (Pred M) = Dpt (enat ?v0) (Trm ps +\<^sub>B Trm [])" using P ps by simp
+    have T': "Trans M = Dpt (enat ?v0) (Trm ps +\<^sub>B Dpt (enat (entry M 1 ?j0')) (snd t12))"
+      using T ps by simp
+    note R = resid[OF P' T']
+    show ?thesis
+      by (rule m_8_7_OT_step_prefix[OF P' T' ihOT conjunct1[OF R]
+              conjunct1[OF conjunct2[OF R]] conjunct2[OF conjunct2[OF R]]])
+  next
+    \<comment> \<open>case (3): \<open>p\<close> = proper prefix, trailing \<open>D\<^bsub>M\<^sub>1\<^sub>,\<^sub>j\<^sub>1'\<^esub> (snd (snd t123))\<close>\<close>
+    assume A: "\<exists>!t123. Trans (Pred M)
+                  = Dpt (enat (entry M 1 0))
+                      (fst t123 +\<^sub>B Dpt (enat (entry M 1 (FirstNodes M ! (Lng (Br M) - 1)))) (fst (snd t123)))
+              \<and> Trans M = Dpt (enat (entry M 1 0))
+                      (fst t123 +\<^sub>B Dpt (enat (entry M 1 (FirstNodes M ! (Lng (Br M) - 1)))) (snd (snd t123)))"
+    from A obtain t123 where
+      P: "Trans (Pred M) = Dpt (enat ?v0)
+              (fst t123 +\<^sub>B Dpt (enat (entry M 1 ?j1')) (fst (snd t123)))"
+      and T: "Trans M = Dpt (enat ?v0)
+              (fst t123 +\<^sub>B Dpt (enat (entry M 1 ?j1')) (snd (snd t123)))"
+      by (blast dest: ex1_implies_ex)
+    obtain ps where ps: "fst t123 = Trm ps" by (cases "fst t123")
+    have P': "Trans (Pred M) = Dpt (enat ?v0)
+                (Trm ps +\<^sub>B Dpt (enat (entry M 1 ?j1')) (fst (snd t123)))" using P ps by simp
+    have T': "Trans M = Dpt (enat ?v0)
+                (Trm ps +\<^sub>B Dpt (enat (entry M 1 ?j1')) (snd (snd t123)))" using T ps by simp
+    note R = resid[OF P' T']
+    show ?thesis
+      by (rule m_8_7_OT_step_prefix[OF P' T' ihOT conjunct1[OF R]
+              conjunct1[OF conjunct2[OF R]] conjunct2[OF conjunct2[OF R]]])
+  next
+    \<comment> \<open>case (4): \<open>p\<close> = proper prefix, trailing \<open>D\<^bsub>M\<^sub>1\<^sub>,\<^sub>j\<^sub>0'\<^esub> (snd (snd t123))\<close>\<close>
+    assume A: "\<exists>!t123. Trans (Pred M)
+                  = Dpt (enat (entry M 1 0))
+                      (fst t123 +\<^sub>B Dpt (enat (entry M 1 (Joints M ! (Lng (Br M) - 1)))) (fst (snd t123)))
+              \<and> Trans M = Dpt (enat (entry M 1 0))
+                      (fst t123 +\<^sub>B Dpt (enat (entry M 1 (Joints M ! (Lng (Br M) - 1)))) (snd (snd t123)))"
+    from A obtain t123 where
+      P: "Trans (Pred M) = Dpt (enat ?v0)
+              (fst t123 +\<^sub>B Dpt (enat (entry M 1 ?j0')) (fst (snd t123)))"
+      and T: "Trans M = Dpt (enat ?v0)
+              (fst t123 +\<^sub>B Dpt (enat (entry M 1 ?j0')) (snd (snd t123)))"
+      by (blast dest: ex1_implies_ex)
+    obtain ps where ps: "fst t123 = Trm ps" by (cases "fst t123")
+    have P': "Trans (Pred M) = Dpt (enat ?v0)
+                (Trm ps +\<^sub>B Dpt (enat (entry M 1 ?j0')) (fst (snd t123)))" using P ps by simp
+    have T': "Trans M = Dpt (enat ?v0)
+                (Trm ps +\<^sub>B Dpt (enat (entry M 1 ?j0')) (snd (snd t123)))" using T ps by simp
+    note R = resid[OF P' T']
+    show ?thesis
+      by (rule m_8_7_OT_step_prefix[OF P' T' ihOT conjunct1[OF R]
+              conjunct1[OF conjunct2[OF R]] conjunct2[OF conjunct2[OF R]]])
+  qed
+qed
 end
