@@ -32,7 +32,7 @@
     - ✅ 補題（部分表現の単項成分と $\textrm{Pred}$ の関係）(§8.2 keystone)〔`m_8_2_keystone` = 無条件 `p_8_2_subexpr_component_Pred`〕
     - 🚨 補題（強単項性の下での部分表現の単項成分の基本性質）
       - ✅ (1) `m_8_2_subexpr_leftend_unique`
-      - 🚨🤖 (2)(3)(4) leBT：paper命題assembled〔`m_8_2_subexpr_component_strongmono`〕factA+newdom完全証明、残=factBlem ただ1つ（clause2 cp/ft core）、workflow
+      - 🚨🤖 (2)(3)(4) leBT：paper命題assembled〔`m_8_2_subexpr_component_strongmono`〕factA+newdom完全証明、残=widH（=universal wid、factBlem⟸widH⟸wid）、workflow
     - 🚨 補題（条件 (V) の下での右端の親の基本性質）
     - 🚨 補題（条件 (V) の下での終切片と $\textrm{Trans}$ の関係）
   - 🚨 §8.3 条件 (II) の下での展開規則
