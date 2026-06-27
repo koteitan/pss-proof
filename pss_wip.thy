@@ -34630,5 +34630,48 @@ proof -
   show ?thesis using nz le0full by (simp add: monoT_def leR_def)
 qed
 
+text \<open>§8.3 condition-(II) commutation \<open>exch\<close> REDUCTION (discharges the \<open>exch\<close>
+  hypothesis of @{thm [source] m_8_3_TransCondII_oper_descend_engine}).  KEY
+  REUSE: condition (II) (\<open>M\<^bsub>1,j\<^sub>1\<^esub> = 0\<close>, parent NON-admissible) has the SAME oper
+  structure as condition (I) (d0zero replication) and — crucially — the SAME
+  marked-principal SHAPE \<open>c\<^sub>2 = D\<^bsub>u\<^esub>(t\<^sub>0 +\<^sub>B D\<^bsub>v\<^esub>(t\<^sub>1 +\<^sub>B D\<^sub>0 0))\<close> (the \<open>_c2\<close>
+  else-branches under \<open>M\<^bsub>1,j\<^sub>1\<^esub> = 0\<close> still end in a trailing \<open>D\<^sub>0 0\<close> one level
+  deeper), so the Buchholz-side @{thm [source] operB_marked_scb_value} applies
+  VERBATIM.  The ONLY difference from condition (I) is the index EXCHANGE: the
+  basepoint shift makes \<open>m\<^sub>n = n - 2\<close> (not \<open>n - 1\<close>; content.md 3964), which the
+  existential \<open>\<exists>k\<close> of \<open>exch\<close> absorbs (empirically \<open>Trans(M[n]) =
+  operB(Trans M)(numBT (n-2))\<close>, 100% over the reduced condition-(II) sample).
+  RESIDUAL = \<open>lhs\<close>: the condition-(II) LHS marking-nesting closed form for
+  \<open>Trans(M[n])\<close> (with \<open>n-1\<close> nested copies), the exact analogue of the condition-(I)
+  residual in @{thm [source] m_8_1_stepT_j0pos_of_lhs_closed}.\<close>
+
+lemma m_8_3_exch_of_lhs_closed:
+  fixes M :: pairseq and u v :: nat
+  assumes MST: "M \<in> ST_PS" and MP: "M \<in> PT_PS"
+    and j1: "Lng M - 1 > 1" and cond: "transCondII M"
+    and t0: "t\<^sub>0 \<in> T_B" and t1: "t\<^sub>1 \<in> T_B" and tT: "Trans M \<in> T_B"
+    and dM: "scb_decomp (Trans M) s
+               (flatBT (Dpt (enat u) (t\<^sub>0 +\<^sub>B Dpt (enat v) (t\<^sub>1 +\<^sub>B Dpt 0 0\<^sub>B)))) b"
+    and lhs: "\<And>m. 1 < m \<Longrightarrow> Trans (M[m])
+                = unflatBT (s @ flatBT (Dpt (enat u)
+                       (t\<^sub>0 +\<^sub>B multBT (Dpt (enat v) t\<^sub>1) (m - 1))) @ b)"
+    and n1: "1 < n"
+  shows "\<exists>k. Trans (M[n]) = operB (Trans M) (numBT k)"
+proof -
+  have RHS: "operB (Trans M) (numBT (n - 2))
+             = unflatBT (s @ flatBT (Dpt (enat u)
+                    (t\<^sub>0 +\<^sub>B multBT (Dpt (enat v) t\<^sub>1) ((n - 2) + 1))) @ b)"
+    by (rule operB_marked_scb_value[OF t0 t1 tT dM])
+  have nfold: "multBT (Dpt (enat v) t\<^sub>1) (n - 1)
+               = multBT (Dpt (enat v) t\<^sub>1) (n - 2) +\<^sub>B Dpt (enat v) t\<^sub>1"
+  proof -
+    have "n - 1 = Suc (n - 2)" using n1 by linarith
+    thus ?thesis by simp
+  qed
+  have "Trans (M[n]) = operB (Trans M) (numBT (n - 2))"
+    using lhs[OF n1] RHS nfold by simp
+  thus ?thesis by blast
+qed
+
 
 end
