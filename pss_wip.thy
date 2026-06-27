@@ -34419,6 +34419,150 @@ lemma m_8_2_factB_step:
           m_8_2_keystone[OF MR MP Brne j1gt]])
 
 
+text \<open>§8.2 \<open>det\<close> reduced to the single keystone case-(4) exclusion.  Under the
+  problematic hypothesis \<open>det\<close> (\<open>M\<^bsub>1,j\<^sub>0'\<^esub> < M\<^bsub>1,j\<^sub>1'\<^esub>\<close>) the four-way keystone
+  @{thm [source] m_8_2_keystone} disjunction collapses to the first-node side
+  \<open>RightNodes(Trans M)\<^bsub>1\<^esub> = M\<^bsub>1,j\<^sub>1'\<^esub>\<close> as soon as case (4) is impossible: cases (1)/(3)
+  already read off \<open>M\<^bsub>1,j\<^sub>1'\<^esub>\<close>; case (2) is excluded ELEMENTARILY (no recursion) by the
+  joint/first-node row identity \<open>M\<^bsub>1,j\<^sub>0'\<^esub> = M\<^bsub>0,j\<^sub>1'\<^esub> - 1\<close>
+  (@{thm [source] m_8_2_joint_row1_eq}, @{thm [source] entry_FirstNodes_eq_component_gen}):
+  case (2)'s local condition \<open>M\<^bsub>0,j\<^sub>1'\<^esub> > M\<^bsub>1,j\<^sub>1'\<^esub>\<close> forces \<open>M\<^bsub>1,j\<^sub>0'\<^esub> \<ge> M\<^bsub>1,j\<^sub>1'\<^esub>\<close>,
+  contradicting \<open>det\<close>.  This isolates the ENTIRE recursive content of \<open>det\<close> to the
+  single keystone case-(4) impossibility (the \<open>j\<^sub>0' = TrMax\<close>/Admpos boundary where
+  both \<open>Trans (Pred M)\<close> and \<open>Trans M\<close> carry a trailing principal at \<open>M\<^bsub>1,j\<^sub>0'\<^esub>\<close>).\<close>
+
+lemma m_8_2_det_of_case4excl:
+  fixes M :: pairseq
+  assumes MD: "M \<in> DT_PS" and Brne: "Br M \<noteq> []" and j1gt: "Lng M - 1 > 1"
+    and det: "entry M 1 (Joints M ! (Lng (Br M) - 1))
+                < entry M 1 (FirstNodes M ! (Lng (Br M) - 1))"
+    and case4excl:
+      "\<not> (\<exists>!t123. Trans (Pred M)
+                = Dpt (enat (entry M 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M 1 (Joints M ! (Lng (Br M) - 1)))) (fst (snd t123)))
+            \<and> Trans M = Dpt (enat (entry M 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M 1 (Joints M ! (Lng (Br M) - 1)))) (snd (snd t123))))"
+  shows "RightNodes (Trans M) ! 1 = entry M 1 (FirstNodes M ! (Lng (Br M) - 1))"
+proof -
+  have MR: "M \<in> RT_PS" and mono: "monoT M" using MD by (auto simp: DT_PS_def)
+  have MT: "M \<in> T_PS" using MR by (simp add: RT_PS_def)
+  have MP: "M \<in> PT_PS" using MT mono by (simp add: PT_PS_def)
+  have BrL: "0 < Lng (Br M)" using Brne by (cases "Br M") auto
+  have J1Br: "Lng (Br M) - 1 < Lng (Br M)" using BrL by simp
+  \<comment> \<open>elementary joint/first-node row identity: \<open>M\<^bsub>1,j\<^sub>0'\<^esub> = M\<^bsub>0,j\<^sub>1'\<^esub> - 1\<close>\<close>
+  have row1j0: "entry M 1 (Joints M ! (Lng (Br M) - 1))
+                  = entry (Br M ! (Lng (Br M) - 1)) 0 0 - 1"
+    by (rule m_8_2_joint_row1_eq[OF MD J1Br])
+  have c0FN: "entry M 0 (FirstNodes M ! (Lng (Br M) - 1))
+                = entry (Br M ! (Lng (Br M) - 1)) 0 0"
+    by (rule entry_FirstNodes_eq_component_gen[OF MP J1Br])
+  have j0eq: "entry M 1 (Joints M ! (Lng (Br M) - 1))
+                = entry M 0 (FirstNodes M ! (Lng (Br M) - 1)) - 1"
+    using row1j0 c0FN by simp
+  from m_8_2_keystone[OF MR MP Brne j1gt] show ?thesis
+  proof (elim disjE)
+    \<comment> \<open>case (1): trailing \<open>M\<^bsub>1,j\<^sub>1'\<^esub>\<close>, reads off directly\<close>
+    assume A: "FirstNodes M ! (Lng (Br M) - 1) = Lng M - 1
+        \<and> (TrMax M = 0 \<or> Joints M ! (Lng (Br M) - 1) < TrMax M)
+        \<and> (entry M 0 (FirstNodes M ! (Lng (Br M) - 1)) = entry M 1 (FirstNodes M ! (Lng (Br M) - 1))
+            \<or> adm M (Joints M ! (Lng (Br M) - 1)))
+        \<and> (\<exists>!t1. Trans (Pred M) = Dpt (enat (entry M 1 0)) t1
+              \<and> Trans M = Dpt (enat (entry M 1 0))
+                            (t1 +\<^sub>B Dpt (enat (entry M 1 (FirstNodes M ! (Lng (Br M) - 1)))) 0\<^sub>B))"
+    from A obtain t1 where
+      T: "Trans M = Dpt (enat (entry M 1 0))
+            (t1 +\<^sub>B Dpt (enat (entry M 1 (FirstNodes M ! (Lng (Br M) - 1)))) 0\<^sub>B)"
+      by (blast dest: ex1_implies_ex)
+    show ?thesis
+      using T rn1_outer_inner_trailing[of "entry M 1 0" t1
+              "entry M 1 (FirstNodes M ! (Lng (Br M) - 1))" "0\<^sub>B"] by simp
+  next
+    \<comment> \<open>case (2): \<open>M\<^bsub>0,j\<^sub>1'\<^esub> > M\<^bsub>1,j\<^sub>1'\<^esub>\<close> + row identity contradict \<open>det\<close>\<close>
+    assume A: "FirstNodes M ! (Lng (Br M) - 1) = Lng M - 1
+        \<and> entry M 0 (FirstNodes M ! (Lng (Br M) - 1)) > entry M 1 (FirstNodes M ! (Lng (Br M) - 1))
+        \<and> \<not> adm M (Joints M ! (Lng (Br M) - 1))
+        \<and> (\<exists>!t12. Trans (Pred M) = Dpt (enat (entry M 1 0)) (fst t12)
+              \<and> Trans M = Dpt (enat (entry M 1 0))
+                            (fst t12 +\<^sub>B Dpt (enat (entry M 1 (Joints M ! (Lng (Br M) - 1)))) (snd t12)))"
+    have e0gt: "entry M 0 (FirstNodes M ! (Lng (Br M) - 1))
+                  > entry M 1 (FirstNodes M ! (Lng (Br M) - 1))"
+      using conjunct1[OF conjunct2[OF A]] .
+    have False using j0eq e0gt det by linarith
+    thus ?thesis ..
+  next
+    \<comment> \<open>case (3): trailing \<open>M\<^bsub>1,j\<^sub>1'\<^esub>\<close> shared with \<open>Pred M\<close>, reads off directly\<close>
+    assume A: "\<exists>!t123. Trans (Pred M)
+                  = Dpt (enat (entry M 1 0))
+                      (fst t123 +\<^sub>B Dpt (enat (entry M 1 (FirstNodes M ! (Lng (Br M) - 1)))) (fst (snd t123)))
+              \<and> Trans M = Dpt (enat (entry M 1 0))
+                      (fst t123 +\<^sub>B Dpt (enat (entry M 1 (FirstNodes M ! (Lng (Br M) - 1)))) (snd (snd t123)))"
+    from A obtain t123 where
+      C: "Trans (Pred M) = Dpt (enat (entry M 1 0))
+            (fst t123 +\<^sub>B Dpt (enat (entry M 1 (FirstNodes M ! (Lng (Br M) - 1)))) (fst (snd t123)))"
+      and T: "Trans M = Dpt (enat (entry M 1 0))
+            (fst t123 +\<^sub>B Dpt (enat (entry M 1 (FirstNodes M ! (Lng (Br M) - 1)))) (snd (snd t123)))"
+      by (blast dest: ex1_implies_ex)
+    show ?thesis
+      using T rn1_outer_inner_trailing[of "entry M 1 0" "fst t123"
+              "entry M 1 (FirstNodes M ! (Lng (Br M) - 1))" "snd (snd t123)"] by simp
+  next
+    \<comment> \<open>case (4): excluded by hypothesis\<close>
+    assume A: "\<exists>!t123. Trans (Pred M)
+                  = Dpt (enat (entry M 1 0))
+                      (fst t123 +\<^sub>B Dpt (enat (entry M 1 (Joints M ! (Lng (Br M) - 1)))) (fst (snd t123)))
+              \<and> Trans M = Dpt (enat (entry M 1 0))
+                      (fst t123 +\<^sub>B Dpt (enat (entry M 1 (Joints M ! (Lng (Br M) - 1)))) (snd (snd t123)))"
+    show ?thesis using A case4excl by blast
+  qed
+qed
+
+
+text \<open>§8.2 widH recursion STEP — the PROVABLE half of the \<open>det\<close>/widH induction
+  (\<open>Admpos\<close> ∧ \<open>j\<^sub>1' \<noteq> Lng M - 1\<close>).  In the \<open>Admpos\<close> regime the body-split
+  @{thm [source] m_8_2_wid_step} preserves the second \<open>RightNodes\<close> entry across
+  \<open>Pred\<close> (\<open>RightNodes(Trans M)\<^bsub>1\<^esub> = RightNodes(Trans (Pred M))\<^bsub>1\<^esub>\<close>); and when the
+  last branch is NOT a singleton (\<open>j\<^sub>1' \<noteq> Lng M - 1\<close>) the FIRST-NODE transport
+  @{thm [source] m_8_2_ft_transport} carries the IH threshold verbatim
+  (\<open>(Pred M)\<^bsub>1,FirstNodes(Pred M)\<^bsub>J'\<^sub>1\<^esub>\<^esub> = M\<^bsub>1,j\<^sub>1'\<^esub>\<close>, \<open>J'\<^sub>1 = Lng(Br(Pred M))-1\<close>).  So
+  widH for \<open>M\<close> follows DIRECTLY from widH for \<open>Pred M\<close>.  Empirically this clean
+  step covers the \<open>Admpos\<close> ∧ \<open>j\<^sub>1' \<noteq> Lng M - 1\<close> sub-case (62 / 230 of the
+  \<open>RightNodes\<^bsub>1\<^esub> = M\<^bsub>1,j\<^sub>0'\<^esub>\<close> situations over reachable \<open>DT\<^bsub>PS\<^esub>\<close>); the irreducible core
+  is exactly \<open>Admpos\<close> ∧ \<open>j\<^sub>1' = Lng M - 1\<close> (\<open>j\<^sub>0' = TrMax\<close>, where \<open>ft\<close> fails — the
+  last-branch-singleton / \<open>cp\<close>-coupling residual), with the \<open>Adm0\<close> regime fully
+  elementary (every \<open>Adm0\<close> \<open>RightNodes\<^bsub>1\<^esub> = M\<^bsub>1,j\<^sub>0'\<^esub>\<close> situation satisfies the
+  case-(2) condition \<open>M\<^bsub>0,j\<^sub>1'\<^esub> > M\<^bsub>1,j\<^sub>1'\<^esub>\<close>).\<close>
+
+lemma m_8_2_widH_admpos_j1ne_step:
+  fixes M :: pairseq
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS" and Brne: "Br M \<noteq> []"
+    and j1gt: "Lng M - 1 > 1"
+    and Admpos: "transJm1 M > 0"
+    and brP: "Br (Pred M) \<noteq> []"
+    and j1ne: "FirstNodes M ! (Lng (Br M) - 1) \<noteq> Lng M - 1"
+    and ihP: "entry (Pred M) 1 (FirstNodes (Pred M) ! (Lng (Br (Pred M)) - 1))
+                \<le> RightNodes (Trans (Pred M)) ! 1"
+  shows "entry M 1 (FirstNodes M ! (Lng (Br M) - 1)) \<le> RightNodes (Trans M) ! 1"
+proof -
+  have predRT: "Pred M \<in> RT_PS" by (rule Pred_RT_PS[OF MR])
+  have L: "1 < Lng M" using j1gt by simp
+  have LPeq: "Lng (Pred M) = Lng M - 1" using L by (simp add: Pred_def)
+  have LPg1: "1 < Lng (Pred M)" using LPeq j1gt by simp
+  have nzP: "\<not> zeroT (Pred M)" using LPg1 by (simp add: zeroT_def)
+  have t1ne: "Trans (Pred M) \<noteq> 0\<^sub>B" using m_7_3_Trans_zeroT[OF predRT] nzP by blast
+  have step: "RightNodes (Trans M) ! 1 = RightNodes (Trans (Pred M)) ! 1"
+    by (rule m_8_2_wid_step[OF MR MP j1gt Admpos t1ne])
+  have ft: "entry (Pred M) 1 (FirstNodes (Pred M) ! (Lng (Br (Pred M)) - 1))
+              = entry M 1 (FirstNodes M ! (Lng (Br M) - 1))"
+    by (rule m_8_2_ft_transport[OF MR MP Brne j1gt brP j1ne])
+  have "entry M 1 (FirstNodes M ! (Lng (Br M) - 1))
+          = entry (Pred M) 1 (FirstNodes (Pred M) ! (Lng (Br (Pred M)) - 1))"
+    using ft by simp
+  also have "\<dots> \<le> RightNodes (Trans (Pred M)) ! 1" by (rule ihP)
+  also have "\<dots> = RightNodes (Trans M) ! 1" using step by simp
+  finally show ?thesis .
+qed
+
+
 text \<open>§8.2 widH reduced to the single clause-exclusion determination, NO condition
   C.  Combining the now-unconditional 2-way disjunction
   @{thm [source] m_8_2_wid_full} (\<open>RightNodes(Trans M)\<^bsub>1\<^esub> \<in> {M\<^bsub>1,j\<^sub>1'\<^esub>, M\<^bsub>1,j\<^sub>0'\<^esub>}\<close>)
@@ -35807,6 +35951,109 @@ proof -
     using predN IH by simp
   show ?thesis
     by (rule m_8_1_step_w1_nesting[OF NR NP j1gtN Adm0N condAN elastN predCF])
+qed
+
+
+text \<open>§8.4/§8.5 KIND-1 LHS context recurrence, REDUCTION to the pure FLAT
+  DECOMPOSITION of \<open>Trans (M[m])\<close>.  This discharges the \<open>lhs\<close> hypothesis of
+  @{thm [source] m_8_4_exch_of_lhs_closed} / @{thm [source] m_8_5_exch_of_lhs_closed}
+  MODULO the context-match hypothesis \<open>flatdec\<close>: that for every iterate index
+  \<open>m > 1\<close> the flat string of \<open>Trans (M[m])\<close> splits as
+  \<open>S\<^sub>j \<frown> flat\<^bsub>BP\<^esub> cp \<frown> B\<^sub>j\<close> with the SAME outer context
+  \<open>S\<^sub>j = s\<^sub>1 D\<^sub>u (s\<^sub>0 D\<^bsub>v-1\<^esub>)\<^bsup>j\<^esup>\<close>, the SAME all-\<open>RP\<close> tail \<open>B\<^sub>j = b\<^sub>0\<^bsup>j\<^esup> b\<^sub>1\<close>, and a
+  deepest-leaf principal \<open>cp\<close> bounded by \<open>D\<^bsub>v-1\<^esub> 0\<close>.  Given that, the closed RHS
+  value (@{thm [source] operB_marked_scb_value_kind1}, read flat by
+  @{thm [source] m_7_2_scb_fseq_kind1_general}) is exactly the \<open>cp = D\<^bsub>v-1\<^esub> 0\<close>
+  instance, so \<open>leBT\<close> follows by leaf-congruence: strict leaf (@{thm [source]
+  scbext_lessBT}, all-\<open>RP\<close> tail) when \<open>cp <\<^bsub>BP\<^esub> D\<^bsub>v-1\<^esub> 0\<close>, equal leaf
+  (@{thm [source] m_7_flatBT_inj}) when \<open>cp = D\<^bsub>v-1\<^esub> 0\<close>.  This isolates the
+  remaining genuine content to \<open>flatdec\<close> (the marking-nesting context recurrence)
+  alone.\<close>
+
+lemma m_8_45_lhs_of_flat_decomp:
+  fixes M :: pairseq and u v :: nat
+  assumes tT: "Trans M \<in> T_B" and uv: "u < v" and bodyT: "body \<in> T_B"
+    and dbbody: "domB body = TBv (enat (v - 1))"
+    and bodyne: "body \<noteq> Trm []"
+    and innerscb: "scb_decomp body s\<^sub>0 (flatBT (Dpt (enat v) 0\<^sub>B)) b\<^sub>0"
+    and k1: "scb_kind1 (Trans M) s\<^sub>1 (flatBT (Dpt (enat u) body)) b\<^sub>1"
+    and flatdec: "\<And>m. 1 < m \<Longrightarrow> \<exists>j cp.
+        (lessBP cp (DB (enat (v - 1)) (Trm []))
+           \<or> cp = DB (enat (v - 1)) (Trm []))
+      \<and> flatBT (Trans (M[m]))
+          = (s\<^sub>1 @ Dsym (enat u) # concat (replicate j (s\<^sub>0 @ [Dsym (enat (v - 1))])))
+            @ flatBP cp
+            @ (concat (replicate j b\<^sub>0) @ b\<^sub>1)"
+  shows "\<And>m. 1 < m \<Longrightarrow> \<exists>j. leBT (Trans (M[m]))
+                (unflatBT (s\<^sub>1 @ (Dsym (enat u)
+                    # concat (replicate j (s\<^sub>0 @ [Dsym (enat (v - 1))]))
+                    @ [Dsym (enat (v - 1))] @ [Zsym]
+                    @ concat (replicate j b\<^sub>0)) @ b\<^sub>1))"
+proof -
+  fix m :: nat assume m1: "1 < m"
+  obtain j cp where
+      cple: "lessBP cp (DB (enat (v - 1)) (Trm []))
+               \<or> cp = DB (enat (v - 1)) (Trm [])"
+    and flateq: "flatBT (Trans (M[m]))
+          = (s\<^sub>1 @ Dsym (enat u) # concat (replicate j (s\<^sub>0 @ [Dsym (enat (v - 1))])))
+            @ flatBP cp
+            @ (concat (replicate j b\<^sub>0) @ b\<^sub>1)"
+    using flatdec[OF m1] by blast
+  let ?R = "unflatBT (s\<^sub>1 @ (Dsym (enat u)
+                # concat (replicate j (s\<^sub>0 @ [Dsym (enat (v - 1))]))
+                @ [Dsym (enat (v - 1))] @ [Zsym]
+                @ concat (replicate j b\<^sub>0)) @ b\<^sub>1)"
+  \<comment> \<open>the RHS closed value at the matching index \<open>j\<close>\<close>
+  have opR: "operB (Trans M) (numBT j) = ?R"
+    by (rule operB_marked_scb_value_kind1[OF tT uv bodyT dbbody bodyne innerscb k1])
+  have flatop: "flatBT ?R
+          = s\<^sub>1 @ (Dsym (enat u)
+              # concat (replicate j (s\<^sub>0 @ [Dsym (enat (v - 1))]))
+              @ [Dsym (enat (v - 1))] @ [Zsym]
+              @ concat (replicate j b\<^sub>0)) @ b\<^sub>1"
+  proof -
+    have "flatBT (operB (Trans M) (numBT j))
+            = s\<^sub>1 @ (Dsym (enat u)
+                # concat (replicate j (s\<^sub>0 @ [Dsym (enat (v - 1))]))
+                @ [Dsym (enat (v - 1))] @ [Zsym]
+                @ concat (replicate j b\<^sub>0)) @ b\<^sub>1"
+      using m_7_2_scb_fseq_kind1_general[OF tT uv bodyT dbbody bodyne innerscb k1]
+      by simp
+    thus ?thesis using opR by simp
+  qed
+  have flatR: "flatBT ?R
+          = (s\<^sub>1 @ Dsym (enat u) # concat (replicate j (s\<^sub>0 @ [Dsym (enat (v - 1))])))
+            @ flatBP (DB (enat (v - 1)) (Trm []))
+            @ (concat (replicate j b\<^sub>0) @ b\<^sub>1)"
+    using flatop by simp
+  \<comment> \<open>the tail \<open>B\<^sub>j = b\<^sub>0\<^bsup>j\<^esup> b\<^sub>1\<close> is all \<open>RP\<close>\<close>
+  have b0RP: "\<forall>x \<in> set b\<^sub>0. x = RP" using innerscb by (simp add: scb_decomp_def)
+  have b1RP: "\<forall>x \<in> set b\<^sub>1. x = RP"
+    using k1 by (simp add: scb_kind1_def scb_decomp_def)
+  have sub: "set (concat (replicate j b\<^sub>0)) \<subseteq> set b\<^sub>0" by (induction j) auto
+  have allRP: "\<forall>x \<in> set (concat (replicate j b\<^sub>0) @ b\<^sub>1). x = RP"
+    using b0RP b1RP sub by auto
+  \<comment> \<open>leaf-congruence: equal leaf \<open>\<Longrightarrow>\<close> equality, strict leaf \<open>\<Longrightarrow>\<close> \<open>lessBT\<close>\<close>
+  have leR: "leBT (Trans (M[m])) ?R"
+  proof (cases "cp = DB (enat (v - 1)) (Trm [])")
+    case True
+    have "flatBT (Trans (M[m])) = flatBT ?R"
+      using flateq flatR True by simp
+    hence "Trans (M[m]) = ?R" by (rule m_7_flatBT_inj)
+    thus "leBT (Trans (M[m])) ?R" by simp
+  next
+    case False
+    hence less: "lessBP cp (DB (enat (v - 1)) (Trm []))" using cple by simp
+    have "lessBT (Trans (M[m])) ?R"
+      by (rule scbext_lessBT[OF flateq flatR allRP less])
+    thus "leBT (Trans (M[m])) ?R" by simp
+  qed
+  show "\<exists>j. leBT (Trans (M[m]))
+             (unflatBT (s\<^sub>1 @ (Dsym (enat u)
+                 # concat (replicate j (s\<^sub>0 @ [Dsym (enat (v - 1))]))
+                 @ [Dsym (enat (v - 1))] @ [Zsym]
+                 @ concat (replicate j b\<^sub>0)) @ b\<^sub>1))"
+    by (rule exI[of _ j], rule leR)
 qed
 
 
