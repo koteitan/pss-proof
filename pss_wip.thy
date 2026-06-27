@@ -34424,6 +34424,153 @@ lemma m_8_7_OT_B_of_isOT_BT:
   shows "Trans M \<in> OT_B"
   using ot m_8_7_Trans_in_T_B_ST[OF M] by (simp add: OT_B_def OT_def)
 
+text \<open>§8.7 descP-closure (the R2 \<open>bodyD\<close> step rule, surgery-FREE).  \<open>descP\<close> is
+  preserved by appending one principal that is \<open>\<le>\<close> the current last principal
+  (\<open>leBT (D pn) (D last)\<close>).  This is the inductive-step shape of \<open>descP\<close> on \<open>Trans
+  M\<close>'s body: the prefix \<open>descP\<close> comes from the IH @{term \<open>isOT_BT (Trans (Pred
+  M))\<close>}, and this rule adds the new keystone principal once the descending
+  inequality \<open>M\<^bsub>1,j\<^sub>1'\<^esub> \<le> RightNodes(Trans (Pred M))\<close> is established.  Empirically
+  verified: 0 descP failures over 315 \<open>ST\<^bsub>PS\<^esub>\<close> \<open>Trans\<close> samples (and 0 OT
+  failures).\<close>
+
+lemma descP_snoc:
+  "descP xs \<Longrightarrow> (xs \<noteq> [] \<longrightarrow> leBT (Trm [pn]) (Trm [last xs])) \<Longrightarrow> descP (xs @ [pn])"
+proof (induction xs rule: descP.induct)
+  case 1 thus ?case by simp
+next
+  case (2 q) thus ?case by simp
+next
+  case (3 q r rest)
+  from "3.prems"(1) have h1: "leBT (Trm [r]) (Trm [q])" and hd: "descP (r # rest)" by simp_all
+  from "3.prems"(2) have hle2: "r # rest \<noteq> [] \<longrightarrow> leBT (Trm [pn]) (Trm [last (r # rest)])"
+    by simp
+  have "descP ((r # rest) @ [pn])" by (rule "3.IH"[OF hd hle2])
+  thus ?case using h1 by simp
+qed
+
+lemma m_8_7_isOT_BT_snoc_leBT:
+  assumes a: "isOT_BT (Trm xs)" and p: "isOT_BP pn"
+    and le: "xs \<noteq> [] \<longrightarrow> leBT (Trm [pn]) (Trm [last xs])"
+  shows "isOT_BT (Trm (xs @ [pn]))"
+proof -
+  have "descP xs" using a by simp
+  hence "descP (xs @ [pn])" using descP_snoc[OF _ le] by blast
+  thus ?thesis using m_8_7_isOT_BT_snoc[OF a p] by blast
+qed
+
+text \<open>\<open>isOT_BT (D\<^bsub>v\<^esub> t) \<Longrightarrow> isOT_BT t\<close>: the body of an OT principal is OT (peel the
+  outer \<open>D\<^bsub>v\<^esub>\<close>).  Feeds R1 (the IH @{term \<open>isOT_BT (Trans (Pred M))\<close>} exposes
+  \<open>isOT_BT t\<^sub>1\<close> for the body \<open>t\<^sub>1\<close> of \<open>Trans (Pred M) = D\<^bsub>M\<^sub>1\<^sub>,\<^sub>0\<^esub> t\<^sub>1\<close>).\<close>
+
+lemma isOT_BT_Dpt_body:
+  assumes "isOT_BT (Dpt v t)"
+  shows "isOT_BT t"
+  using assms by simp
+
+text \<open>§8.7 OT-membership STEP — surgery-FREE keystone Pred-recursion (modulo wid +
+  [Buc1]).  The keystone @{thm [source] m_8_2_keystone} decomposes \<open>Trans M = D\<^bsub>M\<^sub>1\<^sub>,\<^sub>0\<^esub>
+  (p +\<^sub>B D\<^bsub>x\<^esub> q)\<close> with \<open>p\<close> a prefix of the body of \<open>Trans (Pred M)\<close> (surgery-free,
+  proven).  Given that decomposition, \<open>isOT_BT (Trans M)\<close> reduces to exactly the
+  three residual classes, all banked green here as hypotheses:
+  \<^item> \<open>pOT\<close>: \<open>isOT_BT (Trm ps)\<close> — R1, from the IH on \<open>Trans (Pred M)\<close>
+    (@{thm [source] isOT_BT_Dpt_body} + prefix-of-OT);
+  \<^item> \<open>dstep\<close>: the appended principal \<open>\<le>\<close> the prefix's last — R2, the descP step
+    \<open>M\<^bsub>1,j\<^sub>1'\<^esub> \<le> RightNodes(Trans (Pred M))\<close>; its head part is wid (clean for
+    \<open>j\<^sub>0' < TrMax\<close>, the \<open>j\<^sub>0' = TrMax\<close> determination being THE universal residual);
+  \<^item> \<open>newOT\<close> / \<open>gbt\<close>: \<open>isOT_BP (D\<^bsub>x\<^esub> q)\<close> and the outer \<open>G\<^bsub>B\<^esub>\<close>-condition — R3, the
+    [Buc1] OT2 clauses.
+  No surgery anywhere; the only non-elementary inputs are the proven keystone, the
+  wid head-determination (R2), and the [Buc1] citations (R3).\<close>
+
+lemma m_8_7_OT_step_uniform:
+  fixes M :: pairseq
+  assumes dec: "Trans M = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B Dpt (enat x) q)"
+    and pOT: "isOT_BT (Trm ps)"
+    and newOT: "isOT_BP (DB (enat x) q)"
+    and dstep: "ps \<noteq> [] \<longrightarrow> leBT (Dpt (enat x) q) (Trm [last ps])"
+    and gbt: "\<forall>y\<in>GBT (enat (entry M 1 0)) (Trm ps +\<^sub>B Dpt (enat x) q).
+                 lessBT y (Trm ps +\<^sub>B Dpt (enat x) q)"
+  shows "isOT_BT (Trans M)"
+proof -
+  have leP: "ps \<noteq> [] \<longrightarrow> leBT (Trm [DB (enat x) q]) (Trm [last ps])" using dstep by simp
+  have snoc: "isOT_BT (Trm (ps @ [DB (enat x) q]))"
+    by (rule m_8_7_isOT_BT_snoc_leBT[OF pOT newOT leP])
+  have bOT: "isOT_BT (Trm ps +\<^sub>B Dpt (enat x) q)" using snoc by simp
+  have "isOT_BT (Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B Dpt (enat x) q))"
+    by (rule m_8_7_isOT_BT_Dpt[OF bOT gbt])
+  thus ?thesis using dec by simp
+qed
+
+text \<open>Prefix-of-OT: \<open>descP\<close> and \<open>isOT_BT\<close> restrict to a left prefix.  Needed to
+  expose the IH prefix \<open>p\<close> as OT in keystone cases (3)/(4), where \<open>p\<close> is a proper
+  prefix of the body of \<open>Trans (Pred M)\<close>.\<close>
+
+lemma descP_append1: "descP (xs @ ys) \<Longrightarrow> descP xs"
+proof (induction xs rule: descP.induct)
+  case 1 show ?case by simp
+next
+  case (2 q) show ?case by simp
+next
+  case (3 q r rest)
+  from "3.prems" have c: "leBT (Trm [r]) (Trm [q]) \<and> descP ((r # rest) @ ys)" by simp
+  have "descP (r # rest)" by (rule "3.IH"[OF conjunct2[OF c]])
+  thus ?case using conjunct1[OF c] by simp
+qed
+
+lemma isOT_BT_addBT_left:
+  assumes "isOT_BT (a +\<^sub>B b)"
+  shows "isOT_BT a"
+proof -
+  obtain as where as: "a = Trm as" by (cases a)
+  obtain bs where bs: "b = Trm bs" by (cases b)
+  have H: "(\<forall>p\<in>set (as @ bs). isOT_BP p) \<and> descP (as @ bs)" using assms as bs by simp
+  have "\<forall>p\<in>set as. isOT_BP p" using H by auto
+  moreover have "descP as" using descP_append1 H by blast
+  ultimately show ?thesis using as by simp
+qed
+
+text \<open>§8.7 OT-membership STEP, fully wired (keystone case (1), modulo wid +
+  [Buc1]).  Internalises R1 (\<open>isOT_BT t\<^sub>1\<close> from the IH @{term \<open>isOT_BT (Trans (Pred
+  M))\<close>} via @{thm [source] isOT_BT_Dpt_body}) and R3-inner (the appended principal
+  \<open>D\<^bsub>M\<^sub>1\<^sub>,\<^sub>j\<^sub>1'\<^esub> 0\<close> is trivially \<open>isOT_BP\<close>).  Its remaining hypotheses are exactly the
+  keystone case-(1) decomposition \<open>dec1\<close> (the wid determination: which keystone case
+  fires — clean for \<open>j\<^sub>0' < TrMax\<close>, the universal residual at \<open>j\<^sub>0' = TrMax\<close>),
+  \<open>dstep\<close> (R2, the descP step \<open>M\<^bsub>1,j\<^sub>1'\<^esub> \<le> RightNodes(Trans (Pred M))\<close>), and \<open>gbt\<close>
+  (R3-outer, [Buc1] OT2).  Surgery-free.\<close>
+
+lemma m_8_7_Trans_preserves_OT_step:
+  fixes M :: pairseq
+  assumes predW: "Trans (Pred M) = Dpt (enat (entry M 1 0)) t1"
+    and dec1: "Trans M = Dpt (enat (entry M 1 0))
+                  (t1 +\<^sub>B Dpt (enat (entry M 1 (FirstNodes M ! (Lng (Br M) - 1)))) 0\<^sub>B)"
+    and ihOT: "isOT_BT (Trans (Pred M))"
+    and dstep: "(\<forall>ps. t1 = Trm ps \<longrightarrow> ps \<noteq> [] \<longrightarrow>
+                   leBT (Dpt (enat (entry M 1 (FirstNodes M ! (Lng (Br M) - 1)))) 0\<^sub>B)
+                        (Trm [last ps]))"
+    and gbt: "\<forall>y\<in>GBT (enat (entry M 1 0))
+                  (t1 +\<^sub>B Dpt (enat (entry M 1 (FirstNodes M ! (Lng (Br M) - 1)))) 0\<^sub>B).
+                 lessBT y (t1 +\<^sub>B Dpt (enat (entry M 1 (FirstNodes M ! (Lng (Br M) - 1)))) 0\<^sub>B)"
+  shows "isOT_BT (Trans M)"
+proof -
+  obtain ps where ps: "t1 = Trm ps" by (cases t1)
+  have pOT: "isOT_BT (Trm ps)"
+    using isOT_BT_Dpt_body[OF ihOT[unfolded predW]] ps by simp
+  have newOT: "isOT_BP (DB (enat (entry M 1 (FirstNodes M ! (Lng (Br M) - 1)))) 0\<^sub>B)"
+    by simp
+  have dstep': "ps \<noteq> [] \<longrightarrow>
+      leBT (Dpt (enat (entry M 1 (FirstNodes M ! (Lng (Br M) - 1)))) 0\<^sub>B) (Trm [last ps])"
+    using dstep ps by blast
+  have dec1': "Trans M = Dpt (enat (entry M 1 0))
+                  (Trm ps +\<^sub>B Dpt (enat (entry M 1 (FirstNodes M ! (Lng (Br M) - 1)))) 0\<^sub>B)"
+    using dec1 ps by simp
+  have gbt': "\<forall>y\<in>GBT (enat (entry M 1 0))
+                  (Trm ps +\<^sub>B Dpt (enat (entry M 1 (FirstNodes M ! (Lng (Br M) - 1)))) 0\<^sub>B).
+                 lessBT y (Trm ps +\<^sub>B Dpt (enat (entry M 1 (FirstNodes M ! (Lng (Br M) - 1)))) 0\<^sub>B)"
+    using gbt ps by simp
+  show ?thesis
+    by (rule m_8_7_OT_step_uniform[OF dec1' pOT newOT dstep' gbt'])
+qed
+
 text \<open>§8.1 additivity infrastructure (for @{thm [source]
   m_8_1_stepT_j0zero_of_additivity}).  The condition-(I), \<open>j\<^sub>0 = 0\<close> fundamental
   sequence is a pure self-repeat of \<open>Pred M\<close> (@{thm [source]
