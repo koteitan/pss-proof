@@ -34622,6 +34622,262 @@ proof -
 qed
 
 
+text \<open>§8.2 \<open>det\<close> global branch-row-1: the \<open>J = 0\<close> slice, UNCONDITIONAL (any
+  \<open>M \<in> DT\<^bsub>PS\<^esub>\<close> with at least one branch).  The first branch's first node is
+  \<open>FirstNodes M ! 0 = TrMax M + 1\<close> (@{thm [source] wit_FirstNodes0}), so the
+  trunk-top row-1 edge fact is exactly @{thm [source] nextR1_TrMax_fail}
+  (\<open>\<not> nextR M 1 (TrMax M)(TrMax M + 1)\<close>); feeding it into
+  @{thm [source] m_8_2_branch_row1_le_TrMax_of_notnextR} discharges the slice
+  outright.  (No recursion: \<open>TrMax M + 1\<close> is the trunk-top successor whose
+  row-1 step always fails.)\<close>
+
+lemma m_8_2_branch_row1_le_TrMax_J0:
+  fixes M :: pairseq
+  assumes MD: "M \<in> DT_PS" and Brne: "Br M \<noteq> []"
+  shows "entry M 1 (FirstNodes M ! 0) \<le> entry M 1 (TrMax M)"
+proof -
+  have MR: "M \<in> RT_PS" using MD by (auto simp: DT_PS_def)
+  have MT: "M \<in> T_PS" using MR by (simp add: RT_PS_def)
+  have JBr: "0 < Lng (Br M)" using Brne by (cases "Br M") auto
+  have f0: "FirstNodes M ! 0 = TrMax M + 1" by (rule wit_FirstNodes0)
+  have notnx: "\<not> nextR M 1 (TrMax M) (FirstNodes M ! 0)"
+    using nextR1_TrMax_fail[OF MT] f0 by simp
+  show ?thesis
+    by (rule m_8_2_branch_row1_le_TrMax_of_notnextR[OF MD JBr notnx])
+qed
+
+
+text \<open>§8.2 \<open>det\<close> global branch-row-1: the SINGLE-branch case (\<open>Lng (Br M) = 1\<close>).
+  The only branch index is \<open>J = 0\<close>, so the global bound reduces to the \<open>J = 0\<close>
+  slice (@{thm [source] m_8_2_branch_row1_le_TrMax_J0}).\<close>
+
+lemma m_8_2_branch_row1_le_TrMax_single:
+  fixes M :: pairseq
+  assumes MD: "M \<in> DT_PS" and Br1: "Lng (Br M) = 1"
+  shows "\<forall>J<Lng (Br M). entry M 1 (FirstNodes M ! J) \<le> entry M 1 (TrMax M)"
+proof (intro allI impI)
+  fix J assume "J < Lng (Br M)"
+  hence J0: "J = 0" using Br1 by simp
+  have Brne: "Br M \<noteq> []" using Br1 by auto
+  show "entry M 1 (FirstNodes M ! J) \<le> entry M 1 (TrMax M)"
+    unfolding J0 by (rule m_8_2_branch_row1_le_TrMax_J0[OF MD Brne])
+qed
+
+
+text \<open>§8.2 \<open>det\<close> support: the row-0 head of branch \<open>J\<close> equals \<open>M\<^bsub>1,0\<^esub> + j\<^sub>0' + 1\<close>
+  where \<open>j\<^sub>0' = Joints M ! J\<close>.  The branch head is the first-node row-0 value
+  (@{thm [source] entry_FirstNodes_eq_component_gen}); by \<open>RedCondA\<close> it is one more
+  than its row-0 parent \<open>j\<^sub>0'\<close>, whose trunk-diagonal value is \<open>M\<^bsub>0,0\<^esub> + j\<^sub>0'\<close>
+  (@{thm [source] trunk_entries_offset}, \<open>j\<^sub>0' \<le> TrMax M\<close>), and \<open>M\<^bsub>0,0\<^esub> = M\<^bsub>1,0\<^esub>\<close>
+  at the root (\<open>RedCondB\<close>, col 0 parentless).\<close>
+
+lemma m_8_2_branch_col0_val:
+  fixes M :: pairseq
+  assumes MD: "M \<in> DT_PS" and JBr: "J < Lng (Br M)"
+  shows "entry (Br M ! J) 0 0 = entry M 1 0 + Joints M ! J + 1"
+proof -
+  have MR: "M \<in> RT_PS" and mono: "monoT M" using MD by (auto simp: DT_PS_def)
+  have MT: "M \<in> T_PS" using MR by (simp add: RT_PS_def)
+  have MP: "M \<in> PT_PS" using MT mono by (simp add: PT_PS_def)
+  have condAB: "RedCondA M \<and> RedCondB M" using m_6_6_reduced_iff_cond[OF MT] MR by simp
+  have condA: "RedCondA M" and condB: "RedCondB M" using condAB by simp_all
+  let ?f = "FirstNodes M ! J"
+  let ?j0 = "Joints M ! J"
+  have parR: "nextR M 0 ?j0 ?f" by (rule Joints_parent_nextR[OF MP JBr])
+  have j0le: "?j0 \<le> TrMax M" and tlf: "TrMax M < ?f"
+    using m_6_4_FirstNodes_TrMax_Joints[OF MP JBr] by simp_all
+  have fL: "?f < Lng M" by (rule a1_FN_lt[OF MP JBr])
+  have fpos: "0 < ?f" using tlf by simp
+  have fle: "?f \<le> Lng M - 1" using fL by simp
+  have hp0: "hasParent M 0 ?f" using monoT_branch_hasParent[OF MT mono fpos fle] by simp
+  have ex1: "\<exists>!a. nextR M 0 a ?f" using hp0 by (simp add: hasParent_def)
+  have par0eq: "parent M 0 ?f = ?j0"
+    using ex1 parR unfolding parent_def by (rule the1_equality)
+  have toff_j0: "entry M 0 ?j0 = entry M 0 0 + ?j0 \<and> entry M 1 ?j0 = entry M 1 0 + ?j0"
+    by (rule trunk_entries_offset[OF MT condA j0le])
+  have noprt0: "\<not> hasParent M 0 0"
+    unfolding hasParent_def by (auto simp: nextR_def nextrel0_def)
+  have col0: "entry M 0 0 = entry M 1 0"
+    using condB noprt0 unfolding RedCondB_def by auto
+  have condA0: "\<And>j. hasParent M 0 j \<Longrightarrow> entry M 0 (parent M 0 j) + 1 = entry M 0 j"
+    using condA unfolding RedCondA_def by blast
+  have e0f: "entry M 0 ?f = entry M 0 ?j0 + 1"
+    using condA0[OF hp0] par0eq by simp
+  have c0FN: "entry M 0 ?f = entry (Br M ! J) 0 0"
+    by (rule entry_FirstNodes_eq_component_gen[OF MP JBr])
+  show ?thesis using e0f toff_j0 col0 c0FN by simp
+qed
+
+
+text \<open>§8.2 \<open>det\<close> GLOBAL branch-row-1 bound, UNCONDITIONAL (the open core of the
+  global lemma, closed).  For every branch first-node \<open>f = FirstNodes M ! J\<close> of
+  \<open>M \<in> DT\<^bsub>PS\<^esub>\<close> the row-1 value is bounded by the trunk-top row-1 value:
+  \<open>M\<^bsub>1,f\<^esub> \<le> M\<^bsub>1,TrMax M\<^esub>\<close>.  Two regimes by the joint \<open>j\<^sub>0' = Joints M ! J\<close>:
+
+  \<^item> \<open>j\<^sub>0' < TrMax M\<close>: the reduced coefficient \<open>M\<^bsub>1,f\<^esub> \<le> M\<^bsub>0,f\<^esub>\<close>
+    (@{thm [source] m_6_6_reduced_coeff}) plus the branch-head value
+    (@{thm [source] m_8_2_branch_col0_val}, \<open>= M\<^bsub>1,0\<^esub> + j\<^sub>0' + 1\<close>) and the trunk
+    diagonal already give \<open>M\<^bsub>1,f\<^esub> \<le> M\<^bsub>1,0\<^esub> + j\<^sub>0' + 1 \<le> M\<^bsub>1,0\<^esub> + TrMax M = M\<^bsub>1,TrMax M\<^esub>\<close>.
+
+  \<^item> \<open>j\<^sub>0' = TrMax M\<close> (boundary): branch \<open>J\<close> attaches at the trunk top.  For \<open>J = 0\<close>
+    this is the slice @{thm [source] m_8_2_branch_row1_le_TrMax_J0}.  For \<open>J > 0\<close>,
+    the joints are weakly decreasing and \<open>\<le> TrMax M\<close>
+    (@{thm [source] m_6_4_FirstNodes_Joints_mono}, @{thm [source] m_6_4_FirstNodes_TrMax_Joints}),
+    so \<open>Joints M ! 0 = TrMax M\<close> too; hence branches \<open>0\<close> and \<open>J\<close> have the SAME
+    row-0 head (\<open>M\<^bsub>1,0\<^esub> + TrMax M + 1\<close>).  The \<open>descending(Br M)\<close> tie-break (row-0
+    major, row-1 minor; @{thm [source] descending_cdomD}) then forces
+    \<open>(Br M ! J)\<^bsub>1,0\<^esub> \<le> (Br M ! 0)\<^bsub>1,0\<^esub>\<close>, i.e. the row-1 first-node values ARE
+    monotone WITHIN this equal-row-0 boundary block, reducing \<open>J\<close> to \<open>J = 0\<close>.
+    (This is the crack that defeated 5 rounds: row-1 is non-monotone in general,
+    but at the boundary every branch shares the same row-0 head, so the
+    lexicographic tie-break applies.  Empirically 838/838 boundary cases,
+    \<open>scratchpad/det_explore.py\<close>.)\<close>
+
+lemma m_8_2_branch_row1_le_TrMax:
+  fixes M :: pairseq
+  assumes MD: "M \<in> DT_PS" and JBr: "J < Lng (Br M)"
+  shows "entry M 1 (FirstNodes M ! J) \<le> entry M 1 (TrMax M)"
+proof -
+  have MR: "M \<in> RT_PS" and mono: "monoT M" and descBr: "descending (Br M)"
+    using MD by (auto simp: DT_PS_def)
+  have MT: "M \<in> T_PS" using MR by (simp add: RT_PS_def)
+  have MP: "M \<in> PT_PS" using MT mono by (simp add: PT_PS_def)
+  have condAB: "RedCondA M \<and> RedCondB M" using m_6_6_reduced_iff_cond[OF MT] MR by simp
+  have condA: "RedCondA M" using condAB by simp
+  let ?f = "FirstNodes M ! J"
+  let ?j0 = "Joints M ! J"
+  let ?t = "TrMax M"
+  have j0le: "?j0 \<le> ?t" using m_6_4_FirstNodes_TrMax_Joints[OF MP JBr] by simp
+  have Brne: "Br M \<noteq> []" using JBr by (cases "Br M") auto
+  have BrL: "0 < Lng (Br M)" using Brne by (cases "Br M") auto
+  have fL: "?f < Lng M" by (rule a1_FN_lt[OF MP JBr])
+  have coeff: "entry M 1 ?f \<le> entry M 0 ?f" by (rule m_6_6_reduced_coeff[OF MR fL])
+  have c0FN: "entry M 0 ?f = entry (Br M ! J) 0 0"
+    by (rule entry_FirstNodes_eq_component_gen[OF MP JBr])
+  have c0val: "entry (Br M ! J) 0 0 = entry M 1 0 + ?j0 + 1"
+    by (rule m_8_2_branch_col0_val[OF MD JBr])
+  have toff_t: "entry M 1 ?t = entry M 1 0 + ?t"
+    using trunk_entries_offset[OF MT condA order.refl] by simp
+  show ?thesis
+  proof (cases "?j0 < ?t")
+    case True
+    have "entry M 1 ?f \<le> entry M 1 0 + ?j0 + 1" using coeff c0FN c0val by simp
+    also have "\<dots> \<le> entry M 1 0 + ?t" using True by simp
+    also have "\<dots> = entry M 1 ?t" using toff_t by simp
+    finally show ?thesis .
+  next
+    case False
+    hence j0t: "?j0 = ?t" using j0le by simp
+    show ?thesis
+    proof (cases "J = 0")
+      case True
+      show ?thesis unfolding True by (rule m_8_2_branch_row1_le_TrMax_J0[OF MD Brne])
+    next
+      case False
+      hence Jpos: "0 < J" by simp
+      \<comment> \<open>branch \<open>0\<close> also attaches at \<open>TrMax\<close> (descending joints, each \<open>\<le> TrMax\<close>)\<close>
+      have monoJ: "Joints M ! J \<le> Joints M ! 0"
+        using m_6_4_FirstNodes_Joints_mono[OF MP Jpos JBr] by simp
+      have j00ge: "?t \<le> Joints M ! 0" using monoJ j0t by simp
+      have j00le: "Joints M ! 0 \<le> ?t"
+        using m_6_4_FirstNodes_TrMax_Joints[OF MP BrL] by simp
+      have j00t: "Joints M ! 0 = ?t" using j00ge j00le by simp
+      \<comment> \<open>equal row-0 first-column heads\<close>
+      have c0valJ: "entry (Br M ! J) 0 0 = entry M 1 0 + ?t + 1"
+        using c0val j0t by simp
+      have c0val0: "entry (Br M ! 0) 0 0 = entry M 1 0 + ?t + 1"
+        using m_8_2_branch_col0_val[OF MD BrL] j00t by simp
+      have row0eq: "entry (Br M ! 0) 0 0 = entry (Br M ! J) 0 0"
+        using c0valJ c0val0 by simp
+      \<comment> \<open>descending tie-break: equal row-0 forces row-1 weakly decreasing\<close>
+      have le0J: "(0::nat) \<le> J" by simp
+      have cdomJ: "cdom (Br M ! 0) (Br M ! J)"
+        by (rule descending_cdomD[OF descBr le0J JBr])
+      have row1le: "entry (Br M ! J) 1 0 \<le> entry (Br M ! 0) 1 0"
+        using cdomJ row0eq by (simp add: cdom_def)
+      \<comment> \<open>branch \<open>0\<close> row-1 first node bounded by the \<open>J = 0\<close> slice\<close>
+      have c1FN: "entry M 1 ?f = entry (Br M ! J) 1 0"
+        by (rule entry_FirstNodes_eq_component_gen[OF MP JBr])
+      have c1FN0: "entry M 1 (FirstNodes M ! 0) = entry (Br M ! 0) 1 0"
+        by (rule entry_FirstNodes_eq_component_gen[OF MP BrL])
+      have b0le: "entry M 1 (FirstNodes M ! 0) \<le> entry M 1 ?t"
+        by (rule m_8_2_branch_row1_le_TrMax_J0[OF MD Brne])
+      have "entry M 1 ?f = entry (Br M ! J) 1 0" by (rule c1FN)
+      also have "\<dots> \<le> entry (Br M ! 0) 1 0" by (rule row1le)
+      also have "\<dots> = entry M 1 (FirstNodes M ! 0)" using c1FN0 by simp
+      also have "\<dots> \<le> entry M 1 ?t" by (rule b0le)
+      finally show ?thesis .
+    qed
+  qed
+qed
+
+
+text \<open>§8.2 \<open>det\<close> forces the NON-boundary regime.  Under the problematic det
+  hypothesis (\<open>M\<^bsub>1,j\<^sub>0'\<^esub> < M\<^bsub>1,j\<^sub>1'\<^esub>\<close> for the last branch \<open>J\<^sub>1 = Lng (Br M) - 1\<close>) the
+  now-unconditional global branch-row-1 bound (@{thm [source] m_8_2_branch_row1_le_TrMax})
+  gives \<open>M\<^bsub>1,j\<^sub>1'\<^esub> \<le> M\<^bsub>1,TrMax M\<^esub>\<close>, hence \<open>M\<^bsub>1,j\<^sub>0'\<^esub> < M\<^bsub>1,TrMax M\<^esub>\<close>; the trunk diagonal
+  (@{thm [source] trunk_entries_offset}, strictly increasing on \<open>[0,TrMax M]\<close>) forces
+  \<open>j\<^sub>0' < TrMax M\<close>.  This is exactly the local fact (\<open>M\<^bsub>1,TrMax M\<^esub> \<ge> M\<^bsub>1,j\<^sub>1'\<^esub>\<close> under
+  det) the route doc sought: \<open>det\<close> excludes the keystone case-(4) boundary
+  (\<open>j\<^sub>0' = TrMax\<close>).\<close>
+
+lemma m_8_2_det_imp_joint_lt_TrMax:
+  fixes M :: pairseq
+  assumes MD: "M \<in> DT_PS" and Brne: "Br M \<noteq> []"
+    and det: "entry M 1 (Joints M ! (Lng (Br M) - 1))
+                < entry M 1 (FirstNodes M ! (Lng (Br M) - 1))"
+  shows "Joints M ! (Lng (Br M) - 1) < TrMax M"
+proof -
+  have MR: "M \<in> RT_PS" and mono: "monoT M" using MD by (auto simp: DT_PS_def)
+  have MT: "M \<in> T_PS" using MR by (simp add: RT_PS_def)
+  have MP: "M \<in> PT_PS" using MT mono by (simp add: PT_PS_def)
+  have condA: "RedCondA M" using m_6_6_reduced_iff_cond[OF MT] MR by simp
+  have BrL: "0 < Lng (Br M)" using Brne by (cases "Br M") auto
+  have J1Br: "Lng (Br M) - 1 < Lng (Br M)" using BrL by simp
+  let ?j0 = "Joints M ! (Lng (Br M) - 1)"
+  let ?t = "TrMax M"
+  have j0le: "?j0 \<le> ?t" using m_6_4_FirstNodes_TrMax_Joints[OF MP J1Br] by simp
+  have bnd: "entry M 1 (FirstNodes M ! (Lng (Br M) - 1)) \<le> entry M 1 ?t"
+    by (rule m_8_2_branch_row1_le_TrMax[OF MD J1Br])
+  have lt: "entry M 1 ?j0 < entry M 1 ?t" using det bnd by simp
+  have e_j0: "entry M 1 ?j0 = entry M 1 0 + ?j0"
+    using trunk_entries_offset[OF MT condA j0le] by simp
+  have e_t: "entry M 1 ?t = entry M 1 0 + ?t"
+    using trunk_entries_offset[OF MT condA order.refl] by simp
+  show ?thesis using lt e_j0 e_t by linarith
+qed
+
+
+text \<open>§8.2 \<open>det\<close> excludes the \<open>Admpos\<close> case-(4) regime at the \<open>j\<^sub>1' = j\<^sub>1\<close> boundary.
+  When the last branch's first node is the right end (\<open>j\<^sub>1' = Lng M - 1\<close>) and \<open>M\<close> is
+  \<open>Admpos\<close> (\<open>transJm1 M > 0\<close>), the joint collapses to the trunk top
+  (@{thm [source] m_8_2_j0_eq_TrMax}: \<open>j\<^sub>0' = TrMax M\<close>); but det forces \<open>j\<^sub>0' < TrMax M\<close>
+  (@{thm [source] m_8_2_det_imp_joint_lt_TrMax}).  So under det at this boundary \<open>M\<close> is
+  \<open>Adm0\<close>, where the keystone case-(4) does not arise (the \<open>Adm0\<close> regime gives only
+  cases (1)/(2), case (2) being elementarily excluded by the row identity).  This is
+  the structural half of the case-(4) exclusion; the residual is the \<open>Adm0\<close>/non-\<open>j\<^sub>1'=j\<^sub>1\<close>
+  closure (see \<open>m_8_2_det_of_case4excl\<close>).\<close>
+
+lemma m_8_2_det_imp_not_admpos_of_j1eq:
+  fixes M :: pairseq
+  assumes MD: "M \<in> DT_PS" and Brne: "Br M \<noteq> []" and j1gt: "Lng M - 1 > 1"
+    and j1eq: "FirstNodes M ! (Lng (Br M) - 1) = Lng M - 1"
+    and det: "entry M 1 (Joints M ! (Lng (Br M) - 1))
+                < entry M 1 (FirstNodes M ! (Lng (Br M) - 1))"
+  shows "\<not> transJm1 M > 0"
+proof
+  assume Admpos: "transJm1 M > 0"
+  have MR: "M \<in> RT_PS" and mono: "monoT M" using MD by (auto simp: DT_PS_def)
+  have MT: "M \<in> T_PS" using MR by (simp add: RT_PS_def)
+  have MP: "M \<in> PT_PS" using MT mono by (simp add: PT_PS_def)
+  have j0t: "Joints M ! (Lng (Br M) - 1) = TrMax M"
+    by (rule m_8_2_j0_eq_TrMax[OF MR MP Brne j1gt Admpos j1eq])
+  have j0lt: "Joints M ! (Lng (Br M) - 1) < TrMax M"
+    by (rule m_8_2_det_imp_joint_lt_TrMax[OF MD Brne det])
+  show False using j0t j0lt by simp
+qed
+
+
 text \<open>§8.2 \<open>det\<close> reduced to the single keystone case-(4) exclusion.  Under the
   problematic hypothesis \<open>det\<close> (\<open>M\<^bsub>1,j\<^sub>0'\<^esub> < M\<^bsub>1,j\<^sub>1'\<^esub>\<close>) the four-way keystone
   @{thm [source] m_8_2_keystone} disjunction collapses to the first-node side
@@ -36518,6 +36774,55 @@ proof -
 qed
 
 
+text \<open>§8.4/§8.5 kind-1 \<open>lhs\<close>, condition-(V) COMPLETION of @{thm [source]
+  funpow_closed_of_step}.  EMPIRICAL CORRECTION (round-6, validated with
+  \<open>python/r6_basestepbot.py\<close> / \<open>python/r6_diag.py\<close> over standard \<open>ST\<^bsub>PS\<^esub>\<close>
+  condIII/condV hosts, \<open>bms -s\<close>): the \<open>step\<close> hypothesis of @{thm [source]
+  funpow_closed_of_step} — namely \<open>\<forall>p \<ge> 1. Trans (M[p]) = OW b \<longrightarrow>
+  Trans (M[Suc p]) = OW (C b)\<close> — is FALSE on condition (V).  WITNESS: the \<open>k = 2\<close>
+  condV host \<open>M = (0,0)(1,1)(2,2)(2,2)\<close>, where the FIRST oper step
+  \<open>M[1] \<to> M[2]\<close> nests TWO copies of the period context \<open>C\<close>, not one:
+  \<open>Trans (M[1]) = D\<^sub>0(D\<^sub>2 0)\<close> (\<open>= OW leafL\<close>, \<open>leafL = D\<^sub>2 0\<close>), but
+  \<open>Trans (M[2]) = D\<^sub>0((D\<^sub>2 0, D\<^sub>1((D\<^sub>2 0, D\<^sub>1(D\<^sub>2 0))))) = OW (C\<^bsup>2\<^esup> leafL)\<close> with
+  \<open>C x = (D\<^sub>2 0, D\<^sub>1 x)\<close> — whereas @{thm [source] funpow_closed_of_step}'s
+  uniform \<open>step\<close> forces \<open>Trans (M[2]) = OW (C\<^bsup>1\<^esup> leafL)\<close> (the EXTRA nesting
+  level is dropped).  The single oper step IS uniform from \<open>p \<ge> 2\<close> onward (each
+  later step nests exactly one \<open>C\<close>, empirically 25/25 incl. the \<open>k = 2\<close> host), so
+  the condition-(V)-complete closed form starts the induction at \<open>m = 2\<close> with a
+  host-constant FIRST-STEP JUMP \<open>k \<in> {1,2}\<close> (\<open>k = 1\<close> for all condIII and most
+  condV, \<open>k = 2\<close> for the \<open>D\<^sub>v\<close>-leaf-nesting condV hosts).  This pure-induction
+  packaging reduces the genuine residual to \<open>base2\<close> (\<open>Trans (M[2]) = OW (C\<^bsup>k\<^esup>
+  leafL)\<close>, the \<open>k\<close>-jump first step from \<open>Pred M\<close>) plus \<open>step\<close> ONLY for \<open>p \<ge> 2\<close>;
+  the descent engine only ever needs \<open>m = n > 1\<close>, so the \<open>m \<ge> 2\<close> restriction is
+  free.  (NB: for \<open>k = 1\<close> this coincides with @{thm [source]
+  funpow_closed_of_step} at \<open>m \<ge> 2\<close>, so this lemma SUBSUMES the onestep route on
+  the descent-engine domain while additionally covering the \<open>k = 2\<close> condV gap.)\<close>
+
+lemma funpow_closed_of_step_from2:
+  fixes M :: pairseq and OW C :: "BT \<Rightarrow> BT" and leafL :: BT and m k :: nat
+  assumes base2: "Trans (M[2]) = OW ((C ^^ k) leafL)"
+    and step: "\<And>p b. 2 \<le> p \<Longrightarrow> Trans (M[p]) = OW b \<Longrightarrow> Trans (M[Suc p]) = OW (C b)"
+    and m2: "2 \<le> m"
+  shows "Trans (M[m]) = OW ((C ^^ (k + (m - 2))) leafL)"
+proof -
+  have key: "\<And>q. Trans (M[2 + q]) = OW ((C ^^ (k + q)) leafL)"
+  proof -
+    fix q show "Trans (M[2 + q]) = OW ((C ^^ (k + q)) leafL)"
+    proof (induction q)
+      case 0 show ?case using base2 by simp
+    next
+      case (Suc q)
+      have ihq: "Trans (M[2 + q]) = OW ((C ^^ (k + q)) leafL)" using Suc.IH .
+      have "Trans (M[Suc (2 + q)]) = OW (C ((C ^^ (k + q)) leafL))"
+        by (rule step[OF _ ihq]) simp
+      thus ?case by simp
+    qed
+  qed
+  have mq: "2 + (m - 2) = m" using m2 by simp
+  show ?thesis using key[of "m - 2"] mq by simp
+qed
+
+
 text \<open>§8.4/§8.5 kind-1 \<open>lhs\<close> DISCHARGE — the FULL one-step reduction.  Composes
   @{thm [source] funpow_closed_of_step} (closed form \<open>\<Longleftarrow>\<close> base + step) into
   @{thm [source] m_8_45_lhs_of_funpow_recurrence_scb}: the exch \<open>lhs\<close> conclusion
@@ -36552,6 +36857,103 @@ proof -
           [where C = C and OW = OW and s\<^sub>0 = s\<^sub>0 and s\<^sub>1 = s\<^sub>1 and b\<^sub>0 = b\<^sub>0 and b\<^sub>1 = b\<^sub>1
              and u = u and v = v and M = M and m = m and k = k and leafL = leafL,
            OF C_def OW_def tT uv bodyT dbbody bodyne innerscb k1 lhs bot])
+qed
+
+
+text \<open>§8.4/§8.5 kind-1 \<open>lhs\<close> DISCHARGE — condition-(V)-COMPLETE drop-in (round-6).
+  The analogue of @{thm [source] m_8_45_lhs_of_onestep_scb} built on the
+  condV-complete packaging @{thm [source] funpow_closed_of_step_from2} instead of
+  the (condV-INCOMPLETE) @{thm [source] funpow_closed_of_step}.  Reduces the exch
+  \<open>lhs\<close> conclusion \<open>\<exists>j. leBT (Trans (M[m])) (operB (Trans M) (numBT j))\<close> to the
+  THREE empirically-validated genuine residuals: \<open>base2\<close> (\<open>Trans (M[2]) =
+  OW (C\<^bsup>k\<^esup> leafL\<^sub>0)\<close>, the host-constant \<open>k\<close>-jump first oper step, \<open>k \<in> {1,2}\<close>),
+  \<open>step2\<close> (the single oper-step marking-nesting recurrence \<open>Trans (M[Suc p]) =
+  OW (C b)\<close> for \<open>p \<ge> 2\<close>, uniform 25/25 incl. the \<open>k = 2\<close> host), and \<open>botU\<close> (the
+  uniform single-step leaf bound \<open>leBT leafL\<^sub>0 (C (D\<^bsub>v-1\<^esub> 0))\<close>, 25/25).  Internally
+  it sets \<open>leafL = C\<^bsup>k-1\<^esup> leafL\<^sub>0\<close> so the closed form becomes \<open>Trans (M[m]) =
+  OW (C\<^bsup>m-1\<^esup> leafL)\<close> (\<open>m \<ge> 2\<close>), lifting \<open>botU\<close> by \<open>Cmono\<close> to the \<open>C\<^bsup>k\<^esup>\<close> bottom
+  bound required by @{thm [source] m_8_45_lhs_of_funpow_recurrence_scb}, witness
+  \<open>j = (m-1) + k\<close>.  Drop-in for the \<open>exch\<close> hypothesis of @{thm [source]
+  m_8_5_TransCondV_oper_descend_engine}.\<close>
+
+lemma m_8_45_lhs_of_step2_scb:
+  fixes M :: pairseq and u v m k :: nat and leafL\<^sub>0 :: BT
+    and s\<^sub>0 s\<^sub>1 b\<^sub>0 b\<^sub>1 :: "Sym list" and C OW :: "BT \<Rightarrow> BT"
+  assumes C_def: "C = (\<lambda>x. unflatBT (s\<^sub>0 @ Dsym (enat (v - 1)) # flatBT x @ b\<^sub>0))"
+    and OW_def: "OW = (\<lambda>x. unflatBT (s\<^sub>1 @ Dsym (enat u) # flatBT x @ b\<^sub>1))"
+    and tT: "Trans M \<in> T_B" and uv: "u < v" and bodyT: "body \<in> T_B"
+    and dbbody: "domB body = TBv (enat (v - 1))" and bodyne: "body \<noteq> Trm []"
+    and innerscb: "scb_decomp body s\<^sub>0 (flatBT (Dpt (enat v) 0\<^sub>B)) b\<^sub>0"
+    and k1: "scb_kind1 (Trans M) s\<^sub>1 (flatBT (Dpt (enat u) body)) b\<^sub>1"
+    and kpos: "1 \<le> k"
+    and base2: "Trans (M[2]) = OW ((C ^^ k) leafL\<^sub>0)"
+    and step2: "\<And>p b. 2 \<le> p \<Longrightarrow> Trans (M[p]) = OW b \<Longrightarrow> Trans (M[Suc p]) = OW (C b)"
+    and botU: "leBT leafL\<^sub>0 (C (Dpt (enat (v - 1)) 0\<^sub>B))"
+    and m2: "2 \<le> m"
+  shows "\<exists>j. leBT (Trans (M[m])) (operB (Trans M) (numBT j))"
+proof -
+  \<comment> \<open>\<open>Cmono\<close> from the scb structure (as in m_8_45_lhs_of_funpow_recurrence_scb)\<close>
+  have bodyflat: "flatBT body = s\<^sub>0 @ flatBP (DB (enat v) (Trm [])) @ b\<^sub>0"
+    using innerscb by (simp add: scb_decomp_def)
+  have b0RP: "\<forall>x \<in> set b\<^sub>0. x = RP" using innerscb by (simp add: scb_decomp_def)
+  have R0c: "\<And>x. flatBT (C x) = s\<^sub>0 @ flatBP (DB (enat (v - 1)) x) @ b\<^sub>0"
+  proof -
+    fix x
+    obtain t' where t': "flatBT t' = s\<^sub>0 @ flatBP (DB (enat (v - 1)) x) @ b\<^sub>0"
+      using scbimg_image_BT[OF bodyflat b0RP, of "DB (enat (v - 1)) x"] by blast
+    have "C x = unflatBT (s\<^sub>0 @ flatBP (DB (enat (v - 1)) x) @ b\<^sub>0)"
+      by (simp add: C_def)
+    also have "\<dots> = t'" using t' by (metis unflatBT_flat)
+    finally have "C x = t'" .
+    thus "flatBT (C x) = s\<^sub>0 @ flatBP (DB (enat (v - 1)) x) @ b\<^sub>0" using t' by simp
+  qed
+  have Cmono: "\<And>x y. leBT x y \<Longrightarrow> leBT (C x) (C y)"
+  proof -
+    fix x y assume "leBT x y"
+    thus "leBT (C x) (C y)"
+    proof
+      assume "lessBT x y"
+      hence "lessBP (DB (enat (v - 1)) x) (DB (enat (v - 1)) y)" by simp
+      hence "lessBT (C x) (C y)"
+        by (rule scbext_lessBT[OF R0c R0c b0RP])
+      thus ?thesis by simp
+    next
+      assume "x = y" thus ?thesis by simp
+    qed
+  qed
+  \<comment> \<open>closed form from \<open>base2\<close> + \<open>step2\<close>\<close>
+  have cf: "Trans (M[m]) = OW ((C ^^ (k + (m - 2))) leafL\<^sub>0)"
+    by (rule funpow_closed_of_step_from2[OF base2 step2 m2])
+  define leafL where "leafL = (C ^^ (k - 1)) leafL\<^sub>0"
+  have e1: "(m - 1) + (k - 1) = k + (m - 2)" using kpos m2 by linarith
+  have lhseq: "Trans (M[m]) = OW ((C ^^ (m - 1)) leafL)"
+  proof -
+    have "(C ^^ (m - 1)) leafL = (C ^^ ((m - 1) + (k - 1))) leafL\<^sub>0"
+      by (simp add: leafL_def funpow_add)
+    also have "\<dots> = (C ^^ (k + (m - 2))) leafL\<^sub>0" using e1 by simp
+    finally show ?thesis using cf by simp
+  qed
+  \<comment> \<open>lift \<open>botU\<close> by \<open>Cmono\<close> to the \<open>C\<^bsup>k\<^esup>\<close> bottom bound\<close>
+  have lift: "(C ^^ k) X = (C ^^ (k - 1)) (C X)" for X
+  proof -
+    have kk: "Suc (k - 1) = k" using kpos by simp
+    have "(C ^^ k) X = (C ^^ Suc (k - 1)) X" using kk by simp
+    also have "\<dots> = C ((C ^^ (k - 1)) X)" by simp
+    also have "\<dots> = (C ^^ (k - 1)) (C X)" by (simp add: funpow_swap1)
+    finally show ?thesis .
+  qed
+  have boteq: "leBT leafL ((C ^^ k) (Dpt (enat (v - 1)) 0\<^sub>B))"
+  proof -
+    have "leBT ((C ^^ (k - 1)) leafL\<^sub>0)
+               ((C ^^ (k - 1)) (C (Dpt (enat (v - 1)) 0\<^sub>B)))"
+      by (rule leBT_funpow_mono[OF Cmono botU])
+    thus ?thesis using lift by (simp add: leafL_def)
+  qed
+  show ?thesis
+    by (rule m_8_45_lhs_of_funpow_recurrence_scb
+          [where C = C and OW = OW and s\<^sub>0 = s\<^sub>0 and s\<^sub>1 = s\<^sub>1 and b\<^sub>0 = b\<^sub>0 and b\<^sub>1 = b\<^sub>1
+             and u = u and v = v and M = M and m = m and k = k and leafL = leafL,
+           OF C_def OW_def tT uv bodyT dbbody bodyne innerscb k1 lhseq boteq])
 qed
 
 
