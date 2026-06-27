@@ -38,7 +38,7 @@
   - 🚨 §8.3 条件 (II) の下での展開規則
     - 🚨 命題（条件 (II) の下での $\textrm{Trans}$ と基本列の交換関係）
       - ✅ 降下⟸exch+OT〔`m_8_3_TransCondII_oper_descend_engine`〕
-      - 🚨 exch（交換則）
+      - 🚨🤖 exch（交換則）：kind-0共有 marking-nesting へ還元済〔`m_8_3_exch_of_lhs_closed`、=§8.1 step 残差〕
       - 🚨 OT所属（→§8.7）
     - ✅ 補題（第 $0$ 種型基本列の基本不等式）〔`m_8_3_kind0_base_ineq`(A22訂正)〕
     - ✅ 補題（第 $0$ 種型基本列の基本分岐規則）〔`m_8_3_kind0_branch_rule`〕
