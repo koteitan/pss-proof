@@ -34419,6 +34419,130 @@ lemma m_8_2_factB_step:
           m_8_2_keystone[OF MR MP Brne j1gt]])
 
 
+text \<open>§8.2 \<open>det\<close>-boundary structural support — STRICT reduced coefficient at a
+  column with a row-0 parent but NO row-1 parent.  This is the cleanly-closable
+  half of the \<open>det\<close> case-(4) boundary geometry (the regime \<open>Admpos\<close> ∧
+  \<open>j\<^sub>1' = Lng M - 1\<close>, where the structural fact \<open>M\<^bsub>0,j\<^sub>1'\<^esub> > M\<^bsub>1,j\<^sub>1'\<^esub>\<close> — equivalently
+  \<open>M\<^bsub>1,j\<^sub>0'\<^esub> \<ge> M\<^bsub>1,j\<^sub>1'\<^esub>\<close> via @{thm [source] m_8_2_joint_row1_eq} — excludes the
+  problematic \<open>det\<close> hypothesis).  The argument mirrors the \<open>hp\<^sub>1\<close>-False / \<open>hp\<^sub>0\<close>-True
+  branch of @{thm [source] m_6_6_reduced_coeff}: with \<open>p\<^sub>0 = parent M 0 j\<close>, the
+  ccontr witness of @{thm [source] m_5_1_parent_exists_2} would force a row-1
+  parent of \<open>j\<close> (contradicting \<open>\<not> hasParent M 1 j\<close>), so \<open>M\<^bsub>1,j\<^esub> \<le> M\<^bsub>1,p\<^sub>0\<^esub>\<close>; combining
+  with \<open>M\<^bsub>0,p\<^sub>0\<^esub> \<ge> M\<^bsub>1,p\<^sub>0\<^esub>\<close> (@{thm [source] m_6_6_reduced_coeff}) and the STRICT
+  ancestor step \<open>M\<^bsub>0,p\<^sub>0\<^esub> < M\<^bsub>0,j\<^esub>\<close> (@{thm [source] m_5_1_ancestor_basic_1}) yields
+  \<open>M\<^bsub>1,j\<^esub> \<le> M\<^bsub>1,p\<^sub>0\<^esub> \<le> M\<^bsub>0,p\<^sub>0\<^esub> < M\<^bsub>0,j\<^esub>\<close>, i.e. the STRICT inequality.  Verified
+  empirically on the \<open>det\<close>-boundary regime (\<open>python/_det_struct.py\<close>: in
+  \<open>Admpos\<close> ∧ \<open>j\<^sub>1' = Lng M - 1\<close> the last column has no row-1 parent in 83/118
+  cases, all satisfying \<open>e0 > e1\<close>).\<close>
+
+lemma m_8_2_strict_coeff_no_row1:
+  fixes M :: pairseq
+  assumes MR: "M \<in> RT_PS" and jL: "j < Lng M"
+    and hp0: "hasParent M 0 j" and nhp1: "\<not> hasParent M 1 j"
+  shows "entry M 1 j < entry M 0 j"
+proof -
+  have MT: "M \<in> T_PS" using MR by (simp add: RT_PS_def)
+  let ?p0 = "parent M 0 j"
+  have par0: "nextR M 0 ?p0 j"
+    using hp0 unfolding hasParent_def parent_def by (rule theI')
+  have p0lt: "?p0 < j" and leR0p0j: "leR M 0 ?p0 j"
+    using poper_nextR_imp_le0[OF par0] by simp_all
+  have p0L: "?p0 < Lng M" using p0lt jL by linarith
+  \<comment> \<open>no row-1 parent forces \<open>M\<^bsub>1,j\<^esub> \<le> M\<^bsub>1,p\<^sub>0\<^esub>\<close> (else a row-1 edge into \<open>j\<close> exists)\<close>
+  have e1le: "entry M 1 j \<le> entry M 1 ?p0"
+  proof (rule ccontr)
+    assume "\<not> entry M 1 j \<le> entry M 1 ?p0"
+    hence elt: "entry M 1 ?p0 < entry M 1 j" by simp
+    obtain j' where j'par: "?p0 \<le> j'" "j' < j" "nextR M 1 j' j"
+      using m_5_1_parent_exists_2[OF MT p0lt jL elt leR0p0j] by blast
+    have "hasParent M 1 j"
+      unfolding hasParent_def
+    proof (rule ex_ex1I)
+      show "\<exists>a. nextR M 1 a j" using j'par(3) by blast
+    next
+      fix a b assume "nextR M 1 a j" "nextR M 1 b j"
+      thus "a = b" by (rule nextR1_unique)
+    qed
+    thus False using nhp1 by simp
+  qed
+  have coeff: "entry M 0 ?p0 \<ge> entry M 1 ?p0" by (rule m_6_6_reduced_coeff[OF MR p0L])
+  have e0lt: "entry M 0 ?p0 < entry M 0 j"
+    by (rule m_5_1_ancestor_basic_1[OF MT p0lt _ leR0p0j]) simp
+  from e1le coeff e0lt show ?thesis by linarith
+qed
+
+
+text \<open>§8.2 \<open>det\<close>-boundary structural support — the row-0 \<open>le\<^sub>0\<close>-ancestor bound: a
+  column \<open>p\<close> that \<open>le\<^sub>0\<close>-reaches \<open>j\<close> (and is \<open>\<noteq> j\<close>) lies at or below the unique
+  row-0 parent of \<open>j\<close>.  (The last \<open>nextrel\<^sub>0\<close> edge of any path into \<open>j\<close> is the
+  unique parent edge; \<open>nextrel\<^sub>0\<close> is index-increasing, so the whole path stays
+  \<open>\<le> parent M 0 j\<close>.)  This is the "no \<open>le\<^sub>0\<close> from the branch interior to the last
+  column" fact (\<open>python/_det_boundary.py\<close>, 0/118 violations): for the boundary
+  regime the only \<open>p \<ge> TrMax\<close> with \<open>le\<^sub>0 M p (Lng M-1)\<close> is \<open>p = TrMax\<close> itself, used
+  to pin the row-1 parent of the last column to the trunk in the full boundary
+  argument.\<close>
+
+lemma m_8_2_le0_above_parent:
+  fixes M :: pairseq
+  assumes hp0: "hasParent M 0 j" and ple: "le0 M p j" and pne: "p \<noteq> j"
+  shows "p \<le> parent M 0 j"
+proof -
+  have rt: "(nextrel0 M)\<^sup>*\<^sup>* p j" using ple by (simp add: le0_def)
+  have parR: "nextR M 0 (parent M 0 j) j"
+    using hp0 unfolding hasParent_def parent_def by (rule theI')
+  have ex1: "\<exists>!a. nextR M 0 a j" using hp0 by (simp add: hasParent_def)
+  \<comment> \<open>the last \<open>nextrel\<^sub>0\<close> edge of the path into \<open>j\<close> is the unique parent edge\<close>
+  have "\<exists>q. (nextrel0 M)\<^sup>*\<^sup>* p q \<and> nextrel0 M q j"
+    using rt pne by (metis rtranclp.cases)
+  then obtain q where pq: "(nextrel0 M)\<^sup>*\<^sup>* p q" and qj: "nextrel0 M q j" by blast
+  have qnr: "nextR M 0 q j" using qj by (simp add: nextR_def)
+  have qpar: "q = parent M 0 j" using ex1 qnr parR by metis
+  have "(nextrel0 M)\<^sup>*\<^sup>* p (parent M 0 j)" using pq qpar by simp
+  thus ?thesis by (rule nextrel0_rtrancl_mono)
+qed
+
+
+text \<open>§8.2 \<open>det\<close>-boundary structural REDUCTION — the row-1 value of a column is
+  bounded by that of its row-0 parent, REDUCED to the single local fact that the
+  row-0 parent is NOT also a row-1 parent.  Assuming \<open>\<not> nextR M 1 (parent M 0 j) j\<close>:
+  were \<open>M\<^bsub>1,j\<^esub> > M\<^bsub>1,p\<^sub>0\<^esub>\<close> (\<open>p\<^sub>0 = parent M 0 j\<close>), @{thm [source] m_5_1_parent_exists_2}
+  produces a row-1 edge \<open>p\<^sub>1 \<rightarrow> j\<close> with \<open>p\<^sub>0 \<le> p\<^sub>1 < j\<close>; @{thm [source] m_8_2_le0_above_parent}
+  pins \<open>p\<^sub>1 \<le> p\<^sub>0\<close> (the edge's \<open>le\<^sub>0\<close> cannot rise above the parent), so \<open>p\<^sub>1 = p\<^sub>0\<close> and
+  \<open>nextR M 1 p\<^sub>0 j\<close> — contradicting the hypothesis.  Applied at the \<open>det\<close>-boundary
+  (\<open>j = Lng M - 1\<close>, \<open>p\<^sub>0 = TrMax M\<close> via the \<open>Admpos\<close> collapse), this isolates the
+  ENTIRE remaining \<open>det\<close> case-(4) content to the single trunk-top row-1 edge
+  exclusion \<open>\<not> nextR M 1 (TrMax M) (Lng M - 1)\<close> (empirically 0/118 over the
+  boundary regime, \<open>python/_det_boundary.py\<close>; it is the genuinely-recursive
+  branch-row-1 geometry that requires a global \<open>Lng\<close>-induction over the branches).\<close>
+
+lemma m_8_2_e1_le_e1par_of_notnextR1:
+  fixes M :: pairseq
+  assumes MT: "M \<in> T_PS"
+    and hp0: "hasParent M 0 j" and jL: "j < Lng M"
+    and notnx: "\<not> nextR M 1 (parent M 0 j) j"
+  shows "entry M 1 j \<le> entry M 1 (parent M 0 j)"
+proof -
+  let ?p0 = "parent M 0 j"
+  have parR: "nextR M 0 ?p0 j"
+    using hp0 unfolding hasParent_def parent_def by (rule theI')
+  have p0lt: "?p0 < j" and leR0p0j: "leR M 0 ?p0 j"
+    using poper_nextR_imp_le0[OF parR] by simp_all
+  show ?thesis
+  proof (rule ccontr)
+    assume "\<not> entry M 1 j \<le> entry M 1 ?p0"
+    hence elt: "entry M 1 ?p0 < entry M 1 j" by simp
+    obtain p1 where p1: "?p0 \<le> p1" "p1 < j" "nextR M 1 p1 j"
+      using m_5_1_parent_exists_2[OF MT p0lt jL elt leR0p0j] by blast
+    have le0p1: "le0 M p1 j" using p1(3) by (simp add: nextR_def nextrel1_def)
+    have p1ne: "p1 \<noteq> j" using p1(2) by simp
+    have "p1 \<le> ?p0" by (rule m_8_2_le0_above_parent[OF hp0 le0p1 p1ne])
+    hence "p1 = ?p0" using p1(1) by linarith
+    hence "nextR M 1 ?p0 j" using p1(3) by simp
+    thus False using notnx by simp
+  qed
+qed
+
+
 text \<open>§8.2 \<open>det\<close> reduced to the single keystone case-(4) exclusion.  Under the
   problematic hypothesis \<open>det\<close> (\<open>M\<^bsub>1,j\<^sub>0'\<^esub> < M\<^bsub>1,j\<^sub>1'\<^esub>\<close>) the four-way keystone
   @{thm [source] m_8_2_keystone} disjunction collapses to the first-node side
