@@ -38070,6 +38070,76 @@ proof -
 qed
 
 
+text \<open>§8.4/§8.5 residual \<open>botU\<close>, structural core.  The inner period context \<open>C\<close>
+  built from the scb-decomposition of the body \<open>t\<^sub>2 +\<^sub>B D\<^bsub>v\<^esub> 0\<close> at its TRAILING
+  marked leaf \<open>D\<^bsub>v\<^esub> 0\<close> acts on any \<open>x\<close> exactly as the addBT-right replacement of
+  that trailing principal by \<open>D\<^bsub>w\<^esub> x\<close>: \<open>C\<^bsub>w\<^esub>(x) = unflatBT(s\<^sub>0 \<frown> D\<^bsub>w\<^esub> # flat x \<frown> b\<^sub>0)
+  = t\<^sub>2 +\<^sub>B D\<^bsub>w\<^esub> x\<close>.  Mechanism: @{thm [source] addBT_trailing_align} produces the
+  canonical trailing decomposition \<open>(pre, post)\<close>, which by scb-uniqueness
+  (@{thm [source] m_7_2_scb_unique_sb}) coincides with the given \<open>(s\<^sub>0, b\<^sub>0)\<close>;
+  the same \<open>(pre, post)\<close> re-wraps \<open>D\<^bsub>w\<^esub> x\<close> into \<open>t\<^sub>2 +\<^sub>B D\<^bsub>w\<^esub> x\<close>.  This is the
+  EMPIRICALLY-VALIDATED structural identity \<open>C(D\<^bsub>v-1\<^esub> 0) = t\<^sub>2 +\<^sub>B D\<^bsub>v-1\<^esub>(D\<^bsub>v-1\<^esub> 0)\<close>
+  underlying \<open>botU\<close> (python/r9: \<open>eqadd\<close> 6/6 condV incl. the \<open>k=2\<close> host).\<close>
+
+lemma addBT_scb_C_eq:
+  fixes t\<^sub>2 :: BT and v w :: nat and x :: BT and s\<^sub>0 b\<^sub>0 :: "Sym list"
+  assumes inner: "scb_decomp (t\<^sub>2 +\<^sub>B Dpt (enat v) 0\<^sub>B) s\<^sub>0 (flatBT (Dpt (enat v) 0\<^sub>B)) b\<^sub>0"
+  shows "unflatBT (s\<^sub>0 @ Dsym (enat w) # flatBT x @ b\<^sub>0) = t\<^sub>2 +\<^sub>B Dpt (enat w) x"
+proof -
+  let ?cv = "Dpt (enat v) 0\<^sub>B"
+  let ?cw = "Dpt (enat w) x"
+  have cvp: "?cv = Trm [DB (enat v) 0\<^sub>B]" by simp
+  have cwp: "?cw = Trm [DB (enat w) x]" by simp
+  obtain pre post where postRP: "\<forall>y\<in>set post. y = RP"
+    and ev: "flatBT (t\<^sub>2 +\<^sub>B ?cv) = pre @ flatBT ?cv @ post"
+    and ew: "flatBT (t\<^sub>2 +\<^sub>B ?cw) = pre @ flatBT ?cw @ post"
+    using addBT_trailing_align[OF cvp cwp, where t = t\<^sub>2] by blast
+  have bodyne: "t\<^sub>2 +\<^sub>B ?cv \<noteq> Trm []"
+  proof -
+    obtain ts where "t\<^sub>2 = Trm ts" by (cases t\<^sub>2)
+    thus ?thesis by simp
+  qed
+  have iptcv: "isPTB_str (flatBT ?cv)" by (rule isPTB_str_Dpt) simp_all
+  have dpre: "scb_decomp (t\<^sub>2 +\<^sub>B ?cv) pre (flatBT ?cv) post"
+    unfolding scb_decomp_def using ev postRP iptcv by simp
+  have align: "s\<^sub>0 = pre \<and> b\<^sub>0 = post"
+    by (rule m_7_2_scb_unique_sb[OF inner dpre bodyne])
+  have fcw: "flatBT ?cw = Dsym (enat w) # flatBT x" by simp
+  have "s\<^sub>0 @ Dsym (enat w) # flatBT x @ b\<^sub>0 = pre @ flatBT ?cw @ post"
+    using align fcw by simp
+  also have "\<dots> = flatBT (t\<^sub>2 +\<^sub>B ?cw)" using ew by simp
+  finally show ?thesis by (metis unflatBT_flat)
+qed
+
+
+text \<open>§8.4/§8.5 residual \<open>botU\<close> DISCHARGED (structural, M-free).  With
+  \<open>leafL\<^sub>0 = t\<^sub>2\<close> and the inner period context \<open>C\<close> from the trailing-leaf
+  scb-decomposition (@{thm [source] addBT_scb_C_eq}), the bottom leaf bound
+  \<open>leBT leafL\<^sub>0 (C (D\<^bsub>v-1\<^esub> 0))\<close> reduces to \<open>leBT t\<^sub>2 (t\<^sub>2 +\<^sub>B D\<^bsub>v-1\<^esub>(D\<^bsub>v-1\<^esub> 0))\<close>,
+  immediate from @{thm [source] lessBT_addBT_self}.  This is exactly the \<open>botU\<close>
+  hypothesis of @{thm [source] m_8_45_lhs_of_step2_scb} /
+  @{thm [source] m_8_5_TransCondV_descend_of_step2_residuals} once \<open>leafL\<^sub>0 := t\<^sub>2\<close>.\<close>
+
+lemma m_8_5_botU_of_inner:
+  fixes t\<^sub>2 :: BT and v :: nat and s\<^sub>0 b\<^sub>0 :: "Sym list" and C :: "BT \<Rightarrow> BT"
+  assumes C_def: "C = (\<lambda>x. unflatBT (s\<^sub>0 @ Dsym (enat (v - 1)) # flatBT x @ b\<^sub>0))"
+    and inner: "scb_decomp (t\<^sub>2 +\<^sub>B Dpt (enat v) 0\<^sub>B) s\<^sub>0 (flatBT (Dpt (enat v) 0\<^sub>B)) b\<^sub>0"
+  shows "leBT t\<^sub>2 (C (Dpt (enat (v - 1)) 0\<^sub>B))"
+proof -
+  have "C (Dpt (enat (v - 1)) 0\<^sub>B)
+          = unflatBT (s\<^sub>0 @ Dsym (enat (v - 1)) # flatBT (Dpt (enat (v - 1)) 0\<^sub>B) @ b\<^sub>0)"
+    by (simp add: C_def)
+  also have "\<dots> = t\<^sub>2 +\<^sub>B Dpt (enat (v - 1)) (Dpt (enat (v - 1)) 0\<^sub>B)"
+    by (rule addBT_scb_C_eq[OF inner])
+  finally have Ceq: "C (Dpt (enat (v - 1)) 0\<^sub>B)
+                       = t\<^sub>2 +\<^sub>B Dpt (enat (v - 1)) (Dpt (enat (v - 1)) 0\<^sub>B)" .
+  have ne: "Dpt (enat (v - 1)) (Dpt (enat (v - 1)) 0\<^sub>B) \<noteq> 0\<^sub>B" by simp
+  have less: "lessBT t\<^sub>2 (t\<^sub>2 +\<^sub>B Dpt (enat (v - 1)) (Dpt (enat (v - 1)) 0\<^sub>B))"
+    by (rule lessBT_addBT_self[OF ne])
+  show ?thesis unfolding Ceq using less by simp
+qed
+
+
 text \<open>§8.7 OT-membership STEP — PREFIX case (keystone cases (3)/(4)), surgery-FREE.
   The analog of @{thm [source] m_8_7_Trans_preserves_OT_step} (which covers case (1),
   where the common prefix \<open>p\<close> is the WHOLE body of \<open>Trans (Pred M)\<close>) for the cases
@@ -38329,6 +38399,103 @@ proof -
   have "isOT_BT (Trans M)"
     by (rule m_8_7_OT_keystone_step[OF MR MP Brne j1gt ihBT resid])
   thus ?thesis by (rule m_8_7_OT_B_of_isOT_BT[OF MST])
+qed
+
+text \<open>§8.7 R2 brick — \<open>descP\<close> LAST-step extraction (BT-structural, surgery-FREE).
+  The companion of @{thm [source] descP_snoc} (which BUILDS \<open>descP (xs @ [p])\<close>): this
+  READS OFF the last adjacent comparison.  If \<open>descP (xs @ [p])\<close> holds and \<open>xs\<close> is
+  non-empty, then the appended principal \<open>p\<close> is \<open>\<le>\<close> the current last principal
+  \<open>last xs\<close>.  This is the \<open>dstep\<close> obligation seen from inside an already-\<open>descP\<close>
+  body: when the keystone prefix \<open>ps\<close> already ends in a principal whose head equals
+  the appended head, the tail descent is exactly this last \<open>descP\<close> comparison.\<close>
+
+lemma descP_last_le:
+  "descP (xs @ [p]) \<Longrightarrow> xs \<noteq> [] \<Longrightarrow> leBT (Trm [p]) (Trm [last xs])"
+proof (induction xs)
+  case Nil
+  thus ?case by simp
+next
+  case (Cons a rest)
+  show ?case
+  proof (cases "rest = []")
+    case True
+    thus ?thesis using Cons.prems(1) by simp
+  next
+    case False
+    then obtain b rest' where rb: "rest = b # rest'" by (cases rest) auto
+    have d: "descP (a # (rest @ [p]))" using Cons.prems(1) by simp
+    have "descP (rest @ [p])" using d rb by simp
+    hence ih: "leBT (Trm [p]) (Trm [last rest])" using Cons.IH False by simp
+    have "last (a # rest) = last rest" using False by simp
+    thus ?thesis using ih by simp
+  qed
+qed
+
+text \<open>§8.7 R2 brick — PREDECESSOR right-spine head bound (the \<open>dstep\<close> head input the
+  round-8 finding isolated).  Under the keystone Admpos regime (\<open>transJm1 M > 0\<close>,
+  \<open>Trans (Pred M) \<noteq> 0\<close> — the common-trailing-head / "case (3)/(4)" branch), the last
+  branch's row-1 first-node value of \<open>M\<close> is \<open>\<le>\<close> the index-\<open>1\<close> right node of
+  \<open>Trans (Pred M)\<close>:
+    \<open>M\<^bsub>1,j\<^sub>1'\<^esub> \<le> RightNodes (Trans (Pred M))\<^bsub>1\<^esub>\<close>,  \<open>j\<^sub>1' = FirstNodes M ! (Lng (Br M) - 1)\<close>.
+  This is exactly the "predecessor-spine bound" R2 needs (NOT a direct
+  @{thm [source] m_8_2_widH} on \<open>M\<close>, whose RHS \<open>RightNodes (Trans M)\<^bsub>1\<^esub>\<close> is the
+  appended head itself).  Proof: @{thm [source] m_8_2_widH} on \<open>M\<close> gives
+  \<open>M\<^bsub>1,j\<^sub>1'\<^esub> \<le> RightNodes (Trans M)\<^bsub>1\<^esub>\<close>, and @{thm [source] m_8_2_wid_step} transports
+  the bound across \<open>Pred\<close> (\<open>RightNodes (Trans M)\<^bsub>1\<^esub> = RightNodes (Trans (Pred M))\<^bsub>1\<^esub>\<close>
+  under Admpos, since the trailing principal head \<open>w\<close> is shared).  EMPIRICALLY
+  VERIFIED: 0 failures over 305 \<open>ST\<^bsub>PS\<^esub>\<close> keystone samples
+  (\<open>python/_r9_r2_validate.py\<close>).\<close>
+
+lemma m_8_7_pred_spine_bound:
+  fixes M :: pairseq
+  assumes MD: "M \<in> DT_PS" and MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS"
+    and Brne: "Br M \<noteq> []" and j1gt: "Lng M - 1 > 1"
+    and Admpos: "transJm1 M > 0" and t1ne: "Trans (Pred M) \<noteq> 0\<^sub>B"
+  shows "entry M 1 (FirstNodes M ! (Lng (Br M) - 1)) \<le> RightNodes (Trans (Pred M)) ! 1"
+proof -
+  have w: "entry M 1 (FirstNodes M ! (Lng (Br M) - 1)) \<le> RightNodes (Trans M) ! 1"
+    by (rule m_8_2_widH[OF MD Brne j1gt])
+  have eq: "RightNodes (Trans M) ! 1 = RightNodes (Trans (Pred M)) ! 1"
+    by (rule m_8_2_wid_step[OF MR MP j1gt Admpos t1ne])
+  show ?thesis using w eq by simp
+qed
+
+text \<open>§8.7 R2 brick — \<open>dstep\<close> ASSEMBLY from its two genuine inputs (BT-structural,
+  surgery-FREE).  The keystone \<open>dstep\<close> obligation \<open>leBT (D\<^bsub>x\<^esub> q) (Trm [last ps])\<close>
+  (comparing the appended principal to the prefix's last) reduces, once the prefix's
+  last principal is read off as \<open>D\<^bsub>hd\<^esub> q\<^sub>b\<close>, to exactly:
+  \<^item> \<open>head\<close>: the head bound \<open>x \<le> hd\<close> (from the predecessor-spine bound
+    @{thm [source] m_8_7_pred_spine_bound} in the whole-body cases, or the IH
+    \<open>descP\<close> @{thm [source] descP_last_le} in the proper-prefix cases);
+  \<^item> \<open>tail\<close>: the equal-head tail comparison \<open>x = hd \<Longrightarrow> leBT q q\<^sub>b\<close> (the round-8 finding's
+    residual: empirically \<open>q \<ge> q'\<close> so this does NOT come from \<open>descP\<close>-inheritance and
+    is the genuine \<open>Trans\<close>-spine descent).
+  This isolates the residual to those two scalar facts.  EMPIRICALLY VERIFIED: the
+  full \<open>dstep\<close> holds 0-fail over 305 \<open>ST\<^bsub>PS\<^esub>\<close> keystone samples
+  (\<open>python/_r9_r2_validate.py\<close>); the equal-head subcase \<open>q \<le> q\<^sub>b\<close> holds 22/22
+  (\<open>python/_r9_case34.py\<close>).\<close>
+
+lemma m_8_7_dstep_assemble:
+  fixes x hd :: nat
+  assumes lastps: "last ps = DB (enat hd) qb" and psne: "ps \<noteq> []"
+    and head: "x \<le> hd" and tail: "x = hd \<longrightarrow> leBT q qb"
+  shows "leBT (Dpt (enat x) q) (Trm [last ps])"
+proof -
+  have "leBT (Dpt (enat x) q) (Dpt (enat hd) qb)"
+  proof (cases "x = hd")
+    case True
+    have "leBT q qb" using tail True by simp
+    hence "leBT (Dpt (enat hd) q) (Dpt (enat hd) qb)" by (rule leBT_Dpt_mono)
+    thus ?thesis using True by simp
+  next
+    case False
+    with head have "x < hd" by simp
+    hence "enat x < enat hd" by simp
+    hence "lessBP (DB (enat x) q) (DB (enat hd) qb)" by simp
+    hence "lessBT (Dpt (enat x) q) (Dpt (enat hd) qb)" by simp
+    thus ?thesis by simp
+  qed
+  thus ?thesis using lastps by simp
 qed
 
 end
