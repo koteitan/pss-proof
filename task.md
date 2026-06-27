@@ -23,7 +23,7 @@
       - ✅ 降下⟸交換則(1)+OT〔`m_8_1_Trans_fseq_condI_descent`〕
       - 🚨 交換則(1)本体〔stepT還元=`m_8_1_Trans_fseq_condI_comm_append_reduce`〕
         - ✅ stepT j0=0（copy-additivity）〔`m_8_1_Trans_replicate_pred_condI`〕
-        - 🚨🤖 stepT j0>0〔残=marking-nesting surgery {base2,step2,botU}+itercond+dM〕
+        - 🚨 stepT j0>0〔残=marking-nesting surgery {base2,step2}+itercond+dM〕
       - 🚨 OT所属（→§8.7）
     - ✅ 補題（公差 $(1,1)$ のペア数列の $\textrm{Trans}$ の基本性質）〔`m_8_1_diagSeq_Trans`〕
     - ✅ 系（$\textrm{Pred}$ が公差 $(1,1)$ のペア数列の $\textrm{Trans}$ の基本性質）〔`m_8_1_Pred_diagSeq_Trans`〕
@@ -45,7 +45,7 @@
     - ✅ 補題（第 $0$ 種型基本列の基本分岐規則）〔`m_8_3_kind0_branch_rule`〕
     - ✅ 補題（第 $0$ 種型基本列の基本基点関係）〔`m_8_3_kind0_base_basepoint`〕
   - 🚨 §8.4 条件 (III) か (IV) の下での展開規則
-    - 🚨🤖 命題（条件 (III) か (IV) の下での $\textrm{Trans}$ と基本列の交換関係）〔残=marking-nesting surgery {base2,step2,botU}、condIV=A27〕
+    - 🚨 命題（条件 (III) か (IV) の下での $\textrm{Trans}$ と基本列の交換関係）〔残=marking-nesting surgery {base2,step2}(condIII独自producer要)、condIV=A27〕
     - 🚨 補題（右端の非許容直系先祖の基本性質）
     - 🚨 補題（条件 (III)〜(V) の下での右端の置き換えと $\textrm{Trans}$ の関係）
     - 🚨 補題（条件 (III)〜(VI) の下での展開規則の基本性質）
@@ -55,7 +55,7 @@
     - 🚨 補題（条件 (III) か (IV) の下での各種 scb分解）
     - ✅ 補題（条件 (III) か (IV) の下での基本列の基本性質）〔`m_8_4_oper_basic_part1`(= `p_8_4_oper_basic`)〕
   - 🚨 §8.5 条件 (V) の下での展開規則
-    - 🚨🤖 命題（条件 (V) の下での $\textrm{Trans}$ と基本列の交換関係）〔残=marking-nesting surgery {base2,step2,botU}〕
+    - 🚨 命題（条件 (V) の下での $\textrm{Trans}$ と基本列の交換関係）〔残=marking-nesting surgery {base2,step2}〕
     - 🚨 補題（条件 (V) の下での $\textrm{Joints}$ と $\textrm{FirstNodes}$ と $t_2$ の基本性質）
     - 🚨 補題（条件 (V) の下での各種 scb分解）〔def 内部記号露出要〕
   - 🚨 §8.6 条件 (VI) の下での展開規則
@@ -81,5 +81,5 @@
       - ✅ 4-case dispatcher〔`m_8_7_OT_keystone_step`、step→{det,[Buc1]}〕
       - ✅ wid/det〔=§8.2 widH、`m_8_2_widH`/`m_8_2_det`〕
       - ✅ 帰納 infra〔`m_8_7_Pred_ST_PS`/`m_8_7_Trans_OT_step_keystone`〕
-      - 🚨🤖 R2 dstep〔Trans(Pred)右spine bound+tail〕
+      - 🚨 R2 dstep〔残=per-case wiring〕
       - 📘 R3 newOT/gbt〔OT-recursive scb or 新[Buc1] OT2、既存`buc1_*`不足〕
