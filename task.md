@@ -20,7 +20,7 @@
       - ✅ 降下⟸交換則(1)+OT〔`m_8_1_Trans_fseq_condI_descent`〕
       - 🚨 交換則(1)本体〔stepT還元=`m_8_1_Trans_fseq_condI_comm_append_reduce`〕
         - ✅ stepT j0=0（copy-additivity）〔`m_8_1_Trans_replicate_pred_condI`〕
-        - 🚨🤖 stepT j0>0（残=itercond+general step(任意scb)+dM、wf w6q8ebsb0 wt-iter）
+        - 🚨 stepT j0>0（残=general step(=flatdec同核,content.md3119-3260)+itercond(無条件でない=Adm0のみ済)+dM）
       - 🚨 OT所属（→§8.7）
     - ✅ 補題（公差 $(1,1)$ のペア数列の $\textrm{Trans}$ の基本性質）〔`m_8_1_diagSeq_Trans`〕
     - ✅ 系（$\textrm{Pred}$ が公差 $(1,1)$ のペア数列の $\textrm{Trans}$ の基本性質）〔`m_8_1_Pred_diagSeq_Trans`〕
@@ -32,7 +32,7 @@
     - ✅ 補題（部分表現の単項成分と $\textrm{Pred}$ の関係）(§8.2 keystone)〔`m_8_2_keystone` = 無条件 `p_8_2_subexpr_component_Pred`〕
     - 🚨 補題（強単項性の下での部分表現の単項成分の基本性質）
       - ✅ (1) `m_8_2_subexpr_leftend_unique`
-      - 🚨🤖 (2)(3)(4) leBT：factA/wid 無条件化済、widH→単一含意 det 還元〔`m_8_2_widH_of_j1side`〕。残=det(keystone clause-4排除、Admpos不可避再帰)、wf w6q8ebsb0 wt-det
+      - 🚨 (2)(3)(4) leBT：factA/wid 無条件化済、widH→det→**keystone case-4排除**還元〔`m_8_2_det_of_case4excl`〕(cases1/2/3済)。残=case4(§7.4 Mark geometry/cp-coupling)
     - 🚨 補題（条件 (V) の下での右端の親の基本性質）
     - 🚨 補題（条件 (V) の下での終切片と $\textrm{Trans}$ の関係）
   - 🚨 §8.3 条件 (II) の下での展開規則
@@ -44,7 +44,7 @@
     - ✅ 補題（第 $0$ 種型基本列の基本分岐規則）〔`m_8_3_kind0_branch_rule`〕
     - ✅ 補題（第 $0$ 種型基本列の基本基点関係）〔`m_8_3_kind0_base_basepoint`〕
   - 🚨 §8.4 条件 (III) か (IV) の下での展開規則
-    - 🚨🤖 命題（条件 (III) か (IV) の下での $\textrm{Trans}$ と基本列の交換関係）：inequality(≤)+leaf engine済、残=lhs context recurrence(Trans(M[m])=C^m)、condIV=A27、wf w6q8ebsb0 wt-ctx
+    - 🚨 命題（条件 (III) か (IV) の下での $\textrm{Trans}$ と基本列の交換関係）：inequality(≤)、lhs→flat-decomp還元〔`m_8_45_lhs_of_flat_decomp`〕、残=flatdec(共有marking-nesting recurrence)、condIV=A27
     - 🚨 補題（右端の非許容直系先祖の基本性質）
     - 🚨 補題（条件 (III)〜(V) の下での右端の置き換えと $\textrm{Trans}$ の関係）
     - 🚨 補題（条件 (III)〜(VI) の下での展開規則の基本性質）
@@ -54,7 +54,7 @@
     - 🚨 補題（条件 (III) か (IV) の下での各種 scb分解）
     - ✅ 補題（条件 (III) か (IV) の下での基本列の基本性質）〔`m_8_4_oper_basic_part1`(= `p_8_4_oper_basic`)〕
   - 🚨 §8.5 条件 (V) の下での展開規則
-    - 🚨🤖 命題（条件 (V) の下での $\textrm{Trans}$ と基本列の交換関係）：inequality(≤)+engine、残=lhs context recurrence（=kind-0 step 同深度）、wf w6q8ebsb0 wt-ctx
+    - 🚨 命題（条件 (V) の下での $\textrm{Trans}$ と基本列の交換関係）：inequality(≤)+engine、lhs→flatdec還元（=§8.4と同一）、残=flatdec(=kind-0 step 同核)
     - 🚨 補題（条件 (V) の下での $\textrm{Joints}$ と $\textrm{FirstNodes}$ と $t_2$ の基本性質）
     - 🚨 補題（条件 (V) の下での各種 scb分解）〔def 内部記号露出要〕
   - 🚨 §8.6 条件 (VI) の下での展開規則
@@ -78,5 +78,5 @@
       - ✅ clean部（rank0/T_B/単項leaf）〔`m_8_7_Trans_*`〕
       - ✅ 還元 isOT⟸R1/R2/R3〔`m_8_7_OT_via_body`+`descP_snoc`/`m_8_7_isOT_BT_snoc_leBT`〕
       - 🚨 R2 descP-step（wid head判定=L81 widと共有、wt-wid完了後／非wid機械化は未割当）
-      - 🚨🤖 wid（=§8.2 widH/L35 と同一、det に還元済。残=det、wf w6q8ebsb0 wt-det）
+      - 🚨 wid（=§8.2 widH/L35 と同一、det→case-4排除に還元済〔`m_8_2_det_of_case4excl`〕。残=case4）
       - 📘 R3 = [Buc1] OT2/GBT〔`buc1_*`〕
