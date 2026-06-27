@@ -33362,6 +33362,130 @@ text \<open>§8.2 FactA — the RECURSIVE STEP of the strong-monomiality lower-b
   empirically 0 violations) and \<open>thr \<le> RightNodes(Trans M)\<^bsub>1\<^esub>\<close> (new-head dominance,
   0 violations) are the residual content supplied by the caller.\<close>
 
+lemma m_8_2_wit_step_thr:
+  fixes M :: pairseq
+  defines "j1 \<equiv> Lng M - 1"
+  defines "J1 \<equiv> Lng (Br M) - 1"
+  defines "j0' \<equiv> Joints M ! J1"
+  defines "j1' \<equiv> FirstNodes M ! J1"
+  assumes aW: "Trans M = Dpt (enat (entry M 1 0)) a"
+    and predW: "Trans (Pred M) = Dpt (enat (entry M 1 0)) aP"
+    and ihA: "\<forall>r\<in>set (PB aP). leBT (Dpt (enat thr') 0\<^sub>B) r"
+    and thrmono: "thr \<le> thr'"
+    and newdom: "thr \<le> RightNodes (Trans M) ! 1"
+    and key:
+    "(j1' = j1 \<and> (TrMax M = 0 \<or> j0' < TrMax M)
+        \<and> (entry M 0 j1' = entry M 1 j1' \<or> adm M j0')
+        \<and> (\<exists>!t1. Trans (Pred M) = Dpt (enat (entry M 1 0)) t1
+              \<and> Trans M = Dpt (enat (entry M 1 0))
+                            (t1 +\<^sub>B Dpt (enat (entry M 1 j1')) 0\<^sub>B)))
+   \<or> (j1' = j1 \<and> entry M 0 j1' > entry M 1 j1' \<and> \<not> adm M j0'
+        \<and> (\<exists>!t12. Trans (Pred M) = Dpt (enat (entry M 1 0)) (fst t12)
+              \<and> Trans M = Dpt (enat (entry M 1 0))
+                            (fst t12 +\<^sub>B Dpt (enat (entry M 1 j0')) (snd t12))))
+   \<or> (\<exists>!t123. Trans (Pred M)
+                = Dpt (enat (entry M 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M 1 j1')) (fst (snd t123)))
+            \<and> Trans M = Dpt (enat (entry M 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M 1 j1')) (snd (snd t123))))
+   \<or> (\<exists>!t123. Trans (Pred M)
+                = Dpt (enat (entry M 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M 1 j0')) (fst (snd t123)))
+            \<and> Trans M = Dpt (enat (entry M 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M 1 j0')) (snd (snd t123))))"
+  shows "\<forall>r\<in>set (PB a). leBT (Dpt (enat thr) 0\<^sub>B) r"
+proof -
+  \<comment> \<open>uniform tail-closing block: \<open>a = p +\<^sub>B D\<^bsub>x\<^esub> q\<^sub>2\<close>, prefix covered by the IH\<close>
+  have close: "\<And>p x q2. a = p +\<^sub>B Dpt (enat x) q2 \<Longrightarrow> set (PB p) \<subseteq> set (PB aP)
+                \<Longrightarrow> \<forall>r\<in>set (PB a). leBT (Dpt (enat (thr)) 0\<^sub>B) r"
+  proof -
+    fix p x q2
+    assume ad: "a = p +\<^sub>B Dpt (enat x) q2" and sub: "set (PB p) \<subseteq> set (PB aP)"
+    have onp1: "\<forall>r\<in>set (PB p). leBT (Dpt (enat thr') 0\<^sub>B) r" using ihA sub by blast
+    have onp2: "\<forall>r\<in>set (PB p). leBT (Dpt (enat (thr)) 0\<^sub>B) r"
+      by (rule wit_PB_relax[OF onp1 thrmono])
+    have rn: "RightNodes (Trans M) ! 1 = x"
+      using aW ad rn1_outer_inner_trailing[of "entry M 1 0" p x q2] by simp
+    have thx: "thr \<le> x" using newdom rn by simp
+    have "\<forall>r\<in>set (PB (p +\<^sub>B Dpt (enat x) q2)). leBT (Dpt (enat (thr)) 0\<^sub>B) r"
+      by (rule wit_PB_tail_bound[OF onp2 thx])
+    thus "\<forall>r\<in>set (PB a). leBT (Dpt (enat (thr)) 0\<^sub>B) r" using ad by simp
+  qed
+  from key show ?thesis
+  proof (elim disjE)
+    \<comment> \<open>case (1): \<open>a' = p = t1\<close>, \<open>a = t1 +\<^sub>B D\<^bsub>M\<^sub>1\<^sub>,\<^sub>j\<^sub>1'\<^esub> 0\<close>\<close>
+    assume A: "j1' = j1 \<and> (TrMax M = 0 \<or> j0' < TrMax M)
+        \<and> (entry M 0 j1' = entry M 1 j1' \<or> adm M j0')
+        \<and> (\<exists>!t1. Trans (Pred M) = Dpt (enat (entry M 1 0)) t1
+              \<and> Trans M = Dpt (enat (entry M 1 0))
+                            (t1 +\<^sub>B Dpt (enat (entry M 1 j1')) 0\<^sub>B))"
+    from A obtain t1 where
+      C: "Trans (Pred M) = Dpt (enat (entry M 1 0)) t1"
+      and T: "Trans M = Dpt (enat (entry M 1 0)) (t1 +\<^sub>B Dpt (enat (entry M 1 j1')) 0\<^sub>B)"
+      by (blast dest: ex1_implies_ex)
+    have ad: "a = t1 +\<^sub>B Dpt (enat (entry M 1 j1')) 0\<^sub>B" using aW T by simp
+    have aPeq: "aP = t1" using predW C by simp
+    have sub: "set (PB t1) \<subseteq> set (PB aP)" by (simp add: aPeq)
+    show ?thesis by (rule close[OF ad sub])
+  next
+    \<comment> \<open>case (2): \<open>a' = p = fst t12\<close>, \<open>a = p +\<^sub>B D\<^bsub>M\<^sub>1\<^sub>,\<^sub>j\<^sub>0'\<^esub>(snd t12)\<close>\<close>
+    assume A: "j1' = j1 \<and> entry M 0 j1' > entry M 1 j1' \<and> \<not> adm M j0'
+        \<and> (\<exists>!t12. Trans (Pred M) = Dpt (enat (entry M 1 0)) (fst t12)
+              \<and> Trans M = Dpt (enat (entry M 1 0))
+                            (fst t12 +\<^sub>B Dpt (enat (entry M 1 j0')) (snd t12)))"
+    from A obtain t12 where
+      C: "Trans (Pred M) = Dpt (enat (entry M 1 0)) (fst t12)"
+      and T: "Trans M = Dpt (enat (entry M 1 0))
+                          (fst t12 +\<^sub>B Dpt (enat (entry M 1 j0')) (snd t12))"
+      by (blast dest: ex1_implies_ex)
+    have ad: "a = fst t12 +\<^sub>B Dpt (enat (entry M 1 j0')) (snd t12)" using aW T by simp
+    have aPeq: "aP = fst t12" using predW C by simp
+    have sub: "set (PB (fst t12)) \<subseteq> set (PB aP)" by (simp add: aPeq)
+    show ?thesis by (rule close[OF ad sub])
+  next
+    \<comment> \<open>case (3): \<open>a' = p +\<^sub>B D\<^bsub>M\<^sub>1\<^sub>,\<^sub>j\<^sub>1'\<^esub>(fst(snd t123))\<close>, same head as \<open>a\<close>\<close>
+    assume A: "\<exists>!t123. Trans (Pred M)
+                = Dpt (enat (entry M 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M 1 j1')) (fst (snd t123)))
+            \<and> Trans M = Dpt (enat (entry M 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M 1 j1')) (snd (snd t123)))"
+    from A obtain t123 where
+      C: "Trans (Pred M) = Dpt (enat (entry M 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M 1 j1')) (fst (snd t123)))"
+      and T: "Trans M = Dpt (enat (entry M 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M 1 j1')) (snd (snd t123)))"
+      by (blast dest: ex1_implies_ex)
+    have ad: "a = fst t123 +\<^sub>B Dpt (enat (entry M 1 j1')) (snd (snd t123))"
+      using aW T by simp
+    have aPeq: "aP = fst t123 +\<^sub>B Dpt (enat (entry M 1 j1')) (fst (snd t123))"
+      using predW C by simp
+    have sub: "set (PB (fst t123)) \<subseteq> set (PB aP)"
+      by (auto simp: aPeq PB_addBT_app PB_Dpt_single)
+    show ?thesis by (rule close[OF ad sub])
+  next
+    \<comment> \<open>case (4): \<open>a' = p +\<^sub>B D\<^bsub>M\<^sub>1\<^sub>,\<^sub>j\<^sub>0'\<^esub>(fst(snd t123))\<close>, same head as \<open>a\<close>\<close>
+    assume A: "\<exists>!t123. Trans (Pred M)
+                = Dpt (enat (entry M 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M 1 j0')) (fst (snd t123)))
+            \<and> Trans M = Dpt (enat (entry M 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M 1 j0')) (snd (snd t123)))"
+    from A obtain t123 where
+      C: "Trans (Pred M) = Dpt (enat (entry M 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M 1 j0')) (fst (snd t123)))"
+      and T: "Trans M = Dpt (enat (entry M 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M 1 j0')) (snd (snd t123)))"
+      by (blast dest: ex1_implies_ex)
+    have ad: "a = fst t123 +\<^sub>B Dpt (enat (entry M 1 j0')) (snd (snd t123))"
+      using aW T by simp
+    have aPeq: "aP = fst t123 +\<^sub>B Dpt (enat (entry M 1 j0')) (fst (snd t123))"
+      using predW C by simp
+    have sub: "set (PB (fst t123)) \<subseteq> set (PB aP)"
+      by (auto simp: aPeq PB_addBT_app PB_Dpt_single)
+    show ?thesis by (rule close[OF ad sub])
+  qed
+qed
+
+
 lemma m_8_2_factA_step:
   fixes M :: pairseq
   defines "j1 \<equiv> Lng M - 1"
@@ -34773,6 +34897,180 @@ proof -
   qed
   have "Trans (M[n]) = operB (Trans M) (numBT (n - 2))"
     using lhs[OF n1] RHS nfold by simp
+  thus ?thesis by blast
+qed
+
+text \<open>§8.4/§8.5/§8.6 KIND-1 RHS closed form (reusable, the kind-1 analogue of
+  @{thm [source] operB_marked_scb_value}): for a marked principal \<open>D\<^bsub>u\<^esub> body\<close> with
+  \<open>u < v\<close>, \<open>domB body = T\<^bsub>v-1\<^esub>\<close>, scb-decomposed at \<open>D\<^bsub>v\<^esub> 0\<close>, the fundamental
+  sequence threads \<open>xseq\<close> and folds into the double-replicate flat string of
+  @{thm [source] m_7_2_scb_fseq_kind1_general}, read back through
+  @{thm [source] unflatBT_flat}.  This is the conditions-III/IV/V/VI (\<open>M\<^bsub>1,j\<^sub>1\<^esub> > 0\<close>)
+  counterpart of the kind-0 \<open>operB_marked_scb_value\<close>; the trailing leaf is
+  \<open>D\<^bsub>v-1\<^esub>\<close> (positive threshold), not \<open>D\<^sub>0 0\<close>.\<close>
+
+lemma operB_marked_scb_value_kind1:
+  fixes u v n :: nat
+  assumes tT: "t \<in> T_B" and uv: "u < v" and bodyT: "body \<in> T_B"
+    and dbbody: "domB body = TBv (enat (v - 1))"
+    and bodyne: "body \<noteq> Trm []"
+    and innerscb: "scb_decomp body s\<^sub>0 (flatBT (Dpt (enat v) 0\<^sub>B)) b\<^sub>0"
+    and k1: "scb_kind1 t s\<^sub>1 (flatBT (Dpt (enat u) body)) b\<^sub>1"
+  shows "operB t (numBT n)
+           = unflatBT (s\<^sub>1 @ (Dsym (enat u)
+               # concat (replicate n (s\<^sub>0 @ [Dsym (enat (v - 1))]))
+               @ [Dsym (enat (v - 1))] @ [Zsym]
+               @ concat (replicate n b\<^sub>0)) @ b\<^sub>1)"
+proof -
+  have fe: "flatBT (operB t (numBT n))
+              = s\<^sub>1 @ (Dsym (enat u)
+                  # concat (replicate n (s\<^sub>0 @ [Dsym (enat (v - 1))]))
+                  @ [Dsym (enat (v - 1))] @ [Zsym]
+                  @ concat (replicate n b\<^sub>0)) @ b\<^sub>1"
+    using m_7_2_scb_fseq_kind1_general[OF tT uv bodyT dbbody bodyne innerscb k1]
+    by simp
+  have "operB t (numBT n) = unflatBT (flatBT (operB t (numBT n)))"
+    by (simp add: unflatBT_flat)
+  also have "\<dots> = unflatBT (s\<^sub>1 @ (Dsym (enat u)
+                  # concat (replicate n (s\<^sub>0 @ [Dsym (enat (v - 1))]))
+                  @ [Dsym (enat (v - 1))] @ [Zsym]
+                  @ concat (replicate n b\<^sub>0)) @ b\<^sub>1)"
+    using fe by simp
+  finally show ?thesis .
+qed
+
+text \<open>§8.5 condition-(V) commutation \<open>exch\<close> REDUCTION (the KIND-1 analogue of
+  @{thm [source] m_8_3_exch_of_lhs_closed}, establishing the kind-1 reduction
+  TEMPLATE).  Condition (V) (\<open>M\<^bsub>1,j\<^sub>1\<^esub> > 0\<close>, \<open>M\<^bsub>1,j\<^sub>0\<^esub>+1 = M\<^bsub>1,j\<^sub>1\<^esub>\<close>, \<open>j\<^sub>0+1 < j\<^sub>1\<close>) is
+  a kind-1 condition: its marked principal is \<open>D\<^bsub>u\<^esub> body\<close> with the kind-1 shape
+  (trailing \<open>D\<^bsub>v-1\<^esub>\<close>), so the Buchholz side is @{thm [source]
+  operB_marked_scb_value_kind1}.  The index shift here is \<open>k = n - 1\<close> (no
+  \<open>multBT\<close>-fold needed — the LHS and RHS replicate counts coincide directly).
+  RESIDUAL = \<open>lhs\<close>: the kind-1 LHS marking-nesting closed form for \<open>Trans(M[n])\<close>
+  (with the same double-replicate \<open>n-1\<close> structure), the kind-1 counterpart of the
+  kind-0 marking-nesting.  The SAME reduction (with the per-condition shift) covers
+  conditions III and VI.\<close>
+
+lemma m_8_5_exch_of_lhs_closed:
+  fixes M :: pairseq and u v :: nat
+  assumes MST: "M \<in> ST_PS" and MP: "M \<in> PT_PS"
+    and j1: "Lng M - 1 > 1" and cond: "transCondV M"
+    and tT: "Trans M \<in> T_B" and uv: "u < v" and bodyT: "body \<in> T_B"
+    and dbbody: "domB body = TBv (enat (v - 1))"
+    and bodyne: "body \<noteq> Trm []"
+    and innerscb: "scb_decomp body s\<^sub>0 (flatBT (Dpt (enat v) 0\<^sub>B)) b\<^sub>0"
+    and k1: "scb_kind1 (Trans M) s\<^sub>1 (flatBT (Dpt (enat u) body)) b\<^sub>1"
+    and lhs: "\<And>m. 1 < m \<Longrightarrow> Trans (M[m])
+                = unflatBT (s\<^sub>1 @ (Dsym (enat u)
+                    # concat (replicate (m - 1) (s\<^sub>0 @ [Dsym (enat (v - 1))]))
+                    @ [Dsym (enat (v - 1))] @ [Zsym]
+                    @ concat (replicate (m - 1) b\<^sub>0)) @ b\<^sub>1)"
+    and n1: "1 < n"
+  shows "\<exists>k. Trans (M[n]) = operB (Trans M) (numBT k)"
+proof -
+  have RHS: "operB (Trans M) (numBT (n - 1))
+             = unflatBT (s\<^sub>1 @ (Dsym (enat u)
+                 # concat (replicate (n - 1) (s\<^sub>0 @ [Dsym (enat (v - 1))]))
+                 @ [Dsym (enat (v - 1))] @ [Zsym]
+                 @ concat (replicate (n - 1) b\<^sub>0)) @ b\<^sub>1)"
+    by (rule operB_marked_scb_value_kind1[OF tT uv bodyT dbbody bodyne innerscb k1])
+  have "Trans (M[n]) = operB (Trans M) (numBT (n - 1))"
+    using lhs[OF n1] RHS by simp
+  thus ?thesis by blast
+qed
+
+text \<open>§8.5 命題（条件(V)の下での \<open>Trans\<close> と基本列の交換関係）, descent ENGINE for
+  general \<open>n\<close> — the condition-(V) analogue of @{thm [source]
+  m_8_3_TransCondII_oper_descend_engine}.  Structure is regime-independent: the
+  \<open>n = 1\<close> leaf is pure \<open>Pred\<close>-descent (\<open>M[1] = Pred M\<close> via @{thm [source]
+  m_8_4_oper1_eq_Pred}, then @{thm [source] m_7_3_Pred_Trans_descend} — condition
+  (V) not needed for the leaf), and the \<open>n > 1\<close> branch is a Buchholz
+  fundamental-sequence step (\<open>exch\<close>) which strictly descends by [Buc1] Lemma 3.2(a)
+  (@{thm [source] buc1_3_2a_fseq_lt}, using \<open>Trans M \<in> OT\<^bsub>B\<^esub>\<close> and \<open>Trans M \<noteq> 0\<close>).
+  So §8.5 descent rests on \<open>exch\<close> (the kind-1 reduction
+  @{thm [source] m_8_5_exch_of_lhs_closed}) + \<open>TOT\<close>.  Audit (rule 4): cites only
+  proven facts + the legitimate external @{thm [source] buc1_3_2a_fseq_lt}; no
+  circular use of any \<open>p_8_5_*\<close>.\<close>
+
+lemma m_8_5_TransCondV_oper_descend_engine:
+  fixes M :: pairseq
+  assumes MST: "M \<in> ST_PS" and MP: "M \<in> PT_PS"
+    and j1: "Lng M - 1 > 1"
+    and cond: "transCondV M"
+    and n0: "0 < n"
+    and TOT: "Trans M \<in> OT_B"
+    and exch: "1 < n \<Longrightarrow> \<exists>k. Trans (M[n]) = operB (Trans M) (numBT k)"
+  shows "lessBT (Trans (M[n])) (Trans M)"
+proof -
+  have MT: "M \<in> T_PS" by (rule ST_PS_T_PS[OF MST])
+  have MR: "M \<in> RT_PS" using MST m_6_7_ST_PS_subseteq_RT_PS by blast
+  have L: "1 < Lng M" using j1 by linarith
+  have notz: "\<not> zeroT M"
+  proof
+    assume "zeroT M"
+    hence "Lng M = 1" by (simp add: zeroT_def)
+    with j1 show False by simp
+  qed
+  have Tne: "Trans M \<noteq> 0\<^sub>B" using m_7_3_Trans_zeroT[OF MR] notz by blast
+  show ?thesis
+  proof (cases "n = 1")
+    case True
+    have oper1: "M[1] = Pred M" by (rule m_8_4_oper1_eq_Pred[OF MT])
+    have d: "lessBT (Trans (Pred M)) (Trans M)"
+      using m_7_3_Pred_Trans_descend[rule_format, OF MR L] .
+    show ?thesis using True oper1 d by simp
+  next
+    case False
+    hence n1: "1 < n" using n0 by presburger
+    obtain k where ke: "Trans (M[n]) = operB (Trans M) (numBT k)"
+      using exch[OF n1] by blast
+    have "lessBT (operB (Trans M) (numBT k)) (Trans M)"
+      by (rule buc1_3_2a_fseq_lt[OF TOT Tne])
+    thus ?thesis using ke by simp
+  qed
+qed
+
+text \<open>§8.4 condition-(III) commutation \<open>exch\<close> REDUCTION — the general KIND-1
+  template in SHIFT-AGNOSTIC form.  Unlike @{thm [source] m_8_3_exch_of_lhs_closed}
+  (kind-0, fixed \<open>k = n-2\<close>) and @{thm [source] m_8_5_exch_of_lhs_closed} (kind-1
+  condV, fixed \<open>k = n-1\<close>), here the LHS marking-nesting residual \<open>lhs\<close> is stated
+  EXISTENTIALLY in the replicate count \<open>j\<close> (\<open>\<exists>j. Trans(M[m]) = \<dots>replicate j\<dots>\<close>),
+  so the reduction is valid for ANY per-condition index shift — @{thm [source]
+  operB_marked_scb_value_kind1} matches the same \<open>j\<close> at \<open>k = j\<close>.  This is the
+  cleanest kind-1 template and covers conditions III, V, VI uniformly (the shift is
+  absorbed into \<open>lhs\<close>; only condIV may differ — its commutation needs validation,
+  cf. the A27 \<open>Pred_oper0\<close> falsity).\<close>
+
+lemma m_8_4_exch_of_lhs_closed:
+  fixes M :: pairseq and u v :: nat
+  assumes MST: "M \<in> ST_PS" and MP: "M \<in> PT_PS"
+    and j1: "Lng M - 1 > 1" and cond: "transCondIII M"
+    and tT: "Trans M \<in> T_B" and uv: "u < v" and bodyT: "body \<in> T_B"
+    and dbbody: "domB body = TBv (enat (v - 1))"
+    and bodyne: "body \<noteq> Trm []"
+    and innerscb: "scb_decomp body s\<^sub>0 (flatBT (Dpt (enat v) 0\<^sub>B)) b\<^sub>0"
+    and k1: "scb_kind1 (Trans M) s\<^sub>1 (flatBT (Dpt (enat u) body)) b\<^sub>1"
+    and lhs: "\<And>m. 1 < m \<Longrightarrow> \<exists>j. Trans (M[m])
+                = unflatBT (s\<^sub>1 @ (Dsym (enat u)
+                    # concat (replicate j (s\<^sub>0 @ [Dsym (enat (v - 1))]))
+                    @ [Dsym (enat (v - 1))] @ [Zsym]
+                    @ concat (replicate j b\<^sub>0)) @ b\<^sub>1)"
+    and n1: "1 < n"
+  shows "\<exists>k. Trans (M[n]) = operB (Trans M) (numBT k)"
+proof -
+  obtain j where lj: "Trans (M[n])
+                = unflatBT (s\<^sub>1 @ (Dsym (enat u)
+                    # concat (replicate j (s\<^sub>0 @ [Dsym (enat (v - 1))]))
+                    @ [Dsym (enat (v - 1))] @ [Zsym]
+                    @ concat (replicate j b\<^sub>0)) @ b\<^sub>1)"
+    using lhs[OF n1] by blast
+  have "operB (Trans M) (numBT j)
+          = unflatBT (s\<^sub>1 @ (Dsym (enat u)
+              # concat (replicate j (s\<^sub>0 @ [Dsym (enat (v - 1))]))
+              @ [Dsym (enat (v - 1))] @ [Zsym]
+              @ concat (replicate j b\<^sub>0)) @ b\<^sub>1)"
+    by (rule operB_marked_scb_value_kind1[OF tT uv bodyT dbbody bodyne innerscb k1])
+  hence "Trans (M[n]) = operB (Trans M) (numBT j)" using lj by simp
   thus ?thesis by blast
 qed
 
