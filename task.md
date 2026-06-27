@@ -20,7 +20,7 @@
       - ✅ 降下⟸交換則(1)+OT〔`m_8_1_Trans_fseq_condI_descent`〕
       - 🚨 交換則(1)本体〔stepT還元=`m_8_1_Trans_fseq_condI_comm_append_reduce`〕
         - ✅ stepT j0=0（copy-additivity）〔`m_8_1_Trans_replicate_pred_condI`〕
-        - 🚨🤖 stepT j0>0（→残差lhs marking-nesting、RHS済=`m_8_1_stepT_j0pos_of_lhs_closed`、workflow）
+        - 🚨🤖 stepT j0>0（残=step surgery〔w=1 jpN変動+w>1 block-descent〕、monoT(M[k])/RHS/lhs→step還元済、workflow）
       - 🚨 OT所属（→§8.7）
     - ✅ 補題（公差 $(1,1)$ のペア数列の $\textrm{Trans}$ の基本性質）〔`m_8_1_diagSeq_Trans`〕
     - ✅ 系（$\textrm{Pred}$ が公差 $(1,1)$ のペア数列の $\textrm{Trans}$ の基本性質）〔`m_8_1_Pred_diagSeq_Trans`〕
@@ -32,7 +32,7 @@
     - ✅ 補題（部分表現の単項成分と $\textrm{Pred}$ の関係）(§8.2 keystone)〔`m_8_2_keystone` = 無条件 `p_8_2_subexpr_component_Pred`〕
     - 🚨 補題（強単項性の下での部分表現の単項成分の基本性質）
       - ✅ (1) `m_8_2_subexpr_leftend_unique`
-      - 🚨🤖 (2)(3)(4) leBT：paper命題assembled〔`m_8_2_subexpr_component_strongmono`〕factA完全帰納証明、残=newdomH+factBlem の2残差、workflow
+      - 🚨🤖 (2)(3)(4) leBT：paper命題assembled〔`m_8_2_subexpr_component_strongmono`〕factA+newdom完全証明、残=単一構造核心 e1 j0'≤e1 j1'（adm0H/factBlem核）、workflow
     - 🚨 補題（条件 (V) の下での右端の親の基本性質）
     - 🚨 補題（条件 (V) の下での終切片と $\textrm{Trans}$ の関係）
   - 🚨 §8.3 条件 (II) の下での展開規則
