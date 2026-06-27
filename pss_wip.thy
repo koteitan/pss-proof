@@ -34501,6 +34501,27 @@ proof -
   thus ?thesis using dec by simp
 qed
 
+text \<open>§8.2 wid — case-(2) EXCLUSION (the cheap, certain piece of the wid pin).  The
+  keystone disjunct (2) (which would give \<open>RightNodes(Trans M)\<^bsub>1\<^esub> = M\<^bsub>1,j\<^sub>0'\<^esub>\<close>, the
+  jt value) requires \<open>M\<^bsub>0,j\<^sub>1'\<^esub> > M\<^bsub>1,j\<^sub>1'\<^esub> \<and> \<not> adm M j\<^sub>0'\<close>.  Under the clause-(2)
+  condition C(M) = \<open>(M\<^bsub>0,j\<^sub>1'\<^esub> = M\<^bsub>1,j\<^sub>1'\<^esub> \<or> j\<^sub>0' = 0)\<close> both fail: \<open>M\<^bsub>0,j\<^sub>1'\<^esub> = M\<^bsub>1,j\<^sub>1'\<^esub>\<close>
+  contradicts the strict inequality, and \<open>j\<^sub>0' = 0\<close> gives \<open>adm M 0\<close>
+  (@{thm [source] adm_index0}), contradicting \<open>\<not> adm M j\<^sub>0'\<close>.  So under C(M) the wid
+  disjunction collapses: the jt value \<open>M\<^bsub>1,j\<^sub>0'\<^esub>\<close> can remain only in keystone case 4,
+  so the remaining pin work is the case-(4) exclusion (the recursive \<open>j\<^sub>0' = TrMax\<close>
+  determination).  Empirical: wid is clean (\<open>= M\<^bsub>1,j\<^sub>1'\<^esub>\<close>) for \<open>j\<^sub>0' < TrMax\<close>, i.e.
+  \<open>transJm1 M = 0\<close>; the \<open>j\<^sub>0' = TrMax\<close> (Admpos) region is mixed and recurses via
+  @{thm [source] m_8_2_wid_step}.\<close>
+
+lemma m_8_2_wid_case2_excl:
+  fixes M :: pairseq
+  assumes C: "entry M 0 (FirstNodes M ! (Lng (Br M) - 1)) = entry M 1 (FirstNodes M ! (Lng (Br M) - 1))
+              \<or> Joints M ! (Lng (Br M) - 1) = 0"
+  shows "\<not> (FirstNodes M ! (Lng (Br M) - 1) = Lng M - 1
+            \<and> entry M 0 (FirstNodes M ! (Lng (Br M) - 1)) > entry M 1 (FirstNodes M ! (Lng (Br M) - 1))
+            \<and> \<not> adm M (Joints M ! (Lng (Br M) - 1)))"
+  using C adm_index0 by auto
+
 text \<open>Prefix-of-OT: \<open>descP\<close> and \<open>isOT_BT\<close> restrict to a left prefix.  Needed to
   expose the IH prefix \<open>p\<close> as OT in keystone cases (3)/(4), where \<open>p\<close> is a proper
   prefix of the body of \<open>Trans (Pred M)\<close>.\<close>
@@ -35266,12 +35287,12 @@ text \<open>§8.5 condition-(V) commutation \<open>exch\<close> REDUCTION (the K
   TEMPLATE).  Condition (V) (\<open>M\<^bsub>1,j\<^sub>1\<^esub> > 0\<close>, \<open>M\<^bsub>1,j\<^sub>0\<^esub>+1 = M\<^bsub>1,j\<^sub>1\<^esub>\<close>, \<open>j\<^sub>0+1 < j\<^sub>1\<close>) is
   a kind-1 condition: its marked principal is \<open>D\<^bsub>u\<^esub> body\<close> with the kind-1 shape
   (trailing \<open>D\<^bsub>v-1\<^esub>\<close>), so the Buchholz side is @{thm [source]
-  operB_marked_scb_value_kind1}.  The index shift here is \<open>k = n - 1\<close> (no
-  \<open>multBT\<close>-fold needed — the LHS and RHS replicate counts coincide directly).
-  RESIDUAL = \<open>lhs\<close>: the kind-1 LHS marking-nesting closed form for \<open>Trans(M[n])\<close>
-  (with the same double-replicate \<open>n-1\<close> structure), the kind-1 counterpart of the
-  kind-0 marking-nesting.  The SAME reduction (with the per-condition shift) covers
-  conditions III and VI.\<close>
+  operB_marked_scb_value_kind1}.  The \<open>lhs\<close> is EXISTENTIAL in the replicate count
+  \<open>j\<close> (as in the general kind-1 template \<open>m_8_4_exch_of_lhs_closed\<close> below):
+  \<open>leBT (Trans (M[m])) (operB (Trans M) (numBT j))\<close> for SOME \<open>j\<close>.  The matching index is M-DEPENDENT
+  (empirically \<open>j = m\<close> for \<open>(0,0)\<close>-rooted standard forms, smaller otherwise), so a
+  FIXED index (the old \<open>j = m - 1\<close>) is UNSATISFIABLE and must not be used.
+  RESIDUAL = \<open>lhs\<close>: the kind-1 LHS marking-nesting bound for \<open>Trans(M[m])\<close>.\<close>
 
 lemma m_8_5_exch_of_lhs_closed:
   fixes M :: pairseq and u v :: nat
@@ -35282,22 +35303,27 @@ lemma m_8_5_exch_of_lhs_closed:
     and bodyne: "body \<noteq> Trm []"
     and innerscb: "scb_decomp body s\<^sub>0 (flatBT (Dpt (enat v) 0\<^sub>B)) b\<^sub>0"
     and k1: "scb_kind1 (Trans M) s\<^sub>1 (flatBT (Dpt (enat u) body)) b\<^sub>1"
-    and lhs: "\<And>m. 1 < m \<Longrightarrow> Trans (M[m])
-                = unflatBT (s\<^sub>1 @ (Dsym (enat u)
-                    # concat (replicate (m - 1) (s\<^sub>0 @ [Dsym (enat (v - 1))]))
+    and lhs: "\<And>m. 1 < m \<Longrightarrow> \<exists>j. leBT (Trans (M[m]))
+                (unflatBT (s\<^sub>1 @ (Dsym (enat u)
+                    # concat (replicate j (s\<^sub>0 @ [Dsym (enat (v - 1))]))
                     @ [Dsym (enat (v - 1))] @ [Zsym]
-                    @ concat (replicate (m - 1) b\<^sub>0)) @ b\<^sub>1)"
+                    @ concat (replicate j b\<^sub>0)) @ b\<^sub>1))"
     and n1: "1 < n"
-  shows "\<exists>k. Trans (M[n]) = operB (Trans M) (numBT k)"
+  shows "\<exists>k. leBT (Trans (M[n])) (operB (Trans M) (numBT k))"
 proof -
-  have RHS: "operB (Trans M) (numBT (n - 1))
-             = unflatBT (s\<^sub>1 @ (Dsym (enat u)
-                 # concat (replicate (n - 1) (s\<^sub>0 @ [Dsym (enat (v - 1))]))
-                 @ [Dsym (enat (v - 1))] @ [Zsym]
-                 @ concat (replicate (n - 1) b\<^sub>0)) @ b\<^sub>1)"
+  obtain j where lj: "leBT (Trans (M[n]))
+                (unflatBT (s\<^sub>1 @ (Dsym (enat u)
+                    # concat (replicate j (s\<^sub>0 @ [Dsym (enat (v - 1))]))
+                    @ [Dsym (enat (v - 1))] @ [Zsym]
+                    @ concat (replicate j b\<^sub>0)) @ b\<^sub>1))"
+    using lhs[OF n1] by blast
+  have "operB (Trans M) (numBT j)
+          = unflatBT (s\<^sub>1 @ (Dsym (enat u)
+              # concat (replicate j (s\<^sub>0 @ [Dsym (enat (v - 1))]))
+              @ [Dsym (enat (v - 1))] @ [Zsym]
+              @ concat (replicate j b\<^sub>0)) @ b\<^sub>1)"
     by (rule operB_marked_scb_value_kind1[OF tT uv bodyT dbbody bodyne innerscb k1])
-  have "Trans (M[n]) = operB (Trans M) (numBT (n - 1))"
-    using lhs[OF n1] RHS by simp
+  hence "leBT (Trans (M[n])) (operB (Trans M) (numBT j))" using lj by simp
   thus ?thesis by blast
 qed
 
@@ -35321,7 +35347,7 @@ lemma m_8_5_TransCondV_oper_descend_engine:
     and cond: "transCondV M"
     and n0: "0 < n"
     and TOT: "Trans M \<in> OT_B"
-    and exch: "1 < n \<Longrightarrow> \<exists>k. Trans (M[n]) = operB (Trans M) (numBT k)"
+    and exch: "1 < n \<Longrightarrow> \<exists>k. leBT (Trans (M[n])) (operB (Trans M) (numBT k))"
   shows "lessBT (Trans (M[n])) (Trans M)"
 proof -
   have MT: "M \<in> T_PS" by (rule ST_PS_T_PS[OF MST])
@@ -35344,19 +35370,24 @@ proof -
   next
     case False
     hence n1: "1 < n" using n0 by presburger
-    obtain k where ke: "Trans (M[n]) = operB (Trans M) (numBT k)"
+    \<comment> \<open>condition (V) is the INEQUALITY regime (p_8_5_Trans_oper_exchange (1):
+       \<open>Trans(M[n]) \<le> operB(Trans M)(numBT m\<^sub>n)\<close>), NOT the equality of condition (II);
+       the descent still follows: \<open>\<le>\<close> the fseq term, which is \<open>< Trans M\<close> by buc1.\<close>
+    obtain k where ke: "leBT (Trans (M[n])) (operB (Trans M) (numBT k))"
       using exch[OF n1] by blast
-    have "lessBT (operB (Trans M) (numBT k)) (Trans M)"
+    have lt: "lessBT (operB (Trans M) (numBT k)) (Trans M)"
       by (rule buc1_3_2a_fseq_lt[OF TOT Tne])
-    thus ?thesis using ke by simp
+    show ?thesis using ke lt by (metis lessBT_trans)
   qed
 qed
 
 text \<open>§8.4 condition-(III) commutation \<open>exch\<close> REDUCTION — the general KIND-1
-  template in SHIFT-AGNOSTIC form.  Unlike @{thm [source] m_8_3_exch_of_lhs_closed}
-  (kind-0, fixed \<open>k = n-2\<close>) and @{thm [source] m_8_5_exch_of_lhs_closed} (kind-1
-  condV, fixed \<open>k = n-1\<close>), here the LHS marking-nesting residual \<open>lhs\<close> is stated
-  EXISTENTIALLY in the replicate count \<open>j\<close> (\<open>\<exists>j. Trans(M[m]) = \<dots>replicate j\<dots>\<close>),
+  template in SHIFT-AGNOSTIC (existential) form, the INEQUALITY analogue.  Unlike
+  the fixed-index kind-0 @{thm [source] m_8_3_exch_of_lhs_closed} (sound only because
+  condition (II) is the EQUALITY regime, exact index), here — as in @{thm [source]
+  m_8_5_exch_of_lhs_closed} (condV, now also existential) — the LHS marking-nesting
+  residual \<open>lhs\<close> is stated EXISTENTIALLY in the replicate count \<open>j\<close>
+  (\<open>\<exists>j. leBT (Trans(M[m])) (\<dots>replicate j\<dots>)\<close>),
   so the reduction is valid for ANY per-condition index shift — @{thm [source]
   operB_marked_scb_value_kind1} matches the same \<open>j\<close> at \<open>k = j\<close>.  This is the
   cleanest kind-1 template and covers conditions III, V, VI uniformly (the shift is
@@ -35372,19 +35403,19 @@ lemma m_8_4_exch_of_lhs_closed:
     and bodyne: "body \<noteq> Trm []"
     and innerscb: "scb_decomp body s\<^sub>0 (flatBT (Dpt (enat v) 0\<^sub>B)) b\<^sub>0"
     and k1: "scb_kind1 (Trans M) s\<^sub>1 (flatBT (Dpt (enat u) body)) b\<^sub>1"
-    and lhs: "\<And>m. 1 < m \<Longrightarrow> \<exists>j. Trans (M[m])
-                = unflatBT (s\<^sub>1 @ (Dsym (enat u)
+    and lhs: "\<And>m. 1 < m \<Longrightarrow> \<exists>j. leBT (Trans (M[m]))
+                (unflatBT (s\<^sub>1 @ (Dsym (enat u)
                     # concat (replicate j (s\<^sub>0 @ [Dsym (enat (v - 1))]))
                     @ [Dsym (enat (v - 1))] @ [Zsym]
-                    @ concat (replicate j b\<^sub>0)) @ b\<^sub>1)"
+                    @ concat (replicate j b\<^sub>0)) @ b\<^sub>1))"
     and n1: "1 < n"
-  shows "\<exists>k. Trans (M[n]) = operB (Trans M) (numBT k)"
+  shows "\<exists>k. leBT (Trans (M[n])) (operB (Trans M) (numBT k))"
 proof -
-  obtain j where lj: "Trans (M[n])
-                = unflatBT (s\<^sub>1 @ (Dsym (enat u)
+  obtain j where lj: "leBT (Trans (M[n]))
+                (unflatBT (s\<^sub>1 @ (Dsym (enat u)
                     # concat (replicate j (s\<^sub>0 @ [Dsym (enat (v - 1))]))
                     @ [Dsym (enat (v - 1))] @ [Zsym]
-                    @ concat (replicate j b\<^sub>0)) @ b\<^sub>1)"
+                    @ concat (replicate j b\<^sub>0)) @ b\<^sub>1))"
     using lhs[OF n1] by blast
   have "operB (Trans M) (numBT j)
           = unflatBT (s\<^sub>1 @ (Dsym (enat u)
@@ -35392,9 +35423,21 @@ proof -
               @ [Dsym (enat (v - 1))] @ [Zsym]
               @ concat (replicate j b\<^sub>0)) @ b\<^sub>1)"
     by (rule operB_marked_scb_value_kind1[OF tT uv bodyT dbbody bodyne innerscb k1])
-  hence "Trans (M[n]) = operB (Trans M) (numBT j)" using lj by simp
+  hence "leBT (Trans (M[n])) (operB (Trans M) (numBT j))" using lj by simp
   thus ?thesis by blast
 qed
+
+text \<open>leBT MONOTONICITY under a common \<open>D\<^bsub>v\<^esub>\<close> head (leaf-congruence) — the reusable
+  structural ingredient behind the §8.4/§8.5 INEQUALITY bound.  Empirically
+  \<open>Trans(M[n])\<close> and \<open>operB (Trans M) (numBT n)\<close> share the SAME head-context and differ
+  only at the deepest leaf (\<open>0\<^sub>B\<close> on the \<open>Trans(M[n])\<close> side, a nonzero term on the
+  \<open>operB\<close> side), so \<open>leBT\<close> follows by iterating this congruence down to the leaf,
+  where \<open>leBT 0\<^sub>B X\<close> holds for every \<open>X\<close>.  Derived from @{thm [source]
+  lessBT_Dpt_same}.\<close>
+
+lemma leBT_Dpt_mono:
+  assumes "leBT a b" shows "leBT (Dpt v a) (Dpt v b)"
+  using assms by (cases "a = b") (auto simp: lessBT_Dpt_same)
 
 text \<open>§8.1 kind-0 marking-nesting SURGERY CORE, the \<open>w = 1\<close> condition-(I)
   (\<open>v = 0\<close>) single-step.  Empirically the \<open>w = 1\<close> condition-(I), \<open>j\<^sub>0 > 0\<close> iterate
