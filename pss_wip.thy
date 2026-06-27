@@ -34543,6 +34543,85 @@ proof -
 qed
 
 
+text \<open>§8.2 GLOBAL branch-row-1 lemma, REDUCED to the per-node trunk-top edge fact.
+  For a branch first-node \<open>f = FirstNodes M ! J\<close> with row-0 joint \<open>j\<^sub>0' = Joints M ! J\<close>
+  (\<open>j\<^sub>0' \<le> TrMax M\<close>), the row-1 first-node value is bounded by the trunk-top row-1
+  value \<open>M\<^bsub>1,TrMax M\<^esub>\<close>, PROVIDED the single edge fact \<open>\<not> nextR M 1 (TrMax M) f\<close>
+  (the trunk top is not the row-1 parent of \<open>f\<close>).  This packages the
+  NON-recursive content of the global branch-row-1 lemma
+  (\<open>\<forall> branch first-node f. M\<^bsub>1,f\<^esub> \<le> M\<^bsub>1,TrMax M\<^esub>\<close>, empirically 0/1367 over reachable
+  \<open>DT\<^bsub>PS\<^esub>\<close> Lng 3-6, \<open>python/_r5_fast.py\<close>); the only residual is that edge fact, which is
+  genuinely recursive (the \<open>j\<^sub>0' = TrMax\<close> / Admpos boundary).  Two clean cases:
+  when \<open>j\<^sub>0' < TrMax M\<close> the reduced coefficient bound
+  (@{thm [source] m_6_6_reduced_coeff}) plus the \<open>RedCondA\<close> row-0 parent step already
+  suffice (\<open>M\<^bsub>1,f\<^esub> \<le> M\<^bsub>0,f\<^esub> = M\<^bsub>1,0\<^esub> + j\<^sub>0' + 1 \<le> M\<^bsub>1,0\<^esub> + TrMax M\<close>); when
+  \<open>j\<^sub>0' = TrMax M\<close> the edge fact feeds @{thm [source] m_8_2_e1_le_e1par_of_notnextR1}
+  (parent \<open>= TrMax M\<close>) to give \<open>M\<^bsub>1,f\<^esub> \<le> M\<^bsub>1,TrMax M\<^esub>\<close> directly.  Throughout, the trunk
+  diagonal @{thm [source] trunk_entries_offset} gives \<open>M\<^bsub>1,j\<^esub> = M\<^bsub>1,0\<^esub> + j\<close> for
+  \<open>j \<le> TrMax M\<close> and \<open>M\<^bsub>0,0\<^esub> = M\<^bsub>1,0\<^esub>\<close> at the root (\<open>RedCondB\<close>, col 0 parentless).\<close>
+
+lemma m_8_2_branch_row1_le_TrMax_of_notnextR:
+  fixes M :: pairseq
+  assumes MD: "M \<in> DT_PS" and JBr: "J < Lng (Br M)"
+    and notnx: "\<not> nextR M 1 (TrMax M) (FirstNodes M ! J)"
+  shows "entry M 1 (FirstNodes M ! J) \<le> entry M 1 (TrMax M)"
+proof -
+  have MR: "M \<in> RT_PS" and mono: "monoT M" using MD by (auto simp: DT_PS_def)
+  have MT: "M \<in> T_PS" using MR by (simp add: RT_PS_def)
+  have MP: "M \<in> PT_PS" using MT mono by (simp add: PT_PS_def)
+  have condAB: "RedCondA M \<and> RedCondB M" using m_6_6_reduced_iff_cond[OF MT] MR by simp
+  have condA: "RedCondA M" and condB: "RedCondB M" using condAB by simp_all
+  let ?f = "FirstNodes M ! J"
+  let ?j0 = "Joints M ! J"
+  let ?t = "TrMax M"
+  have parR: "nextR M 0 ?j0 ?f" by (rule Joints_parent_nextR[OF MP JBr])
+  have j0le: "?j0 \<le> ?t" and tlf: "?t < ?f"
+    using m_6_4_FirstNodes_TrMax_Joints[OF MP JBr] by simp_all
+  have fL: "?f < Lng M" by (rule a1_FN_lt[OF MP JBr])
+  have fpos: "0 < ?f" using tlf by simp
+  have fle: "?f \<le> Lng M - 1" using fL by simp
+  have hp0: "hasParent M 0 ?f" using monoT_branch_hasParent[OF MT mono fpos fle] by simp
+  have ex1: "\<exists>!a. nextR M 0 a ?f" using hp0 by (simp add: hasParent_def)
+  have par0eq: "parent M 0 ?f = ?j0"
+    using ex1 parR unfolding parent_def by (rule the1_equality)
+  \<comment> \<open>trunk diagonal and root row-equality\<close>
+  have toff_t: "entry M 1 ?t = entry M 1 0 + ?t"
+    using trunk_entries_offset[OF MT condA order.refl] by simp
+  have toff_j0: "entry M 0 ?j0 = entry M 0 0 + ?j0 \<and> entry M 1 ?j0 = entry M 1 0 + ?j0"
+    by (rule trunk_entries_offset[OF MT condA j0le])
+  have noprt0: "\<not> hasParent M 0 0"
+    unfolding hasParent_def by (auto simp: nextR_def nextrel0_def)
+  have col0: "entry M 0 0 = entry M 1 0"
+    using condB noprt0 unfolding RedCondB_def by auto
+  \<comment> \<open>reduced coefficient and the \<open>RedCondA\<close> row-0 parent step at \<open>f\<close>\<close>
+  have coeff: "entry M 1 ?f \<le> entry M 0 ?f" by (rule m_6_6_reduced_coeff[OF MR fL])
+  have condA0: "\<And>j. hasParent M 0 j \<Longrightarrow> entry M 0 (parent M 0 j) + 1 = entry M 0 j"
+    using condA unfolding RedCondA_def by blast
+  have e0f: "entry M 0 ?f = entry M 0 ?j0 + 1"
+    using condA0[OF hp0] par0eq by simp
+  have e0fval: "entry M 0 ?f = entry M 1 0 + ?j0 + 1"
+    using e0f toff_j0 col0 by simp
+  show ?thesis
+  proof (cases "?j0 < ?t")
+    case True
+    have "entry M 1 ?f \<le> entry M 1 0 + ?j0 + 1" using coeff e0fval by simp
+    also have "\<dots> \<le> entry M 1 0 + ?t" using True by simp
+    also have "\<dots> = entry M 1 ?t" using toff_t by simp
+    finally show ?thesis .
+  next
+    case False
+    hence j0t: "?j0 = ?t" using j0le by simp
+    have notnx': "\<not> nextR M 1 (parent M 0 ?f) ?f" using notnx par0eq j0t by simp
+    have "entry M 1 ?f \<le> entry M 1 (parent M 0 ?f)"
+      by (rule m_8_2_e1_le_e1par_of_notnextR1[OF MT hp0 fL notnx'])
+    also have "\<dots> = entry M 1 ?j0" using par0eq by simp
+    also have "\<dots> = entry M 1 0 + ?t" using toff_j0 j0t by simp
+    also have "\<dots> = entry M 1 ?t" using toff_t by simp
+    finally show ?thesis .
+  qed
+qed
+
+
 text \<open>§8.2 \<open>det\<close> reduced to the single keystone case-(4) exclusion.  Under the
   problematic hypothesis \<open>det\<close> (\<open>M\<^bsub>1,j\<^sub>0'\<^esub> < M\<^bsub>1,j\<^sub>1'\<^esub>\<close>) the four-way keystone
   @{thm [source] m_8_2_keystone} disjunction collapses to the first-node side
@@ -36192,6 +36271,287 @@ proof -
                  @ [Dsym (enat (v - 1))] @ [Zsym]
                  @ concat (replicate j b\<^sub>0)) @ b\<^sub>1))"
     by (rule exI[of _ j], rule leR)
+qed
+
+
+text \<open>§8.4/§8.5 kind-1 \<open>lhs\<close> DISCHARGE via the FUNPOW-CONTEXT recurrence (round-5,
+  the SOUND replacement for the false-\<open>flatdec\<close> route @{thm [source]
+  m_8_45_lhs_of_flat_decomp}).  EMPIRICAL FINDING (round-5,
+  \<open>python/funpow_v3.py\<close> + \<open>python/kcheck.py\<close>, on yaBMS-standard \<open>ST\<^bsub>PS\<^esub>\<close>
+  condIII/condV hosts): the §8.4/§8.5 \<open>lhs\<close> bound
+  \<open>\<exists>j. leBT (Trans (M[m])) (operB (Trans M) (numBT j))\<close> is UNIVERSALLY TRUE, and the
+  genuine mechanism is a FUNPOW-CONTEXT recurrence (NOT an exact \<open>D\<^sub>v 0\<close>-leaf
+  equality — that holds only for the branch-width-1 hosts).  Both \<open>Trans (M[m])\<close>
+  and \<open>operB (Trans M) (numBT j)\<close> share the SAME monotone outer wrap \<open>OW\<close> over the
+  SAME monotone period context \<open>C\<close>: the MIDDLE leaf \<open>leafL\<close> of \<open>Trans (M[m])\<close> is
+  CONSTANT across \<open>m\<close> (condIII 22/22, condV 31/31 \<open>midconst\<close>), with
+  \<open>Trans (M[m]) = OW ((C\<^bsup>m-1\<^esup>) leafL)\<close>, and the operB readback is
+  \<open>operB (Trans M)(numBT j) = OW ((C\<^bsup>j\<^esup>) leafR)\<close> with \<open>leafR = D\<^bsub>v-1\<^esub> 0\<close>
+  (dischargeable from @{thm [source] operB_marked_scb_value_kind1}).  IMPORTANT
+  CORRECTION to the round-4 "witness \<open>j = m\<close>" claim: the bottom bound is
+  \<open>leafL \<le> C\<^bsup>k\<^esup> leafR\<close> for a host-constant \<open>k\<close> (\<open>kcheck.py\<close>: condIII all \<open>k=1\<close>;
+  condV \<open>k=1\<close> for 24/31, \<open>k=2\<close> for 7/31, e.g. \<open>M=(0,0)(1,1)(2,2)(2,2)\<close> where
+  \<open>leafL\<close> nests a \<open>D\<^sub>v\<close>-leaf and \<open>j = m\<close> FAILS), so the matching index is
+  \<open>j = (m-1) + k\<close> (\<open>= m\<close> only when \<open>k = 1\<close>).  Then \<open>leBT\<close> follows by
+  @{thm [source] leBT_funpow_mono} (lift the monotone \<open>C\<close> across the \<open>m-1\<close> nesting)
+  + \<open>funpow_add\<close> + the bottom bound: NO false hypothesis, the residual is exactly the
+  (genuine) pair-side recurrence \<open>lhs\<close> + the bottom bound \<open>bot\<close>.  This produces
+  directly the conclusion of @{thm [source] m_8_4_exch_of_lhs_closed} /
+  @{thm [source] m_8_5_exch_of_lhs_closed} (the \<open>exch\<close> hypothesis of
+  @{thm [source] m_8_5_TransCondV_oper_descend_engine}).\<close>
+
+lemma m_8_45_lhs_of_funpow_recurrence:
+  fixes M :: pairseq and C OW :: "BT \<Rightarrow> BT"
+    and leafR :: BT and leafL :: "nat \<Rightarrow> BT" and m k :: nat
+  assumes Cmono: "\<And>x y. leBT x y \<Longrightarrow> leBT (C x) (C y)"
+    and OWmono: "\<And>x y. leBT x y \<Longrightarrow> leBT (OW x) (OW y)"
+    and rhs: "\<And>j. operB (Trans M) (numBT j) = OW ((C ^^ j) leafR)"
+    and lhs: "Trans (M[m]) = OW ((C ^^ (m - 1)) (leafL m))"
+    and bot: "leBT (leafL m) ((C ^^ k) leafR)"
+  shows "\<exists>j. leBT (Trans (M[m])) (operB (Trans M) (numBT j))"
+proof -
+  have step: "leBT ((C ^^ (m - 1)) (leafL m)) ((C ^^ (m - 1)) ((C ^^ k) leafR))"
+    by (rule leBT_funpow_mono[OF Cmono bot])
+  have shift: "(C ^^ ((m - 1) + k)) leafR = (C ^^ (m - 1)) ((C ^^ k) leafR)"
+    by (simp add: funpow_add)
+  have "leBT (OW ((C ^^ (m - 1)) (leafL m))) (OW ((C ^^ (m - 1)) ((C ^^ k) leafR)))"
+    by (rule OWmono[OF step])
+  hence "leBT (Trans (M[m])) (OW ((C ^^ ((m - 1) + k)) leafR))"
+    using lhs shift by simp
+  hence "leBT (Trans (M[m])) (operB (Trans M) (numBT ((m - 1) + k)))"
+    using rhs[of "(m - 1) + k"] by simp
+  thus ?thesis by blast
+qed
+
+
+text \<open>List helper: a power of @{term xs} commutes with @{term xs} under append
+  (\<open>(xs\<^bsup>n\<^esup>) @ xs = xs @ (xs\<^bsup>n\<^esup>)\<close>), used to fold the funpow flat recurrence below.\<close>
+
+lemma concat_replicate_append_comm:
+  "concat (replicate n xs) @ xs = xs @ concat (replicate n xs)"
+  by (induction n) auto
+
+
+text \<open>§8.4/§8.5 kind-1 \<open>lhs\<close>: the SCB-CONCRETE instance of @{thm [source]
+  m_8_45_lhs_of_funpow_recurrence}.  Here the period context \<open>C\<close> and outer wrap \<open>OW\<close>
+  are the concrete SCB string-wraps (insert a sub-term at the marked-leaf /
+  marked-principal slot), and the operB readback \<open>rhs\<close> is DISCHARGED from
+  @{thm [source] m_7_2_scb_fseq_kind1_general} (the flat fundamental-sequence string)
+  by the funpow flat recurrence \<open>R2\<close> and @{thm [source] m_7_flatBT_inj}.  The two
+  monotonicities are @{thm [source] scbext_lessBT} (a \<open>lessBP\<close>-larger leaf at a fixed
+  all-\<open>RP\<close> scb slot is \<open>lessBT\<close>-larger).  RESIDUAL = the pair-side funpow recurrence
+  \<open>lhs\<close> + the bottom bound \<open>bot\<close> (the genuine marking-nesting surgery, with the period
+  \<open>C\<close> and the bottom leaf \<open>leafL\<close> explicit).\<close>
+
+lemma m_8_45_lhs_of_funpow_recurrence_scb:
+  fixes M :: pairseq and u v m k :: nat and leafL :: BT
+    and s\<^sub>0 s\<^sub>1 b\<^sub>0 b\<^sub>1 :: "Sym list" and C OW :: "BT \<Rightarrow> BT"
+  assumes C_def: "C = (\<lambda>x. unflatBT (s\<^sub>0 @ Dsym (enat (v - 1)) # flatBT x @ b\<^sub>0))"
+    and OW_def: "OW = (\<lambda>x. unflatBT (s\<^sub>1 @ Dsym (enat u) # flatBT x @ b\<^sub>1))"
+    and tT: "Trans M \<in> T_B" and uv: "u < v" and bodyT: "body \<in> T_B"
+    and dbbody: "domB body = TBv (enat (v - 1))" and bodyne: "body \<noteq> Trm []"
+    and innerscb: "scb_decomp body s\<^sub>0 (flatBT (Dpt (enat v) 0\<^sub>B)) b\<^sub>0"
+    and k1: "scb_kind1 (Trans M) s\<^sub>1 (flatBT (Dpt (enat u) body)) b\<^sub>1"
+    and lhs: "Trans (M[m]) = OW ((C ^^ (m - 1)) leafL)"
+    and bot: "leBT leafL ((C ^^ k) (Dpt (enat (v - 1)) 0\<^sub>B))"
+  shows "\<exists>j. leBT (Trans (M[m])) (operB (Trans M) (numBT j))"
+proof -
+  \<comment> \<open>the marked-leaf scb-decomposition of \<open>body\<close> and the all-RP tails\<close>
+  have bodyflat: "flatBT body = s\<^sub>0 @ flatBP (DB (enat v) (Trm [])) @ b\<^sub>0"
+    using innerscb by (simp add: scb_decomp_def)
+  have b0RP: "\<forall>x \<in> set b\<^sub>0. x = RP" using innerscb by (simp add: scb_decomp_def)
+  have transflat: "flatBT (Trans M) = s\<^sub>1 @ flatBP (DB (enat u) body) @ b\<^sub>1"
+    using k1 by (simp add: scb_kind1_def scb_decomp_def)
+  have b1RP: "\<forall>x \<in> set b\<^sub>1. x = RP"
+    using k1 by (simp add: scb_kind1_def scb_decomp_def)
+  \<comment> \<open>R0: the flat strings of the two wrap-contexts (scb image + \<open>unflatBT\<close> inverse)\<close>
+  have R0c: "\<And>x. flatBT (C x) = s\<^sub>0 @ flatBP (DB (enat (v - 1)) x) @ b\<^sub>0"
+  proof -
+    fix x
+    obtain t' where t': "flatBT t' = s\<^sub>0 @ flatBP (DB (enat (v - 1)) x) @ b\<^sub>0"
+      using scbimg_image_BT[OF bodyflat b0RP, of "DB (enat (v - 1)) x"] by blast
+    have "C x = unflatBT (s\<^sub>0 @ flatBP (DB (enat (v - 1)) x) @ b\<^sub>0)"
+      by (simp add: C_def)
+    also have "\<dots> = t'" using t' by (metis unflatBT_flat)
+    finally have "C x = t'" .
+    thus "flatBT (C x) = s\<^sub>0 @ flatBP (DB (enat (v - 1)) x) @ b\<^sub>0" using t' by simp
+  qed
+  have R0o: "\<And>x. flatBT (OW x) = s\<^sub>1 @ flatBP (DB (enat u) x) @ b\<^sub>1"
+  proof -
+    fix x
+    obtain t' where t': "flatBT t' = s\<^sub>1 @ flatBP (DB (enat u) x) @ b\<^sub>1"
+      using scbimg_image_BT[OF transflat b1RP, of "DB (enat u) x"] by blast
+    have "OW x = unflatBT (s\<^sub>1 @ flatBP (DB (enat u) x) @ b\<^sub>1)"
+      by (simp add: OW_def)
+    also have "\<dots> = t'" using t' by (metis unflatBT_flat)
+    finally have "OW x = t'" .
+    thus "flatBT (OW x) = s\<^sub>1 @ flatBP (DB (enat u) x) @ b\<^sub>1" using t' by simp
+  qed
+  \<comment> \<open>R2: the funpow flat recurrence\<close>
+  have R2: "\<And>j. flatBT ((C ^^ j) (Dpt (enat (v - 1)) 0\<^sub>B)) =
+        concat (replicate j (s\<^sub>0 @ [Dsym (enat (v - 1))]))
+        @ [Dsym (enat (v - 1))] @ [Zsym]
+        @ concat (replicate j b\<^sub>0)"
+  proof -
+    fix j show "flatBT ((C ^^ j) (Dpt (enat (v - 1)) 0\<^sub>B)) =
+        concat (replicate j (s\<^sub>0 @ [Dsym (enat (v - 1))]))
+        @ [Dsym (enat (v - 1))] @ [Zsym]
+        @ concat (replicate j b\<^sub>0)"
+    proof (induction j)
+      case 0 show ?case by simp
+    next
+      case (Suc j)
+      have e: "(C ^^ Suc j) (Dpt (enat (v - 1)) 0\<^sub>B)
+                 = C ((C ^^ j) (Dpt (enat (v - 1)) 0\<^sub>B))" by simp
+      have "flatBT (C ((C ^^ j) (Dpt (enat (v - 1)) 0\<^sub>B)))
+              = s\<^sub>0 @ Dsym (enat (v - 1)) # flatBT ((C ^^ j) (Dpt (enat (v - 1)) 0\<^sub>B)) @ b\<^sub>0"
+        using R0c[of "(C ^^ j) (Dpt (enat (v - 1)) 0\<^sub>B)"] by simp
+      also have "\<dots> = s\<^sub>0 @ Dsym (enat (v - 1)) #
+              (concat (replicate j (s\<^sub>0 @ [Dsym (enat (v - 1))]))
+               @ [Dsym (enat (v - 1))] @ [Zsym]
+               @ concat (replicate j b\<^sub>0)) @ b\<^sub>0"
+        using Suc.IH by simp
+      also have "\<dots> = concat (replicate (Suc j) (s\<^sub>0 @ [Dsym (enat (v - 1))]))
+               @ [Dsym (enat (v - 1))] @ [Zsym]
+               @ concat (replicate (Suc j) b\<^sub>0)"
+        by (simp add: concat_replicate_append_comm)
+      finally show ?case using e by simp
+    qed
+  qed
+  \<comment> \<open>readback: \<open>operB\<close> as \<open>OW (C\<^bsup>j\<^esup> leafR)\<close> with \<open>leafR = D\<^bsub>v-1\<^esub> 0\<close>\<close>
+  have rhs: "\<And>j. operB (Trans M) (numBT j) = OW ((C ^^ j) (Dpt (enat (v - 1)) 0\<^sub>B))"
+  proof -
+    fix j
+    have fop: "flatBT (operB (Trans M) (numBT j)) =
+            s\<^sub>1 @ (Dsym (enat u)
+              # concat (replicate j (s\<^sub>0 @ [Dsym (enat (v - 1))]))
+              @ [Dsym (enat (v - 1))] @ [Zsym]
+              @ concat (replicate j b\<^sub>0)) @ b\<^sub>1"
+      using m_7_2_scb_fseq_kind1_general[OF tT uv bodyT dbbody bodyne innerscb k1]
+      by simp
+    have "flatBT (OW ((C ^^ j) (Dpt (enat (v - 1)) 0\<^sub>B)))
+            = s\<^sub>1 @ Dsym (enat u) # flatBT ((C ^^ j) (Dpt (enat (v - 1)) 0\<^sub>B)) @ b\<^sub>1"
+      using R0o[of "(C ^^ j) (Dpt (enat (v - 1)) 0\<^sub>B)"] by simp
+    also have "\<dots> = s\<^sub>1 @ (Dsym (enat u)
+              # concat (replicate j (s\<^sub>0 @ [Dsym (enat (v - 1))]))
+              @ [Dsym (enat (v - 1))] @ [Zsym]
+              @ concat (replicate j b\<^sub>0)) @ b\<^sub>1"
+      using R2[of j] by simp
+    finally have "flatBT (OW ((C ^^ j) (Dpt (enat (v - 1)) 0\<^sub>B)))
+                    = flatBT (operB (Trans M) (numBT j))" using fop by simp
+    thus "operB (Trans M) (numBT j) = OW ((C ^^ j) (Dpt (enat (v - 1)) 0\<^sub>B))"
+      by (metis m_7_flatBT_inj)
+  qed
+  \<comment> \<open>monotonicities via @{thm [source] scbext_lessBT}\<close>
+  have Cmono: "\<And>x y. leBT x y \<Longrightarrow> leBT (C x) (C y)"
+  proof -
+    fix x y assume "leBT x y"
+    thus "leBT (C x) (C y)"
+    proof
+      assume "lessBT x y"
+      hence "lessBP (DB (enat (v - 1)) x) (DB (enat (v - 1)) y)" by simp
+      hence "lessBT (C x) (C y)"
+        by (rule scbext_lessBT[OF R0c R0c b0RP])
+      thus ?thesis by simp
+    next
+      assume "x = y" thus ?thesis by simp
+    qed
+  qed
+  have OWmono: "\<And>x y. leBT x y \<Longrightarrow> leBT (OW x) (OW y)"
+  proof -
+    fix x y assume "leBT x y"
+    thus "leBT (OW x) (OW y)"
+    proof
+      assume "lessBT x y"
+      hence "lessBP (DB (enat u) x) (DB (enat u) y)" by simp
+      hence "lessBT (OW x) (OW y)"
+        by (rule scbext_lessBT[OF R0o R0o b1RP])
+      thus ?thesis by simp
+    next
+      assume "x = y" thus ?thesis by simp
+    qed
+  qed
+  show ?thesis
+    by (rule m_8_45_lhs_of_funpow_recurrence
+          [where C = C and OW = OW and leafR = "Dpt (enat (v - 1)) 0\<^sub>B"
+             and leafL = "\<lambda>_. leafL" and M = M and m = m and k = k,
+           OF Cmono OWmono rhs lhs bot])
+qed
+
+
+text \<open>§8.4/§8.5 kind-1 \<open>lhs\<close>: REDUCE the funpow-context closed form
+  \<open>Trans (M[m]) = OW ((C\<^bsup>m-1\<^esup>) leafL)\<close> (the \<open>lhs\<close> input of @{thm [source]
+  m_8_45_lhs_of_funpow_recurrence_scb}) to a SINGLE oper STEP.  This is the
+  abstract packaging of "THE GENUINE CONTENT (1)" — the pair-side funpow
+  recurrence \<open>Trans (M[Suc p]) = C[Trans (M[p])]\<close> (one \<open>oper\<close> step = one
+  application of the monotone period context \<open>C\<close> under the outer wrap \<open>OW\<close>).
+  Given the base \<open>Trans (M[1]) = OW leafL\<close> (the \<open>Pred\<close>-form, since \<open>M[1] = Pred M\<close>
+  by @{thm [source] m_8_4_oper1_eq_Pred}) and the step \<open>Trans (M[p]) = OW b
+  \<Longrightarrow> Trans (M[Suc p]) = OW (C b)\<close>, the closed form follows by a plain induction.
+  RESIDUAL = exactly \<open>base\<close> + \<open>step\<close> (the single-step marking-nesting surgery,
+  dischargeable via @{thm [source] m_7_4_Mark_Trans_repr} + the c1-around closed
+  forms @{thm [source] m_8_1_c1_around_part4_1} / @{thm [source]
+  m_8_1_c1_around_part4_2} + scb composition).\<close>
+
+lemma funpow_closed_of_step:
+  fixes M :: pairseq and OW C :: "BT \<Rightarrow> BT" and leafL :: BT and m :: nat
+  assumes base: "Trans (M[1]) = OW leafL"
+    and step: "\<And>p b. 1 \<le> p \<Longrightarrow> Trans (M[p]) = OW b \<Longrightarrow> Trans (M[Suc p]) = OW (C b)"
+    and m1: "1 \<le> m"
+  shows "Trans (M[m]) = OW ((C ^^ (m - 1)) leafL)"
+proof -
+  have key: "\<And>q. Trans (M[Suc q]) = OW ((C ^^ q) leafL)"
+  proof -
+    fix q show "Trans (M[Suc q]) = OW ((C ^^ q) leafL)"
+    proof (induction q)
+      case 0 show ?case using base by simp
+    next
+      case (Suc q)
+      have ihq: "Trans (M[Suc q]) = OW ((C ^^ q) leafL)" using Suc.IH .
+      have "Trans (M[Suc (Suc q)]) = OW (C ((C ^^ q) leafL))"
+        by (rule step[OF _ ihq]) simp
+      thus ?case by simp
+    qed
+  qed
+  have mq: "Suc (m - 1) = m" using m1 by simp
+  show ?thesis using key[of "m - 1"] mq by simp
+qed
+
+
+text \<open>§8.4/§8.5 kind-1 \<open>lhs\<close> DISCHARGE — the FULL one-step reduction.  Composes
+  @{thm [source] funpow_closed_of_step} (closed form \<open>\<Longleftarrow>\<close> base + step) into
+  @{thm [source] m_8_45_lhs_of_funpow_recurrence_scb}: the exch \<open>lhs\<close> conclusion
+  \<open>\<exists>j. leBT (Trans (M[m])) (operB (Trans M) (numBT j))\<close> reduces to the CLEANEST
+  residual — \<open>base\<close> (Pred-form), \<open>step\<close> (the single oper-step marking-nesting
+  recurrence), and \<open>bot\<close> (the \<open>C\<^bsup>k\<^esup>\<close> bottom bound, host-constant \<open>k \<in> {1,2}\<close>).
+  This is the direct drop-in for the \<open>exch\<close> hypothesis of @{thm [source]
+  m_8_5_TransCondV_oper_descend_engine} / the conclusion of @{thm [source]
+  m_8_4_exch_of_lhs_closed} / @{thm [source] m_8_5_exch_of_lhs_closed}.\<close>
+
+lemma m_8_45_lhs_of_onestep_scb:
+  fixes M :: pairseq and u v m k :: nat and leafL :: BT
+    and s\<^sub>0 s\<^sub>1 b\<^sub>0 b\<^sub>1 :: "Sym list" and C OW :: "BT \<Rightarrow> BT"
+  assumes C_def: "C = (\<lambda>x. unflatBT (s\<^sub>0 @ Dsym (enat (v - 1)) # flatBT x @ b\<^sub>0))"
+    and OW_def: "OW = (\<lambda>x. unflatBT (s\<^sub>1 @ Dsym (enat u) # flatBT x @ b\<^sub>1))"
+    and tT: "Trans M \<in> T_B" and uv: "u < v" and bodyT: "body \<in> T_B"
+    and dbbody: "domB body = TBv (enat (v - 1))" and bodyne: "body \<noteq> Trm []"
+    and innerscb: "scb_decomp body s\<^sub>0 (flatBT (Dpt (enat v) 0\<^sub>B)) b\<^sub>0"
+    and k1: "scb_kind1 (Trans M) s\<^sub>1 (flatBT (Dpt (enat u) body)) b\<^sub>1"
+    and base: "Trans (M[1]) = OW leafL"
+    and step: "\<And>p b. 1 \<le> p \<Longrightarrow> Trans (M[p]) = OW b \<Longrightarrow> Trans (M[Suc p]) = OW (C b)"
+    and bot: "leBT leafL ((C ^^ k) (Dpt (enat (v - 1)) 0\<^sub>B))"
+    and m1: "1 \<le> m"
+  shows "\<exists>j. leBT (Trans (M[m])) (operB (Trans M) (numBT j))"
+proof -
+  have lhs: "Trans (M[m]) = OW ((C ^^ (m - 1)) leafL)"
+    by (rule funpow_closed_of_step
+          [where M = M and OW = OW and C = C and leafL = leafL and m = m,
+           OF base step m1])
+  show ?thesis
+    by (rule m_8_45_lhs_of_funpow_recurrence_scb
+          [where C = C and OW = OW and s\<^sub>0 = s\<^sub>0 and s\<^sub>1 = s\<^sub>1 and b\<^sub>0 = b\<^sub>0 and b\<^sub>1 = b\<^sub>1
+             and u = u and v = v and M = M and m = m and k = k and leafL = leafL,
+           OF C_def OW_def tT uv bodyT dbbody bodyne innerscb k1 lhs bot])
 qed
 
 
