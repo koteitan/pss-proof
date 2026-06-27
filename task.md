@@ -20,7 +20,7 @@
       - ✅ 降下⟸交換則(1)+OT〔`m_8_1_Trans_fseq_condI_descent`〕
       - 🚨 交換則(1)本体〔stepT還元=`m_8_1_Trans_fseq_condI_comm_append_reduce`〕
         - ✅ stepT j0=0（copy-additivity）〔`m_8_1_Trans_replicate_pred_condI`〕
-        - 🚨🤖 stepT j0>0（marking-nesting、part1-5 n横断glue、workflow）
+        - 🚨🤖 stepT j0>0（→残差lhs marking-nesting、RHS済=`m_8_1_stepT_j0pos_of_lhs_closed`、workflow）
       - 🚨 OT所属（→§8.7）
     - ✅ 補題（公差 $(1,1)$ のペア数列の $\textrm{Trans}$ の基本性質）〔`m_8_1_diagSeq_Trans`〕
     - ✅ 系（$\textrm{Pred}$ が公差 $(1,1)$ のペア数列の $\textrm{Trans}$ の基本性質）〔`m_8_1_Pred_diagSeq_Trans`〕
