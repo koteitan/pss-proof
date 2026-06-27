@@ -20,7 +20,7 @@
       - ✅ 降下⟸交換則(1)+OT〔`m_8_1_Trans_fseq_condI_descent`〕
       - 🚨 交換則(1)本体〔stepT還元=`m_8_1_Trans_fseq_condI_comm_append_reduce`〕
         - ✅ stepT j0=0（copy-additivity）〔`m_8_1_Trans_replicate_pred_condI`〕
-        - 🚨🤖 stepT j0>0（残=general step=marking-nesting recurrence〔正target=D_v0 leaf+flat→nested readback〕+itercond(Adm0のみ)+dM、wf wcd80psjk wt-mark2）
+        - 🚨 stepT j0>0（残=general step=marking-nesting〔正=funpow-context recurrence+bottom bound、D_v0 exact-leaf も非universal判明〕+itercond(Adm0のみ)+dM）
       - 🚨 OT所属（→§8.7）
     - ✅ 補題（公差 $(1,1)$ のペア数列の $\textrm{Trans}$ の基本性質）〔`m_8_1_diagSeq_Trans`〕
     - ✅ 系（$\textrm{Pred}$ が公差 $(1,1)$ のペア数列の $\textrm{Trans}$ の基本性質）〔`m_8_1_Pred_diagSeq_Trans`〕
@@ -32,7 +32,7 @@
     - ✅ 補題（部分表現の単項成分と $\textrm{Pred}$ の関係）(§8.2 keystone)〔`m_8_2_keystone` = 無条件 `p_8_2_subexpr_component_Pred`〕
     - 🚨 補題（強単項性の下での部分表現の単項成分の基本性質）
       - ✅ (1) `m_8_2_subexpr_leftend_unique`
-      - 🚨🤖 (2)(3)(4) leBT：widH→det→keystone case-4排除〔`m_8_2_det_of_case4excl`〕(cases1/2/3済)。残=case4(§7.4 Mark geometry、境界j1'=Lng M-1 で RightNodes_Mark 範囲外)、wf wcd80psjk wt-det2
+      - 🚨 (2)(3)(4) leBT：widH→det→case-4 を単一 edge fact「¬nextR M 1 (TrMax)(L-1)」に絞込〔`m_8_2_e1_le_e1par_of_notnextR1`他〕。残=global branch-row-1帰納「∀f. e1 f≤e1(TrMax)」
     - 🚨 補題（条件 (V) の下での右端の親の基本性質）
     - 🚨 補題（条件 (V) の下での終切片と $\textrm{Trans}$ の関係）
   - 🚨 §8.3 条件 (II) の下での展開規則
@@ -44,7 +44,7 @@
     - ✅ 補題（第 $0$ 種型基本列の基本分岐規則）〔`m_8_3_kind0_branch_rule`〕
     - ✅ 補題（第 $0$ 種型基本列の基本基点関係）〔`m_8_3_kind0_base_basepoint`〕
   - 🚨 §8.4 条件 (III) か (IV) の下での展開規則
-    - 🚨🤖 命題（条件 (III) か (IV) の下での $\textrm{Trans}$ と基本列の交換関係）：inequality(≤)。**flatdec偽**(m_8_45 vacuous)、正target=D_v0 leaf recurrence+readback、condIV=A27、wf wcd80psjk wt-mark2
+    - 🚨 命題（条件 (III) か (IV) の下での $\textrm{Trans}$ と基本列の交換関係）：inequality(≤)。lhs leBT は真(witness j=m)、flatdec/D_v0 exact-leaf とも非universal、正=funpow-context recurrence+bottom bound、condIV=A27
     - 🚨 補題（右端の非許容直系先祖の基本性質）
     - 🚨 補題（条件 (III)〜(V) の下での右端の置き換えと $\textrm{Trans}$ の関係）
     - 🚨 補題（条件 (III)〜(VI) の下での展開規則の基本性質）
@@ -54,7 +54,7 @@
     - 🚨 補題（条件 (III) か (IV) の下での各種 scb分解）
     - ✅ 補題（条件 (III) か (IV) の下での基本列の基本性質）〔`m_8_4_oper_basic_part1`(= `p_8_4_oper_basic`)〕
   - 🚨 §8.5 条件 (V) の下での展開規則
-    - 🚨🤖 命題（条件 (V) の下での $\textrm{Trans}$ と基本列の交換関係）：inequality(≤)+engine。flatdec偽、正target=D_v0 leaf recurrence(=§8.1 step/§8.4 同核)、wf wcd80psjk wt-mark2
+    - 🚨 命題（条件 (V) の下での $\textrm{Trans}$ と基本列の交換関係）：inequality(≤)+engine。正=funpow-context recurrence+bottom bound(=§8.1 step/§8.4 同核)
     - 🚨 補題（条件 (V) の下での $\textrm{Joints}$ と $\textrm{FirstNodes}$ と $t_2$ の基本性質）
     - 🚨 補題（条件 (V) の下での各種 scb分解）〔def 内部記号露出要〕
   - 🚨 §8.6 条件 (VI) の下での展開規則
@@ -78,5 +78,5 @@
       - ✅ clean部（rank0/T_B/単項leaf）〔`m_8_7_Trans_*`〕
       - ✅ 還元 isOT⟸R1/R2/R3〔`m_8_7_OT_via_body`+`descP_snoc`/`m_8_7_isOT_BT_snoc_leBT`〕
       - 🚨 R2 descP-step＝dispatcher resid の det 部（=L81 wid/det）
-      - 🚨🤖 wid（=§8.2 widH/L35 と同一、det→case-4排除。残=case4、wf wcd80psjk wt-det2）
+      - 🚨 wid（=§8.2 widH/L35、det case-4→単一 edge fact「¬nextR M 1 (TrMax)(L-1)」、残=branch-row-1帰納）
       - 📘 R3 = [Buc1] OT2/GBT〔`buc1_*`〕
