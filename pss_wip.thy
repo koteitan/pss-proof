@@ -34249,6 +34249,181 @@ proof -
     by (rule m_8_2_subexpr_component_strongmono_of_factAB[OF MD Brne aW factA factB])
 qed
 
+text \<open>§8.2 branch row-1 tie-break — the LEXICOGRAPHIC content of descending(Br M):
+  when two branches tie in row-0, the earlier dominates in row-1.  This is the
+  second conjunct of @{thm [source] cdom_def} (via @{thm [source] descending_cdomD}).
+  It is the crux unlocking factB's prefix recursion (the article's clause-(2)
+  strong-admissibility): in the row-0 tie case it forces the clause-(2) condition
+  C to descend to Pred M (with reducedness \<open>M\<^bsub>0,FN\<^esub> \<ge> M\<^bsub>1,FN\<^esub>\<close>), so the IH applies;
+  in the strict case the joint bound (factA) suffices.  Reduces factBlem to the
+  single keystone wid-determination \<open>widH\<close> (\<open>RightNodes(Trans M)\<^bsub>1\<^esub> = M\<^bsub>1,j\<^sub>1'\<^esub>\<close> under C).\<close>
+
+lemma m_8_2_branch_row1_tiebreak:
+  fixes M :: pairseq
+  assumes MD: "M \<in> DT_PS" and JNJ1: "JN \<le> J1" and J1Br: "J1 < Lng (Br M)"
+    and tie: "entry (Br M ! JN) 0 0 = entry (Br M ! J1) 0 0"
+  shows "entry (Br M ! J1) 1 0 \<le> entry (Br M ! JN) 1 0"
+proof -
+  have descBrM: "descending (Br M)" using MD by (simp add: DT_PS_def)
+  have "cdom (Br M ! JN) (Br M ! J1)" by (rule descending_cdomD[OF descBrM JNJ1 J1Br])
+  thus ?thesis using tie by (simp add: cdom_def)
+qed
+
+text \<open>§8.2 FactB BASE (clause-(2) lower bound, all-trunk predecessor).  When
+  \<open>Pred M\<close> is all-trunk (\<open>Br (Pred M) = []\<close>), \<open>Pred M = diagSeq u v\<close> and the witness
+  \<open>aP = D\<^bsub>v\<^esub>0\<close> is a single principal, so the IH bound \<open>thr' = v\<close> is immediate.  The
+  threshold is the row-1 entry at the LAST first-node \<open>j\<^sub>1' = FirstNodes M ! (Lng (Br
+  M) - 1)\<close> (the clause-(2) leaf, not the joint \<open>j\<^sub>0'\<close> of factA).  Discharged through
+  the abstract-threshold engine @{thm [source] m_8_2_wit_step_thr} with \<open>thr = M\<^bsub>1,j\<^sub>1'\<^esub>\<close>.
+  Two clean structural side conditions are isolated: \<open>thrmono\<close> (\<open>M\<^bsub>1,j\<^sub>1'\<^esub> \<le> M\<^bsub>1,0\<^esub> +
+  TrMax M\<close>; the last branch's row-1 first-node does not exceed the trunk top --
+  empirically 0-failures over the reachable DT_PS base, provable by the
+  reduced/diagSeq squeeze) and \<open>newdom\<close> (the keystone wid-pinning \<open>widH\<close>, the single
+  documented §8.2 residual).  Scoped to \<open>2 < Lng M\<close> (the keystone's \<open>j\<^sub>1 > 1\<close>); the
+  degenerate two-column base is handled separately by the driver.\<close>
+
+lemma m_8_2_factB_base:
+  fixes M :: pairseq and a :: BT
+  assumes MD: "M \<in> DT_PS" and Brne: "Br M \<noteq> []" and BrPe: "Br (Pred M) = []"
+    and Lge3: "2 < Lng M"
+    and aW: "Trans M = Dpt (enat (entry M 1 0)) a"
+    and thrmono: "entry M 1 (FirstNodes M ! (Lng (Br M) - 1)) \<le> entry M 1 0 + TrMax M"
+    and newdom: "entry M 1 (FirstNodes M ! (Lng (Br M) - 1)) \<le> RightNodes (Trans M) ! 1"
+  shows "\<forall>p\<in>set (PB a). leBT (Dpt (enat (entry M 1 (FirstNodes M ! (Lng (Br M) - 1)))) 0\<^sub>B) p"
+proof -
+  have MR: "M \<in> RT_PS" and mono: "monoT M" using MD by (auto simp: DT_PS_def)
+  have MT: "M \<in> T_PS" using MR by (simp add: RT_PS_def)
+  have MP: "M \<in> PT_PS" using MT mono by (simp add: PT_PS_def)
+  have brTr: "TrMax M \<noteq> Lng M - 1"
+  proof
+    assume "TrMax M = Lng M - 1"
+    hence "Br M = []" by (simp add: Br_def)
+    thus False using Brne by simp
+  qed
+  have Lge2: "1 < Lng M" using Lge3 by simp
+  have LPeq: "Lng (Pred M) = Lng M - 1" using Lge2 by (simp add: Pred_def)
+  have TrP: "TrMax (Pred M) = TrMax M" by (rule TrMax_Pred[OF MT Lge2 brTr])
+  have TrPe: "TrMax (Pred M) = Lng (Pred M) - 1" by (rule baseU_Br_empty_TrMax[OF BrPe])
+  have TrM2: "TrMax M = Lng M - 2" using TrP TrPe LPeq by simp
+  have Trpos: "0 < TrMax M" using TrM2 Lge3 by simp
+  have LPg1: "1 < Lng (Pred M)" using LPeq Lge3 by simp
+  have predDT: "Pred M \<in> DT_PS" by (rule descending_Br_Pred[OF MD Brne LPg1])
+  have predRT: "Pred M \<in> RT_PS" using predDT by (simp add: DT_PS_def)
+  have predmono: "monoT (Pred M)" using predDT by (simp add: DT_PS_def)
+  define u where "u = entry M 1 0"
+  define v where "v = u + TrMax M"
+  have uPred: "entry (Pred M) 1 0 = u"
+    using Lge2 by (simp add: u_def Pred_def entry_def nth_butlast)
+  have uv: "u < v" using Trpos by (simp add: v_def)
+  \<comment> \<open>\<open>Pred M = diagSeq u v\<close>, all-trunk\<close>
+  have predDiag: "Pred M = diagSeq u v"
+  proof (rule nth_equalityI)
+    have "length (diagSeq u v) = Suc v - u" by simp
+    also have "\<dots> = Suc (TrMax M)" by (simp add: v_def)
+    also have "\<dots> = Lng M - 1" using TrM2 Lge3 by simp
+    also have "\<dots> = length (Pred M)" using LPeq by simp
+    finally show "length (Pred M) = length (diagSeq u v)" by simp
+  next
+    fix i assume "i < length (Pred M)"
+    hence iL: "i < Lng (Pred M)" by simp
+    have di: "entry (Pred M) 0 i = entry (Pred M) 1 0 + i
+              \<and> entry (Pred M) 1 i = entry (Pred M) 1 0 + i"
+      by (rule baseU_alltrunk_diag_entry[OF predRT predmono TrPe iL])
+    have "Pred M ! i = (entry (Pred M) 0 i, entry (Pred M) 1 i)" by (simp add: entry_def)
+    hence Pi: "Pred M ! i = (u + i, u + i)" using di uPred by simp
+    have ilt: "i < Suc v - u" using iL LPeq TrM2 Lge3 by (simp add: v_def)
+    have "diagSeq u v ! i = (u + i, u + i)" by (rule diagSeq_nth[OF ilt])
+    thus "Pred M ! i = diagSeq u v ! i" using Pi by simp
+  qed
+  have predTrans: "Trans (Pred M) = Dpt (enat u) (Dpt (enat v) 0\<^sub>B)"
+    using m_8_1_diagSeq_Trans[OF uv] predDiag by simp
+  have predW: "Trans (Pred M) = Dpt (enat (entry M 1 0)) (Dpt (enat v) 0\<^sub>B)"
+    using predTrans by (simp add: u_def)
+  \<comment> \<open>single-principal IH bound (\<open>thr' = v\<close>) and threshold monotonicity\<close>
+  have ihA: "\<forall>r\<in>set (PB (Dpt (enat v) 0\<^sub>B)). leBT (Dpt (enat v) 0\<^sub>B) r"
+    by (simp add: PB_Dpt_single leBT_Dpt0_iff)
+  have thrmono': "entry M 1 (FirstNodes M ! (Lng (Br M) - 1)) \<le> v"
+    using thrmono by (simp add: v_def u_def)
+  have j1gt: "Lng M - 1 > 1" using Lge3 by simp
+  show ?thesis
+    by (rule m_8_2_wit_step_thr[OF aW predW ihA thrmono' newdom
+            m_8_2_keystone[OF MR MP Brne j1gt]])
+qed
+
+
+text \<open>§8.7 OT-closure building blocks (surgery-FREE).  These are the structural
+  closure rules of \<open>isOT_BT\<close> needed by the inductive step of OT membership.  They
+  isolate the three residuals of the Pred-recursion reduction (recurse on \<open>Trans
+  (Pred M)\<close> via the PROVEN keystone @{thm [source] m_8_2_keystone}, NOT on the
+  surgery-dependent \<open>M[n]\<close> commutation):
+  \<^item> \<open>m_8_7_isOT_BT_snoc\<close> — \<open>isOT_BT\<close> is preserved by appending one OT principal
+    that descends after the existing list (the descP step, R2);
+  \<^item> \<open>m_8_7_isOT_BT_Dpt\<close> — wrapping an OT body in a single principal \<open>D\<^sub>v\<close> stays OT
+    given the \<open>G\<^bsub>B\<^esub>\<close>-condition (R3-outer, the [Buc1] OT2 clause);
+  \<^item> \<open>m_8_7_OT_wrap_snoc\<close> — the composite, EXACTLY the shape of a keystone step
+    \<open>Trans M = D\<^bsub>v\<^esub>(a +\<^sub>B D\<^bsub>x\<^esub> q)\<close>: reduces \<open>isOT_BT(Trans M)\<close> to
+    \<open>isOT_BT a\<close> (R1, the IH on \<open>Trans (Pred M)\<close>'s body), \<open>isOT_BP\<close> of the new
+    principal (R3-inner), the descP step (R2), and the outer \<open>G\<^bsub>B\<^esub>\<close>-condition
+    (R3-outer).  All three are pure \<open>BT\<close>-structural facts independent of the
+    pair-sequence surgeries.\<close>
+
+lemma m_8_7_isOT_BT_snoc:
+  assumes a: "isOT_BT (Trm xs)" and p: "isOT_BP pn" and d: "descP (xs @ [pn])"
+  shows "isOT_BT (Trm (xs @ [pn]))"
+  using a p d by auto
+
+lemma m_8_7_isOT_BT_Dpt:
+  assumes b: "isOT_BT t" and g: "\<forall>x\<in>GBT v t. lessBT x t"
+  shows "isOT_BT (Dpt v t)"
+  using b g by simp
+
+lemma m_8_7_OT_wrap_snoc:
+  assumes a: "isOT_BT a" and p: "isOT_BP pn"
+    and d: "descP (case a of Trm xs \<Rightarrow> xs @ [pn])"
+    and g: "\<forall>x\<in>GBT v (a +\<^sub>B Trm [pn]). lessBT x (a +\<^sub>B Trm [pn])"
+  shows "isOT_BT (Dpt v (a +\<^sub>B Trm [pn]))"
+proof -
+  obtain xs where axs: "a = Trm xs" by (cases a)
+  have d': "descP (xs @ [pn])" using d by (simp add: axs)
+  have axsOT: "isOT_BT (Trm xs)" using a by (simp add: axs)
+  have bodyOT: "isOT_BT (a +\<^sub>B Trm [pn])"
+    using m_8_7_isOT_BT_snoc[OF axsOT p d'] by (simp add: axs)
+  show ?thesis by (rule m_8_7_isOT_BT_Dpt[OF bodyOT g])
+qed
+
+text \<open>§8.7 OT-membership master REDUCTION (surgery-FREE).  For any \<open>M\<close> whose
+  \<open>Trans\<close> exposes the single outer principal \<open>D\<^bsub>v\<^esub>(Trm ps)\<close> (every keystone case
+  does, with \<open>v = M\<^bsub>1,0\<^esub>\<close> and \<open>ps\<close> the body's principal list), \<open>Trans M \<in> OT\<^bsub>B\<^esub>\<close>
+  reduces to three clean conditions that map EXACTLY onto the Pred-recursion
+  residuals R1/R2/R3:
+  \<^item> \<open>bodyP\<close>: every body principal is \<open>isOT_BP\<close> — R1 (the prefix principals come
+    from the IH @{term \<open>isOT_BT (Trans (Pred M))\<close>}) + R3-inner (the appended
+    principal \<open>D\<^bsub>M\<^sub>1\<^sub>,\<^sub>j\<^sub>1'\<^esub> q\<close>);
+  \<^item> \<open>bodyD\<close>: \<open>descP ps\<close> — R2, the descending step, \<open>M\<^bsub>1,j\<^sub>1'\<^esub> \<le> RightNodes(Trans
+    (Pred M))\<close>, the §8.2 component-domination machinery;
+  \<^item> \<open>gbt\<close>: the outer \<open>G\<^bsub>B\<^esub>\<close>-condition — R3-outer, the [Buc1] OT2 clause.
+  Plus \<open>T\<^bsub>B\<^esub>\<close> from @{thm [source] m_8_7_Trans_in_T_B_ST} gives \<open>\<in> OT\<^bsub>B\<^esub>\<close>.  None of
+  this touches the surgery-dependent \<open>M[n]\<close> commutation.\<close>
+
+lemma m_8_7_OT_via_body:
+  assumes tval: "Trans M = Dpt v (Trm ps)"
+    and bodyP: "\<forall>p\<in>set ps. isOT_BP p"
+    and bodyD: "descP ps"
+    and gbt: "\<forall>x\<in>GBT v (Trm ps). lessBT x (Trm ps)"
+  shows "isOT_BT (Trans M)"
+proof -
+  have b: "isOT_BT (Trm ps)" using bodyP bodyD by simp
+  have "isOT_BT (Dpt v (Trm ps))" by (rule m_8_7_isOT_BT_Dpt[OF b gbt])
+  thus ?thesis using tval by simp
+qed
+
+text \<open>§8.7 OT-membership ⟶ \<open>OT\<^bsub>B\<^esub>\<close> (adds the \<open>T\<^bsub>B\<^esub>\<close> half on \<open>ST\<^bsub>PS\<^esub>\<close>).\<close>
+
+lemma m_8_7_OT_B_of_isOT_BT:
+  assumes M: "M \<in> ST_PS" and ot: "isOT_BT (Trans M)"
+  shows "Trans M \<in> OT_B"
+  using ot m_8_7_Trans_in_T_B_ST[OF M] by (simp add: OT_B_def OT_def)
+
 text \<open>§8.1 additivity infrastructure (for @{thm [source]
   m_8_1_stepT_j0zero_of_additivity}).  The condition-(I), \<open>j\<^sub>0 = 0\<close> fundamental
   sequence is a pure self-repeat of \<open>Pred M\<close> (@{thm [source]
@@ -35072,6 +35247,129 @@ proof -
     by (rule operB_marked_scb_value_kind1[OF tT uv bodyT dbbody bodyne innerscb k1])
   hence "Trans (M[n]) = operB (Trans M) (numBT j)" using lj by simp
   thus ?thesis by blast
+qed
+
+text \<open>§8.1 kind-0 marking-nesting SURGERY CORE, the \<open>w = 1\<close> condition-(I)
+  (\<open>v = 0\<close>) single-step.  Empirically the \<open>w = 1\<close> condition-(I), \<open>j\<^sub>0 > 0\<close> iterate
+  has \<open>Trans(M[k]) = D\<^bsub>u\<^esub>((D\<^sub>0 0)\<^bsup>k\<^esup>)\<close> (the \<open>v = 0\<close>, \<open>t\<^sub>0 = t\<^sub>1 = 0\<close> closed form), and
+  the single oper step nests ONE more \<open>D\<^sub>0 0\<close>.  This lemma is the value-level core
+  of that step for the branch where the iterate \<open>N = M[Suc(Suc n)]\<close> is itself
+  condition-(I) with \<open>j\<^sub>-\<^sub>1 = 0\<close> (jpN = 0): the marked principal collapses by
+  @{thm [source] m_8_2_subexpr_component_Pred_Adm0_clause1} (the SAME clause-(1)
+  lemma used for the §8.1 RHS) — \<open>Trans N = D\<^bsub>u\<^esub>(t\<^sub>1 +\<^sub>B D\<^sub>0 0)\<close> with
+  \<open>Trans(Pred N) = D\<^bsub>u\<^esub> t\<^sub>1\<close> — so \<open>t\<^sub>1 = (D\<^sub>0 0)\<^bsup>Suc n\<^esup>\<close> from the IH gives
+  \<open>Trans N = (D\<^sub>0 0)\<^bsup>Suc(Suc n)\<^esup>\<close> by the \<open>multBT\<close>-fold.  The iterate-condition facts
+  (Adm0, condA, e1z) are taken as hypotheses here — they are the
+  iterate-structure residual, discharged separately from \<open>N = M[Suc(Suc n)]\<close>.\<close>
+
+lemma m_8_1_step_w1_nesting_condI:
+  fixes N :: pairseq and u n :: nat
+  assumes MR: "N \<in> RT_PS" and MP: "N \<in> PT_PS"
+    and j1gt: "Lng N - 1 > 1"
+    and Adm0: "transJm1 N = 0"
+    and condA: "transCondI N \<or> transCondIII N \<or> transCondV N"
+    and e1z: "entry N 1 (Lng N - 1) = 0"
+    and predCF: "Trans (Pred N) = Dpt (enat u) (multBT (Dpt 0 0\<^sub>B) (Suc n))"
+  shows "Trans N = Dpt (enat u) (multBT (Dpt 0 0\<^sub>B) (Suc (Suc n)))"
+proof -
+  obtain t1 where tp: "Trans (Pred N) = Dpt (enat (entry N 1 0)) t1"
+    and tm: "Trans N = Dpt (enat (entry N 1 0))
+                         (t1 +\<^sub>B Dpt (enat (entry N 1 (Lng N - 1))) 0\<^sub>B)"
+    using m_8_2_subexpr_component_Pred_Adm0_clause1[OF MR MP j1gt Adm0 condA] by blast
+  have eq: "Dpt (enat (entry N 1 0)) t1 = Dpt (enat u) (multBT (Dpt 0 0\<^sub>B) (Suc n))"
+    using tp predCF by simp
+  have ueq: "entry N 1 0 = u" using eq by simp
+  have t1eq: "t1 = multBT (Dpt 0 0\<^sub>B) (Suc n)" using eq by simp
+  have z: "Dpt (enat (entry N 1 (Lng N - 1))) 0\<^sub>B = Dpt 0 0\<^sub>B"
+    by (simp only: e1z) (simp add: zero_enat_def)
+  have tm2: "Trans N = Dpt (enat u) (multBT (Dpt 0 0\<^sub>B) (Suc n) +\<^sub>B Dpt 0 0\<^sub>B)"
+    using tm by (simp only: ueq t1eq z)
+  show ?thesis using tm2 by simp
+qed
+
+text \<open>§8.1 iterate last-column entry (d0zero / condition-(I) oper): the last column
+  of \<open>M[n]\<close> reads back \<open>M\<close>'s column \<open>j\<^sub>1 - 1\<close> (the last column of the branch block),
+  so \<open>entry (M[n]) i (Lng(M[n]) - 1) = entry M i (Lng M - 2)\<close>.  Via @{thm [source]
+  oper_d0zero_nth} at block \<open>q = n-1\<close>, offset \<open>s = w-1\<close>.  This discharges the
+  \<open>e1z\<close> (entry-row-1 = 0) iterate-condition residual of the kind-0 surgery: under
+  condition (I) (\<open>M\<^bsub>1,j\<^sub>1\<^esub> = 0\<close>) with \<open>w = 1\<close> the branch column IS \<open>j\<^sub>0 = j\<^sub>1 - 1\<close>,
+  whose row-1 value \<open>v\<close> determines whether the iterate stays condition-(I).\<close>
+
+lemma entry_operI_d0zero_last:
+  fixes M :: pairseq and i n :: nat
+  assumes hp0: "hasParent M 0 (Lng M - 1)" and e1z: "entry M 1 (Lng M - 1) = 0"
+    and n1: "1 \<le> n"
+  shows "entry (M[n]) i (Lng (M[n]) - 1) = entry M i (Lng M - 1 - 1)"
+proof -
+  let ?j1 = "Lng M - 1"  let ?j0 = "parent M 0 ?j1"  let ?w = "?j1 - ?j0"
+  note F = kind0_parent_facts[OF hp0 e1z]
+  have i1z: "idx1 M ?j1 = 0" by (rule F(1))
+  have j0lt: "?j0 < ?j1" by (rule F(3))
+  have notzero: "\<not> (entry M 0 ?j1 = 0 \<and> entry M 1 ?j1 = 0)" by (rule F(4))
+  have hp: "hasParent M (idx1 M ?j1) ?j1" by (rule F(5))
+  have L: "1 < Lng M" by (rule F(6))
+  have w0: "0 < ?w" using j0lt by linarith
+  have Ln: "Lng (M[n]) = ?j0 + n * ?w"
+  proof -
+    have "Lng (M[n]) = parent M 0 ?j1 + n * (?j1 - parent M 0 ?j1)"
+      by (rule Lng_operI[OF hp0 e1z])
+    thus ?thesis by simp
+  qed
+  \<comment> \<open>\<open>Lng(M[n]) - 1 = j0 + (n-1)w + (w-1)\<close>\<close>
+  have dm: "(n - 1) * ?w = n * ?w - ?w" using n1 by (simp add: diff_mult_distrib)
+  have nw: "?w \<le> n * ?w"
+  proof -
+    have "1 * ?w \<le> n * ?w" using n1 by (rule mult_le_mono1)
+    thus ?thesis by simp
+  qed
+  have idx: "Lng (M[n]) - 1 = ?j0 + (n - 1) * ?w + (?w - 1)"
+    using Ln dm w0 n1 nw by linarith
+  have qn: "n - 1 < n" using n1 by simp
+  have sw: "?w - 1 < ?w" using w0 by simp
+  have nth: "(M[n]) ! (?j0 + (n - 1) * ?w + (?w - 1)) = M ! (?j0 + (?w - 1))"
+    by (rule oper_d0zero_nth[OF L notzero hp i1z j0lt qn sw])
+  have j0w: "?j0 + (?w - 1) = ?j1 - 1" using j0lt w0 by linarith
+  have "(M[n]) ! (Lng (M[n]) - 1) = M ! (?j1 - 1)" using nth idx j0w by simp
+  thus ?thesis by (simp add: entry_def)
+qed
+
+text \<open>§8.1 marking-nesting SURGERY CORE, GENERAL \<open>v\<close> (generalises @{thm [source]
+  m_8_1_step_w1_nesting_condI} from \<open>v = 0\<close> to arbitrary \<open>v\<close>).  When the iterate's
+  branch row-1 leaf is \<open>v > 0\<close> the iterate \<open>N\<close> is itself kind-1 (condition
+  III/V), but as long as \<open>j\<^sub>-\<^sub>1 = 0\<close> (jpN = 0, i.e. \<open>j\<^sub>0 = 1\<close>) the SAME §8.2
+  clause-(1) lemma @{thm [source] m_8_2_subexpr_component_Pred_Adm0_clause1}
+  applies — it gives \<open>Trans N = D\<^bsub>u\<^esub>(t\<^sub>1 +\<^sub>B D\<^bsub>v\<^esub> 0)\<close> (the trailing leaf is now
+  \<open>D\<^bsub>v\<^esub> 0\<close>, NOT collapsed to \<open>D\<^sub>0 0\<close>), so the IH \<open>Trans(Pred N) = (D\<^bsub>v\<^esub> 0)\<^bsup>Suc n\<^esup>\<close>
+  yields \<open>Trans N = (D\<^bsub>v\<^esub> 0)\<^bsup>Suc(Suc n)\<^esup>\<close> by the same \<open>multBT\<close>-fold.  This is the
+  kind-1-LEAF nesting collapse (intellectual core of the second surgery for the
+  simple \<open>D\<^bsub>u\<^esub>((D\<^bsub>v\<^esub> 0)\<^bsup>k\<^esup>)\<close> closed form), AND it discharges the \<open>v > 0\<close>
+  sub-case of the kind-0 \<open>w = 1\<close> step.\<close>
+
+lemma m_8_1_step_w1_nesting:
+  fixes N :: pairseq and u v n :: nat
+  assumes MR: "N \<in> RT_PS" and MP: "N \<in> PT_PS"
+    and j1gt: "Lng N - 1 > 1"
+    and Adm0: "transJm1 N = 0"
+    and condA: "transCondI N \<or> transCondIII N \<or> transCondV N"
+    and elast: "entry N 1 (Lng N - 1) = v"
+    and predCF: "Trans (Pred N) = Dpt (enat u) (multBT (Dpt (enat v) 0\<^sub>B) (Suc n))"
+  shows "Trans N = Dpt (enat u) (multBT (Dpt (enat v) 0\<^sub>B) (Suc (Suc n)))"
+proof -
+  obtain t1 where tp: "Trans (Pred N) = Dpt (enat (entry N 1 0)) t1"
+    and tm: "Trans N = Dpt (enat (entry N 1 0))
+                         (t1 +\<^sub>B Dpt (enat (entry N 1 (Lng N - 1))) 0\<^sub>B)"
+    using m_8_2_subexpr_component_Pred_Adm0_clause1[OF MR MP j1gt Adm0 condA] by blast
+  have eq: "Dpt (enat (entry N 1 0)) t1
+              = Dpt (enat u) (multBT (Dpt (enat v) 0\<^sub>B) (Suc n))"
+    using tp predCF by simp
+  have ueq: "entry N 1 0 = u" using eq by simp
+  have t1eq: "t1 = multBT (Dpt (enat v) 0\<^sub>B) (Suc n)" using eq by simp
+  have z: "Dpt (enat (entry N 1 (Lng N - 1))) 0\<^sub>B = Dpt (enat v) 0\<^sub>B"
+    by (simp only: elast)
+  have tm2: "Trans N = Dpt (enat u)
+                         (multBT (Dpt (enat v) 0\<^sub>B) (Suc n) +\<^sub>B Dpt (enat v) 0\<^sub>B)"
+    using tm by (simp only: ueq t1eq z)
+  show ?thesis using tm2 by simp
 qed
 
 
