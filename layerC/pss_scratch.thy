@@ -1025,6 +1025,118 @@ text \<open>§8.5 BRIDGE — the |B|-COMPOSITION spine-walk (M-agnostic, the mas
   the OUTER-q induction).  Discharges the |B|-composition; leaves exactly the
   per-column \<open>step\<close> (the irreducible keystone-deepen matching) and the endpoint.\<close>
 
+text \<open>§8.5 SURGERY value-step — the CONCRETE spine function \<open>P\<close>.  The trailing-leaf
+  subtree extractor: strip the outer head (\<open>bpHeadT\<close>), take the LAST principal of the
+  body (\<open>last (PB \<cdot>)\<close>), and read its subtree (\<open>bpHeadT\<close>).  Applied to a term in spine
+  form \<open>D\<^bsub>e\<^esub>(t +\<^sub>B D\<^bsub>h\<^esub> z)\<close> it returns exactly the deepest slot \<open>z\<close>
+  (lemma \<open>m_8_5_spineLeaf_Dpt_addBT\<close>).  This is the concrete witness
+  \<open>P m := spineLeaf (Trans (Y \<frown> take m B))\<close> that makes the per-column \<open>step\<close> of
+  \<open>m_8_5_surgery_spine_compose\<close> hold definitionally once the SHAPE
+  (@{thm [source] m_8_5_appended_col_deepen}) pins the deepened subtree.\<close>
+
+definition spineLeaf :: "BT \<Rightarrow> BT" where
+  "spineLeaf T = bpHeadT (last (PB (bpHeadT T)))"
+
+lemma m_8_5_spineLeaf_Dpt_addBT:
+  "spineLeaf (Dpt (enat e) (t +\<^sub>B Dpt (enat h) z)) = z"
+proof -
+  have hb: "bpHeadT (Dpt (enat e) (t +\<^sub>B Dpt (enat h) z)) = t +\<^sub>B Dpt (enat h) z"
+    by simp
+  have pdz: "PB (Dpt (enat h) z) = [Trm [DB (enat h) z]]" by (simp add: PB_def)
+  have pb: "PB (t +\<^sub>B Dpt (enat h) z) = PB t @ [Trm [DB (enat h) z]]"
+    using PB_addBT_app[of t "Dpt (enat h) z"] pdz by simp
+  show ?thesis by (simp add: spineLeaf_def hb pb)
+qed
+
+text \<open>§8.5 SURGERY value-step ALGEBRAIC GLUE (sub-fact B, cancellation core).
+  Two decompositions of \<open>Trans X\<close> — the spine invariant form \<open>D\<^bsub>e10\<^esub>(t\<^sub>2 +\<^sub>B D\<^bsub>vm1\<^esub> a)\<close>
+  (the IH at column \<open>m\<close>) and the keystone-deepen SHAPE form \<open>D\<^bsub>e10'\<^esub>(t +\<^sub>B D\<^bsub>h\<^esub> a\<^sub>0)\<close>
+  (@{thm [source] m_8_5_appended_col_deepen}) — are FORCED to coincide head-for-head
+  by the single-principal cancellation (@{thm [source] Dpt_addBT_right_cancel} family):
+  \<open>e10 = e10'\<close>, \<open>t\<^sub>2 = t\<close>, \<open>vm1 = h\<close>.  Substituting those equalities into the SHAPE
+  output \<open>Trans M' = D\<^bsub>e10'\<^esub>(t +\<^sub>B D\<^bsub>h\<^esub> b)\<close> re-expresses the deepened term in the spine
+  invariant's frame \<open>D\<^bsub>e10\<^esub>(t\<^sub>2 +\<^sub>B D\<^bsub>vm1\<^esub> b)\<close>.  This is the algebraic half of the
+  per-column \<open>step\<close>: it PINS the deepened subtree \<open>b\<close> into the spine slot, so
+  \<open>P (Suc m) := b\<close> advances the invariant.  The remaining (geometric) half is supplying
+  the SHAPE lemma's hypotheses at the partial host \<open>X = Y \<frown> take m B\<close>.\<close>
+
+lemma m_8_5_spine_step_glue:
+  fixes X M' :: pairseq and t2 t a a0 b :: BT and e10 e10' vm1 h :: nat
+  assumes ih: "Trans X = Dpt (enat e10) (t2 +\<^sub>B Dpt (enat vm1) a)"
+    and shX: "Trans X = Dpt (enat e10') (t +\<^sub>B Dpt (enat h) a0)"
+    and shM: "Trans M' = Dpt (enat e10') (t +\<^sub>B Dpt (enat h) b)"
+  shows "Trans M' = Dpt (enat e10) (t2 +\<^sub>B Dpt (enat vm1) b)"
+proof -
+  have eq: "Dpt (enat e10) (t2 +\<^sub>B Dpt (enat vm1) a)
+              = Dpt (enat e10') (t +\<^sub>B Dpt (enat h) a0)"
+    using ih shX by simp
+  have headeq: "e10 = e10'" using eq by simp
+  have bodyeq: "t2 +\<^sub>B Dpt (enat vm1) a = t +\<^sub>B Dpt (enat h) a0" using eq by simp
+  have listeq: "untrm t2 @ [DB (enat vm1) a] = untrm t @ [DB (enat h) a0]"
+    using bodyeq by (cases t2; cases t) simp_all
+  have lasteq: "DB (enat vm1) a = DB (enat h) a0"
+    using listeq by (simp add: append_eq_append_conv)
+  hence hh: "h = vm1" by simp
+  have "untrm t2 = untrm t" using listeq by (simp add: append_eq_append_conv)
+  hence tt: "t2 = t" by (cases t2; cases t) simp_all
+  show ?thesis using shM headeq hh tt by simp
+qed
+
+text \<open>§8.5 SURGERY value-step — the per-column \<open>step\<close> REDUCED to the geometric input.
+  This is the drop-in for the \<open>step\<close> hypothesis of \<open>m_8_5_surgery_spine_compose\<close>
+  at the concrete witness \<open>P m = spineLeaf (Trans
+  (Y \<frown> take m B))\<close>.  Appending the column \<open>B ! m\<close> to the partial host \<open>Y \<frown> take m B\<close>
+  is \<open>Y \<frown> take (Suc m) B\<close> (@{thm [source] take_Suc_conv_app_nth}); the SHAPE collapse
+  (@{thm [source] m_8_5_appended_col_deepen}) gives a common-prefix-body deepen
+  \<open>a \<rightarrow> b\<close>, the GLUE (@{thm [source] m_8_5_spine_step_glue}) pins it into the spine
+  frame, and \<open>spineLeaf\<close> reads \<open>P (Suc m) = b\<close> back off the result
+  (@{thm [source] m_8_5_spineLeaf_Dpt_addBT}).  The ONLY residuals are the
+  per-column GEOMETRIC inputs on the partial host \<open>M' = (Y \<frown> take m B) \<frown> [B ! m]\<close>:
+  reduced-standard membership (\<open>MR\<close>/\<open>MP\<close>), nonempty last branch (\<open>Brne\<close>), depth
+  (\<open>j1gt\<close>), the row-0 parent-past-trunk condition (\<open>par\<close>, the deepen trigger; 148/148
+  empirically), and the constant outer head \<open>entry M' 1 0 = e10\<close>.\<close>
+
+lemma m_8_5_surgery_spine_step:
+  fixes Y B :: pairseq and t2 :: BT and e10 vm1 m :: nat
+  assumes mlt: "m < Lng B"
+    and Yne: "0 < Lng (Y @ take m B)"
+    and MR: "(Y @ take m B) @ [B ! m] \<in> RT_PS"
+    and MP: "(Y @ take m B) @ [B ! m] \<in> PT_PS"
+    and Brne: "Br ((Y @ take m B) @ [B ! m]) \<noteq> []"
+    and j1gt: "Lng ((Y @ take m B) @ [B ! m]) - 1 > 1"
+    and par: "parent ((Y @ take m B) @ [B ! m]) 0 (Lng ((Y @ take m B) @ [B ! m]) - 1)
+                > TrMax ((Y @ take m B) @ [B ! m])"
+    and e10eq: "entry ((Y @ take m B) @ [B ! m]) 1 0 = e10"
+    and ih: "Trans (Y @ take m B)
+               = Dpt (enat e10) (t2 +\<^sub>B Dpt (enat vm1) (spineLeaf (Trans (Y @ take m B))))"
+  shows "Trans (Y @ take (Suc m) B)
+           = Dpt (enat e10) (t2 +\<^sub>B Dpt (enat vm1) (spineLeaf (Trans (Y @ take (Suc m) B))))"
+proof -
+  have Msplit: "Y @ take (Suc m) B = (Y @ take m B) @ [B ! m]"
+    using mlt by (simp add: take_Suc_conv_app_nth)
+  from m_8_5_appended_col_deepen[where X = "Y @ take m B" and col = "B ! m",
+         OF Yne MR MP Brne j1gt par]
+  obtain t h a bb where
+    sh2: "Trans (Y @ take m B)
+            = Dpt (enat (entry ((Y @ take m B) @ [B ! m]) 1 0)) (t +\<^sub>B Dpt (enat h) a)"
+    and sh3: "Trans ((Y @ take m B) @ [B ! m])
+            = Dpt (enat (entry ((Y @ take m B) @ [B ! m]) 1 0)) (t +\<^sub>B Dpt (enat h) bb)"
+    by blast
+  have shX: "Trans (Y @ take m B) = Dpt (enat e10) (t +\<^sub>B Dpt (enat h) a)"
+    using sh2 e10eq by simp
+  have shM: "Trans ((Y @ take m B) @ [B ! m]) = Dpt (enat e10) (t +\<^sub>B Dpt (enat h) bb)"
+    using sh3 e10eq by simp
+  have glued: "Trans ((Y @ take m B) @ [B ! m]) = Dpt (enat e10) (t2 +\<^sub>B Dpt (enat vm1) bb)"
+    by (rule m_8_5_spine_step_glue[OF ih shX shM])
+  have sL: "spineLeaf (Trans ((Y @ take m B) @ [B ! m])) = bb"
+    using glued by (simp add: m_8_5_spineLeaf_Dpt_addBT)
+  have final: "Trans ((Y @ take m B) @ [B ! m])
+        = Dpt (enat e10) (t2 +\<^sub>B Dpt (enat vm1)
+              (spineLeaf (Trans ((Y @ take m B) @ [B ! m]))))"
+    by (subst sL) (rule glued)
+  thus ?thesis using Msplit by simp
+qed
+
 lemma m_8_5_surgery_spine_compose:
   fixes Y B :: pairseq and t2 :: BT and e10 vm1 :: nat and P :: "nat \<Rightarrow> BT"
   assumes base: "Trans Y = Dpt (enat e10) (t2 +\<^sub>B Dpt (enat vm1) (P 0))"
@@ -1065,4 +1177,487 @@ proof -
   thus ?thesis by simp
 qed
 
+text \<open>§8.5 SURGERY — ASSEMBLED from the per-column step + spine composition, leaving
+  EXACTLY the three genuine residuals.  Instantiating @{thm [source]
+  m_8_5_surgery_spine_compose} at the concrete witness \<open>P m = spineLeaf (Trans
+  (Y \<frown> take m B))\<close>, the per-column \<open>step\<close> is discharged uniformly by
+  @{thm [source] m_8_5_surgery_spine_step} (from the per-\<open>m\<close> GEOMETRIC inputs), the
+  composition walks the whole block, and the ENDPOINT identity \<open>spineLeaf (Trans
+  (Y \<frown> B)) = bpHeadT (Trans Y)\<close> rewrites the trailing spine slot back to the head
+  body of \<open>Trans Y\<close>.  The conclusion is EXACTLY the \<open>surgery\<close> hypothesis of
+  @{thm [source] m_8_5_markstep_of_surgery} with \<open>u = e10\<close> and
+  \<open>F = (\<lambda>x. t\<^sub>2 +\<^sub>B D\<^bsub>vm1\<^esub> x)\<close> (one net \<open>C\<close> per appended block).  The three residuals:
+    \<^item> \<open>base\<close>: \<open>Trans Y = D\<^bsub>e10\<^esub>(t\<^sub>2 +\<^sub>B D\<^bsub>vm1\<^esub> (spineLeaf (Trans Y)))\<close> — the spine
+       shape of the slice's own \<open>Trans\<close> (\<open>n=1\<close> base / §7.4 Mark representation);
+    \<^item> \<open>geom\<close> (seven per-\<open>m\<close> facts): the partial-host membership + parent-past-trunk
+       deepen triggers (148/148 empirically);
+    \<^item> \<open>endpoint\<close>: the SELF-SIMILAR bridge result (\<open>P\<^bsup>(q)\<^esup>\<^sub>m = body of the (q-1)-walk\<close>,
+       203/204, the one miss = the \<open>q=2\<close> base) — the genuine irreducible core,
+       provable only by the OUTER-\<open>q\<close> induction (the q-1 surgery feeds the m=0 base).
+  This DISCHARGES the |B|-composition and the algebraic value-pinning completely;
+  the residual content is concentrated in \<open>endpoint\<close> + \<open>geom\<close> (the self-similar
+  recurrence \<open>P\<^bsup>(q)\<^esup>\<^sub>m = C (P\<^bsup>(q-1)\<^esup>\<^sub>m)\<close>, the genuine wall).\<close>
+
+lemma m_8_5_surgery_of_geom_endpoint:
+  fixes Y B :: pairseq and t2 :: BT and e10 vm1 :: nat
+  assumes base: "Trans Y = Dpt (enat e10) (t2 +\<^sub>B Dpt (enat vm1) (spineLeaf (Trans Y)))"
+    and gYne: "\<And>m. m < Lng B \<Longrightarrow> 0 < Lng (Y @ take m B)"
+    and gMR: "\<And>m. m < Lng B \<Longrightarrow> (Y @ take m B) @ [B ! m] \<in> RT_PS"
+    and gMP: "\<And>m. m < Lng B \<Longrightarrow> (Y @ take m B) @ [B ! m] \<in> PT_PS"
+    and gBrne: "\<And>m. m < Lng B \<Longrightarrow> Br ((Y @ take m B) @ [B ! m]) \<noteq> []"
+    and gj1gt: "\<And>m. m < Lng B \<Longrightarrow> Lng ((Y @ take m B) @ [B ! m]) - 1 > 1"
+    and gpar: "\<And>m. m < Lng B \<Longrightarrow> parent ((Y @ take m B) @ [B ! m]) 0
+                 (Lng ((Y @ take m B) @ [B ! m]) - 1) > TrMax ((Y @ take m B) @ [B ! m])"
+    and ge10: "\<And>m. m < Lng B \<Longrightarrow> entry ((Y @ take m B) @ [B ! m]) 1 0 = e10"
+    and endpoint: "spineLeaf (Trans (Y @ B)) = bpHeadT (Trans Y)"
+  shows "Trans (Y @ B) = Dpt (enat e10) (t2 +\<^sub>B Dpt (enat vm1) (bpHeadT (Trans Y)))"
+proof -
+  have step: "\<And>m. m < Lng B \<Longrightarrow>
+        Trans (Y @ take m B)
+          = Dpt (enat e10) (t2 +\<^sub>B Dpt (enat vm1) (spineLeaf (Trans (Y @ take m B)))) \<Longrightarrow>
+        Trans (Y @ take (Suc m) B)
+          = Dpt (enat e10) (t2 +\<^sub>B Dpt (enat vm1) (spineLeaf (Trans (Y @ take (Suc m) B))))"
+  proof -
+    fix m
+    assume m: "m < Lng B"
+      and ih: "Trans (Y @ take m B)
+                 = Dpt (enat e10) (t2 +\<^sub>B Dpt (enat vm1) (spineLeaf (Trans (Y @ take m B))))"
+    show "Trans (Y @ take (Suc m) B)
+            = Dpt (enat e10) (t2 +\<^sub>B Dpt (enat vm1) (spineLeaf (Trans (Y @ take (Suc m) B))))"
+      by (rule m_8_5_surgery_spine_step
+            [OF m gYne[OF m] gMR[OF m] gMP[OF m] gBrne[OF m] gj1gt[OF m]
+                gpar[OF m] ge10[OF m] ih])
+  qed
+  have base': "Trans Y
+        = Dpt (enat e10) (t2 +\<^sub>B Dpt (enat vm1) (spineLeaf (Trans (Y @ take 0 B))))"
+    using base by simp
+  have comp: "Trans (Y @ B)
+        = Dpt (enat e10) (t2 +\<^sub>B Dpt (enat vm1) (spineLeaf (Trans (Y @ take (Lng B) B))))"
+    by (rule m_8_5_surgery_spine_compose
+          [where P = "\<lambda>m. spineLeaf (Trans (Y @ take m B))", OF base' step])
+  have comp2: "Trans (Y @ B)
+        = Dpt (enat e10) (t2 +\<^sub>B Dpt (enat vm1) (spineLeaf (Trans (Y @ B))))"
+    using comp by simp
+  show ?thesis by (subst comp2) (simp add: endpoint)
+qed
+
+text \<open>§8.5 SURGERY — \<open>base\<close> is NOT an independent §7.4 fact: it IS \<open>surgery(q-1)\<close>.
+  EMPIRICALLY DECISIVE (python/base_probe): the spine shape \<open>base(q)\<close>
+  (\<open>bd q\<close>'s last principal has head \<open>vm1\<close> AND its prefix \<open>= t\<^sub>2\<close>) FAILS for \<open>q=1\<close>
+  (0/28: \<open>bd 1 = t\<^sub>2\<close> need not end in \<open>D\<^bsub>vm1\<^esub>\<close>) and HOLDS for \<open>q\<ge>2\<close> (28/28) — exactly
+  tracking "one block already applied".  The reason is structural: for \<open>q\<ge>2\<close>,
+  \<open>bd q = C (bd (q-1)) = t\<^sub>2 +\<^sub>B D\<^bsub>vm1\<^esub>(bd (q-1))\<close> (= \<open>surgery(q-1)\<close>), so its last
+  principal is \<open>D\<^bsub>vm1\<^esub>(bd (q-1))\<close> and its prefix is exactly \<open>t\<^sub>2\<close>; \<open>spineLeaf\<close> then
+  reads back \<open>bd (q-1)\<close>.  Hence \<open>base(q)\<close> is a one-line consequence of the previous
+  iterate's surgery — there is no §7.4 shortcut.  This is the outer-\<open>q\<close> induction's
+  base wiring: the IH \<open>surgery(q-1)\<close> supplies \<open>base(q)\<close>.\<close>
+
+lemma m_8_5_base_of_surgery_pred:
+  fixes Y :: pairseq and t2 z :: BT and e10 vm1 :: nat
+  assumes prev: "Trans Y = Dpt (enat e10) (t2 +\<^sub>B Dpt (enat vm1) z)"
+  shows "Trans Y = Dpt (enat e10) (t2 +\<^sub>B Dpt (enat vm1) (spineLeaf (Trans Y)))"
+proof -
+  have "spineLeaf (Trans Y) = z" using prev by (simp add: m_8_5_spineLeaf_Dpt_addBT)
+  thus ?thesis using prev by simp
+qed
+
+text \<open>§8.5 SURGERY — the OUTER-\<open>q\<close> INDUCTION STEP, fully assembled.  Combines
+  \<open>m_8_5_base_of_surgery_pred\<close> (the IH \<open>surgery(q-1)\<close> supplies \<open>base(q)\<close>) with
+  \<open>m_8_5_surgery_of_geom_endpoint\<close>: it derives \<open>surgery(q)\<close> from \<open>surgery(q-1)\<close>
+  (\<open>prev\<close>: \<open>Trans Y = D\<^bsub>e10\<^esub>(t\<^sub>2 +\<^sub>B D\<^bsub>vm1\<^esub> z)\<close>, where \<open>Y = Y\<^bsub>q\<^esub> = Y\<^bsub>q-1\<^esub> \<frown> B\<^bsub>q-1\<^esub>\<close>
+  and \<open>z = bd (q-1)\<close>), the per-column GEOMETRIC inputs, and the ENDPOINT.  After this,
+  the SOLE residuals of the entire surgery are: (i) \<open>geom\<close> — slice-host membership,
+  which empirically FAILS 8/148 (the slice formulation is geometrically lossy; the
+  faithful fix walks the FULL-prefix hosts \<open>M[q] \<frown> take m B\<close> (148/148) via the readback
+  + a \<open>Mark\<close>-append keystone that does not yet exist; candidate engine
+  @{thm [source] Mark_monoT_via_Pred}, the interior-Mark-under-\<open>Pred\<close> recurrence); and
+  (ii) \<open>endpoint\<close> — the self-similar BRIDGE \<open>P\<^bsup>(q)\<^esup>\<^sub>m = C (P\<^bsup>(q-1)\<^esup>\<^sub>m)\<close> (102/102 for
+  \<open>q=3\<close>), whose \<open>m\<close>-induction has base \<open>= surgery(q-2)\<close> but STEP \<open>= the keystone-deepen
+  COMMUTATION\<close> \<open>g (C x) = C (g x)\<close> relating two different hosts — the master-key wall.\<close>
+
+text \<open>§8.5 ENDPOINT ENGINE — the scb-context SUBSTITUTION operator and its
+  COMMUTATION with the period wrapper \<open>C\<close>.  The interior-\<open>Mark\<close> recurrence
+  (@{thm [source] Mark_monoT_via_Pred}) exposes \<open>Mark N jm1 = G (Mark (Pred N) jm1)\<close>
+  where \<open>G\<close> substitutes the marked principal \<open>c\<^sub>1\<close> by the period block \<open>c\<^sub>2\<close> in the
+  scb-context: \<open>G x = unflatBT (s\<^sub>x \<frown> flat c\<^sub>2 \<frown> b\<^sub>x)\<close>, \<open>(s\<^sub>x,b\<^sub>x)\<close> the scb-decomposition
+  of \<open>x\<close> at \<open>c\<^sub>1\<close>.  The self-similar BRIDGE step is the COMMUTATION
+  \<open>G (pre +\<^sub>B D\<^bsub>h\<^esub> x) = pre +\<^sub>B D\<^bsub>h\<^esub> (G x)\<close>: substituting deep inside \<open>x\<close> commutes with
+  wrapping one more period context around it.  Mechanism: the scb-context of
+  \<open>pre +\<^sub>B D\<^bsub>h\<^esub> x\<close> at \<open>c\<^sub>1\<close> is the \<open>C\<close>-shifted context of \<open>x\<close> at \<open>c\<^sub>1\<close> (prefix gains the
+  \<open>liftS\<close> head, suffix gains one \<open>RP\<close>; @{thm [source] scb_addBT_left}), so the
+  substitution + \<open>unflatBT\<close> factor through the wrapper.  This is the keystone-deepen
+  commutation \<open>g (C x) = C (g x)\<close> at the explicit-\<open>scb\<close> level, the master-key
+  bridge's irreducible step.\<close>
+
+definition scbSubst :: "BT \<Rightarrow> BT \<Rightarrow> BT \<Rightarrow> BT" where
+  "scbSubst c1 c2 x =
+     unflatBT (fst (SOME sb. scb_decomp x (fst sb) (flatBT c1) (snd sb))
+               @ flatBT c2
+               @ snd (SOME sb. scb_decomp x (fst sb) (flatBT c1) (snd sb)))"
+
+lemma scb_SOME_eq:
+  assumes d: "scb_decomp t s c b" and tne: "t \<noteq> Trm []"
+  shows "(SOME sb. scb_decomp t (fst sb) c (snd sb)) = (s, b)"
+proof (rule some_equality)
+  show "scb_decomp t (fst (s, b)) c (snd (s, b))" using d by simp
+next
+  fix sb assume h: "scb_decomp t (fst sb) c (snd sb)"
+  have "fst sb = s \<and> snd sb = b"
+    using m_7_2_scb_unique_sb[OF h d tne] by simp
+  thus "sb = (s, b)" by (cases sb) auto
+qed
+
+lemma scbSubst_eq:
+  assumes d: "scb_decomp t s (flatBT c1) b" and tne: "t \<noteq> Trm []"
+  shows "scbSubst c1 c2 t = unflatBT (s @ flatBT c2 @ b)"
+  using scb_SOME_eq[OF d tne] by (simp add: scbSubst_def)
+
+lemma flat_addBT_Dpt:
+  assumes prene: "untrm pre \<noteq> []"
+  shows "flatBT (pre +\<^sub>B Dpt (enat h) G)
+           = liftS pre (Dsym (enat h) # flatBT G) @ [RP]"
+proof -
+  obtain p ps where ps: "untrm pre = p # ps" using prene by (cases "untrm pre") auto
+  obtain q rest where qr: "ps @ [DB (enat h) G] = q # rest"
+    by (cases "ps @ [DB (enat h) G]") auto
+  have addeq: "pre +\<^sub>B Dpt (enat h) G = Trm (p # q # rest)"
+    using ps qr by (cases pre) simp
+  have "flatBT (pre +\<^sub>B Dpt (enat h) G)
+        = LP # (flatBP p @ concat (map (\<lambda>r. CM # flatBP r) (q # rest))) @ [RP]"
+    using addeq by simp
+  also have "concat (map (\<lambda>r. CM # flatBP r) (q # rest))
+        = concat (map (\<lambda>r. CM # flatBP r) (ps @ [DB (enat h) G]))"
+    using qr by simp
+  also have "\<dots> = concat (map (\<lambda>r. CM # flatBP r) ps) @ CM # Dsym (enat h) # flatBT G"
+    by simp
+  finally have flatL: "flatBT (pre +\<^sub>B Dpt (enat h) G)
+        = LP # flatBP p @ concat (map (\<lambda>r. CM # flatBP r) ps)
+              @ CM # Dsym (enat h) # flatBT G @ [RP]"
+    by simp
+  have lifte: "liftS pre (Dsym (enat h) # flatBT G) @ [RP]
+        = LP # flatBP p @ concat (map (\<lambda>r. CM # flatBP r) ps)
+              @ CM # Dsym (enat h) # flatBT G @ [RP]"
+    using ps by (simp add: liftS_def)
+  show ?thesis using flatL lifte by simp
+qed
+
+lemma m_8_5_scbSubst_addBT_commute:
+  fixes pre c1 c2 x :: BT and h :: nat and sx bx :: "Sym list"
+  assumes mk: "scb_decomp x sx (flatBT c1) bx"
+    and xnz: "x \<noteq> Trm []"
+    and c2p: "isPTB_str (flatBT c2)"
+    and prene: "untrm pre \<noteq> []"
+  shows "scbSubst c1 c2 (pre +\<^sub>B Dpt (enat h) x)
+           = pre +\<^sub>B Dpt (enat h) (scbSubst c1 c2 x)"
+proof -
+  \<comment> \<open>unpack the scb-decomposition of \<open>x\<close> at \<open>c\<^sub>1\<close>\<close>
+  have flatx: "flatBT x = sx @ flatBT c1 @ bx"
+    using mk by (simp add: scb_decomp_def)
+  have ptc1: "isPTB_str (flatBT c1)" using mk xnz by (simp add: scb_decomp_def)
+  have rbx: "\<forall>z \<in> set bx. z = RP" using mk by (simp add: scb_decomp_def)
+  obtain p1 where p1: "flatBT c1 = flatBP p1" using ptc1 by (auto simp: isPTB_str_def)
+  obtain p2 where p2: "flatBT c2 = flatBP p2" using c2p by (auto simp: isPTB_str_def)
+  \<comment> \<open>scb of \<open>D\<^bsub>h\<^esub> x\<close> at \<open>c\<^sub>1\<close>, then transport to \<open>pre +\<^sub>B D\<^bsub>h\<^esub> x\<close>\<close>
+  have dhxne: "Dpt (enat h) x \<noteq> Trm []" by simp
+  have scbDhx: "scb_decomp (Dpt (enat h) x) (Dsym (enat h) # sx) (flatBT c1) bx"
+    unfolding scb_decomp_def using flatx ptc1 rbx by simp
+  have dhx1: "length (untrm (Dpt (enat h) x)) = 1" by simp
+  have scbT: "scb_decomp (pre +\<^sub>B Dpt (enat h) x)
+                (liftS pre (Dsym (enat h) # sx)) (flatBT c1) (bx @ [RP])"
+    by (rule scb_addBT_left[OF scbDhx dhx1 prene])
+  have prexne: "pre +\<^sub>B Dpt (enat h) x \<noteq> Trm []"
+    using prene by (cases pre) simp
+  \<comment> \<open>LHS via the transported scb\<close>
+  have LHS: "scbSubst c1 c2 (pre +\<^sub>B Dpt (enat h) x)
+        = unflatBT (liftS pre (Dsym (enat h) # sx) @ flatBT c2 @ (bx @ [RP]))"
+    by (rule scbSubst_eq[OF scbT prexne])
+  \<comment> \<open>flat of the inner substitution result\<close>
+  have GxV: "scbSubst c1 c2 x = unflatBT (sx @ flatBT c2 @ bx)"
+    by (rule scbSubst_eq[OF mk xnz])
+  have fx1: "flatBT x = sx @ flatBP p1 @ bx" using flatx p1 by simp
+  obtain t' where t': "flatBT t' = sx @ flatBP p2 @ bx"
+    using scbimg_image_BT[OF fx1 rbx, of p2] by blast
+  have flatGx: "flatBT (scbSubst c1 c2 x) = sx @ flatBT c2 @ bx"
+    using GxV t' p2 by (metis unflatBT_flat)
+  \<comment> \<open>RHS flat via the wrapper computation\<close>
+  have flatRHS: "flatBT (pre +\<^sub>B Dpt (enat h) (scbSubst c1 c2 x))
+        = liftS pre (Dsym (enat h) # sx) @ flatBT c2 @ (bx @ [RP])"
+    using flat_addBT_Dpt[OF prene, of h "scbSubst c1 c2 x"] flatGx
+    by (simp add: liftS_def)
+  show ?thesis
+    using LHS flatRHS by (metis unflatBT_flat)
+qed
+
+lemma m_8_5_surgery_of_pred_geom_endpoint:
+  fixes Y B :: pairseq and t2 z :: BT and e10 vm1 :: nat
+  assumes prev: "Trans Y = Dpt (enat e10) (t2 +\<^sub>B Dpt (enat vm1) z)"
+    and gYne: "\<And>m. m < Lng B \<Longrightarrow> 0 < Lng (Y @ take m B)"
+    and gMR: "\<And>m. m < Lng B \<Longrightarrow> (Y @ take m B) @ [B ! m] \<in> RT_PS"
+    and gMP: "\<And>m. m < Lng B \<Longrightarrow> (Y @ take m B) @ [B ! m] \<in> PT_PS"
+    and gBrne: "\<And>m. m < Lng B \<Longrightarrow> Br ((Y @ take m B) @ [B ! m]) \<noteq> []"
+    and gj1gt: "\<And>m. m < Lng B \<Longrightarrow> Lng ((Y @ take m B) @ [B ! m]) - 1 > 1"
+    and gpar: "\<And>m. m < Lng B \<Longrightarrow> parent ((Y @ take m B) @ [B ! m]) 0
+                 (Lng ((Y @ take m B) @ [B ! m]) - 1) > TrMax ((Y @ take m B) @ [B ! m])"
+    and ge10: "\<And>m. m < Lng B \<Longrightarrow> entry ((Y @ take m B) @ [B ! m]) 1 0 = e10"
+    and endpoint: "spineLeaf (Trans (Y @ B)) = bpHeadT (Trans Y)"
+  shows "Trans (Y @ B) = Dpt (enat e10) (t2 +\<^sub>B Dpt (enat vm1) (bpHeadT (Trans Y)))"
+proof -
+  have base: "Trans Y = Dpt (enat e10) (t2 +\<^sub>B Dpt (enat vm1) (spineLeaf (Trans Y)))"
+    by (rule m_8_5_base_of_surgery_pred[OF prev])
+  show ?thesis
+    by (rule m_8_5_surgery_of_geom_endpoint
+          [OF base gYne gMR gMP gBrne gj1gt gpar ge10 endpoint])
+qed
+
+
+text \<open>§8.7 R2 brick — keystone WHOLE-BODY \<open>dstep\<close> reduction to the equal-head tail
+  (cases (1)/(2), surgery-FREE; uniform generalisation of @{thm [source]
+  m_8_7_dstep_case1}).  In keystone cases (1)/(2) the predecessor body is the WHOLE
+  prefix \<open>Trm ps\<close> (no trailing principal: \<open>r = 0\<^sub>B\<close>) and \<open>M\<close> appends ONE principal
+  \<open>D\<^bsub>M\<^sub>1\<^sub>,\<^sub>j\<^sub>j\<^esub> q\<close> at head index \<open>jj\<close> (\<open>jj = j\<^sub>1'\<close> for (1) with \<open>q = 0\<^sub>B\<close>,
+  \<open>jj = j\<^sub>0'\<close> for (2) with general \<open>q = snd t12\<close>).  Under the Admpos regime the head
+  index is PINNED to the prefix's last head: \<open>rn1_outer_inner_trailing\<close> reads
+  \<open>RightNodes (Trans M)\<^bsub>1\<^esub> = M\<^bsub>1,jj\<^esub>\<close> (from \<open>dec\<close>) and
+  \<open>RightNodes (Trans (Pred M))\<^bsub>1\<^esub> = hd\<close> (from \<open>predW\<close> via the butlast/last split),
+  while @{thm [source] m_8_2_wid_step} equates the two — so \<open>M\<^bsub>1,jj\<^esub> = hd\<close> always
+  (the whole-body cases are ALWAYS equal-head, unlike the proper-prefix cases (3)/(4)
+  which mostly escape strictly via @{thm [source] descP_last_le}).  Hence the head
+  bound is FREE and the dstep reduces, via @{thm [source] m_8_7_dstep_assemble}, to
+  exactly the equal-head tail \<open>M\<^bsub>1,jj\<^esub> = hd \<Longrightarrow> leBT q qb\<close> — the genuine \<open>Trans\<close>-spine
+  descent.  (Case (1) recovers as \<open>jj := j\<^sub>1'\<close>, \<open>q := 0\<^sub>B\<close>, tail trivial via
+  @{thm [source] lessBT_Zero_left}; matches @{thm [source] m_8_7_dstep_case1}.)\<close>
+
+lemma m_8_7_dstep_wholebody:
+  fixes M :: pairseq and ps :: "BP list" and q :: BT and jj :: nat
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS"
+    and j1gt: "Lng M - 1 > 1"
+    and Admpos: "transJm1 M > 0"
+    and predW: "Trans (Pred M) = Dpt (enat (entry M 1 0)) (Trm ps)"
+    and dec: "Trans M = Dpt (enat (entry M 1 0))
+                (Trm ps +\<^sub>B Dpt (enat (entry M 1 jj)) q)"
+    and predTB: "Trans (Pred M) \<in> T_B"
+    and psne: "ps \<noteq> []"
+    and tail: "\<And>hd qb. last ps = DB (enat hd) qb \<Longrightarrow> entry M 1 jj = hd \<Longrightarrow> leBT q qb"
+  shows "leBT (Dpt (enat (entry M 1 jj)) q) (Trm [last ps])"
+proof -
+  let ?x = "entry M 1 jj"
+  have t1ne: "Trans (Pred M) \<noteq> 0\<^sub>B" using predW by simp
+  obtain lw qb where lastps_raw: "last ps = DB lw qb" by (cases "last ps")
+  have lin: "last ps \<in> set ps" using psne by simp
+  have dfreeP: "dfree_BT (Trm ps)"
+  proof -
+    have "dfree_BT (Dpt (enat (entry M 1 0)) (Trm ps))"
+      using predTB predW by (simp add: T_B_def)
+    thus ?thesis by simp
+  qed
+  have "dfree_BP (last ps)" using dfreeP lin by simp
+  hence lwne: "lw \<noteq> \<infinity>" using lastps_raw by simp
+  obtain hd where hd: "lw = enat hd" using lwne by (cases lw) auto
+  have lastps: "last ps = DB (enat hd) qb" using lastps_raw hd by simp
+  have psdecomp: "Trm ps = Trm (butlast ps) +\<^sub>B Dpt (enat hd) qb"
+  proof -
+    have "Trm (butlast ps) +\<^sub>B Dpt (enat hd) qb = Trm (butlast ps @ [DB (enat hd) qb])"
+      by simp
+    also have "\<dots> = Trm ps"
+      using append_butlast_last_id[OF psne] lastps by simp
+    finally show ?thesis by simp
+  qed
+  \<comment> \<open>head pin: \<open>?x = hd\<close> from the two trailing-head read-offs + wid_step\<close>
+  have rn1M: "RightNodes (Trans M) ! 1 = ?x"
+  proof -
+    have e: "Trans M = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B Dpt (enat ?x) q)"
+      using dec by simp
+    show ?thesis unfolding e by (rule rn1_outer_inner_trailing)
+  qed
+  have rn1P: "RightNodes (Trans (Pred M)) ! 1 = hd"
+  proof -
+    have e: "Trans (Pred M)
+              = Dpt (enat (entry M 1 0)) (Trm (butlast ps) +\<^sub>B Dpt (enat hd) qb)"
+      using predW psdecomp by simp
+    show ?thesis unfolding e by (rule rn1_outer_inner_trailing)
+  qed
+  have wid: "RightNodes (Trans M) ! 1 = RightNodes (Trans (Pred M)) ! 1"
+    by (rule m_8_2_wid_step[OF MR MP j1gt Admpos t1ne])
+  have xhd: "?x = hd" using rn1M rn1P wid by simp
+  have head: "?x \<le> hd" using xhd by simp
+  have tail': "?x = hd \<longrightarrow> leBT q qb" using tail[OF lastps] xhd by simp
+  show ?thesis
+    by (rule m_8_7_dstep_assemble[OF lastps psne head tail'])
+qed
+
+text \<open>§8.2 (content.md ~3602) 補題（条件(V)の下での右端の親の基本性質） — the
+  Trans-FREE rightmost row-0 parent lemma for the last column \<open>j\<^sub>1 = Lng M - 1\<close>.
+  The unique witness is \<open>j\<^sub>0 = parent M 0 j\<^sub>1\<close> (it exists & is unique by
+  @{thm [source] monoT_hasParent0_last}, giving (1) and the \<open>\<exists>!\<close>).
+  \<^item> (2) \<open>j\<^sub>0' \<le> j\<^sub>0\<close>: if \<open>j\<^sub>1' = j\<^sub>1\<close> the joint \<open>j\<^sub>0' = parent M 0 j\<^sub>1' = j\<^sub>0\<close>;
+    if \<open>j\<^sub>1' < j\<^sub>1\<close> the last branch \<open>Br M ! J\<^sub>1 = seg M j\<^sub>1' j\<^sub>1\<close> is \<open>monoT\<close>
+    (@{thm [source] wf21_Br_eq_seg}, @{thm [source] Br_component_nonmulti}), so
+    \<open>le0 M j\<^sub>1' j\<^sub>1\<close> (@{thm [source] le0_monoT_seg_into_list}) pins
+    \<open>j\<^sub>1' \<le> j\<^sub>0\<close> (@{thm [source] m_8_2_le0_above_parent}), hence
+    \<open>j\<^sub>0' < j\<^sub>1' \<le> j\<^sub>0\<close>.
+  \<^item> (3),(4): the only interesting case is \<open>m = j\<^sub>0\<close>, which (via (2),
+    \<open>m \<le> j\<^sub>0'\<close>) forces \<open>m = j\<^sub>0' = j\<^sub>0\<close>, i.e. the RIGHT disjunct
+    (\<open>M\<^bsub>0,j\<^sub>1'\<^esub> = M\<^bsub>1,j\<^sub>1'\<^esub>\<close>, \<open>Br M\<close> descending).  Then the joint/first-node row
+    identity (@{thm [source] m_8_2_joint_row1_eq},
+    @{thm [source] m_8_2_branch_col0_val}) gives the \<open>det\<close> inequality
+    \<open>M\<^bsub>1,j\<^sub>0'\<^esub> < M\<^bsub>1,j\<^sub>1'\<^esub>\<close>, so @{thm [source] m_8_2_det_imp_joint_lt_TrMax}
+    yields \<open>j\<^sub>0' < TrMax M\<close> (= (4)); (3) reads off the row identity at \<open>j\<^sub>1' = j\<^sub>1\<close>.\<close>
+
+lemma m_8_2_condV_rightmost_parent:
+  fixes M :: pairseq and m :: nat
+  defines "j1 \<equiv> Lng M - 1"
+  defines "J1 \<equiv> Lng (Br M) - 1"
+  defines "j0' \<equiv> Joints M ! J1"
+  defines "j1' \<equiv> FirstNodes M ! J1"
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS" and Brne: "Br M \<noteq> []"
+    and hyp: "m < j0' \<or> (m = j0' \<and> entry M 0 j1' = entry M 1 j1' \<and> descending (Br M))"
+  shows "\<exists>!j0.
+      \<comment> \<open>(1)\<close> nextR M 0 j0 j1
+    \<and> \<comment> \<open>(2)\<close> j0' \<le> j0
+    \<and> \<comment> \<open>(3)\<close> (m < j0 \<or> entry M 0 j1 = entry M 1 j1)
+    \<and> \<comment> \<open>(4)\<close> (m = j0 \<longrightarrow> j0 < TrMax M)"
+proof -
+  \<comment> \<open>plain equalities for the abbreviations\<close>
+  have j1v: "j1 = Lng M - 1" by (simp add: j1_def)
+  have J1v: "J1 = Lng (Br M) - 1" by (simp add: J1_def)
+  have j0'v: "j0' = Joints M ! J1" by (simp add: j0'_def)
+  have j1'v: "j1' = FirstNodes M ! J1" by (simp add: j1'_def)
+  \<comment> \<open>memberships\<close>
+  have MT: "M \<in> T_PS" using MP by (simp add: PT_PS_def)
+  have mono: "monoT M" using MP by (simp add: PT_PS_def)
+  \<comment> \<open>branch index\<close>
+  have BrL: "0 < Lng (Br M)" using Brne by (cases "Br M") auto
+  have J1Br: "J1 < Lng (Br M)" using BrL J1v by simp
+  \<comment> \<open>\<open>j\<^sub>0'\<close>, \<open>j\<^sub>1'\<close> geometry\<close>
+  have geom: "j0' \<le> TrMax M \<and> TrMax M < j1'"
+    using m_6_4_FirstNodes_TrMax_Joints[OF MP J1Br] by (simp add: j0'v j1'v)
+  have Trlt1': "TrMax M < j1'" using geom by simp
+  have fL: "j1' < Lng M" using a1_FN_lt[OF MP J1Br] by (simp add: j1'v)
+  have j1'lej1: "j1' \<le> j1" using fL j1v by linarith
+  have L1: "1 < Lng M" using Trlt1' fL by linarith
+  \<comment> \<open>\<open>j\<^sub>0'\<close> is the row-0 parent of \<open>j\<^sub>1'\<close>\<close>
+  have nxJ: "nextR M 0 j0' j1'" using Joints_parent_nextR[OF MP J1Br] by (simp add: j0'v j1'v)
+  have j0'lt1': "j0' < j1'" using poper_nextR_imp_le0[OF nxJ] by simp
+  have j0'par: "parent M 0 j1' = j0'" using Joints_nth[OF J1Br] by (simp add: j0'v j1'v)
+  \<comment> \<open>the row-0 parent of the last column\<close>
+  define j0s where "j0s = parent M 0 j1"
+  have hpj1: "hasParent M 0 j1" using monoT_hasParent0_last[OF MT mono L1] by (simp add: j1v)
+  have EXU: "\<exists>!a. nextR M 0 a j1" using hpj1 by (simp add: hasParent_def)
+  have nx0s: "nextR M 0 j0s j1" using theI'[OF EXU] by (simp add: j0s_def parent_def)
+  have uniq0: "\<And>a. nextR M 0 a j1 \<Longrightarrow> a = j0s"
+  proof -
+    fix a assume h: "nextR M 0 a j1"
+    show "a = j0s" using the1_equality[OF EXU h] by (simp add: j0s_def parent_def)
+  qed
+  \<comment> \<open>last-branch ancestry: \<open>j\<^sub>1' < j\<^sub>1 \<Longrightarrow> j\<^sub>1' \<le> j\<^sub>0\<close>\<close>
+  have facC: "j1' < j1 \<Longrightarrow> j1' \<le> j0s"
+  proof -
+    assume j1'ltj1: "j1' < j1"
+    have blkeq: "Br M ! J1 = seg M j1' j1"
+      using wf21_Br_eq_seg[OF MP Brne] by (simp add: J1v j1'v j1v)
+    have lenblk: "Lng (Br M ! J1) = Suc j1 - j1'" using blkeq by simp
+    have lenblk_gt: "1 < Lng (Br M ! J1)" using lenblk j1'ltj1 by linarith
+    have nz: "\<not> zeroT (Br M ! J1)" using lenblk_gt by (auto simp: zeroT_def)
+    have monoblk: "monoT (Br M ! J1)" using Br_component_nonmulti[OF MP J1Br] nz by blast
+    have segmono: "monoT (seg M j1' j1)" using monoblk blkeq by simp
+    have j1ltLM: "j1 < Lng M" using j1v L1 by linarith
+    have le0: "le0 M j1' j1"
+      by (rule le0_monoT_seg_into_list[OF MT segmono j1'lej1 order.refl j1ltLM])
+    have "j1' \<le> parent M 0 j1"
+      by (rule m_8_2_le0_above_parent[OF hpj1 le0]) (use j1'ltj1 in simp)
+    thus "j1' \<le> j0s" by (simp add: j0s_def)
+  qed
+  \<comment> \<open>(2)\<close>
+  have C2: "j0' \<le> j0s"
+  proof (cases "j1' = j1")
+    case True
+    have "parent M 0 j1 = parent M 0 j1'" using True by simp
+    also have "\<dots> = j0'" by (rule j0'par)
+    finally have "parent M 0 j1 = j0'" .
+    thus ?thesis by (simp add: j0s_def)
+  next
+    case False
+    hence "j1' < j1" using j1'lej1 by linarith
+    from facC[OF this] j0'lt1' show ?thesis by linarith
+  qed
+  \<comment> \<open>helper: under the RIGHT disjunct, \<open>j\<^sub>0' < TrMax M\<close> (the \<open>det\<close> route)\<close>
+  have rightlt: "\<lbrakk>entry M 0 j1' = entry M 1 j1'; descending (Br M)\<rbrakk> \<Longrightarrow> j0' < TrMax M"
+  proof -
+    assume E: "entry M 0 j1' = entry M 1 j1'" and desc: "descending (Br M)"
+    have MD: "M \<in> DT_PS" using MR mono desc by (simp add: DT_PS_def)
+    have e1j0': "entry M 1 j0' = entry (Br M ! J1) 0 0 - 1"
+      using m_8_2_joint_row1_eq[OF MD J1Br] by (simp add: j0'v)
+    have e0j1': "entry M 0 j1' = entry (Br M ! J1) 0 0"
+      using entry_FirstNodes_eq_component_gen[OF MP J1Br] by (simp add: j1'v)
+    have c0val: "entry (Br M ! J1) 0 0 = entry M 1 0 + j0' + 1"
+      using m_8_2_branch_col0_val[OF MD J1Br] by (simp add: j0'v)
+    have aval: "entry M 1 j0' = entry M 1 0 + j0'" using e1j0' c0val by simp
+    have b1val: "entry M 1 j1' = entry M 1 0 + j0' + 1"
+    proof -
+      have "entry M 1 j1' = entry M 0 j1'" using E by simp
+      also have "\<dots> = entry (Br M ! J1) 0 0" by (rule e0j1')
+      also have "\<dots> = entry M 1 0 + j0' + 1" by (rule c0val)
+      finally show ?thesis .
+    qed
+    have det: "entry M 1 j0' < entry M 1 j1'" using aval b1val by simp
+    have detform: "entry M 1 (Joints M ! (Lng (Br M) - 1))
+                     < entry M 1 (FirstNodes M ! (Lng (Br M) - 1))"
+      using det by (simp add: j0'v j1'v J1v)
+    have "Joints M ! (Lng (Br M) - 1) < TrMax M"
+      by (rule m_8_2_det_imp_joint_lt_TrMax[OF MD Brne detform])
+    thus "j0' < TrMax M" by (simp add: j0'v J1v)
+  qed
+  \<comment> \<open>(3)\<close>
+  have C3: "m < j0s \<or> entry M 0 j1 = entry M 1 j1"
+  proof (cases "m < j0'")
+    case True
+    with C2 have "m < j0s" by linarith
+    thus ?thesis by blast
+  next
+    case False
+    have notlt: "\<not> m < j0'" by (rule False)
+    have meq: "m = j0'" and E: "entry M 0 j1' = entry M 1 j1'"
+      using hyp notlt by auto
+    show ?thesis
+    proof (cases "j1' = j1")
+      case True
+      have "entry M 0 j1 = entry M 1 j1" using E True by simp
+      thus ?thesis by blast
+    next
+      case False
+      hence "j1' < j1" using j1'lej1 by linarith
+      from facC[OF this] have "j1' \<le> j0s" .
+      with j0'lt1' meq have "m < j0s" by linarith
+      thus ?thesis by blast
+    qed
+  qed
+  \<comment> \<open>(4)\<close>
+  have C4: "m = j0s \<longrightarrow> j0s < TrMax M"
+  proof
+    assume meqs: "m = j0s"
+    have mlej0': "m \<le> j0'" using hyp by auto
+    have meq': "m = j0'" using mlej0' C2 meqs by linarith
+    have notlt: "\<not> m < j0'" using meq' by simp
+    have E: "entry M 0 j1' = entry M 1 j1'" and desc: "descending (Br M)"
+      using hyp notlt by auto
+    have lt: "j0' < TrMax M" by (rule rightlt[OF E desc])
+    have "j0s = j0'" using meqs meq' by linarith
+    thus "j0s < TrMax M" using lt by simp
+  qed
+  \<comment> \<open>assemble the \<open>\<exists>!\<close>\<close>
+  show ?thesis
+  proof (rule ex1I[where a = j0s])
+    show "nextR M 0 j0s j1 \<and> j0' \<le> j0s
+            \<and> (m < j0s \<or> entry M 0 j1 = entry M 1 j1)
+            \<and> (m = j0s \<longrightarrow> j0s < TrMax M)"
+      using nx0s C2 C3 C4 by blast
+  next
+    fix j0
+    assume "nextR M 0 j0 j1 \<and> j0' \<le> j0
+              \<and> (m < j0 \<or> entry M 0 j1 = entry M 1 j1)
+              \<and> (m = j0 \<longrightarrow> j0 < TrMax M)"
+    hence "nextR M 0 j0 j1" by simp
+    thus "j0 = j0s" by (rule uniq0)
+  qed
+qed
 end
