@@ -55,11 +55,11 @@
     - 🚨 補題（条件 (III) か (IV) の下での各種 scb分解）
     - ✅ 補題（条件 (III) か (IV) の下での基本列の基本性質）〔`m_8_4_oper_basic_part1`(= `p_8_4_oper_basic`)〕
   - 🚨 §8.5 条件 (V) の下での展開規則
-    - 🚨 命題（条件 (V) の下での $\textrm{Trans}$ と基本列の交換関係）〔残=marking-nesting surgery {base2,step2}〕
+    - 🚨🤖 命題（条件 (V) の下での $\textrm{Trans}$ と基本列の交換関係）〔残=marking-nesting surgery {base2,step2}〕
     - 🚨 補題（条件 (V) の下での $\textrm{Joints}$ と $\textrm{FirstNodes}$ と $t_2$ の基本性質）
     - 🚨 補題（条件 (V) の下での各種 scb分解）〔def 内部記号露出要〕
   - 🚨 §8.6 条件 (VI) の下での展開規則
-    - 🚨 命題（条件 (VI) の下での $\textrm{Trans}$ と基本列の交換関係）
+    - 🚨🤖 命題（条件 (VI) の下での $\textrm{Trans}$ と基本列の交換関係）
     - ✅ 補題（公差 $(1,0)$ のペア数列の $\textrm{Trans}$ の基本性質）〔`m_8_6_const2nd_Trans_paper`〕
     - ✅ 補題（公差 $(1,1)$ のペア数列の $\textrm{Trans}$ の展開規則）〔`m_8_6_diagSeq_Trans_oper_paper`〕
     - 🚨 補題（順序数項の末尾単項の零化可能性）（原文偽=A25）
