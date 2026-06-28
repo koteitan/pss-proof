@@ -3012,9 +3012,106 @@ qed
 text \<open>§8.5 surgery CHECKPOINT — (A) deepen-classification geom is GREEN
   (@{thm [source] m_8_5_gpar_fullprefix} discharges the strict parent>TrMax
   deepen-trigger; @{thm [source] m_8_5_gBrne_from_gpar} discharges gBrne).
-  The remaining master-key residual is the outer-q JOINT induction supplying
-  the \<open>endpoint\<close> (value content) of @{thm [source] m_8_5_surgery_fullprefix};
-  the \<open>cinv\<close> (TrMax iterate-invariance) and \<open>basegpar\<close> (regime deepen) are
-  the only other gpar inputs to that outer-q caller.\<close>
+  The \<open>cinv\<close> (TrMax iterate-invariance) is now also GREEN
+  (lemma \<open>m_8_5_cinv\<close>, below), so \<open>basegpar\<close> (the regime's un-iterated deepen)
+  is the only gpar input the outer-q caller must supply as a hypothesis.
+  The remaining master-key residual is the outer-q JOINT induction supplying the
+  \<open>endpoint\<close> (value content) of @{thm [source] m_8_5_surgery_fullprefix}.\<close>
+
+
+text \<open>§8.5 SURGERY cinv — TRUNK INVARIANCE of the oper-iterate (obstacle #1).  For the
+  deepen-condV regime (last column row-1 positive with a row-1 parent strictly inside,
+  and the row-0 deepen-trigger \<open>TrMax M < parent M 0 (Lng M-1)\<close>), every oper-iterate
+  preserves the trunk length: \<open>TrMax (M[q]) = TrMax M\<close> (q \<ge> 1).  Proof = induction on
+  the iterate index: the base \<open>M[1] = Pred M\<close> (@{thm [source] m_8_4_oper1_eq_Pred}) drops
+  only the last column, leaving the trunk (@{thm [source] TrMax_Pred}, using \<open>TrMax M \<noteq>
+  Lng M-1\<close> from the deepen-trigger); the step \<open>M[Suc(Suc k)] = M[Suc k] @ B\<close>
+  (@{thm [source] m_8_4_oper_Suc_append}) appends ONE more period block past the trunk,
+  which by @{thm [source] m_8_5_TrMax_append_Br} leaves \<open>TrMax\<close> fixed — the deepen branch
+  \<open>Br (M[Suc k]) \<noteq> []\<close> holding because the IH pins \<open>TrMax (M[Suc k]) = TrMax M\<close> and the
+  trigger gives \<open>TrMax M + 2 \<le> Lng M-1 \<le> Lng (M[Suc k]) - 1\<close>.  Discharges the \<open>cinv\<close>
+  hypothesis of the gpar tower (@{thm [source] m_8_5_gpar_col} / @{thm [source]
+  m_8_5_gpar_fullprefix}); the iterate memberships go in as the named assumption \<open>iterT\<close>.\<close>
+
+lemma m_8_5_cinv:
+  fixes M :: pairseq and q :: nat
+  assumes MT: "M \<in> T_PS"
+    and L: "1 < Lng M"
+    and i1: "idx1 M (Lng M - 1) = 1"
+    and hp: "hasParent M (idx1 M (Lng M - 1)) (Lng M - 1)"
+    and j0lt: "parent M (idx1 M (Lng M - 1)) (Lng M - 1) < Lng M - 1"
+    and basegpar: "TrMax M < parent M 0 (Lng M - 1)"
+    and iterT: "\<And>k. 1 \<le> k \<Longrightarrow> (M::pairseq)[k] \<in> T_PS"
+    and q1: "1 \<le> q"
+  shows "TrMax ((M::pairseq)[q]) = TrMax M"
+proof -
+  have e1pos: "entry M 1 (Lng M - 1) > 0"
+  proof (rule ccontr)
+    assume "\<not> entry M 1 (Lng M - 1) > 0"
+    hence "idx1 M (Lng M - 1) = 0" by (simp add: idx1_def)
+    thus False using i1 by simp
+  qed
+  have notzero: "\<not> (entry M 0 (Lng M - 1) = 0 \<and> entry M 1 (Lng M - 1) = 0)"
+    using e1pos by simp
+  have hp1: "hasParent M 1 (Lng M - 1)" using hp i1 by simp
+  have j1pos: "Lng M - 1 > 0" using L by simp
+  define j0 where "j0 = parent M (idx1 M (Lng M - 1)) (Lng M - 1)"
+  define w where "w = Lng M - 1 - j0"
+  have j0ltw: "j0 < Lng M - 1" using j0lt by (simp add: j0_def)
+  have w0: "0 < w" using j0ltw unfolding w_def by simp
+  have j0w: "j0 + w = Lng M - 1" using j0ltw unfolding w_def by simp
+  have j0lt1: "parent M 1 (Lng M - 1) < Lng M - 1" by (rule j0lt[unfolded i1])
+  have hp0: "hasParent M 0 (Lng M - 1)"
+    by (rule oper_last_row0_haspar[OF hp i1 j0lt1])
+  have par0lt: "parent M 0 (Lng M - 1) < Lng M - 1"
+  proof -
+    have "nextR M 0 (parent M 0 (Lng M - 1)) (Lng M - 1)"
+      using hp0 unfolding hasParent_def parent_def by (rule theI')
+    hence "nextrel0 M (parent M 0 (Lng M - 1)) (Lng M - 1)" by (simp add: nextR_def)
+    thus ?thesis by (simp add: nextrel0_def)
+  qed
+  have tbound: "TrMax M + 2 \<le> Lng M - 1" using basegpar par0lt by linarith
+  have br: "TrMax M \<noteq> Lng M - 1" using tbound by linarith
+  have LngI: "\<And>n. Lng ((M::pairseq)[n]) = j0 + n * w"
+    unfolding j0_def w_def using operB_gen_LngM[OF L notzero hp j0lt] by simp
+  have aux: "\<And>k. TrMax ((M::pairseq)[Suc k]) = TrMax M"
+  proof -
+    fix k
+    show "TrMax ((M::pairseq)[Suc k]) = TrMax M"
+    proof (induct k)
+      case 0
+      have "(M::pairseq)[Suc 0] = Pred M" using m_8_4_oper1_eq_Pred[OF MT] by simp
+      thus ?case using TrMax_Pred[OF MT L br] by simp
+    next
+      case (Suc k)
+      obtain B' where appB: "(M::pairseq)[Suc k + 1] = (M::pairseq)[Suc k] @ B'"
+        using m_8_4_oper_Suc_append[OF j1pos e1pos hp1] by blast
+      have eqSS: "(M::pairseq)[Suc (Suc k)] = (M::pairseq)[Suc k] @ B'" using appB by simp
+      have LSk: "Lng ((M::pairseq)[Suc k]) = j0 + Suc k * w" by (rule LngI)
+      have LSkge: "Lng M - 1 \<le> Lng ((M::pairseq)[Suc k])"
+      proof -
+        have "j0 + w \<le> j0 + Suc k * w" using w0 by simp
+        thus ?thesis using LSk j0w by simp
+      qed
+      have IH: "TrMax ((M::pairseq)[Suc k]) = TrMax M" by (rule Suc.hyps)
+      have brSk: "TrMax ((M::pairseq)[Suc k]) \<noteq> Lng ((M::pairseq)[Suc k]) - 1"
+        using IH tbound LSkge by linarith
+      have BrSk: "Br ((M::pairseq)[Suc k]) \<noteq> []"
+        using brSk by (simp add: Br_def P_nonempty)
+      have sk1: "1 \<le> Suc k" by simp
+      have ssk1: "1 \<le> Suc (Suc k)" by simp
+      have T1: "(M::pairseq)[Suc k] \<in> T_PS" by (rule iterT[OF sk1])
+      have T2: "(M::pairseq)[Suc (Suc k)] \<in> T_PS" by (rule iterT[OF ssk1])
+      have T2': "(M::pairseq)[Suc k] @ B' \<in> T_PS" using T2 eqSS by simp
+      have "TrMax ((M::pairseq)[Suc k] @ B') = TrMax ((M::pairseq)[Suc k])"
+        by (rule m_8_5_TrMax_append_Br[OF T1 T2' BrSk])
+      hence "TrMax ((M::pairseq)[Suc (Suc k)]) = TrMax ((M::pairseq)[Suc k])"
+        using eqSS by simp
+      thus ?case using IH by simp
+    qed
+  qed
+  obtain k where qk: "q = Suc k" using q1 by (cases q) auto
+  show ?thesis using aux[of k] qk by simp
+qed
 
 end
