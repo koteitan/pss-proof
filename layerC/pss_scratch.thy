@@ -3015,8 +3015,15 @@ text \<open>§8.5 surgery CHECKPOINT — (A) deepen-classification geom is GREEN
   The \<open>cinv\<close> (TrMax iterate-invariance) is now also GREEN
   (lemma \<open>m_8_5_cinv\<close>, below), so \<open>basegpar\<close> (the regime's un-iterated deepen)
   is the only gpar input the outer-q caller must supply as a hypothesis.
-  The remaining master-key residual is the outer-q JOINT induction supplying the
-  \<open>endpoint\<close> (value content) of @{thm [source] m_8_5_surgery_fullprefix}.\<close>
+  ALL step2-route NON-surgery residuals are now GREEN: \<open>inj\<close>
+  (@{thm [source] m_8_5_OW_inj_of_scb}), BASEPOINT (\<open>m_8_5_basepoint\<close>),
+  brick B (\<open>m_8_5_brickB\<close>), ITERSCB (\<open>m_8_5_iterscb\<close>) — feeding \<open>wrap\<close> via
+  @{thm [source] m_8_5_wrap_of_iterscb}.  The SOLE remaining piece of §8.5 surgery
+  is the deep kernel: the slice-Y surgery \<open>Trans (Y \<frown> B) = D\<^bsub>u\<^esub>(F (bpHeadT (Trans Y)))\<close>
+  (the outer-q JOINT induction / slice-Y depth-recurrence).  Empirically mapped as a
+  multi-session push: \<open>gpar\<close> (the surgery regime) \<Longleftrightarrow> the FULL-iterate endpoint is
+  FALSE, so the constant-C one-wrap step does NOT close on-regime; the endpoint holds
+  only in the slice-Y form.  Kernel PAUSED, cleanly isolated.\<close>
 
 
 text \<open>§8.5 SURGERY cinv — TRUNK INVARIANCE of the oper-iterate (obstacle #1).  For the
@@ -3112,6 +3119,92 @@ proof -
   qed
   obtain k where qk: "q = Suc k" using q1 by (cases q) auto
   show ?thesis using aux[of k] qk by simp
+qed
+
+
+text \<open>§8.5 SURGERY residual (3) BASEPOINT — the iterate basepoint membership
+  \<open>(M[n], jm1) \<in> Marked\<close>, discharged from the condition-(V) regime via the GREEN
+  engine @{thm [source] m_8_3_kind1_base_basepoint}.  \<open>e1pos\<close> and \<open>j0lt2\<close> come from
+  @{const transCondV} (with \<open>coin\<close>: the row-1 and row-0 parents of the last column
+  coincide); \<open>hp1\<close>/\<open>parR\<close>/\<open>coin\<close>/\<open>jm1pos\<close> are the named regime inputs.  One of the
+  three step2 residuals of the §8.5 surgery ladder.\<close>
+
+lemma m_8_5_basepoint:
+  fixes M :: pairseq and n jm1 :: nat
+  assumes M: "M \<in> RT_PS" and n1: "0 < n"
+    and cv: "transCondV M"
+    and hp1: "hasParent M 1 (Lng M - 1)"
+    and parR: "nextrel0 M (parent M 1 (Lng M - 1)) (Lng M - 1)"
+    and coin: "parent M 1 (Lng M - 1) = parent M 0 (Lng M - 1)"
+    and jm1def: "jm1 = Adm M (parent M 0 (Lng M - 1))"
+    and jm1pos: "0 < jm1"
+  shows "((M::pairseq)[n], jm1) \<in> Marked"
+proof -
+  have e1pos: "entry M 1 (Lng M - 1) > 0" using cv by (simp add: transCondV_def)
+  have j0lt2: "parent M 1 (Lng M - 1) + 1 < Lng M - 1"
+  proof -
+    have "parent M 0 (Lng M - 1) + 1 < Lng M - 1" using cv by (simp add: transCondV_def)
+    thus ?thesis using coin by simp
+  qed
+  show ?thesis
+    by (rule conjunct1[OF m_8_3_kind1_base_basepoint
+          [OF M n1 e1pos hp1 j0lt2 parR coin jm1def jm1pos]])
+qed
+
+
+text \<open>§8.5 ITERSCB brick B — the iterate's marked subterm is SINGLE-PRINCIPAL (kind-1).
+  Restates @{thm [source] transC1_single_principal} through @{thm [source] transC1_def}
+  (\<open>transC1 N = Mark (Pred N) (transJm1 N)\<close>): for a condV-regime host \<open>N\<close> (the per-column
+  surgery host \<open>= M[q] \<frown> [col]\<close>, so \<open>Pred N = M[q]\<close> and \<open>transJm1 N = jm1\<close>), the marked
+  subterm \<open>Mark (M[q]) jm1\<close> is a single principal.  This is the centre-bridge for
+  ITERSCB: it lets the scb centre of @{thm [source] m_8_5_wrap_of_iterscb} be written
+  \<open>Dpt u (bpHeadT (Mark (M[q]) jm1))\<close> with the marked subterm reconstructed from its
+  head \<open>u = bpHeadV\<close> and body.\<close>
+
+lemma m_8_5_brickB:
+  fixes N :: pairseq
+  assumes MR: "N \<in> RT_PS" and MP: "N \<in> PT_PS"
+    and J1: "transJ1 N > 0" and T1: "transT1 N \<noteq> 0\<^sub>B"
+  shows "Lng (PB (Mark (Pred N) (transJm1 N))) = 1"
+proof -
+  have "Mark (Pred N) (transJm1 N) = transC1 N" by (simp add: transC1_def)
+  thus ?thesis using transC1_single_principal[OF MR MP J1 T1] by simp
+qed
+
+
+text \<open>§8.5 ITERSCB — the iterate kind-1 scb-context, assembled.  Upgrades the
+  scb-DECOMPOSITION of \<open>Trans (M[q])\<close> at the marked subterm (supplied by
+  @{thm [source] scb_context_eq_of_prefix} — the verbatim trunk-prefix context match,
+  hyp \<open>scb\<close>) to the full \<open>scb_kind1\<close> required by @{thm [source] m_8_5_wrap_of_iterscb},
+  via @{thm [source] scb_kind1_of_suffix}.  The CENTRE bridge uses brick B
+  (@{thm [source] m_8_5_brickB}): the marked subterm is a single principal
+  \<open>Mark (M[q]) jm1 = D\<^bsub>u\<^esub> bdy\<close> (hyp \<open>c1form\<close>), so the wrap-centre
+  \<open>D\<^bsub>u\<^esub> (bpHeadT (Mark (M[q]) jm1))\<close> equals the marked subterm and its flat is
+  \<open>flatBP (D\<^bsub>u\<^esub> bdy)\<close>.  The \<open>dfree\<close> (Trans/Mark values are d-free, §7.3 invariant) and
+  the \<open>rn\<close>-valley (the right-spine strict-increase/valley of the marked principal, the
+  §7.3 \<open>T\<^sub>B\<^sup>Marked\<close> shape) are the named base inputs.  Completes the last step2-route
+  non-surgery residual (with inj / BASEPOINT / brick B), isolating the surgery kernel.\<close>
+
+lemma m_8_5_iterscb:
+  fixes Mq :: pairseq and jm1 u :: nat and bdy :: BT and s1 b1 :: "Sym list"
+  assumes c1form: "Mark Mq jm1 = Dpt (enat u) bdy"
+    and scb: "scb_decomp (Trans Mq) s1 (flatBT (Mark Mq jm1)) b1"
+    and dfree: "dfree_BT (Mark Mq jm1)"
+    and rn: "let r = RightNodes (Mark Mq jm1); j1 = Lng r - 1 in
+               j1 \<ge> 1 \<and> r ! 0 < r ! j1 \<and> (\<forall>j. 0 < j \<and> j < j1 \<longrightarrow> r ! j \<ge> r ! j1)"
+  shows "scb_kind1 (Trans Mq) s1 (flatBT (Dpt (enat u) (bpHeadT (Mark Mq jm1)))) b1"
+proof -
+  have bh: "bpHeadT (Mark Mq jm1) = bdy" using c1form by simp
+  have ceq: "Dpt (enat u) (bpHeadT (Mark Mq jm1)) = Mark Mq jm1" using c1form bh by simp
+  have dfreep: "dfree_BP (DB (enat u) bdy)" using dfree c1form by simp
+  have scbp: "scb_decomp (Trans Mq) s1 (flatBP (DB (enat u) bdy)) b1"
+    using scb c1form by simp
+  have rnp: "let r = RightNodes (Trm [DB (enat u) bdy]); j1 = Lng r - 1 in
+               j1 \<ge> 1 \<and> r ! 0 < r ! j1 \<and> (\<forall>j. 0 < j \<and> j < j1 \<longrightarrow> r ! j \<ge> r ! j1)"
+    using rn c1form by simp
+  have "scb_kind1 (Trans Mq) s1 (flatBP (DB (enat u) bdy)) b1"
+    by (rule scb_kind1_of_suffix[OF dfreep scbp rnp])
+  thus ?thesis using ceq c1form by simp
 qed
 
 end
