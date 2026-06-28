@@ -3533,4 +3533,180 @@ text \<open>§8.5 surgery-chain checkpoint — the slice-Y surgery is GREEN end-
   slice-Y depth-recurrence that was the open wall) is closed; remaining = the top-level
   capstone wiring (the per-q kernel-instantiation + lift to the condV descent).\<close>
 
+text \<open>SS 8.5 CAPSTONE piece — the step2 `body' discharge (q-general).  For each q>=2,
+  the per-q slice-Y surgery (surg, supplied; assembled from rcompat + rsurg via
+  m_8_5_slice_surgery_skeleton) yields the Mark-step bpHeadT (Mark (M[Suc q]) jm1) =
+  F (bpHeadT (Mark (M[q]) jm1)) via m_8_5_markstep_of_surgery.  The markstep
+  infrastructure (Marked basepoint + RT_PS membership for M[q] and M[Suc q],
+  oper-append M[Suc q]=M[q]@B) is discharged from the condV-regime hyps via
+  m_8_3_kind1_base_basepoint + m_8_4_oper_Suc_append; the range jm1<Lng(M[q])-1 is
+  carried (rng).  This is exactly the `body' input of m_8_5_step2_of_wrap_body, so
+  step2 follows from {wrap, inj, this}.\<close>
+
+lemma m_8_5_body_of_sliceY:
+  fixes M :: pairseq and F :: "BT \<Rightarrow> BT" and jm1 u q :: nat
+  assumes M: "M \<in> RT_PS"
+    and e1pos: "entry M 1 (Lng M - 1) > 0"
+    and hp1: "hasParent M 1 (Lng M - 1)"
+    and j0lt2: "parent M 1 (Lng M - 1) + 1 < Lng M - 1"
+    and parR: "nextrel0 M (parent M 1 (Lng M - 1)) (Lng M - 1)"
+    and coin: "parent M 1 (Lng M - 1) = parent M 0 (Lng M - 1)"
+    and jm1def: "jm1 = Adm M (parent M 0 (Lng M - 1))"
+    and jm1pos: "0 < jm1"
+    and rng: "\<And>qq. 2 \<le> qq \<Longrightarrow> jm1 < Lng ((M::pairseq)[qq]) - 1"
+    and surg: "\<And>qq B. 2 \<le> qq \<Longrightarrow> (M::pairseq)[Suc qq] = (M::pairseq)[qq] @ B \<Longrightarrow>
+         Trans (seg ((M::pairseq)[qq]) jm1 (Lng ((M::pairseq)[qq]) - 1) @ B)
+           = Dpt (enat u)
+               (F (bpHeadT (Trans (seg ((M::pairseq)[qq]) jm1 (Lng ((M::pairseq)[qq]) - 1)))))"
+    and q2: "2 \<le> q"
+  shows "bpHeadT (Mark ((M::pairseq)[Suc q]) jm1) = F (bpHeadT (Mark ((M::pairseq)[q]) jm1))"
+proof -
+  have LMpos: "0 < Lng M - 1" using j0lt2 by linarith
+  have qp: "0 < q" using q2 by simp
+  have Sqp: "0 < Suc q" by simp
+  have "\<exists>B. (M::pairseq)[Suc q] = (M::pairseq)[q] @ B"
+    using m_8_4_oper_Suc_append[OF LMpos e1pos hp1] by (metis Suc_eq_plus1)
+  then obtain B where appB: "(M::pairseq)[Suc q] = (M::pairseq)[q] @ B" by blast
+  have mkS: "((M::pairseq)[Suc q], jm1) \<in> Marked \<and> (M::pairseq)[Suc q] \<in> RT_PS"
+    by (rule m_8_3_kind1_base_basepoint[OF M Sqp e1pos hp1 j0lt2 parR coin jm1def jm1pos])
+  have mkqf: "((M::pairseq)[q], jm1) \<in> Marked \<and> (M::pairseq)[q] \<in> RT_PS"
+    by (rule m_8_3_kind1_base_basepoint[OF M qp e1pos hp1 j0lt2 parR coin jm1def jm1pos])
+  have rqS: "jm1 < Lng ((M::pairseq)[Suc q]) - 1" using rng[of "Suc q"] q2 by simp
+  have rq: "jm1 < Lng ((M::pairseq)[q]) - 1" using rng[OF q2] .
+  have mqne: "0 < Lng ((M::pairseq)[q])" using rq by linarith
+  have jlef: "jm1 \<le> Lng ((M::pairseq)[q])" using rq by linarith
+  have surgF: "Trans (seg ((M::pairseq)[q]) jm1 (Lng ((M::pairseq)[q]) - 1) @ B)
+        = Dpt (enat u)
+            (F (bpHeadT (Trans (seg ((M::pairseq)[q]) jm1 (Lng ((M::pairseq)[q]) - 1)))))"
+    using surg[OF q2 appB] .
+  show ?thesis
+  proof (rule m_8_5_markstep_of_surgery)
+    show "((M::pairseq)[Suc q], jm1) \<in> Marked" using mkS by simp
+    show "(M::pairseq)[Suc q] \<in> RT_PS" using mkS by simp
+    show "jm1 < Lng ((M::pairseq)[Suc q]) - 1" using rqS .
+    show "(M::pairseq)[Suc q] = (M::pairseq)[q] @ B" using appB .
+    show "0 < Lng ((M::pairseq)[q])" using mqne .
+    show "jm1 \<le> Lng ((M::pairseq)[q])" using jlef .
+    show "((M::pairseq)[q], jm1) \<in> Marked" using mkqf by simp
+    show "(M::pairseq)[q] \<in> RT_PS" using mkqf by simp
+    show "jm1 < Lng ((M::pairseq)[q]) - 1" using rq .
+    show "Trans (seg ((M::pairseq)[q]) jm1 (Lng ((M::pairseq)[q]) - 1) @ B)
+            = Dpt (enat u)
+                (F (bpHeadT (Trans (seg ((M::pairseq)[q]) jm1 (Lng ((M::pairseq)[q]) - 1)))))"
+      using surgF .
+  qed
+qed
+
+text \<open>SS 8.5 CAPSTONE piece — step2 (the descent recurrence) for the genuine kernel.
+  Combines the green body discharge (m_8_5_body_of_sliceY, instantiated F:=C) with
+  m_8_5_step2_of_wrap_body{wrap, inj}.  Carries as NAMED HYPS the residuals: surgC =
+  the per-q slice-Y surgery in C-form (bundles (E) col0-condI + rsurg + rcompat +
+  skeleton + the F=C matching), wrap (Trans(M[q])=OW(bpHeadT(Mark(M[q]) jm1)), the
+  iterscb-based n=1-base framing), inj (OW injective).  Yields exactly the step2 input
+  of m_8_5_TransCondV_descend_of_step2_residuals.\<close>
+
+lemma m_8_5_step2_kernel:
+  fixes M :: pairseq and C OW :: "BT \<Rightarrow> BT" and jm1 u p :: nat and b :: BT
+  assumes M: "M \<in> RT_PS"
+    and e1pos: "entry M 1 (Lng M - 1) > 0"
+    and hp1: "hasParent M 1 (Lng M - 1)"
+    and j0lt2: "parent M 1 (Lng M - 1) + 1 < Lng M - 1"
+    and parR: "nextrel0 M (parent M 1 (Lng M - 1)) (Lng M - 1)"
+    and coin: "parent M 1 (Lng M - 1) = parent M 0 (Lng M - 1)"
+    and jm1def: "jm1 = Adm M (parent M 0 (Lng M - 1))"
+    and jm1pos: "0 < jm1"
+    and rng: "\<And>qq. 2 \<le> qq \<Longrightarrow> jm1 < Lng ((M::pairseq)[qq]) - 1"
+    and surgC: "\<And>qq B. 2 \<le> qq \<Longrightarrow> (M::pairseq)[Suc qq] = (M::pairseq)[qq] @ B \<Longrightarrow>
+         Trans (seg ((M::pairseq)[qq]) jm1 (Lng ((M::pairseq)[qq]) - 1) @ B)
+           = Dpt (enat u)
+               (C (bpHeadT (Trans (seg ((M::pairseq)[qq]) jm1 (Lng ((M::pairseq)[qq]) - 1)))))"
+    and wrap: "\<And>q. 1 \<le> q \<Longrightarrow>
+                 Trans ((M::pairseq)[q]) = OW (bpHeadT (Mark ((M::pairseq)[q]) jm1))"
+    and inj: "\<And>x y. OW x = OW y \<Longrightarrow> x = y"
+    and p2: "2 \<le> p"
+    and hb: "Trans ((M::pairseq)[p]) = OW b"
+  shows "Trans ((M::pairseq)[Suc p]) = OW (C b)"
+proof -
+  have body: "\<And>q. 2 \<le> q \<Longrightarrow>
+      bpHeadT (Mark ((M::pairseq)[Suc q]) jm1) = C (bpHeadT (Mark ((M::pairseq)[q]) jm1))"
+  proof -
+    fix q :: nat assume q2: "2 \<le> q"
+    show "bpHeadT (Mark ((M::pairseq)[Suc q]) jm1) = C (bpHeadT (Mark ((M::pairseq)[q]) jm1))"
+      using M e1pos hp1 j0lt2 parR coin jm1def jm1pos rng surgC q2
+      by (rule m_8_5_body_of_sliceY)
+  qed
+  show ?thesis
+    by (rule m_8_5_step2_of_wrap_body[OF wrap inj body p2 hb])
+qed
+
+text \<open>SS 8.5 CAPSTONE — the condV descent for the genuine kernel, wired GREEN modulo
+  exactly THREE documented named residuals:
+    (E)  surgC  = the per-q slice-Y surgery in C-form (the descent-regime closure
+                  condV(M[q])\<and>gpar(M[q]) => reduced-col0 condI/Adm0; empirically 48/48;
+                  bundles condI_append_base[(E)] + reduced_slice_surgery_condI + skeleton
+                  + rcompat + the F=C match);
+    (OT) TOT    = Trans M \<in> OT_B  (the SS 8.7 ordinal-term membership);
+    (B0) the n=1 base / OW-scb context: wrap, inj, C_def, OW_def, tT, uv, bodyT, dbbody,
+                  bodyne, innerscb, k1, kpos, base2, botU.
+  The condV-deepen regime hyps (Mrt/e1pos/hp1/j0lt2/parR/coin/jm1def/jm1pos/rng) are the
+  standard SS 6.x setup (e1pos = cond conjunct-1; the rest from cond + gpar).  step2 is
+  DISCHARGED via m_8_5_step2_kernel (= body_of_sliceY + step2_of_wrap_body); the whole
+  then feeds m_8_5_TransCondV_descend_of_step2_residuals.  Conclusion: the SS 8.5 descent
+  lessBT (Trans (M[n])) (Trans M) for every n>0 — the termination measure descent.\<close>
+
+lemma m_8_5_TransCondV_descend_kernel:
+  fixes M :: pairseq and u v k n :: nat and leafL\<^sub>0 body :: BT
+    and s\<^sub>0 s\<^sub>1 b\<^sub>0 b\<^sub>1 :: "Sym list" and C OW :: "BT \<Rightarrow> BT" and jm1 :: nat
+  assumes MST: "M \<in> ST_PS" and MP: "M \<in> PT_PS"
+    and j1: "Lng M - 1 > 1" and cond: "transCondV M"
+    and n0: "0 < n" and TOT: "Trans M \<in> OT_B"
+    and C_def: "C = (\<lambda>x. unflatBT (s\<^sub>0 @ Dsym (enat (v - 1)) # flatBT x @ b\<^sub>0))"
+    and OW_def: "OW = (\<lambda>x. unflatBT (s\<^sub>1 @ Dsym (enat u) # flatBT x @ b\<^sub>1))"
+    and tT: "Trans M \<in> T_B" and uv: "u < v" and bodyT: "body \<in> T_B"
+    and dbbody: "domB body = TBv (enat (v - 1))" and bodyne: "body \<noteq> Trm []"
+    and innerscb: "scb_decomp body s\<^sub>0 (flatBT (Dpt (enat v) 0\<^sub>B)) b\<^sub>0"
+    and k1: "scb_kind1 (Trans M) s\<^sub>1 (flatBT (Dpt (enat u) body)) b\<^sub>1"
+    and kpos: "1 \<le> k"
+    and base2: "Trans ((M::pairseq)[2]) = OW ((C ^^ k) leafL\<^sub>0)"
+    and botU: "leBT leafL\<^sub>0 (C (Dpt (enat (v - 1)) 0\<^sub>B))"
+    and Mrt: "M \<in> RT_PS"
+    and e1pos: "entry M 1 (Lng M - 1) > 0"
+    and hp1: "hasParent M 1 (Lng M - 1)"
+    and j0lt2: "parent M 1 (Lng M - 1) + 1 < Lng M - 1"
+    and parR: "nextrel0 M (parent M 1 (Lng M - 1)) (Lng M - 1)"
+    and coin: "parent M 1 (Lng M - 1) = parent M 0 (Lng M - 1)"
+    and jm1def: "jm1 = Adm M (parent M 0 (Lng M - 1))"
+    and jm1pos: "0 < jm1"
+    and rng: "\<And>qq. 2 \<le> qq \<Longrightarrow> jm1 < Lng ((M::pairseq)[qq]) - 1"
+    and surgC: "\<And>qq B. 2 \<le> qq \<Longrightarrow> (M::pairseq)[Suc qq] = (M::pairseq)[qq] @ B \<Longrightarrow>
+         Trans (seg ((M::pairseq)[qq]) jm1 (Lng ((M::pairseq)[qq]) - 1) @ B)
+           = Dpt (enat u)
+               (C (bpHeadT (Trans (seg ((M::pairseq)[qq]) jm1 (Lng ((M::pairseq)[qq]) - 1)))))"
+    and wrap: "\<And>q. 1 \<le> q \<Longrightarrow>
+                 Trans ((M::pairseq)[q]) = OW (bpHeadT (Mark ((M::pairseq)[q]) jm1))"
+    and inj: "\<And>x y. OW x = OW y \<Longrightarrow> x = y"
+  shows "lessBT (Trans ((M::pairseq)[n])) (Trans M)"
+proof -
+  have step2: "\<And>p b. 2 \<le> p \<Longrightarrow> Trans ((M::pairseq)[p]) = OW b
+                  \<Longrightarrow> Trans ((M::pairseq)[Suc p]) = OW (C b)"
+  proof -
+    fix p :: nat and b :: BT
+    assume p2: "2 \<le> p" and hb: "Trans ((M::pairseq)[p]) = OW b"
+    show "Trans ((M::pairseq)[Suc p]) = OW (C b)"
+      using Mrt e1pos hp1 j0lt2 parR coin jm1def jm1pos rng surgC wrap inj p2 hb
+      by (rule m_8_5_step2_kernel)
+  qed
+  show ?thesis
+    by (rule m_8_5_TransCondV_descend_of_step2_residuals[OF MST MP j1 cond n0 TOT
+          C_def OW_def tT uv bodyT dbbody bodyne innerscb k1 kpos base2 step2 botU])
+qed
+
+text \<open>§8.5 CAPSTONE — the condV termination-measure descent \<open>lessBT (Trans (M[n])) (Trans M)\<close>
+  is wired GREEN modulo exactly THREE documented named residuals: (E) the per-q slice-Y surgery
+  (the descent-regime closure \<open>condV \<and> gpar \<Rightarrow> reduced-col0 condI/Adm0\<close>, empirical 48/48),
+  (OT) \<open>Trans M \<in> OT_B\<close> (§8.7 ordinal-term membership), and the n=1-base/OW-scb context
+  (\<open>wrap/inj/C_def/OW_def/.../base2/botU\<close>).  The slice-Y depth-recurrence master key — the
+  long-open §8 wall — is closed: it reduces, through the green chain
+  @{thm [source] m_8_5_TransCondV_descend_kernel}, to those three residuals (each owned elsewhere).\<close>
+
 end
