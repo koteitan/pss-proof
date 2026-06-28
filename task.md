@@ -59,7 +59,9 @@
       - ✅ reduction ladder〔step2/base2 → wrap/inj/body, `m_8_5_*_of_*`〕
       - 🚨 surgery spine-descent〔§8 master key〕
         - ✅ (A) deepen SHAPE〔`m_8_5_appended_col_deepen` 他〕
-        - 🚨 (B) value bridge〔subtree-readback `a=bpHeadT(Trans Z)`、outer-q帰納、dedicated要〕
+        - 🚨 (B) value〔§8 irreducible core〕
+          - ✅ readback+compose scaffolding〔`m_8_5_surgery_spine_compose`/`_Mark_slice_block_readback`/`_transT2_readback`〕
+          - 🚨 per-column value step〔`P m→P(Suc m)`。concrete P+inner Trans再帰、dedicated要〕
     - ✅ 補題（条件 (V) の下での $\textrm{Joints}$ と $\textrm{FirstNodes}$ と $t_2$ の基本性質）〔`m_8_5_Joints_FirstNodes_basic` parts(1)(2)〕
     - 🚨 補題（条件 (V) の下での各種 scb分解）〔def 内部記号露出要〕
   - 🚨 §8.6 条件 (VI) の下での展開規則
