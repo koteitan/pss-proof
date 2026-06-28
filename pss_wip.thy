@@ -38683,4 +38683,490 @@ proof -
     by (rule m_8_7_dstep_assemble[OF lastps psne head tail])
 qed
 
+
+section \<open>§8.5 condition-(V) marking-nesting surgery (step2/base2) — building blocks\<close>
+
+text \<open>SLICE-APPEND geometry.  The trailing slice \<open>seg X a (Lng X - 1) = drop a X\<close>
+  of an APPEND \<open>X @ B\<close> (with \<open>a \<le> Lng X\<close>) equals the trailing slice of \<open>X\<close> with
+  \<open>B\<close> appended.  Pure list manipulation (@{thm [source] seg_to_last_eq_drop} +
+  \<open>drop_append\<close>).  This is the geometric core of the condition-(V) iterate
+  Mark-transport: with the kind-1 one-step block append \<open>M[Suc p] = M[p] @ B\<^sub>p\<close>
+  (@{thm [source] m_8_4_oper_Suc_append}) it gives
+  \<open>seg (M[Suc p]) a (Lng (M[Suc p]) - 1) = seg (M[p]) a (Lng (M[p]) - 1) @ B\<^sub>p\<close>
+  for any trunk index \<open>a \<le> Lng (M[p])\<close>, so via @{thm [source] m_7_4_Mark_Trans_repr}
+  the marked subterm of the iterate at a FIXED trunk index grows by exactly the
+  appended block: \<open>Mark (M[Suc p]) a = Trans (seg (M[p]) a (Lng (M[p]) - 1) @ B\<^sub>p)\<close>.\<close>
+
+lemma seg_to_last_append:
+  fixes X B :: pairseq
+  assumes Xne: "0 < Lng X" and ale: "a \<le> Lng X"
+  shows "seg (X @ B) a (Lng (X @ B) - 1) = seg X a (Lng X - 1) @ B"
+proof -
+  have XB: "0 < Lng (X @ B)" using Xne by simp
+  have "seg (X @ B) a (Lng (X @ B) - 1) = drop a (X @ B)"
+    by (rule seg_to_last_eq_drop[OF XB])
+  also have "\<dots> = drop a X @ B" using ale by (simp add: drop_append)
+  also have "\<dots> = seg X a (Lng X - 1) @ B"
+    using seg_to_last_eq_drop[OF Xne, symmetric] by simp
+  finally show ?thesis .
+qed
+
+text \<open>The marking-nesting iterate \<open>M[n]\<close> is again strongly reduced (hence reduced,
+  hence a valid pair sequence), for \<open>n \<ge> 1\<close>.  Immediate from \<open>ST\<^bsub>PS\<^esub>\<close>-closure
+  under \<open>oper\<close> (@{thm [source] ST_PS.oper}) and the inclusions
+  \<open>ST\<^bsub>PS\<^esub> \<subseteq> RT\<^bsub>PS\<^esub>\<close> (@{thm [source] m_6_7_ST_PS_subseteq_RT_PS}) and
+  \<open>ST\<^bsub>PS\<^esub> \<subseteq> T\<^bsub>PS\<^esub>\<close> (@{thm [source] ST_PS_T_PS}).  Supplies the \<open>MR\<close> (\<open>\<in> RT\<^bsub>PS\<^esub>\<close>)
+  hypothesis that the producer / @{thm [source] Trans_unflat_transC2} require of the
+  iterate at each step of the marking-nesting induction.\<close>
+
+lemma oper_ST_RT_T:
+  assumes MST: "M \<in> ST_PS" and n1: "1 \<le> n"
+  shows "(M::pairseq)[n] \<in> ST_PS \<and> (M::pairseq)[n] \<in> RT_PS \<and> (M::pairseq)[n] \<in> T_PS"
+proof -
+  have a: "(M::pairseq)[n] \<in> ST_PS" by (rule ST_PS.oper[OF MST n1])
+  have b: "(M::pairseq)[n] \<in> RT_PS" using a m_6_7_ST_PS_subseteq_RT_PS by blast
+  have c: "(M::pairseq)[n] \<in> T_PS" by (rule ST_PS_T_PS[OF a])
+  show ?thesis using a b c by blast
+qed
+
+text \<open>condition-(V) (kind-1) one-step block append \<open>M[Suc p] = M[p] @ B\<^sub>p\<close> with the
+  appended block of width \<open>(Lng M - 1) - parent M 1 (Lng M - 1)\<close>, specialised from
+  the general kind-1 append @{thm [source] m_8_4_oper_Suc_append} to the \<open>Suc p\<close>
+  index shape used by the marking-nesting step.  The row-1 parent existence
+  \<open>hasParent M 1 (Lng M - 1)\<close> is the branch-case witness of the kind-1 oper (taken
+  as a hypothesis; it holds whenever the iterate is genuinely branching).\<close>
+
+lemma condV_oper_Suc_append:
+  assumes j1: "Lng M - 1 > 0" and e1pos: "entry M 1 (Lng M - 1) > 0"
+    and hp1: "hasParent M 1 (Lng M - 1)"
+  shows "\<exists>B. (M::pairseq)[Suc p] = (M::pairseq)[p] @ B
+            \<and> Lng B = (Lng M - 1) - parent M 1 (Lng M - 1)"
+proof -
+  obtain B where "(M::pairseq)[p+1] = (M::pairseq)[p] @ B
+                  \<and> Lng B = (Lng M - 1) - parent M 1 (Lng M - 1)"
+    using m_8_4_oper_Suc_append[OF j1 e1pos hp1] by blast
+  thus ?thesis by auto
+qed
+
+
+text \<open>For a row-1 parent, the parent index is a valid column \<open>< Lng M\<close> (the first
+  conjunct of @{thm [source] nextrel1_def}, via @{thm [source] theI'} on the
+  \<open>hasParent\<close> uniqueness).\<close>
+
+lemma hasParent1_parent_lt:
+  assumes hp1: "hasParent M 1 j1"
+  shows "parent M 1 j1 < Lng M"
+proof -
+  have ex1: "\<exists>!j0. nextR M 1 j0 j1" using hp1 by (simp add: hasParent_def)
+  have "nextR M 1 (THE j0. nextR M 1 j0 j1) j1" by (rule theI'[OF ex1])
+  hence "nextR M 1 (parent M 1 j1) j1" by (simp add: parent_def)
+  hence "nextrel1 M (parent M 1 j1) j1" by (simp add: nextR_def)
+  thus ?thesis by (simp add: nextrel1_def)
+qed
+
+text \<open>condition-(V) / kind-1 oper PREFIX AGREEMENT.  The trunk \<open>take j\<^sub>0 M\<close> of the
+  fundamental sequence (with \<open>j\<^sub>0 = parent M 1 (Lng M - 1)\<close> the row-1 parent /
+  block start) is VERBATIM, so every iterate \<open>M[n]\<close> agrees with \<open>M\<close> on the trunk
+  columns \<open>x < j\<^sub>0\<close>.  Immediate from the kind-1 general form
+  @{thm [source] m_8_4_oper_genform} and @{thm [source] nth_append}.  This is the
+  pair-sequence half of the \<open>OW\<close>-context stability used by the marking-nesting
+  step: the marked head index \<open>u = entry M 1 jm1\<close> (with \<open>jm1 = transJm1 M < j\<^sub>0\<close>
+  in the trunk for the marking-nesting hosts) is independent of \<open>n\<close>
+  (\<open>oper_d0pos_entry_prefix\<close>).\<close>
+
+lemma oper_d0pos_nth_prefix:
+  assumes j1: "Lng M - 1 > 0" and e1pos: "entry M 1 (Lng M - 1) > 0"
+    and hp1: "hasParent M 1 (Lng M - 1)"
+    and xlt: "x < parent M 1 (Lng M - 1)"
+  shows "((M::pairseq)[n]) ! x = M ! x"
+proof -
+  let ?j0 = "parent M 1 (Lng M - 1)"
+  have j0lt: "?j0 < Lng M" by (rule hasParent1_parent_lt[OF hp1])
+  have "\<exists>BL. (M::pairseq)[n] = take ?j0 M @ BL"
+    by (rule exI, rule m_8_4_oper_genform[OF j1 e1pos hp1])
+  then obtain BL where gen: "(M::pairseq)[n] = take ?j0 M @ BL" by blast
+  have tklen: "Lng (take ?j0 M) = ?j0" using j0lt by simp
+  have "((M::pairseq)[n]) ! x = (take ?j0 M @ BL) ! x" using gen by simp
+  also have "\<dots> = take ?j0 M ! x" using xlt tklen by (simp add: nth_append)
+  also have "\<dots> = M ! x" using xlt by simp
+  finally show ?thesis .
+qed
+
+text \<open>The \<open>entry\<close>-level corollary of @{thm [source] oper_d0pos_nth_prefix}: the
+  iterate agrees with \<open>M\<close> on both rows of every trunk column \<open>x < parent M 1
+  (Lng M - 1)\<close>.\<close>
+
+lemma oper_d0pos_entry_prefix:
+  assumes j1: "Lng M - 1 > 0" and e1pos: "entry M 1 (Lng M - 1) > 0"
+    and hp1: "hasParent M 1 (Lng M - 1)"
+    and xlt: "x < parent M 1 (Lng M - 1)"
+  shows "entry ((M::pairseq)[n]) i x = entry M i x"
+  using oper_d0pos_nth_prefix[OF j1 e1pos hp1 xlt] by (simp add: entry_def)
+
+text \<open>Peeling the appended block one column at a time.  When \<open>M[Suc p] = M[p] @ B\<close>
+  (@{thm [source] condV_oper_Suc_append}) the \<open>j\<close>-fold predecessor of the iterate
+  strips the last \<open>j\<close> columns of the block: \<open>Pred\<^bsup>j\<^esup> (X @ B) = X @ take (Lng B - j) B\<close>
+  for \<open>j \<le> Lng B\<close> and non-empty \<open>X\<close>.  In particular \<open>Pred (M[Suc p]) = M[p] @
+  butlast B\<close> lands MID-BLOCK (the genuine obstruction to @{thm [source]
+  operI_Suc_append}-style reasoning); but each single-column step \<open>Pred\<^bsup>j\<^esup>
+  (M[Suc p]) = (Pred\<^bsup>Suc j\<^esup> (M[Suc p])) @ [last column]\<close> is a SINGLE \<open>Trans\<close>
+  recursion step, so the marked subterm of the iterate at a fixed trunk index
+  evolves by exactly \<open>Lng B\<close> applications of the proven keystone
+  @{thm [source] m_8_2_keystone} (one period context \<open>C\<close> net) — the recommended
+  assembly route for \<open>step2\<close>.\<close>
+
+lemma Pred_pow_append:
+  fixes X B :: pairseq
+  assumes Xne: "0 < Lng X"
+  shows "j \<le> Lng B \<longrightarrow> (Pred ^^ j) (X @ B) = X @ take (Lng B - j) B"
+proof (induction j)
+  case 0
+  show ?case by simp
+next
+  case (Suc j)
+  show ?case
+  proof (rule impI)
+    assume sj: "Suc j \<le> Lng B"
+    have jle: "j \<le> Lng B" using sj by simp
+    have IH: "(Pred ^^ j) (X @ B) = X @ take (Lng B - j) B" using Suc.IH jle by simp
+    have lpos: "0 < Lng B - j" using sj by simp
+    have le: "Lng B - j \<le> Lng B" by simp
+    have tlen: "Lng (take (Lng B - j) B) = Lng B - j" using le by (simp add: min.absorb2)
+    have tne: "take (Lng B - j) B \<noteq> []"
+    proof -
+      have "0 < Lng (take (Lng B - j) B)" using tlen lpos by simp
+      thus ?thesis by (cases "take (Lng B - j) B") auto
+    qed
+    have lng: "1 < Lng (X @ take (Lng B - j) B)"
+    proof -
+      have "Lng (X @ take (Lng B - j) B) = Lng X + (Lng B - j)" using tlen by simp
+      thus ?thesis using Xne lpos by linarith
+    qed
+    have "(Pred ^^ Suc j) (X @ B) = Pred ((Pred ^^ j) (X @ B))" by simp
+    also have "\<dots> = Pred (X @ take (Lng B - j) B)" using IH by simp
+    also have "\<dots> = butlast (X @ take (Lng B - j) B)" using lng by (simp add: Pred_def)
+    also have "\<dots> = X @ butlast (take (Lng B - j) B)" using tne by (simp add: butlast_append)
+    also have "\<dots> = X @ take (Lng B - j - 1) B" using butlast_take[OF le] by simp
+    also have "\<dots> = X @ take (Lng B - Suc j) B" by simp
+    finally show "(Pred ^^ Suc j) (X @ B) = X @ take (Lng B - Suc j) B" .
+  qed
+qed
+
+text \<open>The condition-(V) marking-nesting Mark-TRANSPORT, reduced to a slice append.
+  When the iterate marked-subterm index \<open>jm1\<close> is a basepoint of \<open>M[Suc p]\<close>
+  (\<open>(M[Suc p], jm1) \<in> Marked\<close>) lying in the trunk (\<open>jm1 \<le> Lng (M[p])\<close>), the marked
+  subterm of the iterate at \<open>jm1\<close> is \<open>Trans\<close> of the slice of \<open>M[p]\<close> from \<open>jm1\<close>
+  with the appended oper block \<open>B\<close> (\<open>M[Suc p] = M[p] @ B\<close>):
+  \<open>Mark (M[Suc p]) jm1 = Trans (seg (M[p]) jm1 (Lng (M[p]) - 1) @ B)\<close>.  This combines
+  the §7.4 Mark-Trans representation @{thm [source] m_7_4_Mark_Trans_repr} with the
+  slice-append geometry @{thm [source] seg_to_last_append}, reducing the marking-
+  nesting step (\<open>step2\<close>) to a \<open>Trans\<close>-of-append on the SHORTER slice
+  \<open>seg (M[p]) jm1 (Lng (M[p]) - 1)\<close> — which is exactly one application of the proven
+  keystone @{thm [source] m_8_2_keystone} per column of \<open>B\<close> (@{thm [source]
+  Pred_pow_append}).  The basepoint / range hypotheses are the genuine residual
+  (the kind-1 analogue of @{thm [source] m_8_3_kind0_base_basepoint}).\<close>
+
+lemma Mark_iterate_slice_append:
+  fixes M B :: pairseq and p jm1 :: nat
+  assumes mk: "((M::pairseq)[Suc p], jm1) \<in> Marked"
+    and MR: "(M::pairseq)[Suc p] \<in> RT_PS"
+    and rng: "jm1 < Lng ((M::pairseq)[Suc p]) - 1"
+    and app: "(M::pairseq)[Suc p] = (M::pairseq)[p] @ B"
+    and Mpne: "0 < Lng ((M::pairseq)[p])"
+    and jle: "jm1 \<le> Lng ((M::pairseq)[p])"
+  shows "Mark ((M::pairseq)[Suc p]) jm1
+           = Trans (seg ((M::pairseq)[p]) jm1 (Lng ((M::pairseq)[p]) - 1) @ B)"
+proof -
+  have "Mark ((M::pairseq)[Suc p]) jm1
+          = Trans (seg ((M::pairseq)[Suc p]) jm1 (Lng ((M::pairseq)[Suc p]) - 1))"
+    by (rule m_7_4_Mark_Trans_repr[OF mk MR rng])
+  also have "seg ((M::pairseq)[Suc p]) jm1 (Lng ((M::pairseq)[Suc p]) - 1)
+               = seg ((M::pairseq)[p] @ B) jm1 (Lng ((M::pairseq)[p] @ B) - 1)"
+    using app by simp
+  also have "\<dots> = seg ((M::pairseq)[p]) jm1 (Lng ((M::pairseq)[p]) - 1) @ B"
+    by (rule seg_to_last_append[OF Mpne jle])
+  finally show ?thesis .
+qed
+
+text \<open>Full peel: stripping the whole appended block returns the base.  Endpoint of
+  the keystone chain that computes \<open>Trans (M[p] @ B)\<close> from \<open>Trans (M[p])\<close> by
+  \<open>Lng B\<close> single-column @{thm [source] m_8_2_keystone} steps.\<close>
+
+lemma Pred_pow_append_full:
+  fixes X B :: pairseq
+  assumes Xne: "0 < Lng X"
+  shows "(Pred ^^ (Lng B)) (X @ B) = X"
+proof -
+  have "Lng B \<le> Lng B \<longrightarrow> (Pred ^^ (Lng B)) (X @ B) = X @ take (Lng B - Lng B) B"
+    by (rule Pred_pow_append[OF Xne])
+  hence "(Pred ^^ (Lng B)) (X @ B) = X @ take (Lng B - Lng B) B" by simp
+  thus ?thesis by simp
+qed
+
+text \<open>The slice-level corollary of @{thm [source] oper_d0pos_nth_prefix}: every
+  iterate \<open>M[n]\<close> has the SAME prefix slice as \<open>M\<close> up to any trunk index
+  \<open>m < parent M 1 (Lng M - 1)\<close>, hence the same prefix-\<open>Trans\<close>
+  \<open>Trans (seg (M[n]) 0 m) = Trans (seg M 0 m)\<close> — the \<open>segeq\<close> hypothesis of the
+  OW-context stability \<open>scb_context_eq_of_prefix\<close> for the iterates.\<close>
+
+lemma oper_d0pos_seg_prefix:
+  assumes j1: "Lng M - 1 > 0" and e1pos: "entry M 1 (Lng M - 1) > 0"
+    and hp1: "hasParent M 1 (Lng M - 1)"
+    and mlt: "m < parent M 1 (Lng M - 1)"
+  shows "seg ((M::pairseq)[n]) 0 m = seg M 0 m"
+proof -
+  have "map (\<lambda>j. ((M::pairseq)[n]) ! j) [0..<Suc m] = map (\<lambda>j. M ! j) [0..<Suc m]"
+  proof (rule map_cong[OF refl])
+    fix j assume "j \<in> set [0..<Suc m]"
+    hence "j < parent M 1 (Lng M - 1)" using mlt by auto
+    thus "((M::pairseq)[n]) ! j = M ! j" by (rule oper_d0pos_nth_prefix[OF j1 e1pos hp1])
+  qed
+  thus ?thesis by (simp only: seg_def)
+qed
+
+text \<open>OW-CONTEXT STABILITY, the crux of the condition-(V) marking-nesting step.
+  Two sequences \<open>Q\<^sub>1\<close>, \<open>Q\<^sub>2\<close> that agree on the \<open>Trans\<close> of the prefix slice
+  \<open>seg Q\<^sub>i 0 m\<close> and on the row-1 entry \<open>entry Q\<^sub>i 1 m\<close>, and both have \<open>m\<close> as an
+  interior basepoint (\<open>0 < m < Lng Q\<^sub>i - 1\<close>), share a COMMON scb-context at their
+  marked subterm \<open>Mark Q\<^sub>i m\<close>.  Mechanism: by the §7.4 Mark/seg representation
+  @{thm [source] m_7_4_Trans_Mark_seg} the scb-context of \<open>Trans Q\<^sub>i\<close> at
+  \<open>Mark Q\<^sub>i m\<close> is THE unique scb-decomposition of the prefix-\<open>Trans\<close>
+  \<open>Trans (seg Q\<^sub>i 0 m)\<close> at the left-end leaf \<open>D\<^bsub>entry Q\<^sub>i 1 m\<^esub> 0\<close>; the two prefix
+  \<open>Trans\<close>es and centres coincide by hypothesis, so scb-uniqueness
+  (@{thm [source] m_7_2_scb_unique_sb}) forces the contexts equal.
+
+  This is the \<open>OW\<close>-context stability used by \<open>step2\<close>: for the iterates
+  \<open>Q\<^sub>1 = M[Suc p]\<close>, \<open>Q\<^sub>2 = M[1] = Pred M\<close> at \<open>m = jm1 = transJm1 M\<close>, the trunk
+  prefix is verbatim (@{thm [source] oper_d0pos_nth_prefix}), so
+  \<open>seg (M[Suc p]) 0 jm1 = seg (Pred M) 0 jm1\<close> (@{thm [source] oper_d0pos_seg_prefix})
+  and \<open>entry (M[Suc p]) 1 jm1 = entry (Pred M) 1 jm1 = u\<close>; hence \<open>Trans (M[Suc p])\<close>
+  factors through the SAME \<open>OW\<close>-context \<open>(s\<^sub>1, b\<^sub>1)\<close> as the \<open>n = 1\<close> base
+  (@{thm [source] m_8_5_base_scb}).  RESIDUAL for the interior (\<open>0 < jm1\<close>) hosts:
+  the iterate basepoint membership \<open>(M[Suc p], jm1) \<in> Marked\<close> (the kind-1 analogue
+  of @{thm [source] m_8_3_kind0_base_basepoint}).  The \<open>jm1 = 0\<close> hosts (the
+  majority) instead have a TRIVIAL context (\<open>OW = D\<^bsub>u\<^esub>\<close>, a single top principal),
+  so \<open>Trans (M[n]) = D\<^bsub>u\<^esub>(C\<^bsup>n-1\<^esup> t\<^sub>2)\<close> and only the body growth (the keystone chain)
+  remains.\<close>
+
+lemma scb_context_eq_of_prefix:
+  fixes Q1 Q2 :: pairseq and m :: nat
+  assumes mk1: "(Q1, m) \<in> Marked" and R1: "Q1 \<in> RT_PS"
+    and mk2: "(Q2, m) \<in> Marked" and R2: "Q2 \<in> RT_PS"
+    and mpos: "0 < m" and mlt1: "m < Lng Q1 - 1" and mlt2: "m < Lng Q2 - 1"
+    and segeq: "Trans (seg Q1 0 m) = Trans (seg Q2 0 m)"
+    and entryeq: "entry Q1 1 m = entry Q2 1 m"
+    and segnz: "Trans (seg Q1 0 m) \<noteq> 0\<^sub>B"
+  shows "\<exists>s b. scb_decomp (Trans Q1) s (flatBT (Mark Q1 m)) b
+              \<and> scb_decomp (Trans Q2) s (flatBT (Mark Q2 m)) b"
+proof -
+  obtain sb1 where C1:
+      "scb_decomp (Trans (seg Q1 0 m)) (fst sb1)
+          (flatBT (Dpt (enat (entry Q1 1 m)) 0\<^sub>B)) (snd sb1)
+       \<and> scb_decomp (Trans Q1) (fst sb1) (flatBT (Mark Q1 m)) (snd sb1)"
+    using m_7_4_Trans_Mark_seg[OF mk1 R1 mpos mlt1] by (blast dest: ex1_implies_ex)
+  obtain sb2 where C2:
+      "scb_decomp (Trans (seg Q2 0 m)) (fst sb2)
+          (flatBT (Dpt (enat (entry Q2 1 m)) 0\<^sub>B)) (snd sb2)
+       \<and> scb_decomp (Trans Q2) (fst sb2) (flatBT (Mark Q2 m)) (snd sb2)"
+    using m_7_4_Trans_Mark_seg[OF mk2 R2 mpos mlt2] by (blast dest: ex1_implies_ex)
+  have C1seg: "scb_decomp (Trans (seg Q1 0 m)) (fst sb1)
+                 (flatBT (Dpt (enat (entry Q1 1 m)) 0\<^sub>B)) (snd sb1)" using C1 by simp
+  have C1mark: "scb_decomp (Trans Q1) (fst sb1) (flatBT (Mark Q1 m)) (snd sb1)"
+    using C1 by simp
+  have C2seg: "scb_decomp (Trans (seg Q2 0 m)) (fst sb2)
+                 (flatBT (Dpt (enat (entry Q2 1 m)) 0\<^sub>B)) (snd sb2)" using C2 by simp
+  have C2mark: "scb_decomp (Trans Q2) (fst sb2) (flatBT (Mark Q2 m)) (snd sb2)"
+    using C2 by simp
+  \<comment> \<open>both contexts decompose the SAME prefix-Trans at the SAME centre\<close>
+  have A1: "scb_decomp (Trans (seg Q2 0 m)) (fst sb1)
+              (flatBT (Dpt (enat (entry Q2 1 m)) 0\<^sub>B)) (snd sb1)"
+    using C1seg segeq entryeq by simp
+  have segnz2: "Trans (seg Q2 0 m) \<noteq> 0\<^sub>B" using segnz segeq by simp
+  have uniq: "fst sb1 = fst sb2 \<and> snd sb1 = snd sb2"
+    by (rule m_7_2_scb_unique_sb[OF A1 C2seg segnz2])
+  \<comment> \<open>the common context decomposes both \<open>Trans Q\<^sub>1\<close> and \<open>Trans Q\<^sub>2\<close>\<close>
+  have B1: "scb_decomp (Trans Q1) (fst sb2) (flatBT (Mark Q1 m)) (snd sb2)"
+    using C1mark uniq by simp
+  show ?thesis using B1 C2mark by blast
+qed
+
+
+
+section \<open>§8.6 命題（条件(VI)の下での \<open>Trans\<close> と基本列の交換関係）, conclusion (3):
+  descent ENGINE for general \<open>n\<close>, and the \<open>(1,1)\<close>-diagonal instance\<close>
+
+text \<open>Headline conclusion (3) of the §8.6 proposition (content.md 5484–5492): for
+  \<open>M \<in> ST\<^bsub>PS\<^esub> \<inter> PT\<^bsub>PS\<^esub>\<close>, \<open>n > 0\<close>, \<open>j\<^sub>1 = Lng M - 1 > 1\<close>, condition (VI),
+  \<open>Trans(M[n]) <\<^bsub>B\<^esub> Trans(M)\<close>.  The article proves (3) "(1)(2)と[Buc1] Lemma 3.2より
+  即座に従う" (content.md 5670): conclusions (1)/(2) make the \<open>n\<close>-th expansion a
+  Buchholz-side fundamental-sequence step of \<open>Trans M\<close>, which strictly descends by
+  [Buc1] Lemma 3.2(a) (@{thm [source] buc1_3_2a_fseq_lt}).
+
+  This is the condition-(VI) analogue of @{thm [source]
+  m_8_3_TransCondII_oper_descend_engine} / @{thm [source]
+  m_8_5_TransCondV_oper_descend_engine}.  Structure is regime-independent: the
+  \<open>n = 1\<close> leaf is pure \<open>Pred\<close>-descent (\<open>M[1] = Pred M\<close> via @{thm [source]
+  m_8_4_oper1_eq_Pred}, then @{thm [source] m_7_3_Pred_Trans_descend} — condition
+  (VI) not needed for the leaf), and the \<open>n > 1\<close> branch is a Buchholz
+  fundamental-sequence step (\<open>exch\<close>) which strictly descends by [Buc1] Lemma 3.2(a)
+  (using \<open>Trans M \<in> OT\<^bsub>B\<^esub>\<close> and \<open>Trans M \<noteq> 0\<close>).  So §8.6 descent rests on \<open>exch\<close>
+  (conclusion (1)/(2) in exposed \<open>operB\<close> form) + \<open>TOT\<close> (\<open>Trans M \<in> OT\<^bsub>B\<^esub>\<close>, the §8.7
+  membership).  The third ingredient \<open>Trans M \<noteq> 0\<close> ("\<open>M\<close> 単項 ⟹ \<open>Trans(M) \<noteq> 0\<close>",
+  content.md 5670) is discharged HERE from \<open>Lng M - 1 > 1\<close> via
+  @{thm [source] m_7_3_Trans_zeroT}, so it is NOT a residual.
+
+  Audit (agent-workflow rule 4): cites only the already-proven
+  @{thm [source] m_8_4_oper1_eq_Pred}, @{thm [source] m_7_3_Pred_Trans_descend},
+  @{thm [source] m_7_3_Trans_zeroT}, @{thm [source] m_6_7_ST_PS_subseteq_RT_PS},
+  @{thm [source] ST_PS_T_PS}, and the legitimate external [Buc1] citation
+  @{thm [source] buc1_3_2a_fseq_lt}.  No circular use of any \<open>p_8_6_*\<close>.\<close>
+
+lemma m_8_6_TransCondVI_oper_descend_engine:
+  fixes M :: pairseq
+  assumes MST: "M \<in> ST_PS" and MP: "M \<in> PT_PS"
+    and j1: "Lng M - 1 > 1"
+    and cond: "transCondVI M"
+    and n0: "0 < n"
+    and TOT: "Trans M \<in> OT_B"
+    and exch: "1 < n \<Longrightarrow> \<exists>k. leBT (Trans (M[n])) (operB (Trans M) (numBT k))"
+  shows "lessBT (Trans (M[n])) (Trans M)"
+proof -
+  have MT: "M \<in> T_PS" by (rule ST_PS_T_PS[OF MST])
+  have MR: "M \<in> RT_PS" using MST m_6_7_ST_PS_subseteq_RT_PS by blast
+  have L: "1 < Lng M" using j1 by linarith
+  have notz: "\<not> zeroT M"
+  proof
+    assume "zeroT M"
+    hence "Lng M = 1" by (simp add: zeroT_def)
+    with j1 show False by simp
+  qed
+  have Tne: "Trans M \<noteq> 0\<^sub>B" using m_7_3_Trans_zeroT[OF MR] notz by blast
+  show ?thesis
+  proof (cases "n = 1")
+    case True
+    \<comment> \<open>\<open>n = 1\<close> leaf: \<open>M[1] = Pred M\<close>, pure \<open>Pred\<close>-descent (condition (VI) unused)\<close>
+    have oper1: "M[1] = Pred M" by (rule m_8_4_oper1_eq_Pred[OF MT])
+    have d: "lessBT (Trans (Pred M)) (Trans M)"
+      using m_7_3_Pred_Trans_descend[rule_format, OF MR L] .
+    show ?thesis using True oper1 d by simp
+  next
+    case False
+    hence n1: "1 < n" using n0 by presburger
+    \<comment> \<open>\<open>n > 1\<close>: \<open>Trans(M[n])\<close> is \<open>\<le>\<close> a Buchholz fundamental-sequence step of
+       \<open>Trans M\<close>, which strictly descends by [Buc1] Lemma 3.2(a)\<close>
+    obtain k where ke: "leBT (Trans (M[n])) (operB (Trans M) (numBT k))"
+      using exch[OF n1] by blast
+    have lt: "lessBT (operB (Trans M) (numBT k)) (Trans M)"
+      by (rule buc1_3_2a_fseq_lt[OF TOT Tne])
+    show ?thesis using ke lt by (metis lessBT_trans)
+  qed
+qed
+
+text \<open>The \<open>(1,1)\<close>-diagonal instance of the condition-(VI) commutation, exposing
+  exactly why §8.6 is the cleanest of the kind-1 conditions: for \<open>M = diagSeq u (u+j\<^sub>1)\<close>
+  (\<open>j\<^sub>1 > 1\<close>), \<open>M\<close> satisfies condition (VI) and its \<open>Trans\<close> is the two-level
+  diagonal TOWER \<open>D\<^sub>u(D\<^bsub>u+j\<^sub>1\<^esub> 0)\<close> (@{thm [source] m_8_1_diagSeq_Trans}), so the
+  \<open>operator[]\<close> commutation is a DIRECT computation — no marking-nesting surgery is
+  needed (the surgery that blocks conditions III/V in general).  Concretely
+  conclusion (2) holds as an exact equality with \<open>m\<^sub>n = n-1\<close>:
+  \<open>Trans(M[n]) = operB (Trans M) (numBT (n-1))\<close>.
+
+  Both sides are already computed: the LHS by @{thm [source] m_8_6_diagSeq_Trans_oper}
+  (\<open>Trans(M[n]) = D\<^sub>u(D\<^bsub>u+j\<^sub>1-1\<^esub>\<^bsup>n\<^esup> 0)\<close>), the RHS by @{thm [source]
+  operB_Du_Dv0_kind1_eval} (\<open>operB (D\<^sub>u(D\<^bsub>v\<^esub> 0)) (numBT m) = D\<^sub>u(D\<^bsub>v-1\<^esub>\<^bsup>m+1\<^esup> 0)\<close>),
+  and they coincide at \<open>v = u+j\<^sub>1\<close>, \<open>m = n-1\<close>, \<open>m+1 = n\<close>.\<close>
+
+lemma m_8_6_diagSeq_condVI_commute:
+  fixes u j1 n :: nat
+  defines "M \<equiv> diagSeq u (u + j1)"
+  assumes j1: "j1 > 1" and n0: "0 < n"
+  shows "Trans ((M::pairseq)[n]) = operB (Trans M) (numBT (n - 1))"
+proof -
+  have uv: "u < u + j1" using j1 by simp
+  have TM: "Trans M = Dpt (enat u) (Dpt (enat (u + j1)) 0\<^sub>B)"
+    unfolding M_def by (rule m_8_1_diagSeq_Trans[OF uv])
+  have LHS: "Trans (M[n]) = Dpt (enat u) (Dtower (u + j1 - 1) n)"
+    unfolding M_def by (rule m_8_6_diagSeq_Trans_oper[OF n0 j1])
+  have step: "operB (Dpt (enat u) (Dpt (enat (u + j1)) 0\<^sub>B)) (numBT (n - 1))
+                = Dpt (enat u) (Dtower (u + j1 - 1) n)"
+    using operB_Du_Dv0_kind1_eval[OF uv, of "n - 1"] n0 by simp
+  show ?thesis using LHS TM step by simp
+qed
+
+text \<open>The concrete condition-(VI) DESCENT for the \<open>(1,1)\<close>-diagonal host, the
+  non-vacuous payoff of the descent engine: \<open>Trans(M[n]) <\<^bsub>B\<^esub> Trans M\<close> for
+  \<open>M = diagSeq u (u+j\<^sub>1)\<close> (\<open>j\<^sub>1 > 1\<close>, \<open>n > 0\<close>).  Combines the diagonal commutation
+  @{thm [source] m_8_6_diagSeq_condVI_commute} with \<open>Trans M = D\<^sub>u(D\<^bsub>u+j\<^sub>1\<^esub> 0) \<in> OT\<^bsub>B\<^esub>\<close>
+  (@{thm [source] m_8_7_OT_ex2}) and the [Buc1] Lemma 3.2(a) descent
+  (@{thm [source] buc1_3_2a_fseq_lt}).  Valid for ALL \<open>n \<ge> 1\<close> (the \<open>n = 1\<close> leaf is
+  \<open>operB (Trans M) (numBT 0)\<close>, equally a descending fseq step), so it needs neither
+  the \<open>Pred\<close>-leaf split nor condition (VI) as a predicate.\<close>
+
+lemma m_8_6_diagSeq_condVI_descent:
+  fixes u j1 n :: nat
+  defines "M \<equiv> diagSeq u (u + j1)"
+  assumes j1: "j1 > 1" and n0: "0 < n"
+  shows "lessBT (Trans ((M::pairseq)[n])) (Trans M)"
+proof -
+  have uv: "u < u + j1" using j1 by simp
+  have TM: "Trans M = Dpt (enat u) (Dpt (enat (u + j1)) 0\<^sub>B)"
+    unfolding M_def by (rule m_8_1_diagSeq_Trans[OF uv])
+  have OT: "Trans M \<in> OT_B" unfolding TM by (rule m_8_7_OT_ex2)
+  have Tne: "Trans M \<noteq> 0\<^sub>B" unfolding TM by simp
+  have comm: "Trans (M[n]) = operB (Trans M) (numBT (n - 1))"
+    unfolding M_def by (rule m_8_6_diagSeq_condVI_commute[OF j1 n0])
+  have lt: "lessBT (operB (Trans M) (numBT (n - 1))) (Trans M)"
+    by (rule buc1_3_2a_fseq_lt[OF OT Tne])
+  show ?thesis using comm lt by simp
+qed
+
+text \<open>§8.6 condition-(VI) commutation \<open>exch\<close> REDUCTION for the GENERAL (non-diagonal)
+  host — the condition-(VI) instance of the SHARED kind-1 template @{thm [source]
+  m_8_4_exch_of_lhs_closed} / @{thm [source] m_8_5_exch_of_lhs_closed}.  Condition (VI)
+  (\<open>M\<^bsub>1,j\<^sub>1\<^esub> > 0\<close>, \<open>M\<^bsub>1,j\<^sub>0\<^esub>+1 = M\<^bsub>1,j\<^sub>1\<^esub>\<close>, \<open>j\<^sub>0+1 = j\<^sub>1\<close>) is a kind-1 condition: its marked
+  principal is \<open>D\<^sub>u body\<close> with the kind-1 trailing shape, so the Buchholz side is
+  @{thm [source] operB_marked_scb_value_kind1}.  The \<open>lhs\<close> is the SAME kind-1 LHS
+  marking-nesting residual shared with conditions III/V (existential in the replicate
+  count \<open>j\<close>, M-dependent index), i.e. the deep "core A" surgery the §8 endgame
+  converges on.  So the GENERAL condition-(VI) commutation reduces to exactly the
+  shared surgery — NO §8.6-specific gain over III/V in the general case.  The genuine
+  §8.6-specific simplification is the \<open>(1,1)\<close>-diagonal host
+  (@{thm [source] m_8_6_diagSeq_condVI_commute}), where \<open>Trans M\<close> is a clean tower and
+  the commutation is a DIRECT computation needing no \<open>lhs\<close> surgery.  This reduction
+  + @{thm [source] m_8_6_TransCondVI_oper_descend_engine} bring condition (VI)'s descent
+  to \<open>{lhs (kind-1 surgery), TOT}\<close>, matching the rest of the family.\<close>
+
+lemma m_8_6_exch_of_lhs_closed:
+  fixes M :: pairseq and u v :: nat
+  assumes MST: "M \<in> ST_PS" and MP: "M \<in> PT_PS"
+    and j1: "Lng M - 1 > 1" and cond: "transCondVI M"
+    and tT: "Trans M \<in> T_B" and uv: "u < v" and bodyT: "body \<in> T_B"
+    and dbbody: "domB body = TBv (enat (v - 1))"
+    and bodyne: "body \<noteq> Trm []"
+    and innerscb: "scb_decomp body s\<^sub>0 (flatBT (Dpt (enat v) 0\<^sub>B)) b\<^sub>0"
+    and k1: "scb_kind1 (Trans M) s\<^sub>1 (flatBT (Dpt (enat u) body)) b\<^sub>1"
+    and lhs: "\<And>m. 1 < m \<Longrightarrow> \<exists>j. leBT (Trans (M[m]))
+                (unflatBT (s\<^sub>1 @ (Dsym (enat u)
+                    # concat (replicate j (s\<^sub>0 @ [Dsym (enat (v - 1))]))
+                    @ [Dsym (enat (v - 1))] @ [Zsym]
+                    @ concat (replicate j b\<^sub>0)) @ b\<^sub>1))"
+    and n1: "1 < n"
+  shows "\<exists>k. leBT (Trans (M[n])) (operB (Trans M) (numBT k))"
+proof -
+  obtain j where lj: "leBT (Trans (M[n]))
+                (unflatBT (s\<^sub>1 @ (Dsym (enat u)
+                    # concat (replicate j (s\<^sub>0 @ [Dsym (enat (v - 1))]))
+                    @ [Dsym (enat (v - 1))] @ [Zsym]
+                    @ concat (replicate j b\<^sub>0)) @ b\<^sub>1))"
+    using lhs[OF n1] by blast
+  have "operB (Trans M) (numBT j)
+          = unflatBT (s\<^sub>1 @ (Dsym (enat u)
+              # concat (replicate j (s\<^sub>0 @ [Dsym (enat (v - 1))]))
+              @ [Dsym (enat (v - 1))] @ [Zsym]
+              @ concat (replicate j b\<^sub>0)) @ b\<^sub>1)"
+    by (rule operB_marked_scb_value_kind1[OF tT uv bodyT dbbody bodyne innerscb k1])
+  hence "leBT (Trans (M[n])) (operB (Trans M) (numBT j))" using lj by simp
+  thus ?thesis by blast
+qed
+
 end
