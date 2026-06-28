@@ -38163,6 +38163,58 @@ proof -
 qed
 
 
+text \<open>§8.5 jm1=0 TRIVIAL-OW base (the \<open>n = 1\<close> leaf for the marked-head-at-top hosts,
+  the 80/89 condV majority).  When the marked head index \<open>transJm1 M = 0\<close> the marked
+  principal \<open>transC1 M = Mark (Pred M) 0\<close> is the WHOLE \<open>Trans (Pred M)\<close>
+  (@{thm [source] ra_Mark0_eq_Trans}), so the \<open>OW\<close>-context of @{thm [source]
+  m_8_5_base_scb} collapses to the single top principal \<open>D\<^bsub>u\<^esub>\<close>
+  (\<open>u = entry M 1 0\<close>): \<open>Trans (M[1]) = D\<^bsub>entry M 1 0\<^esub>(transT2 M)\<close>.  This pins the
+  closed-form \<open>OW\<close> wrap to the trivial context for the jm1=0 mark-growth assembly,
+  so only the body growth (the keystone chain) remains for \<open>base2\<close>/\<open>step2\<close>.\<close>
+
+lemma m_8_5_base_jm1_0:
+  fixes M :: pairseq
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS"
+    and J1pos: "transJ1 M > 0" and T1: "transT1 M \<noteq> 0\<^sub>B"
+    and jm0: "transJm1 M = 0"
+  shows "Trans (M[1]) = Dpt (enat (entry M 1 0)) (transT2 M)"
+proof -
+  have MT: "M \<in> T_PS" using MP by (simp add: PT_PS_def)
+  have mono: "monoT M" using MP by (simp add: PT_PS_def)
+  have L: "1 < Lng M" using J1pos by (simp add: transJ1_def)
+  have predRT: "Pred M \<in> RT_PS" by (rule Pred_RT_PS[OF MR])
+  have hp: "hasParent M 0 (Lng M - 1)" by (rule monoT_hasParent0_last[OF MT mono L])
+  \<comment> \<open>single-principal reconstruction of \<open>transC1 M\<close>\<close>
+  have pc1: "Lng (PB (transC1 M)) = 1" by (rule transC1_single_principal[OF MR MP J1pos T1])
+  have c1eq: "transC1 M = Dpt (transV M) (transT2 M)"
+    using principal_reconstruct[OF pc1] by (simp add: transV_def transT2_def)
+  \<comment> \<open>\<open>(Pred M, 0) \<in> Marked\<close> at the leftmost basepoint\<close>
+  have jm1eq: "transJm1 M = Adm M (parent M 0 (Lng M - 1))"
+    by (simp add: transJm1_def transJ0_def transJ1_def)
+  have marked0: "(Pred M, 0) \<in> Marked"
+    using Marked_Pred_Adm[OF MT L hp] jm1eq jm0 by simp
+  \<comment> \<open>\<open>transC1 M = Trans (Pred M)\<close> (whole, by @{thm [source] ra_Mark0_eq_Trans})\<close>
+  have c1mk: "transC1 M = Mark (Pred M) 0" by (simp add: transC1_def jm0)
+  have c1T1: "transC1 M = Trans (Pred M)"
+    using ra_Mark0_eq_Trans[rule_format, OF marked0 predRT] c1mk by simp
+  \<comment> \<open>\<open>transV M = entry M 1 0\<close> via the left-end head\<close>
+  have hv: "bpHeadV (Trans (Pred M)) = enat (entry (Pred M) 1 0)"
+    using m_7_3_Trans_leftend predRT by blast
+  have PredB: "Pred M = butlast M" using L by (simp add: Pred_def)
+  have jpos0: "0 < Lng M - 1" using J1pos by (simp add: transJ1_def)
+  have entryPred: "entry (Pred M) 1 0 = entry M 1 0"
+    using jpos0 by (simp add: PredB entry_def nth_butlast)
+  have vV: "transV M = enat (entry M 1 0)"
+    using c1T1 hv entryPred by (simp add: transV_def)
+  \<comment> \<open>assemble\<close>
+  have oper1: "M[1] = Pred M" by (rule m_8_4_oper1_eq_Pred[OF MT])
+  have "Trans (M[1]) = Trans (Pred M)" using oper1 by simp
+  also have "\<dots> = transC1 M" using c1T1 by simp
+  also have "\<dots> = Dpt (enat (entry M 1 0)) (transT2 M)" using c1eq vV by simp
+  finally show ?thesis .
+qed
+
+
 text \<open>§8.4/§8.5 marking-nesting OW-ANCHOR (M-agnostic).  The kind-1 scb-structure
   of \<open>Trans M\<close> at its marked principal \<open>D\<^bsub>u\<^esub> body\<close> reads back as the \<open>OW\<close>-wrap
   \<open>Trans M = OW body\<close> with \<open>OW x = unflatBT (s\<^sub>1 \<frown> D\<^bsub>u\<^esub> # flat x \<frown> b\<^sub>1)\<close>.  This is the
@@ -38903,6 +38955,66 @@ proof -
   thus ?thesis by simp
 qed
 
+text \<open>Single-column \<open>Pred\<close>: stripping one appended column returns the prefix.
+  The \<open>j = 1\<close>, \<open>B = [col]\<close> instance of @{thm [source] Pred_pow_append_full}, stated
+  directly for the per-column keystone step.\<close>
+
+lemma Pred_append_single:
+  fixes X :: pairseq and col :: "nat \<times> nat"
+  assumes Xne: "0 < Lng X"
+  shows "Pred (X @ [col]) = X"
+proof -
+  have "1 < Lng (X @ [col])" using Xne by simp
+  thus ?thesis by (simp add: Pred_def)
+qed
+
+text \<open>SINGLE-COLUMN keystone STEP (the per-column body change of \<open>step2\<close>).  For a
+  non-empty trunk \<open>X\<close> with one appended column \<open>col\<close>, the proven keystone
+  @{thm [source] m_8_2_keystone} on \<open>M' = X \<frown> [col]\<close> relates \<open>Trans M'\<close> to
+  \<open>Trans X\<close> directly (since \<open>Pred M' = X\<close>, @{thm [source] Pred_append_single}): in
+  EVERY case \<open>Trans M' = D\<^bsub>M'\<^bsub>1,0\<^esub>\<^esub>(\<dots>)\<close> with the body obtained from \<open>Trans X\<close> by the
+  same four-way disjunction.  This is the per-column building block whose \<open>Lng B\<close>-fold
+  composition (along the @{thm [source] Pred_pow_append} chain) yields the one-period
+  context \<open>C\<close> growth of \<open>step2\<close>.\<close>
+
+lemma Trans_append_col_keystone:
+  fixes X :: pairseq and col :: "nat \<times> nat"
+  defines "M' \<equiv> X @ [col]"
+  defines "j1 \<equiv> Lng M' - 1"
+  defines "J1 \<equiv> Lng (Br M') - 1"
+  defines "j0' \<equiv> Joints M' ! J1"
+  defines "j1' \<equiv> FirstNodes M' ! J1"
+  assumes Xne: "0 < Lng X"
+    and MR: "M' \<in> RT_PS" and MP: "M' \<in> PT_PS"
+    and Brne: "Br M' \<noteq> []" and j1gt: "j1 > 1"
+  shows
+    "(j1' = j1 \<and> (TrMax M' = 0 \<or> j0' < TrMax M')
+        \<and> (entry M' 0 j1' = entry M' 1 j1' \<or> adm M' j0')
+        \<and> (\<exists>!t1. Trans X = Dpt (enat (entry M' 1 0)) t1
+              \<and> Trans M' = Dpt (enat (entry M' 1 0))
+                            (t1 +\<^sub>B Dpt (enat (entry M' 1 j1')) 0\<^sub>B)))
+   \<or> (j1' = j1 \<and> entry M' 0 j1' > entry M' 1 j1' \<and> \<not> adm M' j0'
+        \<and> (\<exists>!t12. Trans X = Dpt (enat (entry M' 1 0)) (fst t12)
+              \<and> Trans M' = Dpt (enat (entry M' 1 0))
+                            (fst t12 +\<^sub>B Dpt (enat (entry M' 1 j0')) (snd t12))))
+   \<or> (\<exists>!t123. Trans X
+                = Dpt (enat (entry M' 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M' 1 j1')) (fst (snd t123)))
+            \<and> Trans M' = Dpt (enat (entry M' 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M' 1 j1')) (snd (snd t123))))
+   \<or> (\<exists>!t123. Trans X
+                = Dpt (enat (entry M' 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M' 1 j0')) (fst (snd t123)))
+            \<and> Trans M' = Dpt (enat (entry M' 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M' 1 j0')) (snd (snd t123))))"
+proof -
+  have P: "Pred M' = X" using Pred_append_single[OF Xne] M'_def by simp
+  show ?thesis
+    unfolding j1_def J1_def j0'_def j1'_def
+    using m_8_2_keystone[OF MR MP Brne j1gt[unfolded j1_def]]
+    by (simp only: P)
+qed
+
 text \<open>The slice-level corollary of @{thm [source] oper_d0pos_nth_prefix}: every
   iterate \<open>M[n]\<close> has the SAME prefix slice as \<open>M\<close> up to any trunk index
   \<open>m < parent M 1 (Lng M - 1)\<close>, hence the same prefix-\<open>Trans\<close>
@@ -38990,6 +39102,408 @@ proof -
   show ?thesis using B1 C2mark by blast
 qed
 
+
+
+text \<open>=====================================================================
+  d0pos (kind-1) reachability scaffold for the condition-(V) iterate
+  basepoint membership — the kind-1 analogue of the kind-0 §8.3
+  @{thm [source] m_8_3_kind0_base_basepoint} part (2).  Here
+  \<open>j\<^sub>0 = parent M 1 j\<^sub>1\<close> is the row-1 oper boundary; under condition (V) it
+  COINCIDES with the row-0 parent \<open>parent M 0 j\<^sub>1\<close> (hypothesis \<open>coin\<close>) and
+  carries the row-0 parent step \<open>(0,j\<^sub>0) <\<^sup>Next (0,j\<^sub>1)\<close> (hypothesis \<open>parR\<close>).
+  Unlike kind-0 the row-0 entries GROW by \<open>d\<^sub>0 = M\<^bsub>0,j\<^sub>1\<^esub> - M\<^bsub>0,j\<^sub>0\<^esub> > 0\<close> per
+  block, so the iterate reaches its right end by a BLOCK-START chain (each
+  start's row-0 minimum climbs by \<open>d\<^sub>0\<close>, the block interiors staying
+  \<open>\<ge> M\<^bsub>0,j\<^sub>1\<^esub>\<close>) followed by within-the-last-block reachability.  Empirically
+  0-fail (python/_r12_path.py: greedy le0 path = block starts then end).
+  ===================================================================== \<close>
+
+lemma oper_d0pos_nth:
+  assumes j1: "Lng M - 1 > 0" and e1pos: "entry M 1 (Lng M - 1) > 0"
+    and hp1: "hasParent M 1 (Lng M - 1)"
+    and q: "q < n" and s: "s < Lng M - 1 - parent M 1 (Lng M - 1)"
+  shows "((M::pairseq)[n]) ! (parent M 1 (Lng M - 1)
+              + q * (Lng M - 1 - parent M 1 (Lng M - 1)) + s)
+       = (entry M 0 (parent M 1 (Lng M - 1) + s)
+            + q * (entry M 0 (Lng M - 1) - entry M 0 (parent M 1 (Lng M - 1))),
+          entry M 1 (parent M 1 (Lng M - 1) + s))"
+proof -
+  let ?j1 = "Lng M - 1"  let ?j0 = "parent M 1 ?j1"  let ?w = "?j1 - ?j0"
+  let ?d0 = "entry M 0 ?j1 - entry M 0 ?j0"
+  let ?blk = "\<lambda>k. map (\<lambda>j. (entry M 0 j + k * ?d0, entry M 1 j)) [?j0..<?j1]"
+  have gen: "(M::pairseq)[n] = take ?j0 M @ concat (map ?blk [0..<n])"
+    by (rule m_8_4_oper_genform[OF j1 e1pos hp1])
+  have j0ltM: "?j0 < Lng M" by (rule hasParent1_parent_lt[OF hp1])
+  have lentake: "length (take ?j0 M) = ?j0" using j0ltM by simp
+  have lenblk: "\<And>k. k < n \<Longrightarrow> length (?blk k) = ?w" by simp
+  have idxge: "?j0 \<le> ?j0 + q * ?w + s" by simp
+  have "((M::pairseq)[n]) ! (?j0 + q * ?w + s)
+          = concat (map ?blk [0..<n]) ! (q * ?w + s)"
+    using gen lentake idxge by (simp add: nth_append)
+  also have "\<dots> = ?blk q ! s"
+    by (rule nth_concat_map_const_len[OF lenblk s q])
+  also have "\<dots> = (entry M 0 (?j0 + s) + q * ?d0, entry M 1 (?j0 + s))"
+    using s by (simp add: nth_upt)
+  finally show ?thesis .
+qed
+
+lemma oper_d0pos_entry0:
+  assumes j1: "Lng M - 1 > 0" and e1pos: "entry M 1 (Lng M - 1) > 0"
+    and hp1: "hasParent M 1 (Lng M - 1)"
+    and q: "q < n" and s: "s < Lng M - 1 - parent M 1 (Lng M - 1)"
+  shows "entry ((M::pairseq)[n]) 0
+            (parent M 1 (Lng M - 1) + q * (Lng M - 1 - parent M 1 (Lng M - 1)) + s)
+          = entry M 0 (parent M 1 (Lng M - 1) + s)
+            + q * (entry M 0 (Lng M - 1) - entry M 0 (parent M 1 (Lng M - 1)))"
+  using oper_d0pos_nth[OF j1 e1pos hp1 q s] by (simp add: entry_def)
+
+text \<open>Block-0 verbatim region: every iterate \<open>M[n]\<close> (\<open>n>0\<close>) agrees with \<open>M\<close> on
+  ALL columns \<open>x < Lng M - 1\<close> (the trunk plus block 0, which reproduces \<open>M\<close> up to
+  its penultimate column).  Strictly stronger than @{thm [source]
+  oper_d0pos_nth_prefix} (which stops at the trunk boundary \<open>parent M 1 j\<^sub>1\<close>).\<close>
+
+lemma oper_d0pos_nth_low:
+  assumes j1: "Lng M - 1 > 0" and e1pos: "entry M 1 (Lng M - 1) > 0"
+    and hp1: "hasParent M 1 (Lng M - 1)"
+    and n1: "0 < n" and xlt: "x < Lng M - 1"
+  shows "((M::pairseq)[n]) ! x = M ! x"
+proof -
+  let ?j1 = "Lng M - 1"  let ?j0 = "parent M 1 ?j1"  let ?w = "?j1 - ?j0"
+  show ?thesis
+  proof (cases "x < ?j0")
+    case True
+    show ?thesis by (rule oper_d0pos_nth_prefix[OF j1 e1pos hp1 True])
+  next
+    case False
+    hence xge: "?j0 \<le> x" by simp
+    have slt: "x - ?j0 < ?w" using xge xlt by linarith
+    have "((M::pairseq)[n]) ! x = ((M::pairseq)[n]) ! (?j0 + 0 * ?w + (x - ?j0))"
+      using xge by simp
+    also have "\<dots> = (entry M 0 (?j0 + (x - ?j0)) + 0 * (entry M 0 ?j1 - entry M 0 ?j0),
+                      entry M 1 (?j0 + (x - ?j0)))"
+      by (rule oper_d0pos_nth[OF j1 e1pos hp1 n1 slt])
+    also have "\<dots> = (entry M 0 x, entry M 1 x)" using xge by simp
+    also have "\<dots> = M ! x" by (simp add: entry_def)
+    finally show ?thesis .
+  qed
+qed
+
+text \<open>The block-start step: in \<open>M[n]\<close> the start of block \<open>k\<close> reaches the start of
+  block \<open>k+1\<close> by a SINGLE \<open>nextrel\<^sub>0\<close> step (both are the row-0 minimum of their
+  block; the interior columns of block \<open>k\<close> stay \<open>\<ge> M\<^bsub>0,j\<^sub>1\<^esub> + k d\<^sub>0\<close>, the value
+  of the next block start, by the row-0 parent valley).\<close>
+
+lemma oper_d0pos_blockstart_step:
+  assumes j1: "Lng M - 1 > 0" and e1pos: "entry M 1 (Lng M - 1) > 0"
+    and hp1: "hasParent M 1 (Lng M - 1)"
+    and j0lt: "parent M 1 (Lng M - 1) < Lng M - 1"
+    and parR: "nextrel0 M (parent M 1 (Lng M - 1)) (Lng M - 1)"
+    and k: "Suc k < n"
+  shows "nextrel0 ((M::pairseq)[n])
+            (parent M 1 (Lng M - 1) + k * (Lng M - 1 - parent M 1 (Lng M - 1)))
+            (parent M 1 (Lng M - 1) + Suc k * (Lng M - 1 - parent M 1 (Lng M - 1)))"
+proof -
+  let ?j1 = "Lng M - 1"  let ?j0 = "parent M 1 ?j1"  let ?w = "?j1 - ?j0"
+  let ?d0 = "entry M 0 ?j1 - entry M 0 ?j0"
+  let ?Mn = "(M::pairseq)[n]"
+  let ?a = "?j0 + k * ?w"  let ?b = "?j0 + Suc k * ?w"
+  have L: "1 < Lng M" using j1 by linarith
+  have w0: "0 < ?w" using j0lt by linarith
+  have i1: "idx1 M ?j1 = 1" using e1pos by (simp add: idx1_def)
+  have notzero: "\<not> (entry M 0 ?j1 = 0 \<and> entry M 1 ?j1 = 0)" using e1pos by simp
+  have hp: "hasParent M (idx1 M ?j1) ?j1" using hp1 i1 by simp
+  have j0lt': "parent M (idx1 M ?j1) ?j1 < ?j1" using j0lt i1 by simp
+  have LngMn: "Lng ?Mn = ?j0 + n * ?w"
+  proof -
+    have "Lng ?Mn = parent M (idx1 M ?j1) ?j1 + n * (?j1 - parent M (idx1 M ?j1) ?j1)"
+      by (rule operB_gen_LngM[OF L notzero hp j0lt'])
+    thus ?thesis using i1 by simp
+  qed
+  have kn: "k < n" using k by simp
+  have d0pos: "0 < ?d0" using parR by (simp add: nextrel0_def)
+  have eq1: "entry M 0 ?j0 + ?d0 = entry M 0 ?j1" using d0pos by simp
+  have parmid: "\<And>j. ?j0 < j \<Longrightarrow> j < ?j1 \<Longrightarrow> entry M 0 ?j1 \<le> entry M 0 j"
+    using parR by (simp add: nextrel0_def)
+  have bw: "?b = ?a + ?w" by simp
+  have ea: "entry ?Mn 0 ?a = entry M 0 ?j0 + k * ?d0"
+  proof -
+    have "entry ?Mn 0 (?j0 + k * ?w + 0) = entry M 0 (?j0 + 0) + k * ?d0"
+      by (rule oper_d0pos_entry0[OF j1 e1pos hp1 kn w0])
+    thus ?thesis by simp
+  qed
+  have eb: "entry ?Mn 0 ?b = entry M 0 ?j0 + Suc k * ?d0"
+  proof -
+    have "entry ?Mn 0 (?j0 + Suc k * ?w + 0) = entry M 0 (?j0 + 0) + Suc k * ?d0"
+      by (rule oper_d0pos_entry0[OF j1 e1pos hp1 k w0])
+    thus ?thesis by simp
+  qed
+  have alt: "?a < Lng ?Mn"
+  proof -
+    obtain wv where wv: "?w = wv" by blast
+    have "k * wv < n * wv" using kn w0 wv by (simp add: mult_strict_right_mono)
+    hence "?j0 + k * wv < ?j0 + n * wv" by simp
+    thus ?thesis using LngMn wv by simp
+  qed
+  have blt: "?b < Lng ?Mn"
+  proof -
+    obtain wv where wv: "?w = wv" by blast
+    have w0v: "(0::nat) < wv" using w0 wv by simp
+    have "Suc k * wv < n * wv" by (rule mult_strict_right_mono[OF k w0v])
+    hence "?j0 + Suc k * wv < ?j0 + n * wv" by simp
+    thus ?thesis using LngMn wv by simp
+  qed
+  show ?thesis
+    unfolding nextrel0_def
+  proof (intro conjI allI impI)
+    show "?a < Lng ?Mn" by (rule alt)
+    show "?b < Lng ?Mn" by (rule blt)
+    show "?a < ?b" using w0 by simp
+    show "entry ?Mn 0 ?a < entry ?Mn 0 ?b" using ea eb d0pos by simp
+    fix j assume jj: "?a < j \<and> j < ?b"
+    hence ajt: "?a < j" and jbt: "j < ?b" by auto
+    define sp where "sp = j - ?a"
+    have sp0: "0 < sp" using ajt sp_def by simp
+    have spw: "sp < ?w" using jbt bw ajt sp_def by linarith
+    have jeq: "j = ?j0 + k * ?w + sp" using ajt sp_def by simp
+    have ej: "entry ?Mn 0 j = entry M 0 (?j0 + sp) + k * ?d0"
+      using oper_d0pos_entry0[OF j1 e1pos hp1 kn spw] jeq by simp
+    have jrange1: "?j0 < ?j0 + sp" using sp0 by simp
+    have jrange2: "?j0 + sp < ?j1" using spw w0 by simp
+    have "entry M 0 ?j1 \<le> entry M 0 (?j0 + sp)" using parmid[OF jrange1 jrange2] .
+    hence "entry M 0 ?j0 + Suc k * ?d0 \<le> entry M 0 (?j0 + sp) + k * ?d0"
+      using eq1 by simp
+    thus "entry ?Mn 0 ?b \<le> entry ?Mn 0 j" using eb ej by simp
+  qed
+qed
+
+text \<open>Kind-1 within-iterate reachability from the row-1 parent \<open>j\<^sub>0 = parent M 1
+  j\<^sub>1\<close> to the right end of \<open>M[n]\<close> — the d0pos analogue of @{thm [source]
+  oper_d0zero_prefix_to_lastblock} composed with @{thm [source]
+  oper_d0zero_lastblock_to_end}.  Route: the block-start chain
+  @{thm [source] oper_d0pos_blockstart_step} reaches the LAST block start
+  \<open>j\<^sub>0+(n-1)w\<close>; the kind-agnostic within-block lift @{thm [source]
+  oper_d0zero_le0_slice_lift} carries the base within-block reachability
+  @{thm [source] parent_block_le0} into the last block, landing on the right
+  end.\<close>
+
+lemma oper_d0pos_j0_to_end:
+  assumes j1: "Lng M - 1 > 0" and e1pos: "entry M 1 (Lng M - 1) > 0"
+    and hp1: "hasParent M 1 (Lng M - 1)"
+    and j0lt: "parent M 1 (Lng M - 1) < Lng M - 1"
+    and parR: "nextrel0 M (parent M 1 (Lng M - 1)) (Lng M - 1)"
+    and coin: "parent M 1 (Lng M - 1) = parent M 0 (Lng M - 1)"
+    and n1: "0 < n"
+  shows "le0 ((M::pairseq)[n]) (parent M 1 (Lng M - 1)) (Lng ((M::pairseq)[n]) - 1)"
+proof -
+  let ?j1 = "Lng M - 1"  let ?j0 = "parent M 1 ?j1"  let ?w = "?j1 - ?j0"
+  let ?Mn = "(M::pairseq)[n]"
+  have L: "1 < Lng M" using j1 by linarith
+  have w0: "0 < ?w" using j0lt by linarith
+  have wn: "?w \<le> n * ?w" using n1 by (cases n) auto
+  have nw0: "0 < n * ?w" using w0 wn by linarith
+  have i1: "idx1 M ?j1 = 1" using e1pos by (simp add: idx1_def)
+  have notzero: "\<not> (entry M 0 ?j1 = 0 \<and> entry M 1 ?j1 = 0)" using e1pos by simp
+  have hp: "hasParent M (idx1 M ?j1) ?j1" using hp1 i1 by simp
+  have j0lt': "parent M (idx1 M ?j1) ?j1 < ?j1" using j0lt i1 by simp
+  have LngMn: "Lng ?Mn = ?j0 + n * ?w"
+  proof -
+    have "Lng ?Mn = parent M (idx1 M ?j1) ?j1 + n * (?j1 - parent M (idx1 M ?j1) ?j1)"
+      by (rule operB_gen_LngM[OF L notzero hp j0lt'])
+    thus ?thesis using i1 by simp
+  qed
+  have j0w: "?j0 + ?w = ?j1" using j0lt by simp
+  \<comment> \<open>R2: block-start chain \<open>j\<^sub>0 \<rightarrow>\<^sup>* j\<^sub>0+(n-1)w\<close>\<close>
+  have rt: "\<And>k0. k0 < n \<Longrightarrow> (nextrel0 ?Mn)\<^sup>*\<^sup>* ?j0 (?j0 + k0 * ?w)"
+  proof -
+    fix k0 show "k0 < n \<Longrightarrow> (nextrel0 ?Mn)\<^sup>*\<^sup>* ?j0 (?j0 + k0 * ?w)"
+    proof (induction k0)
+      case 0
+      show ?case using rtranclp.rtrancl_refl by simp
+    next
+      case (Suc k)
+      have kn: "k < n" using Suc.prems by simp
+      have IH: "(nextrel0 ?Mn)\<^sup>*\<^sup>* ?j0 (?j0 + k * ?w)" by (rule Suc.IH[OF kn])
+      have step: "nextrel0 ?Mn (?j0 + k * ?w) (?j0 + Suc k * ?w)"
+        by (rule oper_d0pos_blockstart_step[OF j1 e1pos hp1 j0lt parR Suc.prems])
+      show ?case by (rule rtranclp.rtrancl_into_rtrancl[OF IH step])
+    qed
+  qed
+  have nm1lt: "n - 1 < n" using n1 by simp
+  have chain1: "(nextrel0 ?Mn)\<^sup>*\<^sup>* ?j0 (?j0 + (n - 1) * ?w)" using rt[OF nm1lt] .
+  \<comment> \<open>R3: last block start \<open>\<rightarrow>\<^sup>* end\<close> via the within-block lift\<close>
+  have parR0: "nextrel0 M (parent M 0 ?j1) ?j1" using parR coin by simp
+  have wm1': "?w - 1 < Lng M - 1 - parent M 0 (Lng M - 1)" using w0 coin by simp
+  have le0base0: "le0 M (parent M 0 ?j1) (parent M 0 ?j1 + (?w - 1))"
+    by (rule parent_block_le0[OF parR0 wm1'])
+  have le0base: "le0 M ?j0 (?j0 + (?w - 1))" using le0base0 coin by simp
+  have a0: "parent M (idx1 M ?j1) ?j1 \<le> ?j0" using i1 by simp
+  have bj1: "?j0 + (?w - 1) < ?j1"
+  proof -
+    have "?j0 + (?w - 1) < ?j0 + ?w" using w0 by simp
+    thus ?thesis using j0w by simp
+  qed
+  have raw: "le0 ?Mn
+        (?j0 + (n - 1) * ?w + (?j0 - ?j0))
+        (?j0 + (n - 1) * ?w + ((?j0 + (?w - 1)) - ?j0))"
+    using oper_d0zero_le0_slice_lift[OF L notzero hp j0lt' nm1lt a0 bj1 le0base] i1
+    by simp
+  have hi_eq: "?j0 + (n - 1) * ?w + ((?j0 + (?w - 1)) - ?j0) = Lng ?Mn - 1"
+  proof -
+    obtain wv where wv: "?w = wv" by blast
+    have wv0: "0 < wv" using w0 wv by simp
+    have arith: "?j0 + (n - 1) * wv + ((?j0 + (wv - 1)) - ?j0) = ?j0 + n * wv - 1"
+    proof -
+      have nwv1: "1 \<le> n * wv"
+      proof -
+        have "1 * 1 \<le> n * wv" using n1 wv0 by (intro mult_le_mono) auto
+        thus ?thesis by simp
+      qed
+      have e1: "(?j0 + (wv - 1)) - ?j0 = wv - 1" by simp
+      have e2: "(n - 1) * wv + (wv - 1) = n * wv - 1"
+        using n1 wv0 by (simp add: algebra_simps)
+      have "?j0 + (n - 1) * wv + ((?j0 + (wv - 1)) - ?j0)
+              = ?j0 + ((n - 1) * wv + (wv - 1))" using e1 by simp
+      also have "\<dots> = ?j0 + (n * wv - 1)" using e2 by simp
+      also have "\<dots> = ?j0 + n * wv - 1" using nwv1 by simp
+      finally show ?thesis .
+    qed
+    have lenwv: "Lng ?Mn = ?j0 + n * wv" using LngMn wv by simp
+    show ?thesis using arith wv lenwv by simp
+  qed
+  have lo_eq: "?j0 + (n - 1) * ?w + (?j0 - ?j0) = ?j0 + (n - 1) * ?w" by simp
+  have le0_lastblock: "le0 ?Mn (?j0 + (n - 1) * ?w) (Lng ?Mn - 1)"
+    using raw lo_eq hi_eq by simp
+  \<comment> \<open>compose R2 and R3\<close>
+  have c2: "(nextrel0 ?Mn)\<^sup>*\<^sup>* (?j0 + (n - 1) * ?w) (Lng ?Mn - 1)"
+    using le0_lastblock by (simp add: le0_def)
+  have "(nextrel0 ?Mn)\<^sup>*\<^sup>* ?j0 (Lng ?Mn - 1)"
+    using chain1 c2 by (rule rtranclp_trans)
+  moreover have "?j0 < Lng ?Mn" using LngMn nw0 by simp
+  moreover have "Lng ?Mn - 1 < Lng ?Mn" using LngMn nw0 by simp
+  ultimately show ?thesis by (simp add: le0_def)
+qed
+
+text \<open>The kind-1 (condition-(V)) iterate basepoint membership — the residual
+  Marked-membership hypothesis of @{thm [source] Mark_iterate_slice_append} and
+  @{thm [source] scb_context_eq_of_prefix} for the interior (\<open>0 < jm1\<close>) hosts;
+  the d0pos analogue of @{thm [source] m_8_3_kind0_base_basepoint} part (2).
+  With \<open>jm1 = Adm M (parent M 0 j\<^sub>1) = transJm1 M\<close>, admissibility transfers from
+  \<open>M\<close> across the verbatim block-0 region @{thm [source] oper_d0pos_nth_low}
+  (PART a), and \<open>jm1\<close> reaches the right end of \<open>M[n]\<close> by lifting its \<open>M\<close>-row-1
+  ancestry chain into the trunk (verbatim) and then the kind-1 within-iterate
+  reachability @{thm [source] oper_d0pos_j0_to_end} (PART b).\<close>
+
+lemma m_8_3_kind1_base_basepoint:
+  fixes M :: pairseq
+  assumes M: "M \<in> RT_PS" and n1: "0 < n"
+    and e1pos: "entry M 1 (Lng M - 1) > 0"
+    and hp1: "hasParent M 1 (Lng M - 1)"
+    and j0lt2: "parent M 1 (Lng M - 1) + 1 < Lng M - 1"
+    and parR: "nextrel0 M (parent M 1 (Lng M - 1)) (Lng M - 1)"
+    and coin: "parent M 1 (Lng M - 1) = parent M 0 (Lng M - 1)"
+    and jm1def: "jm1 = Adm M (parent M 0 (Lng M - 1))"
+    and jm1pos: "0 < jm1"
+  shows "((M::pairseq)[n], jm1) \<in> Marked \<and> (M::pairseq)[n] \<in> RT_PS"
+proof -
+  let ?j1 = "Lng M - 1"  let ?j0 = "parent M 1 ?j1"  let ?w = "?j1 - ?j0"
+  let ?Mn = "(M::pairseq)[n]"
+  have MT: "M \<in> T_PS" using M by (simp add: RT_PS_def)
+  have j0lt: "?j0 < ?j1" using j0lt2 by linarith
+  have j1: "?j1 > 0" using j0lt2 by linarith
+  have L: "1 < Lng M" using j1 by linarith
+  have w0: "0 < ?w" using j0lt by linarith
+  have wn: "?w \<le> n * ?w" using n1 by (cases n) auto
+  have nw0: "0 < n * ?w" using w0 wn by linarith
+  have n1': "1 \<le> n" using n1 by simp
+  have MnRT: "?Mn \<in> RT_PS" by (rule m_6_6_reduced_oper[OF M n1'])
+  have MnT: "?Mn \<in> T_PS" using MnRT by (simp add: RT_PS_def)
+  have LngMn: "Lng ?Mn = ?j0 + n * ?w"
+  proof -
+    have i1: "idx1 M ?j1 = 1" using e1pos by (simp add: idx1_def)
+    have notzero: "\<not> (entry M 0 ?j1 = 0 \<and> entry M 1 ?j1 = 0)" using e1pos by simp
+    have hp: "hasParent M (idx1 M ?j1) ?j1" using hp1 i1 by simp
+    have j0lt': "parent M (idx1 M ?j1) ?j1 < ?j1" using j0lt i1 by simp
+    have "Lng ?Mn = parent M (idx1 M ?j1) ?j1 + n * (?j1 - parent M (idx1 M ?j1) ?j1)"
+      by (rule operB_gen_LngM[OF L notzero hp j0lt'])
+    thus ?thesis using i1 by simp
+  qed
+  have jm1le_j0: "jm1 \<le> ?j0"
+  proof -
+    have "Adm M (parent M 0 ?j1) \<le> parent M 0 ?j1" by (rule adm_Adm_le)
+    thus ?thesis using jm1def coin by simp
+  qed
+  have jm1lt_j1: "jm1 < ?j1" using jm1le_j0 j0lt by linarith
+  have j0lt_Mn: "?j0 < Lng ?Mn" using LngMn nw0 by simp
+  have j1le_Mn: "?j1 \<le> Lng ?Mn"
+  proof -
+    have "?j1 = ?j0 + ?w" using j0lt by simp
+    also have "?j0 + ?w \<le> ?j0 + n * ?w" using wn by simp
+    finally show ?thesis using LngMn by simp
+  qed
+  \<comment> \<open>===================== PART (a): admissibility transfer =====================\<close>
+  have admMjm1: "adm M jm1" unfolding jm1def by (rule adm_Adm_adm)
+  have agree: "\<And>x. x \<le> jm1 + 1 \<Longrightarrow> ?Mn ! x = M ! x"
+  proof -
+    fix x assume xle: "x \<le> jm1 + 1"
+    have "x < ?j1" using xle jm1le_j0 j0lt2 by linarith
+    thus "?Mn ! x = M ! x" by (rule oper_d0pos_nth_low[OF j1 e1pos hp1 n1])
+  qed
+  have c_Mn: "jm1 + 1 < Lng ?Mn" using jm1le_j0 j0lt2 j1le_Mn by linarith
+  have c_M: "jm1 + 1 < Lng M" using jm1le_j0 j0lt2 L by linarith
+  have adm_jm1: "adm ?Mn jm1"
+  proof (rule ccontr)
+    assume "\<not> adm ?Mn jm1"
+    hence nadm: "nadm ?Mn jm1" by (simp add: adm_def)
+    have "jm1 \<le> Lng ?Mn" using c_Mn by simp
+    hence "\<not> jm1 > Lng ?Mn" by simp
+    hence nr: "nextR ?Mn 1 (jm1 - 1) jm1 \<and> nextR ?Mn 1 jm1 (jm1 + 1)"
+      using nadm by (simp add: nadm_def)
+    have a1: "nextrel1 ?Mn (jm1 - 1) jm1" using nr by (simp add: nextR_def)
+    have a2: "nextrel1 ?Mn jm1 (jm1 + 1)" using nr by (simp add: nextR_def)
+    have b1: "nextrel1 M (jm1 - 1) jm1"
+      by (rule nextrel1_prefix_imp[OF agree c_Mn c_M _ _ a1]) (use jm1pos in linarith)+
+    have b2: "nextrel1 M jm1 (jm1 + 1)"
+      by (rule nextrel1_prefix_imp[OF agree c_Mn c_M _ _ a2]) auto
+    have "nadm M jm1" unfolding nadm_def using b1 b2 by (simp add: nextR_def)
+    thus False using admMjm1 by (simp add: adm_def)
+  qed
+  \<comment> \<open>===================== PART (b): reachability \<open>jm1 \<rightarrow>\<^sup>* end\<close> =====================\<close>
+  have le0_jm1_j0: "le0 M jm1 ?j0"
+  proof -
+    have j0leM1: "parent M 0 ?j1 \<le> Lng M - 1" using coin j0lt by linarith
+    have le1: "leR M 1 (Adm M (parent M 0 ?j1)) (parent M 0 ?j1)"
+      by (rule adm_row1_ancestry[OF MT j0leM1])
+    have "leR M 0 (Adm M (parent M 0 ?j1)) (parent M 0 ?j1)"
+      by (rule m_le1_imp_le0[OF le1])
+    hence f: "le0 M (Adm M (parent M 0 ?j1)) (parent M 0 ?j1)" by (simp add: leR_def)
+    show ?thesis unfolding jm1def using f coin by simp
+  qed
+  have agree0: "\<And>x. x \<le> ?j0 \<Longrightarrow> M ! x = ?Mn ! x"
+  proof -
+    fix x assume "x \<le> ?j0"
+    hence "x < ?j1" using j0lt by linarith
+    thus "M ! x = ?Mn ! x" using oper_d0pos_nth_low[OF j1 e1pos hp1 n1] by simp
+  qed
+  have j0lt_M: "?j0 < Lng M" using j0lt L by linarith
+  have bcrefl: "?j0 \<le> ?j0" by (rule order_refl)
+  have le0_jm1_j0_Mn: "le0 ?Mn jm1 ?j0"
+    by (rule le0_prefix_agree[OF agree0 j0lt_M j0lt_Mn jm1le_j0 bcrefl le0_jm1_j0])
+  have le0_j0_end: "le0 ?Mn ?j0 (Lng ?Mn - 1)"
+    by (rule oper_d0pos_j0_to_end[OF j1 e1pos hp1 j0lt parR coin n1])
+  have le0_jm1_end: "le0 ?Mn jm1 (Lng ?Mn - 1)"
+  proof -
+    have "(nextrel0 ?Mn)\<^sup>*\<^sup>* jm1 ?j0" using le0_jm1_j0_Mn by (simp add: le0_def)
+    moreover have "(nextrel0 ?Mn)\<^sup>*\<^sup>* ?j0 (Lng ?Mn - 1)"
+      using le0_j0_end by (simp add: le0_def)
+    ultimately have "(nextrel0 ?Mn)\<^sup>*\<^sup>* jm1 (Lng ?Mn - 1)" by (rule rtranclp_trans)
+    moreover have "jm1 < Lng ?Mn" using jm1le_j0 j0lt_Mn by linarith
+    moreover have "Lng ?Mn - 1 < Lng ?Mn" using LngMn nw0 by simp
+    ultimately show ?thesis by (simp add: le0_def)
+  qed
+  have Marked: "(?Mn, jm1) \<in> Marked"
+    unfolding Marked_def using MnT adm_jm1 le0_jm1_end by (simp add: leR_def)
+  show ?thesis using Marked MnRT by simp
+qed
 
 
 section \<open>§8.6 命題（条件(VI)の下での \<open>Trans\<close> と基本列の交換関係）, conclusion (3):
