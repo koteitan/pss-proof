@@ -46,7 +46,7 @@
     - ✅ 補題（第 $0$ 種型基本列の基本基点関係）〔`m_8_3_kind0_base_basepoint`〕
   - 🚨 §8.4 条件 (III) か (IV) の下での展開規則
     - 🚨 命題（条件 (III) か (IV) の下での $\textrm{Trans}$ と基本列の交換関係）〔残=marking-nesting surgery {base2,step2}(condIII独自producer要)、condIV=A27〕
-    - 🚨 補題（右端の非許容直系先祖の基本性質）
+    - ✅ 補題（右端の非許容直系先祖の基本性質）〔`m_8_4_rightmost_nonadm_ancestor`〕
     - 🚨 補題（条件 (III)〜(V) の下での右端の置き換えと $\textrm{Trans}$ の関係）
     - 🚨 補題（条件 (III)〜(VI) の下での展開規則の基本性質）
     - 🚨 補題（条件 (III)〜(VI) の下での $\textrm{Trans}$ と scb分解の関係）
