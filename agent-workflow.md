@@ -15,10 +15,17 @@ multi-hour stalls — follow them.
 
 ## Sub-agent rules (put these in every spawn prompt)
 
-1. **Scope = one self-contained lemma.** Read CLAUDE.md first. Build with
-   `isbman`, never `isabelle build`.
-2. **Green = the line `Finished PSS`** (NOT "Finished at" — that prints on
-   failure too). Confirm no `*** ` / `PSS FAILED` / `Unfinished session`.
+1. **Scope = one self-contained lemma.** Read CLAUDE.md first (esp. the layered
+   Build section). **Add your lemmas to the ACTIVE layer `layerC/pss_scratch.thy`**
+   (never edit `pss_wip`/`pss_mechanized` — those are the frozen base). Build the
+   active session: `isbman build -m "pss-..." -d <worktree> -v PSS_C` (never
+   `isabelle build`). After the base heap exists, only `pss_scratch` is rebuilt.
+2. **Green = the line `Finished PSS_C`** (the active session's own line; a bare
+   `Finished PSS` substring-matches the base layers too). NOT "Finished at" (that
+   prints on failure). Under concurrent worktree builds a `***` may be a spurious
+   SQLite-export artifact — judge by `Finished PSS_C` present AND the real-error
+   grep `grep -cE 'Failed to|Type unification|Undefined fact|Outer syntax|Step
+   error|Duplicate fact|exception|Unfinished'` == 0, not by `***` alone.
 3. **NO `sorry` / `oops`** in the final proof (`grep -c "sorry\|oops"` must not
    increase).
 4. **NO circular / forward / false-axiom citation.** Do **not** cite the goal

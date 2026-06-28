@@ -7,20 +7,48 @@ working guide for contributors (human and Claude alike). For the overall picture
 see [README.md](README.md); for progress see [task.md](task.md); for proposed
 corrections to the source see [corrections.md](corrections.md).
 
-## Build
+## Build — layered session split (append-only; never reprocess the stable body)
+
+`ROOT` defines **nested sessions** so the huge proven body sits in pre-built heaps
+and is never reprocessed; only the thin **active top layer** is built each round.
+Each session lives in its own directory (Isabelle forbids two sessions in one dir)
+and imports its parent's top theory **session-qualified** (`imports "PSS_A.pss_mechanized"`).
+
+| session | dir | theory | role | green check |
+|---|---|---|---|---|
+| `PSS_A` | `.` | `pss_defs`+`pss_paper`+**`pss_mechanized`** | FROZEN base | `Finished PSS_A` |
+| `PSS_B` | `layerB` | `pss_wip` | FROZEN base | `Finished PSS_B` |
+| `PSS_C` | `layerC` | `pss_scratch` | **ACTIVE top** (current work) | `Finished PSS_C` |
 
 ```
-isbman build -d . -v PSS          # preferred (per-directory heap isolation)
-# bms-proof runs concurrently on the same machine; ALWAYS tag PSS builds -m "pss-...":
-isbman build -m "pss-§6.4-trunk" -d . -v PSS
+isbman build -m "pss-..." -d . -v PSS_C   # everyone (sub-agents AND main): only the active layer
+isbman build -m "pss-..." -d . -v PSS_B   # one-time: freeze the base (build A then B), then never again
 ```
 
+- **Frozen base = A + B**: built **once**, then reused as heaps. NOT rebuilt per
+  round. (A's first build reprocesses the 66k-line mechanized — that one ~11 min
+  cost is paid once.)
+- **Active layer = the top scratch session** (`PSS_C` now). **Both sub-agents and
+  main build only this.** Per round: sub-agents prove lemmas in `pss_scratch` →
+  verified → main collects them into `pss_scratch`, builds `PSS_C`, commits.
+  **Proven lemmas ACCUMULATE in the active scratch — they are NOT moved back down
+  into `pss_wip`** (that would force a 40k-line `PSS_B` rebuild every round — the
+  whole point is to avoid it).
+- **Freeze when the active layer fattens** (~a completed § or ~10k lines): rename
+  `pss_scratch.thy` to a permanent `pss_segN.thy`, turn its `PSS_C` into a frozen
+  layer, and start a **fresh empty `pss_scratch`** as a new top session `PSS_D` in
+  `layerD` (imports `"PSS_C.pss_segN"`). Per-freeze cost = only the new chunk's
+  heap (bounded — the body below is never reprocessed). The active layer stays thin.
+- **Consolidation (rare safety valve)**: to reset the growing session/file count,
+  fold the frozen `pss_segN` chunks into `pss_mechanized` and rebuild `PSS_A` once.
+- **Green = the target session's OWN `Finished` line**, NOT a bare `Finished PSS`
+  (substring-matches all layers). Active build green: `grep -c 'Finished PSS_C'`
+  == 1; plus no real errors and `sorry`/`oops` == 0 in the edited theory. (A `***`
+  count is unreliable under concurrent worktree builds — use the real-error grep,
+  see agent-workflow.md.)
 - `isbman` wraps `isabelle build` (`isbman ps` lists builds, `isbman kill <id>`
   stops one). Never run `isabelle build` or `pkill` directly — blanket kills
-  clobber other sessions' builds.
-- Session is defined in `ROOT` (`session PSS = HOL`, `sessions HOL-Library`,
-  `options [document = false, quick_and_dirty]`). `quick_and_dirty` is
-  **required** because we use `sorry`.
+  clobber other sessions' builds. `quick_and_dirty` is **required** (we use `sorry`).
 - For long proof search, extend the timeout: `ISBMAN_TIMEOUT=2400 isbman build ...`.
 
 ## Repository layout and external files
@@ -40,13 +68,19 @@ The Isabelle build only needs `tmp/content.md` to *exist* (`@{file}` check).
 
 ## File layout and roles
 
-| File | Role |
-|---|---|
-| `pss_defs.thy` | Formalized **definitions** of the article (pair-sequence side, §4–§6) |
-| `pss_paper.thy` | **Statements only** of the article's propositions/lemmas/corollaries/theorems, transcribed as `sorry`. The §7 Buchholz notation system (definitions of the external reference [Buc1]) also lives here |
-| `pss_mechanized.thy` | Our own **mechanized proofs** discharging the `sorry`s |
+| File | Layer / dir | Role |
+|---|---|---|
+| `pss_defs.thy` | a (`.`) | Formalized **definitions** of the article (pair-sequence side, §4–§6) |
+| `pss_paper.thy` | a (`.`) | **Statements only** of the article's propositions/lemmas/corollaries/theorems, transcribed as `sorry`. The §7 Buchholz notation system (definitions of the external reference [Buc1]) also lives here |
+| `pss_mechanized.thy` | a (`.`) | Our own **mechanized proofs** discharging the `sorry`s |
+| `layerB/pss_wip.thy` | b | Earlier campaign's proven body — now FROZEN into the base heap |
+| `layerC/pss_scratch.thy` | c | **ACTIVE** layer: the lemmas currently being proven (see the Build section) |
 
-Import chain: `pss_defs` ← `pss_paper` ← `pss_mechanized`.
+Import chain: `pss_defs` ← `pss_paper` ← `pss_mechanized` ← `pss_wip` ← `pss_scratch`
+(the last two cross-session, imported session-qualified). Active work happens in
+`layerC/pss_scratch.thy`; the rest is pre-built. `@{file}` antiquotations live only
+in the layer-a theories (which stay in `.`), so the `tmp/` symlink is only needed
+at the repo root, not in `layerB`/`layerC`.
 
 ## Naming and traceability
 

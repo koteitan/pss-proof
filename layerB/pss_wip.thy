@@ -1,5 +1,5 @@
 theory pss_wip
-  imports pss_mechanized
+  imports "PSS_A.pss_mechanized"
 begin
 
 text \<open>
