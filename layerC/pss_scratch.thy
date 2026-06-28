@@ -771,4 +771,183 @@ proof -
   qed
 qed
 
+text \<open>§8.5 SURGERY sub-fact (A.collapse) — the per-column DEEPEN step.  Appending a
+  single column \<open>col\<close> to \<open>X\<close> (host \<open>M' = X \<frown> [col]\<close>) whose last branch is NOT a
+  singleton (\<open>j\<^sub>1' = FirstNodes M' ! J\<^sub>1 \<noteq> j\<^sub>1\<close>) collapses the §8.2 keystone four-way
+  disjunction (@{thm [source] Trans_append_col_keystone}) to its two DEEPEN cases
+  (3)/(4): the trailing principal keeps its head \<open>h\<close> and only its subtree changes
+  \<open>a \<rightarrow> b\<close>, with a COMMON prefix body \<open>t\<close>.  Cases (1)/(2) both assert \<open>j\<^sub>1' = j\<^sub>1\<close>
+  and are killed by \<open>j1ne\<close>.  Empirically \<open>j\<^sub>1' \<noteq> j\<^sub>1\<close> holds for every appended-block
+  column (148/148, python/probeA), so this is exactly the SHAPE half of the surgery
+  spine-descent; the genuine residual is the VALUE step \<open>a \<rightarrow> b\<close> (sub-fact B).\<close>
+
+lemma m_8_5_deepen_step:
+  fixes X :: pairseq and col :: "nat \<times> nat"
+  defines "M' \<equiv> X @ [col]"
+  defines "j1 \<equiv> Lng M' - 1"
+  defines "J1 \<equiv> Lng (Br M') - 1"
+  defines "j0' \<equiv> Joints M' ! J1"
+  defines "j1' \<equiv> FirstNodes M' ! J1"
+  assumes Xne: "0 < Lng X"
+    and MR: "M' \<in> RT_PS" and MP: "M' \<in> PT_PS"
+    and Brne: "Br M' \<noteq> []" and j1gt: "j1 > 1"
+    and j1ne: "j1' \<noteq> j1"
+  shows "\<exists>t h a b. (h = entry M' 1 j1' \<or> h = entry M' 1 j0')
+              \<and> Trans X = Dpt (enat (entry M' 1 0)) (t +\<^sub>B Dpt (enat h) a)
+              \<and> Trans M' = Dpt (enat (entry M' 1 0)) (t +\<^sub>B Dpt (enat h) b)"
+proof -
+  have key: "(j1' = j1 \<and> (TrMax M' = 0 \<or> j0' < TrMax M')
+        \<and> (entry M' 0 j1' = entry M' 1 j1' \<or> adm M' j0')
+        \<and> (\<exists>!t1. Trans X = Dpt (enat (entry M' 1 0)) t1
+              \<and> Trans M' = Dpt (enat (entry M' 1 0))
+                            (t1 +\<^sub>B Dpt (enat (entry M' 1 j1')) 0\<^sub>B)))
+   \<or> (j1' = j1 \<and> entry M' 0 j1' > entry M' 1 j1' \<and> \<not> adm M' j0'
+        \<and> (\<exists>!t12. Trans X = Dpt (enat (entry M' 1 0)) (fst t12)
+              \<and> Trans M' = Dpt (enat (entry M' 1 0))
+                            (fst t12 +\<^sub>B Dpt (enat (entry M' 1 j0')) (snd t12))))
+   \<or> (\<exists>!t123. Trans X
+                = Dpt (enat (entry M' 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M' 1 j1')) (fst (snd t123)))
+            \<and> Trans M' = Dpt (enat (entry M' 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M' 1 j1')) (snd (snd t123))))
+   \<or> (\<exists>!t123. Trans X
+                = Dpt (enat (entry M' 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M' 1 j0')) (fst (snd t123)))
+            \<and> Trans M' = Dpt (enat (entry M' 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M' 1 j0')) (snd (snd t123))))"
+    using Trans_append_col_keystone[OF Xne MR[unfolded M'_def] MP[unfolded M'_def]
+            Brne[unfolded M'_def] j1gt[unfolded j1_def M'_def]]
+    unfolding M'_def j1_def J1_def j0'_def j1'_def .
+  from key j1ne have "(\<exists>!t123. Trans X
+                = Dpt (enat (entry M' 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M' 1 j1')) (fst (snd t123)))
+            \<and> Trans M' = Dpt (enat (entry M' 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M' 1 j1')) (snd (snd t123))))
+   \<or> (\<exists>!t123. Trans X
+                = Dpt (enat (entry M' 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M' 1 j0')) (fst (snd t123)))
+            \<and> Trans M' = Dpt (enat (entry M' 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M' 1 j0')) (snd (snd t123))))"
+    by blast
+  thus ?thesis
+  proof
+    assume "\<exists>!t123. Trans X
+                = Dpt (enat (entry M' 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M' 1 j1')) (fst (snd t123)))
+            \<and> Trans M' = Dpt (enat (entry M' 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M' 1 j1')) (snd (snd t123)))"
+    then obtain t123 where
+      "Trans X = Dpt (enat (entry M' 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M' 1 j1')) (fst (snd t123)))
+       \<and> Trans M' = Dpt (enat (entry M' 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M' 1 j1')) (snd (snd t123)))"
+      by (blast dest: ex1_implies_ex)
+    thus ?thesis by blast
+  next
+    assume "\<exists>!t123. Trans X
+                = Dpt (enat (entry M' 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M' 1 j0')) (fst (snd t123)))
+            \<and> Trans M' = Dpt (enat (entry M' 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M' 1 j0')) (snd (snd t123)))"
+    then obtain t123 where
+      "Trans X = Dpt (enat (entry M' 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M' 1 j0')) (fst (snd t123)))
+       \<and> Trans M' = Dpt (enat (entry M' 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry M' 1 j0')) (snd (snd t123)))"
+      by (blast dest: ex1_implies_ex)
+    thus ?thesis by blast
+  qed
+qed
+
+text \<open>§8.5 SURGERY sub-fact (A.shape) — the P-decomposition direction.  If the
+  last column's row-0 PARENT lies strictly past the trunk (\<open>parent M' 0 (Lng M'-1)
+  > TrMax M'\<close>, i.e. it attaches inside a BRANCH, not the trunk), then the last
+  column is NOT the first node of the last branch (\<open>j\<^sub>1' \<noteq> j\<^sub>1\<close>).  Mechanism: every
+  branch first node has its row-0 parent in the trunk
+  (@{thm [source] m_6_4_FirstNodes_TrMax_Joints}: \<open>Joints M' ! J \<le> TrMax M'\<close>, and
+  \<open>Joints M' ! J = parent M' 0 (FirstNodes M' ! J)\<close> by @{thm [source] Joints_nth});
+  so if the last column \<open>Lng M'-1\<close> WERE that first node \<open>j\<^sub>1'\<close>, its parent would be
+  \<open>\<le> TrMax M'\<close>, contradicting \<open>par\<close>.  This is the exact (A)-characterisation:
+  empirically \<open>j\<^sub>1' \<noteq> j\<^sub>1 \<longleftrightarrow> parent M' 0 (Lng M'-1) > TrMax M'\<close> (python/probeC,
+  148/148), so it feeds @{thm [source] m_8_5_deepen_step}'s \<open>j1ne\<close> hypothesis.\<close>
+
+lemma m_8_5_appended_col_j1ne:
+  fixes M' :: pairseq
+  assumes MP: "M' \<in> PT_PS" and Brne: "Br M' \<noteq> []"
+    and par: "parent M' 0 (Lng M' - 1) > TrMax M'"
+  shows "FirstNodes M' ! (Lng (Br M') - 1) \<noteq> Lng M' - 1"
+proof
+  assume eq: "FirstNodes M' ! (Lng (Br M') - 1) = Lng M' - 1"
+  have J1lt: "Lng (Br M') - 1 < Lng (Br M')" using Brne by (cases "Br M'") auto
+  have jle: "Joints M' ! (Lng (Br M') - 1) \<le> TrMax M'"
+    using m_6_4_FirstNodes_TrMax_Joints[OF MP J1lt] by simp
+  have jpar: "Joints M' ! (Lng (Br M') - 1)
+                = parent M' 0 (FirstNodes M' ! (Lng (Br M') - 1))"
+    using J1lt by (simp add: Joints_nth)
+  have "parent M' 0 (Lng M' - 1) \<le> TrMax M'" using jle jpar eq by simp
+  thus False using par by simp
+qed
+
+text \<open>§8.5 SURGERY — the per-column DEEPEN step packaged from the geometric
+  (A)-characterisation.  Combines @{thm [source] m_8_5_appended_col_j1ne} (the last
+  column attaches inside a branch \<Longrightarrow> \<open>j\<^sub>1' \<noteq> j\<^sub>1\<close>) with
+  @{thm [source] m_8_5_deepen_step} (keystone collapse) into a single drop-in: for a
+  reduced standard host \<open>X \<frown> [col]\<close> whose appended column's row-0 parent is past the
+  trunk, the §8.2 keystone four-way collapses to the two DEEPEN cases — the trailing
+  principal keeps its head \<open>h\<close>, only its subtree changes \<open>a \<rightarrow> b\<close>, with a common
+  prefix body \<open>t\<close>.  This is the SHAPE half of the surgery spine-descent; the residual
+  is the VALUE step \<open>a \<rightarrow> b\<close> (sub-fact B) and the geometric input \<open>par\<close>.\<close>
+
+lemma m_8_5_appended_col_deepen:
+  fixes X :: pairseq and col :: "nat \<times> nat"
+  defines "M' \<equiv> X @ [col]"
+  assumes Xne: "0 < Lng X"
+    and MR: "M' \<in> RT_PS" and MP: "M' \<in> PT_PS"
+    and Brne: "Br M' \<noteq> []" and j1gt: "Lng M' - 1 > 1"
+    and par: "parent M' 0 (Lng M' - 1) > TrMax M'"
+  shows "\<exists>t h a b.
+       (h = entry M' 1 (FirstNodes M' ! (Lng (Br M') - 1))
+          \<or> h = entry M' 1 (Joints M' ! (Lng (Br M') - 1)))
+       \<and> Trans X = Dpt (enat (entry M' 1 0)) (t +\<^sub>B Dpt (enat h) a)
+       \<and> Trans M' = Dpt (enat (entry M' 1 0)) (t +\<^sub>B Dpt (enat h) b)"
+proof -
+  have j1ne: "FirstNodes M' ! (Lng (Br M') - 1) \<noteq> Lng M' - 1"
+    by (rule m_8_5_appended_col_j1ne[OF MP Brne par])
+  show ?thesis
+    using m_8_5_deepen_step[OF Xne MR[unfolded M'_def] MP[unfolded M'_def]
+            Brne[unfolded M'_def] j1gt[unfolded M'_def] j1ne[unfolded M'_def]]
+    unfolding M'_def .
+qed
+
+text \<open>§8.5 SURGERY — VALUE step (B) precise residual (python/_probeVal, 26/26
+  classified, 0 OTHER).  The SHAPE half is now green (@{thm [source]
+  m_8_5_deepen_step} / @{thm [source] m_8_5_appended_col_deepen}): each appended
+  column keeps the prefix body \<open>t\<close> and trailing head \<open>h\<close>, changing only the trailing
+  subtree \<open>a \<rightarrow> b\<close>.  The VALUE \<open>b = f(a,col)\<close> is NOT a flat formula — it is the SAME
+  keystone append-or-deepen applied RECURSIVELY to \<open>a\<close> at its OWN trailing position:
+    • APPEND base (\<open>a\<close>'s trailing slot is a leaf): \<open>b = a +\<^sub>B D\<^bsub>v-1\<^esub> 0\<^sub>B\<close>;
+    • DEEPEN otherwise: \<open>b = a\<close> with its LAST principal's subtree recursively
+      transformed by the same rule (one spine level deeper).
+  Self-similarity (the irreducible core).  By the §7.3 \<open>Trans\<close>/\<open>Mark\<close> recursion
+  (monoT branch: \<open>Trans M' = unflatBT(s \<frown> flat c2 \<frown> b'),  c2 = D\<^bsub>v\<^esub>(t2 +\<^sub>B D\<^bsub>e1j1\<^esub> 0\<^sub>B)\<close>
+  substituted for the marked subterm \<open>c1 = Mark (Pred M') jm1\<close>), the trailing subtree
+  of \<open>bd q\<close> (\<open>= bpHeadT (Mark (M[q]) jm1)\<close>) equals \<open>bd (q-1)\<close> (python: \<open>P0 = bd(q-1)\<close>
+  55/56).  So the column-walk of block \<open>B\<^bsub>q\<^esub>\<close> acting on \<open>bd q\<close>'s trailing subtree IS
+  the surgery at \<open>q-1\<close> acting on the inner slice \<open>Y\<^bsub>q-1\<^esub> = seg (M[q-1]) jm1 (\<dots>)\<close>
+  one spine level down.  Hence surgery(q) reduces to surgery(q-1) — the OUTER
+  induction on q (@{thm [source] funpow_closed_of_step_from2} supplies the q-1 body
+  IH); the naive m-induction on columns is circular (its m=0 base = body(q-1)).
+  CLOSING LEMMA NEEDED (does not exist in the base): an inner-slice / subtree-readback
+  BRIDGE \<open>a = bpHeadT (Trans Z) \<and> b = bpHeadT (Trans (Z \<frown> [col']))\<close> identifying the
+  deepen-case trailing subtree \<open>a\<close> with \<open>Trans\<close> of the marked subterm's own pairseq
+  \<open>Z\<close> (= \<open>Y\<^bsub>q-1\<^esub>\<close> at the top level), so the keystone applies recursively at \<open>Z\<close>.
+  With that bridge, @{thm [source] m_8_5_deepen_step} (shape) + the bridge (value) +
+  the outer-q induction assemble the \<open>surgery\<close> hypothesis of @{thm [source]
+  m_8_5_markstep_of_surgery}, hence the ladder \<Rightarrow> \<open>m_8_5_TransCondV_descend\<close>.
+  SECONDARY residual — the geometric input \<open>par: parent M' 0 (Lng M'-1) > TrMax M'\<close>
+  feeding @{thm [source] m_8_5_appended_col_deepen} (148/148 empirically): closable
+  but laborious from the oper-append trunk machinery (@{thm [source]
+  TrMax_seg_oper_d1pos_eq}, @{thm [source] oper_parent1_readback}); fully closes
+  sub-fact (A) = deepen-only.\<close>
+
 end
