@@ -55,7 +55,7 @@
     - 🚨 補題（条件 (III) か (IV) の下での各種 scb分解）
     - ✅ 補題（条件 (III) か (IV) の下での基本列の基本性質）〔`m_8_4_oper_basic_part1`(= `p_8_4_oper_basic`)〕
   - 🚨 §8.5 条件 (V) の下での展開規則
-    - 🚨🤖 命題（条件 (V) の下での $\textrm{Trans}$ と基本列の交換関係）〔残=marking-nesting surgery {base2,step2}〕
+    - 🚨 命題（条件 (V) の下での $\textrm{Trans}$ と基本列の交換関係）〔残=marking-nesting surgery {base2,step2}〕
     - 🚨 補題（条件 (V) の下での $\textrm{Joints}$ と $\textrm{FirstNodes}$ と $t_2$ の基本性質）
     - 🚨 補題（条件 (V) の下での各種 scb分解）〔def 内部記号露出要〕
   - 🚨 §8.6 条件 (VI) の下での展開規則
@@ -81,5 +81,5 @@
       - ✅ 4-case dispatcher〔`m_8_7_OT_keystone_step`、step→{det,[Buc1]}〕
       - ✅ wid/det〔=§8.2 widH、`m_8_2_widH`/`m_8_2_det`〕
       - ✅ 帰納 infra〔`m_8_7_Pred_ST_PS`/`m_8_7_Trans_OT_step_keystone`〕
-      - 🚨🤖 R2 dstep〔残=per-case wiring〕
-      - 📘 R3 newOT/gbt〔OT-recursive scb or 新[Buc1] OT2、既存`buc1_*`不足〕
+      - 🚨 R2 dstep〔残=cases2-4 head+equal-head tail〕
+      - 🚨 R3 newOT/gbt〔OT-recursive scb=core A(step2)と entangle〕
