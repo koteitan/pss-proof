@@ -34,8 +34,8 @@
     - ✅ 補題（強単項性の切片への遺伝性）〔`m_8_2_strongmono_slice`〕
     - ✅ 補題（部分表現の単項成分と $\textrm{Pred}$ の関係）(§8.2 keystone)〔`m_8_2_keystone` = 無条件 `p_8_2_subexpr_component_Pred`〕
     - ✅ 補題（強単項性の下での部分表現の単項成分の基本性質）〔`m_8_2_subexpr_component_strongmono_uncond`〕
-    - 🚨 補題（条件 (V) の下での右端の親の基本性質）
-    - 🚨 補題（条件 (V) の下での終切片と $\textrm{Trans}$ の関係）
+    - ✅ 補題（条件 (V) の下での右端の親の基本性質）〔`m_8_2_condV_rightmost_parent`〕
+    - 🚨 補題（条件 (V) の下での終切片と $\textrm{Trans}$ の関係）〔§8.5 surgery 待ち。組立 recipe 既知〕
   - 🚨 §8.3 条件 (II) の下での展開規則
     - 🚨 命題（条件 (II) の下での $\textrm{Trans}$ と基本列の交換関係）
       - ✅ 降下⟸exch+OT〔`m_8_3_TransCondII_oper_descend_engine`〕
@@ -60,8 +60,9 @@
       - 🚨 surgery spine-descent〔§8 master key〕
         - ✅ (A) deepen SHAPE〔`m_8_5_appended_col_deepen` 他〕
         - 🚨 (B) value〔§8 irreducible core〕
-          - ✅ readback+compose scaffolding〔`m_8_5_surgery_spine_compose`/`_Mark_slice_block_readback`/`_transT2_readback`〕
-          - 🚨 per-column value step〔`P m→P(Suc m)`。concrete P+inner Trans再帰、dedicated要〕
+          - ✅ value-pinning〔spineLeaf witness+`m_8_5_surgery_spine_step`、5パスの壁突破〕
+          - ✅ outer-q skeleton+commutation〔`m_8_5_surgery_of_pred_geom_endpoint`/`_scbSubst_addBT_commute`〕
+          - 🚨 endpoint m帰納 wire + geom full-prefix Mark-keystone
     - ✅ 補題（条件 (V) の下での $\textrm{Joints}$ と $\textrm{FirstNodes}$ と $t_2$ の基本性質）〔`m_8_5_Joints_FirstNodes_basic` parts(1)(2)〕
     - 🚨 補題（条件 (V) の下での各種 scb分解）〔def 内部記号露出要〕
   - 🚨 §8.6 条件 (VI) の下での展開規則
@@ -89,5 +90,5 @@
       - ✅ 4-case dispatcher〔`m_8_7_OT_keystone_step`、step→{det,[Buc1]}〕
       - ✅ wid/det〔=§8.2 widH、`m_8_2_widH`/`m_8_2_det`〕
       - ✅ 帰納 infra〔`m_8_7_Pred_ST_PS`/`m_8_7_Trans_OT_step_keystone`〕
-      - 🚨 R2 dstep〔残=equal-head tail+case2。cases3/4 還元済〕
+      - 🚨 R2 dstep〔cases1-4 → equal-head tail へ還元(`m_8_7_dstep_wholebody`)。残=tail(=§8.5 surgery)〕
       - 🚨 R3 newOT/gbt〔OT-recursive scb=core A(step2)と entangle〕
