@@ -3018,12 +3018,17 @@ text \<open>§8.5 surgery CHECKPOINT — (A) deepen-classification geom is GREEN
   ALL step2-route NON-surgery residuals are now GREEN: \<open>inj\<close>
   (@{thm [source] m_8_5_OW_inj_of_scb}), BASEPOINT (\<open>m_8_5_basepoint\<close>),
   brick B (\<open>m_8_5_brickB\<close>), ITERSCB (\<open>m_8_5_iterscb\<close>) — feeding \<open>wrap\<close> via
-  @{thm [source] m_8_5_wrap_of_iterscb}.  The SOLE remaining piece of §8.5 surgery
-  is the deep kernel: the slice-Y surgery \<open>Trans (Y \<frown> B) = D\<^bsub>u\<^esub>(F (bpHeadT (Trans Y)))\<close>
-  (the outer-q JOINT induction / slice-Y depth-recurrence).  Empirically mapped as a
-  multi-session push: \<open>gpar\<close> (the surgery regime) \<Longleftrightarrow> the FULL-iterate endpoint is
-  FALSE, so the constant-C one-wrap step does NOT close on-regime; the endpoint holds
-  only in the slice-Y form.  Kernel PAUSED, cleanly isolated.\<close>
+  @{thm [source] m_8_5_wrap_of_iterscb}.  The remaining piece of §8.5 surgery is the
+  slice-Y surgery \<open>Trans (Y \<frown> B) = D\<^bsub>u\<^esub>(F (bpHeadT (Trans Y)))\<close>, Y the marked-basepoint
+  slice.  This looked like an unbounded depth-recurrence at the FULL iterate (gpar
+  \<Longleftrightarrow> full-iterate endpoint FALSE), but Red COLLAPSES the q-tower: \<open>Red (Y \<frown> B) = Red Y \<frown> B''\<close>
+  (lemmas \<open>red_slice_extend\<close> + \<open>seg_append_prefix\<close>, below) with \<open>Red Y\<close>, \<open>B''\<close>
+  q-invariant + standard, so the surgery reduces (\<open>m_8_5_slice_surgery_skeleton\<close>, below)
+  to a BOUNDED surgery on the small reduced slice \<open>Red Y \<frown> B''\<close> — a FINITE well-founded
+  walk (spineLeaf (Trans (Red Y)) = 0, so the value-step bottoms out: ONE condI sibling-append
+  + (w-1) deepens, w-general).  The LONE remaining brick is the condI-append spine-step
+  (keystone cases 1/2, the append-analog of @{thm [source] m_8_5_appended_col_deepen}),
+  composed via @{thm [source] m_8_5_surgery_spine_compose} with the green deepen-step.\<close>
 
 
 text \<open>§8.5 SURGERY cinv — TRUNK INVARIANCE of the oper-iterate (obstacle #1).  For the
@@ -3206,5 +3211,136 @@ proof -
     by (rule scb_kind1_of_suffix[OF dfreep scbp rnp])
   thus ?thesis using ceq c1form by simp
 qed
+
+
+text \<open>§8.5 KERNEL enabler (1) — RED-APPEND COMPAT, general form.  Extending a slice's
+  RIGHT endpoint only APPENDS to its \<open>Red\<close>: the front \<open>Red (seg N a c)\<close> is preserved
+  as a PREFIX of \<open>Red (seg N a b)\<close> (\<open>c \<le> b\<close>).  Iterates the GREEN per-column peeling
+  @{thm [source] m_7_4_Pred_Red_slice} (\<open>Pred (Red (seg N a j)) = Red (seg N a (j-1))\<close>)
+  up the appended columns.  Instantiated at \<open>N = M[Suc q]\<close>, \<open>a = jm1\<close>,
+  \<open>c = Lng (M[q]) - 1\<close>, \<open>b = Lng (M[Suc q]) - 1\<close> (with the prefix-slice identity
+  \<open>seg (M[Suc q]) jm1 c = seg (M[q]) jm1 c = Y\<close>) this is the Red-collapse
+  \<open>Red (Y \<frown> B) = Red Y \<frown> B''\<close> that turns the §8.5 surgery's unbounded q-tower into a
+  bounded recursion on the standard reduced slice — the kernel's key enabler.\<close>
+
+lemma red_slice_extend:
+  fixes N :: pairseq and a c :: nat
+  shows "a \<le> c \<Longrightarrow> c \<le> b \<Longrightarrow> b < Lng N \<Longrightarrow>
+         \<exists>tail. Red (seg N a b) = Red (seg N a c) @ tail"
+proof (induct b)
+  case 0
+  have "c = 0" using "0.prems"(2) by simp
+  thus ?case by (intro exI[where x="[]"]) simp
+next
+  case (Suc b)
+  show ?case
+  proof (cases "c = Suc b")
+    case True
+    thus ?thesis by (intro exI[where x="[]"]) simp
+  next
+    case False
+    have ac: "a \<le> c" by (rule Suc.prems(1))
+    have cb: "c \<le> b" using Suc.prems(2) False by simp
+    have bN: "b < Lng N" using Suc.prems(3) by simp
+    obtain tail where IH: "Red (seg N a b) = Red (seg N a c) @ tail"
+      using Suc.hyps[OF ac cb bN] by blast
+    have aSb: "a < Suc b" using ac cb by simp
+    have step: "Pred (Red (seg N a (Suc b))) = Red (seg N a b)"
+      using m_7_4_Pred_Red_slice[OF aSb] by simp
+    have pref: "\<exists>e. Red (seg N a (Suc b)) = Red (seg N a b) @ e"
+    proof (cases "Lng (Red (seg N a (Suc b))) \<le> 1")
+      case True
+      hence "Pred (Red (seg N a (Suc b))) = Red (seg N a (Suc b))" by (simp add: Pred_def)
+      hence "Red (seg N a (Suc b)) = Red (seg N a b)" using step by simp
+      thus ?thesis by (intro exI[where x="[]"]) simp
+    next
+      case False
+      hence pbl: "Pred (Red (seg N a (Suc b))) = butlast (Red (seg N a (Suc b)))"
+        by (simp add: Pred_def)
+      have ne: "Red (seg N a (Suc b)) \<noteq> []" using False by auto
+      have "Red (seg N a (Suc b))
+              = butlast (Red (seg N a (Suc b))) @ [last (Red (seg N a (Suc b)))]"
+        by (rule append_butlast_last_id[symmetric, OF ne])
+      also have "\<dots> = Red (seg N a b) @ [last (Red (seg N a (Suc b)))]"
+        using pbl step by simp
+      finally show ?thesis by blast
+    qed
+    obtain e where e: "Red (seg N a (Suc b)) = Red (seg N a b) @ e" using pref by blast
+    have "Red (seg N a (Suc b)) = Red (seg N a c) @ (tail @ e)" using e IH by simp
+    thus ?thesis by blast
+  qed
+qed
+
+
+text \<open>§8.5 KERNEL — ASSEMBLY SKELETON (STEP A).  Derives the slice-Y surgery
+  \<open>Trans (Y \<frown> B) = D\<^bsub>e10\<^esub>(t\<^sub>2 +\<^sub>B D\<^bsub>vm1\<^esub> (bpHeadT (Trans Y)))\<close> from the two crisp
+  residuals as NAMED hyps — (1) the Red-append compat \<open>rcompat\<close> (= @{thm [source]
+  red_slice_extend} instantiated: \<open>Red (Y\<frown>B) = Red Y \<frown> B''\<close>) and (2) the reduced-slice
+  surgery \<open>rsurg\<close> on the bounded standard \<open>Red Y \<frown> B''\<close> — via Trans Red-invariance
+  @{thm [source] m_7_3_Trans_Red} (\<open>Trans X = Trans (Red X)\<close>, green).  Red collapses the
+  q-tower (rcompat), so the surgery on the raw slice = the surgery on the bounded
+  standard reduced slice, lifted back by Trans-Red-invariance.  This packages the
+  FINITE kernel structure as green, leaving exactly (2) (and the markstep + outer-q
+  lift) as the residual.\<close>
+
+lemma m_8_5_slice_surgery_skeleton:
+  fixes Y B B'' :: pairseq and t2 :: BT and e10 vm1 :: nat
+  assumes rcompat: "Red (Y @ B) = Red Y @ B''"
+    and rsurg: "Trans (Red Y @ B'')
+                  = Dpt (enat e10) (t2 +\<^sub>B Dpt (enat vm1) (bpHeadT (Trans (Red Y))))"
+    and RRYB: "Red (Y @ B) \<in> RT_PS"
+    and RRY: "Red Y \<in> RT_PS"
+  shows "Trans (Y @ B) = Dpt (enat e10) (t2 +\<^sub>B Dpt (enat vm1) (bpHeadT (Trans Y)))"
+proof -
+  have ti: "Trans (Y @ B) = Trans (Red (Y @ B))" by (rule m_7_3_Trans_Red[OF RRYB])
+  have tY: "Trans Y = Trans (Red Y)" by (rule m_7_3_Trans_Red[OF RRY])
+  have "Trans (Y @ B) = Trans (Red Y @ B'')" using ti rcompat by simp
+  also have "\<dots> = Dpt (enat e10) (t2 +\<^sub>B Dpt (enat vm1) (bpHeadT (Trans (Red Y))))"
+    by (rule rsurg)
+  also have "\<dots> = Dpt (enat e10) (t2 +\<^sub>B Dpt (enat vm1) (bpHeadT (Trans Y)))"
+    using tY by simp
+  finally show ?thesis .
+qed
+
+
+text \<open>§8.5 KERNEL wiring (1') — PREFIX-SLICE identity (general).  A slice whose right
+  endpoint lies inside the shared prefix ignores the append: \<open>seg (X \<frown> Z) a b = seg X a b\<close>
+  when \<open>b < Lng X\<close>.  Instantiated at \<open>X = M[q]\<close>, \<open>Z = B'\<close> (\<open>M[Suc q] = M[q] \<frown> B'\<close> by
+  @{thm [source] m_8_4_oper_Suc_append}), \<open>a = jm1\<close>, \<open>b = Lng (M[q]) - 1\<close>, this gives
+  \<open>seg (M[Suc q]) jm1 (Lng (M[q]) - 1) = seg (M[q]) jm1 (Lng (M[q]) - 1) = Y\<close> — the
+  identity that turns @{thm [source] red_slice_extend} on \<open>M[Suc q]\<close> into the
+  \<open>rcompat\<close> hyp \<open>Red (Y \<frown> B) = Red Y \<frown> B''\<close> of @{thm [source] m_8_5_slice_surgery_skeleton}.\<close>
+
+lemma seg_append_prefix:
+  assumes bX: "b < Lng X"
+  shows "seg (X @ Z) a b = seg X a b"
+  unfolding seg_def
+proof (rule map_cong[OF refl])
+  fix j assume "j \<in> set [a..<Suc b]"
+  hence "j < Lng X" using bX by auto
+  thus "(X @ Z) ! j = X ! j" by (simp add: nth_append)
+qed
+
+
+text \<open>§8.5 KERNEL (2) helper — transC2 CLOSED FORM for the condition-(I) column.  The
+  condI/III/V branch of @{const transC2} is SHARED, so the same closed form as
+  @{thm [source] m_8_5_transC2_condV} holds under \<open>transCondI\<close>:
+  \<open>transC2 M = D\<^bsub>v\<^esub>(t\<^sub>2 +\<^sub>B D\<^bsub>M\<^sub>1\<^sub>,\<^sub>j\<^sub>1\<^esub> 0\<^sub>B)\<close>.  For a condI column \<open>entry M 1 (Lng M-1) = 0\<close>,
+  so this is the SIBLING-APPEND block \<open>D\<^bsub>v\<^esub>(t\<^sub>2 +\<^sub>B D\<^bsub>0\<^esub> 0\<^sub>B)\<close> — the value grafted by the
+  condI-append spine-step of the reduced-slice walk (the per-column step that grows the
+  leaf-0 spine by one sibling).\<close>
+
+lemma m_8_5_transC2_condI:
+  fixes M :: pairseq
+  assumes "transCondI M"
+  shows "transC2 M
+       = Dpt (transV M) (transT2 M +\<^sub>B Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B)"
+  using assms by (simp add: transC2_def Let_def transJ1_def)
+
+text \<open>§8.5 kernel batch checkpoint — Red-collapse lemmas green: \<open>red_slice_extend\<close>,
+  \<open>seg_append_prefix\<close>, \<open>m_8_5_slice_surgery_skeleton\<close>, \<open>m_8_5_transC2_condI\<close>.  The §8.5
+  surgery kernel is reduced to ONE bounded brick: the condI-append spine-step (keystone
+  cases 1/2 append-analog of the deepen-step), composed via \<open>m_8_5_surgery_spine_compose\<close>
+  with the green deepen-step.\<close>
 
 end
