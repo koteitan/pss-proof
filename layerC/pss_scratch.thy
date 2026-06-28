@@ -950,4 +950,119 @@ text \<open>§8.5 SURGERY — VALUE step (B) precise residual (python/_probeVal,
   TrMax_seg_oper_d1pos_eq}, @{thm [source] oper_parent1_readback}); fully closes
   sub-fact (A) = deepen-only.\<close>
 
+
+text \<open>§8.5 BRIDGE brick (1) — the COMMON-PREFIX body readback.  The deepen-case
+  common prefix \<open>t\<close> of the surgery walk (the \<open>t\<^sub>2\<close> of the period context
+  \<open>C x = t\<^sub>2 +\<^sub>B D\<^bsub>v-1\<^esub> x\<close>) reads back as \<open>bpHeadT (Trans Z')\<close> of the inner slice
+  \<open>Z' = seg (Pred M) (transJm1 M) (Lng (Pred M) - 1)\<close>.  This is immediate from the
+  §7.4 keystone @{thm [source] m_7_4_Mark_Trans_repr} applied to \<open>Pred M\<close> at the
+  basepoint \<open>transJm1 M\<close> (\<open>transT2 M = bpHeadT (transC1 M)\<close>,
+  \<open>transC1 M = Mark (Pred M) (transJm1 M)\<close>).  It converts the producer's \<open>t\<^sub>2\<close>
+  (defined as a \<open>Mark\<close>-head) into a \<open>Trans\<close>-of-slice head, the first half of the
+  subtree-readback BRIDGE.\<close>
+
+lemma m_8_5_transT2_readback:
+  fixes M :: pairseq
+  assumes mk: "(Pred M, transJm1 M) \<in> Marked"
+    and pr: "Pred M \<in> RT_PS"
+    and rng: "transJm1 M < Lng (Pred M) - 1"
+  shows "transT2 M = bpHeadT (Trans (seg (Pred M) (transJm1 M) (Lng (Pred M) - 1)))"
+proof -
+  have c1: "transC1 M = Mark (Pred M) (transJm1 M)" by (simp add: transC1_def)
+  have "transT2 M = bpHeadT (Mark (Pred M) (transJm1 M))"
+    using c1 by (simp add: transT2_def)
+  also have "Mark (Pred M) (transJm1 M)
+               = Trans (seg (Pred M) (transJm1 M) (Lng (Pred M) - 1))"
+    by (rule m_7_4_Mark_Trans_repr[OF mk pr rng])
+  finally show ?thesis .
+qed
+
+
+text \<open>§8.5 BRIDGE brick (2) — the PARTIAL-ITERATE slice readback (M-agnostic).
+  The surgery walk forms the partial-block hosts \<open>Y \<frown> take m B\<close>
+  (\<open>Y = seg (M[q]) jm1 (Lng (M[q]) - 1)\<close>); each one reads back as \<open>Mark\<close> of the
+  partial iterate \<open>X \<frown> B'\<close> (\<open>X = M[q]\<close>, \<open>B' = take m B\<close>).  This is the
+  M-agnostic generalisation of @{thm [source] Mark_iterate_slice_append} (which is
+  the special case \<open>X \<frown> B' = M[Suc p]\<close> a FULL block): for ANY split \<open>X \<frown> B'\<close> with
+  basepoint \<open>jm1 \<le> Lng X\<close>, @{thm [source] m_7_4_Mark_Trans_repr} on \<open>X \<frown> B'\<close>
+  combined with the slice-extension @{thm [source] seg_to_last_append}
+  (\<open>seg (X \<frown> B') jm1 end = seg X jm1 (Lng X - 1) \<frown> B'\<close>) gives
+  \<open>Mark (X \<frown> B') jm1 = Trans (seg X jm1 (Lng X - 1) \<frown> B')\<close>.  This is what turns
+  every \<open>Trans (slice \<frown> columns)\<close> in the walk into \<open>Mark\<close> of a partial iterate —
+  the necessary first move of the subtree-readback BRIDGE (it identifies the inner
+  \<open>Z = seg X jm1 (Lng X - 1) \<frown> B'\<close> with the \<open>Mark\<close> of \<open>X \<frown> B'\<close>).\<close>
+
+lemma m_8_5_Mark_slice_block_readback:
+  fixes X B :: pairseq and jm1 :: nat
+  assumes mk: "(X @ B, jm1) \<in> Marked"
+    and MR: "X @ B \<in> RT_PS"
+    and rng: "jm1 < Lng (X @ B) - 1"
+    and Xne: "0 < Lng X"
+    and jle: "jm1 \<le> Lng X"
+  shows "Mark (X @ B) jm1 = Trans (seg X jm1 (Lng X - 1) @ B)"
+proof -
+  have "Mark (X @ B) jm1 = Trans (seg (X @ B) jm1 (Lng (X @ B) - 1))"
+    by (rule m_7_4_Mark_Trans_repr[OF mk MR rng])
+  also have "seg (X @ B) jm1 (Lng (X @ B) - 1) = seg X jm1 (Lng X - 1) @ B"
+    by (rule seg_to_last_append[OF Xne jle])
+  finally show ?thesis .
+qed
+
+
+text \<open>§8.5 BRIDGE — the |B|-COMPOSITION spine-walk (M-agnostic, the master-key
+  structural skeleton).  Composes the per-column DEEPEN steps over the whole
+  appended block \<open>B\<close> into the block-level spine identity.  The SHAPE half
+  (@{thm [source] m_8_5_deepen_step} / @{thm [source] m_8_5_appended_col_deepen})
+  fixes the prefix-and-head form \<open>Trans (Y \<frown> take m B) = D\<^bsub>e10\<^esub>(t\<^sub>2 +\<^sub>B D\<^bsub>vm1\<^esub> (P m))\<close>;
+  the per-column VALUE step \<open>step\<close> (the subtree-readback BRIDGE, supplying
+  \<open>P (Suc m)\<close> from \<open>P m\<close>) advances the trailing subtree one column.  This lemma
+  is the clean \<open>take m B\<close>-induction that walks the spine from \<open>m = 0\<close> (\<open>base\<close>:
+  \<open>Trans Y = D\<^bsub>e10\<^esub>(t\<^sub>2 +\<^sub>B D\<^bsub>vm1\<^esub> (P 0))\<close>, \<open>P 0 = bd (q-1)\<close>) to \<open>m = Lng B\<close>,
+  giving \<open>Trans (Y \<frown> B) = D\<^bsub>e10\<^esub>(t\<^sub>2 +\<^sub>B D\<^bsub>vm1\<^esub> (P (Lng B)))\<close>.  The surgery
+  \<open>Trans (Y \<frown> B) = D\<^bsub>e10\<^esub>(t\<^sub>2 +\<^sub>B D\<^bsub>vm1\<^esub> (bpHeadT (Trans Y)))\<close> is then exactly this
+  with the endpoint identity \<open>P (Lng B) = bpHeadT (Trans Y)\<close> (= the bridge at
+  \<open>m = Lng B\<close> composed with the slice-extension \<open>Y\<^sub>q = Y\<^bsub>q-1\<^esub> \<frown> B\<^bsub>q-1\<^esub>\<close>, supplied by
+  the OUTER-q induction).  Discharges the |B|-composition; leaves exactly the
+  per-column \<open>step\<close> (the irreducible keystone-deepen matching) and the endpoint.\<close>
+
+lemma m_8_5_surgery_spine_compose:
+  fixes Y B :: pairseq and t2 :: BT and e10 vm1 :: nat and P :: "nat \<Rightarrow> BT"
+  assumes base: "Trans Y = Dpt (enat e10) (t2 +\<^sub>B Dpt (enat vm1) (P 0))"
+    and step: "\<And>m. m < Lng B
+                 \<Longrightarrow> Trans (Y @ take m B) = Dpt (enat e10) (t2 +\<^sub>B Dpt (enat vm1) (P m))
+                 \<Longrightarrow> Trans (Y @ take (Suc m) B)
+                       = Dpt (enat e10) (t2 +\<^sub>B Dpt (enat vm1) (P (Suc m)))"
+  shows "Trans (Y @ B) = Dpt (enat e10) (t2 +\<^sub>B Dpt (enat vm1) (P (Lng B)))"
+proof -
+  have gen: "\<And>m. m \<le> Lng B
+               \<longrightarrow> Trans (Y @ take m B) = Dpt (enat e10) (t2 +\<^sub>B Dpt (enat vm1) (P m))"
+  proof -
+    fix m
+    show "m \<le> Lng B
+            \<longrightarrow> Trans (Y @ take m B) = Dpt (enat e10) (t2 +\<^sub>B Dpt (enat vm1) (P m))"
+    proof (induct m)
+      case 0
+      have "Y @ take 0 B = Y" by simp
+      thus ?case using base by simp
+    next
+      case (Suc m)
+      show ?case
+      proof
+        assume sle: "Suc m \<le> Lng B"
+        have mlt: "m < Lng B" using sle by simp
+        have mle: "m \<le> Lng B" using sle by simp
+        have ih: "Trans (Y @ take m B) = Dpt (enat e10) (t2 +\<^sub>B Dpt (enat vm1) (P m))"
+          using Suc.hyps mle by simp
+        show "Trans (Y @ take (Suc m) B)
+                = Dpt (enat e10) (t2 +\<^sub>B Dpt (enat vm1) (P (Suc m)))"
+          by (rule step[OF mlt ih])
+      qed
+    qed
+  qed
+  have "Trans (Y @ take (Lng B) B)
+          = Dpt (enat e10) (t2 +\<^sub>B Dpt (enat vm1) (P (Lng B)))"
+    using gen[of "Lng B"] by simp
+  thus ?thesis by simp
+qed
+
 end
