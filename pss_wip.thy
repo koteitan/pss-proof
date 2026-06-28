@@ -38070,6 +38070,128 @@ proof -
 qed
 
 
+text \<open>§8.4/§8.5 marking-nesting \<open>n = 1\<close> BASE (condA-free).  The \<open>scb\<close>-decomposition
+  of \<open>Trans (M[1]) = Trans (Pred M) = transT1 M\<close> at its marked principal
+  \<open>transC1 M = D\<^bsub>u\<^esub>(transT2 M)\<close> (\<open>u = entry M 1 (transJm1 M)\<close>, the marked head
+  index).  This is the \<open>OW\<close>-wrap base of the closed form: with \<open>OW x =
+  unflatBT (s\<^sub>1 \<frown> D\<^bsub>u\<^esub> # flat x \<frown> b\<^sub>1)\<close> it gives \<open>Trans (M[1]) = OW (transT2 M)\<close>.
+  Derivation reuses the single-principal reconstruction
+  (@{thm [source] transC1_single_principal} / @{thm [source] principal_reconstruct})
+  and the left-end head form (@{thm [source] Mark_leftend_form}) of the producer,
+  but needs NO case condition (it is the structural decomposition of the marked
+  parent, valid for every monotone \<open>t\<^sub>1 \<noteq> 0\<close> sequence).\<close>
+
+lemma m_8_5_base_scb:
+  fixes M :: pairseq
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS"
+    and J1pos: "transJ1 M > 0" and T1: "transT1 M \<noteq> 0\<^sub>B"
+  shows "\<exists>s\<^sub>1 b\<^sub>1.
+       scb_decomp (transT1 M) s\<^sub>1
+         (flatBT (Dpt (enat (entry M 1 (transJm1 M))) (transT2 M))) b\<^sub>1
+     \<and> Trans (M[1]) = unflatBT (s\<^sub>1 @ Dsym (enat (entry M 1 (transJm1 M)))
+                                    # flatBT (transT2 M) @ b\<^sub>1)"
+proof -
+  define jm1 where "jm1 = transJm1 M"
+  define u where "u = entry M 1 jm1"
+  define t2 where "t2 = transT2 M"
+  have MT: "M \<in> T_PS" using MP by (simp add: PT_PS_def)
+  have mono: "monoT M" using MP by (simp add: PT_PS_def)
+  have L: "1 < Lng M" using J1pos by (simp add: transJ1_def)
+  have hp: "hasParent M 0 (Lng M - 1)" by (rule monoT_hasParent0_last[OF MT mono L])
+  have t1ne: "Trans (Pred M) \<noteq> 0\<^sub>B" using T1 by (simp add: transT1_def)
+  have predRT: "Pred M \<in> RT_PS" by (rule Pred_RT_PS[OF MR])
+  \<comment> \<open>single-principal reconstruction of \<open>transC1 M\<close> (condA-free)\<close>
+  have pc1: "Lng (PB (transC1 M)) = 1" by (rule transC1_single_principal[OF MR MP J1pos T1])
+  have c1eq: "transC1 M = Dpt (transV M) t2"
+    using principal_reconstruct[OF pc1] by (simp add: transV_def transT2_def t2_def)
+  \<comment> \<open>\<open>transV M = enat u\<close> via the left-end head of \<open>Mark\<close>\<close>
+  have jm1eq: "jm1 = Adm M (parent M 0 (Lng M - 1))"
+    by (simp add: jm1_def transJm1_def transJ0_def transJ1_def)
+  have markedJ: "(Pred M, jm1) \<in> Marked"
+    using Marked_Pred_Adm[OF MT L hp] jm1eq by simp
+  have c1mk: "transC1 M = Mark (Pred M) jm1"
+    by (simp add: transC1_def jm1_def)
+  have jpos: "0 < Lng M - 1" using J1pos by (simp add: transJ1_def)
+  have hpp: "hasParent M 0 (Lng M - 1) \<and> parent M 0 (Lng M - 1) < Lng M - 1"
+    by (rule monoT_branch_hasParent[OF MT mono jpos order.refl])
+  have AdmLe: "Adm M (parent M 0 (Lng M - 1)) \<le> parent M 0 (Lng M - 1)"
+  proof (cases "adm M (parent M 0 (Lng M - 1))")
+    case True thus ?thesis by (simp add: Adm_def)
+  next
+    case False thus ?thesis using nadm_Adm_lt[OF False] by simp
+  qed
+  have jm1ltL: "jm1 < Lng M - 1" using AdmLe hpp jm1eq by linarith
+  have c1nz: "transC1 M \<noteq> 0\<^sub>B" using c1eq by simp
+  have lef: "Mark (Pred M) jm1 = 0\<^sub>B
+             \<or> (\<exists>t. Mark (Pred M) jm1 = Dpt (enat (entry (Pred M) 1 jm1)) t)"
+    using Mark_leftend_form markedJ predRT by blast
+  have headPred: "transV M = enat (entry (Pred M) 1 jm1)"
+  proof -
+    have mkne: "Mark (Pred M) jm1 \<noteq> 0\<^sub>B" using c1mk c1nz by simp
+    with lef obtain t where "Mark (Pred M) jm1 = Dpt (enat (entry (Pred M) 1 jm1)) t" by blast
+    hence "transC1 M = Dpt (enat (entry (Pred M) 1 jm1)) t" using c1mk by simp
+    thus ?thesis by (simp add: transV_def)
+  qed
+  have PredB: "Pred M = butlast M" using L by (simp add: Pred_def)
+  have entryPred: "entry (Pred M) 1 jm1 = entry M 1 jm1"
+    using jm1ltL by (simp add: PredB entry_def nth_butlast)
+  have transVu: "transV M = enat u" using headPred entryPred u_def by simp
+  have c1u: "transC1 M = Dpt (enat u) t2" using c1eq transVu by simp
+  \<comment> \<open>the marked scb-decomposition of \<open>transT1 M\<close> at \<open>transC1 M\<close>\<close>
+  have mbT: "(transT1 M, transC1 M) \<in> MarkedB"
+    using m_7_3_Trans_Mark_MarkedB[OF predRT markedJ] c1mk by (simp add: transT1_def)
+  obtain s\<^sub>1 b\<^sub>1 where dsb: "scb_decomp (transT1 M) s\<^sub>1 (flatBT (transC1 M)) b\<^sub>1"
+    using mbT unfolding MarkedB_def by auto
+  have dsbu: "scb_decomp (transT1 M) s\<^sub>1 (flatBT (Dpt (enat u) t2)) b\<^sub>1"
+    using dsb c1u by simp
+  \<comment> \<open>the flat-string identity \<open>Trans (M[1]) = OW (transT2 M)\<close>\<close>
+  have flatT1: "flatBT (transT1 M) = s\<^sub>1 @ flatBT (Dpt (enat u) t2) @ b\<^sub>1"
+    using dsbu by (simp add: scb_decomp_def)
+  have fc: "flatBT (Dpt (enat u) t2) = Dsym (enat u) # flatBT t2" by simp
+  have oper1: "M[1] = Pred M" by (rule m_8_4_oper1_eq_Pred[OF MT])
+  have transT1M: "Trans (M[1]) = transT1 M" using oper1 by (simp add: transT1_def)
+  have val: "Trans (M[1]) = unflatBT (s\<^sub>1 @ Dsym (enat u) # flatBT t2 @ b\<^sub>1)"
+  proof -
+    have "flatBT (transT1 M) = s\<^sub>1 @ Dsym (enat u) # flatBT t2 @ b\<^sub>1"
+      using flatT1 fc by simp
+    hence "transT1 M = unflatBT (s\<^sub>1 @ Dsym (enat u) # flatBT t2 @ b\<^sub>1)"
+      by (metis unflatBT_flat)
+    thus ?thesis using transT1M by simp
+  qed
+  show ?thesis
+    using dsbu val u_def jm1_def t2_def by (intro exI[of _ s\<^sub>1] exI[of _ b\<^sub>1]) simp
+qed
+
+
+text \<open>§8.4/§8.5 marking-nesting OW-ANCHOR (M-agnostic).  The kind-1 scb-structure
+  of \<open>Trans M\<close> at its marked principal \<open>D\<^bsub>u\<^esub> body\<close> reads back as the \<open>OW\<close>-wrap
+  \<open>Trans M = OW body\<close> with \<open>OW x = unflatBT (s\<^sub>1 \<frown> D\<^bsub>u\<^esub> # flat x \<frown> b\<^sub>1)\<close>.  This is the
+  \<open>m \<to> \<infinity>\<close> anchor of the closed form (\<open>body = transT2 M +\<^sub>B D\<^bsub>v\<^esub> 0\<close>): it pins
+  the \<open>OW\<close> context to the SAME \<open>(s\<^sub>1, b\<^sub>1)\<close> used by the kind-1 producer / the operB
+  RHS (@{thm [source] operB_marked_scb_value_kind1}), so the marking-nesting
+  recurrence is a statement about the inner argument alone.  Immediate from
+  @{thm [source] scb_kind1_def} (\<open>\<Longrightarrow> scb_decomp\<close>) + the flat property and
+  @{thm [source] unflatBT_flat}.\<close>
+
+lemma m_8_5_anchor_OW:
+  fixes M :: pairseq and u :: nat and s\<^sub>1 b\<^sub>1 :: "Sym list"
+    and body :: BT and OW :: "BT \<Rightarrow> BT"
+  assumes OW_def: "OW = (\<lambda>x. unflatBT (s\<^sub>1 @ Dsym (enat u) # flatBT x @ b\<^sub>1))"
+    and k1: "scb_kind1 (Trans M) s\<^sub>1 (flatBT (Dpt (enat u) body)) b\<^sub>1"
+  shows "Trans M = OW body"
+proof -
+  have scb: "scb_decomp (Trans M) s\<^sub>1 (flatBT (Dpt (enat u) body)) b\<^sub>1"
+    using k1 by (simp add: scb_kind1_def)
+  have flat: "flatBT (Trans M) = s\<^sub>1 @ flatBT (Dpt (enat u) body) @ b\<^sub>1"
+    using scb by (simp add: scb_decomp_def)
+  have "flatBT (Trans M) = s\<^sub>1 @ Dsym (enat u) # flatBT body @ b\<^sub>1"
+    using flat by simp
+  hence "Trans M = unflatBT (s\<^sub>1 @ Dsym (enat u) # flatBT body @ b\<^sub>1)"
+    by (metis unflatBT_flat)
+  thus ?thesis by (simp add: OW_def)
+qed
+
+
 text \<open>§8.4/§8.5 residual \<open>botU\<close>, structural core.  The inner period context \<open>C\<close>
   built from the scb-decomposition of the body \<open>t\<^sub>2 +\<^sub>B D\<^bsub>v\<^esub> 0\<close> at its TRAILING
   marked leaf \<open>D\<^bsub>v\<^esub> 0\<close> acts on any \<open>x\<close> exactly as the addBT-right replacement of
@@ -38496,6 +38618,69 @@ proof -
     thus ?thesis by simp
   qed
   thus ?thesis using lastps by simp
+qed
+
+text \<open>§8.7 R2 brick — keystone case (1) \<open>dstep\<close> FULLY DISCHARGED (surgery-FREE).
+  In keystone case (1) the appended principal is \<open>D\<^bsub>M\<^sub>1\<^sub>,\<^sub>j\<^sub>1'\<^esub> 0\<close> (body \<open>q = 0\<^sub>B\<close>),
+  and the predecessor body is the WHOLE prefix \<open>Trm ps\<close> (\<open>r = 0\<^sub>B\<close>).  Hence:
+  \<^item> the prefix's last principal head \<open>hd\<close> equals \<open>RightNodes (Trans (Pred M))\<^bsub>1\<^esub>\<close>
+    (@{thm [source] rn1_outer_inner_trailing} on the \<open>butlast/last\<close> split of \<open>ps\<close>),
+    so the head bound \<open>M\<^bsub>1,j\<^sub>1'\<^esub> \<le> hd\<close> is exactly the predecessor-spine bound
+    @{thm [source] m_8_7_pred_spine_bound};
+  \<^item> the equal-head tail \<open>leBT 0\<^sub>B q\<^sub>b\<close> is trivial (\<open>0\<^sub>B\<close> least,
+    @{thm [source] lessBT_Zero_left}).
+  @{thm [source] m_8_7_dstep_assemble} then closes \<open>dstep\<close>.  (\<open>q\<^sub>b\<close>'s finiteness
+  comes from \<open>Trans (Pred M) \<in> T\<^bsub>B\<^esub>\<close> being \<open>D\<^sub>\<omega>\<close>-free.)\<close>
+
+lemma m_8_7_dstep_case1:
+  fixes M :: pairseq and ps :: "BP list"
+  assumes MD: "M \<in> DT_PS" and MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS"
+    and Brne: "Br M \<noteq> []" and j1gt: "Lng M - 1 > 1"
+    and Admpos: "transJm1 M > 0"
+    and predW: "Trans (Pred M) = Dpt (enat (entry M 1 0)) (Trm ps)"
+    and predTB: "Trans (Pred M) \<in> T_B"
+    and psne: "ps \<noteq> []"
+  shows "leBT (Dpt (enat (entry M 1 (FirstNodes M ! (Lng (Br M) - 1)))) 0\<^sub>B)
+              (Trm [last ps])"
+proof -
+  let ?j1' = "FirstNodes M ! (Lng (Br M) - 1)"
+  have t1ne: "Trans (Pred M) \<noteq> 0\<^sub>B" using predW by simp
+  obtain lw qb where lastps_raw: "last ps = DB lw qb" by (cases "last ps")
+  have lin: "last ps \<in> set ps" using psne by simp
+  have dfreeP: "dfree_BT (Trm ps)"
+  proof -
+    have "dfree_BT (Dpt (enat (entry M 1 0)) (Trm ps))"
+      using predTB predW by (simp add: T_B_def)
+    thus ?thesis by simp
+  qed
+  have "dfree_BP (last ps)" using dfreeP lin by simp
+  hence lwne: "lw \<noteq> \<infinity>" using lastps_raw by simp
+  obtain hd where hd: "lw = enat hd" using lwne by (cases lw) auto
+  have lastps: "last ps = DB (enat hd) qb" using lastps_raw hd by simp
+  have psdecomp: "Trm ps = Trm (butlast ps) +\<^sub>B Dpt (enat hd) qb"
+  proof -
+    have "Trm (butlast ps) +\<^sub>B Dpt (enat hd) qb = Trm (butlast ps @ [DB (enat hd) qb])"
+      by simp
+    also have "\<dots> = Trm ps"
+      using append_butlast_last_id[OF psne] lastps by simp
+    finally show ?thesis by simp
+  qed
+  have rn1: "RightNodes (Trans (Pred M)) ! 1 = hd"
+  proof -
+    have e: "Trans (Pred M) = Dpt (enat (entry M 1 0)) (Trm (butlast ps) +\<^sub>B Dpt (enat hd) qb)"
+      using predW psdecomp by simp
+    show ?thesis unfolding e by (rule rn1_outer_inner_trailing)
+  qed
+  have head: "entry M 1 ?j1' \<le> hd"
+  proof -
+    have "entry M 1 ?j1' \<le> RightNodes (Trans (Pred M)) ! 1"
+      by (rule m_8_7_pred_spine_bound[OF MD MR MP Brne j1gt Admpos t1ne])
+    thus ?thesis using rn1 by simp
+  qed
+  have tail: "entry M 1 ?j1' = hd \<longrightarrow> leBT (0\<^sub>B::BT) qb"
+    by (cases "qb = (0\<^sub>B::BT)") (simp_all add: lessBT_Zero_left)
+  show ?thesis
+    by (rule m_8_7_dstep_assemble[OF lastps psne head tail])
 qed
 
 end
