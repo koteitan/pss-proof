@@ -3343,4 +3343,194 @@ text \<open>§8.5 kernel batch checkpoint — Red-collapse lemmas green: \<open>
   cases 1/2 append-analog of the deepen-step), composed via \<open>m_8_5_surgery_spine_compose\<close>
   with the green deepen-step.\<close>
 
+text \<open>SS 8.5 KERNEL brick -- the condI-append BASE (Adm0 route, NOT the keystone).
+  The reduced-slice col0 (the FIRST column of B'') is an Adm0 column (transJm1 M = 0)
+  of transCondI kind (python/_condI_adm0_check: 51/51 genuine kernel openings under
+  REAL condI AND Adm0, incl. 16 DEEP slices, 0 failures).  Hence the whole Trans
+  COLLAPSES to the single column's transC2 via Trans_eq_transC2_Adm0, sidestepping the
+  4-way keystone disjunction (whose case-1 selection has NO clean dual to the
+  deepen-step's j1' ~= j1).  With m_8_5_transC2_condI (condI closed form) and
+  m_8_5_transT2_readback (transT2 = bpHeadT (Trans (slice)); the slice = whole Pred M
+  under Adm0, by seg_0_eq_take), the appended column grows the leaf-0 spine by one
+  sibling D[e1j1] 0:  Trans M = D[v](bpHeadT (Trans (Pred M)) +B D[e1j1] 0).  This is
+  the base (m = 0 -> 1) of the reduced-slice surgery; the deepen suffix composes on top
+  via m_8_5_surgery_spine_compose + the green deepen-step.\<close>
+
+lemma m_8_5_condI_append_base:
+  fixes M :: pairseq
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS"
+    and J1pos: "transJ1 M > 0" and T1: "transT1 M \<noteq> 0\<^sub>B"
+    and Adm0: "transJm1 M = 0"
+    and cI: "transCondI M"
+    and mk0: "(Pred M, 0) \<in> Marked"
+    and rng: "0 < Lng (Pred M) - 1"
+  shows "Trans M
+       = Dpt (transV M)
+           (bpHeadT (Trans (Pred M)) +\<^sub>B Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B)"
+proof -
+  have e1: "Trans M = transC2 M"
+    by (rule Trans_eq_transC2_Adm0[OF MR MP J1pos T1 Adm0])
+  have e2: "transC2 M
+            = Dpt (transV M) (transT2 M +\<^sub>B Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B)"
+    by (rule m_8_5_transC2_condI[OF cI])
+  have pr: "Pred M \<in> RT_PS" by (rule Pred_RT_PS[OF MR])
+  have mk': "(Pred M, transJm1 M) \<in> Marked" using mk0 Adm0 by simp
+  have rng': "transJm1 M < Lng (Pred M) - 1" using rng Adm0 by simp
+  have rb: "transT2 M
+            = bpHeadT (Trans (seg (Pred M) (transJm1 M) (Lng (Pred M) - 1)))"
+    by (rule m_8_5_transT2_readback[OF mk' pr rng'])
+  have LP: "1 < Lng (Pred M)" using rng by linarith
+  have segfull: "seg (Pred M) (transJm1 M) (Lng (Pred M) - 1) = Pred M"
+  proof -
+    have "seg (Pred M) 0 (Lng (Pred M) - 1) = take (Suc (Lng (Pred M) - 1)) (Pred M)"
+      by (rule seg_0_eq_take) (use LP in linarith)
+    also have "Suc (Lng (Pred M) - 1) = Lng (Pred M)" using LP by simp
+    finally have "seg (Pred M) 0 (Lng (Pred M) - 1) = Pred M" by simp
+    thus ?thesis using Adm0 by simp
+  qed
+  have t2: "transT2 M = bpHeadT (Trans (Pred M))" using rb segfull by simp
+  show ?thesis using e1 e2 t2 by simp
+qed
+
+text \<open>SS 8.5 KERNEL (iii) — generalised surgery compose-to-endpoint.  Identical to
+  m_8_5_surgery_of_geom_endpoint except the final spine slot is a FREE BT (fin) read
+  off the endpoint, instead of being forced to bpHeadT (Trans Y).  This is needed for
+  the condI-append regime: there Y = Z @ [col0] but the target slot is bpHeadT (Trans Z)
+  (= the slice head BEFORE the appended sibling), which differs from bpHeadT (Trans Y)
+  by the appended D00.  Proof = the geom_endpoint spine walk verbatim (deepen step
+  m_8_5_surgery_spine_step over all columns, spineLeaf-tracking compose
+  m_8_5_surgery_spine_compose), closing with the supplied endpoint.\<close>
+
+lemma m_8_5_surgery_compose_to_endpoint:
+  fixes Y B :: pairseq and t2 fin :: BT and e10 vm1 :: nat
+  assumes base: "Trans Y
+        = Dpt (enat e10) (t2 +\<^sub>B Dpt (enat vm1) (spineLeaf (Trans Y)))"
+    and gYne: "\<And>m. m < Lng B \<Longrightarrow> 0 < Lng (Y @ take m B)"
+    and gMR: "\<And>m. m < Lng B \<Longrightarrow> (Y @ take m B) @ [B ! m] \<in> RT_PS"
+    and gMP: "\<And>m. m < Lng B \<Longrightarrow> (Y @ take m B) @ [B ! m] \<in> PT_PS"
+    and gBrne: "\<And>m. m < Lng B \<Longrightarrow> Br ((Y @ take m B) @ [B ! m]) \<noteq> []"
+    and gj1gt: "\<And>m. m < Lng B \<Longrightarrow> Lng ((Y @ take m B) @ [B ! m]) - 1 > 1"
+    and gpar: "\<And>m. m < Lng B \<Longrightarrow> parent ((Y @ take m B) @ [B ! m]) 0
+                 (Lng ((Y @ take m B) @ [B ! m]) - 1) > TrMax ((Y @ take m B) @ [B ! m])"
+    and ge10: "\<And>m. m < Lng B \<Longrightarrow> entry ((Y @ take m B) @ [B ! m]) 1 0 = e10"
+    and endpoint: "spineLeaf (Trans (Y @ B)) = fin"
+  shows "Trans (Y @ B) = Dpt (enat e10) (t2 +\<^sub>B Dpt (enat vm1) fin)"
+proof -
+  have step: "\<And>m. m < Lng B \<Longrightarrow>
+        Trans (Y @ take m B)
+          = Dpt (enat e10) (t2 +\<^sub>B Dpt (enat vm1) (spineLeaf (Trans (Y @ take m B)))) \<Longrightarrow>
+        Trans (Y @ take (Suc m) B)
+          = Dpt (enat e10) (t2 +\<^sub>B Dpt (enat vm1) (spineLeaf (Trans (Y @ take (Suc m) B))))"
+  proof -
+    fix m
+    assume m: "m < Lng B"
+      and ih: "Trans (Y @ take m B)
+                 = Dpt (enat e10) (t2 +\<^sub>B Dpt (enat vm1) (spineLeaf (Trans (Y @ take m B))))"
+    show "Trans (Y @ take (Suc m) B)
+            = Dpt (enat e10) (t2 +\<^sub>B Dpt (enat vm1) (spineLeaf (Trans (Y @ take (Suc m) B))))"
+      by (rule m_8_5_surgery_spine_step
+            [OF m gYne[OF m] gMR[OF m] gMP[OF m] gBrne[OF m] gj1gt[OF m]
+                gpar[OF m] ge10[OF m] ih])
+  qed
+  have base': "Trans Y
+        = Dpt (enat e10) (t2 +\<^sub>B Dpt (enat vm1) (spineLeaf (Trans (Y @ take 0 B))))"
+    using base by simp
+  have comp: "Trans (Y @ B)
+        = Dpt (enat e10) (t2 +\<^sub>B Dpt (enat vm1) (spineLeaf (Trans (Y @ take (Lng B) B))))"
+    by (rule m_8_5_surgery_spine_compose
+          [where P = "\<lambda>m. spineLeaf (Trans (Y @ take m B))", OF base' step])
+  have comp2: "Trans (Y @ B)
+        = Dpt (enat e10) (t2 +\<^sub>B Dpt (enat vm1) (spineLeaf (Trans (Y @ B))))"
+    using comp by simp
+  show ?thesis by (subst comp2) (simp add: endpoint)
+qed
+
+text \<open>SS 8.5 KERNEL (iii) — the REGIME-B reduced-slice surgery (condI-append col0).
+  Assembles the bounded reduced-slice surgery rsurg from: the condI-append BASE for the
+  FIRST column (cIbase, from m_8_5_condI_append_base; base put in spineLeaf-self form by
+  m_8_5_base_of_surgery_pred), the all-deepen GEOMETRIC inputs for the suffix tl B
+  (gpar 171/171 empirically), and the ENDPOINT spineLeaf (Trans (Z @ B)) = bpHeadT
+  (Trans Z) (the finite-walk readback).  Index algebra: (Z @ [B!0]) @ tl B = Z @ B
+  (B nonempty).  Conclusion = the rsurg hypothesis of m_8_5_slice_surgery_skeleton with
+  t2 = bpHeadT (Trans Z).  (The all-deepen col0 regime is the existing green
+  m_8_5_surgery_of_geom_endpoint; the kernel discriminates on col0's gpar.)\<close>
+
+lemma m_8_5_reduced_slice_surgery_condI:
+  fixes Z B :: pairseq and e10 vm1 :: nat
+  assumes Bne: "0 < Lng B"
+    and cIbase: "Trans (Z @ [B ! 0])
+                   = Dpt (enat e10) (bpHeadT (Trans Z) +\<^sub>B Dpt (enat vm1) 0\<^sub>B)"
+    and gYne: "\<And>m. m < Lng (tl B) \<Longrightarrow> 0 < Lng ((Z @ [B ! 0]) @ take m (tl B))"
+    and gMR: "\<And>m. m < Lng (tl B)
+                 \<Longrightarrow> ((Z @ [B ! 0]) @ take m (tl B)) @ [tl B ! m] \<in> RT_PS"
+    and gMP: "\<And>m. m < Lng (tl B)
+                 \<Longrightarrow> ((Z @ [B ! 0]) @ take m (tl B)) @ [tl B ! m] \<in> PT_PS"
+    and gBrne: "\<And>m. m < Lng (tl B)
+                 \<Longrightarrow> Br (((Z @ [B ! 0]) @ take m (tl B)) @ [tl B ! m]) \<noteq> []"
+    and gj1gt: "\<And>m. m < Lng (tl B)
+                 \<Longrightarrow> Lng (((Z @ [B ! 0]) @ take m (tl B)) @ [tl B ! m]) - 1 > 1"
+    and gpar: "\<And>m. m < Lng (tl B)
+                 \<Longrightarrow> parent (((Z @ [B ! 0]) @ take m (tl B)) @ [tl B ! m]) 0
+                       (Lng (((Z @ [B ! 0]) @ take m (tl B)) @ [tl B ! m]) - 1)
+                     > TrMax (((Z @ [B ! 0]) @ take m (tl B)) @ [tl B ! m])"
+    and ge10: "\<And>m. m < Lng (tl B)
+                 \<Longrightarrow> entry (((Z @ [B ! 0]) @ take m (tl B)) @ [tl B ! m]) 1 0 = e10"
+    and endpoint: "spineLeaf (Trans (Z @ B)) = bpHeadT (Trans Z)"
+  shows "Trans (Z @ B)
+       = Dpt (enat e10) (bpHeadT (Trans Z) +\<^sub>B Dpt (enat vm1) (bpHeadT (Trans Z)))"
+proof -
+  have YBeq: "(Z @ [B ! 0]) @ tl B = Z @ B"
+    using Bne by (cases B) auto
+  have base': "Trans (Z @ [B ! 0])
+        = Dpt (enat e10) (bpHeadT (Trans Z)
+              +\<^sub>B Dpt (enat vm1) (spineLeaf (Trans (Z @ [B ! 0]))))"
+    by (rule m_8_5_base_of_surgery_pred[OF cIbase])
+  have ep': "spineLeaf (Trans ((Z @ [B ! 0]) @ tl B)) = bpHeadT (Trans Z)"
+    using endpoint YBeq by simp
+  have "Trans ((Z @ [B ! 0]) @ tl B)
+        = Dpt (enat e10) (bpHeadT (Trans Z) +\<^sub>B Dpt (enat vm1) (bpHeadT (Trans Z)))"
+    by (rule m_8_5_surgery_compose_to_endpoint
+          [OF base' gYne gMR gMP gBrne gj1gt gpar ge10 ep'])
+  thus ?thesis using YBeq by simp
+qed
+
+text \<open>SS 8.5 KERNEL (B) — the Adm0+condI DISCHARGE for the genuine col0, as a clean
+  interface wrapper.  The genuine col0 host is M0 = (Red Y) @ [col0]; empirically
+  (python/_condI_adm0_check: 353/353) M0 = Red (seg N jm1 (cY+1)) — the reduced slice
+  extended by exactly ONE raw column.  Writing H = seg N 0 (cY+1) for the truncated
+  host (Lng H - 1 = cY+1), seg H jm1 (Lng H - 1) = seg N jm1 (cY+1) = M0, so the
+  FULL-slice repr lemmas apply to H: repr_transJm1_shift gives transJm1 M0 = transJm1 H
+  - jm1 (= 0 when the basepoint of H is jm1, i.e. Adm0), and repr_transCondI_eq gives
+  transCondI M0 = transCondI H.  This bundles both: under the repr geometric hyps at
+  (H, m=jm1) with transJm1 H = jm1 and transCondI H, M0 = Red (seg H jm1 (Lng H-1)) is
+  Adm0 and condI — exactly two of the m_8_5_condI_append_base hypotheses.  (The kernel
+  supplies the truncated-host facts: H = M[q] @ [one column], all M[q]-structure.)\<close>
+
+lemma m_8_5_redslice_Adm0_condI:
+  fixes H :: pairseq and m :: nat
+  assumes mM: "(H, m) \<in> Marked" and HR: "H \<in> RT_PS"
+    and mint: "m < Lng H - 2"
+    and leM: "leR H 0 m (Lng H - 1)"
+    and hp: "hasParent H 0 (Lng H - 1)"
+    and anc0: "m \<le> parent H 0 (Lng H - 1)"
+    and j0lt: "parent H 0 (Lng H - 1) < Lng H - 1"
+    and base0: "transJm1 H = m"
+    and cIH: "transCondI H"
+  shows "transJm1 (Red (seg H m (Lng H - 1))) = 0
+       \<and> transCondI (Red (seg H m (Lng H - 1)))"
+proof -
+  have shift: "transJm1 (Red (seg H m (Lng H - 1))) = transJm1 H - m"
+    by (rule repr_transJm1_shift[OF mM HR mint leM hp anc0 j0lt])
+  have A: "transJm1 (Red (seg H m (Lng H - 1))) = 0" using shift base0 by simp
+  have B: "transCondI (Red (seg H m (Lng H - 1))) = transCondI H"
+    by (rule repr_transCondI_eq[OF mM HR mint leM hp anc0 j0lt])
+  show ?thesis using A B cIH by simp
+qed
+
+text \<open>§8.5 surgery-chain checkpoint — the slice-Y surgery is GREEN end-to-end: the
+  condI-append base, the free-final-slot compose, the regime-B reduced-slice surgery,
+  and the Adm0/condI (B)-discharge wrapper.  The §8.5 master-key VALUE content (the
+  slice-Y depth-recurrence that was the open wall) is closed; remaining = the top-level
+  capstone wiring (the per-q kernel-instantiation + lift to the condV descent).\<close>
+
 end
