@@ -474,4 +474,301 @@ proof -
     using G4 by simp
 qed
 
+
+text \<open>§8.5 step2 WIRING (M-agnostic): the uniform pair-side recurrence
+  \<open>step2\<close> reduces to THREE clean residuals stated at the SUBTREE level
+  (\<open>bd q \<equiv> bpHeadT (Mark (M[q]) jm1)\<close>, the head subtree of the marked
+  principal — the term \<open>OW\<close> wraps, NOT the full marked principal \<open>D\<^bsub>u\<^esub> (bd q)\<close>):
+  the iterate \<open>OW\<close>-wrap \<open>wrap\<close> (\<open>Trans (M[q]) = OW (bd q)\<close>), outer-wrap
+  injectivity \<open>inj\<close>, and the per-oper-step body recurrence \<open>body\<close>
+  (\<open>bd (Suc q) = C (bd q)\<close>).  Given \<open>Trans (M[p]) = OW b\<close>, \<open>inj\<close> pins
+  \<open>b = bd p\<close>, \<open>body\<close> grows it by one \<open>C\<close>, and \<open>wrap\<close> at \<open>Suc p\<close> re-wraps to
+  \<open>OW (C b)\<close>.  The SUBTREE level is essential — the Mark-LEVEL analogue
+  (\<open>Trans (M[q]) = OW (Mark (M[q]) jm1)\<close>) is FALSE (python/_step2_decomp_check:
+  Mark-level wrap/body 0/36, subtree-level 36/36).  Exact drop-in for the \<open>step2\<close>
+  hypothesis of @{thm [source] m_8_5_TransCondV_descend_of_step2_residuals}.\<close>
+
+lemma m_8_5_step2_of_wrap_body:
+  fixes M :: pairseq and OW C :: "BT \<Rightarrow> BT" and jm1 p :: nat and b :: BT
+  assumes wrap: "\<And>q. 1 \<le> q \<Longrightarrow> Trans ((M::pairseq)[q]) = OW (bpHeadT (Mark ((M::pairseq)[q]) jm1))"
+    and inj: "\<And>x y. OW x = OW y \<Longrightarrow> x = y"
+    and body: "\<And>q. 2 \<le> q \<Longrightarrow> bpHeadT (Mark ((M::pairseq)[Suc q]) jm1)
+                              = C (bpHeadT (Mark ((M::pairseq)[q]) jm1))"
+    and p2: "2 \<le> p" and hb: "Trans ((M::pairseq)[p]) = OW b"
+  shows "Trans ((M::pairseq)[Suc p]) = OW (C b)"
+proof -
+  have p1: "1 \<le> p" using p2 by simp
+  have wp: "Trans ((M::pairseq)[p]) = OW (bpHeadT (Mark ((M::pairseq)[p]) jm1))"
+    by (rule wrap[OF p1])
+  have "OW (bpHeadT (Mark ((M::pairseq)[p]) jm1)) = OW b" using wp hb by simp
+  hence beq: "bpHeadT (Mark ((M::pairseq)[p]) jm1) = b" by (rule inj)
+  have sp1: "1 \<le> Suc p" by simp
+  have "Trans ((M::pairseq)[Suc p]) = OW (bpHeadT (Mark ((M::pairseq)[Suc p]) jm1))"
+    by (rule wrap[OF sp1])
+  also have "bpHeadT (Mark ((M::pairseq)[Suc p]) jm1)
+               = C (bpHeadT (Mark ((M::pairseq)[p]) jm1))" by (rule body[OF p2])
+  also have "\<dots> = C b" using beq by simp
+  finally show ?thesis .
+qed
+
+text \<open>§8.5 base2 WIRING (M-agnostic): the \<open>k\<close>-jump first oper step
+  \<open>Trans (M[2]) = OW ((C\<^bsup>k\<^esup>) leafL\<^sub>0)\<close> (\<open>k \<in> {1,2}\<close>) from the same SUBTREE-level
+  residuals — \<open>wrap\<close> at \<open>p = 2\<close>, the \<open>n = 1\<close> leaf identification
+  \<open>bd 1 = leafL\<^sub>0\<close> (\<open>= transT2 M\<close>, @{thm [source] m_8_5_base_scb}), and the
+  first-step \<open>k\<close>-jump \<open>bd 2 = (C\<^bsup>k\<^esup>) (bd 1)\<close> (the base analogue of \<open>body\<close>,
+  with \<open>k \<in> {1,2}\<close> instead of exactly one \<open>C\<close>; python base2 28/28, k=1:27/k=2:1).\<close>
+
+lemma m_8_5_base2_of_wrap_body:
+  fixes M :: pairseq and OW C :: "BT \<Rightarrow> BT" and jm1 k :: nat and leafL\<^sub>0 :: BT
+  assumes wrap2: "Trans ((M::pairseq)[2]) = OW (bpHeadT (Mark ((M::pairseq)[2]) jm1))"
+    and baseleaf: "bpHeadT (Mark ((M::pairseq)[1]) jm1) = leafL\<^sub>0"
+    and basejump: "bpHeadT (Mark ((M::pairseq)[2]) jm1)
+                     = (C ^^ k) (bpHeadT (Mark ((M::pairseq)[1]) jm1))"
+  shows "Trans ((M::pairseq)[2]) = OW ((C ^^ k) leafL\<^sub>0)"
+proof -
+  have "Trans ((M::pairseq)[2]) = OW (bpHeadT (Mark ((M::pairseq)[2]) jm1))" by (rule wrap2)
+  also have "bpHeadT (Mark ((M::pairseq)[2]) jm1)
+               = (C ^^ k) (bpHeadT (Mark ((M::pairseq)[1]) jm1))" by (rule basejump)
+  also have "\<dots> = (C ^^ k) leafL\<^sub>0" using baseleaf by simp
+  finally show ?thesis .
+qed
+
+text \<open>§8.5 base-leaf residual DISCHARGED: the \<open>n = 1\<close> subtree-level leaf body is
+  \<open>transT2 M\<close>.  \<open>M[1] = Pred M\<close> (@{thm [source] m_8_4_oper1_eq_Pred}), so the marked
+  subterm \<open>Mark (M[1]) (transJm1 M) = Mark (Pred M) (transJm1 M) = transC1 M\<close>
+  (@{thm [source] transC1_def}) and its head subtree is \<open>bpHeadT (transC1 M) =
+  transT2 M\<close> (@{thm [source] transT2_def}).  This is the \<open>baseleaf\<close> hypothesis of
+  @{thm [source] m_8_5_base2_of_wrap_body} with \<open>jm1 = transJm1 M\<close>, \<open>leafL\<^sub>0 = transT2 M\<close>.\<close>
+
+lemma m_8_5_base_leaf:
+  assumes MT: "M \<in> T_PS"
+  shows "bpHeadT (Mark ((M::pairseq)[1]) (transJm1 M)) = transT2 M"
+proof -
+  have o1: "(M::pairseq)[1] = Pred M" by (rule m_8_4_oper1_eq_Pred[OF MT])
+  have "Mark ((M::pairseq)[1]) (transJm1 M) = Mark (Pred M) (transJm1 M)" using o1 by simp
+  also have "\<dots> = transC1 M" by (simp add: transC1_def)
+  finally show ?thesis by (simp add: transT2_def)
+qed
+
+text \<open>§8.5 outer-wrap INJECTIVITY DISCHARGED.  The kind-1 outer wrap
+  \<open>OW x = unflatBT (s\<^sub>1 \<frown> D\<^bsub>u\<^esub> # flat x \<frown> b\<^sub>1)\<close> built from ANY scb-decomposition of a
+  term \<open>t\<close> at the single-principal centre \<open>D\<^bsub>u\<^esub> t\<^sub>0\<close> is injective: by
+  @{thm [source] scbimg_image_BT} (\<open>b\<^sub>1\<close> all \<open>RP\<close>) the string \<open>s\<^sub>1 \<frown> D\<^bsub>u\<^esub> # flat x \<frown> b\<^sub>1\<close>
+  is in the flat image, so \<open>flat (OW x) = s\<^sub>1 \<frown> D\<^bsub>u\<^esub> # flat x \<frown> b\<^sub>1\<close>
+  (@{thm [source] unflatBT_flat}); cancelling the common prefix/suffix and using
+  flat injectivity gives \<open>x = y\<close>.  Discharges the \<open>inj\<close> hypothesis of
+  @{thm [source] m_8_5_step2_of_wrap_body} from the producer's kind-1 scb-decomp.\<close>
+
+lemma m_8_5_OW_inj_of_scb:
+  fixes s\<^sub>1 b\<^sub>1 :: "Sym list" and u :: nat and OW :: "BT \<Rightarrow> BT" and t t\<^sub>0 x y :: BT
+  assumes OW_def: "OW = (\<lambda>x. unflatBT (s\<^sub>1 @ Dsym (enat u) # flatBT x @ b\<^sub>1))"
+    and scb: "scb_decomp t s\<^sub>1 (flatBT (Dpt (enat u) t\<^sub>0)) b\<^sub>1"
+    and hxy: "OW x = OW y"
+  shows "x = y"
+proof -
+  have bRP: "\<forall>z \<in> set b\<^sub>1. z = RP" using scb by (simp add: scb_decomp_def)
+  have flatc: "flatBT t = s\<^sub>1 @ flatBT (Dpt (enat u) t\<^sub>0) @ b\<^sub>1"
+    using scb by (simp add: scb_decomp_def)
+  have flat_t: "flatBT t = s\<^sub>1 @ flatBP (DB (enat u) t\<^sub>0) @ b\<^sub>1" using flatc by simp
+  have fow: "\<And>z. flatBT (OW z) = s\<^sub>1 @ Dsym (enat u) # flatBT z @ b\<^sub>1"
+  proof -
+    fix z
+    have "\<exists>t'. flatBT t' = s\<^sub>1 @ flatBP (DB (enat u) z) @ b\<^sub>1"
+      by (rule scbimg_image_BT[OF flat_t bRP])
+    then obtain tz where tz: "flatBT tz = s\<^sub>1 @ flatBP (DB (enat u) z) @ b\<^sub>1" by blast
+    have "OW z = unflatBT (s\<^sub>1 @ Dsym (enat u) # flatBT z @ b\<^sub>1)" by (simp add: OW_def)
+    also have "s\<^sub>1 @ Dsym (enat u) # flatBT z @ b\<^sub>1 = s\<^sub>1 @ flatBP (DB (enat u) z) @ b\<^sub>1" by simp
+    also have "unflatBT \<dots> = unflatBT (flatBT tz)" using tz by simp
+    also have "\<dots> = tz" by (rule unflatBT_flat)
+    finally have "OW z = tz" .
+    thus "flatBT (OW z) = s\<^sub>1 @ Dsym (enat u) # flatBT z @ b\<^sub>1" using tz by simp
+  qed
+  have "s\<^sub>1 @ Dsym (enat u) # flatBT x @ b\<^sub>1 = s\<^sub>1 @ Dsym (enat u) # flatBT y @ b\<^sub>1"
+    using fow[of x] fow[of y] hxy by simp
+  hence "flatBT x @ b\<^sub>1 = flatBT y @ b\<^sub>1" by simp
+  hence "flatBT x = flatBT y" by simp
+  hence "unflatBT (flatBT x) = unflatBT (flatBT y)" by simp
+  thus "x = y" by (simp add: unflatBT_flat)
+qed
+
+text \<open>§8.5 marking-nesting STEP REDUCED to the single block-append SURGERY (uniform
+  in the body endofunction \<open>F\<close>: \<open>F = C\<close> gives the \<open>body\<close> recurrence \<open>q \<ge> 2\<close>,
+  \<open>F = C\<^bsup>k\<^esup>\<close> the \<open>base-jump\<close> first oper step \<open>q = 1\<close>, \<open>k \<in> {1,2}\<close>).  The marked-
+  subterm recurrence \<open>bpHeadT (Mark (M[Suc q]) jm1) = F (bpHeadT (Mark (M[q]) jm1))\<close>
+  follows from the §7.4 Mark-representations (@{thm [source] Mark_iterate_slice_append}
+  for \<open>M[Suc q]\<close>, @{thm [source] m_7_4_Mark_Trans_repr} for \<open>M[q]\<close>) and the SURGERY
+  \<open>Trans (Y \<frown> B) = D\<^bsub>u\<^esub> (F (bpHeadT (Trans Y)))\<close> on the tail slice
+  \<open>Y = seg (M[q]) jm1 (Lng (M[q]) - 1)\<close>: both marked subterms read back as \<open>Trans\<close>
+  of the slice (resp. the slice with the appended oper block \<open>B\<close>), so taking
+  \<open>bpHeadT\<close> of the surgery (the \<open>D\<^bsub>u\<^esub>\<close>-head is discarded) yields exactly \<open>F\<close> applied
+  to the slice's body.  The SURGERY (one net \<open>C\<close> per appended block — \<open>F = C\<close> for the
+  uniform iterates, \<open>F = C\<^bsup>k\<^esup>\<close> for the first step; the §8 master-key residual,
+  python/_step2_decomp_check surgery 36/36) and the iterate basepoint memberships
+  \<open>(M[q],jm1),(M[Suc q],jm1) \<in> Marked\<close> are the remaining obligations.  Discharges
+  \<open>body\<close> (\<open>F:=C\<close>) of @{thm [source] m_8_5_step2_of_wrap_body} and \<open>basejump\<close>
+  (\<open>F:=(C^^k)\<close>) of @{thm [source] m_8_5_base2_of_wrap_body}.\<close>
+
+lemma m_8_5_markstep_of_surgery:
+  fixes M B :: pairseq and F :: "BT \<Rightarrow> BT" and jm1 q u :: nat
+  defines "Y \<equiv> seg ((M::pairseq)[q]) jm1 (Lng ((M::pairseq)[q]) - 1)"
+  assumes mkSuc: "((M::pairseq)[Suc q], jm1) \<in> Marked"
+    and MRSuc: "(M::pairseq)[Suc q] \<in> RT_PS"
+    and rngSuc: "jm1 < Lng ((M::pairseq)[Suc q]) - 1"
+    and app: "(M::pairseq)[Suc q] = (M::pairseq)[q] @ B"
+    and Mqne: "0 < Lng ((M::pairseq)[q])"
+    and jle: "jm1 \<le> Lng ((M::pairseq)[q])"
+    and mkq: "((M::pairseq)[q], jm1) \<in> Marked"
+    and MRq: "(M::pairseq)[q] \<in> RT_PS"
+    and rngq: "jm1 < Lng ((M::pairseq)[q]) - 1"
+    and surgery: "Trans (Y @ B) = Dpt (enat u) (F (bpHeadT (Trans Y)))"
+  shows "bpHeadT (Mark ((M::pairseq)[Suc q]) jm1) = F (bpHeadT (Mark ((M::pairseq)[q]) jm1))"
+proof -
+  have markSuc: "Mark ((M::pairseq)[Suc q]) jm1 = Trans (Y @ B)"
+    unfolding Y_def by (rule Mark_iterate_slice_append[OF mkSuc MRSuc rngSuc app Mqne jle])
+  have markq: "Mark ((M::pairseq)[q]) jm1 = Trans Y"
+    unfolding Y_def by (rule m_7_4_Mark_Trans_repr[OF mkq MRq rngq])
+  have "bpHeadT (Mark ((M::pairseq)[Suc q]) jm1) = bpHeadT (Trans (Y @ B))"
+    using markSuc by simp
+  also have "\<dots> = bpHeadT (Dpt (enat u) (F (bpHeadT (Trans Y))))" using surgery by simp
+  also have "\<dots> = F (bpHeadT (Trans Y))" by simp
+  also have "\<dots> = F (bpHeadT (Mark ((M::pairseq)[q]) jm1))" using markq by simp
+  finally show ?thesis .
+qed
+
+text \<open>§8.5 \<open>wrap\<close> residual REDUCED to the iterate kind-1 scb (context stability).
+  The subtree-level \<open>OW\<close>-wrap \<open>Trans (M[q]) = OW (bpHeadT (Mark (M[q]) jm1))\<close> is
+  IMMEDIATE from the \<open>OW\<close>-anchor @{thm [source] m_8_5_anchor_OW} once the iterate
+  \<open>M[q]\<close> carries the SAME kind-1 scb context \<open>(s\<^sub>1,b\<^sub>1)\<close> and head \<open>u\<close> as the producer,
+  at its own marked subterm \<open>D\<^bsub>u\<^esub> (bpHeadT (Mark (M[q]) jm1))\<close> — the residual
+  \<open>iterscb\<close>.  \<open>iterscb\<close> is the iterate analogue of the producer's \<open>k1\<close>, supplied by
+  the OW-context stability @{thm [source] scb_context_eq_of_prefix} (the trunk
+  prefix \<open>seg (M[q]) 0 jm1 = seg M 0 jm1\<close> is verbatim, so the scb-context matches
+  the \<open>n = 1\<close> base / producer) plus the iterate basepoint membership
+  \<open>(M[q],jm1) \<in> Marked\<close> (@{thm [source] m_8_3_kind1_base_basepoint}).  Discharges
+  \<open>wrap\<close> of @{thm [source] m_8_5_step2_of_wrap_body} / @{thm [source]
+  m_8_5_base2_of_wrap_body}.\<close>
+
+lemma m_8_5_wrap_of_iterscb:
+  fixes M :: pairseq and OW :: "BT \<Rightarrow> BT" and s\<^sub>1 b\<^sub>1 :: "Sym list" and u jm1 q :: nat
+  assumes OW_def: "OW = (\<lambda>x. unflatBT (s\<^sub>1 @ Dsym (enat u) # flatBT x @ b\<^sub>1))"
+    and iterscb: "scb_kind1 (Trans ((M::pairseq)[q])) s\<^sub>1
+                    (flatBT (Dpt (enat u) (bpHeadT (Mark ((M::pairseq)[q]) jm1)))) b\<^sub>1"
+  shows "Trans ((M::pairseq)[q]) = OW (bpHeadT (Mark ((M::pairseq)[q]) jm1))"
+  by (rule m_8_5_anchor_OW[OF OW_def iterscb])
+
+text \<open>§8.5 step2/base2 REDUCTION LADDER (this round, layer c).  The unconditional
+  §8.5 condition-(V) descent reduces — via @{thm [source]
+  m_8_5_TransCondV_descend_of_step2_residuals} and the wirings above — to exactly
+  three GENUINE residuals, all empirically validated (python/_step2_decomp_check):
+    (1) SURGERY  \<open>Trans (Y \<frown> B) = D\<^bsub>u\<^esub> (F (bpHeadT (Trans Y)))\<close>  (one net \<open>C\<close> per
+        appended oper block; \<open>F=C\<close> iterates, \<open>F=C\<^bsup>k\<^esup>\<close> first step) — the §8 master key;
+    (2) ITERSCB  the iterate kind-1 scb-context match (context stability,
+        @{thm [source] scb_context_eq_of_prefix});
+    (3) BASEPOINT  \<open>(M[q],jm1) \<in> Marked\<close> (@{thm [source] m_8_3_kind1_base_basepoint},
+        needing condV \<Longrightarrow> hp1/coin/parR/j0lt2).
+  All other obligations (\<open>inj\<close>, \<open>base-leaf\<close>, the wirings) are discharged here.\<close>
+
+text \<open>SURGERY — empirical structure (python/_surgery_trace.py + _spine_Pm.py;
+  condV hosts, p \<in> {2,3}), for whoever closes the |B|-composition:
+  • (A) EVERY appended-block column triggers @{thm [source] m_8_2_keystone} case
+    (3)/(4) (DEEPEN the trailing principal \<open>D\<^bsub>x\<^esub> a \<rightarrow> D\<^bsub>x\<^esub> b\<close>), NEVER case (1)/(2)
+    (74/74 cols).  So the 4-way disjunction collapses to the two deepen cases —
+    provable from the block FirstNodes/Joints structure (the §8.5 Joints-FirstNodes
+    target; no such lemma yet in this base).
+  • (B) the genuine value-recurrence.  The keystone (3)/(4) gives the trailing-leaf
+    change SHAPE (\<open>a \<rightarrow> b\<close>) but NOT \<open>b\<close>'s value.  The per-column transform is NOT
+    uniform: it applies one keystone DEEPEN at the CURRENT TRAILING-MOST leaf, and
+    the descent DEPTH GROWS WITH p (p=2: col[0] appends \<open>D\<^bsub>v-1\<^esub> 0\<close> then interiors
+    build \<open>t\<^sub>2\<close>; p=3: BOTH columns deepen one level lower; …).  It is a RECURSIVE
+    spine-descent, well-founded on the trailing-leaf depth, netting exactly one
+    \<open>C x = t\<^sub>2 +\<^sub>B D\<^bsub>v-1\<^esub> x\<close> per w-column block.
+  • CIRCULARITY of the naive m-induction (verified): the spine invariant
+    \<open>Trans (Y \<frown> take m B) = D\<^bsub>u\<^esub> (t\<^sub>2 +\<^sub>B D\<^bsub>v-1\<^esub> (P m))\<close> forces \<open>P 0 = bd (q-1)\<close>
+    (= bpHeadT(Mark (M[q-1]) jm1); 55/56, the 1 exception is the k=2 first step),
+    so its BASE case (m=0) is \<open>bpHeadT(Trans Y) = t\<^sub>2 +\<^sub>B D\<^bsub>v-1\<^esub>(bd (q-1))\<close>, i.e.
+    \<open>bd q = C (bd (q-1))\<close> — the surgery CONCLUSION itself.  Hence a standalone
+    induction on m does NOT close it; the surgery needs an OUTER induction on q
+    (the closed-form @{thm [source] funpow_closed_of_step_from2} already inducts on
+    q — the q-1 body structure is the IH) wrapping the spine-descent for the step,
+    or a single well-founded induction on \<open>Lng (Y \<frown> B)\<close>.
+  NET RESIDUAL: appending one w-column oper block traverses-and-rebuilds the
+  trailing \<open>D\<^bsub>v-1\<^esub>\<close>-spine of \<open>bd (q-1)\<close>, wrapping it in one more \<open>C\<close>; this is the
+  §8.5 |B|-composition master key and has no existing closing lemma.\<close>
+
+
+text \<open>Head-extraction from a single-principal \<open>leBT\<close>: \<open>leBT (D\<^bsub>u\<^esub> a) (D\<^bsub>v\<^esub> b)\<close> forces
+  \<open>u \<le> v\<close> (the lexicographic head dominates).  Companion of @{thm [source] leBT_Dpt_mono}
+  (which moves the body under a fixed head).\<close>
+
+lemma leBT_Dpt_head_le:
+  assumes "leBT (Dpt u a) (Dpt v b)"
+  shows "u \<le> v"
+proof -
+  have "lessBT (Trm [DB u a]) (Trm [DB v b]) \<or> Trm [DB u a] = Trm [DB v b]"
+    using assms by simp
+  thus ?thesis
+  proof
+    assume "lessBT (Trm [DB u a]) (Trm [DB v b])"
+    hence "lessBP (DB u a) (DB v b)" by simp
+    hence "u < v \<or> (u = v \<and> lessBT a b)" by simp
+    thus ?thesis by auto
+  next
+    assume "Trm [DB u a] = Trm [DB v b]"
+    thus ?thesis by simp
+  qed
+qed
+
+text \<open>§8.7 R2 brick — keystone PROPER-PREFIX \<open>dstep\<close> reduction to the equal-head tail
+  (cases (3)/(4), surgery-FREE).  In keystone cases (3)/(4) the predecessor body is a
+  PROPER prefix \<open>Trm ps\<close> trailing an appended principal \<open>D\<^bsub>M\<^sub>1\<^sub>,\<^sub>j\<^sub>j\<^esub> q\<^sub>p\<close> at the SAME head
+  index \<open>jj\<close> (\<open>jj = j\<^sub>1'\<close> for (3), \<open>jj = j\<^sub>0'\<close> for (4)) as the \<open>M\<close>-appended principal
+  \<open>D\<^bsub>M\<^sub>1\<^sub>,\<^sub>j\<^sub>j\<^esub> q\<close>.  The \<open>head\<close> input \<open>x \<le> hd\<close> is then FREE from the IH \<open>descP\<close>:
+  \<open>isOT_BT (Trans (Pred M))\<close> exposes \<open>descP (ps @ [D\<^bsub>M\<^sub>1\<^sub>,\<^sub>j\<^sub>j\<^esub> q\<^sub>p])\<close>, whose last step
+  (@{thm [source] descP_last_le}) gives \<open>D\<^bsub>M\<^sub>1\<^sub>,\<^sub>j\<^sub>j\<^esub> q\<^sub>p \<le> last ps\<close>, hence the head bound
+  \<open>M\<^bsub>1,jj\<^esub> \<le> hd\<close> (@{thm [source] leBT_Dpt_head_le}).  This DISCHARGES the head and
+  isolates the genuine residual to the equal-head tail \<open>tail\<close>: \<open>M\<^bsub>1,jj\<^esub> = hd \<Longrightarrow>
+  leBT q qb\<close> — the genuine \<open>Trans\<close>-spine descent (the \<open>M\<close>-appended body \<open>q \<ge> q\<^sub>p\<close> by the
+  §7.3 \<open>Pred\<close>-descent, so this does NOT come from \<open>descP\<close>-inheritance).  Empirically
+  verified: \<open>dstep\<close> 0-fail and equal-head \<open>leBT q qb\<close> 0-fail over 1450+ \<open>ST\<^bsub>PS\<^esub>\<close>
+  keystone samples (\<open>python/_r2_dstep_check.py\<close>; equal-head occurs at \<open>x = 0\<close> AND
+  \<open>x > 0\<close>, with \<open>q = qb\<close> in the periodic-copy subcases and \<open>q < qb\<close> strictly otherwise).\<close>
+
+lemma m_8_7_dstep_properprefix_reduce:
+  fixes M :: pairseq and ps :: "BP list" and q qp :: BT and jj :: nat
+  assumes ihBT: "isOT_BT (Trans (Pred M))"
+    and predW: "Trans (Pred M)
+                = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B Dpt (enat (entry M 1 jj)) qp)"
+    and psne: "ps \<noteq> []"
+    and tail: "\<And>hd qb. last ps = DB (enat hd) qb \<Longrightarrow> entry M 1 jj = hd \<Longrightarrow> leBT q qb"
+  shows "leBT (Dpt (enat (entry M 1 jj)) q) (Trm [last ps])"
+proof -
+  let ?x = "entry M 1 jj"
+  have bodyOT: "isOT_BT (Trm ps +\<^sub>B Dpt (enat ?x) qp)"
+    using ihBT predW by simp
+  have "isOT_BT (Trm (ps @ [DB (enat ?x) qp]))" using bodyOT by simp
+  hence dP: "descP (ps @ [DB (enat ?x) qp])" by simp
+  have dl: "leBT (Trm [DB (enat ?x) qp]) (Trm [last ps])"
+    by (rule descP_last_le[OF dP psne])
+  obtain lw qb where lastps: "last ps = DB lw qb" by (cases "last ps")
+  have dl': "leBT (Dpt (enat ?x) qp) (Dpt lw qb)"
+    using dl lastps by simp
+  show ?thesis
+  proof (cases "enat ?x = lw")
+    case False
+    have "enat ?x \<le> lw" by (rule leBT_Dpt_head_le[OF dl'])
+    hence "enat ?x < lw" using False by simp
+    hence "lessBP (DB (enat ?x) q) (DB lw qb)" by simp
+    hence "lessBT (Dpt (enat ?x) q) (Dpt lw qb)" by simp
+    thus ?thesis using lastps by simp
+  next
+    case True
+    obtain hd where hd: "lw = enat hd" using True by (cases lw) auto
+    have xhd: "?x = hd" using True hd by simp
+    have lastps2: "last ps = DB (enat hd) qb" using lastps hd by simp
+    have "leBT q qb" by (rule tail[OF lastps2 xhd])
+    hence "leBT (Dpt (enat hd) q) (Dpt (enat hd) qb)" by (rule leBT_Dpt_mono)
+    thus ?thesis using lastps hd xhd by simp
+  qed
+qed
+
 end
