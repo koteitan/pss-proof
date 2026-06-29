@@ -5326,4 +5326,42 @@ proof -
   qed
 qed
 
+
+text \<open>§8.7 OT-preservation, nonkey DISCHARGED — reduces m_8_7_Trans_preserves_OT to
+  exactly the two value/junction residuals \<open>resid\<close> (= R3: the keystone newOT/GBT step,
+  surgC/FACT2-entangled) and \<open>multiD\<close> (= the multiT junction descent), by plugging the
+  non-keystone branch @{thm [source] m_8_7_Trans_OT_nonkey} into the \<open>nonkey\<close> slot.\<close>
+
+lemma m_8_7_Trans_preserves_OT_modulo:
+  fixes M :: pairseq
+  assumes resid:
+    "\<And>M x q ps r.
+        M \<in> ST_PS \<Longrightarrow> monoT M \<Longrightarrow> Br M \<noteq> [] \<Longrightarrow> Lng M - 1 > 1 \<Longrightarrow>
+        Trans (Pred M) = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B r) \<Longrightarrow>
+        Trans M = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B Dpt (enat x) q) \<Longrightarrow>
+        isOT_BP (DB (enat x) q)
+        \<and> (ps \<noteq> [] \<longrightarrow> leBT (Dpt (enat x) q) (Trm [last ps]))
+        \<and> (\<forall>y\<in>GBT (enat (entry M 1 0)) (Trm ps +\<^sub>B Dpt (enat x) q).
+               lessBT y (Trm ps +\<^sub>B Dpt (enat x) q))"
+  assumes multiD:
+    "\<And>N as bs. N \<in> ST_PS \<Longrightarrow> multiT N \<Longrightarrow> drop (Pcut N) N \<noteq> [(0,0)] \<Longrightarrow>
+        Trans (take (Pcut N) N) = Trm as \<Longrightarrow> Trans (drop (Pcut N) N) = Trm bs \<Longrightarrow>
+        as \<noteq> [] \<Longrightarrow> bs \<noteq> [] \<Longrightarrow> leBT (Trm [hd bs]) (Trm [last as])"
+  assumes MST: "M \<in> ST_PS"
+  shows "Trans M \<in> OT_B"
+proof -
+  have nk: "\<And>N. N \<in> ST_PS \<Longrightarrow> \<not> (monoT N \<and> Br N \<noteq> [] \<and> Lng N - 1 > 1) \<Longrightarrow>
+              (\<And>N'. N' \<in> ST_PS \<Longrightarrow> Lng N' < Lng N \<Longrightarrow> Trans N' \<in> OT_B) \<Longrightarrow>
+              Trans N \<in> OT_B"
+  proof -
+    fix N assume a: "N \<in> ST_PS"
+      and b: "\<not> (monoT N \<and> Br N \<noteq> [] \<and> Lng N - 1 > 1)"
+      and c: "\<And>N'. N' \<in> ST_PS \<Longrightarrow> Lng N' < Lng N \<Longrightarrow> Trans N' \<in> OT_B"
+    show "Trans N \<in> OT_B"
+      by (rule m_8_7_Trans_OT_nonkey[OF a b c multiD[OF a]])
+  qed
+  show "Trans M \<in> OT_B"
+    by (rule m_8_7_Trans_preserves_OT[OF resid nk MST])
+qed
+
 end
