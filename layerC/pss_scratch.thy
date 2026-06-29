@@ -3876,5 +3876,67 @@ proof -
   show ?thesis using A BI BIII BV cS by blast
 qed
 
+text \<open>§8.5 (E.2) ASSEMBLY — the F=C MATCH (step 4, the crux).  Reconciles the
+  slice-surgery skeleton body \<open>t\<^sub>2 +\<^sub>B D\<^bsub>vm1\<^esub> z\<close> with the spine wrap \<open>C z\<close>
+  (\<open>C = \<lambda>x. unflatBT (s\<^sub>0 \<frown> D\<^bsub>v-1\<^esub> # flat x \<frown> b\<^sub>0)\<close>).  By @{thm [source] flat_addBT_Dpt}
+  \<open>flat (t\<^sub>2 +\<^sub>B D\<^bsub>vm1\<^esub> z) = liftS t\<^sub>2 [] \<frown> D\<^bsub>vm1\<^esub> # flat z \<frown> [RP]\<close>; so when the
+  context matches — \<open>s\<^sub>0 = liftS t\<^sub>2 []\<close>, \<open>b\<^sub>0 = [RP]\<close>, \<open>vm1 = v-1\<close> — the \<open>C\<close>-string IS
+  \<open>flat (t\<^sub>2 +\<^sub>B D\<^bsub>vm1\<^esub> z)\<close>, hence \<open>C z = t\<^sub>2 +\<^sub>B D\<^bsub>vm1\<^esub> z\<close> by @{thm [source] unflatBT_flat}.
+  Python-validated (flat-identity + C-reconstruction 5/5).  Isolates the F=C match to
+  the four context equalities (\<open>s\<^sub>0/b\<^sub>0/vm1/u\<close>), i.e. the n=1-base \<Rightarrow> slice-head scb
+  CONTEXT STABILITY (the \<open>iterscb\<close> residual, @{thm [source] scb_context_eq_of_prefix}).\<close>
+
+lemma m_8_5_FeqC_bridge:
+  fixes t2 z :: BT and vm1 v e10 u :: nat and s0 b0 :: "Sym list" and C :: "BT \<Rightarrow> BT"
+  assumes Cdef: "C = (\<lambda>x. unflatBT (s0 @ Dsym (enat (v - 1)) # flatBT x @ b0))"
+    and prene: "untrm t2 \<noteq> []"
+    and s0eq: "s0 = liftS t2 []"
+    and b0eq: "b0 = [RP]"
+    and vm1eq: "vm1 = v - 1"
+    and ueq: "u = e10"
+  shows "Dpt (enat e10) (t2 +\<^sub>B Dpt (enat vm1) z) = Dpt (enat u) (C z)"
+proof -
+  have flatcomp: "flatBT (t2 +\<^sub>B Dpt (enat vm1) z)
+                    = liftS t2 (Dsym (enat vm1) # flatBT z) @ [RP]"
+    by (rule flat_addBT_Dpt[OF prene])
+  have flat2: "flatBT (t2 +\<^sub>B Dpt (enat vm1) z)
+                 = liftS t2 [] @ Dsym (enat vm1) # flatBT z @ [RP]"
+    using flatcomp by (simp add: liftS_def)
+  have argEq: "s0 @ Dsym (enat (v - 1)) # flatBT z @ b0 = flatBT (t2 +\<^sub>B Dpt (enat vm1) z)"
+    unfolding s0eq b0eq using flat2 vm1eq by simp
+  have "C z = unflatBT (s0 @ Dsym (enat (v - 1)) # flatBT z @ b0)" by (simp add: Cdef)
+  also have "\<dots> = unflatBT (flatBT (t2 +\<^sub>B Dpt (enat vm1) z))" using argEq by simp
+  also have "\<dots> = t2 +\<^sub>B Dpt (enat vm1) z" by (rule unflatBT_flat)
+  finally have CzEq: "C z = t2 +\<^sub>B Dpt (enat vm1) z" .
+  show ?thesis using CzEq ueq by simp
+qed
+
+text \<open>§8.5 (E.2) ASSEMBLY — surgC FROM the skeleton output.  Given the slice surgery
+  in skeleton form \<open>Trans (Y\<frown>B) = D\<^bsub>e10\<^esub>(t\<^sub>2 +\<^sub>B D\<^bsub>vm1\<^esub> (bpHeadT (Trans Y)))\<close> (assembled
+  from @{thm [source] m_8_5_shared_append_base} (col0 base) + @{thm [source]
+  m_8_5_reduced_slice_surgery_condI} (regime-agnostic) + @{thm [source]
+  m_8_5_slice_surgery_skeleton}) and the F=C context match, yields EXACTLY the surgC
+  hypothesis shape of @{thm [source] m_8_5_TransCondV_descend_kernel}:
+  \<open>Trans (Y\<frown>B) = D\<^bsub>u\<^esub> (C (bpHeadT (Trans Y)))\<close>.\<close>
+
+lemma m_8_5_surgC_of_skeleton:
+  fixes Y B :: pairseq and t2 :: BT and e10 vm1 v u :: nat
+    and s0 b0 :: "Sym list" and C :: "BT \<Rightarrow> BT"
+  assumes skel: "Trans (Y @ B)
+                   = Dpt (enat e10) (t2 +\<^sub>B Dpt (enat vm1) (bpHeadT (Trans Y)))"
+    and Cdef: "C = (\<lambda>x. unflatBT (s0 @ Dsym (enat (v - 1)) # flatBT x @ b0))"
+    and prene: "untrm t2 \<noteq> []"
+    and s0eq: "s0 = liftS t2 []"
+    and b0eq: "b0 = [RP]"
+    and vm1eq: "vm1 = v - 1"
+    and ueq: "u = e10"
+  shows "Trans (Y @ B) = Dpt (enat u) (C (bpHeadT (Trans Y)))"
+proof -
+  have "Dpt (enat e10) (t2 +\<^sub>B Dpt (enat vm1) (bpHeadT (Trans Y)))
+          = Dpt (enat u) (C (bpHeadT (Trans Y)))"
+    by (rule m_8_5_FeqC_bridge[OF Cdef prene s0eq b0eq vm1eq ueq])
+  thus ?thesis using skel by simp
+qed
+
 
 end
