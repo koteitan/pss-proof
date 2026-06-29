@@ -4159,5 +4159,76 @@ proof -
   thus ?thesis by (simp add: Pcut_def)
 qed
 
+text \<open>§8.5 (E.2) FACT-1 sub-ob 2 helper — the slice is the CONCAT of period copies.
+  Dropping the trunk prefix \<open>take j\<^sub>0 M\<close> from \<open>M[n]\<close> leaves exactly the periodic copies
+  \<open>concat (map \<beta>\<^bsub>k\<^esub> [0..<n])\<close> (\<open>j\<^sub>0 = parent M 1 (Lng M-1)\<close>).  Since for the condV slice
+  \<open>jm1 = j\<^sub>0\<close>, \<open>seg (M[Suc q]) jm1 (Lng-1) = drop jm1 (M[Suc q]) = concat (period copies)\<close> —
+  the periodic slice form.  From @{thm [source] m_8_4_oper_genform} + \<open>drop_append\<close>.\<close>
+
+lemma m_8_5_slice_concat:
+  assumes j1pos: "Lng M - 1 > 0"
+    and e1pos: "entry M 1 (Lng M - 1) > 0"
+    and hp: "hasParent M 1 (Lng M - 1)"
+    and j0le: "parent M 1 (Lng M - 1) \<le> Lng M"
+  shows "drop (parent M 1 (Lng M - 1)) (M[n])
+       = concat (map (\<lambda>k. map (\<lambda>j. (entry M 0 j
+                                       + k * (entry M 0 (Lng M - 1) - entry M 0 (parent M 1 (Lng M - 1))),
+                                      entry M 1 j))
+                              [parent M 1 (Lng M - 1)..<Lng M - 1])
+                     [0..<n])"
+proof -
+  let ?j0 = "parent M 1 (Lng M - 1)"
+  let ?cc = "concat (map (\<lambda>k. map (\<lambda>j. (entry M 0 j
+                                          + k * (entry M 0 (Lng M - 1) - entry M 0 ?j0),
+                                         entry M 1 j))
+                                 [?j0..<Lng M - 1])
+                        [0..<n])"
+  have gn: "M[n] = take ?j0 M @ ?cc" by (rule m_8_4_oper_genform[OF j1pos e1pos hp])
+  have ltk: "length (take ?j0 M) = ?j0" using j0le by simp
+  have "drop ?j0 (M[n]) = drop ?j0 (take ?j0 M @ ?cc)" using gn by simp
+  also have "\<dots> = drop ?j0 (take ?j0 M) @ drop (?j0 - length (take ?j0 M)) ?cc"
+    by (simp add: drop_append)
+  also have "\<dots> = ?cc" using ltk by simp
+  finally show ?thesis .
+qed
+
+text \<open>§8.5 (E.2) FACT-1 sub-ob 2 helper — the slice's PERIODIC row-0.  At every index
+  \<open>k\<cdot>w + r\<close> (\<open>w = (Lng M-1) - j\<^sub>0\<close>, \<open>k<n\<close>, \<open>r<w\<close>), the slice \<open>drop j\<^sub>0 (M[n])\<close> has row-0
+  \<open>= entry M 0 (j\<^sub>0+r) + k\<cdot>d\<^sub>0\<close> (\<open>d\<^sub>0 = entry M 0 (Lng M-1) - entry M 0 j\<^sub>0\<close>).  From
+  @{thm [source] m_8_5_slice_concat} + @{thm [source] nth_concat_map_const_len} (each
+  period block has constant length \<open>w\<close>) + \<open>nth_map\<close>/\<open>nth_upt\<close>.  This is the explicit
+  periodic row-0 the le0-cut reasoning (sub-ob 2/3) runs on.\<close>
+
+lemma m_8_5_slice_entry0:
+  assumes j1pos: "Lng M - 1 > 0"
+    and e1pos: "entry M 1 (Lng M - 1) > 0"
+    and hp: "hasParent M 1 (Lng M - 1)"
+    and j0le: "parent M 1 (Lng M - 1) \<le> Lng M"
+    and r: "r < Lng M - 1 - parent M 1 (Lng M - 1)"
+    and k: "k < n"
+  shows "entry (drop (parent M 1 (Lng M - 1)) (M[n])) 0
+            (k * (Lng M - 1 - parent M 1 (Lng M - 1)) + r)
+       = entry M 0 (parent M 1 (Lng M - 1) + r)
+           + k * (entry M 0 (Lng M - 1) - entry M 0 (parent M 1 (Lng M - 1)))"
+proof -
+  let ?j0 = "parent M 1 (Lng M - 1)"
+  let ?w = "Lng M - 1 - ?j0"
+  let ?d0 = "entry M 0 (Lng M - 1) - entry M 0 ?j0"
+  let ?B = "\<lambda>k. map (\<lambda>j. (entry M 0 j + k * ?d0, entry M 1 j)) [?j0..<Lng M - 1]"
+  have sc: "drop ?j0 (M[n]) = concat (map ?B [0..<n])"
+    by (rule m_8_5_slice_concat[OF j1pos e1pos hp j0le])
+  have lenB: "\<And>kk. kk < n \<Longrightarrow> length (?B kk) = ?w" by simp
+  have nthc: "concat (map ?B [0..<n]) ! (k * ?w + r) = (?B k) ! r"
+    by (rule nth_concat_map_const_len[OF lenB r k])
+  have nthB: "(?B k) ! r = (entry M 0 (?j0 + r) + k * ?d0, entry M 1 (?j0 + r))"
+    using r by simp
+  have "entry (drop ?j0 (M[n])) 0 (k * ?w + r)
+          = fst (concat (map ?B [0..<n]) ! (k * ?w + r))"
+    using sc by (simp add: entry_def)
+  also have "\<dots> = fst ((?B k) ! r)" using nthc by simp
+  also have "\<dots> = entry M 0 (?j0 + r) + k * ?d0" using nthB by simp
+  finally show ?thesis .
+qed
+
 
 end
