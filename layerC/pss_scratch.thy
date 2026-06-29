@@ -4230,5 +4230,96 @@ proof -
   finally show ?thesis .
 qed
 
+text \<open>§8.5 (E.2) FACT-1 sub-ob 2 helper — the slice LENGTH.  \<open>Lng (drop j\<^sub>0 (M[n])) = n\<cdot>w\<close>
+  (\<open>w = (Lng M-1) - j\<^sub>0\<close>): the \<open>n\<close> period copies each have length \<open>w\<close>.  From
+  @{thm [source] m_8_5_slice_concat} + \<open>length_concat\<close>.\<close>
+
+lemma m_8_5_Lng_slice:
+  assumes j1pos: "Lng M - 1 > 0"
+    and e1pos: "entry M 1 (Lng M - 1) > 0"
+    and hp: "hasParent M 1 (Lng M - 1)"
+    and j0le: "parent M 1 (Lng M - 1) \<le> Lng M"
+  shows "Lng (drop (parent M 1 (Lng M - 1)) (M[n]))
+       = n * (Lng M - 1 - parent M 1 (Lng M - 1))"
+proof -
+  let ?j0 = "parent M 1 (Lng M - 1)"
+  let ?w = "Lng M - 1 - ?j0"
+  let ?B = "\<lambda>k. map (\<lambda>j. (entry M 0 j + k * (entry M 0 (Lng M - 1) - entry M 0 ?j0),
+                          entry M 1 j))
+                  [?j0..<Lng M - 1]"
+  have sc: "drop ?j0 (M[n]) = concat (map ?B [0..<n])"
+    by (rule m_8_5_slice_concat[OF j1pos e1pos hp j0le])
+  have "length (concat (map ?B [0..<n])) = sum_list (map length (map ?B [0..<n]))"
+    by (simp add: length_concat)
+  also have "map length (map ?B [0..<n]) = map (\<lambda>k. ?w) [0..<n]" by simp
+  also have "sum_list (map (\<lambda>k. ?w) [0..<n]) = n * ?w" by (simp add: sum_list_triv)
+  finally show ?thesis using sc by simp
+qed
+
+text \<open>§8.5 (E.2) FACT-1 sub-ob 2 — the BLOCK-START nextrel0 step.  In the periodic slice
+  \<open>X = drop j\<^sub>0 (M[Suc q])\<close>, consecutive period boundaries are \<open>nextrel0\<close>-linked:
+  \<open>nextrel0 X (k\<cdot>w) ((Suc k)\<cdot>w)\<close> for \<open>Suc k \<le> q\<close>.  The row-0 lt and the
+  "all-between-≥-endpoint" both come from \<open>parR\<close> (\<open>nextrel0 M j\<^sub>0 (Lng M-1)\<close>, the committed
+  condV fact) transported through the \<open>+k\<cdot>d\<^sub>0\<close> period shift (@{thm [source] m_8_5_slice_entry0}).\<close>
+
+lemma m_8_5_slice_nextrel0_blockstart:
+  fixes M :: pairseq and q k :: nat
+  assumes j1pos: "Lng M - 1 > 0"
+    and e1pos: "entry M 1 (Lng M - 1) > 0"
+    and hp: "hasParent M 1 (Lng M - 1)"
+    and j0le: "parent M 1 (Lng M - 1) \<le> Lng M"
+    and parR: "nextrel0 M (parent M 1 (Lng M - 1)) (Lng M - 1)"
+    and kq: "Suc k \<le> q"
+  shows "nextrel0 (drop (parent M 1 (Lng M - 1)) (M[Suc q]))
+            (k * (Lng M - 1 - parent M 1 (Lng M - 1)))
+            (Suc k * (Lng M - 1 - parent M 1 (Lng M - 1)))"
+proof -
+  let ?j0 = "parent M 1 (Lng M - 1)"
+  let ?w = "Lng M - 1 - ?j0"
+  let ?d0 = "entry M 0 (Lng M - 1) - entry M 0 ?j0"
+  let ?X = "drop ?j0 (M[Suc q])"
+  have lt0: "entry M 0 ?j0 < entry M 0 (Lng M - 1)" using parR by (simp add: nextrel0_def)
+  have j0lt: "?j0 < Lng M - 1" using parR by (simp add: nextrel0_def)
+  have wpos: "0 < ?w" using j0lt by simp
+  have d0pos: "0 < ?d0" using lt0 by simp
+  have d0eq: "entry M 0 ?j0 + ?d0 = entry M 0 (Lng M - 1)" using lt0 by simp
+  have LngX: "Lng ?X = Suc q * ?w" by (rule m_8_5_Lng_slice[OF j1pos e1pos hp j0le])
+  have klt: "k < Suc q" using kq by simp
+  have k1lt: "Suc k < Suc q" using kq by simp
+  have betwall: "\<forall>jj. ?j0 < jj \<and> jj < Lng M - 1 \<longrightarrow> entry M 0 jj \<ge> entry M 0 (Lng M - 1)"
+    using parR by (simp add: nextrel0_def)
+  have a: "entry ?X 0 (k * ?w) = entry M 0 ?j0 + k * ?d0"
+    using m_8_5_slice_entry0[OF j1pos e1pos hp j0le wpos klt] by simp
+  have b: "entry ?X 0 (Suc k * ?w) = entry M 0 ?j0 + Suc k * ?d0"
+    using m_8_5_slice_entry0[OF j1pos e1pos hp j0le wpos k1lt] by simp
+  show ?thesis
+    unfolding nextrel0_def
+  proof (intro conjI allI impI)
+    show "k * ?w < Lng ?X"
+      using mult_strict_right_mono[OF klt wpos] by (simp only: LngX)
+    show "Suc k * ?w < Lng ?X"
+      using mult_strict_right_mono[OF k1lt wpos] by (simp only: LngX)
+    show "k * ?w < Suc k * ?w" using wpos by simp
+    have sukd: "Suc k * ?d0 = ?d0 + k * ?d0" by simp
+    show "entry ?X 0 (k * ?w) < entry ?X 0 (Suc k * ?w)"
+      using a b d0pos sukd by linarith
+  next
+    fix j assume hj: "k * ?w < j \<and> j < Suc k * ?w"
+    define r where "r = j - k * ?w"
+    have suck: "Suc k * ?w = ?w + k * ?w" by simp
+    have rpos: "0 < r" using hj r_def by linarith
+    have rlt: "r < ?w" using hj r_def suck by linarith
+    have jeq: "j = k * ?w + r" using hj r_def by linarith
+    have ej: "entry ?X 0 j = entry M 0 (?j0 + r) + k * ?d0"
+      using m_8_5_slice_entry0[OF j1pos e1pos hp j0le rlt klt] jeq by simp
+    have jjlt: "?j0 + r < Lng M - 1" using rlt by simp
+    have jjgt: "?j0 < ?j0 + r" using rpos by simp
+    have betw: "entry M 0 (?j0 + r) \<ge> entry M 0 (Lng M - 1)" using betwall jjgt jjlt by blast
+    have sukd: "Suc k * ?d0 = ?d0 + k * ?d0" by simp
+    show "entry ?X 0 (Suc k * ?w) \<le> entry ?X 0 j"
+      using ej b betw d0eq sukd by linarith
+  qed
+qed
+
 
 end
