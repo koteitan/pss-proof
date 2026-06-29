@@ -6316,4 +6316,52 @@ qed
 lemma bpHeadT_rnav_Dpt: "bpHeadT (Dpt (enat v) b) = rnav (Dpt (enat v) b)"
   by (rule bpHeadT_eq_rnav) simp
 
+
+text \<open>§8.5 keystone anchor (DEPTH face) — the C-wrap is undone by EXACTLY ONE rnav step.
+  With the otasm-confirmed clean tower \<open>C z = (D00,D00) +\<^sub>B Dpt 0 z\<close> (the §8.5
+  @{thm [source] m_8_5_C_body} shape, \<open>t2 = (D00,D00)\<close>, \<open>vm1 = 0\<close>), \<open>rnav (C z) = z\<close>.
+  This is the structural target of the one-oper-step deepening: each C-wrap (= one
+  oper-step) adds exactly one rnav-level, so \<open>rnav\<^bsup>k\<^esup> (C\<^bsup>k\<^esup> z) = z\<close> — the tower's
+  clean self-similar rnav-nest.  Non-circular (pure @{thm [source] m_8_5_C_body} +
+  @{thm [source] rnav_addBT}; does not invoke the markstep).\<close>
+
+lemma m_8_5_C_rnav:
+  fixes t2 z :: BT and vm1 v :: nat and s0 b0 :: "Sym list" and C :: "BT \<Rightarrow> BT"
+  assumes Cdef: "C = (\<lambda>x. unflatBT (s0 @ Dsym (enat (v - 1)) # flatBT x @ b0))"
+    and prene: "untrm t2 \<noteq> []"
+    and s0eq: "s0 = liftS t2 []"
+    and b0eq: "b0 = [RP]"
+    and vm1eq: "vm1 = v - 1"
+  shows "rnav (C z) = z"
+proof -
+  have "C z = t2 +\<^sub>B Dpt (enat vm1) z"
+    by (rule m_8_5_C_body[OF Cdef prene s0eq b0eq vm1eq])
+  thus ?thesis by (simp add: rnav_addBT)
+qed
+
+
+text \<open>The k-fold C-wrap is undone by k rnav steps — the clean tower rnav-descent
+  \<open>rnav\<^bsup>k\<^esup> (C\<^bsup>k\<^esup> z) = z\<close>.  Iterated @{thm [source] m_8_5_C_rnav}; the geometric
+  backbone of the depth ladder (each oper-step = one C-wrap = one rnav-level).\<close>
+
+lemma m_8_5_C_rnav_funpow:
+  fixes t2 :: BT and v :: nat and s0 b0 :: "Sym list" and C :: "BT \<Rightarrow> BT"
+  assumes Cdef: "C = (\<lambda>x. unflatBT (s0 @ Dsym (enat (v - 1)) # flatBT x @ b0))"
+    and prene: "untrm t2 \<noteq> []"
+    and s0eq: "s0 = liftS t2 []"
+    and b0eq: "b0 = [RP]"
+  shows "(rnav ^^ k) ((C ^^ k) z) = z"
+proof (induction k arbitrary: z)
+  case 0 thus ?case by simp
+next
+  case (Suc k)
+  have step: "rnav (C w) = w" for w
+    by (rule m_8_5_C_rnav[OF Cdef prene s0eq b0eq refl])
+  have "(rnav ^^ Suc k) ((C ^^ Suc k) z) = (rnav ^^ k) (rnav (C ((C ^^ k) z)))"
+    by (simp add: funpow_Suc_right funpow_swap1)
+  also have "\<dots> = (rnav ^^ k) ((C ^^ k) z)" using step by simp
+  also have "\<dots> = z" by (rule Suc.IH)
+  finally show ?case .
+qed
+
 end
