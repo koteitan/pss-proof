@@ -5715,4 +5715,64 @@ proof -
   show ?thesis using mk2 c2 by (simp add: transJ1_def)
 qed
 
+
+text \<open>§8.5 (E.2) — per-column bpHeadT action, \<open>t\<^sub>2=0\<close> branch (in-theory).  When the predecessor
+  head \<open>transT2 M = 0\<close> and none of cond I/III/V/VI hold, transC2 nests \<open>D\<^bsub>e\<^sub>jp\<^esub>(D\<^bsub>e\<^esub> 0)\<close>:
+  \<open>bpHeadT (Mark M (transJm1 M)) = D\<^bsub>entry M 1 jp\<^esub> (D\<^bsub>entry M 1 (Lng-1)\<^esub> 0)\<close>.\<close>
+
+lemma m_8_5_Mark_bpHeadT_step_tt2zero:
+  fixes M :: pairseq
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS"
+    and J1pos: "transJ1 M > 0" and T1: "transT1 M \<noteq> 0\<^sub>B"
+    and ncond: "\<not> transCondI M \<and> \<not> transCondIII M \<and> \<not> transCondV M \<and> \<not> transCondVI M"
+    and tt2z: "transT2 M = 0\<^sub>B"
+  shows "bpHeadT (Mark M (transJm1 M))
+       = Dpt (enat (entry M 1 (transJ0 M))) (Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B)"
+proof -
+  have mk2: "Mark M (transJm1 M) = transC2 M"
+    by (rule m_7_3_Mark_rightmost2[OF MR MP J1pos T1])
+  have c2: "transC2 M
+              = Dpt (transV M) (Dpt (enat (entry M 1 (transJ0 M)))
+                                    (Dpt (enat (entry M 1 (transJ1 M))) 0\<^sub>B))"
+    using ncond tt2z by (simp add: transC2_def Let_def)
+  show ?thesis using mk2 c2 by (simp add: transJ1_def)
+qed
+
+
+text \<open>§8.5 (E.2) — per-column bpHeadT action, ELSE branch (the NESTED / C-wrap shape, in-theory).
+  When \<open>transT2 M \<noteq> 0\<close> and none of cond I/III/V/VI hold, transC2 produces the nested
+  \<open>D\<^bsub>v\<^esub>(t\<^sub>3 +\<^sub>B D\<^bsub>e\<^sub>jp\<^esub>(t\<^sub>4 +\<^sub>B D\<^bsub>e\<^esub> 0))\<close>, where \<open>t\<^sub>3/t\<^sub>4\<close> are the §7.2 left-split of the predecessor
+  head \<open>t\<^sub>2 = transT2 M\<close> at its last principal \<open>pj\<close> (\<open>t\<^sub>4 = bpHeadT pj\<close> when the left-\<open>D\<^bsub>jp\<^esub>\<close>
+  guard fires).  Taking \<open>bpHeadT\<close>:
+    \<open>bpHeadT (Mark M (transJm1 M)) = t\<^sub>3 +\<^sub>B D\<^bsub>entry M 1 jp\<^esub> (t\<^sub>4 +\<^sub>B D\<^bsub>entry M 1 (Lng-1)\<^esub> 0)\<close>.
+  This is the SELF-SIMILAR reconstructor: \<open>t\<^sub>4 = bpHeadT pj\<close> = the body of the previous head's
+  last principal — the source of the per-period \<open>C\<close>-wrap (the §8 keystone value).\<close>
+
+lemma m_8_5_Mark_bpHeadT_step_else:
+  fixes M :: pairseq
+  defines "t2 \<equiv> transT2 M"
+  defines "J1 \<equiv> Lng (PB t2) - 1"
+  defines "pj \<equiv> PB t2 ! J1"
+  defines "leftDj0 \<equiv> (bpHeadV pj = enat (entry M 1 (transJ0 M)))"
+  defines "t3 \<equiv> (if leftDj0 then SigmaB (take J1 (PB t2)) else t2)"
+  defines "t4 \<equiv> (if leftDj0 then bpHeadT pj else t2)"
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS"
+    and J1pos: "transJ1 M > 0" and T1: "transT1 M \<noteq> 0\<^sub>B"
+    and ncond: "\<not> transCondI M \<and> \<not> transCondIII M \<and> \<not> transCondV M \<and> \<not> transCondVI M"
+    and tt2nz: "transT2 M \<noteq> 0\<^sub>B"
+  shows "bpHeadT (Mark M (transJm1 M))
+       = t3 +\<^sub>B Dpt (enat (entry M 1 (transJ0 M)))
+                   (t4 +\<^sub>B Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B)"
+proof -
+  have mk2: "Mark M (transJm1 M) = transC2 M"
+    by (rule m_7_3_Mark_rightmost2[OF MR MP J1pos T1])
+  have c2: "transC2 M
+              = Dpt (transV M)
+                  (t3 +\<^sub>B Dpt (enat (entry M 1 (transJ0 M)))
+                         (t4 +\<^sub>B Dpt (enat (entry M 1 (transJ1 M))) 0\<^sub>B))"
+    using ncond tt2nz
+    by (simp add: transC2_def Let_def t2_def J1_def pj_def leftDj0_def t3_def t4_def)
+  show ?thesis using mk2 c2 by (simp add: transJ1_def)
+qed
+
 end
