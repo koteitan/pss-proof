@@ -5426,4 +5426,91 @@ proof -
     by (rule m_8_5_endpoint_of_blockC[OF shape Cdef prene s0eq b0eq vm1eq blockC])
 qed
 
+
+text \<open>§8.5 (E.2) MASTER CAPSTONE (netfold-route, condV-grounded).  Same surgC conclusion as
+  the (dead-route) spinelaw wiring but routed through the SLICE-TRUE block identity
+  \<open>blockC : spineLeaf (Trans (Y\<frown>B)) = C (spineLeaf (Trans Y))\<close> (appending the condV-deepen
+  period \<open>B\<close> applies exactly ONE \<open>C\<close>-graft to the spine leaf) — NOT the intrinsic
+  \<open>Pred\<^bsup>Pcut\<^esup>\<close>-spinelaw (which is a FALSE universal off the kernel slice: holds 231/283 over
+  reduced terms, the genuine non-degenerate CEX \<open>X=[(0,0),(1,0),(2,1)]\<close> giving \<open>D\<^sub>1\<close> vs \<open>D\<^sub>0\<close>;
+  even base-shape gating leaves 29 counterexamples).  \<open>blockC\<close> is reachable WITHOUT any
+  intrinsic-spinelaw claim: \<open>Trans (Y\<frown>B) = fold op [0..<Lng B] (Trans Y)\<close> (the GREEN
+  condV-grounded @{thm [source] m_8_5_Trans_netfold_condV}), \<open>spineLeaf\<close> pushed through the
+  fold by @{thm [source] m_8_5_spineLeaf_fold} (3a), then the per-period fold value
+  \<open>fold op [0..<Lng B] (spineLeaf (Trans Y)) = C (spineLeaf (Trans Y))\<close> (3b, the remaining
+  keystone value).  Composes @{thm [source] m_8_5_endpoint_of_blockC} (blockC \<Longrightarrow> endpoint, via
+  @{thm [source] m_8_5_C_body}) with @{thm [source] m_8_5_surgery_of_geom_endpoint}.  This is
+  the CORRECT capstone: surgC \<Longleftarrow> blockC + base-shape + geometry, no false universal.\<close>
+
+lemma m_8_5_surgC_of_blockC:
+  fixes Y B :: pairseq and t2 :: BT and e10 vm1 v :: nat
+    and s0 b0 :: "Sym list" and C :: "BT \<Rightarrow> BT"
+  assumes base: "Trans Y = Dpt (enat e10) (t2 +\<^sub>B Dpt (enat vm1) (spineLeaf (Trans Y)))"
+    and gYne: "\<And>m. m < Lng B \<Longrightarrow> 0 < Lng (Y @ take m B)"
+    and gMR: "\<And>m. m < Lng B \<Longrightarrow> (Y @ take m B) @ [B ! m] \<in> RT_PS"
+    and gMP: "\<And>m. m < Lng B \<Longrightarrow> (Y @ take m B) @ [B ! m] \<in> PT_PS"
+    and gBrne: "\<And>m. m < Lng B \<Longrightarrow> Br ((Y @ take m B) @ [B ! m]) \<noteq> []"
+    and gj1gt: "\<And>m. m < Lng B \<Longrightarrow> Lng ((Y @ take m B) @ [B ! m]) - 1 > 1"
+    and gpar: "\<And>m. m < Lng B \<Longrightarrow> parent ((Y @ take m B) @ [B ! m]) 0
+                 (Lng ((Y @ take m B) @ [B ! m]) - 1) > TrMax ((Y @ take m B) @ [B ! m])"
+    and ge10: "\<And>m. m < Lng B \<Longrightarrow> entry ((Y @ take m B) @ [B ! m]) 1 0 = e10"
+    and Cdef: "C = (\<lambda>x. unflatBT (s0 @ Dsym (enat (v - 1)) # flatBT x @ b0))"
+    and prene: "untrm t2 \<noteq> []"
+    and s0eq: "s0 = liftS t2 []"
+    and b0eq: "b0 = [RP]"
+    and vm1eq: "vm1 = v - 1"
+    and blockC: "spineLeaf (Trans (Y @ B)) = C (spineLeaf (Trans Y))"
+  shows "Trans (Y @ B) = Dpt (enat e10) (t2 +\<^sub>B Dpt (enat vm1) (bpHeadT (Trans Y)))"
+proof -
+  have endpoint: "spineLeaf (Trans (Y @ B)) = bpHeadT (Trans Y)"
+    by (rule m_8_5_endpoint_of_blockC[OF base Cdef prene s0eq b0eq vm1eq blockC])
+  show ?thesis
+    by (rule m_8_5_surgery_of_geom_endpoint
+          [OF base gYne gMR gMP gBrne gj1gt gpar ge10 endpoint])
+qed
+
+text \<open>§8.5 surgC — COMPLETE wiring modulo {netfold, 3a-invariant, 3b, geom}.  Chains
+  @{thm [source] m_8_5_blockC_via_netfold} (blockC from the netfold + 3a invariant + 3b value)
+  into @{thm [source] m_8_5_surgC_of_blockC} (the geom endpoint surgery), giving the full surgC
+  conclusion.  The genuine remaining content is EXACTLY the two §8.5 residuals: the 3a deep-core
+  invariant {step,inv,Pacc} (structural) and the 3b per-period fold value (the keystone) —
+  everything else (netfold host hyps, geom hyps, C-graft data) is the capstone's condV setup.\<close>
+
+lemma m_8_5_surgC_via_netfold:
+  fixes Y B :: pairseq and op :: "nat \<Rightarrow> BT \<Rightarrow> BT" and P :: "BT \<Rightarrow> bool"
+    and C :: "BT \<Rightarrow> BT" and t2 :: BT and e10 vm1 v :: nat and s0 b0 :: "Sym list"
+  assumes nf: "Trans (Y @ B) = fold op [0..<Lng B] (Trans Y)"
+    and step: "\<And>m t. P t \<Longrightarrow> spineLeaf (op m t) = op m (spineLeaf t)"
+    and inv: "\<And>m t. P t \<Longrightarrow> P (op m t)"
+    and Pacc: "P (Trans Y)"
+    and threeB: "fold op [0..<Lng B] (spineLeaf (Trans Y)) = C (spineLeaf (Trans Y))"
+    and base: "Trans Y = Dpt (enat e10) (t2 +\<^sub>B Dpt (enat vm1) (spineLeaf (Trans Y)))"
+    and gYne: "\<And>m. m < Lng B \<Longrightarrow> 0 < Lng (Y @ take m B)"
+    and gMR: "\<And>m. m < Lng B \<Longrightarrow> (Y @ take m B) @ [B ! m] \<in> RT_PS"
+    and gMP: "\<And>m. m < Lng B \<Longrightarrow> (Y @ take m B) @ [B ! m] \<in> PT_PS"
+    and gBrne: "\<And>m. m < Lng B \<Longrightarrow> Br ((Y @ take m B) @ [B ! m]) \<noteq> []"
+    and gj1gt: "\<And>m. m < Lng B \<Longrightarrow> Lng ((Y @ take m B) @ [B ! m]) - 1 > 1"
+    and gpar: "\<And>m. m < Lng B \<Longrightarrow> parent ((Y @ take m B) @ [B ! m]) 0
+                 (Lng ((Y @ take m B) @ [B ! m]) - 1) > TrMax ((Y @ take m B) @ [B ! m])"
+    and ge10: "\<And>m. m < Lng B \<Longrightarrow> entry ((Y @ take m B) @ [B ! m]) 1 0 = e10"
+    and Cdef: "C = (\<lambda>x. unflatBT (s0 @ Dsym (enat (v - 1)) # flatBT x @ b0))"
+    and prene: "untrm t2 \<noteq> []"
+    and s0eq: "s0 = liftS t2 []"
+    and b0eq: "b0 = [RP]"
+    and vm1eq: "vm1 = v - 1"
+  shows "Trans (Y @ B) = Dpt (enat e10) (t2 +\<^sub>B Dpt (enat vm1) (bpHeadT (Trans Y)))"
+proof -
+  have blockC: "spineLeaf (Trans (Y @ B)) = C (spineLeaf (Trans Y))"
+  proof (rule m_8_5_blockC_via_netfold)
+    show "Trans (Y @ B) = fold op [0..<Lng B] (Trans Y)" by (rule nf)
+    show "\<And>m t. P t \<Longrightarrow> spineLeaf (op m t) = op m (spineLeaf t)" by (rule step)
+    show "\<And>m t. P t \<Longrightarrow> P (op m t)" by (rule inv)
+    show "P (Trans Y)" by (rule Pacc)
+    show "fold op [0..<Lng B] (spineLeaf (Trans Y)) = C (spineLeaf (Trans Y))" by (rule threeB)
+  qed
+  show ?thesis
+    by (rule m_8_5_surgC_of_blockC[OF base gYne gMR gMP gBrne gj1gt gpar ge10
+            Cdef prene s0eq b0eq vm1eq blockC])
+qed
+
 end
