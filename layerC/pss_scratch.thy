@@ -4865,5 +4865,55 @@ proof (induction "Lng M" arbitrary: M rule: less_induct)
   qed
 qed
 
+text \<open>§8.5 (E.2) FACT-2 piece 2a — scbSubst commutes with a \<open>Dpt\<close>-prefix.  The marked-core
+  substitution pushes through a head \<open>D\<^bsub>e\<^esub>\<close>: \<open>scbSubst c\<^sub>1 c\<^sub>2 (D\<^bsub>e\<^esub> body) = D\<^bsub>e\<^esub> (scbSubst c\<^sub>1 c\<^sub>2 body)\<close>
+  (\<open>c\<^sub>1\<close> the scb-core of \<open>body\<close>, \<open>c\<^sub>2\<close> a principal string).  From the scb-decomp lift through
+  the head (\<open>flat (D\<^bsub>e\<^esub> body) = D\<^bsub>e\<^esub> # flat body\<close>) + @{thm [source] scbimg_image_BT} (image
+  closure, arbitrary core) + @{thm [source] scbSubst_eq} + @{thm [source] unflatBT_flat}.
+  The head-level companion of @{thm [source] m_8_5_scbSubst_addBT_commute}; used to push
+  scbSubst through the spine for the FACT-2 spine action.\<close>
+
+lemma m_8_5_scbSubst_Dpt:
+  fixes c1 c2 body :: BT and e :: enat and s b :: "Sym list"
+  assumes d: "scb_decomp body s (flatBT c1) b"
+    and bne: "body \<noteq> Trm []"
+    and c2p: "isPTB_str (flatBT c2)"
+  shows "scbSubst c1 c2 (Dpt e body) = Dpt e (scbSubst c1 c2 body)"
+proof -
+  have flatb: "flatBT body = s @ flatBT c1 @ b" using d by (simp add: scb_decomp_def)
+  have ptc1: "isPTB_str (flatBT c1)" using d bne by (simp add: scb_decomp_def)
+  have rb: "\<forall>x\<in>set b. x = RP" using d by (simp add: scb_decomp_def)
+  have flatDe: "flatBT (Dpt e body) = Dsym e # flatBT body" by simp
+  have Dene: "Dpt e body \<noteq> Trm []" by simp
+  have dDe: "scb_decomp (Dpt e body) (Dsym e # s) (flatBT c1) b"
+    unfolding scb_decomp_def using flatDe flatb ptc1 rb by simp
+  have e1: "scbSubst c1 c2 (Dpt e body) = unflatBT ((Dsym e # s) @ flatBT c2 @ b)"
+    by (rule scbSubst_eq[OF dDe Dene])
+  have e2: "scbSubst c1 c2 body = unflatBT (s @ flatBT c2 @ b)"
+    by (rule scbSubst_eq[OF d bne])
+  obtain p1 where p1: "flatBT c1 = flatBP p1" using ptc1 by (auto simp: isPTB_str_def)
+  obtain p2 where p2: "flatBT c2 = flatBP p2" using c2p by (auto simp: isPTB_str_def)
+  have fbody: "flatBT body = s @ flatBP p1 @ b" using flatb p1 by simp
+  obtain t' where t': "flatBT t' = s @ flatBP p2 @ b"
+    using scbimg_image_BT[OF fbody rb] by blast
+  have img: "s @ flatBT c2 @ b = flatBT t'" using t' p2 by simp
+  have lhs: "scbSubst c1 c2 (Dpt e body) = Dpt e t'"
+  proof -
+    have "scbSubst c1 c2 (Dpt e body) = unflatBT (Dsym e # (s @ flatBT c2 @ b))"
+      using e1 by simp
+    also have "\<dots> = unflatBT (Dsym e # flatBT t')" using img by simp
+    also have "\<dots> = unflatBT (flatBT (Dpt e t'))" by simp
+    also have "\<dots> = Dpt e t'" by (rule unflatBT_flat)
+    finally show ?thesis .
+  qed
+  have rhs: "Dpt e (scbSubst c1 c2 body) = Dpt e t'"
+  proof -
+    have "scbSubst c1 c2 body = unflatBT (flatBT t')" using e2 img by simp
+    also have "\<dots> = t'" by (rule unflatBT_flat)
+    finally show ?thesis by simp
+  qed
+  show ?thesis using lhs rhs by simp
+qed
+
 
 end
