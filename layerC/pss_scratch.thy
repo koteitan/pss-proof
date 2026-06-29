@@ -5057,4 +5057,273 @@ proof -
   show "leBT q qb" using hstrip by simp
 qed
 
+
+lemma descP_tl: "descP (x # xs) \<Longrightarrow> descP xs"
+  by (cases xs) auto
+
+lemma descP_Cons_hd_le:
+  "descP (x # xs) \<Longrightarrow> xs \<noteq> [] \<Longrightarrow> leBT (Trm [hd xs]) (Trm [x])"
+  by (cases xs) auto
+
+lemma descP_append:
+  "descP as \<Longrightarrow> descP bs \<Longrightarrow>
+   (as \<noteq> [] \<longrightarrow> bs \<noteq> [] \<longrightarrow> leBT (Trm [hd bs]) (Trm [last as])) \<Longrightarrow> descP (as @ bs)"
+proof (induction bs arbitrary: as)
+  case Nil thus ?case by simp
+next
+  case (Cons b bs')
+  have dab: "descP (as @ [b])"
+  proof (rule descP_snoc[OF Cons.prems(1)])
+    show "as \<noteq> [] \<longrightarrow> leBT (Trm [b]) (Trm [last as])" using Cons.prems(3) by simp
+  qed
+  have dbs': "descP bs'" using descP_tl[OF Cons.prems(2)] .
+  have junc: "as @ [b] \<noteq> [] \<longrightarrow> bs' \<noteq> [] \<longrightarrow> leBT (Trm [hd bs']) (Trm [last (as @ [b])])"
+  proof (intro impI)
+    assume "bs' \<noteq> []"
+    have "leBT (Trm [hd bs']) (Trm [b])"
+      using descP_Cons_hd_le[OF Cons.prems(2) \<open>bs' \<noteq> []\<close>] .
+    thus "leBT (Trm [hd bs']) (Trm [last (as @ [b])])" by simp
+  qed
+  have "descP ((as @ [b]) @ bs')" by (rule Cons.IH[OF dab dbs' junc])
+  thus ?case by simp
+qed
+
+text \<open>Full multiT \<open>Trans\<close> split (both \<open>P\<close>-tail branches), the if-form of
+  @{thm [source] trans_multi_split} extracted from @{thm [source] m_7_3_Trans_monoT}'s
+  inline computation: when the last \<open>P\<close>-component is \<open>[(0,0)]\<close> the appended block is
+  \<open>D\<^sub>0 0\<close>, else it is \<open>Trans (drop (Pcut K) K)\<close>.\<close>
+
+lemma trans_multi_split_full:
+  fixes K :: pairseq
+  assumes KR: "K \<in> RT_PS" and mu: "multiT K"
+  shows "Trans K = (if drop (Pcut K) K = [(0,0)]
+                    then Trans (take (Pcut K) K) +\<^sub>B Dpt 0 0\<^sub>B
+                    else Trans (take (Pcut K) K) +\<^sub>B Trans (drop (Pcut K) K))"
+proof -
+  have KT: "K \<in> T_PS" using KR by (simp add: RT_PS_def)
+  have L: "1 < Lng K" by (rule multiT_imp_Lng_gt1[OF KT mu])
+  have nmono: "\<not> monoT K" using mu by (simp add: multiT_def)
+  have domT: "Trans_Mark_dom (Inl K)" by (rule m_7_3_Trans_welldef[OF KR])
+  let ?A = "take (Pcut K) K"  let ?PJ = "drop (Pcut K) K"
+  have cut: "0 < Pcut K \<and> Pcut K \<le> Lng K - 1" using Pcut_le[OF L] by simp
+  have PJeq: "P K ! (Lng (P K) - 1) = ?PJ"
+    by (rule trans_multiT_last_component(1)[OF KT mu])
+  have Aeq2: "seg K 0 (Lng K - 1 - Lng ?PJ + 1 - 1) = ?A"
+  proof -
+    have LdJ: "Lng ?PJ = Lng K - Pcut K" by simp
+    have "Lng K - 1 - Lng ?PJ + 1 - 1 = Pcut K - 1" using LdJ cut by linarith
+    moreover have "seg K 0 (Pcut K - 1) = take (Suc (Pcut K - 1)) K"
+      by (rule seg_0_eq_take) (use cut L in linarith)
+    moreover have "Suc (Pcut K - 1) = Pcut K" using cut by simp
+    ultimately show ?thesis by simp
+  qed
+  have c1f: "(K \<notin> RT_PS) = False" using KR by simp
+  have c2f: "(Lng K - 1 = 0) = False" using L by simp
+  have c3f: "monoT K = False" using nmono by simp
+  have raw: "Trans K =
+      (if P K ! (Lng (P K) - 1) = [(0, 0)]
+       then Trans (seg K 0 (Lng K - 1 - Lng (P K ! (Lng (P K) - 1)) + 1 - 1))
+              +\<^sub>B Dpt 0 0\<^sub>B
+       else Trans (seg K 0 (Lng K - 1 - Lng (P K ! (Lng (P K) - 1)) + 1 - 1))
+              +\<^sub>B Trans (P K ! (Lng (P K) - 1)))"
+    by (subst Trans.psimps[OF domT]) (simp only: c1f c2f c3f if_False Let_def)
+  show "Trans K = (if ?PJ = [(0,0)] then Trans ?A +\<^sub>B Dpt 0 0\<^sub>B else Trans ?A +\<^sub>B Trans ?PJ)"
+    unfolding raw PJeq Aeq2 ..
+qed
+
+text \<open>§8.7 NON-keystone OT branch (the \<open>nonkey\<close> hypothesis of
+  @{thm [source] m_8_7_Trans_preserves_OT}), reduced.  For \<open>N \<in> ST\<^bsub>PS\<^esub>\<close> that is NOT a
+  keystone (\<open>\<not>(monoT N \<and> Br N \<noteq> [] \<and> Lng N - 1 > 1)\<close>):
+  \<^item> \<open>zeroT N\<close> \<Rightarrow> \<open>Trans N = 0\<^sub>B \<in> OT\<^bsub>B\<^esub>\<close> (GREEN, @{thm [source] m_7_3_Trans_zeroT}).
+  \<^item> \<open>monoT N\<close>, \<open>Lng N \<le> 2\<close> \<Rightarrow> GREEN: singleton \<open>D\<^sub>v 0\<close> (@{thm [source] m_8_7_OT_ex1})
+    or two-column \<open>D\<^sub>a D\<^sub>b 0\<close> (@{thm [source] m_7_3_twoColumn_Trans} +
+    @{thm [source] m_8_7_OT_ex2}).
+  \<^item> \<open>monoT N\<close>, \<open>Br N = []\<close> (all-trunk) \<Rightarrow> GREEN: the trunk is a diagonal
+    (@{thm [source] baseU_alltrunk_diag_entry}), so \<open>N = diagSeq u v\<close> by extensionality
+    and @{thm [source] m_8_7_Trans_preserves_OT_base} applies (\<open>S\<^sub>0T\<^bsub>PS\<^esub>\<close> base).
+  \<^item> \<open>multiT N\<close> \<Rightarrow> the substantive case: GREEN block-recursion via
+    @{thm [source] trans_multi_split_full}.  Both blocks \<open>take (Pcut N) N\<close>
+    (@{thm [source] m_6_7_standard_prefix}) and \<open>drop (Pcut N) N\<close>
+    (@{thm [source] m_6_7_standard_P_components}) are in \<open>ST\<^bsub>PS\<^esub>\<close> with \<open>Lng < Lng N\<close>,
+    so the strong-\<open>Lng\<close> IH gives \<open>isOT_BT\<close> for each; \<open>descP\<close> of the concatenation then
+    needs ONLY the junction descent (named residual \<open>multiD\<close>) — the multiT analog of
+    the keystone R2.  When the last block is \<open>[(0,0)]\<close> the junction is FREE
+    (\<open>D\<^sub>0 0\<close> is \<open>\<le>\<close>-minimal, @{thm [source] leBT_Dpt0_iff}).\<close>
+
+lemma m_8_7_Trans_OT_nonkey:
+  fixes N :: pairseq
+  assumes N: "N \<in> ST_PS"
+    and nk: "\<not> (monoT N \<and> Br N \<noteq> [] \<and> Lng N - 1 > 1)"
+    and IH: "\<And>N'. N' \<in> ST_PS \<Longrightarrow> Lng N' < Lng N \<Longrightarrow> Trans N' \<in> OT_B"
+    and multiD: "\<And>as bs. multiT N \<Longrightarrow> drop (Pcut N) N \<noteq> [(0,0)] \<Longrightarrow>
+        Trans (take (Pcut N) N) = Trm as \<Longrightarrow> Trans (drop (Pcut N) N) = Trm bs \<Longrightarrow>
+        as \<noteq> [] \<Longrightarrow> bs \<noteq> [] \<Longrightarrow> leBT (Trm [hd bs]) (Trm [last as])"
+  shows "Trans N \<in> OT_B"
+proof -
+  have NR: "N \<in> RT_PS" using N m_6_7_ST_PS_subseteq_RT_PS by blast
+  have NT: "N \<in> T_PS" using NR by (simp add: RT_PS_def)
+  show ?thesis
+  proof (cases "zeroT N")
+    case True
+    hence "Trans N = 0\<^sub>B" using m_7_3_Trans_zeroT[OF NR] by simp
+    thus ?thesis using m_8_7_OT_zero by simp
+  next
+    case nzT: False
+    show ?thesis
+    proof (cases "monoT N")
+      case mono: True
+      have disj: "Br N = [] \<or> Lng N \<le> 2"
+      proof (cases "Br N = []")
+        case True thus ?thesis by simp
+      next
+        case False
+        with nk mono have "\<not> 1 < Lng N - 1" by blast
+        hence "Lng N \<le> 2" by linarith
+        thus ?thesis by simp
+      qed
+      show ?thesis
+      proof (cases "Lng N \<le> 2")
+        case small: True
+        have L1: "1 \<le> Lng N" using NT by (cases N) (auto simp: T_PS_def)
+        show ?thesis
+        proof (cases "Lng N = 1")
+          case True
+          obtain v where Nv: "N = [(v, v)]"
+            using m_6_6_oneColumn[OF NT] NR True by auto
+          have vpos: "v \<noteq> 0"
+          proof -
+            have "entry N 1 0 \<noteq> 0" using nzT True by (simp add: zeroT_def)
+            thus ?thesis using Nv by (simp add: entry_def)
+          qed
+          have "Trans N = Dpt (enat v) 0\<^sub>B" using Nv Trans_singleton vpos by simp
+          thus ?thesis using m_8_7_OT_ex1 by simp
+        next
+          case False
+          hence L2: "Lng N = 2" using small L1 by linarith
+          have "Trans N = Dpt (enat (entry N 1 0)) (Dpt (enat (entry N 1 1)) 0\<^sub>B)"
+            by (rule m_7_3_twoColumn_Trans[OF NR mono L2])
+          thus ?thesis using m_8_7_OT_ex2 by simp
+        qed
+      next
+        case False
+        hence brE: "Br N = []" using disj by simp
+        have lgt: "Lng N - 1 > 1" using False by linarith
+        have L1: "1 \<le> Lng N" using lgt by linarith
+        \<comment> \<open>all-trunk \<open>\<Longrightarrow>\<close> diagonal \<open>\<Longrightarrow>\<close> base (article 6133)\<close>
+        have tr: "TrMax N = Lng N - 1" by (rule baseU_Br_empty_TrMax[OF brE])
+        define u where "u = entry N 1 0"
+        define v where "v = u + (Lng N - 1)"
+        have SucV: "Suc v - u = Lng N"
+        proof -
+          have "Suc v - u = Suc (Lng N - 1)" unfolding v_def by simp
+          thus ?thesis using L1 by simp
+        qed
+        have Neq: "N = diagSeq u v"
+        proof (rule nth_equalityI)
+          show "length N = length (diagSeq u v)" using SucV by simp
+        next
+          fix j assume "j < length N"
+          hence jL: "j < Lng N" by simp
+          have e: "entry N 0 j = u + j \<and> entry N 1 j = u + j"
+            unfolding u_def by (rule baseU_alltrunk_diag_entry[OF NR mono tr jL])
+          have "fst (N ! j) = u + j" using e by (simp add: entry_def)
+          moreover have "snd (N ! j) = u + j" using e by (simp add: entry_def)
+          ultimately have "N ! j = (u + j, u + j)" by (simp add: prod_eq_iff)
+          moreover have dj: "j < Suc v - u" using jL SucV by simp
+          ultimately show "N ! j = diagSeq u v ! j" using diagSeq_nth[OF dj] by simp
+        qed
+        have inSk: "N \<in> SkT_PS 0"
+        proof -
+          have uv: "u \<le> v" unfolding v_def by simp
+          have "\<exists>a b. N = diagSeq a b \<and> a \<le> b" using Neq uv by blast
+          thus ?thesis by simp
+        qed
+        show ?thesis by (rule m_8_7_Trans_preserves_OT_base[OF inSk])
+      qed
+    next
+      case False
+      have mu: "multiT N" using nzT False by (simp add: multiT_def)
+      have L: "1 < Lng N" by (rule multiT_imp_Lng_gt1[OF NT mu])
+      have cut: "0 < Pcut N \<and> Pcut N \<le> Lng N - 1" using Pcut_le[OF L] by simp
+      \<comment> \<open>both blocks are standard, with strictly smaller \<open>Lng\<close>\<close>
+      have Aeq: "take (Pcut N) N = seg N 0 (Pcut N - 1)"
+      proof -
+        have "seg N 0 (Pcut N - 1) = take (Suc (Pcut N - 1)) N"
+          by (rule seg_0_eq_take) (use cut L in linarith)
+        thus ?thesis using cut by simp
+      qed
+      have A_ST: "take (Pcut N) N \<in> ST_PS"
+        unfolding Aeq by (rule m_6_7_standard_prefix[OF N]) (use cut in linarith)
+      have LA: "Lng (take (Pcut N) N) < Lng N"
+      proof -
+        have "Lng (take (Pcut N) N) \<le> Pcut N" by simp
+        thus ?thesis using cut L by linarith
+      qed
+      obtain k where Nk: "N \<in> SkT_PS k" using N m_6_7_ST_eq_Union_SkT by blast
+      have Pne: "Lng (P N) - 1 < Lng (P N)" using P_nonempty[of N] by (cases "P N") auto
+      have PJcomp: "drop (Pcut N) N = P N ! (Lng (P N) - 1)"
+        using trans_multiT_last_component(1)[OF NT mu] by simp
+      have PJ_ST: "drop (Pcut N) N \<in> ST_PS"
+      proof -
+        have "P N ! (Lng (P N) - 1) \<in> SkT_PS k"
+          using m_6_7_standard_P_components[OF Nk] Pne by blast
+        hence "P N ! (Lng (P N) - 1) \<in> ST_PS"
+          using m_6_7_ST_eq_Union_SkT by blast
+        thus ?thesis using PJcomp by simp
+      qed
+      have LPJ: "Lng (drop (Pcut N) N) < Lng N"
+      proof -
+        have "Lng (drop (Pcut N) N) = Lng N - Pcut N" by simp
+        thus ?thesis using cut L by linarith
+      qed
+      have isA: "isOT_BT (Trans (take (Pcut N) N))"
+        using IH[OF A_ST LA] by (simp add: OT_B_def OT_def)
+      have isPJ: "isOT_BT (Trans (drop (Pcut N) N))"
+        using IH[OF PJ_ST LPJ] by (simp add: OT_B_def OT_def)
+      obtain as where as: "Trans (take (Pcut N) N) = Trm as" by (cases "Trans (take (Pcut N) N)")
+      have dAs: "descP as" using isA as by simp
+      have pAs: "\<forall>p\<in>set as. isOT_BP p" using isA as by simp
+      have "isOT_BT (Trans N)"
+      proof (cases "drop (Pcut N) N = [(0,0)]")
+        case True
+        have TN: "Trans N = Trm (as @ [DB 0 0\<^sub>B])"
+          using trans_multi_split_full[OF NR mu] True as by simp
+        have dsnoc: "descP (as @ [DB 0 0\<^sub>B])"
+        proof (rule descP_snoc[OF dAs])
+          show "as \<noteq> [] \<longrightarrow> leBT (Trm [DB 0 0\<^sub>B]) (Trm [last as])"
+          proof
+            assume "as \<noteq> []"
+            obtain w c where lc: "last as = DB w c" by (cases "last as")
+            have w0: "enat 0 \<le> w" by (cases w) auto
+            have le0: "leBT (Dpt (enat 0) 0\<^sub>B) (Dpt w c)"
+              using leBT_Dpt0_iff[of 0 w c] w0 by simp
+            show "leBT (Trm [DB 0 0\<^sub>B]) (Trm [last as])"
+              unfolding lc zero_enat_def by (rule le0)
+          qed
+        qed
+        have "\<forall>p\<in>set (as @ [DB 0 0\<^sub>B]). isOT_BP p" using pAs by simp
+        thus ?thesis using TN dsnoc by simp
+      next
+        case PJnz: False
+        obtain bs where bs: "Trans (drop (Pcut N) N) = Trm bs"
+          by (cases "Trans (drop (Pcut N) N)")
+        have TN: "Trans N = Trm (as @ bs)"
+          using trans_multi_split[OF NR mu PJnz] as bs by simp
+        have dBs: "descP bs" using isPJ bs by simp
+        have pBs: "\<forall>p\<in>set bs. isOT_BP p" using isPJ bs by simp
+        have junc: "as \<noteq> [] \<longrightarrow> bs \<noteq> [] \<longrightarrow> leBT (Trm [hd bs]) (Trm [last as])"
+        proof (intro impI)
+          assume "as \<noteq> []" and "bs \<noteq> []"
+          show "leBT (Trm [hd bs]) (Trm [last as])"
+            by (rule multiD[OF mu PJnz as bs \<open>as \<noteq> []\<close> \<open>bs \<noteq> []\<close>])
+        qed
+        have "descP (as @ bs)" by (rule descP_append[OF dAs dBs junc])
+        moreover have "\<forall>p\<in>set (as @ bs). isOT_BP p" using pAs pBs by auto
+        ultimately show ?thesis using TN by simp
+      qed
+      thus ?thesis by (rule m_8_7_OT_B_of_isOT_BT[OF N])
+    qed
+  qed
+qed
+
 end
