@@ -4769,5 +4769,35 @@ proof -
   show ?thesis by (rule m_8_5_Pcut_append[OF j1pos e1pos hp j0le parR le0M q1])
 qed
 
+text \<open>§8.5 (E.2) FACT-2 piece 1 — the per-column Trans recurrence as an explicit
+  scb-SUBSTITUTION.  From the GREEN, surgC-independent §7.4 @{thm [source]
+  m_7_4_Trans_Mark_Pred} (\<open>Trans M\<close> and \<open>Trans (Pred M)\<close> share an scb-context, with the
+  Mark-components \<open>Mark M m\<close>/\<open>Mark (Pred M) m\<close> at the centre): \<open>Trans M\<close> is obtained from
+  \<open>Trans (Pred M)\<close> by substituting \<open>Mark (Pred M) m \<mapsto> Mark M m\<close> (@{thm [source]
+  scbSubst_eq} + @{thm [source] unflatBT_flat}).  This is the per-column step of the
+  FACT-2 spine-descent; NON-circular (no step2/surgC).\<close>
+
+lemma m_8_5_Trans_scbSubst_Pred:
+  fixes M :: pairseq and m :: nat
+  assumes mM: "(M, m) \<in> Marked" and MR: "M \<in> RT_PS" and mlt: "m < Lng M - 1"
+    and tne: "Trans (Pred M) \<noteq> Trm []"
+  shows "Trans M = scbSubst (Mark (Pred M) m) (Mark M m) (Trans (Pred M))"
+proof -
+  have "\<exists>sb. scb_decomp (Trans (Pred M)) (fst sb) (flatBT (Mark (Pred M) m)) (snd sb)
+           \<and> scb_decomp (Trans M) (fst sb) (flatBT (Mark M m)) (snd sb)"
+    using m_7_4_Trans_Mark_Pred[OF mM MR mlt] by (rule ex1_implies_ex)
+  then obtain sb
+    where dP: "scb_decomp (Trans (Pred M)) (fst sb) (flatBT (Mark (Pred M) m)) (snd sb)"
+      and dM: "scb_decomp (Trans M) (fst sb) (flatBT (Mark M m)) (snd sb)" by blast
+  have e1: "scbSubst (Mark (Pred M) m) (Mark M m) (Trans (Pred M))
+              = unflatBT (fst sb @ flatBT (Mark M m) @ snd sb)"
+    by (rule scbSubst_eq[OF dP tne])
+  have flatM: "flatBT (Trans M) = fst sb @ flatBT (Mark M m) @ snd sb"
+    using dM by (simp add: scb_decomp_def)
+  have e2: "unflatBT (fst sb @ flatBT (Mark M m) @ snd sb) = Trans M"
+    using flatM unflatBT_flat[of "Trans M"] by simp
+  show ?thesis using e1 e2 by simp
+qed
+
 
 end
