@@ -5775,4 +5775,127 @@ proof -
   show ?thesis using mk2 c2 by (simp add: transJ1_def)
 qed
 
+
+text \<open>§8.5 (E.2) — RIGHTMOST-SPINE DEPTH and the DEPTH-PARAMETRIC (A) spine action.
+  \<open>rspine d c\<^sub>1 t\<close>: the marked core \<open>c\<^sub>1\<close> sits at DEPTH \<open>d\<close> on the rightmost spine of \<open>t\<close> —
+  i.e. \<open>t\<close> is the \<open>d\<close>-fold spine nesting \<open>D\<^bsub>e\<^esub>(pre +\<^sub>B D\<^bsub>h\<^esub> (\<dots>))\<close> bottoming at \<open>c\<^sub>1\<close>, each
+  level carrying a non-empty prefix \<open>pre\<close> (so one \<open>spineLeaf\<close> step = one level down).  By
+  \<open>rspine_scb_decomp\<close>, that position yields exactly the all-RP \<open>scb_decomp\<close>
+  that forces \<open>c\<^sub>1\<close> on the rightmost spine.  The (A) GENERAL WRAPPER
+  \<open>rspine_spineLeaf_scbSubst\<close> composes the two green endpoints — the DEEP step
+  @{thm [source] m_8_5_spineLeaf_scbSubst} (2b: \<open>spineLeaf\<close> commutes with \<open>scbSubst\<close>) walked
+  \<open>d\<close> times down the rightmost spine, bottoming at the WHOLE-replace
+  @{thm [source] m_8_5_scbSubst_whole} (depth-0) — into the closed form
+  \<open>(spineLeaf\<^bsup>d\<^esup>) (scbSubst c\<^sub>1 c\<^sub>2 t) = c\<^sub>2\<close>: substituting the depth-\<open>d\<close> marked core \<open>c\<^sub>1\<close> by
+  \<open>c\<^sub>2\<close> and reading off \<open>d\<close> levels down the rightmost spine recovers \<open>c\<^sub>2\<close>.  Pure structural
+  glue (no value math): the reusable per-column engine for the B3 markstep, whose condI/III
+  columns sit at increasing depths \<open>d\<^sub>k = (q-1)+k\<close>.\<close>
+
+primrec rspine :: "nat \<Rightarrow> BT \<Rightarrow> BT \<Rightarrow> bool" where
+  "rspine 0 c1 t = (t = c1)"
+| "rspine (Suc d) c1 t =
+     (\<exists>e pre h x. t = Dpt (enat e) (pre +\<^sub>B Dpt (enat h) x)
+        \<and> untrm pre \<noteq> [] \<and> rspine d c1 x)"
+
+lemma rspine_nonempty:
+  assumes "rspine d c1 t" and "c1 \<noteq> Trm []"
+  shows "t \<noteq> Trm []"
+proof (cases d)
+  case 0 thus ?thesis using assms by simp
+next
+  case (Suc d')
+  from assms(1)[unfolded Suc] obtain e pre h x where
+    "t = Dpt (enat e) (pre +\<^sub>B Dpt (enat h) x)" by auto
+  thus ?thesis by simp
+qed
+
+lemma rspine_scb_decomp:
+  assumes rs: "rspine d c1 t" and c1ne: "c1 \<noteq> Trm []" and ptc1: "isPTB_str (flatBT c1)"
+  shows "\<exists>s b. scb_decomp t s (flatBT c1) b \<and> (\<forall>z\<in>set b. z = RP)"
+  using rs
+proof (induction d arbitrary: t)
+  case 0
+  hence tc: "t = c1" by simp
+  have d0: "scb_decomp c1 [] (flatBT c1) []"
+    unfolding scb_decomp_def using ptc1 by simp
+  show ?case unfolding tc
+    by (rule exI[of _ "[]"], rule exI[of _ "[]"], simp add: d0)
+next
+  case (Suc d)
+  from \<open>rspine (Suc d) c1 t\<close> obtain e pre h x where
+    t: "t = Dpt (enat e) (pre +\<^sub>B Dpt (enat h) x)" and prene: "untrm pre \<noteq> []"
+    and rx: "rspine d c1 x" by auto
+  from Suc.IH[OF rx] obtain sx bx
+    where dx: "scb_decomp x sx (flatBT c1) bx" and rbx: "\<forall>z\<in>set bx. z = RP" by auto
+  have flatx: "flatBT x = sx @ flatBT c1 @ bx" using dx by (simp add: scb_decomp_def)
+  have scbDhx: "scb_decomp (Dpt (enat h) x) (Dsym (enat h) # sx) (flatBT c1) bx"
+    unfolding scb_decomp_def using flatx ptc1 rbx by simp
+  have dh1: "length (untrm (Dpt (enat h) x)) = 1" by simp
+  have dBODY: "scb_decomp (pre +\<^sub>B Dpt (enat h) x)
+                  (liftS pre (Dsym (enat h) # sx)) (flatBT c1) (bx @ [RP])"
+    by (rule scb_addBT_left[OF scbDhx dh1 prene])
+  have flatBODY: "flatBT (pre +\<^sub>B Dpt (enat h) x)
+                    = liftS pre (Dsym (enat h) # sx) @ flatBT c1 @ (bx @ [RP])"
+    using dBODY by (simp add: scb_decomp_def)
+  have rbB: "\<forall>z\<in>set (bx @ [RP]). z = RP" using rbx by auto
+  have sc: "scb_decomp (Dpt (enat e) (pre +\<^sub>B Dpt (enat h) x))
+              (Dsym (enat e) # liftS pre (Dsym (enat h) # sx)) (flatBT c1) (bx @ [RP])"
+    unfolding scb_decomp_def using flatBODY ptc1 rbB by simp
+  have "\<exists>s b. scb_decomp (Dpt (enat e) (pre +\<^sub>B Dpt (enat h) x)) s (flatBT c1) b
+          \<and> (\<forall>z\<in>set b. z = RP)" using sc rbB by blast
+  thus ?case using t by simp
+qed
+
+lemma rspine_spineLeaf_nav:
+  assumes "rspine d c1 t"
+  shows "(spineLeaf ^^ d) t = c1"
+  using assms
+proof (induction d arbitrary: t)
+  case 0 thus ?case by simp
+next
+  case (Suc d)
+  from \<open>rspine (Suc d) c1 t\<close> obtain e pre h x where
+    t: "t = Dpt (enat e) (pre +\<^sub>B Dpt (enat h) x)" and rx: "rspine d c1 x" by auto
+  have "(spineLeaf ^^ Suc d) t = (spineLeaf ^^ d) (spineLeaf t)"
+    by (simp only: funpow_Suc_right o_apply)
+  also have "\<dots> = (spineLeaf ^^ d) x" using t by (simp add: m_8_5_spineLeaf_Dpt_addBT)
+  also have "\<dots> = c1" by (rule Suc.IH[OF rx])
+  finally show ?case .
+qed
+
+lemma rspine_spineLeaf_scbSubst:
+  assumes rs: "rspine d c1 t" and c1ne: "c1 \<noteq> Trm []"
+    and ptc1: "isPTB_str (flatBT c1)" and ptc2: "isPTB_str (flatBT c2)"
+  shows "(spineLeaf ^^ d) (scbSubst c1 c2 t) = c2"
+  using rs
+proof (induction d arbitrary: t)
+  case 0
+  hence tc: "t = c1" by simp
+  have "scbSubst c1 c2 c1 = c2" by (rule m_8_5_scbSubst_whole[OF c1ne ptc1])
+  thus ?case using tc by simp
+next
+  case (Suc d)
+  from \<open>rspine (Suc d) c1 t\<close> obtain e pre h x where
+    t: "t = Dpt (enat e) (pre +\<^sub>B Dpt (enat h) x)" and prene: "untrm pre \<noteq> []"
+    and rx: "rspine d c1 x" by auto
+  obtain sx bx where dx: "scb_decomp x sx (flatBT c1) bx"
+    using rspine_scb_decomp[OF rx c1ne ptc1] by auto
+  have xnz: "x \<noteq> Trm []" by (rule rspine_nonempty[OF rx c1ne])
+  have step2b: "spineLeaf (scbSubst c1 c2 t) = scbSubst c1 c2 x"
+  proof -
+    have "spineLeaf (scbSubst c1 c2 (Dpt (enat e) (pre +\<^sub>B Dpt (enat h) x)))
+            = scbSubst c1 c2 (spineLeaf (Dpt (enat e) (pre +\<^sub>B Dpt (enat h) x)))"
+      by (rule m_8_5_spineLeaf_scbSubst[OF dx xnz ptc2 prene])
+    also have "spineLeaf (Dpt (enat e) (pre +\<^sub>B Dpt (enat h) x)) = x"
+      by (rule m_8_5_spineLeaf_Dpt_addBT)
+    finally show ?thesis using t by simp
+  qed
+  have "(spineLeaf ^^ Suc d) (scbSubst c1 c2 t)
+          = (spineLeaf ^^ d) (spineLeaf (scbSubst c1 c2 t))"
+    by (simp only: funpow_Suc_right o_apply)
+  also have "\<dots> = (spineLeaf ^^ d) (scbSubst c1 c2 x)" using step2b by simp
+  also have "\<dots> = c2" by (rule Suc.IH[OF rx])
+  finally show ?case .
+qed
+
 end
