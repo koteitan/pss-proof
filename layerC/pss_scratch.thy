@@ -6364,4 +6364,44 @@ next
   finally show ?case .
 qed
 
+
+text \<open>§8.5 EXPOSED-IDENTITY FRAME — the whole pair-sequence termination markstep,
+  reduced (mechanized, faithfully) to ONE named, otasm-confirmed, q-independent
+  self-similar identity: the WHOLE-PERIOD Trans recurrence
+  \<open>bpHeadT (Trans (slice\<^sub>q \<frown> B)) = C (bpHeadT (Trans slice\<^sub>q))\<close>  (= \<open>U\<^bsub>q+1\<^esub> = C(U\<^sub>q)\<close>),
+  where \<open>slice\<^sub>q = seg (M[q]) jm1 (Lng (M[q]) - 1)\<close> and \<open>C\<close> is the fixed one-hole
+  context of @{thm [source] m_8_5_C_body}.  NO single-column/sub-block decomposition
+  works (Mark-core re-deposit, butlast-B preservation, closing-graft \<open>+1\<close> — ALL
+  refuted by otasm: every column deepens, so the \<open>+1\<close> nesting EMERGES from the full
+  \<open>w\<close>-column composition, owned by no single column).  The identity is EXPOSED as the
+  hypothesis \<open>keystone\<close> (not buried): the markstep follows by the GREEN §7.4
+  Mark\<open>\<leftrightarrow>\<close>Trans bridge — @{thm [source] m_7_4_Mark_Trans_repr} (\<open>Mark (M[q]) jm1
+  = Trans slice\<^sub>q\<close>) and @{thm [source] Mark_iterate_slice_append} (\<open>Mark (M[Suc q]) jm1
+  = Trans (slice\<^sub>q \<frown> B)\<close>) — both proven.  So the entire termination descent is
+  green-modulo this ONE exposed identity, with no second hidden open.\<close>
+
+lemma m_8_5_markstep_of_Trans_keystone:
+  fixes M B :: pairseq and q jm1 :: nat and C :: "BT \<Rightarrow> BT"
+  assumes mk_q:  "((M::pairseq)[q], jm1) \<in> Marked"
+    and MR_q:    "(M::pairseq)[q] \<in> RT_PS"
+    and rng_q:   "jm1 < Lng ((M::pairseq)[q]) - 1"
+    and mk_sq:   "((M::pairseq)[Suc q], jm1) \<in> Marked"
+    and MR_sq:   "(M::pairseq)[Suc q] \<in> RT_PS"
+    and rng_sq:  "jm1 < Lng ((M::pairseq)[Suc q]) - 1"
+    and app:     "(M::pairseq)[Suc q] = (M::pairseq)[q] @ B"
+    and Mpne:    "0 < Lng ((M::pairseq)[q])"
+    and jle:     "jm1 \<le> Lng ((M::pairseq)[q])"
+    and keystone: "bpHeadT (Trans (seg ((M::pairseq)[q]) jm1 (Lng ((M::pairseq)[q]) - 1) @ B))
+                     = C (bpHeadT (Trans (seg ((M::pairseq)[q]) jm1 (Lng ((M::pairseq)[q]) - 1))))"
+  shows "bpHeadT (Mark ((M::pairseq)[Suc q]) jm1) = C (bpHeadT (Mark ((M::pairseq)[q]) jm1))"
+proof -
+  have r1: "Mark ((M::pairseq)[q]) jm1
+              = Trans (seg ((M::pairseq)[q]) jm1 (Lng ((M::pairseq)[q]) - 1))"
+    by (rule m_7_4_Mark_Trans_repr[OF mk_q MR_q rng_q])
+  have r2: "Mark ((M::pairseq)[Suc q]) jm1
+              = Trans (seg ((M::pairseq)[q]) jm1 (Lng ((M::pairseq)[q]) - 1) @ B)"
+    by (rule Mark_iterate_slice_append[OF mk_sq MR_sq rng_sq app Mpne jle])
+  show ?thesis using keystone r1 r2 by simp
+qed
+
 end
