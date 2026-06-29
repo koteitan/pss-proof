@@ -4045,5 +4045,37 @@ proof -
   show ?thesis using blockC cb bh by simp
 qed
 
+text \<open>§8.5 (E.2) — blockC REDUCED to the §7.4 Trans-spine law (the CLEANEST residual).
+  The endpoint/blockC residual \<open>spineLeaf (Trans (Y\<frown>B)) = bpHeadT (Trans Y)\<close> follows from
+  the clean INTRINSIC §7.4 structural law
+    \<open>spineLeaf (Trans X) = bpHeadT (Trans ((Pred^^(Pcut X)) X))\<close>
+  (here \<open>X = Y\<frown>B\<close>; sub-agent (E.2) empirical 15/15 incl. q=4 — one rightmost-spine step of
+  \<open>Trans X\<close> = stripping the first \<open>Pcut\<close>-block by iterated \<open>Pred\<close>) together with the slice
+  GEOMETRY fact \<open>Pcut (Y\<frown>B) = Lng B\<close> (appended deepen-block size = first P-cut of the
+  extended slice; empirical 10/10).  Since \<open>(Pred^^(Lng B)) (Y\<frown>B) = Y\<close>
+  (@{thm [source] herd_Pred_pow_take}), the law lands exactly on \<open>bpHeadT (Trans Y)\<close>.  This
+  isolates the §8 master-key VALUE content to ONE standalone §7.4 law on the rightmost spine
+  of \<open>Trans\<close> of ANY reduced term — NO surgery context, NO per-column address decoding;
+  attackable by structural induction on the \<open>P\<close>-block (multi/mono) decomposition.\<close>
+
+lemma m_8_5_blockC_of_spinelaw:
+  fixes Y B :: pairseq
+  assumes spinelaw: "spineLeaf (Trans (Y @ B))
+                       = bpHeadT (Trans ((Pred ^^ (Pcut (Y @ B))) (Y @ B)))"
+    and pcuteq: "Pcut (Y @ B) = Lng B"
+    and Yne: "0 < Lng Y"
+  shows "spineLeaf (Trans (Y @ B)) = bpHeadT (Trans Y)"
+proof -
+  have lb: "Lng B < Lng (Y @ B)" using Yne by simp
+  have "(Pred ^^ (Lng B)) (Y @ B) = take (Lng (Y @ B) - Lng B) (Y @ B)"
+    by (rule herd_Pred_pow_take[OF lb])
+  also have "\<dots> = Y" by simp
+  finally have predeq: "(Pred ^^ (Lng B)) (Y @ B) = Y" .
+  have "spineLeaf (Trans (Y @ B)) = bpHeadT (Trans ((Pred ^^ (Pcut (Y @ B))) (Y @ B)))"
+    by (rule spinelaw)
+  also have "(Pred ^^ (Pcut (Y @ B))) (Y @ B) = Y" using pcuteq predeq by simp
+  finally show ?thesis .
+qed
+
 
 end
