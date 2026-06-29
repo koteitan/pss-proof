@@ -4321,5 +4321,75 @@ proof -
   qed
 qed
 
+text \<open>§8.5 (E.2) FACT-1 sub-ob 2 — the WITHIN-BLOCK nextrel0 shift-invariance.  Inside one
+  period block (block \<open>k\<close>), \<open>nextrel0\<close> on the slice mirrors \<open>nextrel0\<close> on the base \<open>M\<close>:
+  \<open>nextrel0 M (j\<^sub>0+a) (j\<^sub>0+b) \<Longrightarrow> nextrel0 X (k\<cdot>w+a) (k\<cdot>w+b)\<close> (for \<open>a,b<w\<close>, \<open>k<Suc q\<close>) —
+  the per-period entry shift \<open>+k\<cdot>d\<^sub>0\<close> cancels in every \<open>nextrel0\<close> comparison
+  (@{thm [source] m_8_5_slice_entry0}).  Forward direction; used to transport the base's
+  within-block le0-reachability (\<open>le0(M, j\<^sub>0, Lng M-2)\<close>) into the last slice block.\<close>
+
+lemma m_8_5_slice_nextrel0_shift:
+  fixes M :: pairseq and q k a b :: nat
+  assumes j1pos: "Lng M - 1 > 0"
+    and e1pos: "entry M 1 (Lng M - 1) > 0"
+    and hp: "hasParent M 1 (Lng M - 1)"
+    and j0le: "parent M 1 (Lng M - 1) \<le> Lng M"
+    and kq: "k < Suc q"
+    and aw: "a < Lng M - 1 - parent M 1 (Lng M - 1)"
+    and bw: "b < Lng M - 1 - parent M 1 (Lng M - 1)"
+    and nr: "nextrel0 M (parent M 1 (Lng M - 1) + a) (parent M 1 (Lng M - 1) + b)"
+  shows "nextrel0 (drop (parent M 1 (Lng M - 1)) (M[Suc q]))
+            (k * (Lng M - 1 - parent M 1 (Lng M - 1)) + a)
+            (k * (Lng M - 1 - parent M 1 (Lng M - 1)) + b)"
+proof -
+  let ?j0 = "parent M 1 (Lng M - 1)"
+  let ?w = "Lng M - 1 - ?j0"
+  let ?d0 = "entry M 0 (Lng M - 1) - entry M 0 ?j0"
+  let ?X = "drop ?j0 (M[Suc q])"
+  have LngX: "Lng ?X = Suc q * ?w" by (rule m_8_5_Lng_slice[OF j1pos e1pos hp j0le])
+  have nr': "?j0 + a < ?j0 + b \<and> entry M 0 (?j0 + a) < entry M 0 (?j0 + b)
+             \<and> (\<forall>jj. ?j0 + a < jj \<and> jj < ?j0 + b \<longrightarrow> entry M 0 jj \<ge> entry M 0 (?j0 + b))"
+    using nr by (simp add: nextrel0_def)
+  have ablt: "a < b" using nr' by simp
+  have ea: "entry ?X 0 (k * ?w + a) = entry M 0 (?j0 + a) + k * ?d0"
+    using m_8_5_slice_entry0[OF j1pos e1pos hp j0le aw kq] by simp
+  have eb: "entry ?X 0 (k * ?w + b) = entry M 0 (?j0 + b) + k * ?d0"
+    using m_8_5_slice_entry0[OF j1pos e1pos hp j0le bw kq] by simp
+  have skle: "Suc k * ?w \<le> Suc q * ?w" using kq by (simp add: mult_le_mono1)
+  show ?thesis
+    unfolding nextrel0_def
+  proof (intro conjI allI impI)
+    show "k * ?w + a < Lng ?X"
+    proof -
+      have "k * ?w + a < Suc k * ?w" using aw by simp
+      also have "Suc k * ?w \<le> Suc q * ?w" by (rule skle)
+      also have "Suc q * ?w = Lng ?X" by (simp only: LngX)
+      finally show ?thesis .
+    qed
+    show "k * ?w + b < Lng ?X"
+    proof -
+      have "k * ?w + b < Suc k * ?w" using bw by simp
+      also have "Suc k * ?w \<le> Suc q * ?w" by (rule skle)
+      also have "Suc q * ?w = Lng ?X" by (simp only: LngX)
+      finally show ?thesis .
+    qed
+    show "k * ?w + a < k * ?w + b" using ablt by simp
+    show "entry ?X 0 (k * ?w + a) < entry ?X 0 (k * ?w + b)"
+      using ea eb nr' by simp
+  next
+    fix j assume hj: "k * ?w + a < j \<and> j < k * ?w + b"
+    define r where "r = j - k * ?w"
+    have rge: "a < r" using hj r_def by linarith
+    have rlt: "r < b" using hj r_def by linarith
+    have rw: "r < ?w" using rlt bw by simp
+    have jeq: "j = k * ?w + r" using hj r_def by linarith
+    have ej: "entry ?X 0 j = entry M 0 (?j0 + r) + k * ?d0"
+      using m_8_5_slice_entry0[OF j1pos e1pos hp j0le rw kq] jeq by simp
+    have jjr: "?j0 + a < ?j0 + r \<and> ?j0 + r < ?j0 + b" using rge rlt by simp
+    have betwr: "entry M 0 (?j0 + r) \<ge> entry M 0 (?j0 + b)" using nr' jjr by blast
+    show "entry ?X 0 (k * ?w + b) \<le> entry ?X 0 j" using ej eb betwr by simp
+  qed
+qed
+
 
 end
