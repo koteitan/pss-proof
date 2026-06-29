@@ -57,12 +57,10 @@
   - 🚨 §8.5 条件 (V) の下での展開規則
     - 🚨 命題（条件 (V) の下での $\textrm{Trans}$ と基本列の交換関係）
       - ✅ reduction ladder〔step2/base2 → wrap/inj/body, `m_8_5_*_of_*`〕
-      - 🚨 surgery spine-descent〔§8 master key〕
+      - 🚨 surgery spine-descent〔§8 master key — green-modulo 1 露出 keystone(`m_8_5_markstep_of_Trans_keystone`、32e0a37@wt2-85surgery-green)〕
         - ✅ (A) deepen SHAPE〔`m_8_5_appended_col_deepen` 他〕
-        - 🚨 (B) value〔§8 irreducible core〕
-          - ✅ value-pinning〔spineLeaf witness+`m_8_5_surgery_spine_step`、5パスの壁突破〕
-          - ✅ outer-q skeleton+commutation〔`m_8_5_surgery_of_pred_geom_endpoint`/`_scbSubst_addBT_commute`〕
-          - 🚨 endpoint m帰納 wire + geom full-prefix Mark-keystone
+        - ✅ (B) wiring〔value-pinning/outer-q skeleton/surgC→endpoint→blockC/rnav engine/§7.4 Mark↔Trans 橋 で markstep→keystone 1本〕
+        - 🚨🤖 (keystone) `bpHeadT(Trans(slice_q@B))=C(bpHeadT(Trans slice_q))`〔唯一の露出残核、otasm 47/47、tower q-induction proof 試行中(r2tail)〕
     - ✅ 補題（条件 (V) の下での $\textrm{Joints}$ と $\textrm{FirstNodes}$ と $t_2$ の基本性質）〔`m_8_5_Joints_FirstNodes_basic` parts(1)(2)〕
     - 🚨 補題（条件 (V) の下での各種 scb分解）〔def 内部記号露出要〕
   - 🚨 §8.6 条件 (VI) の下での展開規則
