@@ -5592,4 +5592,40 @@ proof -
   show ?thesis using read1 read2 comple by simp
 qed
 
+
+text \<open>§8.5 (E.2) — generic per-column FOLD telescoping (the netfold skeleton, generalised
+  from \<open>Trans\<close> to ANY column-functor \<open>f\<close>).  If appending the \<open>m\<close>-th column to \<open>Y\<frown>take m B\<close>
+  applies the operator \<open>op m\<close> to \<open>f\<close>, then \<open>f (Y\<frown>B)\<close> is the whole-period fold of the \<open>op\<close>'s
+  over \<open>f Y\<close>.  Pure induction on the take-prefix length; this is @{thm [source]
+  m_8_5_scbSubst_netfold} with \<open>Trans\<close> abstracted to \<open>f\<close>, so it instantiates BOTH to the
+  Trans netfold (f = Trans) and to the MARK netfold (\<open>f = \<lambda>M. Mark M jm1\<close>, \<open>Y = M[q]\<close>,
+  \<open>B\<close> the deepen period): \<open>Mark (M[Suc q]) jm1 = fold op [0..<Lng B] (Mark (M[q]) jm1)\<close> from
+  the per-column @{thm [source] m_8_5_Mark_scbSubst_step}.  The Mark level is the RIGHT level
+  for the §8.5 keystone — \<open>U\<^sub>q = bpHeadT (Mark (M[q]) jm1)\<close> is non-empty (unlike the dead
+  spineLeaf-leaf), and the descent ladder consumes the markstep, bypassing the Trans surgery.\<close>
+
+lemma m_8_5_fold_of_colstep:
+  fixes Y B :: pairseq and op :: "nat \<Rightarrow> BT \<Rightarrow> BT" and f :: "pairseq \<Rightarrow> BT"
+  assumes step: "\<And>m. m < Lng B \<Longrightarrow> f (Y @ take (Suc m) B) = op m (f (Y @ take m B))"
+  shows "f (Y @ B) = fold op [0..<Lng B] (f Y)"
+proof -
+  have gen: "\<And>k. k \<le> Lng B \<Longrightarrow> fold op [0..<k] (f Y) = f (Y @ take k B)"
+  proof -
+    fix k show "k \<le> Lng B \<Longrightarrow> fold op [0..<k] (f Y) = f (Y @ take k B)"
+    proof (induct k)
+      case 0 thus ?case by simp
+    next
+      case (Suc k)
+      have kle: "k \<le> Lng B" using Suc.prems by simp
+      have klt: "k < Lng B" using Suc.prems by simp
+      have "fold op [0..<Suc k] (f Y) = op k (fold op [0..<k] (f Y))" by simp
+      also have "\<dots> = op k (f (Y @ take k B))" using Suc.hyps kle by simp
+      also have "\<dots> = f (Y @ take (Suc k) B)" using step[OF klt] by (rule sym)
+      finally show ?case .
+    qed
+  qed
+  have "fold op [0..<Lng B] (f Y) = f (Y @ take (Lng B) B)" using gen by simp
+  thus ?thesis by simp
+qed
+
 end
