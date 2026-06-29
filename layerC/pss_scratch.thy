@@ -6404,4 +6404,28 @@ proof -
   show ?thesis using keystone r1 r2 by simp
 qed
 
+text \<open>§8.5 KEYSTONE\<open>\<rightarrow>\<close>KERNEL bridge — the descent-kernel hypothesis
+  @{thm [source] m_8_5_TransCondV_descend_kernel} carries free, namely
+  \<open>surgC\<close>: \<open>Trans (slice \<frown> B) = Dpt u (C (bpHeadT (Trans slice)))\<close>, DECOMPOSES
+  EXACTLY into the whole-period keystone identity (the bpHeadT face — the EXPOSED
+  open of @{thm [source] m_8_5_markstep_of_Trans_keystone}) AND the single-outer-
+  principal shape \<open>op\<close> (\<open>Trans (slice \<frown> B)\<close> is one principal of value \<open>u\<close>, body =
+  its own bpHeadT — the surgshape face, the marked head \<open>Mark (M[Suc q]) jm1 =
+  Dpt e\<^sub>1\<^sub>0 (\<dots>)\<close>).  Pure projection glue: the bpHeadT of a single principal is its
+  body, so \<open>op\<close> + keystone \<open>\<Longrightarrow>\<close> surgC.  This pins the §8.5 descent kernel's surgC to
+  the SAME single whole-period identity the markstep faithful-close exposes — no
+  second value open beyond the marked-head shape \<open>op\<close>.\<close>
+
+lemma m_8_5_surgC_of_keystone:
+  fixes X Y\<^sub>0 :: BT and u :: nat and C :: "BT \<Rightarrow> BT"
+  assumes op: "X = Dpt (enat u) (bpHeadT X)"
+    and keystone: "bpHeadT X = C Y\<^sub>0"
+  shows "X = Dpt (enat u) (C Y\<^sub>0)"
+proof -
+  have "X = Dpt (enat u) (bpHeadT X)" by (rule op)
+  also have "Dpt (enat u) (bpHeadT X) = Dpt (enat u) (C Y\<^sub>0)"
+    using keystone by simp
+  finally show ?thesis .
+qed
+
 end
