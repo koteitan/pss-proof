@@ -59,10 +59,12 @@
       - ✅ reduction ladder〔step2/base2 → wrap/inj/body, `m_8_5_*_of_*`〕
       - 🚨 surgery spine-descent〔§8 master key — green-modulo 1 露出 keystone(`m_8_5_markstep_of_Trans_keystone`、32e0a37@wt2-85surgery-green)〕
         - ✅ (A) deepen SHAPE〔`m_8_5_appended_col_deepen` 他〕
-        - ✅ (B) wiring〔value-pinning/outer-q skeleton/surgC→endpoint→blockC/rnav engine/§7.4 Mark↔Trans 橋 で markstep→keystone 1本〕
-        - ✅ kernel bridge〔`m_8_5_surgC_of_keystone`(7c5bf0e): descend-kernel の surgC = keystone + op(marked-head 単項 `Mark(M[Suc q]) jm1=Dpt u(...)`)に分解〕
-        - 🚨 (keystone) `bpHeadT(Trans(slice_q@B))=C(bpHeadT(Trans slice_q))`〔唯一の露出残核、otasm 47/47 + 独立確認: NET は clean q-fixed top-level C(c0,vm1 q-不変、rnav(C b)=b)=tower induction で可証の公算〕
-        - 🚨 (op) marked-head 単項性〔base jm1 で `Mark(M[Suc q]) jm1` 単項=plausible だが base-jm1 で未緑(per-iterate は `transC2_single_principal`✅)〕
+        - ✅ (B) wiring〔rnav engine/§7.4 Mark↔Trans 橋〕
+        - ✅ kernel bridge〔`m_8_5_surgC_of_keystone`〕
+        - 🚨 (keystone) `bpHeadT(Trans(slice@B))=C(bpHeadT(Trans slice))`
+        - 🚨 (op) marked-head 単項性
+          - ✅ per-iterate jm1〔`transC2_single_principal`〕
+          - 🚨 base jm1〔`monoT(slice@B)` 要〕
     - ✅ 補題（条件 (V) の下での $\textrm{Joints}$ と $\textrm{FirstNodes}$ と $t_2$ の基本性質）〔`m_8_5_Joints_FirstNodes_basic` parts(1)(2)〕
     - 🚨 補題（条件 (V) の下での各種 scb分解）〔def 内部記号露出要〕
   - 🚨 §8.6 条件 (VI) の下での展開規則
