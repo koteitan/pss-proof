@@ -5692,4 +5692,27 @@ proof -
   finally show ?thesis by (simp add: transJ1_def)
 qed
 
+
+text \<open>§8.5 (E.2) — per-column bpHeadT action, condVI branch (in-theory, from transC2_def).
+  A condVI column RESETS the marked head to a single leaf principal \<open>D\<^bsub>e\<^esub> 0\<close> (independent of
+  \<open>Pred\<close>): \<open>bpHeadT (Mark M (transJm1 M)) = D\<^bsub>e\<^esub> 0\<close>, \<open>e = entry M 1 (Lng M-1)\<close>.  The condVI
+  branch of @{thm [source] transC2_def} is \<open>D\<^bsub>v\<^esub>(D\<^bsub>e\<^esub> 0)\<close>; via @{thm [source]
+  m_7_3_Mark_rightmost2}.  Companion to @{thm [source] m_8_5_Mark_bpHeadT_step_condV} for the
+  per-column transCond case analysis.\<close>
+
+lemma m_8_5_Mark_bpHeadT_step_condVI:
+  fixes M :: pairseq
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS"
+    and J1pos: "transJ1 M > 0" and T1: "transT1 M \<noteq> 0\<^sub>B"
+    and ncond: "\<not> transCondI M \<and> \<not> transCondIII M \<and> \<not> transCondV M"
+    and condVI: "transCondVI M"
+  shows "bpHeadT (Mark M (transJm1 M)) = Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B"
+proof -
+  have mk2: "Mark M (transJm1 M) = transC2 M"
+    by (rule m_7_3_Mark_rightmost2[OF MR MP J1pos T1])
+  have c2: "transC2 M = Dpt (transV M) (Dpt (enat (entry M 1 (transJ1 M))) 0\<^sub>B)"
+    using ncond condVI by (simp add: transC2_def Let_def)
+  show ?thesis using mk2 c2 by (simp add: transJ1_def)
+qed
+
 end
