@@ -6294,4 +6294,26 @@ proof -
   finally show ?thesis .
 qed
 
+
+text \<open>§8.5 (B3) — bp0/bp1 discharge: on a SINGLE outer-principal term \<open>bpHeadT = rnav\<close>.
+  The genuine kernel mark \<open>Mark (M[q]) jm1 = D\<^bsub>e10\<^esub>(U\<^sub>q)\<close> is single-principal, so \<open>bpHeadT\<close>
+  (subtree of the first = only principal) coincides with \<open>rnav\<close> (subtree of the LAST = only
+  principal).  This discharges the \<open>bp0\<close>/\<open>bp1\<close> hypotheses of @{thm [source]
+  b3_markstep_skeleton_rnav}, leaving the markstep open modulo exactly the depth ladder (B3a)
+  and the keystone value \<open>assembly\<close>.\<close>
+
+lemma bpHeadT_eq_rnav:
+  assumes "length (untrm t) = 1"
+  shows "bpHeadT t = rnav t"
+proof -
+  obtain p where p: "untrm t = [p]" using assms by (cases "untrm t") auto
+  obtain v b where vb: "p = DB v b" by (cases p)
+  have t: "t = Trm [DB v b]" using p vb by (cases t) auto
+  show ?thesis using t by (simp add: rnav_def)
+qed
+
+
+lemma bpHeadT_rnav_Dpt: "bpHeadT (Dpt (enat v) b) = rnav (Dpt (enat v) b)"
+  by (rule bpHeadT_eq_rnav) simp
+
 end
