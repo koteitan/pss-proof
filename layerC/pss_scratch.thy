@@ -5898,4 +5898,120 @@ next
   finally show ?case .
 qed
 
+
+text \<open>§8.5 (E.2) — DEPTH-PARTIAL commute (the B3b composition engine).  Generalises
+  @{thm [source] rspine_spineLeaf_scbSubst} from the full depth \<open>d\<close> to ANY prefix \<open>k \<le> d\<close>:
+  reading the rightmost spine down \<open>k\<close> levels COMMUTES with the depth-\<open>d\<close> \<open>scbSubst\<close> (the
+  substituted core \<open>c\<^sub>1\<close> sits below level \<open>k\<close>, so the two operations are independent):
+  \<open>(spineLeaf\<^bsup>k\<^esup>) (scbSubst c\<^sub>1 c\<^sub>2 t) = scbSubst c\<^sub>1 c\<^sub>2 ((spineLeaf\<^bsup>k\<^esup>) t)\<close>.  Same spine
+  induction as the (A) wrapper, walking 2b \<open>k\<close> times (no whole-replace at the bottom — we stop
+  ABOVE \<open>c\<^sub>1\<close>).  This is the engine that pushes a FIXED outer read-off \<open>spineLeaf\<^bsup>d\<^sub>0\<^esup>\<close> through
+  EVERY period column of the markstep fold: each column's \<open>scbSubst\<close> sits at depth \<open>d\<^sub>m \<ge> d\<^sub>0\<close>,
+  so \<open>spineLeaf\<^bsup>d\<^sub>0\<^esup>\<close> commutes past it, peeling the period one self-similar level at a time.
+  The \<open>k = d\<close> instance recovers the (A) wrapper (\<open>scbSubst c\<^sub>1 c\<^sub>2 c\<^sub>1 = c\<^sub>2\<close> at the bottom).\<close>
+
+lemma rspine_funpow_scbSubst_commute:
+  assumes rs: "rspine d c1 t" and kd: "k \<le> d" and c1ne: "c1 \<noteq> Trm []"
+    and ptc1: "isPTB_str (flatBT c1)" and ptc2: "isPTB_str (flatBT c2)"
+  shows "(spineLeaf ^^ k) (scbSubst c1 c2 t) = scbSubst c1 c2 ((spineLeaf ^^ k) t)"
+  using rs kd
+proof (induction k arbitrary: t d)
+  case 0 thus ?case by simp
+next
+  case (Suc k)
+  from \<open>Suc k \<le> d\<close> obtain d' where d: "d = Suc d'" by (cases d) auto
+  from \<open>rspine d c1 t\<close> obtain e pre h x where
+    t: "t = Dpt (enat e) (pre +\<^sub>B Dpt (enat h) x)" and prene: "untrm pre \<noteq> []"
+    and rx: "rspine d' c1 x" using d by auto
+  have kd': "k \<le> d'" using \<open>Suc k \<le> d\<close> d by simp
+  obtain sx bx where dx: "scb_decomp x sx (flatBT c1) bx"
+    using rspine_scb_decomp[OF rx c1ne ptc1] by auto
+  have xnz: "x \<noteq> Trm []" by (rule rspine_nonempty[OF rx c1ne])
+  have slt: "spineLeaf t = x" using t by (simp add: m_8_5_spineLeaf_Dpt_addBT)
+  have step2b: "spineLeaf (scbSubst c1 c2 t) = scbSubst c1 c2 x"
+  proof -
+    have "spineLeaf (scbSubst c1 c2 (Dpt (enat e) (pre +\<^sub>B Dpt (enat h) x)))
+            = scbSubst c1 c2 (spineLeaf (Dpt (enat e) (pre +\<^sub>B Dpt (enat h) x)))"
+      by (rule m_8_5_spineLeaf_scbSubst[OF dx xnz ptc2 prene])
+    also have "spineLeaf (Dpt (enat e) (pre +\<^sub>B Dpt (enat h) x)) = x"
+      by (rule m_8_5_spineLeaf_Dpt_addBT)
+    finally show ?thesis using t by simp
+  qed
+  have "(spineLeaf ^^ Suc k) (scbSubst c1 c2 t)
+          = (spineLeaf ^^ k) (spineLeaf (scbSubst c1 c2 t))"
+    by (simp only: funpow_Suc_right o_apply)
+  also have "\<dots> = (spineLeaf ^^ k) (scbSubst c1 c2 x)" using step2b by simp
+  also have "\<dots> = scbSubst c1 c2 ((spineLeaf ^^ k) x)" by (rule Suc.IH[OF rx kd'])
+  also have "\<dots> = scbSubst c1 c2 ((spineLeaf ^^ Suc k) t)"
+    by (simp only: funpow_Suc_right o_apply slt)
+  finally show ?case .
+qed
+
+
+text \<open>§8.5 (E.2) — the B3b FOLD-DRIVE.  Threads the depth-partial commute
+  @{thm [source] rspine_funpow_scbSubst_commute} through the WHOLE markstep period fold
+  \<open>fold op [0..<w]\<close> (\<open>op m = scbSubst (c\<^sub>1 m) (c\<^sub>2 m)\<close>, the per-column marked-head action of
+  @{thm [source] m_8_5_Mark_scbSubst_step}): given the (B3a) DEPTH LADDER — at every column \<open>m\<close>
+  the substituted core \<open>c\<^sub>1 m\<close> sits at rightmost-spine depth \<open>dd m \<ge> k\<close> in the running
+  accumulator \<open>fold op [0..<m] acc\<^sub>0\<close> — the fixed outer read-off \<open>spineLeaf\<^bsup>k\<^esup>\<close> COMMUTES past
+  the entire period:
+    \<open>(spineLeaf\<^bsup>k\<^esup>) (fold op [0..<w] acc\<^sub>0) = fold op [0..<w] ((spineLeaf\<^bsup>k\<^esup>) acc\<^sub>0)\<close>.
+  Induction on the period length, peeling one column at a time (each at depth \<open>dd m \<ge> k\<close>).
+  This isolates the markstep to exactly the depth ladder (\<open>ladder\<close>) — the SOLE residual,
+  the B3a geometric crux \<open>dd m = (q-1)+m\<close> (otasm-confirmed empirically).  Instantiate \<open>k\<close>
+  with the fixed outer depth \<open>d\<^sub>0 = q-1\<close> and the RHS leaf-fold + \<open>bpHeadT\<close>-readback assemble
+  the period \<open>C\<close>-graft.\<close>
+
+lemma b3b_spineLeaf_fold_drive:
+  fixes c1 c2 :: "nat \<Rightarrow> BT" and acc0 :: BT and k w :: nat and dd :: "nat \<Rightarrow> nat"
+    and op :: "nat \<Rightarrow> BT \<Rightarrow> BT"
+  defines "op \<equiv> (\<lambda>m t. scbSubst (c1 m) (c2 m) t)"
+  assumes ladder: "\<And>m. m < w \<Longrightarrow> rspine (dd m) (c1 m) (fold op [0..<m] acc0)"
+    and dge: "\<And>m. m < w \<Longrightarrow> k \<le> dd m"
+    and c1ne: "\<And>m. m < w \<Longrightarrow> c1 m \<noteq> Trm []"
+    and pt1: "\<And>m. m < w \<Longrightarrow> isPTB_str (flatBT (c1 m))"
+    and pt2: "\<And>m. m < w \<Longrightarrow> isPTB_str (flatBT (c2 m))"
+  shows "(spineLeaf ^^ k) (fold op [0..<w] acc0)
+       = fold op [0..<w] ((spineLeaf ^^ k) acc0)"
+proof -
+  have gen: "\<And>n. n \<le> w \<Longrightarrow> (spineLeaf ^^ k) (fold op [0..<n] acc0)
+              = fold op [0..<n] ((spineLeaf ^^ k) acc0)"
+  proof -
+    fix n
+    show "n \<le> w \<Longrightarrow> (spineLeaf ^^ k) (fold op [0..<n] acc0)
+            = fold op [0..<n] ((spineLeaf ^^ k) acc0)"
+    proof (induction n)
+      case 0 thus ?case by simp
+    next
+      case (Suc n)
+      have nlew: "n \<le> w" using Suc.prems by simp
+      have nw: "n < w" using Suc.prems by simp
+      have foldA: "fold op [0..<Suc n] acc0 = op n (fold op [0..<n] acc0)"
+        by (simp add: upt_Suc_append)
+      have foldB: "fold op [0..<Suc n] ((spineLeaf ^^ k) acc0)
+                     = op n (fold op [0..<n] ((spineLeaf ^^ k) acc0))"
+        by (simp add: upt_Suc_append)
+      have IH: "(spineLeaf ^^ k) (fold op [0..<n] acc0)
+                  = fold op [0..<n] ((spineLeaf ^^ k) acc0)" by (rule Suc.IH[OF nlew])
+      have opn: "op n = (\<lambda>t. scbSubst (c1 n) (c2 n) t)" by (simp add: op_def)
+      have comm: "(spineLeaf ^^ k) (op n (fold op [0..<n] acc0))
+                    = op n ((spineLeaf ^^ k) (fold op [0..<n] acc0))"
+      proof -
+        have "(spineLeaf ^^ k) (scbSubst (c1 n) (c2 n) (fold op [0..<n] acc0))
+                = scbSubst (c1 n) (c2 n) ((spineLeaf ^^ k) (fold op [0..<n] acc0))"
+          by (rule rspine_funpow_scbSubst_commute[OF ladder[OF nw] dge[OF nw]
+                    c1ne[OF nw] pt1[OF nw] pt2[OF nw]])
+        thus ?thesis using opn by simp
+      qed
+      have "(spineLeaf ^^ k) (fold op [0..<Suc n] acc0)
+              = (spineLeaf ^^ k) (op n (fold op [0..<n] acc0))" using foldA by simp
+      also have "\<dots> = op n ((spineLeaf ^^ k) (fold op [0..<n] acc0))" by (rule comm)
+      also have "\<dots> = op n (fold op [0..<n] ((spineLeaf ^^ k) acc0))" using IH by simp
+      also have "\<dots> = fold op [0..<Suc n] ((spineLeaf ^^ k) acc0)" using foldB by simp
+      finally show ?case .
+    qed
+  qed
+  show ?thesis using gen[of w] by simp
+qed
+
 end
