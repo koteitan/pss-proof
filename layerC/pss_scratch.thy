@@ -5656,4 +5656,40 @@ lemma m_8_5_spineLeaf_scbSubst_whole:
   shows "spineLeaf (scbSubst c1 c2 c1) = spineLeaf c2"
   using m_8_5_scbSubst_whole[OF c1ne ptc1] by simp
 
+
+text \<open>§8.5 (E.2) — the PER-COLUMN bpHeadT RECURRENCE (condV case), derived IN-THEORY from the
+  §7.4 Mark structure (NO empirics).  At the second basepoint, @{thm [source]
+  m_7_3_Mark_rightmost2} gives \<open>Mark M (transJm1 M) = transC2 M\<close>, and the condV branch of
+  @{thm [source] transC2_def} is \<open>D\<^bsub>v\<^esub>(t\<^sub>2 +\<^sub>B D\<^bsub>e\<^esub> 0)\<close> with \<open>t\<^sub>2 = transT2 M = bpHeadT (transC1 M)
+  = bpHeadT (Mark (Pred M) (transJm1 M))\<close> (@{thm [source] transT2_def}/@{thm [source]
+  transC1_def}) and \<open>e = entry M 1 (Lng M-1)\<close>.  Taking \<open>bpHeadT\<close> (the \<open>D\<^bsub>v\<^esub>\<close>-head is dropped):
+    \<open>bpHeadT (Mark M (transJm1 M)) = bpHeadT (Mark (Pred M) (transJm1 M)) +\<^sub>B D\<^bsub>e\<^esub> 0\<close>
+  — appending ONE leaf principal \<open>D\<^bsub>e\<^esub> 0\<close> per condV column.  This is the exact per-column
+  marked-head action; the §8.5 keystone value content, made explicit from §7.4 (no Trans
+  surgery, no slice empirics).\<close>
+
+lemma m_8_5_Mark_bpHeadT_step_condV:
+  fixes M :: pairseq
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS"
+    and J1pos: "transJ1 M > 0" and T1: "transT1 M \<noteq> 0\<^sub>B"
+    and condV: "transCondV M"
+  shows "bpHeadT (Mark M (transJm1 M))
+       = bpHeadT (Mark (Pred M) (transJm1 M)) +\<^sub>B Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B"
+proof -
+  have mk2: "Mark M (transJm1 M) = transC2 M"
+    by (rule m_7_3_Mark_rightmost2[OF MR MP J1pos T1])
+  have c2: "transC2 M
+              = Dpt (transV M) (transT2 M +\<^sub>B Dpt (enat (entry M 1 (transJ1 M))) 0\<^sub>B)"
+    using condV by (simp add: transC2_def Let_def)
+  have tt2: "transT2 M = bpHeadT (Mark (Pred M) (transJm1 M))"
+    by (simp add: transT2_def transC1_def)
+  have "bpHeadT (Mark M (transJm1 M)) = bpHeadT (transC2 M)" using mk2 by simp
+  also have "\<dots> = transT2 M +\<^sub>B Dpt (enat (entry M 1 (transJ1 M))) 0\<^sub>B"
+    using c2 by simp
+  also have "\<dots> = bpHeadT (Mark (Pred M) (transJm1 M))
+                    +\<^sub>B Dpt (enat (entry M 1 (transJ1 M))) 0\<^sub>B"
+    using tt2 by simp
+  finally show ?thesis by (simp add: transJ1_def)
+qed
+
 end
