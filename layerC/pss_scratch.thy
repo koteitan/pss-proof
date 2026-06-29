@@ -5407,4 +5407,18 @@ proof -
           [OF base gYne gMR gMP gBrne gj1gt gpar ge10 endpoint])
 qed
 
+
+text \<open>§8.5 endpoint from the surgC SHAPE (outer-q frame).  Once the surgC tower-shape
+  Trans (Y@B) = Dpt e10 (t2 +B Dpt vm1 (bpHeadT (Trans Y))) is in hand, the endpoint
+  spineLeaf (Trans (Y@B)) = bpHeadT (Trans Y) is a trivial spine readback
+  (@{thm [source] m_8_5_spineLeaf_Dpt_addBT}).  This is the frame for the outer-q induction:
+  prove the closed-form bpHeadT tower (T(q+1) = C(T q)) and endpoint follows.\<close>
+
+lemma m_8_5_endpoint_of_surgshape:
+  fixes Y B :: pairseq and t2 :: BT and e10 vm1 :: nat
+  assumes shape: "Trans (Y @ B)
+                    = Dpt (enat e10) (t2 +\<^sub>B Dpt (enat vm1) (bpHeadT (Trans Y)))"
+  shows "spineLeaf (Trans (Y @ B)) = bpHeadT (Trans Y)"
+  using shape by (simp add: m_8_5_spineLeaf_Dpt_addBT)
+
 end
