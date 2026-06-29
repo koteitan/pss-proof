@@ -3709,4 +3709,172 @@ text \<open>§8.5 CAPSTONE — the condV termination-measure descent \<open>less
   long-open §8 wall — is closed: it reduces, through the green chain
   @{thm [source] m_8_5_TransCondV_descend_kernel}, to those three residuals (each owned elsewhere).\<close>
 
+text \<open>§8.5 B0 CONTEXT — the CLEANLY-DERIVABLE n=1-base / OW-scb bundle hyps.  Of the
+  fourteen B0 hyps the capstone @{thm [source] m_8_5_TransCondV_descend_kernel} carries
+  free, FOUR follow with NO new deep input — they are NOT independent assumptions:
+    \<^item> \<open>tT\<close>     (\<open>Trans M \<in> T_B\<close>)        from \<open>M \<in> RT_PS\<close> (@{thm [source] m_7_3_Trans_in_T_B});
+    \<^item> \<open>inj\<close>    (\<open>OW\<close> injective)         from \<open>OW_def\<close> + \<open>k1\<close> (@{thm [source] m_8_5_OW_inj_of_scb}:
+              \<open>k1\<close>'s scb makes the centre string in the flat image, so \<open>OW\<close> cancels);
+    \<^item> \<open>bodyne\<close> (\<open>body \<noteq> 0\<close>)           from \<open>innerscb\<close> (the centre string
+              \<open>flat (D\<^bsub>v\<^esub> 0) = [D\<^bsub>v\<^esub>, Z]\<close> has length 2, so \<open>flat body\<close> has length \<ge> 2 > 1 = \<open>|flat 0|\<close>).
+  This lemma packages the three structural ones (the parent can also cite
+  @{thm [source] m_7_3_Trans_in_T_B} directly for \<open>tT\<close>).  Empirically all 28/28 on the
+  small condV hosts (python/_step2_decomp_check producer + augmented length/uv check); B0.\<close>
+
+lemma m_8_5_B0_derivable:
+  fixes M :: pairseq and OW :: "BT \<Rightarrow> BT" and s\<^sub>0 s\<^sub>1 b\<^sub>0 b\<^sub>1 :: "Sym list"
+    and u v :: nat and body x y :: BT
+  assumes Mrt: "M \<in> RT_PS"
+    and OW_def: "OW = (\<lambda>x. unflatBT (s\<^sub>1 @ Dsym (enat u) # flatBT x @ b\<^sub>1))"
+    and k1: "scb_kind1 (Trans M) s\<^sub>1 (flatBT (Dpt (enat u) body)) b\<^sub>1"
+    and innerscb: "scb_decomp body s\<^sub>0 (flatBT (Dpt (enat v) 0\<^sub>B)) b\<^sub>0"
+  shows "Trans M \<in> T_B"
+    and "OW x = OW y \<Longrightarrow> x = y"
+    and "body \<noteq> Trm []"
+proof -
+  show "Trans M \<in> T_B" by (rule m_7_3_Trans_in_T_B[OF Mrt])
+next
+  have scb: "scb_decomp (Trans M) s\<^sub>1 (flatBT (Dpt (enat u) body)) b\<^sub>1"
+    using k1 by (simp add: scb_kind1_def)
+  show "OW x = OW y \<Longrightarrow> x = y"
+    by (rule m_8_5_OW_inj_of_scb[OF OW_def scb])
+next
+  have flatb: "flatBT body = s\<^sub>0 @ flatBT (Dpt (enat v) 0\<^sub>B) @ b\<^sub>0"
+    using innerscb by (simp add: scb_decomp_def)
+  show "body \<noteq> Trm []"
+  proof
+    assume b: "body = Trm []"
+    from flatb b have e: "[Zsym] = s\<^sub>0 @ flatBT (Dpt (enat v) 0\<^sub>B) @ b\<^sub>0" by simp
+    have "length ([Zsym]::Sym list) = length (s\<^sub>0 @ flatBT (Dpt (enat v) 0\<^sub>B) @ b\<^sub>0)"
+      by (simp only: e)
+    thus False by simp
+  qed
+qed
+
+text \<open>§8.5 B0 CONTEXT — the \<open>uv\<close> hyp (\<open>u < v\<close>), discharged for the GENUINE pinned values
+  \<open>u = M\<^bsub>1,jm1\<^esub>\<close>, \<open>v = M\<^bsub>1,j\<^sub>1\<^esub>\<close>.  Under condV the row-0 parent boundary \<open>jp = parent M 0 j\<^sub>1\<close>
+  satisfies \<open>M\<^bsub>1,jp\<^esub> + 1 = M\<^bsub>1,j\<^sub>1\<^esub>\<close>, and the admissibility basepoint \<open>jm1 = Adm M jp\<close> is a
+  row-1 ancestor of \<open>jp\<close> (@{thm [source] adm_row1_ancestry}), so \<open>M\<^bsub>1,jm1\<^esub> \<le> M\<^bsub>1,jp\<^esub>\<close>
+  (@{thm [source] le1_imp_entry1_le}) \<open>= v - 1 < v\<close>.  Empirically 28/28 (augmented check). B0.\<close>
+
+lemma m_8_5_B0_uv:
+  fixes M :: pairseq and jm1 :: nat
+  assumes Mrt: "M \<in> RT_PS" and cond: "transCondV M"
+    and jm1def: "jm1 = Adm M (parent M 0 (Lng M - 1))"
+  shows "entry M 1 jm1 < entry M 1 (Lng M - 1)"
+proof -
+  let ?jp = "parent M 0 (Lng M - 1)"
+  have MT: "M \<in> T_PS" using Mrt by (simp add: RT_PS_def)
+  have condvp: "entry M 1 ?jp + 1 = entry M 1 (Lng M - 1)"
+    and jp2: "?jp + 1 < Lng M - 1" using cond by (simp_all add: transCondV_def)
+  have jple: "?jp \<le> Lng M - 1" using jp2 by linarith
+  have leR1: "leR M 1 (Adm M ?jp) ?jp" by (rule adm_row1_ancestry[OF MT jple])
+  have le1: "le1 M jm1 ?jp" using leR1 jm1def by (simp add: leR_def)
+  have "entry M 1 jm1 \<le> entry M 1 ?jp" by (rule le1_imp_entry1_le[OF le1])
+  thus ?thesis using condvp by linarith
+qed
+
+text \<open>§8.5 (E.2) RE-ARCHITECTURE — the descent-regime closure WITHOUT the false
+  \<open>d\<^sub>M = 1\<close> shortcut.  Sub-agent (E.2) REFUTED the candidate
+  \<open>transCondV M \<and> gpar M \<and> M \<in> ST\<^bsub>PS\<^esub> \<Longrightarrow> entry M 1 (parent M 0 (Lng M-1)) = 0\<close>
+  (33/35; two yaBMS-verified standard counterexamples with adjacent duplicate columns
+  from the \<open>i\<^sub>1=0\<close> copy-expand; the "parent is depth-1/top-level" reading is itself
+  inconsistent with \<open>gpar \<equiv> parent > TrMax\<close>, 35/35 branch).  The genuine surgery col0
+  residual is NOT \<open>entry(col0)=0\<close>; the reduced-slice col0 host \<open>M\<^sub>0 = (Red Y) \<frown> [col0]\<close>
+  lands UNIFORMLY in \<open>{condI, condIII, condV}\<close> (empirical GATE: Adm0 60/60; cond
+  \<in> {I:54, III:6}, never {II,IV,VI}) and the transC2 closed form is SHARED across those
+  three.  These three lemmas generalise the condI-only bricks to the shared branch,
+  removing the false \<open>condI\<close>-only assumption at the transC2, append-base, and
+  redslice-discharge levels.\<close>
+
+text \<open>(E.2)-1: transC2 CLOSED FORM for the SHARED condI/III/V branch.  Generalises
+  @{thm [source] m_8_5_transC2_condI}: the \<open>if\<close>-guard of @{const transC2} is literally
+  \<open>transCondI M \<or> transCondIII M \<or> transCondV M\<close>, so any disjunct fires the same branch.\<close>
+
+lemma m_8_5_transC2_shared:
+  fixes M :: pairseq
+  assumes "transCondI M \<or> transCondIII M \<or> transCondV M"
+  shows "transC2 M
+       = Dpt (transV M) (transT2 M +\<^sub>B Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B)"
+  using assms by (simp add: transC2_def Let_def transJ1_def)
+
+text \<open>(E.2)-2: the SHARED Adm0-collapse append BASE.  Generalises
+  @{thm [source] m_8_5_condI_append_base} from \<open>transCondI\<close> to the shared
+  \<open>transCondI \<or> transCondIII \<or> transCondV\<close> branch (uses @{thm [source] m_8_5_transC2_shared});
+  the Adm0 collapse, the transT2 readback and the full-slice rewrite are regime-free.
+  Gives the uniform col0 base \<open>Trans M = D\<^bsub>v\<^esub>(bpHeadT (Trans (Pred M)) +\<^sub>B D\<^bsub>e\<^esub> 0\<^sub>B)\<close> for
+  ANY \<open>e = entry M 1 (Lng M-1)\<close> (e=0 condI, e>0 condIII/V).\<close>
+
+lemma m_8_5_shared_append_base:
+  fixes M :: pairseq
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS"
+    and J1pos: "transJ1 M > 0" and T1: "transT1 M \<noteq> 0\<^sub>B"
+    and Adm0: "transJm1 M = 0"
+    and cS: "transCondI M \<or> transCondIII M \<or> transCondV M"
+    and mk0: "(Pred M, 0) \<in> Marked"
+    and rng: "0 < Lng (Pred M) - 1"
+  shows "Trans M
+       = Dpt (transV M)
+           (bpHeadT (Trans (Pred M)) +\<^sub>B Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B)"
+proof -
+  have e1: "Trans M = transC2 M"
+    by (rule Trans_eq_transC2_Adm0[OF MR MP J1pos T1 Adm0])
+  have e2: "transC2 M
+            = Dpt (transV M) (transT2 M +\<^sub>B Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B)"
+    by (rule m_8_5_transC2_shared[OF cS])
+  have pr: "Pred M \<in> RT_PS" by (rule Pred_RT_PS[OF MR])
+  have mk': "(Pred M, transJm1 M) \<in> Marked" using mk0 Adm0 by simp
+  have rng': "transJm1 M < Lng (Pred M) - 1" using rng Adm0 by simp
+  have rb: "transT2 M
+            = bpHeadT (Trans (seg (Pred M) (transJm1 M) (Lng (Pred M) - 1)))"
+    by (rule m_8_5_transT2_readback[OF mk' pr rng'])
+  have LP: "1 < Lng (Pred M)" using rng by linarith
+  have segfull: "seg (Pred M) (transJm1 M) (Lng (Pred M) - 1) = Pred M"
+  proof -
+    have "seg (Pred M) 0 (Lng (Pred M) - 1) = take (Suc (Lng (Pred M) - 1)) (Pred M)"
+      by (rule seg_0_eq_take) (use LP in linarith)
+    also have "Suc (Lng (Pred M) - 1) = Lng (Pred M)" using LP by simp
+    finally have "seg (Pred M) 0 (Lng (Pred M) - 1) = Pred M" by simp
+    thus ?thesis using Adm0 by simp
+  qed
+  have t2: "transT2 M = bpHeadT (Trans (Pred M))" using rb segfull by simp
+  show ?thesis using e1 e2 t2 by simp
+qed
+
+text \<open>(E.2)-3: the SHARED Adm0+cond DISCHARGE for the genuine col0.  Generalises
+  @{thm [source] m_8_5_redslice_Adm0_condI}: under the back-slice repr hyps and
+  \<open>transJm1 H = m\<close>, the reduced-slice col0 host \<open>M\<^sub>0 = Red (seg H m (Lng H-1))\<close> is Adm0 and
+  keeps the host's trans-condition WITHIN \<open>{I,III,V}\<close> (via the existing
+  @{thm [source] repr_transCondI_eq}, @{thm [source] repr_transCondIII_eq},
+  @{thm [source] repr_transCondV_eq}).  This is the (E') replacement of the refuted (E):
+  the col0 residual is membership in the SHARED branch, NOT \<open>entry(col0)=0\<close>.\<close>
+
+lemma m_8_5_redslice_Adm0_shared:
+  fixes H :: pairseq and m :: nat
+  assumes mM: "(H, m) \<in> Marked" and HR: "H \<in> RT_PS"
+    and mint: "m < Lng H - 2"
+    and leM: "leR H 0 m (Lng H - 1)"
+    and hp: "hasParent H 0 (Lng H - 1)"
+    and anc0: "m \<le> parent H 0 (Lng H - 1)"
+    and j0lt: "parent H 0 (Lng H - 1) < Lng H - 1"
+    and base0: "transJm1 H = m"
+    and cS: "transCondI H \<or> transCondIII H \<or> transCondV H"
+  shows "transJm1 (Red (seg H m (Lng H - 1))) = 0
+       \<and> (transCondI (Red (seg H m (Lng H - 1)))
+          \<or> transCondIII (Red (seg H m (Lng H - 1)))
+          \<or> transCondV (Red (seg H m (Lng H - 1))))"
+proof -
+  have shift: "transJm1 (Red (seg H m (Lng H - 1))) = transJm1 H - m"
+    by (rule repr_transJm1_shift[OF mM HR mint leM hp anc0 j0lt])
+  have A: "transJm1 (Red (seg H m (Lng H - 1))) = 0" using shift base0 by simp
+  have BI: "transCondI (Red (seg H m (Lng H - 1))) = transCondI H"
+    by (rule repr_transCondI_eq[OF mM HR mint leM hp anc0 j0lt])
+  have BIII: "transCondIII (Red (seg H m (Lng H - 1))) = transCondIII H"
+    by (rule repr_transCondIII_eq[OF mM HR mint leM hp anc0 j0lt])
+  have BV: "transCondV (Red (seg H m (Lng H - 1))) = transCondV H"
+    by (rule repr_transCondV_eq[OF mM HR mint leM hp anc0 j0lt])
+  show ?thesis using A BI BIII BV cS by blast
+qed
+
+
 end
