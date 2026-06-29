@@ -4957,5 +4957,34 @@ proof -
   show ?thesis using sl_push sl_t by simp
 qed
 
+text \<open>§8.5 (E.2) FACT-2 piece 3a — \<open>spineLeaf\<close> COMMUTES with the whole netfold.  Generic
+  fold-commute backbone: if every fold operator commutes with \<open>spineLeaf\<close> on the maintained
+  invariant \<open>P\<close> (the per-step @{thm [source] m_8_5_spineLeaf_scbSubst}) and \<open>P\<close> is preserved by
+  each step, then \<open>spineLeaf\<close> pushes through the entire fold:
+  \<open>spineLeaf (fold op ms acc) = fold op ms (spineLeaf acc)\<close>.  Pure structural induction on the
+  fold list; NON-circular.  Instantiating \<open>op\<close> with the netfold's per-column scbSubst and \<open>P\<close>
+  with the spine-form/deep-core invariant turns @{thm [source] m_8_5_scbSubst_netfold} into
+  \<open>spineLeaf (Trans (Y@B)) = fold op [0..<Lng B] (spineLeaf (Trans Y))\<close> — reducing FACT 2 to the
+  single fold-value identity (the period's scbSubsts net to one C-graft).\<close>
+
+lemma m_8_5_spineLeaf_fold:
+  fixes op :: "nat \<Rightarrow> BT \<Rightarrow> BT" and P :: "BT \<Rightarrow> bool" and ms :: "nat list" and acc :: BT
+  assumes step: "\<And>m t. P t \<Longrightarrow> spineLeaf (op m t) = op m (spineLeaf t)"
+    and inv: "\<And>m t. P t \<Longrightarrow> P (op m t)"
+    and Pacc: "P acc"
+  shows "spineLeaf (fold op ms acc) = fold op ms (spineLeaf acc)"
+  using Pacc
+proof (induction ms arbitrary: acc)
+  case Nil thus ?case by simp
+next
+  case (Cons m ms)
+  have Pm: "P (op m acc)" by (rule inv[OF Cons.prems])
+  have "spineLeaf (fold op (m # ms) acc) = spineLeaf (fold op ms (op m acc))" by simp
+  also have "\<dots> = fold op ms (spineLeaf (op m acc))" by (rule Cons.IH[OF Pm])
+  also have "\<dots> = fold op ms (op m (spineLeaf acc))" using step[OF Cons.prems] by simp
+  also have "\<dots> = fold op (m # ms) (spineLeaf acc)" by simp
+  finally show ?case .
+qed
+
 
 end
