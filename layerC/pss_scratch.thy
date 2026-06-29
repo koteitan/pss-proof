@@ -4391,5 +4391,147 @@ proof -
   qed
 qed
 
+text \<open>§8.5 (E.2) FACT-1 sub-ob 2 — WITHIN-LAST-BLOCK le0-transport.  Transports the base's
+  within-block reachability \<open>le0(M, j\<^sub>0, Lng M-2)\<close> (the isolated condV fact) to
+  \<open>le0 X (q\<cdot>w) (Lng X-1)\<close> in the LAST period block of the slice, via the per-step
+  @{thm [source] m_8_5_slice_nextrel0_shift} (k=q) over the M-chain (`rtranclp` transport,
+  all chain nodes block-relative \<open><w\<close>).  \<open>le0(M, j\<^sub>0, Lng M-2)\<close> is supplied from the
+  condV setup (verified 35/35; sibling to \<open>parR\<close>).\<close>
+
+lemma m_8_5_slice_le0_lastblock:
+  fixes M :: pairseq and q :: nat
+  assumes j1pos: "Lng M - 1 > 0"
+    and e1pos: "entry M 1 (Lng M - 1) > 0"
+    and hp: "hasParent M 1 (Lng M - 1)"
+    and j0le: "parent M 1 (Lng M - 1) \<le> Lng M"
+    and le0M: "le0 M (parent M 1 (Lng M - 1)) (Lng M - 2)"
+  shows "le0 (drop (parent M 1 (Lng M - 1)) (M[Suc q]))
+            (q * (Lng M - 1 - parent M 1 (Lng M - 1)))
+            (Lng (drop (parent M 1 (Lng M - 1)) (M[Suc q])) - 1)"
+proof -
+  let ?j0 = "parent M 1 (Lng M - 1)"
+  let ?w = "Lng M - 1 - ?j0"
+  let ?X = "drop ?j0 (M[Suc q])"
+  have chain: "(nextrel0 M)\<^sup>*\<^sup>* ?j0 (Lng M - 2)" using le0M by (simp add: le0_def)
+  have j0leLM2: "?j0 \<le> Lng M - 2" using chain nextrel0_rtrancl_mono by blast
+  have wpos: "0 < ?w" using j0leLM2 j1pos by simp
+  have LngX: "Lng ?X = Suc q * ?w" by (rule m_8_5_Lng_slice[OF j1pos e1pos hp j0le])
+  have trans: "\<And>c. (nextrel0 M)\<^sup>*\<^sup>* ?j0 c \<Longrightarrow> c < Lng M - 1 \<Longrightarrow>
+                  (nextrel0 ?X)\<^sup>*\<^sup>* (q * ?w) (q * ?w + (c - ?j0))"
+  proof -
+    fix c assume H: "(nextrel0 M)\<^sup>*\<^sup>* ?j0 c"
+    show "c < Lng M - 1 \<Longrightarrow> (nextrel0 ?X)\<^sup>*\<^sup>* (q * ?w) (q * ?w + (c - ?j0))"
+      using H
+    proof (induction rule: rtranclp_induct)
+      case base show ?case by simp
+    next
+      case (step y z)
+      have yz: "nextrel0 M y z" by (rule step.hyps(2))
+      have ylt2: "y < z" using yz by (simp add: nextrel0_def)
+      have zlt: "z < Lng M - 1" by (rule step.prems)
+      have ylt: "y < Lng M - 1" using ylt2 zlt by simp
+      have jy: "?j0 \<le> y" using step.hyps(1) nextrel0_rtrancl_mono by blast
+      have IHy: "(nextrel0 ?X)\<^sup>*\<^sup>* (q * ?w) (q * ?w + (y - ?j0))" using step.IH ylt by simp
+      have jz: "?j0 \<le> z" using jy ylt2 by simp
+      have aw: "y - ?j0 < ?w" using ylt jy by linarith
+      have bw: "z - ?j0 < ?w" using zlt jz by linarith
+      have nrM: "nextrel0 M (?j0 + (y - ?j0)) (?j0 + (z - ?j0))"
+        using yz jy jz by simp
+      have nrX: "nextrel0 ?X (q * ?w + (y - ?j0)) (q * ?w + (z - ?j0))"
+        by (rule m_8_5_slice_nextrel0_shift[OF j1pos e1pos hp j0le lessI aw bw nrM])
+      from IHy nrX show ?case by (rule rtranclp.rtrancl_into_rtrancl)
+    qed
+  qed
+  have endc: "Lng M - 2 < Lng M - 1" using j1pos by linarith
+  have rt: "(nextrel0 ?X)\<^sup>*\<^sup>* (q * ?w) (q * ?w + ((Lng M - 2) - ?j0))"
+    by (rule trans[OF chain endc])
+  have idxeq: "q * ?w + ((Lng M - 2) - ?j0) = Lng ?X - 1"
+  proof -
+    have e1: "(Lng M - 2) - ?j0 = ?w - 1" by simp
+    have "q * ?w + ((Lng M - 2) - ?j0) = q * ?w + (?w - 1)" using e1 by simp
+    also have "\<dots> = Suc q * ?w - 1" using wpos by simp
+    also have "\<dots> = Lng ?X - 1" using LngX by simp
+    finally show ?thesis .
+  qed
+  have qwlt: "q * ?w < Lng ?X"
+    using mult_strict_right_mono[OF lessI wpos] by (simp only: LngX)
+  have lastlt: "Lng ?X - 1 < Lng ?X" using qwlt by linarith
+  show ?thesis
+    unfolding le0_def
+  proof (intro conjI)
+    show "q * ?w < Lng ?X" by (rule qwlt)
+    show "Lng ?X - 1 < Lng ?X" by (rule lastlt)
+    show "(nextrel0 ?X)\<^sup>*\<^sup>* (q * ?w) (Lng ?X - 1)" using rt idxeq by simp
+  qed
+qed
+
+text \<open>§8.5 (E.2) FACT-1 sub-ob 2 (le0-cut) — \<open>le0 X w (Lng X-1)\<close>, the first le0-cut at
+  the period boundary \<open>w = Lng B\<close>.  Block-start chain \<open>w \<rightarrow> 2w \<rightarrow> \<dots> \<rightarrow> q\<cdot>w\<close>
+  (rtrancl of @{thm [source] m_8_5_slice_nextrel0_blockstart}, via \<open>parR\<close>) composed with
+  the within-last-block reachability @{thm [source] m_8_5_slice_le0_lastblock} (via the
+  isolated \<open>le0(M, j\<^sub>0, Lng M-2)\<close>).  This is sub-ob 2 of FACT 1.\<close>
+
+lemma m_8_5_slice_le0_cut:
+  fixes M :: pairseq and q :: nat
+  assumes j1pos: "Lng M - 1 > 0"
+    and e1pos: "entry M 1 (Lng M - 1) > 0"
+    and hp: "hasParent M 1 (Lng M - 1)"
+    and j0le: "parent M 1 (Lng M - 1) \<le> Lng M"
+    and parR: "nextrel0 M (parent M 1 (Lng M - 1)) (Lng M - 1)"
+    and le0M: "le0 M (parent M 1 (Lng M - 1)) (Lng M - 2)"
+    and q1: "1 \<le> q"
+  shows "le0 (drop (parent M 1 (Lng M - 1)) (M[Suc q]))
+            (Lng M - 1 - parent M 1 (Lng M - 1))
+            (Lng (drop (parent M 1 (Lng M - 1)) (M[Suc q])) - 1)"
+proof -
+  let ?j0 = "parent M 1 (Lng M - 1)"
+  let ?w = "Lng M - 1 - ?j0"
+  let ?X = "drop ?j0 (M[Suc q])"
+  have j0lt: "?j0 < Lng M - 1" using parR by (simp add: nextrel0_def)
+  have wpos: "0 < ?w" using j0lt by simp
+  have LngX: "Lng ?X = Suc q * ?w" by (rule m_8_5_Lng_slice[OF j1pos e1pos hp j0le])
+  \<comment> \<open>block-start chain \<open>w \<rightarrow> q\<cdot>w\<close>\<close>
+  have chain: "\<And>k. Suc k \<le> q \<Longrightarrow> (nextrel0 ?X)\<^sup>*\<^sup>* ?w (Suc k * ?w)"
+  proof -
+    fix k assume "Suc k \<le> q"
+    thus "(nextrel0 ?X)\<^sup>*\<^sup>* ?w (Suc k * ?w)"
+    proof (induction k)
+      case 0 show ?case by simp
+    next
+      case (Suc k)
+      have IH: "(nextrel0 ?X)\<^sup>*\<^sup>* ?w (Suc k * ?w)" using Suc.IH Suc.prems by simp
+      have st: "nextrel0 ?X (Suc k * ?w) (Suc (Suc k) * ?w)"
+        by (rule m_8_5_slice_nextrel0_blockstart[OF j1pos e1pos hp j0le parR Suc.prems])
+      from IH st show ?case by (rule rtranclp.rtrancl_into_rtrancl)
+    qed
+  qed
+  have c1: "(nextrel0 ?X)\<^sup>*\<^sup>* ?w (q * ?w)"
+  proof -
+    have sq: "Suc (q - 1) \<le> q" using q1 by simp
+    have "(nextrel0 ?X)\<^sup>*\<^sup>* ?w (Suc (q - 1) * ?w)" by (rule chain[OF sq])
+    thus ?thesis using q1 by simp
+  qed
+  \<comment> \<open>within-last-block reachability \<open>q\<cdot>w \<rightarrow> last\<close>\<close>
+  have wb: "le0 ?X (q * ?w) (Lng ?X - 1)"
+    by (rule m_8_5_slice_le0_lastblock[OF j1pos e1pos hp j0le le0M])
+  have c2: "(nextrel0 ?X)\<^sup>*\<^sup>* (q * ?w) (Lng ?X - 1)" using wb[unfolded le0_def] by blast
+  have c12: "(nextrel0 ?X)\<^sup>*\<^sup>* ?w (Lng ?X - 1)" using c1 c2 by (rule rtranclp_trans)
+  have wlt: "?w < Lng ?X"
+  proof -
+    have "?w < 2 * ?w" using wpos by simp
+    also have "(2::nat) * ?w \<le> Suc q * ?w" using q1 by (simp add: mult_le_mono1)
+    also have "Suc q * ?w = Lng ?X" by (simp only: LngX)
+    finally show ?thesis .
+  qed
+  have lastlt: "Lng ?X - 1 < Lng ?X" using wlt by linarith
+  show ?thesis
+    unfolding le0_def
+  proof (intro conjI)
+    show "?w < Lng ?X" by (rule wlt)
+    show "Lng ?X - 1 < Lng ?X" by (rule lastlt)
+    show "(nextrel0 ?X)\<^sup>*\<^sup>* ?w (Lng ?X - 1)" by (rule c12)
+  qed
+qed
+
 
 end
