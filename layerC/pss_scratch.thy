@@ -4077,5 +4077,56 @@ proof -
   finally show ?thesis .
 qed
 
+text \<open>§8.5 (E.2) FACT-1 sub-obligation 1 — the EXPLICIT deepen block (oper periodicity).
+  Sharpens @{thm [source] m_8_4_oper_Suc_append} (which gives only \<open>\<exists>B\<close>) to the EXPLICIT
+  appended block: going \<open>M[n] \<rightarrow> M[Suc n]\<close> appends exactly the \<open>k = n\<close> period-copy
+  \<open>\<beta>\<^bsub>n\<^esub> = map (\<lambda>j. (entry M 0 j + n\<cdot>d\<^sub>0, entry M 1 j)) [j\<^sub>0..<j\<^sub>1]\<close>
+  (\<open>j\<^sub>0 = parent M 1 (Lng M-1)\<close>, \<open>j\<^sub>1 = Lng M-1\<close>, \<open>d\<^sub>0 = entry M 0 j\<^sub>1 - entry M 0 j\<^sub>0\<close>), read off the
+  \<open>oper\<close> general form @{thm [source] m_8_4_oper_genform}.  Row-1 is COPIED VERBATIM and
+  row-0 is shifted by \<open>n\<cdot>d\<^sub>0\<close> — so \<open>\<beta>\<^bsub>Suc n\<^esub>\<close>'s row-0 = \<open>\<beta>\<^bsub>n\<^esub>\<close>'s row-0 \<open>+ d\<^sub>0\<close> (the period
+  shift; see the row-0 corollary below).  This is the foundation for the
+  slice le0-periodicity (FACT 1 sub-ob 2/3); pure \<open>oper\<close> geometry, no \<open>Trans\<close>.\<close>
+
+lemma m_8_5_deepen_block_explicit:
+  assumes j1pos: "Lng M - 1 > 0"
+    and e1pos: "entry M 1 (Lng M - 1) > 0"
+    and hp: "hasParent M 1 (Lng M - 1)"
+  shows "M[Suc n] = M[n] @
+           map (\<lambda>j. (entry M 0 j
+                       + n * (entry M 0 (Lng M - 1) - entry M 0 (parent M 1 (Lng M - 1))),
+                      entry M 1 j))
+               [parent M 1 (Lng M - 1)..<Lng M - 1]"
+proof -
+  let ?blk = "\<lambda>k. map (\<lambda>j. (entry M 0 j
+                              + k * (entry M 0 (Lng M - 1) - entry M 0 (parent M 1 (Lng M - 1))),
+                             entry M 1 j))
+                       [parent M 1 (Lng M - 1)..<Lng M - 1]"
+  have gn: "M[n] = take (parent M 1 (Lng M - 1)) M @ concat (map ?blk [0..<n])"
+    by (rule m_8_4_oper_genform[OF j1pos e1pos hp])
+  have gsn: "M[Suc n] = take (parent M 1 (Lng M - 1)) M @ concat (map ?blk [0..<Suc n])"
+    by (rule m_8_4_oper_genform[OF j1pos e1pos hp])
+  have split: "[0..<Suc n] = [0..<n] @ [n]" by simp
+  have "concat (map ?blk [0..<Suc n]) = concat (map ?blk [0..<n]) @ ?blk n"
+    using split by simp
+  hence "M[Suc n] = (take (parent M 1 (Lng M - 1)) M @ concat (map ?blk [0..<n])) @ ?blk n"
+    using gsn by simp
+  thus ?thesis using gn by simp
+qed
+
+text \<open>§8.5 (E.2) FACT-1 sub-obligation 1 (row-0 periodicity corollary).  The explicit
+  deepen block @{thm [source] m_8_5_deepen_block_explicit} has, at every interior index
+  \<open>i\<close>, row-0 \<open>= entry M 0 (j\<^sub>0+i) + n\<cdot>d\<^sub>0\<close> and row-1 \<open>= entry M 1 (j\<^sub>0+i)\<close> — the
+  period-\<open>(j\<^sub>1-j\<^sub>0)\<close>, \<open>+d\<^sub>0\<close>-shift structure that drives the slice le0-cuts.\<close>
+
+lemma m_8_5_deepen_block_row0:
+  assumes "i < Lng M - 1 - parent M 1 (Lng M - 1)"
+  shows "fst (map (\<lambda>j. (entry M 0 j
+                          + n * (entry M 0 (Lng M - 1) - entry M 0 (parent M 1 (Lng M - 1))),
+                         entry M 1 j))
+                  [parent M 1 (Lng M - 1)..<Lng M - 1] ! i)
+       = entry M 0 (parent M 1 (Lng M - 1) + i)
+           + n * (entry M 0 (Lng M - 1) - entry M 0 (parent M 1 (Lng M - 1)))"
+  using assms by simp
+
 
 end
