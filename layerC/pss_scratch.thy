@@ -5628,4 +5628,32 @@ proof -
   thus ?thesis by simp
 qed
 
+
+text \<open>§8.5 (E.2) — depth-parametric spine action, DEPTH-0 (whole) case.  \<open>scbSubst\<close> at the
+  ROOT (the marked core \<open>c\<^sub>1\<close> IS the whole single-principal term) replaces it wholesale by
+  \<open>c\<^sub>2\<close>: \<open>scbSubst c\<^sub>1 c\<^sub>2 c\<^sub>1 = c\<^sub>2\<close>.  The scb-decomposition is trivial (\<open>s=b=[]\<close>, \<open>b\<close> all-RP
+  vacuously); valid because a single-principal \<open>Trm[p]\<close> has \<open>flatBT (Trm[p]) = flatBP p\<close> (NO
+  LP/RP wrapper — @{thm [source] flatBT.simps}), hence \<open>isPTB_str (flatBT c\<^sub>1)\<close>.  So
+  \<open>spineLeaf (scbSubst c\<^sub>1 c\<^sub>2 c\<^sub>1) = spineLeaf c\<^sub>2\<close> — the depth-0 instance of the rightmost-spine
+  depth action (the op_0 / graft-init column of the per-period netfold).\<close>
+
+lemma m_8_5_scbSubst_whole:
+  fixes c1 c2 :: BT
+  assumes c1ne: "c1 \<noteq> Trm []" and ptc1: "isPTB_str (flatBT c1)"
+  shows "scbSubst c1 c2 c1 = c2"
+proof -
+  have d: "scb_decomp c1 [] (flatBT c1) []"
+    unfolding scb_decomp_def using ptc1 by simp
+  have "scbSubst c1 c2 c1 = unflatBT ([] @ flatBT c2 @ [])"
+    by (rule scbSubst_eq[OF d c1ne])
+  also have "\<dots> = c2" by (simp add: unflatBT_flat)
+  finally show ?thesis .
+qed
+
+lemma m_8_5_spineLeaf_scbSubst_whole:
+  fixes c1 c2 :: BT
+  assumes c1ne: "c1 \<noteq> Trm []" and ptc1: "isPTB_str (flatBT c1)"
+  shows "spineLeaf (scbSubst c1 c2 c1) = spineLeaf c2"
+  using m_8_5_scbSubst_whole[OF c1ne ptc1] by simp
+
 end
