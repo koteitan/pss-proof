@@ -4533,5 +4533,46 @@ proof -
   qed
 qed
 
+text \<open>§8.5 (E.2) FACT 1 ASSEMBLY — \<open>Pcut(slice) = Lng B\<close> (modulo sub-ob 3).  Combines
+  sub-ob 2 (@{thm [source] m_8_5_slice_le0_cut}, the le0-cut at \<open>w = Lng B\<close>) and sub-ob 3
+  (\<open>nocut\<close>, the interior non-ancestor property — supplied as a hyp; see the trapping
+  invariant, empirically 142/142) via @{thm [source] m_8_5_Pcut_of_le0_cut}.  For the
+  genuine condV slice \<open>X = drop jm1 (M[Suc q]) = seg (M[Suc q]) jm1 (Lng-1)\<close> with
+  \<open>jm1 = j\<^sub>0\<close>, this is FACT 1: \<open>Pcut(Y\<frown>B) = Lng B\<close>.\<close>
+
+lemma m_8_5_Pcut_append_block:
+  fixes M :: pairseq and q :: nat
+  assumes j1pos: "Lng M - 1 > 0"
+    and e1pos: "entry M 1 (Lng M - 1) > 0"
+    and hp: "hasParent M 1 (Lng M - 1)"
+    and j0le: "parent M 1 (Lng M - 1) \<le> Lng M"
+    and parR: "nextrel0 M (parent M 1 (Lng M - 1)) (Lng M - 1)"
+    and le0M: "le0 M (parent M 1 (Lng M - 1)) (Lng M - 2)"
+    and q1: "1 \<le> q"
+    and nocut: "\<And>j. 0 < j \<Longrightarrow> j < Lng M - 1 - parent M 1 (Lng M - 1) \<Longrightarrow>
+                  \<not> leR (drop (parent M 1 (Lng M - 1)) (M[Suc q])) 0 j
+                       (Lng (drop (parent M 1 (Lng M - 1)) (M[Suc q])) - 1)"
+  shows "Pcut (drop (parent M 1 (Lng M - 1)) (M[Suc q]))
+       = Lng M - 1 - parent M 1 (Lng M - 1)"
+proof -
+  let ?j0 = "parent M 1 (Lng M - 1)"
+  let ?w = "Lng M - 1 - ?j0"
+  let ?X = "drop ?j0 (M[Suc q])"
+  have j0lt: "?j0 < Lng M - 1" using parR by (simp add: nextrel0_def)
+  have wpos: "0 < ?w" using j0lt by simp
+  have LngX: "Lng ?X = Suc q * ?w" by (rule m_8_5_Lng_slice[OF j1pos e1pos hp j0le])
+  have wlt: "?w < Lng ?X"
+  proof -
+    have "?w < 2 * ?w" using wpos by simp
+    also have "(2::nat) * ?w \<le> Suc q * ?w" using q1 by (simp add: mult_le_mono1)
+    also have "Suc q * ?w = Lng ?X" by (simp only: LngX)
+    finally show ?thesis .
+  qed
+  have wle: "?w \<le> Lng ?X - 1" using wlt by linarith
+  have cut: "leR ?X 0 ?w (Lng ?X - 1)"
+    using m_8_5_slice_le0_cut[OF j1pos e1pos hp j0le parR le0M q1] by (simp add: leR_def)
+  show ?thesis by (rule m_8_5_Pcut_of_le0_cut[OF wpos wle cut nocut])
+qed
+
 
 end
