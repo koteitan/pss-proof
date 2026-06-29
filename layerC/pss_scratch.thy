@@ -3981,5 +3981,69 @@ proof -
     by (rule m_8_5_surgC_of_skeleton[OF skel Cdef prene s0eq b0eq vm1eq ueq])
 qed
 
+text \<open>§8.5 (E.2) — the C-BODY identity (standalone).  Under the context match
+  (\<open>s\<^sub>0 = liftS t\<^sub>2 []\<close>, \<open>b\<^sub>0 = [RP]\<close>, \<open>vm1 = v-1\<close>), the spine wrap \<open>C\<close> acts on ANY \<open>z\<close> as the
+  single sibling-append \<open>C z = t\<^sub>2 +\<^sub>B D\<^bsub>vm1\<^esub> z\<close> (\<open>flat_addBT_Dpt\<close> + \<open>unflatBT_flat\<close>).
+  The body-level core of @{thm [source] m_8_5_FeqC_bridge}.\<close>
+
+lemma m_8_5_C_body:
+  fixes t2 z :: BT and vm1 v :: nat and s0 b0 :: "Sym list" and C :: "BT \<Rightarrow> BT"
+  assumes Cdef: "C = (\<lambda>x. unflatBT (s0 @ Dsym (enat (v - 1)) # flatBT x @ b0))"
+    and prene: "untrm t2 \<noteq> []"
+    and s0eq: "s0 = liftS t2 []"
+    and b0eq: "b0 = [RP]"
+    and vm1eq: "vm1 = v - 1"
+  shows "C z = t2 +\<^sub>B Dpt (enat vm1) z"
+proof -
+  have flatcomp: "flatBT (t2 +\<^sub>B Dpt (enat vm1) z)
+                    = liftS t2 (Dsym (enat vm1) # flatBT z) @ [RP]"
+    by (rule flat_addBT_Dpt[OF prene])
+  have flat2: "flatBT (t2 +\<^sub>B Dpt (enat vm1) z)
+                 = liftS t2 [] @ Dsym (enat vm1) # flatBT z @ [RP]"
+    using flatcomp by (simp add: liftS_def)
+  have argEq: "s0 @ Dsym (enat (v - 1)) # flatBT z @ b0 = flatBT (t2 +\<^sub>B Dpt (enat vm1) z)"
+    unfolding s0eq b0eq using flat2 vm1eq by simp
+  have "C z = unflatBT (s0 @ Dsym (enat (v - 1)) # flatBT z @ b0)" by (simp add: Cdef)
+  also have "\<dots> = unflatBT (flatBT (t2 +\<^sub>B Dpt (enat vm1) z))" using argEq by simp
+  also have "\<dots> = t2 +\<^sub>B Dpt (enat vm1) z" by (rule unflatBT_flat)
+  finally show ?thesis .
+qed
+
+text \<open>§8.5 (E.2) — the ENDPOINT READBACK reduced to the BLOCK-C realization (the sharpest
+  form of the surgC master-key value step).  The geom-endpoint surgery needs
+  \<open>spineLeaf (Trans (Y\<frown>B)) = bpHeadT (Trans Y)\<close> (the per-column value-pinning).  Under the
+  base spine-shape \<open>Trans Y = D\<^bsub>e10\<^esub>(t\<^sub>2 +\<^sub>B D\<^bsub>vm1\<^esub> (spineLeaf (Trans Y)))\<close> and the bridge
+  context, \<open>bpHeadT (Trans Y) = t\<^sub>2 +\<^sub>B D\<^bsub>vm1\<^esub> (spineLeaf (Trans Y)) = C (spineLeaf (Trans Y))\<close>
+  (@{thm [source] m_8_5_C_body}), so the readback is EQUIVALENT to the single statement
+  \<open>spineLeaf (Trans (Y\<frown>B)) = C (spineLeaf (Trans Y))\<close>: appending the block \<open>B\<close> applies
+  exactly ONE \<open>C\<close>-graft to the spine leaf.  This is the canonical keystone-deepen
+  value-pinning (the residual the §8 master key reduces to), in the form addressed by the
+  deepen-commutation @{thm [source] m_8_5_scbSubst_addBT_commute}.  EMPIRICALLY 5/5 (base jm1).\<close>
+
+lemma m_8_5_endpoint_of_blockC:
+  fixes Y B :: pairseq and t2 :: BT and e10 vm1 v :: nat
+    and s0 b0 :: "Sym list" and C :: "BT \<Rightarrow> BT"
+  assumes shape: "Trans Y = Dpt (enat e10) (t2 +\<^sub>B Dpt (enat vm1) (spineLeaf (Trans Y)))"
+    and Cdef: "C = (\<lambda>x. unflatBT (s0 @ Dsym (enat (v - 1)) # flatBT x @ b0))"
+    and prene: "untrm t2 \<noteq> []"
+    and s0eq: "s0 = liftS t2 []"
+    and b0eq: "b0 = [RP]"
+    and vm1eq: "vm1 = v - 1"
+    and blockC: "spineLeaf (Trans (Y @ B)) = C (spineLeaf (Trans Y))"
+  shows "spineLeaf (Trans (Y @ B)) = bpHeadT (Trans Y)"
+proof -
+  have cb: "C (spineLeaf (Trans Y)) = t2 +\<^sub>B Dpt (enat vm1) (spineLeaf (Trans Y))"
+    by (rule m_8_5_C_body[OF Cdef prene s0eq b0eq vm1eq])
+  have bh: "bpHeadT (Trans Y) = t2 +\<^sub>B Dpt (enat vm1) (spineLeaf (Trans Y))"
+  proof -
+    have "bpHeadT (Trans Y)
+            = bpHeadT (Dpt (enat e10) (t2 +\<^sub>B Dpt (enat vm1) (spineLeaf (Trans Y))))"
+      by (rule arg_cong[OF shape])
+    also have "\<dots> = t2 +\<^sub>B Dpt (enat vm1) (spineLeaf (Trans Y))" by simp
+    finally show ?thesis .
+  qed
+  show ?thesis using blockC cb bh by simp
+qed
+
 
 end
