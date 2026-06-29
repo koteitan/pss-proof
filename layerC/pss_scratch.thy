@@ -6051,4 +6051,247 @@ proof -
   finally show ?thesis .
 qed
 
+
+text \<open>§8.5 (B3) — RIGHTMOST-SPINE navigation \<open>rnav\<close> (LAST-principal descent), the
+  CORRECT spine for the genuine kernel.  \<open>spineLeaf\<close> (\<open>bpHeadT \<circ> last \<circ> PB \<circ> bpHeadT\<close>)
+  steps into the FIRST principal's body and DIES on the multi-principal towers the kernel's
+  \<open>Mark\<close> produces; \<open>rnav t = bpHeadT (Trm [last (untrm t)])\<close> descends the LAST principal's
+  subtree cleanly (no first-principal step).  The whole (A)-engine re-bases mechanically on
+  \<open>rnav\<close>: same whole-replace base + a last-principal-descent step
+  (@{thm [source] m_8_5_scbSubst_addBT_commute} / @{thm [source] m_8_5_scbSubst_Dpt}).
+  Depth ladder (otasm): \<open>k\<^sub>m = q-2\<close> (m=0) / \<open>q-1\<close> (m\<ge>1) in the \<open>rnav\<close> metric.\<close>
+
+definition rnav :: "BT \<Rightarrow> BT" where
+  "rnav t = bpHeadT (Trm [last (untrm t)])"
+
+lemma rnav_addBT: "rnav (pre +\<^sub>B Dpt (enat h) x) = x"
+proof -
+  obtain ps where "pre = Trm ps" by (cases pre)
+  thus ?thesis by (simp add: rnav_def)
+qed
+
+lemma rnav_Dpt: "rnav (Dpt (enat h) z) = z"
+  by (simp add: rnav_def)
+
+primrec rspine_r :: "nat \<Rightarrow> BT \<Rightarrow> BT \<Rightarrow> bool" where
+  "rspine_r 0 c1 t = (t = c1)"
+| "rspine_r (Suc d) c1 t =
+     (\<exists>pre h x. t = pre +\<^sub>B Dpt (enat h) x \<and> rspine_r d c1 x)"
+
+lemma rspine_r_nonempty:
+  assumes "rspine_r d c1 t" and "c1 \<noteq> Trm []"
+  shows "t \<noteq> Trm []"
+proof (cases d)
+  case 0 thus ?thesis using assms by simp
+next
+  case (Suc d')
+  from assms(1)[unfolded Suc] obtain pre h x where
+    t: "t = pre +\<^sub>B Dpt (enat h) x" by auto
+  obtain ps where "pre = Trm ps" by (cases pre)
+  thus ?thesis using t by simp
+qed
+
+lemma rnav_scbSubst_step:
+  assumes dx: "scb_decomp x sx (flatBT c1) bx" and xnz: "x \<noteq> Trm []"
+    and ptc2: "isPTB_str (flatBT c2)"
+  shows "rnav (scbSubst c1 c2 (pre +\<^sub>B Dpt (enat h) x)) = scbSubst c1 c2 x"
+proof (cases "untrm pre = []")
+  case True
+  hence preE: "pre +\<^sub>B Dpt (enat h) x = Dpt (enat h) x" by (cases pre) auto
+  have "scbSubst c1 c2 (Dpt (enat h) x) = Dpt (enat h) (scbSubst c1 c2 x)"
+    by (rule m_8_5_scbSubst_Dpt[OF dx xnz ptc2])
+  thus ?thesis using preE by (simp add: rnav_Dpt)
+next
+  case False
+  have "scbSubst c1 c2 (pre +\<^sub>B Dpt (enat h) x) = pre +\<^sub>B Dpt (enat h) (scbSubst c1 c2 x)"
+    by (rule m_8_5_scbSubst_addBT_commute[OF dx xnz ptc2 False])
+  thus ?thesis by (simp add: rnav_addBT)
+qed
+
+lemma rspine_r_scb_decomp:
+  assumes rs: "rspine_r d c1 t" and c1ne: "c1 \<noteq> Trm []" and ptc1: "isPTB_str (flatBT c1)"
+  shows "\<exists>s b. scb_decomp t s (flatBT c1) b \<and> (\<forall>z\<in>set b. z = RP)"
+  using rs
+proof (induction d arbitrary: t)
+  case 0
+  hence tc: "t = c1" by simp
+  have d0: "scb_decomp c1 [] (flatBT c1) []"
+    unfolding scb_decomp_def using ptc1 by simp
+  show ?case unfolding tc
+    by (rule exI[of _ "[]"], rule exI[of _ "[]"], simp add: d0)
+next
+  case (Suc d)
+  from \<open>rspine_r (Suc d) c1 t\<close> obtain pre h x where
+    t: "t = pre +\<^sub>B Dpt (enat h) x" and rx: "rspine_r d c1 x" by auto
+  from Suc.IH[OF rx] obtain sx bx
+    where dx: "scb_decomp x sx (flatBT c1) bx" and rbx: "\<forall>z\<in>set bx. z = RP" by auto
+  have flatx: "flatBT x = sx @ flatBT c1 @ bx" using dx by (simp add: scb_decomp_def)
+  have scbDhx: "scb_decomp (Dpt (enat h) x) (Dsym (enat h) # sx) (flatBT c1) bx"
+    unfolding scb_decomp_def using flatx ptc1 rbx by simp
+  have dh1: "length (untrm (Dpt (enat h) x)) = 1" by simp
+  show ?case
+  proof (cases "untrm pre = []")
+    case True
+    hence preE: "t = Dpt (enat h) x" using t by (cases pre) auto
+    have "\<exists>s b. scb_decomp (Dpt (enat h) x) s (flatBT c1) b \<and> (\<forall>z\<in>set b. z = RP)"
+      using scbDhx rbx by blast
+    thus ?thesis using preE by simp
+  next
+    case False
+    have dBODY: "scb_decomp (pre +\<^sub>B Dpt (enat h) x)
+                    (liftS pre (Dsym (enat h) # sx)) (flatBT c1) (bx @ [RP])"
+      by (rule scb_addBT_left[OF scbDhx dh1 False])
+    have rbB: "\<forall>z\<in>set (bx @ [RP]). z = RP" using rbx by auto
+    have "\<exists>s b. scb_decomp (pre +\<^sub>B Dpt (enat h) x) s (flatBT c1) b \<and> (\<forall>z\<in>set b. z = RP)"
+      using dBODY rbB by blast
+    thus ?thesis using t by simp
+  qed
+qed
+
+lemma rspine_r_nav:
+  assumes "rspine_r d c1 t"
+  shows "(rnav ^^ d) t = c1"
+  using assms
+proof (induction d arbitrary: t)
+  case 0 thus ?case by simp
+next
+  case (Suc d)
+  from \<open>rspine_r (Suc d) c1 t\<close> obtain pre h x where
+    t: "t = pre +\<^sub>B Dpt (enat h) x" and rx: "rspine_r d c1 x" by auto
+  have "(rnav ^^ Suc d) t = (rnav ^^ d) (rnav t)" by (simp only: funpow_Suc_right o_apply)
+  also have "\<dots> = (rnav ^^ d) x" using t by (simp add: rnav_addBT)
+  also have "\<dots> = c1" by (rule Suc.IH[OF rx])
+  finally show ?case .
+qed
+
+lemma rspine_r_scbSubst:
+  assumes rs: "rspine_r d c1 t" and c1ne: "c1 \<noteq> Trm []"
+    and ptc1: "isPTB_str (flatBT c1)" and ptc2: "isPTB_str (flatBT c2)"
+  shows "(rnav ^^ d) (scbSubst c1 c2 t) = c2"
+  using rs
+proof (induction d arbitrary: t)
+  case 0
+  hence tc: "t = c1" by simp
+  have "scbSubst c1 c2 c1 = c2" by (rule m_8_5_scbSubst_whole[OF c1ne ptc1])
+  thus ?case using tc by simp
+next
+  case (Suc d)
+  from \<open>rspine_r (Suc d) c1 t\<close> obtain pre h x where
+    t: "t = pre +\<^sub>B Dpt (enat h) x" and rx: "rspine_r d c1 x" by auto
+  obtain sx bx where dx: "scb_decomp x sx (flatBT c1) bx"
+    using rspine_r_scb_decomp[OF rx c1ne ptc1] by auto
+  have xnz: "x \<noteq> Trm []" by (rule rspine_r_nonempty[OF rx c1ne])
+  have step: "rnav (scbSubst c1 c2 t) = scbSubst c1 c2 x"
+    using rnav_scbSubst_step[OF dx xnz ptc2] t by simp
+  have "(rnav ^^ Suc d) (scbSubst c1 c2 t) = (rnav ^^ d) (rnav (scbSubst c1 c2 t))"
+    by (simp only: funpow_Suc_right o_apply)
+  also have "\<dots> = (rnav ^^ d) (scbSubst c1 c2 x)" using step by simp
+  also have "\<dots> = c2" by (rule Suc.IH[OF rx])
+  finally show ?case .
+qed
+
+lemma rspine_r_funpow_scbSubst_commute:
+  assumes rs: "rspine_r d c1 t" and kd: "k \<le> d" and c1ne: "c1 \<noteq> Trm []"
+    and ptc1: "isPTB_str (flatBT c1)" and ptc2: "isPTB_str (flatBT c2)"
+  shows "(rnav ^^ k) (scbSubst c1 c2 t) = scbSubst c1 c2 ((rnav ^^ k) t)"
+  using rs kd
+proof (induction k arbitrary: t d)
+  case 0 thus ?case by simp
+next
+  case (Suc k)
+  from \<open>Suc k \<le> d\<close> obtain d' where d: "d = Suc d'" by (cases d) auto
+  from \<open>rspine_r d c1 t\<close> obtain pre h x where
+    t: "t = pre +\<^sub>B Dpt (enat h) x" and rx: "rspine_r d' c1 x" using d by auto
+  have kd': "k \<le> d'" using \<open>Suc k \<le> d\<close> d by simp
+  obtain sx bx where dx: "scb_decomp x sx (flatBT c1) bx"
+    using rspine_r_scb_decomp[OF rx c1ne ptc1] by auto
+  have xnz: "x \<noteq> Trm []" by (rule rspine_r_nonempty[OF rx c1ne])
+  have step: "rnav (scbSubst c1 c2 t) = scbSubst c1 c2 x"
+    using rnav_scbSubst_step[OF dx xnz ptc2] t by simp
+  have rnt: "rnav t = x" using t by (simp add: rnav_addBT)
+  have "(rnav ^^ Suc k) (scbSubst c1 c2 t) = (rnav ^^ k) (rnav (scbSubst c1 c2 t))"
+    by (simp only: funpow_Suc_right o_apply)
+  also have "\<dots> = (rnav ^^ k) (scbSubst c1 c2 x)" using step by simp
+  also have "\<dots> = scbSubst c1 c2 ((rnav ^^ k) x)" by (rule Suc.IH[OF rx kd'])
+  also have "\<dots> = scbSubst c1 c2 ((rnav ^^ Suc k) t)"
+    by (simp only: funpow_Suc_right o_apply rnt)
+  finally show ?case .
+qed
+
+lemma b3b_rnav_fold_drive:
+  fixes c1 c2 :: "nat \<Rightarrow> BT" and acc0 :: BT and k w :: nat and dd :: "nat \<Rightarrow> nat"
+    and op :: "nat \<Rightarrow> BT \<Rightarrow> BT"
+  defines "op \<equiv> (\<lambda>m t. scbSubst (c1 m) (c2 m) t)"
+  assumes ladder: "\<And>m. m < w \<Longrightarrow> rspine_r (dd m) (c1 m) (fold op [0..<m] acc0)"
+    and dge: "\<And>m. m < w \<Longrightarrow> k \<le> dd m"
+    and c1ne: "\<And>m. m < w \<Longrightarrow> c1 m \<noteq> Trm []"
+    and pt1: "\<And>m. m < w \<Longrightarrow> isPTB_str (flatBT (c1 m))"
+    and pt2: "\<And>m. m < w \<Longrightarrow> isPTB_str (flatBT (c2 m))"
+  shows "(rnav ^^ k) (fold op [0..<w] acc0) = fold op [0..<w] ((rnav ^^ k) acc0)"
+proof -
+  have gen: "\<And>n. n \<le> w \<Longrightarrow> (rnav ^^ k) (fold op [0..<n] acc0)
+              = fold op [0..<n] ((rnav ^^ k) acc0)"
+  proof -
+    fix n
+    show "n \<le> w \<Longrightarrow> (rnav ^^ k) (fold op [0..<n] acc0)
+            = fold op [0..<n] ((rnav ^^ k) acc0)"
+    proof (induction n)
+      case 0 thus ?case by simp
+    next
+      case (Suc n)
+      have nlew: "n \<le> w" using Suc.prems by simp
+      have nw: "n < w" using Suc.prems by simp
+      have foldA: "fold op [0..<Suc n] acc0 = op n (fold op [0..<n] acc0)"
+        by (simp add: upt_Suc_append)
+      have foldB: "fold op [0..<Suc n] ((rnav ^^ k) acc0)
+                     = op n (fold op [0..<n] ((rnav ^^ k) acc0))"
+        by (simp add: upt_Suc_append)
+      have IH: "(rnav ^^ k) (fold op [0..<n] acc0)
+                  = fold op [0..<n] ((rnav ^^ k) acc0)" by (rule Suc.IH[OF nlew])
+      have opn: "op n = (\<lambda>t. scbSubst (c1 n) (c2 n) t)" by (simp add: op_def)
+      have comm: "(rnav ^^ k) (op n (fold op [0..<n] acc0))
+                    = op n ((rnav ^^ k) (fold op [0..<n] acc0))"
+      proof -
+        have "(rnav ^^ k) (scbSubst (c1 n) (c2 n) (fold op [0..<n] acc0))
+                = scbSubst (c1 n) (c2 n) ((rnav ^^ k) (fold op [0..<n] acc0))"
+          by (rule rspine_r_funpow_scbSubst_commute[OF ladder[OF nw] dge[OF nw]
+                    c1ne[OF nw] pt1[OF nw] pt2[OF nw]])
+        thus ?thesis using opn by simp
+      qed
+      have "(rnav ^^ k) (fold op [0..<Suc n] acc0)
+              = (rnav ^^ k) (op n (fold op [0..<n] acc0))" using foldA by simp
+      also have "\<dots> = op n ((rnav ^^ k) (fold op [0..<n] acc0))" by (rule comm)
+      also have "\<dots> = op n (fold op [0..<n] ((rnav ^^ k) acc0))" using IH by simp
+      also have "\<dots> = fold op [0..<Suc n] ((rnav ^^ k) acc0)" using foldB by simp
+      finally show ?case .
+    qed
+  qed
+  show ?thesis using gen[of w] by simp
+qed
+
+text \<open>§8.5 (B3) — the MARKSTEP SKELETON in the \<open>rnav\<close> metric (the kernel-correct one).
+  Since each mark \<open>Mark (M[q]) jm1 = D\<^bsub>e10\<^esub>(U\<^sub>q)\<close> is SINGLE outer-principal,
+  \<open>rnav (Mark _) = bpHeadT (Mark _)\<close> (the only principal's subtree).  So the markstep
+  \<open>bpHeadT (F acc\<^sub>0) = C (bpHeadT acc\<^sub>0)\<close> collapses through \<open>drive\<close> (\<open>k=1\<close> of
+  @{thm [source] b3b_rnav_fold_drive}) to the SINGLE keystone VALUE
+  \<open>assembly\<close>: \<open>fold op [0..<w] (rnav acc\<^sub>0) = C (rnav acc\<^sub>0)\<close> — the period column ops
+  applied to \<open>U\<^sub>q = rnav acc\<^sub>0\<close> rebuild \<open>C(U\<^sub>q) = U\<^bsub>q+1\<^esub>\<close> (the self-similar value crux, the
+  irreducible §8.5 keystone).  \<open>bp0/bp1\<close> (\<open>bpHeadT = rnav\<close> on the single-principal marks)
+  are mechanical Mark-shape facts.\<close>
+
+lemma b3_markstep_skeleton_rnav:
+  fixes op :: "nat \<Rightarrow> BT \<Rightarrow> BT" and acc0 :: BT and w :: nat and C :: "BT \<Rightarrow> BT"
+  assumes drive: "rnav (fold op [0..<w] acc0) = fold op [0..<w] (rnav acc0)"
+    and bp1: "bpHeadT (fold op [0..<w] acc0) = rnav (fold op [0..<w] acc0)"
+    and bp0: "bpHeadT acc0 = rnav acc0"
+    and assembly: "fold op [0..<w] (rnav acc0) = C (rnav acc0)"
+  shows "bpHeadT (fold op [0..<w] acc0) = C (bpHeadT acc0)"
+proof -
+  have "bpHeadT (fold op [0..<w] acc0) = rnav (fold op [0..<w] acc0)" by (rule bp1)
+  also have "\<dots> = fold op [0..<w] (rnav acc0)" by (rule drive)
+  also have "\<dots> = C (rnav acc0)" by (rule assembly)
+  also have "\<dots> = C (bpHeadT acc0)" using bp0 by simp
+  finally show ?thesis .
+qed
+
 end
