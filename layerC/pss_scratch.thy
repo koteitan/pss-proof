@@ -4987,4 +4987,74 @@ next
 qed
 
 
+
+text \<open>§8.7 R2 equal-head tail — ORDER ENGINE.  \<open>Trans\<close> is weakly monotone along the
+  \<open>take\<close>-prefix chain: a (non-empty) initial slice has \<open>Trans\<close> weakly below
+  \<open>Trans M\<close>.  This is the \<open>\<le>\<close>-closure of the strict @{thm [source] Trans_take_lessBT}
+  (which iterates @{thm [source] m_7_3_Pred_Trans_descend}); the \<open>n = Lng M\<close> case is
+  reflexive (\<open>take (Lng M) M = M\<close>).  (\<open>leBT\<close> is an abbreviation for
+  \<open>lessBT \<dots> \<or> \<dots> = \<dots>\<close>, so the disjuncts are exposed without an unfolding.)\<close>
+
+lemma Trans_take_leBT:
+  assumes M: "M \<in> RT_PS" and npos: "0 < n" and nle: "n \<le> Lng M"
+  shows "leBT (Trans (take n M)) (Trans M)"
+proof (cases "n < Lng M")
+  case True
+  have "lessBT (Trans (take n M)) (Trans M)" by (rule Trans_take_lessBT[OF M npos True])
+  thus ?thesis by blast
+next
+  case False
+  hence "n = Lng M" using nle by linarith
+  hence "take n M = M" by (simp add: take_all)
+  thus ?thesis by simp
+qed
+
+text \<open>§8.7 R2 equal-head tail — ORDER CORE.  The keystone equal-head \<open>tail\<close>
+  obligation \<open>leBT q q\<^sub>b\<close> (the residual of @{thm [source] m_8_7_dstep_wholebody} /
+  @{thm [source] m_8_7_dstep_properprefix_reduce}) is, after identifying the two
+  trailing equal-head principals of \<open>Trans M\<close>'s body as the \<open>Trans\<close>-images of the
+  consecutive branches, exactly the \<open>leBT\<close>-descent of those branch \<open>Trans\<close>-heads.
+  EMPIRICALLY (python \<open>_r2_mark_bridge.py\<close>, \<open>_r2_eqhead_deep.py\<close>: 0 fail / 37+
+  equal-head \<open>ST\<^bsub>PS\<^esub>\<close> samples): with \<open>A = Br M ! J\<^sub>1\<close> the last branch and
+  \<open>B = Br M ! (J\<^sub>1-1)\<close> the previous one,
+  \<^item> \<open>q = bpHeadT (Trans A)\<close>, \<open>q\<^sub>b = bpHeadT (Trans B)\<close> (the branch \<open>Trans\<close>-heads,
+    both with the SAME outer head \<open>x\<close>), and
+  \<^item> \<open>A\<close> is a prefix (\<open>Pred\<close>-iterate) of \<open>B\<close>  (\<open>B = A \<frown> C\<close>).
+  This lemma is the order CORE: from \<open>B \<in> RT\<^bsub>PS\<^esub>\<close>, the prefix relation \<open>B = A \<frown> C\<close>,
+  and the two single-principal branch \<open>Trans\<close> read-offs \<open>Trans A = D\<^bsub>x\<^esub> q\<close>,
+  \<open>Trans B = D\<^bsub>x\<^esub> q\<^sub>b\<close>, the strict take-descent @{thm [source] Trans_take_lessBT}
+  (or reflexivity when \<open>C = []\<close>) yields \<open>leBT (Trans A) (Trans B)\<close>, and the shared
+  head \<open>x\<close> strips off (@{thm [source] lessBT_Dpt_same}) to give \<open>leBT q q\<^sub>b\<close>.  The
+  remaining inputs are PURELY structural §6/§7 facts (the branch \<open>Trans\<close> read-off and
+  the prefix-nesting of consecutive equal-head branches), NOT any \<open>leBT\<close>/value
+  reasoning.\<close>
+
+lemma m_8_7_eqhead_tail_from_branch_prefix:
+  fixes A B C :: pairseq and x :: nat and q qb :: BT
+  assumes BR: "B \<in> RT_PS"
+    and Apos: "0 < Lng A"
+    and Bsplit: "B = A @ C"
+    and qA: "Trans A = Dpt (enat x) q"
+    and qbB: "Trans B = Dpt (enat x) qb"
+  shows "leBT q qb"
+proof -
+  have transle: "leBT (Trans A) (Trans B)"
+  proof (cases "C = []")
+    case True
+    hence "B = A" using Bsplit by simp
+    thus ?thesis by simp
+  next
+    case False
+    hence cpos: "0 < Lng C" by (cases C) auto
+    have ALB: "Lng A < Lng B" using Bsplit cpos by simp
+    have takeA: "take (Lng A) B = A" using Bsplit by simp
+    have "lessBT (Trans (take (Lng A) B)) (Trans B)"
+      by (rule Trans_take_lessBT[OF BR Apos ALB])
+    hence "lessBT (Trans A) (Trans B)" using takeA by simp
+    thus ?thesis by blast
+  qed
+  have hstrip: "leBT (Dpt (enat x) q) (Dpt (enat x) qb)" using transle qA qbB by simp
+  show "leBT q qb" using hstrip by simp
+qed
+
 end
