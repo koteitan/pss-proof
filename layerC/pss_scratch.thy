@@ -6014,4 +6014,41 @@ proof -
   show ?thesis using gen[of w] by simp
 qed
 
+
+text \<open>§8.5 (B3) — the MARKSTEP SKELETON (metric-light bpHeadT level).  Assembles the
+  markstep \<open>bpHeadT (Mark (M[Suc q]) jm1) = C (bpHeadT (Mark (M[q]) jm1))\<close> from THREE
+  named inputs, isolating the per-period keystone VALUE.  Writing \<open>F = fold op [0..<w]\<close>
+  (the period column-substitution fold, \<open>F acc\<^sub>0 = Mark (M[Suc q]) jm1\<close> by
+  @{thm [source] m_8_5_fold_of_colstep}, \<open>acc\<^sub>0 = Mark (M[q]) jm1\<close>):
+  \<^item> \<open>drive\<close>: the \<open>k=1\<close> instance of @{thm [source] b3b_spineLeaf_fold_drive} (commute,
+    DISCHARGED from the depth ladder \<open>dd m \<ge> 1\<close>) — \<open>spineLeaf (F acc\<^sub>0) = F (spineLeaf acc\<^sub>0)\<close>;
+  \<^item> \<open>assembly\<close> (the C-ASSEMBLY, the per-period self-similar VALUE — the irreducible
+    keystone, otasm-empirical 47/47, NOT mechanically reducible to the geometry):
+    \<open>F (spineLeaf acc\<^sub>0) = bpHeadT acc\<^sub>0\<close> — the period's column ops, applied to \<open>U\<^sub>q\<close>'s deep
+    slot, RECONSTRUCT \<open>U\<^sub>q = bpHeadT acc\<^sub>0\<close> itself;
+  \<^item> \<open>shape\<close> (the TOWER-SHAPE of the new mark):
+    \<open>bpHeadT (F acc\<^sub>0) = t\<^sub>2 +\<^sub>B D\<^bsub>vm1\<^esub> (spineLeaf (F acc\<^sub>0))\<close>.
+  With @{thm [source] m_8_5_C_body} (\<open>C z = t\<^sub>2 +\<^sub>B D\<^bsub>vm1\<^esub> z\<close>) the markstep follows mechanically.
+  This SCOPES the §8.5 keystone to exactly \<open>assembly\<close> (the self-similar value) + \<open>shape\<close>
+  (the tower form) + the GREEN depth ladder (B3a); everything else is composed.\<close>
+
+lemma b3_markstep_skeleton:
+  fixes op :: "nat \<Rightarrow> BT \<Rightarrow> BT" and acc0 t2 :: BT and w vm1 :: nat and C :: "BT \<Rightarrow> BT"
+  assumes drive: "spineLeaf (fold op [0..<w] acc0) = fold op [0..<w] (spineLeaf acc0)"
+    and assembly: "fold op [0..<w] (spineLeaf acc0) = bpHeadT acc0"
+    and shape: "bpHeadT (fold op [0..<w] acc0)
+                  = t2 +\<^sub>B Dpt (enat vm1) (spineLeaf (fold op [0..<w] acc0))"
+    and Cdef: "\<And>z. C z = t2 +\<^sub>B Dpt (enat vm1) z"
+  shows "bpHeadT (fold op [0..<w] acc0) = C (bpHeadT acc0)"
+proof -
+  have sl: "spineLeaf (fold op [0..<w] acc0) = bpHeadT acc0"
+    using drive assembly by simp
+  have "bpHeadT (fold op [0..<w] acc0)
+          = t2 +\<^sub>B Dpt (enat vm1) (spineLeaf (fold op [0..<w] acc0))"
+    by (rule shape)
+  also have "\<dots> = t2 +\<^sub>B Dpt (enat vm1) (bpHeadT acc0)" using sl by simp
+  also have "\<dots> = C (bpHeadT acc0)" using Cdef by simp
+  finally show ?thesis .
+qed
+
 end
