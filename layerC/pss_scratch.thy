@@ -4574,5 +4574,153 @@ proof -
   show ?thesis by (rule m_8_5_Pcut_of_le0_cut[OF wpos wle cut nocut])
 qed
 
+text \<open>§8.5 (E.2) FACT-1 sub-ob 3 — the per-step TRAP.  An interior column of the first
+  period (\<open>0<c<w\<close>) has every \<open>nextrel0\<close>-successor still in the first period (\<open>b<w\<close>):
+  it cannot cross a block boundary.  Mechanism: \<open>entry0(X,c) \<ge> entry0(X,w)\<close> (interior \<open>c\<close>
+  has row-0 \<open>\<ge> entry M 0 (Lng M-1) = entry0(X,w)\<close>, via \<open>parR\<close>'s between), so for any \<open>b\<ge>w\<close>
+  the col-\<open>w\<close> witness forces \<open>entry0(X,c) < entry0(X,b) \<le> entry0(X,w) \<le> entry0(X,c)\<close>,
+  a contradiction (@{thm [source] m_8_5_slice_entry0}).\<close>
+
+lemma m_8_5_slice_nextrel0_trap:
+  fixes M :: pairseq and q c b :: nat
+  assumes j1pos: "Lng M - 1 > 0"
+    and e1pos: "entry M 1 (Lng M - 1) > 0"
+    and hp: "hasParent M 1 (Lng M - 1)"
+    and j0le: "parent M 1 (Lng M - 1) \<le> Lng M"
+    and parR: "nextrel0 M (parent M 1 (Lng M - 1)) (Lng M - 1)"
+    and q1: "1 \<le> q"
+    and cpos: "0 < c"
+    and cw: "c < Lng M - 1 - parent M 1 (Lng M - 1)"
+    and nr: "nextrel0 (drop (parent M 1 (Lng M - 1)) (M[Suc q])) c b"
+  shows "b < Lng M - 1 - parent M 1 (Lng M - 1)"
+proof (rule ccontr)
+  let ?j0 = "parent M 1 (Lng M - 1)"
+  let ?w = "Lng M - 1 - ?j0"
+  let ?d0 = "entry M 0 (Lng M - 1) - entry M 0 ?j0"
+  let ?X = "drop ?j0 (M[Suc q])"
+  assume "\<not> b < ?w"
+  hence bw: "?w \<le> b" by simp
+  have lt0: "entry M 0 ?j0 < entry M 0 (Lng M - 1)" using parR by (simp add: nextrel0_def)
+  have wpos: "0 < ?w" using parR by (simp add: nextrel0_def)
+  have s2: "Suc 0 < Suc q" using q1 by simp
+  have betwall: "\<forall>jj. ?j0 < jj \<and> jj < Lng M - 1 \<longrightarrow> entry M 0 jj \<ge> entry M 0 (Lng M - 1)"
+    using parR by (simp add: nextrel0_def)
+  \<comment> \<open>\<open>entry0(X,c) = entry M 0 (j0+c) \<ge> entry M 0 (Lng M-1)\<close>\<close>
+  have ec: "entry ?X 0 c = entry M 0 (?j0 + c)"
+    using m_8_5_slice_entry0[OF j1pos e1pos hp j0le cw zero_less_Suc] by simp
+  have jjc: "?j0 < ?j0 + c \<and> ?j0 + c < Lng M - 1" using cpos cw by simp
+  have starM: "entry M 0 (?j0 + c) \<ge> entry M 0 (Lng M - 1)" using betwall jjc by blast
+  have starc: "entry ?X 0 c \<ge> entry M 0 (Lng M - 1)" using starM ec by simp
+  \<comment> \<open>\<open>entry0(X,w) = entry M 0 (Lng M-1)\<close>\<close>
+  have ew0: "entry ?X 0 (Suc 0 * ?w + 0) = entry M 0 (?j0 + 0) + Suc 0 * ?d0"
+    by (rule m_8_5_slice_entry0[OF j1pos e1pos hp j0le wpos s2])
+  have ew: "entry ?X 0 ?w = entry M 0 (Lng M - 1)" using ew0 lt0 by simp
+  have star: "entry ?X 0 ?w \<le> entry ?X 0 c" using starc ew by simp
+  \<comment> \<open>contradiction from \<open>nr\<close>\<close>
+  have nrc: "entry ?X 0 c < entry ?X 0 b" using nr by (simp add: nextrel0_def)
+  show False
+  proof (cases "b = ?w")
+    case True
+    show False using nrc star True by simp
+  next
+    case False
+    hence wlt: "?w < b" using bw by simp
+    have allbtw: "\<forall>i. c < i \<and> i < b \<longrightarrow> entry ?X 0 i \<ge> entry ?X 0 b"
+      using nr by (simp add: nextrel0_def)
+    have "entry ?X 0 ?w \<ge> entry ?X 0 b" using allbtw cw wlt by blast
+    thus False using nrc star by simp
+  qed
+qed
+
+text \<open>§8.5 (E.2) FACT-1 sub-ob 3 — the TRAPPING invariant.  Everything le0-reachable from
+  an interior first-period column stays in the first period: \<open>le0 X c b \<and> 0<c<w \<Longrightarrow> b<w\<close>.
+  \<open>rtranclp_induct\<close> over the chain, using the per-step
+  @{thm [source] m_8_5_slice_nextrel0_trap} (the chain stays \<open>0<\<cdot><w\<close>).\<close>
+
+lemma m_8_5_slice_le0_trap:
+  fixes M :: pairseq and q c b :: nat
+  assumes j1pos: "Lng M - 1 > 0"
+    and e1pos: "entry M 1 (Lng M - 1) > 0"
+    and hp: "hasParent M 1 (Lng M - 1)"
+    and j0le: "parent M 1 (Lng M - 1) \<le> Lng M"
+    and parR: "nextrel0 M (parent M 1 (Lng M - 1)) (Lng M - 1)"
+    and q1: "1 \<le> q"
+    and cpos: "0 < c"
+    and cw: "c < Lng M - 1 - parent M 1 (Lng M - 1)"
+    and le0cb: "le0 (drop (parent M 1 (Lng M - 1)) (M[Suc q])) c b"
+  shows "b < Lng M - 1 - parent M 1 (Lng M - 1)"
+proof -
+  let ?X = "drop (parent M 1 (Lng M - 1)) (M[Suc q])"
+  have chain: "(nextrel0 ?X)\<^sup>*\<^sup>* c b" using le0cb by (simp add: le0_def)
+  from chain show ?thesis
+  proof (induction rule: rtranclp_induct)
+    case base
+    show ?case by (rule cw)
+  next
+    case (step y z)
+    have cy: "c \<le> y" using step.hyps(1) nextrel0_rtrancl_mono by blast
+    have ypos: "0 < y" using cpos cy by simp
+    have yw: "y < Lng M - 1 - parent M 1 (Lng M - 1)" by (rule step.IH)
+    show ?case
+      by (rule m_8_5_slice_nextrel0_trap[OF j1pos e1pos hp j0le parR q1 ypos yw step.hyps(2)])
+  qed
+qed
+
+text \<open>§8.5 (E.2) FACT-1 sub-ob 3 — the interior NON-CUT.  An interior first-period column
+  \<open>0<j<w\<close> is NOT a le0-ancestor of the last column, since (trapping) any le0-reach from it
+  stays \<open><w\<close>, but \<open>last = Lng X - 1 \<ge> w\<close> (\<open>q\<ge>1\<close>, \<open>X\<close> spans \<open>\<ge>2\<close> periods).\<close>
+
+lemma m_8_5_slice_interior_nocut:
+  fixes M :: pairseq and q j :: nat
+  assumes j1pos: "Lng M - 1 > 0"
+    and e1pos: "entry M 1 (Lng M - 1) > 0"
+    and hp: "hasParent M 1 (Lng M - 1)"
+    and j0le: "parent M 1 (Lng M - 1) \<le> Lng M"
+    and parR: "nextrel0 M (parent M 1 (Lng M - 1)) (Lng M - 1)"
+    and q1: "1 \<le> q"
+    and jpos: "0 < j"
+    and jw: "j < Lng M - 1 - parent M 1 (Lng M - 1)"
+  shows "\<not> leR (drop (parent M 1 (Lng M - 1)) (M[Suc q])) 0 j
+            (Lng (drop (parent M 1 (Lng M - 1)) (M[Suc q])) - 1)"
+proof (rule notI)
+  let ?j0 = "parent M 1 (Lng M - 1)"
+  let ?w = "Lng M - 1 - ?j0"
+  let ?X = "drop ?j0 (M[Suc q])"
+  assume "leR ?X 0 j (Lng ?X - 1)"
+  hence le: "le0 ?X j (Lng ?X - 1)" by (simp add: leR_def)
+  have bw: "Lng ?X - 1 < ?w"
+    by (rule m_8_5_slice_le0_trap[OF j1pos e1pos hp j0le parR q1 jpos jw le])
+  have j0lt: "?j0 < Lng M - 1" using parR by (simp add: nextrel0_def)
+  have wpos: "0 < ?w" using j0lt by simp
+  have LngX: "Lng ?X = Suc q * ?w" by (rule m_8_5_Lng_slice[OF j1pos e1pos hp j0le])
+  have wle: "?w \<le> Lng ?X - 1"
+  proof -
+    have "?w < 2 * ?w" using wpos by simp
+    also have "(2::nat) * ?w \<le> Suc q * ?w" using q1 by (simp add: mult_le_mono1)
+    also have "Suc q * ?w = Lng ?X" by (simp only: LngX)
+    finally have "?w < Lng ?X" .
+    thus ?thesis by linarith
+  qed
+  show False using bw wle by linarith
+qed
+
+text \<open>§8.5 (E.2) FACT 1 (final) — \<open>Pcut(slice) = Lng B\<close>, the interior non-cut sub-ob 3
+  now discharged.  surgC's geometry residual \<open>Pcut(Y\<frown>B) = Lng B\<close> reduces to ONLY the
+  two condV-setup facts \<open>parR\<close> (committed) and \<open>le0(M, j\<^sub>0, Lng M-2)\<close> (isolated, 35/35).\<close>
+
+lemma m_8_5_Pcut_append:
+  fixes M :: pairseq and q :: nat
+  assumes j1pos: "Lng M - 1 > 0"
+    and e1pos: "entry M 1 (Lng M - 1) > 0"
+    and hp: "hasParent M 1 (Lng M - 1)"
+    and j0le: "parent M 1 (Lng M - 1) \<le> Lng M"
+    and parR: "nextrel0 M (parent M 1 (Lng M - 1)) (Lng M - 1)"
+    and le0M: "le0 M (parent M 1 (Lng M - 1)) (Lng M - 2)"
+    and q1: "1 \<le> q"
+  shows "Pcut (drop (parent M 1 (Lng M - 1)) (M[Suc q]))
+       = Lng M - 1 - parent M 1 (Lng M - 1)"
+  by (rule m_8_5_Pcut_append_block[OF j1pos e1pos hp j0le parR le0M q1
+        m_8_5_slice_interior_nocut[OF j1pos e1pos hp j0le parR q1]])
+
 
 end
