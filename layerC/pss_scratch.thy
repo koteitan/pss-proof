@@ -4128,5 +4128,36 @@ lemma m_8_5_deepen_block_row0:
            + n * (entry M 0 (Lng M - 1) - entry M 0 (parent M 1 (Lng M - 1)))"
   using assms by simp
 
+text \<open>§8.5 (E.2) FACT-1 ASSEMBLY — \<open>Pcut\<close> from the two le0-cut facts.  Reduces
+  \<open>Pcut X = w\<close> to: (sub-ob 2) \<open>w\<close> IS a le0-cut \<open>leR X 0 w (Lng X-1)\<close>, and (sub-ob 3) NO
+  smaller \<open>j\<close> is a cut \<open>\<forall>0<j<w. \<not> leR X 0 j (Lng X-1)\<close>, via \<open>Least_equality\<close> on the
+  @{thm [source] Pcut_def} \<open>LEAST\<close>.  Instantiated at \<open>X = Y\<frown>B\<close>, \<open>w = Lng B\<close> this is FACT 1
+  (\<open>m_8_5_Pcut_append_block\<close>): the appended condV-deepen period \<open>B\<close> is the FIRST le0-period
+  of the extended slice.  sub-ob 2/3 are pure §6.2 le0/nextrel0 facts on the periodic
+  slice (period \<open>w = Lng B\<close>, established green by @{thm [source] m_8_5_deepen_block_explicit});
+  both empirically 16/16.\<close>
+
+lemma m_8_5_Pcut_of_le0_cut:
+  fixes X :: pairseq and w :: nat
+  assumes wpos: "0 < w" and wle: "w \<le> Lng X - 1"
+    and cut: "leR X 0 w (Lng X - 1)"
+    and nocut: "\<And>j. 0 < j \<Longrightarrow> j < w \<Longrightarrow> \<not> leR X 0 j (Lng X - 1)"
+  shows "Pcut X = w"
+proof -
+  have "(LEAST j. 0 < j \<and> j \<le> Lng X - 1 \<and> leR X 0 j (Lng X - 1)) = w"
+  proof (rule Least_equality)
+    show "0 < w \<and> w \<le> Lng X - 1 \<and> leR X 0 w (Lng X - 1)" using wpos wle cut by simp
+  next
+    fix j assume hj: "0 < j \<and> j \<le> Lng X - 1 \<and> leR X 0 j (Lng X - 1)"
+    show "w \<le> j"
+    proof (rule ccontr)
+      assume "\<not> w \<le> j"
+      hence "j < w" by simp
+      thus False using hj nocut[of j] by simp
+    qed
+  qed
+  thus ?thesis by (simp add: Pcut_def)
+qed
+
 
 end
