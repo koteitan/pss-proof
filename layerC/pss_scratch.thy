@@ -4915,5 +4915,47 @@ proof -
   show ?thesis using lhs rhs by simp
 qed
 
+text \<open>§8.5 (E.2) FACT-2 piece 2b — \<open>spineLeaf\<close> COMMUTES with scbSubst (deep core).  For a
+  spine-form term \<open>t = D\<^bsub>e\<^esub>(pre +\<^sub>B D\<^bsub>h\<^esub> x)\<close> whose marked-core \<open>c\<^sub>1\<close> lies in the deep slot \<open>x\<close>:
+  \<open>spineLeaf (scbSubst c\<^sub>1 c\<^sub>2 t) = scbSubst c\<^sub>1 c\<^sub>2 (spineLeaf t)\<close>.  Push scbSubst through the head
+  (@{thm [source] m_8_5_scbSubst_Dpt}) then the \<open>+\<^sub>B\<close>-spine
+  (@{thm [source] m_8_5_scbSubst_addBT_commute}), then read off the deep slot
+  (@{thm [source] m_8_5_spineLeaf_Dpt_addBT}).  This is the per-step spine action for the
+  FACT-2 netfold; NON-circular.\<close>
+
+lemma m_8_5_spineLeaf_scbSubst:
+  fixes pre x c1 c2 :: BT and e h :: nat and sx bx :: "Sym list"
+  assumes dx: "scb_decomp x sx (flatBT c1) bx"
+    and xnz: "x \<noteq> Trm []"
+    and c2p: "isPTB_str (flatBT c2)"
+    and prene: "untrm pre \<noteq> []"
+  shows "spineLeaf (scbSubst c1 c2 (Dpt (enat e) (pre +\<^sub>B Dpt (enat h) x)))
+       = scbSubst c1 c2 (spineLeaf (Dpt (enat e) (pre +\<^sub>B Dpt (enat h) x)))"
+proof -
+  let ?BODY = "pre +\<^sub>B Dpt (enat h) x"
+  have flatx: "flatBT x = sx @ flatBT c1 @ bx" using dx by (simp add: scb_decomp_def)
+  have ptc1: "isPTB_str (flatBT c1)" using dx xnz by (simp add: scb_decomp_def)
+  have rbx: "\<forall>z\<in>set bx. z = RP" using dx by (simp add: scb_decomp_def)
+  have scbDhx: "scb_decomp (Dpt (enat h) x) (Dsym (enat h) # sx) (flatBT c1) bx"
+    unfolding scb_decomp_def using flatx ptc1 rbx by simp
+  have dh1: "length (untrm (Dpt (enat h) x)) = 1" by simp
+  have dBODY: "scb_decomp ?BODY (liftS pre (Dsym (enat h) # sx)) (flatBT c1) (bx @ [RP])"
+    by (rule scb_addBT_left[OF scbDhx dh1 prene])
+  have BODYne: "?BODY \<noteq> Trm []" using prene by (cases pre) auto
+  have push: "scbSubst c1 c2 (Dpt (enat e) ?BODY)
+                = Dpt (enat e) (pre +\<^sub>B Dpt (enat h) (scbSubst c1 c2 x))"
+  proof -
+    have "scbSubst c1 c2 (Dpt (enat e) ?BODY) = Dpt (enat e) (scbSubst c1 c2 ?BODY)"
+      by (rule m_8_5_scbSubst_Dpt[OF dBODY BODYne c2p])
+    also have "scbSubst c1 c2 ?BODY = pre +\<^sub>B Dpt (enat h) (scbSubst c1 c2 x)"
+      by (rule m_8_5_scbSubst_addBT_commute[OF dx xnz c2p prene])
+    finally show ?thesis .
+  qed
+  have sl_t: "spineLeaf (Dpt (enat e) ?BODY) = x" by (rule m_8_5_spineLeaf_Dpt_addBT)
+  have sl_push: "spineLeaf (scbSubst c1 c2 (Dpt (enat e) ?BODY)) = scbSubst c1 c2 x"
+    using push by (simp add: m_8_5_spineLeaf_Dpt_addBT)
+  show ?thesis using sl_push sl_t by simp
+qed
+
 
 end
