@@ -5421,4 +5421,175 @@ lemma m_8_5_endpoint_of_surgshape:
   shows "spineLeaf (Trans (Y @ B)) = bpHeadT (Trans Y)"
   using shape by (simp add: m_8_5_spineLeaf_Dpt_addBT)
 
+
+text \<open>§8.7 multiD junction — ORDER CORE (read-off reduction).  The \<open>multiD\<close> residual
+  of @{thm [source] m_8_7_Trans_OT_nonkey} — \<open>leBT (Trm [hd bs]) (Trm [last as])\<close>,
+  the descP junction between the prefix block \<open>Trm as = Trans (take (Pcut N) N)\<close> and
+  the last \<open>P\<close>-component \<open>Trm bs = Trans (drop (Pcut N) N)\<close> — reduces, via two
+  single-principal READ-OFFS, to the consecutive-\<open>P\<close>-component \<open>Trans\<close>-descent
+  \<open>leBT (Trans blockJ) (Trans blockJ\<^sub>-\<^sub>1)\<close>.  Mechanism (no value reasoning):
+  \<^item> every \<open>P\<close>-component is \<open>zeroT \<or> monoT\<close> (@{thm [source] m_6_2_P_components_1}); the
+    last (\<open>blockJ = drop (Pcut N) N\<close>) and second-last (\<open>blockJ\<^sub>-\<^sub>1 = P N\<^bsub>Lng(P N)-2\<^esub>\<close>) are
+    BOTH \<open>monoT\<close> (\<open>\<noteq> [(0,0)]\<close>: \<open>blockJ\<close> by \<open>ne\<close>, \<open>blockJ\<^sub>-\<^sub>1\<close> derived from \<open>comple\<close>),
+    hence SINGLE-principal (@{thm [source] m_7_3_Trans_monoT});
+  \<^item> so \<open>Trm [hd bs] = Trans blockJ\<close> (\<open>bs\<close> singleton) and, peeling the last block off
+    the prefix (@{thm [source] trans_multi_split} / @{thm [source] poper_last_P_multi}),
+    \<open>Trm [last as] = Trans blockJ\<^sub>-\<^sub>1\<close>.
+  The residual \<open>comple\<close> (the equal-leftend consecutive-component descent) is the
+  multiT analog of the §8.2 keystone R2 step and shares its value-residual with surgC.
+  EMPIRICALLY (python \<open>_r2_multiD_probe.py\<close>: 0 fail / 462 multiT \<open>ST\<^bsub>PS\<^esub>\<close> samples;
+  the two component heads are ALWAYS equal — first-col diagonal + equal leftend).\<close>
+
+lemma m_8_7_multiD_junction:
+  fixes N :: pairseq and as bs :: "BP list"
+  assumes N: "N \<in> ST_PS" and mu: "multiT N"
+    and ne: "drop (Pcut N) N \<noteq> [(0,0)]"
+    and aeq: "Trans (take (Pcut N) N) = Trm as"
+    and beq: "Trans (drop (Pcut N) N) = Trm bs"
+    and asne: "as \<noteq> []" and bsne: "bs \<noteq> []"
+    and comple: "leBT (Trans (drop (Pcut N) N)) (Trans (P N ! (Lng (P N) - 2)))"
+  shows "leBT (Trm [hd bs]) (Trm [last as])"
+proof -
+  let ?bJ = "drop (Pcut N) N"
+  let ?pre = "take (Pcut N) N"
+  let ?bJm1 = "P N ! (Lng (P N) - 2)"
+  have NR: "N \<in> RT_PS" using N m_6_7_ST_PS_subseteq_RT_PS by blast
+  have NT: "N \<in> T_PS" using NR by (simp add: RT_PS_def)
+  have L: "1 < Lng N" by (rule multiT_imp_Lng_gt1[OF NT mu])
+  have Pne: "P N \<noteq> []" by (rule P_nonempty)
+  \<comment> \<open>P-decomposition: \<open>P N = P ?pre @ [?bJ]\<close>\<close>
+  have split: "last (P N) = ?bJ \<and> butlast (P N) = P ?pre"
+    by (rule poper_last_P_multi[OF mu L])
+  have PNdec: "P N = P ?pre @ [?bJ]"
+  proof -
+    have "P N = butlast (P N) @ [last (P N)]" using Pne by simp
+    thus ?thesis using split by simp
+  qed
+  have preRT: "?pre \<in> RT_PS" by (rule trans_multiT_prefix_RT_PS[OF NR mu])
+  have Ppre_ne: "P ?pre \<noteq> []" by (rule P_nonempty)
+  have lpre: "1 \<le> Lng (P ?pre)" using Ppre_ne by (cases "P ?pre") auto
+  have LPN: "Lng (P N) = Lng (P ?pre) + 1" using PNdec by simp
+  have LPN2: "2 \<le> Lng (P N)" using LPN lpre by linarith
+  \<comment> \<open>helper: a reduced \<open>P\<close>-component \<open>\<noteq> [(0,0)]\<close> is \<open>monoT\<close> and non-zero\<close>
+  have compMono: "\<And>c. c \<in> set (P N) \<Longrightarrow> c \<noteq> [(0,0)]
+        \<Longrightarrow> c \<in> RT_PS \<and> monoT c \<and> \<not> zeroT c"
+  proof -
+    fix c assume cmem: "c \<in> set (P N)" and cne: "c \<noteq> [(0,0)]"
+    obtain J where cJ: "c = P N ! J" and JL: "J < Lng (P N)"
+      using cmem by (auto simp: in_set_conv_nth)
+    have cRT: "c \<in> RT_PS" using m_6_6_P_reduced[OF NT] NR JL cJ by blast
+    have cT: "c \<in> T_PS" using cRT by (simp add: RT_PS_def)
+    have znz: "\<not> zeroT c"
+    proof
+      assume z: "zeroT c"
+      have l1: "Lng c = 1" using z by (simp add: zeroT_def)
+      obtain v where vv: "c = [(v, v)]" using m_6_6_oneColumn[OF cT] l1 cRT by blast
+      have "entry c 1 0 = 0" using z by (simp add: zeroT_def)
+      hence "v = 0" using vv by (simp add: entry_def)
+      thus False using vv cne by simp
+    qed
+    have "zeroT c \<or> monoT c" using m_6_2_P_components_1[OF NT] cmem by blast
+    hence "monoT c" using znz by blast
+    thus "c \<in> RT_PS \<and> monoT c \<and> \<not> zeroT c" using cRT znz by blast
+  qed
+  \<comment> \<open>helper: a \<open>monoT\<close> \<open>P\<close>-component has a single-principal \<open>Trans\<close>\<close>
+  have monoSingle: "\<And>c cs. c \<in> RT_PS \<Longrightarrow> monoT c \<Longrightarrow> \<not> zeroT c
+        \<Longrightarrow> Trans c = Trm cs \<Longrightarrow> length cs = 1"
+  proof -
+    fix c cs assume cRT: "c \<in> RT_PS" and cmono: "monoT c" and cnz: "\<not> zeroT c"
+      and ceq: "Trans c = Trm cs"
+    have cP: "P c = [c]" using cmono by (intro poper_P_nonmulti) (simp add: multiT_def)
+    have cP0nz: "\<not> zeroT (P c ! 0)" using cnz cP by simp
+    have "Lng (PB (Trans c)) = 1" using m_7_3_Trans_monoT[OF cRT cP0nz] cmono by simp
+    thus "length cs = 1" using ceq by (simp add: PB_def)
+  qed
+  \<comment> \<open>read-off 1: \<open>Trm [hd bs] = Trans ?bJ\<close>\<close>
+  have bJmem: "?bJ \<in> set (P N)" using PNdec by simp
+  from compMono[OF bJmem ne]
+  have bJ_RT: "?bJ \<in> RT_PS" and bJ_mono: "monoT ?bJ" and bJ_nz: "\<not> zeroT ?bJ" by auto
+  have lenbs: "length bs = 1" by (rule monoSingle[OF bJ_RT bJ_mono bJ_nz beq])
+  have read1: "Trm [hd bs] = Trans ?bJ"
+  proof -
+    from lenbs bsne obtain b where bsb: "bs = [b]" by (cases bs) auto
+    thus ?thesis using beq by simp
+  qed
+  \<comment> \<open>\<open>?bJm1 = last (P ?pre)\<close>, \<open>\<noteq> [(0,0)]\<close> (from \<open>comple\<close>), \<open>monoT\<close>\<close>
+  have bJm1eq: "?bJm1 = last (P ?pre)"
+  proof -
+    have idx: "Lng (P N) - 2 = Lng (P ?pre) - 1" using LPN lpre by linarith
+    have lt: "Lng (P ?pre) - 1 < Lng (P ?pre)" using lpre by linarith
+    have "?bJm1 = (P ?pre @ [?bJ]) ! (Lng (P ?pre) - 1)" using PNdec idx by simp
+    also have "\<dots> = P ?pre ! (Lng (P ?pre) - 1)" using lt by (simp add: nth_append)
+    also have "\<dots> = last (P ?pre)" using Ppre_ne by (simp add: last_conv_nth)
+    finally show ?thesis .
+  qed
+  have bJm1lt: "Lng (P N) - 2 < Lng (P N)" using LPN2 by linarith
+  have bJm1mem: "?bJm1 \<in> set (P N)" using bJm1lt by (rule nth_mem)
+  have bJm1RT: "?bJm1 \<in> RT_PS"
+  proof -
+    have "\<forall>J<Lng (P N). P N ! J \<in> RT_PS" using m_6_6_P_reduced[OF NT] NR by blast
+    thus ?thesis using bJm1lt by blast
+  qed
+  have bJm1ne: "?bJm1 \<noteq> [(0,0)]"
+  proof
+    assume z: "?bJm1 = [(0,0)]"
+    have "zeroT ?bJm1" using z by (simp add: zeroT_def entry_def)
+    hence "Trans ?bJm1 = 0\<^sub>B" using m_7_3_Trans_zeroT[OF bJm1RT] by simp
+    hence "leBT (Trans ?bJ) 0\<^sub>B" using comple by simp
+    hence "Trans ?bJ = 0\<^sub>B" by simp
+    hence "zeroT ?bJ" using m_7_3_Trans_zeroT[OF bJ_RT] by simp
+    thus False using bJ_nz by simp
+  qed
+  from compMono[OF bJm1mem bJm1ne]
+  have bJm1_RT: "?bJm1 \<in> RT_PS" and bJm1_mono: "monoT ?bJm1" and bJm1_nz: "\<not> zeroT ?bJm1" by auto
+  \<comment> \<open>read-off 2: \<open>Trm [last as] = Trans ?bJm1\<close>\<close>
+  have read2: "Trm [last as] = Trans ?bJm1"
+  proof (cases "multiT ?pre")
+    case True
+    have preT: "?pre \<in> T_PS" using preRT by (simp add: RT_PS_def)
+    have lastblk: "drop (Pcut ?pre) ?pre = ?bJm1"
+    proof -
+      have "P ?pre ! (Lng (P ?pre) - 1) = drop (Pcut ?pre) ?pre"
+        by (rule trans_multiT_last_component(1)[OF preT True])
+      moreover have "P ?pre ! (Lng (P ?pre) - 1) = last (P ?pre)"
+        using Ppre_ne by (simp add: last_conv_nth)
+      ultimately show ?thesis using bJm1eq by simp
+    qed
+    have nz: "drop (Pcut ?pre) ?pre \<noteq> [(0,0)]" using lastblk bJm1ne by simp
+    have split2: "Trans ?pre = Trans (take (Pcut ?pre) ?pre) +\<^sub>B Trans ?bJm1"
+      using trans_multi_split[OF preRT True nz] lastblk by simp
+    obtain cs where cs: "Trans (take (Pcut ?pre) ?pre) = Trm cs"
+      by (cases "Trans (take (Pcut ?pre) ?pre)")
+    obtain ds where ds: "Trans ?bJm1 = Trm ds" by (cases "Trans ?bJm1")
+    have aseq: "as = cs @ ds"
+    proof -
+      have "Trm as = Trans ?pre" using aeq by simp
+      also have "\<dots> = Trm cs +\<^sub>B Trm ds" using split2 cs ds by simp
+      also have "\<dots> = Trm (cs @ ds)" by simp
+      finally have "Trm as = Trm (cs @ ds)" .
+      thus ?thesis by simp
+    qed
+    have lends: "length ds = 1" by (rule monoSingle[OF bJm1_RT bJm1_mono bJm1_nz ds])
+    from lends obtain d where dsd: "ds = [d]" by (cases ds) auto
+    have "last as = d" using aseq dsd by simp
+    hence "Trm [last as] = Trm ds" using dsd by simp
+    thus ?thesis using ds by simp
+  next
+    case False
+    have Ppre1: "P ?pre = [?pre]" using False by (intro poper_P_nonmulti) simp
+    have preEq: "?pre = ?bJm1"
+    proof -
+      have "last (P ?pre) = ?pre" using Ppre1 by simp
+      thus ?thesis using bJm1eq by simp
+    qed
+    have trEq: "Trans ?bJm1 = Trm as" using aeq preEq by simp
+    have lenas: "length as = 1" by (rule monoSingle[OF bJm1_RT bJm1_mono bJm1_nz trEq])
+    from lenas asne obtain a where asa: "as = [a]" by (cases as) auto
+    have "last as = a" using asa by simp
+    hence "Trm [last as] = Trm as" using asa by simp
+    thus ?thesis using trEq by simp
+  qed
+  show ?thesis using read1 read2 comple by simp
+qed
+
 end
