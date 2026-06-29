@@ -4799,5 +4799,71 @@ proof -
   show ?thesis using e1 e2 by simp
 qed
 
+text \<open>§8.7 main result ASSEMBLY (article 6122): \<open>M \<in> ST\<^bsub>PS\<^esub> \<Longrightarrow> Trans M \<in> OT\<^bsub>B\<^esub>\<close>,
+  by STRONG induction on \<open>Lng M\<close>, modulo two CLEAN named hypotheses.  This wires the
+  full induction skeleton and threads the parallel-in-progress residuals as inputs,
+  so the §8.7 OT residual is made concrete and INDEPENDENT of the specific
+  R2-tail/R3 proofs.
+
+  The \<open>Pred\<close>-recursion gives \<open>Lng (Pred M) = Lng M - 1 < Lng M\<close> (\<open>Pred M = butlast M\<close>
+  for \<open>Lng M > 1\<close>) and \<open>Pred M \<in> ST\<^bsub>PS\<^esub>\<close> (@{thm [source] m_8_7_Pred_ST_PS}), so the
+  strong-\<open>Lng\<close> IH supplies \<open>Trans (Pred M) \<in> OT\<^bsub>B\<^esub>\<close> at every step.  The case split is:
+  \<^item> \<open>monoT M \<and> Br M \<noteq> [] \<and> Lng M - 1 > 1\<close> — the keystone Pred-recursion step
+    @{thm [source] m_8_7_Trans_OT_step_keystone}.  Its only open input is the
+    packaged residual \<open>resid\<close> (the R2 descP head-step + the R3 [Buc1] OT2 surface),
+    exposed here VERBATIM as the named hypothesis \<open>resid\<close> universally quantified over
+    \<open>M\<close> with the keystone preconditions baked in.
+  \<^item> otherwise — the clean-leaf / base / multiT branches, threaded as the clean named
+    hypothesis \<open>nonkey\<close> (base diagonals @{thm [source] m_8_7_Trans_preserves_OT_base},
+    the \<open>cnst\<close>/\<open>rcseq\<close> clean leaves @{thm [source] m_8_7_Trans_cnst_OT} /
+    @{thm [source] m_8_7_Trans_rcseq_OT}, and the multiT split), with the strong-\<open>Lng\<close>
+    IH supplied to it as a local hypothesis.
+
+  Closing the two hypotheses (\<open>resid\<close> = R2 tail + R3; \<open>nonkey\<close> = the non-keystone
+  branch coverage) discharges the §8.7 paper goal \<open>p_8_7_Trans_preserves_OT\<close>.\<close>
+
+lemma m_8_7_Trans_preserves_OT:
+  fixes M :: pairseq
+  assumes resid:
+    "\<And>M x q ps r.
+        M \<in> ST_PS \<Longrightarrow> monoT M \<Longrightarrow> Br M \<noteq> [] \<Longrightarrow> Lng M - 1 > 1 \<Longrightarrow>
+        Trans (Pred M) = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B r) \<Longrightarrow>
+        Trans M = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B Dpt (enat x) q) \<Longrightarrow>
+        isOT_BP (DB (enat x) q)
+        \<and> (ps \<noteq> [] \<longrightarrow> leBT (Dpt (enat x) q) (Trm [last ps]))
+        \<and> (\<forall>y\<in>GBT (enat (entry M 1 0)) (Trm ps +\<^sub>B Dpt (enat x) q).
+               lessBT y (Trm ps +\<^sub>B Dpt (enat x) q))"
+  assumes nonkey:
+    "\<And>N. N \<in> ST_PS \<Longrightarrow> \<not> (monoT N \<and> Br N \<noteq> [] \<and> Lng N - 1 > 1) \<Longrightarrow>
+        (\<And>N'. N' \<in> ST_PS \<Longrightarrow> Lng N' < Lng N \<Longrightarrow> Trans N' \<in> OT_B) \<Longrightarrow>
+        Trans N \<in> OT_B"
+  shows "M \<in> ST_PS \<Longrightarrow> Trans M \<in> OT_B"
+proof (induction "Lng M" arbitrary: M rule: less_induct)
+  case (less M)
+  have IH: "\<And>M'. M' \<in> ST_PS \<Longrightarrow> Lng M' < Lng M \<Longrightarrow> Trans M' \<in> OT_B"
+    using less.hyps by blast
+  show ?case
+  proof (cases "monoT M \<and> Br M \<noteq> [] \<and> Lng M - 1 > 1")
+    case True
+    have Mmono: "monoT M" and Brne: "Br M \<noteq> []" and j1gt: "Lng M - 1 > 1"
+      using True by auto
+    have L: "1 < Lng M" using j1gt by simp
+    have predST: "Pred M \<in> ST_PS" by (rule m_8_7_Pred_ST_PS[OF less.prems L])
+    have pb: "Pred M = butlast M" using L by (simp add: Pred_def)
+    have LP: "Lng (Pred M) < Lng M" using pb L by simp
+    have ihOT: "Trans (Pred M) \<in> OT_B" by (rule IH[OF predST LP])
+    show ?thesis
+      by (rule m_8_7_Trans_OT_step_keystone[OF less.prems Mmono Brne j1gt ihOT
+              resid[OF less.prems Mmono Brne j1gt]])
+  next
+    case False
+    show ?thesis
+    proof (rule nonkey[OF less.prems False])
+      fix N' assume "N' \<in> ST_PS" and "Lng N' < Lng M"
+      thus "Trans N' \<in> OT_B" by (rule IH)
+    qed
+  qed
+qed
+
 
 end
