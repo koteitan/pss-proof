@@ -5513,4 +5513,80 @@ proof -
             Cdef prene s0eq b0eq vm1eq blockC])
 qed
 
+
+text \<open>§8.5 (E.2) FACT-2 piece 3a — \<open>spineLeaf\<close> pushes through the WHOLE netfold of the
+  surgery, netfold-SPECIFIC backbone.  This is the concrete instantiation backbone for the
+  generic @{thm [source] m_8_5_spineLeaf_fold}, threaded through the REAL per-column structure
+  so that the maintained invariant \<open>P\<close> (the spine-shape \<open>Trans (Y @ take m B)
+  = D\<^bsub>e10\<^esub>(t\<^sub>2 +\<^sub>B D\<^bsub>vm1\<^esub> (spineLeaf \<dots>))\<close>, already GREEN per-column via
+  @{thm [source] m_8_5_surgery_spine_compose} / @{thm [source] m_8_5_surgery_spine_step}) and the
+  deep-core commute (per-column @{thm [source] m_8_5_spineLeaf_scbSubst}) are supplied at the
+  ACTUAL fold accumulator \<open>Trans (Y @ take m B)\<close> rather than for all \<open>m\<close>/all \<open>t\<close>:
+
+  NOTE on the all-\<open>m\<close> obstruction.  The bare @{thm [source] m_8_5_spineLeaf_fold} demands
+  \<open>step\<close>/\<open>inv\<close> for EVERY \<open>m\<close> and EVERY \<open>t\<close> with \<open>P t\<close>; but the netfold's operator
+  \<open>op m = scbSubst (transC1 (host m)) (transC2 (host m)) (\<cdot>)\<close> is host-dependent and the
+  deep-core scb-decomposition couples \<open>m\<close> to the SPECIFIC accumulator (the marked core
+  \<open>c\<^sub>1 = transC1 (host m)\<close> lands in the deep slot ONLY of the genuine \<open>Trans (Y @ take m B)\<close>),
+  so \<open>step\<close>/\<open>inv\<close> are FALSE for arbitrary \<open>t\<close>/out-of-range \<open>m\<close>.  Hence the push is proved by a
+  netfold-specific induction that (i) identifies \<open>fold op [0..<k] (Trans Y) = Trans (Y @ take k B)\<close>
+  via the netfold \<open>step\<close> (@{thm [source] m_8_5_Trans_netfold_condV}'s per-column recurrence),
+  and (ii) applies the per-column commute \<open>commute\<close> at that genuine accumulator.
+
+  \<open>commute m\<close> is exactly the per-column 2b instance: with the spine-shape of
+  \<open>Trans (Y @ take m B)\<close> (GREEN) and the deep-core scb_decomp of the marked core into its deep
+  slot, @{thm [source] m_8_5_spineLeaf_scbSubst} discharges it.  Combined with FACT-2 piece 3b
+  (the fold value \<open>fold op [0..<Lng B] (spineLeaf (Trans Y)) = bpHeadT (Trans Y)\<close>) this yields the
+  ENDPOINT \<open>spineLeaf (Trans (Y @ B)) = bpHeadT (Trans Y)\<close> (the sole residual of
+  @{thm [source] m_8_5_surgery_of_geom_endpoint}).\<close>
+
+lemma m_8_5_netfold_deepcore_inv:
+  fixes Y B :: pairseq and op :: "nat \<Rightarrow> BT \<Rightarrow> BT"
+  assumes step: "\<And>m. m < Lng B \<Longrightarrow> Trans (Y @ take (Suc m) B) = op m (Trans (Y @ take m B))"
+    and commute: "\<And>m. m < Lng B \<Longrightarrow>
+        spineLeaf (op m (Trans (Y @ take m B))) = op m (spineLeaf (Trans (Y @ take m B)))"
+  shows "spineLeaf (fold op [0..<Lng B] (Trans Y)) = fold op [0..<Lng B] (spineLeaf (Trans Y))"
+proof -
+  have gen: "\<And>k. k \<le> Lng B \<longrightarrow>
+       fold op [0..<k] (Trans Y) = Trans (Y @ take k B)
+     \<and> spineLeaf (fold op [0..<k] (Trans Y)) = fold op [0..<k] (spineLeaf (Trans Y))"
+  proof -
+    fix k
+    show "k \<le> Lng B \<longrightarrow>
+         fold op [0..<k] (Trans Y) = Trans (Y @ take k B)
+       \<and> spineLeaf (fold op [0..<k] (Trans Y)) = fold op [0..<k] (spineLeaf (Trans Y))"
+    proof (induct k)
+      case 0 show ?case by simp
+    next
+      case (Suc k)
+      show ?case
+      proof
+        assume sle: "Suc k \<le> Lng B"
+        have kle: "k \<le> Lng B" using sle by simp
+        have klt: "k < Lng B" using sle by simp
+        have ihv: "fold op [0..<k] (Trans Y) = Trans (Y @ take k B)"
+          using Suc.hyps kle by blast
+        have ihs: "spineLeaf (fold op [0..<k] (Trans Y)) = fold op [0..<k] (spineLeaf (Trans Y))"
+          using Suc.hyps kle by blast
+        have foldSuc: "fold op [0..<Suc k] (Trans Y) = op k (fold op [0..<k] (Trans Y))" by simp
+        have v: "fold op [0..<Suc k] (Trans Y) = Trans (Y @ take (Suc k) B)"
+          using foldSuc ihv step[OF klt] by simp
+        have "spineLeaf (fold op [0..<Suc k] (Trans Y)) = spineLeaf (op k (Trans (Y @ take k B)))"
+          using foldSuc ihv by simp
+        also have "\<dots> = op k (spineLeaf (Trans (Y @ take k B)))" by (rule commute[OF klt])
+        also have "\<dots> = op k (spineLeaf (fold op [0..<k] (Trans Y)))" using ihv by simp
+        also have "\<dots> = op k (fold op [0..<k] (spineLeaf (Trans Y)))" using ihs by simp
+        also have "\<dots> = fold op [0..<Suc k] (spineLeaf (Trans Y))" by simp
+        finally have s: "spineLeaf (fold op [0..<Suc k] (Trans Y))
+                         = fold op [0..<Suc k] (spineLeaf (Trans Y))" .
+        show "fold op [0..<Suc k] (Trans Y) = Trans (Y @ take (Suc k) B)
+            \<and> spineLeaf (fold op [0..<Suc k] (Trans Y)) = fold op [0..<Suc k] (spineLeaf (Trans Y))"
+          using v s by simp
+      qed
+    qed
+  qed
+  have le: "Lng B \<le> Lng B" by simp
+  show ?thesis using gen[of "Lng B"] le by blast
+qed
+
 end
