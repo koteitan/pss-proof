@@ -3938,5 +3938,48 @@ proof -
   thus ?thesis using skel by simp
 qed
 
+text \<open>§8.5 (E.2) ASSEMBLY — surgC FROM the GEOM-ENDPOINT surgery (the CORRECTED route).
+  Chains the FIXED-t2 composition engine @{thm [source] m_8_5_surgery_of_geom_endpoint}
+  (base spine-shape + the all-deepen suffix walk over \<open>B\<close> + the endpoint readback) into
+  @{thm [source] m_8_5_surgC_of_skeleton}, yielding the surgC hypothesis shape of
+  @{thm [source] m_8_5_TransCondV_descend_kernel}.  This is the route the sub-agent (E.2)
+  empirical analysis VALIDATED (base jm1, NOT per-iterate): the surgery body is the
+  keystone-graft \<open>t\<^sub>2\<^bsub>FIX\<^esub> +\<^sub>B D\<^bsub>vm1\<^esub> (bpHeadT (Trans Y))\<close> with \<open>t\<^sub>2\<^bsub>FIX\<^esub>\<close> the FIXED q=1 base
+  head (\<open>s\<^sub>0 = liftS t\<^sub>2\<^bsub>FIX\<^esub> []\<close>), NOT the self-form of the q=1-only
+  @{thm [source] m_8_5_reduced_slice_surgery_condI}.  Empirically (E.2): the base
+  spine-shape 5/5, the endpoint readback \<open>spineLeaf (Trans (Y\<frown>B)) = bpHeadT (Trans Y)\<close> 5/5,
+  surgC-with-fixed-context-C verified.  The endpoint readback (the per-column value-pinning,
+  the keystone-deepen matching) is the SINGLE remaining master-key residual; everything else
+  (base spine-shape, the all-deepen geometric hyps, the bridge context) is owned/satisfiable.\<close>
+
+lemma m_8_5_surgC_of_geom:
+  fixes Y B :: pairseq and t2 :: BT and e10 vm1 v u :: nat
+    and s0 b0 :: "Sym list" and C :: "BT \<Rightarrow> BT"
+  assumes base: "Trans Y = Dpt (enat e10) (t2 +\<^sub>B Dpt (enat vm1) (spineLeaf (Trans Y)))"
+    and gYne: "\<And>m. m < Lng B \<Longrightarrow> 0 < Lng (Y @ take m B)"
+    and gMR: "\<And>m. m < Lng B \<Longrightarrow> (Y @ take m B) @ [B ! m] \<in> RT_PS"
+    and gMP: "\<And>m. m < Lng B \<Longrightarrow> (Y @ take m B) @ [B ! m] \<in> PT_PS"
+    and gBrne: "\<And>m. m < Lng B \<Longrightarrow> Br ((Y @ take m B) @ [B ! m]) \<noteq> []"
+    and gj1gt: "\<And>m. m < Lng B \<Longrightarrow> Lng ((Y @ take m B) @ [B ! m]) - 1 > 1"
+    and gpar: "\<And>m. m < Lng B \<Longrightarrow> parent ((Y @ take m B) @ [B ! m]) 0
+                 (Lng ((Y @ take m B) @ [B ! m]) - 1) > TrMax ((Y @ take m B) @ [B ! m])"
+    and ge10: "\<And>m. m < Lng B \<Longrightarrow> entry ((Y @ take m B) @ [B ! m]) 1 0 = e10"
+    and endpoint: "spineLeaf (Trans (Y @ B)) = bpHeadT (Trans Y)"
+    and Cdef: "C = (\<lambda>x. unflatBT (s0 @ Dsym (enat (v - 1)) # flatBT x @ b0))"
+    and prene: "untrm t2 \<noteq> []"
+    and s0eq: "s0 = liftS t2 []"
+    and b0eq: "b0 = [RP]"
+    and vm1eq: "vm1 = v - 1"
+    and ueq: "u = e10"
+  shows "Trans (Y @ B) = Dpt (enat u) (C (bpHeadT (Trans Y)))"
+proof -
+  have skel: "Trans (Y @ B)
+                = Dpt (enat e10) (t2 +\<^sub>B Dpt (enat vm1) (bpHeadT (Trans Y)))"
+    by (rule m_8_5_surgery_of_geom_endpoint
+          [OF base gYne gMR gMP gBrne gj1gt gpar ge10 endpoint])
+  show ?thesis
+    by (rule m_8_5_surgC_of_skeleton[OF skel Cdef prene s0eq b0eq vm1eq ueq])
+qed
+
 
 end
