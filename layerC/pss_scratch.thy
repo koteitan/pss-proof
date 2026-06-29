@@ -4722,5 +4722,52 @@ lemma m_8_5_Pcut_append:
   by (rule m_8_5_Pcut_append_block[OF j1pos e1pos hp j0le parR le0M q1
         m_8_5_slice_interior_nocut[OF j1pos e1pos hp j0le parR q1]])
 
+text \<open>§8.5 (E.2) — the isolated fact \<open>le0M\<close> is PROVEN from \<open>parR\<close>.  \<open>parR\<close> gives
+  \<open>leR M 0 j\<^sub>0 (Lng M-1)\<close> (\<open>j\<^sub>0\<close> reaches the last column); by @{thm [source]
+  m_5_1_ancestor_tree_1} (reaching \<open>j\<^sub>1\<close> implies reaching every \<open>j \<in> [j\<^sub>0, j\<^sub>1]\<close>),
+  \<open>j\<^sub>0\<close> reaches the second-to-last column \<open>Lng M-2\<close> too.  So \<open>le0M\<close> needs no separate
+  condV input — only \<open>M \<in> T\<^bsub>PS\<^esub>\<close> (free in the §8.5 regime) and \<open>parR\<close>.\<close>
+
+lemma m_8_5_le0M_of_parR:
+  fixes M :: pairseq
+  assumes MT: "M \<in> T_PS"
+    and j1pos: "Lng M - 1 > 0"
+    and parR: "nextrel0 M (parent M 1 (Lng M - 1)) (Lng M - 1)"
+  shows "le0 M (parent M 1 (Lng M - 1)) (Lng M - 2)"
+proof -
+  let ?j0 = "parent M 1 (Lng M - 1)"
+  have rt: "(nextrel0 M)\<^sup>*\<^sup>* ?j0 (Lng M - 1)" using parR by (rule r_into_rtranclp)
+  have bnds: "?j0 < Lng M \<and> Lng M - 1 < Lng M" using parR by (simp add: nextrel0_def)
+  have parR_le0: "leR M 0 ?j0 (Lng M - 1)" using rt bnds by (simp add: leR_def le0_def)
+  have j0lt: "?j0 < Lng M - 1" using parR by (simp add: nextrel0_def)
+  have j0le2: "?j0 \<le> Lng M - 2" using j0lt j1pos by linarith
+  have LM2le: "Lng M - 2 \<le> Lng M - 1" by simp
+  have "leR M 0 ?j0 (Lng M - 2)"
+    by (rule m_5_1_ancestor_tree_1[OF MT parR_le0 j0le2 LM2le])
+  thus ?thesis by (simp add: leR_def)
+qed
+
+text \<open>§8.5 (E.2) FACT 1 (self-contained) — \<open>Pcut(slice) = Lng B\<close> with \<open>le0M\<close> discharged
+  from \<open>parR\<close> (@{thm [source] m_8_5_le0M_of_parR}).  Now the surgC GEOMETRY residual
+  \<open>Pcut(Y\<frown>B) = Lng B\<close> needs ONLY \<open>M \<in> T\<^bsub>PS\<^esub>\<close> + the committed condV fact \<open>parR\<close>
+  (+ the standard genform setup) — NO extra isolated input.\<close>
+
+lemma m_8_5_Pcut_append_T:
+  fixes M :: pairseq and q :: nat
+  assumes MT: "M \<in> T_PS"
+    and j1pos: "Lng M - 1 > 0"
+    and e1pos: "entry M 1 (Lng M - 1) > 0"
+    and hp: "hasParent M 1 (Lng M - 1)"
+    and j0le: "parent M 1 (Lng M - 1) \<le> Lng M"
+    and parR: "nextrel0 M (parent M 1 (Lng M - 1)) (Lng M - 1)"
+    and q1: "1 \<le> q"
+  shows "Pcut (drop (parent M 1 (Lng M - 1)) (M[Suc q]))
+       = Lng M - 1 - parent M 1 (Lng M - 1)"
+proof -
+  have le0M: "le0 M (parent M 1 (Lng M - 1)) (Lng M - 2)"
+    by (rule m_8_5_le0M_of_parR[OF MT j1pos parR])
+  show ?thesis by (rule m_8_5_Pcut_append[OF j1pos e1pos hp j0le parR le0M q1])
+qed
+
 
 end
