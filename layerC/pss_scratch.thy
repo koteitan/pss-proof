@@ -5364,4 +5364,66 @@ proof -
     by (rule m_8_7_Trans_preserves_OT[OF resid nk MST])
 qed
 
+
+text \<open>§8.5 FACT2 ASSEMBLY — \<open>blockC\<close> via the netfold, modulo exactly {netfold, 3a-invariant,
+  3b}.  Wires the canonical blockC \<open>spineLeaf (Trans (Y\<frown>B)) = C (spineLeaf (Trans Y))\<close>
+  from: (nf) the condV netfold @{thm [source] m_8_5_Trans_netfold_condV}; (step/inv/Pacc) the
+  3a deep-core invariant pushing \<open>spineLeaf\<close> through the fold via
+  @{thm [source] m_8_5_spineLeaf_fold}; and (threeB) the 3b fold-value.  Isolates FACT2 to the
+  two agent residuals (the 3a invariant {step,inv,Pacc}, the 3b fold-value), with NO appeal to
+  the refuted intrinsic spinelaw.\<close>
+
+lemma m_8_5_blockC_via_netfold:
+  fixes Y B :: pairseq and op :: "nat \<Rightarrow> BT \<Rightarrow> BT" and P :: "BT \<Rightarrow> bool" and C :: "BT \<Rightarrow> BT"
+  assumes nf: "Trans (Y @ B) = fold op [0..<Lng B] (Trans Y)"
+    and step: "\<And>m t. P t \<Longrightarrow> spineLeaf (op m t) = op m (spineLeaf t)"
+    and inv: "\<And>m t. P t \<Longrightarrow> P (op m t)"
+    and Pacc: "P (Trans Y)"
+    and threeB: "fold op [0..<Lng B] (spineLeaf (Trans Y)) = C (spineLeaf (Trans Y))"
+  shows "spineLeaf (Trans (Y @ B)) = C (spineLeaf (Trans Y))"
+proof -
+  have sf: "spineLeaf (fold op [0..<Lng B] (Trans Y)) = fold op [0..<Lng B] (spineLeaf (Trans Y))"
+  proof (rule m_8_5_spineLeaf_fold)
+    show "\<And>m t. P t \<Longrightarrow> spineLeaf (op m t) = op m (spineLeaf t)" by (rule step)
+    show "\<And>m t. P t \<Longrightarrow> P (op m t)" by (rule inv)
+    show "P (Trans Y)" by (rule Pacc)
+  qed
+  have "spineLeaf (Trans (Y @ B)) = spineLeaf (fold op [0..<Lng B] (Trans Y))"
+    using nf by simp
+  also have "\<dots> = fold op [0..<Lng B] (spineLeaf (Trans Y))" by (rule sf)
+  also have "\<dots> = C (spineLeaf (Trans Y))" by (rule threeB)
+  finally show ?thesis .
+qed
+
+text \<open>§8.5 FACT2 endpoint readback, ASSEMBLED modulo {netfold, 3a-invariant, 3b, base-shape}.
+  Chains @{thm [source] m_8_5_blockC_via_netfold} into @{thm [source] m_8_5_endpoint_of_blockC}.\<close>
+
+lemma m_8_5_endpoint_via_netfold:
+  fixes Y B :: pairseq and op :: "nat \<Rightarrow> BT \<Rightarrow> BT" and P :: "BT \<Rightarrow> bool"
+    and C :: "BT \<Rightarrow> BT" and t2 :: BT and e10 vm1 v :: nat and s0 b0 :: "Sym list"
+  assumes nf: "Trans (Y @ B) = fold op [0..<Lng B] (Trans Y)"
+    and step: "\<And>m t. P t \<Longrightarrow> spineLeaf (op m t) = op m (spineLeaf t)"
+    and inv: "\<And>m t. P t \<Longrightarrow> P (op m t)"
+    and Pacc: "P (Trans Y)"
+    and threeB: "fold op [0..<Lng B] (spineLeaf (Trans Y)) = C (spineLeaf (Trans Y))"
+    and shape: "Trans Y = Dpt (enat e10) (t2 +\<^sub>B Dpt (enat vm1) (spineLeaf (Trans Y)))"
+    and Cdef: "C = (\<lambda>x. unflatBT (s0 @ Dsym (enat (v - 1)) # flatBT x @ b0))"
+    and prene: "untrm t2 \<noteq> []"
+    and s0eq: "s0 = liftS t2 []"
+    and b0eq: "b0 = [RP]"
+    and vm1eq: "vm1 = v - 1"
+  shows "spineLeaf (Trans (Y @ B)) = bpHeadT (Trans Y)"
+proof -
+  have blockC: "spineLeaf (Trans (Y @ B)) = C (spineLeaf (Trans Y))"
+  proof (rule m_8_5_blockC_via_netfold)
+    show "Trans (Y @ B) = fold op [0..<Lng B] (Trans Y)" by (rule nf)
+    show "\<And>m t. P t \<Longrightarrow> spineLeaf (op m t) = op m (spineLeaf t)" by (rule step)
+    show "\<And>m t. P t \<Longrightarrow> P (op m t)" by (rule inv)
+    show "P (Trans Y)" by (rule Pacc)
+    show "fold op [0..<Lng B] (spineLeaf (Trans Y)) = C (spineLeaf (Trans Y))" by (rule threeB)
+  qed
+  show ?thesis
+    by (rule m_8_5_endpoint_of_blockC[OF shape Cdef prene s0eq b0eq vm1eq blockC])
+qed
+
 end
