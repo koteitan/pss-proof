@@ -141,8 +141,101 @@ pass):
     and may follow from adm_Adm_adm + reachability lemmas already in the
     base with modest effort.
 
+=====================================================================
+ROUND 3 (2026-07-01, this round; layerC/pss_scratch.thy,
+m_8_5_marked_adm_persist / m_8_5_marked_le0_step): R2a's `adm` conjunct
+CLOSED unconditionally; the `leR` conjunct's failure mode root-caused to
+MULTI-BRANCH structure (NEW, unexplored avenue).  R1 confirmed NOT
+independently easier than R2 (a 14th refuted route).
+=====================================================================
+
+ATTEMPT 1 (R1, REFUTED -- 14th refuted route, add to the list).  Tried the
+SAME direct value-level chaining suggested by the prior round's note (b):
+does `transJm1 (host_m) = n0` (the GLOBAL q-level jm1) hold for EVERY
+intermediate fold column, so the ALREADY-PROVEN per-column closed-form
+m_8_5_Mark_bpHeadT_step_condV/condVI/tt2zero/else (which compute `bpHeadT
+(Mark M (transJm1 M))` from `Pred M`, i.e. M's OWN admissible mark) could be
+chained directly, bypassing scbSubst/anchor (R2) entirely?  REFUTED
+empirically (only 3/168 instances across q in {2,3,4}; q=2 is NOT
+structurally special for this -- 1/82 vs 1/47 vs 1/39, statistically the
+same rock-bottom rate at every q).  So R1 genuinely needs the SAME
+off-diagonal-Mark machinery as R2 (computing `Mark M n0` for `n0 !=
+transJm1 M` is unavoidable); R1 is not an independently-easier sub-case of
+the keystone, it shares the R2 anchor bottleneck.  Do not re-attempt this
+"transJm1-constancy" shortcut.
+
+ATTEMPT 2-5 (R2a/R2c sharpening).  `(N,n0) in Marked` unfolds (Marked_def)
+to `adm N n0 AND leR N 0 n0 (Lng N - 1)`.  Empirically (~340 genuine
+fold-column instances): the `adm` conjunct is NEVER the obstruction (0/342
+failures); ONLY `leR` fails (224/342).  This is not a coincidence: `adm N j`
+(nadm_def) only inspects the TWO row-1 edges immediately adjacent to `j`,
+which lie inside the prefix `N` shares with ANY extension `N @ C`, so it
+transfers for free via the ALREADY-PROVEN `adm_prefix_agree_eq`.  This is
+now FORMALIZED, green, unconditional, no regime hypothesis:
+
+  m_8_5_marked_adm_persist: n0+1 < Lng N ==> adm N n0 = adm (N @ C) n0
+
+So R2a's entire surviving open content is the `leR` (`le0`) reachability of
+n0 to the GROWING right end.  Re-filtering PROPERLY to the keystone's own
+regime this time (transCondV (M[q]) + the hp1/parR/coin/jm1pos hypotheses
+of m_8_5_basepoint, NOT just condV(M) of the outer base seed as Round 2's
+harness did -- that under-scopes and mixes in instances the keystone
+machinery was never claimed to cover) gives a clean inductive picture:
+writing `ok m` for `leR (host_m) 0 n0 (Lng host_m - 1)`,
+  (i)  `ok (m-1) = False ==> ok m = False`, with ZERO exceptions (0/24 in
+       the harness) -- once broken, le0-reachability never spontaneously
+       recovers (monotone failure);
+  (ii) `ok (m-1) AND nextrel0 host_m (Lng host_{m-1} - 1) (Lng host_m - 1)`
+       (a DIRECT row-0 edge from the OLD last index to the NEW one)
+       `==> ok m`, with ZERO exceptions (38/38) -- pure transitivity.
+(ii) is now FORMALIZED as a generic (regime-independent) composition
+lemma, reusable for ANY future per-column edge characterization:
+
+  m_8_5_marked_le0_step: le0 N a c [c < Lng N], nextrel0 (N@C) c d
+                          ==> le0 (N@C) a d
+
+ROOT CAUSE of the leR failures (NEW finding, not previously identified):
+genuine period blocks B frequently OPEN with a (0,0) "branch reset" column
+-- entry0 does NOT increase from the previous entry, so `parent (host,0,
+lastidx)` has NO row-0 parent at all (`None`): the new column starts a
+FRESH `Br`/multiT branch SIBLING, not a row-0 successor of the prior entry.
+Worked example (python/_r2a_branch_routing.py, `worked_example()`): for
+M=(0,0)(1,1)(1,1)(1,0), q=2, appending B=[(0,0),(1,1),(1,1)] turns the host
+multiT with THREE `Br` components, the growing one being its own local
+subtree -- `parent(host,0,lastidx)` is genuinely `None` at the open column
+and `leR` is False throughout, even though `adm` stays True the whole time.
+So the `Mark_MarkedB_nest`-based "anchor via literal Marked-ness of n0"
+reduction (Round 2's R2a/R2b/R2c route) is SOUND but demands something the
+genuine fold does not actually need: GLOBAL row-0 trunk reachability from
+n0 across branch boundaries.  HYPOTHESIS for the next round (NOT validated
+or attempted as an Isabelle proof yet): Trans/Mark's own `multi` case is
+`addBT (Trans trunk-part) (Trans last-branch)` (pure list-level sum, no
+cross-branch substitution), so the REAL anchor witness for a freshly-opened
+branch column likely lives ENTIRELY inside the trailing addBT summand (the
+branch's own local Trans) and never needs n0's row-0 ancestry to reach
+across branches at all.  This would explain Round 2's separate finding that
+raw `anchor` (scb_decomp existence) holds MORE often (82/102, 44/62) than
+the Mark_MarkedB_nest route (42/102, 22/62): the latter is sound-but-coarse.
+This LOCAL/addBT route is a genuinely NEW, not-yet-explored avenue --
+distinct from all 13 previously-refuted routes and from the R2a/R2b/R2c
+Marked-nesting route itself (which should now be considered a closed-off
+dead end for the multi-branch-opening columns specifically, though it
+remains the right tool for within-branch / whole-period-boundary columns).
+
+NET this round: R1 confirmed to share R2's bottleneck (not separately
+attackable). R2a's `adm` half fully closed (unconditional). R2a's `leR`
+half sharpened from "raw Marked-membership, ~40-60% empirical failure,
+unclear regime" to a precise INDUCTIVE characterization (monotone-failure +
+one-edge transitivity, both formalized) PLUS a root-cause diagnosis (multi-
+branch opening columns) that points at a concrete, different next route
+(branch-local addBT witness) rather than more case-splitting on
+transCondV/I/III/VI of the moving host.
+
 Re-run instructions: this file is documentation, not an executable check.
   - Round 1 numbers: _rnav_descend3.py (8-seed condV-scoped confirmation).
   - Round 2 numbers: _r2_anchor_nest2.py / _r2_anchor_nest3.py (per-column
     anchor / Mark_MarkedB_nest-reduction confirmation, ~164 instances).
+  - Round 3 numbers: _r2a_branch_routing.py (adm/leR split, regime-proper
+    filtering, monotone-failure + one-edge-transitivity confirmation, the
+    worked multi-branch example).
 """

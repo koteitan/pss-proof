@@ -6508,6 +6508,74 @@ proof -
 qed
 
 
+text \<open>§8.5 R2a SHARPENING (new, this round) — \<open>(N,n\<^sub>0) \<in> Marked\<close> splits as
+  \<open>adm N n\<^sub>0 \<and> leR N 0 n\<^sub>0 (Lng N - 1)\<close> (@{thm [source] Marked_def}); empirically
+  (a dedicated harness, ~340 genuine fold-column instances across randomized
+  standard/reduced seeds, \<open>q=2,3\<close>) the \<open>adm\<close> conjunct is NEVER the obstruction
+  (\<open>0/342\<close> failures) — only \<open>leR\<close> fails (\<open>224/342\<close>).  This is no accident: \<open>adm N j\<close>
+  only inspects the TWO row-1 edges adjacent to \<open>j\<close> (@{thm [source] nadm_def}), which
+  lie entirely inside the SHARED PREFIX \<open>[0,Lng N - 1]\<close> common to \<open>N\<close> and any
+  extension \<open>N @ C\<close>, so it transfers for free via the ALREADY-PROVEN
+  @{thm [source] adm_prefix_agree_eq} — \<open>m_8_5_marked_adm_persist\<close> below makes this
+  precise and closes the \<open>adm\<close> half of R2a UNCONDITIONALLY (no regime hypothesis, no
+  \<open>condV\<close>/\<open>RT_PS\<close> needed).  So R2a's entire remaining open content is the \<open>leR\<close>
+  (\<open>le0\<close>) reachability of \<open>n\<^sub>0\<close> to the GROWING right end, which genuinely changes as
+  \<open>N\<close> grows (the target moves).  Further empirical drill-down (filtering to the
+  ACTUAL keystone regime — \<open>transCondV (M[q])\<close> + the \<open>hp1\<close>/\<open>parR\<close>/\<open>coin\<close>/\<open>jm1pos\<close>
+  hypotheses of @{thm [source] m_8_5_basepoint}, NOT just \<open>condV\<close> of the outer base
+  seed, which the previous round's filtering under-scoped to) shows a clean INDUCTIVE
+  pattern: writing \<open>ok m\<close> for \<open>leR (host_m) 0 n\<^sub>0 (Lng (host_m) - 1)\<close> (\<open>host_m = Y @
+  take m B\<close>), (1) once \<open>ok (m-1)\<close> is FALSE, \<open>ok m\<close> is ALWAYS FALSE too (\<open>0/24\<close> — once
+  broken, reachability never spontaneously recovers); (2) \<open>ok (m-1) \<and> nextrel0
+  host_m (Lng host_{m-1} - 1) (Lng host_m - 1)\<close> (a DIRECT row-0 edge from the OLD
+  last index to the NEW one) \<open>\<Longrightarrow> ok m\<close> with ZERO exceptions (\<open>38/38\<close>) — pure
+  transitivity, formalised generically (regime-independent) as
+  \<open>m_8_5_marked_le0_step\<close> below.  The genuinely OPEN content still not characterised:
+  WHICH fold columns produce such a direct edge (vs. a row-0 parent landing on some
+  EARLIER, possibly-unreachable index) is a fact about the concrete column structure
+  of a genuine \<open>oper\<close>/\<open>Red\<close> period block, not yet derived from \<open>transCondV\<close> et al.
+  (see \<open>python/_keystone_residual_summary.py\<close> for the full empirical record).\<close>
+
+lemma m_8_5_marked_adm_persist:
+  fixes N C :: pairseq and n0 :: nat
+  assumes n0lt: "n0 + 1 < Lng N"
+  shows "adm N n0 = adm (N @ C) n0"
+proof -
+  have agree: "\<And>x. x \<le> Lng N - 1 \<Longrightarrow> N ! x = (N @ C) ! x"
+  proof -
+    fix x assume xle: "x \<le> Lng N - 1"
+    have "x < Lng N" using xle n0lt by linarith
+    thus "N ! x = (N @ C) ! x" by (simp add: nth_append)
+  qed
+  have cN: "Lng N - 1 < Lng N" using n0lt by simp
+  have cNC: "Lng N - 1 < Lng (N @ C)" using n0lt by simp
+  have jc: "n0 + 1 \<le> Lng N - 1" using n0lt by simp
+  show ?thesis using adm_prefix_agree_eq[OF agree cN cNC jc] .
+qed
+
+lemma m_8_5_marked_le0_step:
+  fixes N C :: pairseq and a c d :: nat
+  assumes prevle: "le0 N a c"
+    and cN: "c < Lng N"
+    and edge: "nextrel0 (N @ C) c d"
+  shows "le0 (N @ C) a d"
+proof -
+  have agree: "\<And>x. x \<le> c \<Longrightarrow> N ! x = (N @ C) ! x"
+    using cN by (simp add: nth_append)
+  have cNC: "c < Lng (N @ C)" using cN by simp
+  have rtac: "(nextrel0 N)\<^sup>*\<^sup>* a c" using prevle by (simp add: le0_def)
+  have ac: "a \<le> c" by (rule nextrel0_rtrancl_mono[OF rtac])
+  have transferred: "le0 (N @ C) a c"
+    by (rule le0_prefix_agree[OF agree cN cNC ac order_refl prevle])
+  have rt: "(nextrel0 (N @ C))\<^sup>*\<^sup>* a c" using transferred by (simp add: le0_def)
+  have rt2: "(nextrel0 (N @ C))\<^sup>*\<^sup>* a d"
+    by (rule rtranclp.rtrancl_into_rtrancl[OF rt edge])
+  have aLt: "a < Lng (N @ C)" using ac cNC by linarith
+  have dLt: "d < Lng (N @ C)" using edge by (simp add: nextrel0_def)
+  show ?thesis using rt2 aLt dLt by (simp add: le0_def)
+qed
+
+
 text \<open>§8.5 KEYSTONE TELESCOPE — the GENERIC commutation instantiated concretely at the
   BT/scbSubst level, via the ALREADY-PROVEN @{thm [source] m_8_5_scbSubst_addBT_commute}.
   The SAME per-column rightmost-spine anchoring used by @{thm [source] b3b_rnav_fold_drive}
