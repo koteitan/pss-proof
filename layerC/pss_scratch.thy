@@ -6562,6 +6562,55 @@ next
   finally show ?case .
 qed
 
+text \<open>§8.5 iterate length monotonicity — each condV (kind-1) one-step append strictly
+  extends, so \<open>Lng (M[2]) \<le> Lng (M[qq])\<close> for \<open>qq \<ge> 2\<close>
+  (@{thm [source] condV_oper_Suc_append} + @{thm [source] length_append}).  Gives the
+  \<open>jlt\<close> regime fact (\<open>jm1\<close> stays in the prefix) from the single base \<open>jm1 < Lng (M[2])\<close>.\<close>
+
+lemma m_8_5_Lng_iterate_mono:
+  fixes M :: pairseq and qq :: nat
+  assumes j1: "Lng M - 1 > 0" and e1pos: "entry M 1 (Lng M - 1) > 0"
+    and hp1: "hasParent M 1 (Lng M - 1)" and qq2: "2 \<le> qq"
+  shows "Lng ((M::pairseq)[2]) \<le> Lng ((M::pairseq)[qq])"
+  using qq2
+proof (induction qq rule: nat_induct_at_least)
+  case base
+  show ?case by simp
+next
+  case (Suc p)
+  obtain B where appB: "(M::pairseq)[Suc p] = (M::pairseq)[p] @ B"
+    using condV_oper_Suc_append[OF j1 e1pos hp1] by blast
+  have step: "Lng ((M::pairseq)[p]) \<le> Lng ((M::pairseq)[Suc p])" using appB by simp
+  show ?case using Suc.IH step by linarith
+qed
+
+text \<open>§8.5 value-match from the kernel REGIME — the constancy
+  @{thm [source] m_8_5_entry_jm1_const} with its \<open>stepapp\<close>/\<open>jlt\<close> sides discharged from
+  the descent kernel's own hypotheses: \<open>stepapp\<close> from @{thm [source] condV_oper_Suc_append}
+  (\<open>j1\<close>/\<open>e1pos\<close>/\<open>hp1\<close>) and \<open>jlt\<close> from @{thm [source] m_8_5_Lng_iterate_mono} + the base
+  \<open>jm1 < Lng (M[2])\<close>.  So the surgC value-match \<open>umatch\<close> needs, beyond the keystone, only
+  the kernel regime + the single base index fact \<open>jb\<close> — no new mathematics.\<close>
+
+lemma m_8_5_entry_jm1_const_regime:
+  fixes M :: pairseq and jm1 qq :: nat
+  assumes j1: "Lng M - 1 > 0" and e1pos: "entry M 1 (Lng M - 1) > 0"
+    and hp1: "hasParent M 1 (Lng M - 1)"
+    and jb: "jm1 < Lng ((M::pairseq)[2])"
+    and qq2: "2 \<le> qq"
+  shows "entry ((M::pairseq)[qq]) 1 jm1 = entry ((M::pairseq)[2]) 1 jm1"
+proof -
+  have stepapp: "\<And>p. 2 \<le> p \<Longrightarrow> \<exists>B. (M::pairseq)[Suc p] = (M::pairseq)[p] @ B"
+    using condV_oper_Suc_append[OF j1 e1pos hp1] by blast
+  have jlt: "\<And>p. 2 \<le> p \<Longrightarrow> jm1 < Lng ((M::pairseq)[p])"
+  proof -
+    fix p :: nat assume p2: "2 \<le> p"
+    have "Lng ((M::pairseq)[2]) \<le> Lng ((M::pairseq)[p])"
+      by (rule m_8_5_Lng_iterate_mono[OF j1 e1pos hp1 p2])
+    thus "jm1 < Lng ((M::pairseq)[p])" using jb by linarith
+  qed
+  show ?thesis by (rule m_8_5_entry_jm1_const[OF stepapp jlt qq2])
+qed
+
 text \<open>§8.5 surgC INSTANCE from the keystone — the descent-kernel's surgC body for one
   \<open>(qq,B)\<close>, derived from the whole-period keystone alone.  Assembles the three green
   faces: the §7.4 bridge @{thm [source] Mark_iterate_slice_append}
