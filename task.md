@@ -71,8 +71,10 @@
             - 🚨 R2a leR成分
               - ✅ trunk-stuck(multiT+n0<Pcut)時leR偽を証明〔`m_8_5_marked_requires_last_component`、N上のMark_MarkedB_nestは救済不可〕
               - ✅ trunk-stuck時の代替anchor witness〔`m_8_5_anchor_col_trunkstuck`、branch-local最終P成分PJ上のMark_MarkedB_nest、anchor自体は51/51経験的成立〕
-              - ✅ R2b'+pcutle を単一仮定に縮約〔`m_8_5_anchor_col_trunkstuck_regime`、`Marked_Pred_Adm`+`multi_Marked_last_component`合成でN全体のR2bに帰着→`entry N 0 0 < fst col`一本化〕
-              - 🚨 残=`entry N 0 0 < fst col`をkeystone regimeから導出（79/79経験的成立、未証明）
+              - ✅ R2b'+pcutle を単一仮定に縮約〔`m_8_5_trunkstuck_hyps_of_hasParent0`、`Marked_Pred_Adm`+`multi_Marked_last_component`合成でN全体のR2bに帰着〕
+              - 🚨 `entry N 0 0 < fst col`は反証〔u>0のST_PS(article確認、content.md:1346)で95/245反例、旧79/79はyaBMS縛りのharness artifact〕
+              - ✅ 代替witness `entry N 0 (Pcut N) < fst col`で245/245頑健確認・形式化〔`m_8_5_anchor_col_trunkstuck_regime2`〕
+              - 🚨 残=`entry N 0 (Pcut N) < fst col`をkeystone regimeから導出（未証明）
         - ✅ (op) marked-head 形〔`m_8_5_Mark_headform`(shape+値=entry M 1 m、Marked から)〕
     - ✅ 補題（条件 (V) の下での $\textrm{Joints}$ と $\textrm{FirstNodes}$ と $t_2$ の基本性質）〔`m_8_5_Joints_FirstNodes_basic` parts(1)(2)〕
     - 🚨 補題（条件 (V) の下での各種 scb分解）〔def 内部記号露出要〕

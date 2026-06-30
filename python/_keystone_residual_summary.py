@@ -487,8 +487,196 @@ single end-to-end driver lemma (grepped: zero hits for any of them used as
 `OF` arguments to each other), so this question is open architecture, not a
 one-line gap.
 
+=====================================================================
+ROUND 6 (2026-07-01, this round; layerC/pss_scratch.thy,
+m_8_5_hasParent0_of_pcut_entry_lt / m_8_5_anchor_col_trunkstuck_regime2):
+Round 5's `entry N 0 0 < fst col` REFUTED as a regime fact (not a "didn't get
+to it" gap -- a genuine counterexample); REPLACED by a robust witness
+`entry N 0 (Pcut N) < fst col`, validated 245/245 on the exact adversarial
+sample that refuted the old one.  Two further sub-attempts (the end-to-end
+driver, and the non-trunk-stuck leR case) explored but not closed.
+=====================================================================
+
+ATTEMPT 1 (test Round 5's caveat empirically, per a teammate's request: is
+`entry N 0 0 < fst col` really harness-specific, or does it survive when M[0]
+is allowed to vary?).  First confirmed (`python/_r5_entry00_varied.py`) that
+even REMOVING the artificial `M[0]==(0,0)` restriction from the harness's
+`gen()`, the yaBMS `is_std` oracle STILL only ever accepted `M[0]==(0,0)`
+hosts (51/51) -- i.e. yaBMS's notion of "standard" is narrower than what the
+harness's filter alone would suggest.  Traced this to the ARTICLE ITSELF:
+`tmp/content.md:1346` explicitly states `ST_PS` in the article's formal sense
+is BROADER than the "usual" standard-form notion -- the usual notion
+corresponds to `u = 0` in the `diagSeq u v` base case, and the article
+deliberately generalizes to arbitrary `u`.  So yaBMS validates only the
+"usual" (narrow) sub-case; testing through it was Round 5's blind spot, now
+identified precisely.  Independently confirmed at the `red_model.py` level
+(bypassing yaBMS, using `reduced()` -- the actual `RT_PS`-relevant check):
+REDUCED `M` with `entry M 0 0 != 0` genuinely exist (198 found by direct
+search over small tuples), and in ALL 198, `entry M 0 0 = entry M 1 0`
+exactly (0 mismatches) -- i.e. such `M` opens like `diagSeq u ...`, matching
+the article's own generalization.
+
+ATTEMPT 2 (construct a genuine `u>0` regime-satisfying counterexample).
+`python/_r6_u_nonzero_search.py`: generated REDUCED (via `reduced()`, NOT
+yaBMS) seeds starting `(u,u)` for `u in {1,2,3}`, applied the SAME named
+regime filter as Round 4/5 (`transCondV(Mq)`, `hasParent`, `parR`, `coin`,
+`jm1pos`, trunk-stuck).  RESULT: `entry N 0 0 < fst col` FAILED in 95/245
+trunk-stuck instances (39%) -- e.g. `M=(1,1)(0,0)(1,0)(1,1)(1,0)`, `q=1`,
+`m=1`: `entry N 0 0 = 1 = fst col = 1` (equality, not strict).  This is a
+GENUINE counterexample to Round 5's hypothesis under the article's own
+(broader) domain, not a "ran out of time" gap.  REFUTED ROUTE #16: "the
+trunk-stuck anchor witness's existence argument can use index 0 as the row-0
+parent-existence witness" -- do not re-attempt; index 0 is too far from the
+appended column once `entry _ 0 0` is allowed to be the article's general
+`u > 0`.
+
+ATTEMPT 3 (hand-trace a counterexample to find a working witness).  For
+`M=(1,1)(0,0)(1,0)(1,1)(1,0)`, `q=1`: `Mq=(1,1)(0,0)(1,0)(1,1)`, appended
+block `B=(0,0)(1,0)(1,1)`.  At `m=1` (`Nprev = Mq@[B!0] =
+(1,1)(0,0)(1,0)(1,1)(0,0)`, `col=(1,0)`): `Pcut(Nprev)=4` (the JUST-OPENED
+branch, since `B!0=(0,0)` is itself a fresh reset within the SAME appended
+block -- a multi-branch-opening period, the Round-3 phenomenon recurring one
+level up).  `entry(Nprev,0,Pcut(Nprev)) = entry(Nprev,0,4) = 0 < fst(col) =
+1` -- WORKS, even though `entry(Nprev,0,0) = 1 NOT< 1` fails.  At `m=2`
+(`col=(1,1)`, `fst(col)=1`): `entry(Nprev,0,Lng(Nprev)-1)` (the OLD last
+entry, an alternative "adjacent" witness also tried) `= 1`, ALSO not `< 1` --
+so the "use the immediately preceding entry" idea (a natural-seeming
+alternative) is REFUTED too (route #17: adjacent-predecessor witness).  But
+`entry(Nprev,0,Pcut(Nprev)) = entry(Nprev,0,4) = 0` STILL works (`0 < 1`),
+via a SKIP-edge in `nextrel0` (index 4 reaches index 6 directly, jumping over
+index 5, since `nextrel0`'s "between" condition only requires `>=`, not a
+literal adjacent chain) -- i.e. `Pcut N` (the start of `N`'s CURRENTLY OPEN
+last `P`-component) is the robust witness, not "the nearest" anything.
+
+ATTEMPT 4 (validate `entry N 0 (Pcut N) < fst col` broadly, apples-to-apples
+against the SAME sample that refuted Round 5's hypothesis).
+`python/_r6_pcutwitness_search.py`, identical regime/generation parameters to
+Attempt 2 (`u in {1,2,3}`, `q in {1,2,3,4}`, trunk-stuck, `fst col > 0`
+excluding the unrelated trivial-reset case): `entry N 0 (Pcut N) < fst col`
+held **245/245** (ZERO exceptions) on the EXACT 245 rows where `entry N 0 0 <
+fst col` only held 150/245.  Re-confirmed on a SEPARATE, broader/longer sweep
+(`maxlen<=7`, `u in {0..5}`, `q in {1..5}`, 380s budget): **289/289** (a
+DIFFERENT, larger set of trunk-stuck instances than the apples-to-apples
+245 -- 744 reduced seeds scanned, 567 regime-checked, 289 trunk-stuck rows
+with `fst col>0`), again ZERO exceptions.
+
+FORMALIZED (green, layerC/pss_scratch.thy, this round):
+  m_8_5_hasParent0_of_pcut_entry_lt: N \\in RT_PS, multiT N, entry N 0
+    (Pcut N) < fst col ==> hasParent (N@[col]) 0 (Lng(N@[col])-1).
+    UNCONDITIONAL.  Same existence+uniqueness pattern as Round 5's
+    m_8_5_hasParent0_of_entry0_lt (`m_5_1_parent_exists_1` +
+    `idxsum_parent0_unique`), with `Pcut N` (not `0`) as the witness index;
+    `Pcut N < Lng N` comes from `Pcut_le` (UNCONDITIONAL, just needs
+    `1 < Lng N`, itself from `multiT_imp_Lng_gt1`) -- no NEW base facts
+    needed, just a different witness plugged into the SAME existing engine.
+  m_8_5_anchor_col_trunkstuck_regime2: N \\in RT_PS, multiT N, n0 < Pcut N,
+    entry N 0 (Pcut N) < fst col ==> \\exists sx bx. scb_decomp (Mark N n0)
+    sx (flatBT (transC1 (N@[col]))) bx.  Same assembly as Round 5's
+    m_8_5_anchor_col_trunkstuck_regime (now superseded -- this is the
+    article-domain-robust version), via the unchanged
+    m_8_5_trunkstuck_hyps_of_hasParent0 + m_8_5_anchor_col_trunkstuck.
+  (Round 5's m_8_5_hasParent0_of_entry0_lt / m_8_5_anchor_col_trunkstuck_
+  regime are NOT deleted -- they remain valid implications, just with an
+  unprovable-in-general hypothesis; kept for the record / in case a future
+  caller genuinely has `u=0` pinned down some other way.)
+
+NET this round: the article's own stated generality (`ST_PS` `u>0` broader
+than "usual") is now CONFIRMED to bite at the level of the keystone's own
+hypothesis set, not just an abstract worry -- Round 5's witness was
+fragile, the Pcut(N) witness is robust to it.  The genuinely OPEN residual
+content has NOT shrunk in COUNT (still one named hypothesis,
+`entry N 0 (Pcut N) < fst col`, not yet derived from `transCondV` et al.)
+but has gotten STRICTLY MORE TRUSTWORTHY (245/245 on the harder sample, vs.
+the old one's demonstrated 39% failure rate there).  NOT attempted this
+round: (a) deriving `entry N 0 (Pcut N) < fst col` itself from the regime
+(needs the not-yet-built end-to-end `m_8_5_basepoint`/`m_8_5_deepen_block_
+explicit`/`m_8_5_anchor_fold` driver -- see Round 5's note, still applies
+verbatim); (b) wiring `m_8_5_anchor_col_trunkstuck_regime2` into
+`m_8_5_anchor_fold` via case-split (still only calls `m_8_5_anchor_col`,
+confirmed by grep again this round); (c) the non-trunk-stuck `leR` case of
+R2a (still fully open, `adm` only is closed); (d) R1 (still open, shares R2's
+bottleneck per Round 3).
+
+Re-run instructions for Round 6: python/_r5_entry00_varied.py (yaBMS-vs-
+reduced() M[0] distribution check), python/_r6_u_nonzero_search.py (the
+refuting u>0 search, 245 trunk-stuck rows), python/_r6_pcutwitness_search.py
+(the Pcut(N)-witness confirmation, apples-to-apples against the same rows).
+
 Re-run instructions for Round 5: python/_r4_pcutle_r2bprime.py (the new
 targeted pcutle/R2b' harness, 51 trunk-stuck instances); cross-check via
 python/_marked_last_component_probe.py's R2b/R2c columns (28 more,
 independently coded).
+
+=====================================================================
+ROUND 6b (2026-07-01, same day as Round 6 above; layerC/pss_scratch.thy,
+Shift/oper_Shift/entry00_lt_fstcol_Shift): a SEPARATE pass on the SAME task
+brief (this campaign apparently spans a context-compaction boundary -- this
+pass started without memory of Round 6 above, re-investigated the same
+question, and only discovered Round 6's counterexample/regime2 fix AFTER
+already formalizing a Shift-invariance argument).  Net effect: a genuine,
+narrower-scope, INDEPENDENTLY TRUE side result, now correctly scoped against
+Round 6's findings; does NOT change Round 6's conclusions or supersede
+`m_8_5_anchor_col_trunkstuck_regime2` in any way.
+=====================================================================
+
+WHAT WAS DONE (before discovering Round 6's counterexample): formalized,
+green, that `oper` COMMUTES with `Shift u M = map (lambda p: (fst p+u,snd p+u)) M`
+(uniform translation of BOTH rows by u, distinct from the row-0-only
+`IncrFirst`) PROVIDED `entry M 1 (Lng M - 1) > 0` holds for the OPER
+ARGUMENT `M` ITSELF (not merely some downstream iterate `M[q]`) -- i.e.
+exactly `m_8_5_basepoint`'s literal `cv: transCondV M` hypothesis on the
+keystone's base `M`.  Confirmed empirically with ZERO exceptions (200/200
+direct + 58968/58968 brute-force-filtered, python/_r6_shift_invariance.py;
+an UNRESTRICTED version without the e1pos-on-M restriction found 9828/66339
+genuine commutation failures, root-caused to `idx1` flipping under a
+positive shift when `entry M 1 (Lng M-1) = 0`).  Formalized: `Shift`,
+`Lng_Shift`, `entry_Shift`, `nextrel0_Shift`, `le0_Shift`, `nextrel1_Shift`,
+`le1_Shift`, `nextR_Shift`, `leR_Shift`, `hasParent_Shift`, `parent_Shift`,
+`Pred_Shift`, `idx1_Shift` (foundational relational layer, ALL
+unconditional), then `nextR_parent_witness` + `oper_Shift` (the main
+`(Shift u M)[n] = Shift u (M[n])` fact, reusing the ALREADY-PROVEN
+`m_8_4_oper_genform` for the substantive case rather than hand-unfolding
+`oper_def`), then `seg_Shift`/`append_Shift`/`take_Shift`/
+`entry00_lt_fstcol_Shift` (closing arithmetic corollaries).  All green,
+0 sorry/oops, no circular citation (only external cite: the already-proven
+`m_8_4_oper_genform`).
+
+THE CAVEAT (discovered only after writing the above, by reading task.md and
+re-reading `_keystone_residual_summary.py` itself more carefully -- a
+process/workflow lesson, not a math one): Round 6's counterexample search
+(`_r6_u_nonzero_search.py`) used the SAME regime filter as every other
+python harness in this campaign, `transCondV (M[q])` -- condition (V)
+checked on the ITERATE `M[q]`, NOT on the base `M` directly.  `oper_Shift`'s
+hypothesis is about `M` directly.  These are DIFFERENT conditions (`oper`'s
+branch choice depends only on the FIXED base `M`'s own last-column row-1
+entry -- once `oper(M, q)` is evaluated for varying `q`, `M` itself is the
+literal first argument every time, so `entry M 1 (Lng M - 1)` is the SAME
+value for every `q`; it can be `0` even when `M[q]` happens to satisfy
+condV).  So `oper_Shift`'s 0/58968 clean result and Round 6's 95/245
+counterexample rate are NOT in tension -- they characterize DIFFERENT
+(overlapping but distinct) subsets of the keystone's candidate hosts.  This
+DOES, however, surface a genuine OPEN QUESTION not previously flagged: is
+`m_8_5_basepoint`'s `M` (required to satisfy `transCondV M` directly, by
+the literal hypothesis list of `m_8_5_basepoint` / `m_8_5_TransCondV_
+descend_kernel`) actually how the keystone is invoked in the real
+termination argument, or does the real usage only ever have `transCondV`
+available on some ITERATE `M[q]` (in which case `m_8_5_basepoint`'s own
+domain may need re-examination, separately from the entry-N-0-0-vs-Pcut-N
+question)?  NOT investigated this round; flagged for whoever next touches
+`m_8_5_basepoint`'s call sites.
+
+PROCESS LESSON (for future rounds, important): this session evidently spans
+a context-compaction boundary within a SINGLE longer-running task attempt --
+the task prompt this pass received described "Round 5" as the most recent
+completed state, but the actual `layerC/pss_scratch.thy` / task.md / this
+file on disk already contained a FULLY-WORKED "Round 6" (the regime2 fix)
+that the prompt's context did not mention.  ALWAYS re-read this entire
+residual-summary file (not just skim for the highest round number expected
+from the task prompt) AND `git status`/`git diff` for uncommitted changes
+in the target worktree BEFORE concluding what the "current frontier" is --
+the task prompt itself can be stale relative to the worktree's actual disk
+state when a session has been long-running or compacted.
+
+Re-run instructions for Round 6b: python/_r6_shift_invariance.py (the
+e1pos-restricted oper-commute confirmation, 200+58968 cases, 0 failures).
 """
