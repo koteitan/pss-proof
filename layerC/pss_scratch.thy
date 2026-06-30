@@ -6476,4 +6476,23 @@ proof -
   thus ?thesis by (rule principal_reconstruct)
 qed
 
+text \<open>§8.5 marked-head FORM — the full single-outer-principal shape of the marked
+  value WITH its pinned outer value \<open>entry M 1 m\<close>.  From @{thm [source] Mark_leftend_form}
+  (\<open>Mark M m = 0\<^sub>B \<or> Mark M m = D\<^bsub>entry M 1 m\<^esub>(\<dots>)\<close>) under \<open>Mark M m \<noteq> 0\<^sub>B\<close>.  Strengthens
+  the op shape @{thm [source] m_8_5_op_of_Marked} by FIXING the outer value, which pins
+  the descent-kernel surgC's \<open>Dpt u\<close> head to \<open>u = entry (M[Suc q]) 1 jm1\<close> — the
+  value-match closing the last side of the surgC\<open>\<leftarrow>\<close>keystone wiring.\<close>
+
+lemma m_8_5_Mark_headform:
+  fixes M :: pairseq and m :: nat
+  assumes MR: "M \<in> RT_PS" and mk: "(M, m) \<in> Marked" and mne: "Mark M m \<noteq> 0\<^sub>B"
+  shows "Mark M m = Dpt (enat (entry M 1 m)) (bpHeadT (Mark M m))"
+proof -
+  have "Mark M m = 0\<^sub>B \<or> (\<exists>t. Mark M m = Dpt (enat (entry M 1 m)) t)"
+    using Mark_leftend_form mk MR by blast
+  then obtain t where vt: "Mark M m = Dpt (enat (entry M 1 m)) t" using mne by blast
+  have "bpHeadT (Mark M m) = t" using vt by simp
+  thus ?thesis using vt by simp
+qed
+
 end
