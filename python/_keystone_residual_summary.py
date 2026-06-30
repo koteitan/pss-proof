@@ -461,6 +461,32 @@ the concrete per-q host `Mq` used throughout this file's surgery machinery
 was not fully re-derived from first principles within this round's budget;
 attempting that derivation is the natural next step, NOT a refuted route).
 
+IMPORTANT CAVEAT found while scoping the further-closure attempt (read before
+trying to discharge `entry N 0 0 < fst col` "for free"): `entry N 0 0 = 0` is
+NOT a general ST_PS fact.  `ST_PS`'s base case is `diagSeq a b \\in ST_PS` for
+ANY `a <= b` (`diagSeq a b ! 0 = (a,a)`, pss_defs.thy:347-348), so a base seed
+can legitimately start with `entry _ 0 0 = a > 0`; `oper`/`M[n]` then PRESERVES
+that same first entry verbatim (it only ever touches/extends the SUFFIX from
+the row-i1 parent onward).  The python harness's `gen()` artificially restricts
+to `M[0] == (0,0)` seeds only (a generator convenience, not a derived fact) --
+so the "entry N 0 0 = 0 held in ALL 42 sampled hosts" empirical claim above is
+true ONLY within that artificially-narrowed sample, NOT a property of ST_PS in
+general.  Any future attempt to discharge `entry N 0 0 < fst col` unconditionally
+must either (a) thread an explicit base-seed hypothesis `entry M_base 0 0 = 0`
+(or more generally `entry M_base 0 0 < fst col`, which is all that is actually
+needed) through from wherever the keystone's eventual q-tower driver fixes its
+base seed, or (b) find that the keystone's true base is never a raw `diagSeq`
+with `a>0` for unrelated reasons.  Neither was investigated this round -- this
+is flagged so the next round does not waste a re-attempt assuming the `0` is
+free.  Also unresolved (separately): which "M" `m_8_5_basepoint`/`m_8_5_deepen_
+block_explicit`'s shared variable name actually binds to (the raw base seed vs
+`Mq`) is not yet pinned down anywhere in `layerC/pss_scratch.thy` -- none of
+`m_8_5_basepoint`, `m_8_5_deepen_block_explicit`, `m_8_5_anchor_fold`,
+`m_8_5_fold_C_commute`, `m_8_5_keystone_allq` are yet jointly instantiated by a
+single end-to-end driver lemma (grepped: zero hits for any of them used as
+`OF` arguments to each other), so this question is open architecture, not a
+one-line gap.
+
 Re-run instructions for Round 5: python/_r4_pcutle_r2bprime.py (the new
 targeted pcutle/R2b' harness, 51 trunk-stuck instances); cross-check via
 python/_marked_last_component_probe.py's R2b/R2c columns (28 more,
