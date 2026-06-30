@@ -6514,6 +6514,28 @@ proof -
   thus ?thesis by (simp add: rnsub_RightNodes_empty_iff)
 qed
 
+text \<open>§8.5 value-match core — \<open>entry\<close> at a PREFIX index is unchanged by appending.
+  Since \<open>entry M i j = (\<dots>) (M ! j)\<close> and \<open>(A \<frown> B) ! j = A ! j\<close> for \<open>j < Lng A\<close>
+  (@{thm [source] nth_append}), the outer value read at \<open>jm1\<close> is iterate-stable across
+  the period extension \<open>M[Suc qq] = M[qq] \<frown> B\<close>.\<close>
+
+lemma m_8_5_entry_append_prefix:
+  assumes "j < Lng A"
+  shows "entry (A @ B) i j = entry A i j"
+  using assms by (simp add: entry_def nth_append)
+
+text \<open>§8.5 value-match per-step — the marked-head outer value \<open>entry (M[\<dots>]) 1 jm1\<close> is
+  the SAME at \<open>M[Suc qq]\<close> and \<open>M[qq]\<close>, whenever \<open>jm1\<close> sits in the \<open>M[qq]\<close>-prefix
+  (\<open>jm1 < Lng (M[qq])\<close>).  Iterating this from the base pins the kernel surgC's \<open>u\<close>
+  to the constant \<open>entry (M[2]) 1 jm1\<close> — discharging the value-match side.\<close>
+
+lemma m_8_5_entry_jm1_step:
+  fixes M B :: pairseq and qq jm1 :: nat
+  assumes app: "(M::pairseq)[Suc qq] = (M::pairseq)[qq] @ B"
+    and jlt: "jm1 < Lng ((M::pairseq)[qq])"
+  shows "entry ((M::pairseq)[Suc qq]) 1 jm1 = entry ((M::pairseq)[qq]) 1 jm1"
+  using app jlt by (simp add: m_8_5_entry_append_prefix)
+
 text \<open>§8.5 surgC INSTANCE from the keystone — the descent-kernel's surgC body for one
   \<open>(qq,B)\<close>, derived from the whole-period keystone alone.  Assembles the three green
   faces: the §7.4 bridge @{thm [source] Mark_iterate_slice_append}
