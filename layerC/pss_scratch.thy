@@ -6897,6 +6897,91 @@ proof -
 qed
 
 
+text \<open>§8.5 R2a TRUNK-STUCK — ROUND 6: the Round-5 hypothesis \<open>entry N 0 0 < fst col\<close>
+  (\<open>m_8_5_anchor_col_trunkstuck_regime\<close>, above) is REFUTED as a regime-derivable fact: a
+  dedicated search (\<open>python/_r6_u_nonzero_search.py\<close>) over genuinely REDUCED (not merely
+  \<open>is_std\<close>-validated — see the caveat below) hosts with the SAME named regime
+  (\<open>transCondV\<close>/\<open>hp1\<close>/\<open>parR\<close>/\<open>coin\<close>/\<open>jm1pos\<close>/trunk-stuck) found \<open>95/245\<close> COUNTEREXAMPLES
+  (e.g. \<open>M=(1,1)(0,0)(1,0)(1,1)(1,0)\<close>, \<open>q=1\<close>, \<open>m=1\<close>: \<open>entry N 0 0 = 1 = fst col\<close>, not strict).
+  ROOT CAUSE (article-confirmed, not a transcription artifact): \<open>tmp/content.md:1346\<close>
+  explicitly states \<open>ST_PS\<close> in its formal sense is BROADER than the "usual" standard-form
+  notion (which corresponds to \<open>u = 0\<close> in the \<open>diagSeq u v\<close> base case) — i.e. genuine
+  \<open>ST_PS\<close> members can have \<open>entry _ 0 0 = u > 0\<close>, confirmed independently: REDUCED \<open>M\<close>
+  (\<open>RT_PS\<close>) with \<open>entry M 0 0 \<noteq> 0\<close> exist (\<open>198\<close> found by direct search) and ALWAYS have
+  \<open>entry M 0 0 = entry M 1 0\<close> exactly (\<open>0\<close> mismatches /\<open>198\<close>) — i.e. \<open>M\<close> opens like
+  \<open>diagSeq u \<dots>\<close>.  So \<open>entry N 0 0\<close> is NOT free to assume small; the prior round's "79/79"
+  empirical confirmation was an artifact of testing only through the EXTERNAL yaBMS
+  oracle, which (independently confirmed this round, e.g. \<open>bms -s "(1,1)"\<close> = \<open>0\<close>) only
+  ever validates \<open>u = 0\<close> hosts as "standard" — narrower than the article's own \<open>ST_PS\<close>.
+
+  FIX: hand-tracing a refuting instance found that \<open>Pcut N\<close> (the START of \<open>N\<close>'s own
+  CURRENTLY OPEN last \<open>P\<close>-component) is a ROBUST replacement witness for index \<open>0\<close>: at the
+  counterexample above, \<open>entry N 0 (Pcut N) = 0 < fst col = 1\<close> even though
+  \<open>entry N 0 0 = 1 \<not>< 1\<close>.  The SAME existence+uniqueness pattern used for
+  \<open>m_8_5_hasParent0_of_entry0_lt\<close> applies verbatim with \<open>Pcut N\<close> in place of \<open>0\<close> as the
+  witness index (\<open>Pcut N < Lng N \<le> Lng(N@[col]) - 1\<close>, via @{thm [source] Pcut_le} — no
+  \<open>multiT\<close>-specific machinery needed beyond what already establishes \<open>0 < Pcut N\<close>).
+  RE-VALIDATED on the EXACT same apples-to-apples sample that refuted the index-\<open>0\<close> version
+  (\<open>python/_r6_pcutwitness_search.py\<close>, \<open>245\<close> trunk-stuck \<open>u>0\<close> instances, \<open>q\<in>\{1,2,3,4\}\<close>):
+  \<open>entry N 0 (Pcut N) < fst col\<close> held \<open>245/245\<close> (ZERO exceptions), vs. \<open>150/245\<close> for the
+  index-\<open>0\<close> version on the IDENTICAL sample.  This REPLACES (does not merely supplement)
+  the Round-5 hypothesis as the right primitive: \<open>m_8_5_anchor_col_trunkstuck_regime2\<close>
+  below is the regime-robust analogue of \<open>m_8_5_anchor_col_trunkstuck_regime\<close>.  As with
+  Round 5, this is still a NAMED hypothesis (not yet derived from \<open>transCondV\<close> et al. — that
+  derivation needs the not-yet-built end-to-end \<open>m_8_5_anchor_fold\<close> driver, see the residual
+  summary), but it is the EMPIRICALLY ROBUST one, validated across the article's actual
+  (broader-than-\<open>u=0\<close>) \<open>ST_PS\<close> domain, not merely the yaBMS-validated narrow sub-case.\<close>
+
+lemma m_8_5_hasParent0_of_pcut_entry_lt:
+  fixes N :: pairseq and col :: "nat \<times> nat"
+  assumes NR: "N \<in> RT_PS" and muN: "multiT N"
+    and strict: "entry N 0 (Pcut N) < fst col"
+  shows "hasParent (N @ [col]) 0 (Lng (N @ [col]) - 1)"
+proof -
+  have NT: "N \<in> T_PS" using NR by (simp add: RT_PS_def)
+  have Nne: "N \<noteq> []" using NT by (simp add: T_PS_def)
+  have L: "1 < Lng N" by (rule multiT_imp_Lng_gt1[OF NT muN])
+  have cut: "0 < Pcut N \<and> Pcut N \<le> Lng N - 1" using Pcut_le[OF L] by simp
+  have NcurT: "N @ [col] \<in> T_PS" using Nne by (simp add: T_PS_def)
+  have LngNcur: "Lng (N @ [col]) = Lng N + 1" by simp
+  have j0lt: "Pcut N < Lng (N @ [col]) - 1" using cut L LngNcur by linarith
+  have j1L: "Lng (N @ [col]) - 1 < Lng (N @ [col])" using j0lt by simp
+  have cutLt: "Pcut N < Lng N" using cut L by linarith
+  have idxP: "(N @ [col]) ! (Pcut N) = N ! (Pcut N)" using cutLt by (simp add: nth_append)
+  have e0a: "entry (N @ [col]) 0 (Pcut N) = entry N 0 (Pcut N)" using idxP by (simp add: entry_def)
+  have idxlast: "(N @ [col]) ! (Lng (N @ [col]) - 1) = col" by (simp add: nth_append)
+  have e0b: "entry (N @ [col]) 0 (Lng (N @ [col]) - 1) = fst col" using idxlast by (simp add: entry_def)
+  have strict': "entry (N @ [col]) 0 (Pcut N) < entry (N @ [col]) 0 (Lng (N @ [col]) - 1)"
+    using strict e0a e0b by simp
+  obtain j where "Pcut N \<le> j \<and> j < Lng (N @ [col]) - 1 \<and> nextR (N @ [col]) 0 j (Lng (N @ [col]) - 1)"
+    using m_5_1_parent_exists_1[OF NcurT j0lt j1L strict'] by blast
+  hence pP: "nextR (N @ [col]) 0 j (Lng (N @ [col]) - 1)" by simp
+  have "\<exists>!q. nextR (N @ [col]) 0 q (Lng (N @ [col]) - 1)"
+    using pP idxsum_parent0_unique by metis
+  thus ?thesis unfolding hasParent_def by simp
+qed
+
+lemma m_8_5_anchor_col_trunkstuck_regime2:
+  fixes N :: pairseq and col :: "nat \<times> nat" and n0 :: nat
+  assumes NR: "N \<in> RT_PS"
+    and muN: "multiT N"
+    and stuck: "n0 < Pcut N"
+    and strict: "entry N 0 (Pcut N) < fst col"
+  shows "\<exists>sx bx. scb_decomp (Mark N n0) sx (flatBT (transC1 (N @ [col]))) bx"
+proof -
+  have NT: "N \<in> T_PS" using NR by (simp add: RT_PS_def)
+  have Nne: "N \<noteq> []" using NT by (simp add: T_PS_def)
+  have hp0: "hasParent (N @ [col]) 0 (Lng (N @ [col]) - 1)"
+    by (rule m_8_5_hasParent0_of_pcut_entry_lt[OF NR muN strict])
+  have mJpcut: "(drop (Pcut N) N, transJm1 (N @ [col]) - Pcut N) \<in> Marked"
+    by (rule m_8_5_trunkstuck_hyps_of_hasParent0(2)[OF NT muN Nne hp0])
+  have pcutle: "Pcut N \<le> transJm1 (N @ [col])"
+    by (rule m_8_5_trunkstuck_hyps_of_hasParent0(1)[OF NT muN Nne hp0])
+  show ?thesis
+    by (rule m_8_5_anchor_col_trunkstuck[OF NR muN stuck mJpcut pcutle])
+qed
+
+
 text \<open>§8.5 KEYSTONE TELESCOPE — the GENERIC commutation instantiated concretely at the
   BT/scbSubst level, via the ALREADY-PROVEN @{thm [source] m_8_5_scbSubst_addBT_commute}.
   The SAME per-column rightmost-spine anchoring used by @{thm [source] b3b_rnav_fold_drive}
