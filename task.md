@@ -67,6 +67,8 @@
           - ✅ telescope（∀q→base q=2(R1)+fold-C可換(R2)）〔`m_8_5_keystone_allq`〕
           - 🚨 R1: base q=2 単体〔transJm1定数化chain不成立確認(refuted route14,q=2非特異)、R2と同じanchor律速〕
           - 🚨 R2: fold-C可換〔anchor→Marked nesting(R2a/R2b/R2c)に還元済(`m_8_5_anchor_col`/`_fold`)〕
+            - ✅ Mark-level netfold橋〔`m_8_5_Mark_netfold_condV`、scbSubst per-column再帰(`m_8_5_Mark_scbSubst_step`)を`fold`に接続〕
+            - 🚨 anchor chainとnetfold橋の配線（hostMk引数・q-level driver）
             - ✅ R2a adm成分〔`m_8_5_marked_adm_persist`、prefix不変・無条件〕
             - 🚨 R2a leR成分
               - ✅ trunk-stuck(multiT+n0<Pcut)時leR偽を証明〔`m_8_5_marked_requires_last_component`、N上のMark_MarkedB_nestは救済不可〕
