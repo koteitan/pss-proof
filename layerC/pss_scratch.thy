@@ -6317,6 +6317,174 @@ lemma bpHeadT_rnav_Dpt: "bpHeadT (Dpt (enat v) b) = rnav (Dpt (enat v) b)"
   by (rule bpHeadT_eq_rnav) simp
 
 
+text \<open>§8.5 KEYSTONE TELESCOPE (new, this round) — the \<open>\<forall>q\<close> keystone family reduces
+  mechanically to a SINGLE base instance plus a GENERIC one-period commutation, by
+  induction on the outer tower level.  Empirical motivation
+  (\<open>python/_rnav_descend3.py\<close>): writing \<open>z q = rnav (Mark (M[q]) jm1)\<close>
+  (\<open>= bpHeadT (Mark (M[q]) jm1)\<close>, since the mark is always single-outer-principal —
+  @{thm [source] bpHeadT_eq_rnav}), the per-period recurrence \<open>z (Suc q) = F (z q)\<close>
+  (\<open>F\<close> = the period column-fold, @{thm [source] m_8_5_fold_of_colstep}) was tested on 8
+  seeds across \<open>q=2..7\<close>: in EVERY seed with \<open>condV M\<close> true, \<open>z (Suc q) = C (z q)\<close> holds
+  with \<open>C\<close> a SINGLE FIXED (q-INDEPENDENT) wrap — the SAME \<open>(t\<^sub>2,v)\<close> pinned at \<open>q=2\<close> keep
+  working at \<open>q=3,4,5,6,7\<close> without re-derivation.  The one seed with \<open>condV M = False\<close> is
+  the one case the simple law failed on — consistent with the kernel's own \<open>condV\<close> scoping
+  (NOT a new counterexample to the keystone, which is only claimed under \<open>condV\<close>).  This
+  matches and sharpens the file's existing "cores are q-fixed" finding (REFUTED-route-11
+  note): the q-dependence is ENTIRELY captured by iterating the SAME \<open>C\<close>, i.e.
+  \<open>z q = (C^^(q-2)) (z 2)\<close>.  The two lemmas below formalise the REDUCTION this enables
+  (pure function-iteration algebra, independent of the pair-sequence semantics): given
+  the period-fold \<open>F\<close> commutes with \<open>C\<close> on the \<open>C\<close>-orbit of the base value, AND the
+  keystone holds at the base level alone, it holds at EVERY level.  This converts the
+  previously flat "\<open>\<forall>q\<close>, 47/47 empirical, not mechanically reducible" obligation into TWO
+  strictly smaller named residuals: (1) the SINGLE base instance \<open>q=2\<close> (\<open>F z\<^sub>0 = C z\<^sub>0\<close>);
+  (2) the GENERIC one-period commutation \<open>F (C w) = C (F w)\<close> for \<open>w\<close> on the orbit — which
+  \<open>m_8_5_fold_C_commute\<close> below shows follows from the ALREADY-PROVEN
+  @{thm [source] m_8_5_scbSubst_addBT_commute} given the SAME per-column rightmost-spine
+  anchoring data the existing \<open>b3b_rnav_fold_drive\<close>/\<open>b3b_spineLeaf_fold_drive\<close> engines
+  already require (the depth ladder, B3a) — no NEW open mathematics beyond that anchoring
+  + the base instance.\<close>
+
+lemma m_8_5_funpow_Inv:
+  fixes C :: "'a \<Rightarrow> 'a" and Inv :: "'a \<Rightarrow> bool" and z0 :: 'a
+  assumes z0inv: "Inv z0" and Cinv: "\<And>z. Inv z \<Longrightarrow> Inv (C z)"
+  shows "Inv ((C ^^ n) z0)"
+proof (induction n)
+  case 0 thus ?case using z0inv by simp
+next
+  case (Suc n) thus ?case using Cinv by simp
+qed
+
+lemma m_8_5_keystone_telescope:
+  fixes F C :: "'a \<Rightarrow> 'a" and z0 :: 'a and Inv :: "'a \<Rightarrow> bool"
+  assumes base: "F z0 = C z0"
+    and z0inv: "Inv z0"
+    and Cinv: "\<And>z. Inv z \<Longrightarrow> Inv (C z)"
+    and commute: "\<And>z. Inv z \<Longrightarrow> F (C z) = C (F z)"
+  shows "F ((C ^^ n) z0) = C ((C ^^ n) z0)"
+proof (induction n)
+  case 0 thus ?case using base by simp
+next
+  case (Suc n)
+  have invn: "Inv ((C ^^ n) z0)"
+  proof (induction n)
+    case 0 thus ?case by (simp add: z0inv)
+  next
+    case (Suc n) thus ?case by (simp add: Cinv)
+  qed
+  have step: "(C ^^ Suc n) z0 = C ((C ^^ n) z0)" by simp
+  have "F ((C ^^ Suc n) z0) = F (C ((C ^^ n) z0))" using step by simp
+  also have "\<dots> = C (F ((C ^^ n) z0))" by (rule commute[OF invn])
+  also have "\<dots> = C (C ((C ^^ n) z0))" using Suc.IH by simp
+  also have "\<dots> = C ((C ^^ Suc n) z0)" using step by simp
+  finally show ?case .
+qed
+
+text \<open>§8.5 KEYSTONE TELESCOPE, recursion form — the most directly usable form: a
+  sequence \<open>z\<close> defined by the GENUINE per-period recursion \<open>z (Suc n) = F (z n)\<close>
+  (the real Mark-tower step) coincides with the \<open>C\<close>-orbit \<open>(C^^n) (z 0)\<close>, given only the
+  base instance and the generic commutation.  Immediate corollary
+  \<open>m_8_5_keystone_allq\<close> below then gives the keystone \<open>F (z n) = C (z n)\<close> at
+  EVERY \<open>n\<close>, not just the base.\<close>
+
+lemma m_8_5_keystone_recursion:
+  fixes F C :: "'a \<Rightarrow> 'a" and z :: "nat \<Rightarrow> 'a" and Inv :: "'a \<Rightarrow> bool"
+  assumes zrec: "\<And>n. z (Suc n) = F (z n)"
+    and base: "F (z 0) = C (z 0)"
+    and z0inv: "Inv (z 0)"
+    and Cinv: "\<And>w. Inv w \<Longrightarrow> Inv (C w)"
+    and commute: "\<And>w. Inv w \<Longrightarrow> F (C w) = C (F w)"
+  shows "z n = (C ^^ n) (z 0)"
+proof (induction n)
+  case 0 thus ?case by simp
+next
+  case (Suc n)
+  have tel: "F ((C ^^ n) (z 0)) = C ((C ^^ n) (z 0))"
+    using base z0inv Cinv commute by (rule m_8_5_keystone_telescope)
+  have "z (Suc n) = F (z n)" by (rule zrec)
+  also have "\<dots> = F ((C ^^ n) (z 0))" using Suc.IH by simp
+  also have "\<dots> = C ((C ^^ n) (z 0))" by (rule tel)
+  also have "\<dots> = (C ^^ Suc n) (z 0)" by simp
+  finally show ?case .
+qed
+
+lemma m_8_5_keystone_allq:
+  fixes F C :: "'a \<Rightarrow> 'a" and z :: "nat \<Rightarrow> 'a" and Inv :: "'a \<Rightarrow> bool"
+  assumes zrec: "\<And>n. z (Suc n) = F (z n)"
+    and base: "F (z 0) = C (z 0)"
+    and z0inv: "Inv (z 0)"
+    and Cinv: "\<And>w. Inv w \<Longrightarrow> Inv (C w)"
+    and commute: "\<And>w. Inv w \<Longrightarrow> F (C w) = C (F w)"
+  shows "F (z n) = C (z n)"
+proof -
+  have zn: "z n = (C ^^ n) (z 0)"
+    using zrec base z0inv Cinv commute by (rule m_8_5_keystone_recursion)
+  have "F (z n) = F ((C ^^ n) (z 0))" using zn by simp
+  also have "\<dots> = C ((C ^^ n) (z 0))"
+    using base z0inv Cinv commute by (rule m_8_5_keystone_telescope)
+  also have "\<dots> = C (z n)" using zn by simp
+  finally show ?thesis .
+qed
+
+text \<open>§8.5 KEYSTONE TELESCOPE — the GENERIC commutation instantiated concretely at the
+  BT/scbSubst level, via the ALREADY-PROVEN @{thm [source] m_8_5_scbSubst_addBT_commute}.
+  The SAME per-column rightmost-spine anchoring used by @{thm [source] b3b_rnav_fold_drive}
+  (\<open>scb_decomp\<close> of the running fold accumulator at \<open>c\<^sub>1 m\<close> — a WEAKER hypothesis than the
+  full \<open>rspine_r\<close> depth chain those engines assume) is enough: each column's \<open>scbSubst\<close>
+  commutes past the FIXED outer wrap \<open>t\<^sub>2 +\<^sub>B D\<^bsub>vm1\<^esub>(\<cdot>)\<close> (\<open>= C\<close>, @{thm [source]
+  m_8_5_C_body}) one column at a time, so the WHOLE period fold does too.  This is new
+  machinery (the existing engines only push \<open>rnav\<close>/\<open>spineLeaf\<close> THROUGH the fold; this
+  pushes the wrap \<open>C\<close> itself through), discharging the \<open>commute\<close> hypothesis of
+  @{thm [source] m_8_5_keystone_allq} down to exactly the depth-ladder-style anchoring
+  already acknowledged as open (B3a) — no further new mathematics.\<close>
+
+lemma m_8_5_fold_C_commute:
+  fixes c1 c2 :: "nat \<Rightarrow> BT" and acc0 t2 :: BT and w vm1 :: nat and C :: "BT \<Rightarrow> BT"
+    and op :: "nat \<Rightarrow> BT \<Rightarrow> BT"
+  defines "op \<equiv> (\<lambda>m t. scbSubst (c1 m) (c2 m) t)"
+  assumes anchor: "\<And>m. m < w \<Longrightarrow>
+                     \<exists>sx bx. scb_decomp (fold op [0..<m] acc0) sx (flatBT (c1 m)) bx"
+    and nz: "\<And>m. m < w \<Longrightarrow> fold op [0..<m] acc0 \<noteq> Trm []"
+    and pt2: "\<And>m. m < w \<Longrightarrow> isPTB_str (flatBT (c2 m))"
+    and prene: "untrm t2 \<noteq> []"
+    and Cdef: "\<And>z. C z = t2 +\<^sub>B Dpt (enat vm1) z"
+  shows "fold op [0..<w] (C acc0) = C (fold op [0..<w] acc0)"
+proof -
+  have gen: "\<And>n. n \<le> w \<Longrightarrow> fold op [0..<n] (C acc0) = C (fold op [0..<n] acc0)"
+  proof -
+    fix n
+    show "n \<le> w \<Longrightarrow> fold op [0..<n] (C acc0) = C (fold op [0..<n] acc0)"
+    proof (induction n)
+      case 0 thus ?case by simp
+    next
+      case (Suc n)
+      have nlew: "n \<le> w" using Suc.prems by simp
+      have nw: "n < w" using Suc.prems by simp
+      have foldA: "fold op [0..<Suc n] (C acc0) = op n (fold op [0..<n] (C acc0))"
+        by (simp add: upt_Suc_append)
+      have foldB: "fold op [0..<Suc n] acc0 = op n (fold op [0..<n] acc0)"
+        by (simp add: upt_Suc_append)
+      have IH: "fold op [0..<n] (C acc0) = C (fold op [0..<n] acc0)" by (rule Suc.IH[OF nlew])
+      have opn: "op n = (\<lambda>t. scbSubst (c1 n) (c2 n) t)" by (simp add: op_def)
+      obtain sx bx where dx: "scb_decomp (fold op [0..<n] acc0) sx (flatBT (c1 n)) bx"
+        using anchor[OF nw] by blast
+      have comm: "op n (C (fold op [0..<n] acc0)) = C (op n (fold op [0..<n] acc0))"
+      proof -
+        have "scbSubst (c1 n) (c2 n) (t2 +\<^sub>B Dpt (enat vm1) (fold op [0..<n] acc0))
+                = t2 +\<^sub>B Dpt (enat vm1) (scbSubst (c1 n) (c2 n) (fold op [0..<n] acc0))"
+          by (rule m_8_5_scbSubst_addBT_commute[OF dx nz[OF nw] pt2[OF nw] prene])
+        thus ?thesis using opn Cdef by simp
+      qed
+      have "fold op [0..<Suc n] (C acc0) = op n (fold op [0..<n] (C acc0))" using foldA by simp
+      also have "\<dots> = op n (C (fold op [0..<n] acc0))" using IH by simp
+      also have "\<dots> = C (op n (fold op [0..<n] acc0))" by (rule comm)
+      also have "\<dots> = C (fold op [0..<Suc n] acc0)" using foldB by simp
+      finally show ?case .
+    qed
+  qed
+  show ?thesis using gen[of w] by simp
+qed
+
+
 text \<open>§8.5 keystone anchor (DEPTH face) — the C-wrap is undone by EXACTLY ONE rnav step.
   With the otasm-confirmed clean tower \<open>C z = (D00,D00) +\<^sub>B Dpt 0 z\<close> (the §8.5
   @{thm [source] m_8_5_C_body} shape, \<open>t2 = (D00,D00)\<close>, \<open>vm1 = 0\<close>), \<open>rnav (C z) = z\<close>.
