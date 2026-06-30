@@ -5629,6 +5629,100 @@ proof -
 qed
 
 
+text \<open>§8.5 ROUND 6b (B) -- the MARK-LEVEL netfold instantiation of
+  @{thm [source] m_8_5_fold_of_colstep}, promised but never written by the
+  comment above (the file's grep-able state before this addition: \<open>f =
+  Trans\<close> was instantiated as @{thm [source] m_8_5_Trans_netfold_surgery} /
+  @{thm [source] m_8_5_Trans_netfold_condV}, but \<open>f = \<lambda>M. Mark M n0\<close> was not
+  -- confirmed by grep, zero hits for any concrete Mark-level netfold lemma
+  anywhere in this file).  This is the MISSING BRIDGE connecting the
+  anchor chain (\<open>m_8_5_anchor_col\<close> / \<open>_fold\<close> / \<open>_trunkstuck_regime2\<close>, defined
+  LATER in this file -- which establish \<open>scb_decomp\<close>/\<open>MarkedB\<close> facts about
+  \<open>Mark (host) n0\<close>) to the CONCRETE per-column Mark recursion
+  (@{thm [source] m_8_5_Mark_scbSubst_step}) and hence, via
+  @{thm [source] m_8_5_fold_of_colstep}, to a genuine \<open>fold\<close>-level identity
+  for \<open>Mark (Y @ B) n0\<close> -- the SAME \<open>op\<close> shape (\<open>scbSubst (transC1 host_m)
+  (transC2 host_m)\<close>) that \<open>m_8_5_anchor_fold\<close> / \<open>m_8_5_fold_C_commute\<close>
+  (also defined LATER) already use for their abstract \<open>fold\<close>.  The per-column
+  hypotheses (\<open>hostR\<close>/\<open>hostP\<close>/\<open>hostJ1\<close>/\<open>hostT1\<close>) mirror @{thm [source]
+  m_8_5_Trans_netfold_condV} EXACTLY (same membership facts, reusable
+  verbatim from a \<open>Y@B \<in> ST_PS\<close> source via @{thm [source]
+  m_8_5_fullprefix_RT}/\<open>_PT\<close> as in @{thm [source] m_8_5_Trans_netfold_surgery}
+  -- not re-derived here to keep this lemma's hypothesis list directly
+  comparable); the NEW per-column content is \<open>hostN0\<close> (\<open>n0\<close> stays an interior
+  index of the growing host) and \<open>hostMk\<close> (the \<open>MarkedB\<close> anchor fact at each
+  column) -- exactly what \<open>m_8_5_anchor_fold\<close> packages as
+  \<open>colMarked0\<close>/\<open>colMarkedJ\<close>/\<open>colMono\<close> (modulo unfolding \<open>MarkedB_def\<close> against
+  \<open>m_8_5_anchor_col\<close>'s conclusion -- THAT wiring is the next
+  step, not done here; this lemma only establishes the netfold SHAPE).
+  Architecturally: this is the concrete \<open>F\<close>/\<open>z\<close> instantiation \<open>m_8_5_keystone_
+  allq\<close> (defined LATER in this file) needs at the COLUMN level (\<open>z m :=
+  Mark (Y@take m B) n0\<close>, the GENUINE per-period recursion \<open>zrec\<close> becomes
+  literally THIS lemma's conclusion read one \<open>fold\<close>-step at a time); the
+  Q-LEVEL \<open>F\<close>/\<open>z\<close> of \<open>m_8_5_keystone_allq\<close> (tracking \<open>q\<close>, not the
+  within-period column \<open>m\<close>) is a SEPARATE, still entirely open, outer layer
+  on top of this (R1/R2 in the residual-summary sense) -- this lemma does
+  not attempt that.\<close>
+
+lemma m_8_5_Mark_netfold_condV:
+  fixes Y B :: pairseq and n0 :: nat
+  assumes hostR: "\<And>m. m < Lng B \<Longrightarrow> (Y @ take m B) @ [B ! m] \<in> RT_PS"
+    and hostP: "\<And>m. m < Lng B \<Longrightarrow> (Y @ take m B) @ [B ! m] \<in> PT_PS"
+    and hostJ1: "\<And>m. m < Lng B \<Longrightarrow> transJ1 ((Y @ take m B) @ [B ! m]) > 0"
+    and hostT1: "\<And>m. m < Lng B \<Longrightarrow> transT1 ((Y @ take m B) @ [B ! m]) \<noteq> 0\<^sub>B"
+    and hostN0: "\<And>m. m < Lng B \<Longrightarrow> n0 < Lng ((Y @ take m B) @ [B ! m]) - 1"
+    and hostMk: "\<And>m. m < Lng B \<Longrightarrow>
+        (Mark (Y @ take m B) n0, transC1 ((Y @ take m B) @ [B ! m])) \<in> MarkedB"
+  shows "Mark (Y @ B) n0
+       = fold (\<lambda>m acc. scbSubst (transC1 ((Y @ take m B) @ [B ! m]))
+                                 (transC2 ((Y @ take m B) @ [B ! m])) acc)
+              [0..<Lng B] (Mark Y n0)"
+proof -
+  have step: "\<And>m. m < Lng B \<Longrightarrow>
+        Mark (Y @ take (Suc m) B) n0
+          = scbSubst (transC1 ((Y @ take m B) @ [B ! m]))
+                     (transC2 ((Y @ take m B) @ [B ! m])) (Mark (Y @ take m B) n0)"
+  proof -
+    fix m assume m: "m < Lng B"
+    have host: "(Y @ take m B) @ [B ! m] = Y @ take (Suc m) B"
+      using m by (simp add: take_Suc_conv_app_nth)
+    have RT: "(Y @ take m B) @ [B ! m] \<in> RT_PS" by (rule hostR[OF m])
+    have PT: "(Y @ take m B) @ [B ! m] \<in> PT_PS" by (rule hostP[OF m])
+    have mono: "monoT ((Y @ take m B) @ [B ! m])" using PT by (simp add: PT_PS_def)
+    have L1: "1 < Lng ((Y @ take m B) @ [B ! m])"
+      using hostJ1[OF m] by (simp add: transJ1_def)
+    have bl: "Pred ((Y @ take m B) @ [B ! m]) = Y @ take m B"
+    proof -
+      have "Pred ((Y @ take m B) @ [B ! m]) = butlast ((Y @ take m B) @ [B ! m])"
+        using L1 by (simp add: Pred_def)
+      also have "\<dots> = Y @ take m B" by (rule butlast_snoc)
+      finally show ?thesis .
+    qed
+    have t1ne: "Trans (Pred ((Y @ take m B) @ [B ! m])) \<noteq> 0\<^sub>B"
+      using bl hostT1[OF m] by (simp add: transT1_def)
+    have nlt: "n0 < Lng ((Y @ take m B) @ [B ! m]) - 1" by (rule hostN0[OF m])
+    have mk: "(Mark (Pred ((Y @ take m B) @ [B ! m])) n0,
+               transC1 ((Y @ take m B) @ [B ! m])) \<in> MarkedB"
+      using bl hostMk[OF m] by simp
+    have rec: "Mark ((Y @ take m B) @ [B ! m]) n0
+                 = scbSubst (transC1 ((Y @ take m B) @ [B ! m]))
+                            (transC2 ((Y @ take m B) @ [B ! m]))
+                            (Mark (Pred ((Y @ take m B) @ [B ! m])) n0)"
+      by (rule m_8_5_Mark_scbSubst_step[OF RT mono L1 t1ne nlt mk])
+    show "Mark (Y @ take (Suc m) B) n0
+            = scbSubst (transC1 ((Y @ take m B) @ [B ! m]))
+                       (transC2 ((Y @ take m B) @ [B ! m])) (Mark (Y @ take m B) n0)"
+      using rec bl host by simp
+  qed
+  show ?thesis
+    by (rule m_8_5_fold_of_colstep
+          [where f = "\<lambda>M. Mark M n0"
+             and op = "\<lambda>m acc. scbSubst (transC1 ((Y @ take m B) @ [B ! m]))
+                                         (transC2 ((Y @ take m B) @ [B ! m])) acc",
+           OF step])
+qed
+
+
 text \<open>§8.5 (E.2) — depth-parametric spine action, DEPTH-0 (whole) case.  \<open>scbSubst\<close> at the
   ROOT (the marked core \<open>c\<^sub>1\<close> IS the whole single-principal term) replaces it wholesale by
   \<open>c\<^sub>2\<close>: \<open>scbSubst c\<^sub>1 c\<^sub>2 c\<^sub>1 = c\<^sub>2\<close>.  The scb-decomposition is trivial (\<open>s=b=[]\<close>, \<open>b\<close> all-RP
