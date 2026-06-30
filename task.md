@@ -64,10 +64,7 @@
         - ✅ (B) wiring〔rnav engine/§7.4 Mark↔Trans 橋〕
         - ✅ kernel bridge〔`m_8_5_surgC_of_keystone`〕
         - 🚨 (keystone) `bpHeadT(Trans(slice@B))=C(bpHeadT(Trans slice))`
-        - 🚨 (op) marked-head 単項性
-          - ✅ per-iterate jm1〔`transC2_single_principal`〕
-          - ✅ 単項⟹Dpt形〔`m_8_5_op_of_monoT`〕
-          - 🚨 monoT(slice@B)
+        - ✅ (op) marked-head 単項性〔`m_8_5_op_of_Marked`(Marked から、Trans≠0 side のみ)〕
     - ✅ 補題（条件 (V) の下での $\textrm{Joints}$ と $\textrm{FirstNodes}$ と $t_2$ の基本性質）〔`m_8_5_Joints_FirstNodes_basic` parts(1)(2)〕
     - 🚨 補題（条件 (V) の下での各種 scb分解）〔def 内部記号露出要〕
   - 🚨 §8.6 条件 (VI) の下での展開規則
