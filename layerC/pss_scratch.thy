@@ -6446,4 +6446,34 @@ proof -
   thus ?thesis by (rule principal_reconstruct)
 qed
 
+text \<open>§8.5 op FROM Marked — the kernel-ready discharge of the marked-head
+  single-outer-principal shape \<open>op\<close>, WITHOUT the \<open>monoT (slice \<frown> B)\<close> residual.
+  For \<open>(M,m) \<in> Marked\<close> (which the descent kernel supplies as \<open>mk_sq\<close>) the §7.3
+  bridge @{thm [source] m_7_3_Trans_Mark_MarkedB} makes the marked value
+  \<open>Mark M m\<close> a principal-term-block string (scb centre), hence a SINGLE principal
+  \<open>Trm [p] = D\<^bsub>\<dots>\<^esub>(\<dots>)\<close> (@{thm [source] principal_reconstruct}).  So the kernel's
+  \<open>op\<close> (\<open>Trans (slice \<frown> B) = Mark (M[Suc q]) jm1\<close> single-principal, via §7.4
+  @{thm [source] m_7_4_Mark_Trans_repr}) follows from \<open>(M[Suc q], jm1) \<in> Marked\<close>
+  + \<open>M[Suc q] \<in> RT\<^bsub>PS\<^esub>\<close> + \<open>Trans (M[Suc q]) \<noteq> 0\<^sub>B\<close> — closing the second face of the
+  surgC decomposition (@{thm [source] m_8_5_surgC_of_keystone}) to the keystone ALONE.\<close>
+
+lemma m_8_5_op_of_Marked:
+  fixes M :: pairseq and m :: nat
+  assumes MR: "M \<in> RT_PS" and mk: "(M, m) \<in> Marked" and tne: "Trans M \<noteq> 0\<^sub>B"
+  shows "Mark M m = Dpt (bpHeadV (Mark M m)) (bpHeadT (Mark M m))"
+proof -
+  have mb: "(Trans M, Mark M m) \<in> MarkedB"
+    by (rule m_7_3_Trans_Mark_MarkedB[OF MR mk])
+  then obtain s b where d: "scb_decomp (Trans M) s (flatBT (Mark M m)) b"
+    by (auto simp: MarkedB_def)
+  have ipt: "isPTB_str (flatBT (Mark M m))"
+    using d tne by (simp add: scb_decomp_def)
+  then obtain p where pl: "flatBT (Mark M m) = flatBP p"
+    by (auto simp: isPTB_str_def)
+  have "flatBT (Mark M m) = flatBT (Trm [p])" using pl by simp
+  hence "Mark M m = Trm [p]" by (rule m_7_flatBT_inj)
+  hence "Lng (PB (Mark M m)) = 1" by (simp add: PB_def)
+  thus ?thesis by (rule principal_reconstruct)
+qed
+
 end
