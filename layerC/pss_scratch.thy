@@ -6576,6 +6576,51 @@ proof -
 qed
 
 
+text \<open>§8.5 R2a ROOT CAUSE, FORMALIZED (new, this round) — the Round-3 empirical finding
+  ("genuine period blocks \<open>B\<close> frequently OPEN with a \<open>(0,0)\<close>/branch-reset column, after which
+  \<open>leR\<close> fails because the new column starts a FRESH \<open>multiT\<close> branch sibling") is now a
+  PROVEN necessary condition, not just an empirical pattern: the ALREADY-PROVEN,
+  UNCONDITIONAL, frozen @{thm [source] multi_Marked_last_component} (\<open>PSS_B\<close>,
+  \<open>layerB/pss_wip.thy:1220\<close>, \<open>0/6,080\<close> empirical) states that for a \<open>multiT\<close> host \<open>M\<close>,
+  \<open>(M,m) \<in> Marked\<close> FORCES \<open>Pcut M \<le> m\<close> — a marked index can only ever live in the LAST
+  \<open>P\<close>-component, never in the trunk before it.  Its contrapositive, below, gives a clean,
+  directly citable characterisation: whenever a fold column makes the host \<open>multiT\<close> AND the
+  tracked index \<open>n\<^sub>0\<close> still sits in the trunk (\<open>n\<^sub>0 < Pcut N\<close>), \<open>(N, n\<^sub>0) \<in> Marked\<close> is
+  PROVABLY FALSE, not merely hard to establish.
+
+  This CLOSES OFF the "branch-local addBT witness" hope flagged at the end of Round 3's
+  write-up (\<open>python/_keystone_residual_summary.py\<close>): the @{thm [source] Mark_MarkedB_nest}
+  route is ALREADY maximally branch-local internally — its own \<open>multiT\<close> case recurses into
+  exactly the same last \<open>P\<close>-component \<open>PJ = drop (Pcut M) M\<close> via this same
+  \<open>multi_Marked_last_component\<close> (see also the already-proven §7.4 companion
+  \<open>m_7_4_repr_multiT_step\<close>, \<open>layerB/pss_wip.thy:11273\<close>, which reduces \<open>Mark M m\<close> /
+  \<open>Trans\<close>-representation for an INTERIOR marked \<open>m\<close> of a \<open>multiT\<close> host down to the IDENTICAL
+  smaller-\<open>PJ\<close> problem).  So there is no sharper branch-local witness left to find for R2a's
+  \<open>leR\<close> failure mode in the "tracked mark predates a freshly-opened branch" case —
+  \<open>(N,n\<^sub>0)\<close> genuinely leaves \<open>Marked\<close>, by an unconditional theorem, not an artifact of an
+  over-strong reduction.  EMPIRICALLY (\<open>python/_marked_last_component_probe.py\<close>, this
+  directory; \<open>trans_model.py\<close>'s \<open>Mark\<close> also had a nat-subtraction bug fixed this round — the
+  Python \<open>multi\<close> case used a SIGNED \<open>m - j0\<close>, diverging from Isabelle's truncating \<open>nat\<close>
+  subtraction whenever \<open>m < j0\<close>; fixed to \<open>max(m-j0,0)\<close>) the \<open>multi_Marked_last_component\<close>
+  contrapositive accounts for ALL of the \<open>multiT\<close>-host R2a failures in the keystone's own
+  regime: every \<open>(N,n\<^sub>0)\<close> instance with \<open>N\<close> multiT and \<open>R2a\<close> false has \<open>n\<^sub>0 < Pcut N\<close>; see the
+  residual summary for the exact counts.  REFUTED ROUTE #15: "a branch-local Mark/addBT
+  witness can rescue R2a for trunk-stuck \<open>n\<^sub>0\<close>" — do not re-attempt; any future fix must
+  avoid relying on \<open>(N,n\<^sub>0) \<in> Marked\<close> at EVERY intermediate fold column at all (e.g. a
+  coarser per-BRANCH, not per-COLUMN, telescoping granularity), not look for a weaker
+  sufficient condition within the \<open>Marked\<close>/\<open>MarkedB\<close>-nesting framework.\<close>
+
+lemma m_8_5_marked_requires_last_component:
+  fixes M :: pairseq and m :: nat
+  assumes MT: "M \<in> T_PS" and mu: "multiT M" and mlt: "m < Pcut M"
+  shows "(M, m) \<notin> Marked"
+proof
+  assume mM: "(M, m) \<in> Marked"
+  have "Pcut M \<le> m" by (rule multi_Marked_last_component(1)[OF MT mu mM])
+  thus False using mlt by simp
+qed
+
+
 text \<open>§8.5 KEYSTONE TELESCOPE — the GENERIC commutation instantiated concretely at the
   BT/scbSubst level, via the ALREADY-PROVEN @{thm [source] m_8_5_scbSubst_addBT_commute}.
   The SAME per-column rightmost-spine anchoring used by @{thm [source] b3b_rnav_fold_drive}
