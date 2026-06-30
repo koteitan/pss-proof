@@ -62,7 +62,7 @@
       - 🚨 surgery spine-descent〔§8 master key — green-modulo 1 露出 keystone(`m_8_5_markstep_of_Trans_keystone`、32e0a37@wt2-85surgery-green)〕
         - ✅ (A) deepen SHAPE〔`m_8_5_appended_col_deepen` 他〕
         - ✅ (B) wiring〔rnav engine/§7.4 Mark↔Trans 橋〕
-        - ✅ surgC⟸keystone 組立〔`m_8_5_surgC_instance_of_keystone`、残 side=umatch u-pin〕
+        - ✅ surgC⟸keystone 組立〔`m_8_5_surgC_instance_of_keystone`(+umatch `m_8_5_entry_jm1_const`)、残=regime plumbing〕
         - 🚨 (keystone) `bpHeadT(Trans(slice@B))=C(bpHeadT(Trans slice))`
         - ✅ (op) marked-head 形〔`m_8_5_Mark_headform`(shape+値=entry M 1 m、Marked から)〕
     - ✅ 補題（条件 (V) の下での $\textrm{Joints}$ と $\textrm{FirstNodes}$ と $t_2$ の基本性質）〔`m_8_5_Joints_FirstNodes_basic` parts(1)(2)〕
