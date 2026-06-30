@@ -6769,6 +6769,134 @@ proof -
 qed
 
 
+text \<open>§8.5 R2a TRUNK-STUCK — CLOSING THE GAP (new, this round).  Round 4 left
+  @{thm [source] m_8_5_anchor_col_trunkstuck} with TWO open named hypotheses,
+  \<open>mJpcut\<close> (\<open>(drop (Pcut N) N, transJm1(N@[col]) - Pcut N) \<in> Marked\<close>, a
+  smaller-scale R2b analogue on \<open>PJ\<close>) and \<open>pcutle\<close> (\<open>Pcut N \<le> transJm1(N@[col])\<close>).
+  KEY REALIZATION: BOTH reduce TOGETHER to a SINGLE, more primitive fact about the
+  FULL host \<open>N\<close> (not \<open>PJ\<close>) — \<open>(N, transJm1(N@[col])) \<in> Marked\<close>, i.e. R2b ITSELF
+  (the SAME condition @{thm [source] m_8_5_anchor_col} already needs for the
+  non-trunk-stuck case) — via the ALREADY-PROVEN, frozen, UNCONDITIONAL
+  @{thm [source] multi_Marked_last_component} (its CONTRAPOSITIVE direction was
+  already used for \<open>m_8_5_marked_requires_last_component\<close>; here its FORWARD
+  direction): for \<open>multiT N\<close>, \<open>(N,m) \<in> Marked \<Longrightarrow> Pcut N \<le> m \<and>
+  (drop (Pcut N) N, m - Pcut N) \<in> Marked\<close> — instantiated at \<open>m = transJm1(N@[col])\<close>
+  gives EXACTLY \<open>pcutle\<close> and \<open>mJpcut\<close> TOGETHER, for free.
+
+  R2b on \<open>N\<close> itself (\<open>(N, transJm1(N@[col])) \<in> Marked\<close>) is in turn EXACTLY the
+  conclusion of the ALREADY-PROVEN, frozen, UNCONDITIONAL @{thm [source]
+  Marked_Pred_Adm} (\<open>layerB/pss_wip.thy:1183\<close>: for ANY \<open>M \<in> T_PS\<close> with
+  \<open>1 < Lng M\<close> and \<open>hasParent M 0 (Lng M-1)\<close>, \<open>(Pred M, Adm M (parent M 0
+  (Lng M-1))) \<in> Marked\<close>) instantiated at \<open>M = N @ [col]\<close> — since \<open>Pred (N@[col])
+  = N\<close> and \<open>Adm (N@[col]) (parent (N@[col]) 0 (Lng(N@[col])-1)) = transJm1(N@[col])\<close>
+  by definition.  So R2b for ANY appended column (trunk-stuck or not) needs ONLY
+  \<open>hasParent (N@[col]) 0 (Lng(N@[col])-1)\<close> — i.e. the appended column is NOT a
+  fresh \<open>(0,\<cdot>)\<close>-style branch reset (Round 3's root-cause diagnosis), the one
+  thing \<open>Marked_Pred_Adm\<close> cannot supply for free since a reset column genuinely
+  has no row-0 parent at all.
+
+  This reduces FURTHER, by the GENERAL (regime-free) existence+uniqueness
+  pattern already buried in @{thm [source] oper_last_row0_haspar}'s tail
+  (@{thm [source] m_5_1_parent_exists_1} + @{thm [source] idxsum_parent0_unique}),
+  to the literal numeric fact \<open>entry N 0 0 < fst col\<close> (any earlier index with a
+  SMALLER row-0 value than the new column gives existence of SOME row-0 parent;
+  uniqueness of the row-0 parent is then automatic from \<open>nextrel0\<close>'s own shape —
+  no extra hypothesis needed).  EMPIRICALLY (\<open>python/_r4_pcutle_r2bprime.py\<close>,
+  this round: 51 trunk-stuck instances in the keystone's own \<open>transCondV\<close>/
+  \<open>hp1\<close>/\<open>parR\<close>/\<open>coin\<close>/\<open>jm1pos\<close> regime, PLUS 28 more re-derived independently
+  from \<open>_marked_last_component_probe.py\<close>'s harness, 79 TOTAL, ZERO exceptions):
+  \<open>pcutle\<close> held 51/51, \<open>mJpcut\<close> (\<open>R2bprime\<close>) held 51/51, \<open>entry N 0 0 = 0\<close> held in
+  ALL 42 separately-sampled hosts, and \<open>fst col > 0\<close> (no branch-reset column) held
+  in ALL 79 trunk-stuck instances across both harnesses — so \<open>entry N 0 0 <
+  fst col\<close> is empirically UNIVERSAL in this regime, though its derivation
+  directly from \<open>transCondV\<close>/the deepen-block periodicity formula (rather than
+  carried as a named hypothesis) was not completed this round (see
+  \<open>python/_keystone_residual_summary.py\<close>).\<close>
+
+lemma m_8_5_hasParent0_of_entry0_lt:
+  fixes M :: pairseq
+  assumes MT: "M \<in> T_PS" and j1pos: "0 < Lng M - 1"
+    and strict: "entry M 0 0 < entry M 0 (Lng M - 1)"
+  shows "hasParent M 0 (Lng M - 1)"
+proof -
+  have j1L: "Lng M - 1 < Lng M" using j1pos by linarith
+  obtain j where "0 \<le> j \<and> j < Lng M - 1 \<and> nextR M 0 j (Lng M - 1)"
+    using m_5_1_parent_exists_1[OF MT j1pos j1L strict] by blast
+  hence pP: "nextR M 0 j (Lng M - 1)" by simp
+  have "\<exists>!q. nextR M 0 q (Lng M - 1)"
+    using pP idxsum_parent0_unique by metis
+  thus ?thesis unfolding hasParent_def by simp
+qed
+
+lemma m_8_5_R2b_of_hasParent0:
+  fixes N :: pairseq and col :: "nat \<times> nat"
+  assumes Nne: "N \<noteq> []"
+    and hp0: "hasParent (N @ [col]) 0 (Lng (N @ [col]) - 1)"
+  shows "(N, transJm1 (N @ [col])) \<in> Marked"
+proof -
+  have NcurT: "N @ [col] \<in> T_PS" using Nne by (simp add: T_PS_def)
+  have NcurL1: "1 < Lng (N @ [col])" using Nne by (cases N) auto
+  have Predeq: "Pred (N @ [col]) = N" using NcurL1 by (simp add: Pred_def)
+  have c1eq: "transJm1 (N @ [col])
+                = Adm (N @ [col]) (parent (N @ [col]) 0 (Lng (N @ [col]) - 1))"
+    by (simp add: transJm1_def transJ0_def transJ1_def)
+  have mk: "(Pred (N @ [col]),
+             Adm (N @ [col]) (parent (N @ [col]) 0 (Lng (N @ [col]) - 1))) \<in> Marked"
+    by (rule Marked_Pred_Adm[OF NcurT NcurL1 hp0])
+  thus ?thesis using Predeq c1eq by simp
+qed
+
+lemma m_8_5_trunkstuck_hyps_of_hasParent0:
+  fixes N :: pairseq and col :: "nat \<times> nat"
+  assumes NT: "N \<in> T_PS" and muN: "multiT N" and Nne: "N \<noteq> []"
+    and hp0: "hasParent (N @ [col]) 0 (Lng (N @ [col]) - 1)"
+  shows "Pcut N \<le> transJm1 (N @ [col])"
+    and "(drop (Pcut N) N, transJm1 (N @ [col]) - Pcut N) \<in> Marked"
+proof -
+  have R2b: "(N, transJm1 (N @ [col])) \<in> Marked"
+    by (rule m_8_5_R2b_of_hasParent0[OF Nne hp0])
+  show "Pcut N \<le> transJm1 (N @ [col])"
+    by (rule multi_Marked_last_component(1)[OF NT muN R2b])
+  show "(drop (Pcut N) N, transJm1 (N @ [col]) - Pcut N) \<in> Marked"
+    by (rule multi_Marked_last_component(2)[OF NT muN R2b])
+qed
+
+lemma m_8_5_anchor_col_trunkstuck_regime:
+  fixes N :: pairseq and col :: "nat \<times> nat" and n0 :: nat
+  assumes NR: "N \<in> RT_PS"
+    and muN: "multiT N"
+    and stuck: "n0 < Pcut N"
+    and entry0lt: "entry N 0 0 < fst col"
+  shows "\<exists>sx bx. scb_decomp (Mark N n0) sx (flatBT (transC1 (N @ [col]))) bx"
+proof -
+  have NT: "N \<in> T_PS" using NR by (simp add: RT_PS_def)
+  have Nne: "N \<noteq> []" using NT by (simp add: T_PS_def)
+  have Lgt1col: "1 < Lng (N @ [col])" using Nne by (cases N) auto
+  have lenpos: "0 < length N" using Nne by simp
+  have idx0: "(N @ [col]) ! 0 = N ! 0" using lenpos by (simp add: nth_append)
+  have idxlast: "(N @ [col]) ! (Lng (N @ [col]) - 1) = col"
+  proof -
+    have "Lng (N @ [col]) - 1 = length N" by simp
+    thus ?thesis by (simp add: nth_append)
+  qed
+  have e0a: "entry (N @ [col]) 0 0 = entry N 0 0" using idx0 by (simp add: entry_def)
+  have e0b: "entry (N @ [col]) 0 (Lng (N @ [col]) - 1) = fst col"
+    using idxlast by (simp add: entry_def)
+  have j1pos: "0 < Lng (N @ [col]) - 1" using Lgt1col by simp
+  have strict: "entry (N @ [col]) 0 0 < entry (N @ [col]) 0 (Lng (N @ [col]) - 1)"
+    using entry0lt e0a e0b by simp
+  have NcurT: "N @ [col] \<in> T_PS" using Nne by (simp add: T_PS_def)
+  have hp0: "hasParent (N @ [col]) 0 (Lng (N @ [col]) - 1)"
+    by (rule m_8_5_hasParent0_of_entry0_lt[OF NcurT j1pos strict])
+  have mJpcut: "(drop (Pcut N) N, transJm1 (N @ [col]) - Pcut N) \<in> Marked"
+    by (rule m_8_5_trunkstuck_hyps_of_hasParent0(2)[OF NT muN Nne hp0])
+  have pcutle: "Pcut N \<le> transJm1 (N @ [col])"
+    by (rule m_8_5_trunkstuck_hyps_of_hasParent0(1)[OF NT muN Nne hp0])
+  show ?thesis
+    by (rule m_8_5_anchor_col_trunkstuck[OF NR muN stuck mJpcut pcutle])
+qed
+
+
 text \<open>§8.5 KEYSTONE TELESCOPE — the GENERIC commutation instantiated concretely at the
   BT/scbSubst level, via the ALREADY-PROVEN @{thm [source] m_8_5_scbSubst_addBT_commute}.
   The SAME per-column rightmost-spine anchoring used by @{thm [source] b3b_rnav_fold_drive}

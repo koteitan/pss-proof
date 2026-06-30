@@ -357,4 +357,112 @@ contrapositive), python/_trunk_stuck_equality.py (the equality/anchor
 breakdown that found the 45/51 + 6/51 split), python/_branch_local_witness.py
 (first exploratory pass, superseded by the other two once the bug was
 found -- kept for the worked examples).
+
+=====================================================================
+ROUND 5 (2026-07-01, this round; layerC/pss_scratch.thy,
+m_8_5_hasParent0_of_entry0_lt / m_8_5_R2b_of_hasParent0 /
+m_8_5_trunkstuck_hyps_of_hasParent0 / m_8_5_anchor_col_trunkstuck_regime):
+R2b' (mJpcut) AND pcutle BOTH reduced TOGETHER to ONE primitive numeric
+hypothesis, via two ALREADY-PROVEN frozen lemmas neither previously cited
+for this purpose.
+=====================================================================
+
+GOAL this round (per the task brief): derive Round 4's two remaining named
+hypotheses of `m_8_5_anchor_col_trunkstuck` -- mJpcut (`(drop (Pcut N) N,
+transJm1(N@[col]) - Pcut N) \\in Marked`, R2b' at PJ-scale) and pcutle
+(`Pcut N <= transJm1(N@[col])`) -- from the keystone's own regime.
+
+KEY REALIZATION (the actual route, found by re-reading `multi_Marked_last_
+component`'s OWN statement rather than just its contrapositive, which is all
+Round 4 had used): its FORWARD direction says, for `multiT N` and `(N,m) \\in
+Marked`, `Pcut N <= m` AND `(drop (Pcut N) N, m - Pcut N) \\in Marked` --
+i.e. instantiated at `m = transJm1(N@[col])`, it gives pcutle AND mJpcut
+TOGETHER, for FREE, from a SINGLE hypothesis: `(N, transJm1(N@[col])) \\in
+Marked`.  That hypothesis is EXACTLY R2b -- the SAME condition
+`m_8_5_anchor_col` (the non-trunk-stuck case) already needs.  So Round 4's
+"two small PJ-scale facts" were never independent of R2b at all; they are
+literally its `multi_Marked_last_component` corollaries.
+
+R2b on N is in turn EXACTLY the conclusion of the ALREADY-PROVEN, frozen,
+UNCONDITIONAL `Marked_Pred_Adm` (layerB/pss_wip.thy:1183: for ANY `M \\in
+T_PS` with `1 < Lng M` and `hasParent M 0 (Lng M-1)`, `(Pred M, Adm M
+(parent M 0 (Lng M-1))) \\in Marked`) instantiated at `M = N @ [col]` --
+since `Pred (N@[col]) = N` and `Adm (N@[col]) (parent (N@[col]) 0
+(Lng(N@[col])-1)) = transJm1(N@[col])` by definition (`transC1_def`/
+`transJm1_def`).  So R2b needs ONLY `hasParent (N@[col]) 0 (Lng(N@[col])-1)`
+-- i.e. the appended column is not a fresh `(0,.)`-style branch reset
+(Round 3's root-cause diagnosis), the one thing `Marked_Pred_Adm` cannot
+give for free.
+
+That `hasParent` fact reduces FURTHER, via the GENERAL (regime-free)
+existence+uniqueness pattern already buried (but never extracted as a
+standalone lemma) inside `oper_last_row0_haspar`'s tail
+(`m_5_1_parent_exists_1` + `idxsum_parent0_unique`, both pre-existing frozen
+lemmas), to the literal numeric fact `entry N 0 0 < fst col`: ANY earlier
+index with row-0 value strictly less than the new column's row-0 value gives
+EXISTENCE of a row-0 parent (`m_5_1_parent_exists_1`), and UNIQUENESS of
+that parent is automatic from `nextrel0`'s own shape (`idxsum_parent0_
+unique`) -- no extra hypothesis needed for uniqueness.
+
+EMPIRICAL VALIDATION (python/_r4_pcutle_r2bprime.py, this round, NEW
+harness; regime = the keystone's own transCondV(Mq)+hp1+parR+coin+jm1pos
+filter, i.e. the exact same filter as Round 4's harnesses, re-run on the
+FIXED trans_model.py):
+  - 51 trunk-stuck instances (multiT(Nprev), n0 < Pcut(Nprev)) sampled
+    (maxlen<=6, q in {2,3,4}, 360s budget): jm1cur (= transJm1(Ncur)) was
+    DEFINED (i.e. hasParent held) in 51/51 -- ZERO "NOPARENT"/branch-reset
+    cases.  pcutle held in 51/51 of those.  R2b' (mJpcut) held in 51/51 of
+    the pcutle-ok cases.  entry0(col) > 0 held in ALL 51 (consistent with
+    hasParent always defined).
+  - Cross-checked against the INDEPENDENT, differently-coded Round-4 harness
+    _marked_last_component_probe.py (28 trunk-stuck instances, q in {2,3}):
+    R2b held 28/28, R2c (pcutle's un-shifted analogue, n0<=jm1cur) held
+    28/28 -- fully consistent.
+  - entry(N,0,0) = 0 (the prefix-anchor fact needed for the existence
+    argument with j0=0) held in ALL 42 separately re-sampled hosts checked.
+  - TOTAL across both harnesses: 79/79 trunk-stuck instances have a
+    defined, non-reset next column (entry0(col) > entry N 0 0 = 0), and
+    100% pcutle/mJpcut closure whenever that holds.  ZERO exceptions found
+    to `entry N 0 0 < fst col` in this regime.
+
+FORMALIZED (green, layerC/pss_scratch.thy, this round, e <pending merge>):
+  m_8_5_hasParent0_of_entry0_lt: M \\in T_PS, 0 < Lng M - 1, entry M 0 0 <
+    entry M 0 (Lng M-1) ==> hasParent M 0 (Lng M-1).  UNCONDITIONAL, GENERAL
+    (no T_PS-specific machinery beyond `m_5_1_parent_exists_1` +
+    `idxsum_parent0_unique`, both pre-existing).  A reusable extraction of
+    `oper_last_row0_haspar`'s tail, decoupled from its row-1-derived
+    `strict` hypothesis so it can be fed a DIFFERENT (here: literal index-0)
+    witness.
+  m_8_5_R2b_of_hasParent0: N <> [], hasParent (N@[col]) 0 (Lng(N@[col])-1)
+    ==> (N, transJm1(N@[col])) \\in Marked.  UNCONDITIONAL.  Direct
+    `Marked_Pred_Adm` instantiation at `N@[col]`.
+  m_8_5_trunkstuck_hyps_of_hasParent0: N \\in T_PS, multiT N, N <> [],
+    hasParent (N@[col]) 0 (Lng(N@[col])-1) ==> Pcut N <= transJm1(N@[col])
+    [pcutle] AND (drop (Pcut N) N, transJm1(N@[col]) - Pcut N) \\in Marked
+    [mJpcut].  UNCONDITIONAL.  `multi_Marked_last_component`'s FORWARD
+    direction applied to the R2b fact above.
+  m_8_5_anchor_col_trunkstuck_regime: N \\in RT_PS, multiT N, n0 < Pcut N,
+    entry N 0 0 < fst col ==> \\exists sx bx. scb_decomp (Mark N n0) sx
+    (flatBT (transC1 (N@[col]))) bx.  Assembles the chain above and feeds
+    the two derived facts into the ALREADY-PROVEN (Round 4)
+    `m_8_5_anchor_col_trunkstuck`, replacing its two named hypotheses
+    (mJpcut, pcutle) with the SINGLE, more primitive `entry N 0 0 < fst col`.
+
+NET this round: Round 4's "two small PJ-scale facts, not yet derived" are
+now PROVEN (not just empirically supported) to be EQUIVALENT in strength to
+ONE clean, primitive, numeric fact about the appended column -- the
+trunk-stuck anchor case's ENTIRE remaining open content is `entry N 0 0 <
+fst col` (with `entry N 0 0` itself empirically always `0`, so really just
+"the appended column's row-0 value is positive", i.e. it does not open a
+FRESH branch-reset).  This was NOT further reduced to an unconditional fact
+of `transCondV`/the deepen-block periodicity formula this round (the
+exact correspondence between `m_8_5_basepoint`'s generic "M" parameter and
+the concrete per-q host `Mq` used throughout this file's surgery machinery
+was not fully re-derived from first principles within this round's budget;
+attempting that derivation is the natural next step, NOT a refuted route).
+
+Re-run instructions for Round 5: python/_r4_pcutle_r2bprime.py (the new
+targeted pcutle/R2b' harness, 51 trunk-stuck instances); cross-check via
+python/_marked_last_component_probe.py's R2b/R2c columns (28 more,
+independently coded).
 """
