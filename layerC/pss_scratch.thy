@@ -6495,4 +6495,57 @@ proof -
   thus ?thesis using vt by simp
 qed
 
+text \<open>§8.5 surgC INSTANCE from the keystone — the descent-kernel's surgC body for one
+  \<open>(qq,B)\<close>, derived from the whole-period keystone alone.  Assembles the three green
+  faces: the §7.4 bridge @{thm [source] Mark_iterate_slice_append}
+  (\<open>Mark (M[Suc qq]) jm1 = Trans (slice \<frown> B)\<close>), the marked-head form
+  @{thm [source] m_8_5_Mark_headform} (op shape + outer value \<open>= entry (M[Suc qq]) 1 jm1\<close>),
+  and the projection glue @{thm [source] m_8_5_surgC_of_keystone}.  The two non-keystone
+  side hypotheses are the trivial \<open>Mark (M[Suc qq]) jm1 \<noteq> 0\<^sub>B\<close> and the value-match
+  \<open>entry (M[Suc qq]) 1 jm1 = u\<close>.  This is exactly the kernel's \<open>surgC\<close> obligation, now
+  green-modulo the single exposed keystone identity.\<close>
+
+lemma m_8_5_surgC_instance_of_keystone:
+  fixes M B :: pairseq and qq jm1 u :: nat and C :: "BT \<Rightarrow> BT"
+  assumes mk_sq: "((M::pairseq)[Suc qq], jm1) \<in> Marked"
+    and MR_sq: "(M::pairseq)[Suc qq] \<in> RT_PS"
+    and rng_sq: "jm1 < Lng ((M::pairseq)[Suc qq]) - 1"
+    and app: "(M::pairseq)[Suc qq] = (M::pairseq)[qq] @ B"
+    and Mpne: "0 < Lng ((M::pairseq)[qq])"
+    and jle: "jm1 \<le> Lng ((M::pairseq)[qq])"
+    and mne: "Mark ((M::pairseq)[Suc qq]) jm1 \<noteq> 0\<^sub>B"
+    and umatch: "entry ((M::pairseq)[Suc qq]) 1 jm1 = u"
+    and keystone: "bpHeadT (Trans (seg ((M::pairseq)[qq]) jm1 (Lng ((M::pairseq)[qq]) - 1) @ B))
+                     = C (bpHeadT (Trans (seg ((M::pairseq)[qq]) jm1 (Lng ((M::pairseq)[qq]) - 1))))"
+  shows "Trans (seg ((M::pairseq)[qq]) jm1 (Lng ((M::pairseq)[qq]) - 1) @ B)
+           = Dpt (enat u) (C (bpHeadT (Trans (seg ((M::pairseq)[qq]) jm1 (Lng ((M::pairseq)[qq]) - 1)))))"
+proof -
+  have bridge: "Mark ((M::pairseq)[Suc qq]) jm1
+                  = Trans (seg ((M::pairseq)[qq]) jm1 (Lng ((M::pairseq)[qq]) - 1) @ B)"
+    by (rule Mark_iterate_slice_append[OF mk_sq MR_sq rng_sq app Mpne jle])
+  have hf: "Mark ((M::pairseq)[Suc qq]) jm1
+              = Dpt (enat (entry ((M::pairseq)[Suc qq]) 1 jm1))
+                    (bpHeadT (Mark ((M::pairseq)[Suc qq]) jm1))"
+    by (rule m_8_5_Mark_headform[OF MR_sq mk_sq mne])
+  have op: "Trans (seg ((M::pairseq)[qq]) jm1 (Lng ((M::pairseq)[qq]) - 1) @ B)
+              = Dpt (enat u)
+                  (bpHeadT (Trans (seg ((M::pairseq)[qq]) jm1 (Lng ((M::pairseq)[qq]) - 1) @ B)))"
+  proof -
+    have "Trans (seg ((M::pairseq)[qq]) jm1 (Lng ((M::pairseq)[qq]) - 1) @ B)
+            = Mark ((M::pairseq)[Suc qq]) jm1" using bridge by simp
+    also have "\<dots> = Dpt (enat (entry ((M::pairseq)[Suc qq]) 1 jm1))
+                        (bpHeadT (Mark ((M::pairseq)[Suc qq]) jm1))" by (rule hf)
+    also have "\<dots> = Dpt (enat u)
+                     (bpHeadT (Trans (seg ((M::pairseq)[qq]) jm1 (Lng ((M::pairseq)[qq]) - 1) @ B)))"
+      using umatch bridge by simp
+    finally show ?thesis .
+  qed
+  have "Trans (seg ((M::pairseq)[qq]) jm1 (Lng ((M::pairseq)[qq]) - 1) @ B)
+          = Dpt (enat u) (bpHeadT (Trans (seg ((M::pairseq)[qq]) jm1 (Lng ((M::pairseq)[qq]) - 1) @ B)))"
+    by (rule op)
+  also have "\<dots> = Dpt (enat u) (C (bpHeadT (Trans (seg ((M::pairseq)[qq]) jm1 (Lng ((M::pairseq)[qq]) - 1)))))"
+    using keystone by simp
+  finally show ?thesis .
+qed
+
 end
