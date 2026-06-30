@@ -679,4 +679,100 @@ state when a session has been long-running or compacted.
 
 Re-run instructions for Round 6b: python/_r6_shift_invariance.py (the
 e1pos-restricted oper-commute confirmation, 200+58968 cases, 0 failures).
+
+=====================================================================
+ROUND 6b, part (B) (same pass; layerC/pss_scratch.thy,
+m_8_5_Mark_netfold_condV): the end-to-end driver architecture investigation
+the task brief asked for.  NOT a closure -- a genuine, concrete, missing
+PIECE found and formalized.
+=====================================================================
+
+QUESTION (per the task brief): is there a lemma anywhere that actually
+chains m_8_5_basepoint / m_8_5_deepen_block_explicit / m_8_5_anchor_fold /
+m_8_5_fold_C_commute / m_8_5_keystone_allq together, instantiating F/C/
+Inv/z concretely with the real Trans/Mark/BT objects?  Re-confirmed by grep
+(zero hits for any of these used as `OF`-arguments to each other): still
+NO -- this remains true even after Round 6's regime2 advances.
+
+WHAT WAS FOUND: a pre-existing, GENERIC abstract lemma
+`m_8_5_fold_of_colstep` (per-column fold telescoping, `f` an arbitrary
+"column functor": `f(Y@take(Suc m)B) = op m (f(Y@take m B))` for all
+`m<Lng B` implies `f(Y@B) = fold op [0..<Lng B] (f Y)`) ALREADY HAD A
+COMMENT explicitly saying it "instantiates BOTH to the Trans netfold
+(f = Trans) and to the MARK netfold (f = lambda M. Mark M jm1)" -- but
+grepping for any concrete Mark-level instantiation found ZERO hits: only
+the Trans-level one (m_8_5_Trans_netfold_surgery / m_8_5_Trans_netfold_
+condV) had actually been written.  This is exactly the missing bridge: the
+anchor chain (m_8_5_anchor_col / _fold / _trunkstuck_regime2) establishes
+`scb_decomp`/`MarkedB` facts about `Mark (host) n0` -- a fact ABOUT one
+fold step's substitution being well-positioned -- but nothing connected
+that to a genuine `fold`-level identity for `Mark (Y@B) n0` itself.
+
+FORMALIZED (green, layerC/pss_scratch.thy, this round):
+  m_8_5_Mark_netfold_condV: given the SAME per-column membership facts
+    m_8_5_Trans_netfold_condV already needs (hostR/hostP/hostJ1/hostT1:
+    RT_PS/PT_PS/transJ1>0/transT1!=0_B for each host_m = (Y@take m B)@
+    [B!m]), PLUS two new per-column facts (hostN0: n0 stays interior,
+    n0 < Lng host_m - 1; hostMk: (Mark (Y@take m B) n0, transC1 host_m)
+    \\in MarkedB -- EXACTLY what the anchor chain supplies, via MarkedB_def
+    unfolding against m_8_5_anchor_col's scb_decomp conclusion):
+      Mark (Y@B) n0 = fold (lambda m acc. scbSubst (transC1 host_m)
+                                                     (transC2 host_m) acc)
+                            [0..<Lng B] (Mark Y n0)
+    Proof: instantiates m_8_5_fold_of_colstep at f := (lambda M. Mark M n0),
+    discharging its `step` hypothesis via the per-column Mark recursion
+    m_8_5_Mark_scbSubst_step (ALREADY proven, frozen earlier in the file --
+    this is literally the SAME engine m_8_5_Mark_spine_deepen's comment
+    describes as "the master-key self-similar bridge's inductive step",
+    just not previously folded over a whole period).  Needed an explicit
+    `op` instantiation in the final `rule ... [where f=... and op=..., OF
+    step]` to avoid a "multiple unifiers" higher-order-unification failure
+    (f alone under-determines op from step's shape).
+
+WHY THIS MATTERS for the driver: `m_8_5_fold_C_commute`'s abstract `op`/
+`acc0`/`anchor` hypothesis now has a CONCRETE REALIZATION matching this
+lemma's `op`/`Mark Y n0`/`hostMk` exactly (same `scbSubst (transC1 host_m)
+(transC2 host_m)` shape).  So instantiating `m_8_5_fold_C_commute` at
+`acc0 := Mark Y n0` and feeding it THIS lemma's conclusion (rather than an
+abstract `fold`) is now mechanical -- PROVIDED `hostMk` is itself supplied
+by the anchor chain, which is the genuinely remaining wiring (NOT attempted
+this round): `m_8_5_anchor_fold`'s conclusion is stated as raw
+`scb_decomp (Mark (host_m) n0) sx (flatBT (transC1 host_{m+1})) bx`
+existence, which IS `(Mark host_m n0, transC1 host_{m+1}) \\in MarkedB` by
+`MarkedB_def` (an `\\exists`-unfold, mechanical) -- but `m_8_5_anchor_fold`'s
+OWN hypotheses (colMarked0/colMarkedJ/colMono/colRT) are themselves NOT
+yet discharged for genuine fold hosts (that's the still-open R2a/R2b/R2c
+question this and prior rounds have been chipping at).  So the chain is
+NOW: anchor_fold's named hyps (open) => anchor_fold (proven) => MarkedB
+(mechanical unfold) => hostMk => m_8_5_Mark_netfold_condV (this round) =>
+feed into m_8_5_fold_C_commute (needs matching acc0:=Mark Y n0, NOT yet
+wired) => m_8_5_keystone_allq's `commute` hyp (still needs the OUTER
+q-level z/F too, R1, entirely separate and still open).
+
+NOT attempted this round (honest accounting of what remains, in order):
+  (1) wire m_8_5_anchor_fold's conclusion into m_8_5_Mark_netfold_condV's
+      hostMk argument (mechanical MarkedB_def unfold, NOT done -- the two
+      lemmas have never been used together);
+  (2) discharge m_8_5_anchor_fold's OWN per-column hypotheses for a
+      genuine fold (still the open R2a leR / R2b / R2c question, now with
+      the Round-6 Pcut(N)-witness available for the trunk-stuck sub-case
+      but NOT the non-trunk-stuck case, and NOT derived from transCondV
+      itself rather than carried as a hypothesis);
+  (3) connect m_8_5_Mark_netfold_condV's `Mark Y n0`-based fold to
+      m_8_5_fold_C_commute's `acc0` (needs acc0 := Mark Y n0 specifically,
+      and Cinv/commute's `Inv` predicate concretely instantiated -- not
+      even SKETCHED yet, since Inv must characterize whatever invariant
+      lets `m_8_5_scbSubst_addBT_commute`'s own preconditions transfer
+      across the WHOLE fold, not just one step);
+  (4) the OUTER q-level layer of m_8_5_keystone_allq (R1: the q=2 base
+      instance, confirmed in Round 3 to share R2's bottleneck, not
+      separately attackable) is a COMPLETELY SEPARATE, still fully open,
+      outer wrapper around everything above -- this round's progress is
+      entirely at the WITHIN-PERIOD column-fold level, not the q-tower
+      level.
+So "the end-to-end driver" is now ONE concrete lemma closer (the netfold
+SHAPE is no longer missing/unwritten), but still requires (1)-(4) above,
+of which (2) and (4) are the genuinely hard, still-unsolved mathematical
+content; (1) and (3) are real but more mechanical wiring work for a
+future round.
 """
