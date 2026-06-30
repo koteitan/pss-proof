@@ -75,18 +75,18 @@
       - 🚨 general〔`m_8_6_exch_of_lhs_closed`〕(⛔ 8.5)
     - ✅ 補題（公差 $(1,0)$ のペア数列の $\textrm{Trans}$ の基本性質）〔`m_8_6_const2nd_Trans_paper`〕
     - ✅ 補題（公差 $(1,1)$ のペア数列の $\textrm{Trans}$ の展開規則）〔`m_8_6_diagSeq_Trans_oper_paper`〕
-    - 🚨 補題（順序数項の末尾単項の零化可能性）（原文偽=A25）
+    - ✅ 補題（順序数項の末尾単項の零化可能性）
       - ✅ clean領域〔`m_8_6_trailing_principal_peel`〕
-      - 🚨 一般領域（原文偽）
+      - ❌ 一般領域〔A25〕
   - 🚨 §8.7 主結果
     - ✅ 補題（公差 $(0,0)$ のペア数列の $\textrm{Trans}$ の基本性質）〔`m_8_7_const00_Trans`〕
     - 🚨 補題（基本列の降下性）〔`fseq_descend`。clean到達可、条件I-V/VI交換則連鎖が本体〕
     - ✅ 補題（順序数項の再帰構造）〔`m_8_7_OT_scb_recursive`〕
     - ✅ 補題（順序数項の共終数の遺伝性）〔`m_8_7_OT_dom_hereditary`〕
-    - 🚨 補題（順序数項の末尾項の零化可能性）（原文偽=A26）
+    - ✅ 補題（順序数項の末尾項の零化可能性）
       - ✅ top-level〔`m_8_7_toplevel_OT_tail_annihilate`〕
-      - 🚨 一般化（operB 全域性）
-    - 🚨 補題（$\textrm{Pred}$ と $[0]$ の関係）〔原文偽=A27、停止性は6325ルートで迂回〕
+      - ❌ 一般化〔operB全域性、A26〕
+    - ❌ 補題（$\textrm{Pred}$ と $[0]$ の関係）〔A27、6325ルート迂回〕
     - ✅ 補題（順序数項の基本例）〔`m_8_7_OT_examples`〕
     - 🚨 補題（$\textrm{Trans}$ が標準形を保つこと）= OT所属〔残=R2 dstep+R3 newOT/gbt+帰納組立〕
       - ✅ clean部（rank0/T_B/単項leaf）〔`m_8_7_Trans_*`〕
