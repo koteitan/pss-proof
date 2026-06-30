@@ -6621,6 +6621,154 @@ proof
 qed
 
 
+text \<open>§8.5 ANCHOR, TRUNK-STUCK CASE — CORRECTION/SHARPENING of the note above (same
+  round): "REFUTED ROUTE #15" only refutes rescuing R2a ITSELF (\<open>(N,n\<^sub>0) \<in> Marked\<close>) for a
+  trunk-stuck \<open>n\<^sub>0\<close> — it does NOT refute finding a DIFFERENT witness for the raw \<open>anchor\<close>
+  obligation that \<open>m_8_5_fold_C_commute\<close> actually needs.  Re-empirical-testing
+  (\<open>python/_marked_last_component_probe.py\<close>, \<open>python/_trunk_stuck_equality.py\<close>, after
+  fixing the \<open>trans_model.py\<close> nat-subtraction bug noted above) found raw \<open>anchor\<close> holds
+  \<open>51/51\<close> in the keystone's own regime even on trunk-stuck \<open>multiT\<close> columns, via a
+  GENUINELY branch-local mechanism: apply @{thm [source] Mark_MarkedB_nest} not to \<open>N\<close>
+  itself (impossible, R2a is false) but to the SMALLER last \<open>P\<close>-component
+  \<open>PJ = drop (Pcut N) N\<close>, at the TWO marks \<open>0\<close> and \<open>transJm1 (N@[col]) - Pcut N\<close> — both
+  \<open>Mark N n\<^sub>0\<close> and \<open>transC1 (N@[col])\<close> collapse, via the RAW (unconditional, no \<open>Marked\<close>
+  hypothesis needed — it is just the \<open>multiT\<close> branch of the \<open>Mark\<close> recursion equation)
+  multi-step \<open>Mark N m = Mark PJ (m - Pcut N)\<close>, into exactly \<open>Mark PJ 0\<close> and
+  \<open>Mark PJ (transJm1(N@[col]) - Pcut N)\<close> respectively (the \<open>n\<^sub>0\<close> side because nat
+  subtraction truncates \<open>n\<^sub>0 - Pcut N\<close> to \<open>0\<close> when \<open>n\<^sub>0\<close> is trunk-stuck).  So R2a's failure
+  for \<open>n\<^sub>0\<close> is harmless: the SAME junk-clamp that breaks the global \<open>Marked\<close>-route also
+  lands EXACTLY on \<open>Mark PJ 0\<close>, and \<open>(PJ, 0) \<in> Marked\<close> is essentially FREE — \<open>adm PJ 0\<close>
+  is unconditionally true for any \<open>PJ\<close> (@{thm [source] adm_index0}, since \<open>nadm _ 0\<close> is
+  never satisfiable), and \<open>leR PJ 0 0 (Lng PJ - 1)\<close> holds because \<open>PJ\<close>, being the LAST
+  \<open>P\<close>-component of a \<open>T_PS\<close> host, is ALREADY known to be zero-or-mono
+  (@{thm [source] m_6_2_P_components_1}, frozen base) — either case gives the \<open>leR\<close>
+  reflexively or by \<open>monoT_def\<close> directly.  So the ONLY genuinely new open hypothesis is a
+  SMALLER-SCALE analogue of R2b (\<open>(PJ, transJm1(N@[col]) - Pcut N) \<in> Marked\<close>) plus the
+  trivial monotonicity \<open>Pcut N \<le> transJm1 (N@[col])\<close> — both supplied as hypotheses below
+  (a future round's job to discharge from the keystone's own \<open>transCondV\<close> regime, the
+  same way R2b itself was always meant to be).  The \<open>PJ = [(0,0)]\<close> degenerate sub-case
+  (the very FIRST column of a branch) is even simpler: BOTH marks collapse to the literal
+  CONSTANT \<open>Dpt 0 0\<^sub>B\<close>, so the witness is the trivial reflexive \<open>scb_decomp\<close>
+  (@{thm [source] scb_decomp_self}), no \<open>Mark_MarkedB_nest\<close> needed at all.\<close>
+
+lemma m_8_5_Mark_multi_raw:
+  fixes M :: pairseq and m :: nat
+  assumes MR: "M \<in> RT_PS" and mu: "multiT M"
+  shows "Mark M m = (if drop (Pcut M) M = [(0,0)] then Dpt 0 0\<^sub>B
+                      else Mark (drop (Pcut M) M) (m - Pcut M))"
+proof -
+  have MT: "M \<in> T_PS" using MR by (simp add: RT_PS_def)
+  have L: "1 < Lng M" by (rule multiT_imp_Lng_gt1[OF MT mu])
+  have Lgt1: "\<not> Lng M \<le> Suc 0" using L by simp
+  have domK: "\<And>m'. Trans_Mark_dom (Inr (M, m'))" by (rule m_7_3_Mark_welldef[OF MR])
+  have nmono: "\<not> monoT M" using mu by (simp add: multiT_def)
+  have c1: "(M \<notin> RT_PS) = False" using MR by simp
+  have c2: "(Lng M - 1 = 0) = False" using L by simp
+  have c3: "monoT M = False" using nmono by simp
+  have PJeq: "P M ! (Lng (P M) - 1) = drop (Pcut M) M"
+    using trans_multiT_last_component(1)[OF MT mu] by simp
+  have j0eq: "Lng M - 1 - Lng (P M ! (Lng (P M) - 1)) + 1 = Pcut M"
+    by (rule trans_multiT_last_component(2)[OF MT mu])
+  have raw: "Mark M m =
+      (if P M ! (Lng (P M) - 1) = [(0, 0)] then Dpt 0 0\<^sub>B
+       else Mark (P M ! (Lng (P M) - 1))
+              (m - (Lng M - 1 - Lng (P M ! (Lng (P M) - 1)) + 1)))"
+    by (subst Mark.psimps[OF domK]) (simp only: c1 c2 c3 if_False Let_def)
+  show ?thesis using raw PJeq j0eq by simp
+qed
+
+lemma m_8_5_PJ_marked0:
+  fixes M :: pairseq
+  assumes MT: "M \<in> T_PS" and mu: "multiT M"
+  shows "(drop (Pcut M) M, 0) \<in> Marked"
+proof -
+  have L: "1 < Lng M" by (rule multiT_imp_Lng_gt1[OF MT mu])
+  have cut: "0 < Pcut M \<and> Pcut M \<le> Lng M - 1" using Pcut_le[OF L] by simp
+  define PJ where "PJ = drop (Pcut M) M"
+  have Pne: "P M \<noteq> []" by (rule P_nonempty)
+  have idxlt: "Lng (P M) - 1 < Lng (P M)" using Pne by (cases "P M") auto
+  have PJeq: "P M ! (Lng (P M) - 1) = PJ"
+    using trans_multiT_last_component(1)[OF MT mu] PJ_def by simp
+  have PJmem: "PJ \<in> set (P M)" using PJeq idxlt nth_mem by metis
+  have PJnonmulti: "zeroT PJ \<or> monoT PJ"
+    using m_6_2_P_components_1[OF MT] PJmem by blast
+  have LngPJ: "Lng PJ = Lng M - Pcut M" using PJ_def by simp
+  have LPJpos: "0 < Lng PJ" using cut LngPJ L by linarith
+  have PJT: "PJ \<in> T_PS" using LPJpos by (simp add: T_PS_def)
+  have leRPJ: "leR PJ 0 0 (Lng PJ - 1)"
+  proof (cases "zeroT PJ")
+    case True
+    have len1: "Lng PJ = 1" using True by (simp add: zeroT_def)
+    have "le0 PJ 0 0" using LPJpos by (simp add: le0_def)
+    thus ?thesis using len1 by (simp add: leR_def)
+  next
+    case False
+    hence "monoT PJ" using PJnonmulti by simp
+    thus ?thesis by (simp add: monoT_def)
+  qed
+  have adm0: "adm PJ 0" by (rule adm_index0)
+  show ?thesis using PJT adm0 leRPJ PJ_def unfolding Marked_def by simp
+qed
+
+lemma m_8_5_anchor_col_trunkstuck:
+  fixes N :: pairseq and col :: "nat \<times> nat" and n0 :: nat
+  assumes NR: "N \<in> RT_PS"
+    and muN: "multiT N"
+    and stuck: "n0 < Pcut N"
+    and mJpcut: "(drop (Pcut N) N, transJm1 (N @ [col]) - Pcut N) \<in> Marked"
+    and pcutle: "Pcut N \<le> transJm1 (N @ [col])"
+  shows "\<exists>sx bx. scb_decomp (Mark N n0) sx (flatBT (transC1 (N @ [col]))) bx"
+proof -
+  have NT: "N \<in> T_PS" using NR by (simp add: RT_PS_def)
+  have Nne: "N \<noteq> []" using NT by (simp add: T_PS_def)
+  have Lgt1col: "1 < Lng (N @ [col])" using Nne by (cases N) auto
+  have Npred: "Pred (N @ [col]) = N" using Lgt1col by (simp add: Pred_def)
+  have c1eq: "transC1 (N @ [col]) = Mark N (transJm1 (N @ [col]))"
+    by (simp add: transC1_def Npred)
+  define PJ where "PJ = drop (Pcut N) N"
+  define jcur where "jcur = transJm1 (N @ [col]) - Pcut N"
+  have rawN0: "Mark N n0 = (if PJ = [(0,0)] then Dpt 0 0\<^sub>B else Mark PJ (n0 - Pcut N))"
+    using m_8_5_Mark_multi_raw[OF NR muN, where m=n0] PJ_def by simp
+  have rawNj: "Mark N (transJm1 (N @ [col]))
+                 = (if PJ = [(0,0)] then Dpt 0 0\<^sub>B else Mark PJ jcur)"
+    using m_8_5_Mark_multi_raw[OF NR muN, where m="transJm1 (N @ [col])"] PJ_def jcur_def
+    by simp
+  show ?thesis
+  proof (cases "PJ = [(0,0)]")
+    case True
+    have eqv: "Mark N n0 = transC1 (N @ [col])" using rawN0 rawNj c1eq True by simp
+    have ipt: "isPTB_str (flatBT (Dpt (0::enat) 0\<^sub>B))" by (rule isPTB_str_Dpt) simp_all
+    have "scb_decomp (Mark N n0) [] (flatBT (Mark N n0)) []"
+      by (rule scb_decomp_self) (use rawN0 True ipt in simp)
+    thus ?thesis using eqv by auto
+  next
+    case False
+    have n0clamp: "n0 - Pcut N = 0" using stuck by simp
+    have markN0': "Mark N n0 = Mark PJ 0" using rawN0 False n0clamp by simp
+    have markNj': "Mark N (transJm1 (N @ [col])) = Mark PJ jcur" using rawNj False by simp
+    have NLgt1: "1 < Lng N" by (rule multiT_imp_Lng_gt1[OF NT muN])
+    have cut: "0 < Pcut N \<and> Pcut N \<le> Lng N - 1"
+      using Pcut_le[OF NLgt1] by simp
+    have LngPJ: "Lng PJ = Lng N - Pcut N" using PJ_def by simp
+    have LPJpos: "0 < Lng PJ" using cut LngPJ NLgt1 by linarith
+    have PJne: "PJ \<noteq> []" using LPJpos by auto
+    have Pne: "P N \<noteq> []" by (rule P_nonempty)
+    have idxlt: "Lng (P N) - 1 < Lng (P N)" using Pne by (cases "P N") auto
+    have PJeq: "P N ! (Lng (P N) - 1) = PJ"
+      using trans_multiT_last_component(1)[OF NT muN] PJ_def by simp
+    have PJRT: "PJ \<in> RT_PS" using m_6_6_P_reduced[OF NT] NR idxlt PJeq by auto
+    have mark0: "(PJ, 0) \<in> Marked" using m_8_5_PJ_marked0[OF NT muN] PJ_def by simp
+    have markJ: "(PJ, jcur) \<in> Marked" using mJpcut PJ_def jcur_def by simp
+    have le0jcur: "(0::nat) \<le> jcur" by simp
+    have nest: "(Mark PJ 0, Mark PJ jcur) \<in> MarkedB"
+      using mark0 markJ le0jcur PJRT Mark_MarkedB_nest by blast
+    obtain sx bx where dx: "scb_decomp (Mark PJ 0) sx (flatBT (Mark PJ jcur)) bx"
+      using nest unfolding MarkedB_def by auto
+    show ?thesis using dx markN0' markNj' c1eq by auto
+  qed
+qed
+
+
 text \<open>§8.5 KEYSTONE TELESCOPE — the GENERIC commutation instantiated concretely at the
   BT/scbSubst level, via the ALREADY-PROVEN @{thm [source] m_8_5_scbSubst_addBT_commute}.
   The SAME per-column rightmost-spine anchoring used by @{thm [source] b3b_rnav_fold_drive}

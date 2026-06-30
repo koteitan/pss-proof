@@ -68,7 +68,10 @@
           - 🚨 R1: base q=2 単体〔transJm1定数化chain不成立確認(refuted route14,q=2非特異)、R2と同じanchor律速〕
           - 🚨 R2: fold-C可換〔anchor→Marked nesting(R2a/R2b/R2c)に還元済(`m_8_5_anchor_col`/`_fold`)〕
             - ✅ R2a adm成分〔`m_8_5_marked_adm_persist`、prefix不変・無条件〕
-            - 🚨 R2a leR成分〔multi-branch開始列が根本原因(branch-local addBT証人が次候補)、`m_8_5_marked_le0_step`は一般遷移補題のみ〕
+            - 🚨 R2a leR成分
+              - ✅ trunk-stuck(multiT+n0<Pcut)時leR偽を証明〔`m_8_5_marked_requires_last_component`、N上のMark_MarkedB_nestは救済不可〕
+              - ✅ trunk-stuck時の代替anchor witness〔`m_8_5_anchor_col_trunkstuck`、branch-local最終P成分PJ上のMark_MarkedB_nest、anchor自体は51/51経験的成立〕
+              - 🚨 残=R2b'(PJ規模、`mJpcut`)+Pcut単調性(`pcutle`)をkeystone regimeから導出
         - ✅ (op) marked-head 形〔`m_8_5_Mark_headform`(shape+値=entry M 1 m、Marked から)〕
     - ✅ 補題（条件 (V) の下での $\textrm{Joints}$ と $\textrm{FirstNodes}$ と $t_2$ の基本性質）〔`m_8_5_Joints_FirstNodes_basic` parts(1)(2)〕
     - 🚨 補題（条件 (V) の下での各種 scb分解）〔def 内部記号露出要〕
