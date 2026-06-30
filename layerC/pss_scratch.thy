@@ -6536,6 +6536,32 @@ lemma m_8_5_entry_jm1_step:
   shows "entry ((M::pairseq)[Suc qq]) 1 jm1 = entry ((M::pairseq)[qq]) 1 jm1"
   using app jlt by (simp add: m_8_5_entry_append_prefix)
 
+text \<open>§8.5 value-match u-pin — iterating the per-step invariance from the base \<open>M[2]\<close>:
+  the marked-head outer value \<open>entry (M[qq]) 1 jm1\<close> is CONSTANT (\<open>= entry (M[2]) 1 jm1\<close>)
+  across all iterates \<open>qq \<ge> 2\<close>, given that each step appends (\<open>stepapp\<close>) and \<open>jm1\<close> stays
+  in the prefix (\<open>jlt\<close>).  This pins the kernel surgC's \<open>u\<close> to the single constant
+  \<open>entry (M[2]) 1 jm1\<close>, discharging the value-match \<open>umatch\<close> for ALL \<open>qq\<close>.\<close>
+
+lemma m_8_5_entry_jm1_const:
+  fixes M :: pairseq and jm1 qq :: nat
+  assumes stepapp: "\<And>p. 2 \<le> p \<Longrightarrow> \<exists>B. (M::pairseq)[Suc p] = (M::pairseq)[p] @ B"
+    and jlt: "\<And>p. 2 \<le> p \<Longrightarrow> jm1 < Lng ((M::pairseq)[p])"
+    and qq2: "2 \<le> qq"
+  shows "entry ((M::pairseq)[qq]) 1 jm1 = entry ((M::pairseq)[2]) 1 jm1"
+  using qq2
+proof (induction qq rule: nat_induct_at_least)
+  case base
+  show ?case by simp
+next
+  case (Suc p)
+  obtain B where appB: "(M::pairseq)[Suc p] = (M::pairseq)[p] @ B"
+    using stepapp[OF Suc.hyps] by blast
+  have "entry ((M::pairseq)[Suc p]) 1 jm1 = entry ((M::pairseq)[p]) 1 jm1"
+    by (rule m_8_5_entry_jm1_step[OF appB jlt[OF Suc.hyps]])
+  also have "\<dots> = entry ((M::pairseq)[2]) 1 jm1" by (rule Suc.IH)
+  finally show ?case .
+qed
+
 text \<open>§8.5 surgC INSTANCE from the keystone — the descent-kernel's surgC body for one
   \<open>(qq,B)\<close>, derived from the whole-period keystone alone.  Assembles the three green
   faces: the §7.4 bridge @{thm [source] Mark_iterate_slice_append}
