@@ -63,7 +63,10 @@
         - ✅ (A) deepen SHAPE〔`m_8_5_appended_col_deepen` 他〕
         - ✅ (B) wiring〔rnav engine/§7.4 Mark↔Trans 橋〕
         - ✅ surgC⟸keystone 組立〔`m_8_5_surgC_instance_of_keystone`、umatch regime化済、残=Marked/RT plumbing〕
-        - 🚨 (keystone) `bpHeadT(Trans(slice@B))=C(bpHeadT(Trans slice))`〔∀q→base q=2 + fold-C可換に telescope済(`m_8_5_keystone_allq`)〕
+        - 🚨 (keystone) `bpHeadT(Trans(slice@B))=C(bpHeadT(Trans slice))`
+          - ✅ telescope（∀q→base q=2(R1)+fold-C可換(R2)）〔`m_8_5_keystone_allq`〕
+          - 🚨 R1: base q=2 単体
+          - 🚨 R2: fold-C可換〔anchor→Marked nesting(R2a/R2b/R2c)に還元済(`m_8_5_anchor_col`/`_fold`)、中間列m>0が未着手〕
         - ✅ (op) marked-head 形〔`m_8_5_Mark_headform`(shape+値=entry M 1 m、Marked から)〕
     - ✅ 補題（条件 (V) の下での $\textrm{Joints}$ と $\textrm{FirstNodes}$ と $t_2$ の基本性質）〔`m_8_5_Joints_FirstNodes_basic` parts(1)(2)〕
     - 🚨 補題（条件 (V) の下での各種 scb分解）〔def 内部記号露出要〕
