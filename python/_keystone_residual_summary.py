@@ -238,4 +238,123 @@ Re-run instructions: this file is documentation, not an executable check.
   - Round 3 numbers: _r2a_branch_routing.py (adm/leR split, regime-proper
     filtering, monotone-failure + one-edge-transitivity confirmation, the
     worked multi-branch example).
+
+=====================================================================
+ROUND 4 (2026-07-01, this round; layerC/pss_scratch.thy,
+m_8_5_marked_requires_last_component / m_8_5_Mark_multi_raw /
+m_8_5_PJ_marked0 / m_8_5_anchor_col_trunkstuck): R2a leR's trunk-stuck
+failure PROVEN (not just empirical) AND a genuinely-working branch-local
+replacement anchor witness found and formalized (51/51 empirical).
+=====================================================================
+
+BUG FIX (important, changes all downstream numbers vs Round 3): python/
+trans_model.py's `Mark` multi/non-monoT case used Python's SIGNED `m - j0`
+for the recursive call into the last P-component, diverging from Isabelle's
+TRUNCATING `nat` subtraction whenever `m < j0` (negative-index Python list
+wraparound vs Isabelle's `0`).  Fixed to `max(m - j0, 0)`.  Round 3's
+_r2a_branch_routing.py numbers about raw `anchor` rates for multiT hosts
+were computed on the BUGGY model and are UNRELIABLE; the corrected re-run
+(below) tells a very different, much more positive story.
+
+ATTEMPT 1 (formalize the Round-3 root-cause diagnosis as a THEOREM, not just
+an empirical pattern).  The already-proven, frozen, unconditional
+`multi_Marked_last_component` (layerB/pss_wip.thy:1220, 0/6,080 empirical):
+for a multiT host M, `(M,m) \\in Marked` FORCES `Pcut M <= m`.  Its
+contrapositive -- formalized as `m_8_5_marked_requires_last_component`,
+green, unconditional -- says: whenever a fold column makes the host multiT
+AND the tracked mark n0 still sits in the trunk (`n0 < Pcut N`), `(N,n0) \\in
+Marked` is PROVABLY false.  This also revealed (by reading
+`Mark_MarkedB_nest`'s OWN proof, and the existing §7.4 companion
+`m_7_4_repr_multiT_step`, layerB/pss_wip.thy:11273) that the
+`Mark_MarkedB_nest` route is ALREADY maximally branch-local internally (it
+recurses into the SAME last P-component PJ via this SAME
+`multi_Marked_last_component`) -- so reusing `Mark_MarkedB_nest` ON THE FULL
+HOST N with marks n0/transJm1(N') CANNOT be rescued for trunk-stuck n0,
+full stop.  This is genuinely refuted (route #15 in the strict sense: "R2a
+on N itself cannot be rescued").  Committed (ee2661b).
+
+ATTEMPT 2 (re-test raw `anchor`, the ACTUAL thing m_8_5_fold_C_commute
+needs, with the bug fixed -- a DIFFERENT question from attempt 1, since
+attempt 1 only refutes one ROUTE to it, not anchor itself).
+_marked_last_component_probe.py (82 genuine fold-column instances, keystone's
+own transCondV+hp1+parR+coin+jm1pos regime): "anchor | MONO: 54/54"; "anchor
+| MULTI: 28/28" -- raw anchor holds EVERY TIME in this sample, even though
+ALL 28 multiT instances are trunk-stuck (R2a provably false by attempt 1).
+This means there IS a working witness, just not via Mark_MarkedB_nest-on-N.
+
+ATTEMPT 3 (find the actual witness mechanism: hand-trace + broader sweep).
+_trunk_stuck_equality.py (51 trunk-stuck multiT instances): tested whether
+Mark(Nprev,n0) and transC1(Ncur) = Mark(Nprev, transJm1(Ncur)) are LITERALLY
+EQUAL (a trivial reflexive scb_decomp would then suffice).  Result: equal in
+45/51 (88%); for ALL 51, anchor still holds (the other 6 via a NON-trivial
+but still simple scb_decomp -- a 2-symbol-prefix peel, `Dpt 0 (...)`).
+Mechanism identified: Mark's OWN multiT recursion equation (NOT addBT --
+that is Trans's shape; Mark's non-monoT case is the structurally simpler
+`Mark M m = Mark PJ (m - Pcut M)` with PJ = drop (Pcut M) M, or the constant
+`Dpt 0 0_B` when PJ=[(0,0)]) applies to BOTH n0 and transJm1(Ncur)
+UNCONDITIONALLY -- no Marked-membership needed for the EQUATION itself, only
+for the higher-level CLAIM that the result is the "intended" value.  Since
+n0 < Pcut(Nprev) (trunk-stuck), nat subtraction clamps `n0 - Pcut Nprev` to
+literal `0`: `Mark Nprev n0 = Mark PJ 0` ALWAYS.  And empirically (0/51 in
+this regime) the next column's own jm1cur = transJm1(Ncur) is NEVER ALSO
+trunk-stuck (jm1cur >= Pcut Nprev) -- so `transC1(Ncur) = Mark PJ (jm1cur -
+Pcut Nprev)`, a REAL (non-clamped) recursive value.  `(PJ,0) \\in Marked` is
+essentially FREE: `adm PJ 0` is unconditionally true for ANY pairseq
+(`nadm _ 0` is never satisfiable, already-proven `adm_index0`), and `leR PJ
+0 0 (Lng PJ-1)` holds because PJ -- the LAST P-component of any T_PS host --
+is ALREADY KNOWN to be zero-or-mono (already-proven `m_6_2_P_components_1`,
+frozen base A), and both cases give `leR` immediately (reflexively, or via
+`monoT_def` directly).  So `Mark_MarkedB_nest` applied to the SMALLER PJ
+(not N) at marks `0` and `jm1cur - Pcut Nprev` gives exactly the needed
+`scb_decomp`, PROVIDED `(PJ, jm1cur - Pcut Nprev) \\in Marked` (a
+smaller-scale analogue of R2b, call it R2b') and `Pcut Nprev <= jm1cur`
+(trivial monotonicity, matching the 51/51 "never also stuck" empirical
+finding).
+
+FORMALIZED (green, layerC/pss_scratch.thy, this round):
+  m_8_5_Mark_multi_raw: M \\in RT_PS, multiT M ==> Mark M m = (if drop
+    (Pcut M) M = [(0,0)] then Dpt 0 0_B else Mark (drop (Pcut M) M)
+    (m - Pcut M)).  UNCONDITIONAL (no Marked hypothesis) -- this is just
+    Mark.psimps's non-monoT branch, extracted as a standalone reusable fact
+    (mirrors the inline `raw` step already buried inside
+    m_7_4_repr_multiT_step's proof, but without that lemma's Marked
+    precondition).
+  m_8_5_PJ_marked0: M \\in T_PS, multiT M ==> (drop (Pcut M) M, 0) \\in
+    Marked.  UNCONDITIONAL.  Via adm_index0 + m_6_2_P_components_1.
+  m_8_5_anchor_col_trunkstuck: N \\in RT_PS, multiT N, n0 < Pcut N,
+    (drop (Pcut N) N, transJm1(N@[col]) - Pcut N) \\in Marked [R2b'],
+    Pcut N <= transJm1(N@[col]) [monotonicity]
+    ==> \\exists sx bx. scb_decomp (Mark N n0) sx (flatBT (transC1
+    (N@[col]))) bx.  Two cases: PJ=[(0,0)] (both sides collapse to the
+    SAME constant Dpt 0 0_B, trivial reflexive scb_decomp_self witness);
+    PJ<>[(0,0)] (Mark_MarkedB_nest applied to PJ, via m_8_5_PJ_marked0 +
+    the R2b'/monotonicity hypotheses).
+
+NET this round: the "branch-local addBT witness" hope from Round 3 is
+CONFIRMED REAL, just not in the form first guessed (it is a branch-local
+Mark_MarkedB_nest-on-PJ witness, not an addBT decomposition -- addBT is
+Trans's multi shape, Mark's is the simpler pure-recursion-into-PJ shape).
+R2a's leR failure for trunk-stuck columns is now FULLY accounted for: it is
+harmless, because anchor does not actually need it.  The genuinely OPEN
+residual has SHRUNK again, from "raw leR/Marked failure, root cause
+unclear" to two small, named, structurally-motivated facts about the
+SMALLER PJ: R2b' (`(PJ, jm1cur - Pcut N) \\in Marked`) and the monotonicity
+`Pcut N <= jm1cur`.  Both are STRONGLY supported empirically (0/51
+exceptions to monotonicity in this round's sample; R2b' is exactly what
+made markNj' computable in all 51 cases) but NOT YET derived from the
+keystone's own transCondV regime -- that derivation (likely a structural
+fact about where a freshly-opened branch's OWN admissible parent lands,
+analogous to how R2b was always expected to be discharged for the
+non-trunk-stuck case) is the next round's job.  Also not yet attempted: an
+`_fold`-level wrapper (matching `m_8_5_anchor_fold`'s \\<And>m shape) that
+case-splits each column between the existing m_8_5_anchor_col (mono /
+not-trunk-stuck) and this round's m_8_5_anchor_col_trunkstuck (trunk-stuck),
+to fully discharge m_8_5_fold_C_commute's `anchor` hypothesis end to end.
+
+Re-run instructions for Round 4: python/_marked_last_component_probe.py
+(monoT/multiT split + sanity checks of multi_Marked_last_component's
+contrapositive), python/_trunk_stuck_equality.py (the equality/anchor
+breakdown that found the 45/51 + 6/51 split), python/_branch_local_witness.py
+(first exploratory pass, superseded by the other two once the bug was
+found -- kept for the worked examples).
 """

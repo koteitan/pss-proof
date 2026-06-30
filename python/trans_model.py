@@ -192,7 +192,7 @@ def Mark(M, m, depth=0):
         return Dpt(entry(M,1,j1), ZB)
     J1 = len(P(M)) - 1; PJ = P(M)[J1]; j0 = j1 - Lng(PJ) + 1
     if PJ == [(0,0)]: return Dpt(0, ZB)
-    return Mark(PJ, m - j0, depth+1)
+    return Mark(PJ, max(m - j0, 0), depth+1)   # NAT subtraction (Isabelle truncates at 0)
 
 def dfree_BT(t): return all(dfree_BP(p) for p in t[1])
 def dfree_BP(p): return dfree_BT(p[2])   # v != inf always (ints)
