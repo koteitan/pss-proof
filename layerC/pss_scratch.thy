@@ -6495,13 +6495,33 @@ proof -
   thus ?thesis using vt by simp
 qed
 
+text \<open>§8.5 marked value NONZERO — the marked value at an interior admissible basepoint
+  \<open>0 < m < Lng M - 1\<close> is never \<open>0\<^sub>B\<close>: its @{const RightNodes} list starts with
+  \<open>entry M 1 m\<close> (@{thm [source] m_7_4_RightNodes_Mark}) hence is nonempty, and
+  @{thm [source] rnsub_RightNodes_empty_iff} (\<open>RightNodes t = [] \<longleftrightarrow> t = 0\<^sub>B\<close>) gives
+  \<open>Mark M m \<noteq> 0\<^sub>B\<close>.  Discharges the \<open>mne\<close> side of the surgC instance from the kernel's
+  \<open>jm1pos\<close> + \<open>rng_sq\<close>.\<close>
+
+lemma m_8_5_Mark_nonzero:
+  fixes M :: pairseq and m :: nat
+  assumes MR: "M \<in> RT_PS" and mk: "(M, m) \<in> Marked"
+    and pos: "0 < m" and lt: "m < Lng M - 1"
+  shows "Mark M m \<noteq> 0\<^sub>B"
+proof -
+  obtain a0 a1 where "RightNodes (Mark M m) = [entry M 1 m] @ a1"
+    using m_7_4_RightNodes_Mark[OF mk MR pos lt] by blast
+  hence "RightNodes (Mark M m) \<noteq> []" by simp
+  thus ?thesis by (simp add: rnsub_RightNodes_empty_iff)
+qed
+
 text \<open>§8.5 surgC INSTANCE from the keystone — the descent-kernel's surgC body for one
   \<open>(qq,B)\<close>, derived from the whole-period keystone alone.  Assembles the three green
   faces: the §7.4 bridge @{thm [source] Mark_iterate_slice_append}
   (\<open>Mark (M[Suc qq]) jm1 = Trans (slice \<frown> B)\<close>), the marked-head form
   @{thm [source] m_8_5_Mark_headform} (op shape + outer value \<open>= entry (M[Suc qq]) 1 jm1\<close>),
-  and the projection glue @{thm [source] m_8_5_surgC_of_keystone}.  The two non-keystone
-  side hypotheses are the trivial \<open>Mark (M[Suc qq]) jm1 \<noteq> 0\<^sub>B\<close> and the value-match
+  and the projection glue @{thm [source] m_8_5_surgC_of_keystone}.  The \<open>Mark \<noteq> 0\<^sub>B\<close>
+  side is discharged internally via @{thm [source] m_8_5_Mark_nonzero} (from \<open>jm1pos\<close> +
+  \<open>rng_sq\<close>), so the ONLY non-keystone side left is the value-match
   \<open>entry (M[Suc qq]) 1 jm1 = u\<close>.  This is exactly the kernel's \<open>surgC\<close> obligation, now
   green-modulo the single exposed keystone identity.\<close>
 
@@ -6513,13 +6533,15 @@ lemma m_8_5_surgC_instance_of_keystone:
     and app: "(M::pairseq)[Suc qq] = (M::pairseq)[qq] @ B"
     and Mpne: "0 < Lng ((M::pairseq)[qq])"
     and jle: "jm1 \<le> Lng ((M::pairseq)[qq])"
-    and mne: "Mark ((M::pairseq)[Suc qq]) jm1 \<noteq> 0\<^sub>B"
+    and jm1pos: "0 < jm1"
     and umatch: "entry ((M::pairseq)[Suc qq]) 1 jm1 = u"
     and keystone: "bpHeadT (Trans (seg ((M::pairseq)[qq]) jm1 (Lng ((M::pairseq)[qq]) - 1) @ B))
                      = C (bpHeadT (Trans (seg ((M::pairseq)[qq]) jm1 (Lng ((M::pairseq)[qq]) - 1))))"
   shows "Trans (seg ((M::pairseq)[qq]) jm1 (Lng ((M::pairseq)[qq]) - 1) @ B)
            = Dpt (enat u) (C (bpHeadT (Trans (seg ((M::pairseq)[qq]) jm1 (Lng ((M::pairseq)[qq]) - 1)))))"
 proof -
+  have mne: "Mark ((M::pairseq)[Suc qq]) jm1 \<noteq> 0\<^sub>B"
+    by (rule m_8_5_Mark_nonzero[OF MR_sq mk_sq jm1pos rng_sq])
   have bridge: "Mark ((M::pairseq)[Suc qq]) jm1
                   = Trans (seg ((M::pairseq)[qq]) jm1 (Lng ((M::pairseq)[qq]) - 1) @ B)"
     by (rule Mark_iterate_slice_append[OF mk_sq MR_sq rng_sq app Mpne jle])
