@@ -11,6 +11,8 @@
   - 凡例: **各項目には必ず 🚨（未証明）または ✅（証明済）を付ける**（司令マーカー）。
   - 🚨🤖 ＝ agent 作業中
   - 📘 ＝ [Buc1] 引用 sorry（外部結果、原文も証明せず引用のみ。後で埋める。`buc1_*`）
+  - ⛔ X ＝ X 待ち（X が解けるまでこの項目は解けない／依存先を示す）
+  - ❌ ＝ 原文偽（訂正Axx）かつ停止性に不要（迂回・証明対象外の死枝。✅でも🚨でもない）
 
 ## 進捗ツリー
 - ✅ §5 定式化
@@ -23,30 +25,30 @@
       - ✅ 降下⟸交換則(1)+OT〔`m_8_1_Trans_fseq_condI_descent`〕
       - 🚨 交換則(1)本体〔stepT還元=`m_8_1_Trans_fseq_condI_comm_append_reduce`〕
         - ✅ stepT j0=0（copy-additivity）〔`m_8_1_Trans_replicate_pred_condI`〕
-        - 🚨 stepT j0>0〔残=marking-nesting surgery {base2,step2}+itercond+dM〕
-      - 🚨 OT所属（→§8.7）
+        - 🚨 stepT j0>0 (⛔ 8.5)
+      - 🚨 OT所属 (⛔ 8.7)
     - ✅ 補題（公差 $(1,1)$ のペア数列の $\textrm{Trans}$ の基本性質）〔`m_8_1_diagSeq_Trans`〕
     - ✅ 系（$\textrm{Pred}$ が公差 $(1,1)$ のペア数列の $\textrm{Trans}$ の基本性質）〔`m_8_1_Pred_diagSeq_Trans`〕
     - ✅ 補題（条件 (I) か (III) の下での $c_1$ 前後の具体表示）（A20/A21）〔part(1)-(5)+(4-1)(4-2) `m_8_1_c1_around_part4_1`/`_part4_2`〕
   - 🚨 §8.2 強単項性
     - ✅ 命題（標準形の直系先祖による切片の簡約化の強単項性）〔`m_8_2_standard_slice_Red_strongmono`〕
-    - 🚨 命題（条件 (II) か (IV) の下での終切片と $\textrm{Trans}$ の関係）
+    - 🚨 命題（条件 (II) か (IV) の下での終切片と $\textrm{Trans}$ の関係） (⛔ 8.5)
     - ✅ 補題（強単項性の切片への遺伝性）〔`m_8_2_strongmono_slice`〕
     - ✅ 補題（部分表現の単項成分と $\textrm{Pred}$ の関係）(§8.2 keystone)〔`m_8_2_keystone` = 無条件 `p_8_2_subexpr_component_Pred`〕
     - ✅ 補題（強単項性の下での部分表現の単項成分の基本性質）〔`m_8_2_subexpr_component_strongmono_uncond`〕
-    - 🚨 補題（条件 (V) の下での右端の親の基本性質）
-    - 🚨 補題（条件 (V) の下での終切片と $\textrm{Trans}$ の関係）
+    - ✅ 補題（条件 (V) の下での右端の親の基本性質）〔`m_8_2_condV_rightmost_parent`〕
+    - 🚨 補題（条件 (V) の下での終切片と $\textrm{Trans}$ の関係）〔組立 recipe 既知〕 (⛔ 8.5)
   - 🚨 §8.3 条件 (II) の下での展開規則
     - 🚨 命題（条件 (II) の下での $\textrm{Trans}$ と基本列の交換関係）
       - ✅ 降下⟸exch+OT〔`m_8_3_TransCondII_oper_descend_engine`〕
-      - 🚨 exch〔残=marking-nesting surgery(§8.1/§8.4/§8.5 共有)、`m_8_3_exch_of_lhs_closed`〕
-      - 🚨 OT所属（→§8.7）
+      - 🚨 exch〔`m_8_3_exch_of_lhs_closed`〕(⛔ 8.5)
+      - 🚨 OT所属 (⛔ 8.7)
     - ✅ 補題（第 $0$ 種型基本列の基本不等式）〔`m_8_3_kind0_base_ineq`(A22訂正)〕
     - ✅ 補題（第 $0$ 種型基本列の基本分岐規則）〔`m_8_3_kind0_branch_rule`〕
     - ✅ 補題（第 $0$ 種型基本列の基本基点関係）〔`m_8_3_kind0_base_basepoint`〕
   - 🚨 §8.4 条件 (III) か (IV) の下での展開規則
-    - 🚨 命題（条件 (III) か (IV) の下での $\textrm{Trans}$ と基本列の交換関係）〔残=marking-nesting surgery {base2,step2}(condIII独自producer要)、condIV=A27〕
-    - 🚨 補題（右端の非許容直系先祖の基本性質）
+    - 🚨 命題（条件 (III) か (IV) の下での $\textrm{Trans}$ と基本列の交換関係）〔condIII独自producer要、condIV=A27〕 (⛔ 8.5)
+    - ✅ 補題（右端の非許容直系先祖の基本性質）〔`m_8_4_rightmost_nonadm_ancestor`〕
     - 🚨 補題（条件 (III)〜(V) の下での右端の置き換えと $\textrm{Trans}$ の関係）
     - 🚨 補題（条件 (III)〜(VI) の下での展開規則の基本性質）
     - 🚨 補題（条件 (III)〜(VI) の下での $\textrm{Trans}$ と scb分解の関係）
@@ -55,27 +57,34 @@
     - 🚨 補題（条件 (III) か (IV) の下での各種 scb分解）
     - ✅ 補題（条件 (III) か (IV) の下での基本列の基本性質）〔`m_8_4_oper_basic_part1`(= `p_8_4_oper_basic`)〕
   - 🚨 §8.5 条件 (V) の下での展開規則
-    - 🚨 命題（条件 (V) の下での $\textrm{Trans}$ と基本列の交換関係）〔残=step2: |B|-composition assembly〕
-    - 🚨 補題（条件 (V) の下での $\textrm{Joints}$ と $\textrm{FirstNodes}$ と $t_2$ の基本性質）
+    - 🚨 命題（条件 (V) の下での $\textrm{Trans}$ と基本列の交換関係）
+      - ✅ reduction ladder〔step2/base2 → wrap/inj/body, `m_8_5_*_of_*`〕
+      - 🚨 surgery spine-descent〔§8 master key — green-modulo 1 露出 keystone(`m_8_5_markstep_of_Trans_keystone`、32e0a37@wt2-85surgery-green)〕
+        - ✅ (A) deepen SHAPE〔`m_8_5_appended_col_deepen` 他〕
+        - ✅ (B) wiring〔rnav engine/§7.4 Mark↔Trans 橋〕
+        - ✅ surgC⟸keystone 組立〔`m_8_5_surgC_instance_of_keystone`、umatch regime化済、残=Marked/RT plumbing〕
+        - 🚨 (keystone) `bpHeadT(Trans(slice@B))=C(bpHeadT(Trans slice))`〔∀q→base q=2 + fold-C可換に telescope済(`m_8_5_keystone_allq`)〕
+        - ✅ (op) marked-head 形〔`m_8_5_Mark_headform`(shape+値=entry M 1 m、Marked から)〕
+    - ✅ 補題（条件 (V) の下での $\textrm{Joints}$ と $\textrm{FirstNodes}$ と $t_2$ の基本性質）〔`m_8_5_Joints_FirstNodes_basic` parts(1)(2)〕
     - 🚨 補題（条件 (V) の下での各種 scb分解）〔def 内部記号露出要〕
   - 🚨 §8.6 条件 (VI) の下での展開規則
     - 🚨 命題（条件 (VI) の下での $\textrm{Trans}$ と基本列の交換関係）
       - ✅ descent engine + (1,1)対角 host〔`m_8_6_TransCondVI_oper_descend_engine`/`m_8_6_diagSeq_condVI_commute`〕
-      - 🚨 general〔=shared kind-1 surgery(§8.5 step2)、`m_8_6_exch_of_lhs_closed`〕
+      - 🚨 general〔`m_8_6_exch_of_lhs_closed`〕(⛔ 8.5)
     - ✅ 補題（公差 $(1,0)$ のペア数列の $\textrm{Trans}$ の基本性質）〔`m_8_6_const2nd_Trans_paper`〕
     - ✅ 補題（公差 $(1,1)$ のペア数列の $\textrm{Trans}$ の展開規則）〔`m_8_6_diagSeq_Trans_oper_paper`〕
-    - 🚨 補題（順序数項の末尾単項の零化可能性）（原文偽=A25）
+    - ✅ 補題（順序数項の末尾単項の零化可能性）
       - ✅ clean領域〔`m_8_6_trailing_principal_peel`〕
-      - 🚨 一般領域（原文偽）
+      - ❌ 一般領域〔A25〕
   - 🚨 §8.7 主結果
     - ✅ 補題（公差 $(0,0)$ のペア数列の $\textrm{Trans}$ の基本性質）〔`m_8_7_const00_Trans`〕
     - 🚨 補題（基本列の降下性）〔`fseq_descend`。clean到達可、条件I-V/VI交換則連鎖が本体〕
     - ✅ 補題（順序数項の再帰構造）〔`m_8_7_OT_scb_recursive`〕
     - ✅ 補題（順序数項の共終数の遺伝性）〔`m_8_7_OT_dom_hereditary`〕
-    - 🚨 補題（順序数項の末尾項の零化可能性）（原文偽=A26）
+    - ✅ 補題（順序数項の末尾項の零化可能性）
       - ✅ top-level〔`m_8_7_toplevel_OT_tail_annihilate`〕
-      - 🚨 一般化（operB 全域性）
-    - 🚨 補題（$\textrm{Pred}$ と $[0]$ の関係）〔原文偽=A27、停止性は6325ルートで迂回〕
+      - ❌ 一般化〔operB全域性、A26〕
+    - ❌ 補題（$\textrm{Pred}$ と $[0]$ の関係）〔A27、6325ルート迂回〕
     - ✅ 補題（順序数項の基本例）〔`m_8_7_OT_examples`〕
     - 🚨 補題（$\textrm{Trans}$ が標準形を保つこと）= OT所属〔残=R2 dstep+R3 newOT/gbt+帰納組立〕
       - ✅ clean部（rank0/T_B/単項leaf）〔`m_8_7_Trans_*`〕
@@ -83,5 +92,5 @@
       - ✅ 4-case dispatcher〔`m_8_7_OT_keystone_step`、step→{det,[Buc1]}〕
       - ✅ wid/det〔=§8.2 widH、`m_8_2_widH`/`m_8_2_det`〕
       - ✅ 帰納 infra〔`m_8_7_Pred_ST_PS`/`m_8_7_Trans_OT_step_keystone`〕
-      - 🚨 R2 dstep〔残=cases2-4 head+equal-head tail〕
-      - 🚨 R3 newOT/gbt〔OT-recursive scb=core A(step2)と entangle〕
+      - 🚨 R2 dstep〔`m_8_7_dstep_wholebody`、残=tail〕(⛔ 8.5)
+      - 🚨 R3 newOT/gbt〔core A=step2 と entangle〕(⛔ 8.5)
