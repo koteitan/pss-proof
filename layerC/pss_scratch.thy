@@ -7392,4 +7392,389 @@ proof -
   finally show ?thesis .
 qed
 
+
+text \<open>§8.5 ROUND 6b -- SHIFT INVARIANCE.  IMPORTANT CAVEAT, found AFTER this
+  block was written (the file already contains \<open>m_8_5_anchor_col_trunkstuck_
+  regime2\<close>'s text block above, "ROUND 6", from an EARLIER pass in this same
+  campaign that this pass did not initially have in context -- see that block
+  first): a dedicated search (\<open>python/_r6_u_nonzero_search.py\<close>) already found
+  GENUINE counterexamples to \<open>entry N 0 0 < fst col\<close> for \<open>u>0\<close> hosts (95/245),
+  using the SAME named regime filter the rest of this file's python harnesses
+  use, i.e. \<open>transCondV (M[q])\<close> -- condition (V) checked on the ITERATE
+  \<open>M[q]\<close>, NOT on the base \<open>M\<close> itself.  The lemma below (\<open>oper_Shift\<close>) requires
+  \<open>e1pos\<close> ON THE BASE \<open>M\<close> directly (matching \<open>m_8_5_basepoint\<close>'s literal \<open>cv:
+  transCondV M\<close> hypothesis) -- a STRICTLY STRONGER condition than what those
+  counterexamples were filtered by.  So this block's claim "round 5's caveat
+  is resolved" (below) is, on reflection, OVERSTATED: it resolves the
+  question only in the narrower regime where condition (V) holds on the base
+  \<open>M\<close> itself (provably true there, 0/58968+0/200 in that regime) -- it does
+  NOT contradict the already-found counterexamples, which all live in hosts
+  reached only via several \<open>oper\<close> steps where \<open>M\<close>'s OWN last entry can be
+  row-1-zero.  Whether \<open>m_8_5_basepoint\<close>'s \<open>M\<close> (the keystone's literal base,
+  always required to satisfy \<open>transCondV M\<close> directly) is ever ACTUALLY
+  reached only via such non-\<open>e1pos\<close>-rooted intermediate hosts in the genuine
+  termination argument is a regime-fidelity question NOT resolved here --
+  flagged for a future round.  The mathematically robust FIX for the
+  \<open>entry N 0 (Pcut N) < fst col\<close> witness (REPLACING \<open>entry N 0 0\<close> entirely,
+  \<open>m_8_5_anchor_col_trunkstuck_regime2\<close> above) is UNAFFECTED by anything in
+  this block and remains the right primitive going forward; this Shift block
+  is kept as a freestanding, independently-true side result (none of its
+  lemmas are cited by, nor cite, the regime2 chain) documenting exactly which
+  narrower regime IS shift-invariant, in case it is useful later.
+
+  [Original round-6b framing, written before the above caveat was found:]
+  resolving the round-5 caveat about \<open>entry N 0 0 < fst col\<close> for
+  NON-(0,0)-rooted \<open>ST_PS\<close> bases.  Round 5 flagged: the
+  empirical \<open>entry N 0 0 = 0\<close> finding for the trunk-stuck anchor case held only
+  because the python harness's \<open>gen()\<close> restricted samples to \<open>M[0] = (0,0)\<close>
+  seeds, whereas \<open>ST_PS\<close>'s \<open>diag\<close> rule admits \<open>diagSeq u v\<close> for ANY \<open>u \<le> v\<close>
+  (\<open>entry _ 0 0 = u\<close>, possibly \<open>> 0\<close>), and \<open>oper\<close>/\<open>M[n]\<close> preserve that literal
+  first entry verbatim.
+
+  This round establishes (empirically: 0 failures, 200/200 direct + 58968/58968
+  brute-force-filtered, see \<open>python/_r6_shift_invariance.py\<close>) that \<open>oper\<close>
+  COMMUTES with the uniform translation \<open>Shift u M = map (\<lambda>p.(fst p+u,snd p+u))
+  M\<close> (shift BOTH rows by the SAME \<open>u\<close>; NOT the row-0-only \<open>IncrFirst\<close>),
+  PROVIDED the row-1 positivity \<open>entry M 1 (Lng M - 1) > 0\<close> holds for the
+  ARGUMENT \<open>M\<close> itself -- i.e. exactly the \<open>e1pos\<close> hypothesis already required
+  by \<open>m_8_5_basepoint\<close> / \<open>m_8_5_TransCondV_descend_kernel\<close>'s \<open>cond: transCondV
+  M\<close> on the keystone's own base \<open>M\<close>.  (An EARLIER attempt without this
+  restriction found genuine counterexamples to \<open>oper\<close>-\<open>Shift\<close> commutation,
+  9828/66339 in an unrestricted brute-force sweep: when \<open>entry M 1 (Lng M-1) =
+  0\<close>, \<open>idx1\<close> FLIPS from \<open>0\<close> to \<open>1\<close> under a positive shift, routing \<open>oper\<close> down a
+  different branch.  Restricting to \<open>e1pos\<close> -- which the keystone's regime
+  supplies unconditionally on its own base \<open>M\<close> -- eliminates this: \<open>idx1\<close> stays
+  pinned at \<open>1\<close> in both the shifted and unshifted computation.)
+
+  Since \<open>diagSeq u v = Shift u (diagSeq 0 (v-u))\<close>, this means: for ANY
+  non-(0,0)-rooted base \<open>M = diagSeq u v\<close> satisfying the keystone's regime, its
+  WHOLE \<open>q\<close>-tower is the \<open>Shift\<close>-translate of the \<open>(0,0)\<close>-rooted tower from
+  \<open>diagSeq 0 (v-u)\<close> -- same indices throughout (all of \<open>nextrel0\<close>/\<open>le0\<close>/
+  \<open>nextrel1\<close>/\<open>le1\<close>/\<open>hasParent\<close>/\<open>parent\<close> are pure index-relational, built from
+  STRICT/EQUALITY comparisons of SAME-shifted quantities, hence \<open>Shift\<close>-
+  invariant outright -- no \<open>e1pos\<close> needed for THIS layer; \<open>oper\<close> itself needs
+  \<open>e1pos\<close> only to pin which BRANCH of its own case-split is taken).
+  Consequently \<open>entry N 0 0 < fst col\<close> -- a STRICT comparison between two
+  quantities that BOTH shift by the SAME \<open>u\<close> (since \<open>N\<close>, \<open>col\<close> are built from
+  the tower via \<open>oper\<close>/\<open>seg\<close>/\<open>take\<close>/\<open>append\<close>, all \<open>Shift\<close>-equivariant) -- has
+  the IDENTICAL truth value for the \<open>u\<close>-shifted tower as for the \<open>(0,0)\<close>-rooted
+  one.  So round 5's caveat is RESOLVED: the general-base case is NOT a
+  separate, harder problem -- it reduces FOR FREE to the already-studied
+  \<open>(0,0)\<close>-rooted case via this \<open>Shift\<close> symmetry.  The genuinely open content
+  (whether \<open>entry N 0 0 < fst col\<close> holds UNCONDITIONALLY for the \<open>(0,0)\<close>-rooted
+  case itself, beyond the 79/79 empirical confirmation) is UNCHANGED by this
+  finding.
+
+  This block formalizes the FOUNDATIONAL relational layer that the \<open>oper\<close>-level
+  commutation rests on (\<open>entry\<close>/\<open>nextrel0\<close>/\<open>le0\<close>/\<open>nextrel1\<close>/\<open>le1\<close>/\<open>leR\<close>/
+  \<open>nextR\<close>/\<open>hasParent\<close>/\<open>parent\<close>/\<open>Pred\<close>/\<open>idx1\<close> shift-invariance), all UNCONDITIONAL
+  except \<open>idx1_Shift\<close> (needs \<open>entry M 1 j1 > 0\<close>, matching \<open>oper\<close>'s own use).  The
+  \<open>oper\<close>-level lemma itself (mechanical given this layer -- traced by hand, see
+  \<open>python/_keystone_residual_summary.py\<close> Round 6 -- but NOT completed this round)
+  and its corollary (the \<open>entry N 0 0 < fst col\<close> transport) are the natural next
+  step.\<close>
+
+definition Shift :: "nat \<Rightarrow> pairseq \<Rightarrow> pairseq" where
+  "Shift u M = map (\<lambda>p. (fst p + u, snd p + u)) M"
+
+lemma Lng_Shift: "Lng (Shift u M) = Lng M"
+  by (simp add: Shift_def)
+
+lemma entry_Shift:
+  assumes "j < Lng M"
+  shows "entry (Shift u M) i j = entry M i j + u"
+  using assms by (simp add: Shift_def entry_def)
+
+lemma nextrel0_Shift: "nextrel0 (Shift u M) j0 j1 \<longleftrightarrow> nextrel0 M j0 j1"
+proof (cases "j0 < Lng M \<and> j1 < Lng M")
+  case True
+  have e0: "entry (Shift u M) 0 j0 = entry M 0 j0 + u" using True entry_Shift by simp
+  have e1: "entry (Shift u M) 0 j1 = entry M 0 j1 + u" using True entry_Shift by simp
+  have emid: "\<And>j. j < Lng M \<Longrightarrow> entry (Shift u M) 0 j = entry M 0 j + u"
+    using entry_Shift by simp
+  show ?thesis
+    unfolding nextrel0_def using Lng_Shift[of u M] e0 e1 emid True by auto
+next
+  case False
+  thus ?thesis using Lng_Shift[of u M] unfolding nextrel0_def by auto
+qed
+
+lemma le0_Shift: "le0 (Shift u M) j0 j1 \<longleftrightarrow> le0 M j0 j1"
+proof -
+  have rel: "nextrel0 (Shift u M) = nextrel0 M" by (intro ext) (simp add: nextrel0_Shift)
+  show ?thesis using rel Lng_Shift[of u M] unfolding le0_def by simp
+qed
+
+lemma nextrel1_Shift: "nextrel1 (Shift u M) j0 j1 \<longleftrightarrow> nextrel1 M j0 j1"
+proof (cases "j0 < Lng M \<and> j1 < Lng M")
+  case True
+  have e0: "entry (Shift u M) 1 j0 = entry M 1 j0 + u" using True entry_Shift by simp
+  have e1: "entry (Shift u M) 1 j1 = entry M 1 j1 + u" using True entry_Shift by simp
+  have le0eq: "\<And>j. le0 (Shift u M) j j1 = le0 M j j1" using le0_Shift by simp
+  have emid: "\<And>j. le0 M j j1 \<Longrightarrow> entry (Shift u M) 1 j = entry M 1 j + u"
+  proof -
+    fix j assume "le0 M j j1"
+    hence "j < Lng M" by (simp add: le0_def)
+    thus "entry (Shift u M) 1 j = entry M 1 j + u" using entry_Shift by simp
+  qed
+  have fwd: "nextrel1 M j0 j1 \<Longrightarrow> nextrel1 (Shift u M) j0 j1"
+    unfolding nextrel1_def using Lng_Shift[of u M] e0 e1 emid le0eq True by auto
+  have bwd: "nextrel1 (Shift u M) j0 j1 \<Longrightarrow> nextrel1 M j0 j1"
+    unfolding nextrel1_def using Lng_Shift[of u M] e0 e1 emid le0eq True by auto
+  show ?thesis using fwd bwd by blast
+next
+  case False
+  thus ?thesis using Lng_Shift[of u M] unfolding nextrel1_def by auto
+qed
+
+lemma le1_Shift: "le1 (Shift u M) j0 j1 \<longleftrightarrow> le1 M j0 j1"
+proof -
+  have rel: "nextrel1 (Shift u M) = nextrel1 M" by (intro ext) (simp add: nextrel1_Shift)
+  show ?thesis using rel Lng_Shift[of u M] unfolding le1_def by simp
+qed
+
+lemma nextR_Shift: "nextR (Shift u M) i j0 j1 \<longleftrightarrow> nextR M i j0 j1"
+  by (simp add: nextR_def nextrel0_Shift nextrel1_Shift)
+
+lemma leR_Shift: "leR (Shift u M) i j0 j1 \<longleftrightarrow> leR M i j0 j1"
+  by (simp add: leR_def le0_Shift le1_Shift)
+
+lemma hasParent_Shift: "hasParent (Shift u M) i j1 \<longleftrightarrow> hasParent M i j1"
+  by (simp add: hasParent_def nextR_Shift)
+
+lemma parent_Shift:
+  assumes "hasParent M i j1"
+  shows "parent (Shift u M) i j1 = parent M i j1"
+proof -
+  have rel: "\<And>j0. nextR (Shift u M) i j0 j1 \<longleftrightarrow> nextR M i j0 j1" by (rule nextR_Shift)
+  show ?thesis unfolding parent_def using rel by simp
+qed
+
+lemma Pred_Shift: "Pred (Shift u M) = Shift u (Pred M)"
+  by (simp add: Pred_def Lng_Shift Shift_def map_butlast)
+
+lemma idx1_Shift:
+  assumes "entry M 1 j1 > 0" and "j1 < Lng M"
+  shows "idx1 (Shift u M) j1 = idx1 M j1"
+proof -
+  have "entry (Shift u M) 1 j1 = entry M 1 j1 + u" using assms entry_Shift by simp
+  thus ?thesis using assms by (simp add: idx1_def)
+qed
+
+text \<open>§8.5 ROUND 6 -- the \<open>oper\<close>-level shift commutation itself, completing the
+  chain sketched above: \<open>(Shift u M)[n] = Shift u (M[n])\<close> whenever \<open>M\<close>'s OWN
+  last-column row-1 entry is positive (\<open>e1pos\<close>, the keystone's regime
+  hypothesis).  Hand-traced and empirically confirmed (0/58968 + 0/200
+  failures, \<open>python/_r6_shift_invariance.py\<close>); this Isar proof unfolds
+  \<open>oper_def\<close> and transports each branch via the foundational layer above, using
+  the standard nat-subtraction shift-cancellation \<open>(a+u)-(b+u) = a-b\<close> for the
+  period-step \<open>d0\<close> (which is exactly \<open>0\<close>-or-not regardless of \<open>u\<close>, so no
+  truncation mismatch arises) and \<open>d1 = 0\<close> identically on both sides
+  (\<open>i1 = idx1 M j1 = 1\<close> on both sides, never \<open>> 1\<close>).\<close>
+
+lemma nextR_parent_witness:
+  assumes "hasParent M i j1"
+  shows "nextR M i (parent M i j1) j1"
+  using assms unfolding hasParent_def parent_def by (rule theI')
+
+lemma oper_Shift:
+  fixes M :: pairseq and u n :: nat
+  assumes e1pos: "entry M 1 (Lng M - 1) > 0"
+  shows "(Shift u M)[n] = Shift u ((M::pairseq)[n])"
+proof (cases "Lng M - 1 = 0")
+  case True
+  have LS: "Lng (Shift u M) - 1 = 0" using True by (simp add: Lng_Shift)
+  have m1: "(M::pairseq)[n] = M" using True by (simp add: oper_def Let_def)
+  have m2: "(Shift u M)[n] = Shift u M" using LS by (simp add: oper_def Let_def)
+  show ?thesis using m1 m2 by simp
+next
+  case False
+  define j1 where "j1 = Lng M - 1"
+  have j1pos: "j1 \<noteq> 0" using False j1_def by simp
+  have LMpos: "0 < Lng M" using j1pos j1_def by linarith
+  have j1ltM: "j1 < Lng M" using j1pos LMpos j1_def by simp
+  have LS: "Lng (Shift u M) - 1 = j1" using j1_def by (simp add: Lng_Shift)
+  have e1M: "entry M 1 j1 > 0" using e1pos j1_def by simp
+  have e1S: "entry (Shift u M) 1 j1 = entry M 1 j1 + u"
+    using j1ltM entry_Shift by simp
+  have e1Spos: "entry (Shift u M) 1 j1 > 0" using e1M e1S by simp
+  have e00: "\<not> (entry M 0 j1 = 0 \<and> entry M 1 j1 = 0)" using e1M by simp
+  have e00S: "\<not> (entry (Shift u M) 0 j1 = 0 \<and> entry (Shift u M) 1 j1 = 0)" using e1Spos by simp
+  have i1eq: "idx1 M j1 = 1" using e1M by (simp add: idx1_def)
+  have i1Seq: "idx1 (Shift u M) j1 = 1" using e1Spos by (simp add: idx1_def)
+  show ?thesis
+  proof (cases "hasParent M 1 j1")
+    case False
+    have hpS: "\<not> hasParent (Shift u M) 1 j1" using False hasParent_Shift by simp
+    have m1: "(M::pairseq)[n] = Pred M"
+      using j1pos e00 i1eq False by (simp add: oper_def Let_def j1_def)
+    have m2: "(Shift u M)[n] = Pred (Shift u M)"
+      using j1pos LS e00S i1Seq hpS by (simp add: oper_def Let_def)
+    show ?thesis using m1 m2 Pred_Shift by simp
+  next
+    case True
+    have hpS: "hasParent (Shift u M) 1 j1" using True hasParent_Shift by simp
+    define j0 where "j0 = parent M 1 j1"
+    have j0Seq: "parent (Shift u M) 1 j1 = j0" using True parent_Shift j0_def by simp
+    have nr: "nextR M 1 j0 j1" using True nextR_parent_witness j0_def by simp
+    have j0ltj1: "j0 < j1" using nr by (simp add: nextR_def nextrel1_def)
+    have j0ltM: "j0 < Lng M" using nr by (simp add: nextR_def nextrel1_def)
+    have d0eq: "entry (Shift u M) 0 j1 - entry (Shift u M) 0 j0
+                  = entry M 0 j1 - entry M 0 j0"
+      using entry_Shift[OF j1ltM, of u 0] entry_Shift[OF j0ltM, of u 0] by simp
+    define d0 where "d0 = entry M 0 j1 - entry M 0 j0"
+    have d0Seq: "entry (Shift u M) 0 j1 - entry (Shift u M) 0 j0 = d0"
+      using d0eq d0_def by simp
+    \<comment> \<open>\<open>d1\<close> is \<open>0\<close> on both sides since \<open>i1 = 1\<close> is never \<open>> 1\<close>\<close>
+    have j1posL: "Lng M - 1 > 0" using j1pos j1_def by simp
+    have TrueL: "hasParent M 1 (Lng M - 1)" using True j1_def by simp
+    have m1raw: "(M::pairseq)[n] = take (parent M 1 (Lng M - 1)) M @
+        concat (map (\<lambda>k. map (\<lambda>j. (entry M 0 j
+                                      + k * (entry M 0 (Lng M - 1)
+                                               - entry M 0 (parent M 1 (Lng M - 1))),
+                                     entry M 1 j))
+                              [parent M 1 (Lng M - 1)..<Lng M - 1])
+                   [0..<n])"
+      by (rule m_8_4_oper_genform[OF j1posL e1pos TrueL])
+    have m1: "(M::pairseq)[n] = take j0 M @
+                concat (map (\<lambda>k. map (\<lambda>j. (entry M 0 j + k * d0, entry M 1 j))
+                                      [j0..<j1])
+                            [0..<n])"
+      using m1raw j0_def d0_def j1_def by simp
+    have j1posLS: "Lng (Shift u M) - 1 > 0" using j1posL LS j1_def by simp
+    have e1SposL: "entry (Shift u M) 1 (Lng (Shift u M) - 1) > 0" using e1Spos LS j1_def by simp
+    have hpSL: "hasParent (Shift u M) 1 (Lng (Shift u M) - 1)" using hpS LS j1_def by simp
+    have m2raw: "(Shift u M)[n] = take (parent (Shift u M) 1 (Lng (Shift u M) - 1)) (Shift u M) @
+        concat (map (\<lambda>k. map (\<lambda>j. (entry (Shift u M) 0 j
+                                      + k * (entry (Shift u M) 0 (Lng (Shift u M) - 1)
+                                          - entry (Shift u M) 0 (parent (Shift u M) 1 (Lng (Shift u M) - 1))),
+                                     entry (Shift u M) 1 j))
+                              [parent (Shift u M) 1 (Lng (Shift u M) - 1)..<Lng (Shift u M) - 1])
+                   [0..<n])"
+      by (rule m_8_4_oper_genform[OF j1posLS e1SposL hpSL])
+    have m2: "(Shift u M)[n] = take j0 (Shift u M) @
+                concat (map (\<lambda>k. map (\<lambda>j. (entry (Shift u M) 0 j + k * d0,
+                                             entry (Shift u M) 1 j))
+                                      [j0..<j1])
+                            [0..<n])"
+      using m2raw j0Seq d0Seq LS by simp
+    have takeq: "take j0 (Shift u M) = Shift u (take j0 M)"
+      by (simp add: Shift_def take_map)
+    have innerq: "\<And>k j. j \<in> {j0..<j1} \<Longrightarrow>
+        (entry (Shift u M) 0 j + k * d0, entry (Shift u M) 1 j)
+          = (\<lambda>p. (fst p + u, snd p + u)) (entry M 0 j + k * d0, entry M 1 j)"
+    proof -
+      fix k j assume "j \<in> {j0..<j1}"
+      hence jltM: "j < Lng M" using j1ltM by simp
+      have e0: "entry (Shift u M) 0 j = entry M 0 j + u" using entry_Shift[OF jltM] by simp
+      have e1: "entry (Shift u M) 1 j = entry M 1 j + u" using entry_Shift[OF jltM] by simp
+      show "(entry (Shift u M) 0 j + k * d0, entry (Shift u M) 1 j)
+              = (\<lambda>p. (fst p + u, snd p + u)) (entry M 0 j + k * d0, entry M 1 j)"
+        using e0 e1 by simp
+    qed
+    have mapq: "\<And>k. map (\<lambda>j. (entry (Shift u M) 0 j + k * d0, entry (Shift u M) 1 j)) [j0..<j1]
+                 = Shift u (map (\<lambda>j. (entry M 0 j + k * d0, entry M 1 j)) [j0..<j1])"
+    proof -
+      fix k
+      have "map (\<lambda>j. (entry (Shift u M) 0 j + k * d0, entry (Shift u M) 1 j)) [j0..<j1]
+            = map ((\<lambda>p. (fst p + u, snd p + u)) \<circ> (\<lambda>j. (entry M 0 j + k * d0, entry M 1 j)))
+                  [j0..<j1]"
+      proof (rule map_cong[OF refl])
+        fix j assume "j \<in> set [j0..<j1]"
+        hence "j \<in> {j0..<j1}" by simp
+        thus "(entry (Shift u M) 0 j + k * d0, entry (Shift u M) 1 j)
+                = ((\<lambda>p. (fst p + u, snd p + u)) \<circ> (\<lambda>j. (entry M 0 j + k * d0, entry M 1 j))) j"
+          using innerq by simp
+      qed
+      also have "\<dots> = map (\<lambda>p. (fst p + u, snd p + u))
+                       (map (\<lambda>j. (entry M 0 j + k * d0, entry M 1 j)) [j0..<j1])"
+        by (simp add: map_map)
+      finally show "map (\<lambda>j. (entry (Shift u M) 0 j + k * d0, entry (Shift u M) 1 j)) [j0..<j1]
+                 = Shift u (map (\<lambda>j. (entry M 0 j + k * d0, entry M 1 j)) [j0..<j1])"
+        by (simp add: Shift_def)
+    qed
+    have Shift_eq: "Shift u = map (\<lambda>p. (fst p + u, snd p + u))"
+      by (intro ext) (simp add: Shift_def)
+    have concatq: "concat (map (\<lambda>k. map (\<lambda>j. (entry (Shift u M) 0 j + k * d0,
+                                                entry (Shift u M) 1 j)) [j0..<j1]) [0..<n])
+                 = Shift u (concat (map (\<lambda>k. map (\<lambda>j. (entry M 0 j + k * d0, entry M 1 j))
+                                              [j0..<j1]) [0..<n]))"
+    proof -
+      have lhs: "map (\<lambda>k. map (\<lambda>j. (entry (Shift u M) 0 j + k * d0, entry (Shift u M) 1 j))
+                          [j0..<j1]) [0..<n]
+               = map (\<lambda>k. Shift u (map (\<lambda>j. (entry M 0 j + k * d0, entry M 1 j)) [j0..<j1]))
+                     [0..<n]"
+        by (rule map_cong[OF refl]) (use mapq in simp)
+      have eq1: "Shift u (concat (map (\<lambda>k. map (\<lambda>j. (entry M 0 j + k * d0, entry M 1 j))
+                                        [j0..<j1]) [0..<n]))
+            = concat (map (\<lambda>k. Shift u (map (\<lambda>j. (entry M 0 j + k * d0, entry M 1 j))
+                                        [j0..<j1])) [0..<n])"
+        unfolding Shift_eq by (simp add: map_concat map_map comp_def)
+      have "concat (map (\<lambda>k. map (\<lambda>j. (entry (Shift u M) 0 j + k * d0, entry (Shift u M) 1 j))
+                          [j0..<j1]) [0..<n])
+          = concat (map (\<lambda>k. Shift u (map (\<lambda>j. (entry M 0 j + k * d0, entry M 1 j)) [j0..<j1]))
+                     [0..<n])"
+        by (rule arg_cong[OF lhs])
+      also have "\<dots> = Shift u (concat (map (\<lambda>k. map (\<lambda>j. (entry M 0 j + k * d0, entry M 1 j))
+                                        [j0..<j1]) [0..<n]))"
+        using eq1 by simp
+      finally show ?thesis .
+    qed
+    show ?thesis using m1 m2 takeq concatq by (simp add: Shift_def)
+  qed
+qed
+
+text \<open>§8.5 ROUND 6 -- closing corollaries: \<open>seg\<close>/\<open>append\<close> commute with \<open>Shift\<close>
+  (trivial \<open>map\<close> congruences), and the TARGET arithmetic fact itself -- the
+  \<open>entry N 0 0 < fst col\<close> comparison is \<open>Shift\<close>-invariant, for ANY \<open>N\<close>/\<open>col\<close>
+  whatsoever (it never needed the tower structure: only that BOTH sides are
+  read off a \<open>Shift u\<close>-translate).  Combined with @{thm [source] oper_Shift}
+  and the \<open>seg\<close>/\<open>append\<close> congruences, this shows: for a genuine keystone fold
+  instance built from a base \<open>M\<close> with \<open>entry M 1 (Lng M - 1) > 0\<close> (the
+  keystone's own \<open>e1pos\<close>), replacing \<open>M\<close> by \<open>Shift u M\<close> (e.g. \<open>M = diagSeq u v\<close>
+  instead of \<open>diagSeq 0 (v-u)\<close>) produces the SAME \<open>N\<close>/\<open>col\<close> up to \<open>Shift u\<close>,
+  hence the IDENTICAL truth value of \<open>entry N 0 0 < fst col\<close>.  Round 5's
+  caveat is thus resolved at the Isabelle level for the STRUCTURAL part (the
+  reduction itself); the residual numeric content (whether the comparison
+  holds unconditionally for the \<open>(0,0)\<close>-rooted representative) is unchanged
+  and remains the open item for a future round.\<close>
+
+lemma seg_Shift:
+  assumes "b < Lng M"
+  shows "seg (Shift u M) a b = Shift u (seg M a b)"
+proof -
+  have "seg (Shift u M) a b = map (\<lambda>j. (Shift u M) ! j) [a..<Suc b]"
+    by (simp add: seg_def)
+  also have "\<dots> = map (\<lambda>j. (\<lambda>p. (fst p + u, snd p + u)) (M ! j)) [a..<Suc b]"
+  proof (rule map_cong[OF refl])
+    fix j assume "j \<in> set [a..<Suc b]"
+    hence "j < Lng M" using assms by auto
+    thus "(Shift u M) ! j = (\<lambda>p. (fst p + u, snd p + u)) (M ! j)"
+      by (simp add: Shift_def)
+  qed
+  also have "\<dots> = Shift u (seg M a b)" by (simp add: Shift_def seg_def)
+  finally show ?thesis .
+qed
+
+lemma append_Shift: "Shift u (A @ B) = Shift u A @ Shift u B"
+  by (simp add: Shift_def)
+
+lemma take_Shift: "take a (Shift u M) = Shift u (take a M)"
+  by (simp add: Shift_def take_map)
+
+text \<open>The target: \<open>entry N 0 0 < fst col\<close> is \<open>Shift\<close>-invariant for ANY nonempty
+  \<open>N\<close> and pair \<open>col\<close> -- both sides shift by the SAME \<open>u\<close>, so the strict
+  comparison is unaffected.\<close>
+
+lemma entry00_lt_fstcol_Shift:
+  assumes "N \<noteq> []"
+  shows "(entry (Shift u N) 0 0 < fst (fst col + u, snd col + u))
+           \<longleftrightarrow> (entry N 0 0 < fst col)"
+proof -
+  have "0 < Lng N" using assms by (cases N) auto
+  hence "entry (Shift u N) 0 0 = entry N 0 0 + u" using entry_Shift by simp
+  thus ?thesis by simp
+qed
+
 end
+

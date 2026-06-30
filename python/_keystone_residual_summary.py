@@ -606,4 +606,77 @@ Re-run instructions for Round 5: python/_r4_pcutle_r2bprime.py (the new
 targeted pcutle/R2b' harness, 51 trunk-stuck instances); cross-check via
 python/_marked_last_component_probe.py's R2b/R2c columns (28 more,
 independently coded).
+
+=====================================================================
+ROUND 6b (2026-07-01, same day as Round 6 above; layerC/pss_scratch.thy,
+Shift/oper_Shift/entry00_lt_fstcol_Shift): a SEPARATE pass on the SAME task
+brief (this campaign apparently spans a context-compaction boundary -- this
+pass started without memory of Round 6 above, re-investigated the same
+question, and only discovered Round 6's counterexample/regime2 fix AFTER
+already formalizing a Shift-invariance argument).  Net effect: a genuine,
+narrower-scope, INDEPENDENTLY TRUE side result, now correctly scoped against
+Round 6's findings; does NOT change Round 6's conclusions or supersede
+`m_8_5_anchor_col_trunkstuck_regime2` in any way.
+=====================================================================
+
+WHAT WAS DONE (before discovering Round 6's counterexample): formalized,
+green, that `oper` COMMUTES with `Shift u M = map (lambda p: (fst p+u,snd p+u)) M`
+(uniform translation of BOTH rows by u, distinct from the row-0-only
+`IncrFirst`) PROVIDED `entry M 1 (Lng M - 1) > 0` holds for the OPER
+ARGUMENT `M` ITSELF (not merely some downstream iterate `M[q]`) -- i.e.
+exactly `m_8_5_basepoint`'s literal `cv: transCondV M` hypothesis on the
+keystone's base `M`.  Confirmed empirically with ZERO exceptions (200/200
+direct + 58968/58968 brute-force-filtered, python/_r6_shift_invariance.py;
+an UNRESTRICTED version without the e1pos-on-M restriction found 9828/66339
+genuine commutation failures, root-caused to `idx1` flipping under a
+positive shift when `entry M 1 (Lng M-1) = 0`).  Formalized: `Shift`,
+`Lng_Shift`, `entry_Shift`, `nextrel0_Shift`, `le0_Shift`, `nextrel1_Shift`,
+`le1_Shift`, `nextR_Shift`, `leR_Shift`, `hasParent_Shift`, `parent_Shift`,
+`Pred_Shift`, `idx1_Shift` (foundational relational layer, ALL
+unconditional), then `nextR_parent_witness` + `oper_Shift` (the main
+`(Shift u M)[n] = Shift u (M[n])` fact, reusing the ALREADY-PROVEN
+`m_8_4_oper_genform` for the substantive case rather than hand-unfolding
+`oper_def`), then `seg_Shift`/`append_Shift`/`take_Shift`/
+`entry00_lt_fstcol_Shift` (closing arithmetic corollaries).  All green,
+0 sorry/oops, no circular citation (only external cite: the already-proven
+`m_8_4_oper_genform`).
+
+THE CAVEAT (discovered only after writing the above, by reading task.md and
+re-reading `_keystone_residual_summary.py` itself more carefully -- a
+process/workflow lesson, not a math one): Round 6's counterexample search
+(`_r6_u_nonzero_search.py`) used the SAME regime filter as every other
+python harness in this campaign, `transCondV (M[q])` -- condition (V)
+checked on the ITERATE `M[q]`, NOT on the base `M` directly.  `oper_Shift`'s
+hypothesis is about `M` directly.  These are DIFFERENT conditions (`oper`'s
+branch choice depends only on the FIXED base `M`'s own last-column row-1
+entry -- once `oper(M, q)` is evaluated for varying `q`, `M` itself is the
+literal first argument every time, so `entry M 1 (Lng M - 1)` is the SAME
+value for every `q`; it can be `0` even when `M[q]` happens to satisfy
+condV).  So `oper_Shift`'s 0/58968 clean result and Round 6's 95/245
+counterexample rate are NOT in tension -- they characterize DIFFERENT
+(overlapping but distinct) subsets of the keystone's candidate hosts.  This
+DOES, however, surface a genuine OPEN QUESTION not previously flagged: is
+`m_8_5_basepoint`'s `M` (required to satisfy `transCondV M` directly, by
+the literal hypothesis list of `m_8_5_basepoint` / `m_8_5_TransCondV_
+descend_kernel`) actually how the keystone is invoked in the real
+termination argument, or does the real usage only ever have `transCondV`
+available on some ITERATE `M[q]` (in which case `m_8_5_basepoint`'s own
+domain may need re-examination, separately from the entry-N-0-0-vs-Pcut-N
+question)?  NOT investigated this round; flagged for whoever next touches
+`m_8_5_basepoint`'s call sites.
+
+PROCESS LESSON (for future rounds, important): this session evidently spans
+a context-compaction boundary within a SINGLE longer-running task attempt --
+the task prompt this pass received described "Round 5" as the most recent
+completed state, but the actual `layerC/pss_scratch.thy` / task.md / this
+file on disk already contained a FULLY-WORKED "Round 6" (the regime2 fix)
+that the prompt's context did not mention.  ALWAYS re-read this entire
+residual-summary file (not just skim for the highest round number expected
+from the task prompt) AND `git status`/`git diff` for uncommitted changes
+in the target worktree BEFORE concluding what the "current frontier" is --
+the task prompt itself can be stale relative to the worktree's actual disk
+state when a session has been long-running or compacted.
+
+Re-run instructions for Round 6b: python/_r6_shift_invariance.py (the
+e1pos-restricted oper-commute confirmation, 200+58968 cases, 0 failures).
 """
