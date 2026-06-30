@@ -6425,6 +6425,89 @@ proof -
   finally show ?thesis .
 qed
 
+text \<open>§8.5 R2 ANCHOR — REDUCTION of raw \<open>scb_decomp\<close> existence to \<open>MarkedB\<close>-nesting
+  (new, this round).  The \<open>anchor\<close> hypothesis of \<open>m_8_5_fold_C_commute\<close> (below) asks,
+  for each fold column \<open>m\<close>, for a \<open>scb_decomp\<close> of the running accumulator
+  \<open>Mark N n\<^sub>0\<close> at the NEXT column's marked principal \<open>transC1 N'\<close> (\<open>N' = N @ [col]\<close>,
+  so \<open>transC1 N' = Mark (Pred N') (transJm1 N') = Mark N (transJm1 N')\<close> since
+  \<open>Pred N' = N\<close>, as \<open>N \<noteq> []\<close> when \<open>N \<in> RT_PS\<close>).  This is EXACTLY
+  \<open>(Mark N n\<^sub>0, Mark N (transJm1 N')) \<in> MarkedB\<close>, i.e. a NESTING of two \<open>Mark\<close>-images
+  of the SAME host \<open>N\<close> at two DIFFERENT marks (\<open>n\<^sub>0\<close>, the GLOBAL tracked index, vs.
+  \<open>transJm1 N'\<close>, the next column's OWN admissible parent) — exactly the shape of the
+  ALREADY-PROVEN, UNCONDITIONAL @{thm [source] Mark_MarkedB_nest} (frozen \<open>PSS_B\<close>,
+  \<open>(M,m)\<in>Marked \<longrightarrow> (M,m')\<in>Marked \<longrightarrow> m\<le>m' \<longrightarrow> M\<in>RT_PS \<longrightarrow> (Mark M m, Mark M
+  m')\<in>MarkedB\<close>).  So \<open>anchor\<close> reduces mechanically to THREE per-column NAMED
+  conditions instead of a raw, mysterious scb-existence claim: (R2a)
+  \<open>(N, n\<^sub>0) \<in> Marked\<close>; (R2b) \<open>(N, transJm1 N') \<in> Marked\<close>; (R2c)
+  \<open>n\<^sub>0 \<le> transJm1 N'\<close> (the per-column monotonicity of the tracked admissible
+  index).  \<open>N \<in> RT_PS\<close> is FREE for the genuine fold hosts (prefixes of a standard
+  \<open>M[Suc q]\<close>, via @{thm [source] ST_PS_take} + @{thm [source] m_6_7_ST_PS_subseteq_RT_PS}
+  — no new condition).  Empirically (\<open>python/_r2_anchor_nest2.py\<close>,
+  \<open>python/_r2_anchor_nest3.py\<close>): across ~164 per-column instances (randomized
+  standard/reduced seeds, \<open>q=2,3\<close>), R2a+R2b+R2c+\<open>reduced N\<close> TRUE \<open>\<Longrightarrow>\<close> anchor TRUE
+  held with ZERO counterexamples (both runs); R2a/R2b/R2c themselves do NOT hold
+  universally (R2a and R2c each fail on some columns, tracking — as in the keystone's
+  own domain — the same kind of condV/condI/condIII/VI per-column regime split the
+  existing \<open>transC2\<close>/\<open>_c2\<close> case-split already encodes), so they are NOT closed here;
+  this lemma converts the OPEN obligation from raw \<open>scb_decomp\<close> existence to these
+  three clean \<open>Marked\<close>/\<open>\<le>\<close>-level conditions, a strictly smaller and more tractable
+  residual for a future round (see \<open>python/_keystone_residual_summary.py\<close>).\<close>
+
+lemma m_8_5_anchor_col:
+  fixes N :: pairseq and col :: "nat \<times> nat" and n0 :: nat
+  assumes NR: "N \<in> RT_PS"
+    and mN0: "(N, n0) \<in> Marked"
+    and mJ: "(N, transJm1 (N @ [col])) \<in> Marked"
+    and le: "n0 \<le> transJm1 (N @ [col])"
+  shows "\<exists>sx bx. scb_decomp (Mark N n0) sx (flatBT (transC1 (N @ [col]))) bx"
+proof -
+  have NT: "N \<in> T_PS" using NR by (simp add: RT_PS_def)
+  have Nne: "N \<noteq> []" using NT by (simp add: T_PS_def)
+  have Lgt1: "1 < Lng (N @ [col])" using Nne by (cases N) auto
+  have Npred: "Pred (N @ [col]) = N" using Lgt1 by (simp add: Pred_def)
+  have nest: "(Mark N n0, Mark N (transJm1 (N @ [col]))) \<in> MarkedB"
+    using mN0 mJ le NR Mark_MarkedB_nest by blast
+  have c1eq: "transC1 (N @ [col]) = Mark N (transJm1 (N @ [col]))"
+    by (simp add: transC1_def Npred)
+  show ?thesis using nest c1eq unfolding MarkedB_def by auto
+qed
+
+text \<open>§8.5 R2 ANCHOR, FOLD form — the \<open>\<And>m\<close> wrapper of @{thm [source] m_8_5_anchor_col}
+  matching the exact shape of the \<open>anchor\<close> hypothesis of \<open>m_8_5_fold_C_commute\<close>: for
+  every column \<open>m < Lng B\<close> of the period, with \<open>N = Y @ take m B\<close> and
+  \<open>N' = Y @ take (Suc m) B = N @ [B ! m]\<close> (the standard \<open>take_Suc_conv_app_nth\<close>
+  split).  Packages R2a/R2b/R2c as named per-column hypotheses
+  (\<open>colMarked0\<close>/\<open>colMarkedJ\<close>/\<open>colMono\<close>); \<open>colRT\<close> is the free \<open>RT_PS\<close> membership
+  (citable via \<open>ST_PS_take\<close> when \<open>Y@B \<in> ST_PS\<close>, not re-derived here to keep this
+  lemma reusable independent of that specific source).\<close>
+
+lemma m_8_5_anchor_fold:
+  fixes Y B :: pairseq and n0 :: nat
+  assumes colRT: "\<And>m. m < Lng B \<Longrightarrow> (Y @ take m B) \<in> RT_PS"
+    and colMarked0: "\<And>m. m < Lng B \<Longrightarrow> (Y @ take m B, n0) \<in> Marked"
+    and colMarkedJ: "\<And>m. m < Lng B \<Longrightarrow>
+                       (Y @ take m B, transJm1 (Y @ take (Suc m) B)) \<in> Marked"
+    and colMono: "\<And>m. m < Lng B \<Longrightarrow> n0 \<le> transJm1 (Y @ take (Suc m) B)"
+  shows "\<And>m. m < Lng B \<Longrightarrow>
+    \<exists>sx bx. scb_decomp (Mark (Y @ take m B) n0) sx
+              (flatBT (transC1 (Y @ take (Suc m) B))) bx"
+proof -
+  fix m assume mw: "m < Lng B"
+  have split: "Y @ take (Suc m) B = (Y @ take m B) @ [B ! m]"
+    using mw by (simp add: take_Suc_conv_app_nth)
+  have mJ': "(Y @ take m B, transJm1 ((Y @ take m B) @ [B ! m])) \<in> Marked"
+    using colMarkedJ[OF mw] split by simp
+  have le': "n0 \<le> transJm1 ((Y @ take m B) @ [B ! m])"
+    using colMono[OF mw] split by simp
+  have res: "\<exists>sx bx. scb_decomp (Mark (Y @ take m B) n0) sx
+              (flatBT (transC1 ((Y @ take m B) @ [B ! m]))) bx"
+    by (rule m_8_5_anchor_col[OF colRT[OF mw] colMarked0[OF mw] mJ' le'])
+  show "\<exists>sx bx. scb_decomp (Mark (Y @ take m B) n0) sx
+              (flatBT (transC1 (Y @ take (Suc m) B))) bx"
+    using res split by simp
+qed
+
+
 text \<open>§8.5 KEYSTONE TELESCOPE — the GENERIC commutation instantiated concretely at the
   BT/scbSubst level, via the ALREADY-PROVEN @{thm [source] m_8_5_scbSubst_addBT_commute}.
   The SAME per-column rightmost-spine anchoring used by @{thm [source] b3b_rnav_fold_drive}
