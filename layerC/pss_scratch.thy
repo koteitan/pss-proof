@@ -6428,4 +6428,22 @@ proof -
   finally show ?thesis .
 qed
 
+text \<open>§8.5 op (marked-head single-outer-principal shape) FROM monoT — the SECOND face
+  of the descent-kernel's surgC decomposition (@{thm [source] m_8_5_surgC_of_keystone}):
+  for a monoT reduced sequence, @{thm [source] m_7_3_Trans_monoT} makes \<open>Trans\<close>
+  single-principal and @{thm [source] principal_reconstruct} reads off the
+  \<open>Dpt\<close>-shape \<open>op\<close>.  Applied to the marked slice \<open>X = slice \<frown> B\<close>, this discharges the
+  kernel's \<open>op\<close> residual down to \<open>monoT (slice \<frown> B)\<close> (the marked-slice monoT, the
+  one remaining structural fact besides the keystone).\<close>
+
+lemma m_8_5_op_of_monoT:
+  fixes X :: pairseq
+  assumes MR: "X \<in> RT_PS" and P0nz: "\<not> zeroT (P X ! 0)" and mono: "monoT X"
+  shows "Trans X = Dpt (bpHeadV (Trans X)) (bpHeadT (Trans X))"
+proof -
+  have "Lng (PB (Trans X)) = 1"
+    using m_7_3_Trans_monoT[OF MR P0nz] mono by simp
+  thus ?thesis by (rule principal_reconstruct)
+qed
+
 end
