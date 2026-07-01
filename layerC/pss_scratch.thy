@@ -5629,6 +5629,41 @@ proof -
 qed
 
 
+text \<open>§8.5 ROUND 8, Route 1 item (2)/(3) preparation — the PARTIAL-fold form of
+  @{thm [source] m_8_5_fold_of_colstep}, exposing its internal \<open>gen\<close> induction as a
+  standalone, reusable fact: the RUNNING fold accumulator at column \<open>m\<close> (\<open>0\<le>m\<le>Lng B\<close>,
+  not just the WHOLE period \<open>m=Lng B\<close>) equals \<open>f\<close> applied to the partial prefix
+  \<open>Y @ take m B\<close>.  This is the bridge needed to discharge \<open>m_8_5_fold_C_commute\<close>'s
+  (defined LATER in this file) \<open>anchor\<close> hypothesis (stated in terms of the ABSTRACT
+  \<open>fold op [0..<m] acc0\<close>) from \<open>m_8_5_anchor_fold_mixed\<close>'s (also defined LATER)
+  conclusion (stated in terms of the CONCRETE \<open>Mark (Y @ take m B) n0\<close>) at
+  \<open>f := \<lambda>M. Mark M n0\<close>, \<open>acc0 := Mark Y n0\<close> — rewrite the fold accumulator via this
+  lemma, then the two
+  statements are syntactically identical.  Not yet wired into a single closed lemma
+  (that composition, plus the still-open \<open>nz\<close>/\<open>pt2\<close> per-column hypotheses
+  \<open>m_8_5_fold_C_commute\<close> also needs, is left for a future round — see the residual
+  summary).\<close>
+
+lemma m_8_5_fold_of_colstep_partial:
+  fixes Y B :: pairseq and op :: "nat \<Rightarrow> BT \<Rightarrow> BT" and f :: "pairseq \<Rightarrow> BT"
+  assumes step: "\<And>m. m < Lng B \<Longrightarrow> f (Y @ take (Suc m) B) = op m (f (Y @ take m B))"
+  shows "\<And>k. k \<le> Lng B \<Longrightarrow> fold op [0..<k] (f Y) = f (Y @ take k B)"
+proof -
+  fix k show "k \<le> Lng B \<Longrightarrow> fold op [0..<k] (f Y) = f (Y @ take k B)"
+  proof (induct k)
+    case 0 thus ?case by simp
+  next
+    case (Suc k)
+    have kle: "k \<le> Lng B" using Suc.prems by simp
+    have klt: "k < Lng B" using Suc.prems by simp
+    have "fold op [0..<Suc k] (f Y) = op k (fold op [0..<k] (f Y))" by simp
+    also have "\<dots> = op k (f (Y @ take k B))" using Suc.hyps kle by simp
+    also have "\<dots> = f (Y @ take (Suc k) B)" using step[OF klt] by (rule sym)
+    finally show ?case .
+  qed
+qed
+
+
 text \<open>§8.5 ROUND 6b (B) -- the MARK-LEVEL netfold instantiation of
   @{thm [source] m_8_5_fold_of_colstep}, promised but never written by the
   comment above (the file's grep-able state before this addition: \<open>f =
