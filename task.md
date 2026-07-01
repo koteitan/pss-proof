@@ -84,7 +84,8 @@
               - ✅ trunk-stuck代替witness〔`m_8_5_anchor_col_trunkstuck_regime2`〕
               - 🚨 witnessをregimeから導出
                 - ✅ Pcut freeze定理化〔`m_8_5_Pcut_freezes`〕[r2]
-                - 🚨 witness自体の導出〔frozen-Pcut案は反証済〕[r1]
+                - ✅ reset列(col0)部分の証明〔`m_8_5_Pcut_reset_witness`、経験的に全体の約20%のみカバー(親検証)〕[r1]
+                - 🚨 残り約80%(non-reset先頭列)の導出〔frozen-Pcut案は反証済〕[r1]
         - ✅ (op) marked-head形〔`m_8_5_Mark_headform`〕
     - ✅ 補題（条件 (V) の下での $\textrm{Joints}$ と $\textrm{FirstNodes}$ と $t_2$ の基本性質）〔`m_8_5_Joints_FirstNodes_basic` parts(1)(2)〕
     - 🚨 補題（条件 (V) の下での各種 scb分解）〔def 内部記号露出要〕
