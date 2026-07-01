@@ -86,7 +86,8 @@
                 - ✅ Pcut freeze定理化〔`m_8_5_Pcut_freezes`〕[r2]
                 - ✅ reset列部分〔`m_8_5_Pcut_reset_witness`、約20%カバー〕[r1]
                 - ✅ non-reset列部分〔`m_8_5_Pcut_nonreset_witness`、hasParent前提が実regime157/157成立(親検証)〕[r1]
-                - 🚨 前提(col0/hasParent)をoper生成ブロックから導出し`anchor_fold_mixed`に配線[r0]
+                - ✅ 一般reduction〔`m_8_5_Pcut_witness_of_smaller_at`、任意内点c<で witness〕[r1]
+                - 🚨 残差 `entry Mq 0 (Pcut Mq) < fst(B!m)`〔trunk-stuck非reset列で170/170経験成立、証明open〕[r1]
         - ✅ (op) marked-head形〔`m_8_5_Mark_headform`〕
     - ✅ 補題（条件 (V) の下での $\textrm{Joints}$ と $\textrm{FirstNodes}$ と $t_2$ の基本性質）〔`m_8_5_Joints_FirstNodes_basic` parts(1)(2)〕
     - 🚨 補題（条件 (V) の下での各種 scb分解）〔def 内部記号露出要〕
