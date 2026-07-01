@@ -76,14 +76,15 @@
           - 🚨 R2: fold-C可換
             - ✅ Mark-level netfold橋〔`m_8_5_Mark_netfold_condV`/`_via_anchor`〕
             - ✅ trunk-stuck混在fold対応〔`m_8_5_anchor_fold_mixed`〕[r1]
-            - 🚨 outer q-level driver〔`m_8_5_fold_of_colstep_partial`〕[r1]
+            - ✅ 全期間F/C可換〔`m_8_5_Mark_fold_C_commute`〕[r2]
+            - 🚨 Fのq非依存性組立〔block-shift自己相似confirmed、assembly未着手〕[r2]
             - ✅ R2a adm成分〔`m_8_5_marked_adm_persist`〕
             - 🚨 R2a leR成分
               - ✅ trunk-stuck leR偽の証明〔`m_8_5_marked_requires_last_component`〕
               - ✅ trunk-stuck代替witness〔`m_8_5_anchor_col_trunkstuck_regime2`〕
               - 🚨 witnessをregimeから導出
                 - ✅ Pcut freeze定理化〔`m_8_5_Pcut_freezes`〕[r2]
-                - 🚨 witness自体の導出[r0]
+                - 🚨 witness自体の導出〔frozen-Pcut案は反証済〕[r1]
         - ✅ (op) marked-head形〔`m_8_5_Mark_headform`〕
     - ✅ 補題（条件 (V) の下での $\textrm{Joints}$ と $\textrm{FirstNodes}$ と $t_2$ の基本性質）〔`m_8_5_Joints_FirstNodes_basic` parts(1)(2)〕
     - 🚨 補題（条件 (V) の下での各種 scb分解）〔def 内部記号露出要〕
