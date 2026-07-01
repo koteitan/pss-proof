@@ -77,7 +77,7 @@
               - ✅ R2b'+pcutle を単一仮定に縮約〔`m_8_5_trunkstuck_hyps_of_hasParent0`、`Marked_Pred_Adm`+`multi_Marked_last_component`合成でN全体のR2bに帰着〕
               - 🚨 `entry N 0 0 < fst col`は反証〔u>0のST_PS(article確認、content.md:1346)で95/245反例、旧79/79はyaBMS縛りのharness artifact〕
               - ✅ 代替witness `entry N 0 (Pcut N) < fst col`で245/245頑健確認・形式化〔`m_8_5_anchor_col_trunkstuck_regime2`〕
-              - 🚨 残=`entry N 0 (Pcut N) < fst col`をkeystone regimeから導出（未証明）
+              - 🚨 残=`entry N 0 (Pcut N) < fst col`をkeystone regimeから導出〔目標`m_8_5_Pcut_of_le0_cut`、cut半の証明が壁〕
         - ✅ (op) marked-head 形〔`m_8_5_Mark_headform`(shape+値=entry M 1 m、Marked から)〕
     - ✅ 補題（条件 (V) の下での $\textrm{Joints}$ と $\textrm{FirstNodes}$ と $t_2$ の基本性質）〔`m_8_5_Joints_FirstNodes_basic` parts(1)(2)〕
     - 🚨 補題（条件 (V) の下での各種 scb分解）〔def 内部記号露出要〕
