@@ -1583,4 +1583,70 @@ reset<->jump correlation, 106/106 and 236/236 both directions).
 
 ROUTE 1 ITEM (3) -- explored further, NOT closed. See the dedicated
 sub-section after this one for what was tried and why it remains open.
+
+ROUTE 1 ITEM (3) DETAIL -- re-read Round 9's own "WHAT STILL BLOCKS" list
+(candidate (i) sub-points (1)/(2)/(3), candidate (ii)) to find an unexplored
+angle. Two findings:
+
+(a) Candidates (i)-sub-point-(2) ("F(M[q])=M[Suc q] as a literal equation")
+and (ii) ("bypass keystone_allq, prove markstep directly at every q via
+m_8_5_markstep_of_Trans_keystone's own per-q hypothesis") turn out NOT to be
+live options, on inspection: (2) is moot because the PAIRSEQ-level recursion
+M[Suc q]=F(M[q]) is ALREADY fully explicit and q-independent
+(m_8_5_deepen_block_explicit, ALREADY PROVEN) -- the q-independent-F
+"puzzle" Round 8 flagged was never really about the pairseq level at all,
+it was about the DOWNSTREAM BT/Trans-level recursion (z(Suc q)=F_BT(z q)
+for the ABSTRACT keystone_allq schema), which is a separate, harder claim.
+And (ii) turns out to be ALREADY THE FILE'S CURRENT STATE: the
+"EXPOSED-IDENTITY FRAME" text (~pss_scratch.thy line 8046,
+m_8_5_markstep_of_Trans_keystone) already takes exactly this per-q
+"keystone" hypothesis directly (bypassing keystone_allq/telescope
+entirely) -- this predates the round 8-10 campaign on item (3) and was
+apparently already the adopted approach. Both routes, traced through, land
+on the EXACT SAME open fact as b3_markstep_skeleton_rnav's "assembly"
+(fold op [0..<w] (rnav acc0) = C (rnav acc0)) -- there is no THIRD distinct
+open fact hiding in Round 9's candidate list; "assembly" is the one thing
+both formulations reduce to.
+
+(b) A genuinely NEW angle tried this round: does the ALREADY-PROVEN,
+frozen (IncrFirst,Red)-invariance family -- Trans(IncrFirst M)=Trans M /
+Mark(IncrFirst M) m=Mark M m / Trans_funpow_IncrFirst (layerB/pss_wip.thy
+~line 686-11009; "IncrFirst" = add a CONSTANT to every row-0 entry,
+map (\<lambda>p.(Suc(fst p),snd p))) -- combined with Round 9's CONFIRMED
+block-shift law (B(q) = shift_row0(d0, B(q-1))) let "assembly" reduce to
+something already known?  Traced through by hand (no Isabelle written --
+this was refuted analytically before it was worth testing empirically):
+NO, for a structural reason, not a coincidence. Trans_funpow_IncrFirst says
+Trans is invariant under shifting an ENTIRE pairseq's row-0 by a constant
+(same LENGTH, same shape, just relabelled values) -- but slice_{q+1} =
+slice_q @ B(q) is LONGER than slice_q (genuine append/growth, not a
+same-length relabelling), so "slice_{q+1} = IncrFirst^^d0 (slice_q)" is a
+DIMENSION MISMATCH / false claim, not something IncrFirst-invariance could
+apply to even in principle. Only the NEWLY APPENDED PART (B(q) vs B(q-1))
+satisfies a clean shift law, and IncrFirst-invariance is a fact about
+WHOLE-structure relabelling, not about how Trans treats one growing
+structure against a shorter one -- so this "translation invariance"
+shortcut, however tempting given the CONFIRMED shift law, does not apply to
+the actual assembly obligation. This CONFIRMS (via a different, structural/
+dimensional argument this time, rather than proof-term tracing) Round 10's
+conclusion that "assembly" is not reducible via known machinery; the
+genuine content is that the Mark/BT TOWER grows a real new level each
+period (not a flat relabelling), which is exactly why it needed the
+otasm-empirical/rnav/depth-ladder machinery in the first place.
+
+NET for item (3) this round: no new reduction found; the two remaining
+"candidate resolutions" from Round 9's list turn out to already be
+exhausted / equivalent to the existing state, and a genuinely new
+(IncrFirst-based) angle was tried and structurally refuted. "assembly"
+(b3_markstep_skeleton_rnav's hypothesis, equivalently
+m_8_5_markstep_of_Trans_keystone's `keystone` hypothesis) remains the
+single irreducible mathematical open of Route 1/item (3), now for the
+6th consecutive round reaching this same conclusion via independent
+approaches (Rounds 6b/7/8/9/10/11). A future round should treat this as
+requiring genuinely new mathematical insight (e.g. a direct structural
+argument about how the P-decomposition/Mark recursion behaves ACROSS a
+whole appended period, not a translation/composition trick), not another
+attempt to route around it via already-proven machinery -- every
+composition of currently-available lemmas has now been checked and found
+insufficient by at least one round.
 """
