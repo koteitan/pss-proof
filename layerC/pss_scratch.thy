@@ -7561,6 +7561,141 @@ proof -
     by (rule m_8_5_Pcut_of_le0_cut[OF cut[THEN conjunct1] wle hcut hnocut])
 qed
 
+text \<open>§8.5 ROUND 11, Route 2 -- MAJOR SIMPLIFICATION of the trunk-stuck witness
+  derivation.  Instead of chasing an ANCHOR-based two-case split (Round 10's lead,
+  which turned out empirically messier than expected -- the \<open>ANCHOR<fcol\<close> failures
+  are NOT confined to a \<open>m=0\<close> "period boundary" and are not all exact ties, some are
+  genuine reversals in \<open>d\<^sub>0=0\<close> degenerate sub-cases), a DIRECT empirical re-inspection
+  (\<open>python/_r11_pcut_eq_lngmq.py\<close>, \<open>python/_r11_reset_pcut_general.py\<close>) found the
+  witness reduces to a much simpler, fully GENERAL fact with NO regime/deepen-block
+  content at all: appending a column whose row-0 value is \<open>0\<close> (a "reset" column)
+  ALWAYS makes \<open>Pcut\<close> jump to EXACTLY the position of that new column -- confirmed
+  1,062,880/1,062,880 (zero exceptions) on an unrestricted sweep of ALL \<open>N\<close>/\<open>v\<close> pairs
+  with \<open>multiT (N@[(0,v)])\<close>, no seed/regime filter whatsoever.  Proof: \<open>Lng N\<close> is
+  trivially a valid le0-cut (\<open>le0\<close> is reflexive); no SMALLER \<open>j\<close> can be a cut, since
+  \<open>leR X 0 j (Lng N)\<close> would force (by the ALREADY-PROVEN, frozen
+  @{thm [source] m_5_1_ancestor_basic_1}, value strictly increases along any nontrivial
+  ancestor chain) \<open>entry X 0 j < entry X 0 (Lng N) = 0\<close>, impossible for a \<open>nat\<close>.\<close>
+
+lemma m_8_5_reset_Pcut_jump:
+  fixes N :: pairseq and v :: nat
+  assumes Npos: "0 < Lng N"
+    and MX: "multiT (N @ [(0, v)])"
+  shows "Pcut (N @ [(0, v)]) = Lng N"
+proof -
+  define X where "X = N @ [(0, v)]"
+  have XT: "X \<in> T_PS" by (simp add: X_def T_PS_def)
+  have LngX: "Lng X = Lng N + 1" by (simp add: X_def)
+  have e0: "entry X 0 (Lng X - 1) = 0"
+    using LngX by (simp add: X_def entry_def nth_append)
+  have wpos: "0 < Lng N" by (rule Npos)
+  have wle: "Lng N \<le> Lng X - 1" using LngX by simp
+  have cut: "leR X 0 (Lng N) (Lng X - 1)"
+  proof -
+    have "le0 X (Lng N) (Lng N)"
+      unfolding le0_def using LngX by (simp add: rtranclp.rtrancl_refl)
+    thus ?thesis using LngX by (simp add: leR_def)
+  qed
+  have nocut: "\<And>j. 0 < j \<Longrightarrow> j < Lng N \<Longrightarrow> \<not> leR X 0 j (Lng X - 1)"
+  proof
+    fix j assume j0: "0 < j" and jlt: "j < Lng N" and lc: "leR X 0 j (Lng X - 1)"
+    have jlt2: "j < Lng X - 1" using jlt LngX by simp
+    have "entry X 0 j < entry X 0 (Lng X - 1)"
+      by (rule m_5_1_ancestor_basic_1[OF XT jlt2 order_refl lc])
+    thus False using e0 by simp
+  qed
+  have "Pcut X = Lng N" by (rule m_8_5_Pcut_of_le0_cut[OF wpos wle cut nocut])
+  thus ?thesis by (simp add: X_def)
+qed
+
+text \<open>§8.5 ROUND 11, Route 2 -- the RUNNING-BLOCK corollary.  Combines
+  @{thm [source] m_8_5_reset_Pcut_jump} (the jump, at the block's OWN first/reset
+  column) with the ALREADY-PROVEN @{thm [source] m_8_5_Pcut_freezes} (iterated over
+  the remaining, non-reset columns of the SAME block) to show \<open>Pcut\<close> stays PINNED at
+  \<open>Lng Mq\<close> throughout an entire deepen-block run whose first column is a reset
+  (\<open>fst (B!0) = 0\<close>) and whose later columns are all non-reset (\<open>fst (B!m) > 0\<close> for
+  \<open>0 < m\<close>).  This is the EXACT regime the trunk-stuck witness needs: since
+  \<open>entry (Mq @ take m B) 0 (Pcut (Mq @ take m B)) = entry (Mq@take m B) 0 (Lng Mq) =
+  fst (B!0) = 0\<close> throughout, the witness \<open>entry N 0 (Pcut N) < fst col\<close> reduces to
+  \<open>0 < fst (B!m)\<close>, i.e. the SAME "non-reset column" hypothesis already required --
+  no ANCHOR / periodicity-formula reasoning needed at all.  Confirmed empirically
+  (\<open>python/_r11_pcut_eq_lngmq.py\<close>): 636/636 across three independent samples.\<close>
+
+lemma m_8_5_Pcut_reset_freeze:
+  fixes Mq B :: pairseq
+  assumes hostR: "\<And>m. m \<le> Lng B \<Longrightarrow> Mq @ take m B \<in> RT_PS"
+    and hostM: "\<And>m. m \<le> Lng B \<Longrightarrow> multiT (Mq @ take m B)"
+    and Mqpos: "0 < Lng Mq"
+    and Bne: "0 < Lng B"
+    and col0: "fst (B ! 0) = 0"
+    and colpos: "\<And>m. 0 < m \<Longrightarrow> m < Lng B \<Longrightarrow> 0 < fst (B ! m)"
+  shows "\<And>m. 0 < m \<Longrightarrow> m \<le> Lng B \<Longrightarrow> Pcut (Mq @ take m B) = Lng Mq"
+proof -
+  fix m assume mpos: "0 < m" and mle: "m \<le> Lng B"
+  thus "Pcut (Mq @ take m B) = Lng Mq"
+  proof (induction m)
+    case 0 thus ?case by simp
+  next
+    case (Suc k)
+    show ?case
+    proof (cases "k = 0")
+      case True
+      have take1: "Mq @ take (Suc k) B = Mq @ [B ! 0]"
+        using True Bne by (simp add: take_Suc_conv_app_nth)
+      have mxX: "multiT (Mq @ [B ! 0])"
+        using hostM[of "Suc k"] Suc.prems take1 by simp
+      obtain v where colv: "B ! 0 = (0, v)" using col0 by (cases "B ! 0") auto
+      have "Pcut (Mq @ [B ! 0]) = Lng Mq"
+        using m_8_5_reset_Pcut_jump[OF Mqpos] mxX colv by simp
+      thus ?thesis using take1 by simp
+    next
+      case False
+      then have kpos: "0 < k" by simp
+      have klt: "k < Lng B" using Suc.prems by simp
+      have kle: "k \<le> Lng B" using klt by simp
+      have IH: "Pcut (Mq @ take k B) = Lng Mq" by (rule Suc.IH[OF kpos kle])
+      have colk: "0 < fst (B ! k)" by (rule colpos[OF kpos klt])
+      have NRk: "Mq @ take k B \<in> RT_PS" by (rule hostR[OF kle])
+      have muk: "multiT (Mq @ take k B)" by (rule hostM[OF kle])
+      have e0: "entry (Mq @ take k B) 0 (Lng Mq) = fst (B ! 0)"
+        using kpos by (simp add: entry_def nth_append)
+      have strictk: "entry (Mq @ take k B) 0 (Pcut (Mq @ take k B)) < fst (B ! k)"
+        using IH e0 col0 colk by simp
+      have freeze: "Pcut ((Mq @ take k B) @ [B ! k]) = Pcut (Mq @ take k B)"
+        by (rule m_8_5_Pcut_freezes[OF NRk muk strictk])
+      have takeS: "Mq @ take (Suc k) B = (Mq @ take k B) @ [B ! k]"
+        using klt by (simp add: take_Suc_conv_app_nth)
+      show ?thesis using freeze IH takeS by simp
+    qed
+  qed
+qed
+
+text \<open>§8.5 ROUND 11, Route 2 -- the WITNESS itself, as a direct corollary: within a
+  reset-then-grow deepen-block run, the trunk-stuck anchor witness \<open>entry N 0
+  (Pcut N) < fst col\<close> (\<open>m_8_5_anchor_col_trunkstuck_regime2\<close>'s own \<open>strict\<close>
+  hypothesis, defined LATER in this file) reduces to exactly the non-reset-column
+  hypothesis already carried elsewhere -- no ANCHOR/periodicity reasoning needed.\<close>
+
+lemma m_8_5_Pcut_reset_witness:
+  fixes Mq B :: pairseq and m :: nat
+  assumes hostR: "\<And>k. k \<le> Lng B \<Longrightarrow> Mq @ take k B \<in> RT_PS"
+    and hostM: "\<And>k. k \<le> Lng B \<Longrightarrow> multiT (Mq @ take k B)"
+    and Mqpos: "0 < Lng Mq"
+    and Bne: "0 < Lng B"
+    and col0: "fst (B ! 0) = 0"
+    and colpos: "\<And>k. 0 < k \<Longrightarrow> k < Lng B \<Longrightarrow> 0 < fst (B ! k)"
+    and mpos: "0 < m" and mlt: "m < Lng B"
+  shows "entry (Mq @ take m B) 0 (Pcut (Mq @ take m B)) < fst (B ! m)"
+proof -
+  have mle: "m \<le> Lng B" using mlt by simp
+  have pc: "Pcut (Mq @ take m B) = Lng Mq"
+    by (rule m_8_5_Pcut_reset_freeze[OF hostR hostM Mqpos Bne col0 colpos mpos mle])
+  have e0: "entry (Mq @ take m B) 0 (Lng Mq) = fst (B ! 0)"
+    using mpos by (simp add: entry_def nth_append)
+  have "0 < fst (B ! m)" by (rule colpos[OF mpos mlt])
+  thus ?thesis using pc e0 col0 by simp
+qed
+
 
 lemma m_8_5_anchor_col_trunkstuck_regime2:
   fixes N :: pairseq and col :: "nat \<times> nat" and n0 :: nat

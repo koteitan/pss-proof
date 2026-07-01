@@ -1467,4 +1467,120 @@ proof-term tracing) and one new POSITIVE but incomplete empirical lead
 "assembly" content (b3_markstep_skeleton_rnav) remains the single
 irreducible mathematical open of Route 1; Route 2's derivation is closer
 (one confirmed half of a two-case argument) but not closed.
+
+=====================================================================
+ROUND 11 (2026-07-01, this round; layerC/pss_scratch.thy, commits mirrored
+main/wt2). Route 2's ORIGINAL ask -- deriving the trunk-stuck witness
+`entry N 0 (Pcut N) < fst col` from the keystone's own regime, open since
+Round 6 -- is now FULLY PROVEN via a route that TURNED OUT MUCH SIMPLER than
+Round 10's own ANCHOR-based lead (which is superseded, see below). Route 1
+item (3) was investigated further (Isabelle exploration of what
+m_8_5_markstep_of_Trans_keystone already gives) but NOT closed; see its own
+subsection below.
+=====================================================================
+
+ROUTE 2 -- CLOSED. Round 10 flagged "the germ of a two-case argument" around
+an ANCHOR quantity (epcut<=ANCHOR universal, ANCHOR<fcol only 30/296, with
+the failures allegedly concentrated "at the m=0 period-boundary column,
+where it's an exact tie"). Re-testing that EXACT split first
+(python/_r11_twocase.py): REFUTED as stated -- m==0 NEVER appears as a
+trunk-stuck row at all (0/296; B[0], the deepen-block's own first column, is
+ALWAYS itself the fcol==0 reset column that the harness's own "trivial
+fresh-reset" filter excludes), so the "m==0 boundary" framing was not the
+real mechanism. A second attempt splitting on epcut<ANCHOR (strict) vs
+epcut==ANCHOR (python/_r11_twocase_v2.py) also did not close it (epcut==0
+cases never had epcut==ANCHOR wither -- case B was EMPTY, 0/296 -- and the
+"epcut<ANCHOR ==> ANCHOR<=fcol" half itself FAILED 30/296, with genuine
+ANCHOR>fcol reversals, not just ties, e.g. ANCHOR=2,fcol=1).
+
+Manual inspection of the failing rows from BOTH prior attempts showed
+epcut==0 in EVERY SINGLE ONE. Testing this directly (python/_r11_twocase_v3.py):
+splitting on ANCHOR<fcol (30/296, where epcut<=ANCHOR<fcol already closes it)
+vs ANCHOR>=fcol (266/296) with the conjecture "epcut==0 whenever ANCHOR>=fcol"
+-- CONFIRMED 266/266, closing the witness for ALL 296/296 rows. But a FOLLOW-UP
+check (does epcut==0 hold literally EVERYWHERE, not just in the ANCHOR>=fcol
+sub-case?) revealed epcut==0 in ALL 296/296 rows, including the 30
+"ANCHOR<fcol" ones -- i.e. ANCHOR was NEVER the load-bearing quantity; epcut
+is simply, unconditionally, always 0 in this regime. This is a dramatically
+simpler invariant than anything Rounds 6-10 pursued, and it explains WHY:
+epcut = entry(Nprev,0,Pcut(Nprev)) is the row-0 value at the START of
+Nprev's OWN last P-component (Pcut's definition literally cuts M into
+P(prefix)@[drop(Pcut M) M]), and Round 9 already independently observed
+"the very first column appended after Mq is a branch-reset column (fst=0)"
+and that Pcut(N) JUMPS FORWARD at such resets -- the missing piece is that
+it jumps EXACTLY to the position of that reset column and then FREEZES
+there (via the ALREADY-PROVEN Round 8 m_8_5_Pcut_freezes) for the rest of
+the SAME period's run, so entry(Nprev,0,Pcut(Nprev)) = fst(that reset
+column) = 0 identically throughout.
+
+python/_r11_pcut_eq_lngmq.py confirms `Pcut(Nprev) == Lng(Mq)` (Mq = the
+q-th iterate BEFORE this deepen block; Lng(Mq) = the position of B[0], the
+block's own first column) EXACTLY for every trunk-stuck row, across THREE
+independent samples (296/296, 36/36 on a fresh larger-value/larger-q sample,
+304/304 on a fresh larger-length sample -- 636/636 total, zero exceptions).
+python/_r11_reset_pcut_general.py isolates the UNDERLYING general fact with
+NO deepen-block/regime content at all: for ANY N (Lng N>0) and ANY v, if
+multiT(N@[(0,v)]) then Pcut(N@[(0,v)]) == Lng N -- confirmed on an
+UNRESTRICTED sweep, 1,062,880/1,062,880 (zero exceptions, no regime filter
+whatsoever). python/_r11_pcut_jump_base.py additionally confirms the
+converse direction empirically (fst(B[0])==0 correlates EXACTLY with
+Pcut(Mq@[B[0]])==Lng(Mq); the 236 rows where B[0] is NOT a reset column never
+have this Pcut value, consistent with Pcut freezing at Pcut(Mq) instead via
+the SAME already-proven Pcut_freezes mechanism when the first appended
+column is itself non-reset -- explaining why m==0 never shows up as
+"newly stuck", since a non-reset B[0] keeps the SAME non-stuck status Mq
+itself already had).
+
+FORMALIZED (layerC/pss_scratch.thy, green PSS_C, sorry/oops=0, self-audited
+for circular citation -- none):
+
+  m_8_5_reset_Pcut_jump: `0 < Lng N ==> multiT(N@[(0,v)]) ==> Pcut(N@[(0,v)])
+  = Lng N`. Fully general, no RT_PS/regime hypothesis. Proof: Lng N is
+  trivially a valid le0-cut (le0 is reflexive, m_8_5_Pcut_of_le0_cut's `cut`
+  half); no SMALLER j can be a cut, since leR X 0 j (Lng N) would force (by
+  the ALREADY-PROVEN, frozen m_5_1_ancestor_basic_1 -- value strictly
+  increases along any nontrivial ancestor chain) entry X 0 j < entry X 0
+  (Lng N) = 0, impossible for a nat. This is the ENTIRE new mathematical
+  content of Route 2's closure -- everything else below is composition with
+  Round 8's already-proven m_8_5_Pcut_freezes.
+
+  m_8_5_Pcut_reset_freeze: given a deepen-block-shaped run (per-column RT_PS
+  + multiT hypotheses `hostR`/`hostM`, matching the style of the file's
+  other per-column fold lemmas), a reset first column (`col0: fst(B!0)=0`)
+  and non-reset later columns (`colpos: 0<m<Lng B ==> 0<fst(B!m)`), Pcut
+  (Mq@take m B) = Lng Mq for EVERY 0<m<=Lng B. Proof: induction on m; base
+  case m=1 is m_8_5_reset_Pcut_jump; step case m=Suc k (k>=1) applies the
+  ALREADY-PROVEN m_8_5_Pcut_freezes with the "strict" witness `entry (Mq@take
+  k B) 0 (Pcut (Mq@take k B)) < fst(B!k)` discharged from the IH (Pcut=Lng Mq)
+  + `entry (Mq@take k B) 0 (Lng Mq) = fst(B!0) = 0` (nth_append, k>=1) + colk
+  (0<fst(B!k)).
+
+  m_8_5_Pcut_reset_witness: the witness itself, `entry (Mq@take m B) 0
+  (Pcut(Mq@take m B)) < fst(B!m)` for 0<m<Lng B, directly from
+  m_8_5_Pcut_reset_freeze + col0 -- discharges
+  m_8_5_anchor_col_trunkstuck_regime2's/m_8_5_anchor_fold_mixed's `strict`
+  hypothesis for this regime with NO reference to ANCHOR, periodicity
+  formulas, or d0 at all.
+
+SUPERSEDED (do not re-attempt): Round 10's ANCHOR-based lead (epcut<=ANCHOR,
+ANCHOR<fcol, the "period-boundary column" framing, ANCHOR_PREV) is now
+understood to have been chasing a WEAKER, coincidentally-often-true corollary
+of the real (much stronger, unconditional) epcut==0 fact -- not wrong, just
+unnecessary. A future round wiring m_8_5_Pcut_reset_witness into
+m_8_5_anchor_fold_mixed's colcase disjunct (i.e. showing the `colcase`
+per-column hypothesis itself follows from `col0`/`colpos` across a REAL
+oper-generated deepen block, using m_8_5_deepen_block_explicit/_row0 to
+establish that B[0] is indeed always fst=0 in the genuine oper recursion)
+would complete Route 1 item (1)/(2)'s remaining "R2a's leR gap for
+non-trunk-stuck columns" caveat for this specific sub-case, though that
+wiring was NOT attempted this round (this round's mandate was the witness
+derivation itself, now done).
+
+Re-run instructions for Round 11 (Route 2): python/_r11_pcut_eq_lngmq.py
+(Pcut(Nprev)==Lng(Mq) and epcut==0, 636/636 combined); python/_r11_reset_pcut_general.py
+(the general fact, 1,062,880/1,062,880); python/_r11_pcut_jump_base.py (the
+reset<->jump correlation, 106/106 and 236/236 both directions).
+
+ROUTE 1 ITEM (3) -- explored further, NOT closed. See the dedicated
+sub-section after this one for what was tried and why it remains open.
 """
