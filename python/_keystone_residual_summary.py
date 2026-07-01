@@ -1126,4 +1126,147 @@ Re-run instructions for Round 8: python/_r8_monoT_reaches_all.py (monoT
 reaches everywhere, 0/29079); python/_r8_linearity.py (ancestor linearity,
 0 failures / 10M+ pairs); python/_r8_pcut_cut_nocut.py (cut/nocut/mechanism
 all 266/266).
+
+=====================================================================
+ROUND 9 (2026-07-01, this round; layerC/pss_scratch.thy). Route 1 item (2)
+(the outer q-level driver's nz/pt2 per-column obligations) is now FULLY
+CLOSED as a genuine top-level lemma m_8_5_Mark_fold_C_commute. Route 2's
+OPEN 1 (deriving the trunk-stuck witness from the keystone's own regime) was
+investigated empirically; ONE natural candidate derivation route (a
+"frozen-Pcut + linear row-0 growth" argument) was tried and REFUTED with a
+concrete counterexample pattern -- see below. Item (3)'s q-independence
+puzzle was NOT attempted this round (ran out of budget after item (2) and
+the Route 2 investigation); still open, see Round 8's own writeup above.
+=====================================================================
+
+ROUTE 1 ITEM (2) -- CLOSED. m_8_5_Mark_fold_C_commute (layerC/pss_scratch.thy,
+~line 8107) is a new top-level theorem:
+
+  fold (\<lambda>m acc. scbSubst (transC1 ((Y@take m B)@[B!m]))
+                            (transC2 ((Y@take m B)@[B!m])) acc)
+       [0..<Lng B] (C (Mark Y n0))
+    = C (Mark (Y@B) n0)
+
+i.e. the outer C-wrap commutes past the WHOLE period fold of the Mark-level
+per-column substitution, not just a single column. Hypotheses: n0pos (0<n0),
+n0lt (n0 < Lng Y - 1), the six standard per-column host facts hostR/hostP/
+hostJ1/hostT1/hostN0/hostMk (verbatim from the ALREADY-PROVEN, green
+m_8_5_Mark_netfold_condV -- no new content), colRT + colMarked0 (per-column
+RT_PS/Marked membership of the RUNNING prefix at n0 -- the SAME hypotheses
+m_8_5_anchor_fold already carries), colcase (the R2a/trunk-stuck disjunction
+of m_8_5_anchor_fold_mixed -- unchanged, still the genuine open regime
+content), and prene/Cdef (the outer wrap's own shape, unrelated to the fold).
+
+Three new lemmas assemble this, closing the two per-column obligations Round
+8 flagged as "uninvestigated":
+
+  m_8_5_dfree_transC1_std / m_8_5_isPTB_str_transC2_std (pt2, FOR FREE, no
+  new named hypothesis beyond the pre-existing RT_PS/PT_PS/transJ1>0/
+  transT1<>0 quartet): transC2_def's outer shape is ALWAYS D_v(...) in every
+  branch (a single principal), so isPTB_str(flatBT(transC2 M)) reduces to
+  dfree-ness of that shape, which the ALREADY-PROVEN, frozen dfree_transC2
+  (layerB/pss_wip.thy:3583) supplies from dfree_BT(transC1 M) -- itself
+  obtained via a `transC1 M = Trm ps` case split, reusing the EXACT SAME
+  Trans_Mark_invariant_aux + Marked_Pred_Adm machinery the frozen
+  transC1_single_principal (layerB/pss_wip.thy:2861) already assembles for
+  its own, different conclusion (Lng(PB(transC1 M))=1 -- the single-principal
+  SHAPE, not the dfree SIDE of the same MarkedB witness). Genuinely free: no
+  regime hypothesis beyond what m_8_5_Mark_netfold_condV already required.
+
+  m_8_5_Mark_nonzero_fold (nz, reduces to a per-column Marked-membership
+  hypothesis the apparatus already needs elsewhere): fold op [0..<m] acc0 <>
+  Trm[] rewrites, via m_8_5_fold_of_colstep_partial, to Mark(Y@take m B) n0
+  <> Trm[], which the ALREADY-PROVEN m_8_5_Mark_nonzero supplies from
+  colMarked0 ((Y@take m B,n0) in Marked -- the SAME hypothesis name
+  m_8_5_anchor_fold already carries, just not re-derivable from
+  m_8_5_anchor_fold_mixed's OWN colcase since colcase's trunk-stuck disjunct
+  does NOT itself supply (N,n0) in Marked -- tried to derive it from colcase
+  alone and failed the build, so m_8_5_Mark_fold_C_commute carries
+  colMarked0 as an explicit, separate hypothesis instead, same status as the
+  pre-existing m_8_5_anchor_fold's own colMarked0) + n0pos + n0lt (a SINGLE
+  base interiority bound propagating forward since Lng(Y@take m B) only
+  grows).
+
+  m_8_5_Mark_netfold_condV_partial (the rewrite BRIDGE Round 8 identified as
+  missing): the PARTIAL-fold form of m_8_5_Mark_netfold_condV, literally the
+  same internal `step` derivation with m_8_5_fold_of_colstep swapped for
+  m_8_5_fold_of_colstep_partial in the final line -- gives fold op [0..<k]
+  acc0 = Mark(Y@take k B) n0 for EVERY k<=Lng B, not just k=Lng B. This is
+  what lets m_8_5_Mark_fold_C_commute's `anchor`/`nz` proofs rewrite the
+  ABSTRACT fold accumulator back to the CONCRETE Mark(Y@take m B) n0 that
+  m_8_5_anchor_fold_mixed / m_8_5_Mark_nonzero_fold are stated over.
+
+  GOTCHAS hit assembling this (recorded for the next round): (1)
+  m_8_5_fold_C_commute has a `defines "op \<equiv> ..."` clause, which Isabelle
+  INLINES throughout the lemma's statement -- citing it via `[OF op_def
+  anchor nz pt2 prene Cdef]` fails with "OF: no unifiers" (arity mismatch:
+  defines does NOT produce a separate suppliable premise, unlike `assumes`).
+  Fix: drop op_def from the OF list, and `unfolding op_def` + `[unfolded
+  op_def]` on the anchor/nz facts BEFORE the `rule` call, since a locally
+  `define`d abbreviation is a rigid opaque constant that `rule`/OF
+  unification will NOT see through automatically -- only an explicit
+  `unfolding`/`[unfolded ...]` exposes the underlying lambda for
+  unification. (2) `take_Suc_conv_app_nth`-style prefix-splitting
+  (`Y@take(Suc m) B = (Y@take m B)@[B!m]`) is NOT free under bare `simp` in
+  a `thus ... using X mw by simp` one-liner when X is stated over the
+  `take(Suc m)` form and the goal is stated over the `@[B!m]` form -- needs
+  an explicit named `split` fact (exactly as the ALREADY-GREEN
+  m_8_5_anchor_fold/_mixed proofs already do) rather than relying on bare
+  `simp` to bridge the two forms. (3) two of the four new lemmas needed to
+  be positioned AFTER m_8_5_Mark_nonzero (defined far later in the file,
+  ~line 8051) rather than immediately before m_8_5_fold_C_commute where they
+  were first drafted -- a forward-reference build error (`Undefined fact`),
+  not merely the softer `@{thm [source]}`-in-text gotcha CLAUDE.md already
+  documents; relocated m_8_5_Mark_nonzero_fold + m_8_5_Mark_fold_C_commute
+  to directly after m_8_5_Mark_nonzero's own qed.
+
+ROUTE 2 OPEN 1 -- one candidate derivation REFUTED empirically, witness
+itself RE-CONFIRMED robust. Investigated whether the trunk-stuck witness
+`entry N 0 (Pcut N) < fst col` could be derived from a simple THREE-fact
+combination, all computed directly from the keystone's OUTER host Mq=M[q]
+(NOT from the intermediate running host N=Y@take m B): (a) Pcut(N) stays
+CONSTANT = Pcut(Mq) throughout a trunk-stuck run of columns within a single
+q's deepen block; (b) e_star := entry(Mq,0,Pcut(Mq)) <= e_j0 :=
+entry(Mq,0,j0) (j0 = parent Mq 1 (Lng Mq-1), i.e. Pcut(Mq) sits INSIDE the
+trunk, at or before j0); (c) d0 := entry(Mq,0,j1)-entry(Mq,0,j0) > 0 (row-0
+strictly grows each period). IF all three held, e_star + q*d0 < fst(col)
+would follow almost immediately (q>=1, d0>0), giving a REAL derivation.
+
+python/_r9_witness_structure.py (296 genuine trunk-stuck columns, the SAME
+keystone regime harness as _r6_pcutwitness_search.py, q in {1,2,3,4}):
+witness itself 296/296 (RECONFIRMS Round 6-8's finding on an independent
+fresh random sample -- still empirically bulletproof); (b) e_star<=e_j0
+296/296 and (c) d0>0 296/296 BOTH hold; but (a) Pcut(N)==Pcut(Mq) FAILS
+296/296 (!) -- Pcut(N) is NOT frozen at Pcut(Mq) across a trunk-stuck run:
+concrete example M=(0,0)(1,0)(1,1)(1,0), q=2: Pcut(Mq)=3 but by m=1 (after
+ONE column has been appended), Pcut(N) has already jumped to 6. ROOT CAUSE
+(diagnosed, not just observed): the very FIRST column appended after Mq
+(m=0->1) is apparently a "branch reset" column (fst=0), which
+m_8_5_Pcut_freezes's own witness explicitly EXCLUDES (its hypothesis
+`entry N 0 (Pcut N) < fst col` needs fst col > entry(...) >= 0, so a fst=0
+reset column never satisfies it) -- a reset column starts a genuinely NEW
+P-component, so Pcut jumps forward to point at it. So Pcut(N) is a
+DYNAMIC quantity through the deepen block (piecewise-constant, resetting at
+each internal branch-reset column), not a single value derivable from Mq's
+OWN j0/d0 alone -- REFUTES this specific "frozen Pcut + linear growth"
+derivation route. Since fcol = entry(M,0,j0(M)+m) + q*d0(M) is built from
+the ORIGINAL SEED M's OWN j0/d0 (m_8_5_deepen_block_explicit), NOT Mq's --
+these are generally DIFFERENT numbers from what this round's (b)/(c) checks
+computed at Mq -- so even the (b)/(c) empirical successes may not be the
+load-bearing facts; they were coincidental to the small-example regime
+sampled. Do NOT re-attempt "Pcut(N) frozen across the whole run" as a
+sub-route without first re-deriving fcol's periodicity in terms of the
+SAME base (M, not Mq) the deepen-block formula actually uses.
+
+The genuine derivation of OPEN 1 remains open. What this round adds: the
+witness's continued 296/296 robustness on a fresh sample; and a concrete,
+diagnosed (not just "it failed") reason why naive constant-Pcut arguments
+cannot work -- any future attempt needs to track Pcut's PIECEWISE
+structure through internal branch-resets within a single q's deepen block,
+which likely requires characterizing which within-block columns are
+resets (fst=0) directly from the SAME M/j0/d0 the deepen-block formula
+uses, not from Mq's own (unrelated) Pcut/entry values.
+
+Re-run instructions for Round 9: python/_r9_witness_structure.py (witness
+296/296, Pcut-constant 0/296 REFUTED with diagnosed root cause).
 """
