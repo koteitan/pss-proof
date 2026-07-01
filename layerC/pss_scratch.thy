@@ -7656,6 +7656,151 @@ proof -
 qed
 
 
+text \<open>§8.5 ROUND 9, Route 1 item (2) — the \<open>pt2\<close> per-column hypothesis of
+  \<open>m_8_5_fold_C_commute\<close> (defined LATER in this file; \<open>isPTB_str (flatBT
+  (c\<^sub>2 m))\<close>, instantiated at \<open>c\<^sub>2 = transC2\<close>) is derivable FOR FREE from the SAME
+  standard hypotheses (\<open>RT_PS\<close>/\<open>PT_PS\<close>/\<open>transJ1>0\<close>/\<open>transT1\<noteq>0\<close>) that @{thm [source]
+  m_8_5_Mark_netfold_condV} already carries as \<open>hostR\<close>/\<open>hostP\<close>/\<open>hostJ1\<close>/\<open>hostT1\<close> — NO
+  new named regime hypothesis is needed at all.  \<open>transC2_def\<close>'s outer shape is ALWAYS
+  \<open>D\<^bsub>v\<^esub>(\<dots>)\<close> in every branch (a single principal), and the ALREADY-PROVEN, frozen
+  @{thm [source] dfree_transC2} gives its dfree-ness from \<open>v\<noteq>\<infinity>\<close> + \<open>dfree_BT (transT2 M)\<close>
+  — both of which unpack, via a \<open>transC1 M = Trm ps\<close> case split on \<open>ps\<close>, from
+  \<open>dfree_BT (transC1 M)\<close>.  That dfree fact is supplied by the SAME machinery the
+  ALREADY-PROVEN, frozen @{thm [source] transC1_single_principal} assembles for its OWN,
+  different conclusion (\<open>Lng (PB (transC1 M)) = 1\<close>, via @{thm [source]
+  Trans_Mark_invariant_aux} at \<open>Pred M\<close> + @{thm [source] Marked_Pred_Adm}) — this lemma
+  extracts the DFREE side of that SAME \<open>MarkedB\<close> witness instead of the single-principal
+  side.\<close>
+
+lemma m_8_5_dfree_transC1_std:
+  fixes M :: pairseq
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS"
+    and J1: "transJ1 M > 0" and T1: "transT1 M \<noteq> 0\<^sub>B"
+  shows "dfree_BT (transC1 M)"
+proof -
+  have MT: "M \<in> T_PS" using MP by (simp add: PT_PS_def)
+  have mono: "monoT M" using MP by (simp add: PT_PS_def)
+  have L: "1 < Lng M" using J1 by (simp add: transJ1_def)
+  have hp: "hasParent M 0 (Lng M - 1)" by (rule monoT_hasParent0_last[OF MT mono L])
+  have mkd: "(Pred M, Adm M (parent M 0 (Lng M - 1))) \<in> Marked"
+    by (rule Marked_Pred_Adm[OF MT L hp])
+  have predRT: "Pred M \<in> RT_PS" by (rule Pred_RT_PS[OF MR])
+  have c1eq: "transC1 M = Mark (Pred M) (Adm M (parent M 0 (Lng M - 1)))"
+    by (simp add: transC1_def transJm1_def transJ0_def transJ1_def)
+  have big: "dfree_BT (Trans (Pred M)) \<and> (\<not> zeroT (Pred M) \<longrightarrow> Trans (Pred M) \<noteq> 0\<^sub>B)
+        \<and> (\<forall>m. (Pred M, m) \<in> Marked
+               \<longrightarrow> dfree_BT (Mark (Pred M) m) \<and> (Trans (Pred M), Mark (Pred M) m) \<in> MarkedB)"
+    using Trans_Mark_invariant_aux predRT by blast
+  have "dfree_BT (Mark (Pred M) (Adm M (parent M 0 (Lng M - 1))))"
+    using big mkd by blast
+  thus ?thesis using c1eq by simp
+qed
+
+lemma m_8_5_isPTB_str_transC2_std:
+  fixes M :: pairseq
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS"
+    and J1: "transJ1 M > 0" and T1: "transT1 M \<noteq> 0\<^sub>B"
+  shows "isPTB_str (flatBT (transC2 M))"
+proof -
+  have dfc1: "dfree_BT (transC1 M)" by (rule m_8_5_dfree_transC1_std[OF MR MP J1 T1])
+  obtain ps where psE: "transC1 M = Trm ps" by (cases "transC1 M")
+  have vt2: "transV M \<noteq> \<infinity> \<and> dfree_BT (transT2 M)"
+  proof (cases ps)
+    case Nil
+    thus ?thesis using psE by (simp add: transV_def transT2_def)
+  next
+    case (Cons p ps')
+    obtain v t where pE: "p = DB v t" by (cases p)
+    have dfp: "dfree_BP p" using dfc1 psE Cons by simp
+    have vne': "v \<noteq> \<infinity>" and tdf: "dfree_BT t" using dfp pE by simp_all
+    have bv: "bpHeadV (transC1 M) = v" using psE Cons pE by simp
+    have bt: "bpHeadT (transC1 M) = t" using psE Cons pE by simp
+    show ?thesis using vne' tdf bv bt by (simp add: transV_def transT2_def)
+  qed
+  have vne: "transV M \<noteq> \<infinity>" using vt2 by simp
+  have t2df: "dfree_BT (transT2 M)" using vt2 by simp
+  have shape: "\<exists>t. transC2 M = Dpt (transV M) t"
+    unfolding transC2_def Let_def by auto
+  obtain tt where teq: "transC2 M = Dpt (transV M) tt" using shape by blast
+  have dfx: "dfree_BT (transC2 M)" by (rule dfree_transC2[OF vne t2df])
+  have dft: "dfree_BT tt" using dfx teq by simp
+  show ?thesis using isPTB_str_Dpt[OF vne dft] teq by simp
+qed
+
+
+text \<open>§8.5 ROUND 9, Route 1 item (2) — the PARTIAL-fold form of
+  @{thm [source] m_8_5_Mark_netfold_condV}, swapping @{thm [source]
+  m_8_5_fold_of_colstep} for @{thm [source] m_8_5_fold_of_colstep_partial} in the last
+  step (same \<open>step\<close> derivation, verbatim) to expose the RUNNING fold accumulator at
+  every column \<open>k \<le> Lng B\<close>, not just the whole period \<open>k = Lng B\<close>.  This is the
+  rewrite bridge that turns \<open>m_8_5_fold_C_commute\<close>'s (defined LATER in
+  this file) ABSTRACT \<open>anchor\<close>/\<open>nz\<close> hypotheses (stated over \<open>fold op [0..<m] acc\<^sub>0\<close>)
+  into the CONCRETE per-column facts @{thm [source] m_8_5_anchor_fold_mixed} /
+  \<open>m_8_5_Mark_nonzero_fold\<close> (defined LATER in this file) already supply (stated over
+  \<open>Mark (Y @ take m B) n\<^sub>0\<close>).\<close>
+
+lemma m_8_5_Mark_netfold_condV_partial:
+  fixes Y B :: pairseq and n0 :: nat
+  assumes hostR: "\<And>m. m < Lng B \<Longrightarrow> (Y @ take m B) @ [B ! m] \<in> RT_PS"
+    and hostP: "\<And>m. m < Lng B \<Longrightarrow> (Y @ take m B) @ [B ! m] \<in> PT_PS"
+    and hostJ1: "\<And>m. m < Lng B \<Longrightarrow> transJ1 ((Y @ take m B) @ [B ! m]) > 0"
+    and hostT1: "\<And>m. m < Lng B \<Longrightarrow> transT1 ((Y @ take m B) @ [B ! m]) \<noteq> 0\<^sub>B"
+    and hostN0: "\<And>m. m < Lng B \<Longrightarrow> n0 < Lng ((Y @ take m B) @ [B ! m]) - 1"
+    and hostMk: "\<And>m. m < Lng B \<Longrightarrow>
+        (Mark (Y @ take m B) n0, transC1 ((Y @ take m B) @ [B ! m])) \<in> MarkedB"
+  shows "\<And>k. k \<le> Lng B \<Longrightarrow>
+       fold (\<lambda>m acc. scbSubst (transC1 ((Y @ take m B) @ [B ! m]))
+                                 (transC2 ((Y @ take m B) @ [B ! m])) acc)
+              [0..<k] (Mark Y n0) = Mark (Y @ take k B) n0"
+proof -
+  have step: "\<And>m. m < Lng B \<Longrightarrow>
+        Mark (Y @ take (Suc m) B) n0
+          = scbSubst (transC1 ((Y @ take m B) @ [B ! m]))
+                     (transC2 ((Y @ take m B) @ [B ! m])) (Mark (Y @ take m B) n0)"
+  proof -
+    fix m assume m: "m < Lng B"
+    have host: "(Y @ take m B) @ [B ! m] = Y @ take (Suc m) B"
+      using m by (simp add: take_Suc_conv_app_nth)
+    have RT: "(Y @ take m B) @ [B ! m] \<in> RT_PS" by (rule hostR[OF m])
+    have PT: "(Y @ take m B) @ [B ! m] \<in> PT_PS" by (rule hostP[OF m])
+    have mono: "monoT ((Y @ take m B) @ [B ! m])" using PT by (simp add: PT_PS_def)
+    have L1: "1 < Lng ((Y @ take m B) @ [B ! m])"
+      using hostJ1[OF m] by (simp add: transJ1_def)
+    have bl: "Pred ((Y @ take m B) @ [B ! m]) = Y @ take m B"
+    proof -
+      have "Pred ((Y @ take m B) @ [B ! m]) = butlast ((Y @ take m B) @ [B ! m])"
+        using L1 by (simp add: Pred_def)
+      also have "\<dots> = Y @ take m B" by (rule butlast_snoc)
+      finally show ?thesis .
+    qed
+    have t1ne: "Trans (Pred ((Y @ take m B) @ [B ! m])) \<noteq> 0\<^sub>B"
+      using bl hostT1[OF m] by (simp add: transT1_def)
+    have nlt: "n0 < Lng ((Y @ take m B) @ [B ! m]) - 1" by (rule hostN0[OF m])
+    have mk: "(Mark (Pred ((Y @ take m B) @ [B ! m])) n0,
+               transC1 ((Y @ take m B) @ [B ! m])) \<in> MarkedB"
+      using bl hostMk[OF m] by simp
+    have rec: "Mark ((Y @ take m B) @ [B ! m]) n0
+                 = scbSubst (transC1 ((Y @ take m B) @ [B ! m]))
+                            (transC2 ((Y @ take m B) @ [B ! m]))
+                            (Mark (Pred ((Y @ take m B) @ [B ! m])) n0)"
+      by (rule m_8_5_Mark_scbSubst_step[OF RT mono L1 t1ne nlt mk])
+    show "Mark (Y @ take (Suc m) B) n0
+            = scbSubst (transC1 ((Y @ take m B) @ [B ! m]))
+                       (transC2 ((Y @ take m B) @ [B ! m])) (Mark (Y @ take m B) n0)"
+      using rec bl host by simp
+  qed
+  show "\<And>k. k \<le> Lng B \<Longrightarrow>
+       fold (\<lambda>m acc. scbSubst (transC1 ((Y @ take m B) @ [B ! m]))
+                                 (transC2 ((Y @ take m B) @ [B ! m])) acc)
+              [0..<k] (Mark Y n0) = Mark (Y @ take k B) n0"
+    by (rule m_8_5_fold_of_colstep_partial
+          [where f = "\<lambda>M. Mark M n0"
+             and op = "\<lambda>m acc. scbSubst (transC1 ((Y @ take m B) @ [B ! m]))
+                                         (transC2 ((Y @ take m B) @ [B ! m])) acc",
+           OF step])
+qed
+
+
 text \<open>§8.5 KEYSTONE TELESCOPE — the GENERIC commutation instantiated concretely at the
   BT/scbSubst level, via the ALREADY-PROVEN @{thm [source] m_8_5_scbSubst_addBT_commute}.
   The SAME per-column rightmost-spine anchoring used by @{thm [source] b3b_rnav_fold_drive}
@@ -7714,6 +7859,8 @@ proof -
   qed
   show ?thesis using gen[of w] by simp
 qed
+
+
 
 
 text \<open>§8.5 keystone anchor (DEPTH face) — the C-wrap is undone by EXACTLY ONE rnav step.
@@ -7911,6 +8058,118 @@ proof -
     using m_7_4_RightNodes_Mark[OF mk MR pos lt] by blast
   hence "RightNodes (Mark M m) \<noteq> []" by simp
   thus ?thesis by (simp add: rnsub_RightNodes_empty_iff)
+qed
+
+text \<open>§8.5 ROUND 9, Route 1 item (2) — the \<open>nz\<close> per-column hypothesis of
+  \<open>m_8_5_fold_C_commute\<close> (defined LATER in this file; \<open>fold op [0..<m]
+  acc\<^sub>0 \<noteq> Trm []\<close>, instantiated at \<open>f = \<lambda>M. Mark M n\<^sub>0\<close>) reduces, via @{thm [source]
+  m_8_5_fold_of_colstep_partial} rewriting the abstract fold back to the concrete
+  \<open>Mark (Y @ take m B) n\<^sub>0\<close>, to the ALREADY-PROVEN @{thm [source] m_8_5_Mark_nonzero} —
+  needing only the SAME \<open>colMarked0\<close> per-column hypothesis @{thm [source]
+  m_8_5_anchor_fold}/\<open>_mixed\<close> already carry, PLUS the two base facts \<open>0 < n\<^sub>0\<close>
+  (\<open>jm1pos\<close> in the keystone's own regime) and \<open>n\<^sub>0 < Lng Y - 1\<close> (a SINGLE base
+  interiority bound at the fold's START — since \<open>Lng (Y @ take m B) = Lng Y + m\<close> only
+  GROWS, this one bound propagates to every column, no per-column re-derivation
+  needed).\<close>
+
+lemma m_8_5_Mark_nonzero_fold:
+  fixes Y B :: pairseq and n0 :: nat
+  assumes n0pos: "0 < n0" and n0lt: "n0 < Lng Y - 1"
+    and colRT: "\<And>m. m < Lng B \<Longrightarrow> (Y @ take m B) \<in> RT_PS"
+    and colMarked0: "\<And>m. m < Lng B \<Longrightarrow> (Y @ take m B, n0) \<in> Marked"
+  shows "\<And>m. m < Lng B \<Longrightarrow> Mark (Y @ take m B) n0 \<noteq> Trm []"
+proof -
+  fix m assume mw: "m < Lng B"
+  have lnEq: "Lng (Y @ take m B) = Lng Y + m" using mw by simp
+  have n0lt': "n0 < Lng (Y @ take m B) - 1" using n0lt lnEq by simp
+  show "Mark (Y @ take m B) n0 \<noteq> Trm []"
+    by (rule m_8_5_Mark_nonzero[OF colRT[OF mw] colMarked0[OF mw] n0pos n0lt'])
+qed
+
+text \<open>§8.5 ROUND 9, Route 1 item (2) — ASSEMBLY.  With @{thm [source]
+  m_8_5_Mark_netfold_condV_partial} rewriting the abstract fold back to the concrete
+  \<open>Mark (Y @ take m B) n\<^sub>0\<close> at EVERY column (not just the endpoint), the THREE
+  hypotheses of @{thm [source] m_8_5_fold_C_commute} assemble entirely from
+  ALREADY-PROVEN pieces: \<open>anchor\<close> from @{thm [source] m_8_5_anchor_fold_mixed} (the
+  colcase disjunction — still the genuine open regime content, unchanged from Round
+  8), \<open>nz\<close> from @{thm [source] m_8_5_Mark_nonzero_fold} (free, this round), \<open>pt2\<close> from
+  @{thm [source] m_8_5_isPTB_str_transC2_std} (free, this round).  Combined with
+  @{thm [source] m_8_5_Mark_netfold_condV} (the FULL fold, \<open>k = Lng B\<close>) this closes
+  Route 1 item (2) completely: the outer \<open>C\<close>-wrap commutes past the WHOLE period fold
+  \<open>Mark (Y @ B) n\<^sub>0\<close>, modulo exactly the SAME per-column regime content
+  \<open>m_8_5_anchor_fold_mixed\<close>/\<open>m_8_5_anchor_fold\<close> already needed (\<open>colcase\<close> AND
+  \<open>colMarked0\<close> — the latter carried explicitly rather than re-derived from \<open>colcase\<close>,
+  since \<open>colcase\<close>'s trunk-stuck disjunct does NOT itself supply \<open>(Y@take m B,n0)\<in>
+  Marked\<close> — plus the two base facts \<open>n0pos\<close>, \<open>n0lt\<close>: genuinely narrower than Round 8's
+  open list, no hypothesis beyond what the pre-existing anchor apparatus already
+  carries elsewhere in this file).\<close>
+
+lemma m_8_5_Mark_fold_C_commute:
+  fixes Y B :: pairseq and n0 :: nat and t2 :: BT and vm1 :: nat and C :: "BT \<Rightarrow> BT"
+  assumes n0pos: "0 < n0" and n0lt: "n0 < Lng Y - 1"
+    and hostR: "\<And>m. m < Lng B \<Longrightarrow> (Y @ take m B) @ [B ! m] \<in> RT_PS"
+    and hostP: "\<And>m. m < Lng B \<Longrightarrow> (Y @ take m B) @ [B ! m] \<in> PT_PS"
+    and hostJ1: "\<And>m. m < Lng B \<Longrightarrow> transJ1 ((Y @ take m B) @ [B ! m]) > 0"
+    and hostT1: "\<And>m. m < Lng B \<Longrightarrow> transT1 ((Y @ take m B) @ [B ! m]) \<noteq> 0\<^sub>B"
+    and hostN0: "\<And>m. m < Lng B \<Longrightarrow> n0 < Lng ((Y @ take m B) @ [B ! m]) - 1"
+    and hostMk: "\<And>m. m < Lng B \<Longrightarrow>
+        (Mark (Y @ take m B) n0, transC1 ((Y @ take m B) @ [B ! m])) \<in> MarkedB"
+    and colRT: "\<And>m. m < Lng B \<Longrightarrow> (Y @ take m B) \<in> RT_PS"
+    and colMarked0: "\<And>m. m < Lng B \<Longrightarrow> (Y @ take m B, n0) \<in> Marked"
+    and colcase: "\<And>m. m < Lng B \<Longrightarrow>
+      ((Y @ take m B) \<in> RT_PS
+        \<and> (Y @ take m B, n0) \<in> Marked
+        \<and> (Y @ take m B, transJm1 (Y @ take (Suc m) B)) \<in> Marked
+        \<and> n0 \<le> transJm1 (Y @ take (Suc m) B))
+    \<or> ((Y @ take m B) \<in> RT_PS
+        \<and> multiT (Y @ take m B)
+        \<and> n0 < Pcut (Y @ take m B)
+        \<and> entry (Y @ take m B) 0 (Pcut (Y @ take m B)) < fst (B ! m))"
+    and prene: "untrm t2 \<noteq> []"
+    and Cdef: "\<And>z. C z = t2 +\<^sub>B Dpt (enat vm1) z"
+  shows "fold (\<lambda>m acc. scbSubst (transC1 ((Y @ take m B) @ [B ! m]))
+                                 (transC2 ((Y @ take m B) @ [B ! m])) acc)
+              [0..<Lng B] (C (Mark Y n0))
+       = C (Mark (Y @ B) n0)"
+proof -
+  define op where "op = (\<lambda>m acc. scbSubst (transC1 ((Y @ take m B) @ [B ! m]))
+                                            (transC2 ((Y @ take m B) @ [B ! m])) acc)"
+  have partial: "\<And>k. k \<le> Lng B \<Longrightarrow> fold op [0..<k] (Mark Y n0) = Mark (Y @ take k B) n0"
+    using m_8_5_Mark_netfold_condV_partial[OF hostR hostP hostJ1 hostT1 hostN0 hostMk]
+    by (simp add: op_def)
+  have anchor: "\<And>m. m < Lng B \<Longrightarrow>
+      \<exists>sx bx. scb_decomp (fold op [0..<m] (Mark Y n0)) sx
+                (flatBT (transC1 ((Y @ take m B) @ [B ! m]))) bx"
+  proof -
+    fix m assume mw: "m < Lng B"
+    have feq: "fold op [0..<m] (Mark Y n0) = Mark (Y @ take m B) n0"
+      using partial mw by simp
+    have split: "Y @ take (Suc m) B = (Y @ take m B) @ [B ! m]"
+      using mw by (simp add: take_Suc_conv_app_nth)
+    have "\<exists>sx bx. scb_decomp (Mark (Y @ take m B) n0) sx
+                (flatBT (transC1 (Y @ take (Suc m) B))) bx"
+      using m_8_5_anchor_fold_mixed[OF colcase] mw by simp
+    thus "\<exists>sx bx. scb_decomp (fold op [0..<m] (Mark Y n0)) sx
+                (flatBT (transC1 ((Y @ take m B) @ [B ! m]))) bx"
+      using feq split by simp
+  qed
+  have nz: "\<And>m. m < Lng B \<Longrightarrow> fold op [0..<m] (Mark Y n0) \<noteq> Trm []"
+  proof -
+    fix m assume mw: "m < Lng B"
+    have "fold op [0..<m] (Mark Y n0) = Mark (Y @ take m B) n0"
+      using partial mw by simp
+    thus "fold op [0..<m] (Mark Y n0) \<noteq> Trm []"
+      using m_8_5_Mark_nonzero_fold[OF n0pos n0lt colRT colMarked0] mw by simp
+  qed
+  have pt2: "\<And>m. m < Lng B \<Longrightarrow> isPTB_str (flatBT (transC2 ((Y @ take m B) @ [B ! m])))"
+    using m_8_5_isPTB_str_transC2_std hostR hostP hostJ1 hostT1 by blast
+  have commute: "fold op [0..<Lng B] (C (Mark Y n0)) = C (fold op [0..<Lng B] (Mark Y n0))"
+    unfolding op_def
+    by (rule m_8_5_fold_C_commute[OF anchor[unfolded op_def] nz[unfolded op_def] pt2 prene Cdef])
+  have full: "Mark (Y @ B) n0 = fold op [0..<Lng B] (Mark Y n0)"
+    using m_8_5_Mark_netfold_condV[OF hostR hostP hostJ1 hostT1 hostN0 hostMk]
+    by (simp add: op_def)
+  show ?thesis using commute full by (simp add: op_def)
 qed
 
 text \<open>§8.5 value-match core — \<open>entry\<close> at a PREFIX index is unchanged by appending.
