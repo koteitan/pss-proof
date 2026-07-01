@@ -1334,4 +1334,137 @@ not referencing the original seed M or the outer index q):
 
 Re-run instructions for Round 9 (cont'd): python/_r9_item3_selfref.py
 (shift law 1575/1575, self-d0 1221/1221, both zero counterexamples).
+
+=====================================================================
+ROUND 10 (2026-07-01, this round; empirical/architectural only -- NO new
+Isabelle lemmas, NO commit to layerC/pss_scratch.thy this round). Item (3)
+sub-point (1) is now DEFINITIVELY REFUTED. A fresh architectural check shows
+Round 9's m_8_5_Mark_fold_C_commute does NOT, by itself, resolve the
+"assembly" keystone (confirms the project's own existing "irreducible"
+assessment via an independent path -- do not re-attempt this exact
+combination). Route 2 gained ONE new, clean, 100%-confirmed empirical
+invariant (NOT the refuted frozen-Pcut), still insufficient alone to close
+the derivation.
+=====================================================================
+
+ROUTE 1 ITEM (3) SUB-POINT (1) -- REFUTED. Round 9 flagged as the next
+concrete step: "test whether Pcut X itself -- with NO drop/j0 offset,
+applied directly to X=M[q] -- recovers w" (the period width), which would
+give a literal self-referential w for candidate (i)'s F. Tested directly
+(python/_r10_pcut_selfw2.py, growth-VERIFIED harness -- i.e. only counting
+(M,q) pairs where oper(M,q)->oper(M,q+1) actually appends a length-w block
+matching m_8_5_deepen_block_explicit's own growth picture; an earlier,
+sloppier version without this growth check, python/_r10_pcut_selfw.py --
+since deleted, was misleading itself with degenerate non-growing (M,q)
+pairs and is not a reliable data point):
+
+  Lng(X) - Pcut(X) == w:  0/876  -- REFUTED, decisively, not merely "often
+  fails": ZERO successes on the growth-verified sample (q in 2..5, reduced
+  seeds length<=6, values 0..2/u in 0..3). Concrete smallest counterexample:
+  M=(0,0)(0,0)(1,1), q=2: j0=1, w=1, but Pcut(X)=1 while Lng(X)=3, so
+  Lng(X)-Pcut(X)=2<>1=w. Do NOT re-attempt "Pcut(X) applied directly (no
+  drop) recovers the period width" in any form -- it is false, not merely
+  underdetermined.
+
+  Pcut(X)==j0 (the ORIGINAL M's own row-1 parent offset): 584/876 (~67%),
+  a soft correlation, NOT a law -- also not usable as-is.
+
+  This closes off the ONE concrete next step Round 9 identified for item
+  (3); the "self-referential w via Pcut" idea is dead. Candidate (i)'s
+  remaining path (if revisited) needs a genuinely different source for w
+  (NOT Pcut(X) directly) -- e.g. w might still be recoverable via Pcut of a
+  SUFFIX of X (as m_8_5_Pcut_append already does with the drop j0 offset),
+  but that needs j0 externally, which is exactly what "self-referential"
+  was trying to avoid; no new idea for this sub-point was found this round.
+
+ROUTE 1 ITEM (3), THE DEEPER "ASSEMBLY" CONTENT -- an architectural dead
+end IDENTIFIED (not a new refutation of previously-untried machinery, but a
+NEGATIVE finding worth recording so a future round does not re-derive it):
+does Round 9's freshly-proven m_8_5_Mark_fold_C_commute (fold op [0..<Lng B]
+(C (Mark Y n0)) = C (Mark (Y@B) n0), for GENERIC Y/B/n0) already supply the
+"assembly" keystone content b3_markstep_skeleton_rnav names as irreducible
+(fold op [0..<w] (rnav acc0) = C (rnav acc0), i.e. "the period column ops
+applied to the ALREADY-ONE-LEVEL-STRIPPED value U_q = rnav(acc0) rebuild
+C(U_q)")? Traced through CAREFULLY (no Isabelle written, pure proof-term
+tracing): NO -- these are genuinely different claims, not just differently
+phrased. m_8_5_Mark_fold_C_commute (via ra_Mark0_eq_Trans, layerB/pss_wip.thy:8257,
+ALREADY PROVEN/frozen: (M,0)\<in>Marked --> M\<in>RT_PS --> Mark M 0 = Trans M)
+shows C commutes with the fold when C is applied to the SAME FULL seed
+(Mark Y n0) the fold is run FROM -- i.e. "wrap-before vs wrap-after the
+WHOLE per-column recursion, same starting value". "assembly" instead asks
+about running the SAME per-column op starting from a DIFFERENT, already
+rnav-STRIPPED value (rnav(acc0), one BT-tree level down from acc0 itself)
+and getting C of that stripped value back -- a claim about self-similarity
+ACROSS a depth-strip, not about C surviving a fold from a fixed start.
+Nothing in the Mark_fold_C_commute chain (or in dfree_transC1_std/
+isPTB_str_transC2_std, Round 9's two "for free" pt2/nz facts) touches
+bpHeadT/rnav's INTERACTION with C's own Cdef shape (C z = t2 +\<^sub>B Dpt(vm1) z,
+a PREPEND, not a same-level op) -- confirms b3_markstep_skeleton_rnav's own
+framing ("assembly ... irreducible ... otasm-empirical 47/47, NOT
+mechanically reducible to the geometry") from a genuinely independent
+direction. Also independently confirmed the file's OWN classification of
+the OLDER spineLeaf/endpoint route (m_8_5_C_body's "endpoint" hypothesis,
+~pss_scratch.thy:3967) as superseded by the newer rnav-based
+b3_markstep_skeleton_rnav (matches refuted routes #3/#13 -- do not revisit
+spineLeaf as the bridge). NET: no route found this round that reduces
+"assembly" further; it remains the single genuinely open mathematical
+content, exactly as the last several rounds concluded.
+
+ROUTE 2 -- ONE new, clean, UNIVERSALLY-confirmed (not merely "often")
+empirical invariant found, replacing the refuted "Pcut frozen" idea with an
+INEQUALITY that survives Pcut's resets, but NOT yet sufficient to close the
+witness derivation (python/_r10_witness_bound.py, python/_r10_witness_bound2.py,
+same trunk-stuck keystone-regime harness as Round 9's _r9_witness_structure.py,
+296 genuine trunk-stuck columns, q in {1,2,3,4}):
+
+  epcut <= ANCHOR, where epcut := entry(Nprev,0,Pcut(Nprev)) (Nprev = the
+  running prefix Mq@take m B BEFORE column m is appended) and ANCHOR :=
+  entry(Mq,0,Lng(Mq)-1) (a SINGLE value computed ONCE from Mq -- the q-th
+  iterate BEFORE this deepen block even starts -- NOT tracked/recomputed
+  per column m): CONFIRMED 296/296, ZERO exceptions. This is a genuine,
+  new, ROBUST fact -- unlike "Pcut(N) frozen" (Round 9, refuted 0/296),
+  this one survives Pcut jumping forward at internal branch-reset columns,
+  because it is only an upper BOUND, not an equality. An even SHARPER
+  version also holds universally: epcut <= ANCHOR_PREV, where ANCHOR_PREV
+  := entry(M[q-1],0,Lng(M[q-1])-1) (one FEWER period than Mq) -- CONFIRMED
+  296/296 as well (python/_r10_witness_bound2.py), i.e. epcut is bounded by
+  a value from q-1 periods back, not merely q periods back.
+
+  What is STILL missing to derive the actual witness entry(Nprev,0,Pcut
+  (Nprev)) < fst(col) from this: the OTHER half, ANCHOR < fcol (or
+  ANCHOR_PREV < fcol), does NOT hold universally -- only 30/296 (ANCHOR) or
+  75/296 (ANCHOR_PREV) of rows. Root cause (diagnosed): ANCHOR is, BY THE
+  deepen-block periodicity formula, EXACTLY equal to fcol at column m=0 of
+  the CURRENT period (both equal entry M 0 j0 + q*d0), so "ANCHOR<fcol" is
+  a TIE (not a strict gap) whenever the run reaches back to (or is at) that
+  boundary column, and can even go the other way when d0=0 for the specific
+  (M,q) sampled (a genuinely degenerate sub-case, e.g. M=(0,0)(1,0)(1,1)(1,0)
+  has entry M 1 (Lng M-1)=0, i.e. e1pos fails for M itself, though Mq's OWN
+  derived j0/d0 can still be legitimately 0 in edge cases) -- in EVERY one
+  of these failing rows, though, epcut itself was STRICTLY less than ANCHOR
+  (epcut=0 while ANCHOR=fcol=1), which is exactly why the overall witness
+  (epcut<fcol) still held 296/296 despite the ANCHOR<fcol sub-step failing
+  -- i.e. the gap looks closeable by a two-case split (epcut<ANCHOR, in
+  which case ANCHOR<=fcol suffices; OR epcut=ANCHOR, in which case a
+  separate argument for STRICT ANCHOR<fcol is needed only in that
+  sub-case) but this was NOT worked out or tested this round -- left for a
+  future round. Do NOT re-attempt "ANCHOR<fcol universally" or "ANCHOR_PREV
+  <fcol universally" as stated -- both refuted (30/296, 75/296); the
+  epcut<=ANCHOR(_PREV) HALF is the reusable, confirmed part.
+
+  Re-run instructions for Round 10: python/_r10_pcut_selfw2.py (item-3
+  sub-point-1, 0/876, decisively refuted); python/_r10_witness_bound.py
+  (epcut<=ANCHOR 296/296, ANCHOR<fcol 30/296); python/_r10_witness_bound2.py
+  (epcut<=ANCHOR_PREV 296/296, ANCHOR_PREV<fcol 75/296).
+
+NET this round: no new Isabelle lemmas, no commit to pss_scratch.thy (both
+routes were investigated but neither closed; per the round's own workflow
+guidance, a shaky/uncertain Isabelle attempt was deliberately NOT forced
+under time pressure). Two decisive negative results (item-3 sub-point-1
+REFUTED 0/876; the Mark_fold_C_commute-closes-assembly hope REFUTED by
+proof-term tracing) and one new POSITIVE but incomplete empirical lead
+(epcut<=ANCHOR(_PREV), 296/296) are recorded for the next round. The
+"assembly" content (b3_markstep_skeleton_rnav) remains the single
+irreducible mathematical open of Route 1; Route 2's derivation is closer
+(one confirmed half of a two-case argument) but not closed.
 """
