@@ -6729,6 +6729,64 @@ proof -
 qed
 
 
+text \<open>§8.5 ROUND 8, Route 2 continuation — a GENERAL (regime-free) structural fact about
+  \<open>monoT\<close>, not previously in the file: \<open>monoT M\<close> (i.e. \<open>0\<close> reaches the LAST index,
+  \<open>leR M 0 0 (Lng M-1)\<close>) actually reaches EVERY index \<open>r < Lng M\<close>, not merely the
+  endpoint.  (This is genuinely stronger than the ALREADY-PROVEN, frozen
+  @{thm [source] trunk_le0} — that lemma only reaches up to \<open>TrMax M\<close>, a row-1/nextrel1
+  notion that CAN be \<open>\<noteq> Lng M - 1\<close> even for reduced \<open>monoT\<close> hosts, per
+  \<open>pss_mechanized.thy\<close>'s own "\<open>TrMax M \<noteq> Lng M - 1\<close>" subcase comments; the claim below is
+  about \<open>le0\<close>/row-0 reachability specifically, over the WHOLE length.)  EMPIRICALLY
+  (\<open>python/_r8_monoT_reaches_all.py\<close>, brute force over ALL pairseqs — no \<open>T_PS\<close>/reduced
+  filter — up to length \<open>6\<close>, values \<open>0..2\<close>): \<open>0\<close>-vs-\<open>29\,079\<close> \<open>monoT\<close> hosts tested, ZERO
+  counterexamples.  PROVED by strong induction on \<open>r\<close>, using two ALREADY-PROVEN frozen
+  facts: @{thm [source] m_5_1_ancestor_basic_1} (\<open>leR M 0 j0 j1 \<and> j0<j\<le>j1 \<Longrightarrow> entry M 0 j0
+  < entry M 0 j\<close>, giving \<open>entry M 0 0 < entry M 0 r\<close> directly from \<open>monoT\<close>'s own witness at
+  \<open>j0=0,j1=Lng M-1\<close>) and @{thm [source] m_5_1_parent_exists_1} (existence of SOME direct
+  row-0 parent \<open>q<r\<close> whenever \<open>entry M 0 q &lt; entry M 0 r\<close> is known for SOME \<open>q<r\<close> — here
+  \<open>q:=0\<close>); the IH then supplies \<open>le0 M 0 q\<close> for the found parent \<open>q<r\<close>, and one more
+  \<open>rtrancl_into_rtrancl\<close> step closes \<open>r\<close>.  This is the key new tool for the trunk-stuck
+  \<open>Pcut\<close>-witness ROUTE 2 investigation below (a \<open>PJ\<close>-interior-reachability argument, exactly
+  what Round 7's write-up flagged as needed and did not find).\<close>
+
+lemma m_8_5_monoT_le0_all:
+  fixes M :: pairseq
+  assumes MT: "M \<in> T_PS" and mono: "monoT M"
+  shows "\<And>r. r < Lng M \<Longrightarrow> le0 M 0 r"
+proof -
+  fix r
+  show "r < Lng M \<Longrightarrow> le0 M 0 r"
+  proof (induction r rule: less_induct)
+    case (less r)
+    have zLng: "0 < Lng M" using less.prems by linarith
+    show ?case
+    proof (cases "r = 0")
+      case True
+      have "(nextrel0 M)\<^sup>*\<^sup>* 0 r" using True by simp
+      thus ?thesis using zLng less.prems unfolding le0_def by blast
+    next
+      case False
+      hence rpos: "0 < r" by simp
+      have monole: "leR M 0 0 (Lng M - 1)" using mono by (simp add: monoT_def)
+      have rle: "r \<le> Lng M - 1" using less.prems by simp
+      have strict: "entry M 0 0 < entry M 0 r"
+        by (rule m_5_1_ancestor_basic_1[OF MT rpos rle monole])
+      obtain q where q: "0 \<le> q \<and> q < r \<and> nextR M 0 q r"
+        using m_5_1_parent_exists_1[OF MT rpos less.prems strict] by blast
+      have qlt: "q < r" using q by simp
+      have nq: "nextR M 0 q r" using q by simp
+      have qLng: "q < Lng M" using qlt less.prems by simp
+      have IHq: "le0 M 0 q" using less.IH[OF qlt] qLng by blast
+      have nrel: "nextrel0 M q r" using nq by (simp add: nextR_def)
+      have rt: "(nextrel0 M)\<^sup>*\<^sup>* 0 q" using IHq unfolding le0_def by blast
+      have rt2: "(nextrel0 M)\<^sup>*\<^sup>* 0 r"
+        by (rule rtranclp.rtrancl_into_rtrancl[OF rt nrel])
+      show ?thesis using rt2 zLng less.prems unfolding le0_def by blast
+    qed
+  qed
+qed
+
+
 text \<open>§8.5 R2a ROOT CAUSE, FORMALIZED (new, this round) — the Round-3 empirical finding
   ("genuine period blocks \<open>B\<close> frequently OPEN with a \<open>(0,0)\<close>/branch-reset column, after which
   \<open>leR\<close> fails because the new column starts a FRESH \<open>multiT\<close> branch sibling") is now a
@@ -7114,6 +7172,102 @@ proof -
   thus ?thesis unfolding hasParent_def by simp
 qed
 
+
+text \<open>§8.5 ROUND 8, Route 2 — closing HALF of the target lemma @{thm [source]
+  m_8_5_Pcut_of_le0_cut} (Round 7's identified tool for "Pcut freezes"): its \<open>cut\<close>
+  hypothesis, \<open>leR (N@[col]) 0 (Pcut N) (Lng(N@[col])-1)\<close>, is PROVEN here (not merely
+  empirical) directly from the SAME named witness \<open>entry N 0 (Pcut N) < fst col\<close> that
+  \<open>m_8_5_anchor_col_trunkstuck_regime2\<close> (defined LATER in this file) already carries.
+  Round 7 diagnosed
+  that the naive route (a DIRECT edge from \<open>N\<close>'s own last index, Round 6's REFUTED route
+  #17) fails because the row-0 parent \<open>par0\<close> of the appended column is not always
+  literally \<open>N\<close>'s last index -- the fix is the "PJ-interior-reachability" argument Round 7
+  flagged but did not build: (1) \<open>par0\<close>'s own defining property forces \<open>Pcut N \<le> par0\<close>
+  (else \<open>Pcut N\<close> itself would lie in \<open>par0\<close>'s "everything between is \<ge>" zone,
+  contradicting the witness -- this falls out of @{thm [source] m_5_1_parent_exists_1}'s own
+  construction, which returns a witness \<open>\<ge> j0 = Pcut N\<close> directly, so no separate
+  contradiction argument is even needed); (2) \<open>PJ = drop (Pcut N) N\<close> is \<open>monoT\<close> or
+  \<open>zeroT\<close> (§6.2 P components, as in @{thm [source] m_8_5_PJ_marked0}), so the NEW general
+  @{thm [source] m_8_5_monoT_le0_all} gives \<open>le0 PJ 0 (par0 - Pcut N)\<close>; (3) the
+  ALREADY-PROVEN, frozen @{thm [source] poper_le0_drop} (an unconditional \<open>drop\<close>-shift
+  equivalence for \<open>le0\<close>) transfers this to \<open>le0 N (Pcut N) par0\<close>; (4) the ALREADY-PROVEN
+  @{thm [source] m_8_5_marked_le0_step} (its \<open>c\<close> is a free parameter, not tied to \<open>Lng N-1\<close>
+  — the SAME lemma applies VERBATIM with \<open>c := par0\<close> instead of \<open>Lng N - 1\<close>) closes the
+  gap via the direct edge \<open>par0 \<rightarrow> (new last index)\<close>.  EMPIRICALLY confirmed as part of the
+  same regime as Round 6/7 (\<open>python/_r8_pcut_cut_nocut.py\<close>: \<open>(A) cut\<close> \<open>266/266\<close>, and the
+  underlying mechanism \<open>(C) le0(Nprev,pcut,par0)\<close> (even when \<open>par0 \<noteq> Pcut N\<close>) ALSO
+  \<open>266/266\<close> — matching this proof's steps (2)-(3) exactly).  The \<open>nocut\<close> half of
+  \<open>m_8_5_Pcut_of_le0_cut\<close> (no SMALLER \<open>j\<close> becomes newly valid) is NOT closed by this
+  lemma — see the residual summary for what remains and the "ancestor linearity" candidate
+  route investigated but not completed.\<close>
+
+lemma m_8_5_Pcut_cut_witness:
+  fixes N :: pairseq and col :: "nat \<times> nat"
+  assumes NR: "N \<in> RT_PS" and muN: "multiT N"
+    and strict: "entry N 0 (Pcut N) < fst col"
+  shows "leR (N @ [col]) 0 (Pcut N) (Lng (N @ [col]) - 1)"
+proof -
+  have NT: "N \<in> T_PS" using NR by (simp add: RT_PS_def)
+  have Nne: "N \<noteq> []" using NT by (simp add: T_PS_def)
+  have L: "1 < Lng N" by (rule multiT_imp_Lng_gt1[OF NT muN])
+  have cut: "0 < Pcut N \<and> Pcut N \<le> Lng N - 1" using Pcut_le[OF L] by simp
+  have NcurT: "N @ [col] \<in> T_PS" using Nne by (simp add: T_PS_def)
+  have LngNcur: "Lng (N @ [col]) = Lng N + 1" by simp
+  have j0lt: "Pcut N < Lng (N @ [col]) - 1" using cut L LngNcur by linarith
+  have j1L: "Lng (N @ [col]) - 1 < Lng (N @ [col])" using j0lt by simp
+  have cutLt: "Pcut N < Lng N" using cut L by linarith
+  have idxP: "(N @ [col]) ! (Pcut N) = N ! (Pcut N)" using cutLt by (simp add: nth_append)
+  have e0a: "entry (N @ [col]) 0 (Pcut N) = entry N 0 (Pcut N)" using idxP by (simp add: entry_def)
+  have idxlast: "(N @ [col]) ! (Lng (N @ [col]) - 1) = col" by (simp add: nth_append)
+  have e0b: "entry (N @ [col]) 0 (Lng (N @ [col]) - 1) = fst col" using idxlast by (simp add: entry_def)
+  have strict': "entry (N @ [col]) 0 (Pcut N) < entry (N @ [col]) 0 (Lng (N @ [col]) - 1)"
+    using strict e0a e0b by simp
+  obtain par0 where par0w: "Pcut N \<le> par0 \<and> par0 < Lng (N @ [col]) - 1
+                              \<and> nextR (N @ [col]) 0 par0 (Lng (N @ [col]) - 1)"
+    using m_5_1_parent_exists_1[OF NcurT j0lt j1L strict'] by blast
+  have par0lo: "Pcut N \<le> par0" using par0w by simp
+  have par0hi: "par0 < Lng (N @ [col]) - 1" using par0w by simp
+  have nR: "nextR (N @ [col]) 0 par0 (Lng (N @ [col]) - 1)" using par0w by simp
+  have nrel: "nextrel0 (N @ [col]) par0 (Lng (N @ [col]) - 1)" using nR by (simp add: nextR_def)
+  have par0LtN: "par0 < Lng N" using par0hi LngNcur by simp
+  define PJ where "PJ = drop (Pcut N) N"
+  have LngPJ: "Lng PJ = Lng N - Pcut N" using PJ_def by simp
+  have r_lt: "par0 - Pcut N < Lng PJ" using par0LtN par0lo LngPJ by simp
+  have Pne: "P N \<noteq> []" by (rule P_nonempty)
+  have idxlt: "Lng (P N) - 1 < Lng (P N)" using Pne by (cases "P N") auto
+  have PJeq: "P N ! (Lng (P N) - 1) = PJ"
+    using trans_multiT_last_component(1)[OF NT muN] PJ_def by simp
+  have PJmem: "PJ \<in> set (P N)" using PJeq idxlt nth_mem by metis
+  have PJnonmulti: "zeroT PJ \<or> monoT PJ"
+    using m_6_2_P_components_1[OF NT] PJmem by blast
+  have LPJpos: "0 < Lng PJ" using LngPJ cut L by linarith
+  have PJT: "PJ \<in> T_PS" using LPJpos by (simp add: T_PS_def)
+  have shiftEq: "Pcut N + (par0 - Pcut N) = par0" using par0lo by simp
+  have le0Ncut: "le0 N (Pcut N) par0"
+  proof (cases "zeroT PJ")
+    case True
+    have len1: "Lng PJ = 1" using True by (simp add: zeroT_def)
+    have "par0 - Pcut N = 0" using len1 r_lt by simp
+    hence "par0 = Pcut N" using shiftEq by simp
+    thus ?thesis using cutLt by (simp add: le0_def)
+  next
+    case False
+    hence PJmono: "monoT PJ" using PJnonmulti by simp
+    have le0PJ: "le0 PJ 0 (par0 - Pcut N)"
+      using m_8_5_monoT_le0_all[OF PJT PJmono] r_lt by blast
+    have b1: "(0::nat) < Lng N - Pcut N" using LPJpos LngPJ by simp
+    have b2: "par0 - Pcut N < Lng N - Pcut N" using r_lt LngPJ by simp
+    have shift: "le0 (drop (Pcut N) N) 0 (par0 - Pcut N)
+              = le0 N (Pcut N + 0) (Pcut N + (par0 - Pcut N))"
+      by (rule poper_le0_drop[OF b1 b2])
+    thus ?thesis using le0PJ PJ_def shiftEq by simp
+  qed
+  have final: "le0 (N @ [col]) (Pcut N) (Lng (N @ [col]) - 1)"
+    by (rule m_8_5_marked_le0_step[OF le0Ncut par0LtN nrel])
+  show ?thesis using final by (simp add: leR_def)
+qed
+
+
 lemma m_8_5_anchor_col_trunkstuck_regime2:
   fixes N :: pairseq and col :: "nat \<times> nat" and n0 :: nat
   assumes NR: "N \<in> RT_PS"
@@ -7132,6 +7286,79 @@ proof -
     by (rule m_8_5_trunkstuck_hyps_of_hasParent0(1)[OF NT muN Nne hp0])
   show ?thesis
     by (rule m_8_5_anchor_col_trunkstuck[OF NR muN stuck mJpcut pcutle])
+qed
+
+
+text \<open>§8.5 R2 ANCHOR, MIXED FOLD form (ROUND 8, Route 1 item (1)) — the trunk-stuck
+  analogue of @{thm [source] m_8_5_anchor_fold}, closing the gap the Round 7 note
+  flagged: \<open>m_8_5_anchor_fold\<close> itself only ever invokes the non-trunk-stuck route
+  (@{thm [source] m_8_5_anchor_col}), so it cannot supply the \<open>anchor\<close> obligation for
+  a genuine fold host whose columns are \<open>multiT\<close> on SOME columns and mono/reduced-
+  Marked on OTHERS (the realistic mixed case for an actual \<open>oper\<close>/\<open>Red\<close> period block).
+  This wrapper case-splits EVERY column between the two already-proven per-column
+  routes — @{thm [source] m_8_5_anchor_col} (R2a/R2b/R2c) and
+  @{thm [source] m_8_5_anchor_col_trunkstuck_regime2} (\<open>n\<^sub>0 < Pcut\<close> + the \<open>Pcut\<close>-entry
+  witness) — via a per-column DISJUNCTIVE hypothesis \<open>colcase\<close>, mirroring
+  \<open>m_8_5_anchor_fold\<close>'s own \<open>take_Suc_conv_app_nth\<close> rewrite.  Pure composition (a
+  \<open>cases\<close> split plus the two existing lemmas), no new mathematics: this does NOT
+  close either underlying per-column obligation (R2a's \<open>leR\<close> gap for non-trunk-stuck
+  columns is still open; the trunk-stuck witness is still a named hypothesis, not
+  derived from the keystone's own regime — see \<open>m_8_5_Pcut_of_le0_cut\<close>/the residual
+  summary) — it only removes the STRUCTURAL restriction that a whole fold had to be
+  uniformly one case or the other.\<close>
+
+lemma m_8_5_anchor_fold_mixed:
+  fixes Y B :: pairseq and n0 :: nat
+  assumes colcase: "\<And>m. m < Lng B \<Longrightarrow>
+      ((Y @ take m B) \<in> RT_PS
+        \<and> (Y @ take m B, n0) \<in> Marked
+        \<and> (Y @ take m B, transJm1 (Y @ take (Suc m) B)) \<in> Marked
+        \<and> n0 \<le> transJm1 (Y @ take (Suc m) B))
+    \<or> ((Y @ take m B) \<in> RT_PS
+        \<and> multiT (Y @ take m B)
+        \<and> n0 < Pcut (Y @ take m B)
+        \<and> entry (Y @ take m B) 0 (Pcut (Y @ take m B)) < fst (B ! m))"
+  shows "\<And>m. m < Lng B \<Longrightarrow>
+    \<exists>sx bx. scb_decomp (Mark (Y @ take m B) n0) sx
+              (flatBT (transC1 (Y @ take (Suc m) B))) bx"
+proof -
+  fix m assume mw: "m < Lng B"
+  have split: "Y @ take (Suc m) B = (Y @ take m B) @ [B ! m]"
+    using mw by (simp add: take_Suc_conv_app_nth)
+  let ?nts = "(Y @ take m B) \<in> RT_PS
+        \<and> (Y @ take m B, n0) \<in> Marked
+        \<and> (Y @ take m B, transJm1 (Y @ take (Suc m) B)) \<in> Marked
+        \<and> n0 \<le> transJm1 (Y @ take (Suc m) B)"
+  show "\<exists>sx bx. scb_decomp (Mark (Y @ take m B) n0) sx
+              (flatBT (transC1 (Y @ take (Suc m) B))) bx"
+  proof (cases ?nts)
+    case True
+    have NR: "(Y @ take m B) \<in> RT_PS" using True by simp
+    have mN0: "(Y @ take m B, n0) \<in> Marked" using True by simp
+    have mJ': "(Y @ take m B, transJm1 ((Y @ take m B) @ [B ! m])) \<in> Marked"
+      using True split by simp
+    have le': "n0 \<le> transJm1 ((Y @ take m B) @ [B ! m])"
+      using True split by simp
+    have res: "\<exists>sx bx. scb_decomp (Mark (Y @ take m B) n0) sx
+                (flatBT (transC1 ((Y @ take m B) @ [B ! m]))) bx"
+      by (rule m_8_5_anchor_col[OF NR mN0 mJ' le'])
+    show ?thesis using res split by simp
+  next
+    case False
+    have h: "(Y @ take m B) \<in> RT_PS
+        \<and> multiT (Y @ take m B)
+        \<and> n0 < Pcut (Y @ take m B)
+        \<and> entry (Y @ take m B) 0 (Pcut (Y @ take m B)) < fst (B ! m)"
+      using colcase[OF mw] False by blast
+    have NR: "(Y @ take m B) \<in> RT_PS" using h by simp
+    have muN: "multiT (Y @ take m B)" using h by simp
+    have stuck: "n0 < Pcut (Y @ take m B)" using h by simp
+    have strict: "entry (Y @ take m B) 0 (Pcut (Y @ take m B)) < fst (B ! m)" using h by simp
+    have res: "\<exists>sx bx. scb_decomp (Mark (Y @ take m B) n0) sx
+                (flatBT (transC1 ((Y @ take m B) @ [B ! m]))) bx"
+      by (rule m_8_5_anchor_col_trunkstuck_regime2[OF NR muN stuck strict])
+    show ?thesis using res split by simp
+  qed
 qed
 
 
