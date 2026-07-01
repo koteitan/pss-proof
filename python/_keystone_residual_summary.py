@@ -1649,4 +1649,121 @@ whole appended period, not a translation/composition trick), not another
 attempt to route around it via already-proven machinery -- every
 composition of currently-available lemmas has now been checked and found
 insufficient by at least one round.
+
+=====================================================================
+ROUND 12 (2026-07-01, this round; layerC/pss_scratch.thy, commits mirrored
+main/wt2). CORRECTS Round 11's overclaim: `m_8_5_Pcut_reset_witness` covers
+only the reset-first-column sub-case (independently verified by the parent as
+~20-40% of genuine trunk-stuck deepen-block cases, NOT ~100% as Round 11's
+framing implied). This round closes the REMAINING majority case (non-reset
+first column) via a NEW, GENERAL (regime-free) lemma.
+=====================================================================
+
+FIRST FALSE START -- Round 11's "Pcut freezes at a fixed value across the
+whole block" mental model was RE-TESTED directly this round and REFUTED as a
+general mechanism: `python/_r12_nonreset_broad2.py`'s F1 check ("Pcut(Nprev)
+== Pcut(Mq) for ALL columns of a non-reset-first block") held only 71/226,
+83/265 (~30%) across two independent samples -- NOT the ~100% one might
+assume from Round 11's "freeze" framing. A companion hand-derived conjecture
+("Pcut(Mq) == j0", the appended block's own trunk boundary, q-independent)
+was ALSO refuted directly (`python/_r12_pcut_eq_j0.py`: only 21/174, with the
+i1=0/non-condV rows responsible for all failures -- a reminder to always
+condV-filter). Do NOT re-attempt "Pcut is frozen/constant across the block"
+as a *general* mechanism for the non-reset case -- it is simply false; the
+witness that DOES hold (below) never needed this.
+
+THE CLOSING FACT -- fully GENERAL, regime-free (no oper/condV/deepen-block
+content, no q, no d0, no periodicity formula at all). Whenever a column `col`
+is appended to a multiT host `N` such that `N@[col]` has a row-0 parent for
+its own last index (`hasParent (N@[col]) 0 (Lng(N@[col])-1)`, call it `par0`),
+`par0` is AUTOMATICALLY also a valid `Pcut`-candidate for `N` ITSELF:
+
+  (a) `par0`'s own defining "everything strictly between is >= the target"
+      clause (nextrel0_def) supplies EXACTLY the hypothesis
+      `m_5_1_parent_exists_3` (ALREADY PROVEN, pss_mechanized.thy:247) needs
+      to conclude `leR N 0 par0 (Lng N-1)` (or the case `par0 = Lng N-1` is
+      trivially reflexive).
+  (b) `Pcut N`'s own minimality (`Pcut_def` + `Least_le`, same idiom as the
+      ALREADY-PROVEN `poper_parent_ge_c`, pss_mechanized.thy:2058) then forces
+      `Pcut N <= par0`.
+  (c) `m_5_1_ancestor_basic_1` (or trivial equality when `Pcut N = par0`)
+      gives `entry N 0 (Pcut N) <= entry N 0 par0`.
+  (d) `par0`'s own STRICT defining inequality (that IS what "row-0 parent"
+      means) gives `entry N 0 par0 < fst col` directly.
+  Chaining (c)+(d): `entry N 0 (Pcut N) < fst col` -- the witness, done, with
+  NO reference to `q`, `d0`, periodicity, or whether `Pcut` stays fixed across
+  the fold at all (the mechanism is purely LOCAL to one append step).
+
+EMPIRICAL CONFIRMATION (exact coverage fractions, not just "confirmed"):
+  - General mechanism, UNRESTRICTED (no regime filter whatsoever, all
+    multiT N + hasParent(N@[col],0,last) + fst(col)>0, exhaustive sweep over
+    small pairseqs): `python/_r12_par0_ge_pcut.py` -- `Pcut N <= par0`:
+    19,125,980/19,125,980 (100.00%, ZERO exceptions).
+    `python/_r12_par0_le0_reach.py` -- `le0 N par0 (Lng N-1)` [or the trivial
+    `par0=Lng N-1` case]: 13,655,035/13,655,035 (100.00%, ZERO exceptions).
+  - GENUINE keystone regime (trunk-stuck, non-reset-first-column deepen
+    blocks, matching the harnesses' own condV/hasParent/nextrel0/jm1>0
+    filters, SAME regime style as Round 10/11): the actual witness
+    `entry(Nprev,0,Pcut(Nprev)) < fst(B!m)` held 155/155
+    (`_r12_nonreset_broad2.py`, seed 777) + 16/16 (`_r12_nonreset_final.py`,
+    larger maxlen/maxv/q/u range, seed 4242) + 182/182
+    (`_r12_nonreset_broad2.py` re-run, seed unspecified/default) = **353/353
+    combined (100.00%), ZERO exceptions, across three independently-seeded
+    samples with different length/value/q ranges**.
+  - The ONE hypothesis the new lemma needs beyond RT_PS/multiT
+    (`hasParent(Ncur,0,Lng(Ncur)-1)`) was checked SEPARATELY, restricted to
+    the same genuine trunk-stuck non-reset population: `_r12_hasParent_check.py`
+    -- 74/74 (100.00%), i.e. it is automatically available, not an extra
+    burden on top of the existing regime.
+  - Also confirmed: non-reset-first blocks NEVER had a mid-block reset column
+    either (`0/71`, `0/83` across the two broad2 samples) -- consistent with
+    the reset-vs-non-reset split being clean/exhaustive at the BLOCK level
+    (a genuine deepen block is either "reset-first, rest non-reset" -- Round
+    11's case -- or "non-reset throughout" -- this round's case -- with no
+    messy mixed shape actually arising from real `oper` recursion).
+
+FORMALIZED (layerC/pss_scratch.thy, green PSS_C, sorry/oops=0, self-audited
+for circular citation -- cites only pss_defs.thy/pss_mechanized.thy base-layer
+facts: RT_PS_def, multiT_imp_Lng_gt1, hasParent_def/parent_def, nextR_def,
+nextrel0_def, entry_def/nth_append, Pcut_le, Pcut_def, Least_le,
+m_5_1_ancestor_basic_1, m_5_1_parent_exists_3, m_6_2_not_multi_iff_le -- none
+of these are downstream of anything in this round's own work):
+
+  m_8_5_Pcut_nonreset_witness: `N \<in> RT_PS ==> multiT N ==>
+    hasParent (N@[col]) 0 (Lng(N@[col])-1) ==> entry N 0 (Pcut N) < fst col`.
+    Fully general (no q/oper/condV content at all beyond RT_PS+multiT+the one
+    hasParent hypothesis). This is the "equivalent sufficient fact" the round
+    11 correction asked for -- it reduces the ENTIRE majority-case witness
+    derivation to one clean, primitive, and (per the coverage check above)
+    automatically-true-in-practice hypothesis.
+
+NOT YET WIRED (left for a future round, lower priority than closing was):
+  m_8_5_Pcut_nonreset_witness is not yet plugged into
+  `m_8_5_anchor_fold_mixed`'s `colcase` second disjunct as a per-column
+  discharge (the way `m_8_5_Pcut_reset_witness` already sits ready for the
+  reset sub-case) -- that wiring is pure composition (supply `hasParent`,
+  which the coverage check above shows is available in the real regime, then
+  invoke this lemma) and was not done this round; the NEW mathematical
+  content (the witness derivation itself) is what this round closed.
+  Combined with Round 11's reset-column result, Route 2's trunk-stuck
+  witness now has a candidate closed derivation for BOTH sub-cases
+  (reset-first ~20-40%, non-reset-first ~60-80%, per the parent's and this
+  round's independent counts) -- but the FULL end-to-end wiring into
+  `m_8_5_anchor_fold_mixed`'s `colcase` hypothesis, discharged from a REAL
+  `oper`-generated deepen block with NO named regime hypothesis left over
+  (i.e. showing `col0`/`colpos` OR `hasParent(...)` follow automatically from
+  `m_8_5_deepen_block_explicit`/`_row0`), has NOT been attempted in either
+  round and remains the concrete next step for Route 1 item (1)/(2)'s
+  "R2a's leR gap for non-trunk-stuck columns" caveat.
+
+Re-run instructions for Round 12: python/_r12_par0_ge_pcut.py (unrestricted,
+19,125,980/19,125,980); python/_r12_par0_le0_reach.py (unrestricted,
+13,655,035/13,655,035); python/_r12_nonreset_broad2.py (regime-specific,
+155/155 then 182/182 across two seeded runs); python/_r12_nonreset_final.py
+(regime-specific, larger parameter range, 16/16);
+python/_r12_hasParent_check.py (74/74). python/_r12_nonreset_majority.py and
+python/_r12_pcut_eq_j0.py are kept as NEGATIVE-result records (the refuted
+"exhaustive-generator-only-reaches-u=0" sampling bug, and the refuted
+"Pcut(Mq)==j0" conjecture, respectively) -- do not re-run expecting a
+positive result from either.
 """

@@ -7697,6 +7697,137 @@ proof -
 qed
 
 
+text \<open>§8.5 ROUND 12, Route 2 -- the MAJORITY case (non-reset first column, the
+  \<open>~80\%\<close> the parent's coverage check flagged as uncovered by
+  @{thm [source] m_8_5_Pcut_reset_witness}).  Fully GENERAL, regime-free fact
+  (NO deepen-block/condV/oper content at all -- confirmed empirically
+  UNRESTRICTED, \<open>python/_r12_par0_ge_pcut.py\<close>: \<open>Pcut N \<le> par0\<close> 19,125,980/
+  19,125,980; \<open>python/_r12_par0_le0_reach.py\<close>: \<open>le0 N par0 (Lng N-1)\<close> [or the
+  trivial \<open>par0=Lng N-1\<close> case] 13,655,035/13,655,035 -- both ZERO exceptions
+  over an exhaustive sweep, no regime filter whatsoever):
+
+  whenever the newly appended column \<open>col\<close> gives \<open>N@[col]\<close> a row-0 parent
+  \<open>par0\<close> for its own last index (\<open>hasParent (N@[col]) 0 (Lng(N@[col])-1)\<close>),
+  \<open>par0\<close> is ALSO a valid \<open>Pcut\<close>-candidate for \<open>N\<close> itself: the same "everything
+  strictly between is \<ge> the target" clause that defines \<open>par0\<close> as \<open>N@[col]\<close>'s
+  row-0 parent (via \<open>nextrel0\<close>) supplies EXACTLY the hypothesis
+  @{thm [source] m_5_1_parent_exists_3} needs to give \<open>leR N 0 par0 (Lng N-1)\<close>
+  (the \<open>par0=Lng N-1\<close> case is trivially reflexive).  \<open>Pcut N\<close>'s own minimality
+  (@{thm [source] Pcut_def}) then forces \<open>Pcut N \<le> par0\<close>, and
+  @{thm [source] m_5_1_ancestor_basic_1} (or trivial equality) gives
+  \<open>entry N 0 (Pcut N) \<le> entry N 0 par0\<close>; combined with \<open>par0\<close>'s own STRICT
+  defining inequality \<open>entry N 0 par0 < fst col\<close> (that is what "\<open>par0\<close> is a
+  row-0 parent of the appended column" means), this closes the witness --
+  WITHOUT any reset/non-reset case split, any \<open>oper\<close> periodicity formula, or
+  any tracking of \<open>Pcut\<close> across the fold at all (Round 11's "Pcut freezes at
+  a fixed value across the whole block" mental model, confirmed WRONG for
+  this regime this round -- \<open>python/_r12_nonreset_final.py\<close> found
+  \<open>Pcut(Nprev)==Pcut(Mq)\<close> holds only 0/16 to 71/226 of the time across a
+  block, yet the PER-COLUMN witness below still held 100\% every time, because
+  it never needed \<open>Pcut\<close> to stay fixed -- only the LOCAL \<open>par0\<close> relation at
+  each individual append step).
+
+  COVERAGE CHECK (the actual genuine keystone-regime obligation, restricted to
+  trunk-stuck, non-reset-first-column deepen blocks, matching the harnesses'
+  own \<open>condV\<close>/\<open>hasParent\<close>/\<open>nextrel0\<close>/\<open>jm1>0\<close> filters):
+  \<open>python/_r12_nonreset_broad2.py\<close> (155/155 on trunk-stuck non-reset columns)
+  + \<open>python/_r12_nonreset_final.py\<close> (16/16 on a separate, larger-parameter
+  sample) = 171/171 combined, ZERO exceptions, on top of the unconditional
+  19M/13.6M-case general confirmation above.\<close>
+
+lemma m_8_5_Pcut_nonreset_witness:
+  fixes N :: pairseq and col :: "nat \<times> nat"
+  assumes NR: "N \<in> RT_PS" and muN: "multiT N"
+    and hp: "hasParent (N @ [col]) 0 (Lng (N @ [col]) - 1)"
+  shows "entry N 0 (Pcut N) < fst col"
+proof -
+  have NT: "N \<in> T_PS" using NR by (simp add: RT_PS_def)
+  have L: "1 < Lng N" by (rule multiT_imp_Lng_gt1[OF NT muN])
+  have LngNcur: "Lng (N @ [col]) = Lng N + 1" by simp
+  have lastLN: "Lng (N @ [col]) - 1 = Lng N" using LngNcur by simp
+  define par0 where "par0 = parent (N @ [col]) 0 (Lng (N @ [col]) - 1)"
+  have par0_nextR: "nextR (N @ [col]) 0 par0 (Lng (N @ [col]) - 1)"
+    using hp unfolding hasParent_def parent_def par0_def by (rule theI')
+  have nr0: "nextrel0 (N @ [col]) par0 (Lng (N @ [col]) - 1)"
+    using par0_nextR by (simp add: nextR_def)
+  have strictv: "entry (N @ [col]) 0 par0 < entry (N @ [col]) 0 (Lng (N @ [col]) - 1)"
+    using nr0 by (simp add: nextrel0_def)
+  have betwall: "\<And>jj. par0 < jj \<Longrightarrow> jj < Lng (N @ [col]) - 1 \<Longrightarrow>
+                    entry (N @ [col]) 0 jj \<ge> entry (N @ [col]) 0 (Lng (N @ [col]) - 1)"
+    using nr0 by (simp add: nextrel0_def)
+  have par0LN: "par0 < Lng N" using nr0 lastLN by (simp add: nextrel0_def)
+  have entry_last_col: "entry (N @ [col]) 0 (Lng (N @ [col]) - 1) = fst col"
+    using lastLN by (simp add: entry_def nth_append)
+  have entry_par0_N: "entry (N @ [col]) 0 par0 = entry N 0 par0"
+    using par0LN by (simp add: entry_def nth_append)
+  have strict_col: "entry N 0 par0 < fst col"
+    using strictv entry_last_col entry_par0_N by simp
+  have betwallN: "\<And>jj. par0 < jj \<Longrightarrow> jj \<le> Lng N - 1 \<Longrightarrow> entry N 0 jj \<ge> fst col"
+  proof -
+    fix jj assume h1: "par0 < jj" and h2: "jj \<le> Lng N - 1"
+    have jjlt: "jj < Lng (N @ [col]) - 1" using h2 lastLN L by linarith
+    have "entry (N @ [col]) 0 jj \<ge> entry (N @ [col]) 0 (Lng (N @ [col]) - 1)"
+      using betwall h1 jjlt by blast
+    thus "entry N 0 jj \<ge> fst col"
+      using entry_last_col jjlt lastLN by (simp add: entry_def nth_append)
+  qed
+  have cut: "0 < Pcut N \<and> Pcut N \<le> Lng N - 1 \<and> leR N 0 (Pcut N) (Lng N - 1)"
+    using Pcut_le[OF L] by simp
+  show ?thesis
+  proof (cases "par0 = Lng N - 1")
+    case True
+    hence outerT: "par0 = Lng N - 1" .
+    show ?thesis
+    proof (cases "Pcut N = par0")
+      case True thus ?thesis using strict_col by simp
+    next
+      case False
+      have ltp: "Pcut N < par0" using cut outerT False by simp
+      have jle: "par0 \<le> Lng N - 1" using outerT by simp
+      have leRcut: "leR N 0 (Pcut N) (Lng N - 1)" using cut by simp
+      have "entry N 0 (Pcut N) < entry N 0 par0"
+        by (rule m_5_1_ancestor_basic_1[OF NT ltp jle leRcut])
+      thus ?thesis using strict_col by simp
+    qed
+  next
+    case False
+    have par0lt: "par0 < Lng N - 1" using par0LN False by simp
+    have Hyp: "\<And>j. par0 < j \<Longrightarrow> j \<le> Lng N - 1 \<Longrightarrow> entry N 0 par0 < entry N 0 j"
+    proof -
+      fix j assume hj1: "par0 < j" and hj2: "j \<le> Lng N - 1"
+      have "entry N 0 j \<ge> fst col" using betwallN hj1 hj2 by simp
+      thus "entry N 0 par0 < entry N 0 j" using strict_col by simp
+    qed
+    have j1ltLN: "Lng N - 1 < Lng N" using L by simp
+    have leRp: "leR N 0 par0 (Lng N - 1)"
+      by (rule m_5_1_parent_exists_3[OF NT par0lt j1ltLN Hyp])
+    have par0pos: "0 < par0"
+    proof (rule ccontr)
+      assume "\<not> 0 < par0"
+      hence par00: "par0 = 0" by simp
+      have "leR N 0 0 (Lng N - 1)" using leRp par00 by simp
+      hence "\<not> multiT N" using m_6_2_not_multi_iff_le[OF NT] by simp
+      thus False using muN by simp
+    qed
+    have PcutLe: "Pcut N \<le> par0" unfolding Pcut_def
+      by (rule Least_le[where P="\<lambda>j. 0<j \<and> j\<le>Lng N-1 \<and> leR N 0 j (Lng N-1)"])
+         (use par0pos par0lt leRp in auto)
+    show ?thesis
+    proof (cases "Pcut N = par0")
+      case True thus ?thesis using strict_col by simp
+    next
+      case False
+      have ltp: "Pcut N < par0" using PcutLe False by simp
+      have jle: "par0 \<le> Lng N - 1" using par0lt by simp
+      have leRcut: "leR N 0 (Pcut N) (Lng N - 1)" using cut by simp
+      have "entry N 0 (Pcut N) < entry N 0 par0"
+        by (rule m_5_1_ancestor_basic_1[OF NT ltp jle leRcut])
+      thus ?thesis using strict_col by simp
+    qed
+  qed
+qed
+
+
 lemma m_8_5_anchor_col_trunkstuck_regime2:
   fixes N :: pairseq and col :: "nat \<times> nat" and n0 :: nat
   assumes NR: "N \<in> RT_PS"
