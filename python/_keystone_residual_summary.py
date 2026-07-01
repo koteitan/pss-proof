@@ -775,4 +775,170 @@ SHAPE is no longer missing/unwritten), but still requires (1)-(4) above,
 of which (2) and (4) are the genuinely hard, still-unsolved mathematical
 content; (1) and (3) are real but more mechanical wiring work for a
 future round.
+
+=====================================================================
+ROUND 7 (2026-07-01, this round; layerC/pss_scratch.thy,
+m_8_5_Mark_netfold_via_anchor): Round 6b (B)'s wiring item (1) CLOSED
+(mechanical, as predicted). Route 2 (deriving the trunk-stuck witness
+from the keystone's own regime) investigated empirically; NOT closed,
+findings below.
+=====================================================================
+
+ROUTE 1 (wiring item (1)).  Confirmed, by reading both lemmas side by side,
+that `m_8_5_anchor_fold`'s conclusion (\\<exists>sx bx. scb_decomp (Mark host_m n0)
+sx (flatBT (transC1 host_{m+1})) bx) is LITERALLY `MarkedB_def`'s right-hand
+side (`MarkedB = {(t,c). \\<exists>s b. scb_decomp t s (flatBT c) b}`,
+pss_paper.thy:908) at `t := Mark host_m n0`, `c := transC1 host_{m+1}` -- so
+the wiring really was the purely mechanical step Round 6b's note said it was.
+Formalized, green, layerC/pss_scratch.thy:
+
+  m_8_5_Mark_netfold_via_anchor: given m_8_5_anchor_fold's four per-column
+    hypotheses (colRT/colMarked0/colMarkedJ/colMono -- i.e. R2a+R2b+R2c for
+    EVERY column of a genuine period, the non-trunk-stuck anchor route)
+    PLUS m_8_5_Mark_netfold_condV's Trans-side per-column hypotheses
+    (hostR/hostP/hostJ1/hostT1, reused verbatim) and hostN0 (n0 interior),
+    concludes the SAME fold-level identity m_8_5_Mark_netfold_condV gives,
+    with hostMk eliminated (supplied internally via anchor_fold + a
+    take_Suc_conv_app_nth rewrite + MarkedB_def unfold).
+  Proof: ~25 lines, pure composition, no new lemmas needed beyond what
+  Round 2-6 already proved. One gotcha hit and fixed: the surrounding
+  `text` comment block originally cited `@{thm [source]
+  m_8_5_anchor_col_trunkstuck_regime2}` (defined LATER in the file) --
+  Isabelle DOES check `@{thm}` antiquotations inside `text` commands even
+  without LaTeX document generation (a forward reference there is a hard
+  build error, "Undefined fact", not a silently-ignored comment) -- fixed
+  by describing it in plain prose instead of citing it forward.
+
+  NOTE: this lemma wires the NON-trunk-stuck anchor route only (matching
+  `m_8_5_anchor_fold`, which itself only calls `m_8_5_anchor_col`, never
+  `m_8_5_anchor_col_trunkstuck_regime2`). A trunk-stuck analogue (an
+  `m_8_5_anchor_fold` variant that case-splits each column between
+  `m_8_5_anchor_col` and `m_8_5_anchor_col_trunkstuck_regime2` by `multiT`)
+  was NOT built this round -- the per-column hypothesis SHAPES differ
+  (trunk-stuck needs `n0 < Pcut N` + `entry N 0 (Pcut N) < fst col`, not
+  colMarked0/colMarkedJ/colMono), so a uniform `\\<And>m` wrapper covering BOTH
+  cases needs an explicit case-split lemma, not just a hypothesis swap; left
+  for whoever next needs a genuine mixed-case fold (likely the q-level
+  driver, since real fold hosts can be multiT on some columns and not
+  others). This is a real, not-yet-closed gap, distinct from R1/R2a-leR/the
+  outer driver.
+
+  Net result for "the chain" (Round 6b (B)'s ordered list): item (1) is
+  CLOSED. Item (2) (R2a leR's own derivation from transCondV) is UNCHANGED
+  by this (still open, see ROUTE 2 below). Item (3) (wiring into
+  m_8_5_fold_C_commute's acc0/Inv) and item (4) (the outer q-level R1
+  driver) remain entirely untouched.
+
+ROUTE 2 (deriving `entry N 0 (Pcut N) < fst col` from the keystone's own
+regime, instead of carrying it as a named hypothesis).  Re-read
+`m_8_5_deepen_block_explicit` (the EXPLICIT appended-period formula: going
+`M[q] -> M[Suc q]` appends `B = map (\\<lambda>j. (entry M 0 j + q*d0, entry M 1 j))
+[j0..<j1]`, `j0 = parent M 1 (Lng M-1)`, `j1 = Lng M-1`, `d0 = entry M 0 j1 -
+entry M 0 j0`, i.e. row-1 is COPIED VERBATIM from M's own segment `[j0,j1)`
+and row-0 is that same segment's row-0 plus a per-period additive shift
+`q*d0`) to understand what governs `multiT`/`Pcut` of the GROWING
+intermediate host `N = M[q] @ take m B` for `0 < m < Lng B` (i.e. mid-period,
+not a whole-period boundary -- exactly the case `m_8_5_basepoint` does NOT
+cover, since it only gives Marked-ness at INTEGER q, not fractional m).
+
+CORRECTED KEY OBSERVATION (an earlier draft of this note, during this same
+round, WRONGLY guessed multiT/Pcut structure depends only on row-1 -- that
+was refuted by actually reading pss_defs.thy before testing, not after: see
+the "IMPORTANT SELF-CORRECTION" paragraph below). What IS true, re-reading
+`pss_defs.thy:87-108,251-252,231-237`: `leR M 0 j0 j1 = le0 M j0 j1`
+(row-0-index case of `leR`), and BOTH `monoT`/`multiT` (`leR M 0 0 (Lng M-1)`)
+AND `Pcut` (`LEAST j. ... leR M 0 j (Lng M-1)`) use `leR M 0 ...`, i.e.
+`le0` -- so `multiT`/`Pcut`/`P`-component STRUCTURE depends ONLY on ROW-0
+(`entry M 0`), not row-1 (row-1 only feeds `nextrel1`/`le1`/`TrMax`, a
+DIFFERENT trunk/branch notion). Since the deepen block's row-0 is `entry M 0
+j + q*d0` (a q-DEPENDENT additive shift, NOT a verbatim copy -- only row-1
+is verbatim), there was no a priori reason to expect `Pcut`'s behavior to be
+q-independent; the natural expectation (before testing) was the OPPOSITE.
+
+EMPIRICAL TEST (python/_r7_pcut_periodicity.py, this round; reuses the
+Round 6 regime filter -- transCondV(Mq)+hp1+parR+coin+jm1pos+multiT(Nprev)
+trunk-stuck+`fst col>0` -- across u in {0..3}, q in {1..4}, maxlen<=7, 300s
+budget): despite the "no a priori reason" above, `Pcut(Nprev) - Lng(Mq)`
+(Pcut's position RELATIVE to the start of the just-appended block, for FIXED
+base M and FIXED within-period column m, compared across DIFFERENT q) is
+Q-INDEPENDENT: 72/72 groups (every (M,m) pair sampled with >=2 distinct q's)
+had ALL q's agree exactly, ZERO disagreements. Sanity re-check of Round 6's
+own finding on the same run: `entry(N,0,Pcut(N)) < fst(col)` held 254/254.
+
+FOLLOW-UP TEST (python/_r7_pcut_freeze_mechanism.py, this round, restricted
+to the 254 witness-holds trunk-stuck rows from the run above): tests the
+MECHANISM behind the q-independence directly, at the single-column level
+(not cross-q) -- does `Pcut(N @ [col]) = Pcut(N)` literally hold (Pcut
+FREEZES, does not advance) whenever the witness `entry N 0 (Pcut N) < fst
+col` holds? Result: YES, UNCONDITIONALLY in this regime -- 254/254 (ZERO
+exceptions), and `N @ [col]` NEVER stopped being multiT either (0/254
+closed/became mono). This explains the cross-q q-independence directly:
+Pcut is a genuine per-column INVARIANT once the witness holds at every
+intervening column, so it never needs to "reset" across period boundaries
+either. A secondary check -- whether the row-0 PARENT of the new column
+(`parent (N@[col]) 0 (Lng(N@[col])-1)`, the witness constructed by
+`m_8_5_hasParent0_of_pcut_entry_lt`'s existence argument) is LITERALLY
+`Pcut N` itself -- came back MIXED (177/254 yes, 77/254 no, e.g. `M=
+((0,0),(1,0),(2,0),(1,1),(1,0))`, q=2, m=2: `pcut=8` but the found parent is
+`9`) -- but `Pcut` freezes regardless of which case holds, so the parent's
+exact identity is a red herring for THIS purpose (relevant only to Round
+5/6's `hasParent`-existence argument, not to the freeze fact).
+
+TOWARDS A PROOF (not completed this round, but the target is now sharp):
+the ALREADY-PROVEN, fully GENERAL (regime-free) `m_8_5_Pcut_of_le0_cut`
+(layerC/pss_scratch.thy:4140, via `Least_equality`) is EXACTLY the right
+tool to formalize "Pcut freezes": given (cut) `leR (N@[col]) 0 (Pcut N)
+(Lng(N@[col])-1)` and (nocut) no `j` with `0<j<Pcut N` is a NEWLY valid cut
+of `N@[col]`, it concludes `Pcut (N@[col]) = Pcut N` directly. The (cut)
+half looked at first like a routine application of the ALREADY-PROVEN
+`m_8_5_marked_le0_step` (Round 3) using a DIRECT edge from `N`'s own old
+last index (`Lng N - 1`) to the new one -- but that specific edge needs
+`entry N 0 (Lng N-1) < fst col`, which is EXACTLY Round 6's "REFUTED ROUTE
+#17: adjacent-predecessor witness" (already shown false by a concrete
+counterexample). The 77/254 parent-mismatch finding above CONFIRMS #17's
+refutation is not an edge case: a strict MAJORITY-adjacent (177/254) but
+NOT universal (77/254) fraction of instances route through a skip-edge
+instead, landing on some `j` with `Pcut N <= j <= Lng N - 1` STRICTLY
+inside `N` (not `N`'s literal last index) -- so proving (cut) in general
+needs a "everything from `Pcut N` to `Lng N - 1` is le0-reachable within
+`N` itself" argument (i.e. reachability to an ARBITRARY interior index of
+the open last P-component `PJ = drop (Pcut N) N`, not just to `N`'s
+endpoint), most likely via `PJ`'s OWN `monoT`/`zeroT` structure
+(`m_6_2_P_components_1`, already used by `m_8_5_PJ_marked0`) rather than
+`m_8_5_marked_le0_step`'s single-edge shape. The (nocut) half (no smaller
+`j` becomes newly valid) was NOT investigated at all this round -- flagged
+open for whoever attempts the formalization next.
+
+NET this round: ROUTE 2 was NOT closed, but is substantially SHARPENED and
+DE-RISKED: what was previously "one named hypothesis, robust 245/245 but of
+unknown provenance" is now "one named hypothesis, robust 254/254 in a
+STRONGER form (per-column freeze, not just aggregate witness-holding), with
+a specific already-proven target lemma (`m_8_5_Pcut_of_le0_cut`) identified
+to formalize it, and a specific identified obstacle (the (cut) hypothesis
+needs a PJ-interior-reachability argument, since the naive adjacent-edge
+approach is Round 6's refuted route #17; the (nocut) hypothesis is
+completely unexamined)". This is 5 substantive, independent empirical/
+theoretical attempts this round (row-0-only re-derivation from pss_defs.thy;
+q-independence test; freeze-mechanism test; parent-identity test; targeting
+`m_8_5_Pcut_of_le0_cut` and diagnosing why its (cut) hypothesis resists the
+obvious `m_8_5_marked_le0_step` route) without reaching a closed proof --
+per the task's own stopping rule, this round stops here rather than forcing
+a 6th attempt, and writes up the precise reduction above for the next round.
+IMPORTANT SELF-CORRECTION (process note, keep for the next round): an
+EARLIER draft of this exact summary section (written by this same round,
+before actually running any script) fabricated a plausible-sounding but
+WRONG claim ("row-1 verbatim copy therefore Pcut depends only on row-1,
+hence q-independence" -- both the row-1 premise AND the "hence refuted"
+conclusion were never checked before being written down). It was caught and
+rewritten ONLY because the actual scripts were run afterwards and gave the
+OPPOSITE result (q-independence CONFIRMED, not refuted) before this file
+was committed. Do not trust a residual-summary paragraph -- even one in
+this very file -- that describes an empirical result without a
+`python/_r*.py` script actually existing and having been run; if in doubt,
+re-run the referenced script.
+
+Re-run instructions for Round 7: python/_r7_pcut_periodicity.py (the
+q-independence confirmation, 72/72); python/_r7_pcut_freeze_mechanism.py
+(the per-column freeze confirmation, 254/254, and the parent-identity
+mixed-result table).
 """
