@@ -941,4 +941,189 @@ Re-run instructions for Round 7: python/_r7_pcut_periodicity.py (the
 q-independence confirmation, 72/72); python/_r7_pcut_freeze_mechanism.py
 (the per-column freeze confirmation, 254/254, and the parent-identity
 mixed-result table).
+
+=====================================================================
+ROUND 8 (2026-07-01, this round; layerC/pss_scratch.thy, commits
+2302bc2/3a9bedc/e48caf7 on main, mirrored 3a75f71/912066f/274d1dd on wt2):
+Route 2's identified target lemma (m_8_5_Pcut_of_le0_cut, "Pcut freezes")
+is now FULLY PROVEN (both cut and nocut). Route 1 item (1) (trunk-stuck
+anchor_fold) CLOSED. Item (2)/(3) preparation done but NOT closed.
+=====================================================================
+
+ROUTE 2 -- "Pcut freezes" fully proven (was: Round 7's open target, both
+halves unexamined/unproven).
+
+Two NEW GENERAL (regime-free, no T_PS/reduced/RT_PS scoping beyond what
+pss_defs.thy itself needs) structural facts about le0, neither previously in
+the file, turned out to be exactly what was missing:
+
+  m_8_5_monoT_le0_all: monoT M ==> le0 M 0 r for EVERY r < Lng M, not just
+  the endpoint r = Lng M - 1 that monoT's own definition gives directly.
+  Genuinely stronger than the frozen trunk_le0 (which only reaches up to
+  TrMax M, a row-1/nextrel1 notion that pss_mechanized.thy's own comments
+  note CAN differ from Lng M - 1 even for reduced monoT hosts). Proved by
+  strong induction on r using two ALREADY-PROVEN frozen facts:
+  m_5_1_ancestor_basic_1 (value monotonicity: leR M 0 j0 j1 /\\ j0<j<=j1 ==>
+  entry M 0 j0 < entry M 0 j) instantiated at j0=0,j1=Lng M-1 (monoT's own
+  witness) gives entry M 0 0 < entry M 0 r directly for ANY r in range; then
+  m_5_1_parent_exists_1 gives a direct row-0 parent q<r, and the IH supplies
+  le0 M 0 q. Empirically confirmed 0/29079 counterexamples, brute force, NO
+  regime filter (python/_r8_monoT_reaches_all.py).
+
+  m_8_5_le0_ancestor_linear: le0 M a c /\\ le0 M b c ==> le0 M a b \\/ le0 M b
+  a -- any two le0-ancestors of the SAME index are themselves le0-comparable.
+  Proved by strong induction on the shared descendant c: if a=c or b=c
+  trivial; otherwise both a,b reach c via a nontrivial chain, so each has a
+  well-defined LAST edge into c (m_8_5_nextrel0_rtrancl_last_step, a new
+  small helper via rtranclp_induct), and idxsum_parent0_unique (ALREADY
+  PROVEN, frozen -- uniqueness of a DIRECT row-0 parent of any single target)
+  forces those two last edges to share the SAME penultimate node p, reducing
+  the claim at c to the SAME claim at the strictly smaller p (closed by IH).
+  Empirically confirmed EXHAUSTIVELY: 3,773,682 common-ancestor pairs
+  (lengths<=6, values 0..2) + 6,360,000 more (lengths<=5, values 0..3), ZERO
+  failures (python/_r8_linearity.py -- note the naive per-pair `le0` wrapper
+  recomputes the O(n^3) reach() matrix from scratch on EVERY query, which is
+  why an early attempt at this test, using le0() directly in a quadruple
+  loop, was still running after 8 minutes and had to be killed; computing
+  reach() ONCE per M and reusing the matrix drops this to seconds).
+
+  These two facts assemble into a complete proof of BOTH halves of the
+  already-proven-but-previously-uninvoked m_8_5_Pcut_of_le0_cut:
+
+  m_8_5_Pcut_cut_witness (the `cut` half): leR (N@[col]) 0 (Pcut N)
+  (Lng(N@[col])-1), from the SAME named witness entry N 0 (Pcut N) < fst col
+  that m_8_5_anchor_col_trunkstuck_regime2 already carries. Closes exactly
+  the "PJ-interior-reachability" gap Round 7 flagged: the row-0 parent par0
+  of the appended column is NOT always literally N's last index (Round 6's
+  refuted route #17), but Pcut N ALWAYS le0-reaches par0 -- via PJ's own
+  monoT/zeroT structure (m_6_2_P_components_1, as in m_8_5_PJ_marked0) +
+  m_8_5_monoT_le0_all (giving le0 PJ 0 (par0-Pcut N)) + the frozen
+  poper_le0_drop drop-shift equivalence (transfers PJ's le0 fact back up to
+  N) + the ALREADY-PROVEN m_8_5_marked_le0_step (its `c` parameter is FREE,
+  not tied to Lng N-1 -- reused VERBATIM at c:=par0 to bridge the direct
+  edge par0 -> new-last-index across the append). Empirically confirmed
+  266/266 both for `cut` itself and for the underlying mechanism
+  le0(Nprev,Pcut N,par0) even when par0 != Pcut N (python/_r8_pcut_cut_nocut.py).
+
+  m_8_5_Pcut_nocut_witness (the `nocut` half, Round 7 did not examine this
+  side AT ALL): no 0<j<Pcut N becomes a newly valid le0-cut of N@[col].
+  Proof: suppose such a j existed; by the SAME last-edge-uniqueness argument
+  as the `cut` proof, j must reach the SAME par0; transferring le0(X,j,par0)
+  back down to le0(N,j,par0) (le0_prefix_agree, frozen) and combining with
+  le0(N,Pcut N,par0) (established in the `cut` proof) via
+  m_8_5_le0_ancestor_linear forces j and Pcut N to be le0-comparable;
+  index-monotonicity (nextrel0_rtrancl_mono, frozen) rules out le0 N (Pcut N)
+  j since j<Pcut N, forcing le0 N j (Pcut N); composed with Pcut N's own
+  trivial "reaches the end of its own last P-component" witness (a SECOND
+  application of m_8_5_monoT_le0_all/poper_le0_drop, this time reaching
+  Lng PJ - 1 instead of par0-Pcut N) gives le0 N j (Lng N-1) -- directly
+  CONTRADICTING Pcut N's own minimality (Pcut_def's LEAST, via
+  not_less_Least). No new empirical test needed beyond the `cut` proof's own
+  266/266 (nocut's truth was already implied by the freeze-mechanism finding
+  Round 7 already validated; this round supplied the missing PROOF).
+
+  m_8_5_Pcut_freezes: Pcut (N@[col]) = Pcut N, now a fully DERIVED THEOREM
+  (not merely 254/254 empirical) via m_8_5_Pcut_of_le0_cut fed both halves.
+
+  SCOPE CAVEAT (read before reusing this as "Route 2 is closed" -- it is
+  NOT): m_8_5_Pcut_freezes still CARRIES entry N 0 (Pcut N) < fst col as a
+  NAMED hypothesis. This round closes the lemma Round 7 IDENTIFIED AS THE
+  TARGET TOOL for "Pcut freezes", and "Pcut freezes" is itself useful
+  machinery (e.g. for any future R1/outer-driver argument that needs Pcut to
+  be an invariant across a trunk-stuck run of columns) -- but it does NOT
+  derive the witness entry N 0 (Pcut N) < fst col ITSELF from the keystone's
+  own transCondV/hp1/parR/coin/jm1pos regime, which was the ORIGINAL Route 2
+  ask (per the task prompt: "derive entry N 0 (Pcut N) < fst col"). That
+  derivation is UNCHANGED, still open. Do not conflate the two.
+
+ROUTE 1 item (1) -- trunk-stuck anchor_fold, CLOSED.
+
+  m_8_5_anchor_fold_mixed: a per-column DISJUNCTIVE wrapper that case-splits
+  EVERY column of a fold between the non-trunk-stuck route
+  (m_8_5_anchor_col: R2a/R2b/R2c) and the trunk-stuck route
+  (m_8_5_anchor_col_trunkstuck_regime2: n0<Pcut + the Pcut-entry witness),
+  closing the gap Round 7 flagged: m_8_5_anchor_fold itself only ever
+  invokes the non-trunk-stuck case, so it could not supply the anchor
+  obligation for a genuine MIXED fold (columns multiT on some, not others --
+  the realistic shape of an actual oper/Red period block). Pure composition
+  (a `cases` split on the boolean disjunction, then apply the corresponding
+  already-proven lemma), no new mathematics. Does NOT close either
+  underlying per-column obligation (R2a's leR gap for non-trunk-stuck
+  columns is still open; the trunk-stuck witness is still named, not
+  regime-derived per the scope caveat above) -- it only removes the
+  STRUCTURAL restriction that a whole fold had to be uniformly one case.
+
+ROUTE 1 items (2)/(3) -- NOT closed, preparation only.
+
+  m_8_5_fold_of_colstep_partial: exposes m_8_5_fold_of_colstep's internal
+  `gen` induction as a standalone fact -- fold op [0..<k] (f Y) = f (Y @ take
+  k B) for EVERY k<=Lng B, not just k=Lng B. This is the bridge needed to
+  discharge m_8_5_fold_C_commute's `anchor` hypothesis (stated over the
+  ABSTRACT `fold op [0..<m] acc0`) from m_8_5_anchor_fold_mixed's conclusion
+  (stated over the CONCRETE `Mark (Y @ take m B) n0`) at f := \\<lambda>M. Mark M
+  n0, acc0 := Mark Y n0 -- rewrite the fold accumulator via this lemma, then
+  the two statements become syntactically identical.
+
+  What is STILL missing to close item (2) (wiring the combined anchor fact
+  into m_8_5_fold_C_commute's acc0/Inv concretely): (a) m_8_5_fold_C_commute
+  ALSO needs `nz` (fold op [0..<m] acc0 != Trm [], i.e. Mark (Y@take m B) n0
+  != Trm [] for every column) and `pt2` (isPTB_str (flatBT (c2 m))) as
+  per-column hypotheses -- NEITHER was investigated this round (not known
+  whether they follow for free from RT_PS/Marked membership, or need their
+  own named regime hypotheses like the trunk-stuck witness did); (b) even
+  once assembled, the result is a lemma with a LONG hypothesis list
+  (hostR/hostP/hostJ1/hostT1/hostN0 + the colcase disjunction + nz + pt2 +
+  prene + Cdef) proving ONE fold's worth of C-commutation -- it does not by
+  itself supply `Inv` for m_8_5_keystone_allq (see item (3) below), since
+  `Inv` needs to hold of an ARBITRARY point on the C-orbit, not just the one
+  concrete `Mark Y n0` this wiring is stated for.
+
+  Item (3) (the outer q-level driver, invoking m_8_5_keystone_allq with
+  concrete F/C/z/Inv): investigated ARCHITECTURALLY this round (no Isabelle
+  written), and a genuine puzzle was identified that any future attempt
+  needs to resolve FIRST: m_8_5_keystone_allq needs a single q-INDEPENDENT
+  function F with z(Suc q) = F(z q) literally holding at EVERY q. The
+  natural candidate -- "F := the per-period column-fold" (m_8_5_fold_of_colstep's
+  `op`, built from transC1/transC2 of the SPECIFIC prefixes Y@take m B with
+  Y:=M[q]) -- is NOT actually q-independent AS A LITERAL TERM: the appended
+  block B(q) itself shifts additively by q*d0 each period
+  (m_8_5_deepen_block_explicit), so the concrete pairseq data (hence the
+  concrete `c1 m`/`c2 m` BT values) genuinely differs at every q. Round 7's
+  OWN empirical finding ("z(Suc q)=C(z q) holds with C a SINGLE FIXED wrap
+  across q=2..7") is a NET-RESULT fact about the OUTPUT after the whole
+  fold, not a claim that the per-column fold steps themselves are literally
+  identical across q -- so setting F := (the period fold) does not give a
+  literal q-independent function usable by m_8_5_keystone_allq as stated.
+  TWO candidate resolutions, NEITHER attempted in Isabelle this round: (i) a
+  SELF-REFERENTIAL F defined purely from a pairseq X's OWN trailing period
+  block (F X := X @ (nearest-smaller-derived copy of X's own last block,
+  shifted by X's own d0), NOT referencing the original M/q at all) that
+  might satisfy F (M[q]) = M[Suc q] by the periodic construction's own
+  self-similarity -- UNTESTED, would need its own empirical check before
+  formalizing; (ii) abandon the generic m_8_5_keystone_allq schema for this
+  application and instead prove z(Suc q)=C(z q) directly at EVERY q via
+  m_8_5_markstep_of_Trans_keystone's OWN per-q "keystone" hypothesis
+  (bypassing the telescope machinery entirely), which sidesteps the
+  q-independent-F puzzle but reintroduces exactly the "prove the Trans-level
+  identity at every q separately" cost the telescope was built to avoid.
+  Whoever attempts item (3) next should decide between these two before
+  writing any Isabelle.
+
+NET this round: 3 verified-green commits (2302bc2, 3a9bedc, e48caf7 on
+main), all "Finished PSS_C" + sorry/oops=0, self-audited for circular
+self-citation (grep: none of the 8 new lemmas cite themselves) and
+forward-reference-free @{thm} citations (build caught and fixed 5 forward
+references during development -- @{thm [source] X} where X is defined
+LATER in the file is a hard build error even inside `text`, per Round 7's
+own documented gotcha; all fixed to plain \\<open>X\\<close> prose, "(defined LATER in
+this file)"). Route 2's identified target lemma is fully closed; the
+ORIGINAL Route 2 ask (deriving the witness from transCondV et al.) remains
+open. Route 1 item (1) is closed; items (2)/(3) have real preparation
+(one new reusable lemma, one identified architectural puzzle with two
+named candidate resolutions) but are not closed.
+
+Re-run instructions for Round 8: python/_r8_monoT_reaches_all.py (monoT
+reaches everywhere, 0/29079); python/_r8_linearity.py (ancestor linearity,
+0 failures / 10M+ pairs); python/_r8_pcut_cut_nocut.py (cut/nocut/mechanism
+all 266/266).
 """
