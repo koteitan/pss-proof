@@ -1269,4 +1269,69 @@ uses, not from Mq's own (unrelated) Pcut/entry values.
 
 Re-run instructions for Round 9: python/_r9_witness_structure.py (witness
 296/296, Pcut-constant 0/296 REFUTED with diagnosed root cause).
+
+ROUTE 1 ITEM (3) -- candidate (i) (the self-referential F) INVESTIGATED
+empirically for the first time (Round 8 flagged it as "UNTESTED"); its CORE
+sub-fact is STRONGLY SUPPORTED, not refuted -- but item (3) as a whole is
+NOT closed this round (no Isabelle written for it; see what remains below).
+
+python/_r9_item3_selfref.py tests two sub-facts of candidate (i)'s hoped-for
+self-referential F (F built purely from a pairseq X's OWN trailing block,
+not referencing the original seed M or the outer index q):
+
+  (a) SHIFT LAW: B(q) = Shift_row0(d0, B(q-1)) for q>=1, i.e. two
+  CONSECUTIVE deepen-blocks (m_8_5_deepen_block_explicit's B(q)/B(q-1)) are
+  the SAME list with row-0 (only) shifted by the CONSTANT d0 (row-1
+  unchanged) -- follows almost by inspection of the explicit formula (both
+  B(q)[i] and B(q-1)[i] read entry M 0 (j0+i) plus q*d0 vs (q-1)*d0) but had
+  never been stated/tested as its own fact. CONFIRMED 1575/1575, ZERO
+  counterexamples (across q in {1..5}, the same reduced-seed harness as
+  Round 9's other scripts).
+
+  (b) SELF-RECOVERABLE d0: d0 itself (needed to apply the shift law) can be
+  READ OFF X=M[q] alone (q>=2, no dependency on the original M or on
+  externally-computed j0/j1) by comparing X's OWN last two period-blocks:
+  d0 = entry X 0 (Lng X - 1) - entry X 0 (Lng X - 1 - w) (w = the period
+  length -- STILL computed from the original M in this test, see the gap
+  below). CONFIRMED 1221/1221, ZERO counterexamples.
+
+  Both together mean: GIVEN the period boundary w, the row-0-shift-by-d0
+  content of "the next block equals the previous block shifted" is a
+  genuine, verified, purely-structural (regime-free beyond the existing
+  hasParent/condV setup) fact -- not a coincidence of small examples. This
+  is a POSITIVE result for candidate (i): it directly supplies the "shifted
+  copy of X's own last block" ingredient the Round 8 write-up's candidate
+  (i) sketch asked for.
+
+  WHAT STILL BLOCKS assembling candidate (i) into a literal q-independent F
+  (not attempted this round -- this is exactly where a future round should
+  pick up, do NOT re-verify (a)/(b) again, they are now settled): (1) the
+  period width w itself needs to be recoverable from X ALONE (not from the
+  original M's j0/j1) for F to be truly self-referential -- likely via
+  w = Pcut X (m_8_5_Pcut_append_block, ALREADY PROVEN, establishes
+  Pcut(drop j0 (M[Suc q])) = w under a nocut hypothesis; this round did NOT
+  test whether Pcut X itself -- with NO drop/j0 offset, applied directly to
+  X=M[q] -- recovers w, which is the literal self-referential form
+  candidate (i) needs); (2) even granting (a)+(b)+a self-referential w, one
+  still needs to prove F(M[q]) = M[Suc q] as a literal equation (this round
+  only checked the BLOCK matches, not that appending it via F's own
+  definition reconstructs the exact next iterate -- should follow directly
+  from (a)/(b)/(1) plus m_8_5_deepen_block_explicit, but was not written
+  out); (3) the DEEPER content -- F/C commutation (F(Cw)=C(Fw)) and
+  Inv-persistence, which m_8_5_keystone_allq's schema actually needs to
+  conclude the keystone at every q -- is a SEPARATE, likely harder question
+  that this round's block-shift-law finding does NOT address (recall
+  b3_markstep_skeleton's own text already flags an "assembly" step as
+  "otasm-empirical 47/47, NOT mechanically reducible to the geometry" --
+  the self-referential block LAW found this round may still not be enough
+  to discharge that).
+
+  Candidate (ii) (bypass keystone_allq, prove the markstep directly at
+  every q via m_8_5_markstep_of_Trans_keystone's own per-q hypothesis) was
+  NOT attempted this round either; Round 8's own tradeoff analysis (sidesteps
+  the q-independent-F puzzle but reintroduces the "prove at every q
+  separately" cost) still stands unchanged.
+
+Re-run instructions for Round 9 (cont'd): python/_r9_item3_selfref.py
+(shift law 1575/1575, self-d0 1221/1221, both zero counterexamples).
 """
