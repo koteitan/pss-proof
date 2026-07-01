@@ -6787,6 +6787,89 @@ proof -
 qed
 
 
+text \<open>§8.5 ROUND 8, Route 2 (\<open>nocut\<close> investigation) — a SECOND general (regime-free)
+  structural fact: \<open>le0\<close> is "ancestor-linear" — any two \<open>le0\<close>-ancestors of the SAME index
+  are themselves \<open>le0\<close>-comparable.  EMPIRICALLY confirmed exhaustively
+  (\<open>python/_r8_linearity.py\<close>: \<open>3\,773\,682\<close> common-ancestor pairs, lengths up to \<open>6\<close>/values
+  \<open>0..2\<close>, ZERO failures; independently re-confirmed \<open>6\,360\,000\<close> pairs at lengths up to
+  \<open>5\<close>/values \<open>0..3\<close>).  PROVED by strong induction on the shared descendant \<open>c\<close>: if
+  \<open>a=c\<close> or \<open>b=c\<close> the claim is immediate; otherwise BOTH \<open>a\<close> and \<open>b\<close> reach \<open>c\<close> via a
+  nontrivial chain, so each has a well-defined LAST edge into \<open>c\<close> (extracted via the
+  auxiliary \<open>aux\<close>, a direct \<open>rtranclp_induct\<close>), and by the ALREADY-PROVEN, frozen
+  @{thm [source] idxsum_parent0_unique} (uniqueness of a DIRECT row-0 parent of any single
+  target) those two last edges share the SAME penultimate node \<open>p\<close> — reducing the
+  claim at \<open>c\<close> to the SAME claim at the STRICTLY SMALLER \<open>p\<close>, closed by the IH.  This is
+  the key structural fact behind the "PJ-interior-reachability" \<open>nocut\<close> route: if some
+  \<open>j < Pcut N\<close> also reached the new column's row-0 parent \<open>par0\<close>, THIS lemma would force
+  \<open>j\<close> and \<open>Pcut N\<close> (both ancestors of \<open>par0\<close>, per \<open>m_8_5_Pcut_cut_witness\<close> (defined LATER
+  in this file)'s own construction) to be \<open>le0\<close>-comparable — and since \<open>j < Pcut N\<close> rules
+  out \<open>le0 N (Pcut
+  N) j\<close> (index-monotonicity, @{thm [source] nextrel0_rtrancl_mono}), it would force
+  \<open>le0 N j (Pcut N)\<close>, which composed with \<open>Pcut N\<close>'s own trivial witness \<open>le0 N (Pcut N)
+  (Lng N-1)\<close> gives \<open>le0 N j (Lng N-1)\<close> — CONTRADICTING \<open>Pcut N\<close>'s minimality (it is the
+  LEAST such \<open>j\<close>, \<open>Pcut_def\<close>).  Wiring this chain into a full \<open>nocut\<close> proof (it needs,
+  additionally, that \<open>j\<close> reaching the NEW last index in \<open>N@[col]\<close> forces \<open>j\<close> to reach
+  \<open>par0\<close> specifically — the SAME "last-edge-is-unique" argument applied ONE level up, at
+  the appended-column target rather than at \<open>c\<close> — not yet assembled) is left for a future
+  round; see the residual summary.\<close>
+
+lemma m_8_5_nextrel0_rtrancl_last_step:
+  fixes M :: pairseq and x y :: nat
+  assumes h: "(nextrel0 M)\<^sup>*\<^sup>* x y"
+  shows "x \<noteq> y \<Longrightarrow> \<exists>p. (nextrel0 M)\<^sup>*\<^sup>* x p \<and> nextrel0 M p y"
+  using h
+proof (induction rule: rtranclp_induct)
+  case base thus ?case by simp
+next
+  case (step y z) thus ?case by auto
+qed
+
+lemma m_8_5_le0_ancestor_linear:
+  fixes M :: pairseq and a b c :: nat
+  assumes ha: "le0 M a c" and hb: "le0 M b c"
+  shows "le0 M a b \<or> le0 M b a"
+  using ha hb
+proof (induction c arbitrary: a b rule: less_induct)
+  case (less c)
+  have ha': "le0 M a c" using less.prems by simp
+  have hb': "le0 M b c" using less.prems by simp
+  show ?case
+  proof (cases "a = c")
+    case True
+    thus ?thesis using hb' by simp
+  next
+    case False
+    hence ane: "a \<noteq> c" by simp
+    show ?thesis
+    proof (cases "b = c")
+      case True
+      thus ?thesis using ha' by simp
+    next
+      case False
+      hence bne: "b \<noteq> c" by simp
+      have rta: "(nextrel0 M)\<^sup>*\<^sup>* a c" using ha' by (simp add: le0_def)
+      have rtb: "(nextrel0 M)\<^sup>*\<^sup>* b c" using hb' by (simp add: le0_def)
+      obtain p where hap: "(nextrel0 M)\<^sup>*\<^sup>* a p" and hpc: "nextrel0 M p c"
+        using m_8_5_nextrel0_rtrancl_last_step[OF rta ane] by blast
+      obtain q where hbq: "(nextrel0 M)\<^sup>*\<^sup>* b q" and hqc: "nextrel0 M q c"
+        using m_8_5_nextrel0_rtrancl_last_step[OF rtb bne] by blast
+      have pRc: "nextR M 0 p c" using hpc by (auto simp: nextR_def)
+      have qRc: "nextR M 0 q c" using hqc by (auto simp: nextR_def)
+      have peq: "p = q" using idxsum_parent0_unique[OF pRc qRc] .
+      have plc: "p < c" using hpc by (auto simp: nextrel0_def)
+      have apLt: "a < Lng M" using ha' by (simp add: le0_def)
+      have pLt: "p < Lng M" using hpc by (auto simp: nextrel0_def)
+      have le0ap: "le0 M a p" using hap apLt pLt by (simp add: le0_def)
+      have bqLt: "b < Lng M" using hb' by (simp add: le0_def)
+      have qLt: "q < Lng M" using hqc by (auto simp: nextrel0_def)
+      have le0bq: "le0 M b q" using hbq bqLt qLt by (simp add: le0_def)
+      have le0bp: "le0 M b p" using le0bq peq by simp
+      show ?thesis using less.IH[OF plc le0ap le0bp] .
+    qed
+  qed
+qed
+
+
 text \<open>§8.5 R2a ROOT CAUSE, FORMALIZED (new, this round) — the Round-3 empirical finding
   ("genuine period blocks \<open>B\<close> frequently OPEN with a \<open>(0,0)\<close>/branch-reset column, after which
   \<open>leR\<close> fails because the new column starts a FRESH \<open>multiT\<close> branch sibling") is now a
@@ -7265,6 +7348,182 @@ proof -
   have final: "le0 (N @ [col]) (Pcut N) (Lng (N @ [col]) - 1)"
     by (rule m_8_5_marked_le0_step[OF le0Ncut par0LtN nrel])
   show ?thesis using final by (simp add: leR_def)
+qed
+
+
+text \<open>§8.5 ROUND 8, Route 2 — closing the OTHER half (\<open>nocut\<close>) of
+  @{thm [source] m_8_5_Pcut_of_le0_cut}, using the ancestor-linearity tool
+  @{thm [source] m_8_5_le0_ancestor_linear} exactly as sketched in that lemma's own text
+  block: if some \<open>0<j<Pcut N\<close> ALSO reached the new column's row-0 parent \<open>par0\<close> (the
+  SAME \<open>par0\<close> constructed by @{thm [source] m_8_5_Pcut_cut_witness}), ancestor-linearity
+  forces \<open>j\<close> and \<open>Pcut N\<close> to be \<open>le0\<close>-comparable; index-monotonicity
+  (@{thm [source] nextrel0_rtrancl_mono}) rules out \<open>le0 N (Pcut N) j\<close> (since \<open>j<Pcut N\<close>),
+  so \<open>le0 N j (Pcut N)\<close> must hold, which composed with \<open>Pcut N\<close>'s own trivial
+  end-of-\<open>PJ\<close> witness gives \<open>le0 N j (Lng N-1)\<close> — CONTRADICTING \<open>Pcut N\<close>'s own minimality
+  (\<open>Pcut_def\<close>'s \<open>LEAST\<close>).  This closes \<open>m_8_5_Pcut_of_le0_cut\<close>'s \<open>nocut\<close> hypothesis
+  completely (both \<open>cut\<close> and \<open>nocut\<close> are now PROVEN, not merely named/empirical), so
+  \<open>Pcut (N@[col]) = Pcut N\<close> ("Pcut freezes") is now a fully derived THEOREM under the
+  SAME named witness \<open>entry N 0 (Pcut N) < fst col\<close> — see \<open>m_8_5_Pcut_freezes\<close> (defined
+  LATER in this file).\<close>
+
+lemma m_8_5_Pcut_nocut_witness:
+  fixes N :: pairseq and col :: "nat \<times> nat" and j :: nat
+  assumes NR: "N \<in> RT_PS" and muN: "multiT N"
+    and strict: "entry N 0 (Pcut N) < fst col"
+    and jpos: "0 < j" and jlt: "j < Pcut N"
+  shows "\<not> leR (N @ [col]) 0 j (Lng (N @ [col]) - 1)"
+proof
+  assume contra: "leR (N @ [col]) 0 j (Lng (N @ [col]) - 1)"
+  have NT: "N \<in> T_PS" using NR by (simp add: RT_PS_def)
+  have Nne: "N \<noteq> []" using NT by (simp add: T_PS_def)
+  have L: "1 < Lng N" by (rule multiT_imp_Lng_gt1[OF NT muN])
+  have cut: "0 < Pcut N \<and> Pcut N \<le> Lng N - 1" using Pcut_le[OF L] by simp
+  have NcurT: "N @ [col] \<in> T_PS" using Nne by (simp add: T_PS_def)
+  have LngNcur: "Lng (N @ [col]) = Lng N + 1" by simp
+  have j0lt: "Pcut N < Lng (N @ [col]) - 1" using cut L LngNcur by linarith
+  have j1L: "Lng (N @ [col]) - 1 < Lng (N @ [col])" using j0lt by simp
+  have cutLt: "Pcut N < Lng N" using cut L by linarith
+  have idxP: "(N @ [col]) ! (Pcut N) = N ! (Pcut N)" using cutLt by (simp add: nth_append)
+  have e0a: "entry (N @ [col]) 0 (Pcut N) = entry N 0 (Pcut N)" using idxP by (simp add: entry_def)
+  have idxlast: "(N @ [col]) ! (Lng (N @ [col]) - 1) = col" by (simp add: nth_append)
+  have e0b: "entry (N @ [col]) 0 (Lng (N @ [col]) - 1) = fst col" using idxlast by (simp add: entry_def)
+  have strict': "entry (N @ [col]) 0 (Pcut N) < entry (N @ [col]) 0 (Lng (N @ [col]) - 1)"
+    using strict e0a e0b by simp
+  obtain par0 where par0w: "Pcut N \<le> par0 \<and> par0 < Lng (N @ [col]) - 1
+                              \<and> nextR (N @ [col]) 0 par0 (Lng (N @ [col]) - 1)"
+    using m_5_1_parent_exists_1[OF NcurT j0lt j1L strict'] by blast
+  have par0lo: "Pcut N \<le> par0" using par0w by simp
+  have par0hi: "par0 < Lng (N @ [col]) - 1" using par0w by simp
+  have nR: "nextR (N @ [col]) 0 par0 (Lng (N @ [col]) - 1)" using par0w by simp
+  have par0LtN: "par0 < Lng N" using par0hi LngNcur by simp
+  define PJ where "PJ = drop (Pcut N) N"
+  have LngPJ: "Lng PJ = Lng N - Pcut N" using PJ_def by simp
+  have r_lt: "par0 - Pcut N < Lng PJ" using par0LtN par0lo LngPJ by simp
+  have Pne: "P N \<noteq> []" by (rule P_nonempty)
+  have idxlt: "Lng (P N) - 1 < Lng (P N)" using Pne by (cases "P N") auto
+  have PJeq: "P N ! (Lng (P N) - 1) = PJ"
+    using trans_multiT_last_component(1)[OF NT muN] PJ_def by simp
+  have PJmem: "PJ \<in> set (P N)" using PJeq idxlt nth_mem by metis
+  have PJnonmulti: "zeroT PJ \<or> monoT PJ"
+    using m_6_2_P_components_1[OF NT] PJmem by blast
+  have LPJpos: "0 < Lng PJ" using LngPJ cut L by linarith
+  have PJT: "PJ \<in> T_PS" using LPJpos by (simp add: T_PS_def)
+  have shiftEq: "Pcut N + (par0 - Pcut N) = par0" using par0lo by simp
+  have b1: "(0::nat) < Lng N - Pcut N" using LPJpos LngPJ by simp
+  \<comment> \<open>Pcut N reaches par0 (same construction as m_8_5_Pcut_cut_witness)\<close>
+  have le0Ncut: "le0 N (Pcut N) par0"
+  proof (cases "zeroT PJ")
+    case True
+    have len1: "Lng PJ = 1" using True by (simp add: zeroT_def)
+    have "par0 - Pcut N = 0" using len1 r_lt by simp
+    hence "par0 = Pcut N" using shiftEq by simp
+    thus ?thesis using cutLt by (simp add: le0_def)
+  next
+    case False
+    hence PJmono: "monoT PJ" using PJnonmulti by simp
+    have le0PJ: "le0 PJ 0 (par0 - Pcut N)"
+      using m_8_5_monoT_le0_all[OF PJT PJmono] r_lt by blast
+    have b2: "par0 - Pcut N < Lng N - Pcut N" using r_lt LngPJ by simp
+    have shift: "le0 (drop (Pcut N) N) 0 (par0 - Pcut N)
+              = le0 N (Pcut N + 0) (Pcut N + (par0 - Pcut N))"
+      by (rule poper_le0_drop[OF b1 b2])
+    thus ?thesis using le0PJ PJ_def shiftEq by simp
+  qed
+  \<comment> \<open>Pcut N also reaches N's OWN last index (Pcut's own defining witness, via PJ's
+     whole-length reachability rather than just up to par0)\<close>
+  have le0PJend: "le0 PJ 0 (Lng PJ - 1)"
+  proof (cases "zeroT PJ")
+    case True
+    have len1: "Lng PJ = 1" using True by (simp add: zeroT_def)
+    thus ?thesis using LPJpos by (simp add: le0_def)
+  next
+    case False
+    hence PJmono: "monoT PJ" using PJnonmulti by simp
+    thus ?thesis using LPJpos by (simp add: monoT_def leR_def)
+  qed
+  have b3: "Lng PJ - 1 < Lng N - Pcut N" using LngPJ LPJpos by simp
+  have shift2: "le0 (drop (Pcut N) N) 0 (Lng PJ - 1)
+            = le0 N (Pcut N + 0) (Pcut N + (Lng PJ - 1))"
+    by (rule poper_le0_drop[OF b1 b3])
+  have PcutPlusEq: "Pcut N + (Lng PJ - 1) = Lng N - 1" using LngPJ cut by linarith
+  have le0NcutEnd: "le0 N (Pcut N) (Lng N - 1)"
+    using le0PJend PJ_def shift2 PcutPlusEq by simp
+  \<comment> \<open>the ASSUMED contradiction: j reaches the new last index, hence reaches par0\<close>
+  have rtj: "(nextrel0 (N @ [col]))\<^sup>*\<^sup>* j (Lng (N @ [col]) - 1)"
+    using contra by (simp add: leR_def le0_def)
+  have jNeqLast: "j \<noteq> Lng (N @ [col]) - 1"
+  proof -
+    have "j < Lng N" using jlt cut by linarith
+    moreover have "Lng (N @ [col]) - 1 = Lng N" using LngNcur by simp
+    ultimately show ?thesis by simp
+  qed
+  obtain p' where hjp: "(nextrel0 (N @ [col]))\<^sup>*\<^sup>* j p'"
+              and hp'last: "nextrel0 (N @ [col]) p' (Lng (N @ [col]) - 1)"
+    using m_8_5_nextrel0_rtrancl_last_step[OF rtj jNeqLast] by blast
+  have p'Rc: "nextR (N @ [col]) 0 p' (Lng (N @ [col]) - 1)" using hp'last by (simp add: nextR_def)
+  have p'eq: "p' = par0" using idxsum_parent0_unique[OF p'Rc nR] .
+  have jLtX: "j < Lng (N @ [col])" using jlt cut cutLt by simp
+  have par0LtX: "par0 < Lng (N @ [col])" using par0LtN by simp
+  have le0Xjpar0: "le0 (N @ [col]) j par0" using hjp p'eq jLtX par0LtX by (simp add: le0_def)
+  \<comment> \<open>transfer down to N over the shared prefix\<close>
+  have agree2: "\<And>xx. xx \<le> Lng N - 1 \<Longrightarrow> (N @ [col]) ! xx = N ! xx"
+  proof -
+    fix xx assume "xx \<le> Lng N - 1"
+    hence "xx < Lng N" using cutLt L by linarith
+    thus "(N @ [col]) ! xx = N ! xx" by (simp add: nth_append)
+  qed
+  have cX: "Lng N - 1 < Lng (N @ [col])" using L by simp
+  have cN: "Lng N - 1 < Lng N" using L by simp
+  have jle: "j \<le> Lng N - 1" using jlt cut by simp
+  have par0le: "par0 \<le> Lng N - 1" using par0hi LngNcur by simp
+  have le0Njpar0: "le0 N j par0"
+    by (rule le0_prefix_agree[OF agree2 cX cN jle par0le le0Xjpar0])
+  \<comment> \<open>ancestor-linearity + Pcut N's minimality give the contradiction\<close>
+  have lin: "le0 N j (Pcut N) \<or> le0 N (Pcut N) j"
+    by (rule m_8_5_le0_ancestor_linear[OF le0Njpar0 le0Ncut])
+  have notPj: "\<not> le0 N (Pcut N) j"
+  proof
+    assume h: "le0 N (Pcut N) j"
+    have "(nextrel0 N)\<^sup>*\<^sup>* (Pcut N) j" using h by (simp add: le0_def)
+    hence "Pcut N \<le> j" by (rule nextrel0_rtrancl_mono)
+    thus False using jlt by simp
+  qed
+  have le0Njcut: "le0 N j (Pcut N)" using lin notPj by blast
+  have final: "le0 N j (Lng N - 1)" using le0_trans[OF le0Njcut le0NcutEnd] .
+  have finalR: "leR N 0 j (Lng N - 1)" using final by (simp add: leR_def)
+  have jwit: "0 < j \<and> j \<le> Lng N - 1 \<and> leR N 0 j (Lng N - 1)"
+    using jpos jlt cut finalR by simp
+  have jltLeast: "j < (LEAST j'. 0 < j' \<and> j' \<le> Lng N - 1 \<and> leR N 0 j' (Lng N - 1))"
+    using jlt by (simp add: Pcut_def)
+  have "\<not> (0 < j \<and> j \<le> Lng N - 1 \<and> leR N 0 j (Lng N - 1))"
+    using jltLeast by (rule not_less_Least)
+  thus False using jwit by simp
+qed
+
+text \<open>§8.5 ROUND 8 — ASSEMBLY: with both halves of @{thm [source] m_8_5_Pcut_of_le0_cut}
+  now proven (@{thm [source] m_8_5_Pcut_cut_witness} for \<open>cut\<close>,
+  @{thm [source] m_8_5_Pcut_nocut_witness} for \<open>nocut\<close>), "Pcut freezes" -- Round 7's
+  identified target -- is a clean corollary: appending a column past the SAME named
+  witness \<open>entry N 0 (Pcut N) < fst col\<close> that the trunk-stuck anchor route already
+  carries leaves \<open>Pcut\<close> UNCHANGED.\<close>
+
+lemma m_8_5_Pcut_freezes:
+  fixes N :: pairseq and col :: "nat \<times> nat"
+  assumes NR: "N \<in> RT_PS" and muN: "multiT N"
+    and strict: "entry N 0 (Pcut N) < fst col"
+  shows "Pcut (N @ [col]) = Pcut N"
+proof -
+  have NT: "N \<in> T_PS" using NR by (simp add: RT_PS_def)
+  have L: "1 < Lng N" by (rule multiT_imp_Lng_gt1[OF NT muN])
+  have cut: "0 < Pcut N \<and> Pcut N \<le> Lng N - 1" using Pcut_le[OF L] by simp
+  have LngNcur: "Lng (N @ [col]) = Lng N + 1" by simp
+  have wle: "Pcut N \<le> Lng (N @ [col]) - 1" using cut LngNcur by linarith
+  have hcut: "leR (N @ [col]) 0 (Pcut N) (Lng (N @ [col]) - 1)"
+    by (rule m_8_5_Pcut_cut_witness[OF NR muN strict])
+  have hnocut: "\<And>j. 0 < j \<Longrightarrow> j < Pcut N \<Longrightarrow> \<not> leR (N @ [col]) 0 j (Lng (N @ [col]) - 1)"
+    using m_8_5_Pcut_nocut_witness[OF NR muN strict] by blast
+  show ?thesis
+    by (rule m_8_5_Pcut_of_le0_cut[OF cut[THEN conjunct1] wle hcut hnocut])
 qed
 
 
