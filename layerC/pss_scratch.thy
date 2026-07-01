@@ -7828,6 +7828,66 @@ proof -
 qed
 
 
+text \<open>§8.5 ROUND 13, Route 2 — the INDEX-0 sufficient condition for the
+  trunk-stuck witness, giving a NON-CIRCULAR discharge of
+  @{thm [source] m_8_5_Pcut_nonreset_witness}'s \<open>hasParent\<close> hypothesis.
+
+  @{thm [source] m_8_5_Pcut_nonreset_witness} needs \<open>hasParent (N@[col]) 0
+  (Lng(N@[col])-1)\<close>, which is LOGICALLY EQUIVALENT to the witness itself
+  (@{thm [source] m_8_5_hasParent0_of_pcut_entry_lt} is the converse) — so
+  discharging it directly from the regime would be circular.  This lemma breaks
+  the circle by supplying a STRICTLY STRONGER, primitive, LOCAL sufficient
+  condition: the appended column's row-0 value strictly exceeds the sequence's
+  FIRST row-0 value, \<open>entry N 0 0 < fst col\<close>.  That makes index \<open>0\<close> itself
+  witness \<open>\<exists>j < last. entry (N@[col]) 0 j < entry (N@[col]) 0 last\<close>, which the
+  ALREADY-PROVEN, generic @{thm [source] m_8_5_hasParent0_of_entry0_lt}
+  (index-0 seeded, via @{thm [source] m_5_1_parent_exists_1} +
+  @{thm [source] idxsum_parent0_unique}) turns into \<open>hasParent\<close>.
+
+  EMPIRICAL COVERAGE (exact fractions, genuine keystone regime — trunk-stuck,
+  NON-reset deepen-block columns, matching the harnesses'
+  \<open>condV\<close>/\<open>hasParent\<close>/\<open>nextrel0\<close>/\<open>jm1>0\<close> filters, \<open>python/_r13_hasparent_witness.py\<close>):
+  the TRUE fact @{thm [source] m_8_5_Pcut_nonreset_witness} needs,
+  \<open>hasParent = (\<exists> earlier smaller row-0)\<close>, holds 100% on every seed tested
+  (49/49 seed 555, 37/37 seed 321, 29/29 seed 7, 74/74 seed 2024) and equals the
+  witness identically (0 mismatches).  This index-\<open>0\<close> SHORTCUT
+  \<open>entry N 0 0 < fst col\<close> is STRICTLY STRONGER: it covers only ~80% of the
+  broad regime (41/49, 29/37, 21/29 on those same seeds; the earlier 74/74 on
+  seed 2024 was an unrepresentatively narrow sample where index \<open>0\<close> happened to
+  be the global row-0 argmin every time).  So this lemma SOUNDLY discharges the
+  ~80% of non-reset columns whose row-0 minimum sits at index \<open>0\<close>; the remaining
+  ~20% have their row-0 minimum at a later index and still satisfy \<open>hasParent\<close>,
+  but are NOT covered here.  The residual obligation to close the FULL non-reset
+  case is the (non-circular) general fact \<open>\<exists> j < Lng(N@[col])-1. entry (N@[col])
+  0 j < fst col\<close> (the deepen column is never a strict new GLOBAL row-0
+  left-minimum) — of which \<open>entry N 0 0 < fst col\<close> is the index-\<open>0\<close> instance.\<close>
+
+lemma m_8_5_Pcut_witness_of_entry0:
+  fixes N :: pairseq and col :: "nat \<times> nat"
+  assumes NR: "N \<in> RT_PS" and muN: "multiT N"
+    and e0: "entry N 0 0 < fst col"
+  shows "entry N 0 (Pcut N) < fst col"
+proof -
+  have NT: "N \<in> T_PS" using NR by (simp add: RT_PS_def)
+  have Nne: "N \<noteq> []" using NT by (simp add: T_PS_def)
+  have L: "1 < Lng N" by (rule multiT_imp_Lng_gt1[OF NT muN])
+  have L0: "0 < Lng N" using L by linarith
+  have NcurT: "N @ [col] \<in> T_PS" using Nne by (simp add: T_PS_def)
+  have LngNcur: "Lng (N @ [col]) = Lng N + 1" by simp
+  have j0lt: "0 < Lng (N @ [col]) - 1" using L LngNcur by linarith
+  have idx0: "(N @ [col]) ! 0 = N ! 0" using L0 by (simp add: nth_append)
+  have e0a: "entry (N @ [col]) 0 0 = entry N 0 0" using idx0 by (simp add: entry_def)
+  have idxlast: "(N @ [col]) ! (Lng (N @ [col]) - 1) = col" by (simp add: nth_append)
+  have e0b: "entry (N @ [col]) 0 (Lng (N @ [col]) - 1) = fst col"
+    using idxlast by (simp add: entry_def)
+  have strict': "entry (N @ [col]) 0 0 < entry (N @ [col]) 0 (Lng (N @ [col]) - 1)"
+    using e0 e0a e0b by simp
+  have hp: "hasParent (N @ [col]) 0 (Lng (N @ [col]) - 1)"
+    by (rule m_8_5_hasParent0_of_entry0_lt[OF NcurT j0lt strict'])
+  show ?thesis by (rule m_8_5_Pcut_nonreset_witness[OF NR muN hp])
+qed
+
+
 lemma m_8_5_anchor_col_trunkstuck_regime2:
   fixes N :: pairseq and col :: "nat \<times> nat" and n0 :: nat
   assumes NR: "N \<in> RT_PS"
