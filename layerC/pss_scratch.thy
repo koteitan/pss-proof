@@ -6602,6 +6602,65 @@ proof -
 qed
 
 
+text \<open>§8.5 ROUND 7 (B) — THE END-TO-END WIRING that the Round 6b note flagged as
+  "the genuinely remaining wiring, NOT attempted this round" between the anchor chain
+  (@{thm [source] m_8_5_anchor_fold}, which supplies raw \<open>scb_decomp\<close> existence for
+  every column) and the Mark-level netfold bridge (@{thm [source]
+  m_8_5_Mark_netfold_condV}, which needs that existence packaged as a \<open>MarkedB\<close>
+  membership \<open>hostMk\<close>).  This is EXACTLY the mechanical step the residual summary's
+  Round 6b (B) note named: \<open>m_8_5_anchor_fold\<close>'s conclusion \<open>scb_decomp (Mark host_m n0)
+  sx (flatBT (transC1 host_{m+1})) bx\<close> IS \<open>(Mark host_m n0, transC1 host_{m+1}) \<in>
+  MarkedB\<close> by \<open>MarkedB_def\<close> (an \<open>\<exists>\<close>-unfold, no new mathematics) — so feeding
+  \<open>m_8_5_anchor_fold\<close>'s R2a/R2b/R2c hypotheses (\<open>colMarked0\<close>/\<open>colMarkedJ\<close>/\<open>colMono\<close>/
+  \<open>colRT\<close>, still the genuinely open per-column content for the NON-trunk-stuck case)
+  straight into \<open>m_8_5_Mark_netfold_condV\<close> gives a single lemma computing \<open>Mark (Y@B)
+  n0\<close> as a concrete \<open>fold\<close>, with ALL of its open content now living in named,
+  already-isolated hypotheses (the \<open>Trans\<close>-side \<open>hostR\<close>/\<open>hostP\<close>/\<open>hostJ1\<close>/\<open>hostT1\<close>
+  membership facts — reusable verbatim from a genuine \<open>ST_PS\<close> source exactly as
+  @{thm [source] m_8_5_Trans_netfold_surgery} already does — plus the R2a/R2b/R2c
+  triple).  This does NOT close R2a's \<open>leR\<close> gap (still open, see the
+  \<open>m_8_5_anchor_col_trunkstuck_regime2\<close> lemma defined LATER in this file for the
+  trunk-stuck sub-case instead), nor the outer q-level driver (R1) — it closes exactly
+  wiring item (1) from the Round 6b (B) note, nothing more.\<close>
+
+lemma m_8_5_Mark_netfold_via_anchor:
+  fixes Y B :: pairseq and n0 :: nat
+  assumes hostR: "\<And>m. m < Lng B \<Longrightarrow> (Y @ take m B) @ [B ! m] \<in> RT_PS"
+    and hostP: "\<And>m. m < Lng B \<Longrightarrow> (Y @ take m B) @ [B ! m] \<in> PT_PS"
+    and hostJ1: "\<And>m. m < Lng B \<Longrightarrow> transJ1 ((Y @ take m B) @ [B ! m]) > 0"
+    and hostT1: "\<And>m. m < Lng B \<Longrightarrow> transT1 ((Y @ take m B) @ [B ! m]) \<noteq> 0\<^sub>B"
+    and hostN0: "\<And>m. m < Lng B \<Longrightarrow> n0 < Lng ((Y @ take m B) @ [B ! m]) - 1"
+    and colRT: "\<And>m. m < Lng B \<Longrightarrow> (Y @ take m B) \<in> RT_PS"
+    and colMarked0: "\<And>m. m < Lng B \<Longrightarrow> (Y @ take m B, n0) \<in> Marked"
+    and colMarkedJ: "\<And>m. m < Lng B \<Longrightarrow>
+                       (Y @ take m B, transJm1 (Y @ take (Suc m) B)) \<in> Marked"
+    and colMono: "\<And>m. m < Lng B \<Longrightarrow> n0 \<le> transJm1 (Y @ take (Suc m) B)"
+  shows "Mark (Y @ B) n0
+       = fold (\<lambda>m acc. scbSubst (transC1 ((Y @ take m B) @ [B ! m]))
+                                 (transC2 ((Y @ take m B) @ [B ! m])) acc)
+              [0..<Lng B] (Mark Y n0)"
+proof -
+  have anchor: "\<And>m. m < Lng B \<Longrightarrow>
+      \<exists>sx bx. scb_decomp (Mark (Y @ take m B) n0) sx
+                (flatBT (transC1 (Y @ take (Suc m) B))) bx"
+    by (rule m_8_5_anchor_fold[OF colRT colMarked0 colMarkedJ colMono])
+  have hostMk: "\<And>m. m < Lng B \<Longrightarrow>
+      (Mark (Y @ take m B) n0, transC1 ((Y @ take m B) @ [B ! m])) \<in> MarkedB"
+  proof -
+    fix m assume mw: "m < Lng B"
+    have eq: "Y @ take (Suc m) B = (Y @ take m B) @ [B ! m]"
+      using mw by (simp add: take_Suc_conv_app_nth)
+    obtain sx bx where dx: "scb_decomp (Mark (Y @ take m B) n0) sx
+                (flatBT (transC1 (Y @ take (Suc m) B))) bx"
+      using anchor[OF mw] by blast
+    show "(Mark (Y @ take m B) n0, transC1 ((Y @ take m B) @ [B ! m])) \<in> MarkedB"
+      using dx eq unfolding MarkedB_def by auto
+  qed
+  show ?thesis
+    by (rule m_8_5_Mark_netfold_condV[OF hostR hostP hostJ1 hostT1 hostN0 hostMk])
+qed
+
+
 text \<open>§8.5 R2a SHARPENING (new, this round) — \<open>(N,n\<^sub>0) \<in> Marked\<close> splits as
   \<open>adm N n\<^sub>0 \<and> leR N 0 n\<^sub>0 (Lng N - 1)\<close> (@{thm [source] Marked_def}); empirically
   (a dedicated harness, ~340 genuine fold-column instances across randomized
