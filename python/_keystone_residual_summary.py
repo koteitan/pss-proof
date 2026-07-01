@@ -1766,4 +1766,100 @@ python/_r12_pcut_eq_j0.py are kept as NEGATIVE-result records (the refuted
 "exhaustive-generator-only-reaches-u=0" sampling bug, and the refuted
 "Pcut(Mq)==j0" conjecture, respectively) -- do not re-run expecting a
 positive result from either.
+
+=====================================================================
+ROUND 13 (2026-07-02, this round; layerC/pss_scratch.thy, commits mirrored
+main/wt2 f733324 then 7d11d4c).  Attacks the Round-12 "NOT YET WIRED" note:
+turn the non-reset witness `entry N 0 (Pcut N) < fst col` into a
+regime-DERIVED fact rather than one gated on the circular `hasParent`
+hypothesis.
+=====================================================================
+
+THE CIRCULARITY (why the Round-12 "pure composition" framing was too
+optimistic): `m_8_5_Pcut_nonreset_witness` concludes the witness FROM
+`hasParent (N@[col]) 0 (Lng(N@[col])-1)`, but `m_8_5_hasParent0_of_pcut_entry_lt`
+proves the EXACT CONVERSE (witness => hasParent).  So hasParent and the witness
+are LOGICALLY EQUIVALENT (given RT_PS+multiT); discharging hasParent "from the
+regime" IS discharging the witness -- there is no free composition step.  The
+round's job was therefore to find a NON-circular, strictly-stronger sufficient
+condition and prove the reduction.
+
+THE REDUCTION TOOL (proven, green, sorry=0):
+  m_8_5_Pcut_witness_of_smaller_at:
+    `N in RT_PS ==> multiT N ==> c < Lng N ==> entry N 0 c < fst col
+       ==> entry N 0 (Pcut N) < fst col`.
+  Fully general: ANY interior index c whose row-0 value is below the appended
+  column's row-0 value seeds a row-0 parent for the new last index (via
+  m_5_1_parent_exists_1 + idxsum_parent0_unique = hasParent), hence the witness.
+  m_8_5_Pcut_witness_of_entry0 is the c=0 corollary.
+
+EMPIRICAL COVERAGE of the two concrete choices of c (genuine keystone regime:
+trunk-stuck, NON-reset deepen-block columns; harness filters
+condV/hasParent/nextrel0/jm1>0; the TRUE fact hasParent==witness held 100% on
+every seed -- 49/49 s555, 37/37 s321, 29/29 s7, 74/74 s2024,
+python/_r13_hasparent_witness.py):
+  - c = 0  (entry N 0 0 < fst col): only ~80% of the broad regime
+    (41/49, 29/37, 21/29; the 74/74 on seed 2024 was a NARROW-SAMPLE OUTLIER
+    where index 0 happened to be the row-0 argmin every time -- a direct
+    instance of the "held on a hand-picked sample, fails broadly" trap, caught
+    by re-seeding).  argmin category split (python/_r13_minpos.py): idx0 64/80,
+    trunk 12/80, Mq-block 4/80 -- i.e. ~20% have their row-0 min at a LATER
+    index.  So index-0 is SOUND but INCOMPLETE.
+  - c = Pcut(Mq)  (entry Mq 0 (Pcut Mq) < fst col): the BASE sequence's row-0
+    cut, a FIXED / m-independent index for the whole deepen block.  Holds
+    170/170 = 100.0% across 8 independent seeds (python/_r13_basecut.py:
+    s555/321/7/99/2024/13/42/1234, ZERO exceptions), and the value
+    entry Mq 0 (Pcut Mq) was a CONSTANT 1 over the whole maxv=2 sweep (never 0),
+    always < fst col.  This is the candidate for a FULL-coverage discharge.
+
+BLOCK-STRUCTURE CAVEAT (why the discharge was not fully closed this round):
+the genuine deepen block Mq -> M_{q+1} does NOT match the clean explicit forms.
+python/_r13_block_dichotomy.py (M-level hasParent(M,1,Lng M-1) filter) found
+0 blocks -> so m_8_5_deepen_block_explicit (the e1/idx1=1 form seeded at the
+BASE M) does not govern the regime.  python/_r13_operstep.py: at the Mq level
+idx1(Mq,last)=1 for all 50 blocks, BUT oper(Mq,1) != oper(M,q+1) (0/50) and the
+Mq-level explicit e1-block != B (0/50) -- so B is NOT the 1-step block of Mq
+either.  The block's row-0 profile is thus not yet captured by an available
+explicit lemma, which is exactly what a proof of the base-cut inequality needs.
+python/_r13_entry0_value.py: entry N 0 0 in {1,4} (NOT always 0), so the index-0
+comparison is genuinely nontrivial (it is not "0 < fst col").
+
+RESIDUAL SUB-FACT (the remaining obligation to close the non-reset witness for
+a TRUNK-STUCK column, now a CONCRETE, non-circular, m-independent-index
+inequality rather than the existential hasParent):
+  entry Mq 0 (Pcut Mq) < fst (B!m)   for each TRUNK-STUCK non-reset column B!m.
+Feed it into m_8_5_Pcut_witness_of_smaller_at at c = Pcut Mq (note
+Pcut Mq <= Lng Mq - 1 < Lng Mq <= Lng (Mq @ take m B), so the `c < Lng N`
+premise is automatic) to discharge the witness for that column.  100% empirical
+on the trunk-stuck columns (python/_r13_basecut.py: 170/170) but PROOF-OPEN.
+
+  IMPORTANT -- the inequality is GATED ON TRUNK-STUCKNESS, it does NOT hold for
+  the early (un-stuck) columns, so it CANNOT be reduced to a single m=0 base
+  case: `entry Mq 0 (Pcut Mq) < fst(B!0)` is FALSE 0/50 (python/_r13_monotone.py
+  + the bc0 check), and column m=0 is NEVER trunk-stuck (0/50).  Row-0 IS
+  non-decreasing across the block (fst(B!0) <= ... <= fst(B!wB-1), 50/50), but
+  that does NOT help because the smallest value fst(B!0) is the one that fails.
+  So proving the base-cut inequality still requires relating entry Mq 0
+  (Pcut Mq) to the trunk-stuck condition (jm1 < Pcut(Mq@take m B)) for the
+  specific column -- it is as tightly gated as the witness itself, only with a
+  FIXED left index (Pcut Mq) instead of the moving Pcut(Nprev).  Whether that
+  fixed-index reformulation is genuinely easier to prove than the original
+  witness is the open question for the next round.
+
+REFUTED-this-round (do not re-attempt as GENERAL, non-reset regime):
+  - "previous copy same offset" entry X 0 (last - Lng B) < fst col: 0/80.
+  - "copy-0 same offset" entry X 0 (parent Mq 1 last + m) < fst col: 0/80.
+  - "base-cut@0 + row-0 monotone collapse": base-cut@0 is 0/50, col 0 never
+    stuck 0/50 -- the base case fails, so monotonicity (50/50) is useless here.
+  - "Pcut freezes / is constant across a non-reset block": already refuted
+    Round 12; re-confirmed irrelevant (the witness never needs it).
+
+Re-run instructions for Round 13: python/_r13_hasparent_witness.py <secs> <seed>
+(hasParent/witness 100%, index-0 ~80%); python/_r13_minpos.py <secs> <seeds...>
+(argmin categories + candidate-index unions, pcMqw 80/80); python/_r13_basecut.py
+<secs> <seeds...> (base-cut on stuck cols 170/170=100%, V-distribution);
+python/_r13_monotone.py <secs> <seeds...> (row-0 monotone 50/50, col0-stuck 0/50,
+base-cut@0 0/50 -- the monotone-collapse refutation); python/_r13_operstep.py and
+python/_r13_block_dichotomy.py (block-structure NEGATIVE results -- explicit forms
+do NOT match the regime); python/_r13_entry0_value.py (entry N 0 0 in {1,4}, not 0).
 """

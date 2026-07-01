@@ -7852,17 +7852,21 @@ text \<open>§8.5 ROUND 13, Route 2 — the GENERAL "smaller-at-some-interior-in
     \<open>entry N 0 0 < fst col\<close> covers only ~80% (\<open>python/_r13_hasparent_witness.py\<close>:
     41/49, 29/37, 21/29; the earlier 74/74 on seed 2024 was a narrow-sample
     outlier where index 0 was the row-0 argmin every time).
-  \<^item> \<open>c = Pcut Mq\<close> (the BASE sequence's row-0 cut, FIXED / m-independent for the
-    whole deepen block): \<open>entry Mq 0 (Pcut Mq) < fst col\<close> covers
-    170/170 = 100% across 8 independent seeds (\<open>python/_r13_basecut.py\<close> /
-    \<open>python/_r13_minpos.py\<close>, ZERO exceptions; the value \<open>entry Mq 0 (Pcut Mq)\<close>
-    was a constant \<open>1\<close> over the whole \<open>maxv=2\<close> sweep, always \<open>< fst col\<close>).
-  So the residual obligation to CLOSE the full non-reset case is now the single,
-  non-circular, m-independent structural inequality \<open>entry Mq 0 (Pcut Mq) <
-  fst (B!m)\<close> (the base-cut row-0 value is below every non-reset deepen column's
-  row-0 value) — fed into THIS lemma at \<open>c = Pcut Mq\<close>.  That inequality is not
-  yet proven (it needs the deepen-block row-0 profile), but it is a clean,
-  bounded goal, NOT the circular \<open>hasParent\<close>.\<close>
+  \<^item> \<open>c = Pcut Mq\<close> (the BASE sequence's row-0 cut, a FIXED / m-independent index
+    for the whole deepen block): \<open>entry Mq 0 (Pcut Mq) < fst (B!m)\<close> covers
+    170/170 = 100% of the TRUNK-STUCK non-reset columns across 8 independent
+    seeds (\<open>python/_r13_basecut.py\<close> / \<open>python/_r13_minpos.py\<close>, ZERO exceptions).
+    NB it holds ONLY on the trunk-stuck columns: at the first column \<open>m = 0\<close> it
+    is FALSE (\<open>0/50\<close>, and column \<open>0\<close> is never trunk-stuck) — so it is gated on
+    trunk-stuckness, not a column-uniform fact, and cannot be collapsed to an
+    \<open>m = 0\<close> base case (row-0 IS non-decreasing across the block, 50/50, but the
+    smallest value \<open>fst (B!0)\<close> is the one that fails).
+  So the residual obligation to CLOSE the non-reset witness for a trunk-stuck
+  column is now the CONCRETE (fixed-left-index) inequality \<open>entry Mq 0 (Pcut Mq)
+  < fst (B!m)\<close> — fed into THIS lemma at \<open>c = Pcut Mq\<close>.  It is not yet proven
+  (it still needs the base-cut value related to the trunk-stuck condition), but
+  it is a bounded, non-circular goal, NOT the equivalent-to-the-conclusion
+  \<open>hasParent\<close>.\<close>
 
 lemma m_8_5_Pcut_witness_of_smaller_at:
   fixes N :: pairseq and col :: "nat \<times> nat" and c :: nat
