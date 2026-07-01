@@ -63,32 +63,28 @@
     - 🚨 補題（条件 (III)〜(V) の下での各種 scb分解）
     - 🚨 補題（条件 (III) か (IV) の下での各種 scb分解）
     - ✅ 補題（条件 (III) か (IV) の下での基本列の基本性質）〔`m_8_4_oper_basic_part1`(= `p_8_4_oper_basic`)〕
-  - 🚨 §8.5 条件 (V) の下での展開規則
+  - 🚨 §8.5 条件 (V) の下での展開規則 〔詳細→[[pss-85-surgery-masterkey]]〕
     - 🚨 命題（条件 (V) の下での $\textrm{Trans}$ と基本列の交換関係）
-      - ✅ reduction ladder〔step2/base2 → wrap/inj/body, `m_8_5_*_of_*`〕
-      - 🚨 surgery spine-descent〔§8 master key — green-modulo 1 露出 keystone(`m_8_5_markstep_of_Trans_keystone`、32e0a37@wt2-85surgery-green)〕
-        - ✅ (A) deepen SHAPE〔`m_8_5_appended_col_deepen` 他〕
-        - ✅ (B) wiring〔rnav engine/§7.4 Mark↔Trans 橋〕
-        - ✅ surgC⟸keystone 組立〔`m_8_5_surgC_instance_of_keystone`、umatch regime化済、残=Marked/RT plumbing〕
+      - ✅ reduction ladder〔`m_8_5_*_of_*`〕
+      - 🚨 surgery spine-descent〔keystone 経由〕
+        - ✅ (A) deepen SHAPE〔`m_8_5_appended_col_deepen`〕
+        - ✅ (B) wiring〔rnav engine/§7.4橋〕
+        - ✅ surgC⟸keystone組立〔`m_8_5_surgC_instance_of_keystone`〕
         - 🚨 (keystone) `bpHeadT(Trans(slice@B))=C(bpHeadT(Trans slice))`
-          - ✅ telescope（∀q→base q=2(R1)+fold-C可換(R2)）〔`m_8_5_keystone_allq`〕
-          - 🚨 R1: base q=2 単体〔transJm1定数化chain不成立確認(refuted route14,q=2非特異)、R2と同じanchor律速〕
-          - 🚨 R2: fold-C可換〔anchor→Marked nesting(R2a/R2b/R2c)に還元済(`m_8_5_anchor_col`/`_fold`)〕
-            - ✅ Mark-level netfold橋〔`m_8_5_Mark_netfold_condV`、scbSubst per-column再帰(`m_8_5_Mark_scbSubst_step`)を`fold`に接続〕
-            - ✅ anchor chain→netfold橋 hostMk配線〔`m_8_5_Mark_netfold_via_anchor`、MarkedB_def展開で機械的接続〕
-            - ✅ trunk-stuck混在fold対応〔`m_8_5_anchor_fold_mixed`、列ごとに`anchor_col`/`_trunkstuck_regime2`で場合分け〕[r1]
-            - 🚨 outer q-level driver（R1含む全体組立）〔`m_8_5_fold_of_colstep_partial`で橋を用意、残=nz/pt2条件+Fのq非依存性の構造的難点(案2つ未着手)〕[r1]
-            - ✅ R2a adm成分〔`m_8_5_marked_adm_persist`、prefix不変・無条件〕
+          - ✅ telescope〔`m_8_5_keystone_allq`〕
+          - 🚨 R1: base q=2〔R2と同根、refuted route14〕
+          - 🚨 R2: fold-C可換
+            - ✅ Mark-level netfold橋〔`m_8_5_Mark_netfold_condV`/`_via_anchor`〕
+            - ✅ trunk-stuck混在fold対応〔`m_8_5_anchor_fold_mixed`〕[r1]
+            - 🚨 outer q-level driver〔`m_8_5_fold_of_colstep_partial`〕[r1]
+            - ✅ R2a adm成分〔`m_8_5_marked_adm_persist`〕
             - 🚨 R2a leR成分
-              - ✅ trunk-stuck(multiT+n0<Pcut)時leR偽を証明〔`m_8_5_marked_requires_last_component`、N上のMark_MarkedB_nestは救済不可〕
-              - ✅ trunk-stuck時の代替anchor witness〔`m_8_5_anchor_col_trunkstuck`、branch-local最終P成分PJ上のMark_MarkedB_nest、anchor自体は51/51経験的成立〕
-              - ✅ R2b'+pcutle を単一仮定に縮約〔`m_8_5_trunkstuck_hyps_of_hasParent0`、`Marked_Pred_Adm`+`multi_Marked_last_component`合成でN全体のR2bに帰着〕
-              - 🚨 `entry N 0 0 < fst col`は反証〔u>0のST_PS(article確認、content.md:1346)で95/245反例、旧79/79はyaBMS縛りのharness artifact〕
-              - ✅ 代替witness `entry N 0 (Pcut N) < fst col`で245/245頑健確認・形式化〔`m_8_5_anchor_col_trunkstuck_regime2`〕
-              - 🚨 残=`entry N 0 (Pcut N) < fst col`をkeystone regimeから導出
-                - ✅ `Pcut(N@[col])=Pcut N`を完全証明〔`m_8_5_Pcut_freezes`、新規一般事実`m_8_5_monoT_le0_all`+`m_8_5_le0_ancestor_linear`で`m_8_5_Pcut_of_le0_cut`のcut/nocut両半解決〕[r2]
-                - 🚨 witness自体をtransCondV等から導出〔Pcut freeze済みで土台は用意、未着手〕[r0]
-        - ✅ (op) marked-head 形〔`m_8_5_Mark_headform`(shape+値=entry M 1 m、Marked から)〕
+              - ✅ trunk-stuck leR偽の証明〔`m_8_5_marked_requires_last_component`〕
+              - ✅ trunk-stuck代替witness〔`m_8_5_anchor_col_trunkstuck_regime2`〕
+              - 🚨 witnessをregimeから導出
+                - ✅ Pcut freeze定理化〔`m_8_5_Pcut_freezes`〕[r2]
+                - 🚨 witness自体の導出[r0]
+        - ✅ (op) marked-head形〔`m_8_5_Mark_headform`〕
     - ✅ 補題（条件 (V) の下での $\textrm{Joints}$ と $\textrm{FirstNodes}$ と $t_2$ の基本性質）〔`m_8_5_Joints_FirstNodes_basic` parts(1)(2)〕
     - 🚨 補題（条件 (V) の下での各種 scb分解）〔def 内部記号露出要〕
   - 🚨 §8.6 条件 (VI) の下での展開規則
