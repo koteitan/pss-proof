@@ -26,8 +26,8 @@
 - ✅ §6 ペア数列の基本性質 〔全節完了(2026-06-11)。docs `reducedness.md`/`red-le-domain.md`/`slice-Br-descending.md`〕
 - ✅ §7 Buchholzの表記系への翻訳 
 - 🚨 §8 停止性
-  - 📘 [Buc1] 引用sorry: `buc1_2_2_OT_B_wf`/`buc1_3_2a_fseq_lt`/`buc1_3_2_OT_B_closed`
-    - 🚨🤖 3.2a+OT閉包の直接証明〔`m_buc1_*`、wt-b1〕[r0]
+  - 📘 [Buc1] 引用sorry: 残 `buc1_2_2_OT_B_wf`(整礎)のみ
+    - ✅ 3.2a+OT閉包の直接証明〔`m_buc1_3_2a_fseq_lt`/`m_buc1_3_2_OT_B_closed`、副産物`b1x_operB_dom_all`(operB無条件全域)〕[r1]
   - 🚨 §8.1 条件 (I) の下での展開規則
     - 🚨 命題（条件 (I) の下での $\textrm{Trans}$ と基本列の交換関係）
       - ✅ 降下⟸交換則(1)+OT〔`m_8_1_Trans_fseq_condI_descent`〕
@@ -57,12 +57,12 @@
   - 🚨 §8.4 条件 (III) か (IV) の下での展開規則
     - 🚨 命題（条件 (III) か (IV) の下での $\textrm{Trans}$ と基本列の交換関係）〔condIII独自producer要、condIV=A27〕 (⛔ 8.5)
     - ✅ 補題（右端の非許容直系先祖の基本性質）〔`m_8_4_rightmost_nonadm_ancestor`〕
-    - 🚨🤖 補題（条件 (III)〜(V) の下での右端の置き換えと $\textrm{Trans}$ の関係）〔wt-s4a/b/c〕
-    - 🚨🤖 補題（条件 (III)〜(VI) の下での展開規則の基本性質）〔wt-s4a/b/c〕
-    - 🚨🤖 補題（条件 (III)〜(VI) の下での $\textrm{Trans}$ と scb分解の関係）〔wt-s4a/b/c〕
-    - 🚨🤖 補題（条件 (III)〜(V) の下での切片の scb分解）〔wt-s4a/b/c〕
-    - 🚨🤖 補題（条件 (III)〜(V) の下での各種 scb分解）〔wt-s4a/b/c〕
-    - 🚨🤖 補題（条件 (III) か (IV) の下での各種 scb分解）〔wt-s4a/b/c〕
+    - 🚨🤖 補題（条件 (III)〜(V) の下での右端の置き換えと $\textrm{Trans}$ の関係）〔`m_8_4_rightend_Trans`検証済(A30)、wt-s4b〕
+    - 🚨🤖 補題（条件 (III)〜(VI) の下での展開規則の基本性質）〔`m_8_4_oper_props_*`検証済(A31)、wt-s4a〕
+    - 🚨🤖 補題（条件 (III)〜(VI) の下での $\textrm{Trans}$ と scb分解の関係）〔`m_8_4_Trans_scb`検証済、wt-s4c〕
+    - 🚨🤖 補題（条件 (III)〜(V) の下での切片の scb分解）〔`m_8_4_slice_scb`検証済、wt-s4a〕
+    - 🚨 補題（条件 (III)〜(V) の下での各種 scb分解）〔検証済、C1+C2依存で次round〕
+    - 🚨 補題（条件 (III) か (IV) の下での各種 scb分解）〔IV∧jm3<jm1枝はST_PSで空の疑い〕
     - ✅ 補題（条件 (III) か (IV) の下での基本列の基本性質）〔`m_8_4_oper_basic_part1`(= `p_8_4_oper_basic`)〕
   - 🚨 §8.5 条件 (V) の下での展開規則 〔詳細→[[pss-85-surgery-masterkey]]〕
     - 🚨 命題（条件 (V) の下での $\textrm{Trans}$ と基本列の交換関係）
@@ -83,15 +83,13 @@
             - 🚨 R2a leR成分
               - ✅ trunk-stuck leR偽の証明〔`m_8_5_marked_requires_last_component`〕
               - ✅ trunk-stuck代替witness〔`m_8_5_anchor_col_trunkstuck_regime2`〕
-              - 🚨 witnessをregimeから導出
-                - ✅ Pcut freeze定理化〔`m_8_5_Pcut_freezes`〕[r2]
-                - ✅ reset列部分〔`m_8_5_Pcut_reset_witness`、約20%カバー〕[r1]
-                - ✅ non-reset列部分〔`m_8_5_Pcut_nonreset_witness`、hasParent前提が実regime157/157成立(親検証)〕[r1]
-                - ✅ 一般reduction〔`m_8_5_Pcut_witness_of_smaller_at`、任意内点c<で witness〕[r1]
-                - 🚨🤖 残差 `entry Mq 0 (Pcut Mq) < fst(B!m)`〔trunk-stuck非reset列で170/170経験成立、証明open、wt2〕[r1]
+              - ✅ witnessをregimeから導出〔`m_8_5_basecut_residual`、colcase配線込 `m_8_5_colcase_trunkstuck_basecut`、207/207〕[r7]
+              - 🚨 non-trunk-stuck列のleR導出〔+hasParent(Mq,0,last)組立〕[r0]
         - ✅ (op) marked-head形〔`m_8_5_Mark_headform`〕
     - ✅ 補題（条件 (V) の下での $\textrm{Joints}$ と $\textrm{FirstNodes}$ と $t_2$ の基本性質）〔`m_8_5_Joints_FirstNodes_basic` parts(1)(2)〕
-    - 🚨🤖 補題（条件 (V) の下での各種 scb分解）〔def 内部記号露出要、原典route、wt-s5〕
+    - 🚨 補題（条件 (V) の下での各種 scb分解/基本列のscb分解）〔原典route〕
+      - ✅ part(1)+A24補正閉形式+n=1交換capstone〔`m_8_5_scbdec_fseq_condV`(2295/2295)/`m_8_5_scbdec_exchange1_n1_condV`、A28/A29発見〕[r1]
+      - 🚨 残parts(2)-(5)/一般n〔draft検証済、右端置換系(§8.3-8.4)待ち〕[r0]
   - 🚨 §8.6 条件 (VI) の下での展開規則
     - 🚨 命題（条件 (VI) の下での $\textrm{Trans}$ と基本列の交換関係）
       - ✅ descent engine + (1,1)対角 host〔`m_8_6_TransCondVI_oper_descend_engine`/`m_8_6_diagSeq_condVI_commute`〕
@@ -103,7 +101,9 @@
       - ❌ 一般領域〔A25〕
   - 🚨 §8.7 主結果
     - ✅ 補題（公差 $(0,0)$ のペア数列の $\textrm{Trans}$ の基本性質）〔`m_8_7_const00_Trans`〕
-    - 🚨🤖 補題（基本列の降下性）〔`fseq_descend`。dispatcher化+clean部、wt-f7〕
+    - 🚨 補題（基本列の降下性）〔`fseq_descend`〕
+      - ✅ dispatcher〔`m_8_7_fseq_descend_dispatcher`、7 named交換前提modulo、6439/6439〕[r1]
+      - 🚨 交換前提7本のdischarge〔checklist=`_r14_f7_notes.py`〕(⛔ 8.5)
     - ✅ 補題（順序数項の再帰構造）〔`m_8_7_OT_scb_recursive`〕
     - ✅ 補題（順序数項の共終数の遺伝性）〔`m_8_7_OT_dom_hereditary`〕
     - ✅ 補題（順序数項の末尾項の零化可能性）
