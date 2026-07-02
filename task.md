@@ -73,7 +73,7 @@
   - 🚨 §8.5 条件 (V) の下での展開規則 〔詳細→[[pss-85-surgery-masterkey]]〕
     - 🚨 命題（条件 (V) の下での $\textrm{Trans}$ と基本列の交換関係）
       - ✅ reduction ladder〔`m_8_5_*_of_*`〕
-      - 🚨 surgery spine-descent〔keystone 経由〕
+      - 🚨 surgery spine-descent〔keystone 経由。⚠️N3で netfold橋が実regime偽=deprecated、原典routeへ移行〕
         - ✅ (A) deepen SHAPE〔`m_8_5_appended_col_deepen`〕
         - ✅ (B) wiring〔rnav engine/§7.4橋〕
         - ✅ surgC⟸keystone組立〔`m_8_5_surgC_instance_of_keystone`〕
@@ -97,9 +97,8 @@
     - ✅ 補題（条件 (V) の下での $\textrm{Joints}$ と $\textrm{FirstNodes}$ と $t_2$ の基本性質）〔`m_8_5_Joints_FirstNodes_basic` parts(1)(2)〕
     - 🚨 補題（条件 (V) の下での各種 scb分解/基本列のscb分解）〔原典route〕
       - ✅ part(1)+A24補正閉形式+n=1交換capstone〔`m_8_5_scbdec_fseq_condV`(2295/2295)/`m_8_5_scbdec_exchange1_n1_condV`、A28/A29発見〕[r1]
-      - ✅ adm全n閉形式+交換(1)(2)無条件〔`m_8_5_scbdec_adm_forms`/`m_8_5_Trans_oper_exchange_condV_adm`、keystone不要〕[r1]
-      - 🚨🤖 交換(3)残差〔leBT(D_e 0)t2+HB成分、経験100%、wt2〕[r0]
-      - 🚨🤖 non-adm condV領域〔ST_PSで0/20049、空性定理化、wt2〕[r0]
+      - ✅ adm全n閉形式+交換(1)(2)(3)無条件〔`m_8_5_Trans_oper_exchange_condV_adm_uncond`、(3)残差=`m_8_5_condV_adm_t2_components`/`_t2lb`〕[r2]
+      - 🚨 non-adm condV交換〔空性=偽(E1反証、Lng≥9実在)→独自証明要、`m_8_5_Joints_FirstNodes_basic_condV`済〕[r1]
   - 🚨 §8.6 条件 (VI) の下での展開規則
     - 🚨 命題（条件 (VI) の下での $\textrm{Trans}$ と基本列の交換関係）
       - ✅ descent engine + (1,1)対角 host〔`m_8_6_TransCondVI_oper_descend_engine`/`m_8_6_diagSeq_condVI_commute`〕
@@ -113,7 +112,8 @@
     - ✅ 補題（公差 $(0,0)$ のペア数列の $\textrm{Trans}$ の基本性質）〔`m_8_7_const00_Trans`〕
     - 🚨 補題（基本列の降下性）〔`fseq_descend`〕
       - ✅ dispatcher〔`m_8_7_fseq_descend_dispatcher`、7 named交換前提modulo、6439/6439〕[r1]
-      - 🚨 交換前提7本のdischarge〔checklist=`_r14_f7_notes.py`、exchIV添字k=m(VX)〕(⛔ 8.5)
+      - ✅ condV-adm脚discharge〔`m_8_7_fseq_descend_dispatcher_admV`〕[r1]
+      - 🚨 残交換前提discharge〔condV非adm/condI-IV/VI、checklist=`_r14_f7_notes.py`、exchIV添字k=m〕
     - ✅ 補題（順序数項の再帰構造）〔`m_8_7_OT_scb_recursive`〕
     - ✅ 補題（順序数項の共終数の遺伝性）〔`m_8_7_OT_dom_hereditary`〕
     - ✅ 補題（順序数項の末尾項の零化可能性）
