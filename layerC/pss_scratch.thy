@@ -20956,4 +20956,822 @@ proof -
           exchIV exchV exchVI])
 qed
 
+
+(* ===== round 16b front E2 (wt-s5 10425ca): terminal-slice modVE reduction ===== *)
+
+section \<open>§8.2 round-16 front E2 — terminal-slice / \<open>Trans\<close> reduction\<close>
+
+text \<open>TARGET: p_8_2_condV_terminal_slice_Trans (pss_paper 1604, the lemma
+  ``terminal slice and Trans under condition (V)''), the single residual of the
+  whole section 8.4 various-scb cluster and of the non-adm condV item.  Here we
+  discharge, UNCONDITIONALLY, every part of the lemma EXCEPT one value equation
+  VE': bpHeadT (Trans (seg M m (Lng M - 1))) = bpHeadT (Trans M).  VE' says the
+  terminal slice M' = seg M m j1 shares the deep tail t1 of Trans M, with only
+  the leftmost D-head rebased from M_1,0 to M_1,m (empirically 1284/1284 +
+  52/52 over genuine ST_PS and the wider RT_PS regime, including 191 non-adm-j0
+  hosts, python/_r16_e2_validate.py).  VE' is the article's front-peel / Pred
+  simultaneous induction (the hard core that blocked rounds 15/16); it is stated
+  as an explicit hypothesis of m_8_2_condV_terminal_slice_Trans_modVE below and
+  is NOT proved here.\<close>
+
+text \<open>Every reduced monoT Trans is principal with leftmost head M_1,0.  (The
+  unconditional core of m_8_2_subexpr_leftend_unique, but needing only RT_PS and
+  monoT, not DT_PS -- no descending hypothesis.)\<close>
+
+lemma e2x_Trans_principal_head:
+  assumes MR: "M \<in> RT_PS" and monoM: "monoT M"
+  shows "Trans M = Dpt (enat (entry M 1 0)) (bpHeadT (Trans M))"
+proof -
+  have nz: "\<not> zeroT M" using monoM by (simp add: monoT_def)
+  have tne: "Trans M \<noteq> 0\<^sub>B" using m_7_3_Trans_zeroT[OF MR] nz by blast
+  obtain p where Tp: "Trans M = Trm [p]"
+    using Trans_PT_single[THEN mp, THEN mp, THEN mp, OF MR monoM tne] by blast
+  obtain u a where pua: "p = DB u a" by (cases p)
+  have hv: "bpHeadV (Trans M) = enat (entry M 1 0)"
+    using m_7_3_Trans_leftend MR by blast
+  have ueq: "u = enat (entry M 1 0)" using Tp pua hv by simp
+  have "Trans M = Dpt (enat (entry M 1 0)) a" using Tp pua ueq by simp
+  moreover have "bpHeadT (Trans M) = a" using Tp pua by simp
+  ultimately show ?thesis by simp
+qed
+
+text \<open>The exists-unique scaffold: once both Trans M and Trans M' are principal
+  with heads M_1,0 resp. M_1,m AND share their deep tail (VE'), the target's
+  unique common t1 is exactly bpHeadT (Trans M).  Fully unconditional.\<close>
+
+lemma e2x_terminal_slice_scaffold:
+  fixes M M' :: pairseq and m :: nat
+  assumes princM: "Trans M = Dpt (enat (entry M 1 0)) (bpHeadT (Trans M))"
+    and princM': "Trans M' = Dpt (enat (entry M 1 m)) (bpHeadT (Trans M'))"
+    and VE: "bpHeadT (Trans M') = bpHeadT (Trans M)"
+  shows "\<exists>!t1. Trans M = Dpt (enat (entry M 1 0)) t1
+            \<and> Trans M' = Dpt (enat (entry M 1 m)) t1"
+proof (rule ex1I[where a="bpHeadT (Trans M)"])
+  show "Trans M = Dpt (enat (entry M 1 0)) (bpHeadT (Trans M))
+      \<and> Trans M' = Dpt (enat (entry M 1 m)) (bpHeadT (Trans M))"
+    using princM princM' VE by simp
+next
+  fix t1
+  assume "Trans M = Dpt (enat (entry M 1 0)) t1
+        \<and> Trans M' = Dpt (enat (entry M 1 m)) t1"
+  hence "Dpt (enat (entry M 1 0)) t1 = Dpt (enat (entry M 1 0)) (bpHeadT (Trans M))"
+    using princM by simp
+  thus "t1 = bpHeadT (Trans M)" by simp
+qed
+
+text \<open>The target lemma p_8_2_condV_terminal_slice_Trans, verbatim statement,
+  reduced to the single hypothesis VE' (bpHeadT (Trans M') = bpHeadT (Trans M)).
+  Everything else is discharged: the slice is monoT (m_6_4_mono_slice, using
+  m <= j0' from the hypothesis) with reduced form N = Red M' in RT_PS
+  (slice_Red_in_RT_PS, via leR M 0 m j1), Trans M' = Trans N (m_7_3_Trans_Red),
+  the head value entry N 1 0 = M_1,m (repr_entry1_shift_gen), and both
+  principalities from e2x_Trans_principal_head.\<close>
+
+lemma m_8_2_condV_terminal_slice_Trans_modVE:
+  fixes M :: pairseq and m :: nat
+  defines "j1 \<equiv> Lng M - 1"
+  defines "J1 \<equiv> Lng (Br M) - 1"
+  defines "j0' \<equiv> Joints M ! J1"
+  defines "j1' \<equiv> FirstNodes M ! J1"
+  defines "M' \<equiv> seg M m j1"
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS" and Brne: "Br M \<noteq> []"
+    and hyp: "m < j0' \<or> (m = j0' \<and> entry M 0 j1' = entry M 1 j1' \<and> descending (Br M))"
+    and VE: "bpHeadT (Trans M') = bpHeadT (Trans M)"
+  shows "\<exists>!t1. Trans M = Dpt (enat (entry M 1 0)) t1
+            \<and> Trans M' = Dpt (enat (entry M 1 m)) t1"
+proof -
+  have j1v: "j1 = Lng M - 1" by (simp add: j1_def)
+  have J1v: "J1 = Lng (Br M) - 1" by (simp add: J1_def)
+  have j0'v: "j0' = Joints M ! J1" by (simp add: j0'_def)
+  have j1'v: "j1' = FirstNodes M ! J1" by (simp add: j1'_def)
+  have M'v: "M' = seg M m j1" by (simp add: M'_def)
+  have MT: "M \<in> T_PS" using MP by (simp add: PT_PS_def)
+  have monoM: "monoT M" using MP by (simp add: PT_PS_def)
+  have BrL: "0 < Lng (Br M)" using Brne by (cases "Br M") auto
+  have J1Br: "J1 < Lng (Br M)" using BrL J1v by simp
+  have geom: "j0' \<le> TrMax M \<and> TrMax M < j1'"
+    using m_6_4_FirstNodes_TrMax_Joints[OF MP J1Br] by (simp add: j0'v j1'v)
+  have g1: "j0' \<le> TrMax M" and g2: "TrMax M < j1'" using geom by auto
+  have fL: "j1' < Lng M" using a1_FN_lt[OF MP J1Br] by (simp add: j1'v)
+  have mlej0: "m \<le> j0'" using hyp by auto
+  have mj1: "m < j1" using g1 g2 mlej0 fL j1v by linarith
+  have mlej1: "m \<le> j1" using mj1 by linarith
+  have j1LM: "j1 \<le> Lng M - 1" by (simp add: j1v)
+  have j1ltLM: "j1 < Lng M" using mj1 j1v by linarith
+  \<comment> \<open>the slice is monoT and (as a reduced form) in \<open>RT\<^sub>PS\<close>\<close>
+  have j0leJ: "m \<le> Joints M ! (Lng (Br M) - 1)" using mlej0 j0'v J1v by simp
+  have monoSeg: "monoT (seg M m j1)"
+    by (rule m_6_4_mono_slice[OF MP mj1 j1LM j0leJ])
+  have segne: "seg M m j1 \<noteq> []" using mj1 by (simp add: seg_def)
+  have segT: "seg M m j1 \<in> T_PS" using segne by (simp add: T_PS_def)
+  have segPT: "seg M m j1 \<in> PT_PS" using segT monoSeg by (simp add: PT_PS_def)
+  have le0mj1: "le0 M m j1"
+    by (rule le0_monoT_seg_into_list[OF MT monoSeg mlej1 order.refl j1ltLM])
+  have leMmj1: "leR M 0 m j1" using le0mj1 by (simp add: leR_def)
+  define N where "N = Red (seg M m j1)"
+  have NR: "N \<in> RT_PS"
+    using slice_Red_in_RT_PS[OF MR mj1 j1LM leMmj1] by (simp add: N_def)
+  have monoN: "monoT N" using m_6_5_Red_preserves_monoT[OF segPT] by (simp add: N_def)
+  have TMp: "Trans M' = Trans N"
+    using m_7_3_Trans_Red[OF NR[unfolded N_def]] by (simp add: M'_def N_def)
+  \<comment> \<open>the leftmost head value of the reduced slice is \<open>M\<^bsub>1,m\<^esub>\<close>\<close>
+  have LNpos: "0 < Lng N"
+  proof -
+    have "Lng N = Lng (seg M m j1)" using m_6_5_Lng_Red[OF segT] by (simp add: N_def)
+    also have "\<dots> = Suc j1 - m" by (simp add: Lng_seg)
+    finally show ?thesis using mj1 by linarith
+  qed
+  have headN: "entry N 1 0 = entry M 1 m"
+    using repr_entry1_shift_gen[OF MR mj1 j1LM leMmj1 LNpos[unfolded N_def]]
+    by (simp add: N_def)
+  \<comment> \<open>principality of both transforms, sharing the tail via \<open>VE'\<close>\<close>
+  have princM: "Trans M = Dpt (enat (entry M 1 0)) (bpHeadT (Trans M))"
+    by (rule e2x_Trans_principal_head[OF MR monoM])
+  have princN: "Trans N = Dpt (enat (entry N 1 0)) (bpHeadT (Trans N))"
+    by (rule e2x_Trans_principal_head[OF NR monoN])
+  have princM': "Trans M' = Dpt (enat (entry M 1 m)) (bpHeadT (Trans M'))"
+    using princN headN TMp by simp
+  show ?thesis
+    by (rule e2x_terminal_slice_scaffold[OF princM princM' VE])
+qed
+
+
+(* ===== round 16b front E3 (wt-s4b f7f018a): condIII exchange(2) + descent tower ===== *)
+
+(* ===== round 16 front E3 (wt-s4b): §8.4 condIII exchange, A32-corrected ===== *)
+section \<open>r16b-E3 — §8.4 命題（条件(III)か(IV)の下での\<open>Trans\<close>と基本列の交換関係） A32-corrected\<close>
+
+text \<open>Target: \<open>p_8_4_Trans_oper_exchange\<close> (pss_paper 1906), A32-corrected.  Printed
+  conclusion (1) index \<open>numBT(n-1)\<close> is FALSE (corrections A32 / r15-VX item 1,
+  0/465 condIII); corrected form is STRICT \<open>lessBT (Trans(M[n])) (Trans(M)[n])\<close>.
+  Conclusion (2) \<open>lessBT (Trans(M[n])) (Trans M)\<close> is the §8.4 DESCENT — this
+  block proves it UNCONDITIONALLY (modulo the terminal-slice transports of
+  front E2, taken as named hypotheses \<open>d1/d2/d3\<close> exactly as in
+  @{thm [source] m_8_4_various_scb_IIIV_from_slice}) for the condition-(III)
+  regime, by the two-letter descent tower, mirroring the r15-S5b condV route
+  (@{thm [source] m_8_5_scbdec_exchange2_condV_adm}).  Prefix \<open>e3x_\<close>.\<close>
+
+subsection \<open>The §8.4 two-letter descent tower \<open>e3x_H\<close>\<close>
+
+text \<open>\<open>H\<^sub>0 = t\<^sub>2\<close>, \<open>H\<^sub>k\<^sub>+\<^sub>1 = t\<^sub>2 + D\<^bsub>ub\<^esub>(H\<^sub>k)\<close> (block letter \<open>ub = M\<^bsub>1,j\<^sub>-\<^sub>2\<^esub>\<close>).  Its flat
+  string is the middle of the closed form of \<open>Trans(M[n])\<close> from L5, and — since
+  \<open>ub < M\<^bsub>1,j\<^sub>1\<^esub>\<close> — it is bounded strictly by \<open>t\<^sub>2 + D\<^bsub>M\<^sub>1\<^sub>,\<^sub>j\<^sub>1\<^esub> 0\<close> = the \<open>c\<^sub>2\<close> body
+  at every height.  Unlike the condV \<open>s85b_W\<close> (single head letter), the head
+  letter \<open>M\<^bsub>1,j\<^sub>-\<^sub>1\<^esub>\<close> here sits OUTSIDE the tower and cancels in the descent
+  comparison, so \<open>H\<close> carries only the block letter.\<close>
+
+fun e3x_H :: "nat \<Rightarrow> BT \<Rightarrow> nat \<Rightarrow> BT" where
+  "e3x_H ub t 0 = t"
+| "e3x_H ub t (Suc k) = t +\<^sub>B Dpt (enat ub) (e3x_H ub t k)"
+
+lemma e3x_H_dfree:
+  assumes "dfree_BT t"
+  shows "dfree_BT (e3x_H ub t k)"
+  using assms by (induction k) (simp_all add: dfree_BT_addBT)
+
+lemma e3x_H_TB:
+  assumes "t \<in> T_B"
+  shows "e3x_H ub t k \<in> T_B"
+  using assms e3x_H_dfree[of t ub k] by (simp add: T_B_def)
+
+lemma e3x_H_flat:
+  assumes tTB: "t \<in> T_B"
+    and inner: "scb_decomp (t +\<^sub>B Dpt (enat ub) 0\<^sub>B) s0
+                  (flatBT (Dpt (enat ub) 0\<^sub>B)) b0"
+  shows "flatBT (e3x_H ub t k)
+       = concat (replicate k (s0 @ [Dsym (enat ub)]))
+         @ flatBT t @ concat (replicate k b0)"
+proof (induction k)
+  case 0 show ?case by simp
+next
+  case (Suc k)
+  have c0TB: "Dpt (enat ub) 0\<^sub>B \<in> T_B" by (simp add: T_B_def)
+  have c0p: "\<exists>p. Dpt (enat ub) 0\<^sub>B = Trm [p]" by auto
+  have HTB: "e3x_H ub t k \<in> T_B" by (rule e3x_H_TB[OF tTB])
+  have HpTB: "Dpt (enat ub) (e3x_H ub t k) \<in> T_B" using HTB by (simp add: T_B_def)
+  have Hpp: "\<exists>p. Dpt (enat ub) (e3x_H ub t k) = Trm [p]" by auto
+  have sub: "scb_decomp (t +\<^sub>B Dpt (enat ub) (e3x_H ub t k)) s0
+               (flatBT (Dpt (enat ub) (e3x_H ub t k))) b0"
+    by (rule m_7_2_add_scb_conj2[OF tTB c0TB c0p HpTB Hpp inner])
+  have fsub: "flatBT (t +\<^sub>B Dpt (enat ub) (e3x_H ub t k))
+              = s0 @ flatBT (Dpt (enat ub) (e3x_H ub t k)) @ b0"
+    using sub by (simp add: scb_decomp_def)
+  have "flatBT (e3x_H ub t (Suc k))
+        = s0 @ Dsym (enat ub)
+           # (concat (replicate k (s0 @ [Dsym (enat ub)]))
+              @ flatBT t @ concat (replicate k b0)) @ b0"
+    using fsub Suc.IH by simp
+  also have "\<dots> = concat (replicate (Suc k) (s0 @ [Dsym (enat ub)]))
+        @ flatBT t @ concat (replicate (Suc k) b0)"
+    by (simp add: s85b_crep_comm_snoc s85b_crep_snoc s85b_crep_comm)
+  finally show ?case .
+qed
+
+lemma e3x_H_lt_top:
+  assumes uv: "ub < v"
+  shows "lessBT (e3x_H ub t k) (t +\<^sub>B Dpt (enat v) 0\<^sub>B)"
+proof (induction k)
+  case 0
+  show ?case
+    using lessBT_addBT_self[of "Dpt (enat v) 0\<^sub>B" t] by simp
+next
+  case (Suc k)
+  have hd: "lessBT (Dpt (enat ub) (e3x_H ub t k)) (Dpt (enat v) 0\<^sub>B)"
+    using uv by simp
+  have "lessBT (t +\<^sub>B Dpt (enat ub) (e3x_H ub t k)) (t +\<^sub>B Dpt (enat v) 0\<^sub>B)"
+    by (rule lessBT_addBT_mono_right[OF hd])
+  thus ?case by simp
+qed
+
+subsection \<open>Conclusion (2): the §8.4 descent \<open>Trans(M[n]) < Trans M\<close> (condition III)\<close>
+
+text \<open>命題（条件(III)か(IV)の下での\<open>Trans\<close>と基本列の交換関係） conclusion (2),
+  condition-(III) regime, UNCONDITIONAL modulo the terminal-slice transports
+  \<open>d1/d2/d3\<close> of front E2 (spelled exactly as in
+  @{thm [source] m_8_4_various_scb_IIIV_from_slice}).  \<open>Trans(M[n]) = s\<^sub>1 D\<^bsub>M\<^sub>1\<^sub>,\<^sub>j\<^sub>-\<^sub>1\<^esub>(H\<^sub>n\<^sub>-\<^sub>1) b\<^sub>1\<close>
+  with \<open>H = e3x_H M\<^bsub>1,j\<^sub>-\<^sub>2\<^esub> t\<^sub>2\<close>, and \<open>Trans M = s\<^sub>1 D\<^bsub>M\<^sub>1\<^sub>,\<^sub>j\<^sub>-\<^sub>1\<^esub>(t\<^sub>2 + D\<^bsub>M\<^sub>1\<^sub>,\<^sub>j\<^sub>1\<^esub> 0) b\<^sub>1\<close>
+  (the condition-(III) \<open>c\<^sub>2\<close> shape); since \<open>M\<^bsub>1,j\<^sub>-\<^sub>2\<^esub> < M\<^bsub>1,j\<^sub>1\<^esub>\<close>
+  (@{thm [source] s84c1_jm2_basic}) the tower is strictly below \<open>c\<^sub>2\<close> at every
+  height, and 部分表現の不等式の延長性 (@{thm [source] scbext_lessBT}) closes.
+  Route mirrors @{thm [source] m_8_5_scbdec_exchange2_condV_adm}, avoiding the
+  \<open>Trans M \<in> OT\<^bsub>B\<^esub>\<close> pillar.  Empirical (r15-VX item 1): 465/465 condIII.\<close>
+
+lemma e3x_exchange2_condIII:
+  fixes M :: pairseq and n :: nat and s1' b1' :: "Sym list"
+  assumes MST: "M \<in> ST_PS" and MPT: "M \<in> PT_PS"
+    and hp: "hasParent M 1 (Lng M - 1)"
+    and cIII: "transCondIII M"
+    and reg: "s84x_jm2 M < transJ0 M \<or> adm M (transJ0 M)"
+    and admeq: "Adm M (s84x_jm2 M) = transJm1 M"
+    and n1: "n \<ge> 1"
+    and d1: "scb_decomp (transC2 M)
+               (Dsym (enat (entry M 1 (transJm1 M))) # s1')
+               (flatBT (Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B)) b1'"
+    and d2: "scb_decomp (Trans (s84x_Np M))
+               (Dsym (enat (entry M 1 (s84x_jm2 M))) # s1')
+               (flatBT (Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B)) b1'"
+    and d3: "Trans (Pred (s84x_Np M)) = Dpt (enat (entry M 1 (s84x_jm2 M))) (transT2 M)"
+  shows "lessBT (Trans ((M::pairseq)[n])) (Trans M)"
+proof -
+  let ?e1jm1 = "entry M 1 (transJm1 M)"
+  let ?e1jm2 = "entry M 1 (s84x_jm2 M)"
+  let ?v = "entry M 1 (Lng M - 1)"
+  have MR: "M \<in> RT_PS" using MST m_6_7_ST_PS_subseteq_RT_PS by blast
+  have MT: "M \<in> T_PS" using MPT by (simp add: PT_PS_def)
+  have nVI: "\<not> transCondVI M"
+    using cIII by (auto simp: transCondIII_def transCondVI_def)
+  have j1gt: "1 < Lng M - 1" and T1: "transT1 M \<noteq> 0\<^sub>B"
+    using s84d_L4_regime[OF MST MPT hp nVI] by simp_all
+  have J1pos: "transJ1 M > 0" using j1gt by (simp add: transJ1_def)
+  note shape = m_8_5_scbdec_c1_shape[OF MR MPT J1pos T1]
+  have t2TB: "transT2 M \<in> T_B" using shape(3) .
+  have jm2ltv: "?e1jm2 < ?v" by (rule s84c1_jm2_basic(2)[OF hp])
+  \<comment> \<open>condition-(III) \<open>c\<^sub>2\<close> shape\<close>
+  have c2simple: "transC2 M
+      = Dpt (enat ?e1jm1) (transT2 M +\<^sub>B Dpt (enat ?v) 0\<^sub>B)"
+  proof -
+    have condA: "transCondI M \<or> transCondIII M \<or> transCondV M" using cIII by simp
+    have "transC2 M = s84d_c2hole M ?v" by (rule s84d_c2hole_at_j1)
+    also have "\<dots> = Dpt (transV M) (transT2 M +\<^sub>B Dpt (enat ?v) 0\<^sub>B)"
+      using condA by (simp add: s84d_c2hole_def Let_def)
+    finally show ?thesis using shape(1) by simp
+  qed
+  \<comment> \<open>the L5 closed form of \<open>Trans(M[n])\<close> and the pair \<open>(fst sb, snd sb)\<close>\<close>
+  obtain sb where SB:
+    "scb_decomp (transC2 M)
+       (Dsym (enat ?e1jm1) # fst sb)
+       (flatBT (Dpt (enat ?v) 0\<^sub>B)) (snd sb)
+     \<and> scb_decomp (Trans (s84x_Np M))
+       (Dsym (enat ?e1jm2) # fst sb)
+       (flatBT (Dpt (enat ?v) 0\<^sub>B)) (snd sb)
+     \<and> scb_decomp (Trans (s84x_Lp M))
+       (Dsym (enat ?e1jm2) # fst sb)
+       (flatBT (Dpt (enat ?e1jm2) 0\<^sub>B)) (snd sb)
+     \<and> Trans (Pred (s84x_Np M)) = Dpt (enat ?e1jm2) (transT2 M)
+     \<and> flatBT (Trans (s84x_L M n))
+       = s84x_s1 M @ Dsym (enat ?e1jm1)
+           # concat (replicate n (fst sb @ [Dsym (enat ?e1jm2)]))
+           @ [Zsym] @ concat (replicate n (snd sb)) @ s84x_b1 M
+     \<and> flatBT (Trans ((M::pairseq)[n]))
+       = s84x_s1 M @ Dsym (enat ?e1jm1)
+           # concat (replicate (n - 1) (fst sb @ [Dsym (enat ?e1jm2)]))
+           @ flatBT (transT2 M)
+           @ concat (replicate (n - 1) (snd sb)) @ s84x_b1 M"
+    using ex1_implies_ex[OF m_8_4_various_scb_IIIV_from_slice
+            [OF MST MPT hp nVI reg admeq n1 d1 d2 d3]] by blast
+  have c1sb: "scb_decomp (transC2 M) (Dsym (enat ?e1jm1) # fst sb)
+                (flatBT (Dpt (enat ?v) 0\<^sub>B)) (snd sb)"
+    using SB by blast
+  have cfM: "flatBT (Trans ((M::pairseq)[n]))
+       = s84x_s1 M @ Dsym (enat ?e1jm1)
+           # concat (replicate (n - 1) (fst sb @ [Dsym (enat ?e1jm2)]))
+           @ flatBT (transT2 M)
+           @ concat (replicate (n - 1) (snd sb)) @ s84x_b1 M"
+    using SB by blast
+  \<comment> \<open>un-lift the head of \<open>c1sb\<close> to the inner core decomposition\<close>
+  have iptv: "isPTB_str (flatBT (Dpt (enat ?v) 0\<^sub>B))"
+    by (rule isPTB_str_Dpt) simp_all
+  have deq: "flatBT (transC2 M)
+      = (Dsym (enat ?e1jm1) # fst sb) @ flatBT (Dpt (enat ?v) 0\<^sub>B) @ snd sb"
+    and bsbRP: "\<forall>x \<in> set (snd sb). x = RP"
+    using c1sb by (auto simp: scb_decomp_def)
+  have flatbody: "flatBT (transT2 M +\<^sub>B Dpt (enat ?v) 0\<^sub>B)
+      = fst sb @ flatBT (Dpt (enat ?v) 0\<^sub>B) @ snd sb"
+    using deq c2simple by simp
+  have innerV: "scb_decomp (transT2 M +\<^sub>B Dpt (enat ?v) 0\<^sub>B)
+                  (fst sb) (flatBT (Dpt (enat ?v) 0\<^sub>B)) (snd sb)"
+    unfolding scb_decomp_def using flatbody iptv bsbRP by simp
+  \<comment> \<open>transport the inner core to the block letter \<open>M\<^bsub>1,j\<^sub>-\<^sub>2\<^esub>\<close>\<close>
+  have DvTB: "Dpt (enat ?v) 0\<^sub>B \<in> T_B" by (simp add: T_B_def)
+  have Dvp: "\<exists>p. Dpt (enat ?v) 0\<^sub>B = Trm [p]" by auto
+  have DjTB: "Dpt (enat ?e1jm2) 0\<^sub>B \<in> T_B" by (simp add: T_B_def)
+  have Djp: "\<exists>p. Dpt (enat ?e1jm2) 0\<^sub>B = Trm [p]" by auto
+  have innerJ: "scb_decomp (transT2 M +\<^sub>B Dpt (enat ?e1jm2) 0\<^sub>B)
+                  (fst sb) (flatBT (Dpt (enat ?e1jm2) 0\<^sub>B)) (snd sb)"
+    by (rule m_7_2_add_scb_conj2[OF t2TB DvTB Dvp DjTB Djp innerV])
+  have Hflat: "flatBT (e3x_H ?e1jm2 (transT2 M) (n - 1))
+      = concat (replicate (n - 1) (fst sb @ [Dsym (enat ?e1jm2)]))
+        @ flatBT (transT2 M) @ concat (replicate (n - 1) (snd sb))"
+    by (rule e3x_H_flat[OF t2TB innerJ])
+  \<comment> \<open>read \<open>Trans(M[n])\<close> as \<open>s\<^sub>1 D\<^bsub>M\<^sub>1\<^sub>,\<^sub>j\<^sub>-\<^sub>1\<^esub>(H\<^sub>n\<^sub>-\<^sub>1) b\<^sub>1\<close>\<close>
+  have fMn: "flatBT (Trans ((M::pairseq)[n]))
+      = s84x_s1 M @ flatBP (DB (enat ?e1jm1) (e3x_H ?e1jm2 (transT2 M) (n - 1)))
+        @ s84x_b1 M"
+    using cfM Hflat by simp
+  \<comment> \<open>the outer wrappers coincide with \<open>s84x_s1/b1\<close>; \<open>Trans M\<close> reads as \<open>s\<^sub>1 c\<^sub>2 b\<^sub>1\<close>\<close>
+  have T1ne: "Trans (Pred M) \<noteq> Trm []" using T1 by (simp add: transT1_def)
+  obtain s1 b1 where
+    dc1: "scb_decomp (Trans (Pred M)) s1 (flatBT (transC1 M)) b1"
+    and dc2M0: "scb_decomp (Trans M) s1 (flatBT (transC2 M)) b1"
+    by (rule s84c2_Trans_c2_decomp[OF MR MPT J1pos T1])
+  have s1b1ex1: "\<exists>!sb. scb_decomp (transT1 M) (fst sb) (flatBT (transC1 M)) (snd sb)"
+  proof (rule ex1I[of _ "(s1, b1)"])
+    show "scb_decomp (transT1 M) (fst (s1, b1)) (flatBT (transC1 M)) (snd (s1, b1))"
+      using dc1 by (simp add: transT1_def)
+  next
+    fix y
+    assume "scb_decomp (transT1 M) (fst y) (flatBT (transC1 M)) (snd y)"
+    hence "fst y = s1 \<and> snd y = b1"
+      using m_7_2_scb_unique_sb[OF _ dc1 T1ne] by (simp add: transT1_def)
+    thus "y = (s1, b1)" by (simp add: prod_eq_iff)
+  qed
+  have theSB: "(THE sb. scb_decomp (transT1 M) (fst sb) (flatBT (transC1 M)) (snd sb))
+             = (s1, b1)"
+    by (rule the1_equality[OF s1b1ex1]) (use dc1 in \<open>simp add: transT1_def\<close>)
+  have s1val: "s84x_s1 M = s1" and b1val: "s84x_b1 M = b1"
+    using theSB by (simp_all add: s84x_s1_def s84x_b1_def)
+  have dc2M: "scb_decomp (Trans M) (s84x_s1 M) (flatBT (transC2 M)) (s84x_b1 M)"
+    using dc2M0 s1val b1val by simp
+  have fTM: "flatBT (Trans M)
+      = s84x_s1 M @ flatBP (DB (enat ?e1jm1) (transT2 M +\<^sub>B Dpt (enat ?v) 0\<^sub>B))
+        @ s84x_b1 M"
+    using dc2M c2simple by (simp add: scb_decomp_def)
+  have bRP: "\<forall>x \<in> set (s84x_b1 M). x = RP"
+    using dc2M by (simp add: scb_decomp_def)
+  \<comment> \<open>the strict core comparison via the tower bound\<close>
+  have bodyLt: "lessBT (e3x_H ?e1jm2 (transT2 M) (n - 1))
+                       (transT2 M +\<^sub>B Dpt (enat ?v) 0\<^sub>B)"
+    by (rule e3x_H_lt_top[OF jm2ltv])
+  have coreLt: "lessBP (DB (enat ?e1jm1) (e3x_H ?e1jm2 (transT2 M) (n - 1)))
+                       (DB (enat ?e1jm1) (transT2 M +\<^sub>B Dpt (enat ?v) 0\<^sub>B))"
+    using bodyLt by simp
+  show ?thesis by (rule scbext_lessBT[OF fMn fTM bRP coreLt])
+qed
+
+
+(* ===== round 16b front E4 (wt-b1 1609775): OT preserve via exchange-value reduction ===== *)
+
+(* ===== round 16b front E4 (wt-b1): §8.7 OT-membership TRANSPORT via the
+        [Buc1] OT_B-closure (the ARTICLE ROUTE) ===== *)
+
+section \<open>r16b-E4 — §8.7 OT-membership via the [Buc1] OT_B-closure (article route)\<close>
+
+text \<open>MAP (front E4).  The mechanized §8.7 skeleton
+  (@{thm [source] m_8_7_Trans_preserves_OT} / @{thm [source] m_8_7_Trans_preserves_OT_modulo})
+  is a \<open>Pred\<close>-recursion whose open content is the 4-case keystone dispatcher's
+  \<open>resid\<close> (R2 \<open>dstep\<close> tail + R3 \<open>newOT\<close>/\<open>gbt\<close>, via
+  @{thm [source] m_8_7_OT_keystone_step} / @{thm [source] m_8_7_Trans_OT_step_keystone})
+  and the multiT \<open>multiD\<close> junction (@{thm [source] m_8_7_multiD_junction}).  That
+  is OUR reformulation.  The ARTICLE (content.md 6122/6216) instead inducts on
+  the \<open>ST\<^bsub>PS\<^esub>\<close> GENERATION rank: for an \<open>oper\<close>-step \<open>M = N[n]\<close> with
+  \<open>Trans N \<in> OT\<^bsub>B\<^esub>\<close> (IH), the value identity
+      \<open>Trans (N[n]) = (Trans N)[m\<^sub>n] [0]\<^bsup>k\<^esup>\<close>   (some \<open>m\<^sub>n\<close>, \<open>k\<close>)
+  makes \<open>Trans (N[n]) \<in> OT\<^bsub>B\<^esub>\<close> flow through the [Buc1] closure
+  @{thm [source] m_buc1_3_2_OT_B_closed} (\<open>OT\<^bsub>B\<^esub>\<close> closed under \<open>a[m] = operB a (numBT m)\<close>)
+  ALONE — NO \<open>G\<^bsub>B\<^esub>\<close>-condition, NO \<open>descP\<close>-step, NO \<open>newOT\<close>.  Here \<open>[0] = \<lambda>a. operB a (numBT 0)\<close>
+  (\<open>numBT 0 = Trm [] = 0\<^bsub>B\<^esub>\<close>).
+
+  This block formalizes that TRANSPORT, unconditionally: OT-membership is carried
+  from \<open>a\<close> to \<open>(operB a (numBT m))\<close> and through any number of \<open>[0]\<close>-iterations, so the
+  \<open>Trans (N[n]) \<in> OT\<^bsub>B\<^esub>\<close> STEP reduces to the PURE VALUE identity above (no OT
+  reasoning left in it).  The value identity is exactly the (A28-corrected) §8.5
+  exchange, empirically 40/40 at the shifted index; it is the sole remaining open
+  content of the OT pillar's step under this route.  Note the descent pillar
+  (@{thm [source] m_8_7_fseq_descend_dispatcher_admV}) already bounds by the SAME
+  \<open>operB (Trans N) (numBT k)\<close> object (with \<open>\<le>\<close>), so both pillars share this frame.\<close>
+
+lemma e4x_Zero_OT_B: "Trm [] \<in> OT_B"
+  by (simp add: OT_B_def OT_def T_B_def)
+
+text \<open>[Buc1] closure, UNCONDITIONAL form: \<open>OT\<^bsub>B\<^esub>\<close> is closed under \<open>a[m] = operB a (numBT m)\<close>
+  with NO \<open>a \<noteq> 0\<^bsub>B\<^esub>\<close> side condition — the \<open>a = Trm []\<close> case gives
+  \<open>operB (Trm []) z = Trm [] \<in> OT\<^bsub>B\<^esub>\<close> (@{thm [source] b1x_operB_zero},
+  @{thm [source] e4x_Zero_OT_B}), the rest is @{thm [source] m_buc1_3_2_OT_B_closed}.\<close>
+
+lemma e4x_OT_B_operB_numBT:
+  assumes "a \<in> OT_B"
+  shows "operB a (numBT n) \<in> OT_B"
+proof (cases "a = Trm []")
+  case True
+  hence "operB a (numBT n) = Trm []" by (simp add: b1x_operB_zero)
+  thus ?thesis by (simp add: e4x_Zero_OT_B)
+next
+  case False
+  show ?thesis by (rule m_buc1_3_2_OT_B_closed[OF assms False])
+qed
+
+text \<open>Iterated \<open>[0]\<close> preserves \<open>OT\<^bsub>B\<^esub>\<close>: \<open>a \<in> OT\<^bsub>B\<^esub> \<Longrightarrow> [0]\<^bsup>k\<^esup> a \<in> OT\<^bsub>B\<^esub>\<close>.  Pure
+  induction on \<open>k\<close> over the unconditional single-step
+  @{thm [source] e4x_OT_B_operB_numBT} (at \<open>m = 0\<close>).\<close>
+
+lemma e4x_OT_B_op0_iter:
+  assumes "a \<in> OT_B"
+  shows "((\<lambda>x. operB x (numBT 0))^^k) a \<in> OT_B"
+  using assms
+proof (induction k arbitrary: a)
+  case 0
+  thus ?case by simp
+next
+  case (Suc k)
+  have step: "operB a (numBT 0) \<in> OT_B" by (rule e4x_OT_B_operB_numBT[OF Suc.prems])
+  have ih: "((\<lambda>x. operB x (numBT 0))^^k) (operB a (numBT 0)) \<in> OT_B"
+    by (rule Suc.IH[OF step])
+  have "((\<lambda>x. operB x (numBT 0))^^(Suc k)) a
+          = ((\<lambda>x. operB x (numBT 0))^^k) (operB a (numBT 0))"
+    by (simp only: funpow_Suc_right o_apply)
+  thus ?case using ih by simp
+qed
+
+text \<open>§8.7 OT-membership STEP (article route, ABSTRACT).  Given the IH \<open>a \<in> OT\<^bsub>B\<^esub>\<close>
+  and the value identity \<open>b = [0]\<^bsup>k\<^esup> (operB a (numBT m))\<close>, conclude \<open>b \<in> OT\<^bsub>B\<^esub>\<close>.
+  Composes @{thm [source] e4x_OT_B_operB_numBT} (one \<open>[m]\<close>) with
+  @{thm [source] e4x_OT_B_op0_iter} (the \<open>[0]\<^bsup>k\<^esup>\<close> tail).  ALL OT reasoning is here;
+  the caller's only remaining duty is the pure BT-VALUE identity for \<open>b\<close>.\<close>
+
+lemma m_8_7_OT_via_exchange_value:
+  assumes ihOT: "a \<in> OT_B"
+    and val: "b = ((\<lambda>x. operB x (numBT 0))^^k) (operB a (numBT m))"
+  shows "b \<in> OT_B"
+proof -
+  have "operB a (numBT m) \<in> OT_B" by (rule e4x_OT_B_operB_numBT[OF ihOT])
+  hence "((\<lambda>x. operB x (numBT 0))^^k) (operB a (numBT m)) \<in> OT_B"
+    by (rule e4x_OT_B_op0_iter)
+  thus ?thesis using val by simp
+qed
+
+text \<open>§8.7 OT-membership STEP specialised to \<open>Trans\<close> / \<open>oper\<close> (existential value form,
+  matching the descent pillar's \<open>\<exists>k. \<dots> operB (Trans N) (numBT k)\<close> phrasing).  From
+  \<open>Trans N \<in> OT\<^bsub>B\<^esub>\<close> and the existence of an exchange presentation of \<open>Trans (N[n])\<close>,
+  conclude \<open>Trans (N[n]) \<in> OT\<^bsub>B\<^esub>\<close>.  This is the OT-pillar analogue of
+  @{thm [source] m_8_7_fseq_descend_dispatcher_admV}: it reduces the whole OT step
+  to the §8.5 exchange EQUALITY (A28), with no residual OT/\<open>G\<^bsub>B\<^esub>\<close>/descP obligations.\<close>
+
+lemma m_8_7_Trans_OT_step_via_exchange:
+  assumes ihOT: "Trans N \<in> OT_B"
+    and val: "\<exists>m k. Trans ((N::pairseq)[n])
+                     = ((\<lambda>x. operB x (numBT 0))^^k) (operB (Trans N) (numBT m))"
+  shows "Trans ((N::pairseq)[n]) \<in> OT_B"
+  using val m_8_7_OT_via_exchange_value[OF ihOT] by blast
+
+text \<open>§8.7 MAIN RESULT via the ARTICLE ROUTE (generation-rank induction).  The full
+  \<open>ST\<^bsub>PS\<^esub> \<Longrightarrow> Trans M \<in> OT\<^bsub>B\<^esub>\<close>, proven by \<open>ST_PS.induct\<close> (the article's generation
+  induction, article 6122), modulo the SINGLE clean value-identity hypothesis
+  \<open>stepval\<close> (the §8.5 exchange EQUALITY).  This is an ARCHITECTURALLY SIMPLER
+  reduction than @{thm [source] m_8_7_Trans_preserves_OT_modulo}: it needs NEITHER
+  the 4-case keystone \<open>resid\<close> (R2 \<open>dstep\<close> + R3 \<open>newOT\<close>/\<open>gbt\<close>) NOR the multiT
+  \<open>multiD\<close> junction — the whole OT pillar collapses to one \<open>Trans\<close>/\<open>oper\<close> value
+  identity, with all OT/\<open>G\<^bsub>B\<^esub>\<close>/\<open>descP\<close> reasoning discharged by the [Buc1] closure
+  transport (@{thm [source] m_8_7_Trans_OT_step_via_exchange}).
+  \<^item> BASE (\<open>diag\<close>): \<open>Trans (diagSeq u v) \<in> OT\<^bsub>B\<^esub>\<close> is @{thm [source]
+    m_8_7_Trans_preserves_OT_base} (\<open>diagSeq u v \<in> SkT\<^bsub>PS\<^esub> 0\<close> for \<open>u \<le> v\<close>).
+  \<^item> STEP (\<open>oper\<close>): \<open>Trans (N[n]) \<in> OT\<^bsub>B\<^esub>\<close> from the IH \<open>Trans N \<in> OT\<^bsub>B\<^esub>\<close> +
+    \<open>stepval\<close>, via @{thm [source] m_8_7_Trans_OT_step_via_exchange}.
+
+  CAVEAT on \<open>stepval\<close> (honest scoping; python/_r16_e4_check.py + _r16_e4_condv_deep.py):
+  the op0-tower identity is confirmed clean on genuine \<open>ST\<^bsub>PS\<^esub>\<close> for condV-adm
+  (9/9, \<open>k=2\<close>), condI-adm, and condVI-nadm (\<open>k=0\<close>); for condIII-adm / condVI-adm a
+  fraction did not fit the naive small \<open>(m,k)\<close> window and needs either a wider index
+  or the A28-corrected \<open>m\<^sub>n\<close> — so \<open>stepval\<close> is the genuine remaining open content of
+  the OT step, NOT a discharged fact.  This lemma isolates it as ONE hypothesis.\<close>
+
+lemma m_8_7_Trans_preserves_OT_via_closure:
+  fixes M :: pairseq
+  assumes stepval:
+    "\<And>N n. N \<in> ST_PS \<Longrightarrow> Trans N \<in> OT_B \<Longrightarrow> 1 \<le> n \<Longrightarrow>
+        \<exists>m k. Trans ((N::pairseq)[n])
+              = ((\<lambda>x. operB x (numBT 0))^^k) (operB (Trans N) (numBT m))"
+    and MST: "M \<in> ST_PS"
+  shows "Trans M \<in> OT_B"
+  using MST
+proof (induct M rule: ST_PS.induct)
+  case (diag u v)
+  have "diagSeq u v \<in> SkT_PS 0" using diag by auto
+  thus ?case by (rule m_8_7_Trans_preserves_OT_base)
+next
+  case (oper N n)
+  have val: "\<exists>m k. Trans ((N::pairseq)[n])
+                   = ((\<lambda>x. operB x (numBT 0))^^k) (operB (Trans N) (numBT m))"
+    by (rule stepval[OF oper.hyps(1) oper.hyps(2) oper.hyps(3)])
+  show ?case by (rule m_8_7_Trans_OT_step_via_exchange[OF oper.hyps(2) val])
+qed
+
+
+(* ===== round 16b front E5 (wt2 178de9f): non-adm condV exchange + dispatcher condV ===== *)
+
+(* ===== round 16b front E5: condition (V) NON-ADM exchange/descent ===== *)
+section \<open>r16b-E5: 条件(V) — 非許容 \<open>j\<^sub>0\<close> の交換関係と降下性\<close>
+
+text \<open>Front E5 attacks the NON-ADMISSIBLE condition-(V) branch of the
+  \<open>Trans\<close>/fundamental-sequence exchange, proven REACHABLE by r16-E1
+  (@{thm [source] m_8_5_Joints_FirstNodes_basic_condV}: genuine
+  \<open>ST\<^bsub>PS\<^esub> \<inter> PT\<^bsub>PS\<^esub>\<close> members with \<open>transCondV M\<close> and \<open>\<not> adm M j\<^sub>0\<close> exist at
+  \<open>Lng \<ge> 9\<close>).  EMPIRICAL MAP (python/_r16b_e5_nonadm.py, 21 genuine deep
+  non-adm hosts, plus the dump python/_r16b_e5_dump.py /
+  python/_r16b_e5_slices.py on the smallest witness
+  \<open>M = (0,0)(1,1)(2,2)(3,1)(4,0)(5,1)(6,2)(7,0)(6,2)\<close>):
+  writing \<open>u = M\<^bsub>1,j\<^sub>-\<^sub>1\<^esub>\<close> (\<open>= bpHeadV c\<^sub>1 = transV\<close>), \<open>e = M\<^bsub>1,j\<^sub>0\<^esub>\<close>,
+  \<open>v\<^sub>1 = M\<^bsub>1,j\<^sub>1\<^esub>\<close> (condition (V): \<open>e + 1 = v\<^sub>1\<close>, and \<open>u \<le> e < v\<^sub>1\<close>),
+  \<open>t\<^sub>2 = transT2 M\<close>, and the SHARED surgery pair \<open>(s\<^sub>1, b\<^sub>1)\<close> of
+  @{thm [source] m_8_5_scbdec_fseq_condV}:
+  \<^item> \<open>Trans M            = s\<^sub>1 \<cdot> D\<^sub>u(t\<^sub>2 + D\<^bsub>v\<^sub>1\<^esub> 0) \<cdot> b\<^sub>1\<close>  (= \<open>c\<^sub>2\<close>, head \<open>u\<close>);
+  \<^item> \<open>Trans(M[1])        = s\<^sub>1 \<cdot> D\<^sub>u t\<^sub>2 \<cdot> b\<^sub>1\<close>                    (head \<open>u\<close>);
+  \<^item> \<open>Trans(M[Suc k])     = s\<^sub>1 \<cdot> D\<^sub>u(bodyM t\<^sub>2 e k) \<cdot> b\<^sub>1\<close>, where
+        \<open>bodyM t\<^sub>2 e 0 = t\<^sub>2\<close>, \<open>bodyM t\<^sub>2 e (Suc j) = t\<^sub>2 + W\<^sub>e\<^bsup>t\<^sub>2\<^esup>(t\<^sub>2, Suc j)\<close>
+        (\<open>W = s85b_W\<close>, inner heads \<open>e\<close>, seed \<open>t\<^sub>2\<close>);
+  \<^item> \<open>operB(Trans M)(numBT n) = s\<^sub>1 \<cdot> D\<^sub>u(bodyO t\<^sub>2 e n) \<cdot> b\<^sub>1\<close> (n \<ge> 1), where
+        \<open>bodyO t\<^sub>2 e n = t\<^sub>2 + W\<^sub>e\<^bsup>t\<^sub>2\<^esup>(D\<^sub>e 0, n-1)\<close> (seed \<open>D\<^sub>e 0\<close>).
+  The outer head is ALWAYS \<open>u = M\<^bsub>1,j\<^sub>-\<^sub>1\<^esub>\<close> (the article's head-rebase collapses in
+  the adm case where \<open>j\<^sub>-\<^sub>1 = j\<^sub>0\<close> so \<open>u = e\<close>).  Consequences validated 100% over
+  21 non-adm hosts:  descent (2) \<open>Trans(M[n]) < Trans M\<close> (all n), and exchange
+  (1) at index \<open>n + 1\<close>: \<open>Trans(M[n]) < operB(Trans M)(numBT (n+1))\<close> STRICT
+  (min-\<open>k\<close> is exactly \<open>n + 1\<close> for \<open>n \<ge> 2\<close>, \<open>1\<close> at \<open>n = 1\<close>; the printed
+  adm-index \<open>n\<close> FAILS non-adm, 0/60 — a further A28-style shift).\<close>
+
+subsection \<open>The tower inner bodies and the pure \<open>BT\<close>-order comparisons\<close>
+
+text \<open>Inner body of the \<open>Trans(M[Suc k])\<close> core (below the outer \<open>D\<^sub>u\<close>): \<open>t\<close> at
+  \<open>k = 0\<close>, and \<open>t + (s85b_W e t t (Suc j))\<close> at \<open>k = Suc j\<close>.\<close>
+
+fun e5x_bodyM :: "BT \<Rightarrow> nat \<Rightarrow> nat \<Rightarrow> BT" where
+  "e5x_bodyM t e 0 = t"
+| "e5x_bodyM t e (Suc j) = t +\<^sub>B s85b_W e t t (Suc j)"
+
+text \<open>Inner body of the \<open>operB(Trans M)(numBT n)\<close> core (n \<ge> 1): the same tower
+  with seed \<open>D\<^sub>e 0\<close> at height \<open>n - 1\<close>.\<close>
+
+definition e5x_bodyO :: "BT \<Rightarrow> nat \<Rightarrow> nat \<Rightarrow> BT" where
+  "e5x_bodyO t e n = t +\<^sub>B s85b_W e t (Dpt (enat e) 0\<^sub>B) (n - 1)"
+
+text \<open>A \<open>s85b_W\<close> tower with head \<open>u\<close> is strictly below any principal with a
+  strictly larger head — the dictionary order decides at the first symbol.\<close>
+
+lemma e5x_W_lt_Dpt:
+  assumes uv: "u < v"
+  shows "lessBT (s85b_W u t c k) (Dpt (enat v) d)"
+proof -
+  obtain b where b: "s85b_W u t c k = Dpt (enat u) b"
+    using s85b_W_principal[of u t c k] by blast
+  have "lessBP (DB (enat u) b) (DB (enat v) d)" using uv by simp
+  thus ?thesis using b by simp
+qed
+
+text \<open>Seed-shift: raising the tower height by one more than compensates for
+  shrinking the seed from \<open>t\<close> to \<open>D\<^sub>u 0\<close> — the \<open>operB\<close> body at height \<open>k+1\<close>
+  strictly dominates the \<open>Trans(M[..])\<close> body at height \<open>k\<close>.  Pure \<open>BT\<close>-order,
+  by induction on \<open>k\<close> (base = \<open>+\<close>-self, step = \<open>+\<close>-mono-right).\<close>
+
+lemma e5x_W_seed_shift:
+  "lessBT (s85b_W u t t k) (s85b_W u t (Dpt (enat u) 0\<^sub>B) (Suc k))"
+proof (induction k)
+  case 0
+  have ne: "s85b_W u t (Dpt (enat u) 0\<^sub>B) 0 \<noteq> 0\<^sub>B" by simp
+  have "lessBT t (t +\<^sub>B s85b_W u t (Dpt (enat u) 0\<^sub>B) 0)"
+    by (rule lessBT_addBT_self[OF ne])
+  thus ?case by simp
+next
+  case (Suc k)
+  have "lessBT (t +\<^sub>B s85b_W u t t k) (t +\<^sub>B s85b_W u t (Dpt (enat u) 0\<^sub>B) (Suc k))"
+    by (rule lessBT_addBT_mono_right[OF Suc.IH])
+  thus ?case by simp
+qed
+
+text \<open>The two core comparisons at the shared outer head \<open>u\<close>, packaged as
+  \<open>lessBP\<close> facts on the \<open>D\<^sub>u\<close>-wrapped bodies.\<close>
+
+lemma e5x_bodyM_lt_c2:
+  assumes ev: "e < v"
+  shows "lessBP (DB (enat u) (e5x_bodyM t e k))
+                (DB (enat u) (t +\<^sub>B Dpt (enat v) 0\<^sub>B))"
+proof (cases k)
+  case 0
+  have ne: "Dpt (enat v) 0\<^sub>B \<noteq> 0\<^sub>B" by simp
+  have "lessBT t (t +\<^sub>B Dpt (enat v) 0\<^sub>B)" by (rule lessBT_addBT_self[OF ne])
+  thus ?thesis using 0 by simp
+next
+  case (Suc j)
+  have wlt: "lessBT (s85b_W e t t (Suc j)) (Dpt (enat v) 0\<^sub>B)"
+    by (rule e5x_W_lt_Dpt[OF ev])
+  have "lessBT (t +\<^sub>B s85b_W e t t (Suc j)) (t +\<^sub>B Dpt (enat v) 0\<^sub>B)"
+    by (rule lessBT_addBT_mono_right[OF wlt])
+  thus ?thesis using Suc by simp
+qed
+
+lemma e5x_bodyM_lt_bodyO:
+  shows "lessBP (DB (enat u) (e5x_bodyM t e k))
+                (DB (enat u) (e5x_bodyO t e (Suc (Suc k))))"
+proof (cases k)
+  case 0
+  have ne: "s85b_W e t (Dpt (enat e) 0\<^sub>B) (Suc 0) \<noteq> 0\<^sub>B" by simp
+  have "lessBT t (t +\<^sub>B s85b_W e t (Dpt (enat e) 0\<^sub>B) (Suc 0))"
+    by (rule lessBT_addBT_self[OF ne])
+  thus ?thesis using 0 by (simp add: e5x_bodyO_def)
+next
+  case (Suc j)
+  have wlt: "lessBT (s85b_W e t t (Suc j))
+                    (s85b_W e t (Dpt (enat e) 0\<^sub>B) (Suc (Suc j)))"
+    by (rule e5x_W_seed_shift)
+  have "lessBT (t +\<^sub>B s85b_W e t t (Suc j))
+               (t +\<^sub>B s85b_W e t (Dpt (enat e) 0\<^sub>B) (Suc (Suc j)))"
+    by (rule lessBT_addBT_mono_right[OF wlt])
+  thus ?thesis using Suc by (simp add: e5x_bodyO_def)
+qed
+
+subsection \<open>非許容 (V) の交換関係 (1) と降下性 (2)（tower閉形式を仮定して）\<close>
+
+text \<open>命題（条件(V)の下での\<open>Trans\<close>と基本列の交換関係）, NON-ADMISSIBLE branch.
+  Reduced to the SINGLE named hypothesis \<open>NF\<close> — the non-adm analogue of the
+  \<open>mM\<close> conjunct of @{thm [source] m_8_5_scbdec_adm_forms} together with the
+  \<open>operB\<close> value form (@{thm [source] m_8_5_scbdec_oper_general_condV_adm} in the
+  adm case): the \<open>Trans(M[Suc k])\<close> and \<open>operB(Trans M)(numBT m)\<close> flat strings
+  factor at the SHARED surgery pair \<open>(s\<^sub>1,b\<^sub>1)\<close> (the one
+  @{thm [source] m_8_5_scbdec_fseq_condV} produces — pinned here by the base
+  decomposition of \<open>Trans(M[1])\<close> at \<open>D\<^sub>u t\<^sub>2\<close> and the kind-1 decomposition of
+  \<open>Trans M\<close> at \<open>c\<^sub>2\<close>) with cores \<open>D\<^sub>u(e5x_bodyM t\<^sub>2 e k)\<close> and \<open>D\<^sub>u(e5x_bodyO t\<^sub>2 e m)\<close>.
+  From it, exchange (1) at the CORRECTED non-adm index \<open>n + 1\<close> (STRICT) and
+  descent (2) follow by the pure comparisons above and 部分表現の不等式の延長性
+  (@{thm [source] scbext_lessBT}).  \<open>NF\<close> is faithful: its \<open>k = 0\<close> instance is
+  \<open>d1\<close> itself, and it is the exact shape the (non-adm) tower induction produces
+  — empirically 100% over 21 genuine deep hosts (python/_r16b_e5_nonadm.py).\<close>
+
+lemma m_8_5_Trans_oper_exchange_condV_nonadm:
+  fixes M :: pairseq and n :: nat
+  assumes MST: "M \<in> ST_PS" and MP: "M \<in> PT_PS"
+    and cond: "transCondV M"
+    and nadm: "\<not> adm M (parent M 0 (Lng M - 1))"
+    and n1: "1 \<le> n"
+    and NF: "\<And>s\<^sub>1 b\<^sub>1.
+        scb_decomp (Trans (M[1])) s\<^sub>1
+          (flatBT (Dpt (enat (entry M 1 (transJm1 M))) (transT2 M))) b\<^sub>1
+      \<Longrightarrow> scb_kind1 (Trans M) s\<^sub>1 (flatBT (transC2 M)) b\<^sub>1
+      \<Longrightarrow> (\<forall>k. flatBT (Trans (M[Suc k]))
+                = s\<^sub>1 @ flatBP (DB (enat (entry M 1 (transJm1 M)))
+                    (e5x_bodyM (transT2 M) (entry M 1 (transJ0 M)) k)) @ b\<^sub>1)
+        \<and> (\<forall>m. 1 \<le> m \<longrightarrow> flatBT (operB (Trans M) (numBT m))
+                = s\<^sub>1 @ flatBP (DB (enat (entry M 1 (transJm1 M)))
+                    (e5x_bodyO (transT2 M) (entry M 1 (transJ0 M)) m)) @ b\<^sub>1)"
+  shows "lessBT (Trans (M[n])) (operB (Trans M) (numBT (n + 1)))"
+    and "lessBT (Trans (M[n])) (Trans M)"
+proof -
+  have MR: "M \<in> RT_PS" using MST m_6_7_ST_PS_subseteq_RT_PS by blast
+  note J1pos = s85b_condV_setup(1)[OF MR MP cond]
+  note T1 = s85b_condV_setup(2)[OF MR MP cond]
+  note shape = m_8_5_scbdec_c1_shape[OF MR MP J1pos T1]
+  \<comment> \<open>the shared surgery pair from @{thm m_8_5_scbdec_fseq_condV}\<close>
+  obtain s0 s1 b0 b1 where
+      d1: "scb_decomp (Trans (M[1])) s1
+             (flatBT (Dpt (enat (entry M 1 (transJm1 M))) (transT2 M))) b1"
+    and k1: "scb_kind1 (Trans M) s1 (flatBT (transC2 M)) b1"
+    using m_8_5_scbdec_fseq_condV[OF MR MP J1pos T1 cond] by blast
+  note forms = NF[OF d1 k1]
+  have Mform: "\<And>k. flatBT (Trans (M[Suc k]))
+        = s1 @ flatBP (DB (enat (entry M 1 (transJm1 M)))
+            (e5x_bodyM (transT2 M) (entry M 1 (transJ0 M)) k)) @ b1"
+    using forms by blast
+  have Oform: "\<And>m. 1 \<le> m \<Longrightarrow> flatBT (operB (Trans M) (numBT m))
+        = s1 @ flatBP (DB (enat (entry M 1 (transJm1 M)))
+            (e5x_bodyO (transT2 M) (entry M 1 (transJ0 M)) m)) @ b1"
+    using forms by blast
+  \<comment> \<open>the \<open>Trans M\<close> core is \<open>c\<^sub>2 = D\<^sub>u(t\<^sub>2 + D\<^bsub>v\<^sub>1\<^esub> 0)\<close>\<close>
+  have c2eq: "transC2 M = Dpt (enat (entry M 1 (transJm1 M)))
+                (transT2 M +\<^sub>B Dpt (enat (entry M 1 (transJ1 M))) 0\<^sub>B)"
+    using m_8_5_transC2_condV[OF cond] shape(1) by (simp add: transJ1_def)
+  have dTM: "scb_decomp (Trans M) s1 (flatBT (transC2 M)) b1"
+    using k1 by (simp add: scb_kind1_def)
+  have fTM: "flatBT (Trans M)
+        = s1 @ flatBP (DB (enat (entry M 1 (transJm1 M)))
+            (transT2 M +\<^sub>B Dpt (enat (entry M 1 (transJ1 M))) 0\<^sub>B)) @ b1"
+    using dTM c2eq by (simp add: scb_decomp_def)
+  have bRP: "\<forall>x \<in> set b1. x = RP" using d1 by (simp add: scb_decomp_def)
+  have ev: "entry M 1 (transJ0 M) < entry M 1 (transJ1 M)"
+    using cond unfolding transCondV_def transJ0_def transJ1_def by arith
+  obtain k where nk: "n = Suc k" using n1 by (cases n) auto
+  have fMn: "flatBT (Trans (M[n]))
+        = s1 @ flatBP (DB (enat (entry M 1 (transJm1 M)))
+            (e5x_bodyM (transT2 M) (entry M 1 (transJ0 M)) k)) @ b1"
+    using Mform nk by simp
+  \<comment> \<open>descent (2)\<close>
+  have coreLt2: "lessBP (DB (enat (entry M 1 (transJm1 M)))
+                          (e5x_bodyM (transT2 M) (entry M 1 (transJ0 M)) k))
+                        (DB (enat (entry M 1 (transJm1 M)))
+                          (transT2 M +\<^sub>B Dpt (enat (entry M 1 (transJ1 M))) 0\<^sub>B))"
+    by (rule e5x_bodyM_lt_c2[OF ev])
+  show "lessBT (Trans (M[n])) (Trans M)"
+    by (rule scbext_lessBT[OF fMn fTM bRP coreLt2])
+  \<comment> \<open>exchange (1) at index \<open>n + 1\<close>\<close>
+  have n1le: "1 \<le> n + 1" by simp
+  have fOn1: "flatBT (operB (Trans M) (numBT (n + 1)))
+        = s1 @ flatBP (DB (enat (entry M 1 (transJm1 M)))
+            (e5x_bodyO (transT2 M) (entry M 1 (transJ0 M)) (n + 1))) @ b1"
+    using Oform[OF n1le] .
+  have idx: "n + 1 = Suc (Suc k)" using nk by simp
+  have fOn1': "flatBT (operB (Trans M) (numBT (n + 1)))
+        = s1 @ flatBP (DB (enat (entry M 1 (transJm1 M)))
+            (e5x_bodyO (transT2 M) (entry M 1 (transJ0 M)) (Suc (Suc k)))) @ b1"
+    using fOn1 idx by simp
+  have coreLt1: "lessBP (DB (enat (entry M 1 (transJm1 M)))
+                          (e5x_bodyM (transT2 M) (entry M 1 (transJ0 M)) k))
+                        (DB (enat (entry M 1 (transJm1 M)))
+                          (e5x_bodyO (transT2 M) (entry M 1 (transJ0 M)) (Suc (Suc k))))"
+    by (rule e5x_bodyM_lt_bodyO)
+  show "lessBT (Trans (M[n])) (operB (Trans M) (numBT (n + 1)))"
+    by (rule scbext_lessBT[OF fMn fOn1' bRP coreLt1])
+qed
+
+subsection \<open>Dispatcher: the condition-(V) branch FULLY closed modulo the tower forms\<close>
+
+text \<open>The §8.7 fundamental-sequence-descent dispatcher with BOTH condition-(V)
+  sub-branches discharged: the ADM branch unconditionally (via the r16-E1
+  triple @{thm [source] m_8_5_Trans_oper_exchange_condV_adm_uncond}, inside
+  @{thm [source] m_8_7_fseq_descend_dispatcher_admV}), and the NON-ADM branch
+  via @{thm [source] m_8_5_Trans_oper_exchange_condV_nonadm} — reducing the whole
+  condition-(V) leg to the single universally-quantified non-adm tower-forms
+  hypothesis \<open>NFall\<close> (the ONLY remaining condition-(V) residual, empirically
+  100% over the genuine deep regime).  Every other hypothesis is verbatim
+  @{thm [source] m_8_7_fseq_descend_dispatcher_admV}, EXCEPT \<open>exchVn\<close> is now
+  DERIVED (witness \<open>k = m + 1\<close>, strict) rather than assumed.\<close>
+
+lemma m_8_7_fseq_descend_dispatcher_condV:
+  fixes M :: pairseq and n :: nat
+  assumes MST: "M \<in> ST_PS"
+    and n1: "1 \<le> n" and L: "1 < Lng M"
+    and TOT: "\<And>N. N \<in> ST_PS \<Longrightarrow> N \<in> PT_PS \<Longrightarrow> 1 < Lng N - 1 \<Longrightarrow> Trans N \<in> OT_B"
+    and exchI: "\<And>N m. N \<in> ST_PS \<Longrightarrow> N \<in> PT_PS \<Longrightarrow> 1 < Lng N - 1 \<Longrightarrow>
+                  transCondI N \<Longrightarrow> 0 < parent N 0 (Lng N - 1) \<Longrightarrow> 1 < m \<Longrightarrow>
+                  Trans ((N::pairseq)[m]) = operB (Trans N) (numBT (m - 1))"
+    and exchII: "\<And>N m. N \<in> ST_PS \<Longrightarrow> N \<in> PT_PS \<Longrightarrow> 1 < Lng N - 1 \<Longrightarrow>
+                  transCondII N \<Longrightarrow> 1 < m \<Longrightarrow>
+                  \<exists>k. Trans ((N::pairseq)[m]) = operB (Trans N) (numBT k)"
+    and exchIII: "\<And>N m. N \<in> ST_PS \<Longrightarrow> N \<in> PT_PS \<Longrightarrow> 1 < Lng N - 1 \<Longrightarrow>
+                  transCondIII N \<Longrightarrow> 1 < m \<Longrightarrow>
+                  \<exists>k. leBT (Trans ((N::pairseq)[m])) (operB (Trans N) (numBT k))"
+    and exchIV: "\<And>N m. N \<in> ST_PS \<Longrightarrow> N \<in> PT_PS \<Longrightarrow> 1 < Lng N - 1 \<Longrightarrow>
+                  transCondIV N \<Longrightarrow> 1 < m \<Longrightarrow>
+                  \<exists>k. leBT (Trans ((N::pairseq)[m])) (operB (Trans N) (numBT k))"
+    and NFall: "\<And>N s\<^sub>1 b\<^sub>1. N \<in> ST_PS \<Longrightarrow> N \<in> PT_PS \<Longrightarrow> transCondV N \<Longrightarrow>
+                  \<not> adm N (parent N 0 (Lng N - 1)) \<Longrightarrow>
+                  scb_decomp (Trans (N[1])) s\<^sub>1
+                    (flatBT (Dpt (enat (entry N 1 (transJm1 N))) (transT2 N))) b\<^sub>1 \<Longrightarrow>
+                  scb_kind1 (Trans N) s\<^sub>1 (flatBT (transC2 N)) b\<^sub>1 \<Longrightarrow>
+                  (\<forall>k. flatBT (Trans (N[Suc k]))
+                        = s\<^sub>1 @ flatBP (DB (enat (entry N 1 (transJm1 N)))
+                            (e5x_bodyM (transT2 N) (entry N 1 (transJ0 N)) k)) @ b\<^sub>1)
+                  \<and> (\<forall>mm. 1 \<le> mm \<longrightarrow> flatBT (operB (Trans N) (numBT mm))
+                        = s\<^sub>1 @ flatBP (DB (enat (entry N 1 (transJm1 N)))
+                            (e5x_bodyO (transT2 N) (entry N 1 (transJ0 N)) mm)) @ b\<^sub>1)"
+    and exchVI: "\<And>N m. N \<in> ST_PS \<Longrightarrow> N \<in> PT_PS \<Longrightarrow> 1 < Lng N - 1 \<Longrightarrow>
+                  transCondVI N \<Longrightarrow> 1 < m \<Longrightarrow>
+                  \<exists>k. leBT (Trans ((N::pairseq)[m])) (operB (Trans N) (numBT k))"
+  shows "lessBT (Trans ((M::pairseq)[n])) (Trans M)"
+proof -
+  have exchVn: "\<And>N m. N \<in> ST_PS \<Longrightarrow> N \<in> PT_PS \<Longrightarrow> 1 < Lng N - 1 \<Longrightarrow>
+                  transCondV N \<Longrightarrow> \<not> adm N (parent N 0 (Lng N - 1)) \<Longrightarrow> 1 < m \<Longrightarrow>
+                  \<exists>k. leBT (Trans ((N::pairseq)[m])) (operB (Trans N) (numBT k))"
+  proof -
+    fix N :: pairseq and m :: nat
+    assume NST: "N \<in> ST_PS" and NP: "N \<in> PT_PS" and j1gt: "1 < Lng N - 1"
+      and cV: "transCondV N" and nadmN: "\<not> adm N (parent N 0 (Lng N - 1))"
+      and m2: "1 < m"
+    have m1: "1 \<le> m" using m2 by linarith
+    have "lessBT (Trans ((N::pairseq)[m])) (operB (Trans N) (numBT (m + 1)))"
+      by (rule m_8_5_Trans_oper_exchange_condV_nonadm(1)
+            [OF NST NP cV nadmN m1 NFall[OF NST NP cV nadmN]])
+    hence "leBT (Trans ((N::pairseq)[m])) (operB (Trans N) (numBT (m + 1)))" by simp
+    thus "\<exists>k. leBT (Trans ((N::pairseq)[m])) (operB (Trans N) (numBT k))" by blast
+  qed
+  show ?thesis
+    by (rule m_8_7_fseq_descend_dispatcher_admV[OF MST n1 L TOT exchI exchII
+          exchIII exchIV exchVn exchVI])
+qed
+
+
 end
