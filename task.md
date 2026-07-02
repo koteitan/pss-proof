@@ -55,7 +55,7 @@
     - ✅ 補題（第 $0$ 種型基本列の基本分岐規則）〔`m_8_3_kind0_branch_rule`〕
     - ✅ 補題（第 $0$ 種型基本列の基本基点関係）〔`m_8_3_kind0_base_basepoint`〕
   - 🚨 §8.4 条件 (III) か (IV) の下での展開規則
-    - 🚨 命題（条件 (III) か (IV) の下での $\textrm{Trans}$ と基本列の交換関係）〔condIII独自producer要、condIV=A27〕 (⛔ 8.5)
+    - 🚨 命題（条件 (III) か (IV) の下での $\textrm{Trans}$ と基本列の交換関係）〔condIII独自producer要、condIV=A27、(1)添字=A32〕 (⛔ 8.5)
     - ✅ 補題（右端の非許容直系先祖の基本性質）〔`m_8_4_rightmost_nonadm_ancestor`〕
     - ✅ 補題（条件 (III)〜(V) の下での右端の置き換えと $\textrm{Trans}$ の関係）〔`m_8_4_rightend_Trans`、A30訂正形〕[r1]
     - ✅ 補題（条件 (III)〜(VI) の下での展開規則の基本性質）〔`m_8_4_oper_props_1..5`、A31ガード形〕[r1]
@@ -79,12 +79,14 @@
             - ✅ trunk-stuck混在fold対応〔`m_8_5_anchor_fold_mixed`〕[r1]
             - ✅ 全期間F/C可換〔`m_8_5_Mark_fold_C_commute`〕[r2]
             - 🚨 Fのq非依存性組立〔block-shift自己相似confirmed、assembly未着手〕[r2]
+            - 🚨 netfold橋のhostP前提が実regime偽(N3)〔W1/W2再構築 or S5交換routeで迂回〕[r0]
             - ✅ R2a adm成分〔`m_8_5_marked_adm_persist`〕
             - 🚨 R2a leR成分
               - ✅ trunk-stuck leR偽の証明〔`m_8_5_marked_requires_last_component`〕
               - ✅ trunk-stuck代替witness〔`m_8_5_anchor_col_trunkstuck_regime2`〕
               - ✅ witnessをregimeから導出〔`m_8_5_basecut_residual`、colcase配線込 `m_8_5_colcase_trunkstuck_basecut`、207/207〕[r7]
-              - 🚨🤖 non-trunk-stuck列のleR導出〔+hasParent(Mq,0,last)組立+colcase全discharge、wt2〕[r0]
+              - ✅ colcase全discharge〔`m_8_5_colcase_full`/`m_8_5_anchor_fold_kernel`、ok1-transport+stuck-suffix〕[r1]
+              - 🚨 基底前提discharge〔hp0N1がm=0で20/68偽(N1)→m=0義務の再形成要、disc/colRT〕[r0]
         - ✅ (op) marked-head形〔`m_8_5_Mark_headform`〕
     - ✅ 補題（条件 (V) の下での $\textrm{Joints}$ と $\textrm{FirstNodes}$ と $t_2$ の基本性質）〔`m_8_5_Joints_FirstNodes_basic` parts(1)(2)〕
     - 🚨 補題（条件 (V) の下での各種 scb分解/基本列のscb分解）〔原典route〕
@@ -93,7 +95,7 @@
   - 🚨 §8.6 条件 (VI) の下での展開規則
     - 🚨 命題（条件 (VI) の下での $\textrm{Trans}$ と基本列の交換関係）
       - ✅ descent engine + (1,1)対角 host〔`m_8_6_TransCondVI_oper_descend_engine`/`m_8_6_diagSeq_condVI_commute`〕
-      - 🚨 general〔`m_8_6_exch_of_lhs_closed`〕(⛔ 8.5)
+      - 🚨 general〔`m_8_6_exch_of_lhs_closed`、(1)n=1脚=A34〕(⛔ 8.5)
     - ✅ 補題（公差 $(1,0)$ のペア数列の $\textrm{Trans}$ の基本性質）〔`m_8_6_const2nd_Trans_paper`〕
     - ✅ 補題（公差 $(1,1)$ のペア数列の $\textrm{Trans}$ の展開規則）〔`m_8_6_diagSeq_Trans_oper_paper`〕
     - ✅ 補題（順序数項の末尾単項の零化可能性）
@@ -103,7 +105,7 @@
     - ✅ 補題（公差 $(0,0)$ のペア数列の $\textrm{Trans}$ の基本性質）〔`m_8_7_const00_Trans`〕
     - 🚨 補題（基本列の降下性）〔`fseq_descend`〕
       - ✅ dispatcher〔`m_8_7_fseq_descend_dispatcher`、7 named交換前提modulo、6439/6439〕[r1]
-      - 🚨 交換前提7本のdischarge〔checklist=`_r14_f7_notes.py`〕(⛔ 8.5)
+      - 🚨 交換前提7本のdischarge〔checklist=`_r14_f7_notes.py`、exchIV添字k=m(VX)〕(⛔ 8.5)
     - ✅ 補題（順序数項の再帰構造）〔`m_8_7_OT_scb_recursive`〕
     - ✅ 補題（順序数項の共終数の遺伝性）〔`m_8_7_OT_dom_hereditary`〕
     - ✅ 補題（順序数項の末尾項の零化可能性）
