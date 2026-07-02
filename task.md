@@ -60,9 +60,15 @@
     - ✅ 補題（条件 (III)〜(V) の下での右端の置き換えと $\textrm{Trans}$ の関係）〔`m_8_4_rightend_Trans`、A30訂正形〕[r1]
     - ✅ 補題（条件 (III)〜(VI) の下での展開規則の基本性質）〔`m_8_4_oper_props_1..5`、A31ガード形〕[r1]
     - ✅ 補題（条件 (III)〜(VI) の下での $\textrm{Trans}$ と scb分解の関係）〔`m_8_4_Trans_scb`〕[r1]
-    - 🚨 補題（条件 (III)〜(V) の下での切片の scb分解）〔(2)(3)=`p_8_2_condV_terminal_slice_Trans`待ち、statement検証済〕(⛔ 8.5)[r1]
-    - 🚨🤖 補題（条件 (III)〜(V) の下での各種 scb分解）〔依存解禁済、wt-s4b〕
-    - 🚨🤖 補題（条件 (III) か (IV) の下での各種 scb分解）〔IV∧jm3<jm1枝の空性判定込、wt-s4b〕
+    - 🚨 補題（条件 (III)〜(V) の下での切片の scb分解）
+      - ✅ part(1)〔`m_8_4_slice_scb_part1`〕[r2]
+      - 🚨 parts(2)(3)〔=`p_8_2_condV_terminal_slice_Trans`〕(⛔ 8.2終切片)[r0]
+    - 🚨 補題（条件 (III)〜(V) の下での各種 scb分解）
+      - ✅ from_slice還元〔`m_8_4_various_scb_IIIV_from_slice`〕[r1]
+      - 🚨 terminal-slice transport×2〔=`p_8_2_condV_terminal_slice_Trans`〕(⛔ 8.2終切片)[r0]
+    - 🚨 補題（条件 (III) か (IV) の下での各種 scb分解）
+      - ✅ from_slice還元〔`m_8_4_various_scb_IIIIV_from_slice`、IV∧jm3<jm1は実在6例(空性反証)〕[r1]
+      - 🚨 terminal-slice transport〔同上〕(⛔ 8.2終切片)[r0]
     - ✅ 補題（条件 (III) か (IV) の下での基本列の基本性質）〔`m_8_4_oper_basic_part1`(= `p_8_4_oper_basic`)〕
   - 🚨 §8.5 条件 (V) の下での展開規則 〔詳細→[[pss-85-surgery-masterkey]]〕
     - 🚨 命題（条件 (V) の下での $\textrm{Trans}$ と基本列の交換関係）
@@ -91,7 +97,9 @@
     - ✅ 補題（条件 (V) の下での $\textrm{Joints}$ と $\textrm{FirstNodes}$ と $t_2$ の基本性質）〔`m_8_5_Joints_FirstNodes_basic` parts(1)(2)〕
     - 🚨 補題（条件 (V) の下での各種 scb分解/基本列のscb分解）〔原典route〕
       - ✅ part(1)+A24補正閉形式+n=1交換capstone〔`m_8_5_scbdec_fseq_condV`(2295/2295)/`m_8_5_scbdec_exchange1_n1_condV`、A28/A29発見〕[r1]
-      - 🚨🤖 残parts(2)-(5)/一般n〔rightend解禁済、目標=keystone-free条件V交換、wt-s5〕[r0]
+      - ✅ adm全n閉形式+交換(1)(2)無条件〔`m_8_5_scbdec_adm_forms`/`m_8_5_Trans_oper_exchange_condV_adm`、keystone不要〕[r1]
+      - 🚨 交換(3)残差〔leBT(D_e 0)t2+HB成分、経験100%〕[r0]
+      - 🚨 non-adm condV領域〔ST_PSで0/20049、空性定理化 or 個別証明〕[r0]
   - 🚨 §8.6 条件 (VI) の下での展開規則
     - 🚨 命題（条件 (VI) の下での $\textrm{Trans}$ と基本列の交換関係）
       - ✅ descent engine + (1,1)対角 host〔`m_8_6_TransCondVI_oper_descend_engine`/`m_8_6_diagSeq_condVI_commute`〕
