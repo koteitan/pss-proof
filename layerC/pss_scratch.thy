@@ -20563,4 +20563,397 @@ qed
 
 
 
+
+(* ===== round 16 front E1: condV non-adm REACHABILITY refutation, adm-side
+        HB discharge, exchange triple unconditional, dispatcher wiring ===== *)
+section \<open>r16-E1: 条件(V) — 非許容 \<open>j\<^sub>0\<close> の到達可能性（反証）と許容側残差の完全解消\<close>
+
+text \<open>REFUTATION (r16-E1, python/_r16_e1_admcheck.py, _r16_e1_chains.py,
+  _r16_e1_nonadm_exch.py).  The rounds-14/15 working hypothesis "non-adm condV
+  is unreachable in genuine \<open>ST\<^bsub>PS\<^esub>\<close>" (0/20049 shallow instances) is FALSE:
+  genuine members of \<open>ST\<^bsub>PS\<^esub> \<inter> PT\<^bsub>PS\<^esub>\<close> satisfying \<open>transCondV M\<close> with
+  \<open>\<not> adm M j\<^sub>0\<close> exist, all at \<open>Lng \<ge> 9\<close> — exactly the verify-rank-depth blind
+  spot (same failure mode as the refuted round-14 condIV-vacuity).  Smallest
+  found (explicit \<open>oper\<close> chain from \<open>diagSeq 0 3\<close>, replayed step-by-step, all
+  intermediates reduced, yaBMS-oracle-confirmed standard):
+    \<open>M = (0,0)(1,1)(2,2)(3,1)(4,0)(5,1)(6,2)(7,0)(6,2)\<close>
+      \<open>= diagSeq 0 3 [2][2][2][2][2][1][2][2][2][1]\<close>,
+    \<open>j\<^sub>0 = 5\<close>, \<open>M\<^bsub>1,j\<^sub>0\<^esub> = 1\<close>, \<open>M\<^bsub>1,j\<^sub>1\<^esub> = 2\<close>, \<open>nadm\<close> edges \<open>(1,4)\<rightarrow>(1,5)\<rightarrow>(1,6)\<close>.
+  81 further distinct genuine non-adm instances over two seeds.  EMPIRICAL MAP
+  of the non-adm branch (41 + 40 instances, two seeds, n \<in> {1,2,3}):
+  \<^item> descent \<open>Trans(M[n]) < Trans M\<close>: 100%;
+  \<^item> the printed 命題（条件(V)の下での交換関係） (1) index \<open>m\<^sub>n = n\<close> is FALSE for
+    \<open>n \<ge> 2\<close> (0/79) — the A28 index shift propagates to the non-adm branch:
+    min \<open>k\<close> with \<open>Trans(M[n]) \<le> Trans(M)[k]\<close> is EXACTLY \<open>n + 1 = m\<^sub>n + 1\<close>
+    for \<open>n \<ge> 2\<close> (and \<open>1\<close> at \<open>n = 1\<close>, the \<open>Pred\<close> leaf);
+  \<^item> the printed conclusion (3) \<open>Trans(M)[n] \<le> Trans(M[n+1])\<close>: 100% as printed;
+  \<^item> part (3) of 補題（条件(V)の下での\<open>Joints\<close>と\<open>FirstNodes\<close>と\<open>t\<^sub>2\<close>の基本性質）
+    (each component of \<open>t\<^sub>2\<close> is \<open>\<ge> D\<^bsub>M\<^sub>1\<^sub>,\<^sub>j\<^sub>1\<^esub> 0\<close>): 100% — consistent with the
+    article (stated there for the non-adm case);
+  \<^item> \<open>nextR M 1 j\<^sub>0 j\<^sub>1\<close>: 100% (and proven below without any adm hypothesis).
+  CONSEQUENCES: (a) the s5b adm-case block keeps its hypothesis \<open>adm M j\<^sub>0\<close> —
+  it is NOT dischargeable; (b) the dispatcher's \<open>exchV\<close> genuinely needs a
+  non-adm leg (kept as a — now provably non-vacuous — hypothesis, weakened
+  below); (c) the adm-regime residuals HB/t2lb were RE-VALIDATED DEEP
+  (60/60 at \<open>Lng \<ge> 9\<close>) and are proven unconditionally below.\<close>
+
+subsection \<open>The row-1 parent edge under condition (V) (no adm hypothesis)\<close>
+
+text \<open>\<open>s85b_condV_bridge\<close> exports \<open>hasParent\<close> and the parent VALUE; the edge
+  itself, needed as the \<open>nextR\<close> hypothesis of the Joints/FirstNodes lemma, is
+  its \<open>THE\<close>-unfolding.\<close>
+
+lemma e1x_condV_nextR1:
+  fixes M :: pairseq
+  assumes MP: "M \<in> PT_PS" and cond: "transCondV M"
+  shows "nextR M 1 (transJ0 M) (Lng M - 1)"
+proof -
+  have hp1: "hasParent M 1 (Lng M - 1)" by (rule s85b_condV_bridge(3)[OF MP cond])
+  have EXU: "\<exists>!p. nextR M 1 p (Lng M - 1)" using hp1 by (simp add: hasParent_def)
+  have "nextR M 1 (parent M 1 (Lng M - 1)) (Lng M - 1)"
+    using theI'[OF EXU] by (simp add: parent_def)
+  moreover have "parent M 1 (Lng M - 1) = transJ0 M"
+    using s85b_condV_bridge(4)[OF MP cond] by (simp add: s84x_jm2_def)
+  ultimately show ?thesis by simp
+qed
+
+subsection \<open>Joints/FirstNodes basic lemma with hypotheses reduced to condition (V)\<close>
+
+text \<open>The proven parts (1)–(2) of 補題（条件(V)の下での\<open>Joints\<close>と\<open>FirstNodes\<close>と
+  \<open>t\<^sub>2\<close>の基本性質） (@{thm [source] m_8_5_Joints_FirstNodes_basic}) restated on
+  the now-live regime \<open>transCondV M \<and> \<not> adm M j\<^sub>0\<close>: the \<open>nextR\<close> and gap
+  hypotheses are DERIVED (@{thm [source] e1x_condV_nextR1},
+  @{thm [source] s85b_condV_bridge}).\<close>
+
+lemma m_8_5_Joints_FirstNodes_basic_condV:
+  fixes M :: pairseq
+  defines "j1 \<equiv> Lng M - 1"
+    and "j0 \<equiv> parent M 0 (Lng M - 1)"
+  assumes MST: "M \<in> ST_PS" and MP: "M \<in> PT_PS"
+    and cond: "transCondV M"
+    and nadm: "\<not> adm M j0"
+  shows "Lng (Br (Red (seg M (Adm M j0) j1))) \<ge> 1"
+    and "j0 - Adm M j0
+           = Joints (Red (seg M (Adm M j0) j1)) ! (Lng (Br (Red (seg M (Adm M j0) j1))) - 1)"
+    and "FirstNodes (Red (seg M (Adm M j0) j1)) ! (Lng (Br (Red (seg M (Adm M j0) j1))) - 1)
+           = j1 - Adm M j0"
+    and "entry (Red (seg M (Adm M j0) j1)) 0 (j1 - Adm M j0)
+           = entry (Red (seg M (Adm M j0) j1)) 1 (j1 - Adm M j0)"
+proof -
+  have nxR: "nextR M 1 (parent M 0 (Lng M - 1)) (Lng M - 1)"
+    using e1x_condV_nextR1[OF MP cond] by (simp add: transJ0_def transJ1_def)
+  have gap: "parent M 0 (Lng M - 1) < Lng M - 1 - 1"
+    using s85b_condV_bridge(2)[OF MP cond]
+    unfolding transJ0_def transJ1_def by linarith
+  have nadm': "\<not> adm M (parent M 0 (Lng M - 1))" using nadm by (simp add: j0_def)
+  note L = m_8_5_Joints_FirstNodes_basic[OF MST MP nxR nadm' gap]
+  show "Lng (Br (Red (seg M (Adm M j0) j1))) \<ge> 1"
+    using L(1) by (simp add: j0_def j1_def)
+  show "j0 - Adm M j0
+           = Joints (Red (seg M (Adm M j0) j1)) ! (Lng (Br (Red (seg M (Adm M j0) j1))) - 1)"
+    using L(2) by (simp add: j0_def j1_def)
+  show "FirstNodes (Red (seg M (Adm M j0) j1)) ! (Lng (Br (Red (seg M (Adm M j0) j1))) - 1)
+           = j1 - Adm M j0"
+    using L(3) by (simp add: j0_def j1_def)
+  show "entry (Red (seg M (Adm M j0) j1)) 0 (j1 - Adm M j0)
+           = entry (Red (seg M (Adm M j0) j1)) 1 (j1 - Adm M j0)"
+    using L(4) by (simp add: j0_def j1_def)
+qed
+
+subsection \<open>HB discharged: the adm-case \<open>t\<^sub>2\<close>-component lower bound\<close>
+
+text \<open>The adm analogue of part (3) of the Joints/FirstNodes lemma — the last
+  named residual of the r15-S5b condV exchange triple.  Route (mirrors the
+  article's non-adm proof, with the Adm-zero regime COMING FOR FREE in the adm
+  case): \<open>N = (M\<^sub>j)\<^bsub>j=j\<^sub>0\<^esub>\<^bsup>j\<^sub>1\<^esup>\<close>, \<open>Red N \<in> DT\<^bsub>PS\<^esub>\<close>
+  (@{thm [source] m_8_2_standard_slice_Red_strongmono}), \<open>transJ0 (Red N) = 0\<close>
+  (@{thm [source] repr_transJ0_shift}) hence \<open>transJm1 (Red N) = 0\<close>, so the
+  Adm0 family identifies the last branch (@{thm [source] m_8_2_j1eq_Adm0},
+  @{thm [source] m_8_2_j0eq_Adm0}) with last joint \<open>0\<close> — the FIRST disjunct of
+  case (i) of @{thm [source] m_8_2_subexpr_component_strongmono_uncond} fires,
+  bounding every component of the body of \<open>Trans (Red N)\<close> from below by
+  \<open>D\<^bsub>M\<^sub>1\<^sub>,\<^sub>j\<^sub>1\<^esub> 0\<close>.  \<open>Trans (Red N) = Trans N = c\<^sub>2 = D\<^bsub>M\<^sub>1\<^sub>,\<^sub>j\<^sub>0\<^esub>(t\<^sub>2 + D\<^bsub>M\<^sub>1\<^sub>,\<^sub>j\<^sub>1\<^esub> 0)\<close>
+  (@{thm [source] m_7_3_Trans_Red}, @{thm [source] m_8_5_scbdec_Np_condV_adm})
+  pins the body, whose \<open>P\<^sub>B\<close>-components include \<open>t\<^sub>2\<close>'s.  \<open>Br (Red N) \<noteq> []\<close> by
+  the trunk-step/parent-uniqueness contradiction, exactly as in
+  @{thm [source] m_8_5_Joints_FirstNodes_basic}.  Empirical: 53/53 (r15, two
+  seeds) + 60/60 DEEP (\<open>Lng \<ge> 9\<close>, this round, python/_r16_e1_nonadm_exch.py).\<close>
+
+lemma m_8_5_condV_adm_t2_components:
+  fixes M :: pairseq
+  assumes MST: "M \<in> ST_PS" and MP: "M \<in> PT_PS"
+    and cond: "transCondV M" and admj0: "adm M (transJ0 M)"
+  shows "\<forall>c \<in> set (PB (transT2 M)).
+           leBT (Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B) c"
+proof -
+  have MR: "M \<in> RT_PS" using MST m_6_7_ST_PS_subseteq_RT_PS by blast
+  have MT: "M \<in> T_PS" using MP by (simp add: PT_PS_def)
+  have mono: "monoT M" using MP by (simp add: PT_PS_def)
+  let ?j0 = "transJ0 M"
+  let ?j1 = "Lng M - 1"
+  let ?N = "seg M ?j0 ?j1"
+  let ?RN = "Red ?N"
+  \<comment> \<open>ranges from condition (V)\<close>
+  have rng: "?j0 + 1 < ?j1"
+    using s85b_condV_bridge(2)[OF MP cond] by (simp add: transJ1_def)
+  have j0lt: "?j0 < ?j1" using rng by linarith
+  have L1: "1 < Lng M" using rng by linarith
+  have j1gt0: "0 < ?j1" using rng by linarith
+  have j1le: "?j1 \<le> Lng M - 1" by simp
+  have hp0M: "hasParent M 0 (Lng M - 1)"
+    by (rule monoT_hasParent0_last[OF MT mono L1])
+  \<comment> \<open>ancestry \<open>leR M 0 j\<^sub>0 j\<^sub>1\<close> (the row-0 parent edge)\<close>
+  have le0j: "le0 M ?j0 ?j1" by (rule s84c1_le0_j0[OF MP j1gt0])
+  have leM: "leR M 0 ?j0 ?j1" using le0j by (simp add: leR_def)
+  \<comment> \<open>the reduced slice: strongly mono, length preserved\<close>
+  have NR: "?RN \<in> RT_PS" using slice_Red_in_RT_PS[OF MR j0lt j1le leM] by simp
+  have NT: "?RN \<in> T_PS" using NR by (simp add: RT_PS_def)
+  have segT: "?N \<in> T_PS" using slice_Red_in_RT_PS[OF MR j0lt j1le leM] by simp
+  have ND: "?RN \<in> DT_PS"
+    by (rule m_8_2_standard_slice_Red_strongmono[OF MST j0lt j1le leM])
+  have monoRN: "monoT ?RN" using ND by (simp add: DT_PS_def)
+  have NP: "?RN \<in> PT_PS" using NT monoRN by (simp add: PT_PS_def)
+  have LRN: "Lng ?RN = Lng ?N" by (rule m_6_5_Lng_Red[OF segT])
+  have LNval: "Lng ?N = Suc ?j1 - ?j0" by simp
+  have LRNm1: "Lng ?RN - 1 = ?j1 - ?j0" using LRN LNval j0lt by linarith
+  have RNge2: "2 \<le> Lng ?RN" using LRNm1 rng by linarith
+  have LNpos: "0 < Lng ?N" using LNval j0lt by linarith
+  \<comment> \<open>IncrFirst bridge for \<open>nextR\<close>\<close>
+  have segeq: "?N = (IncrFirst ^^ (entry M 0 ?j0 - entry M 1 ?j0)) ?RN"
+    using m_6_6_ancestor_slice_Red_IncrFirst[OF MR j0lt j1le leM] by simp
+  have j1ltLM: "?j1 < Lng M" using L1 by simp
+  have bridge: "\<And>i p q. i \<le> (1::nat) \<Longrightarrow> p < Lng ?N \<Longrightarrow> q < Lng ?N
+                 \<Longrightarrow> nextR ?RN i p q = nextR M i (?j0 + p) (?j0 + q)"
+  proof -
+    fix i p q :: nat assume i: "i \<le> 1" and p: "p < Lng ?N" and q: "q < Lng ?N"
+    have "nextR ?RN i p q
+            = nextR ((IncrFirst ^^ (entry M 0 ?j0 - entry M 1 ?j0)) ?RN) i p q"
+      by (simp add: nextR_funpow_IncrFirst_eq)
+    also have "\<dots> = nextR ?N i p q" using segeq by simp
+    also have "\<dots> = nextR M i (?j0 + p) (?j0 + q)"
+      by (rule rcpb_nextR_seg[OF j1ltLM i p q])
+    finally show "nextR ?RN i p q = nextR M i (?j0 + p) (?j0 + q)" .
+  qed
+  \<comment> \<open>the Adm-zero regime of the slice: \<open>transJ0 ?RN = 0\<close>, hence \<open>transJm1 ?RN = 0\<close>\<close>
+  have mint: "?j0 < Lng M - 2" using rng by linarith
+  have anc0: "?j0 \<le> parent M 0 (Lng M - 1)" by (simp add: transJ0_def transJ1_def)
+  have leM2: "leR M 0 ?j0 (Lng M - 1)" using leM by simp
+  have tj0RN: "transJ0 ?RN = 0"
+    using repr_transJ0_shift[OF MR mint leM2 hp0M anc0] by simp
+  have Adm0RN: "transJm1 ?RN = 0"
+    using tj0RN adm_zero by (simp add: transJm1_def Adm_def)
+  \<comment> \<open>row-1 parent edge of the host's last column sits at \<open>j\<^sub>0 \<noteq> j\<^sub>1 - 1\<close>\<close>
+  have nxR1: "nextR M 1 ?j0 ?j1" by (rule e1x_condV_nextR1[OF MP cond])
+  have notnext: "\<not> nextR M 1 (?j1 - 1) ?j1"
+  proof
+    assume H: "nextR M 1 (?j1 - 1) ?j1"
+    have "?j1 - 1 = ?j0" by (rule nextR1_unique[OF H nxR1])
+    thus False using rng by linarith
+  qed
+  \<comment> \<open>\<open>Br ?RN \<noteq> []\<close>\<close>
+  have Brne: "Br ?RN \<noteq> []"
+  proof
+    assume Bemp: "Br ?RN = []"
+    have trmaxeq: "TrMax ?RN = Lng ?RN - 1"
+    proof (rule ccontr)
+      assume ne: "TrMax ?RN \<noteq> Lng ?RN - 1"
+      hence "Br ?RN = P (seg ?RN (TrMax ?RN + 1) (Lng ?RN - 1))" by (simp add: Br_def)
+      hence "Br ?RN \<noteq> []" using P_nonempty by simp
+      thus False using Bemp by simp
+    qed
+    have TrMaxpos: "0 < TrMax ?RN" using trmaxeq RNge2 by linarith
+    have step: "nextR ?RN 1 (TrMax ?RN - 1) (TrMax ?RN)"
+      using TrMax_trunk_step[OF NT, of "TrMax ?RN - 1"] TrMaxpos by simp
+    have e2: "TrMax ?RN - 1 = Lng ?RN - 2" using trmaxeq by simp
+    have p2: "Lng ?RN - 2 < Lng ?N" using LRN RNge2 by linarith
+    have q2: "Lng ?RN - 1 < Lng ?N" using LRN RNge2 by linarith
+    have add_p2: "?j0 + (Lng ?RN - 2) = ?j1 - 1" using LRNm1 RNge2 j0lt by linarith
+    have add_q2: "?j0 + (Lng ?RN - 1) = ?j1" using LRNm1 j0lt by linarith
+    have stepRN: "nextR ?RN 1 (Lng ?RN - 2) (Lng ?RN - 1)" using step trmaxeq e2 by simp
+    have "nextR M 1 (?j1 - 1) ?j1"
+      using bridge[of 1 "Lng ?RN - 2" "Lng ?RN - 1"] p2 q2 stepRN add_p2 add_q2 by simp
+    thus False using notnext by simp
+  qed
+  have j1gtRN: "Lng ?RN - 1 > 1" using LRNm1 rng by linarith
+  \<comment> \<open>last-branch identification: first node = last column, joint = \<open>0\<close>\<close>
+  have FNlast: "FirstNodes ?RN ! (Lng (Br ?RN) - 1) = Lng ?RN - 1"
+    by (rule m_8_2_j1eq_Adm0[OF NR NP Brne j1gtRN Adm0RN])
+  have Jlast: "Joints ?RN ! (Lng (Br ?RN) - 1) = transJ0 ?RN"
+    by (rule m_8_2_j0eq_Adm0[OF NR NP Brne j1gtRN Adm0RN])
+  have J0z: "Joints ?RN ! (Lng (Br ?RN) - 1) = 0" using Jlast tj0RN by simp
+  \<comment> \<open>strong-monomiality component bound, case (i) first disjunct\<close>
+  obtain t' where
+    TRN: "Trans ?RN = Dpt (enat (entry ?RN 1 0)) t'"
+    and bnd: "(Joints ?RN ! (Lng (Br ?RN) - 1) = 0
+          \<or> entry ?RN 0 (FirstNodes ?RN ! (Lng (Br ?RN) - 1))
+              = entry ?RN 1 (FirstNodes ?RN ! (Lng (Br ?RN) - 1)))
+         \<longrightarrow> (\<forall>p\<in>set (PB t').
+                leBT (Dpt (enat (entry ?RN 1 (FirstNodes ?RN ! (Lng (Br ?RN) - 1)))) 0\<^sub>B) p)"
+    using m_8_2_subexpr_component_strongmono_uncond[OF ND Brne] by blast
+  have compbnd: "\<forall>p\<in>set (PB t').
+      leBT (Dpt (enat (entry ?RN 1 (Lng ?RN - 1))) 0\<^sub>B) p"
+    using bnd J0z FNlast by simp
+  \<comment> \<open>row-1 entries of the reduced slice = host row-1 entries\<close>
+  have e1RN: "\<And>p. p < Lng ?N \<Longrightarrow> entry ?RN 1 p = entry M 1 (?j0 + p)"
+  proof -
+    fix p assume pL: "p < Lng ?N"
+    have pRN: "p < Lng ?RN" using pL LRN by simp
+    have "entry ?N 1 p
+            = entry ((IncrFirst ^^ (entry M 0 ?j0 - entry M 1 ?j0)) ?RN) 1 p"
+      using segeq by simp
+    hence a: "entry ?N 1 p = entry ?RN 1 p"
+      using entry_funpow_IncrFirst1[OF pRN] by simp
+    have b: "entry ?N 1 p = entry M 1 (?j0 + p)" by (rule entry_seg[OF pL])
+    show "entry ?RN 1 p = entry M 1 (?j0 + p)" using a b by simp
+  qed
+  have lastL: "Lng ?RN - 1 < Lng ?N" using LRN LNpos by linarith
+  have addlast: "?j0 + (Lng ?RN - 1) = ?j1" using LRNm1 j0lt by linarith
+  have e1last: "entry ?RN 1 (Lng ?RN - 1) = entry M 1 ?j1"
+    using e1RN[OF lastL] addlast by simp
+  have zeroL: "(0::nat) < Lng ?N" using LNpos by simp
+  have e1zero: "entry ?RN 1 0 = entry M 1 ?j0" using e1RN[OF zeroL] by simp
+  \<comment> \<open>pin the body: \<open>Trans ?RN = Trans ?N = c\<^sub>2 = D\<^bsub>M\<^sub>1\<^sub>,\<^sub>j\<^sub>0\<^esub>(t\<^sub>2 + D\<^bsub>M\<^sub>1\<^sub>,\<^sub>j\<^sub>1\<^esub> 0)\<close>\<close>
+  have NpSeg: "s84x_Np M = ?N"
+    using s85b_condV_bridge(4)[OF MP cond] by (simp add: s84x_Np_def)
+  have TN: "Trans ?N
+      = Dpt (enat (entry M 1 ?j0)) (transT2 M +\<^sub>B Dpt (enat (entry M 1 ?j1)) 0\<^sub>B)"
+    using m_8_5_scbdec_Np_condV_adm(2)[OF MST MP cond admj0] NpSeg
+    by (simp add: transJ1_def)
+  have TRedN: "Trans ?N = Trans ?RN" by (rule m_7_3_Trans_Red[OF NR])
+  have pinned: "Dpt (enat (entry M 1 ?j0)) (transT2 M +\<^sub>B Dpt (enat (entry M 1 ?j1)) 0\<^sub>B)
+      = Dpt (enat (entry M 1 ?j0)) t'"
+    using TN TRedN TRN e1zero by simp
+  have t'eq: "t' = transT2 M +\<^sub>B Dpt (enat (entry M 1 ?j1)) 0\<^sub>B"
+    using pinned by simp
+  \<comment> \<open>\<open>t\<^sub>2\<close>'s components sit inside \<open>t'\<close>'s\<close>
+  obtain as where t2l: "transT2 M = Trm as" by (cases "transT2 M") auto
+  have t'l: "t' = Trm (as @ [DB (enat (entry M 1 ?j1)) 0\<^sub>B])"
+    using t'eq t2l by simp
+  have sub: "set (PB (transT2 M)) \<subseteq> set (PB t')"
+    using t2l t'l by (auto simp: PB_def)
+  show ?thesis
+  proof
+    fix c assume "c \<in> set (PB (transT2 M))"
+    hence mem: "c \<in> set (PB t')" using sub by blast
+    have "leBT (Dpt (enat (entry ?RN 1 (Lng ?RN - 1))) 0\<^sub>B) c"
+      using compbnd mem by blast
+    thus "leBT (Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B) c"
+      using e1last by simp
+  qed
+qed
+
+text \<open>Corollary: the OTHER r15-S5b residual, \<open>t2lb\<close> — \<open>D\<^bsub>M\<^sub>1\<^sub>,\<^sub>j\<^sub>0\<^esub> 0 < t\<^sub>2\<close> — now
+  unconditional (via the pure order lemma @{thm [source] s85b_complb_lessBT},
+  \<open>t\<^sub>2 \<noteq> 0\<close> and \<open>M\<^bsub>1,j\<^sub>0\<^esub> < M\<^bsub>1,j\<^sub>1\<^esub>\<close>).\<close>
+
+lemma m_8_5_condV_adm_t2lb:
+  fixes M :: pairseq
+  assumes MST: "M \<in> ST_PS" and MP: "M \<in> PT_PS"
+    and cond: "transCondV M" and admj0: "adm M (transJ0 M)"
+  shows "lessBT (Dpt (enat (entry M 1 (transJ0 M))) 0\<^sub>B) (transT2 M)"
+proof -
+  have MR: "M \<in> RT_PS" using MST m_6_7_ST_PS_subseteq_RT_PS by blast
+  note J1pos = s85b_condV_setup(1)[OF MR MP cond]
+  note jm1 = s85b_jm1_adm[OF admj0]
+  have t2ne: "transT2 M \<noteq> 0\<^sub>B"
+    by (rule m_8_5_scbdec_t2_nonzero_condV[OF MR MP cond])
+  have uv: "entry M 1 (transJ0 M) < entry M 1 (transJ1 M)"
+    using m_8_5_condV_uv[OF MR MP J1pos cond] jm1 by simp
+  have HB: "\<forall>c \<in> set (PB (transT2 M)).
+              leBT (Dpt (enat (entry M 1 (transJ1 M))) 0\<^sub>B) c"
+    using m_8_5_condV_adm_t2_components[OF MST MP cond admj0]
+    by (simp add: transJ1_def)
+  show ?thesis by (rule s85b_complb_lessBT[OF uv t2ne HB])
+qed
+
+subsection \<open>The condition-(V) adm-case exchange triple, fully unconditional\<close>
+
+text \<open>命題（条件(V)の下での\<open>Trans\<close>と基本列の交換関係）, adm branch, A28-corrected
+  index \<open>m\<^sub>n + 1 = n\<close>, with NO residual hypothesis left: conclusion (3) is now
+  STRICT and unconditional (HB discharged above).  This closes the r15-S5b
+  front's "modulo two named residuals" caveat entirely.\<close>
+
+lemma m_8_5_Trans_oper_exchange_condV_adm_uncond:
+  fixes M :: pairseq and n :: nat
+  assumes MST: "M \<in> ST_PS" and MP: "M \<in> PT_PS" and n1: "n \<ge> 1"
+    and cond: "transCondV M"
+    and admj0: "adm M (parent M 0 (Lng M - 1))"
+  shows "lessBT (Trans ((M::pairseq)[n])) (operB (Trans M) (numBT n))"
+    and "lessBT (Trans ((M::pairseq)[n])) (Trans M)"
+    and "lessBT (operB (Trans M) (numBT n)) (Trans ((M::pairseq)[n + 1]))"
+proof -
+  have admj0': "adm M (transJ0 M)"
+    using admj0 by (simp add: transJ0_def transJ1_def)
+  show "lessBT (Trans ((M::pairseq)[n])) (operB (Trans M) (numBT n))"
+    by (rule m_8_5_scbdec_exchange1_condV_adm[OF MST MP cond admj0' n1])
+  show "lessBT (Trans ((M::pairseq)[n])) (Trans M)"
+    by (rule m_8_5_scbdec_exchange2_condV_adm[OF MST MP cond admj0' n1])
+  have HB: "\<forall>c \<in> set (PB (transT2 M)).
+              leBT (Dpt (enat (entry M 1 (transJ1 M))) 0\<^sub>B) c"
+    using m_8_5_condV_adm_t2_components[OF MST MP cond admj0']
+    by (simp add: transJ1_def)
+  have "lessBT (operB (Trans M) (numBT n)) (Trans ((M::pairseq)[Suc n]))"
+    by (rule m_8_5_scbdec_exchange3_strict_condV_adm[OF MST MP cond admj0' n1 HB])
+  thus "lessBT (operB (Trans M) (numBT n)) (Trans ((M::pairseq)[n + 1]))"
+    by simp
+qed
+
+subsection \<open>Dispatcher wiring: the \<open>exchV\<close> hypothesis weakened to its non-adm leg\<close>
+
+text \<open>The §8.7 dispatcher instance with the condition-(V) exchange hypothesis
+  discharged on the ADM branch (via the unconditional triple above, witness
+  \<open>k = m\<close>); only the non-adm branch — proven REACHABLE this round, see the
+  refutation note — remains a named hypothesis (\<open>exchVn\<close>), now strictly weaker
+  than the original \<open>exchV\<close>.  Every other hypothesis is verbatim
+  @{thm [source] m_8_7_fseq_descend_dispatcher}.\<close>
+
+lemma m_8_7_fseq_descend_dispatcher_admV:
+  fixes M :: pairseq and n :: nat
+  assumes MST: "M \<in> ST_PS"
+    and n1: "1 \<le> n" and L: "1 < Lng M"
+    and TOT: "\<And>N. N \<in> ST_PS \<Longrightarrow> N \<in> PT_PS \<Longrightarrow> 1 < Lng N - 1 \<Longrightarrow> Trans N \<in> OT_B"
+    and exchI: "\<And>N m. N \<in> ST_PS \<Longrightarrow> N \<in> PT_PS \<Longrightarrow> 1 < Lng N - 1 \<Longrightarrow>
+                  transCondI N \<Longrightarrow> 0 < parent N 0 (Lng N - 1) \<Longrightarrow> 1 < m \<Longrightarrow>
+                  Trans ((N::pairseq)[m]) = operB (Trans N) (numBT (m - 1))"
+    and exchII: "\<And>N m. N \<in> ST_PS \<Longrightarrow> N \<in> PT_PS \<Longrightarrow> 1 < Lng N - 1 \<Longrightarrow>
+                  transCondII N \<Longrightarrow> 1 < m \<Longrightarrow>
+                  \<exists>k. Trans ((N::pairseq)[m]) = operB (Trans N) (numBT k)"
+    and exchIII: "\<And>N m. N \<in> ST_PS \<Longrightarrow> N \<in> PT_PS \<Longrightarrow> 1 < Lng N - 1 \<Longrightarrow>
+                  transCondIII N \<Longrightarrow> 1 < m \<Longrightarrow>
+                  \<exists>k. leBT (Trans ((N::pairseq)[m])) (operB (Trans N) (numBT k))"
+    and exchIV: "\<And>N m. N \<in> ST_PS \<Longrightarrow> N \<in> PT_PS \<Longrightarrow> 1 < Lng N - 1 \<Longrightarrow>
+                  transCondIV N \<Longrightarrow> 1 < m \<Longrightarrow>
+                  \<exists>k. leBT (Trans ((N::pairseq)[m])) (operB (Trans N) (numBT k))"
+    and exchVn: "\<And>N m. N \<in> ST_PS \<Longrightarrow> N \<in> PT_PS \<Longrightarrow> 1 < Lng N - 1 \<Longrightarrow>
+                  transCondV N \<Longrightarrow> \<not> adm N (parent N 0 (Lng N - 1)) \<Longrightarrow> 1 < m \<Longrightarrow>
+                  \<exists>k. leBT (Trans ((N::pairseq)[m])) (operB (Trans N) (numBT k))"
+    and exchVI: "\<And>N m. N \<in> ST_PS \<Longrightarrow> N \<in> PT_PS \<Longrightarrow> 1 < Lng N - 1 \<Longrightarrow>
+                  transCondVI N \<Longrightarrow> 1 < m \<Longrightarrow>
+                  \<exists>k. leBT (Trans ((N::pairseq)[m])) (operB (Trans N) (numBT k))"
+  shows "lessBT (Trans ((M::pairseq)[n])) (Trans M)"
+proof -
+  have exchV: "\<And>N m. N \<in> ST_PS \<Longrightarrow> N \<in> PT_PS \<Longrightarrow> 1 < Lng N - 1 \<Longrightarrow>
+                  transCondV N \<Longrightarrow> 1 < m \<Longrightarrow>
+                  \<exists>k. leBT (Trans ((N::pairseq)[m])) (operB (Trans N) (numBT k))"
+  proof -
+    fix N :: pairseq and m :: nat
+    assume NST: "N \<in> ST_PS" and NP: "N \<in> PT_PS" and j1gt: "1 < Lng N - 1"
+      and cV: "transCondV N" and m2: "1 < m"
+    show "\<exists>k. leBT (Trans ((N::pairseq)[m])) (operB (Trans N) (numBT k))"
+    proof (cases "adm N (parent N 0 (Lng N - 1))")
+      case True
+      have m1: "1 \<le> m" using m2 by linarith
+      have "lessBT (Trans ((N::pairseq)[m])) (operB (Trans N) (numBT m))"
+        by (rule m_8_5_Trans_oper_exchange_condV_adm_uncond(1)[OF NST NP m1 cV True])
+      thus ?thesis by blast
+    next
+      case False
+      show ?thesis by (rule exchVn[OF NST NP j1gt cV False m2])
+    qed
+  qed
+  show ?thesis
+    by (rule m_8_7_fseq_descend_dispatcher[OF MST n1 L TOT exchI exchII exchIII
+          exchIV exchV exchVI])
+qed
+
 end
