@@ -25,7 +25,7 @@
 - ✅ §5 定式化
 - ✅ §6 ペア数列の基本性質 〔全節完了(2026-06-11)。docs `reducedness.md`/`red-le-domain.md`/`slice-Br-descending.md`〕
 - ✅ §7 Buchholzの表記系への翻訳 
-- 🚨 §8 停止性
+- 🚨 §8 停止性 〔r18: capstone `m_8_termination_modulo_CF`=停止性は CF-META(原典Pred同時帰納)+`buc1_2_2`整礎 の2点に崩壊。CF が唯一の Fable target〕
   - 📘 [Buc1] 引用sorry: 残 `buc1_2_2_OT_B_wf`(整礎)のみ
     - ✅ 3.2a+OT閉包の直接証明〔`m_buc1_3_2a_fseq_lt`/`m_buc1_3_2_OT_B_closed`、副産物`b1x_operB_dom_all`(operB無条件全域)〕[r1]
   - 🚨 §8.1 条件 (I) の下での展開規則
