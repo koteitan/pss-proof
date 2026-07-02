@@ -45,7 +45,9 @@
     - ✅ 補題（部分表現の単項成分と $\textrm{Pred}$ の関係）(§8.2 keystone)〔`m_8_2_keystone` = 無条件 `p_8_2_subexpr_component_Pred`〕
     - ✅ 補題（強単項性の下での部分表現の単項成分の基本性質）〔`m_8_2_subexpr_component_strongmono_uncond`〕
     - ✅ 補題（条件 (V) の下での右端の親の基本性質）〔`m_8_2_condV_rightmost_parent`〕
-    - 🚨🤖 補題（条件 (V) の下での終切片と $\textrm{Trans}$ の関係）〔adm case は r15-S5b 相当済、non-adm=head-rebase、wt-s5〕
+    - 🚨 補題（条件 (V) の下での終切片と $\textrm{Trans}$ の関係）
+      - ✅ VE'への還元〔`m_8_2_condV_terminal_slice_Trans_modVE`、全域modulo VE'〕[r1]
+      - 🚨 残 VE' `bpHeadT(Trans(seg M m j1))=bpHeadT(Trans M)`〔原典front-peel/Pred帰納、1284/1284〕[r0]
   - 🚨 §8.3 条件 (II) の下での展開規則
     - 🚨 命題（条件 (II) の下での $\textrm{Trans}$ と基本列の交換関係）
       - ✅ 降下⟸exch+OT〔`m_8_3_TransCondII_oper_descend_engine`〕
@@ -55,7 +57,9 @@
     - ✅ 補題（第 $0$ 種型基本列の基本分岐規則）〔`m_8_3_kind0_branch_rule`〕
     - ✅ 補題（第 $0$ 種型基本列の基本基点関係）〔`m_8_3_kind0_base_basepoint`〕
   - 🚨 §8.4 条件 (III) か (IV) の下での展開規則
-    - 🚨🤖 命題（条件 (III) か (IV) の下での $\textrm{Trans}$ と基本列の交換関係）〔A32補正形、原典route(条件V成功の写し)、wt-s4b〕
+    - 🚨 命題（条件 (III) か (IV) の下での $\textrm{Trans}$ と基本列の交換関係）〔A32補正形〕
+      - ✅ (2)降下 condIII〔`e3x_exchange2_condIII`、terminal-slice modulo〕[r1]
+      - 🚨 (1)(3)+condIV〔jm3分解route検証済、operB絡み〕[r0]
     - ✅ 補題（右端の非許容直系先祖の基本性質）〔`m_8_4_rightmost_nonadm_ancestor`〕
     - ✅ 補題（条件 (III)〜(V) の下での右端の置き換えと $\textrm{Trans}$ の関係）〔`m_8_4_rightend_Trans`、A30訂正形〕[r1]
     - ✅ 補題（条件 (III)〜(VI) の下での展開規則の基本性質）〔`m_8_4_oper_props_1..5`、A31ガード形〕[r1]
@@ -98,7 +102,7 @@
     - 🚨 補題（条件 (V) の下での各種 scb分解/基本列のscb分解）〔原典route〕
       - ✅ part(1)+A24補正閉形式+n=1交換capstone〔`m_8_5_scbdec_fseq_condV`(2295/2295)/`m_8_5_scbdec_exchange1_n1_condV`、A28/A29発見〕[r1]
       - ✅ adm全n閉形式+交換(1)(2)(3)無条件〔`m_8_5_Trans_oper_exchange_condV_adm_uncond`、(3)残差=`m_8_5_condV_adm_t2_components`/`_t2lb`〕[r2]
-      - 🚨🤖 non-adm condV交換〔空性=偽(E1反証、Lng≥9実在)→独自証明要、`m_8_5_Joints_FirstNodes_basic_condV`済、wt2〕[r1]
+      - 🚨 non-adm condV交換〔`m_8_5_Trans_oper_exchange_condV_nonadm`+dispatcher condV、modulo NFall(non-adm閉形式、admより深、terminal-slice要)〕[r2]
   - 🚨 §8.6 条件 (VI) の下での展開規則
     - 🚨 命題（条件 (VI) の下での $\textrm{Trans}$ と基本列の交換関係）
       - ✅ descent engine + (1,1)対角 host〔`m_8_6_TransCondVI_oper_descend_engine`/`m_8_6_diagSeq_condVI_commute`〕
@@ -127,5 +131,5 @@
       - ✅ 4-case dispatcher〔`m_8_7_OT_keystone_step`、step→{det,[Buc1]}〕
       - ✅ wid/det〔=§8.2 widH、`m_8_2_widH`/`m_8_2_det`〕
       - ✅ 帰納 infra〔`m_8_7_Pred_ST_PS`/`m_8_7_Trans_OT_step_keystone`〕
-      - 🚨🤖 R2 dstep〔`m_8_7_dstep_wholebody`、operB全域化で再攻、wt-b1〕
-      - 🚨🤖 R3 newOT/gbt〔scbdec閉形式ベースへ再マップ、wt-b1〕
+      - ✅ 交換value恒等式への還元〔`m_8_7_Trans_preserves_OT_via_closure`、OT柱=降下柱と同一残差stepval〕[r1]
+      - 🚨 残 stepval〔=§8.5交換のvalue形 `Trans(N[n])=[0]^k(operB(Trans N)(numBT m_n))`、降下柱と共有〕[r0]
