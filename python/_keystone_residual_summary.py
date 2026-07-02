@@ -1862,4 +1862,74 @@ python/_r13_monotone.py <secs> <seeds...> (row-0 monotone 50/50, col0-stuck 0/50
 base-cut@0 0/50 -- the monotone-collapse refutation); python/_r13_operstep.py and
 python/_r13_block_dichotomy.py (block-structure NEGATIVE results -- explicit forms
 do NOT match the regime); python/_r13_entry0_value.py (entry N 0 0 in {1,4}, not 0).
+
+=====================================================================
+ROUND 14, front K (2026-07-02; layerC/pss_scratch.thy appended block,
+lemmas m_8_5_oper_genform0 .. m_8_5_colcase_trunkstuck_basecut, green
+`Finished PSS_C`==1, sorry/oops=0, no p_* citations).  The Round-13
+residual `entry Mq 0 (Pcut Mq) < fst (B!m)` (trunk-stuck non-reset
+columns) is CLOSED, both oper branches, with the m=0 case DISCHARGED.
+=====================================================================
+
+THE UNBLOCKING OBSERVATION.  Round 13's "no explicit lemma captures the
+genuine block B" was an i1=1-only artifact: by oper_def, M[Suc q] = M[q] @
+copy_q in BOTH branches (copy_q = the k=q shifted copy of the base segment
+[j0..<j1], j0 = parent M i1 j1).  The genuine regime is DOMINATED by i1=0
+bases (entry M 1 (Lng M-1) = 0, d0 = 0, B = the VERBATIM segment,
+q-independent) -- _r13_block_dichotomy only filtered for i1=1 and hence saw
+0 blocks.  The missing i1=0 genform is now proven (m_8_5_oper_genform0 /
+m_8_5_deepen_block_explicit0).  Under maxv=3 broadening i1=1 blocks also
+occur (d0=2) and are handled by a separate seed.
+
+THE PROOF (all green):
+ - i1=0, m>0: feed m_8_5_Pcut_witness_of_smaller_at the index c = j0.
+   entry(M[q],0,j0) = entry M 0 j0 (copy 0 unshifted) and fst(B!m) =
+   entry M 0 (j0+m) >= entry M 0 j1 > entry M 0 j0 by nextrel0's OWN
+   "interior >= target" clause (m_8_5_basecut_small0).
+ - i1=0, m=0: the comparison is genuinely FALSE (round 13, 0/50) but
+   column 0 is NEVER trunk-stuck -- proven unconditionally:
+   Pcut(M[q]) <= jm1 = Adm (M[q]) (parent (M[q]) 0 (Lng-1))
+   (m_8_5_Pcut_le_Adm_parent0) via the NEW general fact adm M (Pcut M)
+   for multiT M (m_8_5_Pcut_adm: a non-admissible Pcut would chain
+   nextrel1's le0 conjunct with the cut, making Pcut-1 a smaller cut --
+   Least-minimality / monoT contradiction) + Least_le + adm_Adm_max.
+ - i1=1, ANY m: c = Lng(M[q-1]) + m, the previous copy's same-offset
+   column, exactly d0 below fst(B!m), d0 >= 1 by m_5_1_ancestor_basic_1
+   on the row-1 parent's le0 conjunct (m_8_5_basecut_small1).  NB round
+   13's "previous copy same offset 0/80" refutation was the i1=0
+   population (d0=0, non-strict) -- gated on i1=1 it is exact.
+
+DELIVERED LEMMAS: m_8_5_basecut_residual (the round-13 residual literally,
+stuck-gated, m=0 discharged NOT hypothesized); m_8_5_trunkstuck_basecut_witness
+(the witness at the fold host = regime2's `strict` hyp, now DERIVED);
+m_8_5_anchor_col_trunkstuck_basecut (the R2a trunk-stuck ANCHOR obligation
+with no witness hypothesis left); m_8_5_colcase_trunkstuck_basecut (the
+literal SECOND DISJUNCT of m_8_5_anchor_fold_mixed's colcase at Y = M[q],
+n0 = jm1).  Remaining hypotheses = regime facts only (RT_PS/multiT of the
+host, hasParent (M[q]) 0 (Lng-1) [100% in regime], app, 0<q, m<Lng B, and
+the trunk-stuck gate itself).
+
+EMPIRICAL (genuine keystone regime, filters as rounds 10-13, BROADENED
+maxv=3 / u 0..4 / q 1..7; python/_r14_k_broad.py, python/_r14_k_branch.py,
+details python/_r14_k_notes.py): final witness 207/207 trunk-stuck
+non-reset rows across 15 independent seeds (75/75 broad + 91/91 branch +
+41/41 high-q), ZERO exceptions; every per-branch sub-statement (E1a-E1d,
+E2a-E2d, E3/E3b/E4, K2/K2b/K2c/K3/K4) 100%; B == copy_q sanity 196/196
+blocks.  V = entry Mq 0 (Pcut Mq) takes values {1: 42, 2: 33} under maxv=3
+-- round 13's "constant 1" was a maxv=2 artifact; the proof uses no bound
+on V.  m=0 stuck: 0 observed (and now a theorem).  CAVEAT (honest): all
+observed trunk-stuck rows came from i1=0 blocks (stuckrows within i1=1
+blocks: 0/21 blocks); the i1=1 lemma covers ALL m unconditionally, so this
+only means its stuck-gated use is vacuous in-sample.  diagSeq-iterate
+population: 0 genuine blocks at this size (condV never fires on short
+iterates; matches rounds 10-13's population choice).
+
+WHAT REMAINS (not this front): the NON-trunk-stuck colcase disjunct (R2a
+leR gap) and the assembly wall (F q-independence) -- unchanged.  A future
+end-to-end fold driver should cases-combine m_8_5_colcase_trunkstuck_basecut
+with the non-stuck route per column.
+
+Re-run instructions for Round 14 front K:
+python3 python/_r14_k_broad.py 110 555 321 7 99 2024 13 42 1234 777
+python3 python/_r14_k_branch.py 100 11 222 3333 44444 5 606 7007
 """
