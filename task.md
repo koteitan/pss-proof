@@ -30,9 +30,11 @@
     - ✅ Lemma 2.1 lessBT 狭義線形順序〔`lessBT_irrefl`/`lessBT_trans`/`lessBT_total`(既存 layerB)〕
     - ✅ Lemma 3.2a+3.3 OT閉包の直接証明〔`m_buc1_3_2a_fseq_lt`/`m_buc1_3_2_OT_B_closed`、副産物`b1x_operB_dom_all`〕[r1]
     - 🚨 Lemma 2.2 `(OT_B,<)` 整礎性 `buc1_2_2_OT_B_wf`〔停止性の最終外部引用〕
-      - 🚨 WF⟺無限下降列なし 還元〔2.1線形順序経由、`wf_iff_no_infinite_down_chain`〕
-      - 🚨 下降列有限性の本体〔順序数付値 or D_ω-free rank／Buchholz distinguished-set〕
-      - 🚨 証明構造 scout〔[Buc1] §2 論文精読→Isabelle 分解の確定〕
+      - 🚨🤖 WF⟺無限下降列なし 還元〔2.1線形順序経由、wt2〕
+      - 🚨🤖 下降列有限性: measure/CNF多重集合順序〔wt-s5〕
+      - 🚨🤖 下降列有限性: 順序数付値〔wt-s4b〕
+      - 🚨🤖 下降列有限性: G-norm有界→有限〔wt-b1〕
+      - 🚨🤖 証明構造 scout〔[Buc1] §2 精読→Isabelle分解、wt2〕
   - 🚨 §8.1 条件 (I) の下での展開規則
     - 🚨 命題（条件 (I) の下での $\textrm{Trans}$ と基本列の交換関係）
       - ✅ 降下⟸交換則(1)+OT〔`m_8_1_Trans_fseq_condI_descent`〕
