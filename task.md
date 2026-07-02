@@ -33,7 +33,7 @@
       - ✅ 降下⟸交換則(1)+OT〔`m_8_1_Trans_fseq_condI_descent`〕
       - 🚨 交換則(1)本体〔stepT還元=`m_8_1_Trans_fseq_condI_comm_append_reduce`〕
         - ✅ stepT j0=0（copy-additivity）〔`m_8_1_Trans_replicate_pred_condI`〕
-        - 🚨 stepT j0>0 (⛔ 8.5)
+        - 🚨🤖 stepT j0>0〔condI explicit形で攻略中、wt-f7〕
       - 🚨 OT所属 (⛔ 8.7)
     - ✅ 補題（公差 $(1,1)$ のペア数列の $\textrm{Trans}$ の基本性質）〔`m_8_1_diagSeq_Trans`〕
     - ✅ 系（$\textrm{Pred}$ が公差 $(1,1)$ のペア数列の $\textrm{Trans}$ の基本性質）〔`m_8_1_Pred_diagSeq_Trans`〕
@@ -47,7 +47,7 @@
     - ✅ 補題（条件 (V) の下での右端の親の基本性質）〔`m_8_2_condV_rightmost_parent`〕
     - 🚨 補題（条件 (V) の下での終切片と $\textrm{Trans}$ の関係）
       - ✅ VE'への還元〔`m_8_2_condV_terminal_slice_Trans_modVE`、全域modulo VE'〕[r1]
-      - 🚨 残 VE'=FPEEL_STEP〔原典Pred同時帰納(content 3745-3945)、front-peel簡約は全て偽と確認、`fpx_slice_principal`済〕[r1]
+      - 🚨🤖 残 VE'=FPEEL_STEP〔原典Pred同時帰納。CFA/CFB/CFC 3角度攻略中(wt2/s5/s4b)〕[r1]
   - 🚨 §8.3 条件 (II) の下での展開規則
     - 🚨 命題（条件 (II) の下での $\textrm{Trans}$ と基本列の交換関係）
       - ✅ 降下⟸exch+OT〔`m_8_3_TransCondII_oper_descend_engine`〕
@@ -61,7 +61,7 @@
     - 🚨 命題（条件 (III) か (IV) の下での $\textrm{Trans}$ と基本列の交換関係）〔A32補正形〕
       - ✅ (2)降下 condIII〔`e3x_exchange2_condIII`、terminal-slice modulo〕[r1]
       - ✅ (1)(3) condIII〔`d13x_exchange13_condIII`/`m_8_4_Trans_oper_exchange_corrected_condIII`、mnform modulo〕[r1]
-      - 🚨 condIV枝〔jm3<jm1、6実例〕[r0]
+      - 🚨🤖 condIV枝〔jm3<jm1、6実例、wt-b1〕[r0]
     - ✅ 補題（右端の非許容直系先祖の基本性質）〔`m_8_4_rightmost_nonadm_ancestor`〕
     - ✅ 補題（条件 (III)〜(V) の下での右端の置き換えと $\textrm{Trans}$ の関係）〔`m_8_4_rightend_Trans`、A30訂正形〕[r1]
     - ✅ 補題（条件 (III)〜(VI) の下での展開規則の基本性質）〔`m_8_4_oper_props_1..5`、A31ガード形〕[r1]
@@ -104,7 +104,7 @@
     - 🚨 補題（条件 (V) の下での各種 scb分解/基本列のscb分解）〔原典route〕
       - ✅ part(1)+A24補正閉形式+n=1交換capstone〔`m_8_5_scbdec_fseq_condV`(2295/2295)/`m_8_5_scbdec_exchange1_n1_condV`、A28/A29発見〕[r1]
       - ✅ adm全n閉形式+交換(1)(2)(3)無条件〔`m_8_5_Trans_oper_exchange_condV_adm_uncond`、(3)残差=`m_8_5_condV_adm_t2_components`/`_t2lb`〕[r2]
-      - 🚨 non-adm condV交換〔`m_8_5_Trans_oper_exchange_condV_nonadm`+dispatcher condV、modulo NFall(non-adm閉形式、admより深、terminal-slice要)〕[r2]
+      - 🚨🤖 non-adm condV交換〔NFall(=CF-META cond V-nonadm instance)攻略中、wt-s4a〕[r2]
   - 🚨 §8.6 条件 (VI) の下での展開規則
     - 🚨 命題（条件 (VI) の下での $\textrm{Trans}$ と基本列の交換関係）
       - ✅ descent engine + (1,1)対角 host〔`m_8_6_TransCondVI_oper_descend_engine`/`m_8_6_diagSeq_condVI_commute`〕
