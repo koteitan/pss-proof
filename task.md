@@ -31,32 +31,32 @@
     - ✅ Lemma 3.2a+3.3 OT閉包の直接証明〔`m_buc1_3_2a_fseq_lt`/`m_buc1_3_2_OT_B_closed`、副産物`b1x_operB_dom_all`〕[r1]
     - 🚨 Lemma 2.2 `(OT_B,<)` 整礎性 `buc1_2_2_OT_B_wf`〔停止性の最終外部引用。順序型 ψ₀(ε_{Ω_ω+1})=真の external-grade〕
       - ✅ principal順序への還元〔`m_buc1_2_2_OT_B_wf_via_principal`、多重集合層証明済・両方向同値〕[r1]
-      - 🚨 `wf RPrel`(principal lessBP 整礎)〔=ψ順序数崩壊、独立プロジェクト。AFP Ordinal は凍結ROOTでPSS_C非許可〕[r0]
+      - 🚨🤖 `wf RPrel`(principal lessBP 整礎)〔有界/rank断片を攻略、wt-y4〕[r0]
   - 🚨 §8.1 条件 (I) の下での展開規則
     - 🚨 命題（条件 (I) の下での $\textrm{Trans}$ と基本列の交換関係）
       - ✅ 降下⟸交換則(1)+OT〔`m_8_1_Trans_fseq_condI_descent`〕
       - 🚨 交換則(1)本体〔stepT還元=`m_8_1_Trans_fseq_condI_comm_append_reduce`〕
         - ✅ stepT j0=0（copy-additivity）〔`m_8_1_Trans_replicate_pred_condI`〕
-        - 🚨 stepT j0>0〔`c1x_condI_j0pos_exchange`でCF_Iに還元、CF-META待ち〕[r1]
+        - 🚨🤖 stepT j0>0〔CF_I value fact 攻略、wt-s4c〕[r1]
       - 🚨 OT所属 (⛔ 8.7)
     - ✅ 補題（公差 $(1,1)$ のペア数列の $\textrm{Trans}$ の基本性質）〔`m_8_1_diagSeq_Trans`〕
     - ✅ 系（$\textrm{Pred}$ が公差 $(1,1)$ のペア数列の $\textrm{Trans}$ の基本性質）〔`m_8_1_Pred_diagSeq_Trans`〕
     - ✅ 補題（条件 (I) か (III) の下での $c_1$ 前後の具体表示）（A20/A21）〔part(1)-(5)+(4-1)(4-2) `m_8_1_c1_around_part4_1`/`_part4_2`〕
   - 🚨 §8.2 強単項性
     - ✅ 命題（標準形の直系先祖による切片の簡約化の強単項性）〔`m_8_2_standard_slice_Red_strongmono`〕
-    - 🚨 命題（条件 (II) か (IV) の下での終切片と $\textrm{Trans}$ の関係） (⛔ 8.5)
+    - 🚨🤖 命題（条件 (II) か (IV) の下での終切片と $\textrm{Trans}$ の関係）〔`p_8_2_condIIIV_terminal_slice_Trans`(art3314)=condVのVE'と別命題・独立、wt-y5〕
     - ✅ 補題（強単項性の切片への遺伝性）〔`m_8_2_strongmono_slice`〕
     - ✅ 補題（部分表現の単項成分と $\textrm{Pred}$ の関係）(§8.2 keystone)〔`m_8_2_keystone` = 無条件 `p_8_2_subexpr_component_Pred`〕
     - ✅ 補題（強単項性の下での部分表現の単項成分の基本性質）〔`m_8_2_subexpr_component_strongmono_uncond`〕
     - ✅ 補題（条件 (V) の下での右端の親の基本性質）〔`m_8_2_condV_rightmost_parent`〕
     - 🚨 補題（条件 (V) の下での終切片と $\textrm{Trans}$ の関係）
       - ✅ VE'への還元〔`m_8_2_condV_terminal_slice_Trans_modVE`、全域modulo VE'〕[r1]
-      - 🚨 残 VE'〔原典back-peel帰納(`cfbx_VE_backpeel`, front-peel死路確定)、残=STEP core/Pred-stable域m<TrMax〕[r2]
+      - 🚨🤖 残 VE'〔back-peel STEP/BASE/transport 攻略、wt2/wt-s5/wt-s4a〕[r2]
   - 🚨 §8.3 条件 (II) の下での展開規則
     - 🚨 命題（条件 (II) の下での $\textrm{Trans}$ と基本列の交換関係）
       - ✅ 降下⟸exch+OT〔`m_8_3_TransCondII_oper_descend_engine`〕
       - ✅ OT柱回避の直接降下〔`d2x_exchange2_condII`、kind0残差modulo〕[r1]
-      - 🚨 exch〔`m_8_3_exch_of_lhs_closed`〕(⛔ Pred帰納)
+      - 🚨🤖 exch〔condII kind0 lhs value fact 攻略、wt-y1〕(⛔ Pred帰納)
       - 🚨 OT所属 (⛔ 8.7)
     - ✅ 補題（第 $0$ 種型基本列の基本不等式）〔`m_8_3_kind0_base_ineq`(A22訂正)〕
     - ✅ 補題（第 $0$ 種型基本列の基本分岐規則）〔`m_8_3_kind0_branch_rule`〕
@@ -108,12 +108,12 @@
     - 🚨 補題（条件 (V) の下での各種 scb分解/基本列のscb分解）〔原典route〕
       - ✅ part(1)+A24補正閉形式+n=1交換capstone〔`m_8_5_scbdec_fseq_condV`(2295/2295)/`m_8_5_scbdec_exchange1_n1_condV`、A28/A29発見〕[r1]
       - ✅ adm全n閉形式+交換(1)(2)(3)無条件〔`m_8_5_Trans_oper_exchange_condV_adm_uncond`、(3)残差=`m_8_5_condV_adm_t2_components`/`_t2lb`〕[r2]
-      - 🚨 non-adm condV交換〔`nfx_NFall`(operB半=無条件)、残=3 non-adm slice-value(=§8.2 VE)〕[r3]
+      - 🚨🤖 non-adm condV交換〔NFall 3 slice-value 攻略、wt-b1〕[r3]
   - 🚨 §8.6 条件 (VI) の下での展開規則
     - 🚨 命題（条件 (VI) の下での $\textrm{Trans}$ と基本列の交換関係）
       - ✅ descent engine + (1,1)対角 host〔`m_8_6_TransCondVI_oper_descend_engine`/`m_8_6_diagSeq_condVI_commute`〕
       - ✅ OT柱回避の直接降下〔`d6x_exchange2_condVI`、cf残差modulo〕[r1]
-      - 🚨 general〔`m_8_6_exch_of_lhs_closed`、(1)n=1脚=A34〕(⛔ Pred帰納)
+      - 🚨🤖 general〔condVI cf value fact 攻略、wt-y3〕(⛔ Pred帰納)
     - ✅ 補題（公差 $(1,0)$ のペア数列の $\textrm{Trans}$ の基本性質）〔`m_8_6_const2nd_Trans_paper`〕
     - ✅ 補題（公差 $(1,1)$ のペア数列の $\textrm{Trans}$ の展開規則）〔`m_8_6_diagSeq_Trans_oper_paper`〕
     - ✅ 補題（順序数項の末尾単項の零化可能性）
@@ -139,4 +139,4 @@
       - ✅ wid/det〔=§8.2 widH、`m_8_2_widH`/`m_8_2_det`〕
       - ✅ 帰納 infra〔`m_8_7_Pred_ST_PS`/`m_8_7_Trans_OT_step_keystone`〕
       - ✅ 交換value恒等式への還元〔`m_8_7_Trans_preserves_OT_via_closure`、OT柱=降下柱と同一残差stepval〕[r1]
-      - 🚨 残 stepval〔=§8.5交換のvalue形 `Trans(N[n])=[0]^k(operB(Trans N)(numBT m_n))`、降下柱と共有〕[r0]
+      - 🚨🤖 残 stepval〔cond I/II で discharge + III/V interleave 特徴づけ、wt-f7〕[r0]
