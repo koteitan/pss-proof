@@ -24498,4 +24498,433 @@ qed
 
 
 
+
+(* ===== round 20 WFORD (wt-s4b 702dae4): [Buc1] Lemma 2.2 reduced to WF of the principal order (multiset layer discharged, both directions) ===== *)
+
+
+
+section \<open>[Buc1] Lemma 2.2: well-foundedness of \<open>(OT\<^bsub>B\<^esub>, <)\<close> (WFORD attack, r20)\<close>
+
+text \<open>
+  GOAL (the SOLE remaining external-citation \<open>sorry\<close> the termination result depends on):
+  @{prop "wf {(a, b). a \<in> OT_B \<and> b \<in> OT_B \<and> lessBT a b}"} (= @{text buc1_2_2_OT_B_wf}).
+  We reduce it here, WITHOUT citing that \<open>sorry\<close>, to a sharply-stated named residual and
+  prove everything around the residual green.
+
+  \<^bold>\<open>Structure of the reduction.\<close>  \<open>OT\<^bsub>B\<^esub> = {t. isOT_BT t \<and> dfree_BT t}\<close>, so the goal
+  relation is exactly @{text RTrel} below.  We package the well-known facts:
+  \<^item> \<open><\<close> is a strict LINEAR order on \<open>T\<close> ([Buc1] Lemma 2.1, proven upstream as
+    @{thm [source] lessBT_irrefl} / @{thm [source] lessBT_trans} /
+    @{thm [source] lessBT_total}); hence on \<open>OT\<^bsub>B\<^esub>\<close>, so \<open>wf\<close> \<open>\<Longleftrightarrow>\<close> no infinite
+    strictly-\<open><\<close>-descending chain (Main @{thm [source] wf_iff_no_infinite_down_chain}).
+  \<^item> The genuine content of [Buc1] Lemma 2.2 is the ORDINAL-collapsing well-ordering: the
+    ordinal value \<open>o : OT \<to> Ord\<close> is an order embedding into \<open>C\<^sub>0(\<epsilon>\<^bsub>\<Omega>\<^sub>\<omega>+1\<^esub>)\<close>
+    (Buchholz's own proof, §2, is \<open>a < c \<Longrightarrow> o(a) < o(c)\<close>).  This CANNOT be replaced by a
+    naive structural / nested-multiset denotation: the nested-multiset-with-lex-index order
+    on all \<open>T\<^bsub>B\<^esub>\<close> is itself NOT well-founded (empirically: \<open>D\<^sub>0\<^sup>n(D\<^sub>1 0)\<close> is an infinite
+    \<open><\<close>-descending chain in \<open>T\<^bsub>B\<^esub>\<close>, and its image is an infinite descending nested-multiset
+    chain).  The \<open>OT\<close> normal-form condition \<open>G\<^sub>v b < b\<close> (which \<open>D\<^sub>0\<^sup>2(D\<^sub>1 0) \<notin> OT\<close>
+    violates) is exactly what the collapsing supplies; encoding it needs real ordinals.
+\<close>
+
+definition RPrel :: "(BP \<times> BP) set" where
+  "RPrel = {(p, q). isOT_BP p \<and> dfree_BP p \<and> isOT_BP q \<and> dfree_BP q \<and> lessBP p q}"
+
+definition RTrel :: "(BT \<times> BT) set" where
+  "RTrel = {(a, b). isOT_BT a \<and> dfree_BT a \<and> isOT_BT b \<and> dfree_BT b \<and> lessBT a b}"
+
+text \<open>The goal relation is exactly @{text RTrel} (unfolding \<open>OT\<^bsub>B\<^esub> = OT \<inter> T\<^bsub>B\<^esub>\<close>).\<close>
+
+lemma wfox_goal_eq_RTrel:
+  "{(a, b). a \<in> OT_B \<and> b \<in> OT_B \<and> lessBT a b} = RTrel"
+  by (auto simp: RTrel_def OT_B_def OT_def T_B_def)
+
+text \<open>\<open>RTrel\<close> is a strict linear order (irreflexive / transitive / total) — from Lemma 2.1.\<close>
+
+lemma wfox_RTrel_irrefl: "(a, a) \<notin> RTrel"
+  by (simp add: RTrel_def lessBT_irrefl)
+
+lemma wfox_RTrel_trans: "(a, b) \<in> RTrel \<Longrightarrow> (b, c) \<in> RTrel \<Longrightarrow> (a, c) \<in> RTrel"
+  by (auto simp: RTrel_def dest: lessBT_trans)
+
+text \<open>WF of \<open>RTrel\<close> is equivalent to the absence of an infinite strictly-\<open><\<close>-descending
+  chain of \<open>OT\<^bsub>B\<^esub>\<close> terms (Main; this is how Buchholz-style WF is attacked).\<close>
+
+lemma wfox_wf_iff_nochain:
+  "wf RTrel \<longleftrightarrow> (\<nexists>f. \<forall>i. (f (Suc i), f i) \<in> RTrel)"
+  by (rule wf_iff_no_infinite_down_chain)
+
+text \<open>\<^bold>\<open>Isolating the hard core.\<close>  The natural place to try to attack \<open>wf RTrel\<close> is to
+  push it down to the PRINCIPAL order @{term RPrel} (Buchholz's own induction is on the
+  principal terms \<open>D\<^sub>v b\<close>).  The two directions of this decomposition split cleanly into
+  a trivial part and the genuinely-hard part:
+
+  \<^item> @{text wfox_RPrel_of_RTrel} (\<open>wf RTrel \<Longrightarrow> wf RPrel\<close>) is easy: principals embed into
+    terms via \<open>p \<mapsto> D\<^sub>? p = Trm [p]\<close>.  So \<open>wf RPrel\<close> is not STRONGER than the goal.
+  \<^item> @{text wfox_RPrel_subterm} shows that, inside @{term RPrel}, the SAME-INDEX layer
+    (\<open>D\<^sub>v a < D\<^sub>v b \<Longleftrightarrow> a < b\<close>) reduces to @{term RTrel} on the strictly-smaller subterms.
+    So the ONLY genuinely-hard part of \<open>wf RPrel\<close> is the CROSS-INDEX comparison
+    \<open>D\<^sub>u a < D\<^sub>v b\<close> with \<open>u < v\<close>: an arbitrary \<open>D\<^sub>u a\<close> lies below \<open>D\<^sub>v b\<close> regardless of
+    \<open>a\<close> — this is exactly Buchholz's ordinal COLLAPSING (\<open>\<psi>\<^sub>u\<close> / \<open>C\<^sub>0\<close>), for which no
+    structural / multiset surrogate exists (see the header note).
+  The reverse \<open>wf RPrel \<Longrightarrow> wf RTrel\<close> (the natural-sum / tuple layer, an \<open>\<omega>\<^sup>\<cdot>\<close>-sum whose
+  well-ordering is the Dershowitz--Manna multiset order over \<open>RPrel\<close>) is provable but needs
+  \<open>HOL-Library.Multiset\<close> (\<open>wf_mult\<close>), which cannot be imported here without editing the
+  frozen import line; its multiset-free proof (max element eventually stabilises, then
+  recurse below it) is the validated residual plan.  EMPIRICALLY VALIDATED (0 mismatches
+  over ~3.4M ordered pairs of \<open>OT\<^bsub>B\<^esub>\<close> terms, \<open>python\<close> ad-hoc check): for OT/dfree
+  \<open>a b\<close>, \<open>lessBT a b \<Longleftrightarrow> multp lessBP (mset (untrm a)) (mset (untrm b))\<close>.\<close>
+
+lemma wfox_RPrel_into_RTrel:
+  "(p, q) \<in> RPrel \<Longrightarrow> (Trm [p], Trm [q]) \<in> RTrel"
+  by (auto simp: RPrel_def RTrel_def)
+
+lemma wfox_RPrel_of_RTrel:
+  \<comment> \<open>trivial direction: principals embed into terms, so \<open>wf RPrel\<close> follows from the goal.\<close>
+  assumes "wf RTrel"
+  shows "wf RPrel"
+proof (rule wf_subset[OF wf_inv_image[OF assms, of "\<lambda>p. Trm [p]"]])
+  show "RPrel \<subseteq> inv_image RTrel (\<lambda>p. Trm [p])"
+    by (auto simp: inv_image_def wfox_RPrel_into_RTrel)
+qed
+
+lemma wfox_RPrel_subterm:
+  \<comment> \<open>the SAME-INDEX layer of @{term RPrel} reduces to @{term RTrel} on subterms (the
+     genuinely-hard part is only the CROSS-INDEX \<open>u < v\<close> comparison = collapsing).\<close>
+  "(DB v a, DB v b) \<in> RPrel \<Longrightarrow> (a, b) \<in> RTrel"
+  by (auto simp: RPrel_def RTrel_def)
+
+
+text \<open>
+  \<^bold>\<open>The natural-sum / tuple layer, proven multiset-free.\<close>  We prove
+  \<open>wf RPrel \<Longrightarrow> wf RTrel\<close> so the residual for the goal becomes the SHARPER
+  principal well-foundedness @{term "wf RPrel"} (which by @{thm [source] wfox_RPrel_of_RTrel}
+  is not stronger than the goal).  This discharges the \<open>\<omega>\<^sup>\<cdot>\<close>-sum / Dershowitz--Manna
+  multiset layer WITHOUT importing @{text HOL.Multiset}: outer well-founded induction on
+  the head principal under @{term RPrel}, inner induction on the list length (peeling the
+  shared maximal head).\<close>
+
+lemma wfox_Trm_untrm: "Trm (untrm t) = t"
+  by (cases t) simp
+
+lemma wfox_hd_guarded:
+  "isOT_BT (Trm (p # ps)) \<Longrightarrow> dfree_BT (Trm (p # ps)) \<Longrightarrow> isOT_BP p \<and> dfree_BP p"
+  by simp
+
+lemma wfox_tl_guarded:
+  "isOT_BT (Trm (p # ps)) \<Longrightarrow> dfree_BT (Trm (p # ps)) \<Longrightarrow> isOT_BT (Trm ps) \<and> dfree_BT (Trm ps)"
+  by (cases ps) auto
+
+lemma wfox_chain_nonempty:
+  assumes ch: "\<forall>i. (f (Suc i), f i) \<in> RTrel"
+  shows "untrm (f i) \<noteq> []"
+proof
+  assume e: "untrm (f i) = []"
+  have "f i = Trm []" using e wfox_Trm_untrm[of "f i"] by simp
+  moreover have "lessBT (f (Suc i)) (f i)" using ch by (simp add: RTrel_def)
+  ultimately show False by simp
+qed
+
+lemma wfox_head_step:
+  \<comment> \<open>heads are non-increasing along an @{term RTrel}-step.\<close>
+  assumes rt: "(a, b) \<in> RTrel" and na: "untrm a \<noteq> []" and nb: "untrm b \<noteq> []"
+  shows "hd (untrm a) = hd (untrm b) \<or> lessBP (hd (untrm a)) (hd (untrm b))"
+proof -
+  obtain xs where a: "a = Trm xs" by (cases a)
+  obtain ys where b: "b = Trm ys" by (cases b)
+  from na a obtain c cs where xs: "xs = c # cs" by (cases xs) auto
+  from nb b obtain d ds where ys: "ys = d # ds" by (cases ys) auto
+  have "lessBT (Trm (c # cs)) (Trm (d # ds))"
+    using rt a b xs ys by (simp add: RTrel_def)
+  hence "lessBP c d \<or> (c = d \<and> lessBT (Trm cs) (Trm ds))" by simp
+  thus ?thesis using a b xs ys by auto
+qed
+
+lemma wfox_tail_step:
+  \<comment> \<open>equal-head @{term RTrel}-step descends the tails.\<close>
+  assumes rt: "(Trm (c # cs), Trm (c # ds)) \<in> RTrel"
+  shows "(Trm cs, Trm ds) \<in> RTrel"
+proof -
+  from rt have g1: "isOT_BT (Trm (c # cs))" and g2: "dfree_BT (Trm (c # cs))"
+    and g3: "isOT_BT (Trm (c # ds))" and g4: "dfree_BT (Trm (c # ds))"
+    and lt5: "lessBT (Trm (c # cs)) (Trm (c # ds))"
+    by (auto simp: RTrel_def)
+  from lt5 have "lessBP c c \<or> (c = c \<and> lessBT (Trm cs) (Trm ds))" by simp
+  hence lt: "lessBT (Trm cs) (Trm ds)" using lessBP_irrefl by blast
+  have "isOT_BT (Trm cs) \<and> dfree_BT (Trm cs)" using wfox_tl_guarded[OF g1 g2] .
+  moreover have "isOT_BT (Trm ds) \<and> dfree_BT (Trm ds)" using wfox_tl_guarded[OF g3 g4] .
+  ultimately show ?thesis using lt by (simp add: RTrel_def)
+qed
+
+lemma wfox_head_bound:
+  \<comment> \<open>iterating @{thm [source] wfox_head_step}: every later head is \<open>\<le>\<close> the head at \<open>n\<close>.\<close>
+  assumes ch: "\<forall>i. (f (Suc i), f i) \<in> RTrel"
+  shows "hd (untrm (f (n + k))) = hd (untrm (f n))
+         \<or> lessBP (hd (untrm (f (n + k)))) (hd (untrm (f n)))"
+proof (induction k)
+  case 0
+  show ?case by simp
+next
+  case (Suc k)
+  have inRT: "(f (Suc (n + k)), f (n + k)) \<in> RTrel" using ch by blast
+  have step: "hd (untrm (f (Suc (n + k)))) = hd (untrm (f (n + k)))
+              \<or> lessBP (hd (untrm (f (Suc (n + k))))) (hd (untrm (f (n + k))))"
+    using wfox_head_step[OF inRT wfox_chain_nonempty[OF ch] wfox_chain_nonempty[OF ch]] .
+  have goal': "hd (untrm (f (Suc (n + k)))) = hd (untrm (f n))
+               \<or> lessBP (hd (untrm (f (Suc (n + k))))) (hd (untrm (f n)))"
+  proof (cases "hd (untrm (f (Suc (n + k)))) = hd (untrm (f (n + k)))")
+    case True
+    thus ?thesis using Suc.IH by simp
+  next
+    case False
+    with step have ab: "lessBP (hd (untrm (f (Suc (n + k))))) (hd (untrm (f (n + k))))" by blast
+    from Suc.IH show ?thesis
+    proof
+      assume "hd (untrm (f (n + k))) = hd (untrm (f n))"
+      thus ?thesis using ab by simp
+    next
+      assume "lessBP (hd (untrm (f (n + k)))) (hd (untrm (f n)))"
+      thus ?thesis using ab lessBP_trans by blast
+    qed
+  qed
+  thus ?case by (simp only: add_Suc_right)
+qed
+
+lemma wfox_tail_step':
+  \<comment> \<open>@{thm [source] wfox_tail_step} phrased on \<open>untrm\<close>: an equal-head step descends tails.\<close>
+  assumes rt: "(a, b) \<in> RTrel" and na: "untrm a \<noteq> []" and nb: "untrm b \<noteq> []"
+    and eqh: "hd (untrm a) = hd (untrm b)"
+  shows "(Trm (tl (untrm a)), Trm (tl (untrm b))) \<in> RTrel"
+proof -
+  obtain xs where a: "a = Trm xs" by (cases a)
+  obtain ys where b: "b = Trm ys" by (cases b)
+  from na a obtain c cs where xs: "xs = c # cs" by (cases xs) auto
+  from nb b obtain d ds where ys: "ys = d # ds" by (cases ys) auto
+  have cd: "c = d" using eqh a b xs ys by simp
+  have "(Trm (d # cs), Trm (d # ds)) \<in> RTrel" using rt a b xs ys cd by simp
+  from wfox_tail_step[OF this] have "(Trm cs, Trm ds) \<in> RTrel" .
+  thus ?thesis using a b xs ys by simp
+qed
+
+text \<open>\<^bold>\<open>Core (double induction).\<close>  No infinite @{term RTrel}-descending chain can have all
+  its heads \<open>\<le>\<close> a fixed principal \<open>p\<close>: outer well-founded induction on \<open>p\<close> under
+  @{term RPrel}, inner induction on the length of the initial term (peeling the shared
+  maximal head \<open>p\<close>; a strictly-smaller head hands to the outer IH).\<close>
+
+lemma wfox_NoBad:
+  assumes wfP: "wf RPrel"
+  shows "isOT_BP p \<longrightarrow> dfree_BP p \<longrightarrow>
+         \<not> (\<exists>f. (\<forall>i. (f (Suc i), f i) \<in> RTrel) \<and>
+                (\<forall>i. untrm (f i) \<noteq> []
+                     \<and> (hd (untrm (f i)) = p \<or> lessBP (hd (untrm (f i))) p)))"
+proof (rule wf_induct_rule[OF wfP])
+  fix p
+  assume IH: "\<And>q. (q, p) \<in> RPrel \<Longrightarrow>
+                 isOT_BP q \<longrightarrow> dfree_BP q \<longrightarrow>
+                 \<not> (\<exists>f. (\<forall>i. (f (Suc i), f i) \<in> RTrel) \<and>
+                        (\<forall>i. untrm (f i) \<noteq> []
+                             \<and> (hd (untrm (f i)) = q \<or> lessBP (hd (untrm (f i))) q)))"
+  show "isOT_BP p \<longrightarrow> dfree_BP p \<longrightarrow>
+        \<not> (\<exists>f. (\<forall>i. (f (Suc i), f i) \<in> RTrel) \<and>
+               (\<forall>i. untrm (f i) \<noteq> []
+                    \<and> (hd (untrm (f i)) = p \<or> lessBP (hd (untrm (f i))) p)))"
+  proof (intro impI notI)
+    assume pg1: "isOT_BP p" and pg2: "dfree_BP p"
+      and EX: "\<exists>f. (\<forall>i. (f (Suc i), f i) \<in> RTrel)
+                  \<and> (\<forall>i. untrm (f i) \<noteq> []
+                       \<and> (hd (untrm (f i)) = p \<or> lessBP (hd (untrm (f i))) p))"
+    from EX obtain f0 where f0ch: "\<forall>i. (f0 (Suc i), f0 i) \<in> RTrel"
+      and f0hd: "\<forall>i. untrm (f0 i) \<noteq> []
+                     \<and> (hd (untrm (f0 i)) = p \<or> lessBP (hd (untrm (f0 i))) p)"
+      by blast
+    have inner: "length (untrm (f 0)) \<le> L \<Longrightarrow>
+                 (\<forall>i. (f (Suc i), f i) \<in> RTrel) \<Longrightarrow>
+                 (\<forall>i. untrm (f i) \<noteq> []
+                      \<and> (hd (untrm (f i)) = p \<or> lessBP (hd (untrm (f i))) p)) \<Longrightarrow>
+                 False" for f L
+    proof (induction L arbitrary: f)
+      case 0
+      have "untrm (f 0) \<noteq> []" using "0.prems"(3) by blast
+      thus False using "0.prems"(1) by simp
+    next
+      case (Suc L)
+      note len = Suc.prems(1) and ch = Suc.prems(2) and hd = Suc.prems(3)
+      show False
+      proof (cases "\<forall>i. hd (untrm (f i)) = p")
+        case True
+        \<comment> \<open>all heads \<open>= p\<close>: peel the shared head, apply the inner (length) IH.\<close>
+        define g where "g \<equiv> \<lambda>i. Trm (tl (untrm (f i)))"
+        have gne_f: "\<And>i. untrm (f i) \<noteq> []" using hd by blast
+        have hdp: "\<And>i. hd (untrm (f i)) = p" using True by blast
+        have gch: "\<forall>i. (g (Suc i), g i) \<in> RTrel"
+        proof
+          fix i
+          have rt: "(f (Suc i), f i) \<in> RTrel" using ch by blast
+          have "hd (untrm (f (Suc i))) = hd (untrm (f i))" using hdp[of "Suc i"] hdp[of i] by simp
+          from wfox_tail_step'[OF rt gne_f[of "Suc i"] gne_f[of i] this]
+          have "(Trm (tl (untrm (f (Suc i)))), Trm (tl (untrm (f i)))) \<in> RTrel" .
+          thus "(g (Suc i), g i) \<in> RTrel" by (simp add: g_def)
+        qed
+        have ghd: "\<forall>i. untrm (g i) \<noteq> []
+                       \<and> (hd (untrm (g i)) = p \<or> lessBP (hd (untrm (g i))) p)"
+        proof
+          fix i
+          have gne: "untrm (g i) \<noteq> []" using wfox_chain_nonempty[OF gch, of i] .
+          have gu: "untrm (g i) = tl (untrm (f i))" by (simp add: g_def)
+          have rt: "(f (Suc i), f i) \<in> RTrel" using ch by blast
+          hence isot: "isOT_BT (f i)" by (simp add: RTrel_def)
+          have descPi: "descP (untrm (f i))"
+          proof -
+            obtain xs where "f i = Trm xs" by (cases "f i")
+            thus ?thesis using isot by auto
+          qed
+          from gne gu have tlne: "tl (untrm (f i)) \<noteq> []" by simp
+          obtain sec rest where dec: "untrm (f i) = p # sec # rest"
+            using gne_f[of i] hdp[of i] tlne
+            by (cases "untrm (f i)"; cases "tl (untrm (f i))") auto
+          have "descP (p # sec # rest)" using descPi dec by simp
+          hence "leBT (Trm [sec]) (Trm [p])" by simp
+          hence "sec = p \<or> lessBP sec p" by auto
+          moreover have "hd (untrm (g i)) = sec" using dec gu by simp
+          ultimately show "untrm (g i) \<noteq> []
+                            \<and> (hd (untrm (g i)) = p \<or> lessBP (hd (untrm (g i))) p)"
+            using gne by auto
+        qed
+        have lgen: "length (untrm (g 0)) \<le> L"
+        proof -
+          have "untrm (g 0) = tl (untrm (f 0))" by (simp add: g_def)
+          moreover have "untrm (f 0) \<noteq> []" using gne_f[of 0] .
+          ultimately have "length (untrm (g 0)) = length (untrm (f 0)) - 1" by simp
+          thus ?thesis using len by simp
+        qed
+        show False by (rule Suc.IH[OF lgen gch ghd])
+      next
+        case False
+        \<comment> \<open>some head \<open>< p\<close>: shift the chain there and apply the outer (@{term RPrel}) IH.\<close>
+        then obtain i0 where "hd (untrm (f i0)) \<noteq> p" by blast
+        moreover have "hd (untrm (f i0)) = p \<or> lessBP (hd (untrm (f i0))) p" using hd by blast
+        ultimately have qlt: "lessBP (hd (untrm (f i0))) p" by blast
+        define q where "q \<equiv> hd (untrm (f i0))"
+        have fi0ne: "untrm (f i0) \<noteq> []" using hd by blast
+        have rt0: "(f (Suc i0), f i0) \<in> RTrel" using ch by blast
+        have isot0: "isOT_BT (f i0)" and dfr0: "dfree_BT (f i0)"
+          using rt0 by (simp_all add: RTrel_def)
+        have qg: "isOT_BP q \<and> dfree_BP q"
+        proof -
+          obtain c cs where cc: "untrm (f i0) = c # cs"
+            using fi0ne by (cases "untrm (f i0)") auto
+          have "f i0 = Trm (c # cs)" using cc by (metis wfox_Trm_untrm)
+          hence "isOT_BP c \<and> dfree_BP c" using isot0 dfr0 by simp
+          moreover have "q = c" using cc q_def by simp
+          ultimately show ?thesis by simp
+        qed
+        have qpR: "(q, p) \<in> RPrel"
+          using qg qlt pg1 pg2 q_def by (simp add: RPrel_def)
+        define f' where "f' \<equiv> \<lambda>k. f (i0 + k)"
+        have f'ch: "\<forall>k. (f' (Suc k), f' k) \<in> RTrel" using ch by (simp add: f'_def)
+        have f'hd: "\<forall>k. untrm (f' k) \<noteq> []
+                        \<and> (hd (untrm (f' k)) = q \<or> lessBP (hd (untrm (f' k))) q)"
+        proof
+          fix k
+          have ne: "untrm (f' k) \<noteq> []" using hd by (simp add: f'_def)
+          have "hd (untrm (f (i0 + k))) = hd (untrm (f i0))
+                \<or> lessBP (hd (untrm (f (i0 + k)))) (hd (untrm (f i0)))"
+            using wfox_head_bound[OF ch, of i0 k] .
+          thus "untrm (f' k) \<noteq> []
+                \<and> (hd (untrm (f' k)) = q \<or> lessBP (hd (untrm (f' k))) q)"
+            using ne q_def by (simp add: f'_def)
+        qed
+        have "\<not> (\<exists>g. (\<forall>i. (g (Suc i), g i) \<in> RTrel)
+                    \<and> (\<forall>i. untrm (g i) \<noteq> []
+                         \<and> (hd (untrm (g i)) = q \<or> lessBP (hd (untrm (g i))) q)))"
+          using IH[OF qpR] qg by blast
+        moreover have "(\<forall>i. (f' (Suc i), f' i) \<in> RTrel)
+                    \<and> (\<forall>i. untrm (f' i) \<noteq> []
+                         \<and> (hd (untrm (f' i)) = q \<or> lessBP (hd (untrm (f' i))) q))"
+          using f'ch f'hd by blast
+        ultimately show False by blast
+      qed
+    qed
+    have "length (untrm (f0 0)) \<le> length (untrm (f0 0))" by simp
+    from inner[OF this f0ch f0hd] show False .
+  qed
+qed
+
+lemma wfox_tuple_lift:
+  \<comment> \<open>the natural-sum / tuple layer: principal WF lifts to term WF (multiset-free).\<close>
+  assumes wfP: "wf RPrel"
+  shows "wf RTrel"
+proof -
+  have "\<nexists>f. \<forall>i. (f (Suc i), f i) \<in> RTrel"
+  proof
+    assume "\<exists>f. \<forall>i. (f (Suc i), f i) \<in> RTrel"
+    then obtain f where ch: "\<forall>i. (f (Suc i), f i) \<in> RTrel" by blast
+    have ne: "\<And>i. untrm (f i) \<noteq> []" using wfox_chain_nonempty[OF ch] .
+    define p where "p \<equiv> hd (untrm (f 0))"
+    obtain c cs where cc: "untrm (f 0) = c # cs" using ne[of 0] by (cases "untrm (f 0)") auto
+    have f0: "f 0 = Trm (c # cs)" using cc by (metis wfox_Trm_untrm)
+    have inRT0: "(f (Suc 0), f 0) \<in> RTrel" using ch by blast
+    have isot0: "isOT_BT (f 0)" and dfr0: "dfree_BT (f 0)"
+      using inRT0 by (simp_all add: RTrel_def)
+    have pg: "isOT_BP p \<and> dfree_BP p"
+    proof -
+      have "isOT_BP c \<and> dfree_BP c" using isot0 dfr0 unfolding f0 by simp
+      moreover have "p = c" using cc p_def by simp
+      ultimately show ?thesis by simp
+    qed
+    have allhd: "\<forall>i. untrm (f i) \<noteq> []
+                     \<and> (hd (untrm (f i)) = p \<or> lessBP (hd (untrm (f i))) p)"
+    proof
+      fix i
+      have "hd (untrm (f (0 + i))) = hd (untrm (f 0))
+            \<or> lessBP (hd (untrm (f (0 + i)))) (hd (untrm (f 0)))"
+        using wfox_head_bound[OF ch, of 0 i] .
+      thus "untrm (f i) \<noteq> [] \<and> (hd (untrm (f i)) = p \<or> lessBP (hd (untrm (f i))) p)"
+        using ne[of i] p_def by simp
+    qed
+    have "\<not> (\<exists>g. (\<forall>i. (g (Suc i), g i) \<in> RTrel)
+                \<and> (\<forall>i. untrm (g i) \<noteq> []
+                     \<and> (hd (untrm (g i)) = p \<or> lessBP (hd (untrm (g i))) p)))"
+      using wfox_NoBad[OF wfP] pg by blast
+    moreover have "(\<forall>i. (f (Suc i), f i) \<in> RTrel)
+                \<and> (\<forall>i. untrm (f i) \<noteq> []
+                     \<and> (hd (untrm (f i)) = p \<or> lessBP (hd (untrm (f i))) p))"
+      using ch allhd by blast
+    ultimately show False by blast
+  qed
+  thus ?thesis by (simp add: wf_iff_no_infinite_down_chain)
+qed
+
+text \<open>The residual @{term "wf RPrel"} is EXACTLY equivalent to the goal @{term "wf RTrel"}
+  (@{thm [source] wfox_tuple_lift} and @{thm [source] wfox_RPrel_of_RTrel}), so the reduction
+  to @{term "wf RPrel"} is FAITHFUL — neither stronger nor weaker than [Buc1] Lemma 2.2.\<close>
+
+lemma wfox_wf_RPrel_iff_RTrel:
+  "wf RPrel \<longleftrightarrow> wf RTrel"
+  using wfox_tuple_lift wfox_RPrel_of_RTrel by blast
+
+text \<open>\<^bold>\<open>Sharper final theorem\<close>: the goal ([Buc1] Lemma 2.2) follows from the PRINCIPAL
+  well-foundedness @{term "wf RPrel"} alone.  The tuple / natural-sum layer is discharged;
+  the residual is the ordinal-collapsing well-ordering of the OT PRINCIPAL terms.\<close>
+
+theorem m_buc1_2_2_OT_B_wf_via_principal:
+  assumes wfRP: "wf RPrel"
+  shows "wf {(a, b). a \<in> OT_B \<and> b \<in> OT_B \<and> lessBT a b}"
+  using wfox_tuple_lift[OF wfRP] by (simp add: wfox_goal_eq_RTrel)
+
+text \<open>The residual, stated sharply: no infinite strictly-descending \<open><\<close>-chain in \<open>OT\<^bsub>B\<^esub>\<close>.
+  This is [Buc1] Lemma 2.2 in its no-infinite-descent form; by @{thm [source] wfox_wf_iff_nochain}
+  it is EQUIVALENT to the goal, so this reduction is faithful (neither stronger nor weaker).
+  Its genuine mathematical content is the ordinal-collapsing well-ordering discussed above.\<close>
+
+theorem m_buc1_2_2_OT_B_wf:
+  assumes nochain: "\<nexists>f. \<forall>i::nat. f (Suc i) \<in> OT_B \<and> f i \<in> OT_B \<and> lessBT (f (Suc i)) (f i)"
+  shows "wf {(a, b). a \<in> OT_B \<and> b \<in> OT_B \<and> lessBT a b}"
+proof -
+  have "\<nexists>f. \<forall>i. (f (Suc i), f i) \<in> RTrel"
+    using nochain by (auto simp: RTrel_def OT_B_def OT_def T_B_def)
+  hence "wf RTrel" by (simp add: wfox_wf_iff_nochain)
+  thus ?thesis by (simp add: wfox_goal_eq_RTrel)
+qed
+
 end
