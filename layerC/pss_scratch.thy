@@ -16155,4 +16155,849 @@ proof -
 qed
 
 
+
+(* ===== round 15 front K2 (wt2 5d401ad): colcase_full / anchor_fold_kernel ===== *)
+
+(* ===== round 15 front K2 (wt2) ===== *)
+
+section \<open>r15-K2: the NON-trunk-stuck colcase route and the full anchor colcase\<close>
+
+text \<open>ROUND 15 front K2.  Round 14 closed the TRUNK-STUCK colcase disjunct of
+  @{thm [source] m_8_5_anchor_fold_mixed} (\<open>m_8_5_colcase_trunkstuck_basecut\<close>).  This
+  block closes the NON-trunk-stuck disjunct and assembles the FULL per-column colcase.
+
+  EMPIRICAL PICTURE FIRST (\<open>python/_r15_k2_colcase.py\<close>, \<open>python/_r15_k2_blockpat.py\<close>;
+  genuine keystone regime = the EXACT round-13/14 filters: reduced base, block exists,
+  \<open>condV (M[q])\<close>, \<open>hasParent (M[q]) 1 (Lng-1)\<close>, parR \<open>nextrel0\<close> + coin at \<open>M[q]\<close>,
+  \<open>jm1 > 0\<close>, non-reset \<open>fst(B!0) > 0\<close>, reduced+multiT \<open>M[q]\<close>; 11 seeds, 68 blocks,
+  \<open>q \<in> 1..5\<close>):
+  \<^item> Writing \<open>N\<^sub>1 = M[q] @ [B!0]\<close>, \<open>L = Lng (M[q])\<close>, \<open>ok1 = le0 N\<^sub>1 jm1 L\<close> (the tracked
+    index reaches the first appended block column), \<open>hp0N1 = hasParent N\<^sub>1 0 L\<close>:
+    \<open>hp0N1 \<longleftrightarrow> ok1\<close> held 68/68 (48 both true, 20 both false, NO mixed case), and
+    \<open>jm1 \<le> parent N\<^sub>1 0 L\<close> held 48/48 of the \<open>hp0N1\<close> blocks.
+  \<^item> Block patterns: \<open>D1ALL\<close> (every column satisfies the FIRST disjunct) 48/68 —
+    exactly the \<open>ok1\<close> blocks; \<open>FAIL0\<close> (column 0 satisfies NEITHER disjunct, all
+    columns \<open>\<ge> 1\<close> satisfy the trunk-stuck disjunct) 20/68 — exactly the \<open>\<not>hp0N1\<close>
+    blocks; genuinely MIXED (d1 at 0, d2 later): 0; OTHER: 0.
+  \<^item> DANGER rows (a NON-stuck column \<open>m \<ge> 1\<close> with R2a false — the only shape that
+    would refute this block's theorem): 0/10 non-stuck \<open>m \<ge> 1\<close> columns.
+  \<^item> Stuck-suffix (once trunk-stuck, stuck at every later column): 0 violations.
+    Parent-stays-in-block (\<open>parent \<ge> L\<close> for appended columns \<open>m \<ge> 1\<close>): 50/50.
+
+  NEGATIVE FINDING (new, important): on 20/68 genuine blocks (~29%) the colcase
+  disjunction of \<open>m_8_5_anchor_fold_mixed\<close> is UNSATISFIABLE at column 0: these are
+  the very blocks that later go trunk-stuck, their first appended column \<open>B!0\<close> has
+  NO row-0 parent in \<open>N\<^sub>1\<close> (its row-0 value equals the host minimum, e.g. \<open>u\<close>-opening
+  hosts with \<open>fst(B!0) = u\<close>), so \<open>transJm1 N\<^sub>1\<close> is a \<open>THE\<close>-underspecified index and
+  R2b/R2c are unprovable — while column 0 is NEVER trunk-stuck
+  (@{thm [source] m_8_5_Pcut_le_Adm_parent0}), so the second disjunct is unavailable
+  too.  CONSEQUENCE: the r14 trunk-stuck route and the non-stuck route can NEVER
+  genuinely mix inside one satisfiable fold (in-regime): a fold whose colcase is
+  fully dischargeable is d1-everywhere (\<open>ok1\<close> blocks, no stuck column at all), and
+  the trunk-stuck blocks need a DIFFERENT (non-\<open>transC1\<close>) treatment of their opening
+  column.  The opening step is NOT the identity either: \<open>Mark N\<^sub>1 jm1 = Mark (M[q])
+  jm1\<close> failed 67/67.  See the ROUND 15 section of
+  \<open>python/_keystone_residual_summary.py\<close>.
+
+  WHAT IS PROVEN HERE (all green, no deferred goals):
+  (1) \<open>m_8_5_hasParent0_of_edge\<close> — the round-14 composition stub: ANY \<open>nextrel0\<close>
+      edge into the last index gives \<open>hasParent _ 0 (Lng - 1)\<close> (uniqueness is
+      @{thm [source] idxsum_parent0_unique}); in the kernel wiring context this
+      discharges the round-14 \<open>hp0Mq\<close> hypothesis from parR.
+  (2) \<open>m_8_5_Marked_Adm_edge\<close> — the fold BASEPOINT: \<open>(M, Adm M j\<^sub>0) \<in> Marked\<close> from a
+      row-0 edge \<open>j\<^sub>0 \<rightarrow> (Lng M - 1)\<close> (row-1 ancestry of the admissibilization +
+      one edge), i.e. R2a at column 0 with NO iterate machinery.
+  (3) the BLOCK-DESCENT toolkit: \<open>m_8_5_block_base_min\<close> (\<open>fst(B!0) < fst(B!m)\<close> for
+      \<open>0 < m\<close>, both \<open>i\<^sub>1\<close> branches, from the base parent edge \<open>parR0M\<close>),
+      \<open>m_8_5_fold_blocker\<close> (no \<open>nextrel0\<close> edge from below \<open>L\<close> into the appended
+      block: position \<open>L\<close> breaks the all-between clause), \<open>m_8_5_fold_parentwit\<close>
+      (every appended column \<open>m \<ge> 1\<close> has a parent \<open>\<ge> L\<close>: seed \<open>c = L\<close>),
+      \<open>m_8_5_le0_cross_block\<close> (any \<open>le0\<close> chain from below \<open>L\<close> into the block factors
+      THROUGH \<open>L\<close>) and \<open>m_8_5_le0_block_climb\<close> (from \<open>le0 _ x L\<close>, \<open>x\<close> reaches EVERY
+      appended column — strong induction through the in-block parent chain).
+  (4) \<open>m_8_5_ok_of_ok1\<close> / \<open>m_8_5_R2a_of_ok1\<close> — R2a at EVERY column from the single
+      base fact \<open>ok1\<close>; \<open>m_8_5_stuck_suffix\<close> — trunk-stuckness at column 1 propagates
+      to every later column (multiT and the \<open>Pcut\<close> bound, via cross-block factoring).
+  (5) \<open>m_8_5_colcase_cols_ge1\<close> — under \<open>stuck1\<close>, every column \<open>m \<ge> 1\<close> satisfies the
+      trunk-stuck disjunct with the r14 witness derived (NO per-column hypothesis).
+  (6) \<open>m_8_5_colcase_full\<close> — THE DELIVERABLE: under the kernel-shaped base facts
+      (\<open>j1pos/nz/hp/parR0M/qpos/app\<close> at the base, \<open>parRq/jm1def\<close> at \<open>M[q]\<close>, per-column
+      \<open>colRT\<close>) plus TWO base-level (NOT per-column) named residuals — \<open>hp0N1\<close> and the
+      dichotomy witness \<open>disc = ok1 \<or> stuck1\<close> — EVERY column \<open>m < Lng B\<close> satisfies
+      the literal colcase disjunction of @{thm [source] m_8_5_anchor_fold_mixed}.
+  (7) \<open>m_8_5_anchor_fold_kernel\<close> — feeding (6) to the mixed fold wrapper: the full
+      per-column ANCHOR chain with no per-column hypothesis left.
+  Honest residuals: \<open>hp0N1\<close> and \<open>disc\<close> are carried, not derived (they are exactly
+  the two base-level facts the 20/68 \<open>FAIL0\<close> blocks refute/vacuate — no theorem can
+  remove them while the colcase keeps its current two-disjunct shape); \<open>parR0M\<close> is
+  derivable from \<open>hp\<close> for \<open>i\<^sub>1 = 0\<close> bases and is the kernel parR/coin shape for
+  \<open>i\<^sub>1 = 1\<close> (0 \<open>i\<^sub>1 = 1\<close> instances arose in this round's validation sample).\<close>
+
+text \<open>(1) The round-14 composition stub: an edge into the last index makes
+  \<open>hasParent\<close> — existence from the edge itself, uniqueness from
+  @{thm [source] idxsum_parent0_unique}.  In the kernel wiring, instantiated at
+  \<open>M := M[q]\<close> with parR, this discharges the round-14 \<open>hp0Mq\<close> hypothesis.\<close>
+
+lemma m_8_5_hasParent0_of_edge:
+  fixes M :: pairseq and p :: nat
+  assumes edge: "nextrel0 M p (Lng M - 1)"
+  shows "hasParent M 0 (Lng M - 1)"
+proof -
+  have pP: "nextR M 0 p (Lng M - 1)" using edge by (simp add: nextR_def)
+  have "\<exists>!j. nextR M 0 j (Lng M - 1)" using pP idxsum_parent0_unique by metis
+  thus ?thesis unfolding hasParent_def by simp
+qed
+
+text \<open>(2) The fold basepoint, self-contained: for ANY host with a row-0 edge
+  \<open>j\<^sub>0 \<rightarrow> Lng M - 1\<close>, the admissibilization of \<open>j\<^sub>0\<close> is Marked IN \<open>M\<close> ITSELF (not in
+  \<open>Pred\<close> as @{thm [source] Marked_Pred_Adm} gives): \<open>adm\<close> by @{thm [source]
+  adm_Adm_adm}, \<open>leR\<close> by the row-1 ancestry chain @{thm [source] adm_row1_ancestry}
+  (+ @{thm [source] m_le1_imp_le0}) composed with the edge.  At \<open>M := M[q]\<close>, \<open>j\<^sub>0 :=
+  parent (M[q]) 0 (Lng (M[q]) - 1)\<close> this is R2a for the fold's \<open>m = 0\<close> column.\<close>
+
+lemma m_8_5_Marked_Adm_edge:
+  fixes M :: pairseq and j0 :: nat
+  assumes MT: "M \<in> T_PS"
+    and edge: "nextrel0 M j0 (Lng M - 1)"
+  shows "(M, Adm M j0) \<in> Marked"
+proof -
+  let ?a = "Adm M j0"
+  have j0lt: "j0 < Lng M - 1" using edge by (simp add: nextrel0_def)
+  have j0le: "j0 \<le> Lng M - 1" using j0lt by simp
+  have admA: "adm M ?a" by (rule adm_Adm_adm)
+  have ale: "?a \<le> j0" by (rule adm_Adm_le)
+  have le1a: "leR M 1 ?a j0" by (rule adm_row1_ancestry[OF MT j0le])
+  have le0a: "leR M 0 ?a j0" by (rule m_le1_imp_le0[OF le1a])
+  have rt: "(nextrel0 M)\<^sup>*\<^sup>* ?a j0" using le0a by (simp add: leR_def le0_def)
+  have rt2: "(nextrel0 M)\<^sup>*\<^sup>* ?a (Lng M - 1)"
+    by (rule rtranclp.rtrancl_into_rtrancl[OF rt edge])
+  have aL: "?a < Lng M" using ale j0lt by linarith
+  have lastL: "Lng M - 1 < Lng M" using j0lt by linarith
+  have leRa: "leR M 0 ?a (Lng M - 1)" using rt2 aL lastL by (simp add: leR_def le0_def)
+  show ?thesis using MT admA leRa by (simp add: Marked_def)
+qed
+
+text \<open>(3a) Cross-block factoring: if no single \<open>nextrel0\<close> step can jump from below
+  \<open>L\<close> to strictly above \<open>L\<close> (the \<open>blocker\<close>), then any \<open>le0\<close> chain from \<open>x \<le> L\<close> to a
+  target \<open>\<ge> L\<close> passes THROUGH \<open>L\<close>.  Strong induction on the target via the
+  last-edge decomposition @{thm [source] m_8_5_nextrel0_rtrancl_last_step}.\<close>
+
+lemma m_8_5_le0_cross_block:
+  fixes N :: pairseq and L x t :: nat
+  assumes blocker: "\<And>p u. nextrel0 N p u \<Longrightarrow> L < u \<Longrightarrow> p < L \<Longrightarrow> False"
+    and ch: "le0 N x t" and xL: "x \<le> L" and Lt: "L \<le> t"
+  shows "le0 N x L"
+proof -
+  have gen: "\<And>u. le0 N x u \<Longrightarrow> L \<le> u \<Longrightarrow> le0 N x L"
+  proof -
+    fix u
+    show "le0 N x u \<Longrightarrow> L \<le> u \<Longrightarrow> le0 N x L"
+    proof (induction u rule: less_induct)
+      case (less u)
+      have chu: "le0 N x u" using less.prems(1) .
+      have Lu: "L \<le> u" using less.prems(2) .
+      show ?case
+      proof (cases "u = L")
+        case True thus ?thesis using chu by simp
+      next
+        case False
+        have Llt: "L < u" using False Lu by simp
+        have xu: "x \<noteq> u" using xL Llt by simp
+        have rt: "(nextrel0 N)\<^sup>*\<^sup>* x u" using chu by (simp add: le0_def)
+        obtain p where hp': "(nextrel0 N)\<^sup>*\<^sup>* x p" and pe: "nextrel0 N p u"
+          using m_8_5_nextrel0_rtrancl_last_step[OF rt xu] by blast
+        have pge: "L \<le> p"
+        proof (rule ccontr)
+          assume "\<not> L \<le> p"
+          hence "p < L" by simp
+          thus False by (rule blocker[OF pe Llt])
+        qed
+        have plt: "p < u" using pe by (simp add: nextrel0_def)
+        have pLn: "p < Lng N" using pe by (simp add: nextrel0_def)
+        have xLn: "x < Lng N" using chu by (simp add: le0_def)
+        have le0xp: "le0 N x p" using hp' xLn pLn by (simp add: le0_def)
+        show ?thesis by (rule less.IH[OF plt le0xp pge])
+      qed
+    qed
+  qed
+  show ?thesis by (rule gen[OF ch Lt])
+qed
+
+text \<open>(3b) Block climb: if \<open>x\<close> reaches \<open>L\<close> and every position strictly above \<open>L\<close>
+  has SOME parent in \<open>[L, \<cdot>)\<close> (the \<open>parentwit\<close>), then \<open>x\<close> reaches EVERY position
+  \<open>\<ge> L\<close>.  Strong induction on the target through the in-block parent chain.\<close>
+
+lemma m_8_5_le0_block_climb:
+  fixes N :: pairseq and L x t :: nat
+  assumes seed: "le0 N x L"
+    and parentwit: "\<And>u. L < u \<Longrightarrow> u < Lng N \<Longrightarrow>
+                     \<exists>p. L \<le> p \<and> p < u \<and> nextrel0 N p u"
+    and Lt: "L \<le> t" and tLn: "t < Lng N"
+  shows "le0 N x t"
+proof -
+  have gen: "\<And>u. L \<le> u \<Longrightarrow> u < Lng N \<Longrightarrow> le0 N x u"
+  proof -
+    fix u
+    show "L \<le> u \<Longrightarrow> u < Lng N \<Longrightarrow> le0 N x u"
+    proof (induction u rule: less_induct)
+      case (less u)
+      have Lu: "L \<le> u" using less.prems(1) .
+      have uLn: "u < Lng N" using less.prems(2) .
+      show ?case
+      proof (cases "u = L")
+        case True thus ?thesis using seed by simp
+      next
+        case False
+        have Llt: "L < u" using False Lu by simp
+        obtain p where pge: "L \<le> p" and plt: "p < u" and pe: "nextrel0 N p u"
+          using parentwit[OF Llt uLn] by blast
+        have pLn: "p < Lng N" using pe by (simp add: nextrel0_def)
+        have IHp: "le0 N x p" by (rule less.IH[OF plt pge pLn])
+        have rt: "(nextrel0 N)\<^sup>*\<^sup>* x p" using IHp by (simp add: le0_def)
+        have rt2: "(nextrel0 N)\<^sup>*\<^sup>* x u" by (rule rtranclp.rtrancl_into_rtrancl[OF rt pe])
+        have xLn: "x < Lng N" using IHp by (simp add: le0_def)
+        show ?thesis using rt2 xLn uLn by (simp add: le0_def)
+      qed
+    qed
+  qed
+  show ?thesis by (rule gen[OF Lt tLn])
+qed
+
+text \<open>(3c) Reading a block column's row-0 value off the fold host.\<close>
+
+lemma m_8_5_entry_block_at:
+  fixes A B :: pairseq and k r :: nat
+  assumes rk: "r < k" and kB: "k \<le> Lng B"
+  shows "entry (A @ take k B) 0 (Lng A + r) = fst (B ! r)"
+proof -
+  have "(A @ take k B) ! (Lng A + r) = take k B ! r" by (simp add: nth_append)
+  also have "take k B ! r = B ! r" using rk by simp
+  finally show ?thesis by (simp add: entry_def)
+qed
+
+text \<open>(3d) The block-base minimum: within one genuine deepen block, the OPENING
+  column's row-0 value is STRICTLY below every later column's.  Both \<open>i\<^sub>1\<close> branches:
+  the interior clause of the base parent edge \<open>parR0M\<close> (\<open>\<forall>j \<in> (j\<^sub>0, j\<^sub>1)\<close>:
+  \<open>entry \<ge> entry j\<^sub>1 > entry j\<^sub>0\<close>) plus the explicit block forms
+  @{thm [source] m_8_5_deepen_block_explicit0} / @{thm [source]
+  m_8_5_deepen_block_explicit} (the \<open>i\<^sub>1 = 1\<close> shift \<open>q\<cdot>d\<^sub>0\<close> is column-uniform).
+  For \<open>i\<^sub>1 = 0\<close> bases \<open>parR0M\<close> is redundant given \<open>hp\<close>; for \<open>i\<^sub>1 = 1\<close> it is the
+  kernel's own parR/coin shape at the base.\<close>
+
+lemma m_8_5_block_base_min:
+  fixes M B :: pairseq and q m :: nat
+  assumes j1pos: "Lng M - 1 > 0"
+    and nz: "\<not> (entry M 0 (Lng M - 1) = 0 \<and> entry M 1 (Lng M - 1) = 0)"
+    and hp: "hasParent M (idx1 M (Lng M - 1)) (Lng M - 1)"
+    and parR0M: "nextrel0 M (parent M (idx1 M (Lng M - 1)) (Lng M - 1)) (Lng M - 1)"
+    and app: "(M::pairseq)[Suc q] = M[q] @ B"
+    and mpos: "0 < m" and mlt: "m < Lng B"
+  shows "fst (B ! 0) < fst (B ! m)"
+proof (cases "entry M 1 (Lng M - 1) > 0")
+  case True
+  have i1: "idx1 M (Lng M - 1) = 1" using True by (simp add: idx1_def)
+  have hp1: "hasParent M 1 (Lng M - 1)" using hp i1 by simp
+  define j0 where "j0 = parent M 1 (Lng M - 1)"
+  define d0 where "d0 = entry M 0 (Lng M - 1) - entry M 0 j0"
+  define blkf where
+    "blkf = (\<lambda>k. map (\<lambda>j. (entry M 0 j
+                             + k * (entry M 0 (Lng M - 1)
+                                     - entry M 0 (parent M 1 (Lng M - 1))),
+                            entry M 1 j))
+                     [parent M 1 (Lng M - 1)..<Lng M - 1])"
+  have expl: "M[Suc q] = M[q] @ blkf q"
+    using m_8_5_deepen_block_explicit[OF j1pos True hp1] by (simp add: blkf_def)
+  have Beq: "B = blkf q" using app expl by simp
+  have nr0: "nextrel0 M j0 (Lng M - 1)" using parR0M unfolding i1 j0_def .
+  have j0lt: "j0 < Lng M - 1" using nr0 by (simp add: nextrel0_def)
+  have lenB: "Lng B = Lng M - 1 - j0" using Beq blkf_def j0_def by simp
+  have mltw: "m < Lng M - 1 - j0" using mlt lenB by simp
+  have w0: "0 < Lng M - 1 - j0" using mltw by linarith
+  have jmlt: "j0 + m < Lng M - 1" using mltw j0lt by linarith
+  have B0: "fst (B ! 0) = entry M 0 j0 + q * d0"
+    using Beq blkf_def w0 j0lt by (simp add: j0_def d0_def)
+  have Bm: "fst (B ! m) = entry M 0 (j0 + m) + q * d0"
+    using Beq blkf_def mltw jmlt by (simp add: j0_def d0_def)
+  have interior: "entry M 0 (j0 + m) \<ge> entry M 0 (Lng M - 1)"
+    using nr0 mpos jmlt unfolding nextrel0_def by auto
+  have base_lt: "entry M 0 j0 < entry M 0 (Lng M - 1)" using nr0 by (simp add: nextrel0_def)
+  have "entry M 0 j0 < entry M 0 (j0 + m)" using interior base_lt by linarith
+  thus ?thesis using B0 Bm by simp
+next
+  case False
+  have e1z: "entry M 1 (Lng M - 1) = 0" using False by simp
+  have e0pos: "entry M 0 (Lng M - 1) > 0" using nz e1z by simp
+  have i1: "idx1 M (Lng M - 1) = 0" using e1z by (simp add: idx1_def)
+  have hp0: "hasParent M 0 (Lng M - 1)" using hp i1 by simp
+  define j0 where "j0 = parent M 0 (Lng M - 1)"
+  define blk where "blk = map (\<lambda>j. (entry M 0 j, entry M 1 j)) [j0..<Lng M - 1]"
+  have expl: "M[Suc q] = M[q] @ blk"
+    using m_8_5_deepen_block_explicit0[OF j1pos e1z e0pos hp0]
+    by (simp add: blk_def j0_def)
+  have Beq: "B = blk" using app expl by simp
+  have nr0: "nextrel0 M j0 (Lng M - 1)" using parR0M unfolding i1 j0_def .
+  have j0lt: "j0 < Lng M - 1" using nr0 by (simp add: nextrel0_def)
+  have lenB: "Lng B = Lng M - 1 - j0" using Beq blk_def by simp
+  have mltw: "m < Lng M - 1 - j0" using mlt lenB by simp
+  have w0: "0 < Lng M - 1 - j0" using mltw by linarith
+  have jmlt: "j0 + m < Lng M - 1" using mltw j0lt by linarith
+  have B0: "fst (B ! 0) = entry M 0 j0"
+    using Beq blk_def w0 j0lt by simp
+  have Bm: "fst (B ! m) = entry M 0 (j0 + m)"
+    using Beq blk_def mltw jmlt by simp
+  have interior: "entry M 0 (j0 + m) \<ge> entry M 0 (Lng M - 1)"
+    using nr0 mpos jmlt unfolding nextrel0_def by auto
+  have base_lt: "entry M 0 j0 < entry M 0 (Lng M - 1)" using nr0 by (simp add: nextrel0_def)
+  show ?thesis using B0 Bm interior base_lt by linarith
+qed
+
+text \<open>(3e) The blocker at the fold hosts: NO \<open>nextrel0\<close> edge jumps from below \<open>L\<close>
+  into the appended block — position \<open>L\<close> (value \<open>fst(B!0)\<close>, the block-base minimum)
+  breaks the all-between clause.\<close>
+
+lemma m_8_5_fold_blocker:
+  fixes M B :: pairseq and q k p u :: nat
+  assumes bv: "\<And>r. 0 < r \<Longrightarrow> r < Lng B \<Longrightarrow> fst (B ! 0) < fst (B ! r)"
+    and kpos: "1 \<le> k" and kB: "k \<le> Lng B"
+    and edge: "nextrel0 ((M::pairseq)[q] @ take k B) p u"
+    and uL: "Lng ((M::pairseq)[q]) < u"
+    and pL: "p < Lng ((M::pairseq)[q])"
+  shows False
+proof -
+  let ?A = "(M::pairseq)[q]"
+  let ?N = "?A @ take k B"
+  let ?L = "Lng ?A"
+  have LngN: "Lng ?N = ?L + k" using kB by (simp add: min.absorb1)
+  have uLng: "u < Lng ?N" using edge by (simp add: nextrel0_def)
+  define r where "r = u - ?L"
+  have rpos: "0 < r" using uL r_def by simp
+  have rk: "r < k" using uLng LngN r_def uL by linarith
+  have ueq: "u = ?L + r" using r_def uL by simp
+  have zk: "(0::nat) < k" using kpos by simp
+  have eL: "entry ?N 0 ?L = fst (B ! 0)"
+    using m_8_5_entry_block_at[OF zk kB, of ?A] by simp
+  have eu: "entry ?N 0 u = fst (B ! r)"
+    using m_8_5_entry_block_at[OF rk kB, of ?A] ueq by simp
+  have between: "entry ?N 0 ?L \<ge> entry ?N 0 u"
+    using edge pL uL unfolding nextrel0_def by blast
+  have rB: "r < Lng B" using rk kB by linarith
+  show False using bv[OF rpos rB] eL eu between by simp
+qed
+
+text \<open>(3f) The parent witness at the fold hosts: every appended column has SOME
+  row-0 parent \<open>\<ge> L\<close> — seed \<open>c = L\<close> (the block-base minimum) into
+  @{thm [source] m_5_1_parent_exists_1}, whose witness is returned \<open>\<ge> c\<close>.\<close>
+
+lemma m_8_5_fold_parentwit:
+  fixes M B :: pairseq and q k u :: nat
+  assumes bv: "\<And>r. 0 < r \<Longrightarrow> r < Lng B \<Longrightarrow> fst (B ! 0) < fst (B ! r)"
+    and kpos: "1 \<le> k" and kB: "k \<le> Lng B"
+    and uL: "Lng ((M::pairseq)[q]) < u"
+    and uLng: "u < Lng ((M::pairseq)[q] @ take k B)"
+  shows "\<exists>p. Lng ((M::pairseq)[q]) \<le> p \<and> p < u \<and> nextrel0 ((M::pairseq)[q] @ take k B) p u"
+proof -
+  let ?A = "(M::pairseq)[q]"
+  let ?N = "?A @ take k B"
+  let ?L = "Lng ?A"
+  have LngN: "Lng ?N = ?L + k" using kB by (simp add: min.absorb1)
+  define r where "r = u - ?L"
+  have rpos: "0 < r" using uL r_def by simp
+  have rk: "r < k" using uLng LngN r_def uL by linarith
+  have ueq: "u = ?L + r" using r_def uL by simp
+  have zk: "(0::nat) < k" using kpos by simp
+  have eL: "entry ?N 0 ?L = fst (B ! 0)"
+    using m_8_5_entry_block_at[OF zk kB, of ?A] by simp
+  have eu: "entry ?N 0 u = fst (B ! r)"
+    using m_8_5_entry_block_at[OF rk kB, of ?A] ueq by simp
+  have rB: "r < Lng B" using rk kB by linarith
+  have strict: "entry ?N 0 ?L < entry ?N 0 u" using bv[OF rpos rB] eL eu by simp
+  have LngNpos: "0 < Lng ?N" using LngN kpos by linarith
+  have NT: "?N \<in> T_PS" using LngNpos by (auto simp: T_PS_def)
+  obtain j where jw: "?L \<le> j \<and> j < u \<and> nextR ?N 0 j u"
+    using m_5_1_parent_exists_1[OF NT uL uLng strict] by blast
+  have "nextrel0 ?N j u" using jw by (simp add: nextR_def)
+  thus ?thesis using jw by blast
+qed
+
+text \<open>(4a) R2a \<open>le0\<close> transport: from the SINGLE base fact \<open>ok1\<close> (\<open>jm1\<close> reaches the
+  first appended column), \<open>jm1\<close> reaches the last index of EVERY fold host — seed
+  transfer by prefix agreement, then the block climb.\<close>
+
+lemma m_8_5_ok_of_ok1:
+  fixes M B :: pairseq and q jm1 k :: nat
+  assumes j1pos: "Lng M - 1 > 0"
+    and nz: "\<not> (entry M 0 (Lng M - 1) = 0 \<and> entry M 1 (Lng M - 1) = 0)"
+    and hp: "hasParent M (idx1 M (Lng M - 1)) (Lng M - 1)"
+    and parR0M: "nextrel0 M (parent M (idx1 M (Lng M - 1)) (Lng M - 1)) (Lng M - 1)"
+    and app: "(M::pairseq)[Suc q] = M[q] @ B"
+    and ok1: "le0 ((M::pairseq)[q] @ take 1 B) jm1 (Lng ((M::pairseq)[q]))"
+    and kpos: "1 \<le> k" and kB: "k \<le> Lng B"
+  shows "le0 ((M::pairseq)[q] @ take k B) jm1 (Lng ((M::pairseq)[q] @ take k B) - 1)"
+proof -
+  let ?A = "(M::pairseq)[q]"
+  let ?N = "?A @ take k B"
+  let ?N1 = "?A @ take 1 B"
+  let ?L = "Lng ?A"
+  have bv: "\<And>r. 0 < r \<Longrightarrow> r < Lng B \<Longrightarrow> fst (B ! 0) < fst (B ! r)"
+    using m_8_5_block_base_min[OF j1pos nz hp parR0M app] by blast
+  have LngBpos: "0 < Lng B" using kpos kB by linarith
+  have oneB: "(1::nat) \<le> Lng B" using LngBpos by linarith
+  have LngN1: "Lng ?N1 = ?L + 1" using oneB by (simp add: min.absorb1)
+  have LngN: "Lng ?N = ?L + k" using kB by (simp add: min.absorb1)
+  have jm1L: "jm1 \<le> ?L"
+  proof -
+    have "(nextrel0 ?N1)\<^sup>*\<^sup>* jm1 ?L" using ok1 by (simp add: le0_def)
+    thus ?thesis by (rule nextrel0_rtrancl_mono)
+  qed
+  have agree: "\<And>x. x \<le> ?L \<Longrightarrow> ?N1 ! x = ?N ! x"
+  proof -
+    fix x assume xle: "x \<le> ?L"
+    show "?N1 ! x = ?N ! x"
+    proof (cases "x < ?L")
+      case True thus ?thesis by (simp add: nth_append)
+    next
+      case False
+      have xeq: "x = ?L" using False xle by simp
+      have a: "?N1 ! ?L = take 1 B ! 0" by (simp add: nth_append)
+      have b: "?N ! ?L = take k B ! 0" by (simp add: nth_append)
+      have c: "take 1 B ! 0 = B ! 0" by simp
+      have d: "take k B ! 0 = B ! 0" using kpos by simp
+      show ?thesis using a b c d xeq by simp
+    qed
+  qed
+  have cM: "?L < Lng ?N1" using LngN1 by simp
+  have cN: "?L < Lng ?N" using LngN kpos by linarith
+  have seed: "le0 ?N jm1 ?L"
+    by (rule le0_prefix_agree[OF agree cM cN jm1L order_refl ok1])
+  have pw: "\<And>u. ?L < u \<Longrightarrow> u < Lng ?N \<Longrightarrow> \<exists>p. ?L \<le> p \<and> p < u \<and> nextrel0 ?N p u"
+    using m_8_5_fold_parentwit[OF bv kpos kB] by blast
+  have tge: "?L \<le> Lng ?N - 1" using LngN kpos by linarith
+  have tlt: "Lng ?N - 1 < Lng ?N" using LngN kpos by linarith
+  show ?thesis by (rule m_8_5_le0_block_climb[OF seed pw tge tlt])
+qed
+
+text \<open>(4b) R2a Marked form: adm persists (@{thm [source] m_8_5_marked_adm_persist},
+  the basepoint sits strictly inside the \<open>M[q]\<close> prefix by parR), leR from (4a).\<close>
+
+lemma m_8_5_R2a_of_ok1:
+  fixes M B :: pairseq and q jm1 k :: nat
+  assumes j1pos: "Lng M - 1 > 0"
+    and nz: "\<not> (entry M 0 (Lng M - 1) = 0 \<and> entry M 1 (Lng M - 1) = 0)"
+    and hp: "hasParent M (idx1 M (Lng M - 1)) (Lng M - 1)"
+    and parR0M: "nextrel0 M (parent M (idx1 M (Lng M - 1)) (Lng M - 1)) (Lng M - 1)"
+    and app: "(M::pairseq)[Suc q] = M[q] @ B"
+    and parRq: "nextrel0 ((M::pairseq)[q])
+                  (parent ((M::pairseq)[q]) 0 (Lng ((M::pairseq)[q]) - 1))
+                  (Lng ((M::pairseq)[q]) - 1)"
+    and jm1def: "jm1 = Adm ((M::pairseq)[q]) (parent ((M::pairseq)[q]) 0 (Lng ((M::pairseq)[q]) - 1))"
+    and ok1: "le0 ((M::pairseq)[q] @ take 1 B) jm1 (Lng ((M::pairseq)[q]))"
+    and kpos: "1 \<le> k" and kB: "k \<le> Lng B"
+  shows "((M::pairseq)[q] @ take k B, jm1) \<in> Marked"
+proof -
+  let ?A = "(M::pairseq)[q]"
+  let ?N = "?A @ take k B"
+  let ?L = "Lng ?A"
+  have le0N: "le0 ?N jm1 (Lng ?N - 1)"
+    by (rule m_8_5_ok_of_ok1[OF j1pos nz hp parR0M app ok1 kpos kB])
+  have LngN: "Lng ?N = ?L + k" using kB by (simp add: min.absorb1)
+  have LngNpos: "0 < Lng ?N" using LngN kpos by linarith
+  have NT: "?N \<in> T_PS" using LngNpos by (auto simp: T_PS_def)
+  have p0lt: "parent ?A 0 (?L - 1) < ?L - 1" using parRq by (simp add: nextrel0_def)
+  have jm1le: "jm1 \<le> parent ?A 0 (?L - 1)" using jm1def adm_Adm_le by simp
+  have n0lt: "jm1 + 1 < ?L" using jm1le p0lt by linarith
+  have admA: "adm ?A jm1" using jm1def adm_Adm_adm by simp
+  have admN: "adm ?N jm1"
+    using admA m_8_5_marked_adm_persist[OF n0lt, where C="take k B"] by simp
+  have lerN: "leR ?N 0 jm1 (Lng ?N - 1)" using le0N by (simp add: leR_def)
+  show ?thesis using NT admN lerN by (simp add: Marked_def)
+qed
+
+text \<open>(4c) The stuck suffix: trunk-stuckness at column 1 propagates to EVERY later
+  column.  Both conjuncts by cross-block factoring: a mono chain (resp. a smaller
+  cut) at a later host would factor through \<open>L\<close> and transfer back to \<open>N\<^sub>1\<close>,
+  contradicting \<open>multiT N\<^sub>1\<close> (resp. \<open>Pcut N\<^sub>1\<close>'s Least-minimality).  This is the
+  formal content of the empirical stuck-suffix pattern (0 violations, all rounds).\<close>
+
+lemma m_8_5_stuck_suffix:
+  fixes M B :: pairseq and q jm1 k :: nat
+  assumes j1pos: "Lng M - 1 > 0"
+    and nz: "\<not> (entry M 0 (Lng M - 1) = 0 \<and> entry M 1 (Lng M - 1) = 0)"
+    and hp: "hasParent M (idx1 M (Lng M - 1)) (Lng M - 1)"
+    and parR0M: "nextrel0 M (parent M (idx1 M (Lng M - 1)) (Lng M - 1)) (Lng M - 1)"
+    and app: "(M::pairseq)[Suc q] = M[q] @ B"
+    and jm1L: "jm1 < Lng ((M::pairseq)[q])"
+    and mu1: "multiT ((M::pairseq)[q] @ take 1 B)"
+    and st1: "jm1 < Pcut ((M::pairseq)[q] @ take 1 B)"
+    and kpos: "1 \<le> k" and kB: "k \<le> Lng B"
+  shows "multiT ((M::pairseq)[q] @ take k B) \<and> jm1 < Pcut ((M::pairseq)[q] @ take k B)"
+proof -
+  let ?A = "(M::pairseq)[q]"
+  let ?N = "?A @ take k B"
+  let ?N1 = "?A @ take 1 B"
+  let ?L = "Lng ?A"
+  have bv: "\<And>r. 0 < r \<Longrightarrow> r < Lng B \<Longrightarrow> fst (B ! 0) < fst (B ! r)"
+    using m_8_5_block_base_min[OF j1pos nz hp parR0M app] by blast
+  have LngBpos: "0 < Lng B" using kpos kB by linarith
+  have oneB: "(1::nat) \<le> Lng B" using LngBpos by linarith
+  have LngN1: "Lng ?N1 = ?L + 1" using oneB by (simp add: min.absorb1)
+  have LngN: "Lng ?N = ?L + k" using kB by (simp add: min.absorb1)
+  have N1T: "?N1 \<in> T_PS" using LngN1 by (auto simp: T_PS_def)
+  have NT: "?N \<in> T_PS"
+  proof -
+    have "0 < Lng ?N" using LngN kpos by linarith
+    thus ?thesis by (auto simp: T_PS_def)
+  qed
+  have LngN1gt1: "1 < Lng ?N1" by (rule multiT_imp_Lng_gt1[OF N1T mu1])
+  have Lpos: "0 < ?L" using LngN1gt1 LngN1 by linarith
+  have LngNgt1: "1 < Lng ?N" using LngN kpos Lpos by linarith
+  have blocker: "\<And>p u. nextrel0 ?N p u \<Longrightarrow> ?L < u \<Longrightarrow> p < ?L \<Longrightarrow> False"
+    using m_8_5_fold_blocker[OF bv kpos kB] by blast
+  have cM: "?L < Lng ?N" using LngN kpos by linarith
+  have cN1: "?L < Lng ?N1" using LngN1 by simp
+  have agree: "\<And>x. x \<le> ?L \<Longrightarrow> ?N ! x = ?N1 ! x"
+  proof -
+    fix x assume xle: "x \<le> ?L"
+    show "?N ! x = ?N1 ! x"
+    proof (cases "x < ?L")
+      case True thus ?thesis by (simp add: nth_append)
+    next
+      case False
+      have xeq: "x = ?L" using False xle by simp
+      have a: "?N1 ! ?L = take 1 B ! 0" by (simp add: nth_append)
+      have b: "?N ! ?L = take k B ! 0" by (simp add: nth_append)
+      have c: "take 1 B ! 0 = B ! 0" by simp
+      have d: "take k B ! 0 = B ! 0" using kpos by simp
+      show ?thesis using a b c d xeq by simp
+    qed
+  qed
+  have transfer: "\<And>x. x \<le> ?L \<Longrightarrow> le0 ?N x ?L \<Longrightarrow> le0 ?N1 x ?L"
+  proof -
+    fix x assume xle: "x \<le> ?L" and ch: "le0 ?N x ?L"
+    show "le0 ?N1 x ?L"
+      by (rule le0_prefix_agree[OF agree cM cN1 xle order_refl ch])
+  qed
+  have Lle: "?L \<le> Lng ?N - 1" using LngN kpos by linarith
+  have muN: "multiT ?N"
+  proof (rule ccontr)
+    assume nmu: "\<not> multiT ?N"
+    have nzt: "\<not> zeroT ?N" using LngNgt1 by (simp add: zeroT_def)
+    have mono: "leR ?N 0 0 (Lng ?N - 1)" using nmu nzt by (simp add: multiT_def monoT_def)
+    have ch: "le0 ?N 0 (Lng ?N - 1)" using mono by (simp add: leR_def)
+    have zL: "(0::nat) \<le> ?L" by simp
+    have crossed: "le0 ?N 0 ?L" by (rule m_8_5_le0_cross_block[OF blocker ch zL Lle])
+    have t1: "le0 ?N1 0 ?L" by (rule transfer[OF zL crossed])
+    have "leR ?N1 0 0 (Lng ?N1 - 1)" using t1 LngN1 by (simp add: leR_def)
+    hence "\<not> multiT ?N1" using m_6_2_not_multi_iff_le[OF N1T] by simp
+    thus False using mu1 by simp
+  qed
+  have stN: "jm1 < Pcut ?N"
+  proof (rule ccontr)
+    assume "\<not> jm1 < Pcut ?N"
+    hence pcle: "Pcut ?N \<le> jm1" by simp
+    have cut: "0 < Pcut ?N \<and> Pcut ?N \<le> Lng ?N - 1 \<and> leR ?N 0 (Pcut ?N) (Lng ?N - 1)"
+      by (rule Pcut_le[OF LngNgt1])
+    have ch: "le0 ?N (Pcut ?N) (Lng ?N - 1)" using cut by (simp add: leR_def)
+    have xle: "Pcut ?N \<le> ?L" using pcle jm1L by linarith
+    have crossed: "le0 ?N (Pcut ?N) ?L"
+      by (rule m_8_5_le0_cross_block[OF blocker ch xle Lle])
+    have t1: "le0 ?N1 (Pcut ?N) ?L" by (rule transfer[OF xle crossed])
+    have ler1: "leR ?N1 0 (Pcut ?N) (Lng ?N1 - 1)" using t1 LngN1 by (simp add: leR_def)
+    have pcpos: "0 < Pcut ?N" using cut by simp
+    have pcbd: "Pcut ?N \<le> Lng ?N1 - 1" using xle LngN1 by simp
+    have le1: "(LEAST j. 0 < j \<and> j \<le> Lng ?N1 - 1 \<and> leR ?N1 0 j (Lng ?N1 - 1)) \<le> Pcut ?N"
+      by (rule Least_le[where P="\<lambda>j. 0 < j \<and> j \<le> Lng ?N1 - 1 \<and> leR ?N1 0 j (Lng ?N1 - 1)"])
+         (use pcpos pcbd ler1 in auto)
+    have "Pcut ?N1 \<le> Pcut ?N" using le1 by (simp add: Pcut_def)
+    thus False using st1 pcle by linarith
+  qed
+  show ?thesis using muN stN by simp
+qed
+
+text \<open>(5) The trunk-stuck disjunct for every column \<open>m \<ge> 1\<close>, from the SINGLE
+  base-level fact \<open>stuck1\<close> (trunk-stuck already at column 1) — the r14 witness
+  @{thm [source] m_8_5_trunkstuck_basecut_witness} with its \<open>stuck\<close>/\<open>hp0Mq\<close>
+  hypotheses now DERIVED (stuck-suffix + @{thm [source] m_8_5_hasParent0_of_edge}).\<close>
+
+lemma m_8_5_colcase_cols_ge1:
+  fixes M B :: pairseq and q jm1 m :: nat
+  assumes j1pos: "Lng M - 1 > 0"
+    and nz: "\<not> (entry M 0 (Lng M - 1) = 0 \<and> entry M 1 (Lng M - 1) = 0)"
+    and hp: "hasParent M (idx1 M (Lng M - 1)) (Lng M - 1)"
+    and parR0M: "nextrel0 M (parent M (idx1 M (Lng M - 1)) (Lng M - 1)) (Lng M - 1)"
+    and qpos: "0 < q"
+    and app: "(M::pairseq)[Suc q] = M[q] @ B"
+    and parRq: "nextrel0 ((M::pairseq)[q])
+                  (parent ((M::pairseq)[q]) 0 (Lng ((M::pairseq)[q]) - 1))
+                  (Lng ((M::pairseq)[q]) - 1)"
+    and jm1def: "jm1 = Adm ((M::pairseq)[q]) (parent ((M::pairseq)[q]) 0 (Lng ((M::pairseq)[q]) - 1))"
+    and NR: "((M::pairseq)[q] @ take m B) \<in> RT_PS"
+    and mu1: "multiT ((M::pairseq)[q] @ take 1 B)"
+    and st1: "jm1 < Pcut ((M::pairseq)[q] @ take 1 B)"
+    and mpos: "0 < m" and mlt: "m < Lng B"
+  shows "((M::pairseq)[q] @ take m B) \<in> RT_PS
+       \<and> multiT ((M::pairseq)[q] @ take m B)
+       \<and> jm1 < Pcut ((M::pairseq)[q] @ take m B)
+       \<and> entry ((M::pairseq)[q] @ take m B) 0 (Pcut ((M::pairseq)[q] @ take m B)) < fst (B ! m)"
+proof -
+  let ?A = "(M::pairseq)[q]"
+  let ?L = "Lng ?A"
+  have p0lt: "parent ?A 0 (?L - 1) < ?L - 1" using parRq by (simp add: nextrel0_def)
+  have jm1le: "jm1 \<le> parent ?A 0 (?L - 1)" using jm1def adm_Adm_le by simp
+  have jm1L: "jm1 < ?L" using jm1le p0lt by linarith
+  have kpos: "1 \<le> m" using mpos by simp
+  have kB: "m \<le> Lng B" using mlt by simp
+  have sfx: "multiT (?A @ take m B) \<and> jm1 < Pcut (?A @ take m B)"
+    by (rule m_8_5_stuck_suffix[OF j1pos nz hp parR0M app jm1L mu1 st1 kpos kB])
+  have muN: "multiT (?A @ take m B)" using sfx by simp
+  have stN: "jm1 < Pcut (?A @ take m B)" using sfx by simp
+  have hp0Mq: "hasParent ?A 0 (?L - 1)" by (rule m_8_5_hasParent0_of_edge[OF parRq])
+  have stuck': "Adm ?A (parent ?A 0 (?L - 1)) < Pcut (?A @ take m B)"
+    using stN jm1def by simp
+  have wit: "entry (?A @ take m B) 0 (Pcut (?A @ take m B)) < fst (B ! m)"
+    by (rule m_8_5_trunkstuck_basecut_witness[OF j1pos nz hp qpos app mlt NR muN hp0Mq stuck'])
+  show ?thesis using NR muN stN wit by blast
+qed
+
+text \<open>(6) THE FULL COLCASE — every column \<open>m < Lng B\<close> satisfies the literal
+  per-column disjunction of @{thm [source] m_8_5_anchor_fold_mixed} (at \<open>Y = M[q]\<close>,
+  \<open>n\<^sub>0 = jm1\<close>), from base-level facts only.  The two named base residuals are
+  \<open>hp0N1\<close> (the opening column has a row-0 parent — REFUTED as regime-derivable:
+  20/68 genuine blocks fail it, and on those the colcase is genuinely
+  unsatisfiable at \<open>m = 0\<close>, see the section header) and \<open>disc\<close> (\<open>ok1 \<or> stuck1\<close> —
+  the danger zone \<open>hp0N1 \<and> \<not>ok1 \<and> \<not>stuck1\<close> is empirically empty, 0/68).
+  Column 0 lands in the FIRST disjunct under EITHER \<open>disc\<close> branch (\<open>jm1 \<le>
+  parent N\<^sub>1 0 L\<close>: in the \<open>ok1\<close> branch as the chain's last edge, in the \<open>stuck1\<close>
+  branch via \<open>Pcut N\<^sub>1 \<le> parent N\<^sub>1 0 L\<close>); columns \<open>m \<ge> 1\<close> land in the first
+  disjunct under \<open>ok1\<close> (R2a transport + in-block parent for R2b/R2c) and in the
+  trunk-stuck disjunct under \<open>stuck1\<close> (stuck suffix + r14 witness).\<close>
+
+lemma m_8_5_colcase_full:
+  fixes M B :: pairseq and q jm1 m :: nat
+  assumes j1pos: "Lng M - 1 > 0"
+    and nz: "\<not> (entry M 0 (Lng M - 1) = 0 \<and> entry M 1 (Lng M - 1) = 0)"
+    and hp: "hasParent M (idx1 M (Lng M - 1)) (Lng M - 1)"
+    and parR0M: "nextrel0 M (parent M (idx1 M (Lng M - 1)) (Lng M - 1)) (Lng M - 1)"
+    and qpos: "0 < q"
+    and app: "(M::pairseq)[Suc q] = M[q] @ B"
+    and parRq: "nextrel0 ((M::pairseq)[q])
+                  (parent ((M::pairseq)[q]) 0 (Lng ((M::pairseq)[q]) - 1))
+                  (Lng ((M::pairseq)[q]) - 1)"
+    and jm1def: "jm1 = Adm ((M::pairseq)[q]) (parent ((M::pairseq)[q]) 0 (Lng ((M::pairseq)[q]) - 1))"
+    and colRT: "\<And>k. k < Lng B \<Longrightarrow> ((M::pairseq)[q] @ take k B) \<in> RT_PS"
+    and hp0N1: "hasParent ((M::pairseq)[q] @ take 1 B) 0 (Lng ((M::pairseq)[q] @ take 1 B) - 1)"
+    and disc: "le0 ((M::pairseq)[q] @ take 1 B) jm1 (Lng ((M::pairseq)[q]))
+             \<or> (multiT ((M::pairseq)[q] @ take 1 B)
+                 \<and> jm1 < Pcut ((M::pairseq)[q] @ take 1 B))"
+    and mlt: "m < Lng B"
+  shows "(((M::pairseq)[q] @ take m B) \<in> RT_PS
+        \<and> ((M::pairseq)[q] @ take m B, jm1) \<in> Marked
+        \<and> ((M::pairseq)[q] @ take m B, transJm1 ((M::pairseq)[q] @ take (Suc m) B)) \<in> Marked
+        \<and> jm1 \<le> transJm1 ((M::pairseq)[q] @ take (Suc m) B))
+    \<or> (((M::pairseq)[q] @ take m B) \<in> RT_PS
+        \<and> multiT ((M::pairseq)[q] @ take m B)
+        \<and> jm1 < Pcut ((M::pairseq)[q] @ take m B)
+        \<and> entry ((M::pairseq)[q] @ take m B) 0 (Pcut ((M::pairseq)[q] @ take m B)) < fst (B ! m))"
+proof -
+  let ?A = "(M::pairseq)[q]"
+  let ?L = "Lng ?A"
+  let ?N = "?A @ take m B"
+  let ?N' = "?A @ take (Suc m) B"
+  let ?N1 = "?A @ take 1 B"
+  have LngBpos: "0 < Lng B" using mlt by linarith
+  have oneB: "(1::nat) \<le> Lng B" using LngBpos by linarith
+  have p0lt: "parent ?A 0 (?L - 1) < ?L - 1" using parRq by (simp add: nextrel0_def)
+  have jm1le: "jm1 \<le> parent ?A 0 (?L - 1)" using jm1def adm_Adm_le by simp
+  have n0lt: "jm1 + 1 < ?L" using jm1le p0lt by linarith
+  have jm1L: "jm1 < ?L" using n0lt by linarith
+  have admA: "adm ?A jm1" using jm1def adm_Adm_adm by simp
+  have bv: "\<And>r. 0 < r \<Longrightarrow> r < Lng B \<Longrightarrow> fst (B ! 0) < fst (B ! r)"
+    using m_8_5_block_base_min[OF j1pos nz hp parR0M app] by blast
+  have LngN1: "Lng ?N1 = ?L + 1" using oneB by (simp add: min.absorb1)
+  have LN1m1: "Lng ?N1 - 1 = ?L" using LngN1 by simp
+  have N1T: "?N1 \<in> T_PS" using LngN1 by (auto simp: T_PS_def)
+  have hp0L: "hasParent ?N1 0 ?L" using hp0N1 LN1m1 by simp
+  have pLw: "nextR ?N1 0 (parent ?N1 0 ?L) ?L" by (rule nextR_parent_witness[OF hp0L])
+  define pL where "pL = parent ?N1 0 ?L"
+  have pLe: "nextrel0 ?N1 pL ?L" using pLw pL_def by (simp add: nextR_def)
+  have pLlt: "pL < ?L" using pLe by (simp add: nextrel0_def)
+  have admN1: "adm ?N1 jm1"
+    using admA m_8_5_marked_adm_persist[OF n0lt, where C="take 1 B"] by simp
+  \<comment> \<open>R2c enabler at column 0, uniform over the two \<open>disc\<close> branches\<close>
+  have jm1pL: "jm1 \<le> pL"
+    using disc
+  proof (elim disjE)
+    assume ok1: "le0 ?N1 jm1 ?L"
+    have neq: "jm1 \<noteq> ?L" using jm1L by simp
+    have rt: "(nextrel0 ?N1)\<^sup>*\<^sup>* jm1 ?L" using ok1 by (simp add: le0_def)
+    obtain p where hp': "(nextrel0 ?N1)\<^sup>*\<^sup>* jm1 p" and pe: "nextrel0 ?N1 p ?L"
+      using m_8_5_nextrel0_rtrancl_last_step[OF rt neq] by blast
+    have pR: "nextR ?N1 0 p ?L" using pe by (simp add: nextR_def)
+    have peq: "p = pL" using idxsum_parent0_unique[OF pR pLw] pL_def by simp
+    have "jm1 \<le> p" by (rule nextrel0_rtrancl_mono[OF hp'])
+    thus "jm1 \<le> pL" using peq by simp
+  next
+    assume h: "multiT ?N1 \<and> jm1 < Pcut ?N1"
+    have mu1: "multiT ?N1" and st1: "jm1 < Pcut ?N1" using h by simp_all
+    have pLpos: "0 < pL"
+    proof (rule ccontr)
+      assume "\<not> 0 < pL"
+      hence pL0: "pL = 0" by simp
+      have rt1: "(nextrel0 ?N1)\<^sup>*\<^sup>* 0 ?L" using pLe pL0 by (auto intro: r_into_rtranclp)
+      have b1: "(0::nat) < Lng ?N1" using LngN1 by simp
+      have b2: "?L < Lng ?N1" using LngN1 by simp
+      have "le0 ?N1 0 ?L" using rt1 b1 b2 by (simp add: le0_def)
+      hence "leR ?N1 0 0 (Lng ?N1 - 1)" using LN1m1 by (simp add: leR_def)
+      hence "\<not> multiT ?N1" using m_6_2_not_multi_iff_le[OF N1T] by simp
+      thus False using mu1 by simp
+    qed
+    have rt1: "(nextrel0 ?N1)\<^sup>*\<^sup>* pL ?L" using pLe by (rule r_into_rtranclp)
+    have b1: "pL < Lng ?N1" using pLlt LngN1 by simp
+    have b2: "?L < Lng ?N1" using LngN1 by simp
+    have lerpL: "leR ?N1 0 pL (Lng ?N1 - 1)"
+      using rt1 b1 b2 LN1m1 by (simp add: leR_def le0_def)
+    have pLbd: "pL \<le> Lng ?N1 - 1" using pLlt LN1m1 by simp
+    have le1: "(LEAST j. 0 < j \<and> j \<le> Lng ?N1 - 1 \<and> leR ?N1 0 j (Lng ?N1 - 1)) \<le> pL"
+      by (rule Least_le[where P="\<lambda>j. 0 < j \<and> j \<le> Lng ?N1 - 1 \<and> leR ?N1 0 j (Lng ?N1 - 1)"])
+         (use pLpos pLbd lerpL in auto)
+    have "Pcut ?N1 \<le> pL" using le1 by (simp add: Pcut_def)
+    thus "jm1 \<le> pL" using st1 by linarith
+  qed
+  show ?thesis
+  proof (cases "m = 0")
+    case True
+    have N0: "?A @ take m B = ?A" using True by simp
+    have NR: "?N \<in> RT_PS" using colRT[OF mlt] .
+    have AT: "?A \<in> T_PS" using NR N0 by (simp add: RT_PS_def)
+    have Ane: "?A \<noteq> []" using AT by (simp add: T_PS_def)
+    have R2a: "(?A, jm1) \<in> Marked"
+      using m_8_5_Marked_Adm_edge[OF AT parRq] jm1def by simp
+    have take1: "take 1 B = [B ! 0]" using LngBpos by (cases B) auto
+    have N1eq: "?N1 = ?A @ [B ! 0]" using take1 by simp
+    have tSm1: "?A @ take (Suc m) B = ?N1" using True by simp
+    have hp0X: "hasParent (?A @ [B ! 0]) 0 (Lng (?A @ [B ! 0]) - 1)"
+      using hp0L N1eq by simp
+    have R2bN1: "(?A, transJm1 ?N1) \<in> Marked"
+      using m_8_5_R2b_of_hasParent0[OF Ane hp0X] N1eq by simp
+    have tj1eq: "transJm1 ?N1 = Adm ?N1 pL"
+    proof -
+      have "transJm1 ?N1 = Adm ?N1 (parent ?N1 0 (Lng ?N1 - 1))"
+        by (simp add: transJm1_def transJ0_def transJ1_def)
+      thus ?thesis using LN1m1 pL_def by simp
+    qed
+    have R2cN1: "jm1 \<le> transJm1 ?N1"
+      using adm_Adm_max[OF admN1 jm1pL] tj1eq by simp
+    have c1: "?N \<in> RT_PS" using NR .
+    have c2: "(?N, jm1) \<in> Marked" using R2a True by simp
+    have c3: "(?N, transJm1 (?A @ take (Suc m) B)) \<in> Marked"
+      using R2bN1 True by simp
+    have c4: "jm1 \<le> transJm1 (?A @ take (Suc m) B)" using R2cN1 True by simp
+    show ?thesis using c1 c2 c3 c4 by blast
+  next
+    case False
+    have mpos: "0 < m" using False by simp
+    have kpos: "1 \<le> m" using mpos by simp
+    have kB: "m \<le> Lng B" using mlt by simp
+    have NR: "?N \<in> RT_PS" using colRT[OF mlt] .
+    show ?thesis
+      using disc
+    proof (elim disjE)
+      assume ok1: "le0 ?N1 jm1 ?L"
+      have R2a: "(?N, jm1) \<in> Marked"
+        by (rule m_8_5_R2a_of_ok1[OF j1pos nz hp parR0M app parRq jm1def ok1 kpos kB])
+      \<comment> \<open>R2b/R2c at the extended host \<open>?N'\<close>\<close>
+      have SucmB: "Suc m \<le> Lng B" using mlt by simp
+      have kposS: "1 \<le> Suc m" by simp
+      have LngN': "Lng ?N' = ?L + Suc m" using SucmB by (simp add: min.absorb1)
+      have LngNm: "Lng ?N = ?L + m" using kB by (simp add: min.absorb1)
+      have uL: "?L < ?L + m" using mpos by simp
+      have uLng: "?L + m < Lng ?N'" using LngN' by simp
+      obtain p where pge: "?L \<le> p" and plt: "p < ?L + m" and pe: "nextrel0 ?N' p (?L + m)"
+        using m_8_5_fold_parentwit[OF bv kposS SucmB uL uLng] by blast
+      have pR: "nextR ?N' 0 p (?L + m)" using pe by (simp add: nextR_def)
+      have hasP: "hasParent ?N' 0 (?L + m)"
+      proof -
+        have "\<exists>!x. nextR ?N' 0 x (?L + m)" using pR idxsum_parent0_unique by metis
+        thus ?thesis unfolding hasParent_def by simp
+      qed
+      have peq: "parent ?N' 0 (?L + m) = p"
+      proof -
+        have w: "nextR ?N' 0 (parent ?N' 0 (?L + m)) (?L + m)"
+          by (rule nextR_parent_witness[OF hasP])
+        show ?thesis by (rule idxsum_parent0_unique[OF w pR])
+      qed
+      have splitm: "?N' = ?N @ [B ! m]" using mlt by (simp add: take_Suc_conv_app_nth)
+      have LngNmpos: "0 < Lng ?N" using LngNm kpos by linarith
+      have Nne: "?N \<noteq> []" using LngNmpos by auto
+      have LN'm1: "Lng ?N' - 1 = ?L + m" using LngN' by simp
+      have LngNm1: "Lng (?N @ [B ! m]) - 1 = ?L + m" using LngNm by simp
+      have hp0m: "hasParent (?N @ [B ! m]) 0 (Lng (?N @ [B ! m]) - 1)"
+        using hasP splitm LngNm1 by simp
+      have R2b: "(?N, transJm1 (?A @ take (Suc m) B)) \<in> Marked"
+        using m_8_5_R2b_of_hasParent0[OF Nne hp0m] splitm by simp
+      have admN': "adm ?N' jm1"
+        using admA m_8_5_marked_adm_persist[OF n0lt, where C="take (Suc m) B"] by simp
+      have jm1p: "jm1 \<le> p" using jm1L pge by linarith
+      have tjm: "transJm1 ?N' = Adm ?N' p"
+      proof -
+        have "transJm1 ?N' = Adm ?N' (parent ?N' 0 (Lng ?N' - 1))"
+          by (simp add: transJm1_def transJ0_def transJ1_def)
+        thus ?thesis using LN'm1 peq by simp
+      qed
+      have R2c: "jm1 \<le> transJm1 (?A @ take (Suc m) B)"
+        using adm_Adm_max[OF admN' jm1p] tjm by simp
+      show ?thesis using NR R2a R2b R2c by blast
+    next
+      assume h: "multiT ?N1 \<and> jm1 < Pcut ?N1"
+      have mu1: "multiT ?N1" and st1: "jm1 < Pcut ?N1" using h by simp_all
+      have d2: "?N \<in> RT_PS \<and> multiT ?N \<and> jm1 < Pcut ?N
+                \<and> entry ?N 0 (Pcut ?N) < fst (B ! m)"
+        by (rule m_8_5_colcase_cols_ge1[OF j1pos nz hp parR0M qpos app parRq jm1def NR mu1 st1 mpos mlt])
+      show ?thesis using d2 by blast
+    qed
+  qed
+qed
+
+text \<open>(7) THE ANCHOR CHAIN, colcase discharged — @{thm [source]
+  m_8_5_anchor_fold_mixed} at \<open>Y = M[q]\<close>, \<open>n\<^sub>0 = jm1\<close>, with the per-column colcase
+  hypothesis REPLACED by the base-level kernel facts of (6).  No per-column
+  hypothesis remains except the standard \<open>colRT\<close> membership.\<close>
+
+lemma m_8_5_anchor_fold_kernel:
+  fixes M B :: pairseq and q jm1 :: nat
+  assumes j1pos: "Lng M - 1 > 0"
+    and nz: "\<not> (entry M 0 (Lng M - 1) = 0 \<and> entry M 1 (Lng M - 1) = 0)"
+    and hp: "hasParent M (idx1 M (Lng M - 1)) (Lng M - 1)"
+    and parR0M: "nextrel0 M (parent M (idx1 M (Lng M - 1)) (Lng M - 1)) (Lng M - 1)"
+    and qpos: "0 < q"
+    and app: "(M::pairseq)[Suc q] = M[q] @ B"
+    and parRq: "nextrel0 ((M::pairseq)[q])
+                  (parent ((M::pairseq)[q]) 0 (Lng ((M::pairseq)[q]) - 1))
+                  (Lng ((M::pairseq)[q]) - 1)"
+    and jm1def: "jm1 = Adm ((M::pairseq)[q]) (parent ((M::pairseq)[q]) 0 (Lng ((M::pairseq)[q]) - 1))"
+    and colRT: "\<And>k. k < Lng B \<Longrightarrow> ((M::pairseq)[q] @ take k B) \<in> RT_PS"
+    and hp0N1: "hasParent ((M::pairseq)[q] @ take 1 B) 0 (Lng ((M::pairseq)[q] @ take 1 B) - 1)"
+    and disc: "le0 ((M::pairseq)[q] @ take 1 B) jm1 (Lng ((M::pairseq)[q]))
+             \<or> (multiT ((M::pairseq)[q] @ take 1 B)
+                 \<and> jm1 < Pcut ((M::pairseq)[q] @ take 1 B))"
+  shows "\<And>m. m < Lng B \<Longrightarrow>
+    \<exists>sx bx. scb_decomp (Mark ((M::pairseq)[q] @ take m B) jm1) sx
+              (flatBT (transC1 ((M::pairseq)[q] @ take (Suc m) B))) bx"
+proof -
+  have colcase: "\<And>m. m < Lng B \<Longrightarrow>
+      (((M::pairseq)[q] @ take m B) \<in> RT_PS
+        \<and> ((M::pairseq)[q] @ take m B, jm1) \<in> Marked
+        \<and> ((M::pairseq)[q] @ take m B, transJm1 ((M::pairseq)[q] @ take (Suc m) B)) \<in> Marked
+        \<and> jm1 \<le> transJm1 ((M::pairseq)[q] @ take (Suc m) B))
+    \<or> (((M::pairseq)[q] @ take m B) \<in> RT_PS
+        \<and> multiT ((M::pairseq)[q] @ take m B)
+        \<and> jm1 < Pcut ((M::pairseq)[q] @ take m B)
+        \<and> entry ((M::pairseq)[q] @ take m B) 0 (Pcut ((M::pairseq)[q] @ take m B)) < fst (B ! m))"
+    by (rule m_8_5_colcase_full[OF j1pos nz hp parR0M qpos app parRq jm1def colRT hp0N1 disc])
+  fix m assume mw: "m < Lng B"
+  show "\<exists>sx bx. scb_decomp (Mark ((M::pairseq)[q] @ take m B) jm1) sx
+              (flatBT (transC1 ((M::pairseq)[q] @ take (Suc m) B))) bx"
+    by (rule m_8_5_anchor_fold_mixed[OF colcase mw])
+qed
+
+
 end

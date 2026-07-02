@@ -1932,4 +1932,130 @@ with the non-stuck route per column.
 Re-run instructions for Round 14 front K:
 python3 python/_r14_k_broad.py 110 555 321 7 99 2024 13 42 1234 777
 python3 python/_r14_k_branch.py 100 11 222 3333 44444 5 606 7007
+
+=====================================================================
+ROUND 15, front K2 (2026-07-02; layerC/pss_scratch.thy appended r15-K2
+block, lemmas m_8_5_hasParent0_of_edge .. m_8_5_anchor_fold_kernel).
+The ANCHOR COLCASE is now fully discharged from base-level facts, and
+the map between the anchor and the keystone is REDRAWN (two of the
+standing bridge hypotheses are refuted in-regime).
+=====================================================================
+
+WHAT CLOSED THIS ROUND (details: python/_r15_k2_notes.py).
+ - R2a non-trunk-stuck leR: from the SINGLE base fact
+     ok1 = le0 (M[q] @ [B!0]) jm1 (Lng (M[q]))
+   R2a holds at EVERY fold column (m_8_5_ok_of_ok1 / m_8_5_R2a_of_ok1),
+   via the new block-descent toolkit: fst(B!0) < fst(B!m) for m >= 1
+   (m_8_5_block_base_min), hence the appended block is parent-closed
+   above L = Lng (M[q]) (m_8_5_fold_blocker / m_8_5_fold_parentwit),
+   chains from below L factor through L (m_8_5_le0_cross_block) and
+   reachability climbs the whole block from L (m_8_5_le0_block_climb).
+ - The m=0 basepoint R2a is self-contained (m_8_5_Marked_Adm_edge), the
+   r14 hp0Mq stub is composed away (m_8_5_hasParent0_of_edge), R2b/R2c
+   are derived per column (in-block parent + adm_Adm_max), stuck(1)
+   propagates to all m >= 1 (m_8_5_stuck_suffix), and the r14 witness
+   fires per stuck column with stuck/hp0Mq DERIVED
+   (m_8_5_colcase_cols_ge1).
+ - m_8_5_colcase_full: EVERY column m < Lng B satisfies the literal
+   colcase disjunction of m_8_5_anchor_fold_mixed at Y = M[q], n0 = jm1,
+   from base-level hypotheses only:
+     j1pos/nz/hp/parR0M (base M), qpos/app, parRq/jm1def (at M[q]),
+     colRT (per-column RT_PS, standard), hp0N1, disc = ok1 \/ stuck1.
+   m_8_5_anchor_fold_kernel = the anchor chain with no per-column
+   hypothesis left.
+
+NEW NEGATIVE RESULTS (empirical; genuine regime, 68 blocks, 11 seeds):
+ (N1) The colcase is UNSATISFIABLE at column 0 on 20/68 blocks (exactly
+      the trunk-stuck blocks): B!0's row-0 value equals the host
+      minimum, hasParent(N_1,0,L) FAILS, transJm1(N_1) is
+      THE-underspecified, R2b/R2c unprovable; column 0 is never stuck.
+      hp0N1 <=> ok1 held 68/68; D1ALL=48, FAIL0=20, MIXED=0, OTHER=0.
+      So satisfiable folds are d1-everywhere (ok1 blocks have NO stuck
+      column) and the two colcase routes NEVER genuinely mix.  hp0N1
+      and disc are therefore PERMANENT named residuals of this shape.
+ (N2) Mark(N_1, jm1) == Mark(M[q], jm1): 0/67 (the opening column
+      always changes the marked value; no "start the fold at m=1").
+ (N3) hostP -- monoT((Y @ take m B) @ [B!m]), carried per column by
+      m_8_5_Mark_netfold_condV / m_8_5_Mark_netfold_via_anchor /
+      m_8_5_Mark_fold_C_commute -- is FALSE at EVERY genuine fold
+      column (0/37; reach0L = 0/68).  The condV-uniform netfold bridge
+      is UNINSTANTIABLE on genuine deepen blocks as stated.
+
+THE REDRAWN MAP: what stands between the (now closed) anchor and the
+keystone bpHeadT (Trans (slice_q @ B)) = C (bpHeadT (Trans slice_q)).
+Lemma-shaped obligations, in dependency order:
+
+ (W1) PERIOD-FOLD DECOMPOSITION (the zrec of m_8_5_keystone_allq):
+        lemma mark_period_fold_genuine:
+          assumes <genuine-regime base facts>
+          shows "Mark (M[Suc q]) jm1
+                   = fold (\m acc. STEP m acc) [0..<Lng B] (Mark (M[q]) jm1)"
+      where STEP m is the PER-COLUMN Trans-recursion case of the host
+      (M[q] @ take m B) @ [B!m] -- NOT uniformly the condV scbSubst:
+      by (N3) the extended hosts are all multiT, so the uniform
+      hostP/hostJ1/hostT1 profile of m_8_5_Mark_netfold_condV never
+      holds.  The r14-F7 per-column case DISPATCHER is the right
+      skeleton; the condV-shaped scbSubst step can at best apply to a
+      sub-case of columns.  STATUS: OPEN, and now known to require a
+      case-dispatched fold, not the existing netfold.
+ (W2) FOLD-COMMUTE (the commute of m_8_5_keystone_allq):
+        F (C w) = C (F w) on the orbit invariant.
+      m_8_5_fold_C_commute discharges this GIVEN anchor (CLOSED this
+      round) + nz (closed via colMarked0 = R2a, on ok1 folds) + pt2
+      (isPTB_str (flatBT (transC2 host)) -- currently only via
+      m_8_5_isPTB_str_transC2_std, which needs the SAME refuted hostP).
+      STATUS: blocked on the same per-column case profile as W1.
+ (W3) R1 BASE INSTANCE: F (z 0) = C (z 0) at the tower base q = 2.
+      One concrete whole-period identity.  STATUS: OPEN (out of scope
+      this round, unchanged).
+ (W4) F q-INDEPENDENCE (assembly): one fixed F for all q. The fold
+      operators transC1/transC2 read the GROWING hosts, so F is
+      formally q-dependent; q-independence must come from the
+      self-similar block structure (B is q-verbatim for i1=0 bases,
+      uniformly shifted for i1=1).  STATUS: OPEN, untouched.
+ (W5) MARKSTEP BRIDGE (m_8_5_markstep_of_Trans_keystone): needs
+      Marked/RT_PS/rng at M[q] and M[Suc q] -- all supplied by
+      m_8_3_kind1_base_basepoint (and now m_8_5_Marked_Adm_edge for
+      self-contained base cases).  STATUS: effectively closed modulo
+      the keystone hypothesis itself.
+
+CAN THE S5 ARTICLE ROUTE (m_8_5_scbdec_* closed forms, A28-corrected)
+BYPASS THESE?
+ - The scbdec closed forms work at the WHOLE-TERM operB level:
+     flat(Trans(M)[n]) closed form for ALL n (m_8_5_scbdec_fseq_condV,
+     A24-corrected), exchange instance at n = 1
+     (m_8_5_scbdec_exchange1_n1_condV: lessBT (Trans (M[1]))
+     (operB (Trans M) (numBT 1))).
+   The article's own SS8.5 descent uses the (A28-shifted) exchange
+     lessBT (Trans (M[n])) (operB (Trans M) (numBT (m_n + 1)))
+   which requires NO per-column Mark fold, NO C-tower, NO F: it
+   compares Trans of the ITERATE with an operB fundamental-sequence
+   member directly.  If the exchange is closed for ALL n (the n=1
+   instance + the fseq closed form already exist; the all-n step is
+   an scbext/lessBT induction along the SAME (s1,b1)), it BYPASSES
+   W1, W2, W4 AND R1 ENTIRELY -- the keystone identity becomes
+   unnecessary for the descent; only the SS8 endgame's Sigma_B-descent
+   hookup (pss-8-endgame-route) remains.
+ - What the S5 route does NOT bypass: (a) its own regime is condV at
+   the BASE M of each oper step (exactly the kernel regime -- same
+   hp0N1-style opening-column caveats apply to its Trans well-
+   definedness on the iterates); (b) the OT_B/descent glue (operB
+   member-of-fundamental-sequence descent, m_buc1_3_2a_fseq_lt --
+   already green); (c) condI/condIII/condVI columns (the dispatcher
+   fronts).
+ RECOMMENDATION: given (N3) -- the Mark-netfold bridge is refuted
+ in-regime -- the S5 exchange route is now the PRIMARY candidate for
+ the keystone/descent, with the C-tower route (W1-W4) demoted to the
+ sub-case where a case-dispatched fold can be rebuilt.  Concrete next
+ target, lemma-shaped:
+        lemma m_8_5_scbdec_exchange_alln_condV:
+          assumes MR MP J1pos T1 cond (as in the n=1 capstone)
+          shows "lessBT (Trans ((M::pairseq)[n]))
+                        (operB (Trans M) (numBT n))"      -- A28 index
+ (empirically 40/40 strict in _r14_s5_nonadm_hunt.py's population).
+
+Re-run instructions for Round 15 front K2:
+python3 python/_r15_k2_blockpat.py 40 555 321 7 99 2024 13 42 1234 777 11 222
+python3 python/_r15_k2_colcase.py 35 555 321 7
+python3 python/_r15_k2_parr0.py
 """

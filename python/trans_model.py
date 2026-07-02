@@ -72,10 +72,16 @@ def _parseBP(xs):
     return ('D', v, t), rest
 
 def isPTB_str(c):
+    # r15-VX fix: catch ONLY the parser's own failures.  The former bare
+    # "except Exception" also swallowed SIGALRM timeout exceptions raised
+    # mid-parse by callers' watchdogs, turning a timeout into a wrong False;
+    # scb_decomps then dropped a legitimate candidate and Trans crashed with
+    # "no scb decomposition (invariant breach)" (the r14-C3 crash) -- or,
+    # silently, an empirical check could report a false refutation.
     try:
         p, rest = _parseBP(c)
         return not rest
-    except Exception:
+    except (ValueError, IndexError):
         return False
 
 def scb_decomps(t, c):
