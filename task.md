@@ -47,7 +47,7 @@
     - ✅ 補題（条件 (V) の下での右端の親の基本性質）〔`m_8_2_condV_rightmost_parent`〕
     - 🚨 補題（条件 (V) の下での終切片と $\textrm{Trans}$ の関係）
       - ✅ VE'への還元〔`m_8_2_condV_terminal_slice_Trans_modVE`、全域modulo VE'〕[r1]
-      - 🚨 残 VE' `bpHeadT(Trans(seg M m j1))=bpHeadT(Trans M)`〔原典front-peel/Pred帰納、1284/1284〕[r0]
+      - 🚨🤖 残 VE' `bpHeadT(Trans(seg M m j1))=bpHeadT(Trans M)`〔原典front-peel/Pred帰納、endgame単一残差、wt2〕[r0]
   - 🚨 §8.3 条件 (II) の下での展開規則
     - 🚨 命題（条件 (II) の下での $\textrm{Trans}$ と基本列の交換関係）
       - ✅ 降下⟸exch+OT〔`m_8_3_TransCondII_oper_descend_engine`〕
@@ -59,7 +59,7 @@
   - 🚨 §8.4 条件 (III) か (IV) の下での展開規則
     - 🚨 命題（条件 (III) か (IV) の下での $\textrm{Trans}$ と基本列の交換関係）〔A32補正形〕
       - ✅ (2)降下 condIII〔`e3x_exchange2_condIII`、terminal-slice modulo〕[r1]
-      - 🚨 (1)(3)+condIV〔jm3分解route検証済、operB絡み〕[r0]
+      - 🚨🤖 (1)(3)+condIV〔jm3分解route検証済、wt-b1〕[r0]
     - ✅ 補題（右端の非許容直系先祖の基本性質）〔`m_8_4_rightmost_nonadm_ancestor`〕
     - ✅ 補題（条件 (III)〜(V) の下での右端の置き換えと $\textrm{Trans}$ の関係）〔`m_8_4_rightend_Trans`、A30訂正形〕[r1]
     - ✅ 補題（条件 (III)〜(VI) の下での展開規則の基本性質）〔`m_8_4_oper_props_1..5`、A31ガード形〕[r1]
