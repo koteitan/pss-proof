@@ -22602,4 +22602,170 @@ qed
 
 
 
+
+(* ===== round 18 front CONS (wt2 873380b): collapse to CF-META + capstone m_8_termination_modulo_CF ===== *)
+(* ==================== r18-CONS: CONSOLIDATION onto the single residual CF ==================== *)
+section \<open>r18-CONS — every §8 termination residual collapses onto the marked-principal
+  fundamental-sequence flat closed form \<open>CF\<close>\<close>
+
+text \<open>THE CONVERGENCE (round 17), pinned.  Every §8 termination residual bottoms on the
+  closed form of \<open>flatBT (Trans (M[n]))\<close> that the article's Pred-SIMULTANEOUS induction
+  (content.md 3745-3945) produces.  The UNIFYING object is NOT an equation
+  \<open>Trans(M[n]) = operB (\<dots>)\<close> — that EQUALITY is FALSE for conditions (III) and (V), where the
+  fundamental sequence strictly INTERLEAVES the Buchholz fundamental sequence
+  (\<open>X\<^sub>k < A\<^sub>k < X\<^sub>k\<^sub>+\<^sub>1\<close>; @{thm [source] d13x_exchange13_condIII}, and the STRICT exchange(1) of
+  r15-S5b).  The unifying object is the FULL FLAT STRING of \<open>flatBT (Trans (M[n]))\<close> read in
+  the MARKED-PRINCIPAL surgery wrapper of \<open>Trans M\<close>:
+
+  \<^bold>\<open>CF-META\<close>:  \<open>flatBT (Trans (M[n])) = s\<^sub>1 @ flatBP (DB hd (core M n)) @ b\<^sub>1\<close>,
+
+  where \<open>(s\<^sub>1,b\<^sub>1)\<close> is the ONE surgery pair scb-decomposing \<open>Trans M\<close> at its marked principal
+  \<open>transC2 M\<close> (\<open>flatBT (Trans M) = s\<^sub>1 @ flatBP (DB hd top) @ b\<^sub>1\<close>), \<open>hd\<close> is the marked head, and
+  \<open>core M n\<close> is the condition-specific inner body:
+
+  \<^item> cond (II)  KIND-0, \<open>hd = M\<^bsub>1,j\<^sub>-\<^sub>1\<^esub>\<close>, \<open>core = t\<^sub>0 + (D\<^bsub>v\<^esub> t\<^sub>1)\<cdot>(n-1)\<close>, \<open>top = t\<^sub>0 + D\<^bsub>v\<^esub>(t\<^sub>1 + D\<^sub>0 0)\<close>
+    (the \<open>lhs\<close> of @{thm [source] m_8_3_exch_of_lhs_closed} / @{thm [source] d2x_exchange2_condII}).
+  \<^item> cond (VI) KIND-1, \<open>hd = transV M\<close>, \<open>core = Dtower M\<^bsub>1,j\<^sub>0\<^esub> k\<close>, \<open>top = D\<^bsub>M\<^sub>1\<^sub>,\<^sub>j\<^sub>1\<^esub> 0\<close>
+    (the \<open>cf'\<close> of @{thm [source] d6x_exchange2_condVI_tower}).
+  \<^item> cond (III) KIND-1, \<open>hd = M\<^bsub>1,j\<^sub>-\<^sub>3\<^esub>\<close>, \<open>core = d13x_T L (v-1) A\<^sub>0 (n-1)\<close> (A-tower)
+    (the \<open>mnform\<close> of @{thm [source] d13x_exchange13_condIII}).
+  \<^item> cond (V)-nonadm KIND-1, \<open>hd = M\<^bsub>1,j\<^sub>-\<^sub>1\<^esub>\<close>, \<open>core = e5x_bodyM t\<^sub>2 e (n-1)\<close> (+ the \<open>operB\<close> companion)
+    (the \<open>NF\<close> of @{thm [source] m_8_5_Trans_oper_exchange_condV_nonadm}).
+
+  Because the four cores are genuinely different closed forms (the condition IS the core shape),
+  NO single literal equation gives all four; what is single is this ABSTRACT marked-principal
+  flat form.  It is the FABLE TARGET: Fable proves CF-META (4 instances) by the Pred-simultaneous
+  induction; below we discharge, GREEN, the mechanical consequences.
+
+  COLLAPSE MAP (see the lemmas below and python/_r18_cons_map.py):
+  \<^item> @{text m_8_cf_descent_of_CF}: CF-META + core-bound \<Rightarrow> \<open>lessBT (Trans(M[n])) (Trans M)\<close>.  ONE
+    generic lemma subsuming the conclusion-(2) DESCENT of conditions (II)/(III)/(V)/(VI).
+  \<^item> @{text m_8_3_lhs_of_CF}: the cond-(II) CF-META instance \<Rightarrow> the \<open>lhs\<close> residual (unflat form).
+  \<^item> @{text m_8_6_cf_of_CF}: the cond-(VI) CF-META instance \<Rightarrow> d6x's existential \<open>cf'\<close> residual.
+  \<^item> @{text m_8_termination_modulo_CF}: the two §8 PILLARS (\<open>Trans M \<in> OT\<^bsub>B\<^esub>\<close> + the fundamental-
+    sequence DESCENT) from the CF-derived exchanges + \<open>stepval\<close> — so §8 bottoms on
+    CF + \<open>buc1_2_2_OT_B_wf\<close> alone (the final \<open>Fdom\<close> step is the standard well-founded induction
+    over that descent, not re-mechanized here).
+  \<^item> VE'/FPEEL_STEP (§8.2) is a DIFFERENT object — the terminal SLICE \<open>seg M m j\<^sub>1\<close>, not the
+    fundamental sequence — proved by the SAME Pred-simultaneous induction; it does NOT logically
+    follow from CF-for-\<open>M[n]\<close>, so it is a second (slice) instance of the same core (its telescoping
+    reduction to FPEEL_STEP is already GREEN: @{thm [source] fpx_terminal_slice_Trans_modStep}).\<close>
+
+subsection \<open>The generic descent from \<open>CF\<close> (subsumes the four condition descents)\<close>
+
+text \<open>The single point onto which every conclusion-(2) DESCENT collapses: once CF-META gives
+  \<open>flatBT (Trans (M[n]))\<close> in the surgery wrapper of \<open>flatBT (Trans M)\<close> with a marked principal
+  \<open>coreP\<close> strictly below the \<open>Trans M\<close> marked principal \<open>topP\<close>, the descent is one application
+  of 部分表現の不等式の延長性 (@{thm [source] scbext_lessBT}).  Conditions (II)
+  (@{thm [source] d2x_exchange2_condII}), (III) (@{thm [source] e3x_exchange2_condIII}),
+  (V)-nonadm (@{thm [source] m_8_5_Trans_oper_exchange_condV_nonadm}) and (VI)
+  (@{thm [source] d6x_exchange2_condVI}) each end with exactly this step.\<close>
+
+lemma m_8_cf_descent_of_CF:
+  fixes M :: pairseq and n :: nat
+    and s b :: "Sym list" and topP coreP :: BP
+  assumes dTM: "flatBT (Trans M) = s @ flatBP topP @ b"
+    and CF:    "flatBT (Trans ((M::pairseq)[n])) = s @ flatBP coreP @ b"
+    and bRP:   "\<forall>x \<in> set b. x = RP"
+    and coreLt: "lessBP coreP topP"
+  shows "lessBT (Trans ((M::pairseq)[n])) (Trans M)"
+  by (rule scbext_lessBT[OF CF dTM bRP coreLt])
+
+subsection \<open>The cond-(II) \<open>lhs\<close> residual from its CF-META instance\<close>
+
+text \<open>The KIND-0 CF-META instance (@{text CF}: the flat string of \<open>Trans(M[m])\<close> at the marked
+  principal \<open>D\<^bsub>u\<^esub>(t\<^sub>0 + (D\<^bsub>v\<^esub> t\<^sub>1)\<cdot>(m-1))\<close>) is exactly the \<open>lhs\<close> hypothesis of
+  @{thm [source] m_8_3_exch_of_lhs_closed} / @{thm [source] d2x_exchange2_condII}, read back
+  through @{thm [source] unflatBT_flat} (\<open>flatBT (Dpt u t) = flatBP (DB u t)\<close>).\<close>
+
+lemma m_8_3_lhs_of_CF:
+  fixes M :: pairseq and m u v :: nat and t\<^sub>0 t\<^sub>1 :: BT and s b :: "Sym list"
+  assumes CF: "flatBT (Trans ((M::pairseq)[m]))
+                 = s @ flatBP (DB (enat u) (t\<^sub>0 +\<^sub>B multBT (Dpt (enat v) t\<^sub>1) (m - 1))) @ b"
+  shows "Trans ((M::pairseq)[m])
+           = unflatBT (s @ flatBT (Dpt (enat u)
+                (t\<^sub>0 +\<^sub>B multBT (Dpt (enat v) t\<^sub>1) (m - 1))) @ b)"
+proof -
+  have fp: "flatBT (Dpt (enat u) (t\<^sub>0 +\<^sub>B multBT (Dpt (enat v) t\<^sub>1) (m - 1)))
+            = flatBP (DB (enat u) (t\<^sub>0 +\<^sub>B multBT (Dpt (enat v) t\<^sub>1) (m - 1)))"
+    by simp
+  have "unflatBT (s @ flatBT (Dpt (enat u)
+             (t\<^sub>0 +\<^sub>B multBT (Dpt (enat v) t\<^sub>1) (m - 1))) @ b)
+        = unflatBT (flatBT (Trans ((M::pairseq)[m])))"
+    using CF fp by simp
+  also have "\<dots> = Trans ((M::pairseq)[m])" by (rule unflatBT_flat)
+  finally show ?thesis by (rule sym)
+qed
+
+subsection \<open>The cond-(VI) \<open>cf'\<close> residual from its CF-META instance\<close>
+
+text \<open>The KIND-1 (clean, \<open>t\<^sub>2\<close>-free) CF-META instance packages directly into the existential
+  \<open>cf'\<close> hypothesis of @{thm [source] d6x_exchange2_condVI_tower} (\<open>core = Dtower M\<^bsub>1,j\<^sub>0\<^esub> k\<close>): the
+  scb-decomposition of \<open>Trans M\<close> at \<open>transC2 M\<close> and the flat string of \<open>Trans(M[m])\<close> ARE the two
+  conjuncts.  The strict inner bound is discharged internally by @{thm [source] d6x_Dtower_lt_Dpt}
+  from the condition-(VI) index relation, so \<open>cf'\<close> is just the CF-META existential witnessing.\<close>
+
+lemma m_8_6_cf_of_CF:
+  fixes M :: pairseq and m k :: nat and s\<^sub>1 b\<^sub>1 :: "Sym list"
+  assumes dc2: "scb_decomp (Trans M) s\<^sub>1 (flatBT (transC2 M)) b\<^sub>1"
+    and CF: "flatBT (Trans ((M::pairseq)[m]))
+               = s\<^sub>1 @ flatBP (DB (transV M) (Dtower (entry M 1 (transJ0 M)) k)) @ b\<^sub>1"
+  shows "\<exists>s\<^sub>1 b\<^sub>1 k.
+           scb_decomp (Trans M) s\<^sub>1 (flatBT (transC2 M)) b\<^sub>1
+           \<and> flatBT (Trans ((M::pairseq)[m]))
+               = s\<^sub>1 @ flatBP (DB (transV M)
+                        (Dtower (entry M 1 (transJ0 M)) k)) @ b\<^sub>1"
+  using dc2 CF by blast
+
+subsection \<open>CAPSTONE — the two §8 pillars modulo \<open>CF\<close> (+ \<open>stepval\<close>)\<close>
+
+text \<open>Both §8 termination pillars from the CF-derived inputs: the OT pillar \<open>Trans M \<in> OT\<^bsub>B\<^esub>\<close> from
+  \<open>stepval\<close> (the §8.7 op0-tower value identity, via @{thm [source] m_8_7_Trans_preserves_OT_via_closure}),
+  and the fundamental-sequence DESCENT \<open>lessBT (Trans(M[n])) (Trans M)\<close> from the six per-condition
+  EXCHANGE facts (which the CF-META instances supply through the \<open>exch_of_lhs\<close> bridges
+  @{thm [source] m_8_3_exch_of_lhs_closed} etc.) via the full dispatcher
+  @{thm [source] m_8_7_fseq_descend_dispatcher}.  Thus the whole §8 bottoms on
+  \<open>CF\<close> + \<open>buc1_2_2_OT_B_wf\<close>: the remaining step to the article's \<open>Fdom\<close> statement
+  (@{thm [source] p_8_7_termination}) is the standard well-founded induction of the descent along
+  \<open>(OT\<^bsub>B\<^esub>, <)\<close>, which is @{thm [source] buc1_2_2_OT_B_wf} and is not re-mechanized here.\<close>
+
+lemma m_8_termination_modulo_CF:
+  fixes M :: pairseq and n :: nat
+  assumes MST: "M \<in> ST_PS" and n1: "1 \<le> n" and L: "1 < Lng M"
+    and stepval: "\<And>N k. N \<in> ST_PS \<Longrightarrow> Trans N \<in> OT_B \<Longrightarrow> 1 \<le> k \<Longrightarrow>
+        \<exists>m j. Trans ((N::pairseq)[k])
+              = ((\<lambda>x. operB x (numBT 0))^^j) (operB (Trans N) (numBT m))"
+    and exchI: "\<And>N m. N \<in> ST_PS \<Longrightarrow> N \<in> PT_PS \<Longrightarrow> 1 < Lng N - 1 \<Longrightarrow>
+                  transCondI N \<Longrightarrow> 0 < parent N 0 (Lng N - 1) \<Longrightarrow> 1 < m \<Longrightarrow>
+                  Trans ((N::pairseq)[m]) = operB (Trans N) (numBT (m - 1))"
+    and exchII: "\<And>N m. N \<in> ST_PS \<Longrightarrow> N \<in> PT_PS \<Longrightarrow> 1 < Lng N - 1 \<Longrightarrow>
+                  transCondII N \<Longrightarrow> 1 < m \<Longrightarrow>
+                  \<exists>k. Trans ((N::pairseq)[m]) = operB (Trans N) (numBT k)"
+    and exchIII: "\<And>N m. N \<in> ST_PS \<Longrightarrow> N \<in> PT_PS \<Longrightarrow> 1 < Lng N - 1 \<Longrightarrow>
+                  transCondIII N \<Longrightarrow> 1 < m \<Longrightarrow>
+                  \<exists>k. leBT (Trans ((N::pairseq)[m])) (operB (Trans N) (numBT k))"
+    and exchIV: "\<And>N m. N \<in> ST_PS \<Longrightarrow> N \<in> PT_PS \<Longrightarrow> 1 < Lng N - 1 \<Longrightarrow>
+                  transCondIV N \<Longrightarrow> 1 < m \<Longrightarrow>
+                  \<exists>k. leBT (Trans ((N::pairseq)[m])) (operB (Trans N) (numBT k))"
+    and exchV: "\<And>N m. N \<in> ST_PS \<Longrightarrow> N \<in> PT_PS \<Longrightarrow> 1 < Lng N - 1 \<Longrightarrow>
+                  transCondV N \<Longrightarrow> 1 < m \<Longrightarrow>
+                  \<exists>k. leBT (Trans ((N::pairseq)[m])) (operB (Trans N) (numBT k))"
+    and exchVI: "\<And>N m. N \<in> ST_PS \<Longrightarrow> N \<in> PT_PS \<Longrightarrow> 1 < Lng N - 1 \<Longrightarrow>
+                  transCondVI N \<Longrightarrow> 1 < m \<Longrightarrow>
+                  \<exists>k. leBT (Trans ((N::pairseq)[m])) (operB (Trans N) (numBT k))"
+  shows "Trans M \<in> OT_B \<and> lessBT (Trans ((M::pairseq)[n])) (Trans M)"
+proof
+  show "Trans M \<in> OT_B"
+    by (rule m_8_7_Trans_preserves_OT_via_closure[OF stepval MST])
+next
+  have TOT: "\<And>N. N \<in> ST_PS \<Longrightarrow> N \<in> PT_PS \<Longrightarrow> 1 < Lng N - 1 \<Longrightarrow> Trans N \<in> OT_B"
+    by (rule m_8_7_Trans_preserves_OT_via_closure[OF stepval])
+  show "lessBT (Trans ((M::pairseq)[n])) (Trans M)"
+    by (rule m_8_7_fseq_descend_dispatcher[OF MST n1 L TOT exchI exchII exchIII
+          exchIV exchV exchVI])
+qed
+
+
+
+
 end
