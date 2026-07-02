@@ -57,10 +57,10 @@
   - 🚨 §8.4 条件 (III) か (IV) の下での展開規則
     - 🚨 命題（条件 (III) か (IV) の下での $\textrm{Trans}$ と基本列の交換関係）〔condIII独自producer要、condIV=A27〕 (⛔ 8.5)
     - ✅ 補題（右端の非許容直系先祖の基本性質）〔`m_8_4_rightmost_nonadm_ancestor`〕
-    - 🚨🤖 補題（条件 (III)〜(V) の下での右端の置き換えと $\textrm{Trans}$ の関係）〔`m_8_4_rightend_Trans`検証済(A30)、wt-s4b〕
-    - 🚨🤖 補題（条件 (III)〜(VI) の下での展開規則の基本性質）〔`m_8_4_oper_props_*`検証済(A31)、wt-s4a〕
-    - 🚨🤖 補題（条件 (III)〜(VI) の下での $\textrm{Trans}$ と scb分解の関係）〔`m_8_4_Trans_scb`検証済、wt-s4c〕
-    - 🚨🤖 補題（条件 (III)〜(V) の下での切片の scb分解）〔`m_8_4_slice_scb`検証済、wt-s4a〕
+    - ✅ 補題（条件 (III)〜(V) の下での右端の置き換えと $\textrm{Trans}$ の関係）〔`m_8_4_rightend_Trans`、A30訂正形〕[r1]
+    - ✅ 補題（条件 (III)〜(VI) の下での展開規則の基本性質）〔`m_8_4_oper_props_1..5`、A31ガード形〕[r1]
+    - ✅ 補題（条件 (III)〜(VI) の下での $\textrm{Trans}$ と scb分解の関係）〔`m_8_4_Trans_scb`〕[r1]
+    - 🚨 補題（条件 (III)〜(V) の下での切片の scb分解）〔(2)(3)=`p_8_2_condV_terminal_slice_Trans`待ち、statement検証済〕(⛔ 8.5)[r1]
     - 🚨 補題（条件 (III)〜(V) の下での各種 scb分解）〔検証済、C1+C2依存で次round〕
     - 🚨 補題（条件 (III) か (IV) の下での各種 scb分解）〔IV∧jm3<jm1枝はST_PSで空の疑い〕
     - ✅ 補題（条件 (III) か (IV) の下での基本列の基本性質）〔`m_8_4_oper_basic_part1`(= `p_8_4_oper_basic`)〕
