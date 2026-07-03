@@ -908,3 +908,17 @@ r25-CONDVI13 が真正 condVI mono host（深 Lng≤11）で印字形 (1) を 51
 
 ### 経験的確認
 `python/_r25_condvi13*.py`（真正 ST_PS condVI mono、Lng≤11）。
+
+## A38. §8.7 補題（Transが標準形を保つこと）の値等式 Trans(N[n])=Trans(N)[m_n][0]^k が偽
+
+### 対象
+original.html 6216（content.md 6122）の §8.7 OT保存証明が依拠する値等式: `Trans(N[n]) = operB^k_[0](operB(Trans N)(numBT m_n))`（適当な m_n, k）。
+
+### 訂正案
+この等式(stepval 形)は条件 III/IV/V の e≥1 host と条件 VI-adm の n=1 で**充足不能**。機構: 簡約 root head 0 と leaf head e≥1 の間の root kind-1 guard により `operB(Trans N)(numBT m)` の [0]-軌道は 3 手で 0 へ潰れ、`Trans(N[n])` は `Trans N` の fseq-閉包に属さない。A25/A26/A27（Pred-[0]/零化可能性の偽）の帰結が §8.7 本体へ伝播した形。OT保存自体は真: 世代帰納の各枝を交換則(1)(2)そのもの＋構造的 OT-step で置換すれば成立（`otx_Trans_preserves_OT_dispatch`、残差 {exchI, exchII, OTint, OTpred, OTmulti} は降下柱と共有）。
+
+### 反例
+形式反証 `otx_stepval_refuted`（N=[(1,1)], n=1 で (m,k) 不存在）。深い経験反証: M=(0,0)(1,1)(2,2)(3,2)(4,2)（condIII-adm）で全 m の [0]-軌道が 3 手で 0 に潰れ、いかなる (m,k) too 不成立。
+
+### 形式化での扱い
+`m_8_7_Trans_preserves_OT_via_closure` と r21 の `svx_OT_preserved_*` capstone は健全だが前提充足不能=vacuous（死没扱い）。置換 = `otx_Trans_preserves_OT_dispatch`（r28、緑）。
