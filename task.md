@@ -36,10 +36,8 @@
         - 🚨 unbounded-depth chain排除〔=ψ collapsing本体、非初等。外部`buc1_2_2`が唯一の残外部引用〕[r0]
   - 🚨 §8.1 条件 (I) の下での展開規則
     - 🚨 命題（条件 (I) の下での $\textrm{Trans}$ と基本列の交換関係）
-      - ✅ 降下⟸交換則(1)+OT〔`m_8_1_Trans_fseq_condI_descent`〕
-      - 🚨 交換則(1)本体〔stepT還元=`m_8_1_Trans_fseq_condI_comm_append_reduce`〕
-        - ✅ stepT j0=0（copy-additivity）〔`m_8_1_Trans_replicate_pred_condI`〕
-        - 🚨🤖 stepT j0>0〔CF_I value fact 攻略、wt-s4c〕[r1]
+      - ✅ 交換則(1)本体〔`scx_condI_exchange1` 完全無条件(j0=0+j0>0、marking-nesting二重帰納)〕[r4]
+      - ✅ 降下(2) OT-free〔`scx_condI_descent`(d2x scbext route、OT柱回避)〕[r1]
       - 🚨 OT所属 (⛔ 8.7)
     - ✅ 補題（公差 $(1,1)$ のペア数列の $\textrm{Trans}$ の基本性質）〔`m_8_1_diagSeq_Trans`〕
     - ✅ 系（$\textrm{Pred}$ が公差 $(1,1)$ のペア数列の $\textrm{Trans}$ の基本性質）〔`m_8_1_Pred_diagSeq_Trans`〕
@@ -69,22 +67,27 @@
       - ✅ (1)(3) condIII〔`d13x_exchange13_condIII`/`m_8_4_Trans_oper_exchange_corrected_condIII`、mnform modulo〕[r1]
       - ✅ condIV枝〔`d4vx_exchange2_condIV`/`d4vx_Trans_oper_exchange_corrected`(III+IV組立)、mnform modulo〕[r1]
       - ✅ condIV mnform〔`c4cx2_condIV_mnform_of_slice`=various_scb_IIIV content、r21b 4/57は誤form(d13x_T)への反証〕[r3]
-      - 🚨 condIII value facts(baseM/baseL)
-        - ✅ 特定slice VE'還元〔`c3vx_baseML_of_VEslices`(universal KER偽=r23 vmlx系vacuousを回避)〕[r5]
-        - 🚨🤖 slice regime discharge〔VEM/VEL=cfbx_VE instances、`vcx_VE_all`適用にcfbx_reg要、WIRE84=wt-s4b〕[r0]
+      - 🚨 condIV exchange 組立
+        - ✅ producer data+組立〔`c4dx_uv`/`c4dx_condIV_dbbody`/`c4dx_condIV_k1`(witness-match)/`c4dx_condIV_base1`、(1)(2)=`c4dx_condIV_exchange12_assembled` modulo d1-d3(=regS/regB系)〕[r1]
+        - 🚨 HB(t2成分bound)〔`ALL c∈PB(transT2). leBT (D_v1 0) c`、condV `m_8_5_condV_adm_t2_components`の類似、(3)のみ影響〕[r0]
+      - ❌ d13x_T形organize〔innerU が真正condIIIで充足不能(0/426)、`cfax_`/`e3x_`/`corrected_condIII` 組立はvacuous(cIII∧admeq不能)〕[r2]
+      - 🚨 condIII exchange 再構築(d4vx_core route)
+        - ✅ engine+mnform+降下(2)OT-free+triple組立〔`w84x_exchange13_core`/`w84x_condIII_exchange_full_of_sliceregs`〕[r6]
+        - 🚨🤖 regS/regB(guarded slice regime、269/269)〔diag-at-jm3+singleton-last-branch、CIIIREG=wt-s4b〕[r0]
+        - 🚨🤖 BT-side facts dbbodyH/base0H/base1H/A0ltH〔right-spine head bound、CIIIREG=wt-s4b〕[r0]
     - ✅ 補題（右端の非許容直系先祖の基本性質）〔`m_8_4_rightmost_nonadm_ancestor`〕
     - ✅ 補題（条件 (III)〜(V) の下での右端の置き換えと $\textrm{Trans}$ の関係）〔`m_8_4_rightend_Trans`、A30訂正形〕[r1]
     - ✅ 補題（条件 (III)〜(VI) の下での展開規則の基本性質）〔`m_8_4_oper_props_1..5`、A31ガード形〕[r1]
     - ✅ 補題（条件 (III)〜(VI) の下での $\textrm{Trans}$ と scb分解の関係）〔`m_8_4_Trans_scb`〕[r1]
     - 🚨 補題（条件 (III)〜(V) の下での切片の scb分解）
       - ✅ part(1)〔`m_8_4_slice_scb_part1`〕[r2]
-      - 🚨🤖 parts(2)(3)〔8.2終切片✅解禁、`m_8_2_condV_terminal_slice_Trans`への再配線、WIRE84=wt-s4b〕[r0]
+      - ✅ parts(2)(3) 再配線〔`w84x_subslice_value`/`w84x_slice_value_of_reg`(証明済終切片から)〕[r1]
     - 🚨 補題（条件 (III)〜(V) の下での各種 scb分解）
       - ✅ from_slice還元〔`m_8_4_various_scb_IIIV_from_slice`〕[r1]
-      - 🚨🤖 terminal-slice transport×2〔8.2終切片✅解禁、再配線、WIRE84=wt-s4b〕[r0]
+      - ✅ terminal-slice transport×2 再配線〔`w84x_various_scb_IIIV_of_sliceregs`(L5 d2/d3、regS/regB modulo=condIII exchange行で追跡)〕[r1]
     - 🚨 補題（条件 (III) か (IV) の下での各種 scb分解）
       - ✅ from_slice還元〔`m_8_4_various_scb_IIIIV_from_slice`、IV∧jm3<jm1は実在6例(空性反証)〕[r1]
-      - 🚨🤖 terminal-slice transport〔8.2終切片✅解禁、再配線、WIRE84=wt-s4b〕[r0]
+      - ✅ terminal-slice transport 再配線〔`w84x_various_scb_IIIIV_of_sliceregs`(L6 d4a/d4b、regS/regB modulo=condIII exchange行で追跡)〕[r1]
     - ✅ 補題（条件 (III) か (IV) の下での基本列の基本性質）〔`m_8_4_oper_basic_part1`(= `p_8_4_oper_basic`)〕
   - 🚨 §8.5 条件 (V) の下での展開規則 〔詳細→[[pss-85-surgery-masterkey]]〕
     - 🚨 命題（条件 (V) の下での $\textrm{Trans}$ と基本列の交換関係）
@@ -117,11 +120,9 @@
       - 🚨 non-adm condV交換
         - ❌ de-adm/WRAP route〔W1(r25)/W2(r26)とも~adm域で偽、reach-guardも不十分。universal KERも偽(r27, 24/1318非標準CEX)〕[r6]
         - 🚨 c2L1
-          - ✅ SHARP→{len2,redB}還元〔`lp2x_c2L1_of_sharp`+`shx_c2L1_of_len2_redB`〕[r7]
-          - 🚨🤖 len2+redB〔ST_PS標準性atoms: slice単一block(RightNodes長=2)+peak等値、SHARP2=wt-f7〕[r0]
-        - 🚨 交換route
-          - ✅ route確定=no-straddle〔`ncx_nf3x`(nf3x_NFall capstone、regime guardは22/40で過剰)〕[r1]
-          - 🚨🤖 W2nostr〔bpHeadT(Trans(seg M j0 c))=bpHeadT(Trans(seg M jm1 c))、condVがrow-0親をslice左端に固定、W2NOSTR=wt-s5〕[r0]
+          - ✅ SHARP→{atomA,atomB}再切断〔`s2x_chain`(slice右端強帰納)+`s2x_c2L1_of_atoms`。len2/redB は ST_PS で偽(19/131、r27 18/18=corpus truncation)〕[r8]
+          - 🚨🤖 atomA+atomB〔atomA=`adm M (transJ0+1)`/atomB=j0-anchored列(parent=j0∧値=e1j0+1)、ST固有、ATOMS=wt-f7〕[r0]
+        - ✅ 交換route〔W2nostr両消費点(c=Lng-1/Lng-2)証明済`wnx_W2nostr_c1/_c2`(IncrFirst→Red slice→vcx_VE_all、run-cap-1は偽d=2実在)、capstone `wnx_nf3x`=modulo{c2L1,d1h,k1h}〕[r2]
   - 🚨 §8.6 条件 (VI) の下での展開規則
     - 🚨 命題（条件 (VI) の下での $\textrm{Trans}$ と基本列の交換関係）
       - ✅ descent engine + (1,1)対角 host〔`m_8_6_TransCondVI_oper_descend_engine`/`m_8_6_diagSeq_condVI_commute`〕
@@ -153,5 +154,7 @@
       - ✅ 4-case dispatcher〔`m_8_7_OT_keystone_step`、step→{det,[Buc1]}〕
       - ✅ wid/det〔=§8.2 widH、`m_8_2_widH`/`m_8_2_det`〕
       - ✅ 帰納 infra〔`m_8_7_Pred_ST_PS`/`m_8_7_Trans_OT_step_keystone`〕
-      - ✅ 交換value恒等式への還元〔`m_8_7_Trans_preserves_OT_via_closure`、OT柱=降下柱と同一残差stepval〕[r1]
-      - 🚨🤖 残 stepval〔cond I/II で discharge + III/V interleave 特徴づけ、wt-f7〕[r0]
+      - ❌ stepval(交換value恒等式)route〔A38: `otx_stepval_refuted`(充足不能、原文6216はA25-A27帰結で偽)。`_via_closure`/r21 svx系はvacuous死没〕[r2]
+      - ✅ 置換capstone〔`otx_Trans_preserves_OT_dispatch`(ST_PS.induct)、modulo{exchI,exchII,OTint,OTpred,OTmulti}、exchI/exchII=降下dispatcherと共有〕[r1]
+      - ✅ per-branch true legs〔`otx_stepval_condVI_adm/_nadm`/`_condI_j0z/_n1`/`_j1eq1`×2/`_zerocol`、exchI j0=0半分discharge〕[r1]
+      - 🚨🤖 残 OTint/OTpred/OTmulti〔III/IV/V n≥2構造OT-step/Pred値legs/multi NP lift、OTRES=wt-b1〕[r0]
