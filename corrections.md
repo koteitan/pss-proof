@@ -897,3 +897,14 @@ replicate 数を固定 m-1 でなく**存在量化 c≥1** にする（第1種 s
 
 ### 形式化での扱い
 `d2x_exchange2_condII`(固定 count)は健全な条件付補題だが残差が一般充足不能。存在形 `c2vx_exchange2_condII_ex`(descent、全 n、両分岐)で置換予定(r21b で draft)。降下 `d2x_multBT_lt_top` は任意 count≥1 で成立するので降下自体は不変。
+
+## A37. §8.6 命題（条件(VI)の下でのTransと基本列の交換関係）(1) の反復添字が偽（A34 の精密化）
+
+### 対象
+`p_8_6_Trans_fseq_condVI` 結論 (1) の印字された `[0]`-反復回数（k-iterate）。
+
+### 訂正案
+r25-CONDVI13 が真正 condVI mono host（深 Lng≤11）で印字形 (1) を 518/796(adm) で反証。正しい添字を operB 基本列エンジンで同定し、条件VI 交換 (1)(3) を **全 admissible j0(M1j0=0 含む)で無条件証明**（`c613x_condVI_exch_adm`）。非admissible j0 は降下の owed piece modulo。A34（(1) n=1&adm 脚が偽）の精密化に相当。
+
+### 経験的確認
+`python/_r25_condvi13*.py`（真正 ST_PS condVI mono、Lng≤11）。
