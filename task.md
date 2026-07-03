@@ -51,7 +51,7 @@
     - ✅ 補題（条件 (V) の下での右端の親の基本性質）〔`m_8_2_condV_rightmost_parent`〕
     - 🚨 補題（条件 (V) の下での終切片と $\textrm{Trans}$ の関係）
       - ✅ VE'への還元〔`m_8_2_condV_terminal_slice_Trans_modVE`、全域modulo VE'〕[r1]
-      - 🚨🤖 残 VE'〔STEP+surgery全証明済、残=BASE(原典route B、baseIH)+de-adm kernel、wt-s4b〕[r4]
+      - 🚨🤖 残 VE'〔STEP+surgery済、原典=j1−TrMax帰納。VESTEP=wt-s4b/VEBASE=wt-b1〕[r5]
   - 🚨 §8.3 条件 (II) の下での展開規則
     - 🚨 命題（条件 (II) の下での $\textrm{Trans}$ と基本列の交換関係）
       - ✅ 降下⟸exch+OT〔`m_8_3_TransCondII_oper_descend_engine`〕
@@ -108,13 +108,14 @@
     - 🚨 補題（条件 (V) の下での各種 scb分解/基本列のscb分解）〔原典route〕
       - ✅ part(1)+A24補正閉形式+n=1交換capstone〔`m_8_5_scbdec_fseq_condV`(2295/2295)/`m_8_5_scbdec_exchange1_n1_condV`、A28/A29発見〕[r1]
       - ✅ adm全n閉形式+交換(1)(2)(3)無条件〔`m_8_5_Trans_oper_exchange_condV_adm_uncond`、(3)残差=`m_8_5_condV_adm_t2_components`/`_t2lb`〕[r2]
-      - 🚨🤖 non-adm condV交換〔`nf3x_NFall` modulo {de-adm kernel(共有), notLD}、wt2/s5/b1〕[r4]
+      - 🚨🤖 non-adm condV交換〔WRAP(=W1/W2)+notLD で連鎖。W1=wt2/W2=wt-s5/LPH=wt-f7〕[r5]
   - 🚨 §8.6 条件 (VI) の下での展開規則
     - 🚨 命題（条件 (VI) の下での $\textrm{Trans}$ と基本列の交換関係）
       - ✅ descent engine + (1,1)対角 host〔`m_8_6_TransCondVI_oper_descend_engine`/`m_8_6_diagSeq_condVI_commute`〕
       - ✅ OT柱回避の直接降下〔`d6x_exchange2_condVI`、cf残差modulo〕[r1]
       - ✅ 降下(2) adm一般〔`c6gx_condVI_descent_free_adm`無条件、M1j0>0〕[r2]
-      - 🚨 (1)(3)+M1j0=0枝〔A34、wt-f7〕
+      - ✅ 降下 M1j0=0枝〔`c6zx_condVI_descent_u0`無条件〕[r1]
+      - 🚨🤖 (1)(3)〔A34訂正、CONDVI13=wt-s4a〕[r0]
     - ✅ 補題（公差 $(1,0)$ のペア数列の $\textrm{Trans}$ の基本性質）〔`m_8_6_const2nd_Trans_paper`〕
     - ✅ 補題（公差 $(1,1)$ のペア数列の $\textrm{Trans}$ の展開規則）〔`m_8_6_diagSeq_Trans_oper_paper`〕
     - ✅ 補題（順序数項の末尾単項の零化可能性）
