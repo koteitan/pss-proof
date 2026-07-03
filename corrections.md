@@ -883,3 +883,17 @@ n=1 で指数 \(n\) 形 0/48、指数 \(0\) 形 48/48（RT∩PT 非許容condV�
 
 ### 対象/精密化
 A25 は core 条件 \(v = 0 \lor u \ge v\) を安全領域としたが、**s-文脈の head が \(T_{v-1}\) ドメインを捕獲する**と core-clean でも偽（xseq 再始動、2347/3296 で文字どおり形が偽）。経験的に正確な安全領域 = core-clean **かつ** ctx-clean（s 内の全 head 添字 \(\ge v\)）: 1699/1699。※ ctx-clean 特徴づけは経験的予想（3296 全数で正確）、機械化済みの `m_8_6_trailing_principal_peel` は影響なし（その前提が既に安全領域内）。
+
+## A36. §8.3 命題（条件(II)の下でのTransと基本列の交換関係）の基本列 lhs は固定 replicate 数でなく存在量化が必要
+
+### 対象
+§8.3 condII kind-0 の基本列閉形式 `lhs`（`m_8_3_exch_of_lhs_closed` / `d2x_exchange2_condII` の残差）: `Trans(M[m]) = unflatBT(s @ flatBT(D_u(t0 + (D_v t1)^(m-1))) @ b)`（固定 replicate 数 m-1）。
+
+### 訂正案
+replicate 数を固定 m-1 でなく**存在量化 c≥1** にする（第1種 sibling `m_8_5_exch_of_lhs_closed` が既に存在形に切替済みなのと同じ）。原文§8.3 命題（content.md 3960）は `P(t2)_{J1}` の左端が `D_{M1,j0}` かで場合分けし、m_n=n-1（count m）/ m_n=n-2（count m-1）に分岐する。この分岐は Trans 再帰内部(leftDj0)で決まり dM から一意でないため、固定 count 形は m_n=n-2 部分族でしか成立しない。
+
+### 反例
+`M=(0,0)(1,1)(2,2)(2,0)(2,0) ∈ ST_PS∩PT_PS`（Lng-1=4>1、transCondII、dM witness 成立）で `Trans(M[m])` の replicate 数は m（m-1 でない、m=2,3,4）。broad 検証で count∈{m-1,m}（両分岐実在、100/100）。
+
+### 形式化での扱い
+`d2x_exchange2_condII`(固定 count)は健全な条件付補題だが残差が一般充足不能。存在形 `c2vx_exchange2_condII_ex`(descent、全 n、両分岐)で置換予定(r21b で draft)。降下 `d2x_multBT_lt_top` は任意 count≥1 で成立するので降下自体は不変。
