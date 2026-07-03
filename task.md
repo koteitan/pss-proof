@@ -51,7 +51,13 @@
     - ✅ 補題（条件 (V) の下での右端の親の基本性質）〔`m_8_2_condV_rightmost_parent`〕
     - 🚨 補題（条件 (V) の下での終切片と $\textrm{Trans}$ の関係）
       - ✅ VE'への還元〔`m_8_2_condV_terminal_slice_Trans_modVE`、全域modulo VE'〕[r1]
-      - 🚨🤖 残 VE'〔STEP+surgery済、原典=j1−TrMax帰納。VESTEP=wt-s4b/VEBASE=wt-b1〕[r5]
+      - 🚨 残 VE'
+        - ✅ BASE (j1−TrMax=1)〔`a0x_base_VE`、Adm0 sub-case=`a0x_base_VE_Adm0`〕[r6]
+        - ✅ STEP j1'<j1〔VESTEP+RPERS〕[r5]
+        - 🚨 STEP j1'=j1
+          - ✅ RPj1eq + deepen〔`vjx_RPj1eq`/`vjx_VEj1eq_deepen`〕[r1]
+          - 🚨🤖 Adm0-collapse残差〔a0x_bpHeadT_transC2_eq機構をSTEP hostへ移植、VECLOSE=wt2〕[r0]
+          - 🚨🤖 surgery quad〔id2B/id3B/intMB/intNB、a0x_base_VE経由でcapstone再配線、VECLOSE=wt2〕[r0]
   - 🚨 §8.3 条件 (II) の下での展開規則
     - 🚨 命題（条件 (II) の下での $\textrm{Trans}$ と基本列の交換関係）
       - ✅ 降下⟸exch+OT〔`m_8_3_TransCondII_oper_descend_engine`〕
@@ -108,14 +114,17 @@
     - 🚨 補題（条件 (V) の下での各種 scb分解/基本列のscb分解）〔原典route〕
       - ✅ part(1)+A24補正閉形式+n=1交換capstone〔`m_8_5_scbdec_fseq_condV`(2295/2295)/`m_8_5_scbdec_exchange1_n1_condV`、A28/A29発見〕[r1]
       - ✅ adm全n閉形式+交換(1)(2)(3)無条件〔`m_8_5_Trans_oper_exchange_condV_adm_uncond`、(3)残差=`m_8_5_condV_adm_t2_components`/`_t2lb`〕[r2]
-      - 🚨🤖 non-adm condV交換〔WRAP(=W1/W2)+notLD で連鎖。W1=wt2/W2=wt-s5/LPH=wt-f7〕[r5]
+      - 🚨 non-adm condV交換
+        - ❌ de-adm/WRAP route〔W1(r25)/W2(r26)とも~adm域で偽、reach-guardも不十分(no-straddle要)。regime route(`v1x_W2reg_of_VE1regime`)へ移行〕[r6]
+        - 🚨🤖 c2L1(=SHARP)〔`RightNodes(transC1 M)!1=entry M 1(transJ0 M+1)`、lp2x_bridge✅で還元、残=terminal-slice 2nd-right-ancestor帰納、SHARP=wt-f7〕[r6]
+        - 🚨🤖 交換 route再構築〔regime(VE'依存) or condV制限no-straddle WRAP''、NADMCONDV=wt-s5〕[r0]
   - 🚨 §8.6 条件 (VI) の下での展開規則
     - 🚨 命題（条件 (VI) の下での $\textrm{Trans}$ と基本列の交換関係）
       - ✅ descent engine + (1,1)対角 host〔`m_8_6_TransCondVI_oper_descend_engine`/`m_8_6_diagSeq_condVI_commute`〕
       - ✅ OT柱回避の直接降下〔`d6x_exchange2_condVI`、cf残差modulo〕[r1]
       - ✅ 降下(2) adm一般〔`c6gx_condVI_descent_free_adm`無条件、M1j0>0〕[r2]
       - ✅ 降下 M1j0=0枝〔`c6zx_condVI_descent_u0`無条件〕[r1]
-      - 🚨🤖 (1)(3)〔A34訂正、CONDVI13=wt-s4a〕[r0]
+      - ✅ (1)(2)(3) 全host無条件〔adm=`c613x_condVI_exch_adm`/nadm=`c6nx_condVI_exch_nadm_uncond`、A34/A37訂正〕[r2]
     - ✅ 補題（公差 $(1,0)$ のペア数列の $\textrm{Trans}$ の基本性質）〔`m_8_6_const2nd_Trans_paper`〕
     - ✅ 補題（公差 $(1,1)$ のペア数列の $\textrm{Trans}$ の展開規則）〔`m_8_6_diagSeq_Trans_oper_paper`〕
     - ✅ 補題（順序数項の末尾単項の零化可能性）
