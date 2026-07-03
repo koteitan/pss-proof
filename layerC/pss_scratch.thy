@@ -24927,4 +24927,2163 @@ proof -
   thus ?thesis by (simp add: wfox_goal_eq_RTrel)
 qed
 
+
+(* ===== round 21 CFCTRANS (wt-s4a: id2/id3 interior identities for non-marked m<=transJm1) ===== *)
+
+
+
+(* ===== round 21 front CFCTRANS (wt-s4a): §8.2 VE' interior-core identity,
+        extended from the Marked case to NON-marked m in the Pred-stable domain
+        (m \<le> transJm1 M).  Complements BPSTEPA; both attack VE'. ===== *)
+
+section \<open>r21-CFCTRANS — VE' interior-core identities @{text \<open>transC1 M = transC1 N\<close>}
+  / @{text \<open>transC2 M = transC2 N\<close>} for non-marked @{text m}\<close>
+
+text \<open>r19-CFC (@{thm [source] cfcx_VE_step_concrete}) reduced the §8.2 terminal-slice
+  value equation \<open>VE'(M,m)\<close> to the interior-core identities \<open>id2: transC1 M = transC1 N\<close>
+  and \<open>id3: transC2 M = transC2 N\<close> (\<open>N = Red(seg M m (Lng M-1))\<close>), which
+  @{thm [source] m_7_4_interior_id2}/@{thm [source] m_7_4_interior_id3} prove only for
+  a \<^emph>\<open>Marked\<close> (admissible) front offset \<open>m\<close>.  For \<open>VE'\<close> the offset \<open>m\<close> is an interior
+  trunk index (\<open>1 \<le> m < TrMax M\<close>), which is generically NON-admissible
+  (both \<open>(1,m-1)<\<^sup>Next(1,m)\<close> and \<open>(1,m)<\<^sup>Next(1,m+1)\<close> hold on the trunk, so \<open>nadm M m\<close>),
+  hence \<open>(M,m) \<notin> Marked\<close>.  CFC found the \<open>Mark\<close>-representation route
+  \<open>bpHeadT(Mark M m) = bpHeadT(Trans M)\<close> is FALSE for such \<open>m\<close>; the correct route is
+  the reduced-slice \<open>N = Red(seg M m (Lng M-1))\<close> one, i.e. the interior identities
+  themselves.
+
+  EMPIRICAL (python/ctx_val3.py, ctx_val4.py — genuine reduced monoT hosts, all
+  interior \<open>m\<close> non-admissible): the identities \<open>transC1 M = transC1 N \<and> transC2 M = transC2 N\<close>
+  hold EXACTLY on the domain \<open>m \<le> transJm1 M\<close> (= \<open>m \<le> Adm M (parent M 0 (Lng M-1))\<close>):
+  the biconditional "\<open>(id2 \<and> id3) \<longleftrightarrow> m \<le> transJm1 M\<close>" was 226/226 (WIDE) with ZERO
+  violations, and on that domain \<open>c1\<close>-eq 176/176, \<open>c2\<close>-eq 176/176, anchoring
+  \<open>leR M 0 m (Lng M-1)\<close> 176/176, the shift \<open>transJm1 N = transJm1 M - m\<close> 176/176,
+  \<open>hasParent M 0 (Lng M-1)\<close> 176/176, and the boundary \<open>m = parent M 0 (Lng M-1)\<close>
+  NEVER occurred (0/176).  (Outside the domain, \<open>jm1M < m < TrMax\<close>, the marked ancestor
+  \<open>Adm M (parent M 0 (Lng M-1))\<close> falls to the left of the slice and both identities
+  legitimately fail — that is not part of VE'.)
+
+  The \<open>ctx_\<close> lemmas below are the exact @{text mM}-free re-derivations of the
+  \<open>repr_*\<close>/\<open>m_7_4_interior_*\<close> family: the only place @{text \<open>(M,m) \<in> Marked\<close>} was used
+  is the derivation \<open>m \<le> Adm M (parent M 0 (Lng M-1))\<close>, which is now the explicit
+  hypothesis \<open>ancJm1\<close>, plus the boundary collapse \<open>m = parent M 0 (Lng M-1)\<close>, which is
+  vacuous on the domain (there \<open>m = parent \<Longrightarrow> Adm M parent = parent\<close>, i.e. the
+  boundary is itself admissible).\<close>
+
+text \<open>(A.2\<open>'\<close>) @{text mM}-free \<open>transJm1\<close> shift: replaces the \<open>adm M m\<close>-derived
+  \<open>m \<le> Adm M j\<^sub>0\<close> in @{thm [source] repr_transJm1_shift} with the explicit hypothesis
+  \<open>ancJm1\<close>.\<close>
+
+lemma ctx_transJm1_shift:
+  assumes MR: "M \<in> RT_PS" and mint: "m < Lng M - 2"
+    and leM: "leR M 0 m (Lng M - 1)"
+    and hp: "hasParent M 0 (Lng M - 1)"
+    and anc0: "m \<le> parent M 0 (Lng M - 1)"
+    and j0lt: "parent M 0 (Lng M - 1) < Lng M - 1"
+    and ancJm1: "m \<le> transJm1 M"
+  shows "transJm1 (Red (seg M m (Lng M - 1))) = transJm1 M - m"
+proof -
+  have MT: "M \<in> T_PS" using MR by (simp add: RT_PS_def)
+  let ?j1 = "Lng M - 1"  let ?S = "seg M m ?j1"  let ?N = "Red ?S"
+  let ?j0 = "parent M 0 ?j1"
+  have mj1: "m < ?j1" using mint by linarith
+  have j1L: "?j1 \<le> Lng M - 1" by simp
+  define k where "k = entry M 0 m - entry M 1 m"
+  have segeq: "?S = (IncrFirst ^^ k) ?N"
+    using m_6_6_ancestor_slice_Red_IncrFirst[OF MR mj1 j1L leM] k_def by simp
+  have j0N: "transJ0 ?N = transJ0 M - m"
+    by (rule repr_transJ0_shift[OF MR mint leM hp anc0])
+  have j0Neq: "transJ0 ?N = ?j0 - m" using j0N by (simp add: transJ0_def transJ1_def)
+  have AdmN: "Adm ?N (?j0 - m) = Adm ?S (?j0 - m)"
+    using segeq Adm_funpow_IncrFirst_eq[of k ?N "?j0 - m"] by simp
+  have mAdmJ0: "m \<le> Adm M ?j0"
+    using ancJm1 by (simp add: transJm1_def transJ0_def transJ1_def)
+  have AdmSlice: "Adm ?S (?j0 - m) = Adm M ?j0 - m"
+    by (rule m_6_3_admof_slice[OF MT mAdmJ0 j0lt j1L])
+  have "transJm1 ?N = Adm ?N (transJ0 ?N)" by (simp add: transJm1_def)
+  also have "\<dots> = Adm ?N (?j0 - m)" using j0Neq by simp
+  also have "\<dots> = Adm ?S (?j0 - m)" using AdmN by simp
+  also have "\<dots> = Adm M ?j0 - m" using AdmSlice by simp
+  also have "\<dots> = transJm1 M - m" by (simp add: transJm1_def transJ0_def transJ1_def)
+  finally show ?thesis .
+qed
+
+text \<open>(A.4\<open>'\<close>) @{text mM}-free \<open>adm\<close>-at-parent shift.  The Marked case
+  (@{thm [source] repr_adm_transJ0_shift}) used \<open>adm M m\<close> only to discharge the
+  \<open>m = j\<^sub>0\<close> disjunct of @{thm [source] m_6_3_adm_slice}.  On the domain \<open>ancJm1\<close> that
+  disjunct is self-discharging: \<open>m = j\<^sub>0\<close> with \<open>m \<le> Adm M j\<^sub>0 \<le> j\<^sub>0\<close> forces
+  \<open>Adm M j\<^sub>0 = j\<^sub>0\<close>, i.e. \<open>adm M j\<^sub>0\<close>.\<close>
+
+lemma ctx_adm_transJ0_shift:
+  assumes MR: "M \<in> RT_PS" and mint: "m < Lng M - 2"
+    and leM: "leR M 0 m (Lng M - 1)"
+    and hp: "hasParent M 0 (Lng M - 1)"
+    and anc0: "m \<le> parent M 0 (Lng M - 1)"
+    and j0lt: "parent M 0 (Lng M - 1) < Lng M - 1"
+    and ancJm1: "m \<le> transJm1 M"
+  shows "adm (Red (seg M m (Lng M - 1))) (transJ0 (Red (seg M m (Lng M - 1))))
+       = adm M (transJ0 M)"
+proof -
+  have MT: "M \<in> T_PS" using MR by (simp add: RT_PS_def)
+  let ?j1 = "Lng M - 1"  let ?S = "seg M m ?j1"  let ?N = "Red ?S"
+  let ?j0 = "parent M 0 ?j1"
+  have mj1: "m < ?j1" using mint by linarith
+  have j1L: "?j1 \<le> Lng M - 1" by simp
+  define k where "k = entry M 0 m - entry M 1 m"
+  have segeq: "?S = (IncrFirst ^^ k) ?N"
+    using m_6_6_ancestor_slice_Red_IncrFirst[OF MR mj1 j1L leM] k_def by simp
+  have j0N: "transJ0 ?N = ?j0 - m"
+    using repr_transJ0_shift[OF MR mint leM hp anc0]
+    by (simp add: transJ0_def transJ1_def)
+  have admNS: "adm ?N (?j0 - m) = adm ?S (?j0 - m)"
+    using segeq adm_funpow_IncrFirst_eq[of k ?N "?j0 - m"] by simp
+  have mj0: "m \<le> ?j0" using anc0 .
+  have j0j1: "?j0 \<le> ?j1" using j0lt by simp
+  have admSM: "(adm M ?j0 \<or> m = ?j0 \<or> ?j0 = ?j1) = adm ?S (?j0 - m)"
+    by (rule m_6_3_adm_slice[OF MT mj0 j0j1 j1L])
+  have mAdmJ0: "m \<le> Adm M ?j0"
+    using ancJm1 by (simp add: transJm1_def transJ0_def transJ1_def)
+  have collapse: "(adm M ?j0 \<or> m = ?j0 \<or> ?j0 = ?j1) = adm M ?j0"
+  proof -
+    have mimp: "m = ?j0 \<Longrightarrow> adm M ?j0"
+    proof -
+      assume e: "m = ?j0"
+      have "?j0 \<le> Adm M ?j0" using mAdmJ0 e by simp
+      moreover have "Adm M ?j0 \<le> ?j0" by (rule adm_Adm_le)
+      ultimately have "Adm M ?j0 = ?j0" by simp
+      thus "adm M ?j0" using adm_Adm_adm[of M ?j0] by simp
+    qed
+    have "?j0 \<noteq> ?j1" using j0lt by simp
+    thus ?thesis using mimp by blast
+  qed
+  have "adm ?N (transJ0 ?N) = adm ?N (?j0 - m)" using j0N by simp
+  also have "\<dots> = adm ?S (?j0 - m)" using admNS by simp
+  also have "\<dots> = adm M ?j0" using admSM collapse by simp
+  also have "\<dots> = adm M (transJ0 M)" by (simp add: transJ0_def transJ1_def)
+  finally show ?thesis .
+qed
+
+text \<open>@{text mM}-free atom bundle (cf. @{thm [source] repr_transCond_atoms}); only the
+  \<open>adm\<close> conjunct (5) changes route (via @{thm [source] ctx_adm_transJ0_shift}).\<close>
+
+lemma ctx_transCond_atoms:
+  assumes MR: "M \<in> RT_PS" and mint: "m < Lng M - 2"
+    and leM: "leR M 0 m (Lng M - 1)"
+    and hp: "hasParent M 0 (Lng M - 1)"
+    and anc0: "m \<le> parent M 0 (Lng M - 1)"
+    and j0lt: "parent M 0 (Lng M - 1) < Lng M - 1"
+    and ancJm1: "m \<le> transJm1 M"
+  shows "Lng (Red (seg M m (Lng M - 1))) - 1 = (Lng M - 1) - m"
+    and "parent (Red (seg M m (Lng M - 1))) 0
+           (Lng (Red (seg M m (Lng M - 1))) - 1) = parent M 0 (Lng M - 1) - m"
+    and "entry (Red (seg M m (Lng M - 1))) 1
+           (Lng (Red (seg M m (Lng M - 1))) - 1) = entry M 1 (Lng M - 1)"
+    and "entry (Red (seg M m (Lng M - 1))) 1
+           (parent (Red (seg M m (Lng M - 1))) 0
+              (Lng (Red (seg M m (Lng M - 1))) - 1))
+         = entry M 1 (parent M 0 (Lng M - 1))"
+    and "adm (Red (seg M m (Lng M - 1)))
+           (parent (Red (seg M m (Lng M - 1))) 0
+              (Lng (Red (seg M m (Lng M - 1))) - 1))
+         = adm M (parent M 0 (Lng M - 1))"
+proof -
+  have MT: "M \<in> T_PS" using MR by (simp add: RT_PS_def)
+  let ?j1 = "Lng M - 1"  let ?S = "seg M m ?j1"  let ?N = "Red ?S"
+  let ?j0 = "parent M 0 ?j1"
+  have L: "2 < Lng M" using mint by linarith
+  have mj1: "m < ?j1" using mint by linarith
+  have j1L: "?j1 \<le> Lng M - 1" by simp
+  have mj0: "m \<le> ?j0" using anc0 .
+  have j0j1: "?j0 < ?j1" using j0lt by simp
+  define k where "k = entry M 0 m - entry M 1 m"
+  have segeq: "?S = (IncrFirst ^^ k) ?N"
+    using m_6_6_ancestor_slice_Red_IncrFirst[OF MR mj1 j1L leM] k_def by simp
+  have LS: "Lng ?S = Suc ?j1 - m" by simp
+  have LNS: "Lng ?N = Lng ?S"
+    using arg_cong[OF segeq, of Lng] by (simp add: Lng_funpow_IncrFirst)
+  have LN: "Lng ?N = Suc ?j1 - m" using LNS LS by simp
+  show endp: "Lng ?N - 1 = ?j1 - m" using LN mj1 by simp
+  have parN: "parent ?N 0 (Lng ?N - 1) = ?j0 - m"
+    using repr_transJ0_shift[OF MR mint leM hp anc0]
+    by (simp add: transJ0_def transJ1_def)
+  show "parent ?N 0 (Lng ?N - 1) = ?j0 - m" by (rule parN)
+  have iN1: "?j1 - m < Lng ?N" using LN mj1 by linarith
+  have e1: "entry ?N 1 (Lng ?N - 1) = entry M 1 ?j1"
+  proof -
+    have "entry ?N 1 (?j1 - m) = entry M 1 (m + (?j1 - m))"
+      by (rule repr_entry1_shift[OF MR mint leM]) (use iN1 endp in simp)
+    thus ?thesis using endp mj1 by simp
+  qed
+  show "entry ?N 1 (Lng ?N - 1) = entry M 1 ?j1" by (rule e1)
+  have iN0: "?j0 - m < Lng ?N" using LN j0j1 mj0 by linarith
+  have e0: "entry ?N 1 (parent ?N 0 (Lng ?N - 1)) = entry M 1 ?j0"
+  proof -
+    have "entry ?N 1 (?j0 - m) = entry M 1 (m + (?j0 - m))"
+      by (rule repr_entry1_shift[OF MR mint leM]) (use iN0 endp in simp)
+    thus ?thesis using parN mj0 by simp
+  qed
+  show "entry ?N 1 (parent ?N 0 (Lng ?N - 1)) = entry M 1 ?j0" by (rule e0)
+  have a1: "adm ?N (parent ?N 0 (Lng ?N - 1)) = adm M ?j0"
+    using ctx_adm_transJ0_shift[OF MR mint leM hp anc0 j0lt ancJm1]
+    by (simp add: transJ0_def transJ1_def)
+  show "adm ?N (parent ?N 0 (Lng ?N - 1)) = adm M ?j0" by (rule a1)
+qed
+
+lemma ctx_transCondI_eq:
+  assumes MR: "M \<in> RT_PS" and mint: "m < Lng M - 2"
+    and leM: "leR M 0 m (Lng M - 1)"
+    and hp: "hasParent M 0 (Lng M - 1)"
+    and anc0: "m \<le> parent M 0 (Lng M - 1)"
+    and j0lt: "parent M 0 (Lng M - 1) < Lng M - 1"
+    and ancJm1: "m \<le> transJm1 M"
+  shows "transCondI (Red (seg M m (Lng M - 1))) = transCondI M"
+proof -
+  note B = ctx_transCond_atoms[OF MR mint leM hp anc0 j0lt ancJm1]
+  let ?N = "Red (seg M m (Lng M - 1))"
+  have "transCondI ?N \<longleftrightarrow>
+          entry ?N 1 (Lng ?N - 1) = 0 \<and> adm ?N (parent ?N 0 (Lng ?N - 1))"
+    by (simp add: transCondI_def)
+  also have "\<dots> \<longleftrightarrow> entry M 1 (Lng M - 1) = 0 \<and> adm M (parent M 0 (Lng M - 1))"
+    by (simp only: B(3) B(5))
+  also have "\<dots> \<longleftrightarrow> transCondI M" by (simp add: transCondI_def)
+  finally show ?thesis .
+qed
+
+lemma ctx_transCondIII_eq:
+  assumes MR: "M \<in> RT_PS" and mint: "m < Lng M - 2"
+    and leM: "leR M 0 m (Lng M - 1)"
+    and hp: "hasParent M 0 (Lng M - 1)"
+    and anc0: "m \<le> parent M 0 (Lng M - 1)"
+    and j0lt: "parent M 0 (Lng M - 1) < Lng M - 1"
+    and ancJm1: "m \<le> transJm1 M"
+  shows "transCondIII (Red (seg M m (Lng M - 1))) = transCondIII M"
+proof -
+  note B = ctx_transCond_atoms[OF MR mint leM hp anc0 j0lt ancJm1]
+  let ?N = "Red (seg M m (Lng M - 1))"
+  have "transCondIII ?N \<longleftrightarrow>
+          entry ?N 1 (Lng ?N - 1) > 0
+        \<and> entry ?N 1 (parent ?N 0 (Lng ?N - 1)) \<ge> entry ?N 1 (Lng ?N - 1)
+        \<and> adm ?N (parent ?N 0 (Lng ?N - 1))"
+    by (simp add: transCondIII_def)
+  also have "\<dots> \<longleftrightarrow>
+          entry M 1 (Lng M - 1) > 0
+        \<and> entry M 1 (parent M 0 (Lng M - 1)) \<ge> entry M 1 (Lng M - 1)
+        \<and> adm M (parent M 0 (Lng M - 1))"
+    by (simp only: B(3) B(4) B(5))
+  also have "\<dots> \<longleftrightarrow> transCondIII M" by (simp add: transCondIII_def)
+  finally show ?thesis .
+qed
+
+lemma ctx_transCondV_eq:
+  assumes MR: "M \<in> RT_PS" and mint: "m < Lng M - 2"
+    and leM: "leR M 0 m (Lng M - 1)"
+    and hp: "hasParent M 0 (Lng M - 1)"
+    and anc0: "m \<le> parent M 0 (Lng M - 1)"
+    and j0lt: "parent M 0 (Lng M - 1) < Lng M - 1"
+    and ancJm1: "m \<le> transJm1 M"
+  shows "transCondV (Red (seg M m (Lng M - 1))) = transCondV M"
+proof -
+  note B = ctx_transCond_atoms[OF MR mint leM hp anc0 j0lt ancJm1]
+  let ?N = "Red (seg M m (Lng M - 1))"
+  let ?j1 = "Lng M - 1"  let ?j0 = "parent M 0 ?j1"
+  have endp: "Lng ?N - 1 = ?j1 - m" by (rule B(1))
+  have parN: "parent ?N 0 (Lng ?N - 1) = ?j0 - m" by (rule B(2))
+  have ar: "(?j0 - m) + 1 < ?j1 - m \<longleftrightarrow> ?j0 + 1 < ?j1"
+    using anc0 j0lt by linarith
+  have "transCondV ?N \<longleftrightarrow>
+          entry ?N 1 (Lng ?N - 1) > 0
+        \<and> entry ?N 1 (parent ?N 0 (Lng ?N - 1)) + 1 = entry ?N 1 (Lng ?N - 1)
+        \<and> parent ?N 0 (Lng ?N - 1) + 1 < Lng ?N - 1"
+    by (simp add: transCondV_def)
+  also have "\<dots> \<longleftrightarrow>
+          entry M 1 ?j1 > 0
+        \<and> entry M 1 ?j0 + 1 = entry M 1 ?j1
+        \<and> ?j0 + 1 < ?j1"
+    using B(3) B(4) endp parN ar by simp
+  also have "\<dots> \<longleftrightarrow> transCondV M" by (simp add: transCondV_def)
+  finally show ?thesis .
+qed
+
+lemma ctx_transCondVI_eq:
+  assumes MR: "M \<in> RT_PS" and mint: "m < Lng M - 2"
+    and leM: "leR M 0 m (Lng M - 1)"
+    and hp: "hasParent M 0 (Lng M - 1)"
+    and anc0: "m \<le> parent M 0 (Lng M - 1)"
+    and j0lt: "parent M 0 (Lng M - 1) < Lng M - 1"
+    and ancJm1: "m \<le> transJm1 M"
+  shows "transCondVI (Red (seg M m (Lng M - 1))) = transCondVI M"
+proof -
+  note B = ctx_transCond_atoms[OF MR mint leM hp anc0 j0lt ancJm1]
+  let ?N = "Red (seg M m (Lng M - 1))"
+  let ?j1 = "Lng M - 1"  let ?j0 = "parent M 0 ?j1"
+  have endp: "Lng ?N - 1 = ?j1 - m" by (rule B(1))
+  have parN: "parent ?N 0 (Lng ?N - 1) = ?j0 - m" by (rule B(2))
+  have ar: "(?j0 - m) + 1 = ?j1 - m \<longleftrightarrow> ?j0 + 1 = ?j1"
+    using anc0 j0lt by linarith
+  have "transCondVI ?N \<longleftrightarrow>
+          entry ?N 1 (Lng ?N - 1) > 0
+        \<and> entry ?N 1 (parent ?N 0 (Lng ?N - 1)) + 1 = entry ?N 1 (Lng ?N - 1)
+        \<and> parent ?N 0 (Lng ?N - 1) + 1 = Lng ?N - 1"
+    by (simp add: transCondVI_def)
+  also have "\<dots> \<longleftrightarrow>
+          entry M 1 ?j1 > 0
+        \<and> entry M 1 ?j0 + 1 = entry M 1 ?j1
+        \<and> ?j0 + 1 = ?j1"
+    using B(3) B(4) endp parN ar by simp
+  also have "\<dots> \<longleftrightarrow> transCondVI M" by (simp add: transCondVI_def)
+  finally show ?thesis .
+qed
+
+text \<open>@{text mM}-free identity (2): \<open>transC1 M = transC1 N\<close>, taking the \<open>markShift\<close>
+  hypothesis exactly as @{thm [source] m_7_4_interior_id2} does (the assembly
+  discharges it below).\<close>
+
+lemma ctx_interior_id2:
+  assumes MR: "M \<in> RT_PS" and mint: "m < Lng M - 2"
+    and leM: "leR M 0 m (Lng M - 1)"
+    and hp: "hasParent M 0 (Lng M - 1)"
+    and anc0: "m \<le> parent M 0 (Lng M - 1)"
+    and j0lt: "parent M 0 (Lng M - 1) < Lng M - 1"
+    and ancJm1: "m \<le> transJm1 M"
+    and markShift: "Mark (Pred (Red (seg M m (Lng M - 1)))) (transJm1 M - m)
+                    = Mark (Pred M) (transJm1 M)"
+  shows "transC1 M = transC1 (Red (seg M m (Lng M - 1)))"
+proof -
+  let ?j1 = "Lng M - 1"  let ?N = "Red (seg M m ?j1)"
+  have jm1N: "transJm1 ?N = transJm1 M - m"
+    by (rule ctx_transJm1_shift[OF MR mint leM hp anc0 j0lt ancJm1])
+  have "transC1 ?N = Mark (Pred ?N) (transJm1 ?N)" by (simp add: transC1_def)
+  also have "\<dots> = Mark (Pred ?N) (transJm1 M - m)" using jm1N by simp
+  also have "\<dots> = Mark (Pred M) (transJm1 M)" by (rule markShift)
+  also have "\<dots> = transC1 M" by (simp add: transC1_def)
+  finally show ?thesis ..
+qed
+
+text \<open>@{text mM}-free identity (3): \<open>transC2 M = transC2 N\<close>.  The structural collapse
+  @{thm [source] m_7_4_interior_id3} is already @{text mM}-free; we only supply its
+  atom/condition correspondences from the \<open>ctx_\<close> bundle.\<close>
+
+lemma ctx_interior_id3:
+  assumes MR: "M \<in> RT_PS" and mint: "m < Lng M - 2"
+    and leM: "leR M 0 m (Lng M - 1)"
+    and hp: "hasParent M 0 (Lng M - 1)"
+    and anc0: "m \<le> parent M 0 (Lng M - 1)"
+    and j0lt: "parent M 0 (Lng M - 1) < Lng M - 1"
+    and ancJm1: "m \<le> transJm1 M"
+    and c1eq: "transC1 M = transC1 (Red (seg M m (Lng M - 1)))"
+  shows "transC2 M = transC2 (Red (seg M m (Lng M - 1)))"
+proof -
+  let ?N = "Red (seg M m (Lng M - 1))"
+  note B = ctx_transCond_atoms[OF MR mint leM hp anc0 j0lt ancJm1]
+  have ej0: "entry ?N 1 (transJ0 ?N) = entry M 1 (transJ0 M)"
+    using B(4) by (simp add: transJ0_def transJ1_def)
+  have ej1: "entry ?N 1 (transJ1 ?N) = entry M 1 (transJ1 M)"
+    using B(3) by (simp add: transJ1_def)
+  have cI: "transCondI ?N = transCondI M"
+    by (rule ctx_transCondI_eq[OF MR mint leM hp anc0 j0lt ancJm1])
+  have cIII: "transCondIII ?N = transCondIII M"
+    by (rule ctx_transCondIII_eq[OF MR mint leM hp anc0 j0lt ancJm1])
+  have cV: "transCondV ?N = transCondV M"
+    by (rule ctx_transCondV_eq[OF MR mint leM hp anc0 j0lt ancJm1])
+  have cVI: "transCondVI ?N = transCondVI M"
+    by (rule ctx_transCondVI_eq[OF MR mint leM hp anc0 j0lt ancJm1])
+  show ?thesis
+    by (rule m_7_4_interior_id3[OF c1eq ej0 ej1 cI cIII cV cVI])
+qed
+
+
+
+text \<open>@{text mM}-free discharge of the \<open>markShift\<close> hypothesis of
+  @{thm [source] ctx_interior_id2}.  This is INDEPENDENT of \<open>m\<close>'s admissibility:
+  it feeds the (already @{text mM}-free) discharge lemmas
+  @{thm [source] m_7_4_markShift_discharge_interior} /
+  @{thm [source] m_7_4_markShift_discharge_boundary} the two Marked memberships
+  \<open>(Pred M, transJm1 M) \<in> Marked\<close> and \<open>(Pred N, transJm1 N) \<in> Marked\<close>, both of
+  which come from @{thm [source] Marked_Pred_Adm} (\<open>transJm1 = Adm M (parent ..)\<close> is
+  ALWAYS admissible), and the two rightmost \<open>Mark\<close>-\<open>Trans\<close> representations from the
+  proven keystone @{thm [source] m_7_4_Mark_Trans_repr} at those admissible indices.
+  The offset \<open>m\<close> enters only through the shift \<open>transJm1 N = transJm1 M - m\<close>
+  (@{thm [source] ctx_transJm1_shift}).\<close>
+
+lemma ctx_markShift:
+  assumes MR: "M \<in> RT_PS" and mint: "m < Lng M - 2"
+    and leM: "leR M 0 m (Lng M - 1)"
+    and hp: "hasParent M 0 (Lng M - 1)"
+    and anc0: "m \<le> parent M 0 (Lng M - 1)"
+    and j0lt: "parent M 0 (Lng M - 1) < Lng M - 1"
+    and ancJm1: "m \<le> transJm1 M"
+  shows "Mark (Pred (Red (seg M m (Lng M - 1)))) (transJm1 M - m)
+       = Mark (Pred M) (transJm1 M)"
+proof -
+  have MT: "M \<in> T_PS" using MR by (simp add: RT_PS_def)
+  let ?j1 = "Lng M - 1"  let ?S = "seg M m ?j1"  let ?N = "Red ?S"
+  have L: "2 < Lng M" using mint by linarith
+  have L1: "1 < Lng M" using L by linarith
+  have mj1: "m < ?j1" using mint by linarith
+  have j1le: "?j1 \<le> Lng M - 1" by simp
+  \<comment> \<open>\<open>transJm1 M \<le> Lng M - 2\<close> (it is \<open>Adm M j\<^sub>0 \<le> j\<^sub>0 < j\<^sub>1\<close>)\<close>
+  have tjle: "transJm1 M \<le> Lng M - 2"
+  proof -
+    have "transJm1 M = Adm M (parent M 0 ?j1)"
+      by (simp add: transJm1_def transJ0_def transJ1_def)
+    moreover have "Adm M (parent M 0 ?j1) \<le> parent M 0 ?j1" by (rule adm_Adm_le)
+    ultimately show ?thesis using j0lt L by linarith
+  qed
+  \<comment> \<open>=== N facts ===\<close>
+  have anc: "Red ?N = ?N \<and> monoT ?N
+           \<and> ?S = (IncrFirst ^^ (entry M 0 m - entry M 1 m)) ?N"
+    by (rule m_6_6_ancestor_slice_Red_IncrFirst[OF MR mj1 j1le leM])
+  have monoN: "monoT ?N" using anc by simp
+  have NR: "?N \<in> RT_PS" using slice_Red_in_RT_PS[OF MR mj1 j1le leM] by simp
+  have NT: "?N \<in> T_PS" using NR by (simp add: RT_PS_def)
+  have LN: "Lng ?N = Suc ?j1 - m"
+  proof -
+    have "Lng ?N = Lng ?S"
+      using arg_cong[OF conjunct2[OF conjunct2[OF anc]], of Lng]
+      by (simp add: Lng_funpow_IncrFirst)
+    thus ?thesis by simp
+  qed
+  have LNgt2: "2 < Lng ?N" using LN mint by simp
+  have LN1: "1 < Lng ?N" using LNgt2 by linarith
+  have predNRT: "Pred ?N \<in> RT_PS" by (rule Pred_RT_PS[OF NR])
+  have hpN: "hasParent ?N 0 (Lng ?N - 1)" by (rule monoT_hasParent0_last[OF NT monoN LN1])
+  \<comment> \<open>\<open>Pred N = Red (seg M m (Lng M - 2))\<close>\<close>
+  have predN_eq: "Pred ?N = Red (seg M m (Lng M - 2))"
+  proof -
+    have e: "Pred (Red (seg M m ?j1)) = Red (seg M m (?j1 - 1))"
+      by (rule m_7_4_Pred_Red_slice[OF mj1])
+    have "?j1 - 1 = Lng M - 2" by simp
+    hence "Red (seg M m (?j1 - 1)) = Red (seg M m (Lng M - 2))"
+      by (rule arg_cong[where f = "\<lambda>x. Red (seg M m x)"])
+    thus ?thesis using e by simp
+  qed
+  \<comment> \<open>\<open>Lng (Pred N) - 1 = Lng M - 2 - m\<close> via the reduced-slice length (boundary pattern)\<close>
+  have Spne: "seg M m (Lng M - 2) \<noteq> []" using mint by (simp add: seg_def)
+  have SpT: "seg M m (Lng M - 2) \<in> T_PS" using Spne by (simp add: T_PS_def)
+  have LRSp: "Lng (Red (seg M m (Lng M - 2))) = Lng M - 1 - m"
+    using m_6_5_Lng_Red[OF SpT] mint by simp
+  have LPNval: "Lng (Pred ?N) - 1 = Lng M - 2 - m" using predN_eq LRSp by simp
+  \<comment> \<open>=== Marked memberships (both from Marked_Pred_Adm, mM-free) ===\<close>
+  have markedM: "(Pred M, transJm1 M) \<in> Marked"
+    using Marked_Pred_Adm[OF MT L1 hp]
+    by (simp add: transJm1_def transJ0_def transJ1_def)
+  have jm1N: "transJm1 ?N = transJm1 M - m"
+    by (rule ctx_transJm1_shift[OF MR mint leM hp anc0 j0lt ancJm1])
+  have markedN0: "(Pred ?N, transJm1 ?N) \<in> Marked"
+    using Marked_Pred_Adm[OF NT LN1 hpN]
+    by (simp add: transJm1_def transJ0_def transJ1_def)
+  have markedN: "(Pred ?N, transJm1 M - m) \<in> Marked" using markedN0 jm1N by simp
+  \<comment> \<open>=== Pred M length facts ===\<close>
+  have predMRT: "Pred M \<in> RT_PS" by (rule Pred_RT_PS[OF MR])
+  have predMb: "Pred M = butlast M" using L1 by (simp add: Pred_def)
+  have LPM: "Lng (Pred M) = Lng M - 1" using predMb by simp
+  have LPMm1: "Lng (Pred M) - 1 = Lng M - 2" using LPM by simp
+  \<comment> \<open>=== split on transJm1 M vs Lng M - 2 ===\<close>
+  consider (int) "transJm1 M < Lng M - 2" | (bnd) "transJm1 M = Lng M - 2"
+    using tjle by linarith
+  then show ?thesis
+  proof cases
+    case int
+    \<comment> \<open>markM via the keystone at \<open>(Pred M, transJm1 M)\<close>\<close>
+    have jmPM: "transJm1 M < Lng (Pred M) - 1" using int LPMm1 by simp
+    have reprM: "Mark (Pred M) (transJm1 M)
+               = Trans (seg (Pred M) (transJm1 M) (Lng (Pred M) - 1))"
+      by (rule m_7_4_Mark_Trans_repr[OF markedM predMRT jmPM])
+    have tjleq: "transJm1 M \<le> Lng M - 2" using int by simp
+    have segPM: "seg (Pred M) (transJm1 M) (Lng M - 2) = seg M (transJm1 M) (Lng M - 2)"
+      by (rule m_7_4_seg_Pred_eq[OF L1 tjleq]) (use L in linarith)
+    have markM: "Mark (Pred M) (transJm1 M) = Trans (seg M (transJm1 M) (Lng M - 2))"
+      using reprM segPM LPMm1 by simp
+    \<comment> \<open>ihB via the keystone at \<open>(Pred N, transJm1 M - m)\<close>\<close>
+    have jmPN: "transJm1 M - m < Lng (Pred ?N) - 1"
+    proof -
+      have "transJm1 M - m < Lng M - 2 - m" using int ancJm1 by linarith
+      thus ?thesis using LPNval by simp
+    qed
+    have ihB: "Mark (Pred ?N) (transJm1 M - m)
+             = Trans (seg (Pred ?N) (transJm1 M - m) (Lng (Pred ?N) - 1))"
+      by (rule m_7_4_Mark_Trans_repr[OF markedN predNRT jmPN])
+    \<comment> \<open>lePN = the leR conjunct of \<open>markedN\<close>, transported to \<open>Red (seg M m (Lng M - 2))\<close>\<close>
+    have leRN: "leR (Pred ?N) 0 (transJm1 M - m) (Lng (Pred ?N) - 1)"
+      using markedN by (simp add: Marked_def)
+    have lePN: "leR (Red (seg M m (Lng M - 2))) 0 (transJm1 M - m)
+                    (Lng (Red (seg M m (Lng M - 2))) - 1)"
+      using leRN predN_eq by simp
+    show ?thesis
+      by (rule m_7_4_markShift_discharge_interior[OF MR mint leM ancJm1 int lePN ihB markM])
+  next
+    case bnd
+    have idxM: "transJm1 M = Lng (Pred M) - 1" using bnd LPMm1 by simp
+    have mkdM: "(Pred M, Lng (Pred M) - 1) \<in> Marked" using markedM idxM by simp
+    have idxN: "transJm1 M - m = Lng (Pred ?N) - 1" using bnd LPNval by simp
+    have mkdN: "(Pred ?N, Lng (Pred ?N) - 1) \<in> Marked" using markedN idxN by simp
+    show ?thesis
+      by (rule m_7_4_markShift_discharge_boundary[OF MR mint leM ancJm1 bnd mkdM mkdN])
+  qed
+qed
+
+text \<open>The unconditional interior-core identities for non-marked \<open>m\<close> on the
+  Pred-stable domain \<open>ancJm1: m \<le> transJm1 M\<close>: \<open>markShift\<close> is discharged internally
+  by @{thm [source] ctx_markShift}, so this yields BOTH
+  \<open>id2: transC1 M = transC1 N\<close> and \<open>id3: transC2 M = transC2 N\<close> outright, in exactly
+  the form the §8.2 step @{thm [source] cfcx_VE_step_concrete} consumes.\<close>
+
+lemma ctx_interior_ids:
+  assumes MR: "M \<in> RT_PS" and mint: "m < Lng M - 2"
+    and leM: "leR M 0 m (Lng M - 1)"
+    and hp: "hasParent M 0 (Lng M - 1)"
+    and anc0: "m \<le> parent M 0 (Lng M - 1)"
+    and j0lt: "parent M 0 (Lng M - 1) < Lng M - 1"
+    and ancJm1: "m \<le> transJm1 M"
+  shows "transC1 M = transC1 (Red (seg M m (Lng M - 1)))
+       \<and> transC2 M = transC2 (Red (seg M m (Lng M - 1)))"
+proof -
+  have markShift: "Mark (Pred (Red (seg M m (Lng M - 1)))) (transJm1 M - m)
+                 = Mark (Pred M) (transJm1 M)"
+    by (rule ctx_markShift[OF MR mint leM hp anc0 j0lt ancJm1])
+  have id2: "transC1 M = transC1 (Red (seg M m (Lng M - 1)))"
+    by (rule ctx_interior_id2[OF MR mint leM hp anc0 j0lt ancJm1 markShift])
+  have id3: "transC2 M = transC2 (Red (seg M m (Lng M - 1)))"
+    by (rule ctx_interior_id3[OF MR mint leM hp anc0 j0lt ancJm1 id2])
+  show ?thesis using id2 id3 by blast
+qed
+
+
+
+text \<open>Capstone: the §8.2 terminal-slice value-equation step \<open>VE'(M,m)\<close> for a
+  NON-marked interior offset \<open>m\<close>.  Identical to @{thm [source] cfcx_VE_step_concrete}
+  except that the interior-core identities \<open>id2\<close>/\<open>id3\<close> are no longer taken as
+  hypotheses — they are discharged internally by @{thm [source] ctx_interior_ids} from
+  the base anchoring plus the Pred-stable-domain bound \<open>ancJm1: m \<le> transJm1 M\<close>.
+  So the ONLY genuinely inductive premise that remains is \<open>IH\<close> (\<open>VE'\<close> at \<open>Pred\<close>),
+  which the \<open>VE'\<close> induction driver (front BPSTEPA) supplies.  This is the exact
+  point at which the two fronts compose.\<close>
+
+lemma ctx_VE_step_nonmarked:
+  fixes M :: pairseq and m :: nat
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS"
+    and J1pos: "transJ1 M > 0" and T1: "transT1 M \<noteq> 0\<^sub>B"
+    and NR: "Red (seg M m (Lng M - 1)) \<in> RT_PS"
+    and NP: "Red (seg M m (Lng M - 1)) \<in> PT_PS"
+    and J1posN: "transJ1 (Red (seg M m (Lng M - 1))) > 0"
+    and T1N: "transT1 (Red (seg M m (Lng M - 1))) \<noteq> 0\<^sub>B"
+    and mint: "m < Lng M - 2"
+    and leM: "leR M 0 m (Lng M - 1)"
+    and hp: "hasParent M 0 (Lng M - 1)"
+    and anc0: "m \<le> parent M 0 (Lng M - 1)"
+    and j0lt: "parent M 0 (Lng M - 1) < Lng M - 1"
+    and ancJm1: "m \<le> transJm1 M"
+    and IH:  "bpHeadT (Trans (Pred M))
+            = bpHeadT (Trans (Pred (Red (seg M m (Lng M - 1)))))"
+    and tne: "bpHeadT (Trans (Pred M)) \<noteq> 0\<^sub>B"
+    and intM: "\<And>s b. scb_decomp (Trans (Pred M)) s (flatBT (transC1 M)) b \<Longrightarrow> s \<noteq> []"
+    and intN: "\<And>s b. scb_decomp (Trans (Pred (Red (seg M m (Lng M - 1))))) s
+                        (flatBT (transC1 (Red (seg M m (Lng M - 1))))) b \<Longrightarrow> s \<noteq> []"
+  shows "bpHeadT (Trans (seg M m (Lng M - 1))) = bpHeadT (Trans M)"
+proof -
+  have ids: "transC1 M = transC1 (Red (seg M m (Lng M - 1)))
+           \<and> transC2 M = transC2 (Red (seg M m (Lng M - 1)))"
+    by (rule ctx_interior_ids[OF MR mint leM hp anc0 j0lt ancJm1])
+  show ?thesis
+    by (rule cfcx_VE_step_concrete[OF MR MP J1pos T1 NR NP J1posN T1N
+          conjunct1[OF ids] conjunct2[OF ids] IH tne intM intN])
+qed
+
+(* ===== round 21 BPSTEPA (wt2: back-peel STEP inductive core + RPERS discharged) ===== *)
+
+
+(* ===== round 21 front BPSTEPA (wt2): §8.2 terminal-slice back-peel STEP ===== *)
+
+section \<open>r21-BPSTEPA — §8.2 terminal-slice back-peel STEP (the genuine CF core)\<close>
+
+text \<open>The back-peel induction skeleton @{thm [source] cfbx_VE_backpeel} discharges
+  the terminal-slice value equation \<open>VE'\<close> modulo three residuals \<open>{BASE, STEP,
+  RPERS}\<close>.  \<open>STEP\<close> (the genuine core) relates \<open>VE'(N)\<close> to \<open>VE'(Pred N)\<close> when the
+  last column opens a NEW branch (\<open>j\<^sub>1' < j\<^sub>1\<close>): \<open>Pred\<close> removes the last column and
+  the marked-principal head is governed by the surgery recursion of \<open>Trans\<close>.  This
+  block WIRES \<open>STEP\<close> to the surgery-heart @{thm [source] cfcx_VE_step_concrete}
+  (r19-CFC), whose induction hypothesis has the DIFFERENT shape
+  \<open>bpHeadT (Trans (Pred N)) = bpHeadT (Trans (Pred (Red (seg N m (Lng N-1)))))\<close>.
+  The bridge between the two IH shapes is the reusable Marked-free
+  @{thm [source] m_7_4_Trans_PredN} generalisation below.
+
+  EMPIRICAL (python/_r19_cfb_bpeel.py, genuine reduced monoT hosts, deep
+  \<open>Lng \<ge> 9\<close>): STEP soundness \<open>IH \<Longrightarrow> VE'\<close> holds 193/193 + 226/226; the regime
+  facts \<open>leR N 0 m (Lng N-1)\<close> 303/303 and \<open>m < Lng N - 2\<close> 303/303.\<close>
+
+text \<open>Marked-free generalisation of @{thm [source] m_7_4_Trans_PredN}: its proof
+  uses \<open>(M,m) \<in> Marked\<close> ONLY to extract \<open>leR M 0 m (Lng M-1)\<close> (via \<open>Marked_def\<close>),
+  which then feeds @{thm [source] Trans_slice_eq_Red}.  Stated with that \<open>leR\<close>
+  directly, so it applies to the general (non-admissible) \<open>m\<close> of the back-peel
+  regime.  This is the IH-BRIDGE core: it identifies \<open>Trans (Pred N)\<close>
+  (\<open>N = Red (seg M m (Lng M-1))\<close>) with \<open>Trans\<close> of the shorter slice
+  \<open>seg M m (Lng M-2)\<close>.\<close>
+
+lemma bpax_Trans_PredN_leR:
+  assumes MR: "M \<in> RT_PS" and mint: "m < Lng M - 2"
+    and leM: "leR M 0 m (Lng M - 1)"
+  shows "Trans (Pred (Red (seg M m (Lng M - 1)))) = Trans (seg M m (Lng M - 2))"
+proof -
+  have MT: "M \<in> T_PS" using MR by (simp add: RT_PS_def)
+  let ?j1 = "Lng M - 1"
+  have L: "2 < Lng M" using mint by linarith
+  have mj1: "m < ?j1" using mint by linarith
+  have predN: "Pred (Red (seg M m ?j1)) = Red (seg M m (?j1 - 1))"
+    by (rule m_7_4_Pred_Red_slice[OF mj1])
+  have j1m1: "?j1 - 1 = Lng M - 2" by simp
+  have leM': "leR M 0 m (?j1 - 1)"
+    by (rule m_5_1_ancestor_tree_1[OF MT leM]) (use mint in linarith)+
+  have mlt': "m < ?j1 - 1" using mint by linarith
+  have j1le': "?j1 - 1 \<le> Lng M - 1" by simp
+  have tr: "Trans (seg M m (?j1 - 1)) = Trans (Red (seg M m (?j1 - 1)))"
+    by (rule Trans_slice_eq_Red[OF MR mlt' j1le' leM'])
+  have "Trans (Pred (Red (seg M m ?j1))) = Trans (Red (seg M m (?j1 - 1)))"
+    using predN by simp
+  also have "\<dots> = Trans (seg M m (?j1 - 1))" using tr by simp
+  also have "\<dots> = Trans (seg M m (Lng M - 2))" using j1m1 by simp
+  finally show ?thesis .
+qed
+
+text \<open>The back-peel \<open>STEP\<close> (the genuine CF core), WIRED to the surgery-heart
+  @{thm [source] cfcx_VE_step_concrete}.  Given a host \<open>M\<close> in the regime whose last
+  column opens a new branch (\<open>j\<^sub>1' < j\<^sub>1\<close>) and the induction hypothesis
+  \<open>cfbx_VE m (Pred M)\<close>, we prove \<open>cfbx_VE m M\<close>.  DISCHARGED internally from the
+  regime + IH: the reduced/mono structure of \<open>M\<close> and of the reduced slice
+  \<open>N = Red (seg M m (Lng M-1))\<close> (\<open>MR\<close>/\<open>MP\<close>/\<open>J1pos\<close>/\<open>T1\<close>/\<open>NR\<close>/\<open>NP\<close>/\<open>J1posN\<close>/\<open>T1N\<close>),
+  the length bound \<open>m < Lng M - 2\<close> (from @{thm [source] m_6_4_FirstNodes_TrMax_Joints}
+  geometry \<open>j\<^sub>0' \<le> TrMax M < j\<^sub>1' < Lng M-1\<close>), and — the genuine NEW inductive
+  content — the IH-BRIDGE that turns \<open>cfbx_VE m (Pred M)\<close> into the shape
+  @{thm [source] cfcx_VE_step_concrete} consumes, via
+  @{thm [source] m_7_4_seg_Pred_eq} and @{thm [source] bpax_Trans_PredN_leR}.
+
+  LEFT as sharp residuals (universally over regime hosts \<open>Q\<close> with \<open>j\<^sub>1' < j\<^sub>1\<close>):
+  \<^item> \<open>lerR\<close>: \<open>leR Q 0 m (Lng Q-1)\<close> — regime ancestry (empirically 303/303, likely
+    derivable from the regime's identity-like row 0);
+  \<^item> \<open>id2R\<close>/\<open>id3R\<close>: the general-\<open>m\<close> interior identities \<open>transC1/2 Q = transC1/2 N\<close>
+    (@{thm [source] m_7_4_interior_id2}/@{thm [source] m_7_4_interior_id3} prove
+    these for admissible \<open>m\<close> only; the general-\<open>m\<close> case is the flagged residual);
+  \<^item> \<open>tneR\<close>/\<open>intMR\<close>/\<open>intNR\<close>: the surgery interiority facts (\<open>c\<^sub>1\<close> strictly interior,
+    shared deep tail nonzero) that @{thm [source] cfcx_VE_step_concrete} requires.\<close>
+
+lemma bpax_VE_step:
+  fixes m :: nat and M :: pairseq
+  assumes lerR: "\<And>Q. cfbx_reg m Q \<Longrightarrow> cfbx_j1p Q < Lng Q - 1
+                    \<Longrightarrow> leR Q 0 m (Lng Q - 1)"
+    and id2R: "\<And>Q. cfbx_reg m Q \<Longrightarrow> cfbx_j1p Q < Lng Q - 1
+                    \<Longrightarrow> transC1 Q = transC1 (Red (seg Q m (Lng Q - 1)))"
+    and id3R: "\<And>Q. cfbx_reg m Q \<Longrightarrow> cfbx_j1p Q < Lng Q - 1
+                    \<Longrightarrow> transC2 Q = transC2 (Red (seg Q m (Lng Q - 1)))"
+    and tneR: "\<And>Q. cfbx_reg m Q \<Longrightarrow> cfbx_j1p Q < Lng Q - 1
+                    \<Longrightarrow> bpHeadT (Trans (Pred Q)) \<noteq> 0\<^sub>B"
+    and intMR: "\<And>Q s b. cfbx_reg m Q \<Longrightarrow> cfbx_j1p Q < Lng Q - 1
+                    \<Longrightarrow> scb_decomp (Trans (Pred Q)) s (flatBT (transC1 Q)) b \<Longrightarrow> s \<noteq> []"
+    and intNR: "\<And>Q s b. cfbx_reg m Q \<Longrightarrow> cfbx_j1p Q < Lng Q - 1
+                    \<Longrightarrow> scb_decomp (Trans (Pred (Red (seg Q m (Lng Q - 1))))) s
+                          (flatBT (transC1 (Red (seg Q m (Lng Q - 1))))) b \<Longrightarrow> s \<noteq> []"
+    and reg: "cfbx_reg m M" and lt: "cfbx_j1p M < Lng M - 1"
+    and regP: "cfbx_reg m (Pred M)" and IH: "cfbx_VE m (Pred M)"
+  shows "cfbx_VE m M"
+proof -
+  \<comment> \<open>regime unpacking\<close>
+  have MR: "M \<in> RT_PS" using reg by (simp add: cfbx_reg_def)
+  have MP: "M \<in> PT_PS" using reg by (simp add: cfbx_reg_def)
+  have Brne: "Br M \<noteq> []" using reg by (simp add: cfbx_reg_def)
+  have MT: "M \<in> T_PS" using MR by (simp add: RT_PS_def)
+  \<comment> \<open>geometry: \<open>j\<^sub>0' \<le> TrMax M < j\<^sub>1' < Lng M-1\<close>, hence \<open>m < Lng M-2\<close>\<close>
+  have J1lt: "Lng (Br M) - 1 < Lng (Br M)" using Brne by (cases "Br M") auto
+  have geom1: "Joints M ! (Lng (Br M) - 1) \<le> TrMax M"
+    using m_6_4_FirstNodes_TrMax_Joints[OF MP J1lt] by simp
+  have geom2: "TrMax M < FirstNodes M ! (Lng (Br M) - 1)"
+    using m_6_4_FirstNodes_TrMax_Joints[OF MP J1lt] by simp
+  have j1lt: "FirstNodes M ! (Lng (Br M) - 1) < Lng M - 1"
+    using lt by (simp add: cfbx_j1p_def)
+  have mle: "m \<le> Joints M ! (Lng (Br M) - 1)" using reg by (auto simp: cfbx_reg_def)
+  have mint: "m < Lng M - 2" using geom1 geom2 j1lt mle by linarith
+  have L1: "1 < Lng M" using mint by linarith
+  have mj1: "m < Lng M - 1" using mint by linarith
+  have blt: "Lng M - 1 < Lng M" using L1 by simp
+  \<comment> \<open>ancestry (residual) and its \<open>le0\<close> form\<close>
+  have leM: "leR M 0 m (Lng M - 1)" by (rule lerR[OF reg lt])
+  have le0M: "le0 M m (Lng M - 1)" using leM by (simp add: leR_def)
+  \<comment> \<open>host \<open>Trans\<close> data\<close>
+  have J1pos: "transJ1 M > 0" using L1 by (simp add: transJ1_def)
+  have predMR: "Pred M \<in> RT_PS" using regP by (simp add: cfbx_reg_def)
+  have predMP: "Pred M \<in> PT_PS" using regP by (simp add: cfbx_reg_def)
+  have monoPM: "monoT (Pred M)" using predMP by (simp add: PT_PS_def)
+  have nzPM: "\<not> zeroT (Pred M)" using monoPM by (simp add: monoT_def)
+  have T1: "transT1 M \<noteq> 0\<^sub>B"
+    using m_7_3_Trans_zeroT[OF predMR] nzPM by (simp add: transT1_def)
+  \<comment> \<open>the reduced slice \<open>N = Red (seg M m (Lng M-1))\<close>: RT_PS / T_PS / monoT / PT_PS\<close>
+  have SlRT: "Red (seg M m (Lng M - 1)) \<in> RT_PS"
+    and segT: "seg M m (Lng M - 1) \<in> T_PS"
+    and SlT: "Red (seg M m (Lng M - 1)) \<in> T_PS"
+    using slice_Red_in_RT_PS[OF MR mj1 order.refl leM] by auto
+  have segmono: "monoT (seg M m (Lng M - 1))" by (rule monoT_seg_of_le0[OF blt mj1 le0M])
+  have segPT: "seg M m (Lng M - 1) \<in> PT_PS" using segT segmono by (simp add: PT_PS_def)
+  have SlPT: "Red (seg M m (Lng M - 1)) \<in> PT_PS"
+    using SlT m_6_5_Red_preserves_monoT[OF segPT] by (simp add: PT_PS_def)
+  \<comment> \<open>\<open>J1posN\<close>: \<open>Lng N > 1\<close>\<close>
+  have LngSl: "Lng (Red (seg M m (Lng M - 1))) = Lng M - m"
+  proof -
+    have "Lng (Red (seg M m (Lng M - 1))) = Lng (seg M m (Lng M - 1))"
+      by (rule m_6_5_Lng_Red[OF segT])
+    also have "\<dots> = Suc (Lng M - 1) - m" by (rule Lng_seg)
+    also have "\<dots> = Lng M - m" using L1 by simp
+    finally show ?thesis .
+  qed
+  have J1posN: "transJ1 (Red (seg M m (Lng M - 1))) > 0"
+    unfolding transJ1_def using LngSl mint by linarith
+  \<comment> \<open>\<open>T1N\<close>: \<open>Trans (Pred N) \<noteq> 0\<close>, via \<open>Pred N = Red (seg M m (Lng M-2))\<close>\<close>
+  have predSl: "Pred (Red (seg M m (Lng M - 1))) = Red (seg M m (Lng M - 2))"
+  proof -
+    have idx: "Lng M - 1 - 1 = Lng M - 2" by simp
+    have "Pred (Red (seg M m (Lng M - 1))) = Red (seg M m (Lng M - 1 - 1))"
+      by (rule m_7_4_Pred_Red_slice[OF mj1])
+    also have "\<dots> = Red (seg M m (Lng M - 2))"
+      using idx by (rule arg_cong[where f = "\<lambda>x. Red (seg M m x)"])
+    finally show ?thesis .
+  qed
+  have mj2: "m < Lng M - 2" using mint .
+  have lem2le: "Lng M - 2 \<le> Lng M - 1" by simp
+  have blt2: "Lng M - 2 < Lng M" using L1 by simp
+  have leM2: "leR M 0 m (Lng M - 2)"
+    by (rule m_5_1_ancestor_tree_1[OF MT leM]) (use mint in linarith)+
+  have le0M2: "le0 M m (Lng M - 2)" using leM2 by (simp add: leR_def)
+  have PredSlRT: "Red (seg M m (Lng M - 2)) \<in> RT_PS"
+    and seg2T: "seg M m (Lng M - 2) \<in> T_PS"
+    using slice_Red_in_RT_PS[OF MR mj2 lem2le leM2] by auto
+  have seg2mono: "monoT (seg M m (Lng M - 2))" by (rule monoT_seg_of_le0[OF blt2 mj2 le0M2])
+  have seg2PT: "seg M m (Lng M - 2) \<in> PT_PS" using seg2T seg2mono by (simp add: PT_PS_def)
+  have PredSlmono: "monoT (Red (seg M m (Lng M - 2)))"
+    by (rule m_6_5_Red_preserves_monoT[OF seg2PT])
+  have nzPredSl: "\<not> zeroT (Red (seg M m (Lng M - 2)))"
+    using PredSlmono by (simp add: monoT_def)
+  have T1N: "transT1 (Red (seg M m (Lng M - 1))) \<noteq> 0\<^sub>B"
+  proof -
+    have "transT1 (Red (seg M m (Lng M - 1))) = Trans (Red (seg M m (Lng M - 2)))"
+      unfolding transT1_def using predSl by simp
+    moreover have "Trans (Red (seg M m (Lng M - 2))) \<noteq> 0\<^sub>B"
+      using m_7_3_Trans_zeroT[OF PredSlRT] nzPredSl by blast
+    ultimately show ?thesis by simp
+  qed
+  \<comment> \<open>IH-BRIDGE: rewrite the \<open>Pred M\<close>-slice IH into the \<open>Trans (Pred N)\<close> shape\<close>
+  have LP: "Lng (Pred M) = Lng M - 1" using L1 by (simp add: Pred_def)
+  have mle2: "m \<le> Lng M - 2" using mint by linarith
+  have blt3: "Lng M - 2 < Lng M - 1" using L1 by linarith
+  have segPeq: "seg (Pred M) m (Lng (Pred M) - 1) = seg M m (Lng M - 2)"
+  proof -
+    have lpidx: "Lng (Pred M) - 1 = Lng M - 2" using LP by simp
+    have "seg (Pred M) m (Lng (Pred M) - 1) = seg (Pred M) m (Lng M - 2)"
+      using lpidx by (rule arg_cong[where f = "\<lambda>x. seg (Pred M) m x"])
+    also have "\<dots> = seg M m (Lng M - 2)" by (rule m_7_4_seg_Pred_eq[OF L1 mle2 blt3])
+    finally show ?thesis .
+  qed
+  have bridge: "Trans (Pred (Red (seg M m (Lng M - 1)))) = Trans (seg M m (Lng M - 2))"
+    by (rule bpax_Trans_PredN_leR[OF MR mint leM])
+  have IH': "bpHeadT (Trans (seg M m (Lng M - 2))) = bpHeadT (Trans (Pred M))"
+    using IH segPeq by simp
+  have IHcfcx: "bpHeadT (Trans (Pred M))
+              = bpHeadT (Trans (Pred (Red (seg M m (Lng M - 1)))))"
+    using IH' bridge by simp
+  \<comment> \<open>the residual surgery facts, instantiated at the host \<open>M\<close>\<close>
+  have id2: "transC1 M = transC1 (Red (seg M m (Lng M - 1)))" by (rule id2R[OF reg lt])
+  have id3: "transC2 M = transC2 (Red (seg M m (Lng M - 1)))" by (rule id3R[OF reg lt])
+  have tne: "bpHeadT (Trans (Pred M)) \<noteq> 0\<^sub>B" by (rule tneR[OF reg lt])
+  have intM: "\<And>s b. scb_decomp (Trans (Pred M)) s (flatBT (transC1 M)) b \<Longrightarrow> s \<noteq> []"
+    using intMR[OF reg lt] .
+  have intN: "\<And>s b. scb_decomp (Trans (Pred (Red (seg M m (Lng M - 1))))) s
+                       (flatBT (transC1 (Red (seg M m (Lng M - 1))))) b \<Longrightarrow> s \<noteq> []"
+    using intNR[OF reg lt] .
+  \<comment> \<open>discharge \<open>VE'(M)\<close> via the surgery-heart step\<close>
+  show "cfbx_VE m M"
+    by (rule cfcx_VE_step_concrete[OF MR MP J1pos T1 SlRT SlPT J1posN T1N
+          id2 id3 IHcfcx tne intM intN])
+qed
+
+text \<open>END-TO-END: the full terminal-slice lemma \<open>p_8_2_condV_terminal_slice_Trans\<close>
+  (pss_paper 1604) GREEN with the back-peel \<open>STEP\<close> DISCHARGED (via
+  @{thm [source] bpax_VE_step}), i.e. modulo only \<open>{BASE, RPERS}\<close> and the sharp
+  surgery residuals \<open>{lerR, id2R, id3R, tneR, intMR, intNR}\<close>.  Same statement as
+  @{thm [source] cfbx_terminal_slice_Trans_modBackpeel} but with its \<open>STEP\<close>
+  hypothesis replaced by the surgery residuals that
+  @{thm [source] bpax_VE_step} consumes — the terminal-slice lemma no longer
+  depends on the inductive \<open>STEP\<close> at all, only on the LOCAL (non-inductive)
+  surgery identities.\<close>
+
+lemma bpax_terminal_slice_modResidual:
+  fixes M :: pairseq and m :: nat
+  defines "j1 \<equiv> Lng M - 1"
+  defines "J1 \<equiv> Lng (Br M) - 1"
+  defines "j0' \<equiv> Joints M ! J1"
+  defines "j1' \<equiv> FirstNodes M ! J1"
+  defines "M' \<equiv> seg M m j1"
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS" and Brne: "Br M \<noteq> []"
+    and hyp: "m < j0' \<or> (m = j0' \<and> entry M 0 j1' = entry M 1 j1'
+                          \<and> descending (Br M))"
+    and BASE: "\<And>N. cfbx_reg m N \<Longrightarrow> cfbx_j1p N = Lng N - 1 \<Longrightarrow> cfbx_VE m N"
+    and RPERS: "\<And>N. cfbx_reg m N \<Longrightarrow> cfbx_j1p N < Lng N - 1 \<Longrightarrow> cfbx_reg m (Pred N)"
+    and lerR: "\<And>Q. cfbx_reg m Q \<Longrightarrow> cfbx_j1p Q < Lng Q - 1
+                    \<Longrightarrow> leR Q 0 m (Lng Q - 1)"
+    and id2R: "\<And>Q. cfbx_reg m Q \<Longrightarrow> cfbx_j1p Q < Lng Q - 1
+                    \<Longrightarrow> transC1 Q = transC1 (Red (seg Q m (Lng Q - 1)))"
+    and id3R: "\<And>Q. cfbx_reg m Q \<Longrightarrow> cfbx_j1p Q < Lng Q - 1
+                    \<Longrightarrow> transC2 Q = transC2 (Red (seg Q m (Lng Q - 1)))"
+    and tneR: "\<And>Q. cfbx_reg m Q \<Longrightarrow> cfbx_j1p Q < Lng Q - 1
+                    \<Longrightarrow> bpHeadT (Trans (Pred Q)) \<noteq> 0\<^sub>B"
+    and intMR: "\<And>Q s b. cfbx_reg m Q \<Longrightarrow> cfbx_j1p Q < Lng Q - 1
+                    \<Longrightarrow> scb_decomp (Trans (Pred Q)) s (flatBT (transC1 Q)) b \<Longrightarrow> s \<noteq> []"
+    and intNR: "\<And>Q s b. cfbx_reg m Q \<Longrightarrow> cfbx_j1p Q < Lng Q - 1
+                    \<Longrightarrow> scb_decomp (Trans (Pred (Red (seg Q m (Lng Q - 1))))) s
+                          (flatBT (transC1 (Red (seg Q m (Lng Q - 1))))) b \<Longrightarrow> s \<noteq> []"
+  shows "\<exists>!t1. Trans M = Dpt (enat (entry M 1 0)) t1
+            \<and> Trans M' = Dpt (enat (entry M 1 m)) t1"
+proof -
+  have reg: "cfbx_reg m M"
+    unfolding cfbx_reg_def
+    using MR MP Brne hyp[unfolded j0'_def j1'_def J1_def] by blast
+  have VE: "cfbx_VE m M"
+    by (rule cfbx_VE_backpeel[OF BASE
+          bpax_VE_step[OF lerR id2R id3R tneR intMR intNR] RPERS reg])
+  show ?thesis
+    unfolding j1_def J1_def j0'_def j1'_def M'_def
+    by (rule m_8_2_condV_terminal_slice_Trans_modVE[OF MR MP Brne
+          hyp[unfolded j1_def J1_def j0'_def j1'_def] VE])
+qed
+
+text \<open>\<open>RPERS\<close> DISCHARGED: the regime persists to \<open>Pred N\<close> in the \<open>j\<^sub>1' < j\<^sub>1\<close>
+  case.  When the last column opens a NEW branch (\<open>j\<^sub>1' < j\<^sub>1\<close>), removing it keeps
+  the trunk (@{thm [source] TrMax_Pred}), the branch count
+  (@{thm [source] wid_BrLen_Pred}: since \<open>j\<^sub>1' \<noteq> j\<^sub>1\<close>, \<open>Lng (Br (Pred N)) = Lng (Br N)\<close>),
+  and the last branch's joint / first node (@{thm [source] wid_Joints_Pred},
+  @{thm [source] wid_FirstNodes_Pred}), so the regime index data — and hence the
+  \<open>m\<close>-condition — is unchanged.  \<open>Pred N\<close> is reduced mono (@{thm [source] Pred_RT_PS}
+  + \<open>Pred N = seg N 0 (Lng N-2)\<close> is a row-0-ancestor slice,
+  @{thm [source] monoT_seg_of_le0}); the descending clause (only in the \<open>m = j\<^sub>0'\<close>
+  disjunct) transfers by @{thm [source] descending_Br_Pred}.  EMPIRICAL
+  (python/_r19_cfb_bpeel.py): RP_j1lt 193/193 + 226/226.\<close>
+
+lemma bpax_RPERS:
+  fixes m :: nat and N :: pairseq
+  assumes reg: "cfbx_reg m N" and lt: "cfbx_j1p N < Lng N - 1"
+  shows "cfbx_reg m (Pred N)"
+proof -
+  have NR: "N \<in> RT_PS" using reg by (simp add: cfbx_reg_def)
+  have NP: "N \<in> PT_PS" using reg by (simp add: cfbx_reg_def)
+  have Brne: "Br N \<noteq> []" using reg by (simp add: cfbx_reg_def)
+  have NT: "N \<in> T_PS" using NR by (simp add: RT_PS_def)
+  have monoN: "monoT N" using NP by (simp add: PT_PS_def)
+  \<comment> \<open>geometry: \<open>TrMax N < j\<^sub>1' < Lng N - 1\<close>, hence \<open>2 < Lng N\<close>\<close>
+  have J1lt: "Lng (Br N) - 1 < Lng (Br N)" using Brne by (cases "Br N") auto
+  have geom2: "TrMax N < FirstNodes N ! (Lng (Br N) - 1)"
+    using m_6_4_FirstNodes_TrMax_Joints[OF NP J1lt] by simp
+  have j1lt: "FirstNodes N ! (Lng (Br N) - 1) < Lng N - 1"
+    using lt by (simp add: cfbx_j1p_def)
+  have L2: "2 < Lng N" using geom2 j1lt by linarith
+  have L: "1 < Lng N" using L2 by linarith
+  have br: "TrMax N \<noteq> Lng N - 1"
+  proof
+    assume "TrMax N = Lng N - 1"
+    hence "Br N = []" by (simp add: Br_def)
+    thus False using Brne by simp
+  qed
+  have predbut: "Pred N = butlast N" using L by (simp add: Pred_def)
+  have LPN: "Lng (Pred N) = Lng N - 1" using L by (simp add: Pred_def)
+  \<comment> \<open>(a) \<open>Pred N \<in> RT_PS\<close>\<close>
+  have predNR: "Pred N \<in> RT_PS" by (rule Pred_RT_PS[OF NR])
+  have predNT: "Pred N \<in> T_PS" using predNR by (simp add: RT_PS_def)
+  \<comment> \<open>(b) \<open>Pred N \<in> PT_PS\<close>: \<open>Pred N = seg N 0 (Lng N-2)\<close> is a row-0 ancestor slice\<close>
+  have sucln: "Suc (Lng N - 2) = Lng N - 1" using L2 by simp
+  have segeq: "seg N 0 (Lng N - 2) = Pred N"
+  proof -
+    have "seg N 0 (Lng N - 2) = take (Suc (Lng N - 2)) N"
+      by (rule seg_0_eq_take) (use L2 in simp)
+    also have "\<dots> = take (Lng N - 1) N" using sucln by simp
+    also have "\<dots> = butlast N" by (simp add: butlast_conv_take)
+    finally show ?thesis using predbut by simp
+  qed
+  have leN: "leR N 0 0 (Lng N - 1)" using monoN by (simp add: monoT_def)
+  have leN2: "leR N 0 0 (Lng N - 2)"
+    by (rule m_5_1_ancestor_tree_1[OF NT leN]) (use L2 in linarith)+
+  have le0N2: "le0 N 0 (Lng N - 2)" using leN2 by (simp add: leR_def)
+  have b2lt: "Lng N - 2 < Lng N" using L by simp
+  have zlt: "(0::nat) < Lng N - 2" using L2 by simp
+  have segmono: "monoT (seg N 0 (Lng N - 2))" by (rule monoT_seg_of_le0[OF b2lt zlt le0N2])
+  have monoPredN: "monoT (Pred N)" using segmono segeq by simp
+  have predNP: "Pred N \<in> PT_PS" using predNT monoPredN by (simp add: PT_PS_def)
+  \<comment> \<open>(c) \<open>Br (Pred N) \<noteq> []\<close>: branch count is preserved (@{thm wid_BrLen_Pred})\<close>
+  have j1'ne: "FirstNodes N ! (Lng (Br N) - 1) \<noteq> Lng N - 1" using j1lt by simp
+  have BrLenP: "Lng (Br (Pred N)) = Lng (Br N)"
+    using wid_BrLen_Pred[OF NP Brne L] j1'ne by simp
+  have BrPos: "0 < Lng (Br N)" using Brne by (cases "Br N") auto
+  have BrPne: "Br (Pred N) \<noteq> []"
+  proof -
+    have "0 < Lng (Br (Pred N))" using BrLenP BrPos by simp
+    thus ?thesis by (cases "Br (Pred N)") auto
+  qed
+  have J1Peq: "Lng (Br (Pred N)) - 1 = Lng (Br N) - 1" using BrLenP by simp
+  have JBrP: "Lng (Br N) - 1 < Lng (Br (Pred N))" using BrLenP J1lt by simp
+  have JointsP: "Joints (Pred N) ! (Lng (Br N) - 1) = Joints N ! (Lng (Br N) - 1)"
+    by (rule wid_Joints_Pred[OF NT monoN br L JBrP])
+  have FirstNodesP: "FirstNodes (Pred N) ! (Lng (Br N) - 1) = FirstNodes N ! (Lng (Br N) - 1)"
+    by (rule wid_FirstNodes_Pred[OF NT monoN br L JBrP])
+  \<comment> \<open>row entries at \<open>j\<^sub>1' < Lng N - 1\<close> are unchanged by \<open>butlast\<close>\<close>
+  have idxlt: "FirstNodes N ! (Lng (Br N) - 1) < length (butlast N)"
+    using j1lt by simp
+  have nthEq: "butlast N ! (FirstNodes N ! (Lng (Br N) - 1)) = N ! (FirstNodes N ! (Lng (Br N) - 1))"
+    by (rule nth_butlast[OF idxlt])
+  have entryPres: "\<And>i. entry (Pred N) i (FirstNodes N ! (Lng (Br N) - 1))
+                     = entry N i (FirstNodes N ! (Lng (Br N) - 1))"
+    using predbut nthEq by (simp add: entry_def)
+  \<comment> \<open>the regime \<open>m\<close>-condition of \<open>N\<close>, transported to \<open>Pred N\<close>\<close>
+  have hyp: "m < Joints N ! (Lng (Br N) - 1)
+           \<or> (m = Joints N ! (Lng (Br N) - 1)
+              \<and> entry N 0 (FirstNodes N ! (Lng (Br N) - 1))
+                  = entry N 1 (FirstNodes N ! (Lng (Br N) - 1))
+              \<and> descending (Br N))"
+    using reg by (simp add: cfbx_reg_def)
+  have JP: "Joints (Pred N) ! (Lng (Br (Pred N)) - 1) = Joints N ! (Lng (Br N) - 1)"
+    using JointsP J1Peq by simp
+  have FP: "FirstNodes (Pred N) ! (Lng (Br (Pred N)) - 1) = FirstNodes N ! (Lng (Br N) - 1)"
+    using FirstNodesP J1Peq by simp
+  have c4: "m < Joints (Pred N) ! (Lng (Br (Pred N)) - 1)
+          \<or> (m = Joints (Pred N) ! (Lng (Br (Pred N)) - 1)
+             \<and> entry (Pred N) 0 (FirstNodes (Pred N) ! (Lng (Br (Pred N)) - 1))
+                 = entry (Pred N) 1 (FirstNodes (Pred N) ! (Lng (Br (Pred N)) - 1))
+             \<and> descending (Br (Pred N)))"
+  proof -
+    from hyp show ?thesis
+    proof
+      assume "m < Joints N ! (Lng (Br N) - 1)"
+      thus ?thesis using JP by simp
+    next
+      assume H: "m = Joints N ! (Lng (Br N) - 1)
+            \<and> entry N 0 (FirstNodes N ! (Lng (Br N) - 1))
+                = entry N 1 (FirstNodes N ! (Lng (Br N) - 1))
+            \<and> descending (Br N)"
+      have meq: "m = Joints (Pred N) ! (Lng (Br (Pred N)) - 1)" using H JP by simp
+      have eeq: "entry (Pred N) 0 (FirstNodes (Pred N) ! (Lng (Br (Pred N)) - 1))
+               = entry (Pred N) 1 (FirstNodes (Pred N) ! (Lng (Br (Pred N)) - 1))"
+        using H entryPres FP by simp
+      have descBrN: "descending (Br N)" using H by simp
+      have ND: "N \<in> DT_PS" using NR monoN descBrN by (simp add: DT_PS_def)
+      have LpN: "1 < Lng (Pred N)" using LPN L2 by simp
+      have descP: "descending (Br (Pred N))"
+        using descending_Br_Pred[OF ND Brne LpN] by (simp add: DT_PS_def)
+      show ?thesis using meq eeq descP by blast
+    qed
+  qed
+  show "cfbx_reg m (Pred N)"
+    unfolding cfbx_reg_def using predNR predNP BrPne c4 by blast
+qed
+
+text \<open>END-TO-END (improved): the terminal-slice lemma
+  \<open>p_8_2_condV_terminal_slice_Trans\<close> GREEN with BOTH the inductive back-peel
+  \<open>STEP\<close> (via @{thm [source] bpax_VE_step}) AND \<open>RPERS\<close> (via
+  @{thm [source] bpax_RPERS}) DISCHARGED — leaving only \<open>{BASE}\<close> (the article's
+  \<open>j\<^sub>1' = j\<^sub>1\<close> base case) and the sharp surgery residuals
+  \<open>{lerR, id2R, id3R, tneR, intMR, intNR}\<close> of @{thm [source] cfcx_VE_step_concrete}.\<close>
+
+lemma bpax_terminal_slice_modResidual2:
+  fixes M :: pairseq and m :: nat
+  defines "j1 \<equiv> Lng M - 1"
+  defines "J1 \<equiv> Lng (Br M) - 1"
+  defines "j0' \<equiv> Joints M ! J1"
+  defines "j1' \<equiv> FirstNodes M ! J1"
+  defines "M' \<equiv> seg M m j1"
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS" and Brne: "Br M \<noteq> []"
+    and hyp: "m < j0' \<or> (m = j0' \<and> entry M 0 j1' = entry M 1 j1'
+                          \<and> descending (Br M))"
+    and BASE: "\<And>N. cfbx_reg m N \<Longrightarrow> cfbx_j1p N = Lng N - 1 \<Longrightarrow> cfbx_VE m N"
+    and lerR: "\<And>Q. cfbx_reg m Q \<Longrightarrow> cfbx_j1p Q < Lng Q - 1
+                    \<Longrightarrow> leR Q 0 m (Lng Q - 1)"
+    and id2R: "\<And>Q. cfbx_reg m Q \<Longrightarrow> cfbx_j1p Q < Lng Q - 1
+                    \<Longrightarrow> transC1 Q = transC1 (Red (seg Q m (Lng Q - 1)))"
+    and id3R: "\<And>Q. cfbx_reg m Q \<Longrightarrow> cfbx_j1p Q < Lng Q - 1
+                    \<Longrightarrow> transC2 Q = transC2 (Red (seg Q m (Lng Q - 1)))"
+    and tneR: "\<And>Q. cfbx_reg m Q \<Longrightarrow> cfbx_j1p Q < Lng Q - 1
+                    \<Longrightarrow> bpHeadT (Trans (Pred Q)) \<noteq> 0\<^sub>B"
+    and intMR: "\<And>Q s b. cfbx_reg m Q \<Longrightarrow> cfbx_j1p Q < Lng Q - 1
+                    \<Longrightarrow> scb_decomp (Trans (Pred Q)) s (flatBT (transC1 Q)) b \<Longrightarrow> s \<noteq> []"
+    and intNR: "\<And>Q s b. cfbx_reg m Q \<Longrightarrow> cfbx_j1p Q < Lng Q - 1
+                    \<Longrightarrow> scb_decomp (Trans (Pred (Red (seg Q m (Lng Q - 1))))) s
+                          (flatBT (transC1 (Red (seg Q m (Lng Q - 1))))) b \<Longrightarrow> s \<noteq> []"
+  shows "\<exists>!t1. Trans M = Dpt (enat (entry M 1 0)) t1
+            \<and> Trans M' = Dpt (enat (entry M 1 m)) t1"
+proof -
+  have reg: "cfbx_reg m M"
+    unfolding cfbx_reg_def
+    using MR MP Brne hyp[unfolded j0'_def j1'_def J1_def] by blast
+  have VE: "cfbx_VE m M"
+    by (rule cfbx_VE_backpeel[OF BASE
+          bpax_VE_step[OF lerR id2R id3R tneR intMR intNR] bpax_RPERS reg])
+  show ?thesis
+    unfolding j1_def J1_def j0'_def j1'_def M'_def
+    by (rule m_8_2_condV_terminal_slice_Trans_modVE[OF MR MP Brne
+          hyp[unfolded j1_def J1_def j0'_def j1'_def] VE])
+qed
+
+(* ===== round 21 BPSTEPB (wt-s5: RPERS proven, BASE->PEEL) ===== *)
+
+
+(* ===== round 21 front BPSTEPB (wt-s5): BASE + RPERS of cfbx back-peel ===== *)
+
+section \<open>r21-BPSTEPB — \<open>cfbx\<close> back-peel induction: BASE (\<open>j\<^sub>1' = j\<^sub>1\<close>) and
+  RPERS (regime persists to \<open>Pred\<close> in the \<open>j\<^sub>1' < j\<^sub>1\<close> case)\<close>
+
+text \<open>Complement to the STEP front.  Discharges two of the three named residuals
+  of @{thm [source] cfbx_VE_backpeel}:
+  \<^item> \<open>RPERS\<close>: when the last branch's first node is strictly interior
+    (\<open>cfbx_j1p N < Lng N - 1\<close>, i.e. the last branch has length \<open>> 1\<close>), the same
+    front offset \<open>m\<close> stays in the terminal-slice regime for \<open>Pred N\<close>.  Proved
+    UNCONDITIONALLY here from the frozen \<open>Br\<close>/\<open>Joints\<close>/\<open>FirstNodes\<close>-under-\<open>Pred\<close>
+    machinery (@{thm [source] wid_Br_Pred}, @{thm [source] wid_FirstNodes_Pred},
+    @{thm [source] wid_Joints_Pred}, @{thm [source] wf21_Br_eq_seg}): dropping the
+    last column shortens the last branch but keeps its left end (so
+    \<open>Lng (Br (Pred N)) = Lng (Br N)\<close>, the joint/first-node row is stable, the row
+    entries at \<open>j\<^sub>1'\<close> are unchanged, and \<open>Br\<close>-descendingness — a left-end-only
+    condition — transfers).  EMPIRICAL: RP_j1lt 193/193 + 205/205
+    (python/_r19_cfb_bpeel.py); the \<open>j\<^sub>1' = j\<^sub>1\<close> case NEVER persists (RP_j1eq 0/98),
+    confirming this is exactly the recursion's live case.
+
+  A reusable left-end descending-transfer helper \<open>bpbx_descending_transfer\<close> is
+  isolated first.\<close>
+
+text \<open>\<open>descending\<close> depends only on each branch's LEFT END (index-0 pair); so if two
+  branch lists have equal length and equal head pairs componentwise, one is
+  descending iff the other is.\<close>
+
+lemma bpbx_descending_transfer:
+  assumes eqlen: "Lng P' = Lng Q" and Qne: "Q \<noteq> []"
+    and left: "\<And>J. J < Lng Q \<Longrightarrow> P' ! J ! 0 = Q ! J ! 0"
+    and desc: "descending Q"
+  shows "descending P'"
+  unfolding descending_def
+proof (intro allI impI)
+  fix J0 J1 assume H: "J0 \<le> J1 \<and> J1 \<le> Lng P' - 1"
+  have QLpos: "0 < Lng Q" using Qne by (cases Q) auto
+  have J1lt: "J1 < Lng Q" using H eqlen QLpos by linarith
+  have J0lt: "J0 < Lng Q" using H J1lt by linarith
+  have e0: "P' ! J0 ! 0 = Q ! J0 ! 0" by (rule left[OF J0lt])
+  have e1: "P' ! J1 ! 0 = Q ! J1 ! 0" by (rule left[OF J1lt])
+  have hyp: "J0 \<le> J1 \<and> J1 \<le> Lng Q - 1" using H eqlen by simp
+  have d: "entry (Q ! J0) 0 0 \<ge> entry (Q ! J1) 0 0
+         \<and> (entry (Q ! J0) 0 0 = entry (Q ! J1) 0 0
+              \<longrightarrow> entry (Q ! J0) 1 0 \<ge> entry (Q ! J1) 1 0)"
+    using desc hyp unfolding descending_def by blast
+  show "entry (P' ! J0) 0 0 \<ge> entry (P' ! J1) 0 0
+      \<and> (entry (P' ! J0) 0 0 = entry (P' ! J1) 0 0
+           \<longrightarrow> entry (P' ! J0) 1 0 \<ge> entry (P' ! J1) 1 0)"
+    using d e0 e1 by (simp add: entry_def)
+qed
+
+text \<open>RPERS: the terminal-slice regime persists to \<open>Pred N\<close> in the live
+  (\<open>j\<^sub>1' < j\<^sub>1\<close>) recursion case.\<close>
+
+lemma bpbx_RPERS:
+  fixes m :: nat and N :: pairseq
+  assumes reg: "cfbx_reg m N"
+    and lt: "cfbx_j1p N < Lng N - 1"
+  shows "cfbx_reg m (Pred N)"
+proof -
+  from reg have reg':
+    "N \<in> RT_PS \<and> N \<in> PT_PS \<and> Br N \<noteq> []
+     \<and> (m < Joints N ! (Lng (Br N) - 1)
+        \<or> (m = Joints N ! (Lng (Br N) - 1)
+           \<and> entry N 0 (FirstNodes N ! (Lng (Br N) - 1))
+               = entry N 1 (FirstNodes N ! (Lng (Br N) - 1))
+           \<and> descending (Br N)))"
+    by (simp add: cfbx_reg_def)
+  have NR: "N \<in> RT_PS" using reg' by blast
+  have NP: "N \<in> PT_PS" using reg' by blast
+  have Brne: "Br N \<noteq> []" using reg' by blast
+  have regdisj: "m < Joints N ! (Lng (Br N) - 1)
+        \<or> (m = Joints N ! (Lng (Br N) - 1)
+           \<and> entry N 0 (FirstNodes N ! (Lng (Br N) - 1))
+               = entry N 1 (FirstNodes N ! (Lng (Br N) - 1))
+           \<and> descending (Br N))"
+    using reg' by blast
+  have NT: "N \<in> T_PS" using NP by (simp add: PT_PS_def)
+  have monoN: "monoT N" using NP by (simp add: PT_PS_def)
+  define J1 where "J1 = Lng (Br N) - 1"
+  have BrL: "0 < Lng (Br N)" using Brne by (cases "Br N") auto
+  have JBr: "J1 < Lng (Br N)" using BrL by (simp add: J1_def)
+  define j0' where "j0' = Joints N ! J1"
+  define j1' where "j1' = FirstNodes N ! J1"
+  have j1'lt: "j1' < Lng N - 1" using lt by (simp add: cfbx_j1p_def j1'_def J1_def)
+  have L: "1 < Lng N" using j1'lt by linarith
+  have br: "TrMax N \<noteq> Lng N - 1"
+  proof
+    assume "TrMax N = Lng N - 1"
+    hence "Br N = []" by (simp add: Br_def)
+    thus False using Brne by simp
+  qed
+  have trj1: "TrMax N < j1'"
+    using m_6_4_FirstNodes_TrMax_Joints[OF NP JBr] by (simp add: j1'_def)
+  \<comment> \<open>last branch has length \<open>> 1\<close>, so \<open>Pred\<close> merely shortens it\<close>
+  have lastseg: "Br N ! J1 = seg N j1' (Lng N - 1)"
+    using wf21_Br_eq_seg[OF NP Brne] by (simp add: J1_def j1'_def)
+  have lastlen: "Lng (Br N ! J1) = Suc (Lng N - 1) - j1'" using lastseg by simp
+  have lastgt1: "1 < Lng (Br N ! J1)" using lastlen j1'lt L by linarith
+  have lastB: "last (Br N) = Br N ! J1" using Brne by (simp add: J1_def last_conv_nth)
+  have lastgt1': "\<not> Lng (last (Br N)) \<le> 1" using lastgt1 lastB by simp
+  \<comment> \<open>\<open>Br (Pred N)\<close> = same branches, last one shortened by one column\<close>
+  have brEq: "Br (Pred N) = butlast (Br N) @ [butlast (last (Br N))]"
+    using wid_Br_Pred[OF NT br L] lastgt1' by simp
+  have LBrPred: "Lng (Br (Pred N)) = Lng (Br N)"
+  proof -
+    have "Lng (Br (Pred N)) = length (butlast (Br N)) + 1" using brEq by simp
+    also have "\<dots> = (Lng (Br N) - 1) + 1" by simp
+    also have "\<dots> = Lng (Br N)" using BrL by simp
+    finally show ?thesis .
+  qed
+  have BrPredne: "Br (Pred N) \<noteq> []" using brEq by simp
+  have JN: "Lng (Br (Pred N)) - 1 = J1" using LBrPred by (simp add: J1_def)
+  have JBrN: "J1 < Lng (Br (Pred N))" using LBrPred JBr by simp
+  \<comment> \<open>joint/first-node row stable at the last branch\<close>
+  have FNt: "FirstNodes (Pred N) ! J1 = j1'"
+    using wid_FirstNodes_Pred[OF NT monoN br L JBrN] by (simp add: j1'_def)
+  have Jt: "Joints (Pred N) ! J1 = j0'"
+    using wid_Joints_Pred[OF NT monoN br L JBrN] by (simp add: j0'_def)
+  \<comment> \<open>\<open>Pred N\<close> is reduced monoT\<close>
+  have predRT: "Pred N \<in> RT_PS" by (rule Pred_RT_PS[OF NR])
+  have predT: "Pred N \<in> T_PS" by (rule Pred_preserves_T_PS[OF NT])
+  have LP: "Lng (Pred N) = Lng N - 1" using L by (simp add: Pred_def)
+  have LP2: "1 < Lng (Pred N)" using trj1 j1'lt LP by linarith
+  have nzP: "\<not> zeroT (Pred N)" using LP2 by (simp add: zeroT_def)
+  have nmuN: "\<not> multiT N" using monoN by (simp add: multiT_def)
+  have nmuP: "\<not> multiT (Pred N)" by (rule nonmulti_Pred[OF NT nmuN L])
+  have monoPred: "monoT (Pred N)" using nzP nmuP by (simp add: multiT_def)
+  have predP: "Pred N \<in> PT_PS" using predT monoPred by (simp add: PT_PS_def)
+  \<comment> \<open>row entries at \<open>j\<^sub>1'\<close> unchanged (\<open>j\<^sub>1' < Lng N - 1\<close>, below the dropped column)\<close>
+  have predbl: "Pred N = butlast N" using L by (simp add: Pred_def)
+  have entX: "entry (Pred N) i j1' = entry N i j1'" for i
+  proof -
+    have "butlast N ! j1' = N ! j1'" using j1'lt by (simp add: nth_butlast)
+    thus "entry (Pred N) i j1' = entry N i j1'" by (simp add: predbl entry_def)
+  qed
+  \<comment> \<open>every branch of \<open>Br (Pred N)\<close> has the same left-end pair as \<open>Br N\<close>\<close>
+  have lefteq: "Br (Pred N) ! J ! 0 = Br N ! J ! 0" if JQ: "J < Lng (Br N)" for J
+  proof (cases "J < Lng (Br N) - 1")
+    case True
+    have "Br (Pred N) ! J = butlast (Br N) ! J"
+      using brEq True Brne by (simp add: nth_append)
+    also have "\<dots> = Br N ! J" using True by (simp add: nth_butlast)
+    finally show ?thesis by simp
+  next
+    case False
+    hence Jeq: "J = Lng (Br N) - 1" using JQ by linarith
+    have "Br (Pred N) ! J = butlast (last (Br N))"
+      using brEq Jeq Brne by (simp add: nth_append)
+    moreover have "butlast (last (Br N)) ! 0 = last (Br N) ! 0"
+      using lastgt1 lastB by (simp add: nth_butlast)
+    moreover have "last (Br N) = Br N ! J" using Jeq Brne by (simp add: last_conv_nth)
+    ultimately show ?thesis by simp
+  qed
+  \<comment> \<open>assemble \<open>cfbx_reg m (Pred N)\<close>\<close>
+  show "cfbx_reg m (Pred N)"
+    unfolding cfbx_reg_def
+  proof (intro conjI)
+    show "Pred N \<in> RT_PS" by (rule predRT)
+    show "Pred N \<in> PT_PS" by (rule predP)
+    show "Br (Pred N) \<noteq> []" by (rule BrPredne)
+    show "m < Joints (Pred N) ! (Lng (Br (Pred N)) - 1)
+          \<or> (m = Joints (Pred N) ! (Lng (Br (Pred N)) - 1)
+             \<and> entry (Pred N) 0 (FirstNodes (Pred N) ! (Lng (Br (Pred N)) - 1))
+                 = entry (Pred N) 1 (FirstNodes (Pred N) ! (Lng (Br (Pred N)) - 1))
+             \<and> descending (Br (Pred N)))"
+    proof -
+      from regdisj show ?thesis
+      proof
+        assume "m < Joints N ! (Lng (Br N) - 1)"
+        hence "m < Joints (Pred N) ! (Lng (Br (Pred N)) - 1)"
+          using JN Jt by (simp add: j0'_def J1_def)
+        thus ?thesis by (rule disjI1)
+      next
+        assume B: "m = Joints N ! (Lng (Br N) - 1)
+           \<and> entry N 0 (FirstNodes N ! (Lng (Br N) - 1))
+               = entry N 1 (FirstNodes N ! (Lng (Br N) - 1))
+           \<and> descending (Br N)"
+        have meq: "m = j0'" using B by (simp add: j0'_def J1_def)
+        have eN: "entry N 0 j1' = entry N 1 j1'" using B by (simp add: j1'_def J1_def)
+        have descN: "descending (Br N)" using B by blast
+        have e0: "entry (Pred N) 0 j1' = entry (Pred N) 1 j1'"
+          using eN by (simp add: entX)
+        have descP: "descending (Br (Pred N))"
+          by (rule bpbx_descending_transfer[OF LBrPred Brne lefteq descN])
+        show ?thesis
+        proof (rule disjI2, intro conjI)
+          show "m = Joints (Pred N) ! (Lng (Br (Pred N)) - 1)"
+            using meq JN Jt by simp
+          show "entry (Pred N) 0 (FirstNodes (Pred N) ! (Lng (Br (Pred N)) - 1))
+              = entry (Pred N) 1 (FirstNodes (Pred N) ! (Lng (Br (Pred N)) - 1))"
+            using e0 JN FNt by simp
+          show "descending (Br (Pred N))" by (rule descP)
+        qed
+      qed
+    qed
+  qed
+qed
+
+text \<open>The \<open>j\<^sub>1' = j\<^sub>1\<close> (BASE) structural fact the article uses: dropping the last
+  column removes the WHOLE last branch (which is the single terminal column), so
+  \<open>Br (Pred N) = butlast (Br N)\<close> (one fewer branch, unlike the RPERS
+  \<open>j\<^sub>1' < j\<^sub>1\<close> case where the branch count is preserved).  Unconditional, via
+  @{thm [source] wid_Br_Pred} in its \<open>Lng (last (Br N)) \<le> 1\<close> branch
+  (@{thm [source] wf21_Br_eq_seg} pins the last branch to the single column
+  \<open>seg N (Lng N-1) (Lng N-1)\<close>).\<close>
+
+lemma bpbx_Br_Pred_j1eq:
+  fixes m :: nat and N :: pairseq
+  assumes reg: "cfbx_reg m N"
+    and eq: "cfbx_j1p N = Lng N - 1"
+  shows "Br (Pred N) = butlast (Br N)"
+proof -
+  have NP: "N \<in> PT_PS" using reg[unfolded cfbx_reg_def] by blast
+  have Brne: "Br N \<noteq> []" using reg[unfolded cfbx_reg_def] by blast
+  have NT: "N \<in> T_PS" using NP by (simp add: PT_PS_def)
+  define J1 where "J1 = Lng (Br N) - 1"
+  have BrL: "0 < Lng (Br N)" using Brne by (cases "Br N") auto
+  have j1'eq: "FirstNodes N ! J1 = Lng N - 1" using eq by (simp add: cfbx_j1p_def J1_def)
+  have br: "TrMax N \<noteq> Lng N - 1"
+  proof
+    assume "TrMax N = Lng N - 1"
+    hence "Br N = []" by (simp add: Br_def)
+    thus False using Brne by simp
+  qed
+  have L: "1 < Lng N"
+  proof -
+    have "TrMax N \<le> Lng N - 1" by (rule TrMax_bound[OF NT])
+    with br show ?thesis by linarith
+  qed
+  have lastseg: "Br N ! J1 = seg N (Lng N - 1) (Lng N - 1)"
+    using wf21_Br_eq_seg[OF NP Brne] j1'eq by (simp add: J1_def)
+  have lastlen: "Lng (Br N ! J1) = 1" using lastseg by simp
+  have lastB: "last (Br N) = Br N ! J1" using Brne by (simp add: J1_def last_conv_nth)
+  have last1: "Lng (last (Br N)) \<le> 1" using lastlen lastB by simp
+  have "Br (Pred N)
+        = butlast (Br N)
+          @ (if Lng (last (Br N)) \<le> 1 then [] else [butlast (last (Br N))])"
+    by (rule wid_Br_Pred[OF NT br L])
+  thus ?thesis using last1 by simp
+qed
+
+text \<open>BASE of @{thm [source] cfbx_VE_backpeel}, GREEN modulo the trunk front-peel
+  step \<open>PEEL\<close>.  HONEST STATUS (empirically established this round,
+  python/_r21_base_explore.py, 492 BASE cases, 0 \<open>VE'\<close> failures): at \<open>j\<^sub>1' = j\<^sub>1\<close> the
+  two principals share the deep tail EXACTLY —
+  \<open>Trans N = D\<^bsub>N\<^bsub>1,0\<^esub>\<^esub> t\<close>, \<open>Trans (seg N m j\<^sub>1) = D\<^bsub>N\<^bsub>1,m\<^esub>\<^esub> t\<close> with the SAME \<open>t\<close> —
+  because \<open>m \<le> j'\<^sub>0 \<le> TrMax N\<close> means the front peel only shortens the TRUNK,
+  leaving the branch structure (hence the deep tail) unchanged.  This is
+  bit-for-bit what \<open>VE'\<close> asserts, so any \<open>same-tail\<close> restatement is EQUIVALENT to
+  the goal (not an upstream reduction).  The genuine content is the per-column
+  trunk peel \<open>PEEL\<close> (\<open>i < m \<le> j'\<^sub>0\<close>), discharged by the proven telescoping
+  @{thm [source] fpx_VE_reduction}.  CAVEAT: this reduction is NOT
+  \<open>j\<^sub>1' = j\<^sub>1\<close>-specific (it holds for any regime \<open>N\<close>); it does NOT confirm the r19
+  premise that BASE is near-trivial via slice-principality alone.  BASE carries
+  the SAME surgery weight as the general regime — the whole \<open>cfbx_VE\<close> (BASE and
+  STEP together) collapses to \<open>PEEL\<close> via @{thm [source] fpx_VE_reduction}; the
+  back-peel STEP (front BPSTEPA, @{thm [source] cfcx_VE_step_concrete}) is the
+  surgery route that AVOIDS \<open>PEEL\<close>.\<close>
+
+lemma bpbx_BASE:
+  fixes m :: nat and N :: pairseq
+  assumes reg: "cfbx_reg m N"
+    and eq: "cfbx_j1p N = Lng N - 1"
+    and PEEL: "\<And>i. i < m \<Longrightarrow>
+        bpHeadT (Trans (seg N i (Lng N - 1)))
+      = bpHeadT (Trans (seg N (Suc i) (Lng N - 1)))"
+  shows "cfbx_VE m N"
+proof -
+  have NR: "N \<in> RT_PS" using reg[unfolded cfbx_reg_def] by blast
+  have Nne: "N \<noteq> []" using NR by (simp add: RT_PS_def T_PS_def)
+  show ?thesis by (rule fpx_VE_reduction[OF Nne PEEL])
+qed
+
+text \<open>CAPSTONE: the back-peel terminal-slice value equation \<open>cfbx_VE m M\<close> for any
+  regime host \<open>M\<close>, GREEN modulo just \<open>{STEP, PEEL-at-BASE}\<close>.  The \<open>RPERS\<close> residual
+  of @{thm [source] cfbx_VE_backpeel} is discharged UNCONDITIONALLY by
+  @{thm [source] bpbx_RPERS}; the \<open>BASE\<close> residual is discharged by
+  @{thm [source] bpbx_BASE} down to the trunk front-peel step \<open>PEELg\<close>.  So the
+  three r19 residuals \<open>{BASE, STEP, RPERS}\<close> collapse to \<open>{STEP, PEELg}\<close>: the
+  back-peel \<open>STEP\<close> surgery (front BPSTEPA, @{thm [source] cfcx_VE_step_concrete})
+  and the front-peel per-column step.  (Note both close the SAME core two ways —
+  proving either alone closes \<open>cfbx_VE\<close>; this lemma records that BPSTEPB removes
+  \<open>RPERS\<close> entirely and reduces \<open>BASE\<close> to the shared local peel.)\<close>
+
+lemma bpbx_cfbx_VE_modSTEP_PEEL:
+  fixes m :: nat and M :: pairseq
+  assumes STEP: "\<And>N. cfbx_reg m N \<Longrightarrow> cfbx_j1p N < Lng N - 1 \<Longrightarrow>
+                   cfbx_reg m (Pred N) \<Longrightarrow> cfbx_VE m (Pred N) \<Longrightarrow> cfbx_VE m N"
+    and PEELg: "\<And>N i. cfbx_reg m N \<Longrightarrow> cfbx_j1p N = Lng N - 1 \<Longrightarrow> i < m \<Longrightarrow>
+                   bpHeadT (Trans (seg N i (Lng N - 1)))
+                 = bpHeadT (Trans (seg N (Suc i) (Lng N - 1)))"
+    and M: "cfbx_reg m M"
+  shows "cfbx_VE m M"
+proof -
+  have BASE: "cfbx_VE m N" if r: "cfbx_reg m N" and e: "cfbx_j1p N = Lng N - 1" for N
+  proof (rule bpbx_BASE[OF r e])
+    fix i assume "i < m"
+    thus "bpHeadT (Trans (seg N i (Lng N - 1)))
+        = bpHeadT (Trans (seg N (Suc i) (Lng N - 1)))"
+      by (rule PEELg[OF r e])
+  qed
+  show ?thesis by (rule cfbx_VE_backpeel[OF BASE STEP bpbx_RPERS M])
+qed
+
+(* ===== round 21 VALFACTS (wt-s4b: condIII value facts fPN/fLp (2 of 4)) ===== *)
+
+
+(* ===== round 21 front VALFACTS (wt-s4b): CFA condIII CF value facts ===== *)
+
+section \<open>r21-VALFACTS — condIII CF value facts \<open>fPN\<close> / \<open>fLp\<close> via the
+  marked-basepoint \<open>Mark\<close> representations\<close>
+
+text \<open>The head symbol of a flat term string pins \<open>bpHeadV\<close>: if \<open>flat t\<close> starts
+  with the letter \<open>D\<^sub>v\<close> then \<open>t\<close> is a single principal with head \<open>v\<close>.\<close>
+
+lemma vfx_flat_head_bpHeadV:
+  assumes "flatBT t = Dsym v # rest"
+  shows "bpHeadV t = v"
+proof -
+  obtain xs where t: "t = Trm xs" by (cases t)
+  show ?thesis
+  proof (cases xs)
+    case Nil
+    thus ?thesis using assms t by simp
+  next
+    case (Cons p ps)
+    show ?thesis
+    proof (cases ps)
+      case Nil
+      obtain u a where p: "p = DB u a" by (cases p)
+      have h: "flatBT t = Dsym u # flatBT a" using t Cons Nil p by simp
+      have "u = v" using h assms by simp
+      thus ?thesis using t Cons Nil p by simp
+    next
+      case (Cons q qs)
+      have "flatBT t
+          = LP # (flatBP p @ concat (map (\<lambda>r. CM # flatBP r) (q # qs))) @ [RP]"
+        using t \<open>xs = p # ps\<close> \<open>ps = q # qs\<close> by simp
+      thus ?thesis using assms by simp
+    qed
+  qed
+qed
+
+text \<open>The left-end head value of \<open>Trans N'\<close> (\<open>N' = (M\<^sub>j)\<^bsub>j=j\<^sub>-\<^sub>2\<^esub>\<^bsup>j\<^sub>1\<^esup>\<close>) is
+  \<open>M\<^bsub>1,j\<^sub>-\<^sub>2\<^esub>\<close>: \<open>Trans N' = Trans (Red N')\<close> with \<open>Red N'\<close> reduced, whose row-1
+  left-end entry equals \<open>M\<^bsub>1,j\<^sub>-\<^sub>2\<^esub>\<close> (invariant of \<open>IncrFirst\<close>).  Uses only the
+  §6 slice-reduction facts and @{thm [source] m_7_3_Trans_leftend}.\<close>
+
+lemma vfx_Np_head:
+  fixes M :: pairseq
+  assumes MST: "M \<in> ST_PS" and MPT: "M \<in> PT_PS"
+    and hp1: "hasParent M 1 (Lng M - 1)"
+    and rng: "s84x_jm2 M + 1 < Lng M - 1"
+  shows "bpHeadV (Trans (s84x_Np M)) = enat (entry M 1 (s84x_jm2 M))"
+proof -
+  have MR: "M \<in> RT_PS" using MST m_6_7_ST_PS_subseteq_RT_PS by blast
+  define jm2 where "jm2 = s84x_jm2 M"
+  define j1 where "j1 = Lng M - 1"
+  have jm2lt: "jm2 < j1" using rng jm2_def j1_def by simp
+  have j1le: "j1 \<le> Lng M - 1" using j1_def by simp
+  have nrR: "nextR M 1 jm2 j1"
+    using s84c1_nextR1_jm2[OF hp1] jm2_def j1_def by simp
+  have nr1: "nextrel1 M jm2 j1" using nrR by (simp add: nextR_def)
+  have le0jm2: "le0 M jm2 j1" using nr1 by (simp add: nextrel1_def)
+  have leR: "leR M 0 jm2 j1" using le0jm2 by (simp add: leR_def)
+  have Npseg: "s84x_Np M = seg M jm2 j1" by (simp add: s84x_Np_def jm2_def j1_def)
+  define Q where "Q = Red (seg M jm2 j1)"
+  have sliceRT: "Red (seg M jm2 j1) \<in> RT_PS \<and> seg M jm2 j1 \<in> T_PS
+                 \<and> Red (seg M jm2 j1) \<in> T_PS"
+    by (rule slice_Red_in_RT_PS[OF MR jm2lt j1le leR])
+  have QRT: "Q \<in> RT_PS" using sliceRT Q_def by simp
+  have segT: "seg M jm2 j1 \<in> T_PS" using sliceRT by simp
+  have LngQ: "Lng Q = Lng (seg M jm2 j1)" using m_6_5_Lng_Red[OF segT] Q_def by simp
+  have LngQ0: "0 < Lng Q" using LngQ jm2lt by simp
+  have pack: "seg M jm2 j1
+            = (IncrFirst ^^ (entry M 0 jm2 - entry M 1 jm2)) Q"
+    using m_6_6_ancestor_slice_Red_IncrFirst[OF MR jm2lt j1le leR] Q_def by simp
+  have TransNpQ: "Trans (s84x_Np M) = Trans Q"
+    using Trans_slice_eq_Red[OF MR jm2lt j1le leR] Q_def Npseg by simp
+  have lead: "bpHeadV (Trans Q) = enat (entry Q 1 0)"
+    using m_7_3_Trans_leftend QRT by blast
+  have eNp0: "entry (seg M jm2 j1) 1 0 = entry M 1 jm2"
+  proof -
+    have "0 < Lng (seg M jm2 j1)" using jm2lt by simp
+    thus ?thesis using entry_seg[of 0 M jm2 j1 1] by simp
+  qed
+  have "entry (seg M jm2 j1) 1 0 = entry Q 1 0"
+    using pack entry_funpow_IncrFirst1[OF LngQ0,
+             of "entry M 0 jm2 - entry M 1 jm2"] by simp
+  hence "entry Q 1 0 = entry M 1 jm2" using eNp0 by simp
+  thus ?thesis using lead TransNpQ jm2_def by simp
+qed
+
+text \<open>CF value fact \<open>fPN\<close>: \<open>Trans (Pred N')\<close> is a single principal with head
+  \<open>ub = M\<^bsub>1,j\<^sub>1\<^esub> - 1\<close>.  Route: \<open>Trans (Pred N') = Mark (M[2]) m\<^sup>*\<close> at the marked
+  interior basepoint \<open>m\<^sup>*\<close> (@{thm [source] s84c1_Mark_Mn_mstar}), left-end
+  principal by @{thm [source] Mark_leftend_form}, nonzero by
+  @{thm [source] m_8_5_Mark_nonzero}, and \<open>M\<^bsub>1,m\<^sup>*\<^esub> = M\<^bsub>1,j\<^sub>-\<^sub>2\<^esub> = ub\<close>.\<close>
+
+lemma vfx_fPN:
+  fixes M :: pairseq
+  assumes MST: "M \<in> ST_PS" and MPT: "M \<in> PT_PS"
+    and hp1: "hasParent M 1 (Lng M - 1)" and j1gt2: "1 < Lng M - 1"
+    and rng: "s84x_jm2 M + 1 < Lng M - 1"
+    and jm2ub: "entry M 1 (s84x_jm2 M) = entry M 1 (Lng M - 1) - 1"
+  shows "flatBT (Trans (Pred (s84x_Np M)))
+           = Dsym (enat (entry M 1 (Lng M - 1) - 1))
+              # flatBT (bpHeadT (Trans (Pred (s84x_Np M))))"
+proof -
+  let ?ms = "s84x_jm2 M + (2 - 1) * (Lng M - 1 - s84x_jm2 M)"
+  have n2: "(2::nat) \<le> 2" by simp
+  have n1: "(1::nat) \<le> 2" by simp
+  have j1gt: "0 < Lng M - 1" using j1gt2 by simp
+  have jm2lt: "s84x_jm2 M < Lng M - 1" by (rule s84c1_jm2_basic(1)[OF hp1])
+  have MnST: "(M::pairseq)[2] \<in> ST_PS" by (rule ST_PS.oper[OF MST n1])
+  have MnRT: "(M::pairseq)[2] \<in> RT_PS" using MnST m_6_7_ST_PS_subseteq_RT_PS by blast
+  have mkMn: "((M::pairseq)[2], ?ms) \<in> Marked"
+    by (rule s84c1_Mark_Mn_mstar(2)[OF MST MPT hp1 j1gt2 n2 rng])
+  have markMn: "Mark ((M::pairseq)[2]) ?ms = Trans (Pred (s84x_Np M))"
+    by (rule s84c1_Mark_Mn_mstar(1)[OF MST MPT hp1 j1gt2 n2 rng])
+  have colms: "((M::pairseq)[2]) ! ?ms
+             = (entry M 0 (s84x_jm2 M)
+                  + (2 - 1) * (entry M 0 (Lng M - 1) - entry M 0 (s84x_jm2 M)),
+                entry M 1 (s84x_jm2 M))"
+    by (rule s84c1_Mn_entry_mstar[OF hp1 j1gt n1])
+  have e1ms: "entry ((M::pairseq)[2]) 1 ?ms = entry M 1 (s84x_jm2 M)"
+    using colms by (simp add: entry_def)
+  have LngMn: "Lng ((M::pairseq)[2]) = s84x_jm2 M + 2 * (Lng M - 1 - s84x_jm2 M)"
+    by (rule s84c1_Lng_oper[OF hp1 j1gt])
+  have w2: "2 \<le> Lng M - 1 - s84x_jm2 M" using rng jm2lt by linarith
+  have mspos: "0 < ?ms" using jm2lt w2 by simp
+  have msltMn: "?ms < Lng ((M::pairseq)[2]) - 1" using LngMn w2 by simp
+  have Mne: "Mark ((M::pairseq)[2]) ?ms \<noteq> 0\<^sub>B"
+    by (rule m_8_5_Mark_nonzero[OF MnRT mkMn mspos msltMn])
+  have lef: "Mark ((M::pairseq)[2]) ?ms = 0\<^sub>B
+           \<or> (\<exists>t. Mark ((M::pairseq)[2]) ?ms
+                    = Dpt (enat (entry ((M::pairseq)[2]) 1 ?ms)) t)"
+    using Mark_leftend_form mkMn MnRT by blast
+  have "\<exists>t. Mark ((M::pairseq)[2]) ?ms
+             = Dpt (enat (entry ((M::pairseq)[2]) 1 ?ms)) t"
+    using lef Mne by blast
+  then obtain t where
+    tform: "Mark ((M::pairseq)[2]) ?ms
+              = Dpt (enat (entry ((M::pairseq)[2]) 1 ?ms)) t" ..
+  have Tub: "Trans (Pred (s84x_Np M))
+             = Dpt (enat (entry M 1 (Lng M - 1) - 1)) t"
+    using tform markMn e1ms jm2ub by simp
+  show ?thesis using Tub by simp
+qed
+
+text \<open>CF value fact \<open>fLp\<close>: \<open>Trans L'\<close> is a single \<open>ub\<close>-principal whose body
+  contains the hole \<open>D\<^bsub>ub\<^esub> 0\<close>, i.e. \<open>flat (Trans L') = D\<^bsub>ub\<^esub> \<frown> s\<^sub>0 \<frown> [D\<^bsub>ub\<^esub>,Z]
+  \<frown> b\<^sub>0\<close> with \<open>b\<^sub>0\<close> all \<open>)\<close>.  Route: single-principality of \<open>Trans L'\<close> via
+  \<open>Trans L' = Mark (L\<^sub>2) m\<^sup>*\<close> (@{thm [source] s84c1_Mark_L_mstar}) +
+  @{thm [source] Mark_leftend_form}, the body hole from the rightend
+  replacement (@{thm [source] m_8_4_rightend_Trans}), and the leading-\<open>s\<close>
+  nonemptiness from the \<open>N'\<close> left-end head (@{thm [source] vfx_Np_head}).\<close>
+
+lemma vfx_fLp:
+  fixes M :: pairseq
+  assumes MST: "M \<in> ST_PS" and MPT: "M \<in> PT_PS"
+    and hp1: "hasParent M 1 (Lng M - 1)" and j1gt2: "1 < Lng M - 1"
+    and rng: "s84x_jm2 M + 1 < Lng M - 1"
+    and jm2ub: "entry M 1 (s84x_jm2 M) = entry M 1 (Lng M - 1) - 1"
+    and e1pos: "0 < entry M 1 (Lng M - 1)"
+  shows "\<exists>s0 b0. (\<forall>x \<in> set b0. x = RP)
+           \<and> flatBT (Trans (s84x_Lp M))
+               = Dsym (enat (entry M 1 (Lng M - 1) - 1))
+                  # s0 @ [Dsym (enat (entry M 1 (Lng M - 1) - 1)), Zsym] @ b0"
+proof -
+  let ?ub = "entry M 1 (Lng M - 1) - 1"
+  let ?e1j1 = "entry M 1 (Lng M - 1)"
+  let ?ms = "s84x_jm2 M + (2 - 1) * (Lng M - 1 - s84x_jm2 M)"
+  have n2: "(2::nat) \<le> 2" by simp
+  have n1: "(1::nat) \<le> 2" by simp
+  have j1gt: "0 < Lng M - 1" using j1gt2 by simp
+  have MT: "M \<in> T_PS" using MPT by (simp add: PT_PS_def)
+  have jm2lt: "s84x_jm2 M < Lng M - 1" by (rule s84c1_jm2_basic(1)[OF hp1])
+  \<comment> \<open>(1) \<open>Trans L'\<close> is a single principal with head \<open>ub\<close>\<close>
+  have L2RT: "s84x_L M 2 \<in> RT_PS"
+    by (rule m_8_4_oper_props_2(1)[OF MST MPT hp1 j1gt2 n1])
+  have mkL: "(s84x_L M 2, ?ms) \<in> Marked"
+    by (rule s84c1_marked_L[OF MT hp1 j1gt n2])
+  have markL: "Mark (s84x_L M 2) ?ms = Trans (s84x_Lp M)"
+    by (rule s84c1_Mark_L_mstar[OF MST MPT hp1 j1gt2 n2])
+  have colms: "((M::pairseq)[2]) ! ?ms
+             = (entry M 0 (s84x_jm2 M)
+                  + (2 - 1) * (entry M 0 (Lng M - 1) - entry M 0 (s84x_jm2 M)),
+                entry M 1 (s84x_jm2 M))"
+    by (rule s84c1_Mn_entry_mstar[OF hp1 j1gt n1])
+  have LngMn2: "Lng ((M::pairseq)[2]) = s84x_jm2 M + 2 * (Lng M - 1 - s84x_jm2 M)"
+    by (rule s84c1_Lng_oper[OF hp1 j1gt])
+  have wpos: "0 < Lng M - 1 - s84x_jm2 M" using jm2lt by simp
+  have msltMn: "?ms < Lng ((M::pairseq)[2])"
+  proof -
+    have "?ms = s84x_jm2 M + (Lng M - 1 - s84x_jm2 M)" by simp
+    also have "\<dots> < s84x_jm2 M + 2 * (Lng M - 1 - s84x_jm2 M)" using wpos by simp
+    finally show ?thesis using LngMn2 by simp
+  qed
+  have LnMn: "s84x_L M 2 ! ?ms = ((M::pairseq)[2]) ! ?ms"
+    using msltMn by (simp add: s84x_L_def nth_append)
+  have e1msL: "entry (s84x_L M 2) 1 ?ms = entry M 1 (s84x_jm2 M)"
+    using LnMn colms by (simp add: entry_def)
+  have LngLn: "Lng (s84x_L M 2)
+             = (s84x_jm2 M + 2 * (Lng M - 1 - s84x_jm2 M)) + 1"
+    using s84c1_Lng_L[of M 2] s84c1_Lng_oper[OF hp1 j1gt, of 2] by simp
+  have mspos: "0 < ?ms" using jm2lt by simp
+  have msltL: "?ms < Lng (s84x_L M 2) - 1" using LngLn jm2lt by simp
+  have MneL: "Mark (s84x_L M 2) ?ms \<noteq> 0\<^sub>B"
+    by (rule m_8_5_Mark_nonzero[OF L2RT mkL mspos msltL])
+  have lefL: "Mark (s84x_L M 2) ?ms = 0\<^sub>B
+            \<or> (\<exists>t. Mark (s84x_L M 2) ?ms
+                     = Dpt (enat (entry (s84x_L M 2) 1 ?ms)) t)"
+    using Mark_leftend_form mkL L2RT by blast
+  have "\<exists>t. Mark (s84x_L M 2) ?ms = Dpt (enat (entry (s84x_L M 2) 1 ?ms)) t"
+    using lefL MneL by blast
+  then obtain A where
+    Aform: "Mark (s84x_L M 2) ?ms = Dpt (enat (entry (s84x_L M 2) 1 ?ms)) A" ..
+  have LpDpt: "Trans (s84x_Lp M) = Dpt (enat ?ub) A"
+    using Aform markL e1msL jm2ub by simp
+  have hdLp: "flatBT (Trans (s84x_Lp M)) = Dsym (enat ?ub) # flatBT A"
+    using LpDpt by simp
+  \<comment> \<open>(2) the rightend replacement: a shared \<open>(s,b)\<close> for \<open>Trans N'\<close> / \<open>Trans L'\<close>\<close>
+  obtain sb where
+    rd1: "scb_decomp (Trans (s84x_Np M)) (fst sb)
+            (flatBT (Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B)) (snd sb)"
+    and rd2: "scb_decomp (Trans (s84x_Lp M)) (fst sb)
+            (flatBT (Dpt (enat (entry M 1 (s84x_jm2 M))) 0\<^sub>B)) (snd sb)"
+    using ex1_implies_ex[OF m_8_4_rightend_Trans[OF MST MPT hp1 rng]] by auto
+  define s where "s = fst sb"
+  define b where "b = snd sb"
+  have bRP: "\<forall>x \<in> set b. x = RP" using rd1 by (simp add: scb_decomp_def b_def)
+  have reNp: "flatBT (Trans (s84x_Np M))
+              = s @ [Dsym (enat ?e1j1), Zsym] @ b"
+    using rd1 by (simp add: scb_decomp_def s_def b_def)
+  have reLp: "flatBT (Trans (s84x_Lp M))
+              = s @ [Dsym (enat ?ub), Zsym] @ b"
+    using rd2 jm2ub by (simp add: scb_decomp_def s_def b_def)
+  \<comment> \<open>(3) the leading \<open>s\<close> is nonempty (else \<open>N'\<close>-head would be \<open>e\<^sub>1j\<^sub>1 \<noteq> ub\<close>)\<close>
+  have NpHead: "bpHeadV (Trans (s84x_Np M)) = enat ?ub"
+    using vfx_Np_head[OF MST MPT hp1 rng] jm2ub by simp
+  have ubne: "?ub \<noteq> ?e1j1" using e1pos by simp
+  have sne: "s \<noteq> []"
+  proof
+    assume se: "s = []"
+    have "flatBT (Trans (s84x_Np M)) = Dsym (enat ?e1j1) # (Zsym # b)"
+      using reNp se by simp
+    hence "bpHeadV (Trans (s84x_Np M)) = enat ?e1j1"
+      by (rule vfx_flat_head_bpHeadV)
+    thus False using NpHead ubne by simp
+  qed
+  \<comment> \<open>(4) assemble: \<open>hd s = D\<^bsub>ub\<^esub>\<close>, so \<open>flat (Trans L') = D\<^bsub>ub\<^esub> \<frown> (tl s) \<frown> hole \<frown> b\<close>\<close>
+  obtain x s' where scons: "s = x # s'" using sne by (cases s) auto
+  have "Dsym (enat ?ub) # flatBT A = (x # s') @ [Dsym (enat ?ub), Zsym] @ b"
+    using hdLp reLp scons by simp
+  hence xub: "x = Dsym (enat ?ub)" by simp
+  have goalLp: "flatBT (Trans (s84x_Lp M))
+              = Dsym (enat ?ub) # s' @ [Dsym (enat ?ub), Zsym] @ b"
+    using reLp scons xub by simp
+  show ?thesis
+  proof (intro exI conjI)
+    show "\<forall>x \<in> set b. x = RP" using bRP .
+    show "flatBT (Trans (s84x_Lp M))
+            = Dsym (enat ?ub) # s' @ [Dsym (enat ?ub), Zsym] @ b"
+      using goalLp .
+  qed
+qed
+
+(* ===== round 21 NFALL2 (wt-b1: non-adm condV derivation layer) ===== *)
+
+
+(* ===== round 21 front NFALL2 (wt-b1): the 3 non-adm condV slice-value base pieces
+        of nfx_NFall, reduced to the atomic non-adm slice VALUES (NpVal/PredNp) ===== *)
+
+section \<open>r21-NFALL2 — non-adm condition-(V) slice-value base pieces\<close>
+
+text \<open>The three named hypotheses of @{thm [source] nfx_NFall} — \<open>PredNp\<close> / \<open>Lpv\<close> /
+  \<open>L1v\<close> — are the §8.2 front-peel / terminal-slice (VE) residual at the
+  NON-admissible \<open>j\<^sub>0\<close>.  Empirically (python nf2_validate: 154/154 across seeds)
+  they are TRUE, but the slices \<open>seg M j\<^sub>0 (Lng M - 2)\<close> etc. are NOT reduced
+  (\<open>reduced\<close> = 0/5 on genuine non-adm hosts), so the adm route (\<open>Mark\<close>-\<open>Trans\<close>
+  representation on the REDUCED \<open>M\<close> at the marked \<open>j\<^sub>0\<close>) is unavailable — \<open>j\<^sub>0 \<notin>
+  Marked\<close>.  What DOES survive from the adm proofs is the derivation LAYER above
+  the atomic slice values: the adm \<open>Lp\<close> / \<open>L\<^sub>1\<close> proofs use \<open>adm M j\<^sub>0\<close> ONLY to
+  supply the two atomic slice VALUES (the \<open>Np\<close> value and \<open>Pred N'\<close> value); every
+  other step is on the reduced \<open>M\<close> and needs only \<open>M \<in> ST\<^bsub>PS\<^esub>\<close>.  So the three
+  pieces collapse onto the TWO atomic non-adm slice values
+  \<^item> \<open>NpVal\<close>: \<open>Trans (s84x_Np M) = D\<^bsub>e\<^esub>(t\<^sub>2 + D\<^bsub>M\<^sub>1\<^sub>,\<^sub>j\<^sub>1\<^esub> 0)\<close>  (\<open>e = M\<^bsub>1,j\<^sub>0\<^esub>\<close>), and
+  \<^item> \<open>PredNp\<close>: \<open>Trans (Pred (s84x_Np M)) = D\<^bsub>e\<^esub> t\<^sub>2\<close>,
+  both of which are computable as \<open>Mark\<close> of a REDUCED host on the marked point
+  \<open>m\<^sub>n = j\<^sub>0 + (n-1)\<cdot>w\<close> — @{thm [source] s84c1_Mark_Mn_mstar}
+  (\<open>Trans (Pred N') = Mark (M[n]) m\<^sub>n\<close>) and @{thm [source] s84c1_Mark_L_mstar}
+  (\<open>Trans L' = Mark (L\<^sub>n) m\<^sub>n\<close>) — i.e. the residual is a genuine \<open>Mark\<close>-evaluation
+  on the reduced iterate, the exact non-adm analogue of the adm
+  \<open>Mark M j\<^sub>0 = c\<^sub>2\<close>.  Here we discharge \<open>Lpv\<close> from \<open>NpVal\<close> and \<open>L1v\<close> from
+  \<open>PredNp\<close> + \<open>Lpv\<close> (both unconditional in \<open>adm\<close>), leaving \<open>{NpVal, PredNp}\<close> as the
+  atomic §8.2 VE residual.\<close>
+
+text \<open>\<open>Lpv\<close> from the non-adm \<open>Np\<close> value.  This is @{thm [source]
+  m_8_5_scbdec_Lp_condV_adm}'s proof body VERBATIM, with the ONE use of
+  \<open>adm M j\<^sub>0\<close> (the \<open>Np\<close> value @{thm [source] m_8_5_scbdec_Np_condV_adm}(2))
+  replaced by the named \<open>NpVal\<close> assumption.  All remaining steps — the condV
+  producer, the §8.4 rightend replacement @{thm [source] m_8_4_rightend_Trans}
+  (needs only \<open>M \<in> ST\<^bsub>PS\<^esub>\<close>), scb-uniqueness, and the 加法とscb分解 readback —
+  are \<open>adm\<close>-free.\<close>
+
+lemma nf2x_Lpv:
+  fixes M :: pairseq
+  assumes MST: "M \<in> ST_PS" and MP: "M \<in> PT_PS" and cond: "transCondV M"
+    and NpVal: "Trans (s84x_Np M)
+                  = Dpt (enat (entry M 1 (transJ0 M)))
+                        (transT2 M +\<^sub>B Dpt (enat (entry M 1 (transJ1 M))) 0\<^sub>B)"
+  shows "Trans (s84x_Lp M)
+         = Dpt (enat (entry M 1 (transJ0 M)))
+               (transT2 M +\<^sub>B Dpt (enat (entry M 1 (transJ0 M))) 0\<^sub>B)"
+proof -
+  have MR: "M \<in> RT_PS" using MST m_6_7_ST_PS_subseteq_RT_PS by blast
+  note J1pos = s85b_condV_setup(1)[OF MR MP cond]
+  note T1 = s85b_condV_setup(2)[OF MR MP cond]
+  note shape = m_8_5_scbdec_c1_shape[OF MR MP J1pos T1]
+  note jm2eq = s85b_condV_bridge(4)[OF MP cond]
+  define e where "e = entry M 1 (transJ0 M)"
+  obtain s0 sP b0 bP where
+      inner: "scb_decomp (transT2 M +\<^sub>B Dpt (enat (entry M 1 (transJ1 M))) 0\<^sub>B)
+                s0 (flatBT (Dpt (enat (entry M 1 (transJ1 M))) 0\<^sub>B)) b0"
+    using m_8_5_TransCondV_producer[OF MR MP J1pos T1 cond] by blast
+  have TN: "Trans (s84x_Np M)
+            = Dpt (enat e) (transT2 M +\<^sub>B Dpt (enat (entry M 1 (transJ1 M))) 0\<^sub>B)"
+    using NpVal by (simp add: e_def)
+  have iptc: "isPTB_str (flatBT (Dpt (enat (entry M 1 (transJ1 M))) 0\<^sub>B))"
+    by (rule isPTB_str_Dpt) simp_all
+  have wit: "scb_decomp (Trans (s84x_Np M)) (Dsym (enat e) # s0)
+               (flatBT (Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B)) b0"
+    using scb_Dpt_lift[OF inner iptc, of "enat e"] TN
+    by (simp add: transJ1_def)
+  have hp1: "hasParent M 1 (Lng M - 1)" by (rule s85b_condV_bridge(3)[OF MP cond])
+  have rng: "s84x_jm2 M + 1 < Lng M - 1"
+    using jm2eq s85b_condV_bridge(2)[OF MP cond] by (simp add: transJ1_def)
+  obtain sb where P:
+    "scb_decomp (Trans (s84x_Np M)) (fst sb)
+       (flatBT (Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B)) (snd sb)
+     \<and> scb_decomp (Trans (s84x_Lp M)) (fst sb)
+       (flatBT (Dpt (enat (entry M 1 (s84x_jm2 M))) 0\<^sub>B)) (snd sb)"
+    using m_8_4_rightend_Trans[OF MST MP hp1 rng] by blast
+  have TNne: "Trans (s84x_Np M) \<noteq> Trm []" using TN by simp
+  have pinned: "fst sb = Dsym (enat e) # s0 \<and> snd sb = b0"
+    using m_7_2_scb_unique_sb[OF _ wit TNne] P by blast
+  have dLp: "scb_decomp (Trans (s84x_Lp M)) (Dsym (enat e) # s0)
+               (flatBT (Dpt (enat e) 0\<^sub>B)) b0"
+    using P pinned jm2eq by (simp add: e_def)
+  have cTB: "Dpt (enat (entry M 1 (transJ1 M))) 0\<^sub>B \<in> T_B" by (simp add: T_B_def)
+  have cprin: "\<exists>p. Dpt (enat (entry M 1 (transJ1 M))) 0\<^sub>B = Trm [p]" by auto
+  have zTB: "Dpt (enat e) 0\<^sub>B \<in> T_B" by (simp add: T_B_def)
+  have zprin: "\<exists>p. Dpt (enat e) 0\<^sub>B = Trm [p]" by auto
+  have subst0: "scb_decomp (transT2 M +\<^sub>B Dpt (enat e) 0\<^sub>B) s0
+                  (flatBT (Dpt (enat e) 0\<^sub>B)) b0"
+    by (rule m_7_2_add_scb_conj2[OF shape(3) cTB cprin zTB zprin inner])
+  have f1: "flatBT (Trans (s84x_Lp M))
+            = (Dsym (enat e) # s0) @ flatBT (Dpt (enat e) 0\<^sub>B) @ b0"
+    using dLp by (simp add: scb_decomp_def)
+  have f2: "flatBT (transT2 M +\<^sub>B Dpt (enat e) 0\<^sub>B)
+            = s0 @ flatBT (Dpt (enat e) 0\<^sub>B) @ b0"
+    using subst0 by (simp add: scb_decomp_def)
+  have feq: "flatBT (Trans (s84x_Lp M))
+        = flatBT (Dpt (enat e) (transT2 M +\<^sub>B Dpt (enat e) 0\<^sub>B))"
+    using f1 f2 by simp
+  have "Trans (s84x_Lp M) = Dpt (enat e) (transT2 M +\<^sub>B Dpt (enat e) 0\<^sub>B)"
+    using arg_cong[OF feq, of unflatBT] by (simp only: unflatBT_flat)
+  thus ?thesis by (simp add: e_def)
+qed
+
+text \<open>\<open>L1v\<close> from the deeper core value.  This is @{thm [source] s85b_L1_decomp_adm}'s
+  final surgery-transfer, adapted to the NON-admissible \<open>j\<^sub>0\<close> — "one nesting level
+  deeper".  \<open>L\<^sub>1 = s84x_L M 1 = Pred M \<oplus> ((M\<^bsub>0,j\<^sub>1\<^esub>, M\<^bsub>1,j\<^sub>0\<^esub>))\<close> shares \<open>Pred\<close>,
+  \<open>j\<^sub>0\<close> and the admissible ancestor \<open>j\<^sub>-\<^sub>1\<close> with \<open>M\<close> (its entries below \<open>j\<^sub>1\<close> agree,
+  so \<open>Adm\<^bsub>L\<^sub>1\<^esub>(j\<^sub>0) = Adm\<^bsub>M\<^esub>(j\<^sub>0) = j\<^sub>-\<^sub>1\<close> by @{thm [source] Adm_eq_of_adm_below} /
+  @{thm [source] adm_prefix_agree_eq}), hence \<open>c\<^sub>1(L\<^sub>1) = c\<^sub>1(M) = D\<^bsub>u\<^esub> t\<^sub>2\<close> and — via
+  the generic \<open>c\<^sub>1\<close>/\<open>c\<^sub>2\<close> surgery @{thm [source] s84c2_Trans_c2_decomp} pinned to the
+  shared wrapper \<open>(s\<^sub>1,b\<^sub>1)\<close> of \<open>d1h\<close> — the whole decomposition of \<open>Trans L\<^sub>1\<close> is at
+  \<open>c\<^sub>2(L\<^sub>1)\<close>.  In the adm case \<open>c\<^sub>2(L\<^sub>1) = D\<^bsub>e\<^esub>(t\<^sub>2 + D\<^bsub>e\<^esub> 0)\<close> came free (basepoint
+  \<open>j\<^sub>0\<close> is marked); here \<open>j\<^sub>0 \<notin> Marked\<close>, so the deeper value
+  \<open>c\<^sub>2(L\<^sub>1) = D\<^bsub>u\<^esub>(t\<^sub>2 + D\<^bsub>e\<^esub>(t\<^sub>2 + D\<^bsub>e\<^esub> 0))\<close> is the genuine §8.2 VE residual, taken
+  as the named \<open>c2L1\<close> assumption (\<open>= D\<^bsub>u\<^esub>(t\<^sub>2 + Trans(L') )\<close> with \<open>Trans L'\<close> the
+  \<open>Lpv\<close> value, i.e. this residual is the non-adm \<open>Mark L\<^sub>1 j\<^sub>-\<^sub>1\<close>).\<close>
+
+lemma nf2x_L1v:
+  fixes M :: pairseq and s\<^sub>1 b\<^sub>1 :: "Sym list"
+  assumes MST: "M \<in> ST_PS" and MP: "M \<in> PT_PS" and cond: "transCondV M"
+    and d1h: "scb_decomp (Trans (M[1])) s\<^sub>1
+                (flatBT (Dpt (enat (entry M 1 (transJm1 M))) (transT2 M))) b\<^sub>1"
+    and c2L1: "transC2 (s84x_L M 1)
+                = Dpt (enat (entry M 1 (transJm1 M)))
+                    (transT2 M +\<^sub>B Dpt (enat (entry M 1 (transJ0 M)))
+                       (transT2 M +\<^sub>B Dpt (enat (entry M 1 (transJ0 M))) 0\<^sub>B))"
+  shows "scb_decomp (Trans (s84x_L M 1)) s\<^sub>1
+           (flatBT (Dpt (enat (entry M 1 (transJm1 M)))
+              (transT2 M +\<^sub>B Dpt (enat (entry M 1 (transJ0 M)))
+                 (transT2 M +\<^sub>B Dpt (enat (entry M 1 (transJ0 M))) 0\<^sub>B)))) b\<^sub>1"
+proof -
+  have MR: "M \<in> RT_PS" using MST m_6_7_ST_PS_subseteq_RT_PS by blast
+  have MT: "M \<in> T_PS" using MP by (simp add: PT_PS_def)
+  note J1pos = s85b_condV_setup(1)[OF MR MP cond]
+  note T1 = s85b_condV_setup(2)[OF MR MP cond]
+  note shape = m_8_5_scbdec_c1_shape[OF MR MP J1pos T1]
+  have hp1: "hasParent M 1 (Lng M - 1)" by (rule s85b_condV_bridge(3)[OF MP cond])
+  have rng: "transJ0 M + 1 < Lng M - 1"
+    using s85b_condV_bridge(2)[OF MP cond] by (simp add: transJ1_def)
+  have jlt: "transJ0 M < Lng M - 1" using rng by simp
+  have j1gt0: "0 < Lng M - 1" using jlt by simp
+  have j1gt2: "1 < Lng M - 1" using rng by simp
+  have L: "1 < Lng M" using j1gt0 by linarith
+  define L1 where "L1 = s84x_L M 1"
+  have L1RT: "L1 \<in> RT_PS" and monoL1: "monoT L1"
+    using m_8_4_oper_props_2[OF MST MP hp1 j1gt2, of 1] by (simp_all add: L1_def)
+  have L1T: "L1 \<in> T_PS" using L1RT by (simp add: RT_PS_def)
+  have L1PT: "L1 \<in> PT_PS" using L1T monoL1 by (simp add: PT_PS_def)
+  have L1form: "L1 = Pred M @ [(entry M 0 (Lng M - 1), entry M 1 (s84x_jm2 M))]"
+    using s84c1_L1_form[OF MT hp1] by (simp add: L1_def)
+  have LngL1: "Lng L1 = Lng M"
+    using s84c1_L1_Lng[OF MT hp1 j1gt0] by (simp add: L1_def)
+  have PredMb: "Pred M = butlast M" using L by (simp add: Pred_def)
+  have lenPred: "length (Pred M) = Lng M - 1" using PredMb by simp
+  have PredL1: "Pred L1 = Pred M"
+  proof -
+    have "Pred L1 = butlast L1" using LngL1 L by (simp add: Pred_def)
+    thus ?thesis using L1form by simp
+  qed
+  have J1L1: "transJ1 L1 > 0" using LngL1 j1gt0 by (simp add: transJ1_def)
+  have T1L1: "transT1 L1 = transT1 M" by (simp add: transT1_def PredL1)
+  have T1ne: "transT1 L1 \<noteq> 0\<^sub>B" using T1L1 T1 by simp
+  \<comment> \<open>column agreement below \<open>j\<^sub>1\<close> and row-0 parent of the last column\<close>
+  have colag: "\<And>x. x < Lng M - 1 \<Longrightarrow> L1 ! x = M ! x"
+  proof -
+    fix x assume xlt: "x < Lng M - 1"
+    have "L1 ! x = Pred M ! x" using L1form xlt lenPred by (simp add: nth_append)
+    also have "\<dots> = M ! x" using xlt lenPred PredMb by (simp add: nth_butlast)
+    finally show "L1 ! x = M ! x" .
+  qed
+  have E0: "\<And>j. j < Lng M \<Longrightarrow> entry L1 0 j = entry M 0 j"
+    using s84c1_L1_entry0[OF MT hp1 j1gt0] by (simp add: L1_def)
+  have nx0M: "nextR M 0 (transJ0 M) (Lng M - 1)"
+    by (rule s84c1_nextR0_j0(1)[OF MP j1gt0])
+  have nx0L: "nextR L1 0 (transJ0 M) (Lng L1 - 1)"
+  proof -
+    have "nextrel0 L1 (transJ0 M) (Lng M - 1)"
+      by (rule s84c1_nextrel0_dir[OF LngL1[symmetric] _ _])
+         (use E0 nx0M LngL1 in \<open>simp_all add: nextR_def\<close>)
+    thus ?thesis using LngL1 by (simp add: nextR_def)
+  qed
+  have hp0M: "hasParent M 0 (Lng M - 1)" by (rule s84c1_hp0[OF MP j1gt0])
+  have j0L1: "transJ0 L1 = transJ0 M"
+  proof -
+    have u: "\<And>j'. nextR L1 0 j' (Lng L1 - 1) \<Longrightarrow> j' = transJ0 M"
+    proof -
+      fix j' assume a: "nextR L1 0 j' (Lng L1 - 1)"
+      have "nextrel0 L1 j' (Lng M - 1)" using a LngL1 by (simp add: nextR_def)
+      hence "nextrel0 M j' (Lng M - 1)"
+        by (rule s84c1_nextrel0_dir[OF LngL1 E0, rotated])
+      hence "nextR M 0 j' (Lng M - 1)" by (simp add: nextR_def)
+      thus "j' = transJ0 M"
+        using hp0M nx0M unfolding hasParent_def transJ0_def transJ1_def by blast
+    qed
+    have "parent L1 0 (Lng L1 - 1) = transJ0 M"
+      unfolding parent_def
+      by (rule the_equality[of "\<lambda>j0. nextR L1 0 j0 (Lng L1 - 1)" "transJ0 M",
+                            OF nx0L u])
+    thus ?thesis by (simp add: transJ0_def transJ1_def)
+  qed
+  \<comment> \<open>the admissible ancestor of \<open>j\<^sub>0\<close> is unchanged (entries below \<open>j\<^sub>1\<close> agree)\<close>
+  have Ladm: "\<And>j. j \<le> transJ0 M \<Longrightarrow> adm L1 j = adm M j"
+  proof -
+    fix j assume jle: "j \<le> transJ0 M"
+    have jc: "j + 1 \<le> Lng M - 2" using jle rng by linarith
+    have cLL: "Lng M - 2 < Lng L1" using LngL1 L by linarith
+    have cMM: "Lng M - 2 < Lng M" using L by linarith
+    have agr: "\<And>x. x \<le> Lng M - 2 \<Longrightarrow> L1 ! x = M ! x"
+    proof -
+      fix x assume "x \<le> Lng M - 2"
+      hence "x < Lng M - 1" using j1gt2 by linarith
+      thus "L1 ! x = M ! x" by (rule colag)
+    qed
+    show "adm L1 j = adm M j"
+      by (rule adm_prefix_agree_eq[OF agr cLL cMM jc])
+  qed
+  have jm1L1: "transJm1 L1 = transJm1 M"
+  proof -
+    have "Adm L1 (transJ0 M) = Adm M (transJ0 M)"
+      by (rule Adm_eq_of_adm_below[OF Ladm])
+    thus ?thesis using j0L1 by (simp add: transJm1_def)
+  qed
+  have c1L1: "transC1 L1 = transC1 M"
+    by (simp add: transC1_def PredL1 jm1L1)
+  \<comment> \<open>the generic \<open>c\<^sub>1\<close>/\<open>c\<^sub>2\<close> surgery of \<open>Trans L\<^sub>1\<close> and the wrapper transfer\<close>
+  obtain sL bL where
+      dP: "scb_decomp (Trans (Pred L1)) sL (flatBT (transC1 L1)) bL"
+    and dW: "scb_decomp (Trans L1) sL (flatBT (transC2 L1)) bL"
+    by (rule s84c2_Trans_c2_decomp[OF L1RT L1PT J1L1 T1ne])
+  have dP': "scb_decomp (Trans (Pred M)) sL (flatBT (transC1 M)) bL"
+    using dP by (simp add: PredL1 c1L1)
+  have d1h': "scb_decomp (Trans (Pred M)) s\<^sub>1 (flatBT (transC1 M)) b\<^sub>1"
+  proof -
+    have o1: "(M::pairseq)[1] = Pred M" by (rule m_8_4_oper1_eq_Pred[OF MT])
+    have "scb_decomp (Trans (Pred M)) s\<^sub>1
+            (flatBT (Dpt (enat (entry M 1 (transJm1 M))) (transT2 M))) b\<^sub>1"
+      using d1h o1 by simp
+    thus ?thesis using shape(2) by simp
+  qed
+  have TPne: "Trans (Pred M) \<noteq> Trm []" using T1 by (simp add: transT1_def)
+  have pin: "sL = s\<^sub>1 \<and> bL = b\<^sub>1"
+    using m_7_2_scb_unique_sb[OF dP' d1h' TPne] by simp
+  show ?thesis using dW pin c2L1 by (simp add: L1_def)
+qed
+
+text \<open>Capstone: the full non-adm condition-(V) \<open>NFall\<close> conjunction (= the exact
+  hypothesis of @{thm [source] m_8_7_fseq_descend_dispatcher_condV} at \<open>N = M\<close>),
+  with the THREE original slice-value base pieces of @{thm [source] nfx_NFall}
+  replaced by the reduced residual set \<open>{PredNp, NpVal, c2L1}\<close> — all three now
+  atomic slice VALUES.  \<open>Lpv\<close> is derived from \<open>NpVal\<close> (@{thm [source] nf2x_Lpv}),
+  \<open>L1v\<close> from the deeper \<open>c\<^sub>2(L\<^sub>1)\<close> value (@{thm [source] nf2x_L1v}); the \<open>operB\<close>
+  half stays UNCONDITIONAL (@{thm [source] nfx_operB_form}, folded inside
+  @{thm [source] nfx_NFall}).  Each remaining residual is a pure \<open>Mark\<close>/\<open>Trans\<close>
+  evaluation on the REDUCED host — \<open>NpVal\<close>/\<open>PredNp\<close> are @{thm [source]
+  s84c1_Mark_Mn_mstar}-style Marks of \<open>M[n]\<close>, \<open>c2L1\<close> is \<open>Mark L\<^sub>1 j\<^sub>-\<^sub>1\<close> — i.e.
+  the non-adm analogue of the adm collapse \<open>Mark M j\<^sub>0 = c\<^sub>2\<close>; they are the §8.2
+  terminal-slice / VE residual proper.\<close>
+
+lemma nf2x_NFall:
+  fixes M :: pairseq and s\<^sub>1 b\<^sub>1 :: "Sym list"
+  assumes MST: "M \<in> ST_PS" and MP: "M \<in> PT_PS"
+    and cond: "transCondV M"
+    and nadm: "\<not> adm M (parent M 0 (Lng M - 1))"
+    and d1h: "scb_decomp (Trans (M[1])) s\<^sub>1
+                (flatBT (Dpt (enat (entry M 1 (transJm1 M))) (transT2 M))) b\<^sub>1"
+    and k1h: "scb_kind1 (Trans M) s\<^sub>1 (flatBT (transC2 M)) b\<^sub>1"
+    and PredNp: "Trans (Pred (s84x_Np M))
+                   = Dpt (enat (entry M 1 (transJ0 M))) (transT2 M)"
+    and NpVal: "Trans (s84x_Np M)
+                  = Dpt (enat (entry M 1 (transJ0 M)))
+                        (transT2 M +\<^sub>B Dpt (enat (entry M 1 (transJ1 M))) 0\<^sub>B)"
+    and c2L1: "transC2 (s84x_L M 1)
+                = Dpt (enat (entry M 1 (transJm1 M)))
+                    (transT2 M +\<^sub>B Dpt (enat (entry M 1 (transJ0 M)))
+                       (transT2 M +\<^sub>B Dpt (enat (entry M 1 (transJ0 M))) 0\<^sub>B))"
+  shows "(\<forall>k. flatBT (Trans (M[Suc k]))
+                = s\<^sub>1 @ flatBP (DB (enat (entry M 1 (transJm1 M)))
+                    (e5x_bodyM (transT2 M) (entry M 1 (transJ0 M)) k)) @ b\<^sub>1)
+       \<and> (\<forall>m. 1 \<le> m \<longrightarrow> flatBT (operB (Trans M) (numBT m))
+                = s\<^sub>1 @ flatBP (DB (enat (entry M 1 (transJm1 M)))
+                    (e5x_bodyO (transT2 M) (entry M 1 (transJ0 M)) m)) @ b\<^sub>1)"
+proof -
+  have Lpv: "Trans (s84x_Lp M)
+             = Dpt (enat (entry M 1 (transJ0 M)))
+                   (transT2 M +\<^sub>B Dpt (enat (entry M 1 (transJ0 M))) 0\<^sub>B)"
+    by (rule nf2x_Lpv[OF MST MP cond NpVal])
+  have L1v: "scb_decomp (Trans (s84x_L M 1)) s\<^sub>1
+               (flatBT (Dpt (enat (entry M 1 (transJm1 M)))
+                  (transT2 M +\<^sub>B Dpt (enat (entry M 1 (transJ0 M)))
+                     (transT2 M +\<^sub>B Dpt (enat (entry M 1 (transJ0 M))) 0\<^sub>B)))) b\<^sub>1"
+    by (rule nf2x_L1v[OF MST MP cond d1h c2L1])
+  show ?thesis
+    by (rule nfx_NFall[OF MST MP cond nadm d1h k1h PredNp Lpv L1v])
+qed
+
+(* ===== round 21 STEPVAL (wt-f7: stepval condI/II discharged, III/VI wrapper) ===== *)
+
+
+(* ===== round 21 front STEPVAL (wt-f7): the §8.7 OT-pillar `stepval` residual ===== *)
+
+section \<open>r21-STEPVAL — the §8.7 OT-pillar \<open>stepval\<close> residual, split coincidence / interleaving\<close>
+
+text \<open>The OT pillar @{thm [source] m_8_7_Trans_preserves_OT_via_closure} reduces
+  \<open>M \<in> ST\<^bsub>PS\<^esub> \<Longrightarrow> Trans M \<in> OT\<^bsub>B\<^esub>\<close> to the SINGLE value identity, per \<open>oper\<close> step,
+  \<^bold>\<open>stepval\<close>:  \<open>\<exists>m k. Trans (N[n]) = [0]\<^bsup>k\<^esup> (operB (Trans N) (numBT m))\<close>
+  (\<open>[0] = \<lambda>x. operB x (numBT 0)\<close>).  This front splits \<open>stepval\<close> along the two
+  regimes the §8 exchange lemmas already separate:
+
+  \<^bold>\<open>COINCIDENCE regime\<close> — conditions (I)/(II), article 2827 / 3958 — where the
+  \<open>Trans\<close>/fundamental-sequence exchange is a genuine EQUALITY
+  (\<open>Trans(M[n]) = operB (Trans M) (numBT m\<^sub>n)\<close>, @{thm [source] p_8_1_Trans_fseq_condI}(1),
+  @{thm [source] p_8_3_TransCondII_oper_descend}(2)).  There \<open>stepval\<close> is FREE at
+  op0-power \<open>k = 0\<close> — no \<open>[0]\<close>-iteration — so it is a corollary of the CF-derived
+  exchange equality alone.  (EMPIRICAL: cond I \<open>Trans(M[n]) = operB(Trans M)(numBT(n-1))\<close>
+  exact on genuine deep \<open>ST\<^bsub>PS\<^esub>\<close>, cond II \<open>\<exists>k. \<dots>\<close>; python/_r21_svx_p1.py.)
+
+  \<^bold>\<open>INTERLEAVING regime\<close> — conditions (III)/(IV)/(V)/(VI) — where the fundamental
+  sequence strictly INTERLEAVES the Buchholz fundamental sequence
+  (\<open>X\<^sub>k < A\<^sub>k < X\<^sub>k\<^sub>+\<^sub>1\<close>, @{thm [source] d13x_T_interleave}), so NO exact operB index
+  gives \<open>Trans(M[n])\<close> and the \<open>[0]\<close>-tower reindex is nontrivial.  EMPIRICALLY the
+  reindex is \<open>(m,k) = (n,2)\<close> for the clean majority (condV-adm 5/5, condIII-adm
+  \<open>(0,2)\<close> dominant; python/_r16_e4_condv_deep.py), with a residue of long
+  increasing-then-plateau hosts needing a wider \<open>m\<close> — i.e. the reindex bottoms on
+  the same FLAT closed form the CFA/CFB fronts are proving (@{thm [source]
+  d13x_exchange13_condIII}: \<open>Trans(M[n])\<close> reads with the A-tower core, \<open>operB\<close> with
+  the X-tower core, in the SHARED surgery wrapper).  Here we REDUCE \<open>stepval\<close> for
+  the interleaving regime to that flat closed form (taken as a named hypothesis).\<close>
+
+subsection \<open>Generic bridges: exchange EQUALITY \<Longrightarrow> stepval / OT-step (op0-power 0)\<close>
+
+text \<open>The op0-tower value identity at power \<open>0\<close> is exactly an exchange EQUALITY
+  \<open>Trans(N[n]) = operB (Trans N) (numBT m\<^sub>0)\<close>.  These two bridges package the
+  coincidence regime: given that equality (the CF corollary), \<open>stepval\<close> holds with
+  \<open>k = 0\<close> and the OT step is immediate from the [Buc1] closure
+  @{thm [source] e4x_OT_B_operB_numBT} (no \<open>[0]\<close>-iteration, no residual).\<close>
+
+lemma svx_stepval_of_exchange_eq:
+  fixes N :: pairseq
+  assumes eq: "Trans ((N::pairseq)[n]) = operB (Trans N) (numBT m\<^sub>0)"
+  shows "\<exists>m k. Trans ((N::pairseq)[n])
+               = ((\<lambda>x. operB x (numBT 0))^^k) (operB (Trans N) (numBT m))"
+proof -
+  have "Trans ((N::pairseq)[n])
+          = ((\<lambda>x. operB x (numBT 0))^^0) (operB (Trans N) (numBT m\<^sub>0))"
+    using eq by simp
+  thus ?thesis by blast
+qed
+
+lemma svx_OT_step_of_exchange_eq:
+  fixes N :: pairseq
+  assumes ihOT: "Trans N \<in> OT_B"
+    and eq: "Trans ((N::pairseq)[n]) = operB (Trans N) (numBT m\<^sub>0)"
+  shows "Trans ((N::pairseq)[n]) \<in> OT_B"
+proof -
+  have "Trans ((N::pairseq)[n])
+          = ((\<lambda>x. operB x (numBT 0))^^0) (operB (Trans N) (numBT m\<^sub>0))"
+    using eq by simp
+  thus ?thesis by (rule m_8_7_OT_via_exchange_value[OF ihOT])
+qed
+
+subsection \<open>Coincidence regime: cond (I)/(II) \<open>stepval\<close> and OT-step, modulo CF\<close>
+
+text \<open>Cond (I), article 2827: the exchange is the EQUALITY
+  \<open>Trans(M[n]) = operB (Trans M) (numBT (n-1))\<close> (@{thm [source] p_8_1_Trans_fseq_condI}(1),
+  supplied by CF).  \<open>stepval\<close> and the OT step follow at \<open>k = 0\<close>.  (The exchange
+  equality is taken as the named hypothesis \<open>exchI\<close>; it is exactly the cond-(I)
+  CF instance, not re-derived here — the unproven \<open>p_8_1\<close> statement is NOT cited.)\<close>
+
+lemma svx_stepval_condI:
+  fixes N :: pairseq
+  assumes exchI: "Trans ((N::pairseq)[n]) = operB (Trans N) (numBT (n - 1))"
+  shows "\<exists>m k. Trans ((N::pairseq)[n])
+               = ((\<lambda>x. operB x (numBT 0))^^k) (operB (Trans N) (numBT m))"
+  by (rule svx_stepval_of_exchange_eq[OF exchI])
+
+lemma svx_OT_step_condI:
+  fixes N :: pairseq
+  assumes ihOT: "Trans N \<in> OT_B"
+    and exchI: "Trans ((N::pairseq)[n]) = operB (Trans N) (numBT (n - 1))"
+  shows "Trans ((N::pairseq)[n]) \<in> OT_B"
+  by (rule svx_OT_step_of_exchange_eq[OF ihOT exchI])
+
+text \<open>Cond (II), article 3958: for the \<open>m\<^sub>n \<ge> 0\<close> leg the exchange is the EQUALITY
+  \<open>Trans(M[n]) = operB (Trans M) (numBT m\<^sub>n)\<close> (@{thm [source] p_8_3_TransCondII_oper_descend}(2),
+  existential in \<open>m\<^sub>n\<close>).  \<open>stepval\<close> / OT-step follow at \<open>k = 0\<close> from any such witness.\<close>
+
+lemma svx_stepval_condII:
+  fixes N :: pairseq
+  assumes exchII: "\<exists>k. Trans ((N::pairseq)[n]) = operB (Trans N) (numBT k)"
+  shows "\<exists>m k. Trans ((N::pairseq)[n])
+               = ((\<lambda>x. operB x (numBT 0))^^k) (operB (Trans N) (numBT m))"
+proof -
+  obtain k\<^sub>0 where "Trans ((N::pairseq)[n]) = operB (Trans N) (numBT k\<^sub>0)"
+    using exchII by blast
+  thus ?thesis by (rule svx_stepval_of_exchange_eq)
+qed
+
+lemma svx_OT_step_condII:
+  fixes N :: pairseq
+  assumes ihOT: "Trans N \<in> OT_B"
+    and exchII: "\<exists>k. Trans ((N::pairseq)[n]) = operB (Trans N) (numBT k)"
+  shows "Trans ((N::pairseq)[n]) \<in> OT_B"
+proof -
+  obtain k\<^sub>0 where "Trans ((N::pairseq)[n]) = operB (Trans N) (numBT k\<^sub>0)"
+    using exchII by blast
+  thus ?thesis by (rule svx_OT_step_of_exchange_eq[OF ihOT])
+qed
+
+subsection \<open>Interleaving regime: reduce \<open>stepval\<close> to the flat closed form\<close>
+
+text \<open>For conditions (III)/(IV)/(V)/(VI) the exchange is a strict INEQUALITY, not an
+  equality (@{thm [source] m_8_5_Trans_oper_exchange_condV_adm_uncond},
+  @{thm [source] d13x_exchange13_condIII}), so \<open>stepval\<close> is the genuine op0-tower
+  reindex.  It reduces to a pure FLAT-STRING identity via injectivity of \<open>flatBT\<close>
+  (@{thm [source] unflatBT_flat}): if the flat string of \<open>Trans(M[n])\<close> equals that
+  of \<open>[0]\<^bsup>k\<^esup>(operB (Trans M)(numBT m))\<close> then the terms are equal, giving \<open>stepval\<close> and
+  the OT step.  This is exactly the flat closed form the CFA/CFB fronts produce.\<close>
+
+lemma svx_stepval_of_flat_eq:
+  fixes M :: pairseq
+  assumes flateq: "flatBT (Trans ((M::pairseq)[n]))
+                     = flatBT (((\<lambda>x. operB x (numBT 0))^^k) (operB (Trans M) (numBT m)))"
+  shows "\<exists>m k. Trans ((M::pairseq)[n])
+               = ((\<lambda>x. operB x (numBT 0))^^k) (operB (Trans M) (numBT m))"
+proof -
+  have "Trans ((M::pairseq)[n])
+          = ((\<lambda>x. operB x (numBT 0))^^k) (operB (Trans M) (numBT m))"
+    using flateq by (metis unflatBT_flat)
+  thus ?thesis by blast
+qed
+
+lemma svx_OT_step_of_flat_eq:
+  fixes M :: pairseq
+  assumes ihOT: "Trans M \<in> OT_B"
+    and flateq: "flatBT (Trans ((M::pairseq)[n]))
+                   = flatBT (((\<lambda>x. operB x (numBT 0))^^k) (operB (Trans M) (numBT m)))"
+  shows "Trans ((M::pairseq)[n]) \<in> OT_B"
+proof -
+  have "Trans ((M::pairseq)[n])
+          = ((\<lambda>x. operB x (numBT 0))^^k) (operB (Trans M) (numBT m))"
+    using flateq by (metis unflatBT_flat)
+  thus ?thesis by (rule m_8_7_OT_via_exchange_value[OF ihOT])
+qed
+
+text \<open>The flat identity itself reduces to a single CORE coincidence in the SHARED
+  surgery wrapper \<open>(s, b)\<close> of \<open>Trans M\<close>: if \<open>Trans(M[n])\<close> reads as
+  \<open>s @ D\<^bsub>hd\<^esub>(coreA) @ b\<close> and \<open>[0]\<^bsup>k\<^esup>(operB (Trans M)(numBT m))\<close> reads as
+  \<open>s @ D\<^bsub>hd\<^esub>(coreB) @ b\<close> in the SAME wrapper, then \<open>coreA = coreB\<close> gives the flat
+  identity.  In the cond-(III) closed form (@{thm [source] d13x_exchange13_condIII})
+  \<open>coreA\<close> is the A-tower \<open>d13x_T L (v-1) A\<^sub>0 (n-1)\<close> and the \<open>operB\<close>/op0-tower core is a
+  transported X-tower — so \<open>stepval\<close> for the interleaving regime bottoms on exactly
+  the CFA/CFB core identity \<open>A-tower = (op0-transport of the X-tower)\<close>.\<close>
+
+lemma svx_flat_eq_of_wrapper_core:
+  fixes M :: pairseq and hd :: enat and coreA coreB :: BT and s b :: "Sym list"
+  assumes wA: "flatBT (Trans ((M::pairseq)[n])) = s @ flatBP (DB hd coreA) @ b"
+    and wB: "flatBT (((\<lambda>x. operB x (numBT 0))^^k) (operB (Trans M) (numBT m)))
+                = s @ flatBP (DB hd coreB) @ b"
+    and core: "coreA = coreB"
+  shows "flatBT (Trans ((M::pairseq)[n]))
+           = flatBT (((\<lambda>x. operB x (numBT 0))^^k) (operB (Trans M) (numBT m)))"
+  using wA wB core by simp
+
+lemma svx_stepval_condIIIVI_of_wrapper:
+  fixes M :: pairseq and hd :: enat and coreA coreB :: BT and s b :: "Sym list"
+  assumes wA: "flatBT (Trans ((M::pairseq)[n])) = s @ flatBP (DB hd coreA) @ b"
+    and wB: "flatBT (((\<lambda>x. operB x (numBT 0))^^k) (operB (Trans M) (numBT m)))
+                = s @ flatBP (DB hd coreB) @ b"
+    and core: "coreA = coreB"
+  shows "\<exists>m k. Trans ((M::pairseq)[n])
+               = ((\<lambda>x. operB x (numBT 0))^^k) (operB (Trans M) (numBT m))"
+proof -
+  have "flatBT (Trans ((M::pairseq)[n]))
+          = flatBT (((\<lambda>x. operB x (numBT 0))^^k) (operB (Trans M) (numBT m)))"
+    by (rule svx_flat_eq_of_wrapper_core[OF wA wB core])
+  thus ?thesis by (rule svx_stepval_of_flat_eq)
+qed
+
+text \<open>Empirical pin of the interleaving reindex: \<open>(m,k) = (n,2)\<close> is the clean
+  majority (condV-adm, condIII-adm dominant; python/_r16_e4_condv_deep.py).  This
+  specialises the flat-form reduction to that index so the CFA/CFB deliverable —
+  \<open>flatBT (Trans(M[n])) = flatBT ([0]\<^bsup>2\<^esup>(operB (Trans M)(numBT n)))\<close> — discharges
+  \<open>stepval\<close> outright for those hosts.\<close>
+
+lemma svx_stepval_interleave_n2:
+  fixes M :: pairseq
+  assumes flateq: "flatBT (Trans ((M::pairseq)[n]))
+                     = flatBT (((\<lambda>x. operB x (numBT 0))^^2) (operB (Trans M) (numBT n)))"
+  shows "\<exists>m k. Trans ((M::pairseq)[n])
+               = ((\<lambda>x. operB x (numBT 0))^^k) (operB (Trans M) (numBT m))"
+  by (rule svx_stepval_of_flat_eq[OF flateq])
+
+subsection \<open>Capstone: OT-preservation, \<open>stepval\<close> split coincidence / interleaving\<close>
+
+text \<open>The OT pillar for ALL of \<open>ST\<^bsub>PS\<^esub>\<close>, with the single \<open>stepval\<close> hypothesis of
+  @{thm [source] m_8_7_Trans_preserves_OT_via_closure} split exactly along the
+  regime boundary: the cond-(I)/(II) legs are the CF-derived exchange EQUALITIES
+  (discharged here at \<open>k = 0\<close>), the remaining legs are the interleaving FLAT
+  identity (the CFA/CFB closed form).  Thus the OT pillar bottoms on
+  \<^item> \<open>eqI\<close>/\<open>eqII\<close> — the coincidence exchange equalities (a CF corollary), AND
+  \<^item> \<open>flatIII\<close> — the interleaving flat closed form (CFA/CFB),
+  with NO residual op0-tower reasoning left in the OT step itself.\<close>
+
+lemma svx_OT_preserved_stepval_split:
+  fixes M :: pairseq
+  assumes MST: "M \<in> ST_PS"
+    and eqI: "\<And>N n. N \<in> ST_PS \<Longrightarrow> Trans N \<in> OT_B \<Longrightarrow> 1 \<le> n \<Longrightarrow> transCondI N \<Longrightarrow>
+                 Trans ((N::pairseq)[n]) = operB (Trans N) (numBT (n - 1))"
+    and eqII: "\<And>N n. N \<in> ST_PS \<Longrightarrow> Trans N \<in> OT_B \<Longrightarrow> 1 \<le> n \<Longrightarrow> transCondII N \<Longrightarrow>
+                 \<exists>k. Trans ((N::pairseq)[n]) = operB (Trans N) (numBT k)"
+    and flatIII: "\<And>N n. N \<in> ST_PS \<Longrightarrow> Trans N \<in> OT_B \<Longrightarrow> 1 \<le> n \<Longrightarrow>
+                 \<not> (transCondI N \<or> transCondII N) \<Longrightarrow>
+                 \<exists>m k. flatBT (Trans ((N::pairseq)[n]))
+                       = flatBT (((\<lambda>x. operB x (numBT 0))^^k) (operB (Trans N) (numBT m)))"
+  shows "Trans M \<in> OT_B"
+proof -
+  have stepval: "\<And>N n. N \<in> ST_PS \<Longrightarrow> Trans N \<in> OT_B \<Longrightarrow> 1 \<le> n \<Longrightarrow>
+        \<exists>m k. Trans ((N::pairseq)[n])
+              = ((\<lambda>x. operB x (numBT 0))^^k) (operB (Trans N) (numBT m))"
+  proof -
+    fix N :: pairseq and n :: nat
+    assume NST: "N \<in> ST_PS" and NOT: "Trans N \<in> OT_B" and n1: "1 \<le> n"
+    show "\<exists>m k. Trans ((N::pairseq)[n])
+                = ((\<lambda>x. operB x (numBT 0))^^k) (operB (Trans N) (numBT m))"
+    proof (cases "transCondI N \<or> transCondII N")
+      case True
+      then consider (I) "transCondI N" | (II) "transCondII N" by blast
+      thus ?thesis
+      proof cases
+        case I
+        have "Trans ((N::pairseq)[n]) = operB (Trans N) (numBT (n - 1))"
+          by (rule eqI[OF NST NOT n1 I])
+        thus ?thesis by (rule svx_stepval_of_exchange_eq)
+      next
+        case II
+        show ?thesis by (rule svx_stepval_condII[OF eqII[OF NST NOT n1 II]])
+      qed
+    next
+      case False
+      obtain m k where
+        "flatBT (Trans ((N::pairseq)[n]))
+           = flatBT (((\<lambda>x. operB x (numBT 0))^^k) (operB (Trans N) (numBT m)))"
+        using flatIII[OF NST NOT n1 False] by blast
+      thus ?thesis by (rule svx_stepval_of_flat_eq)
+    qed
+  qed
+  show ?thesis by (rule m_8_7_Trans_preserves_OT_via_closure[OF stepval MST])
+qed
+
+text \<open>A fully-general variant of the capstone that routes EVERYTHING except cond (I)
+  through the interleaving FLAT form.  This covers the cond-(II) \<open>m\<^sub>n = -1\<close> leg —
+  whose value \<open>s\<^sub>1 D\<^bsub>M\<^sub>1\<^sub>,\<^sub>j\<^sub>-\<^sub>1\<^esub> t\<^sub>2 b\<^sub>1\<close> (article 3958(1)) is a SURGERY string, NOT a
+  bare \<open>operB\<close> value — which the three-way split above did not.  Splitting on cond (I)
+  alone keeps both hypotheses dischargeable: \<open>eqI\<close> is the cond-(I) exchange EQUALITY
+  (article 2827, a CF corollary), \<open>flatRest\<close> is the flat closed form for every other
+  condition (CFA/CFB).  So the ENTIRE OT pillar bottoms on ONE exact equality (cond I)
+  plus ONE flat closed form (the rest).\<close>
+
+lemma svx_OT_preserved_condI_vs_flat:
+  fixes M :: pairseq
+  assumes MST: "M \<in> ST_PS"
+    and eqI: "\<And>N n. N \<in> ST_PS \<Longrightarrow> Trans N \<in> OT_B \<Longrightarrow> 1 \<le> n \<Longrightarrow> transCondI N \<Longrightarrow>
+                 Trans ((N::pairseq)[n]) = operB (Trans N) (numBT (n - 1))"
+    and flatRest: "\<And>N n. N \<in> ST_PS \<Longrightarrow> Trans N \<in> OT_B \<Longrightarrow> 1 \<le> n \<Longrightarrow> \<not> transCondI N \<Longrightarrow>
+                 \<exists>m k. flatBT (Trans ((N::pairseq)[n]))
+                       = flatBT (((\<lambda>x. operB x (numBT 0))^^k) (operB (Trans N) (numBT m)))"
+  shows "Trans M \<in> OT_B"
+proof -
+  have stepval: "\<And>N n. N \<in> ST_PS \<Longrightarrow> Trans N \<in> OT_B \<Longrightarrow> 1 \<le> n \<Longrightarrow>
+        \<exists>m k. Trans ((N::pairseq)[n])
+              = ((\<lambda>x. operB x (numBT 0))^^k) (operB (Trans N) (numBT m))"
+  proof -
+    fix N :: pairseq and n :: nat
+    assume NST: "N \<in> ST_PS" and NOT: "Trans N \<in> OT_B" and n1: "1 \<le> n"
+    show "\<exists>m k. Trans ((N::pairseq)[n])
+                = ((\<lambda>x. operB x (numBT 0))^^k) (operB (Trans N) (numBT m))"
+    proof (cases "transCondI N")
+      case True
+      have "Trans ((N::pairseq)[n]) = operB (Trans N) (numBT (n - 1))"
+        by (rule eqI[OF NST NOT n1 True])
+      thus ?thesis by (rule svx_stepval_of_exchange_eq)
+    next
+      case False
+      obtain m k where
+        "flatBT (Trans ((N::pairseq)[n]))
+           = flatBT (((\<lambda>x. operB x (numBT 0))^^k) (operB (Trans N) (numBT m)))"
+        using flatRest[OF NST NOT n1 False] by blast
+      thus ?thesis by (rule svx_stepval_of_flat_eq)
+    qed
+  qed
+  show ?thesis by (rule m_8_7_Trans_preserves_OT_via_closure[OF stepval MST])
+qed
+
 end
