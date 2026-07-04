@@ -97,8 +97,8 @@ task.md のユーザー向け骨格に対する、作業側の詳細版。ユー
       - 🚨 VE3/VE4
         - ✅ back-peel skeleton(guarded、vg4x_reg4訂正)〔**r33のvg3x_reg3 BASEも偽**(vg2x_VE34は 0<j0'<TrMax=非admj0' が必要、CEX (0,0)(1,1)(2,2)(3,0)[j0'=TrMax]/(0,0)(1,1)(1,0)[j0'=0])。だが `vgx_condIIIV_of_VE` は既に j0pos+j0lt 供給→`vg4x_reg4` に訂正、`vg4x_VE34_backpeel`〕[r3]
         - ✅ RPERS〔`vg4x_RPERS`(STEPでPredは最終枝を短縮するのみ→j0'/TrMax/guard-node安定)〕[r1]
-        - 🚨🤖 guarded BASE(残=単一 bridges obligation)〔r35: `vg5x_base_transM_form`(無条件、base で Trans N=D_{e1 0}(t1+_B D_{e1 j0'}tau))+`vg5x_base_VE34_of_bridges`(還元)+`vg5x_base_VE34_modBridges`(capstone)。残=`bridges`=終切片2恒等式 Trans(seg N 0 m1)=D_{e1 0}t1 ∧ ∃t2. tau=t1+_B t2∧t2≠0_B∧Trans(seg N j0'(Lng N-1))=D_{e1 j0'}tau(原文 part(1)(3))〕[r1]
-        - 🚨🤖 STEP(article cases3,4)〔head-shift、condV VESTEPと同型、未着手〕[r0]
+        - 🚨🤖 guarded BASE(要 regime に descending(Br) 再挿入)〔r36 **反証**: `vg2x_VE34` は `vg4x_reg4`(=RT∩PT∩Br≠[]∩0<j0'<TrMax) 上で偽、`descending(Br)` 脱落(r32 back-peel で落とした)。CEX N=(0,0)(1,1)(2,2)(2,1)(2,2)(2,0)、非降順で 198/2560 fail、descending付で 0/3168。**親が vg2x_reg2/vg3x_reg3/vg4x_reg4 に descending(Br) を再挿入必須**(→DT_PS)。r36も `bridges⟷vg2x_VE34`(厳密還元でない、`vg6x_*` 6緑)判明→降順域でも bridges=原文 part(1)(3) 終切片readback induction〕[r2]
+        - 🚨🤖 STEP(残=§7.4 head-shift)〔r36: hext(terminal principal が prefix 延長)を deep反証(0/5、終切片は arithmetic ramp で restructure)。`vs2x_VE34_step`=vg2x_VE34 を VE3+VE4 に再包装(IH未使用、weak)。真の残差=§7.4 shared-scb head-shift `m_7_4_Trans_Mark_Pred`+`m_7_4_Mark_Trans_repr`+(N,j0')∈Marked。regime修正が前提〕[r1]
     - ✅ 補題（強単項性の切片への遺伝性）〔`m_8_2_strongmono_slice`〕
     - ✅ 補題（部分表現の単項成分と $\textrm{Pred}$ の関係）(§8.2 keystone)〔`m_8_2_keystone` = 無条件 `p_8_2_subexpr_component_Pred`〕
     - ✅ 補題（強単項性の下での部分表現の単項成分の基本性質）〔`m_8_2_subexpr_component_strongmono_uncond`〕
@@ -114,7 +114,7 @@ task.md のユーザー向け骨格に対する、作業側の詳細版。ユー
         - 🚨 tailval残差
           - ✅ not-leftDj0脚(guard)modulo DIAG〔`cdx_d_le_joints`+`cdx_tailval_notldj`〕[r1]
           - 🚨 p_8_2_condIIIV(=§8.2命題、VE3/VE4残)〔同一物。scaffold+LastStep+VE2(ROW10込)✅、残=guarded VE3/VE4(BASE/STEP/RPERS)+fin〕[r2]
-          - 🚨🤖 DIAG→strictlt(ST_PS last-block、ANC0共有)〔r34: DIAG全体を単一鋭不等式 strictlt=`entry RN' 1 d < entry RN' 1 fnp`(=RN'最終枝 first-node diagonal)に還元(`dgx_regSP_diag_of_lt`)。condIII Br≠[]-REGSP/condIV REGSP/condII tailval で共有。r35: strictlt は純 reduced-form でない(54/119 で偽、eqhyp+Pred と絡む)→要 ST_PS oper last-block layout `s84c1_oper_lastblock`〕[r3]
+          - 🚨🤖 strictlt-under-d=jlp(ST_PS last-block、condII共有)〔r34: DIAG全体を単一鋭不等式 strictlt=`entry RN' 1 d < entry RN' 1 fnp`(RN'最終枝 first-node diagonal)に還元。condIII Br≠[]-REGSP/condIV REGSP/condII tailval で共有。r36: **unconditional strictlt は偽**(453/553)→`lb2x_regSP_of_lt_eqd` で d=jlp(=jm2-jm3=Joints RN'!last) 等値ガード下のみ要求に再配線、それは真形(98/98、r34 census 52/52)。残=strictlt-under-d=jlp、要 reduced-Pred-slice branch geometry〕[r4]
       - 🚨 OT所属 (⛔ 8.7)
     - ✅ 補題（第 $0$ 種型基本列の基本不等式）〔`m_8_3_kind0_base_ineq`(A22訂正)〕
     - ✅ 補題（第 $0$ 種型基本列の基本分岐規則）〔`m_8_3_kind0_branch_rule`〕
@@ -128,15 +128,15 @@ task.md のユーザー向け骨格に対する、作業側の詳細版。ユー
       - 🚨 condIV exchange 組立
         - ✅ producer data+組立〔`c4dx_uv`/`c4dx_condIV_dbbody`/`c4dx_condIV_k1`(witness-match)/`c4dx_condIV_base1`、(1)(2)=`c4dx_condIV_exchange12_assembled`〕[r1]
         - ✅ HB(t2成分bound)〔`HB_condIV_t2_components`無条件(condV `m_8_5_condV_adm_t2_components`類似、clause(ii)@M1j0→M1j1 downgrade。DIAGはcondIVで0/536)。triple=`c4hx_condIV_exchange_full_of_regimes`〕[r1]
-        - 🚨🤖 regime残差(admeq gate/regS vacuous/REGSP=strictlt・M0RUN=ANC0 を condIII と共有)〔r34: **condIV guard j-3<j-2 は VACUOUS**(0/28041)→`c4rx_condIV_exchange_full` が regS を noguard(=adm M j-2)から vacuous discharge。r35: `lbx_M0RUN_of_anc0` は condIII非依存で condIV にも verbatim 適用(要 condIV wrapper)。残=noguard(condIV⟹adm(j-2))+admeq(gate)+shared{strictlt,ANC0}(condIII共有)〕[r5]
+        - 🚨🤖 regime残差(admeq gate/regS vacuous/REGSP=strictlt-eqd・M0RUN=WGAP を condIII と共有)〔r34: **condIV guard j-3<j-2 は VACUOUS**(0/28041)→`c4rx_condIV_exchange_full` が regS を noguard(=adm M j-2)から vacuous discharge。r36 注意: condIV keystone `c4cx_condIV_exchange_full` は condIII crg と残差構造が異なる(scb_decomp d1/d2/d3,mnform,base0/base1)→lbx_M0RUN の verbatim condIV wrapper 不成立、要別配線。残=noguard(condIV⟹adm(j-2))+admeq(gate)+shared{strictlt-eqd,WGAP}(condIII共有)〕[r6]
       - ❌ d13x_T形organize〔innerU が真正condIIIで充足不能(0/426)、`cfax_`/`e3x_`/`corrected_condIII` 組立はvacuous(cIII∧admeq不能)〕[r2]
       - 🚨 condIII exchange 再構築(d4vx_core route)
         - ✅ engine+mnform+降下(2)OT-free+triple組立〔`crx_condIII_exchange_full`(Red-slice真regimeで再組立、r28の6残差→3)〕[r6]
         - ✅ BT-side facts (dbbodyH/base0/base1/A0lt)〔`crx_dbbodyH`/`crx_base0_of_run`/`crx_base1_of_nest`/`crx_A0lt_of_nest`、426/426+deep340/340〕[r1]
         - ✅ REGS(mcx_regS、MCOND証明)〔`mcx_d_le_last_joint`(d≤Joints(Red N)!last、branch-geometry、0 fail)+`mcx_MCOND_RN`(equality-diag込、trunk_entries_offset+終端row-1 valley+m_6_6_reduced_coeff sandwich)→`crx_regS_red_of_mcond`。**JGE(≤形)は偽だったがMCOND(disjunction)は真**〕[r4]
-        - 🚨🤖 ANC0(M0RUN由来、non-anc vacuous、ST_PS last-block)〔r35: **non-ancestor枝は condIII/IV で VACUOUS**(0/912、condIII が jm2<j0 と [jm2,j0] row-0連鎖を強制)→`lbx_M0RUN_of_anc0` が M0RUN run edge を単一無条件事実 ANC0=`le0 M (jm2+1)(transJ0 M)`(912/912)から証明。残=ANC0 のみ、要 `s84c1_oper_lastblock`。row-0側 ramp(`lbx_row0_diag_step`)は RedCondA不要で FREE、row-1側=ANC0〕[r5]
+        - 🚨🤖 WGAP≥half(ANC0←row-0 gap等式、≤half済)〔r35: M0RUN non-anc 枝 VACUOUS(0/912)→ANC0=`le0 M (jm2+1)(transJ0)`。r36: ANC0 を単一 row-0 gap等値 **WGAP**=`entry M 0 transJ0 = entry M 0 jm2 + (transJ0-jm2)` に還元。**≤half を無条件証明**(`lb2x_le0_row0_bound`: reduced M の row-0 le0-chain は各段 unique-parent +1)+`lb2x_le0_gap_consec`(gap=index gap→consec)+`lb2x_anc0_of_wgap`。残=**≥half(=昇段窓に row-0 plateau 無し)**、273/273、要 `s84c1_oper_lastblock`/ST_PS.induct。reduced-slice-trunk 近道は反証(self-similar)〕[r6]
         - ✅ REGSP trunk-bypass(d4a kousa-(1,1))〔`crg_d4a_trunk`/`crg_d4a_all`〕[r1]
-        - 🚨🤖 Br≠[]-REGSP→strictlt(ST_PS last-block、ANC0/condII DIAG共有)〔`dgx_regSP_of_lt`: strictlt(=`entry RN' 1 d < entry RN' 1 fnp`)modulo。RN'は d で terminal row-1 edge を持たない(RN valley をmirror不可)→strictlt が残差。r35: 純 reduced-form でない(130/232 で偽)→要 ST_PS.induct on oper last-block〕[r4]
+        - 🚨🤖 strictlt-under-d=jlp(ST_PS last-block、WGAP/condII 共有)〔`dgx_regSP_of_lt`: strictlt=`entry RN' 1 d < entry RN' 1 fnp` modulo。r36: **unconditional strictlt は偽**(453/553)→`lb2x_regSP_of_lt_eqd` で d=jlp(=jm2-jm3=Joints RN'!last)等値ガード下のみ要求に再配線。残=strictlt-under-d=jlp、98/98(deep_eqd 1/1)、要 reduced-Pred-slice branch geometry(RN' 最終枝 first-node が内部 d の row-1 値を超える)〕[r5]
     - ✅ 補題（右端の非許容直系先祖の基本性質）〔`m_8_4_rightmost_nonadm_ancestor`〕
     - ✅ 補題（条件 (III)〜(V) の下での右端の置き換えと $\textrm{Trans}$ の関係）〔`m_8_4_rightend_Trans`、A30訂正形〕[r1]
     - ✅ 補題（条件 (III)〜(VI) の下での展開規則の基本性質）〔`m_8_4_oper_props_1..5`、A31ガード形〕[r1]
