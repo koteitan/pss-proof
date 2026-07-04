@@ -95,8 +95,10 @@ task.md のユーザー向け骨格に対する、作業側の詳細版。ユー
       - ✅ LastStep切片幾何基礎〔`vgx_LastStep_*`/`vgx_m1_bounds`/`vgx_slice_*_mono`/`vgx_slice_princ`。r30未発達だったのをゼロから整備。A39=LastStep Min-landmine発見〕[r1]
       - ✅ VE2(無条件、ROW10討伐)〔`vg3x_VE2`(=vg2x_VE2でROW10内部discharge)。`vg3x_ROW10`←`vg3x_row1_le_row0`(entry M 1 j≤entry M 0 j、任意reduced M、RedCondA/B only、monoT不要でm_6_6_condAB_coeffより一般、強帰納)〕[r3]
       - 🚨 VE3/VE4
-        - ✅ back-peel skeleton(guarded)〔`vg3x_VE34_backpeel`+`vg3x_VE34_of_DT`。**r32のvg2x_reg2は不足**(vg2x_VE34は guard=last-branch first-node非対角 が必要、unguarded 0/13偽 例(0,0)(1,1)(2,2)(2,2))→`vg3x_reg3`=reg2∧guard に訂正〕[r2]
-        - 🚨🤖 guarded BASE/STEP/RPERS〔BASE=article case2(nadm j0'、subexpr_component_Pred、19/19)/STEP=cases3,4 head-shift/RPERS=prefix reducedness。condV VESTEP/VEBASE と同型、次round〕[r1]
+        - ✅ back-peel skeleton(guarded、vg4x_reg4訂正)〔**r33のvg3x_reg3 BASEも偽**(vg2x_VE34は 0<j0'<TrMax=非admj0' が必要、CEX (0,0)(1,1)(2,2)(3,0)[j0'=TrMax]/(0,0)(1,1)(1,0)[j0'=0])。だが `vgx_condIIIV_of_VE` は既に j0pos+j0lt 供給→`vg4x_reg4` に訂正、`vg4x_VE34_backpeel`〕[r3]
+        - ✅ RPERS〔`vg4x_RPERS`(STEPでPredは最終枝を短縮するのみ→j0'/TrMax/guard-node安定)〕[r1]
+        - 🚨 guarded BASE(2 terminal-slice bridges)〔base=Adm0 keystone枝(transJm1 N=0、Admpos w-id不要)。keystone→Trans N=D_{e1 0}(P+_B D_{e1 j0'}Q)、残=P=bpHeadT(Trans(seg N 0 m1))/Q=bpHeadT(Trans(seg N j0'(Lng N-1)))〕[r0]
+        - 🚨 STEP(article cases3,4)〔head-shift、condV VESTEPと同型、未着手〕[r0]
     - ✅ 補題（強単項性の切片への遺伝性）〔`m_8_2_strongmono_slice`〕
     - ✅ 補題（部分表現の単項成分と $\textrm{Pred}$ の関係）(§8.2 keystone)〔`m_8_2_keystone` = 無条件 `p_8_2_subexpr_component_Pred`〕
     - ✅ 補題（強単項性の下での部分表現の単項成分の基本性質）〔`m_8_2_subexpr_component_strongmono_uncond`〕
@@ -112,7 +114,7 @@ task.md のユーザー向け骨格に対する、作業側の詳細版。ユー
         - 🚨 tailval残差
           - ✅ not-leftDj0脚(guard)modulo DIAG〔`cdx_d_le_joints`+`cdx_tailval_notldj`〕[r1]
           - 🚨 p_8_2_condIIIV(=§8.2命題、VE3/VE4残)〔同一物。scaffold+LastStep+VE2(ROW10込)✅、残=guarded VE3/VE4(BASE/STEP/RPERS)+fin〕[r2]
-          - 🚨🤖 DIAG(eq-BAD⟹leftDj0、REGSP DIAGと共有)〔c2最終principal/right-spine計算。MCOND front も同じDIAG(eq-diag on Pred slice)を named assumeで残した=condII/IV横断共有残差〕[r1]
+          - 🚨 DIAG→strictlt(ST_PS last-block、M0RUN共有)〔r34: DIAG全体を単一鋭不等式 strictlt=`entry RN' 1 d < entry RN' 1 fnp`(=共有crux `le0 M (jm3+fnp)(Lng M-1)`)に還元(`dgx_regSP_diag_of_lt`)。condIII Br≠[]-REGSP/condIV REGSP/condII tailval で共有。要 ST_PS oper last-block diagonal-ramp〕[r2]
       - 🚨 OT所属 (⛔ 8.7)
     - ✅ 補題（第 $0$ 種型基本列の基本不等式）〔`m_8_3_kind0_base_ineq`(A22訂正)〕
     - ✅ 補題（第 $0$ 種型基本列の基本分岐規則）〔`m_8_3_kind0_branch_rule`〕
@@ -126,15 +128,15 @@ task.md のユーザー向け骨格に対する、作業側の詳細版。ユー
       - 🚨 condIV exchange 組立
         - ✅ producer data+組立〔`c4dx_uv`/`c4dx_condIV_dbbody`/`c4dx_condIV_k1`(witness-match)/`c4dx_condIV_base1`、(1)(2)=`c4dx_condIV_exchange12_assembled`〕[r1]
         - ✅ HB(t2成分bound)〔`HB_condIV_t2_components`無条件(condV `m_8_5_condV_adm_t2_components`類似、clause(ii)@M1j0→M1j1 downgrade。DIAGはcondIVで0/536)。triple=`c4hx_condIV_exchange_full_of_regimes`〕[r1]
-        - 🚨🤖 regime残差(admeq gate/regS raw-slice wiring/REGSP=condIII共有=DIAG)〔`c4wx_condIV_exchange_full_of_regimes` modulo {admeq(真gate、named assume), regS, shared-REGSP}。**⚠️c4wx の regS は RAW slice `s84x_N`(Redでない)**=mcx_regS(Red slice)と非一致、wiring artifact か要再statement(jm3対角時のみraw=Red)。shared-REGSP=`mcx_regSP_of_diag`でDIAG modulo(≤bound済)〕[r3]
+        - 🚨 regime残差(admeq gate/regS vacuous modulo condIV⟹adm(j-2)/REGSP=strictlt共有)〔r34: **condIV guard j-3<j-2 は VACUOUS**(0/28041)→`c4rx_condIV_exchange_full` が regS を noguard(=adm M j-2)から vacuous discharge。残=noguard(condIV⟹adm(j-2)、深検証済未証明)+admeq(gate、named assume)+shared-REGSP=strictlt(condIII共有)〕[r4]
       - ❌ d13x_T形organize〔innerU が真正condIIIで充足不能(0/426)、`cfax_`/`e3x_`/`corrected_condIII` 組立はvacuous(cIII∧admeq不能)〕[r2]
       - 🚨 condIII exchange 再構築(d4vx_core route)
         - ✅ engine+mnform+降下(2)OT-free+triple組立〔`crx_condIII_exchange_full`(Red-slice真regimeで再組立、r28の6残差→3)〕[r6]
         - ✅ BT-side facts (dbbodyH/base0/base1/A0lt)〔`crx_dbbodyH`/`crx_base0_of_run`/`crx_base1_of_nest`/`crx_A0lt_of_nest`、426/426+deep340/340〕[r1]
         - ✅ REGS(mcx_regS、MCOND証明)〔`mcx_d_le_last_joint`(d≤Joints(Red N)!last、branch-geometry、0 fail)+`mcx_MCOND_RN`(equality-diag込、trunk_entries_offset+終端row-1 valley+m_6_6_reduced_coeff sandwich)→`crx_regS_red_of_mcond`。**JGE(≤形)は偽だったがMCOND(disjunction)は真**〕[r4]
-        - 🚨🤖 M0RUN(→単一entry不等式)〔`c3cx_M0RUN_of_a`+`c3cx_nextrel0_adj_of_le0` で reach/valley discharge→残=`entry M 1 jm2 < entry M 1 (jm2+1)`(=RedCondAでM0RUN自身)。要ST_PS-oper構造〕[r3]
+        - 🚨 M0RUN(ancestor✅、non-ancestor残=ST_PS last-block)〔`dgx_M0RUN_of_le0anc`(row-0-ancestor枝 le0 M (jm2+1)(Lng-1)で M0RUN 証明)。残=non-ancestor枝(~3%、49/1562)=strictltと同一 ST_PS oper last-block diagonal-ramp現象〕[r4]
         - ✅ REGSP trunk-bypass(d4a kousa-(1,1))〔`crg_d4a_trunk`/`crg_d4a_all`〕[r1]
-        - 🚨🤖 Br≠[]-REGSP→DIAG(≤bound済)〔`mcx_regSP_of_diag`: ≤bound無条件(TrMax_Pred+le0 transfer)、残=equality-diag on Pred slice=上記共有DIAG(要 le0 M (jm3+fn') j1、singleton-vs-≥2 case split)〕[r2]
+        - 🚨 Br≠[]-REGSP→strictlt(ST_PS last-block、M0RUN/condII DIAG共有)〔`dgx_regSP_of_lt`: strictlt(=`entry RN' 1 d < entry RN' 1 fnp`)modulo。RN'は d で terminal row-1 edge を持たない(RN valley をmirror不可)→strictlt が残差。要 ST_PS.induct on oper last-block〕[r3]
     - ✅ 補題（右端の非許容直系先祖の基本性質）〔`m_8_4_rightmost_nonadm_ancestor`〕
     - ✅ 補題（条件 (III)〜(V) の下での右端の置き換えと $\textrm{Trans}$ の関係）〔`m_8_4_rightend_Trans`、A30訂正形〕[r1]
     - ✅ 補題（条件 (III)〜(VI) の下での展開規則の基本性質）〔`m_8_4_oper_props_1..5`、A31ガード形〕[r1]
@@ -172,5 +174,5 @@ task.md のユーザー向け骨格に対する、作業側の詳細版。ユー
       - ✅ 置換capstone〔`otx_Trans_preserves_OT_dispatch`(ST_PS.induct)、modulo{exchI,exchII,OTint,OTpred,OTmulti}、exchI/exchII=降下dispatcherと共有〕[r1]
       - ✅ per-branch true legs〔`otx_stepval_condVI_adm/_nadm`/`_condI_j0z/_n1`/`_j1eq1`×2/`_zerocol`、exchI j0=0半分discharge〕[r1]
       - ✅ dispatcher slots discharge(orx_)〔`orx_OTint/OTpred/OTmulti`+`orx_Trans_preserves_OT`。ただしm_8_7_Trans_preserves_OT_modulo経由=下記{resid,multiD}に依存〕[r1]
-      - ✅ local-OTint keystone-free(condI/V-adm/VI)〔`otlx_OTint_local`(cond I/V-adm/VI は operB/op0-tower閉形式でOT_B所属、resid/multiD不要)+`otlx_OTint_condVI/condI/condV_adm`。cfVadm=condV-adm stepval(named、13/13)〕[r1]
-      - 🚨 condIII/IV/V-nadm OT所属(surgery keystone or sub-slice{otIII,otIV,otVnadm})〔**局所operB route は deep-insert条件で偽**(condIII 49/153/condV-nadm 7/7、operBは最右top principalしか書換えられず内部 j_-1=Adm(j0)<j0 の graft を再現不能)→ {resid,multiD}(surgery keystone) か sub-slice OT-membership {otIII,otIV,otVnadm}(実測100%真)を残差として要証明〕[r1]
+      - ✅ local-OTint keystone-free(condI/condVI/condV-adm-e=0)〔`otlx_OTint_local`+`cfvx_OTint_local_condVadm_corrected`。**cfVadm(condV-adm op0-tower)はe>0で偽**(r34、CEX (0,0)(1,1)(2,2)(3,1)(4,2)(4,2))→e=0のみkeystone-free。cf0(e=0 op0-tower)はnamed、証明可〕[r2]
+      - 🚨 deep-insertion OT所属{otIII,otIV,otVnadm,otVadmDeep}(surgery keystone or sub-slice)〔operBは内部 j_-1=Adm(j0)<j0 graft 再現不能。condV-adm-e>0(otVadmDeep)も合流。{resid,multiD}(surgery keystone) か sub-slice OT-membership(実測100%真)要証明〕[r2]
