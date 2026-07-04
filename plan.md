@@ -16,6 +16,32 @@ task.md のユーザー向け骨格に対する、作業側の詳細版。ユー
 - **wave-2 予定**(統合後): OTRES=wt-b1(OTint/OTpred/OTmulti) / HBWIRE=wt2(condIV HB+d1-d3配線) / DISPATCH=wt-s5(dsx_fseq_descend_master+termination残差census)。scriptは scratchpad/pss-r29.mjs の該当3面を流用。
 - 統合手順: extract_block.py で base 相対 clean-append 検証 → 連結 → solo `isbman build -v PSS_C` → literal "Finished PSS_C"==1 + real-error grep 0 + sorry/oops テキストのみ確認 → python 資産回収 → commit+push → task.md/plan.md → worktree 同期 → 次wave。
 
+## 今後の戦略（2026-07-04 策定、Fable週間残14%→枯渇後は Opus 4.8 のみ）
+
+**モデル資源の前提**: Fable は週間制限の残り 14% のみ。枯渇後は有料化で完全に使えなくなり、以後は Opus 4.8(+xhigh) が唯一の深reasoningモデル。Opus は r14-r27 の全ラウンド(VE' 完全クローズ含む)を担った実績があるので、質的に詰むことはない — ただし Fable より押し切り力が落ちるので、**残差を「鋭い単文残差」まで削ってから投げる**運用を徹底する。
+
+### Fable 残 14% の使い途（優先順位）
+1. **実行中の wave-1(CIIIREG/ATOMS/CONDII) を完走させる** — 現在まさに最難の3コア(regS/regB、c2L1、tailval)に Fable を投入中。これが 14% の主用途。
+2. wave-1 が Fable 枯渇で死んだ場合: 緑コミットを回収(commit-early 徹底済)→ 残りは Opus で継続。fossil 回収手順は確立済。
+3. wave-1 後に Fable が残っていた場合のみ: wave-1 で割れなかった単一の最難残差(候補: regS の構造帰納 or OTint)に **1-agent 集中投下**(3並列はしない)。それ以外の用途に Fable を使わない。
+
+### Opus 時代の運用（wave-1 統合後〜）
+- 3 front/wave・Opus4.8+xhigh・empirical-first(cap≥30000/Lng≥10/brute straddle)は不変。
+- **wave-2(配線系、Opus で十分)**: OTRES(OTpred→OTmulti→OTint の順に易→難) / HBWIRE(HB+d1-d3配線) / DISPATCH(dsx_fseq_descend_master+termination残差census)。scratchpad/pss-r29.mjs の該当3面を model 指定だけ変えて流用。
+- 以後のラウンドは census の残差リストを上から潰す。**2ラウンド抵抗した残差は必ず再分割**(reduce→validate→close の r22-r28 パターン。一点突破を Opus に強要しない)。
+
+### 残差の難易度見立てと着手順
+1. 【wave-1 中】regS/regB(構造帰納・中難)、tailval(W=D_v0 t4・中難)、c2L1(緑済・統合のみ)
+2. 【wave-2、易〜中】OTpred(1 leg は plain descent)、OTmulti(P分解 lift)、HB(condV 類似の写経)、d1-d3 配線(機械的)、DISPATCH(機械的だが census 価値大)
+3. 【中難】base0H/base1H/A0ltH(right-spine head bound、dbbodyH の姉妹)、OTint(閉形式→isOT/descP snoc 機械化)
+4. 【後回し・要判定】§8.2 condII/IV 終切片命題 — **停止性 critical path 上か先に判定**(w84x/c4dx route は既にこれを迂回している可能性大。迂回済なら paper 完全性のみの問題として deferred)
+5. 【監査・安価】§8.5 keystone surgery-spine subtree — 原典route(scbdec)が condV 交換を閉じた今、**obsolete の可能性大。丸ごと ❌/不要 化できるか audit**(ツリー大幅整理)
+6. 【外部のまま維持】buc1_2_2 unbounded-depth(ψ collapsing) — Buchholz ψ の整礎性形式化は独立大プロジェクト。**停止性は「buc1_2_2 modulo」で完成宣言**し、深追いしない(depth断片+同値尖鋭化まで済んでいるので外部引用の正当性は十分文書化済)
+
+### 終盤の完成形（目標）
+- `dsx_termination_residual_census`: 停止性定理 = {残差アトム全列挙} modulo buc1_2_2 — census が空になった時点で **「ペア数列停止性、[Buc1] Lemma 2.2 のみ外部引用で完全形式証明」達成**。
+- その後: pss_paper の p_* sorry を m_*/w84x/scx… で discharge する機械的 sweep → layer 凍結(scratch→seg 化) → README/docs 整備。
+
 ## §8 残差 census（r28後、r29a で解消中）
 - 降下柱: condI ✅ / condVI ✅ / condV-adm ✅ / condV-nadm→{c2L1(ATOMS緑済), d1h/k1h(atx内部供給済)} / condII→{tailval} / condIII→{regS,regB,dbbodyH(緑済),base0H,base1H,A0ltH} / condIV→{d1-d3(=w84x配線),HB}
 - OT柱: {exchI(condI分✅+condII分=tailval), exchII(c2sx配線済=tailval), OTint, OTpred, OTmulti}
