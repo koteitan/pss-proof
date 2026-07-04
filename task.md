@@ -79,15 +79,9 @@
     - ✅ 補題（条件 (III)〜(V) の下での右端の置き換えと $\textrm{Trans}$ の関係）〔`m_8_4_rightend_Trans`、A30訂正形〕[r1]
     - ✅ 補題（条件 (III)〜(VI) の下での展開規則の基本性質）〔`m_8_4_oper_props_1..5`、A31ガード形〕[r1]
     - ✅ 補題（条件 (III)〜(VI) の下での $\textrm{Trans}$ と scb分解の関係）〔`m_8_4_Trans_scb`〕[r1]
-    - 🚨 補題（条件 (III)〜(V) の下での切片の scb分解）
-      - ✅ part(1)〔`m_8_4_slice_scb_part1`〕[r2]
-      - ✅ parts(2)(3) 再配線〔`w84x_subslice_value`/`w84x_slice_value_of_reg`(証明済終切片から)〕[r1]
-    - 🚨 補題（条件 (III)〜(V) の下での各種 scb分解）
-      - ✅ from_slice還元〔`m_8_4_various_scb_IIIV_from_slice`〕[r1]
-      - ✅ terminal-slice transport×2 再配線〔`w84x_various_scb_IIIV_of_sliceregs`(L5 d2/d3、regS/regB modulo=condIII exchange行で追跡)〕[r1]
-    - 🚨 補題（条件 (III) か (IV) の下での各種 scb分解）
-      - ✅ from_slice還元〔`m_8_4_various_scb_IIIIV_from_slice`、IV∧jm3<jm1は実在6例(空性反証)〕[r1]
-      - ✅ terminal-slice transport 再配線〔`w84x_various_scb_IIIIV_of_sliceregs`(L6 d4a/d4b、regS/regB modulo=condIII exchange行で追跡)〕[r1]
+    - ✅ 補題（条件 (III)〜(V) の下での切片の scb分解）〔part(1)=`m_8_4_slice_scb_part1`、(2)(3)=`w84x_subslice_value`/`w84x_slice_value_of_reg`〕[r3]
+    - ✅ 補題（条件 (III)〜(V) の下での各種 scb分解）〔`m_8_4_various_scb_IIIV_from_slice`+`w84x_various_scb_IIIV_of_sliceregs`(regS/regB modulo=condIII exchange行で追跡)〕[r2]
+    - ✅ 補題（条件 (III) か (IV) の下での各種 scb分解）〔`m_8_4_various_scb_IIIIV_from_slice`+`w84x_various_scb_IIIIV_of_sliceregs`(同上modulo)〕[r2]
     - ✅ 補題（条件 (III) か (IV) の下での基本列の基本性質）〔`m_8_4_oper_basic_part1`(= `p_8_4_oper_basic`)〕
   - 🚨 §8.5 条件 (V) の下での展開規則 〔詳細→[[pss-85-surgery-masterkey]]〕
     - 🚨 命題（条件 (V) の下での $\textrm{Trans}$ と基本列の交換関係）
@@ -123,18 +117,7 @@
           - ✅ SHARP→{atomA,atomB}再切断〔`s2x_chain`(slice右端強帰納)+`s2x_c2L1_of_atoms`。len2/redB は ST_PS で偽(19/131、r27 18/18=corpus truncation)〕[r8]
           - 🚨🤖 c2L1本体〔ATOMS=wt-f7が原典忠実route(t2成分bound→notLD→c2L1)で緑達成済+condV非adm交換ペア無条件化`atx_Trans_oper_exchange_condV_nonadm_uncond`、統合待ち。atomA/atomB routeは不要化〕[r1]
         - ✅ 交換route〔W2nostr両消費点(c=Lng-1/Lng-2)証明済`wnx_W2nostr_c1/_c2`(IncrFirst→Red slice→vcx_VE_all、run-cap-1は偽d=2実在)、capstone `wnx_nf3x`=modulo{c2L1,d1h,k1h}〕[r2]
-  - 🚨 §8.6 条件 (VI) の下での展開規則
-    - 🚨 命題（条件 (VI) の下での $\textrm{Trans}$ と基本列の交換関係）
-      - ✅ descent engine + (1,1)対角 host〔`m_8_6_TransCondVI_oper_descend_engine`/`m_8_6_diagSeq_condVI_commute`〕
-      - ✅ OT柱回避の直接降下〔`d6x_exchange2_condVI`、cf残差modulo〕[r1]
-      - ✅ 降下(2) adm一般〔`c6gx_condVI_descent_free_adm`無条件、M1j0>0〕[r2]
-      - ✅ 降下 M1j0=0枝〔`c6zx_condVI_descent_u0`無条件〕[r1]
-      - ✅ (1)(2)(3) 全host無条件〔adm=`c613x_condVI_exch_adm`/nadm=`c6nx_condVI_exch_nadm_uncond`、A34/A37訂正〕[r2]
-    - ✅ 補題（公差 $(1,0)$ のペア数列の $\textrm{Trans}$ の基本性質）〔`m_8_6_const2nd_Trans_paper`〕
-    - ✅ 補題（公差 $(1,1)$ のペア数列の $\textrm{Trans}$ の展開規則）〔`m_8_6_diagSeq_Trans_oper_paper`〕
-    - ✅ 補題（順序数項の末尾単項の零化可能性）
-      - ✅ clean領域〔`m_8_6_trailing_principal_peel`〕
-      - ❌ 一般領域〔A25〕
+  - ✅ §8.6 条件 (VI) の下での展開規則〔交換(1)(2)(3)全host無条件: adm=`c613x_condVI_exch_adm`/nadm=`c6nx_condVI_exch_nadm_uncond`(A34/A37)。零化一般領域のみ❌A25(clean=`m_8_6_trailing_principal_peel`で足りる)〕[r6]
   - 🚨 §8.7 主結果
     - ✅ 補題（公差 $(0,0)$ のペア数列の $\textrm{Trans}$ の基本性質）〔`m_8_7_const00_Trans`〕
     - 🚨 補題（基本列の降下性）〔`fseq_descend`〕
@@ -143,9 +126,7 @@
       - 🚨 残交換前提discharge〔condV非adm/condI-IV/VI、checklist=`_r14_f7_notes.py`、exchIV添字k=m〕
     - ✅ 補題（順序数項の再帰構造）〔`m_8_7_OT_scb_recursive`〕
     - ✅ 補題（順序数項の共終数の遺伝性）〔`m_8_7_OT_dom_hereditary`〕
-    - ✅ 補題（順序数項の末尾項の零化可能性）
-      - ✅ top-level〔`m_8_7_toplevel_OT_tail_annihilate`〕
-      - ❌ 一般化〔operB全域性、A26〕
+    - ✅ 補題（順序数項の末尾項の零化可能性）〔top-level=`m_8_7_toplevel_OT_tail_annihilate`。一般化のみ❌A26(operB全域性)〕
     - ❌ 補題（$\textrm{Pred}$ と $[0]$ の関係）〔A27、6325ルート迂回〕
     - ✅ 補題（順序数項の基本例）〔`m_8_7_OT_examples`〕
     - 🚨 補題（$\textrm{Trans}$ が標準形を保つこと）= OT所属〔残=R2 dstep+R3 newOT/gbt+帰納組立〕
