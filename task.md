@@ -134,4 +134,4 @@
       - ✅ per-branch true legs[r1]
       - ✅ dispatcher slots discharge(orx_)[r1]
       - ✅ local-OTint keystone-free(condI/condVI/condV-adm-e=0)[r2]
-      - 🚨 deep-insertion OT所属(4脚→surgery keystone{resid,multiD}に集約、sub-slice反証)[r3]
+      - 🚨🤖 deep-insertion OT所属(4脚→surgery keystone{resid,multiD}に集約、sub-slice反証)[r3]
