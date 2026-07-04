@@ -434,7 +434,11 @@ $c' \in T_{\textrm{B}}$ が主表現、$u_1 \in T_{\textrm{B}}$、$\textrm{flat}
 (5) $t$ の第$1$種scb分解は一意である。
 
 ### 訂正案
-(3)(4)(5) は前提「$t \neq \text{()}$」の下で成り立つ。
+(3) $t \neq \text{()}$ ならば、$t$ は第$0$種scb分解可能でないか、または $t$ は第$1$種scb分解可能でない。
+
+(4) $t \neq \text{()}$ ならば、$t$ の第$0$種scb分解は一意である。
+
+(5) $t \neq \text{()}$ ならば、$t$ の第$1$種scb分解は一意である。
 
 ### 原文の問題点
 A11–A13 と同じく、対象が空項 \(()\)（`Trm []`、\(\textrm{flat}=[Zsym]\)）のとき scb分解の主表現条件が外れる。このため \(t=()\) では中央成分 \(c\) が主表現でない分解（例 \((s,c,b)=([],[Zsym],[])\) と \(([Zsym],[],[])\)）が両立し、その第\(0\)/第\(1\)種条件（`RightNodes` 条件）が**空虚に**成立してしまう。よって (4)(5) の一意性も (3) の排他性も \(t=()\) で破れる。
@@ -516,7 +520,9 @@ ST_PS 閉包（diagSeq から \(M[n], n\ge1\) で BFS、7046 個）で違反は�
 $m = j_1$ であることと $\textrm{Mark}(M,m) = D_{M_{1,m}} 0$ であることは同値である。
 
 ### 訂正案
-§7.3 の基点・順序命題は前提「$M$ は非零項」（$M \in RT_{\textrm{PS}} \cap PT_{\textrm{PS}}$）の下で成り立つ。
+$M \in RT_{\textrm{PS}} \cap PT_{\textrm{PS}}$（$M$ は非零項）のとき、$m = j_1$ であることと $\textrm{Mark}(M,m) = D_{M_{1,m}} 0$ であることは同値である。
+
+（§7.3 の他の基点・順序命題群も同様に、前提 $M \in RT_{\textrm{PS}} \cap PT_{\textrm{PS}}$ の下で述べる。）
 
 ### 原文の問題点
 \(M = ((0,0))\)（零項、\(\in RT_{\textrm{PS}}\)）で \(m = 0 = j_1\) のとき、\(\textrm{Mark}(M,0) = 0\)（零項基底枝）であって \(D_{M_{1,0}} 0 = D_0 0 \neq 0\) ではない。よって「\(m = j_1 \Leftrightarrow \textrm{Mark}(M,m) = D_{M_{1,m}} 0\)」は \(M\) 零項で偽（左真・右偽）。[[A16]] と同じく原文が暗黙に非零項（genuine な単項以上）を仮定している系統的エッジ。
@@ -539,7 +545,7 @@ ST_PS 閉包で \((M,m) \in \textrm{Marked}\) を走査、違反は \(M = ((0,0)
 $j_1=\textrm{Lng}\,M-1$ の一意な NextAdm 親 $j_0$ と、$(0,j)\le_M(0,j_0)$ なる任意の $j$ について、$\textrm{Mark}(M,j)$ は $\textrm{Mark}(M,j_0)$ の周りに scb 分解される。
 
 ### 訂正案
-命題は仮定「$j$ は $M$-許容（$(M,j)\in\textrm{Marked}$）」の下で成り立つ。
+$j_1=\textrm{Lng}\,M-1$ の一意な NextAdm 親 $j_0$ と、$(0,j)\le_M(0,j_0)$ かつ $(M,j)\in\textrm{Marked}$（$j$ は $M$-許容）なる任意の $j$ について、$\textrm{Mark}(M,j)$ は $\textrm{Mark}(M,j_0)$ の周りに scb 分解される。
 
 ### 原文の問題点
 仮定 \((0,j)\le_M(0,j_0)\)(= `leR M 0 j j0` = 行0祖先 `le0`)は \(j\) の**許容性を含意しない**。\(\textrm{Mark}\) の定義域は \(RT_{\textrm{PS}}^{\textrm{Marked}}\)（許容基点列）なので、\(\textrm{Mark}(M,j)\) が原文の「marked 列の像」である為には \((M,j)\in\textrm{Marked}\)（特に \(\textrm{adm}\,M\,j\)）が必要。
@@ -579,7 +585,7 @@ $(M,m_0),(M,m_1)\in T_{\textrm{PS}}^{\textrm{Marked}}$ に対し、次は同値:
 $c_1 = \textrm{Mark}(\textrm{Pred}(M),j_{-1}) = \textrm{Trans}((M_j)_{j=j_0}^{j_1-1})$
 
 ### 訂正案
-part(1) の $\textrm{Trans}(\text{切片}) = c_1$ は前提「$j_0 < j_1-1$（切片が非単項）」の下で成り立つ。
+$j_0 < j_1-1$（切片が非単項）のとき: $c_1 = \textrm{Mark}(\textrm{Pred}(M),j_{-1}) = \textrm{Trans}((M_j)_{j=j_0}^{j_1-1})$
 
 ### 原文の問題点
 \(j_0 = j_1-1\)(切片 \((M_j)_{j=j_0}^{j_1-1}\) が単項 \([M_{j_0}]\))かつ \(M_{0,j_0} > M_{1,j_0}\)(非簡約)のとき偽。中間ステップ「\(\textrm{Mark}(\textrm{Pred}(M),j_0) = \textrm{Trans}(\text{切片})\)」は **Mark の Trans 表示**([[A19]] 隣、content 2490)の境界条件 \(j_1-m>0\) を破る(\(m=j_0=j_1-1\) で \(j_1-m=0\))。\(\textrm{Trans}\) は \((\textrm{IncrFirst},\textrm{Red})\) 不変で非簡約単項を rebase し row-0 頭を落とす(\(\to 0_B\))一方、\(c_1=\textrm{Mark}\) は \(D_{M_{1,j_0}}\) 頭を保持する。
@@ -848,7 +854,7 @@ n=1 で指数 \(n\) 形 0/48、指数 \(0\) 形 48/48（RT∩PT 非許容condV�
 同補題 (content.md 4407) part (5-3): \(\textrm{Trans}(\textrm{Pred}\,N')\) を中心とする scb 分解の存在。
 
 ### 訂正案
-\(\textrm{Pred}\,N' \neq \text{()}\)（非零項）のとき、\(\textrm{Trans}(\textrm{Pred}\,N')\) を中心とする scb 分解が存在する。（part (5-3) の前提に非零項ガードを加えた形。）
+\(\textrm{Pred}\,N' \neq \text{()}\)（非零項）のとき、\(\textrm{Trans}(\textrm{Pred}\,N')\) を中心とする scb 分解が存在する。
 
 ### 原文の問題点
 零項のとき（条件(VI)で \(M_{1,j_{-2}} = 0\)、このとき \(j_{-2} = j_1 - 1\)、\(M[n] = L_{n-1}\)）\(\textrm{Trans}(\textrm{Pred}\,N') = 0_B\) は主項文字列でなく scb 分解の中心になれない。parts (5-1)(5-2) は同領域でも成立（642/642）。
@@ -903,7 +909,7 @@ A25 は core 条件 \(v = 0 \lor u \ge v\) を安全領域としたが、**s-文
 §8.3 condII kind-0 の基本列閉形式 `lhs`（`m_8_3_exch_of_lhs_closed` / `d2x_exchange2_condII` の残差）: `Trans(M[m]) = unflatBT(s @ flatBT(D_u(t0 + (D_v t1)^(m-1))) @ b)`（固定 replicate 数 m-1）。
 
 ### 訂正案
-`∃ c≥1. Trans(M[m]) = unflatBT(s @ flatBT(D_u(t0 + (D_v t1)^c)) @ b)`（固定 replicate 数 m-1 を存在量化 c≥1 に）。
+`∃ c≥1. Trans(M[m]) = unflatBT(s @ flatBT(D_u(t0 + (D_v t1)^c)) @ b)`
 
 ### 原文の問題点
 原文§8.3 命題（content.md 3960）は `P(t2)_{J1}` の左端が `D_{M1,j0}` かで場合分けし、m_n=n-1（count m）/ m_n=n-2（count m-1）に分岐する。この分岐は Trans 再帰内部(leftDj0)で決まり dM から一意でないため、固定 count 形は m_n=n-2 部分族でしか成立しない（第1種 sibling `m_8_5_exch_of_lhs_closed` も同様に存在形へ切替済み）。
@@ -948,11 +954,9 @@ original.html 6216（content.md 6122）の §8.7 OT保存証明が依拠する�
 集合 `{J. …}` の J は**全 nat を走る**(J < Lng(Br M) の上界なし)。範囲外 J では `Br M ! J` は nth-overflow の junk になり、集合が余有限(cofinite)になりうる→ `Min` は無限集合上で `Min_le`/`Min_in`(共に finite 要求)が使えず未定義同然。結果 `LastStep M < Lng(Br M)` が `Br M ≠ []` だけからは証明できず、有限性 side-condition `fin` が必要になる(r31-VEGEOM が全下流補題に `fin` を携行)。
 
 ### 訂正案
-else 枝を次に置き換える（`Min` → nat 上 total な `LEAST`。原文「最小の $J$」の忠実転写）:
-
 ```
 (LEAST J. entry (Br M ! J1) 0 0 = entry (Br M ! J) 0 0 ∧ entry (Br M ! J) 1 0 < entry (Br M ! J) 0 0)
 ```
 
 ### 形式化での扱い
-`fin` は全 genuine host で成立するので停止性証明は不変(現状 `fin` 携行で回避済)。pss_defs は凍結層なので即修正せず、最終 sweep 時に上記へ差し替え予定。
+`Min` を nat 上 total な `LEAST`(原文「最小の $J$」の忠実転写)へ差し替える。`fin` は全 genuine host で成立するので停止性証明は不変(現状 `fin` 携行で回避済)。pss_defs は凍結層なので即修正せず、最終 sweep 時に上記へ差し替え予定。
