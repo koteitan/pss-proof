@@ -53,7 +53,9 @@
     - ✅ 命題（標準形の直系先祖による切片の簡約化の強単項性）
     - 🚨 命題（条件 (II) か (IV) の下での終切片と $\textrm{Trans}$ の関係）
       - ✅ scaffold還元(∃!→{VE2,VE3,VE4})[r1]
-      - 🚨 VE2/VE3/VE4(LastStep切片幾何)[r0]
+      - ✅ LastStep切片幾何基礎[r1]
+      - 🚨 VE2(→prefix regime)[r1]
+      - 🚨 VE3/VE4(非対角front-peel)[r0]
     - ✅ 補題（強単項性の切片への遺伝性）
     - ✅ 補題（部分表現の単項成分と $\textrm{Pred}$ の関係）(§8.2 keystone)
     - ✅ 補題（強単項性の下での部分表現の単項成分の基本性質）
@@ -68,8 +70,8 @@
         - ✅ base2+per-step surgery(閉形式)[r2]
         - 🚨 tailval残差
           - ✅ not-leftDj0脚(guard)modulo DIAG[r1]
-          - 🚨 p_8_2_condIIIV→{VE2/VE3/VE4}scaffold還元[r1]
-          - 🚨 VE2/VE3/VE4 + DIAG本体(LastStep切片幾何)[r0]
+          - 🚨 p_8_2_condIIIV(=§8.2命題、VE3/VE4残)[r1]
+          - 🚨 DIAG(eq-BAD⟹leftDj0)[r0]
       - 🚨 OT所属 (⛔ 8.7)
     - ✅ 補題（第 $0$ 種型基本列の基本不等式）
     - ✅ 補題（第 $0$ 種型基本列の基本分岐規則）
@@ -83,14 +85,15 @@
       - 🚨 condIV exchange 組立
         - ✅ producer data+組立[r1]
         - ✅ HB(t2成分bound)[r1]
-        - 🚨 regime残差(admeq/regS/regSP-bypass)[r0]
+        - 🚨 regime残差(admeq/regS=JGE/regSP-bypass別object)[r1]
       - ❌ d13x_T形organize[r2]
       - 🚨 condIII exchange 再構築(d4vx_core route)
         - ✅ engine+mnform+降下(2)OT-free+triple組立[r6]
         - ✅ BT-side facts (dbbodyH/base0/base1/A0lt)[r1]
-        - 🚨 REGS(→JGE単一不等式)[r2]
-        - 🚨 M0RUN(真・未証明)[r1]
-        - ❌ REGSP原文形(純trunkで偽)→d4a kousa-(1,1)bypass要[r1]
+        - 🚨 REGS→JGE(Joints(Red N)!last=TrMax)[r3]
+        - 🚨 M0RUN(要ST_PS)[r2]
+        - ✅ REGSP trunk-bypass(d4a kousa-(1,1))[r1]
+        - 🚨 Br≠[]-guarded REGSP(真)[r0]
     - ✅ 補題（右端の非許容直系先祖の基本性質）
     - ✅ 補題（条件 (III)〜(V) の下での右端の置き換えと $\textrm{Trans}$ の関係）[r1]
     - ✅ 補題（条件 (III)〜(VI) の下での展開規則の基本性質）[r1]
@@ -122,4 +125,5 @@
       - ❌ stepval(交換value恒等式)route[r2]
       - ✅ 置換capstone[r1]
       - ✅ per-branch true legs[r1]
-      - 🚨 残 OTint/OTpred/OTmulti[r0]
+      - ✅ dispatcher slots discharge(orx_)[r1]
+      - 🚨 {resid,multiD}(=§8.5 surgery keystone) or local-OTint route[r0]
