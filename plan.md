@@ -93,8 +93,12 @@ task.md のユーザー向け骨格に対する、作業側の詳細版。ユー
     - 🚨 命題（条件 (II) か (IV) の下での終切片と $\textrm{Trans}$ の関係）〔`p_8_2_condIIIV_terminal_slice_Trans`(pss_paper 1624)=condVのVE'のcondII/IV版〕
       - ✅ scaffold還元(∃!→{VE2,VE3,VE4})〔`cdx_condIIIV_scaffold`+`vgx_condIIIV_of_VE`(paper verbatim modulo {VE2,VE3,VE4,fin})〕[r1]
       - ✅ LastStep切片幾何基礎〔`vgx_LastStep_*`/`vgx_m1_bounds`/`vgx_slice_*_mono`/`vgx_slice_princ`。r30未発達だったのをゼロから整備。A39=LastStep Min-landmine発見〕[r1]
-      - 🚨🤖 VE2(→prefix regime)〔`vgx_VE2_of_reg`: VE2⟸cfbx_reg j0'(seg M 0 m1)。残=prefix枝幾何(TrMax/Br/Joints of seg M 0 m1、J0=0純trunk別扱い)〕[r1]
-      - 🚨🤖 VE3/VE4(非対角front-peel)〔condV VE'(r15-27=12round)のcondII/IV版。guard entry M 0 j1'>entry M 1 j1'=非対角なのでcondV直適用不可。head-shift合成〕[r0]
+      - 🚨 VE2
+        - ✅ prefix geometry(J0=0/J0>0)〔`vg2x_VE2`/`vg2x_prefix_geom`(TrMax N=TrMax M/Br N=take J0(Br M)/offset-0 transport)→vgx_VE2_of_reg/vcx_VE_all。J0=0=`crg_slice_value_of_trunk`。340/340〕[r2]
+        - 🚨 ROW10(branch-head row1≤row0)〔`entry M 1 (FirstNodes M!(LastStep M-1)) ≤ entry M 0 (…)`、eqdiag boundary のみで使用(lt枝は無条件)、reduced-monoで1384/0〕[r0]
+      - 🚨 VE3/VE4
+        - ✅ back-peel skeleton〔`vg2x_VE34_backpeel`=condV `cfbx_VE_backpeel` のcondII/IV版(Lng強帰納、cfbx_j1p=Lng-1 BASE vs <STEP)〕[r1]
+        - 🚨 BASE/STEP/RPERS〔BASE=article cases1,2/STEP=cases3,4 head-shift/RPERS=regime persist to Pred。condV VESTEP/VEBASE と同型、次round〕[r0]
     - ✅ 補題（強単項性の切片への遺伝性）〔`m_8_2_strongmono_slice`〕
     - ✅ 補題（部分表現の単項成分と $\textrm{Pred}$ の関係）(§8.2 keystone)〔`m_8_2_keystone` = 無条件 `p_8_2_subexpr_component_Pred`〕
     - ✅ 補題（強単項性の下での部分表現の単項成分の基本性質）〔`m_8_2_subexpr_component_strongmono_uncond`〕
@@ -109,7 +113,7 @@ task.md のユーザー向け骨格に対する、作業側の詳細版。ユー
         - ✅ base2+per-step surgery(閉形式)〔`c2sx_condII_masterCF`(scx二重帰納、opaque W)。exchII配線`c2sx_exchII_leg_of_tailval`(両dispatcher共有)〕[r2]
         - 🚨 tailval残差
           - ✅ not-leftDj0脚(guard)modulo DIAG〔`cdx_d_le_joints`+`cdx_tailval_notldj`〕[r1]
-          - 🚨 p_8_2_condIIIV(=§8.2命題、VE3/VE4残)〔上の§8.2命題と同一物。scaffold+VE2は上で✅、残VE3/VE4〕[r1]
+          - 🚨 p_8_2_condIIIV(=§8.2命題、VE3/VE4残)〔同一物。scaffold+LastStep+VE2✅、残=VE3/VE4(skeleton済、BASE/STEP/RPERS)+ROW10+fin〕[r2]
           - 🚨 DIAG(eq-BAD⟹leftDj0)〔c2最終principal/right-spine計算。eq-BAD class=2 leftDj0 host実測〕[r0]
       - 🚨 OT所属 (⛔ 8.7)
     - ✅ 補題（第 $0$ 種型基本列の基本不等式）〔`m_8_3_kind0_base_ineq`(A22訂正)〕
@@ -124,15 +128,15 @@ task.md のユーザー向け骨格に対する、作業側の詳細版。ユー
       - 🚨 condIV exchange 組立
         - ✅ producer data+組立〔`c4dx_uv`/`c4dx_condIV_dbbody`/`c4dx_condIV_k1`(witness-match)/`c4dx_condIV_base1`、(1)(2)=`c4dx_condIV_exchange12_assembled`〕[r1]
         - ✅ HB(t2成分bound)〔`HB_condIV_t2_components`無条件(condV `m_8_5_condV_adm_t2_components`類似、clause(ii)@M1j0→M1j1 downgrade。DIAGはcondIVで0/536)。triple=`c4hx_condIV_exchange_full_of_regimes`〕[r1]
-        - 🚨🤖 regime残差(admeq/regS=JGE/regSP-bypass別object)〔regS=condIII JGE共有。**condIV regSP=cfbx_reg m (Pred(s84x_N)) RAW slice**(condIIIのRed(Pred(s84x_N))と別object、w84x_d2/d3経由)→condIII trunk-bypassでは落ちない、condIV独自bypass要。admeq=真gate〕[r1]
+        - 🚨 regime残差(admeq gate/regS=MCOND/REGSP=condIII共有)〔r32: `c4wx_d3_all` が d3 を RED route で再構築→**condIV regSP は condIII の shared REGSP(crg_d4a_all)と COINCIDE**(Br(raw)=[]⟺Br(Red)=[] 40/40、trunk枝は regime不要)。`c4wx_condIV_exchange_full_of_regimes` modulo {admeq(真gate 47/48=`admeq_condIV_derivable`反証、named assume), regS=MCOND, shared-REGSP}〕[r2]
       - ❌ d13x_T形organize〔innerU が真正condIIIで充足不能(0/426)、`cfax_`/`e3x_`/`corrected_condIII` 組立はvacuous(cIII∧admeq不能)〕[r2]
       - 🚨 condIII exchange 再構築(d4vx_core route)
         - ✅ engine+mnform+降下(2)OT-free+triple組立〔`crx_condIII_exchange_full`(Red-slice真regimeで再組立、r28の6残差→3)〕[r6]
         - ✅ BT-side facts (dbbodyH/base0/base1/A0lt)〔`crx_dbbodyH`/`crx_base0_of_run`/`crx_base1_of_nest`/`crx_A0lt_of_nest`、426/426+deep340/340〕[r1]
-        - 🚨🤖 REGS→JGE(Joints(Red N)!last=TrMax)〔`crg_regS_of_jointGeTrMax`でrun半分無条件。**JGE正しい形=Joints(Red N)!last=TrMax(Red N)厳密等号**(r31: 単一枝route偽、Red Nは2枝あり CEX (0,0)(1,1)(2,2)(3,2)(3,2))。両枝がadm trunk右端にattach〕[r3]
-        - 🚨🤖 M0RUN(要ST_PS)〔`nextR M 1 j-2 (j-2+1)`。**ST_PS必須**(r31: 全trunk route偽11/13、非標準CEX (0,0)(1,0)(1,1)(2,1)でGOAL偽)。2 entry不等式に還元〕[r2]
-        - ✅ REGSP trunk-bypass(d4a kousa-(1,1))〔`crg_d4a_trunk`/`crg_d4a_all`(diagSeq閉形式)→`crg_condIII_exchange_full`は偽の無条件REGSP不要に。Br=[]枝を別dispatch〕[r1]
-        - 🚨🤖 Br≠[]-guarded REGSP(真)〔bypass後の残=Br(Red(Pred N))≠[]枝のcfbx_reg(真、要証明)〕[r0]
+        - 🚨 REGS=MCOND(JGE形は反証)〔**JGE(TrMax(Red N)≤Joints!last)は偽**(r32、174/386、CEX (0,0)(1,1)(2,2)(3,3)(3,2)(4,2)、3≤2偽)。正しい残差=MCOND(既存`crx_regS_red_of_mcond`が消費、d≤last-joint、386/386真)。d>joint は決して起きない。要reduced-slice branch-geometry証明〕[r3]
+        - 🚨 M0RUN(→単一entry不等式)〔`c3cx_M0RUN_of_a`+`c3cx_nextrel0_adj_of_le0` で reach/valley discharge→残=`entry M 1 jm2 < entry M 1 (jm2+1)`(=RedCondAでM0RUN自身)。要ST_PS-oper構造〕[r3]
+        - ✅ REGSP trunk-bypass(d4a kousa-(1,1))〔`crg_d4a_trunk`/`crg_d4a_all`〕[r1]
+        - 🚨 Br≠[]-REGSP=MCOND-on-Pred〔bypass後の残=Br(Red(Pred N))≠[]枝、同じMCOND形をPred slice上で(505/505真)、要証明〕[r1]
     - ✅ 補題（右端の非許容直系先祖の基本性質）〔`m_8_4_rightmost_nonadm_ancestor`〕
     - ✅ 補題（条件 (III)〜(V) の下での右端の置き換えと $\textrm{Trans}$ の関係）〔`m_8_4_rightend_Trans`、A30訂正形〕[r1]
     - ✅ 補題（条件 (III)〜(VI) の下での展開規則の基本性質）〔`m_8_4_oper_props_1..5`、A31ガード形〕[r1]
