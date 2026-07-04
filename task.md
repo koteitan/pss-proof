@@ -59,8 +59,8 @@
       - 🚨 VE3/VE4
         - ✅ back-peel skeleton(guarded、vg4x_reg4訂正)[r3]
         - ✅ RPERS[r1]
-        - 🚨🤖 guarded BASE(要 regime に descending(Br) 再挿入、bridges⟷VE34)[r2]
-        - 🚨🤖 STEP(残=§7.4 head-shift、hext反証)[r1]
+        - 🚨🤖 guarded BASE(regime修正済 vg7x⟺DT_PS、残=終切片 bridges readback)[r3]
+        - 🚨🤖 STEP(regime修正済、残=§7.4 head-shift)[r2]
     - ✅ 補題（強単項性の切片への遺伝性）
     - ✅ 補題（部分表現の単項成分と $\textrm{Pred}$ の関係）(§8.2 keystone)
     - ✅ 補題（強単項性の下での部分表現の単項成分の基本性質）
@@ -76,7 +76,7 @@
         - 🚨 tailval残差
           - ✅ not-leftDj0脚(guard)modulo DIAG[r1]
           - 🚨 p_8_2_condIIIV(=§8.2命題、VE3/VE4残)[r2]
-          - 🚨🤖 strictlt-under-d=jlp(condII共有、uncond偽/guard付真)[r4]
+          - ✅ REGSP strictlt-eqd(slx37無条件)[r5]
       - 🚨 OT所属 (⛔ 8.7)
     - ✅ 補題（第 $0$ 種型基本列の基本不等式）
     - ✅ 補題（第 $0$ 種型基本列の基本分岐規則）
@@ -90,15 +90,15 @@
       - 🚨 condIV exchange 組立
         - ✅ producer data+組立[r1]
         - ✅ HB(t2成分bound)[r1]
-        - 🚨🤖 regime残差(admeq gate/regS vacuous/REGSP=strictlt-eqd・M0RUN=WGAP を condIII と共有)[r6]
+        - 🚨🤖 regime残差(admeq gate/noguard(condIV⟹adm(j-2))/M0RUN=E1GE non-anc を condIII共有、REGSP✅)[r7]
       - ❌ d13x_T形organize[r2]
       - 🚨 condIII exchange 再構築(d4vx_core route)
         - ✅ engine+mnform+降下(2)OT-free+triple組立[r6]
         - ✅ BT-side facts (dbbodyH/base0/base1/A0lt)[r1]
         - ✅ REGS(mcx_regS、MCOND証明)[r4]
-        - 🚨🤖 WGAP≥half(ANC0←row-0 gap等式、≤half済/残=no-plateau)[r6]
+        - 🚨🤖 M0RUN E1GE non-anc枝(ancestor✅、WGAP/ANC0は反証、ST_PS last-block)[r7]
         - ✅ REGSP trunk-bypass(d4a kousa-(1,1))[r1]
-        - 🚨🤖 strictlt-under-d=jlp(ST_PS last-block、WGAP/condII 共有)[r5]
+        - ✅ REGSP strictlt-eqd(slx37無条件)[r5]
     - ✅ 補題（右端の非許容直系先祖の基本性質）
     - ✅ 補題（条件 (III)〜(V) の下での右端の置き換えと $\textrm{Trans}$ の関係）[r1]
     - ✅ 補題（条件 (III)〜(VI) の下での展開規則の基本性質）[r1]
