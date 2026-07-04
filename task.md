@@ -44,7 +44,7 @@
     - ✅ 補題（条件 (I) か (III) の下での $c_1$ 前後の具体表示）（A20/A21）〔part(1)-(5)+(4-1)(4-2) `m_8_1_c1_around_part4_1`/`_part4_2`〕
   - 🚨 §8.2 強単項性
     - ✅ 命題（標準形の直系先祖による切片の簡約化の強単項性）〔`m_8_2_standard_slice_Red_strongmono`〕
-    - 🚨🤖 命題（条件 (II) か (IV) の下での終切片と $\textrm{Trans}$ の関係）〔`p_8_2_condIIIV_terminal_slice_Trans`(art3314)=condVのVE'と別命題・独立、wt-y5〕
+    - 🚨 命題（条件 (II) か (IV) の下での終切片と $\textrm{Trans}$ の関係）〔`p_8_2_condIIIV_terminal_slice_Trans`(art3314)=condVのVE'と別命題・独立〕
     - ✅ 補題（強単項性の切片への遺伝性）〔`m_8_2_strongmono_slice`〕
     - ✅ 補題（部分表現の単項成分と $\textrm{Pred}$ の関係）(§8.2 keystone)〔`m_8_2_keystone` = 無条件 `p_8_2_subexpr_component_Pred`〕
     - ✅ 補題（強単項性の下での部分表現の単項成分の基本性質）〔`m_8_2_subexpr_component_strongmono_uncond`〕
@@ -56,7 +56,7 @@
       - ✅ OT柱回避の直接降下〔`d2x_exchange2_condII`、kind0残差modulo〕[r1]
       - 🚨 exch
         - ✅ 存在量化count+step還元〔`c2ex_exchange2_condII_ex`(A36)+`c2lx_lhs_ex_of_step`〕[r2]
-        - 🚨 base2+per-step surgery〔condI step(`m_8_1_lhs_j0pos_of_step`)と同一のmarking-nesting核〕[r0]
+        - 🚨🤖 base2+per-step surgery〔CONDII=wt-s4aが閉形式緑達成(X_n=D_va(t2+W·(n−1))+exchII配線`c2sx_exchII_leg_of_tailval`)、残=`c2sx_tailval`(W=D_v0 t4)討伐中〕[r1]
       - 🚨 OT所属 (⛔ 8.7)
     - ✅ 補題（第 $0$ 種型基本列の基本不等式）〔`m_8_3_kind0_base_ineq`(A22訂正)〕
     - ✅ 補題（第 $0$ 種型基本列の基本分岐規則）〔`m_8_3_kind0_branch_rule`〕
@@ -74,7 +74,7 @@
       - 🚨 condIII exchange 再構築(d4vx_core route)
         - ✅ engine+mnform+降下(2)OT-free+triple組立〔`w84x_exchange13_core`/`w84x_condIII_exchange_full_of_sliceregs`〕[r6]
         - 🚨🤖 regS/regB(guarded slice regime、269/269)〔diag-at-jm3+singleton-last-branch、CIIIREG=wt-s4b〕[r0]
-        - 🚨🤖 BT-side facts dbbodyH/base0H/base1H/A0ltH〔right-spine head bound、CIIIREG=wt-s4b〕[r0]
+        - 🚨🤖 BT-side facts dbbodyH/base0H/base1H/A0ltH〔right-spine head bound、CIIIREG=wt-s4bがdbbodyH緑達成済(`crx_dbbodyH`統合待ち)、残り3討伐中〕[r1]
     - ✅ 補題（右端の非許容直系先祖の基本性質）〔`m_8_4_rightmost_nonadm_ancestor`〕
     - ✅ 補題（条件 (III)〜(V) の下での右端の置き換えと $\textrm{Trans}$ の関係）〔`m_8_4_rightend_Trans`、A30訂正形〕[r1]
     - ✅ 補題（条件 (III)〜(VI) の下での展開規則の基本性質）〔`m_8_4_oper_props_1..5`、A31ガード形〕[r1]
@@ -121,7 +121,7 @@
         - ❌ de-adm/WRAP route〔W1(r25)/W2(r26)とも~adm域で偽、reach-guardも不十分。universal KERも偽(r27, 24/1318非標準CEX)〕[r6]
         - 🚨 c2L1
           - ✅ SHARP→{atomA,atomB}再切断〔`s2x_chain`(slice右端強帰納)+`s2x_c2L1_of_atoms`。len2/redB は ST_PS で偽(19/131、r27 18/18=corpus truncation)〕[r8]
-          - 🚨🤖 atomA+atomB〔atomA=`adm M (transJ0+1)`/atomB=j0-anchored列(parent=j0∧値=e1j0+1)、ST固有、ATOMS=wt-f7〕[r0]
+          - 🚨🤖 c2L1本体〔ATOMS=wt-f7が原典忠実route(t2成分bound→notLD→c2L1)で緑達成済+condV非adm交換ペア無条件化`atx_Trans_oper_exchange_condV_nonadm_uncond`、統合待ち。atomA/atomB routeは不要化〕[r1]
         - ✅ 交換route〔W2nostr両消費点(c=Lng-1/Lng-2)証明済`wnx_W2nostr_c1/_c2`(IncrFirst→Red slice→vcx_VE_all、run-cap-1は偽d=2実在)、capstone `wnx_nf3x`=modulo{c2L1,d1h,k1h}〕[r2]
   - 🚨 §8.6 条件 (VI) の下での展開規則
     - 🚨 命題（条件 (VI) の下での $\textrm{Trans}$ と基本列の交換関係）
@@ -157,4 +157,4 @@
       - ❌ stepval(交換value恒等式)route〔A38: `otx_stepval_refuted`(充足不能、原文6216はA25-A27帰結で偽)。`_via_closure`/r21 svx系はvacuous死没〕[r2]
       - ✅ 置換capstone〔`otx_Trans_preserves_OT_dispatch`(ST_PS.induct)、modulo{exchI,exchII,OTint,OTpred,OTmulti}、exchI/exchII=降下dispatcherと共有〕[r1]
       - ✅ per-branch true legs〔`otx_stepval_condVI_adm/_nadm`/`_condI_j0z/_n1`/`_j1eq1`×2/`_zerocol`、exchI j0=0半分discharge〕[r1]
-      - 🚨🤖 残 OTint/OTpred/OTmulti〔III/IV/V n≥2構造OT-step/Pred値legs/multi NP lift、OTRES=wt-b1〕[r0]
+      - 🚨 残 OTint/OTpred/OTmulti〔III/IV/V n≥2構造OT-step/Pred値legs/multi NP lift、wave2予定〕[r0]
