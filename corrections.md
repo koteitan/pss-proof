@@ -922,3 +922,14 @@ original.html 6216（content.md 6122）の §8.7 OT保存証明が依拠する�
 
 ### 形式化での扱い
 `m_8_7_Trans_preserves_OT_via_closure` と r21 の `svx_OT_preserved_*` capstone は健全だが前提充足不能=vacuous（死没扱い）。置換 = `otx_Trans_preserves_OT_dispatch`（r28、緑）。
+
+## A39. LastStep の定義が Min を無限集合に適用している（形式化バグ／原文「最小の J」の忠実転写ずれ）
+
+### 対象
+`LastStep`(pss_defs.thy:516、§8.2 art 3297-3326)の else 枝 `Min {J. entry (Br M ! J1) 0 0 = entry (Br M ! J) 0 0 ∧ entry (Br M ! J) 1 0 < entry (Br M ! J) 0 0}`。
+
+### 問題
+集合 `{J. …}` の J は**全 nat を走る**(J < Lng(Br M) の上界なし)。範囲外 J では `Br M ! J` は nth-overflow の junk になり、集合が余有限(cofinite)になりうる→ `Min` は無限集合上で `Min_le`/`Min_in`(共に finite 要求)が使えず未定義同然。結果 `LastStep M < Lng(Br M)` が `Br M ≠ []` だけからは証明できず、有限性 side-condition `fin` が必要になる(r31-VEGEOM が全下流補題に `fin` を携行)。
+
+### 訂正案
+`Min` を `LEAST`(nat 上で total、原文「最小の J」の忠実転写)に変更、または集合を `{J. J < Lng(Br M) ∧ …}` と有界化する。`fin` は全 genuine host で成立するので停止性証明は不変(現状 `fin` 携行で回避済)。pss_defs は凍結層なので即修正せず、最終 sweep 時に LEAST 化予定。
