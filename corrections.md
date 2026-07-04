@@ -705,9 +705,12 @@ xseq タワーは \(x_0 = D_{v-1} 0\)（基底、\(s_0,b_0\) に包まれない�
 
 ## A28. §8.5 命題（条件(V)の下でのTransと基本列の交換関係）(1) と 補題（条件(V)の下での基本列のscb分解）(2) の基本列添字が A24 を継承して1ずれ
 
+### 位置
+§8.5 命題（条件(V)の下での\(\textrm{Trans}\)と基本列の交換関係）(1) と 補題（条件(V)の下での基本列のscb分解）(content.md 5352) part (2)
+
 ### 原文
-- 命題（条件(V)の下での\(\textrm{Trans}\)と基本列の交換関係）結論 (1): \(\textrm{Trans}(M[n]) \le \textrm{Trans}(M)[m_n]\)（\(m_n = n-1\)（\(j_0\) が \(M\) 許容的）/ \(n\)（非許容的））
-- 補題（条件(V)の下での基本列のscb分解, content.md 5352）part (2): \((s'_0, D_u(t_2 + D_{M_{1,j_0}} 0), b'_0)\) が \(\textrm{Trans}(M)[m_n]\) の scb 分解
+- 命題 結論 (1): \(\textrm{Trans}(M[n]) \le \textrm{Trans}(M)[m_n]\)（\(m_n = n-1\)（\(j_0\) が \(M\) 許容的）/ \(n\)（非許容的））
+- 補題 part (2): \((s'_0, D_u(t_2 + D_{M_{1,j_0}} 0), b'_0)\) が \(\textrm{Trans}(M)[m_n]\) の scb 分解
 
 ### 訂正案
 - 命題 結論 (1): \(\textrm{Trans}(M[n]) < \textrm{Trans}(M)[m_n+1]\)
@@ -725,11 +728,14 @@ xseq タワーは \(x_0 = D_{v-1} 0\)（基底、\(s_0,b_0\) に包まれない�
 
 ## A29. §8.5 補題（条件(V)の下での各種scb分解）part (5) の指数が n=1 で不整合 [軽微]
 
+### 位置
+§8.5 補題（条件(V)の下での各種scb分解）(content.md 5213) part (5)
+
 ### 原文
-補題（条件(V)の下での各種scb分解, content.md 5213）part (5): \(\textrm{Trans}(M[n]) = s_1 D_{M_{1,j_{-1}}} (s'_1 D_{M_{1,j_0}})^n t_2 (b'_1)^n b_1\)。
+\(\textrm{Trans}(M[n]) = s_1 D_{M_{1,j_{-1}}} (s'_1 D_{M_{1,j_0}})^n t_2 (b'_1)^n b_1\)
 
 ### 訂正案
-part (5): \(\textrm{Trans}(M[n]) = s_1 D_{M_{1,j_{-1}}} (s'_1 D_{M_{1,j_0}})^{n-1} t_2 (b'_1)^{n-1} b_1\)
+\(\textrm{Trans}(M[n]) = s_1 D_{M_{1,j_{-1}}} (s'_1 D_{M_{1,j_0}})^{n-1} t_2 (b'_1)^{n-1} b_1\)
 
 ### 原文の問題点
 指数は \(n-1\)。原文証明自身が n=1 の場合を指数 \(2n-2 = 0\) で導出しており、\(M[1] = \textrm{Pred}\,M\) より \(\textrm{Trans}(M[1]) = s_1 D_{M_{1,j_{-1}}} t_2 b_1\)。また part (4) の帰納見出しの「\(2n\)」は「\(n+1\)」の誤記。
@@ -739,11 +745,14 @@ n=1 で指数 \(n\) 形 0/48、指数 \(0\) 形 48/48（RT∩PT 非許容condV�
 
 ## A30. §8.4 補題（条件(III)～(V)の下での右端の置き換えとTransの関係）part (3) の結論 scb 分解が偽
 
+### 位置
+§8.4 補題（条件(III)～(V)の下での右端の置き換えと\(\textrm{Trans}\)の関係）(content.md 4273) part (3)
+
 ### 原文
-同補題 (content.md 4273) part (3): \(j_{-2} < j_0\) かつ \(j_0\) 非 \(M\) 許容的のとき \((s, D_{M_{1,j_0}}(t_2 + D_{M_{1,j_0}} 0), b)\) が \(\textrm{Trans}(L')\) の scb 分解。
+\(j_{-2} < j_0\) かつ \(j_0\) 非 \(M\) 許容的のとき \((s, D_{M_{1,j_0}}(t_2 + D_{M_{1,j_0}} 0), b)\) が \(\textrm{Trans}(L')\) の scb 分解である。
 
 ### 訂正案
-part (3): \((s, D_{M_{1,j_{-2}}} 0, b)\) が \(\textrm{Trans}(L')\) の scb 分解である。
+\((s, D_{M_{1,j_{-2}}} 0, b)\) が \(\textrm{Trans}(L')\) の scb 分解である。
 
 ### 原文の問題点
 結論は part (2) と同一の \((s, D_{M_{1,j_{-2}}} 0, b)\)（無条件）。原文証明自身の結語（content.md 4371 / 4387）が両場合ともこの形を導いている。長さ勘定により文字どおりの part (3) は part (1) と \((s,b)\) を共有できない。
@@ -753,8 +762,11 @@ part (3): \((s, D_{M_{1,j_{-2}}} 0, b)\) が \(\textrm{Trans}(L')\) の scb 分�
 
 ## A31. §8.4 補題（条件(III)～(VI)の下での展開規則の基本性質）part (5-3) は zeroT(Pred N') で偽（ガード欠落）
 
+### 位置
+§8.4 補題（条件(III)～(VI)の下での展開規則の基本性質）(content.md 4407) part (5-3)
+
 ### 原文
-同補題 (content.md 4407) part (5-3): \(\textrm{Trans}(\textrm{Pred}\,N')\) を中心とする scb 分解の存在。
+\(\textrm{Trans}(\textrm{Pred}\,N')\) を中心とする scb 分解が存在する。
 
 ### 訂正案
 \(\textrm{Pred}\,N' \neq \text{()}\)（非零項）のとき、\(\textrm{Trans}(\textrm{Pred}\,N')\) を中心とする scb 分解が存在する。
@@ -770,11 +782,14 @@ part (3): \((s, D_{M_{1,j_{-2}}} 0, b)\) が \(\textrm{Trans}(L')\) の scb 分�
 
 ## A32. §8.4 命題（条件(III)か(IV)の下でのTransと基本列の交換関係）(1) の基本列添字も A28 型のずれ
 
+### 位置
+§8.4 命題（条件(III)か(IV)の下での\(\textrm{Trans}\)と基本列の交換関係）結論 (1)
+
 ### 原文
-本命題 結論 (1): \(\textrm{Trans}(M[n]) \le \textrm{Trans}(M)[n-1]\)。
+\(\textrm{Trans}(M[n]) \le \textrm{Trans}(M)[n-1]\)
 
 ### 訂正案
-結論 (1): \(\textrm{Trans}(M[n]) < \textrm{Trans}(M)[n]\)
+\(\textrm{Trans}(M[n]) < \textrm{Trans}(M)[n]\)
 
 ### 反例（最小）
 \(M = (0,0)(1,1)(2,1)\)、\(n=1\)。原文形 0/465(III)+0/18(IV)。
@@ -784,13 +799,16 @@ part (3): \((s, D_{M_{1,j_{-2}}} 0, b)\) が \(\textrm{Trans}(L')\) の scb 分�
 
 ## A33. §8.4 命題/補題（条件(III)か(IV)の下での基本列の基本性質）(2) は添字調整不能の構造的偽
 
+### 位置
+§8.4 補題（条件(III)か(IV)の下での基本列の基本性質）結論 (2)
+
 ### 原文
-本命題 結論 (2): \(\textrm{Trans}(M)[n-1] = \textrm{Trans}(M[n+1][1]^{j_1-1-j_{-2}})\)。
+\(\textrm{Trans}(M)[n-1] = \textrm{Trans}(M[n+1][1]^{j_1-1-j_{-2}})\)
 
 ### 訂正案
 (2) を削除する。
 
-### 問題点
+### 原文の問題点
 すべての（添字シフト, 反復回数）組合せで偽——operB の xseq タワーは素基底 \(D_{j_0} 0\) を再播種するが、\(\textrm{Trans}\) 像は常に \(t_2\) を保持するため、印字された等式は構造的に成立し得ない（添字の誤記ではない）。結論 (1)(3) は原文どおり真（(3) の \(\textrm{numBT}\,n\) は既に A28 補正済みの添字）。
 
 ### 経験的確認
@@ -798,8 +816,11 @@ part (3): \((s, D_{M_{1,j_{-2}}} 0, b)\) が \(\textrm{Trans}(L')\) の scb 分�
 
 ## A34. §8.6 命題（条件(VI)の下でのTransと基本列の交換関係）(1) の n=1 かつ j0 許容的の脚が偽
 
+### 位置
+§8.6 命題（条件(VI)の下での\(\textrm{Trans}\)と基本列の交換関係）結論 (1)（\(n=1\)・\(j_0\) 許容的の場合）
+
 ### 原文
-本命題 結論 (1) の \(n=1\)・\(j_0\) 許容的ケース。
+結論 (1)（印字された \([0]\)-反復回数による \(\textrm{Trans}(M[n])\) と基本列の交換関係）は、\(j_0\) が許容的な全ての場合（\(n=1\) を含む）で成立する。
 
 ### 訂正案
 結論 (1) は、正しい \([0]\)-反復回数（[[A37]]）の下で、\(n=1\) かつ \(j_0\) が許容的の場合も含めて成立する。
@@ -812,13 +833,28 @@ part (3): \((s, D_{M_{1,j_{-2}}} 0, b)\) が \(\textrm{Trans}(L')\) の scb 分�
 
 ## A35. §8.6 補題（順序数項の末尾単項の零化可能性）の安全領域は core-clean に加え ctx-clean も要る（A25 の精密化）
 
-### 対象/精密化
-A25 は core 条件 \(v = 0 \lor u \ge v\) を安全領域としたが、**s-文脈の head が \(T_{v-1}\) ドメインを捕獲する**と core-clean でも偽（xseq 再始動、2347/3296 で文字どおり形が偽）。経験的に正確な安全領域 = core-clean **かつ** ctx-clean（s 内の全 head 添字 \(\ge v\)）: 1699/1699。※ ctx-clean 特徴づけは経験的予想（3296 全数で正確）、機械化済みの `m_8_6_trailing_principal_peel` は影響なし（その前提が既に安全領域内）。
+### 位置
+§8.6 補題（順序数項の末尾単項の零化可能性）（content.md 5621）— [[A25]] 訂正案の安全領域の精密化
+
+### 原文
+[[A25]] 訂正案の安全領域を、core 条件 \(v = 0 \lor u \ge v\)（core-clean）のみとする。
+
+### 訂正案
+[[A25]] 訂正案の安全領域を、core-clean（\(v = 0 \lor u \ge v\)）かつ ctx-clean（\(s\) 内の全 head 添字 \(\ge v\)）とする。
+
+### 原文の問題点
+[[A25]] は core 条件 \(v = 0 \lor u \ge v\) を安全領域としたが、**s-文脈の head が \(T_{v-1}\) ドメインを捕獲する**と core-clean でも偽（xseq 再始動、2347/3296 で文字どおり形が偽）。
+
+### 経験的確認
+経験的に正確な安全領域 = core-clean かつ ctx-clean（\(s\) 内の全 head 添字 \(\ge v\)）: 1699/1699。ctx-clean 特徴づけは経験的予想（3296 全数で正確）。機械化済みの `m_8_6_trailing_principal_peel` は影響なし（その前提が既に安全領域内）。
 
 ## A36. §8.3 命題（条件(II)の下でのTransと基本列の交換関係）の基本列 lhs は固定 replicate 数でなく存在量化が必要
 
+### 位置
+§8.3 命題（条件(II)の下での\(\textrm{Trans}\)と基本列の交換関係）の基本列閉形式（content.md 3960）
+
 ### 原文
-§8.3 命題（条件(II)の下での\(\textrm{Trans}\)と基本列の交換関係）の基本列閉形式（content.md 3960）: \(\textrm{Trans}(M[m]) = s\, D_u(t_0 + (D_v t_1)^{m-1})\, b\)（固定 replicate 数 \(m-1\)）。
+\(\textrm{Trans}(M[m]) = s\, D_u(t_0 + (D_v t_1)^{m-1})\, b\)
 
 ### 訂正案
 ある \(c \ge 1\) が存在して \(\textrm{Trans}(M[m]) = s\, D_u(t_0 + (D_v t_1)^{c})\, b\) である。
@@ -831,8 +867,11 @@ A25 は core 条件 \(v = 0 \lor u \ge v\) を安全領域としたが、**s-文
 
 ## A37. §8.6 命題（条件(VI)の下でのTransと基本列の交換関係）(1) の反復添字が偽（A34 の精密化）
 
+### 位置
+§8.6 命題（条件(VI)の下での\(\textrm{Trans}\)と基本列の交換関係）結論 (1)
+
 ### 原文
-本命題 結論 (1) の印字された \([0]\)-反復回数。
+結論 (1) の \([0]\)-反復回数（印字値）。
 
 ### 訂正案
 条件(VI) の交換則 (1)(3) は全ての許容的 \(j_0\)（\(M_{1,j_0}=0\) を含む）で成立する。結論 (1) の \([0]\)-反復回数は、原文の印字値でなく、基本列展開が定める値とする。
@@ -845,8 +884,11 @@ r25-CONDVI13 が真正 condVI mono host（深 Lng≤11）で印字形 (1) を 51
 
 ## A38. §8.7 補題（Transが標準形を保つこと）の値等式 Trans(N[n])=Trans(N)[m_n][0]^k が偽
 
+### 位置
+§8.7 補題（\(\textrm{Trans}\) が標準形を保つこと）（content.md 6122）の証明が依拠する値等式
+
 ### 原文
-§8.7「\(\textrm{Trans}\) が標準形を保つこと」（content.md 6122）の証明が依拠する値等式: \(\textrm{Trans}(N[n]) = \textrm{Trans}(N)[m_n][0]^k\)（適当な \(m_n, k\)）。
+\(\textrm{Trans}(N[n]) = \textrm{Trans}(N)[m_n][0]^k\)（適当な \(m_n, k\)）
 
 ### 訂正案
 この値等式を削除する。
@@ -859,13 +901,18 @@ r25-CONDVI13 が真正 condVI mono host（深 Lng≤11）で印字形 (1) を 51
 
 ## A39. LastStep の定義が Min を無限集合に適用している（形式化バグ／原文「最小の J」の忠実転写ずれ）
 
-### 対象
-`LastStep`(pss_defs.thy:516、§8.2 art 3297-3326)の else 枝 `Min {J. entry (Br M ! J1) 0 0 = entry (Br M ! J) 0 0 ∧ entry (Br M ! J) 1 0 < entry (Br M ! J) 0 0}`。
+### 位置
+§8.2 写像 \(\textrm{LastStep}\) の定義（art 3297-3326；形式化 `LastStep` pss_defs.thy:516）の else 枝。
 
-### 問題
-集合 `{J. …}` の J は**全 nat を走る**(J < Lng(Br M) の上界なし)。範囲外 J では `Br M ! J` は nth-overflow の junk になり、集合が余有限(cofinite)になりうる→ `Min` は無限集合上で `Min_le`/`Min_in`(共に finite 要求)が使えず未定義同然。結果 `LastStep M < Lng(Br M)` が `Br M ≠ []` だけからは証明できず、有限性 side-condition `fin` が必要になる(r31-VEGEOM が全下流補題に `fin` を携行)。
+### 原文
+```
+Min {J. entry (Br M ! J1) 0 0 = entry (Br M ! J) 0 0 ∧ entry (Br M ! J) 1 0 < entry (Br M ! J) 0 0}
+```
 
 ### 訂正案
 ```
 (LEAST J. entry (Br M ! J1) 0 0 = entry (Br M ! J) 0 0 ∧ entry (Br M ! J) 1 0 < entry (Br M ! J) 0 0)
 ```
+
+### 原文の問題点
+集合 `{J. …}` の J は**全 nat を走る**(J < Lng(Br M) の上界なし)。範囲外 J では `Br M ! J` は nth-overflow の junk になり、集合が余有限(cofinite)になりうる→ `Min` は無限集合上で `Min_le`/`Min_in`(共に finite 要求)が使えず未定義同然。結果 `LastStep M < Lng(Br M)` が `Br M ≠ []` だけからは証明できず、有限性 side-condition `fin` が必要になる(r31-VEGEOM が全下流補題に `fin` を携行)。原文の「最小の \(J\)」は nat 上 total な `LEAST` で忠実に転写できる（範囲外 J でも述語が偽なら `LEAST` は有限witnessを返す）。
