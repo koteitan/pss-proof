@@ -10,11 +10,12 @@ task.md のユーザー向け骨格に対する、作業側の詳細版。ユー
 - ツリー以外のセクション（ラウンド状態・残差census・REFUTED registry・運用手順）を自由に追加・改廃する。
 - 詳細が肥大したら docs/ か memory に移してポインタだけ残す。
 
-## 現在のラウンド状態（2026-07-04）
-- **並列度制限: 3 front/wave**（r29 6同時が session limit 全滅 → ユーザー指示で半減）。モデルは全 front Fable+xhigh。
-- **r29a wave-1 実行中**(wf_1c874268-93d、base ff1eac6): CIIIREG=wt-s4b(regS/regB+BT4、dbbodyH緑済) / ATOMS=wt-f7(c2L1原典route緑済+condV非adm交換無条件化`atx_Trans_oper_exchange_condV_nonadm_uncond`) / CONDII=wt-s4a(閉形式緑、残=`c2sx_tailval`)。
-- **wave-2 予定**(統合後): OTRES=wt-b1(OTint/OTpred/OTmulti) / HBWIRE=wt2(condIV HB+d1-d3配線) / DISPATCH=wt-s5(dsx_fseq_descend_master+termination残差census)。scriptは scratchpad/pss-r29.mjs の該当3面を流用。
-- 統合手順: extract_block.py で base 相対 clean-append 検証 → 連結 → solo `isbman build -v PSS_C` → literal "Finished PSS_C"==1 + real-error grep 0 + sorry/oops テキストのみ確認 → python 資産回収 → commit+push → task.md/plan.md → worktree 同期 → 次wave。
+## 現在のラウンド状態（2026-07-04 更新）
+- **並列度制限: 3 front/wave**（r29 6同時が session limit 全滅 → ユーザー指示で半減）。**モデル: Fable 残8%→ほぼ Opus 4.8+xhigh へ移行**(ユーザー switch 済)。
+- **r29a wave-1 統合済**(main HEAD=6f491a2): ✅condV非adm交換 完全無条件化(descent condV leg 完了) / ✅condII 閉形式(残=tailval leftDj0枝) / ✅condIII 6→3残差(REGS/REGSP/M0RUN)。CIIIREG は session limit で死んだが6緑コミット全回収。
+- **次 wave 予定**: OTRES(OTint/OTpred/OTmulti) / HBWIRE(condIV HB+d1-d3配線) / DISPATCH(dsx_fseq_descend_master+termination残差census)。**+新規: CIIIREGIME(REGS/REGSP/M0RUN) / CONDIITAIL(tailval leftDj0=p_8_2_condIIIV)**。Opus なので鋭い単文残差に削って投入、3 front/wave 厳守。
+- worktree 同期: wave-1 の wt-f7/wt-s4a/wt-s4b は 6f491a2 へ reset 要(未実施なら次 spawn 前に)。
+- 統合手順: `git/tools/extract_block.py` で base 相対 clean-append 検証 → 連結 → solo `isbman build -v PSS_C` → literal "Finished PSS_C"==1 + real-error grep 0 + sorry/oops テキストのみ確認 → python 資産回収 → commit+push → task.md/plan.md 両更新 → worktree 同期 → 次wave。
 
 ## 今後の戦略（2026-07-04 策定、Fable週間残14%→枯渇後は Opus 4.8 のみ）
 
@@ -42,11 +43,12 @@ task.md のユーザー向け骨格に対する、作業側の詳細版。ユー
 - `dsx_termination_residual_census`: 停止性定理 = {残差アトム全列挙} modulo buc1_2_2 — census が空になった時点で **「ペア数列停止性、[Buc1] Lemma 2.2 のみ外部引用で完全形式証明」達成**。
 - その後: pss_paper の p_* sorry を m_*/w84x/scx… で discharge する機械的 sweep → layer 凍結(scratch→seg 化) → README/docs 整備。
 
-## §8 残差 census（r28後、r29a で解消中）
-- 降下柱: condI ✅ / condVI ✅ / condV-adm ✅ / condV-nadm→{c2L1(ATOMS緑済), d1h/k1h(atx内部供給済)} / condII→{tailval} / condIII→{regS,regB,dbbodyH(緑済),base0H,base1H,A0ltH} / condIV→{d1-d3(=w84x配線),HB}
-- OT柱: {exchI(condI分✅+condII分=tailval), exchII(c2sx配線済=tailval), OTint, OTpred, OTmulti}
+## §8 残差 census（r29a後）
+- 降下柱: condI ✅ / condVI ✅ / **condV(adm+nadm) ✅ 完全無条件** / condII→{tailval の leftDj0枝=p_8_2_condIIIV} / condIII→{REGS, REGSP, M0RUN}(BT facts全✅) / condIV→{d1-d3配線, HB}
+- OT柱: {exchI ✅(condI), exchII(=condII tailval), OTint, OTpred, OTmulti}
 - 整礎柱: buc1_2_2 のみ外部(depth断片✅、unbounded-depth=ψ collapsing 非初等)
 - capstone: `m_8_termination_modulo_CF` → DISPATCH で `dsx_termination_residual_census` に更新予定
+- **残差の実体(r29a後)**: {condII-tailval-leftDj0(=p_8_2_condIIIV終切片), condIII-REGS/REGSP/M0RUN, condIV-HB+d1d3配線, OTint/OTpred/OTmulti, buc1_2_2}。§8.1/8.2/8.5/8.6 は交換側✅。**p_8_2_condIIIV(condII/IV終切片命題)が condII-tailval の底に居る**——これを割ると condII も落ちる可能性。
 
 ## REFUTED registry（再挑戦禁止・引用禁止の死没route）
 - W1/W2/WRAP'/reach-WRAP'(de-adm、~adm域で偽; dkfx_/dkbx_ vacuous) [r25-r26]
@@ -92,7 +94,8 @@ task.md のユーザー向け骨格に対する、作業側の詳細版。ユー
       - ✅ OT柱回避の直接降下〔`d2x_exchange2_condII`、kind0残差modulo〕[r1]
       - 🚨 exch
         - ✅ 存在量化count+step還元〔`c2ex_exchange2_condII_ex`(A36)+`c2lx_lhs_ex_of_step`〕[r2]
-        - 🚨🤖 base2+per-step surgery〔CONDII=wt-s4aが閉形式緑達成(X_n=D_va(t2+W·(n−1))+exchII配線`c2sx_exchII_leg_of_tailval`)、残=`c2sx_tailval`(W=D_v0 t4)討伐中〕[r1]
+        - ✅ base2+per-step surgery(閉形式)〔`c2sx_condII_masterCF`(scx二重帰納、opaque W)。exchII配線`c2sx_exchII_leg_of_tailval`(両dispatcher共有)〕[r2]
+        - 🚨 tailval残差(leftDj0枝=p_8_2_condIIIV)〔`c2sx_tailval`(W=`Dpt(e1 j0)(c2sx_t4)`、head証明済)。dischargers 2本証明済(`c2sx_tailval_trunk`/`_of_reg`)、残=leftDj0枝=p_8_2_condIIIV終切片をRed(seg M j-1 (Lng-2))に適用+not-leftDj0 guard〕[r0]
       - 🚨 OT所属 (⛔ 8.7)
     - ✅ 補題（第 $0$ 種型基本列の基本不等式）〔`m_8_3_kind0_base_ineq`(A22訂正)〕
     - ✅ 補題（第 $0$ 種型基本列の基本分岐規則）〔`m_8_3_kind0_branch_rule`〕
@@ -108,9 +111,9 @@ task.md のユーザー向け骨格に対する、作業側の詳細版。ユー
         - 🚨 HB(t2成分bound)〔`ALL c∈PB(transT2). leBT (D_v1 0) c`、condV `m_8_5_condV_adm_t2_components`の類似、(3)のみ影響〕[r0]
       - ❌ d13x_T形organize〔innerU が真正condIIIで充足不能(0/426)、`cfax_`/`e3x_`/`corrected_condIII` 組立はvacuous(cIII∧admeq不能)〕[r2]
       - 🚨 condIII exchange 再構築(d4vx_core route)
-        - ✅ engine+mnform+降下(2)OT-free+triple組立〔`w84x_exchange13_core`/`w84x_condIII_exchange_full_of_sliceregs`〕[r6]
-        - 🚨🤖 regS/regB(guarded slice regime、269/269)〔diag-at-jm3+singleton-last-branch、CIIIREG=wt-s4b〕[r0]
-        - 🚨🤖 BT-side facts dbbodyH/base0H/base1H/A0ltH〔right-spine head bound、CIIIREG=wt-s4bがdbbodyH緑達成済(`crx_dbbodyH`統合待ち)、残り3討伐中〕[r1]
+        - ✅ engine+mnform+降下(2)OT-free+triple組立〔`crx_condIII_exchange_full`(Red-slice真regimeで再組立、r28の6残差→3)〕[r6]
+        - ✅ BT-side facts (dbbodyH/base0/base1/A0lt)〔`crx_dbbodyH`/`crx_base0_of_run`/`crx_base1_of_nest`/`crx_A0lt_of_nest`、426/426+deep340/340〕[r1]
+        - 🚨 regime残差 REGS/REGSP/M0RUN〔`crx_regS_red_of_mcond`でREGSはm-condition核に還元。REGS=cfbx_reg at Red(s84x_N)、REGSP=at Red(Pred(s84x_N))、M0RUN=nextR(m=0全trunk枝)。次round対象〕[r1]
     - ✅ 補題（右端の非許容直系先祖の基本性質）〔`m_8_4_rightmost_nonadm_ancestor`〕
     - ✅ 補題（条件 (III)〜(V) の下での右端の置き換えと $\textrm{Trans}$ の関係）〔`m_8_4_rightend_Trans`、A30訂正形〕[r1]
     - ✅ 補題（条件 (III)〜(VI) の下での展開規則の基本性質）〔`m_8_4_oper_props_1..5`、A31ガード形〕[r1]
@@ -119,47 +122,20 @@ task.md のユーザー向け骨格に対する、作業側の詳細版。ユー
     - ✅ 補題（条件 (III)〜(V) の下での各種 scb分解）〔`m_8_4_various_scb_IIIV_from_slice`+`w84x_various_scb_IIIV_of_sliceregs`(regS/regB modulo=condIII exchange行で追跡)〕[r2]
     - ✅ 補題（条件 (III) か (IV) の下での各種 scb分解）〔`m_8_4_various_scb_IIIIV_from_slice`+`w84x_various_scb_IIIIV_of_sliceregs`(同上modulo)〕[r2]
     - ✅ 補題（条件 (III) か (IV) の下での基本列の基本性質）〔`m_8_4_oper_basic_part1`(= `p_8_4_oper_basic`)〕
-  - 🚨 §8.5 条件 (V) の下での展開規則 〔詳細→[[pss-85-surgery-masterkey]]〕
-    - 🚨 命題（条件 (V) の下での $\textrm{Trans}$ と基本列の交換関係）
-      - ✅ reduction ladder〔`m_8_5_*_of_*`〕
-      - 🚨 surgery spine-descent〔keystone 経由。⚠️N3で netfold橋が実regime偽=deprecated、原典routeへ移行〕
-        - ✅ (A) deepen SHAPE〔`m_8_5_appended_col_deepen`〕
-        - ✅ (B) wiring〔rnav engine/§7.4橋〕
-        - ✅ surgC⟸keystone組立〔`m_8_5_surgC_instance_of_keystone`〕
-        - 🚨 (keystone) `bpHeadT(Trans(slice@B))=C(bpHeadT(Trans slice))`
-          - ✅ telescope〔`m_8_5_keystone_allq`〕
-          - 🚨 R1: base q=2〔R2と同根、refuted route14〕
-          - 🚨 R2: fold-C可換
-            - ✅ Mark-level netfold橋〔`m_8_5_Mark_netfold_condV`/`_via_anchor`〕
-            - ✅ trunk-stuck混在fold対応〔`m_8_5_anchor_fold_mixed`〕[r1]
-            - ✅ 全期間F/C可換〔`m_8_5_Mark_fold_C_commute`〕[r2]
-            - 🚨 Fのq非依存性組立〔block-shift自己相似confirmed、assembly未着手〕[r2]
-            - 🚨 netfold橋のhostP前提が実regime偽(N3)〔W1/W2再構築 or S5交換routeで迂回〕[r0]
-            - ✅ R2a adm成分〔`m_8_5_marked_adm_persist`〕
-            - 🚨 R2a leR成分
-              - ✅ trunk-stuck leR偽の証明〔`m_8_5_marked_requires_last_component`〕
-              - ✅ trunk-stuck代替witness〔`m_8_5_anchor_col_trunkstuck_regime2`〕
-              - ✅ witnessをregimeから導出〔`m_8_5_basecut_residual`、colcase配線込 `m_8_5_colcase_trunkstuck_basecut`、207/207〕[r7]
-              - ✅ colcase全discharge〔`m_8_5_colcase_full`/`m_8_5_anchor_fold_kernel`、ok1-transport+stuck-suffix〕[r1]
-              - 🚨 基底前提discharge〔hp0N1がm=0で20/68偽(N1)→m=0義務の再形成要、disc/colRT〕[r0]
-        - ✅ (op) marked-head形〔`m_8_5_Mark_headform`〕
-    - ✅ 補題（条件 (V) の下での $\textrm{Joints}$ と $\textrm{FirstNodes}$ と $t_2$ の基本性質）〔`m_8_5_Joints_FirstNodes_basic` parts(1)(2)〕
-    - 🚨 補題（条件 (V) の下での各種 scb分解/基本列のscb分解）〔原典route〕
-      - ✅ part(1)+A24補正閉形式+n=1交換capstone〔`m_8_5_scbdec_fseq_condV`(2295/2295)/`m_8_5_scbdec_exchange1_n1_condV`、A28/A29発見〕[r1]
-      - ✅ adm全n閉形式+交換(1)(2)(3)無条件〔`m_8_5_Trans_oper_exchange_condV_adm_uncond`、(3)残差=`m_8_5_condV_adm_t2_components`/`_t2lb`〕[r2]
-      - 🚨 non-adm condV交換
-        - ❌ de-adm/WRAP route〔W1(r25)/W2(r26)とも~adm域で偽、reach-guardも不十分。universal KERも偽(r27, 24/1318非標準CEX)〕[r6]
-        - 🚨 c2L1
-          - ✅ SHARP→{atomA,atomB}再切断〔`s2x_chain`(slice右端強帰納)+`s2x_c2L1_of_atoms`。len2/redB は ST_PS で偽(19/131、r27 18/18=corpus truncation)〕[r8]
-          - 🚨🤖 c2L1本体〔ATOMS=wt-f7が原典忠実route(t2成分bound→notLD→c2L1)で緑達成済+condV非adm交換ペア無条件化`atx_Trans_oper_exchange_condV_nonadm_uncond`、統合待ち。atomA/atomB routeは不要化〕[r1]
-        - ✅ 交換route〔W2nostr両消費点(c=Lng-1/Lng-2)証明済`wnx_W2nostr_c1/_c2`(IncrFirst→Red slice→vcx_VE_all、run-cap-1は偽d=2実在)、capstone `wnx_nf3x`=modulo{c2L1,d1h,k1h}〕[r2]
+  - ✅ §8.5 条件 (V) の下での展開規則[r33]
+    <!-- 詳細: 命題(交換)=adm `m_8_5_Trans_oper_exchange_condV_adm_uncond`[r3]+nadm `atx_Trans_oper_exchange_condV_nonadm_uncond`[r14, scbdec原典route]で全host無条件。
+         non-adm c2L1=原典t2成分下界route `atx_condV_nadm_t2_components`→`atx_notLD`→`atx_c2L1`(atomA/atomB不要化、SHARP/s2x chainは consumerless死枝)。交換route=`wnx_nf3x`(W2nostr両消費点`wnx_W2nostr_c1/c2`)。
+         ❌REFUTED: de-adm/WRAP route[r6]、universal KER、len2/redB(→REFUTED registry参照)。
+         ⚰️SUPERSEDED(不要化): surgery spine-descent/keystone subtree(R1/R2/fold-C/netfold橋/leR成分…、[[pss-85-surgery-masterkey]]) — 交換命題がscbdec原典routeで閉じたため丸ごとobsolete。N3/Fのq非依存/基底前提discharge等は放棄。
+         補題 Joints/FirstNodes/t2 = `m_8_5_Joints_FirstNodes_basic` parts(1)(2)。 -->
   - ✅ §8.6 条件 (VI) の下での展開規則〔交換(1)(2)(3)全host無条件: adm=`c613x_condVI_exch_adm`/nadm=`c6nx_condVI_exch_nadm_uncond`(A34/A37)。零化一般領域のみ❌A25(clean=`m_8_6_trailing_principal_peel`で足りる)〕[r6]
   - 🚨 §8.7 主結果
     - ✅ 補題（公差 $(0,0)$ のペア数列の $\textrm{Trans}$ の基本性質）〔`m_8_7_const00_Trans`〕
     - 🚨 補題（基本列の降下性）〔`fseq_descend`〕
       - ✅ dispatcher〔`m_8_7_fseq_descend_dispatcher`、7 named交換前提modulo、6439/6439〕[r1]
-      - ✅ condV-adm脚discharge〔`m_8_7_fseq_descend_dispatcher_admV`〕[r1]
-      - 🚨 残交換前提discharge〔condV非adm/condI-IV/VI、checklist=`_r14_f7_notes.py`、exchIV添字k=m〕
+      - ✅ condV脚(adm+nadm)discharge〔adm=`m_8_7_fseq_descend_dispatcher_admV`/nadm=`atx_fseq_descend_dispatcher_Vclosed`〕[r2]
+      - ✅ condI脚discharge〔`scx_condI_exchange1`+`scx_condI_descent`(j0=0/j0>0両方)〕[r1]
+      - 🚨 残交換前提discharge(condII/III/IV)〔exchII=condII tailval / exchIII=condIII regime残差 / exchIV=condIV HB。exchVI=✅済〕
     - ✅ 補題（順序数項の再帰構造）〔`m_8_7_OT_scb_recursive`〕
     - ✅ 補題（順序数項の共終数の遺伝性）〔`m_8_7_OT_dom_hereditary`〕
     - ✅ 補題（順序数項の末尾項の零化可能性）〔top-level=`m_8_7_toplevel_OT_tail_annihilate`。一般化のみ❌A26(operB全域性)〕

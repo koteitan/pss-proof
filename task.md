@@ -63,7 +63,8 @@
       - ✅ OT柱回避の直接降下[r1]
       - 🚨 exch
         - ✅ 存在量化count+step還元[r2]
-        - 🚨🤖 base2+per-step surgery[r1]
+        - ✅ base2+per-step surgery(閉形式)[r2]
+        - 🚨 tailval残差(leftDj0枝=p_8_2_condIIIV)[r0]
       - 🚨 OT所属 (⛔ 8.7)
     - ✅ 補題（第 $0$ 種型基本列の基本不等式）
     - ✅ 補題（第 $0$ 種型基本列の基本分岐規則）
@@ -80,8 +81,8 @@
       - ❌ d13x_T形organize[r2]
       - 🚨 condIII exchange 再構築(d4vx_core route)
         - ✅ engine+mnform+降下(2)OT-free+triple組立[r6]
-        - 🚨🤖 regS/regB(guarded slice regime)[r0]
-        - 🚨🤖 BT-side facts dbbodyH/base0H/base1H/A0ltH[r1]
+        - ✅ BT-side facts (dbbodyH/base0/base1/A0lt)[r1]
+        - 🚨 regime残差 REGS/REGSP/M0RUN[r1]
     - ✅ 補題（右端の非許容直系先祖の基本性質）
     - ✅ 補題（条件 (III)〜(V) の下での右端の置き換えと $\textrm{Trans}$ の関係）[r1]
     - ✅ 補題（条件 (III)〜(VI) の下での展開規則の基本性質）[r1]
@@ -90,47 +91,15 @@
     - ✅ 補題（条件 (III)〜(V) の下での各種 scb分解）[r2]
     - ✅ 補題（条件 (III) か (IV) の下での各種 scb分解）[r2]
     - ✅ 補題（条件 (III) か (IV) の下での基本列の基本性質）
-  - 🚨 §8.5 条件 (V) の下での展開規則
-    - 🚨 命題（条件 (V) の下での $\textrm{Trans}$ と基本列の交換関係）
-      - ✅ reduction ladder
-      - 🚨 surgery spine-descent
-        - ✅ (A) deepen SHAPE
-        - ✅ (B) wiring
-        - ✅ surgC⟸keystone組立
-        - 🚨 (keystone) `bpHeadT(Trans(slice@B))=C(bpHeadT(Trans slice))`
-          - ✅ telescope
-          - 🚨 R1: base q=2
-          - 🚨 R2: fold-C可換
-            - ✅ Mark-level netfold橋
-            - ✅ trunk-stuck混在fold対応[r1]
-            - ✅ 全期間F/C可換[r2]
-            - 🚨 Fのq非依存性組立[r2]
-            - 🚨 netfold橋のhostP前提が実regime偽(N3)[r0]
-            - ✅ R2a adm成分
-            - 🚨 R2a leR成分
-              - ✅ trunk-stuck leR偽の証明
-              - ✅ trunk-stuck代替witness
-              - ✅ witnessをregimeから導出[r7]
-              - ✅ colcase全discharge[r1]
-              - 🚨 基底前提discharge[r0]
-        - ✅ (op) marked-head形
-    - ✅ 補題（条件 (V) の下での $\textrm{Joints}$ と $\textrm{FirstNodes}$ と $t_2$ の基本性質）
-    - 🚨 補題（条件 (V) の下での各種 scb分解/基本列のscb分解）
-      - ✅ part(1)+A24補正閉形式+n=1交換capstone[r1]
-      - ✅ adm全n閉形式+交換(1)(2)(3)無条件[r2]
-      - 🚨 non-adm condV交換
-        - ❌ de-adm/WRAP route[r6]
-        - 🚨 c2L1
-          - ✅ SHARP→{atomA,atomB}再切断[r8]
-          - 🚨🤖 c2L1本体[r1]
-        - ✅ 交換route[r2]
+  - ✅ §8.5 条件 (V) の下での展開規則[r33]
   - ✅ §8.6 条件 (VI) の下での展開規則[r6]
   - 🚨 §8.7 主結果
     - ✅ 補題（公差 $(0,0)$ のペア数列の $\textrm{Trans}$ の基本性質）
     - 🚨 補題（基本列の降下性）
       - ✅ dispatcher[r1]
-      - ✅ condV-adm脚discharge[r1]
-      - 🚨 残交換前提discharge
+      - ✅ condV脚(adm+nadm)discharge[r2]
+      - ✅ condI脚discharge[r1]
+      - 🚨 残交換前提discharge(condII/III/IV)
     - ✅ 補題（順序数項の再帰構造）
     - ✅ 補題（順序数項の共終数の遺伝性）
     - ✅ 補題（順序数項の末尾項の零化可能性）
