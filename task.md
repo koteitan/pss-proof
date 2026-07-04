@@ -59,7 +59,7 @@
       - 🚨 VE3/VE4
         - ✅ back-peel skeleton(guarded、vg4x_reg4訂正)[r3]
         - ✅ RPERS[r1]
-        - 🚨🤖 guarded BASE(2 terminal-slice bridges)[r0]
+        - 🚨🤖 guarded BASE(残=単一 bridges obligation)[r1]
         - 🚨🤖 STEP(article cases3,4)[r0]
     - ✅ 補題（強単項性の切片への遺伝性）
     - ✅ 補題（部分表現の単項成分と $\textrm{Pred}$ の関係）(§8.2 keystone)
@@ -76,7 +76,7 @@
         - 🚨 tailval残差
           - ✅ not-leftDj0脚(guard)modulo DIAG[r1]
           - 🚨 p_8_2_condIIIV(=§8.2命題、VE3/VE4残)[r2]
-          - 🚨🤖 DIAG→strictlt(ST_PS last-block、M0RUN共有)[r2]
+          - 🚨🤖 DIAG→strictlt(ST_PS last-block、M0RUN共有)[r3]
       - 🚨 OT所属 (⛔ 8.7)
     - ✅ 補題（第 $0$ 種型基本列の基本不等式）
     - ✅ 補題（第 $0$ 種型基本列の基本分岐規則）
@@ -90,15 +90,15 @@
       - 🚨 condIV exchange 組立
         - ✅ producer data+組立[r1]
         - ✅ HB(t2成分bound)[r1]
-        - 🚨🤖 regime残差(admeq gate/regS vacuous modulo condIV⟹adm(j-2)/REGSP=strictlt共有)[r4]
+        - 🚨🤖 regime残差(admeq gate/regS vacuous/REGSP=strictlt・M0RUN=ANC0 を condIII と共有)[r5]
       - ❌ d13x_T形organize[r2]
       - 🚨 condIII exchange 再構築(d4vx_core route)
         - ✅ engine+mnform+降下(2)OT-free+triple組立[r6]
         - ✅ BT-side facts (dbbodyH/base0/base1/A0lt)[r1]
         - ✅ REGS(mcx_regS、MCOND証明)[r4]
-        - 🚨🤖 M0RUN(ancestor✅、non-ancestor残=ST_PS last-block)[r4]
+        - 🚨🤖 ANC0(M0RUN由来、non-anc vacuous、ST_PS last-block)[r5]
         - ✅ REGSP trunk-bypass(d4a kousa-(1,1))[r1]
-        - 🚨🤖 Br≠[]-REGSP→strictlt(ST_PS last-block、M0RUN/condII DIAG共有)[r3]
+        - 🚨🤖 Br≠[]-REGSP→strictlt(ST_PS last-block、ANC0/condII DIAG共有)[r4]
     - ✅ 補題（右端の非許容直系先祖の基本性質）
     - ✅ 補題（条件 (III)〜(V) の下での右端の置き換えと $\textrm{Trans}$ の関係）[r1]
     - ✅ 補題（条件 (III)〜(VI) の下での展開規則の基本性質）[r1]
@@ -132,4 +132,4 @@
       - ✅ per-branch true legs[r1]
       - ✅ dispatcher slots discharge(orx_)[r1]
       - ✅ local-OTint keystone-free(condI/condVI/condV-adm-e=0)[r2]
-      - 🚨🤖 deep-insertion OT所属{otIII,otIV,otVnadm,otVadmDeep}(surgery keystone or sub-slice)[r2]
+      - 🚨 deep-insertion OT所属(4脚→surgery keystone{resid,multiD}に集約、sub-slice反証)[r3]
