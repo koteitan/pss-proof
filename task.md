@@ -58,7 +58,7 @@
       - ✅ VE2(無条件、ROW10討伐)[r3]
       - 🚨 VE3/VE4
         - ✅ back-peel skeleton(guarded)[r2]
-        - 🚨 guarded BASE/STEP/RPERS[r1]
+        - 🚨🤖 guarded BASE/STEP/RPERS[r1]
     - ✅ 補題（強単項性の切片への遺伝性）
     - ✅ 補題（部分表現の単項成分と $\textrm{Pred}$ の関係）(§8.2 keystone)
     - ✅ 補題（強単項性の下での部分表現の単項成分の基本性質）
@@ -74,7 +74,7 @@
         - 🚨 tailval残差
           - ✅ not-leftDj0脚(guard)modulo DIAG[r1]
           - 🚨 p_8_2_condIIIV(=§8.2命題、VE3/VE4残)[r2]
-          - 🚨 DIAG(eq-BAD⟹leftDj0、REGSP DIAGと共有)[r1]
+          - 🚨🤖 DIAG(eq-BAD⟹leftDj0、REGSP DIAGと共有)[r1]
       - 🚨 OT所属 (⛔ 8.7)
     - ✅ 補題（第 $0$ 種型基本列の基本不等式）
     - ✅ 補題（第 $0$ 種型基本列の基本分岐規則）
@@ -88,15 +88,15 @@
       - 🚨 condIV exchange 組立
         - ✅ producer data+組立[r1]
         - ✅ HB(t2成分bound)[r1]
-        - 🚨 regime残差(admeq gate/regS raw-slice wiring/REGSP=condIII共有=DIAG)[r3]
+        - 🚨🤖 regime残差(admeq gate/regS raw-slice wiring/REGSP=condIII共有=DIAG)[r3]
       - ❌ d13x_T形organize[r2]
       - 🚨 condIII exchange 再構築(d4vx_core route)
         - ✅ engine+mnform+降下(2)OT-free+triple組立[r6]
         - ✅ BT-side facts (dbbodyH/base0/base1/A0lt)[r1]
         - ✅ REGS(mcx_regS、MCOND証明)[r4]
-        - 🚨 M0RUN(→単一entry不等式)[r3]
+        - 🚨🤖 M0RUN(→単一entry不等式)[r3]
         - ✅ REGSP trunk-bypass(d4a kousa-(1,1))[r1]
-        - 🚨 Br≠[]-REGSP→DIAG(≤bound済)[r2]
+        - 🚨🤖 Br≠[]-REGSP→DIAG(≤bound済)[r2]
     - ✅ 補題（右端の非許容直系先祖の基本性質）
     - ✅ 補題（条件 (III)〜(V) の下での右端の置き換えと $\textrm{Trans}$ の関係）[r1]
     - ✅ 補題（条件 (III)〜(VI) の下での展開規則の基本性質）[r1]

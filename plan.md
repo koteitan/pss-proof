@@ -96,7 +96,7 @@ task.md のユーザー向け骨格に対する、作業側の詳細版。ユー
       - ✅ VE2(無条件、ROW10討伐)〔`vg3x_VE2`(=vg2x_VE2でROW10内部discharge)。`vg3x_ROW10`←`vg3x_row1_le_row0`(entry M 1 j≤entry M 0 j、任意reduced M、RedCondA/B only、monoT不要でm_6_6_condAB_coeffより一般、強帰納)〕[r3]
       - 🚨 VE3/VE4
         - ✅ back-peel skeleton(guarded)〔`vg3x_VE34_backpeel`+`vg3x_VE34_of_DT`。**r32のvg2x_reg2は不足**(vg2x_VE34は guard=last-branch first-node非対角 が必要、unguarded 0/13偽 例(0,0)(1,1)(2,2)(2,2))→`vg3x_reg3`=reg2∧guard に訂正〕[r2]
-        - 🚨 guarded BASE/STEP/RPERS〔BASE=article case2(nadm j0'、subexpr_component_Pred、19/19)/STEP=cases3,4 head-shift/RPERS=prefix reducedness。condV VESTEP/VEBASE と同型、次round〕[r1]
+        - 🚨🤖 guarded BASE/STEP/RPERS〔BASE=article case2(nadm j0'、subexpr_component_Pred、19/19)/STEP=cases3,4 head-shift/RPERS=prefix reducedness。condV VESTEP/VEBASE と同型、次round〕[r1]
     - ✅ 補題（強単項性の切片への遺伝性）〔`m_8_2_strongmono_slice`〕
     - ✅ 補題（部分表現の単項成分と $\textrm{Pred}$ の関係）(§8.2 keystone)〔`m_8_2_keystone` = 無条件 `p_8_2_subexpr_component_Pred`〕
     - ✅ 補題（強単項性の下での部分表現の単項成分の基本性質）〔`m_8_2_subexpr_component_strongmono_uncond`〕
@@ -112,7 +112,7 @@ task.md のユーザー向け骨格に対する、作業側の詳細版。ユー
         - 🚨 tailval残差
           - ✅ not-leftDj0脚(guard)modulo DIAG〔`cdx_d_le_joints`+`cdx_tailval_notldj`〕[r1]
           - 🚨 p_8_2_condIIIV(=§8.2命題、VE3/VE4残)〔同一物。scaffold+LastStep+VE2(ROW10込)✅、残=guarded VE3/VE4(BASE/STEP/RPERS)+fin〕[r2]
-          - 🚨 DIAG(eq-BAD⟹leftDj0、REGSP DIAGと共有)〔c2最終principal/right-spine計算。MCOND front も同じDIAG(eq-diag on Pred slice)を named assumeで残した=condII/IV横断共有残差〕[r1]
+          - 🚨🤖 DIAG(eq-BAD⟹leftDj0、REGSP DIAGと共有)〔c2最終principal/right-spine計算。MCOND front も同じDIAG(eq-diag on Pred slice)を named assumeで残した=condII/IV横断共有残差〕[r1]
       - 🚨 OT所属 (⛔ 8.7)
     - ✅ 補題（第 $0$ 種型基本列の基本不等式）〔`m_8_3_kind0_base_ineq`(A22訂正)〕
     - ✅ 補題（第 $0$ 種型基本列の基本分岐規則）〔`m_8_3_kind0_branch_rule`〕
@@ -126,15 +126,15 @@ task.md のユーザー向け骨格に対する、作業側の詳細版。ユー
       - 🚨 condIV exchange 組立
         - ✅ producer data+組立〔`c4dx_uv`/`c4dx_condIV_dbbody`/`c4dx_condIV_k1`(witness-match)/`c4dx_condIV_base1`、(1)(2)=`c4dx_condIV_exchange12_assembled`〕[r1]
         - ✅ HB(t2成分bound)〔`HB_condIV_t2_components`無条件(condV `m_8_5_condV_adm_t2_components`類似、clause(ii)@M1j0→M1j1 downgrade。DIAGはcondIVで0/536)。triple=`c4hx_condIV_exchange_full_of_regimes`〕[r1]
-        - 🚨 regime残差(admeq gate/regS raw-slice wiring/REGSP=condIII共有=DIAG)〔`c4wx_condIV_exchange_full_of_regimes` modulo {admeq(真gate、named assume), regS, shared-REGSP}。**⚠️c4wx の regS は RAW slice `s84x_N`(Redでない)**=mcx_regS(Red slice)と非一致、wiring artifact か要再statement(jm3対角時のみraw=Red)。shared-REGSP=`mcx_regSP_of_diag`でDIAG modulo(≤bound済)〕[r3]
+        - 🚨🤖 regime残差(admeq gate/regS raw-slice wiring/REGSP=condIII共有=DIAG)〔`c4wx_condIV_exchange_full_of_regimes` modulo {admeq(真gate、named assume), regS, shared-REGSP}。**⚠️c4wx の regS は RAW slice `s84x_N`(Redでない)**=mcx_regS(Red slice)と非一致、wiring artifact か要再statement(jm3対角時のみraw=Red)。shared-REGSP=`mcx_regSP_of_diag`でDIAG modulo(≤bound済)〕[r3]
       - ❌ d13x_T形organize〔innerU が真正condIIIで充足不能(0/426)、`cfax_`/`e3x_`/`corrected_condIII` 組立はvacuous(cIII∧admeq不能)〕[r2]
       - 🚨 condIII exchange 再構築(d4vx_core route)
         - ✅ engine+mnform+降下(2)OT-free+triple組立〔`crx_condIII_exchange_full`(Red-slice真regimeで再組立、r28の6残差→3)〕[r6]
         - ✅ BT-side facts (dbbodyH/base0/base1/A0lt)〔`crx_dbbodyH`/`crx_base0_of_run`/`crx_base1_of_nest`/`crx_A0lt_of_nest`、426/426+deep340/340〕[r1]
         - ✅ REGS(mcx_regS、MCOND証明)〔`mcx_d_le_last_joint`(d≤Joints(Red N)!last、branch-geometry、0 fail)+`mcx_MCOND_RN`(equality-diag込、trunk_entries_offset+終端row-1 valley+m_6_6_reduced_coeff sandwich)→`crx_regS_red_of_mcond`。**JGE(≤形)は偽だったがMCOND(disjunction)は真**〕[r4]
-        - 🚨 M0RUN(→単一entry不等式)〔`c3cx_M0RUN_of_a`+`c3cx_nextrel0_adj_of_le0` で reach/valley discharge→残=`entry M 1 jm2 < entry M 1 (jm2+1)`(=RedCondAでM0RUN自身)。要ST_PS-oper構造〕[r3]
+        - 🚨🤖 M0RUN(→単一entry不等式)〔`c3cx_M0RUN_of_a`+`c3cx_nextrel0_adj_of_le0` で reach/valley discharge→残=`entry M 1 jm2 < entry M 1 (jm2+1)`(=RedCondAでM0RUN自身)。要ST_PS-oper構造〕[r3]
         - ✅ REGSP trunk-bypass(d4a kousa-(1,1))〔`crg_d4a_trunk`/`crg_d4a_all`〕[r1]
-        - 🚨 Br≠[]-REGSP→DIAG(≤bound済)〔`mcx_regSP_of_diag`: ≤bound無条件(TrMax_Pred+le0 transfer)、残=equality-diag on Pred slice=上記共有DIAG(要 le0 M (jm3+fn') j1、singleton-vs-≥2 case split)〕[r2]
+        - 🚨🤖 Br≠[]-REGSP→DIAG(≤bound済)〔`mcx_regSP_of_diag`: ≤bound無条件(TrMax_Pred+le0 transfer)、残=equality-diag on Pred slice=上記共有DIAG(要 le0 M (jm3+fn') j1、singleton-vs-≥2 case split)〕[r2]
     - ✅ 補題（右端の非許容直系先祖の基本性質）〔`m_8_4_rightmost_nonadm_ancestor`〕
     - ✅ 補題（条件 (III)〜(V) の下での右端の置き換えと $\textrm{Trans}$ の関係）〔`m_8_4_rightend_Trans`、A30訂正形〕[r1]
     - ✅ 補題（条件 (III)〜(VI) の下での展開規則の基本性質）〔`m_8_4_oper_props_1..5`、A31ガード形〕[r1]
