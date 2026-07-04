@@ -17,6 +17,8 @@ def body(path):
     if not lines or lines[-1].strip() != 'end':
         raise SystemExit(f"REFUSE: {path} does not end with 'end'")
     lines.pop()
+    while lines and lines[-1].strip() == '':
+        lines.pop()  # also strip blank lines that sat between content and the final 'end'
     return lines
 
 base = body(sys.argv[1])
