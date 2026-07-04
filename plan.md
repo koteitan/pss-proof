@@ -1,27 +1,36 @@
-# 進捗管理
+# plan.md — 作業計画・詳細メモ
 
-## 注意事項
-- 進捗ツリー以外をこのページに書かない。
-- **各アイテムはアイテムを区別する情報のみを１行で。それ以上は書かない**（討伐補題名 or blocker を短く。設計の詳細は docs/・memory へ）。
-- 子がすべて ✅ のノードは子を畳む（子を書かない）。
-- **🚨 行に ✅(done部) を inline 禁止**。done と未done が混在したら ✅子/🚨子 に分割する：
-  - ダメな書き方：`- 🚨🤖 (2)(3)(4) leBT〔残=det case-4構造link。value bound \`m_8_2_branch_row1_le_TrMax\`✅〕`
-  - 良い書き方：`- 🚨 (2)(3)(4) leBT` の子に `- ✅ value bound〔m_8_2_branch_row1_le_TrMax〕` と `- 🚨🤖 det case-4 構造link` を作る
-- 下記の反例以外のマークを増やさない
-  - 凡例: **各項目には必ず 🚨（未証明）または ✅（証明済）を付ける**（司令マーカー）。
-  - 🚨🤖 ＝ agent 作業中
-  - 📘 ＝ [Buc1] 引用 sorry（外部結果、原文も証明せず引用のみ。後で埋める。`buc1_*`）
-  - ⛔ X ＝ X 待ち（X が解けるまでこの項目は解けない／依存先を示す）
-  - ❌ ＝ 原文偽（訂正Axx）かつ停止性に不要（迂回・証明対象外の死枝。✅でも🚨でもない）
-- **ラウンド消費数 `[rN]`**：そのアイテムに何ラウンド費やしたかを末尾に付ける。例：`- 🚨xxxxx[r2]` は2ラウンド消費済み。
-  - 分岐させる時は、消費済みラウンド数をそれまでの作業に対応する子へ付け、新設の子は `[r0]` から始める：
-    - 分岐前：`- 🚨xxxxx[r2]`
-    - 分岐後：`- 🚨xxxxx` の子に `- ✅yyyyy[r2]` と `- 🚨zzzzz[r0]`
-  - 子孫が全て ✅ になったら、ツリー内の全ラウンド数を合計して子を畳み、親1行の `[rN]` にする：
-    - 畳む前：`- 🚨xxxxx` の子が `- ✅yyyyy[r2]` と `- ✅zzzzz[r4]`
-    - 畳んだ後：`- ✅xxxxx[r6]`
+task.md のユーザー向け骨格に対する、作業側の詳細版。ユーザーは読まない前提の自由記述。
 
-## 進捗ツリー
+## 編集方針（自分用）
+- **ツリーは task.md とアイテム名を一致させる**（grep で相互参照できるように）。task.md の状態変更（✅化/分岐/畳み込み）と同じコミットで plan.md 側も更新する。
+- 各アイテムに書いてよいもの: thy 対応（討伐補題名）、modulo 残差の正確な内容(Isar)、経験検証の分数と corpus 深さ、勝ち筋/死路、他アイテムとの依存関係、担当 front/worktree、難易度所感、次の一手。
+- task.md で畳んだ ✅ ノードも、こちらでは子を残してよい（履歴として有用なら）。
+- ツリー以外のセクション（ラウンド状態・残差census・REFUTED registry・運用手順）を自由に追加・改廃する。
+- 詳細が肥大したら docs/ か memory に移してポインタだけ残す。
+
+## 現在のラウンド状態（2026-07-04）
+- **並列度制限: 3 front/wave**（r29 6同時が session limit 全滅 → ユーザー指示で半減）。モデルは全 front Fable+xhigh。
+- **r29a wave-1 実行中**(wf_1c874268-93d、base ff1eac6): CIIIREG=wt-s4b(regS/regB+BT4、dbbodyH緑済) / ATOMS=wt-f7(c2L1原典route緑済+condV非adm交換無条件化`atx_Trans_oper_exchange_condV_nonadm_uncond`) / CONDII=wt-s4a(閉形式緑、残=`c2sx_tailval`)。
+- **wave-2 予定**(統合後): OTRES=wt-b1(OTint/OTpred/OTmulti) / HBWIRE=wt2(condIV HB+d1-d3配線) / DISPATCH=wt-s5(dsx_fseq_descend_master+termination残差census)。scriptは scratchpad/pss-r29.mjs の該当3面を流用。
+- 統合手順: extract_block.py で base 相対 clean-append 検証 → 連結 → solo `isbman build -v PSS_C` → literal "Finished PSS_C"==1 + real-error grep 0 + sorry/oops テキストのみ確認 → python 資産回収 → commit+push → task.md/plan.md → worktree 同期 → 次wave。
+
+## §8 残差 census（r28後、r29a で解消中）
+- 降下柱: condI ✅ / condVI ✅ / condV-adm ✅ / condV-nadm→{c2L1(ATOMS緑済), d1h/k1h(atx内部供給済)} / condII→{tailval} / condIII→{regS,regB,dbbodyH(緑済),base0H,base1H,A0ltH} / condIV→{d1-d3(=w84x配線),HB}
+- OT柱: {exchI(condI分✅+condII分=tailval), exchII(c2sx配線済=tailval), OTint, OTpred, OTmulti}
+- 整礎柱: buc1_2_2 のみ外部(depth断片✅、unbounded-depth=ψ collapsing 非初等)
+- capstone: `m_8_termination_modulo_CF` → DISPATCH で `dsx_termination_residual_census` に更新予定
+
+## REFUTED registry（再挑戦禁止・引用禁止の死没route）
+- W1/W2/WRAP'/reach-WRAP'(de-adm、~adm域で偽; dkfx_/dkbx_ vacuous) [r25-r26]
+- universal KER(RT_PS&monoT量化で偽; vmlx_*_of_kernel vacuous) [r27]
+- stepval(A38; m_8_7_Trans_preserves_OT_via_closure/svx_* vacuous) [r28]
+- len2/redB(ST_PSで偽19/131; shx_*_of_len2_redB は端点として死没) [r28]
+- d13x_T形 condIII organize(innerU 0/426; cfax_/e3x_/corrected_condIII vacuous) [r28]
+- Pred_oper0(A27) / 零化一般(A25/A26) / has_gz⟹D系(§6.7) / 固定count condII(A36)
+- 経験検証の教訓: oper-only corpus と小cap(8000)は偽陽性を生む。brute straddle + cap≥30000 + Lng≥10 必須。
+
+## 進捗ツリー（詳細注釈付き）
 - ✅ §5 定式化
 - ✅ §6 ペア数列の基本性質 〔全節完了(2026-06-11)。docs `reducedness.md`/`red-le-domain.md`/`slice-Br-descending.md`〕
 - ✅ §7 Buchholzの表記系への翻訳 
