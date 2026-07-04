@@ -55997,4 +55997,608 @@ qed
 
 (* ===== end r35-OTDEEP block ===== *)
 
+(* ===== r36 merge: wt-s4b block (r36-LASTBLOCK2) ===== *)
+
+(* ===================================================================== *)
+(* ===== r36-LASTBLOCK2 (lb2x_ prefix): ANC0 discharge scaffolding.   ===== *)
+(* ===== The row-0 ascension-window fact ANC0 = le0 M (jm2+1) transJ0 ===== *)
+(* ===== is reduced to the SINGLE row-0 gap equality                  ===== *)
+(* =====   WGAP : entry M 0 (transJ0 M)                               ===== *)
+(* =====            = entry M 0 (s84x_jm2 M) + (transJ0 M - jm2)      ===== *)
+(* ===== (the ``last-block diagonal ramp'' equality).  Its (<=) half  ===== *)
+(* ===== is FREE (lb2x_le0_row0_bound: along a row-0 le0-chain in a   ===== *)
+(* ===== reduced M the row-0 value grows by <= the index distance,    ===== *)
+(* ===== since every chain step is a UNIQUE-parent +1 step by         ===== *)
+(* ===== RedCondA); the (>=) half is exactly ``the ascension window   ===== *)
+(* ===== has no row-0 plateau'', the genuine ST_PS last-block fact.   ===== *)
+(* ===== Given WGAP the chain from jm2 to transJ0 is forced CONSEC    ===== *)
+(* ===== (pigeonhole: gap = index-gap), so le0 M (jm2+1) transJ0.     ===== *)
+(* ===== EMPIRICAL (python/_r36_anc0.py, _r36_d0w.py): ANC0 and the   ===== *)
+(* ===== window-consecutive form hold 2099/2099 and 1665/1665 over    ===== *)
+(* ===== the genuine condIII/IV ST_PS oper corpus (deep Lng>=10).     ===== *)
+(* ===================================================================== *)
+
+section \<open>r36-LASTBLOCK2 --- ANC0 reduced to the row-0 last-block gap equality WGAP\<close>
+
+text \<open>A single row-0 next-edge in a reduced \<open>M\<close> increments row 0 by exactly \<open>1\<close>:
+  from @{term "nextrel0 M a c"} the child \<open>c\<close> has \<open>a\<close> as its UNIQUE row-0 parent
+  (@{thm [source] idxsum_parent0_unique}), so @{thm [source] RedCondA_def}
+  (via @{thm [source] wnx_condA_step}) pins \<open>M\<^bsub>0,c\<^esub> = M\<^bsub>0,a\<^esub> + 1\<close>.\<close>
+
+lemma lb2x_nextrel0_condA:
+  fixes M :: pairseq and a c :: nat
+  assumes MR: "M \<in> RT_PS" and nr: "nextrel0 M a c"
+  shows "entry M 0 c = entry M 0 a + 1"
+proof -
+  have ex: "nextR M 0 a c" using nr by (simp add: nextR_def)
+  have hp: "hasParent M 0 c"
+    unfolding hasParent_def
+  proof (rule ex1I[of _ a])
+    show "nextR M 0 a c" by (rule ex)
+  next
+    fix a' assume "nextR M 0 a' c"
+    from idxsum_parent0_unique[OF this ex] show "a' = a" .
+  qed
+  have par: "parent M 0 c = a"
+    unfolding parent_def
+  proof (rule the_equality)
+    show "nextR M 0 a c" by (rule ex)
+  next
+    fix p assume "nextR M 0 p c"
+    from idxsum_parent0_unique[OF this ex] show "p = a" .
+  qed
+  have "entry M 0 (parent M 0 c) + 1 = entry M 0 c"
+    by (rule wnx_condA_step[OF MR _ hp]) simp
+  thus ?thesis using par by simp
+qed
+
+text \<open>Row-0 chain UPPER bound (the \<open>\<le>\<close> half of \<open>WGAP\<close>, unconditional): along any
+  row-0 reachability \<open>(nextrel0 M)\<^sup>*\<^sup>* a b\<close> in a reduced \<open>M\<close>, the row-0 value grows
+  by at most the index distance.  Each chain step increments row 0 by exactly
+  \<open>1\<close> (@{thm [source] lb2x_nextrel0_condA}) while the index strictly increases,
+  so \<open>M\<^bsub>0,b\<^esub> - M\<^bsub>0,a\<^esub> = \<close>(#steps)\<open> \<le> b - a\<close>.\<close>
+
+lemma lb2x_le0_row0_bound:
+  fixes M :: pairseq and a b :: nat
+  assumes MR: "M \<in> RT_PS" and ch: "(nextrel0 M)\<^sup>*\<^sup>* a b"
+  shows "entry M 0 b \<le> entry M 0 a + (b - a)"
+  using ch
+proof (induct rule: rtranclp_induct)
+  case base
+  show ?case by simp
+next
+  case (step y z)
+  have amono: "a \<le> y" using step.hyps(1) by (rule nextrel0_rtrancl_mono)
+  have yz: "y < z" using step.hyps(2) by (simp add: nextrel0_def)
+  have eq: "entry M 0 z = entry M 0 y + 1" by (rule lb2x_nextrel0_condA[OF MR step.hyps(2)])
+  show ?case using step.hyps(3) amono yz eq by linarith
+qed
+
+text \<open>\<^bold>\<open>Gap \<open>\<Rightarrow>\<close> consecutive.\<close>  If \<open>a\<close> row-0-reaches \<open>b\<close> (\<open>a < b\<close>) in a reduced
+  \<open>M\<close> and the row-0 GAP equals the INDEX gap (\<open>M\<^bsub>0,b\<^esub> = M\<^bsub>0,a\<^esub> + (b-a)\<close>), then
+  the chain is forced to be a consecutive \<open>a \<to> a+1 \<to> \<dots> \<to> b\<close> run; in
+  particular \<open>a+1\<close> row-0-reaches \<open>b\<close>.  Proof: peel the first edge
+  \<open>nextrel0 M a c\<close>; it increments row 0 by \<open>1\<close>, and the \<open>\<le>\<close> bound on the residual
+  \<open>c \<to> b\<close> forces \<open>c \<le> a+1\<close>, i.e. \<open>c = a+1\<close>, and the residual is \<open>a+1 \<to> b\<close>.\<close>
+
+lemma lb2x_le0_gap_consec:
+  fixes M :: pairseq and a b :: nat
+  assumes MR: "M \<in> RT_PS" and le: "le0 M a b" and ab: "a < b"
+    and gap: "entry M 0 b = entry M 0 a + (b - a)"
+  shows "le0 M (a + 1) b"
+proof -
+  have aL: "a < Lng M" and bL: "b < Lng M" using le by (simp_all add: le0_def)
+  have ch: "(nextrel0 M)\<^sup>*\<^sup>* a b" using le by (simp add: le0_def)
+  have ne: "a \<noteq> b" using ab by simp
+  obtain c where ac: "nextrel0 M a c" and cb: "(nextrel0 M)\<^sup>*\<^sup>* c b"
+    using ch ne by (metis converse_rtranclpE)
+  have alt: "a < c" using ac by (simp add: nextrel0_def)
+  have cle: "c \<le> b" using cb by (rule nextrel0_rtrancl_mono)
+  have ec: "entry M 0 c = entry M 0 a + 1" by (rule lb2x_nextrel0_condA[OF MR ac])
+  have bnd: "entry M 0 b \<le> entry M 0 c + (b - c)" by (rule lb2x_le0_row0_bound[OF MR cb])
+  have "c \<le> a + 1" using gap ec bnd ab alt cle by linarith
+  hence ca1: "c = a + 1" using alt by linarith
+  have cL: "c < Lng M" using ac by (simp add: nextrel0_def)
+  show ?thesis using cb ca1 cL bL by (simp add: le0_def)
+qed
+
+text \<open>\<open>ANC0\<close> discharged from the single row-0 gap equality \<open>WGAP\<close>.  Combines
+  @{thm [source] lbx_le0_jm2_j0} (\<open>le0 M j\<^sub>-\<^sub>2 j\<^sub>0\<close>, already proven),
+  @{thm [source] m_8_4_oper_props_1} (\<open>j\<^sub>-\<^sub>2 < j\<^sub>0\<close> under (III)/(IV)) and
+  @{thm [source] lb2x_le0_gap_consec}.\<close>
+
+lemma lb2x_anc0_of_wgap:
+  fixes M :: pairseq
+  assumes MST: "M \<in> ST_PS" and MPT: "M \<in> PT_PS"
+    and hp: "hasParent M 1 (Lng M - 1)"
+    and j1gt: "1 < Lng M - 1"
+    and branch: "transCondIII M \<or> transCondIV M"
+    and WGAP: "entry M 0 (transJ0 M)
+                 = entry M 0 (s84x_jm2 M) + (transJ0 M - s84x_jm2 M)"
+  shows "le0 M (s84x_jm2 M + 1) (transJ0 M)"
+proof -
+  have MR: "M \<in> RT_PS" using MST m_6_7_ST_PS_subseteq_RT_PS by blast
+  have j1gt0: "0 < Lng M - 1" using j1gt by simp
+  have le0: "le0 M (s84x_jm2 M) (transJ0 M)" by (rule lbx_le0_jm2_j0[OF MPT hp j1gt0])
+  have lt: "s84x_jm2 M < transJ0 M" by (rule m_8_4_oper_props_1(1)[OF MST MPT hp j1gt branch])
+  show ?thesis by (rule lb2x_le0_gap_consec[OF MR le0 lt WGAP])
+qed
+
+text \<open>The condIII exchange keystone @{thm [source] lbx_crg_condIII_exchange_full_reduced}
+  with its residual set \<open>{REGSP, ANC0}\<close> further reduced to \<open>{REGSP, WGAP}\<close>: the
+  row-0 reachability \<open>ANC0\<close> is discharged by @{thm [source] lb2x_anc0_of_wgap} from
+  the single row-0 last-block gap equality \<open>WGAP\<close> (whose \<open>\<le>\<close> half is unconditional,
+  @{thm [source] lb2x_le0_row0_bound}).\<close>
+
+lemma lb2x_crg_condIII_exchange_full_wgap:
+  fixes M :: pairseq and n :: nat
+  assumes MST: "M \<in> ST_PS" and MPT: "M \<in> PT_PS"
+    and hp: "hasParent M 1 (Lng M - 1)"
+    and j1gt: "1 < Lng M - 1"
+    and cIII: "transCondIII M"
+    and n1: "1 \<le> n"
+    and REGSP: "Br (Red (Pred (s84x_N M))) \<noteq> [] \<Longrightarrow>
+                  cfbx_reg (s84x_jm2 M - s84x_jm3 M) (Red (Pred (s84x_N M)))"
+    and WGAP: "entry M 0 (transJ0 M)
+                 = entry M 0 (s84x_jm2 M) + (transJ0 M - s84x_jm2 M)"
+  shows "lessBT (Trans ((M::pairseq)[n])) (operB (Trans M) (numBT n))
+       \<and> lessBT (Trans ((M::pairseq)[n])) (Trans M)
+       \<and> lessBT (operB (Trans M) (numBT (n - 1))) (Trans ((M::pairseq)[n + 1]))"
+proof -
+  have branch: "transCondIII M \<or> transCondIV M" by (rule disjI1[OF cIII])
+  have ANC0: "le0 M (s84x_jm2 M + 1) (transJ0 M)"
+    by (rule lb2x_anc0_of_wgap[OF MST MPT hp j1gt branch WGAP])
+  show ?thesis
+    by (rule lbx_crg_condIII_exchange_full_reduced[OF MST MPT hp j1gt cIII n1 REGSP ANC0])
+qed
+
+(* ===== end r36-LASTBLOCK2 ANC0 reduction ===== *)
+
+(* ===================================================================== *)
+(* ===== r36-LASTBLOCK2 (lb2x_ prefix): strictlt sharpened to the      == *)
+(* ===== d = jlp EQUALITY case.                                        == *)
+(* ===== dgx_regSP_of_lt takes the sharp inequality strictlt as an      == *)
+(* ===== UNCONDITIONAL hypothesis, but strictlt is FALSE in general on   == *)
+(* ===== the reduced Pred-slice: EMPIRICALLY (python/_r36_strictlt.py)   == *)
+(* ===== it holds only 453/553 over the brne guard corpus.  Inspection   == *)
+(* ===== of dgx_regSP_diag_of_lt shows strictlt is CONSUMED only in the  == *)
+(* ===== equality case  d = Joints RN' ! last  (the DIAG hypothesis of   == *)
+(* ===== mcx_regSP_of_diag is itself guarded by exactly that equality).  == *)
+(* ===== So the TRUE residual is strictlt-UNDER-(d=jlp), which the r34    == *)
+(* ===== census confirms 52/52 (python/_r34_diag_deep.py filters d=jlp   == *)
+(* ===== before checking).  lb2x_regSP_of_lt_eqd re-plumbs               == *)
+(* ===== dgx_regSP_of_lt to require strictlt only under that guard.      == *)
+(* ===================================================================== *)
+
+section \<open>r36-LASTBLOCK2 --- REGSP with strictlt guarded by the \<open>d = jlp\<close> equality\<close>
+
+text \<open>\<open>REGSP\<close> (the shared condIII/condIV \<open>Br(Red(Pred(s84x_N M)))\<noteq>[]\<close> regime),
+  unconditional MODULO the sharp \<open>strictlt\<close> inequality \<^bold>\<open>restricted to the equality
+  case\<close> \<open>d = Joints RN' ! last\<close> (\<open>RN' = Red(Pred(s84x_N M))\<close>).  Strict improvement of
+  @{thm [source] dgx_regSP_of_lt}, whose \<open>strictlt\<close> hypothesis is UNCONDITIONAL and
+  hence FALSE in general (the last-branch first-node diagonal is only forced when
+  the last branch attaches exactly at \<open>d\<close>): the \<open>DIAG\<close> obligation of
+  @{thm [source] mcx_regSP_of_diag} is already guarded by that very equality, so
+  \<open>strictlt\<close> is consumed by @{thm [source] dgx_regSP_diag_of_lt} only there.\<close>
+
+lemma lb2x_regSP_of_lt_eqd:
+  fixes M :: pairseq
+  assumes MST: "M \<in> ST_PS" and MPT: "M \<in> PT_PS"
+    and hp: "hasParent M 1 (Lng M - 1)"
+    and j1gt: "1 < Lng M - 1"
+    and branch: "transCondIII M \<or> transCondIV M"
+    and guard: "s84x_jm3 M < s84x_jm2 M"
+    and Brne': "Br (Red (Pred (s84x_N M))) \<noteq> []"
+    and strictlt_eqd:
+      "s84x_jm2 M - s84x_jm3 M
+         = Joints (Red (Pred (s84x_N M)))
+             ! (Lng (Br (Red (Pred (s84x_N M)))) - 1)
+       \<Longrightarrow> entry (Red (Pred (s84x_N M))) 1 (s84x_jm2 M - s84x_jm3 M)
+             < entry (Red (Pred (s84x_N M))) 1
+                 (FirstNodes (Red (Pred (s84x_N M)))
+                    ! (Lng (Br (Red (Pred (s84x_N M)))) - 1))"
+  shows "cfbx_reg (s84x_jm2 M - s84x_jm3 M) (Red (Pred (s84x_N M)))"
+proof -
+  have DIAG: "s84x_jm2 M - s84x_jm3 M
+                = Joints (Red (Pred (s84x_N M)))
+                    ! (Lng (Br (Red (Pred (s84x_N M)))) - 1)
+             \<Longrightarrow> entry (Red (Pred (s84x_N M))) 0
+                   (FirstNodes (Red (Pred (s84x_N M)))
+                      ! (Lng (Br (Red (Pred (s84x_N M)))) - 1))
+               = entry (Red (Pred (s84x_N M))) 1
+                   (FirstNodes (Red (Pred (s84x_N M)))
+                      ! (Lng (Br (Red (Pred (s84x_N M)))) - 1))"
+  proof -
+    assume eq: "s84x_jm2 M - s84x_jm3 M
+                  = Joints (Red (Pred (s84x_N M)))
+                      ! (Lng (Br (Red (Pred (s84x_N M)))) - 1)"
+    show "entry (Red (Pred (s84x_N M))) 0
+            (FirstNodes (Red (Pred (s84x_N M)))
+               ! (Lng (Br (Red (Pred (s84x_N M)))) - 1))
+        = entry (Red (Pred (s84x_N M))) 1
+            (FirstNodes (Red (Pred (s84x_N M)))
+               ! (Lng (Br (Red (Pred (s84x_N M)))) - 1))"
+      by (rule dgx_regSP_diag_of_lt[OF MST MPT hp j1gt branch guard Brne'
+            strictlt_eqd[OF eq] eq])
+  qed
+  show ?thesis
+    by (rule mcx_regSP_of_diag[OF MST MPT hp j1gt branch guard Brne' DIAG])
+qed
+
+(* ===== end r36-LASTBLOCK2 strictlt-eqd sharpening ===== *)
+
+(* ===== r36 merge: wt-s4a block (r36-BRIDGES) ===== *)
+
+(* ===================================================================== *)
+(* ===== r36-BRIDGES (vg6x_ prefix): the VE34 guarded BASE bridges.    ===== *)
+(* ===== FINDING: the r35 `bridges` obligation is EQUIVALENT to the    ===== *)
+(* ===== VE34 base residual itself (modulo the two slice principals,   ===== *)
+(* ===== which are provable), i.e. it is NOT a strict reduction.       ===== *)
+(* ===================================================================== *)
+
+section \<open>r36-BRIDGES --- the §8.2 condII/IV VE34 BASE bridges: pure-BT split
+  algebra, the slice principalities, and the equivalence \<open>bridges \<longleftrightarrow> VE34\<close>\<close>
+
+text \<open>\<^bold>\<open>Pure-\<^typ>\<open>BT\<close> snoc/append uniqueness.\<close>  Every \<^typ>\<open>BT\<close> is \<open>Trm ps\<close> and
+  \<open>a +\<^sub>B Dpt v x = Trm (untrm a @ [DB v x])\<close> is a \<^bold>\<open>snoc\<close>; two snocs with the same
+  last head \<open>v\<close> are equal iff both the prefix \<^typ>\<open>BT\<close>s and the last bodies agree.
+  This is the exact left/right-cancellation the article uses when it reads
+  ``\<open>t\<^sub>1 + D\<^bsub>v\<^esub> \<tau> = t\<^sub>1' + D\<^bsub>v\<^esub> \<tau>'\<close>'' off the two decompositions of \<open>Trans M\<close> —
+  the ``最右単項成分の左端が \<open>D\<^bsub>M\<^bsub>1,j\<^sub>0'\<^esub>\<^esub>\<close>'' step (content.md 3900+).  Companion of
+  @{thm [source] cdx_addBT_left_cancel}.  Prefix \<open>vg6x_\<close>.\<close>
+
+lemma vg6x_addBT_split_lastD:
+  fixes a b x y :: BT and v :: enat
+  assumes "a +\<^sub>B Dpt v x = b +\<^sub>B Dpt v y"
+  shows "a = b \<and> x = y"
+proof -
+  obtain as where a: "a = Trm as" by (cases a)
+  obtain bs where b: "b = Trm bs" by (cases b)
+  have "Trm (as @ [DB v x]) = Trm (bs @ [DB v y])"
+    using assms a b by simp
+  hence eqL: "as @ [DB v x] = bs @ [DB v y]" by simp
+  have "as = bs" using eqL by simp
+  moreover have "DB v x = DB v y" using eqL by simp
+  ultimately show ?thesis using a b by simp
+qed
+
+text \<open>\<^bold>\<open>The equivalence direction \<open>VE34 \<Longrightarrow> bridges\<close> (modulo the two slice
+  principalities).\<close>  Given the base \<open>Trans N\<close> form (from
+  @{thm [source] vg5x_base_transM_form}), the two slice principalities \<open>princN\<close>
+  (\<open>Trans (seg N 0 m\<^sub>1) = D\<^bsub>N\<^bsub>1,0\<^esub>\<^esub> (bpHeadT (Trans (seg N 0 m\<^sub>1)))\<close>)
+  and \<open>princMp\<close> (\<open>Trans (seg N j\<^sub>0' (Lng N - 1)) = D\<^bsub>N\<^bsub>1,j\<^sub>0'\<^esub>\<^esub> (bpHeadT \<dots>)\<close>),
+  and the \<^bold>\<open>bpHeadT-level\<close> residual @{term "vg2x_VE34 N"} (\<open>= VE3 \<and> t\<^sub>2\<noteq>0 \<and> VE4\<close>),
+  the FULL terminal-slice readbacks \<open>brN\<close>/\<open>brMp\<close> (article parts (1),(3)) follow by
+  @{thm [source] vg6x_addBT_split_lastD}: \<open>VE4\<close> equates the form's split
+  \<open>t\<^sub>1 + D\<^bsub>j\<^sub>0'\<^esub>\<tau>\<close> with \<open>bpHeadT(Trans N\<^sub>slice) + D\<^bsub>j\<^sub>0'\<^esub>(bpHeadT(Trans M'\<^sub>slice))\<close>, so
+  the snoc-split pins \<open>t\<^sub>1 = bpHeadT(Trans N\<^sub>slice)\<close> and \<open>\<tau> = bpHeadT(Trans M'\<^sub>slice)\<close>;
+  the principalities then upgrade the \<open>bpHeadT\<close> equalities to term readbacks and
+  \<open>VE3\<close> supplies the growth split.  \<^bold>\<open>Consequence:\<close> combined with the already-proven
+  reverse @{thm [source] vg5x_base_VE34_of_bridges} (\<open>bridges \<Longrightarrow> VE34\<close>), this shows
+  \<open>bridges \<longleftrightarrow> VE34\<close> once the principalities hold; i.e. the r35 \<open>bridges\<close>
+  hypothesis of @{thm [source] vg5x_base_VE34_modBridges} is \<^bold>\<open>equivalent\<close> to
+  \<open>vg2x_VE34 N\<close> itself, not a strict reduction of it.  Audit (rule 4): cites only
+  @{thm [source] vg6x_addBT_split_lastD} and \<open>bpHeadT.simps\<close>; \<open>princN/princMp/ve34\<close>
+  are honest named hypotheses.\<close>
+
+lemma vg6x_bridges_of_VE34:
+  fixes N :: pairseq and t1 tau :: BT
+  defines "j0' \<equiv> Joints N ! (Lng (Br N) - 1)"
+  defines "m1 \<equiv> FirstNodes N ! (LastStep N) - 1"
+  assumes form: "Trans N = Dpt (enat (entry N 1 0))
+                  (t1 +\<^sub>B Dpt (enat (entry N 1 j0')) tau)"
+    and princN: "Trans (seg N 0 m1)
+                   = Dpt (enat (entry N 1 0)) (bpHeadT (Trans (seg N 0 m1)))"
+    and princMp: "Trans (seg N j0' (Lng N - 1))
+                   = Dpt (enat (entry N 1 j0')) (bpHeadT (Trans (seg N j0' (Lng N - 1))))"
+    and ve34: "vg2x_VE34 N"
+  shows "Trans (seg N 0 m1) = Dpt (enat (entry N 1 0)) t1
+       \<and> (\<exists>t2. tau = t1 +\<^sub>B t2 \<and> t2 \<noteq> 0\<^sub>B
+           \<and> Trans (seg N j0' (Lng N - 1))
+               = Dpt (enat (entry N 1 j0')) tau)"
+proof -
+  \<comment> \<open>abbreviations matching @{term vg2x_VE34}\<close>
+  let ?Nsl = "Trans (seg N 0 m1)"
+  let ?Msl = "Trans (seg N j0' (Lng N - 1))"
+  from ve34 obtain t2 where
+    VE3: "bpHeadT ?Msl = bpHeadT ?Nsl +\<^sub>B t2"
+    and t2ne: "t2 \<noteq> 0\<^sub>B"
+    and VE4: "bpHeadT (Trans N)
+                = bpHeadT ?Nsl +\<^sub>B Dpt (enat (entry N 1 j0')) (bpHeadT ?Msl)"
+    by (auto simp: j0'_def m1_def)
+  \<comment> \<open>the form gives \<open>bpHeadT (Trans N) = t\<^sub>1 + D\<^bsub>j\<^sub>0'\<^esub> \<tau>\<close>\<close>
+  have hN: "bpHeadT (Trans N) = t1 +\<^sub>B Dpt (enat (entry N 1 j0')) tau"
+    using form by simp
+  \<comment> \<open>equate and snoc-split\<close>
+  have eq: "t1 +\<^sub>B Dpt (enat (entry N 1 j0')) tau
+              = bpHeadT ?Nsl +\<^sub>B Dpt (enat (entry N 1 j0')) (bpHeadT ?Msl)"
+    using hN VE4 by simp
+  have split: "t1 = bpHeadT ?Nsl \<and> tau = bpHeadT ?Msl"
+    by (rule vg6x_addBT_split_lastD[OF eq])
+  have t1eq: "t1 = bpHeadT ?Nsl" using split by simp
+  have taueq: "tau = bpHeadT ?Msl" using split by simp
+  \<comment> \<open>brN: upgrade principality with \<open>t\<^sub>1 = bpHeadT(Trans N\<^sub>slice)\<close>\<close>
+  have brN: "?Nsl = Dpt (enat (entry N 1 0)) t1"
+    using princN t1eq by simp
+  \<comment> \<open>brMp: split + principal readback\<close>
+  have brMpslice: "?Msl = Dpt (enat (entry N 1 j0')) tau"
+    using princMp taueq by simp
+  have tsplit: "tau = t1 +\<^sub>B t2" using taueq t1eq VE3 by simp
+  show ?thesis using brN tsplit t2ne brMpslice by blast
+qed
+
+text \<open>\<^bold>\<open>The two slice principalities over the \<open>vg4x_reg4\<close> base.\<close>  These upgrade
+  \<open>princMp\<close>/\<open>princN\<close> of @{thm [source] vg6x_bridges_of_VE34} from named hypotheses to
+  proven facts of the regime, so the equivalence \<open>bridges \<longleftrightarrow> VE34\<close> holds modulo
+  only the \<open>LastStep\<close> well-definedness side condition \<open>fin\<close> (a formalisation
+  artifact — \<open>Br N ! J\<close> for out-of-range \<open>J\<close> — carried throughout §8.2, cf.\
+  @{thm [source] vgx_condIIIV_of_VE}).  \<open>princMp\<close> (the terminal slice
+  \<open>seg N j\<^sub>0' (Lng N - 1)\<close>) is \<open>fin\<close>-free (@{thm [source] vgx_slice_Mp_mono}); \<open>princN\<close>
+  (the \<open>LastStep\<close>-prefix slice \<open>seg N 0 m\<^sub>1\<close>) needs \<open>fin\<close> only to place
+  \<open>LastStep N < Lng (Br N)\<close> (@{thm [source] vgx_LastStep_lt_of_guard}).  Both route
+  through @{thm [source] vgx_slice_princ}.  Audit (rule 4): cites only proven
+  \<open>vgx_\<close> facts; \<open>fin\<close> is the honest carried side condition.\<close>
+
+lemma vg6x_base_princMp:
+  fixes N :: pairseq
+  assumes reg: "vg4x_reg4 N"
+  shows "Trans (seg N (Joints N ! (Lng (Br N) - 1)) (Lng N - 1))
+           = Dpt (enat (entry N 1 (Joints N ! (Lng (Br N) - 1))))
+                 (bpHeadT (Trans (seg N (Joints N ! (Lng (Br N) - 1)) (Lng N - 1))))"
+proof -
+  have reg3: "vg3x_reg3 N" using reg by (simp add: vg4x_reg4_def)
+  have reg2: "vg2x_reg2 N" using reg3 by (simp add: vg3x_reg3_def)
+  have MR: "N \<in> RT_PS" using reg2 by (simp add: vg2x_reg2_def)
+  have MP: "N \<in> PT_PS" using reg2 by (simp add: vg2x_reg2_def)
+  have MT: "N \<in> T_PS" using MR by (simp add: RT_PS_def)
+  have Brne: "Br N \<noteq> []" using reg2 by (simp add: vg2x_reg2_def)
+  have j0lt: "Joints N ! (Lng (Br N) - 1) < TrMax N" using reg by (simp add: vg4x_reg4_def)
+  have trbd: "TrMax N \<le> Lng N - 1" by (rule TrMax_bound[OF MT])
+  have trne: "TrMax N \<noteq> Lng N - 1"
+  proof
+    assume "TrMax N = Lng N - 1"
+    hence "Br N = []" by (simp add: Br_def)
+    thus False using Brne by simp
+  qed
+  have trlt: "TrMax N < Lng N - 1" using trbd trne by linarith
+  have ab: "Joints N ! (Lng (Br N) - 1) < Lng N - 1" using j0lt trlt by linarith
+  have bL: "Lng N - 1 \<le> Lng N - 1" by simp
+  have monoMp: "monoT (seg N (Joints N ! (Lng (Br N) - 1)) (Lng N - 1))"
+    by (rule vgx_slice_Mp_mono[OF MP Brne j0lt])
+  show ?thesis by (rule vgx_slice_princ[OF MR ab bL monoMp])
+qed
+
+lemma vg6x_base_princN:
+  fixes N :: pairseq
+  assumes reg: "vg4x_reg4 N"
+    and fin: "finite {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+                         \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}"
+  shows "Trans (seg N 0 (FirstNodes N ! (LastStep N) - 1))
+           = Dpt (enat (entry N 1 0))
+                 (bpHeadT (Trans (seg N 0 (FirstNodes N ! (LastStep N) - 1))))"
+proof -
+  have reg3: "vg3x_reg3 N" using reg by (simp add: vg4x_reg4_def)
+  have reg2: "vg2x_reg2 N" using reg3 by (simp add: vg3x_reg3_def)
+  have MR: "N \<in> RT_PS" using reg2 by (simp add: vg2x_reg2_def)
+  have MP: "N \<in> PT_PS" using reg2 by (simp add: vg2x_reg2_def)
+  have Brne: "Br N \<noteq> []" using reg2 by (simp add: vg2x_reg2_def)
+  have j0pos: "0 < Joints N ! (Lng (Br N) - 1)" using reg by (simp add: vg4x_reg4_def)
+  have j0lt: "Joints N ! (Lng (Br N) - 1) < TrMax N" using reg by (simp add: vg4x_reg4_def)
+  have guard: "entry N 1 (FirstNodes N ! (Lng (Br N) - 1))
+                 < entry N 0 (FirstNodes N ! (Lng (Br N) - 1))"
+    using reg3 by (simp add: vg3x_reg3_def)
+  have J0rng: "LastStep N < Lng (Br N)"
+    by (rule vgx_LastStep_lt_of_guard[OF MP Brne guard fin])
+  have mb: "TrMax N \<le> FirstNodes N ! (LastStep N) - 1
+          \<and> FirstNodes N ! (LastStep N) - 1 < Lng N - 1"
+    by (rule vgx_m1_bounds[OF MP J0rng])
+  have ab: "0 < FirstNodes N ! (LastStep N) - 1" using j0pos j0lt mb by linarith
+  have bL: "FirstNodes N ! (LastStep N) - 1 \<le> Lng N - 1" using mb by linarith
+  have monoN: "monoT (seg N 0 (FirstNodes N ! (LastStep N) - 1))"
+    by (rule vgx_slice_N_mono[OF MP Brne J0rng j0pos j0lt])
+  show ?thesis by (rule vgx_slice_princ[OF MR ab bL monoN])
+qed
+
+text \<open>\<^bold>\<open>Base \<open>bridges\<close> from \<open>VE34\<close> (over the regime, mod \<open>fin\<close>).\<close>  Assembling
+  @{thm [source] vg6x_base_princMp}, @{thm [source] vg6x_base_princN} and
+  @{thm [source] vg6x_bridges_of_VE34}: over the \<open>vg4x_reg4\<close> base host \<open>N\<close> (\<open>+ fin\<close>),
+  the residual @{term "vg2x_VE34 N"} entails the FULL \<open>bridges\<close> predicate.\<close>
+
+lemma vg6x_base_bridges_of_VE34:
+  fixes N :: pairseq and t1 tau :: BT
+  assumes reg: "vg4x_reg4 N"
+    and fin: "finite {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+                         \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}"
+    and ve34: "vg2x_VE34 N"
+    and form: "Trans N = Dpt (enat (entry N 1 0))
+                  (t1 +\<^sub>B Dpt (enat (entry N 1 (Joints N ! (Lng (Br N) - 1)))) tau)"
+  shows "Trans (seg N 0 (FirstNodes N ! (LastStep N) - 1)) = Dpt (enat (entry N 1 0)) t1
+       \<and> (\<exists>t2. tau = t1 +\<^sub>B t2 \<and> t2 \<noteq> 0\<^sub>B
+           \<and> Trans (seg N (Joints N ! (Lng (Br N) - 1)) (Lng N - 1))
+               = Dpt (enat (entry N 1 (Joints N ! (Lng (Br N) - 1)))) tau)"
+proof -
+  have princN: "Trans (seg N 0 (FirstNodes N ! (LastStep N) - 1))
+                  = Dpt (enat (entry N 1 0))
+                        (bpHeadT (Trans (seg N 0 (FirstNodes N ! (LastStep N) - 1))))"
+    by (rule vg6x_base_princN[OF reg fin])
+  have princMp: "Trans (seg N (Joints N ! (Lng (Br N) - 1)) (Lng N - 1))
+                  = Dpt (enat (entry N 1 (Joints N ! (Lng (Br N) - 1))))
+                        (bpHeadT (Trans (seg N (Joints N ! (Lng (Br N) - 1)) (Lng N - 1))))"
+    by (rule vg6x_base_princMp[OF reg])
+  show ?thesis by (rule vg6x_bridges_of_VE34[OF form princN princMp ve34])
+qed
+
+text \<open>\<^bold>\<open>Capstone finding: over the \<open>vg4x_reg4\<close> base (\<open>+ fin\<close>), \<open>bridges \<longleftrightarrow> VE34\<close>.\<close>
+  The r35 \<open>bridges\<close> hypothesis of @{thm [source] vg5x_base_VE34_modBridges} is
+  \<^bold>\<open>logically equivalent\<close> to the residual @{term "vg2x_VE34 N"} it was meant to
+  reduce.  Forward (\<open>bridges \<Longrightarrow> VE34\<close>) is @{thm [source] vg5x_base_VE34_modBridges};
+  backward (\<open>VE34 \<Longrightarrow> bridges\<close>) is @{thm [source] vg6x_base_bridges_of_VE34}.  \<^bold>\<open>So
+  discharging \<open>bridges\<close> unconditionally is NOT a strict reduction of the base — it
+  is exactly proving the VE34 terminal-slice readback\<close> (the article §8.2 parts
+  (1)+(3), content.md 3314), which requires the terminal-slice induction on the
+  Adm0 slice \<open>M' = seg N j\<^sub>0' (Lng N - 1)\<close>, mirroring the condV cfbx campaign but at
+  the full \<^bold>\<open>term-readback\<close> level (not just the \<open>bpHeadT\<close> equality the condV base
+  needs).  Empirically \<open>brN\<close>/\<open>brMp\<close> hold with 0 failures on the genuine base regime
+  (python/_r36_bridges.py).  Audit (rule 4): both directions cite only proven
+  facts; \<open>fin\<close> is the honest carried side condition.\<close>
+
+lemma vg6x_base_bridges_iff_VE34:
+  fixes N :: pairseq
+  assumes reg: "vg4x_reg4 N" and base: "cfbx_j1p N = Lng N - 1"
+    and fin: "finite {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+                         \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}"
+  shows "(\<forall>t1 tau. Trans N = Dpt (enat (entry N 1 0))
+                     (t1 +\<^sub>B Dpt (enat (entry N 1 (Joints N ! (Lng (Br N) - 1)))) tau)
+           \<longrightarrow> Trans (seg N 0 (FirstNodes N ! (LastStep N) - 1)) = Dpt (enat (entry N 1 0)) t1
+             \<and> (\<exists>t2. tau = t1 +\<^sub>B t2 \<and> t2 \<noteq> 0\<^sub>B
+                 \<and> Trans (seg N (Joints N ! (Lng (Br N) - 1)) (Lng N - 1))
+                     = Dpt (enat (entry N 1 (Joints N ! (Lng (Br N) - 1)))) tau))
+         \<longleftrightarrow> vg2x_VE34 N"
+proof
+  assume br: "\<forall>t1 tau. Trans N = Dpt (enat (entry N 1 0))
+                     (t1 +\<^sub>B Dpt (enat (entry N 1 (Joints N ! (Lng (Br N) - 1)))) tau)
+           \<longrightarrow> Trans (seg N 0 (FirstNodes N ! (LastStep N) - 1)) = Dpt (enat (entry N 1 0)) t1
+             \<and> (\<exists>t2. tau = t1 +\<^sub>B t2 \<and> t2 \<noteq> 0\<^sub>B
+                 \<and> Trans (seg N (Joints N ! (Lng (Br N) - 1)) (Lng N - 1))
+                     = Dpt (enat (entry N 1 (Joints N ! (Lng (Br N) - 1)))) tau)"
+  show "vg2x_VE34 N"
+  proof (rule vg5x_base_VE34_modBridges[OF reg base])
+    fix t1 tau
+    assume form: "Trans N = Dpt (enat (entry N 1 0))
+                    (t1 +\<^sub>B Dpt (enat (entry N 1 (Joints N ! (Lng (Br N) - 1)))) tau)"
+    show "Trans (seg N 0 (FirstNodes N ! (LastStep N) - 1)) = Dpt (enat (entry N 1 0)) t1
+       \<and> (\<exists>t2. tau = t1 +\<^sub>B t2 \<and> t2 \<noteq> 0\<^sub>B
+           \<and> Trans (seg N (Joints N ! (Lng (Br N) - 1)) (Lng N - 1))
+               = Dpt (enat (entry N 1 (Joints N ! (Lng (Br N) - 1)))) tau)"
+      using br form by blast
+  qed
+next
+  assume ve34: "vg2x_VE34 N"
+  show "\<forall>t1 tau. Trans N = Dpt (enat (entry N 1 0))
+                     (t1 +\<^sub>B Dpt (enat (entry N 1 (Joints N ! (Lng (Br N) - 1)))) tau)
+           \<longrightarrow> Trans (seg N 0 (FirstNodes N ! (LastStep N) - 1)) = Dpt (enat (entry N 1 0)) t1
+             \<and> (\<exists>t2. tau = t1 +\<^sub>B t2 \<and> t2 \<noteq> 0\<^sub>B
+                 \<and> Trans (seg N (Joints N ! (Lng (Br N) - 1)) (Lng N - 1))
+                     = Dpt (enat (entry N 1 (Joints N ! (Lng (Br N) - 1)))) tau)"
+  proof (intro allI impI)
+    fix t1 tau
+    assume form: "Trans N = Dpt (enat (entry N 1 0))
+                    (t1 +\<^sub>B Dpt (enat (entry N 1 (Joints N ! (Lng (Br N) - 1)))) tau)"
+    show "Trans (seg N 0 (FirstNodes N ! (LastStep N) - 1)) = Dpt (enat (entry N 1 0)) t1
+       \<and> (\<exists>t2. tau = t1 +\<^sub>B t2 \<and> t2 \<noteq> 0\<^sub>B
+           \<and> Trans (seg N (Joints N ! (Lng (Br N) - 1)) (Lng N - 1))
+               = Dpt (enat (entry N 1 (Joints N ! (Lng (Br N) - 1)))) tau)"
+      by (rule vg6x_base_bridges_of_VE34[OF reg fin ve34 form])
+  qed
+qed
+
+(* ===== r36 merge: wt-b1 block (r36-VESTEP) ===== *)
+
+
+(* ===================================================================== *)
+(* ===== r36-VESTEP (wt-b1, vs2x_ prefix): the VE34 STEP (article §8.2 == *)
+(* ===== cases 3,4 head-shift) reduced to the head-shift residual.     == *)
+(* ===================================================================== *)
+
+section \<open>r36-VESTEP --- \<open>\<S>8.2\<close> condII/IV VE3/VE4 back-peel STEP (cases 3,4 head-shift)\<close>
+
+text \<open>Tiny \<open>+\<^sub>B\<close> algebra facts.  \<open>+\<^sub>B\<close> is list-append on the \<open>BP\<close>-list
+  (@{thm [source] addBT.simps}), so it is associative and nonzero on the left.\<close>
+
+lemma vs2x_addBT_assoc: "(a +\<^sub>B b) +\<^sub>B c = a +\<^sub>B (b +\<^sub>B c)"
+  by (cases a; cases b; cases c) simp
+
+lemma vs2x_addBT_ne0_left: "a \<noteq> 0\<^sub>B \<Longrightarrow> a +\<^sub>B b \<noteq> 0\<^sub>B"
+  by (cases a; cases b) auto
+
+text \<open>The condII/IV back-peel STEP (the last open slot of
+  @{thm [source] vg4x_VE34_of_DT}).  The article proves the condII/IV terminal-slice
+  proposition (content.md 3314) by an induction whose inductive step (content.md
+  3360, ``部分表現の単項成分と\<open>Pred\<close>の関係'', cases (3)/(4)) is a HEAD-SHIFT: when the
+  last column lies inside the current last branch (\<open>j\<^sub>1' < j\<^sub>1\<close>, i.e.
+  \<open>cfbx_j1p N < Lng N - 1\<close>), \<open>Trans N\<close> and \<open>Trans (Pred N)\<close> share an scb-context
+  around the terminal slice (\<open>Mark (Pred N) j\<^sub>0'\<close> \<open>\<mapsto>\<close> \<open>Mark N j\<^sub>0'\<close>).
+
+  Here \<open>vg2x_VE34 N\<close> is reduced to its own two sharp conjuncts, the VE3/VE4 heads
+  that @{thm [source] vgx_condIIIV_of_VE} consumes:
+  \<^item> \<open>VE3\<close> (growth): \<open>bpHeadT (Trans (terminal N)) = bpHeadT (Trans (prefix N)) +\<^sub>B t\<^sub>2\<close>,
+    \<open>t\<^sub>2 \<noteq> 0\<close> (the last-branch first node \<open>M\<^bsub>0,j\<^sub>1'\<^esub> > M\<^bsub>1,j\<^sub>1'\<^esub>\<close> guard makes the
+    terminal head STRICTLY exceed the prefix head);
+  \<^item> \<open>VE4\<close> (head-shift): \<open>bpHeadT (Trans N)
+      = bpHeadT (Trans (prefix N)) +\<^sub>B D\<^bsub>M\<^sub>1\<^sub>,\<^sub>j\<^sub>0'\<^esub>(bpHeadT (Trans (terminal N)))\<close>.
+  Since VE4 is \<open>t\<^sub>2\<close>-free, \<open>vg2x_VE34 N = VE3 \<and> VE4\<close> exactly, so the assembly is the
+  \<open>\<exists>\<close>-shuffle.  Both VE3 and VE4 are EMPIRICALLY TRUE on genuine deep \<open>reg4\<close> hosts
+  (python/ve34_deep2.py, oper-generated, \<open>Lng \<le> 12\<close>: VE3 5/5, VE4 5/5, whole
+  \<open>vg2x_VE34\<close> 5/5, STEP 5/5), and they are exactly the VE3/VE4 hypotheses of
+  @{thm [source] vgx_condIIIV_of_VE}: this lemma wires \<open>vg2x_VE34\<close> to them.
+
+  REFUTED (do NOT retry): the NAIVE inductive reduction ``the terminal principal
+  tail EXTENDS by \<open>+\<^sub>B e\<close> under the column append'' (\<open>bpHeadT (Trans (terminal (Pred
+  N)))\<close> a PREFIX of \<open>bpHeadT (Trans (terminal N))\<close>) is FALSE — python/ve34_deep2.py:
+  0/5 on deep hosts (\<open>Lng \<le> 12\<close>).  The terminal slice RESTRUCTURES, not extends
+  (article case (IV) content.md 3245–3247: the inner tail is \<open>t\<^sub>4 + c\<^sub>1 \<times> (n-1)\<close>, an
+  ARITHMETIC ramp, not a suffix append).  Hence VE3 at \<open>N\<close> does NOT follow from VE3 at \<open>Pred N\<close>
+  by a prefix argument; the genuine inductive discharge of \<open>{VE3, VE4}\<close> from the IH
+  needs the §7.4 shared-scb-context head-shift @{thm [source] m_7_4_Trans_Mark_Pred}
+  (\<open>Trans N\<close>/\<open>Trans (Pred N)\<close> share \<open>(s\<^sub>0,b\<^sub>0)\<close> around \<open>Mark\<close>) together with
+  @{thm [source] m_7_4_Mark_Trans_repr} (\<open>Mark N j\<^sub>0' = Trans (terminal N)\<close>) — the
+  read-off through the scb-context is the remaining surgery.  Audit (rule 4): cites
+  only proven facts; \<open>VE3\<close>/\<open>VE4\<close> are honest empirically-true named hypotheses; no
+  \<open>sorry\<close>-\<open>p_*\<close>/\<open>buc1_*\<close>, no refuted/vacuous endpoint.  Prefix \<open>vs2x_\<close>.\<close>
+
+lemma vs2x_VE34_step:
+  fixes N :: pairseq
+  assumes reg: "vg4x_reg4 N"
+    and lt: "cfbx_j1p N < Lng N - 1"
+    and regP: "vg4x_reg4 (Pred N)"
+    and IH: "vg2x_VE34 (Pred N)"
+    \<comment> \<open>VE3 (growth, for \<open>N\<close>): the terminal head exceeds the prefix head by a nonzero \<open>t\<^sub>2\<close>\<close>
+    and VE3:
+      "\<exists>t2. bpHeadT (Trans (seg N (Joints N ! (Lng (Br N) - 1)) (Lng N - 1)))
+             = bpHeadT (Trans (seg N 0 (FirstNodes N ! (LastStep N) - 1))) +\<^sub>B t2
+           \<and> t2 \<noteq> 0\<^sub>B"
+    \<comment> \<open>VE4 (head-shift, for \<open>N\<close>): the outer-context equation for \<open>N\<close>\<close>
+    and VE4:
+      "bpHeadT (Trans N)
+     = bpHeadT (Trans (seg N 0 (FirstNodes N ! (LastStep N) - 1)))
+       +\<^sub>B Dpt (enat (entry N 1 (Joints N ! (Lng (Br N) - 1))))
+              (bpHeadT (Trans (seg N (Joints N ! (Lng (Br N) - 1)) (Lng N - 1))))"
+  shows "vg2x_VE34 N"
+proof -
+  obtain t2 where
+    A: "bpHeadT (Trans (seg N (Joints N ! (Lng (Br N) - 1)) (Lng N - 1)))
+          = bpHeadT (Trans (seg N 0 (FirstNodes N ! (LastStep N) - 1))) +\<^sub>B t2"
+    and B: "t2 \<noteq> 0\<^sub>B"
+    using VE3 by blast
+  show "vg2x_VE34 N" using A B VE4 by blast
+qed
+
+text \<open>Assembled STEP-shaped form for the \<open>vg4x_VE34_backpeel\<close> STEP slot, discharging
+  it from the two universal residual families \<open>VE3R\<close> (growth) and \<open>VE4R\<close>
+  (head-shift).  Passing these to @{thm [source] vg4x_VE34_of_DT} makes \<open>vg2x_VE34\<close>
+  — and hence @{thm [source] vgx_condIIIV_of_VE}'s VE3/VE4 — hold on every
+  guarded+non-admissible regime host modulo exactly \<open>{BASE, VE3R, VE4R}\<close>
+  (\<open>RPERS\<close> already unconditional).  (The IH is not consumed: \<open>vg2x_VE34\<close> holds
+  POINTWISE on \<open>reg4\<close> hosts — python/ve34_deep2.py 5/5 whole — the induction is only
+  the article's PROOF route, not needed for the statement; the residuals are the
+  local VE3/VE4 heads.)\<close>
+
+lemma vs2x_VE34_step_of_residuals:
+  fixes N :: pairseq
+  assumes reg: "vg4x_reg4 N"
+    and lt: "cfbx_j1p N < Lng N - 1"
+    and regP: "vg4x_reg4 (Pred N)"
+    and IH: "vg2x_VE34 (Pred N)"
+    and VE3R: "\<And>Q. vg4x_reg4 Q \<Longrightarrow> cfbx_j1p Q < Lng Q - 1 \<Longrightarrow>
+        \<exists>t2. bpHeadT (Trans (seg Q (Joints Q ! (Lng (Br Q) - 1)) (Lng Q - 1)))
+              = bpHeadT (Trans (seg Q 0 (FirstNodes Q ! (LastStep Q) - 1))) +\<^sub>B t2
+            \<and> t2 \<noteq> 0\<^sub>B"
+    and VE4R: "\<And>Q. vg4x_reg4 Q \<Longrightarrow> cfbx_j1p Q < Lng Q - 1 \<Longrightarrow>
+        bpHeadT (Trans Q)
+      = bpHeadT (Trans (seg Q 0 (FirstNodes Q ! (LastStep Q) - 1)))
+        +\<^sub>B Dpt (enat (entry Q 1 (Joints Q ! (Lng (Br Q) - 1))))
+               (bpHeadT (Trans (seg Q (Joints Q ! (Lng (Br Q) - 1)) (Lng Q - 1))))"
+  shows "vg2x_VE34 N"
+  by (rule vs2x_VE34_step[OF reg lt regP IH VE3R[OF reg lt] VE4R[OF reg lt]])
+
 end
