@@ -899,20 +899,18 @@ r25-CONDVI13 が真正 condVI mono host（深 Lng≤11）で印字形 (1) を 51
 ### 反例
 形式反証 `otx_stepval_refuted`（N=[(1,1)], n=1 で (m,k) 不存在）。深い経験反証: M=(0,0)(1,1)(2,2)(3,2)(4,2)（condIII-adm）で全 m の [0]-軌道が 3 手で 0 に潰れ、いかなる (m,k) too 不成立。
 
-## A39. LastStep の定義が Min を無限集合に適用している（形式化バグ／原文「最小の J」の忠実転写ずれ）
+## A39. §8.2 写像 LastStep の定義: 最小値をとる集合 \(\{J \in \mathbb{N} \mid \cdots\}\) に添字上界 \(J \le J_1\) が無い（記事内の \(j_0\) の定義と非整合）[軽微]
 
 ### 位置
-§8.2 写像 \(\textrm{LastStep}\) の定義（art 3297-3326；形式化 `LastStep` pss_defs.thy:516）の else 枝。
+§8.2 写像 \(\textrm{LastStep}\) の定義（content.md 3312）の第3ケース（\((\textrm{Br}(M)_{J_1})_{0,0} > (\textrm{Br}(M)_{J_1})_{1,0}\) の場合）。
 
 ### 原文
-```
-Min {J. entry (Br M ! J1) 0 0 = entry (Br M ! J) 0 0 ∧ entry (Br M ! J) 1 0 < entry (Br M ! J) 0 0}
-```
+\((\textrm{Br}(M)_{J_1})_{0,0} > (\textrm{Br}(M)_{J_1})_{1,0}\)ならば\(\textrm{LastStep}(M) := \min \{J \in \mathbb{N} \mid (\textrm{Br}(M)_{J_1})_{0,0} = (\textrm{Br}(M)_J)_{0,0} > (\textrm{Br}(M)_J)_{1,0}\}\)である。
 
 ### 訂正案
-```
-(LEAST J. entry (Br M ! J1) 0 0 = entry (Br M ! J) 0 0 ∧ entry (Br M ! J) 1 0 < entry (Br M ! J) 0 0)
-```
+\((\textrm{Br}(M)_{J_1})_{0,0} > (\textrm{Br}(M)_{J_1})_{1,0}\)ならば\(\textrm{LastStep}(M) := \min \{J \in \mathbb{N} \mid J \le J_1 \wedge (\textrm{Br}(M)_{J_1})_{0,0} = (\textrm{Br}(M)_J)_{0,0} > (\textrm{Br}(M)_J)_{1,0}\}\)である。
 
 ### 原文の問題点
-集合 `{J. …}` の J は**全 nat を走る**(J < Lng(Br M) の上界なし)。範囲外 J では `Br M ! J` は nth-overflow の junk になり、集合が余有限(cofinite)になりうる→ `Min` は無限集合上で `Min_le`/`Min_in`(共に finite 要求)が使えず未定義同然。結果 `LastStep M < Lng(Br M)` が `Br M ≠ []` だけからは証明できず、有限性 side-condition `fin` が必要になる(r31-VEGEOM が全下流補題に `fin` を携行)。原文の「最小の \(J\)」は nat 上 total な `LEAST` で忠実に転写できる（範囲外 J でも述語が偽なら `LEAST` は有限witnessを返す）。
+集合 \(\{J \in \mathbb{N} \mid \cdots\}\) の \(J\) に上界がなく、\(J > J_1 = \textrm{Lng}(\textrm{Br}(M))-1\) では \(\textrm{Br}(M)_J\) が \(\textrm{Br}(M)\) の添字範囲外を参照する。記事は \(j_0 := \min\{j \in \mathbb{N} \mid 0 < j \le j_1 \wedge (0,j) \le_M (0,j_1)\}\)（content.md 490）では上界 \(j \le j_1\) を明示しており、LastStep の \(\min\) だけ上界を欠くのは非整合。\(J \le J_1\) を補えば集合は \(\{0,\dots,J_1\}\) の部分集合として有限になり（\(J = J_1\) が条件を満たすので非空、脚注[61]）、\(\min\) が明確に存在する。
+
+（形式化 `LastStep`(pss_defs.thy:516) はこの \(\min\) を `Min {J. …}` と転写したが、Isabelle では範囲外 \(J\) で `Br M ! J` が nth-overflow の junk を返し集合が余有限になりうるため `Min`（`Min_le`/`Min_in` が finite 要求）が未定義同然になり、`LastStep M < Lng(Br M)` が `Br M ≠ []` だけからは証明できない。上界 \(J \le J_1\) を課すか、nat 上 total な `LEAST` に替えれば解消する。）
