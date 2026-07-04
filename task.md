@@ -59,8 +59,9 @@
       - 🚨 VE3/VE4
         - ✅ back-peel skeleton(guarded、vg4x_reg4訂正)[r3]
         - ✅ RPERS[r1]
-        - 🚨🤖 guarded BASE(regime修正済 vg7x⟺DT_PS、残=終切片 bridges readback)[r3]
-        - 🚨🤖 STEP(regime修正済、残=§7.4 head-shift)[r2]
+        - ✅ regime修正(vg7x⟺DT_PS、descending Pred保存)[r1]
+        - ✅ BASE/STEP形+全dispatcher還元→bridgesU(vg8x/vs3x)[r5]
+        - 🚨🤖 bridgesU 終切片readback(原文part(1)(3)、BASE/STEP共通残差、173/173 deep)[r0]
     - ✅ 補題（強単項性の切片への遺伝性）
     - ✅ 補題（部分表現の単項成分と $\textrm{Pred}$ の関係）(§8.2 keystone)
     - ✅ 補題（強単項性の下での部分表現の単項成分の基本性質）
@@ -90,15 +91,16 @@
       - 🚨 condIV exchange 組立
         - ✅ producer data+組立[r1]
         - ✅ HB(t2成分bound)[r1]
-        - 🚨🤖 regime残差(admeq gate/noguard(condIV⟹adm(j-2))/M0RUN=E1GE non-anc を condIII共有、REGSP✅)[r7]
+        - 🚨🤖 regime残差(admeq gate/noguard(condIV⟹adm(j-2)); REGSP✅・M0RUN不要(reg=jm2<transJ0∨adm))[r7]
       - ❌ d13x_T形organize[r2]
       - 🚨 condIII exchange 再構築(d4vx_core route)
         - ✅ engine+mnform+降下(2)OT-free+triple組立[r6]
         - ✅ BT-side facts (dbbodyH/base0/base1/A0lt)[r1]
         - ✅ REGS(mcx_regS、MCOND証明)[r4]
-        - 🚨🤖 M0RUN E1GE non-anc枝(ancestor✅、WGAP/ANC0は反証、ST_PS last-block)[r7]
+        - ✅ M0RUN E1GE(e1x無条件、non-anc枝討伐)[r7]
         - ✅ REGSP trunk-bypass(d4a kousa-(1,1))[r1]
         - ✅ REGSP strictlt-eqd(slx37無条件)[r5]
+        - 🚨🤖 compose→無条件 exchange(REGS+REGSP+M0RUN 合成)[r0]
     - ✅ 補題（右端の非許容直系先祖の基本性質）
     - ✅ 補題（条件 (III)〜(V) の下での右端の置き換えと $\textrm{Trans}$ の関係）[r1]
     - ✅ 補題（条件 (III)〜(VI) の下での展開規則の基本性質）[r1]
