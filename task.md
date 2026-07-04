@@ -2,6 +2,7 @@
 
 <!--
 ## 注意事項
+- **エージェントが作業中のアイテムには 🚨🤖 を書く**（該当ラウンドで agent が討伐対象にしている 🚨 アイテムに 🤖 を付ける。統合したら 🚨→✅ か、作業継続なら 🚨🤖 のまま）。
 - **進捗ツリーを編集するときは task.md と plan.md の両方を同じように編集する**（同一アイテム名・同一ツリー構造を保つ。task.md=骨格のみ、plan.md=同じツリー+詳細注釈。状態変更・分岐・畳み込みは同じコミットで両方に反映）。
 - 進捗ツリー以外をこのページに書かない。
 - **各アイテムはアイテムを区別する情報のみを１行で。それ以上は書かない**。
@@ -54,8 +55,8 @@
     - 🚨 命題（条件 (II) か (IV) の下での終切片と $\textrm{Trans}$ の関係）
       - ✅ scaffold還元(∃!→{VE2,VE3,VE4})[r1]
       - ✅ LastStep切片幾何基礎[r1]
-      - 🚨 VE2(→prefix regime)[r1]
-      - 🚨 VE3/VE4(非対角front-peel)[r0]
+      - 🚨🤖 VE2(→prefix regime)[r1]
+      - 🚨🤖 VE3/VE4(非対角front-peel)[r0]
     - ✅ 補題（強単項性の切片への遺伝性）
     - ✅ 補題（部分表現の単項成分と $\textrm{Pred}$ の関係）(§8.2 keystone)
     - ✅ 補題（強単項性の下での部分表現の単項成分の基本性質）
@@ -85,15 +86,15 @@
       - 🚨 condIV exchange 組立
         - ✅ producer data+組立[r1]
         - ✅ HB(t2成分bound)[r1]
-        - 🚨 regime残差(admeq/regS=JGE/regSP-bypass別object)[r1]
+        - 🚨🤖 regime残差(admeq/regS=JGE/regSP-bypass別object)[r1]
       - ❌ d13x_T形organize[r2]
       - 🚨 condIII exchange 再構築(d4vx_core route)
         - ✅ engine+mnform+降下(2)OT-free+triple組立[r6]
         - ✅ BT-side facts (dbbodyH/base0/base1/A0lt)[r1]
-        - 🚨 REGS→JGE(Joints(Red N)!last=TrMax)[r3]
-        - 🚨 M0RUN(要ST_PS)[r2]
+        - 🚨🤖 REGS→JGE(Joints(Red N)!last=TrMax)[r3]
+        - 🚨🤖 M0RUN(要ST_PS)[r2]
         - ✅ REGSP trunk-bypass(d4a kousa-(1,1))[r1]
-        - 🚨 Br≠[]-guarded REGSP(真)[r0]
+        - 🚨🤖 Br≠[]-guarded REGSP(真)[r0]
     - ✅ 補題（右端の非許容直系先祖の基本性質）
     - ✅ 補題（条件 (III)〜(V) の下での右端の置き換えと $\textrm{Trans}$ の関係）[r1]
     - ✅ 補題（条件 (III)〜(VI) の下での展開規則の基本性質）[r1]
