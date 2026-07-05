@@ -84,7 +84,7 @@ task.md のユーザー向け骨格に対する、作業側の詳細版。ユー
     - 🚨 命題（条件 (I) の下での $\textrm{Trans}$ と基本列の交換関係）
       - ✅ 交換則(1)本体〔`scx_condI_exchange1` 完全無条件(j0=0+j0>0、marking-nesting二重帰納)〕[r4]
       - ✅ 降下(2) OT-free〔`scx_condI_descent`(d2x scbext route、OT柱回避)〕[r1]
-      - 🚨 OT所属 (⛔ 8.7)
+      - 🚨 OT所属 (⛔ §8.7「Transが標準形を保つ」補題)
     - ✅ 補題（公差 $(1,1)$ のペア数列の $\textrm{Trans}$ の基本性質）〔`m_8_1_diagSeq_Trans`〕
     - ✅ 系（$\textrm{Pred}$ が公差 $(1,1)$ のペア数列の $\textrm{Trans}$ の基本性質）〔`m_8_1_Pred_diagSeq_Trans`〕
     - ✅ 補題（条件 (I) か (III) の下での $c_1$ 前後の具体表示）（A20/A21）〔part(1)-(5)+(4-1)(4-2) `m_8_1_c1_around_part4_1`/`_part4_2`〕
@@ -117,7 +117,7 @@ task.md のユーザー向け骨格に対する、作業側の詳細版。ユー
           - ✅ not-leftDj0脚(guard)modulo DIAG〔`cdx_d_le_joints`+`cdx_tailval_notldj`〕[r1]
           - 🚨 p_8_2_condIIIV(=§8.2命題、VE3/VE4残)〔同一物。scaffold+LastStep+VE2(ROW10込)✅、残=guarded VE3/VE4(BASE/STEP/RPERS)+fin〕[r2]
           - ✅ REGSP strictlt-eqd(slx37無条件)〔r37 **クローズ**: `slx37_strictlt_eqd`(d=jlp ガード付 strictlt を strictlt仮定無しで証明: wid_*_Pred transport で RN'=Pred RN 最終枝 first-node/joint を RN に戻し、descending+trunk row-0 厳増+d≤last-joint(`mcx_d_le_last_joint`)で d=jl強制、`mcx_MCOND_RN`で対角化、butlast で RN'座標へ)→`slx37_regSP_uncond`=REGSP(cfbx_reg) 無条件。condIII/IV REGSP 完全discharge。consumer 再配線(dgx/lb2x call site→slx37)は親の統合手順〕[r5]
-      - 🚨 OT所属 (⛔ 8.7)
+      - 🚨 OT所属 (⛔ §8.7「Transが標準形を保つ」補題)
     - ✅ 補題（第 $0$ 種型基本列の基本不等式）〔`m_8_3_kind0_base_ineq`(A22訂正)〕
     - ✅ 補題（第 $0$ 種型基本列の基本分岐規則）〔`m_8_3_kind0_branch_rule`〕
     - ✅ 補題（第 $0$ 種型基本列の基本基点関係）〔`m_8_3_kind0_base_basepoint`〕
