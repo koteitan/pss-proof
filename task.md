@@ -26,6 +26,7 @@
   - 子孫が全て ✅ になったら、ツリー内の全ラウンド数を合計して子を畳み、親1行の `[rN]` にする：
     - 畳む前：`- 🚨xxxxx` の子が `- ✅yyyyy[r2]` と `- ✅zzzzz[r4]`
     - 畳んだ後：`- ✅xxxxx[r6]`
+- **消費トークン `[X.XXX]`**：`[rN]` の直後に、そのアイテムに費やした **subagent_tokens の M(百万)単位**を付ける（例 `[r1][0.314]` = 1ラウンド・0.314M tokens）。ラウンド同様、分岐時は子に配分／畳み時は合計。単一フロント round は全量をそのアイテムに計上。追跡開始は r41（それ以前の round のトークンは未計測なので過去アイテムには付けない）。
 
 -->
 
@@ -93,7 +94,7 @@
         - ✅ producer data+組立[r1]
         - ✅ HB(t2成分bound)[r1]
         - 🚨 regime残差(cpx済→残=non-admeq枝)
-          - ✅ cpx Red-slice再thread→admeq枝exchange無条件(cpx_condIV_exchange_uncond)[r8]
+          - ✅ cpx Red-slice再thread→admeq枝exchange無条件(cpx_condIV_exchange_uncond)[r8][0.314]
           - 🚨 non-admeq condIV枝(admeq=proof-route gate、~78-92%充足)[r0]
       - ❌ d13x_T形organize[r2]
       - 🚨 condIII exchange 再構築(d4vx_core route)
@@ -104,7 +105,7 @@
         - ✅ REGSP trunk-bypass(d4a kousa-(1,1))[r1]
         - ✅ REGSP strictlt-eqd(slx37無条件)[r5]
         - ✅ compose hasParent枝 無条件(cpx_condIII_exchange_uncond)[r1]
-        - 🚨 ¬hasParent枝(noParentPred、condIII ST_PS ~22%)[r0]
+        - 🚨🤖 ¬hasParent枝(noParentPred、condIII ST_PS ~22%)[r0]
     - ✅ 補題（右端の非許容直系先祖の基本性質）
     - ✅ 補題（条件 (III)〜(V) の下での右端の置き換えと $\textrm{Trans}$ の関係）[r1]
     - ✅ 補題（条件 (III)〜(VI) の下での展開規則の基本性質）[r1]
