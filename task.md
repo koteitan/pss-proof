@@ -95,7 +95,7 @@
         - ✅ HB(t2成分bound)[r1]
         - 🚨 regime残差(cpx済→残=non-admeq枝)
           - ✅ cpx Red-slice再thread→admeq枝exchange無条件(cpx_condIV_exchange_uncond)[r8][0.314][1.29h]
-          - 🚨 non-admeq condIV枝(admeq=proof-route gate、~78-92%充足)[r0]
+          - 🚨🤖 non-admeq condIV枝(admeq=proof-route gate、~78-92%充足)[r0]
       - ❌ d13x_T形organize[r2]
       - 🚨 condIII exchange 再構築(d4vx_core route)
         - ✅ engine+mnform+降下(2)OT-free+triple組立[r6]
@@ -105,7 +105,7 @@
         - ✅ REGSP trunk-bypass(d4a kousa-(1,1))[r1]
         - ✅ REGSP strictlt-eqd(slx37無条件)[r5]
         - ✅ compose hasParent枝 無条件(cpx_condIII_exchange_uncond)[r1]
-        - 🚨🤖 ¬hasParent枝(noParentPred、condIII ST_PS ~22%)[r0]
+        - 🚨 ¬hasParent枝(noParentPred、condIII ST_PS ~22%)[r0]
     - ✅ 補題（右端の非許容直系先祖の基本性質）
     - ✅ 補題（条件 (III)〜(V) の下での右端の置き換えと $\textrm{Trans}$ の関係）[r1]
     - ✅ 補題（条件 (III)〜(VI) の下での展開規則の基本性質）[r1]
