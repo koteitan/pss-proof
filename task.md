@@ -92,7 +92,7 @@
       - 🚨 condIV exchange 組立
         - ✅ producer data+組立[r1]
         - ✅ HB(t2成分bound)[r1]
-        - 🚨 regime残差(noguard反証→要 cpx型Red-slice再thread; admeq=真gate; REGSP✅)[r8]
+        - 🚨🤖 regime残差(noguard反証→要 cpx型Red-slice再thread; admeq=真gate; REGSP✅)[r8]
       - ❌ d13x_T形organize[r2]
       - 🚨 condIII exchange 再構築(d4vx_core route)
         - ✅ engine+mnform+降下(2)OT-free+triple組立[r6]
