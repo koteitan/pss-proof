@@ -62,7 +62,7 @@
         - ✅ regime修正(vg7x⟺DT_PS、descending Pred保存)[r1]
         - ✅ BASE/STEP形+全dispatcher還元→bridgesU(vg8x/vs3x)[r5]
         - ✅ terminal-slice setup(bux_terminal_slice_ready、keystone4前提)[r1]
-        - 🚨🤖 bridgesU 終切片readback(残=keystone RightNodes値 cpU/chainOK+scb readoff、128/128 deep)[r1]
+        - 🚨 bridgesU 終切片readback(keystone RightNodes値 DISSOLVED→残=readoff、kyx_VE34_of_DT_modReadoff)[r2]
     - ✅ 補題（強単項性の切片への遺伝性）
     - ✅ 補題（部分表現の単項成分と $\textrm{Pred}$ の関係）(§8.2 keystone)
     - ✅ 補題（強単項性の下での部分表現の単項成分の基本性質）
@@ -102,7 +102,7 @@
         - ✅ REGSP trunk-bypass(d4a kousa-(1,1))[r1]
         - ✅ REGSP strictlt-eqd(slx37無条件)[r5]
         - ✅ compose hasParent枝 無条件(cpx_condIII_exchange_uncond)[r1]
-        - 🚨🤖 ¬hasParent枝(noParentPred、condIII ST_PS ~22%)[r0]
+        - 🚨 ¬hasParent枝(noParentPred、condIII ST_PS ~22%)[r0]
     - ✅ 補題（右端の非許容直系先祖の基本性質）
     - ✅ 補題（条件 (III)〜(V) の下での右端の置き換えと $\textrm{Trans}$ の関係）[r1]
     - ✅ 補題（条件 (III)〜(VI) の下での展開規則の基本性質）[r1]
@@ -136,4 +136,4 @@
       - ✅ per-branch true legs[r1]
       - ✅ dispatcher slots discharge(orx_)[r1]
       - ✅ local-OTint keystone-free(condI/condVI/condV-adm-e=0)[r2]
-      - 🚨🤖 deep-insertion OT所属(keystone{resid,multiD}; multiD→pcompPrefix還元済、resid最難)[r4]
+      - 🚨🤖 deep-insertion OT所属(keystone{resid,multiD}; pcompPrefix反証→multiD route dead; resid=Fable攻撃中)[r5]
