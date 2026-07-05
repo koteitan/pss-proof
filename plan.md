@@ -130,7 +130,9 @@ task.md のユーザー向け骨格に対する、作業側の詳細版。ユー
       - 🚨 condIV exchange 組立
         - ✅ producer data+組立〔`c4dx_uv`/`c4dx_condIV_dbbody`/`c4dx_condIV_k1`(witness-match)/`c4dx_condIV_base1`、(1)(2)=`c4dx_condIV_exchange12_assembled`〕[r1]
         - ✅ HB(t2成分bound)〔`HB_condIV_t2_components`無条件(condV `m_8_5_condV_adm_t2_components`類似、clause(ii)@M1j0→M1j1 downgrade。DIAGはcondIVで0/536)。triple=`c4hx_condIV_exchange_full_of_regimes`〕[r1]
-        - 🚨🤖 regime残差(noguard反証→要 cpx型Red-slice再thread; admeq=真gate; REGSP✅)〔r37: REGSP✅。r38: M0RUN 不消費(reg=jm2<transJ0∨adm)。🚩r39: **noguard(condIV⟹adm(transJ0/j-2))は偽**(CEX (0,0)(1,1)(2,2)(3,3)(3,2)、9/264 condIV host が guard 成立)→`c4rx` noguard-only は不十分。`admeq` は真の article gate(discharge不可)。**condIV 正道=condIII cpx と同じ Red-slice guard&Br≠[] 再thread**(`cpx_condIII_mnform` は branch=III∨IV なので mcx_regS/slx37 は condIV でも REGS/REGSP discharge)+admeq を gate 携行。raw-slice `c4hx_condIV_exchange_full_of_regimes` は dead(unreduced slice で偽)〕[r8]
+        - 🚨 regime残差(cpx済→残=non-admeq枝)〔r41: cpx Red-slice 再thread 完了。condIV は admeq 枝が無条件化、残は non-admeq 枝〕
+          - ✅ cpx Red-slice再thread→admeq枝exchange無条件(cpx_condIV_exchange_uncond)〔`cpx_condIV_exchange_uncond`=condIV exchange triple modulo {admeq}のみ。REGS=mcx_regS/REGSP=slx37(branch=condIV)+trunk で discharge、d1/d2/d3/HB/reg 済。**premise訂正**: cpx_condIII_mnform は verbatim 不可(admeqで jm3=transJm1→ltJ 不成立、Trans(s84x_N M)=transC2 M で分解崩壊)→c4dx d1/d2/d3 dispatcher を reduced-slice(`crx_slice_red_value` Br≠[]/`crg_slice_red_value_trunk` Br=[]trunk)へ再thread。raw-slice c4hx/c4wx は dead〕[r8]
+          - 🚨 non-admeq condIV枝(admeq=proof-route gate、~78-92%充足)〔🚩**admeq は proof-route gate で truth gate でない**: exchange は非admeq host でも経験的に真(22/22)だが、この slice-transport route は head index 整合に admeq(jm3=transJm1)を要する。充足率 78%(本pool 75/97 deep)/92.5%(既存 496/536)→非admeq host は別 route 要(condIII noParentPred 類似)〕[r0]
       - ❌ d13x_T形organize〔innerU が真正condIIIで充足不能(0/426)、`cfax_`/`e3x_`/`corrected_condIII` 組立はvacuous(cIII∧admeq不能)〕[r2]
       - 🚨 condIII exchange 再構築(d4vx_core route)
         - ✅ engine+mnform+降下(2)OT-free+triple組立〔`crx_condIII_exchange_full`(Red-slice真regimeで再組立、r28の6残差→3)〕[r6]
