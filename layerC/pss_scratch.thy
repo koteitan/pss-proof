@@ -60662,4 +60662,248 @@ proof -
     by (rule kyx_VE34_of_DT_modReadoff[OF MDT Brne guard j0pos j0lt readoff])
 qed
 
+(* ===== r44 merge: wt-s4a — slotNewOT C1 (snx_newOT_of_sliceTrans/snx_slotNewOT_modSlice) ===== *)
+
+
+(* ===================================================================== *)
+(* ===== r44 front C1 (snx_ prefix): §8.7 slotNewOT — the appended  ==== *)
+(* =====   principal D_x q of Trans M is an ordinal-term principal.  ==== *)
+(* ===================================================================== *)
+
+section \<open>r44-C1 --- §8.7 slotNewOT reduction (snx_ prefix)\<close>
+
+text \<open>\<^bold>\<open>Target.\<close>  \<open>snx_slotNewOT\<close> is the C1 slot of
+  @{thm [source] rgx_Trans_preserves_OT_of_slots}: in the deep-insertion keystone
+  step (\<open>M \<in> ST\<^bsub>PS\<^esub>\<close>, \<open>monoT M\<close>, \<open>Br M \<noteq> []\<close>, \<open>Lng M - 1 > 1\<close>), with
+  \<open>Trans (Pred M) = D\<^bsub>M\<^sub>1\<^sub>,\<^sub>0\<^esub>(Trm ps +\<^sub>B r)\<close> and
+  \<open>Trans M = D\<^bsub>M\<^sub>1\<^sub>,\<^sub>0\<^esub>(Trm ps +\<^sub>B D\<^bsub>x\<^esub> q)\<close>, the newly deposited principal
+  \<open>D\<^bsub>x\<^esub> q\<close> is an \<open>OT\<close>-principal: \<open>isOT_BP (DB (enat x) q)\<close>.
+
+  \<^bold>\<open>Empirical status (STEP-0, python/_r40b_resid_deep.py + probe3/probe5).\<close>
+  DEEP-validated TRUE (0 fail / 1468 hosts).  The structural facts pinned by the
+  probes (34 keystone hosts, \<open>Lng \<le> 15\<close>; 12 deeper hosts) are decisive on the
+  \<^emph>\<open>route\<close>:
+  \<^enum> The deposited principal \<open>D\<^bsub>x\<^esub> q\<close> equals \<open>Trans\<close> of the \<^emph>\<open>from-joint terminal
+    slice\<close> \<open>seg M j\<^sub>0' (Lng M - 1)\<close>, where \<open>j\<^sub>0' = Joints M ! (Lng (Br M) - 1)\<close>
+    (\<open>segj0p\<close> match: 12/12; the from-\<^emph>\<open>FirstNode\<close> slice \<open>seg M j\<^sub>1' \<dots>\<close> does NOT
+    match, 0/12).  Since \<open>Trans\<close> is \<open>Red\<close>-invariant
+    (@{thm [source] m_7_3_Trans_Red}) this also equals \<open>Trans (Red (seg M j\<^sub>0' \<dots>))\<close>
+    (\<open>redj0p\<close> 12/12), and the slice is strictly shorter (\<open>Lng < Lng M\<close>, 12/12).
+  \<^enum> The deposit is \<^emph>\<open>not\<close> an scb-subterm of \<open>Trans (Pred M)\<close> (occurs 3/34) — so the
+    a6-transport route (@{thm [source] m_8_7_OT_scb_recursive} from
+    \<open>Trans (Pred M) \<in> OT\<^bsub>B\<^esub>\<close>) is DEAD: \<open>q\<close> is genuinely NEW content.
+
+  \<^bold>\<open>The only viable route\<close> is therefore the Lng-IH \<open>a5\<close> applied to a shorter
+  standard sequence \<open>N\<close> whose \<open>Trans\<close> is the deposit.  This is exactly the article's
+  step (content.md 6122ff): the deposited component is \<open>a\<^sub>2 = Trans (P(N)\<^bsub>J\<^sub>1\<^esub>[n])\<close>,
+  the \<open>Trans\<close> of the last monotone component (branch) operated once, which is a
+  strictly shorter standard sequence (標準形の単項成分が標準形).
+
+  \<^bold>\<open>Reduction, GREEN below.\<close>  \<open>snx_newOT_of_sliceTrans\<close> discharges C1
+  from that single slice fact via \<open>a5\<close> and the trivial unfolding
+  \<open>Trans N \<in> OT\<^bsub>B\<^esub> \<Longrightarrow> isOT_BT (D\<^bsub>x\<^esub> q) \<Longrightarrow> isOT_BP (DB x q)\<close>.
+  \<open>snx_slotNewOT_modSlice\<close> carries the EXACT keystone hypothesis
+  bundle of the slot, modulo the packaged existence \<open>slice\<close>.
+
+  \<^bold>\<open>Exact obstruction to the FULL (unconditional) \<open>snx_slotNewOT\<close>.\<close>  The residual
+  \<open>slice\<close> obligation
+  \<open>\<exists>N. N \<in> ST\<^bsub>PS\<^esub> \<and> Lng N < Lng M \<and> Trans N = D\<^bsub>x\<^esub> q\<close>
+  requires: (i) identify the deposit as \<open>Trans\<close> of \<open>seg M j\<^sub>0' (Lng M - 1)\<close> in
+  Isabelle (the §8.2 terminal-slice-\<open>Trans\<close> readoff; the from-joint slice IS the
+  recognized object of @{thm [source] rdx_bridgesU_readoff}, but that is itself
+  green-modulo the §8.2 \<open>{BASE,STEP}\<close> back-peel — the r30–r43 blocker); and (ii)
+  its reduced form's \<open>ST\<^bsub>PS\<^esub>\<close>-membership (標準形の単項成分が標準形).  Note: the
+  NAIVE \<open>Red (seg M j\<^sub>0' (Lng M - 1))\<close> is standard only 9/12 empirically, so the
+  correct standard witness is the article's \<open>P(N)\<^bsub>J\<^sub>1\<^esub>[n]\<close> branch normalization,
+  NOT the raw from-joint slice.\<close>
+
+text \<open>C1 REDUCTION (pure, minimal).  The appended principal \<open>D\<^bsub>x\<^esub> q\<close> is an
+  \<open>OT\<close>-principal AS SOON AS its body-as-a-term \<open>D\<^bsub>x\<^esub> q = Trm [DB x q]\<close> is the
+  \<open>Trans\<close> of some strictly shorter standard sequence \<open>N\<close>: the Lng-IH \<open>a5\<close> gives
+  \<open>Trans N \<in> OT\<^bsub>B\<^esub>\<close>, hence \<open>isOT_BT (D\<^bsub>x\<^esub> q)\<close>, which for a single-principal term is
+  exactly \<open>isOT_BP (DB x q)\<close> (\<open>descP\<close> of a singleton is trivial).\<close>
+
+lemma snx_newOT_of_sliceTrans:
+  fixes M :: pairseq and x :: nat and q :: BT and N :: pairseq
+  assumes a5: "\<And>N'. N' \<in> ST_PS \<Longrightarrow> Lng N' < Lng M \<Longrightarrow> Trans N' \<in> OT_B"
+    and Nst: "N \<in> ST_PS" and Nlt: "Lng N < Lng M"
+    and Ntr: "Trans N = Dpt (enat x) q"
+  shows "isOT_BP (DB (enat x) q)"
+proof -
+  have "Trans N \<in> OT_B" by (rule a5[OF Nst Nlt])
+  hence "Dpt (enat x) q \<in> OT_B" using Ntr by simp
+  hence "isOT_BT (Dpt (enat x) q)" by (simp add: OT_B_def OT_def)
+  thus "isOT_BP (DB (enat x) q)" by simp
+qed
+
+text \<open>C1 slot in the EXACT keystone bundle (the \<open>slotNewOT\<close> shape of
+  @{thm [source] rgx_Trans_preserves_OT_of_slots}) modulo the single packaged
+  existence \<open>slice\<close>.  This is the sharpest green frame for the parent: everything
+  in \<open>snx_slotNewOT\<close> is discharged except the deposit-slice existence, which is the
+  article's \<open>a\<^sub>2 = Trans (P(N)\<^bsub>J\<^sub>1\<^esub>[n])\<close> step (see the obstruction note above).\<close>
+
+lemma snx_slotNewOT_modSlice:
+  fixes M :: pairseq and x :: nat and q r :: BT and ps :: "BP list"
+  assumes a1: "M \<in> ST_PS" and a2: "monoT M" and a3: "Br M \<noteq> []"
+    and a4: "Lng M - 1 > 1"
+    and a5: "\<And>N. N \<in> ST_PS \<Longrightarrow> Lng N < Lng M \<Longrightarrow> Trans N \<in> OT_B"
+    and a6: "Trans (Pred M) \<in> OT_B"
+    and a7: "Trans (Pred M) = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B r)"
+    and a8: "Trans M = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B Dpt (enat x) q)"
+    and slice: "\<exists>N. N \<in> ST_PS \<and> Lng N < Lng M \<and> Trans N = Dpt (enat x) q"
+  shows "isOT_BP (DB (enat x) q)"
+proof -
+  from slice obtain N where Nst: "N \<in> ST_PS" and Nlt: "Lng N < Lng M"
+    and Ntr: "Trans N = Dpt (enat x) q" by blast
+  show ?thesis by (rule snx_newOT_of_sliceTrans[OF a5 Nst Nlt Ntr])
+qed
+
+(* ===== r44 merge: wt-s4c — slotAppg C3 (sax_slotAppg_modcore) ===== *)
+
+
+(* ===================================================================== *)
+(* ===== r44 slotAppg (C3 core): sax_ prefix  ========================== *)
+(* =====   §8.7 deep-insertion appended-principal G_B-bound.          === *)
+(* =====   Target = the slotAppg assumption of                        === *)
+(* =====   rgx_Trans_preserves_OT_of_slots (~59988).  STEP-0 empirics === *)
+(* =====   (python/step0_slotAppg): appg holds 984/984 real hosts     === *)
+(* =====   (deep Lng>=20: 21/21, zero fail; every applicable host had === *)
+(* =====   v0<=x).  The v0>x branch is vacuous (empty G-set) and is   === *)
+(* =====   discharged inside rgx_appg_split; the q=0_B branch is       === *)
+(* =====   trivial (0_B < any nonempty body / GBT v0 0_B = {}).  What  === *)
+(* =====   remains — the genuine descent core — is the (v0<=x /\       === *)
+(* =====   q<>0_B) regime, isolated here as the two named residuals    === *)
+(* =====   sax_qcore / sax_Gcore.  See report for the obstruction:     === *)
+(* =====   qcore/Gcore encode the outer-level-minimality invariant of  === *)
+(* =====   Trans (v0=entry M 1 0 small enough vs the deposited heads), === *)
+(* =====   which is a fragment of "Trans M in OT" itself and is NOT    === *)
+(* =====   derivable from predOT/newOT/descP locally (OT counterexample=== *)
+(* =====   q=Trm[DB 5 0], x=0, ps=[] : all local data hold yet         === *)
+(* =====   lessBT q (Dpt 0 q) is False).                               === *)
+(* ===================================================================== *)
+
+section \<open>r44-slotAppg --- appended-principal \<open>G\<^sub>B\<close>-bound reduction (sax_ prefix)\<close>
+
+text \<open>§8.7 slotAppg SHARPEST GREEN REDUCTION.  The appended-principal
+  \<open>G\<^sub>B\<close>-bound (\<open>slotAppg\<close> assumption of @{thm [source] rgx_Trans_preserves_OT_of_slots})
+  threaded through @{thm [source] rgx_appg_split}, with the vacuous \<open>v\<^sub>0>x\<close> branch
+  (empty \<open>G\<^sub>B\<close>-set, closed inside @{thm [source] rgx_appg_split}) and the trivial
+  \<open>q=0\<^sub>B\<close> branch (\<open>0\<^sub>B<\<close> a nonempty body; \<open>GBT v\<^sub>0 0\<^sub>B = {}\<close>) discharged
+  unconditionally.  This exposes the genuine descent core as EXACTLY the two named
+  residuals \<open>qcore\<close>/\<open>Gcore\<close>, both restricted to the non-vacuous, non-trivial
+  regime \<open>q\<noteq>0\<^sub>B \<and> entry M 1 0 \<le> x\<close>.  Empirically (STEP-0) the full conclusion
+  holds 984/984 on standard hosts including deep ones, so the residual core is a
+  TRUE statement; the obstruction is provability from the LOCAL hypotheses (see
+  the block header / report).\<close>
+
+lemma sax_slotAppg_modcore:
+  fixes M :: pairseq and x :: nat and q r :: BT and ps :: "BP list"
+  assumes a1: "M \<in> ST_PS" and a2: "monoT M" and a3: "Br M \<noteq> []" and a4: "Lng M - 1 > 1"
+    and a5: "\<And>N. N \<in> ST_PS \<Longrightarrow> Lng N < Lng M \<Longrightarrow> Trans N \<in> OT_B"
+    and a6: "Trans (Pred M) \<in> OT_B"
+    and a7: "Trans (Pred M) = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B r)"
+    and a8: "Trans M = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B Dpt (enat x) q)"
+    and qcore: "q \<noteq> 0\<^sub>B \<Longrightarrow> entry M 1 0 \<le> x
+                  \<Longrightarrow> lessBT q (Trm ps +\<^sub>B Dpt (enat x) q)"
+    and Gcore: "\<And>y. q \<noteq> 0\<^sub>B \<Longrightarrow> entry M 1 0 \<le> x
+                  \<Longrightarrow> y \<in> GBT (enat (entry M 1 0)) q
+                  \<Longrightarrow> lessBT y (Trm ps +\<^sub>B Dpt (enat x) q)"
+  shows "\<forall>y\<in>GBT (enat (entry M 1 0)) (Dpt (enat x) q).
+            lessBT y (Trm ps +\<^sub>B Dpt (enat x) q)"
+proof (rule rgx_appg_split)
+  show "entry M 1 0 \<le> x \<Longrightarrow> lessBT q (Trm ps +\<^sub>B Dpt (enat x) q)"
+  proof -
+    assume vx: "entry M 1 0 \<le> x"
+    show "lessBT q (Trm ps +\<^sub>B Dpt (enat x) q)"
+    proof (cases "q = 0\<^sub>B")
+      case True
+      have "Trm ps +\<^sub>B Dpt (enat x) q = Trm (ps @ [DB (enat x) q])" by simp
+      thus ?thesis using True by simp
+    next
+      case False
+      show ?thesis by (rule qcore[OF False vx])
+    qed
+  qed
+next
+  show "\<And>y. entry M 1 0 \<le> x \<Longrightarrow> y \<in> GBT (enat (entry M 1 0)) q
+            \<Longrightarrow> lessBT y (Trm ps +\<^sub>B Dpt (enat x) q)"
+  proof -
+    fix y assume vx: "entry M 1 0 \<le> x"
+      and yin: "y \<in> GBT (enat (entry M 1 0)) q"
+    show "lessBT y (Trm ps +\<^sub>B Dpt (enat x) q)"
+    proof (cases "q = 0\<^sub>B")
+      case True
+      have "GBT (enat (entry M 1 0)) q = {}" using True by simp
+      thus ?thesis using yin by simp
+    next
+      case False
+      show ?thesis by (rule Gcore[OF False vx yin])
+    qed
+  qed
+qed
+
+(* ===== r44 merge: wt-s4b — slotTail C2 (stx_slotTail_properprefix_from_descent; falseness-check TRUE) ===== *)
+
+text \<open>r44 §8.7 slotTail — SHARP REDUCTION of the PROPER-PREFIX half.  The
+  \<open>slotTail\<close> assumption of @{thm [source] rgx_Trans_preserves_OT_of_slots} (the
+  equal-head tail descent \<open>leBT q qb\<close>, C2 core) is the genuine Trans-spine
+  descent that both dispatchers @{thm [source] rgx_dstep_wholebody_case} and
+  @{thm [source] rgx_dstep_properprefix_case} CONSUME rather than prove — it is
+  the irreducible leaf on which the entire OT pillar rests.  This lemma isolates
+  the PROPER-PREFIX regime (where \<open>Trans (Pred M)\<close> ALREADY carries a trailing
+  principal \<open>D\<^bsub>x\<^esub> qp\<close> with the same head \<open>x\<close>): there the equal-head descent
+  reduces, by a SINGLE further fact — the trailing-subtree descent
+  \<open>descent : leBT q qp\<close> (the new subtree \<open>q\<close> deposited by the \<open>Pred M \<rightarrow> M\<close> step
+  is \<open>\<le>\<close> the one it replaces) — to \<open>leBT q qb\<close>, via \<open>qp \<le> qb\<close> read off from the
+  \<open>descP\<close> well-formedness of \<open>Trans (Pred M) \<in> OT\<^sub>B\<close> plus \<open>leBT\<close> transitivity.
+  So on the proper-prefix branch, \<open>slotTail \<Longleftarrow> {leBT q qp}\<close>.  (The
+  WHOLE-BODY branch — cases (1)/(2) of @{thm [source] m_8_2_keystone}, where the
+  new principal is FRESHLY appended after the entire predecessor body — is the
+  residual obstruction: case (1) has \<open>q = 0\<^sub>B\<close> (trivial), but case (2)'s
+  \<open>q = snd t12\<close> still needs its own value bound \<open>q \<le> qb\<close> from the §8.2 keystone
+  witness, not covered here.)  This reduction is genuinely TRUE and
+  non-circular: it assumes \<open>leBT q qp\<close>, a DIFFERENT statement from \<open>slotTail\<close>.
+  Empirical status (r44 falseness check): \<open>leBT q qb\<close> held in 0-fail across a
+  deep, yaBMS-standard branch-prefix sample (equal-head, \<open>qb \<noteq> 0\<^sub>B\<close>) up to
+  \<open>Lng = 16\<close> — the config is genuinely reachable by \<open>ST\<^sub>PS\<close> and \<open>slotTail\<close> holds.\<close>
+
+lemma stx_slotTail_properprefix_from_descent:
+  fixes M :: pairseq and ps :: "BP list" and q qp qb :: BT and x hdv :: nat
+  assumes ihBT: "isOT_BT (Trans (Pred M))"
+    and predW: "Trans (Pred M)
+                  = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B Dpt (enat x) qp)"
+    and psne: "ps \<noteq> []"
+    and lastps: "last ps = DB (enat hdv) qb"
+    and xhd: "x = hdv"
+    and descent: "leBT q qp"
+  shows "leBT q qb"
+proof -
+  have bodyOT: "isOT_BT (Trm ps +\<^sub>B Dpt (enat x) qp)"
+    using ihBT predW by simp
+  have "isOT_BT (Trm (ps @ [DB (enat x) qp]))" using bodyOT by simp
+  hence dP: "descP (ps @ [DB (enat x) qp])" by simp
+  have dl: "leBT (Trm [DB (enat x) qp]) (Trm [last ps])"
+    by (rule descP_last_le[OF dP psne])
+  have dl2: "leBT (Dpt (enat x) qp) (Dpt (enat hdv) qb)"
+    using dl lastps by simp
+  have qpqb: "leBT qp qb"
+  proof -
+    have "lessBT (Dpt (enat x) qp) (Dpt (enat hdv) qb)
+            \<or> Dpt (enat x) qp = Dpt (enat hdv) qb"
+      using dl2 by simp
+    thus ?thesis
+    proof
+      assume "lessBT (Dpt (enat x) qp) (Dpt (enat hdv) qb)"
+      hence "lessBP (DB (enat x) qp) (DB (enat hdv) qb)" by simp
+      hence "enat x < enat hdv \<or> (enat x = enat hdv \<and> lessBT qp qb)" by simp
+      thus ?thesis using xhd by auto
+    next
+      assume "Dpt (enat x) qp = Dpt (enat hdv) qb"
+      hence "qp = qb" by simp
+      thus ?thesis by simp
+    qed
+  qed
+  show "leBT q qb" by (rule leBT_trans[OF descent qpqb])
+qed
+
 end
