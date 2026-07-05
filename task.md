@@ -63,7 +63,9 @@
         - ✅ regime修正(vg7x⟺DT_PS、descending Pred保存)[r1]
         - ✅ BASE/STEP形+全dispatcher還元→bridgesU(vg8x/vs3x)[r5]
         - ✅ terminal-slice setup(bux_terminal_slice_ready、keystone4前提)[r1]
-        - 🚨🤖 bridgesU 終切片readback(keystone RightNodes値 DISSOLVED→残=readoff、kyx_VE34_of_DT_modReadoff)[r2]
+        - 🚨 bridgesU 終切片readback(readoff⟺VE34判明→残=article {BASE,STEP} back-peel)
+          - ✅ readoff⟺{BASE,STEP}還元(rdx_, modReadoff interface閉)[r3][0.259][0.93h]
+          - 🚨 {BASE,STEP} back-peel(article Pred-induction on j1-TrMax)[r0]
     - ✅ 補題（強単項性の切片への遺伝性）
     - ✅ 補題（部分表現の単項成分と $\textrm{Pred}$ の関係）(§8.2 keystone)
     - ✅ 補題（強単項性の下での部分表現の単項成分の基本性質）
