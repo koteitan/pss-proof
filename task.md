@@ -95,7 +95,9 @@
         - ✅ HB(t2成分bound)[r1]
         - 🚨 regime残差(cpx済→残=non-admeq枝)
           - ✅ cpx Red-slice再thread→admeq枝exchange無条件(cpx_condIV_exchange_uncond)[r8][0.314][1.29h]
-          - 🚨🤖 non-admeq condIV枝(admeq=proof-route gate、~78-92%充足)[r0]
+          - 🚨 non-admeq condIV枝(~2%稀少degenerate regime)
+            - ✅ admeqフリーbrick+全枝統合器(残差1本隔離)[r1][0.250][1.04h]
+            - 🚨 nonadmeq_exch残差(e1jm1=v1縮退、u=v fseq新machinery要)[r0]
       - ❌ d13x_T形organize[r2]
       - 🚨 condIII exchange 再構築(d4vx_core route)
         - ✅ engine+mnform+降下(2)OT-free+triple組立[r6]
