@@ -59520,4 +59520,572 @@ text \<open>DOCUMENTATION ONLY (no lemma, no sorry).  The r39 reduction
   (the surgC-shared value residual), NOT from a length/prefix relation.
   pcompPrefix is REFUTED --- do not re-attempt it, and do not cite it.\<close>
 
+(* ===== r40b merge: wt-s4b block (Fable OT-resid: rgx_ cluster) ===== *)
+
+section \<open>DELIVERABLE — §8.7 OT keystone residual \<open>resid\<close> SHARPENED (r40b)\<close>
+
+text \<open>§8.7 resid C3 — [Buc1]-order INTERVAL structure: any term in the interval
+  \<open>[Trm ps, Trm (ps @ rs))\<close> of the dictionary order is an extension \<open>Trm (ps @ ys)\<close>
+  of the prefix.  (The dictionary order can only exceed \<open>Trm ps\<close> without exceeding
+  \<open>Trm (ps @ rs)\<close> by agreeing with \<open>ps\<close> and continuing.)  Pure \<open>lessBT\<close> structure;
+  the engine for restricting outer \<open>G\<^sub>B\<close>-conditions to prefixes.\<close>
+
+lemma rgx_between_extends:
+  "leBT (Trm ps) y \<Longrightarrow> lessBT y (Trm (ps @ rs)) \<Longrightarrow> \<exists>ys. y = Trm (ps @ ys)"
+proof (induction ps arbitrary: y)
+  case Nil
+  obtain ys0 where "y = Trm ys0" by (cases y)
+  thus ?case by auto
+next
+  case (Cons p ps')
+  obtain ys0 where y: "y = Trm ys0" by (cases y)
+  show ?case
+  proof (cases "ys0 = []")
+    case True
+    have False using Cons.prems(1) y True by simp
+    thus ?thesis ..
+  next
+    case False
+    then obtain y0 ys1 where ys0: "ys0 = y0 # ys1" by (cases ys0) auto
+    have lt2: "lessBP y0 p \<or> (y0 = p \<and> lessBT (Trm ys1) (Trm (ps' @ rs)))"
+      using Cons.prems(2) y ys0 by simp
+    have le1: "lessBP p y0 \<or> (p = y0 \<and> lessBT (Trm ps') (Trm ys1))
+               \<or> (p = y0 \<and> ps' = ys1)"
+      using Cons.prems(1) y ys0 by auto
+    have y0p: "y0 = p"
+    proof (rule ccontr)
+      assume ne: "y0 \<noteq> p"
+      have bp: "lessBP y0 p" using lt2 ne by blast
+      have "lessBP p y0" using le1 ne by blast
+      hence "lessBP y0 y0" using bp lessBP_trans by blast
+      thus False using lessBP_irrefl by blast
+    qed
+    have lt2': "lessBT (Trm ys1) (Trm (ps' @ rs))"
+      using lt2 y0p lessBP_irrefl by blast
+    have le1': "leBT (Trm ps') (Trm ys1)"
+      using le1 y0p lessBP_irrefl by blast
+    obtain ys where ysw: "Trm ys1 = Trm (ps' @ ys)"
+      using Cons.IH[OF le1' lt2'] by blast
+    have "ys1 = ps' @ ys" using ysw by simp
+    hence "y = Trm ((p # ps') @ ys)" using y ys0 y0p by simp
+    thus ?thesis by blast
+  qed
+qed
+
+lemma rgx_size_Trm_append: "size (Trm ps) \<le> size (Trm (ps @ ys))"
+proof (induction ps)
+  case Nil
+  show ?case by simp
+next
+  case (Cons p ps)
+  thus ?case by simp
+qed
+
+text \<open>§8.7 resid C3 — the outer \<open>G\<^sub>B\<close>-condition RESTRICTS to list prefixes: if every
+  \<open>G\<^sub>v\<close>-subterm of \<open>Trm (ps @ rs)\<close> is \<open><\<close> the whole, then every \<open>G\<^sub>v\<close>-subterm of the
+  prefix \<open>Trm ps\<close> is \<open><\<close> the prefix.  Mechanism: \<open>G\<^sub>B\<close>-monotone under append (union),
+  so \<open>y < Trm (ps @ rs)\<close>; if \<open>y\<close> were \<open>\<ge> Trm ps\<close> it would live in the interval and
+  hence be an extension \<open>Trm (ps @ ys)\<close> (@{thm [source] rgx_between_extends}) —
+  impossible by the strict size drop of \<open>G\<^sub>B\<close>-membership (@{thm [source] b1x_GBT_size}).
+  This closes the \<open>ihg\<close> input of @{thm [source] m_8_7_gbt_outer_reduce} from the
+  Pred-IH G-condition alone — no keystone case analysis, no value reasoning.\<close>
+
+lemma rgx_gbt_prefix_restrict:
+  fixes v :: enat and ps rs :: "BP list"
+  assumes gfull: "\<forall>y\<in>GBT v (Trm (ps @ rs)). lessBT y (Trm (ps @ rs))"
+  shows "\<forall>y\<in>GBT v (Trm ps). lessBT y (Trm ps)"
+proof
+  fix y assume yin: "y \<in> GBT v (Trm ps)"
+  have yin2: "y \<in> GBT v (Trm (ps @ rs))" using yin by auto
+  have ylt: "lessBT y (Trm (ps @ rs))" using gfull yin2 by blast
+  have ysz: "size y < size (Trm ps)" by (rule b1x_GBT_size[OF yin])
+  show "lessBT y (Trm ps)"
+  proof (rule ccontr)
+    assume nlt: "\<not> lessBT y (Trm ps)"
+    have "lessBT y (Trm ps) \<or> y = Trm ps \<or> lessBT (Trm ps) y"
+      by (rule lessBT_total)
+    hence le: "leBT (Trm ps) y" using nlt by blast
+    obtain ys where yeq: "y = Trm (ps @ ys)"
+      using rgx_between_extends[OF le ylt] by blast
+    have "size (Trm ps) \<le> size y" using yeq rgx_size_Trm_append by simp
+    thus False using ysz by simp
+  qed
+qed
+
+text \<open>§8.7 resid C3 ASSEMBLED from the single appended-principal residual \<open>appg\<close>:
+  given the Pred-IH \<open>Trans (Pred M) \<in> OT\<^sub>B\<close> and the two keystone equations, the full
+  outer \<open>G\<^sub>B\<close>-condition (resid conjunct C3) follows from \<open>appg\<close> — the \<open>G\<^sub>B\<close>-bound of
+  the appended principal ALONE.  The prefix part \<open>ihg\<close> is discharged by
+  @{thm [source] rgx_gbt_prefix_restrict} applied to the G-condition of the
+  predecessor body (read off \<open>isOT_BP (DB v\<^sub>0 (Trm (ps @ rs)))\<close> inside the IH).\<close>
+
+lemma rgx_gbt_of_appg:
+  fixes M :: pairseq and ps :: "BP list" and r q :: BT and x v0 :: nat
+  assumes predOT: "Trans (Pred M) \<in> OT_B"
+    and predW: "Trans (Pred M) = Dpt (enat v0) (Trm ps +\<^sub>B r)"
+    and appg: "\<forall>y\<in>GBT (enat v0) (Dpt (enat x) q).
+                  lessBT y (Trm ps +\<^sub>B Dpt (enat x) q)"
+  shows "\<forall>y\<in>GBT (enat v0) (Trm ps +\<^sub>B Dpt (enat x) q).
+            lessBT y (Trm ps +\<^sub>B Dpt (enat x) q)"
+proof -
+  obtain rs where r: "r = Trm rs" by (cases r)
+  have ot: "isOT_BT (Dpt (enat v0) (Trm (ps @ rs)))"
+    using predOT predW r by (simp add: OT_B_def OT_def)
+  have gfull: "\<forall>y\<in>GBT (enat v0) (Trm (ps @ rs)). lessBT y (Trm (ps @ rs))"
+    using ot by simp
+  have ihg: "\<forall>y\<in>GBT (enat v0) (Trm ps). lessBT y (Trm ps)"
+    by (rule rgx_gbt_prefix_restrict[OF gfull])
+  show ?thesis by (rule m_8_7_gbt_outer_reduce[OF ihg appg])
+qed
+
+text \<open>\<open>appg\<close> unfolded: the appended-principal \<open>G\<^sub>B\<close>-bound splits into the body bound
+  \<open>qlt\<close> and the recursive \<open>G\<^sub>B\<close>-bound \<open>Gq\<close>, both only needed when \<open>v\<^sub>0 \<le> x\<close>
+  (\<open>G\<^sub>B\<close> of a principal with smaller head is empty).\<close>
+
+lemma rgx_appg_split:
+  fixes v0 x :: nat and q :: BT and ps :: "BP list"
+  assumes qlt: "v0 \<le> x \<Longrightarrow> lessBT q (Trm ps +\<^sub>B Dpt (enat x) q)"
+    and Gq: "\<And>y. v0 \<le> x \<Longrightarrow> y \<in> GBT (enat v0) q
+                \<Longrightarrow> lessBT y (Trm ps +\<^sub>B Dpt (enat x) q)"
+  shows "\<forall>y\<in>GBT (enat v0) (Dpt (enat x) q). lessBT y (Trm ps +\<^sub>B Dpt (enat x) q)"
+proof
+  fix y assume yin: "y \<in> GBT (enat v0) (Dpt (enat x) q)"
+  show "lessBT y (Trm ps +\<^sub>B Dpt (enat x) q)"
+  proof (cases "v0 \<le> x")
+    case True
+    hence vx': "enat v0 \<le> enat x" by simp
+    have "GBT (enat v0) (Dpt (enat x) q) = insert q (GBT (enat v0) q)"
+      using vx' by simp
+    hence "y = q \<or> y \<in> GBT (enat v0) q" using yin by blast
+    thus ?thesis using qlt[OF True] Gq[OF True] by blast
+  next
+    case False
+    hence vx': "\<not> enat v0 \<le> enat x" by simp
+    have "GBT (enat v0) (Dpt (enat x) q) = {}" using vx' by simp
+    thus ?thesis using yin by blast
+  qed
+qed
+
+text \<open>§8.7 resid C2 — WHOLE-BODY case dispatcher with the \<open>x\<close>-form interface.
+  Wraps @{thm [source] m_8_7_dstep_wholebody} (Admpos regime) and falls back to the
+  named head residual \<open>headWB\<close> + @{thm [source] m_8_7_dstep_assemble} on the
+  \<open>transJm1 M = 0\<close> corner.\<close>
+
+lemma rgx_dstep_wholebody_case:
+  fixes M :: pairseq and ps :: "BP list" and q :: BT and x jj :: nat
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS" and j1gt: "Lng M - 1 > 1"
+    and xex: "x = entry M 1 jj"
+    and predW: "Trans (Pred M) = Dpt (enat (entry M 1 0)) (Trm ps)"
+    and dec: "Trans M = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B Dpt (enat x) q)"
+    and predTB: "Trans (Pred M) \<in> T_B"
+    and psne: "ps \<noteq> []"
+    and tailEH: "\<And>hdv qb. last ps = DB (enat hdv) qb \<Longrightarrow> x = hdv \<Longrightarrow> leBT q qb"
+    and headWB: "\<And>hdv qb. transJm1 M = 0 \<Longrightarrow> last ps = DB (enat hdv) qb \<Longrightarrow> x \<le> hdv"
+  shows "leBT (Dpt (enat x) q) (Trm [last ps])"
+proof (cases "transJm1 M > 0")
+  case True
+  have dec': "Trans M = Dpt (enat (entry M 1 0))
+                (Trm ps +\<^sub>B Dpt (enat (entry M 1 jj)) q)"
+    using dec xex by simp
+  have tail1: "\<And>hdv qb. last ps = DB (enat hdv) qb \<Longrightarrow> entry M 1 jj = hdv
+                  \<Longrightarrow> leBT q qb"
+  proof -
+    fix hdv qb assume l: "last ps = DB (enat hdv) qb" and e: "entry M 1 jj = hdv"
+    show "leBT q qb" using tailEH[OF l] xex e by simp
+  qed
+  have "leBT (Dpt (enat (entry M 1 jj)) q) (Trm [last ps])"
+    by (rule m_8_7_dstep_wholebody[OF MR MP j1gt True predW dec' predTB psne tail1])
+  thus ?thesis using xex by simp
+next
+  case False
+  hence adm0: "transJm1 M = 0" by simp
+  obtain lw qb where lraw: "last ps = DB lw qb" by (cases "last ps")
+  have dfreeP: "dfree_BT (Trm ps)"
+  proof -
+    have "dfree_BT (Dpt (enat (entry M 1 0)) (Trm ps))"
+      using predTB predW by (simp add: T_B_def)
+    thus ?thesis by simp
+  qed
+  have "dfree_BP (last ps)" using dfreeP last_in_set[OF psne] by simp
+  hence "lw \<noteq> \<infinity>" using lraw by simp
+  then obtain hdv where hdveq: "lw = enat hdv" by (cases lw) auto
+  have lps: "last ps = DB (enat hdv) qb" using lraw hdveq by simp
+  have hle: "x \<le> hdv" by (rule headWB[OF adm0 lps])
+  have tl: "x = hdv \<longrightarrow> leBT q qb" using tailEH[OF lps] by blast
+  show ?thesis by (rule m_8_7_dstep_assemble[OF lps psne hle tl])
+qed
+
+text \<open>§8.7 resid C2 — PROPER-PREFIX case dispatcher with the \<open>x\<close>-form interface
+  (wraps @{thm [source] m_8_7_dstep_properprefix_reduce}; head bound FREE from the
+  IH \<open>descP\<close>).\<close>
+
+lemma rgx_dstep_properprefix_case:
+  fixes M :: pairseq and ps :: "BP list" and q qp :: BT and x jj :: nat
+  assumes ihBT: "isOT_BT (Trans (Pred M))"
+    and xex: "x = entry M 1 jj"
+    and predW: "Trans (Pred M)
+                = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B Dpt (enat x) qp)"
+    and psne: "ps \<noteq> []"
+    and tailEH: "\<And>hdv qb. last ps = DB (enat hdv) qb \<Longrightarrow> x = hdv \<Longrightarrow> leBT q qb"
+  shows "leBT (Dpt (enat x) q) (Trm [last ps])"
+proof -
+  have predW': "Trans (Pred M)
+                = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B Dpt (enat (entry M 1 jj)) qp)"
+    using predW xex by simp
+  have tail1: "\<And>hdv qb. last ps = DB (enat hdv) qb \<Longrightarrow> entry M 1 jj = hdv
+                  \<Longrightarrow> leBT q qb"
+  proof -
+    fix hdv qb assume l: "last ps = DB (enat hdv) qb" and e: "entry M 1 jj = hdv"
+    show "leBT q qb" using tailEH[OF l] xex e by simp
+  qed
+  have "leBT (Dpt (enat (entry M 1 jj)) q) (Trm [last ps])"
+    by (rule m_8_7_dstep_properprefix_reduce[OF ihBT predW' psne tail1])
+  thus ?thesis using xex by simp
+qed
+
+text \<open>§8.7 resid MASTER REDUCTION.  The FULL packaged residual \<open>resid\<close> of
+  @{thm [source] m_8_7_Trans_OT_step_keystone} — all three conjuncts C1 (newOT),
+  C2 (head-step), C3 (outer \<open>G\<^sub>B\<close>) — from the Pred-IH \<open>Trans (Pred M) \<in> OT\<^sub>B\<close> plus
+  exactly THREE sharp value residuals: \<open>newOT\<close> (C1 verbatim), \<open>tailEH\<close> (the
+  equal-head tail descent — the genuine \<open>Trans\<close>-spine descent), \<open>appg\<close> (the
+  appended-principal \<open>G\<^sub>B\<close>-bound), plus the corner slot \<open>headWB\<close> (whole-body head
+  bound at \<open>transJm1 M = 0\<close>; the \<open>transJm1 M > 0\<close> regime is closed by
+  @{thm [source] m_8_2_wid_step} inside @{thm [source] m_8_7_dstep_wholebody}).
+  Mechanism: re-run the (proven, unconditional) keystone
+  @{thm [source] m_8_2_keystone}; in each of its four cases the ex1 witness is
+  REALIGNED with the given decomposition by \<open>butlast/last\<close> of the snoc-append
+  (the decomposition \<open>ps @ [DB x q]\<close> of the body of \<open>Trans M\<close> is unique), which
+  pins the case shape: cases (1)/(2) force \<open>Trans (Pred M) = D\<^bsub>v\<^sub>0\<^esub>(Trm ps)\<close>
+  (whole-body), cases (3)/(4) force the trailing equal-head principal
+  (proper-prefix).  C2 then goes to the respective dispatcher; C3 to
+  @{thm [source] rgx_gbt_of_appg}; C1 is \<open>newOT\<close> itself.\<close>
+
+lemma rgx_resid_of_parts:
+  fixes M :: pairseq and x :: nat and q r :: BT and ps :: "BP list"
+  assumes MST: "M \<in> ST_PS" and Mmono: "monoT M"
+    and Brne: "Br M \<noteq> []" and j1gt: "Lng M - 1 > 1"
+    and predOT: "Trans (Pred M) \<in> OT_B"
+    and predW: "Trans (Pred M) = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B r)"
+    and dec: "Trans M = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B Dpt (enat x) q)"
+    and newOT: "isOT_BP (DB (enat x) q)"
+    and appg: "\<forall>y\<in>GBT (enat (entry M 1 0)) (Dpt (enat x) q).
+                  lessBT y (Trm ps +\<^sub>B Dpt (enat x) q)"
+    and tailEH: "\<And>hdv qb. ps \<noteq> [] \<Longrightarrow> last ps = DB (enat hdv) qb \<Longrightarrow> x = hdv
+                    \<Longrightarrow> leBT q qb"
+    and headWB: "\<And>hdv qb. ps \<noteq> [] \<Longrightarrow> transJm1 M = 0
+                    \<Longrightarrow> Trans (Pred M) = Dpt (enat (entry M 1 0)) (Trm ps)
+                    \<Longrightarrow> last ps = DB (enat hdv) qb \<Longrightarrow> x \<le> hdv"
+  shows "isOT_BP (DB (enat x) q)
+         \<and> (ps \<noteq> [] \<longrightarrow> leBT (Dpt (enat x) q) (Trm [last ps]))
+         \<and> (\<forall>y\<in>GBT (enat (entry M 1 0)) (Trm ps +\<^sub>B Dpt (enat x) q).
+                lessBT y (Trm ps +\<^sub>B Dpt (enat x) q))"
+proof -
+  let ?v0 = "entry M 1 0"
+  let ?j1' = "FirstNodes M ! (Lng (Br M) - 1)"
+  let ?j0' = "Joints M ! (Lng (Br M) - 1)"
+  have MR: "M \<in> RT_PS" using MST m_6_7_ST_PS_subseteq_RT_PS by blast
+  have MT: "M \<in> T_PS" using MR by (simp add: RT_PS_def)
+  have MP: "M \<in> PT_PS" using MT Mmono by (simp add: PT_PS_def)
+  have ihBT: "isOT_BT (Trans (Pred M))"
+    using predOT by (simp add: OT_B_def OT_def)
+  have predTB: "Trans (Pred M) \<in> T_B" using predOT by (simp add: OT_B_def)
+  have C3: "\<forall>y\<in>GBT (enat ?v0) (Trm ps +\<^sub>B Dpt (enat x) q).
+               lessBT y (Trm ps +\<^sub>B Dpt (enat x) q)"
+    by (rule rgx_gbt_of_appg[OF predOT predW appg])
+  have C2: "ps \<noteq> [] \<longrightarrow> leBT (Dpt (enat x) q) (Trm [last ps])"
+  proof (intro impI)
+    assume psne: "ps \<noteq> []"
+    have tE: "\<And>hdv qb. last ps = DB (enat hdv) qb \<Longrightarrow> x = hdv \<Longrightarrow> leBT q qb"
+    proof -
+      fix hdv qb assume l: "last ps = DB (enat hdv) qb" and e: "x = hdv"
+      show "leBT q qb" by (rule tailEH[OF psne l e])
+    qed
+    from m_8_2_keystone[OF MR MP Brne j1gt]
+    show "leBT (Dpt (enat x) q) (Trm [last ps])"
+    proof (elim disjE)
+      \<comment> \<open>case (1): whole body, trailing \<open>D\<^bsub>M\<^sub>1\<^sub>,\<^sub>j\<^sub>1'\<^esub> 0\<close>\<close>
+      assume A: "FirstNodes M ! (Lng (Br M) - 1) = Lng M - 1
+          \<and> (TrMax M = 0 \<or> Joints M ! (Lng (Br M) - 1) < TrMax M)
+          \<and> (entry M 0 (FirstNodes M ! (Lng (Br M) - 1))
+               = entry M 1 (FirstNodes M ! (Lng (Br M) - 1))
+             \<or> adm M (Joints M ! (Lng (Br M) - 1)))
+          \<and> (\<exists>!t1. Trans (Pred M) = Dpt (enat (entry M 1 0)) t1
+                \<and> Trans M = Dpt (enat (entry M 1 0))
+                     (t1 +\<^sub>B Dpt (enat (entry M 1 (FirstNodes M ! (Lng (Br M) - 1)))) 0\<^sub>B))"
+      from A obtain t1 where
+        P1: "Trans (Pred M) = Dpt (enat ?v0) t1"
+        and T1: "Trans M = Dpt (enat ?v0) (t1 +\<^sub>B Dpt (enat (entry M 1 ?j1')) 0\<^sub>B)"
+        by (blast dest: ex1_implies_ex)
+      obtain ts where ts: "t1 = Trm ts" by (cases t1)
+      have e1: "ps @ [DB (enat x) q] = ts @ [DB (enat (entry M 1 ?j1')) 0\<^sub>B]"
+        using dec T1 ts by simp
+      have pse: "ps = ts" by (metis e1 butlast_snoc)
+      have lastO: "DB (enat x) q = DB (enat (entry M 1 ?j1')) 0\<^sub>B"
+        by (metis e1 last_snoc)
+      have xex: "x = entry M 1 ?j1'" using lastO by simp
+      have predW1: "Trans (Pred M) = Dpt (enat ?v0) (Trm ps)"
+        using P1 ts pse by simp
+      have hW: "\<And>hdv qb. transJm1 M = 0 \<Longrightarrow> last ps = DB (enat hdv) qb \<Longrightarrow> x \<le> hdv"
+      proof -
+        fix hdv qb assume a: "transJm1 M = 0" and l: "last ps = DB (enat hdv) qb"
+        show "x \<le> hdv" by (rule headWB[OF psne a predW1 l])
+      qed
+      show "leBT (Dpt (enat x) q) (Trm [last ps])"
+        by (rule rgx_dstep_wholebody_case[OF MR MP j1gt xex predW1 dec predTB psne tE hW])
+    next
+      \<comment> \<open>case (2): whole body, trailing \<open>D\<^bsub>M\<^sub>1\<^sub>,\<^sub>j\<^sub>0'\<^esub> (snd t12)\<close>\<close>
+      assume A: "FirstNodes M ! (Lng (Br M) - 1) = Lng M - 1
+          \<and> entry M 0 (FirstNodes M ! (Lng (Br M) - 1))
+              > entry M 1 (FirstNodes M ! (Lng (Br M) - 1))
+          \<and> \<not> adm M (Joints M ! (Lng (Br M) - 1))
+          \<and> (\<exists>!t12. Trans (Pred M) = Dpt (enat (entry M 1 0)) (fst t12)
+                \<and> Trans M = Dpt (enat (entry M 1 0))
+                     (fst t12 +\<^sub>B Dpt (enat (entry M 1 (Joints M ! (Lng (Br M) - 1)))) (snd t12)))"
+      from A obtain t12 where
+        P2: "Trans (Pred M) = Dpt (enat ?v0) (fst t12)"
+        and T2: "Trans M = Dpt (enat ?v0) (fst t12 +\<^sub>B Dpt (enat (entry M 1 ?j0')) (snd t12))"
+        by (blast dest: ex1_implies_ex)
+      obtain ts where ts: "fst t12 = Trm ts" by (cases "fst t12")
+      have e2: "ps @ [DB (enat x) q] = ts @ [DB (enat (entry M 1 ?j0')) (snd t12)]"
+        using dec T2 ts by simp
+      have pse: "ps = ts" by (metis e2 butlast_snoc)
+      have lastO: "DB (enat x) q = DB (enat (entry M 1 ?j0')) (snd t12)"
+        by (metis e2 last_snoc)
+      have xex: "x = entry M 1 ?j0'" using lastO by simp
+      have predW2: "Trans (Pred M) = Dpt (enat ?v0) (Trm ps)"
+        using P2 ts pse by simp
+      have hW: "\<And>hdv qb. transJm1 M = 0 \<Longrightarrow> last ps = DB (enat hdv) qb \<Longrightarrow> x \<le> hdv"
+      proof -
+        fix hdv qb assume a: "transJm1 M = 0" and l: "last ps = DB (enat hdv) qb"
+        show "x \<le> hdv" by (rule headWB[OF psne a predW2 l])
+      qed
+      show "leBT (Dpt (enat x) q) (Trm [last ps])"
+        by (rule rgx_dstep_wholebody_case[OF MR MP j1gt xex predW2 dec predTB psne tE hW])
+    next
+      \<comment> \<open>case (3): proper prefix, trailing \<open>D\<^bsub>M\<^sub>1\<^sub>,\<^sub>j\<^sub>1'\<^esub>\<close>\<close>
+      assume A: "\<exists>!t123. Trans (Pred M)
+                    = Dpt (enat (entry M 1 0))
+                        (fst t123 +\<^sub>B Dpt (enat (entry M 1 (FirstNodes M ! (Lng (Br M) - 1)))) (fst (snd t123)))
+                \<and> Trans M = Dpt (enat (entry M 1 0))
+                        (fst t123 +\<^sub>B Dpt (enat (entry M 1 (FirstNodes M ! (Lng (Br M) - 1)))) (snd (snd t123)))"
+      from A obtain t123 where
+        P3: "Trans (Pred M) = Dpt (enat ?v0)
+                (fst t123 +\<^sub>B Dpt (enat (entry M 1 ?j1')) (fst (snd t123)))"
+        and T3: "Trans M = Dpt (enat ?v0)
+                (fst t123 +\<^sub>B Dpt (enat (entry M 1 ?j1')) (snd (snd t123)))"
+        by (blast dest: ex1_implies_ex)
+      obtain ts where ts: "fst t123 = Trm ts" by (cases "fst t123")
+      have e3: "ps @ [DB (enat x) q] = ts @ [DB (enat (entry M 1 ?j1')) (snd (snd t123))]"
+        using dec T3 ts by simp
+      have pse: "ps = ts" by (metis e3 butlast_snoc)
+      have lastO: "DB (enat x) q = DB (enat (entry M 1 ?j1')) (snd (snd t123))"
+        by (metis e3 last_snoc)
+      have xex: "x = entry M 1 ?j1'" using lastO by simp
+      have predW3: "Trans (Pred M)
+                     = Dpt (enat ?v0) (Trm ps +\<^sub>B Dpt (enat x) (fst (snd t123)))"
+        using P3 ts pse xex by simp
+      show "leBT (Dpt (enat x) q) (Trm [last ps])"
+        by (rule rgx_dstep_properprefix_case[OF ihBT xex predW3 psne tE])
+    next
+      \<comment> \<open>case (4): proper prefix, trailing \<open>D\<^bsub>M\<^sub>1\<^sub>,\<^sub>j\<^sub>0'\<^esub>\<close>\<close>
+      assume A: "\<exists>!t123. Trans (Pred M)
+                    = Dpt (enat (entry M 1 0))
+                        (fst t123 +\<^sub>B Dpt (enat (entry M 1 (Joints M ! (Lng (Br M) - 1)))) (fst (snd t123)))
+                \<and> Trans M = Dpt (enat (entry M 1 0))
+                        (fst t123 +\<^sub>B Dpt (enat (entry M 1 (Joints M ! (Lng (Br M) - 1)))) (snd (snd t123)))"
+      from A obtain t123 where
+        P4: "Trans (Pred M) = Dpt (enat ?v0)
+                (fst t123 +\<^sub>B Dpt (enat (entry M 1 ?j0')) (fst (snd t123)))"
+        and T4: "Trans M = Dpt (enat ?v0)
+                (fst t123 +\<^sub>B Dpt (enat (entry M 1 ?j0')) (snd (snd t123)))"
+        by (blast dest: ex1_implies_ex)
+      obtain ts where ts: "fst t123 = Trm ts" by (cases "fst t123")
+      have e4: "ps @ [DB (enat x) q] = ts @ [DB (enat (entry M 1 ?j0')) (snd (snd t123))]"
+        using dec T4 ts by simp
+      have pse: "ps = ts" by (metis e4 butlast_snoc)
+      have lastO: "DB (enat x) q = DB (enat (entry M 1 ?j0')) (snd (snd t123))"
+        by (metis e4 last_snoc)
+      have xex: "x = entry M 1 ?j0'" using lastO by simp
+      have predW4: "Trans (Pred M)
+                     = Dpt (enat ?v0) (Trm ps +\<^sub>B Dpt (enat x) (fst (snd t123)))"
+        using P4 ts pse xex by simp
+      show "leBT (Dpt (enat x) q) (Trm [last ps])"
+        by (rule rgx_dstep_properprefix_case[OF ihBT xex predW4 psne tE])
+    qed
+  qed
+  show ?thesis using newOT C2 C3 by blast
+qed
+
+text \<open>§8.7 OT-preservation ASSEMBLY with the IH-ENRICHED residual slot.  Same
+  strong-\<open>Lng\<close> induction as \<open>m_8_7_Trans_preserves_OT\<close>, but the
+  keystone residual additionally RECEIVES the strong IH and the Pred-IH
+  \<open>Trans (Pred M) \<in> OT\<^sub>B\<close> — strictly weaker slot obligations (any prover of the
+  slots may now use OT-membership of every shorter standard sequence).\<close>
+
+lemma rgx_Trans_preserves_OT_modIH:
+  fixes M :: pairseq
+  assumes residIH:
+    "\<And>M x q ps r.
+        M \<in> ST_PS \<Longrightarrow> monoT M \<Longrightarrow> Br M \<noteq> [] \<Longrightarrow> Lng M - 1 > 1 \<Longrightarrow>
+        (\<And>N. N \<in> ST_PS \<Longrightarrow> Lng N < Lng M \<Longrightarrow> Trans N \<in> OT_B) \<Longrightarrow>
+        Trans (Pred M) \<in> OT_B \<Longrightarrow>
+        Trans (Pred M) = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B r) \<Longrightarrow>
+        Trans M = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B Dpt (enat x) q) \<Longrightarrow>
+        isOT_BP (DB (enat x) q)
+        \<and> (ps \<noteq> [] \<longrightarrow> leBT (Dpt (enat x) q) (Trm [last ps]))
+        \<and> (\<forall>y\<in>GBT (enat (entry M 1 0)) (Trm ps +\<^sub>B Dpt (enat x) q).
+               lessBT y (Trm ps +\<^sub>B Dpt (enat x) q))"
+    and nonkey:
+    "\<And>N. N \<in> ST_PS \<Longrightarrow> \<not> (monoT N \<and> Br N \<noteq> [] \<and> Lng N - 1 > 1) \<Longrightarrow>
+        (\<And>N'. N' \<in> ST_PS \<Longrightarrow> Lng N' < Lng N \<Longrightarrow> Trans N' \<in> OT_B) \<Longrightarrow>
+        Trans N \<in> OT_B"
+  shows "M \<in> ST_PS \<Longrightarrow> Trans M \<in> OT_B"
+proof (induction "Lng M" arbitrary: M rule: less_induct)
+  case (less M)
+  have IH: "\<And>M'. M' \<in> ST_PS \<Longrightarrow> Lng M' < Lng M \<Longrightarrow> Trans M' \<in> OT_B"
+    using less.hyps by blast
+  show ?case
+  proof (cases "monoT M \<and> Br M \<noteq> [] \<and> Lng M - 1 > 1")
+    case True
+    have Mmono: "monoT M" and Brne: "Br M \<noteq> []" and j1gt: "Lng M - 1 > 1"
+      using True by auto
+    have L: "1 < Lng M" using j1gt by simp
+    have predST: "Pred M \<in> ST_PS" by (rule m_8_7_Pred_ST_PS[OF less.prems L])
+    have pb: "Pred M = butlast M" using L by (simp add: Pred_def)
+    have LP: "Lng (Pred M) < Lng M" using pb L by simp
+    have ihOT: "Trans (Pred M) \<in> OT_B" by (rule IH[OF predST LP])
+    have resid': "\<And>x q ps r.
+        Trans (Pred M) = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B r) \<Longrightarrow>
+        Trans M = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B Dpt (enat x) q) \<Longrightarrow>
+        isOT_BP (DB (enat x) q)
+        \<and> (ps \<noteq> [] \<longrightarrow> leBT (Dpt (enat x) q) (Trm [last ps]))
+        \<and> (\<forall>y\<in>GBT (enat (entry M 1 0)) (Trm ps +\<^sub>B Dpt (enat x) q).
+               lessBT y (Trm ps +\<^sub>B Dpt (enat x) q))"
+      by (rule residIH[OF less.prems Mmono Brne j1gt IH ihOT])
+    show ?thesis
+      by (rule m_8_7_Trans_OT_step_keystone[OF less.prems Mmono Brne j1gt ihOT resid'])
+  next
+    case False
+    show ?thesis
+    proof (rule nonkey[OF less.prems False])
+      fix N' assume "N' \<in> ST_PS" and "Lng N' < Lng M"
+      thus "Trans N' \<in> OT_B" by (rule IH)
+    qed
+  qed
+qed
+
+text \<open>§8.7 OT-preservation — the SHARPEST green frame (r40b).  \<open>Trans\<close> preserves
+  standard\<open>\<rightarrow>\<close>OT modulo exactly FIVE named value residuals, each handed the full
+  keystone context AND the strong IH:
+  \<^item> \<open>slotNewOT\<close>  (C1): the appended principal is an ordinal term;
+  \<^item> \<open>slotTail\<close>   (C2 core): the equal-head tail descent \<open>leBT q qb\<close>;
+  \<^item> \<open>slotAppg\<close>   (C3 core): the appended-principal \<open>G\<^sub>B\<close>-bound;
+  \<^item> \<open>slotHeadWB\<close> (C2 corner): whole-body head bound at \<open>transJm1 M = 0\<close>;
+  \<^item> \<open>multiD\<close>     (nonkey): the multiT junction descent.
+  Everything else — the keystone recursion, case realignment, the IH \<open>descP\<close>
+  head bounds, the prefix \<open>G\<^sub>B\<close>-restriction, \<open>T\<^sub>B\<close>/OT bookkeeping — is closed.\<close>
+
+lemma rgx_Trans_preserves_OT_of_slots:
+  fixes M :: pairseq
+  assumes slotNewOT:
+    "\<And>M x q ps r.
+        M \<in> ST_PS \<Longrightarrow> monoT M \<Longrightarrow> Br M \<noteq> [] \<Longrightarrow> Lng M - 1 > 1 \<Longrightarrow>
+        (\<And>N. N \<in> ST_PS \<Longrightarrow> Lng N < Lng M \<Longrightarrow> Trans N \<in> OT_B) \<Longrightarrow>
+        Trans (Pred M) \<in> OT_B \<Longrightarrow>
+        Trans (Pred M) = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B r) \<Longrightarrow>
+        Trans M = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B Dpt (enat x) q) \<Longrightarrow>
+        isOT_BP (DB (enat x) q)"
+    and slotTail:
+    "\<And>M x q ps r hdv qb.
+        M \<in> ST_PS \<Longrightarrow> monoT M \<Longrightarrow> Br M \<noteq> [] \<Longrightarrow> Lng M - 1 > 1 \<Longrightarrow>
+        (\<And>N. N \<in> ST_PS \<Longrightarrow> Lng N < Lng M \<Longrightarrow> Trans N \<in> OT_B) \<Longrightarrow>
+        Trans (Pred M) \<in> OT_B \<Longrightarrow>
+        Trans (Pred M) = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B r) \<Longrightarrow>
+        Trans M = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B Dpt (enat x) q) \<Longrightarrow>
+        ps \<noteq> [] \<Longrightarrow> last ps = DB (enat hdv) qb \<Longrightarrow> x = hdv \<Longrightarrow> leBT q qb"
+    and slotAppg:
+    "\<And>M x q ps r.
+        M \<in> ST_PS \<Longrightarrow> monoT M \<Longrightarrow> Br M \<noteq> [] \<Longrightarrow> Lng M - 1 > 1 \<Longrightarrow>
+        (\<And>N. N \<in> ST_PS \<Longrightarrow> Lng N < Lng M \<Longrightarrow> Trans N \<in> OT_B) \<Longrightarrow>
+        Trans (Pred M) \<in> OT_B \<Longrightarrow>
+        Trans (Pred M) = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B r) \<Longrightarrow>
+        Trans M = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B Dpt (enat x) q) \<Longrightarrow>
+        (\<forall>y\<in>GBT (enat (entry M 1 0)) (Dpt (enat x) q).
+            lessBT y (Trm ps +\<^sub>B Dpt (enat x) q))"
+    and slotHeadWB:
+    "\<And>M x q ps r hdv qb.
+        M \<in> ST_PS \<Longrightarrow> monoT M \<Longrightarrow> Br M \<noteq> [] \<Longrightarrow> Lng M - 1 > 1 \<Longrightarrow>
+        (\<And>N. N \<in> ST_PS \<Longrightarrow> Lng N < Lng M \<Longrightarrow> Trans N \<in> OT_B) \<Longrightarrow>
+        Trans (Pred M) \<in> OT_B \<Longrightarrow>
+        Trans (Pred M) = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B r) \<Longrightarrow>
+        Trans M = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B Dpt (enat x) q) \<Longrightarrow>
+        ps \<noteq> [] \<Longrightarrow> transJm1 M = 0 \<Longrightarrow>
+        Trans (Pred M) = Dpt (enat (entry M 1 0)) (Trm ps) \<Longrightarrow>
+        last ps = DB (enat hdv) qb \<Longrightarrow> x \<le> hdv"
+    and multiD:
+    "\<And>N as bs. N \<in> ST_PS \<Longrightarrow> multiT N \<Longrightarrow> drop (Pcut N) N \<noteq> [(0,0)] \<Longrightarrow>
+        Trans (take (Pcut N) N) = Trm as \<Longrightarrow> Trans (drop (Pcut N) N) = Trm bs \<Longrightarrow>
+        as \<noteq> [] \<Longrightarrow> bs \<noteq> [] \<Longrightarrow> leBT (Trm [hd bs]) (Trm [last as])"
+    and MST: "M \<in> ST_PS"
+  shows "Trans M \<in> OT_B"
+proof -
+  have nk: "\<And>N. N \<in> ST_PS \<Longrightarrow> \<not> (monoT N \<and> Br N \<noteq> [] \<and> Lng N - 1 > 1) \<Longrightarrow>
+              (\<And>N'. N' \<in> ST_PS \<Longrightarrow> Lng N' < Lng N \<Longrightarrow> Trans N' \<in> OT_B) \<Longrightarrow>
+              Trans N \<in> OT_B"
+  proof -
+    fix N assume a: "N \<in> ST_PS"
+      and b: "\<not> (monoT N \<and> Br N \<noteq> [] \<and> Lng N - 1 > 1)"
+      and c: "\<And>N'. N' \<in> ST_PS \<Longrightarrow> Lng N' < Lng N \<Longrightarrow> Trans N' \<in> OT_B"
+    show "Trans N \<in> OT_B"
+      by (rule m_8_7_Trans_OT_nonkey[OF a b c multiD[OF a]])
+  qed
+  have residIH: "\<And>M x q ps r.
+        M \<in> ST_PS \<Longrightarrow> monoT M \<Longrightarrow> Br M \<noteq> [] \<Longrightarrow> Lng M - 1 > 1 \<Longrightarrow>
+        (\<And>N. N \<in> ST_PS \<Longrightarrow> Lng N < Lng M \<Longrightarrow> Trans N \<in> OT_B) \<Longrightarrow>
+        Trans (Pred M) \<in> OT_B \<Longrightarrow>
+        Trans (Pred M) = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B r) \<Longrightarrow>
+        Trans M = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B Dpt (enat x) q) \<Longrightarrow>
+        isOT_BP (DB (enat x) q)
+        \<and> (ps \<noteq> [] \<longrightarrow> leBT (Dpt (enat x) q) (Trm [last ps]))
+        \<and> (\<forall>y\<in>GBT (enat (entry M 1 0)) (Trm ps +\<^sub>B Dpt (enat x) q).
+               lessBT y (Trm ps +\<^sub>B Dpt (enat x) q))"
+  proof -
+    fix M :: pairseq and x :: nat and q r :: BT and ps :: "BP list"
+    assume a1: "M \<in> ST_PS" and a2: "monoT M" and a3: "Br M \<noteq> []"
+      and a4: "Lng M - 1 > 1"
+      and a5: "\<And>N. N \<in> ST_PS \<Longrightarrow> Lng N < Lng M \<Longrightarrow> Trans N \<in> OT_B"
+      and a6: "Trans (Pred M) \<in> OT_B"
+      and a7: "Trans (Pred M) = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B r)"
+      and a8: "Trans M = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B Dpt (enat x) q)"
+    have sN: "isOT_BP (DB (enat x) q)"
+      by (rule slotNewOT[OF a1 a2 a3 a4 a5 a6 a7 a8])
+    have sA: "\<forall>y\<in>GBT (enat (entry M 1 0)) (Dpt (enat x) q).
+                 lessBT y (Trm ps +\<^sub>B Dpt (enat x) q)"
+      by (rule slotAppg[OF a1 a2 a3 a4 a5 a6 a7 a8])
+    have sT: "\<And>hdv qb. ps \<noteq> [] \<Longrightarrow> last ps = DB (enat hdv) qb \<Longrightarrow> x = hdv
+                 \<Longrightarrow> leBT q qb"
+    proof -
+      fix hdv qb assume b1: "ps \<noteq> []" and b2: "last ps = DB (enat hdv) qb"
+        and b3: "x = hdv"
+      show "leBT q qb" by (rule slotTail[OF a1 a2 a3 a4 a5 a6 a7 a8 b1 b2 b3])
+    qed
+    have sH: "\<And>hdv qb. ps \<noteq> [] \<Longrightarrow> transJm1 M = 0
+                 \<Longrightarrow> Trans (Pred M) = Dpt (enat (entry M 1 0)) (Trm ps)
+                 \<Longrightarrow> last ps = DB (enat hdv) qb \<Longrightarrow> x \<le> hdv"
+    proof -
+      fix hdv qb assume b1: "ps \<noteq> []" and b2: "transJm1 M = 0"
+        and b3: "Trans (Pred M) = Dpt (enat (entry M 1 0)) (Trm ps)"
+        and b4: "last ps = DB (enat hdv) qb"
+      show "x \<le> hdv" by (rule slotHeadWB[OF a1 a2 a3 a4 a5 a6 a7 a8 b1 b2 b3 b4])
+    qed
+    show "isOT_BP (DB (enat x) q)
+        \<and> (ps \<noteq> [] \<longrightarrow> leBT (Dpt (enat x) q) (Trm [last ps]))
+        \<and> (\<forall>y\<in>GBT (enat (entry M 1 0)) (Trm ps +\<^sub>B Dpt (enat x) q).
+               lessBT y (Trm ps +\<^sub>B Dpt (enat x) q))"
+      by (rule rgx_resid_of_parts[OF a1 a2 a3 a4 a6 a7 a8 sN sA sT sH])
+  qed
+  show "Trans M \<in> OT_B"
+    by (rule rgx_Trans_preserves_OT_modIH[OF residIH nk MST])
+qed
+
 end
