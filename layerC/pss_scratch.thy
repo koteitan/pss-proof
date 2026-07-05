@@ -60088,4 +60088,329 @@ proof -
     by (rule rgx_Trans_preserves_OT_modIH[OF residIH nk MST])
 qed
 
+(* ===== r41 merge: wt-s4b block (condIV cpx re-thread) ===== *)
+
+
+(* ===================================================================== *)
+(* ===== r41-CONDIV (cpx_ prefix): condIV exchange re-threaded onto  === *)
+(* =====   the RED-slice regimes (REGS=Red(N), REGSP=Red(Pred N)),   === *)
+(* =====   mirroring the r39 condIII cpx cascade.  The DEAD           === *)
+(* =====   c4hx_/c4wx_condIV_exchange_full_of_regimes used the RAW    === *)
+(* =====   slice cfbx_reg (s84x_N M / Pred(s84x_N M)), FALSE on       === *)
+(* =====   unreduced slices.  Here d2/d3 are re-threaded through the  === *)
+(* =====   REDUCED-slice value transport crx_slice_red_value (Br<>[]) === *)
+(* =====   / crg_slice_red_value_trunk (Br=[]), so REGS is discharg-  === *)
+(* =====   ed by mcx_regS and REGSP by slx37_regSP_uncond (branch=IV) === *)
+(* =====   + the pure-trunk corner.  d1 is free (m_8_4_slice_scb_     === *)
+(* =====   part1), HB free (HB_condIV_t2_components), reg free        === *)
+(* =====   (m_8_4_oper_props_1(1)).  Net: cpx_condIV_exchange_uncond  === *)
+(* =====   rests on the admeq gate ONLY.  Audit (rule 4): cites only  === *)
+(* =====   PROVEN facts; carries no sorry/refuted/DEAD-raw-slice.     === *)
+(* ===================================================================== *)
+
+section \<open>r41-CONDIV --- condIV exchange on the RED-slice regimes (cpx_ prefix)\<close>
+
+text \<open>\<open>d2\<close> (the E2 transport of \<open>Trans (s84x_Np M)\<close> to the deep hole \<open>D\<^bsub>M\<^sub>1\<^sub>,\<^sub>j\<^sub>1\<^esub> 0\<close>),
+  re-threaded through the REDUCED-slice value transport
+  @{thm [source] crx_slice_red_value} / head @{thm [source] crx_slice_red_head}
+  (mirror of @{thm [source] crx_d4b_of_redreg} but at the deeper hole
+  \<open>D\<^bsub>M\<^sub>1\<^sub>,\<^sub>j\<^sub>1\<^esub> 0\<close> instead of \<open>transC2 M\<close>, with the \<open>Trans (s84x_N M) = transC2 M\<close>
+  admeq-collapse folded in).  \<open>REGS\<close> is the UNGUARDED reduced regime that
+  @{thm [source] mcx_regS} owns (the \<open>N\<close>-slice always has \<open>Br \<noteq> []\<close>).\<close>
+
+lemma cpx_d2_condIV:
+  fixes M :: pairseq and s1' b1' :: "Sym list"
+  assumes MST: "M \<in> ST_PS" and MPT: "M \<in> PT_PS"
+    and hp: "hasParent M 1 (Lng M - 1)"
+    and nVI: "\<not> transCondVI M"
+    and admeq: "Adm M (s84x_jm2 M) = transJm1 M"
+    and REGS: "s84x_jm3 M < s84x_jm2 M \<Longrightarrow>
+                 cfbx_reg (s84x_jm2 M - s84x_jm3 M) (Red (s84x_N M))"
+    and d1: "scb_decomp (transC2 M)
+               (Dsym (enat (entry M 1 (transJm1 M))) # s1')
+               (flatBT (Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B)) b1'"
+  shows "scb_decomp (Trans (s84x_Np M))
+           (Dsym (enat (entry M 1 (s84x_jm2 M))) # s1')
+           (flatBT (Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B)) b1'"
+proof -
+  have MR: "M \<in> RT_PS" using MST m_6_7_ST_PS_subseteq_RT_PS by blast
+  have MT: "M \<in> T_PS" using MPT by (simp add: PT_PS_def)
+  have jm3eq: "s84x_jm3 M = transJm1 M" using admeq by (simp add: s84x_jm3_def)
+  have TNc2: "Trans (s84x_N M) = transC2 M"
+    by (rule w84x_TN_c2_of_admeq[OF MST MPT hp nVI admeq])
+  have d2: "scb_decomp (Trans (s84x_N M))
+              (Dsym (enat (entry M 1 (s84x_jm3 M))) # s1')
+              (flatBT (Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B)) b1'"
+    using d1 TNc2 jm3eq by simp
+  show ?thesis
+  proof (cases "s84x_jm3 M < s84x_jm2 M")
+    case True
+    have regS: "cfbx_reg (s84x_jm2 M - s84x_jm3 M) (Red (s84x_N M))"
+      by (rule REGS[OF True])
+    have jm3le: "s84x_jm3 M \<le> s84x_jm2 M"
+      using adm_Adm_le by (simp add: s84x_jm3_def)
+    have jm2lt: "s84x_jm2 M < Lng M - 1" by (rule s84c1_jm2_basic(1)[OF hp])
+    have mM3: "(M, s84x_jm3 M) \<in> Marked"
+      using s84d_jm3_Marked(1)[OF MR MT hp] by simp
+    have leR3: "leR M 0 (s84x_jm3 M) (Lng M - 1)"
+      using mM3 by (simp add: Marked_def)
+    have le0q: "le0 M (s84x_jm2 M) (Lng M - 1)"
+      using s84c1_nextR1_jm2[OF hp] by (simp add: nextR_def nextrel1_def)
+    have regS': "cfbx_reg (s84x_jm2 M - s84x_jm3 M)
+                          (Red (seg M (s84x_jm3 M) (Lng M - 1)))"
+      using regS by (simp add: s84x_N_def)
+    have valNp: "Trans (seg M (s84x_jm2 M) (Lng M - 1))
+               = Dpt (enat (entry M 1 (s84x_jm2 M)))
+                     (bpHeadT (Trans (seg M (s84x_jm3 M) (Lng M - 1))))"
+      by (rule crx_slice_red_value[OF MR jm3le jm2lt order.refl leR3 le0q regS'])
+    define W where "W = bpHeadT (Trans (s84x_N M))"
+    have jm3lt: "s84x_jm3 M < Lng M - 1" using jm3le jm2lt by linarith
+    have monoR: "monoT (Red (seg M (s84x_jm3 M) (Lng M - 1)))"
+      using regS' by (simp add: cfbx_reg_def PT_PS_def)
+    have princN: "Trans (s84x_N M) = Dpt (enat (entry M 1 (s84x_jm3 M))) W"
+      using crx_slice_red_head[OF MR jm3lt order.refl leR3 monoR]
+      by (simp add: s84x_N_def W_def)
+    have d2': "scb_decomp (Dpt (enat (entry M 1 (s84x_jm3 M))) W)
+                 (Dsym (enat (entry M 1 (s84x_jm3 M))) # s1')
+                 (flatBT (Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B)) b1'"
+      using d2 by (simp only: princN[symmetric])
+    have inner: "scb_decomp W s1'
+                   (flatBT (Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B)) b1'"
+      by (rule w84x_scb_unlift[OF d2'])
+    have ipt: "isPTB_str (flatBT (Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B))"
+      by (rule isPTB_str_Dpt) simp_all
+    have lifted: "scb_decomp (Dpt (enat (entry M 1 (s84x_jm2 M))) W)
+                    (Dsym (enat (entry M 1 (s84x_jm2 M))) # s1')
+                    (flatBT (Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B)) b1'"
+      by (rule scb_Dpt_lift[OF inner ipt])
+    have valNp': "Trans (s84x_Np M) = Dpt (enat (entry M 1 (s84x_jm2 M))) W"
+      using valNp by (simp add: s84x_Np_def s84x_N_def W_def)
+    show ?thesis using lifted valNp' by simp
+  next
+    case False
+    have jm3le: "s84x_jm3 M \<le> s84x_jm2 M"
+      using adm_Adm_le by (simp add: s84x_jm3_def)
+    have eq: "s84x_jm3 M = s84x_jm2 M" using False jm3le by linarith
+    have Neq: "s84x_Np M = s84x_N M" by (simp add: s84x_Np_def s84x_N_def eq)
+    show ?thesis using d2 by (simp add: Neq eq)
+  qed
+qed
+
+text \<open>\<open>d3\<close> (the E3 predecessor-slice VALUE \<open>Trans (Pred (s84x_Np M)) = D\<^bsub>M\<^sub>1\<^sub>,\<^sub>j\<^sub>-\<^sub>2\<^esub> t\<^sub>2\<close>),
+  re-threaded through the REDUCED-slice value transport.  Because the \<open>Pred\<close>
+  slice's \<open>Br\<close> may be empty (pure trunk), \<open>REGSP\<close> is the \<open>Br \<noteq> []\<close>-guarded
+  reduced regime (the exact one @{thm [source] slx37_regSP_uncond} owns), and
+  the \<open>Br = []\<close> corner is closed by the trunk transport
+  @{thm [source] crg_slice_red_value_trunk} (mirror of the condIII
+  @{thm [source] crg_d4a_trunk} value leg).\<close>
+
+lemma cpx_d3_condIV:
+  fixes M :: pairseq
+  assumes MST: "M \<in> ST_PS" and MPT: "M \<in> PT_PS"
+    and hp: "hasParent M 1 (Lng M - 1)"
+    and nVI: "\<not> transCondVI M"
+    and admeq: "Adm M (s84x_jm2 M) = transJm1 M"
+    and rng: "s84x_jm2 M + 1 < Lng M - 1"
+    and REGSP: "s84x_jm3 M < s84x_jm2 M \<Longrightarrow> Br (Red (Pred (s84x_N M))) \<noteq> [] \<Longrightarrow>
+                  cfbx_reg (s84x_jm2 M - s84x_jm3 M) (Red (Pred (s84x_N M)))"
+  shows "Trans (Pred (s84x_Np M))
+       = Dpt (enat (entry M 1 (s84x_jm2 M))) (transT2 M)"
+proof -
+  have MR: "M \<in> RT_PS" using MST m_6_7_ST_PS_subseteq_RT_PS by blast
+  have MT: "M \<in> T_PS" using MPT by (simp add: PT_PS_def)
+  have j1gt: "1 < Lng M - 1" and T1: "transT1 M \<noteq> 0\<^sub>B"
+    using s84d_L4_regime[OF MST MPT hp nVI] by simp_all
+  have J1pos: "transJ1 M > 0" using j1gt by (simp add: transJ1_def)
+  have jm3eq: "s84x_jm3 M = transJm1 M" using admeq by (simp add: s84x_jm3_def)
+  have PNc1: "Trans (Pred (s84x_N M)) = transC1 M"
+    by (rule w84x_PN_c1_of_admeq[OF MST MPT hp nVI admeq rng])
+  have c1shape: "transC1 M = Dpt (enat (entry M 1 (transJm1 M))) (transT2 M)"
+    by (rule m_8_5_scbdec_c1_shape(2)[OF MR MPT J1pos T1])
+  have jm3le: "s84x_jm3 M \<le> s84x_jm2 M"
+    using adm_Adm_le by (simp add: s84x_jm3_def)
+  have jm2lt: "s84x_jm2 M < Lng M - 1" by (rule s84c1_jm2_basic(1)[OF hp])
+  have jm2m2: "s84x_jm2 M < Lng M - 2" using rng by linarith
+  have jm3ltLng: "s84x_jm3 M < Lng M - 1" using jm3le jm2lt by linarith
+  have jm3lt2: "s84x_jm3 M < Lng M - 2" using jm3le jm2m2 by linarith
+  have j1gt0: "0 < Lng M - 1" using jm2lt by linarith
+  have idx2: "Lng M - 1 - 1 = Lng M - 2" by simp
+  have blN: "Pred (s84x_N M) = seg M (s84x_jm3 M) (Lng M - 2)"
+  proof -
+    have LN: "Lng (s84x_N M) = Suc (Lng M - 1) - s84x_jm3 M"
+      by (simp add: s84x_N_def seg_def del: upt_Suc)
+    have "1 < Lng (s84x_N M)" using LN jm3ltLng by linarith
+    hence a: "Pred (s84x_N M) = butlast (s84x_N M)" by (simp add: Pred_def)
+    have "butlast (s84x_N M) = seg M (s84x_jm3 M) (Lng M - 1 - 1)"
+      using s84c2_seg_butlast[OF jm3ltLng] by (simp add: s84x_N_def)
+    thus ?thesis using a idx2 by simp
+  qed
+  have blNp: "Pred (s84x_Np M) = seg M (s84x_jm2 M) (Lng M - 2)"
+  proof -
+    have LNp: "Lng (s84x_Np M) = Suc (Lng M - 1) - s84x_jm2 M"
+      by (simp add: s84x_Np_def seg_def del: upt_Suc)
+    have "1 < Lng (s84x_Np M)" using LNp jm2lt by linarith
+    hence a: "Pred (s84x_Np M) = butlast (s84x_Np M)" by (simp add: Pred_def)
+    have "butlast (s84x_Np M) = seg M (s84x_jm2 M) (Lng M - 1 - 1)"
+      using s84c2_seg_butlast[OF jm2lt] by (simp add: s84x_Np_def)
+    thus ?thesis using a idx2 by simp
+  qed
+  \<comment> \<open>row-0 reach of \<open>j\<^sub>-\<^sub>2\<close> and \<open>j\<^sub>-\<^sub>3\<close> to \<open>Lng M - 2\<close> (condition-agnostic)\<close>
+  have le0jm2j1: "le0 M (s84x_jm2 M) (Lng M - 1)"
+    using s84c1_nextR1_jm2[OF hp] by (simp add: nextR_def nextrel1_def)
+  have nxt0: "nextR M 0 (transJ0 M) (Lng M - 1)"
+    by (rule s84c1_nextR0_j0(1)[OF MPT j1gt0])
+  have j0lt: "transJ0 M < Lng M - 1" by (rule s84c1_nextR0_j0(2)[OF MPT j1gt0])
+  have jm2L: "s84x_jm2 M < Lng M" using jm2lt by linarith
+  have le0jm2j0: "le0 M (s84x_jm2 M) (transJ0 M)"
+  proof -
+    have ch: "(nextrel0 M)\<^sup>*\<^sup>* (s84x_jm2 M) (Lng M - 1)"
+      using le0jm2j1 by (simp add: le0_def)
+    have ne: "s84x_jm2 M \<noteq> Lng M - 1" using jm2lt by linarith
+    obtain y where y1: "(nextrel0 M)\<^sup>*\<^sup>* (s84x_jm2 M) y"
+        and y2: "nextrel0 M y (Lng M - 1)"
+      using ch ne by (metis rtranclp.cases)
+    have "nextR M 0 y (Lng M - 1)" using y2 by (simp add: nextR_def)
+    hence yeq: "y = transJ0 M" using idxsum_parent0_unique nxt0 by blast
+    have j0L: "transJ0 M < Lng M" using j0lt by linarith
+    show ?thesis using y1 yeq jm2L j0L by (simp add: le0_def)
+  qed
+  have le0j0: "le0 M (transJ0 M) (Lng M - 2)"
+  proof -
+    have nr0: "nextrel0 M (parent M 0 (Lng M - 1)) (Lng M - 1)"
+      using nxt0 by (simp add: nextR_def transJ0_def transJ1_def)
+    have "le0 M (parent M 0 (Lng M - 1)) (Lng M - 1 - 1)"
+      by (rule parent_block_le0_pred[OF nr0])
+    thus ?thesis using idx2 by (simp add: transJ0_def transJ1_def)
+  qed
+  have le0S: "le0 M (s84x_jm2 M) (Lng M - 2)"
+    by (rule le0_trans[OF le0jm2j0 le0j0])
+  have jm2Le: "s84x_jm2 M \<le> Lng M - 1" using jm2lt by simp
+  have le1a: "leR M 1 (s84x_jm3 M) (s84x_jm2 M)"
+    using adm_row1_ancestry[OF MT jm2Le] by (simp add: s84x_jm3_def)
+  have le0a: "le0 M (s84x_jm3 M) (s84x_jm2 M)"
+    using m_le1_imp_le0[OF le1a] by (simp add: leR_def)
+  have le032: "le0 M (s84x_jm3 M) (Lng M - 2)"
+    by (rule le0_trans[OF le0a le0S])
+  have leR32: "leR M 0 (s84x_jm3 M) (Lng M - 2)"
+    using le032 by (simp add: leR_def)
+  have le2: "Lng M - 2 \<le> Lng M - 1" by simp
+  have body: "bpHeadT (Trans (seg M (s84x_jm3 M) (Lng M - 2))) = transT2 M"
+    using PNc1 c1shape blN by simp
+  show ?thesis
+  proof (cases "s84x_jm3 M < s84x_jm2 M")
+    case True
+    note guard = this
+    have valPNp: "Trans (seg M (s84x_jm2 M) (Lng M - 2))
+                = Dpt (enat (entry M 1 (s84x_jm2 M)))
+                      (bpHeadT (Trans (seg M (s84x_jm3 M) (Lng M - 2))))"
+    proof (cases "Br (Red (Pred (s84x_N M))) = []")
+      case True
+      have trunkP': "Br (Red (seg M (s84x_jm3 M) (Lng M - 2))) = []"
+        using True blN by simp
+      show ?thesis
+        by (rule crg_slice_red_value_trunk[OF MR jm3le jm2m2 le2 leR32 le0S trunkP'])
+    next
+      case False
+      have regSP': "cfbx_reg (s84x_jm2 M - s84x_jm3 M)
+                             (Red (seg M (s84x_jm3 M) (Lng M - 2)))"
+        using REGSP[OF guard False] blN by simp
+      show ?thesis
+        by (rule crx_slice_red_value[OF MR jm3le jm2m2 le2 leR32 le0S regSP'])
+    qed
+    show ?thesis using valPNp body blNp by simp
+  next
+    case False
+    have eq: "s84x_jm3 M = s84x_jm2 M" using False jm3le by linarith
+    have Neq: "s84x_Np M = s84x_N M" by (simp add: s84x_Np_def s84x_N_def eq)
+    have e1eq: "entry M 1 (s84x_jm2 M) = entry M 1 (transJm1 M)"
+      using jm3eq eq by simp
+    show ?thesis using PNc1 c1shape Neq e1eq by simp
+  qed
+qed
+
+text \<open>\<^bold>\<open>The condIV exchange triple on the RED-slice regimes\<close> (mirror of
+  @{thm [source] cpx_condIII_exchange_full}).  \<open>reg\<close> is DERIVED for condIV
+  (@{thm [source] m_8_4_oper_props_1}, \<open>j\<^sub>-\<^sub>2 < j\<^sub>0\<close> strictly), \<open>d1\<close> is free
+  (@{thm [source] m_8_4_slice_scb_part1}), \<open>d2\<close>/\<open>d3\<close> via the reduced-slice
+  re-threads @{thm [source] cpx_d2_condIV}/@{thm [source] cpx_d3_condIV},
+  \<open>HB\<close> free (@{thm [source] HB_condIV_t2_components}).  Remaining hypotheses:
+  \<open>admeq\<close> (genuine gate) and the RED-slice \<open>REGS\<close>/\<open>REGSP\<close>.\<close>
+
+lemma cpx_condIV_exchange_full:
+  fixes M :: pairseq and n :: nat
+  assumes MST: "M \<in> ST_PS" and MPT: "M \<in> PT_PS"
+    and hp: "hasParent M 1 (Lng M - 1)"
+    and cIV: "transCondIV M"
+    and admeq: "Adm M (s84x_jm2 M) = transJm1 M"
+    and n1: "1 \<le> n"
+    and REGS: "s84x_jm3 M < s84x_jm2 M \<Longrightarrow>
+                 cfbx_reg (s84x_jm2 M - s84x_jm3 M) (Red (s84x_N M))"
+    and REGSP: "s84x_jm3 M < s84x_jm2 M \<Longrightarrow> Br (Red (Pred (s84x_N M))) \<noteq> [] \<Longrightarrow>
+                  cfbx_reg (s84x_jm2 M - s84x_jm3 M) (Red (Pred (s84x_N M)))"
+  shows "lessBT (Trans ((M::pairseq)[n])) (operB (Trans M) (numBT n))
+       \<and> lessBT (Trans ((M::pairseq)[n])) (Trans M)
+       \<and> lessBT (operB (Trans M) (numBT (n - 1))) (Trans ((M::pairseq)[n + 1]))"
+proof -
+  have nVI: "\<not> transCondVI M" using c4dx_condIV_excl(4)[OF cIV] .
+  have j1gt: "1 < Lng M - 1" using s84d_L4_regime[OF MST MPT hp nVI] by simp
+  have reg: "s84x_jm2 M < transJ0 M \<or> adm M (transJ0 M)"
+    using m_8_4_oper_props_1(1)[OF MST MPT hp j1gt] cIV by blast
+  have rng: "s84x_jm2 M + 1 < Lng M - 1" by (rule s84d_L5_rng[OF MST MPT hp nVI])
+  obtain sb where d1: "scb_decomp (transC2 M)
+        (Dsym (enat (entry M 1 (transJm1 M))) # fst sb)
+        (flatBT (Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B)) (snd sb)"
+    using ex1_implies_ex[OF m_8_4_slice_scb_part1[OF MST MPT hp nVI admeq]] by auto
+  have d2: "scb_decomp (Trans (s84x_Np M))
+        (Dsym (enat (entry M 1 (s84x_jm2 M))) # fst sb)
+        (flatBT (Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B)) (snd sb)"
+    by (rule cpx_d2_condIV[OF MST MPT hp nVI admeq REGS d1])
+  have d3: "Trans (Pred (s84x_Np M))
+          = Dpt (enat (entry M 1 (s84x_jm2 M))) (transT2 M)"
+    by (rule cpx_d3_condIV[OF MST MPT hp nVI admeq rng REGSP])
+  have HB: "\<forall>c \<in> set (PB (transT2 M)).
+              leBT (Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B) c"
+    by (rule HB_condIV_t2_components[OF MST MPT hp cIV])
+  show ?thesis
+    by (rule c4dx_condIV_exchange_assembled[OF MST MPT hp cIV reg admeq n1 d1 d2 d3 HB])
+qed
+
+text \<open>\<^bold>\<open>The condIV exchange triple, modulo the admeq gate ONLY.\<close>  \<open>REGS\<close> is
+  discharged by @{thm [source] mcx_regS} (unconditional on the \<open>N\<close>-slice),
+  \<open>REGSP\<close> by @{thm [source] slx37_regSP_uncond} on the \<open>guard \<and> Br \<noteq> []\<close> overlap
+  (branch = condIV).  No \<open>REGS\<close>/\<open>REGSP\<close> residual remains: only \<open>MST, MPT, hp,
+  transCondIV, admeq, n1\<close>.  \<open>M0RUN\<close> is not consumed by condIV.  This is the
+  condIV counterpart of @{thm [source] cpx_condIII_exchange_uncond}.\<close>
+
+lemma cpx_condIV_exchange_uncond:
+  fixes M :: pairseq and n :: nat
+  assumes MST: "M \<in> ST_PS" and MPT: "M \<in> PT_PS"
+    and hp: "hasParent M 1 (Lng M - 1)"
+    and cIV: "transCondIV M"
+    and admeq: "Adm M (s84x_jm2 M) = transJm1 M"
+    and n1: "1 \<le> n"
+  shows "lessBT (Trans ((M::pairseq)[n])) (operB (Trans M) (numBT n))
+       \<and> lessBT (Trans ((M::pairseq)[n])) (Trans M)
+       \<and> lessBT (operB (Trans M) (numBT (n - 1))) (Trans ((M::pairseq)[n + 1]))"
+proof -
+  have nVI: "\<not> transCondVI M" using c4dx_condIV_excl(4)[OF cIV] .
+  have j1gt: "1 < Lng M - 1" using s84d_L4_regime[OF MST MPT hp nVI] by simp
+  have branch: "transCondIII M \<or> transCondIV M" by (rule disjI2[OF cIV])
+  have REGS: "s84x_jm3 M < s84x_jm2 M \<Longrightarrow>
+                cfbx_reg (s84x_jm2 M - s84x_jm3 M) (Red (s84x_N M))"
+  proof -
+    assume g: "s84x_jm3 M < s84x_jm2 M"
+    show "cfbx_reg (s84x_jm2 M - s84x_jm3 M) (Red (s84x_N M))"
+      by (rule mcx_regS[OF MST MPT hp j1gt branch g])
+  qed
+  have REGSP: "s84x_jm3 M < s84x_jm2 M \<Longrightarrow> Br (Red (Pred (s84x_N M))) \<noteq> [] \<Longrightarrow>
+                 cfbx_reg (s84x_jm2 M - s84x_jm3 M) (Red (Pred (s84x_N M)))"
+  proof -
+    assume g: "s84x_jm3 M < s84x_jm2 M" and b: "Br (Red (Pred (s84x_N M))) \<noteq> []"
+    show "cfbx_reg (s84x_jm2 M - s84x_jm3 M) (Red (Pred (s84x_N M)))"
+      by (rule slx37_regSP_uncond[OF MST MPT hp j1gt branch g b])
+  qed
+  show ?thesis
+    by (rule cpx_condIV_exchange_full[OF MST MPT hp cIV admeq n1 REGS REGSP])
+qed
+
 end
