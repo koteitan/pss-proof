@@ -59216,4 +59216,308 @@ proof -
     by (rule m_8_7_multiD_junction[OF N mu ne aeq beq asne bsne comple])
 qed
 
+(* ===== r40 merge: wt-b1 block (r40-KEYSTONE) ===== *)
+
+
+(* ===================================================================== *)
+(* ===== r40-KEYSTONE (kyx_ prefix): the §8.2 keystone RightNodes      === *)
+(* =====   residual is DISSOLVED --- m_8_2_keystone (PSS_B) is already  === *)
+(* =====   UNCONDITIONAL; apply it to the terminal slice.              === *)
+(* ===================================================================== *)
+
+section \<open>r40-KEYSTONE --- the §8.2 keystone RightNodes value residual (r39's
+  ``sharp remaining obstruction'') is already CLOSED: @{thm [source] m_8_2_keystone}
+  is UNCONDITIONAL; apply it to the terminal slice \<open>M' = seg N j\<^sub>0' (Lng N-1)\<close>\<close>
+
+text \<open>\<^bold>\<open>Finding (r40, correcting r39).\<close>  The r39 note at
+  @{thm [source] bux_terminal_slice_ready} recorded that ``every mechanized form of
+  the §8.2 keystone still carries an OPEN residual --- the
+  \<open>RightNodes (Trans (Pred M'))!1\<close> value \<open>cpU\<close> (\<open>== branchParAll == chainOK\<close>)'',
+  listing @{thm [source] m_8_2_subexpr_component_Pred}, \<open>_final\<close>,
+  @{thm [source] m_8_2_subexpr_component_Pred_done},
+  @{thm [source] m_8_2_subexpr_component_Pred_via_chainOK}.  \<^bold>\<open>That census MISSED the
+  final wrapper\<close> @{thm [source] m_8_2_keystone} (PSS_B, pss_wip.thy line 31738),
+  which is the UNCONDITIONAL form: it discharges the universal residual
+  \<open>branchParAll\<close> internally by @{thm [source] m_8_2_branchPar} (a proven geometric
+  fact: \<open>TrMax M \<le> parent M 0 b\<close> for every trunk-exceeding \<open>b\<close>, via
+  @{thm [source] monoT_branch_hasParent}, @{thm [source] m_8_2_branchHigh},
+  @{thm [source] nextR0_largest_below}), whence \<open>chainOK\<close>
+  (@{thm [source] m_8_2_chainOK_of_branchPar}) and \<open>cpU\<close>
+  (@{thm [source] m_8_2_cpU_of_chainOK}) are ALL discharged along the chain
+  \<open>m_8_2_keystone \<rightarrow> _done \<rightarrow> _via_chainOK \<rightarrow> _final\<close>.  Hence \<open>m_8_2_keystone\<close>
+  needs \<^bold>\<open>only\<close> the four geometric hypotheses \<open>M \<in> RT\<^bsub>PS\<^esub>\<close>, \<open>M \<in> PT\<^bsub>PS\<^esub>\<close>,
+  \<open>Br M \<noteq> []\<close>, \<open>Lng M - 1 > 1\<close> --- NO \<open>cpU\<close>/\<open>chainOK\<close>/RightNodes residual.
+  (Audit: pss_wip.thy contains \<^bold>\<open>zero\<close> \<open>sorry\<close>/\<open>oops\<close>; the whole chain
+  28000--32100 is residual-free.  Verified by grep.)
+
+  \<^bold>\<open>Consequence.\<close>  The keystone applies UNCONDITIONALLY to the terminal slice
+  \<open>M' = seg N j\<^sub>0' (Lng N-1)\<close> of any \<open>vg7x_reg4\<close> host \<open>N\<close>: its four keystone
+  preconditions are exactly @{thm [source] bux_terminal_slice_ready} (all green).
+  So the residual that r39 pinned as \<^bold>\<open>the\<close> §8.2 blocker does not exist; the
+  remaining \<open>bridgesU\<close> obstruction is purely the condII/IV terminal-slice
+  \<open>Trans\<close>-readback (parts (1)+(3)) --- the non-admissible \<open>j\<^sub>0'\<close> Mark read-off,
+  the condII/IV analog of the (r15) condV \<open>VE'\<close> machinery, NOT a keystone residual.
+  Audit (rule 4): cites only proven facts (@{thm [source] m_8_2_keystone},
+  @{thm [source] bux_terminal_slice_ready}); no \<open>sorry\<close>/\<open>p_*\<close>/refuted endpoint.
+  Prefix \<open>kyx_\<close>.\<close>
+
+lemma kyx_terminal_slice_keystone:
+  fixes N :: pairseq
+  assumes reg: "vg7x_reg4 N"
+  defines "Mp \<equiv> seg N (Joints N ! (Lng (Br N) - 1)) (Lng N - 1)"
+  defines "j1 \<equiv> Lng Mp - 1"
+  defines "J1 \<equiv> Lng (Br Mp) - 1"
+  defines "j0' \<equiv> Joints Mp ! J1"
+  defines "j1' \<equiv> FirstNodes Mp ! J1"
+  shows
+    "(j1' = j1 \<and> (TrMax Mp = 0 \<or> j0' < TrMax Mp)
+        \<and> (entry Mp 0 j1' = entry Mp 1 j1' \<or> adm Mp j0')
+        \<and> (\<exists>!t1. Trans (Pred Mp) = Dpt (enat (entry Mp 1 0)) t1
+              \<and> Trans Mp = Dpt (enat (entry Mp 1 0))
+                            (t1 +\<^sub>B Dpt (enat (entry Mp 1 j1')) 0\<^sub>B)))
+   \<or> (j1' = j1 \<and> entry Mp 0 j1' > entry Mp 1 j1' \<and> \<not> adm Mp j0'
+        \<and> (\<exists>!t12. Trans (Pred Mp) = Dpt (enat (entry Mp 1 0)) (fst t12)
+              \<and> Trans Mp = Dpt (enat (entry Mp 1 0))
+                            (fst t12 +\<^sub>B Dpt (enat (entry Mp 1 j0')) (snd t12))))
+   \<or> (\<exists>!t123. Trans (Pred Mp)
+                = Dpt (enat (entry Mp 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry Mp 1 j1')) (fst (snd t123)))
+            \<and> Trans Mp = Dpt (enat (entry Mp 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry Mp 1 j1')) (snd (snd t123))))
+   \<or> (\<exists>!t123. Trans (Pred Mp)
+                = Dpt (enat (entry Mp 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry Mp 1 j0')) (fst (snd t123)))
+            \<and> Trans Mp = Dpt (enat (entry Mp 1 0))
+                    (fst t123 +\<^sub>B Dpt (enat (entry Mp 1 j0')) (snd (snd t123))))"
+proof -
+  have MpR: "Mp \<in> RT_PS"
+    unfolding Mp_def using bux_terminal_slice_ready[OF reg] by blast
+  have MpPT: "Mp \<in> PT_PS"
+    unfolding Mp_def using bux_terminal_slice_ready[OF reg] by blast
+  have BrMp: "Br Mp \<noteq> []"
+    unfolding Mp_def using bux_terminal_slice_ready[OF reg] by blast
+  have gt1: "1 < Lng Mp - 1"
+    unfolding Mp_def using bux_terminal_slice_ready[OF reg] by blast
+  show ?thesis
+    unfolding j1_def J1_def j0'_def j1'_def
+    by (rule m_8_2_keystone[OF MpR MpPT BrMp gt1])
+qed
+
+
+text \<open>\<^bold>\<open>Terminal-slice leading form.\<close>  The terminal slice
+  \<open>M' = seg N j\<^sub>0' (Lng N-1)\<close> of a \<open>vg7x_reg4\<close> host is \<open>DT\<^bsub>PS\<^esub>\<close>
+  (@{thm [source] vg8x_terminal_slice_DT}), hence strongly monotone; so by
+  @{thm [source] m_8_2_subexpr_leftend_unique} its \<open>Trans\<close> has a unique leftend
+  head \<open>Trans M' = D\<^bsub>M'\<^bsub>1,0\<^esub>\<^esub> t'\<close>, and \<open>M'\<^bsub>1,0\<^esub> = N\<^bsub>1,j\<^sub>0'\<^esub>\<close>
+  (@{thm [source] entry_seg}).  So \<open>Trans M' = D\<^bsub>N\<^bsub>1,j\<^sub>0'\<^esub>\<^esub> (bpHeadT (Trans M'))\<close>:
+  the terminal slice's \<open>Trans\<close> head index is EXACTLY \<open>N\<^bsub>1,j\<^sub>0'\<^esub>\<close>, the head that
+  \<open>bridgesU\<close>'s \<open>brMp\<close> requires.  This discharges the outer \<open>D\<^bsub>N\<^bsub>1,j\<^sub>0'\<^esub>\<^esub>\<close> head of
+  \<open>brMp\<close> unconditionally, reducing \<open>brMp\<close> to the SUBTREE identity
+  \<open>bpHeadT (Trans M') = \<tau>\<close>.  Audit (rule 4): cites only proven facts
+  (@{thm [source] vg8x_terminal_slice_DT}, @{thm [source] m_8_2_subexpr_leftend_unique},
+  @{thm [source] entry_seg}, @{thm [source] Lng_seg}, @{thm [source] TrMax_bound}).\<close>
+
+lemma kyx_terminal_slice_leadform:
+  fixes N :: pairseq
+  assumes reg: "vg7x_reg4 N"
+  defines "j0N \<equiv> Joints N ! (Lng (Br N) - 1)"
+  defines "Mp \<equiv> seg N j0N (Lng N - 1)"
+  shows "Trans Mp = Dpt (enat (entry N 1 j0N)) (bpHeadT (Trans Mp))"
+proof -
+  have MpDT: "Mp \<in> DT_PS"
+    unfolding Mp_def j0N_def by (rule vg8x_terminal_slice_DT[OF reg])
+  \<comment> \<open>geometry: \<open>0 < Lng Mp\<close> (the slice is non-empty)\<close>
+  have reg4: "vg4x_reg4 N" using reg by (simp add: vg7x_reg4_def)
+  have reg2: "vg2x_reg2 N" using reg4 by (simp add: vg4x_reg4_def vg3x_reg3_def)
+  have MR: "N \<in> RT_PS" using reg2 by (simp add: vg2x_reg2_def)
+  have MT: "N \<in> T_PS" using MR by (simp add: RT_PS_def)
+  have Brne: "Br N \<noteq> []" using reg2 by (simp add: vg2x_reg2_def)
+  have j0lt: "j0N < TrMax N" using reg4 unfolding j0N_def by (simp add: vg4x_reg4_def)
+  have trbd: "TrMax N \<le> Lng N - 1" by (rule TrMax_bound[OF MT])
+  have trne: "TrMax N \<noteq> Lng N - 1"
+  proof
+    assume "TrMax N = Lng N - 1"
+    hence "Br N = []" by (simp add: Br_def)
+    thus False using Brne by simp
+  qed
+  have trlt: "TrMax N < Lng N - 1" using trbd trne by linarith
+  have j0ltj1: "j0N < Lng N - 1" using j0lt trlt by linarith
+  have L1: "1 < Lng N" using j0ltj1 by linarith
+  have LngMp: "Lng Mp = Suc (Lng N - 1) - j0N" unfolding Mp_def by (rule Lng_seg)
+  have Lpos: "0 < Lng Mp" using LngMp j0ltj1 L1 by linarith
+  \<comment> \<open>leftend head of the reduced slice\<close>
+  obtain t' where Tt: "Trans Mp = Dpt (enat (entry Mp 1 0)) t'"
+    using m_8_2_subexpr_leftend_unique[OF MpDT] by blast
+  have head: "bpHeadT (Trans Mp) = t'" using Tt by simp
+  have e0: "entry Mp 1 0 = entry N 1 j0N"
+  proof -
+    have "entry Mp 1 0 = entry N 1 (j0N + 0)"
+      unfolding Mp_def
+      by (rule entry_seg[where M=N and a=j0N and b="Lng N - 1" and i=1 and j=0])
+         (use Lpos Mp_def in simp)
+    thus ?thesis by simp
+  qed
+  show ?thesis using Tt head e0 by simp
+qed
+
+
+text \<open>\<^bold>\<open>Sharpest \<open>bridgesU\<close> reduction (the r40 diagnosis).\<close>  With the terminal-slice
+  leading form (@{thm [source] kyx_terminal_slice_leadform}) discharging \<open>brMp\<close>'s
+  outer head, the ENTIRE \<open>bridgesU\<close> readback body reduces to the CRISP residual
+  triple \<open>{brN, headMp, split}\<close>: the front-slice readoff
+  \<open>Trans (seg N 0 (m\<^sub>1)) = D\<^bsub>N\<^bsub>1,0\<^esub>\<^esub> t\<^sub>1\<close> (article part (1)), the terminal-slice
+  \<^bold>\<open>subtree\<close> identity \<open>bpHeadT (Trans M') = \<tau>\<close> (article part (3), head-stripped),
+  and the growth split \<open>\<tau> = t\<^sub>1 + t\<^sub>2 \<and> t\<^sub>2 \<noteq> 0\<close>.  The residual no longer carries
+  the \<open>D\<^bsub>N\<^bsub>1,j\<^sub>0'\<^esub>\<^esub>\<close> head (now proven) --- \<open>headMp\<close> is a pure BT-subtree equation.
+  Audit (rule 4): cites only @{thm [source] kyx_terminal_slice_leadform}; no
+  \<open>sorry\<close>, no refuted endpoint.\<close>
+
+lemma kyx_bridgesU_of_readoff:
+  fixes N :: pairseq and t1 tau :: BT
+  assumes reg: "vg7x_reg4 N"
+    and brN: "Trans (seg N 0 (FirstNodes N ! (LastStep N) - 1)) = Dpt (enat (entry N 1 0)) t1"
+    and headMp: "bpHeadT (Trans (seg N (Joints N ! (Lng (Br N) - 1)) (Lng N - 1))) = tau"
+    and split: "\<exists>t2. tau = t1 +\<^sub>B t2 \<and> t2 \<noteq> 0\<^sub>B"
+  shows "Trans (seg N 0 (FirstNodes N ! (LastStep N) - 1)) = Dpt (enat (entry N 1 0)) t1
+       \<and> (\<exists>t2. tau = t1 +\<^sub>B t2 \<and> t2 \<noteq> 0\<^sub>B
+           \<and> Trans (seg N (Joints N ! (Lng (Br N) - 1)) (Lng N - 1))
+               = Dpt (enat (entry N 1 (Joints N ! (Lng (Br N) - 1)))) tau)"
+proof -
+  have lead: "Trans (seg N (Joints N ! (Lng (Br N) - 1)) (Lng N - 1))
+                = Dpt (enat (entry N 1 (Joints N ! (Lng (Br N) - 1))))
+                    (bpHeadT (Trans (seg N (Joints N ! (Lng (Br N) - 1)) (Lng N - 1))))"
+    by (rule kyx_terminal_slice_leadform[OF reg])
+  have brMp: "Trans (seg N (Joints N ! (Lng (Br N) - 1)) (Lng N - 1))
+                = Dpt (enat (entry N 1 (Joints N ! (Lng (Br N) - 1)))) tau"
+    using lead headMp by simp
+  from split obtain t2 where s: "tau = t1 +\<^sub>B t2" and tne: "t2 \<noteq> 0\<^sub>B" by blast
+  show ?thesis using brN s tne brMp by blast
+qed
+
+
+text \<open>\<^bold>\<open>Capstone: §8.2 condII/IV VE34 dispatcher reduced to the crisp readoff
+  residual.\<close>  Plugging @{thm [source] kyx_bridgesU_of_readoff} into the back-peel
+  dispatcher @{thm [source] vs3x_VE34_of_DT_modBridges} yields
+  @{term "vg2x_VE34 M"} for a condII/IV host \<open>M \<in> DT\<^bsub>PS\<^esub>\<close> from the SINGLE
+  head-free readoff residual \<open>{brN, headMp, split}\<close>.  So the whole §8.2 condII/IV
+  strong-monotonicity terminal-slice proposition (\<Rightarrow> \<open>p_8_2_condIIIV\<close> \<Rightarrow> condII
+  exchange) now rests on the ONE subtree readback --- with the keystone residual
+  DISSOLVED (r40, @{thm [source] kyx_terminal_slice_keystone}) and the \<open>brMp\<close> head
+  DISCHARGED (@{thm [source] kyx_terminal_slice_leadform}).  Audit (rule 4): cites
+  only proven facts; \<open>readoff\<close> is the honest carried residual.\<close>
+
+lemma kyx_VE34_of_DT_modReadoff:
+  fixes M :: pairseq
+  assumes MDT: "M \<in> DT_PS" and Brne: "Br M \<noteq> []"
+    and guard: "entry M 1 (FirstNodes M ! (Lng (Br M) - 1))
+                  < entry M 0 (FirstNodes M ! (Lng (Br M) - 1))"
+    and j0pos: "0 < Joints M ! (Lng (Br M) - 1)"
+    and j0lt:  "Joints M ! (Lng (Br M) - 1) < TrMax M"
+    and readoff:
+      "\<And>N t1 tau. vg7x_reg4 N \<Longrightarrow>
+          Trans N = Dpt (enat (entry N 1 0))
+             (t1 +\<^sub>B Dpt (enat (entry N 1 (Joints N ! (Lng (Br N) - 1)))) tau)
+        \<Longrightarrow> Trans (seg N 0 (FirstNodes N ! (LastStep N) - 1)) = Dpt (enat (entry N 1 0)) t1
+          \<and> bpHeadT (Trans (seg N (Joints N ! (Lng (Br N) - 1)) (Lng N - 1))) = tau
+          \<and> (\<exists>t2. tau = t1 +\<^sub>B t2 \<and> t2 \<noteq> 0\<^sub>B)"
+  shows "vg2x_VE34 M"
+proof -
+  have bridgesU: "\<And>N t1 tau. vg7x_reg4 N \<Longrightarrow>
+          Trans N = Dpt (enat (entry N 1 0))
+             (t1 +\<^sub>B Dpt (enat (entry N 1 (Joints N ! (Lng (Br N) - 1)))) tau)
+         \<Longrightarrow> Trans (seg N 0 (FirstNodes N ! (LastStep N) - 1)) = Dpt (enat (entry N 1 0)) t1
+           \<and> (\<exists>t2. tau = t1 +\<^sub>B t2 \<and> t2 \<noteq> 0\<^sub>B
+               \<and> Trans (seg N (Joints N ! (Lng (Br N) - 1)) (Lng N - 1))
+                   = Dpt (enat (entry N 1 (Joints N ! (Lng (Br N) - 1)))) tau)"
+  proof -
+    fix N :: pairseq and t1 tau :: BT
+    assume r: "vg7x_reg4 N"
+      and f: "Trans N = Dpt (enat (entry N 1 0))
+                 (t1 +\<^sub>B Dpt (enat (entry N 1 (Joints N ! (Lng (Br N) - 1)))) tau)"
+    have R: "Trans (seg N 0 (FirstNodes N ! (LastStep N) - 1)) = Dpt (enat (entry N 1 0)) t1
+          \<and> bpHeadT (Trans (seg N (Joints N ! (Lng (Br N) - 1)) (Lng N - 1))) = tau
+          \<and> (\<exists>t2. tau = t1 +\<^sub>B t2 \<and> t2 \<noteq> 0\<^sub>B)"
+      by (rule readoff[OF r f])
+    have brN: "Trans (seg N 0 (FirstNodes N ! (LastStep N) - 1)) = Dpt (enat (entry N 1 0)) t1"
+      using R by simp
+    have headMp: "bpHeadT (Trans (seg N (Joints N ! (Lng (Br N) - 1)) (Lng N - 1))) = tau"
+      using R by simp
+    have split: "\<exists>t2. tau = t1 +\<^sub>B t2 \<and> t2 \<noteq> 0\<^sub>B" using R by simp
+    show "Trans (seg N 0 (FirstNodes N ! (LastStep N) - 1)) = Dpt (enat (entry N 1 0)) t1
+           \<and> (\<exists>t2. tau = t1 +\<^sub>B t2 \<and> t2 \<noteq> 0\<^sub>B
+               \<and> Trans (seg N (Joints N ! (Lng (Br N) - 1)) (Lng N - 1))
+                   = Dpt (enat (entry N 1 (Joints N ! (Lng (Br N) - 1)))) tau)"
+      by (rule kyx_bridgesU_of_readoff[OF r brN headMp split])
+  qed
+  show ?thesis
+    by (rule vs3x_VE34_of_DT_modBridges[OF MDT Brne guard j0pos j0lt bridgesU])
+qed
+
+(* ===== r40 merge: wt-s4a block (r40-PCOMPPREFIX-refute) ===== *)
+
+
+section \<open>r40-PCOMPPREFIX --- REFUTATION of the residual hypothesis pcompPrefix
+  over ST_PS (the last P-component is NOT in general a prefix of the second-last)\<close>
+
+text \<open>DOCUMENTATION ONLY (no lemma, no sorry).  The r39 reduction
+  otkx_multiD_of_pcomp_prefix discharges the OT-pillar keystone multiD from the
+  SINGLE pure hypothesis
+
+     pcompPrefix :  EX C. P N ! (Lng (P N) - 2) = drop (Pcut N) N @ C
+
+  (``the last P-component drop (Pcut N) N is an initial segment / prefix of the
+  second-last P-component P N ! (Lng (P N) - 2)''), under N : ST_PS, multiT N,
+  drop (Pcut N) N ~= [(0,0)].  The r39 census recorded pcompPrefix as
+  ``empirically 771/771 deep'' and marked it as ``the closer half'' of multiD.
+
+  \<^bold>\<open>This is FALSE over ST_PS.\<close>  The r39 corpus (seeded from is_standard(yaBMS)
+  / a shallow oper-orbit) was a STRICT SUBSET of ST_PS and hid the failures ---
+  the exact r37/r39 lesson, hit here a THIRD time.  A deep BFS over the TRUE
+  ST_PS closure (oper-closure of diagSeq u v seeds, u>0 included, intermediate
+  Lng up to 96, ~5.9e5 states) finds 1513 counterexamples.
+
+  \<^bold>\<open>Minimal counterexample (Lng 4)\<close>:
+      N = (0,0)(1,1)(0,0)(1,0).
+    \<^item> N : ST_PS by the explicit derivation from the diag seed (0,0)(1,1)(2,2)
+      (ST_PS.diag, u=0<=v=2), then repeated ST_PS.oper (all n>=1):
+        (0,0)(1,1)(2,2) [2]-> (0,0)(1,1)(2,1) [2]-> (0,0)(1,1)(2,0)(3,1)
+        [1]-> (0,0)(1,1)(2,0) [2]-> (0,0)(1,1)(1,1) [2]-> (0,0)(1,1)(1,0)(2,1)
+        [1]-> (0,0)(1,1)(1,0) [2]-> (0,0)(1,1)(0,0)(1,1) [2]-> (0,0)(1,1)(0,0)(1,0) = N.
+    \<^item> multiT N holds:  row 0 of N is [0,1,0,1]; le0 N 0 3 fails (from column 0
+      only columns {0,1} are row-0 reachable), so NOT monoT, so multiT.
+    \<^item> Pcut N = 2  (least j in {1..3} with le0 N j 3; j=2 gives the direct
+      nextrel0 edge 2 -> 3).  drop (Pcut N) N = (0,0)(1,0) ~= [(0,0)]  (so the
+      hypothesis ne holds).
+    \<^item> P N = [ (0,0)(1,1), (0,0)(1,0) ]  (P (take 2 N) = [(0,0)(1,1)] since that
+      prefix is monoT; last component = drop 2 N).  Lng (P N) = 2, so the
+      second-last is P N ! 0 = (0,0)(1,1).
+    \<^item> pcompPrefix would need  (0,0)(1,1) = (0,0)(1,0) @ C , i.e. (0,0)(1,0) a
+      prefix of (0,0)(1,1).  Column 1 differs ((1,0) vs (1,1)): NO such C.
+      Also the reverse prefix fails.  So the two consecutive P-components are
+      genuinely NOT prefix-nested.
+
+  The next-smallest length-6 witness  N = (0,0)(1,0)(2,0)(0,0)(1,0)(1,0)
+  ( = M[2], M = (0,0)(1,0)(2,0)(0,0)(1,0)(2,0), both is_standard per yaBMS) has
+  P N = [ (0,0)(1,0)(2,0), (0,0)(1,0)(1,0) ]; again the last component is not a
+  prefix of the second-last (column 2: (1,0) vs (2,0)).  Triple-confirmed:
+  fast_pss.py, the reference red_model.py, and by-hand from the pss_defs
+  definitions; N is is_standard per yaBMS.  Verifier: python/_r40_fast.py,
+  python/_r40_junc.py (junction analysis).
+
+  \<^bold>\<open>Consequence for the OT keystone.\<close>  otkx_multiD_of_pcomp_prefix and
+  otkx_leBT_Trans_of_prefix remain GREEN and SOUND (pcompPrefix is carried as an
+  explicit named hypothesis, never asserted), but pcompPrefix CANNOT be
+  discharged --- the ``surgery-free'' route from multiD to a pure P-prefix fact
+  is a DEAD END.  The junction obligation m_8_7_multiD_junction still needs only
+  the weaker Trans-order fact
+
+     comple :  leBT (Trans (drop (Pcut N) N)) (Trans (P N ! (Lng (P N) - 2)))
+
+  which is the multiT analog of the descending-component order (m_6_8 /
+  descending_P_of_ST) and IS still empirically true (the two heads are equal by
+  the first-column-diagonal + equal-leftend structure).  So multiD must obtain
+  comple from the Trans/value order of consecutive descending components
+  (the surgC-shared value residual), NOT from a length/prefix relation.
+  pcompPrefix is REFUTED --- do not re-attempt it, and do not cite it.\<close>
+
 end
