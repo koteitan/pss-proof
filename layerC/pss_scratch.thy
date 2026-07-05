@@ -60513,4 +60513,153 @@ next
   show ?thesis by (rule nonadmeq_exch[OF False])
 qed
 
+(* ===== r43 merge: wt-s4b bridgesU readoff => {BASE,STEP} reduction (readoff⟺VE34; modReadoff interface closed onto the article terminal-slice induction) ===== *)
+
+
+(* ===== r43 RDX: the §8.2 condII/IV bridgesU readoff residual =========== *)
+
+section \<open>r43-RDX --- the \<open>readoff\<close> residual of @{thm [source] kyx_VE34_of_DT_modReadoff}:
+  NON-CIRCULAR reduction to the article terminal-slice induction \<open>{BASE, STEP}\<close>\<close>
+
+text \<open>\<^bold>\<open>Structural finding (r43).\<close>  The \<open>readoff\<close> residual carried by
+  @{thm [source] kyx_VE34_of_DT_modReadoff} is NOT closable by the terminal-slice
+  keystone (@{thm [source] kyx_terminal_slice_keystone}) and leading form
+  (@{thm [source] kyx_terminal_slice_leadform}) alone.  The reason is an
+  \<^bold>\<open>equivalence\<close>, already recorded in @{thm [source] vg6x_base_bridges_iff_VE34}:
+  over the \<open>vg4x_reg4\<close> regime (\<open>+ fin\<close>), the term-level readback
+  \<open>bridges N\<close> (article §8.2 parts (1)+(3), content.md 3314) is \<^bold>\<open>logically
+  equivalent\<close> to the \<open>bpHeadT\<close>-level residual @{term "vg2x_VE34 N"} it is meant to
+  supply.  Hence the \<open>readoff\<close> hypothesis of \<open>kyx_VE34_of_DT_modReadoff\<close> is
+  \<^emph>\<open>exactly as strong\<close> as its own conclusion \<open>\<forall>N. vg2x_VE34 N\<close>: discharging
+  \<open>readoff\<close> unconditionally IS proving the whole §8.2 condII/IV terminal-slice
+  proposition for every host.  So \<open>readoff\<close> cannot be reduced to \<open>vg2x_VE34\<close>
+  (that would be circular); it must be obtained from a strictly more fundamental
+  source.
+
+  \<^bold>\<open>The genuine non-circular source\<close> is the article's induction on
+  \<open>j\<^sub>1 - TrMax(M)\<close> (content.md 3345\<endash>3520), which the development already exposes
+  as the \<^bold>\<open>\<open>{BASE, STEP}\<close> pair\<close> of @{thm [source] vg7x_VE34_of_DT} (the \<open>RPERS\<close>
+  half being discharged internally by @{thm [source] vg7x_RPERS}):
+    \<^item> \<open>BASE\<close>: \<open>vg7x_reg4 N \<Longrightarrow> cfbx_j1p N = Lng N - 1 \<Longrightarrow> vg2x_VE34 N\<close>;
+    \<^item> \<open>STEP\<close>: \<open>vg7x_reg4 N \<Longrightarrow> cfbx_j1p N < Lng N - 1 \<Longrightarrow> vg7x_reg4 (Pred N)
+              \<Longrightarrow> vg2x_VE34 (Pred N) \<Longrightarrow> vg2x_VE34 N\<close>.
+  \<open>rdx_bridgesU_readoff\<close> below closes \<open>readoff\<close> from EXACTLY this
+  pair (plus the carried \<open>fin\<close> side condition), by threading
+  @{thm [source] vg7x_VE34_of_DT} \<rightarrow> @{term "vg2x_VE34 N"} \<rightarrow>
+  @{thm [source] vg6x_base_bridges_of_VE34} \<rightarrow> the two term-level slice reads,
+  then stripping the terminal head to the
+  \<open>readoff\<close> shape.  \<open>rdx_VE34_of_DT\<close> plugs it into
+  @{thm [source] kyx_VE34_of_DT_modReadoff}, so the §8.2 condII/IV VE34 dispatcher
+  \<Rightarrow> \<open>p_8_2_condIIIV\<close> \<Rightarrow> condII exchange rests on the \<^bold>\<open>single\<close> honest obstruction
+  \<open>{BASE, STEP}\<close> (+ the universal \<open>fin\<close> artifact).
+
+  \<^bold>\<open>Concrete route for \<open>STEP\<close> (the next round).\<close>  In the \<open>j\<^sub>1' < j\<^sub>1\<close> STEP the last
+  column is appended to the last branch, so (i) the front slice is \<open>Pred\<close>-invariant
+  (\<open>seg N 0 m\<^sub>1 = seg (Pred N) 0 m\<^sub>1\<close> with \<open>m\<^sub>1\<close>, \<open>LastStep\<close>, \<open>Joints\<^bsub>J\<^sub>1\<^esub>\<close> stable by
+  @{thm [source] wid_FirstNodes_Pred}, @{thm [source] wid_Joints_Pred}); (ii) the
+  terminal slice GROWS by that column: \<open>seg N j\<^sub>0' (Lng N-1)
+  = seg (Pred N) j\<^sub>0' (Lng (Pred N)-1) @ [N ! (Lng N-1)]\<close>
+  (@{thm [source] seg_to_last_append}), so its \<open>Trans\<close> is one single-column
+  @{thm [source] m_8_2_keystone} step above the \<open>Pred\<close> terminal slice
+  (@{thm [source] kyx_terminal_slice_keystone}, the r40-DISSOLVED keystone).  The
+  keystone clause (4) on \<open>N\<close> shares \<open>t\<^sub>1\<close> between \<open>Trans (Pred N)\<close> and \<open>Trans N\<close>;
+  snoc-splitting against the IH \<open>vg2x_VE34 (Pred N)\<close> pins
+  \<open>bpHeadT (Trans (front N)) = t\<^sub>1\<close> and reduces \<open>VE4(N)\<close> to
+  \<open>bpHeadT (Trans (term N)) = snd\<close> (the keystone's \<open>N\<close>-side inner), i.e. exactly the
+  terminal-slice keystone read.  \<open>VE3(N)\<close> (proper growth) is the accompanying
+  strict-growth witness.  Empirically the whole \<open>readoff\<close> holds with 0 failures on
+  the genuine \<open>vg7x_reg4\<close> corpus (python/_r36_bridges.py 128/128 deep,
+  python/_r39_bridgesU_deep.py, python/_r43_readoff_deep.py).  Audit (rule 4):
+  cites only proven facts (@{thm [source] vg7x_VE34_of_DT},
+  @{thm [source] vg6x_base_bridges_of_VE34}, @{thm [source] vg7x_reg4_DT}); the
+  carried residuals are the honest \<open>{BASE, STEP, fin}\<close>.  Prefix \<open>rdx_\<close>.\<close>
+
+lemma rdx_bridgesU_readoff:
+  fixes N :: pairseq and t1 tau :: BT
+  assumes reg: "vg7x_reg4 N"
+    and f: "Trans N = Dpt (enat (entry N 1 0))
+             (t1 +\<^sub>B Dpt (enat (entry N 1 (Joints N ! (Lng (Br N) - 1)))) tau)"
+    and fin: "finite {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+                         \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}"
+    and BASE: "\<And>N. vg7x_reg4 N \<Longrightarrow> cfbx_j1p N = Lng N - 1 \<Longrightarrow> vg2x_VE34 N"
+    and STEP: "\<And>N. vg7x_reg4 N \<Longrightarrow> cfbx_j1p N < Lng N - 1 \<Longrightarrow>
+                 vg7x_reg4 (Pred N) \<Longrightarrow> vg2x_VE34 (Pred N) \<Longrightarrow> vg2x_VE34 N"
+  shows "Trans (seg N 0 (FirstNodes N ! (LastStep N) - 1)) = Dpt (enat (entry N 1 0)) t1
+       \<and> bpHeadT (Trans (seg N (Joints N ! (Lng (Br N) - 1)) (Lng N - 1))) = tau
+       \<and> (\<exists>t2. tau = t1 +\<^sub>B t2 \<and> t2 \<noteq> 0\<^sub>B)"
+proof -
+  have reg4: "vg4x_reg4 N" using reg by (simp add: vg7x_reg4_def)
+  have reg3: "vg3x_reg3 N" using reg4 by (simp add: vg4x_reg4_def)
+  have reg2: "vg2x_reg2 N" using reg3 by (simp add: vg3x_reg3_def)
+  have Brne: "Br N \<noteq> []" using reg2 by (simp add: vg2x_reg2_def)
+  have NDT: "N \<in> DT_PS" by (rule vg7x_reg4_DT[OF reg])
+  have guard: "entry N 1 (FirstNodes N ! (Lng (Br N) - 1))
+                 < entry N 0 (FirstNodes N ! (Lng (Br N) - 1))"
+    using reg3 by (simp add: vg3x_reg3_def)
+  have j0pos: "0 < Joints N ! (Lng (Br N) - 1)" using reg4 by (simp add: vg4x_reg4_def)
+  have j0lt:  "Joints N ! (Lng (Br N) - 1) < TrMax N" using reg4 by (simp add: vg4x_reg4_def)
+  \<comment> \<open>the article terminal-slice induction closes @{term "vg2x_VE34 N"} from \<open>{BASE, STEP}\<close>\<close>
+  have ve34: "vg2x_VE34 N"
+    by (rule vg7x_VE34_of_DT[OF NDT Brne guard j0pos j0lt BASE STEP])
+  \<comment> \<open>upgrade the \<open>bpHeadT\<close>-level VE34 to the FULL term-level bridges (parts (1)+(3))\<close>
+  have B: "Trans (seg N 0 (FirstNodes N ! (LastStep N) - 1)) = Dpt (enat (entry N 1 0)) t1
+       \<and> (\<exists>t2. tau = t1 +\<^sub>B t2 \<and> t2 \<noteq> 0\<^sub>B
+           \<and> Trans (seg N (Joints N ! (Lng (Br N) - 1)) (Lng N - 1))
+               = Dpt (enat (entry N 1 (Joints N ! (Lng (Br N) - 1)))) tau)"
+    by (rule vg6x_base_bridges_of_VE34[OF reg4 fin ve34 f])
+  have brN: "Trans (seg N 0 (FirstNodes N ! (LastStep N) - 1)) = Dpt (enat (entry N 1 0)) t1"
+    using B by blast
+  from B obtain t2 where s: "tau = t1 +\<^sub>B t2" and tne: "t2 \<noteq> 0\<^sub>B"
+    and brMp: "Trans (seg N (Joints N ! (Lng (Br N) - 1)) (Lng N - 1))
+                 = Dpt (enat (entry N 1 (Joints N ! (Lng (Br N) - 1)))) tau"
+    by blast
+  have hdeq: "bpHeadT (Trans (seg N (Joints N ! (Lng (Br N) - 1)) (Lng N - 1))) = tau"
+    using brMp by simp
+  show ?thesis using brN hdeq s tne by blast
+qed
+
+text \<open>\<^bold>\<open>Wrapper: plug @{thm [source] rdx_bridgesU_readoff} into
+  @{thm [source] kyx_VE34_of_DT_modReadoff}.\<close>  Discharges the \<open>readoff\<close> assumption
+  of the dispatcher, so @{term "vg2x_VE34 M"} follows for a condII/IV host
+  \<open>M \<in> DT\<^bsub>PS\<^esub>\<close> from the \<^bold>\<open>single\<close> non-circular obstruction \<open>{BASE, STEP}\<close> (plus the
+  universal \<open>fin\<close> artifact \<open>finU\<close>).  This closes bridgesU/VE34 \<Rightarrow>
+  \<open>p_8_2_condIIIV\<close> \<Rightarrow> condII exchange \<^emph>\<open>modulo the article terminal-slice
+  induction\<close>.  (The direct route @{thm [source] vg7x_VE34_of_DT} obtains the same
+  conclusion from \<open>{BASE, STEP}\<close> alone, without \<open>finU\<close>; this wrapper honours the
+  \<open>modReadoff\<close> interface the r40\<endash>r42 dispatcher was built around.)\<close>
+
+lemma rdx_VE34_of_DT:
+  fixes M :: pairseq
+  assumes MDT: "M \<in> DT_PS" and Brne: "Br M \<noteq> []"
+    and guard: "entry M 1 (FirstNodes M ! (Lng (Br M) - 1))
+                  < entry M 0 (FirstNodes M ! (Lng (Br M) - 1))"
+    and j0pos: "0 < Joints M ! (Lng (Br M) - 1)"
+    and j0lt:  "Joints M ! (Lng (Br M) - 1) < TrMax M"
+    and finU: "\<And>N. finite {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+                              \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}"
+    and BASE: "\<And>N. vg7x_reg4 N \<Longrightarrow> cfbx_j1p N = Lng N - 1 \<Longrightarrow> vg2x_VE34 N"
+    and STEP: "\<And>N. vg7x_reg4 N \<Longrightarrow> cfbx_j1p N < Lng N - 1 \<Longrightarrow>
+                 vg7x_reg4 (Pred N) \<Longrightarrow> vg2x_VE34 (Pred N) \<Longrightarrow> vg2x_VE34 N"
+  shows "vg2x_VE34 M"
+proof -
+  have readoff: "\<And>N t1 tau. vg7x_reg4 N \<Longrightarrow>
+          Trans N = Dpt (enat (entry N 1 0))
+             (t1 +\<^sub>B Dpt (enat (entry N 1 (Joints N ! (Lng (Br N) - 1)))) tau)
+        \<Longrightarrow> Trans (seg N 0 (FirstNodes N ! (LastStep N) - 1)) = Dpt (enat (entry N 1 0)) t1
+          \<and> bpHeadT (Trans (seg N (Joints N ! (Lng (Br N) - 1)) (Lng N - 1))) = tau
+          \<and> (\<exists>t2. tau = t1 +\<^sub>B t2 \<and> t2 \<noteq> 0\<^sub>B)"
+  proof -
+    fix N :: pairseq and t1 tau :: BT
+    assume rN: "vg7x_reg4 N"
+      and fN: "Trans N = Dpt (enat (entry N 1 0))
+                 (t1 +\<^sub>B Dpt (enat (entry N 1 (Joints N ! (Lng (Br N) - 1)))) tau)"
+    show "Trans (seg N 0 (FirstNodes N ! (LastStep N) - 1)) = Dpt (enat (entry N 1 0)) t1
+          \<and> bpHeadT (Trans (seg N (Joints N ! (Lng (Br N) - 1)) (Lng N - 1))) = tau
+          \<and> (\<exists>t2. tau = t1 +\<^sub>B t2 \<and> t2 \<noteq> 0\<^sub>B)"
+      by (rule rdx_bridgesU_readoff[OF rN fN finU BASE STEP])
+  qed
+  show ?thesis
+    by (rule kyx_VE34_of_DT_modReadoff[OF MDT Brne guard j0pos j0lt readoff])
+qed
+
 end
