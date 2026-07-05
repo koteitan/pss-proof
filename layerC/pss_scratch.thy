@@ -60413,4 +60413,104 @@ proof -
     by (rule cpx_condIV_exchange_full[OF MST MPT hp cIV admeq n1 REGS REGSP])
 qed
 
+(* ===== r42 merge: wt-s4b condIV non-admeq (admeq-free brick + all-uncond combiner; non-admeq residual isolated) ===== *)
+
+
+(* ===================================================================== *)
+(* ===== r42-CONDIV-NONADMEQ --- the condIV exchange on the         ===== *)
+(* ===== NON-admeq branch (Adm M (s84x_jm2 M) \<noteq> transJm1 M).           ===== *)
+(* ===== Deep-validation (python/_r42_v2.py, _r42_cex_probe.py):     ===== *)
+(* =====   non-admeq condIV hosts are RARE (~2% of condIV hosts) and  ===== *)
+(* =====   DEGENERATE: jm2 < j0 AND jm3 < jm1, with the deep-hole    ===== *)
+(* =====   head e1jm1 = entry M 1 (transJm1 M) reaching v1 =          ===== *)
+(* =====   entry M 1 (Lng M - 1).  The exchange triple STILL holds     ===== *)
+(* =====   empirically (all 3 conjuncts, n=1..3, 100%), but the        ===== *)
+(* =====   admeq slice-transport route (d2/d3 onto the reduced         ===== *)
+(* =====   jm2-slice) is OUTRIGHT FALSE there: when jm2 = 0 the        ===== *)
+(* =====   jm2-slice s84x_Np = M itself, so                            ===== *)
+(* =====   Trans (s84x_Np M) = Trans M \<noteq> Dpt (e1jm2) (bpHeadT c2).       ===== *)
+(* =====   The generic fseq engine m_7_2_scb_fseq_kind1_general also    ===== *)
+(* =====   fails (it needs u < v, but the correct deep hole is the      ===== *)
+(* =====   innermost D_{v1} 0 with head u = v1 = v).  So the non-admeq  ===== *)
+(* =====   case needs a DIFFERENT (degenerate u=v) fseq analysis.       ===== *)
+(* ===================================================================== *)
+
+section \<open>r42-CONDIV-NONADMEQ --- condIV exchange on the \<open>\<not>admeq\<close> branch\<close>
+
+text \<open>\<^bold>\<open>Admeq-free brick.\<close>  \<open>Trans M\<close> decomposes at the \<open>c\<^sub>2\<close>-principal with the
+  canonical \<open>s84x\<close> outer wrapper, with \<^bold>\<open>no\<close> \<open>admeq\<close> hypothesis.  This is the
+  admeq-independent kernel of @{thm [source] c4dx_condIV_k1} (the scb-decomp half,
+  before the \<open>e\<^sub>3 = e\<^sub>1\<^sub>,\<^sub>j\<^sub>-\<^sub>1\<close> flip that \<open>admeq\<close> is used for): the head of \<open>c\<^sub>2\<close> is
+  \<open>transV M = enat (entry M 1 (transJm1 M))\<close> UNCONDITIONALLY
+  (@{thm [source] m_8_5_scbdec_c1_shape}(1)), so no index alignment is needed for
+  the decomposition itself.  Cites only proven, admeq-free facts
+  (@{thm [source] s84c2_Trans_c2_decomp}, @{thm [source] m_7_2_scb_unique_sb}).\<close>
+
+lemma cnx_condIV_Trans_c2_decomp:
+  fixes M :: pairseq
+  assumes MST: "M \<in> ST_PS" and MPT: "M \<in> PT_PS"
+    and hp: "hasParent M 1 (Lng M - 1)"
+    and nVI: "\<not> transCondVI M"
+  shows "scb_decomp (Trans M) (s84x_s1 M) (flatBT (transC2 M)) (s84x_b1 M)"
+proof -
+  have MR: "M \<in> RT_PS" using MST m_6_7_ST_PS_subseteq_RT_PS by blast
+  have j1gt: "1 < Lng M - 1" and T1: "transT1 M \<noteq> 0\<^sub>B"
+    using s84d_L4_regime[OF MST MPT hp nVI] by simp_all
+  have J1pos: "transJ1 M > 0" using j1gt by (simp add: transJ1_def)
+  have T1ne: "Trans (Pred M) \<noteq> Trm []" using T1 by (simp add: transT1_def)
+  obtain s1 b1 where
+    dc1: "scb_decomp (Trans (Pred M)) s1 (flatBT (transC1 M)) b1"
+    and dc2M0: "scb_decomp (Trans M) s1 (flatBT (transC2 M)) b1"
+    by (rule s84c2_Trans_c2_decomp[OF MR MPT J1pos T1])
+  have s1b1ex1: "\<exists>!sb. scb_decomp (transT1 M) (fst sb) (flatBT (transC1 M)) (snd sb)"
+  proof (rule ex1I[of _ "(s1, b1)"])
+    show "scb_decomp (transT1 M) (fst (s1, b1)) (flatBT (transC1 M)) (snd (s1, b1))"
+      using dc1 by (simp add: transT1_def)
+  next
+    fix y
+    assume "scb_decomp (transT1 M) (fst y) (flatBT (transC1 M)) (snd y)"
+    hence "fst y = s1 \<and> snd y = b1"
+      using m_7_2_scb_unique_sb[OF _ dc1 T1ne] by (simp add: transT1_def)
+    thus "y = (s1, b1)" by (simp add: prod_eq_iff)
+  qed
+  have theSB: "(THE sb. scb_decomp (transT1 M) (fst sb) (flatBT (transC1 M)) (snd sb))
+             = (s1, b1)"
+    by (rule the1_equality[OF s1b1ex1]) (use dc1 in \<open>simp add: transT1_def\<close>)
+  have s1val: "s84x_s1 M = s1" and b1val: "s84x_b1 M = b1"
+    using theSB by (simp_all add: s84x_s1_def s84x_b1_def)
+  show ?thesis using dc2M0 s1val b1val by simp
+qed
+
+text \<open>\<^bold>\<open>condIV exchange, FULLY unconditional modulo the isolated \<open>\<not>admeq\<close> residual.\<close>
+  The \<open>admeq\<close> branch is closed OUTRIGHT by
+  @{thm [source] cpx_condIV_exchange_uncond}; the \<open>\<not>admeq\<close> branch is carried as the
+  single named hypothesis \<open>nonadmeq_exch\<close> --- the empirically-verified
+  (python/_r42_v2.py, 100% on all found non-admeq condIV hosts, n = 1..3) exchange
+  triple on the degenerate regime.  This is the condIV counterpart of the
+  \<open>cpx_exchIII_slot\<close> \<open>noParentPred\<close>-residual pattern: the residual is an honest
+  carried hypothesis (a true statement whose proof needs the degenerate \<open>u = v\<close>
+  fseq analysis), NOT a false/refuted one.  When \<open>nonadmeq_exch\<close> is discharged the
+  condIV exchange becomes exchange-unconditional over ALL condIV \<open>ST\<^bsub>PS\<^esub>\<close> hosts.\<close>
+
+lemma cnx_condIV_exchange_alluncond:
+  fixes M :: pairseq and n :: nat
+  assumes MST: "M \<in> ST_PS" and MPT: "M \<in> PT_PS"
+    and hp: "hasParent M 1 (Lng M - 1)"
+    and cIV: "transCondIV M"
+    and n1: "1 \<le> n"
+    and nonadmeq_exch: "Adm M (s84x_jm2 M) \<noteq> transJm1 M \<Longrightarrow>
+        lessBT (Trans ((M::pairseq)[n])) (operB (Trans M) (numBT n))
+      \<and> lessBT (Trans ((M::pairseq)[n])) (Trans M)
+      \<and> lessBT (operB (Trans M) (numBT (n - 1))) (Trans ((M::pairseq)[n + 1]))"
+  shows "lessBT (Trans ((M::pairseq)[n])) (operB (Trans M) (numBT n))
+       \<and> lessBT (Trans ((M::pairseq)[n])) (Trans M)
+       \<and> lessBT (operB (Trans M) (numBT (n - 1))) (Trans ((M::pairseq)[n + 1]))"
+proof (cases "Adm M (s84x_jm2 M) = transJm1 M")
+  case True
+  show ?thesis by (rule cpx_condIV_exchange_uncond[OF MST MPT hp cIV True n1])
+next
+  case False
+  show ?thesis by (rule nonadmeq_exch[OF False])
+qed
+
 end
