@@ -145,8 +145,14 @@
       - ✅ local-OTint keystone-free(condI/condVI/condV-adm-e=0)[r2]
       - 🚨 deep-insertion OT所属(keystone{resid,multiD}、resid真)[r5]
         - ✅ resid deep検証+4slot分解(rgx_、C3 prefix半分クローズ)[r1]
-        - 🚨🤖 slotNewOT(C1: isOT_BP(DB x q))[r0]
-        - 🚨🤖 slotAppg(C3: G_B-bound)[r0]
-        - 🚨🤖 slotTail(C2: leBT q qb、branch-prefix疑)[r0]
+        - 🚨 slotNewOT(C1: isOT_BP(DB x q))
+          - ✅ shorter-slice IH還元(snx_)[r1][0.193][0.32h]
+          - 🚨 deposit-slice存在(⛔ §8.2 {BASE,STEP} back-peel)[r0]
+        - 🚨 slotAppg(C3: G_B-bound)
+          - ✅ guarded還元(sax_modcore、v0>x/q=0 discharge)[r1][0.193][0.32h]
+          - 🚨 head-gap x≥head(q)(局所導出不可・WGAP系REFUTED)[r0]
+        - 🚨 slotTail(C2: leBT q qb、偽チェック=真)
+          - ✅ proper-prefix半還元(stx_、→leBT q qp)[r1][0.193][0.32h]
+          - 🚨 spine descent leBT q qp(⛔ §8.2/8.5)[r0]
         - 🚨 slotHeadWB(C2: transJm1=0角、WB⟹equal-head)[r0]
         - 🚨 multiD(pcompPrefix反証→別ルート要)[r0]
