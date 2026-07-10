@@ -65,6 +65,8 @@ task.md のユーザー向け骨格に対する、作業側の詳細版。ユー
 - d13x_T形 condIII organize(innerU 0/426; cfax_/e3x_/corrected_condIII vacuous) [r28]
 - **REGSP原文形(condIII/condIV共通)**: cfbx_reg at Red(Pred(s84x_N)) は Red(Pred N) 純trunk時に Br≠[] conjunct 不成立で偽(~15%host、CEX (0,0)(1,1)(2,2)(3,2)) [r30]。→ 証明せず d4a レベルで kousa-(1,1)閉形式 bypass。crx_/c4hx_ の regSP assume はこの純trunk枝では充足不能。
 - Pred_oper0(A27) / 零化一般(A25/A26) / has_gz⟹D系(§6.7) / 固定count condII(A36)
+- **leBT q qp(spine qp-descent、slotTail)**: ST_PS で偽 33/33(方向が逆: Pred は trailing deposit を縮める、qp<q)。stx_..._from_descent の descent 仮定は充足不能=DEAD route [r45]
+- **from-joint deposit 同定(r44 C1)**: 挿入主項 D_x q = Trans(seg M j0'(Lng M-1)) は偽(33/33、slice Trans は D_{M10}-tree 全体)。正=原文 P(N)_J1[n] 枝成分 [r45]
 - 経験検証の教訓: oper-only corpus と小cap(8000)は偽陽性を生む。brute straddle + cap≥30000 + Lng≥10 必須。
 
 ## 進捗ツリー（詳細注釈付き）
@@ -102,7 +104,10 @@ task.md のユーザー向け骨格に対する、作業側の詳細版。ユー
         - ✅ terminal-slice setup(bux_terminal_slice_ready、keystone4前提)〔r39: 全 vg7x_reg4 host で終切片 M'=seg N j0'(Lng N-1) が DT_PS/RT_PS/PT_PS∧Br≠[]∧Lng-1>1(keystone の4幾何前提、無条件)。`vg8x_terminal_slice_DT`+`TrMax_seg_ancestor`+`baseU_Br_empty_TrMax`〕[r1]
         - 🚨 bridgesU 終切片readback(readoff⟺VE34判明→残=article {BASE,STEP} back-peel)〔bridgesU=原文§8.2 終切片 term-readback。128/128 deep。r39発見の keystone RightNodes値残差を r40 で DISSOLVED し dispatcher を「readoff」残差 `kyx_VE34_of_DT_modReadoff` に還元していた〕
           - ✅ readoff⟺{BASE,STEP}還元(rdx_, modReadoff interface閉)〔r43発見: **readoff は vg2x_VE34 と論理的に等価**(既証 `vg6x_base_bridges_iff_VE34` 経由)→ keystone+leadform だけでは閉じない(t1/tau 同定に VE4=vg2x_VE34 本体が要り循環)。非循環還元: `rdx_bridgesU_readoff` は readoff を {BASE,STEP}(=原文 j1-TrMax 上の Pred 帰納=`vg7x_VE34_of_DT` obligation)+fin artifact から証明、`rdx_VE34_of_DT` が kyx_VE34_of_DT_modReadoff の readoff 仮定を discharge。両方 green。exhaustive L=6 で readoff 真 90/90(front(1)/terminal(3)/split 各90/90)〕[r3][0.259][0.93h]
-          - 🚨🤖 {BASE,STEP} back-peel(article Pred-induction on j1-TrMax)〔真の非循環障害。BASE: cfbx_j1p N=Lng N-1 で vg2x_VE34。STEP: cfbx_j1p N<Lng N-1 かつ Pred の VE34 から N の VE34。**r30-r42 で implicit に抵抗してきた壁**。r43文書化の具体 route: 終切片は seg_to_last_append で1列だけ伸びる→r40 dissolved keystone に接続、前切片は Pred不変(wid_FirstNodes_Pred/wid_Joints_Pred)、keystone clause(4) が Trans(Pred N) と Trans N 間で t1 を共有。⚠️fin(LastStep branch-head 集合の有限性、nth範囲外 artifact)は §8.2 全域で carry、一般には未証明〕[r0]
+          - 🚨 {BASE,STEP} back-peel(article Pred-induction on j1-TrMax)〔r30-r43抵抗の壁。r45でSTEP側が単一方程式に崩落〕
+            - ✅ STEP slot閉 modulo TSPIN(bpx_、VE3+front-pin+fin Pred不変 全緑)〔r45 Fable: `bpx_VE34_step_modTSPIN`=vg7x_VE34_of_DT の STEP slot を {fin(host), TSPIN} だけに還元。緑15補題: VE3成長=r40 keystone `kyx_terminal_slice_keystone` 経由 transport(append=addBT-assoc、last-subtree-replacement=新 strict-prefix 補題 `bpx_growth_transport`)/front切片 Pred不変(`bpx_finset_Pred_eq`=LastStep Min-set が文字通り等しい: 枝頭 entry 全 index Pred-stable `bpx_Br_head_entries_Pred`+範囲外 `bpx_nth_overflow`)/t1 pin=IH VE4 の snoc-split(`bpx_step_form_pinned`)/fin Pred不変(`bpx_fin_Pred`)→capstone `bpx_VE34_of_DT_modBASE_TSPIN`(VE34 modulo {BASEf,TSPIN}+fin M、consumer vgx_condIIIV_of_VE は fin M を既に carry するので interface 拡大なし)。⚠️vg7x の fin-free slot 原形は多分 discharge 不能(LastStep Min-set の有限性が fin なしで出ない)→bpx_ dispatcher は per-host fin を thread〕[r1][0.279][0.28h]
+            - 🚨🤖 TSPIN(終切片transport、非許容jointでのMark-surgery naturality)〔単一方程式: Trans N=Dpt(N10)(F +B Dpt(N1j0') a) ⟹ a=bpHeadT(Trans(seg N j0'(Lng N-1)))。経験的に真(=brMp readback、_r36/_r39/_r43 deep 0-fail と同値)。障害: m_8_2_keystone は clause(3)/(4)成分を opaque EX1 t123 でしか出さず、m_7_4_Mark_Trans_repr+Trans_Mark_Pred は m=j0' で Marked が adm N m を要求するのに regime が非許容を強制(0<j0'<TrMax)、m=Adm N j0' では一段下で再発。**非許容 joint での Trans 再帰の Mark-surgery naturality(content.md 3360)が本体**。r46 単独 target 推奨〕[r0]
+            - 🚨🤖 BASEf(TSPIN kernel+same-head branch-run帰納)〔BASE(cfbx_j1p N=Lng N-1)は TSPIN kernel に加え、descending_def が弱降下ゆえ same-head branch run(LastStep<J1 が r38 corpus 8/8 で実在)の上の第2帰納(原文の run 帰納、未機械化)が要る〕[r0]
     - ✅ 補題（強単項性の切片への遺伝性）〔`m_8_2_strongmono_slice`〕
     - ✅ 補題（部分表現の単項成分と $\textrm{Pred}$ の関係）(§8.2 keystone)〔`m_8_2_keystone` = 無条件 `p_8_2_subexpr_component_Pred`〕
     - ✅ 補題（強単項性の下での部分表現の単項成分の基本性質）〔`m_8_2_subexpr_component_strongmono_uncond`〕
@@ -123,38 +128,7 @@ task.md のユーザー向け骨格に対する、作業側の詳細版。ユー
     - ✅ 補題（第 $0$ 種型基本列の基本不等式）〔`m_8_3_kind0_base_ineq`(A22訂正)〕
     - ✅ 補題（第 $0$ 種型基本列の基本分岐規則）〔`m_8_3_kind0_branch_rule`〕
     - ✅ 補題（第 $0$ 種型基本列の基本基点関係）〔`m_8_3_kind0_base_basepoint`〕
-  - 🚨 §8.4 条件 (III) か (IV) の下での展開規則
-    - 🚨 命題（条件 (III) か (IV) の下での $\textrm{Trans}$ と基本列の交換関係）〔A32補正形〕
-      - ✅ (2)降下 condIII〔`e3x_exchange2_condIII`、terminal-slice modulo〕[r1]
-      - ✅ (1)(3) condIII〔`d13x_exchange13_condIII`/`m_8_4_Trans_oper_exchange_corrected_condIII`、mnform modulo〕[r1]
-      - ✅ condIV枝〔`d4vx_exchange2_condIV`/`d4vx_Trans_oper_exchange_corrected`(III+IV組立)、mnform modulo〕[r1]
-      - ✅ condIV mnform〔`c4cx2_condIV_mnform_of_slice`=various_scb_IIIV content、r21b 4/57は誤form(d13x_T)への反証〕[r3]
-      - 🚨 condIV exchange 組立
-        - ✅ producer data+組立〔`c4dx_uv`/`c4dx_condIV_dbbody`/`c4dx_condIV_k1`(witness-match)/`c4dx_condIV_base1`、(1)(2)=`c4dx_condIV_exchange12_assembled`〕[r1]
-        - ✅ HB(t2成分bound)〔`HB_condIV_t2_components`無条件(condV `m_8_5_condV_adm_t2_components`類似、clause(ii)@M1j0→M1j1 downgrade。DIAGはcondIVで0/536)。triple=`c4hx_condIV_exchange_full_of_regimes`〕[r1]
-        - 🚨 regime残差(cpx済→残=non-admeq枝)〔r41: cpx Red-slice 再thread 完了。condIV は admeq 枝が無条件化、残は non-admeq 枝〕
-          - ✅ cpx Red-slice再thread→admeq枝exchange無条件(cpx_condIV_exchange_uncond)〔`cpx_condIV_exchange_uncond`=condIV exchange triple modulo {admeq}のみ。REGS=mcx_regS/REGSP=slx37(branch=condIV)+trunk で discharge、d1/d2/d3/HB/reg 済。**premise訂正**: cpx_condIII_mnform は verbatim 不可(admeqで jm3=transJm1→ltJ 不成立、Trans(s84x_N M)=transC2 M で分解崩壊)→c4dx d1/d2/d3 dispatcher を reduced-slice(`crx_slice_red_value` Br≠[]/`crg_slice_red_value_trunk` Br=[]trunk)へ再thread。raw-slice c4hx/c4wx は dead〕[r8]
-          - 🚨 non-admeq condIV枝(~2%稀少degenerate regime)〔r42: deep検証で non-admeq condIV host は ~2%(1/48, r32 pool)の稀少種と判明。構造は degenerate: RightNodes(transC2 M)=[e1jm1,e1j0,v1]、非admeq host では **e1jm1=v1** ちょうど→transC2 は kind1-able でない(spine条件 e1jm1<v1 不成立)。正しい marked principal は深い innermost D_{v1}[0]、operB もそこへ再帰→ u=v の縮退 fseq が要り、汎用 engine m_7_2_scb_fseq_kind1_general(u<v 前提)では扱えない。加えて d2/d3 slice transport は jm2=0 で outright false(s84x_Np M=M)。非admeq⟹jm2<j0 かつ jm3<jm1(方向は常に jm3<jm1)〕
-            - ✅ admeqフリーbrick+全枝統合器(残差1本隔離)〔`cnx_condIV_Trans_c2_decomp`=admeq非依存の scb_decomp カーネル(c4dx_condIV_k1 の e3=e1jm1 flip 前の半分、非admeq でも壊れない)。`cnx_condIV_exchange_alluncond`=全 condIV ST_PS host の exchange triple、admeq枝=cpx_condIV_exchange_uncond で閉、non-admeq枝=単一 named 仮定 `nonadmeq_exch` で carry(honest modulo-residual、cpx_exchIII_slot 型)。discharge すれば condIV exchange 完全無条件。python/_r42_r32exch/_cex_probe 検証: 非admeq host 1件で CONJ1/2/3 各 3/3〕[r1][0.250][1.04h]
-            - 🚨🤖 nonadmeq_exch残差(e1jm1=v1縮退、u=v fseq新machinery要)〔実際の non-admeq exchange triple。経験的に真(3/3 conjunct, 全host)だが未証明: innermost D_{v1}[0] principal での u=v 縮退 fseq 解析が要り、既存 kind1/d4vx tower の外の新 machinery。**未解決 sub問**: e1jm1<v1 な non-admeq condIV host が存在するか。存在すれば transC2 は kind1-able で汎用 engine+brick で閉じ得る(ただし d2/d3 false を回避する mn-form 要)。tractable sample には e1jm1=v1 のみ→次round の split 候補〕[r0]
-      - ❌ d13x_T形organize〔innerU が真正condIIIで充足不能(0/426)、`cfax_`/`e3x_`/`corrected_condIII` 組立はvacuous(cIII∧admeq不能)〕[r2]
-      - 🚨 condIII exchange 再構築(d4vx_core route)
-        - ✅ engine+mnform+降下(2)OT-free+triple組立〔`crx_condIII_exchange_full`(Red-slice真regimeで再組立、r28の6残差→3)〕[r6]
-        - ✅ BT-side facts (dbbodyH/base0/base1/A0lt)〔`crx_dbbodyH`/`crx_base0_of_run`/`crx_base1_of_nest`/`crx_A0lt_of_nest`、426/426+deep340/340〕[r1]
-        - ✅ REGS(mcx_regS、MCOND証明)〔`mcx_d_le_last_joint`(d≤Joints(Red N)!last、branch-geometry、0 fail)+`mcx_MCOND_RN`(equality-diag込、trunk_entries_offset+終端row-1 valley+m_6_6_reduced_coeff sandwich)→`crx_regS_red_of_mcond`。**JGE(≤形)は偽だったがMCOND(disjunction)は真**〕[r4]
-        - ✅ M0RUN E1GE(e1x無条件、non-anc枝討伐)〔r38 **クローズ**: E1GE non-anc 枝 `e1x_ineq_nonanc` 無条件証明(¬le0 M(jm2+1)j1 で ¬INEQ⟹TrMax(seg M jm2 j1)=0⟹row-0 等値の2枝頭⟹descending(Br) tie-break が nextrel1 valley と矛盾)。`e1x_e1ge_uncond`(両枝)⟹`e1x_condIII_exchange_full_uncond`(M0RUN discharge、残{REGS,REGSP}=r37済)。**deep検証(oper-depth 24、403/403 non-anc、r37 WGAP教訓遵守)**。WGAP/ANC0 は反証済(浅corpus偽陽性)〕[r7]
-        - ✅ REGSP trunk-bypass(d4a kousa-(1,1))〔`crg_d4a_trunk`/`crg_d4a_all`〕[r1]
-        - ✅ REGSP strictlt-eqd(slx37無条件)〔r37 **クローズ**: `slx37_strictlt_eqd`→`slx37_regSP_uncond`(REGSP=cfbx_reg 無条件、strictlt仮定不要)。§8.3 condII/§8.4 condIII/condIV 共有 REGSP を一挙 discharge。詳細は §8.3 側同項参照〕[r5]
-        - ✅ compose hasParent枝 無条件(cpx_condIII_exchange_uncond)〔r39: naive compose は不可(guard-only REGSP が guard&Br(Red(Pred N))=[] で偽)→crg cascade を REGSP=guard∧Br≠[] guard で再thread(`cpx_d4a_all`/`cpx_condIII_mnform`/`cpx_exchange13`/`cpx_descent`/`cpx_condIII_exchange_full`)。`cpx_condIII_exchange_uncond`=condIII exchange triple 完全無条件(MST,MPT,hp,j1gt,transCondIII,n1 のみ)。`cpx_exchIII_slot` で dispatcher の exchIII 前提を hasParent 枝で discharge〕[r1]
-        - 🚨🤖 ¬hasParent枝(noParentPred、condIII ST_PS ~22%)〔🚩r39: **hasParent N 1(Lng-1) は condIII ST_PS の ~22%(6513/29529)で偽**(M[1,0]=M[1,Lng-1]、例 N=(1,1)(2,1)(3,1)=((1,1)(2,2))[3])。この no-parent Pred-corner の exchIII=∃k. leBT(Trans(Pred N))(operB(Trans N)(numBT k)) が別残差。**教訓再確認: 最初の hasParent 検証は is_standard(yaBMS) corpus(645、100% hasParent)=ST_PS の真部分集合(u>0 diagSeq 除外)で 22%gap 見えず→ST_PS-wide 主張は diagSeq u v seed 必須**〕[r0]
-    - ✅ 補題（右端の非許容直系先祖の基本性質）〔`m_8_4_rightmost_nonadm_ancestor`〕
-    - ✅ 補題（条件 (III)〜(V) の下での右端の置き換えと $\textrm{Trans}$ の関係）〔`m_8_4_rightend_Trans`、A30訂正形〕[r1]
-    - ✅ 補題（条件 (III)〜(VI) の下での展開規則の基本性質）〔`m_8_4_oper_props_1..5`、A31ガード形〕[r1]
-    - ✅ 補題（条件 (III)〜(VI) の下での $\textrm{Trans}$ と scb分解の関係）〔`m_8_4_Trans_scb`〕[r1]
-    - ✅ 補題（条件 (III)〜(V) の下での切片の scb分解）〔part(1)=`m_8_4_slice_scb_part1`、(2)(3)=`w84x_subslice_value`/`w84x_slice_value_of_reg`〕[r3]
-    - ✅ 補題（条件 (III)〜(V) の下での各種 scb分解）〔`m_8_4_various_scb_IIIV_from_slice`+`w84x_various_scb_IIIV_of_sliceregs`(regS/regB modulo=condIII exchange行で追跡)〕[r2]
-    - ✅ 補題（条件 (III) か (IV) の下での各種 scb分解）〔`m_8_4_various_scb_IIIIV_from_slice`+`w84x_various_scb_IIIIV_of_sliceregs`(同上modulo)〕[r2]
-    - ✅ 補題（条件 (III) か (IV) の下での基本列の基本性質）〔`m_8_4_oper_basic_part1`(= `p_8_4_oper_basic`)〕
+  - ✅ §8.4 条件 (III) か (IV) の下での展開規則[r56][1.122][2.89h]〔🎉r45完結。condIII exchange=`cpx_condIII_exchange_uncond`(hasParent枝)+`npx_exchIII_slot_uncond`(¬hasParent枝: N[m]=Pred N ∀m、operB(Trans N)(numBT 0)=Trans(Pred N) 等式=k=0、domB(Trans N)=T_{e-1} via 最大low-ancestor対偶 npx_le0_last_entry_ge、¬hasParent枝は等式のみで strict は Trans レベルで偽)。condIV exchange=`cnv_condIV_exchange_final` 完全無条件(MST,MPT,hp,cIV,n≥1)——勝ち筋: r39 condIII route は jm3-slice anchored で branch+ltJ のみ要(admeq不要)、non-admeq では ltJ が Adm-maximality(adm_Adm_max+jm2<j0)から直に出て、kind1 anchor u=e1jm3<v1 は無条件→縮退 e1jm1=v1 host も u=v fseq 不要で被覆(cnv_ 10補題、cIII専用 bricks は1段深い nest mirror cnv_A0lt_of_nest/cnv_base1_of_nest/cnv_base0_of_run で置換、uniform deep hole pair+scb_unique_sb)。旧樹: 命題[r46]=(2)降下r1/(1)(3)r1/condIV枝r1/mnform r3/組立r12(producer r1+HB r1+regime r10=cpx r8[0.314][1.29h]+brick r1[0.250][1.04h]+nonadmeq r1[0.279][0.28h])/❌d13x r2/condIII再構築r26(engine r6+BT r1+REGS r4+M0RUN r7+trunk r1+slx37 r5+compose r1+noParent r1[0.279][0.28h])。補題8本[r10]。¬hasParent-condIV corner は §8.7 dispatcher 配線で要否判定(wave-2)〕
   - ✅ §8.5 条件 (V) の下での展開規則[r33]
     <!-- 詳細: 命題(交換)=adm `m_8_5_Trans_oper_exchange_condV_adm_uncond`[r3]+nadm `atx_Trans_oper_exchange_condV_nonadm_uncond`[r14, scbdec原典route]で全host無条件。
          non-adm c2L1=原典t2成分下界route `atx_condV_nadm_t2_components`→`atx_notLD`→`atx_c2L1`(atomA/atomB不要化、SHARP/s2x chainは consumerless死枝)。交換route=`wnx_nf3x`(W2nostr両消費点`wnx_W2nostr_c1/c2`)。
@@ -168,7 +142,7 @@ task.md のユーザー向け骨格に対する、作業側の詳細版。ユー
       - ✅ dispatcher〔`m_8_7_fseq_descend_dispatcher`、7 named交換前提modulo、6439/6439〕[r1]
       - ✅ condV脚(adm+nadm)discharge〔adm=`m_8_7_fseq_descend_dispatcher_admV`/nadm=`atx_fseq_descend_dispatcher_Vclosed`〕[r2]
       - ✅ condI脚discharge〔`scx_condI_exchange1`+`scx_condI_descent`(j0=0/j0>0両方)〕[r1]
-      - 🚨 残交換前提discharge(condII/III/IV)〔exchII=condII tailval / exchIII=condIII regime残差 / exchIV=condIV HB。exchVI=✅済〕
+      - 🚨🤖 残交換前提discharge(condII/III/IV)〔exchII=condII tailval / exchIII=condIII regime残差 / exchIV=condIV HB。exchVI=✅済〕
     - ✅ 補題（順序数項の再帰構造）〔`m_8_7_OT_scb_recursive`〕
     - ✅ 補題（順序数項の共終数の遺伝性）〔`m_8_7_OT_dom_hereditary`〕
     - ✅ 補題（順序数項の末尾項の零化可能性）〔top-level=`m_8_7_toplevel_OT_tail_annihilate`。一般化のみ❌A26(operB全域性)〕
@@ -189,12 +163,13 @@ task.md のユーザー向け骨格に対する、作業側の詳細版。ユー
         - ✅ resid deep検証+4slot分解(rgx_、C3 prefix半分クローズ)〔`rgx_resid_of_parts`(MASTER: resid C1∧C2∧C3 ⟸ {newOT,tailEH,appg,headWB}+Pred-OT、m_8_2_keystone 再走+snoc realign)。C3 prefix半分は `rgx_between_extends`([Buc1]辞書順区間)+`rgx_gbt_prefix_restrict`(b1x_GBT_size)で無条件クローズ、C3⟸appg(`rgx_gbt_of_appg`)。C2 whole-body Admpos 閉、`rgx_dstep_*` dispatcher〕[r1]
         - 🚨 slotNewOT(C1: isOT_BP(DB x q))〔r44発見: 挿入主項 D_x q = **from-joint 終切片 Trans**(seg M j0'(Lng M-1)、j0'=Joints M!(Lng(Br M)-1))。a6-scb transport は DEAD(deposit は Trans(Pred M) の scb-subterm でない 3/34)→唯一の筋は Lng-IH a5 を deposit-slice(短い標準列)に適用〕
           - ✅ shorter-slice IH還元(snx_)〔`snx_newOT_of_sliceTrans`=「N∈ST_PS, Lng N<Lng M, Trans N=Dpt(enat x)q ⟹ isOT_BP(DB(enat x)q)」を a5+isOT_BT→isOT_BP 展開で。`snx_slotNewOT_modSlice`=正確8仮定 modulo packaged deposit-slice存在。両 green〕[r1][0.193][0.32h]
-          - 🚨 deposit-slice存在(⛔ §8.2 {BASE,STEP} back-peel)〔deposit=Trans(seg M j0'(Lng M-1))の同定は rdx_bridgesU_readoff の対象だが green-modulo §8.2 {BASE,STEP} back-peel(r30-r43 抵抗)。その reduced 形の ST_PS 所属も要=NAIVE Red(from-joint slice) は標準 9/12 のみ→正しい witness は原文 P(N)_J1[n] 枝正規化(raw slice 不可)〕[r0]
+          - 🚨🤖 deposit-host存在(P(N)_J1[n] witness、devel EX-N半と共有、from-joint同定は反証)〔r45 spine 反証: deposit=Trans(seg M j0'(Lng M-1)) は誤り(33/33、slice Trans は D_{M10} 全体)。正 witness=原文の枝成分 a2=Trans(P(N)_J1[n])。devel(slotTail) の EX-N 半と同一物→1 witness で slotNewOT modSlice と slotTail modDevel の両方が発火。旧⛔ {BASE,STEP} 依存は解消(witness 経路が変わった)〕[r0]
         - 🚨 slotAppg(C3: G_B-bound)〔r44: appg 真 984/984(deep Lng≥20:21/21)。`rgx_appg_split`で {qlt,Gq} 分割、v0>x(空G_B集合)/q=0B(自明)は無条件 discharge〕
           - ✅ guarded還元(sax_modcore、v0>x/q=0 discharge)〔`sax_slotAppg_modcore`=正確結論を rgx_appg_split 経由、genuine 内容を q≠0B∧entry M 1 0≤x の2残差 sax_qcore/sax_Gcore に隔離。green〕[r1][0.193][0.32h]
           - 🚨 head-gap x≥head(q)(局所導出不可・WGAP系REFUTED)〔qcore=lessBT q(Trm ps+_B Dpt x q) は deposited head が body head を支配 x≥head(q) に還元(diag 185/185)。これは「Trans M∈OT」自体の断片で、**局所仮定(predOT/newOT/descP/IH)から導出不可**を明示 OT CEX(q=Trm[DB 5 0],x=0,ps=[] は局所全成立だが lessBT q(Dpt 0 q) 偽)で証明。plan.md REFUTED の unconditional strictlt/WGAP/ANC0 head-gap 系と一致→大域 OT 不変量が要る〕[r0]
-        - 🚨 slotTail(C2: leBT q qb、偽チェック=真)〔r44 偽チェック=**TRUE**(0-fail)。branch-prefix 構成(last ps=NESTED 分岐主項,qb≠0B,等頭 x=hdv)は ST_PS で到達可能(diagSeq+root付随 nested-block-repeat seed 例(0,0)+[(1,1),(2,1)]*k)、yaBMS 標準確認、Lng=16 まで 28 branch-prefix+16 leaf 全通過。等頭 OUTER-body 主項は root付随 nested block の oper 反復からのみ生じ descP 尊重(同一反復→q=qb、後者は strictly-smaller successor-development)〕
-          - ✅ proper-prefix半還元(stx_、→leBT q qp)〔`stx_slotTail_properprefix_from_descent`=proper-prefix 半を単一事実 leBT q qp(trailing-subtree descent Pred M→M)に還元(qp≤qb を Trans(Pred M)∈OT_B の descP から読み出し+leBT_trans)。green。非循環〕[r1][0.193][0.32h]
-          - 🚨🤖 spine descent leBT q qp(⛔ §8.2/8.5)〔slotTail は両 rgx_dstep dispatcher が consume する irreducible Trans-spine descent leaf。残=whole-body 枝(m_8_2_keystone case2)の値 bound q≤qb + proper-prefix の leBT q qp=§8.2/8.5 spine descent〕[r0]
+        - 🚨 slotTail(C2: leBT q qb、真)〔r44 偽チェック=TRUE(0-fail)。r45: 比較相手は M 内部の前枝 deposit qb であって Pred 残余 qp ではない(r44 が混同)〕
+          - ✅ proper-prefix半還元(stx_→qp-descent、後にroute死)〔`stx_slotTail_properprefix_from_descent` は緑のまま残るが descent 仮定 leBT q qp が r45 で反証され DEAD route〕[r1][0.193][0.32h]
+          - ✅ qp-descent反証(33/33逆向き)+slot束→devel単一残差化(spx_modDevel)〔r45 Fable: **leBT q qp は ST_PS で偽 33/33**(yaBMS標準確認済CEX: M=(0,0)(1,1)(2,1)(1,1)(2,1) q=D_1(0),qp=0_B 等3件)。真の向きは逆=Pred は trailing deposit を縮める。**併せて r44 C1 from-joint 同定も反証**: Trans(seg M j0'(Lng M-1)) は D_{M10} 全体であって deposit でない(33/33 mismatch)、正 witness=原文 P(N)_J1[n] 枝成分。緑: `spx_slotTail_eqhead_of_deposit_hosts`(same-head strip core)+`spx_slotTail_modDevel`=slotTail slot 束(proper-prefix+whole-body 両枝=rgx dispatcher の tailEH slot)を単一 packaged 残差 devel に還元。devel=∃N N'∈ST_PS 短Lng: Trans N=Dpt x q ∧ Trans N'=Dpt hdv qb ∧ (N=N' ∨ lessBT(Trans N)(Trans N'))。EX-N 半は snx C1 slice 残差と一致(1 witness pair が両 slot に効く)〕[r1][0.279][0.28h]
+          - 🚨🤖 devel残差(deposit-host同定P(N)_J1[n]+development構造+短Lng降下)〔discharge=(i)deposit-host 同定(原文 P(N)_J1 枝成分、raw from-joint route は反証済) (ii)ST_PS 枝反復/development 構造(最終枝=前枝の development) (iii)短Lng での lessBT 降下(m_8_7_fseq_descend_dispatcher interface、強IH a5 下で使用可)〕[r0]
         - 🚨 slotHeadWB(C2: transJm1=0角、WB⟹equal-head)〔非空虚(小corpus 17/17 で transJm1=0, x=hdv=0)。Pred側 RightNodes 値読出し or 「WB⟹x=hdv(等頭)」補題が最短kill候補。Admpos を WB で仮定しないこと〕[r0]
         - 🚨 multiD(pcompPrefix反証→別ルート要)〔`otkx_multiD_of_pcomp_prefix` は pcompPrefix(ST_PS で反証済)依存で dead 条件補題。multiT junction 降下の別ルート要〕[r0]

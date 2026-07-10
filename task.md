@@ -65,7 +65,10 @@
         - ✅ terminal-slice setup(bux_terminal_slice_ready、keystone4前提)[r1]
         - 🚨 bridgesU 終切片readback(readoff⟺VE34判明→残=article {BASE,STEP} back-peel)
           - ✅ readoff⟺{BASE,STEP}還元(rdx_, modReadoff interface閉)[r3][0.259][0.93h]
-          - 🚨🤖 {BASE,STEP} back-peel(article Pred-induction on j1-TrMax)[r0]
+          - 🚨 {BASE,STEP} back-peel(article Pred-induction on j1-TrMax)
+            - ✅ STEP slot閉 modulo TSPIN(bpx_、VE3+front-pin+fin Pred不変 全緑)[r1][0.279][0.28h]
+            - 🚨🤖 TSPIN(終切片transport、非許容jointでのMark-surgery naturality)[r0]
+            - 🚨🤖 BASEf(TSPIN kernel+same-head branch-run帰納)[r0]
     - ✅ 補題（強単項性の切片への遺伝性）
     - ✅ 補題（部分表現の単項成分と $\textrm{Pred}$ の関係）(§8.2 keystone)
     - ✅ 補題（強単項性の下での部分表現の単項成分の基本性質）
@@ -86,38 +89,7 @@
     - ✅ 補題（第 $0$ 種型基本列の基本不等式）
     - ✅ 補題（第 $0$ 種型基本列の基本分岐規則）
     - ✅ 補題（第 $0$ 種型基本列の基本基点関係）
-  - 🚨 §8.4 条件 (III) か (IV) の下での展開規則
-    - 🚨 命題（条件 (III) か (IV) の下での $\textrm{Trans}$ と基本列の交換関係）
-      - ✅ (2)降下 condIII[r1]
-      - ✅ (1)(3) condIII[r1]
-      - ✅ condIV枝[r1]
-      - ✅ condIV mnform[r3]
-      - 🚨 condIV exchange 組立
-        - ✅ producer data+組立[r1]
-        - ✅ HB(t2成分bound)[r1]
-        - 🚨 regime残差(cpx済→残=non-admeq枝)
-          - ✅ cpx Red-slice再thread→admeq枝exchange無条件(cpx_condIV_exchange_uncond)[r8][0.314][1.29h]
-          - 🚨 non-admeq condIV枝(~2%稀少degenerate regime)
-            - ✅ admeqフリーbrick+全枝統合器(残差1本隔離)[r1][0.250][1.04h]
-            - 🚨🤖 nonadmeq_exch残差(e1jm1=v1縮退、u=v fseq新machinery要)[r0]
-      - ❌ d13x_T形organize[r2]
-      - 🚨 condIII exchange 再構築(d4vx_core route)
-        - ✅ engine+mnform+降下(2)OT-free+triple組立[r6]
-        - ✅ BT-side facts (dbbodyH/base0/base1/A0lt)[r1]
-        - ✅ REGS(mcx_regS、MCOND証明)[r4]
-        - ✅ M0RUN E1GE(e1x無条件、non-anc枝討伐)[r7]
-        - ✅ REGSP trunk-bypass(d4a kousa-(1,1))[r1]
-        - ✅ REGSP strictlt-eqd(slx37無条件)[r5]
-        - ✅ compose hasParent枝 無条件(cpx_condIII_exchange_uncond)[r1]
-        - 🚨🤖 ¬hasParent枝(noParentPred、condIII ST_PS ~22%)[r0]
-    - ✅ 補題（右端の非許容直系先祖の基本性質）
-    - ✅ 補題（条件 (III)〜(V) の下での右端の置き換えと $\textrm{Trans}$ の関係）[r1]
-    - ✅ 補題（条件 (III)〜(VI) の下での展開規則の基本性質）[r1]
-    - ✅ 補題（条件 (III)〜(VI) の下での $\textrm{Trans}$ と scb分解の関係）[r1]
-    - ✅ 補題（条件 (III)〜(V) の下での切片の scb分解）[r3]
-    - ✅ 補題（条件 (III)〜(V) の下での各種 scb分解）[r2]
-    - ✅ 補題（条件 (III) か (IV) の下での各種 scb分解）[r2]
-    - ✅ 補題（条件 (III) か (IV) の下での基本列の基本性質）
+  - ✅ §8.4 条件 (III) か (IV) の下での展開規則[r56][1.122][2.89h]
   - ✅ §8.5 条件 (V) の下での展開規則[r33]
   - ✅ §8.6 条件 (VI) の下での展開規則[r6]
   - 🚨 §8.7 主結果
@@ -126,7 +98,7 @@
       - ✅ dispatcher[r1]
       - ✅ condV脚(adm+nadm)discharge[r2]
       - ✅ condI脚discharge[r1]
-      - 🚨 残交換前提discharge(condII/III/IV)
+      - 🚨🤖 残交換前提discharge(condII/III/IV)
     - ✅ 補題（順序数項の再帰構造）
     - ✅ 補題（順序数項の共終数の遺伝性）
     - ✅ 補題（順序数項の末尾項の零化可能性）
@@ -147,12 +119,13 @@
         - ✅ resid deep検証+4slot分解(rgx_、C3 prefix半分クローズ)[r1]
         - 🚨 slotNewOT(C1: isOT_BP(DB x q))
           - ✅ shorter-slice IH還元(snx_)[r1][0.193][0.32h]
-          - 🚨 deposit-slice存在(⛔ §8.2 {BASE,STEP} back-peel)[r0]
+          - 🚨🤖 deposit-host存在(P(N)_J1[n] witness、devel EX-N半と共有、from-joint同定は反証)[r0]
         - 🚨 slotAppg(C3: G_B-bound)
           - ✅ guarded還元(sax_modcore、v0>x/q=0 discharge)[r1][0.193][0.32h]
           - 🚨 head-gap x≥head(q)(局所導出不可・WGAP系REFUTED)[r0]
-        - 🚨 slotTail(C2: leBT q qb、偽チェック=真)
-          - ✅ proper-prefix半還元(stx_、→leBT q qp)[r1][0.193][0.32h]
-          - 🚨🤖 spine descent leBT q qp(⛔ §8.2/8.5)[r0]
+        - 🚨 slotTail(C2: leBT q qb、真)
+          - ✅ proper-prefix半還元(stx_→qp-descent、後にroute死)[r1][0.193][0.32h]
+          - ✅ qp-descent反証(33/33逆向き)+slot束→devel単一残差化(spx_modDevel)[r1][0.279][0.28h]
+          - 🚨🤖 devel残差(deposit-host同定P(N)_J1[n]+development構造+短Lng降下)[r0]
         - 🚨 slotHeadWB(C2: transJm1=0角、WB⟹equal-head)[r0]
         - 🚨 multiD(pcompPrefix反証→別ルート要)[r0]
