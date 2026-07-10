@@ -53,25 +53,7 @@
     - ✅ 補題（条件 (I) か (III) の下での $c_1$ 前後の具体表示）（A20/A21）
   - 🚨 §8.2 強単項性
     - ✅ 命題（標準形の直系先祖による切片の簡約化の強単項性）
-    - 🚨 命題（条件 (II) か (IV) の下での終切片と $\textrm{Trans}$ の関係）
-      - ✅ scaffold還元(∃!→{VE2,VE3,VE4})[r1]
-      - ✅ LastStep切片幾何基礎[r1]
-      - ✅ VE2(無条件、ROW10討伐)[r3]
-      - 🚨 VE3/VE4
-        - ✅ back-peel skeleton(guarded、vg4x_reg4訂正)[r3]
-        - ✅ RPERS[r1]
-        - ✅ regime修正(vg7x⟺DT_PS、descending Pred保存)[r1]
-        - ✅ BASE/STEP形+全dispatcher還元→bridgesU(vg8x/vs3x)[r5]
-        - ✅ terminal-slice setup(bux_terminal_slice_ready、keystone4前提)[r1]
-        - 🚨 bridgesU 終切片readback(readoff⟺VE34判明→残=article {BASE,STEP} back-peel)
-          - ✅ readoff⟺{BASE,STEP}還元(rdx_, modReadoff interface閉)[r3][0.259][0.93h]
-          - 🚨 {BASE,STEP} back-peel(article Pred-induction on j1-TrMax)
-            - ✅ STEP slot閉 modulo TSPIN(bpx_、VE3+front-pin+fin Pred不変 全緑)[r1][0.279][0.28h]
-            - ✅ TSPIN閉(tsx_、STEP slot無残差・capstone VE34 modulo BASEf)[r1][0.306][0.31h]
-            - 🚨 BASEf(same-head branch-run帰納)
-              - ✅ run-peel帰納機械化(bfx_、JEQ+peel安定+RPERS+VE3-base)[r1][0.306][0.31h]
-              - ✅ Adm0 sharp forms+run-STEP脚full+NOTLEFT0閉(bgx_、残差1本化)[r1][0.406][0.51h]
-              - 🚨🤖 HEADEQ0(run-base head等式、=条件(V)VE'のm=j0'配置)[r0]
+    - ✅ 命題（条件 (II) か (IV) の下での終切片と $\textrm{Trans}$ の関係）(fin threading)[r24][1.775][2.52h]
     - ✅ 補題（強単項性の切片への遺伝性）
     - ✅ 補題（部分表現の単項成分と $\textrm{Pred}$ の関係）(§8.2 keystone)
     - ✅ 補題（強単項性の下での部分表現の単項成分の基本性質）
@@ -86,7 +68,7 @@
         - ✅ base2+per-step surgery(閉形式)[r2]
         - 🚨 tailval残差
           - ✅ not-leftDj0脚(guard)modulo DIAG[r1]
-          - 🚨 p_8_2_condIIIV(=§8.2命題、VE3/VE4残)[r2]
+          - 🚨🤖 TVall配線(§8.2命題✅済→残=ldj-leg Rc transport+fin-threading census改訂)[r2]
           - ✅ REGSP strictlt-eqd(slx37無条件)[r5]
       - 🚨 OT所属 (⛔ §8.7「Transが標準形を保つ」補題)
     - ✅ 補題（第 $0$ 種型基本列の基本不等式）
@@ -102,7 +84,8 @@
       - ✅ condV脚(adm+nadm)discharge[r2]
       - ✅ condI脚discharge[r1]
       - ✅ 全交換slot discharge+census(dpx_、exchIV/VI無条件化込)[r1][0.306][0.31h]
-      - 🚨🤖 残={TOT,TVall}(⛔ OT所属、⛔ §8.2命題、r48=joint帰納assembly)[r0]
+      - ✅ assembly census(asx_、長さ帰納不可能を証明、fseqD/TOT消去)[r1][0.219][0.18h]
+      - 🚨🤖 AP knot(隣接P成分降下の接地、stage帰納+補正readback要)[r0]
     - ✅ 補題（順序数項の再帰構造）
     - ✅ 補題（順序数項の共終数の遺伝性）
     - ✅ 補題（順序数項の末尾項の零化可能性）
@@ -127,14 +110,16 @@
         - 🚨 slotAppg(C3: G_B-bound)
           - ✅ guarded還元(sax_modcore、v0>x/q=0 discharge)[r1][0.193][0.32h]
           - ✅ modDom/modSliceGaps緑frame(hgx_、slice-only還元は反証)[r1][0.406][0.51h]
-          - 🚨🤖 depdom(遺伝的head-gap、閾値v0)[r0]
+          - ✅ ps=[]主要部還元(ddx_、pred-depdom無料+transfer append形)[r1][0.219][0.18h]
+          - 🚨🤖 transfer一般形(keystone強化=c1→c2 surgery露出)+freshdom/preddomNE[r0]
         - 🚨 slotTail(C2: leBT q qb、真)
           - ✅ proper-prefix半還元(stx_→qp-descent、後にroute死)[r1][0.193][0.32h]
           - ✅ qp-descent反証(33/33逆向き)+slot束→devel単一残差化(spx_modDevel)[r1][0.279][0.28h]
           - 🚨 devel残差
             - ✅ devpair尖鋭化+2slot同時consumer(dvx_、成分標準性+A16同定)[r1][0.306][0.31h]
             - ✅ D_0 0_B corner閉+devchain弱化(dpr_、単一step版unsafe)[r1][0.406][0.51h]
-            - 🚨🤖 devchain存在(witness同定+標準性、推奨=mono-host fseq零化route)[r0]
+            - ✅ IncrFirst正規化witness+corner框架(dcx_、modulo claim S+branchwit)[r1][0.219][0.18h]
+            - 🚨🤖 branchwit(claim S機械化+depth≥2=mono零化機構)[r0]
         - 🚨 slotHeadWB(C2: deple読出しhgx_あり、要独立deple源)[r0]
         - 🚨 multiD(⛔ 基本列の降下性=fseqD)
           - ✅ 降下柱へ解消(mdx_、slot消去、modulo fseqDのみ)[r1][0.406][0.51h]
