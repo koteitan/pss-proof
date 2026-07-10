@@ -55,7 +55,9 @@
           - 🚨 wfs_level_jump→collapse_core再尖鋭化
             - ✅ lvP-STRAT反証→head-index STRAT+frag+G-set/tuple-acc bricks(wfj_)[r1][0.284][0.25h]
             - ✅ bookkeeping全消去+非可述性確定+staged ladder(wfc_)[r1][0.239][0.35h]
-            - 🚨🤖 pbody-acc本体(非可述、route=distinguished sets 4-8R)[r0]
+            - 🚨 pbody-acc本体(distinguished sets route)
+              - ✅ 定義+Mset+D1 union+acc bridge+基本閉包(wds_)[r1][0.233][0.21h]
+              - 🚨 collapse補題(D3)+ladder接続[r0]
   - 🚨 §8.1 条件 (I) の下での展開規則
     - 🚨 命題（条件 (I) の下での $\textrm{Trans}$ と基本列の交換関係）
       - ✅ 交換則(1)本体[r4]
@@ -106,13 +108,12 @@
       - 🚨 OTint(値形OT-step)
         - ✅ condV脚(adm+nadm)閉 modulo oix_transport(oix_、band-exclusion)[r1][0.322][0.47h]
         - ✅ oix_transport定理化(otx2_ bricks+otx3_組立、condV脚無残差)[r2][0.523][0.60h]
-        - 🚨🤖 otIII/otIV脚+{PredNp,Lpv,L1v}(§8.2終切片base3点)[r0]
+        - ✅ base3{PredNp,Lpv,L1v}討伐(oi4_+oc4_L1v、nadm脚無残差)[r1][0.233][0.21h]
+        - 🚨 otIII/otIV脚(condVのotx3パターン踏襲)[r0]
       - 🚨 OTpred(with-parent Pred corner OT-step)
         - ✅ keystone 4-clause分析(fresh閉+multi/corner閉、opx_)[r2][0.262][0.30h]
-        - 🚨🤖 DEEPOT(deepened clauses)+NOBR(branch-free mono)[r0]
-      - 🚨 OTmulti(multi P成分lift OT-step)
-        - ✅ operB局所化+replicate regime閉(opx_OTmulti)[r2][0.262][0.30h]
-        - 🚨🤖 ordIntC(内部exchange脚のleBT弱形)[r0]
+        - 🚨 DEEPOT(deepened clauses)+NOBR(branch-free mono)[r1][0.233][0.21h]
+      - 🚨 OTmulti(⛔ OTint、oc4_で{OTint,TVall}のみ化)[r3][0.495][0.51h]
       - 🚨 deep-insertion OT所属(keystone{resid,multiD}、r49でcritical path外)[r5]
         - ✅ resid deep検証+4slot分解(rgx_、C3 prefix半分クローズ)[r1]
         - 🚨 slotNewOT(C1: isOT_BP(DB x q))
