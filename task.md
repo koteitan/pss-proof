@@ -67,8 +67,10 @@
           - ✅ readoff⟺{BASE,STEP}還元(rdx_, modReadoff interface閉)[r3][0.259][0.93h]
           - 🚨 {BASE,STEP} back-peel(article Pred-induction on j1-TrMax)
             - ✅ STEP slot閉 modulo TSPIN(bpx_、VE3+front-pin+fin Pred不変 全緑)[r1][0.279][0.28h]
-            - 🚨🤖 TSPIN(終切片transport、非許容jointでのMark-surgery naturality)[r0]
-            - 🚨🤖 BASEf(TSPIN kernel+same-head branch-run帰納)[r0]
+            - ✅ TSPIN閉(tsx_、STEP slot無残差・capstone VE34 modulo BASEf)[r1][0.306][0.31h]
+            - 🚨 BASEf(same-head branch-run帰納)
+              - ✅ run-peel帰納機械化(bfx_、JEQ+peel安定+RPERS+VE3-base)[r1][0.306][0.31h]
+              - 🚨🤖 {TSPIN-base,PIN,SPLIT0}(非許容j0' Mark-readback族、tsx機構のbase適用)[r0]
     - ✅ 補題（強単項性の切片への遺伝性）
     - ✅ 補題（部分表現の単項成分と $\textrm{Pred}$ の関係）(§8.2 keystone)
     - ✅ 補題（強単項性の下での部分表現の単項成分の基本性質）
@@ -98,7 +100,8 @@
       - ✅ dispatcher[r1]
       - ✅ condV脚(adm+nadm)discharge[r2]
       - ✅ condI脚discharge[r1]
-      - 🚨🤖 残交換前提discharge(condII/III/IV)
+      - ✅ 全交換slot discharge+census(dpx_、exchIV/VI無条件化込)[r1][0.306][0.31h]
+      - 🚨 残={TOT,TVall}(⛔ OT所属、⛔ §8.2命題)[r0]
     - ✅ 補題（順序数項の再帰構造）
     - ✅ 補題（順序数項の共終数の遺伝性）
     - ✅ 補題（順序数項の末尾項の零化可能性）
@@ -119,13 +122,15 @@
         - ✅ resid deep検証+4slot分解(rgx_、C3 prefix半分クローズ)[r1]
         - 🚨 slotNewOT(C1: isOT_BP(DB x q))
           - ✅ shorter-slice IH還元(snx_)[r1][0.193][0.32h]
-          - 🚨🤖 deposit-host存在(P(N)_J1[n] witness、devel EX-N半と共有、from-joint同定は反証)[r0]
+          - 🚨 deposit-host存在(=devpair、slotTail側と共有)[r0]
         - 🚨 slotAppg(C3: G_B-bound)
           - ✅ guarded還元(sax_modcore、v0>x/q=0 discharge)[r1][0.193][0.32h]
-          - 🚨 head-gap x≥head(q)(局所導出不可・WGAP系REFUTED)[r0]
+          - 🚨🤖 head-gap x≥head(q)(局所導出不可・WGAP系REFUTED)[r0]
         - 🚨 slotTail(C2: leBT q qb、真)
           - ✅ proper-prefix半還元(stx_→qp-descent、後にroute死)[r1][0.193][0.32h]
           - ✅ qp-descent反証(33/33逆向き)+slot束→devel単一残差化(spx_modDevel)[r1][0.279][0.28h]
-          - 🚨🤖 devel残差(deposit-host同定P(N)_J1[n]+development構造+短Lng降下)[r0]
-        - 🚨 slotHeadWB(C2: transJm1=0角、WB⟹equal-head)[r0]
-        - 🚨 multiD(pcompPrefix反証→別ルート要)[r0]
+          - 🚨 devel残差
+            - ✅ devpair尖鋭化+2slot同時consumer(dvx_、成分標準性+A16同定)[r1][0.306][0.31h]
+            - 🚨🤖 devpair(枝標準性+body readoff枝拡張+D_0 0_B corner)[r0]
+        - 🚨🤖 slotHeadWB(C2: transJm1=0角、WB⟹equal-head)[r0]
+        - 🚨🤖 multiD(pcompPrefix反証→別ルート要)[r0]
