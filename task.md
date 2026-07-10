@@ -42,7 +42,7 @@
       - ✅ principal順序への還元[r1]
       - 🚨 `wf RPrel`(principal lessBP 整礎)
         - ✅ depth有界断片(無限・無条件)[r2]
-        - 🚨 unbounded-depth chain排除[r0]
+        - 🚨🤖 unbounded-depth chain排除[r0]
   - 🚨 §8.1 条件 (I) の下での展開規則
     - 🚨 命題（条件 (I) の下での $\textrm{Trans}$ と基本列の交換関係）
       - ✅ 交換則(1)本体[r4]

@@ -85,7 +85,7 @@ task.md のユーザー向け骨格に対する、作業側の詳細版。ユー
       - ✅ principal順序への還元〔`m_buc1_2_2_OT_B_wf_via_principal`、多重集合層証明済・両方向同値〕[r1]
       - 🚨 `wf RPrel`(principal lessBP 整礎)
         - ✅ depth有界断片(無限・無条件)〔`wfpd_wf_goal_dep`、norm断片⊂depth断片、wf⟺unbounded-depth chain無〕[r2]
-        - 🚨 unbounded-depth chain排除〔=ψ collapsing本体、非初等。外部`buc1_2_2`が唯一の残外部引用〕[r0]
+        - 🚨🤖 unbounded-depth chain排除〔=ψ collapsing本体、非初等。外部`buc1_2_2`が唯一の残外部引用〕[r0]
   - 🚨 §8.1 条件 (I) の下での展開規則
     - 🚨 命題（条件 (I) の下での $\textrm{Trans}$ と基本列の交換関係）
       - ✅ 交換則(1)本体〔`scx_condI_exchange1` 完全無条件(j0=0+j0>0、marking-nesting二重帰納)〕[r4]
