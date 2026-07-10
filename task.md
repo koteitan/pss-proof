@@ -51,14 +51,7 @@
     - ✅ 補題（公差 $(1,1)$ のペア数列の $\textrm{Trans}$ の基本性質）
     - ✅ 系（$\textrm{Pred}$ が公差 $(1,1)$ のペア数列の $\textrm{Trans}$ の基本性質）
     - ✅ 補題（条件 (I) か (III) の下での $c_1$ 前後の具体表示）（A20/A21）
-  - 🚨 §8.2 強単項性
-    - ✅ 命題（標準形の直系先祖による切片の簡約化の強単項性）
-    - ✅ 命題（条件 (II) か (IV) の下での終切片と $\textrm{Trans}$ の関係）(fin threading)[r24][1.775][2.52h]
-    - ✅ 補題（強単項性の切片への遺伝性）
-    - ✅ 補題（部分表現の単項成分と $\textrm{Pred}$ の関係）(§8.2 keystone)
-    - ✅ 補題（強単項性の下での部分表現の単項成分の基本性質）
-    - ✅ 補題（条件 (V) の下での右端の親の基本性質）
-    - ✅ 補題（条件 (V) の下での終切片と $\textrm{Trans}$ の関係）[r15]
+  - ✅ §8.2 強単項性[r39][1.775][2.52h]
   - 🚨 §8.3 条件 (II) の下での展開規則
     - 🚨 命題（条件 (II) の下での $\textrm{Trans}$ と基本列の交換関係）
       - ✅ 降下⟸exch+OT
@@ -121,5 +114,4 @@
             - ✅ IncrFirst正規化witness+corner框架(dcx_、modulo claim S+branchwit)[r1][0.219][0.18h]
             - 🚨🤖 branchwit(claim S機械化+depth≥2=mono零化機構)[r0]
         - 🚨 slotHeadWB(C2: deple読出しhgx_あり、要独立deple源)[r0]
-        - 🚨 multiD(⛔ 基本列の降下性=fseqD)
-          - ✅ 降下柱へ解消(mdx_、slot消去、modulo fseqDのみ)[r1][0.406][0.51h]
+        - 🚨 multiD(⛔ 基本列の降下性=fseqD)[r1][0.406][0.51h]
