@@ -50,7 +50,9 @@
       - ✅ principal順序への還元[r1]
       - 🚨 `wf RPrel`(principal lessBP 整礎)
         - ✅ depth有界断片(無限・無条件)[r2]
-        - 🚨🤖 unbounded-depth chain排除[r1][0.101][0.26h]
+        - 🚨 unbounded-depth chain排除→level jump 1本化
+          - ✅ level-0 acc無条件+goal≡wfs_level_jump+wellorder/rank基盤(wfs_)[r2][0.423][0.73h]
+          - 🚨🤖 wfs_level_jump(level n⟹n+1 acc、ψ-collapse核、見積3-5R)[r0]
   - 🚨 §8.1 条件 (I) の下での展開規則
     - 🚨 命題（条件 (I) の下での $\textrm{Trans}$ と基本列の交換関係）
       - ✅ 交換則(1)本体[r4]
@@ -69,7 +71,9 @@
         - ✅ base2+per-step surgery(閉形式)[r2]
         - 🚨 tailval残差
           - ✅ not-leftDj0脚(guard)modulo DIAG[r1]
-          - 🚨🤖 TVall配線(§8.2命題✅済→残=ldj-leg Rc transport+fin-threading census改訂)[r3][0.181][0.14h]
+          - 🚨 TVall配線(FINRC threading)
+            - ✅ ldj-leg+R3LE討伐+DIAG包摂+census sharp化(tvx_)[r4][0.503][0.61h]
+            - 🚨🤖 LDJB(ldj⟹d=jL∧guard、655/655)[r0]
           - ✅ REGSP strictlt-eqd(slx37無条件)[r5]
       - 🚨 OT所属 (⛔ §8.7「Transが標準形を保つ」補題)
     - ✅ 補題（第 $0$ 種型基本列の基本不等式）
@@ -104,9 +108,12 @@
       - ✅ per-branch true legs[r1]
       - ✅ dispatcher slots discharge(orx_)[r1]
       - ✅ local-OTint keystone-free(condI/condVI/condV-adm-e=0)[r2]
-      - 🚨🤖 OTint(条件III/IV/V interleaving n≥2の値形OT-step)[r0]
-      - 🚨 OTpred(with-parent Pred corner OT-step)[r0]
-      - 🚨 OTmulti(multi P成分lift OT-step)[r0]
+      - 🚨 OTint(値形OT-step)
+        - ✅ condV脚(adm+nadm)閉 modulo oix_transport(oix_、band-exclusion)[r1][0.322][0.47h]
+        - 🚨🤖 oix_transport(right-spine sandwich置換、純BT)[r0]
+        - 🚨 otIII/otIV脚(r35形carry)[r0]
+      - 🚨🤖 OTpred(with-parent Pred corner OT-step)[r0]
+      - 🚨🤖 OTmulti(multi P成分lift OT-step)[r0]
       - 🚨 deep-insertion OT所属(keystone{resid,multiD}、r49でcritical path外)[r5]
         - ✅ resid deep検証+4slot分解(rgx_、C3 prefix半分クローズ)[r1]
         - 🚨 slotNewOT(C1: isOT_BP(DB x q))
