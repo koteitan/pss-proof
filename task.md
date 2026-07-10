@@ -70,7 +70,8 @@
             - ✅ TSPIN閉(tsx_、STEP slot無残差・capstone VE34 modulo BASEf)[r1][0.306][0.31h]
             - 🚨 BASEf(same-head branch-run帰納)
               - ✅ run-peel帰納機械化(bfx_、JEQ+peel安定+RPERS+VE3-base)[r1][0.306][0.31h]
-              - 🚨🤖 {TSPIN-base,PIN,SPLIT0}(非許容j0' Mark-readback族、tsx機構のbase適用)[r0]
+              - ✅ Adm0 sharp forms+run-STEP脚full+NOTLEFT0閉(bgx_、残差1本化)[r1][0.406][0.51h]
+              - 🚨🤖 HEADEQ0(run-base head等式、=条件(V)VE'のm=j0'配置)[r0]
     - ✅ 補題（強単項性の切片への遺伝性）
     - ✅ 補題（部分表現の単項成分と $\textrm{Pred}$ の関係）(§8.2 keystone)
     - ✅ 補題（強単項性の下での部分表現の単項成分の基本性質）
@@ -101,7 +102,7 @@
       - ✅ condV脚(adm+nadm)discharge[r2]
       - ✅ condI脚discharge[r1]
       - ✅ 全交換slot discharge+census(dpx_、exchIV/VI無条件化込)[r1][0.306][0.31h]
-      - 🚨 残={TOT,TVall}(⛔ OT所属、⛔ §8.2命題)[r0]
+      - 🚨🤖 残={TOT,TVall}(⛔ OT所属、⛔ §8.2命題、r48=joint帰納assembly)[r0]
     - ✅ 補題（順序数項の再帰構造）
     - ✅ 補題（順序数項の共終数の遺伝性）
     - ✅ 補題（順序数項の末尾項の零化可能性）
@@ -125,12 +126,15 @@
           - 🚨 deposit-host存在(=devpair、slotTail側と共有)[r0]
         - 🚨 slotAppg(C3: G_B-bound)
           - ✅ guarded還元(sax_modcore、v0>x/q=0 discharge)[r1][0.193][0.32h]
-          - 🚨🤖 head-gap x≥head(q)(局所導出不可・WGAP系REFUTED)[r0]
+          - ✅ modDom/modSliceGaps緑frame(hgx_、slice-only還元は反証)[r1][0.406][0.51h]
+          - 🚨🤖 depdom(遺伝的head-gap、閾値v0)[r0]
         - 🚨 slotTail(C2: leBT q qb、真)
           - ✅ proper-prefix半還元(stx_→qp-descent、後にroute死)[r1][0.193][0.32h]
           - ✅ qp-descent反証(33/33逆向き)+slot束→devel単一残差化(spx_modDevel)[r1][0.279][0.28h]
           - 🚨 devel残差
             - ✅ devpair尖鋭化+2slot同時consumer(dvx_、成分標準性+A16同定)[r1][0.306][0.31h]
-            - 🚨🤖 devpair(枝標準性+body readoff枝拡張+D_0 0_B corner)[r0]
-        - 🚨🤖 slotHeadWB(C2: transJm1=0角、WB⟹equal-head)[r0]
-        - 🚨🤖 multiD(pcompPrefix反証→別ルート要)[r0]
+            - ✅ D_0 0_B corner閉+devchain弱化(dpr_、単一step版unsafe)[r1][0.406][0.51h]
+            - 🚨🤖 devchain存在(witness同定+標準性、推奨=mono-host fseq零化route)[r0]
+        - 🚨 slotHeadWB(C2: deple読出しhgx_あり、要独立deple源)[r0]
+        - 🚨 multiD(⛔ 基本列の降下性=fseqD)
+          - ✅ 降下柱へ解消(mdx_、slot消去、modulo fseqDのみ)[r1][0.406][0.51h]
