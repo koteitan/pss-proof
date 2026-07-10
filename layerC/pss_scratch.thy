@@ -73833,4 +73833,3313 @@ qed
 
 (* ===== end r52-otx2 alignment bricks ===== *)
 
+(* ===== r53 merge: wt-y1 — LDJB CLOSED -> TVall modulo FINRC; pillars {OTint,OTpred,OTmulti,FINRC} (ljx_) ===== *)
+
+(* ===================================================================== *)
+(* ===== r52 LDJB (ljx_): the LAST TVall residual closed via the    ===== *)
+(* ===== RightAnces/RightNodes right-spine route (NO hqx, NO fin).   ===== *)
+(* ===================================================================== *)
+
+section \<open>r52-LDJB --- \<open>ldj \<Longrightarrow> d = j\<^sub>L \<and> guard\<close> via the right-ancestor spine
+  (prefix \<open>ljx_\<close>)\<close>
+
+text \<open>\<^bold>\<open>Route (NEW, replaces the drafted hqx-at-\<open>j\<^sub>L\<close> plan).\<close>  The pj-head of
+  \<open>c2sx_ldj\<close> is the SECOND element of \<open>RightNodes (Trans R\<^sub>c)\<close>: the bridge
+  @{thm [source] c2sx_slice_jm1_c1} + @{thm [source] wnx_seg_transport} give
+  \<open>Trans R\<^sub>c = D\<^bsub>va\<^esub> t\<^sub>2\<close>, so \<open>RightNodes (Trans R\<^sub>c) = va # the_enat (bpHeadV pj) # _\<close>
+  (@{thm [source] rnsub_RightNodes_last}); \<open>ldj\<close> pins position 1 to
+  \<open>v\<^sub>0 = M\<^bsub>1,j\<^sub>0\<^esub> = va + d\<close> (@{thm [source] wnx_run_entries}).  Position 1 is
+  computed STRUCTURALLY on the other side:
+  \<^item> \<open>j\<^sub>L = TrMax R\<^sub>c\<close>: the joint is admissible (@{thm [source] adm_TrMax}) and
+    marked, so the Marked split @{thm [source] m_7_4_RightNodes_Mark} applies at
+    \<open>j\<^sub>L\<close>; the prefix \<open>seg R\<^sub>c 0 j\<^sub>L\<close> is the explicit trunk diagonal
+    (@{thm [source] trunk_entries_offset}), \<open>Trans = D\<^bsub>va\<^esub>D\<^bsub>va+j\<^sub>L\<^esub>0\<close>
+    (@{thm [source] m_8_1_diagSeq_Trans}), so position 1 \<open>= va + j\<^sub>L\<close>, forcing
+    \<open>d = j\<^sub>L = TrMax R\<^sub>c\<close> --- contradicting the UNCONDITIONAL strictness
+    @{thm [source] tvx_d_lt_TrMax}.  (Kills the r51 open core
+    \<open>ldj \<and> guard \<and> d < j\<^sub>L = TrMax\<close>.)
+  \<^item> \<open>j\<^sub>L < TrMax R\<^sub>c\<close>: the interior trunk run \<open>(0, TrMax)\<close> is non-admissible
+    (@{thm [source] TrMax_trunk_step}), so \<open>Adm(j\<^sub>L) = 0\<close> in the prefix
+    \<open>N = seg R\<^sub>c 0 fn\<close>; the split at the ADMISSIBLE marked first-node \<open>fn\<close>
+    (row-1 parenthood at \<open>fn-1\<close> would force \<open>j\<^sub>L = fn - 1\<close>, impossible) plus ONE
+    unfold of the \<open>RightAnces\<close> recursion (@{thm [source] RightAnces_dom_RT},
+    @{thm [source] m_7_4_RightAnces_RightNodes}) computes position 1:
+    \<open>N\<close> falls in \<open>{I,III,VI}\<close> never (\<open>adm j\<^sub>L\<close> fails / \<open>j\<^sub>L + 1 < fn\<close>); in the
+    \<open>V\<close> branch position 1 \<open>= M\<^bsub>1,fn\<^esub> = va + j\<^sub>L + 1\<close>, forcing \<open>d = j\<^sub>L + 1 > j\<^sub>L\<close>
+    --- REFUTED (kills the r51 open core \<open>ldj \<and> diag-at-fn\<close>, since a diagonal
+    first-node has the row-1 edge \<open>(1,j\<^sub>L) <\<^sup>Next (1,fn)\<close> with RedCondA
+    coefficient \<open>+1\<close>, i.e.\ lands in \<open>V\<close>); in the \<open>II/IV\<close> (else) branch
+    position 1 \<open>= M\<^bsub>1,j\<^sub>L\<^esub> = va + j\<^sub>L\<close>, giving \<open>d = j\<^sub>L\<close>, and the guard follows
+    from @{thm [source] tvx_fn_row_bound} + (diag \<Rightarrow> \<open>V\<close>, contradiction).
+
+  EMPIRICAL (python/_r52_ldjb_probe.py): genuine condII census (brute \<open>L \<le> 7\<close>,
+  418 hosts): \<open>ldj\<close> occurs ONLY in \<open>guard \<and> j\<^sub>L < TrMax \<and> d = j\<^sub>L\<close> (194/194, and
+  pj-head \<open>= entry R\<^sub>c 1 j\<^sub>L\<close> 194/194); the classes \<open>diag\<close> (135) and
+  \<open>guard \<and> j\<^sub>L = TrMax\<close> (48) are ALL \<open>\<not>ldj\<close>; \<open>bad\<close> (row-1 > row-0 at fn) empty.
+  Generic reduced hosts (\<open>TrMax = 1\<close> slice): head \<open>= entry 1 j\<^sub>L\<close> 91/91.
+
+  Audit (agent-workflow rule 4): cites only proven facts (the frozen-layer
+  \<open>m_7_4_\<close>/\<open>rnsub_\<close>/\<open>RightAnces\<close> infrastructure, \<open>m_6_x\<close> geometry bricks, the
+  r51 \<open>tvx_\<close> bricks); NO \<open>hqx_\<close>, NO \<open>fin\<close>, no sorry-\<open>p_*\<close>, no REFUTED fact, no
+  circularity (\<open>RightAnces\<close>/\<open>Mark\<close> facts do not consume \<open>TVall\<close>/\<open>LDJB\<close>).\<close>
+
+subsection \<open>ljx: elementary bricks\<close>
+
+lemma ljx_nextrel0_star_le:
+  assumes "(nextrel0 M)\<^sup>*\<^sup>* a b"
+  shows "a \<le> b"
+  using assms by (induction rule: rtranclp_induct) (auto simp: nextrel0_def)
+
+lemma ljx_le0_succ_step:
+  assumes le: "le0 M j (Suc j)"
+  shows "nextrel0 M j (Suc j)"
+proof -
+  have st: "(nextrel0 M)\<^sup>*\<^sup>* j (Suc j)" using le by (simp add: le0_def)
+  obtain z where z1: "nextrel0 M j z" and z2: "(nextrel0 M)\<^sup>*\<^sup>* z (Suc j)"
+    using st by (metis converse_rtranclpE n_not_Suc_n)
+  have jz: "j < z" using z1 by (simp add: nextrel0_def)
+  have zle: "z \<le> Suc j" by (rule ljx_nextrel0_star_le[OF z2])
+  have "z = Suc j" using jz zle by linarith
+  thus ?thesis using z1 by simp
+qed
+
+lemma ljx_nextrel0_unique:
+  assumes a: "nextrel0 M a c" and b: "nextrel0 M b c"
+  shows "a = b"
+proof (rule ccontr)
+  assume ne: "a \<noteq> b"
+  then consider (ab) "a < b" | (ba) "b < a" by linarith
+  then show False
+  proof cases
+    case ab
+    have "b < c" using b by (simp add: nextrel0_def)
+    hence "entry M 0 b \<ge> entry M 0 c" using a ab by (simp add: nextrel0_def)
+    moreover have "entry M 0 b < entry M 0 c" using b by (simp add: nextrel0_def)
+    ultimately show False by linarith
+  next
+    case ba
+    have "a < c" using a by (simp add: nextrel0_def)
+    hence "entry M 0 a \<ge> entry M 0 c" using b ba by (simp add: nextrel0_def)
+    moreover have "entry M 0 a < entry M 0 c" using a by (simp add: nextrel0_def)
+    ultimately show False by linarith
+  qed
+qed
+
+lemma ljx_trunk_interior_nadm:
+  assumes MT: "M \<in> T_PS" and j1: "1 \<le> j" and jlt: "j < TrMax M"
+  shows "\<not> adm M j"
+proof -
+  have s1: "nextR M 1 (j - 1) j"
+  proof -
+    have "j - 1 < TrMax M" using jlt by linarith
+    hence "nextR M 1 (j - 1) (j - 1 + 1)" by (rule TrMax_trunk_step[OF MT])
+    thus ?thesis using j1 by simp
+  qed
+  have s2: "nextR M 1 j (j + 1)" using jlt by (rule TrMax_trunk_step[OF MT])
+  show ?thesis unfolding adm_def nadm_def using s1 s2 by simp
+qed
+
+text \<open>The last branch's left end row-0-reaches the last column (the wf22 brick
+  without its \<open>(0,0)\<close>-root hypotheses; the singleton case is reflexive).\<close>
+
+lemma ljx_lastblock_le0:
+  assumes MP: "M \<in> PT_PS" and brne: "Br M \<noteq> []"
+  shows "le0 M (FirstNodes M ! (Lng (Br M) - 1)) (Lng M - 1)"
+proof -
+  have MT: "M \<in> T_PS" using MP by (simp add: PT_PS_def)
+  have LMpos: "0 < Lng M" using MT by (cases M) (auto simp: T_PS_def)
+  have BLlt: "Lng (Br M) - 1 < Lng (Br M)" using brne by (cases "Br M") auto
+  have offlt: "FirstNodes M ! (Lng (Br M) - 1) < Lng M"
+    by (rule a1_FN_lt[OF MP BLlt])
+  show ?thesis
+  proof (cases "FirstNodes M ! (Lng (Br M) - 1) = Lng M - 1")
+    case True
+    show ?thesis using True le0_refl LMpos by simp
+  next
+    case False
+    have offle: "FirstNodes M ! (Lng (Br M) - 1) \<le> Lng M - 1" using offlt by linarith
+    have offlt1: "FirstNodes M ! (Lng (Br M) - 1) < Lng M - 1" using offle False by linarith
+    have blkeq: "Br M ! (Lng (Br M) - 1)
+                   = seg M (FirstNodes M ! (Lng (Br M) - 1)) (Lng M - 1)"
+      by (rule wf21_Br_eq_seg[OF MP brne])
+    have Lblk: "1 < Lng (Br M ! (Lng (Br M) - 1))"
+      using blkeq offlt1 LMpos by simp
+    have nz: "\<not> zeroT (Br M ! (Lng (Br M) - 1))" using Lblk by (simp add: zeroT_def)
+    have bmono: "monoT (Br M ! (Lng (Br M) - 1))"
+      using Br_component_nonmulti[OF MP BLlt] nz by blast
+    have segmono: "monoT (seg M (FirstNodes M ! (Lng (Br M) - 1)) (Lng M - 1))"
+      using bmono blkeq by simp
+    have beL: "Lng M - 1 < Lng M" using LMpos by linarith
+    show ?thesis
+      by (rule le0_monoT_seg_into_list[OF MT segmono offle order.refl beL])
+  qed
+qed
+
+subsection \<open>ljx: the ldj side --- position 1 of the right spine is \<open>v\<^sub>0\<close>\<close>
+
+lemma ljx_RightNodes_pj_ldj:
+  fixes M :: pairseq
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS"
+    and j1gt: "1 < Lng M - 1" and condII: "transCondII M"
+    and ldj: "c2sx_ldj M"
+  shows "\<exists>rest. RightNodes (Trans (tvx_Rc M))
+              = entry (tvx_Rc M) 1 0 # entry M 1 (parent M 0 (Lng M - 1)) # rest"
+proof -
+  let ?j0 = "parent M 0 (Lng M - 1)"
+  let ?jm1 = "Adm M (parent M 0 (Lng M - 1))"
+  let ?d = "parent M 0 (Lng M - 1) - Adm M (parent M 0 (Lng M - 1))"
+  let ?Rc = "Red (seg M ?jm1 (Lng M - 2))"
+  have MT: "M \<in> T_PS" using MR by (simp add: RT_PS_def)
+  note HB = c2sx_host_basic[OF MR MP j1gt condII]
+  note RB = c2sx_reach[OF MR MP j1gt condII]
+  have jm1le: "?jm1 \<le> ?j0" by (rule adm_Adm_le)
+  have jm1d: "?jm1 + ?d = ?j0" using jm1le by linarith
+  have ab: "?jm1 < Lng M - 2" by (rule RB(3))
+  have bL2: "Lng M - 2 \<le> Lng M - 1" by simp
+  have leab: "leR M 0 ?jm1 (Lng M - 2)" by (rule RB(1))
+  have amb: "?jm1 + ?d < Lng M - 2" using jm1d RB(4) by simp
+  have leam: "le0 M (?jm1 + ?d) (Lng M - 2)" using RB(2) jm1d by simp
+  note WT = wnx_seg_transport[OF MR ab bL2 leab amb leam]
+  have W1: "Trans (seg M ?jm1 (Lng M - 2)) = Trans ?Rc" by (rule WT(1))
+  have LRcpos: "0 < Lng ?Rc" using WT(3) ab by linarith
+  have e0: "entry ?Rc 1 0 = entry M 1 ?jm1"
+    using repr_entry1_shift_gen[OF MR ab bL2 leab LRcpos] by simp
+  have bridge: "Trans (seg M ?jm1 (Lng M - 2))
+                  = Dpt (enat (entry M 1 ?jm1)) (transT2 M)"
+    by (rule c2sx_slice_jm1_c1[OF MR MP j1gt condII])
+  have TRc: "Trans ?Rc = Dpt (enat (entry M 1 ?jm1)) (transT2 M)"
+    using W1 bridge by simp
+  have t2ne: "transT2 M \<noteq> 0\<^sub>B" by (rule HB(11))
+  obtain ps where PS: "transT2 M = Trm ps" by (cases "transT2 M") auto
+  have psne: "ps \<noteq> []" using t2ne PS by auto
+  obtain u b where LPS: "last ps = DB u b" by (cases "last ps") auto
+  have pjeq: "c2sx_pj M = Trm [last ps]"
+  proof -
+    have PBps: "PB (transT2 M) = map (\<lambda>p. Trm [p]) ps" by (simp add: PB_def PS)
+    have "PB (transT2 M) ! (length ps - 1) = Trm [ps ! (length ps - 1)]"
+      using psne by (simp add: PBps)
+    moreover have "ps ! (length ps - 1) = last ps"
+      using psne by (simp add: last_conv_nth)
+    ultimately show ?thesis using PBps by (simp add: c2sx_pj_def)
+  qed
+  have uval: "u = enat (entry M 1 ?j0)"
+  proof -
+    have "bpHeadV (c2sx_pj M) = enat (entry M 1 (transJ0 M))"
+      using ldj by (simp add: c2sx_ldj_def)
+    moreover have "bpHeadV (c2sx_pj M) = u" using pjeq LPS by simp
+    moreover have "transJ0 M = ?j0" by (simp add: transJ0_def transJ1_def)
+    ultimately show ?thesis by simp
+  qed
+  have RN2: "RightNodes (transT2 M) = entry M 1 ?j0 # RightNodes b"
+  proof -
+    have "RightNodes (Trm ps) = RightNodes (Trm [last ps])"
+      using psne by (rule rnsub_RightNodes_last)
+    also have "\<dots> = the_enat u # RightNodes b" by (simp add: LPS)
+    finally show ?thesis using PS uval by simp
+  qed
+  have "RightNodes (Trans ?Rc)
+          = the_enat (enat (entry M 1 ?jm1)) # RightNodes (transT2 M)"
+    using TRc by simp
+  hence "RightNodes (Trans ?Rc)
+           = entry ?Rc 1 0 # entry M 1 ?j0 # RightNodes b"
+    using RN2 e0 by simp
+  thus ?thesis by (auto simp add: tvx_Rc_def)
+qed
+
+subsection \<open>ljx: the structural side at \<open>j\<^sub>L = TrMax R\<^sub>c\<close> --- position 1 is
+  \<open>entry R\<^sub>c 1 j\<^sub>L\<close> (diagonal-prefix split)\<close>
+
+lemma ljx_RightNodes_a0_trmax:
+  fixes M :: pairseq
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS"
+    and j1gt: "1 < Lng M - 1" and condII: "transCondII M"
+    and BR: "Br (tvx_Rc M) \<noteq> []"
+    and jpos: "0 < tvx_jL M"
+    and jeq: "tvx_jL M = TrMax (tvx_Rc M)"
+  shows "\<exists>a1. RightNodes (Trans (tvx_Rc M))
+            = entry (tvx_Rc M) 1 0 # entry (tvx_Rc M) 1 (tvx_jL M) # a1"
+proof -
+  let ?jm1 = "Adm M (parent M 0 (Lng M - 1))"
+  let ?Rc = "Red (seg M ?jm1 (Lng M - 2))"
+  let ?BL = "Lng (Br ?Rc) - 1"
+  let ?jL = "Joints ?Rc ! ?BL"
+  let ?fn = "FirstNodes ?Rc ! ?BL"
+  have MT: "M \<in> T_PS" using MR by (simp add: RT_PS_def)
+  note RB = c2sx_reach[OF MR MP j1gt condII]
+  have ab: "?jm1 < Lng M - 2" by (rule RB(3))
+  have bL2: "Lng M - 2 \<le> Lng M - 1" by simp
+  have leab: "leR M 0 ?jm1 (Lng M - 2)" by (rule RB(1))
+  have RcRT: "?Rc \<in> RT_PS" using slice_Red_in_RT_PS[OF MR ab bL2 leab] by blast
+  have RcT: "?Rc \<in> T_PS" using RcRT by (simp add: RT_PS_def)
+  have monoRc: "monoT ?Rc"
+    using m_6_6_ancestor_slice_Red_IncrFirst[OF MR ab bL2 leab] by simp
+  have RcPT: "?Rc \<in> PT_PS" using RcT monoRc by (simp add: PT_PS_def)
+  have condARc: "RedCondA ?Rc"
+    using m_6_6_reduced_iff_cond[OF RcT] RcRT by blast
+  have Brne: "Br ?Rc \<noteq> []" using BR by (simp add: tvx_Rc_def)
+  have BLlt: "?BL < Lng (Br ?Rc)" using Brne by (cases "Br ?Rc") auto
+  have jposr: "0 < ?jL" using jpos by (simp add: tvx_jL_def tvx_Rc_def)
+  have jeqr: "?jL = TrMax ?Rc" using jeq by (simp add: tvx_jL_def tvx_Rc_def)
+  have jle: "?jL \<le> TrMax ?Rc" using jeqr by simp
+  have offsJ: "entry ?Rc 1 ?jL = entry ?Rc 1 0 + ?jL"
+    using trunk_entries_offset[OF RcT condARc jle] by blast
+  have offs0: "\<And>i. i \<le> ?jL \<Longrightarrow>
+                 entry ?Rc 0 i = entry ?Rc 0 0 + i \<and> entry ?Rc 1 i = entry ?Rc 1 0 + i"
+  proof -
+    fix i assume "i \<le> ?jL"
+    hence "i \<le> TrMax ?Rc" using jeqr by simp
+    thus "entry ?Rc 0 i = entry ?Rc 0 0 + i \<and> entry ?Rc 1 i = entry ?Rc 1 0 + i"
+      using trunk_entries_offset[OF RcT condARc] by blast
+  qed
+  have diag00: "entry ?Rc 0 0 = entry ?Rc 1 0"
+    by (rule kfwd_reduced_monoT_diag00[OF RcRT monoRc])
+  \<comment> \<open>the joint is admissible (it IS the trunk top) and marked\<close>
+  have admJ: "adm ?Rc ?jL" using adm_TrMax[OF RcT] jeqr by simp
+  have nx0: "nextR ?Rc 0 ?jL ?fn" by (rule Joints_parent_nextR[OF RcPT BLlt])
+  have le0J: "le0 ?Rc ?jL ?fn"
+    using nx0 by (auto simp: nextR_def le0_def nextrel0_def)
+  have le0F: "le0 ?Rc ?fn (Lng ?Rc - 1)" by (rule ljx_lastblock_le0[OF RcPT Brne])
+  have le0E: "le0 ?Rc ?jL (Lng ?Rc - 1)" by (rule le0_trans[OF le0J le0F])
+  have mk: "(?Rc, ?jL) \<in> Marked"
+    using RcT admJ le0E by (simp add: Marked_def leR_def)
+  \<comment> \<open>\<open>j\<^sub>L < Lng R\<^sub>c - 1\<close>\<close>
+  have trne: "TrMax ?Rc \<noteq> Lng ?Rc - 1"
+  proof
+    assume "TrMax ?Rc = Lng ?Rc - 1"
+    hence "Br ?Rc = []" by (simp add: Br_def)
+    with Brne show False by simp
+  qed
+  have jlt2: "?jL < Lng ?Rc - 1"
+    using TrMax_bound[OF RcT] trne jeqr by linarith
+  \<comment> \<open>the Marked split at \<open>j\<^sub>L\<close>\<close>
+  obtain a0 a1 where
+    SPL: "RightNodes (Trans ?Rc) = a0 @ [entry ?Rc 1 ?jL] @ a1"
+    and SPL2: "RightNodes (Trans (seg ?Rc 0 ?jL)) = a0 @ [entry ?Rc 1 ?jL]"
+    using m_7_4_RightNodes_Mark[OF mk RcRT jposr jlt2] by blast
+  \<comment> \<open>the prefix is the explicit trunk diagonal\<close>
+  have LRcpos: "0 < Lng ?Rc" using jlt2 by linarith
+  have segdiag: "seg ?Rc 0 ?jL = diagSeq (entry ?Rc 1 0) (entry ?Rc 1 0 + ?jL)"
+  proof (rule nth_equalityI)
+    show "length (seg ?Rc 0 ?jL)
+            = length (diagSeq (entry ?Rc 1 0) (entry ?Rc 1 0 + ?jL))"
+      by (simp add: diagSeq_def)
+  next
+    fix i assume iL: "i < length (seg ?Rc 0 ?jL)"
+    have ile: "i \<le> ?jL" using iL by simp
+    have segnth: "seg ?Rc 0 ?jL ! i = ?Rc ! i"
+    proof -
+      have "seg ?Rc 0 ?jL = take (Suc ?jL) ?Rc"
+        by (rule seg_0_eq_take) (use jlt2 LRcpos in linarith)
+      thus ?thesis using ile by simp
+    qed
+    have Rci: "?Rc ! i = (entry ?Rc 0 i, entry ?Rc 1 i)"
+      by (simp add: entry_def)
+    have "?Rc ! i = (entry ?Rc 1 0 + i, entry ?Rc 1 0 + i)"
+      using Rci offs0[OF ile] diag00 by simp
+    moreover have "diagSeq (entry ?Rc 1 0) (entry ?Rc 1 0 + ?jL) ! i
+                     = (entry ?Rc 1 0 + i, entry ?Rc 1 0 + i)"
+      by (rule diagSeq_nth) (use ile in linarith)
+    ultimately show "seg ?Rc 0 ?jL ! i
+                       = diagSeq (entry ?Rc 1 0) (entry ?Rc 1 0 + ?jL) ! i"
+      using segnth by simp
+  qed
+  have uw: "entry ?Rc 1 0 < entry ?Rc 1 0 + ?jL" using jposr by linarith
+  have TD: "Trans (seg ?Rc 0 ?jL)
+              = Dpt (enat (entry ?Rc 1 0))
+                    (Dpt (enat (entry ?Rc 1 0 + ?jL)) 0\<^sub>B)"
+  proof -
+    have "Trans (seg ?Rc 0 ?jL)
+            = Trans (diagSeq (entry ?Rc 1 0) (entry ?Rc 1 0 + ?jL))"
+      by (rule arg_cong[where f = Trans, OF segdiag])
+    also have "\<dots> = Dpt (enat (entry ?Rc 1 0))
+                        (Dpt (enat (entry ?Rc 1 0 + ?jL)) 0\<^sub>B)"
+      by (rule m_8_1_diagSeq_Trans[OF uw])
+    finally show ?thesis .
+  qed
+  have RND: "RightNodes (Trans (seg ?Rc 0 ?jL))
+               = [entry ?Rc 1 0, entry ?Rc 1 0 + ?jL]"
+    using TD by simp
+  \<comment> \<open>extract \<open>a0 = [entry R\<^sub>c 1 0]\<close> and conclude\<close>
+  have "a0 @ [entry ?Rc 1 ?jL] = [entry ?Rc 1 0, entry ?Rc 1 ?jL]"
+    using SPL2 RND offsJ by simp
+  hence a0v: "a0 = [entry ?Rc 1 0]"
+    by (metis butlast_snoc butlast.simps(2) list.distinct(1))
+  have "RightNodes (Trans ?Rc)
+          = entry ?Rc 1 0 # entry ?Rc 1 ?jL # a1"
+    using SPL a0v by simp
+  thus ?thesis by (auto simp add: tvx_Rc_def tvx_jL_def)
+qed
+
+subsection \<open>ljx: r53 bricks --- prefix transport (\<open>nextrel0\<close>/\<open>adm\<close>/\<open>Adm\<close>) and the
+  one-step \<open>RightAnces\<close> unfolds\<close>
+
+text \<open>Last-step decomposition of a \<open>nextrel0\<close> chain (dual of
+  @{thm [source] ljx_le0_succ_step}'s first-step extraction).\<close>
+
+lemma ljx_nextrel0_star_last:
+  assumes "(nextrel0 M)\<^sup>*\<^sup>* a b" and "a \<noteq> b"
+  shows "\<exists>y. (nextrel0 M)\<^sup>*\<^sup>* a y \<and> nextrel0 M y b"
+  using assms by (induction rule: rtranclp_induct) auto
+
+lemma ljx_nextrel0_succ_intro:
+  assumes "Suc j < Lng M" and "entry M 0 j < entry M 0 (Suc j)"
+  shows "nextrel0 M j (Suc j)"
+  using assms by (auto simp: nextrel0_def)
+
+text \<open>\<open>nextrel0\<close> transports into a trunk-anchored prefix (all positions involved
+  are \<open>\<le> c\<close>, and entries agree there).\<close>
+
+lemma ljx_nextrel0_seg0:
+  assumes nx: "nextrel0 M j0 j1" and j1c: "j1 \<le> c" and cL: "c < Lng M"
+  shows "nextrel0 (seg M 0 c) j0 j1"
+proof -
+  have lt: "j0 < j1" and elt: "entry M 0 j0 < entry M 0 j1"
+    using nx by (auto simp: nextrel0_def)
+  have mid: "\<And>j. j0 < j \<Longrightarrow> j < j1 \<Longrightarrow> entry M 0 j \<ge> entry M 0 j1"
+    using nx by (auto simp: nextrel0_def)
+  have ent: "\<And>j. j \<le> c \<Longrightarrow> entry (seg M 0 c) 0 j = entry M 0 j"
+  proof -
+    fix j assume "j \<le> c"
+    hence "j < Lng (seg M 0 c)" by simp
+    from entry_seg[OF this] show "entry (seg M 0 c) 0 j = entry M 0 j" by simp
+  qed
+  show ?thesis
+    unfolding nextrel0_def
+  proof (intro conjI allI impI)
+    show "j0 < Lng (seg M 0 c)" using lt j1c by simp
+    show "j1 < Lng (seg M 0 c)" using j1c by simp
+    show "j0 < j1" by (rule lt)
+    show "entry (seg M 0 c) 0 j0 < entry (seg M 0 c) 0 j1"
+      using ent[of j0] ent[of j1] elt lt j1c by simp
+  next
+    fix j assume h: "j0 < j \<and> j < j1"
+    have "entry M 0 j \<ge> entry M 0 j1" using mid h by blast
+    thus "entry (seg M 0 c) 0 j1 \<le> entry (seg M 0 c) 0 j"
+      using ent[of j] ent[of j1] h j1c by simp
+  qed
+qed
+
+text \<open>\<open>adm\<close> transports between a trunk-anchored prefix and the host (via the
+  frozen @{thm [source] adm_prefix_agree_eq}).\<close>
+
+lemma ljx_adm_seg0:
+  assumes cL: "c < Lng M" and jc: "j + 1 \<le> c"
+  shows "adm (seg M 0 c) j = adm M j"
+proof -
+  have tk: "seg M 0 c = take (Suc c) M"
+    by (rule seg_0_eq_take) (use cL in linarith)
+  have agree: "\<And>x. x \<le> c \<Longrightarrow> seg M 0 c ! x = M ! x" using tk by simp
+  have cS: "c < Lng (seg M 0 c)" using cL by simp
+  show ?thesis by (rule adm_prefix_agree_eq[OF agree cS cL jc])
+qed
+
+text \<open>If everything strictly between \<open>0\<close> and \<open>j\<close> is non-admissible (and \<open>j\<close> too),
+  the admissibilization collapses to the root.\<close>
+
+lemma ljx_Adm_eq_0:
+  assumes na: "\<not> adm M j" and inner: "\<And>j'. 0 < j' \<Longrightarrow> j' < j \<Longrightarrow> \<not> adm M j'"
+  shows "Adm M j = 0"
+proof -
+  have adm0: "adm M 0" by (simp add: adm_def nadm_def nextR_def nextrel1_def)
+  have jpos: "0 < j" using na adm0 by (cases "j = 0") auto
+  have S: "{j'. adm M j' \<and> j' < j} = {0}"
+  proof (rule set_eqI)
+    fix x
+    show "x \<in> {j'. adm M j' \<and> j' < j} \<longleftrightarrow> x \<in> {0}"
+    proof (cases "x = 0")
+      case True thus ?thesis using adm0 jpos by simp
+    next
+      case False thus ?thesis using inner[of x] by auto
+    qed
+  qed
+  show ?thesis using na S by (simp add: Adm_def)
+qed
+
+text \<open>One-step \<open>RightAnces\<close> unfolds: the singleton base and the mono
+  \<open>\<not> zeroT (Pred _)\<close> branch (pattern of the frozen
+  @{thm [source] m_7_4_RightAnces_RightNodes} proof).\<close>
+
+lemma ljx_RA_singleton:
+  assumes XR: "X \<in> RT_PS" and L1: "Lng X = 1"
+  shows "RightAnces X = (if X ! 0 = (0,0) then [] else [entry X 1 0])"
+  by (subst RightAnces.psimps[OF RightAnces_dom_RT[rule_format, OF XR]])
+     (use XR L1 in \<open>simp add: Let_def\<close>)
+
+lemma ljx_RA_unfold_mono:
+  assumes NR: "N \<in> RT_PS" and j1ne: "Lng N - 1 \<noteq> 0" and mono: "monoT N"
+    and prednz: "\<not> zeroT (Pred N)"
+  shows "RightAnces N =
+     (if transCondI N \<or> transCondIII N \<or> transCondV N \<or> transCondVI N
+      then (if zeroT (seg N 0 (Adm N (parent N 0 (Lng N - 1)))) then [0]
+            else RightAnces (seg N 0 (Adm N (parent N 0 (Lng N - 1)))))
+           @ [entry N 1 (Lng N - 1)]
+      else (if zeroT (seg N 0 (Adm N (parent N 0 (Lng N - 1)))) then [0]
+            else RightAnces (seg N 0 (Adm N (parent N 0 (Lng N - 1)))))
+           @ [entry N 1 (parent N 0 (Lng N - 1)), entry N 1 (Lng N - 1)])"
+  by (subst RightAnces.psimps[OF RightAnces_dom_RT[rule_format, OF NR]])
+     (use NR j1ne mono prednz in \<open>simp add: Let_def\<close>)
+
+subsection \<open>ljx: the structural side at \<open>j\<^sub>L < TrMax R\<^sub>c\<close> --- position 1 via the
+  Marked split at the first node \<open>fn\<close> and ONE \<open>RightAnces\<close> unfold\<close>
+
+text \<open>On the prefix \<open>N = seg R\<^sub>c 0 fn\<close>: \<open>parent N 0 fn = j\<^sub>L\<close>, \<open>adm N j\<^sub>L\<close> FAILS
+  (interior trunk), \<open>Adm N j\<^sub>L = 0\<close>, so one unfold computes
+  \<open>RightAnces N = [v\<^sub>a] @ tail\<close> with \<open>tail = [e\<^sub>1(fn)]\<close> in the \<open>V\<close> branch (where
+  \<open>e\<^sub>1(fn) = e\<^sub>1(j\<^sub>L) + 1\<close>) and \<open>tail = [e\<^sub>1(j\<^sub>L), e\<^sub>1(fn)]\<close> otherwise (I/III excluded
+  by \<open>\<not> adm\<close>, VI by \<open>j\<^sub>L + 1 < fn\<close>); in the latter branch the fn-diagonal is
+  EXCLUDED (diag at \<open>fn\<close> \<Rightarrow> RedCondA row-0 coefficient forces cond \<open>V\<close>).\<close>
+
+lemma ljx_RightNodes_a0_lt_trmax:
+  fixes M :: pairseq
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS"
+    and j1gt: "1 < Lng M - 1" and condII: "transCondII M"
+    and BR: "Br (tvx_Rc M) \<noteq> []"
+    and jpos: "0 < tvx_jL M"
+    and jlt: "tvx_jL M < TrMax (tvx_Rc M)"
+  shows "(\<exists>a1. RightNodes (Trans (tvx_Rc M))
+            = entry (tvx_Rc M) 1 0 # entry (tvx_Rc M) 1 (tvx_jL M) # a1
+          \<and> entry (tvx_Rc M) 1 (tvx_fn M) \<noteq> entry (tvx_Rc M) 0 (tvx_fn M))
+       \<or> (\<exists>a1. RightNodes (Trans (tvx_Rc M))
+            = entry (tvx_Rc M) 1 0 # (entry (tvx_Rc M) 1 (tvx_jL M) + 1) # a1)"
+proof -
+  let ?jm1 = "Adm M (parent M 0 (Lng M - 1))"
+  let ?Rc = "Red (seg M ?jm1 (Lng M - 2))"
+  let ?BL = "Lng (Br ?Rc) - 1"
+  let ?jL = "Joints ?Rc ! ?BL"
+  let ?fn = "FirstNodes ?Rc ! ?BL"
+  let ?N = "seg ?Rc 0 ?fn"
+  have MT: "M \<in> T_PS" using MR by (simp add: RT_PS_def)
+  note RB = c2sx_reach[OF MR MP j1gt condII]
+  have ab: "?jm1 < Lng M - 2" by (rule RB(3))
+  have bL2: "Lng M - 2 \<le> Lng M - 1" by simp
+  have leab: "leR M 0 ?jm1 (Lng M - 2)" by (rule RB(1))
+  have RcRT: "?Rc \<in> RT_PS" using slice_Red_in_RT_PS[OF MR ab bL2 leab] by blast
+  have RcT: "?Rc \<in> T_PS" using RcRT by (simp add: RT_PS_def)
+  have monoRc: "monoT ?Rc"
+    using m_6_6_ancestor_slice_Red_IncrFirst[OF MR ab bL2 leab] by simp
+  have RcPT: "?Rc \<in> PT_PS" using RcT monoRc by (simp add: PT_PS_def)
+  have condARc: "RedCondA ?Rc"
+    using m_6_6_reduced_iff_cond[OF RcT] RcRT by blast
+  have Brne: "Br ?Rc \<noteq> []" using BR by (simp add: tvx_Rc_def)
+  have BLlt: "?BL < Lng (Br ?Rc)" using Brne by (cases "Br ?Rc") auto
+  have jposr: "0 < ?jL" using jpos by (simp add: tvx_jL_def tvx_Rc_def)
+  have jltr: "?jL < TrMax ?Rc" using jlt by (simp add: tvx_jL_def tvx_Rc_def)
+  have jleT: "?jL \<le> TrMax ?Rc" using jltr by linarith
+  note FJ = m_6_4_FirstNodes_TrMax_Joints[OF RcPT BLlt]
+  have tmfn: "TrMax ?Rc < ?fn" using FJ by blast
+  have fnL: "?fn < Lng ?Rc" by (rule a1_FN_lt[OF RcPT BLlt])
+  have fnpos: "0 < ?fn" using tmfn by linarith
+  have fn2: "2 \<le> ?fn" using jposr jltr tmfn by linarith
+  have jLfn: "?jL + 1 < ?fn" using jltr tmfn by linarith
+  have nx0: "nextR ?Rc 0 ?jL ?fn" by (rule Joints_parent_nextR[OF RcPT BLlt])
+  have nx0': "nextrel0 ?Rc ?jL ?fn" using nx0 by (simp add: nextR_def)
+  have diag00: "entry ?Rc 0 0 = entry ?Rc 1 0"
+    by (rule kfwd_reduced_monoT_diag00[OF RcRT monoRc])
+  \<comment> \<open>the prefix \<open>N\<close> and its basic data\<close>
+  have LN1: "Lng ?N - 1 = ?fn" by simp
+  have fnle1: "?fn \<le> Lng ?Rc - 1" using fnL by linarith
+  have NRT: "?N \<in> RT_PS" by (rule seg_0_RT_PS[OF RcRT fnle1])
+  have entN: "\<And>i j. j \<le> ?fn \<Longrightarrow> entry ?N i j = entry ?Rc i j"
+  proof -
+    fix i j assume "j \<le> ?fn"
+    hence "j < Lng ?N" by simp
+    from entry_seg[OF this] show "entry ?N i j = entry ?Rc i j" by simp
+  qed
+  have eN0: "entry ?N 1 0 = entry ?Rc 1 0" by (rule entN) simp
+  have eNfn: "entry ?N 1 ?fn = entry ?Rc 1 ?fn" by (rule entN) simp
+  have eNjL: "entry ?N 1 ?jL = entry ?Rc 1 ?jL" using jLfn by (intro entN) linarith
+  \<comment> \<open>\<open>parent N 0 fn = j\<^sub>L\<close>\<close>
+  have nxN: "nextrel0 ?N ?jL ?fn" by (rule ljx_nextrel0_seg0[OF nx0' order.refl fnL])
+  have ex1N: "\<exists>!j0. nextR ?N 0 j0 ?fn"
+  proof
+    show "nextR ?N 0 ?jL ?fn" using nxN by (simp add: nextR_def)
+  next
+    fix j0 assume "nextR ?N 0 j0 ?fn"
+    hence "nextrel0 ?N j0 ?fn" by (simp add: nextR_def)
+    thus "j0 = ?jL" using nxN by (rule ljx_nextrel0_unique)
+  qed
+  have pNthe: "(THE j0. nextR ?N 0 j0 ?fn) = ?jL"
+    by (rule the1_equality[OF ex1N]) (use nxN in \<open>simp add: nextR_def\<close>)
+  have pNdef: "parent ?N 0 ?fn = (THE j0. nextR ?N 0 j0 ?fn)"
+    by (simp only: parent_def)
+  have pN: "parent ?N 0 ?fn = ?jL" by (rule trans[OF pNdef pNthe])
+  \<comment> \<open>\<open>adm N j\<^sub>L\<close> fails, and \<open>Adm N j\<^sub>L = 0\<close>\<close>
+  have nadmjL_Rc: "\<not> adm ?Rc ?jL"
+    by (rule ljx_trunk_interior_nadm[OF RcT _ jltr]) (use jposr in linarith)
+  have admtr: "adm ?N ?jL = adm ?Rc ?jL"
+    by (rule ljx_adm_seg0[OF fnL]) (use jLfn in linarith)
+  have nadmjLN: "\<not> adm ?N ?jL" using admtr nadmjL_Rc by simp
+  have AdmN: "Adm ?N ?jL = 0"
+  proof (rule ljx_Adm_eq_0[OF nadmjLN])
+    fix j' assume j'pos: "0 < j'" and j'lt: "j' < ?jL"
+    have a: "\<not> adm ?Rc j'"
+      by (rule ljx_trunk_interior_nadm[OF RcT]) (use j'pos j'lt jltr in linarith)+
+    have tr: "adm ?N j' = adm ?Rc j'"
+      by (rule ljx_adm_seg0[OF fnL]) (use j'lt jLfn in linarith)
+    show "\<not> adm ?N j'" using a tr by simp
+  qed
+  \<comment> \<open>\<open>monoT N\<close> (trunk chain \<open>0 \<rightarrow> j\<^sub>L\<close> plus the joint edge \<open>j\<^sub>L \<rightarrow> fn\<close>)\<close>
+  have nzN: "\<not> zeroT ?N" using fnpos by (simp add: zeroT_def)
+  have stepN: "\<And>j. j < ?jL \<Longrightarrow> nextrel0 ?N j (Suc j)"
+  proof -
+    fix j assume jlt': "j < ?jL"
+    have o1: "entry ?Rc 0 j = entry ?Rc 0 0 + j"
+      using trunk_entries_offset[OF RcT condARc, of j] jlt' jleT by linarith
+    have o2: "entry ?Rc 0 (Suc j) = entry ?Rc 0 0 + Suc j"
+      using trunk_entries_offset[OF RcT condARc, of "Suc j"] jlt' jleT by linarith
+    have s: "nextrel0 ?Rc j (Suc j)"
+      by (rule ljx_nextrel0_succ_intro) (use o1 o2 jlt' jLfn fnL in linarith)+
+    show "nextrel0 ?N j (Suc j)"
+      by (rule ljx_nextrel0_seg0[OF s _ fnL]) (use jlt' jLfn in linarith)
+  qed
+  have chainN: "(nextrel0 ?N)\<^sup>*\<^sup>* 0 j" if "j \<le> ?jL" for j
+    using that
+  proof (induction j)
+    case 0 show ?case by simp
+  next
+    case (Suc j)
+    have ih: "(nextrel0 ?N)\<^sup>*\<^sup>* 0 j" using Suc.prems by (intro Suc.IH) linarith
+    have st: "nextrel0 ?N j (Suc j)" using Suc.prems by (intro stepN) linarith
+    show ?case using ih st by (rule rtranclp.rtrancl_into_rtrancl)
+  qed
+  have chainfn: "(nextrel0 ?N)\<^sup>*\<^sup>* 0 ?fn"
+    using chainN[OF order.refl] nxN by (rule rtranclp.rtrancl_into_rtrancl)
+  have le0N: "le0 ?N 0 ?fn" using chainfn by (simp add: le0_def)
+  have monoN: "monoT ?N" using nzN le0N by (simp add: monoT_def leR_def)
+  \<comment> \<open>\<open>Pred N\<close> is not the zero term\<close>
+  have LP: "Lng (Pred ?N) = ?fn" using fnpos by (simp add: Pred_def)
+  have prednzN: "\<not> zeroT (Pred ?N)" using LP fn2 by (simp add: zeroT_def)
+  \<comment> \<open>the \<open>a\<close>-value: the root singleton contributes exactly \<open>[v\<^sub>a]\<close>\<close>
+  have seg00RT: "seg ?N 0 0 \<in> RT_PS" by (rule seg_0_RT_PS[OF NRT]) simp
+  have Lseg00: "Lng (seg ?N 0 0) = 1" by simp
+  have e00seg: "entry (seg ?N 0 0) 1 0 = entry ?N 1 0"
+  proof -
+    have "0 < Lng (seg ?N 0 0)" by simp
+    from entry_seg[OF this] show ?thesis by simp
+  qed
+  have aval: "(if zeroT (seg ?N 0 0) then [0] else RightAnces (seg ?N 0 0))
+                = [entry ?N 1 0]"
+  proof (cases "zeroT (seg ?N 0 0)")
+    case True
+    hence "entry (seg ?N 0 0) 1 0 = 0" by (simp add: zeroT_def)
+    hence "entry ?N 1 0 = 0" using e00seg by simp
+    thus ?thesis using True by simp
+  next
+    case False
+    have ne00: "seg ?N 0 0 ! 0 \<noteq> (0,0)"
+    proof
+      assume z: "seg ?N 0 0 ! 0 = (0,0)"
+      have "entry (seg ?N 0 0) 1 0 = 0" using z by (simp add: entry_def)
+      hence "zeroT (seg ?N 0 0)" using Lseg00 by (simp add: zeroT_def)
+      with False show False ..
+    qed
+    have "RightAnces (seg ?N 0 0) = [entry (seg ?N 0 0) 1 0]"
+      using ljx_RA_singleton[OF seg00RT Lseg00] ne00 by simp
+    thus ?thesis using False e00seg by simp
+  qed
+  \<comment> \<open>the one-step unfold, with the computed pieces substituted\<close>
+  have j1ne: "Lng ?N - 1 \<noteq> 0" using fnpos by simp
+  note RAN0 = ljx_RA_unfold_mono[OF NRT j1ne monoN prednzN]
+  note RAN = RAN0[unfolded LN1 pN AdmN aval]
+  \<comment> \<open>classification: I/III die on \<open>\<not> adm N j\<^sub>L\<close>, VI on \<open>j\<^sub>L + 1 < fn\<close>\<close>
+  have notI: "\<not> transCondI ?N"
+    using nadmjLN unfolding transCondI_def LN1 pN by blast
+  have notIII: "\<not> transCondIII ?N"
+    using nadmjLN unfolding transCondIII_def LN1 pN by blast
+  have notVI: "\<not> transCondVI ?N"
+    using jLfn unfolding transCondVI_def LN1 pN by linarith
+  have guard_iff: "(transCondI ?N \<or> transCondIII ?N \<or> transCondV ?N \<or> transCondVI ?N)
+                     = transCondV ?N"
+    using notI notIII notVI by blast
+  \<comment> \<open>splice: \<open>RightNodes (Trans R\<^sub>c)\<close> extends \<open>RightNodes (Trans N)\<close>\<close>
+  have le0fn: "le0 ?Rc ?fn (Lng ?Rc - 1)" by (rule ljx_lastblock_le0[OF RcPT Brne])
+  have admfn: "adm ?Rc ?fn"
+  proof (rule ccontr)
+    assume "\<not> adm ?Rc ?fn"
+    hence "nadm ?Rc ?fn" by (simp add: adm_def)
+    hence disj: "?fn > Lng ?Rc \<or> (nextR ?Rc 1 (?fn - 1) ?fn \<and> nextR ?Rc 1 ?fn (?fn + 1))"
+      by (simp add: nadm_def)
+    have nx1: "nextR ?Rc 1 (?fn - 1) ?fn" using disj fnL by auto
+    hence "nextrel1 ?Rc (?fn - 1) ?fn" by (simp add: nextR_def)
+    hence le0h: "le0 ?Rc (?fn - 1) ?fn" by (simp add: nextrel1_def)
+    have ch: "(nextrel0 ?Rc)\<^sup>*\<^sup>* (?fn - 1) ?fn" using le0h by (simp add: le0_def)
+    have ne: "?fn - 1 \<noteq> ?fn" using fnpos by linarith
+    obtain y where cy: "(nextrel0 ?Rc)\<^sup>*\<^sup>* (?fn - 1) y" and sy: "nextrel0 ?Rc y ?fn"
+      using ljx_nextrel0_star_last[OF ch ne] by blast
+    have y1: "?fn - 1 \<le> y" by (rule ljx_nextrel0_star_le[OF cy])
+    have y2: "y < ?fn" using sy by (simp add: nextrel0_def)
+    have yeq: "y = ?fn - 1" using y1 y2 by linarith
+    have nxlast: "nextrel0 ?Rc (?fn - 1) ?fn" using sy yeq by simp
+    have "?jL = ?fn - 1" by (rule ljx_nextrel0_unique[OF nx0' nxlast])
+    thus False using jLfn fnpos by linarith
+  qed
+  have mk: "(?Rc, ?fn) \<in> Marked"
+    using RcT admfn le0fn by (simp add: Marked_def leR_def)
+  have RNsplit: "\<exists>a1. RightNodes (Trans ?Rc) = RightNodes (Trans ?N) @ a1"
+  proof (cases "?fn = Lng ?Rc - 1")
+    case True
+    have sfn: "Suc ?fn = Lng ?Rc" using True fnL by linarith
+    have "?N = take (Suc ?fn) ?Rc" by (rule seg_0_eq_take) (use fnL in linarith)
+    also have "\<dots> = ?Rc" unfolding sfn by simp
+    finally have "RightNodes (Trans ?Rc) = RightNodes (Trans ?N) @ []" by simp
+    thus ?thesis by blast
+  next
+    case False
+    have fnlt1: "?fn < Lng ?Rc - 1" using fnL False by linarith
+    obtain a0 a1 where S1: "RightNodes (Trans ?Rc) = a0 @ [entry ?Rc 1 ?fn] @ a1"
+      and S2: "RightNodes (Trans ?N) = a0 @ [entry ?Rc 1 ?fn]"
+      using m_7_4_RightNodes_Mark[OF mk RcRT fnpos fnlt1] by blast
+    have "RightNodes (Trans ?Rc) = RightNodes (Trans ?N) @ a1" using S1 S2 by simp
+    thus ?thesis by blast
+  qed
+  have RNN: "RightAnces ?N = RightNodes (Trans ?N)"
+    by (rule m_7_4_RightAnces_RightNodes[OF NRT])
+  \<comment> \<open>the two branches\<close>
+  show ?thesis
+  proof (cases "transCondV ?N")
+    case True
+    have RAv: "RightAnces ?N = [entry ?Rc 1 0, entry ?Rc 1 ?fn]"
+      using RAN guard_iff True eN0 eNfn by simp
+    have vval: "entry ?Rc 1 ?fn = entry ?Rc 1 ?jL + 1"
+      using True unfolding transCondV_def LN1 pN using eNjL eNfn by linarith
+    obtain a1 where "RightNodes (Trans ?Rc) = [entry ?Rc 1 0, entry ?Rc 1 ?fn] @ a1"
+      using RNsplit RNN RAv by auto
+    hence "RightNodes (Trans ?Rc) = entry ?Rc 1 0 # (entry ?Rc 1 ?jL + 1) # a1"
+      using vval by simp
+    hence "\<exists>a1. RightNodes (Trans (tvx_Rc M))
+            = entry (tvx_Rc M) 1 0 # (entry (tvx_Rc M) 1 (tvx_jL M) + 1) # a1"
+      by (auto simp add: tvx_Rc_def tvx_jL_def)
+    thus ?thesis by blast
+  next
+    case False
+    have RAe: "RightAnces ?N = [entry ?Rc 1 0, entry ?Rc 1 ?jL, entry ?Rc 1 ?fn]"
+      using RAN guard_iff False eN0 eNjL eNfn by simp
+    obtain a1 where "RightNodes (Trans ?Rc)
+        = [entry ?Rc 1 0, entry ?Rc 1 ?jL, entry ?Rc 1 ?fn] @ a1"
+      using RNsplit RNN RAe by auto
+    hence form1: "RightNodes (Trans ?Rc)
+        = entry ?Rc 1 0 # entry ?Rc 1 ?jL # (entry ?Rc 1 ?fn # a1)" by simp
+    have neq: "entry ?Rc 1 ?fn \<noteq> entry ?Rc 0 ?fn"
+    proof
+      assume dg: "entry ?Rc 1 ?fn = entry ?Rc 0 ?fn"
+      have ex1Rc: "\<exists>!j0. nextR ?Rc 0 j0 ?fn"
+      proof
+        show "nextR ?Rc 0 ?jL ?fn" by (rule nx0)
+      next
+        fix j0 assume "nextR ?Rc 0 j0 ?fn"
+        hence "nextrel0 ?Rc j0 ?fn" by (simp add: nextR_def)
+        thus "j0 = ?jL" using nx0' by (rule ljx_nextrel0_unique)
+      qed
+      have hasPfn: "hasParent ?Rc 0 ?fn" using ex1Rc by (simp add: hasParent_def)
+      have pRcthe: "(THE j0. nextR ?Rc 0 j0 ?fn) = ?jL"
+        by (rule the1_equality[OF ex1Rc]) (use nx0' in \<open>simp add: nextR_def\<close>)
+      have pRcdef: "parent ?Rc 0 ?fn = (THE j0. nextR ?Rc 0 j0 ?fn)"
+        by (simp only: parent_def)
+      have pRc: "parent ?Rc 0 ?fn = ?jL" by (rule trans[OF pRcdef pRcthe])
+      have condA0: "\<forall>j1'. hasParent ?Rc 0 j1'
+                      \<longrightarrow> entry ?Rc 0 (parent ?Rc 0 j1') + 1 = entry ?Rc 0 j1'"
+        using spec[OF condARc[unfolded RedCondA_def], of 0] by simp
+      have "entry ?Rc 0 (parent ?Rc 0 ?fn) + 1 = entry ?Rc 0 ?fn"
+        using condA0 hasPfn by blast
+      hence e0fn: "entry ?Rc 0 ?jL + 1 = entry ?Rc 0 ?fn" using pRc by simp
+      have offsjL: "entry ?Rc 0 ?jL = entry ?Rc 0 0 + ?jL
+                  \<and> entry ?Rc 1 ?jL = entry ?Rc 1 0 + ?jL"
+        using trunk_entries_offset[OF RcT condARc jleT] by blast
+      have v1: "entry ?Rc 1 ?fn = entry ?Rc 1 ?jL + 1"
+        using dg e0fn offsjL diag00 by linarith
+      have c1: "0 < entry ?N 1 ?fn" using v1 eNfn by simp
+      have c2: "entry ?N 1 ?jL + 1 = entry ?N 1 ?fn" using v1 eNjL eNfn by simp
+      have "transCondV ?N"
+        unfolding transCondV_def LN1 pN using c1 c2 jLfn by blast
+      with False show False ..
+    qed
+    have "\<exists>a1. RightNodes (Trans (tvx_Rc M))
+            = entry (tvx_Rc M) 1 0 # entry (tvx_Rc M) 1 (tvx_jL M) # a1
+          \<and> entry (tvx_Rc M) 1 (tvx_fn M) \<noteq> entry (tvx_Rc M) 0 (tvx_fn M)"
+      using form1 neq by (auto simp add: tvx_Rc_def tvx_jL_def tvx_fn_def)
+    thus ?thesis by blast
+  qed
+qed
+
+subsection \<open>ljx: the LDJB residual CLOSED, and the census updates\<close>
+
+text \<open>\<^bold>\<open>LDJB\<close> --- the exact residual slot of @{thm [source] tvx_TVall_of_LDJB_fin}:
+  on a genuine condition-(II) host with \<open>ldj\<close>, a branched \<open>R\<^sub>c\<close> and \<open>d \<le> j\<^sub>L\<close>, the
+  boundary is exact (\<open>d = j\<^sub>L\<close>) and the last first-node guard is strict.  Proof =
+  position-1 comparison on \<open>RightNodes (Trans R\<^sub>c)\<close>: the ldj side reads
+  \<open>v\<^sub>a + d\<close> (@{thm [source] ljx_RightNodes_pj_ldj} + the adm-run entries), the
+  structural side reads \<open>v\<^sub>a + j\<^sub>L\<close> (cond II/IV prefix branch), \<open>v\<^sub>a + j\<^sub>L + 1\<close>
+  (cond V branch, killed by \<open>d \<le> j\<^sub>L\<close>) or \<open>v\<^sub>a + TrMax\<close> (\<open>j\<^sub>L = TrMax\<close>, killed by
+  @{thm [source] tvx_d_lt_TrMax}); the guard's equality case is the fn-diagonal,
+  excluded inside @{thm [source] ljx_RightNodes_a0_lt_trmax} (diag \<Rightarrow> cond V).\<close>
+
+lemma ljx_LDJB:
+  fixes K :: pairseq
+  assumes KST: "K \<in> ST_PS" and KP: "K \<in> PT_PS"
+    and j1gt: "1 < Lng K - 1" and condII: "transCondII K"
+    and ldj: "c2sx_ldj K" and BR: "Br (tvx_Rc K) \<noteq> []"
+    and dle: "tvx_d K \<le> tvx_jL K"
+  shows "tvx_d K = tvx_jL K
+       \<and> entry (tvx_Rc K) 1 (tvx_fn K) < entry (tvx_Rc K) 0 (tvx_fn K)"
+proof -
+  let ?j0 = "parent K 0 (Lng K - 1)"
+  let ?jm1 = "Adm K (parent K 0 (Lng K - 1))"
+  let ?Rc = "Red (seg K ?jm1 (Lng K - 2))"
+  have MR: "K \<in> RT_PS" using KST m_6_7_ST_PS_subseteq_RT_PS by blast
+  note HB = c2sx_host_basic[OF MR KP j1gt condII]
+  note RB = c2sx_reach[OF MR KP j1gt condII]
+  have ab: "?jm1 < Lng K - 2" by (rule RB(3))
+  have bL2: "Lng K - 2 \<le> Lng K - 1" by simp
+  have leab: "leR K 0 ?jm1 (Lng K - 2)" by (rule RB(1))
+  have RcRT: "?Rc \<in> RT_PS" using slice_Red_in_RT_PS[OF MR ab bL2 leab] by blast
+  have RcT: "?Rc \<in> T_PS" using RcRT by (simp add: RT_PS_def)
+  have monoRc: "monoT ?Rc"
+    using m_6_6_ancestor_slice_Red_IncrFirst[OF MR ab bL2 leab] by simp
+  have RcPT: "?Rc \<in> PT_PS" using RcT monoRc by (simp add: PT_PS_def)
+  have condARc: "RedCondA ?Rc"
+    using m_6_6_reduced_iff_cond[OF RcT] RcRT by blast
+  have Brne: "Br ?Rc \<noteq> []" using BR by (simp add: tvx_Rc_def)
+  have BLlt: "Lng (Br ?Rc) - 1 < Lng (Br ?Rc)" using Brne by (cases "Br ?Rc") auto
+  \<comment> \<open>\<open>d > 0\<close>, hence \<open>j\<^sub>L > 0\<close>\<close>
+  have jm1lt: "?jm1 < ?j0" by (rule HB(5))
+  have dpos: "0 < tvx_d K" unfolding tvx_d_def using jm1lt by linarith
+  have jpos: "0 < tvx_jL K" using dpos dle by linarith
+  \<comment> \<open>\<open>j\<^sub>L \<le> TrMax R\<^sub>c\<close>\<close>
+  note FJ = m_6_4_FirstNodes_TrMax_Joints[OF RcPT BLlt]
+  have jleraw: "Joints ?Rc ! (Lng (Br ?Rc) - 1) \<le> TrMax ?Rc" using FJ by blast
+  have jle: "tvx_jL K \<le> TrMax (tvx_Rc K)"
+    unfolding tvx_jL_def tvx_Rc_def by (rule jleraw)
+  \<comment> \<open>the ldj side: position 1 is \<open>v\<^sub>a + d\<close>\<close>
+  obtain rest where L1: "RightNodes (Trans (tvx_Rc K))
+      = entry (tvx_Rc K) 1 0 # entry K 1 ?j0 # rest"
+    using ljx_RightNodes_pj_ldj[OF MR KP j1gt condII ldj] by blast
+  have nadm0: "\<not> adm K ?j0" by (rule HB(3))
+  have j0L: "?j0 < Lng K" using RB(4) by linarith
+  have trefl: "tvx_d K \<le> ?j0 - Adm K ?j0" unfolding tvx_d_def by simp
+  have run: "entry K 1 (?jm1 + tvx_d K) = entry K 1 ?jm1 + tvx_d K"
+    using wnx_run_entries[OF MR j0L nadm0 trefl] by blast
+  have jm1d: "?jm1 + tvx_d K = ?j0"
+    unfolding tvx_d_def using adm_Adm_le[of K "?j0"] by linarith
+  have LRcpos: "0 < Lng ?Rc" using RcT by (cases ?Rc) (auto simp: T_PS_def)
+  have e0: "entry ?Rc 1 0 = entry K 1 ?jm1"
+    using repr_entry1_shift_gen[OF MR ab bL2 leab LRcpos] by simp
+  have pos1ldj: "entry K 1 ?j0 = entry ?Rc 1 0 + tvx_d K"
+  proof -
+    have "entry K 1 ?j0 = entry K 1 (?jm1 + tvx_d K)" using jm1d by simp
+    also have "\<dots> = entry K 1 ?jm1 + tvx_d K" by (rule run)
+    also have "\<dots> = entry ?Rc 1 0 + tvx_d K" using e0 by simp
+    finally show ?thesis .
+  qed
+  \<comment> \<open>the unconditional strictness and the trunk offset at \<open>j\<^sub>L\<close>\<close>
+  have dstrict: "tvx_d K < TrMax (tvx_Rc K)"
+    unfolding tvx_d_def tvx_Rc_def by (rule tvx_d_lt_TrMax[OF MR KP j1gt condII])
+  have offsJ: "entry (tvx_Rc K) 1 (tvx_jL K) = entry (tvx_Rc K) 1 0 + tvx_jL K"
+    unfolding tvx_Rc_def tvx_jL_def
+    using trunk_entries_offset[OF RcT condARc jleraw] by blast
+  show ?thesis
+  proof (cases "tvx_jL K = TrMax (tvx_Rc K)")
+    case True
+    obtain a1 where S: "RightNodes (Trans (tvx_Rc K))
+        = entry (tvx_Rc K) 1 0 # entry (tvx_Rc K) 1 (tvx_jL K) # a1"
+      using ljx_RightNodes_a0_trmax[OF MR KP j1gt condII BR jpos True] by blast
+    have eqd: "entry K 1 ?j0 = entry (tvx_Rc K) 1 (tvx_jL K)" using L1 S by simp
+    have "tvx_d K = tvx_jL K"
+      using pos1ldj offsJ eqd unfolding tvx_Rc_def by linarith
+    hence "tvx_d K = TrMax (tvx_Rc K)" using True by simp
+    with dstrict have False by linarith
+    thus ?thesis ..
+  next
+    case False
+    have lt: "tvx_jL K < TrMax (tvx_Rc K)" using jle False by linarith
+    from ljx_RightNodes_a0_lt_trmax[OF MR KP j1gt condII BR jpos lt]
+    consider
+      (g) a1 where "RightNodes (Trans (tvx_Rc K))
+            = entry (tvx_Rc K) 1 0 # entry (tvx_Rc K) 1 (tvx_jL K) # a1"
+          "entry (tvx_Rc K) 1 (tvx_fn K) \<noteq> entry (tvx_Rc K) 0 (tvx_fn K)"
+    | (v) a1 where "RightNodes (Trans (tvx_Rc K))
+            = entry (tvx_Rc K) 1 0 # (entry (tvx_Rc K) 1 (tvx_jL K) + 1) # a1"
+      by blast
+    then show ?thesis
+    proof cases
+      case (g a1)
+      have eqd: "entry K 1 ?j0 = entry (tvx_Rc K) 1 (tvx_jL K)" using L1 g(1) by simp
+      have deq: "tvx_d K = tvx_jL K"
+        using pos1ldj offsJ eqd unfolding tvx_Rc_def by linarith
+      have lefn: "entry (tvx_Rc K) 1 (tvx_fn K) \<le> entry (tvx_Rc K) 0 (tvx_fn K)"
+        by (rule tvx_fn_row_bound[OF KST KP j1gt condII BR])
+      have "entry (tvx_Rc K) 1 (tvx_fn K) < entry (tvx_Rc K) 0 (tvx_fn K)"
+        using lefn g(2) by linarith
+      thus ?thesis using deq by blast
+    next
+      case (v a1)
+      have eqd: "entry K 1 ?j0 = entry (tvx_Rc K) 1 (tvx_jL K) + 1" using L1 v by simp
+      have "tvx_d K = tvx_jL K + 1"
+        using pos1ldj offsJ eqd unfolding tvx_Rc_def by linarith
+      with dle have False by linarith
+      thus ?thesis ..
+    qed
+  qed
+qed
+
+text \<open>\<^bold>\<open>TVall modulo \<open>FINRC\<close> only\<close>: the \<open>LDJB\<close> slot of
+  @{thm [source] tvx_TVall_of_LDJB_fin} is now a THEOREM.\<close>
+
+lemma ljx_TVall_of_fin:
+  fixes K :: pairseq
+  assumes FINRC: "\<And>K. K \<in> ST_PS \<Longrightarrow> K \<in> PT_PS \<Longrightarrow> 1 < Lng K - 1 \<Longrightarrow>
+                  transCondII K \<Longrightarrow> tvx_finRc K"
+    and KST: "K \<in> ST_PS" and KP: "K \<in> PT_PS"
+    and j1gt: "1 < Lng K - 1" and condII: "transCondII K"
+  shows "c2sx_tailval K"
+  by (rule tvx_TVall_of_LDJB_fin[OF ljx_LDJB FINRC KST KP j1gt condII])
+
+text \<open>\<^bold>\<open>Termination census update\<close>: @{thm [source] tvx_termination_modOT_sharp}
+  with the \<open>LDJB\<close> premise DISCHARGED --- the \<open>TVall\<close> pillar now rests on the
+  residuals \<open>{OTint, OTpred, OTmulti, FINRC}\<close> alone.\<close>
+
+theorem ljx_termination_modOT:
+  assumes OTint: "\<And>N m. N \<in> ST_PS \<Longrightarrow> N \<in> PT_PS \<Longrightarrow> 1 < Lng N - 1 \<Longrightarrow>
+                  transCondIII N \<or> transCondIV N \<or> transCondV N \<Longrightarrow>
+                  Trans N \<in> OT_B \<Longrightarrow> 1 < m \<Longrightarrow> Trans ((N::pairseq)[m]) \<in> OT_B"
+    and OTpred: "\<And>N. N \<in> ST_PS \<Longrightarrow> Trans N \<in> OT_B \<Longrightarrow> 2 < Lng N \<Longrightarrow>
+                  \<not> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0) \<Longrightarrow>
+                  \<not> (N \<in> PT_PS \<and> transCondI N) \<Longrightarrow>
+                  \<not> (N \<in> PT_PS \<and> transCondVI N \<and> \<not> adm N (transJ0 N)) \<Longrightarrow>
+                  Trans (Pred N) \<in> OT_B"
+    and OTmulti: "\<And>N m. N \<in> ST_PS \<Longrightarrow> multiT N \<Longrightarrow> Trans N \<in> OT_B \<Longrightarrow>
+                  1 < m \<Longrightarrow> (N::pairseq)[m] \<noteq> Pred N \<Longrightarrow>
+                  Trans ((N::pairseq)[m]) \<in> OT_B"
+    and FINRC: "\<And>K. K \<in> ST_PS \<Longrightarrow> K \<in> PT_PS \<Longrightarrow> 1 < Lng K - 1 \<Longrightarrow>
+                  transCondII K \<Longrightarrow> tvx_finRc K"
+  shows "\<forall>M. M \<in> ST_PS \<longrightarrow> Trans M \<in> OT_B"
+    and "\<forall>M n. M \<in> ST_PS \<longrightarrow> 1 \<le> n \<longrightarrow> 1 < Lng M \<longrightarrow>
+           lessBT (Trans ((M::pairseq)[n])) (Trans M)"
+proof -
+  show "\<forall>M. M \<in> ST_PS \<longrightarrow> Trans M \<in> OT_B"
+    by (rule tvx_termination_modOT_sharp(1)[OF OTint OTpred OTmulti ljx_LDJB FINRC])
+  show "\<forall>M n. M \<in> ST_PS \<longrightarrow> 1 \<le> n \<longrightarrow> 1 < Lng M \<longrightarrow>
+           lessBT (Trans ((M::pairseq)[n])) (Trans M)"
+    by (rule tvx_termination_modOT_sharp(2)[OF OTint OTpred OTmulti ljx_LDJB FINRC])
+qed
+
+(* ===== end r53 LDJB (ljx_): the ldj boundary residual CLOSED ===== *)
+
+(* ===== r53 merge: wt-s4b — OTmulti modulo {OTint,TVall,ordIntC}; OTpred modulo {DEEPOT,NOBR} (opx_) ===== *)
+
+
+(* ===================================================================== *)
+(* ===== r52 OPX: the OTpred / OTmulti census slots (opx_ prefix)  ===== *)
+(* ===================================================================== *)
+
+section \<open>r52-OPX --- the \<open>OTmulti\<close> / \<open>OTpred\<close> census slots\<close>
+
+text \<open>Round 52.  The two OT-pillar census slots of
+  @{thm [source] apx_termination_final} that concern structural descent ---
+  \<open>OTmulti\<close> (the multi \<open>P\<close>-component lift) and \<open>OTpred\<close> (the \<open>Pred\<close> OT-step on
+  with-parent corners) --- are reduced here.
+
+  \<^bold>\<open>OTmulti architecture\<close> (@{text opx_OTmulti} below).  For a multi standard
+  host \<open>N\<close> with \<open>N[m] \<noteq> Pred N\<close>, the oper acts inside the last \<open>P\<close>-component
+  \<open>L = last (P N)\<close> (@{thm [source] m_6_2_P_oper_2}), which is MONO and standard
+  (@{thm [source] dvx_standard_last_component}), and \<open>Lng L > 1\<close> (else
+  \<open>N[m] = Pred N\<close> by @{thm [source] m_6_2_P_oper_1}).  Then:
+  \<^item> replicate regime (\<open>nextR L 0 0 j\<^sub>1 \<and> L\<^bsub>1,j\<^sub>1\<^esub> = 0\<close>,
+    @{thm [source] m_6_2_nonmulti_oper_1}): \<open>N[j]\<close> peels as
+    \<open>Trans (N[j]) = Trm (as @ replicate j be)\<close> where \<open>be\<close> is the (single)
+    principal of \<open>Trans (Pred L)\<close> (or \<open>D\<^sub>0 0\<close> in the \<open>Pred L = ((0,0))\<close> corner).
+    \<open>isOT_BP be\<close> comes for FREE from \<open>Trans (L[2]) = operB (Trans L) (numBT 1)\<close>
+    (@{thm [source] m_8_1_Trans_replicate_pred_condI} --- the regime IS condI
+    with \<open>j\<^sub>0 = 0\<close>) via @{thm [source] e4x_OT_B_operB_numBT}; the junction is the
+    GREEN \<open>Pred\<close>-descent @{thm [source] m_7_3_Pred_Trans_descend}; the copies
+    compare reflexively.  Fully green.
+  \<^item> single-component regime (@{thm [source] m_6_2_nonmulti_oper_2}):
+    \<open>Trans (N[m]) = Trm as +\<^sub>B Trans (L[m])\<close> (multi split at \<open>N[m]\<close>).  KEY
+    OBSERVATION: \<open>operB\<close> LOCALISES to the last top-level principal
+    (@{thm [source] b1x_operB_multi}), so every component-level exchange
+    equality \<open>Trans (L[m]) = operB (Trans L) (numBT k)\<close> lifts to the HOST
+    equality \<open>Trans (N[m]) = operB (Trans N) (numBT k)\<close> --- OT-membership then
+    follows JUNCTION-FREE from @{thm [source] e4x_OT_B_operB_numBT}.  This
+    covers conds I (@{thm [source] scx_condI_exchange1} /
+    @{thm [source] otx_condI_j1eq1_eq}), II (modulo the \<open>TVall\<close> census slot,
+    @{thm [source] c2sx_exchII_leg_of_tailval}) and VI
+    (@{thm [source] otx_condVI_adm_eq} etc.).  Only the interior conds III/IV/V
+    need the assembly route: OT of the new component from the \<open>OTint\<close> census
+    slot itself (NOT circular: it is the same census slot, universally
+    quantified) plus ONE sharp new residual \<open>ordIntC\<close> --- the interior-leg
+    ORDER half \<open>leBT (Trans (P[n])) (Trans P)\<close> (the \<open>leBT\<close>-weakening of the
+    descent pillar's exchange legs III/IV/V, needed only for the \<open>descP\<close>
+    junction of the reassembled sum).
+
+  So: \<open>OTmulti \<Longleftarrow> {OTint, TVall, ordIntC}\<close> --- the OTmulti census slot is
+  eliminated in favour of the strictly smaller order residual \<open>ordIntC\<close>.
+
+  Audit (agent-workflow rule 4): every cited fact is proven green in this file
+  or its parents; \<open>OTint / TVall / ordIntC\<close> are carried as named hypotheses;
+  no REFUTED-registry fact is used; \<open>apx_AP_grounded\<close> / \<open>orx_*\<close> /
+  \<open>multiD\<close>-grounded routes (circular for this slot) are NOT used.\<close>
+
+subsection \<open>Order and \<open>descP\<close> bricks\<close>
+
+lemma opx_leBT_min: "leBT (Trm [DB 0 0\<^sub>B]) (Trm [p])"
+proof (cases p)
+  case (DB v b)
+  show ?thesis
+  proof (cases "v = 0 \<and> b = Trm []")
+    case True
+    thus ?thesis using DB by simp
+  next
+    case False
+    have "lessBP (DB 0 0\<^sub>B) (DB v b)"
+    proof (cases "0 < v")
+      case True
+      thus ?thesis by simp
+    next
+      case notpos: False
+      hence v0: "v = 0" by (simp add: not_gr_zero)
+      have bne: "b \<noteq> Trm []" using False v0 by simp
+      obtain bs where beq: "b = Trm bs" by (cases b) auto
+      have "bs \<noteq> []" using bne beq by simp
+      hence "lessBT 0\<^sub>B b" using beq by simp
+      thus ?thesis using v0 by simp
+    qed
+    thus ?thesis using DB by simp
+  qed
+qed
+
+lemma opx_lessBT_append_ext:
+  "lessBT x (Trm ps) \<Longrightarrow> lessBT x (Trm (ps @ qs))"
+proof (induction ps arbitrary: x)
+  case Nil
+  obtain xs where xeq: "x = Trm xs" by (cases x)
+  show ?case using Nil.prems xeq by (cases xs) simp_all
+next
+  case (Cons p ps')
+  obtain xs where xeq: "x = Trm xs" by (cases x)
+  show ?case
+  proof (cases xs)
+    case Nil
+    thus ?thesis using xeq by simp
+  next
+    case (Cons a as)
+    have d: "lessBP a p \<or> (a = p \<and> lessBT (Trm as) (Trm ps'))"
+      using Cons.prems(1) xeq Cons by simp
+    show ?thesis
+    proof (cases "lessBP a p")
+      case True
+      thus ?thesis using xeq Cons by simp
+    next
+      case False
+      with d have ap: "a = p" and lt: "lessBT (Trm as) (Trm ps')" by auto
+      have "lessBT (Trm as) (Trm (ps' @ qs))" by (rule Cons.IH[OF lt])
+      thus ?thesis using xeq Cons ap by simp
+    qed
+  qed
+qed
+
+lemma opx_lessBT_append_cancel:
+  "lessBT (Trm (cs @ as)) (Trm (cs @ bs)) \<Longrightarrow> lessBT (Trm as) (Trm bs)"
+proof (induction cs)
+  case Nil
+  thus ?case by simp
+next
+  case (Cons c cs')
+  have "lessBP c c \<or> (c = c \<and> lessBT (Trm (cs' @ as)) (Trm (cs' @ bs)))"
+    using Cons.prems by simp
+  hence "lessBT (Trm (cs' @ as)) (Trm (cs' @ bs))" using lessBP_irrefl by blast
+  thus ?case by (rule Cons.IH)
+qed
+
+lemma opx_descP_snoc_intro:
+  assumes d: "descP xs" and j: "xs \<noteq> [] \<Longrightarrow> leBT (Trm [y]) (Trm [last xs])"
+  shows "descP (xs @ [y])"
+  using d j
+proof (induction xs)
+  case Nil
+  show ?case by simp
+next
+  case (Cons p xs')
+  show ?case
+  proof (cases xs')
+    case Nil
+    have "leBT (Trm [y]) (Trm [p])" using Cons.prems(2) Nil by simp
+    thus ?thesis using Nil by simp
+  next
+    case (Cons q rest)
+    have d': "descP xs'" and hd': "leBT (Trm [q]) (Trm [p])"
+      using Cons.prems(1) Cons by simp_all
+    have j': "xs' \<noteq> [] \<Longrightarrow> leBT (Trm [y]) (Trm [last xs'])"
+      using Cons.prems(2) Cons by simp
+    have ih: "descP (xs' @ [y])" using Cons.IH d' j' by blast
+    have e: "(p # xs') @ [y] = p # q # (rest @ [y])" using Cons by simp
+    have "descP (q # (rest @ [y]))" using ih Cons by simp
+    thus ?thesis using hd' e by simp
+  qed
+qed
+
+lemma opx_descP_append_rep:
+  assumes d: "descP xs" and j: "xs \<noteq> [] \<Longrightarrow> leBT (Trm [y]) (Trm [last xs])"
+  shows "descP (xs @ replicate m y)"
+proof (induction m)
+  case 0
+  show ?case using d by simp
+next
+  case (Suc m)
+  have e: "xs @ replicate (Suc m) y = (xs @ replicate m y) @ [y]"
+    by (simp add: replicate_append_same)
+  have j': "xs @ replicate m y \<noteq> [] \<Longrightarrow> leBT (Trm [y]) (Trm [last (xs @ replicate m y)])"
+  proof -
+    assume ne: "xs @ replicate m y \<noteq> []"
+    show "leBT (Trm [y]) (Trm [last (xs @ replicate m y)])"
+    proof (cases m)
+      case 0
+      hence "last (xs @ replicate m y) = last xs" and "xs \<noteq> []" using ne by simp_all
+      thus ?thesis using j by simp
+    next
+      case (Suc m')
+      hence "last (xs @ replicate m y) = y" by simp
+      thus ?thesis by simp
+    qed
+  qed
+  show ?case using opx_descP_snoc_intro[OF Suc.IH j'] e by simp
+qed
+
+subsection \<open>The \<open>OT\<^bsub>B\<^esub>\<close> reassembly brick\<close>
+
+text \<open>Replace the last top-level principal \<open>pl\<close> of an \<open>OT\<^bsub>B\<^esub>\<close> host list by \<open>m\<close>
+  copies of a new principal \<open>be\<close> with \<open>isOT_BP be\<close> and \<open>Trm [be] \<le> Trm [pl]\<close>:
+  the result is again in \<open>OT\<^bsub>B\<^esub>\<close> (given its \<open>T\<^bsub>B\<^esub>\<close>-membership).  The host
+  junction \<open>Trm [pl] \<le> Trm [last as]\<close> is read off the host's own \<open>descP\<close> via
+  @{thm [source] oix_descP_ge_last}.\<close>
+
+lemma opx_OT_append_rep:
+  assumes hostOT: "Trm (as @ [pl]) \<in> OT_B"
+    and beOT: "isOT_BP be"
+    and junc: "leBT (Trm [be]) (Trm [pl])"
+    and tb: "Trm (as @ replicate m be) \<in> T_B"
+  shows "Trm (as @ replicate m be) \<in> OT_B"
+proof -
+  have hOT: "isOT_BT (Trm (as @ [pl]))" using hostOT by (simp add: OT_B_def OT_def)
+  have elemsH: "\<forall>p \<in> set (as @ [pl]). isOT_BP p" and descH: "descP (as @ [pl])"
+    using hOT by simp_all
+  have dA: "descP as" by (rule descP_append1[OF descH])
+  have juncA: "leBT (Trm [be]) (Trm [last as])" if ne: "as \<noteq> []"
+  proof -
+    have mem: "last as \<in> set (as @ [pl])" using ne by simp
+    have h1: "leBT (Trm [last (as @ [pl])]) (Trm [last as])"
+      by (rule oix_descP_ge_last[OF descH mem])
+    have h2: "leBT (Trm [pl]) (Trm [last as])" using h1 by simp
+    show ?thesis by (rule oix_leBT_trans[OF junc h2])
+  qed
+  have dR: "descP (as @ replicate m be)" by (rule opx_descP_append_rep[OF dA juncA])
+  have elemsR: "\<forall>p \<in> set (as @ replicate m be). isOT_BP p"
+  proof
+    fix p assume "p \<in> set (as @ replicate m be)"
+    hence "p \<in> set as \<or> p = be" by (auto simp: in_set_replicate)
+    thus "isOT_BP p" using elemsH beOT by auto
+  qed
+  have "isOT_BT (Trm (as @ replicate m be))" using elemsR dR by simp
+  thus ?thesis using tb by (simp add: OT_B_def OT_def)
+qed
+
+subsection \<open>\<open>operB\<close> localisation to the last top-level principal\<close>
+
+lemma opx_operB_snoc_local:
+  "operB (Trm (as @ [pl])) z = Trm as +\<^sub>B operB (Trm [pl]) z"
+proof (cases as)
+  case Nil
+  obtain xs where xeq: "operB (Trm [pl]) z = Trm xs" by (cases "operB (Trm [pl]) z") auto
+  show ?thesis using Nil xeq by simp
+next
+  case (Cons a as')
+  obtain q qs where qqs: "as' @ [pl] = q # qs" by (cases "as' @ [pl]") auto
+  have e1: "as @ [pl] = a # q # qs" using Cons qqs by simp
+  have bl: "butlast (a # q # qs) = as"
+  proof -
+    have "butlast (a # q # qs) = butlast (a # (as' @ [pl]))" using qqs by simp
+    also have "\<dots> = a # butlast (as' @ [pl])" by simp
+    also have "\<dots> = a # as'" by simp
+    finally show ?thesis using Cons by simp
+  qed
+  have la: "last (a # q # qs) = pl"
+  proof -
+    have "last (a # q # qs) = last (a # (as' @ [pl]))" using qqs by simp
+    also have "\<dots> = pl" by simp
+    finally show ?thesis .
+  qed
+  have "operB (Trm (as @ [pl])) z = operB (Trm (a # q # qs)) z" using e1 by simp
+  also have "\<dots> = Trm (butlast (a # q # qs)) +\<^sub>B operB (Trm [last (a # q # qs)]) z"
+    by (rule b1x_operB_multi)
+  also have "\<dots> = Trm as +\<^sub>B operB (Trm [pl]) z" using bl la by simp
+  finally show ?thesis .
+qed
+
+subsection \<open>Mono components have singleton \<open>Trans\<close> lists\<close>
+
+lemma opx_mono_Trans_singleton:
+  assumes LR: "L \<in> RT_PS" and mono: "monoT L"
+  shows "\<exists>pl. Trans L = Trm [pl]"
+proof -
+  have nm: "\<not> (multiT L \<and> 1 < Lng L)" using mono by (simp add: multiT_def)
+  have PL: "P L = [L]" by (rule poper_P_nonmulti[OF nm])
+  have nz0: "\<not> zeroT (P L ! 0)" using PL mono by (simp add: monoT_def del: P.simps)
+  have len1: "Lng (PB (Trans L)) = 1" using m_7_3_Trans_monoT[OF LR nz0] mono by simp
+  obtain ps where tps: "Trans L = Trm ps" by (cases "Trans L") auto
+  have lps: "length ps = 1" using len1 tps by (simp add: PB_def)
+  obtain pl where "ps = [pl]" using lps by (cases ps) auto
+  thus ?thesis using tps by blast
+qed
+
+subsection \<open>THE OTmulti SLOT, reduced to \<open>{OTint, TVall, ordIntC}\<close>\<close>
+
+lemma opx_OTmulti:
+  fixes N :: pairseq and m :: nat
+  assumes OTint: "\<And>P n. P \<in> ST_PS \<Longrightarrow> P \<in> PT_PS \<Longrightarrow> 1 < Lng P - 1 \<Longrightarrow>
+                  transCondIII P \<or> transCondIV P \<or> transCondV P \<Longrightarrow>
+                  Trans P \<in> OT_B \<Longrightarrow> 1 < n \<Longrightarrow> Trans ((P::pairseq)[n]) \<in> OT_B"
+    and TVall: "\<And>K. K \<in> ST_PS \<Longrightarrow> K \<in> PT_PS \<Longrightarrow> 1 < Lng K - 1 \<Longrightarrow>
+                  transCondII K \<Longrightarrow> c2sx_tailval K"
+    and ordIntC: "\<And>P n. P \<in> ST_PS \<Longrightarrow> P \<in> PT_PS \<Longrightarrow> 1 < Lng P - 1 \<Longrightarrow>
+                  transCondIII P \<or> transCondIV P \<or> transCondV P \<Longrightarrow>
+                  Trans P \<in> OT_B \<Longrightarrow> 1 < n \<Longrightarrow>
+                  leBT (Trans ((P::pairseq)[n])) (Trans P)"
+    and NST: "N \<in> ST_PS" and mu: "multiT N" and ihOT: "Trans N \<in> OT_B"
+    and mgt: "1 < m" and NPred: "(N::pairseq)[m] \<noteq> Pred N"
+  shows "Trans ((N::pairseq)[m]) \<in> OT_B"
+proof -
+  have m1: "1 \<le> m" using mgt by simp
+  have NR: "N \<in> RT_PS" using NST m_6_7_ST_PS_subseteq_RT_PS by blast
+  have NT: "N \<in> T_PS" using NR by (simp add: RT_PS_def)
+  have LN: "1 < Lng N" by (rule multiT_imp_Lng_gt1[OF NT mu])
+  define L where "L = last (P N)"
+  define A where "A = take (Pcut N) N"
+  have lastbutl: "last (P N) = drop (Pcut N) N \<and> butlast (P N) = P (take (Pcut N) N)"
+    by (rule poper_last_P_multi[OF mu LN])
+  have Ldrop: "L = drop (Pcut N) N" using lastbutl L_def by simp
+  have butP: "butlast (P N) = P A" using lastbutl A_def by simp
+  have Aconc: "A = concat (butlast (P N))"
+  proof -
+    have "concat (butlast (P N)) = concat (P A)" using butP by simp
+    also have "\<dots> = A" by (rule poper_concat_P)
+    finally show ?thesis by simp
+  qed
+  have LST: "L \<in> ST_PS" using dvx_standard_last_component(1)[OF NST mu] Ldrop by simp
+  have LR: "L \<in> RT_PS" using LST m_6_7_ST_PS_subseteq_RT_PS by blast
+  have LT: "L \<in> T_PS" using LR by (simp add: RT_PS_def)
+  have NAL: "A @ L = N" by (simp add: A_def Ldrop)
+  have Lne: "L \<noteq> []" using LT by (simp add: T_PS_def)
+  have LgtL: "1 < Lng L"
+  proof (rule ccontr)
+    assume nn: "\<not> 1 < Lng L"
+    have "0 < Lng L" using Lne by (cases L) auto
+    hence "Lng L = 1" using nn by linarith
+    hence L1: "Lng (last (P N)) = 1" using L_def by simp
+    have "(N::pairseq)[m] = Pred N" using m_6_2_P_oper_1[OF NT m1 L1] by blast
+    thus False using NPred by simp
+  qed
+  have oper2: "(N::pairseq)[m] = concat (butlast (P N)) @ (L::pairseq)[m]
+       \<and> P ((N::pairseq)[m]) = butlast (P N) @ P ((L::pairseq)[m])"
+    using m_6_2_P_oper_2[OF NT m1 LgtL[unfolded L_def], folded L_def] by blast
+  have NmvalA: "(N::pairseq)[m] = A @ (L::pairseq)[m]" using oper2 Aconc by simp
+  have PNm0: "P ((N::pairseq)[m]) = butlast (P N) @ P ((L::pairseq)[m])" using oper2 by blast
+  have Lmem: "L \<in> set (P N)" using P_nonempty by (simp add: L_def last_in_set)
+  have Lzm: "zeroT L \<or> monoT L" using m_6_2_P_components_1[OF NT] Lmem by blast
+  have Lnz: "\<not> zeroT L" using LgtL by (auto simp: zeroT_def)
+  have Lmono: "monoT L" using Lzm Lnz by blast
+  have Lnm: "\<not> multiT L" using Lmono by (simp add: multiT_def)
+  have LPT: "L \<in> PT_PS" using LT Lmono by (simp add: PT_PS_def)
+  have PJne00: "drop (Pcut N) N \<noteq> [(0,0)]"
+  proof
+    assume "drop (Pcut N) N = [(0,0)]"
+    hence "L = [(0,0)]" using Ldrop by simp
+    thus False using LgtL by simp
+  qed
+  have hostsplit: "Trans N = Trans A +\<^sub>B Trans L"
+    using trans_multi_split[OF NR mu PJne00] A_def Ldrop by simp
+  obtain "as" where TA: "Trans A = Trm as" by (cases "Trans A") auto
+  obtain pl where TL: "Trans L = Trm [pl]"
+    using opx_mono_Trans_singleton[OF LR Lmono] by blast
+  have hostL: "Trans N = Trm (as @ [pl])" using hostsplit TA TL by simp
+  have TransLOT: "Trans L \<in> OT_B"
+  proof -
+    have h: "isOT_BT (Trm (as @ [pl]))" using ihOT hostL by (simp add: OT_B_def OT_def)
+    have "\<forall>p \<in> set (as @ [pl]). isOT_BP p" using h by simp
+    hence pOT: "isOT_BP pl" by simp
+    hence "isOT_BT (Trm [pl])" by simp
+    moreover have "Trans L \<in> T_B" by (rule m_7_3_Trans_in_T_B[OF LR])
+    ultimately show ?thesis using TL by (simp add: OT_B_def OT_def)
+  qed
+  have LmPred: "(L::pairseq)[m] \<noteq> Pred L"
+  proof
+    assume e: "(L::pairseq)[m] = Pred L"
+    have "Pred L = butlast L" using LgtL by (simp add: Pred_def)
+    hence "(N::pairseq)[m] = A @ butlast L" using NmvalA e by simp
+    also have "\<dots> = butlast (A @ L)" using Lne by (simp add: butlast_append)
+    also have "\<dots> = butlast N" using NAL by simp
+    also have "\<dots> = Pred N" using LN by (simp add: Pred_def)
+    finally show False using NPred by simp
+  qed
+  have j1posL: "Lng L - 1 \<noteq> 0" using LgtL by simp
+  have notzeroL: "\<not> (entry L 0 (Lng L - 1) = 0 \<and> entry L 1 (Lng L - 1) = 0)"
+  proof
+    assume "entry L 0 (Lng L - 1) = 0 \<and> entry L 1 (Lng L - 1) = 0"
+    hence "(L::pairseq)[m] = Pred L" using j1posL by (simp add: oper_def Let_def)
+    thus False using LmPred by simp
+  qed
+  have hpL: "hasParent L (idx1 L (Lng L - 1)) (Lng L - 1)"
+  proof (rule ccontr)
+    assume nh: "\<not> hasParent L (idx1 L (Lng L - 1)) (Lng L - 1)"
+    have "(L::pairseq)[m] = Pred L" using j1posL notzeroL nh by (simp add: oper_def Let_def)
+    thus False using LmPred by simp
+  qed
+  have hp0L: "hasParent L 0 (Lng L - 1)" by (rule monoT_hasParent0_last[OF LT Lmono LgtL])
+  have NmST: "(N::pairseq)[m] \<in> ST_PS" by (rule ST_PS.oper[OF NST m1])
+  have NmRT: "(N::pairseq)[m] \<in> RT_PS" using NmST m_6_7_ST_PS_subseteq_RT_PS by blast
+  have NmT: "(N::pairseq)[m] \<in> T_PS" using NmRT by (simp add: RT_PS_def)
+  have NmTB: "Trans ((N::pairseq)[m]) \<in> T_B" by (rule m_7_3_Trans_in_T_B[OF NmRT])
+  have lenPN: "1 < length (P N)" using m_6_2_P_components_2[OF NT] mu by simp
+  have hostOTL: "Trm (as @ [pl]) \<in> OT_B" using ihOT hostL by simp
+  show ?thesis
+  proof (cases "nextR L 0 0 (Lng L - 1) \<and> entry L 1 (Lng L - 1) = 0")
+    case caseb: True
+    have par: "nextR L 0 0 (Lng L - 1)" and e1L: "entry L 1 (Lng L - 1) = 0"
+      using caseb by auto
+    have PLj: "\<And>j. 1 \<le> j \<Longrightarrow> P ((L::pairseq)[j]) = replicate j (Pred L)"
+      using m_6_2_nonmulti_oper_1[OF LT _ Lnm par e1L] by blast
+    have Ljval: "\<And>j. 1 \<le> j \<Longrightarrow> (L::pairseq)[j] = concat (replicate j (Pred L))"
+    proof -
+      fix j :: nat assume j1: "1 \<le> j"
+      have "(L::pairseq)[j] = concat (P ((L::pairseq)[j]))" by (simp add: poper_concat_P)
+      thus "(L::pairseq)[j] = concat (replicate j (Pred L))" using PLj[OF j1] by simp
+    qed
+    have predRT: "Pred L \<in> RT_PS" by (rule Pred_RT_PS[OF LR])
+    have predT: "Pred L \<in> T_PS" using predRT by (simp add: RT_PS_def)
+    have predbutl: "Pred L = butlast L" using LgtL by (simp add: Pred_def)
+    have Lngpred: "Lng (Pred L) = Lng L - 1" using predbutl by simp
+    have prednm: "\<not> multiT (Pred L)" by (rule nonmulti_Pred[OF LT Lnm LgtL])
+    obtain be where bshape: "(if Pred L = [(0,0)] then Dpt 0 0\<^sub>B else Trans (Pred L)) = Trm [be]"
+      and beOT: "isOT_BP be"
+      and juncbe: "leBT (Trm [be]) (Trm [pl])"
+    proof (cases "Pred L = [(0,0)]")
+      case pl00: True
+      have s: "(if Pred L = [(0,0)] then Dpt 0 0\<^sub>B else Trans (Pred L)) = Trm [DB 0 0\<^sub>B]"
+        using pl00 by simp
+      have o: "isOT_BP (DB 0 0\<^sub>B)" by simp
+      have j: "leBT (Trm [DB 0 0\<^sub>B]) (Trm [pl])" by (rule opx_leBT_min)
+      show ?thesis by (rule that[OF s o j])
+    next
+      case npl00: False
+      have prednz: "\<not> zeroT (Pred L)"
+      proof
+        assume z: "zeroT (Pred L)"
+        hence L1p: "Lng (Pred L) = 1" and ez: "entry (Pred L) 1 0 = 0"
+          by (auto simp: zeroT_def)
+        obtain v where pv: "Pred L = [(v, v)]"
+          using m_6_6_oneColumn[OF predT] predRT L1p by auto
+        have "(entry (Pred L) 0 0, entry (Pred L) 1 0) = (v, v)"
+          using pv entry_pair[of "Pred L" 0] by simp
+        hence "v = 0" using ez by simp
+        thus False using pv npl00 by simp
+      qed
+      have predmono: "monoT (Pred L)" using prednm prednz unfolding multiT_def by blast
+      obtain be where TPred: "Trans (Pred L) = Trm [be]"
+        using opx_mono_Trans_singleton[OF predRT predmono] by blast
+      have s: "(if Pred L = [(0,0)] then Dpt 0 0\<^sub>B else Trans (Pred L)) = Trm [be]"
+        using npl00 TPred by simp
+      have desc: "lessBT (Trans (Pred L)) (Trans L)"
+        using m_7_3_Pred_Trans_descend[of L] LR LgtL by blast
+      have j: "leBT (Trm [be]) (Trm [pl])" using desc TPred TL by simp
+      have o: "isOT_BP be"
+      proof (cases "Lng L = 2")
+        case L2: True
+        have L1p: "Lng (Pred L) = 1" using Lngpred L2 by simp
+        obtain v where pv: "Pred L = [(v, v)]"
+          using m_6_6_oneColumn[OF predT] predRT L1p by auto
+        have vne: "v \<noteq> 0" using pv npl00 by simp
+        have "Trans (Pred L) = Dpt (enat v) 0\<^sub>B" using pv Trans_singleton vne by simp
+        hence "be = DB (enat v) 0\<^sub>B" using TPred by simp
+        thus ?thesis by simp
+      next
+        case Lgt2: False
+        have j1gtL: "1 < Lng L - 1" using LgtL Lgt2 by linarith
+        have ex1: "\<exists>!j0. nextR L 0 j0 (Lng L - 1)" by (metis idxsum_ex1_parent0_iff par)
+        have parent0: "parent L 0 (Lng L - 1) = 0"
+          unfolding parent_def by (rule the1_equality[OF ex1 par])
+        have admp: "adm L (parent L 0 (Lng L - 1))"
+          by (simp only: parent0 f7x_adm_zero)
+        have condIL: "transCondI L"
+          unfolding transCondI_def using e1L admp by blast
+        have L2ST: "(L::pairseq)[Suc 1] \<in> ST_PS" by (rule ST_PS.oper[OF LST]) simp
+        have L2RT: "(L::pairseq)[Suc 1] \<in> RT_PS" using L2ST m_6_7_ST_PS_subseteq_RT_PS by blast
+        have L2T: "(L::pairseq)[Suc 1] \<in> T_PS" using L2RT by (simp add: RT_PS_def)
+        have L2val: "(L::pairseq)[Suc 1] = concat (replicate (Suc 1) (Pred L))"
+          using Ljval[of "Suc 1"] by simp
+        have transL2: "Trans ((L::pairseq)[Suc 1]) = operB (Trans L) (numBT 1)"
+          using m_8_1_Trans_replicate_pred_condI[OF LR LPT j1gtL condIL parent0, of 1] L2val
+          by simp
+        have L2OT: "Trans ((L::pairseq)[Suc 1]) \<in> OT_B"
+          using transL2 e4x_OT_B_operB_numBT[OF TransLOT] by simp
+        have PL2: "P ((L::pairseq)[Suc 1]) = replicate (Suc 1) (Pred L)"
+          using PLj[of "Suc 1"] by simp
+        have mu2: "multiT ((L::pairseq)[Suc 1])"
+          using m_6_2_P_components_2[OF L2T] PL2 by simp
+        have L2len: "1 < Lng ((L::pairseq)[Suc 1])" by (rule multiT_imp_Lng_gt1[OF L2T mu2])
+        have lastbutl2: "last (P ((L::pairseq)[Suc 1]))
+                           = drop (Pcut ((L::pairseq)[Suc 1])) ((L::pairseq)[Suc 1])
+                       \<and> butlast (P ((L::pairseq)[Suc 1]))
+                           = P (take (Pcut ((L::pairseq)[Suc 1])) ((L::pairseq)[Suc 1]))"
+          by (rule poper_last_P_multi[OF mu2 L2len])
+        have last2: "drop (Pcut ((L::pairseq)[Suc 1])) ((L::pairseq)[Suc 1]) = Pred L"
+          using lastbutl2 PL2 by simp
+        have take2: "take (Pcut ((L::pairseq)[Suc 1])) ((L::pairseq)[Suc 1]) = Pred L"
+        proof -
+          have b2: "butlast (P ((L::pairseq)[Suc 1])) = [Pred L]"
+            unfolding PL2 by simp
+          have p2: "P (take (Pcut ((L::pairseq)[Suc 1])) ((L::pairseq)[Suc 1])) = [Pred L]"
+            using lastbutl2 b2 by metis
+          have "concat (P (take (Pcut ((L::pairseq)[Suc 1])) ((L::pairseq)[Suc 1])))
+                  = concat [Pred L]"
+            unfolding p2 by (rule refl)
+          thus ?thesis by (simp add: poper_concat_P)
+        qed
+        have nz2: "drop (Pcut ((L::pairseq)[Suc 1])) ((L::pairseq)[Suc 1]) \<noteq> [(0,0)]"
+          using last2 npl00 by simp
+        have "Trans ((L::pairseq)[Suc 1]) = Trans (Pred L) +\<^sub>B Trans (Pred L)"
+          using trans_multi_split[OF L2RT mu2 nz2] last2 take2 by simp
+        hence L2shape: "Trans ((L::pairseq)[Suc 1]) = Trm ([be] @ [be])" using TPred by simp
+        have "isOT_BT (Trm ([be] @ [be]))" using L2OT L2shape by (simp add: OT_B_def OT_def)
+        thus ?thesis by simp
+      qed
+      show ?thesis by (rule that[OF s o j])
+    qed
+    define blkT where "blkT = (if Pred L = [(0,0)] then Dpt 0 0\<^sub>B else Trans (Pred L))"
+    have bshape': "blkT = Trm [be]" using bshape blkT_def by simp
+    have PNi: "\<And>i. 1 \<le> i \<Longrightarrow> P ((N::pairseq)[i]) = butlast (P N) @ replicate i (Pred L)"
+    proof -
+      fix i :: nat assume i1: "1 \<le> i"
+      have "P ((N::pairseq)[i]) = butlast (P N) @ P ((L::pairseq)[i])"
+        using m_6_2_P_oper_2[OF NT i1 LgtL[unfolded L_def], folded L_def] by blast
+      thus "P ((N::pairseq)[i]) = butlast (P N) @ replicate i (Pred L)"
+        using PLj[OF i1] by simp
+    qed
+    have Nival: "\<And>i. 1 \<le> i \<Longrightarrow> (N::pairseq)[i] = A @ (L::pairseq)[i]"
+    proof -
+      fix i :: nat assume i1: "1 \<le> i"
+      have "(N::pairseq)[i] = concat (butlast (P N)) @ (L::pairseq)[i]"
+        using m_6_2_P_oper_2[OF NT i1 LgtL[unfolded L_def], folded L_def] by blast
+      thus "(N::pairseq)[i] = A @ (L::pairseq)[i]" using Aconc by simp
+    qed
+    have Nifr: "\<And>i. 1 \<le> i \<Longrightarrow> (N::pairseq)[i] \<in> RT_PS \<and> multiT ((N::pairseq)[i])
+                  \<and> 1 < Lng ((N::pairseq)[i])"
+    proof -
+      fix i :: nat assume i1: "1 \<le> i"
+      have iST: "(N::pairseq)[i] \<in> ST_PS" by (rule ST_PS.oper[OF NST i1])
+      have iRT: "(N::pairseq)[i] \<in> RT_PS" using iST m_6_7_ST_PS_subseteq_RT_PS by blast
+      have iT: "(N::pairseq)[i] \<in> T_PS" using iRT by (simp add: RT_PS_def)
+      have leni: "1 < length (P ((N::pairseq)[i]))" using PNi[OF i1] lenPN i1 by simp
+      have imu: "multiT ((N::pairseq)[i])" using m_6_2_P_components_2[OF iT] leni by simp
+      have iL: "1 < Lng ((N::pairseq)[i])" by (rule multiT_imp_Lng_gt1[OF iT imu])
+      show "(N::pairseq)[i] \<in> RT_PS \<and> multiT ((N::pairseq)[i]) \<and> 1 < Lng ((N::pairseq)[i])"
+        using iRT imu iL by blast
+    qed
+    have lasti: "\<And>i. 1 \<le> i \<Longrightarrow>
+        drop (Pcut ((N::pairseq)[i])) ((N::pairseq)[i]) = Pred L
+        \<and> butlast (P ((N::pairseq)[i])) = P (take (Pcut ((N::pairseq)[i])) ((N::pairseq)[i]))"
+    proof -
+      fix i :: nat assume i1: "1 \<le> i"
+      have lb: "last (P ((N::pairseq)[i])) = drop (Pcut ((N::pairseq)[i])) ((N::pairseq)[i])
+              \<and> butlast (P ((N::pairseq)[i])) = P (take (Pcut ((N::pairseq)[i])) ((N::pairseq)[i]))"
+        using poper_last_P_multi Nifr[OF i1] by blast
+      have repne: "replicate i (Pred L) \<noteq> []" using i1 by (cases i) auto
+      have "last (P ((N::pairseq)[i])) = last (replicate i (Pred L))"
+        using PNi[OF i1] repne by (simp add: last_append)
+      also have "\<dots> = Pred L" using repne by simp
+      finally show "drop (Pcut ((N::pairseq)[i])) ((N::pairseq)[i]) = Pred L
+        \<and> butlast (P ((N::pairseq)[i])) = P (take (Pcut ((N::pairseq)[i])) ((N::pairseq)[i]))"
+        using lb by simp
+    qed
+    have takei: "\<And>i. 1 \<le> i \<Longrightarrow>
+        take (Pcut ((N::pairseq)[i])) ((N::pairseq)[i]) = A @ concat (replicate (i - 1) (Pred L))"
+    proof -
+      fix i :: nat assume i1: "1 \<le> i"
+      obtain i' where ieq: "i = Suc i'" using i1 by (cases i) auto
+      have "replicate i (Pred L) = replicate i' (Pred L) @ [Pred L]"
+        using ieq by (simp add: replicate_append_same)
+      hence "P ((N::pairseq)[i]) = (butlast (P N) @ replicate i' (Pred L)) @ [Pred L]"
+        using PNi[OF i1] by simp
+      hence b: "butlast (P ((N::pairseq)[i])) = butlast (P N) @ replicate i' (Pred L)"
+        by (simp add: butlast_append)
+      have "P (take (Pcut ((N::pairseq)[i])) ((N::pairseq)[i]))
+              = butlast (P N) @ replicate i' (Pred L)"
+        using lasti[OF i1] b by simp
+      hence "concat (P (take (Pcut ((N::pairseq)[i])) ((N::pairseq)[i])))
+              = concat (butlast (P N)) @ concat (replicate i' (Pred L))" by simp
+      thus "take (Pcut ((N::pairseq)[i])) ((N::pairseq)[i])
+              = A @ concat (replicate (i - 1) (Pred L))"
+        using ieq by (simp add: poper_concat_P Aconc)
+    qed
+    have spliti: "\<And>i. 1 \<le> i \<Longrightarrow>
+        Trans ((N::pairseq)[i]) = Trans (A @ concat (replicate (i - 1) (Pred L))) +\<^sub>B blkT"
+    proof -
+      fix i :: nat assume i1: "1 \<le> i"
+      have iRT: "(N::pairseq)[i] \<in> RT_PS" and imu: "multiT ((N::pairseq)[i])"
+        using Nifr[OF i1] by auto
+      show "Trans ((N::pairseq)[i]) = Trans (A @ concat (replicate (i - 1) (Pred L))) +\<^sub>B blkT"
+      proof (cases "Pred L = [(0,0)]")
+        case t: True
+        show ?thesis
+          using trans_multi_split_full[OF iRT imu] lasti[OF i1] takei[OF i1] t blkT_def by simp
+      next
+        case f: False
+        have nzi: "drop (Pcut ((N::pairseq)[i])) ((N::pairseq)[i]) \<noteq> [(0,0)]"
+          using lasti[OF i1] f by simp
+        show ?thesis
+          using trans_multi_split[OF iRT imu nzi] lasti[OF i1] takei[OF i1] f blkT_def by simp
+      qed
+    qed
+    have peel: "\<And>j. 1 \<le> j \<Longrightarrow> Trans ((N::pairseq)[j]) = Trm (as @ replicate j be)"
+    proof -
+      fix j :: nat
+      show "1 \<le> j \<Longrightarrow> Trans ((N::pairseq)[j]) = Trm (as @ replicate j be)"
+      proof (induction j)
+        case 0
+        thus ?case by simp
+      next
+        case (Suc j)
+        show ?case
+        proof (cases "j = 0")
+          case True
+          have "Trans ((N::pairseq)[Suc j]) = Trans (A @ concat (replicate 0 (Pred L))) +\<^sub>B blkT"
+            using spliti[of "Suc j"] True by simp
+          also have "\<dots> = Trans A +\<^sub>B blkT" by simp
+          also have "\<dots> = Trm (as @ [be])" using TA bshape' by simp
+          finally show ?thesis using True by simp
+        next
+          case False
+          hence j1: "1 \<le> j" by simp
+          have "Trans ((N::pairseq)[Suc j]) = Trans (A @ concat (replicate j (Pred L))) +\<^sub>B blkT"
+            using spliti[of "Suc j"] by simp
+          also have "\<dots> = Trans (A @ (L::pairseq)[j]) +\<^sub>B blkT" using Ljval[OF j1] by simp
+          also have "\<dots> = Trans ((N::pairseq)[j]) +\<^sub>B blkT" using Nival[OF j1] by simp
+          also have "\<dots> = Trm (as @ replicate j be) +\<^sub>B Trm [be]"
+            using Suc.IH[OF j1] bshape' by simp
+          also have "\<dots> = Trm (as @ replicate (Suc j) be)"
+            by (simp add: replicate_append_same)
+          finally show ?thesis .
+        qed
+      qed
+    qed
+    have shape: "Trans ((N::pairseq)[m]) = Trm (as @ replicate m be)" using peel[OF m1] .
+    have tb: "Trm (as @ replicate m be) \<in> T_B" using NmTB shape by simp
+    show ?thesis using opx_OT_append_rep[OF hostOTL beOT juncbe tb] shape by simp
+  next
+    case casea: False
+    have H: "\<not> nextR L 0 0 (Lng L - 1) \<or> entry L 1 (Lng L - 1) > 0" using casea by auto
+    have Psing: "P ((L::pairseq)[m]) = [((L::pairseq)[m])]"
+      by (rule m_6_2_nonmulti_oper_2[OF LT m1 Lnm H])
+    have PNm: "P ((N::pairseq)[m]) = butlast (P N) @ [((L::pairseq)[m])]"
+      using PNm0 Psing by simp
+    have lenm: "1 < length (P ((N::pairseq)[m]))" using PNm lenPN by simp
+    have Nmmu: "multiT ((N::pairseq)[m])" using m_6_2_P_components_2[OF NmT] lenm by simp
+    have NmL: "1 < Lng ((N::pairseq)[m])" by (rule multiT_imp_Lng_gt1[OF NmT Nmmu])
+    have lastbutlm: "last (P ((N::pairseq)[m]))
+                       = drop (Pcut ((N::pairseq)[m])) ((N::pairseq)[m])
+                   \<and> butlast (P ((N::pairseq)[m]))
+                       = P (take (Pcut ((N::pairseq)[m])) ((N::pairseq)[m]))"
+      by (rule poper_last_P_multi[OF Nmmu NmL])
+    have lastm: "drop (Pcut ((N::pairseq)[m])) ((N::pairseq)[m]) = (L::pairseq)[m]"
+      using lastbutlm PNm by simp
+    have takem: "take (Pcut ((N::pairseq)[m])) ((N::pairseq)[m]) = A"
+    proof -
+      have bm: "butlast (P ((N::pairseq)[m])) = butlast (P N)"
+        unfolding PNm by simp
+      have "P (take (Pcut ((N::pairseq)[m])) ((N::pairseq)[m])) = butlast (P N)"
+        using lastbutlm bm by metis
+      hence "concat (P (take (Pcut ((N::pairseq)[m])) ((N::pairseq)[m])))
+               = concat (butlast (P N))" by simp
+      thus ?thesis by (simp add: poper_concat_P Aconc)
+    qed
+    have LmST: "(L::pairseq)[m] \<in> ST_PS" by (rule ST_PS.oper[OF LST m1])
+    have LmRT: "(L::pairseq)[m] \<in> RT_PS" using LmST m_6_7_ST_PS_subseteq_RT_PS by blast
+    have LmT: "(L::pairseq)[m] \<in> T_PS" using LmRT by (simp add: RT_PS_def)
+    show ?thesis
+    proof (cases "(L::pairseq)[m] = [(0,0)]")
+      case lm00: True
+      have v: "Trans ((N::pairseq)[m]) = Trans A +\<^sub>B Dpt 0 0\<^sub>B"
+        using trans_multi_split_full[OF NmRT Nmmu] lastm takem lm00 by simp
+      hence shape: "Trans ((N::pairseq)[m]) = Trm (as @ [DB 0 0\<^sub>B])" using TA by simp
+      have beOT0: "isOT_BP (DB 0 0\<^sub>B)" by simp
+      have tb1: "Trm (as @ replicate 1 (DB 0 0\<^sub>B)) \<in> T_B" using NmTB shape by simp
+      have "Trm (as @ replicate 1 (DB 0 0\<^sub>B)) \<in> OT_B"
+        by (rule opx_OT_append_rep[OF hostOTL beOT0 opx_leBT_min tb1])
+      thus ?thesis using shape by simp
+    next
+      case lmn00: False
+      have nzm: "drop (Pcut ((N::pairseq)[m])) ((N::pairseq)[m]) \<noteq> [(0,0)]"
+        using lastm lmn00 by simp
+      have splitm: "Trans ((N::pairseq)[m]) = Trans A +\<^sub>B Trans ((L::pairseq)[m])"
+        using trans_multi_split[OF NmRT Nmmu nzm] lastm takem by simp
+      have Lmnm: "\<not> multiT ((L::pairseq)[m])"
+        using m_6_2_P_components_2[OF LmT] Psing by simp
+      have Lmnz: "\<not> zeroT ((L::pairseq)[m])"
+      proof
+        assume z: "zeroT ((L::pairseq)[m])"
+        hence l1: "Lng ((L::pairseq)[m]) = 1" and ez: "entry ((L::pairseq)[m]) 1 0 = 0"
+          by (auto simp: zeroT_def)
+        obtain v where lv: "(L::pairseq)[m] = [(v, v)]"
+          using m_6_6_oneColumn[OF LmT] LmRT l1 by auto
+        have "(entry ((L::pairseq)[m]) 0 0, entry ((L::pairseq)[m]) 1 0) = (v, v)"
+          using lv entry_pair[of "(L::pairseq)[m]" 0] by simp
+        hence "v = 0" using ez by simp
+        thus False using lv lmn00 by simp
+      qed
+      have Lmmono: "monoT ((L::pairseq)[m])" using Lmnm Lmnz unfolding multiT_def by blast
+      obtain pn where TLm: "Trans ((L::pairseq)[m]) = Trm [pn]"
+        using opx_mono_Trans_singleton[OF LmRT Lmmono] by blast
+      have shape: "Trans ((N::pairseq)[m]) = Trm (as @ [pn])" using splitm TA TLm by simp
+      have closEx: "\<And>k. Trans ((L::pairseq)[m]) = operB (Trans L) (numBT k)
+                      \<Longrightarrow> Trans ((N::pairseq)[m]) \<in> OT_B"
+      proof -
+        fix k assume ek: "Trans ((L::pairseq)[m]) = operB (Trans L) (numBT k)"
+        have "Trans ((N::pairseq)[m]) = Trm as +\<^sub>B operB (Trm [pl]) (numBT k)"
+          using splitm TA TL ek by simp
+        also have "\<dots> = operB (Trm (as @ [pl])) (numBT k)"
+          by (simp add: opx_operB_snoc_local)
+        also have "\<dots> = operB (Trans N) (numBT k)" using hostL by simp
+        finally have "Trans ((N::pairseq)[m]) = operB (Trans N) (numBT k)" .
+        thus "Trans ((N::pairseq)[m]) \<in> OT_B"
+          using e4x_OT_B_operB_numBT[OF ihOT] by simp
+      qed
+      have closInt: "transCondIII L \<or> transCondIV L \<or> transCondV L \<Longrightarrow> 1 < Lng L - 1
+                      \<Longrightarrow> Trans ((N::pairseq)[m]) \<in> OT_B"
+      proof -
+        assume cond: "transCondIII L \<or> transCondIV L \<or> transCondV L" and j1gtL: "1 < Lng L - 1"
+        have LmOT: "Trans ((L::pairseq)[m]) \<in> OT_B"
+          by (rule OTint[OF LST LPT j1gtL cond TransLOT mgt])
+        have pnOT: "isOT_BP pn" using LmOT TLm by (simp add: OT_B_def OT_def)
+        have ordL: "leBT (Trans ((L::pairseq)[m])) (Trans L)"
+          by (rule ordIntC[OF LST LPT j1gtL cond TransLOT mgt])
+        have junc: "leBT (Trm [pn]) (Trm [pl])" using ordL TLm TL by simp
+        have tb: "Trm (as @ replicate 1 pn) \<in> T_B" using NmTB shape by simp
+        have "Trm (as @ replicate 1 pn) \<in> OT_B"
+          by (rule opx_OT_append_rep[OF hostOTL pnOT junc tb])
+        thus "Trans ((N::pairseq)[m]) \<in> OT_B" using shape by simp
+      qed
+      consider (cI) "transCondI L" | (cII) "transCondII L" | (cIII) "transCondIII L"
+        | (cIV) "transCondIV L" | (cV) "transCondV L" | (cVI) "transCondVI L"
+        using m_8_2_condII_or_condIV[OF LR LPT LgtL] by blast
+      then show ?thesis
+      proof cases
+        case cI
+        show ?thesis
+        proof (cases "Lng L - 1 = 1")
+          case j1one: True
+          have L2: "Lng L = 2" using j1one LgtL by linarith
+          have m2: "2 \<le> m" using mgt by simp
+          have "Trans ((L::pairseq)[m])
+                  = operB (Trans L) (numBT (if entry L 1 0 = 0 then m - 2 else m - 1))"
+            by (rule otx_condI_j1eq1_eq[OF LR LPT L2 cI m2])
+          thus ?thesis by (rule closEx)
+        next
+          case j1big: False
+          have j1gtL: "1 < Lng L - 1" using j1big j1posL by linarith
+          have "Trans ((L::pairseq)[m]) = operB (Trans L) (numBT (m - 1))"
+            by (rule scx_condI_exchange1[OF LST LPT j1gtL cI mgt])
+          thus ?thesis by (rule closEx)
+        qed
+      next
+        case cII
+        have j1gtL: "1 < Lng L - 1"
+        proof (rule ccontr)
+          assume "\<not> 1 < Lng L - 1"
+          hence j1one: "Lng L - 1 = 1" using j1posL by linarith
+          have p0: "parent L 0 (Lng L - 1) = 0"
+            using f7x_parent_one_zero[of L 0] hp0L j1one by simp
+          have "\<not> adm L (parent L 0 (Lng L - 1))" using cII by (simp add: transCondII_def)
+          thus False using p0 f7x_adm_zero by simp
+        qed
+        obtain k where "Trans ((L::pairseq)[m]) = operB (Trans L) (numBT k)"
+          using c2sx_exchII_leg_of_tailval[OF TVall LST LPT j1gtL cII mgt] by blast
+        thus ?thesis by (rule closEx)
+      next
+        case cIII
+        have j1gtL: "1 < Lng L - 1"
+        proof (rule ccontr)
+          assume "\<not> 1 < Lng L - 1"
+          hence j1one: "Lng L - 1 = 1" using j1posL by linarith
+          have e1pos: "0 < entry L 1 (Lng L - 1)" using cIII by (simp add: transCondIII_def)
+          have i1: "idx1 L (Lng L - 1) = 1" using e1pos by (simp add: idx1_def)
+          have hp1: "hasParent L 1 1" using hpL i1 j1one by simp
+          obtain j where jw: "nextR L 1 j 1" using hp1 unfolding hasParent_def by blast
+          have j0: "j = 0" using jw by (auto simp: nextR_def nextrel1_def)
+          have lt: "entry L 1 0 < entry L 1 1" using jw j0 by (simp add: nextR_def nextrel1_def)
+          have p0: "parent L 0 (Lng L - 1) = 0"
+            using f7x_parent_one_zero[of L 0] hp0L j1one by simp
+          have ge: "entry L 1 (Lng L - 1) \<le> entry L 1 (parent L 0 (Lng L - 1))"
+            using cIII by (simp add: transCondIII_def)
+          show False using ge p0 lt j1one by simp
+        qed
+        show ?thesis using closInt cIII j1gtL by blast
+      next
+        case cIV
+        have j1gtL: "1 < Lng L - 1"
+        proof (rule ccontr)
+          assume "\<not> 1 < Lng L - 1"
+          hence j1one: "Lng L - 1 = 1" using j1posL by linarith
+          have e1pos: "0 < entry L 1 (Lng L - 1)" using cIV by (simp add: transCondIV_def)
+          have i1: "idx1 L (Lng L - 1) = 1" using e1pos by (simp add: idx1_def)
+          have hp1: "hasParent L 1 1" using hpL i1 j1one by simp
+          obtain j where jw: "nextR L 1 j 1" using hp1 unfolding hasParent_def by blast
+          have j0: "j = 0" using jw by (auto simp: nextR_def nextrel1_def)
+          have lt: "entry L 1 0 < entry L 1 1" using jw j0 by (simp add: nextR_def nextrel1_def)
+          have p0: "parent L 0 (Lng L - 1) = 0"
+            using f7x_parent_one_zero[of L 0] hp0L j1one by simp
+          have ge: "entry L 1 (Lng L - 1) \<le> entry L 1 (parent L 0 (Lng L - 1))"
+            using cIV by (simp add: transCondIV_def)
+          show False using ge p0 lt j1one by simp
+        qed
+        show ?thesis using closInt cIV j1gtL by blast
+      next
+        case cV
+        have j1gtL: "1 < Lng L - 1" using cV by (simp add: transCondV_def)
+        show ?thesis using closInt cV j1gtL by blast
+      next
+        case cVI
+        show ?thesis
+        proof (cases "Lng L - 1 = 1")
+          case j1one: True
+          have L2: "Lng L = 2" using j1one LgtL by linarith
+          have m2: "2 \<le> m" using mgt by simp
+          have "Trans ((L::pairseq)[m]) = operB (Trans L) (numBT (m - 2))"
+            by (rule otx_condVI_j1eq1_eq[OF LR LPT L2 cVI hpL m2])
+          thus ?thesis by (rule closEx)
+        next
+          case j1big: False
+          have j1gtL: "1 < Lng L - 1" using j1big j1posL by linarith
+          show ?thesis
+          proof (cases "adm L (transJ0 L)")
+            case admT: True
+            have m2: "2 \<le> m" using mgt by simp
+            have "Trans ((L::pairseq)[m]) = operB (Trans L) (numBT (m - 2))"
+              by (rule otx_condVI_adm_eq[OF LST LPT cVI j1gtL admT m2])
+            thus ?thesis by (rule closEx)
+          next
+            case admF: False
+            have "Trans ((L::pairseq)[m]) = operB (Trans L) (numBT (m - 1))"
+              by (rule otx_condVI_nadm_eq[OF LST LPT cVI j1gtL admF m1])
+            thus ?thesis by (rule closEx)
+          qed
+        qed
+      qed
+    qed
+  qed
+qed
+
+(* ===== end r52 OPX part 1 (bricks + OTmulti) ===== *)
+
+(* ===================================================================== *)
+(* ===== r53 OPM: census v2 (OTmulti discharged) + OTpred removal  ===== *)
+(* =====   analysis (fresh keystone clauses closed, deepened =     ===== *)
+(* =====   single named residual DEEPOT)                           ===== *)
+(* ===================================================================== *)
+
+section \<open>r53-OPM --- census v2 (\<open>OTmulti\<close> discharged) and the \<open>OTpred\<close>
+  removal analysis\<close>
+
+subsection \<open>THE REVISED TERMINATION CENSUS --- both pillars modulo
+  \<open>{OTint, OTpred, TVall, ordIntC}\<close>\<close>
+
+text \<open>@{thm [source] apx_termination_final} with the \<open>OTmulti\<close> slot DISCHARGED
+  by @{thm [source] opx_OTmulti}: the multi-host structural slot is eliminated
+  in favour of the strictly smaller interior ORDER residual \<open>ordIntC\<close> (the
+  \<open>leBT\<close>-weakening of the interior exchange legs (III)/(IV)/(V), needed only
+  for the \<open>descP\<close> junction of the reassembled multi host).\<close>
+
+theorem opx_termination_census:
+  assumes OTint: "\<And>N m. N \<in> ST_PS \<Longrightarrow> N \<in> PT_PS \<Longrightarrow> 1 < Lng N - 1 \<Longrightarrow>
+                  transCondIII N \<or> transCondIV N \<or> transCondV N \<Longrightarrow>
+                  Trans N \<in> OT_B \<Longrightarrow> 1 < m \<Longrightarrow> Trans ((N::pairseq)[m]) \<in> OT_B"
+    and OTpred: "\<And>N. N \<in> ST_PS \<Longrightarrow> Trans N \<in> OT_B \<Longrightarrow> 2 < Lng N \<Longrightarrow>
+                  \<not> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0) \<Longrightarrow>
+                  \<not> (N \<in> PT_PS \<and> transCondI N) \<Longrightarrow>
+                  \<not> (N \<in> PT_PS \<and> transCondVI N \<and> \<not> adm N (transJ0 N)) \<Longrightarrow>
+                  Trans (Pred N) \<in> OT_B"
+    and TVall: "\<And>K. K \<in> ST_PS \<Longrightarrow> K \<in> PT_PS \<Longrightarrow> 1 < Lng K - 1 \<Longrightarrow>
+                  transCondII K \<Longrightarrow> c2sx_tailval K"
+    and ordIntC: "\<And>P n. P \<in> ST_PS \<Longrightarrow> P \<in> PT_PS \<Longrightarrow> 1 < Lng P - 1 \<Longrightarrow>
+                  transCondIII P \<or> transCondIV P \<or> transCondV P \<Longrightarrow>
+                  Trans P \<in> OT_B \<Longrightarrow> 1 < n \<Longrightarrow>
+                  leBT (Trans ((P::pairseq)[n])) (Trans P)"
+  shows "\<forall>M. M \<in> ST_PS \<longrightarrow> Trans M \<in> OT_B"
+    and "\<forall>M n. M \<in> ST_PS \<longrightarrow> 1 \<le> n \<longrightarrow> 1 < Lng M \<longrightarrow>
+           lessBT (Trans ((M::pairseq)[n])) (Trans M)"
+proof -
+  have OTmulti: "\<And>N m. N \<in> ST_PS \<Longrightarrow> multiT N \<Longrightarrow> Trans N \<in> OT_B \<Longrightarrow>
+                  1 < m \<Longrightarrow> (N::pairseq)[m] \<noteq> Pred N \<Longrightarrow>
+                  Trans ((N::pairseq)[m]) \<in> OT_B"
+    by (rule opx_OTmulti[OF OTint TVall ordIntC])
+  show "\<forall>M. M \<in> ST_PS \<longrightarrow> Trans M \<in> OT_B"
+    by (rule apx_termination_final(1)[OF OTint OTpred OTmulti TVall])
+  show "\<forall>M n. M \<in> ST_PS \<longrightarrow> 1 \<le> n \<longrightarrow> 1 < Lng M \<longrightarrow>
+           lessBT (Trans ((M::pairseq)[n])) (Trans M)"
+    by (rule apx_termination_final(2)[OF OTint OTpred OTmulti TVall])
+qed
+
+subsection \<open>The \<open>OTpred\<close> removal analysis --- keystone FRESH clauses are FREE\<close>
+
+text \<open>Removal of the last principal of an \<open>OT\<^bsub>B\<^esub>\<close> deposit body preserves
+  \<open>OT\<^bsub>B\<^esub>\<close>: elements restrict (\<open>set_append\<close>), \<open>descP\<close> restricts
+  (@{thm [source] descP_append1}), and the outer \<open>G\<^sub>B\<close>-domination restricts to
+  prefixes (@{thm [source] rgx_gbt_prefix_restrict} --- the between-band is
+  excluded by the strict \<open>G\<^sub>B\<close> size drop).  No new residual.\<close>
+
+lemma opx_OT_removal:
+  fixes v0 :: nat and ps :: "BP list" and z :: BP and T W :: BT
+  assumes hostOT: "T \<in> OT_B"
+    and hostW: "T = Dpt (enat v0) (Trm (ps @ [z]))"
+    and predW: "W = Dpt (enat v0) (Trm ps)"
+    and predTB: "W \<in> T_B"
+  shows "W \<in> OT_B"
+proof -
+  have h: "isOT_BT (Dpt (enat v0) (Trm (ps @ [z])))"
+    using hostOT hostW by (simp add: OT_B_def OT_def)
+  have hp: "isOT_BP (DB (enat v0) (Trm (ps @ [z])))" using h by simp
+  have hbt: "isOT_BT (Trm (ps @ [z]))"
+    and hg: "\<forall>y\<in>GBT (enat v0) (Trm (ps @ [z])). lessBT y (Trm (ps @ [z]))"
+    using hp by simp_all
+  have elems0: "\<forall>p\<in>set (ps @ [z]). isOT_BP p" and dfull: "descP (ps @ [z])"
+    using hbt by simp_all
+  have elems: "\<forall>p\<in>set ps. isOT_BP p" using elems0[unfolded set_append] by blast
+  have dps: "descP ps" by (rule descP_append1[OF dfull])
+  have g: "\<forall>y\<in>GBT (enat v0) (Trm ps). lessBT y (Trm ps)"
+    by (rule rgx_gbt_prefix_restrict[OF hg])
+  have "isOT_BT (Trm ps)" using elems dps by simp
+  hence "isOT_BP (DB (enat v0) (Trm ps))" using g by simp
+  hence "isOT_BT (Dpt (enat v0) (Trm ps))" by simp
+  thus ?thesis using predW predTB by (simp add: OT_B_def OT_def)
+qed
+
+text \<open>The \<open>OTpred\<close> slot on the branched mono frame, cased along the §8.2
+  keystone @{thm [source] m_8_2_keystone}: the whole-body clauses (1)/(2)
+  (FRESH deposit) are CLOSED by @{thm [source] opx_OT_removal}; the
+  proper-prefix clauses (3)/(4) (DEEPENED deposit, whose predecessor body
+  \<open>q'\<close> is NOT a subterm of \<open>Trans M\<close>) are carried as the single named
+  residual \<open>DEEPOT\<close>.\<close>
+
+lemma opx_OTpred_monoBr_of_DEEPOT:
+  fixes M :: pairseq
+  assumes DEEPOT: "\<And>x q q' ps.
+      Trans M = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B Dpt (enat x) q) \<Longrightarrow>
+      Trans (Pred M) = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B Dpt (enat x) q') \<Longrightarrow>
+      Trans (Pred M) \<in> OT_B"
+    and MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS"
+    and br: "Br M \<noteq> []" and j1gt: "1 < Lng M - 1"
+    and hostOT: "Trans M \<in> OT_B"
+  shows "Trans (Pred M) \<in> OT_B"
+proof -
+  let ?v0 = "entry M 1 0"
+  let ?j1' = "FirstNodes M ! (Lng (Br M) - 1)"
+  let ?j0' = "Joints M ! (Lng (Br M) - 1)"
+  have predRT: "Pred M \<in> RT_PS" by (rule Pred_RT_PS[OF MR])
+  have predTB: "Trans (Pred M) \<in> T_B" by (rule m_7_3_Trans_in_T_B[OF predRT])
+  from m_8_2_keystone[OF MR MP br j1gt]
+  show ?thesis
+  proof (elim disjE)
+    \<comment> \<open>case (1): whole body, trailing \<open>D\<^bsub>M\<^sub>1\<^sub>,\<^sub>j\<^sub>1'\<^esub> 0\<close> --- FRESH\<close>
+    assume A: "FirstNodes M ! (Lng (Br M) - 1) = Lng M - 1
+        \<and> (TrMax M = 0 \<or> Joints M ! (Lng (Br M) - 1) < TrMax M)
+        \<and> (entry M 0 (FirstNodes M ! (Lng (Br M) - 1))
+             = entry M 1 (FirstNodes M ! (Lng (Br M) - 1))
+           \<or> adm M (Joints M ! (Lng (Br M) - 1)))
+        \<and> (\<exists>!t1. Trans (Pred M) = Dpt (enat (entry M 1 0)) t1
+              \<and> Trans M = Dpt (enat (entry M 1 0))
+                   (t1 +\<^sub>B Dpt (enat (entry M 1 (FirstNodes M ! (Lng (Br M) - 1)))) 0\<^sub>B))"
+    from A obtain t1 where
+      P1: "Trans (Pred M) = Dpt (enat ?v0) t1"
+      and T1: "Trans M = Dpt (enat ?v0)
+                 (t1 +\<^sub>B Dpt (enat (entry M 1 ?j1')) 0\<^sub>B)"
+      by (blast dest: ex1_implies_ex)
+    obtain ts where ts: "t1 = Trm ts" by (cases t1)
+    have hostW: "Trans M = Dpt (enat ?v0)
+                   (Trm (ts @ [DB (enat (entry M 1 ?j1')) 0\<^sub>B]))"
+      using T1 ts by simp
+    have predW: "Trans (Pred M) = Dpt (enat ?v0) (Trm ts)" using P1 ts by simp
+    show ?thesis by (rule opx_OT_removal[OF hostOT hostW predW predTB])
+  next
+    \<comment> \<open>case (2): whole body, trailing \<open>D\<^bsub>M\<^sub>1\<^sub>,\<^sub>j\<^sub>0'\<^esub> (snd t12)\<close> --- FRESH\<close>
+    assume A: "FirstNodes M ! (Lng (Br M) - 1) = Lng M - 1
+        \<and> entry M 0 (FirstNodes M ! (Lng (Br M) - 1))
+            > entry M 1 (FirstNodes M ! (Lng (Br M) - 1))
+        \<and> \<not> adm M (Joints M ! (Lng (Br M) - 1))
+        \<and> (\<exists>!t12. Trans (Pred M) = Dpt (enat (entry M 1 0)) (fst t12)
+              \<and> Trans M = Dpt (enat (entry M 1 0))
+                   (fst t12 +\<^sub>B Dpt (enat (entry M 1 (Joints M ! (Lng (Br M) - 1)))) (snd t12)))"
+    from A obtain t12 where
+      P2: "Trans (Pred M) = Dpt (enat ?v0) (fst t12)"
+      and T2: "Trans M = Dpt (enat ?v0)
+                 (fst t12 +\<^sub>B Dpt (enat (entry M 1 ?j0')) (snd t12))"
+      by (blast dest: ex1_implies_ex)
+    obtain ts where ts: "fst t12 = Trm ts" by (cases "fst t12")
+    have hostW: "Trans M = Dpt (enat ?v0)
+                   (Trm (ts @ [DB (enat (entry M 1 ?j0')) (snd t12)]))"
+      using T2 ts by simp
+    have predW: "Trans (Pred M) = Dpt (enat ?v0) (Trm ts)" using P2 ts by simp
+    show ?thesis by (rule opx_OT_removal[OF hostOT hostW predW predTB])
+  next
+    \<comment> \<open>case (3): proper prefix, trailing \<open>D\<^bsub>M\<^sub>1\<^sub>,\<^sub>j\<^sub>1'\<^esub>\<close> --- DEEPENED\<close>
+    assume A: "\<exists>!t123. Trans (Pred M)
+                  = Dpt (enat (entry M 1 0))
+                      (fst t123 +\<^sub>B Dpt (enat (entry M 1 (FirstNodes M ! (Lng (Br M) - 1)))) (fst (snd t123)))
+              \<and> Trans M = Dpt (enat (entry M 1 0))
+                      (fst t123 +\<^sub>B Dpt (enat (entry M 1 (FirstNodes M ! (Lng (Br M) - 1)))) (snd (snd t123)))"
+    from A obtain t123 where
+      P3: "Trans (Pred M) = Dpt (enat ?v0)
+              (fst t123 +\<^sub>B Dpt (enat (entry M 1 ?j1')) (fst (snd t123)))"
+      and T3: "Trans M = Dpt (enat ?v0)
+              (fst t123 +\<^sub>B Dpt (enat (entry M 1 ?j1')) (snd (snd t123)))"
+      by (blast dest: ex1_implies_ex)
+    obtain ts where ts: "fst t123 = Trm ts" by (cases "fst t123")
+    show ?thesis by (rule DEEPOT[OF T3[unfolded ts] P3[unfolded ts]])
+  next
+    \<comment> \<open>case (4): proper prefix, trailing \<open>D\<^bsub>M\<^sub>1\<^sub>,\<^sub>j\<^sub>0'\<^esub>\<close> --- DEEPENED\<close>
+    assume A: "\<exists>!t123. Trans (Pred M)
+                  = Dpt (enat (entry M 1 0))
+                      (fst t123 +\<^sub>B Dpt (enat (entry M 1 (Joints M ! (Lng (Br M) - 1)))) (fst (snd t123)))
+              \<and> Trans M = Dpt (enat (entry M 1 0))
+                      (fst t123 +\<^sub>B Dpt (enat (entry M 1 (Joints M ! (Lng (Br M) - 1)))) (snd (snd t123)))"
+    from A obtain t123 where
+      P4: "Trans (Pred M) = Dpt (enat ?v0)
+              (fst t123 +\<^sub>B Dpt (enat (entry M 1 ?j0')) (fst (snd t123)))"
+      and T4: "Trans M = Dpt (enat ?v0)
+              (fst t123 +\<^sub>B Dpt (enat (entry M 1 ?j0')) (snd (snd t123)))"
+      by (blast dest: ex1_implies_ex)
+    obtain ts where ts: "fst t123 = Trm ts" by (cases "fst t123")
+    show ?thesis by (rule DEEPOT[OF T4[unfolded ts] P4[unfolded ts]])
+  qed
+qed
+
+(* ===== end r53 OPM part 1 (census v2 + OTpred removal bricks) ===== *)
+
+subsection \<open>\<open>OTpred\<close> on multi hosts REDUCES to \<open>OTpred\<close> on the mono last
+  component\<close>
+
+text \<open>For a multi host \<open>N\<close>, \<open>Pred N = butlast N\<close> acts inside the last
+  \<open>P\<close>-component \<open>L\<close>:
+  \<^item> \<open>Lng L = 1\<close>: \<open>Pred N = A\<close> --- a TOP-LEVEL removal of the last principal
+    (\<open>Trm as\<close> from \<open>Trm (as @ [pl])\<close>); elements and \<open>descP\<close> restrict, no
+    \<open>G\<^sub>B\<close>-condition at top level.  FREE.
+  \<^item> \<open>Lng L > 1\<close>: \<open>Pred N = A @ Pred L\<close> (via \<open>N[1] = Pred N\<close> and
+    @{thm [source] m_6_2_P_oper_2}); the junction
+    \<open>Trm [pl'] \<le> Trm [pl]\<close> is FREE from the \<open>Pred\<close>-descent
+    @{thm [source] m_7_3_Pred_Trans_descend}, so
+    @{thm [source] opx_OT_append_rep} (with \<open>m = 1\<close>) reassembles \<open>OT\<^bsub>B\<^esub>\<close> from
+    \<open>Trans (Pred L) \<in> OT\<^bsub>B\<^esub>\<close> --- the mono \<open>OTpred\<close> at \<open>L\<close>.\<close>
+
+lemma opx_OTpred_multi_of_mono:
+  fixes N :: pairseq
+  assumes monoPred: "\<And>K. K \<in> ST_PS \<Longrightarrow> monoT K \<Longrightarrow> 1 < Lng K \<Longrightarrow>
+                      Trans K \<in> OT_B \<Longrightarrow> Trans (Pred K) \<in> OT_B"
+    and NST: "N \<in> ST_PS" and mu: "multiT N" and hostOT: "Trans N \<in> OT_B"
+  shows "Trans (Pred N) \<in> OT_B"
+proof -
+  have NR: "N \<in> RT_PS" using NST m_6_7_ST_PS_subseteq_RT_PS by blast
+  have NT: "N \<in> T_PS" using NR by (simp add: RT_PS_def)
+  have LN: "1 < Lng N" by (rule multiT_imp_Lng_gt1[OF NT mu])
+  define L where "L = last (P N)"
+  define A where "A = take (Pcut N) N"
+  have lastbutl: "last (P N) = drop (Pcut N) N \<and> butlast (P N) = P (take (Pcut N) N)"
+    by (rule poper_last_P_multi[OF mu LN])
+  have Ldrop: "L = drop (Pcut N) N" using lastbutl L_def by simp
+  have butP: "butlast (P N) = P A" using lastbutl A_def by simp
+  have Aconc: "A = concat (butlast (P N))"
+  proof -
+    have "concat (butlast (P N)) = concat (P A)" using butP by simp
+    also have "\<dots> = A" by (rule poper_concat_P)
+    finally show ?thesis by simp
+  qed
+  have LST: "L \<in> ST_PS" using dvx_standard_last_component(1)[OF NST mu] Ldrop by simp
+  have LR: "L \<in> RT_PS" using LST m_6_7_ST_PS_subseteq_RT_PS by blast
+  have LT: "L \<in> T_PS" using LR by (simp add: RT_PS_def)
+  have NAL: "A @ L = N" by (simp add: A_def Ldrop)
+  have Lne: "L \<noteq> []" using LT by (simp add: T_PS_def)
+  have Lmem: "L \<in> set (P N)" using P_nonempty by (simp add: L_def last_in_set)
+  have Lzm: "zeroT L \<or> monoT L" using m_6_2_P_components_1[OF NT] Lmem by blast
+  have lenPN: "1 < length (P N)" using m_6_2_P_components_2[OF NT] mu by simp
+  have predN: "Pred N = butlast N" using LN by (simp add: Pred_def)
+  have predRT: "Pred N \<in> RT_PS" by (rule Pred_RT_PS[OF NR])
+  have predTB: "Trans (Pred N) \<in> T_B" by (rule m_7_3_Trans_in_T_B[OF predRT])
+  obtain "as" where TA: "Trans A = Trm as" by (cases "Trans A") auto
+  show ?thesis
+  proof (cases "Lng L = 1")
+    case L1: True
+    obtain x where Lx: "L = [x]" using L1 by (cases L) auto
+    have predA: "Pred N = A"
+    proof -
+      have "Pred N = butlast (A @ [x])" using predN NAL Lx by simp
+      thus ?thesis by simp
+    qed
+    have TransPredN: "Trans (Pred N) = Trm as" using predA TA by simp
+    have ex_hostL: "\<exists>pl. Trans N = Trm (as @ [pl])"
+    proof (cases "L = [(0,0)]")
+      case True
+      have "Trans N = Trans A +\<^sub>B Dpt 0 0\<^sub>B"
+        using trans_multi_split_full[OF NR mu] Ldrop True A_def by simp
+      hence "Trans N = Trm (as @ [DB 0 0\<^sub>B])" using TA by simp
+      thus ?thesis by blast
+    next
+      case False
+      have nz: "drop (Pcut N) N \<noteq> [(0,0)]"
+      proof
+        assume "drop (Pcut N) N = [(0,0)]"
+        hence "L = [(0,0)]" using Ldrop by simp
+        thus False using False by simp
+      qed
+      have hostsplit: "Trans N = Trans A +\<^sub>B Trans L"
+        using trans_multi_split[OF NR mu nz] A_def Ldrop by simp
+      have Lnz: "\<not> zeroT L"
+      proof
+        assume z: "zeroT L"
+        hence ez: "entry L 1 0 = 0" by (auto simp: zeroT_def)
+        obtain v where lv: "L = [(v, v)]"
+          using m_6_6_oneColumn[OF LT] LR L1 by auto
+        have "(entry L 0 0, entry L 1 0) = (v, v)" using lv entry_pair[of L 0] by simp
+        hence "v = 0" using ez by simp
+        thus False using lv False by simp
+      qed
+      have Lmono: "monoT L" using Lzm Lnz by blast
+      obtain pl0 where TL0: "Trans L = Trm [pl0]"
+        using opx_mono_Trans_singleton[OF LR Lmono] by blast
+      have "Trans N = Trm (as @ [pl0])" using hostsplit TA TL0 by simp
+      thus ?thesis by blast
+    qed
+    obtain pl where hostL: "Trans N = Trm (as @ [pl])" using ex_hostL by blast
+    have hOT: "isOT_BT (Trm (as @ [pl]))" using hostOT hostL by (simp add: OT_B_def OT_def)
+    have elems0: "\<forall>p\<in>set (as @ [pl]). isOT_BP p" and dfull: "descP (as @ [pl])"
+      using hOT by simp_all
+    have elems: "\<forall>p\<in>set as. isOT_BP p" using elems0[unfolded set_append] by blast
+    have dA: "descP as" by (rule descP_append1[OF dfull])
+    have "isOT_BT (Trm as)" using elems dA by simp
+    thus ?thesis using TransPredN predTB by (simp add: OT_B_def OT_def)
+  next
+    case notL1: False
+    have "0 < Lng L" using Lne by (cases L) auto
+    hence LgtL: "1 < Lng L" using notL1 by linarith
+    have Lnz: "\<not> zeroT L" using LgtL by (auto simp: zeroT_def)
+    have Lmono: "monoT L" using Lzm Lnz by blast
+    have Lnm: "\<not> multiT L" using Lmono by (simp add: multiT_def)
+    obtain pl where TL: "Trans L = Trm [pl]"
+      using opx_mono_Trans_singleton[OF LR Lmono] by blast
+    have PJne00: "drop (Pcut N) N \<noteq> [(0,0)]"
+    proof
+      assume "drop (Pcut N) N = [(0,0)]"
+      hence "L = [(0,0)]" using Ldrop by simp
+      thus False using LgtL by simp
+    qed
+    have hostsplit: "Trans N = Trans A +\<^sub>B Trans L"
+      using trans_multi_split[OF NR mu PJne00] A_def Ldrop by simp
+    have hostL: "Trans N = Trm (as @ [pl])" using hostsplit TA TL by simp
+    have hostOTL: "Trm (as @ [pl]) \<in> OT_B" using hostOT hostL by simp
+    have TransLOT: "Trans L \<in> OT_B"
+    proof -
+      have h: "isOT_BT (Trm (as @ [pl]))" using hostOT hostL by (simp add: OT_B_def OT_def)
+      have "\<forall>p \<in> set (as @ [pl]). isOT_BP p" using h by simp
+      hence pOT: "isOT_BP pl" by simp
+      hence "isOT_BT (Trm [pl])" by simp
+      moreover have "Trans L \<in> T_B" by (rule m_7_3_Trans_in_T_B[OF LR])
+      ultimately show ?thesis using TL by (simp add: OT_B_def OT_def)
+    qed
+    have predL: "Pred L = butlast L" using LgtL by (simp add: Pred_def)
+    have PredNval: "Pred N = A @ Pred L"
+    proof -
+      have "Pred N = butlast (A @ L)" using predN NAL by simp
+      also have "\<dots> = A @ butlast L" using Lne by (simp add: butlast_append)
+      finally show ?thesis using predL by simp
+    qed
+    have one1: "(1::nat) \<le> 1" by simp
+    have oper1: "(N::pairseq)[1] = concat (butlast (P N)) @ (L::pairseq)[1]
+         \<and> P ((N::pairseq)[1]) = butlast (P N) @ P ((L::pairseq)[1])"
+      using m_6_2_P_oper_2[OF NT one1 LgtL[unfolded L_def], folded L_def] by blast
+    have o1N: "(N::pairseq)[1] = Pred N" by (rule m_8_4_oper1_eq_Pred[OF NT])
+    have o1L: "(L::pairseq)[1] = Pred L" by (rule m_8_4_oper1_eq_Pred[OF LT])
+    have PPredN: "P (Pred N) = butlast (P N) @ P (Pred L)"
+    proof -
+      have "P ((N::pairseq)[1]) = butlast (P N) @ P ((L::pairseq)[1])"
+        using oper1 by blast
+      thus ?thesis unfolding o1N o1L .
+    qed
+    have predNT: "Pred N \<in> T_PS" using predRT by (simp add: RT_PS_def)
+    have prednm: "\<not> multiT (Pred L)" by (rule nonmulti_Pred[OF LT Lnm LgtL])
+    have nm': "\<not> (multiT (Pred L) \<and> 1 < Lng (Pred L))" using prednm by blast
+    have PPredL: "P (Pred L) = [Pred L]" by (rule poper_P_nonmulti[OF nm'])
+    have PPredN': "P (Pred N) = butlast (P N) @ [Pred L]" using PPredN PPredL by simp
+    have lenPredN: "1 < length (P (Pred N))" using PPredN' lenPN by simp
+    have PredNmu: "multiT (Pred N)" using m_6_2_P_components_2[OF predNT] lenPredN by simp
+    have PredNL: "1 < Lng (Pred N)" by (rule multiT_imp_Lng_gt1[OF predNT PredNmu])
+    have lastbutlp: "last (P (Pred N)) = drop (Pcut (Pred N)) (Pred N)
+                 \<and> butlast (P (Pred N)) = P (take (Pcut (Pred N)) (Pred N))"
+      by (rule poper_last_P_multi[OF PredNmu PredNL])
+    have lastp: "drop (Pcut (Pred N)) (Pred N) = Pred L"
+    proof -
+      have "last (P (Pred N)) = Pred L" using PPredN' by simp
+      thus ?thesis using lastbutlp by simp
+    qed
+    have takep: "take (Pcut (Pred N)) (Pred N) = A"
+    proof -
+      have bp: "butlast (P (Pred N)) = butlast (P N)" unfolding PPredN' by simp
+      have p2: "P (take (Pcut (Pred N)) (Pred N)) = butlast (P N)"
+        using lastbutlp bp by metis
+      have "concat (P (take (Pcut (Pred N)) (Pred N))) = concat (butlast (P N))"
+        unfolding p2 by (rule refl)
+      thus ?thesis by (simp add: poper_concat_P Aconc)
+    qed
+    show ?thesis
+    proof (cases "Pred L = [(0,0)]")
+      case pl00: True
+      have v: "Trans (Pred N) = Trans A +\<^sub>B Dpt 0 0\<^sub>B"
+        using trans_multi_split_full[OF predRT PredNmu] lastp takep pl00 by simp
+      hence shape: "Trans (Pred N) = Trm (as @ [DB 0 0\<^sub>B])" using TA by simp
+      have beOT0: "isOT_BP (DB 0 0\<^sub>B)" by simp
+      have tb1: "Trm (as @ replicate 1 (DB 0 0\<^sub>B)) \<in> T_B" using predTB shape by simp
+      have "Trm (as @ replicate 1 (DB 0 0\<^sub>B)) \<in> OT_B"
+        by (rule opx_OT_append_rep[OF hostOTL beOT0 opx_leBT_min tb1])
+      thus ?thesis using shape by simp
+    next
+      case pln00: False
+      have nzp: "drop (Pcut (Pred N)) (Pred N) \<noteq> [(0,0)]" using lastp pln00 by simp
+      have splitp: "Trans (Pred N) = Trans A +\<^sub>B Trans (Pred L)"
+        using trans_multi_split[OF predRT PredNmu nzp] lastp takep by simp
+      have PredLST: "Pred L \<in> ST_PS"
+      proof -
+        have "(L::pairseq)[1] \<in> ST_PS" by (rule ST_PS.oper[OF LST one1])
+        thus ?thesis using o1L by simp
+      qed
+      have PredLRT: "Pred L \<in> RT_PS" using PredLST m_6_7_ST_PS_subseteq_RT_PS by blast
+      have PredLT: "Pred L \<in> T_PS" using PredLRT by (simp add: RT_PS_def)
+      have prednz: "\<not> zeroT (Pred L)"
+      proof
+        assume z: "zeroT (Pred L)"
+        hence l1: "Lng (Pred L) = 1" and ez: "entry (Pred L) 1 0 = 0"
+          by (auto simp: zeroT_def)
+        obtain v where pv: "Pred L = [(v, v)]"
+          using m_6_6_oneColumn[OF PredLT] PredLRT l1 by auto
+        have "(entry (Pred L) 0 0, entry (Pred L) 1 0) = (v, v)"
+          using pv entry_pair[of "Pred L" 0] by simp
+        hence "v = 0" using ez by simp
+        thus False using pv pln00 by simp
+      qed
+      have predmono: "monoT (Pred L)" using prednm prednz unfolding multiT_def by blast
+      obtain pl' where TPredL: "Trans (Pred L) = Trm [pl']"
+        using opx_mono_Trans_singleton[OF PredLRT predmono] by blast
+      have PredLOT: "Trans (Pred L) \<in> OT_B"
+        by (rule monoPred[OF LST Lmono LgtL TransLOT])
+      have plOT: "isOT_BP pl'" using PredLOT TPredL by (simp add: OT_B_def OT_def)
+      have desc: "lessBT (Trans (Pred L)) (Trans L)"
+        using m_7_3_Pred_Trans_descend[of L] LR LgtL by blast
+      have junc: "leBT (Trm [pl']) (Trm [pl])" using desc TPredL TL by simp
+      have shape: "Trans (Pred N) = Trm (as @ [pl'])" using splitp TA TPredL by simp
+      have tb1: "Trm (as @ replicate 1 pl') \<in> T_B" using predTB shape by simp
+      have "Trm (as @ replicate 1 pl') \<in> OT_B"
+        by (rule opx_OT_append_rep[OF hostOTL plOT junc tb1])
+      thus ?thesis using shape by simp
+    qed
+  qed
+qed
+
+subsection \<open>THE MONO \<open>OTpred\<close> assembly and the FULL \<open>OTpred\<close> slot, modulo
+  \<open>{DEEPOT, NOBR}\<close>\<close>
+
+text \<open>Mono hosts: \<open>Lng M = 2\<close> is the free one-column corner (the dispatcher's
+  own pattern); \<open>Lng M > 2\<close> splits on \<open>Br M\<close> --- branched goes through the
+  keystone (@{thm [source] opx_OTpred_monoBr_of_DEEPOT}, fresh clauses closed,
+  deepened = \<open>DEEPOT\<close>); branch-free is the named residual \<open>NOBR\<close>.\<close>
+
+lemma opx_OTpred_mono_of_residuals:
+  fixes M :: pairseq
+  assumes DEEPOT: "\<And>K x q q' ps. K \<in> ST_PS \<Longrightarrow> monoT K \<Longrightarrow> Br K \<noteq> [] \<Longrightarrow>
+      1 < Lng K - 1 \<Longrightarrow> Trans K \<in> OT_B \<Longrightarrow>
+      Trans K = Dpt (enat (entry K 1 0)) (Trm ps +\<^sub>B Dpt (enat x) q) \<Longrightarrow>
+      Trans (Pred K) = Dpt (enat (entry K 1 0)) (Trm ps +\<^sub>B Dpt (enat x) q') \<Longrightarrow>
+      Trans (Pred K) \<in> OT_B"
+    and NOBR: "\<And>K. K \<in> ST_PS \<Longrightarrow> monoT K \<Longrightarrow> Br K = [] \<Longrightarrow> 1 < Lng K - 1 \<Longrightarrow>
+      Trans K \<in> OT_B \<Longrightarrow> Trans (Pred K) \<in> OT_B"
+    and MST: "M \<in> ST_PS" and mono: "monoT M" and L: "1 < Lng M"
+    and hostOT: "Trans M \<in> OT_B"
+  shows "Trans (Pred M) \<in> OT_B"
+proof -
+  have MR: "M \<in> RT_PS" using MST m_6_7_ST_PS_subseteq_RT_PS by blast
+  have MT: "M \<in> T_PS" using MR by (simp add: RT_PS_def)
+  have MP: "M \<in> PT_PS" using MT mono by (simp add: PT_PS_def)
+  show ?thesis
+  proof (cases "Lng M = 2")
+    case L2: True
+    have predRT: "Pred M \<in> RT_PS" by (rule Pred_RT_PS[OF MR])
+    have predT: "Pred M \<in> T_PS" using predRT by (simp add: RT_PS_def)
+    have LP1: "Lng (Pred M) = 1" using L2 by (simp add: Pred_def)
+    obtain v where pv: "Pred M = [(v, v)]"
+      using m_6_6_oneColumn[OF predT] predRT LP1 by auto
+    have tv: "Trans (Pred M) = (if v = 0 then 0\<^sub>B else Dpt (enat v) 0\<^sub>B)"
+      using pv Trans_singleton by simp
+    show ?thesis
+      using tv otx_OT_B_zero m_8_7_OT_ex1[of v] by (cases "v = 0") simp_all
+  next
+    case False
+    have j1gt: "1 < Lng M - 1" using L False by linarith
+    show ?thesis
+    proof (cases "Br M = []")
+      case True
+      show ?thesis by (rule NOBR[OF MST mono True j1gt hostOT])
+    next
+      case brne: False
+      show ?thesis
+      proof (rule opx_OTpred_monoBr_of_DEEPOT[OF _ MR MP brne j1gt hostOT])
+        fix x q q' ps
+        assume h1: "Trans M = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B Dpt (enat x) q)"
+          and h2: "Trans (Pred M) = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B Dpt (enat x) q')"
+        show "Trans (Pred M) \<in> OT_B"
+          by (rule DEEPOT[OF MST mono brne j1gt hostOT h1 h2])
+      qed
+    qed
+  qed
+qed
+
+lemma opx_OTpred_of_residuals:
+  fixes N :: pairseq
+  assumes DEEPOT: "\<And>K x q q' ps. K \<in> ST_PS \<Longrightarrow> monoT K \<Longrightarrow> Br K \<noteq> [] \<Longrightarrow>
+      1 < Lng K - 1 \<Longrightarrow> Trans K \<in> OT_B \<Longrightarrow>
+      Trans K = Dpt (enat (entry K 1 0)) (Trm ps +\<^sub>B Dpt (enat x) q) \<Longrightarrow>
+      Trans (Pred K) = Dpt (enat (entry K 1 0)) (Trm ps +\<^sub>B Dpt (enat x) q') \<Longrightarrow>
+      Trans (Pred K) \<in> OT_B"
+    and NOBR: "\<And>K. K \<in> ST_PS \<Longrightarrow> monoT K \<Longrightarrow> Br K = [] \<Longrightarrow> 1 < Lng K - 1 \<Longrightarrow>
+      Trans K \<in> OT_B \<Longrightarrow> Trans (Pred K) \<in> OT_B"
+    and NST: "N \<in> ST_PS" and hostOT: "Trans N \<in> OT_B" and L: "1 < Lng N"
+  shows "Trans (Pred N) \<in> OT_B"
+proof -
+  have NR: "N \<in> RT_PS" using NST m_6_7_ST_PS_subseteq_RT_PS by blast
+  have NT: "N \<in> T_PS" using NR by (simp add: RT_PS_def)
+  show ?thesis
+  proof (cases "multiT N")
+    case mu: True
+    show ?thesis
+      by (rule opx_OTpred_multi_of_mono[OF
+            opx_OTpred_mono_of_residuals[OF DEEPOT NOBR] NST mu hostOT])
+  next
+    case False
+    have nm: "\<not> (multiT N \<and> 1 < Lng N)" using False by blast
+    have PN: "P N = [N]" by (rule poper_P_nonmulti[OF nm])
+    have Nmem: "N \<in> set (P N)" using PN by simp
+    have "zeroT N \<or> monoT N" using m_6_2_P_components_1[OF NT] Nmem by blast
+    moreover have "\<not> zeroT N" using L by (auto simp: zeroT_def)
+    ultimately have mono: "monoT N" by blast
+    show ?thesis
+      by (rule opx_OTpred_mono_of_residuals[OF DEEPOT NOBR NST mono L hostOT])
+  qed
+qed
+
+subsection \<open>THE REVISED TERMINATION CENSUS v3 --- both pillars modulo
+  \<open>{OTint, TVall, ordIntC, DEEPOT, NOBR}\<close>\<close>
+
+text \<open>Census v3: BOTH structural slots \<open>OTmulti\<close> AND \<open>OTpred\<close> are now
+  eliminated --- \<open>OTmulti\<close> by @{thm [source] opx_OTmulti}, \<open>OTpred\<close> by
+  @{thm [source] opx_OTpred_of_residuals} (which is STRONGER than the slot:
+  it needs none of the three corner exclusions).  Residue: \<open>OTint\<close> (interior
+  OT), \<open>TVall\<close> (condition-(II) tail value), \<open>ordIntC\<close> (interior order leg),
+  \<open>DEEPOT\<close> (deepened-deposit \<open>Pred\<close> step on branched mono hosts), \<open>NOBR\<close>
+  (branch-free mono \<open>Pred\<close> step).\<close>
+
+theorem opx_termination_census_v3:
+  assumes OTint: "\<And>N m. N \<in> ST_PS \<Longrightarrow> N \<in> PT_PS \<Longrightarrow> 1 < Lng N - 1 \<Longrightarrow>
+                  transCondIII N \<or> transCondIV N \<or> transCondV N \<Longrightarrow>
+                  Trans N \<in> OT_B \<Longrightarrow> 1 < m \<Longrightarrow> Trans ((N::pairseq)[m]) \<in> OT_B"
+    and TVall: "\<And>K. K \<in> ST_PS \<Longrightarrow> K \<in> PT_PS \<Longrightarrow> 1 < Lng K - 1 \<Longrightarrow>
+                  transCondII K \<Longrightarrow> c2sx_tailval K"
+    and ordIntC: "\<And>P n. P \<in> ST_PS \<Longrightarrow> P \<in> PT_PS \<Longrightarrow> 1 < Lng P - 1 \<Longrightarrow>
+                  transCondIII P \<or> transCondIV P \<or> transCondV P \<Longrightarrow>
+                  Trans P \<in> OT_B \<Longrightarrow> 1 < n \<Longrightarrow>
+                  leBT (Trans ((P::pairseq)[n])) (Trans P)"
+    and DEEPOT: "\<And>K x q q' ps. K \<in> ST_PS \<Longrightarrow> monoT K \<Longrightarrow> Br K \<noteq> [] \<Longrightarrow>
+                  1 < Lng K - 1 \<Longrightarrow> Trans K \<in> OT_B \<Longrightarrow>
+                  Trans K = Dpt (enat (entry K 1 0)) (Trm ps +\<^sub>B Dpt (enat x) q) \<Longrightarrow>
+                  Trans (Pred K) = Dpt (enat (entry K 1 0)) (Trm ps +\<^sub>B Dpt (enat x) q') \<Longrightarrow>
+                  Trans (Pred K) \<in> OT_B"
+    and NOBR: "\<And>K. K \<in> ST_PS \<Longrightarrow> monoT K \<Longrightarrow> Br K = [] \<Longrightarrow> 1 < Lng K - 1 \<Longrightarrow>
+                  Trans K \<in> OT_B \<Longrightarrow> Trans (Pred K) \<in> OT_B"
+  shows "\<forall>M. M \<in> ST_PS \<longrightarrow> Trans M \<in> OT_B"
+    and "\<forall>M n. M \<in> ST_PS \<longrightarrow> 1 \<le> n \<longrightarrow> 1 < Lng M \<longrightarrow>
+           lessBT (Trans ((M::pairseq)[n])) (Trans M)"
+proof -
+  have OTpred: "\<And>N. N \<in> ST_PS \<Longrightarrow> Trans N \<in> OT_B \<Longrightarrow> 2 < Lng N \<Longrightarrow>
+                  \<not> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0) \<Longrightarrow>
+                  \<not> (N \<in> PT_PS \<and> transCondI N) \<Longrightarrow>
+                  \<not> (N \<in> PT_PS \<and> transCondVI N \<and> \<not> adm N (transJ0 N)) \<Longrightarrow>
+                  Trans (Pred N) \<in> OT_B"
+  proof -
+    fix N :: pairseq
+    assume NST: "N \<in> ST_PS" and ihOT: "Trans N \<in> OT_B" and L3: "2 < Lng N"
+      and "\<not> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0)"
+      and "\<not> (N \<in> PT_PS \<and> transCondI N)"
+      and "\<not> (N \<in> PT_PS \<and> transCondVI N \<and> \<not> adm N (transJ0 N))"
+    have L: "1 < Lng N" using L3 by simp
+    show "Trans (Pred N) \<in> OT_B"
+      by (rule opx_OTpred_of_residuals[OF DEEPOT NOBR NST ihOT L])
+  qed
+  have OTmulti: "\<And>N m. N \<in> ST_PS \<Longrightarrow> multiT N \<Longrightarrow> Trans N \<in> OT_B \<Longrightarrow>
+                  1 < m \<Longrightarrow> (N::pairseq)[m] \<noteq> Pred N \<Longrightarrow>
+                  Trans ((N::pairseq)[m]) \<in> OT_B"
+    by (rule opx_OTmulti[OF OTint TVall ordIntC])
+  show "\<forall>M. M \<in> ST_PS \<longrightarrow> Trans M \<in> OT_B"
+    by (rule apx_termination_final(1)[OF OTint OTpred OTmulti TVall])
+  show "\<forall>M n. M \<in> ST_PS \<longrightarrow> 1 \<le> n \<longrightarrow> 1 < Lng M \<longrightarrow>
+           lessBT (Trans ((M::pairseq)[n])) (Trans M)"
+    by (rule apx_termination_final(2)[OF OTint OTpred OTmulti TVall])
+qed
+
+(* ===== end r53 OPM part 2 (OTpred slot eliminated; census v3) ===== *)
+
+(* ===== r53 merge: wt-s4c — oix_transport THEOREM -> OTint condV residual-free; slot modulo {otIII,otIV,PredNp,Lpv,L1v} (otx3_) ===== *)
+
+(* ===================================================================== *)
+(* ===== r53-OTX3 (otx3_ prefix): oix_transport ASSEMBLED as a       ===== *)
+(* ===== THEOREM from the r52 otx2_ bricks; the OTint condV legs     ===== *)
+(* ===== and the census drop the transport hypothesis.               ===== *)
+(* ===================================================================== *)
+
+section \<open>r53-OTX3 --- @{const oix_transport} discharged; transport-free census\<close>
+
+text \<open>\<^bold>\<open>Assembly\<close> (r51 design, r52 bricks).  @{thm [source] otx2_align3} peels the
+  shared \<open>(s, b)\<close> context one right-spine level at a time; @{text otx3_core}
+  (strong induction on \<open>size t'\<close>) carries through the recursion the sandwich
+  orders \<open>tLo \<le> t' \<le> tHi\<close> and the [Buc1]-\<open>\<triangleleft>\<^sub>z\<close> G-control
+  \<open>b1x_triG (D\<^sub>\<infinity>(tLo\<^bsub>level\<^esub>)) t' tHi\<close> (base = the \<open>setle\<close> premise via
+  @{text otx3_setle_triG}; step = @{text otx3_triG_lift} on
+  @{thm [source] b1x_sandwich_prefix}/@{thm [source] b1x_sandwich_Dpt}).  The
+  \<open>z\<close>-WEAKENING across levels (from \<open>D\<^sub>\<infinity>(lbLo)\<close> to \<open>D\<^sub>\<infinity>(tLo)\<close>) is sound
+  because the left G-set \<open>G\<^sub>u(D\<^sub>w \<cdot>)\<close> vanishes for \<open>u > w\<close>, so only \<open>u \<le> w\<close>
+  matters, where the low core's G-material embeds verbatim into the level's
+  low donor.  Each level's (OT3) guard is [Buc1] Lemma 3.4
+  (@{thm [source] b1x_G_control}) with \<open>Ga\<close> = the HIGH donor's own guard and
+  \<open>Gz\<close> = the LOW donor's guard + strictness of the substitution (the
+  degenerate \<open>lb' = lbLo\<close> level IS the low donor's principal verbatim, no
+  strictness needed); \<open>descP\<close>-last is read off the HIGH donor
+  (@{thm [source] descP_last_le}); the prefix components come from the LOW
+  donor.  Empirics: r51 STEP-0 3628/3628 and r52 STEP-0 15934/15934 on this
+  exact statement (11590 instances with \<open>insert aLo\<close> load-bearing).\<close>
+
+subsection \<open>Bricks: \<open>setle \<Rightarrow> \<triangleleft>\<close>, the per-level principal guard, the
+  \<open>\<triangleleft>\<close> level lift, and the level assembly\<close>
+
+text \<open>The \<open>setle\<close> premise of the transport is (strictly stronger than) the
+  G-control \<open>a' \<triangleleft>\<^bsub>D\<^sub>\<infinity>(aLo)\<^esub> aHi\<close>: the intermediate \<open>c\<close> is not even needed.\<close>
+
+lemma otx3_setle_triG:
+  assumes setle: "\<forall>u. b1x_setle (GBT u a') (insert aLo (GBT u aLo))"
+  shows "b1x_triG (Dpt \<infinity> aLo) a' aHi"
+proof (rule b1x_triG_I)
+  fix u c
+  assume "leBT a' c" and "leBT c aHi"
+  have "b1x_setle (GBT u a') (GBT u (Dpt \<infinity> aLo))"
+    using setle by simp
+  thus "b1x_setle (GBT u a') (GBT u c \<union> GBT u (Dpt \<infinity> aLo) \<union> {Trm []})"
+    by (rule b1x_setle_widen) blast
+qed
+
+text \<open>Per-level principal guard: between two OT principals \<open>D\<^sub>w xLo \<le> D\<^sub>w xHi\<close>
+  (same head), an OT body \<open>x'\<close> in the order sandwich with the G-control
+  against the LOW body is itself an OT principal at head \<open>w\<close> --- [Buc1]
+  Lemma 3.4 with \<open>Ga\<close> = high guard, \<open>Gz\<close> = low guard + strictness.\<close>
+
+lemma otx3_pOT:
+  assumes loP: "isOT_BP (DB w xLo)" and hiP: "isOT_BP (DB w xHi)"
+    and xOT: "isOT_BT x'"
+    and o1: "leBT xLo x'" and o2: "leBT x' xHi"
+    and tri: "b1x_triG (Dpt \<infinity> xLo) x' xHi"
+  shows "isOT_BP (DB w x')"
+proof (cases "x' = xLo")
+  case True
+  thus ?thesis using loP by simp
+next
+  case False
+  hence lo_lt: "lessBT xLo x'" using o1 by blast
+  have GLo: "\<forall>y \<in> GBT w xLo. lessBT y xLo" using loP by simp
+  have Ga: "\<forall>x \<in> GBT w xHi. lessBT x xHi" using hiP by simp
+  have Gz: "\<forall>x \<in> GBT w (Dpt \<infinity> xLo). lessBT x x'"
+  proof
+    fix x assume "x \<in> GBT w (Dpt \<infinity> xLo)"
+    hence "x \<in> insert xLo (GBT w xLo)" by simp
+    then consider (top) "x = xLo" | (deep) "x \<in> GBT w xLo" by blast
+    thus "lessBT x x'"
+    proof cases
+      case top
+      thus ?thesis using lo_lt by simp
+    next
+      case deep
+      have "lessBT x xLo" using GLo deep by blast
+      thus ?thesis using o1 by (rule b1x_less_le_trans)
+    qed
+  qed
+  have G: "\<forall>x \<in> GBT w x'. lessBT x x'"
+    by (rule b1x_G_control[OF tri o2 Ga Gz])
+  show ?thesis using xOT G by simp
+qed
+
+text \<open>The \<open>\<triangleleft>\<close> level lift WITH \<open>z\<close>-weakening: from the body G-control
+  \<open>x' \<triangleleft>\<^bsub>D\<^sub>\<infinity>(xLo)\<^esub> xHi\<close> to the term G-control at the next level, \<open>z\<close> moving
+  from the low BODY to the low TERM.  (Not an instance of
+  @{thm [source] b1x_triG_Dpt}/@{thm [source] b1x_triG_addBT}, which keep
+  \<open>z\<close> fixed.)\<close>
+
+lemma otx3_triG_lift:
+  assumes tri: "b1x_triG (Dpt \<infinity> xLo) x' xHi"
+  shows "b1x_triG (Dpt \<infinity> (Trm (qs @ [DB w xLo])))
+           (Trm (qs @ [DB w x'])) (Trm (qs @ [DB w xHi]))"
+proof (rule b1x_triG_I)
+  fix u c
+  assume l1: "leBT (Trm (qs @ [DB w x'])) c"
+    and l2: "leBT c (Trm (qs @ [DB w xHi]))"
+  let ?tLo = "Trm (qs @ [DB w xLo])"
+  let ?Z = "GBT u c \<union> GBT u (Dpt \<infinity> ?tLo) \<union> {Trm []}"
+  obtain cs where ceq: "c = Trm (qs @ cs)"
+    and s1: "leBT (Trm [DB w x']) (Trm cs)"
+    and s2: "leBT (Trm cs) (Trm [DB w xHi])"
+    using b1x_sandwich_prefix[OF l1 l2] by blast
+  obtain c0 c1 where cseq: "Trm cs = Trm (DB w c0 # c1)"
+    and xc0: "leBT x' c0" and c0hi: "leBT c0 xHi"
+    using b1x_sandwich_Dpt[OF s1 s2] by blast
+  have cse: "cs = DB w c0 # c1" using cseq by simp
+  have snocLo: "GBT u ?tLo = GBT u (Trm qs) \<union> GBP u (DB w xLo)"
+    using otx2_GBT_snoc[of u qs "DB w xLo"] by simp
+  have snocX: "GBT u (Trm (qs @ [DB w x'])) = GBT u (Trm qs) \<union> GBP u (DB w x')"
+    using otx2_GBT_snoc[of u qs "DB w x'"] by simp
+  have tLoZ: "GBT u ?tLo \<subseteq> GBT u (Dpt \<infinity> ?tLo)" by auto
+  have part1: "b1x_setle (GBT u (Trm qs)) ?Z"
+  proof (rule b1x_setle_subset)
+    have "GBT u (Trm qs) \<subseteq> GBT u ?tLo" using snocLo by blast
+    thus "GBT u (Trm qs) \<subseteq> ?Z" using tLoZ by blast
+  qed
+  have part2: "b1x_setle (GBP u (DB w x')) ?Z"
+  proof (cases "u \<le> w")
+    case False
+    hence "GBP u (DB w x') = {}" by simp
+    thus ?thesis by (simp add: b1x_setle_def)
+  next
+    case True
+    have Gx': "GBP u (DB w x') = insert x' (GBT u x')" using True by simp
+    have c0in: "c0 \<in> GBT u c" using ceq cse True by auto
+    have Gc0sub: "GBT u c0 \<subseteq> GBT u c" using ceq cse True by fastforce
+    have sub2: "GBT u (Dpt \<infinity> xLo) \<subseteq> GBT u (Dpt \<infinity> ?tLo)"
+    proof -
+      have "GBT u (Dpt \<infinity> xLo) = GBP u (DB w xLo)" using True by simp
+      also have "\<dots> \<subseteq> GBT u ?tLo" using snocLo by blast
+      also have "\<dots> \<subseteq> GBT u (Dpt \<infinity> ?tLo)" using tLoZ .
+      finally show ?thesis .
+    qed
+    have deep: "b1x_setle (GBT u x')
+                  (GBT u c0 \<union> GBT u (Dpt \<infinity> xLo) \<union> {Trm []})"
+      by (rule b1x_triG_D[OF tri xc0 c0hi])
+    have deep': "b1x_setle (GBT u x') ?Z"
+      by (rule b1x_setle_widen[OF deep]) (use Gc0sub sub2 in blast)
+    have x'le: "\<exists>y\<in>?Z. leBT x' y" using xc0 c0in by blast
+    show ?thesis
+      unfolding Gx' b1x_setle_def
+      using x'le deep'[unfolded b1x_setle_def] by blast
+  qed
+  show "b1x_setle (GBT u (Trm (qs @ [DB w x']))) ?Z"
+    unfolding snocX by (rule b1x_setle_union[OF part1 part2])
+qed
+
+text \<open>One level of the assembly: prefix components from the LOW donor,
+  \<open>descP\<close>-last from the HIGH donor, the new principal by hypothesis, plus the
+  order and G-control lifts.\<close>
+
+lemma otx3_level:
+  assumes LoOT: "isOT_BT (Trm (qs @ [DB w xLo]))"
+    and HiOT: "isOT_BT (Trm (qs @ [DB w xHi]))"
+    and pOT: "isOT_BP (DB w x')"
+    and o1: "leBT xLo x'" and o2: "leBT x' xHi"
+    and tri: "b1x_triG (Dpt \<infinity> xLo) x' xHi"
+  shows "isOT_BT (Trm (qs @ [DB w x']))
+       \<and> leBT (Trm (qs @ [DB w xLo])) (Trm (qs @ [DB w x']))
+       \<and> leBT (Trm (qs @ [DB w x'])) (Trm (qs @ [DB w xHi]))
+       \<and> b1x_triG (Dpt \<infinity> (Trm (qs @ [DB w xLo])))
+           (Trm (qs @ [DB w x'])) (Trm (qs @ [DB w xHi]))"
+proof -
+  have qsP: "\<forall>p \<in> set qs. isOT_BP p" using LoOT by auto
+  have descLo: "descP (qs @ [DB w xLo])" using LoOT by simp
+  have qsD: "descP qs" by (rule otx2_descP_prefix[OF descLo])
+  have qsOT: "isOT_BT (Trm qs)" using qsP qsD by simp
+  have lelast: "qs \<noteq> [] \<longrightarrow> leBT (Trm [DB w x']) (Trm [last qs])"
+  proof
+    assume qne: "qs \<noteq> []"
+    have descHi: "descP (qs @ [DB w xHi])" using HiOT by simp
+    have hi_last: "leBT (Trm [DB w xHi]) (Trm [last qs])"
+      by (rule descP_last_le[OF descHi qne])
+    have mid: "leBT (Trm [DB w x']) (Trm [DB w xHi])"
+      using otx2_leBT_snocsnoc[OF o2, where qs="[]" and w=w] by simp
+    show "leBT (Trm [DB w x']) (Trm [last qs])"
+      by (rule oix_leBT_trans[OF mid hi_last])
+  qed
+  have OT: "isOT_BT (Trm (qs @ [DB w x']))"
+    by (rule m_8_7_isOT_BT_snoc_leBT[OF qsOT pOT lelast])
+  have le1: "leBT (Trm (qs @ [DB w xLo])) (Trm (qs @ [DB w x']))"
+    by (rule otx2_leBT_snocsnoc[OF o1])
+  have le2: "leBT (Trm (qs @ [DB w x'])) (Trm (qs @ [DB w xHi]))"
+    by (rule otx2_leBT_snocsnoc[OF o2])
+  have triL: "b1x_triG (Dpt \<infinity> (Trm (qs @ [DB w xLo])))
+                (Trm (qs @ [DB w x'])) (Trm (qs @ [DB w xHi]))"
+    by (rule otx3_triG_lift[OF tri])
+  show ?thesis using OT le1 le2 triL by blast
+qed
+
+subsection \<open>The context recursion and the transport theorem\<close>
+
+lemma otx3_core:
+  "flatBT tLo = s @ flatBP (DB (enat h) aLo) @ b \<Longrightarrow>
+   flatBT t' = s @ flatBP (DB (enat h) a') @ b \<Longrightarrow>
+   flatBT tHi = s @ flatBP (DB (enat h) aHi) @ b \<Longrightarrow>
+   \<forall>x \<in> set b. x = RP \<Longrightarrow>
+   isOT_BT tLo \<Longrightarrow> isOT_BT tHi \<Longrightarrow>
+   isOT_BP (DB (enat h) a') \<Longrightarrow>
+   leBT aLo a' \<Longrightarrow> leBT a' aHi \<Longrightarrow>
+   \<forall>u. b1x_setle (GBT u a') (insert aLo (GBT u aLo)) \<Longrightarrow>
+   isOT_BT t' \<and> leBT tLo t' \<and> leBT t' tHi \<and> b1x_triG (Dpt \<infinity> tLo) t' tHi"
+proof (induction t' arbitrary: tLo tHi s b rule: measure_induct_rule[where f=size])
+  case (less t')
+  note P = less.prems
+  from otx2_align3[OF P(1) P(2) P(3) P(4)]
+  show ?case
+  proof (elim disjE exE conjE)
+    \<comment> \<open>case A: the cores are the last top-level components over a shared \<open>qs\<close>\<close>
+    fix qs
+    assume TLo: "tLo = Trm (qs @ [DB (enat h) aLo])"
+      and T': "t' = Trm (qs @ [DB (enat h) a'])"
+      and THi: "tHi = Trm (qs @ [DB (enat h) aHi])"
+    have tri0: "b1x_triG (Dpt \<infinity> aLo) a' aHi"
+      by (rule otx3_setle_triG[OF P(10)])
+    have LoOT': "isOT_BT (Trm (qs @ [DB (enat h) aLo]))" using P(5) TLo by simp
+    have HiOT': "isOT_BT (Trm (qs @ [DB (enat h) aHi]))" using P(6) THi by simp
+    show "isOT_BT t' \<and> leBT tLo t' \<and> leBT t' tHi \<and> b1x_triG (Dpt \<infinity> tLo) t' tHi"
+      unfolding TLo T' THi
+      by (rule otx3_level[OF LoOT' HiOT' P(7) P(8) P(9) tri0])
+  next
+    \<comment> \<open>case B: descend through a shared last component into aligned bodies\<close>
+    fix qs w lbLo lb' lbHi sc bc
+    assume TLo: "tLo = Trm (qs @ [DB w lbLo])"
+      and T': "t' = Trm (qs @ [DB w lb'])"
+      and THi: "tHi = Trm (qs @ [DB w lbHi])"
+      and F1: "flatBT lbLo = sc @ flatBP (DB (enat h) aLo) @ bc"
+      and F2: "flatBT lb' = sc @ flatBP (DB (enat h) a') @ bc"
+      and F3: "flatBT lbHi = sc @ flatBP (DB (enat h) aHi) @ bc"
+      and BC: "\<forall>x \<in> set bc. x = RP"
+    have LoOT': "isOT_BT (Trm (qs @ [DB w lbLo]))" using P(5) TLo by simp
+    have HiOT': "isOT_BT (Trm (qs @ [DB w lbHi]))" using P(6) THi by simp
+    have loP: "isOT_BP (DB w lbLo)" using LoOT' by simp
+    have hiP: "isOT_BP (DB w lbHi)" using HiOT' by simp
+    have loBT: "isOT_BT lbLo" using loP by simp
+    have hiBT: "isOT_BT lbHi" using hiP by simp
+    have pin: "DB w lb' \<in> set (qs @ [DB w lb'])" by simp
+    have szp: "size (DB w lb') \<le> size_list size (qs @ [DB w lb'])"
+      by (rule size_list_estimation'[OF pin order_refl])
+    have sz: "size lb' < size t'" using szp T' by simp
+    from less.IH[OF sz F1 F2 F3 BC loBT hiBT P(7) P(8) P(9) P(10)]
+    have ih1: "isOT_BT lb'" and ih2: "leBT lbLo lb'" and ih3: "leBT lb' lbHi"
+      and ih4: "b1x_triG (Dpt \<infinity> lbLo) lb' lbHi" by blast+
+    have pOT: "isOT_BP (DB w lb')"
+      by (rule otx3_pOT[OF loP hiP ih1 ih2 ih3 ih4])
+    show "isOT_BT t' \<and> leBT tLo t' \<and> leBT t' tHi \<and> b1x_triG (Dpt \<infinity> tLo) t' tHi"
+      unfolding TLo T' THi
+      by (rule otx3_level[OF LoOT' HiOT' pOT ih2 ih3 ih4])
+  qed
+qed
+
+theorem otx3_transport: "oix_transport"
+  unfolding oix_transport_def
+proof (intro allI impI)
+  fix tLo t' tHi :: BT and s b :: "Sym list" and h :: nat and aLo a' aHi :: BT
+  assume d1: "scb_decomp tLo s (flatBT (Dpt (enat h) aLo)) b"
+    and d2: "scb_decomp t' s (flatBT (Dpt (enat h) a')) b"
+    and d3: "scb_decomp tHi s (flatBT (Dpt (enat h) aHi)) b"
+    and loOT: "isOT_BT tLo" and hiOT: "isOT_BT tHi"
+    and newOT: "isOT_BP (DB (enat h) a')"
+    and o1: "leBT aLo a'" and o2: "leBT a' aHi"
+    and setle: "\<forall>u. b1x_setle (GBT u a') (insert aLo (GBT u aLo))"
+  have e1: "flatBT tLo = s @ flatBP (DB (enat h) aLo) @ b"
+    using d1 by (simp add: scb_decomp_def)
+  have e2: "flatBT t' = s @ flatBP (DB (enat h) a') @ b"
+    using d2 by (simp add: scb_decomp_def)
+  have e3: "flatBT tHi = s @ flatBP (DB (enat h) aHi) @ b"
+    using d3 by (simp add: scb_decomp_def)
+  have bR: "\<forall>x \<in> set b. x = RP" using d1 by (simp add: scb_decomp_def)
+  show "isOT_BT t'"
+    using otx3_core[OF e1 e2 e3 bR loOT hiOT newOT o1 o2 setle] by blast
+qed
+
+(* ===== end r53-otx3 transport theorem ===== *)
+
+subsection \<open>Transport-free consumers: the condV \<open>OTint\<close> legs and the census\<close>
+
+text \<open>The condV-ADM leg is now RESIDUAL-FREE (no hypotheses beyond the slot's
+  own): @{thm [source] oix_OTint_condV_adm} with @{thm [source] otx3_transport}.\<close>
+
+lemma otx3_OTint_condV:
+  fixes N :: pairseq and m :: nat
+  assumes "N \<in> ST_PS" and "N \<in> PT_PS"
+    and "transCondV N" and "adm N (transJ0 N)"
+    and "Trans N \<in> OT_B" and "1 < m"
+  shows "Trans ((N::pairseq)[m]) \<in> OT_B"
+  by (rule oix_OTint_condV_adm[OF otx3_transport assms])
+
+text \<open>The condV-NADM leg keeps only its three §8.2-terminal-slice value-form
+  inputs (\<open>PredNp\<close>/\<open>Lpv\<close>/\<open>L1v\<close>); the transport hypothesis is gone.\<close>
+
+lemma otx3_OTint_condV_nadm:
+  fixes N :: pairseq and m :: nat
+  assumes "N \<in> ST_PS" and "N \<in> PT_PS"
+    and "transCondV N" and "\<not> adm N (transJ0 N)"
+    and "Trans (Pred (s84x_Np N))
+           = Dpt (enat (entry N 1 (transJ0 N))) (transT2 N)"
+    and "Trans (s84x_Lp N)
+           = Dpt (enat (entry N 1 (transJ0 N)))
+               (transT2 N +\<^sub>B Dpt (enat (entry N 1 (transJ0 N))) 0\<^sub>B)"
+    and "\<And>s\<^sub>1 b\<^sub>1. scb_decomp (Trans ((N::pairseq)[1])) s\<^sub>1
+           (flatBT (Dpt (enat (entry N 1 (transJm1 N))) (transT2 N))) b\<^sub>1 \<Longrightarrow>
+         scb_kind1 (Trans N) s\<^sub>1 (flatBT (transC2 N)) b\<^sub>1 \<Longrightarrow>
+         scb_decomp (Trans (s84x_L N 1)) s\<^sub>1
+           (flatBT (Dpt (enat (entry N 1 (transJm1 N)))
+              (transT2 N +\<^sub>B Dpt (enat (entry N 1 (transJ0 N)))
+                 (transT2 N +\<^sub>B Dpt (enat (entry N 1 (transJ0 N))) 0\<^sub>B)))) b\<^sub>1"
+    and "Trans N \<in> OT_B" and "1 < m"
+  shows "Trans ((N::pairseq)[m]) \<in> OT_B"
+  by (rule oix_OTint_condV_nadm[OF otx3_transport assms])
+
+text \<open>The \<open>OTint\<close> census slot, transport-free: condition (V) fully covered,
+  residuals \<open>{otIII, otIV, PredNp, Lpv, L1v}\<close>.\<close>
+
+lemma otx3_OTint_slot:
+  fixes N :: pairseq and m :: nat
+  assumes otIII: "\<And>P n. P \<in> ST_PS \<Longrightarrow> P \<in> PT_PS \<Longrightarrow> 1 < Lng P - 1 \<Longrightarrow>
+             transCondIII P \<Longrightarrow> Trans P \<in> OT_B \<Longrightarrow> 1 < n \<Longrightarrow>
+             Trans ((P::pairseq)[n]) \<in> OT_B"
+    and otIV: "\<And>P n. P \<in> ST_PS \<Longrightarrow> P \<in> PT_PS \<Longrightarrow> 1 < Lng P - 1 \<Longrightarrow>
+             transCondIV P \<Longrightarrow> Trans P \<in> OT_B \<Longrightarrow> 1 < n \<Longrightarrow>
+             Trans ((P::pairseq)[n]) \<in> OT_B"
+    and PredNpH: "\<And>P. P \<in> ST_PS \<Longrightarrow> P \<in> PT_PS \<Longrightarrow> transCondV P \<Longrightarrow>
+             \<not> adm P (transJ0 P) \<Longrightarrow>
+             Trans (Pred (s84x_Np P))
+               = Dpt (enat (entry P 1 (transJ0 P))) (transT2 P)"
+    and LpvH: "\<And>P. P \<in> ST_PS \<Longrightarrow> P \<in> PT_PS \<Longrightarrow> transCondV P \<Longrightarrow>
+             \<not> adm P (transJ0 P) \<Longrightarrow>
+             Trans (s84x_Lp P)
+               = Dpt (enat (entry P 1 (transJ0 P)))
+                   (transT2 P +\<^sub>B Dpt (enat (entry P 1 (transJ0 P))) 0\<^sub>B)"
+    and L1vH: "\<And>P s\<^sub>1 b\<^sub>1. P \<in> ST_PS \<Longrightarrow> P \<in> PT_PS \<Longrightarrow> transCondV P \<Longrightarrow>
+             \<not> adm P (transJ0 P) \<Longrightarrow>
+             scb_decomp (Trans ((P::pairseq)[1])) s\<^sub>1
+               (flatBT (Dpt (enat (entry P 1 (transJm1 P))) (transT2 P))) b\<^sub>1 \<Longrightarrow>
+             scb_kind1 (Trans P) s\<^sub>1 (flatBT (transC2 P)) b\<^sub>1 \<Longrightarrow>
+             scb_decomp (Trans (s84x_L P 1)) s\<^sub>1
+               (flatBT (Dpt (enat (entry P 1 (transJm1 P)))
+                  (transT2 P +\<^sub>B Dpt (enat (entry P 1 (transJ0 P)))
+                     (transT2 P +\<^sub>B Dpt (enat (entry P 1 (transJ0 P))) 0\<^sub>B)))) b\<^sub>1"
+    and NST: "N \<in> ST_PS" and NPT: "N \<in> PT_PS" and j1gt: "1 < Lng N - 1"
+    and cond: "transCondIII N \<or> transCondIV N \<or> transCondV N"
+    and ihOT: "Trans N \<in> OT_B" and mgt: "1 < m"
+  shows "Trans ((N::pairseq)[m]) \<in> OT_B"
+  by (rule oix_OTint_slot2[OF otx3_transport otIII otIV PredNpH LpvH L1vH
+        NST NPT j1gt cond ihOT mgt])
+
+text \<open>\<^bold>\<open>Census update (r53).\<close>  Both termination pillars, now modulo
+  \<open>{otIII, otIV, PredNp, Lpv, L1v, OTpred, OTmulti, TVall}\<close> --- the pure-\<open>BT\<close>
+  transport residual is GONE from the census.\<close>
+
+lemma otx3_census:
+  assumes otIII: "\<And>P n. P \<in> ST_PS \<Longrightarrow> P \<in> PT_PS \<Longrightarrow> 1 < Lng P - 1 \<Longrightarrow>
+             transCondIII P \<Longrightarrow> Trans P \<in> OT_B \<Longrightarrow> 1 < n \<Longrightarrow>
+             Trans ((P::pairseq)[n]) \<in> OT_B"
+    and otIV: "\<And>P n. P \<in> ST_PS \<Longrightarrow> P \<in> PT_PS \<Longrightarrow> 1 < Lng P - 1 \<Longrightarrow>
+             transCondIV P \<Longrightarrow> Trans P \<in> OT_B \<Longrightarrow> 1 < n \<Longrightarrow>
+             Trans ((P::pairseq)[n]) \<in> OT_B"
+    and PredNpH: "\<And>P. P \<in> ST_PS \<Longrightarrow> P \<in> PT_PS \<Longrightarrow> transCondV P \<Longrightarrow>
+             \<not> adm P (transJ0 P) \<Longrightarrow>
+             Trans (Pred (s84x_Np P))
+               = Dpt (enat (entry P 1 (transJ0 P))) (transT2 P)"
+    and LpvH: "\<And>P. P \<in> ST_PS \<Longrightarrow> P \<in> PT_PS \<Longrightarrow> transCondV P \<Longrightarrow>
+             \<not> adm P (transJ0 P) \<Longrightarrow>
+             Trans (s84x_Lp P)
+               = Dpt (enat (entry P 1 (transJ0 P)))
+                   (transT2 P +\<^sub>B Dpt (enat (entry P 1 (transJ0 P))) 0\<^sub>B)"
+    and L1vH: "\<And>P s\<^sub>1 b\<^sub>1. P \<in> ST_PS \<Longrightarrow> P \<in> PT_PS \<Longrightarrow> transCondV P \<Longrightarrow>
+             \<not> adm P (transJ0 P) \<Longrightarrow>
+             scb_decomp (Trans ((P::pairseq)[1])) s\<^sub>1
+               (flatBT (Dpt (enat (entry P 1 (transJm1 P))) (transT2 P))) b\<^sub>1 \<Longrightarrow>
+             scb_kind1 (Trans P) s\<^sub>1 (flatBT (transC2 P)) b\<^sub>1 \<Longrightarrow>
+             scb_decomp (Trans (s84x_L P 1)) s\<^sub>1
+               (flatBT (Dpt (enat (entry P 1 (transJm1 P)))
+                  (transT2 P +\<^sub>B Dpt (enat (entry P 1 (transJ0 P)))
+                     (transT2 P +\<^sub>B Dpt (enat (entry P 1 (transJ0 P))) 0\<^sub>B)))) b\<^sub>1"
+    and OTpred: "\<And>N. N \<in> ST_PS \<Longrightarrow> Trans N \<in> OT_B \<Longrightarrow> 2 < Lng N \<Longrightarrow>
+             \<not> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0) \<Longrightarrow>
+             \<not> (N \<in> PT_PS \<and> transCondI N) \<Longrightarrow>
+             \<not> (N \<in> PT_PS \<and> transCondVI N \<and> \<not> adm N (transJ0 N)) \<Longrightarrow>
+             Trans (Pred N) \<in> OT_B"
+    and OTmulti: "\<And>N m. N \<in> ST_PS \<Longrightarrow> multiT N \<Longrightarrow> Trans N \<in> OT_B \<Longrightarrow>
+             1 < m \<Longrightarrow> (N::pairseq)[m] \<noteq> Pred N \<Longrightarrow>
+             Trans ((N::pairseq)[m]) \<in> OT_B"
+    and TVall: "\<And>K. K \<in> ST_PS \<Longrightarrow> K \<in> PT_PS \<Longrightarrow> 1 < Lng K - 1 \<Longrightarrow>
+             transCondII K \<Longrightarrow> c2sx_tailval K"
+  shows "\<forall>M. M \<in> ST_PS \<longrightarrow> Trans M \<in> OT_B"
+    and "\<forall>M n. M \<in> ST_PS \<longrightarrow> 1 \<le> n \<longrightarrow> 1 < Lng M \<longrightarrow>
+           lessBT (Trans ((M::pairseq)[n])) (Trans M)"
+proof -
+  show "\<forall>M. M \<in> ST_PS \<longrightarrow> Trans M \<in> OT_B"
+    by (rule oix_census_modOPM2(1)[OF otx3_transport otIII otIV PredNpH LpvH
+          L1vH OTpred OTmulti TVall])
+  show "\<forall>M n. M \<in> ST_PS \<longrightarrow> 1 \<le> n \<longrightarrow> 1 < Lng M \<longrightarrow>
+           lessBT (Trans ((M::pairseq)[n])) (Trans M)"
+    by (rule oix_census_modOPM2(2)[OF otx3_transport otIII otIV PredNpH LpvH
+          L1vH OTpred OTmulti TVall])
+qed
+
+(* ===== end r53-otx3 block ===== *)
+
+(* ===== r53 merge: wt-y3 — collapse core: impredicativity established; residual = pbody-acc / staged jump ladder (wfc_) ===== *)
+
+(* ===== r53: wt-y3 — buc1 collapse-core round (wfc_): G-antitonicity, secured
+        propagation, same-head acc lift, head-recursion discharge; residual
+        re-sharpened to principal-body RTrel-accessibility ===== *)
+
+section \<open>r53 wfc — the collapse core: the head recursion is discharged\<close>
+
+text \<open>Target: \<open>wfj_collapse_core\<close> (r52).  This round separates the two branches of
+  the \<open>accI\<close> step for a principal \<open>D\<^sub>v b\<close> and discharges everything EXCEPT the
+  genuine \<open>\<psi>\<close>-collapse content:
+
+  \<^enum> SAME-HEAD branch (\<open>D\<^sub>v w < D\<^sub>v b\<close> via \<open>w < b\<close>): fully reduced to
+    \<open>RTrel\<close>-accessibility of the body (\<open>wfc_principal_acc_of_body\<close>, an
+    \<open>acc\<close>-induction along \<open>RTrel\<close>).
+  \<^enum> STRICT-HEAD branch (\<open>D\<^sub>u w < D\<^sub>v b\<close> via \<open>u < v\<close>): the body \<open>w\<close> is completely
+    unconstrained by the comparison, so this branch needs accessibility of ALL
+    \<open>OT\<close>+\<open>dfree\<close> principals of head \<open>< v\<close> — but that hypothesis is FREE across
+    the head index by strong induction on the (finite, \<open>dfree\<close>) head
+    (\<open>wfc_wf_of_pbody_hyp\<close>), because \<open>wfj_hd\<close> is the true stratification
+    (\<open>wfj_strat_hd\<close>, r52).
+
+  Net effect: \<^bold>\<open>the head bookkeeping adds nothing\<close> — \<open>wf RPrel\<close> (hence the
+  collapse core, hence [Buc1] 2.2) is EQUIVALENT to \<open>RTrel\<close>-accessibility of the
+  bodies of \<open>OT\<close>+\<open>dfree\<close> principals (\<open>wfc_pbody_acc\<close>).  Together with the r52
+  tuple layer (\<open>wfj_tuple_acc\<close> and its converse \<open>wfc_acc_component\<close> below), the
+  two-sorted principal/tuple structure collapses to ONE question about bodies.\<close>
+
+subsection \<open>(1) \<open>G\<close>-set antitonicity and secured-content propagation\<close>
+
+lemma wfc_GBT_antitone: "\<forall>u u'. u \<le> u' \<longrightarrow> GBT u' t \<subseteq> GBT u t"
+  and wfc_GBP_antitone: "\<forall>u u'. u \<le> u' \<longrightarrow> GBP u' q \<subseteq> GBP u q"
+proof (induction t and q rule: wfs_lvT_wfs_lvP.induct)
+  case (1 ps)
+  show ?case
+  proof (intro allI impI subsetI)
+    fix u u' :: enat and x
+    assume le: "u \<le> u'" and xin: "x \<in> GBT u' (Trm ps)"
+    obtain r where rin: "r \<in> set ps" and xr: "x \<in> GBP u' r" using xin by auto
+    have "x \<in> GBP u r" using "1.IH"[OF rin] le xr by blast
+    then show "x \<in> GBT u (Trm ps)" using rin by auto
+  qed
+next
+  case (2 v b)
+  show ?case
+  proof (intro allI impI subsetI)
+    fix u u' :: enat and x
+    assume le: "u \<le> u'" and xin: "x \<in> GBP u' (DB v b)"
+    have u'v: "u' \<le> v" using xin by (auto split: if_splits)
+    have uv: "u \<le> v" using le u'v by (rule order_trans)
+    have xc: "x = b \<or> x \<in> GBT u' b" using xin u'v by (auto split: if_splits)
+    have "x = b \<or> x \<in> GBT u b" using xc "2.IH" le by blast
+    then show "x \<in> GBP u (DB v b)" using uv by auto
+  qed
+qed
+
+text \<open>The collapse-core premise (secured \<open>G\<^sub>v\<close>-coefficients) propagates to every
+  UNSHIELDED component of the body: if \<open>D\<^sub>w c\<close> is a top-level component of \<open>b\<close>
+  with \<open>w \<ge> v\<close>, then \<open>c\<close> is itself secured and its own \<open>G\<^sub>w\<close>-content is secured
+  — the recursion step of any future engine.  (Shielded components, \<open>w < v\<close>,
+  are NOT covered: they are the genuine \<open>\<psi>\<close>-collapse content.)\<close>
+
+lemma wfc_sec_component:
+  assumes sec: "\<forall>x \<in> GBT v b. wfj_secT x"
+    and comp: "DB w c \<in> set (untrm b)"
+    and vw: "v \<le> w"
+  shows "wfj_secT c" and "\<forall>x \<in> GBT w c. wfj_secT x"
+proof -
+  obtain ps where beq: "b = Trm ps" by (cases b) auto
+  have cin: "DB w c \<in> set ps" using comp beq by simp
+  have cG: "c \<in> GBT v b"
+  proof -
+    have m: "c \<in> GBP v (DB w c)" using vw by simp
+    have "c \<in> (\<Union>p \<in> set ps. GBP v p)" using cin m by (rule UN_I)
+    then show ?thesis using beq by simp
+  qed
+  show "wfj_secT c" using sec cG by blast
+  have sub: "GBT w c \<subseteq> GBT v b"
+  proof -
+    have s1: "GBT w c \<subseteq> GBT v c" using wfc_GBT_antitone vw by blast
+    have s2: "GBT v c \<subseteq> GBP v (DB w c)" using vw by auto
+    have s3: "GBP v (DB w c) \<subseteq> GBT v b"
+    proof
+      fix y assume yin: "y \<in> GBP v (DB w c)"
+      have "y \<in> (\<Union>p \<in> set ps. GBP v p)" using cin yin by (rule UN_I)
+      then show "y \<in> GBT v b" using beq by simp
+    qed
+    show ?thesis using s1 s2 s3 by blast
+  qed
+  show "\<forall>x \<in> GBT w c. wfj_secT x" using sec sub by blast
+qed
+
+subsection \<open>(2) The same-head acc lift: body \<open>RTrel\<close>-accessibility lifts to the
+  principal, GIVEN accessibility below the head\<close>
+
+lemma wfc_principal_acc_of_body_aux:
+  assumes hlt: "\<And>r. isOT_BP r \<Longrightarrow> dfree_BP r \<Longrightarrow> wfj_hd r < v \<Longrightarrow> r \<in> Wellfounded.acc RPrel"
+    and bacc: "b \<in> Wellfounded.acc RTrel"
+  shows "isOT_BP (DB v b) \<longrightarrow> dfree_BP (DB v b) \<longrightarrow> DB v b \<in> Wellfounded.acc RPrel"
+  using bacc
+proof (induction rule: acc.induct)
+  case (accI b)
+  show ?case
+  proof (intro impI)
+    assume otc: "isOT_BP (DB v b)" and dfc: "dfree_BP (DB v b)"
+    show "DB v b \<in> Wellfounded.acc RPrel"
+    proof (rule acc.intros)
+      fix q assume qR: "(q, DB v b) \<in> RPrel"
+      obtain u w where qeq: "q = DB u w" by (cases q) auto
+      have qot: "isOT_BP q" and qdf: "dfree_BP q" using qR by (auto simp add: RPrel_def)
+      have "lessBP q (DB v b)" using qR by (simp add: RPrel_def)
+      then have disj: "u < v \<or> (u = v \<and> lessBT w b)" using qeq by simp
+      show "q \<in> Wellfounded.acc RPrel"
+      proof (cases "u < v")
+        case True
+        then have "wfj_hd q < v" using qeq by simp
+        then show ?thesis using hlt qot qdf by blast
+      next
+        case False
+        then have ueq: "u = v" and wb: "lessBT w b" using disj by auto
+        have wot: "isOT_BT w" and wdf: "dfree_BT w" using qot qdf qeq by simp_all
+        have bot: "isOT_BT b" and bdf: "dfree_BT b" using otc dfc by simp_all
+        have wR: "(w, b) \<in> RTrel" using wot wdf bot bdf wb by (simp add: RTrel_def)
+        have "isOT_BP (DB v w)" "dfree_BP (DB v w)" using qot qdf qeq ueq by simp_all
+        then have "DB v w \<in> Wellfounded.acc RPrel" using accI.IH[OF wR] by blast
+        then show ?thesis using qeq ueq by simp
+      qed
+    qed
+  qed
+qed
+
+lemma wfc_principal_acc_of_body:
+  assumes hlt: "\<And>r. isOT_BP r \<Longrightarrow> dfree_BP r \<Longrightarrow> wfj_hd r < v \<Longrightarrow> r \<in> Wellfounded.acc RPrel"
+    and bacc: "b \<in> Wellfounded.acc RTrel"
+    and otp: "isOT_BP (DB v b)" and dfp: "dfree_BP (DB v b)"
+  shows "DB v b \<in> Wellfounded.acc RPrel"
+  using wfc_principal_acc_of_body_aux[OF hlt bacc] otp dfp by blast
+
+subsection \<open>(3) The head recursion is free: body accessibility \<open>\<Longrightarrow>\<close> \<open>wf RPrel\<close>\<close>
+
+theorem wfc_wf_of_pbody_hyp:
+  assumes B: "\<And>v c. isOT_BP (DB v c) \<Longrightarrow> dfree_BP (DB v c) \<Longrightarrow> c \<in> Wellfounded.acc RTrel"
+  shows "wf RPrel"
+proof -
+  have H: "\<forall>q. isOT_BP q \<longrightarrow> dfree_BP q \<longrightarrow> wfj_hd q \<le> enat n \<longrightarrow>
+              q \<in> Wellfounded.acc RPrel" for n
+  proof (induction n rule: less_induct)
+    case (less n)
+    show ?case
+    proof (intro allI impI)
+      fix q assume qot: "isOT_BP q" and qdf: "dfree_BP q" and qhd: "wfj_hd q \<le> enat n"
+      obtain v b where qeq: "q = DB v b" by (cases q) auto
+      have vn: "v \<le> enat n" using qhd qeq by simp
+      have hlt: "\<And>r. isOT_BP r \<Longrightarrow> dfree_BP r \<Longrightarrow> wfj_hd r < v \<Longrightarrow>
+                     r \<in> Wellfounded.acc RPrel"
+      proof -
+        fix r assume rot: "isOT_BP r" and rdf: "dfree_BP r" and rhd: "wfj_hd r < v"
+        obtain u w where req: "r = DB u w" by (cases r) auto
+        have "u \<noteq> \<infinity>" using rdf req by simp
+        then obtain m where um: "u = enat m" by (cases u) auto
+        have "u < v" using rhd req by simp
+        then have "u < enat n" using vn by (rule less_le_trans)
+        then have mn: "m < n" using um by simp
+        have rm: "wfj_hd r \<le> enat m" using req um by simp
+        show "r \<in> Wellfounded.acc RPrel" using less.IH[OF mn] rot rdf rm by blast
+      qed
+      have bot: "isOT_BP (DB v b)" and bdf: "dfree_BP (DB v b)"
+        using qot qdf qeq by simp_all
+      have bacc: "b \<in> Wellfounded.acc RTrel" using B[OF bot bdf] .
+      show "q \<in> Wellfounded.acc RPrel"
+        using wfc_principal_acc_of_body[OF hlt bacc bot bdf] qeq by simp
+    qed
+  qed
+  show "wf RPrel"
+  proof (rule acc_wfI)
+    show "\<forall>x. x \<in> Wellfounded.acc RPrel"
+    proof
+      fix p :: BP
+      show "p \<in> Wellfounded.acc RPrel"
+      proof (cases "isOT_BP p \<and> dfree_BP p")
+        case True
+        obtain v b where peq: "p = DB v b" by (cases p) auto
+        have "v \<noteq> \<infinity>" using True peq by simp
+        then obtain k where vk: "v = enat k" by (cases v) auto
+        have "wfj_hd p \<le> enat k" using peq vk by simp
+        then show ?thesis using H[of k] True by blast
+      next
+        case False
+        show ?thesis
+        proof (rule accI)
+          fix q assume "(q, p) \<in> RPrel"
+          then have "isOT_BP p \<and> dfree_BP p" by (auto simp add: RPrel_def)
+          with False show "q \<in> Wellfounded.acc RPrel" by blast
+        qed
+      qed
+    qed
+  qed
+qed
+
+text \<open>The re-sharpened residual: the head recursion, the tuple layer and the
+  secured-coefficient bookkeeping are all discharged — what is left is EXACTLY
+  the \<open>RTrel\<close>-accessibility of the bodies of \<open>OT\<close>+\<open>dfree\<close> principals.  NOTE the
+  \<open>OT\<close> premise keeps the [Buc1] guard \<open>G\<^sub>v b < b\<close> available for a future rank
+  construction on the body.\<close>
+
+definition wfc_pbody_acc :: bool where
+  "wfc_pbody_acc \<longleftrightarrow>
+     (\<forall>v b. isOT_BP (DB v b) \<longrightarrow> dfree_BP (DB v b) \<longrightarrow> b \<in> Wellfounded.acc RTrel)"
+
+theorem wfc_wf_of_pbody:
+  assumes "wfc_pbody_acc" shows "wf RPrel"
+proof (rule wfc_wf_of_pbody_hyp)
+  fix v c assume "isOT_BP (DB v c)" "dfree_BP (DB v c)"
+  then show "c \<in> Wellfounded.acc RTrel"
+    using assms[unfolded wfc_pbody_acc_def] by blast
+qed
+
+theorem wfc_pbody_of_wf:
+  assumes "wf RPrel" shows "wfc_pbody_acc"
+proof -
+  have "wf RTrel" using wfox_tuple_lift[OF assms] .
+  then have "\<forall>t. t \<in> Wellfounded.acc RTrel" by (rule wf_iff_acc[THEN iffD1])
+  then show ?thesis unfolding wfc_pbody_acc_def by blast
+qed
+
+theorem wfc_pbody_iff_wf: "wfc_pbody_acc \<longleftrightarrow> wf RPrel"
+  using wfc_wf_of_pbody wfc_pbody_of_wf by blast
+
+theorem wfc_pbody_iff_collapse_core: "wfc_pbody_acc \<longleftrightarrow> wfj_collapse_core"
+  using wfc_pbody_iff_wf wfj_collapse_core_iff_wf by blast
+
+theorem wfc_pbody_iff_level_jump: "wfc_pbody_acc \<longleftrightarrow> wfs_level_jump"
+  using wfc_pbody_iff_wf wfj_level_jump_of_wf wfs_wf_RPrel_of_level_jump by blast
+
+subsection \<open>(4) Reflection: tuple accessibility gives component accessibility
+  (the converse of \<open>wfj_tuple_acc\<close>)\<close>
+
+lemma wfc_acc_singleton:
+  assumes "Trm [p] \<in> Wellfounded.acc RTrel"
+  shows "p \<in> Wellfounded.acc RPrel"
+proof -
+  have gen: "\<forall>p. t = Trm [p] \<longrightarrow> p \<in> Wellfounded.acc RPrel"
+    if "t \<in> Wellfounded.acc RTrel" for t
+    using that
+  proof (induction rule: acc.induct)
+    case (accI t)
+    show ?case
+    proof (intro allI impI)
+      fix p assume te: "t = Trm [p]"
+      show "p \<in> Wellfounded.acc RPrel"
+      proof (rule acc.intros)
+        fix q assume qp: "(q, p) \<in> RPrel"
+        have "(Trm [q], Trm [p]) \<in> RTrel" using wfox_RPrel_into_RTrel[OF qp] .
+        then have "(Trm [q], t) \<in> RTrel" using te by simp
+        then show "q \<in> Wellfounded.acc RPrel" using accI.IH by blast
+      qed
+    qed
+  qed
+  show ?thesis using gen[OF assms] by blast
+qed
+
+lemma wfc_tail_lessBT: "descP (p # ps) \<Longrightarrow> lessBT (Trm ps) (Trm (p # ps))"
+proof (induction ps arbitrary: p)
+  case Nil
+  show ?case by simp
+next
+  case (Cons q ps')
+  have dq: "descP (q # ps')" using Cons.prems by simp
+  have lq: "leBT (Trm [q]) (Trm [p])" using Cons.prems by simp
+  have IH: "lessBT (Trm ps') (Trm (q # ps'))" using Cons.IH[OF dq] .
+  show ?case
+  proof (cases "q = p")
+    case True
+    then show ?thesis using IH by simp
+  next
+    case False
+    have "lessBT (Trm [q]) (Trm [p])" using lq False by auto
+    then have "lessBP q p" using b1x_lessBP_single by blast
+    then show ?thesis by simp
+  qed
+qed
+
+lemma wfc_member_leBT:
+  "descP ps \<Longrightarrow> r \<in> set ps \<Longrightarrow> leBT (Trm [r]) (Trm ps)"
+proof (induction ps)
+  case Nil
+  show ?case using Nil.prems(2) by simp
+next
+  case (Cons p ps')
+  have dtail: "descP ps'" using Cons.prems(1) by (cases ps') simp_all
+  show ?case
+  proof (cases "ps' = []")
+    case True
+    then have "r = p" using Cons.prems(2) by simp
+    then show ?thesis using True by simp
+  next
+    case False
+    note psne = False
+    have tl: "lessBT (Trm ps') (Trm (p # ps'))" using wfc_tail_lessBT[OF Cons.prems(1)] .
+    show ?thesis
+    proof (cases "r = p")
+      case True
+      have "lessBT (Trm []) (Trm ps')" using psne by simp
+      then have "lessBT (Trm [r]) (Trm (p # ps'))" using True by simp
+      then show ?thesis by blast
+    next
+      case False
+      then have rin: "r \<in> set ps'" using Cons.prems(2) by simp
+      have IH: "leBT (Trm [r]) (Trm ps')" using Cons.IH[OF dtail rin] .
+      show ?thesis
+      proof (cases "Trm [r] = Trm ps'")
+        case True
+        then show ?thesis using tl by simp
+      next
+        case False
+        then have "lessBT (Trm [r]) (Trm ps')" using IH by blast
+        then have "lessBT (Trm [r]) (Trm (p # ps'))" using tl by (rule lessBT_trans)
+        then show ?thesis by blast
+      qed
+    qed
+  qed
+qed
+
+lemma wfc_acc_component:
+  assumes tacc: "t \<in> Wellfounded.acc RTrel"
+    and tot: "isOT_BT t" and tdf: "dfree_BT t"
+    and rin: "r \<in> set (untrm t)"
+  shows "r \<in> Wellfounded.acc RPrel"
+proof -
+  obtain ps where te: "t = Trm ps" by (cases t) auto
+  have rin': "r \<in> set ps" using rin te by simp
+  have rot: "isOT_BP r" using tot te rin' by simp
+  have rdf: "dfree_BP r" using tdf te rin' by simp
+  have sot: "isOT_BT (Trm [r])" using rot by simp
+  have sdf: "dfree_BT (Trm [r])" using rdf by simp
+  have dps: "descP ps" using tot te by simp
+  have le: "leBT (Trm [r]) (Trm ps)" using wfc_member_leBT[OF dps rin'] .
+  have "Trm [r] \<in> Wellfounded.acc RTrel"
+  proof (cases "Trm [r] = Trm ps")
+    case True
+    then show ?thesis using tacc te by simp
+  next
+    case False
+    then have "lessBT (Trm [r]) (Trm ps)" using le by blast
+    then have rrel: "(Trm [r], t) \<in> RTrel"
+      using sot sdf tot tdf te by (simp add: RTrel_def)
+    show ?thesis by (rule acc_downward[OF tacc rrel])
+  qed
+  then show ?thesis by (rule wfc_acc_singleton)
+qed
+
+theorem wfc_tuple_acc_iff:
+  assumes "isOT_BT t" and "dfree_BT t"
+  shows "t \<in> Wellfounded.acc RTrel \<longleftrightarrow> (\<forall>r \<in> set (untrm t). r \<in> Wellfounded.acc RPrel)"
+proof
+  assume "t \<in> Wellfounded.acc RTrel"
+  then show "\<forall>r \<in> set (untrm t). r \<in> Wellfounded.acc RPrel"
+    using wfc_acc_component assms by blast
+next
+  assume "\<forall>r \<in> set (untrm t). r \<in> Wellfounded.acc RPrel"
+  then show "t \<in> Wellfounded.acc RTrel" using wfj_tuple_acc assms by blast
+qed
+
+(* ===== end r53 wfc block 1 (head-recursion discharge + tuple reflection) ===== *)
+
+subsection \<open>(5) The \<open>lvP\<close>-staged bootstrap: a HEAD-bounded collapse core reaches a
+  whole \<open>lvP\<close>-LEVEL, and the residual factors into per-level jump steps\<close>
+
+text \<open>\<open>wfj_acc_of_collapse_core\<close> (r52) consumes the core at ALL heads.  Refinement:
+  the core restricted to heads \<open>\<le> n\<close> (\<open>wfc_core_upto n\<close>) already yields
+  accessibility of every principal of HEREDITARY level \<open>wfs_lvP \<le> n\<close>
+  (\<open>wfc_acc_of_core_upto\<close>) — because \<open>G\<close>-elements do not raise the level
+  (\<open>wfc_G_lvT\<close>).  Hence the whole goal factors into the classical-shape
+  per-level steps \<open>wfc_jump_step n\<close>: FROM the wellfounded (hence, by
+  \<open>wfs_accord\<close>/\<open>wfs_rk\<close>, well-ordered and ranked) accessible level-\<open>n\<close> part TO
+  the core for heads \<open>\<le> n+1\<close> — exactly the transfinite-recursion step of
+  [Buc1]'s own proof of Lemma 2.2.  This is the sharpest STAGED form of the
+  residual: \<open>(\<forall>n. wfc_jump_step n) \<Longrightarrow> wf RPrel\<close> (\<open>wfc_wf_of_jump_steps\<close>).\<close>
+
+lemma wfc_maxe_mem: "x \<in> set xs \<Longrightarrow> x \<le> wfs_maxe xs"
+proof (induction xs)
+  case Nil
+  then show ?case by simp
+next
+  case (Cons y ys)
+  show ?case
+  proof (cases "x = y")
+    case True
+    then show ?thesis by (simp add: max.cobounded1)
+  next
+    case False
+    then have "x \<in> set ys" using Cons.prems by simp
+    then have "x \<le> wfs_maxe ys" using Cons.IH by blast
+    then have "x \<le> max y (wfs_maxe ys)" by (rule max.coboundedI2)
+    then show ?thesis by simp
+  qed
+qed
+
+lemma wfc_G_lvT: "\<forall>u x. x \<in> GBT u t \<longrightarrow> wfs_lvT x \<le> wfs_lvT t"
+  and wfc_G_lvP: "\<forall>u x. x \<in> GBP u q \<longrightarrow> wfs_lvT x \<le> wfs_lvP q"
+proof (induction t and q rule: wfs_lvT_wfs_lvP.induct)
+  case (1 ps)
+  show ?case
+  proof (intro allI impI)
+    fix u x assume xin: "x \<in> GBT u (Trm ps)"
+    obtain r where rin: "r \<in> set ps" and xr: "x \<in> GBP u r" using xin by auto
+    have h1: "wfs_lvT x \<le> wfs_lvP r" using "1.IH"[OF rin] xr by blast
+    have "wfs_lvP r \<in> set (map wfs_lvP ps)" using rin by simp
+    then have h2: "wfs_lvP r \<le> wfs_maxe (map wfs_lvP ps)" by (rule wfc_maxe_mem)
+    show "wfs_lvT x \<le> wfs_lvT (Trm ps)" using order_trans[OF h1 h2] by simp
+  qed
+next
+  case (2 v b)
+  show ?case
+  proof (intro allI impI)
+    fix u x assume xin: "x \<in> GBP u (DB v b)"
+    have uv: "u \<le> v" using xin by (auto split: if_splits)
+    have xc: "x = b \<or> x \<in> GBT u b" using xin uv by (auto split: if_splits)
+    have bb: "wfs_lvT b \<le> wfs_lvP (DB v b)" by (simp add: max.cobounded2)
+    show "wfs_lvT x \<le> wfs_lvP (DB v b)"
+    proof (cases "x = b")
+      case True
+      then show ?thesis using bb by simp
+    next
+      case False
+      then have "x \<in> GBT u b" using xc by blast
+      then have "wfs_lvT x \<le> wfs_lvT b" using "2.IH" by blast
+      then show ?thesis using bb by (rule order_trans)
+    qed
+  qed
+qed
+
+definition wfc_core_upto :: "nat \<Rightarrow> bool" where
+  "wfc_core_upto n \<longleftrightarrow>
+     (\<forall>v b. v \<le> enat n \<longrightarrow> isOT_BP (DB v b) \<longrightarrow> dfree_BP (DB v b) \<longrightarrow>
+        (\<forall>x \<in> GBT v b. wfj_secT x) \<longrightarrow> DB v b \<in> Wellfounded.acc RPrel)"
+
+theorem wfc_acc_of_core_upto:
+  assumes C: "wfc_core_upto n"
+  shows "isOT_BP p \<Longrightarrow> dfree_BP p \<Longrightarrow> wfs_lvP p \<le> enat n \<Longrightarrow> p \<in> Wellfounded.acc RPrel"
+proof (induction p rule: measure_induct_rule[where f = wfs_szP])
+  case (less p)
+  obtain v b where peq: "p = DB v b" by (cases p) auto
+  have otp: "isOT_BP (DB v b)" using less.prems(1) peq by simp
+  have dfp: "dfree_BP (DB v b)" using less.prems(2) peq by simp
+  have otb: "isOT_BT b" using otp by simp
+  have dfb: "dfree_BT b" using dfp by simp
+  have vle: "v \<le> enat n"
+  proof -
+    have "v \<le> wfs_lvP p" using peq by (simp add: max.cobounded1)
+    then show ?thesis using less.prems(3) by (rule order_trans)
+  qed
+  have lvb: "wfs_lvT b \<le> enat n"
+  proof -
+    have "wfs_lvT b \<le> wfs_lvP p" using peq by (simp add: max.cobounded2)
+    then show ?thesis using less.prems(3) by (rule order_trans)
+  qed
+  have sec: "\<forall>x \<in> GBT v b. wfj_secT x"
+  proof
+    fix x assume xG: "x \<in> GBT v b"
+    have otx: "isOT_BT x" using wfj_G_OT_T otb xG by blast
+    have dfx: "dfree_BT x" using wfj_G_df_T dfb xG by blast
+    have szx: "wfs_szT x < wfs_szT b" using wfj_G_szT xG by blast
+    have lvx: "wfs_lvT x \<le> wfs_lvT b" using wfc_G_lvT xG by blast
+    obtain rs where xeq: "x = Trm rs" by (cases x) auto
+    have "\<forall>r \<in> set rs. r \<in> Wellfounded.acc RPrel"
+    proof
+      fix r assume rin: "r \<in> set rs"
+      have otr: "isOT_BP r" using otx xeq rin by simp
+      have dfr: "dfree_BP r" using dfx xeq rin by simp
+      have szr: "wfs_szP r < wfs_szT x" using wfs_szP_mem_lt[OF rin] xeq by simp
+      have szb: "wfs_szP p = Suc (wfs_szT b)" using peq by simp
+      have szlt: "wfs_szP r < wfs_szP p" using szr szx szb by linarith
+      have "wfs_lvP r \<in> set (map wfs_lvP rs)" using rin by simp
+      then have "wfs_lvP r \<le> wfs_maxe (map wfs_lvP rs)" by (rule wfc_maxe_mem)
+      then have "wfs_lvP r \<le> wfs_lvT x" using xeq by simp
+      then have "wfs_lvP r \<le> wfs_lvT b" using lvx by (rule order_trans)
+      then have lvr: "wfs_lvP r \<le> enat n" using lvb by (rule order_trans)
+      show "r \<in> Wellfounded.acc RPrel" using less.IH[OF szlt otr dfr lvr] .
+    qed
+    then show "wfj_secT x" using xeq by simp
+  qed
+  have "DB v b \<in> Wellfounded.acc RPrel"
+    using C[unfolded wfc_core_upto_def] vle otp dfp sec by blast
+  then show ?case using peq by simp
+qed
+
+text \<open>The per-level jump step, in the shape of [Buc1]'s own recursion: the
+  wellordered accessible level-\<open>n\<close> part feeds the collapse core one head higher.\<close>
+
+definition wfc_jump_step :: "nat \<Rightarrow> bool" where
+  "wfc_jump_step n \<longleftrightarrow>
+     ((\<forall>q. isOT_BP q \<longrightarrow> dfree_BP q \<longrightarrow> wfs_lvP q \<le> enat n \<longrightarrow>
+           q \<in> Wellfounded.acc RPrel)
+      \<longrightarrow> wfc_core_upto (Suc n))"
+
+theorem wfc_acc_levels_of_jump_steps:
+  assumes J: "\<And>n. wfc_jump_step n"
+  shows "\<forall>p. isOT_BP p \<longrightarrow> dfree_BP p \<longrightarrow> wfs_lvP p \<le> enat n \<longrightarrow>
+             p \<in> Wellfounded.acc RPrel"
+proof (induction n)
+  case 0
+  show ?case
+  proof (intro allI impI)
+    fix p assume otp: "isOT_BP p" and dfp: "dfree_BP p" and lv: "wfs_lvP p \<le> enat 0"
+    have "wfs_lvP p = 0"
+      using lv by (cases "wfs_lvP p") (auto simp add: zero_enat_def)
+    then show "p \<in> Wellfounded.acc RPrel"
+      using wfs_level0_acc otp dfp by blast
+  qed
+next
+  case (Suc n)
+  have cu: "wfc_core_upto (Suc n)"
+    using J[of n, unfolded wfc_jump_step_def] Suc.IH by blast
+  show ?case
+  proof (intro allI impI)
+    fix p assume otp: "isOT_BP p" and dfp: "dfree_BP p"
+      and lvp: "wfs_lvP p \<le> enat (Suc n)"
+    show "p \<in> Wellfounded.acc RPrel"
+      using wfc_acc_of_core_upto[OF cu otp dfp lvp] .
+  qed
+qed
+
+theorem wfc_wf_of_jump_steps:
+  assumes J: "\<And>n. wfc_jump_step n"
+  shows "wf RPrel"
+proof (rule acc_wfI)
+  show "\<forall>x. x \<in> Wellfounded.acc RPrel"
+  proof
+    fix p :: BP
+    show "p \<in> Wellfounded.acc RPrel"
+    proof (cases "isOT_BP p \<and> dfree_BP p")
+      case True
+      have "wfs_lvP p \<noteq> \<infinity>" using wfs_lv_finP True by blast
+      then obtain n where "wfs_lvP p = enat n" by (cases "wfs_lvP p") auto
+      then have "wfs_lvP p \<le> enat n" by simp
+      then show ?thesis using wfc_acc_levels_of_jump_steps[OF J] True by blast
+    next
+      case False
+      show ?thesis
+      proof (rule accI)
+        fix q assume "(q, p) \<in> RPrel"
+        then have "isOT_BP p \<and> dfree_BP p" by (auto simp add: RPrel_def)
+        with False show "q \<in> Wellfounded.acc RPrel" by blast
+      qed
+    qed
+  qed
+qed
+
+corollary wfc_level_jump_of_jump_steps:
+  assumes "\<And>n. wfc_jump_step n"
+  shows "wfs_level_jump"
+  using wfj_level_jump_of_wf[OF wfc_wf_of_jump_steps[OF assms]] .
+
+corollary wfc_collapse_core_of_jump_steps:
+  assumes "\<And>n. wfc_jump_step n"
+  shows "wfj_collapse_core"
+  using wfj_collapse_core_of_wf[OF wfc_wf_of_jump_steps[OF assms]] .
+
+lemma wfc_core_upto_of_wf:
+  assumes "wf RPrel" shows "wfc_core_upto n"
+proof -
+  have "\<forall>p. p \<in> Wellfounded.acc RPrel" using assms wfs_wf_iff_all_acc by blast
+  then show ?thesis unfolding wfc_core_upto_def by blast
+qed
+
+lemma wfc_jump_step_of_wf:
+  assumes "wf RPrel" shows "wfc_jump_step n"
+  using wfc_core_upto_of_wf[OF assms] unfolding wfc_jump_step_def by blast
+
+theorem wfc_wf_iff_jump_steps: "wf RPrel \<longleftrightarrow> (\<forall>n. wfc_jump_step n)"
+  using wfc_wf_of_jump_steps wfc_jump_step_of_wf by blast
+
+lemma wfc_core_upto_of_collapse_core:
+  assumes "wfj_collapse_core" shows "wfc_core_upto n"
+  using assms unfolding wfj_collapse_core_def wfc_core_upto_def by blast
+
+lemma wfc_collapse_core_of_upto:
+  assumes A: "\<And>n. wfc_core_upto n"
+  shows "wfj_collapse_core"
+proof (unfold wfj_collapse_core_def, intro allI impI)
+  fix v b assume otp: "isOT_BP (DB v b)" and dfp: "dfree_BP (DB v b)"
+    and sec: "\<forall>x \<in> GBT v b. wfj_secT x"
+  have "v \<noteq> \<infinity>" using dfp by simp
+  then obtain k where vk: "v = enat k" by (cases v) auto
+  have "v \<le> enat k" using vk by simp
+  then show "DB v b \<in> Wellfounded.acc RPrel"
+    using A[of k, unfolded wfc_core_upto_def] otp dfp sec by blast
+qed
+
+text \<open>\<^bold>\<open>Status after r53, and the honest obstruction analysis.\<close>
+
+  \<^enum> CLOSED this round: \<open>G\<close>-antitonicity (\<open>wfc_GBT_antitone\<close>), secured-content
+    propagation to unshielded components (\<open>wfc_sec_component\<close>), the same-head
+    acc lift (\<open>wfc_principal_acc_of_body\<close>), the FULL head recursion
+    (\<open>wfc_wf_of_pbody_hyp\<close>: body accessibility \<open>\<Longrightarrow>\<close> \<open>wf RPrel\<close>, by strong
+    induction on the finite head via the r52 head stratification), tuple
+    reflection (\<open>wfc_acc_component\<close> / \<open>wfc_tuple_acc_iff\<close>), the level-bounded
+    bootstrap (\<open>wfc_G_lvT\<close> + \<open>wfc_acc_of_core_upto\<close>), and the staging
+    \<open>(\<forall>n. wfc_jump_step n) \<Longrightarrow> wf RPrel\<close>.
+
+  \<^enum> WHY an "induction on the secured tuple" CANNOT close the core by itself:
+    in the \<open>accI\<close> step for \<open>D\<^sub>v a\<close> (secured), a predecessor \<open>q = D\<^sub>u w\<close> with
+    \<open>u < v\<close> has a COMPLETELY unconstrained body \<open>w\<close> (\<open>lessBP\<close> compares heads
+    first; no \<open>G\<close>-, size- or tuple-relation ties \<open>w\<close> to \<open>a\<close>).  Already at
+    \<open>v = 1\<close> this branch demands accessibility of the entire \<open>\<psi>\<^sub>0\<close>-collapsed
+    segment \<open>wfj_frag 0\<close>, which contains principals of EVERY \<open>lvP\<close>-level
+    (\<open>wfj_frag0_lv_unbounded\<close>, r52).  So no wellfounded induction on
+    \<open>(v, secured tuple of a)\<close> discharges it; the same-head branch, by
+    contrast, is completely handled by the body order
+    (\<open>wfc_principal_acc_of_body\<close>).
+
+  \<^enum> The residual, in its two sharpest equivalent shapes:
+    (i) GLOBAL: \<open>wfc_pbody_acc\<close> — \<open>RTrel\<close>-accessibility of the bodies of
+        \<open>OT\<close>+\<open>dfree\<close> principals (head/tuple/secured bookkeeping all gone);
+    (ii) STAGED: \<open>wfc_jump_step n\<close> — from the wellordered accessible
+        level-\<open>n\<close> part (\<open>wfs_accord\<close>/\<open>wfs_rk\<close> give the wellorder and rank) to
+        the collapse core for heads \<open>\<le> n + 1\<close>; the secured-coefficient
+        premise and \<open>wfc_sec_component\<close> supply the inner \<open>G\<close>-recursion data.
+
+  \<^enum> ROUTES to \<open>wfc_jump_step n\<close> (both genuinely impredicative — this is the
+    \<open>\<psi>\<close>-collapse, in total proof-theoretically at \<open>\<Pi>\<^sup>1\<^sub>1-CA\<^sub>0\<close> grade):
+    (a) DISTINGUISHED SETS (Buchholz--Schütte Fundierung, adapted): quantify
+        over subsets \<open>M \<subseteq> BP\<close> that are wellfounded and \<open>C\<^sub>v\<close>-closed; HOL's
+        impredicative comprehension carries the union-of-distinguished
+        argument.  Est. 4--8 focused rounds (the linearity toolkit needed for
+        comparability of distinguished sets is available).
+    (b) SURROGATE-\<open>\<Omega>\<close> SEMANTICS: interpret into HOL wellorders (\<open><o\<close>), with
+        \<open>\<Omega>\<^sub>v\<close> any strictly increasing ordinals of uncountable cofinality
+        (\<open>\<omega>\<^sub>1\<cdot>(v+1)\<close>-grade suffices — the \<open>C\<close>-closures are countable); define
+        \<open>C\<^sub>v(a)\<close>/\<open>\<psi>\<^sub>v\<close> by transfinite recursion and prove the interpretation
+        strictly monotone on \<open>OT\<close> — [Buc1]'s own Lemma 2.2 proof, where the
+        guard \<open>G\<^sub>v b < b\<close> (kept available in \<open>wfc_pbody_acc\<close> / supplied by
+        \<open>wfc_sec_component\<close>) is exactly what makes \<open>\<psi>\<^sub>v\<close> order-faithful.
+        Needs ordinal-recursion infrastructure beyond the current \<open>wfs_\<close>
+        toolkit; est. 5--9 rounds.
+    A purely syntactic per-\<open>v\<close> "relative rank" (r52 sketch) cannot avoid
+    this: ranking \<open>D\<^sub>u\<close>-structure (\<open>u \<ge> v\<close>) over the level-\<open>n\<close> atoms
+    re-creates the \<open>\<Omega>\<close>-tower (no ordinal fixed point \<open>B = \<omega>\<^bsup>B\<cdot>\<omega>\<^esup>\<close> exists),
+    which is precisely why the collapse functions are load-bearing.\<close>
+
+(* ===== end r53 wfc block 2 (lvP-staged bootstrap + jump-step residual) ===== *)
+
 end
