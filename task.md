@@ -54,7 +54,8 @@
           - ✅ level-0 acc無条件+goal≡wfs_level_jump+wellorder/rank基盤(wfs_)[r2][0.423][0.73h]
           - 🚨 wfs_level_jump→collapse_core再尖鋭化
             - ✅ lvP-STRAT反証→head-index STRAT+frag+G-set/tuple-acc bricks(wfj_)[r1][0.284][0.25h]
-            - 🚨🤖 wfj_collapse_core(secured-coefficient principal acc、ψ-collapse核)[r0]
+            - ✅ bookkeeping全消去+非可述性確定+staged ladder(wfc_)[r1][0.239][0.35h]
+            - 🚨🤖 pbody-acc本体(非可述、route=distinguished sets 4-8R)[r0]
   - 🚨 §8.1 条件 (I) の下での展開規則
     - 🚨 命題（条件 (I) の下での $\textrm{Trans}$ と基本列の交換関係）
       - ✅ 交換則(1)本体[r4]
@@ -68,15 +69,7 @@
     - 🚨 命題（条件 (II) の下での $\textrm{Trans}$ と基本列の交換関係）
       - ✅ 降下⟸exch+OT
       - ✅ OT柱回避の直接降下[r1]
-      - 🚨 exch
-        - ✅ 存在量化count+step還元[r2]
-        - ✅ base2+per-step surgery(閉形式)[r2]
-        - 🚨 tailval残差
-          - ✅ not-leftDj0脚(guard)modulo DIAG[r1]
-          - 🚨 TVall配線(FINRC threading)
-            - ✅ ldj-leg+R3LE討伐+DIAG包摂+census sharp化(tvx_)[r4][0.503][0.61h]
-            - 🚨🤖 LDJB(ldj⟹d=jL∧guard、655/655)[r1][0.284][0.25h]
-          - ✅ REGSP strictlt-eqd(slx37無条件)[r5]
+      - ✅ exch(FINRC threading)[r16][1.026][1.21h]
       - 🚨 OT所属 (⛔ §8.7「Transが標準形を保つ」補題)
     - ✅ 補題（第 $0$ 種型基本列の基本不等式）
     - ✅ 補題（第 $0$ 種型基本列の基本分岐規則）
@@ -112,12 +105,14 @@
       - ✅ local-OTint keystone-free(condI/condVI/condV-adm-e=0)[r2]
       - 🚨 OTint(値形OT-step)
         - ✅ condV脚(adm+nadm)閉 modulo oix_transport(oix_、band-exclusion)[r1][0.322][0.47h]
-        - 🚨 oix_transport(right-spine sandwich置換、純BT)
-          - ✅ level-peel bricks(otx2_、order/GBT代数/join-peel-align3)[r1][0.284][0.25h]
-          - 🚨🤖 transport本体組立[r0]
-        - 🚨 otIII/otIV脚(r35形carry)[r0]
-      - 🚨🤖 OTpred(with-parent Pred corner OT-step)[r1][0.142][0.12h]
-      - 🚨🤖 OTmulti(multi P成分lift OT-step)[r1][0.142][0.12h]
+        - ✅ oix_transport定理化(otx2_ bricks+otx3_組立、condV脚無残差)[r2][0.523][0.60h]
+        - 🚨🤖 otIII/otIV脚+{PredNp,Lpv,L1v}(§8.2終切片base3点)[r0]
+      - 🚨 OTpred(with-parent Pred corner OT-step)
+        - ✅ keystone 4-clause分析(fresh閉+multi/corner閉、opx_)[r2][0.262][0.30h]
+        - 🚨🤖 DEEPOT(deepened clauses)+NOBR(branch-free mono)[r0]
+      - 🚨 OTmulti(multi P成分lift OT-step)
+        - ✅ operB局所化+replicate regime閉(opx_OTmulti)[r2][0.262][0.30h]
+        - 🚨🤖 ordIntC(内部exchange脚のleBT弱形)[r0]
       - 🚨 deep-insertion OT所属(keystone{resid,multiD}、r49でcritical path外)[r5]
         - ✅ resid deep検証+4slot分解(rgx_、C3 prefix半分クローズ)[r1]
         - 🚨 slotNewOT(C1: isOT_BP(DB x q))
