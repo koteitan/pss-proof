@@ -66,6 +66,7 @@ task.md のユーザー向け骨格に対する、作業側の詳細版。ユー
 - **REGSP原文形(condIII/condIV共通)**: cfbx_reg at Red(Pred(s84x_N)) は Red(Pred N) 純trunk時に Br≠[] conjunct 不成立で偽(~15%host、CEX (0,0)(1,1)(2,2)(3,2)) [r30]。→ 証明せず d4a レベルで kousa-(1,1)閉形式 bypass。crx_/c4hx_ の regSP assume はこの純trunk枝では充足不能。
 - Pred_oper0(A27) / 零化一般(A25/A26) / has_gz⟹D系(§6.7) / 固定count condII(A36)
 - **leBT q qp(spine qp-descent、slotTail)**: ST_PS で偽 33/33(方向が逆: Pred は trailing deposit を縮める、qp<q)。stx_..._from_descent の descent 仮定は充足不能=DEAD route [r45]
+- **STRAT-n(lvP 版、buc1)**: n≥1 で偽(witness D_0(D_k 0) < D_1 0)。層化は head-index で行う(wfj_strat_hd) [r52]
 - **長さ指標 joint 帰納(r46/r47 エンジン)**: 証明不可能(EDGE-1/EDGE-2 が長さ非有界、a5/長さIH と矛盾——asx_ 監査)。stage-first も a5/Pred で対称に失敗。接地は stage 帰納+補正 readback(route A)のみ [r48]
 - **naive 再帰 frame-descent(devchain depth≥2)**: 「Trans(norm(last(Br M))) の body が (prev,dep) で終わる」は 0/22 反証 [r48]
 - **sliceV0 witness route for ps=[]**(depdom): Dpt v0 (Dpt x q)=Trans M 自身のため shorter witness 不在(0/1721、忠実性矛盾) [r48]
@@ -87,7 +88,9 @@ task.md のユーザー向け骨格に対する、作業側の詳細版。ユー
         - ✅ depth有界断片(無限・無条件)〔`wfpd_wf_goal_dep`、norm断片⊂depth断片、wf⟺unbounded-depth chain無〕[r2]
         - 🚨 unbounded-depth chain排除→level jump 1本化〔r51 で構造確定〕
           - ✅ level-0 acc無条件+goal≡wfs_level_jump+wellorder/rank基盤(wfs_)〔r51 Fable: **wfs_level0_acc 無条件**(ε₀級 base case)=STRAT-0(level-0 の下方閉性、size 帰納のみ・G条件不要)+DEPTH-MONO-0(level 0 では order が depth を bound)+既証 depth 断片 wfpd_wf_RPrel_dep。**goal wf(OT_B,<)≡単一残差 wfs_level_jump**(level n acc⟹level n+1 acc、wfs_wf_RPrel_of_level_jump/wfs_OT_B_wf_of_level_jump)。基盤: wf_ordLess は Main で使用可(<o 記法は無効、定数 ordLess2)/wfs_accord=accessible part 上の Well_order/semantic rank wfs_rk=前者制限、RPrel で ordLess 単調。⚠️**DEPTH-MONO は level≥1 で偽**(D_0(D_1 0) の下に無限深 D_0 塔)→depth-断片吸収 trick は jump に lift 不可(再走禁止)。⚠️罠2件: fun-simps が =0 iff より先に発火(wfs_max_eq0 を simp に)/acc_downward+blast は発散(OF/rule で)。順序数算術(oexp/osum)は Main に無い——rank は predecessor-restriction で回避済〕[r2][0.423][0.73h]
-          - 🚨🤖 wfs_level_jump(level n⟹n+1 acc、ψ-collapse核、見積3-5R)〔残る唯一の外部級内容。STRAT-n(level≤n 下方閉性)は STRAT-0 の size 帰納+head-index 比較 case 追加で ≈1R。内側 G_v-collapse 再帰(真に新規)≈2-4R、wellorder/rank toolkit 使用〕[r0]
+          - 🚨 wfs_level_jump→collapse_core再尖鋭化〔r52 で構造刷新〕
+            - ✅ lvP-STRAT反証→head-index STRAT+frag+G-set/tuple-acc bricks(wfj_)〔r52 Fable(+salvage): **STRAT-n(lvP版)は n≥1 で反証**(witness D_0(D_k 0)<D_1 0——低 head の下で max-index は跳ねる、REFUTED registry 入り)→真の層化=**head-index STRAT**(wfj_hd_le/wfj_strat_hd)。head-index fragments wfj_frag(下方閉・単調)+per-level wf goals。⚠️frag_0=ψ₀-collapse 済全 segment=易しい base は無い。**残差再尖鋭化: `wfj_collapse_core`**(secured-coefficient principal が acc)+size 帰納 bootstrap で collapse_core⟺wf RPrel⟺wfs_level_jump、[Buc1]2.2 readback 済。G-set bricks(G_v 元は真 OT+dfree 部分項)+tuple-acc(wfj_NoBad_acc/wfj_tuple_acc/wfj_secT_tuple_acc、chunk4 は post-green pre-commit salvage)〕[r1][0.284][0.25h]
+            - 🚨🤖 wfj_collapse_core(secured-coefficient principal acc、ψ-collapse核)〔唯一の残差。tuple-acc bricks が土台〕[r0]
   - 🚨 §8.1 条件 (I) の下での展開規則
     - 🚨 命題（条件 (I) の下での $\textrm{Trans}$ と基本列の交換関係）
       - ✅ 交換則(1)本体〔`scx_condI_exchange1` 完全無条件(j0=0+j0>0、marking-nesting二重帰納)〕[r4]
@@ -108,7 +111,7 @@ task.md のユーザー向け骨格に対する、作業側の詳細版。ユー
           - ✅ not-leftDj0脚(guard)modulo DIAG〔`cdx_d_le_joints`+`cdx_tailval_notldj`〕[r1]
           - 🚨 TVall配線(FINRC threading)〔fin(Rc) は host fin から導出不能と r51 で確定(Br Rc は Br K と無関係な list の total-nth artifact)→FINRC として census に thread(§8.2 fin と同格の形式化 artifact)〕
             - ✅ ldj-leg+R3LE討伐+DIAG包摂+census sharp化(tvx_)〔r51 Fable: `tvx_tailval_of_boundary`=hqx_condIIIV_of_DT を Rc=Red(seg M (Adm M j0)(Lng M-2)) に適用、clause(4) で transT2 M=t1\'+B Dpt v0(…) 抽出(c2sx_slice_jm1_c1+wnx_seg_transport+repr_entry1_shift_gen)、**c2sx_tailval と c2sx_ldj の両方**を出力→r30 DIAG 残差包摂。境界厳格性 d<TrMax Rc **無条件**(tvx_d_lt_TrMax、nadm-run transport)。R3LE=tvx_fn_row_bound(the1_equality HO-unification ハングを theI\' で回避)。STEP-0 655/655 ldj host で境界成立・補類空。census=`tvx_termination_modOT_sharp`〕[r4][0.503][0.61h]
-            - 🚨🤖 LDJB(ldj⟹d=jL∧guard、655/655)〔唯一の残差: "K∈ST_PS⟹…⟹c2sx_ldj K⟹Br(Rc)≠[]⟹d≤jL⟹d=jL∧guard-at-fn"。攻め筋(agent 起案): d<jL なら hqx を jL で使い ldj を反証(tvx_notldj_of_strict 案、未実装)。真に open な核=ldj∧diag-at-fn と ldj∧guard∧d<jL=TrMax〕[r0]
+            - 🚨🤖 LDJB(ldj⟹d=jL∧guard、655/655)〔唯一の残差: "K∈ST_PS⟹…⟹c2sx_ldj K⟹Br(Rc)≠[]⟹d≤jL⟹d=jL∧guard-at-fn"。攻め筋(agent 起案): d<jL なら hqx を jL で使い ldj を反証(tvx_notldj_of_strict 案、未実装)。真に open な核=ldj∧diag-at-fn と ldj∧guard∧d<jL=TrMax〕[r1][0.284][0.25h]  ← r52 front は月次limitで死亡、**未検証 draft 335行(39エラー)が wt-y1 に残置**(/tmp/pss-r52-salvage-wt-y1.log)——r53 で修理継続
           - ✅ REGSP strictlt-eqd(slx37無条件)〔r37 **クローズ**: `slx37_strictlt_eqd`(d=jlp ガード付 strictlt を strictlt仮定無しで証明: wid_*_Pred transport で RN'=Pred RN 最終枝 first-node/joint を RN に戻し、descending+trunk row-0 厳増+d≤last-joint(`mcx_d_le_last_joint`)で d=jl強制、`mcx_MCOND_RN`で対角化、butlast で RN'座標へ)→`slx37_regSP_uncond`=REGSP(cfbx_reg) 無条件。condIII/IV REGSP 完全discharge。consumer 再配線(dgx/lb2x call site→slx37)は親の統合手順〕[r5]
       - 🚨 OT所属 (⛔ §8.7「Transが標準形を保つ」補題)
     - ✅ 補題（第 $0$ 種型基本列の基本不等式）〔`m_8_3_kind0_base_ineq`(A22訂正)〕
@@ -150,10 +153,12 @@ task.md のユーザー向け骨格に対する、作業側の詳細版。ユー
       - ✅ local-OTint keystone-free(condI/condVI/condV-adm-e=0)〔`otlx_OTint_local`+`cfvx_OTint_local_condVadm_corrected`。**cfVadm(condV-adm op0-tower)はe>0で偽**(r34、CEX (0,0)(1,1)(2,2)(3,1)(4,2)(4,2))→e=0のみkeystone-free。cf0(e=0 op0-tower)はnamed、証明可〕[r2]
       - 🚨 OTint(値形OT-step)〔r51 で condV 完了、残=transport 核+III/IV〕
         - ✅ condV脚(adm+nadm)閉 modulo oix_transport(oix_、band-exclusion)〔r51 Fable: A24補正値形(m_8_5_scbdec_adm_forms/nfx_NFall)で Trans(N[Suc k]) と operB(Trans N)(numBT n) を**同一 (s1,b1) hole の塔** D_h(block^k(t2))/D_h(block^n(D_e 0)) として表示(fun oix_twr、nadm の e5x cores も文字通り同塔)。sandwich W_k≤V_k≤W_{k+1}、donor は [Buc1]3.2 閉包+slot 自身の IH で OT。newOT=新 brick `oix_G_prefix_lt`(host 自身の OT3 guard から G_e t2<t2 を band-exclusion で抽出)/nadm は rebase head u≤e を G-antitonicity で。setle は仮定なし。`oix_OTint_condV_adm`/`oix_OTint_condV_nadm`(後者 modulo {PredNp,Lpv,L1v}=§8.2 系降下柱既 carry 3点)。⚠️STEP-0 PART B の python condV 判定にバグ(t2=0 誤分類)——本質結論は r34 CEX host で個別検証済だが再走せず(spend 配慮)〕[r1][0.322][0.47h]
-        - 🚨🤖 oix_transport(right-spine sandwich置換、純BT)〔唯一の新残差(定義+consumer `oix_transportD` は緑): 同 head right-spine core の置換 between 2 OT donors at one shared scb hole(newOT+setle 前提付)。agent の proof-design(共有 (s,b) 文脈を level 毎に peel、prefix-G は low donor・descP-last は high donor・insert 義務は first-diff/band 場合分けで setle+ord に着地)は全検査 case で解決——実装が残}。⚠️empirics は setle の SUBSET-corner しか非自明 case を踏んでいない(3628/3628)——insert-aLo 域は genuine condV host 経由のみ〕[r0]
+        - 🚨 oix_transport(right-spine sandwich置換、純BT)〔r51 定義+consumer 緑、r52 で bricks 前進〕
+          - ✅ level-peel bricks(otx2_、order/GBT代数/join-peel-align3)〔r52 salvage(post-green pre-commit): otx2_flatBP_len/BP_prefix/lessBT・leBT_snocsnoc/descP_prefix/GBT_snoc/GBP_inf/join_no_core/peel/join3/top_shape/align3——r51 proof-design の文脈 peel 機構〕[r1][0.284][0.25h]
+          - 🚨🤖 transport本体組立[r0]
         - 🚨 otIII/otIV脚(r35形carry)〔oix_OTint_slot は III/IV を r35 形で carry。cpx/cnv mnform 値形からの同型攻め(次々wave)〕[r0]
-      - 🚨🤖 OTpred(with-parent Pred corner OT-step)〔r31 empirics: 局所 [0]-step では 0/63→値形 route〕[r0]
-      - 🚨🤖 OTmulti(multi P成分lift OT-step)〔Σ_B 成分 lift、dvx_standard_component+A16 同定が使える見込み〕[r0]
+      - 🚨🤖 OTpred(with-parent Pred corner OT-step)〔r31 empirics: 局所 [0]-step では 0/63→値形 route〕[r1][0.142][0.12h]  ← r52 draft 804行(8エラー)が wt-s4b に残置(/tmp/pss-r52-salvage-wt-s4b.log)、r53 で修理継続
+      - 🚨🤖 OTmulti(multi P成分lift OT-step)〔Σ_B 成分 lift、dvx_standard_component+A16 同定が使える見込み〕[r1][0.142][0.12h]
       - 🚨 deep-insertion OT所属(keystone{resid,multiD}、r49でcritical path外)〔r35: 4脚→単一 keystone {resid,multiD}(`orx_OTint`)。r40b(Fable): **resid を deep検証(真、1468/0、最大Lng43、pcompPrefix と違い偽陽性でない)+4slot分解**。keystone `m_8_7_Trans_OT_step_keystone` の resid slot が強IH+Trans(Pred M)∈OT_B を受領する形に再構築(`rgx_Trans_preserves_OT_of_slots`)。反証registry: operB(term z)/最右spine scb-substitution/pcompPrefix 偽〕[r5]
         - ✅ resid deep検証+4slot分解(rgx_、C3 prefix半分クローズ)〔`rgx_resid_of_parts`(MASTER: resid C1∧C2∧C3 ⟸ {newOT,tailEH,appg,headWB}+Pred-OT、m_8_2_keystone 再走+snoc realign)。C3 prefix半分は `rgx_between_extends`([Buc1]辞書順区間)+`rgx_gbt_prefix_restrict`(b1x_GBT_size)で無条件クローズ、C3⟸appg(`rgx_gbt_of_appg`)。C2 whole-body Admpos 閉、`rgx_dstep_*` dispatcher〕[r1]
         - 🚨 slotNewOT(C1: isOT_BP(DB x q))〔r44発見: 挿入主項 D_x q = **from-joint 終切片 Trans**(seg M j0'(Lng M-1)、j0'=Joints M!(Lng(Br M)-1))。a6-scb transport は DEAD(deposit は Trans(Pred M) の scb-subterm でない 3/34)→唯一の筋は Lng-IH a5 を deposit-slice(短い標準列)に適用〕

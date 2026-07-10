@@ -52,7 +52,9 @@
         - ✅ depth有界断片(無限・無条件)[r2]
         - 🚨 unbounded-depth chain排除→level jump 1本化
           - ✅ level-0 acc無条件+goal≡wfs_level_jump+wellorder/rank基盤(wfs_)[r2][0.423][0.73h]
-          - 🚨🤖 wfs_level_jump(level n⟹n+1 acc、ψ-collapse核、見積3-5R)[r0]
+          - 🚨 wfs_level_jump→collapse_core再尖鋭化
+            - ✅ lvP-STRAT反証→head-index STRAT+frag+G-set/tuple-acc bricks(wfj_)[r1][0.284][0.25h]
+            - 🚨🤖 wfj_collapse_core(secured-coefficient principal acc、ψ-collapse核)[r0]
   - 🚨 §8.1 条件 (I) の下での展開規則
     - 🚨 命題（条件 (I) の下での $\textrm{Trans}$ と基本列の交換関係）
       - ✅ 交換則(1)本体[r4]
@@ -73,7 +75,7 @@
           - ✅ not-leftDj0脚(guard)modulo DIAG[r1]
           - 🚨 TVall配線(FINRC threading)
             - ✅ ldj-leg+R3LE討伐+DIAG包摂+census sharp化(tvx_)[r4][0.503][0.61h]
-            - 🚨🤖 LDJB(ldj⟹d=jL∧guard、655/655)[r0]
+            - 🚨🤖 LDJB(ldj⟹d=jL∧guard、655/655)[r1][0.284][0.25h]
           - ✅ REGSP strictlt-eqd(slx37無条件)[r5]
       - 🚨 OT所属 (⛔ §8.7「Transが標準形を保つ」補題)
     - ✅ 補題（第 $0$ 種型基本列の基本不等式）
@@ -110,10 +112,12 @@
       - ✅ local-OTint keystone-free(condI/condVI/condV-adm-e=0)[r2]
       - 🚨 OTint(値形OT-step)
         - ✅ condV脚(adm+nadm)閉 modulo oix_transport(oix_、band-exclusion)[r1][0.322][0.47h]
-        - 🚨🤖 oix_transport(right-spine sandwich置換、純BT)[r0]
+        - 🚨 oix_transport(right-spine sandwich置換、純BT)
+          - ✅ level-peel bricks(otx2_、order/GBT代数/join-peel-align3)[r1][0.284][0.25h]
+          - 🚨🤖 transport本体組立[r0]
         - 🚨 otIII/otIV脚(r35形carry)[r0]
-      - 🚨🤖 OTpred(with-parent Pred corner OT-step)[r0]
-      - 🚨🤖 OTmulti(multi P成分lift OT-step)[r0]
+      - 🚨🤖 OTpred(with-parent Pred corner OT-step)[r1][0.142][0.12h]
+      - 🚨🤖 OTmulti(multi P成分lift OT-step)[r1][0.142][0.12h]
       - 🚨 deep-insertion OT所属(keystone{resid,multiD}、r49でcritical path外)[r5]
         - ✅ resid deep検証+4slot分解(rgx_、C3 prefix半分クローズ)[r1]
         - 🚨 slotNewOT(C1: isOT_BP(DB x q))
