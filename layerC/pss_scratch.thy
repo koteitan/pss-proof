@@ -69569,4 +69569,366 @@ qed
 
 (* ===== end r48 ASSEMBLY (asx_) ===== *)
 
+(* ===== r49 merge: wt-s4b — AP GROUNDED via r28 otx dispatcher; census upgraded to {OTint,OTpred,OTmulti,TVall} (apx_) ===== *)
+
+(* ===== r49 AP-KNOT (apx_): AP grounded ===== *)
+
+section \<open>r49 AP-KNOT (\<open>apx_\<close>) --- \<open>AP\<close> grounded: the OT pillar re-based on the
+  AP-free generation dispatcher; the census upgraded to
+  \<open>{OTint, OTpred, OTmulti, TVall}\<close>\<close>
+
+text \<open>ROUTE FINDING (r49).  The r48 knot (@{thm [source] asx_termination_census})
+  carries \<open>AP\<close> because its OT pillar is the LENGTH-induction engine
+  @{thm [source] rgx_Trans_preserves_OT_of_slots}, whose \<open>multiD\<close> slot consumes
+  \<open>AP\<close> (@{thm [source] asx_multiD_of_allpairs}).  The prescribed route (A)
+  (stage induction with the per-step OT transport realised by a corrected-A38
+  fseq READBACK) is DEAD at its readback leg: @{thm [source] otx_stepval_refuted}
+  (r28) refutes not only the \<open>[m][0]\<^sup>k\<close> value identity but --- on the genuine
+  host \<open>(0,0)(1,1)(2,2)(3,2)(4,2)\<close>, \<open>n = 1\<close> --- reachability of \<open>Trans (M[1])\<close>
+  from \<open>Trans M\<close> by ANY composition of fundamental-sequence steps (r28 section
+  header, deep counterexample class: every post-step value contains a \<open>D\<^sub>1\<close>- or
+  \<open>D\<^sub>0\<close>-headed splice node).  So no [Buc1]-closure transport can ground the
+  generation OT step, and the per-step OT transport must be carried
+  STRUCTURALLY.
+
+  The cut that DOES ground \<open>AP\<close>: the r28 generation dispatcher
+  @{thm [source] otx_Trans_preserves_OT_dispatch} is an OT pillar that is
+  \<open>AP\<close>-FREE --- its residuals are \<open>{exchI, exchII, OTint, OTpred, OTmulti}\<close>, of
+  which \<open>exchI\<close> is CLOSED (@{thm [source] scx_condI_exchange1}) and \<open>exchII\<close> is
+  closed modulo \<open>TVall\<close> (@{thm [source] c2sx_exchange_ex_condII_of_tailval}).
+  Hence, ACYCLICALLY:
+    \<open>{OTint, OTpred, OTmulti, TVall}\<close>
+      \<Longrightarrow> OT-all (generation induction, no \<open>AP\<close>, no length induction)
+      \<Longrightarrow> global descent (@{thm [source] dpx_fseq_descend_census}, whose \<open>TOT\<close>
+          input is now a theorem modulo the slots)
+      \<Longrightarrow> \<open>fseqD\<close> (\<open>leBT\<close> weakening)
+      \<Longrightarrow> \<open>AP\<close> (@{thm [source] mdx_P_allpairs_leBT_modFseq}).
+  \<open>AP\<close> is no longer a hypothesis anywhere: the r48 census's
+  \<open>{slotNewOT, slotTail, slotAppg, slotHeadWB, AP}\<close> are replaced wholesale by
+  the three AP-free structural residuals \<open>{OTint, OTpred, OTmulti}\<close> (r28 shapes
+  VERBATIM; empirically true; NOT the refuted \<open>stepval\<close> --- they assert OT
+  membership, not fseq reachability).  Both pillars assemble modulo
+  \<open>{OTint, OTpred, OTmulti, TVall}\<close> (@{text apx_termination_final}) and modulo
+  the single abstract per-step residual \<open>{OTstep, TVall}\<close>
+  (@{text apx_termination_final_of_step}).
+
+  Audit (agent-workflow rule 4): cites only proven facts
+  (@{thm [source] m_8_7_Trans_preserves_OT_base},
+  @{thm [source] otx_Trans_preserves_OT_dispatch},
+  @{thm [source] scx_condI_exchange1},
+  @{thm [source] c2sx_exchange_ex_condII_of_tailval},
+  @{thm [source] dpx_fseq_descend_census},
+  @{thm [source] mdx_P_allpairs_leBT_modFseq},
+  @{thm [source] asx_multiD_of_allpairs}); no REFUTED registry fact is used
+  (\<open>stepval\<close>/A38 appears only NEGATIVELY, as the reason route (A)'s readback
+  leg is dead); all carried residuals are named \<open>assumes\<close>.\<close>
+
+subsection \<open>The OT pillar, AP-free: (i) modulo the single abstract per-step
+  residual, (ii) modulo the r28 structural slots\<close>
+
+text \<open>(i) The generation-induction SKELETON modulo the named per-step
+  OT-transport residual \<open>OTstep\<close>.  (\<open>ST_PS.induct\<close> IS the stage induction:
+  \<open>SkT\<^bsub>PS\<^esub>\<close> rank = generation depth, @{thm [source] m_6_7_ST_eq_Union_SkT}; no
+  separate \<open>SkT\<close> machinery is needed once the step is host-local.)\<close>
+
+lemma apx_Trans_OT_all_of_step:
+  fixes M :: pairseq
+  assumes OTstep: "\<And>N n. N \<in> ST_PS \<Longrightarrow> Trans N \<in> OT_B \<Longrightarrow> 1 \<le> n \<Longrightarrow>
+                     Trans ((N::pairseq)[n]) \<in> OT_B"
+    and MST: "M \<in> ST_PS"
+  shows "Trans M \<in> OT_B"
+  using MST
+proof (induct M rule: ST_PS.induct)
+  case (diag u v)
+  have "diagSeq u v \<in> SkT_PS 0" using diag by auto
+  thus ?case by (rule m_8_7_Trans_preserves_OT_base)
+next
+  case (oper N n)
+  show ?case by (rule OTstep[OF oper.hyps(1) oper.hyps(2) oper.hyps(3)])
+qed
+
+text \<open>(ii) The OT pillar modulo the r28 structural slots \<open>{OTint, OTpred,
+  OTmulti}\<close> (+ \<open>TVall\<close>): the two exchange hypotheses of
+  @{thm [source] otx_Trans_preserves_OT_dispatch} discharged by their closed
+  forms.\<close>
+
+lemma apx_Trans_OT_all_of_otx_slots:
+  fixes M :: pairseq
+  assumes OTint: "\<And>N m. N \<in> ST_PS \<Longrightarrow> N \<in> PT_PS \<Longrightarrow> 1 < Lng N - 1 \<Longrightarrow>
+                  transCondIII N \<or> transCondIV N \<or> transCondV N \<Longrightarrow>
+                  Trans N \<in> OT_B \<Longrightarrow> 1 < m \<Longrightarrow> Trans ((N::pairseq)[m]) \<in> OT_B"
+    and OTpred: "\<And>N. N \<in> ST_PS \<Longrightarrow> Trans N \<in> OT_B \<Longrightarrow> 2 < Lng N \<Longrightarrow>
+                  \<not> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0) \<Longrightarrow>
+                  \<not> (N \<in> PT_PS \<and> transCondI N) \<Longrightarrow>
+                  \<not> (N \<in> PT_PS \<and> transCondVI N \<and> \<not> adm N (transJ0 N)) \<Longrightarrow>
+                  Trans (Pred N) \<in> OT_B"
+    and OTmulti: "\<And>N m. N \<in> ST_PS \<Longrightarrow> multiT N \<Longrightarrow> Trans N \<in> OT_B \<Longrightarrow>
+                  1 < m \<Longrightarrow> (N::pairseq)[m] \<noteq> Pred N \<Longrightarrow>
+                  Trans ((N::pairseq)[m]) \<in> OT_B"
+    and TVall: "\<And>K. K \<in> ST_PS \<Longrightarrow> K \<in> PT_PS \<Longrightarrow> 1 < Lng K - 1 \<Longrightarrow>
+                  transCondII K \<Longrightarrow> c2sx_tailval K"
+    and MST: "M \<in> ST_PS"
+  shows "Trans M \<in> OT_B"
+proof -
+  have exchI: "\<And>N m. N \<in> ST_PS \<Longrightarrow> N \<in> PT_PS \<Longrightarrow> 1 < Lng N - 1 \<Longrightarrow>
+                  transCondI N \<Longrightarrow> 0 < parent N 0 (Lng N - 1) \<Longrightarrow> 1 < m \<Longrightarrow>
+                  Trans ((N::pairseq)[m]) = operB (Trans N) (numBT (m - 1))"
+  proof -
+    fix N :: pairseq and m :: nat
+    assume a1: "N \<in> ST_PS" and a2: "N \<in> PT_PS" and a3: "1 < Lng N - 1"
+      and a4: "transCondI N" and a5: "0 < parent N 0 (Lng N - 1)"
+      and a6: "1 < m"
+    show "Trans ((N::pairseq)[m]) = operB (Trans N) (numBT (m - 1))"
+      by (rule scx_condI_exchange1[OF a1 a2 a3 a4 a6])
+  qed
+  have exchII: "\<And>N m. N \<in> ST_PS \<Longrightarrow> N \<in> PT_PS \<Longrightarrow> 1 < Lng N - 1 \<Longrightarrow>
+                  transCondII N \<Longrightarrow> 1 < m \<Longrightarrow>
+                  \<exists>k. Trans ((N::pairseq)[m]) = operB (Trans N) (numBT k)"
+    by (meson c2sx_exchange_ex_condII_of_tailval TVall)
+  show ?thesis
+    by (rule otx_Trans_preserves_OT_dispatch[OF MST exchI exchII OTint OTpred
+          OTmulti])
+qed
+
+subsection \<open>Global descent and \<open>fseqD\<close>, modulo the same slots\<close>
+
+lemma apx_descent_of_otx_slots:
+  fixes M :: pairseq and n :: nat
+  assumes OTint: "\<And>N m. N \<in> ST_PS \<Longrightarrow> N \<in> PT_PS \<Longrightarrow> 1 < Lng N - 1 \<Longrightarrow>
+                  transCondIII N \<or> transCondIV N \<or> transCondV N \<Longrightarrow>
+                  Trans N \<in> OT_B \<Longrightarrow> 1 < m \<Longrightarrow> Trans ((N::pairseq)[m]) \<in> OT_B"
+    and OTpred: "\<And>N. N \<in> ST_PS \<Longrightarrow> Trans N \<in> OT_B \<Longrightarrow> 2 < Lng N \<Longrightarrow>
+                  \<not> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0) \<Longrightarrow>
+                  \<not> (N \<in> PT_PS \<and> transCondI N) \<Longrightarrow>
+                  \<not> (N \<in> PT_PS \<and> transCondVI N \<and> \<not> adm N (transJ0 N)) \<Longrightarrow>
+                  Trans (Pred N) \<in> OT_B"
+    and OTmulti: "\<And>N m. N \<in> ST_PS \<Longrightarrow> multiT N \<Longrightarrow> Trans N \<in> OT_B \<Longrightarrow>
+                  1 < m \<Longrightarrow> (N::pairseq)[m] \<noteq> Pred N \<Longrightarrow>
+                  Trans ((N::pairseq)[m]) \<in> OT_B"
+    and TVall: "\<And>K. K \<in> ST_PS \<Longrightarrow> K \<in> PT_PS \<Longrightarrow> 1 < Lng K - 1 \<Longrightarrow>
+                  transCondII K \<Longrightarrow> c2sx_tailval K"
+    and MST: "M \<in> ST_PS" and n1: "1 \<le> n" and L: "1 < Lng M"
+  shows "lessBT (Trans ((M::pairseq)[n])) (Trans M)"
+proof -
+  have TOT: "\<And>N. N \<in> ST_PS \<Longrightarrow> N \<in> PT_PS \<Longrightarrow> 1 < Lng N - 1 \<Longrightarrow> Trans N \<in> OT_B"
+    by (rule apx_Trans_OT_all_of_otx_slots[OF OTint OTpred OTmulti TVall])
+  show ?thesis by (rule dpx_fseq_descend_census[OF MST n1 L TOT TVall])
+qed
+
+lemma apx_descent_of_step:
+  fixes M :: pairseq and n :: nat
+  assumes OTstep: "\<And>N n. N \<in> ST_PS \<Longrightarrow> Trans N \<in> OT_B \<Longrightarrow> 1 \<le> n \<Longrightarrow>
+                     Trans ((N::pairseq)[n]) \<in> OT_B"
+    and TVall: "\<And>K. K \<in> ST_PS \<Longrightarrow> K \<in> PT_PS \<Longrightarrow> 1 < Lng K - 1 \<Longrightarrow>
+                  transCondII K \<Longrightarrow> c2sx_tailval K"
+    and MST: "M \<in> ST_PS" and n1: "1 \<le> n" and L: "1 < Lng M"
+  shows "lessBT (Trans ((M::pairseq)[n])) (Trans M)"
+proof -
+  have TOT: "\<And>N. N \<in> ST_PS \<Longrightarrow> N \<in> PT_PS \<Longrightarrow> 1 < Lng N - 1 \<Longrightarrow> Trans N \<in> OT_B"
+    by (rule apx_Trans_OT_all_of_step[OF OTstep])
+  show ?thesis by (rule dpx_fseq_descend_census[OF MST n1 L TOT TVall])
+qed
+
+text \<open>The r47 shared residual \<open>fseqD\<close> as a THEOREM modulo the slots (mono not
+  even needed) --- this is the fact whose grounding was the whole knot.\<close>
+
+lemma apx_fseqD_grounded:
+  fixes K :: pairseq and n :: nat
+  assumes OTint: "\<And>N m. N \<in> ST_PS \<Longrightarrow> N \<in> PT_PS \<Longrightarrow> 1 < Lng N - 1 \<Longrightarrow>
+                  transCondIII N \<or> transCondIV N \<or> transCondV N \<Longrightarrow>
+                  Trans N \<in> OT_B \<Longrightarrow> 1 < m \<Longrightarrow> Trans ((N::pairseq)[m]) \<in> OT_B"
+    and OTpred: "\<And>N. N \<in> ST_PS \<Longrightarrow> Trans N \<in> OT_B \<Longrightarrow> 2 < Lng N \<Longrightarrow>
+                  \<not> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0) \<Longrightarrow>
+                  \<not> (N \<in> PT_PS \<and> transCondI N) \<Longrightarrow>
+                  \<not> (N \<in> PT_PS \<and> transCondVI N \<and> \<not> adm N (transJ0 N)) \<Longrightarrow>
+                  Trans (Pred N) \<in> OT_B"
+    and OTmulti: "\<And>N m. N \<in> ST_PS \<Longrightarrow> multiT N \<Longrightarrow> Trans N \<in> OT_B \<Longrightarrow>
+                  1 < m \<Longrightarrow> (N::pairseq)[m] \<noteq> Pred N \<Longrightarrow>
+                  Trans ((N::pairseq)[m]) \<in> OT_B"
+    and TVall: "\<And>K. K \<in> ST_PS \<Longrightarrow> K \<in> PT_PS \<Longrightarrow> 1 < Lng K - 1 \<Longrightarrow>
+                  transCondII K \<Longrightarrow> c2sx_tailval K"
+    and KST: "K \<in> ST_PS" and LK: "1 < Lng K" and n1: "1 \<le> n"
+  shows "leBT (Trans ((K::pairseq)[n])) (Trans K)"
+proof -
+  have "lessBT (Trans ((K::pairseq)[n])) (Trans K)"
+    by (rule apx_descent_of_otx_slots[OF OTint OTpred OTmulti TVall KST n1 LK])
+  thus ?thesis by simp
+qed
+
+subsection \<open>THE TARGET: \<open>AP\<close> grounded (exact census shape)\<close>
+
+lemma apx_AP_grounded:
+  fixes N :: pairseq
+  assumes OTint: "\<And>N m. N \<in> ST_PS \<Longrightarrow> N \<in> PT_PS \<Longrightarrow> 1 < Lng N - 1 \<Longrightarrow>
+                  transCondIII N \<or> transCondIV N \<or> transCondV N \<Longrightarrow>
+                  Trans N \<in> OT_B \<Longrightarrow> 1 < m \<Longrightarrow> Trans ((N::pairseq)[m]) \<in> OT_B"
+    and OTpred: "\<And>N. N \<in> ST_PS \<Longrightarrow> Trans N \<in> OT_B \<Longrightarrow> 2 < Lng N \<Longrightarrow>
+                  \<not> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0) \<Longrightarrow>
+                  \<not> (N \<in> PT_PS \<and> transCondI N) \<Longrightarrow>
+                  \<not> (N \<in> PT_PS \<and> transCondVI N \<and> \<not> adm N (transJ0 N)) \<Longrightarrow>
+                  Trans (Pred N) \<in> OT_B"
+    and OTmulti: "\<And>N m. N \<in> ST_PS \<Longrightarrow> multiT N \<Longrightarrow> Trans N \<in> OT_B \<Longrightarrow>
+                  1 < m \<Longrightarrow> (N::pairseq)[m] \<noteq> Pred N \<Longrightarrow>
+                  Trans ((N::pairseq)[m]) \<in> OT_B"
+    and TVall: "\<And>K. K \<in> ST_PS \<Longrightarrow> K \<in> PT_PS \<Longrightarrow> 1 < Lng K - 1 \<Longrightarrow>
+                  transCondII K \<Longrightarrow> c2sx_tailval K"
+    and NST: "N \<in> ST_PS"
+  shows "\<forall>J. Suc J < Lng (P N) \<longrightarrow> leBT (Trans (P N ! Suc J)) (Trans (P N ! J))"
+proof -
+  have fseqD: "\<And>K n. K \<in> ST_PS \<Longrightarrow> monoT K \<Longrightarrow> 1 < Lng K \<Longrightarrow> 1 \<le> n \<Longrightarrow>
+                  leBT (Trans ((K::pairseq)[n])) (Trans K)"
+  proof -
+    fix K :: pairseq and n :: nat
+    assume k1: "K \<in> ST_PS" and k2: "monoT K" and k3: "1 < Lng K" and k4: "1 \<le> n"
+    have "lessBT (Trans ((K::pairseq)[n])) (Trans K)"
+      by (rule apx_descent_of_otx_slots[OF OTint OTpred OTmulti TVall k1 k4 k3])
+    thus "leBT (Trans ((K::pairseq)[n])) (Trans K)" by simp
+  qed
+  show ?thesis by (rule mdx_P_allpairs_leBT_modFseq[OF fseqD NST])
+qed
+
+lemma apx_AP_grounded_of_step:
+  fixes N :: pairseq
+  assumes OTstep: "\<And>N n. N \<in> ST_PS \<Longrightarrow> Trans N \<in> OT_B \<Longrightarrow> 1 \<le> n \<Longrightarrow>
+                     Trans ((N::pairseq)[n]) \<in> OT_B"
+    and TVall: "\<And>K. K \<in> ST_PS \<Longrightarrow> K \<in> PT_PS \<Longrightarrow> 1 < Lng K - 1 \<Longrightarrow>
+                  transCondII K \<Longrightarrow> c2sx_tailval K"
+    and NST: "N \<in> ST_PS"
+  shows "\<forall>J. Suc J < Lng (P N) \<longrightarrow> leBT (Trans (P N ! Suc J)) (Trans (P N ! J))"
+proof -
+  have fseqD: "\<And>K n. K \<in> ST_PS \<Longrightarrow> monoT K \<Longrightarrow> 1 < Lng K \<Longrightarrow> 1 \<le> n \<Longrightarrow>
+                  leBT (Trans ((K::pairseq)[n])) (Trans K)"
+  proof -
+    fix K :: pairseq and n :: nat
+    assume k1: "K \<in> ST_PS" and k2: "monoT K" and k3: "1 < Lng K" and k4: "1 \<le> n"
+    have "lessBT (Trans ((K::pairseq)[n])) (Trans K)"
+      by (rule apx_descent_of_step[OF OTstep TVall k1 k4 k3])
+    thus "leBT (Trans ((K::pairseq)[n])) (Trans K)" by simp
+  qed
+  show ?thesis by (rule mdx_P_allpairs_leBT_modFseq[OF fseqD NST])
+qed
+
+subsection \<open>Downstream corollary: the \<open>multiD\<close> keystone grounded\<close>
+
+text \<open>The \<open>multiD\<close> junction keystone (of the Lng-capstone route and the r31
+  \<open>orx_\<close> discharge) becomes a theorem modulo the same slots --- the only
+  keystone of @{thm [source] m_8_7_Trans_preserves_OT_modulo} left open after
+  this round is \<open>resid\<close>.\<close>
+
+lemma apx_multiD_grounded:
+  fixes N :: pairseq and as bs :: "BP list"
+  assumes OTint: "\<And>N m. N \<in> ST_PS \<Longrightarrow> N \<in> PT_PS \<Longrightarrow> 1 < Lng N - 1 \<Longrightarrow>
+                  transCondIII N \<or> transCondIV N \<or> transCondV N \<Longrightarrow>
+                  Trans N \<in> OT_B \<Longrightarrow> 1 < m \<Longrightarrow> Trans ((N::pairseq)[m]) \<in> OT_B"
+    and OTpred: "\<And>N. N \<in> ST_PS \<Longrightarrow> Trans N \<in> OT_B \<Longrightarrow> 2 < Lng N \<Longrightarrow>
+                  \<not> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0) \<Longrightarrow>
+                  \<not> (N \<in> PT_PS \<and> transCondI N) \<Longrightarrow>
+                  \<not> (N \<in> PT_PS \<and> transCondVI N \<and> \<not> adm N (transJ0 N)) \<Longrightarrow>
+                  Trans (Pred N) \<in> OT_B"
+    and OTmulti: "\<And>N m. N \<in> ST_PS \<Longrightarrow> multiT N \<Longrightarrow> Trans N \<in> OT_B \<Longrightarrow>
+                  1 < m \<Longrightarrow> (N::pairseq)[m] \<noteq> Pred N \<Longrightarrow>
+                  Trans ((N::pairseq)[m]) \<in> OT_B"
+    and TVall: "\<And>K. K \<in> ST_PS \<Longrightarrow> K \<in> PT_PS \<Longrightarrow> 1 < Lng K - 1 \<Longrightarrow>
+                  transCondII K \<Longrightarrow> c2sx_tailval K"
+    and NST: "N \<in> ST_PS" and mu: "multiT N"
+    and ne: "drop (Pcut N) N \<noteq> [(0,0)]"
+    and aeq: "Trans (take (Pcut N) N) = Trm as"
+    and beq: "Trans (drop (Pcut N) N) = Trm bs"
+    and asne: "as \<noteq> []" and bsne: "bs \<noteq> []"
+  shows "leBT (Trm [hd bs]) (Trm [last as])"
+proof -
+  have AP: "\<And>K. K \<in> ST_PS \<Longrightarrow>
+              \<forall>J. Suc J < Lng (P K) \<longrightarrow> leBT (Trans (P K ! Suc J)) (Trans (P K ! J))"
+    by (rule apx_AP_grounded[OF OTint OTpred OTmulti TVall])
+  show ?thesis
+    by (rule asx_multiD_of_allpairs[OF AP NST mu ne aeq beq asne bsne])
+qed
+
+subsection \<open>The upgraded termination census: BOTH pillars, \<open>AP\<close> discharged\<close>
+
+text \<open>@{thm [source] asx_termination_census} with \<open>AP\<close> DISCHARGED and the four
+  \<open>rgx\<close> length-induction slots gone: both pillars modulo
+  \<open>{OTint, OTpred, OTmulti, TVall}\<close> only.\<close>
+
+lemma apx_termination_final:
+  assumes OTint: "\<And>N m. N \<in> ST_PS \<Longrightarrow> N \<in> PT_PS \<Longrightarrow> 1 < Lng N - 1 \<Longrightarrow>
+                  transCondIII N \<or> transCondIV N \<or> transCondV N \<Longrightarrow>
+                  Trans N \<in> OT_B \<Longrightarrow> 1 < m \<Longrightarrow> Trans ((N::pairseq)[m]) \<in> OT_B"
+    and OTpred: "\<And>N. N \<in> ST_PS \<Longrightarrow> Trans N \<in> OT_B \<Longrightarrow> 2 < Lng N \<Longrightarrow>
+                  \<not> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0) \<Longrightarrow>
+                  \<not> (N \<in> PT_PS \<and> transCondI N) \<Longrightarrow>
+                  \<not> (N \<in> PT_PS \<and> transCondVI N \<and> \<not> adm N (transJ0 N)) \<Longrightarrow>
+                  Trans (Pred N) \<in> OT_B"
+    and OTmulti: "\<And>N m. N \<in> ST_PS \<Longrightarrow> multiT N \<Longrightarrow> Trans N \<in> OT_B \<Longrightarrow>
+                  1 < m \<Longrightarrow> (N::pairseq)[m] \<noteq> Pred N \<Longrightarrow>
+                  Trans ((N::pairseq)[m]) \<in> OT_B"
+    and TVall: "\<And>K. K \<in> ST_PS \<Longrightarrow> K \<in> PT_PS \<Longrightarrow> 1 < Lng K - 1 \<Longrightarrow>
+                  transCondII K \<Longrightarrow> c2sx_tailval K"
+  shows "\<forall>M. M \<in> ST_PS \<longrightarrow> Trans M \<in> OT_B"
+    and "\<forall>M n. M \<in> ST_PS \<longrightarrow> 1 \<le> n \<longrightarrow> 1 < Lng M \<longrightarrow>
+           lessBT (Trans ((M::pairseq)[n])) (Trans M)"
+proof -
+  show "\<forall>M. M \<in> ST_PS \<longrightarrow> Trans M \<in> OT_B"
+    using apx_Trans_OT_all_of_otx_slots[OF OTint OTpred OTmulti TVall] by blast
+  show "\<forall>M n. M \<in> ST_PS \<longrightarrow> 1 \<le> n \<longrightarrow> 1 < Lng M \<longrightarrow>
+           lessBT (Trans ((M::pairseq)[n])) (Trans M)"
+  proof (intro allI impI)
+    fix M :: pairseq and n :: nat
+    assume MST: "M \<in> ST_PS" and n1: "1 \<le> n" and L: "1 < Lng M"
+    show "lessBT (Trans ((M::pairseq)[n])) (Trans M)"
+      by (rule apx_descent_of_otx_slots[OF OTint OTpred OTmulti TVall MST n1 L])
+  qed
+qed
+
+lemma apx_termination_final_of_step:
+  assumes OTstep: "\<And>N n. N \<in> ST_PS \<Longrightarrow> Trans N \<in> OT_B \<Longrightarrow> 1 \<le> n \<Longrightarrow>
+                     Trans ((N::pairseq)[n]) \<in> OT_B"
+    and TVall: "\<And>K. K \<in> ST_PS \<Longrightarrow> K \<in> PT_PS \<Longrightarrow> 1 < Lng K - 1 \<Longrightarrow>
+                  transCondII K \<Longrightarrow> c2sx_tailval K"
+  shows "\<forall>M. M \<in> ST_PS \<longrightarrow> Trans M \<in> OT_B"
+    and "\<forall>M n. M \<in> ST_PS \<longrightarrow> 1 \<le> n \<longrightarrow> 1 < Lng M \<longrightarrow>
+           lessBT (Trans ((M::pairseq)[n])) (Trans M)"
+proof -
+  show "\<forall>M. M \<in> ST_PS \<longrightarrow> Trans M \<in> OT_B"
+    using apx_Trans_OT_all_of_step[OF OTstep] by blast
+  show "\<forall>M n. M \<in> ST_PS \<longrightarrow> 1 \<le> n \<longrightarrow> 1 < Lng M \<longrightarrow>
+           lessBT (Trans ((M::pairseq)[n])) (Trans M)"
+  proof (intro allI impI)
+    fix M :: pairseq and n :: nat
+    assume MST: "M \<in> ST_PS" and n1: "1 \<le> n" and L: "1 < Lng M"
+    show "lessBT (Trans ((M::pairseq)[n])) (Trans M)"
+      by (rule apx_descent_of_step[OF OTstep TVall MST n1 L])
+  qed
+qed
+
+text \<open>Consistency of the two moduli: the r28 structural slots imply the
+  abstract per-step residual on its whole domain EXCEPT nothing --- \<open>OTstep\<close>
+  itself is derivable from the slots (via OT-all, which makes the OT hypothesis
+  redundant), closing the circle of the two presentations.\<close>
+
+lemma apx_OTstep_of_otx_slots:
+  fixes N :: pairseq and n :: nat
+  assumes OTint: "\<And>N m. N \<in> ST_PS \<Longrightarrow> N \<in> PT_PS \<Longrightarrow> 1 < Lng N - 1 \<Longrightarrow>
+                  transCondIII N \<or> transCondIV N \<or> transCondV N \<Longrightarrow>
+                  Trans N \<in> OT_B \<Longrightarrow> 1 < m \<Longrightarrow> Trans ((N::pairseq)[m]) \<in> OT_B"
+    and OTpred: "\<And>N. N \<in> ST_PS \<Longrightarrow> Trans N \<in> OT_B \<Longrightarrow> 2 < Lng N \<Longrightarrow>
+                  \<not> (entry N 0 (Lng N - 1) = 0 \<and> entry N 1 (Lng N - 1) = 0) \<Longrightarrow>
+                  \<not> (N \<in> PT_PS \<and> transCondI N) \<Longrightarrow>
+                  \<not> (N \<in> PT_PS \<and> transCondVI N \<and> \<not> adm N (transJ0 N)) \<Longrightarrow>
+                  Trans (Pred N) \<in> OT_B"
+    and OTmulti: "\<And>N m. N \<in> ST_PS \<Longrightarrow> multiT N \<Longrightarrow> Trans N \<in> OT_B \<Longrightarrow>
+                  1 < m \<Longrightarrow> (N::pairseq)[m] \<noteq> Pred N \<Longrightarrow>
+                  Trans ((N::pairseq)[m]) \<in> OT_B"
+    and TVall: "\<And>K. K \<in> ST_PS \<Longrightarrow> K \<in> PT_PS \<Longrightarrow> 1 < Lng K - 1 \<Longrightarrow>
+                  transCondII K \<Longrightarrow> c2sx_tailval K"
+    and NST: "N \<in> ST_PS" and n1: "1 \<le> n"
+  shows "Trans ((N::pairseq)[n]) \<in> OT_B"
+proof -
+  have st: "(N::pairseq)[n] \<in> ST_PS" by (rule ST_PS.oper[OF NST n1])
+  show ?thesis
+    by (rule apx_Trans_OT_all_of_otx_slots[OF OTint OTpred OTmulti TVall st])
+qed
+
+(* ===== end r49 AP-KNOT (apx_) ===== *)
+
 end
