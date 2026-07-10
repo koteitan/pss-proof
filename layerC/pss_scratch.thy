@@ -72588,4 +72588,1249 @@ text \<open>\<^bold>\<open>Status and feasibility verdict for the LEVEL JUMP\<cl
 
 (* ===== end r51 buc1-semantic front (wfs_) ===== *)
 
+(* ===== r52 merge: wt-y3 — buc1 jump r52: STRAT-n(lvP) refuted -> head-index STRAT; frag machinery; collapse-core residual + tuple-acc bricks (wfj_) ===== *)
+
+(* ===== r52 merge: wt-y3 — buc1 level-jump front (wfj_): STRAT-n for wfs_lvP REFUTED
+        (n >= 1); the TRUE downward-closed stratification is by HEAD index ===== *)
+
+section \<open>r52 wfj — opening the level jump: STRAT-\<open>n\<close> refuted, head-index fragments\<close>
+
+text \<open>Target: the single residual \<open>wfs_level_jump\<close> (r51).  The r51 feasibility plan
+  proposed as step (a) the level-relativized STRAT-\<open>n\<close>:
+  \<open>(q, p) \<in> RPrel \<Longrightarrow> wfs_lvP p \<le> n \<Longrightarrow> wfs_lvP q \<le> n\<close>.  \<^bold>\<open>This is FALSE for every
+  \<open>n \<ge> 1\<close>\<close> (machine-checked below): in the strict head-comparison case \<open>u < v\<close> of
+  \<open>lessBP\<close> the BODY of the smaller side is completely unconstrained by the comparison,
+  and the \<open>G\<close>-condition does NOT bound its level — \<open>D\<^sub>0 (D\<^sub>k 0) \<in> OT\<close> for every \<open>k\<close>
+  (its \<open>G\<^sub>0\<close>-set is \<open>{0\<^sub>B}\<close> and \<open>0\<^sub>B < D\<^sub>k 0\<close>) while \<open>D\<^sub>0 (D\<^sub>k 0) < D\<^sub>1 0\<close>.
+  Semantically \<open>\<psi>\<^sub>0(\<Omega>\<^sub>k) < \<Omega>\<^sub>1\<close>: collapsed images of ALL levels sit below level 1.
+  STRAT-0 (r51, \<open>wfs_strat0_P\<close>) survives because at level 0 the strict head case is
+  impossible (\<open>u < 0\<close> has no solution in \<open>enat\<close>).
+
+  The TRUE downward-closed stratification is by the HEAD index alone (the fragment
+  "below \<open>\<Omega>\<^bsub>n+1\<^esub>\<close>"): \<open>lessBP\<close> compares heads first, so the head is weakly
+  monotone along \<open>RPrel\<close> — no induction and no \<open>G\<close>-condition needed at all.\<close>
+
+subsection \<open>(1a) Head index \<open>wfj_hd\<close>: the TRUE STRAT-\<open>n\<close>\<close>
+
+fun wfj_hd :: "BP \<Rightarrow> enat" where
+  "wfj_hd (DB v b) = v"
+
+lemma wfj_hd_le:
+  assumes "(q, p) \<in> RPrel"
+  shows "wfj_hd q \<le> wfj_hd p"
+proof -
+  obtain u w where qeq: "q = DB u w" by (cases q) auto
+  obtain v c where peq: "p = DB v c" by (cases p) auto
+  have "lessBP q p" using assms by (simp add: RPrel_def)
+  then have "u < v \<or> (u = v \<and> lessBT w c)" using qeq peq by simp
+  then show ?thesis using qeq peq by auto
+qed
+
+lemma wfj_strat_hd:
+  assumes "(q, p) \<in> RPrel" and "wfj_hd p \<le> enat n"
+  shows "wfj_hd q \<le> enat n"
+  using wfj_hd_le[OF assms(1)] assms(2) order_trans by blast
+
+lemma wfj_hd_le_lvP: "wfj_hd p \<le> wfs_lvP p"
+  by (cases p) (simp add: max.cobounded1)
+
+subsection \<open>(1b) STRAT-\<open>n\<close> for \<open>wfs_lvP\<close> is FALSE for every \<open>n \<ge> 1\<close>\<close>
+
+lemma wfj_enat_max0: "max (x::enat) 0 = x"
+  by (rule max_absorb1[OF zero_le])
+
+lemma wfj_enat_0max: "max (0::enat) x = x"
+  by (rule max_absorb2[OF zero_le])
+
+text \<open>The counterexample family: \<open>wfj_cexq k = D\<^sub>0 (D\<^sub>k 0)\<close> — an \<open>OT\<^bsub>B\<^esub>\<close> principal
+  of head \<open>0\<close> and level \<open>k\<close>.\<close>
+
+definition wfj_cexq :: "nat \<Rightarrow> BP" where
+  "wfj_cexq k = DB 0 (Trm [DB (enat k) (Trm [])])"
+
+lemma wfj_cexq_OT: "isOT_BP (wfj_cexq k)"
+  by (simp add: wfj_cexq_def)
+
+lemma wfj_cexq_dfree: "dfree_BP (wfj_cexq k)"
+  by (simp add: wfj_cexq_def zero_enat_def)
+
+lemma wfj_cexq_lv: "wfs_lvP (wfj_cexq k) = enat k"
+  by (simp add: wfj_cexq_def wfj_enat_max0 wfj_enat_0max)
+
+lemma wfj_cexq_hd: "wfj_hd (wfj_cexq k) = 0"
+  by (simp add: wfj_cexq_def)
+
+theorem wfj_stratn_lvP_refuted:
+  assumes n1: "1 \<le> n"
+  shows "\<exists>q p. (q, p) \<in> RPrel \<and> wfs_lvP p \<le> enat n \<and> \<not> wfs_lvP q \<le> enat n"
+proof -
+  have otp: "isOT_BP (DB (enat 1) (Trm []))" by simp
+  have dfp: "dfree_BP (DB (enat 1) (Trm []))" by simp
+  have lvp: "wfs_lvP (DB (enat 1) (Trm [])) = enat 1" by (simp add: wfj_enat_max0)
+  have qp: "lessBP (wfj_cexq (Suc n)) (DB (enat 1) (Trm []))"
+    by (simp add: wfj_cexq_def zero_enat_def)
+  have inR: "(wfj_cexq (Suc n), DB (enat 1) (Trm [])) \<in> RPrel"
+    using wfj_cexq_OT wfj_cexq_dfree otp dfp qp by (simp add: RPrel_def)
+  have lep: "wfs_lvP (DB (enat 1) (Trm [])) \<le> enat n" using lvp n1 by simp
+  have nleq: "\<not> wfs_lvP (wfj_cexq (Suc n)) \<le> enat n" by (simp add: wfj_cexq_lv)
+  show ?thesis using inR lep nleq by blast
+qed
+
+corollary wfj_stratn_lvP_false:
+  "\<not> (\<forall>n q p. 1 \<le> n \<longrightarrow> (q, p) \<in> RPrel \<longrightarrow> wfs_lvP p \<le> enat n \<longrightarrow> wfs_lvP q \<le> enat n)"
+  using wfj_stratn_lvP_refuted by blast
+
+subsection \<open>(2) The head-index fragments \<open>wfj_frag\<close> — downward closed, per-level wf
+  goals, and the derivation of \<open>wfs_level_jump\<close>\<close>
+
+definition wfj_frag :: "nat \<Rightarrow> BP set" where
+  "wfj_frag n = {p. isOT_BP p \<and> dfree_BP p \<and> wfj_hd p \<le> enat n}"
+
+lemma wfj_frag_downclosed:
+  assumes sf: "s \<in> wfj_frag n" and qs: "(q, s) \<in> RPrel"
+  shows "q \<in> wfj_frag n"
+proof -
+  have hq: "wfj_hd q \<le> wfj_hd s" by (rule wfj_hd_le[OF qs])
+  have hs: "wfj_hd s \<le> enat n" using sf by (simp add: wfj_frag_def)
+  have hn: "wfj_hd q \<le> enat n" using hq hs by (rule order_trans)
+  have qg: "isOT_BP q" "dfree_BP q" using qs by (auto simp add: RPrel_def)
+  show ?thesis using hn qg by (simp add: wfj_frag_def)
+qed
+
+lemma wfj_frag_mono:
+  assumes "n \<le> m" shows "wfj_frag n \<subseteq> wfj_frag m"
+proof
+  fix p assume "p \<in> wfj_frag n"
+  then have f1: "isOT_BP p" and f2: "dfree_BP p" and f3: "wfj_hd p \<le> enat n"
+    by (auto simp add: wfj_frag_def)
+  have "wfj_hd p \<le> enat m" by (rule order_trans[OF f3]) (simp add: assms)
+  then show "p \<in> wfj_frag m" using f1 f2 by (simp add: wfj_frag_def)
+qed
+
+lemma wfj_lv_in_frag:
+  assumes "isOT_BP p" and "dfree_BP p" and "wfs_lvP p \<le> enat n"
+  shows "p \<in> wfj_frag n"
+proof -
+  have "wfj_hd p \<le> enat n" by (rule order_trans[OF wfj_hd_le_lvP assms(3)])
+  then show ?thesis using assms(1,2) by (simp add: wfj_frag_def)
+qed
+
+text \<open>\<^bold>\<open>No easy base\<close>: the bottom fragment \<open>wfj_frag 0\<close> (the terms below \<open>\<Omega>\<^sub>1\<close>)
+  already contains principals of EVERY \<open>wfs_lvP\<close>-level — it is the \<open>\<psi>\<^sub>0\<close>-collapsed
+  image of the whole system, NOT an \<open>\<epsilon>\<^sub>0\<close>-sized base case.  So neither stratification
+  gives a climbable ladder by itself: the \<open>lvP\<close>-fragments have easy bases but are not
+  downward closed (refuted above); the head fragments are downward closed but their
+  bottom already carries full collapsing strength.\<close>
+
+lemma wfj_frag0_lv_unbounded: "\<exists>p \<in> wfj_frag 0. wfs_lvP p = enat k"
+proof -
+  have "wfj_cexq k \<in> wfj_frag 0"
+    using wfj_cexq_OT wfj_cexq_dfree
+    by (simp add: wfj_frag_def wfj_cexq_hd zero_enat_def)
+  then show ?thesis using wfj_cexq_lv by blast
+qed
+
+text \<open>The per-level wf goals, and the plumbing: all levels together are EQUIVALENT to
+  the full goal \<open>wf RPrel\<close>, and hence discharge the r51 residual \<open>wfs_level_jump\<close>.\<close>
+
+definition wfj_level_wf :: "nat \<Rightarrow> bool" where
+  "wfj_level_wf n \<longleftrightarrow> wf (Restr RPrel (wfj_frag n))"
+
+theorem wfj_wf_RPrel_of_all_levels:
+  assumes A: "\<forall>n. wfj_level_wf n"
+  shows "wf RPrel"
+proof (rule acc_wfI)
+  show "\<forall>x. x \<in> Wellfounded.acc RPrel"
+  proof
+    fix p :: BP
+    show "p \<in> Wellfounded.acc RPrel"
+    proof (cases "isOT_BP p \<and> dfree_BP p")
+      case True
+      obtain v b where peq: "p = DB v b" by (cases p) auto
+      have dfp: "dfree_BP (DB v b)" using True peq by simp
+      then have "v \<noteq> \<infinity>" by simp
+      then obtain k where vk: "v = enat k" by (cases v) auto
+      have pfrag: "p \<in> wfj_frag k" using True peq vk by (simp add: wfj_frag_def)
+      have dc: "\<forall>s q. s \<in> wfj_frag k \<longrightarrow> (q, s) \<in> RPrel \<longrightarrow> q \<in> wfj_frag k"
+        using wfj_frag_downclosed by blast
+      have wfk: "wf (Restr RPrel (wfj_frag k))"
+        using A by (simp add: wfj_level_wf_def)
+      have "wfj_frag k \<subseteq> Wellfounded.acc RPrel"
+        by (rule wfs_closed_wf_acc[OF dc wfk])
+      then show ?thesis using pfrag by blast
+    next
+      case False
+      show ?thesis
+      proof (rule accI)
+        fix q assume "(q, p) \<in> RPrel"
+        then have "isOT_BP p \<and> dfree_BP p" by (auto simp add: RPrel_def)
+        with False show "q \<in> Wellfounded.acc RPrel" by blast
+      qed
+    qed
+  qed
+qed
+
+lemma wfj_all_levels_of_wf:
+  assumes "wf RPrel" shows "wfj_level_wf n"
+  using assms unfolding wfj_level_wf_def by (simp add: wf_Int1)
+
+theorem wfj_wf_iff_all_levels: "wf RPrel \<longleftrightarrow> (\<forall>n. wfj_level_wf n)"
+  using wfj_wf_RPrel_of_all_levels wfj_all_levels_of_wf by blast
+
+lemma wfj_level_jump_of_wf:
+  assumes "wf RPrel" shows "wfs_level_jump"
+proof -
+  have "\<forall>p. p \<in> Wellfounded.acc RPrel" using assms wfs_wf_iff_all_acc by blast
+  then show ?thesis unfolding wfs_level_jump_def by blast
+qed
+
+theorem wfj_level_jump_of_all_levels:
+  assumes "\<forall>n. wfj_level_wf n" shows "wfs_level_jump"
+  using wfj_level_jump_of_wf wfj_wf_RPrel_of_all_levels[OF assms] by blast
+
+subsection \<open>(3) The jump opening: \<open>G\<close>-set bricks and the SECURED-COEFFICIENT
+  collapse core\<close>
+
+text \<open>Since neither level ladder climbs (see above), the residual is re-sharpened from
+  the per-level \<open>wfs_level_jump\<close> to the GLOBAL collapse engine.  The \<open>G\<^sub>v\<close>-elements of
+  a body are proper subterms (\<open>wfj_G_szT\<close>), and they inherit \<open>OT\<close>/\<open>dfree\<close>
+  (\<open>wfj_G_OT_T\<close>/\<open>wfj_G_df_T\<close>); call a term SECURED when all its principal components
+  are already accessible (\<open>wfj_secT\<close>).  The engine statement \<open>wfj_collapse_core\<close> —
+  an \<open>OT\<close>+\<open>dfree\<close> principal \<open>D\<^sub>v b\<close> whose \<open>G\<^sub>v\<close>-coefficients are all secured is
+  itself accessible — then yields the WHOLE goal by a plain structural-size induction
+  (\<open>wfj_acc_of_collapse_core\<close>): no level bookkeeping survives.\<close>
+
+lemma wfj_G_szT: "\<forall>u x. x \<in> GBT u t \<longrightarrow> wfs_szT x < wfs_szT t"
+  and wfj_G_szP: "\<forall>u x. x \<in> GBP u q \<longrightarrow> wfs_szT x < wfs_szP q"
+proof (induction t and q rule: wfs_lvT_wfs_lvP.induct)
+  case (1 ps)
+  show ?case
+  proof (intro allI impI)
+    fix u x assume xin: "x \<in> GBT u (Trm ps)"
+    obtain r where rin: "r \<in> set ps" and xr: "x \<in> GBP u r" using xin by auto
+    have s1: "wfs_szT x < wfs_szP r" using "1.IH"[OF rin] xr by blast
+    have s2: "wfs_szP r \<le> sum_list (map wfs_szP ps)" using wfs_szP_mem[OF rin] .
+    have s3: "wfs_szT (Trm ps) = Suc (sum_list (map wfs_szP ps))" by simp
+    show "wfs_szT x < wfs_szT (Trm ps)" using s1 s2 s3 by linarith
+  qed
+next
+  case (2 v b)
+  show ?case
+  proof (intro allI impI)
+    fix u x assume xin: "x \<in> GBP u (DB v b)"
+    have sb: "wfs_szP (DB v b) = Suc (wfs_szT b)" by simp
+    show "wfs_szT x < wfs_szP (DB v b)"
+    proof (cases "u \<le> v")
+      case True
+      then have xc: "x = b \<or> x \<in> GBT u b" using xin by (auto split: if_splits)
+      show ?thesis
+      proof (cases "x = b")
+        case True then show ?thesis using sb by simp
+      next
+        case False
+        then have "x \<in> GBT u b" using xc by blast
+        then have "wfs_szT x < wfs_szT b" using "2.IH" by blast
+        then show ?thesis using sb by linarith
+      qed
+    next
+      case False
+      then show ?thesis using xin by simp
+    qed
+  qed
+qed
+
+lemma wfj_G_OT_T: "\<forall>u x. isOT_BT t \<longrightarrow> x \<in> GBT u t \<longrightarrow> isOT_BT x"
+  and wfj_G_OT_P: "\<forall>u x. isOT_BP q \<longrightarrow> x \<in> GBP u q \<longrightarrow> isOT_BT x"
+proof (induction t and q rule: wfs_lvT_wfs_lvP.induct)
+  case (1 ps)
+  show ?case
+  proof (intro allI impI)
+    fix u x assume ot: "isOT_BT (Trm ps)" and xin: "x \<in> GBT u (Trm ps)"
+    obtain r where rin: "r \<in> set ps" and xr: "x \<in> GBP u r" using xin by auto
+    have otr: "isOT_BP r" using ot rin by simp
+    show "isOT_BT x" using "1.IH"[OF rin] otr xr by blast
+  qed
+next
+  case (2 v b)
+  show ?case
+  proof (intro allI impI)
+    fix u x assume ot: "isOT_BP (DB v b)" and xin: "x \<in> GBP u (DB v b)"
+    have otb: "isOT_BT b" using ot by simp
+    show "isOT_BT x"
+    proof (cases "u \<le> v")
+      case True
+      then have "x = b \<or> x \<in> GBT u b" using xin by (auto split: if_splits)
+      then show ?thesis using "2.IH" otb by blast
+    next
+      case False
+      then show ?thesis using xin by simp
+    qed
+  qed
+qed
+
+lemma wfj_G_df_T: "\<forall>u x. dfree_BT t \<longrightarrow> x \<in> GBT u t \<longrightarrow> dfree_BT x"
+  and wfj_G_df_P: "\<forall>u x. dfree_BP q \<longrightarrow> x \<in> GBP u q \<longrightarrow> dfree_BT x"
+proof (induction t and q rule: wfs_lvT_wfs_lvP.induct)
+  case (1 ps)
+  show ?case
+  proof (intro allI impI)
+    fix u x assume df: "dfree_BT (Trm ps)" and xin: "x \<in> GBT u (Trm ps)"
+    obtain r where rin: "r \<in> set ps" and xr: "x \<in> GBP u r" using xin by auto
+    have dfr: "dfree_BP r" using df rin by simp
+    show "dfree_BT x" using "1.IH"[OF rin] dfr xr by blast
+  qed
+next
+  case (2 v b)
+  show ?case
+  proof (intro allI impI)
+    fix u x assume df: "dfree_BP (DB v b)" and xin: "x \<in> GBP u (DB v b)"
+    have dfb: "dfree_BT b" using df by simp
+    show "dfree_BT x"
+    proof (cases "u \<le> v")
+      case True
+      then have "x = b \<or> x \<in> GBT u b" using xin by (auto split: if_splits)
+      then show ?thesis using "2.IH" dfb by blast
+    next
+      case False
+      then show ?thesis using xin by simp
+    qed
+  qed
+qed
+
+text \<open>A term is SECURED when all its principal components are accessible.\<close>
+
+fun wfj_secT :: "BT \<Rightarrow> bool" where
+  "wfj_secT (Trm rs) = (\<forall>r \<in> set rs. r \<in> Wellfounded.acc RPrel)"
+
+text \<open>\<^bold>\<open>The re-sharpened single residual\<close> — the \<open>\<psi>\<close>-collapse engine of [Buc1]
+  Lemma 2.2.  NOTE the honest scope of the premise: it secures exactly the
+  \<open>G\<^sub>v\<close>-coefficient skeleton of \<open>b\<close> (arguments of \<open>D\<^sub>u\<close>, \<open>u \<ge> v\<close>, hereditarily
+  until shielded); principals of head \<open>< v\<close> INSIDE \<open>b\<close> are NOT covered by it, and
+  the engine's own proof must secure them by its recursion on the head index.\<close>
+
+definition wfj_collapse_core :: bool where
+  "wfj_collapse_core \<longleftrightarrow>
+     (\<forall>v b. isOT_BP (DB v b) \<longrightarrow> dfree_BP (DB v b) \<longrightarrow>
+        (\<forall>x \<in> GBT v b. wfj_secT x) \<longrightarrow> DB v b \<in> Wellfounded.acc RPrel)"
+
+text \<open>\<^bold>\<open>The bootstrap\<close>: the engine alone yields accessibility of EVERY \<open>OT\<close>+\<open>dfree\<close>
+  principal, by structural-size induction — the \<open>G\<^sub>v\<close>-coefficients are proper
+  subterms, so their components are accessible by the induction hypothesis.\<close>
+
+theorem wfj_acc_of_collapse_core:
+  assumes C: "wfj_collapse_core"
+  shows "isOT_BP p \<Longrightarrow> dfree_BP p \<Longrightarrow> p \<in> Wellfounded.acc RPrel"
+proof (induction p rule: measure_induct_rule[where f = wfs_szP])
+  case (less p)
+  obtain v b where peq: "p = DB v b" by (cases p) auto
+  have otp: "isOT_BP (DB v b)" using less.prems(1) peq by simp
+  have dfp: "dfree_BP (DB v b)" using less.prems(2) peq by simp
+  have otb: "isOT_BT b" using otp by simp
+  have dfb: "dfree_BT b" using dfp by simp
+  have sec: "\<forall>x \<in> GBT v b. wfj_secT x"
+  proof
+    fix x assume xG: "x \<in> GBT v b"
+    have otx: "isOT_BT x" using wfj_G_OT_T otb xG by blast
+    have dfx: "dfree_BT x" using wfj_G_df_T dfb xG by blast
+    have szx: "wfs_szT x < wfs_szT b" using wfj_G_szT xG by blast
+    obtain rs where xeq: "x = Trm rs" by (cases x) auto
+    have "\<forall>r \<in> set rs. r \<in> Wellfounded.acc RPrel"
+    proof
+      fix r assume rin: "r \<in> set rs"
+      have otr: "isOT_BP r" using otx xeq rin by simp
+      have dfr: "dfree_BP r" using dfx xeq rin by simp
+      have szr: "wfs_szP r < wfs_szT x" using wfs_szP_mem_lt[OF rin] xeq by simp
+      have szb: "wfs_szP p = Suc (wfs_szT b)" using peq by simp
+      have "wfs_szP r < wfs_szP p" using szr szx szb by linarith
+      then show "r \<in> Wellfounded.acc RPrel" using less.IH otr dfr by blast
+    qed
+    then show "wfj_secT x" using xeq by simp
+  qed
+  have "DB v b \<in> Wellfounded.acc RPrel"
+    using C[unfolded wfj_collapse_core_def] otp dfp sec by blast
+  then show ?case using peq by simp
+qed
+
+theorem wfj_wf_RPrel_of_collapse_core:
+  assumes C: "wfj_collapse_core"
+  shows "wf RPrel"
+proof (rule acc_wfI)
+  show "\<forall>x. x \<in> Wellfounded.acc RPrel"
+  proof
+    fix p :: BP
+    show "p \<in> Wellfounded.acc RPrel"
+    proof (cases "isOT_BP p \<and> dfree_BP p")
+      case True
+      then show ?thesis using wfj_acc_of_collapse_core[OF C] by blast
+    next
+      case False
+      show ?thesis
+      proof (rule accI)
+        fix q assume "(q, p) \<in> RPrel"
+        then have "isOT_BP p \<and> dfree_BP p" by (auto simp add: RPrel_def)
+        with False show "q \<in> Wellfounded.acc RPrel" by blast
+      qed
+    qed
+  qed
+qed
+
+lemma wfj_collapse_core_of_wf:
+  assumes "wf RPrel" shows "wfj_collapse_core"
+proof -
+  have "\<forall>p. p \<in> Wellfounded.acc RPrel" using assms wfs_wf_iff_all_acc by blast
+  then show ?thesis unfolding wfj_collapse_core_def by blast
+qed
+
+theorem wfj_collapse_core_iff_wf: "wfj_collapse_core \<longleftrightarrow> wf RPrel"
+  using wfj_wf_RPrel_of_collapse_core wfj_collapse_core_of_wf by blast
+
+theorem wfj_collapse_core_iff_level_jump: "wfj_collapse_core \<longleftrightarrow> wfs_level_jump"
+  using wfj_collapse_core_iff_wf wfj_level_jump_of_wf
+        wfs_wf_RPrel_of_level_jump wfj_collapse_core_of_wf by blast
+
+corollary wfj_all_levels_of_collapse_core:
+  assumes "wfj_collapse_core" shows "wfj_level_wf n"
+  using wfj_all_levels_of_wf[OF wfj_wf_RPrel_of_collapse_core[OF assms]] .
+
+theorem wfj_OT_B_wf_of_collapse_core:
+  assumes "wfj_collapse_core"
+  shows "wf {(a, b). a \<in> OT_B \<and> b \<in> OT_B \<and> lessBT a b}"
+  using m_buc1_2_2_OT_B_wf_via_principal[OF wfj_wf_RPrel_of_collapse_core[OF assms]] .
+
+text \<open>\<^bold>\<open>Status after r52 and route for the engine\<close>.
+
+  \<^enum> REFUTED: the r51 plan's STRAT-\<open>n\<close> (\<open>lvP\<close>-fragments downward closed), for every
+    \<open>n \<ge> 1\<close> (\<open>wfj_stratn_lvP_refuted\<close>).  The \<open>lvP\<close>-level ladder behind
+    \<open>wfs_level_jump\<close> cannot be climbed stepwise: already the \<open>n = 0 \<Rightarrow> 1\<close> step
+    pulls in the accessibility of \<open>D\<^sub>0 b\<close> for ARBITRARY \<open>OT\<close> bodies \<open>b\<close> (all of
+    \<open>wfj_frag 0\<close>), i.e. the full collapsing strength.
+  \<^enum> TRUE stratification: head index (\<open>wfj_frag\<close>, downward closed, no \<open>G\<close>-condition);
+    all levels together \<open>\<longleftrightarrow>\<close> \<open>wf RPrel\<close>; but \<open>wfj_frag 0\<close> is the full
+    \<open>\<psi>\<^sub>0\<close>-collapsed segment (\<open>wfj_frag0_lv_unbounded\<close>) — no easy base either.
+  \<^enum> The goal is now concentrated in ONE genuinely global residual,
+    \<open>wfj_collapse_core \<longleftrightarrow> wf RPrel \<longleftrightarrow> wfs_level_jump\<close>: accessibility of a
+    principal with SECURED \<open>G\<^sub>v\<close>-coefficients.  Everything around it (bootstrap by
+    size induction, per-level plumbing, [Buc1] 2.2 readback) is proven.
+  \<^enum> Engine route (est. 2--4 focused rounds, classical distinguished-set /
+    relative-rank argument): for fixed \<open>v\<close>, interpret bodies-with-secured-content by
+    a RELATIVE RANK into wellorders over the already-accessible part — atoms =
+    principals of head \<open>< v\<close> ranked by \<open>wfs_rk\<close> inside \<open>wfs_accord\<close> (r51 toolkit),
+    tuples = descending words (dictionary order over a wellorder; NOTE
+    \<open>HOL-Library.Multiset\<close> is NOT importable here — reuse the hand-rolled multiset
+    layer of the \<open>wfox_\<close>/\<open>wfpd_\<close> blocks), \<open>D\<^sub>u\<close> for \<open>u \<ge> v\<close> = structural pairs
+    \<open>(u, rank of argument)\<close>.  Load-bearing lemma: strict monotonicity of this rank
+    along \<open>lessBT\<close> on secured \<open>OT\<close> bodies, where the \<open>G\<^sub>v < b\<close> condition is exactly
+    what keeps the head case honest.  The engine recursion on the head index \<open>v\<close>
+    must additionally secure the shielded (head \<open>< v\<close>) principals inside \<open>b\<close> —
+    they are NOT covered by the secured-coefficient premise.\<close>
+
+subsection \<open>(4) First engine brick: the ACC-LOCAL tuple lift\<close>
+
+text \<open>The r20 tuple layer (\<open>wfox_NoBad\<close>/\<open>wfox_tuple_lift\<close>) lifts GLOBAL \<open>wf RPrel\<close> to
+  \<open>wf RTrel\<close>.  The collapse engine needs the ACC-LOCAL form: a single \<open>OT\<close>+\<open>dfree\<close>
+  term whose principal components are accessible is itself \<open>RTrel\<close>-accessible —
+  available BEFORE \<open>wf RPrel\<close> is known.  The proof is \<open>wfox_NoBad\<close> with the outer
+  well-founded induction replaced by \<open>acc\<close>-induction on the head: the outer branch
+  derives \<open>(q, p) \<in> RPrel\<close> exactly where the \<open>acc\<close> IH wants it; the inner
+  length-peeling induction is untouched.\<close>
+
+lemma wfj_NoBad_acc:
+  assumes pacc: "p \<in> Wellfounded.acc RPrel"
+  shows "isOT_BP p \<longrightarrow> dfree_BP p \<longrightarrow>
+         \<not> (\<exists>f. (\<forall>i. (f (Suc i), f i) \<in> RTrel) \<and>
+                (\<forall>i. untrm (f i) \<noteq> []
+                     \<and> (hd (untrm (f i)) = p \<or> lessBP (hd (untrm (f i))) p)))"
+  using pacc
+proof (induction rule: acc.induct)
+  case (accI p)
+  show ?case
+  proof (intro impI notI)
+    assume pg1: "isOT_BP p" and pg2: "dfree_BP p"
+      and EX: "\<exists>f. (\<forall>i. (f (Suc i), f i) \<in> RTrel)
+                  \<and> (\<forall>i. untrm (f i) \<noteq> []
+                       \<and> (hd (untrm (f i)) = p \<or> lessBP (hd (untrm (f i))) p))"
+    from EX obtain f0 where f0ch: "\<forall>i. (f0 (Suc i), f0 i) \<in> RTrel"
+      and f0hd: "\<forall>i. untrm (f0 i) \<noteq> []
+                     \<and> (hd (untrm (f0 i)) = p \<or> lessBP (hd (untrm (f0 i))) p)"
+      by blast
+    have inner: "length (untrm (f 0)) \<le> L \<Longrightarrow>
+                 (\<forall>i. (f (Suc i), f i) \<in> RTrel) \<Longrightarrow>
+                 (\<forall>i. untrm (f i) \<noteq> []
+                      \<and> (hd (untrm (f i)) = p \<or> lessBP (hd (untrm (f i))) p)) \<Longrightarrow>
+                 False" for f L
+    proof (induction L arbitrary: f)
+      case 0
+      have "untrm (f 0) \<noteq> []" using "0.prems"(3) by blast
+      thus False using "0.prems"(1) by simp
+    next
+      case (Suc L)
+      note len = Suc.prems(1) and ch = Suc.prems(2) and hd = Suc.prems(3)
+      show False
+      proof (cases "\<forall>i. hd (untrm (f i)) = p")
+        case True
+        define g where "g \<equiv> \<lambda>i. Trm (tl (untrm (f i)))"
+        have gne_f: "\<And>i. untrm (f i) \<noteq> []" using hd by blast
+        have hdp: "\<And>i. hd (untrm (f i)) = p" using True by blast
+        have gch: "\<forall>i. (g (Suc i), g i) \<in> RTrel"
+        proof
+          fix i
+          have rt: "(f (Suc i), f i) \<in> RTrel" using ch by blast
+          have "hd (untrm (f (Suc i))) = hd (untrm (f i))"
+            using hdp[of "Suc i"] hdp[of i] by simp
+          from wfox_tail_step'[OF rt gne_f[of "Suc i"] gne_f[of i] this]
+          have "(Trm (tl (untrm (f (Suc i)))), Trm (tl (untrm (f i)))) \<in> RTrel" .
+          thus "(g (Suc i), g i) \<in> RTrel" by (simp add: g_def)
+        qed
+        have ghd: "\<forall>i. untrm (g i) \<noteq> []
+                       \<and> (hd (untrm (g i)) = p \<or> lessBP (hd (untrm (g i))) p)"
+        proof
+          fix i
+          have gne: "untrm (g i) \<noteq> []" using wfox_chain_nonempty[OF gch, of i] .
+          have gu: "untrm (g i) = tl (untrm (f i))" by (simp add: g_def)
+          have rt: "(f (Suc i), f i) \<in> RTrel" using ch by blast
+          hence isot: "isOT_BT (f i)" by (simp add: RTrel_def)
+          have descPi: "descP (untrm (f i))"
+          proof -
+            obtain xs where "f i = Trm xs" by (cases "f i")
+            thus ?thesis using isot by auto
+          qed
+          from gne gu have tlne: "tl (untrm (f i)) \<noteq> []" by simp
+          obtain sec rest where dec: "untrm (f i) = p # sec # rest"
+            using gne_f[of i] hdp[of i] tlne
+            by (cases "untrm (f i)"; cases "tl (untrm (f i))") auto
+          have "descP (p # sec # rest)" using descPi dec by simp
+          hence "leBT (Trm [sec]) (Trm [p])" by simp
+          hence "sec = p \<or> lessBP sec p" by auto
+          moreover have "hd (untrm (g i)) = sec" using dec gu by simp
+          ultimately show "untrm (g i) \<noteq> []
+                            \<and> (hd (untrm (g i)) = p \<or> lessBP (hd (untrm (g i))) p)"
+            using gne by auto
+        qed
+        have lgen: "length (untrm (g 0)) \<le> L"
+        proof -
+          have "untrm (g 0) = tl (untrm (f 0))" by (simp add: g_def)
+          moreover have "untrm (f 0) \<noteq> []" using gne_f[of 0] .
+          ultimately have "length (untrm (g 0)) = length (untrm (f 0)) - 1" by simp
+          thus ?thesis using len by simp
+        qed
+        show False by (rule Suc.IH[OF lgen gch ghd])
+      next
+        case False
+        then obtain i0 where "hd (untrm (f i0)) \<noteq> p" by blast
+        moreover have "hd (untrm (f i0)) = p \<or> lessBP (hd (untrm (f i0))) p"
+          using hd by blast
+        ultimately have qlt: "lessBP (hd (untrm (f i0))) p" by blast
+        define q where "q \<equiv> hd (untrm (f i0))"
+        have fi0ne: "untrm (f i0) \<noteq> []" using hd by blast
+        have rt0: "(f (Suc i0), f i0) \<in> RTrel" using ch by blast
+        have isot0: "isOT_BT (f i0)" and dfr0: "dfree_BT (f i0)"
+          using rt0 by (simp_all add: RTrel_def)
+        have qg: "isOT_BP q \<and> dfree_BP q"
+        proof -
+          obtain c cs where cc: "untrm (f i0) = c # cs"
+            using fi0ne by (cases "untrm (f i0)") auto
+          have "f i0 = Trm (c # cs)" using cc by (metis wfox_Trm_untrm)
+          hence "isOT_BP c \<and> dfree_BP c" using isot0 dfr0 by simp
+          moreover have "q = c" using cc q_def by simp
+          ultimately show ?thesis by simp
+        qed
+        have qpR: "(q, p) \<in> RPrel"
+          using qg qlt pg1 pg2 q_def by (simp add: RPrel_def)
+        define f' where "f' \<equiv> \<lambda>k. f (i0 + k)"
+        have f'ch: "\<forall>k. (f' (Suc k), f' k) \<in> RTrel" using ch by (simp add: f'_def)
+        have f'hd: "\<forall>k. untrm (f' k) \<noteq> []
+                        \<and> (hd (untrm (f' k)) = q \<or> lessBP (hd (untrm (f' k))) q)"
+        proof
+          fix k
+          have ne: "untrm (f' k) \<noteq> []" using hd by (simp add: f'_def)
+          have "hd (untrm (f (i0 + k))) = hd (untrm (f i0))
+                \<or> lessBP (hd (untrm (f (i0 + k)))) (hd (untrm (f i0)))"
+            using wfox_head_bound[OF ch, of i0 k] .
+          thus "untrm (f' k) \<noteq> []
+                \<and> (hd (untrm (f' k)) = q \<or> lessBP (hd (untrm (f' k))) q)"
+            using ne q_def by (simp add: f'_def)
+        qed
+        have "\<not> (\<exists>g. (\<forall>i. (g (Suc i), g i) \<in> RTrel)
+                    \<and> (\<forall>i. untrm (g i) \<noteq> []
+                         \<and> (hd (untrm (g i)) = q \<or> lessBP (hd (untrm (g i))) q)))"
+          using accI.IH[OF qpR] qg by blast
+        moreover have "(\<forall>i. (f' (Suc i), f' i) \<in> RTrel)
+                    \<and> (\<forall>i. untrm (f' i) \<noteq> []
+                         \<and> (hd (untrm (f' i)) = q \<or> lessBP (hd (untrm (f' i))) q))"
+          using f'ch f'hd by blast
+        ultimately show False by blast
+      qed
+    qed
+    have "length (untrm (f0 0)) \<le> length (untrm (f0 0))" by simp
+    from inner[OF this f0ch f0hd] show False .
+  qed
+qed
+
+theorem wfj_tuple_acc:
+  assumes ot: "isOT_BT t" and df: "dfree_BT t"
+      and cs: "\<forall>r \<in> set (untrm t). r \<in> Wellfounded.acc RPrel"
+  shows "t \<in> Wellfounded.acc RTrel"
+proof (cases "untrm t = []")
+  case True
+  have te: "t = Trm []" using True wfox_Trm_untrm[of t] by simp
+  show ?thesis
+  proof (rule accI)
+    fix a assume aR: "(a, t) \<in> RTrel"
+    have lf: "lessBT a (Trm [])" using aR te by (simp add: RTrel_def)
+    obtain as where ae: "a = Trm as" by (cases a) auto
+    have False using lf ae by (cases as) simp_all
+    then show "a \<in> Wellfounded.acc RTrel" by blast
+  qed
+next
+  case False
+  define p where "p = hd (untrm t)"
+  have pin: "p \<in> set (untrm t)" using False p_def by (cases "untrm t") auto
+  have pacc: "p \<in> Wellfounded.acc RPrel" using cs pin by blast
+  obtain xs where teq: "t = Trm xs" by (cases t) auto
+  have pin': "p \<in> set xs" using pin teq by simp
+  have pg1: "isOT_BP p" using ot teq pin' by simp
+  have pg2: "dfree_BP p" using df teq pin' by simp
+  define S where "S = {a. isOT_BT a \<and> dfree_BT a \<and>
+                          (untrm a = [] \<or> hd (untrm a) = p \<or> lessBP (hd (untrm a)) p)}"
+  have dc: "\<forall>s q. s \<in> S \<longrightarrow> (q, s) \<in> RTrel \<longrightarrow> q \<in> S"
+  proof (intro allI impI)
+    fix s q assume sS: "s \<in> S" and qs: "(q, s) \<in> RTrel"
+    have qg: "isOT_BT q" "dfree_BT q" using qs by (auto simp add: RTrel_def)
+    have sne: "untrm s \<noteq> []"
+    proof
+      assume "untrm s = []"
+      then have se: "s = Trm []" using wfox_Trm_untrm[of s] by simp
+      obtain qs' where qe: "q = Trm qs'" by (cases q) auto
+      have "lessBT q s" using qs by (simp add: RTrel_def)
+      then show False using se qe by (cases qs') simp_all
+    qed
+    show "q \<in> S"
+    proof (cases "untrm q = []")
+      case True
+      then show ?thesis using qg by (simp add: S_def)
+    next
+      case False
+      have hb: "hd (untrm q) = hd (untrm s) \<or> lessBP (hd (untrm q)) (hd (untrm s))"
+        using wfox_head_step[OF qs False sne] .
+      have sb: "hd (untrm s) = p \<or> lessBP (hd (untrm s)) p"
+        using sS sne by (auto simp add: S_def)
+      have "hd (untrm q) = p \<or> lessBP (hd (untrm q)) p"
+        using hb sb lessBP_trans by metis
+      then show ?thesis using qg by (auto simp add: S_def)
+    qed
+  qed
+  have wfS: "wf (Restr RTrel S)"
+  proof (rule ccontr)
+    assume "\<not> wf (Restr RTrel S)"
+    then obtain f where ch: "\<forall>i. (f (Suc i), f i) \<in> Restr RTrel S"
+      using wf_iff_no_infinite_down_chain by blast
+    have chR: "\<forall>i. (f (Suc i), f i) \<in> RTrel" using ch by blast
+    have fS: "\<forall>i. f i \<in> S" using ch by blast
+    have fne: "\<forall>i. untrm (f i) \<noteq> []" using wfox_chain_nonempty[OF chR] by blast
+    have fhd: "\<forall>i. untrm (f i) \<noteq> []
+                   \<and> (hd (untrm (f i)) = p \<or> lessBP (hd (untrm (f i))) p)"
+      using fS fne by (auto simp add: S_def)
+    have "\<not> (\<exists>g. (\<forall>i. (g (Suc i), g i) \<in> RTrel)
+                \<and> (\<forall>i. untrm (g i) \<noteq> []
+                     \<and> (hd (untrm (g i)) = p \<or> lessBP (hd (untrm (g i))) p)))"
+      using wfj_NoBad_acc[OF pacc] pg1 pg2 by blast
+    moreover have "(\<forall>i. (f (Suc i), f i) \<in> RTrel)
+                \<and> (\<forall>i. untrm (f i) \<noteq> []
+                     \<and> (hd (untrm (f i)) = p \<or> lessBP (hd (untrm (f i))) p))"
+      using chR fhd by blast
+    ultimately show False by blast
+  qed
+  have tS: "t \<in> S" using ot df p_def by (simp add: S_def)
+  have "S \<subseteq> Wellfounded.acc RTrel" by (rule wfs_closed_wf_acc[OF dc wfS])
+  then show ?thesis using tS by blast
+qed
+
+text \<open>Reflection back to principals, in the form the engine will consume: an \<open>OT\<close>+\<open>dfree\<close>
+  principal is accessible iff its body's components are — the same-head layer of
+  \<open>RPrel\<close> descends into \<open>RTrel\<close> on the body (\<open>wfox_RPrel_subterm\<close>).\<close>
+
+lemma wfj_secT_tuple_acc:
+  assumes "isOT_BT t" and "dfree_BT t" and "wfj_secT t"
+  shows "t \<in> Wellfounded.acc RTrel"
+proof -
+  obtain rs where teq: "t = Trm rs" by (cases t) auto
+  have "\<forall>r \<in> set (untrm t). r \<in> Wellfounded.acc RPrel"
+    using assms(3) teq by simp
+  then show ?thesis using wfj_tuple_acc assms(1,2) by blast
+qed
+
+(* ===== end r52 buc1 level-jump front (wfj_) ===== *)
+
+(* ===== r52 merge: wt-s4c — oix_transport level-peel bricks (otx2_, salvaged) ===== *)
+
+(* ===================================================================== *)
+(* ===== r52-OTX2 (otx2_ prefix): the r51 pure-BT residual            ===== *)
+(* ===== oix_transport DISCHARGED as a theorem.                        ===== *)
+(* ===================================================================== *)
+
+section \<open>r52-OTX2 --- discharging @{const oix_transport}\<close>
+
+text \<open>\<^bold>\<open>Target.\<close>  The single pure-\<open>BT\<close> residual of the r51 \<open>OTint\<close>-condV
+  reduction: the same-head right-spine core substitution between two OT donors
+  at one shared scb hole preserves \<open>isOT\<close> (statement @{const oix_transport}).
+
+  \<^bold>\<open>Method.\<close>  (1) ALIGNMENT: the three flat equations at the SHARED \<open>(s, b)\<close>
+  force the three terms to have the SAME right-spine context, level by level
+  (@{text otx2_align3}; parsed with the \<open>flatinj\<close> weight/prefix-freeness
+  toolkit).  (2) TRANSPORT, by induction on the context depth
+  (@{text otx2_core}): at each level the goal splits per the r51 design ---
+  prefix-\<open>G\<close>/component obligations from the LOW donor, \<open>descP\<close>-last from the
+  HIGH donor's chain, and the guard at the substitution spine via Buchholz's
+  \<open>\<triangleleft>\<^sub>z\<close> machinery: the induction carries the \<open>G\<close>-control
+  \<open>b1x_triG (D\<^sub>\<infinity>(tLo-at-that-level)) t' tHi\<close> (base = the \<open>setle\<close> premise,
+  step = the sandwich decompositions @{thm [source] b1x_sandwich_prefix} /
+  @{thm [source] b1x_sandwich_Dpt}), and each level's guard follows by
+  [Buc1] Lemma 3.4 (@{thm [source] b1x_G_control}) with \<open>Ga\<close> = the HIGH
+  donor's own (OT3) guard and \<open>Gz\<close> = the LOW donor's guard + strict
+  monotonicity of the substitution.
+
+  \<^bold>\<open>STEP-0\<close> (python/_r52_otx2_step0.py): 15934/15934 premise-satisfying
+  structural instances pass, 11590 of them with the \<open>insert aLo\<close> part of the
+  \<open>setle\<close> premise LOAD-BEARING (the region r51's empirics did not exercise);
+  the three hand-built near-counterexample families (prefix-coincidence flip,
+  self-similar spine, deep-\<open>G\<close> head escalation) each violate a donor premise,
+  matching the proof's use of them.\<close>
+
+subsection \<open>Order and \<open>descP\<close> bricks\<close>
+
+lemma otx2_flatBP_len: "2 \<le> length (flatBP p)"
+proof -
+  obtain u a where pe: "p = DB u a" by (cases p)
+  have "flatBT a \<noteq> []" by (rule flatBT_nonempty)
+  thus ?thesis using pe by (cases "flatBT a") auto
+qed
+
+lemma otx2_BP_prefix:
+  assumes "flatBP p @ xs = flatBP q @ ys"
+  shows "p = q \<and> xs = ys"
+proof -
+  have fe: "flatBP p = flatBP q" and xy: "xs = ys"
+    using flatinj_flatBP_cancel[OF assms] by blast+
+  have "flatBT (Trm [p]) = flatBT (Trm [q])" using fe by simp
+  hence "Trm [p] = Trm [q]" by (rule m_7_flatBT_inj)
+  thus ?thesis using xy by simp
+qed
+
+lemma otx2_lessBT_snocsnoc:
+  "lessBT (Trm (qs @ [p])) (Trm (qs @ [q])) \<longleftrightarrow> lessBP p q"
+proof (induction qs)
+  case Nil
+  show ?case using b1x_lessBP_single by simp
+next
+  case (Cons a qs')
+  thus ?case using lessBP_irrefl[of a] by simp
+qed
+
+lemma otx2_leBT_snocsnoc:
+  assumes "leBT x y"
+  shows "leBT (Trm (qs @ [DB w x])) (Trm (qs @ [DB w y]))"
+proof (cases "x = y")
+  case True thus ?thesis by simp
+next
+  case False
+  hence "lessBT x y" using assms by blast
+  hence "lessBP (DB w x) (DB w y)" by simp
+  thus ?thesis using otx2_lessBT_snocsnoc by blast
+qed
+
+lemma otx2_descP_prefix: "descP (xs @ ys) \<Longrightarrow> descP xs"
+proof (induction xs rule: descP.induct)
+  case 1 thus ?case by simp
+next
+  case (2 p) thus ?case by simp
+next
+  case (3 p q ps)
+  have "leBT (Trm [q]) (Trm [p])" and "descP ((q # ps) @ ys)"
+    using "3.prems" by simp_all
+  thus ?case using "3.IH" by simp
+qed
+
+lemma otx2_GBT_snoc:
+  "GBT u (Trm (qs @ [p])) = (\<Union>q\<in>set qs. GBP u q) \<union> GBP u p"
+  by auto
+
+lemma otx2_GBP_inf: "GBP u (DB \<infinity> x) = insert x (GBT u x)"
+  by simp
+
+subsection \<open>Alignment: the shared \<open>(s, b)\<close> hole forces a shared right-spine
+  context, one level at a time\<close>
+
+text \<open>A comma-join string (a nonempty tuple tail) can never BE a core-led
+  string: the head symbol is \<open>CM\<close>/\<open>RP\<close>, never \<open>Dsym\<close>.\<close>
+
+lemma otx2_join_no_core:
+  assumes "concat (map (\<lambda>r. CM # flatBP r) xs) @ [RP] = flatBP cp @ ys"
+  shows False
+proof -
+  obtain u a where cpe: "cp = DB u a" by (cases cp)
+  show False using assms cpe by (cases xs) auto
+qed
+
+text \<open>Single-component peel: in \<open>flatBP r \<frown> join \<frown> ")" = s\<^sub>1 \<frown> flatBP cp \<frown> b\<close>
+  (with \<open>b\<close> all-\<open>RP\<close>), either the core occurrence lies strictly BEYOND \<open>r\<close>
+  (and \<open>flatBP r\<close> is a proper prefix of \<open>s\<^sub>1\<close>), or \<open>r\<close> is the LAST component
+  and the core lies inside \<open>flatBP r\<close> with an all-\<open>RP\<close> slack.  Overlaps are
+  excluded by the \<open>flatinj\<close> weight (every complete \<open>flatBP\<close> has weight \<open>-1\<close>,
+  proper prefixes are \<open>\<ge> 0\<close>).\<close>
+
+lemma otx2_peel:
+  assumes eq: "flatBP r @ (concat (map (\<lambda>x. CM # flatBP x) rest) @ [RP])
+                 = s1 @ flatBP cp @ b"
+    and bR: "\<forall>x \<in> set b. x = RP"
+  shows "(\<exists>us. flatBP r @ us = s1 \<and> us \<noteq> [] \<and>
+            concat (map (\<lambda>x. CM # flatBP x) rest) @ [RP] = us @ flatBP cp @ b)
+       \<or> (rest = [] \<and> (\<exists>vs. flatBP r = s1 @ flatBP cp @ vs \<and> b = vs @ [RP]
+            \<and> (\<forall>x \<in> set vs. x = RP)))"
+proof -
+  let ?J = "concat (map (\<lambda>x. CM # flatBP x) rest) @ [RP]"
+  from append_eq_append_conv2[THEN iffD1, OF eq]
+  obtain us where D: "flatBP r = s1 @ us \<and> us @ ?J = flatBP cp @ b
+                    \<or> flatBP r @ us = s1 \<and> ?J = us @ flatBP cp @ b" by blast
+  show ?thesis
+  proof (cases "flatBP r @ us = s1 \<and> ?J = us @ flatBP cp @ b")
+    case True
+    have usne: "us \<noteq> []"
+    proof
+      assume "us = []"
+      hence "?J = flatBP cp @ b" using True by simp
+      thus False by (rule otx2_join_no_core)
+    qed
+    show ?thesis using True usne by blast
+  next
+    case False
+    with D have inr: "flatBP r = s1 @ us" and rest': "us @ ?J = flatBP cp @ b"
+      by auto
+    have usne: "us \<noteq> []"
+    proof
+      assume "us = []"
+      hence "?J = flatBP cp @ b" using rest' by simp
+      thus False by (rule otx2_join_no_core)
+    qed
+    from append_eq_append_conv2[THEN iffD1, OF rest']
+    obtain vs where D2: "us = flatBP cp @ vs \<and> vs @ ?J = b
+                       \<or> us @ vs = flatBP cp \<and> ?J = vs @ b" by blast
+    show ?thesis
+    proof (cases "us = flatBP cp @ vs \<and> vs @ ?J = b")
+      case inner: True
+      have ball: "\<forall>x \<in> set (vs @ ?J). x = RP" using inner bR by simp
+      have restnil: "rest = []"
+      proof (cases rest)
+        case (Cons r1 rest1)
+        hence "CM \<in> set ?J" by simp
+        thus ?thesis using ball by auto
+      qed simp
+      have vsRP: "\<forall>x \<in> set vs. x = RP" using ball by auto
+      have beq: "b = vs @ [RP]" using inner restnil by simp
+      have req: "flatBP r = s1 @ flatBP cp @ vs" using inr inner by simp
+      show ?thesis using restnil req beq vsRP by blast
+    next
+      case False
+      with D2 have pre: "us @ vs = flatBP cp" and jrest: "?J = vs @ b" by auto
+      have vsne: "vs \<noteq> []"
+      proof
+        assume v0: "vs = []"
+        hence "us = flatBP cp" using pre by simp
+        thus False using jrest v0 False pre by simp
+      qed
+      have neg: "flatinj_dsum us < 0"
+      proof -
+        have "flatinj_dsum (flatBP r) = -1" by (rule flatinj_dsum_flatBP)
+        moreover have "0 \<le> flatinj_dsum s1"
+          using flatinj_prefix_nonneg_BP[OF inr usne] .
+        moreover have "flatinj_dsum (flatBP r) = flatinj_dsum s1 + flatinj_dsum us"
+          using inr by simp
+        ultimately show ?thesis by simp
+      qed
+      have "0 \<le> flatinj_dsum us"
+        using flatinj_prefix_nonneg_BP[OF pre[symmetric] vsne] .
+      thus ?thesis using neg by simp
+    qed
+  qed
+qed
+
+text \<open>Parallel 3-term join parse: at the shared \<open>(s, b)\<close>, the three tuple
+  tails peel the SAME components in lockstep (prefix-freeness of \<open>flatBP\<close>
+  images), until all three bottom at the same position: either the cores ARE
+  the last components (case A) or all three descend into same-head last
+  components at a shared sub-position \<open>(sc, bc)\<close> (case B).\<close>
+
+lemma otx2_join3:
+  "concat (map (\<lambda>r. CM # flatBP r) rs1) @ [RP] = s @ flatBP cp1 @ b \<Longrightarrow>
+   concat (map (\<lambda>r. CM # flatBP r) rs2) @ [RP] = s @ flatBP cp2 @ b \<Longrightarrow>
+   concat (map (\<lambda>r. CM # flatBP r) rs3) @ [RP] = s @ flatBP cp3 @ b \<Longrightarrow>
+   \<forall>x \<in> set b. x = RP \<Longrightarrow>
+   (\<exists>qs. rs1 = qs @ [cp1] \<and> rs2 = qs @ [cp2] \<and> rs3 = qs @ [cp3])
+   \<or> (\<exists>qs w lb1 lb2 lb3 sc bc. rs1 = qs @ [DB w lb1] \<and> rs2 = qs @ [DB w lb2]
+        \<and> rs3 = qs @ [DB w lb3]
+        \<and> flatBT lb1 = sc @ flatBP cp1 @ bc \<and> flatBT lb2 = sc @ flatBP cp2 @ bc
+        \<and> flatBT lb3 = sc @ flatBP cp3 @ bc \<and> (\<forall>x \<in> set bc. x = RP))"
+proof (induction rs1 arbitrary: rs2 rs3 s b)
+  case Nil
+  have "length ([RP] :: Sym list) = length (s @ flatBP cp1 @ b)"
+    using Nil.prems(1) by simp
+  thus ?case using otx2_flatBP_len[of cp1] by simp
+next
+  case (Cons r1 rest1)
+  obtain u1 ca1 where cp1e: "cp1 = DB u1 ca1" by (cases cp1)
+  obtain u2 ca2 where cp2e: "cp2 = DB u2 ca2" by (cases cp2)
+  obtain u3 ca3 where cp3e: "cp3 = DB u3 ca3" by (cases cp3)
+  \<comment> \<open>the shared \<open>s\<close> starts with the comma\<close>
+  have sne: "s \<noteq> []"
+  proof
+    assume "s = []"
+    hence "CM = Dsym u1" using Cons.prems(1) cp1e by simp
+    thus False by simp
+  qed
+  then obtain s1 where se: "s = CM # s1"
+    using Cons.prems(1) by (cases s) auto
+  \<comment> \<open>the other two lists are nonempty for the same reason\<close>
+  have rs2c: "\<exists>r2 rest2. rs2 = r2 # rest2"
+  proof (cases rs2)
+    case Nil
+    hence "[RP] = s @ flatBP cp2 @ b" using Cons.prems(2) by simp
+    hence "length ([RP] :: Sym list) = length (s @ flatBP cp2 @ b)" by simp
+    thus ?thesis using otx2_flatBP_len[of cp2] by simp
+  qed blast
+  then obtain r2 rest2 where rs2e: "rs2 = r2 # rest2" by blast
+  have rs3c: "\<exists>r3 rest3. rs3 = r3 # rest3"
+  proof (cases rs3)
+    case Nil
+    hence "[RP] = s @ flatBP cp3 @ b" using Cons.prems(3) by simp
+    hence "length ([RP] :: Sym list) = length (s @ flatBP cp3 @ b)" by simp
+    thus ?thesis using otx2_flatBP_len[of cp3] by simp
+  qed blast
+  then obtain r3 rest3 where rs3e: "rs3 = r3 # rest3" by blast
+  have eq1: "flatBP r1 @ (concat (map (\<lambda>x. CM # flatBP x) rest1) @ [RP])
+               = s1 @ flatBP cp1 @ b"
+    using Cons.prems(1) se by simp
+  have eq2: "flatBP r2 @ (concat (map (\<lambda>x. CM # flatBP x) rest2) @ [RP])
+               = s1 @ flatBP cp2 @ b"
+    using Cons.prems(2) se rs2e by simp
+  have eq3: "flatBP r3 @ (concat (map (\<lambda>x. CM # flatBP x) rest3) @ [RP])
+               = s1 @ flatBP cp3 @ b"
+    using Cons.prems(3) se rs3e by simp
+  note P1 = otx2_peel[OF eq1 Cons.prems(4)]
+  note P2 = otx2_peel[OF eq2 Cons.prems(4)]
+  note P3 = otx2_peel[OF eq3 Cons.prems(4)]
+  \<comment> \<open>mixed branches are impossible: BEYOND makes \<open>flatBP r\<close> a proper prefix
+      of \<open>s\<^sub>1\<close>, IN makes \<open>s\<^sub>1\<close> a proper prefix of \<open>flatBP r\<close>\<close>
+  have mixed: "\<And>ra rb usa cpb vsb.
+      flatBP ra @ usa = s1 \<Longrightarrow> usa \<noteq> [] \<Longrightarrow> flatBP rb = s1 @ flatBP cpb @ vsb
+      \<Longrightarrow> False"
+  proof -
+    fix ra rb usa cpb vsb
+    assume A: "flatBP ra @ usa = s1" and B: "usa \<noteq> []"
+      and C: "flatBP rb = s1 @ flatBP cpb @ vsb"
+    have "flatBP rb = flatBP ra @ (usa @ flatBP cpb @ vsb)" using A C by simp
+    hence "rb = ra \<and> usa @ flatBP cpb @ vsb = []"
+      using otx2_BP_prefix[of rb "[]" ra "usa @ flatBP cpb @ vsb"] by simp
+    thus False using B by simp
+  qed
+  show ?case
+  proof (cases "\<exists>us. flatBP r1 @ us = s1 \<and> us \<noteq> [] \<and>
+            concat (map (\<lambda>x. CM # flatBP x) rest1) @ [RP] = us @ flatBP cp1 @ b")
+    case True
+    \<comment> \<open>all three BEYOND: peel the shared component and recurse\<close>
+    then obtain us where B1: "flatBP r1 @ us = s1" and usne: "us \<noteq> []"
+      and J1: "concat (map (\<lambda>x. CM # flatBP x) rest1) @ [RP] = us @ flatBP cp1 @ b"
+      by blast
+    have B2': "\<exists>us2. flatBP r2 @ us2 = s1 \<and> us2 \<noteq> [] \<and>
+        concat (map (\<lambda>x. CM # flatBP x) rest2) @ [RP] = us2 @ flatBP cp2 @ b"
+      using P2 mixed[OF B1 usne] by blast
+    then obtain us2 where B2: "flatBP r2 @ us2 = s1"
+      and J2': "concat (map (\<lambda>x. CM # flatBP x) rest2) @ [RP] = us2 @ flatBP cp2 @ b"
+      by blast
+    have B3': "\<exists>us3. flatBP r3 @ us3 = s1 \<and> us3 \<noteq> [] \<and>
+        concat (map (\<lambda>x. CM # flatBP x) rest3) @ [RP] = us3 @ flatBP cp3 @ b"
+      using P3 mixed[OF B1 usne] by blast
+    then obtain us3 where B3: "flatBP r3 @ us3 = s1"
+      and J3': "concat (map (\<lambda>x. CM # flatBP x) rest3) @ [RP] = us3 @ flatBP cp3 @ b"
+      by blast
+    have r21: "r2 = r1" and us21: "us2 = us"
+      using otx2_BP_prefix B2 B1 by blast+
+    have r31: "r3 = r1" and us31: "us3 = us"
+      using otx2_BP_prefix B3 B1 by blast+
+    have J2: "concat (map (\<lambda>x. CM # flatBP x) rest2) @ [RP] = us @ flatBP cp2 @ b"
+      using J2' us21 by simp
+    have J3: "concat (map (\<lambda>x. CM # flatBP x) rest3) @ [RP] = us @ flatBP cp3 @ b"
+      using J3' us31 by simp
+    from Cons.IH[OF J1 J2 J3 Cons.prems(4)]
+    show ?thesis
+    proof (elim disjE exE conjE)
+      fix qs
+      assume A1: "rest1 = qs @ [cp1]" and A2: "rest2 = qs @ [cp2]"
+        and A3: "rest3 = qs @ [cp3]"
+      have "r1 # rest1 = (r1 # qs) @ [cp1]" using A1 by simp
+      moreover have "rs2 = (r1 # qs) @ [cp2]" using A2 rs2e r21 by simp
+      moreover have "rs3 = (r1 # qs) @ [cp3]" using A3 rs3e r31 by simp
+      ultimately show ?thesis by blast
+    next
+      fix qs w lb1 lb2 lb3 sc bc
+      assume A1: "rest1 = qs @ [DB w lb1]" and A2: "rest2 = qs @ [DB w lb2]"
+        and A3: "rest3 = qs @ [DB w lb3]"
+        and F1: "flatBT lb1 = sc @ flatBP cp1 @ bc"
+        and F2: "flatBT lb2 = sc @ flatBP cp2 @ bc"
+        and F3: "flatBT lb3 = sc @ flatBP cp3 @ bc"
+        and BC: "\<forall>x \<in> set bc. x = RP"
+      have "r1 # rest1 = (r1 # qs) @ [DB w lb1]" using A1 by simp
+      moreover have "rs2 = (r1 # qs) @ [DB w lb2]" using A2 rs2e r21 by simp
+      moreover have "rs3 = (r1 # qs) @ [DB w lb3]" using A3 rs3e r31 by simp
+      ultimately show ?thesis using F1 F2 F3 BC by blast
+    qed
+  next
+    case False
+    \<comment> \<open>all three IN: the peeled components are the LAST ones; bottom out\<close>
+    have I1: "rest1 = [] \<and> (\<exists>vs. flatBP r1 = s1 @ flatBP cp1 @ vs \<and> b = vs @ [RP]
+                \<and> (\<forall>x \<in> set vs. x = RP))"
+      using P1 False by blast
+    then obtain vs1 where R1: "flatBP r1 = s1 @ flatBP cp1 @ vs1"
+      and beq1: "b = vs1 @ [RP]" and rest1e: "rest1 = []" by blast
+    have I2: "rest2 = [] \<and> (\<exists>vs. flatBP r2 = s1 @ flatBP cp2 @ vs \<and> b = vs @ [RP]
+                \<and> (\<forall>x \<in> set vs. x = RP))"
+      using P2
+    proof (elim disjE exE conjE)
+      fix us2
+      assume "flatBP r2 @ us2 = s1" and "us2 \<noteq> []"
+      thus ?thesis using mixed R1 by blast
+    qed blast
+    then obtain vs2 where R2: "flatBP r2 = s1 @ flatBP cp2 @ vs2"
+      and beq2: "b = vs2 @ [RP]" and rest2e: "rest2 = []" by blast
+    have I3: "rest3 = [] \<and> (\<exists>vs. flatBP r3 = s1 @ flatBP cp3 @ vs \<and> b = vs @ [RP]
+                \<and> (\<forall>x \<in> set vs. x = RP))"
+      using P3
+    proof (elim disjE exE conjE)
+      fix us3
+      assume "flatBP r3 @ us3 = s1" and "us3 \<noteq> []"
+      thus ?thesis using mixed R1 by blast
+    qed blast
+    then obtain vs3 where R3: "flatBP r3 = s1 @ flatBP cp3 @ vs3"
+      and beq3: "b = vs3 @ [RP]" and rest3e: "rest3 = []" by blast
+    have vs21: "vs2 = vs1" using beq1 beq2 by simp
+    have vs31: "vs3 = vs1" using beq1 beq3 by simp
+    have vsRP: "\<forall>x \<in> set vs1. x = RP"
+      using Cons.prems(4) beq1 by auto
+    show ?thesis
+    proof (cases s1)
+      case Nil
+      \<comment> \<open>case A: the cores ARE the last components (and the slacks vanish)\<close>
+      have "flatBP r1 @ [] = flatBP cp1 @ vs1" using R1 Nil by simp
+      hence r1c: "r1 = cp1" and v1n: "vs1 = []"
+        using otx2_BP_prefix[of r1 "[]" cp1 vs1] by auto
+      have "flatBP r2 @ [] = flatBP cp2 @ vs1" using R2 Nil vs21 by simp
+      hence r2c: "r2 = cp2" using otx2_BP_prefix[of r2 "[]" cp2 vs1] by auto
+      have "flatBP r3 @ [] = flatBP cp3 @ vs1" using R3 Nil vs31 by simp
+      hence r3c: "r3 = cp3" using otx2_BP_prefix[of r3 "[]" cp3 vs1] by auto
+      have "r1 # rest1 = [] @ [cp1]" using rest1e r1c by simp
+      moreover have "rs2 = [] @ [cp2]" using rs2e rest2e r2c by simp
+      moreover have "rs3 = [] @ [cp3]" using rs3e rest3e r3c by simp
+      ultimately show ?thesis by blast
+    next
+      case (Cons x s2)
+      \<comment> \<open>case B: descend into the last components' bodies at shared \<open>(s2, vs1)\<close>\<close>
+      obtain w1 lb1 where r1e: "r1 = DB w1 lb1" by (cases r1)
+      obtain w2 lb2 where r2e: "r2 = DB w2 lb2" by (cases r2)
+      obtain w3 lb3 where r3e: "r3 = DB w3 lb3" by (cases r3)
+      have x1: "x = Dsym w1" and f1: "flatBT lb1 = s2 @ flatBP cp1 @ vs1"
+        using R1 r1e Cons by auto
+      have x2: "x = Dsym w2" and f2: "flatBT lb2 = s2 @ flatBP cp2 @ vs1"
+        using R2 r2e Cons vs21 by auto
+      have x3: "x = Dsym w3" and f3: "flatBT lb3 = s2 @ flatBP cp3 @ vs1"
+        using R3 r3e Cons vs31 by auto
+      have w2e: "w2 = w1" using x1 x2 by simp
+      have w3e: "w3 = w1" using x1 x3 by simp
+      have "r1 # rest1 = [] @ [DB w1 lb1]" using rest1e r1e by simp
+      moreover have "rs2 = [] @ [DB w1 lb2]" using rs2e rest2e r2e w2e by simp
+      moreover have "rs3 = [] @ [DB w1 lb3]" using rs3e rest3e r3e w3e by simp
+      ultimately show ?thesis using f1 f2 f3 vsRP by blast
+    qed
+  qed
+qed
+
+text \<open>Top-level shape classification of ONE term against \<open>(s, b)\<close>: the head
+  of \<open>s\<close> (or its emptiness) determines whether the term IS the core, descends
+  through a single principal, or is a tuple whose first component is a proper
+  prefix of \<open>s\<close>.\<close>
+
+lemma otx2_top_shape:
+  assumes eq: "flatBT t = s @ flatBP cp @ b"
+    and bR: "\<forall>x \<in> set b. x = RP"
+  shows "(s = [] \<and> b = [] \<and> t = Trm [cp])
+       \<or> (\<exists>w s1 lb. s = Dsym w # s1 \<and> t = Trm [DB w lb]
+            \<and> flatBT lb = s1 @ flatBP cp @ b)
+       \<or> (\<exists>s1 p0 q0 rest us. s = LP # s1 \<and> t = Trm (p0 # q0 # rest)
+            \<and> flatBP p0 @ us = s1 \<and> us \<noteq> []
+            \<and> concat (map (\<lambda>r. CM # flatBP r) (q0 # rest)) @ [RP]
+                = us @ flatBP cp @ b)"
+proof -
+  obtain uc ac where cpe: "cp = DB uc ac" by (cases cp)
+  obtain ps where te: "t = Trm ps" by (cases t)
+  have psne: "ps \<noteq> []"
+  proof
+    assume "ps = []"
+    hence "length ([Zsym] :: Sym list) = length (s @ flatBP cp @ b)"
+      using eq te by simp
+    thus False using otx2_flatBP_len[of cp] by simp
+  qed
+  show ?thesis
+  proof (cases ps)
+    case Nil thus ?thesis using psne by simp
+  next
+    case (Cons p0 ps1)
+    show ?thesis
+    proof (cases ps1)
+      case Nil
+      \<comment> \<open>single component: \<open>flatBP p0 = s @ core @ b\<close>\<close>
+      have fe: "flatBP p0 = s @ flatBP cp @ b" using eq te Cons Nil by simp
+      show ?thesis
+      proof (cases s)
+        case sNil: Nil
+        have "flatBP p0 @ [] = flatBP cp @ b" using fe sNil by simp
+        hence "p0 = cp \<and> [] = b" by (rule otx2_BP_prefix)
+        thus ?thesis using te Cons Nil sNil by auto
+      next
+        case (Cons x s1)
+        obtain w lb where p0e: "p0 = DB w lb" by (cases p0)
+        have xe: "x = Dsym w" and fl: "flatBT lb = s1 @ flatBP cp @ b"
+          using fe p0e Cons by auto
+        show ?thesis using te \<open>ps = p0 # ps1\<close> Nil p0e xe Cons fl by auto
+      qed
+    next
+      case (Cons q0 rest)
+      \<comment> \<open>tuple: \<open>s\<close> opens with the paren\<close>
+      have fe: "LP # (flatBP p0
+            @ concat (map (\<lambda>r. CM # flatBP r) (q0 # rest))) @ [RP]
+            = s @ flatBP cp @ b"
+        using eq te \<open>ps = p0 # ps1\<close> Cons by simp
+      have sne: "s \<noteq> []"
+      proof
+        assume "s = []"
+        hence "LP = Dsym uc" using fe cpe by simp
+        thus False by simp
+      qed
+      then obtain s1 where se: "s = LP # s1" using fe by (cases s) auto
+      have eqin: "flatBP p0 @ (concat (map (\<lambda>r. CM # flatBP r) (q0 # rest)) @ [RP])
+            = s1 @ flatBP cp @ b"
+        using fe se by simp
+      from otx2_peel[OF eqin bR]
+      show ?thesis
+      proof (elim disjE exE conjE)
+        fix us
+        assume "flatBP p0 @ us = s1" and "us \<noteq> []"
+          and "concat (map (\<lambda>x. CM # flatBP x) (q0 # rest)) @ [RP]
+                 = us @ flatBP cp @ b"
+        thus ?thesis using te \<open>ps = p0 # ps1\<close> Cons se by blast
+      next
+        assume "q0 # rest = []"
+        thus ?thesis by simp
+      qed
+    qed
+  qed
+qed
+
+text \<open>The parallel 3-term alignment at a shared \<open>(s, b)\<close>: one shared context
+  level is peeled off --- either all three terms carry their cores as the last
+  top-level component over a SHARED prefix \<open>qs\<close> (case A), or all three descend
+  through a shared last component \<open>D\<^bsub>w\<^esub>\<close> into bodies aligned at a shared
+  deeper hole \<open>(sc, bc)\<close> (case B).\<close>
+
+lemma otx2_align3:
+  assumes e1: "flatBT t1 = s @ flatBP cp1 @ b"
+    and e2: "flatBT t2 = s @ flatBP cp2 @ b"
+    and e3: "flatBT t3 = s @ flatBP cp3 @ b"
+    and bR: "\<forall>x \<in> set b. x = RP"
+  shows "(\<exists>qs. t1 = Trm (qs @ [cp1]) \<and> t2 = Trm (qs @ [cp2]) \<and> t3 = Trm (qs @ [cp3]))
+       \<or> (\<exists>qs w lb1 lb2 lb3 sc bc.
+            t1 = Trm (qs @ [DB w lb1]) \<and> t2 = Trm (qs @ [DB w lb2])
+          \<and> t3 = Trm (qs @ [DB w lb3])
+          \<and> flatBT lb1 = sc @ flatBP cp1 @ bc \<and> flatBT lb2 = sc @ flatBP cp2 @ bc
+          \<and> flatBT lb3 = sc @ flatBP cp3 @ bc \<and> (\<forall>x \<in> set bc. x = RP))"
+proof -
+  note S1 = otx2_top_shape[OF e1 bR]
+  note S2 = otx2_top_shape[OF e2 bR]
+  note S3 = otx2_top_shape[OF e3 bR]
+  from S1 show ?thesis
+  proof (elim disjE exE conjE)
+    \<comment> \<open>\<open>s = []\<close>: all three are bare cores\<close>
+    assume A1: "s = []" and B1: "b = []" and T1: "t1 = Trm [cp1]"
+    have T2: "t2 = Trm [cp2]"
+      using S2 A1 by auto
+    have T3: "t3 = Trm [cp3]"
+      using S3 A1 by auto
+    have "t1 = Trm ([] @ [cp1]) \<and> t2 = Trm ([] @ [cp2]) \<and> t3 = Trm ([] @ [cp3])"
+      using T1 T2 T3 by simp
+    thus ?thesis by blast
+  next
+    \<comment> \<open>\<open>s = Dsym w # s1\<close>: all three descend through a single principal\<close>
+    fix w s1 lb1
+    assume A1: "s = Dsym w # s1" and T1: "t1 = Trm [DB w lb1]"
+      and F1: "flatBT lb1 = s1 @ flatBP cp1 @ b"
+    obtain lb2 where T2: "t2 = Trm [DB w lb2]"
+      and F2: "flatBT lb2 = s1 @ flatBP cp2 @ b"
+      using S2 A1 by auto
+    obtain lb3 where T3: "t3 = Trm [DB w lb3]"
+      and F3: "flatBT lb3 = s1 @ flatBP cp3 @ b"
+      using S3 A1 by auto
+    have "t1 = Trm ([] @ [DB w lb1]) \<and> t2 = Trm ([] @ [DB w lb2])
+          \<and> t3 = Trm ([] @ [DB w lb3])"
+      using T1 T2 T3 by simp
+    thus ?thesis using F1 F2 F3 bR by blast
+  next
+    \<comment> \<open>\<open>s = LP # s1\<close>: all three are tuples; peel the shared first component
+        and hand the tails to the join parse\<close>
+    fix s1 p1 q1 rest1 us1
+    assume A1: "s = LP # s1" and T1: "t1 = Trm (p1 # q1 # rest1)"
+      and PR1: "flatBP p1 @ us1 = s1" and usne: "us1 \<noteq> []"
+      and J1: "concat (map (\<lambda>r. CM # flatBP r) (q1 # rest1)) @ [RP]
+                 = us1 @ flatBP cp1 @ b"
+    obtain p2 q2 rest2 us2 where T2: "t2 = Trm (p2 # q2 # rest2)"
+      and PR2: "flatBP p2 @ us2 = s1"
+      and J2: "concat (map (\<lambda>r. CM # flatBP r) (q2 # rest2)) @ [RP]
+                 = us2 @ flatBP cp2 @ b"
+      using S2 A1 by auto
+    obtain p3 q3 rest3 us3 where T3: "t3 = Trm (p3 # q3 # rest3)"
+      and PR3: "flatBP p3 @ us3 = s1"
+      and J3: "concat (map (\<lambda>r. CM # flatBP r) (q3 # rest3)) @ [RP]
+                 = us3 @ flatBP cp3 @ b"
+      using S3 A1 by auto
+    have p21: "p2 = p1" and us21: "us2 = us1"
+      using otx2_BP_prefix PR2 PR1 by blast+
+    have p31: "p3 = p1" and us31: "us3 = us1"
+      using otx2_BP_prefix PR3 PR1 by blast+
+    have J2': "concat (map (\<lambda>r. CM # flatBP r) (q2 # rest2)) @ [RP]
+                 = us1 @ flatBP cp2 @ b" using J2 us21 by simp
+    have J3': "concat (map (\<lambda>r. CM # flatBP r) (q3 # rest3)) @ [RP]
+                 = us1 @ flatBP cp3 @ b" using J3 us31 by simp
+    from otx2_join3[OF J1 J2' J3' bR]
+    show ?thesis
+    proof (elim disjE exE conjE)
+      fix qs
+      assume Q1: "q1 # rest1 = qs @ [cp1]" and Q2: "q2 # rest2 = qs @ [cp2]"
+        and Q3: "q3 # rest3 = qs @ [cp3]"
+      have "t1 = Trm ((p1 # qs) @ [cp1])" using T1 Q1 by simp
+      moreover have "t2 = Trm ((p1 # qs) @ [cp2])" using T2 Q2 p21 by simp
+      moreover have "t3 = Trm ((p1 # qs) @ [cp3])" using T3 Q3 p31 by simp
+      ultimately show ?thesis by blast
+    next
+      fix qs w lb1 lb2 lb3 sc bc
+      assume Q1: "q1 # rest1 = qs @ [DB w lb1]" and Q2: "q2 # rest2 = qs @ [DB w lb2]"
+        and Q3: "q3 # rest3 = qs @ [DB w lb3]"
+        and F1: "flatBT lb1 = sc @ flatBP cp1 @ bc"
+        and F2: "flatBT lb2 = sc @ flatBP cp2 @ bc"
+        and F3: "flatBT lb3 = sc @ flatBP cp3 @ bc"
+        and BC: "\<forall>x \<in> set bc. x = RP"
+      have "t1 = Trm ((p1 # qs) @ [DB w lb1])" using T1 Q1 by simp
+      moreover have "t2 = Trm ((p1 # qs) @ [DB w lb2])" using T2 Q2 p21 by simp
+      moreover have "t3 = Trm ((p1 # qs) @ [DB w lb3])" using T3 Q3 p31 by simp
+      ultimately show ?thesis using F1 F2 F3 BC by blast
+    qed
+  qed
+qed
+
+(* ===== end r52-otx2 alignment bricks ===== *)
+
 end
