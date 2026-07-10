@@ -10,6 +10,14 @@
   - 悪い例：`- ✅ Lemma 2.1 lessBT 狭義線形順序〔lessBT_irrefl/lessBT_trans/lessBT_total(既存 layerB)〕`
   - thy との対応（補題名〔lessBT_irrefl/…〕など）・他アイテムとの関連情報・手ごわさ/難易度・今後の計画などを書きたいときは **plan.md** の方に書く。
 - 子がすべて ✅ のノードは子を畳む（子を書かない）。
+- **原文にある chapter・section 類・定理・補題名は全部書く**（§8.x などの章番号・章題を省略しない。ただし子が全て ✅ の場合はたたむ）：
+  - 例:
+    ```
+    - 🚨 §6 ペア数列の基本性質
+      - 🚨 §6.8 降順性
+        - 🚨 命題（標準形の切片と Br の降順性の関係）
+          - 🚨...
+    ```
 - **🚨 行に ✅(done部) を inline 禁止**。done と未done が混在したら ✅子/🚨子 に分割する：
   - ダメな書き方：`- 🚨🤖 (2)(3)(4) leBT〔残=det case-4構造link。value bound \`m_8_2_branch_row1_le_TrMax\`✅〕`
   - 良い書き方：`- 🚨 (2)(3)(4) leBT` の子に `- ✅ value bound〔m_8_2_branch_row1_le_TrMax〕` と `- 🚨🤖 det case-4 構造link` を作る
