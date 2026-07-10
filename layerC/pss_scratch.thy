@@ -68044,4 +68044,1529 @@ qed
 
 (* ===== end r47 multiD (mdx_) ===== *)
 
+(* ===== r48 merge: wt-y1 — HEADEQ0 CLOSED -> VE34 + p_8_2_condIIIV modulo fin only (hqx_) ===== *)
+
+(* ===== r48 HEADEQ0 (hqx_): the single remaining VE34 residual CLOSED ===== *)
+
+(* ===================================================================== *)
+(* ===== r48-HEADEQ0 (hqx_ prefix).  KEY DIAGNOSIS: HEADEQ0 at a       ===== *)
+(* ===== run-base host N is EXACTLY the (r27-PROVEN) terminal-slice    ===== *)
+(* ===== value equation cfbx_VE (vcx_VE_all) at host Q = Pred N and    ===== *)
+(* ===== offset m = j0' = Joints N ! (Lng (Br N) - 1):                 ===== *)
+(* =====   Pred (seg N j0' (Lng N-1)) = seg (Pred N) j0' (Lng(Pred N)-1) == *)
+(* ===== -- the terminal slice OF Pred N.  So the ONLY new content is  ===== *)
+(* ===== the regime membership cfbx_reg j0' (Pred N):                  ===== *)
+(* =====  - the second-to-last joint jq = Joints N ! (Lng(Br N)-2)     ===== *)
+(* =====    sits at or above j0' (descending heads + condA edges +     ===== *)
+(* =====    trunk offsets, exactly the jqge step of bgx_notleft_run0); ===== *)
+(* =====  - if jq > j0': FIRST disjunct of cfbx_reg;                   ===== *)
+(* =====  - if jq = j0' (shared joint): the run-base LastStep          ===== *)
+(* =====    minimality forbids a guarded head there, so the head is    ===== *)
+(* =====    EQUAL (reduced coeff) -- the SECOND disjunct, descending    ===== *)
+(* =====    from Pred N \<in> DT_PS (bfx_PredDT_base).                     ===== *)
+(* ===== The Br (Pred N) = [] corner (minimal base Lng N = TrMax+2)    ===== *)
+(* ===== is the diagSeq closed form on both sides (m_8_1_diagSeq_Trans). == *)
+(* ===== Then the r47 capstones bgx_VE34_of_reg_modHEADEQ /            ===== *)
+(* ===== bgx_VE34_of_DT_modHEADEQ close VE34 with NO residual beyond   ===== *)
+(* ===== fin (hqx_VE34_of_reg / hqx_VE34_of_DT).                       ===== *)
+(* ===================================================================== *)
+
+section \<open>r48-HEADEQ0 --- the run-base head equality via the proven
+  terminal-slice value equation (prefix \<open>hqx_\<close>)\<close>
+
+text \<open>\<open>Pred\<close> of a terminal slice is the one-column-shorter slice.\<close>
+
+lemma hqx_Pred_seg:
+  fixes N :: pairseq and a :: nat
+  assumes L: "1 < Lng N" and alt: "a < Lng N - 1"
+  shows "Pred (seg N a (Lng N - 1)) = seg N a (Lng N - 2)"
+proof -
+  have Lseg: "Lng (seg N a (Lng N - 1)) = Suc (Lng N - 1) - a" by (rule Lng_seg)
+  have ge2: "1 < Lng (seg N a (Lng N - 1))" using Lseg alt L by linarith
+  have notle1: "\<not> Lng (seg N a (Lng N - 1)) \<le> 1" using ge2 by linarith
+  have pb: "Pred (seg N a (Lng N - 1)) = butlast (seg N a (Lng N - 1))"
+    unfolding Pred_def by (rule if_not_P[OF notle1])
+  have alej: "a \<le> Lng N - 1" using alt by linarith
+  have u: "[a..<Suc (Lng N - 1)] = [a..<Lng N - 1] @ [Lng N - 1]"
+    by (rule upt_Suc_append[OF alej])
+  have e1: "Suc (Lng N - 2) = Lng N - 1" using L by linarith
+  have "butlast (seg N a (Lng N - 1)) = map (\<lambda>j. N ! j) (butlast [a..<Suc (Lng N - 1)])"
+    unfolding seg_def by (rule map_butlast[symmetric])
+  also have "butlast [a..<Suc (Lng N - 1)] = [a..<Lng N - 1]" using u by simp
+  also have "map (\<lambda>j. N ! j) [a..<Lng N - 1] = seg N a (Lng N - 2)"
+    unfolding seg_def using e1 by simp
+  finally show ?thesis using pb by simp
+qed
+
+text \<open>\<^bold>\<open>HEADEQ0\<close>: at a run-base BASE host, the deep head of the terminal slice's
+  \<open>Pred\<close> equals the deep head of the host's \<open>Pred\<close>.  This is the \<open>VE'\<close> of
+  @{thm [source] m_8_2_condV_terminal_slice_Trans_modVE} at \<open>Q = Pred N\<close>,
+  \<open>m = j\<^sub>0'\<close> --- discharged by the UNCONDITIONAL r27 terminal-slice value
+  equation @{thm [source] vcx_VE_all} once the regime \<open>cfbx_reg j\<^sub>0' (Pred N)\<close>
+  is established (the run-base content), with the \<open>Br (Pred N) = []\<close> trunk
+  corner closed by the \<open>diagSeq\<close> closed forms.\<close>
+
+lemma hqx_HEADEQ0:
+  fixes N :: pairseq
+  assumes reg: "vg7x_reg4 N"
+    and fin: "finite {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+                         \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}"
+    and base: "cfbx_j1p N = Lng N - 1"
+    and r0: "LastStep N = Lng (Br N) - 1"
+  shows "bpHeadT (Trans (Pred (seg N (Joints N ! (Lng (Br N) - 1)) (Lng N - 1))))
+           = bpHeadT (Trans (Pred N))"
+proof -
+  let ?J1 = "Lng (Br N) - 1"
+  let ?j0 = "Joints N ! ?J1"
+  let ?Q = "Pred N"
+  have reg4: "vg4x_reg4 N" using reg by (simp add: vg7x_reg4_def)
+  have desc: "descending (Br N)" using reg by (simp add: vg7x_reg4_def)
+  have NR: "N \<in> RT_PS" by (rule bfx_base_setup(1)[OF reg base])
+  have NP: "N \<in> PT_PS" by (rule bfx_base_setup(2)[OF reg base])
+  have NT: "N \<in> T_PS" by (rule bfx_base_setup(3)[OF reg base])
+  have monoN: "monoT N" by (rule bfx_base_setup(4)[OF reg base])
+  have Brne: "Br N \<noteq> []" by (rule bfx_base_setup(5)[OF reg base])
+  have L: "1 < Lng N" by (rule bfx_base_setup(7)[OF reg base])
+  have br: "TrMax N \<noteq> Lng N - 1" by (rule bfx_base_setup(8)[OF reg base])
+  have trlt: "TrMax N < Lng N - 1" by (rule bfx_base_setup(9)[OF reg base])
+  have predbut: "Pred N = butlast N" by (rule bfx_base_setup(11)[OF reg base])
+  have j0pos: "0 < ?j0" using reg4 by (simp add: vg4x_reg4_def)
+  have j0tr: "?j0 < TrMax N" using reg4 by (simp add: vg4x_reg4_def)
+  have j0lt2: "?j0 < Lng N - 1" using j0tr trlt by linarith
+  have LQ: "Lng ?Q = Lng N - 1" using predbut by simp
+  have TrQ: "TrMax ?Q = TrMax N" by (rule bfx_TrMax_Pred_base[OF reg base])
+  have condAN: "RedCondA N" using m_6_6_reduced_iff_cond[OF NT] NR by blast
+  have diagN: "entry N 0 0 = entry N 1 0" by (rule kfwd_reduced_monoT_diag00[OF NR monoN])
+  have offsN: "\<And>j. j \<le> TrMax N \<Longrightarrow> entry N 0 j = entry N 0 0 + j
+                                   \<and> entry N 1 j = entry N 1 0 + j"
+    by (rule trunk_entries_offset[OF NT condAN])
+  have Psegeq: "Pred (seg N ?j0 (Lng N - 1)) = seg N ?j0 (Lng N - 2)"
+    by (rule hqx_Pred_seg[OF L j0lt2])
+  show ?thesis
+  proof (cases "Br ?Q = []")
+    case True
+    \<comment> \<open>trunk corner: both \<open>Pred\<close>s are \<open>diagSeq\<close>s with the SAME right end\<close>
+    have trunkQ: "TrMax ?Q = Lng ?Q - 1"
+    proof (rule ccontr)
+      assume "TrMax ?Q \<noteq> Lng ?Q - 1"
+      hence "Br ?Q = P (seg ?Q (TrMax ?Q + 1) (Lng ?Q - 1))" by (simp add: Br_def)
+      thus False using True P_nonempty by metis
+    qed
+    have LN2: "Lng N - 2 = TrMax N" using trunkQ TrQ LQ by linarith
+    define e where "e = entry N 1 0"
+    have pairN: "\<And>j. j \<le> TrMax N \<Longrightarrow> N ! j = (e + j, e + j)"
+    proof -
+      fix j :: nat assume jTr: "j \<le> TrMax N"
+      have f: "fst (N ! j) = e + j"
+        using offsN[OF jTr] diagN by (simp add: entry_def e_def)
+      have s: "snd (N ! j) = e + j"
+        using offsN[OF jTr] by (simp add: entry_def e_def)
+      show "N ! j = (e + j, e + j)" using f s by (simp add: prod_eq_iff)
+    qed
+    have lenP1: "Lng ?Q = TrMax N + 1" using LQ LN2 L by linarith
+    have lenP2: "Lng (diagSeq e (e + TrMax N)) = TrMax N + 1"
+    proof -
+      have "Lng (diagSeq e (e + TrMax N)) = Suc (e + TrMax N) - e" by simp
+      also have "\<dots> = TrMax N + 1" by linarith
+      finally show ?thesis .
+    qed
+    have listP: "?Q = diagSeq e (e + TrMax N)"
+    proof (rule nth_equalityI)
+      show "length ?Q = length (diagSeq e (e + TrMax N))"
+        using lenP1 lenP2 by simp
+    next
+      fix j assume "j < length ?Q"
+      hence jlt: "j < TrMax N + 1" using lenP1 by simp
+      have jTr: "j \<le> TrMax N" using jlt by linarith
+      have jbl: "j < Lng N - 1" using jlt LN2 L by linarith
+      have "?Q ! j = N ! j" using predbut jbl by (simp add: nth_butlast)
+      also have "\<dots> = (e + j, e + j)" by (rule pairN[OF jTr])
+      also have "\<dots> = diagSeq e (e + TrMax N) ! j"
+      proof -
+        have "j < Suc (e + TrMax N) - e" using jlt by linarith
+        thus ?thesis using diagSeq_nth[where a = e and b = "e + TrMax N" and j = j]
+          by simp
+      qed
+      finally show "?Q ! j = diagSeq e (e + TrMax N) ! j" .
+    qed
+    have lenS2: "Lng (diagSeq (e + ?j0) (e + TrMax N)) = TrMax N + 1 - ?j0"
+    proof -
+      have "Lng (diagSeq (e + ?j0) (e + TrMax N)) = Suc (e + TrMax N) - (e + ?j0)"
+        by simp
+      also have "\<dots> = TrMax N + 1 - ?j0" by linarith
+      finally show ?thesis .
+    qed
+    have listS: "seg N ?j0 (Lng N - 2) = diagSeq (e + ?j0) (e + TrMax N)"
+    proof (rule nth_equalityI)
+      have "Lng (seg N ?j0 (Lng N - 2)) = Suc (Lng N - 2) - ?j0" by (rule Lng_seg)
+      also have "\<dots> = TrMax N + 1 - ?j0" using LN2 by simp
+      finally show "length (seg N ?j0 (Lng N - 2))
+                      = length (diagSeq (e + ?j0) (e + TrMax N))"
+        using lenS2 by simp
+    next
+      fix i assume "i < length (seg N ?j0 (Lng N - 2))"
+      hence ilt: "i < Suc (Lng N - 2) - ?j0" by simp
+      have iTr: "?j0 + i \<le> TrMax N" using ilt LN2 by linarith
+      have "seg N ?j0 (Lng N - 2) ! i = N ! (?j0 + i)"
+        using ilt unfolding seg_def by (simp del: upt_Suc)
+      also have "\<dots> = (e + (?j0 + i), e + (?j0 + i))" by (rule pairN[OF iTr])
+      also have "\<dots> = diagSeq (e + ?j0) (e + TrMax N) ! i"
+      proof -
+        have "i < Suc (e + TrMax N) - (e + ?j0)" using ilt LN2 by linarith
+        hence "diagSeq (e + ?j0) (e + TrMax N) ! i = ((e + ?j0) + i, (e + ?j0) + i)"
+          by (rule diagSeq_nth)
+        thus ?thesis by (simp add: add.assoc)
+      qed
+      finally show "seg N ?j0 (Lng N - 2) ! i = diagSeq (e + ?j0) (e + TrMax N) ! i" .
+    qed
+    have Trpos: "0 < TrMax N" using j0pos j0tr by linarith
+    have TP: "Trans ?Q = Dpt (enat e) (Dpt (enat (e + TrMax N)) 0\<^sub>B)"
+      using listP m_8_1_diagSeq_Trans[of e "e + TrMax N"] Trpos by simp
+    have TS: "Trans (seg N ?j0 (Lng N - 2))
+                = Dpt (enat (e + ?j0)) (Dpt (enat (e + TrMax N)) 0\<^sub>B)"
+      using listS m_8_1_diagSeq_Trans[of "e + ?j0" "e + TrMax N"] j0tr by simp
+    have "bpHeadT (Trans (Pred (seg N ?j0 (Lng N - 1))))
+            = bpHeadT (Trans (seg N ?j0 (Lng N - 2)))"
+      using Psegeq by simp
+    also have "\<dots> = Dpt (enat (e + TrMax N)) 0\<^sub>B" using TS by simp
+    also have "\<dots> = bpHeadT (Trans ?Q)" using TP by simp
+    finally show ?thesis .
+  next
+    case False
+    \<comment> \<open>branching \<open>Pred N\<close>: regime membership + the PROVEN \<open>VE'\<close>\<close>
+    have QDT: "?Q \<in> DT_PS" by (rule bfx_PredDT_base[OF reg base])
+    have QR: "?Q \<in> RT_PS" using QDT by (simp add: DT_PS_def)
+    have monoQ: "monoT ?Q" using QDT by (simp add: DT_PS_def)
+    have descQ: "descending (Br ?Q)" using QDT by (simp add: DT_PS_def)
+    have QT: "?Q \<in> T_PS" using QR by (simp add: RT_PS_def)
+    have QPT: "?Q \<in> PT_PS" using QT monoQ by (simp add: PT_PS_def)
+    have BrLenP: "Lng (Br ?Q) = Lng (Br N) - 1"
+      by (rule bfx_BrLen_Pred_base[OF reg base])
+    have J1ge1: "1 \<le> ?J1" using False BrLenP by (cases "Br ?Q") auto
+    let ?Jp = "Lng (Br ?Q) - 1"
+    have JmBr: "?Jp < Lng (Br ?Q)" using False by (cases "Br ?Q") auto
+    have JpN: "?Jp = Lng (Br N) - 2" using BrLenP by simp
+    have JpltBrN: "?Jp < Lng (Br N)" using JpN J1ge1 Brne by (cases "Br N") auto
+    have jqQ: "Joints ?Q ! ?Jp = Joints N ! ?Jp"
+      by (rule wid_Joints_Pred[OF NT monoN br L JmBr])
+    have fqQ: "FirstNodes ?Q ! ?Jp = FirstNodes N ! ?Jp"
+      by (rule wid_FirstNodes_Pred[OF NT monoN br L JmBr])
+    let ?jq = "Joints N ! ?Jp"
+    let ?fq = "FirstNodes N ! ?Jp"
+    have geomp: "?jq \<le> TrMax N \<and> TrMax N < ?fq"
+      by (rule m_6_4_FirstNodes_TrMax_Joints[OF NP JpltBrN])
+    have fqlt: "?fq < Lng N - 1"
+    proof -
+      have "FirstNodes ?Q ! ?Jp < Lng ?Q" by (rule a1_FN_lt[OF QPT JmBr])
+      thus ?thesis using fqQ LQ by simp
+    qed
+    have fqLngN: "?fq < Lng N" using fqlt by linarith
+    have he_p: "entry N 0 ?jq + 1 = entry N 0 ?fq"
+      by (rule bgx_headedge[OF NR NP JpltBrN])
+    have J1Br: "?J1 < Lng (Br N)" using Brne by (cases "Br N") auto
+    have fn1: "FirstNodes N ! ?J1 = Lng N - 1" using base by (simp add: cfbx_j1p_def)
+    have he_1: "entry N 0 ?j0 + 1 = entry N 0 (Lng N - 1)"
+      using bgx_headedge[OF NR NP J1Br] fn1 by simp
+    have brhd_p0: "entry N 0 ?fq = entry (Br N ! ?Jp) 0 0"
+      by (rule entry_FirstNodes_eq_component_gen[OF NP JpltBrN])
+    have brhd_10: "entry N 0 (Lng N - 1) = entry (Br N ! ?J1) 0 0"
+      using entry_FirstNodes_eq_component_gen[OF NP J1Br] fn1 by simp
+    have deschd: "entry (Br N ! ?Jp) 0 0 \<ge> entry (Br N ! ?J1) 0 0"
+      using desc[unfolded descending_def, rule_format, of ?Jp ?J1] JpN J1ge1
+      by simp
+    have jqge: "?j0 \<le> ?jq"
+    proof -
+      have "entry N 0 ?fq \<ge> entry N 0 (Lng N - 1)"
+        using deschd brhd_p0 brhd_10 by simp
+      hence "entry N 0 ?jq \<ge> entry N 0 ?j0" using he_p he_1 by linarith
+      thus ?thesis using offsN[of ?jq] offsN[of ?j0] geomp j0tr by linarith
+    qed
+    have regdisj: "?j0 < Joints ?Q ! (Lng (Br ?Q) - 1)
+          \<or> (?j0 = Joints ?Q ! (Lng (Br ?Q) - 1)
+             \<and> entry ?Q 0 (FirstNodes ?Q ! (Lng (Br ?Q) - 1))
+                 = entry ?Q 1 (FirstNodes ?Q ! (Lng (Br ?Q) - 1))
+             \<and> descending (Br ?Q))"
+    proof (cases "?j0 = ?jq")
+      case False
+      hence "?j0 < ?jq" using jqge by linarith
+      thus ?thesis using jqQ by auto
+    next
+      case True
+      \<comment> \<open>shared joint: run-base \<open>LastStep\<close> minimality forbids a guarded head\<close>
+      have coeff: "entry N 1 ?fq \<le> entry N 0 ?fq"
+        by (rule m_6_6_reduced_coeff[OF NR fqLngN])
+      have ngt: "\<not> entry N 1 ?fq < entry N 0 ?fq"
+      proof
+        assume gt: "entry N 1 ?fq < entry N 0 ?fq"
+        have hdeq: "entry (Br N ! ?J1) 0 0 = entry (Br N ! ?Jp) 0 0"
+          using he_p he_1 True brhd_p0 brhd_10 by simp
+        have brhd_p1: "entry N 1 ?fq = entry (Br N ! ?Jp) 1 0"
+          by (rule entry_FirstNodes_eq_component_gen[OF NP JpltBrN])
+        have grd: "entry (Br N ! ?Jp) 1 0 < entry (Br N ! ?Jp) 0 0"
+          using gt brhd_p0 brhd_p1 by simp
+        have JpS: "?Jp \<in> {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+                            \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}"
+          using hdeq grd by simp
+        have LSmin: "LastStep N
+            = Min {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+                      \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}"
+          by (rule vgx_LastStep_elsecase[OF Brne bfx_gtN[OF reg]])
+        have "LastStep N \<le> ?Jp" using LSmin Min_le[OF fin JpS] by simp
+        thus False using r0 JpN J1ge1 by linarith
+      qed
+      have eqfq: "entry N 0 ?fq = entry N 1 ?fq" using coeff ngt by linarith
+      have entX: "\<And>i. entry ?Q i ?fq = entry N i ?fq"
+      proof -
+        fix i :: nat
+        have "butlast N ! ?fq = N ! ?fq" using fqlt L by (simp add: nth_butlast)
+        thus "entry ?Q i ?fq = entry N i ?fq" by (simp add: predbut entry_def)
+      qed
+      show ?thesis
+      proof (rule disjI2, intro conjI)
+        show "?j0 = Joints ?Q ! (Lng (Br ?Q) - 1)" using True jqQ by simp
+        show "entry ?Q 0 (FirstNodes ?Q ! (Lng (Br ?Q) - 1))
+                = entry ?Q 1 (FirstNodes ?Q ! (Lng (Br ?Q) - 1))"
+          using fqQ entX eqfq by simp
+        show "descending (Br ?Q)" by (rule descQ)
+      qed
+    qed
+    have regQ: "cfbx_reg ?j0 ?Q"
+      unfolding cfbx_reg_def using QR QPT False regdisj by blast
+    have VEQ: "cfbx_VE ?j0 ?Q" by (rule vcx_VE_all[OF regQ])
+    have j0le2: "?j0 \<le> Lng N - 2" using j0tr trlt by linarith
+    have blt3: "Lng N - 2 < Lng N - 1" using L by linarith
+    have s2: "seg ?Q ?j0 (Lng N - 2) = seg N ?j0 (Lng N - 2)"
+      by (rule m_7_4_seg_Pred_eq[OF L j0le2 blt3])
+    have LQm1: "Lng ?Q - 1 = Lng N - 2" using LQ by simp
+    have s1: "seg ?Q ?j0 (Lng ?Q - 1) = seg ?Q ?j0 (Lng N - 2)"
+      using LQm1 by (rule arg_cong[where f = "\<lambda>x. seg ?Q ?j0 x"])
+    have "bpHeadT (Trans (Pred (seg N ?j0 (Lng N - 1))))
+            = bpHeadT (Trans (seg N ?j0 (Lng N - 2)))"
+      using Psegeq by simp
+    also have "\<dots> = bpHeadT (Trans (seg ?Q ?j0 (Lng ?Q - 1)))"
+      using s1 s2 by simp
+    also have "\<dots> = bpHeadT (Trans ?Q)" using VEQ by simp
+    finally show ?thesis .
+  qed
+qed
+
+text \<open>\<^bold>\<open>CAPSTONE (r48)\<close>: \<open>vg2x_VE34\<close> on every \<open>vg7x_reg4\<close> host, modulo NOTHING
+  beyond the consumer's own \<open>fin\<close>.  The single r47 residual \<open>HEADEQ0\<close> of
+  @{thm [source] bgx_VE34_of_reg_modHEADEQ} is discharged by
+  @{thm [source] hqx_HEADEQ0}.\<close>
+
+lemma hqx_VE34_of_reg:
+  fixes M :: pairseq
+  assumes regM: "vg7x_reg4 M"
+    and finM: "finite {J. entry (Br M ! (Lng (Br M) - 1)) 0 0 = entry (Br M ! J) 0 0
+                          \<and> entry (Br M ! J) 1 0 < entry (Br M ! J) 0 0}"
+  shows "vg2x_VE34 M"
+  by (rule bgx_VE34_of_reg_modHEADEQ[OF regM finM hqx_HEADEQ0])
+
+text \<open>\<^bold>\<open>The DT-hypotheses capstone\<close>: the \<open>\<S>\<close>8.2 condII/IV VE34 dispatcher for
+  \<open>M \<in> DT\<^bsub>PS\<^esub>\<close>, with NO residual beyond \<open>fin\<close>.\<close>
+
+lemma hqx_VE34_of_DT:
+  fixes M :: pairseq
+  assumes MDT: "M \<in> DT_PS" and Brne: "Br M \<noteq> []"
+    and guard: "entry M 1 (FirstNodes M ! (Lng (Br M) - 1))
+                  < entry M 0 (FirstNodes M ! (Lng (Br M) - 1))"
+    and j0pos: "0 < Joints M ! (Lng (Br M) - 1)"
+    and j0lt:  "Joints M ! (Lng (Br M) - 1) < TrMax M"
+    and finM: "finite {J. entry (Br M ! (Lng (Br M) - 1)) 0 0 = entry (Br M ! J) 0 0
+                          \<and> entry (Br M ! J) 1 0 < entry (Br M ! J) 0 0}"
+  shows "vg2x_VE34 M"
+  by (rule bgx_VE34_of_DT_modHEADEQ[OF MDT Brne guard j0pos j0lt finM hqx_HEADEQ0])
+
+text \<open>\<^bold>\<open>THE \<S>8.2 condII/IV TERMINAL-SLICE PROPOSITION\<close>
+  (\<open>p_8_2_condIIIV_terminal_slice_Trans\<close>, pss_paper 1624,
+  命題（条件(II)か(IV)の下での終切片と\<open>Trans\<close>の関係）), closed modulo ONLY the
+  \<open>fin\<close> side condition (the \<open>LastStep\<close> \<open>Min\<close>-set finiteness — an artifact of
+  total \<open>nth\<close>, underivable for out-of-range indices; correction-A9 territory).
+  All three value inputs of @{thm [source] vgx_condIIIV_of_VE} are now proven:
+  \<open>VE2\<close> = @{thm [source] vg3x_VE2} (r33), \<open>VE3\<close>/\<open>VE4\<close> = @{thm [source]
+  hqx_VE34_of_DT} (this round).\<close>
+
+lemma hqx_condIIIV_of_DT:
+  fixes M :: pairseq
+  assumes MDT: "M \<in> DT_PS" and Brne: "Br M \<noteq> []"
+    and j0pos: "0 < Joints M ! (Lng (Br M) - 1)"
+    and j0lt:  "Joints M ! (Lng (Br M) - 1) < TrMax M"
+    and guard: "entry M 1 (FirstNodes M ! (Lng (Br M) - 1))
+                  < entry M 0 (FirstNodes M ! (Lng (Br M) - 1))"
+    and fin: "finite {J. entry (Br M ! (Lng (Br M) - 1)) 0 0 = entry (Br M ! J) 0 0
+                         \<and> entry (Br M ! J) 1 0 < entry (Br M ! J) 0 0}"
+  shows "\<exists>!t12.
+      Trans (seg M 0 (FirstNodes M ! (LastStep M) - 1)) = Dpt (enat (entry M 1 0)) (fst t12)
+    \<and> Trans (seg M (Joints M ! (Lng (Br M) - 1)) (FirstNodes M ! (LastStep M) - 1))
+        = Dpt (enat (entry M 1 (Joints M ! (Lng (Br M) - 1)))) (fst t12)
+    \<and> Trans (seg M (Joints M ! (Lng (Br M) - 1)) (Lng M - 1))
+        = Dpt (enat (entry M 1 (Joints M ! (Lng (Br M) - 1)))) (fst t12 +\<^sub>B snd t12)
+      \<and> snd t12 \<noteq> 0\<^sub>B
+    \<and> Trans M = Dpt (enat (entry M 1 0))
+                  (fst t12 +\<^sub>B Dpt (enat (entry M 1 (Joints M ! (Lng (Br M) - 1))))
+                                   (fst t12 +\<^sub>B snd t12))"
+proof -
+  have VE34: "vg2x_VE34 M"
+    by (rule hqx_VE34_of_DT[OF MDT Brne guard j0pos j0lt fin])
+  from VE34 obtain t2 where
+    V3: "bpHeadT (Trans (seg M (Joints M ! (Lng (Br M) - 1)) (Lng M - 1)))
+           = bpHeadT (Trans (seg M 0 (FirstNodes M ! (LastStep M) - 1))) +\<^sub>B t2"
+    and t2ne: "t2 \<noteq> 0\<^sub>B"
+    and V4: "bpHeadT (Trans M)
+           = bpHeadT (Trans (seg M 0 (FirstNodes M ! (LastStep M) - 1)))
+             +\<^sub>B Dpt (enat (entry M 1 (Joints M ! (Lng (Br M) - 1))))
+                    (bpHeadT (Trans (seg M (Joints M ! (Lng (Br M) - 1)) (Lng M - 1))))"
+    by blast
+  have VE2: "bpHeadT (Trans (seg M (Joints M ! (Lng (Br M) - 1))
+                               (FirstNodes M ! (LastStep M) - 1)))
+               = bpHeadT (Trans (seg M 0 (FirstNodes M ! (LastStep M) - 1)))"
+    by (rule vg3x_VE2[OF MDT Brne j0pos j0lt guard fin])
+  show ?thesis
+    by (rule vgx_condIIIV_of_VE[OF MDT Brne j0pos j0lt guard fin VE2 V3 t2ne V4])
+qed
+
+(* ===== end r48 HEADEQ0 (hqx_) ===== *)
+
+(* ===== r48 merge: wt-s4a — devchain modulo non-corner branchwit; IncrFirst-normalized branch witnesses (dcx_) ===== *)
+
+(* ===================================================================== *)
+(* ===== r48 devchain (dcx_): the dpr_ devchain residual via         ===== *)
+(* =====   IncrFirst-NORMALIZED BRANCH witnesses + corner dispatch   ===== *)
+(* ===================================================================== *)
+
+section \<open>r48 --- §8.7 devchain via IncrFirst-normalized branch witnesses
+  (dcx_ prefix)\<close>
+
+text \<open>\<^bold>\<open>Target.\<close>  Discharge bricks for the \<open>devchain\<close> residual of
+  @{thm [source] dpr_two_slots_of_devchain} (r47): under the deep-insertion
+  eqhead frame, two shorter standard hosts \<open>N, N'\<close> with
+  \<open>Trans N = D\<^bsub>x\<^esub> q\<close>, \<open>Trans N' = D\<^bsub>hdv\<^esub> qb\<close>, related by \<open>N = N' \<or> dpr_dev N' N\<close>.
+
+  \<^bold>\<open>Route (r47 recommendation).\<close>  The r46 branch-standardness obstruction
+  (\<open>last (Br M) \<in> ST\<^bsub>PS\<^esub>\<close> unsupported) is DODGED by the IncrFirst-normalized
+  form: \<open>Trans\<close> is \<open>IncrFirst\<close>-invariant on standard-rooted hosts
+  (@{thm [source] Trans_funpow_IncrFirst} through
+  @{thm [source] m_6_7_ST_PS_subseteq_RT_PS}), so a branch that IS an
+  \<open>IncrFirst\<close>-power shift of a standard host serves as a witness through its
+  normalized form --- standardness is only needed for the SHIFTED-DOWN branch
+  (first column diagonal, standard-shaped), not the raw branch.
+
+  \<^bold>\<open>STEP-0 empirics (python/_r48_devchain.py, _r48_devchain2.py; pool
+  62k--64k \<open>ST\<^bsub>PS\<^esub>\<close>-constructed members, hosts \<open>Lng \<le> 14\<close>).\<close>
+  \<^enum> \<^bold>\<open>Claim S (branch-shift standardness): NO counterexample.\<close>  Over the
+    eqhead frame hosts, 131/145 branches have their normalized form
+    (down-shift by \<open>entry b 0 0 - entry b 1 0\<close>, making the first column
+    diagonal) IN the \<open>ST\<^bsub>PS\<^esub>\<close>-construction pool; the 14 misses are
+    pool-boundary (inconclusive, no refutation); 0 normalization failures
+    (the row-0 bound never failed).  \<open>Trans\<close>-transport
+    \<open>Trans (norm b) = Trans b\<close> held \<^bold>\<open>145/145\<close> (theorem-backed given claim S).
+  \<^enum> \<^bold>\<open>Witness recipe coverage \<open>\<approx>\<close> half.\<close>  Run 2 ladder on 43 eqhead frame
+    hosts: \<open>D\<^sub>0 0\<^sub>B\<close> corner (CLOSED, @{thm [source] dpr_devpair_corner}) 7;
+    \<open>N' = norm (Br M ! (\<bar>Br M\<bar> - 2))\<close> with \<open>N = N'\<close> (eqdep) 6 or a 1--2-step
+    \<open>dpr_dev\<close> chain (\<open>n \<le> 8\<close>) 8; \<^bold>\<open>22 hosts unresolved\<close> (deep deposits,
+    nesting depth \<open>\<ge> 2\<close>: depth dist \<open>{1: 10, 2: 11, 3: 13, 4: 1, 6: 1}\<close>).
+  \<^enum> \<^bold>\<open>REFUTED side-conjecture (do not re-run)\<close>: the naive recursive frame
+    descent --- ``the body of \<open>Trans (norm (last (Br M)))\<close> ends with the same
+    pair \<open>(prev, dep)\<close>'' --- failed \<^bold>\<open>0/22\<close> on the unresolved hosts.  The
+    deep-deposit witness does NOT come from iterating the last-branch
+    read-off; per-depth witness selection is still required (consistent with
+    the r46/r47 depth-\<open>\<ge>2\<close> read-off diagnosis: \<open>Trans (last (Br M))\<close> read-off
+    held only 29/36, the \<open>ps\<close>-side \<open>Trans (Br M ! (\<bar>Br M\<bar>-2))\<close> read-off only
+    21/36).
+  \<^enum> The Trans-indexed pool fallback was time-truncated (index incomplete), so
+    devchain TRUTH on the 22 deep hosts stays empirically OPEN here (r47 run2
+    had witnessed most of its corpus with a complete index; no refutation).
+
+  \<^bold>\<open>GREEN below.\<close>
+  \<^item> \<open>dcx_shift_standard_Trans\<close> / \<open>dcx_Lng_funpow_IncrFirst\<close>: the transport
+    bricks --- \<open>Trans ((IncrFirst ^^ k) N) = Trans N\<close> for standard \<open>N\<close>
+    (kills obstruction (ii) of the r46 diagnosis MODULO the shift
+    decomposition itself).
+  \<^item> \<open>dcx_branch_Lng\<close>: every branch is strictly shorter than its host
+    (\<open>Br\<close> components are \<open>P\<close>-components of the post-trunk segment;
+    @{thm [source] idxsum_concat_P} + @{thm [source] Lng_seg}).
+  \<^item> \<open>dcx_branchwit_of_readoff\<close>: branch-level read-off \<open>\<Rightarrow>\<close> witness-level
+    \<open>Trans\<close> value (the consumer of the transport brick).
+  \<^item> \<open>dcx_dev_two_step\<close>: the 2-step \<open>dpr_dev\<close> chain constructor matching the
+    observed \<open>dev1/dev2\<close> recipes.
+  \<^item> \<open>dcx_devchain_of_branchwit\<close>: \<^bold>\<open>devchain from ONE normalized-branch
+    witness\<close> --- the sharpest packaging of the residual: a branch index \<open>j\<close>,
+    a shift \<open>k\<close>, a standard \<open>N'\<close> under it with the \<open>ps\<close>-side \<open>Trans\<close> value,
+    and (eqdep) value equality or a \<open>dpr_dev\<close> development reaching the
+    deposit below length \<open>Lng M\<close>.
+  \<^item> \<open>dcx_devchain\<close>: the corner dispatch --- the \<open>D\<^sub>0 0\<^sub>B\<close> corner needs NO
+    witness data (closed r47), so \<open>branchwit\<close> is only assumed OUTSIDE the
+    corner.
+  \<^item> \<open>dcx_two_slots\<close> + wrappers \<open>dcx_slotTail\<close> / \<open>dcx_slotNewOT\<close>: both §8.7
+    slots modulo {non-corner \<open>branchwit\<close>, descent pillar} via
+    @{thm [source] dpr_two_slots_of_devchain}.
+
+  \<^bold>\<open>Exact residual obstruction (what \<open>branchwit\<close> still needs).\<close>
+  (i) \<^bold>\<open>Claim S\<close>: \<open>Br M ! j = (IncrFirst ^^ k) N'\<close> with \<open>N' \<in> ST\<^bsub>PS\<^esub>\<close> ---
+  empirically unrefuted (131/145 confirmed), structurally an \<open>ST\<^bsub>PS\<^esub>\<close>-induction
+  on how \<open>Br\<close> evolves under \<open>oper\<close> (the bad-part copies are IncrFirst-shifted
+  suffix blocks); NOT yet mechanized.  (ii) \<^bold>\<open>read-off / witness selection\<close>:
+  which branch \<open>j\<close> carries the \<open>ps\<close>-side value and how the deposit develops
+  from it --- covered empirically at deposit depth 1 (the
+  \<open>j = \<bar>Br M\<bar> - 2\<close>, \<open>n \<le> 8\<close>, \<open>\<le> 2\<close>-step recipe) but OPEN at depth \<open>\<ge> 2\<close>
+  (22/43 hosts; the recursive descent conjecture is refuted, so a genuinely
+  new per-depth mechanism is needed --- the article's mono-host fseq
+  transport in its corrected scb-decomp form remains the candidate).
+
+  Audit (rule 4): everything below cites only proven facts
+  (@{thm [source] Trans_funpow_IncrFirst},
+  @{thm [source] m_6_7_ST_PS_subseteq_RT_PS}, @{thm [source] idxsum_concat_P},
+  @{thm [source] Lng_seg}, the r47 \<open>dpr_\<close> cluster); no REFUTED registry fact
+  is used; \<open>branchwit\<close> and the descent slot are honest named assumptions.\<close>
+
+subsection \<open>Transport bricks: IncrFirst-power shifts of standard hosts are
+  \<open>Trans\<close>-transparent and length-preserving\<close>
+
+lemma dcx_Lng_funpow_IncrFirst [simp]: "Lng ((IncrFirst ^^ k) N) = Lng N"
+  by (induction k) simp_all
+
+lemma dcx_shift_standard_Trans:
+  assumes NST: "N \<in> ST_PS"
+  shows "Trans ((IncrFirst ^^ k) N) = Trans N"
+proof -
+  have NR: "N \<in> RT_PS" using NST m_6_7_ST_PS_subseteq_RT_PS by blast
+  have NT: "N \<in> T_PS" and RedN: "Red N = N"
+    using NR by (simp_all add: RT_PS_def)
+  have "Red N \<in> RT_PS" using RedN NR by simp
+  thus ?thesis by (rule Trans_funpow_IncrFirst[OF NT])
+qed
+
+text \<open>Branch length: every \<open>Br\<close> component is strictly shorter than the host
+  (it is a \<open>P\<close>-component of the post-trunk segment, whose concat is the
+  segment itself).\<close>
+
+lemma dcx_branch_Lng:
+  assumes L: "0 < Lng M" and mem: "b \<in> set (Br M)"
+  shows "Lng b < Lng M"
+proof -
+  have ne: "Br M \<noteq> []" using mem by auto
+  let ?S = "seg M (TrMax M + 1) (Lng M - 1)"
+  have Breq: "Br M = P ?S"
+    using ne by (cases "TrMax M = Lng M - 1") (simp_all add: Br_def)
+  have bP: "b \<in> set (P ?S)" using mem Breq by simp
+  then obtain ys zs where split: "P ?S = ys @ b # zs" by (meson split_list)
+  have "Lng b \<le> Lng (concat (P ?S))" using split by simp
+  hence LbS: "Lng b \<le> Lng ?S" by (simp add: idxsum_concat_P)
+  have "Lng ?S = Suc (Lng M - 1) - (TrMax M + 1)" by (simp only: Lng_seg)
+  also have "\<dots> = Lng M - (TrMax M + 1)" using L by simp
+  finally have "Lng ?S < Lng M" using L by linarith
+  thus ?thesis using LbS by linarith
+qed
+
+text \<open>Read-off conversion: a branch-level \<open>Trans\<close> read-off becomes a
+  witness-level value through the shift decomposition.\<close>
+
+lemma dcx_branchwit_of_readoff:
+  assumes dec: "Br M ! j = (IncrFirst ^^ k) N'" and NST: "N' \<in> ST_PS"
+    and ro: "Trans (Br M ! j) = Dpt (enat hdv) qb"
+  shows "Trans N' = Dpt (enat hdv) qb"
+  using ro dcx_shift_standard_Trans[OF NST, of k] dec by simp
+
+text \<open>The 2-step development chain constructor (the observed \<open>dev2\<close> recipe;
+  \<open>dev1\<close> is @{thm [source] dpr_dev.dpr_dev_step} itself).\<close>
+
+lemma dcx_dev_two_step:
+  fixes N' :: pairseq
+  assumes n1: "1 \<le> n1" and L1: "1 < Lng N'"
+    and n2: "1 \<le> n2" and L2: "1 < Lng ((N'::pairseq)[n1])"
+  shows "dpr_dev N' (((N'::pairseq)[n1])[n2])"
+  by (rule dpr_dev_trans[OF dpr_dev_step[OF n1 L1] dpr_dev_step[OF n2 L2]])
+
+subsection \<open>Core assembly: \<open>devchain\<close> from ONE normalized-branch witness\<close>
+
+text \<open>\<open>branchwit\<close>, the r48 sharpened residual: a branch of \<open>M\<close> is an
+  \<open>IncrFirst\<close>-power shift of a standard \<open>N'\<close> whose \<open>Trans\<close> is the \<open>ps\<close>-side
+  principal, and the deposit is either equal (complete branch repeat) or a
+  \<open>dpr_dev\<close> development of \<open>N'\<close> below length \<open>Lng M\<close>.  Both length bounds
+  come FREE from the branch geometry (@{thm [source] dcx_branch_Lng} +
+  @{thm [source] dcx_Lng_funpow_IncrFirst}); standardness of the developed
+  witness comes free from @{thm [source] dpr_dev_ST} downstream.\<close>
+
+lemma dcx_devchain_of_branchwit:
+  fixes M :: pairseq and x hdv :: nat and q qb :: BT
+  assumes LM: "2 < Lng M"
+    and branchwit:
+      "\<exists>j k N'. j < Lng (Br M) \<and> Br M ! j = (IncrFirst ^^ k) N'
+          \<and> N' \<in> ST_PS \<and> Trans N' = Dpt (enat hdv) qb
+          \<and> (Dpt (enat x) q = Dpt (enat hdv) qb
+             \<or> (\<exists>N. dpr_dev N' N \<and> Lng N < Lng M \<and> Trans N = Dpt (enat x) q))"
+  shows "\<exists>N N'. N' \<in> ST_PS \<and> Lng N < Lng M \<and> Lng N' < Lng M
+           \<and> Trans N = Dpt (enat x) q \<and> Trans N' = Dpt (enat hdv) qb
+           \<and> (N = N' \<or> dpr_dev N' N)"
+proof -
+  from branchwit obtain j k N' where
+    jL: "j < Lng (Br M)" and dec: "Br M ! j = (IncrFirst ^^ k) N'"
+    and NST: "N' \<in> ST_PS" and NT: "Trans N' = Dpt (enat hdv) qb"
+    and rel: "Dpt (enat x) q = Dpt (enat hdv) qb
+              \<or> (\<exists>N. dpr_dev N' N \<and> Lng N < Lng M \<and> Trans N = Dpt (enat x) q)"
+    by blast
+  have mem: "Br M ! j \<in> set (Br M)" using jL by (rule nth_mem)
+  have L0: "0 < Lng M" using LM by linarith
+  have "Lng (Br M ! j) < Lng M" by (rule dcx_branch_Lng[OF L0 mem])
+  hence LN': "Lng N' < Lng M" using dec by simp
+  from rel show ?thesis
+  proof
+    assume eq: "Dpt (enat x) q = Dpt (enat hdv) qb"
+    have "Trans N' = Dpt (enat x) q" using NT eq by simp
+    thus ?thesis using NST LN' NT by blast
+  next
+    assume "\<exists>N. dpr_dev N' N \<and> Lng N < Lng M \<and> Trans N = Dpt (enat x) q"
+    then obtain N where "dpr_dev N' N" and "Lng N < Lng M"
+      and "Trans N = Dpt (enat x) q" by blast
+    thus ?thesis using NST LN' NT by blast
+  qed
+qed
+
+text \<open>Corner dispatch: at the absorbed \<open>D\<^sub>0 0\<^sub>B\<close> corner the residual is
+  discharged outright by the r47 corner witness
+  (@{thm [source] dpr_devpair_corner}); \<open>branchwit\<close> is only assumed OUTSIDE
+  the corner (7/43 of the empirical eqhead hosts are the corner).\<close>
+
+lemma dcx_devchain:
+  fixes M :: pairseq and x hdv :: nat and q qb :: BT
+  assumes LM: "2 < Lng M" and b3: "x = hdv"
+    and ncwit: "\<not> (x = 0 \<and> q = 0\<^sub>B \<and> qb = 0\<^sub>B) \<Longrightarrow>
+      (\<exists>j k N'. j < Lng (Br M) \<and> Br M ! j = (IncrFirst ^^ k) N'
+          \<and> N' \<in> ST_PS \<and> Trans N' = Dpt (enat hdv) qb
+          \<and> (Dpt (enat x) q = Dpt (enat hdv) qb
+             \<or> (\<exists>N. dpr_dev N' N \<and> Lng N < Lng M \<and> Trans N = Dpt (enat x) q)))"
+  shows "\<exists>N N'. N' \<in> ST_PS \<and> Lng N < Lng M \<and> Lng N' < Lng M
+           \<and> Trans N = Dpt (enat x) q \<and> Trans N' = Dpt (enat hdv) qb
+           \<and> (N = N' \<or> dpr_dev N' N)"
+proof (cases "x = 0 \<and> q = 0\<^sub>B \<and> qb = 0\<^sub>B")
+  case True
+  have x0: "x = 0" and q0: "q = 0\<^sub>B" and qb0: "qb = 0\<^sub>B" using True by blast+
+  have hdv0: "hdv = 0" using b3 x0 by simp
+  have C: "\<exists>N N'. N' \<in> ST_PS \<and> Lng N < Lng M \<and> Lng N' < Lng M
+             \<and> Trans N = Dpt (enat 0) 0\<^sub>B \<and> Trans N' = Dpt (enat 0) 0\<^sub>B
+             \<and> (N = N' \<or> dpr_dev N' N)"
+    by (rule dpr_devchain_of_devpair[OF dpr_devpair_corner[OF LM]])
+  show ?thesis unfolding x0 q0 qb0 hdv0 by (rule C)
+next
+  case False
+  show ?thesis by (rule dcx_devchain_of_branchwit[OF LM ncwit[OF False]])
+qed
+
+subsection \<open>Consumers: both §8.7 slots modulo {non-corner \<open>branchwit\<close>,
+  descent pillar}\<close>
+
+lemma dcx_two_slots:
+  fixes M :: pairseq and x hdv :: nat and q r qb :: BT and ps :: "BP list"
+  assumes a1: "M \<in> ST_PS" and a2: "monoT M" and a3: "Br M \<noteq> []"
+    and a4: "Lng M - 1 > 1"
+    and a5: "\<And>N. N \<in> ST_PS \<Longrightarrow> Lng N < Lng M \<Longrightarrow> Trans N \<in> OT_B"
+    and a6: "Trans (Pred M) \<in> OT_B"
+    and a7: "Trans (Pred M) = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B r)"
+    and a8: "Trans M = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B Dpt (enat x) q)"
+    and b1: "ps \<noteq> []" and b2: "last ps = DB (enat hdv) qb" and b3: "x = hdv"
+    and ncwit: "\<not> (x = 0 \<and> q = 0\<^sub>B \<and> qb = 0\<^sub>B) \<Longrightarrow>
+      (\<exists>j k N'. j < Lng (Br M) \<and> Br M ! j = (IncrFirst ^^ k) N'
+          \<and> N' \<in> ST_PS \<and> Trans N' = Dpt (enat hdv) qb
+          \<and> (Dpt (enat x) q = Dpt (enat hdv) qb
+             \<or> (\<exists>N. dpr_dev N' N \<and> Lng N < Lng M \<and> Trans N = Dpt (enat x) q)))"
+    and descent: "\<And>K n. K \<in> ST_PS \<Longrightarrow> 1 \<le> n \<Longrightarrow> 1 < Lng K
+                    \<Longrightarrow> lessBT (Trans ((K::pairseq)[n])) (Trans K)"
+  shows "leBT q qb \<and> isOT_BP (DB (enat x) q)"
+proof -
+  have LM: "2 < Lng M" using a4 by simp
+  have devchain: "\<exists>N N'. N' \<in> ST_PS \<and> Lng N < Lng M \<and> Lng N' < Lng M
+           \<and> Trans N = Dpt (enat x) q \<and> Trans N' = Dpt (enat hdv) qb
+           \<and> (N = N' \<or> dpr_dev N' N)"
+    by (rule dcx_devchain[OF LM b3 ncwit])
+  show ?thesis
+    by (rule dpr_two_slots_of_devchain[OF a1 a2 a3 a4 a5 a6 a7 a8 b1 b2 b3
+          devchain descent])
+qed
+
+text \<open>The two named wrappers, in the exact slot shapes of
+  @{thm [source] rgx_Trans_preserves_OT_of_slots}.\<close>
+
+lemma dcx_slotTail:
+  fixes M :: pairseq and x hdv :: nat and q r qb :: BT and ps :: "BP list"
+  assumes a1: "M \<in> ST_PS" and a2: "monoT M" and a3: "Br M \<noteq> []"
+    and a4: "Lng M - 1 > 1"
+    and a5: "\<And>N. N \<in> ST_PS \<Longrightarrow> Lng N < Lng M \<Longrightarrow> Trans N \<in> OT_B"
+    and a6: "Trans (Pred M) \<in> OT_B"
+    and a7: "Trans (Pred M) = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B r)"
+    and a8: "Trans M = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B Dpt (enat x) q)"
+    and b1: "ps \<noteq> []" and b2: "last ps = DB (enat hdv) qb" and b3: "x = hdv"
+    and ncwit: "\<not> (x = 0 \<and> q = 0\<^sub>B \<and> qb = 0\<^sub>B) \<Longrightarrow>
+      (\<exists>j k N'. j < Lng (Br M) \<and> Br M ! j = (IncrFirst ^^ k) N'
+          \<and> N' \<in> ST_PS \<and> Trans N' = Dpt (enat hdv) qb
+          \<and> (Dpt (enat x) q = Dpt (enat hdv) qb
+             \<or> (\<exists>N. dpr_dev N' N \<and> Lng N < Lng M \<and> Trans N = Dpt (enat x) q)))"
+    and descent: "\<And>K n. K \<in> ST_PS \<Longrightarrow> 1 \<le> n \<Longrightarrow> 1 < Lng K
+                    \<Longrightarrow> lessBT (Trans ((K::pairseq)[n])) (Trans K)"
+  shows "leBT q qb"
+  using dcx_two_slots[OF a1 a2 a3 a4 a5 a6 a7 a8 b1 b2 b3 ncwit descent]
+  by blast
+
+lemma dcx_slotNewOT:
+  fixes M :: pairseq and x hdv :: nat and q r qb :: BT and ps :: "BP list"
+  assumes a1: "M \<in> ST_PS" and a2: "monoT M" and a3: "Br M \<noteq> []"
+    and a4: "Lng M - 1 > 1"
+    and a5: "\<And>N. N \<in> ST_PS \<Longrightarrow> Lng N < Lng M \<Longrightarrow> Trans N \<in> OT_B"
+    and a6: "Trans (Pred M) \<in> OT_B"
+    and a7: "Trans (Pred M) = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B r)"
+    and a8: "Trans M = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B Dpt (enat x) q)"
+    and b1: "ps \<noteq> []" and b2: "last ps = DB (enat hdv) qb" and b3: "x = hdv"
+    and ncwit: "\<not> (x = 0 \<and> q = 0\<^sub>B \<and> qb = 0\<^sub>B) \<Longrightarrow>
+      (\<exists>j k N'. j < Lng (Br M) \<and> Br M ! j = (IncrFirst ^^ k) N'
+          \<and> N' \<in> ST_PS \<and> Trans N' = Dpt (enat hdv) qb
+          \<and> (Dpt (enat x) q = Dpt (enat hdv) qb
+             \<or> (\<exists>N. dpr_dev N' N \<and> Lng N < Lng M \<and> Trans N = Dpt (enat x) q)))"
+    and descent: "\<And>K n. K \<in> ST_PS \<Longrightarrow> 1 \<le> n \<Longrightarrow> 1 < Lng K
+                    \<Longrightarrow> lessBT (Trans ((K::pairseq)[n])) (Trans K)"
+  shows "isOT_BP (DB (enat x) q)"
+  using dcx_two_slots[OF a1 a2 a3 a4 a5 a6 a7 a8 b1 b2 b3 ncwit descent]
+  by blast
+
+(* ===== end r48 devchain (dcx_) ===== *)
+
+(* ===== r48 merge: wt-s4c — depdom sharply reduced {freshdom,preddomNE,transfer}; slotAppg wired (ddx_) ===== *)
+
+(* ===================================================================== *)
+(* ===== r48 depdom (ddx_ prefix): closing §8.7 slotAppg's deposit   === *)
+(* =====   outer-G_B residual.  Target = the depdom assumption of    === *)
+(* =====   hgx_slotAppg_modDom (~67591).                             === *)
+(* =====   STEP-0 empirics (python/_r48_depdom_step0{,b}.py, corpus  === *)
+(* =====   Lng<=18, 1737 applicable frame hosts):                    === *)
+(* =====   (i)   ps = [] DOMINATES: 1721/1737 (99.1%); there the     === *)
+(* =====         v0-rooted term Dpt v0 (Dpt x q) IS Trans M itself   === *)
+(* =====         (1721/1721), so the hgx_depdom_of_sliceV0 witness   === *)
+(* =====         route is DEAD for ps=[] (a shorter witness would    === *)
+(* =====         contradict Trans faithfulness; found 0/1721).       === *)
+(* =====   (ii)  for ps = [] the predecessor body is ALWAYS a single === *)
+(* =====         principal with the SAME head x (1721/1721): the     === *)
+(* =====         keystone lands in the proper-prefix cases (3)/(4),  === *)
+(* =====         so a6 = Trans (Pred M) in OT_B gives EXACTLY the    === *)
+(* =====         predecessor depdom (the G_B-half of                 === *)
+(* =====         isOT_BP (DB v0 (Dpt x q'))) FOR FREE.               === *)
+(* =====   (iii) terminal slices seg M j (Lng M - 1) NEVER carry the === *)
+(* =====         v0-rooted term for ps <> [] (0/14, r48 run 1); the  === *)
+(* =====         16/16 global witnesses found for ps <> [] are a     === *)
+(* =====         branch-repetition artifact (witness = the prefix    === *)
+(* =====         minus the last branch, whose ps happened to equal   === *)
+(* =====         the deposit) -- NOT a general mechanism.            === *)
+(* =====   (iv)  escape profile: over all 1737 hosts, EVERY escape   === *)
+(* =====         y in {q} u G_v0(q) is 0_B, or has head index < x,   === *)
+(* =====         or head = x with body < q (esc_bad = 0) -- the      === *)
+(* =====         true invariant is a hereditary head cap at x.       === *)
+(* =====   Architecture: realign the keystone (fresh vs deepened     === *)
+(* =====   deposit), discharge the ps=[] predecessor bound from a6,  === *)
+(* =====   and reduce depdom to THREE sharp named residuals:         === *)
+(* =====   freshdom (whole-body corner), preddomNE (the ps<>[]       === *)
+(* =====   predecessor last-principal v0-bound -- needs the pillar   === *)
+(* =====   invariant strengthening), transfer (the single Pred->M    === *)
+(* =====   deposit-body step).  transfer is PROVEN here for the      === *)
+(* =====   top-level append shape q = q' +B Dpt w 0B, w <= x (the    === *)
+(* =====   condI/III/V/VI anchor-at-deposit case), evidencing        === *)
+(* =====   tractability of the general step.                         === *)
+(* ===================================================================== *)
+
+section \<open>r48 depdom --- §8.7 slotAppg deposit outer-\<open>G\<^sub>B\<close> reduction (ddx_ prefix)\<close>
+
+text \<open>Order helper: a proper list extension is \<open>lessBT\<close>-larger (dictionary
+  order, proper prefix is smaller).\<close>
+
+lemma ddx_lessBT_snoc: "lessBT (Trm as) (Trm (as @ z # zs))"
+proof (induction as)
+  case Nil
+  show ?case by simp
+next
+  case (Cons a as')
+  show ?case using Cons.IH by simp
+qed
+
+text \<open>Keystone REALIGNMENT for depdom: under the deep-insertion frame, the
+  predecessor's \<open>Trans\<close> either lacks the deposit entirely (whole-body cases
+  (1)/(2) of @{thm [source] m_8_2_keystone}: FRESH deposit) or carries a
+  principal with the SAME head \<open>x\<close> in the same position (proper-prefix cases
+  (3)/(4): DEEPENED deposit).  Same butlast/last snoc-realignment as inside
+  @{thm [source] rgx_resid_of_parts}.\<close>
+
+lemma ddx_keystone_realign:
+  fixes M :: pairseq and x :: nat and q :: BT and ps :: "BP list"
+  assumes a1: "M \<in> ST_PS" and a2: "monoT M" and a3: "Br M \<noteq> []"
+    and a4: "Lng M - 1 > 1"
+    and a8: "Trans M = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B Dpt (enat x) q)"
+  shows "Trans (Pred M) = Dpt (enat (entry M 1 0)) (Trm ps)
+       \<or> (\<exists>q'. Trans (Pred M)
+                 = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B Dpt (enat x) q'))"
+proof -
+  let ?v0 = "entry M 1 0"
+  let ?j1' = "FirstNodes M ! (Lng (Br M) - 1)"
+  let ?j0' = "Joints M ! (Lng (Br M) - 1)"
+  have MR: "M \<in> RT_PS" using a1 m_6_7_ST_PS_subseteq_RT_PS by blast
+  have MT: "M \<in> T_PS" using MR by (simp add: RT_PS_def)
+  have MP: "M \<in> PT_PS" using MT a2 by (simp add: PT_PS_def)
+  from m_8_2_keystone[OF MR MP a3 a4]
+  show ?thesis
+  proof (elim disjE)
+    \<comment> \<open>case (1): whole body, trailing \<open>D\<^bsub>M\<^sub>1\<^sub>,\<^sub>j\<^sub>1'\<^esub> 0\<close> --- FRESH\<close>
+    assume A: "FirstNodes M ! (Lng (Br M) - 1) = Lng M - 1
+        \<and> (TrMax M = 0 \<or> Joints M ! (Lng (Br M) - 1) < TrMax M)
+        \<and> (entry M 0 (FirstNodes M ! (Lng (Br M) - 1))
+             = entry M 1 (FirstNodes M ! (Lng (Br M) - 1))
+           \<or> adm M (Joints M ! (Lng (Br M) - 1)))
+        \<and> (\<exists>!t1. Trans (Pred M) = Dpt (enat (entry M 1 0)) t1
+              \<and> Trans M = Dpt (enat (entry M 1 0))
+                   (t1 +\<^sub>B Dpt (enat (entry M 1 (FirstNodes M ! (Lng (Br M) - 1)))) 0\<^sub>B))"
+    from A obtain t1 where
+      P1: "Trans (Pred M) = Dpt (enat ?v0) t1"
+      and T1: "Trans M = Dpt (enat ?v0) (t1 +\<^sub>B Dpt (enat (entry M 1 ?j1')) 0\<^sub>B)"
+      by (blast dest: ex1_implies_ex)
+    obtain ts where ts: "t1 = Trm ts" by (cases t1)
+    have e1: "ps @ [DB (enat x) q] = ts @ [DB (enat (entry M 1 ?j1')) 0\<^sub>B]"
+      using a8 T1 ts by simp
+    have pse: "ps = ts" by (metis e1 butlast_snoc)
+    have predW1: "Trans (Pred M) = Dpt (enat ?v0) (Trm ps)"
+      using P1 ts pse by simp
+    show ?thesis using predW1 by blast
+  next
+    \<comment> \<open>case (2): whole body, trailing \<open>D\<^bsub>M\<^sub>1\<^sub>,\<^sub>j\<^sub>0'\<^esub> (snd t12)\<close> --- FRESH\<close>
+    assume A: "FirstNodes M ! (Lng (Br M) - 1) = Lng M - 1
+        \<and> entry M 0 (FirstNodes M ! (Lng (Br M) - 1))
+            > entry M 1 (FirstNodes M ! (Lng (Br M) - 1))
+        \<and> \<not> adm M (Joints M ! (Lng (Br M) - 1))
+        \<and> (\<exists>!t12. Trans (Pred M) = Dpt (enat (entry M 1 0)) (fst t12)
+              \<and> Trans M = Dpt (enat (entry M 1 0))
+                   (fst t12 +\<^sub>B Dpt (enat (entry M 1 (Joints M ! (Lng (Br M) - 1)))) (snd t12)))"
+    from A obtain t12 where
+      P2: "Trans (Pred M) = Dpt (enat ?v0) (fst t12)"
+      and T2: "Trans M = Dpt (enat ?v0)
+                 (fst t12 +\<^sub>B Dpt (enat (entry M 1 ?j0')) (snd t12))"
+      by (blast dest: ex1_implies_ex)
+    obtain ts where ts: "fst t12 = Trm ts" by (cases "fst t12")
+    have e2: "ps @ [DB (enat x) q] = ts @ [DB (enat (entry M 1 ?j0')) (snd t12)]"
+      using a8 T2 ts by simp
+    have pse: "ps = ts" by (metis e2 butlast_snoc)
+    have predW2: "Trans (Pred M) = Dpt (enat ?v0) (Trm ps)"
+      using P2 ts pse by simp
+    show ?thesis using predW2 by blast
+  next
+    \<comment> \<open>case (3): proper prefix, trailing \<open>D\<^bsub>M\<^sub>1\<^sub>,\<^sub>j\<^sub>1'\<^esub>\<close> --- DEEPENED\<close>
+    assume A: "\<exists>!t123. Trans (Pred M)
+                  = Dpt (enat (entry M 1 0))
+                      (fst t123 +\<^sub>B Dpt (enat (entry M 1 (FirstNodes M ! (Lng (Br M) - 1)))) (fst (snd t123)))
+              \<and> Trans M = Dpt (enat (entry M 1 0))
+                      (fst t123 +\<^sub>B Dpt (enat (entry M 1 (FirstNodes M ! (Lng (Br M) - 1)))) (snd (snd t123)))"
+    from A obtain t123 where
+      P3: "Trans (Pred M) = Dpt (enat ?v0)
+              (fst t123 +\<^sub>B Dpt (enat (entry M 1 ?j1')) (fst (snd t123)))"
+      and T3: "Trans M = Dpt (enat ?v0)
+              (fst t123 +\<^sub>B Dpt (enat (entry M 1 ?j1')) (snd (snd t123)))"
+      by (blast dest: ex1_implies_ex)
+    obtain ts where ts: "fst t123 = Trm ts" by (cases "fst t123")
+    have e3: "ps @ [DB (enat x) q] = ts @ [DB (enat (entry M 1 ?j1')) (snd (snd t123))]"
+      using a8 T3 ts by simp
+    have pse: "ps = ts" by (metis e3 butlast_snoc)
+    have lastO: "DB (enat x) q = DB (enat (entry M 1 ?j1')) (snd (snd t123))"
+      by (metis e3 last_snoc)
+    have xex: "x = entry M 1 ?j1'" using lastO by simp
+    have predW3: "Trans (Pred M)
+                   = Dpt (enat ?v0) (Trm ps +\<^sub>B Dpt (enat x) (fst (snd t123)))"
+      using P3 ts pse xex by simp
+    show ?thesis using predW3 by blast
+  next
+    \<comment> \<open>case (4): proper prefix, trailing \<open>D\<^bsub>M\<^sub>1\<^sub>,\<^sub>j\<^sub>0'\<^esub>\<close> --- DEEPENED\<close>
+    assume A: "\<exists>!t123. Trans (Pred M)
+                  = Dpt (enat (entry M 1 0))
+                      (fst t123 +\<^sub>B Dpt (enat (entry M 1 (Joints M ! (Lng (Br M) - 1)))) (fst (snd t123)))
+              \<and> Trans M = Dpt (enat (entry M 1 0))
+                      (fst t123 +\<^sub>B Dpt (enat (entry M 1 (Joints M ! (Lng (Br M) - 1)))) (snd (snd t123)))"
+    from A obtain t123 where
+      P4: "Trans (Pred M) = Dpt (enat ?v0)
+              (fst t123 +\<^sub>B Dpt (enat (entry M 1 ?j0')) (fst (snd t123)))"
+      and T4: "Trans M = Dpt (enat ?v0)
+              (fst t123 +\<^sub>B Dpt (enat (entry M 1 ?j0')) (snd (snd t123)))"
+      by (blast dest: ex1_implies_ex)
+    obtain ts where ts: "fst t123 = Trm ts" by (cases "fst t123")
+    have e4: "ps @ [DB (enat x) q] = ts @ [DB (enat (entry M 1 ?j0')) (snd (snd t123))]"
+      using a8 T4 ts by simp
+    have pse: "ps = ts" by (metis e4 butlast_snoc)
+    have lastO: "DB (enat x) q = DB (enat (entry M 1 ?j0')) (snd (snd t123))"
+      by (metis e4 last_snoc)
+    have xex: "x = entry M 1 ?j0'" using lastO by simp
+    have predW4: "Trans (Pred M)
+                   = Dpt (enat ?v0) (Trm ps +\<^sub>B Dpt (enat x) (fst (snd t123)))"
+      using P4 ts pse xex by simp
+    show ?thesis using predW4 by blast
+  qed
+qed
+
+text \<open>The \<open>ps = []\<close> PREDECESSOR depdom is FREE: when the predecessor's whole
+  body is the single principal \<open>D\<^bsub>x\<^esub> q'\<close>, the \<open>G\<^sub>B\<close>-half of
+  \<open>isOT_BP (DB v\<^sub>0 (D\<^bsub>x\<^esub> q'))\<close> read off \<open>Trans (Pred M) \<in> OT\<^sub>B\<close> IS the
+  predecessor's depdom (same mechanism as
+  @{thm [source] hgx_depdom_of_sliceV0}, with \<open>Pred M\<close> in place of the
+  witness --- no shortness needed since \<open>a6\<close> already carries OT-membership).\<close>
+
+lemma ddx_preddom_of_predOT:
+  fixes M :: pairseq and q' :: BT and v0 x :: nat
+  assumes predOT: "Trans (Pred M) \<in> OT_B"
+    and shape: "Trans (Pred M) = Dpt (enat v0) (Dpt (enat x) q')"
+  shows "\<forall>y\<in>GBT (enat v0) (Dpt (enat x) q'). lessBT y (Dpt (enat x) q')"
+proof -
+  have "isOT_BT (Dpt (enat v0) (Dpt (enat x) q'))"
+    using predOT shape by (simp add: OT_B_def OT_def)
+  hence "isOT_BP (DB (enat v0) (Dpt (enat x) q'))" by simp
+  thus ?thesis by simp
+qed
+
+text \<open>The deposit-body STEP for the top-level APPEND shape: if the new deposit
+  body is the old one with a single \<open>D\<^bsub>w\<^esub> 0\<^sub>B\<close> appended at top level
+  (\<open>w \<le> x\<close>; the \<open>_c2\<close> shape of conditions (I)/(III)/(V)/(VI) when the Mark
+  anchor is the deposit itself), then the predecessor depdom TRANSFERS to the
+  new deposit.  Mechanism: the new escapes are the old ones plus \<open>0\<^sub>B\<close> plus the
+  new body itself; the old ones ride @{thm [source] lessBT_trans} across
+  \<open>D\<^bsub>x\<^esub> q' < D\<^bsub>x\<^esub> q\<close> (body extension), \<open>0\<^sub>B\<close> is trivial, and the new body's
+  head is either the old head (bounded by the predecessor depdom applied to
+  \<open>q'\<close> itself) or the appended \<open>D\<^bsub>w\<^esub> 0\<^sub>B\<close> (bounded by \<open>w \<le> x\<close>).\<close>
+
+lemma ddx_transfer_append:
+  fixes q' :: BT and v0 x w :: nat
+  assumes preddom: "\<forall>y\<in>GBT (enat v0) (Dpt (enat x) q'). lessBT y (Dpt (enat x) q')"
+    and vx: "v0 \<le> x"
+    and wle: "w \<le> x"
+  shows "\<forall>y\<in>GBT (enat v0) (Dpt (enat x) (q' +\<^sub>B Dpt (enat w) 0\<^sub>B)).
+            lessBT y (Dpt (enat x) (q' +\<^sub>B Dpt (enat w) 0\<^sub>B))"
+proof -
+  let ?qq = "q' +\<^sub>B Dpt (enat w) 0\<^sub>B"
+  obtain qs' where q'e: "q' = Trm qs'" by (cases q')
+  have qqe: "?qq = Trm (qs' @ [DB (enat w) 0\<^sub>B])" using q'e by simp
+  have qlt: "lessBT q' ?qq"
+  proof -
+    have "lessBT (Trm qs') (Trm (qs' @ DB (enat w) 0\<^sub>B # []))"
+      by (rule ddx_lessBT_snoc)
+    thus ?thesis using q'e qqe by simp
+  qed
+  have dlt: "lessBT (Dpt (enat x) q') (Dpt (enat x) ?qq)" using qlt by simp
+  have vx': "enat v0 \<le> enat x" using vx by simp
+  have Gnew: "GBT (enat v0) (Dpt (enat x) ?qq) = insert ?qq (GBT (enat v0) ?qq)"
+    using vx' by simp
+  have Gold: "GBT (enat v0) (Dpt (enat x) q') = insert q' (GBT (enat v0) q')"
+    using vx' by simp
+  have Gqq: "GBT (enat v0) ?qq \<subseteq> GBT (enat v0) q' \<union> {0\<^sub>B}"
+  proof -
+    have Gsplit: "GBT (enat v0) ?qq
+                    = GBT (enat v0) q' \<union> GBP (enat v0) (DB (enat w) 0\<^sub>B)"
+      using qqe q'e by auto
+    have "GBP (enat v0) (DB (enat w) 0\<^sub>B) \<subseteq> {0\<^sub>B}" by auto
+    thus ?thesis using Gsplit by blast
+  qed
+  have qqlt: "lessBT ?qq (Dpt (enat x) ?qq)"
+  proof (cases qs')
+    case Nil
+    have z: "lessBT 0\<^sub>B ?qq" using qqe by simp
+    have "lessBP (DB (enat w) 0\<^sub>B) (DB (enat x) ?qq)"
+    proof (cases "w < x")
+      case True thus ?thesis by simp
+    next
+      case False
+      hence "w = x" using wle by simp
+      thus ?thesis using z by simp
+    qed
+    hence "lessBT (Trm [DB (enat w) 0\<^sub>B]) (Trm [DB (enat x) ?qq])" by simp
+    thus ?thesis using qqe Nil by simp
+  next
+    case (Cons p rest)
+    have q'mem: "q' \<in> GBT (enat v0) (Dpt (enat x) q')" using Gold by blast
+    have q'lt: "lessBT q' (Dpt (enat x) q')" using preddom q'mem by blast
+    have hdlt: "lessBP p (DB (enat x) q')"
+    proof -
+      have "lessBT (Trm (p # rest)) (Trm [DB (enat x) q'])"
+        using q'lt q'e Cons by simp
+      hence "lessBP p (DB (enat x) q')
+             \<or> (p = DB (enat x) q' \<and> lessBT (Trm rest) (Trm []))" by simp
+      moreover have "\<not> lessBT (Trm rest) (Trm [])" by (cases rest) simp_all
+      ultimately show ?thesis by blast
+    qed
+    obtain u c where pe: "p = DB u c" by (cases p)
+    have ud: "u < enat x \<or> (u = enat x \<and> lessBT c q')" using hdlt pe by simp
+    have newhd: "lessBP p (DB (enat x) ?qq)"
+    proof (cases "u < enat x")
+      case True thus ?thesis using pe by simp
+    next
+      case False
+      hence ueq: "u = enat x" and clt: "lessBT c q'" using ud by auto
+      have "lessBT c ?qq" by (rule lessBT_trans[OF clt qlt])
+      thus ?thesis using pe ueq by simp
+    qed
+    have "lessBT (Trm (p # (rest @ [DB (enat w) 0\<^sub>B]))) (Trm [DB (enat x) ?qq])"
+      using newhd by simp
+    moreover have "?qq = Trm (p # (rest @ [DB (enat w) 0\<^sub>B]))"
+      using qqe Cons by simp
+    ultimately show ?thesis by simp
+  qed
+  show ?thesis
+  proof
+    fix y assume yin: "y \<in> GBT (enat v0) (Dpt (enat x) ?qq)"
+    have "y = ?qq \<or> y \<in> GBT (enat v0) ?qq" using yin Gnew by blast
+    thus "lessBT y (Dpt (enat x) ?qq)"
+    proof
+      assume "y = ?qq"
+      thus "lessBT y (Dpt (enat x) ?qq)" using qqlt by simp
+    next
+      assume "y \<in> GBT (enat v0) ?qq"
+      hence "y \<in> GBT (enat v0) q' \<union> {0\<^sub>B}" using Gqq by blast
+      thus "lessBT y (Dpt (enat x) ?qq)"
+      proof
+        assume "y \<in> GBT (enat v0) q'"
+        hence "y \<in> GBT (enat v0) (Dpt (enat x) q')" using Gold by blast
+        hence "lessBT y (Dpt (enat x) q')" using preddom by blast
+        thus "lessBT y (Dpt (enat x) ?qq)" by (rule lessBT_trans[OF _ dlt])
+      next
+        assume "y \<in> {0\<^sub>B}"
+        hence ye: "y = 0\<^sub>B" by blast
+        have "lessBT 0\<^sub>B (Dpt (enat x) ?qq)" by simp
+        thus "lessBT y (Dpt (enat x) ?qq)" using ye by simp
+      qed
+    qed
+  qed
+qed
+
+text \<open>Shape-instance consumer of the append transfer: the exact \<open>transfer\<close>
+  slot of \<open>ddx_depdom_modResid\<close> below, discharged whenever the Pred\<open>\<rightarrow>\<close>M
+  deposit-body step is the top-level append \<open>q = q' + D\<^bsub>w\<^esub> 0\<^sub>B\<close> with
+  \<open>w \<le> x\<close>.\<close>
+
+lemma ddx_transfer_of_append_shape:
+  fixes q q' :: BT and v0 x w :: nat
+  assumes shape: "q = q' +\<^sub>B Dpt (enat w) 0\<^sub>B"
+    and wle: "w \<le> x"
+    and vx: "v0 \<le> x"
+    and preddom: "\<forall>y\<in>GBT (enat v0) (Dpt (enat x) q'). lessBT y (Dpt (enat x) q')"
+  shows "\<forall>y\<in>GBT (enat v0) (Dpt (enat x) q). lessBT y (Dpt (enat x) q)"
+  using ddx_transfer_append[OF preddom vx wle] shape by simp
+
+text \<open>\<^bold>\<open>depdom ASSEMBLY\<close> --- the depdom residual of
+  @{thm [source] hgx_slotAppg_modDom} from THREE sharp named residuals:
+  \<^item> \<open>freshdom\<close>: the whole-body corner (keystone cases (1)/(2); under
+    \<open>q \<noteq> 0\<^sub>B\<close> only case (2)'s fresh Mark-deposit remains --- empirically
+    ABSENT for \<open>ps = []\<close> (0/1721));
+  \<^item> \<open>preddomNE\<close>: the \<open>ps \<noteq> []\<close> predecessor last-principal \<open>v\<^sub>0\<close>-bound ---
+    NOT derivable from \<open>a6\<close> alone (r44 CEX 2); needs the §8.7 pillar
+    invariant strengthened from \<open>Trans N \<in> OT\<^sub>B\<close> to principal-wise
+    \<open>v\<^sub>0\<close>-rooted OT-ness of the body (only 16/1737 hosts empirically);
+  \<^item> \<open>transfer\<close>: the single Pred\<open>\<rightarrow>\<close>M deposit-body step (proven for the
+    top-level append shape by @{thm [source] ddx_transfer_of_append_shape};
+    the general case needs the \<open>c\<^sub>1 \<rightarrow> c\<^sub>2\<close> surgery relation, which
+    @{thm [source] m_8_2_keystone} does not expose).
+  The \<open>ps = []\<close> predecessor bound (99.1% of instances) is DISCHARGED here
+  from \<open>a6\<close> via @{thm [source] ddx_preddom_of_predOT}.\<close>
+
+lemma ddx_depdom_modResid:
+  fixes M :: pairseq and x :: nat and q :: BT and ps :: "BP list"
+  assumes a1: "M \<in> ST_PS" and a2: "monoT M" and a3: "Br M \<noteq> []"
+    and a4: "Lng M - 1 > 1"
+    and a6: "Trans (Pred M) \<in> OT_B"
+    and a8: "Trans M = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B Dpt (enat x) q)"
+    and freshdom: "Trans (Pred M) = Dpt (enat (entry M 1 0)) (Trm ps)
+                     \<Longrightarrow> \<forall>y\<in>GBT (enat (entry M 1 0)) (Dpt (enat x) q).
+                            lessBT y (Dpt (enat x) q)"
+    and preddomNE: "\<And>q'. ps \<noteq> []
+                     \<Longrightarrow> Trans (Pred M)
+                           = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B Dpt (enat x) q')
+                     \<Longrightarrow> \<forall>y\<in>GBT (enat (entry M 1 0)) (Dpt (enat x) q').
+                            lessBT y (Dpt (enat x) q')"
+    and transfer: "\<And>q'. Trans (Pred M)
+                           = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B Dpt (enat x) q')
+                     \<Longrightarrow> \<forall>y\<in>GBT (enat (entry M 1 0)) (Dpt (enat x) q').
+                            lessBT y (Dpt (enat x) q')
+                     \<Longrightarrow> \<forall>y\<in>GBT (enat (entry M 1 0)) (Dpt (enat x) q).
+                            lessBT y (Dpt (enat x) q)"
+  shows "\<forall>y\<in>GBT (enat (entry M 1 0)) (Dpt (enat x) q). lessBT y (Dpt (enat x) q)"
+proof -
+  from ddx_keystone_realign[OF a1 a2 a3 a4 a8]
+  show ?thesis
+  proof (elim disjE)
+    assume "Trans (Pred M) = Dpt (enat (entry M 1 0)) (Trm ps)"
+    thus ?thesis by (rule freshdom)
+  next
+    assume "\<exists>q'. Trans (Pred M)
+                   = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B Dpt (enat x) q')"
+    then obtain q' where
+      sh: "Trans (Pred M) = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B Dpt (enat x) q')"
+      by blast
+    have pd: "\<forall>y\<in>GBT (enat (entry M 1 0)) (Dpt (enat x) q').
+                 lessBT y (Dpt (enat x) q')"
+    proof (cases "ps = []")
+      case True
+      have sh0: "Trans (Pred M) = Dpt (enat (entry M 1 0)) (Dpt (enat x) q')"
+        using sh True by simp
+      show ?thesis by (rule ddx_preddom_of_predOT[OF a6 sh0])
+    next
+      case False
+      show ?thesis by (rule preddomNE[OF False sh])
+    qed
+    show ?thesis by (rule transfer[OF sh pd])
+  qed
+qed
+
+text \<open>§8.7 slotAppg --- r48 assembly: the EXACT \<open>slotAppg\<close> slot bundle of
+  @{thm [source] rgx_Trans_preserves_OT_of_slots} via
+  @{thm [source] hgx_slotAppg_modDom}, with depdom replaced by the three
+  r48 residuals \<open>{freshdom, preddomNE, transfer}\<close> (each guarded by the
+  non-trivial regime \<open>q \<noteq> 0\<^sub>B \<and> v\<^sub>0 \<le> x\<close>) plus the C2 conclusion \<open>deple\<close>
+  threaded acyclically as before.\<close>
+
+lemma ddx_slotAppg:
+  fixes M :: pairseq and x :: nat and q r :: BT and ps :: "BP list"
+  assumes a1: "M \<in> ST_PS" and a2: "monoT M" and a3: "Br M \<noteq> []"
+    and a4: "Lng M - 1 > 1"
+    and a5: "\<And>N. N \<in> ST_PS \<Longrightarrow> Lng N < Lng M \<Longrightarrow> Trans N \<in> OT_B"
+    and a6: "Trans (Pred M) \<in> OT_B"
+    and a7: "Trans (Pred M) = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B r)"
+    and a8: "Trans M = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B Dpt (enat x) q)"
+    and freshdom: "q \<noteq> 0\<^sub>B \<Longrightarrow> entry M 1 0 \<le> x
+                     \<Longrightarrow> Trans (Pred M) = Dpt (enat (entry M 1 0)) (Trm ps)
+                     \<Longrightarrow> \<forall>y\<in>GBT (enat (entry M 1 0)) (Dpt (enat x) q).
+                            lessBT y (Dpt (enat x) q)"
+    and preddomNE: "\<And>q'. q \<noteq> 0\<^sub>B \<Longrightarrow> entry M 1 0 \<le> x \<Longrightarrow> ps \<noteq> []
+                     \<Longrightarrow> Trans (Pred M)
+                           = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B Dpt (enat x) q')
+                     \<Longrightarrow> \<forall>y\<in>GBT (enat (entry M 1 0)) (Dpt (enat x) q').
+                            lessBT y (Dpt (enat x) q')"
+    and transfer: "\<And>q'. q \<noteq> 0\<^sub>B \<Longrightarrow> entry M 1 0 \<le> x
+                     \<Longrightarrow> Trans (Pred M)
+                           = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B Dpt (enat x) q')
+                     \<Longrightarrow> \<forall>y\<in>GBT (enat (entry M 1 0)) (Dpt (enat x) q').
+                            lessBT y (Dpt (enat x) q')
+                     \<Longrightarrow> \<forall>y\<in>GBT (enat (entry M 1 0)) (Dpt (enat x) q).
+                            lessBT y (Dpt (enat x) q)"
+    and deple: "ps \<noteq> [] \<Longrightarrow> leBT (Dpt (enat x) q) (Trm [last ps])"
+  shows "\<forall>y\<in>GBT (enat (entry M 1 0)) (Dpt (enat x) q).
+            lessBT y (Trm ps +\<^sub>B Dpt (enat x) q)"
+proof (rule hgx_slotAppg_modDom[OF a1 a2 a3 a4 a5 a6 a7 a8 _ deple])
+  assume qne: "q \<noteq> 0\<^sub>B" and vx: "entry M 1 0 \<le> x"
+  show "\<forall>y\<in>GBT (enat (entry M 1 0)) (Dpt (enat x) q). lessBT y (Dpt (enat x) q)"
+    by (rule ddx_depdom_modResid[OF a1 a2 a3 a4 a6 a8
+          freshdom[OF qne vx] preddomNE[OF qne vx] transfer[OF qne vx]])
+qed
+
+(* ===== end r48 depdom (ddx_) ===== *)
+
+(* ===== r48 merge: wt-s4b — joint length-induction refuted; termination census modulo {4 slots,TVall,AP} (asx_) ===== *)
+
+(* ===================================================================== *)
+(* ===== r48 ASSEMBLY (asx_): the termination-theorem skeleton.      ===== *)
+(* ===== The two pillars (descent dpx_, OT mdx_/rgx_) tied together  ===== *)
+(* ===== at the GLOBAL level, modulo ONE new knot residual AP        ===== *)
+(* ===== (adjacent-P-component all-pairs descent) + the four r47     ===== *)
+(* ===== value slots + TVall.  The length-indexed simultaneous       ===== *)
+(* ===== induction the r47 plan envisioned is PROVABLY NOT           ===== *)
+(* ===== well-founded with the r46/r47 engines (audit below).        ===== *)
+(* ===================================================================== *)
+
+section \<open>r48-ASSEMBLY --- termination-theorem skeleton and the definitive
+  endgame census (prefix \<open>asx_\<close>)\<close>
+
+text \<open>\<^bold>\<open>TARGET.\<close>  Tie the two pillars
+  \<^item> descent: @{thm [source] dpx_fseq_descend_census} ---
+    \<open>lessBT (Trans (M[n])) (Trans M)\<close> for standard \<open>M\<close>, modulo \<open>{TOT, TVall}\<close>;
+  \<^item> OT: @{thm [source] mdx_Trans_preserves_OT_of_slots} ---
+    \<open>Trans M \<in> OT\<^bsub>B\<^esub>\<close> for standard \<open>M\<close>, modulo the four value slots + \<open>fseqD\<close>
+  into the article's simultaneous induction (\<S>8.7 主結果の証明) and produce the
+  final census.
+
+  \<^bold>\<open>AUDIT (1): where the descent pillar consumes \<open>TOT\<close>.\<close>  Inside
+  @{thm [source] f7x_fseq_descend_mono} every use is \<open>TOT[OF MST MP j1gt]\<close> ---
+  the HOST \<open>M\<close> ITSELF (all six branches: condI \<open>j\<^sub>1 > 1\<close> corner, condII, III, IV,
+  V, VI; the \<open>Lng M = 2\<close> corners are TOT-free closed forms).  Inside
+  @{thm [source] m_8_7_fseq_descend_dispatcher} the multi case hands \<open>TOT\<close> to
+  the mono engine at \<open>PJ = drop (Pcut M) M\<close>, the LAST P-component:
+  \<open>Lng PJ < Lng M\<close> (since \<open>0 < Pcut M\<close>) and \<open>PJ\<close> is same-stage standard
+  (@{thm [source] m_6_7_standard_P_components}).  \<open>TVall\<close> is consumed at the
+  same two spots (host / last component).  CONCLUSION: descent at \<open>M\<close> needs OT
+  at lengths \<open>\<le> Lng M\<close> ONLY, with equality exactly at mono hosts --- so
+  "OT-first-then-descent within each length level" is sound for THIS pillar.
+
+  \<^bold>\<open>AUDIT (2): where the OT pillar consumes \<open>fseqD\<close>.\<close>  The only consumption is
+  \<open>multiD \<rightarrow>\<close> @{thm [source] mdx_comple_modFseq} \<open>\<rightarrow>\<close>
+  @{thm [source] mdx_P_allpairs_leBT_modFseq}, whose proof is a GENERATION
+  induction (\<open>ST_PS.induct\<close>): at each generation step \<open>M\<^sub>i \<Rightarrow> M\<^sub>i[n\<^sub>i]\<close> on the
+  path from the diagSeq seed to the multi host \<open>N\<close>, branch \<open>1 < Lng L\<^sub>i\<close> /
+  singleton, it applies \<open>fseqD\<close> at \<open>(L\<^sub>i, n\<^sub>i)\<close>, \<open>L\<^sub>i = last (P M\<^sub>i)\<close>.  The bound
+  is \<open>Lng L\<^sub>i \<le> Lng M\<^sub>i\<close> --- the length of the INTERMEDIATE generation host, NOT
+  of \<open>N\<close>: a path may expand (\<open>n \<ge> 2\<close> steps) far above \<open>Lng N\<close> and then shrink
+  back by \<open>Pred\<close> steps (\<open>n\<^sub>i = 1\<close>), so the \<open>fseqD\<close> hosts are UNBOUNDED in
+  \<open>Lng N\<close>.  (Only the \<open>n\<^sub>i = 1\<close> uses are dischargeable \<open>fseqD\<close>-free via
+  @{thm [source] m_7_3_Pred_Trans_descend}; the \<open>n\<^sub>i \<ge> 2\<close> uses are genuine.)
+  In STAGE terms the consumption IS bounded: \<open>L\<^sub>i\<close> lives strictly below \<open>N\<close>'s
+  generation stage.  [EDGE-1]
+
+  \<^bold>\<open>AUDIT (2'): the slot dischargers.\<close>  Each r47 slot residual carries the
+  strong IH \<open>a5\<close> (all SHORTER standard \<open>\<Rightarrow>\<close> OT) inside its frame ---
+  length-compatible.  But the r47 slot REDUCTIONS consume the descent pillar
+  again: @{thm [source] dpr_two_slots_of_devchain} (slotNewOT+slotTail from
+  \<open>devchain\<close>) needs descent along a \<open>dpr_dev\<close> development chain
+  (@{thm [source] dpr_dev_lessBT}) whose ENDPOINTS are \<open>< Lng M\<close> but whose
+  INTERMEDIATE hosts are length-unbounded (each chain step may expand).
+  [EDGE-2]  (@{thm [source] snx_slotNewOT_modSlice} alone is descent-free;
+  @{thm [source] hgx_slotAppg_modDom} is descent-free but needs the in-frame C2
+  output \<open>deple\<close>; \<open>slotHeadWB\<close> is raw.)
+
+  \<^bold>\<open>AUDIT (3): the OT engine's internal order.\<close>
+  @{thm [source] rgx_Trans_preserves_OT_modIH} is a strong induction on
+  \<open>Lng M\<close> whose step consumes \<open>Trans (Pred M) \<in> OT\<^bsub>B\<^esub>\<close> with
+  \<open>Pred M = M[1] \<in> ST\<^bsub>PS\<^esub>\<close> (@{thm [source] m_8_7_Pred_ST_PS}) --- \<open>Pred\<close> DECREASES
+  length but INCREASES the generation stage --- and hands the any-stage \<open>a5\<close> to
+  the slots.
+
+  \<^bold>\<open>FINDING (4): the mutual recursion is NOT well-founded as stated.\<close>  The
+  exact cycle: \<open>OT@M \<Leftarrow>\<close>(EDGE-1/EDGE-2)\<open>\<Leftarrow> descent@K\<close> with \<open>Lng K\<close> unbounded
+  above \<open>Lng M\<close>, and \<open>descent@K \<Leftarrow>\<close> (AUDIT 1) \<open>\<Leftarrow> OT@K\<close> (same host).  A joint
+  measure \<open>\<mu>\<close> compatible with the r46/r47 shapes must be strictly
+  length-monotone (the \<open>a5\<close> frames and the length-IH of
+  @{thm [source] rgx_Trans_preserves_OT_modIH} quantify over ALL shorter
+  standard hosts) AND must decrease along EDGE-1/EDGE-2 (which go UP in
+  length) --- contradiction.  Stage-first fails symmetrically: \<open>Pred\<close> and \<open>a5\<close>
+  cross stages upward.  So neither \<open>JOINT L\<close> (length) nor \<open>JOINT k\<close> (stage) nor
+  any lexicographic product admits the two engines as step engines.
+
+  \<^bold>\<open>The article's fine structure\<close> (content.md 6127--6360, \<S>8.7 補題「Trans が
+  標準形を保つこと」): OT-preservation is proven by induction on
+  \<open>k\<^sub>0 = min {k. M \<in> S\<^sub>kT\<^bsub>PS\<^esub>}\<close> --- the GENERATION STAGE, not length.  Its step at
+  \<open>M = N[n]\<close> transports \<open>Trans N \<in> OT\<^bsub>B\<^esub>\<close> (stage \<open>k\<^sub>0 - 1\<close>) through the
+  Buchholz-side fseq identities \<open>Trans M = Trans(N)[m\<^sub>n][0]\<^sup>k\<close> + [Buc1] Lemma 3.3
+  --- NO length induction, NO \<open>Pred\<close>-keystone --- and consumes fseq descent
+  only at the stage-\<open>(k\<^sub>0-1)\<close> component \<open>P(N)\<^bsub>J\<^sub>1\<^esub>\<close> (content.md 6280).  That
+  stratification is stage-well-founded.  It is NOT available to us verbatim:
+  the global readback identity is REFUTED (A38, plan.md registry) --- the
+  mechanization replaced it by the \<open>rgx\<close> \<open>Pred\<close>-keystone recursion, which is
+  length-first and stage-incompatible.  RESOLUTION ROUTES (next fronts):
+  (A) stage-threaded OT engine: per-branch corrected readback identities
+  (equality-with-\<open>[0]\<^sup>k\<close> forms for condIII/IV/V/VI, replacing the refuted
+  uniform A38) + operB-OT-closure would rebuild the article's step ---
+  then \<open>OT@stage k \<Leftarrow> descent@stage (k-1) \<Leftarrow> OT@stage (k-1)\<close> closes by
+  induction on \<open>k\<close> and grounds the knot;
+  (B) length-threaded all-pairs: a direct (non-generation) proof of the
+  adjacent-component descent, plus a length-bounded \<open>devchain\<close> discharge ---
+  both currently blocked (chains/ancestors genuinely expand).
+
+  \<^bold>\<open>THIS ROUND'S ASSEMBLY (green below).\<close>  Carry the all-pairs statement
+  \<open>AP\<close> --- \<open>\<forall>J. Suc J < Lng (P K) \<longrightarrow> leBT (Trans (P K ! Suc J)) (Trans (P K ! J))\<close>
+  for standard \<open>K\<close> --- as the SINGLE knot residual.  Then EVERYTHING closes at
+  the global level: \<open>AP \<Rightarrow> multiD\<close> (junction), so OT closes modulo the four
+  slots; OT gives \<open>TOT\<close>, so descent closes modulo \<open>TVall\<close>; descent gives
+  \<open>fseqD\<close> --- the r47 shared residual is DERIVED, and
+  @{thm [source] mdx_P_allpairs_leBT_modFseq} closes the loop \<open>fseqD \<Rightarrow> AP\<close>:
+  the knot is mutually derivable with the census's own output but not
+  groundable from it (no circular discharge).  \<open>AP\<close> is exactly what route (A)'s
+  stage induction grounds.  Downstream (\<S>8.7 主結果): the census conclusions +
+  well-foundedness of \<open>(OT\<^bsub>B\<^esub>, <)\<close> ([Buc1] 2.2, cf.
+  @{thm [source] m_buc1_2_2_OT_B_wf_via_principal}) yield the termination
+  theorem --- nothing here consumes it.
+
+  Audit (agent-workflow rule 4): everything below cites only proven facts
+  (@{thm [source] m_8_7_multiD_junction},
+  @{thm [source] rgx_Trans_preserves_OT_of_slots},
+  @{thm [source] dpx_fseq_descend_census},
+  @{thm [source] mdx_P_allpairs_leBT_modFseq},
+  @{thm [source] dpr_two_slots_of_devchain}, @{thm [source] m_8_7_Pred_ST_PS},
+  and list bricks named in the proofs); the residuals \<open>{slotNewOT, slotTail,
+  slotAppg, slotHeadWB, TVall, AP}\<close> are named hypotheses in their EXACT
+  r46/r47 shapes; no REFUTED registry facts are used.  Prefix \<open>asx_\<close>.\<close>
+
+subsection \<open>The knot residual \<open>AP\<close> dissolves \<open>multiD\<close>\<close>
+
+text \<open>\<open>comple\<close> from \<open>AP\<close> at the host: the all-pairs instance at the last
+  adjacent pair (mirror of @{thm [source] mdx_comple_modFseq} with the
+  generation induction replaced by the carried residual).\<close>
+
+lemma asx_comple_of_allpairs:
+  fixes N :: pairseq
+  assumes ap: "\<forall>J. Suc J < Lng (P N) \<longrightarrow> leBT (Trans (P N ! Suc J)) (Trans (P N ! J))"
+    and NST: "N \<in> ST_PS" and mu: "multiT N"
+  shows "leBT (Trans (drop (Pcut N) N)) (Trans (P N ! (Lng (P N) - 2)))"
+proof -
+  have NT: "N \<in> T_PS" using NST ST_PS_T_PS by blast
+  have LN: "1 < Lng N" using multiT_imp_Lng_gt1[OF NT mu] by simp
+  have len2: "1 < length (P N)" using m_6_2_P_components_2[OF NT] mu by blast
+  have lastc: "last (P N) = drop (Pcut N) N"
+    using poper_last_P_multi[OF mu LN] by blast
+  have Pne: "P N \<noteq> []" by (rule P_nonempty)
+  have lidx: "last (P N) = P N ! (Lng (P N) - 1)" using Pne by (simp add: last_conv_nth)
+  have sj: "Suc (Lng (P N) - 2) = Lng (P N) - 1" using len2 by linarith
+  have lt: "Suc (Lng (P N) - 2) < Lng (P N)" using len2 by linarith
+  have "leBT (Trans (P N ! Suc (Lng (P N) - 2))) (Trans (P N ! (Lng (P N) - 2)))"
+    using ap lt by blast
+  hence "leBT (Trans (P N ! (Lng (P N) - 1))) (Trans (P N ! (Lng (P N) - 2)))"
+    using sj by simp
+  thus ?thesis using lastc lidx by simp
+qed
+
+text \<open>The \<open>multiD\<close> slot of @{thm [source] rgx_Trans_preserves_OT_of_slots} in
+  its EXACT shape, from \<open>AP\<close> alone.\<close>
+
+lemma asx_multiD_of_allpairs:
+  fixes N :: pairseq and as bs :: "BP list"
+  assumes AP: "\<And>K. K \<in> ST_PS \<Longrightarrow>
+                 \<forall>J. Suc J < Lng (P K) \<longrightarrow> leBT (Trans (P K ! Suc J)) (Trans (P K ! J))"
+    and N: "N \<in> ST_PS" and mu: "multiT N"
+    and ne: "drop (Pcut N) N \<noteq> [(0,0)]"
+    and aeq: "Trans (take (Pcut N) N) = Trm as"
+    and beq: "Trans (drop (Pcut N) N) = Trm bs"
+    and asne: "as \<noteq> []" and bsne: "bs \<noteq> []"
+  shows "leBT (Trm [hd bs]) (Trm [last as])"
+  by (rule m_8_7_multiD_junction[OF N mu ne aeq beq asne bsne
+        asx_comple_of_allpairs[OF AP[OF N] N mu]])
+
+subsection \<open>OT half: \<open>Trans\<close> preserves standard\<open>\<rightarrow>\<close>OT modulo \<open>{4 slots, AP}\<close>\<close>
+
+lemma asx_Trans_OT_of_slots_allpairs:
+  fixes M :: pairseq
+  assumes slotNewOT:
+    "\<And>M x q ps r.
+        M \<in> ST_PS \<Longrightarrow> monoT M \<Longrightarrow> Br M \<noteq> [] \<Longrightarrow> Lng M - 1 > 1 \<Longrightarrow>
+        (\<And>N. N \<in> ST_PS \<Longrightarrow> Lng N < Lng M \<Longrightarrow> Trans N \<in> OT_B) \<Longrightarrow>
+        Trans (Pred M) \<in> OT_B \<Longrightarrow>
+        Trans (Pred M) = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B r) \<Longrightarrow>
+        Trans M = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B Dpt (enat x) q) \<Longrightarrow>
+        isOT_BP (DB (enat x) q)"
+    and slotTail:
+    "\<And>M x q ps r hdv qb.
+        M \<in> ST_PS \<Longrightarrow> monoT M \<Longrightarrow> Br M \<noteq> [] \<Longrightarrow> Lng M - 1 > 1 \<Longrightarrow>
+        (\<And>N. N \<in> ST_PS \<Longrightarrow> Lng N < Lng M \<Longrightarrow> Trans N \<in> OT_B) \<Longrightarrow>
+        Trans (Pred M) \<in> OT_B \<Longrightarrow>
+        Trans (Pred M) = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B r) \<Longrightarrow>
+        Trans M = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B Dpt (enat x) q) \<Longrightarrow>
+        ps \<noteq> [] \<Longrightarrow> last ps = DB (enat hdv) qb \<Longrightarrow> x = hdv \<Longrightarrow> leBT q qb"
+    and slotAppg:
+    "\<And>M x q ps r.
+        M \<in> ST_PS \<Longrightarrow> monoT M \<Longrightarrow> Br M \<noteq> [] \<Longrightarrow> Lng M - 1 > 1 \<Longrightarrow>
+        (\<And>N. N \<in> ST_PS \<Longrightarrow> Lng N < Lng M \<Longrightarrow> Trans N \<in> OT_B) \<Longrightarrow>
+        Trans (Pred M) \<in> OT_B \<Longrightarrow>
+        Trans (Pred M) = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B r) \<Longrightarrow>
+        Trans M = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B Dpt (enat x) q) \<Longrightarrow>
+        (\<forall>y\<in>GBT (enat (entry M 1 0)) (Dpt (enat x) q).
+            lessBT y (Trm ps +\<^sub>B Dpt (enat x) q))"
+    and slotHeadWB:
+    "\<And>M x q ps r hdv qb.
+        M \<in> ST_PS \<Longrightarrow> monoT M \<Longrightarrow> Br M \<noteq> [] \<Longrightarrow> Lng M - 1 > 1 \<Longrightarrow>
+        (\<And>N. N \<in> ST_PS \<Longrightarrow> Lng N < Lng M \<Longrightarrow> Trans N \<in> OT_B) \<Longrightarrow>
+        Trans (Pred M) \<in> OT_B \<Longrightarrow>
+        Trans (Pred M) = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B r) \<Longrightarrow>
+        Trans M = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B Dpt (enat x) q) \<Longrightarrow>
+        ps \<noteq> [] \<Longrightarrow> transJm1 M = 0 \<Longrightarrow>
+        Trans (Pred M) = Dpt (enat (entry M 1 0)) (Trm ps) \<Longrightarrow>
+        last ps = DB (enat hdv) qb \<Longrightarrow> x \<le> hdv"
+    and AP: "\<And>K. K \<in> ST_PS \<Longrightarrow>
+                 \<forall>J. Suc J < Lng (P K) \<longrightarrow> leBT (Trans (P K ! Suc J)) (Trans (P K ! J))"
+    and MST: "M \<in> ST_PS"
+  shows "Trans M \<in> OT_B"
+proof -
+  have md: "\<And>N as bs. N \<in> ST_PS \<Longrightarrow> multiT N \<Longrightarrow> drop (Pcut N) N \<noteq> [(0,0)] \<Longrightarrow>
+        Trans (take (Pcut N) N) = Trm as \<Longrightarrow> Trans (drop (Pcut N) N) = Trm bs \<Longrightarrow>
+        as \<noteq> [] \<Longrightarrow> bs \<noteq> [] \<Longrightarrow> leBT (Trm [hd bs]) (Trm [last as])"
+  proof -
+    fix N :: pairseq and as bs :: "BP list"
+    assume a1: "N \<in> ST_PS" and a2: "multiT N" and a3: "drop (Pcut N) N \<noteq> [(0,0)]"
+      and a4: "Trans (take (Pcut N) N) = Trm as" and a5: "Trans (drop (Pcut N) N) = Trm bs"
+      and a6: "as \<noteq> []" and a7: "bs \<noteq> []"
+    show "leBT (Trm [hd bs]) (Trm [last as])"
+      by (rule asx_multiD_of_allpairs[OF AP a1 a2 a3 a4 a5 a6 a7])
+  qed
+  show ?thesis
+    by (rule rgx_Trans_preserves_OT_of_slots[OF slotNewOT slotTail slotAppg
+          slotHeadWB md MST])
+qed
+
+subsection \<open>The termination census: BOTH pillars modulo
+  \<open>{slotNewOT, slotTail, slotAppg, slotHeadWB, TVall, AP}\<close>\<close>
+
+lemma asx_termination_census:
+  assumes slotNewOT:
+    "\<And>M x q ps r.
+        M \<in> ST_PS \<Longrightarrow> monoT M \<Longrightarrow> Br M \<noteq> [] \<Longrightarrow> Lng M - 1 > 1 \<Longrightarrow>
+        (\<And>N. N \<in> ST_PS \<Longrightarrow> Lng N < Lng M \<Longrightarrow> Trans N \<in> OT_B) \<Longrightarrow>
+        Trans (Pred M) \<in> OT_B \<Longrightarrow>
+        Trans (Pred M) = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B r) \<Longrightarrow>
+        Trans M = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B Dpt (enat x) q) \<Longrightarrow>
+        isOT_BP (DB (enat x) q)"
+    and slotTail:
+    "\<And>M x q ps r hdv qb.
+        M \<in> ST_PS \<Longrightarrow> monoT M \<Longrightarrow> Br M \<noteq> [] \<Longrightarrow> Lng M - 1 > 1 \<Longrightarrow>
+        (\<And>N. N \<in> ST_PS \<Longrightarrow> Lng N < Lng M \<Longrightarrow> Trans N \<in> OT_B) \<Longrightarrow>
+        Trans (Pred M) \<in> OT_B \<Longrightarrow>
+        Trans (Pred M) = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B r) \<Longrightarrow>
+        Trans M = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B Dpt (enat x) q) \<Longrightarrow>
+        ps \<noteq> [] \<Longrightarrow> last ps = DB (enat hdv) qb \<Longrightarrow> x = hdv \<Longrightarrow> leBT q qb"
+    and slotAppg:
+    "\<And>M x q ps r.
+        M \<in> ST_PS \<Longrightarrow> monoT M \<Longrightarrow> Br M \<noteq> [] \<Longrightarrow> Lng M - 1 > 1 \<Longrightarrow>
+        (\<And>N. N \<in> ST_PS \<Longrightarrow> Lng N < Lng M \<Longrightarrow> Trans N \<in> OT_B) \<Longrightarrow>
+        Trans (Pred M) \<in> OT_B \<Longrightarrow>
+        Trans (Pred M) = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B r) \<Longrightarrow>
+        Trans M = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B Dpt (enat x) q) \<Longrightarrow>
+        (\<forall>y\<in>GBT (enat (entry M 1 0)) (Dpt (enat x) q).
+            lessBT y (Trm ps +\<^sub>B Dpt (enat x) q))"
+    and slotHeadWB:
+    "\<And>M x q ps r hdv qb.
+        M \<in> ST_PS \<Longrightarrow> monoT M \<Longrightarrow> Br M \<noteq> [] \<Longrightarrow> Lng M - 1 > 1 \<Longrightarrow>
+        (\<And>N. N \<in> ST_PS \<Longrightarrow> Lng N < Lng M \<Longrightarrow> Trans N \<in> OT_B) \<Longrightarrow>
+        Trans (Pred M) \<in> OT_B \<Longrightarrow>
+        Trans (Pred M) = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B r) \<Longrightarrow>
+        Trans M = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B Dpt (enat x) q) \<Longrightarrow>
+        ps \<noteq> [] \<Longrightarrow> transJm1 M = 0 \<Longrightarrow>
+        Trans (Pred M) = Dpt (enat (entry M 1 0)) (Trm ps) \<Longrightarrow>
+        last ps = DB (enat hdv) qb \<Longrightarrow> x \<le> hdv"
+    and TVall: "\<And>K. K \<in> ST_PS \<Longrightarrow> K \<in> PT_PS \<Longrightarrow> 1 < Lng K - 1 \<Longrightarrow>
+                  transCondII K \<Longrightarrow> c2sx_tailval K"
+    and AP: "\<And>K. K \<in> ST_PS \<Longrightarrow>
+                 \<forall>J. Suc J < Lng (P K) \<longrightarrow> leBT (Trans (P K ! Suc J)) (Trans (P K ! J))"
+  shows "\<forall>M. M \<in> ST_PS \<longrightarrow> Trans M \<in> OT_B"
+    and "\<forall>M n. M \<in> ST_PS \<longrightarrow> 1 \<le> n \<longrightarrow> 1 < Lng M \<longrightarrow>
+           lessBT (Trans ((M::pairseq)[n])) (Trans M)"
+proof -
+  have OTall: "\<And>M. M \<in> ST_PS \<Longrightarrow> Trans M \<in> OT_B"
+    by (rule asx_Trans_OT_of_slots_allpairs[OF slotNewOT slotTail slotAppg
+          slotHeadWB AP])
+  show "\<forall>M. M \<in> ST_PS \<longrightarrow> Trans M \<in> OT_B" using OTall by blast
+  have TOT: "\<And>N. N \<in> ST_PS \<Longrightarrow> N \<in> PT_PS \<Longrightarrow> 1 < Lng N - 1 \<Longrightarrow> Trans N \<in> OT_B"
+    by (rule OTall)
+  show "\<forall>M n. M \<in> ST_PS \<longrightarrow> 1 \<le> n \<longrightarrow> 1 < Lng M \<longrightarrow>
+           lessBT (Trans ((M::pairseq)[n])) (Trans M)"
+  proof (intro allI impI)
+    fix M :: pairseq and n :: nat
+    assume MST: "M \<in> ST_PS" and n1: "1 \<le> n" and L: "1 < Lng M"
+    show "lessBT (Trans ((M::pairseq)[n])) (Trans M)"
+      by (rule dpx_fseq_descend_census[OF MST n1 L TOT TVall])
+  qed
+qed
+
+text \<open>The joint statement of the (degenerate) simultaneous induction: \<open>JOINT L\<close>
+  holds for every \<open>L\<close>.  Degenerate BECAUSE of finding (4): no induction ON \<open>L\<close>
+  is possible with the r46/r47 engines (EDGE-1/EDGE-2 go up in length), so
+  \<open>JOINT L\<close> is obtained by restricting the global census, whose grounding gap
+  is exactly the carried knot residual \<open>AP\<close>.\<close>
+
+lemma asx_joint_induction:
+  fixes L :: nat
+  assumes slotNewOT:
+    "\<And>M x q ps r.
+        M \<in> ST_PS \<Longrightarrow> monoT M \<Longrightarrow> Br M \<noteq> [] \<Longrightarrow> Lng M - 1 > 1 \<Longrightarrow>
+        (\<And>N. N \<in> ST_PS \<Longrightarrow> Lng N < Lng M \<Longrightarrow> Trans N \<in> OT_B) \<Longrightarrow>
+        Trans (Pred M) \<in> OT_B \<Longrightarrow>
+        Trans (Pred M) = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B r) \<Longrightarrow>
+        Trans M = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B Dpt (enat x) q) \<Longrightarrow>
+        isOT_BP (DB (enat x) q)"
+    and slotTail:
+    "\<And>M x q ps r hdv qb.
+        M \<in> ST_PS \<Longrightarrow> monoT M \<Longrightarrow> Br M \<noteq> [] \<Longrightarrow> Lng M - 1 > 1 \<Longrightarrow>
+        (\<And>N. N \<in> ST_PS \<Longrightarrow> Lng N < Lng M \<Longrightarrow> Trans N \<in> OT_B) \<Longrightarrow>
+        Trans (Pred M) \<in> OT_B \<Longrightarrow>
+        Trans (Pred M) = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B r) \<Longrightarrow>
+        Trans M = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B Dpt (enat x) q) \<Longrightarrow>
+        ps \<noteq> [] \<Longrightarrow> last ps = DB (enat hdv) qb \<Longrightarrow> x = hdv \<Longrightarrow> leBT q qb"
+    and slotAppg:
+    "\<And>M x q ps r.
+        M \<in> ST_PS \<Longrightarrow> monoT M \<Longrightarrow> Br M \<noteq> [] \<Longrightarrow> Lng M - 1 > 1 \<Longrightarrow>
+        (\<And>N. N \<in> ST_PS \<Longrightarrow> Lng N < Lng M \<Longrightarrow> Trans N \<in> OT_B) \<Longrightarrow>
+        Trans (Pred M) \<in> OT_B \<Longrightarrow>
+        Trans (Pred M) = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B r) \<Longrightarrow>
+        Trans M = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B Dpt (enat x) q) \<Longrightarrow>
+        (\<forall>y\<in>GBT (enat (entry M 1 0)) (Dpt (enat x) q).
+            lessBT y (Trm ps +\<^sub>B Dpt (enat x) q))"
+    and slotHeadWB:
+    "\<And>M x q ps r hdv qb.
+        M \<in> ST_PS \<Longrightarrow> monoT M \<Longrightarrow> Br M \<noteq> [] \<Longrightarrow> Lng M - 1 > 1 \<Longrightarrow>
+        (\<And>N. N \<in> ST_PS \<Longrightarrow> Lng N < Lng M \<Longrightarrow> Trans N \<in> OT_B) \<Longrightarrow>
+        Trans (Pred M) \<in> OT_B \<Longrightarrow>
+        Trans (Pred M) = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B r) \<Longrightarrow>
+        Trans M = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B Dpt (enat x) q) \<Longrightarrow>
+        ps \<noteq> [] \<Longrightarrow> transJm1 M = 0 \<Longrightarrow>
+        Trans (Pred M) = Dpt (enat (entry M 1 0)) (Trm ps) \<Longrightarrow>
+        last ps = DB (enat hdv) qb \<Longrightarrow> x \<le> hdv"
+    and TVall: "\<And>K. K \<in> ST_PS \<Longrightarrow> K \<in> PT_PS \<Longrightarrow> 1 < Lng K - 1 \<Longrightarrow>
+                  transCondII K \<Longrightarrow> c2sx_tailval K"
+    and AP: "\<And>K. K \<in> ST_PS \<Longrightarrow>
+                 \<forall>J. Suc J < Lng (P K) \<longrightarrow> leBT (Trans (P K ! Suc J)) (Trans (P K ! J))"
+  shows "(\<forall>M. M \<in> ST_PS \<longrightarrow> Lng M \<le> L \<longrightarrow>
+            (\<forall>n. 1 \<le> n \<longrightarrow> 1 < Lng M \<longrightarrow> lessBT (Trans ((M::pairseq)[n])) (Trans M)))
+         \<and> (\<forall>N. N \<in> ST_PS \<longrightarrow> Lng N \<le> L \<longrightarrow> Trans N \<in> OT_B)"
+proof -
+  have o: "\<forall>M. M \<in> ST_PS \<longrightarrow> Trans M \<in> OT_B"
+    by (rule asx_termination_census(1)[OF slotNewOT slotTail slotAppg slotHeadWB
+          TVall AP])
+  have d: "\<forall>M n. M \<in> ST_PS \<longrightarrow> 1 \<le> n \<longrightarrow> 1 < Lng M \<longrightarrow>
+             lessBT (Trans ((M::pairseq)[n])) (Trans M)"
+    by (rule asx_termination_census(2)[OF slotNewOT slotTail slotAppg slotHeadWB
+          TVall AP])
+  show ?thesis using o d by blast
+qed
+
+subsection \<open>The knot, made explicit in Isar\<close>
+
+text \<open>Forward: under the census hypotheses the r47 shared residual \<open>fseqD\<close> is
+  DERIVED (so the OT pillar's \<open>fseqD\<close> and the descent pillar's \<open>TOT\<close> are both
+  eliminated by the census --- they were the two pillars' mutual references).\<close>
+
+lemma asx_fseqD_derived:
+  assumes descent: "\<forall>M n. M \<in> ST_PS \<longrightarrow> 1 \<le> n \<longrightarrow> 1 < Lng M \<longrightarrow>
+             lessBT (Trans ((M::pairseq)[n])) (Trans M)"
+    and KST: "K \<in> ST_PS" and mono: "monoT K" and LK: "1 < Lng K" and n1: "1 \<le> n"
+  shows "leBT (Trans ((K::pairseq)[n])) (Trans K)"
+  using descent KST LK n1 by blast
+
+text \<open>Backward: \<open>fseqD \<Rightarrow> AP\<close> --- the reverse edge of the knot
+  (@{thm [source] mdx_P_allpairs_leBT_modFseq} re-exported).  Together with
+  @{thm [source] asx_fseqD_derived} this shows \<open>AP\<close> is mutually derivable with
+  the census's own output; it is NOT thereby groundable (no circular
+  discharge) --- grounding \<open>AP\<close> is exactly route (A), the stage induction.\<close>
+
+lemma asx_allpairs_of_fseqD:
+  assumes fseqD: "\<And>K n. K \<in> ST_PS \<Longrightarrow> monoT K \<Longrightarrow> 1 < Lng K \<Longrightarrow> 1 \<le> n \<Longrightarrow>
+                    leBT (Trans ((K::pairseq)[n])) (Trans K)"
+    and NST: "N \<in> ST_PS"
+  shows "\<forall>J. Suc J < Lng (P N) \<longrightarrow> leBT (Trans (P N ! Suc J)) (Trans (P N ! J))"
+  by (rule mdx_P_allpairs_leBT_modFseq[OF fseqD NST])
+
+subsection \<open>Post-knot takeover: once \<open>AP\<close> is grounded, \<open>devchain\<close> replaces the
+  \<open>slotNewOT\<close>/\<open>slotTail\<close> pair\<close>
+
+text \<open>With the census output (global OT + global descent) in hand, the r47 deep
+  residual \<open>devchain\<close> discharges BOTH \<open>slotNewOT\<close> and \<open>slotTail\<close> at any keystone
+  frame (@{thm [source] dpr_two_slots_of_devchain}, whose \<open>a5\<close>/\<open>a6\<close>/descent
+  inputs are now theorems).  This is the r49+ census upgrade path
+  \<open>{slotNewOT, slotTail} \<rightarrow> devchain\<close>; it CANNOT be folded into the census
+  itself (EDGE-2: the chain descent is length-unbounded, see the audit).\<close>
+
+lemma asx_devchain_takeover:
+  fixes M :: pairseq and x hdv :: nat and q r qb :: BT and ps :: "BP list"
+  assumes OTall: "\<forall>N. N \<in> ST_PS \<longrightarrow> Trans N \<in> OT_B"
+    and descent: "\<forall>K n. K \<in> ST_PS \<longrightarrow> 1 \<le> n \<longrightarrow> 1 < Lng K \<longrightarrow>
+             lessBT (Trans ((K::pairseq)[n])) (Trans K)"
+    and a1: "M \<in> ST_PS" and a2: "monoT M" and a3: "Br M \<noteq> []"
+    and a4: "Lng M - 1 > 1"
+    and a7: "Trans (Pred M) = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B r)"
+    and a8: "Trans M = Dpt (enat (entry M 1 0)) (Trm ps +\<^sub>B Dpt (enat x) q)"
+    and b1: "ps \<noteq> []" and b2: "last ps = DB (enat hdv) qb" and b3: "x = hdv"
+    and devchain: "\<exists>N N'. N' \<in> ST_PS \<and> Lng N < Lng M \<and> Lng N' < Lng M
+                    \<and> Trans N = Dpt (enat x) q \<and> Trans N' = Dpt (enat hdv) qb
+                    \<and> (N = N' \<or> dpr_dev N' N)"
+  shows "leBT q qb \<and> isOT_BP (DB (enat x) q)"
+proof -
+  have a5: "\<And>N. N \<in> ST_PS \<Longrightarrow> Lng N < Lng M \<Longrightarrow> Trans N \<in> OT_B"
+    using OTall by blast
+  have L: "1 < Lng M" using a4 by linarith
+  have predST: "Pred M \<in> ST_PS" by (rule m_8_7_Pred_ST_PS[OF a1 L])
+  have a6: "Trans (Pred M) \<in> OT_B" using OTall predST by blast
+  have dsc: "\<And>K n. K \<in> ST_PS \<Longrightarrow> 1 \<le> n \<Longrightarrow> 1 < Lng K
+               \<Longrightarrow> lessBT (Trans ((K::pairseq)[n])) (Trans K)"
+    using descent by blast
+  show ?thesis
+    by (rule dpr_two_slots_of_devchain[OF a1 a2 a3 a4 a5 a6 a7 a8 b1 b2 b3
+          devchain dsc])
+qed
+
+(* ===== end r48 ASSEMBLY (asx_) ===== *)
+
 end
