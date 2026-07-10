@@ -42,7 +42,7 @@
       - ✅ principal順序への還元[r1]
       - 🚨 `wf RPrel`(principal lessBP 整礎)
         - ✅ depth有界断片(無限・無条件)[r2]
-        - 🚨🤖 unbounded-depth chain排除[r0]
+        - 🚨🤖 unbounded-depth chain排除[r1][0.101][0.26h]
   - 🚨 §8.1 条件 (I) の下での展開規則
     - 🚨 命題（条件 (I) の下での $\textrm{Trans}$ と基本列の交換関係）
       - ✅ 交換則(1)本体[r4]
@@ -61,7 +61,7 @@
         - ✅ base2+per-step surgery(閉形式)[r2]
         - 🚨 tailval残差
           - ✅ not-leftDj0脚(guard)modulo DIAG[r1]
-          - 🚨🤖 TVall配線(§8.2命題✅済→残=ldj-leg Rc transport+fin-threading census改訂)[r2]
+          - 🚨🤖 TVall配線(§8.2命題✅済→残=ldj-leg Rc transport+fin-threading census改訂)[r3][0.181][0.14h]
           - ✅ REGSP strictlt-eqd(slx37無条件)[r5]
       - 🚨 OT所属 (⛔ §8.7「Transが標準形を保つ」補題)
     - ✅ 補題（第 $0$ 種型基本列の基本不等式）
@@ -78,7 +78,8 @@
       - ✅ condI脚discharge[r1]
       - ✅ 全交換slot discharge+census(dpx_、exchIV/VI無条件化込)[r1][0.306][0.31h]
       - ✅ assembly census(asx_、長さ帰納不可能を証明、fseqD/TOT消去)[r1][0.219][0.18h]
-      - 🚨🤖 AP knot(隣接P成分降下の接地、stage帰納+補正readback要)[r0]
+      - ✅ AP接地+census{OTint,OTpred,OTmulti,TVall}化(apx_、otx dispatcher route)[r1][0.181][0.14h]
+      - 🚨 残=census 4点(⛔ OTint/OTpred/OTmulti/TVall)[r0]
     - ✅ 補題（順序数項の再帰構造）
     - ✅ 補題（順序数項の共終数の遺伝性）
     - ✅ 補題（順序数項の末尾項の零化可能性）
@@ -95,7 +96,10 @@
       - ✅ per-branch true legs[r1]
       - ✅ dispatcher slots discharge(orx_)[r1]
       - ✅ local-OTint keystone-free(condI/condVI/condV-adm-e=0)[r2]
-      - 🚨 deep-insertion OT所属(keystone{resid,multiD}、resid真)[r5]
+      - 🚨🤖 OTint(条件III/IV/V interleaving n≥2の値形OT-step)[r0]
+      - 🚨🤖 OTpred(with-parent Pred corner OT-step)[r0]
+      - 🚨🤖 OTmulti(multi P成分lift OT-step)[r0]
+      - 🚨 deep-insertion OT所属(keystone{resid,multiD}、r49でcritical path外)[r5]
         - ✅ resid deep検証+4slot分解(rgx_、C3 prefix半分クローズ)[r1]
         - 🚨 slotNewOT(C1: isOT_BP(DB x q))
           - ✅ shorter-slice IH還元(snx_)[r1][0.193][0.32h]
@@ -104,7 +108,7 @@
           - ✅ guarded還元(sax_modcore、v0>x/q=0 discharge)[r1][0.193][0.32h]
           - ✅ modDom/modSliceGaps緑frame(hgx_、slice-only還元は反証)[r1][0.406][0.51h]
           - ✅ ps=[]主要部還元(ddx_、pred-depdom無料+transfer append形)[r1][0.219][0.18h]
-          - 🚨🤖 transfer一般形(keystone強化=c1→c2 surgery露出)+freshdom/preddomNE[r0]
+          - 🚨 transfer一般形(keystone強化、r49でcritical path外)[r1][0.181][0.14h]
         - 🚨 slotTail(C2: leBT q qb、真)
           - ✅ proper-prefix半還元(stx_→qp-descent、後にroute死)[r1][0.193][0.32h]
           - ✅ qp-descent反証(33/33逆向き)+slot束→devel単一残差化(spx_modDevel)[r1][0.279][0.28h]
@@ -112,6 +116,6 @@
             - ✅ devpair尖鋭化+2slot同時consumer(dvx_、成分標準性+A16同定)[r1][0.306][0.31h]
             - ✅ D_0 0_B corner閉+devchain弱化(dpr_、単一step版unsafe)[r1][0.406][0.51h]
             - ✅ IncrFirst正規化witness+corner框架(dcx_、modulo claim S+branchwit)[r1][0.219][0.18h]
-            - 🚨🤖 branchwit(claim S機械化+depth≥2=mono零化機構)[r0]
+            - 🚨 branchwit(claim S機械化、r49でcritical path外・bwx brick回収)[r1][0.181][0.14h]
         - 🚨 slotHeadWB(C2: deple読出しhgx_あり、要独立deple源)[r0]
         - 🚨 multiD(⛔ 基本列の降下性=fseqD)[r1][0.406][0.51h]
