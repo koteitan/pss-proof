@@ -65,7 +65,7 @@
         - ✅ terminal-slice setup(bux_terminal_slice_ready、keystone4前提)[r1]
         - 🚨 bridgesU 終切片readback(readoff⟺VE34判明→残=article {BASE,STEP} back-peel)
           - ✅ readoff⟺{BASE,STEP}還元(rdx_, modReadoff interface閉)[r3][0.259][0.93h]
-          - 🚨 {BASE,STEP} back-peel(article Pred-induction on j1-TrMax)[r0]
+          - 🚨🤖 {BASE,STEP} back-peel(article Pred-induction on j1-TrMax)[r0]
     - ✅ 補題（強単項性の切片への遺伝性）
     - ✅ 補題（部分表現の単項成分と $\textrm{Pred}$ の関係）(§8.2 keystone)
     - ✅ 補題（強単項性の下での部分表現の単項成分の基本性質）
@@ -99,7 +99,7 @@
           - ✅ cpx Red-slice再thread→admeq枝exchange無条件(cpx_condIV_exchange_uncond)[r8][0.314][1.29h]
           - 🚨 non-admeq condIV枝(~2%稀少degenerate regime)
             - ✅ admeqフリーbrick+全枝統合器(残差1本隔離)[r1][0.250][1.04h]
-            - 🚨 nonadmeq_exch残差(e1jm1=v1縮退、u=v fseq新machinery要)[r0]
+            - 🚨🤖 nonadmeq_exch残差(e1jm1=v1縮退、u=v fseq新machinery要)[r0]
       - ❌ d13x_T形organize[r2]
       - 🚨 condIII exchange 再構築(d4vx_core route)
         - ✅ engine+mnform+降下(2)OT-free+triple組立[r6]
@@ -109,7 +109,7 @@
         - ✅ REGSP trunk-bypass(d4a kousa-(1,1))[r1]
         - ✅ REGSP strictlt-eqd(slx37無条件)[r5]
         - ✅ compose hasParent枝 無条件(cpx_condIII_exchange_uncond)[r1]
-        - 🚨 ¬hasParent枝(noParentPred、condIII ST_PS ~22%)[r0]
+        - 🚨🤖 ¬hasParent枝(noParentPred、condIII ST_PS ~22%)[r0]
     - ✅ 補題（右端の非許容直系先祖の基本性質）
     - ✅ 補題（条件 (III)〜(V) の下での右端の置き換えと $\textrm{Trans}$ の関係）[r1]
     - ✅ 補題（条件 (III)〜(VI) の下での展開規則の基本性質）[r1]
@@ -153,6 +153,6 @@
           - 🚨 head-gap x≥head(q)(局所導出不可・WGAP系REFUTED)[r0]
         - 🚨 slotTail(C2: leBT q qb、偽チェック=真)
           - ✅ proper-prefix半還元(stx_、→leBT q qp)[r1][0.193][0.32h]
-          - 🚨 spine descent leBT q qp(⛔ §8.2/8.5)[r0]
+          - 🚨🤖 spine descent leBT q qp(⛔ §8.2/8.5)[r0]
         - 🚨 slotHeadWB(C2: transJm1=0角、WB⟹equal-head)[r0]
         - 🚨 multiD(pcompPrefix反証→別ルート要)[r0]
