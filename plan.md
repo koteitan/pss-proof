@@ -145,8 +145,8 @@ task.md のユーザー向け骨格に対する、作業側の詳細版。ユー
       - ✅ dispatcher slots discharge(orx_)〔`orx_OTint/OTpred/OTmulti`+`orx_Trans_preserves_OT`。ただしm_8_7_Trans_preserves_OT_modulo経由=下記{resid,multiD}に依存〕[r1]
       - ✅ local-OTint keystone-free(condI/condVI/condV-adm-e=0)〔`otlx_OTint_local`+`cfvx_OTint_local_condVadm_corrected`。**cfVadm(condV-adm op0-tower)はe>0で偽**(r34、CEX (0,0)(1,1)(2,2)(3,1)(4,2)(4,2))→e=0のみkeystone-free。cf0(e=0 op0-tower)はnamed、証明可〕[r2]
       - 🚨🤖 OTint(条件III/IV/V interleaving n≥2の値形OT-step)〔r28 otx slot 原形verbatim。fseq-closure transport は r28 で不可能証明済→**per-condition 値形**(§8.5 masterkey `m_8_5_markstep_of_Trans_keystone`/scbdec、§8.4 cnv/c4dx 値形、§8.6 c6 値形)から OT-step を直接。empirically 真〕[r0]
-      - 🚨🤖 OTpred(with-parent Pred corner OT-step)〔r31 empirics: 局所 [0]-step では 0/63→値形 route〕[r0]
-      - 🚨🤖 OTmulti(multi P成分lift OT-step)〔Σ_B 成分 lift、dvx_standard_component+A16 同定が使える見込み〕[r0]
+      - 🚨 OTpred(with-parent Pred corner OT-step)〔r31 empirics: 局所 [0]-step では 0/63→値形 route〕[r0]
+      - 🚨 OTmulti(multi P成分lift OT-step)〔Σ_B 成分 lift、dvx_standard_component+A16 同定が使える見込み〕[r0]
       - 🚨 deep-insertion OT所属(keystone{resid,multiD}、r49でcritical path外)〔r35: 4脚→単一 keystone {resid,multiD}(`orx_OTint`)。r40b(Fable): **resid を deep検証(真、1468/0、最大Lng43、pcompPrefix と違い偽陽性でない)+4slot分解**。keystone `m_8_7_Trans_OT_step_keystone` の resid slot が強IH+Trans(Pred M)∈OT_B を受領する形に再構築(`rgx_Trans_preserves_OT_of_slots`)。反証registry: operB(term z)/最右spine scb-substitution/pcompPrefix 偽〕[r5]
         - ✅ resid deep検証+4slot分解(rgx_、C3 prefix半分クローズ)〔`rgx_resid_of_parts`(MASTER: resid C1∧C2∧C3 ⟸ {newOT,tailEH,appg,headWB}+Pred-OT、m_8_2_keystone 再走+snoc realign)。C3 prefix半分は `rgx_between_extends`([Buc1]辞書順区間)+`rgx_gbt_prefix_restrict`(b1x_GBT_size)で無条件クローズ、C3⟸appg(`rgx_gbt_of_appg`)。C2 whole-body Admpos 閉、`rgx_dstep_*` dispatcher〕[r1]
         - 🚨 slotNewOT(C1: isOT_BP(DB x q))〔r44発見: 挿入主項 D_x q = **from-joint 終切片 Trans**(seg M j0'(Lng M-1)、j0'=Joints M!(Lng(Br M)-1))。a6-scb transport は DEAD(deposit は Trans(Pred M) の scb-subterm でない 3/34)→唯一の筋は Lng-IH a5 を deposit-slice(短い標準列)に適用〕

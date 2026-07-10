@@ -105,8 +105,8 @@
       - ✅ dispatcher slots discharge(orx_)[r1]
       - ✅ local-OTint keystone-free(condI/condVI/condV-adm-e=0)[r2]
       - 🚨🤖 OTint(条件III/IV/V interleaving n≥2の値形OT-step)[r0]
-      - 🚨🤖 OTpred(with-parent Pred corner OT-step)[r0]
-      - 🚨🤖 OTmulti(multi P成分lift OT-step)[r0]
+      - 🚨 OTpred(with-parent Pred corner OT-step)[r0]
+      - 🚨 OTmulti(multi P成分lift OT-step)[r0]
       - 🚨 deep-insertion OT所属(keystone{resid,multiD}、r49でcritical path外)[r5]
         - ✅ resid deep検証+4slot分解(rgx_、C3 prefix半分クローズ)[r1]
         - 🚨 slotNewOT(C1: isOT_BP(DB x q))
