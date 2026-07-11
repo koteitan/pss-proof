@@ -3852,4 +3852,352 @@ proof -
   show ?thesis using inv by blast
 qed
 
+
+(* ===== r59 OTint: A0OT CLOSED => OTA1 pillar done (front A) + SETLE1 body-driver (front B) ===== *)
+
+
+(* ===================================================================== *)
+(* r59 A0OT-closure (front A0OT): the LAST OTA1 residual.                 *)
+(*   STEP 1  od4_OTpred_mono_RT   : the RT_PS (not ST_PS) mono OT step.   *)
+(*   helper  otx_bpHeadT_OT       : bpHeadT of an OT_B term is OT.        *)
+(*   STEP 2-4 ot1_A0OT            : A0OT via the REDUCED slice            *)
+(*             Red (s84x_N N) \<in> RT_PS (the raw slice need not be reduced). *)
+(*   capstone oi8_census_final    : both pillars modulo                   *)
+(*             {SETLE1_ltJ, IVADMEQ, FINRC}.                              *)
+(* ===================================================================== *)
+
+text \<open>STEP 1 --- @{text od4_OTpred_mono_RT}: the mono \<open>Trans (Pred M) \<in> OT\<^bsub>B\<^esub>\<close>
+  step, VERBATIM from @{thm [source] od4_OTpred_mono} but with the \<open>ST\<^bsub>PS\<^esub>\<close>
+  hypothesis replaced by the strictly weaker \<open>RT\<^bsub>PS\<^esub> \<and> PT\<^bsub>PS\<^esub>\<close> pair (the deleted
+  lines only served to derive \<open>MR/MP\<close>, everything below uses only \<open>MR/MP/mono\<close>).\<close>
+
+lemma od4_OTpred_mono_RT:
+  fixes M :: pairseq
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS" and mono: "monoT M"
+    and L: "1 < Lng M" and hostOT: "Trans M \<in> OT_B"
+  shows "Trans (Pred M) \<in> OT_B"
+proof -
+  have predRT: "Pred M \<in> RT_PS" by (rule Pred_RT_PS[OF MR])
+  have predTB: "Trans (Pred M) \<in> T_B" by (rule m_7_3_Trans_in_T_B[OF predRT])
+  show ?thesis
+  proof (cases "Trans (Pred M) = 0\<^sub>B")
+    case True
+    thus ?thesis using otx_OT_B_zero by simp
+  next
+    case T1ne: False
+    show ?thesis
+    proof (cases "Lng M = 2")
+      case L2: True
+      have predT: "Pred M \<in> T_PS" using predRT by (simp add: RT_PS_def)
+      have LP1: "Lng (Pred M) = 1" using L2 by (simp add: Pred_def)
+      obtain v where pv: "Pred M = [(v, v)]"
+        using m_6_6_oneColumn[OF predT] predRT LP1 by auto
+      have tv: "Trans (Pred M) = (if v = 0 then 0\<^sub>B else Dpt (enat v) 0\<^sub>B)"
+        using pv Trans_singleton by simp
+      show ?thesis
+        using tv otx_OT_B_zero m_8_7_OT_ex1[of v] by (cases "v = 0") simp_all
+    next
+      case False
+      have j1gt: "1 < Lng M - 1" using L False by linarith
+      have T1: "transT1 M \<noteq> 0\<^sub>B" using T1ne by (simp add: transT1_def)
+      have R: "od4_R (Trans (Pred M)) (Trans M)"
+        by (rule od4_master_R[OF MR MP j1gt T1])
+      show ?thesis by (rule od4_R_OT_B[OF R hostOT predTB])
+    qed
+  qed
+qed
+
+text \<open>Helper --- @{text otx_bpHeadT_OT}: the principal body of an \<open>OT\<^bsub>B\<^esub>\<close> term is
+  itself \<open>OT\<close> (\<open>isOT_BP\<close> at the head yields \<open>isOT_BT\<close> of its body; the \<open>0\<^bsub>B\<^esub>\<close> head
+  is \<open>OT\<close> by (OT1)).\<close>
+
+lemma otx_bpHeadT_OT:
+  assumes "X \<in> OT_B"
+  shows "isOT_BT (bpHeadT X)"
+proof -
+  have XOT: "isOT_BT X" using assms by (simp add: OT_B_def OT_def)
+  obtain ps where Xps: "X = Trm ps" by (cases X)
+  show ?thesis
+  proof (cases ps)
+    case Nil
+    thus ?thesis using Xps by simp
+  next
+    case (Cons p rest)
+    obtain v t where pvt: "p = DB v t" by (cases p)
+    have "isOT_BP (DB v t)" using XOT Xps Cons pvt by auto
+    hence "isOT_BT t" by simp
+    thus ?thesis using Xps Cons pvt by simp
+  qed
+qed
+
+text \<open>STEP 2-4 --- @{text ot1_A0OT}: the LAST OTA1 residual
+  \<open>A0OT = isOT_BT (bpHeadT (Trans (Pred (s84x_N N))))\<close>, discharged UNCONDITIONALLY
+  from the census premises.  The raw census slice \<open>s84x_N N\<close> need NOT be reduced;
+  we route through its reduction \<open>RN = Red (s84x_N N) \<in> RT\<^bsub>PS\<^esub>\<close> (which shares its
+  \<open>Trans\<close> value), apply the RT_PS mono OT step @{thm [source] od4_OTpred_mono_RT}
+  to \<open>RN\<close>, and transport back along @{thm [source] m_7_4_Trans_PredN}
+  (\<open>Trans (Pred RN) = Trans (seg N j\<^sub>-\<^sub>3 (Lng N - 2)) = Trans (Pred (s84x_N N))\<close>).
+  \<open>Trans RN \<in> OT\<^bsub>B\<^esub>\<close> is the deep-graft body OT-ness, read off the scb-subterm
+  \<open>D\<^bsub>e\<^sub>3\<^esub> body\<close> of \<open>Trans N\<close> (the census kind-1 position) by OT-heredity
+  @{thm [source] m_8_7_OT_scb_recursive}.\<close>
+
+lemma ot1_A0OT:
+  fixes N :: pairseq
+  assumes NST: "N \<in> ST_PS" and NPT: "N \<in> PT_PS"
+    and hp: "hasParent N 1 (Lng N - 1)"
+    and j1gt: "1 < Lng N - 1"
+    and branch: "transCondIII N \<or> transCondIV N"
+    and ihOT: "Trans N \<in> OT_B"
+    and ltJ: "s84x_jm3 N < transJm1 N"
+  shows "isOT_BT (bpHeadT (Trans (Pred (s84x_N N))))"
+proof -
+  let ?e3 = "entry N 1 (s84x_jm3 N)"
+  let ?body = "bpHeadT (Trans (s84x_N N))"
+  let ?S = "seg N (s84x_jm3 N) (Lng N - 1)"
+  let ?RN = "Red ?S"
+  have MR: "N \<in> RT_PS" using NST m_6_7_ST_PS_subseteq_RT_PS by blast
+  have MT: "N \<in> T_PS" using MR by (simp add: RT_PS_def)
+  have mono: "monoT N" using NPT by (simp add: PT_PS_def)
+  have Lgt: "1 < Lng N" using j1gt by linarith
+  \<comment> \<open>slice geometry\<close>
+  have jm2lt: "s84x_jm2 N < Lng N - 1" by (rule s84c1_jm2_basic(1)[OF hp])
+  have jm3le: "s84x_jm3 N \<le> s84x_jm2 N" using adm_Adm_le by (simp add: s84x_jm3_def)
+  have jm3lt: "s84x_jm3 N < Lng N - 1" using jm3le jm2lt by linarith
+  have mM3: "(N, s84x_jm3 N) \<in> Marked" using s84d_jm3_Marked(1)[OF MR MT hp] by simp
+  have leR3: "leR N 0 (s84x_jm3 N) (Lng N - 1)" using mM3 by (simp add: Marked_def)
+  have jm1lt: "transJm1 N < Lng N - 1" using s84d_jm1_Marked(2)[OF MR NPT Lgt] by simp
+  have jm3int: "s84x_jm3 N < Lng N - 2" using ltJ jm1lt j1gt by linarith
+  have LNlen: "Lng ?S = Suc (Lng N - 1) - s84x_jm3 N"
+    by (simp add: seg_def del: upt_Suc)
+  have LN0: "(0::nat) < Lng ?S" using LNlen jm3lt by linarith
+  \<comment> \<open>reduced-slice facts (the raw slice need not be reduced)\<close>
+  have segT: "?S \<in> T_PS"
+    using slice_Red_in_RT_PS[OF MR jm3lt order.refl leR3] by simp
+  have RN_RT: "?RN \<in> RT_PS"
+    using slice_Red_in_RT_PS[OF MR jm3lt order.refl leR3] by simp
+  have RN_mono: "monoT ?RN"
+    using m_6_6_ancestor_slice_Red_IncrFirst[OF MR jm3lt order.refl leR3] by simp
+  have RN_T: "?RN \<in> T_PS" using RN_RT by (simp add: RT_PS_def)
+  have RN_PT: "?RN \<in> PT_PS" using RN_T RN_mono by (simp add: PT_PS_def)
+  have RN_Lng: "1 < Lng ?RN"
+  proof -
+    have a: "Lng ?RN = Lng ?S" by (rule m_6_5_Lng_Red[OF segT])
+    show ?thesis using a LNlen jm3lt Lgt by linarith
+  qed
+  \<comment> \<open>the slice \<open>Trans\<close> equals its reduction's \<open>Trans\<close>\<close>
+  have TeqR: "Trans ?S = Trans ?RN"
+    by (rule Trans_slice_eq_Red[OF MR jm3lt order.refl leR3])
+  \<comment> \<open>STEP 3: \<open>Trans RN \<in> OT\<^bsub>B\<^esub>\<close> via the census kind-1 scb-subterm of \<open>Trans N\<close>\<close>
+  obtain s0 b0 s1 b1 where
+    k1: "scb_kind1 (Trans N) s1 (flatBT (Dpt (enat ?e3) ?body)) b1"
+    by (rule oi5_IIIIV_pkg[OF NST NPT hp j1gt branch ltJ])
+  have scbd: "scb_decomp (Trans N) s1 (flatBT (Dpt (enat ?e3) ?body)) b1"
+    using k1 by (simp add: scb_kind1_def)
+  have TReq: "Trans ?RN = Dpt (enat (entry ?RN 1 0)) (bpHeadT (Trans ?RN))"
+    by (rule e2x_Trans_principal_head[OF RN_RT RN_mono])
+  have e_RN: "entry ?RN 1 0 = ?e3"
+  proof -
+    have "entry ?RN 1 0 = entry ?S 1 0" by (rule m_6_6_Red_leftend_1[OF segT])
+    also have "\<dots> = ?e3" using entry_seg[OF LN0, of 1] by simp
+    finally show ?thesis .
+  qed
+  have bodyR: "bpHeadT (Trans ?RN) = ?body"
+  proof -
+    have "bpHeadT (Trans ?RN) = bpHeadT (Trans ?S)" using TeqR by simp
+    also have "\<dots> = ?body" by (simp add: s84x_N_def)
+    finally show ?thesis .
+  qed
+  have TR_princ: "Trans ?RN = Dpt (enat ?e3) ?body"
+    using TReq e_RN bodyR by simp
+  have RN_TB: "Trans ?RN \<in> T_B" by (rule m_7_3_Trans_in_T_B[OF RN_RT])
+  have DptTB: "Dpt (enat ?e3) ?body \<in> T_B" using RN_TB TR_princ by simp
+  have DptOT: "Dpt (enat ?e3) ?body \<in> OT"
+    by (rule m_8_7_OT_scb_recursive[OF ihOT DptTB scbd])
+  have RN_TransOT: "Trans ?RN \<in> OT_B"
+    using DptOT TR_princ RN_TB by (simp add: OT_B_def)
+  \<comment> \<open>STEP 1 applied to the reduced slice\<close>
+  have predOT: "Trans (Pred ?RN) \<in> OT_B"
+    by (rule od4_OTpred_mono_RT[OF RN_RT RN_PT RN_mono RN_Lng RN_TransOT])
+  \<comment> \<open>transport: \<open>Trans (Pred RN) = Trans (Pred (s84x_N N))\<close>\<close>
+  have blN: "Pred (s84x_N N) = seg N (s84x_jm3 N) (Lng N - 2)"
+  proof -
+    have LN: "Lng (s84x_N N) = Suc (Lng N - 1) - s84x_jm3 N"
+      by (simp add: s84x_N_def seg_def del: upt_Suc)
+    have "1 < Lng (s84x_N N)" using LN jm3lt Lgt by linarith
+    hence "Pred (s84x_N N) = butlast (s84x_N N)" by (simp add: Pred_def)
+    also have "\<dots> = seg N (s84x_jm3 N) (Lng N - 1 - 1)"
+      using s84c2_seg_butlast[OF jm3lt] by (simp add: s84x_N_def)
+    also have "Lng N - 1 - 1 = Lng N - 2" by simp
+    finally show ?thesis .
+  qed
+  have predEq: "Trans (Pred ?RN) = Trans (Pred (s84x_N N))"
+  proof -
+    have "Trans (Pred ?RN) = Trans (seg N (s84x_jm3 N) (Lng N - 2))"
+      by (rule m_7_4_Trans_PredN[OF mM3 MR jm3int])
+    also have "\<dots> = Trans (Pred (s84x_N N))" by (simp add: blN)
+    finally show ?thesis .
+  qed
+  have predOTfinal: "Trans (Pred (s84x_N N)) \<in> OT_B"
+    using predOT predEq by simp
+  \<comment> \<open>STEP 4: read off the principal head\<close>
+  show ?thesis by (rule otx_bpHeadT_OT[OF predOTfinal])
+qed
+
+text \<open>CAPSTONE --- @{text oi8_census_final}: the ltJ-threaded master census with
+  the A0OT residual now DISCHARGED by @{thm [source] ot1_A0OT}.  Both termination
+  pillars hold modulo exactly the three remaining residuals
+  \<open>{SETLE1_ltJ, IVADMEQ, FINRC}\<close> (the OTA1 pillar is CLOSED).\<close>
+
+theorem oi8_census_final:
+  assumes SETLE1: "\<And>P s0 b0 u. P \<in> ST_PS \<Longrightarrow> P \<in> PT_PS \<Longrightarrow>
+        hasParent P 1 (Lng P - 1) \<Longrightarrow> 1 < Lng P - 1 \<Longrightarrow>
+        transCondIII P \<or> transCondIV P \<Longrightarrow> Trans P \<in> OT_B \<Longrightarrow>
+        (\<forall>x \<in> set b0. x = RP) \<Longrightarrow>
+        scb_decomp (bpHeadT (Trans (s84x_N P))) s0
+          (flatBT (Dpt (enat (entry P 1 (Lng P - 1))) 0\<^sub>B)) b0 \<Longrightarrow>
+        s84x_jm3 P < transJm1 P \<Longrightarrow>
+        b1x_setle
+          (GBT u (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
+                    (bpHeadT (Trans (Pred (s84x_N P))))))
+          (insert (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
+                     (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))
+                  (GBT u (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
+                            (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))))"
+    and IVADMEQ: "\<And>P n. P \<in> ST_PS \<Longrightarrow> P \<in> PT_PS \<Longrightarrow>
+        hasParent P 1 (Lng P - 1) \<Longrightarrow> 1 < Lng P - 1 \<Longrightarrow> transCondIV P \<Longrightarrow>
+        Adm P (s84x_jm2 P) = transJm1 P \<Longrightarrow> Trans P \<in> OT_B \<Longrightarrow> 1 < n \<Longrightarrow>
+        Trans ((P::pairseq)[n]) \<in> OT_B"
+    and FINRC: "\<And>K. K \<in> ST_PS \<Longrightarrow> K \<in> PT_PS \<Longrightarrow> 1 < Lng K - 1 \<Longrightarrow>
+             transCondII K \<Longrightarrow> tvx_finRc K"
+  shows "\<forall>M. M \<in> ST_PS \<longrightarrow> Trans M \<in> OT_B"
+    and "\<forall>M n. M \<in> ST_PS \<longrightarrow> 1 \<le> n \<longrightarrow> 1 < Lng M \<longrightarrow>
+           lessBT (Trans ((M::pairseq)[n])) (Trans M)"
+proof -
+  show "\<forall>M. M \<in> ST_PS \<longrightarrow> Trans M \<in> OT_B"
+    by (rule oi8_census_via_A0OT(1)[OF ot1_A0OT SETLE1 IVADMEQ FINRC])
+  show "\<forall>M n. M \<in> ST_PS \<longrightarrow> 1 \<le> n \<longrightarrow> 1 < Lng M \<longrightarrow>
+           lessBT (Trans ((M::pairseq)[n])) (Trans M)"
+    by (rule oi8_census_via_A0OT(2)[OF ot1_A0OT SETLE1 IVADMEQ FINRC])
+qed
+
+
+
+(* ===================================================================== *)
+(* r59 SETLE1_ltJ (prefix ox5_): the ltJ-guarded census setle residual.    *)
+(*   TARGET: b1x_setle (GBT u A1) (insert X1 (GBT u X1)),                   *)
+(*     A1 = d4vx_ins s0 ub b0 A0, X1 = d4vx_ins s0 ub b0 X0,                *)
+(*     A0 = bpHeadT(Trans(Pred(s84x_N P))), X0 = Dpt ub 0, ub = v1-1.       *)
+(*                                                                         *)
+(*   STEP-0 FINDING (python/_r59_setle1_step0.py, 119877 base0&base1 hosts): *)
+(*     * body driver BE'  : forall u.  G(u,A0) <= {X1} u G(u,X1)  -- 0/119877  *)
+(*         FAIL  (TRUE, ox5_body_driver below, from tri0=ot1_tri0_census).   *)
+(*     * FULL target setle: 53669/119877 FAIL for GENERAL OT A0 !!           *)
+(*     * spine bound lbA<=X1: 55751/119877 FAIL.                            *)
+(*   i.e. the naive all-u setle is FALSE without a HEAD-STRUCTURE bound on   *)
+(*   A0: A0's rightmost-spine escape heads (transV) can EXCEED X1's outer    *)
+(*   head, so the spine-body escapes of A1 are NOT <= any member of         *)
+(*   {X1} u G(u,X1).  Concrete CEX (wrap=[D_2 .], tv=4, ub=1, t2=0):         *)
+(*     A0=[D_2[D_4 0]], X1=[D_2[D_4[D_1[D_1 0]]]]; base0,base1,ordlo,ordhi   *)
+(*     all hold, yet at u=0 the escape [D_4[D_1 A0]] in G(0,A1) exceeds X1.  *)
+(*   The 899/899 last-round validation therefore relied on A0 being a real   *)
+(*   Trans-image (bpHeadT(Trans(Pred ..))), whose right-spine head structure  *)
+(*   bounds transV; ot1_SETLE1_ltJ CANNOT be closed from base0/base1/tri0    *)
+(*   alone.  See the ox5_ obstruction note at end of block.                 *)
+(* ===================================================================== *)
+
+subsection \<open>The body driver \<open>BE'\<close> (hole-body domination, from \<open>tri0\<close>)\<close>
+
+text \<open>@{text ox5_body_driver}: every \<open>G\<^sub>u\<close>-member of the hole body \<open>A\<^sub>0\<close> is
+  \<open>\<le>\<close> some member of \<open>{X\<^sub>1} \<union> G\<^sub>u X\<^sub>1\<close>.  This is the CLEAN piece of the SETLE1
+  residual: it is exactly the \<open>c = X\<^sub>1\<close> instance of the census G-control brick
+  \<open>tri0 = b1x_triG z A\<^sub>0 X\<^sub>1\<close> (@{thm [source] ot1_tri0_census}, any \<open>z\<close>) at
+  \<open>z = 0\<close>, folded against \<open>base\<^sub>1 = A\<^sub>0 < X\<^sub>1\<close>: \<open>G\<^sub>u A\<^sub>0 \<preceq> G\<^sub>u X\<^sub>1 \<union> {0}\<close>, and
+  \<open>0 \<le> X\<^sub>1\<close> (as \<open>X\<^sub>1 \<noteq> 0\<close>).  STEP-0 confirms it holds on all 119877 hosts.
+  Abstract in \<open>(A\<^sub>0, X\<^sub>1)\<close> so a census wrapper can supply the two inputs.\<close>
+
+lemma ox5_body_driver:
+  fixes A0 X1 :: BT and u :: enat
+  assumes tri0: "\<And>z. b1x_triG z A0 X1"
+    and base1: "lessBT A0 X1"
+    and X1ne: "X1 \<noteq> Trm []"
+  shows "b1x_setle (GBT u A0) (insert X1 (GBT u X1))"
+proof -
+  have leA0X1: "leBT A0 X1" using base1 by blast
+  have step: "b1x_setle (GBT u A0) (GBT u X1 \<union> GBT u (Trm []) \<union> {Trm []})"
+    by (rule b1x_triG_D[OF tri0[of "Trm []"] leA0X1]) simp
+  have step': "b1x_setle (GBT u A0) (GBT u X1 \<union> {Trm []})"
+    using step by simp
+  show ?thesis
+    unfolding b1x_setle_def
+  proof
+    fix x assume "x \<in> GBT u A0"
+    then obtain y where yin: "y \<in> GBT u X1 \<union> {Trm []}" and xy: "leBT x y"
+      using step' unfolding b1x_setle_def by blast
+    show "\<exists>z \<in> insert X1 (GBT u X1). leBT x z"
+    proof (cases "y \<in> GBT u X1")
+      case True
+      thus ?thesis using xy by blast
+    next
+      case False
+      hence "y = Trm []" using yin by blast
+      hence "x = Trm []" using xy by (cases x) auto
+      moreover have "lessBT (Trm []) X1" using X1ne by simp
+      ultimately show ?thesis by blast
+    qed
+  qed
+qed
+
+text \<open>@{text ox5_body_driver_census}: the census-level instance of
+  @{thm [source] ox5_body_driver} \<mdash> \<open>tri0\<close> from @{thm [source] ot1_tri0_census}
+  and \<open>base\<^sub>1\<close> from @{thm [source] oi5_IIIIV_pkg} (the given \<open>(s\<^sub>0,b\<^sub>0)\<close> is pinned
+  to the package's by \<open>scb\<close>-uniqueness inside \<open>crx/cnv_tri0_of_nest\<close>, so the
+  two \<open>X\<^sub>1\<close> coincide).\<close>
+
+lemma ox5_body_driver_census:
+  fixes N :: pairseq and s0 b0 :: "Sym list" and u :: enat
+  assumes NST: "N \<in> ST_PS" and NPT: "N \<in> PT_PS"
+    and hp: "hasParent N 1 (Lng N - 1)"
+    and j1gt: "1 < Lng N - 1"
+    and branch: "transCondIII N \<or> transCondIV N"
+    and ltJ: "s84x_jm3 N < transJm1 N"
+    and inner: "scb_decomp (bpHeadT (Trans (s84x_N N))) s0
+                 (flatBT (Dpt (enat (entry N 1 (Lng N - 1))) 0\<^sub>B)) b0"
+  shows "b1x_setle
+           (GBT u (bpHeadT (Trans (Pred (s84x_N N)))))
+           (insert (d4vx_ins s0 (entry N 1 (Lng N - 1) - 1) b0
+                      (Dpt (enat (entry N 1 (Lng N - 1) - 1)) 0\<^sub>B))
+                   (GBT u (d4vx_ins s0 (entry N 1 (Lng N - 1) - 1) b0
+                             (Dpt (enat (entry N 1 (Lng N - 1) - 1)) 0\<^sub>B))))"
+proof -
+  let ?ub = "entry N 1 (Lng N - 1) - 1"
+  let ?A0 = "bpHeadT (Trans (Pred (s84x_N N)))"
+  let ?X1 = "d4vx_ins s0 ?ub b0 (Dpt (enat ?ub) 0\<^sub>B)"
+  have tri0: "\<And>z. b1x_triG z ?A0 ?X1"
+    by (rule ot1_tri0_census[OF NST NPT hp j1gt branch ltJ inner])
+  \<comment> \<open>\<open>base\<^sub>1\<close> and the \<open>flat\<close> wrapper from the package (given \<open>(s\<^sub>0,b\<^sub>0)\<close> pinned)\<close>
+  obtain s0' b0' s1 b1 where
+      b0RP': "\<forall>x \<in> set b0'. x = RP"
+    and inner': "scb_decomp (bpHeadT (Trans (s84x_N N))) s0'
+         (flatBT (Dpt (enat (entry N 1 (Lng N - 1))) 0\<^sub>B)) b0'"
+    and base1': "lessBT ?A0 (d4vx_ins s0' ?ub b0' (Dpt (enat ?ub) 0\<^sub>B))"
+    by (rule oi5_IIIIV_pkg[OF NST NPT hp j1gt branch ltJ])
+  \<comment> \<open>\<open>(s\<^sub>0,b\<^sub>0)\<close> pinned by \<open>scb\<close>-uniqueness of the shared hole\<close>
+  have bodyne: "bpHeadT (Trans (s84x_N N)) \<noteq> Trm []"
+  proof
+    assume z: "bpHeadT (Trans (s84x_N N)) = Trm []"
+    have "flatBT (bpHeadT (Trans (s84x_N N)))
+            = s0 @ flatBT (Dpt (enat (entry N 1 (Lng N - 1))) 0\<^sub>B) @ b0"
+      using inner by (simp add: scb_decomp_def)
+    hence "[Zsym] = s0 @ [Dsym (enat (entry N 1 (Lng N - 1))), Zsym] @ b0"
+      using z by simp
+    thus False by (cases s0) auto
+  qed
+  have pin: "s0 = s0' \<and> b0 = b0'"
+    by (rule m_7_2_scb_unique_sb[OF inner inner' bodyne])
+  have X1eq: "?X1 = d4vx_ins s0' ?ub b0' (Dpt (enat ?ub) 0\<^sub>B)" using pin by simp
+  have base1: "lessBT ?A0 ?X1" using base1' X1eq by simp
+  have X1ne: "?X1 \<noteq> Trm []" using base1 by (cases ?A0) auto
+  show ?thesis by (rule ox5_body_driver[OF tri0 base1 X1ne])
+qed
+
 end
