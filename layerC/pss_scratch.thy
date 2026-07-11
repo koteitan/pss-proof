@@ -5925,4 +5925,263 @@ proof -
   then show ?thesis using otp dfp nacc bacc by blast
 qed
 
+(* ===================================================================== *)
+(* ===== r64: wcl_ continuation --- the LEXICOGRAPHIC (head, size)     ===== *)
+(* ===== minimal bad witness, and the sharp UPPER-COMPONENT residual.  ===== *)
+(* =====                                                               ===== *)
+(* ===== r63 exposed two INCOMPATIBLE minimality framings:             ===== *)
+(* =====   * SIZE-minimal bad (wcl_min_bad_body_acc): body is acc, but  ===== *)
+(* =====     head-<v predecessors may be LARGER (out of reach), so the ===== *)
+(* =====     wfc_principal_acc_of_body hlt-premise is NOT discharged.   ===== *)
+(* =====   * HEAD-minimal bad: hlt IS discharged, but the body need not ===== *)
+(* =====     be acc.                                                    ===== *)
+(* ===== The resolution is the LEXICOGRAPHIC minimum on (head, size)   ===== *)
+(* ===== with HEAD dominating: it discharges BOTH the head-<n branch   ===== *)
+(* ===== (i, by head-minimality) AND the head-=n smaller-body branch   ===== *)
+(* ===== (ii, by size-minimality within the level).  The SOLE residual ===== *)
+(* ===== is then the head->n ("upper", shielded/collapsed) components  ===== *)
+(* ===== of the minimal-bad body --- exactly the psi-collapse content  ===== *)
+(* ===== of [Buc1] Lemma 2.2.  This is a genuine sharpening: the entire ===== *)
+(* ===== head-<= n segment of the minimal-bad body is now free.        ===== *)
+(* ===================================================================== *)
+
+subsection \<open>(D) The lexicographic \<open>(head, size)\<close>-minimal bad witness\<close>
+
+text \<open>If some \<open>OT\<close>+\<open>dfree\<close> principal is not \<open>RPrel\<close>-accessible, then a
+  \<open>(wfj_hd, wfs_szP)\<close>-lexicographically-minimal such principal \<open>D\<^bsub>n\<^esub> b\<close> has:
+  (i) EVERY strictly-lower-head \<open>OT\<close>+\<open>dfree\<close> principal accessible (head
+  minimality), and (ii) EVERY equal-head strictly-smaller principal accessible
+  (size minimality at the level).  The lexicographic wellorder is the standard
+  \<open>less_than <*lex*> less_than\<close> pulled back along \<open>g p = (hd\<^sub>nat p, wfs_szP p)\<close>.\<close>
+
+lemma wcl_min_bad_lex:
+  assumes bad: "\<not> (\<forall>p. isOT_BP p \<longrightarrow> dfree_BP p \<longrightarrow> p \<in> Wellfounded.acc RPrel)"
+  shows "\<exists>n b. isOT_BP (DB (enat n) b) \<and> dfree_BP (DB (enat n) b)
+             \<and> DB (enat n) b \<notin> Wellfounded.acc RPrel
+             \<and> (\<forall>r. isOT_BP r \<longrightarrow> dfree_BP r \<longrightarrow> wfj_hd r < enat n
+                    \<longrightarrow> r \<in> Wellfounded.acc RPrel)
+             \<and> (\<forall>c. isOT_BP c \<longrightarrow> dfree_BP c \<longrightarrow> wfj_hd c = enat n
+                    \<longrightarrow> wfs_szP c < wfs_szP (DB (enat n) b)
+                    \<longrightarrow> c \<in> Wellfounded.acc RPrel)"
+proof -
+  define Bad where
+    "Bad = {p. isOT_BP p \<and> dfree_BP p \<and> p \<notin> Wellfounded.acc RPrel}"
+  define g :: "BP \<Rightarrow> nat \<times> nat" where
+    "g = (\<lambda>p. (case wfj_hd p of enat k \<Rightarrow> k | \<infinity> \<Rightarrow> 0, wfs_szP p))"
+  from bad obtain p0 where p0Bad: "p0 \<in> Bad" unfolding Bad_def by blast
+  have wfR: "wf (inv_image (less_than <*lex*> less_than) g)"
+    by (rule wf_inv_image[OF wf_lex_prod[OF wf_less_than wf_less_than]])
+  have "\<exists>z\<in>Bad. \<forall>y. (y, z) \<in> inv_image (less_than <*lex*> less_than) g
+                       \<longrightarrow> y \<notin> Bad"
+    using wfR[unfolded wf_eq_minimal] p0Bad by blast
+  then obtain z where zBad: "z \<in> Bad"
+    and zmin: "\<forall>y. (y, z) \<in> inv_image (less_than <*lex*> less_than) g \<longrightarrow> y \<notin> Bad"
+    by blast
+  have zot: "isOT_BP z" and zdf: "dfree_BP z"
+    and znacc: "z \<notin> Wellfounded.acc RPrel"
+    using zBad unfolding Bad_def by auto
+  obtain v b where zeq0: "z = DB v b" by (cases z) auto
+  have "v \<noteq> \<infinity>" using zdf zeq0 by simp
+  then obtain n where vn: "v = enat n" by (cases v) auto
+  have zeq: "z = DB (enat n) b" using zeq0 vn by simp
+  have gz: "g z = (n, wfs_szP z)" using zeq by (simp add: g_def)
+  \<comment> \<open>(i) head minimality: every strictly-lower-head principal is accessible\<close>
+  have i: "\<forall>r. isOT_BP r \<longrightarrow> dfree_BP r \<longrightarrow> wfj_hd r < enat n
+                \<longrightarrow> r \<in> Wellfounded.acc RPrel"
+  proof (intro allI impI)
+    fix r assume otr: "isOT_BP r" and dfr: "dfree_BP r" and hlt: "wfj_hd r < enat n"
+    show "r \<in> Wellfounded.acc RPrel"
+    proof (rule ccontr)
+      assume nacc: "r \<notin> Wellfounded.acc RPrel"
+      then have rBad: "r \<in> Bad" using otr dfr unfolding Bad_def by blast
+      obtain u w where req: "r = DB u w" by (cases r) auto
+      have "u \<noteq> \<infinity>" using dfr req by simp
+      then obtain m where um: "u = enat m" by (cases u) auto
+      have hdr: "wfj_hd r = enat m" using req um by simp
+      then have mn: "m < n" using hlt by simp
+      have gr: "g r = (m, wfs_szP r)" using hdr by (simp add: g_def)
+      have "(g r, g z) \<in> less_than <*lex*> less_than"
+        using mn gr gz by (simp add: lex_prod_def)
+      then have "(r, z) \<in> inv_image (less_than <*lex*> less_than) g"
+        by (simp add: inv_image_def)
+      then have "r \<notin> Bad" using zmin by blast
+      then show False using rBad by blast
+    qed
+  qed
+  \<comment> \<open>(ii) size minimality within the level \<open>n\<close>\<close>
+  have ii: "\<forall>c. isOT_BP c \<longrightarrow> dfree_BP c \<longrightarrow> wfj_hd c = enat n
+                 \<longrightarrow> wfs_szP c < wfs_szP (DB (enat n) b)
+                 \<longrightarrow> c \<in> Wellfounded.acc RPrel"
+  proof (intro allI impI)
+    fix c assume otc: "isOT_BP c" and dfc: "dfree_BP c"
+      and hdc: "wfj_hd c = enat n" and szc: "wfs_szP c < wfs_szP (DB (enat n) b)"
+    show "c \<in> Wellfounded.acc RPrel"
+    proof (rule ccontr)
+      assume nacc: "c \<notin> Wellfounded.acc RPrel"
+      then have cBad: "c \<in> Bad" using otc dfc unfolding Bad_def by blast
+      have gc: "g c = (n, wfs_szP c)" using hdc by (simp add: g_def)
+      have szc': "wfs_szP c < wfs_szP z" using szc zeq by simp
+      have "(g c, g z) \<in> less_than <*lex*> less_than"
+        using szc' gc gz by (simp add: lex_prod_def)
+      then have "(c, z) \<in> inv_image (less_than <*lex*> less_than) g"
+        by (simp add: inv_image_def)
+      then have "c \<notin> Bad" using zmin by blast
+      then show False using cBad by blast
+    qed
+  qed
+  have zot': "isOT_BP (DB (enat n) b)" using zot zeq by simp
+  have zdf': "dfree_BP (DB (enat n) b)" using zdf zeq by simp
+  have znacc': "DB (enat n) b \<notin> Wellfounded.acc RPrel" using znacc zeq by simp
+  show ?thesis using zot' zdf' znacc' i ii by blast
+qed
+
+subsection \<open>(E) The sharp UPPER-component residual: the last content of [Buc1] 2.2\<close>
+
+text \<open>\<open>wcl_upper\<close> isolates the ONLY thing the collapse must still supply: for a
+  lexicographically-minimal bad principal \<open>D\<^bsub>n\<^esub> b\<close> (head-\<open><n\<close> and equal-head
+  smaller predecessors already accessible), the body components with head
+  STRICTLY GREATER than \<open>n\<close> --- the \<open>\<psi>\<^bsub>n\<^esub>\<close>-shielded / collapsed coefficients ---
+  are accessible.  Under this residual, all body components are accessible
+  (head-\<open><n\<close> by (i), head-\<open>=n\<close> by (ii) since they are proper subterms, head-\<open>>n\<close>
+  by the residual), so the body is \<open>RTrel\<close>-accessible (\<open>wfj_tuple_acc\<close>) and the
+  principal is \<open>RPrel\<close>-accessible (\<open>wfc_principal_acc_of_body\<close>) --- a
+  contradiction.  Hence \<open>wcl_upper \<Longrightarrow> wf RPrel\<close> and the whole [Buc1] 2.2 chain.\<close>
+
+definition wcl_upper :: bool where
+  "wcl_upper \<longleftrightarrow>
+     (\<forall>n b. isOT_BP (DB (enat n) b) \<longrightarrow> dfree_BP (DB (enat n) b) \<longrightarrow>
+        DB (enat n) b \<notin> Wellfounded.acc RPrel \<longrightarrow>
+        (\<forall>r. isOT_BP r \<longrightarrow> dfree_BP r \<longrightarrow> wfj_hd r < enat n
+             \<longrightarrow> r \<in> Wellfounded.acc RPrel) \<longrightarrow>
+        (\<forall>c. isOT_BP c \<longrightarrow> dfree_BP c \<longrightarrow> wfj_hd c = enat n
+             \<longrightarrow> wfs_szP c < wfs_szP (DB (enat n) b)
+             \<longrightarrow> c \<in> Wellfounded.acc RPrel) \<longrightarrow>
+        (\<forall>w c. DB w c \<in> set (untrm b) \<longrightarrow> enat n < w
+               \<longrightarrow> DB w c \<in> Wellfounded.acc RPrel))"
+
+theorem wcl_wf_of_upper:
+  assumes U: "wcl_upper"
+  shows "wf RPrel"
+proof (rule ccontr)
+  assume nwf: "\<not> wf RPrel"
+  have bad: "\<not> (\<forall>p. isOT_BP p \<longrightarrow> dfree_BP p \<longrightarrow> p \<in> Wellfounded.acc RPrel)"
+  proof
+    assume A: "\<forall>p. isOT_BP p \<longrightarrow> dfree_BP p \<longrightarrow> p \<in> Wellfounded.acc RPrel"
+    have "\<forall>p. p \<in> Wellfounded.acc RPrel"
+    proof
+      fix p :: BP
+      show "p \<in> Wellfounded.acc RPrel"
+      proof (cases "isOT_BP p \<and> dfree_BP p")
+        case True thus ?thesis using A by blast
+      next
+        case False
+        show ?thesis
+        proof (rule accI)
+          fix q assume "(q, p) \<in> RPrel"
+          then have "isOT_BP p \<and> dfree_BP p" by (auto simp add: RPrel_def)
+          with False show "q \<in> Wellfounded.acc RPrel" by blast
+        qed
+      qed
+    qed
+    then have "wf RPrel" using wfs_wf_iff_all_acc by blast
+    with nwf show False by blast
+  qed
+  obtain n b where otp: "isOT_BP (DB (enat n) b)" and dfp: "dfree_BP (DB (enat n) b)"
+    and nacc: "DB (enat n) b \<notin> Wellfounded.acc RPrel"
+    and i: "\<forall>r. isOT_BP r \<longrightarrow> dfree_BP r \<longrightarrow> wfj_hd r < enat n
+                 \<longrightarrow> r \<in> Wellfounded.acc RPrel"
+    and ii: "\<forall>c. isOT_BP c \<longrightarrow> dfree_BP c \<longrightarrow> wfj_hd c = enat n
+                  \<longrightarrow> wfs_szP c < wfs_szP (DB (enat n) b)
+                  \<longrightarrow> c \<in> Wellfounded.acc RPrel"
+    using wcl_min_bad_lex[OF bad] by blast
+  have otb: "isOT_BT b" using otp by simp
+  have dfb: "dfree_BT b" using dfp by simp
+  obtain bs where beq: "b = Trm bs" by (cases b) auto
+  \<comment> \<open>upper components (head \<open>> n\<close>) accessible by the residual\<close>
+  have upper: "\<forall>w c. DB w c \<in> set (untrm b) \<longrightarrow> enat n < w
+                     \<longrightarrow> DB w c \<in> Wellfounded.acc RPrel"
+    using U[unfolded wcl_upper_def] otp dfp nacc i ii by blast
+  \<comment> \<open>ALL body components accessible, by trichotomy on the component head\<close>
+  have allcomp: "\<forall>r \<in> set (untrm b). r \<in> Wellfounded.acc RPrel"
+  proof
+    fix r assume rin: "r \<in> set (untrm b)"
+    have rin': "r \<in> set bs" using rin beq by simp
+    have otr: "isOT_BP r" using otb beq rin' by simp
+    have dfr: "dfree_BP r" using dfb beq rin' by simp
+    obtain w c where req: "r = DB w c" by (cases r) auto
+    have rmem: "DB w c \<in> set (untrm b)" using rin req by simp
+    show "r \<in> Wellfounded.acc RPrel"
+    proof (cases w "enat n" rule: linorder_cases)
+      case less
+      have "wfj_hd r < enat n" using req less by simp
+      then show ?thesis using i otr dfr by blast
+    next
+      case equal
+      have hd_r: "wfj_hd r = enat n" using req equal by simp
+      have "wfs_szP r < wfs_szT (Trm bs)" using wfs_szP_mem_lt[OF rin'] .
+      then have "wfs_szP r < wfs_szT b" using beq by simp
+      then have szr: "wfs_szP r < wfs_szP (DB (enat n) b)" by simp
+      show ?thesis using ii otr dfr hd_r szr by blast
+    next
+      case greater
+      show ?thesis using upper rmem greater req by blast
+    qed
+  qed
+  have bacc: "b \<in> Wellfounded.acc RTrel"
+    by (rule wfj_tuple_acc[OF otb dfb allcomp])
+  have hlt: "\<And>r. isOT_BP r \<Longrightarrow> dfree_BP r \<Longrightarrow> wfj_hd r < enat n
+                 \<Longrightarrow> r \<in> Wellfounded.acc RPrel"
+    using i by blast
+  have "DB (enat n) b \<in> Wellfounded.acc RPrel"
+    by (rule wfc_principal_acc_of_body[OF hlt bacc otp dfp])
+  then show False using nacc by blast
+qed
+
+text \<open>Converse sanity: \<open>wcl_upper\<close> is EXACTLY theorem-strength (no overshoot).
+  Under \<open>wf RPrel\<close> every principal is accessible, so the residual holds
+  vacuously (its \<open>D\<^bsub>n\<^esub> b \<notin> acc\<close> premise is never met).\<close>
+
+lemma wcl_upper_of_wf:
+  assumes "wf RPrel" shows "wcl_upper"
+proof -
+  have "\<forall>p. p \<in> Wellfounded.acc RPrel" using assms wfs_wf_iff_all_acc by blast
+  then show ?thesis unfolding wcl_upper_def by blast
+qed
+
+theorem wcl_upper_iff_wf: "wcl_upper \<longleftrightarrow> wf RPrel"
+  using wcl_wf_of_upper wcl_upper_of_wf by blast
+
+corollary wcl_collapse_of_upper:
+  assumes "wcl_upper" shows "wds_collapse"
+  by (rule wds_collapse_of_wf[OF wcl_wf_of_upper[OF assms]])
+
+corollary wcl_buc1_2_2_of_upper:
+  \<comment> \<open>[Buc1] Lemma 2.2 in original shape, modulo the single \<open>wcl_upper\<close> residual.\<close>
+  assumes "wcl_upper"
+  shows "wf {(a, b). a \<in> OT_B \<and> b \<in> OT_B \<and> lessBT a b}"
+  using wds_buc1_2_2_of_collapse[OF wcl_collapse_of_upper[OF assms]] .
+
+text \<open>\<^bold>\<open>Status after r64.\<close>  The last external citation [Buc1] Lemma 2.2 is now
+  pinned to the SINGLE sharpest residual \<open>wcl_upper\<close> (\<open>wcl_upper_iff_wf\<close>: exactly
+  theorem-strength).  Compared with r63's \<open>wds_collapse\<close>, the entire head-\<open>\<le> n\<close>
+  segment of the minimal-bad body is discharged unconditionally by the
+  lexicographic \<open>(head, size)\<close> minimality (\<open>wcl_min_bad_lex\<close>):
+
+  \<^item> head-\<open>< n\<close> components: accessible by head-minimality (clause (i));
+  \<^item> head-\<open>= n\<close> components: accessible by size-minimality within the level,
+    since they are proper subterms of the body (clause (ii));
+  \<^item> head-\<open>> n\<close> components (the \<open>\<psi>\<^bsub>n\<^esub>\<close>-shielded / collapsed coefficients): the
+    SOLE remaining obligation \<open>wcl_upper\<close>.
+
+  \<^bold>\<open>Exact obstruction.\<close>  \<open>wcl_upper\<close> asks that the head-\<open>> n\<close> body components of
+  the minimal-bad principal be \<open>RPrel\<close>-accessible.  These are exactly Buchholz's
+  collapsed coefficients \<open>\<psi>\<^bsub>w\<^esub>(\<dots>)\<close>, \<open>w > n\<close>, appearing under a \<open>\<psi>\<^bsub>n\<^esub>\<close>: their
+  accessibility is NOT reachable by any subterm/size descent (they sit at a
+  larger head) nor by head-minimality (their head is \<open>> n\<close>, not \<open>< n\<close>).  Closing
+  them is the genuine transfinite content --- the [Buc1] distinguished-set /
+  fundamental-sequence collapse (\<open>wds_distinguished\<close> + [Buc1] \<open>\<section>\<close>5, cf.
+  \<open>wcl_accfrag_distinguished_of_core\<close>, which currently still assumes the collapse
+  core).  Estimated 2--4 rounds if the distinguished-set tower induction on \<open>n\<close>
+  can be made to feed \<open>wcl_upper\<close> level by level; genuinely external otherwise.\<close>
+
 end
