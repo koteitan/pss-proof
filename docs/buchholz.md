@@ -118,6 +118,41 @@ the pair-sequence side, so it lives in `pss_paper` (imports `pss_defs`). Then
 `Trans` / `Mark`. The well-foundedness of `(OT_B, <)` ([Buc1] Lemma 2.2) is the
 eventual source of termination.
 
+### Formalizing Lemma 2.2 (well-foundedness) — two routes, one recommended
+
+The article cites [Buc1] Lemma 2.2 without proof, so leaving `buc1_2_2_OT_B_wf`
+as a cited `sorry` is *faithful*. If we want the internal proof, note that
+[Buc1] (1986) itself proves wf **semantically** (Lemma 2.2(c)+2.3: `o(·)` is an
+order-embedding of `(OT,<)` into a set of genuine ordinals `C₀(ε_{Ω_ω+1})`, so
+wf pulls back from the ordinals). That is **not** the route our `wds_`/`wcl_`
+code takes. Two options:
+
+- **Route D — distinguished sets (`ausgezeichnete Mengen`), what `wds_`/`wcl_`
+  do.** A *finitary/syntactic* well-ordering proof: pure `Wellfounded.acc`/`wf`
+  on the term system, **no ordinals, no set theory, no `Isabelle/ZF`, no
+  `ZFC_in_HOL`**. This is why proof theorists invented the method — to avoid
+  semantic ordinals. Source proof: **Buchholz–Schütte monograph Ch. IV §1–§4**
+  (refined in the Buchholz Hydra paper — the companion `[1]`, held locally as
+  `../1984_Buchholz_BHydra_an-independence-result-for-...pdf` = *An independence
+  result for (Π¹₁-CA)+BI*, APAL 33 (1987) 131–155). The wall is the impredicative
+  accessibility step (`wcl_upper`): a proof-engineering difficulty, **not** a
+  logical-strength one — HOL is far strong enough. **Recommended: continue
+  Route D in plain HOL**, transcribing the Ch. IV / `[1]` distinguished-sets
+  accessibility argument into `wcl_upper`.
+- **Route S — semantic (the 1986 paper's own proof).** Define the `ψ_ν`
+  collapsing functions on *real* ordinals (up to `ε_{Ω_ω+1}`, needs cardinals
+  `ℵ_1..ℵ_ω`), prove `o : OT → Ord` order-preserving, pull back wf. This needs a
+  set-theory library — **`ZFC_in_HOL`** (Paulson, AFP; ZFC inside HOL, so it
+  interoperates), **not `Isabelle/ZF`** (a separate object logic that cannot be
+  combined with this HOL development). Bigger, different undertaking; only worth
+  it if we deliberately pivot away from distinguished sets.
+
+**`Isabelle/ZF` is not useful here** either way: object logics don't interoperate,
+so it would mean re-doing the entire HOL development. No existing Isabelle
+formalization reaches ψ₀(ε_{Ω_ω+1}) (the AFP hereditary-multiset ordinals stop at
+ε₀); a full Buchholz-ψ well-ordering would be frontier work — the Route-D
+transcription is the shortest path.
+
 ## Empirical validation (`python/buchholz.py`, `python/buchholz_audit.py`)
 
 A faithful Python model of the notation system (terms, `<`, `+`, `T_v`, `G_u`,
