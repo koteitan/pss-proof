@@ -4983,4 +4983,333 @@ proof -
     by (rule oi8_census_final(2)[OF SETLE1 ot2_IVADMEQ FINRC])
 qed
 
+
+(* ===== r61 endgame: SETLE1 restricted engine ox6_*_restr (front A) + FINRC bounded content ot_finRc_* / A9 determination (front B) ===== *)
+
+
+(* ===================================================================== *)
+(* r61 SETLE1_ltJ (prefix ox6_..._restr / ot6_): the ANCESTOR-RESTRICTED  *)
+(*   re-thread of the head-guarded scbext-setle descent engine.           *)
+(*                                                                        *)
+(*   HONESTY FIX over r60's ox6_setle_scbext: r60 threaded spineH         *)
+(*   UNIVERSALLY over all (t',sc,bc) with flatBT t' = sc @ flatBP cpA @ bc *)
+(*   and size t' < size tA.  That form is STRONGER-THAN-TRUE (a small tree *)
+(*   can carry a head BIGGER than X1's, so it is > X1).  The TRUE bound    *)
+(*   (STEP-0 r60, 146/146 real hosts; STEP-0 r59's "H" pointwise          *)
+(*   invariant) is ANCESTOR-RESTRICTED: it holds only for t' that are the  *)
+(*   ACTUAL right-spine ancestor bodies of A1 --- and those come, at every  *)
+(*   align3 peel level, with a MATCHED X-side sibling  tx' (same sc,bc,     *)
+(*   hole cpX) that the engine already proves lies in  GBT u B.  Keying     *)
+(*   spineH on the witness  tx' \<in> GBT u B  is exactly what rules out the     *)
+(*   false small-tree/big-head CEX, so the restricted residual is the TRUE  *)
+(*   statement.  ox6_setle_scbext_restr is the reusable spine-induction     *)
+(*   core; ox6_setle_wrapped_restr packages it for d4vx_ins;                *)
+(*   ox6_SETLE1_reduce_restr localises the census SETLE1_ltJ slot to the    *)
+(*   restricted ancestor bound.                                            *)
+(* ===================================================================== *)
+
+subsection \<open>The ancestor-restricted scbext-setle descent engine
+  \<open>ox6_setle_scbext_restr\<close>\<close>
+
+text \<open>@{text ox6_setle_scbext_restr}: the honest re-thread of
+  @{thm [source] ox6_setle_scbext}.  Identical right-spine induction, but the
+  \<open>spineH\<close> residual is keyed on the MATCHED X-side sibling witness \<open>tx' \<in> G\<^sub>u B\<close>:
+  the engine hands \<open>spineH\<close> only the ACTUAL right-spine ancestor bodies \<open>lbA\<close>,
+  each paired with its matched \<open>lbX \<in> G\<^sub>u B\<close> (proved \<open>lbXB\<close> below).  This is the
+  exact TRUE (STEP-0) bound, unlike the universal (stronger-than-true) form.\<close>
+
+lemma ox6_setle_scbext_restr:
+  fixes B :: BT and cpA cpX :: BP and u :: enat
+  assumes holeH: "b1x_setle (GBP u cpA) (insert B (GBT u B))"
+  shows "flatBT tA = s @ flatBP cpA @ b \<Longrightarrow>
+         flatBT tX = s @ flatBP cpX @ b \<Longrightarrow>
+         (\<forall>x\<in>set b. x = RP) \<Longrightarrow>
+         GBT u tX \<subseteq> GBT u B \<Longrightarrow>
+         (\<forall>t' tx' sc bc. flatBT t' = sc @ flatBP cpA @ bc
+              \<longrightarrow> flatBT tx' = sc @ flatBP cpX @ bc
+              \<longrightarrow> (\<forall>x\<in>set bc. x = RP) \<longrightarrow> tx' \<in> GBT u B
+              \<longrightarrow> size t' < size tA \<longrightarrow> leBT t' B) \<Longrightarrow>
+         b1x_setle (GBT u tA) (insert B (GBT u B))"
+proof (induction tA arbitrary: tX s b rule: measure_induct_rule[where f=size])
+  case (less tA)
+  note fA = less.prems(1) and fX = less.prems(2) and bRP = less.prems(3)
+    and subXB = less.prems(4) and spineH = less.prems(5)
+  from otx2_align3[OF fA fX fX bRP]
+  show ?case
+  proof (elim disjE exE conjE)
+    \<comment> \<open>Case A: the hole is the last top-level principal\<close>
+    fix qs
+    assume TA: "tA = Trm (qs @ [cpA])" and TX: "tX = Trm (qs @ [cpX])"
+      and TX3: "tX = Trm (qs @ [cpX])"
+    have qle: "(\<Union>q\<in>set qs. GBP u q) \<subseteq> GBT u B"
+    proof -
+      have "(\<Union>q\<in>set qs. GBP u q) \<subseteq> GBT u tX" using TX by auto
+      thus ?thesis using subXB by blast
+    qed
+    show "b1x_setle (GBT u tA) (insert B (GBT u B))"
+      unfolding b1x_setle_def
+    proof
+      fix x assume xin: "x \<in> GBT u tA"
+      have "x \<in> (\<Union>q\<in>set qs. GBP u q) \<or> x \<in> GBP u cpA" using xin TA by auto
+      thus "\<exists>y\<in>insert B (GBT u B). leBT x y"
+      proof
+        assume "x \<in> (\<Union>q\<in>set qs. GBP u q)"
+        hence "x \<in> GBT u B" using qle by blast
+        thus ?thesis by blast
+      next
+        assume "x \<in> GBP u cpA"
+        thus ?thesis using holeH unfolding b1x_setle_def by blast
+      qed
+    qed
+  next
+    \<comment> \<open>Case B: the hole is nested one right-spine level deeper\<close>
+    fix qs w lbA lbX lb3 sc bc
+    assume TA: "tA = Trm (qs @ [DB w lbA])"
+      and TX: "tX = Trm (qs @ [DB w lbX])"
+      and TX3: "tX = Trm (qs @ [DB w lb3])"
+      and FlbA: "flatBT lbA = sc @ flatBP cpA @ bc"
+      and FlbX: "flatBT lbX = sc @ flatBP cpX @ bc"
+      and Flb3: "flatBT lb3 = sc @ flatBP cpX @ bc"
+      and bcRP: "\<forall>x\<in>set bc. x = RP"
+    have pin: "DB w lbA \<in> set (qs @ [DB w lbA])" by simp
+    have szp: "size (DB w lbA) \<le> size_list size (qs @ [DB w lbA])"
+      by (rule size_list_estimation'[OF pin order_refl])
+    have szlt: "size lbA < size tA" using szp TA by simp
+    have qle: "(\<Union>q\<in>set qs. GBP u q) \<subseteq> GBT u B"
+    proof -
+      have "(\<Union>q\<in>set qs. GBP u q) \<subseteq> GBT u tX" using TX by auto
+      thus ?thesis using subXB by blast
+    qed
+    show "b1x_setle (GBT u tA) (insert B (GBT u B))"
+      unfolding b1x_setle_def
+    proof
+      fix x assume xin: "x \<in> GBT u tA"
+      have "x \<in> (\<Union>q\<in>set qs. GBP u q) \<or> x \<in> GBP u (DB w lbA)"
+        using xin TA by auto
+      thus "\<exists>y\<in>insert B (GBT u B). leBT x y"
+      proof
+        assume "x \<in> (\<Union>q\<in>set qs. GBP u q)"
+        hence "x \<in> GBT u B" using qle by blast
+        thus ?thesis by blast
+      next
+        assume xh: "x \<in> GBP u (DB w lbA)"
+        have uw: "u \<le> w" using xh by (auto split: if_split_asm)
+        have xcase: "x = lbA \<or> x \<in> GBT u lbA" using xh by (auto split: if_split_asm)
+        have lbXin: "lbX \<in> GBT u tX"
+        proof -
+          have "lbX \<in> GBP u (DB w lbX)" using uw by simp
+          thus ?thesis using TX by auto
+        qed
+        have lbXB: "lbX \<in> GBT u B" using lbXin subXB by blast
+        have subX': "GBT u lbX \<subseteq> GBT u B" using b1x_GBT_trans[OF lbXB] by blast
+        \<comment> \<open>the restricted spineH re-threaded for the deeper level, MATCHED to \<open>lbX\<close>\<close>
+        have spineH': "\<forall>t' tx' sc' bc'. flatBT t' = sc' @ flatBP cpA @ bc'
+              \<longrightarrow> flatBT tx' = sc' @ flatBP cpX @ bc'
+              \<longrightarrow> (\<forall>x\<in>set bc'. x = RP) \<longrightarrow> tx' \<in> GBT u B
+              \<longrightarrow> size t' < size lbA \<longrightarrow> leBT t' B"
+        proof (intro allI impI)
+          fix t' tx' sc' bc'
+          assume a1: "flatBT t' = sc' @ flatBP cpA @ bc'"
+            and a1x: "flatBT tx' = sc' @ flatBP cpX @ bc'"
+            and a2: "\<forall>x\<in>set bc'. x = RP" and a2x: "tx' \<in> GBT u B"
+            and a3: "size t' < size lbA"
+          have "size t' < size tA" using a3 szlt by simp
+          thus "leBT t' B" using spineH a1 a1x a2 a2x by blast
+        qed
+        from xcase show ?thesis
+        proof
+          assume "x = lbA"
+          moreover have "leBT lbA B"
+            using spineH FlbA FlbX bcRP lbXB szlt by blast
+          ultimately show ?thesis by blast
+        next
+          assume xlbA: "x \<in> GBT u lbA"
+          have "b1x_setle (GBT u lbA) (insert B (GBT u B))"
+            by (rule less.IH[OF szlt FlbA FlbX bcRP subX' spineH'])
+          thus ?thesis using xlbA unfolding b1x_setle_def by blast
+        qed
+      qed
+    qed
+  qed
+qed
+
+text \<open>@{text ox6_setle_wrapped_restr}: the @{const d4vx_ins} packaging of the
+  restricted engine.  Mirror of @{thm [source] ox6_setle_wrapped}; only \<open>spineH\<close>
+  is now the ancestor-restricted (matched-\<open>tx'\<close>) form.\<close>
+
+lemma ox6_setle_wrapped_restr:
+  fixes A0 X0 W :: BT and hole :: BP and s0 b0 :: "Sym list" and ub :: nat and u :: enat
+  assumes ox5: "b1x_setle (GBT u A0)
+                  (insert (d4vx_ins s0 ub b0 X0) (GBT u (d4vx_ins s0 ub b0 X0)))"
+    and base1: "lessBT A0 (d4vx_ins s0 ub b0 X0)"
+    and wrap: "flatBT W = s0 @ flatBP hole @ b0"
+    and b0RP: "\<forall>x \<in> set b0. x = RP"
+    and spineH: "\<forall>t' tx' sc bc.
+          flatBT t' = sc @ flatBP (DB (enat ub) A0) @ bc
+          \<longrightarrow> flatBT tx' = sc @ flatBP (DB (enat ub) X0) @ bc
+          \<longrightarrow> (\<forall>x\<in>set bc. x = RP)
+          \<longrightarrow> tx' \<in> GBT u (d4vx_ins s0 ub b0 X0)
+          \<longrightarrow> size t' < size (d4vx_ins s0 ub b0 A0)
+          \<longrightarrow> leBT t' (d4vx_ins s0 ub b0 X0)"
+  shows "b1x_setle (GBT u (d4vx_ins s0 ub b0 A0))
+           (insert (d4vx_ins s0 ub b0 X0) (GBT u (d4vx_ins s0 ub b0 X0)))"
+proof -
+  let ?X1 = "d4vx_ins s0 ub b0 X0"
+  let ?A1 = "d4vx_ins s0 ub b0 A0"
+  have fA1: "flatBT ?A1 = s0 @ flatBP (DB (enat ub) A0) @ b0"
+    using d4vx_ins_flat[OF wrap b0RP, of ub A0] by simp
+  have fX1: "flatBT ?X1 = s0 @ flatBP (DB (enat ub) X0) @ b0"
+    using d4vx_ins_flat[OF wrap b0RP, of ub X0] by simp
+  have holeH: "b1x_setle (GBP u (DB (enat ub) A0)) (insert ?X1 (GBT u ?X1))"
+    by (rule ox6_holeH[OF ox5 base1])
+  show ?thesis
+    by (rule ox6_setle_scbext_restr[OF holeH fA1 fX1 b0RP subset_refl spineH])
+qed
+
+text \<open>@{text ox6_SETLE1_reduce_restr}: the census-level SETLE1 residual reduced to
+  the ANCESTOR-RESTRICTED spine head bound.  Mirror of
+  @{thm [source] ox6_SETLE1_reduce}; conclusion is EXACTLY the \<open>SETLE1\<close> slot of
+  @{thm [source] oi8_census_final} at \<open>u\<close>, and the sole open input \<open>spineH\<close> is
+  now the TRUE (matched-\<open>tx'\<close>) statement.\<close>
+
+lemma ox6_SETLE1_reduce_restr:
+  fixes N :: pairseq and s0 b0 :: "Sym list" and u :: enat
+  assumes NST: "N \<in> ST_PS" and NPT: "N \<in> PT_PS"
+    and hp: "hasParent N 1 (Lng N - 1)"
+    and j1gt: "1 < Lng N - 1"
+    and branch: "transCondIII N \<or> transCondIV N"
+    and ltJ: "s84x_jm3 N < transJm1 N"
+    and inner: "scb_decomp (bpHeadT (Trans (s84x_N N))) s0
+                 (flatBT (Dpt (enat (entry N 1 (Lng N - 1))) 0\<^sub>B)) b0"
+    and spineH: "\<forall>t' tx' sc bc.
+          flatBT t' = sc @ flatBP (DB (enat (entry N 1 (Lng N - 1) - 1))
+                                      (bpHeadT (Trans (Pred (s84x_N N))))) @ bc
+          \<longrightarrow> flatBT tx' = sc @ flatBP (DB (enat (entry N 1 (Lng N - 1) - 1))
+                                      (Dpt (enat (entry N 1 (Lng N - 1) - 1)) 0\<^sub>B)) @ bc
+          \<longrightarrow> (\<forall>x\<in>set bc. x = RP)
+          \<longrightarrow> tx' \<in> GBT u (d4vx_ins s0 (entry N 1 (Lng N - 1) - 1) b0
+                            (Dpt (enat (entry N 1 (Lng N - 1) - 1)) 0\<^sub>B))
+          \<longrightarrow> size t' < size (d4vx_ins s0 (entry N 1 (Lng N - 1) - 1) b0
+                                (bpHeadT (Trans (Pred (s84x_N N)))))
+          \<longrightarrow> leBT t' (d4vx_ins s0 (entry N 1 (Lng N - 1) - 1) b0
+                        (Dpt (enat (entry N 1 (Lng N - 1) - 1)) 0\<^sub>B))"
+  shows "b1x_setle
+           (GBT u (d4vx_ins s0 (entry N 1 (Lng N - 1) - 1) b0
+                     (bpHeadT (Trans (Pred (s84x_N N))))))
+           (insert (d4vx_ins s0 (entry N 1 (Lng N - 1) - 1) b0
+                      (Dpt (enat (entry N 1 (Lng N - 1) - 1)) 0\<^sub>B))
+                   (GBT u (d4vx_ins s0 (entry N 1 (Lng N - 1) - 1) b0
+                             (Dpt (enat (entry N 1 (Lng N - 1) - 1)) 0\<^sub>B))))"
+proof -
+  let ?v1 = "entry N 1 (Lng N - 1)"
+  let ?ub = "entry N 1 (Lng N - 1) - 1"
+  let ?A0 = "bpHeadT (Trans (Pred (s84x_N N)))"
+  let ?X0 = "Dpt (enat ?ub) 0\<^sub>B"
+  let ?body = "bpHeadT (Trans (s84x_N N))"
+  \<comment> \<open>the body driver \<open>ox5\<close>\<close>
+  have ox5: "b1x_setle (GBT u ?A0)
+               (insert (d4vx_ins s0 ?ub b0 ?X0) (GBT u (d4vx_ins s0 ?ub b0 ?X0)))"
+    by (rule ox5_body_driver_census[OF NST NPT hp j1gt branch ltJ inner])
+  \<comment> \<open>\<open>base\<^sub>1\<close> and the flat wrapper from the package (given \<open>(s\<^sub>0,b\<^sub>0)\<close> pinned)\<close>
+  obtain s0' b0' s1 b1 where
+      b0RP': "\<forall>x \<in> set b0'. x = RP"
+    and inner': "scb_decomp ?body s0'
+         (flatBT (Dpt (enat ?v1) 0\<^sub>B)) b0'"
+    and base1': "lessBT ?A0 (d4vx_ins s0' ?ub b0' ?X0)"
+    by (rule oi5_IIIIV_pkg[OF NST NPT hp j1gt branch ltJ])
+  have bodyne: "?body \<noteq> Trm []"
+  proof
+    assume z: "?body = Trm []"
+    have "flatBT ?body = s0 @ flatBT (Dpt (enat ?v1) 0\<^sub>B) @ b0"
+      using inner by (simp add: scb_decomp_def)
+    hence "[Zsym] = s0 @ [Dsym (enat ?v1), Zsym] @ b0" using z by simp
+    thus False by (cases s0) auto
+  qed
+  have pin: "s0 = s0' \<and> b0 = b0'"
+    by (rule m_7_2_scb_unique_sb[OF inner inner' bodyne])
+  have base1: "lessBT ?A0 (d4vx_ins s0 ?ub b0 ?X0)" using base1' pin by simp
+  have b0RP: "\<forall>x \<in> set b0. x = RP" using b0RP' pin by simp
+  have wrap: "flatBT ?body = s0 @ flatBP (DB (enat ?v1) 0\<^sub>B) @ b0"
+    using inner by (simp add: scb_decomp_def)
+  show ?thesis
+    by (rule ox6_setle_wrapped_restr[OF ox5 base1 wrap b0RP spineH])
+qed
+
+
+
+(* ===================================================================== *)
+(* ===== r61 FINRC closure attempt (prefix ot_finRc_):  the condII   ==== *)
+(* =====   finiteness residual tvx_finRc IS the A9 nth-artifact in     === *)
+(* =====   fin-set form.  DETERMINATION + the true bounded content.    === *)
+(* ===================================================================== *)
+
+text \<open>\<^bold>\<open>FINRC = the A9 nth-artifact in fin-set form.\<close>  The census slot
+  \<open>FINRC\<close> asks for @{const tvx_finRc} \<open>K\<close>, i.e. finiteness of
+  \[
+     \{J.\ (\mathrm{Br}\,R_c)_{(\mathrm{Lng}(\mathrm{Br}\,R_c)-1)\,0\,0}
+              = (\mathrm{Br}\,R_c)_{J\,0\,0}
+        \ \wedge\ (\mathrm{Br}\,R_c)_{J\,1\,0} < (\mathrm{Br}\,R_c)_{J\,0\,0}\},
+  \]
+  where @{term "entry M i j"} is @{term "if i = 0 then fst (M ! j) else snd (M ! j)"}
+  (@{thm entry_def}) and \<open>Br R\<^sub>c\<close> is a genuine finite @{typ "pairseq list"}.  The
+  set-comprehension binder \<open>J\<close> ranges over \<^bold>\<open>all\<close> naturals, but the article's
+  \<open>J\<close> is a \<^emph>\<open>branch index\<close>, ranging over \<open>0, \<dots>, Lng (Br R\<^sub>c) - 1\<close> (exactly the
+  correction \<^bold>\<open>A9\<close>: "\<open>J\<^sub>1 := Lng (Br M)\<close>" must be "\<open>J\<^sub>1 := Lng (Br M) - 1\<close>",
+  the \<open>Br\<close>-index range being \<open>0..Lng (Br M) - 1\<close>).  For \<open>J \<ge> Lng (Br R\<^sub>c)\<close> the
+  list-\<open>nth\<close> \<open>(Br R\<^sub>c) ! J\<close> peels to \<open>[] ! (J - Lng (Br R\<^sub>c))\<close>: Isabelle's
+  @{const nth} has \<^bold>\<open>no\<close> equation for the \<open>[]\<close> constructor (it is
+  \<open>primrec (nonexhaustive)\<close>), so \<open>[] ! m\<close> is an unspecified value about which
+  \<^bold>\<open>nothing\<close> is provable.  Hence the strict inequality
+  \<open>(Br R\<^sub>c)_{J,1,0} < (Br R\<^sub>c)_{J,0,0}\<close> is \<^bold>\<open>not refutable\<close> for out-of-range \<open>J\<close>,
+  the set is not provably bounded, and @{const tvx_finRc} \<open>K\<close> is \<^bold>\<open>UNPROVABLE as
+  literally stated\<close> (the total-\<open>nth\<close> artifact already recorded in the
+  \<open>tvx_finRc\<close> comment; same class as the \<open>hqx\<close>/\<open>bpx\<close>/\<open>bfx\<close> fins found
+  un-dischargeable in r24/r48, correction-A9 territory).
+
+  Two honest green bricks below make this precise and record the true content:
+  \<^item> @{text ot_finRc_bounded}: under the \<^emph>\<open>intended bounded reading\<close>
+    (\<open>J < Lng (Br R\<^sub>c)\<close>, the branch-index range) the set is \<^bold>\<open>finite\<close>,
+    unconditionally --- it is a subset of \<open>{..< Lng (Br R\<^sub>c)}\<close>.  So the article's
+    finiteness claim is \<^bold>\<open>TRUE\<close>; only the formalized (unbounded) binder is wrong.
+  \<^item> @{text ot_finRc_reduce}: @{const tvx_finRc} \<open>K\<close> follows from
+    \<^bold>\<open>exactly\<close> the A9 out-of-range refutation
+    \<open>\<forall>J \<ge> Lng (Br R\<^sub>c). \<not> ((Br R\<^sub>c)_{J,1,0} < (Br R\<^sub>c)_{J,0,0})\<close>.  This localizes the
+    entire FINRC residual to that single undischargeable \<open>nth\<close>-artifact premise:
+    once \<open>tvx_finRc_def\<close> carries the \<open>J < Lng (Br (tvx_Rc K))\<close> guard (the A9
+    fin-form correction), the census FINRC slot is discharged verbatim by
+    @{text ot_finRc_bounded}.\<close>
+
+lemma ot_finRc_bounded:
+  fixes K :: pairseq
+  shows "finite {J. J < Lng (Br (tvx_Rc K))
+              \<and> entry (Br (tvx_Rc K) ! (Lng (Br (tvx_Rc K)) - 1)) 0 0
+                  = entry (Br (tvx_Rc K) ! J) 0 0
+              \<and> entry (Br (tvx_Rc K) ! J) 1 0 < entry (Br (tvx_Rc K) ! J) 0 0}"
+  by (rule finite_subset[of _ "{..< Lng (Br (tvx_Rc K))}"]) auto
+
+lemma ot_finRc_reduce:
+  fixes K :: pairseq
+  assumes OOR: "\<And>J. Lng (Br (tvx_Rc K)) \<le> J \<Longrightarrow>
+                  \<not> (entry (Br (tvx_Rc K) ! J) 1 0 < entry (Br (tvx_Rc K) ! J) 0 0)"
+  shows "tvx_finRc K"
+proof -
+  let ?S = "{J. entry (Br (tvx_Rc K) ! (Lng (Br (tvx_Rc K)) - 1)) 0 0
+                    = entry (Br (tvx_Rc K) ! J) 0 0
+                \<and> entry (Br (tvx_Rc K) ! J) 1 0 < entry (Br (tvx_Rc K) ! J) 0 0}"
+  have "?S \<subseteq> {..< Lng (Br (tvx_Rc K))}"
+  proof (rule subsetI)
+    fix J assume "J \<in> ?S"
+    hence H: "entry (Br (tvx_Rc K) ! J) 1 0 < entry (Br (tvx_Rc K) ! J) 0 0" by blast
+    have "J < Lng (Br (tvx_Rc K))"
+    proof (rule ccontr)
+      assume "\<not> J < Lng (Br (tvx_Rc K))"
+      hence "Lng (Br (tvx_Rc K)) \<le> J" by simp
+      from OOR[OF this] H show False by simp
+    qed
+    thus "J \<in> {..< Lng (Br (tvx_Rc K))}" by simp
+  qed
+  hence "finite ?S" using finite_subset finite_lessThan by blast
+  thus ?thesis by (simp add: tvx_finRc_def)
+qed
+
 end

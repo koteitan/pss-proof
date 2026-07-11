@@ -1743,4 +1743,8 @@ Format: `line<TAB>kind<TAB>text`. Regenerate after every C->B fold.
 4108	subsection	The body driver \<open>BE'\<close> (hole-body domination, from \<open>tri0\<close>)
 4204	banner	r60 OTint: IVADMEQ CLOSED (front B) + SETLE1 head-guarded engine ox6_ (front A)
 4257	subsection	The head-guarded scbext-setle descent engine \<open>ox6_setle_scbext\<close>
+4987	banner	r61 endgame: SETLE1 restricted engine ox6_*_restr (front A) + FINRC bounded content ot_finRc_* / A9 determination (front B)
+5241	banner	r61 FINRC closure attempt (prefix ot_finRc_):  the condII
+5242	banner	finiteness residual tvx_finRc IS the A9 nth-artifact in
+5243	banner	fin-set form.  DETERMINATION + the true bounded content.
 
