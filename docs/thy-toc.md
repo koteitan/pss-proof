@@ -1679,4 +1679,30 @@ Format: `line<TAB>kind<TAB>text`. Regenerate after every C->B fold.
 794	subsection	Brick E: the mono \<open>OTpred\<close> step --- NO branch/condition hypotheses
 842	subsection	Brick F: \<open>DEEPOT\<close> and \<open>NOBR\<close> CLOSED; the \<open>OTpred\<close> slot residual-free
 909	banner	end r55-od4 part 2 (OTpred CLOSED: DEEPOT + NOBR discharged)
+914	banner	r55-OI5 (oi5_ prefix): the LAST OTint residuals otIII/otIV.
+915	banner	Route: the condIII/IV exchange value forms (cpx_condIII_
+916	banner	mnform, branch = III or IV with ltJ) exhibit Trans(M[Suc k])
+917	banner	as the d4vx_core tower over base A0 = bpHeadT(Trans(Pred N))
+918	banner	in the shared kind-1 wrapper; the operB fundamental
+919	banner	sequence (d13x_fseq_condIII) is the SAME tower over base
+920	banner	D_ub 0.  KEY COLLAPSE (r55): peeling the shared context
+921	banner	k-1 tower blocks deep, the proven transport otx3_transport
+922	banner	applies with the FIXED core triple (X1, A1, X2) for EVERY
+923	banner	k >= 1 (head e3 at k = 1, head ub at k >= 2) -- no tower
+924	banner	induction for newOT/setle is needed, only the one-block
+925	banner	facts OTA1 (isOT_BP (DB e3 A1), transported to ub by
+926	banner	G-antitonicity since e3 <= ub) and SETLE1.  STEP-0
+927	banner	(python/_r55_oi5_step0.py): ord/newOT/setle/loOT/hiOT ALL
+928	banner	pass on genuine condIII hosts incl. block depth r = 2..4
+929	banner	(48 deep (host,k) setle passes, 153 nontrivial); no-parent
+930	banner	legs (N[m] = Pred N, numBT-0 readback, Pred-OT) 0 failures.
+933	section	r55-OI5 --- \<open>otIII\<close>/\<open>otIV\<close>: shared exchange package and \<open>T\<^bsub>B\<^esub>\<close> bricks
+935	subsection	List and \<open>T\<^bsub>B\<^esub>\<close> helpers
+984	subsection	The shared condIII / condIV exchange package (\<open>REGS\<close>/\<open>REGSP\<close>/\<open>RUN
+1156	subsection	Regime bundle (host-only facts)
+1217	subsection	The \<open>OTint\<close> step on \<open>hasParent
+1470	subsection	The \<open>otIII\<close> leg, closed modulo \<open>{OTA1, SETLE1}\<close>
+1535	subsection	The \<open>otIV
+1681	subsection	The \<open>OTint\<close> slot and the \<open>OTmulti\<close> slot, same residuals
+1763	banner	r55 front A+B synthesis: discharge DEEPOT/NOBR via od4
 
