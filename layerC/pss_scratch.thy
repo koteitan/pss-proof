@@ -7057,4 +7057,351 @@ text \<open>\<^bold>\<open>Round 66 status.\<close>  \<^term>\<open>wf RPrel\<cl
   multi-round work; \<open>bwo_2_2_wf\<close> guarantees it is the ONLY work.\<close>
 
 (* ===== end r66 bwo block (Buchholz \<section>2 transcription; residual = bwo_Wstar_total) ===== *)
+
+(* ===================================================================== *)
+(* ===== r67 (OPUS 4.8): the r66 HEAD residual is REFUTED             ==== *)
+(* =====   (ox7_hole_right_spine_terminal / bpHeadV t' < bpHeadV X1)   ==== *)
+(* =====                                                               ==== *)
+(* ===== STEP-0 (python/_r67_headterm_step0.py, real ST_PS census      ==== *)
+(* ===== hosts, oper-images of diagonals; yaBMS is_standard oracle):    ==== *)
+(* =====   The r66 position-0 first-difference HEAD                     ==== *)
+(* =====     forall matched-hole tx' in GBT u X1.  bpHeadV t' < bpHeadV ==== *)
+(* =====     X1   (t' the A-side, share => bpHeadV t' = bpHeadV tx')    ==== *)
+(* =====   is FALSE.  90/332 matched tx' have bpHeadV t' = bpHeadV X1   ==== *)
+(* =====   (EQUALITY, never >).  The stronger task claim bpHeadV t'=ub  ==== *)
+(* =====   fails 198/332.                                              ==== *)
+(* =====                                                               ==== *)
+(* ===== GENUINE ST_PS CEX (is_standard = 1 via yaBMS `bms -s`):        ==== *)
+(* =====   M = (0,0)(1,1)(2,2)(3,3)(4,1)(5,0)(6,1)(7,1)(8,1)            ==== *)
+(* =====   reduced, monoT, condIII, hasParent, 1<Lng-1, ltJ            ==== *)
+(* =====   (s84x_jm3=5 < transJm1=7).  v1=1, ub=0.                     ==== *)
+(* =====   X1 = D_1(D_1(D_0(D_0 0))),  bpHeadV X1 = 1.                  ==== *)
+(* =====   matched tx' = D_1(D_0(D_0 0)) in GBT u X1 (u in {0,1}),      ==== *)
+(* =====   flat = [D_0](=sc) @ flatBP(D_0(D_0 0))(=hole P) @ [] (bc);   ==== *)
+(* =====   size t' < size A1 (bound SATISFIED, does not exclude it);    ==== *)
+(* =====   bpHeadV tx' = 1 = bpHeadV X1  --- NOT strictly less.         ==== *)
+(* =====                                                               ==== *)
+(* ===== ROOT CAUSE.  The matched-hole set (tx' in GBT u X1 carrying    ==== *)
+(* =====   the hole P = D_ub(D_ub 0) at its rightmost spine, bc all-RP) ==== *)
+(* =====   is NOT just the immediate parent body of P: it contains      ==== *)
+(* =====   EVERY higher right-spine ancestor body of P.  A higher one   ==== *)
+(* =====   b1 = D_h0(...P...) has first head h0 = bpHeadV X1, so the    ==== *)
+(* =====   position-0 head AGREES with X1 and the first-difference sits ==== *)
+(* =====   DEEPER (where t' hits the hole head ub while X1 still has an  ==== *)
+(* =====   s0 right-spine head >= v1 > ub).  r66's position-0 reduction ==== *)
+(* =====   (ot7_SETLE1_ltJ_of_head, ox7_headlt_lessBT) is thus too      ==== *)
+(* =====   STRONG; HEAD cannot be discharged (it is false).             ==== *)
+(* =====                                                               ==== *)
+(* ===== WHAT IS STILL TRUE (0 fails on all matched tx'):               ==== *)
+(* =====   (a) bpHeadV t' <= bpHeadV X1   (weak head bound);            ==== *)
+(* =====   (b) leBT t' X1                 (spineH itself; r65: 537/537).==== *)
+(* =====   So SETLE1 is reduced (ox6_SETLE1_reduce_restr) to the TRUE   ==== *)
+(* =====   spineH = "leBT t' X1 for every matched-hole tx' in GBT u X1  ==== *)
+(* =====   (size t' < size A1)", which is NOT further reducible to a    ==== *)
+(* =====   position-0 head separation.                                  ==== *)
+(* =====                                                               ==== *)
+(* ===== CORRECTED RESIDUAL / NEXT IDEA (right-spine DESCENT, not the   ==== *)
+(* =====   position-0 head, and INDEPENDENT of A0 since the divergence  ==== *)
+(* =====   is strictly before the hole body):                          ==== *)
+(* =====   prove   lessBT tx' X1   for every matched-hole tx' in        ==== *)
+(* =====   GBT u X1  (X-side, hole body X0 = D_ub 0), by induction down  ==== *)
+(* =====   X1's rightmost spine:                                        ==== *)
+(* =====     * bpHeadV X1 = h0 is the MAX right-spine head              ==== *)
+(* =====       (OT descP + rnsub RightNodes bound, r63/r65; the LEFT-   ==== *)
+(* =====       end head governs, cf. ox7_bpHeadV_body_ge_v1);           ==== *)
+(* =====     * matched tx' = D_{h_k}(deeper), h_k <= h0; if h_k < h0    ==== *)
+(* =====       then bpHeadV tx' < bpHeadV X1 closes at THIS level        ==== *)
+(* =====       (ox7_headlt_lessBT); if h_k = h0 recurse into the bodies  ==== *)
+(* =====       (both share the head, compare one spine level deeper);    ==== *)
+(* =====     * the base of the descent is the hole D_ub, ub < v1 <= all  ==== *)
+(* =====       right-spine heads, so the recursion terminates with a     ==== *)
+(* =====       strict drop.                                             ==== *)
+(* =====   Then transport lessBT tx' X1 to lessBT t' X1 (t' = tx' with   ==== *)
+(* =====   hole body X0 -> A0): the first-difference is at an outer      ==== *)
+(* =====   principal head, strictly ABOVE the hole body, so replacing    ==== *)
+(* =====   X0 by A0 leaves the difference and its verdict unchanged.     ==== *)
+(* =====   The load-bearing NEW lemma is "matched right-spine sub-body   ==== *)
+(* =====   of the census X1 is lessBT X1" (a shared-outer-heads /        ==== *)
+(* =====   hole-head-drop first-difference), which the existing          ==== *)
+(* =====   position-0 bricks (ox7_headlt_lessBT / ox7_bpHeadV_share)     ==== *)
+(* =====   are too shallow to give.                                     ==== *)
+(* ===================================================================== *)
+
+
+(* ===================================================================== *)
+(* ===== r67 buc1: Buchholz [1] Lemma 2.4(a) shift-closure + the    ===== *)
+(* ===== addBT/domB/operB glue underneath 2.5/2.6/2.7.  Prefix bwo_ ===== *)
+(* ===== (append-only).                                             ===== *)
+(* ===================================================================== *)
+
+section \<open>r67 bwo — the \<open>+\<^sub>B\<close> glue and Buchholz [1] Lemma 2.4(a)\<close>
+
+text \<open>
+  \<^bold>\<open>Round 67 contribution.\<close>  The fundamental-sequence strict descent
+  \<open>a[z] < a\<close> for \<open>z \<in> dom(a) \<union> \<nat>\<close> ([Buc1] Lemma 3.2(a), GENERAL \<open>z\<close>) is
+  ALREADY PROVEN in the frozen base as @{thm [source] b1x_descent}
+  (and the numeral form @{thm [source] m_buc1_3_2a_fseq_lt}, with \<open>OT\<^bsub>B\<^esub>\<close>-closure
+  @{thm [source] m_buc1_3_2_OT_B_closed}).  Hence the descent is NOT the residual
+  blocker for \<open>bwo_Wstar_total\<close>.
+
+  Here we transcribe the ABSTRACT set-operator layer of Buchholz's proof that
+  does not touch \<open>acc\<close>: the commutation of \<open>domB\<close>/\<open>operB\<close> with a left \<open>+\<^sub>B\<close>-prefix
+  (both act on the last principal only), and [Buc1] Lemma 2.4(a) — the shift
+  \<open>X\<^bsup>(a)\<^esup>\<close> is \<open>A\<^sub>\<nu>\<close>-closed whenever \<open>X\<close> is and \<open>a \<in> X\<close>.  These are the reusable
+  bricks underneath Lemmas 2.5 (\<open>D\<^sub>\<nu>\<close>-closure) and 2.7 (length induction).\<close>
+
+subsection \<open>(4) \<open>+\<^sub>B\<close> / \<open>domB\<close> / \<open>operB\<close> glue\<close>
+
+text \<open>\<open>dom(0) = \<emptyset>\<close>.\<close>
+
+lemma bwo_domB_Nil: "domB (Trm []) = {}"
+  by (subst domB_unfold) simp
+
+text \<open>\<open>a + 0 = a\<close>, \<open>0 + b = b\<close>, associativity of \<open>+\<^sub>B\<close> (all from list \<open>@\<close>).\<close>
+
+lemma bwo_addBT_Nil_right: "a +\<^sub>B Trm [] = a"
+  by (cases a) simp
+
+lemma bwo_addBT_Nil_left: "Trm [] +\<^sub>B b = b"
+  by (cases b) simp
+
+lemma bwo_addBT_assoc: "(a +\<^sub>B b) +\<^sub>B c = a +\<^sub>B (b +\<^sub>B c)"
+  by (cases a; cases b; cases c) simp
+
+text \<open>\<open>dom(a + b) = dom(b)\<close> for \<open>b \<noteq> 0\<close> (\<open>dom\<close> reads only the last principal,
+  @{thm [source] domB_last_component}).\<close>
+
+lemma bwo_addBT_domB:
+  assumes bne: "b \<noteq> Trm []"
+  shows "domB (a +\<^sub>B b) = domB b"
+proof -
+  obtain as where aeq: "a = Trm as" by (cases a) auto
+  obtain bs where beq: "b = Trm bs" by (cases b) auto
+  have bsne: "bs \<noteq> []" using bne beq by simp
+  have absne: "as @ bs \<noteq> []" using bsne by simp
+  have "domB (a +\<^sub>B b) = domB (Trm (as @ bs))" using aeq beq by simp
+  also have "\<dots> = domB (Trm [last (as @ bs)])" by (rule domB_last_component[OF absne])
+  also have "domB (Trm [last (as @ bs)]) = domB (Trm [last bs])" using bsne by simp
+  finally have L: "domB (a +\<^sub>B b) = domB (Trm [last bs])" .
+  have R: "domB b = domB (Trm [last bs])" using beq domB_last_component[OF bsne] by simp
+  show ?thesis using L R by simp
+qed
+
+text \<open>\<open>operB\<close> splits off the last principal, uniformly over single/multi terms.\<close>
+
+lemma bwo_operB_split:
+  assumes bsne: "bs \<noteq> []"
+  shows "operB (Trm bs) z = Trm (butlast bs) +\<^sub>B operB (Trm [last bs]) z"
+proof (cases "tl bs")
+  case Nil
+  from bsne obtain p where "bs = [p]" using Nil by (cases bs) auto
+  thus ?thesis by (simp add: bwo_addBT_Nil_left)
+next
+  case (Cons q rest)
+  from bsne obtain p ps where "bs = p # ps" by (cases bs) auto
+  hence bs3: "bs = p # q # rest" using Cons by auto
+  show ?thesis unfolding bs3 by (rule b1x_operB_multi)
+qed
+
+text \<open>\<open>(a + b)[z] = a + b[z]\<close> for \<open>b \<noteq> 0\<close>.\<close>
+
+lemma bwo_addBT_operB:
+  assumes bne: "b \<noteq> Trm []"
+  shows "operB (a +\<^sub>B b) z = a +\<^sub>B operB b z"
+proof -
+  obtain as where aeq: "a = Trm as" by (cases a) auto
+  obtain bs where beq: "b = Trm bs" by (cases b) auto
+  have bsne: "bs \<noteq> []" using bne beq by simp
+  have ab: "a +\<^sub>B b = Trm (as @ bs)" using aeq beq by simp
+  have absne: "as @ bs \<noteq> []" using bsne by simp
+  have lst: "last (as @ bs) = last bs" using bsne by simp
+  have blt: "butlast (as @ bs) = as @ butlast bs" using bsne by (simp add: butlast_append)
+  have "operB (a +\<^sub>B b) z
+          = Trm (butlast (as @ bs)) +\<^sub>B operB (Trm [last (as @ bs)]) z"
+    using ab bwo_operB_split[OF absne] by simp
+  also have "\<dots> = Trm (as @ butlast bs) +\<^sub>B operB (Trm [last bs]) z"
+    using lst blt by simp
+  also have "\<dots> = Trm as +\<^sub>B (Trm (butlast bs) +\<^sub>B operB (Trm [last bs]) z)"
+  proof -
+    have "Trm (as @ butlast bs) +\<^sub>B operB (Trm [last bs]) z
+            = (Trm as +\<^sub>B Trm (butlast bs)) +\<^sub>B operB (Trm [last bs]) z" by simp
+    also have "\<dots> = Trm as +\<^sub>B (Trm (butlast bs) +\<^sub>B operB (Trm [last bs]) z)"
+      by (rule bwo_addBT_assoc)
+    finally show ?thesis .
+  qed
+  also have "\<dots> = Trm as +\<^sub>B operB (Trm bs) z"
+    using bwo_operB_split[OF bsne] by simp
+  finally show ?thesis using aeq beq by simp
+qed
+
+text \<open>\<open>A\<^sub>\<nu>(X,a)\<close> is monotone in the level bound \<open>\<nu>\<close> (only the \<open>T\<^sub>u\<close> clause
+  depends on \<open>\<nu>\<close>, through \<open>u < \<nu>\<close>).  Buchholz's \<open>A\<^sub>u(X) \<subseteq> A\<^sub>\<nu>(X)\<close> for \<open>u \<le> \<nu>\<close>.\<close>
+
+lemma bwo_Aop_mono_nv:
+  assumes le: "nv \<le> nv'" and a: "bwo_Aop nv X a"
+  shows "bwo_Aop nv' X a"
+proof -
+  consider "a = Trm []"
+    | "(domB a = {Trm []} \<or> domB a = NatSet) \<and> (\<forall>n. operB a (numBT n) \<in> X)"
+    | u where "enat u < nv" "domB a = TBv (enat u)" "\<forall>z \<in> bwo_Wlev u. operB a z \<in> X"
+    using a[unfolded bwo_Aop_def] by blast
+  thus ?thesis
+  proof cases
+    case 1 thus ?thesis unfolding bwo_Aop_def by blast
+  next
+    case 2 thus ?thesis unfolding bwo_Aop_def by blast
+  next
+    case (3 u)
+    have "enat u < nv'" using 3(1) le by (rule less_le_trans)
+    thus ?thesis using 3(2) 3(3) unfolding bwo_Aop_def by blast
+  qed
+qed
+
+subsection \<open>(5) [Buc1] Lemma 2.4(a): shift closure \<open>A\<^sub>\<nu>(X\<^bsup>(a)\<^esup>) \<subseteq> X\<^bsup>(a)\<^esup>\<close>\<close>
+
+text \<open>Faithful transcription of [Buc1] p.138 Lemma 2.4(a).  Assume \<open>X\<close> is
+  \<open>A\<^sub>\<nu>\<close>-closed and \<open>a \<in> X\<close>; then every \<open>b\<close> with \<open>A\<^sub>\<nu>(X\<^bsup>(a)\<^esup>, b)\<close> lies in
+  \<open>X\<^bsup>(a)\<^esup>\<close>, i.e. \<open>a + b \<in> X\<close>.  The three cases (\<open>b = 0\<close>; \<open>dom(b) \<in> {{0},\<nat>}\<close>;
+  \<open>dom(b) = T\<^sub>u\<close>) use the glue \<open>dom(a+b)=dom(b)\<close> and \<open>(a+b)[z]=a+b[z]\<close> to
+  transport the \<open>A\<^sub>\<nu>\<close>-witness for \<open>b\<close> into one for \<open>a+b\<close>.\<close>
+
+lemma bwo_2_4a_shift_closure:
+  assumes Acl: "\<And>c. bwo_Aop nv X c \<Longrightarrow> c \<in> X"
+    and aX: "a \<in> X"
+    and body: "bwo_Aop nv (bwo_shift a X) b"
+  shows "b \<in> bwo_shift a X"
+proof -
+  have goal: "a +\<^sub>B b \<in> X"
+  proof -
+    consider (zero) "b = Trm []"
+      | (num) "(domB b = {Trm []} \<or> domB b = NatSet)
+               \<and> (\<forall>n. operB b (numBT n) \<in> bwo_shift a X)"
+      | (tu) u where "enat u < nv" "domB b = TBv (enat u)"
+               "\<forall>z \<in> bwo_Wlev u. operB b z \<in> bwo_shift a X"
+      using body[unfolded bwo_Aop_def] by blast
+    thus ?thesis
+    proof cases
+      case zero
+      thus ?thesis using aX bwo_addBT_Nil_right by simp
+    next
+      case num
+      have bne: "b \<noteq> Trm []"
+      proof
+        assume z: "b = Trm []"
+        have dz: "domB b = {}" using z bwo_domB_Nil by simp
+        have "numBT 0 \<in> NatSet" by (simp add: NatSet_def)
+        moreover have "Trm [] \<in> {Trm []}" by simp
+        ultimately show False using conjunct1[OF num] dz by auto
+      qed
+      have d: "domB (a +\<^sub>B b) = {Trm []} \<or> domB (a +\<^sub>B b) = NatSet"
+        using conjunct1[OF num] bwo_addBT_domB[OF bne] by simp
+      have op: "\<forall>n. operB (a +\<^sub>B b) (numBT n) \<in> X"
+      proof (intro allI)
+        fix n
+        have "operB b (numBT n) \<in> bwo_shift a X" using conjunct2[OF num] by blast
+        hence "a +\<^sub>B operB b (numBT n) \<in> X" by (simp add: bwo_shift_def)
+        thus "operB (a +\<^sub>B b) (numBT n) \<in> X"
+          using bwo_addBT_operB[OF bne] by simp
+      qed
+      have "bwo_Aop nv X (a +\<^sub>B b)"
+        using d op unfolding bwo_Aop_def by blast
+      thus ?thesis by (rule Acl)
+    next
+      case (tu u)
+      have bne: "b \<noteq> Trm []"
+      proof
+        assume z: "b = Trm []"
+        have "TBv (enat u) = {}" using z tu(2) bwo_domB_Nil by simp
+        moreover have "Trm [] \<in> TBv (enat u)" by (simp add: TBv_def)
+        ultimately show False by simp
+      qed
+      have d: "domB (a +\<^sub>B b) = TBv (enat u)"
+        using tu(2) bwo_addBT_domB[OF bne] by simp
+      have op: "\<forall>z \<in> bwo_Wlev u. operB (a +\<^sub>B b) z \<in> X"
+      proof
+        fix z assume zW: "z \<in> bwo_Wlev u"
+        have "operB b z \<in> bwo_shift a X" using tu(3) zW by blast
+        hence "a +\<^sub>B operB b z \<in> X" by (simp add: bwo_shift_def)
+        thus "operB (a +\<^sub>B b) z \<in> X"
+          using bwo_addBT_operB[OF bne] by simp
+      qed
+      have "bwo_Aop nv X (a +\<^sub>B b)"
+        using tu(1) d op unfolding bwo_Aop_def by blast
+      thus ?thesis by (rule Acl)
+    qed
+  qed
+  show ?thesis using goal by (simp add: bwo_shift_def)
+qed
+
+subsection \<open>(6) [Buc1] Lemma 2.5 sub-result (1), modulo leastness (A2)\<close>
+
+text \<open>Shape of the successor-principal \<open>D\<^bsub>u+1\<^esub>0\<close>: its domain is \<open>T\<^sub>u\<close> and its
+  fundamental sequence is the identity, \<open>(D\<^bsub>u+1\<^esub>0)[z] = z\<close> (operB case ([].2)).\<close>
+
+lemma bwo_domB_Dsucc0: "domB (Trm [DB (enat (Suc u)) (Trm [])]) = TBv (enat u)"
+  by (subst domB_unfold) (simp add: zero_enat_def)
+
+lemma bwo_operB_Dsucc0: "operB (Trm [DB (enat (Suc u)) (Trm [])]) z = z"
+proof (rule b1x_operB_Dsucc)
+  show "enat (Suc u) \<noteq> 0" by (simp add: zero_enat_def)
+  show "enat (Suc u) \<noteq> \<infinity>" by simp
+qed
+
+text \<open>[Buc1] Lemma 2.5, sub-result (1): \<open>\<forall>u<\<nu>. a + D\<^bsub>u+1\<^esub>0 \<in> X\<close> (p.138).  This is
+  the ONLY step of Lemma 2.5 that invokes Buchholz's leastness
+  (A2) \<open>A\<^sub>u(Y) \<subseteq> Y \<Longrightarrow> W\<^sub>u \<subseteq> Y\<close>.  For the \<^emph>\<open>acc\<close>-based \<open>bwo_Wlev\<close> of this
+  development (A2) is the \<^bold>\<open>hard\<close> direction — it says
+  \<open>{z. D\<^sub>u z \<in> acc} \<subseteq>\<close> every \<open>A\<^sub>u\<close>-closed set, i.e. the fundamental sequences are
+  cofinal in the \<open><\<close>-predecessors of \<open>D\<^sub>u z\<close> (Buchholz's genuine \<section>2/\<section>3 content,
+  NOT free here because \<open>bwo_Wlev\<close> is defined via \<open>acc\<close>, not as the least fixpoint
+  of \<open>A\<^sub>u\<close>).  It is carried as the explicit hypothesis \<open>A2\<close>, isolating it as THE
+  residual; everything else — 2.4(a), the level monotonicity \<open>A\<^sub>u \<subseteq> A\<^sub>\<nu>\<close>, and the
+  \<open>+\<^sub>B\<close>/\<open>domB\<close>/\<open>operB\<close> glue — is discharged.\<close>
+
+lemma bwo_2_5_sub1:
+  assumes Acl: "\<And>c. bwo_Aop nv X c \<Longrightarrow> c \<in> X"
+    and aX: "a \<in> X"
+    and A2: "\<And>Y. (\<And>c. bwo_Aop (enat u) Y c \<Longrightarrow> c \<in> Y) \<Longrightarrow> bwo_Wlev u \<subseteq> Y"
+    and ult: "enat u < nv"
+  shows "a +\<^sub>B Trm [DB (enat (Suc u)) (Trm [])] \<in> X"
+proof -
+  let ?D = "Trm [DB (enat (Suc u)) (Trm [])] :: BT"
+  have Dne: "?D \<noteq> Trm []" by simp
+  have domAD: "domB (a +\<^sub>B ?D) = TBv (enat u)"
+    using bwo_addBT_domB[OF Dne] bwo_domB_Dsucc0 by simp
+  have opAD: "\<And>z. operB (a +\<^sub>B ?D) z = a +\<^sub>B z"
+  proof -
+    fix z
+    have "operB (a +\<^sub>B ?D) z = a +\<^sub>B operB ?D z" by (rule bwo_addBT_operB[OF Dne])
+    also have "\<dots> = a +\<^sub>B z" using bwo_operB_Dsucc0 by simp
+    finally show "operB (a +\<^sub>B ?D) z = a +\<^sub>B z" .
+  qed
+  \<comment> \<open>2.4(a): \<open>X\<^bsup>(a)\<^esup>\<close> is \<open>A\<^sub>\<nu>\<close>-closed, hence \<open>A\<^sub>u\<close>-closed since \<open>A\<^sub>u \<subseteq> A\<^sub>\<nu>\<close>\<close>
+  have shiftAu: "\<And>c. bwo_Aop (enat u) (bwo_shift a X) c \<Longrightarrow> c \<in> bwo_shift a X"
+  proof -
+    fix c assume "bwo_Aop (enat u) (bwo_shift a X) c"
+    hence bnv: "bwo_Aop nv (bwo_shift a X) c"
+      by (rule bwo_Aop_mono_nv[OF less_imp_le[OF ult]])
+    show "c \<in> bwo_shift a X" by (rule bwo_2_4a_shift_closure[OF Acl aX bnv])
+  qed
+  \<comment> \<open>(A2): \<open>W\<^sub>u \<subseteq> X\<^bsup>(a)\<^esup>\<close>\<close>
+  have WsubShift: "bwo_Wlev u \<subseteq> bwo_shift a X" by (rule A2[OF shiftAu])
+  have azX: "\<And>z. z \<in> bwo_Wlev u \<Longrightarrow> a +\<^sub>B z \<in> X"
+  proof -
+    fix z assume "z \<in> bwo_Wlev u"
+    hence "z \<in> bwo_shift a X" using WsubShift by blast
+    thus "a +\<^sub>B z \<in> X" by (simp add: bwo_shift_def)
+  qed
+  have opX: "\<forall>z \<in> bwo_Wlev u. operB (a +\<^sub>B ?D) z \<in> X"
+  proof
+    fix z assume "z \<in> bwo_Wlev u"
+    hence "a +\<^sub>B z \<in> X" by (rule azX)
+    thus "operB (a +\<^sub>B ?D) z \<in> X" using opAD by simp
+  qed
+  have "bwo_Aop nv X (a +\<^sub>B ?D)"
+    using ult domAD opX unfolding bwo_Aop_def by blast
+  thus ?thesis by (rule Acl)
+qed
+
+(* ===== end r67 bwo block (glue + [Buc1] Lemma 2.4(a) + 2.5 sub(1)/A2) ===== *)
 end
