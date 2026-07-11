@@ -115,7 +115,7 @@
             - ✅ tri0 CRUX(scbext_triG engine+crx/cnv_tri0_of_nest、ltJ不要)[r1][0.297][0.65h]
             - ✅ ltJ再スレッド+oi8 census(OTA1を単一A0OTへ還元、oi8_census_via_A0OT)[r1][0.284][0.59h]
             - ✅ A0OT(=isOT_BT(bpHeadT(Trans(Pred(s84x_N N))))、od4 RT_PS弱化+Red slice経由、OTA1柱完結)[r1][0.230][0.56h]
-            - 🚨🤖 SETLE1_ltJ(restricted engine ox6_*_restr済、残=§7.4 head keystone: 強化align3+RightNodes/TBv bound+lex congruence)[r3][0.601][1.40h]
+            - 🚨 SETLE1_ltJ(sub-brick(i)(iii)済、残=新§7.4事実 RightNodes(body)≥v1 spine-monotonicity)[r4][0.771][2.03h]
           - ✅ IVNP(condIV no-parent隅=Pred除去、ot2_IVNP)[r1][0.257][0.65h]
           - ✅ IVADMEQ(condIV adm-eq隅、SETLE-free tower engine+Red-slice regime、ot2_IVADMEQ)[r4][1.074][2.60h]
       - ✅ OTpred(with-parent Pred corner OT-step、無仮定master od4_OTpred_mono→od4_OTpred_final無残差)[r4][0.817][1.41h]
