@@ -97,9 +97,7 @@
     - 🚨 補題（$\textrm{Trans}$ が標準形を保つこと）= OT所属
       - ✅ clean部（rank0/T_B/単項leaf）
       - ✅ 還元 isOT⟸R1/R2/R3
-      - ✅ 4-case dispatcher
       - ✅ wid/det
-      - ✅ 帰納 infra
       - ✅ 置換capstone[r1]
       - ✅ per-branch true legs[r1]
       - ✅ local-OTint keystone-free(condI/condVI/condV-adm-e=0)[r2]
