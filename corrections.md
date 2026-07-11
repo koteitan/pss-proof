@@ -297,6 +297,9 @@ $J_1 := \textrm{Lng}(\textrm{Br}(M)) - 1$。$\textrm{Br}(M) = ()$ ならば $\te
 ### 原文の問題点
 \(\textrm{Br}(M)\) の添字は \(0,\dots,\textrm{Lng}(\textrm{Br}(M))-1\) の範囲。\(J_1 := \textrm{Lng}(\textrm{Br}(M))\) と置くと \(\textrm{Br}(M)_{J_1}\) は範囲外。直後の「\(J_1 = 0\) ならば」も \(\textrm{Lng}(\textrm{Br}(M)) = 0\)（\(\textrm{Br}(M)\) が空）の意図と読め、\(J_1\) は最終成分の添字 \(\textrm{Lng}(\textrm{Br}(M))-1\) を指すべき。
 
+### 補足（else 節の \(\min\) の添字範囲）
+else 節「\((\textrm{Br}(M)_{J_1})_{0,0} = (\textrm{Br}(M)_J)_{0,0}\) かつ \((\textrm{Br}(M)_J)_{1,0} < (\textrm{Br}(M)_J)_{0,0}\) なる最小の \(J\)」における \(J\) も、\(J_1\) と同様に**枝 index の範囲 \(0 \le J < \textrm{Lng}(\textrm{Br}(M))\) に限る**（原文は暗黙にそう読ませているが明示がない）。形式化上はこの範囲制限が本質的で、\(\min\) の内包表記の束縛変数を \(J < \textrm{Lng}(\textrm{Br}(M))\) で制限しないと、範囲外 \(J\) で \(\textrm{Br}(M)_J\) が未定義値（total な `nth` の範囲外値）を取り、集合が有界と示せず有限性が崩れる。訂正案では \(\min\) を \(\{J.\ J < \textrm{Lng}(\textrm{Br}(M)) \land \dots\}\) 上で取ると明記する。
+
 ## A10. §6.5 簡約化: 複数の命題が相互に依存し、死枝[19]/[20]の不到達には独立な証明を要する
 
 ### 位置
