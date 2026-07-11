@@ -9113,4 +9113,879 @@ text \<open>\<^bold>\<open>Round-68 status.\<close>  The residual for \<open>wf 
   \<open>dom(a) = T\<^sub>m\<close>.  Everything else in [Buc1] \<section>2 is now proved unconditionally.\<close>
 
 (* ===== end r68 bwl part 6 (bridge; residual = bwl_cof, the Bachmann property) ===== *)
+
+
+(* ===================================================================== *)
+(* ===== r69 (OPUS 4.8): the SURGERY TRANSPORT.  Prefix  ox9_.        ==== *)
+(* =====                                                              ==== *)
+(* ===== r68 proved the TRUE SOURCE of the SETLE1 descent             ==== *)
+(* ===== (ox8_body_rspine_lessBT: every right-spine sub-body of       ==== *)
+(* ===== body = bpHeadT (Trans (s84x_N M)) is < body, from the ONE    ==== *)
+(* ===== Buchholz G-condition at the low enclosing head e3).  What    ==== *)
+(* ===== SETLE1 actually needs is that comparison carried over to the ==== *)
+(* ===== SURGERED trees  A1 = body[hole := D_ub A0],                  ==== *)
+(* ===== X1 = body[hole := D_ub X0]  (hole = D_v1 0, ub = v1 - 1):    ==== *)
+(* =====     lessBT (ox8_rsub A1 k) X1     (k >= 1).                  ==== *)
+(* =====                                                              ==== *)
+(* ===== STEP-0 (python/_r69_transport_step0{,b,c}.py; standard ST_PS ==== *)
+(* ===== corpus, condIII/IV + hasParent + 1<Lng-1 + ltJ; 361/427      ==== *)
+(* ===== hosts, 1117 peel levels):                                    ==== *)
+(* =====  * lessBT (ox8_rsub A1 k) X1        : 1117/1117              ==== *)
+(* =====  * lessBT (ox8_rsub body k) body    : 1117/1117 (= ox8)      ==== *)
+(* =====  * r68's claim "every spine level of X1 above the hole is a  ==== *)
+(* =====    PURE CHAIN" is FALSE on this corpus (14 hosts have a wide ==== *)
+(* =====    hole level, 15 have a non-monotone width word), and the   ==== *)
+(* =====    dangerous branch (C) below DOES occur (13/1117).  So the  ==== *)
+(* =====    r68 assembly sketch (chain-ness) is NOT the right brick.  ==== *)
+(* =====  * the TRUE brick: EVERY head occurring ANYWHERE in body is  ==== *)
+(* =====    >= v1 (427/427 hosts; ox9_hge below).  With it the whole  ==== *)
+(* =====    transport is elementary -- the surgery never flips a      ==== *)
+(* =====    verdict, because the LEFT operand can never reach the     ==== *)
+(* =====    RIGHT operand's leaf hole D_v1 0 (that would need a head  ==== *)
+(* =====    < v1).  Run as a decision procedure the proof below       ==== *)
+(* =====    closes 1117/1117 with 0 dangers.                          ==== *)
+(* =====                                                              ==== *)
+(* ===== So SETLE1 is REDUCED, unconditionally, to the single local   ==== *)
+(* ===== head-bound  ox9_hge (enat v1) (bpHeadT (Trans (s84x_N M)))   ==== *)
+(* ===== -- a Trans-image geometry fact, NOT an OT fact (descP only   ==== *)
+(* ===== bounds heads from below by the LAST head of their own list). ==== *)
+(* ===================================================================== *)
+
+section \<open>r69 ox9 --- the surgery transport\<close>
+
+subsection \<open>(1) The all-heads bound \<open>ox9_hge\<close> and the hole relation \<open>ox9_holeD\<close>\<close>
+
+text \<open>@{text ox9_hge} \<open>v t\<close>: EVERY \<open>D\<close>-index occurring anywhere in \<open>t\<close> is \<open>\<ge> v\<close>.
+  This is the one census input the transport needs.  It is strictly stronger than
+  @{thm [source] ox7_RightNodes_body_ge_v1} (which bounds only the RIGHT-SPINE
+  heads); \<open>descP\<close> propagates the spine bound to the top-level principals of every
+  spine level, but NOT into off-spine bodies -- and the transport's dangerous
+  branch lives exactly there.\<close>
+
+fun ox9_hge :: "enat \<Rightarrow> BT \<Rightarrow> bool" and ox9_hgeP :: "enat \<Rightarrow> BP \<Rightarrow> bool" where
+  "ox9_hge v (Trm ps) = (\<forall>p \<in> set ps. ox9_hgeP v p)"
+| "ox9_hgeP v (DB w b) = (v \<le> w \<and> ox9_hge v b)"
+
+text \<open>\<^bold>\<open>CORRECTION (r69 STEP-0d).\<close>  @{const ox9_hge} \<open>v\<^sub>1 body\<close> is \<^bold>\<open>FALSE\<close> on the
+  census: 2/425 deep standard hosts carry a head \<open>< v\<^sub>1\<close> inside \<open>body\<close> (e.g.
+  \<open>M = (0,0)(1,1)(2,2)(3,1)(4,0)(5,1)(6,2)(7,0)(6,1)(7,2)(8,0)(7,1)(8,1)\<close>, where
+  \<open>v\<^sub>1 = 1\<close> and \<open>D\<^sub>0 0\<close> occurs in \<open>body\<close>).  But the transport survives, because such
+  a small head appears only with a body that is \<^emph>\<open>below the surgery filler\<close>
+  \<open>X\<^sub>0 = D\<^bsub>ub\<^esub>0\<close>: the comparison against the lowered hole \<open>D\<^bsub>ub\<^esub>X\<^sub>0\<close> is then still
+  won on the SECOND component.  \<open>ox9_ok\<close> below is exactly that weakening --- and
+  it is what the base case of @{text ox9_TT} actually needs.\<close>
+
+fun ox9_ok :: "enat \<Rightarrow> enat \<Rightarrow> BT \<Rightarrow> bool"
+  and ox9_okP :: "enat \<Rightarrow> enat \<Rightarrow> BP \<Rightarrow> bool" where
+  "ox9_ok v ub (Trm ps) = (\<forall>p \<in> set ps. ox9_okP v ub p)"
+| "ox9_okP v ub (DB w b) = ((v \<le> w \<or> lessBT b (Dpt ub 0\<^sub>B)) \<and> ox9_ok v ub b)"
+
+lemma ox9_ok_of_hge: "ox9_hge v t \<Longrightarrow> ox9_ok v ub t"
+  and ox9_okP_of_hgeP: "ox9_hgeP v p \<Longrightarrow> ox9_okP v ub p"
+  by (induct t and p rule: ox9_hge_ox9_hgeP.induct) auto
+
+text \<open>@{text ox9_holeD} \<open>e p q t t'\<close>: \<open>t'\<close> is \<open>t\<close> with its deepest-right principal
+  \<open>p\<close> replaced by \<open>q\<close>, the hole sitting at right-spine depth \<open>e\<close>.  This is the
+  structural content of the flat surgery \<open>flat t = s \<frown> flat p \<frown> b\<close>,
+  \<open>flat t' = s \<frown> flat q \<frown> b\<close> (\<open>b\<close> all-\<open>RP\<close>) -- see
+  @{text ox9_holeD_of_flat3} below, which reads it off @{thm [source] otx2_align3}.\<close>
+
+inductive ox9_holeD :: "nat \<Rightarrow> BP \<Rightarrow> BP \<Rightarrow> BT \<Rightarrow> BT \<Rightarrow> bool" where
+  ox9_hD0: "ox9_holeD 0 p q (Trm (ps @ [p])) (Trm (ps @ [q]))"
+| ox9_hDS: "ox9_holeD k p q b b'
+     \<Longrightarrow> ox9_holeD (Suc k) p q (Trm (ps @ [DB w b])) (Trm (ps @ [DB w b']))"
+
+lemma ox9_holeD_0E:
+  assumes "ox9_holeD 0 p q t t'"
+  obtains ps where "t = Trm (ps @ [p])" and "t' = Trm (ps @ [q])"
+  using assms by (cases rule: ox9_holeD.cases) auto
+
+lemma ox9_holeD_SucE:
+  assumes "ox9_holeD (Suc e) p q t t'"
+  obtains ps w b b' where "t = Trm (ps @ [DB w b])" and "t' = Trm (ps @ [DB w b'])"
+    and "ox9_holeD e p q b b'"
+  using assms by (cases rule: ox9_holeD.cases) auto
+
+lemma ox9_holeD_ne:
+  assumes "ox9_holeD e p q t t'"
+  shows "t \<noteq> 0\<^sub>B"
+  using assms by (cases rule: ox9_holeD.cases) auto
+
+
+subsection \<open>(2) Elementary \<open>lessBT\<close> / \<open>lessBP\<close> facts\<close>
+
+lemma ox9_lessBT_zero: "\<not> lessBT t 0\<^sub>B"
+proof (cases t)
+  case (Trm ps) thus ?thesis by (cases ps) auto
+qed
+
+lemma ox9_lessBP_iff: "lessBP a b \<longleftrightarrow> lessBT (Trm [a]) (Trm [b])" by simp
+
+lemma ox9_lessBP_trans: "lessBP a b \<Longrightarrow> lessBP b c \<Longrightarrow> lessBP a c"
+  using lessBT_trans[of "Trm [a]" "Trm [b]" "Trm [c]"] by simp
+
+text \<open>The surgery at a shared position strictly lowers, at the list level and at
+  the tree level.\<close>
+
+lemma ox9_snoc_lessBT: "lessBP q p \<Longrightarrow> lessBT (Trm (ps @ [q])) (Trm (ps @ [p]))"
+  by (induct ps) auto
+
+lemma ox9_holeD_lessBT:
+  "ox9_holeD e p q t t' \<Longrightarrow> lessBP q p \<Longrightarrow> lessBT t' t"
+proof (induction e p q t t' rule: ox9_holeD.induct)
+  case (ox9_hD0 p q ps)
+  thus ?case by (simp add: ox9_snoc_lessBT)
+next
+  case (ox9_hDS k p q b b' ps w)
+  have "lessBT b' b" using ox9_hDS.IH ox9_hDS.prems by simp
+  hence "lessBP (DB w b') (DB w b)" by simp
+  thus ?case by (simp add: ox9_snoc_lessBT)
+qed
+
+
+subsection \<open>(3) The one-sided transport \<open>ox9_TT\<close>: a tree all of whose heads are
+  \<open>\<ge> v\<close> can NEVER reach the leaf hole \<open>D\<^sub>v 0\<close>\<close>
+
+text \<open>@{text ox9_lexP}: the list-level walk with a hole ONLY in the right operand.
+  The right operand's hole principal \<open>q\<close> is compared against a left principal only
+  through the hypothesis \<open>HT\<close>; everything else is unchanged by the surgery, so the
+  verdict transports verbatim.\<close>
+
+lemma ox9_lexP:
+  assumes HT: "\<And>x. ox9_okP v ub x \<Longrightarrow> lessBP x q \<Longrightarrow> lessBP x q'"
+  shows "ox9_ok v ub (Trm xs) \<Longrightarrow> lessBT (Trm xs) (Trm (ys @ [q]))
+         \<Longrightarrow> lessBT (Trm xs) (Trm (ys @ [q']))"
+proof (induction ys arbitrary: xs)
+  case Nil
+  note P1 = Nil.prems(1) and P2 = Nil.prems(2)
+  show ?case
+  proof (cases xs)
+    case Nil
+    thus ?thesis by simp
+  next
+    case (Cons x xs')
+    have hx: "ox9_okP v ub x" using P1 Cons by simp
+    have "lessBP x q \<or> (x = q \<and> lessBT (Trm xs') 0\<^sub>B)" using P2 Cons by simp
+    hence lx: "lessBP x q" using ox9_lessBT_zero by blast
+    have "lessBP x q'" by (rule HT[OF hx lx])
+    thus ?thesis using Cons by simp
+  qed
+next
+  case (Cons y ys')
+  note IH = Cons.IH and P1 = Cons.prems(1) and P2 = Cons.prems(2)
+  show ?case
+  proof (cases xs)
+    case Nil
+    thus ?thesis by simp
+  next
+    case (Cons x xs')
+    have hxs: "ox9_ok v ub (Trm xs')" using P1 Cons by simp
+    have "lessBP x y \<or> (x = y \<and> lessBT (Trm xs') (Trm (ys' @ [q])))"
+      using P2 Cons by simp
+    thus ?thesis
+    proof
+      assume "lessBP x y"
+      thus ?thesis using Cons by simp
+    next
+      assume A: "x = y \<and> lessBT (Trm xs') (Trm (ys' @ [q]))"
+      have "lessBT (Trm xs') (Trm (ys' @ [q']))" by (rule IH[OF hxs]) (use A in simp)
+      thus ?thesis using Cons A by simp
+    qed
+  qed
+qed
+
+text \<open>@{text ox9_TT_aux}: the hole-replacement premise \<open>PX\<close> is carried through the
+  induction (the relation's replacement \<open>q'\<close> is the SAME at every depth).  In the
+  census it is discharged for \<open>q' = D\<^bsub>ub\<^esub>X\<^sub>0\<close> from @{const ox9_ok}: a left principal
+  \<open>D\<^sub>c XB\<close> that reaches the leaf hole has \<open>c < v\<^sub>1\<close>, hence \<open>c \<le> ub\<close>, and
+  @{const ox9_ok} then hands us \<open>XB < X\<^sub>0\<close> --- which decides \<open>D\<^sub>c XB < D\<^bsub>ub\<^esub>X\<^sub>0\<close> on
+  the second component when \<open>c = ub\<close>.\<close>
+
+lemma ox9_TT_aux:
+  "ox9_holeD e p q' R R' \<Longrightarrow> p = DB v 0\<^sub>B
+   \<Longrightarrow> (\<forall>x. ox9_okP v ub x \<longrightarrow> lessBP x (DB v 0\<^sub>B) \<longrightarrow> lessBP x q')
+   \<Longrightarrow> ox9_ok v ub L \<Longrightarrow> lessBT L R \<Longrightarrow> lessBT L R'"
+proof (induction e p q' R R' arbitrary: L rule: ox9_holeD.induct)
+  case (ox9_hD0 p q ps)
+  have pd: "p = DB v 0\<^sub>B" using ox9_hD0.prems(1) by simp
+  have HT: "\<And>x. ox9_okP v ub x \<Longrightarrow> lessBP x p \<Longrightarrow> lessBP x q"
+    using ox9_hD0.prems(2) pd by blast
+  obtain xs where Lx: "L = Trm xs" by (cases L)
+  have hge: "ox9_ok v ub (Trm xs)" using ox9_hD0.prems(3) Lx by simp
+  have lt: "lessBT (Trm xs) (Trm (ps @ [p]))" using ox9_hD0.prems(4) Lx by simp
+  show ?case using ox9_lexP[OF HT hge lt] Lx by simp
+next
+  case (ox9_hDS k p q b b' ps w)
+  have pd: "p = DB v 0\<^sub>B" using ox9_hDS.prems(1) by simp
+  have PX: "\<forall>x. ox9_okP v ub x \<longrightarrow> lessBP x (DB v 0\<^sub>B) \<longrightarrow> lessBP x q"
+    using ox9_hDS.prems(2) by simp
+  have HT: "\<And>x. ox9_okP v ub x \<Longrightarrow> lessBP x (DB w b) \<Longrightarrow> lessBP x (DB w b')"
+  proof -
+    fix x assume hx: "ox9_okP v ub x" and lx: "lessBP x (DB w b)"
+    obtain c XB where xc: "x = DB c XB" by (cases x)
+    have hXB: "ox9_ok v ub XB" using hx xc by simp
+    have "c < w \<or> (c = w \<and> lessBT XB b)" using lx xc by simp
+    thus "lessBP x (DB w b')"
+    proof
+      assume "c < w" thus ?thesis using xc by simp
+    next
+      assume A: "c = w \<and> lessBT XB b"
+      have "lessBT XB b'" by (rule ox9_hDS.IH[OF pd PX hXB]) (use A in simp)
+      thus ?thesis using xc A by simp
+    qed
+  qed
+  obtain xs where Lx: "L = Trm xs" by (cases L)
+  have hge: "ox9_ok v ub (Trm xs)" using ox9_hDS.prems(3) Lx by simp
+  have lt: "lessBT (Trm xs) (Trm (ps @ [DB w b]))" using ox9_hDS.prems(4) Lx by simp
+  show ?case using ox9_lexP[OF HT hge lt] Lx by simp
+qed
+
+lemma ox9_TT:
+  assumes hd: "ox9_holeD e (DB v 0\<^sub>B) q' R R'"
+    and PX: "\<And>x. ox9_okP v ub x \<Longrightarrow> lessBP x (DB v 0\<^sub>B) \<Longrightarrow> lessBP x q'"
+    and hge: "ox9_ok v ub L" and lt: "lessBT L R"
+  shows "lessBT L R'"
+  using ox9_TT_aux[OF hd refl _ hge lt] PX by blast
+
+
+subsection \<open>(4) The two-sided transport \<open>ox9_MAIN\<close>\<close>
+
+text \<open>@{text ox9_lexM}: the list-level lock-step walk, with a hole in the last
+  principal of BOTH operands.  Three principal-level side conditions:
+  \<open>PD\<close> (the two hole principals meet), \<open>PB\<close> (the left hole principal meets a
+  hole-free right principal -- the surgery LOWERS the left, so the verdict is
+  preserved), \<open>PC\<close> (a hole-free left principal meets the right hole principal --
+  the surgery LOWERS the right, so a flip is a priori possible; this is the one
+  dangerous branch, discharged by @{thm [source] ox9_TT}).\<close>
+
+lemma ox9_lexM:
+  assumes PD: "lessBP pL pR \<Longrightarrow> lessBP pL' pR'"
+    and PB: "\<And>y. lessBP pL y \<or> pL = y \<Longrightarrow> lessBP pL' y"
+    and PC: "\<And>x. ox9_okP v ub x \<Longrightarrow> lessBP x pR \<Longrightarrow> lessBP x pR'"
+  shows "ox9_ok v ub (Trm xs) \<Longrightarrow> lessBT (Trm (xs @ [pL])) (Trm (ys @ [pR]))
+         \<Longrightarrow> lessBT (Trm (xs @ [pL'])) (Trm (ys @ [pR']))"
+proof (induction ys arbitrary: xs)
+  case Nil
+  note P1 = Nil.prems(1) and P2 = Nil.prems(2)
+  show ?case
+  proof (cases xs)
+    case Nil
+    have "lessBP pL pR" using P2 Nil by simp
+    thus ?thesis using PD Nil by simp
+  next
+    case (Cons x xs')
+    have hx: "ox9_okP v ub x" using P1 Cons by simp
+    have "lessBP x pR \<or> (x = pR \<and> lessBT (Trm (xs' @ [pL])) 0\<^sub>B)"
+      using P2 Cons by simp
+    hence lx: "lessBP x pR" using ox9_lessBT_zero by blast
+    have "lessBP x pR'" by (rule PC[OF hx lx])
+    thus ?thesis using Cons by simp
+  qed
+next
+  case (Cons y ys')
+  note IH = Cons.IH and P1 = Cons.prems(1) and P2 = Cons.prems(2)
+  show ?case
+  proof (cases xs)
+    case Nil
+    have "lessBP pL y \<or> (pL = y \<and> lessBT 0\<^sub>B (Trm (ys' @ [pR])))"
+      using P2 Nil by simp
+    hence "lessBP pL y \<or> pL = y" by blast
+    hence "lessBP pL' y" by (rule PB)
+    thus ?thesis using Nil by simp
+  next
+    case (Cons x xs')
+    have hxs: "ox9_ok v ub (Trm xs')" using P1 Cons by simp
+    have "lessBP x y \<or> (x = y \<and> lessBT (Trm (xs' @ [pL])) (Trm (ys' @ [pR])))"
+      using P2 Cons by simp
+    thus ?thesis
+    proof
+      assume "lessBP x y"
+      thus ?thesis using Cons by simp
+    next
+      assume A: "x = y \<and> lessBT (Trm (xs' @ [pL])) (Trm (ys' @ [pR]))"
+      have "lessBT (Trm (xs' @ [pL'])) (Trm (ys' @ [pR']))"
+        by (rule IH[OF hxs]) (use A in simp)
+      thus ?thesis using Cons A by simp
+    qed
+  qed
+qed
+
+text \<open>@{text ox9_MAIN}: THE TRANSPORT.  \<open>WB\<close> carries the hole at right-spine depth
+  \<open>dR\<close>, \<open>tB\<close> (a STRICTLY deeper right-spine sub-body of the same tree) at depth
+  \<open>dL < dR\<close>; \<open>WX = WB[hole := pX]\<close>, \<open>tA = tB[hole := pA]\<close>, both surgeries strictly
+  lowering (\<open>pA, pX < D\<^bsub>v\<^sub>1\<^esub>0\<close>).  If every head of \<open>tB\<close> is \<open>\<ge> v\<^sub>1\<close> then
+  \<open>lessBT tB WB\<close> transports to \<open>lessBT tA WX\<close>.
+
+  \<open>dL < dR\<close> is what makes the RIGHT operand's hole principal a genuine spine
+  principal \<open>D\<^bsub>w\<^esub>RB\<close> (never the leaf \<open>D\<^bsub>v\<^sub>1\<^esub>0\<close>): its HEAD is untouched by the
+  surgery, so the head comparison transports and only the body recursion is left.
+  The left operand's leaf case (\<open>dL = 0\<close>) is decided outright: \<open>lessBP (D\<^bsub>v\<^sub>1\<^esub>0) pR\<close>
+  forces \<open>v\<^sub>1 \<le> w\<close>, and \<open>pA\<close>'s head is \<open>< v\<^sub>1 \<le> w\<close>.\<close>
+
+lemma ox9_MAIN:
+  fixes v1 ub :: enat
+  assumes PXOK: "\<And>x. ox9_okP v1 ub x \<Longrightarrow> lessBP x (DB v1 0\<^sub>B) \<Longrightarrow> lessBP x pX"
+  shows "ox9_holeD dR (DB v1 0\<^sub>B) pX WB WX \<Longrightarrow>
+         ox9_holeD dL (DB v1 0\<^sub>B) pA tB tA \<Longrightarrow>
+         lessBP pA (DB v1 0\<^sub>B) \<Longrightarrow> dL < dR \<Longrightarrow>
+         ox9_ok v1 ub tB \<Longrightarrow> lessBT tB WB \<Longrightarrow> lessBT tA WX"
+proof (induction dR arbitrary: dL WB WX tB tA rule: less_induct)
+  case (less dR)
+  note hdR = less.prems(1) and hdL = less.prems(2) and pAlt = less.prems(3)
+    and dlt = less.prems(4) and hge = less.prems(5) and lt = less.prems(6)
+  obtain e where dRe: "dR = Suc e" using dlt by (cases dR) auto
+  have hdR': "ox9_holeD (Suc e) (DB v1 0\<^sub>B) pX WB WX" using hdR dRe by simp
+  obtain ys wR RB RB' where
+      WBd: "WB = Trm (ys @ [DB wR RB])" and WXd: "WX = Trm (ys @ [DB wR RB'])"
+    and hdRB: "ox9_holeD e (DB v1 0\<^sub>B) pX RB RB'"
+    by (rule ox9_holeD_SucE[OF hdR'])
+  \<comment> \<open>the dangerous branch (C), discharged by @{thm [source] ox9_TT}\<close>
+  have PC: "\<And>x. ox9_okP v1 ub x \<Longrightarrow> lessBP x (DB wR RB) \<Longrightarrow> lessBP x (DB wR RB')"
+  proof -
+    fix x assume hx: "ox9_okP v1 ub x" and lx: "lessBP x (DB wR RB)"
+    obtain c XB where xc: "x = DB c XB" by (cases x)
+    have hXB: "ox9_ok v1 ub XB" using hx xc by simp
+    have "c < wR \<or> (c = wR \<and> lessBT XB RB)" using lx xc by simp
+    thus "lessBP x (DB wR RB')"
+    proof
+      assume "c < wR" thus ?thesis using xc by simp
+    next
+      assume A: "c = wR \<and> lessBT XB RB"
+      have ltXB: "lessBT XB RB" using A by simp
+      have "lessBT XB RB'" by (rule ox9_TT[OF hdRB PXOK hXB ltXB])
+      thus ?thesis using xc A by simp
+    qed
+  qed
+  show ?case
+  proof (cases dL)
+    case 0
+    have hdL': "ox9_holeD 0 (DB v1 0\<^sub>B) pA tB tA" using hdL 0 by simp
+    obtain xs where tBd: "tB = Trm (xs @ [DB v1 0\<^sub>B])" and tAd: "tA = Trm (xs @ [pA])"
+      by (rule ox9_holeD_0E[OF hdL'])
+    obtain c A0 where pAc: "pA = DB c A0" by (cases pA)
+    have cv: "c < v1"
+    proof -
+      have "c < v1 \<or> (c = v1 \<and> lessBT A0 0\<^sub>B)" using pAlt pAc by simp
+      thus ?thesis using ox9_lessBT_zero by blast
+    qed
+    have PD: "lessBP (DB v1 0\<^sub>B) (DB wR RB) \<Longrightarrow> lessBP pA (DB wR RB')"
+    proof -
+      assume "lessBP (DB v1 0\<^sub>B) (DB wR RB)"
+      hence "v1 < wR \<or> (v1 = wR \<and> lessBT 0\<^sub>B RB)" by simp
+      hence "v1 \<le> wR" by auto
+      hence "c < wR" using cv by simp
+      thus "lessBP pA (DB wR RB')" using pAc by simp
+    qed
+    have PB: "\<And>y. lessBP (DB v1 0\<^sub>B) y \<or> (DB v1 0\<^sub>B) = y \<Longrightarrow> lessBP pA y"
+    proof -
+      fix y assume "lessBP (DB v1 0\<^sub>B) y \<or> (DB v1 0\<^sub>B) = y"
+      thus "lessBP pA y"
+      proof
+        assume "lessBP (DB v1 0\<^sub>B) y"
+        thus ?thesis using ox9_lessBP_trans[OF pAlt] by blast
+      next
+        assume "(DB v1 0\<^sub>B) = y"
+        thus ?thesis using pAlt by simp
+      qed
+    qed
+    have hgex: "ox9_ok v1 ub (Trm xs)" using hge tBd by simp
+    have lt': "lessBT (Trm (xs @ [DB v1 0\<^sub>B])) (Trm (ys @ [DB wR RB]))"
+      using lt tBd WBd by simp
+    have "lessBT (Trm (xs @ [pA])) (Trm (ys @ [DB wR RB']))"
+      by (rule ox9_lexM[OF PD PB PC hgex lt'])
+    thus ?thesis using tAd WXd by simp
+  next
+    case (Suc eL)
+    have hdL': "ox9_holeD (Suc eL) (DB v1 0\<^sub>B) pA tB tA" using hdL Suc by simp
+    obtain xs wL LB LA where
+        tBd: "tB = Trm (xs @ [DB wL LB])" and tAd: "tA = Trm (xs @ [DB wL LA])"
+      and hdLB: "ox9_holeD eL (DB v1 0\<^sub>B) pA LB LA"
+      by (rule ox9_holeD_SucE[OF hdL'])
+    have hLB: "ox9_ok v1 ub LB" using hge tBd by simp
+    have eLe: "eL < e" using dlt Suc dRe by simp
+    have PD: "lessBP (DB wL LB) (DB wR RB) \<Longrightarrow> lessBP (DB wL LA) (DB wR RB')"
+    proof -
+      assume "lessBP (DB wL LB) (DB wR RB)"
+      hence "wL < wR \<or> (wL = wR \<and> lessBT LB RB)" by simp
+      thus "lessBP (DB wL LA) (DB wR RB')"
+      proof
+        assume "wL < wR" thus ?thesis by simp
+      next
+        assume A: "wL = wR \<and> lessBT LB RB"
+        have "lessBT LA RB'"
+          by (rule less.IH[OF _ hdRB hdLB pAlt eLe hLB]) (use A eLe dRe in simp_all)
+        thus ?thesis using A by simp
+      qed
+    qed
+    have lowLA: "lessBT LA LB" by (rule ox9_holeD_lessBT[OF hdLB pAlt])
+    have PB: "\<And>y. lessBP (DB wL LB) y \<or> (DB wL LB) = y \<Longrightarrow> lessBP (DB wL LA) y"
+    proof -
+      fix y assume H: "lessBP (DB wL LB) y \<or> (DB wL LB) = y"
+      have low: "lessBP (DB wL LA) (DB wL LB)" using lowLA by simp
+      from H show "lessBP (DB wL LA) y"
+      proof
+        assume "lessBP (DB wL LB) y"
+        thus ?thesis using ox9_lessBP_trans[OF low] by blast
+      next
+        assume "(DB wL LB) = y"
+        thus ?thesis using low by simp
+      qed
+    qed
+    have hgex: "ox9_ok v1 ub (Trm xs)" using hge tBd by simp
+    have lt': "lessBT (Trm (xs @ [DB wL LB])) (Trm (ys @ [DB wR RB]))"
+      using lt tBd WBd by simp
+    have "lessBT (Trm (xs @ [DB wL LA])) (Trm (ys @ [DB wR RB']))"
+      by (rule ox9_lexM[OF PD PB PC hgex lt'])
+    thus ?thesis using tAd WXd by simp
+  qed
+qed
+
+
+subsection \<open>(5) Reading \<open>ox9_holeD\<close> off the flat surgery, and descending it\<close>
+
+text \<open>@{text ox9_holeD_of_flat3}: the flat-level surgery data of the census (one
+  body \<open>t\<close>, two replacements \<open>q\<^sub>1, q\<^sub>2\<close> at the SAME wrapper \<open>(s,b)\<close>) yields the two
+  structural hole relations at the SAME depth -- by iterating
+  @{thm [source] otx2_align3}, which is exactly the right-spine peel.\<close>
+
+lemma ox9_holeD_of_flat3:
+  "flatBT t = s @ flatBP p @ b \<Longrightarrow> flatBT t1 = s @ flatBP q1 @ b \<Longrightarrow>
+   flatBT t2 = s @ flatBP q2 @ b \<Longrightarrow> (\<forall>x \<in> set b. x = RP) \<Longrightarrow>
+   \<exists>e. ox9_holeD e p q1 t t1 \<and> ox9_holeD e p q2 t t2"
+proof (induction t arbitrary: t1 t2 s b rule: measure_induct_rule[where f=size])
+  case (less t)
+  from otx2_align3[OF less.prems(1) less.prems(2) less.prems(3) less.prems(4)]
+  show ?case
+  proof (elim disjE exE conjE)
+    fix qs
+    assume T: "t = Trm (qs @ [p])" and T1: "t1 = Trm (qs @ [q1])"
+      and T2: "t2 = Trm (qs @ [q2])"
+    have "ox9_holeD 0 p q1 t t1 \<and> ox9_holeD 0 p q2 t t2"
+      using T T1 T2 by (simp add: ox9_holeD.ox9_hD0)
+    thus ?thesis by blast
+  next
+    fix qs w lb1 lb2 lb3 sc bc
+    assume T: "t = Trm (qs @ [DB w lb1])" and T1: "t1 = Trm (qs @ [DB w lb2])"
+      and T2: "t2 = Trm (qs @ [DB w lb3])"
+      and F: "flatBT lb1 = sc @ flatBP p @ bc"
+      and F1: "flatBT lb2 = sc @ flatBP q1 @ bc"
+      and F2: "flatBT lb3 = sc @ flatBP q2 @ bc"
+      and BC: "\<forall>x \<in> set bc. x = RP"
+    have pin: "DB w lb1 \<in> set (qs @ [DB w lb1])" by simp
+    have szp: "size (DB w lb1) \<le> size_list size (qs @ [DB w lb1])"
+      by (rule size_list_estimation'[OF pin order_refl])
+    have szlt: "size lb1 < size t" using szp T by simp
+    from less.IH[OF szlt F F1 F2 BC] obtain e where
+      E: "ox9_holeD e p q1 lb1 lb2 \<and> ox9_holeD e p q2 lb1 lb3" by blast
+    have "ox9_holeD (Suc e) p q1 t t1 \<and> ox9_holeD (Suc e) p q2 t t2"
+      using E T T1 T2 by (simp add: ox9_holeD.ox9_hDS)
+    thus ?thesis by blast
+  qed
+qed
+
+lemma ox9_rsub_Suc: "ox8_rsub t (Suc k) = ox8_lastT (ox8_rsub t k)"
+proof (induction k arbitrary: t)
+  case 0 thus ?case by simp
+next
+  case (Suc k)
+  have "ox8_rsub t (Suc (Suc k)) = ox8_rsub (ox8_lastT t) (Suc k)" by simp
+  also have "\<dots> = ox8_lastT (ox8_rsub (ox8_lastT t) k)" by (rule Suc.IH)
+  also have "\<dots> = ox8_lastT (ox8_rsub t (Suc k))" by simp
+  finally show ?case .
+qed
+
+lemma ox9_holeD_lastT:
+  assumes "ox9_holeD (Suc e) p q t t'"
+  shows "ox9_holeD e p q (ox8_lastT t) (ox8_lastT t')"
+proof -
+  obtain ps w b b' where T: "t = Trm (ps @ [DB w b])" and T': "t' = Trm (ps @ [DB w b'])"
+    and H: "ox9_holeD e p q b b'"
+    by (rule ox9_holeD_SucE[OF assms])
+  have "ox8_lastT t = b" using T by simp
+  moreover have "ox8_lastT t' = b'" using T' by simp
+  ultimately show ?thesis using H by simp
+qed
+
+lemma ox9_holeD_rsub:
+  "ox9_holeD dR p q t t' \<Longrightarrow> k \<le> dR
+   \<Longrightarrow> ox9_holeD (dR - k) p q (ox8_rsub t k) (ox8_rsub t' k)"
+proof (induction k arbitrary: t t' dR)
+  case 0 thus ?case by simp
+next
+  case (Suc k)
+  obtain e where dRe: "dR = Suc e" using Suc.prems(2) by (cases dR) auto
+  have H: "ox9_holeD (Suc e) p q t t'" using Suc.prems(1) dRe by simp
+  have step: "ox9_holeD e p q (ox8_lastT t) (ox8_lastT t')"
+    by (rule ox9_holeD_lastT[OF H])
+  have kle: "k \<le> e" using Suc.prems(2) dRe by simp
+  have IH: "ox9_holeD (e - k) p q (ox8_rsub (ox8_lastT t) k) (ox8_rsub (ox8_lastT t') k)"
+    by (rule Suc.IH[OF step kle])
+  have r1: "ox8_rsub t (Suc k) = ox8_rsub (ox8_lastT t) k" by simp
+  have r2: "ox8_rsub t' (Suc k) = ox8_rsub (ox8_lastT t') k" by simp
+  have "dR - Suc k = e - k" using dRe by simp
+  thus ?case using IH r1 r2 by simp
+qed
+
+lemma ox9_ok_lastT: "ox9_ok v ub t \<Longrightarrow> ox9_ok v ub (ox8_lastT t)"
+proof -
+  assume H: "ox9_ok v ub t"
+  obtain ps where T: "t = Trm ps" by (cases t)
+  show ?thesis
+  proof (cases "ps = []")
+    case True thus ?thesis using T by simp
+  next
+    case False
+    obtain w b where lp: "last ps = DB w b" by (cases "last ps")
+    have mem: "DB w b \<in> set ps" using False lp by (metis last_in_set)
+    have hall: "\<forall>p \<in> set ps. ox9_okP v ub p" using H T by simp
+    have "ox9_okP v ub (DB w b)" using hall mem by blast
+    hence "ox9_ok v ub b" by simp
+    moreover have "ox8_lastT t = b" using T False lp by simp
+    ultimately show ?thesis by simp
+  qed
+qed
+
+lemma ox9_ok_rsub: "ox9_ok v ub t \<Longrightarrow> ox9_ok v ub (ox8_rsub t k)"
+proof (induction k arbitrary: t)
+  case 0 thus ?case by simp
+next
+  case (Suc k)
+  have "ox9_ok v ub (ox8_lastT t)" by (rule ox9_ok_lastT[OF Suc.prems])
+  thus ?case using Suc.IH by simp
+qed
+
+
+subsection \<open>(6) The re-threaded SETLE engine \<open>ox9_engine\<close>\<close>
+
+text \<open>@{text ox9_engine}: the right-spine peel of @{thm [source] ox6_setle_scbext_restr},
+  re-threaded so that at every level the three trees are the ITERATED RIGHT-SPINE
+  SUB-BODIES \<open>ox8_rsub WB k\<close> / \<open>ox8_rsub A\<^sub>1 k\<close> / \<open>ox8_rsub X\<^sub>1 k\<close> of the surgery
+  triple.  That is exactly the data the residual needs: the spine descent
+  \<open>DESC\<close> (= @{thm [source] ox8_body_rspine_lessBT}) and the transport
+  @{thm [source] ox9_MAIN} then close the ancestor bound \<open>leBT (ox8_rsub A\<^sub>1 k) X\<^sub>1\<close>
+  outright -- no \<open>spineH\<close> residual is left.\<close>
+
+lemma ox9_engine:
+  fixes u v1 ub :: enat and WB A1 X1 :: BT and pA pX :: BP
+  assumes holeH: "b1x_setle (GBP u pA) (insert X1 (GBT u X1))"
+    and hdA: "ox9_holeD dR (DB v1 0\<^sub>B) pA WB A1"
+    and hdX: "ox9_holeD dR (DB v1 0\<^sub>B) pX WB X1"
+    and pAlt: "lessBP pA (DB v1 0\<^sub>B)"
+    and PXOK: "\<And>x. ox9_okP v1 ub x \<Longrightarrow> lessBP x (DB v1 0\<^sub>B) \<Longrightarrow> lessBP x pX"
+    and hgeB: "ox9_ok v1 ub WB"
+    and DESC: "\<And>k. 1 \<le> k \<Longrightarrow> k \<le> dR \<Longrightarrow> lessBT (ox8_rsub WB k) WB"
+  shows "dR - k = m \<Longrightarrow> k \<le> dR \<Longrightarrow> GBT u (ox8_rsub X1 k) \<subseteq> GBT u X1
+         \<Longrightarrow> b1x_setle (GBT u (ox8_rsub A1 k)) (insert X1 (GBT u X1))"
+proof (induction m arbitrary: k rule: less_induct)
+  case (less m)
+  note mk = less.prems(1) and kle = less.prems(2) and subX = less.prems(3)
+  have hdAk: "ox9_holeD (dR - k) (DB v1 0\<^sub>B) pA (ox8_rsub WB k) (ox8_rsub A1 k)"
+    by (rule ox9_holeD_rsub[OF hdA kle])
+  have hdXk: "ox9_holeD (dR - k) (DB v1 0\<^sub>B) pX (ox8_rsub WB k) (ox8_rsub X1 k)"
+    by (rule ox9_holeD_rsub[OF hdX kle])
+  show ?case
+  proof (cases "dR - k")
+    case 0
+    \<comment> \<open>the hole is the last top-level principal of this level\<close>
+    have hA: "ox9_holeD 0 (DB v1 0\<^sub>B) pA (ox8_rsub WB k) (ox8_rsub A1 k)"
+      using hdAk 0 by simp
+    have hX: "ox9_holeD 0 (DB v1 0\<^sub>B) pX (ox8_rsub WB k) (ox8_rsub X1 k)"
+      using hdXk 0 by simp
+    obtain ps where WBk: "ox8_rsub WB k = Trm (ps @ [DB v1 0\<^sub>B])"
+      and A1k: "ox8_rsub A1 k = Trm (ps @ [pA])"
+      by (rule ox9_holeD_0E[OF hA])
+    obtain ps' where WBk': "ox8_rsub WB k = Trm (ps' @ [DB v1 0\<^sub>B])"
+      and X1k: "ox8_rsub X1 k = Trm (ps' @ [pX])"
+      by (rule ox9_holeD_0E[OF hX])
+    have pseq: "ps = ps'" using WBk WBk' by simp
+    have qsub: "(\<Union>q \<in> set ps. GBP u q) \<subseteq> GBT u X1"
+    proof -
+      have "(\<Union>q \<in> set ps. GBP u q) \<subseteq> GBT u (ox8_rsub X1 k)" using X1k pseq by auto
+      thus ?thesis using subX by blast
+    qed
+    show ?thesis
+      unfolding b1x_setle_def
+    proof
+      fix x assume xin: "x \<in> GBT u (ox8_rsub A1 k)"
+      have "x \<in> (\<Union>q \<in> set ps. GBP u q) \<or> x \<in> GBP u pA" using xin A1k by auto
+      thus "\<exists>y \<in> insert X1 (GBT u X1). leBT x y"
+      proof
+        assume "x \<in> (\<Union>q \<in> set ps. GBP u q)"
+        hence "x \<in> GBT u X1" using qsub by blast
+        thus ?thesis by blast
+      next
+        assume "x \<in> GBP u pA"
+        thus ?thesis using holeH unfolding b1x_setle_def by blast
+      qed
+    qed
+  next
+    case (Suc e)
+    have hA: "ox9_holeD (Suc e) (DB v1 0\<^sub>B) pA (ox8_rsub WB k) (ox8_rsub A1 k)"
+      using hdAk Suc by simp
+    have hX: "ox9_holeD (Suc e) (DB v1 0\<^sub>B) pX (ox8_rsub WB k) (ox8_rsub X1 k)"
+      using hdXk Suc by simp
+    obtain ps w LB LA where WBk: "ox8_rsub WB k = Trm (ps @ [DB w LB])"
+      and A1k: "ox8_rsub A1 k = Trm (ps @ [DB w LA])"
+      and hdLB: "ox9_holeD e (DB v1 0\<^sub>B) pA LB LA"
+      by (rule ox9_holeD_SucE[OF hA])
+    obtain ps' w' LB' LX where WBk': "ox8_rsub WB k = Trm (ps' @ [DB w' LB'])"
+      and X1k: "ox8_rsub X1 k = Trm (ps' @ [DB w' LX])"
+      by (rule ox9_holeD_SucE[OF hX])
+    have pseq: "ps = ps' \<and> w = w' \<and> LB = LB'" using WBk WBk' by simp
+    \<comment> \<open>the three peels are the next right-spine sub-bodies\<close>
+    have rB: "ox8_rsub WB (Suc k) = LB" using ox9_rsub_Suc[of WB k] WBk by simp
+    have rA: "ox8_rsub A1 (Suc k) = LA" using ox9_rsub_Suc[of A1 k] A1k by simp
+    have rX: "ox8_rsub X1 (Suc k) = LX" using ox9_rsub_Suc[of X1 k] X1k by simp
+    have kSle: "Suc k \<le> dR" using kle Suc by simp
+    have hLB: "ox9_ok v1 ub LB" using ox9_ok_rsub[OF hgeB, of "Suc k"] rB by simp
+    have descLB: "lessBT LB WB" using DESC[of "Suc k"] kSle rB by simp
+    have eLdR: "e < dR" using Suc kle by simp
+    \<comment> \<open>the ancestor bound at this level: the TRANSPORT\<close>
+    have leLA: "leBT LA X1"
+    proof -
+      have "lessBT LA X1"
+        by (rule ox9_MAIN[OF PXOK hdX hdLB pAlt eLdR hLB descLB])
+      thus ?thesis by blast
+    qed
+    have qsub: "(\<Union>q \<in> set ps. GBP u q) \<subseteq> GBT u X1"
+    proof -
+      have "(\<Union>q \<in> set ps. GBP u q) \<subseteq> GBT u (ox8_rsub X1 k)" using X1k pseq by auto
+      thus ?thesis using subX by blast
+    qed
+    show ?thesis
+      unfolding b1x_setle_def
+    proof
+      fix x assume xin: "x \<in> GBT u (ox8_rsub A1 k)"
+      have "x \<in> (\<Union>q \<in> set ps. GBP u q) \<or> x \<in> GBP u (DB w LA)" using xin A1k by auto
+      thus "\<exists>y \<in> insert X1 (GBT u X1). leBT x y"
+      proof
+        assume "x \<in> (\<Union>q \<in> set ps. GBP u q)"
+        hence "x \<in> GBT u X1" using qsub by blast
+        thus ?thesis by blast
+      next
+        assume xh: "x \<in> GBP u (DB w LA)"
+        have uw: "u \<le> w" using xh by (auto split: if_split_asm)
+        have xcase: "x = LA \<or> x \<in> GBT u LA" using xh by (auto split: if_split_asm)
+        \<comment> \<open>the matched \<open>X\<close>-side sibling lies in \<open>G\<^sub>u X\<^sub>1\<close>, which re-threads the peel\<close>
+        have LXin: "LX \<in> GBT u X1"
+        proof -
+          have "LX \<in> GBP u (DB w' LX)" using uw pseq by simp
+          hence "LX \<in> GBT u (ox8_rsub X1 k)" using X1k by auto
+          thus ?thesis using subX by blast
+        qed
+        have subX': "GBT u (ox8_rsub X1 (Suc k)) \<subseteq> GBT u X1"
+          using b1x_GBT_trans[OF LXin] rX by simp
+        from xcase show ?thesis
+        proof
+          assume "x = LA"
+          thus ?thesis using leLA by blast
+        next
+          assume xLA: "x \<in> GBT u LA"
+          have mlt: "dR - Suc k < m" using mk Suc by simp
+          have IH: "b1x_setle (GBT u (ox8_rsub A1 (Suc k))) (insert X1 (GBT u X1))"
+            by (rule less.IH[OF mlt refl kSle subX'])
+          have "b1x_setle (GBT u LA) (insert X1 (GBT u X1))" using IH rA by simp
+          thus ?thesis using xLA unfolding b1x_setle_def by blast
+        qed
+      qed
+    qed
+  qed
+qed
+
+
+subsection \<open>(7) The census \<open>SETLE1_ltJ\<close> slot, modulo the head bound\<close>
+
+text \<open>@{text ox9_SETLE1_ltJ}: the \<open>SETLE1\<close> assumption of
+  @{thm [source] oi8_census_final_ivadmeq}, VERBATIM, discharged from the SINGLE
+  residual \<open>ALLH\<close>: every head occurring in \<open>body = bpHeadT (Trans (s84x_N N))\<close> is
+  \<open>\<ge> v\<^sub>1\<close>.  Everything else -- the \<open>G\<close>-descent (@{thm [source] ox8_body_rspine_lessBT}),
+  the body driver (@{thm [source] ox5_body_driver_census}), the hole
+  (@{thm [source] ox6_holeH}), the surgery structure
+  (@{thm [source] ox9_holeD_of_flat3}) and the transport
+  (@{thm [source] ox9_MAIN}) -- is unconditional.\<close>
+
+lemma ox9_SETLE1_ltJ:
+  fixes N :: pairseq and s0 b0 :: "Sym list" and u :: enat
+  assumes NST: "N \<in> ST_PS" and NPT: "N \<in> PT_PS"
+    and hp: "hasParent N 1 (Lng N - 1)"
+    and j1gt: "1 < Lng N - 1"
+    and branch: "transCondIII N \<or> transCondIV N"
+    and ihOT: "Trans N \<in> OT_B"
+    and b0RP: "\<forall>x \<in> set b0. x = RP"
+    and inner: "scb_decomp (bpHeadT (Trans (s84x_N N))) s0
+                 (flatBT (Dpt (enat (entry N 1 (Lng N - 1))) 0\<^sub>B)) b0"
+    and ltJ: "s84x_jm3 N < transJm1 N"
+    and ALLH: "ox9_ok (enat (entry N 1 (Lng N - 1)))
+                      (enat (entry N 1 (Lng N - 1) - 1))
+                      (bpHeadT (Trans (s84x_N N)))"
+  shows "b1x_setle
+           (GBT u (d4vx_ins s0 (entry N 1 (Lng N - 1) - 1) b0
+                     (bpHeadT (Trans (Pred (s84x_N N))))))
+           (insert (d4vx_ins s0 (entry N 1 (Lng N - 1) - 1) b0
+                      (Dpt (enat (entry N 1 (Lng N - 1) - 1)) 0\<^sub>B))
+                   (GBT u (d4vx_ins s0 (entry N 1 (Lng N - 1) - 1) b0
+                             (Dpt (enat (entry N 1 (Lng N - 1) - 1)) 0\<^sub>B))))"
+proof -
+  let ?v1 = "entry N 1 (Lng N - 1)"
+  let ?ub = "entry N 1 (Lng N - 1) - 1"
+  let ?A0 = "bpHeadT (Trans (Pred (s84x_N N)))"
+  let ?X0 = "Dpt (enat ?ub) 0\<^sub>B"
+  let ?body = "bpHeadT (Trans (s84x_N N))"
+  let ?X1 = "d4vx_ins s0 ?ub b0 ?X0"
+  let ?A1 = "d4vx_ins s0 ?ub b0 ?A0"
+  \<comment> \<open>\<open>v\<^sub>1 > 0\<close> (both branches), so \<open>ub = v\<^sub>1 - 1 < v\<^sub>1\<close>\<close>
+  have v1pos: "0 < ?v1"
+    using branch by (auto simp: transCondIII_def transCondIV_def)
+  have ublt: "?ub < ?v1" using v1pos by simp
+  have pAlt: "lessBP (DB (enat ?ub) ?A0) (DB (enat ?v1) 0\<^sub>B)" using ublt by simp
+  \<comment> \<open>\<open>PXOK\<close>: a principal that reaches the leaf hole has head \<open>< v\<^sub>1\<close>, hence \<open>\<le> ub\<close>;
+      @{const ox9_ok} then hands the body bound \<open>XB < X\<^sub>0\<close> that decides the tie.\<close>
+  have PXOK: "\<And>x. ox9_okP (enat ?v1) (enat ?ub) x
+                \<Longrightarrow> lessBP x (DB (enat ?v1) 0\<^sub>B) \<Longrightarrow> lessBP x (DB (enat ?ub) ?X0)"
+  proof -
+    fix x assume hx: "ox9_okP (enat ?v1) (enat ?ub) x"
+      and lx: "lessBP x (DB (enat ?v1) 0\<^sub>B)"
+    obtain c XB where xc: "x = DB c XB" by (cases x)
+    have clt: "c < enat ?v1"
+    proof -
+      have "c < enat ?v1 \<or> (c = enat ?v1 \<and> lessBT XB 0\<^sub>B)" using lx xc by simp
+      thus ?thesis using ox9_lessBT_zero by blast
+    qed
+    have nge: "\<not> enat ?v1 \<le> c" using clt by simp
+    have bodylt: "lessBT XB (Dpt (enat ?ub) 0\<^sub>B)" using hx xc nge by simp
+    obtain c' where cn: "c = enat c'" using clt by (cases c) auto
+    have "c' < ?v1" using clt cn by simp
+    hence "c' \<le> ?ub" using ublt by simp
+    hence "c \<le> enat ?ub" using cn by simp
+    hence "c < enat ?ub \<or> c = enat ?ub" by auto
+    thus "lessBP x (DB (enat ?ub) ?X0)"
+    proof
+      assume "c < enat ?ub" thus ?thesis using xc by simp
+    next
+      assume "c = enat ?ub" thus ?thesis using xc bodylt by simp
+    qed
+  qed
+  \<comment> \<open>the body driver and \<open>base\<^sub>1\<close> (pin \<open>(s\<^sub>0,b\<^sub>0)\<close> against the package)\<close>
+  have ox5: "b1x_setle (GBT u ?A0) (insert ?X1 (GBT u ?X1))"
+    by (rule ox5_body_driver_census[OF NST NPT hp j1gt branch ltJ inner])
+  obtain s0' b0' s1 b1 where
+      b0RP': "\<forall>x \<in> set b0'. x = RP"
+    and inner': "scb_decomp ?body s0' (flatBT (Dpt (enat ?v1) 0\<^sub>B)) b0'"
+    and base1': "lessBT ?A0 (d4vx_ins s0' ?ub b0' ?X0)"
+    by (rule oi5_IIIIV_pkg[OF NST NPT hp j1gt branch ltJ])
+  have bodyne: "?body \<noteq> Trm []"
+  proof
+    assume z: "?body = Trm []"
+    have "flatBT ?body = s0 @ flatBT (Dpt (enat ?v1) 0\<^sub>B) @ b0"
+      using inner by (simp add: scb_decomp_def)
+    hence "[Zsym] = s0 @ [Dsym (enat ?v1), Zsym] @ b0" using z by simp
+    thus False by (cases s0) auto
+  qed
+  have pin: "s0 = s0' \<and> b0 = b0'"
+    by (rule m_7_2_scb_unique_sb[OF inner inner' bodyne])
+  have base1: "lessBT ?A0 ?X1" using base1' pin by simp
+  have holeH: "b1x_setle (GBP u (DB (enat ?ub) ?A0)) (insert ?X1 (GBT u ?X1))"
+    by (rule ox6_holeH[OF ox5 base1])
+  \<comment> \<open>the three flat surgery strings\<close>
+  have wrap: "flatBT ?body = s0 @ flatBP (DB (enat ?v1) 0\<^sub>B) @ b0"
+    using inner by (simp add: scb_decomp_def)
+  have fA1: "flatBT ?A1 = s0 @ flatBP (DB (enat ?ub) ?A0) @ b0"
+    using d4vx_ins_flat[OF wrap b0RP, of ?ub ?A0] by simp
+  have fX1: "flatBT ?X1 = s0 @ flatBP (DB (enat ?ub) ?X0) @ b0"
+    using d4vx_ins_flat[OF wrap b0RP, of ?ub ?X0] by simp
+  obtain dR where
+      hdA: "ox9_holeD dR (DB (enat ?v1) 0\<^sub>B) (DB (enat ?ub) ?A0) ?body ?A1"
+    and hdX: "ox9_holeD dR (DB (enat ?v1) 0\<^sub>B) (DB (enat ?ub) ?X0) ?body ?X1"
+    using ox9_holeD_of_flat3[OF wrap fA1 fX1 b0RP] by blast
+  \<comment> \<open>the \<open>G\<close>-descent, with aliveness read off the surgery structure\<close>
+  have DESC: "\<And>k. 1 \<le> k \<Longrightarrow> k \<le> dR \<Longrightarrow> lessBT (ox8_rsub ?body k) ?body"
+  proof -
+    fix k :: nat assume kge: "1 \<le> k" and kle: "k \<le> dR"
+    have alive: "\<forall>j<k. ox8_rsub ?body j \<noteq> 0\<^sub>B"
+    proof (intro allI impI)
+      fix j assume jk: "j < k"
+      have jle: "j \<le> dR" using jk kle by simp
+      have "ox9_holeD (dR - j) (DB (enat ?v1) 0\<^sub>B) (DB (enat ?ub) ?A0)
+              (ox8_rsub ?body j) (ox8_rsub ?A1 j)"
+        by (rule ox9_holeD_rsub[OF hdA jle])
+      thus "ox8_rsub ?body j \<noteq> 0\<^sub>B" by (rule ox9_holeD_ne)
+    qed
+    show "lessBT (ox8_rsub ?body k) ?body"
+      by (rule ox8_body_rspine_lessBT[OF NST NPT hp j1gt branch ihOT ltJ kge alive])
+  qed
+  \<comment> \<open>run the engine from the top (\<open>k = 0\<close>)\<close>
+  have e0: "dR - 0 = dR" by simp
+  have k0: "(0::nat) \<le> dR" by simp
+  have sub0: "GBT u (ox8_rsub ?X1 0) \<subseteq> GBT u ?X1" by simp
+  have top: "b1x_setle (GBT u (ox8_rsub ?A1 0)) (insert ?X1 (GBT u ?X1))"
+    by (rule ox9_engine[OF holeH hdA hdX pAlt PXOK ALLH DESC e0 k0 sub0])
+  thus ?thesis by simp
+qed
+
+
+subsection \<open>(8) The census roll-up: SETLE1 is CLOSED modulo the head bound\<close>
+
+text \<open>@{text oi9_census_SETLE_hge}: both termination pillars, with the \<open>SETLE1\<close>
+  slot of @{thm [source] oi8_census_final_ivadmeq} now DISCHARGED from the single
+  head bound \<open>HGE\<close>.  Residual set: \<open>{HGE, FINRC}\<close>.\<close>
+
+theorem oi9_census_SETLE_ok:
+  assumes HGE: "\<And>P. P \<in> ST_PS \<Longrightarrow> P \<in> PT_PS \<Longrightarrow>
+             hasParent P 1 (Lng P - 1) \<Longrightarrow> 1 < Lng P - 1 \<Longrightarrow>
+             transCondIII P \<or> transCondIV P \<Longrightarrow> Trans P \<in> OT_B \<Longrightarrow>
+             s84x_jm3 P < transJm1 P \<Longrightarrow>
+             ox9_ok (enat (entry P 1 (Lng P - 1)))
+                    (enat (entry P 1 (Lng P - 1) - 1))
+                    (bpHeadT (Trans (s84x_N P)))"
+    and FINRC: "\<And>K. K \<in> ST_PS \<Longrightarrow> K \<in> PT_PS \<Longrightarrow> 1 < Lng K - 1 \<Longrightarrow>
+             transCondII K \<Longrightarrow> tvx_finRc K"
+  shows "\<forall>M. M \<in> ST_PS \<longrightarrow> Trans M \<in> OT_B"
+    and "\<forall>M n. M \<in> ST_PS \<longrightarrow> 1 \<le> n \<longrightarrow> 1 < Lng M \<longrightarrow>
+           lessBT (Trans ((M::pairseq)[n])) (Trans M)"
+proof -
+  have SETLE1: "\<And>P s0 b0 u. P \<in> ST_PS \<Longrightarrow> P \<in> PT_PS \<Longrightarrow>
+        hasParent P 1 (Lng P - 1) \<Longrightarrow> 1 < Lng P - 1 \<Longrightarrow>
+        transCondIII P \<or> transCondIV P \<Longrightarrow> Trans P \<in> OT_B \<Longrightarrow>
+        (\<forall>x \<in> set b0. x = RP) \<Longrightarrow>
+        scb_decomp (bpHeadT (Trans (s84x_N P))) s0
+          (flatBT (Dpt (enat (entry P 1 (Lng P - 1))) 0\<^sub>B)) b0 \<Longrightarrow>
+        s84x_jm3 P < transJm1 P \<Longrightarrow>
+        b1x_setle
+          (GBT u (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
+                    (bpHeadT (Trans (Pred (s84x_N P))))))
+          (insert (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
+                     (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))
+                  (GBT u (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
+                            (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))))"
+  proof -
+    fix P :: pairseq and s0 b0 :: "Sym list" and u :: enat
+    assume A1: "P \<in> ST_PS" and A2: "P \<in> PT_PS"
+      and A3: "hasParent P 1 (Lng P - 1)" and A4: "1 < Lng P - 1"
+      and A5: "transCondIII P \<or> transCondIV P" and A6: "Trans P \<in> OT_B"
+      and A7: "\<forall>x \<in> set b0. x = RP"
+      and A8: "scb_decomp (bpHeadT (Trans (s84x_N P))) s0
+                (flatBT (Dpt (enat (entry P 1 (Lng P - 1))) 0\<^sub>B)) b0"
+      and A9: "s84x_jm3 P < transJm1 P"
+    have H: "ox9_ok (enat (entry P 1 (Lng P - 1)))
+                    (enat (entry P 1 (Lng P - 1) - 1))
+                    (bpHeadT (Trans (s84x_N P)))"
+      by (rule HGE[OF A1 A2 A3 A4 A5 A6 A9])
+    show "b1x_setle
+          (GBT u (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
+                    (bpHeadT (Trans (Pred (s84x_N P))))))
+          (insert (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
+                     (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))
+                  (GBT u (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
+                            (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))))"
+      by (rule ox9_SETLE1_ltJ[OF A1 A2 A3 A4 A5 A6 A7 A8 A9 H])
+  qed
+  show "\<forall>M. M \<in> ST_PS \<longrightarrow> Trans M \<in> OT_B"
+    by (rule oi8_census_final_ivadmeq(1)[OF SETLE1 FINRC])
+  show "\<forall>M n. M \<in> ST_PS \<longrightarrow> 1 \<le> n \<longrightarrow> 1 < Lng M \<longrightarrow>
+         lessBT (Trans ((M::pairseq)[n])) (Trans M)"
+    by (rule oi8_census_final_ivadmeq(2)[OF SETLE1 FINRC])
+qed
+
+(* ===== end r69 ox9 block (SETLE1 reduced to the head bound ox9_hge) ===== *)
+
 end
