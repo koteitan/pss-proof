@@ -117,7 +117,7 @@
             - ✅ A0OT(=isOT_BT(bpHeadT(Trans(Pred(s84x_N N))))、od4 RT_PS弱化+Red slice経由、OTA1柱完結)[r1][0.230][0.56h]
             - 🚨🤖 SETLE1_ltJ(⚠️抽象形は偽、実Trans-image A0のhead構造要=§7.3/7.4)[r1][0.219][0.56h]
           - ✅ IVNP(condIV no-parent隅=Pred除去、ot2_IVNP)[r1][0.257][0.65h]
-          - 🚨 IVADMEQ(condIV adm-eq隅=標準condIVの主OT内容、残差{d1,d2,d3,HB})[r3][0.550][1.30h]
+          - 🚨🤖 IVADMEQ(condIV adm-eq隅=標準condIVの主OT内容、残差{d1,d2,d3,HB})[r3][0.550][1.30h]
       - ✅ OTpred(with-parent Pred corner OT-step、無仮定master od4_OTpred_mono→od4_OTpred_final無残差)[r4][0.817][1.41h]
       - 🚨 OTmulti(⛔OTint残差{A0OT,SETLE1_ltJ,IVADMEQ}: oi5_OTmulti還元済)[r3][0.495][0.51h]
       - 🚨 deep-insertion OT所属(keystone{resid,multiD}、r49でcritical path外)[r5]
