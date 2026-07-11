@@ -57,7 +57,7 @@
             - ✅ bookkeeping全消去+非可述性確定+staged ladder(wfc_)[r1][0.239][0.35h]
             - 🚨 pbody-acc本体(distinguished sets route)
               - ✅ 定義+Mset+D1 union+acc bridge+基本閉包(wds_)[r1][0.233][0.21h]
-              - 🚨🤖 collapse補題(D3)+ladder接続[r0]
+              - 🚨 collapse補題(D3)+ladder接続(wcl_ 攻め面7ブリック済、残=wds_collapse 本体=外部級)[r1][0.200][0.30h]
   - 🚨 §8.1 条件 (I) の下での展開規則
     - 🚨 命題（条件 (I) の下での $\textrm{Trans}$ と基本列の交換関係）
       - ✅ 交換則(1)本体[r4]
@@ -113,7 +113,7 @@
             - ✅ tri0 CRUX(scbext_triG engine+crx/cnv_tri0_of_nest、ltJ不要)[r1][0.297][0.65h]
             - ✅ ltJ再スレッド+oi8 census(OTA1を単一A0OTへ還元、oi8_census_via_A0OT)[r1][0.284][0.59h]
             - ✅ A0OT(=isOT_BT(bpHeadT(Trans(Pred(s84x_N N))))、od4 RT_PS弱化+Red slice経由、OTA1柱完結)[r1][0.230][0.56h]
-            - 🚨🤖 SETLE1_ltJ(sub-brick(i)(iii)済、残=新§7.4事実 RightNodes(body)≥v1 spine-monotonicity)[r4][0.771][2.03h]
+            - 🚨 SETLE1_ltJ(§7.4 RightNodes(body)≥v1済、残=spineH cross-hole lex=新L1/L2要)[r5][0.971][2.34h]
           - ✅ IVNP(condIV no-parent隅=Pred除去、ot2_IVNP)[r1][0.257][0.65h]
           - ✅ IVADMEQ(condIV adm-eq隅、SETLE-free tower engine+Red-slice regime、ot2_IVADMEQ)[r4][1.074][2.60h]
       - ✅ OTpred(with-parent Pred corner OT-step、無仮定master od4_OTpred_mono→od4_OTpred_final無残差)[r4][0.817][1.41h]
