@@ -1753,4 +1753,30 @@ Format: `line<TAB>kind<TAB>text`. Regenerate after every C->B fold.
 5439	banner	r62 FINRC de-risk (sub-task (4)): the CONSUMER-SIDE of the
 5440	banner	A9 fin-form fix, ready to plug in once LastStep_def's Min
 5441	banner	binder carries the  J < Lng (Br M)  guard.
+5512	banner	r63: SETLE1 sec7.4 RightNodes(body)>=v1 (ox7_) [front A] + buc1 wds_collapse attack-surface wcl_ bricks [front B]
+5522	banner	e3 # RightNodes body and j1 = |r|-1, all MIDDLE nodes r!j (0<j<j1)
+5530	subsection	\<open>ox7_RightNodes_body_ge_v1
+5625	banner	r63 wcl: buc1-collapse --- engine-entry framing of THE
+5626	banner	residual wds_collapse (= wfj_collapse_core = wfc_pbody_acc
+5627	banner	= wf RPrel), the last external citation [Buc1] Lemma 2.2
+5628	banner	(Buchholz--Schuette Fundierung of (OT_B,<)).
+5630	banner	This block delivers UNCONDITIONAL structural bricks that
+5631	banner	sharpen the attack surface for the collapse, WITHOUT citing
+5632	banner	any residual:
+5633	banner	(A) wcl_min_bad_secured: the wfs_szP-minimal counterexample
+5634	banner	to accessibility is automatically G-trace-SECURED
+5635	banner	(wfj_secT) --- the standard [Buc1]/Buchholz--Schuette
+5636	banner	entry point: what the collapse engine must refute is a
+5637	banner	SECURED principal that fails to be accessible.
+5638	banner	(B) wcl_accfrag_*: the accessible fragment
+5639	banner	wfj_frag v \<inter> acc RPrel satisfies the domain/downward/
+5640	banner	relative-acc clauses of wds_distinguished UNCONDITIONALLY;
+5641	banner	its 4th (G-progressiveness) clause is EXACTLY the
+5642	banner	collapse-core, so under the residual it is the CONCRETE
+5643	banner	maximal v-distinguished set (= wds_Mset v), discharging
+5644	banner	the r54 honesty note on D1 witness existence.
+5647	section	r63-wcl --- [Buc1] 2.2 collapse: engine-entry framing (prefix \<open>wcl_\<close>)
+5649	subsection	(A) The minimal counterexample to the collapse is \<open>G\<close>-trace-secured
+5730	subsection	(B) The accessible fragment \<open>wfj_frag v \<inter> acc RPrel
+5839	subsection	(C) The minimal counterexample has an \<open>RTrel
 

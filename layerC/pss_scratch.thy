@@ -5508,4 +5508,421 @@ proof -
   show ?thesis by (rule ot_finRc_LastStep_bounded_lt[OF Brne gt])
 qed
 
+
+(* ===== r63: SETLE1 sec7.4 RightNodes(body)>=v1 (ox7_) [front A] + buc1 wds_collapse attack-surface wcl_ bricks [front B] ===== *)
+
+
+(* ===================================================================== *)
+(* r63 SETLE1_ltJ sec7.4 spine-monotonicity (prefix ox7_):                *)
+(*   the TRUE residual lower bound RightNodes(body) >= v1.                 *)
+(*                                                                        *)
+(*   KEY: the pkg already hands us  k1 : scb_kind1 (Trans M) s1           *)
+(*   (flatBT (D_e3 body)) b1.  scb_kind1's own RightNodes condition IS    *)
+(*   the spine head-monotonicity: for r = RightNodes (Trm [D_e3 body])    *)
+(*   = e3 # RightNodes body and j1 = |r|-1, all MIDDLE nodes r!j (0<j<j1) *)
+(*   are >= r!j1, the DEEPEST head.  And the deepest head r!j1 = v1,       *)
+(*   because inner shows body's flat ends in the hole  D_v1 0  (so        *)
+(*   rnsub_RightNodes_t0_lastv gives RightNodes body = a0 @ [v1]).  Hence *)
+(*   every entry of RightNodes body is >= v1.  (The r62 head-bound        *)
+(*   "A0 heads <= ub" is REFUTED and is NOT used.)                        *)
+(* ===================================================================== *)
+
+subsection \<open>\<open>ox7_RightNodes_body_ge_v1\<close>: every right-spine head of the terminal
+  mono slice body is \<open>\<ge> v\<^sub>1\<close>\<close>
+
+text \<open>@{text ox7_RightNodes_body_ge_v1}: the NEW sec7.4 spine-monotonicity fact
+  behind the SETLE1 spine head bound.  \<open>body = bpHeadT (Trans (s84x_N M))\<close> is the
+  head body of a \<open>Trans\<close>-image whose enclosing principal \<open>D\<^bsub>e\<^sub>3\<^esub> body\<close> is a
+  \<^bold>\<open>kind-1\<close> scb-block (@{thm [source] oi5_IIIIV_pkg}'s \<open>k1\<close>).  The kind-1
+  RightNodes condition says the middle spine heads dominate the deepest head;
+  the deepest head is \<open>v\<^sub>1\<close> (the hole \<open>D\<^bsub>v\<^sub>1\<^esub> 0\<close> of \<open>inner\<close>, read off by
+  @{thm [source] rnsub_RightNodes_t0_lastv}), so ALL heads are \<open>\<ge> v\<^sub>1\<close>.\<close>
+
+lemma ox7_RightNodes_body_ge_v1:
+  fixes M :: pairseq
+  assumes NST: "M \<in> ST_PS" and NPT: "M \<in> PT_PS"
+    and hp: "hasParent M 1 (Lng M - 1)"
+    and j1gt: "1 < Lng M - 1"
+    and branch: "transCondIII M \<or> transCondIV M"
+    and ltJ: "s84x_jm3 M < transJm1 M"
+  shows "\<forall>x \<in> set (RightNodes (bpHeadT (Trans (s84x_N M)))).
+            entry M 1 (Lng M - 1) \<le> x"
+proof -
+  let ?e3 = "entry M 1 (s84x_jm3 M)"
+  let ?v1 = "entry M 1 (Lng M - 1)"
+  let ?ub = "entry M 1 (Lng M - 1) - 1"
+  let ?A0 = "bpHeadT (Trans (Pred (s84x_N M)))"
+  let ?body = "bpHeadT (Trans (s84x_N M))"
+  obtain s0 b0 s1 b1 where
+    b0RP: "\<forall>x \<in> set b0. x = RP" and b1RP: "\<forall>x \<in> set b1. x = RP"
+    and inner: "scb_decomp ?body s0 (flatBT (Dpt (enat ?v1) 0\<^sub>B)) b0"
+    and k1: "scb_kind1 (Trans M) s1 (flatBT (Dpt (enat ?e3) ?body)) b1"
+    and mn: "\<forall>m. 1 \<le> m \<longrightarrow>
+        flatBT (Trans ((M::pairseq)[m]))
+          = s1 @ Dsym (enat ?e3)
+              # flatBT (d4vx_core s0 ?ub b0 ?A0 (m - 1)) @ b1"
+    and base0: "lessBT (Dpt (enat ?ub) 0\<^sub>B) ?A0"
+    and base1: "lessBT ?A0 (d4vx_ins s0 ?ub b0 (Dpt (enat ?ub) 0\<^sub>B))"
+    and A0TB: "?A0 \<in> T_B"
+    by (rule oi5_IIIIV_pkg[OF NST NPT hp j1gt branch ltJ])
+  have bodyT: "?body \<in> T_B" by (rule oi5_regime(3)[OF NST NPT hp j1gt branch])
+  \<comment> \<open>flat form of body: ends in the hole \<open>D\<^bsub>v\<^sub>1\<^esub> 0\<close>\<close>
+  have fbody: "flatBT ?body = s0 @ Dsym (enat ?v1) # Zsym # b0"
+    using inner by (simp add: scb_decomp_def)
+  \<comment> \<open>hence \<open>RightNodes body\<close> ends in \<open>v\<^sub>1\<close>\<close>
+  obtain a0 where RNbody: "RightNodes ?body = a0 @ [?v1]"
+    using rnsub_RightNodes_t0_lastv[OF fbody b0RP bodyT] by blast
+  \<comment> \<open>the kind-1 head-monotonicity for the enclosing principal \<open>D\<^bsub>e\<^sub>3\<^esub> body\<close>\<close>
+  let ?p = "DB (enat ?e3) ?body"
+  let ?r = "RightNodes (Trm [?p])"
+  let ?j1 = "Lng ?r - 1"
+  have cflat: "flatBT (Dpt (enat ?e3) ?body) = flatBP ?p" by simp
+  have rform: "?r = ?e3 # RightNodes ?body" by (simp add: rnsub_RN_single)
+  have rval: "?r = ?e3 # (a0 @ [?v1])" using rform RNbody by simp
+  have j1val: "?j1 = Suc (length a0)" using rval by simp
+  have rj1: "?r ! ?j1 = ?v1" using rval j1val by (simp add: nth_append)
+  \<comment> \<open>unfold the kind-1 window property at \<open>?p\<close>\<close>
+  have KC: "let r = RightNodes (Trm [?p]); j1 = Lng r - 1 in
+             j1 \<ge> 1 \<and> r ! 0 < r ! j1 \<and> (\<forall>j. 0 < j \<and> j < j1 \<longrightarrow> r ! j \<ge> r ! j1)"
+  proof -
+    from k1 have "\<forall>p. flatBT (Dpt (enat ?e3) ?body) = flatBP p \<longrightarrow>
+          (let r = RightNodes (Trm [p]); j1 = Lng r - 1 in
+           j1 \<ge> 1 \<and> r ! 0 < r ! j1 \<and> (\<forall>j. 0 < j \<and> j < j1 \<longrightarrow> r ! j \<ge> r ! j1))"
+      by (simp add: scb_kind1_def)
+    from this[rule_format, OF cflat] show ?thesis .
+  qed
+  have rmono: "\<forall>j. 0 < j \<and> j < ?j1 \<longrightarrow> ?r ! j \<ge> ?r ! ?j1"
+    using KC by (simp add: Let_def)
+  \<comment> \<open>every element of \<open>RightNodes body\<close> is \<open>\<ge> v\<^sub>1\<close>\<close>
+  show "\<forall>x \<in> set (RightNodes ?body). ?v1 \<le> x"
+  proof
+    fix x assume xin: "x \<in> set (RightNodes ?body)"
+    have "x \<in> set (a0 @ [?v1])" using xin RNbody by simp
+    hence "x \<in> set a0 \<or> x = ?v1" by auto
+    thus "?v1 \<le> x"
+    proof
+      assume "x = ?v1" thus ?thesis by simp
+    next
+      assume "x \<in> set a0"
+      then obtain k where klt: "k < length a0" and xk: "a0 ! k = x"
+        by (auto simp: in_set_conv_nth)
+      have rSuck: "?r ! Suc k = x"
+      proof -
+        have "?r ! Suc k = (a0 @ [?v1]) ! k" using rval by simp
+        also have "\<dots> = a0 ! k" using klt by (simp add: nth_append)
+        finally show ?thesis using xk by simp
+      qed
+      have "0 < Suc k" by simp
+      moreover have "Suc k < ?j1" using klt j1val by simp
+      ultimately have "?r ! Suc k \<ge> ?r ! ?j1" using rmono by blast
+      thus ?thesis using rSuck rj1 by simp
+    qed
+  qed
+qed
+
+
+(* ===================================================================== *)
+(* ===== r63 wcl: buc1-collapse --- engine-entry framing of THE       ===== *)
+(* ===== residual wds_collapse (= wfj_collapse_core = wfc_pbody_acc    ===== *)
+(* ===== = wf RPrel), the last external citation [Buc1] Lemma 2.2      ===== *)
+(* ===== (Buchholz--Schuette Fundierung of (OT_B,<)).                  ===== *)
+(* =====                                                               ===== *)
+(* ===== This block delivers UNCONDITIONAL structural bricks that      ===== *)
+(* ===== sharpen the attack surface for the collapse, WITHOUT citing   ===== *)
+(* ===== any residual:                                                 ===== *)
+(* =====  (A) wcl_min_bad_secured: the wfs_szP-minimal counterexample  ===== *)
+(* =====      to accessibility is automatically G-trace-SECURED        ===== *)
+(* =====      (wfj_secT) --- the standard [Buc1]/Buchholz--Schuette     ===== *)
+(* =====      entry point: what the collapse engine must refute is a    ===== *)
+(* =====      SECURED principal that fails to be accessible.            ===== *)
+(* =====  (B) wcl_accfrag_*: the accessible fragment                   ===== *)
+(* =====      wfj_frag v \<inter> acc RPrel satisfies the domain/downward/    ===== *)
+(* =====      relative-acc clauses of wds_distinguished UNCONDITIONALLY;===== *)
+(* =====      its 4th (G-progressiveness) clause is EXACTLY the         ===== *)
+(* =====      collapse-core, so under the residual it is the CONCRETE   ===== *)
+(* =====      maximal v-distinguished set (= wds_Mset v), discharging   ===== *)
+(* =====      the r54 honesty note on D1 witness existence.             ===== *)
+(* ===================================================================== *)
+
+section \<open>r63-wcl --- [Buc1] 2.2 collapse: engine-entry framing (prefix \<open>wcl_\<close>)\<close>
+
+subsection \<open>(A) The minimal counterexample to the collapse is \<open>G\<close>-trace-secured\<close>
+
+text \<open>Contrapositive entry point of \<open>wfj_acc_of_collapse_core\<close>: if some
+  \<open>OT\<close>+\<open>dfree\<close> principal is NOT \<open>RPrel\<close>-accessible, then a \<open>wfs_szP\<close>-minimal
+  such principal \<open>D\<^sub>v b\<close> has its whole \<open>G\<^sub>v\<close>-trace already SECURED
+  (\<open>wfj_secT\<close>): the trace components are proper subterms (\<open>wfj_G_szT\<close>), hence
+  accessible by \<open>wfs_szP\<close>-minimality.  This is exactly the object the [Buc1]
+  Lemma 2.2 collapse must refute --- a secured principal failing to be
+  accessible.  Because \<open>wfj_collapse_core \<longleftrightarrow> wf RPrel\<close>
+  (\<open>wfj_collapse_core_iff_wf\<close>) and \<open>wds_collapse \<longleftrightarrow> wf RPrel\<close>
+  (\<open>wds_collapse_iff_wf\<close>), refuting this single witness closes the last
+  external citation.  Unconditional (no residual cited).\<close>
+
+lemma wcl_min_bad_secured:
+  assumes bad: "\<not> (\<forall>p. isOT_BP p \<longrightarrow> dfree_BP p \<longrightarrow> p \<in> Wellfounded.acc RPrel)"
+  shows "\<exists>v b. isOT_BP (DB v b) \<and> dfree_BP (DB v b)
+               \<and> DB v b \<notin> Wellfounded.acc RPrel
+               \<and> (\<forall>x \<in> GBT v b. wfj_secT x)"
+proof -
+  define Bad where
+    "Bad = {p. isOT_BP p \<and> dfree_BP p \<and> p \<notin> Wellfounded.acc RPrel}"
+  from bad obtain p0 where p0Bad: "p0 \<in> Bad" unfolding Bad_def by blast
+  have wfm: "wf (measure wfs_szP)" by (rule wf_measure)
+  have "\<exists>z\<in>Bad. \<forall>y. (y, z) \<in> measure wfs_szP \<longrightarrow> y \<notin> Bad"
+    using wfm[unfolded wf_eq_minimal] p0Bad by blast
+  then obtain z where zBad: "z \<in> Bad"
+    and zmin: "\<forall>y. (y, z) \<in> measure wfs_szP \<longrightarrow> y \<notin> Bad" by blast
+  have zot: "isOT_BP z" and zdf: "dfree_BP z"
+    and znacc: "z \<notin> Wellfounded.acc RPrel"
+    using zBad unfolding Bad_def by auto
+  obtain v b where zeq: "z = DB v b" by (cases z) auto
+  have otb: "isOT_BT b" using zot zeq by simp
+  have dfb: "dfree_BT b" using zdf zeq by simp
+  have sec: "\<forall>x \<in> GBT v b. wfj_secT x"
+  proof
+    fix x assume xG: "x \<in> GBT v b"
+    have otx: "isOT_BT x" using wfj_G_OT_T otb xG by blast
+    have dfx: "dfree_BT x" using wfj_G_df_T dfb xG by blast
+    have szx: "wfs_szT x < wfs_szT b" using wfj_G_szT xG by blast
+    obtain rs where xeq: "x = Trm rs" by (cases x) auto
+    have "\<forall>r \<in> set rs. r \<in> Wellfounded.acc RPrel"
+    proof
+      fix r assume rin: "r \<in> set rs"
+      have otr: "isOT_BP r" using otx xeq rin by simp
+      have dfr: "dfree_BP r" using dfx xeq rin by simp
+      have szr: "wfs_szP r < wfs_szT x" using wfs_szP_mem_lt[OF rin] xeq by simp
+      have szb: "wfs_szP z = Suc (wfs_szT b)" using zeq by simp
+      have "wfs_szP r < wfs_szP z" using szr szx szb by linarith
+      then have "(r, z) \<in> measure wfs_szP" by simp
+      then have "r \<notin> Bad" using zmin by blast
+      then show "r \<in> Wellfounded.acc RPrel"
+        using otr dfr unfolding Bad_def by blast
+    qed
+    then show "wfj_secT x" using xeq by simp
+  qed
+  show ?thesis using zot zdf znacc sec zeq by blast
+qed
+
+text \<open>The immediate corollary in the exact \<open>wfj_collapse_core\<close> shape: refuting
+  the secured witness IS the collapse core (hence \<open>wf RPrel\<close> and [Buc1] 2.2).
+  This is the sharpest self-contained statement of what remains.\<close>
+
+lemma wcl_core_iff_no_bad_secured:
+  "wfj_collapse_core \<longleftrightarrow>
+     \<not> (\<exists>v b. isOT_BP (DB v b) \<and> dfree_BP (DB v b)
+             \<and> DB v b \<notin> Wellfounded.acc RPrel
+             \<and> (\<forall>x \<in> GBT v b. wfj_secT x))"
+proof
+  assume C: "wfj_collapse_core"
+  show "\<not> (\<exists>v b. isOT_BP (DB v b) \<and> dfree_BP (DB v b)
+             \<and> DB v b \<notin> Wellfounded.acc RPrel
+             \<and> (\<forall>x \<in> GBT v b. wfj_secT x))"
+    using C[unfolded wfj_collapse_core_def] by blast
+next
+  assume R: "\<not> (\<exists>v b. isOT_BP (DB v b) \<and> dfree_BP (DB v b)
+             \<and> DB v b \<notin> Wellfounded.acc RPrel
+             \<and> (\<forall>x \<in> GBT v b. wfj_secT x))"
+  show "wfj_collapse_core"
+    unfolding wfj_collapse_core_def using R by blast
+qed
+
+subsection \<open>(B) The accessible fragment \<open>wfj_frag v \<inter> acc RPrel\<close> is the
+  concrete maximal \<open>v\<close>-distinguished set\<close>
+
+text \<open>Clauses 1--3 (domain, \<open>RPrel\<close>-downward closure, relative accessibility)
+  of \<open>wds_distinguished\<close> hold for \<open>A\<^sub>v = wfj_frag v \<inter> acc RPrel\<close>
+  UNCONDITIONALLY; clause 4 (\<open>G\<close>-progressiveness) is discharged by
+  \<open>wfj_collapse_core\<close>.  So under the residual \<open>A\<^sub>v\<close> is the CONCRETE witness that
+  the r54 D1 lemma (\<open>wds_Mset_distinguished\<close>) left abstract, and
+  \<open>wds_Mset v = wfj_frag v \<inter> acc RPrel\<close>.\<close>
+
+lemma wcl_accfrag_downclosed:
+  assumes pA: "p \<in> wfj_frag v \<inter> Wellfounded.acc RPrel"
+    and qp: "(q, p) \<in> RPrel"
+  shows "q \<in> wfj_frag v \<inter> Wellfounded.acc RPrel"
+proof -
+  have qf: "q \<in> wfj_frag v" using wfj_frag_downclosed pA qp by blast
+  have pacc: "p \<in> Wellfounded.acc RPrel" using pA by blast
+  have "q \<in> Wellfounded.acc RPrel" using acc_downward[OF pacc qp] .
+  then show ?thesis using qf by blast
+qed
+
+lemma wcl_accfrag_relacc:
+  assumes pA: "p \<in> wfj_frag v \<inter> Wellfounded.acc RPrel"
+  shows "p \<in> Wellfounded.acc (Restr RPrel (wfj_frag v \<inter> Wellfounded.acc RPrel))"
+proof -
+  have "p \<in> Wellfounded.acc RPrel" using pA by blast
+  moreover have "Restr RPrel (wfj_frag v \<inter> Wellfounded.acc RPrel) \<subseteq> RPrel"
+    by blast
+  ultimately show ?thesis using acc_subset by blast
+qed
+
+lemma wcl_accfrag_prog_of_core:
+  assumes C: "wfj_collapse_core"
+    and uv: "u \<le> v" and ot: "isOT_BP (DB (enat u) c)"
+    and df: "dfree_BP (DB (enat u) c)"
+    and cnt: "\<forall>x \<in> GBT (enat u) c.
+                x \<in> wds_hullT (wfj_frag v \<inter> Wellfounded.acc RPrel)"
+  shows "DB (enat u) c \<in> wfj_frag v \<inter> Wellfounded.acc RPrel"
+proof -
+  have sec: "\<forall>x \<in> GBT (enat u) c. wfj_secT x"
+  proof
+    fix x assume xG: "x \<in> GBT (enat u) c"
+    obtain rs where xeq: "x = Trm rs" by (cases x) auto
+    have "\<forall>r \<in> set rs. r \<in> Wellfounded.acc RPrel"
+    proof
+      fix r assume rin: "r \<in> set rs"
+      have "r \<in> set (untrm x)" using xeq rin by simp
+      then have "r \<in> wfj_frag v \<inter> Wellfounded.acc RPrel"
+        using cnt xG by (simp add: wds_hullT_iff)
+      then show "r \<in> Wellfounded.acc RPrel" by blast
+    qed
+    then show "wfj_secT x" using xeq by simp
+  qed
+  have acc: "DB (enat u) c \<in> Wellfounded.acc RPrel"
+    using C[unfolded wfj_collapse_core_def] ot df sec by blast
+  have "wfj_hd (DB (enat u) c) \<le> enat v" using uv by simp
+  then have "DB (enat u) c \<in> wfj_frag v" using ot df by (simp add: wfj_frag_def)
+  then show ?thesis using acc by blast
+qed
+
+theorem wcl_accfrag_distinguished_of_core:
+  assumes C: "wfj_collapse_core"
+  shows "wds_distinguished v (wfj_frag v \<inter> Wellfounded.acc RPrel)"
+proof (rule wds_distI)
+  show "wfj_frag v \<inter> Wellfounded.acc RPrel \<subseteq> wfj_frag v" by blast
+next
+  fix p q assume "p \<in> wfj_frag v \<inter> Wellfounded.acc RPrel"
+    and "(q, p) \<in> RPrel"
+  then show "q \<in> wfj_frag v \<inter> Wellfounded.acc RPrel"
+    by (rule wcl_accfrag_downclosed)
+next
+  fix p assume "p \<in> wfj_frag v \<inter> Wellfounded.acc RPrel"
+  then show "p \<in> Wellfounded.acc (Restr RPrel (wfj_frag v \<inter> Wellfounded.acc RPrel))"
+    by (rule wcl_accfrag_relacc)
+next
+  fix u c
+  assume "u \<le> v" and "isOT_BP (DB (enat u) c)" and "dfree_BP (DB (enat u) c)"
+    and "\<forall>x \<in> GBT (enat u) c.
+           x \<in> wds_hullT (wfj_frag v \<inter> Wellfounded.acc RPrel)"
+  then show "DB (enat u) c \<in> wfj_frag v \<inter> Wellfounded.acc RPrel"
+    by (rule wcl_accfrag_prog_of_core[OF C])
+qed
+
+corollary wcl_Mset_distinguished_of_core:
+  assumes C: "wfj_collapse_core"
+  shows "wds_distinguished v (wds_Mset v)"
+  by (rule wds_Mset_distinguished[OF wcl_accfrag_distinguished_of_core[OF C]])
+
+corollary wcl_Mset_eq_accfrag_of_core:
+  assumes C: "wfj_collapse_core"
+  shows "wds_Mset v = wfj_frag v \<inter> Wellfounded.acc RPrel"
+proof (rule subset_antisym)
+  have "wds_Mset v \<subseteq> wfj_frag v" by (rule wds_Mset_frag)
+  moreover have "wds_Mset v \<subseteq> Wellfounded.acc RPrel"
+    by (rule wds_Mset_subset_acc)
+  ultimately show "wds_Mset v \<subseteq> wfj_frag v \<inter> Wellfounded.acc RPrel" by blast
+next
+  show "wfj_frag v \<inter> Wellfounded.acc RPrel \<subseteq> wds_Mset v"
+    by (rule wds_Mset_upper[OF wcl_accfrag_distinguished_of_core[OF C]])
+qed
+
+text \<open>Direct single-name bridge between the two named residuals (previously
+  connected only transitively through \<open>wf RPrel\<close>): the collapse core yields
+  \<open>wds_collapse\<close> via the concrete accessible-fragment witness.\<close>
+
+corollary wcl_collapse_of_core:
+  assumes "wfj_collapse_core" shows "wds_collapse"
+  by (rule wds_collapse_of_wf[OF wfj_wf_RPrel_of_collapse_core[OF assms]])
+
+subsection \<open>(C) The minimal counterexample has an \<open>RTrel\<close>-accessible BODY:
+  the obstruction is purely the head-\<open>< v\<close> lower segment\<close>
+
+text \<open>Sharper than (A): the \<open>wfs_szP\<close>-minimal non-accessible \<open>OT\<close>+\<open>dfree\<close>
+  principal \<open>D\<^sub>v b\<close> has an \<open>RTrel\<close>-accessible BODY \<open>b\<close> (its DIRECT components
+  are proper subterms, accessible by minimality; \<open>wfj_secT_tuple_acc\<close>).  Note
+  this is complementary to (A): the \<open>G\<^sub>v\<close>-trace shields head-\<open>< v\<close> principals
+  (r52 note: they are NOT covered by \<open>wfj_secT\<close>), whereas the direct body
+  components ARE secured by size-minimality.\<close>
+
+lemma wcl_min_bad_body_acc:
+  assumes bad: "\<not> (\<forall>p. isOT_BP p \<longrightarrow> dfree_BP p \<longrightarrow> p \<in> Wellfounded.acc RPrel)"
+  shows "\<exists>v b. isOT_BP (DB v b) \<and> dfree_BP (DB v b)
+               \<and> DB v b \<notin> Wellfounded.acc RPrel
+               \<and> b \<in> Wellfounded.acc RTrel"
+proof -
+  define Bad where
+    "Bad = {p. isOT_BP p \<and> dfree_BP p \<and> p \<notin> Wellfounded.acc RPrel}"
+  from bad obtain p0 where p0Bad: "p0 \<in> Bad" unfolding Bad_def by blast
+  have wfm: "wf (measure wfs_szP)" by (rule wf_measure)
+  have "\<exists>z\<in>Bad. \<forall>y. (y, z) \<in> measure wfs_szP \<longrightarrow> y \<notin> Bad"
+    using wfm[unfolded wf_eq_minimal] p0Bad by blast
+  then obtain z where zBad: "z \<in> Bad"
+    and zmin: "\<forall>y. (y, z) \<in> measure wfs_szP \<longrightarrow> y \<notin> Bad" by blast
+  have zot: "isOT_BP z" and zdf: "dfree_BP z"
+    and znacc: "z \<notin> Wellfounded.acc RPrel"
+    using zBad unfolding Bad_def by auto
+  obtain v b where zeq: "z = DB v b" by (cases z) auto
+  have otb: "isOT_BT b" using zot zeq by simp
+  have dfb: "dfree_BT b" using zdf zeq by simp
+  have secb: "wfj_secT b"
+  proof -
+    obtain bs where beq: "b = Trm bs" by (cases b) auto
+    have "\<forall>r \<in> set bs. r \<in> Wellfounded.acc RPrel"
+    proof
+      fix r assume rin: "r \<in> set bs"
+      have otr: "isOT_BP r" using otb beq rin by simp
+      have dfr: "dfree_BP r" using dfb beq rin by simp
+      have szr: "wfs_szP r < wfs_szT b" using wfs_szP_mem_lt[OF rin] beq by simp
+      have szb: "wfs_szP z = Suc (wfs_szT b)" using zeq by simp
+      have "wfs_szP r < wfs_szP z" using szr szb by linarith
+      then have "(r, z) \<in> measure wfs_szP" by simp
+      then have "r \<notin> Bad" using zmin by blast
+      then show "r \<in> Wellfounded.acc RPrel"
+        using otr dfr unfolding Bad_def by blast
+    qed
+    then show ?thesis using beq by simp
+  qed
+  have bacc: "b \<in> Wellfounded.acc RTrel"
+    by (rule wfj_secT_tuple_acc[OF otb dfb secb])
+  show ?thesis using zot zdf znacc bacc zeq by blast
+qed
+
+text \<open>Consequently the residual localizes to the head index: any minimal
+  body-accessible counterexample sits STRICTLY ABOVE a lower-head
+  counterexample.  With \<open>wfc_principal_acc_of_body\<close> (already proven: an
+  \<open>OT\<close>+\<open>dfree\<close> principal with an \<open>RTrel\<close>-accessible body and ALL head-\<open>< v\<close>
+  predecessors accessible is itself accessible), a witness whose head-\<open>< v\<close>
+  segment were fully accessible would be accessible --- contradiction.  Hence
+  the obstruction is NOT the body but the lower collapsing segment
+  \<open>wfj_frag (v-1)\<close> (unbounded \<open>wfs_szP\<close> by \<open>wfj_frag0_lv_unbounded\<close>, so out of
+  reach of size-minimality); this head-index descent is exactly the [Buc1]
+  Lemma 2.2 transfinite recursion on \<open>v\<close>.\<close>
+
+corollary wcl_lower_head_bad_exists:
+  assumes bad: "\<not> (\<forall>p. isOT_BP p \<longrightarrow> dfree_BP p \<longrightarrow> p \<in> Wellfounded.acc RPrel)"
+  shows "\<exists>v b. isOT_BP (DB v b) \<and> dfree_BP (DB v b)
+               \<and> DB v b \<notin> Wellfounded.acc RPrel
+               \<and> b \<in> Wellfounded.acc RTrel
+               \<and> (\<exists>r. isOT_BP r \<and> dfree_BP r \<and> wfj_hd r < v
+                      \<and> r \<notin> Wellfounded.acc RPrel)"
+proof -
+  obtain v b where otp: "isOT_BP (DB v b)" and dfp: "dfree_BP (DB v b)"
+    and nacc: "DB v b \<notin> Wellfounded.acc RPrel"
+    and bacc: "b \<in> Wellfounded.acc RTrel"
+    using wcl_min_bad_body_acc[OF bad] by blast
+  have "\<exists>r. isOT_BP r \<and> dfree_BP r \<and> wfj_hd r < v \<and> r \<notin> Wellfounded.acc RPrel"
+  proof (rule ccontr)
+    assume "\<not> (\<exists>r. isOT_BP r \<and> dfree_BP r \<and> wfj_hd r < v
+                   \<and> r \<notin> Wellfounded.acc RPrel)"
+    then have hlt: "\<And>r. isOT_BP r \<Longrightarrow> dfree_BP r \<Longrightarrow> wfj_hd r < v
+                        \<Longrightarrow> r \<in> Wellfounded.acc RPrel" by blast
+    have "DB v b \<in> Wellfounded.acc RPrel"
+      by (rule wfc_principal_acc_of_body[OF hlt bacc otp dfp])
+    then show False using nacc by blast
+  qed
+  then show ?thesis using otp dfp nacc bacc by blast
+qed
+
 end
