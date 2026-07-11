@@ -57,7 +57,7 @@
             - ✅ bookkeeping全消去+非可述性確定+staged ladder(wfc_)[r1][0.239][0.35h]
             - 🚨 pbody-acc本体(distinguished sets route)
               - ✅ 定義+Mset+D1 union+acc bridge+基本閉包(wds_)[r1][0.233][0.21h]
-              - 🚨🤖 collapse補題(D3)+ladder接続(r67: Buchholz 2.4a無条件+2.5 sub1 modulo A2、descent a[z]<a既証明b1x_descent=非blocker、残=bwo_Wstar_total=leastness A2 fund-seq cofinality、bwo_Wlev を lfp 化推奨)[r5][0.94][1.35h]
+              - 🚨 collapse補題(D3)+ladder接続(r68 lfp化で[Buc1]2.6/2.7/2.8を無条件証明=全D_ω-free項がW*、残=bwl_cof=Bachmann性。§8のfseq対応 Trans(M[n])=operB で残差不要化の可能性)[r6][1.19][1.87h]
   - 🚨 §8.1 条件 (I) の下での展開規則
     - 🚨 命題（条件 (I) の下での $\textrm{Trans}$ と基本列の交換関係）
       - ✅ 交換則(1)本体[r4]
@@ -90,7 +90,7 @@
       - ✅ AP接地+census{OTint,OTpred,OTmulti,TVall}化(apx_、otx dispatcher route)[r1][0.181][0.14h]
       - 🚨 残=census modulo{SETLE1_ltJ,FINRC}(oi8_census_final_ivadmeq、両柱)
         - ⛔ SETLE1_ltJ slot(§8.7「Transが標準形を保つ」配下で追跡)
-        - 🚨 FINRC slot(=A9 nth-artifact、LastStep_def guard+§8.2 VE fin/finM refactor、未着手)[r0]
+        - 🚨🤖 FINRC slot(=A9 nth-artifact、LastStep_def guard+§8.2 VE fin/finM refactor)[r0]
     - ✅ 補題（順序数項の再帰構造）
     - ✅ 補題（順序数項の共終数の遺伝性）
     - ✅ 補題（順序数項の末尾項の零化可能性）
@@ -113,7 +113,7 @@
             - ✅ tri0 CRUX(scbext_triG engine+crx/cnv_tri0_of_nest、ltJ不要)[r1][0.297][0.65h]
             - ✅ ltJ再スレッド+oi8 census(OTA1を単一A0OTへ還元、oi8_census_via_A0OT)[r1][0.284][0.59h]
             - ✅ A0OT(=isOT_BT(bpHeadT(Trans(Pred(s84x_N N))))、od4 RT_PS弱化+Red slice経由、OTA1柱完結)[r1][0.230][0.56h]
-            - 🚨🤖 SETLE1_ltJ(r67でHEAD route反証(ox7_hole_right_spine_terminal偽、CEX標準形)、残=lessBT tx′ X1 via X1右spine descent deep first-diff、ox6_reduce_restr で true spineH 還元済)[r9][1.71][3.39h]
+            - 🚨🤖 SETLE1_ltJ(r68で真のsource証明=ox8_body_rspine_lessBT(e3 G-condition self-maximality)、残=surgery TRANSPORT(leaf版→ub-hole版移送))[r10][1.96][3.91h]
           - ✅ IVNP(condIV no-parent隅=Pred除去、ot2_IVNP)[r1][0.257][0.65h]
           - ✅ IVADMEQ(condIV adm-eq隅、SETLE-free tower engine+Red-slice regime、ot2_IVADMEQ)[r4][1.074][2.60h]
       - ✅ OTpred(with-parent Pred corner OT-step、無仮定master od4_OTpred_mono→od4_OTpred_final無残差)[r4][0.817][1.41h]
