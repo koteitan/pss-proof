@@ -11227,4 +11227,35 @@ text \<open>\<^bold>\<open>WHY THE CORRESPONDENCE IS NOT AN EQUATION\<close> (r7
 
 (* ===== end r70 y3 audit/refutation notes ===== *)
 
+
+text \<open>\<^bold>\<open>Round-70 capstone (re-based).\<close>  \<open>oi9_census_OKH\<close> is VACUOUS
+  (its hypothesis \<open>OKH\<close> is refuted --- see @{thm [source] ox10_cex_not_ok}), so the
+  termination engine must be fed by the TRUE census @{thm [source] oi10_census_KK}.
+  Result: PSS termination (accessibility of the step relation) modulo EXACTLY
+  \<open>{KK, y3_cofimg}\<close> --- with \<^bold>\<open>no\<close> \<open>wf\<close>, no \<open>buc1_2_2\<close>, no \<open>bwl_cof\<close>.\<close>
+
+theorem y3_PSS_acc_of_KK_cofimg:
+  assumes KK: "\<And>P s0 b0 k. P \<in> ST_PS \<Longrightarrow> P \<in> PT_PS \<Longrightarrow>
+             hasParent P 1 (Lng P - 1) \<Longrightarrow> 1 < Lng P - 1 \<Longrightarrow>
+             transCondIII P \<or> transCondIV P \<Longrightarrow>
+             (\<forall>x \<in> set b0. x = RP) \<Longrightarrow>
+             scb_decomp (bpHeadT (Trans (s84x_N P))) s0
+               (flatBT (Dpt (enat (entry P 1 (Lng P - 1))) 0\<^sub>B)) b0 \<Longrightarrow>
+             s84x_jm3 P < transJm1 P \<Longrightarrow>
+             1 \<le> k \<Longrightarrow>
+             (\<forall>j<k. ox8_rsub (bpHeadT (Trans (s84x_N P))) j \<noteq> 0\<^sub>B) \<Longrightarrow>
+             lessBT (ox8_rsub (bpHeadT (Trans (s84x_N P))) k)
+               (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
+                  (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))"
+    and COF: "y3_cofimg"
+    and MST: "M \<in> ST_PS"
+  shows "M \<in> Wellfounded.acc y3_PSSrel"
+proof -
+  have TOT: "\<And>N. N \<in> ST_PS \<Longrightarrow> Trans N \<in> OT_B"
+    using oi10_census_KK(1)[OF KK] by blast
+  have DESC: "\<And>N n. N \<in> ST_PS \<Longrightarrow> 1 \<le> n \<Longrightarrow> 1 < Lng N \<Longrightarrow>
+                lessBT (Trans ((N::pairseq)[n])) (Trans N)"
+    using oi10_census_KK(2)[OF KK] by blast
+  show ?thesis by (rule y3_PSS_acc_of_cofimg[OF DESC TOT COF MST])
+qed
 end
