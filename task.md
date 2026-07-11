@@ -88,7 +88,7 @@
       - ✅ 全交換slot discharge+census(dpx_、exchIV/VI無条件化込)[r1][0.306][0.31h]
       - ✅ assembly census(asx_、長さ帰納不可能を証明、fseqD/TOT消去)[r1][0.219][0.18h]
       - ✅ AP接地+census{OTint,OTpred,OTmulti,TVall}化(apx_、otx dispatcher route)[r1][0.181][0.14h]
-      - 🚨 残=census modulo{OTA1,SETLE1,IVADMEQ,FINRC}(oi7_termination_census、両柱)[r0]
+      - 🚨 残=census modulo{A0OT,SETLE1_ltJ,IVADMEQ{d1,d2,d3,HB},FINRC}(oi8_census_via_A0OT、両柱)[r0]
     - ✅ 補題（順序数項の再帰構造）
     - ✅ 補題（順序数項の共終数の遺伝性）
     - ✅ 補題（順序数項の末尾項の零化可能性）
@@ -113,11 +113,13 @@
           - ✅ 還元machinery(oi5_OTint_condIII/condIV)[r1][0.775][2.06h]
           - 🚨 {OTA1,SETLE1}(condIII/IV共通塔isOT_BP/setle計算)
             - ✅ tri0 CRUX(scbext_triG engine+crx/cnv_tri0_of_nest、ltJ不要)[r1][0.297][0.65h]
-            - 🚨🤖 ltJ再スレッド+OTA1_ltJ/SETLE1_ltJ組立(tri0+newOT_body slice輸送)[r1][0.257][0.65h]
+            - ✅ ltJ再スレッド+oi8 census(OTA1を単一A0OTへ還元、oi8_census_via_A0OT)[r1][0.284][0.59h]
+            - 🚨🤖 A0OT(=isOT_BT(bpHeadT(Trans(Pred(s84x_N N))))、od4 RT_PS弱化で攻略)[r0]
+            - 🚨🤖 SETLE1_ltJ(top-anchored GBT descent、oix_condV_adm_setle移植)[r0]
           - ✅ IVNP(condIV no-parent隅=Pred除去、ot2_IVNP)[r1][0.257][0.65h]
-          - 🚨🤖 IVADMEQ(condIV adm-eq隅=標準condIVの主OT内容、残差{d1,d2,d3,HB,NEWOT,SETLE})[r2][0.297][0.65h]
+          - 🚨 IVADMEQ(condIV adm-eq隅=標準condIVの主OT内容、残差{d1,d2,d3,HB})[r3][0.550][1.30h]
       - ✅ OTpred(with-parent Pred corner OT-step、無仮定master od4_OTpred_mono→od4_OTpred_final無残差)[r4][0.817][1.41h]
-      - 🚨 OTmulti(⛔{OTA1,SETLE1,IVADMEQ,IVNP}: oi5_OTmulti還元済、oi6でDEEPOT/NOBR discharge)[r3][0.495][0.51h]
+      - 🚨 OTmulti(⛔OTint残差{A0OT,SETLE1_ltJ,IVADMEQ}: oi5_OTmulti還元済)[r3][0.495][0.51h]
       - 🚨 deep-insertion OT所属(keystone{resid,multiD}、r49でcritical path外)[r5]
         - ✅ resid deep検証+4slot分解(rgx_、C3 prefix半分クローズ)[r1]
         - 🚨 slotNewOT(C1: isOT_BP(DB x q))
