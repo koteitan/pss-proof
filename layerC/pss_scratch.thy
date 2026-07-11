@@ -10132,4 +10132,1099 @@ proof -
            lessBT (Trans ((M::pairseq)[n])) (Trans M)"
     by (rule oi9_census_SETLE_ok(2)[OF HGE ot9_FINRC])
 qed
+
+
+(* ===================================================================== *)
+(* ===== r70 (OKH front).  STEP-0 verdict: the r69 census residual  ==== *)
+(* =====   OKH  =  ox9_ok v1 (v1-1) (bpHeadT (Trans (s84x_N P)))    ==== *)
+(* ===== is  FALSE.  So is the recommended route "leafcond".  Both  ==== *)
+(* ===== die on the SAME witness, a genuine ST_PS census host:      ==== *)
+(* =====                                                            ==== *)
+(* =====  P = (0,0)(1,1)(2,1)(3,1)(4,0)(5,1)(6,1)(7,1)(8,0)(9,1)    ==== *)
+(* =====      (10,1)(11,1)(11,0)(12,0)(10,1)(11,1)(10,1)(11,1)      ==== *)
+(* =====                                                            ==== *)
+(* ===== certified (python/_r70_okh_cex.py) to satisfy EVERY census ==== *)
+(* ===== hypothesis: P in ST_PS (explicit oper chain from           ==== *)
+(* ===== diagSeq 0 2, replayed), monoT (hence PT_PS), hasParent P 1 ==== *)
+(* ===== (Lng P - 1), 1 < Lng P - 1, transCondIII P, Trans P in     ==== *)
+(* ===== OT_B, s84x_jm3 P = 8 < 16 = transJm1 P.  For it            ==== *)
+(* =====   v1 = 1,  ub = 0,  X0 = D_0 0,  pX = D_0 X0 = D_0(D_0 0)  ==== *)
+(* =====   body = bpHeadT (Trans (s84x_N P))                        ==== *)
+(* =====        = D_1((D_1((D_1 0, D_0(D_0 0))), D_1(D_1 0),        ==== *)
+(* =====              D_1(D_1 0)))                                  ==== *)
+(* ===== and body carries, OFF the right spine, the principal       ==== *)
+(* =====   D_0 (D_0 0)  =  pX  EXACTLY.                             ==== *)
+(* ===== Its head 0 < v1 = 1 and its body D_0 0 is NOT < X0 = D_0 0 ==== *)
+(* ===== (they are EQUAL), so ox9_okP fails -- ox9_ok fails at      ==== *)
+(* ===== EQUALITY with the surgery filler.  ox10_cex_not_ok below   ==== *)
+(* ===== is the Isabelle check.  (ox9_hge and leafcond die a        ==== *)
+(* ===== fortiori.)  Corpus: pure ST_PS (diagSeq + oper closure),   ==== *)
+(* ===== maxlen 20, 542 census hosts / 1212 peel levels: 8 hosts    ==== *)
+(* ===== refute ox9_ok.  (r69 saw 0 -- its walks were too short.)   ==== *)
+(* ===== Hence theorem oi9_census_OKH is VACUOUS.                   ==== *)
+(* =====                                                            ==== *)
+(* ===== BUT the transport TARGET survives (1212/1212, 0 failures): ==== *)
+(* ===== ox9_ok was only ever a SUFFICIENT condition, and it is     ==== *)
+(* ===== strictly too strong -- it is a GLOBAL "every principal     ==== *)
+(* ===== anywhere" guard, while ox9_lexP consumes it only at the    ==== *)
+(* ===== hole-aligned positions of the tie path, which the bad      ==== *)
+(* ===== principal never occupies (it lives in the body of a        ==== *)
+(* ===== NON-last principal, off the right spine).                  ==== *)
+(* =====                                                            ==== *)
+(* ===== r70 route: ox9_ok/PXOK/DESC are consumed by ox9_engine     ==== *)
+(* ===== ONLY to feed ox9_MAIN, whose ONLY output is                ==== *)
+(* =====   leLA : leBT (ox8_rsub A1 (Suc k)) X1.                    ==== *)
+(* ===== Take that as the hypothesis instead, and factor it:        ==== *)
+(* =====   MONO(k): lessBT (ox8_rsub A1 k) (ox8_rsub WB k)          ==== *)
+(* =====            -- ALREADY PROVEN (ox9_holeD_lessBT: the        ==== *)
+(* =====               surgery pA < D_v1 0 lowers the tree)         ==== *)
+(* =====   KK(k)  : lessBT (ox8_rsub WB k) X1                       ==== *)
+(* =====            -- the UNSURGERED spine sub-body of the census  ==== *)
+(* =====               body stays below the LOWERED body X1.        ==== *)
+(* ===== KK is a Trans-image geometry fact with NO A0 and NO        ==== *)
+(* ===== ox9_ok in it, and it is TRUE on the corpus (1212/1212,     ==== *)
+(* ===== including all 8 ox9_ok-refuting hosts; python/_r70_key.py).==== *)
+(* ===== ox10_engine below re-derives the whole census from KK.     ==== *)
+(* ===================================================================== *)
+
+section \<open>r70 ox10 --- OKH is FALSE; the census residual becomes the \<open>KK\<close> bound\<close>
+
+subsection \<open>(1) The counterexample: \<open>ox9_ok\<close> fails at EQUALITY with the filler\<close>
+
+text \<open>@{text ox10_cexBody} is \<open>bpHeadT (Trans (s84x_N P))\<close> for the census host \<open>P\<close>
+  displayed above (python/_r70_okh_cex.py; \<open>v\<^sub>1 = 1\<close>, \<open>ub = 0\<close>).  It carries the
+  principal \<open>D\<^sub>0(D\<^sub>0 0)\<close>, which is EXACTLY the surgery filler \<open>pX = D\<^bsub>ub\<^esub>X\<^sub>0\<close>: head
+  \<open>0 < v\<^sub>1\<close> and body \<open>D\<^sub>0 0 = X\<^sub>0\<close>, so \<open>lessBT XB X\<^sub>0\<close> fails by irreflexivity.\<close>
+
+definition ox10_cexBody :: BT where
+  "ox10_cexBody =
+     Trm [DB (enat 1)
+           (Trm [DB (enat 1)
+                   (Trm [DB (enat 1) 0\<^sub>B,
+                         DB (enat 0) (Trm [DB (enat 0) 0\<^sub>B])]),
+                 DB (enat 1) (Trm [DB (enat 1) 0\<^sub>B]),
+                 DB (enat 1) (Trm [DB (enat 1) 0\<^sub>B])])]"
+
+lemma ox10_cex_not_ok: "\<not> ox9_ok (enat 1) (enat 0) ox10_cexBody"
+  by (simp add: ox10_cexBody_def)
+
+lemma ox10_cex_not_hge: "\<not> ox9_hge (enat 1) ox10_cexBody"
+  by (simp add: ox10_cexBody_def)
+
+text \<open>The bad principal is a \<^emph>\<open>witness of the equality case\<close>: it is \<open>\<le>\<close> the filler
+  but not \<open><\<close> it.  No weakening of @{const ox9_ok} that still yields
+  \<open>lessBP x pX\<close> (which @{thm [source] ox9_lexP}'s base case needs) can survive it;
+  the guard has to become POSITIONAL.  That is what @{text ox10_engine} does --
+  by not needing a guard at all.\<close>
+
+
+subsection \<open>(2) \<open>ox10_engine\<close>: the same engine, driven by \<open>KK\<close> alone\<close>
+
+text \<open>Identical to @{thm [source] ox9_engine} except that the ancestor bound
+  \<open>leLA\<close> at each peel level is no longer produced by @{thm [source] ox9_MAIN}
+  (which needs the refuted @{const ox9_ok}); it is produced by
+
+    @{thm [source] ox9_holeD_lessBT} (\<open>MONO\<close>, unconditional) + \<open>KK\<close> + transitivity.
+
+  So \<open>PXOK\<close>, \<open>hgeB\<close> and \<open>DESC\<close> all disappear from the hypotheses.\<close>
+
+lemma ox10_engine:
+  fixes u v1 :: enat and WB A1 X1 :: BT and pA pX :: BP
+  assumes holeH: "b1x_setle (GBP u pA) (insert X1 (GBT u X1))"
+    and hdA: "ox9_holeD dR (DB v1 0\<^sub>B) pA WB A1"
+    and hdX: "ox9_holeD dR (DB v1 0\<^sub>B) pX WB X1"
+    and pAlt: "lessBP pA (DB v1 0\<^sub>B)"
+    and KK: "\<And>j. 1 \<le> j \<Longrightarrow> j \<le> dR \<Longrightarrow> lessBT (ox8_rsub WB j) X1"
+  shows "dR - k = m \<Longrightarrow> k \<le> dR \<Longrightarrow> GBT u (ox8_rsub X1 k) \<subseteq> GBT u X1
+         \<Longrightarrow> b1x_setle (GBT u (ox8_rsub A1 k)) (insert X1 (GBT u X1))"
+proof (induction m arbitrary: k rule: less_induct)
+  case (less m)
+  note mk = less.prems(1) and kle = less.prems(2) and subX = less.prems(3)
+  have hdAk: "ox9_holeD (dR - k) (DB v1 0\<^sub>B) pA (ox8_rsub WB k) (ox8_rsub A1 k)"
+    by (rule ox9_holeD_rsub[OF hdA kle])
+  have hdXk: "ox9_holeD (dR - k) (DB v1 0\<^sub>B) pX (ox8_rsub WB k) (ox8_rsub X1 k)"
+    by (rule ox9_holeD_rsub[OF hdX kle])
+  show ?case
+  proof (cases "dR - k")
+    case 0
+    have hA: "ox9_holeD 0 (DB v1 0\<^sub>B) pA (ox8_rsub WB k) (ox8_rsub A1 k)"
+      using hdAk 0 by simp
+    have hX: "ox9_holeD 0 (DB v1 0\<^sub>B) pX (ox8_rsub WB k) (ox8_rsub X1 k)"
+      using hdXk 0 by simp
+    obtain ps where WBk: "ox8_rsub WB k = Trm (ps @ [DB v1 0\<^sub>B])"
+      and A1k: "ox8_rsub A1 k = Trm (ps @ [pA])"
+      by (rule ox9_holeD_0E[OF hA])
+    obtain ps' where WBk': "ox8_rsub WB k = Trm (ps' @ [DB v1 0\<^sub>B])"
+      and X1k: "ox8_rsub X1 k = Trm (ps' @ [pX])"
+      by (rule ox9_holeD_0E[OF hX])
+    have pseq: "ps = ps'" using WBk WBk' by simp
+    have qsub: "(\<Union>q \<in> set ps. GBP u q) \<subseteq> GBT u X1"
+    proof -
+      have "(\<Union>q \<in> set ps. GBP u q) \<subseteq> GBT u (ox8_rsub X1 k)" using X1k pseq by auto
+      thus ?thesis using subX by blast
+    qed
+    show ?thesis
+      unfolding b1x_setle_def
+    proof
+      fix x assume xin: "x \<in> GBT u (ox8_rsub A1 k)"
+      have "x \<in> (\<Union>q \<in> set ps. GBP u q) \<or> x \<in> GBP u pA" using xin A1k by auto
+      thus "\<exists>y \<in> insert X1 (GBT u X1). leBT x y"
+      proof
+        assume "x \<in> (\<Union>q \<in> set ps. GBP u q)"
+        hence "x \<in> GBT u X1" using qsub by blast
+        thus ?thesis by blast
+      next
+        assume "x \<in> GBP u pA"
+        thus ?thesis using holeH unfolding b1x_setle_def by blast
+      qed
+    qed
+  next
+    case (Suc e)
+    have hA: "ox9_holeD (Suc e) (DB v1 0\<^sub>B) pA (ox8_rsub WB k) (ox8_rsub A1 k)"
+      using hdAk Suc by simp
+    have hX: "ox9_holeD (Suc e) (DB v1 0\<^sub>B) pX (ox8_rsub WB k) (ox8_rsub X1 k)"
+      using hdXk Suc by simp
+    obtain ps w LB LA where WBk: "ox8_rsub WB k = Trm (ps @ [DB w LB])"
+      and A1k: "ox8_rsub A1 k = Trm (ps @ [DB w LA])"
+      and hdLB: "ox9_holeD e (DB v1 0\<^sub>B) pA LB LA"
+      by (rule ox9_holeD_SucE[OF hA])
+    obtain ps' w' LB' LX where WBk': "ox8_rsub WB k = Trm (ps' @ [DB w' LB'])"
+      and X1k: "ox8_rsub X1 k = Trm (ps' @ [DB w' LX])"
+      by (rule ox9_holeD_SucE[OF hX])
+    have pseq: "ps = ps' \<and> w = w' \<and> LB = LB'" using WBk WBk' by simp
+    have rB: "ox8_rsub WB (Suc k) = LB" using ox9_rsub_Suc[of WB k] WBk by simp
+    have rA: "ox8_rsub A1 (Suc k) = LA" using ox9_rsub_Suc[of A1 k] A1k by simp
+    have rX: "ox8_rsub X1 (Suc k) = LX" using ox9_rsub_Suc[of X1 k] X1k by simp
+    have kSle: "Suc k \<le> dR" using kle Suc by simp
+    \<comment> \<open>the ancestor bound at this level: \<open>MONO\<close> (unconditional) + \<open>KK\<close>\<close>
+    have leLA: "leBT LA X1"
+    proof -
+      have hdLA: "ox9_holeD (dR - Suc k) (DB v1 0\<^sub>B) pA
+                    (ox8_rsub WB (Suc k)) (ox8_rsub A1 (Suc k))"
+        by (rule ox9_holeD_rsub[OF hdA kSle])
+      have mono: "lessBT (ox8_rsub A1 (Suc k)) (ox8_rsub WB (Suc k))"
+        by (rule ox9_holeD_lessBT[OF hdLA pAlt])
+      have kk: "lessBT (ox8_rsub WB (Suc k)) X1" using KK[of "Suc k"] kSle by simp
+      have "lessBT (ox8_rsub A1 (Suc k)) X1" by (rule lessBT_trans[OF mono kk])
+      thus ?thesis using rA by blast
+    qed
+    have qsub: "(\<Union>q \<in> set ps. GBP u q) \<subseteq> GBT u X1"
+    proof -
+      have "(\<Union>q \<in> set ps. GBP u q) \<subseteq> GBT u (ox8_rsub X1 k)" using X1k pseq by auto
+      thus ?thesis using subX by blast
+    qed
+    show ?thesis
+      unfolding b1x_setle_def
+    proof
+      fix x assume xin: "x \<in> GBT u (ox8_rsub A1 k)"
+      have "x \<in> (\<Union>q \<in> set ps. GBP u q) \<or> x \<in> GBP u (DB w LA)" using xin A1k by auto
+      thus "\<exists>y \<in> insert X1 (GBT u X1). leBT x y"
+      proof
+        assume "x \<in> (\<Union>q \<in> set ps. GBP u q)"
+        hence "x \<in> GBT u X1" using qsub by blast
+        thus ?thesis by blast
+      next
+        assume xh: "x \<in> GBP u (DB w LA)"
+        have uw: "u \<le> w" using xh by (auto split: if_split_asm)
+        have xcase: "x = LA \<or> x \<in> GBT u LA" using xh by (auto split: if_split_asm)
+        have LXin: "LX \<in> GBT u X1"
+        proof -
+          have "LX \<in> GBP u (DB w' LX)" using uw pseq by simp
+          hence "LX \<in> GBT u (ox8_rsub X1 k)" using X1k by auto
+          thus ?thesis using subX by blast
+        qed
+        have subX': "GBT u (ox8_rsub X1 (Suc k)) \<subseteq> GBT u X1"
+          using b1x_GBT_trans[OF LXin] rX by simp
+        from xcase show ?thesis
+        proof
+          assume "x = LA"
+          thus ?thesis using leLA by blast
+        next
+          assume xLA: "x \<in> GBT u LA"
+          have mlt: "dR - Suc k < m" using mk Suc by simp
+          have IH: "b1x_setle (GBT u (ox8_rsub A1 (Suc k))) (insert X1 (GBT u X1))"
+            by (rule less.IH[OF mlt refl kSle subX'])
+          have "b1x_setle (GBT u LA) (insert X1 (GBT u X1))" using IH rA by simp
+          thus ?thesis using xLA unfolding b1x_setle_def by blast
+        qed
+      qed
+    qed
+  qed
+qed
+
+
+subsection \<open>(3) The census \<open>SETLE1\<close> slot from \<open>KK\<close>\<close>
+
+text \<open>Same statement as @{thm [source] ox9_SETLE1_ltJ}, with the refuted
+  \<open>ALLH\<close> (= \<open>OKH\<close>) replaced by the (empirically true) spine bound \<open>KK\<close>.  The
+  aliveness side condition of \<open>KK\<close> is the same one @{thm [source] ox8_body_rspine_lessBT}
+  carries, and it is discharged inside from the hole structure.\<close>
+
+lemma ox10_SETLE1_ltJ:
+  fixes N :: pairseq and s0 b0 :: "Sym list" and u :: enat
+  assumes NST: "N \<in> ST_PS" and NPT: "N \<in> PT_PS"
+    and hp: "hasParent N 1 (Lng N - 1)"
+    and j1gt: "1 < Lng N - 1"
+    and branch: "transCondIII N \<or> transCondIV N"
+    and b0RP: "\<forall>x \<in> set b0. x = RP"
+    and inner: "scb_decomp (bpHeadT (Trans (s84x_N N))) s0
+                 (flatBT (Dpt (enat (entry N 1 (Lng N - 1))) 0\<^sub>B)) b0"
+    and ltJ: "s84x_jm3 N < transJm1 N"
+    and KK: "\<And>k. 1 \<le> k \<Longrightarrow> (\<forall>j<k. ox8_rsub (bpHeadT (Trans (s84x_N N))) j \<noteq> 0\<^sub>B)
+              \<Longrightarrow> lessBT (ox8_rsub (bpHeadT (Trans (s84x_N N))) k)
+                    (d4vx_ins s0 (entry N 1 (Lng N - 1) - 1) b0
+                       (Dpt (enat (entry N 1 (Lng N - 1) - 1)) 0\<^sub>B))"
+  shows "b1x_setle
+           (GBT u (d4vx_ins s0 (entry N 1 (Lng N - 1) - 1) b0
+                     (bpHeadT (Trans (Pred (s84x_N N))))))
+           (insert (d4vx_ins s0 (entry N 1 (Lng N - 1) - 1) b0
+                      (Dpt (enat (entry N 1 (Lng N - 1) - 1)) 0\<^sub>B))
+                   (GBT u (d4vx_ins s0 (entry N 1 (Lng N - 1) - 1) b0
+                             (Dpt (enat (entry N 1 (Lng N - 1) - 1)) 0\<^sub>B))))"
+proof -
+  let ?v1 = "entry N 1 (Lng N - 1)"
+  let ?ub = "entry N 1 (Lng N - 1) - 1"
+  let ?A0 = "bpHeadT (Trans (Pred (s84x_N N)))"
+  let ?X0 = "Dpt (enat ?ub) 0\<^sub>B"
+  let ?body = "bpHeadT (Trans (s84x_N N))"
+  let ?X1 = "d4vx_ins s0 ?ub b0 ?X0"
+  let ?A1 = "d4vx_ins s0 ?ub b0 ?A0"
+  have v1pos: "0 < ?v1"
+    using branch by (auto simp: transCondIII_def transCondIV_def)
+  have ublt: "?ub < ?v1" using v1pos by simp
+  have pAlt: "lessBP (DB (enat ?ub) ?A0) (DB (enat ?v1) 0\<^sub>B)" using ublt by simp
+  \<comment> \<open>the body driver and \<open>base\<^sub>1\<close> (pin \<open>(s\<^sub>0,b\<^sub>0)\<close> against the package)\<close>
+  have ox5: "b1x_setle (GBT u ?A0) (insert ?X1 (GBT u ?X1))"
+    by (rule ox5_body_driver_census[OF NST NPT hp j1gt branch ltJ inner])
+  obtain s0' b0' s1 b1 where
+      b0RP': "\<forall>x \<in> set b0'. x = RP"
+    and inner': "scb_decomp ?body s0' (flatBT (Dpt (enat ?v1) 0\<^sub>B)) b0'"
+    and base1': "lessBT ?A0 (d4vx_ins s0' ?ub b0' ?X0)"
+    by (rule oi5_IIIIV_pkg[OF NST NPT hp j1gt branch ltJ])
+  have bodyne: "?body \<noteq> Trm []"
+  proof
+    assume z: "?body = Trm []"
+    have "flatBT ?body = s0 @ flatBT (Dpt (enat ?v1) 0\<^sub>B) @ b0"
+      using inner by (simp add: scb_decomp_def)
+    hence "[Zsym] = s0 @ [Dsym (enat ?v1), Zsym] @ b0" using z by simp
+    thus False by (cases s0) auto
+  qed
+  have pin: "s0 = s0' \<and> b0 = b0'"
+    by (rule m_7_2_scb_unique_sb[OF inner inner' bodyne])
+  have base1: "lessBT ?A0 ?X1" using base1' pin by simp
+  have holeH: "b1x_setle (GBP u (DB (enat ?ub) ?A0)) (insert ?X1 (GBT u ?X1))"
+    by (rule ox6_holeH[OF ox5 base1])
+  \<comment> \<open>the three flat surgery strings\<close>
+  have wrap: "flatBT ?body = s0 @ flatBP (DB (enat ?v1) 0\<^sub>B) @ b0"
+    using inner by (simp add: scb_decomp_def)
+  have fA1: "flatBT ?A1 = s0 @ flatBP (DB (enat ?ub) ?A0) @ b0"
+    using d4vx_ins_flat[OF wrap b0RP, of ?ub ?A0] by simp
+  have fX1: "flatBT ?X1 = s0 @ flatBP (DB (enat ?ub) ?X0) @ b0"
+    using d4vx_ins_flat[OF wrap b0RP, of ?ub ?X0] by simp
+  obtain dR where
+      hdA: "ox9_holeD dR (DB (enat ?v1) 0\<^sub>B) (DB (enat ?ub) ?A0) ?body ?A1"
+    and hdX: "ox9_holeD dR (DB (enat ?v1) 0\<^sub>B) (DB (enat ?ub) ?X0) ?body ?X1"
+    using ox9_holeD_of_flat3[OF wrap fA1 fX1 b0RP] by blast
+  \<comment> \<open>the spine bound, with aliveness read off the surgery structure\<close>
+  have KKd: "\<And>k. 1 \<le> k \<Longrightarrow> k \<le> dR \<Longrightarrow> lessBT (ox8_rsub ?body k) ?X1"
+  proof -
+    fix k :: nat assume kge: "1 \<le> k" and kle: "k \<le> dR"
+    have alive: "\<forall>j<k. ox8_rsub ?body j \<noteq> 0\<^sub>B"
+    proof (intro allI impI)
+      fix j assume jk: "j < k"
+      have jle: "j \<le> dR" using jk kle by simp
+      have "ox9_holeD (dR - j) (DB (enat ?v1) 0\<^sub>B) (DB (enat ?ub) ?A0)
+              (ox8_rsub ?body j) (ox8_rsub ?A1 j)"
+        by (rule ox9_holeD_rsub[OF hdA jle])
+      thus "ox8_rsub ?body j \<noteq> 0\<^sub>B" by (rule ox9_holeD_ne)
+    qed
+    show "lessBT (ox8_rsub ?body k) ?X1" by (rule KK[OF kge alive])
+  qed
+  \<comment> \<open>run the engine from the top (\<open>k = 0\<close>)\<close>
+  have e0: "dR - 0 = dR" by simp
+  have k0: "(0::nat) \<le> dR" by simp
+  have sub0: "GBT u (ox8_rsub ?X1 0) \<subseteq> GBT u ?X1" by simp
+  have top: "b1x_setle (GBT u (ox8_rsub ?A1 0)) (insert ?X1 (GBT u ?X1))"
+    by (rule ox10_engine[OF holeH hdA hdX pAlt KKd e0 k0 sub0])
+  thus ?thesis by simp
+qed
+
+
+subsection \<open>(4) The census roll-up: both pillars from \<open>KK\<close> alone\<close>
+
+text \<open>\<^bold>\<open>Round-70 capstone.\<close>  The r69 residual \<open>OKH\<close> is FALSE
+  (@{thm [source] ox10_cex_not_ok}), so @{thm [source] oi9_census_OKH} is vacuous.
+  Both termination pillars are re-derived here from the \<^emph>\<open>spine bound\<close> \<open>KK\<close>,
+  which is TRUE on the whole deep census corpus (1212/1212 peel levels, all 8
+  \<open>ox9_ok\<close>-refuting hosts included).  \<open>KK\<close> mentions neither \<open>A\<^sub>0\<close> nor any
+  head guard: it says only that the right-spine sub-bodies of the census body
+  stay below the LOWERED body \<open>X\<^sub>1\<close> --- i.e. that the descent
+  @{thm [source] ox8_body_rspine_lessBT} is decided strictly ABOVE the hole.\<close>
+
+theorem oi10_census_KK:
+  assumes KK: "\<And>P s0 b0 k. P \<in> ST_PS \<Longrightarrow> P \<in> PT_PS \<Longrightarrow>
+             hasParent P 1 (Lng P - 1) \<Longrightarrow> 1 < Lng P - 1 \<Longrightarrow>
+             transCondIII P \<or> transCondIV P \<Longrightarrow>
+             (\<forall>x \<in> set b0. x = RP) \<Longrightarrow>
+             scb_decomp (bpHeadT (Trans (s84x_N P))) s0
+               (flatBT (Dpt (enat (entry P 1 (Lng P - 1))) 0\<^sub>B)) b0 \<Longrightarrow>
+             s84x_jm3 P < transJm1 P \<Longrightarrow>
+             1 \<le> k \<Longrightarrow>
+             (\<forall>j<k. ox8_rsub (bpHeadT (Trans (s84x_N P))) j \<noteq> 0\<^sub>B) \<Longrightarrow>
+             lessBT (ox8_rsub (bpHeadT (Trans (s84x_N P))) k)
+               (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
+                  (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))"
+  shows "\<forall>M. M \<in> ST_PS \<longrightarrow> Trans M \<in> OT_B"
+    and "\<forall>M n. M \<in> ST_PS \<longrightarrow> 1 \<le> n \<longrightarrow> 1 < Lng M \<longrightarrow>
+           lessBT (Trans ((M::pairseq)[n])) (Trans M)"
+proof -
+  have SETLE1: "\<And>P s0 b0 u. P \<in> ST_PS \<Longrightarrow> P \<in> PT_PS \<Longrightarrow>
+        hasParent P 1 (Lng P - 1) \<Longrightarrow> 1 < Lng P - 1 \<Longrightarrow>
+        transCondIII P \<or> transCondIV P \<Longrightarrow> Trans P \<in> OT_B \<Longrightarrow>
+        (\<forall>x \<in> set b0. x = RP) \<Longrightarrow>
+        scb_decomp (bpHeadT (Trans (s84x_N P))) s0
+          (flatBT (Dpt (enat (entry P 1 (Lng P - 1))) 0\<^sub>B)) b0 \<Longrightarrow>
+        s84x_jm3 P < transJm1 P \<Longrightarrow>
+        b1x_setle
+          (GBT u (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
+                    (bpHeadT (Trans (Pred (s84x_N P))))))
+          (insert (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
+                     (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))
+                  (GBT u (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
+                            (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))))"
+  proof -
+    fix P :: pairseq and s0 b0 :: "Sym list" and u :: enat
+    assume A1: "P \<in> ST_PS" and A2: "P \<in> PT_PS"
+      and A3: "hasParent P 1 (Lng P - 1)" and A4: "1 < Lng P - 1"
+      and A5: "transCondIII P \<or> transCondIV P" and A6: "Trans P \<in> OT_B"
+      and A7: "\<forall>x \<in> set b0. x = RP"
+      and A8: "scb_decomp (bpHeadT (Trans (s84x_N P))) s0
+                (flatBT (Dpt (enat (entry P 1 (Lng P - 1))) 0\<^sub>B)) b0"
+      and A9: "s84x_jm3 P < transJm1 P"
+    have H: "\<And>k. 1 \<le> k \<Longrightarrow>
+               (\<forall>j<k. ox8_rsub (bpHeadT (Trans (s84x_N P))) j \<noteq> 0\<^sub>B) \<Longrightarrow>
+               lessBT (ox8_rsub (bpHeadT (Trans (s84x_N P))) k)
+                 (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
+                    (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))"
+      by (rule KK[OF A1 A2 A3 A4 A5 A7 A8 A9])
+    show "b1x_setle
+          (GBT u (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
+                    (bpHeadT (Trans (Pred (s84x_N P))))))
+          (insert (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
+                     (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))
+                  (GBT u (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
+                            (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))))"
+      by (rule ox10_SETLE1_ltJ[OF A1 A2 A3 A4 A5 A7 A8 A9 H])
+  qed
+  show "\<forall>M. M \<in> ST_PS \<longrightarrow> Trans M \<in> OT_B"
+    by (rule oi8_census_final_ivadmeq(1)[OF SETLE1 ot9_FINRC])
+  show "\<forall>M n. M \<in> ST_PS \<longrightarrow> 1 \<le> n \<longrightarrow> 1 < Lng M \<longrightarrow>
+         lessBT (Trans ((M::pairseq)[n])) (Trans M)"
+    by (rule oi8_census_final_ivadmeq(2)[OF SETLE1 ot9_FINRC])
+qed
+
+subsection \<open>(5) \<open>ox10_lexP\<close>: the list transport with a POSITIONAL guard\<close>
+
+text \<open>\<^bold>\<open>Why @{const ox9_ok} was doomed.\<close>  @{thm [source] ox9_lexP} demands the guard
+  \<open>HT\<close> for EVERY principal of the left operand.  Its proof needs it for exactly ONE:
+  the principal sitting at the RIGHT operand's hole index \<open>\<bar>ys\<bar>\<close> --- and only when
+  the left operand's list actually has \<open>ys\<close> as a prefix (otherwise the walk is
+  decided earlier and the hole is never compared).  The refuting principal
+  \<open>D\<^sub>0(D\<^sub>0 0)\<close> of @{const ox10_cexBody} lives in the body of a NON-last principal, so
+  it never occupies a hole-aligned position; the global guard sees it, the walk
+  does not.  @{text ox10_lexP} is @{thm [source] ox9_lexP} with the guard moved to
+  where it is used.  (STEP-0 measurement: over 1700 census peel levels the walk of
+  \<open>ox8_rsub body k\<close> against \<open>X\<^sub>1\<close> reaches the hole \<^bold>\<open>0\<close> times --- python/_r70_hd.py.)\<close>
+
+lemma ox10_lexP:
+  "lessBT (Trm xs) (Trm (ys @ [q]))
+   \<Longrightarrow> (\<forall>zs x. xs = ys @ x # zs \<longrightarrow> lessBP x q \<longrightarrow> lessBP x q')
+   \<Longrightarrow> lessBT (Trm xs) (Trm (ys @ [q']))"
+proof (induction ys arbitrary: xs)
+  case Nil
+  note P1 = Nil.prems(1) and P2 = Nil.prems(2)
+  show ?case
+  proof (cases xs)
+    case Nil
+    thus ?thesis by simp
+  next
+    case (Cons x xs')
+    have "lessBP x q \<or> (x = q \<and> lessBT (Trm xs') 0\<^sub>B)" using P1 Cons by simp
+    hence lx: "lessBP x q" using ox9_lessBT_zero by blast
+    have E: "xs = [] @ x # xs'" using Cons by simp
+    have "lessBP x q'" using P2 E lx by blast
+    thus ?thesis using Cons by simp
+  qed
+next
+  case (Cons y ys')
+  note IH = Cons.IH and P1 = Cons.prems(1) and P2 = Cons.prems(2)
+  show ?case
+  proof (cases xs)
+    case Nil
+    thus ?thesis by simp
+  next
+    case (Cons x xs')
+    have "lessBP x y \<or> (x = y \<and> lessBT (Trm xs') (Trm (ys' @ [q])))"
+      using P1 Cons by simp
+    thus ?thesis
+    proof
+      assume "lessBP x y"
+      thus ?thesis using Cons by simp
+    next
+      assume A: "x = y \<and> lessBT (Trm xs') (Trm (ys' @ [q]))"
+      have G: "\<forall>zs x2. xs' = ys' @ x2 # zs \<longrightarrow> lessBP x2 q \<longrightarrow> lessBP x2 q'"
+      proof (intro allI impI)
+        fix zs x2 assume E: "xs' = ys' @ x2 # zs" and L: "lessBP x2 q"
+        have "xs = (y # ys') @ x2 # zs" using Cons E A by simp
+        thus "lessBP x2 q'" using P2 L by blast
+      qed
+      have "lessBT (Trm xs') (Trm (ys' @ [q']))" by (rule IH[OF _ G]) (use A in simp)
+      thus ?thesis using Cons A by simp
+    qed
+  qed
+qed
+
+text \<open>@{thm [source] ox9_lexP} is the special case in which the positional guard is
+  discharged from the (refuted) GLOBAL predicate @{const ox9_ok} --- so
+  @{text ox10_lexP} is strictly more general, and it is the hook any future proof
+  of \<open>KK\<close> should use.\<close>
+
+lemma ox10_lexP_subsumes_ox9:
+  assumes HT: "\<And>x. ox9_okP v ub x \<Longrightarrow> lessBP x q \<Longrightarrow> lessBP x q'"
+    and ok: "ox9_ok v ub (Trm xs)"
+    and lt: "lessBT (Trm xs) (Trm (ys @ [q]))"
+  shows "lessBT (Trm xs) (Trm (ys @ [q']))"
+proof -
+  have G: "\<forall>zs x. xs = ys @ x # zs \<longrightarrow> lessBP x q \<longrightarrow> lessBP x q'"
+  proof (intro allI impI)
+    fix zs x assume E: "xs = ys @ x # zs" and L: "lessBP x q"
+    have "x \<in> set xs" using E by simp
+    hence "ox9_okP v ub x" using ok by simp
+    thus "lessBP x q'" by (rule HT[OF _ L])
+  qed
+  show ?thesis by (rule ox10_lexP[OF lt G])
+qed
+
+(* ===== end r70 ox10 block (OKH refuted; census residual = KK) ========== *)
+
+
+
+(* =====================================================================
+   r70 front y3 (prefix  y3_ ).  THE W-INDUCTION TERMINATION ENGINE.
+
+   Goal of the round: retire the last external citation ([Buc1] 2.2,
+   \<open>wf (<)\<close>) by running the termination proof on the FUNDAMENTAL-SEQUENCE
+   well-foundedness that r68 proved unconditionally (\<open>bwl_2_8\<close>: every
+   \<open>D\<^sub>\<omega>\<close>-free term lies in \<open>W\<^sup>*\<close>), instead of on \<open>wf RPrel\<close>.
+
+   What this block establishes:
+   (1) \<open>y3_TBv_dfree_W\<close>: every \<open>D\<^sub>\<omega>\<close>-free \<open>z \<in> T\<^sub>m\<close> is ALREADY in \<open>W\<^sub>m\<close>.
+       Consequence: the \<open>z \<in> W\<^sub>m\<close> side condition of the r68 residual
+       \<open>bwl_cof\<close> is FREE, and \<open>bwl_cof\<close> collapses to the purely
+       order-theoretic \<open>y3_cof0\<close> (no fixpoint set occurs in it).
+   (2) \<open>y3_W_acc\<close>: \<open>W\<^sub>v\<close>-membership gives ACCESSIBILITY along the
+       fundamental-sequence tree — Buchholz's hydra theorem in \<open>acc\<close> form,
+       free from the \<open>lfp\<close> induction rule, no cofinality needed.
+   (3) \<open>y3_PSS_acc_of_OKH_cofimg\<close>: PSS termination (accessibility of the
+       \<open>M \<rightarrow> M[n]\<close> step relation) proved by W-INDUCTION, using NO \<open>wf\<close>,
+       NO \<open>buc1_2_2_OT_B_wf\<close>, NO \<open>bwl_cof\<close> — modulo the census residual
+       \<open>OKH\<close> and the NEW residual \<open>y3_cofimg\<close> (\<open>bwl_cof\<close> with the smaller
+       argument restricted to \<open>Trans\<close>-images, and with no \<open>W\<close>-membership
+       clause).  \<open>y3_cofimg\<close> is strictly weaker than \<open>bwl_cof\<close>
+       (@{thm [source] y3_cofimg_of_bwl_cof}).
+
+   HONEST FINDING (see the closing text): the fseq CORRESPONDENCE is NOT an
+   equation.  The article's exchange laws give equality only in the
+   condition-(I)/(II) legs; legs (III)-(VI) give \<open>\<le>\<close> only, and in leg (VI)
+   with \<open>adm\<close> the proven @{thm [source] c613x_condVI_exch_adm} gives a STRICT
+   \<open><\<close>.  So \<open>Trans (M[n])\<close> is in general NOT a fundamental-sequence child of
+   \<open>Trans M\<close>, and a cofinality (step-down) property is unavoidable.
+   ===================================================================== *)
+
+section \<open>r70-y3 --- W-induction as the termination engine (\<open>y3_\<close>)\<close>
+
+subsection \<open>(1) \<open>W\<close> is monotone in the level, and every \<open>D\<^sub>\<omega>\<close>-free \<open>T\<^sub>m\<close>-term is in \<open>W\<^sub>m\<close>\<close>
+
+lemma y3_W_mono:
+  assumes uv: "u \<le> v"
+  shows "bwl_W u \<subseteq> bwl_W v"
+proof (rule bwl_A2')
+  fix c assume A: "bwl_Aop bwl_W (enat u) (bwl_W v) c"
+  have le: "enat u \<le> enat v" using uv by simp
+  have "bwl_Aop bwl_W (enat v) (bwl_W v) c" by (rule bwl_Aop_mono_nv[OF le A])
+  thus "c \<in> bwl_W v" by (rule bwl_A1_intro)
+qed
+
+text \<open>The key closure: a \<open>D\<^sub>\<omega>\<close>-free term all of whose top-level principal indices are
+  \<open>\<le> m\<close> lies in \<open>W\<^sub>m\<close>.  Each principal is in \<open>W\<close> at its own index by
+  @{thm [source] bwl_2_8_principal}, lifts to \<open>W\<^sub>m\<close> by @{thm [source] y3_W_mono},
+  and the tuple is assembled by the addition closure @{thm [source] bwl_2_4b_add}.\<close>
+
+lemma y3_TBv_dfree_W_aux:
+  assumes df: "\<forall>p \<in> set ps. dfree_BP p"
+    and bd: "\<forall>p \<in> set ps. (case p of DB w b \<Rightarrow> w \<le> enat m)"
+  shows "Trm ps \<in> bwl_W m"
+  using assms
+proof (induction ps)
+  case Nil
+  show ?case by (simp add: bwl_W_zero)
+next
+  case (Cons p ps)
+  obtain w b where pwb: "p = DB w b" by (cases p)
+  have dfp: "dfree_BP p" using Cons.prems(1) by simp
+  have wne: "w \<noteq> \<infinity>" and dfb: "dfree_BT b" using dfp pwb by simp_all
+  obtain k where wk: "w = enat k" using wne by (cases w) auto
+  have kle: "enat k \<le> enat m" using Cons.prems(2) pwb wk by simp
+  hence km: "k \<le> m" by simp
+  have pW: "Trm [DB (enat k) b] \<in> bwl_W k" by (rule bwl_2_8_principal[OF dfb])
+  have pWm: "Trm [p] \<in> bwl_W m" using pW y3_W_mono[OF km] pwb wk by blast
+  have d1: "\<forall>q \<in> set ps. dfree_BP q" using Cons.prems(1) by simp
+  have d2: "\<forall>q \<in> set ps. (case q of DB w' b' \<Rightarrow> w' \<le> enat m)" using Cons.prems(2) by simp
+  have rest: "Trm ps \<in> bwl_W m" by (rule Cons.IH[OF d1 d2])
+  have "Trm [p] +\<^sub>B Trm ps \<in> bwl_W m" by (rule bwl_2_4b_add[OF pWm rest])
+  thus ?case by simp
+qed
+
+lemma y3_TBv_dfree_W:
+  assumes df: "dfree_BT z" and tb: "z \<in> TBv (enat m)"
+  shows "z \<in> bwl_W m"
+proof -
+  obtain ps where zps: "z = Trm ps" by (cases z)
+  have d1: "\<forall>p \<in> set ps. dfree_BP p" using df zps by simp
+  have d2: "\<forall>p \<in> set ps. (case p of DB w b \<Rightarrow> w \<le> enat m)"
+    using tb zps by (simp add: TBv_def)
+  show ?thesis using y3_TBv_dfree_W_aux[OF d1 d2] zps by simp
+qed
+
+text \<open>Every \<open>D\<^sub>\<omega>\<close>-free term has a finite level, hence lies in SOME \<open>W\<^sub>m\<close>.\<close>
+
+lemma y3_dfree_ex_lev_aux:
+  assumes "\<forall>p \<in> set ps. dfree_BP p"
+  shows "\<exists>m. \<forall>p \<in> set ps. (case p of DB w b \<Rightarrow> w \<le> enat m)"
+  using assms
+proof (induction ps)
+  case Nil
+  show ?case by simp
+next
+  case (Cons p ps)
+  obtain w b where pwb: "p = DB w b" by (cases p)
+  have wne: "w \<noteq> \<infinity>" using Cons.prems pwb by simp
+  obtain k where wk: "w = enat k" using wne by (cases w) auto
+  have d1: "\<forall>q \<in> set ps. dfree_BP q" using Cons.prems by simp
+  obtain m where m: "\<forall>q \<in> set ps. (case q of DB w' b' \<Rightarrow> w' \<le> enat m)"
+    using Cons.IH[OF d1] by blast
+  have "\<forall>q \<in> set (p # ps). (case q of DB w' b' \<Rightarrow> w' \<le> enat (max k m))"
+  proof
+    fix q assume qin: "q \<in> set (p # ps)"
+    obtain w' b' where qwb: "q = DB w' b'" by (cases q)
+    show "case q of DB w' b' \<Rightarrow> w' \<le> enat (max k m)"
+    proof (cases "q = p")
+      case True
+      have "w \<le> enat (max k m)" using wk by simp
+      thus ?thesis using True pwb qwb by simp
+    next
+      case False
+      hence qps: "q \<in> set ps" using qin by simp
+      have hq: "case q of DB w2 b2 \<Rightarrow> w2 \<le> enat m" using m qps by blast
+      have le1: "w' \<le> enat m" using hq qwb by simp
+      have le2: "enat m \<le> enat (max k m)" by simp
+      have "w' \<le> enat (max k m)" using le1 le2 by (rule order_trans)
+      thus ?thesis using qwb by simp
+    qed
+  qed
+  thus ?case by blast
+qed
+
+lemma y3_dfree_ex_lev:
+  assumes df: "dfree_BT z"
+  shows "\<exists>m. z \<in> TBv (enat m)"
+proof -
+  obtain ps where zps: "z = Trm ps" by (cases z)
+  have d1: "\<forall>p \<in> set ps. dfree_BP p" using df zps by simp
+  obtain m where m: "\<forall>p \<in> set ps. (case p of DB w b \<Rightarrow> w \<le> enat m)"
+    using y3_dfree_ex_lev_aux[OF d1] by blast
+  have "z \<in> TBv (enat m)" using m zps by (simp add: TBv_def)
+  thus ?thesis by blast
+qed
+
+corollary y3_dfree_W_ex:
+  assumes df: "dfree_BT z"
+  shows "\<exists>m. z \<in> bwl_W m"
+  using y3_dfree_ex_lev[OF df] y3_TBv_dfree_W[OF df] by blast
+
+text \<open>\<open>Trans\<close>-images are \<open>D\<^sub>\<omega>\<close>-free (they are in \<open>T\<^bsub>B\<^esub>\<close> by
+  @{thm [source] m_7_3_Trans_in_T_B}), hence in \<open>W\<close>.\<close>
+
+lemma y3_Trans_dfree:
+  assumes MR: "M \<in> RT_PS"
+  shows "dfree_BT (Trans M)"
+  using m_7_3_Trans_in_T_B[OF MR] by (simp add: T_B_def)
+
+corollary y3_Trans_W:
+  assumes MR: "M \<in> RT_PS"
+  shows "\<exists>m. Trans M \<in> bwl_W m"
+  by (rule y3_dfree_W_ex[OF y3_Trans_dfree[OF MR]])
+
+
+subsection \<open>(2) The three \<open>dom\<close>-shapes are pairwise distinct\<close>
+
+lemma y3_one_in_TBv: "Trm [DB 0 (Trm [DB 0 (Trm [])])] \<in> TBv (enat m)"
+  by (simp add: TBv_def)
+
+lemma y3_D0one_not_NatSet: "Trm [DB 0 (Trm [DB 0 (Trm [])])] \<notin> NatSet"
+proof
+  assume "Trm [DB 0 (Trm [DB 0 (Trm [])])] \<in> NatSet"
+  then obtain n where n: "Trm [DB 0 (Trm [DB 0 (Trm [])])] = numBT n"
+    by (auto simp: NatSet_def)
+  hence l: "[DB 0 (Trm [DB 0 (Trm [])])] = replicate n (DB 0 (Trm []))"
+    by (simp add: numBT_def)
+  show False using l by (cases n) auto
+qed
+
+lemma y3_TBv_ne_zeroset: "TBv (enat m) \<noteq> {Trm []}"
+proof
+  assume e: "TBv (enat m) = {Trm []}"
+  have "Trm [DB 0 (Trm [DB 0 (Trm [])])] \<in> TBv (enat m)" by (rule y3_one_in_TBv)
+  hence "Trm [DB 0 (Trm [DB 0 (Trm [])])] = Trm []" using e by simp
+  thus False by simp
+qed
+
+lemma y3_TBv_ne_NatSet: "TBv (enat m) \<noteq> NatSet"
+proof
+  assume e: "TBv (enat m) = NatSet"
+  have "Trm [DB 0 (Trm [DB 0 (Trm [])])] \<in> TBv (enat m)" by (rule y3_one_in_TBv)
+  hence "Trm [DB 0 (Trm [DB 0 (Trm [])])] \<in> NatSet" using e by simp
+  thus False using y3_D0one_not_NatSet by simp
+qed
+
+lemma y3_TBv_inj:
+  assumes e: "TBv (enat m) = TBv (enat m')"
+  shows "m = m'"
+proof -
+  have le: "\<And>i j. TBv (enat i) = TBv (enat j) \<Longrightarrow> i \<le> j"
+  proof -
+    fix i j :: nat assume ij: "TBv (enat i) = TBv (enat j)"
+    have "Trm [DB (enat i) (Trm [])] \<in> TBv (enat i)" by (simp add: TBv_def)
+    hence "Trm [DB (enat i) (Trm [])] \<in> TBv (enat j)" using ij by simp
+    hence "enat i \<le> enat j" by (simp add: TBv_def)
+    thus "i \<le> j" by simp
+  qed
+  show ?thesis using le[OF e] le[OF e[symmetric]] by simp
+qed
+
+
+subsection \<open>(3) The residual \<open>bwl_cof\<close> loses its \<open>W\<close>-membership clause\<close>
+
+text \<open>\<open>y3_cof0\<close> is \<open>bwl_cof\<close> with the clause \<open>z \<in> W\<^sub>m\<close> DELETED: a purely
+  order-theoretic cofinality statement about \<open><\<close> and \<open>[\<cdot>]\<close> on \<open>OT\<^bsub>B\<^esub>\<close>.  It implies
+  \<open>bwl_cof\<close> because the missing clause is now free (@{thm [source] y3_TBv_dfree_W}:
+  \<open>z \<in> dom(a) = T\<^sub>m\<close> and \<open>z\<close> \<open>D\<^sub>\<omega>\<close>-free already force \<open>z \<in> W\<^sub>m\<close>).\<close>
+
+definition y3_cof0 :: bool where
+  "y3_cof0 \<longleftrightarrow>
+     (\<forall>a b. isOT_BT a \<longrightarrow> dfree_BT a \<longrightarrow> isOT_BT b \<longrightarrow> dfree_BT b \<longrightarrow> lessBT b a \<longrightarrow>
+        (((domB a = {Trm []} \<or> domB a = NatSet)
+             \<longrightarrow> (\<exists>n. leBT b (operB a (numBT n))))
+         \<and> (\<forall>m. domB a = TBv (enat m)
+             \<longrightarrow> (\<exists>z. z \<in> domB a \<and> isOT_BT z \<and> dfree_BT z \<and> leBT b (operB a z)))))"
+
+lemma y3_cof0_imp_bwl_cof:
+  assumes C0: "y3_cof0"
+  shows "bwl_cof"
+proof -
+  have main: "\<And>a b. isOT_BT a \<Longrightarrow> dfree_BT a \<Longrightarrow> isOT_BT b \<Longrightarrow> dfree_BT b \<Longrightarrow>
+      lessBT b a \<Longrightarrow>
+      (((domB a = {Trm []} \<or> domB a = NatSet) \<longrightarrow> (\<exists>n. leBT b (operB a (numBT n))))
+       \<and> (\<forall>m. domB a = TBv (enat m)
+             \<longrightarrow> (\<exists>z. z \<in> bwl_W m \<and> z \<in> domB a \<and> isOT_BT z \<and> dfree_BT z
+                        \<and> leBT b (operB a z))))"
+  proof -
+    fix a b assume ota: "isOT_BT a" and dfa: "dfree_BT a"
+      and otb: "isOT_BT b" and dfb: "dfree_BT b" and lba: "lessBT b a"
+    have c0: "((domB a = {Trm []} \<or> domB a = NatSet)
+                  \<longrightarrow> (\<exists>n. leBT b (operB a (numBT n))))
+              \<and> (\<forall>m. domB a = TBv (enat m)
+                  \<longrightarrow> (\<exists>z. z \<in> domB a \<and> isOT_BT z \<and> dfree_BT z \<and> leBT b (operB a z)))"
+      using C0[unfolded y3_cof0_def] ota dfa otb dfb lba by blast
+    have num: "(domB a = {Trm []} \<or> domB a = NatSet)
+                  \<longrightarrow> (\<exists>n. leBT b (operB a (numBT n)))"
+      using c0 by blast
+    have tu: "\<forall>m. domB a = TBv (enat m)
+                  \<longrightarrow> (\<exists>z. z \<in> bwl_W m \<and> z \<in> domB a \<and> isOT_BT z \<and> dfree_BT z
+                             \<and> leBT b (operB a z))"
+    proof (intro allI impI)
+      fix m assume dm: "domB a = TBv (enat m)"
+      obtain z where z1: "z \<in> domB a" and z2: "isOT_BT z" and z3: "dfree_BT z"
+        and z4: "leBT b (operB a z)" using c0 dm by blast
+      have zTB: "z \<in> TBv (enat m)" using z1 dm by simp
+      have zW: "z \<in> bwl_W m" by (rule y3_TBv_dfree_W[OF z3 zTB])
+      show "\<exists>z. z \<in> bwl_W m \<and> z \<in> domB a \<and> isOT_BT z \<and> dfree_BT z
+                  \<and> leBT b (operB a z)"
+        using zW z1 z2 z3 z4 by blast
+    qed
+    show "(((domB a = {Trm []} \<or> domB a = NatSet)
+              \<longrightarrow> (\<exists>n. leBT b (operB a (numBT n))))
+           \<and> (\<forall>m. domB a = TBv (enat m)
+              \<longrightarrow> (\<exists>z. z \<in> bwl_W m \<and> z \<in> domB a \<and> isOT_BT z \<and> dfree_BT z
+                         \<and> leBT b (operB a z))))"
+      using num tu by blast
+  qed
+  show ?thesis unfolding bwl_cof_def using main by blast
+qed
+
+theorem y3_wf_RPrel_of_cof0:
+  assumes C0: "y3_cof0"
+  shows "wf RPrel"
+  by (rule bwl_wf_RPrel_of_cof[OF y3_cof0_imp_bwl_cof[OF C0]])
+
+
+subsection \<open>(4) The FREE hydra theorem: \<open>W\<^sub>v \<subseteq> acc\<close> of the fundamental-sequence tree\<close>
+
+text \<open>\<open>y3_child v a b\<close>: \<open>b\<close> is a child of \<open>a\<close> in the fundamental-sequence tree, exactly
+  as the two generating clauses (W2)/(W3) of \<open>W\<^sub>v\<close> descend.  By
+  @{thm [source] y3_TBv_dfree_W}, in the (W3) case the admissible arguments \<open>z\<close> include
+  ALL \<open>D\<^sub>\<omega>\<close>-free elements of \<open>dom(a)\<close>, so this really is the full fseq tree.\<close>
+
+definition y3_child :: "nat \<Rightarrow> BT \<Rightarrow> BT \<Rightarrow> bool" where
+  "y3_child v a b \<longleftrightarrow>
+     ((domB a = {Trm []} \<or> domB a = NatSet) \<and> (\<exists>n. b = operB a (numBT n)))
+     \<or> (\<exists>m. m < v \<and> domB a = TBv (enat m) \<and> (\<exists>z. z \<in> bwl_W m \<and> b = operB a z))"
+
+definition y3_Rel :: "nat \<Rightarrow> (BT \<times> BT) set" where
+  "y3_Rel v = {(b, a). y3_child v a b}"
+
+theorem y3_W_acc: "bwl_W v \<subseteq> Wellfounded.acc (y3_Rel v)"
+proof (rule bwl_A2')
+  fix c assume A: "bwl_Aop bwl_W (enat v) (Wellfounded.acc (y3_Rel v)) c"
+  consider (zero) "c = Trm []"
+    | (num) "(domB c = {Trm []} \<or> domB c = NatSet)
+             \<and> (\<forall>n. operB c (numBT n) \<in> Wellfounded.acc (y3_Rel v))"
+    | (tu) m where "enat m < enat v" "domB c = TBv (enat m)"
+             "\<forall>z \<in> bwl_W m. operB c z \<in> Wellfounded.acc (y3_Rel v)"
+    using A[unfolded bwl_Aop_def] by blast
+  thus "c \<in> Wellfounded.acc (y3_Rel v)"
+  proof cases
+    case zero
+    show ?thesis
+    proof (rule acc.intros)
+      fix b assume "(b, c) \<in> y3_Rel v"
+      hence ch: "y3_child v c b" by (simp add: y3_Rel_def)
+      have dz: "domB c = {}" using zero bwo_domB_Nil by simp
+      have n1: "domB c \<noteq> {Trm []}" using dz by simp
+      have n2: "domB c \<noteq> NatSet"
+      proof
+        assume "domB c = NatSet"
+        hence "NatSet = {}" using dz by simp
+        moreover have "numBT 0 \<in> NatSet" by (simp add: NatSet_def)
+        ultimately show False by simp
+      qed
+      have n3: "\<And>m. domB c \<noteq> TBv (enat m)"
+      proof -
+        fix m :: nat
+        show "domB c \<noteq> TBv (enat m)"
+        proof
+          assume e: "domB c = TBv (enat m)"
+          have "Trm [] \<in> TBv (enat m)" by (simp add: TBv_def)
+          thus False using e dz by simp
+        qed
+      qed
+      show "b \<in> Wellfounded.acc (y3_Rel v)"
+        using ch n1 n2 n3 unfolding y3_child_def by blast
+    qed
+  next
+    case num
+    show ?thesis
+    proof (rule acc.intros)
+      fix b assume "(b, c) \<in> y3_Rel v"
+      hence ch: "y3_child v c b" by (simp add: y3_Rel_def)
+      have D: "domB c = {Trm []} \<or> domB c = NatSet" using num by blast
+      have notTB: "\<And>m. domB c \<noteq> TBv (enat m)"
+        using D y3_TBv_ne_zeroset y3_TBv_ne_NatSet by metis
+      have "\<exists>n. b = operB c (numBT n)"
+        using ch notTB unfolding y3_child_def by blast
+      then obtain n where bn: "b = operB c (numBT n)" by blast
+      show "b \<in> Wellfounded.acc (y3_Rel v)" using bn num by blast
+    qed
+  next
+    case (tu m)
+    show ?thesis
+    proof (rule acc.intros)
+      fix b assume "(b, c) \<in> y3_Rel v"
+      hence ch: "y3_child v c b" by (simp add: y3_Rel_def)
+      have notNum: "\<not> (domB c = {Trm []} \<or> domB c = NatSet)"
+        using tu(2) y3_TBv_ne_zeroset y3_TBv_ne_NatSet by metis
+      obtain m' z where m'1: "domB c = TBv (enat m')" and m'2: "z \<in> bwl_W m'"
+        and m'3: "b = operB c z"
+        using ch notNum unfolding y3_child_def by blast
+      have "TBv (enat m') = TBv (enat m)" using m'1 tu(2) by simp
+      hence mm: "m' = m" by (rule y3_TBv_inj)
+      have "z \<in> bwl_W m" using m'2 mm by simp
+      thus "b \<in> Wellfounded.acc (y3_Rel v)" using tu(3) m'3 by blast
+    qed
+  qed
+qed
+
+
+subsection \<open>(5) The NEW residual \<open>y3_cofimg\<close> and the citation-free termination engine\<close>
+
+text \<open>The PSS one-step relation: \<open>M \<rightarrow> M[n]\<close> for \<open>n \<ge> 1\<close> at a non-degenerate \<open>M\<close>.\<close>
+
+definition y3_PSSrel :: "(pairseq \<times> pairseq) set" where
+  "y3_PSSrel = {(N, M). M \<in> ST_PS \<and> 1 < Lng M \<and> (\<exists>n. 1 \<le> n \<and> N = (M::pairseq)[n])}"
+
+text \<open>\<open>y3_cofimg\<close>: \<open>y3_cof0\<close> with the SMALLER argument restricted to \<open>Trans\<close>-images.
+  This is all the termination proof ever needs, and it is implied by \<open>bwl_cof\<close>
+  (hence a fortiori by \<open>y3_cof0\<close>).\<close>
+
+definition y3_cofimg :: bool where
+  "y3_cofimg \<longleftrightarrow>
+     (\<forall>a M. isOT_BT a \<longrightarrow> dfree_BT a \<longrightarrow> M \<in> ST_PS \<longrightarrow> lessBT (Trans M) a \<longrightarrow>
+        (((domB a = {Trm []} \<or> domB a = NatSet)
+             \<longrightarrow> (\<exists>n. leBT (Trans M) (operB a (numBT n))))
+         \<and> (\<forall>m. domB a = TBv (enat m)
+             \<longrightarrow> (\<exists>z. z \<in> domB a \<and> isOT_BT z \<and> dfree_BT z
+                        \<and> leBT (Trans M) (operB a z)))))"
+
+lemma y3_cofimg_of_bwl_cof:
+  assumes COF: "bwl_cof"
+    and TOT: "\<And>N. N \<in> ST_PS \<Longrightarrow> Trans N \<in> OT_B"
+  shows "y3_cofimg"
+proof (unfold y3_cofimg_def, intro allI impI)
+  fix a :: BT and M :: pairseq
+  assume ota: "isOT_BT a" and dfa: "dfree_BT a" and MST: "M \<in> ST_PS"
+    and lt: "lessBT (Trans M) a"
+  have MOT: "Trans M \<in> OT_B" by (rule TOT[OF MST])
+  have otb: "isOT_BT (Trans M)" and dfb: "dfree_BT (Trans M)"
+    using MOT by (simp_all add: OT_B_def OT_def T_B_def)
+  have C: "((domB a = {Trm []} \<or> domB a = NatSet)
+               \<longrightarrow> (\<exists>n. leBT (Trans M) (operB a (numBT n))))
+           \<and> (\<forall>m. domB a = TBv (enat m)
+               \<longrightarrow> (\<exists>z. z \<in> bwl_W m \<and> z \<in> domB a \<and> isOT_BT z \<and> dfree_BT z
+                          \<and> leBT (Trans M) (operB a z)))"
+    by (rule COF[unfolded bwl_cof_def, rule_format, OF ota dfa otb dfb lt])
+  show "((domB a = {Trm []} \<or> domB a = NatSet)
+            \<longrightarrow> (\<exists>n. leBT (Trans M) (operB a (numBT n))))
+        \<and> (\<forall>m. domB a = TBv (enat m)
+            \<longrightarrow> (\<exists>z. z \<in> domB a \<and> isOT_BT z \<and> dfree_BT z
+                       \<and> leBT (Trans M) (operB a z)))"
+    using C by blast
+qed
+
+text \<open>\<^bold>\<open>THE ENGINE.\<close>  Termination of the PSS step relation by W-INDUCTION
+  (@{thm [source] bwl_A2'}) on \<open>Trans M\<close>.  The invariant is
+  \<open>Y = {a. a \<in> OT\<^bsub>B\<^esub> \<longrightarrow> (\<forall>N \<in> ST\<^bsub>PS\<^esub>. Trans N \<le> a \<longrightarrow> N accessible)}\<close>;
+  the \<open>\<le>\<close> (rather than \<open>=\<close>) is forced by the article's exchange laws, which give only
+  \<open>Trans (M[n]) \<le> (Trans M)[k]\<close> in the condition-(III)--(VI) legs, and the \<open>\<le>\<close> is
+  absorbed by \<open>y3_cofimg\<close> at each node.  NO \<open>wf\<close>, NO \<open>buc1_2_2_OT_B_wf\<close>,
+  NO \<open>bwl_cof\<close> is used.\<close>
+
+theorem y3_PSS_acc_of_cofimg:
+  assumes DESC: "\<And>N n. N \<in> ST_PS \<Longrightarrow> 1 \<le> n \<Longrightarrow> 1 < Lng N \<Longrightarrow>
+                   lessBT (Trans ((N::pairseq)[n])) (Trans N)"
+    and TOT: "\<And>N. N \<in> ST_PS \<Longrightarrow> Trans N \<in> OT_B"
+    and COF: "y3_cofimg"
+    and MST: "M \<in> ST_PS"
+  shows "M \<in> Wellfounded.acc y3_PSSrel"
+proof -
+  define Y :: "BT set" where
+    "Y = {a. isOT_BT a \<longrightarrow> dfree_BT a \<longrightarrow>
+              (\<forall>N. N \<in> ST_PS \<longrightarrow> leBT (Trans N) a \<longrightarrow> N \<in> Wellfounded.acc y3_PSSrel)}"
+  have Ycl: "\<And>v c. bwl_Aop bwl_W (enat v) Y c \<Longrightarrow> c \<in> Y"
+  proof -
+    fix v :: nat and c :: BT
+    assume A: "bwl_Aop bwl_W (enat v) Y c"
+    show "c \<in> Y"
+    proof (cases "isOT_BT c \<and> dfree_BT c")
+      case False
+      thus ?thesis by (auto simp: Y_def)
+    next
+      case True
+      have otc: "isOT_BT c" and dfc: "dfree_BT c" using True by simp_all
+      have cOT: "c \<in> OT_B" using otc dfc by (simp add: OT_B_def OT_def T_B_def)
+      have body: "\<forall>N. N \<in> ST_PS \<longrightarrow> leBT (Trans N) c
+                        \<longrightarrow> N \<in> Wellfounded.acc y3_PSSrel"
+      proof (intro allI impI)
+        fix N :: pairseq
+        assume NST: "N \<in> ST_PS" and leN: "leBT (Trans N) c"
+        show "N \<in> Wellfounded.acc y3_PSSrel"
+        proof (rule acc.intros)
+          fix K :: pairseq
+          assume KN: "(K, N) \<in> y3_PSSrel"
+          then obtain n where L: "1 < Lng N" and n1: "1 \<le> n"
+            and Keq: "K = (N::pairseq)[n]"
+            by (auto simp: y3_PSSrel_def)
+          have KST: "K \<in> ST_PS" using ST_PS.oper[OF NST n1] Keq by simp
+          have desc: "lessBT (Trans K) (Trans N)"
+            using DESC[OF NST n1 L] Keq by simp
+          have ltc: "lessBT (Trans K) c"
+          proof (cases "Trans N = c")
+            case True
+            thus ?thesis using desc by simp
+          next
+            case False
+            hence "lessBT (Trans N) c" using leN by simp
+            thus ?thesis by (rule lessBT_trans[OF desc])
+          qed
+          have cne: "c \<noteq> Trm []"
+          proof
+            assume z: "c = Trm []"
+            have "lessBT (Trans K) (Trm [])" using ltc z by simp
+            thus False using bwl_not_lessBT_zero by simp
+          qed
+          have cofK: "((domB c = {Trm []} \<or> domB c = NatSet)
+                          \<longrightarrow> (\<exists>n'. leBT (Trans K) (operB c (numBT n'))))
+                      \<and> (\<forall>m. domB c = TBv (enat m)
+                          \<longrightarrow> (\<exists>z. z \<in> domB c \<and> isOT_BT z \<and> dfree_BT z
+                                     \<and> leBT (Trans K) (operB c z)))"
+            using COF[unfolded y3_cofimg_def] otc dfc KST ltc by blast
+          consider (zero) "c = Trm []"
+            | (num) "(domB c = {Trm []} \<or> domB c = NatSet)
+                     \<and> (\<forall>n. operB c (numBT n) \<in> Y)"
+            | (tu) m where "enat m < enat v" "domB c = TBv (enat m)"
+                     "\<forall>z \<in> bwl_W m. operB c z \<in> Y"
+            using A[unfolded bwl_Aop_def] by blast
+          thus "K \<in> Wellfounded.acc y3_PSSrel"
+          proof cases
+            case zero
+            thus ?thesis using cne by simp
+          next
+            case num
+            have D: "domB c = {Trm []} \<or> domB c = NatSet" using num by blast
+            obtain n' where n': "leBT (Trans K) (operB c (numBT n'))"
+              using cofK D by blast
+            have dY: "operB c (numBT n') \<in> Y" using num by blast
+            have dOT: "operB c (numBT n') \<in> OT_B"
+              by (rule m_buc1_3_2_OT_B_closed[OF cOT cne])
+            have otd: "isOT_BT (operB c (numBT n'))"
+              and dfd: "dfree_BT (operB c (numBT n'))"
+              using dOT by (simp_all add: OT_B_def OT_def T_B_def)
+            have "\<forall>N'. N' \<in> ST_PS \<longrightarrow> leBT (Trans N') (operB c (numBT n'))
+                          \<longrightarrow> N' \<in> Wellfounded.acc y3_PSSrel"
+              using dY otd dfd by (simp add: Y_def)
+            thus ?thesis using KST n' by blast
+          next
+            case (tu m)
+            obtain z where zd: "z \<in> domB c" and otz: "isOT_BT z" and dfz: "dfree_BT z"
+              and lez: "leBT (Trans K) (operB c z)"
+              using cofK tu(2) by blast
+            have zTB: "z \<in> TBv (enat m)" using zd tu(2) by simp
+            have zW: "z \<in> bwl_W m" by (rule y3_TBv_dfree_W[OF dfz zTB])
+            have dY: "operB c z \<in> Y" using tu(3) zW by blast
+            have "isOT_BT (operB c z) \<and> dfree_BT (operB c z)"
+              using b1x_master[OF otc dfc cne disjI1[OF zd]] otz dfz by blast
+            hence otd: "isOT_BT (operB c z)" and dfd: "dfree_BT (operB c z)"
+              by simp_all
+            have "\<forall>N'. N' \<in> ST_PS \<longrightarrow> leBT (Trans N') (operB c z)
+                          \<longrightarrow> N' \<in> Wellfounded.acc y3_PSSrel"
+              using dY otd dfd by (simp add: Y_def)
+            thus ?thesis using KST lez by blast
+          qed
+        qed
+      qed
+      show ?thesis using body by (simp add: Y_def)
+    qed
+  qed
+  have MR: "M \<in> RT_PS" using MST m_6_7_ST_PS_subseteq_RT_PS by blast
+  obtain v where vW: "Trans M \<in> bwl_W v" using y3_Trans_W[OF MR] by blast
+  have sub: "bwl_W v \<subseteq> Y" by (rule bwl_A2'[OF Ycl])
+  have MY: "Trans M \<in> Y" using vW sub by blast
+  have MOT: "Trans M \<in> OT_B" by (rule TOT[OF MST])
+  have otM: "isOT_BT (Trans M)" and dfM: "dfree_BT (Trans M)"
+    using MOT by (simp_all add: OT_B_def OT_def T_B_def)
+  have "\<forall>N. N \<in> ST_PS \<longrightarrow> leBT (Trans N) (Trans M)
+              \<longrightarrow> N \<in> Wellfounded.acc y3_PSSrel"
+    using MY otM dfM by (simp add: Y_def)
+  thus ?thesis using MST by blast
+qed
+
+text \<open>\<^bold>\<open>The round-70 capstone.\<close>  Feeding the r69 census
+  (@{thm [source] oi9_census_OKH}, both pillars modulo the single residual \<open>OKH\<close>)
+  into the engine: PSS termination modulo \<open>{OKH, y3_cofimg}\<close>, with the external
+  citation [Buc1] 2.2 (\<open>buc1_2_2_OT_B_wf\<close> / \<open>wf RPrel\<close>) COMPLETELY OUT of the
+  dependency graph.\<close>
+
+theorem y3_PSS_acc_of_OKH_cofimg:
+  assumes HGE: "\<And>P. P \<in> ST_PS \<Longrightarrow> P \<in> PT_PS \<Longrightarrow>
+             hasParent P 1 (Lng P - 1) \<Longrightarrow> 1 < Lng P - 1 \<Longrightarrow>
+             transCondIII P \<or> transCondIV P \<Longrightarrow> Trans P \<in> OT_B \<Longrightarrow>
+             s84x_jm3 P < transJm1 P \<Longrightarrow>
+             ox9_ok (enat (entry P 1 (Lng P - 1)))
+                    (enat (entry P 1 (Lng P - 1) - 1))
+                    (bpHeadT (Trans (s84x_N P)))"
+    and COF: "y3_cofimg"
+    and MST: "M \<in> ST_PS"
+  shows "M \<in> Wellfounded.acc y3_PSSrel"
+proof -
+  have TOT: "\<And>N. N \<in> ST_PS \<Longrightarrow> Trans N \<in> OT_B"
+    using oi9_census_OKH(1)[OF HGE] by blast
+  have DESC: "\<And>N n. N \<in> ST_PS \<Longrightarrow> 1 \<le> n \<Longrightarrow> 1 < Lng N \<Longrightarrow>
+                lessBT (Trans ((N::pairseq)[n])) (Trans N)"
+    using oi9_census_OKH(2)[OF HGE] by blast
+  show ?thesis by (rule y3_PSS_acc_of_cofimg[OF DESC TOT COF MST])
+qed
+
+text \<open>\<^bold>\<open>Consistency check\<close>: the old route still works — \<open>bwl_cof\<close> (r68's residual)
+  implies \<open>y3_cofimg\<close>, so nothing is lost by moving to the new engine.\<close>
+
+corollary y3_PSS_acc_of_OKH_bwl_cof:
+  assumes HGE: "\<And>P. P \<in> ST_PS \<Longrightarrow> P \<in> PT_PS \<Longrightarrow>
+             hasParent P 1 (Lng P - 1) \<Longrightarrow> 1 < Lng P - 1 \<Longrightarrow>
+             transCondIII P \<or> transCondIV P \<Longrightarrow> Trans P \<in> OT_B \<Longrightarrow>
+             s84x_jm3 P < transJm1 P \<Longrightarrow>
+             ox9_ok (enat (entry P 1 (Lng P - 1)))
+                    (enat (entry P 1 (Lng P - 1) - 1))
+                    (bpHeadT (Trans (s84x_N P)))"
+    and COF: "bwl_cof"
+    and MST: "M \<in> ST_PS"
+  shows "M \<in> Wellfounded.acc y3_PSSrel"
+proof -
+  have TOT: "\<And>N. N \<in> ST_PS \<Longrightarrow> Trans N \<in> OT_B"
+    using oi9_census_OKH(1)[OF HGE] by blast
+  have CF: "y3_cofimg" by (rule y3_cofimg_of_bwl_cof[OF COF TOT])
+  have DESC: "\<And>N n. N \<in> ST_PS \<Longrightarrow> 1 \<le> n \<Longrightarrow> 1 < Lng N \<Longrightarrow>
+                lessBT (Trans ((N::pairseq)[n])) (Trans N)"
+    using oi9_census_OKH(2)[OF HGE] by blast
+  show ?thesis by (rule y3_PSS_acc_of_cofimg[OF DESC TOT CF MST])
+qed
+
+(* ===== end r70 y3 block ===== *)
+
+text \<open>\<^bold>\<open>MECHANICAL PROOF-TERM AUDIT (r70-y3, Isabelle2025-2).\<close>  The dependency
+  graphs were walked with \<open>Proofterm.fold_body_thms\<close> and intersected with the 131
+  \<open>sorry\<close>-carrying statements of \<open>pss_paper\<close>.  Result:
+
+  \<^item> @{thm [source] y3_PSS_acc_of_cofimg} (the engine): \<^bold>\<open>0 sorry-dependencies\<close>.
+  \<^item> @{thm [source] y3_W_acc}, @{thm [source] y3_TBv_dfree_W},
+    @{thm [source] y3_cof0_imp_bwl_cof}, @{thm [source] bwl_2_8_principal}: 0 each.
+  \<^item> @{thm [source] y3_PSS_acc_of_OKH_cofimg} (capstone) and
+    @{thm [source] oi9_census_OKH}: \<^bold>\<open>exactly ONE\<close> — \<open>pss_paper.buc1_3_2a_fseq_lt\<close>.
+
+  So \<open>buc1_2_2_OT_B_wf\<close> ([Buc1] Lemma 2.2, \<open>wf (<)\<close>) is \<^bold>\<open>OUT of the graph\<close>: the
+  W-induction engine replaces it.  The single remaining \<open>sorry\<close> in the chain,
+  \<open>buc1_3_2a_fseq_lt\<close> (\<open>a \<noteq> 0 \<Longrightarrow> a[n] < a\<close>), is a \<^emph>\<open>stale citation\<close>: the identical
+  statement is already PROVEN as \<open>m_buc1_3_2a_fseq_lt\<close> (\<open>layerB/pss_wip.thy\<close> 49765).
+  Removing it is a mechanical swap at the 7 call sites that still cite the paper
+  version (\<open>layerB/pss_wip.thy\<close> lines 27797, 27874, 36809, 39574, 39633, 51962, 51989)
+  — a FROZEN-layer edit, so it is left to the parent (one \<open>PSS_B\<close> rebuild).  After
+  that swap the whole termination chain is \<open>sorry\<close>-free modulo the two named
+  hypotheses \<open>OKH\<close> and \<open>y3_cofimg\<close>.\<close>
+
+text \<open>\<^bold>\<open>WHY THE CORRESPONDENCE IS NOT AN EQUATION\<close> (r70-y3 refutation, empirical, 397
+  genuine \<open>ST\<^bsub>PS\<^esub>\<close> hosts via \<open>python/_r15_vx_lib.py\<close>).  For \<open>EQ := (\<exists>k. Trans (M[n])
+  = operB (Trans M) (numBT k))\<close>: cond (I) 332/332, cond (VI) 132/132, cond (III)
+  72/196 — and the 72 successes are EXACTLY the hosts with \<open>dom (Trans M) = T\<^sub>u\<close>;
+  cond (IV) 0/4, cond (V) 0/70.  \<open>\<le>\<close> holds 100%.  Widening the fseq argument from
+  numerals to ARBITRARY \<open>D\<^sub>\<omega>\<close>-free \<open>z\<close> adds ZERO equalities, and every failing host
+  has \<open>dom (Trans M) = \<nat>\<close>, whose fseq children ARE exactly the numerals.  Minimal
+  witness \<open>M = (0,0)(1,1)(2,1)\<close>, \<open>n = 2\<close> (condIII): \<open>Trans (M[2])\<close> lies STRICTLY
+  between two consecutive members of the fundamental sequence of \<open>Trans M\<close> — it is a
+  grand-child (reached at fseq-depth 3), not a child.  Hence (W2)/(W3) alone cannot
+  see the PSS step, and the \<open>\<le>\<close> must be absorbed by a cofinality property — which is
+  precisely what \<open>y3_cofimg\<close> is.  This is consistent with the proven exchange slots:
+  @{thm [source] npx_exchIII_slot_uncond}, @{thm [source] dpx_exchIV_slot_uncond},
+  @{thm [source] dpx_exchVI_slot_uncond} are \<open>leBT\<close>-only, and
+  @{thm [source] c613x_condVI_exch_adm} is even a STRICT \<open><\<close>.\<close>
+
+(* ===== end r70 y3 audit/refutation notes ===== *)
+
 end
