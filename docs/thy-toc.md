@@ -1641,4 +1641,42 @@ Format: `line<TAB>kind<TAB>text`. Regenerate after every C->B fold.
 
 ## layerC/pss_scratch.thy
 
+16	banner	r54 od4: the OTpred residuals {DEEPOT, NOBR}.
+17	banner	Brick A: the right-spine un-insertion relation od4_R and
+18	banner	its OT-algebra (order transfer via a size argument;
+19	banner	escape-set shrinking; isOT preservation).  STEP-0 r54
+20	banner	validation: T-checks 2232/2232, U-checks 1872/1872,
+21	banner	W-checks 140/140, plus 1882/1882 genuine deepened ST_PS
+22	banner	instances (od4_step0.py).
+25	section	r54-od4 --- \<open>OTpred\<close> residuals: spine un-insertion (prefix \<open>od4_\<close>)
+48	subsection	Size measure and the escape-size bound
+96	subsection	\<open>od4_R\<close> is a strict-order step
+115	subsection	The ORDER-TRANSFER lemma: \<open>y < b\<close> and \<open>od4_sz y < od4_sz a
+246	subsection	Escape-set shrinking across an un-insertion step
+302	subsection	\<open>descP\<close> under a smaller snoc, and the site \<open>G\<close>-transfer
+357	subsection	MAIN: \<open>od4_R\<close> preserves \<open>isOT\<close> backwards
+403	banner	end r54-od4 Brick A (un-insertion OT algebra)
+405	subsection	Brick B: lifting \<open>od4_R
+446	banner	end r54-od4 Brick B (scb context lifting)
+449	banner	r55 od4 part 2: closing the OTpred residuals.
+450	banner	Brick C0: the condVI+nonadm c1 shape (the ONLY branch
+451	banner	needing structural knowledge of t2).
+452	banner	Brick C : the surgery-site un-insertion od4_R t2 body2
+453	banner	across ALL transC2 branches.
+454	banner	Brick D : MASTER od4_R (Trans (Pred M)) (Trans M).
+455	banner	Brick E : the mono OTpred step, free of Br/cond hypotheses.
+456	banner	Brick F : DEEPOT + NOBR verbatim, OTpred slot residual-free,
+457	banner	census v4.  r55 STEP-0 validation (od4_r55_check.py):
+458	banner	MASTER 0-fail and SITE 0-fail on 550 brute reduced-mono
+459	banner	hosts + 654 genuine ST_PS hosts (all condition classes,
+460	banner	Br=[] and Br<>[]); OT preservation 0-fail; condVI t2
+461	banner	shapes: adm -> 0_B (136/136), nadm -> single trivial
+462	banner	D_u 0 with u < M1j1 (21/21).
+465	section	r55-od4 part 2 --- \<open>OTpred\<close> closed: site, master, \<open>DEEPOT\<close>/\<open>NOBR\<close>
+467	subsection	Brick C0: the condition-(VI) non-admissible \<open>c\<^sub>1\<close> shape
+623	subsection	Brick C: the surgery site is an un-insertion, in EVERY branch
+753	subsection	Brick D: MASTER --- \<open>Trans (Pred M)\<close> is an un-insertion of \<open>Trans M\<close>
+794	subsection	Brick E: the mono \<open>OTpred\<close> step --- NO branch/condition hypotheses
+842	subsection	Brick F: \<open>DEEPOT\<close> and \<open>NOBR\<close> CLOSED; the \<open>OTpred\<close> slot residual-free
+909	banner	end r55-od4 part 2 (OTpred CLOSED: DEEPOT + NOBR discharged)
 
