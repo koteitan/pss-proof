@@ -1724,4 +1724,19 @@ Format: `line<TAB>kind<TAB>text`. Regenerate after every C->B fold.
 2399	subsection	The full-depth OT transport reduction (condV-style, at head \<open>e\<^sub>3\<close>)
 2530	subsection	Host-only discharge of the mnform package (\<open>d1/d2/d3/HB\<close> residual)
 2643	subsection	Surgery \<open>\<rightarrow>\<close> nested \<open>+\<^sub>B\<close>: the \<open>d4vx_ins\<close> hole is a CLEAN body substitution
+2730	banner	r58 OTint: ltJ-rethread census oi8_ + OTA1 reduced to A0OT (front A) + IVADMEQ NEWOT engine (front B)
+2735	banner	r58 ltJ-THREADED census chain (prefix oi8_): the census
+2736	banner	demands OTA1/SETLE1 only UNDER ltJ (s84x_jm3 P<transJm1 P).
+2737	banner	condIII always has ltJ; condIV-not-admeq derives it via
+2738	banner	cnv_condIV_ltJ; condIV-admeq->IVADMEQ; no-parent->IVNP.
+2739	banner	Verbatim copies of oi5_OTint_IIIIV_hp/condIII/condIV with
+2740	banner	the ltJ premise added to OTA1/SETLE1 and passed at the two
+2741	banner	application sites; then a single oi8_termination_census.
+3110	subsection	The ltJ-threaded master census, modulo \<open>{OTA1_ltJ, SETLE1_ltJ, IVADMEQ, FINRC}\<close>
+3173	banner	r58 OTA1_ltJ assembly (front A): reduce the ltJ-guarded
+3174	banner	census assumption OTA1_ltJ to the two genuinely-hard
+3175	banner	bricks {nub, tri0} via ot1_OTA1_from_bricks.  Everything
+3176	banner	else (the flat forms, the donor-OT readoff via
+3177	banner	m_8_7_OT_scb_recursive on operB(numBT 1/2), the base
+3178	banner	orders) is discharged from oi5_IIIIV_pkg + oi5_regime.
 
