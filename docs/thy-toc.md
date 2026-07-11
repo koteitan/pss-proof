@@ -1747,4 +1747,10 @@ Format: `line<TAB>kind<TAB>text`. Regenerate after every C->B fold.
 5241	banner	r61 FINRC closure attempt (prefix ot_finRc_):  the condII
 5242	banner	finiteness residual tvx_finRc IS the A9 nth-artifact in
 5243	banner	fin-set form.  DETERMINATION + the true bounded content.
+5316	banner	r62: SETLE1 sec7.4 sub-bricks ox7_ (align3-track+leBT-hole; head-bound(ii) REFUTED, needs RightNodes>=v1) + FINRC A9 root=LastStep_def; consumer bodies ot_finRc_LastStep_* (no fin)
+5326	subsection	\<open>ox7_scbext_leBT_hole
+5360	subsection	\<open>ox7_align3_track
+5439	banner	r62 FINRC de-risk (sub-task (4)): the CONSUMER-SIDE of the
+5440	banner	A9 fin-form fix, ready to plug in once LastStep_def's Min
+5441	banner	binder carries the  J < Lng (Br M)  guard.
 

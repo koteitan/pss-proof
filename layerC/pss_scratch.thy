@@ -5312,4 +5312,200 @@ proof -
   thus ?thesis by (simp add: tvx_finRc_def)
 qed
 
+
+(* ===== r62: SETLE1 sec7.4 sub-bricks ox7_ (align3-track+leBT-hole; head-bound(ii) REFUTED, needs RightNodes>=v1) + FINRC A9 root=LastStep_def; consumer bodies ot_finRc_LastStep_* (no fin) ===== *)
+
+
+(* ===================================================================== *)
+(* r62 SETLE1_ltJ sec7.4-head-bound front (prefix ox7_):                  *)
+(*   BRICK (iii) -- the LOCALIZED-HOLE le-lex congruence, and a targeted  *)
+(*   empirical NOTE recording that the r61 head-bound sub-brick (ii) as   *)
+(*   literally posed is REFUTED (see the census note above the lemma).    *)
+(* ===================================================================== *)
+
+subsection \<open>\<open>ox7_scbext_leBT_hole\<close>: le-lex congruence at a shared right-spine
+  hole (le-version of @{thm [source] scbext_lessBT})\<close>
+
+text \<open>@{text ox7_scbext_leBT_hole}: if two trees \<open>t\<close>, \<open>t'\<close> share the same scb
+  wrapper \<open>(s, b)\<close> (\<open>b\<close> all-\<open>RP\<close>) and differ only at a same-head hole principal
+  \<open>D\<^bsub>w\<^esub> a\<^sub>1\<close> resp. \<open>D\<^bsub>w\<^esub> a\<^sub>2\<close>, then \<open>a\<^sub>1 \<le> a\<^sub>2 \<Longrightarrow> t \<le> t'\<close>.  The strict half is
+  @{thm [source] scbext_lessBT} at the hole \<open>DB w a\<^sub>1 < DB w a\<^sub>2\<close> (from
+  \<open>a\<^sub>1 < a\<^sub>2\<close>); the equality half is @{thm [source] m_7_flatBT_inj}.  This is the
+  reusable localized-hole lex step (BRICK (iii) of the r62 sec7.4 front): the
+  order of the two whole trees is decided by the order of the hole bodies when
+  the hole sits at the shared deepest-right position and the closing context is
+  all-\<open>RP\<close>.\<close>
+
+lemma ox7_scbext_leBT_hole:
+  fixes t t' :: BT and s b :: "Sym list" and w :: enat and a1 a2 :: BT
+  assumes fa: "flatBT t  = s @ flatBP (DB w a1) @ b"
+    and fb: "flatBT t' = s @ flatBP (DB w a2) @ b"
+    and bRP: "\<forall>x \<in> set b. x = RP"
+    and le: "leBT a1 a2"
+  shows "leBT t t'"
+proof (cases "a1 = a2")
+  case True
+  have "flatBT t = flatBT t'" using fa fb True by simp
+  hence "t = t'" by (rule m_7_flatBT_inj)
+  thus ?thesis by simp
+next
+  case False
+  hence "lessBT a1 a2" using le by blast
+  hence "lessBP (DB w a1) (DB w a2)" by simp
+  hence "lessBT t t'" by (rule scbext_lessBT[OF fa fb bRP])
+  thus ?thesis by blast
+qed
+
+
+subsection \<open>\<open>ox7_align3_track\<close>: strengthened right-spine alignment tracking the
+  descended context \<open>(sc, bc)\<close> as a suffix of \<open>s\<close> / prefix of \<open>b\<close>\<close>
+
+text \<open>@{text ox7_align3_track}: the strengthened form of
+  @{thm [source] otx2_align3} (BRICK (i) of the r62 sec7.4 front).  Identical
+  case split, but the deeper-level branch additionally exposes
+  \<open>\<exists>pre. s = pre \<frown> sc\<close> and \<open>\<exists>post. b = bc \<frown> post\<close>, i.e. the descended context
+  \<open>(sc, bc)\<close> is pinned as a \<^emph>\<open>suffix of the accumulated \<open>s\<close>\<close> and a \<^emph>\<open>prefix of
+  \<open>b\<close>\<close>.  This is derived POST-HOC from @{thm [source] otx2_align3}'s output by a
+  single flat cancellation: with \<open>t\<^sub>1 = Trm (qs \<frown> [D\<^bsub>w\<^esub> lb\<^sub>1])\<close> and
+  \<open>flat lb\<^sub>1 = sc \<frown> flat cp\<^sub>1 \<frown> bc\<close>, computing \<open>flat t\<^sub>1\<close> via
+  @{thm [source] flatBT_multi_last} gives
+  \<open>flat t\<^sub>1 = (PRE \<frown> D\<^sub>w \<frown> sc) \<frown> flat cp\<^sub>1 \<frown> (bc \<frown> POST)\<close> with \<open>POST\<close> all-\<open>RP\<close>;
+  @{thm [source] m_7_2_scb_unique_sb} against \<open>flat t\<^sub>1 = s \<frown> flat cp\<^sub>1 \<frown> b\<close>
+  forces \<open>s = PRE \<frown> D\<^sub>w \<frown> sc\<close> and \<open>b = bc \<frown> POST\<close>.  Only \<open>cp\<^sub>1\<close> needs to be a
+  principal-term string (\<open>isPTB_str\<close>); the shared \<open>cp\<^sub>2, cp\<^sub>3\<close> do not.\<close>
+
+lemma ox7_align3_track:
+  assumes e1: "flatBT t1 = s @ flatBP cp1 @ b"
+    and e2: "flatBT t2 = s @ flatBP cp2 @ b"
+    and e3: "flatBT t3 = s @ flatBP cp3 @ b"
+    and bR: "\<forall>x \<in> set b. x = RP"
+    and pc1: "isPTB_str (flatBP cp1)"
+  shows "(\<exists>qs. t1 = Trm (qs @ [cp1]) \<and> t2 = Trm (qs @ [cp2]) \<and> t3 = Trm (qs @ [cp3]))
+       \<or> (\<exists>qs w lb1 lb2 lb3 sc bc.
+            t1 = Trm (qs @ [DB w lb1]) \<and> t2 = Trm (qs @ [DB w lb2])
+          \<and> t3 = Trm (qs @ [DB w lb3])
+          \<and> flatBT lb1 = sc @ flatBP cp1 @ bc \<and> flatBT lb2 = sc @ flatBP cp2 @ bc
+          \<and> flatBT lb3 = sc @ flatBP cp3 @ bc \<and> (\<forall>x \<in> set bc. x = RP)
+          \<and> (\<exists>pre. s = pre @ sc) \<and> (\<exists>post. b = bc @ post))"
+proof -
+  from otx2_align3[OF e1 e2 e3 bR] show ?thesis
+  proof (elim disjE exE conjE)
+    fix qs
+    assume "t1 = Trm (qs @ [cp1])" and "t2 = Trm (qs @ [cp2])"
+      and "t3 = Trm (qs @ [cp3])"
+    thus ?thesis by blast
+  next
+    fix qs w lb1 lb2 lb3 sc bc
+    assume TA: "t1 = Trm (qs @ [DB w lb1])" and TB: "t2 = Trm (qs @ [DB w lb2])"
+      and TC: "t3 = Trm (qs @ [DB w lb3])"
+      and F1: "flatBT lb1 = sc @ flatBP cp1 @ bc"
+      and F2: "flatBT lb2 = sc @ flatBP cp2 @ bc"
+      and F3: "flatBT lb3 = sc @ flatBP cp3 @ bc"
+      and BC: "\<forall>x \<in> set bc. x = RP"
+    \<comment> \<open>snoc-flat of \<open>t\<^sub>1\<close>: \<open>flat t\<^sub>1 = PRE \<frown> D\<^sub>w \<frown> flat lb\<^sub>1 \<frown> POST\<close>, \<open>POST\<close> all-\<open>RP\<close>\<close>
+    obtain PRE POST where
+        fdec: "flatBT t1 = PRE @ Dsym w # flatBT lb1 @ POST"
+      and postRP: "\<forall>x \<in> set POST. x = RP"
+    proof (cases "qs = []")
+      case True
+      have "flatBT t1 = Dsym w # flatBT lb1" using TA True by simp
+      thus ?thesis using that[of "[]" "[]"] by simp
+    next
+      case False
+      have "flatBT t1 = Wpre qs @ flatBP (DB w lb1) @ [RP]"
+        using TA flatBT_multi_last[OF False, of "DB w lb1"] by simp
+      hence "flatBT t1 = Wpre qs @ Dsym w # flatBT lb1 @ [RP]" by simp
+      thus ?thesis using that[of "Wpre qs" "[RP]"] by simp
+    qed
+    \<comment> \<open>rewrite as an scb around \<open>cp\<^sub>1\<close> and pin \<open>(s, b)\<close> by uniqueness\<close>
+    have fT1: "flatBT t1 = (PRE @ Dsym w # sc) @ flatBP cp1 @ (bc @ POST)"
+      using fdec F1 by simp
+    have bcPOST_RP: "\<forall>x \<in> set (bc @ POST). x = RP" using BC postRP by auto
+    have d_new: "scb_decomp t1 (PRE @ Dsym w # sc) (flatBP cp1) (bc @ POST)"
+      unfolding scb_decomp_def using fT1 pc1 bcPOST_RP by simp
+    have d_old: "scb_decomp t1 s (flatBP cp1) b"
+      unfolding scb_decomp_def using e1 pc1 bR by simp
+    have t1ne: "t1 \<noteq> Trm []" using TA by simp
+    have pin: "s = PRE @ Dsym w # sc \<and> b = bc @ POST"
+      by (rule m_7_2_scb_unique_sb[OF d_old d_new t1ne])
+    have ssuf: "\<exists>pre. s = pre @ sc" using pin by (metis append.assoc append_Cons append_Nil)
+    have bpre: "\<exists>post. b = bc @ post" using pin by blast
+    from TA TB TC F1 F2 F3 BC ssuf bpre show ?thesis by blast
+  qed
+qed
+
+
+(* ===================================================================== *)
+(* ===== r62 FINRC de-risk (sub-task (4)): the CONSUMER-SIDE of the   === *)
+(* =====   A9 fin-form fix, ready to plug in once LastStep_def's Min  === *)
+(* =====   binder carries the  J < Lng (Br M)  guard.                 === *)
+(* ===================================================================== *)
+
+text \<open>\<^bold>\<open>Where \<open>fin\<close> is really consumed, and why bounded finiteness is the fix.\<close>
+  Tracing the \<open>fin\<close> hypothesis of @{thm [source] hqx_condIIIV_of_DT} through
+  @{thm [source] vg3x_VE2} / @{thm [source] vgx_condIIIV_of_VE}, it is passed to
+  @{thm [source] vgx_LastStep_lt_of_guard} and bottoms out at
+  @{thm [source] vgx_LastStep_lt_Lng_Br} (\<open>pss_wip\<close>), whose \<^emph>\<open>only\<close> use of
+  finiteness is one step
+  \[ \<open>Min ?S \<le> J\<^sub>1\<close> \quad\text{by}\quad @{thm [source] Min_le}, \]
+  giving \<open>LastStep M < Lng (Br M)\<close>.  Now @{thm [source] LastStep_def} applies
+  \<open>Min\<close> to the \<^bold>\<open>unbounded\<close> binder \<open>?S\<close>, and an infinite-set \<open>Min\<close> is
+  HOL-unspecified, so \<^bold>\<open>bounded finiteness cannot bound this \<open>Min\<close>\<close>: merely
+  threading a \<open>J < Lng\<close> guard through the \<open>fin\<close> hypotheses (leaving
+  @{thm [source] LastStep_def} unbounded) will \<^emph>\<open>fail\<close> here.  The genuine A9 fix
+  is at the ROOT: guard the \<open>Min\<close> binder of @{thm [source] LastStep_def} with
+  \<open>J < Lng (Br M)\<close> (exactly correction A9, already noted in that definition's own
+  comment).  Once that is done the two bricks below show the bound
+  \<open>LastStep M < Lng (Br M)\<close> holds with \<^bold>\<open>NO finiteness hypothesis at all\<close> --- so
+  the entire \<open>fin\<close>/\<open>FIN\<close>/\<open>FINr\<close>/\<open>FINRC\<close> cascade becomes \<^emph>\<open>vacuous\<close> (droppable),
+  not merely guarded, and @{term tvx_finRc}/@{thm [source] tvx_finRc_def} can be
+  deleted outright.\<close>
+
+lemma ot_finRc_LastStep_bounded_lt:
+  \<comment> \<open>the post-correction body of @{thm [source] vgx_LastStep_lt_Lng_Br}, with the
+      \<open>fin\<close> premise ELIMINATED: the guarded else-branch \<open>Min\<close> is unconditionally
+      in range.\<close>
+  fixes M :: pairseq
+  assumes Brne: "Br M \<noteq> []"
+    and gt: "entry (Br M ! (Lng (Br M) - 1)) 1 0 < entry (Br M ! (Lng (Br M) - 1)) 0 0"
+  shows "Min {J. J < Lng (Br M)
+                 \<and> entry (Br M ! (Lng (Br M) - 1)) 0 0 = entry (Br M ! J) 0 0
+                 \<and> entry (Br M ! J) 1 0 < entry (Br M ! J) 0 0}
+         < Lng (Br M)"
+proof -
+  let ?J1 = "Lng (Br M) - 1"
+  let ?Sb = "{J. J < Lng (Br M)
+                 \<and> entry (Br M ! ?J1) 0 0 = entry (Br M ! J) 0 0
+                 \<and> entry (Br M ! J) 1 0 < entry (Br M ! J) 0 0}"
+  have finSb: "finite ?Sb" by (rule finite_subset[of _ "{..< Lng (Br M)}"]) auto
+  have J1lt: "?J1 < Lng (Br M)" using Brne by (cases "Br M") auto
+  have mem: "?J1 \<in> ?Sb" using gt J1lt by simp
+  have "Min ?Sb \<le> ?J1" using finSb mem by (rule Min_le)
+  thus ?thesis using J1lt by simp
+qed
+
+lemma ot_finRc_LastStep_guard_bounded_lt:
+  \<comment> \<open>the post-correction drop-in for @{thm [source] vgx_LastStep_lt_of_guard}:
+      from the paper guard (row-1 \<open><\<close> row-0 at the last first node) alone, the
+      guarded-\<open>Min\<close> \<open>LastStep\<close> is in range --- \<^bold>\<open>no \<open>fin\<close>\<close>.\<close>
+  fixes M :: pairseq
+  assumes MP: "M \<in> PT_PS" and Brne: "Br M \<noteq> []"
+    and guard: "entry M 1 (FirstNodes M ! (Lng (Br M) - 1))
+                  < entry M 0 (FirstNodes M ! (Lng (Br M) - 1))"
+  shows "Min {J. J < Lng (Br M)
+                 \<and> entry (Br M ! (Lng (Br M) - 1)) 0 0 = entry (Br M ! J) 0 0
+                 \<and> entry (Br M ! J) 1 0 < entry (Br M ! J) 0 0}
+         < Lng (Br M)"
+proof -
+  have h0: "entry (Br M ! (Lng (Br M) - 1)) 0 0
+              = entry M 0 (FirstNodes M ! (Lng (Br M) - 1))"
+    by (rule vgx_Br_last_head[OF MP Brne])
+  have h1: "entry (Br M ! (Lng (Br M) - 1)) 1 0
+              = entry M 1 (FirstNodes M ! (Lng (Br M) - 1))"
+    by (rule vgx_Br_last_head[OF MP Brne])
+  have gt: "entry (Br M ! (Lng (Br M) - 1)) 1 0 < entry (Br M ! (Lng (Br M) - 1)) 0 0"
+    using guard h0 h1 by simp
+  show ?thesis by (rule ot_finRc_LastStep_bounded_lt[OF Brne gt])
+qed
+
 end
