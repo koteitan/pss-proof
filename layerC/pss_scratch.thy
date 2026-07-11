@@ -6665,4 +6665,396 @@ text \<open>\<^bold>\<open>Status after r65.\<close>  The residual for [Buc1] Le
   a full formalization of the exhibit-move transfinite induction is estimated at
   \<open>\<ge> 5\<close> dedicated rounds (or importing an external well-foundedness of the
   Buchholz \<open>\<psi>\<close>-collapse).\<close>
+
+
+(* ===================================================================== *)
+(* ===== r66 (OPUS 4.8): SETLE1_ltJ position-0 first-difference close === *)
+(* =====                                                               === *)
+(* ===== r65 localized the census SETLE1_ltJ residual (via             === *)
+(* ===== ox6_SETLE1_reduce_restr) to a spineH: leBT t' X1 for every    === *)
+(* ===== matched-hole right-spine ancestor body t' of A1, with matched === *)
+(* ===== tx' in GBT u X1 sharing the hole (sc,bc).  The r65 next-idea   === *)
+(* ===== closes spineH at position 0: t' and X1 differ at the FIRST     === *)
+(* ===== principal head, and bpHeadV(t') < bpHeadV(X1) DECIDES          === *)
+(* ===== lessBT t' X1 outright (dictionary order, [Buc1] (<1)-(<3)).    === *)
+(* ===== This front supplies the two reusable position-0 bricks         === *)
+(* ===== (ox7_headlt_lessBT, ox7_bpHeadV_share) and threads the census  === *)
+(* ===== SETLE1_ltJ slot down to the SINGLE clean strict-head residual  === *)
+(* ===== HEAD: bpHeadV(t') < bpHeadV(X1) (ot7_SETLE1_ltJ_of_head,        === *)
+(* ===== oi8_census_SETLE_of_head).  The remaining truth of HEAD is the  === *)
+(* ===== census right-spine-terminal geometry (bpHeadV(t')=ub), a deep   === *)
+(* ===== Trans-image fact recorded in the status text at the end.        === *)
+(* ===================================================================== *)
+
+subsection \<open>\<open>ox7_headlt_lessBT\<close>: the position-0 first-difference --- a strictly
+  smaller leftmost principal head decides \<open>lessBT\<close>\<close>
+
+text \<open>@{text ox7_headlt_lessBT}: the dictionary order @{const lessBT}
+  (@{thm [source] lessBT.simps}) is decided at the FIRST principal: if the
+  leftmost principal head of \<open>t\<close> is strictly below that of \<open>t'\<close>
+  (\<open>bpHeadV t < bpHeadV t'\<close>) and both are nonzero, then \<open>lessBT t t'\<close>.  This is
+  the exact position-0 head-side step the census \<open>spineH\<close> assembly consumes: it
+  turns a strict outer-head separation into the whole-tree order, no matter what
+  the deeper bodies are (unlike the shared-hole congruence
+  @{thm [source] ox7_scbext_leBT_hole}, which needs the hole bodies ordered).\<close>
+
+lemma ox7_headlt_lessBT:
+  fixes t t' :: BT
+  assumes lt: "bpHeadV t < bpHeadV t'" and tne: "t \<noteq> 0\<^sub>B" and t'ne: "t' \<noteq> 0\<^sub>B"
+  shows "lessBT t t'"
+proof -
+  obtain ps where tp: "t = Trm ps" by (cases t)
+  obtain qs where t'p: "t' = Trm qs" by (cases t')
+  have psne: "ps \<noteq> []" using tne tp by auto
+  have qsne: "qs \<noteq> []" using t'ne t'p by auto
+  obtain p ps' where p: "ps = p # ps'" using psne by (cases ps) auto
+  obtain q qs' where q: "qs = q # qs'" using qsne by (cases qs) auto
+  obtain u1 a1 where pu: "p = DB u1 a1" by (cases p)
+  obtain u2 a2 where qu: "q = DB u2 a2" by (cases q)
+  have hu1: "bpHeadV t = u1" using tp p pu by simp
+  have hu2: "bpHeadV t' = u2" using t'p q qu by simp
+  have "u1 < u2" using lt hu1 hu2 by simp
+  hence "lessBP (DB u1 a1) (DB u2 a2)" by simp
+  hence "lessBT (Trm (DB u1 a1 # ps')) (Trm (DB u2 a2 # qs'))" by simp
+  thus ?thesis using tp t'p p q pu qu by simp
+qed
+
+
+subsection \<open>\<open>ox7_bpHeadV_share\<close>: two trees whose flats share a prefix up to and
+  including their first \<open>D\<close>-symbol have equal \<open>bpHeadV\<close>\<close>
+
+text \<open>@{text ox7_bpHeadV_share}: if \<open>flat t\<close> and \<open>flat t'\<close> agree on a prefix
+  \<open>sc\<close> and then both continue with the SAME letter \<open>D\<^sub>w\<close>, they have equal leftmost
+  principal head.  Consequence of @{thm [source] bpHeadV_find_Dsym} (the first
+  \<open>D\<close>-letter of a flat string carries \<open>bpHeadV\<close>) and
+  @{thm [source] find_append_local}: the first \<open>D\<close>-letter of \<open>sc \<frown> D\<^sub>w \<frown> r\<close>
+  lies in \<open>sc \<frown> [D\<^sub>w]\<close>, hence is independent of the tail \<open>r\<close>.  In the census
+  \<open>spineH\<close> this is applied to the matched ancestor bodies \<open>t' = lbA\<close>,
+  \<open>tx' = lbX\<close> (shared \<open>sc\<close>, hole head \<open>ub\<close>): they have the SAME outer head.\<close>
+
+lemma ox7_bpHeadV_share:
+  fixes t t' :: BT and sc r1 r2 :: "Sym list" and w :: enat
+  assumes fa: "flatBT t  = sc @ Dsym w # r1"
+    and fb: "flatBT t' = sc @ Dsym w # r2"
+  shows "bpHeadV t = bpHeadV t'"
+proof -
+  let ?P = "\<lambda>x. \<exists>v. x = Dsym v"
+  have tne: "t \<noteq> 0\<^sub>B"
+  proof
+    assume "t = 0\<^sub>B"
+    hence "flatBT t = [Zsym]" by simp
+    with fa show False by (cases sc) auto
+  qed
+  have t'ne: "t' \<noteq> 0\<^sub>B"
+  proof
+    assume "t' = 0\<^sub>B"
+    hence "flatBT t' = [Zsym]" by simp
+    with fb show False by (cases sc) auto
+  qed
+  have Pw: "?P (Dsym w)" by blast
+  have shared: "find ?P (sc @ Dsym w # r1) = find ?P (sc @ Dsym w # r2)"
+    by (simp add: find_append_local) (cases "find ?P sc"; simp add: Pw)
+  have "Some (Dsym (bpHeadV t)) = Some (Dsym (bpHeadV t'))"
+    using bpHeadV_find_Dsym[OF tne] bpHeadV_find_Dsym[OF t'ne] fa fb shared by simp
+  thus ?thesis by simp
+qed
+
+
+subsection \<open>\<open>ot7_SETLE1_ltJ_of_head\<close>: the census SETLE1 slot from the SINGLE
+  strict-head residual \<open>HEAD\<close>\<close>
+
+text \<open>@{text ot7_SETLE1_ltJ_of_head}: the census \<open>SETLE1_ltJ\<close> slot (verbatim the
+  \<open>SETLE1\<close> assumption of @{thm [source] oi8_census_final_ivadmeq}) is discharged
+  from the SINGLE clean residual \<open>HEAD\<close>: every matched-hole right-spine ancestor
+  body \<open>t'\<close> of \<open>A\<^sub>1\<close> has strictly smaller leftmost principal head than \<open>X\<^sub>1\<close>.
+  From \<open>HEAD\<close> the engine input \<open>spineH\<close> (@{thm [source] ox6_SETLE1_reduce_restr})
+  follows position-0 by @{thm [source] ox7_headlt_lessBT}; the tree-nonzero side
+  conditions are read off the flats (\<open>t'\<close> has the hole letter \<open>D\<^bsub>ub\<^esub>\<close>; \<open>X\<^sub>1\<close>'s
+  flat is the pkg surgery string).  This collapses ALL of the setle / \<open>G\<^sub>B\<close> /
+  right-spine engine scaffolding to the one strict-head fact \<open>HEAD\<close>.\<close>
+
+lemma ot7_SETLE1_ltJ_of_head:
+  fixes N :: pairseq and s0 b0 :: "Sym list" and u :: enat
+  assumes NST: "N \<in> ST_PS" and NPT: "N \<in> PT_PS"
+    and hp: "hasParent N 1 (Lng N - 1)"
+    and j1gt: "1 < Lng N - 1"
+    and branch: "transCondIII N \<or> transCondIV N"
+    and ltJ: "s84x_jm3 N < transJm1 N"
+    and inner: "scb_decomp (bpHeadT (Trans (s84x_N N))) s0
+                 (flatBT (Dpt (enat (entry N 1 (Lng N - 1))) 0\<^sub>B)) b0"
+    and HEAD: "\<forall>t' tx' sc bc.
+          flatBT t' = sc @ flatBP (DB (enat (entry N 1 (Lng N - 1) - 1))
+                                      (bpHeadT (Trans (Pred (s84x_N N))))) @ bc
+          \<longrightarrow> flatBT tx' = sc @ flatBP (DB (enat (entry N 1 (Lng N - 1) - 1))
+                                      (Dpt (enat (entry N 1 (Lng N - 1) - 1)) 0\<^sub>B)) @ bc
+          \<longrightarrow> (\<forall>x\<in>set bc. x = RP)
+          \<longrightarrow> tx' \<in> GBT u (d4vx_ins s0 (entry N 1 (Lng N - 1) - 1) b0
+                            (Dpt (enat (entry N 1 (Lng N - 1) - 1)) 0\<^sub>B))
+          \<longrightarrow> size t' < size (d4vx_ins s0 (entry N 1 (Lng N - 1) - 1) b0
+                                (bpHeadT (Trans (Pred (s84x_N N)))))
+          \<longrightarrow> bpHeadV t' < bpHeadV (d4vx_ins s0 (entry N 1 (Lng N - 1) - 1) b0
+                                     (Dpt (enat (entry N 1 (Lng N - 1) - 1)) 0\<^sub>B))"
+  shows "b1x_setle
+           (GBT u (d4vx_ins s0 (entry N 1 (Lng N - 1) - 1) b0
+                     (bpHeadT (Trans (Pred (s84x_N N))))))
+           (insert (d4vx_ins s0 (entry N 1 (Lng N - 1) - 1) b0
+                      (Dpt (enat (entry N 1 (Lng N - 1) - 1)) 0\<^sub>B))
+                   (GBT u (d4vx_ins s0 (entry N 1 (Lng N - 1) - 1) b0
+                             (Dpt (enat (entry N 1 (Lng N - 1) - 1)) 0\<^sub>B))))"
+proof -
+  let ?v1 = "entry N 1 (Lng N - 1)"
+  let ?ub = "entry N 1 (Lng N - 1) - 1"
+  let ?A0 = "bpHeadT (Trans (Pred (s84x_N N)))"
+  let ?X0 = "Dpt (enat ?ub) 0\<^sub>B"
+  let ?body = "bpHeadT (Trans (s84x_N N))"
+  let ?X1 = "d4vx_ins s0 ?ub b0 ?X0"
+  let ?A1 = "d4vx_ins s0 ?ub b0 ?A0"
+  \<comment> \<open>the pkg wrapper facts (pin \<open>(s\<^sub>0,b\<^sub>0)\<close>, get \<open>b\<^sub>0\<close> all-\<open>RP\<close> and the flat of \<open>X\<^sub>1\<close>)\<close>
+  obtain s0' b0' s1 b1 where
+      b0RP': "\<forall>x \<in> set b0'. x = RP"
+    and inner': "scb_decomp ?body s0' (flatBT (Dpt (enat ?v1) 0\<^sub>B)) b0'"
+    by (rule oi5_IIIIV_pkg[OF NST NPT hp j1gt branch ltJ])
+  have bodyne: "?body \<noteq> Trm []"
+  proof
+    assume z: "?body = Trm []"
+    have "flatBT ?body = s0 @ flatBT (Dpt (enat ?v1) 0\<^sub>B) @ b0"
+      using inner by (simp add: scb_decomp_def)
+    hence "[Zsym] = s0 @ [Dsym (enat ?v1), Zsym] @ b0" using z by simp
+    thus False by (cases s0) auto
+  qed
+  have pin: "s0 = s0' \<and> b0 = b0'"
+    by (rule m_7_2_scb_unique_sb[OF inner inner' bodyne])
+  have b0RP: "\<forall>x \<in> set b0. x = RP" using b0RP' pin by simp
+  have wrap: "flatBT ?body = s0 @ flatBP (DB (enat ?v1) 0\<^sub>B) @ b0"
+    using inner by (simp add: scb_decomp_def)
+  have fX1: "flatBT ?X1 = s0 @ Dsym (enat ?ub) # flatBT ?X0 @ b0"
+    using d4vx_ins_flat[OF wrap b0RP, of ?ub ?X0] by simp
+  have X1ne: "?X1 \<noteq> 0\<^sub>B"
+  proof
+    assume "?X1 = 0\<^sub>B"
+    hence "flatBT ?X1 = [Zsym]" by simp
+    with fX1 show False by (cases s0) auto
+  qed
+  \<comment> \<open>the engine's \<open>spineH\<close>, closed at position 0 by the strict head separation\<close>
+  have spineH: "\<forall>t' tx' sc bc.
+        flatBT t' = sc @ flatBP (DB (enat ?ub) ?A0) @ bc
+        \<longrightarrow> flatBT tx' = sc @ flatBP (DB (enat ?ub) ?X0) @ bc
+        \<longrightarrow> (\<forall>x\<in>set bc. x = RP)
+        \<longrightarrow> tx' \<in> GBT u ?X1
+        \<longrightarrow> size t' < size ?A1
+        \<longrightarrow> leBT t' ?X1"
+  proof (intro allI impI)
+    fix t' tx' sc bc
+    assume fa: "flatBT t' = sc @ flatBP (DB (enat ?ub) ?A0) @ bc"
+      and fb: "flatBT tx' = sc @ flatBP (DB (enat ?ub) ?X0) @ bc"
+      and bcRP: "\<forall>x\<in>set bc. x = RP"
+      and txin: "tx' \<in> GBT u ?X1"
+      and szt: "size t' < size ?A1"
+    have hlt: "bpHeadV t' < bpHeadV ?X1"
+      using HEAD fa fb bcRP txin szt by blast
+    have t'ne: "t' \<noteq> 0\<^sub>B"
+    proof
+      assume "t' = 0\<^sub>B"
+      hence "flatBT t' = [Zsym]" by simp
+      with fa show False by (cases sc) auto
+    qed
+    have "lessBT t' ?X1" by (rule ox7_headlt_lessBT[OF hlt t'ne X1ne])
+    thus "leBT t' ?X1" by blast
+  qed
+  show ?thesis
+    by (rule ox6_SETLE1_reduce_restr[OF NST NPT hp j1gt branch ltJ inner spineH])
+qed
+
+(* ===================================================================== *)
+(* ===== r66 (OPUS 4.8) — buc1 MAJOR REFRAME: transcribe Buchholz's   ===== *)
+(* ===== OWN proof of wf ([1] \<section>2, Lemmas 2.4--2.8), a FORWARD          ===== *)
+(* ===== structural induction on TERM LENGTH (NOT the dead r65         ===== *)
+(* ===== head-level / minimal-bad tower).  Prefix  bwo_  (Buchholz     ===== *)
+(* ===== well-ordering).                                                ===== *)
+(* ===================================================================== *)
+
+section \<open>r66 bwo — Buchholz's own proof of \<open>wf RPrel\<close> ([1] \<section>2, Lemmas 2.4--2.8)\<close>
+
+text \<open>
+  \<^bold>\<open>The reframe.\<close>  r65 certified the head-level / minimal-bad-witness route
+  DEAD (\<open>wcl_upper\<close> can hold only vacuously; the head-\<open>>n\<close> content is provably
+  non-accessible under a bad witness).  Buchholz [1] avoids this entirely: he
+  proves \<open>a \<in> W\<^sub>0\<close> by a FORWARD induction on the LENGTH of the term \<open>a\<close>
+  (Lemma 2.7), with the impredicative content HIDDEN inside the definitions of
+  the derived sets \<open>X\<^bsup>(a)\<^esup>\<close> / \<open>Xbar\<close> / \<open>W\<^sup>*\<close> and their closure lemmas 2.4/2.5/2.6.
+
+  \<^bold>\<open>The correspondence to our machinery\<close> (established this round).  Our target is
+  \<^term>\<open>wf RPrel\<close> (\<open>RPrel\<close> = \<open><\<close> on the \<open>D\<^sub>\<omega>\<close>-free \<open>OT\<close> principals); by
+  \<open>wfs_wf_iff_all_acc\<close> and the tuple bridge \<open>wf RPrel \<longleftrightarrow> wf RTrel\<close> this is
+  ``every \<open>OT\<^bsub>B\<^esub>\<close> term is \<open><\<close>-accessible'' = Buchholz 2.8 (\<open>a \<in> T\<^sub>0 \<Longrightarrow> a \<in> W\<^sub>0\<close>).
+  The \<open>T\<close> / \<open><\<close> / \<open>a[z]\<close> / \<open>dom\<close> / \<open>a+b\<close> of [1] are our \<^typ>\<open>BT\<close> / \<open>lessBT\<close> /
+  \<open>operB\<close> / \<open>domB\<close> / \<open>addBT\<close>; \<open>D\<^sub>v b\<close> is \<open>Dprin v b = Trm [DB v b]\<close>; \<open>W\<^sub>0\<close> is
+  \<^term>\<open>Wellfounded.acc RTrel\<close>.  The five lemmas map as follows:
+
+  \<^item> \<^bold>\<open>2.4(b)\<close>  \<open>a,b \<in> W\<^sub>v \<Longrightarrow> a+b \<in> W\<^sub>v\<close> (the addition / tuple-assembly layer):
+    ALREADY PROVEN as \<open>wfj_tuple_acc\<close> (an \<open>OT\<^bsub>B\<^esub>\<close> term all of whose principal
+    components are \<open>RPrel\<close>-accessible is \<open>RTrel\<close>-accessible).  Aliased below as
+    \<open>bwo_2_4b_addition_closure\<close>.
+  \<^item> \<^bold>\<open>2.7 case \<open>a = D\<^sub>v b\<close>\<close> (principal formation, the \<open>W\<^sub>v\<close>-membership step):
+    ALREADY PROVEN as \<open>wfc_principal_acc_of_body\<close> (body \<open>RTrel\<close>-accessible +
+    accessibility below the head \<open>\<Longrightarrow>\<close> the principal is \<open>RPrel\<close>-accessible).
+    Aliased \<open>bwo_2_7_Dv_formation\<close>.
+  \<^item> \<^bold>\<open>2.7/2.8 head recursion\<close> (\<open>A\<^sub>\<nu>(X)\<subseteq> X \<Longrightarrow> W\<^sub>\<nu>\<subseteq> X\<close> stratified by head):
+    ALREADY PROVEN as \<open>wfc_wf_of_pbody_hyp\<close> — reduces \<^term>\<open>wf RPrel\<close> to
+    ``every \<open>OT\<^bsub>B\<^esub>\<close> principal body is \<open>RTrel\<close>-accessible''.  Aliased
+    \<open>bwo_2_8_head_recursion\<close>.
+  \<^item> \<^bold>\<open>A1/A2\<close> (\<open>A\<^sub>\<nu>(W\<^sub>\<nu>)=W\<^sub>\<nu>\<close>, least-fixpoint induction): our \<^const>\<open>Wellfounded.acc\<close>
+    IS the least fixpoint of ``all predecessors accessible \<open>\<Longrightarrow>\<close> accessible''
+    (\<open>accI\<close> / \<open>acc.induct\<close>), so A1/A2 are free.
+  \<^item> \<^bold>\<open>2.5\<close> (\<open>A\<^sub>\<nu>(X)\<subseteq> X \<Longrightarrow> A\<^sub>\<nu>(Xbar)\<subseteq> Xbar\<close>, the \<open>D\<^sub>\<nu>\<close>-closure crux) and
+    \<^bold>\<open>2.6\<close> (\<open>A\<^sub>\<nu>(W\<^sup>*)\<subseteq> W\<^sup>*\<close>): the GENUINELY REMAINING content.  These build the
+    below-head accessibility that r65 showed is unreachable head-locally; their
+    proofs use the fundamental-sequence operator \<open>operB\<close>/\<open>domB\<close> essentially
+    (2.6 case 4.2 sets \<open>z := D\<^sub>u b[1]\<close>).  Isolated here as the single residual
+    \<open>bwo_Wstar_total\<close>.
+
+  What this round contributes GREEN: the faithful transcription of the four
+  derived-set definitions of [1] p.138 mapped to our term machinery, the three
+  correspondence aliases above, and the main reduction \<open>bwo_2_2_wf\<close> that
+  discharges \<^term>\<open>wf RPrel\<close> from \<open>bwo_Wstar_total\<close> — reusing the proven tuple
+  layer and head recursion, so that the ONLY thing left is Buchholz's
+  \<open>W\<^sup>*\<close>-totality (his 2.6 + the 2.7 length induction).\<close>
+
+subsection \<open>(1) The derived sets of [1] p.138: \<open>A\<^sub>\<nu>(X,a)\<close>, \<open>X\<^bsup>(a)\<^esup>\<close>, \<open>Xbar\<close>, \<open>W\<^sup>*\<close>\<close>
+
+text \<open>\<open>W\<^sub>u\<close>-analog: the terms \<open>z\<close> such that the level-\<open>u\<close> principal \<open>D\<^sub>u z\<close> is
+  \<open>RPrel\<close>-accessible (used inside \<open>A\<^sub>\<nu>\<close>'s \<open>dom(a)=T\<^sub>u\<close> clause and in \<open>W\<^sup>*\<close>).\<close>
+
+definition bwo_Wlev :: "nat \<Rightarrow> BT set" where
+  "bwo_Wlev u = {z. isOT_BT z \<and> dfree_BT z \<and> DB (enat u) z \<in> Wellfounded.acc RPrel}"
+
+text \<open>[1] p.138 (3) the \<open>a\<close>-shift \<open>X\<^bsup>(a)\<^esup> := {y. a+y \<in> X}\<close>.\<close>
+
+definition bwo_shift :: "BT \<Rightarrow> BT set \<Rightarrow> BT set" where
+  "bwo_shift a X = {y. addBT a y \<in> X}"
+
+text \<open>[1] p.138 (4) the \<open>D\<^sub>\<nu>\<close>-closure \<open>Xbar := {y. \<forall>x. x \<in> X \<longrightarrow> x + D\<^sub>\<nu> y \<in> X}\<close>.\<close>
+
+definition bwo_Dclosure :: "enat \<Rightarrow> BT set \<Rightarrow> BT set" where
+  "bwo_Dclosure nv X = {y. \<forall>x. x \<in> X \<longrightarrow> addBT x (Dprin nv y) \<in> X}"
+
+text \<open>[1] p.138 (5) \<open>W\<^sup>* := {x. \<forall>u<\<nu>. D\<^sub>u x \<in> W\<^sub>u}\<close> (here \<open>\<nu> = \<omega>\<close>, so \<open>u\<close>
+  ranges over all finite levels).  A term is in \<open>W\<^sup>*\<close> iff every level-\<open>u\<close>
+  principal over it that is a genuine \<open>OT\<^bsub>B\<^esub>\<close> principal is \<open>RPrel\<close>-accessible.\<close>
+
+definition bwo_Wstar :: "BT set" where
+  "bwo_Wstar = {x. \<forall>u. isOT_BP (DB (enat u) x) \<longrightarrow> dfree_BP (DB (enat u) x)
+                       \<longrightarrow> DB (enat u) x \<in> Wellfounded.acc RPrel}"
+
+text \<open>[1] p.138 (1)(2) the accessibility operator \<open>A\<^sub>\<nu>(X,a)\<close> and \<open>A\<^sub>\<nu>(X) = {x. A\<^sub>\<nu>(X,x)}\<close>,
+  transcribed with our \<open>domB\<close>/\<open>operB\<close>; \<open>a[n] = operB a (numBT n)\<close>, \<open>a[z] = operB a z\<close>,
+  \<open>{0} = {Trm []}\<close>, \<open>\<nat> = NatSet\<close>, \<open>T\<^sub>u = TBv (enat u)\<close>.\<close>
+
+definition bwo_Aop :: "enat \<Rightarrow> BT set \<Rightarrow> BT \<Rightarrow> bool" where
+  "bwo_Aop nv X a \<longleftrightarrow>
+     a = Trm [] \<or>
+     ((domB a = {Trm []} \<or> domB a = NatSet) \<and> (\<forall>n. operB a (numBT n) \<in> X)) \<or>
+     (\<exists>u. enat u < nv \<and> domB a = TBv (enat u) \<and> (\<forall>z \<in> bwo_Wlev u. operB a z \<in> X))"
+
+subsection \<open>(2) Correspondence aliases: Buchholz 2.4(b) / 2.7-\<open>D\<^sub>v\<close> / 2.8 = proven code\<close>
+
+lemmas bwo_2_4b_addition_closure = wfj_tuple_acc
+lemmas bwo_2_7_Dv_formation      = wfc_principal_acc_of_body
+lemmas bwo_2_8_head_recursion    = wfc_wf_of_pbody_hyp
+
+subsection \<open>(3) The single residual and the main reduction \<open>bwo_2_2_wf\<close>\<close>
+
+text \<open>The residual = Buchholz's \<open>W\<^sup>*\<close>-totality (his 2.6 \<open>A\<^sub>\<nu>(W\<^sup>*)\<subseteq> W\<^sup>*\<close> together with
+  the 2.7 length induction give it): every \<open>OT\<^bsub>B\<^esub>\<close> term lies in \<open>W\<^sup>*\<close>.\<close>
+
+definition bwo_Wstar_total :: bool where
+  "bwo_Wstar_total \<longleftrightarrow> (\<forall>t. isOT_BT t \<longrightarrow> dfree_BT t \<longrightarrow> t \<in> bwo_Wstar)"
+
+text \<open>From \<open>W\<^sup>*\<close>-totality, every \<open>OT\<^bsub>B\<^esub>\<close> principal is \<open>RPrel\<close>-accessible (take the
+  principal's own head as the level \<open>u\<close> in the \<open>W\<^sup>*\<close> clause of its body).\<close>
+
+lemma bwo_all_OT_principal_acc_of_Wstar_total:
+  assumes WT: "bwo_Wstar_total"
+    and ot: "isOT_BP p" and df: "dfree_BP p"
+  shows "p \<in> Wellfounded.acc RPrel"
+proof -
+  obtain u d where peq: "p = DB u d" by (cases p) auto
+  have une: "u \<noteq> \<infinity>" using df peq by simp
+  then obtain k where uk: "u = enat k" by (cases u) auto
+  have otd: "isOT_BT d" using ot peq by simp
+  have dfd: "dfree_BT d" using df peq by simp
+  have dW: "d \<in> bwo_Wstar" using WT[unfolded bwo_Wstar_total_def] otd dfd by blast
+  have iotk: "isOT_BP (DB (enat k) d)" using ot peq uk by simp
+  have idfk: "dfree_BP (DB (enat k) d)" using df peq uk by simp
+  have "DB (enat k) d \<in> Wellfounded.acc RPrel"
+    using dW iotk idfk unfolding bwo_Wstar_def by blast
+  then show ?thesis using peq uk by simp
+qed
+
+theorem bwo_2_2_wf:
+  assumes WT: "bwo_Wstar_total"
+  shows "wf RPrel"
+proof (rule bwo_2_8_head_recursion)
+  fix v c
+  assume otp: "isOT_BP (DB v c)" and dfp: "dfree_BP (DB v c)"
+  have otc: "isOT_BT c" using otp by simp
+  have dfc: "dfree_BT c" using dfp by simp
+  obtain rs where ceq: "c = Trm rs" by (cases c) auto
+  have otc': "(\<forall>r \<in> set rs. isOT_BP r) \<and> descP rs" using otc ceq by simp
+  have dfc': "\<forall>r \<in> set rs. dfree_BP r" using dfc ceq by simp
+  have comps: "\<forall>r \<in> set (untrm c). r \<in> Wellfounded.acc RPrel"
+  proof
+    fix r assume rin: "r \<in> set (untrm c)"
+    have rin': "r \<in> set rs" using rin ceq by simp
+    have otr: "isOT_BP r" using otc' rin' by blast
+    have dfr: "dfree_BP r" using dfc' rin' by blast
+    show "r \<in> Wellfounded.acc RPrel"
+      by (rule bwo_all_OT_principal_acc_of_Wstar_total[OF WT otr dfr])
+  qed
+  show "c \<in> Wellfounded.acc RTrel"
+    by (rule bwo_2_4b_addition_closure[OF otc dfc comps])
+qed
+
+text \<open>The converse: the residual is EXACTLY \<^term>\<open>wf RPrel\<close>-strength (no
+  overshoot).  If \<^term>\<open>wf RPrel\<close> then every principal is accessible, so every
+  term is in \<open>W\<^sup>*\<close>.\<close>
+
+lemma bwo_Wstar_total_of_wf:
+  assumes "wf RPrel"
+  shows "bwo_Wstar_total"
+proof (unfold bwo_Wstar_total_def, intro allI impI)
+  fix t assume "isOT_BT t" and "dfree_BT t"
+  have all: "\<forall>p. p \<in> Wellfounded.acc RPrel" using assms wfs_wf_iff_all_acc by blast
+  show "t \<in> bwo_Wstar" unfolding bwo_Wstar_def using all by blast
+qed
+
+theorem bwo_2_2_wf_iff: "bwo_Wstar_total \<longleftrightarrow> wf RPrel"
+  using bwo_2_2_wf bwo_Wstar_total_of_wf by blast
+
+text \<open>\<^bold>\<open>Round 66 status.\<close>  \<^term>\<open>wf RPrel\<close> is now discharged from the single
+  residual \<open>bwo_Wstar_total\<close> via Buchholz's own decomposition — the tuple /
+  addition layer (2.4(b) = \<open>wfj_tuple_acc\<close>) and the head recursion (2.8 =
+  \<open>wfc_wf_of_pbody_hyp\<close>) are both PROVEN, so nothing head-local remains.  The
+  residual \<open>bwo_Wstar_total\<close> is exactly what Buchholz [1] establishes by his
+  Lemma 2.6 (\<open>A\<^sub>\<nu>(W\<^sup>*) \<subseteq> W\<^sup>*\<close>) plus the Lemma 2.7 induction on term length, and it
+  is the RIGHT residual (it sidesteps the r65 head-level wall because its content
+  lives in the fundamental-sequence closure \<open>bwo_Dclosure\<close> / \<open>bwo_Wstar\<close>, not in a
+  head-level transfinite induction).
+
+  \<^bold>\<open>Exact remaining obstruction.\<close>  To prove \<open>bwo_Wstar_total\<close> one transcribes
+  Lemma 2.6 by cases on \<open>domB b\<close> / the shape of \<open>b\<close>:
+  \<^item> cases \<open>b = 0\<close> (\<open>v = 0\<close> / successor / \<open>\<omega>\<close>) and the successor case use only the
+    successor / (W2)(W3) closure — reachable from \<open>wfc_principal_acc_of_body\<close>
+    once the below-head accessibility is threaded;
+  \<^item> case 4.1 (\<open>dom(b)=T\<^sub>u\<close>, \<open>u<v\<close>) is direct;
+  \<^item> case 4.2 (\<open>v \<le> u\<close>) is the crux: it needs \<open>operB\<close> at \<open>z := D\<^sub>u b[1]\<close> with
+    \<open>1 \<in> W\<^sub>u\<close> and \<open>b[1] \<in> W\<^sup>*\<close>, i.e. the fundamental-sequence step-down of [1] \<section>3.
+  The load-bearing missing analytic fact is the fundamental-sequence strict
+  descent \<open>a[n] < a\<close> (currently only the \<^emph>\<open>cited\<close> \<open>buc1_3_2a_fseq_lt\<close>, still a
+  \<open>sorry\<close> in \<open>pss_paper\<close>) together with its cofinality (every \<open>b < a\<close> is \<open>\<le>\<close> some
+  \<open>a[n]\<close>), which turns fundamental-sequence closure into \<open><\<close>-accessibility.
+  Proving 2.6 (esp. 4.2) and threading it through the 2.7 length induction is the
+  multi-round work; \<open>bwo_2_2_wf\<close> guarantees it is the ONLY work.\<close>
+
+(* ===== end r66 bwo block (Buchholz \<section>2 transcription; residual = bwo_Wstar_total) ===== *)
 end
