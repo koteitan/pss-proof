@@ -5293,7 +5293,7 @@ lemma ot_finRc_reduce:
                   \<not> (entry (Br (tvx_Rc K) ! J) 1 0 < entry (Br (tvx_Rc K) ! J) 0 0)"
   shows "tvx_finRc K"
 proof -
-  let ?S = "{J. entry (Br (tvx_Rc K) ! (Lng (Br (tvx_Rc K)) - 1)) 0 0
+  let ?S = "{J. J < Lng (Br (tvx_Rc K)) \<and> entry (Br (tvx_Rc K) ! (Lng (Br (tvx_Rc K)) - 1)) 0 0
                     = entry (Br (tvx_Rc K) ! J) 0 0
                 \<and> entry (Br (tvx_Rc K) ! J) 1 0 < entry (Br (tvx_Rc K) ! J) 0 0}"
   have "?S \<subseteq> {..< Lng (Br (tvx_Rc K))}"
@@ -9116,6 +9116,125 @@ text \<open>\<^bold>\<open>Round-68 status.\<close>  The residual for \<open>wf 
 
 
 (* ===================================================================== *)
+(* ===== r69 FINRC ROOT SURGERY (prefix ot9_): correction A9 fin-form === *)
+(* =====   LastStep_def's Min-binder is now GUARDED by J < Lng (Br M). == *)
+(* =====   Consequence: the whole fin/finM/FINRC cascade is PROVABLE.  == *)
+(* ===================================================================== *)
+
+text \<open>\<^bold>\<open>What changed (the only frozen-definition edit of the campaign).\<close>
+  @{thm [source] LastStep_def} used to apply \<open>Min\<close> to the UNBOUNDED comprehension
+  \<open>{J. (Br M)\<^bsub>J\<^sub>1,0,0\<^esub> = (Br M)\<^bsub>J,0,0\<^esub> \<and> (Br M)\<^bsub>J,1,0\<^esub> < (Br M)\<^bsub>J,0,0\<^esub>}\<close>, whereas the
+  article's \<open>J\<close> is a \<^emph>\<open>branch index\<close> (\<open>0 \<dots> Lng (Br M) - 1\<close>).  Out of range,
+  \<open>Br M ! J\<close> peels to \<open>[] ! (J - Lng (Br M))\<close> --- HOL-unspecified junk --- so the
+  set was not provably finite, \<open>Min\<close> on an infinite set is junk, and every
+  downstream fact had to carry an UNDISCHARGEABLE \<open>finite \<dots>\<close> side condition
+  (\<open>fin\<close>/\<open>finM\<close>/\<open>FINRC\<close>, 129 occurrences).  \<open>LastStep_def\<close> now reads
+  \<open>Min {J. J < Lng (Br M) \<and> \<dots>}\<close> (CORRECTION A9, fin-form), and the same guard was
+  inserted verbatim into every one of those 129 comprehensions in \<open>pss_wip\<close>.
+
+  \<^bold>\<open>FAITHFULNESS (no value changes on the intended domain).\<close>  The \<open>Br M = []\<close> and
+  the diagonal (\<open>row-0 = row-1\<close>) branches are untouched.  In the else-branch, on
+  any \<^emph>\<open>reduced\<close> host (@{thm [source] m_6_6_reduced_coeff}: \<open>row-1 \<le> row-0\<close>
+  everywhere, hence \<open>\<noteq>\<close> gives \<open>row-1 < row-0\<close> at \<open>J\<^sub>1\<close>) the index \<open>J\<^sub>1\<close> itself
+  lies in the guarded set, so \<open>Min\<close>\<open>(guarded) \<le> J\<^sub>1 < Lng (Br M)\<close>, while every
+  element the OLD set had in addition is \<open>\<ge> Lng (Br M) > J\<^sub>1\<close>.  Therefore
+  \<^bold>\<open>whenever the old set was finite --- i.e. exactly when the old \<open>Min\<close> was
+  well-defined at all, which is precisely what the old \<open>fin\<close> hypotheses assumed
+  --- the two \<open>Min\<close>s COINCIDE\<close>; where it was infinite the old value was HOL-junk.
+  @{text ot9_LastStep_A9_faithful} machine-checks this: under the old \<open>fin\<close>
+  hypothesis, the NEW \<open>LastStep\<close> equals the OLD definition's value verbatim.  So
+  the edit is a disambiguation of the article's binder, not a semantic change,
+  and no previously proven fact loses its meaning.\<close>
+
+lemma ot9_LastStep_A9_faithful:
+  \<comment> \<open>the new (guarded) \<open>LastStep\<close> agrees with the OLD (unguarded) definition on
+      every host where the old one was well-defined (\<open>finU\<close> = the old \<open>fin\<close>).\<close>
+  fixes M :: pairseq
+  assumes Brne: "Br M \<noteq> []"
+    and gt: "entry (Br M ! (Lng (Br M) - 1)) 1 0 < entry (Br M ! (Lng (Br M) - 1)) 0 0"
+    and finU: "finite {J. entry (Br M ! (Lng (Br M) - 1)) 0 0 = entry (Br M ! J) 0 0
+                          \<and> entry (Br M ! J) 1 0 < entry (Br M ! J) 0 0}"
+  shows "LastStep M = Min {J. entry (Br M ! (Lng (Br M) - 1)) 0 0 = entry (Br M ! J) 0 0
+                              \<and> entry (Br M ! J) 1 0 < entry (Br M ! J) 0 0}"
+proof -
+  let ?J1 = "Lng (Br M) - 1"
+  let ?U = "{J. entry (Br M ! ?J1) 0 0 = entry (Br M ! J) 0 0
+                \<and> entry (Br M ! J) 1 0 < entry (Br M ! J) 0 0}"
+  let ?G = "{J. J < Lng (Br M) \<and> entry (Br M ! ?J1) 0 0 = entry (Br M ! J) 0 0
+                \<and> entry (Br M ! J) 1 0 < entry (Br M ! J) 0 0}"
+  have J1lt: "?J1 < Lng (Br M)" using Brne by (cases "Br M") auto
+  have finG: "finite ?G" by (rule finite_subset[of _ "{..< Lng (Br M)}"]) auto
+  have memG: "?J1 \<in> ?G" using gt J1lt by simp
+  have Gne: "?G \<noteq> {}" using memG by blast
+  have sub: "?G \<subseteq> ?U" by blast
+  have LS: "LastStep M = Min ?G" by (rule vgx_LastStep_elsecase[OF Brne gt])
+  have MGle: "Min ?G \<le> ?J1" using finG memG by (rule Min_le)
+  have le1: "Min ?U \<le> Min ?G" by (rule Min_antimono[OF sub Gne finU])
+  have Une: "?U \<noteq> {}" using Gne sub by blast
+  have memU: "Min ?U \<in> ?U" using finU Une by (rule Min_in)
+  have le2: "Min ?G \<le> Min ?U"
+  proof (cases "Min ?U < Lng (Br M)")
+    case True
+    have "Min ?U \<in> ?G" using memU True by simp
+    thus ?thesis by (rule Min_le[OF finG])
+  next
+    case False
+    hence "Lng (Br M) \<le> Min ?U" by simp
+    thus ?thesis using MGle J1lt by linarith
+  qed
+  have "Min ?G = Min ?U" using le1 le2 by simp
+  thus ?thesis using LS by simp
+qed
+
+text \<open>\<^bold>\<open>FINRC, discharged.\<close>  With the A9 guard in place, @{const tvx_finRc} is the
+  finiteness of a set of BRANCH INDICES of \<open>R\<^sub>c\<close>, hence a subset of
+  \<open>{..< Lng (Br R\<^sub>c)}\<close>: finite UNCONDITIONALLY --- no host hypothesis at all.  This
+  is the r61 brick @{thm [source] ot_finRc_bounded} now applying to the actual
+  definition (its statement and this one are literally the same set).\<close>
+
+lemma ot9_FINRC: "tvx_finRc K"
+  unfolding tvx_finRc_def
+  by (rule finite_subset[of _ "{..< Lng (Br (tvx_Rc K))}"]) auto
+
+text \<open>\<^bold>\<open>CAPSTONE (r69).\<close>  @{thm [source] oi8_census_final_ivadmeq} with its
+  \<open>FINRC\<close> slot DISCHARGED: both termination pillars (\<open>Trans M \<in> OT\<^bsub>B\<^esub>\<close> for all
+  \<open>M \<in> ST\<^bsub>PS\<^esub>\<close>, and the fundamental-sequence descent \<open>Trans (M[n]) < Trans M\<close>) now
+  hold modulo the single remaining census residual \<open>SETLE1_ltJ\<close>.\<close>
+
+theorem oi8_census_FINRC:
+  assumes SETLE1: "\<And>P s0 b0 u. P \<in> ST_PS \<Longrightarrow> P \<in> PT_PS \<Longrightarrow>
+        hasParent P 1 (Lng P - 1) \<Longrightarrow> 1 < Lng P - 1 \<Longrightarrow>
+        transCondIII P \<or> transCondIV P \<Longrightarrow> Trans P \<in> OT_B \<Longrightarrow>
+        (\<forall>x \<in> set b0. x = RP) \<Longrightarrow>
+        scb_decomp (bpHeadT (Trans (s84x_N P))) s0
+          (flatBT (Dpt (enat (entry P 1 (Lng P - 1))) 0\<^sub>B)) b0 \<Longrightarrow>
+        s84x_jm3 P < transJm1 P \<Longrightarrow>
+        b1x_setle
+          (GBT u (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
+                    (bpHeadT (Trans (Pred (s84x_N P))))))
+          (insert (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
+                     (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))
+                  (GBT u (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
+                            (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))))"
+  shows "\<forall>M. M \<in> ST_PS \<longrightarrow> Trans M \<in> OT_B"
+    and "\<forall>M n. M \<in> ST_PS \<longrightarrow> 1 \<le> n \<longrightarrow> 1 < Lng M \<longrightarrow>
+           lessBT (Trans ((M::pairseq)[n])) (Trans M)"
+proof -
+  have FINRC: "\<And>K. K \<in> ST_PS \<Longrightarrow> K \<in> PT_PS \<Longrightarrow> 1 < Lng K - 1 \<Longrightarrow>
+             transCondII K \<Longrightarrow> tvx_finRc K"
+    by (rule ot9_FINRC)
+  show "\<forall>M. M \<in> ST_PS \<longrightarrow> Trans M \<in> OT_B"
+    by (rule oi8_census_final_ivadmeq(1)[OF SETLE1 FINRC])
+  show "\<forall>M n. M \<in> ST_PS \<longrightarrow> 1 \<le> n \<longrightarrow> 1 < Lng M \<longrightarrow>
+           lessBT (Trans ((M::pairseq)[n])) (Trans M)"
+    by (rule oi8_census_final_ivadmeq(2)[OF SETLE1 FINRC])
+qed
+
+(* ===== end r69 FINRC root surgery (A9 fin-form): FINRC DISCHARGED ===== *)
+
+
+
+(* ===================================================================== *)
 (* ===== r69 (OPUS 4.8): the SURGERY TRANSPORT.  Prefix  ox9_.        ==== *)
 (* =====                                                              ==== *)
 (* ===== r68 proved the TRUE SOURCE of the SETLE1 descent             ==== *)
@@ -9988,4 +10107,29 @@ qed
 
 (* ===== end r69 ox9 block (SETLE1 reduced to the head bound ox9_hge) ===== *)
 
+
+text \<open>\<^bold>\<open>Round-69 capstone.\<close>  \<open>FINRC\<close> is now a theorem
+  (@{thm [source] ot9_FINRC}, unconditional --- correction A9 root surgery), so the census
+  of @{thm [source] oi9_census_SETLE_ok} loses its \<open>FINRC\<close> slot outright.  BOTH
+  termination pillars therefore hold modulo the SINGLE residual \<open>OKH\<close> (\<open>ox9_ok\<close>
+  on the census body) --- plus, of course, the external [Buc1] 2.2.\<close>
+
+theorem oi9_census_OKH:
+  assumes HGE: "\<And>P. P \<in> ST_PS \<Longrightarrow> P \<in> PT_PS \<Longrightarrow>
+             hasParent P 1 (Lng P - 1) \<Longrightarrow> 1 < Lng P - 1 \<Longrightarrow>
+             transCondIII P \<or> transCondIV P \<Longrightarrow> Trans P \<in> OT_B \<Longrightarrow>
+             s84x_jm3 P < transJm1 P \<Longrightarrow>
+             ox9_ok (enat (entry P 1 (Lng P - 1)))
+                    (enat (entry P 1 (Lng P - 1) - 1))
+                    (bpHeadT (Trans (s84x_N P)))"
+  shows "\<forall>M. M \<in> ST_PS \<longrightarrow> Trans M \<in> OT_B"
+    and "\<forall>M n. M \<in> ST_PS \<longrightarrow> 1 \<le> n \<longrightarrow> 1 < Lng M \<longrightarrow>
+           lessBT (Trans ((M::pairseq)[n])) (Trans M)"
+proof -
+  show "\<forall>M. M \<in> ST_PS \<longrightarrow> Trans M \<in> OT_B"
+    by (rule oi9_census_SETLE_ok(1)[OF HGE ot9_FINRC])
+  show "\<forall>M n. M \<in> ST_PS \<longrightarrow> 1 \<le> n \<longrightarrow> 1 < Lng M \<longrightarrow>
+           lessBT (Trans ((M::pairseq)[n])) (Trans M)"
+    by (rule oi9_census_SETLE_ok(2)[OF HGE ot9_FINRC])
+qed
 end

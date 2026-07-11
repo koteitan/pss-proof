@@ -300,6 +300,14 @@ $J_1 := \textrm{Lng}(\textrm{Br}(M)) - 1$。$\textrm{Br}(M) = ()$ ならば $\te
 ### 補足（else 節の \(\min\) の添字範囲）
 else 節「\((\textrm{Br}(M)_{J_1})_{0,0} = (\textrm{Br}(M)_J)_{0,0}\) かつ \((\textrm{Br}(M)_J)_{1,0} < (\textrm{Br}(M)_J)_{0,0}\) なる最小の \(J\)」における \(J\) も、\(J_1\) と同様に**枝 index の範囲 \(0 \le J < \textrm{Lng}(\textrm{Br}(M))\) に限る**（原文は暗黙にそう読ませているが明示がない）。形式化上はこの範囲制限が本質的で、\(\min\) の内包表記の束縛変数を \(J < \textrm{Lng}(\textrm{Br}(M))\) で制限しないと、範囲外 \(J\) で \(\textrm{Br}(M)_J\) が未定義値（total な `nth` の範囲外値）を取り、集合が有界と示せず有限性が崩れる。訂正案では \(\min\) を \(\{J.\ J < \textrm{Lng}(\textrm{Br}(M)) \land \dots\}\) 上で取ると明記する。
 
+#### 形式化への影響と実装（2026-07-12）
+人間の読者には自明な暗黙の読みだが、**形式化では load-bearing** だった：この範囲制限が無いために §8.2 の VE カスケード全体が「（証明不能な）有限性側条件 `fin`」を引きずり、停止性の柱の残差 **FINRC**（\(\textrm{tvx\_finRc}\)）が約10ラウンド discharge 不能なまま残っていた。
+
+`pss_defs.thy` の `LastStep_def` の \(\min\) 束縛変数に `J < Lng (Br M)` を入れる **root surgery** を実施し、全チェーン（PSS_A/B/C）を再ビルドして green を確認：
+
+- **忠実性（機械検証）**: `ot9_LastStep_A9_faithful` — **旧定義の集合が有限だったとき（＝旧 `min` が well-defined だったとき、すなわち旧 `fin` 仮定が成り立っていた場合すべて）、新旧の \(\textrm{LastStep}\) の値は一致する**。`if` 分岐と \(\textrm{Br}(M)=()\) 分岐は不変。else 分岐では簡約形の host 上で \(J_1\) 自身が有界集合に属し、旧集合が余分に持つ元は全て範囲外（\(\ge \textrm{Lng}(\textrm{Br}(M)) > J_1 \ge \min\)）なので \(\min\) は変わらない。すなわち**値を変えない曖昧性解消**であり、既存の証明済事実は一つも無効化されない。
+- **効果**: `fin` 前提は自明に証明可能になり（有界集合の部分集合）、**FINRC が無条件に discharge された**（`ot9_FINRC : "tvx_finRc K"`、仮定ゼロ）。停止性の capstone は FINRC スロットを解消（`oi8_census_FINRC`）。
+
 ## A10. §6.5 簡約化: 複数の命題が相互に依存し、死枝[19]/[20]の不到達には独立な証明を要する
 
 ### 位置

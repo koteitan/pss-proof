@@ -511,14 +511,28 @@ text \<open>\<open>LastStep : DT\<^bsub>PS\<^esub> \<to> \<nat>\<close> (§8.2, 
   \<open>Br\<close>-index, \<open>0\<close> if \<open>Br M = []\<close>; \<open>J\<^sub>1\<close> if the last branch has equal head rows;
   else the least \<open>J\<close> whose head row-0 equals \<open>(Br M\<^bsub>J\<^sub>1\<^esub>)\<^bsub>0,0\<^esub>\<close> and exceeds its
   own row-1.  (CORRECTION A9: the article writes \<open>J\<^sub>1 := Lng(Br M)\<close> but then
-  indexes \<open>Br(M)\<^bsub>J\<^sub>1\<^esub>\<close>, which is out of range; \<open>Lng(Br M) - 1\<close> is meant.)\<close>
+  indexes \<open>Br(M)\<^bsub>J\<^sub>1\<^esub>\<close>, which is out of range; \<open>Lng(Br M) - 1\<close> is meant.)
+
+  CORRECTION A9 (fin-form, r69): the article's \<open>J\<close> is a \<^emph>\<open>branch index\<close>, so the
+  \<open>Min\<close>-binder must be BOUNDED by \<open>J < Lng (Br M)\<close>.  Without that bound the
+  comprehension also collects out-of-range \<open>J\<close>, where \<open>Br M ! J\<close> peels to the
+  HOL-unspecified \<open>[] ! (J - Lng (Br M))\<close> (@{const nth} is \<open>primrec\<close> with no
+  \<open>[]\<close> equation): the set is then not provably finite and \<open>Min\<close> on an infinite
+  set is junk, which made every downstream fact carry an undischargeable
+  \<open>finite\<close> side condition.  FAITHFULNESS: the bound changes NO value on the
+  intended domain --- the \<open>if\<close>-branch is untouched, and in the \<open>else\<close>-branch on a
+  reduced host \<open>J\<^sub>1\<close> itself lies in the bounded set (row-1 \<open><\<close> row-0 there), so
+  every extra out-of-range element is \<open>\<ge> Lng (Br M) > J\<^sub>1 \<ge> Min\<close>: whenever the
+  unbounded set was finite (i.e. exactly when the old \<open>Min\<close> was well-defined at
+  all) the two \<open>Min\<close>s coincide.  Machine-checked as \<open>ot9_LastStep_A9_faithful\<close>.\<close>
 
 definition LastStep :: "pairseq \<Rightarrow> nat" where
   "LastStep M =
      (if Br M = [] then 0
       else let J1 = Lng (Br M) - 1 in
         if entry (Br M ! J1) 0 0 = entry (Br M ! J1) 1 0 then J1
-        else Min {J. entry (Br M ! J1) 0 0 = entry (Br M ! J) 0 0
+        else Min {J. J < Lng (Br M)
+                     \<and> entry (Br M ! J1) 0 0 = entry (Br M ! J) 0 0
                      \<and> entry (Br M ! J) 1 0 < entry (Br M ! J) 0 0})"
 
 end

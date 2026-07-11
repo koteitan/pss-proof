@@ -90453,7 +90453,7 @@ lemma vgx_LastStep_elsecase:
   fixes M :: pairseq
   assumes Brne: "Br M \<noteq> []"
     and gt: "entry (Br M ! (Lng (Br M) - 1)) 1 0 < entry (Br M ! (Lng (Br M) - 1)) 0 0"
-  shows "LastStep M = Min {J. entry (Br M ! (Lng (Br M) - 1)) 0 0 = entry (Br M ! J) 0 0
+  shows "LastStep M = Min {J. J < Lng (Br M) \<and> entry (Br M ! (Lng (Br M) - 1)) 0 0 = entry (Br M ! J) 0 0
                             \<and> entry (Br M ! J) 1 0 < entry (Br M ! J) 0 0}"
 proof -
   have neq: "entry (Br M ! (Lng (Br M) - 1)) 0 0 \<noteq> entry (Br M ! (Lng (Br M) - 1)) 1 0"
@@ -90469,19 +90469,19 @@ lemma vgx_LastStep_lt_Lng_Br:
   fixes M :: pairseq
   assumes Brne: "Br M \<noteq> []"
     and gt: "entry (Br M ! (Lng (Br M) - 1)) 1 0 < entry (Br M ! (Lng (Br M) - 1)) 0 0"
-    and fin: "finite {J. entry (Br M ! (Lng (Br M) - 1)) 0 0 = entry (Br M ! J) 0 0
+    and fin: "finite {J. J < Lng (Br M) \<and> entry (Br M ! (Lng (Br M) - 1)) 0 0 = entry (Br M ! J) 0 0
                          \<and> entry (Br M ! J) 1 0 < entry (Br M ! J) 0 0}"
   shows "LastStep M < Lng (Br M)"
 proof -
   let ?J1 = "Lng (Br M) - 1"
-  let ?S = "{J. entry (Br M ! ?J1) 0 0 = entry (Br M ! J) 0 0
+  let ?S = "{J. J < Lng (Br M) \<and> entry (Br M ! ?J1) 0 0 = entry (Br M ! J) 0 0
                 \<and> entry (Br M ! J) 1 0 < entry (Br M ! J) 0 0}"
-  have mem: "?J1 \<in> ?S" using gt by simp
+  have J1lt: "?J1 < Lng (Br M)" using Brne by (cases "Br M") auto
+  have mem: "?J1 \<in> ?S" using gt J1lt by simp
   have LS: "LastStep M = Min ?S" by (rule vgx_LastStep_elsecase[OF Brne gt])
   have "Min ?S \<le> ?J1" using fin mem by (rule Min_le)
   hence "LastStep M \<le> ?J1" using LS by simp
-  moreover have "?J1 < Lng (Br M)" using Brne by (cases "Br M") auto
-  ultimately show ?thesis by simp
+  thus ?thesis using J1lt by simp
 qed
 
 text \<open>Paper-guard form: from the article's guard \<open>M\<^bsub>0,j\<^sub>1'\<^esub> > M\<^bsub>1,j\<^sub>1'\<^esub>\<close> (with
@@ -90493,7 +90493,7 @@ lemma vgx_LastStep_lt_of_guard:
   assumes MP: "M \<in> PT_PS" and Brne: "Br M \<noteq> []"
     and guard: "entry M 1 (FirstNodes M ! (Lng (Br M) - 1))
                   < entry M 0 (FirstNodes M ! (Lng (Br M) - 1))"
-    and fin: "finite {J. entry (Br M ! (Lng (Br M) - 1)) 0 0 = entry (Br M ! J) 0 0
+    and fin: "finite {J. J < Lng (Br M) \<and> entry (Br M ! (Lng (Br M) - 1)) 0 0 = entry (Br M ! J) 0 0
                          \<and> entry (Br M ! J) 1 0 < entry (Br M ! J) 0 0}"
   shows "LastStep M < Lng (Br M)"
 proof -
@@ -90698,7 +90698,7 @@ lemma vgx_condIIIV_of_VE:
   assumes MDT: "M \<in> DT_PS" and Brne: "Br M \<noteq> []"
     and j0pos: "0 < j0'" and j0lt: "j0' < TrMax M"
     and guard: "entry M 1 j1' < entry M 0 j1'"
-    and fin: "finite {J. entry (Br M ! (Lng (Br M) - 1)) 0 0 = entry (Br M ! J) 0 0
+    and fin: "finite {J. J < Lng (Br M) \<and> entry (Br M ! (Lng (Br M) - 1)) 0 0 = entry (Br M ! J) 0 0
                          \<and> entry (Br M ! J) 1 0 < entry (Br M ! J) 0 0}"
     and VE2: "bpHeadT (Trans N') = bpHeadT (Trans N)"
     and VE3: "bpHeadT (Trans M') = bpHeadT (Trans N) +\<^sub>B t2" and t2ne: "t2 \<noteq> 0\<^sub>B"
@@ -92323,7 +92323,7 @@ lemma vg2x_eqdiag_M:
   assumes MDT: "M \<in> DT_PS" and Brne: "Br M \<noteq> []"
     and K0: "0 < LastStep M" and KL: "LastStep M < Lng (Br M)"
     and guard: "entry M 1 (FirstNodes M ! (Lng (Br M) - 1)) < entry M 0 (FirstNodes M ! (Lng (Br M) - 1))"
-    and fin: "finite {J. entry (Br M ! (Lng (Br M) - 1)) 0 0 = entry (Br M ! J) 0 0
+    and fin: "finite {J. J < Lng (Br M) \<and> entry (Br M ! (Lng (Br M) - 1)) 0 0 = entry (Br M ! J) 0 0
                          \<and> entry (Br M ! J) 1 0 < entry (Br M ! J) 0 0}"
     and eqJoint: "Joints M ! (LastStep M - 1) = Joints M ! (Lng (Br M) - 1)"
     and ROW10: "entry M 1 (FirstNodes M ! (LastStep M - 1)) \<le> entry M 0 (FirstNodes M ! (LastStep M - 1))"
@@ -92383,15 +92383,15 @@ proof -
     by (rule vgx_Br_last_head[OF MP Brne])
   have gtComp: "entry (Br M ! (Lng (Br M) - 1)) 1 0 < entry (Br M ! (Lng (Br M) - 1)) 0 0"
     using guard h0J1 h1J1 by simp
-  have LSeq: "LastStep M = Min {J. entry (Br M ! (Lng (Br M) - 1)) 0 0 = entry (Br M ! J) 0 0
+  have LSeq: "LastStep M = Min {J. J < Lng (Br M) \<and> entry (Br M ! (Lng (Br M) - 1)) 0 0 = entry (Br M ! J) 0 0
                                     \<and> entry (Br M ! J) 1 0 < entry (Br M ! J) 0 0}"
     by (rule vgx_LastStep_elsecase[OF Brne gtComp])
-  have notInS: "(LastStep M - 1) \<notin> {J. entry (Br M ! (Lng (Br M) - 1)) 0 0 = entry (Br M ! J) 0 0
+  have notInS: "(LastStep M - 1) \<notin> {J. J < Lng (Br M) \<and> entry (Br M ! (Lng (Br M) - 1)) 0 0 = entry (Br M ! J) 0 0
                                           \<and> entry (Br M ! J) 1 0 < entry (Br M ! J) 0 0}"
   proof
-    assume mem: "LastStep M - 1 \<in> {J. entry (Br M ! (Lng (Br M) - 1)) 0 0 = entry (Br M ! J) 0 0
+    assume mem: "LastStep M - 1 \<in> {J. J < Lng (Br M) \<and> entry (Br M ! (Lng (Br M) - 1)) 0 0 = entry (Br M ! J) 0 0
                                         \<and> entry (Br M ! J) 1 0 < entry (Br M ! J) 0 0}"
-    have "Min {J. entry (Br M ! (Lng (Br M) - 1)) 0 0 = entry (Br M ! J) 0 0
+    have "Min {J. J < Lng (Br M) \<and> entry (Br M ! (Lng (Br M) - 1)) 0 0 = entry (Br M ! J) 0 0
                   \<and> entry (Br M ! J) 1 0 < entry (Br M ! J) 0 0} \<le> LastStep M - 1"
       using Min_le[OF fin mem] .
     hence "LastStep M \<le> LastStep M - 1" using LSeq by simp
@@ -92401,7 +92401,7 @@ proof -
   have compHD0: "entry (Br M ! (Lng (Br M) - 1)) 0 0 = entry (Br M ! (LastStep M - 1)) 0 0"
     using HD0eq h0J1 entry_FirstNodes_eq_component_gen[OF MP Km1lenBr, of 0] by simp
   have geComp: "entry (Br M ! (LastStep M - 1)) 0 0 \<le> entry (Br M ! (LastStep M - 1)) 1 0"
-    using notInS compHD0 by force
+    using notInS compHD0 Km1lenBr by force
   have leComp: "entry (Br M ! (LastStep M - 1)) 1 0 \<le> entry (Br M ! (LastStep M - 1)) 0 0"
     using ROW10 entry_FirstNodes_eq_component_gen[OF MP Km1lenBr, of 0]
           entry_FirstNodes_eq_component_gen[OF MP Km1lenBr, of 1] by simp
@@ -92424,7 +92424,7 @@ lemma vg2x_cfbx_reg:
   assumes MDT: "M \<in> DT_PS" and Brne: "Br M \<noteq> []"
     and K0: "0 < LastStep M"
     and guard: "entry M 1 (FirstNodes M ! (Lng (Br M) - 1)) < entry M 0 (FirstNodes M ! (Lng (Br M) - 1))"
-    and fin: "finite {J. entry (Br M ! (Lng (Br M) - 1)) 0 0 = entry (Br M ! J) 0 0
+    and fin: "finite {J. J < Lng (Br M) \<and> entry (Br M ! (Lng (Br M) - 1)) 0 0 = entry (Br M ! J) 0 0
                          \<and> entry (Br M ! J) 1 0 < entry (Br M ! J) 0 0}"
     and ROW10: "entry M 1 (FirstNodes M ! (LastStep M - 1)) \<le> entry M 0 (FirstNodes M ! (LastStep M - 1))"
   shows "cfbx_reg (Joints M ! (Lng (Br M) - 1)) (seg M 0 (FirstNodes M ! (LastStep M) - 1))"
@@ -92490,7 +92490,7 @@ lemma vg2x_VE2_reg:
   assumes MDT: "M \<in> DT_PS" and Brne: "Br M \<noteq> []"
     and K0: "0 < LastStep M"
     and guard: "entry M 1 (FirstNodes M ! (Lng (Br M) - 1)) < entry M 0 (FirstNodes M ! (Lng (Br M) - 1))"
-    and fin: "finite {J. entry (Br M ! (Lng (Br M) - 1)) 0 0 = entry (Br M ! J) 0 0
+    and fin: "finite {J. J < Lng (Br M) \<and> entry (Br M ! (Lng (Br M) - 1)) 0 0 = entry (Br M ! J) 0 0
                          \<and> entry (Br M ! J) 1 0 < entry (Br M ! J) 0 0}"
     and ROW10: "entry M 1 (FirstNodes M ! (LastStep M - 1)) \<le> entry M 0 (FirstNodes M ! (LastStep M - 1))"
   shows "bpHeadT (Trans (seg M (Joints M ! (Lng (Br M) - 1)) (FirstNodes M ! (LastStep M) - 1)))
@@ -92580,7 +92580,7 @@ lemma vg2x_VE2:
     and j0pos: "0 < Joints M ! (Lng (Br M) - 1)"
     and j0lt: "Joints M ! (Lng (Br M) - 1) < TrMax M"
     and guard: "entry M 1 (FirstNodes M ! (Lng (Br M) - 1)) < entry M 0 (FirstNodes M ! (Lng (Br M) - 1))"
-    and fin: "finite {J. entry (Br M ! (Lng (Br M) - 1)) 0 0 = entry (Br M ! J) 0 0
+    and fin: "finite {J. J < Lng (Br M) \<and> entry (Br M ! (Lng (Br M) - 1)) 0 0 = entry (Br M ! J) 0 0
                          \<and> entry (Br M ! J) 1 0 < entry (Br M ! J) 0 0}"
     and ROW10: "entry M 1 (FirstNodes M ! (LastStep M - 1)) \<le> entry M 0 (FirstNodes M ! (LastStep M - 1))"
   shows "bpHeadT (Trans (seg M (Joints M ! (Lng (Br M) - 1)) (FirstNodes M ! (LastStep M) - 1)))
@@ -93867,7 +93867,7 @@ lemma vg3x_VE2:
     and j0pos: "0 < Joints M ! (Lng (Br M) - 1)"
     and j0lt: "Joints M ! (Lng (Br M) - 1) < TrMax M"
     and guard: "entry M 1 (FirstNodes M ! (Lng (Br M) - 1)) < entry M 0 (FirstNodes M ! (Lng (Br M) - 1))"
-    and fin: "finite {J. entry (Br M ! (Lng (Br M) - 1)) 0 0 = entry (Br M ! J) 0 0
+    and fin: "finite {J. J < Lng (Br M) \<and> entry (Br M ! (Lng (Br M) - 1)) 0 0 = entry (Br M ! J) 0 0
                          \<and> entry (Br M ! J) 1 0 < entry (Br M ! J) 0 0}"
   shows "bpHeadT (Trans (seg M (Joints M ! (Lng (Br M) - 1)) (FirstNodes M ! (LastStep M) - 1)))
        = bpHeadT (Trans (seg M 0 (FirstNodes M ! (LastStep M) - 1)))"
@@ -96052,7 +96052,7 @@ qed
 lemma vg6x_base_princN:
   fixes N :: pairseq
   assumes reg: "vg4x_reg4 N"
-    and fin: "finite {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+    and fin: "finite {J. J < Lng (Br N) \<and> entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
                          \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}"
   shows "Trans (seg N 0 (FirstNodes N ! (LastStep N) - 1))
            = Dpt (enat (entry N 1 0))
@@ -96088,7 +96088,7 @@ text \<open>\<^bold>\<open>Base \<open>bridges\<close> from \<open>VE34\<close> 
 lemma vg6x_base_bridges_of_VE34:
   fixes N :: pairseq and t1 tau :: BT
   assumes reg: "vg4x_reg4 N"
-    and fin: "finite {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+    and fin: "finite {J. J < Lng (Br N) \<and> entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
                          \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}"
     and ve34: "vg2x_VE34 N"
     and form: "Trans N = Dpt (enat (entry N 1 0))
@@ -96126,7 +96126,7 @@ text \<open>\<^bold>\<open>Capstone finding: over the \<open>vg4x_reg4\<close> b
 lemma vg6x_base_bridges_iff_VE34:
   fixes N :: pairseq
   assumes reg: "vg4x_reg4 N" and base: "cfbx_j1p N = Lng N - 1"
-    and fin: "finite {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+    and fin: "finite {J. J < Lng (Br N) \<and> entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
                          \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}"
   shows "(\<forall>t1 tau. Trans N = Dpt (enat (entry N 1 0))
                      (t1 +\<^sub>B Dpt (enat (entry N 1 (Joints N ! (Lng (Br N) - 1)))) tau)
@@ -96965,7 +96965,7 @@ lemma vg7x_condIIIV_of_DT:
     and j0lt:  "Joints M ! (Lng (Br M) - 1) < TrMax M"
     and guard: "entry M 1 (FirstNodes M ! (Lng (Br M) - 1))
                   < entry M 0 (FirstNodes M ! (Lng (Br M) - 1))"
-    and fin: "finite {J. entry (Br M ! (Lng (Br M) - 1)) 0 0 = entry (Br M ! J) 0 0
+    and fin: "finite {J. J < Lng (Br M) \<and> entry (Br M ! (Lng (Br M) - 1)) 0 0 = entry (Br M ! J) 0 0
                          \<and> entry (Br M ! J) 1 0 < entry (Br M ! J) 0 0}"
     and VE2: "bpHeadT (Trans (seg M (Joints M ! (Lng (Br M) - 1))
                                      (FirstNodes M ! (LastStep M) - 1)))
@@ -100260,7 +100260,7 @@ lemma rdx_bridgesU_readoff:
   assumes reg: "vg7x_reg4 N"
     and f: "Trans N = Dpt (enat (entry N 1 0))
              (t1 +\<^sub>B Dpt (enat (entry N 1 (Joints N ! (Lng (Br N) - 1)))) tau)"
-    and fin: "finite {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+    and fin: "finite {J. J < Lng (Br N) \<and> entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
                          \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}"
     and BASE: "\<And>N. vg7x_reg4 N \<Longrightarrow> cfbx_j1p N = Lng N - 1 \<Longrightarrow> vg2x_VE34 N"
     and STEP: "\<And>N. vg7x_reg4 N \<Longrightarrow> cfbx_j1p N < Lng N - 1 \<Longrightarrow>
@@ -100316,7 +100316,7 @@ lemma rdx_VE34_of_DT:
                   < entry M 0 (FirstNodes M ! (Lng (Br M) - 1))"
     and j0pos: "0 < Joints M ! (Lng (Br M) - 1)"
     and j0lt:  "Joints M ! (Lng (Br M) - 1) < TrMax M"
-    and finU: "\<And>N. finite {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+    and finU: "\<And>N. finite {J. J < Lng (Br N) \<and> entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
                               \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}"
     and BASE: "\<And>N. vg7x_reg4 N \<Longrightarrow> cfbx_j1p N = Lng N - 1 \<Longrightarrow> vg2x_VE34 N"
     and STEP: "\<And>N. vg7x_reg4 N \<Longrightarrow> cfbx_j1p N < Lng N - 1 \<Longrightarrow>
@@ -102203,9 +102203,9 @@ text \<open>The \<open>LastStep\<close>/\<open>fin\<close> index set is \<open>P
 lemma bpx_finset_Pred_eq:
   fixes N :: pairseq
   assumes reg: "vg7x_reg4 N" and lt: "cfbx_j1p N < Lng N - 1"
-  shows "{J. entry (Br (Pred N) ! (Lng (Br (Pred N)) - 1)) 0 0 = entry (Br (Pred N) ! J) 0 0
+  shows "{J. J < Lng (Br (Pred N)) \<and> entry (Br (Pred N) ! (Lng (Br (Pred N)) - 1)) 0 0 = entry (Br (Pred N) ! J) 0 0
              \<and> entry (Br (Pred N) ! J) 1 0 < entry (Br (Pred N) ! J) 0 0}
-       = {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+       = {J. J < Lng (Br N) \<and> entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
              \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}"
 proof -
   have BrLenP: "Lng (Br (Pred N)) = Lng (Br N)" by (rule bpx_step_setup(10)[OF reg lt])
@@ -102220,9 +102220,9 @@ text \<open>\<open>fin\<close> threads through the back-peel: the artifact set o
 lemma bpx_fin_Pred:
   fixes N :: pairseq
   assumes reg: "vg7x_reg4 N" and lt: "cfbx_j1p N < Lng N - 1"
-    and fin: "finite {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+    and fin: "finite {J. J < Lng (Br N) \<and> entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
                          \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}"
-  shows "finite {J. entry (Br (Pred N) ! (Lng (Br (Pred N)) - 1)) 0 0
+  shows "finite {J. J < Lng (Br (Pred N)) \<and> entry (Br (Pred N) ! (Lng (Br (Pred N)) - 1)) 0 0
                       = entry (Br (Pred N) ! J) 0 0
                     \<and> entry (Br (Pred N) ! J) 1 0 < entry (Br (Pred N) ! J) 0 0}"
   using fin bpx_finset_Pred_eq[OF reg lt] by simp
@@ -102260,11 +102260,11 @@ proof -
                < entry (Br (Pred N) ! (Lng (Br (Pred N)) - 1)) 0 0"
     using gtN BrLenP e0 e1 by simp
   have LSN: "LastStep N
-      = Min {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+      = Min {J. J < Lng (Br N) \<and> entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
                 \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}"
     by (rule vgx_LastStep_elsecase[OF Brne gtN])
   have LSP: "LastStep (Pred N)
-      = Min {J. entry (Br (Pred N) ! (Lng (Br (Pred N)) - 1)) 0 0
+      = Min {J. J < Lng (Br (Pred N)) \<and> entry (Br (Pred N) ! (Lng (Br (Pred N)) - 1)) 0 0
                   = entry (Br (Pred N) ! J) 0 0
                 \<and> entry (Br (Pred N) ! J) 1 0 < entry (Br (Pred N) ! J) 0 0}"
     by (rule vgx_LastStep_elsecase[OF BrPne gtP])
@@ -102277,7 +102277,7 @@ text \<open>The front-slice endpoint \<open>m\<^sub>1 = FirstNodes N ! (LastStep
 lemma bpx_m1_Pred:
   fixes N :: pairseq
   assumes reg: "vg7x_reg4 N" and lt: "cfbx_j1p N < Lng N - 1"
-    and fin: "finite {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+    and fin: "finite {J. J < Lng (Br N) \<and> entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
                          \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}"
   shows "FirstNodes (Pred N) ! (LastStep (Pred N)) = FirstNodes N ! (LastStep N)"
 proof -
@@ -102308,7 +102308,7 @@ text \<open>\<^bold>\<open>Front-slice \<open>Pred\<close>-invariance\<close>: \
 lemma bpx_front_Pred:
   fixes N :: pairseq
   assumes reg: "vg7x_reg4 N" and lt: "cfbx_j1p N < Lng N - 1"
-    and fin: "finite {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+    and fin: "finite {J. J < Lng (Br N) \<and> entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
                          \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}"
   shows "seg (Pred N) 0 (FirstNodes (Pred N) ! (LastStep (Pred N)) - 1)
        = seg N 0 (FirstNodes N ! (LastStep N) - 1)"
@@ -102387,7 +102387,7 @@ lemma bpx_VE3_step:
   fixes N :: pairseq
   assumes reg: "vg7x_reg4 N" and lt: "cfbx_j1p N < Lng N - 1"
     and ihP: "vg2x_VE34 (Pred N)"
-    and fin: "finite {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+    and fin: "finite {J. J < Lng (Br N) \<and> entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
                          \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}"
   shows "\<exists>t2. bpHeadT (Trans (seg N (Joints N ! (Lng (Br N) - 1)) (Lng N - 1)))
             = bpHeadT (Trans (seg N 0 (FirstNodes N ! (LastStep N) - 1))) +\<^sub>B t2
@@ -102449,7 +102449,7 @@ lemma bpx_step_form_pinned:
   fixes N :: pairseq
   assumes reg: "vg7x_reg4 N" and lt: "cfbx_j1p N < Lng N - 1"
     and regP: "vg7x_reg4 (Pred N)" and ihP: "vg2x_VE34 (Pred N)"
-    and fin: "finite {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+    and fin: "finite {J. J < Lng (Br N) \<and> entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
                          \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}"
   shows "\<exists>a. Trans N = Dpt (enat (entry N 1 0))
               (bpHeadT (Trans (seg N 0 (FirstNodes N ! (LastStep N) - 1)))
@@ -102598,7 +102598,7 @@ lemma bpx_VE34_step_modTSPIN:
   fixes N :: pairseq
   assumes reg: "vg7x_reg4 N" and lt: "cfbx_j1p N < Lng N - 1"
     and regP: "vg7x_reg4 (Pred N)" and ihP: "vg2x_VE34 (Pred N)"
-    and fin: "finite {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+    and fin: "finite {J. J < Lng (Br N) \<and> entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
                          \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}"
     and TSPIN: "\<And>a. Trans N = Dpt (enat (entry N 1 0))
                   (bpHeadT (Trans (seg N 0 (FirstNodes N ! (LastStep N) - 1)))
@@ -102633,27 +102633,27 @@ text \<open>The \<open>fin\<close>-threading back-peel skeleton: structurally
 
 lemma bpx_VE34_backpeel_fin:
   assumes BASEf: "\<And>N. vg7x_reg4 N
-      \<Longrightarrow> finite {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+      \<Longrightarrow> finite {J. J < Lng (Br N) \<and> entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
                      \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}
       \<Longrightarrow> cfbx_j1p N = Lng N - 1 \<Longrightarrow> vg2x_VE34 N"
     and STEPf: "\<And>N. vg7x_reg4 N
-      \<Longrightarrow> finite {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+      \<Longrightarrow> finite {J. J < Lng (Br N) \<and> entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
                      \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}
       \<Longrightarrow> cfbx_j1p N < Lng N - 1 \<Longrightarrow> vg7x_reg4 (Pred N)
       \<Longrightarrow> vg2x_VE34 (Pred N) \<Longrightarrow> vg2x_VE34 N"
     and M: "vg7x_reg4 M"
-    and finM: "finite {J. entry (Br M ! (Lng (Br M) - 1)) 0 0 = entry (Br M ! J) 0 0
+    and finM: "finite {J. J < Lng (Br M) \<and> entry (Br M ! (Lng (Br M) - 1)) 0 0 = entry (Br M ! J) 0 0
                           \<and> entry (Br M ! J) 1 0 < entry (Br M ! J) 0 0}"
   shows "vg2x_VE34 M"
 proof -
   have gen: "\<And>M0. vg7x_reg4 M0
-      \<and> finite {J. entry (Br M0 ! (Lng (Br M0) - 1)) 0 0 = entry (Br M0 ! J) 0 0
+      \<and> finite {J. J < Lng (Br M0) \<and> entry (Br M0 ! (Lng (Br M0) - 1)) 0 0 = entry (Br M0 ! J) 0 0
                    \<and> entry (Br M0 ! J) 1 0 < entry (Br M0 ! J) 0 0}
       \<longrightarrow> vg2x_VE34 M0"
   proof -
     fix M0 :: pairseq
     show "vg7x_reg4 M0
-      \<and> finite {J. entry (Br M0 ! (Lng (Br M0) - 1)) 0 0 = entry (Br M0 ! J) 0 0
+      \<and> finite {J. J < Lng (Br M0) \<and> entry (Br M0 ! (Lng (Br M0) - 1)) 0 0 = entry (Br M0 ! J) 0 0
                    \<and> entry (Br M0 ! J) 1 0 < entry (Br M0 ! J) 0 0}
       \<longrightarrow> vg2x_VE34 M0"
     proof (induction M0 rule: measure_induct_rule[where f = Lng])
@@ -102661,10 +102661,10 @@ proof -
       show ?case
       proof
         assume regfin: "vg7x_reg4 M0
-          \<and> finite {J. entry (Br M0 ! (Lng (Br M0) - 1)) 0 0 = entry (Br M0 ! J) 0 0
+          \<and> finite {J. J < Lng (Br M0) \<and> entry (Br M0 ! (Lng (Br M0) - 1)) 0 0 = entry (Br M0 ! J) 0 0
                        \<and> entry (Br M0 ! J) 1 0 < entry (Br M0 ! J) 0 0}"
         have reg: "vg7x_reg4 M0" using regfin by blast
-        have fin: "finite {J. entry (Br M0 ! (Lng (Br M0) - 1)) 0 0 = entry (Br M0 ! J) 0 0
+        have fin: "finite {J. J < Lng (Br M0) \<and> entry (Br M0 ! (Lng (Br M0) - 1)) 0 0 = entry (Br M0 ! J) 0 0
                               \<and> entry (Br M0 ! J) 1 0 < entry (Br M0 ! J) 0 0}"
           using regfin by blast
         have reg4: "vg4x_reg4 M0" using reg by (simp add: vg7x_reg4_def)
@@ -102684,7 +102684,7 @@ proof -
           have lt: "cfbx_j1p M0 < Lng M0 - 1" using j1pLt False by linarith
           have L2: "1 < Lng M0" using lt by linarith
           have regP: "vg7x_reg4 (Pred M0)" by (rule vg7x_RPERS[OF reg lt])
-          have finP: "finite {J. entry (Br (Pred M0) ! (Lng (Br (Pred M0)) - 1)) 0 0
+          have finP: "finite {J. J < Lng (Br (Pred M0)) \<and> entry (Br (Pred M0) ! (Lng (Br (Pred M0)) - 1)) 0 0
                                    = entry (Br (Pred M0) ! J) 0 0
                                  \<and> entry (Br (Pred M0) ! J) 1 0
                                    < entry (Br (Pred M0) ! J) 0 0}"
@@ -102714,14 +102714,14 @@ lemma bpx_VE34_of_DT_modBASE_TSPIN:
                   < entry M 0 (FirstNodes M ! (Lng (Br M) - 1))"
     and j0pos: "0 < Joints M ! (Lng (Br M) - 1)"
     and j0lt:  "Joints M ! (Lng (Br M) - 1) < TrMax M"
-    and finM: "finite {J. entry (Br M ! (Lng (Br M) - 1)) 0 0 = entry (Br M ! J) 0 0
+    and finM: "finite {J. J < Lng (Br M) \<and> entry (Br M ! (Lng (Br M) - 1)) 0 0 = entry (Br M ! J) 0 0
                           \<and> entry (Br M ! J) 1 0 < entry (Br M ! J) 0 0}"
     and BASEf: "\<And>N. vg7x_reg4 N
-      \<Longrightarrow> finite {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+      \<Longrightarrow> finite {J. J < Lng (Br N) \<and> entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
                      \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}
       \<Longrightarrow> cfbx_j1p N = Lng N - 1 \<Longrightarrow> vg2x_VE34 N"
     and TSPIN: "\<And>N a. vg7x_reg4 N \<Longrightarrow> cfbx_j1p N < Lng N - 1
-      \<Longrightarrow> finite {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+      \<Longrightarrow> finite {J. J < Lng (Br N) \<and> entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
                      \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}
       \<Longrightarrow> Trans N = Dpt (enat (entry N 1 0))
              (bpHeadT (Trans (seg N 0 (FirstNodes N ! (LastStep N) - 1)))
@@ -102739,14 +102739,14 @@ proof -
   have reg4: "vg4x_reg4 M" unfolding vg4x_reg4_def using reg3 j0pos j0lt by blast
   have reg7: "vg7x_reg4 M" unfolding vg7x_reg4_def using reg4 descBr by blast
   have STEPf: "\<And>N. vg7x_reg4 N
-      \<Longrightarrow> finite {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+      \<Longrightarrow> finite {J. J < Lng (Br N) \<and> entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
                      \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}
       \<Longrightarrow> cfbx_j1p N < Lng N - 1 \<Longrightarrow> vg7x_reg4 (Pred N)
       \<Longrightarrow> vg2x_VE34 (Pred N) \<Longrightarrow> vg2x_VE34 N"
   proof -
     fix N :: pairseq
     assume r: "vg7x_reg4 N"
-      and f: "finite {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+      and f: "finite {J. J < Lng (Br N) \<and> entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
                          \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}"
       and l: "cfbx_j1p N < Lng N - 1"
       and rP: "vg7x_reg4 (Pred N)"
@@ -103365,7 +103365,7 @@ lemma tsx_t1_identified:
   fixes N :: pairseq
   assumes reg: "vg7x_reg4 N" and lt: "cfbx_j1p N < Lng N - 1"
     and regP: "vg7x_reg4 (Pred N)" and ihP: "vg2x_VE34 (Pred N)"
-    and fin: "finite {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+    and fin: "finite {J. J < Lng (Br N) \<and> entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
                          \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}"
   shows "Trans (Pred (seg N (Joints N ! (Lng (Br N) - 1)) (Lng N - 1)))
            = Dpt (enat (entry N 1 (Joints N ! (Lng (Br N) - 1))))
@@ -103437,7 +103437,7 @@ lemma tsx_assembly:
   fixes N :: pairseq
   assumes reg: "vg7x_reg4 N" and lt: "cfbx_j1p N < Lng N - 1"
     and regP: "vg7x_reg4 (Pred N)" and ihP: "vg2x_VE34 (Pred N)"
-    and fin: "finite {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+    and fin: "finite {J. J < Lng (Br N) \<and> entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
                          \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}"
   shows "Trans N = Dpt (enat (entry N 1 0))
            (bpHeadT (Trans (seg N 0 (FirstNodes N ! (LastStep N) - 1)))
@@ -103631,7 +103631,7 @@ lemma tsx_TSPIN:
   fixes N :: pairseq and a :: BT
   assumes reg: "vg7x_reg4 N" and lt: "cfbx_j1p N < Lng N - 1"
     and regP: "vg7x_reg4 (Pred N)" and ihP: "vg2x_VE34 (Pred N)"
-    and fin: "finite {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+    and fin: "finite {J. J < Lng (Br N) \<and> entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
                          \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}"
     and form: "Trans N = Dpt (enat (entry N 1 0))
                   (bpHeadT (Trans (seg N 0 (FirstNodes N ! (LastStep N) - 1)))
@@ -103664,7 +103664,7 @@ lemma tsx_VE34_step:
   fixes N :: pairseq
   assumes reg: "vg7x_reg4 N" and lt: "cfbx_j1p N < Lng N - 1"
     and regP: "vg7x_reg4 (Pred N)" and ihP: "vg2x_VE34 (Pred N)"
-    and fin: "finite {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+    and fin: "finite {J. J < Lng (Br N) \<and> entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
                          \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}"
   shows "vg2x_VE34 N"
   by (rule bpx_VE34_step_modTSPIN[OF reg lt regP ihP fin
@@ -103683,10 +103683,10 @@ lemma tsx_VE34_of_DT_modBASE:
                   < entry M 0 (FirstNodes M ! (Lng (Br M) - 1))"
     and j0pos: "0 < Joints M ! (Lng (Br M) - 1)"
     and j0lt:  "Joints M ! (Lng (Br M) - 1) < TrMax M"
-    and finM: "finite {J. entry (Br M ! (Lng (Br M) - 1)) 0 0 = entry (Br M ! J) 0 0
+    and finM: "finite {J. J < Lng (Br M) \<and> entry (Br M ! (Lng (Br M) - 1)) 0 0 = entry (Br M ! J) 0 0
                           \<and> entry (Br M ! J) 1 0 < entry (Br M ! J) 0 0}"
     and BASEf: "\<And>N. vg7x_reg4 N
-      \<Longrightarrow> finite {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+      \<Longrightarrow> finite {J. J < Lng (Br N) \<and> entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
                      \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}
       \<Longrightarrow> cfbx_j1p N = Lng N - 1 \<Longrightarrow> vg2x_VE34 N"
   shows "vg2x_VE34 M"
@@ -103701,14 +103701,14 @@ proof -
   have reg4: "vg4x_reg4 M" unfolding vg4x_reg4_def using reg3 j0pos j0lt by blast
   have reg7: "vg7x_reg4 M" unfolding vg7x_reg4_def using reg4 descBr by blast
   have STEPf: "\<And>N. vg7x_reg4 N
-      \<Longrightarrow> finite {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+      \<Longrightarrow> finite {J. J < Lng (Br N) \<and> entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
                      \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}
       \<Longrightarrow> cfbx_j1p N < Lng N - 1 \<Longrightarrow> vg7x_reg4 (Pred N)
       \<Longrightarrow> vg2x_VE34 (Pred N) \<Longrightarrow> vg2x_VE34 N"
   proof -
     fix N :: pairseq
     assume r: "vg7x_reg4 N"
-      and f: "finite {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+      and f: "finite {J. J < Lng (Br N) \<and> entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
                          \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}"
       and l: "cfbx_j1p N < Lng N - 1"
       and rP: "vg7x_reg4 (Pred N)"
@@ -103916,7 +103916,7 @@ text \<open>\<open>LastStep\<close> never exceeds \<open>J\<^sub>1\<close> (unde
 lemma bfx_LastStep_le:
   fixes N :: pairseq
   assumes reg: "vg7x_reg4 N"
-    and fin: "finite {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+    and fin: "finite {J. J < Lng (Br N) \<and> entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
                          \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}"
   shows "LastStep N \<le> Lng (Br N) - 1"
 proof -
@@ -103926,12 +103926,13 @@ proof -
   have gtN: "entry (Br N ! (Lng (Br N) - 1)) 1 0 < entry (Br N ! (Lng (Br N) - 1)) 0 0"
     by (rule bfx_gtN[OF reg])
   have LSN: "LastStep N
-      = Min {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+      = Min {J. J < Lng (Br N) \<and> entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
                 \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}"
     by (rule vgx_LastStep_elsecase[OF Brne gtN])
-  have mem: "Lng (Br N) - 1 \<in> {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+  have J1lt: "Lng (Br N) - 1 < Lng (Br N)" using Brne by (cases "Br N") auto
+  have mem: "Lng (Br N) - 1 \<in> {J. J < Lng (Br N) \<and> entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
                                   \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}"
-    using gtN by simp
+    using gtN J1lt by simp
   show ?thesis using LSN Min_le[OF fin mem] by simp
 qed
 
@@ -103943,13 +103944,13 @@ text \<open>\<^bold>\<open>Run facts at \<open>J\<^sub>1 - 1\<close>\<close> (wh
 lemma bfx_run_prev:
   fixes N :: pairseq
   assumes reg: "vg7x_reg4 N"
-    and fin: "finite {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+    and fin: "finite {J. J < Lng (Br N) \<and> entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
                          \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}"
     and rgt: "LastStep N < Lng (Br N) - 1"
   shows "entry (Br N ! (Lng (Br N) - 2)) 0 0 = entry (Br N ! (Lng (Br N) - 1)) 0 0"
     and "entry (Br N ! (Lng (Br N) - 2)) 1 0 < entry (Br N ! (Lng (Br N) - 2)) 0 0"
 proof -
-  let ?S = "{J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+  let ?S = "{J. J < Lng (Br N) \<and> entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
                 \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}"
   have reg4: "vg4x_reg4 N" using reg by (simp add: vg7x_reg4_def)
   have reg2: "vg2x_reg2 N" using reg4 by (simp add: vg4x_reg4_def vg3x_reg3_def)
@@ -103957,7 +103958,8 @@ proof -
   have gtN: "entry (Br N ! (Lng (Br N) - 1)) 1 0 < entry (Br N ! (Lng (Br N) - 1)) 0 0"
     by (rule bfx_gtN[OF reg])
   have LSN: "LastStep N = Min ?S" by (rule vgx_LastStep_elsecase[OF Brne gtN])
-  have J1mem: "Lng (Br N) - 1 \<in> ?S" using gtN by simp
+  have J1lt: "Lng (Br N) - 1 < Lng (Br N)" using Brne by (cases "Br N") auto
+  have J1mem: "Lng (Br N) - 1 \<in> ?S" using gtN J1lt by simp
   have Sne: "?S \<noteq> {}" using J1mem by blast
   have LSmem: "LastStep N \<in> ?S" using LSN Min_in[OF fin Sne] by simp
   have LS0: "entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! (LastStep N)) 0 0"
@@ -104000,7 +104002,7 @@ text \<open>\<^bold>\<open>JEQ --- run branches share the joint.\<close>  The \<
 lemma bfx_JEQ:
   fixes N :: pairseq
   assumes reg: "vg7x_reg4 N"
-    and fin: "finite {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+    and fin: "finite {J. J < Lng (Br N) \<and> entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
                          \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}"
     and rgt: "LastStep N < Lng (Br N) - 1"
   shows "Joints N ! (Lng (Br N) - 2) = Joints N ! (Lng (Br N) - 1)"
@@ -104150,7 +104152,7 @@ text \<open>The peeled host's LAST branch head equals the host's \<open>J\<^sub>
 lemma bfx_tgt_Pred_base:
   fixes N :: pairseq
   assumes reg: "vg7x_reg4 N" and base: "cfbx_j1p N = Lng N - 1"
-    and fin: "finite {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+    and fin: "finite {J. J < Lng (Br N) \<and> entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
                          \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}"
     and rgt: "LastStep N < Lng (Br N) - 1"
   shows "entry (Br (Pred N) ! (Lng (Br (Pred N)) - 1)) 0 0
@@ -104170,7 +104172,7 @@ qed
 lemma bfx_gtP_base:
   fixes N :: pairseq
   assumes reg: "vg7x_reg4 N" and base: "cfbx_j1p N = Lng N - 1"
-    and fin: "finite {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+    and fin: "finite {J. J < Lng (Br N) \<and> entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
                          \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}"
     and rgt: "LastStep N < Lng (Br N) - 1"
   shows "entry (Br (Pred N) ! (Lng (Br (Pred N)) - 1)) 1 0
@@ -104195,7 +104197,7 @@ text \<open>Pointwise \<open>Min\<close>-set agreement below the peel index.\<cl
 lemma bfx_finset_mem_lt_base:
   fixes N :: pairseq and J :: nat
   assumes reg: "vg7x_reg4 N" and base: "cfbx_j1p N = Lng N - 1"
-    and fin: "finite {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+    and fin: "finite {J. J < Lng (Br N) \<and> entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
                          \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}"
     and rgt: "LastStep N < Lng (Br N) - 1"
     and JBr: "J < Lng (Br (Pred N))"
@@ -104221,16 +104223,16 @@ text \<open>\<open>fin\<close> is preserved by the branch-peel: the peeled set i
 lemma bfx_fin_Pred_base:
   fixes N :: pairseq
   assumes reg: "vg7x_reg4 N" and base: "cfbx_j1p N = Lng N - 1"
-    and fin: "finite {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+    and fin: "finite {J. J < Lng (Br N) \<and> entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
                          \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}"
     and rgt: "LastStep N < Lng (Br N) - 1"
-  shows "finite {J. entry (Br (Pred N) ! (Lng (Br (Pred N)) - 1)) 0 0
+  shows "finite {J. J < Lng (Br (Pred N)) \<and> entry (Br (Pred N) ! (Lng (Br (Pred N)) - 1)) 0 0
                       = entry (Br (Pred N) ! J) 0 0
                     \<and> entry (Br (Pred N) ! J) 1 0 < entry (Br (Pred N) ! J) 0 0}"
 proof -
-  let ?S = "{J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+  let ?S = "{J. J < Lng (Br N) \<and> entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
                 \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}"
-  let ?S' = "{J. entry (Br (Pred N) ! (Lng (Br (Pred N)) - 1)) 0 0
+  let ?S' = "{J. J < Lng (Br (Pred N)) \<and> entry (Br (Pred N) ! (Lng (Br (Pred N)) - 1)) 0 0
                    = entry (Br (Pred N) ! J) 0 0
                  \<and> entry (Br (Pred N) ! J) 1 0 < entry (Br (Pred N) ! J) 0 0}"
   have BrLenP: "Lng (Br (Pred N)) = Lng (Br N) - 1"
@@ -104239,39 +104241,12 @@ proof -
   have tgt': "entry (Br (Pred N) ! (Lng (Br (Pred N)) - 1)) 0 0
             = entry (Br N ! (Lng (Br N) - 1)) 0 0"
     by (rule bfx_tgt_Pred_base[OF reg base fin rgt])
-  have sub: "?S' \<subseteq> ?S \<union> Suc -` ?S"
-  proof
-    fix J assume JS': "J \<in> ?S'"
-    show "J \<in> ?S \<union> Suc -` ?S"
-    proof (cases "J < Lng (Br (Pred N))")
-      case True
-      have "J \<in> ?S"
-        using JS' bfx_finset_mem_lt_base[OF reg base fin rgt True] by blast
-      thus ?thesis by blast
-    next
-      case False
-      have lP: "length (Br (Pred N)) \<le> J" using False by simp
-      have ovP: "Br (Pred N) ! J = [] ! (J - length (Br (Pred N)))"
-        by (rule bpx_nth_overflow[OF lP])
-      have lN: "length (Br N) \<le> Suc J" using False BrLenP by arith
-      have ovN: "Br N ! (Suc J) = [] ! (Suc J - length (Br N))"
-        by (rule bpx_nth_overflow[OF lN])
-      have idxeq: "J - length (Br (Pred N)) = Suc J - length (Br N)"
-        using BrLenP BrL2 by arith
-      have breq: "Br (Pred N) ! J = Br N ! (Suc J)" using ovP ovN idxeq by simp
-      have pj: "entry (Br (Pred N) ! (Lng (Br (Pred N)) - 1)) 0 0
-                  = entry (Br (Pred N) ! J) 0 0
-              \<and> entry (Br (Pred N) ! J) 1 0 < entry (Br (Pred N) ! J) 0 0"
-        using JS' by simp
-      have "entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! (Suc J)) 0 0
-          \<and> entry (Br N ! (Suc J)) 1 0 < entry (Br N ! (Suc J)) 0 0"
-        using pj tgt' breq by simp
-      hence "Suc J \<in> ?S" by simp
-      thus ?thesis by blast
-    qed
-  qed
-  have fin2: "finite (Suc -` ?S)" by (rule finite_vimageI[OF fin inj_Suc])
-  show ?thesis by (rule finite_subset[OF sub finite_UnI[OF fin fin2]])
+  \<comment> \<open>CORRECTION A9 (fin-form, r69): with the \<open>J < Lng (Br M)\<close> guard in
+      @{thm [source] LastStep_def}, the peeled \<open>Min\<close>-set is a subset of
+      \<open>{..< Lng (Br (Pred N))}\<close>, so finiteness is UNCONDITIONAL --- the old
+      overflow (\<open>Suc\<close>-shift of the out-of-range junk part) argument is gone.\<close>
+  show ?thesis
+    by (rule finite_subset[of _ "{..< Lng (Br (Pred N))}"]) auto
 qed
 
 text \<open>\<open>LastStep\<close> is stable under the branch-peel (run-step regime): both hosts
@@ -104281,14 +104256,14 @@ text \<open>\<open>LastStep\<close> is stable under the branch-peel (run-step re
 lemma bfx_LastStep_Pred_base:
   fixes N :: pairseq
   assumes reg: "vg7x_reg4 N" and base: "cfbx_j1p N = Lng N - 1"
-    and fin: "finite {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+    and fin: "finite {J. J < Lng (Br N) \<and> entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
                          \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}"
     and rgt: "LastStep N < Lng (Br N) - 1"
   shows "LastStep (Pred N) = LastStep N"
 proof -
-  let ?S = "{J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+  let ?S = "{J. J < Lng (Br N) \<and> entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
                 \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}"
-  let ?S' = "{J. entry (Br (Pred N) ! (Lng (Br (Pred N)) - 1)) 0 0
+  let ?S' = "{J. J < Lng (Br (Pred N)) \<and> entry (Br (Pred N) ! (Lng (Br (Pred N)) - 1)) 0 0
                    = entry (Br (Pred N) ! J) 0 0
                  \<and> entry (Br (Pred N) ! J) 1 0 < entry (Br (Pred N) ! J) 0 0}"
   have Brne: "Br N \<noteq> []" by (rule bfx_base_setup(5)[OF reg base])
@@ -104300,14 +104275,15 @@ proof -
            < entry (Br (Pred N) ! (Lng (Br (Pred N)) - 1)) 0 0"
     by (rule bfx_gtP_base[OF reg base fin rgt])
   have LSP: "LastStep (Pred N) = Min ?S'" by (rule vgx_LastStep_elsecase[OF BrPne gtP])
-  have J1mem: "Lng (Br N) - 1 \<in> ?S" using gtN by simp
+  have J1lt: "Lng (Br N) - 1 < Lng (Br N)" using Brne by (cases "Br N") auto
+  have J1mem: "Lng (Br N) - 1 \<in> ?S" using gtN J1lt by simp
   have Sne: "?S \<noteq> {}" using J1mem by blast
   have LSmem: "LastStep N \<in> ?S" using LSN Min_in[OF fin Sne] by simp
   have BrLenP: "Lng (Br (Pred N)) = Lng (Br N) - 1"
     by (rule bfx_BrLen_Pred_base[OF reg base])
   have LSlt': "LastStep N < Lng (Br (Pred N))" using rgt BrLenP by simp
   have memS': "LastStep N \<in> ?S'"
-    using LSmem bfx_finset_mem_lt_base[OF reg base fin rgt LSlt'] by blast
+    using LSmem LSlt' bfx_finset_mem_lt_base[OF reg base fin rgt LSlt'] by blast
   have finS': "finite ?S'" by (rule bfx_fin_Pred_base[OF reg base fin rgt])
   have bound: "\<And>b. b \<in> ?S' \<Longrightarrow> LastStep N \<le> b"
   proof -
@@ -104315,7 +104291,9 @@ proof -
     show "LastStep N \<le> b"
     proof (cases "b < Lng (Br (Pred N))")
       case True
-      have "b \<in> ?S" using bS' bfx_finset_mem_lt_base[OF reg base fin rgt True] by blast
+      have bltN: "b < Lng (Br N)" using True BrLenP by linarith
+      have "b \<in> ?S"
+        using bS' bltN bfx_finset_mem_lt_base[OF reg base fin rgt True] by blast
       hence "Min ?S \<le> b" by (rule Min_le[OF fin])
       thus ?thesis using LSN by simp
     next
@@ -104331,7 +104309,7 @@ qed
 lemma bfx_Joints_Pred_last:
   fixes N :: pairseq
   assumes reg: "vg7x_reg4 N" and base: "cfbx_j1p N = Lng N - 1"
-    and fin: "finite {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+    and fin: "finite {J. J < Lng (Br N) \<and> entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
                          \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}"
     and rgt: "LastStep N < Lng (Br N) - 1"
   shows "Joints (Pred N) ! (Lng (Br (Pred N)) - 1) = Joints N ! (Lng (Br N) - 1)"
@@ -104373,7 +104351,7 @@ text \<open>\<^bold>\<open>Front-slice invariance across the branch-peel\<close>
 lemma bfx_front_Pred_base:
   fixes N :: pairseq
   assumes reg: "vg7x_reg4 N" and base: "cfbx_j1p N = Lng N - 1"
-    and fin: "finite {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+    and fin: "finite {J. J < Lng (Br N) \<and> entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
                          \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}"
     and rgt: "LastStep N < Lng (Br N) - 1"
   shows "seg (Pred N) 0 (FirstNodes (Pred N) ! (LastStep (Pred N)) - 1)
@@ -104406,7 +104384,7 @@ text \<open>\<^bold>\<open>Terminal-slice transport across the branch-peel\<clos
 lemma bfx_term_Pred_base:
   fixes N :: pairseq
   assumes reg: "vg7x_reg4 N" and base: "cfbx_j1p N = Lng N - 1"
-    and fin: "finite {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+    and fin: "finite {J. J < Lng (Br N) \<and> entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
                          \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}"
     and rgt: "LastStep N < Lng (Br N) - 1"
   shows "seg (Pred N) (Joints (Pred N) ! (Lng (Br (Pred N)) - 1)) (Lng (Pred N) - 1)
@@ -104448,7 +104426,7 @@ text \<open>\<^bold>\<open>Run-peel regime preservation\<close>: \<open>vg7x_reg
 lemma bfx_RPERS_base:
   fixes N :: pairseq
   assumes reg: "vg7x_reg4 N" and base: "cfbx_j1p N = Lng N - 1"
-    and fin: "finite {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+    and fin: "finite {J. J < Lng (Br N) \<and> entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
                          \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}"
     and rgt: "LastStep N < Lng (Br N) - 1"
   shows "vg7x_reg4 (Pred N)"
@@ -104500,7 +104478,7 @@ lemma bfx_VE3_base_step:
   assumes reg: "vg7x_reg4 N" and base: "cfbx_j1p N = Lng N - 1"
     and rgt: "LastStep N < Lng (Br N) - 1"
     and ihP: "vg2x_VE34 (Pred N)"
-    and fin: "finite {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+    and fin: "finite {J. J < Lng (Br N) \<and> entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
                          \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}"
   shows "\<exists>t2. bpHeadT (Trans (seg N (Joints N ! (Lng (Br N) - 1)) (Lng N - 1)))
             = bpHeadT (Trans (seg N 0 (FirstNodes N ! (LastStep N) - 1))) +\<^sub>B t2
@@ -104561,7 +104539,7 @@ lemma bfx_VE34_base_step_modTSPIN:
   assumes reg: "vg7x_reg4 N" and base: "cfbx_j1p N = Lng N - 1"
     and rgt: "LastStep N < Lng (Br N) - 1"
     and ihP: "vg2x_VE34 (Pred N)"
-    and fin: "finite {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+    and fin: "finite {J. J < Lng (Br N) \<and> entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
                          \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}"
     and PIN: "\<exists>a. Trans N = Dpt (enat (entry N 1 0))
                 (bpHeadT (Trans (seg N 0 (FirstNodes N ! (LastStep N) - 1)))
@@ -104636,32 +104614,32 @@ text \<open>\<^bold>\<open>The three-case back-peel skeleton\<close>: strong ind
 
 lemma bfx_VE34_backpeel_fin3:
   assumes BASE0f: "\<And>N. vg7x_reg4 N
-      \<Longrightarrow> finite {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+      \<Longrightarrow> finite {J. J < Lng (Br N) \<and> entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
                      \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}
       \<Longrightarrow> cfbx_j1p N = Lng N - 1 \<Longrightarrow> LastStep N = Lng (Br N) - 1 \<Longrightarrow> vg2x_VE34 N"
     and BASERf: "\<And>N. vg7x_reg4 N
-      \<Longrightarrow> finite {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+      \<Longrightarrow> finite {J. J < Lng (Br N) \<and> entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
                      \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}
       \<Longrightarrow> cfbx_j1p N = Lng N - 1 \<Longrightarrow> LastStep N < Lng (Br N) - 1
       \<Longrightarrow> vg7x_reg4 (Pred N) \<Longrightarrow> vg2x_VE34 (Pred N) \<Longrightarrow> vg2x_VE34 N"
     and STEPf: "\<And>N. vg7x_reg4 N
-      \<Longrightarrow> finite {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+      \<Longrightarrow> finite {J. J < Lng (Br N) \<and> entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
                      \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}
       \<Longrightarrow> cfbx_j1p N < Lng N - 1 \<Longrightarrow> vg7x_reg4 (Pred N)
       \<Longrightarrow> vg2x_VE34 (Pred N) \<Longrightarrow> vg2x_VE34 N"
     and M: "vg7x_reg4 M"
-    and finM: "finite {J. entry (Br M ! (Lng (Br M) - 1)) 0 0 = entry (Br M ! J) 0 0
+    and finM: "finite {J. J < Lng (Br M) \<and> entry (Br M ! (Lng (Br M) - 1)) 0 0 = entry (Br M ! J) 0 0
                           \<and> entry (Br M ! J) 1 0 < entry (Br M ! J) 0 0}"
   shows "vg2x_VE34 M"
 proof -
   have gen: "\<And>M0. vg7x_reg4 M0
-      \<and> finite {J. entry (Br M0 ! (Lng (Br M0) - 1)) 0 0 = entry (Br M0 ! J) 0 0
+      \<and> finite {J. J < Lng (Br M0) \<and> entry (Br M0 ! (Lng (Br M0) - 1)) 0 0 = entry (Br M0 ! J) 0 0
                    \<and> entry (Br M0 ! J) 1 0 < entry (Br M0 ! J) 0 0}
       \<longrightarrow> vg2x_VE34 M0"
   proof -
     fix M0 :: pairseq
     show "vg7x_reg4 M0
-      \<and> finite {J. entry (Br M0 ! (Lng (Br M0) - 1)) 0 0 = entry (Br M0 ! J) 0 0
+      \<and> finite {J. J < Lng (Br M0) \<and> entry (Br M0 ! (Lng (Br M0) - 1)) 0 0 = entry (Br M0 ! J) 0 0
                    \<and> entry (Br M0 ! J) 1 0 < entry (Br M0 ! J) 0 0}
       \<longrightarrow> vg2x_VE34 M0"
     proof (induction M0 rule: measure_induct_rule[where f = Lng])
@@ -104669,10 +104647,10 @@ proof -
       show ?case
       proof
         assume regfin: "vg7x_reg4 M0
-          \<and> finite {J. entry (Br M0 ! (Lng (Br M0) - 1)) 0 0 = entry (Br M0 ! J) 0 0
+          \<and> finite {J. J < Lng (Br M0) \<and> entry (Br M0 ! (Lng (Br M0) - 1)) 0 0 = entry (Br M0 ! J) 0 0
                        \<and> entry (Br M0 ! J) 1 0 < entry (Br M0 ! J) 0 0}"
         have reg: "vg7x_reg4 M0" using regfin by blast
-        have fin: "finite {J. entry (Br M0 ! (Lng (Br M0) - 1)) 0 0 = entry (Br M0 ! J) 0 0
+        have fin: "finite {J. J < Lng (Br M0) \<and> entry (Br M0 ! (Lng (Br M0) - 1)) 0 0 = entry (Br M0 ! J) 0 0
                               \<and> entry (Br M0 ! J) 1 0 < entry (Br M0 ! J) 0 0}"
           using regfin by blast
         have reg4: "vg4x_reg4 M0" using reg by (simp add: vg7x_reg4_def)
@@ -104696,7 +104674,7 @@ proof -
             case False
             have rgt: "LastStep M0 < Lng (Br M0) - 1" using LSle False by linarith
             have regP: "vg7x_reg4 (Pred M0)" by (rule bfx_RPERS_base[OF reg base fin rgt])
-            have finP: "finite {J. entry (Br (Pred M0) ! (Lng (Br (Pred M0)) - 1)) 0 0
+            have finP: "finite {J. J < Lng (Br (Pred M0)) \<and> entry (Br (Pred M0) ! (Lng (Br (Pred M0)) - 1)) 0 0
                                      = entry (Br (Pred M0) ! J) 0 0
                                    \<and> entry (Br (Pred M0) ! J) 1 0
                                      < entry (Br (Pred M0) ! J) 0 0}"
@@ -104712,7 +104690,7 @@ proof -
           have lt: "cfbx_j1p M0 < Lng M0 - 1" using j1pLt False by linarith
           have L2: "1 < Lng M0" using lt by linarith
           have regP: "vg7x_reg4 (Pred M0)" by (rule vg7x_RPERS[OF reg lt])
-          have finP: "finite {J. entry (Br (Pred M0) ! (Lng (Br (Pred M0)) - 1)) 0 0
+          have finP: "finite {J. J < Lng (Br (Pred M0)) \<and> entry (Br (Pred M0) ! (Lng (Br (Pred M0)) - 1)) 0 0
                                    = entry (Br (Pred M0) ! J) 0 0
                                  \<and> entry (Br (Pred M0) ! J) 1 0
                                    < entry (Br (Pred M0) ! J) 0 0}"
@@ -104738,24 +104716,24 @@ text \<open>\<^bold>\<open>Master assembly\<close>: \<open>vg2x_VE34\<close> on 
 lemma bfx_VE34_of_reg_modTSPIN_PIN_SPLIT0:
   fixes M :: pairseq
   assumes regM: "vg7x_reg4 M"
-    and finM: "finite {J. entry (Br M ! (Lng (Br M) - 1)) 0 0 = entry (Br M ! J) 0 0
+    and finM: "finite {J. J < Lng (Br M) \<and> entry (Br M ! (Lng (Br M) - 1)) 0 0 = entry (Br M ! J) 0 0
                           \<and> entry (Br M ! J) 1 0 < entry (Br M ! J) 0 0}"
     and TSPIN: "\<And>N a. vg7x_reg4 N
-      \<Longrightarrow> finite {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+      \<Longrightarrow> finite {J. J < Lng (Br N) \<and> entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
                      \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}
       \<Longrightarrow> Trans N = Dpt (enat (entry N 1 0))
              (bpHeadT (Trans (seg N 0 (FirstNodes N ! (LastStep N) - 1)))
               +\<^sub>B Dpt (enat (entry N 1 (Joints N ! (Lng (Br N) - 1)))) a)
       \<Longrightarrow> a = bpHeadT (Trans (seg N (Joints N ! (Lng (Br N) - 1)) (Lng N - 1)))"
     and PIN: "\<And>N. vg7x_reg4 N
-      \<Longrightarrow> finite {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+      \<Longrightarrow> finite {J. J < Lng (Br N) \<and> entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
                      \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}
       \<Longrightarrow> cfbx_j1p N = Lng N - 1
       \<Longrightarrow> \<exists>a. Trans N = Dpt (enat (entry N 1 0))
              (bpHeadT (Trans (seg N 0 (FirstNodes N ! (LastStep N) - 1)))
               +\<^sub>B Dpt (enat (entry N 1 (Joints N ! (Lng (Br N) - 1)))) a)"
     and SPLIT0: "\<And>N. vg7x_reg4 N
-      \<Longrightarrow> finite {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+      \<Longrightarrow> finite {J. J < Lng (Br N) \<and> entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
                      \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}
       \<Longrightarrow> cfbx_j1p N = Lng N - 1 \<Longrightarrow> LastStep N = Lng (Br N) - 1
       \<Longrightarrow> \<exists>t2. bpHeadT (Trans (seg N (Joints N ! (Lng (Br N) - 1)) (Lng N - 1)))
@@ -104764,13 +104742,13 @@ lemma bfx_VE34_of_reg_modTSPIN_PIN_SPLIT0:
   shows "vg2x_VE34 M"
 proof -
   have B0: "\<And>N. vg7x_reg4 N
-      \<Longrightarrow> finite {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+      \<Longrightarrow> finite {J. J < Lng (Br N) \<and> entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
                      \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}
       \<Longrightarrow> cfbx_j1p N = Lng N - 1 \<Longrightarrow> LastStep N = Lng (Br N) - 1 \<Longrightarrow> vg2x_VE34 N"
   proof -
     fix N :: pairseq
     assume r: "vg7x_reg4 N"
-      and f: "finite {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+      and f: "finite {J. J < Lng (Br N) \<and> entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
                          \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}"
       and b: "cfbx_j1p N = Lng N - 1"
       and r0: "LastStep N = Lng (Br N) - 1"
@@ -104779,14 +104757,14 @@ proof -
                                               TSPIN[OF r f]])
   qed
   have BR: "\<And>N. vg7x_reg4 N
-      \<Longrightarrow> finite {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+      \<Longrightarrow> finite {J. J < Lng (Br N) \<and> entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
                      \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}
       \<Longrightarrow> cfbx_j1p N = Lng N - 1 \<Longrightarrow> LastStep N < Lng (Br N) - 1
       \<Longrightarrow> vg7x_reg4 (Pred N) \<Longrightarrow> vg2x_VE34 (Pred N) \<Longrightarrow> vg2x_VE34 N"
   proof -
     fix N :: pairseq
     assume r: "vg7x_reg4 N"
-      and f: "finite {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+      and f: "finite {J. J < Lng (Br N) \<and> entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
                          \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}"
       and b: "cfbx_j1p N = Lng N - 1"
       and rgt: "LastStep N < Lng (Br N) - 1"
@@ -104797,14 +104775,14 @@ proof -
                                               TSPIN[OF r f]])
   qed
   have ST: "\<And>N. vg7x_reg4 N
-      \<Longrightarrow> finite {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+      \<Longrightarrow> finite {J. J < Lng (Br N) \<and> entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
                      \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}
       \<Longrightarrow> cfbx_j1p N < Lng N - 1 \<Longrightarrow> vg7x_reg4 (Pred N)
       \<Longrightarrow> vg2x_VE34 (Pred N) \<Longrightarrow> vg2x_VE34 N"
   proof -
     fix N :: pairseq
     assume r: "vg7x_reg4 N"
-      and f: "finite {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+      and f: "finite {J. J < Lng (Br N) \<and> entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
                          \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}"
       and l: "cfbx_j1p N < Lng N - 1"
       and rP: "vg7x_reg4 (Pred N)"
@@ -104823,25 +104801,25 @@ text \<open>\<^bold>\<open>The BASEf slot of @{thm [source] bpx_VE34_of_DT_modBA
 lemma bfx_VE34_base_modTSPIN_PIN_SPLIT0:
   fixes N :: pairseq
   assumes reg: "vg7x_reg4 N"
-    and fin: "finite {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+    and fin: "finite {J. J < Lng (Br N) \<and> entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
                          \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}"
     and base: "cfbx_j1p N = Lng N - 1"
     and TSPIN: "\<And>N a. vg7x_reg4 N
-      \<Longrightarrow> finite {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+      \<Longrightarrow> finite {J. J < Lng (Br N) \<and> entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
                      \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}
       \<Longrightarrow> Trans N = Dpt (enat (entry N 1 0))
              (bpHeadT (Trans (seg N 0 (FirstNodes N ! (LastStep N) - 1)))
               +\<^sub>B Dpt (enat (entry N 1 (Joints N ! (Lng (Br N) - 1)))) a)
       \<Longrightarrow> a = bpHeadT (Trans (seg N (Joints N ! (Lng (Br N) - 1)) (Lng N - 1)))"
     and PIN: "\<And>N. vg7x_reg4 N
-      \<Longrightarrow> finite {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+      \<Longrightarrow> finite {J. J < Lng (Br N) \<and> entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
                      \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}
       \<Longrightarrow> cfbx_j1p N = Lng N - 1
       \<Longrightarrow> \<exists>a. Trans N = Dpt (enat (entry N 1 0))
              (bpHeadT (Trans (seg N 0 (FirstNodes N ! (LastStep N) - 1)))
               +\<^sub>B Dpt (enat (entry N 1 (Joints N ! (Lng (Br N) - 1)))) a)"
     and SPLIT0: "\<And>N. vg7x_reg4 N
-      \<Longrightarrow> finite {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+      \<Longrightarrow> finite {J. J < Lng (Br N) \<and> entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
                      \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}
       \<Longrightarrow> cfbx_j1p N = Lng N - 1 \<Longrightarrow> LastStep N = Lng (Br N) - 1
       \<Longrightarrow> \<exists>t2. bpHeadT (Trans (seg N (Joints N ! (Lng (Br N) - 1)) (Lng N - 1)))
@@ -104866,24 +104844,24 @@ lemma bfx_VE34_of_DT_modTSPIN_PIN_SPLIT0:
                   < entry M 0 (FirstNodes M ! (Lng (Br M) - 1))"
     and j0pos: "0 < Joints M ! (Lng (Br M) - 1)"
     and j0lt:  "Joints M ! (Lng (Br M) - 1) < TrMax M"
-    and finM: "finite {J. entry (Br M ! (Lng (Br M) - 1)) 0 0 = entry (Br M ! J) 0 0
+    and finM: "finite {J. J < Lng (Br M) \<and> entry (Br M ! (Lng (Br M) - 1)) 0 0 = entry (Br M ! J) 0 0
                           \<and> entry (Br M ! J) 1 0 < entry (Br M ! J) 0 0}"
     and TSPIN: "\<And>N a. vg7x_reg4 N
-      \<Longrightarrow> finite {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+      \<Longrightarrow> finite {J. J < Lng (Br N) \<and> entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
                      \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}
       \<Longrightarrow> Trans N = Dpt (enat (entry N 1 0))
              (bpHeadT (Trans (seg N 0 (FirstNodes N ! (LastStep N) - 1)))
               +\<^sub>B Dpt (enat (entry N 1 (Joints N ! (Lng (Br N) - 1)))) a)
       \<Longrightarrow> a = bpHeadT (Trans (seg N (Joints N ! (Lng (Br N) - 1)) (Lng N - 1)))"
     and PIN: "\<And>N. vg7x_reg4 N
-      \<Longrightarrow> finite {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+      \<Longrightarrow> finite {J. J < Lng (Br N) \<and> entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
                      \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}
       \<Longrightarrow> cfbx_j1p N = Lng N - 1
       \<Longrightarrow> \<exists>a. Trans N = Dpt (enat (entry N 1 0))
              (bpHeadT (Trans (seg N 0 (FirstNodes N ! (LastStep N) - 1)))
               +\<^sub>B Dpt (enat (entry N 1 (Joints N ! (Lng (Br N) - 1)))) a)"
     and SPLIT0: "\<And>N. vg7x_reg4 N
-      \<Longrightarrow> finite {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+      \<Longrightarrow> finite {J. J < Lng (Br N) \<and> entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
                      \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}
       \<Longrightarrow> cfbx_j1p N = Lng N - 1 \<Longrightarrow> LastStep N = Lng (Br N) - 1
       \<Longrightarrow> \<exists>t2. bpHeadT (Trans (seg N (Joints N ! (Lng (Br N) - 1)) (Lng N - 1)))
@@ -105916,7 +105894,7 @@ lemma bgx_VE34_base_step:
   assumes reg: "vg7x_reg4 N" and base: "cfbx_j1p N = Lng N - 1"
     and rgt: "LastStep N < Lng (Br N) - 1"
     and ihP: "vg2x_VE34 (Pred N)"
-    and fin: "finite {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+    and fin: "finite {J. J < Lng (Br N) \<and> entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
                          \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}"
   shows "vg2x_VE34 N"
 proof -
@@ -106077,16 +106055,16 @@ text \<open>\<^bold>\<open>Capstone (r47, intermediate)\<close>: \<open>vg2x_VE3
 lemma bgx_VE34_of_reg_modNOTLEFT_HEADEQ:
   fixes M :: pairseq
   assumes regM: "vg7x_reg4 M"
-    and finM: "finite {J. entry (Br M ! (Lng (Br M) - 1)) 0 0 = entry (Br M ! J) 0 0
+    and finM: "finite {J. J < Lng (Br M) \<and> entry (Br M ! (Lng (Br M) - 1)) 0 0 = entry (Br M ! J) 0 0
                           \<and> entry (Br M ! J) 1 0 < entry (Br M ! J) 0 0}"
     and NL0: "\<And>N. vg7x_reg4 N
-      \<Longrightarrow> finite {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+      \<Longrightarrow> finite {J. J < Lng (Br N) \<and> entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
                      \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}
       \<Longrightarrow> cfbx_j1p N = Lng N - 1 \<Longrightarrow> LastStep N = Lng (Br N) - 1
       \<Longrightarrow> bpHeadV (PB (transT2 N) ! (Lng (PB (transT2 N)) - 1))
             \<noteq> enat (entry N 1 (transJ0 N))"
     and HE0: "\<And>N. vg7x_reg4 N
-      \<Longrightarrow> finite {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+      \<Longrightarrow> finite {J. J < Lng (Br N) \<and> entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
                      \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}
       \<Longrightarrow> cfbx_j1p N = Lng N - 1 \<Longrightarrow> LastStep N = Lng (Br N) - 1
       \<Longrightarrow> bpHeadT (Trans (Pred (seg N (Joints N ! (Lng (Br N) - 1)) (Lng N - 1))))
@@ -106094,13 +106072,13 @@ lemma bgx_VE34_of_reg_modNOTLEFT_HEADEQ:
   shows "vg2x_VE34 M"
 proof -
   have B0: "\<And>N. vg7x_reg4 N
-      \<Longrightarrow> finite {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+      \<Longrightarrow> finite {J. J < Lng (Br N) \<and> entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
                      \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}
       \<Longrightarrow> cfbx_j1p N = Lng N - 1 \<Longrightarrow> LastStep N = Lng (Br N) - 1 \<Longrightarrow> vg2x_VE34 N"
   proof -
     fix N :: pairseq
     assume r: "vg7x_reg4 N"
-      and f: "finite {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+      and f: "finite {J. J < Lng (Br N) \<and> entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
                          \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}"
       and b: "cfbx_j1p N = Lng N - 1"
       and r0: "LastStep N = Lng (Br N) - 1"
@@ -106108,14 +106086,14 @@ proof -
       by (rule bgx_VE34_base_run0_mod[OF r b r0 NL0[OF r f b r0] HE0[OF r f b r0]])
   qed
   have BR: "\<And>N. vg7x_reg4 N
-      \<Longrightarrow> finite {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+      \<Longrightarrow> finite {J. J < Lng (Br N) \<and> entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
                      \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}
       \<Longrightarrow> cfbx_j1p N = Lng N - 1 \<Longrightarrow> LastStep N < Lng (Br N) - 1
       \<Longrightarrow> vg7x_reg4 (Pred N) \<Longrightarrow> vg2x_VE34 (Pred N) \<Longrightarrow> vg2x_VE34 N"
   proof -
     fix N :: pairseq
     assume r: "vg7x_reg4 N"
-      and f: "finite {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+      and f: "finite {J. J < Lng (Br N) \<and> entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
                          \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}"
       and b: "cfbx_j1p N = Lng N - 1"
       and rgt: "LastStep N < Lng (Br N) - 1"
@@ -106124,14 +106102,14 @@ proof -
     show "vg2x_VE34 N" by (rule bgx_VE34_base_step[OF r b rgt ih f])
   qed
   have ST: "\<And>N. vg7x_reg4 N
-      \<Longrightarrow> finite {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+      \<Longrightarrow> finite {J. J < Lng (Br N) \<and> entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
                      \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}
       \<Longrightarrow> cfbx_j1p N < Lng N - 1 \<Longrightarrow> vg7x_reg4 (Pred N)
       \<Longrightarrow> vg2x_VE34 (Pred N) \<Longrightarrow> vg2x_VE34 N"
   proof -
     fix N :: pairseq
     assume r: "vg7x_reg4 N"
-      and f: "finite {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+      and f: "finite {J. J < Lng (Br N) \<and> entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
                          \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}"
       and l: "cfbx_j1p N < Lng N - 1"
       and rP: "vg7x_reg4 (Pred N)"
@@ -106321,7 +106299,7 @@ text \<open>\<^bold>\<open>NOTLEFT0 discharged\<close>: at a run-base BASE host,
 lemma bgx_notleft_run0:
   fixes N :: pairseq
   assumes reg: "vg7x_reg4 N" and base: "cfbx_j1p N = Lng N - 1"
-    and fin: "finite {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+    and fin: "finite {J. J < Lng (Br N) \<and> entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
                          \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}"
     and r0: "LastStep N = Lng (Br N) - 1"
   shows "bpHeadV (PB (transT2 N) ! (Lng (PB (transT2 N)) - 1))
@@ -106536,11 +106514,11 @@ proof -
             using he_p he_1 jqeq brhd_p0 brhd_10 by simp
           have grd: "entry (Br N ! ?Jp) 1 0 < entry (Br N ! ?Jp) 0 0"
             using gt brhd_p0 brhd_p1 by simp
-          have JpS: "?Jp \<in> {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+          have JpS: "?Jp \<in> {J. J < Lng (Br N) \<and> entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
                               \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}"
-            using hdeq grd by simp
+            using hdeq grd JpltBrN by simp
           have LSmin: "LastStep N
-              = Min {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+              = Min {J. J < Lng (Br N) \<and> entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
                         \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}"
             by (rule vgx_LastStep_elsecase[OF Brne bfx_gtN[OF reg]])
           have "LastStep N \<le> ?Jp" using LSmin Min_le[OF fin JpS] by simp
@@ -106594,10 +106572,10 @@ text \<open>\<^bold>\<open>Capstone (r47)\<close>: \<open>vg2x_VE34\<close> on e
 lemma bgx_VE34_of_reg_modHEADEQ:
   fixes M :: pairseq
   assumes regM: "vg7x_reg4 M"
-    and finM: "finite {J. entry (Br M ! (Lng (Br M) - 1)) 0 0 = entry (Br M ! J) 0 0
+    and finM: "finite {J. J < Lng (Br M) \<and> entry (Br M ! (Lng (Br M) - 1)) 0 0 = entry (Br M ! J) 0 0
                           \<and> entry (Br M ! J) 1 0 < entry (Br M ! J) 0 0}"
     and HE0: "\<And>N. vg7x_reg4 N
-      \<Longrightarrow> finite {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+      \<Longrightarrow> finite {J. J < Lng (Br N) \<and> entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
                      \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}
       \<Longrightarrow> cfbx_j1p N = Lng N - 1 \<Longrightarrow> LastStep N = Lng (Br N) - 1
       \<Longrightarrow> bpHeadT (Trans (Pred (seg N (Joints N ! (Lng (Br N) - 1)) (Lng N - 1))))
@@ -106605,7 +106583,7 @@ lemma bgx_VE34_of_reg_modHEADEQ:
   shows "vg2x_VE34 M"
 proof -
   have NL0: "\<And>N. vg7x_reg4 N
-      \<Longrightarrow> finite {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+      \<Longrightarrow> finite {J. J < Lng (Br N) \<and> entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
                      \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}
       \<Longrightarrow> cfbx_j1p N = Lng N - 1 \<Longrightarrow> LastStep N = Lng (Br N) - 1
       \<Longrightarrow> bpHeadV (PB (transT2 N) ! (Lng (PB (transT2 N)) - 1))
@@ -106628,10 +106606,10 @@ lemma bgx_VE34_of_DT_modHEADEQ:
                   < entry M 0 (FirstNodes M ! (Lng (Br M) - 1))"
     and j0pos: "0 < Joints M ! (Lng (Br M) - 1)"
     and j0lt:  "Joints M ! (Lng (Br M) - 1) < TrMax M"
-    and finM: "finite {J. entry (Br M ! (Lng (Br M) - 1)) 0 0 = entry (Br M ! J) 0 0
+    and finM: "finite {J. J < Lng (Br M) \<and> entry (Br M ! (Lng (Br M) - 1)) 0 0 = entry (Br M ! J) 0 0
                           \<and> entry (Br M ! J) 1 0 < entry (Br M ! J) 0 0}"
     and HE0: "\<And>N. vg7x_reg4 N
-      \<Longrightarrow> finite {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+      \<Longrightarrow> finite {J. J < Lng (Br N) \<and> entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
                      \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}
       \<Longrightarrow> cfbx_j1p N = Lng N - 1 \<Longrightarrow> LastStep N = Lng (Br N) - 1
       \<Longrightarrow> bpHeadT (Trans (Pred (seg N (Joints N ! (Lng (Br N) - 1)) (Lng N - 1))))
@@ -107790,7 +107768,7 @@ text \<open>\<^bold>\<open>HEADEQ0\<close>: at a run-base BASE host, the deep he
 lemma hqx_HEADEQ0:
   fixes N :: pairseq
   assumes reg: "vg7x_reg4 N"
-    and fin: "finite {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+    and fin: "finite {J. J < Lng (Br N) \<and> entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
                          \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}"
     and base: "cfbx_j1p N = Lng N - 1"
     and r0: "LastStep N = Lng (Br N) - 1"
@@ -107985,11 +107963,11 @@ proof -
           by (rule entry_FirstNodes_eq_component_gen[OF NP JpltBrN])
         have grd: "entry (Br N ! ?Jp) 1 0 < entry (Br N ! ?Jp) 0 0"
           using gt brhd_p0 brhd_p1 by simp
-        have JpS: "?Jp \<in> {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+        have JpS: "?Jp \<in> {J. J < Lng (Br N) \<and> entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
                             \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}"
-          using hdeq grd by simp
+          using hdeq grd JpltBrN by simp
         have LSmin: "LastStep N
-            = Min {J. entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
+            = Min {J. J < Lng (Br N) \<and> entry (Br N ! (Lng (Br N) - 1)) 0 0 = entry (Br N ! J) 0 0
                       \<and> entry (Br N ! J) 1 0 < entry (Br N ! J) 0 0}"
           by (rule vgx_LastStep_elsecase[OF Brne bfx_gtN[OF reg]])
         have "LastStep N \<le> ?Jp" using LSmin Min_le[OF fin JpS] by simp
@@ -108039,7 +108017,7 @@ text \<open>\<^bold>\<open>CAPSTONE (r48)\<close>: \<open>vg2x_VE34\<close> on e
 lemma hqx_VE34_of_reg:
   fixes M :: pairseq
   assumes regM: "vg7x_reg4 M"
-    and finM: "finite {J. entry (Br M ! (Lng (Br M) - 1)) 0 0 = entry (Br M ! J) 0 0
+    and finM: "finite {J. J < Lng (Br M) \<and> entry (Br M ! (Lng (Br M) - 1)) 0 0 = entry (Br M ! J) 0 0
                           \<and> entry (Br M ! J) 1 0 < entry (Br M ! J) 0 0}"
   shows "vg2x_VE34 M"
   by (rule bgx_VE34_of_reg_modHEADEQ[OF regM finM hqx_HEADEQ0])
@@ -108054,7 +108032,7 @@ lemma hqx_VE34_of_DT:
                   < entry M 0 (FirstNodes M ! (Lng (Br M) - 1))"
     and j0pos: "0 < Joints M ! (Lng (Br M) - 1)"
     and j0lt:  "Joints M ! (Lng (Br M) - 1) < TrMax M"
-    and finM: "finite {J. entry (Br M ! (Lng (Br M) - 1)) 0 0 = entry (Br M ! J) 0 0
+    and finM: "finite {J. J < Lng (Br M) \<and> entry (Br M ! (Lng (Br M) - 1)) 0 0 = entry (Br M ! J) 0 0
                           \<and> entry (Br M ! J) 1 0 < entry (Br M ! J) 0 0}"
   shows "vg2x_VE34 M"
   by (rule bgx_VE34_of_DT_modHEADEQ[OF MDT Brne guard j0pos j0lt finM hqx_HEADEQ0])
@@ -108075,7 +108053,7 @@ lemma hqx_condIIIV_of_DT:
     and j0lt:  "Joints M ! (Lng (Br M) - 1) < TrMax M"
     and guard: "entry M 1 (FirstNodes M ! (Lng (Br M) - 1))
                   < entry M 0 (FirstNodes M ! (Lng (Br M) - 1))"
-    and fin: "finite {J. entry (Br M ! (Lng (Br M) - 1)) 0 0 = entry (Br M ! J) 0 0
+    and fin: "finite {J. J < Lng (Br M) \<and> entry (Br M ! (Lng (Br M) - 1)) 0 0 = entry (Br M ! J) 0 0
                          \<and> entry (Br M ! J) 1 0 < entry (Br M ! J) 0 0}"
   shows "\<exists>!t12.
       Trans (seg M 0 (FirstNodes M ! (LastStep M) - 1)) = Dpt (enat (entry M 1 0)) (fst t12)
@@ -109817,7 +109795,7 @@ lemma tvx_tailval_of_boundary:
               < entry (Red (seg M (Adm M (parent M 0 (Lng M - 1))) (Lng M - 2))) 0
                   (FirstNodes (Red (seg M (Adm M (parent M 0 (Lng M - 1))) (Lng M - 2)))
                      ! (Lng (Br (Red (seg M (Adm M (parent M 0 (Lng M - 1))) (Lng M - 2)))) - 1))"
-    and FIN: "finite {J. entry (Br (Red (seg M (Adm M (parent M 0 (Lng M - 1))) (Lng M - 2)))
+    and FIN: "finite {J. J < Lng (Br (Red (seg M (Adm M (parent M 0 (Lng M - 1))) (Lng M - 2)))) \<and> entry (Br (Red (seg M (Adm M (parent M 0 (Lng M - 1))) (Lng M - 2)))
                              ! (Lng (Br (Red (seg M (Adm M (parent M 0 (Lng M - 1))) (Lng M - 2)))) - 1)) 0 0
                          = entry (Br (Red (seg M (Adm M (parent M 0 (Lng M - 1))) (Lng M - 2))) ! J) 0 0
                        \<and> entry (Br (Red (seg M (Adm M (parent M 0 (Lng M - 1))) (Lng M - 2))) ! J) 1 0
@@ -109953,7 +109931,7 @@ text \<open>\<^bold>\<open>The \<open>fin\<close> side condition at \<open>R\<^s
 
 definition tvx_finRc :: "pairseq \<Rightarrow> bool" where
   "tvx_finRc K \<longleftrightarrow>
-     finite {J. entry (Br (tvx_Rc K) ! (Lng (Br (tvx_Rc K)) - 1)) 0 0
+     finite {J. J < Lng (Br (tvx_Rc K)) \<and> entry (Br (tvx_Rc K) ! (Lng (Br (tvx_Rc K)) - 1)) 0 0
                   = entry (Br (tvx_Rc K) ! J) 0 0
               \<and> entry (Br (tvx_Rc K) ! J) 1 0 < entry (Br (tvx_Rc K) ! J) 0 0}"
 
@@ -110004,7 +109982,7 @@ proof -
   let ?jLr = "Joints ?Rc ! (Lng (Br ?Rc) - 1)"
   let ?fnr = "FirstNodes ?Rc ! (Lng (Br ?Rc) - 1)"
   have MR: "K \<in> RT_PS" using KST m_6_7_ST_PS_subseteq_RT_PS by blast
-  have FINr: "finite {J. entry (Br ?Rc ! (Lng (Br ?Rc) - 1)) 0 0
+  have FINr: "finite {J. J < Lng (Br ?Rc) \<and> entry (Br ?Rc ! (Lng (Br ?Rc) - 1)) 0 0
                            = entry (Br ?Rc ! J) 0 0
                          \<and> entry (Br ?Rc ! J) 1 0 < entry (Br ?Rc ! J) 0 0}"
     using FINRC[OF KST KP j1gt condII] by (simp add: tvx_finRc_def tvx_Rc_def)
