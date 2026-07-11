@@ -1741,4 +1741,6 @@ Format: `line<TAB>kind<TAB>text`. Regenerate after every C->B fold.
 3178	banner	orders) is discharged from oi5_IIIIV_pkg + oi5_regime.
 3856	banner	r59 OTint: A0OT CLOSED => OTA1 pillar done (front A) + SETLE1 body-driver (front B)
 4108	subsection	The body driver \<open>BE'\<close> (hole-body domination, from \<open>tri0\<close>)
+4204	banner	r60 OTint: IVADMEQ CLOSED (front B) + SETLE1 head-guarded engine ox6_ (front A)
+4257	subsection	The head-guarded scbext-setle descent engine \<open>ox6_setle_scbext\<close>
 
