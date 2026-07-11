@@ -41,6 +41,19 @@ isbman build -m "pss-..." -d . -v PSS_B   # one-time: freeze the base (build A t
   heap (bounded — the body below is never reprocessed). The active layer stays thin.
 - **Consolidation (rare safety valve)**: to reset the growing session/file count,
   fold the frozen `pss_segN` chunks into `pss_mechanized` and rebuild `PSS_A` once.
+- **C→B fold (preferred over the freeze-chain; done 2026-07-11)**: when the active
+  scratch fattens (per-round build in the minutes), append its whole body into
+  `layerB/pss_wip.thy` (before the final `end`, with a dated banner) and reset the
+  scratch, then rebuild once. Session names, build commands and the green check all
+  stay unchanged. Measured at the 2026-07-11 fold (78k scratch lines → 118k-line
+  `pss_wip`): one-time `PSS_B` rebuild 5:31; per-round `PSS_C` build drops from
+  ~4:52 back to ~7 s. Each worktree pays the one-time `PSS_B` rebuild on its first
+  build after syncing past the fold commit. After every fold, regenerate the TOC
+  (`python3 tools/make_toc.py` → `docs/thy-toc.md`): a line-anchored index of all
+  banner comments and section headings — agents grep it for topic/round/prefix
+  orientation, then jump into the .thy at the reported line. Do NOT split the frozen
+  theory into thematic files: the body is in append (= dependency) order, grep cost
+  is size-independent, and `PSS_B` is never rebuilt per round anyway.
 - **Green = the target session's OWN `Finished` line**, NOT a bare `Finished PSS`
   (substring-matches all layers). Active build green: `grep -c 'Finished PSS_C'`
   == 1; plus no real errors and `sorry`/`oops` == 0 in the edited theory. (A `***`
