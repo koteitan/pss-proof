@@ -7404,4 +7404,1713 @@ proof -
 qed
 
 (* ===== end r67 bwo block (glue + [Buc1] Lemma 2.4(a) + 2.5 sub(1)/A2) ===== *)
+
+
+(* ===================================================================== *)
+(* ===== r68 (OPUS 4.8): the CORRECTED SETLE1 residual — the DEEP    ==== *)
+(* =====   first-difference descent.  Prefix  ox8_.                   ==== *)
+(* =====                                                              ==== *)
+(* ===== r67 REFUTED the position-0 HEAD route (bpHeadV t' < bpHeadV  ==== *)
+(* ===== X1 is FALSE: the matched-hole set contains EVERY higher      ==== *)
+(* ===== right-spine ancestor, and a higher one shares X1's outer     ==== *)
+(* ===== head).  The TRUE residual (spineH of ox6_SETLE1_reduce_restr)==== *)
+(* ===== is  leBT t' X1  for the matched right-spine ancestor bodies. ==== *)
+(* =====                                                              ==== *)
+(* ===== STEP-0 (python/_r68_deepdesc_step0.py; 1984 REAL ST_PS       ==== *)
+(* ===== census hosts = BFS-standard corpus, condIII/IV + hasParent + ==== *)
+(* ===== 1<Lng-1 + ltJ; 11306 peel levels):                           ==== *)
+(* =====   * goal   lessBT Z_k X1  : 11306/11306 (0 fails)            ==== *)
+(* =====   * X-side lessBT Y_k X1  : 11306/11306                      ==== *)
+(* =====   * VERDICT INVARIANCE    : 11306/11306 — the verdict of     ==== *)
+(* =====     lessBT (Y_k with hole body := Q) X1 is the SAME for      ==== *)
+(* =====     Q in {0, D_ub 0, A0, BIG}, i.e. the first difference     ==== *)
+(* =====     sits strictly ABOVE the hole body (so the X0 -> A0       ==== *)
+(* =====     transport is sound).                                     ==== *)
+(* =====   * X1's right spine above the hole: heads all >= v1 > ub,   ==== *)
+(* =====     and EVERY spine level is a PURE CHAIN (single principal, ==== *)
+(* =====     11306/11306) — the comparison path = the spine path.     ==== *)
+(* =====   * bpHeadV Z_k > bpHeadV X1 : NEVER (0/11306); = : 4083     ==== *)
+(* =====     (r67's CEX class, needs the deep descent); < : 7223.     ==== *)
+(* =====   * every matched tx' in GBT 0 X1 IS a spine body Y_k        ==== *)
+(* =====     (off-spine matched: 0).                                  ==== *)
+(* =====   * NEGATIVE: the stepwise chain  lessBT Y_k Y_(k-1)  FAILS  ==== *)
+(* =====     2274/11306 — so the descent CANNOT be assembled by       ==== *)
+(* =====     transitivity along the spine; it must be proved AGAINST  ==== *)
+(* =====     X1 directly (a lexicographic / self-maximality fact).    ==== *)
+(* =====   * isOT_BT X1 : 1984/1984.                                  ==== *)
+(* =====                                                              ==== *)
+(* ===== THE SOURCE OF THE DESCENT (this block).  The self-maximality ==== *)
+(* ===== of the spine is NOT an OT-generic fact (the head word can    ==== *)
+(* ===== genuinely increase: 3379 strict drops vs 5943 non-drops) —   ==== *)
+(* ===== it comes from ONE Buchholz G-condition, at the LOW enclosing ==== *)
+(* ===== head e3:  D_e3(body) is the deepest-right principal of       ==== *)
+(* ===== Trans M (the kind-1 scb block k1 of oi5_IIIIV_pkg), so       ==== *)
+(* ===== m_8_7_OT_scb_recursive gives  isOT_BP (D_e3 body), i.e.      ==== *)
+(* =====     for all x in G_e3(body).  x < body.                      ==== *)
+(* ===== And e3 < v1 (oi5_regime(1)) <= EVERY right-spine head of     ==== *)
+(* ===== body (ox7_RightNodes_body_ge_v1), so the WHOLE right spine   ==== *)
+(* ===== of body lies inside G_e3(body).  Hence EVERY right-spine     ==== *)
+(* ===== sub-body of body is < body — exactly the self-maximality     ==== *)
+(* ===== that STEP-0 measures, now unconditional.                     ==== *)
+(* ===================================================================== *)
+
+section \<open>r68 ox8 — right-spine sub-bodies and the OT \<open>G\<close>-descent\<close>
+
+subsection \<open>(1) The right-spine sub-body operators \<open>ox8_lastV\<close> / \<open>ox8_lastT\<close> /
+  \<open>ox8_rsub\<close>\<close>
+
+text \<open>\<open>ox8_lastT t\<close> = the body of the LAST principal of \<open>t\<close> (\<open>0\<close> if \<open>t = 0\<close>),
+  \<open>ox8_lastV t\<close> its head.  This is exactly the step the align3 peel
+  (@{thm [source] otx2_align3} Case B, @{thm [source] ox7_align3_track}) takes:
+  the engine's ancestor bodies are the iterates \<open>ox8_rsub t k\<close>.  Note
+  @{const RightNodes} walks the SAME chain (its defining equation reads the last
+  principal), which is what makes the r63 spine bound
+  @{thm [source] ox7_RightNodes_body_ge_v1} applicable to these iterates.\<close>
+
+fun ox8_lastV :: "BT \<Rightarrow> enat" where
+  "ox8_lastV (Trm ps) = (if ps = [] then 0 else (case last ps of DB v b \<Rightarrow> v))"
+
+fun ox8_lastT :: "BT \<Rightarrow> BT" where
+  "ox8_lastT (Trm ps) = (if ps = [] then Trm [] else (case last ps of DB v b \<Rightarrow> b))"
+
+fun ox8_rsub :: "BT \<Rightarrow> nat \<Rightarrow> BT" where
+  "ox8_rsub t 0 = t"
+| "ox8_rsub t (Suc k) = ox8_rsub (ox8_lastT t) k"
+
+text \<open>The one-step \<open>G\<^bsub>B\<^esub>\<close>-membership: the last principal's body lies in
+  \<open>G\<^sub>u t\<close> as soon as \<open>u\<close> is below that principal's head (clause (G2)).\<close>
+
+lemma ox8_lastT_GBT:
+  assumes ne: "t \<noteq> 0\<^sub>B" and uh: "u \<le> ox8_lastV t"
+  shows "ox8_lastT t \<in> GBT u t"
+proof -
+  obtain ps where tps: "t = Trm ps" by (cases t)
+  have psne: "ps \<noteq> []" using ne tps by auto
+  obtain v b where lp: "last ps = DB v b" by (cases "last ps")
+  have hv: "ox8_lastV t = v" using tps psne lp by simp
+  have ht: "ox8_lastT t = b" using tps psne lp by simp
+  have uv: "u \<le> v" using uh hv by simp
+  have bin: "b \<in> GBP u (last ps)" using uv lp by simp
+  have lin: "last ps \<in> set ps" using psne by simp
+  have "b \<in> (\<Union>p \<in> set ps. GBP u p)" using bin lin by blast
+  hence "b \<in> GBT u t" using tps by simp
+  thus ?thesis using ht by simp
+qed
+
+text \<open>Iterated: every right-spine sub-body \<open>ox8_rsub t k\<close> (\<open>k \<ge> 1\<close>) lies in
+  \<open>G\<^sub>u t\<close>, provided the spine is alive and its heads stay \<open>\<ge> u\<close> down to level
+  \<open>k-1\<close> (@{thm [source] b1x_GBT_trans} closes the chain).\<close>
+
+lemma ox8_rsub_GBT:
+  "\<lbrakk> 1 \<le> k; \<forall>j<k. ox8_rsub t j \<noteq> 0\<^sub>B \<and> u \<le> ox8_lastV (ox8_rsub t j) \<rbrakk>
+     \<Longrightarrow> ox8_rsub t k \<in> GBT u t"
+proof (induction k arbitrary: t)
+  case 0 thus ?case by simp
+next
+  case (Suc k)
+  have tne: "t \<noteq> 0\<^sub>B" and htv: "u \<le> ox8_lastV t" using Suc.prems(2) by force+
+  have step: "ox8_lastT t \<in> GBT u t" by (rule ox8_lastT_GBT[OF tne htv])
+  show ?case
+  proof (cases "k = 0")
+    case True
+    have "ox8_rsub t (Suc 0) = ox8_lastT t" by simp
+    thus ?thesis using step True by simp
+  next
+    case False
+    hence k1: "1 \<le> k" by simp
+    have prem: "\<forall>j<k. ox8_rsub (ox8_lastT t) j \<noteq> 0\<^sub>B
+                       \<and> u \<le> ox8_lastV (ox8_rsub (ox8_lastT t) j)"
+    proof (intro allI impI)
+      fix j assume jk: "j < k"
+      have sj: "Suc j < Suc k" using jk by simp
+      have H: "ox8_rsub t (Suc j) \<noteq> 0\<^sub>B \<and> u \<le> ox8_lastV (ox8_rsub t (Suc j))"
+        using Suc.prems(2) sj by blast
+      show "ox8_rsub (ox8_lastT t) j \<noteq> 0\<^sub>B
+             \<and> u \<le> ox8_lastV (ox8_rsub (ox8_lastT t) j)"
+        using H by simp
+    qed
+    have IH: "ox8_rsub (ox8_lastT t) k \<in> GBT u (ox8_lastT t)"
+      by (rule Suc.IH[OF k1 prem])
+    have sub: "GBT u (ox8_lastT t) \<subseteq> GBT u t" by (rule b1x_GBT_trans[OF step])
+    have "ox8_rsub t (Suc k) = ox8_rsub (ox8_lastT t) k" by simp
+    thus ?thesis using IH sub by auto
+  qed
+qed
+
+subsection \<open>(2) The \<open>G\<close>-descent: an \<open>OT\<close> principal bounds its whole right spine\<close>
+
+text \<open>@{text ox8_rsub_lessBT_of_OTP}: THE descent engine.  If \<open>D\<^sub>u t\<close> is an \<open>OT\<close>
+  principal (clause (OT2): \<open>G\<^sub>u t < t\<close>) and \<open>u\<close> is below every right-spine head
+  of \<open>t\<close> down to level \<open>k-1\<close>, then the \<open>k\<close>-th right-spine sub-body of \<open>t\<close> is
+  \<^emph>\<open>strictly below \<open>t\<close> itself\<close>.  This is the ONLY source of the census
+  spine-descent: STEP-0 shows the head word genuinely increases along the spine
+  (so no monotone/step-wise argument can work), and the stepwise chain
+  \<open>Y\<^sub>k < Y\<^bsub>k-1\<^esub>\<close> is FALSE (2274/11306) — but the \<^emph>\<open>direct\<close> bound against the
+  whole term holds always, and this lemma is why.\<close>
+
+lemma ox8_rsub_lessBT_of_OTP:
+  assumes otp: "isOT_BP (DB u t)"
+    and kge: "1 \<le> k"
+    and alive: "\<forall>j<k. ox8_rsub t j \<noteq> 0\<^sub>B \<and> u \<le> ox8_lastV (ox8_rsub t j)"
+  shows "lessBT (ox8_rsub t k) t"
+proof -
+  have G: "\<forall>x \<in> GBT u t. lessBT x t" using otp by simp
+  have mem: "ox8_rsub t k \<in> GBT u t" by (rule ox8_rsub_GBT[OF kge alive])
+  show ?thesis using G mem by blast
+qed
+
+subsection \<open>(3) \<open>RightNodes\<close> reads exactly the \<open>ox8_rsub\<close> chain\<close>
+
+lemma ox8_RightNodes_cons:
+  assumes ne: "t \<noteq> 0\<^sub>B"
+  shows "RightNodes t = the_enat (ox8_lastV t) # RightNodes (ox8_lastT t)"
+proof -
+  obtain ps where tps: "t = Trm ps" by (cases t)
+  have psne: "ps \<noteq> []" using ne tps by auto
+  obtain v b where lp: "last ps = DB v b" by (cases "last ps")
+  have R: "RightNodes (Trm ps) = the_enat v # RightNodes b"
+  proof (cases ps)
+    case Nil thus ?thesis using psne by simp
+  next
+    case (Cons p qs)
+    have "RightNodes (Trm (p # qs))
+            = (case last (p # qs) of DB u a \<Rightarrow> the_enat u # RightNodes a)" by simp
+    thus ?thesis using Cons lp by simp
+  qed
+  have hv: "ox8_lastV t = v" using tps psne lp by simp
+  have ht: "ox8_lastT t = b" using tps psne lp by simp
+  show ?thesis using R tps hv ht by simp
+qed
+
+lemma ox8_rsub_head_RN:
+  "\<lbrakk> \<forall>j\<le>k. ox8_rsub t j \<noteq> 0\<^sub>B \<rbrakk>
+     \<Longrightarrow> the_enat (ox8_lastV (ox8_rsub t k)) \<in> set (RightNodes t)"
+proof (induction k arbitrary: t)
+  case 0
+  have tne: "t \<noteq> 0\<^sub>B" using 0 by force
+  have "RightNodes t = the_enat (ox8_lastV t) # RightNodes (ox8_lastT t)"
+    by (rule ox8_RightNodes_cons[OF tne])
+  thus ?case by simp
+next
+  case (Suc k)
+  have tne: "t \<noteq> 0\<^sub>B" using Suc.prems by force
+  have prem: "\<forall>j\<le>k. ox8_rsub (ox8_lastT t) j \<noteq> 0\<^sub>B"
+  proof (intro allI impI)
+    fix j assume "j \<le> k"
+    hence sj: "Suc j \<le> Suc k" by simp
+    have H: "ox8_rsub t (Suc j) \<noteq> 0\<^sub>B" using Suc.prems sj by blast
+    show "ox8_rsub (ox8_lastT t) j \<noteq> 0\<^sub>B" using H by simp
+  qed
+  have IH: "the_enat (ox8_lastV (ox8_rsub (ox8_lastT t) k))
+              \<in> set (RightNodes (ox8_lastT t))" by (rule Suc.IH[OF prem])
+  have "RightNodes t = the_enat (ox8_lastV t) # RightNodes (ox8_lastT t)"
+    by (rule ox8_RightNodes_cons[OF tne])
+  thus ?case using IH by simp
+qed
+
+subsection \<open>(4) \<open>d\<close>-freeness along the spine\<close>
+
+lemma ox8_dfree_lastT: "dfree_BT t \<Longrightarrow> dfree_BT (ox8_lastT t)"
+proof -
+  assume df: "dfree_BT t"
+  obtain ps where tps: "t = Trm ps" by (cases t)
+  show ?thesis
+  proof (cases "ps = []")
+    case True thus ?thesis using tps by simp
+  next
+    case False
+    obtain v b where lp: "last ps = DB v b" by (cases "last ps")
+    have dfps: "\<forall>p \<in> set ps. dfree_BP p" using df tps by simp
+    have mem: "DB v b \<in> set ps" using False lp by (metis last_in_set)
+    have "dfree_BP (DB v b)" using dfps mem by blast
+    hence "dfree_BT b" by simp
+    thus ?thesis using tps False lp by simp
+  qed
+qed
+
+lemma ox8_dfree_rsub: "dfree_BT t \<Longrightarrow> dfree_BT (ox8_rsub t k)"
+proof (induction k arbitrary: t)
+  case 0 thus ?case by simp
+next
+  case (Suc k)
+  have "dfree_BT (ox8_lastT t)" by (rule ox8_dfree_lastT[OF Suc.prems])
+  thus ?case using Suc.IH by simp
+qed
+
+lemma ox8_dfree_lastV:
+  assumes df: "dfree_BT t" and ne: "t \<noteq> 0\<^sub>B"
+  shows "ox8_lastV t \<noteq> \<infinity>"
+proof -
+  obtain ps where tps: "t = Trm ps" by (cases t)
+  have psne: "ps \<noteq> []" using ne tps by auto
+  obtain v b where lp: "last ps = DB v b" by (cases "last ps")
+  have dfps: "\<forall>p \<in> set ps. dfree_BP p" using df tps by simp
+  have mem: "DB v b \<in> set ps" using psne lp by (metis last_in_set)
+  have "dfree_BP (DB v b)" using dfps mem by blast
+  hence "v \<noteq> \<infinity>" by simp
+  thus ?thesis using tps psne lp by simp
+qed
+
+subsection \<open>(5) Census: \<open>D\<^bsub>e\<^sub>3\<^esub>(body)\<close> is an \<open>OT\<close> principal\<close>
+
+text \<open>@{text ox8_OTP_e3_body}: the kind-1 scb block \<open>k\<^sub>1\<close> of
+  @{thm [source] oi5_IIIIV_pkg} says \<open>flat (Trans M) = s\<^sub>1 \<frown> flat (D\<^bsub>e\<^sub>3\<^esub> body) \<frown> b\<^sub>1\<close>
+  with \<open>b\<^sub>1\<close> all-\<open>RP\<close>, i.e. \<open>D\<^bsub>e\<^sub>3\<^esub>(body)\<close> is a genuine right-spine component of
+  \<open>Trans M \<in> OT\<^bsub>B\<^esub>\<close>.  \<open>OT\<close>-heredity at scb positions
+  (@{thm [source] m_8_7_OT_scb_recursive}) hands us the \<open>OT\<close> principal, hence
+  Buchholz's (OT2) condition \<open>G\<^bsub>e\<^sub>3\<^esub>(body) < body\<close>.\<close>
+
+lemma ox8_OTP_e3_body:
+  fixes M :: pairseq
+  assumes MST: "M \<in> ST_PS" and MPT: "M \<in> PT_PS"
+    and hp: "hasParent M 1 (Lng M - 1)"
+    and j1gt: "1 < Lng M - 1"
+    and branch: "transCondIII M \<or> transCondIV M"
+    and ihOT: "Trans M \<in> OT_B"
+    and ltJ: "s84x_jm3 M < transJm1 M"
+  shows "isOT_BP (DB (enat (entry M 1 (s84x_jm3 M)))
+                     (bpHeadT (Trans (s84x_N M))))"
+proof -
+  let ?e3 = "entry M 1 (s84x_jm3 M)"
+  let ?body = "bpHeadT (Trans (s84x_N M))"
+  obtain s0 b0 s1 b1 where
+    k1: "scb_kind1 (Trans M) s1 (flatBT (Dpt (enat ?e3) ?body)) b1"
+    by (rule oi5_IIIIV_pkg[OF MST MPT hp j1gt branch ltJ])
+  have scb: "scb_decomp (Trans M) s1 (flatBT (Dpt (enat ?e3) ?body)) b1"
+    using k1 by (simp add: scb_kind1_def)
+  have bodyTB: "?body \<in> T_B" by (rule oi5_regime(3)[OF MST MPT hp j1gt branch])
+  have cTB: "Dpt (enat ?e3) ?body \<in> T_B" using bodyTB by (simp add: T_B_def)
+  have "Dpt (enat ?e3) ?body \<in> OT"
+    by (rule m_8_7_OT_scb_recursive[OF ihOT cTB scb])
+  thus ?thesis by (simp add: OT_def)
+qed
+
+subsection \<open>(6) CENSUS KEYSTONE: every right-spine sub-body of \<open>body\<close> is
+  \<open>< body\<close> (the self-maximality of the spine)\<close>
+
+text \<open>@{text ox8_body_rspine_lessBT}: the census form of the descent.  \<open>e\<^sub>3 < v\<^sub>1\<close>
+  (@{thm [source] oi5_regime}(1)) and every right-spine head of \<open>body\<close> is \<open>\<ge> v\<^sub>1\<close>
+  (@{thm [source] ox7_RightNodes_body_ge_v1}), so \<open>e\<^sub>3\<close> is below the WHOLE right
+  spine; @{thm [source] ox8_rsub_lessBT_of_OTP} then bounds every right-spine
+  sub-body by \<open>body\<close>.  This is the fact STEP-0 measures (11306/11306) and the
+  ONLY available source of it (the spine head word is NOT monotone, and the
+  stepwise descent is false).\<close>
+
+theorem ox8_body_rspine_lessBT:
+  fixes M :: pairseq and k :: nat
+  assumes MST: "M \<in> ST_PS" and MPT: "M \<in> PT_PS"
+    and hp: "hasParent M 1 (Lng M - 1)"
+    and j1gt: "1 < Lng M - 1"
+    and branch: "transCondIII M \<or> transCondIV M"
+    and ihOT: "Trans M \<in> OT_B"
+    and ltJ: "s84x_jm3 M < transJm1 M"
+    and kge: "1 \<le> k"
+    and alive: "\<forall>j<k. ox8_rsub (bpHeadT (Trans (s84x_N M))) j \<noteq> 0\<^sub>B"
+  shows "lessBT (ox8_rsub (bpHeadT (Trans (s84x_N M))) k)
+                (bpHeadT (Trans (s84x_N M)))"
+proof -
+  let ?e3 = "entry M 1 (s84x_jm3 M)"
+  let ?v1 = "entry M 1 (Lng M - 1)"
+  let ?body = "bpHeadT (Trans (s84x_N M))"
+  have otp: "isOT_BP (DB (enat ?e3) ?body)"
+    by (rule ox8_OTP_e3_body[OF MST MPT hp j1gt branch ihOT ltJ])
+  have e3lt: "?e3 < ?v1" by (rule oi5_regime(1)[OF MST MPT hp j1gt branch])
+  have RNge: "\<forall>x \<in> set (RightNodes ?body). ?v1 \<le> x"
+    by (rule ox7_RightNodes_body_ge_v1[OF MST MPT hp j1gt branch ltJ])
+  have bodyTB: "?body \<in> T_B" by (rule oi5_regime(3)[OF MST MPT hp j1gt branch])
+  have dfb: "dfree_BT ?body" using bodyTB by (simp add: T_B_def)
+  have alive': "\<forall>j<k. ox8_rsub ?body j \<noteq> 0\<^sub>B
+                      \<and> enat ?e3 \<le> ox8_lastV (ox8_rsub ?body j)"
+  proof (intro allI impI)
+    fix j assume jk: "j < k"
+    have ne: "ox8_rsub ?body j \<noteq> 0\<^sub>B" using alive jk by simp
+    have prem: "\<forall>i\<le>j. ox8_rsub ?body i \<noteq> 0\<^sub>B"
+    proof (intro allI impI)
+      fix i assume "i \<le> j"
+      hence "i < k" using jk by simp
+      thus "ox8_rsub ?body i \<noteq> 0\<^sub>B" using alive by simp
+    qed
+    have mem: "the_enat (ox8_lastV (ox8_rsub ?body j)) \<in> set (RightNodes ?body)"
+      by (rule ox8_rsub_head_RN[OF prem])
+    have ge: "?v1 \<le> the_enat (ox8_lastV (ox8_rsub ?body j))" using RNge mem by blast
+    have dfj: "dfree_BT (ox8_rsub ?body j)" by (rule ox8_dfree_rsub[OF dfb])
+    have fin: "ox8_lastV (ox8_rsub ?body j) \<noteq> \<infinity>" by (rule ox8_dfree_lastV[OF dfj ne])
+    obtain i where vi: "ox8_lastV (ox8_rsub ?body j) = enat i"
+      using fin by (cases "ox8_lastV (ox8_rsub ?body j)") auto
+    have "?v1 \<le> i" using ge vi by simp
+    hence "?e3 \<le> i" using e3lt by simp
+    hence "enat ?e3 \<le> ox8_lastV (ox8_rsub ?body j)" using vi by simp
+    thus "ox8_rsub ?body j \<noteq> 0\<^sub>B \<and> enat ?e3 \<le> ox8_lastV (ox8_rsub ?body j)"
+      using ne by simp
+  qed
+  show ?thesis by (rule ox8_rsub_lessBT_of_OTP[OF otp kge alive'])
+qed
+
+subsection \<open>(7) STATUS — the EXACT residual after r68: the surgery TRANSPORT\<close>
+
+text \<open>
+  \<^bold>\<open>What is now proven (unconditionally).\<close>  @{thm [source] ox8_body_rspine_lessBT}:
+  for the census host \<open>M\<close> (\<open>ST_PS\<close>, \<open>PT_PS\<close>, \<open>hasParent\<close>, \<open>1 < Lng M - 1\<close>,
+  \<open>condIII \<or> condIV\<close>, \<open>Trans M \<in> OT\<^bsub>B\<^esub>\<close>, \<open>ltJ\<close>) EVERY right-spine sub-body of
+  \<open>body = bpHeadT (Trans (s84x_N M))\<close> is \<^emph>\<open>strictly below \<open>body\<close>\<close>.  This is the
+  \<^bold>\<open>self-maximality\<close> of the census spine — the fact the SETLE1 descent needs, and
+  (per STEP-0) the only true one: the spine head word is NOT monotone (3379
+  strict drops among 11306 levels), and the stepwise chain
+  \<open>Y\<^sub>k < Y\<^bsub>k-1\<^esub>\<close> is FALSE (2274/11306), so nothing weaker than the direct
+  \<open>G\<close>-condition bound can produce it.
+
+  \<^bold>\<open>The one remaining gap: the surgery TRANSPORT.\<close>  The census \<open>spineH\<close>
+  (@{thm [source] ox6_SETLE1_reduce_restr}) compares the peel bodies of the
+  \<^emph>\<open>surgered\<close> trees: with \<open>X\<^sub>0 = D\<^bsub>ub\<^esub>0\<close>, \<open>X\<^sub>1 = d4vx_ins s\<^sub>0 ub b\<^sub>0 X\<^sub>0\<close>,
+  \<open>A\<^sub>1 = d4vx_ins s\<^sub>0 ub b\<^sub>0 A\<^sub>0\<close>, it needs
+  \[ \<open>leBT (ox8_rsub A\<^sub>1 k) X\<^sub>1\<close> \qquad (k \<ge> 1), \]
+  whereas the \<open>G\<close>-descent gives the \<^emph>\<open>leaf\<close>-version
+  \<open>lessBT (ox8_rsub body k) body\<close>.  \<open>X\<^sub>1\<close> / \<open>A\<^sub>1\<close> are \<open>body\<close> with its deepest-right
+  LEAF principal \<open>D\<^bsub>v\<^sub>1\<^esub>0\<close> replaced by \<open>D\<^bsub>ub\<^esub>X\<^sub>0\<close> / \<open>D\<^bsub>ub\<^esub>A\<^sub>0\<close> (\<open>ub = v\<^sub>1 - 1 < v\<^sub>1\<close>),
+  and the peel keeps the two sides aligned: at every align3 level the three
+  trees share \<open>(qs, w, sc, bc)\<close> (@{thm [source] ox7_align3_track}), so the peel
+  bodies are \<open>lbB = ox8_rsub body k\<close>, \<open>lbX = ox8_rsub X\<^sub>1 k\<close>, \<open>lbA = ox8_rsub A\<^sub>1 k\<close>
+  with the SAME context.  The needed lemma is therefore exactly
+
+  \<^bold>\<open>TRANSPORT\<close>: \<open>flatBT WB = s \<frown> flat (D\<^bsub>v\<^sub>1\<^esub>0) \<frown> b\<close>, \<open>flatBT WX = s \<frown> flat (D\<^bsub>ub\<^esub>X\<^sub>0) \<frown> b\<close>,
+  \<open>flatBT tB = sc \<frown> flat (D\<^bsub>v\<^sub>1\<^esub>0) \<frown> bc\<close>, \<open>flatBT tA = sc \<frown> flat (D\<^bsub>ub\<^esub>A\<^sub>0) \<frown> bc\<close>,
+  \<open>b, bc\<close> all-\<open>RP\<close>, \<open>s = pre \<frown> sc\<close> with \<open>pre \<noteq> []\<close>, \<open>ub < v\<^sub>1\<close>, and
+  \<open>lessBT tB WB\<close>  \<Longrightarrow>  \<open>lessBT tA WX\<close>.
+
+  STEP-0 validates TRANSPORT as verdict-INVARIANCE (11306/11306: the verdict of
+  \<open>lessBT (level-k body with hole content \<open>Q\<close>) X\<^sub>1\<close> is the same for
+  \<open>Q \<in> {0, X\<^sub>0, A\<^sub>0, BIG}\<close>), i.e. the first difference lies strictly ABOVE the hole
+  body.  Its proof is a lock-step first-difference induction: the surgery only
+  ever touches the LAST principal of each right-spine level
+  (@{thm [source] scb_to_last_component}), while the \<open>lessBT\<close> recursion walks the
+  principal lists from the LEFT, so at every position either (i) the compared
+  principals are hole-free — hence literally identical in the leaf- and the
+  surgered version, and the verdict transports verbatim; or (ii) the compared
+  principal is the hole-carrying last one, where the surgery is a strict
+  DECREASE (\<open>D\<^bsub>ub\<^esub>Q < D\<^bsub>v\<^sub>1\<^esub>0\<close> by \<open>ub < v\<^sub>1\<close>, @{thm [source] scbext_lessBT}), so a
+  verdict \<open>'<'\<close> on the left is preserved and an EQUALITY on the left becomes a
+  strict \<open>'<'\<close> — the same verdict as the leaf version's prefix rule.
+
+  \<^bold>\<open>The one case that needs a census input\<close> (and hence the exact Isar
+  obstruction).  The dangerous branch of (ii) is when the comparison reaches the
+  hole-carrying last principal of the RIGHT operand (\<open>WX\<close>) while the left operand
+  (\<open>tA\<close>) still offers a hole-FREE principal at that index — there the surgery
+  \<^emph>\<open>lowers the right side\<close> and a leaf-version \<open>'<'\<close> could flip.  This requires
+  \<open>|principal list of tA| > |principal list of WX|\<close> at a common peel depth.  STEP-0
+  shows it never happens on real census hosts, because EVERY right-spine level of
+  \<open>X\<^sub>1\<close> above the hole is a \<^bold>\<open>pure chain\<close> (a single principal; 11306/11306), so the
+  right operand's list has length 1 and the comparison at index 0 is exactly the
+  hole-carrying principal on both sides.  The missing brick is therefore either
+  (a) the chain-ness of the census spine — \<open>ox8_lastT\<close>-levels of \<open>body\<close> above the
+  hole have a single principal (a \<open>Trans\<close>-image geometry fact), or (b) a
+  head-hypothesis strong enough to rule the flip out
+  (\<open>bpHeadV\<close> of the left operand's index-\<open>|QS|\<close> principal \<open>< W\<close>, which for the
+  hole level follows from \<open>descP\<close> + \<open>ub < v\<^sub>1 \<le> W\<close> only when that principal is the
+  hole itself).  Everything else in TRANSPORT is elementary
+  (@{thm [source] scbext_lessBT}, @{thm [source] ox7_align3_track},
+  @{thm [source] ox7_headlt_lessBT}).
+
+  \<^bold>\<open>Assembly once TRANSPORT lands\<close>: TRANSPORT + @{thm [source] ox8_body_rspine_lessBT}
+  give \<open>spineH\<close> of @{thm [source] ox6_SETLE1_reduce_restr} (the \<open>tx' \<in> G\<^sub>u X\<^sub>1\<close>
+  witness is not even needed — the align3-track suffix relation \<open>s\<^sub>0 = pre \<frown> sc\<close>,
+  \<open>pre \<noteq> []\<close>, is what the engine really supplies), hence the census
+  \<open>SETLE1_ltJ\<close> slot of @{thm [source] oi8_census_final_ivadmeq}, leaving
+  \<open>{FINRC}\<close> only.
+\<close>
+
+(* ===== end r68 ox8 block (part 1: the G-descent source; residual = TRANSPORT) ===== *)
+
+
+(* =====================================================================
+   r68 bwl block.  Prefix  bwl_  ([Buc1] \<section>2 with the CORRECT semantics for
+   \<open>W\<^sub>v\<close>: the LEAST FIXPOINT of the accessibility operator \<open>A\<^sub>v\<close>).
+   ===================================================================== *)
+
+text \<open>\<^bold>\<open>Why this block exists.\<close>  Round 66 transcribed [Buc1] \<section>2 but defined the
+  level sets by \<^emph>\<open>accessibility\<close>, \<open>bwo_Wlev u = {z. D\<^sub>u z \<in> acc RPrel}\<close>.  With that
+  reading Buchholz's leastness principle
+
+    (A2)  \<open>A\<^sub>u(Y) \<subseteq> Y \<Longrightarrow> W\<^sub>u \<subseteq> Y\<close>
+
+  is NOT free — it becomes a cofinality statement about fundamental sequences —
+  and round 67 had to carry it as an explicit hypothesis of
+  @{thm [source] bwo_2_5_sub1}.  But in [1] p.137 \<open>W\<^sub>v\<close> is by DEFINITION the
+  \<^bold>\<open>iterated inductive definition\<close> generated by
+
+    (W1) \<open>0 \<in> W\<^sub>v\<close>;
+    (W2) \<open>dom(a) \<in> {{0}, \<nat>}\<close>, \<open>\<forall>n. a[n] \<in> W\<^sub>v\<close> \<Longrightarrow> \<open>a \<in> W\<^sub>v\<close>;
+    (W3) \<open>dom(a) = T\<^sub>u\<close> with \<open>u < v\<close>, \<open>\<forall>z \<in> W\<^sub>u. a[z] \<in> W\<^sub>v\<close> \<Longrightarrow> \<open>a \<in> W\<^sub>v\<close>
+
+  i.e. \<open>W\<^sub>v = lfp (A\<^sub>v)\<close> where the LOWER levels \<open>W\<^sub>u\<close> \<open>(u < v)\<close> occur as
+  \<^emph>\<open>parameters\<close> (this is exactly why it is an ITERATED inductive definition: the
+  occurrence of \<open>W\<^sub>u\<close> in (W3) is not monotone in the set being generated, so the
+  whole family cannot be produced by a single \<open>lfp\<close>).  With that definition
+  (A1) and (A2) are the fixpoint equation and the induction rule of the
+  \<open>lfp\<close> — FREE.  We rebuild the \<section>2 machinery on that basis.\<close>
+
+subsection \<open>(1) The operator \<open>A\<^sub>\<nu>\<close>, parametrised by the lower-level family\<close>
+
+text \<open>[1] p.138(1)(2), with the lower levels supplied as a parameter \<open>Wf\<close>.\<close>
+
+definition bwl_Aop :: "(nat \<Rightarrow> BT set) \<Rightarrow> enat \<Rightarrow> BT set \<Rightarrow> BT \<Rightarrow> bool" where
+  "bwl_Aop Wf nv X a \<longleftrightarrow>
+     a = Trm [] \<or>
+     ((domB a = {Trm []} \<or> domB a = NatSet) \<and> (\<forall>n. operB a (numBT n) \<in> X)) \<or>
+     (\<exists>u. enat u < nv \<and> domB a = TBv (enat u) \<and> (\<forall>z \<in> Wf u. operB a z \<in> X))"
+
+definition bwl_Aset :: "(nat \<Rightarrow> BT set) \<Rightarrow> enat \<Rightarrow> BT set \<Rightarrow> BT set" where
+  "bwl_Aset Wf nv X = {a. bwl_Aop Wf nv X a}"
+
+lemma bwl_Aop_mono_X:
+  assumes "bwl_Aop Wf nv X a" and "X \<subseteq> Y"
+  shows "bwl_Aop Wf nv Y a"
+  using assms unfolding bwl_Aop_def by blast
+
+lemma bwl_Aset_mono: "mono (bwl_Aset Wf nv)"
+proof (rule monoI)
+  fix X Y :: "BT set" assume XY: "X \<subseteq> Y"
+  show "bwl_Aset Wf nv X \<subseteq> bwl_Aset Wf nv Y"
+    unfolding bwl_Aset_def using XY by (blast intro: bwl_Aop_mono_X)
+qed
+
+text \<open>Level monotonicity of the operator itself ([1] uses \<open>A\<^sub>u(X) \<subseteq> A\<^sub>\<nu>(X)\<close> for
+  \<open>u \<le> \<nu>\<close> in the proof of 2.5(1)).\<close>
+
+lemma bwl_Aop_mono_nv:
+  assumes le: "nv \<le> nv'" and a: "bwl_Aop Wf nv X a"
+  shows "bwl_Aop Wf nv' X a"
+  using a le unfolding bwl_Aop_def by (blast intro: less_le_trans)
+
+text \<open>\<open>A\<^sub>\<nu>\<close> only reads the levels \<open>u < \<nu>\<close> of its family parameter.\<close>
+
+lemma bwl_Aop_cong:
+  assumes W: "\<And>u. enat u < nv \<Longrightarrow> Wf u = Wg u"
+  shows "bwl_Aop Wf nv X a = bwl_Aop Wg nv X a"
+proof -
+  have "\<And>u. enat u < nv \<Longrightarrow>
+          (\<forall>z \<in> Wf u. operB a z \<in> X) = (\<forall>z \<in> Wg u. operB a z \<in> X)"
+    using W by simp
+  hence "(\<exists>u. enat u < nv \<and> domB a = TBv (enat u) \<and> (\<forall>z \<in> Wf u. operB a z \<in> X))
+       = (\<exists>u. enat u < nv \<and> domB a = TBv (enat u) \<and> (\<forall>z \<in> Wg u. operB a z \<in> X))"
+    by blast
+  thus ?thesis unfolding bwl_Aop_def by blast
+qed
+
+subsection \<open>(2) The iterated inductive definition \<open>W\<^sub>v = lfp A\<^sub>v\<close>\<close>
+
+text \<open>\<open>bwl_Wf n\<close> is the family of levels \<^emph>\<open>below\<close> \<open>n\<close> (levels \<open>\<ge> n\<close> are junk \<open>{}\<close>);
+  each stage is an honest \<open>lfp\<close> of the (monotone) operator built from the
+  previously-defined stages.\<close>
+
+primrec bwl_Wf :: "nat \<Rightarrow> nat \<Rightarrow> BT set" where
+  "bwl_Wf 0 = (\<lambda>u. {})"
+| "bwl_Wf (Suc v) =
+     (\<lambda>u. if u = v then lfp (bwl_Aset (bwl_Wf v) (enat v)) else bwl_Wf v u)"
+
+definition bwl_W :: "nat \<Rightarrow> BT set" where
+  "bwl_W u = bwl_Wf (Suc u) u"
+
+lemma bwl_Wf_coh: "u < n \<Longrightarrow> bwl_Wf n u = bwl_Wf (Suc u) u"
+proof (induction n)
+  case 0 thus ?case by simp
+next
+  case (Suc v)
+  show ?case
+  proof (cases "u = v")
+    case True thus ?thesis by simp
+  next
+    case False
+    hence ulv: "u < v" using Suc.prems by simp
+    have "bwl_Wf (Suc v) u = bwl_Wf v u" using False by simp
+    also have "\<dots> = bwl_Wf (Suc u) u" using Suc.IH[OF ulv] .
+    finally show ?thesis .
+  qed
+qed
+
+lemma bwl_Wf_eq_W: "u < n \<Longrightarrow> bwl_Wf n u = bwl_W u"
+  unfolding bwl_W_def by (rule bwl_Wf_coh)
+
+text \<open>The defining equation: \<open>W\<^sub>v\<close> IS the least fixpoint of \<open>A\<^sub>v\<close> over the family
+  \<open>W\<close> itself (the stage-truncation is invisible because \<open>A\<^sub>v\<close> only reads \<open>u < v\<close>).\<close>
+
+lemma bwl_W_unfold: "bwl_W v = lfp (bwl_Aset bwl_W (enat v))"
+proof -
+  have stage: "bwl_W v = lfp (bwl_Aset (bwl_Wf v) (enat v))"
+    unfolding bwl_W_def by simp
+  have cong: "bwl_Wf v u = bwl_W u" if "enat u < enat v" for u
+  proof -
+    have "u < v" using that by simp
+    thus ?thesis by (rule bwl_Wf_eq_W)
+  qed
+  have ptw: "bwl_Aset (bwl_Wf v) (enat v) X = bwl_Aset bwl_W (enat v) X" for X
+  proof (rule set_eqI)
+    fix a
+    show "(a \<in> bwl_Aset (bwl_Wf v) (enat v) X) = (a \<in> bwl_Aset bwl_W (enat v) X)"
+      unfolding bwl_Aset_def mem_Collect_eq
+      by (rule bwl_Aop_cong[where Wf = "bwl_Wf v" and Wg = bwl_W and nv = "enat v",
+                            OF cong])
+  qed
+  have "bwl_Aset (bwl_Wf v) (enat v) = bwl_Aset bwl_W (enat v)"
+    using ptw by (rule ext)
+  thus ?thesis using stage by simp
+qed
+
+text \<open>\<^bold>\<open>(A1)\<close> [1] p.138: \<open>A\<^sub>v(W\<^sub>v) = W\<^sub>v\<close> — the fixpoint equation, FREE.\<close>
+
+lemma bwl_A1: "bwl_Aset bwl_W (enat v) (bwl_W v) = bwl_W v"
+  using lfp_unfold[OF bwl_Aset_mono, of bwl_W "enat v", symmetric]
+  by (simp add: bwl_W_unfold)
+
+text \<open>\<^bold>\<open>(A2)\<close> [1] p.138: \<open>A\<^sub>v(Y) \<subseteq> Y \<Longrightarrow> W\<^sub>v \<subseteq> Y\<close> — the induction rule, FREE.
+  This is the hypothesis that round 67 had to assume.\<close>
+
+lemma bwl_A2:
+  assumes A: "bwl_Aset bwl_W (enat v) Y \<subseteq> Y"
+  shows "bwl_W v \<subseteq> Y"
+proof -
+  have "lfp (bwl_Aset bwl_W (enat v)) \<subseteq> Y"
+    by (rule lfp_lowerbound[of "bwl_Aset bwl_W (enat v)" Y, OF A])
+  thus ?thesis by (simp add: bwl_W_unfold)
+qed
+
+text \<open>Practical (pointwise) forms of (A1)/(A2).\<close>
+
+lemma bwl_A1_intro:
+  assumes "bwl_Aop bwl_W (enat v) (bwl_W v) a"
+  shows "a \<in> bwl_W v"
+proof -
+  have "a \<in> bwl_Aset bwl_W (enat v) (bwl_W v)"
+    using assms unfolding bwl_Aset_def by simp
+  thus ?thesis using bwl_A1 by simp
+qed
+
+lemma bwl_A1_dest:
+  assumes "a \<in> bwl_W v"
+  shows "bwl_Aop bwl_W (enat v) (bwl_W v) a"
+proof -
+  have "a \<in> bwl_Aset bwl_W (enat v) (bwl_W v)" using assms bwl_A1 by simp
+  thus ?thesis unfolding bwl_Aset_def by simp
+qed
+
+lemma bwl_A2':
+  assumes Y: "\<And>c. bwl_Aop bwl_W (enat v) Y c \<Longrightarrow> c \<in> Y"
+  shows "bwl_W v \<subseteq> Y"
+proof (rule bwl_A2, rule subsetI)
+  fix x assume "x \<in> bwl_Aset bwl_W (enat v) Y"
+  hence "bwl_Aop bwl_W (enat v) Y x" unfolding bwl_Aset_def by simp
+  thus "x \<in> Y" by (rule Y)
+qed
+
+text \<open>(W1): \<open>0 \<in> W\<^sub>v\<close>.\<close>
+
+lemma bwl_W_zero: "Trm [] \<in> bwl_W v"
+  by (rule bwl_A1_intro) (simp add: bwl_Aop_def)
+
+text \<open>(W2)/(W3) as introduction rules.\<close>
+
+lemma bwl_W2:
+  assumes d: "domB a = {Trm []} \<or> domB a = NatSet"
+    and op: "\<And>n. operB a (numBT n) \<in> bwl_W v"
+  shows "a \<in> bwl_W v"
+proof (rule bwl_A1_intro)
+  show "bwl_Aop bwl_W (enat v) (bwl_W v) a"
+    unfolding bwl_Aop_def using d op by blast
+qed
+
+lemma bwl_W3:
+  assumes uv: "u < v" and d: "domB a = TBv (enat u)"
+    and op: "\<And>z. z \<in> bwl_W u \<Longrightarrow> operB a z \<in> bwl_W v"
+  shows "a \<in> bwl_W v"
+proof (rule bwl_A1_intro)
+  have lt: "enat u < enat v" using uv by simp
+  have all: "\<forall>z \<in> bwl_W u. operB a z \<in> bwl_W v" using op by blast
+  show "bwl_Aop bwl_W (enat v) (bwl_W v) a"
+    unfolding bwl_Aop_def using lt d all by blast
+qed
+
+text \<open>[1] p.137 Proposition: \<open>u \<le> v \<Longrightarrow> W\<^sub>u \<subseteq> W\<^sub>v\<close>.  Free from (A1)+(A2)+level
+  monotonicity of \<open>A\<close>.\<close>
+
+lemma bwl_W_level_mono:
+  assumes uv: "u \<le> v"
+  shows "bwl_W u \<subseteq> bwl_W v"
+proof (rule bwl_A2')
+  fix c assume c: "bwl_Aop bwl_W (enat u) (bwl_W v) c"
+  have le: "enat u \<le> enat v" using uv by simp
+  have "bwl_Aop bwl_W (enat v) (bwl_W v) c" by (rule bwl_Aop_mono_nv[OF le c])
+  thus "c \<in> bwl_W v" by (rule bwl_A1_intro)
+qed
+
+(* ===== end r68 bwl part 1 (lfp semantics: A1/A2/W1/W2/W3/level-mono FREE) ===== *)
+
+subsection \<open>(3) [Buc1] Lemma 2.4 on the \<open>lfp\<close> semantics\<close>
+
+text \<open>2.4(a) \<open>A\<^sub>\<nu>(X) \<subseteq> X\<close>, \<open>a \<in> X\<close> \<Longrightarrow> \<open>A\<^sub>\<nu>(X\<^bsup>(a)\<^esup>) \<subseteq> X\<^bsup>(a)\<^esup>\<close> — same proof as
+  @{thm [source] bwo_2_4a_shift_closure}, but for the family-parametric \<open>bwl_Aop\<close>
+  (the lower levels enter only as an opaque set, so the argument is unchanged).\<close>
+
+lemma bwl_2_4a_shift:
+  assumes Acl: "\<And>c. bwl_Aop Wf nv X c \<Longrightarrow> c \<in> X"
+    and aX: "a \<in> X"
+    and body: "bwl_Aop Wf nv (bwo_shift a X) b"
+  shows "b \<in> bwo_shift a X"
+proof -
+  have goal: "a +\<^sub>B b \<in> X"
+  proof -
+    consider (zero) "b = Trm []"
+      | (num) "(domB b = {Trm []} \<or> domB b = NatSet)
+               \<and> (\<forall>n. operB b (numBT n) \<in> bwo_shift a X)"
+      | (tu) u where "enat u < nv" "domB b = TBv (enat u)"
+               "\<forall>z \<in> Wf u. operB b z \<in> bwo_shift a X"
+      using body[unfolded bwl_Aop_def] by blast
+    thus ?thesis
+    proof cases
+      case zero
+      thus ?thesis using aX bwo_addBT_Nil_right by simp
+    next
+      case num
+      have bne: "b \<noteq> Trm []"
+      proof
+        assume z: "b = Trm []"
+        have dz: "domB b = {}" using z bwo_domB_Nil by simp
+        have "numBT 0 \<in> NatSet" by (simp add: NatSet_def)
+        moreover have "Trm [] \<in> {Trm []}" by simp
+        ultimately show False using conjunct1[OF num] dz by auto
+      qed
+      have d: "domB (a +\<^sub>B b) = {Trm []} \<or> domB (a +\<^sub>B b) = NatSet"
+        using conjunct1[OF num] bwo_addBT_domB[OF bne] by simp
+      have op: "\<forall>n. operB (a +\<^sub>B b) (numBT n) \<in> X"
+      proof (intro allI)
+        fix n
+        have "operB b (numBT n) \<in> bwo_shift a X" using conjunct2[OF num] by blast
+        hence "a +\<^sub>B operB b (numBT n) \<in> X" by (simp add: bwo_shift_def)
+        thus "operB (a +\<^sub>B b) (numBT n) \<in> X"
+          using bwo_addBT_operB[OF bne] by simp
+      qed
+      have "bwl_Aop Wf nv X (a +\<^sub>B b)"
+        using d op unfolding bwl_Aop_def by blast
+      thus ?thesis by (rule Acl)
+    next
+      case (tu u)
+      have bne: "b \<noteq> Trm []"
+      proof
+        assume z: "b = Trm []"
+        have "TBv (enat u) = {}" using z tu(2) bwo_domB_Nil by simp
+        moreover have "Trm [] \<in> TBv (enat u)" by (simp add: TBv_def)
+        ultimately show False by simp
+      qed
+      have d: "domB (a +\<^sub>B b) = TBv (enat u)"
+        using tu(2) bwo_addBT_domB[OF bne] by simp
+      have op: "\<forall>z \<in> Wf u. operB (a +\<^sub>B b) z \<in> X"
+      proof
+        fix z assume zW: "z \<in> Wf u"
+        have "operB b z \<in> bwo_shift a X" using tu(3) zW by blast
+        hence "a +\<^sub>B operB b z \<in> X" by (simp add: bwo_shift_def)
+        thus "operB (a +\<^sub>B b) z \<in> X"
+          using bwo_addBT_operB[OF bne] by simp
+      qed
+      have "bwl_Aop Wf nv X (a +\<^sub>B b)"
+        using tu(1) d op unfolding bwl_Aop_def by blast
+      thus ?thesis by (rule Acl)
+    qed
+  qed
+  show ?thesis using goal by (simp add: bwo_shift_def)
+qed
+
+text \<open>2.4(b) \<open>a, b \<in> W\<^sub>v \<Longrightarrow> a + b \<in> W\<^sub>v\<close>.  Buchholz derives it from 2.4(a)
+  together with (A1) and (A2) — both of which are now FREE.  (This is the
+  genuine [1] 2.4(b); the r66 alias \<open>bwo_2_4b_addition_closure\<close> pointed at the
+  \<^emph>\<open>acc\<close>-side tuple lemma instead.)\<close>
+
+lemma bwl_2_4b_add:
+  assumes a: "a \<in> bwl_W v" and b: "b \<in> bwl_W v"
+  shows "a +\<^sub>B b \<in> bwl_W v"
+proof -
+  have Acl: "\<And>c. bwl_Aop bwl_W (enat v) (bwl_W v) c \<Longrightarrow> c \<in> bwl_W v"
+    by (rule bwl_A1_intro)
+  have sh: "\<And>c. bwl_Aop bwl_W (enat v) (bwo_shift a (bwl_W v)) c
+                 \<Longrightarrow> c \<in> bwo_shift a (bwl_W v)"
+    by (rule bwl_2_4a_shift[OF Acl a])
+  have "bwl_W v \<subseteq> bwo_shift a (bwl_W v)" by (rule bwl_A2'[OF sh])
+  hence "b \<in> bwo_shift a (bwl_W v)" using b by blast
+  thus ?thesis by (simp add: bwo_shift_def)
+qed
+
+text \<open>Iterated form \<open>a \<cdot> n \<in> W\<^sub>v\<close> (needed in [1] 2.6 case 3).\<close>
+
+lemma bwl_2_4b_mult:
+  assumes y: "y \<in> bwl_W v"
+  shows "y *\<^sub>B n \<in> bwl_W v"
+proof (induction n)
+  case 0 show ?case by (simp add: bwl_W_zero)
+next
+  case (Suc n)
+  show ?case using bwl_2_4b_add[OF Suc.IH y] by simp
+qed
+
+subsection \<open>(4) The numerals live in every \<open>W\<^sub>v\<close>\<close>
+
+lemma bwl_domB_one: "domB (Trm [DB 0 (Trm [])]) = {Trm []}"
+  by (subst domB_unfold) simp
+
+lemma bwl_one_W: "Trm [DB 0 (Trm [])] \<in> bwl_W v"
+proof (rule bwl_W2)
+  show "domB (Trm [DB 0 (Trm [])]) = {Trm []}
+        \<or> domB (Trm [DB 0 (Trm [])]) = NatSet"
+    using bwl_domB_one by simp
+next
+  fix n show "operB (Trm [DB 0 (Trm [])]) (numBT n) \<in> bwl_W v"
+    by (simp add: b1x_operB_D0 bwl_W_zero)
+qed
+
+lemma bwl_numBT_W: "numBT n \<in> bwl_W v"
+  using bwl_2_4b_mult[OF bwl_one_W, of n v] by (simp add: numBT_def b1x_mult_single)
+
+subsection \<open>(5) [Buc1] Lemma 2.5 sub-result (1) — now UNCONDITIONAL\<close>
+
+text \<open>Round 67 had to assume (A2) here; on the \<open>lfp\<close> semantics it is
+  @{thm [source] bwl_A2'}, so the lemma is unconditional.\<close>
+
+lemma bwl_2_5_sub1:
+  assumes Acl: "\<And>c. bwl_Aop bwl_W nv X c \<Longrightarrow> c \<in> X"
+    and aX: "a \<in> X"
+    and ult: "enat u < nv"
+  shows "a +\<^sub>B Trm [DB (enat (Suc u)) (Trm [])] \<in> X"
+proof -
+  let ?D = "Trm [DB (enat (Suc u)) (Trm [])] :: BT"
+  have Dne: "?D \<noteq> Trm []" by simp
+  have domAD: "domB (a +\<^sub>B ?D) = TBv (enat u)"
+    using bwo_addBT_domB[OF Dne] bwo_domB_Dsucc0 by simp
+  have opAD: "\<And>z. operB (a +\<^sub>B ?D) z = a +\<^sub>B z"
+  proof -
+    fix z
+    have "operB (a +\<^sub>B ?D) z = a +\<^sub>B operB ?D z" by (rule bwo_addBT_operB[OF Dne])
+    also have "\<dots> = a +\<^sub>B z" using bwo_operB_Dsucc0 by simp
+    finally show "operB (a +\<^sub>B ?D) z = a +\<^sub>B z" .
+  qed
+  have shiftAu: "\<And>c. bwl_Aop bwl_W (enat u) (bwo_shift a X) c
+                      \<Longrightarrow> c \<in> bwo_shift a X"
+  proof -
+    fix c assume "bwl_Aop bwl_W (enat u) (bwo_shift a X) c"
+    hence bnv: "bwl_Aop bwl_W nv (bwo_shift a X) c"
+      by (rule bwl_Aop_mono_nv[OF less_imp_le[OF ult]])
+    show "c \<in> bwo_shift a X" by (rule bwl_2_4a_shift[OF Acl aX bnv])
+  qed
+  have WsubShift: "bwl_W u \<subseteq> bwo_shift a X" by (rule bwl_A2'[OF shiftAu])
+  have opX: "\<forall>z \<in> bwl_W u. operB (a +\<^sub>B ?D) z \<in> X"
+  proof
+    fix z assume "z \<in> bwl_W u"
+    hence "z \<in> bwo_shift a X" using WsubShift by blast
+    hence "a +\<^sub>B z \<in> X" by (simp add: bwo_shift_def)
+    thus "operB (a +\<^sub>B ?D) z \<in> X" using opAD by simp
+  qed
+  have "bwl_Aop bwl_W nv X (a +\<^sub>B ?D)"
+    using ult domAD opX unfolding bwl_Aop_def by blast
+  thus ?thesis by (rule Acl)
+qed
+
+(* ===== end r68 bwl part 2 ([Buc1] 2.4(a),(b), numerals, 2.5(1) unconditional) ===== *)
+
+subsection \<open>(6) Shape lemmas for the principal \<open>D\<^sub>w c\<close> (guards of \<open>operB\<close>/\<open>domB\<close>)\<close>
+
+lemma bwl_domB_case_i:
+  assumes "b \<noteq> Trm []" and "domB b = {Trm []}"
+  shows "domB (Trm [DB v b]) = NatSet"
+  using assms by (subst domB_unfold) (simp add: Let_def)
+
+lemma bwl_TBv_neq_zero: "TBv (enat m) \<noteq> {Trm []}"
+proof
+  assume H: "TBv (enat m) = {Trm []}"
+  have "Trm [DB 0 (Trm [])] \<in> TBv (enat m)" by (simp add: TBv_def)
+  hence "Trm [DB 0 (Trm [])] \<in> {Trm []}" using H by simp
+  thus False by simp
+qed
+
+text \<open>If \<open>dom(c) = T\<^sub>m\<close> with \<open>m < w\<close> then the \<open>xseq\<close>-branch ([].4)(ii) of \<open>D\<^sub>w c\<close> is
+  \<^emph>\<open>not\<close> taken, so ([].4)(iii) applies: \<open>dom(D\<^sub>w c) = dom(c)\<close>, \<open>(D\<^sub>w c)[z] = D\<^sub>w(c[z])\<close>.\<close>
+
+lemma bwl_case_iii_guard_TBv:
+  assumes mw: "m < w"
+  shows "\<not> (\<exists>u. enat w \<le> enat u \<and> TBv (enat m) = TBv (enat u))"
+proof
+  assume "\<exists>u. enat w \<le> enat u \<and> TBv (enat m) = TBv (enat u)"
+  then obtain u where wu: "enat w \<le> enat u" and eq: "TBv (enat m) = TBv (enat u)"
+    by blast
+  have "m = u" using eq by (rule TBv_enat_inj)
+  thus False using wu mw by simp
+qed
+
+text \<open>\<open>D\<^sub>w 0 \<in> W\<^sub>w\<close>: for \<open>w = 0\<close> it is the numeral \<open>1\<close>; for \<open>w = s+1\<close> it is (W3) with
+  \<open>dom(D\<^bsub>s+1\<^esub>0) = T\<^sub>s\<close>, \<open>(D\<^bsub>s+1\<^esub>0)[z] = z\<close> and the level monotonicity \<open>W\<^sub>s \<subseteq> W\<^sub>w\<close>.\<close>
+
+lemma bwl_D_zero_W: "Trm [DB (enat w) (Trm [])] \<in> bwl_W w"
+proof (cases w)
+  case 0
+  have z: "enat 0 = (0 :: enat)" by (simp add: zero_enat_def)
+  show ?thesis using bwl_one_W[of 0] z 0 by simp
+next
+  case (Suc s)
+  show ?thesis
+  proof (rule bwl_W3[where u = s])
+    show "s < w" using Suc by simp
+    show "domB (Trm [DB (enat w) (Trm [])]) = TBv (enat s)"
+      using Suc bwo_domB_Dsucc0[of s] by simp
+  next
+    fix z assume "z \<in> bwl_W s"
+    hence zw: "z \<in> bwl_W w" using bwl_W_level_mono[of s w] Suc by auto
+    show "operB (Trm [DB (enat w) (Trm [])]) z \<in> bwl_W w"
+      using Suc bwo_operB_Dsucc0[of s z] zw by simp
+  qed
+qed
+
+subsection \<open>(7) The collapsing closure: \<open>u \<le> w \<Longrightarrow> x \<in> W\<^sub>u \<Longrightarrow> D\<^sub>w x \<in> W\<^sub>w\<close>\<close>
+
+text \<open>\<^bold>\<open>This is the first real dividend of the \<open>lfp\<close> semantics.\<close>  It is proved by the
+  (now free) induction rule (A2) at level \<open>u\<close>, applied to the set
+  \<open>Y := {x. D\<^sub>w x \<in> W\<^sub>w}\<close>: one shows \<open>A\<^sub>u(Y) \<subseteq> Y\<close> by the three \<open>A\<close>-clauses, using the
+  three \<open>D\<^sub>w\<close>-shape branches ([].4)(i)/(iii) of \<open>dom\<close>/\<open>[\<cdot>]\<close> — the \<open>xseq\<close>-branch
+  ([].4)(ii) never fires because every level \<open>m\<close> occurring in an \<open>A\<^sub>u\<close>-clause
+  satisfies \<open>m < u \<le> w\<close>.  Buchholz uses instances of this inside 2.6.\<close>
+
+lemma bwl_key_collapse_sub:
+  assumes uw: "u \<le> w"
+  shows "bwl_W u \<subseteq> {x. Trm [DB (enat w) x] \<in> bwl_W w}"
+proof (rule bwl_A2')
+  fix c assume A: "bwl_Aop bwl_W (enat u) {x. Trm [DB (enat w) x] \<in> bwl_W w} c"
+  let ?Y = "{x. Trm [DB (enat w) x] \<in> bwl_W w}"
+  consider (zero) "c = Trm []"
+    | (num) "(domB c = {Trm []} \<or> domB c = NatSet) \<and> (\<forall>n. operB c (numBT n) \<in> ?Y)"
+    | (tu) m where "enat m < enat u" "domB c = TBv (enat m)"
+             "\<forall>z \<in> bwl_W m. operB c z \<in> ?Y"
+    using A[unfolded bwl_Aop_def] by blast
+  then have main: "Trm [DB (enat w) c] \<in> bwl_W w"
+  proof cases
+    case zero
+    thus ?thesis using bwl_D_zero_W by simp
+  next
+    case num
+    have cne: "c \<noteq> Trm []"
+    proof
+      assume z: "c = Trm []"
+      have dz: "domB c = {}" using z bwo_domB_Nil by simp
+      have "numBT 0 \<in> NatSet" by (simp add: NatSet_def)
+      moreover have "Trm [] \<in> {Trm []}" by simp
+      ultimately show False using conjunct1[OF num] dz by auto
+    qed
+    show ?thesis
+    proof (cases "domB c = {Trm []}")
+      case True
+      have dW: "domB (Trm [DB (enat w) c]) = NatSet"
+        by (rule bwl_domB_case_i[OF cne True])
+      have base: "Trm [DB (enat w) (operB c (Trm []))] \<in> bwl_W w"
+      proof -
+        have "operB c (numBT 0) \<in> ?Y" using num by blast
+        moreover have "numBT 0 = Trm []" by (simp add: numBT_def)
+        ultimately show ?thesis by simp
+      qed
+      show ?thesis
+      proof (rule bwl_W2)
+        show "domB (Trm [DB (enat w) c]) = {Trm []}
+              \<or> domB (Trm [DB (enat w) c]) = NatSet" using dW by simp
+      next
+        fix n
+        have eq: "operB (Trm [DB (enat w) c]) (numBT n)
+                = Trm [DB (enat w) (operB c (Trm []))] *\<^sub>B (numNat (numBT n) + 1)"
+          by (rule b1x_operB_case_i[OF cne True])
+        show "operB (Trm [DB (enat w) c]) (numBT n) \<in> bwl_W w"
+          unfolding eq by (rule bwl_2_4b_mult[OF base])
+      qed
+    next
+      case False
+      have dN: "domB c = NatSet" using num False by blast
+      have g3: "\<not> (\<exists>u'. enat w \<le> enat u' \<and> domB c = TBv (enat u'))"
+        using dN NatSet_neq_TBv by blast
+      have dW: "domB (Trm [DB (enat w) c]) = domB c"
+        by (rule b1x_domB_case_iii[OF cne False g3])
+      show ?thesis
+      proof (rule bwl_W2)
+        show "domB (Trm [DB (enat w) c]) = {Trm []}
+              \<or> domB (Trm [DB (enat w) c]) = NatSet" using dW dN by simp
+      next
+        fix n
+        have "operB (Trm [DB (enat w) c]) (numBT n)
+                = Trm [DB (enat w) (operB c (numBT n))]"
+          by (rule b1x_operB_case_iii[OF cne False g3])
+        moreover have "operB c (numBT n) \<in> ?Y" using num by blast
+        ultimately show "operB (Trm [DB (enat w) c]) (numBT n) \<in> bwl_W w" by simp
+      qed
+    qed
+  next
+    case (tu m)
+    have mw: "m < w" using tu(1) uw by simp
+    have cne: "c \<noteq> Trm []"
+    proof
+      assume z: "c = Trm []"
+      have "TBv (enat m) = {}" using z tu(2) bwo_domB_Nil by simp
+      moreover have "Trm [] \<in> TBv (enat m)" by (simp add: TBv_def)
+      ultimately show False by simp
+    qed
+    have g2: "domB c \<noteq> {Trm []}" using tu(2) bwl_TBv_neq_zero by simp
+    have g3: "\<not> (\<exists>u'. enat w \<le> enat u' \<and> domB c = TBv (enat u'))"
+      using tu(2) bwl_case_iii_guard_TBv[OF mw] by simp
+    have dW: "domB (Trm [DB (enat w) c]) = TBv (enat m)"
+      using b1x_domB_case_iii[OF cne g2 g3] tu(2) by simp
+    show ?thesis
+    proof (rule bwl_W3[where u = m])
+      show "m < w" by (rule mw)
+      show "domB (Trm [DB (enat w) c]) = TBv (enat m)" by (rule dW)
+    next
+      fix z assume zm: "z \<in> bwl_W m"
+      have "operB (Trm [DB (enat w) c]) z = Trm [DB (enat w) (operB c z)]"
+        by (rule b1x_operB_case_iii[OF cne g2 g3])
+      moreover have "operB c z \<in> ?Y" using tu(3) zm by blast
+      ultimately show "operB (Trm [DB (enat w) c]) z \<in> bwl_W w" by simp
+    qed
+  qed
+  show "c \<in> ?Y" using main by simp
+qed
+
+lemma bwl_key_collapse:
+  assumes uw: "u \<le> w" and x: "x \<in> bwl_W u"
+  shows "Trm [DB (enat w) x] \<in> bwl_W w"
+  using bwl_key_collapse_sub[OF uw] x by blast
+
+text \<open>Two immediate corollaries: every \<open>W\<^sub>w\<close> is closed under its own \<open>D\<^sub>w\<close>, and the
+  \<open>D\<^sub>w\<close>-towers over \<open>0\<close> all lie in \<open>W\<^sub>w\<close>.\<close>
+
+lemma bwl_W_Dself: "x \<in> bwl_W w \<Longrightarrow> Trm [DB (enat w) x] \<in> bwl_W w"
+  by (rule bwl_key_collapse[OF order_refl])
+
+(* ===== end r68 bwl part 3 (collapsing closure W_u -> D_w W_u subseteq W_w, u<=w) ===== *)
+
+subsection \<open>(8) The \<open>xseq\<close> branch ([].4)(ii), i.e. the [Buc2]-corrected case\<close>
+
+lemma bwl_numNat_numBT: "numNat (numBT n) = n"
+  by (simp add: numNat_def numBT_def)
+
+lemma bwl_tbvIdx: "tbvIdx (TBv (enat u)) = u"
+  unfolding tbvIdx_def
+proof (rule the_equality)
+  show "TBv (enat u) = TBv (enat u)" by simp
+next
+  fix u' assume "TBv (enat u) = TBv (enat u')"
+  hence "u = u'" by (rule TBv_enat_inj)
+  thus "u' = u" by simp
+qed
+
+lemma bwl_domB_case_ii:
+  assumes bne: "b \<noteq> Trm []" and g2: "domB b \<noteq> {Trm []}"
+    and g3: "\<exists>u. v \<le> enat u \<and> domB b = TBv (enat u)"
+  shows "domB (Trm [DB v b]) = NatSet"
+proof -
+  have e1: "(b = Trm []) = False" using bne by simp
+  have e2: "(domB b = {Trm []}) = False" using g2 by simp
+  have e3: "(\<exists>u. v \<le> enat u \<and> domB b = TBv (enat u)) = True" using g3 by simp
+  show ?thesis by (subst domB_unfold) (simp add: Let_def e1 e2 e3)
+qed
+
+lemma bwl_operB_case_ii:
+  assumes bne: "b \<noteq> Trm []" and g2: "domB b \<noteq> {Trm []}"
+    and g3: "\<exists>u. v \<le> enat u \<and> domB b = TBv (enat u)"
+  shows "operB (Trm [DB v b]) z
+           = Trm [DB v (xseq b (enat (tbvIdx (domB b))) (numNat z))]"
+proof -
+  have e1: "(b = Trm []) = False" using bne by simp
+  have e2: "(domB b = {Trm []}) = False" using g2 by simp
+  have e3: "(\<exists>u. v \<le> enat u \<and> domB b = TBv (enat u)) = True" using g3 by simp
+  show ?thesis by (subst b1x_operB_unfold) (simp add: Let_def e1 e2 e3)
+qed
+
+subsection \<open>(9) The DOWNWARD collapse \<open>W\<^sub>m \<subseteq> {y. \<forall>v \<le> m. D\<^sub>v y \<in> W\<^sub>v}\<close>\<close>
+
+text \<open>\<^bold>\<open>The hard half of the collapsing closure\<close> — and the step where the
+  [Buc2]-corrected fundamental sequence ([].4)(ii) (\<open>x\<^sub>0 = D\<^sub>u 0\<close>, \<open>x\<^sub>i = b[D\<^sub>u x\<^bsub>i-1\<^esub>]\<close>,
+  \<open>(D\<^sub>v b)[n] = D\<^sub>v x\<^sub>n\<close>; correction A23) really has to be handled.  Buchholz's own
+  2.6 case 4.2 uses the (typo-afflicted) literal \<open>a[n] := D\<^sub>v b[D\<^sub>u b[1]]\<close>, for which
+  \<open>1 \<in> W\<^sub>u\<close> suffices; with the corrected \<open>xseq\<close> the base point of the sequence is
+  \<open>x\<^sub>0 = D\<^sub>u 0\<close>, whose \<open>D\<^sub>v\<close>-image at levels \<open>v < u\<close> is not available from
+  @{thm [source] bwl_key_collapse}.  The repair is a STRONG INDUCTION ON THE LEVEL
+  \<open>m\<close>: in the \<open>dom(c) = T\<^sub>k\<close> clause one has \<open>k < m\<close>, so the induction hypothesis
+  applies to \<open>W\<^sub>k \<ni> D\<^sub>k 0\<close> and supplies exactly the missing \<open>D\<^sub>v(D\<^sub>k 0) \<in> W\<^sub>v\<close> for
+  \<open>v < k\<close>; levels \<open>v \<ge> k\<close> come from @{thm [source] bwl_key_collapse}.  The \<open>x\<^sub>j\<close> then
+  stay inside the invariant by an inner induction on \<open>j\<close>.\<close>
+
+lemma bwl_DC:
+  "bwl_W m \<subseteq> {y. \<forall>v \<le> m. Trm [DB (enat v) y] \<in> bwl_W v}"
+proof (induction m rule: less_induct)
+  case (less m)
+  let ?Y = "{y. \<forall>v \<le> m. Trm [DB (enat v) y] \<in> bwl_W v}"
+  show ?case
+  proof (rule bwl_A2')
+    fix c assume A: "bwl_Aop bwl_W (enat m) ?Y c"
+    consider (zero) "c = Trm []"
+      | (num) "(domB c = {Trm []} \<or> domB c = NatSet) \<and> (\<forall>n. operB c (numBT n) \<in> ?Y)"
+      | (tu) k where "enat k < enat m" "domB c = TBv (enat k)"
+               "\<forall>z \<in> bwl_W k. operB c z \<in> ?Y"
+      using A[unfolded bwl_Aop_def] by blast
+    then have main: "\<And>v. v \<le> m \<Longrightarrow> Trm [DB (enat v) c] \<in> bwl_W v"
+    proof cases
+      case zero
+      fix v assume "v \<le> m"
+      show "Trm [DB (enat v) c] \<in> bwl_W v" using zero bwl_D_zero_W by simp
+    next
+      case num
+      have cne: "c \<noteq> Trm []"
+      proof
+        assume z: "c = Trm []"
+        have dz: "domB c = {}" using z bwo_domB_Nil by simp
+        have "numBT 0 \<in> NatSet" by (simp add: NatSet_def)
+        moreover have "Trm [] \<in> {Trm []}" by simp
+        ultimately show False using conjunct1[OF num] dz by auto
+      qed
+      fix v assume vm: "v \<le> m"
+      show "Trm [DB (enat v) c] \<in> bwl_W v"
+      proof (cases "domB c = {Trm []}")
+        case True
+        have dW: "domB (Trm [DB (enat v) c]) = NatSet"
+          by (rule bwl_domB_case_i[OF cne True])
+        have base: "Trm [DB (enat v) (operB c (Trm []))] \<in> bwl_W v"
+        proof -
+          have "operB c (numBT 0) \<in> ?Y" using num by blast
+          moreover have "numBT 0 = Trm []" by (simp add: numBT_def)
+          ultimately show ?thesis using vm by simp
+        qed
+        show ?thesis
+        proof (rule bwl_W2)
+          show "domB (Trm [DB (enat v) c]) = {Trm []}
+                \<or> domB (Trm [DB (enat v) c]) = NatSet" using dW by simp
+        next
+          fix n
+          have eq: "operB (Trm [DB (enat v) c]) (numBT n)
+                  = Trm [DB (enat v) (operB c (Trm []))] *\<^sub>B (numNat (numBT n) + 1)"
+            by (rule b1x_operB_case_i[OF cne True])
+          show "operB (Trm [DB (enat v) c]) (numBT n) \<in> bwl_W v"
+            unfolding eq by (rule bwl_2_4b_mult[OF base])
+        qed
+      next
+        case False
+        have dN: "domB c = NatSet" using num False by blast
+        have g3: "\<not> (\<exists>u'. enat v \<le> enat u' \<and> domB c = TBv (enat u'))"
+          using dN NatSet_neq_TBv by blast
+        have dW: "domB (Trm [DB (enat v) c]) = domB c"
+          by (rule b1x_domB_case_iii[OF cne False g3])
+        show ?thesis
+        proof (rule bwl_W2)
+          show "domB (Trm [DB (enat v) c]) = {Trm []}
+                \<or> domB (Trm [DB (enat v) c]) = NatSet" using dW dN by simp
+        next
+          fix n
+          have "operB (Trm [DB (enat v) c]) (numBT n)
+                  = Trm [DB (enat v) (operB c (numBT n))]"
+            by (rule b1x_operB_case_iii[OF cne False g3])
+          moreover have "operB c (numBT n) \<in> ?Y" using num by blast
+          ultimately show "operB (Trm [DB (enat v) c]) (numBT n) \<in> bwl_W v"
+            using vm by simp
+        qed
+      qed
+    next
+      case (tu k)
+      have km: "k < m" using tu(1) by simp
+      have cne: "c \<noteq> Trm []"
+      proof
+        assume z: "c = Trm []"
+        have "TBv (enat k) = {}" using z tu(2) bwo_domB_Nil by simp
+        moreover have "Trm [] \<in> TBv (enat k)" by (simp add: TBv_def)
+        ultimately show False by simp
+      qed
+      have g2: "domB c \<noteq> {Trm []}" using tu(2) bwl_TBv_neq_zero by simp
+      \<comment> \<open>the base point \<open>x\<^sub>0 = D\<^sub>k 0\<close> of the \<open>xseq\<close>, at EVERY level: below \<open>k\<close> by the
+         strong induction hypothesis (\<open>k < m\<close>), at/above \<open>k\<close> by the upward collapse\<close>
+      have Dk0: "Trm [DB (enat k) (Trm [])] \<in> bwl_W k" by (rule bwl_D_zero_W)
+      have base0: "Trm [DB (enat v') (Trm [DB (enat k) (Trm [])])] \<in> bwl_W v'" for v'
+      proof (cases "v' \<le> k")
+        case True
+        have "Trm [DB (enat k) (Trm [])]
+                \<in> {y. \<forall>v'' \<le> k. Trm [DB (enat v'') y] \<in> bwl_W v''}"
+          using less.IH[OF km] Dk0 by blast
+        thus ?thesis using True by blast
+      next
+        case False
+        hence kv: "k \<le> v'" by simp
+        show ?thesis by (rule bwl_key_collapse[OF kv Dk0])
+      qed
+      fix v assume vm: "v \<le> m"
+      show "Trm [DB (enat v) c] \<in> bwl_W v"
+      proof (cases "k < v")
+        case True
+        \<comment> \<open>([].4)(iii): \<open>dom(D\<^sub>v c) = T\<^sub>k\<close> and \<open>(D\<^sub>v c)[z] = D\<^sub>v(c[z])\<close>\<close>
+        have g3: "\<not> (\<exists>u'. enat v \<le> enat u' \<and> domB c = TBv (enat u'))"
+          using tu(2) bwl_case_iii_guard_TBv[OF True] by simp
+        have dW: "domB (Trm [DB (enat v) c]) = TBv (enat k)"
+          using b1x_domB_case_iii[OF cne g2 g3] tu(2) by simp
+        show ?thesis
+        proof (rule bwl_W3[where u = k])
+          show "k < v" by (rule True)
+          show "domB (Trm [DB (enat v) c]) = TBv (enat k)" by (rule dW)
+        next
+          fix z assume zk: "z \<in> bwl_W k"
+          have "operB (Trm [DB (enat v) c]) z = Trm [DB (enat v) (operB c z)]"
+            by (rule b1x_operB_case_iii[OF cne g2 g3])
+          moreover have "operB c z \<in> ?Y" using tu(3) zk by blast
+          ultimately show "operB (Trm [DB (enat v) c]) z \<in> bwl_W v" using vm by simp
+        qed
+      next
+        case False
+        \<comment> \<open>([].4)(ii): the \<open>xseq\<close> branch, \<open>v \<le> k\<close>\<close>
+        hence vk: "enat v \<le> enat k" by simp
+        have g3: "\<exists>u'. enat v \<le> enat u' \<and> domB c = TBv (enat u')"
+          using vk tu(2) by blast
+        have dW: "domB (Trm [DB (enat v) c]) = NatSet"
+          by (rule bwl_domB_case_ii[OF cne g2 g3])
+        have tb: "tbvIdx (domB c) = k" using tu(2) by (simp add: bwl_tbvIdx)
+        \<comment> \<open>the \<open>xseq\<close> stays inside the invariant\<close>
+        have xY: "xseq c (enat k) j \<in> ?Y" for j
+        proof (induction j)
+          case 0
+          have x0: "xseq c (enat k) 0 = Trm [DB (enat k) (Trm [])]" by (rule b1x_xseq_0)
+          show ?case using x0 base0 by simp
+        next
+          case (Suc j)
+          have xs: "xseq c (enat k) (Suc j)
+                      = operB c (Trm [DB (enat k) (xseq c (enat k) j)])"
+            by (rule b1x_xseq_Suc)
+          have zk: "Trm [DB (enat k) (xseq c (enat k) j)] \<in> bwl_W k"
+            using Suc.IH km by auto
+          have "operB c (Trm [DB (enat k) (xseq c (enat k) j)]) \<in> ?Y"
+            using tu(3) zk by blast
+          thus ?case using xs by simp
+        qed
+        show ?thesis
+        proof (rule bwl_W2)
+          show "domB (Trm [DB (enat v) c]) = {Trm []}
+                \<or> domB (Trm [DB (enat v) c]) = NatSet" using dW by simp
+        next
+          fix n
+          have "operB (Trm [DB (enat v) c]) (numBT n)
+                  = Trm [DB (enat v) (xseq c (enat (tbvIdx (domB c))) (numNat (numBT n)))]"
+            by (rule bwl_operB_case_ii[OF cne g2 g3])
+          hence eq: "operB (Trm [DB (enat v) c]) (numBT n)
+                       = Trm [DB (enat v) (xseq c (enat k) n)]"
+            using tb bwl_numNat_numBT by simp
+          have "xseq c (enat k) n \<in> ?Y" by (rule xY)
+          hence "Trm [DB (enat v) (xseq c (enat k) n)] \<in> bwl_W v" using vm by blast
+          thus "operB (Trm [DB (enat v) c]) (numBT n) \<in> bwl_W v" using eq by simp
+        qed
+      qed
+    qed
+    show "c \<in> ?Y" using main by blast
+  qed
+qed
+
+text \<open>Combining the two directions: every \<open>W\<^sub>m\<close> is contained in Buchholz's \<open>W\<^sup>*\<close>.\<close>
+
+lemma bwl_W_subset_star:
+  assumes y: "y \<in> bwl_W m"
+  shows "Trm [DB (enat v) y] \<in> bwl_W v"
+proof (cases "v \<le> m")
+  case True
+  have "y \<in> {y. \<forall>v \<le> m. Trm [DB (enat v) y] \<in> bwl_W v}" using bwl_DC y by blast
+  thus ?thesis using True by blast
+next
+  case False
+  hence "m \<le> v" by simp
+  thus ?thesis by (rule bwl_key_collapse[OF _ y])
+qed
+
+(* ===== end r68 bwl part 4 (downward collapse; W_m inside Wstar) ===== *)
+
+subsection \<open>(10) [Buc1] p.138(5): \<open>W\<^sup>* = {x. \<forall>u < \<nu>. D\<^sub>u x \<in> W\<^sub>u}\<close> (here \<open>\<nu> = \<omega>\<close>)\<close>
+
+definition bwl_Wstar :: "BT set" where
+  "bwl_Wstar = {x. \<forall>u. Trm [DB (enat u) x] \<in> bwl_W u}"
+
+lemma bwl_WstarI: "(\<And>u. Trm [DB (enat u) x] \<in> bwl_W u) \<Longrightarrow> x \<in> bwl_Wstar"
+  unfolding bwl_Wstar_def by blast
+
+lemma bwl_WstarD: "x \<in> bwl_Wstar \<Longrightarrow> Trm [DB (enat u) x] \<in> bwl_W u"
+  unfolding bwl_Wstar_def by blast
+
+text \<open>By the two collapse directions, every level set already sits inside \<open>W\<^sup>*\<close>.\<close>
+
+lemma bwl_W_in_Wstar: "y \<in> bwl_W m \<Longrightarrow> y \<in> bwl_Wstar"
+  by (rule bwl_WstarI) (rule bwl_W_subset_star)
+
+lemma bwl_zero_Wstar: "Trm [] \<in> bwl_Wstar"
+  by (rule bwl_W_in_Wstar[OF bwl_W_zero])
+
+subsection \<open>(11) [Buc1] Lemma 2.6: \<open>A\<^sub>\<nu>(W\<^sup>*) \<subseteq> W\<^sup>*\<close>\<close>
+
+lemma bwl_2_6:
+  assumes A: "bwl_Aop bwl_W \<infinity> bwl_Wstar b"
+  shows "b \<in> bwl_Wstar"
+proof (rule bwl_WstarI)
+  fix v :: nat
+  consider (zero) "b = Trm []"
+    | (num) "(domB b = {Trm []} \<or> domB b = NatSet)
+             \<and> (\<forall>n. operB b (numBT n) \<in> bwl_Wstar)"
+    | (tu) u where "domB b = TBv (enat u)" "\<forall>z \<in> bwl_W u. operB b z \<in> bwl_Wstar"
+    using A[unfolded bwl_Aop_def] by blast
+  thus "Trm [DB (enat v) b] \<in> bwl_W v"
+  proof cases
+    case zero
+    thus ?thesis using bwl_D_zero_W by simp
+  next
+    case num
+    have bne: "b \<noteq> Trm []"
+    proof
+      assume z: "b = Trm []"
+      have dz: "domB b = {}" using z bwo_domB_Nil by simp
+      have "numBT 0 \<in> NatSet" by (simp add: NatSet_def)
+      moreover have "Trm [] \<in> {Trm []}" by simp
+      ultimately show False using conjunct1[OF num] dz by auto
+    qed
+    show ?thesis
+    proof (cases "domB b = {Trm []}")
+      case True
+      have dW: "domB (Trm [DB (enat v) b]) = NatSet"
+        by (rule bwl_domB_case_i[OF bne True])
+      have base: "Trm [DB (enat v) (operB b (Trm []))] \<in> bwl_W v"
+      proof -
+        have "operB b (numBT 0) \<in> bwl_Wstar" using num by blast
+        moreover have "numBT 0 = Trm []" by (simp add: numBT_def)
+        ultimately show ?thesis using bwl_WstarD by simp
+      qed
+      show ?thesis
+      proof (rule bwl_W2)
+        show "domB (Trm [DB (enat v) b]) = {Trm []}
+              \<or> domB (Trm [DB (enat v) b]) = NatSet" using dW by simp
+      next
+        fix n
+        have eq: "operB (Trm [DB (enat v) b]) (numBT n)
+                = Trm [DB (enat v) (operB b (Trm []))] *\<^sub>B (numNat (numBT n) + 1)"
+          by (rule b1x_operB_case_i[OF bne True])
+        show "operB (Trm [DB (enat v) b]) (numBT n) \<in> bwl_W v"
+          unfolding eq by (rule bwl_2_4b_mult[OF base])
+      qed
+    next
+      case False
+      have dN: "domB b = NatSet" using num False by blast
+      have g3: "\<not> (\<exists>u'. enat v \<le> enat u' \<and> domB b = TBv (enat u'))"
+        using dN NatSet_neq_TBv by blast
+      have dW: "domB (Trm [DB (enat v) b]) = domB b"
+        by (rule b1x_domB_case_iii[OF bne False g3])
+      show ?thesis
+      proof (rule bwl_W2)
+        show "domB (Trm [DB (enat v) b]) = {Trm []}
+              \<or> domB (Trm [DB (enat v) b]) = NatSet" using dW dN by simp
+      next
+        fix n
+        have "operB (Trm [DB (enat v) b]) (numBT n)
+                = Trm [DB (enat v) (operB b (numBT n))]"
+          by (rule b1x_operB_case_iii[OF bne False g3])
+        moreover have "operB b (numBT n) \<in> bwl_Wstar" using num by blast
+        ultimately show "operB (Trm [DB (enat v) b]) (numBT n) \<in> bwl_W v"
+          using bwl_WstarD by simp
+      qed
+    qed
+  next
+    case (tu u)
+    have bne: "b \<noteq> Trm []"
+    proof
+      assume z: "b = Trm []"
+      have "TBv (enat u) = {}" using z tu(1) bwo_domB_Nil by simp
+      moreover have "Trm [] \<in> TBv (enat u)" by (simp add: TBv_def)
+      ultimately show False by simp
+    qed
+    have g2: "domB b \<noteq> {Trm []}" using tu(1) bwl_TBv_neq_zero by simp
+    show ?thesis
+    proof (cases "u < v")
+      case True
+      \<comment> \<open>[1] 2.6 case 4.1: \<open>u < v\<close>, branch ([].4)(iii), rule (W3)\<close>
+      have g3: "\<not> (\<exists>u'. enat v \<le> enat u' \<and> domB b = TBv (enat u'))"
+        using tu(1) bwl_case_iii_guard_TBv[OF True] by simp
+      have dW: "domB (Trm [DB (enat v) b]) = TBv (enat u)"
+        using b1x_domB_case_iii[OF bne g2 g3] tu(1) by simp
+      show ?thesis
+      proof (rule bwl_W3[where u = u])
+        show "u < v" by (rule True)
+        show "domB (Trm [DB (enat v) b]) = TBv (enat u)" by (rule dW)
+      next
+        fix z assume zu: "z \<in> bwl_W u"
+        have "operB (Trm [DB (enat v) b]) z = Trm [DB (enat v) (operB b z)]"
+          by (rule b1x_operB_case_iii[OF bne g2 g3])
+        moreover have "operB b z \<in> bwl_Wstar" using tu(2) zu by blast
+        ultimately show "operB (Trm [DB (enat v) b]) z \<in> bwl_W v"
+          using bwl_WstarD by simp
+      qed
+    next
+      case False
+      \<comment> \<open>[1] 2.6 case 4.2: \<open>v \<le> u\<close>, the \<open>xseq\<close> branch ([].4)(ii).  Buchholz's own
+         argument needs \<open>b[1] \<in> W\<^sup>*\<close>; with the [Buc2] correction the base point is
+         \<open>x\<^sub>0 = D\<^sub>u 0 \<in> W\<^sub>u \<subseteq> W\<^sup>*\<close> — available exactly because of the DOWNWARD collapse.\<close>
+      hence vu: "enat v \<le> enat u" by simp
+      have g3: "\<exists>u'. enat v \<le> enat u' \<and> domB b = TBv (enat u')"
+        using vu tu(1) by blast
+      have dW: "domB (Trm [DB (enat v) b]) = NatSet"
+        by (rule bwl_domB_case_ii[OF bne g2 g3])
+      have tb: "tbvIdx (domB b) = u" using tu(1) by (simp add: bwl_tbvIdx)
+      have xW: "xseq b (enat u) j \<in> bwl_Wstar" for j
+      proof (induction j)
+        case 0
+        have x0: "xseq b (enat u) 0 = Trm [DB (enat u) (Trm [])]" by (rule b1x_xseq_0)
+        have "Trm [DB (enat u) (Trm [])] \<in> bwl_Wstar"
+          by (rule bwl_W_in_Wstar[OF bwl_D_zero_W])
+        thus ?case using x0 by simp
+      next
+        case (Suc j)
+        have xs: "xseq b (enat u) (Suc j)
+                    = operB b (Trm [DB (enat u) (xseq b (enat u) j)])"
+          by (rule b1x_xseq_Suc)
+        have zu: "Trm [DB (enat u) (xseq b (enat u) j)] \<in> bwl_W u"
+          using Suc.IH by (rule bwl_WstarD)
+        have "operB b (Trm [DB (enat u) (xseq b (enat u) j)]) \<in> bwl_Wstar"
+          using tu(2) zu by blast
+        thus ?case using xs by simp
+      qed
+      show ?thesis
+      proof (rule bwl_W2)
+        show "domB (Trm [DB (enat v) b]) = {Trm []}
+              \<or> domB (Trm [DB (enat v) b]) = NatSet" using dW by simp
+      next
+        fix n
+        have "operB (Trm [DB (enat v) b]) (numBT n)
+                = Trm [DB (enat v) (xseq b (enat (tbvIdx (domB b))) (numNat (numBT n)))]"
+          by (rule bwl_operB_case_ii[OF bne g2 g3])
+        hence eq: "operB (Trm [DB (enat v) b]) (numBT n)
+                     = Trm [DB (enat v) (xseq b (enat u) n)]"
+          using tb bwl_numNat_numBT by simp
+        have "Trm [DB (enat v) (xseq b (enat u) n)] \<in> bwl_W v"
+          using xW by (rule bwl_WstarD)
+        thus "operB (Trm [DB (enat v) b]) (numBT n) \<in> bwl_W v" using eq by simp
+      qed
+    qed
+  qed
+qed
+
+subsection \<open>(12) [Buc1] Lemma 2.7 (length induction) for the \<open>D\<^sub>\<omega>\<close>-free terms\<close>
+
+lemma bwl_size_list_butlast:
+  "l \<noteq> [] \<Longrightarrow> size_list size (butlast l) < size_list size (l :: BP list)"
+  by (induction l) auto
+
+lemma bwl_size_butlast_lt:
+  "xs \<noteq> [] \<Longrightarrow> size (Trm (butlast xs) :: BT) < size (Trm xs :: BT)"
+  using bwl_size_list_butlast by simp
+
+text \<open>[1] 2.7: \<open>A\<^sub>\<nu>(X) \<subseteq> X \<Longrightarrow> a \<in> X\<close>, for \<open>a\<close> containing no \<open>D\<^sub>v\<close> with \<open>v > \<nu>\<close>.  We take
+  \<open>\<nu> = \<omega> = \<infinity>\<close> and restrict to the \<open>D\<^sub>\<omega>\<close>-free terms \<open>T\<^bsub>B\<^esub>\<close> (which is all we ever need).
+  \<^bold>\<open>Consequence: Buchholz's case 3 (\<open>a = D\<^sub>\<nu> b\<close> with the index EQUAL to \<open>\<nu>\<close>), the only
+  case that needs Lemma 2.5 and the \<open>D\<^sub>\<nu>\<close>-closure \<open>Xbar\<close>, cannot arise\<close> — a \<open>D\<^sub>\<omega>\<close>-free
+  principal always has a FINITE index \<open>n < \<omega>\<close>, i.e. Buchholz's case 4, which is
+  discharged by 2.6 plus the leastness (A2).  So the whole 6-case \<open>Xbar\<close> analysis of
+  [1] 2.5 is bypassed.  The induction is on \<open>size\<close> (subsuming his induction on the
+  length of \<open>a\<close>), and the set \<open>X\<close> must be generalised (case 2 instantiates it with the
+  shift \<open>X\<^bsup>(c)\<^esup>\<close>, case 3 with \<open>W\<^sup>*\<close>).\<close>
+
+lemma bwl_2_7_aux:
+  "\<forall>X. (\<forall>c. bwl_Aop bwl_W \<infinity> X c \<longrightarrow> c \<in> X) \<longrightarrow> dfree_BT a \<longrightarrow> a \<in> X"
+proof (induction a rule: measure_induct_rule[where f = size])
+  case (less a)
+  show ?case
+  proof (intro allI impI)
+    fix X :: "BT set"
+    assume Acl: "\<forall>c. bwl_Aop bwl_W \<infinity> X c \<longrightarrow> c \<in> X"
+    assume dfa: "dfree_BT a"
+    obtain xs where axs: "a = Trm xs" by (cases a)
+    show "a \<in> X"
+    proof (cases xs)
+      case Nil
+      have "bwl_Aop bwl_W \<infinity> X (Trm [])" by (simp add: bwl_Aop_def)
+      thus ?thesis using Acl axs Nil by blast
+    next
+      case (Cons p ps)
+      show ?thesis
+      proof (cases ps)
+        case Nil
+        \<comment> \<open>single principal \<open>a = D\<^sub>w b\<close>; \<open>D\<^sub>\<omega>\<close>-freeness forces \<open>w = n < \<omega> = \<nu>\<close> ([1] 2.7 case 4)\<close>
+        obtain w b where peq: "p = DB w b" by (cases p)
+        have aeq: "a = Trm [DB w b]" using axs Cons Nil peq by simp
+        have wfin: "w \<noteq> \<infinity>" using dfa aeq by simp
+        have dfb: "dfree_BT b" using dfa aeq by simp
+        obtain n where wn: "w = enat n" using wfin by (cases w) auto
+        have Wcl: "\<forall>c. bwl_Aop bwl_W \<infinity> bwl_Wstar c \<longrightarrow> c \<in> bwl_Wstar"
+          using bwl_2_6 by blast
+        have szb: "size b < size a" using aeq by simp
+        have bW: "b \<in> bwl_Wstar" using less.IH[OF szb] Wcl dfb by blast
+        have Dn: "Trm [DB (enat n) b] \<in> bwl_W n" using bW by (rule bwl_WstarD)
+        have AnX: "\<And>c. bwl_Aop bwl_W (enat n) X c \<Longrightarrow> c \<in> X"
+        proof -
+          fix c assume c: "bwl_Aop bwl_W (enat n) X c"
+          have inf: "enat n \<le> \<infinity>" by simp
+          have "bwl_Aop bwl_W \<infinity> X c" by (rule bwl_Aop_mono_nv[OF inf c])
+          thus "c \<in> X" using Acl by blast
+        qed
+        have "bwl_W n \<subseteq> X" by (rule bwl_A2'[OF AnX])
+        thus ?thesis using Dn aeq wn by blast
+      next
+        case (Cons q qs)
+        \<comment> \<open>\<open>a = c + a\<^sub>k\<close> with \<open>c\<close> the butlast ([1] 2.7 case 2, via 2.4(a))\<close>
+        have xne: "xs \<noteq> []" using axs \<open>xs = p # ps\<close> by simp
+        have xs2: "xs = p # q # qs" using \<open>xs = p # ps\<close> \<open>ps = q # qs\<close> by simp
+        have allf: "\<forall>r \<in> set xs. dfree_BP r" using dfa axs by simp
+        have aeq: "a = Trm (butlast xs) +\<^sub>B Trm [last xs]"
+          using axs xne by (simp add: append_butlast_last_id)
+        have szc: "size (Trm (butlast xs) :: BT) < size a"
+          using axs bwl_size_butlast_lt[OF xne] by simp
+        have szl: "size (Trm [last xs] :: BT) < size a"
+          using axs xs2 b1x_size_last_lt[of p q qs] by simp
+        have dfc: "dfree_BT (Trm (butlast xs))"
+          using allf by (auto dest: in_set_butlastD)
+        have dfl: "dfree_BT (Trm [last xs])"
+        proof -
+          have "last xs \<in> set xs" using xne by simp
+          hence "dfree_BP (last xs)" using allf by blast
+          thus ?thesis by simp
+        qed
+        have Acl': "\<And>e. bwl_Aop bwl_W \<infinity> X e \<Longrightarrow> e \<in> X" using Acl by blast
+        have cX: "Trm (butlast xs) \<in> X" using less.IH[OF szc] Acl dfc by blast
+        have shcl: "\<And>d. bwl_Aop bwl_W \<infinity> (bwo_shift (Trm (butlast xs)) X) d
+                          \<Longrightarrow> d \<in> bwo_shift (Trm (butlast xs)) X"
+          by (rule bwl_2_4a_shift[OF Acl' cX])
+        have "Trm [last xs] \<in> bwo_shift (Trm (butlast xs)) X"
+          using less.IH[OF szl] shcl dfl by blast
+        hence "Trm (butlast xs) +\<^sub>B Trm [last xs] \<in> X"
+          by (simp add: bwo_shift_def)
+        thus ?thesis using aeq by simp
+      qed
+    qed
+  qed
+qed
+
+subsection \<open>(13) [Buc1] 2.8 for \<open>T\<^bsub>B\<^esub>\<close>: every \<open>D\<^sub>\<omega>\<close>-free term lies in \<open>W\<^sup>*\<close>\<close>
+
+theorem bwl_2_8_dfree_Wstar:
+  assumes df: "dfree_BT t"
+  shows "t \<in> bwl_Wstar"
+proof -
+  have Wcl: "\<forall>c. bwl_Aop bwl_W \<infinity> bwl_Wstar c \<longrightarrow> c \<in> bwl_Wstar"
+    using bwl_2_6 by blast
+  show ?thesis using bwl_2_7_aux[of t] Wcl df by blast
+qed
+
+corollary bwl_2_8_principal:
+  assumes df: "dfree_BT t"
+  shows "Trm [DB (enat u) t] \<in> bwl_W u"
+  using bwl_2_8_dfree_Wstar[OF df] by (rule bwl_WstarD)
+
+text \<open>\<^bold>\<open>Status.\<close>  [Buc1] \<section>2 is now fully mechanized on its own (\<open>lfp\<close>) terms: every
+  \<open>D\<^sub>\<omega>\<close>-free term is in \<open>W\<^sup>*\<close>, i.e. all its principals \<open>D\<^sub>u t\<close> are in the inductively
+  generated \<open>W\<^sub>u\<close>.  Note this needed NO \<open>OT\<close> (normal-form) hypothesis.\<close>
+
+(* ===== end r68 bwl part 5 ([Buc1] 2.6, 2.7 for dfree, 2.8: T_B inside Wstar) ===== *)
+
+subsection \<open>(14) The bridge \<open>W\<^sub>u \<longrightarrow> acc\<close>, and the NEW single residual \<open>bwl_cof\<close>\<close>
+
+text \<open>\<^bold>\<open>Where the remaining work now sits.\<close>  Part 5 proves that every \<open>D\<^sub>\<omega>\<close>-free term
+  lies in \<open>W\<^sup>*\<close> — that is Buchholz's \<^emph>\<open>fundamental-sequence\<close> well-foundedness (the
+  hydra theorem), and it is now unconditional.  What \<open>wf RPrel\<close> additionally needs is
+  that \<open>W\<^sub>u\<close>-membership implies \<open><\<close>-ACCESSIBILITY, and the ONLY gap between the two is
+  that the \<open>W\<close>-rules (W2)/(W3) descend along the fundamental sequences \<open>a[n]\<close> / \<open>a[z]\<close>,
+  whereas \<open>acc\<close> quantifies over ALL \<open><\<close>-predecessors.  So the bridge is exactly the
+  \<^bold>\<open>cofinality (Bachmann) property\<close>: every \<open>b < a\<close> is \<open>\<le>\<close> some element of \<open>a\<close>'s
+  fundamental sequence.  We isolate it as \<open>bwl_cof\<close> and show it is SUFFICIENT.
+
+  (This is the same mathematical content that round 67 met as the unprovable
+  hypothesis (A2) of the \<^emph>\<open>acc\<close>-based \<open>bwo_Wlev\<close>; the \<open>lfp\<close> restructuring did not
+  make it disappear, but it has (i) made the whole of Buchholz \<section>2 unconditional,
+  and (ii) reduced the residual from a statement about \<open>acc\<close>-sets to a purely
+  \<^emph>\<open>order-theoretic\<close> statement about \<open><\<close> and \<open>[\<cdot>]\<close> on \<open>OT\<^bsub>B\<^esub>\<close>, with no fixpoints
+  in it.)\<close>
+
+definition bwl_cof :: bool where
+  "bwl_cof \<longleftrightarrow>
+     (\<forall>a b. isOT_BT a \<longrightarrow> dfree_BT a \<longrightarrow> isOT_BT b \<longrightarrow> dfree_BT b \<longrightarrow> lessBT b a \<longrightarrow>
+        (((domB a = {Trm []} \<or> domB a = NatSet)
+             \<longrightarrow> (\<exists>n. leBT b (operB a (numBT n))))
+         \<and> (\<forall>m. domB a = TBv (enat m)
+             \<longrightarrow> (\<exists>z. z \<in> bwl_W m \<and> z \<in> domB a \<and> isOT_BT z \<and> dfree_BT z
+                        \<and> leBT b (operB a z)))))"
+
+lemma bwl_not_lessBT_zero: "\<not> lessBT y (Trm [])"
+proof (cases y)
+  case (Trm ys)
+  then show ?thesis by (cases ys) simp_all
+qed
+
+text \<open>The principal embedding \<open>p \<mapsto> D\<^sub>? p = Trm [p]\<close> reflects accessibility.\<close>
+
+lemma bwl_acc_BP_of_BT_aux:
+  assumes "y \<in> Wellfounded.acc RTrel"
+  shows "\<forall>q. y = Trm [q] \<longrightarrow> q \<in> Wellfounded.acc RPrel"
+  using assms
+proof (induction rule: acc.induct)
+  case (accI y)
+  show ?case
+  proof (intro allI impI)
+    fix q assume yq: "y = Trm [q]"
+    show "q \<in> Wellfounded.acc RPrel"
+    proof (rule acc.intros)
+      fix r assume rq: "(r, q) \<in> RPrel"
+      have "(Trm [r], Trm [q]) \<in> RTrel" by (rule wfox_RPrel_into_RTrel[OF rq])
+      hence ry: "(Trm [r], y) \<in> RTrel" using yq by simp
+      have "\<forall>q'. Trm [r] = Trm [q'] \<longrightarrow> q' \<in> Wellfounded.acc RPrel"
+        by (rule accI.IH[OF ry])
+      thus "r \<in> Wellfounded.acc RPrel" by simp
+    qed
+  qed
+qed
+
+lemma bwl_acc_BP_of_BT:
+  "Trm [p] \<in> Wellfounded.acc RTrel \<Longrightarrow> p \<in> Wellfounded.acc RPrel"
+  using bwl_acc_BP_of_BT_aux by blast
+
+text \<open>\<^bold>\<open>The bridge.\<close>  Under \<open>bwl_cof\<close> the set \<open>acc RTrel\<close> is \<open>A\<^sub>u\<close>-closed, so the (free)
+  leastness (A2) gives \<open>W\<^sub>u \<subseteq> acc RTrel\<close>.  Note the terms that are NOT in \<open>OT\<^bsub>B\<^esub>\<close> are
+  \<open>acc\<close> for free (they have no \<open>RTrel\<close>-predecessors at all).\<close>
+
+lemma bwl_acc_of_W:
+  assumes COF: "bwl_cof"
+  shows "bwl_W u \<subseteq> Wellfounded.acc RTrel"
+proof (rule bwl_A2')
+  fix c assume A: "bwl_Aop bwl_W (enat u) (Wellfounded.acc RTrel) c"
+  show "c \<in> Wellfounded.acc RTrel"
+  proof (cases "isOT_BT c \<and> dfree_BT c")
+    case False
+    show ?thesis
+    proof (rule acc.intros)
+      fix y assume "(y, c) \<in> RTrel"
+      hence "isOT_BT c \<and> dfree_BT c" by (simp add: RTrel_def)
+      thus "y \<in> Wellfounded.acc RTrel" using False by simp
+    qed
+  next
+    case True
+    have otc: "isOT_BT c" and dfc: "dfree_BT c" using True by simp_all
+    have cOT: "c \<in> OT_B" using otc dfc by (simp add: OT_B_def OT_def T_B_def)
+    consider (zero) "c = Trm []"
+      | (num) "(domB c = {Trm []} \<or> domB c = NatSet)
+               \<and> (\<forall>n. operB c (numBT n) \<in> Wellfounded.acc RTrel)"
+      | (tu) m where "enat m < enat u" "domB c = TBv (enat m)"
+               "\<forall>z \<in> bwl_W m. operB c z \<in> Wellfounded.acc RTrel"
+      using A[unfolded bwl_Aop_def] by blast
+    thus ?thesis
+    proof cases
+      case zero
+      show ?thesis
+      proof (rule acc.intros)
+        fix y assume "(y, c) \<in> RTrel"
+        hence "lessBT y (Trm [])" using zero by (simp add: RTrel_def)
+        thus "y \<in> Wellfounded.acc RTrel" using bwl_not_lessBT_zero by simp
+      qed
+    next
+      case num
+      have cne: "c \<noteq> Trm []"
+      proof
+        assume z: "c = Trm []"
+        have dz: "domB c = {}" using z bwo_domB_Nil by simp
+        have "numBT 0 \<in> NatSet" by (simp add: NatSet_def)
+        moreover have "Trm [] \<in> {Trm []}" by simp
+        ultimately show False using conjunct1[OF num] dz by auto
+      qed
+      show ?thesis
+      proof (rule acc.intros)
+        fix b assume bc: "(b, c) \<in> RTrel"
+        have otb: "isOT_BT b" and dfb: "dfree_BT b" and lb: "lessBT b c"
+          using bc by (simp_all add: RTrel_def)
+        have cofc: "((domB c = {Trm []} \<or> domB c = NatSet)
+                       \<longrightarrow> (\<exists>n. leBT b (operB c (numBT n))))
+                    \<and> (\<forall>m. domB c = TBv (enat m)
+                       \<longrightarrow> (\<exists>z. z \<in> bwl_W m \<and> z \<in> domB c \<and> isOT_BT z \<and> dfree_BT z
+                                  \<and> leBT b (operB c z)))"
+          by (rule COF[unfolded bwl_cof_def, rule_format, OF otc dfc otb dfb lb])
+        have D: "domB c = {Trm []} \<or> domB c = NatSet" using num by blast
+        have "\<exists>n. leBT b (operB c (numBT n))" using conjunct1[OF cofc] D by simp
+        then obtain n where nb: "leBT b (operB c (numBT n))" by blast
+        have accn: "operB c (numBT n) \<in> Wellfounded.acc RTrel" using num by blast
+        have otn: "operB c (numBT n) \<in> OT_B"
+          by (rule m_buc1_3_2_OT_B_closed[OF cOT cne])
+        show "b \<in> Wellfounded.acc RTrel"
+        proof (cases "b = operB c (numBT n)")
+          case True thus ?thesis using accn by simp
+        next
+          case False
+          hence "lessBT b (operB c (numBT n))" using nb by simp
+          hence "(b, operB c (numBT n)) \<in> RTrel"
+            using otb dfb otn by (simp add: RTrel_def OT_B_def OT_def T_B_def)
+          thus ?thesis by (rule acc_downward[OF accn])
+        qed
+      qed
+    next
+      case (tu m)
+      have cne: "c \<noteq> Trm []"
+      proof
+        assume z: "c = Trm []"
+        have "TBv (enat m) = {}" using z tu(2) bwo_domB_Nil by simp
+        moreover have "Trm [] \<in> TBv (enat m)" by (simp add: TBv_def)
+        ultimately show False by simp
+      qed
+      show ?thesis
+      proof (rule acc.intros)
+        fix b assume bc: "(b, c) \<in> RTrel"
+        have otb: "isOT_BT b" and dfb: "dfree_BT b" and lb: "lessBT b c"
+          using bc by (simp_all add: RTrel_def)
+        have cofc: "((domB c = {Trm []} \<or> domB c = NatSet)
+                       \<longrightarrow> (\<exists>n. leBT b (operB c (numBT n))))
+                    \<and> (\<forall>m. domB c = TBv (enat m)
+                       \<longrightarrow> (\<exists>z. z \<in> bwl_W m \<and> z \<in> domB c \<and> isOT_BT z \<and> dfree_BT z
+                                  \<and> leBT b (operB c z)))"
+          by (rule COF[unfolded bwl_cof_def, rule_format, OF otc dfc otb dfb lb])
+        have "\<exists>z. z \<in> bwl_W m \<and> z \<in> domB c \<and> isOT_BT z \<and> dfree_BT z
+                    \<and> leBT b (operB c z)"
+          using conjunct2[OF cofc] tu(2) by simp
+        then obtain z where zW: "z \<in> bwl_W m" and zd: "z \<in> domB c"
+          and otz: "isOT_BT z" and dfz: "dfree_BT z"
+          and nb: "leBT b (operB c z)" by blast
+        have accz: "operB c z \<in> Wellfounded.acc RTrel" using tu(3) zW by blast
+        have "isOT_BT (operB c z) \<and> dfree_BT (operB c z)"
+          using b1x_master[OF otc dfc cne disjI1[OF zd]] otz dfz by blast
+        hence otz': "operB c z \<in> OT_B" by (simp add: OT_B_def OT_def T_B_def)
+        show "b \<in> Wellfounded.acc RTrel"
+        proof (cases "b = operB c z")
+          case True thus ?thesis using accz by simp
+        next
+          case False
+          hence "lessBT b (operB c z)" using nb by simp
+          hence "(b, operB c z) \<in> RTrel"
+            using otb dfb otz' by (simp add: RTrel_def OT_B_def OT_def T_B_def)
+          thus ?thesis by (rule acc_downward[OF accz])
+        qed
+      qed
+    qed
+  qed
+qed
+
+text \<open>\<^bold>\<open>Consequence: the r66 residual \<open>bwo_Wstar_total\<close> is implied by \<open>bwl_cof\<close>\<close> — hence
+  so is \<open>wf RPrel\<close> ([Buc1] Lemma 2.2), via the already-proven \<open>bwo_2_2_wf\<close>.\<close>
+
+theorem bwl_Wstar_total_of_cof:
+  assumes COF: "bwl_cof"
+  shows "bwo_Wstar_total"
+proof (unfold bwo_Wstar_total_def, intro allI impI)
+  fix t assume ot: "isOT_BT t" and df: "dfree_BT t"
+  show "t \<in> bwo_Wstar"
+  proof (unfold bwo_Wstar_def, intro CollectI allI impI)
+    fix u assume "isOT_BP (DB (enat u) t)" and "dfree_BP (DB (enat u) t)"
+    have "Trm [DB (enat u) t] \<in> bwl_W u" by (rule bwl_2_8_principal[OF df])
+    hence "Trm [DB (enat u) t] \<in> Wellfounded.acc RTrel"
+      using bwl_acc_of_W[OF COF] by blast
+    thus "DB (enat u) t \<in> Wellfounded.acc RPrel" by (rule bwl_acc_BP_of_BT)
+  qed
+qed
+
+theorem bwl_wf_RPrel_of_cof:
+  assumes COF: "bwl_cof"
+  shows "wf RPrel"
+  by (rule bwo_2_2_wf[OF bwl_Wstar_total_of_cof[OF COF]])
+
+text \<open>\<^bold>\<open>Round-68 status.\<close>  The residual for \<open>wf RPrel\<close> is now the single statement
+  \<open>bwl_cof\<close>: for \<open>OT\<^bsub>B\<^esub>\<close> terms \<open>b < a\<close>, the fundamental sequence of \<open>a\<close> reaches above
+  \<open>b\<close> — \<open>\<exists>n. b \<le> a[n]\<close> when \<open>dom(a) \<in> {{0},\<nat>}\<close>, and \<open>\<exists>z \<in> W\<^sub>m \<inter> dom(a). b \<le> a[z]\<close> when
+  \<open>dom(a) = T\<^sub>m\<close>.  Everything else in [Buc1] \<section>2 is now proved unconditionally.\<close>
+
+(* ===== end r68 bwl part 6 (bridge; residual = bwl_cof, the Bachmann property) ===== *)
 end
