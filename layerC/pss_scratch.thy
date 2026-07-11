@@ -1817,4 +1817,204 @@ proof -
 qed
 
 
+
+(* ===== r56 OTint one-block bricks: OTA1 engine (front A) + IVNP (front B) ===== *)
+
+
+(* ===================================================================== *)
+(* ===== r56 ot1_ : discharge OTA1/SETLE1 (the two one-block tower   ==== *)
+(* =====   facts) into oi5_termination_census.  STEP-0 (python)      ==== *)
+(* =====   confirmed OTA1 (isOT_BP) and SETLE1 (setle) hold 899/899  ==== *)
+(* =====   on genuine condIII/IV ST_PS hosts, decomposition UNIQUE.  ==== *)
+(* =====   Body-level drivers verified: tri0 = b1x_triG(Dinf X0)A0 X1,==== *)
+(* =====   BE0 (G u A0 <= A0 all-u), newOT_body isOT_BP(DB ub A0).    ==== *)
+(* =====   setle_body (G u A0 vs insert X0 (G u X0)) is FALSE (u=0),  ==== *)
+(* =====   so the plain otx3_core is BLOCKED; the tri-variant below   ==== *)
+(* =====   takes tri0 directly at the hole instead of rebuilding it   ==== *)
+(* =====   from a (false) setle.                                       ==== *)
+(* ===================================================================== *)
+
+text \<open>@{text otx3_core_tri}: the deep-insertion transport engine
+  @{thm [source] otx3_core}, but taking the hole-level G-control
+  \<open>b1x_triG (D\<^sub>\<infinity> aLo) a' aHi\<close> DIRECTLY (as \<open>tri0\<close>) instead of deriving it from
+  a \<open>setle\<close> via @{thm [source] otx3_setle_triG}.  This is exactly the r55
+  \<open>otx3_core\<close> proof with the single \<open>otx3_setle_triG[OF setle]\<close> step replaced
+  by the supplied \<open>tri0\<close> (the fixed hole cores \<open>aLo,a',aHi\<close> are invariant across
+  the context descent, so \<open>tri0\<close> threads unchanged).  Needed because the
+  condIII/IV body-level \<open>setle\<close> \<open>G\<^sub>u A\<^sub>0 \<preceq> insert X\<^sub>0 (G\<^sub>u X\<^sub>0)\<close> is FALSE while its
+  weaker G-control \<open>tri0\<close> is TRUE (STEP-0).\<close>
+
+lemma otx3_core_tri:
+  "flatBT tLo = s @ flatBP (DB (enat h) aLo) @ b \<Longrightarrow>
+   flatBT t' = s @ flatBP (DB (enat h) a') @ b \<Longrightarrow>
+   flatBT tHi = s @ flatBP (DB (enat h) aHi) @ b \<Longrightarrow>
+   \<forall>x \<in> set b. x = RP \<Longrightarrow>
+   isOT_BT tLo \<Longrightarrow> isOT_BT tHi \<Longrightarrow>
+   isOT_BP (DB (enat h) a') \<Longrightarrow>
+   leBT aLo a' \<Longrightarrow> leBT a' aHi \<Longrightarrow>
+   b1x_triG (Dpt \<infinity> aLo) a' aHi \<Longrightarrow>
+   isOT_BT t' \<and> leBT tLo t' \<and> leBT t' tHi \<and> b1x_triG (Dpt \<infinity> tLo) t' tHi"
+proof (induction t' arbitrary: tLo tHi s b rule: measure_induct_rule[where f=size])
+  case (less t')
+  note P = less.prems
+  from otx2_align3[OF P(1) P(2) P(3) P(4)]
+  show ?case
+  proof (elim disjE exE conjE)
+    \<comment> \<open>case A: the cores are the last top-level components over a shared \<open>qs\<close>\<close>
+    fix qs
+    assume TLo: "tLo = Trm (qs @ [DB (enat h) aLo])"
+      and T': "t' = Trm (qs @ [DB (enat h) a'])"
+      and THi: "tHi = Trm (qs @ [DB (enat h) aHi])"
+    have LoOT': "isOT_BT (Trm (qs @ [DB (enat h) aLo]))" using P(5) TLo by simp
+    have HiOT': "isOT_BT (Trm (qs @ [DB (enat h) aHi]))" using P(6) THi by simp
+    show "isOT_BT t' \<and> leBT tLo t' \<and> leBT t' tHi \<and> b1x_triG (Dpt \<infinity> tLo) t' tHi"
+      unfolding TLo T' THi
+      by (rule otx3_level[OF LoOT' HiOT' P(7) P(8) P(9) P(10)])
+  next
+    \<comment> \<open>case B: descend through a shared last component into aligned bodies\<close>
+    fix qs w lbLo lb' lbHi sc bc
+    assume TLo: "tLo = Trm (qs @ [DB w lbLo])"
+      and T': "t' = Trm (qs @ [DB w lb'])"
+      and THi: "tHi = Trm (qs @ [DB w lbHi])"
+      and F1: "flatBT lbLo = sc @ flatBP (DB (enat h) aLo) @ bc"
+      and F2: "flatBT lb' = sc @ flatBP (DB (enat h) a') @ bc"
+      and F3: "flatBT lbHi = sc @ flatBP (DB (enat h) aHi) @ bc"
+      and BC: "\<forall>x \<in> set bc. x = RP"
+    have LoOT': "isOT_BT (Trm (qs @ [DB w lbLo]))" using P(5) TLo by simp
+    have HiOT': "isOT_BT (Trm (qs @ [DB w lbHi]))" using P(6) THi by simp
+    have loP: "isOT_BP (DB w lbLo)" using LoOT' by simp
+    have hiP: "isOT_BP (DB w lbHi)" using HiOT' by simp
+    have loBT: "isOT_BT lbLo" using loP by simp
+    have hiBT: "isOT_BT lbHi" using hiP by simp
+    have pin: "DB w lb' \<in> set (qs @ [DB w lb'])" by simp
+    have szp: "size (DB w lb') \<le> size_list size (qs @ [DB w lb'])"
+      by (rule size_list_estimation'[OF pin order_refl])
+    have sz: "size lb' < size t'" using szp T' by simp
+    from less.IH[OF sz F1 F2 F3 BC loBT hiBT P(7) P(8) P(9) P(10)]
+    have ih1: "isOT_BT lb'" and ih2: "leBT lbLo lb'" and ih3: "leBT lb' lbHi"
+      and ih4: "b1x_triG (Dpt \<infinity> lbLo) lb' lbHi" by blast+
+    have pOT: "isOT_BP (DB w lb')"
+      by (rule otx3_pOT[OF loP hiP ih1 ih2 ih3 ih4])
+    show "isOT_BT t' \<and> leBT tLo t' \<and> leBT t' tHi \<and> b1x_triG (Dpt \<infinity> tLo) t' tHi"
+      unfolding TLo T' THi
+      by (rule otx3_level[OF LoOT' HiOT' pOT ih2 ih3 ih4])
+  qed
+qed
+
+text \<open>@{text ot1_OTA1_from_bricks}: the OTA1 conclusion \<open>isOT_BP (D\<^bsub>e\<^sub>3\<^esub> A\<^sub>1)\<close>
+  packaged as ONE application of @{thm [source] otx3_core_tri} (giving \<open>isOT_BT
+  A\<^sub>1\<close> and the lifted G-control \<open>A\<^sub>1 \<triangleleft>\<^bsub>D\<^sub>\<infinity>X\<^sub>1\<^esub> X\<^sub>2\<close>) followed by
+  @{thm [source] otx3_pOT} at head \<open>e\<^sub>3\<close>.  This reduces the census assumption
+  \<open>OTA1\<close> to exactly the reusable brick set
+  \<open>{donor-OT (X\<^sub>1,X\<^sub>2 and their D\<^bsub>e\<^sub>3\<^esub>-principals), newOT_body isOT_BP(D\<^bsub>ub\<^esub> A\<^sub>0),
+    base0/base1, tri0}\<close>.  \<open>X\<^sub>0 = D\<^bsub>ub\<^esub>0\<close>, \<open>X\<^sub>1 = d4vx_ins s\<^sub>0 ub b\<^sub>0 X\<^sub>0\<close>,
+  \<open>X\<^sub>2 = d4vx_ins s\<^sub>0 ub b\<^sub>0 X\<^sub>1\<close>, \<open>A\<^sub>1 = d4vx_ins s\<^sub>0 ub b\<^sub>0 A\<^sub>0\<close>.\<close>
+
+lemma ot1_OTA1_from_bricks:
+  fixes s0 b0 :: "Sym list" and ub e3 :: nat and X0 A0 X1 X2 A1 :: BT
+  assumes fX1: "flatBT X1 = s0 @ flatBP (DB (enat ub) X0) @ b0"
+    and fA1: "flatBT A1 = s0 @ flatBP (DB (enat ub) A0) @ b0"
+    and fX2: "flatBT X2 = s0 @ flatBP (DB (enat ub) X1) @ b0"
+    and b0RP: "\<forall>x \<in> set b0. x = RP"
+    and X1OT: "isOT_BT X1" and X2OT: "isOT_BT X2"
+    and loPe: "isOT_BP (DB (enat e3) X1)"
+    and hiPe: "isOT_BP (DB (enat e3) X2)"
+    and nub: "isOT_BP (DB (enat ub) A0)"
+    and o1: "leBT X0 A0" and o2: "leBT A0 X1"
+    and tri0: "b1x_triG (Dpt \<infinity> X0) A0 X1"
+  shows "isOT_BP (DB (enat e3) A1)"
+proof -
+  from otx3_core_tri[OF fX1 fA1 fX2 b0RP X1OT X2OT nub o1 o2 tri0]
+  have A1OT: "isOT_BT A1" and ordlo: "leBT X1 A1" and ordhi: "leBT A1 X2"
+    and triA: "b1x_triG (Dpt \<infinity> X1) A1 X2" by blast+
+  show ?thesis by (rule otx3_pOT[OF loPe hiPe A1OT ordlo ordhi triA])
+qed
+
+
+
+(* =================================================================== *)
+(* r56-IVCORNER (prefix ot2_): the two condIV corner residuals of      *)
+(* oi5_OTint_condIV discharged as HYPOTHESIS-FREE lemmas, so that       *)
+(* oi5_termination_census loses its IVADMEQ / IVNP assumptions.         *)
+(*                                                                      *)
+(* Empirical (python/_r56_ivcorner_step0.py, genuine ST_PS oper-orbit): *)
+(*   IVADMEQ corner (hasParent, condIV, admeq gate jm3=jm1): 24 hosts,  *)
+(*     96/96 (host,n) pairs Trans(P[n]) in OT_B, 0 CEX, IH always OK.   *)
+(*   IVNP corner discharged unconditionally by od4_OTpred_final.        *)
+(* =================================================================== *)
+
+section \<open>r56-IVCORNER (\<open>ot2_\<close>) --- the two condIV corner residuals\<close>
+
+subsection \<open>\<open>IVNP\<close>: the no-parent condIV corner\<close>
+
+text \<open>\<open>IVNP\<close> is \<open>Trans (Pred P) \<in> OT\<^bsub>B\<^esub>\<close> under condIV with \<open>\<not> hasParent P 1 (Lng
+  P - 1)\<close>.  This is a pure \<open>OTpred\<close> step and needs no branch/parent structure:
+  the hypothesis-free master @{thm [source] od4_OTpred_final} (front B, r55)
+  already gives \<open>Trans (Pred P) \<in> OT\<^bsub>B\<^esub>\<close> for EVERY standard host with
+  \<open>1 < Lng P\<close> and \<open>Trans P \<in> OT\<^bsub>B\<^esub>\<close>.  The condIV/\<open>\<not>hasParent\<close> hypotheses are
+  simply discarded.\<close>
+
+lemma ot2_IVNP:
+  fixes P :: pairseq
+  assumes NST: "P \<in> ST_PS" and NPT: "P \<in> PT_PS" and j1gt: "1 < Lng P - 1"
+    and cIV: "transCondIV P" and nhp: "\<not> hasParent P 1 (Lng P - 1)"
+    and ihOT: "Trans P \<in> OT_B"
+  shows "Trans (Pred P) \<in> OT_B"
+proof -
+  have L: "1 < Lng P" using j1gt by linarith
+  show ?thesis by (rule od4_OTpred_final[OF NST ihOT L])
+qed
+
+
+(* ===================================================================== *)
+(* ===== r56: discharge IVNP via ot2_IVNP => census modulo 4         ===== *)
+(* ===================================================================== *)
+
+text \<open>IVNP (the condIV no-parent corner) is now closed unconditionally by
+  @{thm [source] ot2_IVNP} (an instance of the r55 hypothesis-free OTpred
+  master @{thm [source] od4_OTpred_final}).  Composing it into
+  @{thm [source] oi6_termination_census} removes IVNP from the residual set:
+  both termination pillars now hold modulo \<open>{OTA1, SETLE1, IVADMEQ, FINRC}\<close>.\<close>
+
+theorem oi7_termination_census:
+  assumes OTA1: "\<And>P s0 b0. P \<in> ST_PS \<Longrightarrow> P \<in> PT_PS \<Longrightarrow>
+        hasParent P 1 (Lng P - 1) \<Longrightarrow> 1 < Lng P - 1 \<Longrightarrow>
+        transCondIII P \<or> transCondIV P \<Longrightarrow> Trans P \<in> OT_B \<Longrightarrow>
+        (\<forall>x \<in> set b0. x = RP) \<Longrightarrow>
+        scb_decomp (bpHeadT (Trans (s84x_N P))) s0
+          (flatBT (Dpt (enat (entry P 1 (Lng P - 1))) 0\<^sub>B)) b0 \<Longrightarrow>
+        isOT_BP (DB (enat (entry P 1 (s84x_jm3 P)))
+                    (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
+                       (bpHeadT (Trans (Pred (s84x_N P))))))"
+    and SETLE1: "\<And>P s0 b0 u. P \<in> ST_PS \<Longrightarrow> P \<in> PT_PS \<Longrightarrow>
+        hasParent P 1 (Lng P - 1) \<Longrightarrow> 1 < Lng P - 1 \<Longrightarrow>
+        transCondIII P \<or> transCondIV P \<Longrightarrow> Trans P \<in> OT_B \<Longrightarrow>
+        (\<forall>x \<in> set b0. x = RP) \<Longrightarrow>
+        scb_decomp (bpHeadT (Trans (s84x_N P))) s0
+          (flatBT (Dpt (enat (entry P 1 (Lng P - 1))) 0\<^sub>B)) b0 \<Longrightarrow>
+        b1x_setle
+          (GBT u (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
+                    (bpHeadT (Trans (Pred (s84x_N P))))))
+          (insert (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
+                     (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))
+                  (GBT u (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
+                            (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))))"
+    and IVADMEQ: "\<And>P n. P \<in> ST_PS \<Longrightarrow> P \<in> PT_PS \<Longrightarrow>
+        hasParent P 1 (Lng P - 1) \<Longrightarrow> 1 < Lng P - 1 \<Longrightarrow> transCondIV P \<Longrightarrow>
+        Adm P (s84x_jm2 P) = transJm1 P \<Longrightarrow> Trans P \<in> OT_B \<Longrightarrow> 1 < n \<Longrightarrow>
+        Trans ((P::pairseq)[n]) \<in> OT_B"
+    and FINRC: "\<And>K. K \<in> ST_PS \<Longrightarrow> K \<in> PT_PS \<Longrightarrow> 1 < Lng K - 1 \<Longrightarrow>
+             transCondII K \<Longrightarrow> tvx_finRc K"
+  shows "\<forall>M. M \<in> ST_PS \<longrightarrow> Trans M \<in> OT_B"
+    and "\<forall>M n. M \<in> ST_PS \<longrightarrow> 1 \<le> n \<longrightarrow> 1 < Lng M \<longrightarrow>
+           lessBT (Trans ((M::pairseq)[n])) (Trans M)"
+proof -
+  show "\<forall>M. M \<in> ST_PS \<longrightarrow> Trans M \<in> OT_B"
+    by (rule oi6_termination_census(1)[OF OTA1 SETLE1 IVADMEQ ot2_IVNP FINRC])
+  show "\<forall>M n. M \<in> ST_PS \<longrightarrow> 1 \<le> n \<longrightarrow> 1 < Lng M \<longrightarrow>
+           lessBT (Trans ((M::pairseq)[n])) (Trans M)"
+    by (rule oi6_termination_census(2)[OF OTA1 SETLE1 IVADMEQ ot2_IVNP FINRC])
+qed
+
+
 end

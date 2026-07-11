@@ -1705,4 +1705,18 @@ Format: `line<TAB>kind<TAB>text`. Regenerate after every C->B fold.
 1535	subsection	The \<open>otIV
 1681	subsection	The \<open>OTint\<close> slot and the \<open>OTmulti\<close> slot, same residuals
 1763	banner	r55 front A+B synthesis: discharge DEEPOT/NOBR via od4
+1821	banner	r56 OTint one-block bricks: OTA1 engine (front A) + IVNP (front B)
+1825	banner	r56 ot1_ : discharge OTA1/SETLE1 (the two one-block tower
+1826	banner	facts) into oi5_termination_census.  STEP-0 (python)
+1827	banner	confirmed OTA1 (isOT_BP) and SETLE1 (setle) hold 899/899
+1828	banner	on genuine condIII/IV ST_PS hosts, decomposition UNIQUE.
+1829	banner	Body-level drivers verified: tri0 = b1x_triG(Dinf X0)A0 X1,
+1830	banner	BE0 (G u A0 <= A0 all-u), newOT_body isOT_BP(DB ub A0).
+1831	banner	setle_body (G u A0 vs insert X0 (G u X0)) is FALSE (u=0),
+1832	banner	so the plain otx3_core is BLOCKED; the tri-variant below
+1833	banner	takes tri0 directly at the hole instead of rebuilding it
+1834	banner	from a (false) setle.
+1946	section	r56-IVCORNER (\<open>ot2_\<close>) --- the two condIV corner residuals
+1948	subsection	\<open>IVNP\<close>: the no-parent condIV corner
+1970	banner	r56: discharge IVNP via ot2_IVNP => census modulo 4
 
