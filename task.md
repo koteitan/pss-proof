@@ -88,7 +88,7 @@
       - ✅ 全交換slot discharge+census(dpx_、exchIV/VI無条件化込)[r1][0.306][0.31h]
       - ✅ assembly census(asx_、長さ帰納不可能を証明、fseqD/TOT消去)[r1][0.219][0.18h]
       - ✅ AP接地+census{OTint,OTpred,OTmulti,TVall}化(apx_、otx dispatcher route)[r1][0.181][0.14h]
-      - 🚨 残=census 4点(⛔ OTint/OTpred/OTmulti/TVall)[r0]
+      - 🚨 残=census(⛔OTint{otIII/otIV}→OTmulti自動+FINRC artifact。OTpred✅r55/TVall✅mod-FINRC)[r0]
     - ✅ 補題（順序数項の再帰構造）
     - ✅ 補題（順序数項の共終数の遺伝性）
     - ✅ 補題（順序数項の末尾項の零化可能性）
@@ -110,9 +110,7 @@
         - ✅ oix_transport定理化(otx2_ bricks+otx3_組立、condV脚無残差)[r2][0.523][0.60h]
         - ✅ base3{PredNp,Lpv,L1v}討伐(oi4_+oc4_L1v、nadm脚無残差)[r1][0.233][0.21h]
         - 🚨🤖 otIII/otIV脚(condVのotx3パターン踏襲)[r0]
-      - 🚨 OTpred(with-parent Pred corner OT-step)
-        - ✅ keystone 4-clause分析(fresh閉+multi/corner閉、opx_)[r2][0.262][0.30h]
-        - 🚨🤖 DEEPOT(deepened clauses)+NOBR(branch-free mono)[r1][0.233][0.21h]
+      - ✅ OTpred(with-parent Pred corner OT-step、無仮定master od4_OTpred_mono→od4_OTpred_final無残差)[r4][0.817][1.41h]
       - 🚨 OTmulti(⛔ OTint、oc4_で{OTint,TVall}のみ化)[r3][0.495][0.51h]
       - 🚨 deep-insertion OT所属(keystone{resid,multiD}、r49でcritical path外)[r5]
         - ✅ resid deep検証+4slot分解(rgx_、C3 prefix半分クローズ)[r1]
