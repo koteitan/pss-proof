@@ -88,7 +88,9 @@
       - ✅ 全交換slot discharge+census(dpx_、exchIV/VI無条件化込)[r1][0.306][0.31h]
       - ✅ assembly census(asx_、長さ帰納不可能を証明、fseqD/TOT消去)[r1][0.219][0.18h]
       - ✅ AP接地+census{OTint,OTpred,OTmulti,TVall}化(apx_、otx dispatcher route)[r1][0.181][0.14h]
-      - 🚨 残=census modulo{SETLE1_ltJ,FINRC}(oi8_census_final_ivadmeq、両柱)[r0]
+      - 🚨 残=census modulo{SETLE1_ltJ,FINRC}(oi8_census_final_ivadmeq、両柱)
+        - ⛔ SETLE1_ltJ slot(§8.7「Transが標準形を保つ」配下で追跡)
+        - 🚨 FINRC slot(=A9 nth-artifact、LastStep_def guard+§8.2 VE fin/finM refactor、未着手)[r0]
     - ✅ 補題（順序数項の再帰構造）
     - ✅ 補題（順序数項の共終数の遺伝性）
     - ✅ 補題（順序数項の末尾項の零化可能性）
