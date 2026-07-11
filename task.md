@@ -109,10 +109,10 @@
         - ✅ condV脚(adm+nadm)閉 modulo oix_transport(oix_、band-exclusion)[r1][0.322][0.47h]
         - ✅ oix_transport定理化(otx2_ bricks+otx3_組立、condV脚無残差)[r2][0.523][0.60h]
         - ✅ base3{PredNp,Lpv,L1v}討伐(oi4_+oc4_L1v、nadm脚無残差)[r1][0.233][0.21h]
-        - 🚨 otIII/otIV脚(condVのotx3パターン踏襲)[r0]
+        - 🚨🤖 otIII/otIV脚(condVのotx3パターン踏襲)[r0]
       - 🚨 OTpred(with-parent Pred corner OT-step)
         - ✅ keystone 4-clause分析(fresh閉+multi/corner閉、opx_)[r2][0.262][0.30h]
-        - 🚨 DEEPOT(deepened clauses)+NOBR(branch-free mono)[r1][0.233][0.21h]
+        - 🚨🤖 DEEPOT(deepened clauses)+NOBR(branch-free mono)[r1][0.233][0.21h]
       - 🚨 OTmulti(⛔ OTint、oc4_で{OTint,TVall}のみ化)[r3][0.495][0.51h]
       - 🚨 deep-insertion OT所属(keystone{resid,multiD}、r49でcritical path外)[r5]
         - ✅ resid deep検証+4slot分解(rgx_、C3 prefix半分クローズ)[r1]
