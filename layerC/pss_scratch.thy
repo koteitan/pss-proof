@@ -6184,4 +6184,485 @@ text \<open>\<^bold>\<open>Status after r64.\<close>  The last external citation
   core).  Estimated 2--4 rounds if the distinguished-set tower induction on \<open>n\<close>
   can be made to feed \<open>wcl_upper\<close> level by level; genuinely external otherwise.\<close>
 
+
+(* ===================================================================== *)
+(* ===== r65: SETLE1_ltJ LEFT-END head bound (prefix ox7_) [front A] ==== *)
+(* =====                                                              ==== *)
+(* ===== r64 REFUTED the right-spine L1/L2 route: the restricted      ==== *)
+(* ===== spineH of ox6_setle_scbext_restr is governed by the FIRST-   ==== *)
+(* ===== principal (LEFT-end) head bpHeadV(body), NOT the right spine. ==== *)
+(* ===== python census (537 REAL ST_PS-cap-PT_PS hosts, ST_PS oracle): ==== *)
+(* =====   * bpHeadV(body) >= v1  holds on ALL 537 (0 failures);       ==== *)
+(* =====   * s0 is NEVER empty  => bpHeadV(X1) = bpHeadV(body);         ==== *)
+(* =====   * the exact universal spineH (leBT t' X1 for every          ==== *)
+(* =====     tx' in GBT u X1 with matched hole + size bound) holds on   ==== *)
+(* =====     ALL 537 (0 failures) for u in {0,1};                      ==== *)
+(* =====   * the 2 ambiguous hosts M=(0,0)(1,0)(1,1)(2,1)(1,1)(2,1)     ==== *)
+(* =====     and its (2,2) variant are NON-real (is_standard = False). ==== *)
+(* ===== So the LEFT-end bound closes spineH.  (python:                ==== *)
+(* =====   python/_r65_lefthead_step0.py)                             ==== *)
+(* =====                                                              ==== *)
+(* ===== KEY PROOF IDEA for the LEFT-end bound (r64 said RightNodes    ==== *)
+(* ===== ALONE cannot bound bpHeadV; RightNodes + OT descP CAN):       ==== *)
+(* =====   body in OT_B  =>  its principal list descP-descending, so    ==== *)
+(* =====   head(first principal) >= head(last principal); and          ==== *)
+(* =====   head(last principal) = RightNodes(body)!0 (lpx_bpHeadV_PB_  ==== *)
+(* =====   last), which is >= v1 by the r63 RightNodes bound.  Hence    ==== *)
+(* =====   bpHeadV(body) = head(first) >= head(last) >= v1.            ==== *)
+(* ===================================================================== *)
+
+subsection \<open>\<open>ox7_slice_TransOT\<close>: the census slice \<open>Trans (s84x_N M)\<close> is in \<open>OT\<^bsub>B\<^esub>\<close>\<close>
+
+text \<open>@{text ox7_slice_TransOT}: the OT-ness of the RAW census slice's \<open>Trans\<close>
+  value.  This is the non-\<open>Pred\<close> mirror of the STEP-3 core of
+  @{thm [source] ot1_A0OT}: route through the reduction \<open>RN = Red (s84x_N M)\<close>
+  (which shares \<open>Trans\<close>), read \<open>Trans RN = D\<^bsub>e\<^sub>3\<^esub> body\<close> off
+  @{thm [source] e2x_Trans_principal_head}, and use OT-heredity
+  @{thm [source] m_8_7_OT_scb_recursive} on the census kind-1 scb-subterm
+  \<open>D\<^bsub>e\<^sub>3\<^esub> body\<close> of \<open>Trans M\<close> (from the \<open>ihOT : Trans M \<in> OT\<^bsub>B\<^esub>\<close> premise, the same
+  hypothesis the census \<open>SETLE1\<close> slot supplies).\<close>
+
+lemma ox7_slice_TransOT:
+  fixes N :: pairseq
+  assumes NST: "N \<in> ST_PS" and NPT: "N \<in> PT_PS"
+    and hp: "hasParent N 1 (Lng N - 1)"
+    and j1gt: "1 < Lng N - 1"
+    and branch: "transCondIII N \<or> transCondIV N"
+    and ihOT: "Trans N \<in> OT_B"
+    and ltJ: "s84x_jm3 N < transJm1 N"
+  shows "Trans (s84x_N N) \<in> OT_B"
+proof -
+  let ?e3 = "entry N 1 (s84x_jm3 N)"
+  let ?body = "bpHeadT (Trans (s84x_N N))"
+  let ?S = "seg N (s84x_jm3 N) (Lng N - 1)"
+  let ?RN = "Red ?S"
+  have MR: "N \<in> RT_PS" using NST m_6_7_ST_PS_subseteq_RT_PS by blast
+  have MT: "N \<in> T_PS" using MR by (simp add: RT_PS_def)
+  have jm2lt: "s84x_jm2 N < Lng N - 1" by (rule s84c1_jm2_basic(1)[OF hp])
+  have jm3le: "s84x_jm3 N \<le> s84x_jm2 N" using adm_Adm_le by (simp add: s84x_jm3_def)
+  have jm3lt: "s84x_jm3 N < Lng N - 1" using jm3le jm2lt by linarith
+  have mM3: "(N, s84x_jm3 N) \<in> Marked" using s84d_jm3_Marked(1)[OF MR MT hp] by simp
+  have leR3: "leR N 0 (s84x_jm3 N) (Lng N - 1)" using mM3 by (simp add: Marked_def)
+  have LNlen: "Lng ?S = Suc (Lng N - 1) - s84x_jm3 N"
+    by (simp add: seg_def del: upt_Suc)
+  have LN0: "(0::nat) < Lng ?S" using LNlen jm3lt by linarith
+  have segT: "?S \<in> T_PS"
+    using slice_Red_in_RT_PS[OF MR jm3lt order.refl leR3] by simp
+  have RN_RT: "?RN \<in> RT_PS"
+    using slice_Red_in_RT_PS[OF MR jm3lt order.refl leR3] by simp
+  have RN_mono: "monoT ?RN"
+    using m_6_6_ancestor_slice_Red_IncrFirst[OF MR jm3lt order.refl leR3] by simp
+  have TeqR: "Trans ?S = Trans ?RN"
+    by (rule Trans_slice_eq_Red[OF MR jm3lt order.refl leR3])
+  obtain s0 b0 s1 b1 where
+    k1: "scb_kind1 (Trans N) s1 (flatBT (Dpt (enat ?e3) ?body)) b1"
+    by (rule oi5_IIIIV_pkg[OF NST NPT hp j1gt branch ltJ])
+  have scbd: "scb_decomp (Trans N) s1 (flatBT (Dpt (enat ?e3) ?body)) b1"
+    using k1 by (simp add: scb_kind1_def)
+  have TReq: "Trans ?RN = Dpt (enat (entry ?RN 1 0)) (bpHeadT (Trans ?RN))"
+    by (rule e2x_Trans_principal_head[OF RN_RT RN_mono])
+  have e_RN: "entry ?RN 1 0 = ?e3"
+  proof -
+    have "entry ?RN 1 0 = entry ?S 1 0" by (rule m_6_6_Red_leftend_1[OF segT])
+    also have "\<dots> = ?e3" using entry_seg[OF LN0, of 1] by simp
+    finally show ?thesis .
+  qed
+  have bodyR: "bpHeadT (Trans ?RN) = ?body"
+  proof -
+    have "bpHeadT (Trans ?RN) = bpHeadT (Trans ?S)" using TeqR by simp
+    also have "\<dots> = ?body" by (simp add: s84x_N_def)
+    finally show ?thesis .
+  qed
+  have TR_princ: "Trans ?RN = Dpt (enat ?e3) ?body"
+    using TReq e_RN bodyR by simp
+  have RN_TB: "Trans ?RN \<in> T_B" by (rule m_7_3_Trans_in_T_B[OF RN_RT])
+  have DptTB: "Dpt (enat ?e3) ?body \<in> T_B" using RN_TB TR_princ by simp
+  have DptOT: "Dpt (enat ?e3) ?body \<in> OT"
+    by (rule m_8_7_OT_scb_recursive[OF ihOT DptTB scbd])
+  have RN_TransOT: "Trans ?RN \<in> OT_B"
+    using DptOT TR_princ RN_TB by (simp add: OT_B_def)
+  have "Trans (s84x_N N) = Trans ?S" by (simp add: s84x_N_def)
+  also have "\<dots> = Trans ?RN" using TeqR by simp
+  finally show "Trans (s84x_N N) \<in> OT_B" using RN_TransOT by simp
+qed
+
+
+subsection \<open>\<open>ox7_bpHeadV_body_ge_v1\<close>: the LEFT-end (first-principal) head of the
+  terminal mono slice body is \<open>\<ge> v\<^sub>1\<close>\<close>
+
+text \<open>@{text ox7_bpHeadV_body_ge_v1}: the LEFT-end mirror of
+  @{thm [source] ox7_RightNodes_body_ge_v1}, and the TRUE residual that r64's
+  census identified as governing the restricted \<open>spineH\<close>.  \<open>body \<in> OT\<^bsub>B\<^esub>\<close>
+  (@{thm [source] ox7_slice_TransOT} + @{thm [source] otx_bpHeadT_OT}) makes
+  \<open>body\<close>'s principal list \<open>descP\<close>-descending
+  (@{thm [source] b1x_descP_last_hd}), so the FIRST-principal head
+  \<open>bpHeadV body\<close> dominates the LAST-principal head
+  \<open>= RightNodes body ! 0\<close> (@{thm [source] lpx_bpHeadV_PB_last}); the latter is
+  \<open>\<ge> v\<^sub>1\<close> by the r63 spine bound.  Thus \<open>bpHeadV body \<ge> v\<^sub>1\<close> --- a fact that,
+  as r64 stressed, RightNodes ALONE cannot give, but RightNodes + the OT
+  descending-principal order does.\<close>
+
+lemma ox7_bpHeadV_body_ge_v1:
+  fixes M :: pairseq
+  assumes NST: "M \<in> ST_PS" and NPT: "M \<in> PT_PS"
+    and hp: "hasParent M 1 (Lng M - 1)"
+    and j1gt: "1 < Lng M - 1"
+    and branch: "transCondIII M \<or> transCondIV M"
+    and ihOT: "Trans M \<in> OT_B"
+    and ltJ: "s84x_jm3 M < transJm1 M"
+  shows "enat (entry M 1 (Lng M - 1))
+           \<le> bpHeadV (bpHeadT (Trans (s84x_N M)))"
+proof -
+  let ?v1 = "entry M 1 (Lng M - 1)"
+  let ?body = "bpHeadT (Trans (s84x_N M))"
+  \<comment> \<open>the body \<open>OT\<^bsub>B\<^esub>\<close> and \<open>T\<^bsub>B\<^esub>\<close> facts\<close>
+  have sliceOT: "Trans (s84x_N M) \<in> OT_B"
+    by (rule ox7_slice_TransOT[OF NST NPT hp j1gt branch ihOT ltJ])
+  have bodyOT: "isOT_BT ?body" by (rule otx_bpHeadT_OT[OF sliceOT])
+  have bodyTB: "?body \<in> T_B" by (rule oi5_regime(3)[OF NST NPT hp j1gt branch])
+  \<comment> \<open>the pkg scb-decomposition of \<open>body\<close> (its flat ends in the hole \<open>D\<^bsub>v\<^sub>1\<^esub> 0\<close>)\<close>
+  obtain s0 b0 s1 b1 where
+    b0RP: "\<forall>x \<in> set b0. x = RP"
+    and inner: "scb_decomp ?body s0 (flatBT (Dpt (enat ?v1) 0\<^sub>B)) b0"
+    by (rule oi5_IIIIV_pkg[OF NST NPT hp j1gt branch ltJ])
+  have fbody: "flatBT ?body = s0 @ Dsym (enat ?v1) # Zsym # b0"
+    using inner by (simp add: scb_decomp_def)
+  have bodyne: "?body \<noteq> 0\<^sub>B"
+  proof
+    assume z: "?body = 0\<^sub>B"
+    have "flatBT ?body = [Zsym]" using z by simp
+    with fbody show False by (cases s0) auto
+  qed
+  \<comment> \<open>\<open>RightNodes body\<close> ends in \<open>v\<^sub>1\<close> (r63 shape), so its \<open>0\<close>-th entry is \<open>\<ge> v\<^sub>1\<close>\<close>
+  obtain a0 where RNbody: "RightNodes ?body = a0 @ [?v1]"
+    using rnsub_RightNodes_t0_lastv[OF fbody b0RP bodyTB] by blast
+  have RNlen: "0 < length (RightNodes ?body)" using RNbody by simp
+  have RN0mem: "RightNodes ?body ! 0 \<in> set (RightNodes ?body)"
+    using RNlen by (rule nth_mem)
+  have RNge: "\<forall>x \<in> set (RightNodes ?body). ?v1 \<le> x"
+    by (rule ox7_RightNodes_body_ge_v1[OF NST NPT hp j1gt branch ltJ])
+  have v1_le_RN0: "?v1 \<le> RightNodes ?body ! 0" using RNge RN0mem by blast
+  \<comment> \<open>\<open>body = Trm ps\<close> is a nonzero \<open>descP\<close>-descending principal list\<close>
+  obtain ps where bps: "?body = Trm ps" by (cases ?body)
+  have psne: "ps \<noteq> []" using bodyne bps by auto
+  have descPps: "descP ps" using bodyOT bps by simp
+  have lasthd: "leBT (Trm [last ps]) (Trm [hd ps])"
+    by (rule b1x_descP_last_hd[OF descPps psne])
+  \<comment> \<open>LAST-principal head \<open>= enat (RightNodes body ! 0)\<close>\<close>
+  have dfbody: "dfree_BT ?body" using bodyTB by (simp add: T_B_def)
+  have lenPB: "Lng (PB ?body) = length ps" using bps by (simp add: rnsub_Lng_PB)
+  have idxlt: "length ps - 1 < length ps" using psne by (cases ps) auto
+  have PBlast: "PB ?body ! (Lng (PB ?body) - 1) = Trm [last ps]"
+  proof -
+    have "PB ?body = map (\<lambda>p. Trm [p]) ps" using bps by (simp add: PB_def)
+    hence "PB ?body ! (Lng (PB ?body) - 1) = Trm [ps ! (length ps - 1)]"
+      using lenPB idxlt by (simp add: nth_map)
+    also have "ps ! (length ps - 1) = last ps" using psne by (simp add: last_conv_nth)
+    finally show ?thesis .
+  qed
+  have hlast: "bpHeadV (Trm [last ps]) = enat (RightNodes ?body ! 0)"
+  proof -
+    have "bpHeadV (PB ?body ! (Lng (PB ?body) - 1)) = enat (RightNodes ?body ! 0)"
+      by (rule lpx_bpHeadV_PB_last[OF bodyne dfbody])
+    thus ?thesis using PBlast by simp
+  qed
+  \<comment> \<open>FIRST-principal head \<open>= bpHeadV body\<close>, and it dominates the LAST head\<close>
+  have hhd: "bpHeadV (Trm [hd ps]) = bpHeadV ?body"
+  proof -
+    obtain p rest where pr: "ps = p # rest" using psne by (cases ps) auto
+    obtain u2 a2 where pv: "p = DB u2 a2" by (cases p)
+    have "bpHeadV ?body = u2" using bps pr pv by simp
+    moreover have "bpHeadV (Trm [hd ps]) = u2" using pr pv by simp
+    ultimately show ?thesis by simp
+  qed
+  have headmono: "bpHeadV (Trm [last ps]) \<le> bpHeadV (Trm [hd ps])"
+  proof -
+    obtain u1 a1 where l1: "last ps = DB u1 a1" by (cases "last ps")
+    obtain u2 a2 where l2: "hd ps = DB u2 a2" by (cases "hd ps")
+    have le: "leBT (Trm [DB u1 a1]) (Trm [DB u2 a2])" using lasthd l1 l2 by simp
+    have "u1 \<le> u2"
+    proof (cases "Trm [DB u1 a1] = Trm [DB u2 a2]")
+      case True thus ?thesis by simp
+    next
+      case False
+      hence "lessBT (Trm [DB u1 a1]) (Trm [DB u2 a2])" using le by blast
+      hence "lessBP (DB u1 a1) (DB u2 a2)" by simp
+      hence "u1 < u2 \<or> (u1 = u2 \<and> lessBT a1 a2)" by simp
+      thus ?thesis by (auto simp: order_le_less)
+    qed
+    thus ?thesis using l1 l2 by simp
+  qed
+  \<comment> \<open>chain: \<open>v\<^sub>1 \<le> RightNodes!0 = head(last) \<le> head(first) = bpHeadV body\<close>\<close>
+  have "enat ?v1 \<le> enat (RightNodes ?body ! 0)" using v1_le_RN0 by simp
+  also have "\<dots> = bpHeadV (Trm [last ps])" using hlast by simp
+  also have "\<dots> \<le> bpHeadV (Trm [hd ps])" using headmono by simp
+  also have "\<dots> = bpHeadV ?body" using hhd by simp
+  finally show "enat ?v1 \<le> bpHeadV ?body" .
+qed
+
+
+subsection \<open>\<open>ox7_ub_lt_bpHeadV_body\<close>: the STRICT LEFT-end head separation
+  \<open>ub < bpHeadV body\<close> (the head-side input of the first-difference at position 0)\<close>
+
+text \<open>@{text ox7_ub_lt_bpHeadV_body}: the strict form
+  \<open>enat (v\<^sub>1 - 1) < bpHeadV body\<close> --- the exact head-side fact a first-difference
+  \<open>spineH\<close> assembly consumes at position 0 (the outer principal), since the
+  ancestor's hole head is \<open>ub = v\<^sub>1 - 1\<close> while \<open>X\<^sub>1\<close>'s first-principal head is
+  \<open>bpHeadV body\<close>.  It follows from @{thm [source] ox7_bpHeadV_body_ge_v1} and
+  \<open>v\<^sub>1 > 0\<close> (a conjunct of both \<open>transCondIII\<close> / \<open>transCondIV\<close>).\<close>
+
+lemma ox7_ub_lt_bpHeadV_body:
+  fixes M :: pairseq
+  assumes NST: "M \<in> ST_PS" and NPT: "M \<in> PT_PS"
+    and hp: "hasParent M 1 (Lng M - 1)"
+    and j1gt: "1 < Lng M - 1"
+    and branch: "transCondIII M \<or> transCondIV M"
+    and ihOT: "Trans M \<in> OT_B"
+    and ltJ: "s84x_jm3 M < transJm1 M"
+  shows "enat (entry M 1 (Lng M - 1) - 1)
+           < bpHeadV (bpHeadT (Trans (s84x_N M)))"
+proof -
+  have v1pos: "0 < entry M 1 (Lng M - 1)"
+    using branch by (auto simp: transCondIII_def transCondIV_def)
+  have ge: "enat (entry M 1 (Lng M - 1))
+              \<le> bpHeadV (bpHeadT (Trans (s84x_N M)))"
+    by (rule ox7_bpHeadV_body_ge_v1[OF NST NPT hp j1gt branch ihOT ltJ])
+  have "enat (entry M 1 (Lng M - 1) - 1) < enat (entry M 1 (Lng M - 1))"
+    using v1pos by simp
+  also note ge
+  finally show ?thesis .
+qed
+(* ===================================================================== *)
+(* ===== r65 (OPUS 4.8): the tower STEP and the intrinsic-globality   ===== *)
+(* ===== obstruction of wcl_upper (prefixes wtw_ / wcl_).             ===== *)
+(* =====                                                               ===== *)
+(* ===== r64 pinned [Buc1] 2.2 to the single residual wcl_upper: for   ===== *)
+(* ===== the lex-(head,size)-minimal bad principal D_n b, the head->n  ===== *)
+(* ===== body components are RPrel-accessible.  This round makes the   ===== *)
+(* ===== tower STEP explicit and unconditional (wtw_core_step: the     ===== *)
+(* ===== level-u principal is accessible once head-<u principals AND   ===== *)
+(* ===== the head->=u components are), and CERTIFIES why the residual  ===== *)
+(* ===== cannot be discharged level-locally: for a bad witness, EVERY  ===== *)
+(* ===== head->n component has the bad principal itself as a strict    ===== *)
+(* ===== RPrel-predecessor (wcl_high_comp_bad_pred), so it is provably ===== *)
+(* ===== NON-accessible (wcl_high_comp_not_acc) — the head->n content  ===== *)
+(* ===== is exactly the shielded material with no elementary handle.   ===== *)
+(* ===================================================================== *)
+
+subsection \<open>(F) r65: the unconditional tower STEP and the globality of \<open>wcl_upper\<close>\<close>
+
+text \<open>\<^bold>\<open>The tower step (positive, unconditional).\<close>  This is the clean level-\<open>u\<close>
+  successor of the head recursion, isolating the low part (below the head,
+  supplied by the induction hypothesis of any head-recursion) from the high
+  part (the \<open>\<ge> u\<close> components, the residual).  It says: a level-\<open>u\<close> \<open>OT\<close>+\<open>dfree\<close>
+  principal is \<open>RPrel\<close>-accessible as soon as (a) every strictly-lower-head
+  \<open>OT\<close>+\<open>dfree\<close> principal is accessible (the tower below), and (b) every direct
+  body component of head \<open>\<ge> u\<close> is accessible (the shielded upper part).  The
+  low components (head \<open>< u\<close>) are handled by (a), so the body is
+  \<open>RTrel\<close>-accessible (\<open>wfj_tuple_acc\<close>) and the principal lifts by
+  \<open>wfc_principal_acc_of_body\<close>.  This packages exactly the split that
+  \<open>wcl_wf_of_upper\<close> performs inline, as a reusable named brick for the tower.\<close>
+
+lemma wtw_core_step:
+  assumes hlt: "\<And>r. isOT_BP r \<Longrightarrow> dfree_BP r \<Longrightarrow> wfj_hd r < enat u
+                    \<Longrightarrow> r \<in> Wellfounded.acc RPrel"
+    and hge: "\<And>w c. DB w c \<in> set (untrm b) \<Longrightarrow> enat u \<le> w
+                     \<Longrightarrow> DB w c \<in> Wellfounded.acc RPrel"
+    and ot: "isOT_BP (DB (enat u) b)" and df: "dfree_BP (DB (enat u) b)"
+  shows "DB (enat u) b \<in> Wellfounded.acc RPrel"
+proof -
+  have otb: "isOT_BT b" using ot by simp
+  have dfb: "dfree_BT b" using df by simp
+  obtain bs where beq: "b = Trm bs" by (cases b) auto
+  have allc: "\<forall>r \<in> set (untrm b). r \<in> Wellfounded.acc RPrel"
+  proof
+    fix r assume rin: "r \<in> set (untrm b)"
+    have rin': "r \<in> set bs" using rin beq by simp
+    have otr: "isOT_BP r" using otb beq rin' by simp
+    have dfr: "dfree_BP r" using dfb beq rin' by simp
+    obtain w c where req: "r = DB w c" by (cases r) auto
+    show "r \<in> Wellfounded.acc RPrel"
+    proof (cases "w < enat u")
+      case True
+      have "wfj_hd r < enat u" using req True by simp
+      then show ?thesis using hlt otr dfr by blast
+    next
+      case False
+      have geu: "enat u \<le> w" using False by (simp add: not_less)
+      have "DB w c \<in> set (untrm b)" using rin req by simp
+      then have "DB w c \<in> Wellfounded.acc RPrel" using hge geu by blast
+      then show ?thesis using req by simp
+    qed
+  qed
+  have bacc: "b \<in> Wellfounded.acc RTrel" by (rule wfj_tuple_acc[OF otb dfb allc])
+  show ?thesis by (rule wfc_principal_acc_of_body[OF hlt bacc ot df])
+qed
+
+text \<open>\<^bold>\<open>The intrinsic-globality obstruction.\<close>  The head-\<open>> n\<close> components of the
+  lex-minimal bad principal \<open>D\<^bsub>n\<^esub> b\<close> are NOT merely "hard to reach": for a
+  \<open>bad\<close> (non-accessible) witness they are provably NON-accessible.  The reason is
+  structural: \<open>D\<^bsub>n\<^esub> b\<close> is itself a strict \<open>RPrel\<close>-predecessor of every body
+  component of head \<open>w > n\<close> (head \<open>n < w\<close> forces \<open>lessBP (D\<^bsub>n\<^esub> b) (D\<^bsub>w\<^esub> c)\<close>
+  irrespective of the bodies).  Since accessibility is downward closed
+  (\<open>acc_downward\<close>), a component with a non-accessible predecessor is itself
+  non-accessible.  Hence \<open>wcl_upper\<close>'s conclusion "the head-\<open>> n\<close> components are
+  accessible" is FALSE on any genuine bad witness carrying such a component:
+  \<open>wcl_upper\<close> can only hold vacuously, i.e. it is equivalent to \<open>wf RPrel\<close> with
+  no proper sub-instance — there is no monotone "partial" progress to be made on
+  the residual itself.  Establishing accessibility of those components therefore
+  requires first ruling out the bad witness globally, which is the whole theorem
+  (\<open>wcl_upper_iff_wf\<close>).  This is the exact certificate that the distinguished-set
+  impredicative construction (\<open>wds_collapse\<close>, existence of a distinguished set =
+  theorem strength) is unavoidable, and that no head-\<open>< n\<close> / size descent closes
+  the head-\<open>> n\<close> level.\<close>
+
+lemma wcl_high_comp_bad_pred:
+  assumes ot: "isOT_BP (DB (enat n) b)" and df: "dfree_BP (DB (enat n) b)"
+    and comp: "DB w c \<in> set (untrm b)" and hn: "enat n < w"
+  shows "(DB (enat n) b, DB w c) \<in> RPrel"
+proof -
+  have otb: "isOT_BT b" using ot by simp
+  have dfb: "dfree_BT b" using df by simp
+  obtain bs where beq: "b = Trm bs" by (cases b) auto
+  have cin: "DB w c \<in> set bs" using comp beq by simp
+  have "\<forall>p \<in> set bs. isOT_BP p" using otb beq by simp
+  then have otc: "isOT_BP (DB w c)" using cin by blast
+  have "\<forall>p \<in> set bs. dfree_BP p" using dfb beq by simp
+  then have dfc: "dfree_BP (DB w c)" using cin by blast
+  have "lessBP (DB (enat n) b) (DB w c)" using hn by simp
+  then show ?thesis using ot df otc dfc by (simp add: RPrel_def)
+qed
+
+corollary wcl_high_comp_not_acc:
+  assumes ot: "isOT_BP (DB (enat n) b)" and df: "dfree_BP (DB (enat n) b)"
+    and comp: "DB w c \<in> set (untrm b)" and hn: "enat n < w"
+    and nacc: "DB (enat n) b \<notin> Wellfounded.acc RPrel"
+  shows "DB w c \<notin> Wellfounded.acc RPrel"
+proof
+  assume acc: "DB w c \<in> Wellfounded.acc RPrel"
+  have "DB (enat n) b \<in> Wellfounded.acc RPrel"
+    by (rule acc_downward[OF acc wcl_high_comp_bad_pred[OF ot df comp hn]])
+  then show False using nacc by blast
+qed
+
+text \<open>\<^bold>\<open>Consequently\<close>: on the lex-minimal bad witness \<open>D\<^bsub>n\<^esub> b\<close> (from
+  \<open>wcl_min_bad_lex\<close>), the \<open>ONLY\<close> way \<open>wcl_upper\<close> can fail to be immediately
+  self-contradictory is that \<open>b\<close> carries \<open>NO\<close> head-\<open>> n\<close> component at all --- in
+  which case \<open>wcl_wf_of_upper\<close> already closes via clauses (i)/(ii) with no upper
+  content.  If a head-\<open>> n\<close> component exists, \<open>wcl_high_comp_not_acc\<close> shows it is
+  non-accessible, so \<open>wcl_upper\<close>'s demand is unmeetable without first refuting the
+  witness.  This gives the sharpened obstruction and a strictly-shorter route
+  through \<open>wcl_wf_of_upper\<close>: under the residual, either there is no upper content
+  (finish by (i)/(ii)) or the residual is self-defeating on the witness.\<close>
+
+lemma wcl_wf_of_upper_via_step:
+  \<comment> \<open>Re-derivation of \<open>wf RPrel\<close> from \<open>wcl_upper\<close> through the named tower step
+      \<open>wtw_core_step\<close>, making the low/upper split explicit.\<close>
+  assumes U: "wcl_upper"
+  shows "wf RPrel"
+proof (rule ccontr)
+  assume nwf: "\<not> wf RPrel"
+  have bad: "\<not> (\<forall>p. isOT_BP p \<longrightarrow> dfree_BP p \<longrightarrow> p \<in> Wellfounded.acc RPrel)"
+  proof
+    assume A: "\<forall>p. isOT_BP p \<longrightarrow> dfree_BP p \<longrightarrow> p \<in> Wellfounded.acc RPrel"
+    have "\<forall>p. p \<in> Wellfounded.acc RPrel"
+    proof
+      fix p :: BP
+      show "p \<in> Wellfounded.acc RPrel"
+      proof (cases "isOT_BP p \<and> dfree_BP p")
+        case True thus ?thesis using A by blast
+      next
+        case False
+        show ?thesis
+        proof (rule accI)
+          fix q assume "(q, p) \<in> RPrel"
+          then have "isOT_BP p \<and> dfree_BP p" by (auto simp add: RPrel_def)
+          with False show "q \<in> Wellfounded.acc RPrel" by blast
+        qed
+      qed
+    qed
+    then have "wf RPrel" using wfs_wf_iff_all_acc by blast
+    with nwf show False by blast
+  qed
+  obtain n b where otp: "isOT_BP (DB (enat n) b)"
+    and dfp: "dfree_BP (DB (enat n) b)"
+    and nacc: "DB (enat n) b \<notin> Wellfounded.acc RPrel"
+    and i: "\<forall>r. isOT_BP r \<longrightarrow> dfree_BP r \<longrightarrow> wfj_hd r < enat n
+                 \<longrightarrow> r \<in> Wellfounded.acc RPrel"
+    and ii: "\<forall>c. isOT_BP c \<longrightarrow> dfree_BP c \<longrightarrow> wfj_hd c = enat n
+                  \<longrightarrow> wfs_szP c < wfs_szP (DB (enat n) b)
+                  \<longrightarrow> c \<in> Wellfounded.acc RPrel"
+    using wcl_min_bad_lex[OF bad] by blast
+  have otb: "isOT_BT b" using otp by simp
+  have dfb: "dfree_BT b" using dfp by simp
+  obtain bs where beq: "b = Trm bs" by (cases b) auto
+  \<comment> \<open>the residual supplies the head-\<open>> n\<close> (\<open>= \<ge> Suc n\<close>) components\<close>
+  have upper: "\<forall>w c. DB w c \<in> set (untrm b) \<longrightarrow> enat n < w
+                     \<longrightarrow> DB w c \<in> Wellfounded.acc RPrel"
+    using U[unfolded wcl_upper_def] otp dfp nacc i ii by blast
+  have hlt: "\<And>r. isOT_BP r \<Longrightarrow> dfree_BP r \<Longrightarrow> wfj_hd r < enat n
+                 \<Longrightarrow> r \<in> Wellfounded.acc RPrel"
+    using i by blast
+  \<comment> \<open>the head-\<open>\<ge> n\<close> components: head \<open>= n\<close> by (ii) (proper subterms), head \<open>> n\<close> by the residual\<close>
+  have hge: "\<And>w c. DB w c \<in> set (untrm b) \<Longrightarrow> enat n \<le> w
+                    \<Longrightarrow> DB w c \<in> Wellfounded.acc RPrel"
+  proof -
+    fix w c assume rmem: "DB w c \<in> set (untrm b)" and geu: "enat n \<le> w"
+    have rin': "DB w c \<in> set bs" using rmem beq by simp
+    have "\<forall>p \<in> set bs. isOT_BP p" using otb beq by simp
+    then have otr: "isOT_BP (DB w c)" using rin' by blast
+    have "\<forall>p \<in> set bs. dfree_BP p" using dfb beq by simp
+    then have dfr: "dfree_BP (DB w c)" using rin' by blast
+    show "DB w c \<in> Wellfounded.acc RPrel"
+    proof (cases "w = enat n")
+      case True
+      have hd_r: "wfj_hd (DB w c) = enat n" using True by simp
+      have "wfs_szP (DB w c) < wfs_szT (Trm bs)"
+        using wfs_szP_mem_lt[OF rin'] .
+      then have "wfs_szP (DB w c) < wfs_szT b" using beq by simp
+      then have szr: "wfs_szP (DB w c) < wfs_szP (DB (enat n) b)" by simp
+      show ?thesis using ii otr dfr hd_r szr by blast
+    next
+      case False
+      have "enat n < w" using geu False by simp
+      then show ?thesis using upper rmem by blast
+    qed
+  qed
+  have "DB (enat n) b \<in> Wellfounded.acc RPrel"
+    by (rule wtw_core_step[OF hlt hge otp dfp])
+  then show False using nacc by blast
+qed
+
+text \<open>\<^bold>\<open>Status after r65.\<close>  The residual for [Buc1] Lemma 2.2 is unchanged
+  (\<open>wcl_upper\<close>, \<open>wcl_upper_iff_wf\<close>: exactly theorem-strength).  What r65 adds is
+  the precise \<^emph>\<open>shape\<close> of the obstruction, as green bricks:
+
+  \<^item> \<open>wtw_core_step\<close> — the unconditional level-\<open>u\<close> tower step (low part = the
+    head-\<open>< u\<close> IH, upper part = the head-\<open>\<ge> u\<close> components), and
+    \<open>wcl_wf_of_upper_via_step\<close> re-derives \<open>wf RPrel\<close> from \<open>wcl_upper\<close> through it,
+    exposing the low/upper split as a reusable named brick for a future tower.
+  \<^item> \<open>wcl_high_comp_bad_pred\<close> / \<open>wcl_high_comp_not_acc\<close> — the head-\<open>> n\<close>
+    components of a bad witness are provably NON-accessible (the bad principal is
+    their \<open>RPrel\<close>-predecessor).  So \<open>wcl_upper\<close> admits no monotone partial
+    progress: its conclusion is false on any genuine witness with upper content;
+    it can hold only vacuously.
+
+  \<^bold>\<open>Exact obstruction / next idea.\<close>  The head-\<open>> n\<close> level cannot be discharged by
+  any subterm/size descent (its members are lex-\<open>larger\<close>, and non-accessible
+  while the witness is bad) nor by the head recursion (head-\<open>< n\<close> has no base:
+  \<open>wfj_frag0_lv_unbounded\<close>).  The sole path is the impredicative
+  distinguished-set collapse \<open>wds_collapse\<close> (equivalently \<open>wcl_upper\<close>): its
+  exhibit-move must construct a \<open>v\<close>-distinguished set on top of \<open>wds_Mset v\<close>
+  containing the target \<open>D\<^bsub>v\<^esub> c\<close>, whose only non-cheap clauses are (i) the
+  \<open>RPrel\<close>-downward closure of the initial segment \<open>{q \<in> wfj_frag v. q \<le>\<^sub>P D\<^bsub>v\<^esub> c}\<close>
+  (a transfinite induction along the wellfounded \<open>acc RPrel\<close>-restriction to
+  \<open>wds_Mset v\<close>, using the premise that \<open>c\<close>'s \<open>G\<^sub>v\<close>-trace coefficients already sit in
+  the tower), and (ii) its \<open>G\<close>-progressiveness.  The load-bearing missing fact is
+  the \<^emph>\<open>existence of one \<open>v\<close>-distinguished set\<close> (the D1 witness for
+  \<open>wds_Mset_distinguished\<close>) — itself of theorem strength (\<open>wfj_frag0_lv_unbounded\<close>
+  forces it to contain a hereditarily-\<open>G\<close>-low unbounded-level family).  This is
+  the genuine [Buc1] \<open>\<section>\<close>5 fundamental-sequence content and remains external-grade:
+  a full formalization of the exhibit-move transfinite induction is estimated at
+  \<open>\<ge> 5\<close> dedicated rounds (or importing an external well-foundedness of the
+  Buchholz \<open>\<psi>\<close>-collapse).\<close>
 end
