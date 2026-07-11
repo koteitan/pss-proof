@@ -57,7 +57,7 @@
             - ✅ bookkeeping全消去+非可述性確定+staged ladder(wfc_)[r1][0.239][0.35h]
             - 🚨 pbody-acc本体(distinguished sets route)
               - ✅ 定義+Mset+D1 union+acc bridge+基本閉包(wds_)[r1][0.233][0.21h]
-              - 🚨 collapse補題(D3)+ladder接続(残=wcl_upper=distinguished-sets exhibit-move、r65でtower路線を死路と証明、[1]/Buchholz-Schütte Ch.IV写経)[r3][0.55][0.87h]
+              - 🚨🤖 collapse補題(D3)+ladder接続(残=wf RPrel、r66でBuchholz[1]§2 Lemmas2.4-2.8 forward A_ν-closure構造帰納を写経bwo_、r65でtower死路確定)[r3][0.55][0.87h]
   - 🚨 §8.1 条件 (I) の下での展開規則
     - 🚨 命題（条件 (I) の下での $\textrm{Trans}$ と基本列の交換関係）
       - ✅ 交換則(1)本体[r4]
@@ -111,7 +111,7 @@
             - ✅ tri0 CRUX(scbext_triG engine+crx/cnv_tri0_of_nest、ltJ不要)[r1][0.297][0.65h]
             - ✅ ltJ再スレッド+oi8 census(OTA1を単一A0OTへ還元、oi8_census_via_A0OT)[r1][0.284][0.59h]
             - ✅ A0OT(=isOT_BT(bpHeadT(Trans(Pred(s84x_N N))))、od4 RT_PS弱化+Red slice経由、OTA1柱完結)[r1][0.230][0.56h]
-            - 🚨 SETLE1_ltJ(r65: 左端bound bpHeadV(body)≥v1証明、残=挿入hole right-spine-terminal→bpHeadV(tx′)=ub の§7.4 Trans-image構造補題)[r7][1.32][2.91h]
+            - 🚨🤖 SETLE1_ltJ(r65: 左端bound bpHeadV(body)≥v1証明、残=挿入hole right-spine-terminal→bpHeadV(tx′)=ub の§7.4 Trans-image構造補題)[r7][1.32][2.91h]
           - ✅ IVNP(condIV no-parent隅=Pred除去、ot2_IVNP)[r1][0.257][0.65h]
           - ✅ IVADMEQ(condIV adm-eq隅、SETLE-free tower engine+Red-slice regime、ot2_IVADMEQ)[r4][1.074][2.60h]
       - ✅ OTpred(with-parent Pred corner OT-step、無仮定master od4_OTpred_mono→od4_OTpred_final無残差)[r4][0.817][1.41h]
