@@ -1719,4 +1719,9 @@ Format: `line<TAB>kind<TAB>text`. Regenerate after every C->B fold.
 1946	section	r56-IVCORNER (\<open>ot2_\<close>) --- the two condIV corner residuals
 1948	subsection	\<open>IVNP\<close>: the no-parent condIV corner
 1970	banner	r56: discharge IVNP via ot2_IVNP => census modulo 4
+2021	banner	r57 OTint: tri0 engine (front A) + IVADMEQ pkg-reduction (front B)
+2397	section	r57-IVADMEQ (\<open>ot2_\<close>) --- the standard-condIV admeq OT step
+2399	subsection	The full-depth OT transport reduction (condV-style, at head \<open>e\<^sub>3\<close>)
+2530	subsection	Host-only discharge of the mnform package (\<open>d1/d2/d3/HB\<close> residual)
+2643	subsection	Surgery \<open>\<rightarrow>\<close> nested \<open>+\<^sub>B\<close>: the \<open>d4vx_ins\<close> hole is a CLEAN body substitution
 
