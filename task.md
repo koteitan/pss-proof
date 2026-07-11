@@ -111,9 +111,11 @@
         - ✅ base3{PredNp,Lpv,L1v}討伐(oi4_+oc4_L1v、nadm脚無残差)[r1][0.233][0.21h]
         - 🚨 otIII/otIV脚(一ブロック塔4事実へ還元)
           - ✅ 還元machinery(oi5_OTint_condIII/condIV)[r1][0.775][2.06h]
-          - 🚨🤖 {OTA1,SETLE1}(condIII/IV共通塔isOT_BP/setle計算)[r1][0.257][0.65h]
+          - 🚨 {OTA1,SETLE1}(condIII/IV共通塔isOT_BP/setle計算)
+            - ✅ tri0 CRUX(scbext_triG engine+crx/cnv_tri0_of_nest、ltJ不要)[r1][0.297][0.65h]
+            - 🚨🤖 ltJ再スレッド+OTA1_ltJ/SETLE1_ltJ組立(tri0+newOT_body slice輸送)[r1][0.257][0.65h]
           - ✅ IVNP(condIV no-parent隅=Pred除去、ot2_IVNP)[r1][0.257][0.65h]
-          - 🚨🤖 IVADMEQ(condIV adm-eq隅=標準condIVの主OT内容)[r1]
+          - 🚨🤖 IVADMEQ(condIV adm-eq隅=標準condIVの主OT内容、残差{d1,d2,d3,HB,NEWOT,SETLE})[r2][0.297][0.65h]
       - ✅ OTpred(with-parent Pred corner OT-step、無仮定master od4_OTpred_mono→od4_OTpred_final無残差)[r4][0.817][1.41h]
       - 🚨 OTmulti(⛔{OTA1,SETLE1,IVADMEQ,IVNP}: oi5_OTmulti還元済、oi6でDEEPOT/NOBR discharge)[r3][0.495][0.51h]
       - 🚨 deep-insertion OT所属(keystone{resid,multiD}、r49でcritical path外)[r5]
