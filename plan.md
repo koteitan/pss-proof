@@ -89,10 +89,11 @@ task.md のユーザー向け骨格に対する、作業側の詳細版。ユー
 - ✅ §5 定式化
 - ✅ §6 ペア数列の基本性質 〔全節完了(2026-06-11)。docs `reducedness.md`/`red-le-domain.md`/`slice-Br-descending.md`〕
 - ✅ §7 Buchholzの表記系への翻訳 
-- ✅ §8 停止性 〔r18: capstone `m_8_termination_modulo_CF`=停止性は CF-META(原典Pred同時帰納)+`buc1_2_2`整礎 の2点に崩壊。CF が唯一の Fable target〕
+- 🚨 §8 停止性（定理は完了。原文カバレッジに残欠。2026-07-12 の4面完全性監査で判明）〔r18: capstone `m_8_termination_modulo_CF`=停止性は CF-META(原典Pred同時帰納)+`buc1_2_2`整礎 の2点に崩壊。CF が唯一の Fable target〕
   - ✅ [Buc1] 引用sorry 討伐(Lemma 2.1/3.2a+3.3/2.2 全て自前証明)〔**⚠️訂正(2026-07-12): 一度「不要」としてツリーから消したのは誤り**。ユーザー指摘「§8の子に[Buc1]が入っていると §8 には [Buc1] が真であることが必要という意味になる。必要なの、必要じゃないの?」→**必要**。停止性は (OT_B,<) の整礎性を要する。**そして r71 front B がそれを証明した**: Buchholz[1]§3 の **≪_k step-down 関係**を写経(y4_bachmann/y4_xseq_cof/y4_inner/y4_bump 等)し **y4_cof0("y3_cof0") → y4_bwl_cof("bwl_cof") → y4_wf_RPrel("wf RPrel") → `y4_buc1_2_2_OT_B_wf`("wf {(a,b). a∈OT_B ∧ b∈OT_B ∧ lessBT a b}")**。最後の文は **pss_paper の cited sorry `buc1_2_2_OT_B_wf` と verbatim 同一** ⟹ **[Buc1] Lemma 2.2 は我々の定理になった**。**循環監査を build に焼き込み済**(ML block、違反すれば error でビルドが落ちる=**緑ビルドそのものが監査**): y4_buc1_2_2_OT_B_wf/y4_wf_RPrel/y4_cof0/y4_bwl_cof は **sorry 依存ゼロ**(特に置換対象の pss_paper.buc1_2_2_OT_B_wf に依存しない=非循環)。**削除したサブツリーの記録**: 自前証明の道程 wfs_(level-0 acc+rank)[r2]/wfj_(head-index STRAT)[r1]/wfc_(bookkeeping消去)[r1]/wds_(distinguished sets)[r1]/bwl_(r68: Buchholz[1]§2 2.4-2.8 を lfp 化で無条件証明=全D_ω-free項がW*)/y3_(r70: W-帰納 engine)/y4_(r71: [1]§3 ≪_k で仕上げ)。❌死枠(再挑戦禁止): minimal-bad/head-level tower(wcl_upper)/lvP-STRAT/acc-based bwl_Wlev/fseq対応の等式化〕[r14]
   - ✅ 停止性チェーンの sorry 除去〔**達成(r71)**: 停止性定理 `y4_PSS_acc_of_KK` と census `oi10_census_KK` は **pss_paper の 131個の sorry すべてに非依存**。**ビルド強制監査**(ML block、違反すれば error=緑ビルドそのものが監査)+**negative control で検証済**(sorry を意図的に使う Route A `y3_PSS_wf_of_KK_buc1` を監査対象に足すとビルドが正しく落ちる=監査は空虚でない)。**修正内容**: 最後の sorry `pss_paper.buc1_3_2a_fseq_lt`([Buc1]3.2a 基本列降下)は**陳腐**——同文が `m_buc1_3_2a_fseq_lt` として証明済だったのに、layerB の7消費者のうち5つが証明より**前の行**にありスコープ外だった。`leBT_trans`(4行・layerB依存ゼロ)+`b1x_` ブロック(466行、b1x_descent と m_buc1_3_2a_fseq_lt を含む)を最初の消費者の直前(27786行)へ**前方移動**し7箇所差替。移動ブロックの依存閉包が挿入点以降に届かないことを検証済。PSS_B+PSS_C 再ビルド緑(5:43/0:33)〕[r1]
-  - ✅ §8.1 条件 (I) の下での展開規則[r6]
+  - 🚨 §8.1 条件 (I) の下での展開規則[r6]〔**SCOPE GAP**: 原文 `p_8_1_Trans_fseq_condI` は M∈RT_PS∩PT_PS だが `scx_condI_exchange1`/`scx_condI_descent` はどちらも M∈ST_PS を仮定(ST_PS⊊RT_PS)。n=1 だけ `m_8_1_Trans_fseq_condI_n1` が RT_PS。停止性は y3_PSSrel が ST_PS 量化なので無影響〕
+    - 🚨 命題（条件 (I) の下での $\textrm{Trans}$ と基本列の交換関係）の $RT_{PS}$ 版（証明済は $ST_{PS}$ 版のみ）[r0]
     - 🚨 命題（条件 (I) の下での $\textrm{Trans}$ と基本列の交換関係）
       - ✅ 交換則(1)本体〔`scx_condI_exchange1` 完全無条件(j0=0+j0>0、marking-nesting二重帰納)〕[r4]
       - ✅ 降下(2) OT-free〔`scx_condI_descent`(d2x scbext route、OT柱回避)〕[r1]
@@ -101,7 +102,8 @@ task.md のユーザー向け骨格に対する、作業側の詳細版。ユー
     - ✅ 系（$\textrm{Pred}$ が公差 $(1,1)$ のペア数列の $\textrm{Trans}$ の基本性質）〔`m_8_1_Pred_diagSeq_Trans`〕
     - ✅ 補題（条件 (I) か (III) の下での $c_1$ 前後の具体表示）（A20/A21）〔part(1)-(5)+(4-1)(4-2) `m_8_1_c1_around_part4_1`/`_part4_2`〕
   - ✅ §8.2 強単項性[r39][1.775][2.52h]〔🎉r48完結。命題（標準形の直系先祖による切片の簡約化の強単項性）=`m_8_2_standard_slice_Red_strongmono`。命題（条件(II)か(IV)の下での終切片とTransの関係）=`hqx_condIIIV_of_DT`(pss_paper 1624 4-clause exists-unique、fin threading のみ、r24[1.775][2.52h]。系譜=scaffold/LastStep幾何/VE2(ROW10)/VE3-VE4(back-peel→bridgesU→{BASE,STEP}→TSPIN(tsx)→BASEf(bfx/bgx)→HEADEQ0(hqx=r27 vcx_VE_all 適用)))。補題5本=切片遺伝/keystone m_8_2_subexpr_component_Pred/単項成分基本性質/条件V右端親/条件V終切片[r15]。⚠️fin=un-dischargeable nth-artifact、consumer は thread(bpx_fin_Pred 式)。fin(Rc) 問題は §8.3 TVall配線で追跡〕
-  - ✅ §8.3 条件 (II) の下での展開規則[r18]
+  - 🚨 §8.3 条件 (II) の下での展開規則[r18]〔原文命題の結論 (1)(2)(3) は Trans 内部記号のため pss_paper に未転記。転記済 (4)=降下 のみ `y5_8_3_TransCondII_oper_descend` で証明〕
+    - 🚨 命題（条件 (II) の下での $\textrm{Trans}$ と基本列の交換関係）の結論 (1)(2)(3)（未転記。(4) のみ証明済）[r0]
     - 🚨 命題（条件 (II) の下での $\textrm{Trans}$ と基本列の交換関係）
       - ✅ 降下⟸exch+OT〔`m_8_3_TransCondII_oper_descend_engine`〕
       - ✅ OT柱回避の直接降下〔`d2x_exchange2_condII`、kind0残差modulo〕[r1]
@@ -110,8 +112,8 @@ task.md のユーザー向け骨格に対する、作業側の詳細版。ユー
     - ✅ 補題（第 $0$ 種型基本列の基本不等式）〔`m_8_3_kind0_base_ineq`(A22訂正)〕
     - ✅ 補題（第 $0$ 種型基本列の基本分岐規則）〔`m_8_3_kind0_branch_rule`〕
     - ✅ 補題（第 $0$ 種型基本列の基本基点関係）〔`m_8_3_kind0_base_basepoint`〕
-  - ✅ §8.4 条件 (III) か (IV) の下での展開規則[r56][1.122][2.89h]〔🎉r45完結。condIII exchange=`cpx_condIII_exchange_uncond`(hasParent枝)+`npx_exchIII_slot_uncond`(¬hasParent枝: N[m]=Pred N ∀m、operB(Trans N)(numBT 0)=Trans(Pred N) 等式=k=0、domB(Trans N)=T_{e-1} via 最大low-ancestor対偶 npx_le0_last_entry_ge、¬hasParent枝は等式のみで strict は Trans レベルで偽)。condIV exchange=`cnv_condIV_exchange_final` 完全無条件(MST,MPT,hp,cIV,n≥1)——勝ち筋: r39 condIII route は jm3-slice anchored で branch+ltJ のみ要(admeq不要)、non-admeq では ltJ が Adm-maximality(adm_Adm_max+jm2<j0)から直に出て、kind1 anchor u=e1jm3<v1 は無条件→縮退 e1jm1=v1 host も u=v fseq 不要で被覆(cnv_ 10補題、cIII専用 bricks は1段深い nest mirror cnv_A0lt_of_nest/cnv_base1_of_nest/cnv_base0_of_run で置換、uniform deep hole pair+scb_unique_sb)。旧樹: 命題[r46]=(2)降下r1/(1)(3)r1/condIV枝r1/mnform r3/組立r12(producer r1+HB r1+regime r10=cpx r8[0.314][1.29h]+brick r1[0.250][1.04h]+nonadmeq r1[0.279][0.28h])/❌d13x r2/condIII再構築r26(engine r6+BT r1+REGS r4+M0RUN r7+trunk r1+slx37 r5+compose r1+noParent r1[0.279][0.28h])。補題8本[r10]。¬hasParent-condIV corner は §8.7 dispatcher 配線で要否判定(wave-2)〕
-  - ✅ §8.5 条件 (V) の下での展開規則[r33]
+  - 🚨 §8.4 条件 (III) か (IV) の下での展開規則[r56][1.122][2.89h]〔**scb分解クラスタ 6 補題が pss_paper に未転記**(text で DEFERRED、理由=Trans 再帰の内部記号 c1/c2/t2/s'i/b'i が関数として露出していない)。`p_8_4_oper_basic`(3)(c'1<c'2 の scb 対)はどこにも証明が無い。(2) は A33 で構造的に偽。以下は交換則本体の履歴: 🎉r45完結。condIII exchange=`cpx_condIII_exchange_uncond`(hasParent枝)+`npx_exchIII_slot_uncond`(¬hasParent枝: N[m]=Pred N ∀m、operB(Trans N)(numBT 0)=Trans(Pred N) 等式=k=0、domB(Trans N)=T_{e-1} via 最大low-ancestor対偶 npx_le0_last_entry_ge、¬hasParent枝は等式のみで strict は Trans レベルで偽)。condIV exchange=`cnv_condIV_exchange_final` 完全無条件(MST,MPT,hp,cIV,n≥1)——勝ち筋: r39 condIII route は jm3-slice anchored で branch+ltJ のみ要(admeq不要)、non-admeq では ltJ が Adm-maximality(adm_Adm_max+jm2<j0)から直に出て、kind1 anchor u=e1jm3<v1 は無条件→縮退 e1jm1=v1 host も u=v fseq 不要で被覆(cnv_ 10補題、cIII専用 bricks は1段深い nest mirror cnv_A0lt_of_nest/cnv_base1_of_nest/cnv_base0_of_run で置換、uniform deep hole pair+scb_unique_sb)。旧樹: 命題[r46]=(2)降下r1/(1)(3)r1/condIV枝r1/mnform r3/組立r12(producer r1+HB r1+regime r10=cpx r8[0.314][1.29h]+brick r1[0.250][1.04h]+nonadmeq r1[0.279][0.28h])/❌d13x r2/condIII再構築r26(engine r6+BT r1+REGS r4+M0RUN r7+trunk r1+slx37 r5+compose r1+noParent r1[0.279][0.28h])。補題8本[r10]。¬hasParent-condIV corner は §8.7 dispatcher 配線で要否判定(wave-2)〕
+  - 🚨 §8.5 条件 (V) の下での展開規則[r33]〔**残欠3**: `p_8_5_Trans_oper_exchange`(3) は無条件未証明(adm枝のみ、しかも残差 HB 付き)/Joints-FirstNodes 補題 (3)=残差 **HB**(t2 の各単項成分 ≥ D_{M1j1} 0、経験 53/53 真、未転記)/scb分解 2 補題が未転記。(1)=A28 で偽・(2)=census 経由で証明済〕
     <!-- 詳細: 命題(交換)=adm `m_8_5_Trans_oper_exchange_condV_adm_uncond`[r3]+nadm `atx_Trans_oper_exchange_condV_nonadm_uncond`[r14, scbdec原典route]で全host無条件。
          non-adm c2L1=原典t2成分下界route `atx_condV_nadm_t2_components`→`atx_notLD`→`atx_c2L1`(atomA/atomB不要化、SHARP/s2x chainは consumerless死枝)。交換route=`wnx_nf3x`(W2nostr両消費点`wnx_W2nostr_c1/c2`)。
          ❌REFUTED: de-adm/WRAP route[r6]、universal KER、len2/redB(→REFUTED registry参照)。
@@ -119,3 +121,21 @@ task.md のユーザー向け骨格に対する、作業側の詳細版。ユー
          補題 Joints/FirstNodes/t2 = `m_8_5_Joints_FirstNodes_basic` parts(1)(2)。 -->
   - ✅ §8.6 条件 (VI) の下での展開規則〔交換(1)(2)(3)全host無条件: adm=`c613x_condVI_exch_adm`/nadm=`c6nx_condVI_exch_nadm_uncond`(A34/A37)。零化一般領域のみ❌A25(clean=`m_8_6_trailing_principal_peel`で足りる)〕[r6]
   - ✅ §8.7 主結果[r49]〔🎉**r72 完全達成**。KK を **記号数(symbol count)論法**で証明: hole principal は `ox12_szP (DB v 0)=1`、右spine を1段降りるだけで `ox12_szT (ox8_rsub t k) < ox12_szT t`(`ox12_sz_rsub_lt`)、よって `ox12_safe_of_size: szP p=1 ⟹ szT Z < szT W ⟹ ox11_safe`。**lex walk が hole に届かないのは「左辺が右辺より純粋に小さい木だから」**——位置解析も OT も guard も不要だった(r71 の位置版 transport `ox11_TT` が受け皿)。連鎖: `ox12_KK`/`ox12_KK_free`(無条件 KK) → `oi12_census`(両柱無条件) → `y5_Trans_OT_B`(=p_8_7_Trans_preserves_OT)/`y5_Trans_descend`/`y5_PSS_wf`(**仮定ゼロ**)/`y5_PSS_acc`/`y5_Fdom`(=**原文形 p_8_7_termination**)。全て build 強制監査 `assert_clean` に登録+`y5_PSS_wf` の閉性(前提/自由変数/schematic なし)も ML で assert。**緑ビルド=sorry非依存の証明**。cross-check: r72 front B は独立に KK を bottom guard へ還元し、「小さい body は存在しない」不変量を**反証**(43/680 の census-body principal が firsthead(b)<w、witness 記録済)、正しくは「低い head は必ず LEAF」と訂正——同じ機構の別描像で整合〕
+  - 🚨 §8.4 scb分解クラスタ(未転記6補題)[r0]
+    - 🚨 補題（条件 (III)〜(V) の下での右端の置き換えと $\textrm{Trans}$ の関係）〔A30: part(3) 偽〕
+    - 🚨 補題（条件 (III)〜(VI) の下での展開規則の基本性質）〔A31: part(5-3) 偽〕
+    - 🚨 補題（条件 (III)〜(VI) の下での $\textrm{Trans}$ と scb 分解の関係）
+    - 🚨 補題（条件 (III)〜(V) の下での切片の scb 分解）
+    - 🚨 補題（条件 (III)〜(V) の下での各種 scb 分解）
+    - 🚨 補題（条件 (III) か (IV) の下での各種 scb 分解）
+    - 🚨 補題（条件 (III) か (IV) の下での基本列の基本性質）(3)
+  - 🚨 §8.5 残欠[r0]
+    - 🚨 命題（条件 (V) の下での $\textrm{Trans}$ と基本列の交換関係）(3)
+    - 🚨 補題（条件 (V) の Joints/FirstNodes と $t_2$ の基本性質）(3)〔残差 HB〕
+    - 🚨 補題（条件 (V) の下での各種 scb 分解）〔A29: part(5) 指数ずれ〕
+    - 🚨 補題（条件 (V) の下での基本列の scb 分解）〔A28: part(2) 添字1ずれ。訂正形 `m_8_5_scbdec_fseq_condV` は証明済〕
+- 🚨 偽命題の sorry 残置（pss_paper に訂正未反映。証明不可能なので訂正形へ書換が要る）[r0]
+  - 🚨 §7 の 7 件（A11/A12/A13/A14/A17/A24）〔p_7_2_scb_replaceable / p_7_2_scb_compose(2) / p_7_2_scb_unique(3)(4)(5) / p_7_2_add_scb(3) / p_7_2_scb_fseq(2) / p_7_3_Mark_rightmost1。いずれも反例を我々が証明済(m_7_2_scb_replaceable_counterexample 等)。引用箇所ゼロなので不健全ではないが、偽命題の sorry は False を導ける地雷〕
+  - 🚨 §8 の 8 件（A20/A25/A26/A27/A28/A32/A33/A34/A37）〔p_8_1_condI_III_c1_around(1) / p_8_4_Trans_oper_exchange(1) / p_8_4_oper_basic(2) / p_8_5_Trans_oper_exchange(1) / p_8_6_Trans_fseq_condVI(1) / p_8_6_trailing_principal_annihilable / p_8_7_OT_tail_annihilable / p_8_7_Pred_oper0。ML 監査が停止性連鎖から締め出していることは確認済〕
+- 🚨 SCOPE GAP: 原文 $T_{PS}$ → 証明 $RT_{PS}$（§7 の 7 命題）[r0]〔p_7_3_Trans_zeroT / p_7_3_Pred_Trans_descend / p_7_4_Trans_nextAdm / p_7_4_Mark_nextAdm / p_7_4_Trans_Mark_Pred / p_7_4_RightAnces_RightNodes / p_7_4_RightAnces_zeroT。A15 の訂正域は「Red M が簡約」で RT_PS より広く、その中間域(未簡約だが可簡約な M)が未証明。`m_7_3_Trans_Red`(Trans M = Trans(Red M))で橋渡しできるはずだがその形の定理が無い。停止性は ST_PS⊆RT_PS なので無影響〕
+- 🚨 停止性チェーン外の stale 引用 1 件[r0]〔`layerB/pss_wip.thy:27070` の `m_8_7_toplevel_OT_tail_annihilate` が `wf_induct_rule[OF buc1_2_2_OT_B_wf]`(pss_paper の sorry 版)を使用。同命題は `y4_buc1_2_2_OT_B_wf` として証明済だが layerC にあるため layerB からは参照できない。b1x_ ブロック同様の前方移動か、layerC 側で再証明が要る〕

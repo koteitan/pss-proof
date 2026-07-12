@@ -406,7 +406,11 @@ function (domintros) Red :: "pairseq \<Rightarrow> pairseq" where
 
 subsection \<open>§6.6 簡約性 (Reducedness)\<close>
 
-text \<open>\<open>RT\<^sub>PS\<close>: the reduced pair sequences \<open>{M \<in> T\<^sub>PS | Red M = M} = Im(Red)\<close>.\<close>
+text \<open>\<open>RT\<^sub>PS\<close>: the reduced pair sequences \<open>{M \<in> T\<^sub>PS | Red M = M}\<close>.
+
+  \<^bold>\<open>NOT\<close> \<open>Im(Red)\<close>.  The article asserts \<open>RT\<^sub>PS = Im(Red)\<close> (content.md 1024), but that
+  equality needs idempotence of \<open>Red\<close> on \<open>T\<^sub>PS\<close>, which is FALSE (correction A4;
+  counterexample \<open>M = ((0,0),(0,2))\<close>).  Only \<open>RT\<^sub>PS \<subseteq> Im(Red)\<close> holds.  See A41.\<close>
 
 definition RT_PS :: "pairseq set" where
   "RT_PS = {M. M \<in> T_PS \<and> Red M = M}"
