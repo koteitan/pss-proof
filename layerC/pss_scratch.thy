@@ -14651,6 +14651,187 @@ lemma y3_7_4_Mark_nextAdm:
                   (fst sb) (flatBT (Mark M (THE j0. nextAdm M 0 j0 (Lng M - 1)))) (snd sb)"
   by (rule m_7_4_Mark_nextAdm[OF MR y3_nextAdm_ex1[OF Mm L] jM jle])
 
+section \<open>r73-CONDI-RTPS — the \<section>8.1 condition-(I) exchange/descent on the FULL
+  article domain \<open>RT\<^bsub>PS\<^esub> \<inter> PT\<^bsub>PS\<^esub>\<close> (the \<open>ST\<^bsub>PS\<^esub>\<close> scope gap, CLOSED)\<close>
+
+text \<open>The frozen @{thm [source] scx_condI_exchange1} / @{thm [source] scx_condI_descent}
+  assume \<open>M \<in> ST\<^bsub>PS\<^esub>\<close> (standard), a PROPER subset of the article's domain
+  \<open>RT\<^bsub>PS\<^esub> \<inter> PT\<^bsub>PS\<^esub>\<close>, so the \<section>8.1 proposition @{thm [source] p_8_1_Trans_fseq_condI}
+  was not covered on its stated domain.
+
+  AUDIT RESULT: the standardness hypothesis is DEAD WEIGHT.  In all three frozen
+  proofs (@{thm [source] scx_condI_exchange1}, @{thm [source] scx_condI_descent},
+  and the \<open>j\<^sub>0 > 0\<close> assembler @{thm [source] c1x_condI_j0pos_exchange}) the
+  assumption \<open>MST : M \<in> ST\<^bsub>PS\<^esub>\<close> is used at EXACTLY one place each: the opening
+  line \<open>MR : M \<in> RT\<^bsub>PS\<^esub>\<close> obtained via @{thm [source] m_6_7_ST_PS_subseteq_RT_PS}
+  (and, in \<open>scx_condI_exchange1\<close>, the pass-through of \<open>MST\<close> into
+  \<open>c1x_condI_j0pos_exchange\<close>, which does the same).  Every cited ingredient is
+  already RT-level:
+  \<^item> \<open>j\<^sub>0 = 0\<close> branch: @{thm [source] m_8_1_condI_oper_pow_j0zero} (hypothesis-only),
+    @{thm [source] m_8_1_Trans_replicate_pred_condI} (\<open>RT\<^bsub>PS\<^esub>\<close>),
+    @{thm [source] operI_Suc_append} (hypothesis-only).
+  \<^item> \<open>j\<^sub>0 > 0\<close> branch: @{thm [source] scx_condI_j0pos_masterCF} (\<open>RT\<^bsub>PS\<^esub>\<close>),
+    @{thm [source] m_8_1_stepT_j0pos_of_lhs_closed} (hypothesis-only).
+  \<^item> the induction: @{thm [source] m_8_1_Trans_fseq_condI_comm_append_reduce} (\<open>RT\<^bsub>PS\<^esub>\<close>).
+  \<^item> descent values: @{thm [source] m_8_1_operB_condI_value} (\<open>RT\<^bsub>PS\<^esub>\<close>),
+    @{thm [source] m_8_2_subexpr_component_Pred_Adm0_clause1} (\<open>RT\<^bsub>PS\<^esub>\<close>),
+    @{thm [source] m_7_2_scb_fseq_scb} / @{thm [source] d2x_multBT_lt_top} /
+    @{thm [source] scbext_lessBT} (pure \<open>T\<^bsub>B\<^esub>\<close>),
+    @{thm [source] m_7_3_Pred_Trans_descend} (\<open>RT\<^bsub>PS\<^esub>\<close>) for \<open>n = 1\<close>.
+  Nothing routes through \<section>6.8 (\<open>descending\<close>/\<open>Br\<close>, the genuinely standard-only
+  cluster) nor through \<open>DT\<^bsub>PS\<^esub>\<close>.  We therefore REPLAY the two proofs verbatim with
+  \<open>MR : M \<in> RT\<^bsub>PS\<^esub>\<close> in place of \<open>MST\<close> (inlining the two-line body of
+  \<open>c1x_condI_j0pos_exchange\<close>, whose only other role was to carry \<open>MST\<close>), and the
+  article's \<open>RT\<^bsub>PS\<^esub> \<inter> PT\<^bsub>PS\<^esub>\<close> claim closes for ALL \<open>n \<ge> 1\<close>.  No new hypothesis is
+  introduced anywhere below, so there is no vacuity risk.
+  (Empirical backing for the region actually opened up: 26,200 non-standard hosts
+  in \<open>RT\<^bsub>PS\<^esub> \<inter> PT\<^bsub>PS\<^esub> \<inter> condI \<inter> {Lng-1>1}\<close>, both conclusions verified for
+  \<open>n = 1..5\<close>, zero failures --- python/_r72_condI_rtps_gap.py.)\<close>
+
+subsection \<open>Exchange (1) on \<open>RT\<^bsub>PS\<^esub>\<close>, all \<open>n \<ge> 1\<close>\<close>
+
+theorem y3g_condI_exchange1_rtps:
+  fixes M :: pairseq and m :: nat
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS"
+    and j1gt: "1 < Lng M - 1" and condI: "transCondI M"
+    and m1: "1 \<le> m"
+  shows "Trans ((M::pairseq)[m]) = operB (Trans M) (numBT (m - 1))"
+proof -
+  have MT: "M \<in> T_PS" using MR by (simp add: RT_PS_def)
+  have mono: "monoT M" using MP by (simp add: PT_PS_def)
+  have L: "1 < Lng M" using j1gt by linarith
+  have hp0: "hasParent M 0 (Lng M - 1)" by (rule monoT_hasParent0_last[OF MT mono L])
+  have e1z: "entry M 1 (Lng M - 1) = 0" using condI by (simp add: transCondI_def)
+  have tT: "Trans M \<in> T_B" by (rule m_7_3_Trans_in_T_B[OF MR])
+  \<comment> \<open>the per-step residual \<open>stepT\<close>, in both parent cases\<close>
+  have stepT: "Trans ((M[k]) @ map ((!) M) [parent M 0 (Lng M - 1) ..< Lng M - 1])
+                 = operB (Trans M) (numBT k)" if k1: "1 \<le> k" for k
+  proof (cases "parent M 0 (Lng M - 1) = 0")
+    case True
+    \<comment> \<open>\<open>j\<^sub>0 = 0\<close>: copy-additivity\<close>
+    have pow: "concat (replicate (Suc k) (Pred M)) = M[Suc k]"
+      by (rule m_8_1_condI_oper_pow_j0zero[OF hp0 e1z True, symmetric])
+    have addv: "Trans (concat (replicate (Suc k) (Pred M)))
+              = operB (Trans M) (numBT k)"
+      by (rule m_8_1_Trans_replicate_pred_condI[OF MR MP j1gt condI True k1])
+    have ap: "(M[k]) @ map ((!) M) [parent M 0 (Lng M - 1)..<Lng M - 1] = M[Suc k]"
+      using operI_Suc_append[OF hp0 e1z, of k] by simp
+    show ?thesis using pow addv ap by simp
+  next
+    case False
+    hence j0pos: "0 < parent M 0 (Lng M - 1)" by simp
+    obtain s b u v t\<^sub>0 t\<^sub>1 where w: "t\<^sub>0 \<in> T_B" "t\<^sub>1 \<in> T_B"
+      "scb_decomp (Trans M) s
+         (flatBT (Dpt (enat u) (t\<^sub>0 +\<^sub>B Dpt (enat v) (t\<^sub>1 +\<^sub>B Dpt 0 0\<^sub>B)))) b"
+      "\<forall>k. 1 \<le> k \<longrightarrow> Trans ((M::pairseq)[Suc k])
+         = unflatBT (s @ flatBT (Dpt (enat u)
+                (t\<^sub>0 +\<^sub>B multBT (Dpt (enat v) t\<^sub>1) (k + 1))) @ b)"
+      using scx_condI_j0pos_masterCF[OF MR MP j1gt condI j0pos] by blast
+    show ?thesis
+      by (rule m_8_1_stepT_j0pos_of_lhs_closed[OF hp0 e1z w(1) w(2) tT w(3)
+            _ k1]) (use w(4) in blast)
+  qed
+  show ?thesis
+    by (rule m_8_1_Trans_fseq_condI_comm_append_reduce[OF MR MP j1gt condI stepT m1])
+qed
+
+subsection \<open>Descent (2) on \<open>RT\<^bsub>PS\<^esub>\<close>, all \<open>n \<ge> 1\<close>\<close>
+
+theorem y3g_condI_descent_rtps:
+  fixes M :: pairseq and n :: nat
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS"
+    and j1gt: "1 < Lng M - 1" and condI: "transCondI M"
+    and n1: "1 \<le> n"
+  shows "lessBT (Trans ((M::pairseq)[n])) (Trans M)"
+proof -
+  have MT: "M \<in> T_PS" using MR by (simp add: RT_PS_def)
+  have L: "1 < Lng M" using j1gt by linarith
+  consider (one) "n = 1" | (big) "1 < n" using n1 by linarith
+  then show ?thesis
+  proof cases
+    case one
+    have "(M::pairseq)[1] = Pred M" by (rule m_8_4_oper1_eq_Pred[OF MT])
+    moreover have "lessBT (Trans (Pred M)) (Trans M)"
+      using m_7_3_Pred_Trans_descend MR L by blast
+    ultimately show ?thesis using one by simp
+  next
+    case big
+    have exch: "Trans ((M::pairseq)[n]) = operB (Trans M) (numBT (n - 1))"
+      by (rule y3g_condI_exchange1_rtps[OF MR MP j1gt condI]) (use big in simp)
+    show ?thesis
+    proof (cases "parent M 0 (Lng M - 1) = 0")
+      case True
+      have val: "operB (Trans M) (numBT (n - 1))
+               = multBT (Trans (Pred M)) (Suc (n - 1))"
+        by (rule m_8_1_operB_condI_value[OF MR MP j1gt condI True])
+      have e1z: "entry M 1 (Lng M - 1) = 0" using condI by (simp add: transCondI_def)
+      have admJm1: "transJm1 M = 0"
+      proof -
+        have e1: "transJm1 M = Adm M (parent M 0 (Lng M - 1))"
+          by (simp add: transJm1_def transJ0_def transJ1_def)
+        have adm0: "adm M 0" by (simp add: adm_def nadm_def nextR_def nextrel1_def)
+        have "Adm M 0 = 0" using adm0 by (simp add: Adm_def)
+        thus ?thesis using e1 True by simp
+      qed
+      have condA: "transCondI M \<or> transCondIII M \<or> transCondV M" using condI by blast
+      obtain t1' where
+        tp: "Trans (Pred M) = Dpt (enat (entry M 1 0)) t1'"
+        and tm: "Trans M = Dpt (enat (entry M 1 0))
+                    (t1' +\<^sub>B Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B)"
+        using m_8_2_subexpr_component_Pred_Adm0_clause1[OF MR MP j1gt admJm1 condA]
+        by blast
+      have tm': "Trans M = Dpt (enat (entry M 1 0)) (t1' +\<^sub>B Dpt 0 0\<^sub>B)"
+        using tm e1z by (simp add: zero_enat_def)
+      have lt: "lessBT (multBT (Dpt (enat (entry M 1 0)) t1') (Suc (n - 1)))
+                       (Dpt (enat (entry M 1 0)) (t1' +\<^sub>B Dpt 0 0\<^sub>B))"
+        by (rule d2x_multBT_lt_top) simp
+      show ?thesis using exch val tp tm' lt by simp
+    next
+      case False
+      hence j0pos: "0 < parent M 0 (Lng M - 1)" by simp
+      have tT: "Trans M \<in> T_B" by (rule m_7_3_Trans_in_T_B[OF MR])
+      obtain s b u v t\<^sub>0 t\<^sub>1 where w1: "t\<^sub>0 \<in> T_B" and w2: "t\<^sub>1 \<in> T_B"
+        and dM: "scb_decomp (Trans M) s
+             (flatBT (Dpt (enat u) (t\<^sub>0 +\<^sub>B Dpt (enat v) (t\<^sub>1 +\<^sub>B Dpt 0 0\<^sub>B)))) b"
+        using scx_condI_j0pos_masterCF[OF MR MP j1gt condI j0pos] by blast
+      have dOp: "scb_decomp (operB (Trans M) (numBT (n - 1))) s
+                   (flatBT (Dpt (enat u)
+                      (t\<^sub>0 +\<^sub>B multBT (Dpt (enat v) t\<^sub>1) ((n - 1) + 1)))) b"
+        using m_7_2_scb_fseq_scb[OF w1 w2 tT dM, of "n - 1"] by simp
+      have fMn: "flatBT (Trans ((M::pairseq)[n]))
+            = s @ flatBP (DB (enat u)
+                (t\<^sub>0 +\<^sub>B multBT (Dpt (enat v) t\<^sub>1) ((n - 1) + 1))) @ b"
+        using dOp exch by (simp add: scb_decomp_def)
+      have fTM: "flatBT (Trans M)
+            = s @ flatBP (DB (enat u) (t\<^sub>0 +\<^sub>B Dpt (enat v) (t\<^sub>1 +\<^sub>B Dpt 0 0\<^sub>B))) @ b"
+        using dM by (simp add: scb_decomp_def)
+      have bRP: "\<forall>x \<in> set b. x = RP" using dM by (simp add: scb_decomp_def)
+      have topLt: "lessBT (multBT (Dpt (enat v) t\<^sub>1) ((n - 1) + 1))
+                          (Dpt (enat v) (t\<^sub>1 +\<^sub>B Dpt 0 0\<^sub>B))"
+        by (rule d2x_multBT_lt_top) simp
+      have bodyLt: "lessBT (t\<^sub>0 +\<^sub>B multBT (Dpt (enat v) t\<^sub>1) ((n - 1) + 1))
+                           (t\<^sub>0 +\<^sub>B Dpt (enat v) (t\<^sub>1 +\<^sub>B Dpt 0 0\<^sub>B))"
+        by (rule lessBT_addBT_mono_right[OF topLt])
+      have coreLt: "lessBP (DB (enat u)
+              (t\<^sub>0 +\<^sub>B multBT (Dpt (enat v) t\<^sub>1) ((n - 1) + 1)))
+            (DB (enat u) (t\<^sub>0 +\<^sub>B Dpt (enat v) (t\<^sub>1 +\<^sub>B Dpt 0 0\<^sub>B)))"
+        using bodyLt by simp
+      show ?thesis by (rule scbext_lessBT[OF fMn fTM bRP coreLt])
+    qed
+  qed
+qed
+
+subsection \<open>The article's \<section>8.1 proposition, on its stated domain\<close>
+
+theorem y3g_p_8_1_Trans_fseq_condI:
+  fixes M :: pairseq and n :: nat
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS" and n1: "n \<ge> 1"
+    and j1gt: "Lng M - 1 > 1" and condI: "transCondI M"
+  shows "Trans ((M::pairseq)[n]) = operB (Trans M) (numBT (n - 1))"
+    and "lessBT (Trans ((M::pairseq)[n])) (Trans M)"
+   apply (rule y3g_condI_exchange1_rtps[OF MR MP j1gt condI n1])
+  by (rule y3g_condI_descent_rtps[OF MR MP j1gt condI n1])
+
 ML \<open>
   fun sorry_deps th =
     let
