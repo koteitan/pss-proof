@@ -15125,6 +15125,216 @@ proof -
   qed
 qed
 
+section \<open>r74: \<section>8.4 補題（条件(III)か(IV)の下での基本列の基本性質）part (3)\<close>
+
+text \<open>Part (3) asks for a \<^emph>\<open>witnessed\<close> scb pair: \<open>(s',c'\<^sub>1,c'\<^sub>2,b')\<close> with \<open>c'\<^sub>1,c'\<^sub>2\<close>
+  principal, \<open>c'\<^sub>1 < c'\<^sub>2\<close>, \<open>(s',c'\<^sub>1,b')\<close> an scb-decomposition of \<open>Trans(M[n])\<close> and
+  \<open>(s',c'\<^sub>2,b')\<close> one of \<open>Trans(M)[n]\<close>.  The witnesses are already latent in the
+  green condIII machinery: @{thm [source] cpx_condIII_mnform} produces the shared
+  surgery pair \<open>(s\<^sub>1,b\<^sub>1)\<close> together with the \<open>Trans(M[m])\<close> tower closed form, and
+  @{thm [source] d13x_fseq_condIII} gives the matching \<open>operB\<close> closed form.  The
+  two cores are
+      \<open>c'\<^sub>1 = D\<^bsub>e\<^sub>3\<^esub>(d4vx_core s\<^sub>0 ub b\<^sub>0 A\<^sub>0 (n-1))\<close>   and
+      \<open>c'\<^sub>2 = D\<^bsub>e\<^sub>3\<^esub>(d4vx_core s\<^sub>0 ub b\<^sub>0 0\<^sub>B (n+1))\<close>.
+  Their strict order does NOT have to be re-derived: the surgery extension
+  @{thm [source] scbext_lessBT} is \<^emph>\<open>reflected\<close> below (\<open>y3h_scbext_reflect\<close>) —
+  at a COMMON surgery pair, \<open>t < t'\<close> forces \<open>c'\<^sub>1 < c'\<^sub>2\<close> by trichotomy — and
+  \<open>Trans(M[n]) < Trans(M)[n]\<close> is exactly the already-proven
+  @{thm [source] cpx_condIII_exchange_uncond} (1), whose \<open>LbaseH\<close> residual is
+  discharged by @{thm [source] oi5_LbaseU} + @{thm [source] y5_Trans_OT_B}.
+
+  Empirical (python/_r74_84_operbasic.py, CORRECTED \<open>operB\<close> from buchholz.py):
+  part (3) holds on 62/62 non-vacuous exercises (30 genuine \<open>ST\<^bsub>PS\<^esub>\<close> condIII/IV
+  hosts, \<open>n = 1,2\<close>), 0 counterexamples; part (2) likewise 62/62 — see the note at
+  the end of this section.  NOTHING is assumed here.\<close>
+
+subsection \<open>Reflection: a common surgery pair TRANSPORTS the order backwards\<close>
+
+text \<open>Converse of 部分表現の不等式の延長性: if two terms factor at the SAME
+  \<open>(s,b)\<close> and \<open>t < t'\<close>, then the cores compare the same way.  By trichotomy on
+  \<open>T\<^bsub>B\<^esub>\<close> (@{thm [source] m_7_1_lessBT_linord}) + injectivity of \<open>flatBT\<close>.\<close>
+
+lemma y3h_scbext_reflect:
+  fixes t t' :: BT and cp1 cp2 :: BP
+  assumes f1: "flatBT t = s @ flatBP cp1 @ b"
+    and f2: "flatBT t' = s @ flatBP cp2 @ b"
+    and bRP: "\<forall>x \<in> set b. x = RP"
+    and lt: "lessBT t t'"
+  shows "lessBP cp1 cp2"
+proof (rule ccontr)
+  assume nc: "\<not> lessBP cp1 cp2"
+  have tri: "lessBP cp1 cp2 \<or> cp1 = cp2 \<or> lessBP cp2 cp1"
+    using m_7_1_lessBT_linord(3)[of "Trm [cp1]" "Trm [cp2]"] by simp
+  show False
+  proof (cases "cp1 = cp2")
+    case True
+    hence "flatBT t = flatBT t'" using f1 f2 by simp
+    hence "t = t'" by (rule m_7_flatBT_inj)
+    thus False using lt lessBT_irrefl by simp
+  next
+    case False
+    hence gt: "lessBP cp2 cp1" using tri nc by blast
+    have "lessBT t' t" by (rule scbext_lessBT[OF f2 f1 bRP gt])
+    thus False using lt lessBT_irrefl lessBT_trans by blast
+  qed
+qed
+
+text \<open>A principal core sitting inside a \<open>T\<^bsub>B\<^esub>\<close> flat string is itself \<open>d\<close>-free:
+  every \<open>D\<close>-symbol of the core occurs in the ambient string.\<close>
+
+lemma y3h_core_TB_of_flat:
+  fixes t X :: BT
+  assumes tTB: "t \<in> T_B"
+    and f: "flatBT t = s @ flatBP (DB (enat u) X) @ b"
+  shows "X \<in> T_B"
+proof -
+  have tdf: "dfree_BT t" using tTB by (simp add: T_B_def)
+  have no: "\<And>w. Dsym w \<in> set (flatBT t) \<Longrightarrow> w \<noteq> \<infinity>"
+    using tdf[unfolded dfree_flat_BT] by blast
+  have sub: "set (flatBT X) \<subseteq> set (flatBT t)" using f by auto
+  have "\<And>w. Dsym w \<in> set (flatBT X) \<Longrightarrow> w \<noteq> \<infinity>" using no sub by blast
+  hence "dfree_BT X" unfolding dfree_flat_BT by blast
+  thus ?thesis by (simp add: T_B_def)
+qed
+
+subsection \<open>\<section>8.4 part (3) under condition (III), UNCONDITIONAL\<close>
+
+theorem y3h_p_8_4_oper_basic_part3_condIII:
+  fixes M :: pairseq and n :: nat
+  assumes MST: "M \<in> ST_PS" and MPT: "M \<in> PT_PS" and n1: "1 \<le> n"
+    and hp: "hasParent M 1 (Lng M - 1)"
+    and j1gt: "1 < Lng M - 1"
+    and cIII: "transCondIII M"
+  shows "\<exists>s c1 c2 b.
+            Lng (PB c1) = 1 \<and> Lng (PB c2) = 1 \<and> lessBT c1 c2
+          \<and> scb_decomp (Trans ((M::pairseq)[n])) s (flatBT c1) b
+          \<and> scb_decomp (operB (Trans M) (numBT n)) s (flatBT c2) b"
+proof -
+  let ?e3 = "entry M 1 (s84x_jm3 M)"
+  let ?v1 = "entry M 1 (Lng M - 1)"
+  let ?ub = "entry M 1 (Lng M - 1) - 1"
+  have branch: "transCondIII M \<or> transCondIV M" by (rule disjI1[OF cIII])
+  note regime = oi5_regime[OF MST MPT hp j1gt branch]
+  note uv     = regime(1)
+  note bodyT  = regime(3)
+  note dbbodyH = regime(4)
+  note TT     = regime(5)
+  \<comment> \<open>\<open>ltJ\<close>: under (III), \<open>j\<^sub>-\<^sub>1 = j\<^sub>0\<close> and \<open>j\<^sub>-\<^sub>3 \<le> j\<^sub>-\<^sub>2 < j\<^sub>0\<close>\<close>
+  have jm1eq: "transJm1 M = transJ0 M"
+    using cIII
+    by (simp add: transJm1_def transJ0_def transJ1_def transCondIII_def Adm_def)
+  have jm2ltj0: "s84x_jm2 M < transJ0 M"
+    by (rule m_8_4_oper_props_1(1)[OF MST MPT hp j1gt branch])
+  have jm3le: "s84x_jm3 M \<le> s84x_jm2 M"
+    using adm_Adm_le by (simp add: s84x_jm3_def)
+  have ltJ: "s84x_jm3 M < transJm1 M" using jm3le jm2ltj0 jm1eq by linarith
+  \<comment> \<open>the two regularity slots (as in @{thm [source] cpx_condIII_exchange_uncond})\<close>
+  have REGS: "s84x_jm3 M < s84x_jm2 M \<Longrightarrow>
+                cfbx_reg (s84x_jm2 M - s84x_jm3 M) (Red (s84x_N M))"
+    by (rule mcx_regS[OF MST MPT hp j1gt branch])
+  have REGSP: "s84x_jm3 M < s84x_jm2 M \<Longrightarrow> Br (Red (Pred (s84x_N M))) \<noteq> [] \<Longrightarrow>
+                 cfbx_reg (s84x_jm2 M - s84x_jm3 M) (Red (Pred (s84x_N M)))"
+  proof -
+    assume g: "s84x_jm3 M < s84x_jm2 M" and b: "Br (Red (Pred (s84x_N M))) \<noteq> []"
+    show "cfbx_reg (s84x_jm2 M - s84x_jm3 M) (Red (Pred (s84x_N M)))"
+      by (rule slx37_regSP_uncond[OF MST MPT hp j1gt branch g b])
+  qed
+  \<comment> \<open>the producer: shared surgery pair + both tower closed forms\<close>
+  obtain u1 u2 v2 w1 s1 b1 where
+    b0RP: "\<forall>x \<in> set (v2 @ w1). x = RP" and b1RP: "\<forall>x \<in> set b1. x = RP"
+    and dPq: "scb_decomp (Trans (Pred (s84x_N M)))
+                (Dsym (enat ?e3) # u1) (flatBT (transC1 M)) w1"
+    and d2q: "scb_decomp (Trans (s84x_N M))
+                (Dsym (enat ?e3) # u1) (flatBT (transC2 M)) w1"
+    and d4c2q: "scb_decomp (transC2 M) u2
+                  (flatBT (Dpt (enat ?v1) 0\<^sub>B)) v2"
+    and inner: "scb_decomp (bpHeadT (Trans (s84x_N M))) (u1 @ u2)
+                  (flatBT (Dpt (enat ?v1) 0\<^sub>B)) (v2 @ w1)"
+    and k1: "scb_kind1 (Trans M) s1
+               (flatBT (Dpt (enat ?e3) (bpHeadT (Trans (s84x_N M))))) b1"
+    and A0eq: "bpHeadT (Trans (Pred (s84x_N M)))
+             = bpHeadT (Trans (Pred (s84x_Np M)))"
+    and MNall: "\<forall>m. 1 \<le> m \<longrightarrow>
+        flatBT (Trans ((M::pairseq)[m]))
+          = s1 @ Dsym (enat ?e3)
+              # flatBT (d4vx_core (u1 @ u2) ?ub (v2 @ w1)
+                         (bpHeadT (Trans (Pred (s84x_N M)))) (m - 1))
+              @ b1"
+    using cpx_condIII_mnform[OF MST MPT hp j1gt branch ltJ REGS REGSP] by blast
+  define s0 where "s0 = u1 @ u2"
+  define b0 where "b0 = v2 @ w1"
+  define A0 where "A0 = bpHeadT (Trans (Pred (s84x_N M)))"
+  have inner': "scb_decomp (bpHeadT (Trans (s84x_N M))) s0
+                  (flatBT (Dpt (enat ?v1) 0\<^sub>B)) b0"
+    using inner by (simp add: s0_def b0_def)
+  have b0RP': "\<forall>x \<in> set b0. x = RP" using b0RP by (simp add: b0_def)
+  have wrap: "flatBT (bpHeadT (Trans (s84x_N M)))
+              = s0 @ flatBP (DB (enat ?v1) 0\<^sub>B) @ b0"
+    using inner' by (simp add: scb_decomp_def)
+  have bodyne: "bpHeadT (Trans (s84x_N M)) \<noteq> Trm []"
+  proof
+    assume z: "bpHeadT (Trans (s84x_N M)) = Trm []"
+    hence "[Zsym] = s0 @ [Dsym (enat ?v1), Zsym] @ b0" using wrap by simp
+    thus False by (cases s0) auto
+  qed
+  \<comment> \<open>the \<open>operB\<close> closed form (CORRECTED rule): the \<open>0\<^sub>B\<close>-seeded tower at height \<open>n+1\<close>\<close>
+  have fs_n: "flatBT (operB (Trans M) (numBT n))
+      = s1 @ (Dsym (enat ?e3)
+           # concat (replicate (n + 1) (s0 @ [Dsym (enat ?ub)]))
+           @ [Zsym] @ concat (replicate (n + 1) b0)) @ b1"
+    by (rule d13x_fseq_condIII[OF TT uv bodyT dbbodyH bodyne inner' k1])
+  have Yflat: "flatBT (d4vx_core s0 ?ub b0 0\<^sub>B k)
+      = concat (replicate k (s0 @ [Dsym (enat ?ub)]))
+        @ [Zsym] @ concat (replicate k b0)" for k
+    using d4vx_core_flat[OF wrap b0RP'] by simp
+  have fOn: "flatBT (operB (Trans M) (numBT n))
+      = s1 @ flatBP (DB (enat ?e3) (d4vx_core s0 ?ub b0 0\<^sub>B (n + 1))) @ b1"
+    using fs_n Yflat[of "n + 1"] by simp
+  have fMn: "flatBT (Trans ((M::pairseq)[n]))
+      = s1 @ flatBP (DB (enat ?e3) (d4vx_core s0 ?ub b0 A0 (n - 1))) @ b1"
+    using MNall n1 by (simp add: s0_def b0_def A0_def)
+  \<comment> \<open>the strict order, already green (\<open>LbaseH\<close> discharged by \<open>oi5_LbaseU\<close>)\<close>
+  have OTB: "Trans M \<in> OT_B" by (rule y5_Trans_OT_B[OF MST])
+  have LbaseH: "\<And>s0' b0'. scb_decomp (bpHeadT (Trans (s84x_N M))) s0'
+                    (flatBT (Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B)) b0' \<Longrightarrow>
+                  leBT (Dpt (enat (entry M 1 (Lng M - 1) - 1)) 0\<^sub>B)
+                    (d4vx_ins s0' (entry M 1 (Lng M - 1) - 1) b0' 0\<^sub>B)"
+    by (rule oi5_LbaseU[OF MST MPT j1gt branch OTB hp])
+  have lt: "lessBT (Trans ((M::pairseq)[n])) (operB (Trans M) (numBT n))"
+    using cpx_condIII_exchange_uncond[OF MST MPT hp j1gt cIII n1 LbaseH] by simp
+  \<comment> \<open>reflect the order onto the cores\<close>
+  have coreLt: "lessBP (DB (enat ?e3) (d4vx_core s0 ?ub b0 A0 (n - 1)))
+                       (DB (enat ?e3) (d4vx_core s0 ?ub b0 0\<^sub>B (n + 1)))"
+    by (rule y3h_scbext_reflect[OF fMn fOn b1RP lt])
+  \<comment> \<open>both cores are \<open>d\<close>-free, hence the middles are principal-term strings\<close>
+  have MnST: "(M::pairseq)[n] \<in> ST_PS" using MST n1 by (intro ST_PS.oper) simp_all
+  have MnRT: "(M::pairseq)[n] \<in> RT_PS" using MnST m_6_7_ST_PS_subseteq_RT_PS by blast
+  have TMnTB: "Trans ((M::pairseq)[n]) \<in> T_B" by (rule m_7_3_Trans_in_T_B[OF MnRT])
+  have core1TB: "d4vx_core s0 ?ub b0 A0 (n - 1) \<in> T_B"
+    by (rule y3h_core_TB_of_flat[OF TMnTB fMn])
+  have zTB: "(0\<^sub>B :: BT) \<in> T_B" by (simp add: T_B_def)
+  have core2TB: "d4vx_core s0 ?ub b0 0\<^sub>B (n + 1) \<in> T_B"
+    by (rule oi5_d4vx_core_TB[OF wrap b0RP' bodyT zTB])
+  have p1: "isPTB_str (flatBT (Dpt (enat ?e3) (d4vx_core s0 ?ub b0 A0 (n - 1))))"
+    by (rule isPTB_str_Dpt) (use core1TB in \<open>simp_all add: T_B_def\<close>)
+  have p2: "isPTB_str (flatBT (Dpt (enat ?e3) (d4vx_core s0 ?ub b0 0\<^sub>B (n + 1))))"
+    by (rule isPTB_str_Dpt) (use core2TB in \<open>simp_all add: T_B_def\<close>)
+  have d1: "scb_decomp (Trans ((M::pairseq)[n])) s1
+              (flatBT (Dpt (enat ?e3) (d4vx_core s0 ?ub b0 A0 (n - 1)))) b1"
+    using fMn b1RP p1 by (simp add: scb_decomp_def)
+  have d2: "scb_decomp (operB (Trans M) (numBT n)) s1
+              (flatBT (Dpt (enat ?e3) (d4vx_core s0 ?ub b0 0\<^sub>B (n + 1)))) b1"
+    using fOn b1RP p2 by (simp add: scb_decomp_def)
+  have L1: "Lng (PB (Dpt (enat ?e3) (d4vx_core s0 ?ub b0 A0 (n - 1)))) = 1"
+    by (simp add: PB_def)
+  have L2: "Lng (PB (Dpt (enat ?e3) (d4vx_core s0 ?ub b0 0\<^sub>B (n + 1)))) = 1"
+    by (simp add: PB_def)
+  have cLt: "lessBT (Dpt (enat ?e3) (d4vx_core s0 ?ub b0 A0 (n - 1)))
+                    (Dpt (enat ?e3) (d4vx_core s0 ?ub b0 0\<^sub>B (n + 1)))"
+    using coreLt by simp
+  show ?thesis using L1 L2 cLt d1 d2 by blast
+qed
+
 ML \<open>
   fun sorry_deps th =
     let
