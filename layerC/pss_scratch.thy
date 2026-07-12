@@ -13228,6 +13228,530 @@ corollary y4_PSS_acc_of_KK_wf:
   by (rule acc_wfD[OF y4_PSS_wf_of_KK[OF KK]])
 
 
+(* ================================================================= *)
+(*   r72 front A (prefix  ox12_ / oi12_ / y5_ ).   K K   I S   C L O S E D.  *)
+(*                                                                     *)
+(*   The BOTTOM GUARD  BG  of r71 is NOT NEEDED.  ox11_safe is VACUOUS *)
+(*   on the census, by a pure SIZE count -- the left operand simply    *)
+(*   HAS NOT GOT ENOUGH PRINCIPAL SYMBOLS to walk all the way down to  *)
+(*   the hole.  This is the formal content of the r70/r71 empirical    *)
+(*   observation "the walk reaches the hole 0 times out of 4301".      *)
+(*                                                                     *)
+(*   szT (Trm ps) = sum of szP over ps,  szP (D_v b) = 1 + szT b.      *)
+(*                                                                     *)
+(*   (a) Down the walk the strict inequality szT Z < szT W is an       *)
+(*       INVARIANT: if W = (ps @ [D_w LW]) and Z = (ps @ D_w t # rest) *)
+(*       then szT W = szT ps + 1 + szT LW and szT Z = szT ps + 1 +     *)
+(*       szT t + szT rest, so szT Z < szT W forces szT t < szT LW.     *)
+(*   (b) At the BOTTOM the hole principal is p = D_v1 0, of size 1.    *)
+(*       So szT W = szT ps + 1, while any Z = (ps @ x # rest) has      *)
+(*       szT Z >= szT ps + szP x >= szT ps + 1 = szT W.  Contradiction *)
+(*       with the invariant: the bottom clause is VACUOUS.             *)
+(*   (c) The left operand of KK is  ox8_rsub body k  with  k >= 1, and *)
+(*       one right-spine step strictly drops szT (it discards the D of *)
+(*       the last principal, and every sibling).  So szT Z < szT body. *)
+(*                                                                     *)
+(*   Combining, ox11_safe dR p pX (ox8_rsub body k) body holds with NO *)
+(*   hypothesis, and ox11_TT transports ox8_body_rspine_lessBT across  *)
+(*   the surgery.  KK follows unconditionally.                         *)
+(*                                                                     *)
+(*   NOTE the two REFUTED cousins of this measure (do not re-attempt): *)
+(*     * HEIGHT instead of size: FALSE (31/477 census hosts have a     *)
+(*       branch deeper than the right spine; python/_r72_ht.py).       *)
+(*     * a global "every principal anywhere" guard (ox9_ok/OKH): FALSE *)
+(*       (ox10_cex_not_ok).                                            *)
+(*   Size is exactly the measure that both the head-tie descent and    *)
+(*   the prefix-match consume, which is why it -- and not height --    *)
+(*   closes the walk.                                                  *)
+(* ================================================================= *)
+
+section \<open>r72 ox12 --- \<open>KK\<close> CLOSED: \<open>ox11_safe\<close> is vacuous by a SIZE count\<close>
+
+subsection \<open>(1) The symbol count \<open>ox12_szT\<close> / \<open>ox12_szP\<close>\<close>
+
+fun ox12_szT :: "BT \<Rightarrow> nat" and ox12_szP :: "BP \<Rightarrow> nat" where
+  "ox12_szT (Trm ps) = sum_list (map ox12_szP ps)"
+| "ox12_szP (DB v b) = Suc (ox12_szT b)"
+
+lemma ox12_szP_pos: "Suc 0 \<le> ox12_szP x"
+  by (cases x) simp
+
+lemma ox12_szT_zero: "ox12_szT 0\<^sub>B = 0"
+  by simp
+
+text \<open>The hole principal \<open>D\<^bsub>v\<^sub>1\<^esub>0\<close> has size exactly \<open>1\<close> --- this is the fact that
+  makes the bottom clause of @{const ox11_safe} vacuous.\<close>
+
+lemma ox12_szP_Dzero: "ox12_szP (DB v 0\<^sub>B) = Suc 0"
+  by simp
+
+
+subsection \<open>(2) THE COLLAPSE: \<open>ox11_safe\<close> from \<open>ox12_szT Z < ox12_szT W\<close>\<close>
+
+text \<open>\<^bold>\<open>The r72 keystone.\<close>  If the left operand \<open>Z\<close> carries strictly fewer
+  \<open>D\<close>-symbols than \<open>W\<close>, the lex walk of \<open>Z\<close> against \<open>W\<close> can NEVER reach the
+  hole, whatever the hole depth \<open>e\<close> --- PROVIDED the hole principal \<open>p\<close> is
+  \<open>D\<^sub>v 0\<close> (size \<open>1\<close>), which on the census it is.  No guard, no \<open>G\<close>-set, no
+  \<open>OT\<close>: pure counting.\<close>
+
+lemma ox12_safe_of_size_aux:
+  assumes P0: "ox12_szP p = Suc 0"
+  shows "\<forall>Z W. ox12_szT Z < ox12_szT W \<longrightarrow> ox11_safe e p q Z W"
+proof (induction e)
+  case 0
+  show ?case
+  proof (intro allI impI)
+    fix Z W :: BT
+    assume LT: "ox12_szT Z < ox12_szT W"
+    have G: "\<forall>ps x rest. W = Trm (ps @ [p]) \<longrightarrow> Z = Trm (ps @ x # rest)
+               \<longrightarrow> lessBP x p \<longrightarrow> lessBP x q"
+    proof (intro allI impI)
+      fix ps :: "BP list" and x :: BP and rest :: "BP list"
+      assume WE: "W = Trm (ps @ [p])" and ZE: "Z = Trm (ps @ x # rest)"
+      have szW: "ox12_szT W = ox12_szT (Trm ps) + Suc 0" using WE P0 by simp
+      have szZ: "ox12_szT Z
+                   = ox12_szT (Trm ps) + ox12_szP x + ox12_szT (Trm rest)"
+        using ZE by simp
+      have xpos: "Suc 0 \<le> ox12_szP x" by (rule ox12_szP_pos)
+      have False using LT szW szZ xpos by linarith
+      thus "lessBP x q" by simp
+    qed
+    show "ox11_safe 0 p q Z W" using G by simp
+  qed
+next
+  case (Suc e)
+  show ?case
+  proof (intro allI impI)
+    fix Z W :: BT
+    assume LT: "ox12_szT Z < ox12_szT W"
+    have G: "\<forall>ps w LW t rest. W = Trm (ps @ [DB w LW])
+               \<longrightarrow> Z = Trm (ps @ DB w t # rest)
+               \<longrightarrow> lessBT t LW \<longrightarrow> ox11_safe e p q t LW"
+    proof (intro allI impI)
+      fix ps :: "BP list" and w :: enat and LW :: BT and t :: BT
+        and rest :: "BP list"
+      assume WE: "W = Trm (ps @ [DB w LW])" and ZE: "Z = Trm (ps @ DB w t # rest)"
+      have szW: "ox12_szT W = ox12_szT (Trm ps) + Suc (ox12_szT LW)"
+        using WE by simp
+      have szZ: "ox12_szT Z
+                   = ox12_szT (Trm ps) + Suc (ox12_szT t) + ox12_szT (Trm rest)"
+        using ZE by simp
+      have tlt: "ox12_szT t < ox12_szT LW" using LT szW szZ by linarith
+      show "ox11_safe e p q t LW" using Suc.IH tlt by blast
+    qed
+    show "ox11_safe (Suc e) p q Z W" using G by simp
+  qed
+qed
+
+lemma ox12_safe_of_size:
+  assumes P0: "ox12_szP p = Suc 0" and LT: "ox12_szT Z < ox12_szT W"
+  shows "ox11_safe e p q Z W"
+  using ox12_safe_of_size_aux[OF P0] LT by blast
+
+
+subsection \<open>(3) One right-spine step strictly drops the symbol count\<close>
+
+lemma ox12_sz_lastT_lt:
+  assumes ne: "t \<noteq> 0\<^sub>B"
+  shows "ox12_szT (ox8_lastT t) < ox12_szT t"
+proof -
+  obtain ps where T: "t = Trm ps" by (cases t)
+  have psne: "ps \<noteq> []" using ne T by auto
+  obtain as x where SP: "ps = as @ [x]"
+    by (metis psne append_butlast_last_id)
+  obtain w b where X: "x = DB w b" by (cases x)
+  have T2: "t = Trm (as @ [DB w b])" using T SP X by simp
+  have lt: "ox8_lastT t = b" using T2 by simp
+  have sz: "ox12_szT t = ox12_szT (Trm as) + Suc (ox12_szT b)" using T2 by simp
+  show ?thesis using lt sz by simp
+qed
+
+lemma ox12_sz_rsub_le: "ox12_szT (ox8_rsub t k) \<le> ox12_szT t"
+proof (induction k arbitrary: t)
+  case 0
+  show ?case by simp
+next
+  case (Suc k)
+  have step: "ox12_szT (ox8_lastT t) \<le> ox12_szT t"
+  proof (cases "t = 0\<^sub>B")
+    case True
+    thus ?thesis by simp
+  next
+    case False
+    show ?thesis using ox12_sz_lastT_lt[OF False] by simp
+  qed
+  have "ox12_szT (ox8_rsub t (Suc k)) = ox12_szT (ox8_rsub (ox8_lastT t) k)"
+    by simp
+  also have "\<dots> \<le> ox12_szT (ox8_lastT t)" by (rule Suc.IH)
+  also have "\<dots> \<le> ox12_szT t" by (rule step)
+  finally show ?case .
+qed
+
+lemma ox12_sz_rsub_lt:
+  assumes ne: "t \<noteq> 0\<^sub>B" and k1: "1 \<le> k"
+  shows "ox12_szT (ox8_rsub t k) < ox12_szT t"
+proof -
+  obtain j where kj: "k = Suc j" using k1 by (cases k) auto
+  have "ox12_szT (ox8_rsub t k) = ox12_szT (ox8_rsub (ox8_lastT t) j)"
+    using kj by simp
+  also have "\<dots> \<le> ox12_szT (ox8_lastT t)" by (rule ox12_sz_rsub_le)
+  also have "\<dots> < ox12_szT t" by (rule ox12_sz_lastT_lt[OF ne])
+  finally show ?thesis .
+qed
+
+
+subsection \<open>(4) \<open>KK\<close> --- PROVED (the census, with \<open>Trans N \<in> OT\<^bsub>B\<^esub>\<close> available)\<close>
+
+text \<open>The r70/r71 residual \<open>KK\<close>, discharged.  Everything is as in
+  @{thm [source] ox11_KK_of_BG} except that the bottom guard \<open>BG\<close> is replaced by
+  @{thm [source] ox12_safe_of_size}: the hole principal is \<open>D\<^bsub>v\<^sub>1\<^esub>0\<close> (size \<open>1\<close>) and
+  the left operand \<open>ox8_rsub body k\<close> (\<open>k \<ge> 1\<close>) is strictly smaller than \<open>body\<close>,
+  so @{const ox11_safe} holds for free.  No case split on \<open>k \<le> d\<^sub>R\<close> is needed
+  either --- the size argument covers the dead-spine range as well.\<close>
+
+theorem ox12_KK:
+  fixes N :: pairseq and s0 b0 :: "Sym list" and k :: nat
+  assumes NST: "N \<in> ST_PS" and NPT: "N \<in> PT_PS"
+    and hp: "hasParent N 1 (Lng N - 1)"
+    and j1gt: "1 < Lng N - 1"
+    and branch: "transCondIII N \<or> transCondIV N"
+    and ihOT: "Trans N \<in> OT_B"
+    and b0RP: "\<forall>x \<in> set b0. x = RP"
+    and inner: "scb_decomp (bpHeadT (Trans (s84x_N N))) s0
+                 (flatBT (Dpt (enat (entry N 1 (Lng N - 1))) 0\<^sub>B)) b0"
+    and ltJ: "s84x_jm3 N < transJm1 N"
+    and kge: "1 \<le> k"
+    and alive: "\<forall>j<k. ox8_rsub (bpHeadT (Trans (s84x_N N))) j \<noteq> 0\<^sub>B"
+  shows "lessBT (ox8_rsub (bpHeadT (Trans (s84x_N N))) k)
+           (d4vx_ins s0 (entry N 1 (Lng N - 1) - 1) b0
+              (Dpt (enat (entry N 1 (Lng N - 1) - 1)) 0\<^sub>B))"
+proof -
+  let ?v1 = "entry N 1 (Lng N - 1)"
+  let ?ub = "entry N 1 (Lng N - 1) - 1"
+  let ?body = "bpHeadT (Trans (s84x_N N))"
+  let ?A0 = "bpHeadT (Trans (Pred (s84x_N N)))"
+  let ?X0 = "Dpt (enat ?ub) 0\<^sub>B"
+  let ?X1 = "d4vx_ins s0 ?ub b0 ?X0"
+  let ?A1 = "d4vx_ins s0 ?ub b0 ?A0"
+  let ?p = "DB (enat ?v1) 0\<^sub>B"
+  let ?pX = "DB (enat ?ub) ?X0"
+  \<comment> \<open>the flat surgery, and the hole relation it induces (verbatim from \<open>ox11\<close>)\<close>
+  have wrap: "flatBT ?body = s0 @ flatBP (DB (enat ?v1) 0\<^sub>B) @ b0"
+    using inner by (simp add: scb_decomp_def)
+  have fA1: "flatBT ?A1 = s0 @ flatBP (DB (enat ?ub) ?A0) @ b0"
+    using d4vx_ins_flat[OF wrap b0RP, of ?ub ?A0] by simp
+  have fX1: "flatBT ?X1 = s0 @ flatBP (DB (enat ?ub) ?X0) @ b0"
+    using d4vx_ins_flat[OF wrap b0RP, of ?ub ?X0] by simp
+  obtain dR where
+      hdA: "ox9_holeD dR ?p (DB (enat ?ub) ?A0) ?body ?A1"
+    and hdX: "ox9_holeD dR ?p ?pX ?body ?X1"
+    using ox9_holeD_of_flat3[OF wrap fA1 fX1 b0RP] by blast
+  \<comment> \<open>the SIZE collapse: \<open>ox11_safe\<close> for free\<close>
+  have bodyne: "?body \<noteq> 0\<^sub>B" by (rule ox9_holeD_ne[OF hdX])
+  have psz: "ox12_szP ?p = Suc 0" by (rule ox12_szP_Dzero)
+  have szlt: "ox12_szT (ox8_rsub ?body k) < ox12_szT ?body"
+    by (rule ox12_sz_rsub_lt[OF bodyne kge])
+  have safe: "ox11_safe dR ?p ?pX (ox8_rsub ?body k) ?body"
+    by (rule ox12_safe_of_size[OF psz szlt])
+  \<comment> \<open>the self-maximality of the census body (r68), transported (r71)\<close>
+  have lt: "lessBT (ox8_rsub ?body k) ?body"
+    by (rule ox8_body_rspine_lessBT[OF NST NPT hp j1gt branch ihOT ltJ kge alive])
+  show ?thesis by (rule ox11_TT[OF hdX safe lt])
+qed
+
+
+subsection \<open>(5) The census roll-up --- UNCONDITIONAL\<close>
+
+text \<open>@{thm [source] oi11_census_BG} with \<open>BG\<close> discharged by @{thm [source] ox12_KK}.
+  Both termination pillars, with \<^bold>\<open>no residual hypothesis\<close>.\<close>
+
+theorem oi12_census:
+  shows "\<forall>M. M \<in> ST_PS \<longrightarrow> Trans M \<in> OT_B"
+    and "\<forall>M n. M \<in> ST_PS \<longrightarrow> 1 \<le> n \<longrightarrow> 1 < Lng M \<longrightarrow>
+           lessBT (Trans ((M::pairseq)[n])) (Trans M)"
+proof -
+  have SETLE1: "\<And>P s0 b0 u. P \<in> ST_PS \<Longrightarrow> P \<in> PT_PS \<Longrightarrow>
+        hasParent P 1 (Lng P - 1) \<Longrightarrow> 1 < Lng P - 1 \<Longrightarrow>
+        transCondIII P \<or> transCondIV P \<Longrightarrow> Trans P \<in> OT_B \<Longrightarrow>
+        (\<forall>x \<in> set b0. x = RP) \<Longrightarrow>
+        scb_decomp (bpHeadT (Trans (s84x_N P))) s0
+          (flatBT (Dpt (enat (entry P 1 (Lng P - 1))) 0\<^sub>B)) b0 \<Longrightarrow>
+        s84x_jm3 P < transJm1 P \<Longrightarrow>
+        b1x_setle
+          (GBT u (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
+                    (bpHeadT (Trans (Pred (s84x_N P))))))
+          (insert (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
+                     (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))
+                  (GBT u (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
+                            (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))))"
+  proof -
+    fix P :: pairseq and s0 b0 :: "Sym list" and u :: enat
+    assume A1: "P \<in> ST_PS" and A2: "P \<in> PT_PS"
+      and A3: "hasParent P 1 (Lng P - 1)" and A4: "1 < Lng P - 1"
+      and A5: "transCondIII P \<or> transCondIV P" and A6: "Trans P \<in> OT_B"
+      and A7: "\<forall>x \<in> set b0. x = RP"
+      and A8: "scb_decomp (bpHeadT (Trans (s84x_N P))) s0
+                (flatBT (Dpt (enat (entry P 1 (Lng P - 1))) 0\<^sub>B)) b0"
+      and A9: "s84x_jm3 P < transJm1 P"
+    have H: "\<And>k. 1 \<le> k \<Longrightarrow>
+               (\<forall>j<k. ox8_rsub (bpHeadT (Trans (s84x_N P))) j \<noteq> 0\<^sub>B) \<Longrightarrow>
+               lessBT (ox8_rsub (bpHeadT (Trans (s84x_N P))) k)
+                 (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
+                    (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))"
+    proof -
+      fix k :: nat assume kge: "1 \<le> k"
+        and alv: "\<forall>j<k. ox8_rsub (bpHeadT (Trans (s84x_N P))) j \<noteq> 0\<^sub>B"
+      show "lessBT (ox8_rsub (bpHeadT (Trans (s84x_N P))) k)
+              (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
+                 (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))"
+        by (rule ox12_KK[OF A1 A2 A3 A4 A5 A6 A7 A8 A9 kge alv])
+    qed
+    show "b1x_setle
+          (GBT u (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
+                    (bpHeadT (Trans (Pred (s84x_N P))))))
+          (insert (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
+                     (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))
+                  (GBT u (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
+                            (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))))"
+      by (rule ox10_SETLE1_ltJ[OF A1 A2 A3 A4 A5 A7 A8 A9 H])
+  qed
+  show "\<forall>M. M \<in> ST_PS \<longrightarrow> Trans M \<in> OT_B"
+    by (rule oi8_census_final_ivadmeq(1)[OF SETLE1 ot9_FINRC])
+  show "\<forall>M n. M \<in> ST_PS \<longrightarrow> 1 \<le> n \<longrightarrow> 1 < Lng M \<longrightarrow>
+         lessBT (Trans ((M::pairseq)[n])) (Trans M)"
+    by (rule oi8_census_final_ivadmeq(2)[OF SETLE1 ot9_FINRC])
+qed
+
+
+subsection \<open>(6) \<open>KK\<close> in the exact shape the capstones assume (no \<open>OT\<^bsub>B\<^esub>\<close> premise)\<close>
+
+text \<open>@{thm [source] ox12_KK} needs \<open>Trans N \<in> OT\<^bsub>B\<^esub>\<close>, which the capstones'
+  \<open>KK\<close> does not supply.  It is now free: @{thm [source] oi12_census}(1) gives it for
+  every \<open>N \<in> ST_PS\<close>, unconditionally.\<close>
+
+theorem ox12_KK_free:
+  fixes P :: pairseq and s0 b0 :: "Sym list" and k :: nat
+  assumes A1: "P \<in> ST_PS" and A2: "P \<in> PT_PS"
+    and A3: "hasParent P 1 (Lng P - 1)"
+    and A4: "1 < Lng P - 1"
+    and A5: "transCondIII P \<or> transCondIV P"
+    and A7: "\<forall>x \<in> set b0. x = RP"
+    and A8: "scb_decomp (bpHeadT (Trans (s84x_N P))) s0
+               (flatBT (Dpt (enat (entry P 1 (Lng P - 1))) 0\<^sub>B)) b0"
+    and A9: "s84x_jm3 P < transJm1 P"
+    and kge: "1 \<le> k"
+    and alive: "\<forall>j<k. ox8_rsub (bpHeadT (Trans (s84x_N P))) j \<noteq> 0\<^sub>B"
+  shows "lessBT (ox8_rsub (bpHeadT (Trans (s84x_N P))) k)
+           (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
+              (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))"
+proof -
+  have A6: "Trans P \<in> OT_B" using oi12_census(1) A1 by blast
+  show ?thesis by (rule ox12_KK[OF A1 A2 A3 A4 A5 A6 A7 A8 A9 kge alive])
+qed
+
+
+subsection \<open>(7) \<^bold>\<open>PSS TERMINATION --- UNCONDITIONAL\<close>\<close>
+
+text \<open>\<^bold>\<open>THE THEOREM.\<close>  \<open>KK\<close> was the single residual hypothesis of both r71
+  capstones (@{thm [source] y4_PSS_wf_of_KK}, @{thm [source] y4_PSS_acc_of_KK}).
+  @{thm [source] ox12_KK_free} discharges it.  Hence the termination of the pair
+  sequence system is proved outright: no residual hypothesis, no \<open>sorry\<close>, no
+  citation ([Buc1] Lemma 2.2 is our own @{thm [source] y4_buc1_2_2_OT_B_wf}).
+  The ML audit block below fails the build if any of these reaches a \<open>sorry\<close>'d
+  statement of \<open>pss_paper\<close>.\<close>
+
+theorem y5_PSS_wf: "wf y3_PSSrel"
+  by (rule y4_PSS_wf_of_KK[OF ox12_KK_free])
+
+theorem y5_PSS_acc:
+  assumes MST: "M \<in> ST_PS"
+  shows "M \<in> Wellfounded.acc y3_PSSrel"
+  by (rule y4_PSS_acc_of_KK[OF ox12_KK_free MST])
+
+theorem y5_Trans_OT_B: "M \<in> ST_PS \<Longrightarrow> Trans M \<in> OT_B"
+  using oi12_census(1) by blast
+
+theorem y5_Trans_descend:
+  "M \<in> ST_PS \<Longrightarrow> 1 \<le> n \<Longrightarrow> 1 < Lng M \<Longrightarrow>
+     lessBT (Trans ((M::pairseq)[n])) (Trans M)"
+  using oi12_census(2) by blast
+
+
+subsection \<open>(8) The ARTICLE'S OWN termination statement (\<open>p_8_7_termination\<close>)\<close>
+
+text \<open>\<open>wf y3_PSSrel\<close> is termination in OUR formulation.  The article states it as
+  \<open>Fdom f M n\<close> --- the expansion recursion \<open>(M,n) \<mapsto> (M[n], f n)\<close> reaches
+  \<open>Lng = 1\<close> (\<^const>\<open>Fdom\<close>, \<open>pss_defs\<close> \<section>5.4).  We discharge that statement
+  outright, by well-founded induction along @{thm [source] y5_PSS_acc}.
+
+  The only extra ingredient is that an \<open>ST_PS\<close> sequence is never EMPTY (otherwise
+  neither \<^const>\<open>Fdom\<close> rule could fire): \<open>diagSeq u v\<close> has length \<open>Suc v - u \<ge> 1\<close>,
+  and \<^const>\<open>oper\<close> preserves non-emptiness --- in the degenerate branches because
+  \<^const>\<open>Pred\<close> does, and in the tiling branch because \<open>take j\<^sub>0 M @ \<Oplus>\<^bsub>k<n\<^esub> B\<^sub>k\<close> has
+  length \<open>min j\<^sub>0 (Lng M) + n \<cdot> (j\<^sub>1 - j\<^sub>0)\<close>, which is \<open>\<ge> 1\<close> whether \<open>j\<^sub>0 = 0\<close>
+  (then \<open>n \<cdot> j\<^sub>1 \<ge> 1\<close>, as \<open>n \<ge> 1\<close> and \<open>j\<^sub>1 \<noteq> 0\<close> in that branch) or \<open>j\<^sub>0 \<ge> 1\<close>.\<close>
+
+lemma y5_take_concat_ne:
+  fixes M :: "'a list" and F :: "nat \<Rightarrow> nat \<Rightarrow> 'a"
+  assumes L: "1 \<le> length M" and n1: "1 \<le> n" and j1: "0 < j1"
+  shows "take j0 M @ concat (map (\<lambda>k. map (F k) [j0..<j1]) [0..<n]) \<noteq> []"
+proof (cases "j0 = 0")
+  case False
+  hence j0pos: "0 < j0" by simp
+  have "take j0 M \<noteq> []" using L j0pos by (cases M) auto
+  thus ?thesis by simp
+next
+  case True
+  have "concat (map (\<lambda>k. map (F k) [j0..<j1]) [0..<n]) \<noteq> []"
+  proof -
+    have U: "[0..<n] = 0 # [Suc 0..<n]" using n1 by (simp add: upt_conv_Cons)
+    have "concat (map (\<lambda>k. map (F k) [j0..<j1]) [0..<n])
+            = map (F 0) [j0..<j1]
+                @ concat (map (\<lambda>k. map (F k) [j0..<j1]) [Suc 0..<n])"
+      using U by simp
+    moreover have "map (F 0) [j0..<j1] \<noteq> []" using True j1 by simp
+    ultimately show ?thesis by simp
+  qed
+  thus ?thesis using True by simp
+qed
+
+lemma y5_Lng_Pred_pos:
+  assumes L: "1 \<le> Lng M"
+  shows "1 \<le> Lng (Pred M)"
+proof (cases "Lng M \<le> 1")
+  case True
+  have "Pred M = M" using True by (simp add: Pred_def)
+  thus ?thesis using L by simp
+next
+  case False
+  have "Pred M = butlast M" using False by (simp add: Pred_def)
+  hence "Lng (Pred M) = Lng M - 1" by simp
+  thus ?thesis using False by simp
+qed
+
+lemma y5_Lng_oper_pos:
+  assumes L: "1 \<le> Lng M" and n1: "1 \<le> n"
+  shows "1 \<le> Lng ((M::pairseq)[n])"
+proof (cases "1 < Lng M")
+  case False
+  hence L1: "Lng M = 1" using L by simp
+  have "(M::pairseq)[n] = M" by (rule roper_oper_Lng1[OF L1])
+  thus ?thesis using L by simp
+next
+  case True
+  note Lgt = True
+  have predpos: "1 \<le> Lng (Pred M)" by (rule y5_Lng_Pred_pos[OF L])
+  \<comment> \<open>rewrite the three GUARDS to \<open>True\<close>/\<open>False\<close> --- never let \<open>simp\<close> de Morgan them\<close>
+  have nz: "(Lng M - 1 = 0) = False" using Lgt by simp
+  show ?thesis
+  proof (cases "entry M 0 (Lng M - 1) = 0 \<and> entry M 1 (Lng M - 1) = 0")
+    case True
+    have c2: "(entry M 0 (Lng M - 1) = 0 \<and> entry M 1 (Lng M - 1) = 0) = True"
+      using True by simp
+    have "(M::pairseq)[n] = Pred M"
+      unfolding oper_def Let_def by (simp only: nz c2 if_False if_True)
+    thus ?thesis using predpos by simp
+  next
+    case False
+    note nzero = False
+    have c2: "(entry M 0 (Lng M - 1) = 0 \<and> entry M 1 (Lng M - 1) = 0) = False"
+      using nzero by simp
+    show ?thesis
+    proof (cases "hasParent M (idx1 M (Lng M - 1)) (Lng M - 1)")
+      case False
+      have c3: "(\<not> hasParent M (idx1 M (Lng M - 1)) (Lng M - 1)) = True"
+        using False by simp
+      have "(M::pairseq)[n] = Pred M"
+        unfolding oper_def Let_def by (simp only: nz c2 c3 if_False if_True)
+      thus ?thesis using predpos by simp
+    next
+      case True
+      note hp = True
+      let ?j1 = "Lng M - 1"
+      let ?i1 = "idx1 M ?j1"
+      let ?j0 = "parent M ?i1 ?j1"
+      let ?d0 = "(if 0 < ?i1 then entry M 0 ?j1 - entry M 0 ?j0 else 0)"
+      let ?d1 = "(if 1 < ?i1 then entry M 1 ?j1 - entry M 1 ?j0 else 0)"
+      have E: "(M::pairseq)[n]
+                 = take ?j0 M
+                     @ concat (map (\<lambda>k. map (\<lambda>j. (entry M 0 j + k * ?d0,
+                                                    entry M 1 j + k * ?d1))
+                                            [?j0..<?j1])
+                                   [0..<n])"
+        using poper_oper_expand[OF Lgt nzero hp] by (simp only: Let_def)
+      have jpos: "0 < ?j1" using Lgt by simp
+      have NE: "(M::pairseq)[n] \<noteq> []"
+        using E y5_take_concat_ne[OF L n1 jpos, of ?j0
+                 "\<lambda>k j. (entry M 0 j + k * ?d0, entry M 1 j + k * ?d1)"]
+        by simp
+      \<comment> \<open>\<open>length_greater_0_conv\<close> is not usable here (simpset loop) --- use \<open>cases\<close>\<close>
+      show ?thesis using NE by (cases "(M::pairseq)[n]") auto
+    qed
+  qed
+qed
+
+lemma y5_ST_PS_Lng_pos:
+  assumes "M \<in> ST_PS"
+  shows "1 \<le> Lng M"
+  using assms
+proof (induction M rule: ST_PS.induct)
+  case (diag u v)
+  thus ?case by simp
+next
+  case (oper M n)
+  show ?case by (rule y5_Lng_oper_pos[OF oper.IH oper.hyps(2)])
+qed
+
+text \<open>\<^bold>\<open>THE ARTICLE'S THEOREM.\<close>  \<open>p_8_7_termination\<close> (\<open>pss_paper\<close>, transcribed as
+  \<open>sorry\<close>): for \<open>M \<in> ST_PS\<close>, \<open>n \<ge> 1\<close> and any \<open>f\<close> with \<open>f(k) \<ge> 1\<close> for \<open>k \<ge> 1\<close>,
+  the pair sequence system \<open>F\<^sub>M(n)\<close> is DEFINED --- i.e. the expansion halts.
+  PROVED, unconditionally.\<close>
+
+theorem y5_Fdom:
+  assumes MST: "M \<in> ST_PS" and n1: "1 \<le> n"
+    and fpos: "\<And>k. 1 \<le> k \<Longrightarrow> 1 \<le> f k"
+  shows "Fdom f M n"
+proof -
+  have accM: "M \<in> Wellfounded.acc y3_PSSrel" by (rule y5_PSS_acc[OF MST])
+  have MAIN: "\<And>x. x \<in> Wellfounded.acc y3_PSSrel \<Longrightarrow>
+                  x \<in> ST_PS \<longrightarrow> (\<forall>m. 1 \<le> m \<longrightarrow> Fdom f x m)"
+  proof -
+    fix x0 :: pairseq
+    assume A0: "x0 \<in> Wellfounded.acc y3_PSSrel"
+    show "x0 \<in> ST_PS \<longrightarrow> (\<forall>m. 1 \<le> m \<longrightarrow> Fdom f x0 m)"
+      using A0
+    proof (induction rule: Wellfounded.acc.induct)
+      case (accI x)
+      show ?case
+      proof
+        assume xST: "x \<in> ST_PS"
+        show "\<forall>m. 1 \<le> m \<longrightarrow> Fdom f x m"
+        proof (intro allI impI)
+          fix m :: nat assume m1: "1 \<le> m"
+          show "Fdom f x m"
+          proof (cases "1 < Lng x")
+            case False
+            have "1 \<le> Lng x" by (rule y5_ST_PS_Lng_pos[OF xST])
+            hence L1: "Lng x = 1" using False by simp
+            show ?thesis by (rule Fdom.Fdom_base[OF L1])
+          next
+            case True
+            have step: "((x::pairseq)[m], x) \<in> y3_PSSrel"
+              using xST True m1 by (auto simp: y3_PSSrel_def)
+            have opST: "(x::pairseq)[m] \<in> ST_PS" by (rule ST_PS.oper[OF xST m1])
+            have fm1: "1 \<le> f m" by (rule fpos[OF m1])
+            have D: "Fdom f ((x::pairseq)[m]) (f m)"
+              using accI.IH[OF step] opST fm1 by blast
+            show ?thesis by (rule Fdom.Fdom_step[OF True D])
+          qed
+        qed
+      qed
+    qed
+  qed
+  show ?thesis using MAIN[OF accM] MST n1 by blast
+qed
+
+
 text \<open>\<^bold>\<open>Circularity / sorry audit\<close> (fails the build if violated, so a green build IS
   the audit).  Two facts are asserted:
   \<^item> Our proof of [Buc1] Lemma 2.2 (@{thm [source] y4_buc1_2_2_OT_B_wf}) and its
@@ -13268,6 +13792,28 @@ ML \<open>
      ("y4_bwl_cof",          @{thm y4_bwl_cof}),
      ("y4_PSS_acc_of_KK",    @{thm y4_PSS_acc_of_KK}),
      ("y4_PSS_wf_of_KK",     @{thm y4_PSS_wf_of_KK}),
-     ("oi10_census_KK",      @{thm oi10_census_KK(1)})];
+     ("oi10_census_KK",      @{thm oi10_census_KK(1)}),
+     \<comment> \<open>r72: the residual KK is DISCHARGED --- these are UNCONDITIONAL\<close>
+     ("ox12_KK_free",        @{thm ox12_KK_free}),
+     ("oi12_census(1)",      @{thm oi12_census(1)}),
+     ("oi12_census(2)",      @{thm oi12_census(2)}),
+     ("y5_Trans_OT_B",       @{thm y5_Trans_OT_B}),
+     ("y5_Trans_descend",    @{thm y5_Trans_descend}),
+     ("y5_PSS_acc",          @{thm y5_PSS_acc}),
+     ("y5_PSS_wf",           @{thm y5_PSS_wf}),
+     \<comment> \<open>r72: the ARTICLE'S OWN termination statement, p_8_7_termination\<close>
+     ("y5_Fdom",             @{thm y5_Fdom})];
+
+  \<comment> \<open>r72: assert the termination theorems carry NO free hypothesis left ---
+      \<open>y5_PSS_wf\<close> must be a closed statement (no meta-premises, no schematics).\<close>
+  val _ =
+    let
+      val th = @{thm y5_PSS_wf};
+      val t  = Thm.prop_of th;
+    in
+      if Thm.nprems_of th = 0 andalso null (Thm.hyps_of th)
+         andalso null (Term.add_frees t []) andalso null (Term.add_vars t [])
+      then () else error "AUDIT FAILED: y5_PSS_wf is not a closed hypothesis-free statement"
+    end;
 \<close>
 end
