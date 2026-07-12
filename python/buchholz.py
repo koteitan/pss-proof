@@ -124,19 +124,21 @@ def bracket(a, z):
         return mul([D(v, bracket(b, ZERO))], n+1)
     if db == 'N' or (isinstance(db, tuple) and v > db[1]):   # ([].4)(iii) dom(a)=dom(b)
         return [D(v, bracket(b, z))]
-    # ([].4)(ii) dom(b)=T_u, v<=u<ω, [Buc2] modification: x_0=D_u 0, x_i=b[D_u x_{i-1}], a[n]=D_v x_n
-    # A23 (APPLIED): the article footnote (content.md 6427) literally reads a[n]=D_v b[x_n],
-    # but that outer b[.] is a DOUBLED application that escapes dom(b)=T_u: x_n=b[..]∈T_{u+1},
-    # so x_n∉dom(b)=T_u and the term grows, breaking Lemma 3.2a (a[z]<a).  Counterexample
-    # a=D_0((D_1 0,D_1 0)) (see buc_ii_check.py 'literal': 3/106).  Dropping the outer b[.]
-    # (a[n]=D_v x_n) restores well-definedness and Lemmas 3.2a/b/c: validated 106/106 in
-    # python/buc_ii_check.py (reading 'fix_xn').  Cases 0/1/2/3/5 and (i)/(iii) are likewise
-    # validated; the order < is fully validated (Lemma 2.1).
+    # ([].4)(ii) dom(b)=T_u, v<=u<omega, [Buc2] modification.
+    # CORRECTED (supersedes A23): the article footnote (content.md 6427) prints
+    #   x_0 = D_u 0,  x_i = b[D_u x_{i-1}],  a[n] = D_v b[x_n]
+    # and the defect is a TRANSPOSITION inside x_i, not a doubled outer b[.]:
+    #   x_0 = D_u 0,  x_i = D_u b[x_{i-1}],  a[n] = D_v b[x_n]
+    # which is exactly Buchholz's fundamental sequence
+    #   psi_v(b)[n] = psi_v(b[g_n]),  g_0 = Omega_u,  g_{n+1} = psi_u(b[g_n]).
+    # Under this reading every x_i is D_u-headed, hence stays in dom(b)=T_u, and
+    # the article's own §7.2 (2) holds literally (112/112; the old "drop the outer
+    # b[.]" reading fails 60/60).
     u = db[1]; n = nat_value(z)
-    x = [D(u, ZERO)]                                  # x_0 = D_u 0  (term)
+    x = [D(u, ZERO)]                                  # x_0 = D_u 0
     for _ in range(n):
-        x = bracket(b, [D(u, x)])                     # x_i = b[D_u x_{i-1}]
-    return [D(v, x)]                                  # a[n] = D_v x_n  (A23)
+        x = [D(u, bracket(b, x))]                     # x_i = D_u b[x_{i-1}]
+    return [D(v, bracket(b, x))]                      # a[n] = D_v b[x_n]
 
 # ---- pretty printer ----
 def fmt(a):

@@ -22165,9 +22165,28 @@ proof (induction a arbitrary: z rule: measure_induct_rule[where f=size])
          for x1 x2 u
       by (simp add: TBv_def)
   next
-    \<comment> \<open>(A23) the inner \<open>operB b (xseq \<dots>)\<close> recursive call was removed (the
-       fundamental sequence is now \<open>D\<^sub>v x\<^sub>n\<close>, not \<open>D\<^sub>v b[x\<^sub>n]\<close>), so the two
-       \<open>domintros\<close> obligations on \<open>Inr (Inl (x2, xseq x2 \<dots>))\<close> no longer exist.\<close>
+    \<comment> \<open>(4) inner \<open>operB b (xseq \<dots>)\<close> guard side condition, same collapse as (2)\<close>
+    show "xb = Trm []"
+      if "a = Trm [DB x1 x2]" "x2 \<noteq> Trm []" "x1 \<le> enat u"
+         "domB x2 = TBv (enat u)"
+         "\<not> domB_operB_xseq_dom
+              (Inr (Inl (x2, xseq x2 (enat (tbvIdx (TBv (enat u)))) (numNat z))))"
+         "xb \<in> TBv (enat u)" for x1 x2 u xb
+    proof -
+      have "domB x2 = {Trm []}" using single[OF that(1,2)] by simp
+      hence "TBv (enat u) = {Trm []}" using that(4) by simp
+      thus ?thesis using that(6) by simp
+    qed
+  next
+    \<comment> \<open>(5) \<open>0 \<in> T\<^sub>u\<close> again\<close>
+    show "Trm [] \<in> TBv (enat u)"
+      if "a = Trm [DB x1 x2]" "x2 \<noteq> Trm []" "x1 \<le> enat u"
+         "domB x2 = TBv (enat u)"
+         "\<not> domB_operB_xseq_dom
+              (Inr (Inl (x2, xseq x2 (enat (tbvIdx (TBv (enat u)))) (numNat z))))"
+         for x1 x2 u
+      by (simp add: TBv_def)
+  next
     \<comment> \<open>(6) \<open>else\<close>-guard side condition: \<open>domB b = {0}\<close>, so any \<open>xb \<in> domB b\<close> is \<open>0\<close>\<close>
     show "xb = Trm []"
       if "a = Trm [DB x1 x2]" "x2 \<noteq> Trm []"
@@ -22231,7 +22250,7 @@ lemma operB_d0succ_unfold:
              (let db = domB b in
               if db = {Trm []} then multBT (Dprin v (operB b (Trm []))) (numNat z + 1)
               else if (\<exists>u. v \<le> enat u \<and> db = TBv (enat u))
-                   then Dprin v (xseq b (enat (tbvIdx db)) (numNat z))
+                   then Dprin v (operB b (xseq b (enat (tbvIdx db)) (numNat z)))
               else Dprin v (operB b z)))
       | (p # q # rest) \<Rightarrow>
           addBT (Trm (butlast (p # q # rest))) (operB (Trm [last (p # q # rest)]) z)))"
@@ -22333,7 +22352,7 @@ proof -
           = (let db = domB ?b in
              if db = {Trm []} then multBT (Dprin v (operB ?b (Trm []))) (numNat z + 1)
              else if (\<exists>u. v \<le> enat u \<and> db = TBv (enat u))
-                  then Dprin v (xseq ?b (enat (tbvIdx db)) (numNat z))
+                  then Dprin v (operB ?b (xseq ?b (enat (tbvIdx db)) (numNat z)))
              else Dprin v (operB ?b z))"
     using operB_d0succ_unfold[OF ds] bne by simp
   also have "\<dots> = multBT (Dprin v (operB ?b (Trm []))) (numNat z + 1)"
@@ -22515,8 +22534,26 @@ next
        for x1 x2 u
     by (simp add: TBv_def)
 next
-  \<comment> \<open>(A23) the inner \<open>operB b (xseq \<dots>)\<close> recursive call was removed, so its two
-     \<open>domintros\<close> obligations on \<open>Inr (Inl (x2, xseq x2 \<dots>))\<close> no longer exist.\<close>
+  \<comment> \<open>(4) inner \<open>xseq\<close> guard: vacuous\<close>
+  show "xb = Trm []"
+    if "Trm [DB v b] = Trm [DB x1 x2]" "x2 \<noteq> Trm []" "x1 \<le> enat u"
+       "domB x2 = TBv (enat u)"
+       "\<not> domB_operB_xseq_dom (Inr (Inl (x2, xseq x2 (enat (tbvIdx (TBv (enat u)))) (numNat z))))"
+       "xb \<in> TBv (enat u)" for x1 x2 u xb
+  proof -
+    have "x2 = b" using that(1) by simp
+    hence "NatSet = TBv (enat u)" using that(4) db by simp
+    thus ?thesis using NatSet_neq_TBv by simp
+  qed
+next
+  \<comment> \<open>(5) \<open>0 \<in> T\<^sub>u\<close> again\<close>
+  show "Trm [] \<in> TBv (enat u)"
+    if "Trm [DB v b] = Trm [DB x1 x2]" "x2 \<noteq> Trm []" "x1 \<le> enat u"
+       "domB x2 = TBv (enat u)"
+       "\<not> domB_operB_xseq_dom (Inr (Inl (x2, xseq x2 (enat (tbvIdx (TBv (enat u)))) (numNat z))))"
+       for x1 x2 u
+    by (simp add: TBv_def)
+next
   \<comment> \<open>(6) \<open>else\<close>-branch guard side-condition: under \<open>\<not> dom(operB b z)\<close>, every
      \<open>xb \<in> domB b\<close> is \<open>0\<close>.  But \<open>dom(operB b z)\<close> HOLDS (\<open>domb\<close>), so the hypothesis
      \<open>\<not> dom\<close> is false and the premise is vacuous.\<close>
@@ -22567,7 +22604,7 @@ proof -
           = (let dbb = domB b in
              if dbb = {Trm []} then multBT (Dprin v (operB b (Trm []))) (numNat z + 1)
              else if (\<exists>u. v \<le> enat u \<and> dbb = TBv (enat u))
-                  then Dprin v (xseq b (enat (tbvIdx dbb)) (numNat z))
+                  then Dprin v (operB b (xseq b (enat (tbvIdx dbb)) (numNat z)))
              else Dprin v (operB b z))"
     using operB.psimps[OF dom] bne by simp
   also have "\<dots> = Dprin v (operB b z)"
@@ -22627,8 +22664,20 @@ next
        for x1 x2 u
     using that(1) by simp
 next
-  \<comment> \<open>(A23) the inner \<open>operB b (xseq \<dots>)\<close> recursive call was removed, so its two
-     \<open>domintros\<close> obligations on \<open>Inr (Inl (x2, xseq x2 \<dots>))\<close> no longer exist.\<close>
+  show "xb = Trm []"
+    if "Trm (p0 # q # qs) = Trm [DB x1 x2]" "x2 \<noteq> Trm []" "x1 \<le> enat u"
+       "domB x2 = TBv (enat u)"
+       "\<not> domB_operB_xseq_dom (Inr (Inl (x2, xseq x2 (enat (tbvIdx (TBv (enat u)))) (numNat z))))"
+       "xb \<in> TBv (enat u)" for x1 x2 u xb
+    using that(1) by simp
+next
+  show "Trm [] \<in> TBv (enat u)"
+    if "Trm (p0 # q # qs) = Trm [DB x1 x2]" "x2 \<noteq> Trm []" "x1 \<le> enat u"
+       "domB x2 = TBv (enat u)"
+       "\<not> domB_operB_xseq_dom (Inr (Inl (x2, xseq x2 (enat (tbvIdx (TBv (enat u)))) (numNat z))))"
+       for x1 x2 u
+    using that(1) by simp
+next
   show "xb = Trm []"
     if "Trm (p0 # q # qs) = Trm [DB x1 x2]" "x2 \<noteq> Trm []"
        "\<forall>u. x1 \<le> enat u \<longrightarrow> domB x2 \<noteq> TBv (enat u)"
@@ -24442,6 +24491,29 @@ proof (induction b arbitrary: u z rule: measure_induct_rule[where f=size])
                for x1 x2 u'
             by (simp add: TBv_def)
         next
+          \<comment> \<open>(4) inner \<open>operB c (xseq \<dots>)\<close> guard: same vacuity as (2)\<close>
+          show "xb = Trm []"
+            if "Trm [DB w c] = Trm [DB x1 x2]" "x2 \<noteq> Trm []" "x1 \<le> enat u'"
+               "domB x2 = TBv (enat u')"
+               "\<not> domB_operB_xseq_dom
+                    (Inr (Inl (x2, xseq x2 (enat (tbvIdx (TBv (enat u')))) (numNat z))))"
+               "xb \<in> TBv (enat u')" for x1 x2 u' xb
+          proof -
+            have "x2 = c" "x1 = w" using that(1) by simp_all
+            hence "\<exists>u'. w \<le> enat u' \<and> domB c = TBv (enat u')"
+              using that(3,4) by blast
+            thus ?thesis using nguard by simp
+          qed
+        next
+          \<comment> \<open>(5) \<open>0 \<in> T\<^bsub>u'\<^esub>\<close> for the inner call: same vacuous guard\<close>
+          show "Trm [] \<in> TBv (enat u')"
+            if "Trm [DB w c] = Trm [DB x1 x2]" "x2 \<noteq> Trm []" "x1 \<le> enat u'"
+               "domB x2 = TBv (enat u')"
+               "\<not> domB_operB_xseq_dom
+                    (Inr (Inl (x2, xseq x2 (enat (tbvIdx (TBv (enat u')))) (numNat z))))"
+               for x1 x2 u'
+            by (simp add: TBv_def)
+        next
           \<comment> \<open>(6) \<open>else\<close>-guard: \<open>\<not> dom (operB c z)\<close> contradicts the IH @{thm [source] domc}\<close>
           show "xb = Trm []"
             if "Trm [DB w c] = Trm [DB x1 x2]" "x2 \<noteq> Trm []"
@@ -24511,8 +24583,8 @@ next
       if "Suc i = Suc nat" for nat
       using Suc.IH that by simp
   next
-    \<comment> \<open>(2) \<open>operB b (D\<^sub>u (xseq b u nat))\<close>: defined for any second arg, Lemma A\<close>
-    show "domB_operB_xseq_dom (Inr (Inl (b, Dpt u (xseq b u nat))))"
+    \<comment> \<open>(2) \<open>operB b (xseq b u nat)\<close>: defined for any second arg, Lemma A\<close>
+    show "domB_operB_xseq_dom (Inr (Inl (b, xseq b u nat)))"
       if "Suc i = Suc nat" for nat
       by (rule operB_dom_TBv_body[OF db])
   qed
@@ -24572,6 +24644,31 @@ next
        for x1 x2 u'
     by (simp add: TBv_def)
 next
+  \<comment> \<open>(4) inner \<open>operB b (xseq \<dots>)\<close> guard: \<open>\<not> dom\<close> is FALSE (Lemma A on any 2nd arg)\<close>
+  show "xb = Trm []"
+    if "Trm [DB v b] = Trm [DB x1 x2]" "x2 \<noteq> Trm []" "x1 \<le> enat u'"
+       "domB x2 = TBv (enat u')"
+       "\<not> domB_operB_xseq_dom
+            (Inr (Inl (x2, xseq x2 (enat (tbvIdx (TBv (enat u')))) (numNat z))))"
+       "xb \<in> TBv (enat u')" for x1 x2 u' xb
+  proof -
+    have x2b: "x2 = b" using that(1) by simp
+    hence dbu': "domB b = TBv (enat u')" using that(4) by simp
+    have "domB_operB_xseq_dom
+            (Inr (Inl (b, xseq b (enat (tbvIdx (TBv (enat u')))) (numNat z))))"
+      by (rule operB_dom_TBv_body[OF dbu'])
+    thus ?thesis using that(5) x2b by simp
+  qed
+next
+  \<comment> \<open>(5) \<open>0 \<in> T\<^bsub>u'\<^esub>\<close> for the inner call\<close>
+  show "Trm [] \<in> TBv (enat u')"
+    if "Trm [DB v b] = Trm [DB x1 x2]" "x2 \<noteq> Trm []" "x1 \<le> enat u'"
+       "domB x2 = TBv (enat u')"
+       "\<not> domB_operB_xseq_dom
+            (Inr (Inl (x2, xseq x2 (enat (tbvIdx (TBv (enat u')))) (numNat z))))"
+       for x1 x2 u'
+    by (simp add: TBv_def)
+next
   \<comment> \<open>(6) \<open>else\<close>-guard: \<open>\<forall>u'. v \<le> u' \<longrightarrow> domB b \<noteq> T\<^bsub>u'\<^esub>\<close> is FALSE
      (take \<open>u' = u\<close>: \<open>v \<le> u\<close> and \<open>domB b = T\<^bsub>u\<^esub>\<close>)\<close>
   show "xb = Trm []"
@@ -24607,12 +24704,14 @@ next
     using that(1) by simp
 qed
 
-text \<open>The kind-1 \<open>operB\<close> unfold: \<open>operB (D\<^sub>v b) z = D\<^sub>v (xseq b (tbvIdx (domB b)) (numNat z))\<close>
-  when \<open>domB b = T\<^bsub>u\<^esub>\<close> and \<open>v \<le> u\<close> (the \<open>([].4)(ii)\<close> fundamental sequence).\<close>
+text \<open>The kind-1 \<open>operB\<close> unfold:
+  \<open>operB (D\<^sub>v b) z = D\<^sub>v (operB b (xseq b (tbvIdx (domB b)) (numNat z)))\<close>
+  when \<open>domB b = T\<^bsub>u\<^esub>\<close> and \<open>v \<le> u\<close> (the \<open>([].4)(ii)\<close> fundamental sequence
+  \<open>a[n] = D\<^sub>v b[x\<^sub>n]\<close>).\<close>
 
 lemma operB_kind1_unfold:
   assumes db: "domB b = TBv (enat u)" and vu: "v \<le> enat u" and bne: "b \<noteq> Trm []"
-  shows "operB (Trm [DB v b]) z = Dprin v (xseq b (enat u) (numNat z))"
+  shows "operB (Trm [DB v b]) z = Dprin v (operB b (xseq b (enat u) (numNat z)))"
 proof -
   have dom: "domB_operB_xseq_dom (Inr (Inl (Trm [DB v b], z)))"
     by (rule operB_dom_kind1[OF db vu bne])
@@ -24621,15 +24720,15 @@ proof -
           = (let dbb = domB b in
              if dbb = {Trm []} then multBT (Dprin v (operB b (Trm []))) (numNat z + 1)
              else if (\<exists>u'. v \<le> enat u' \<and> dbb = TBv (enat u'))
-                  then Dprin v (xseq b (enat (tbvIdx dbb)) (numNat z))
+                  then Dprin v (operB b (xseq b (enat (tbvIdx dbb)) (numNat z)))
              else Dprin v (operB b z))"
     using operB.psimps[OF dom] bne by simp
-  also have "\<dots> = Dprin v (xseq b (enat (tbvIdx (domB b))) (numNat z))"
+  also have "\<dots> = Dprin v (operB b (xseq b (enat (tbvIdx (domB b))) (numNat z)))"
   proof -
     have nz: "domB b \<noteq> {Trm []}" using db zero_set_neq_TBv by auto
     show ?thesis using nz guard by (simp add: Let_def)
   qed
-  also have "\<dots> = Dprin v (xseq b (enat u) (numNat z))"
+  also have "\<dots> = Dprin v (operB b (xseq b (enat u) (numNat z)))"
     using db tbvIdx_TBv by simp
   finally show ?thesis .
 qed
@@ -24749,6 +24848,44 @@ proof -
   show ?thesis using xseq.psimps[OF dom] by simp
 qed
 
+text \<open>Every tower entry is a single \<open>D\<^sub>u\<dash>\<close>headed principal:
+  \<open>x\<^sub>0 = D\<^sub>u 0\<close> and \<open>x\<^bsub>i+1\<^esub> = D\<^sub>u b[x\<^sub>i]\<close> (corrected \<open>([].4)(ii)\<close>).\<close>
+
+lemma xseq_single_TBv:
+  assumes db: "domB b = TBv (enat u')"
+  shows "\<exists>t. xseq b u i = Trm [DB u t]"
+proof (cases i)
+  case 0
+  thus ?thesis using xseq_eval_0[OF db, of u] by auto
+next
+  case (Suc j)
+  have dom: "domB_operB_xseq_dom (Inr (Inr (b, u, Suc j)))"
+    by (rule xseq_dom_TBv_body[OF db])
+  have "xseq b u (Suc j) = Dprin u (operB b (xseq b u j))"
+    using xseq.psimps[OF dom] by simp
+  thus ?thesis using Suc by auto
+qed
+
+text \<open>\<open>operB (D\<^sub>v 0) z = z\<close> for finite \<open>0 < v < \<infinity>\<close> (the \<open>([].2)\<close> identity, for
+  an arbitrary second argument \<open>z\<close>).\<close>
+
+lemma operB_Dv0_id:
+  assumes vpos: "0 < v"
+  shows "operB (Dpt (enat v) 0\<^sub>B) z = z"
+proof -
+  have dom: "domB_operB_xseq_dom (Inr (Inl (Dpt (enat v) 0\<^sub>B, z)))"
+    by (rule operB_dom_Dv0)
+  have v0: "enat v \<noteq> 0" using vpos by (simp add: zero_enat_def)
+  have vinf: "enat v \<noteq> \<infinity>" by simp
+  have "operB (Trm [DB (enat v) (Trm [])]) z
+          = (if enat v = 0 then Trm []
+             else if enat v = \<infinity> then Dprin (enat (numNat z + 1)) (Trm [])
+             else z)"
+    using operB.psimps[OF dom] by simp
+  also have "\<dots> = z" using v0 vinf by simp
+  finally show ?thesis by simp
+qed
+
 text \<open>Kind-1 descent: \<open>u < w \<Longrightarrow> D\<^sub>u(D\<^sub>w 0)[0] = D\<^sub>u(D\<^bsub>w-1\<^esub>0)\<close>.\<close>
 
 lemma operB_Du_Dw0_kind1:
@@ -24761,10 +24898,15 @@ proof -
   have vu: "enat u \<le> enat (w - 1)" using uw by simp
   have bne: "Dpt (enat w) 0\<^sub>B \<noteq> Trm []" by simp
   have "operB (Trm [DB (enat u) (Dpt (enat w) 0\<^sub>B)]) (numBT 0)
-          = Dprin (enat u) (xseq (Dpt (enat w) 0\<^sub>B) (enat (w - 1)) (numNat (numBT 0)))"
+          = Dprin (enat u)
+              (operB (Dpt (enat w) 0\<^sub>B)
+                (xseq (Dpt (enat w) 0\<^sub>B) (enat (w - 1)) (numNat (numBT 0))))"
     by (rule operB_kind1_unfold[OF db vu bne])
-  also have "\<dots> = Dprin (enat u) (xseq (Dpt (enat w) 0\<^sub>B) (enat (w - 1)) 0)"
+  also have "\<dots> = Dprin (enat u)
+              (operB (Dpt (enat w) 0\<^sub>B) (xseq (Dpt (enat w) 0\<^sub>B) (enat (w - 1)) 0))"
     by (simp add: numNat_numBT)
+  also have "\<dots> = Dprin (enat u) (xseq (Dpt (enat w) 0\<^sub>B) (enat (w - 1)) 0)"
+    using operB_Dv0_id[OF w0] by simp
   also have "\<dots> = Dprin (enat u) (Dprin (enat (w - 1)) (Trm []))"
     using xseq_eval_0[OF db] by simp
   finally show ?thesis by simp
@@ -24817,11 +24959,11 @@ proof -
           = (let dbb = domB ?b in
              if dbb = {Trm []} then multBT (Dprin (enat u) (operB ?b (Trm []))) (numNat (numBT 0) + 1)
              else if (\<exists>u'. enat u \<le> enat u' \<and> dbb = TBv (enat u'))
-                  then Dprin (enat u) (xseq ?b (enat (tbvIdx dbb)) (numNat (numBT 0)))
+                  then Dprin (enat u) (operB ?b (xseq ?b (enat (tbvIdx dbb)) (numNat (numBT 0))))
              else Dprin (enat u) (operB ?b (numBT 0)))"
     using operB.psimps[OF dom] bne by simp
   also have "\<dots> = (if (\<exists>u'. enat u \<le> enat u' \<and> domB ?b = TBv (enat u'))
-                   then Dprin (enat u) (xseq ?b (enat (tbvIdx (domB ?b))) (numNat (numBT 0)))
+                   then Dprin (enat u) (operB ?b (xseq ?b (enat (tbvIdx (domB ?b))) (numNat (numBT 0))))
                    else Dprin (enat u) (operB ?b (numBT 0)))"
     using nz by (simp add: Let_def)
   also have "\<dots> = Dprin (enat u) (operB ?b (numBT 0))"
@@ -24917,26 +25059,6 @@ text \<open>
   principal), via the NatSet scb-spine transport @{thm [source] operB_scb_spine},
   after evaluating \<open>operB (D\<^sub>u(D\<^sub>v 0)) (numBT n)\<close> through the \<open>xseq\<close> tower.\<close>
 
-text \<open>\<open>operB (D\<^sub>v 0) z = z\<close> for finite \<open>0 < v < \<infinity>\<close> (the \<open>([].2)\<close> identity, for
-  an arbitrary second argument \<open>z\<close>).\<close>
-
-lemma operB_Dv0_id:
-  assumes vpos: "0 < v"
-  shows "operB (Dpt (enat v) 0\<^sub>B) z = z"
-proof -
-  have dom: "domB_operB_xseq_dom (Inr (Inl (Dpt (enat v) 0\<^sub>B, z)))"
-    by (rule operB_dom_Dv0)
-  have v0: "enat v \<noteq> 0" using vpos by (simp add: zero_enat_def)
-  have vinf: "enat v \<noteq> \<infinity>" by simp
-  have "operB (Trm [DB (enat v) (Trm [])]) z
-          = (if enat v = 0 then Trm []
-             else if enat v = \<infinity> then Dprin (enat (numNat z + 1)) (Trm [])
-             else z)"
-    using operB.psimps[OF dom] by simp
-  also have "\<dots> = z" using v0 vinf by simp
-  finally show ?thesis by simp
-qed
-
 text \<open>The \<open>xseq\<close> tower over \<open>b = D\<^sub>v 0\<close> with index \<open>v-1\<close>:
   \<open>xseq (D\<^sub>v 0) (v-1) i = (D\<^bsub>v-1\<^esub>)\<^bsup>i+1\<^esup> 0\<close>.  Base \<open>xseq_eval_0\<close>; step
   \<open>xseq b u (Suc j) = operB b (D\<^sub>u (xseq b u j))\<close> with the \<open>([].2)\<close> identity
@@ -24958,12 +25080,12 @@ next
     by (rule xseq_dom_TBv_body[OF db])
   let ?x = "((\<lambda>a. Dpt (enat (v - 1)) a) ^^ (i + 1)) 0\<^sub>B"
   have "xseq (Dpt (enat v) 0\<^sub>B) (enat (v - 1)) (Suc i)
-          = operB (Dpt (enat v) 0\<^sub>B) (Dprin (enat (v - 1)) (xseq (Dpt (enat v) 0\<^sub>B) (enat (v - 1)) i))"
+          = Dprin (enat (v - 1)) (operB (Dpt (enat v) 0\<^sub>B) (xseq (Dpt (enat v) 0\<^sub>B) (enat (v - 1)) i))"
     using xseq.psimps[OF dom] by simp
-  also have "\<dots> = operB (Dpt (enat v) 0\<^sub>B) (Dprin (enat (v - 1)) ?x)"
+  also have "\<dots> = Dprin (enat (v - 1)) (operB (Dpt (enat v) 0\<^sub>B) ?x)"
     using Suc.IH by simp
   also have "\<dots> = Dprin (enat (v - 1)) ?x"
-    by (rule operB_Dv0_id[OF vpos])
+    using operB_Dv0_id[OF vpos] by simp
   also have "\<dots> = ((\<lambda>a. Dpt (enat (v - 1)) a) ^^ (Suc i + 1)) 0\<^sub>B"
     by simp
   finally show ?case .
@@ -25009,10 +25131,15 @@ proof -
   have vu: "enat u \<le> enat (v - 1)" using uv by simp
   have bne: "Dpt (enat v) 0\<^sub>B \<noteq> Trm []" by simp
   have "operB (Trm [DB (enat u) (Dpt (enat v) 0\<^sub>B)]) (numBT n)
-          = Dprin (enat u) (xseq (Dpt (enat v) 0\<^sub>B) (enat (v - 1)) (numNat (numBT n)))"
+          = Dprin (enat u)
+              (operB (Dpt (enat v) 0\<^sub>B)
+                (xseq (Dpt (enat v) 0\<^sub>B) (enat (v - 1)) (numNat (numBT n))))"
     by (rule operB_kind1_unfold[OF db vu bne])
-  also have "\<dots> = Dprin (enat u) (xseq (Dpt (enat v) 0\<^sub>B) (enat (v - 1)) n)"
+  also have "\<dots> = Dprin (enat u)
+              (operB (Dpt (enat v) 0\<^sub>B) (xseq (Dpt (enat v) 0\<^sub>B) (enat (v - 1)) n))"
     by (simp add: numNat_numBT)
+  also have "\<dots> = Dprin (enat u) (xseq (Dpt (enat v) 0\<^sub>B) (enat (v - 1)) n)"
+    using operB_Dv0_id[OF vpos] by simp
   also have "\<dots> = Dprin (enat u) (((\<lambda>a. Dpt (enat (v - 1)) a) ^^ (n + 1)) 0\<^sub>B)"
     using xseq_Dv0_tower[OF vpos] by simp
   finally show ?thesis .
@@ -25368,6 +25495,30 @@ next
        for x1 x2 u'
     by (simp add: TBv_def)
 next
+  \<comment> \<open>(4) inner \<open>operB c (xseq \<dots>)\<close> guard: same vacuity as (2)\<close>
+  show "xb = Trm []"
+    if "Trm [DB w c] = Trm [DB x1 x2]" "x2 \<noteq> Trm []" "x1 \<le> enat u'"
+       "domB x2 = TBv (enat u')"
+       "\<not> domB_operB_xseq_dom
+            (Inr (Inl (x2, xseq x2 (enat (tbvIdx (TBv (enat u')))) (numNat z))))"
+       "xb \<in> TBv (enat u')" for x1 x2 u' xb
+  proof -
+    have x2c: "x2 = c" and x1w: "x1 = w" using that(1) by simp_all
+    have "TBv (enat m) = TBv (enat u')" using dc that(4) x2c by simp
+    hence "m = u'" by (auto dest: TBv_enat_inj)
+    hence "w \<le> enat m" using that(3) x1w by simp
+    thus ?thesis using mw by simp
+  qed
+next
+  \<comment> \<open>(5) \<open>0 \<in> T\<^bsub>u'\<^esub>\<close> for the inner call\<close>
+  show "Trm [] \<in> TBv (enat u')"
+    if "Trm [DB w c] = Trm [DB x1 x2]" "x2 \<noteq> Trm []" "x1 \<le> enat u'"
+       "domB x2 = TBv (enat u')"
+       "\<not> domB_operB_xseq_dom
+            (Inr (Inl (x2, xseq x2 (enat (tbvIdx (TBv (enat u')))) (numNat z))))"
+       for x1 x2 u'
+    by (simp add: TBv_def)
+next
   \<comment> \<open>(6) \<open>else\<close>-guard: \<open>\<not> dom(operB c z)\<close> contradicts @{thm [source] domc}\<close>
   show "xb = Trm []"
     if "Trm [DB w c] = Trm [DB x1 x2]" "x2 \<noteq> Trm []"
@@ -25429,16 +25580,16 @@ proof -
           = (let dbb = domB c in
              if dbb = {Trm []} then multBT (Dprin w (operB c (Trm []))) (numNat z + 1)
              else if (\<exists>u. w \<le> enat u \<and> dbb = TBv (enat u))
-                  then Dprin w (xseq c (enat (tbvIdx dbb)) (numNat z))
+                  then Dprin w (operB c (xseq c (enat (tbvIdx dbb)) (numNat z)))
              else Dprin w (operB c z))"
     using operB.psimps[OF dom] cne by simp
   also have "\<dots> = (if domB c = {Trm []} then multBT (Dprin w (operB c (Trm []))) (numNat z + 1)
                    else if (\<exists>u. w \<le> enat u \<and> domB c = TBv (enat u))
-                        then Dprin w (xseq c (enat (tbvIdx (domB c))) (numNat z))
+                        then Dprin w (operB c (xseq c (enat (tbvIdx (domB c))) (numNat z)))
                    else Dprin w (operB c z))"
     by (simp add: Let_def)
   also have "\<dots> = (if (\<exists>u. w \<le> enat u \<and> domB c = TBv (enat u))
-                   then Dprin w (xseq c (enat (tbvIdx (domB c))) (numNat z))
+                   then Dprin w (operB c (xseq c (enat (tbvIdx (domB c))) (numNat z)))
                    else Dprin w (operB c z))"
     by (rule if_not_P[OF nz])
   also have "\<dots> = Dprin w (operB c z)"
@@ -25780,7 +25931,7 @@ lemma xseq_body_tower_flat:
     and db: "domB body = TBv (enat (v - 1))"
     and scb: "scb_decomp body s\<^sub>0 (flatBT (Dpt (enat v) 0\<^sub>B)) b\<^sub>0"
   shows "flatBT (xseq body (enat (v - 1)) i)
-           = concat (replicate i (s\<^sub>0 @ [Dsym (enat (v - 1))]))
+           = concat (replicate i ([Dsym (enat (v - 1))] @ s\<^sub>0))
              @ [Dsym (enat (v - 1))] @ [Zsym]
              @ concat (replicate i b\<^sub>0)"
 proof (induction i)
@@ -25793,34 +25944,36 @@ next
   let ?m = "enat (v - 1)"
   let ?cp = "DB (enat v) 0\<^sub>B"
   let ?xj = "xseq body ?m j"
-  let ?z = "Dprin ?m ?xj"
-  \<comment> \<open>recursion step\<close>
+  \<comment> \<open>recursion step (corrected \<open>([].4)(ii)\<close>): \<open>x\<^bsub>j+1\<^esub> = D\<^bsub>v-1\<^esub> body[x\<^sub>j]\<close>\<close>
   have domStep: "domB_operB_xseq_dom (Inr (Inr (body, ?m, Suc j)))"
     by (rule xseq_dom_TBv_body[OF db])
-  have step: "xseq body ?m (Suc j) = operB body ?z"
+  have step: "xseq body ?m (Suc j) = Dprin ?m (operB body ?xj)"
     using xseq.psimps[OF domStep] by simp
   \<comment> \<open>flat transport over the body, marked principal \<open>D\<^sub>v 0\<close>\<close>
   have dcp: "scb_decomp body s\<^sub>0 (flatBT (Trm [?cp])) b\<^sub>0" using scb by simp
   have domcp: "domB (Trm [?cp]) = TBv (enat (v - 1))" by (rule domB_Dw0[OF vpos])
   have dfreecp: "dfree_BP ?cp" by simp
-  have domcpz: "domB_operB_xseq_dom (Inr (Inl (Trm [?cp], ?z)))"
+  have domcpz: "domB_operB_xseq_dom (Inr (Inl (Trm [?cp], ?xj)))"
     by (rule operB_dom_Dv0)
-  have imgcp: "operB (Trm [?cp]) ?z = ?z" by (rule operB_Dv0_id[OF vpos])
-  have oprp: "operB (Trm [?cp]) ?z = Trm [DB ?m ?xj]" using imgcp by simp
-  have transp: "flatBT (operB body ?z)
-                  = s\<^sub>0 @ flatBT (operB (Trm [?cp]) ?z) @ b\<^sub>0"
+  have imgcp: "operB (Trm [?cp]) ?xj = ?xj" by (rule operB_Dv0_id[OF vpos])
+  obtain rp where xjps: "?xj = Trm [rp]"
+    using xseq_single_TBv[OF db, of ?m j] by auto
+  have oprp: "operB (Trm [?cp]) ?xj = Trm [rp]" using imgcp xjps by simp
+  have transp: "flatBT (operB body ?xj)
+                  = s\<^sub>0 @ flatBT (operB (Trm [?cp]) ?xj) @ b\<^sub>0"
     by (rule operB_TBv_body_spine[OF dcp domcp dfreecp db domcpz oprp])
-  have flatstep: "flatBT (xseq body ?m (Suc j)) = s\<^sub>0 @ (Dsym ?m # flatBT ?xj) @ b\<^sub>0"
+  have flatstep: "flatBT (xseq body ?m (Suc j)) = Dsym ?m # (s\<^sub>0 @ flatBT ?xj @ b\<^sub>0)"
   proof -
-    have "flatBT (xseq body ?m (Suc j)) = s\<^sub>0 @ flatBT (operB (Trm [?cp]) ?z) @ b\<^sub>0"
-      using step transp by simp
-    also have "\<dots> = s\<^sub>0 @ flatBT ?z @ b\<^sub>0" using imgcp by simp
-    also have "\<dots> = s\<^sub>0 @ (Dsym ?m # flatBT ?xj) @ b\<^sub>0" by simp
+    have "flatBT (xseq body ?m (Suc j)) = Dsym ?m # flatBT (operB body ?xj)"
+      using step by simp
+    also have "\<dots> = Dsym ?m # (s\<^sub>0 @ flatBT (operB (Trm [?cp]) ?xj) @ b\<^sub>0)"
+      using transp by simp
+    also have "\<dots> = Dsym ?m # (s\<^sub>0 @ flatBT ?xj @ b\<^sub>0)" using imgcp by simp
     finally show ?thesis .
   qed
   \<comment> \<open>fold in the IH\<close>
-  have headfold: "(s\<^sub>0 @ [Dsym ?m]) @ concat (replicate j (s\<^sub>0 @ [Dsym ?m]))
-                    = concat (replicate (Suc j) (s\<^sub>0 @ [Dsym ?m]))"
+  have headfold: "([Dsym ?m] @ s\<^sub>0) @ concat (replicate j ([Dsym ?m] @ s\<^sub>0))
+                    = concat (replicate (Suc j) ([Dsym ?m] @ s\<^sub>0))"
     by simp
   have tailfold: "concat (replicate j b\<^sub>0) @ b\<^sub>0 = concat (replicate (Suc j) b\<^sub>0)"
   proof -
@@ -25829,15 +25982,15 @@ next
     thus ?thesis by simp
   qed
   have "flatBT (xseq body ?m (Suc j))
-          = s\<^sub>0 @ (Dsym ?m #
-              (concat (replicate j (s\<^sub>0 @ [Dsym ?m])) @ [Dsym ?m] @ [Zsym]
-               @ concat (replicate j b\<^sub>0))) @ b\<^sub>0"
+          = Dsym ?m # (s\<^sub>0 @
+              (concat (replicate j ([Dsym ?m] @ s\<^sub>0)) @ [Dsym ?m] @ [Zsym]
+               @ concat (replicate j b\<^sub>0)) @ b\<^sub>0)"
     using flatstep Suc.IH by simp
-  also have "\<dots> = (s\<^sub>0 @ [Dsym ?m]) @ concat (replicate j (s\<^sub>0 @ [Dsym ?m]))
+  also have "\<dots> = ([Dsym ?m] @ s\<^sub>0) @ concat (replicate j ([Dsym ?m] @ s\<^sub>0))
                   @ [Dsym ?m] @ [Zsym]
                   @ (concat (replicate j b\<^sub>0) @ b\<^sub>0)"
     by simp
-  also have "\<dots> = concat (replicate (Suc j) (s\<^sub>0 @ [Dsym ?m]))
+  also have "\<dots> = concat (replicate (Suc j) ([Dsym ?m] @ s\<^sub>0))
                   @ [Dsym ?m] @ [Zsym]
                   @ concat (replicate (Suc j) b\<^sub>0)"
     using headfold tailfold by simp
@@ -25877,16 +26030,44 @@ text \<open>\<open>operB (D\<^sub>u body) (numBT n) = D\<^sub>u (xseq body (v-1)
 lemma operB_Du_body_kind1_eval:
   assumes uv: "u < v" and db: "domB body = TBv (enat (v - 1))" and bne: "body \<noteq> Trm []"
   shows "operB (Trm [DB (enat u) body]) (numBT n)
-           = Dprin (enat u) (xseq body (enat (v - 1)) n)"
+           = Dprin (enat u) (operB body (xseq body (enat (v - 1)) n))"
 proof -
   have vu: "enat u \<le> enat (v - 1)" using uv by simp
   have "operB (Trm [DB (enat u) body]) (numBT n)
-          = Dprin (enat u) (xseq body (enat (v - 1)) (numNat (numBT n)))"
+          = Dprin (enat u) (operB body (xseq body (enat (v - 1)) (numNat (numBT n))))"
     by (rule operB_kind1_unfold[OF db vu bne])
-  also have "\<dots> = Dprin (enat u) (xseq body (enat (v - 1)) n)"
+  also have "\<dots> = Dprin (enat u) (operB body (xseq body (enat (v - 1)) n))"
     by (simp add: numNat_numBT)
   finally show ?thesis .
 qed
+
+text \<open>List identity for the \<open>([].4)(ii)\<close> read-back: pulling a prefix \<open>xs\<close>
+  through an \<open>n\<close>-fold \<open>(ys xs)\<close> repetition turns it into an \<open>n\<close>-fold
+  \<open>(xs ys)\<close> repetition followed by \<open>xs\<close>.\<close>
+
+lemma concat_replicate_shift:
+  "xs @ concat (replicate n (ys @ xs)) = concat (replicate n (xs @ ys)) @ xs"
+proof (induction n)
+  case 0
+  show ?case by simp
+next
+  case (Suc n)
+  have "xs @ concat (replicate (Suc n) (ys @ xs))
+          = (xs @ ys) @ (xs @ concat (replicate n (ys @ xs)))"
+    by simp
+  also have "\<dots> = (xs @ ys) @ (concat (replicate n (xs @ ys)) @ xs)"
+    using Suc.IH by simp
+  also have "\<dots> = concat (replicate (Suc n) (xs @ ys)) @ xs"
+    by simp
+  finally show ?case .
+qed
+
+text \<open>List helper: a power of @{term xs} commutes with @{term xs} under append
+  (\<open>(xs\<^bsup>n\<^esup>) @ xs = xs @ (xs\<^bsup>n\<^esup>)\<close>), used to fold the funpow flat recurrence below.\<close>
+
+lemma concat_replicate_append_comm:
+  "concat (replicate n xs) @ xs = xs @ concat (replicate n xs)"
+  by (induction n) auto
 
 text \<open>命題（scb分解と基本列の関係） (§7.2), conjunct (2), GENERAL case (corrected
   A24).  The marked principal is \<open>c\<^sub>2 = D\<^sub>u(body)\<close> whose body has \<open>flat(body) =
@@ -25910,19 +26091,20 @@ lemma m_7_2_scb_fseq_kind1_general:
   shows "v > u \<and>
          flatBT (operB t (numBT n)) =
            s\<^sub>1 @ (Dsym (enat u)
-             # concat (replicate n (s\<^sub>0 @ [Dsym (enat (v - 1))]))
-             @ [Dsym (enat (v - 1))]
+             # concat (replicate (n + 1) (s\<^sub>0 @ [Dsym (enat (v - 1))]))
              @ [Zsym]
-             @ concat (replicate n b\<^sub>0))
+             @ concat (replicate (n + 1) b\<^sub>0))
            @ b\<^sub>1"
 proof -
   let ?cp = "DB (enat u) body"
+  let ?D = "Dsym (enat (v - 1))"
   let ?xn = "xseq body (enat (v - 1)) n"
-  let ?RHS = "Dprin (enat u) ?xn"
+  let ?core = "operB body ?xn"
+  let ?RHS = "Dprin (enat u) ?core"
+  have vpos: "0 < v" using uv by simp
   \<comment> \<open>scb-decomp of \<open>t\<close> with marked principal \<open>?cp\<close>\<close>
   have dcp: "scb_decomp t s\<^sub>1 (flatBT (Trm [?cp])) b\<^sub>1"
     using k1 by (simp add: scb_kind1_def)
-  \<comment> \<open>NatSet + dfree + operB-domain + value of the marked principal\<close>
   have domcp: "domB (Trm [?cp]) = NatSet"
     by (rule domB_Du_body_NatSet[OF uv dbbody bodyne])
   have dfbody: "dfree_BT body" using bodyT by (simp add: T_B_def)
@@ -25932,40 +26114,84 @@ proof -
     by (rule operB_dom_kind1[OF dbbody vu bodyne])
   have opercp: "operB (Trm [?cp]) (numBT n) = ?RHS"
     by (rule operB_Du_body_kind1_eval[OF uv dbbody bodyne])
-  have oprp: "operB (Trm [?cp]) (numBT n) = Trm [DB (enat u) ?xn]"
-    using opercp by simp
-  \<comment> \<open>spine transport: read \<open>flat (operB t (numBT n))\<close> off the marked principal\<close>
-  have flatid: "flatBT (operB t (numBT n)) = s\<^sub>1 @ flatBT (operB (Trm [?cp]) (numBT n)) @ b\<^sub>1"
+  obtain qs where coreqs: "?core = Trm qs" by (cases "?core")
+  have oprp: "operB (Trm [?cp]) (numBT n) = Trm [DB (enat u) (Trm qs)]"
+    using opercp coreqs by simp
+  \<comment> \<open>OUTER spine transport (NatSet marked principal)\<close>
+  have flatid: "flatBT (operB t (numBT n))
+                  = s\<^sub>1 @ flatBT (operB (Trm [?cp]) (numBT n)) @ b\<^sub>1"
     by (rule operB_scb_spine[OF dcp domcp dfreecp domcpz oprp])
   have flatid2: "flatBT (operB t (numBT n)) = s\<^sub>1 @ flatBT ?RHS @ b\<^sub>1"
     using flatid opercp by simp
-  \<comment> \<open>read-back of \<open>flat ?RHS = D\<^sub>u (s\<^sub>0 D\<^bsub>v-1\<^esub>)\<^bsup>n\<^esup> D\<^bsub>v-1\<^esub> 0 b\<^sub>0\<^bsup>n\<^esup>\<close>\<close>
-  have vpos: "0 < v" using uv by simp
+  \<comment> \<open>INNER: the corrected \<open>([].4)(ii)\<close> value is \<open>D\<^sub>u body[x\<^sub>n]\<close>; transport
+     \<open>flat (body[x\<^sub>n])\<close> over the body's own scb-spine (marked leaf \<open>D\<^sub>v 0\<close>,
+     whose \<open>operB\<close>-image is the identity)\<close>
+  let ?cp0 = "DB (enat v) 0\<^sub>B"
+  have dcp0: "scb_decomp body s\<^sub>0 (flatBT (Trm [?cp0])) b\<^sub>0" using innerscb by simp
+  have domcp0: "domB (Trm [?cp0]) = TBv (enat (v - 1))" by (rule domB_Dw0[OF vpos])
+  have dfreecp0: "dfree_BP ?cp0" by simp
+  have domcp0z: "domB_operB_xseq_dom (Inr (Inl (Trm [?cp0], ?xn)))"
+    by (rule operB_dom_Dv0)
+  have imgcp0: "operB (Trm [?cp0]) ?xn = ?xn" by (rule operB_Dv0_id[OF vpos])
+  obtain rp where xnps: "?xn = Trm [rp]"
+    using xseq_single_TBv[OF dbbody, of "enat (v - 1)" n] by auto
+  have oprp0: "operB (Trm [?cp0]) ?xn = Trm [rp]" using imgcp0 xnps by simp
+  have flatcore: "flatBT ?core = s\<^sub>0 @ flatBT ?xn @ b\<^sub>0"
+  proof -
+    have "flatBT ?core = s\<^sub>0 @ flatBT (operB (Trm [?cp0]) ?xn) @ b\<^sub>0"
+      by (rule operB_TBv_body_spine[OF dcp0 domcp0 dfreecp0 dbbody domcp0z oprp0])
+    thus ?thesis using imgcp0 by simp
+  qed
   have flatxn: "flatBT ?xn
-                  = concat (replicate n (s\<^sub>0 @ [Dsym (enat (v - 1))]))
-                    @ [Dsym (enat (v - 1))] @ [Zsym]
+                  = concat (replicate n ([?D] @ s\<^sub>0)) @ [?D] @ [Zsym]
                     @ concat (replicate n b\<^sub>0)"
     by (rule xseq_body_tower_flat[OF vpos dbbody innerscb])
-  have flatRHS: "flatBT ?RHS
-                   = Dsym (enat u)
-                     # concat (replicate n (s\<^sub>0 @ [Dsym (enat (v - 1))]))
-                     @ [Dsym (enat (v - 1))] @ [Zsym]
-                     @ concat (replicate n b\<^sub>0)"
+  \<comment> \<open>read-back: the prefix \<open>s\<^sub>0\<close> shifts through the tower, producing exactly
+     \<open>n+1\<close> copies of \<open>(s\<^sub>0 D\<^bsub>v-1\<^esub>)\<close> and \<open>n+1\<close> copies of \<open>b\<^sub>0\<close>
+     (the article's literal \<open>n+1\<close> form; the A24 \<open>n\<close>-form was an artefact of the
+     mis-transcribed \<open>([].4)(ii)\<close>)\<close>
+  have shift: "s\<^sub>0 @ concat (replicate n ([?D] @ s\<^sub>0))
+                 = concat (replicate n (s\<^sub>0 @ [?D])) @ s\<^sub>0"
+    by (rule concat_replicate_shift)
+  have tailfold: "concat (replicate n b\<^sub>0) @ b\<^sub>0 = concat (replicate (n + 1) b\<^sub>0)"
   proof -
-    have "flatBT ?RHS = Dsym (enat u) # flatBT ?xn" by simp
-    also have "\<dots> = Dsym (enat u)
-                      # (concat (replicate n (s\<^sub>0 @ [Dsym (enat (v - 1))]))
-                         @ [Dsym (enat (v - 1))] @ [Zsym]
-                         @ concat (replicate n b\<^sub>0))"
-      using flatxn by simp
-    finally show ?thesis by simp
+    have "replicate (n + 1) b\<^sub>0 = replicate n b\<^sub>0 @ [b\<^sub>0]"
+      by (simp add: replicate_append_same)
+    thus ?thesis by simp
   qed
+  have headfold: "concat (replicate n (s\<^sub>0 @ [?D])) @ (s\<^sub>0 @ [?D])
+                    = concat (replicate (n + 1) (s\<^sub>0 @ [?D]))"
+  proof -
+    have "replicate (n + 1) (s\<^sub>0 @ [?D]) = replicate n (s\<^sub>0 @ [?D]) @ [s\<^sub>0 @ [?D]]"
+      by (simp add: replicate_append_same)
+    thus ?thesis by simp
+  qed
+  have flatcore2: "flatBT ?core
+                     = concat (replicate (n + 1) (s\<^sub>0 @ [?D])) @ [Zsym]
+                       @ concat (replicate (n + 1) b\<^sub>0)"
+  proof -
+    have "flatBT ?core
+            = (s\<^sub>0 @ concat (replicate n ([?D] @ s\<^sub>0)))
+              @ [?D] @ [Zsym] @ (concat (replicate n b\<^sub>0) @ b\<^sub>0)"
+      using flatcore flatxn by simp
+    also have "\<dots> = (concat (replicate n (s\<^sub>0 @ [?D])) @ s\<^sub>0)
+              @ [?D] @ [Zsym] @ concat (replicate (n + 1) b\<^sub>0)"
+      using shift tailfold by simp
+    also have "\<dots> = (concat (replicate n (s\<^sub>0 @ [?D])) @ (s\<^sub>0 @ [?D]))
+              @ [Zsym] @ concat (replicate (n + 1) b\<^sub>0)"
+      by simp
+    also have "\<dots> = concat (replicate (n + 1) (s\<^sub>0 @ [?D])) @ [Zsym]
+                    @ concat (replicate (n + 1) b\<^sub>0)"
+      using headfold by simp
+    finally show ?thesis .
+  qed
+  have flatRHS: "flatBT ?RHS = Dsym (enat u) # flatBT ?core" by simp
   have "flatBT (operB t (numBT n))
           = s\<^sub>1 @ (Dsym (enat u)
-             # concat (replicate n (s\<^sub>0 @ [Dsym (enat (v - 1))]))
-             @ [Dsym (enat (v - 1))] @ [Zsym]
-             @ concat (replicate n b\<^sub>0)) @ b\<^sub>1"
-    using flatid2 flatRHS by simp
+             # concat (replicate (n + 1) (s\<^sub>0 @ [?D]))
+             @ [Zsym]
+             @ concat (replicate (n + 1) b\<^sub>0)) @ b\<^sub>1"
+    using flatid2 flatRHS flatcore2 by simp
   thus ?thesis using uv by simp
 qed
 
@@ -27824,6 +28050,27 @@ proof (induction a arbitrary: z rule: measure_induct_rule[where f=size])
          for x1 x2 u
       by (simp add: TBv_def)
   next
+    \<comment> \<open>(4) inner \<open>operB b (xseq \<dots>)\<close> guard: \<open>\<not> dom\<close> is false by the IH on \<open>x2\<close>\<close>
+    show "xb = Trm []"
+      if "a = Trm [DB x1 x2]" "x2 \<noteq> Trm []" "x1 \<le> enat u"
+         "domB x2 = TBv (enat u)"
+         "\<not> domB_operB_xseq_dom
+              (Inr (Inl (x2, xseq x2 (enat (tbvIdx (TBv (enat u)))) (numNat z))))"
+         "xb \<in> TBv (enat u)" for x1 x2 u xb
+    proof -
+      have "size x2 < size a" using that(1) by simp
+      from less.IH[OF this] that(5) show ?thesis by simp
+    qed
+  next
+    \<comment> \<open>(5) \<open>0 \<in> T\<^sub>u\<close> for the inner call\<close>
+    show "Trm [] \<in> TBv (enat u)"
+      if "a = Trm [DB x1 x2]" "x2 \<noteq> Trm []" "x1 \<le> enat u"
+         "domB x2 = TBv (enat u)"
+         "\<not> domB_operB_xseq_dom
+              (Inr (Inl (x2, xseq x2 (enat (tbvIdx (TBv (enat u)))) (numNat z))))"
+         for x1 x2 u
+      by (simp add: TBv_def)
+  next
     show "xb = Trm []"
       if "a = Trm [DB x1 x2]" "x2 \<noteq> Trm []"
          "\<forall>u. x1 \<le> enat u \<longrightarrow> domB x2 \<noteq> TBv (enat u)"
@@ -27875,7 +28122,7 @@ next
       if "Suc i = Suc nat" for nat
       using Suc.IH that by simp
   next
-    show "domB_operB_xseq_dom (Inr (Inl (b, Dpt u (xseq b u nat))))"
+    show "domB_operB_xseq_dom (Inr (Inl (b, xseq b u nat)))"
       if "Suc i = Suc nat" for nat
       by (rule b1x_operB_dom_all)
   qed
@@ -27896,7 +28143,7 @@ lemma b1x_operB_unfold:
              (let db = domB b in
               if db = {Trm []} then multBT (Dprin v (operB b (Trm []))) (numNat z + 1)
               else if (\<exists>u. v \<le> enat u \<and> db = TBv (enat u))
-                   then Dprin v (xseq b (enat (tbvIdx db)) (numNat z))
+                   then Dprin v (operB b (xseq b (enat (tbvIdx db)) (numNat z)))
               else Dprin v (operB b z)))
       | (p # q # rest) \<Rightarrow>
           addBT (Trm (butlast (p # q # rest))) (operB (Trm [last (p # q # rest)]) z)))"
@@ -27905,7 +28152,7 @@ lemma b1x_operB_unfold:
 lemma b1x_xseq_0: "xseq b u 0 = Trm [DB u (Trm [])]"
   by (subst xseq.psimps[OF b1x_xseq_dom_all]) simp
 
-lemma b1x_xseq_Suc: "xseq b u (Suc j) = operB b (Trm [DB u (xseq b u j)])"
+lemma b1x_xseq_Suc: "xseq b u (Suc j) = Trm [DB u (operB b (xseq b u j))]"
   by (subst xseq.psimps[OF b1x_xseq_dom_all]) simp
 
 text \<open>Branch-shape lemmas (one per arm of the \<open>operB\<close> recursion).\<close>
@@ -28186,21 +28433,21 @@ proof (induction a arbitrary: z rule: measure_induct_rule[where f=size])
             case True
             then obtain w where dbw: "domB b = TBv (enat w)" and vw: "v \<le> enat w"
               by blast
-            have xlt: "lessBT (xseq b (enat w) i) b" for i
+            \<comment> \<open>every tower entry is a \<open>D\<^sub>w\<dash>\<close>headed term, hence lies in \<open>domB b = T\<^sub>w\<close>\<close>
+            have xin: "xseq b (enat w) i \<in> domB b" for i
             proof (cases i)
               case 0
-              thus ?thesis using b1x_xseq_0 b1x_Dw0_lt[OF otb dbw] by simp
+              thus ?thesis using b1x_xseq_0 dbw b1x_Dpt_TBv by simp
             next
               case (Suc j)
-              have "Trm [DB (enat w) (xseq b (enat w) j)] \<in> domB b"
-                using dbw b1x_Dpt_TBv by simp
-              hence "lessBT (operB b (Trm [DB (enat w) (xseq b (enat w) j)])) b"
-                by (intro less.IH[OF szb otb bne]) simp
-              thus ?thesis using Suc b1x_xseq_Suc by simp
+              thus ?thesis using b1x_xseq_Suc dbw b1x_Dpt_TBv by simp
             qed
-            have "operB a z = Trm [DB v (xseq b (enat w) (numNat z))]"
+            \<comment> \<open>so the outer body application descends: \<open>b[x\<^sub>n] < b\<close>\<close>
+            have oplt: "lessBT (operB b (xseq b (enat w) i)) b" for i
+              by (intro less.IH[OF szb otb bne]) (simp add: xin)
+            have "operB a z = Trm [DB v (operB b (xseq b (enat w) (numNat z)))]"
               using aeq operB_kind1_unfold[OF dbw vw bne] by simp
-            thus ?thesis using aeq xlt[of "numNat z"] by simp
+            thus ?thesis using aeq oplt[of "numNat z"] by simp
           next
             case nk1: False
             have opz: "operB a z = Trm [DB v (operB b z)]"
@@ -37167,23 +37414,23 @@ lemma operB_marked_scb_value_kind1:
     and k1: "scb_kind1 t s\<^sub>1 (flatBT (Dpt (enat u) body)) b\<^sub>1"
   shows "operB t (numBT n)
            = unflatBT (s\<^sub>1 @ (Dsym (enat u)
-               # concat (replicate n (s\<^sub>0 @ [Dsym (enat (v - 1))]))
-               @ [Dsym (enat (v - 1))] @ [Zsym]
-               @ concat (replicate n b\<^sub>0)) @ b\<^sub>1)"
+               # concat (replicate (n + 1) (s\<^sub>0 @ [Dsym (enat (v - 1))]))
+               @ [Zsym]
+               @ concat (replicate (n + 1) b\<^sub>0)) @ b\<^sub>1)"
 proof -
   have fe: "flatBT (operB t (numBT n))
               = s\<^sub>1 @ (Dsym (enat u)
-                  # concat (replicate n (s\<^sub>0 @ [Dsym (enat (v - 1))]))
-                  @ [Dsym (enat (v - 1))] @ [Zsym]
-                  @ concat (replicate n b\<^sub>0)) @ b\<^sub>1"
+                  # concat (replicate (n + 1) (s\<^sub>0 @ [Dsym (enat (v - 1))]))
+                  @ [Zsym]
+                  @ concat (replicate (n + 1) b\<^sub>0)) @ b\<^sub>1"
     using m_7_2_scb_fseq_kind1_general[OF tT uv bodyT dbbody bodyne innerscb k1]
     by simp
   have "operB t (numBT n) = unflatBT (flatBT (operB t (numBT n)))"
     by (simp add: unflatBT_flat)
   also have "\<dots> = unflatBT (s\<^sub>1 @ (Dsym (enat u)
-                  # concat (replicate n (s\<^sub>0 @ [Dsym (enat (v - 1))]))
-                  @ [Dsym (enat (v - 1))] @ [Zsym]
-                  @ concat (replicate n b\<^sub>0)) @ b\<^sub>1)"
+                  # concat (replicate (n + 1) (s\<^sub>0 @ [Dsym (enat (v - 1))]))
+                  @ [Zsym]
+                  @ concat (replicate (n + 1) b\<^sub>0)) @ b\<^sub>1)"
     using fe by simp
   finally show ?thesis .
 qed
@@ -37211,23 +37458,23 @@ lemma m_8_5_exch_of_lhs_closed:
     and k1: "scb_kind1 (Trans M) s\<^sub>1 (flatBT (Dpt (enat u) body)) b\<^sub>1"
     and lhs: "\<And>m. 1 < m \<Longrightarrow> \<exists>j. leBT (Trans (M[m]))
                 (unflatBT (s\<^sub>1 @ (Dsym (enat u)
-                    # concat (replicate j (s\<^sub>0 @ [Dsym (enat (v - 1))]))
-                    @ [Dsym (enat (v - 1))] @ [Zsym]
-                    @ concat (replicate j b\<^sub>0)) @ b\<^sub>1))"
+                    # concat (replicate (j + 1) (s\<^sub>0 @ [Dsym (enat (v - 1))]))
+                    @ [Zsym]
+                    @ concat (replicate (j + 1) b\<^sub>0)) @ b\<^sub>1))"
     and n1: "1 < n"
   shows "\<exists>k. leBT (Trans (M[n])) (operB (Trans M) (numBT k))"
 proof -
   obtain j where lj: "leBT (Trans (M[n]))
                 (unflatBT (s\<^sub>1 @ (Dsym (enat u)
-                    # concat (replicate j (s\<^sub>0 @ [Dsym (enat (v - 1))]))
-                    @ [Dsym (enat (v - 1))] @ [Zsym]
-                    @ concat (replicate j b\<^sub>0)) @ b\<^sub>1))"
+                    # concat (replicate (j + 1) (s\<^sub>0 @ [Dsym (enat (v - 1))]))
+                    @ [Zsym]
+                    @ concat (replicate (j + 1) b\<^sub>0)) @ b\<^sub>1))"
     using lhs[OF n1] by blast
   have "operB (Trans M) (numBT j)
           = unflatBT (s\<^sub>1 @ (Dsym (enat u)
-              # concat (replicate j (s\<^sub>0 @ [Dsym (enat (v - 1))]))
-              @ [Dsym (enat (v - 1))] @ [Zsym]
-              @ concat (replicate j b\<^sub>0)) @ b\<^sub>1)"
+              # concat (replicate (j + 1) (s\<^sub>0 @ [Dsym (enat (v - 1))]))
+              @ [Zsym]
+              @ concat (replicate (j + 1) b\<^sub>0)) @ b\<^sub>1)"
     by (rule operB_marked_scb_value_kind1[OF tT uv bodyT dbbody bodyne innerscb k1])
   hence "leBT (Trans (M[n])) (operB (Trans M) (numBT j))" using lj by simp
   thus ?thesis by blast
@@ -37311,23 +37558,23 @@ lemma m_8_4_exch_of_lhs_closed:
     and k1: "scb_kind1 (Trans M) s\<^sub>1 (flatBT (Dpt (enat u) body)) b\<^sub>1"
     and lhs: "\<And>m. 1 < m \<Longrightarrow> \<exists>j. leBT (Trans (M[m]))
                 (unflatBT (s\<^sub>1 @ (Dsym (enat u)
-                    # concat (replicate j (s\<^sub>0 @ [Dsym (enat (v - 1))]))
-                    @ [Dsym (enat (v - 1))] @ [Zsym]
-                    @ concat (replicate j b\<^sub>0)) @ b\<^sub>1))"
+                    # concat (replicate (j + 1) (s\<^sub>0 @ [Dsym (enat (v - 1))]))
+                    @ [Zsym]
+                    @ concat (replicate (j + 1) b\<^sub>0)) @ b\<^sub>1))"
     and n1: "1 < n"
   shows "\<exists>k. leBT (Trans (M[n])) (operB (Trans M) (numBT k))"
 proof -
   obtain j where lj: "leBT (Trans (M[n]))
                 (unflatBT (s\<^sub>1 @ (Dsym (enat u)
-                    # concat (replicate j (s\<^sub>0 @ [Dsym (enat (v - 1))]))
-                    @ [Dsym (enat (v - 1))] @ [Zsym]
-                    @ concat (replicate j b\<^sub>0)) @ b\<^sub>1))"
+                    # concat (replicate (j + 1) (s\<^sub>0 @ [Dsym (enat (v - 1))]))
+                    @ [Zsym]
+                    @ concat (replicate (j + 1) b\<^sub>0)) @ b\<^sub>1))"
     using lhs[OF n1] by blast
   have "operB (Trans M) (numBT j)
           = unflatBT (s\<^sub>1 @ (Dsym (enat u)
-              # concat (replicate j (s\<^sub>0 @ [Dsym (enat (v - 1))]))
-              @ [Dsym (enat (v - 1))] @ [Zsym]
-              @ concat (replicate j b\<^sub>0)) @ b\<^sub>1)"
+              # concat (replicate (j + 1) (s\<^sub>0 @ [Dsym (enat (v - 1))]))
+              @ [Zsym]
+              @ concat (replicate (j + 1) b\<^sub>0)) @ b\<^sub>1)"
     by (rule operB_marked_scb_value_kind1[OF tT uv bodyT dbbody bodyne innerscb k1])
   hence "leBT (Trans (M[n])) (operB (Trans M) (numBT j))" using lj by simp
   thus ?thesis by blast
@@ -37638,57 +37885,57 @@ lemma m_8_45_lhs_of_flat_decomp:
         (lessBP cp (DB (enat (v - 1)) (Trm []))
            \<or> cp = DB (enat (v - 1)) (Trm []))
       \<and> flatBT (Trans (M[m]))
-          = (s\<^sub>1 @ Dsym (enat u) # concat (replicate j (s\<^sub>0 @ [Dsym (enat (v - 1))])))
+          = (s\<^sub>1 @ Dsym (enat u) # concat (replicate j (s\<^sub>0 @ [Dsym (enat (v - 1))])) @ s\<^sub>0)
             @ flatBP cp
-            @ (concat (replicate j b\<^sub>0) @ b\<^sub>1)"
+            @ (b\<^sub>0 @ concat (replicate j b\<^sub>0) @ b\<^sub>1)"
   shows "\<And>m. 1 < m \<Longrightarrow> \<exists>j. leBT (Trans (M[m]))
                 (unflatBT (s\<^sub>1 @ (Dsym (enat u)
-                    # concat (replicate j (s\<^sub>0 @ [Dsym (enat (v - 1))]))
-                    @ [Dsym (enat (v - 1))] @ [Zsym]
-                    @ concat (replicate j b\<^sub>0)) @ b\<^sub>1))"
+                    # concat (replicate (j + 1) (s\<^sub>0 @ [Dsym (enat (v - 1))]))
+                    @ [Zsym]
+                    @ concat (replicate (j + 1) b\<^sub>0)) @ b\<^sub>1))"
 proof -
   fix m :: nat assume m1: "1 < m"
   obtain j cp where
       cple: "lessBP cp (DB (enat (v - 1)) (Trm []))
                \<or> cp = DB (enat (v - 1)) (Trm [])"
     and flateq: "flatBT (Trans (M[m]))
-          = (s\<^sub>1 @ Dsym (enat u) # concat (replicate j (s\<^sub>0 @ [Dsym (enat (v - 1))])))
+          = (s\<^sub>1 @ Dsym (enat u) # concat (replicate j (s\<^sub>0 @ [Dsym (enat (v - 1))])) @ s\<^sub>0)
             @ flatBP cp
-            @ (concat (replicate j b\<^sub>0) @ b\<^sub>1)"
+            @ (b\<^sub>0 @ concat (replicate j b\<^sub>0) @ b\<^sub>1)"
     using flatdec[OF m1] by blast
   let ?R = "unflatBT (s\<^sub>1 @ (Dsym (enat u)
-                # concat (replicate j (s\<^sub>0 @ [Dsym (enat (v - 1))]))
-                @ [Dsym (enat (v - 1))] @ [Zsym]
-                @ concat (replicate j b\<^sub>0)) @ b\<^sub>1)"
+                # concat (replicate (j + 1) (s\<^sub>0 @ [Dsym (enat (v - 1))]))
+                @ [Zsym]
+                @ concat (replicate (j + 1) b\<^sub>0)) @ b\<^sub>1)"
   \<comment> \<open>the RHS closed value at the matching index \<open>j\<close>\<close>
   have opR: "operB (Trans M) (numBT j) = ?R"
     by (rule operB_marked_scb_value_kind1[OF tT uv bodyT dbbody bodyne innerscb k1])
   have flatop: "flatBT ?R
           = s\<^sub>1 @ (Dsym (enat u)
-              # concat (replicate j (s\<^sub>0 @ [Dsym (enat (v - 1))]))
-              @ [Dsym (enat (v - 1))] @ [Zsym]
-              @ concat (replicate j b\<^sub>0)) @ b\<^sub>1"
+              # concat (replicate (j + 1) (s\<^sub>0 @ [Dsym (enat (v - 1))]))
+              @ [Zsym]
+              @ concat (replicate (j + 1) b\<^sub>0)) @ b\<^sub>1"
   proof -
     have "flatBT (operB (Trans M) (numBT j))
             = s\<^sub>1 @ (Dsym (enat u)
-                # concat (replicate j (s\<^sub>0 @ [Dsym (enat (v - 1))]))
-                @ [Dsym (enat (v - 1))] @ [Zsym]
-                @ concat (replicate j b\<^sub>0)) @ b\<^sub>1"
+                # concat (replicate (j + 1) (s\<^sub>0 @ [Dsym (enat (v - 1))]))
+                @ [Zsym]
+                @ concat (replicate (j + 1) b\<^sub>0)) @ b\<^sub>1"
       using m_7_2_scb_fseq_kind1_general[OF tT uv bodyT dbbody bodyne innerscb k1]
       by simp
     thus ?thesis using opR by simp
   qed
   have flatR: "flatBT ?R
-          = (s\<^sub>1 @ Dsym (enat u) # concat (replicate j (s\<^sub>0 @ [Dsym (enat (v - 1))])))
+          = (s\<^sub>1 @ Dsym (enat u) # concat (replicate j (s\<^sub>0 @ [Dsym (enat (v - 1))])) @ s\<^sub>0)
             @ flatBP (DB (enat (v - 1)) (Trm []))
-            @ (concat (replicate j b\<^sub>0) @ b\<^sub>1)"
-    using flatop by simp
+            @ (b\<^sub>0 @ concat (replicate j b\<^sub>0) @ b\<^sub>1)"
+    using flatop by (simp add: concat_replicate_append_comm)
   \<comment> \<open>the tail \<open>B\<^sub>j = b\<^sub>0\<^bsup>j\<^esup> b\<^sub>1\<close> is all \<open>RP\<close>\<close>
   have b0RP: "\<forall>x \<in> set b\<^sub>0. x = RP" using innerscb by (simp add: scb_decomp_def)
   have b1RP: "\<forall>x \<in> set b\<^sub>1. x = RP"
     using k1 by (simp add: scb_kind1_def scb_decomp_def)
   have sub: "set (concat (replicate j b\<^sub>0)) \<subseteq> set b\<^sub>0" by (induction j) auto
-  have allRP: "\<forall>x \<in> set (concat (replicate j b\<^sub>0) @ b\<^sub>1). x = RP"
+  have allRP: "\<forall>x \<in> set (b\<^sub>0 @ concat (replicate j b\<^sub>0) @ b\<^sub>1). x = RP"
     using b0RP b1RP sub by auto
   \<comment> \<open>leaf-congruence: equal leaf \<open>\<Longrightarrow>\<close> equality, strict leaf \<open>\<Longrightarrow>\<close> \<open>lessBT\<close>\<close>
   have leR: "leBT (Trans (M[m])) ?R"
@@ -37707,9 +37954,9 @@ proof -
   qed
   show "\<exists>j. leBT (Trans (M[m]))
              (unflatBT (s\<^sub>1 @ (Dsym (enat u)
-                 # concat (replicate j (s\<^sub>0 @ [Dsym (enat (v - 1))]))
-                 @ [Dsym (enat (v - 1))] @ [Zsym]
-                 @ concat (replicate j b\<^sub>0)) @ b\<^sub>1))"
+                 # concat (replicate (j + 1) (s\<^sub>0 @ [Dsym (enat (v - 1))]))
+                 @ [Zsym]
+                 @ concat (replicate (j + 1) b\<^sub>0)) @ b\<^sub>1))"
     by (rule exI[of _ j], rule leR)
 qed
 
@@ -37764,14 +38011,6 @@ proof -
 qed
 
 
-text \<open>List helper: a power of @{term xs} commutes with @{term xs} under append
-  (\<open>(xs\<^bsup>n\<^esup>) @ xs = xs @ (xs\<^bsup>n\<^esup>)\<close>), used to fold the funpow flat recurrence below.\<close>
-
-lemma concat_replicate_append_comm:
-  "concat (replicate n xs) @ xs = xs @ concat (replicate n xs)"
-  by (induction n) auto
-
-
 text \<open>§8.4/§8.5 kind-1 \<open>lhs\<close>: the SCB-CONCRETE instance of @{thm [source]
   m_8_45_lhs_of_funpow_recurrence}.  Here the period context \<open>C\<close> and outer wrap \<open>OW\<close>
   are the concrete SCB string-wraps (insert a sub-term at the marked-leaf /
@@ -37793,7 +38032,7 @@ lemma m_8_45_lhs_of_funpow_recurrence_scb:
     and innerscb: "scb_decomp body s\<^sub>0 (flatBT (Dpt (enat v) 0\<^sub>B)) b\<^sub>0"
     and k1: "scb_kind1 (Trans M) s\<^sub>1 (flatBT (Dpt (enat u) body)) b\<^sub>1"
     and lhs: "Trans (M[m]) = OW ((C ^^ (m - 1)) leafL)"
-    and bot: "leBT leafL ((C ^^ k) (Dpt (enat (v - 1)) 0\<^sub>B))"
+    and bot: "leBT leafL ((C ^^ k) (C 0\<^sub>B))"
   shows "\<exists>j. leBT (Trans (M[m])) (operB (Trans M) (numBT j))"
 proof -
   \<comment> \<open>the marked-leaf scb-decomposition of \<open>body\<close> and the all-RP tails\<close>
@@ -37828,58 +38067,59 @@ proof -
     thus "flatBT (OW x) = s\<^sub>1 @ flatBP (DB (enat u) x) @ b\<^sub>1" using t' by simp
   qed
   \<comment> \<open>R2: the funpow flat recurrence\<close>
-  have R2: "\<And>j. flatBT ((C ^^ j) (Dpt (enat (v - 1)) 0\<^sub>B)) =
-        concat (replicate j (s\<^sub>0 @ [Dsym (enat (v - 1))]))
-        @ [Dsym (enat (v - 1))] @ [Zsym]
-        @ concat (replicate j b\<^sub>0)"
+  have R2: "\<And>j. flatBT ((C ^^ j) (C 0\<^sub>B)) =
+        concat (replicate (j + 1) (s\<^sub>0 @ [Dsym (enat (v - 1))]))
+        @ [Zsym]
+        @ concat (replicate (j + 1) b\<^sub>0)"
   proof -
-    fix j show "flatBT ((C ^^ j) (Dpt (enat (v - 1)) 0\<^sub>B)) =
-        concat (replicate j (s\<^sub>0 @ [Dsym (enat (v - 1))]))
-        @ [Dsym (enat (v - 1))] @ [Zsym]
-        @ concat (replicate j b\<^sub>0)"
+    fix j show "flatBT ((C ^^ j) (C 0\<^sub>B)) =
+        concat (replicate (j + 1) (s\<^sub>0 @ [Dsym (enat (v - 1))]))
+        @ [Zsym]
+        @ concat (replicate (j + 1) b\<^sub>0)"
     proof (induction j)
-      case 0 show ?case by simp
+      case 0
+      show ?case using R0c[of "0\<^sub>B"] by simp
     next
       case (Suc j)
-      have e: "(C ^^ Suc j) (Dpt (enat (v - 1)) 0\<^sub>B)
-                 = C ((C ^^ j) (Dpt (enat (v - 1)) 0\<^sub>B))" by simp
-      have "flatBT (C ((C ^^ j) (Dpt (enat (v - 1)) 0\<^sub>B)))
-              = s\<^sub>0 @ Dsym (enat (v - 1)) # flatBT ((C ^^ j) (Dpt (enat (v - 1)) 0\<^sub>B)) @ b\<^sub>0"
-        using R0c[of "(C ^^ j) (Dpt (enat (v - 1)) 0\<^sub>B)"] by simp
+      have e: "(C ^^ Suc j) (C 0\<^sub>B)
+                 = C ((C ^^ j) (C 0\<^sub>B))" by simp
+      have "flatBT (C ((C ^^ j) (C 0\<^sub>B)))
+              = s\<^sub>0 @ Dsym (enat (v - 1)) # flatBT ((C ^^ j) (C 0\<^sub>B)) @ b\<^sub>0"
+        using R0c[of "(C ^^ j) (C 0\<^sub>B)"] by simp
       also have "\<dots> = s\<^sub>0 @ Dsym (enat (v - 1)) #
-              (concat (replicate j (s\<^sub>0 @ [Dsym (enat (v - 1))]))
-               @ [Dsym (enat (v - 1))] @ [Zsym]
-               @ concat (replicate j b\<^sub>0)) @ b\<^sub>0"
+              (concat (replicate (j + 1) (s\<^sub>0 @ [Dsym (enat (v - 1))]))
+               @ [Zsym]
+               @ concat (replicate (j + 1) b\<^sub>0)) @ b\<^sub>0"
         using Suc.IH by simp
-      also have "\<dots> = concat (replicate (Suc j) (s\<^sub>0 @ [Dsym (enat (v - 1))]))
-               @ [Dsym (enat (v - 1))] @ [Zsym]
-               @ concat (replicate (Suc j) b\<^sub>0)"
+      also have "\<dots> = concat (replicate (Suc j + 1) (s\<^sub>0 @ [Dsym (enat (v - 1))]))
+               @ [Zsym]
+               @ concat (replicate (Suc j + 1) b\<^sub>0)"
         by (simp add: concat_replicate_append_comm)
       finally show ?case using e by simp
     qed
   qed
   \<comment> \<open>readback: \<open>operB\<close> as \<open>OW (C\<^bsup>j\<^esup> leafR)\<close> with \<open>leafR = D\<^bsub>v-1\<^esub> 0\<close>\<close>
-  have rhs: "\<And>j. operB (Trans M) (numBT j) = OW ((C ^^ j) (Dpt (enat (v - 1)) 0\<^sub>B))"
+  have rhs: "\<And>j. operB (Trans M) (numBT j) = OW ((C ^^ j) (C 0\<^sub>B))"
   proof -
     fix j
     have fop: "flatBT (operB (Trans M) (numBT j)) =
             s\<^sub>1 @ (Dsym (enat u)
-              # concat (replicate j (s\<^sub>0 @ [Dsym (enat (v - 1))]))
-              @ [Dsym (enat (v - 1))] @ [Zsym]
-              @ concat (replicate j b\<^sub>0)) @ b\<^sub>1"
+              # concat (replicate (j + 1) (s\<^sub>0 @ [Dsym (enat (v - 1))]))
+              @ [Zsym]
+              @ concat (replicate (j + 1) b\<^sub>0)) @ b\<^sub>1"
       using m_7_2_scb_fseq_kind1_general[OF tT uv bodyT dbbody bodyne innerscb k1]
       by simp
-    have "flatBT (OW ((C ^^ j) (Dpt (enat (v - 1)) 0\<^sub>B)))
-            = s\<^sub>1 @ Dsym (enat u) # flatBT ((C ^^ j) (Dpt (enat (v - 1)) 0\<^sub>B)) @ b\<^sub>1"
-      using R0o[of "(C ^^ j) (Dpt (enat (v - 1)) 0\<^sub>B)"] by simp
+    have "flatBT (OW ((C ^^ j) (C 0\<^sub>B)))
+            = s\<^sub>1 @ Dsym (enat u) # flatBT ((C ^^ j) (C 0\<^sub>B)) @ b\<^sub>1"
+      using R0o[of "(C ^^ j) (C 0\<^sub>B)"] by simp
     also have "\<dots> = s\<^sub>1 @ (Dsym (enat u)
-              # concat (replicate j (s\<^sub>0 @ [Dsym (enat (v - 1))]))
-              @ [Dsym (enat (v - 1))] @ [Zsym]
-              @ concat (replicate j b\<^sub>0)) @ b\<^sub>1"
+              # concat (replicate (j + 1) (s\<^sub>0 @ [Dsym (enat (v - 1))]))
+              @ [Zsym]
+              @ concat (replicate (j + 1) b\<^sub>0)) @ b\<^sub>1"
       using R2[of j] by simp
-    finally have "flatBT (OW ((C ^^ j) (Dpt (enat (v - 1)) 0\<^sub>B)))
+    finally have "flatBT (OW ((C ^^ j) (C 0\<^sub>B)))
                     = flatBT (operB (Trans M) (numBT j))" using fop by simp
-    thus "operB (Trans M) (numBT j) = OW ((C ^^ j) (Dpt (enat (v - 1)) 0\<^sub>B))"
+    thus "operB (Trans M) (numBT j) = OW ((C ^^ j) (C 0\<^sub>B))"
       by (metis m_7_flatBT_inj)
   qed
   \<comment> \<open>monotonicities via @{thm [source] scbext_lessBT}\<close>
@@ -37913,7 +38153,7 @@ proof -
   qed
   show ?thesis
     by (rule m_8_45_lhs_of_funpow_recurrence
-          [where C = C and OW = OW and leafR = "Dpt (enat (v - 1)) 0\<^sub>B"
+          [where C = C and OW = OW and leafR = "C 0\<^sub>B"
              and leafL = "\<lambda>_. leafL" and M = M and m = m and k = k,
            OF Cmono OWmono rhs lhs bot])
 qed
@@ -38028,7 +38268,7 @@ lemma m_8_45_lhs_of_onestep_scb:
     and k1: "scb_kind1 (Trans M) s\<^sub>1 (flatBT (Dpt (enat u) body)) b\<^sub>1"
     and base: "Trans (M[1]) = OW leafL"
     and step: "\<And>p b. 1 \<le> p \<Longrightarrow> Trans (M[p]) = OW b \<Longrightarrow> Trans (M[Suc p]) = OW (C b)"
-    and bot: "leBT leafL ((C ^^ k) (Dpt (enat (v - 1)) 0\<^sub>B))"
+    and bot: "leBT leafL ((C ^^ k) (C 0\<^sub>B))"
     and m1: "1 \<le> m"
   shows "\<exists>j. leBT (Trans (M[m])) (operB (Trans M) (numBT j))"
 proof -
@@ -38072,7 +38312,7 @@ lemma m_8_45_lhs_of_step2_scb:
     and kpos: "1 \<le> k"
     and base2: "Trans (M[2]) = OW ((C ^^ k) leafL\<^sub>0)"
     and step2: "\<And>p b. 2 \<le> p \<Longrightarrow> Trans (M[p]) = OW b \<Longrightarrow> Trans (M[Suc p]) = OW (C b)"
-    and botU: "leBT leafL\<^sub>0 (C (Dpt (enat (v - 1)) 0\<^sub>B))"
+    and botU: "leBT leafL\<^sub>0 (C (C 0\<^sub>B))"
     and m2: "2 \<le> m"
   shows "\<exists>j. leBT (Trans (M[m])) (operB (Trans M) (numBT j))"
 proof -
@@ -38126,10 +38366,10 @@ proof -
     also have "\<dots> = (C ^^ (k - 1)) (C X)" by (simp add: funpow_swap1)
     finally show ?thesis .
   qed
-  have boteq: "leBT leafL ((C ^^ k) (Dpt (enat (v - 1)) 0\<^sub>B))"
+  have boteq: "leBT leafL ((C ^^ k) (C 0\<^sub>B))"
   proof -
     have "leBT ((C ^^ (k - 1)) leafL\<^sub>0)
-               ((C ^^ (k - 1)) (C (Dpt (enat (v - 1)) 0\<^sub>B)))"
+               ((C ^^ (k - 1)) (C (C 0\<^sub>B)))"
       by (rule leBT_funpow_mono[OF Cmono botU])
     thus ?thesis using lift by (simp add: leafL_def)
   qed
@@ -38173,7 +38413,7 @@ lemma m_8_5_TransCondV_descend_of_step2_residuals:
     and kpos: "1 \<le> k"
     and base2: "Trans (M[2]) = OW ((C ^^ k) leafL\<^sub>0)"
     and step2: "\<And>p b. 2 \<le> p \<Longrightarrow> Trans (M[p]) = OW b \<Longrightarrow> Trans (M[Suc p]) = OW (C b)"
-    and botU: "leBT leafL\<^sub>0 (C (Dpt (enat (v - 1)) 0\<^sub>B))"
+    and botU: "leBT leafL\<^sub>0 (C (C 0\<^sub>B))"
   shows "lessBT (Trans (M[n])) (Trans M)"
 proof -
   have exch: "1 < n \<Longrightarrow> \<exists>kk. leBT (Trans (M[n])) (operB (Trans M) (numBT kk))"
@@ -38770,17 +39010,17 @@ lemma m_8_5_botU_of_inner:
   fixes t\<^sub>2 :: BT and v :: nat and s\<^sub>0 b\<^sub>0 :: "Sym list" and C :: "BT \<Rightarrow> BT"
   assumes C_def: "C = (\<lambda>x. unflatBT (s\<^sub>0 @ Dsym (enat (v - 1)) # flatBT x @ b\<^sub>0))"
     and inner: "scb_decomp (t\<^sub>2 +\<^sub>B Dpt (enat v) 0\<^sub>B) s\<^sub>0 (flatBT (Dpt (enat v) 0\<^sub>B)) b\<^sub>0"
-  shows "leBT t\<^sub>2 (C (Dpt (enat (v - 1)) 0\<^sub>B))"
+  shows "leBT t\<^sub>2 (C (C 0\<^sub>B))"
 proof -
-  have "C (Dpt (enat (v - 1)) 0\<^sub>B)
-          = unflatBT (s\<^sub>0 @ Dsym (enat (v - 1)) # flatBT (Dpt (enat (v - 1)) 0\<^sub>B) @ b\<^sub>0)"
+  have "C (C 0\<^sub>B)
+          = unflatBT (s\<^sub>0 @ Dsym (enat (v - 1)) # flatBT (C 0\<^sub>B) @ b\<^sub>0)"
     by (simp add: C_def)
-  also have "\<dots> = t\<^sub>2 +\<^sub>B Dpt (enat (v - 1)) (Dpt (enat (v - 1)) 0\<^sub>B)"
+  also have "\<dots> = t\<^sub>2 +\<^sub>B Dpt (enat (v - 1)) (C 0\<^sub>B)"
     by (rule addBT_scb_C_eq[OF inner])
-  finally have Ceq: "C (Dpt (enat (v - 1)) 0\<^sub>B)
-                       = t\<^sub>2 +\<^sub>B Dpt (enat (v - 1)) (Dpt (enat (v - 1)) 0\<^sub>B)" .
-  have ne: "Dpt (enat (v - 1)) (Dpt (enat (v - 1)) 0\<^sub>B) \<noteq> 0\<^sub>B" by simp
-  have less: "lessBT t\<^sub>2 (t\<^sub>2 +\<^sub>B Dpt (enat (v - 1)) (Dpt (enat (v - 1)) 0\<^sub>B))"
+  finally have Ceq: "C (C 0\<^sub>B)
+                       = t\<^sub>2 +\<^sub>B Dpt (enat (v - 1)) (C 0\<^sub>B)" .
+  have ne: "Dpt (enat (v - 1)) (C 0\<^sub>B) \<noteq> 0\<^sub>B" by simp
+  have less: "lessBT t\<^sub>2 (t\<^sub>2 +\<^sub>B Dpt (enat (v - 1)) (C 0\<^sub>B))"
     by (rule lessBT_addBT_self[OF ne])
   show ?thesis unfolding Ceq using less by simp
 qed
@@ -40133,23 +40373,23 @@ lemma m_8_6_exch_of_lhs_closed:
     and k1: "scb_kind1 (Trans M) s\<^sub>1 (flatBT (Dpt (enat u) body)) b\<^sub>1"
     and lhs: "\<And>m. 1 < m \<Longrightarrow> \<exists>j. leBT (Trans (M[m]))
                 (unflatBT (s\<^sub>1 @ (Dsym (enat u)
-                    # concat (replicate j (s\<^sub>0 @ [Dsym (enat (v - 1))]))
-                    @ [Dsym (enat (v - 1))] @ [Zsym]
-                    @ concat (replicate j b\<^sub>0)) @ b\<^sub>1))"
+                    # concat (replicate (j + 1) (s\<^sub>0 @ [Dsym (enat (v - 1))]))
+                    @ [Zsym]
+                    @ concat (replicate (j + 1) b\<^sub>0)) @ b\<^sub>1))"
     and n1: "1 < n"
   shows "\<exists>k. leBT (Trans (M[n])) (operB (Trans M) (numBT k))"
 proof -
   obtain j where lj: "leBT (Trans (M[n]))
                 (unflatBT (s\<^sub>1 @ (Dsym (enat u)
-                    # concat (replicate j (s\<^sub>0 @ [Dsym (enat (v - 1))]))
-                    @ [Dsym (enat (v - 1))] @ [Zsym]
-                    @ concat (replicate j b\<^sub>0)) @ b\<^sub>1))"
+                    # concat (replicate (j + 1) (s\<^sub>0 @ [Dsym (enat (v - 1))]))
+                    @ [Zsym]
+                    @ concat (replicate (j + 1) b\<^sub>0)) @ b\<^sub>1))"
     using lhs[OF n1] by blast
   have "operB (Trans M) (numBT j)
           = unflatBT (s\<^sub>1 @ (Dsym (enat u)
-              # concat (replicate j (s\<^sub>0 @ [Dsym (enat (v - 1))]))
-              @ [Dsym (enat (v - 1))] @ [Zsym]
-              @ concat (replicate j b\<^sub>0)) @ b\<^sub>1)"
+              # concat (replicate (j + 1) (s\<^sub>0 @ [Dsym (enat (v - 1))]))
+              @ [Zsym]
+              @ concat (replicate (j + 1) b\<^sub>0)) @ b\<^sub>1)"
     by (rule operB_marked_scb_value_kind1[OF tT uv bodyT dbbody bodyne innerscb k1])
   hence "leBT (Trans (M[n])) (operB (Trans M) (numBT j))" using lj by simp
   thus ?thesis by blast
@@ -43821,7 +44061,7 @@ lemma m_8_5_TransCondV_descend_kernel:
     and k1: "scb_kind1 (Trans M) s\<^sub>1 (flatBT (Dpt (enat u) body)) b\<^sub>1"
     and kpos: "1 \<le> k"
     and base2: "Trans ((M::pairseq)[2]) = OW ((C ^^ k) leafL\<^sub>0)"
-    and botU: "leBT leafL\<^sub>0 (C (Dpt (enat (v - 1)) 0\<^sub>B))"
+    and botU: "leBT leafL\<^sub>0 (C (C 0\<^sub>B))"
     and Mrt: "M \<in> RT_PS"
     and e1pos: "entry M 1 (Lng M - 1) > 0"
     and hp1: "hasParent M 1 (Lng M - 1)"
@@ -72802,17 +73042,17 @@ proof -
     by (induct n) simp_all
   have fe: "flatBT (operB t (numBT n))
               = s\<^sub>1 @ (Dsym (enat U)
-                  # concat (replicate n ([] @ [Dsym (enat (Suc u - 1))]))
-                  @ [Dsym (enat (Suc u - 1))] @ [Zsym]
-                  @ concat (replicate n [])) @ b\<^sub>1"
+                  # concat (replicate (n + 1) ([] @ [Dsym (enat (Suc u - 1))]))
+                  @ [Zsym]
+                  @ concat (replicate (n + 1) [])) @ b\<^sub>1"
     using m_7_2_scb_fseq_kind1_general[OF tT Ult bodyT dbbody bodyne innerscb k1]
     by simp
   have "flatBT (operB t (numBT n))
           = s\<^sub>1 @ (Dsym (enat U)
-              # replicate n (Dsym (enat u)) @ [Dsym (enat u), Zsym]) @ b\<^sub>1"
+              # replicate (Suc n) (Dsym (enat u)) @ [Zsym]) @ b\<^sub>1"
     using fe by (simp add: c6gx_concat_rep_single c6gx_concat_rep_nil)
   also have "\<dots> = s\<^sub>1 @ flatBP (DB (enat U) (Dtower u (Suc n))) @ b\<^sub>1"
-    using rep by (simp add: flat_Dtower)
+    by (simp add: flat_Dtower)
   finally show ?thesis .
 qed
 

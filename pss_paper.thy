@@ -726,9 +726,12 @@ definition tbvIdx :: "BT set \<Rightarrow> nat" where
 text \<open>
   [Buc1] §3 \<open>dom(a)\<close> and \<open>a[z]\<close>, ([].0)–([].5), with the \<^bold>\<open>[Buc2]\<close>-modified
   case ([].4)(ii) (article footnote, content.md 6427): \<open>x\<^sub>0 = D\<^sub>u 0\<close>,
-  \<open>x\<^sub>i = b[D\<^sub>u x\<^bsub>i-1\<^esub>]\<close>, \<open>a[n] = D\<^sub>v x\<^sub>n\<close> (correction A23: the outer \<open>b[\<dots>]\<close>
-  of the literal footnote is a doubled application that escapes \<open>dom(b)=T\<^sub>u\<close>;
-  validated 106/106 in \<open>python/buc_ii_check.py\<close>); \<open>xseq b u\<close> computes \<open>x\<close>.
+  \<open>x\<^sub>i = D\<^sub>u b[x\<^bsub>i-1\<^esub>]\<close>, \<open>a[n] = D\<^sub>v b[x\<^sub>n]\<close> (correction A23, revised: the footnote's
+  \<open>x\<^sub>i = b[D\<^sub>u x\<^bsub>i-1\<^esub>]\<close> is a \<^emph>\<open>transposition\<close> typo for \<open>x\<^sub>i = D\<^sub>u b[x\<^bsub>i-1\<^esub>]\<close>; with that
+  repair the rule is literally Buchholz's fundamental sequence
+  \<open>\<psi>\<^sub>v(b)[n] = \<psi>\<^sub>v(b[g\<^sub>n])\<close>, \<open>g\<^sub>0 = \<Omega>\<^sub>u\<close>, \<open>g\<^bsub>n+1\<^esub> = \<psi>\<^sub>u(b[g\<^sub>n])\<close>, and the article's own
+  §7.2 (2) holds 112/112 while the earlier "drop the outer \<open>b[\<dots>]\<close>" reading
+  fails 60/60); \<open>xseq b u\<close> computes \<open>x\<close>.
 
   \<open>dom\<close> returns the actual index set (\<open>\<emptyset>\<close>, \<open>{0}\<close>, \<open>\<nat>\<close> = \<open>NatSet\<close>, or
   \<open>T\<^sub>u\<close> = \<open>TBv (enat u)\<close>).  Mutual recursion (with \<open>xseq\<close>); all calls are on
@@ -767,14 +770,14 @@ where
              (let db = domB b in
               if db = {Trm []} then multBT (Dprin v (operB b (Trm []))) (numNat z + 1)
               else if (\<exists>u. v \<le> enat u \<and> db = TBv (enat u))
-                   then Dprin v (xseq b (enat (tbvIdx db)) (numNat z))
+                   then Dprin v (operB b (xseq b (enat (tbvIdx db)) (numNat z)))
               else Dprin v (operB b z)))
       | (p # q # rest) \<Rightarrow>
           addBT (Trm (butlast (p # q # rest))) (operB (Trm [last (p # q # rest)]) z)))"
 | "xseq b u i =
      (case i of
         0 \<Rightarrow> Dprin u (Trm [])
-      | Suc j \<Rightarrow> operB b (Dprin u (xseq b u j)))"
+      | Suc j \<Rightarrow> Dprin u (operB b (xseq b u j)))"
   by pat_completeness auto
 
 text \<open>
