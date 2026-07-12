@@ -132,13 +132,22 @@ def operB(a, z):
         if db == 'ZERO':
             return multBT(Dpt(v, operB(b, ZB)), numNat(z) + 1)
         if isinstance(db, tuple) and db[0] == 'TB' and v <= db[1]:
-            return Dpt(v, xseq(b, db[1], numNat(z)))
+            return Dpt(v, operB(b, xseq(b, db[1], numNat(z))))   # a[n] = D_v b[x_n]
         return Dpt(v, operB(b, z))
     return addBT(('T', ps[:-1]), operB(('T', [ps[-1]]), z))
 
 def xseq(b, u, i):
+    """Buchholz's x-sequence for ([].4)(ii):  x_0 = D_u 0,  x_i = D_u (b[x_{i-1}]).
+
+    🚨 CORRECTED 2026-07-13.  This file previously implemented
+           x_i = b[D_u x_{i-1}],   a[n] = D_v x_n
+    which was OUR MISREADING of the article's footnote [30] (the typo there is a
+    TRANSPOSITION inside x_i, not a doubled outer b[.]).  The wrong rule made ten of our
+    proposed corrections to the article look valid when the article was in fact right
+    (A24-A28, A32-A35, A37, A38 — all retracted).  Matches pss_paper.thy and buchholz.py.
+    """
     if i == 0: return Dpt(u, ZB)
-    return operB(b, Dpt(u, xseq(b, u, i - 1)))
+    return Dpt(u, operB(b, xseq(b, u, i - 1)))
 
 def operB_iter0(t, k):
     """t[0]^k -- k-fold iterate of (lambda a. operB a (numBT 0))."""
