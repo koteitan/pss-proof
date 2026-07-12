@@ -118830,4 +118830,226 @@ text \<open>\<^bold>\<open>Status after r54.\<close>
 (* ===== end r54 wds block 2 (collapse residual + Hauptlemma + full chain) ===== *)
 
 
+(* ===================================================================== *)
+(* ===== r72-LBASE (opf_ prefix): the scb-wrapper BASE comparison   ===== *)
+(* =====   leBT (D_ub 0) (d4vx_ins s0 ub b0 0_B)  --- PROVED.       ===== *)
+(* ===================================================================== *)
+
+section \<open>r72-LBASE --- the \<open>Lbase\<close> residual of the condIII/condIV exchange,
+  discharged from \<open>domB\<close> + \<open>isOT\<close> alone\<close>
+
+text \<open>\<^bold>\<open>The claim.\<close>  If \<open>(s\<^sub>0, D\<^bsub>v\<^sub>1\<^esub>0, b\<^sub>0)\<close> is an scb-decomposition of a term \<open>t\<close>
+  with \<open>dom(t) = T\<^bsub>ub\<^esub>\<close> and \<open>t \<in> OT\<close>, then the scb wrapper does not decrease the
+  hole: \<open>D\<^bsub>ub\<^esub>0 \<le> s\<^sub>0 D\<^bsub>ub\<^esub>(0) b\<^sub>0\<close>.  This is the \<open>Lbase\<close> hypothesis threaded
+  through the whole condIII/condIV exchange tower.
+
+  \<^bold>\<open>Why both hypotheses are needed.\<close>  \<open>dom\<close> only sees the RIGHTMOST spine
+  (@{thm [source] domB_last_component}), so it pins the LAST principal's index
+  \<open>> ub\<close> (@{thm [source] domB_single_TBv_struct}: the \<open>([].4)(ii)\<close> guard would
+  otherwise fire and return \<open>\<nat>\<close>).  The wrapper's head, however, is the FIRST
+  principal --- and only the (OT3) descending-components condition \<open>descP\<close>
+  (@{thm [source] b1x_descP_last_hd}) carries the bound from the last principal
+  to the head.  Without \<open>isOT\<close> the statement is FALSE: \<open>t = (D\<^sub>0 0, D\<^sub>2 0)\<close> has
+  \<open>dom t = T\<^sub>1\<close>, \<open>s\<^sub>0 = "D\<^sub>0 0"\<close>, and \<open>D\<^sub>1 0 > s\<^sub>0 D\<^sub>1(0) = (D\<^sub>0 0, D\<^sub>1 0)\<close>.
+  (\<open>descP\<close> rejects that \<open>t\<close>.)\<close>
+
+text \<open>Head pinning: the first letter of \<open>s\<^sub>0\<close> (or its second, past a \<open>(\<close>) is the
+  head index letter of \<open>t\<close>.  Only the wrapper \<open>s\<^sub>0\<close> is involved, so two terms
+  sharing \<open>(s\<^sub>0, b\<^sub>0)\<close> have the SAME head index.\<close>
+
+lemma opf_hd_pin:
+  assumes eq: "flatBT t = s @ flatBP (DB w 0\<^sub>B) @ b"
+    and bRP: "\<forall>x \<in> set b. x = RP"
+    and sne: "s \<noteq> []"
+  shows "(\<exists>s'. s = Dsym (bpHeadV t) # s') \<or> (\<exists>s'. s = LP # Dsym (bpHeadV t) # s')"
+proof -
+  obtain xs where t: "t = Trm xs" by (cases t)
+  show ?thesis
+  proof (cases xs)
+    case Nil
+    have "[Zsym] = s @ [Dsym w, Zsym] @ b" using eq t Nil by simp
+    thus ?thesis by (cases s) auto
+  next
+    case (Cons p ps)
+    obtain u a where pua: "p = DB u a" by (cases p)
+    show ?thesis
+    proof (cases ps)
+      case Nil
+      have hv: "bpHeadV t = u" using t Cons Nil pua by simp
+      have "Dsym u # flatBT a = s @ [Dsym w, Zsym] @ b"
+        using eq t Cons Nil pua by simp
+      then obtain s' where "s = Dsym u # s'" using sne by (cases s) auto
+      thus ?thesis using hv by blast
+    next
+      case Cons2: (Cons q qs)
+      let ?J = "concat (map (\<lambda>r. CM # flatBP r) (q # qs))"
+      have hv: "bpHeadV t = u" using t Cons pua by simp
+      have ft: "flatBT t = LP # (flatBP p @ ?J) @ [RP]"
+        using t Cons Cons2 by simp
+      have "LP # (flatBP p @ ?J) @ [RP] = s @ [Dsym w, Zsym] @ b"
+        using ft eq by simp
+      then obtain s1 where s1: "s = LP # s1"
+        using sne by (cases s) auto
+      have e1: "flatBP p @ ?J @ [RP] = s1 @ [Dsym w, Zsym] @ b"
+        using ft eq s1 by simp
+      have CMin: "CM \<in> set (flatBP p @ ?J @ [RP])" by simp
+      have s1ne: "s1 \<noteq> []"
+      proof
+        assume z: "s1 = []"
+        have seteq: "set (flatBP p @ ?J @ [RP]) = set (Dsym w # Zsym # b)"
+          using e1 z by simp
+        have "CM \<in> set (Dsym w # Zsym # b)" using CMin seteq by blast
+        hence "CM \<in> set b" by auto
+        thus False using bRP by auto
+      qed
+      have "hd (flatBP p @ ?J @ [RP]) = Dsym u" using pua by simp
+      moreover have "hd (s1 @ [Dsym w, Zsym] @ b) = hd s1" using s1ne by simp
+      ultimately have "hd s1 = Dsym u" using e1 by simp
+      then obtain s' where "s1 = Dsym u # s'" using s1ne by (cases s1) auto
+      thus ?thesis using s1 hv by blast
+    qed
+  qed
+qed
+
+lemma opf_hdV_eq:
+  assumes e1: "flatBT t = s @ flatBP (DB w 0\<^sub>B) @ b"
+    and e2: "flatBT t' = s @ flatBP (DB w' 0\<^sub>B) @ b"
+    and bRP: "\<forall>x \<in> set b. x = RP"
+    and sne: "s \<noteq> []"
+  shows "bpHeadV t' = bpHeadV t"
+  using opf_hd_pin[OF e1 bRP sne] opf_hd_pin[OF e2 bRP sne] by auto
+
+text \<open>\<open>dom(t) = T\<^bsub>ub\<^esub>\<close> pins the LAST principal's index strictly above \<open>ub\<close>.\<close>
+
+lemma opf_lastIx_gt:
+  assumes tT: "t \<in> T_B" and tne: "t \<noteq> 0\<^sub>B"
+    and db: "domB t = TBv (enat ub)"
+    and lst: "last (untrm t) = DB w c"
+  shows "enat ub < w"
+proof -
+  obtain xs where t: "t = Trm xs" by (cases t)
+  have xsne: "xs \<noteq> []" using tne t by simp
+  have lastx: "last xs = DB w c" using lst t by simp
+  have dbl: "domB (Trm [DB w c]) = TBv (enat ub)"
+    using db t domB_last_component[OF xsne] lastx by simp
+  have wne: "w \<noteq> \<infinity>"
+  proof -
+    have "dfree_BT t" using tT by (simp add: T_B_def)
+    hence "dfree_BP (last xs)" using t xsne by simp
+    thus ?thesis using lastx by simp
+  qed
+  show ?thesis
+  proof (cases "c = Trm []")
+    case True
+    have wpos: "0 < the_enat w"
+    proof (rule ccontr)
+      assume "\<not> 0 < the_enat w"
+      hence "the_enat w = 0" by simp
+      hence "w = 0" using wne by (cases w) (simp_all add: zero_enat_def)
+      hence "domB (Trm [DB w c]) = {Trm []}" using True by (subst domB_unfold) simp
+      thus False using dbl zero_set_neq_TBv by auto
+    qed
+    have weq: "w = enat (the_enat w)" using wne by (cases w) simp_all
+    have "domB (Dpt (enat (the_enat w)) 0\<^sub>B) = TBv (enat (the_enat w - 1))"
+      by (rule domB_Dw0[OF wpos])
+    hence "TBv (enat (the_enat w - 1)) = TBv (enat ub)"
+      using dbl True weq by simp
+    hence ubw: "the_enat w - 1 = ub" by (auto dest: TBv_enat_inj)
+    have "ub < the_enat w" using ubw wpos by linarith
+    thus ?thesis using weq by (metis enat_ord_simps(2))
+  next
+    case False
+    note S = domB_single_TBv_struct[OF dbl False]
+    have dc: "domB c = TBv (enat ub)" using S by blast
+    have ng: "\<not> (\<exists>u'. w \<le> enat u' \<and> domB c = TBv (enat u'))" using S by blast
+    have "\<not> w \<le> enat ub" using ng dc by blast
+    thus ?thesis by simp
+  qed
+qed
+
+text \<open>Head bound: \<open>dom(t) = T\<^bsub>ub\<^esub>\<close> + \<open>t \<in> OT\<close> \<open>\<Longrightarrow>\<close> the HEAD index of \<open>t\<close> is \<open>> ub\<close>.\<close>
+
+lemma opf_head_ge_of_domB:
+  assumes tT: "t \<in> T_B" and tne: "t \<noteq> 0\<^sub>B" and OT: "isOT_BT t"
+    and db: "domB t = TBv (enat ub)"
+  shows "enat ub < bpHeadV t"
+proof -
+  obtain xs where t: "t = Trm xs" by (cases t)
+  have xsne: "xs \<noteq> []" using tne t by simp
+  obtain w c where lst: "last xs = DB w c" by (cases "last xs")
+  have wgt: "enat ub < w"
+    by (rule opf_lastIx_gt[OF tT tne db]) (simp add: t lst)
+  have descPxs: "descP xs" using OT t by simp
+  have le: "leBT (Trm [last xs]) (Trm [hd xs])"
+    by (rule b1x_descP_last_hd[OF descPxs xsne])
+  obtain a Y where hd: "hd xs = DB a Y" by (cases "hd xs")
+  have "w \<le> a" using leBT_Dpt_head_le[of w c a Y] le lst hd by simp
+  moreover have "bpHeadV t = a"
+  proof -
+    obtain ps where xs: "xs = hd xs # ps" using xsne by (cases xs) auto
+    show ?thesis using t xs hd by simp
+  qed
+  ultimately show ?thesis using wgt by simp
+qed
+
+text \<open>\<^bold>\<open>THE \<open>Lbase\<close> LEMMA.\<close>  \<open>t \<in> T\<^bsub>B\<^esub> \<inter> OT\<close>, \<open>dom t = T\<^bsub>ub\<^esub>\<close>, and \<open>(s\<^sub>0, D\<^bsub>v\<^sub>1\<^esub>0, b\<^sub>0)\<close>
+  an scb-decomposition of \<open>t\<close> \<open>\<Longrightarrow>\<close> \<open>D\<^bsub>ub\<^esub>0 \<le> d4vx_ins s\<^sub>0 ub b\<^sub>0 0\<close>.  Two cases:
+  \<open>s\<^sub>0 = []\<close> forces \<open>b\<^sub>0 = []\<close> (@{thm [source] scbimg_prefix_whole}) and the wrapper is
+  the identity (equality); otherwise the wrapper's head index is the head index
+  of \<open>t\<close> (@{thm [source] opf_hdV_eq}), which is \<open>> ub\<close>, so the first-letter
+  comparison of the dictionary order decides outright.\<close>
+
+lemma opf_Lbase_of_domB:
+  fixes t :: BT
+  assumes tT: "t \<in> T_B" and OT: "isOT_BT t"
+    and db: "domB t = TBv (enat ub)"
+    and dec: "scb_decomp t s0 (flatBT (Dpt (enat v1) 0\<^sub>B)) b0"
+  shows "leBT (Dpt (enat ub) 0\<^sub>B) (d4vx_ins s0 ub b0 0\<^sub>B)"
+proof -
+  let ?X = "d4vx_ins s0 ub b0 0\<^sub>B"
+  have fT: "flatBT t = s0 @ flatBP (DB (enat v1) 0\<^sub>B) @ b0"
+    using dec by (simp add: scb_decomp_def)
+  have b0RP: "\<forall>x \<in> set b0. x = RP" using dec by (simp add: scb_decomp_def)
+  have tne: "t \<noteq> 0\<^sub>B"
+  proof
+    assume z: "t = 0\<^sub>B"
+    have "[Zsym] = s0 @ [Dsym (enat v1), Zsym] @ b0" using fT z by simp
+    thus False by (cases s0) auto
+  qed
+  have fX: "flatBT ?X = s0 @ flatBP (DB (enat ub) 0\<^sub>B) @ b0"
+    using d4vx_ins_flat[OF fT b0RP, of ub "0\<^sub>B"] by simp
+  show ?thesis
+  proof (cases "s0 = []")
+    case True
+    have cT: "Dpt (enat v1) 0\<^sub>B \<in> T_B" by (simp add: T_B_def)
+    have "flatBT t = flatBT (Dpt (enat v1) 0\<^sub>B) @ b0" using fT True by simp
+    hence b0nil: "b0 = []" by (rule scbimg_prefix_whole[OF tT cT _ b0RP])
+    have "?X = unflatBT (flatBT (Dpt (enat ub) 0\<^sub>B))"
+      using True b0nil
+      by (simp only: d4vx_ins_def append_Nil append_Nil2)
+    also have "\<dots> = Dpt (enat ub) 0\<^sub>B" by (rule unflatBT_flat)
+    finally show ?thesis by simp
+  next
+    case False
+    have hdeq: "bpHeadV ?X = bpHeadV t" by (rule opf_hdV_eq[OF fT fX b0RP False])
+    have hgt: "enat ub < bpHeadV t" by (rule opf_head_ge_of_domB[OF tT tne OT db])
+    obtain ys where Xy: "?X = Trm ys" by (cases ?X)
+    have ysne: "ys \<noteq> []"
+    proof
+      assume "ys = []"
+      hence "[Zsym] = s0 @ [Dsym (enat ub), Zsym] @ b0" using fX Xy by simp
+      thus False by (cases s0) auto
+    qed
+    obtain p ps where yps: "ys = p # ps" using ysne by (cases ys) auto
+    obtain a Y where pa: "p = DB a Y" by (cases p)
+    have hda: "bpHeadV ?X = a" using Xy yps pa by simp
+    have ua: "enat ub < a" using hgt hdeq hda by simp
+    have "lessBP (DB (enat ub) 0\<^sub>B) (DB a Y)" using ua by simp
+    hence "lessBT (Trm [DB (enat ub) 0\<^sub>B]) (Trm (p # ps))" using pa by simp
+    thus ?thesis using Xy yps by simp
+  qed
+qed
+
+(* ===== end r72-LBASE ===== *)
+
 end
