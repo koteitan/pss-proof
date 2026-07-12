@@ -14852,11 +14852,35 @@ text \<open>The article states seven \<section>7.3/\<section>7.4 propositions fo
   \<open>RedStab = T\<^bsub>PS\<^esub>\<close> is a purely \<section>6 statement (\<open>Red (Red M) \<in> RT\<^bsub>PS\<^esub>\<close>), independent
   of \<section>7; see \<open>y3s_RedStab_of_Red2\<close> for the one-line bridge.
 
-  On \<open>RedStab\<close> we prove FOUR of the seven article propositions verbatim.  The
-  other three of the seven fall into two groups: \<open>p_7_4_Mark_nextAdm\<close> also lifts
-  (it is stated with correction A18's \<open>(M,j) \<in> Marked\<close> premise), while
-  \<open>p_7_4_Trans_nextAdm\<close> and \<open>p_7_4_Trans_Mark_Pred\<close> are \<^bold>\<open>FALSE\<close> on \<open>T\<^bsub>PS\<^esub>\<close>
-  (correction A45; witness \<open>M = (0,0)(0,1)(1,2)(1,0)\<close>, see the text below).\<close>
+  On \<open>RedStab\<close> we prove FOUR of the seven article propositions verbatim
+  (\<open>p_7_3_Trans_zeroT\<close>, \<open>p_7_3_Pred_Trans_descend\<close>, \<open>p_7_4_RightAnces_RightNodes\<close>,
+  \<open>p_7_4_RightAnces_zeroT\<close>).  Of the other three:
+
+    \<^item> \<open>p_7_4_Mark_nextAdm\<close> (in correction A18's form) lifts only with its hypotheses
+      read off the REDUCT, see \<open>y3s_7_4_Mark_nextAdm_TPS_reduct\<close>;
+
+    \<^item> \<open>p_7_4_Trans_nextAdm\<close> and \<open>p_7_4_Trans_Mark_Pred\<close> are \<^bold>\<open>FALSE\<close> as stated on
+      \<open>T\<^bsub>PS\<^esub>\<close>.  \<^bold>\<open>PROPOSED CORRECTION\<close> (new id; \<open>corrections.md\<close> currently ends at
+      A44 --- not edited from here).  Witness (vetted \<open>red_model\<close>/\<open>trans_model\<close>):
+      \<open>M = (0,0)(0,1)(1,2)(1,0) \<in> T\<^bsub>PS\<^esub>\<close>, non-reduced, with
+      \<open>Red M = (0,0)(1,1)(2,2)(2,0) \<in> RT\<^bsub>PS\<^esub>\<close>.  Take \<open>m = j\<^sub>0 = 1\<close>, \<open>j\<^sub>1 = 3\<close>.
+      Then \<open>adm M 1\<close> and \<open>(0,1) \<le>\<^sub>M (0,3)\<close>, so \<open>(M,1) \<in> T\<^bsub>PS\<^esub>\<^sup>Marked\<close> and \<open>1\<close> is the
+      UNIQUE \<open><\<^bsub>M\<^esub>\<^sup>NextAdm\<close>-parent of \<open>3\<close> --- both propositions' hypotheses hold.
+      But \<open>Trans (Pred M) = D\<^sub>0(D\<^sub>2(0))\<close>, \<open>Mark (Pred M) 1 = D\<^sub>2(0)\<close>,
+      \<open>Trans M = D\<^sub>0(D\<^sub>2(0) + D\<^sub>1(D\<^sub>2(0) + D\<^sub>0(0)))\<close>, \<open>Mark M 1 = D\<^sub>0(0)\<close>, and there is
+      \<^bold>\<open>no\<close> \<open>(s\<^sub>0,b\<^sub>0)\<close> at all that scb-decomposes BOTH pairs (the two singleton scb
+      sets are disjoint) --- existence fails, not merely uniqueness.  Root cause:
+      \<open>Mark M m := Mark (Red M) m\<close> evaluates the basepoint at the reduct, but
+      \<open>\<le>\<^sub>M\<close> is NOT \<open>Red\<close>-invariant on \<open>T\<^bsub>PS\<^esub>\<close> (correction A4): here \<open>(0,1) \<le>\<^sub>M (0,3)\<close>
+      holds while \<open>(0,1) \<le>\<^bsub>Red M\<^esub> (0,3)\<close> FAILS, so column \<open>1\<close> is not a basepoint of
+      \<open>Red M\<close> and \<open>Mark\<close> returns a value unrelated to \<open>M\<close>'s own structure.  Census
+      (entries \<open>< 3\<close>, \<open>Lng \<le> 4\<close>): \<open>p_7_4_Trans_nextAdm\<close> 3990/4023,
+      \<open>p_7_4_Trans_Mark_Pred\<close> 4490/4523 --- 33 counterexamples each, ALL non-reduced;
+      on reduced \<open>M\<close> both hold (224/224), i.e. our \<open>RT\<^bsub>PS\<^esub>\<close> lemmas
+      @{thm [source] m_7_4_Trans_nextAdm}, @{thm [source] m_7_4_Trans_Mark_Pred}
+      are exactly right and the article's domain is the error.
+      The correct \<open>T\<^bsub>PS\<^esub>\<close>-level statement must read \<open>Marked\<close>/\<open>NextAdm\<close> off \<open>Red M\<close>,
+      or restrict to \<open>RT\<^bsub>PS\<^esub>\<close>.\<close>
 
 subsection \<open>Basic \<open>Red\<close>-iteration bricks\<close>
 
