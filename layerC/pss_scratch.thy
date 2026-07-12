@@ -13805,6 +13805,218 @@ proof -
   show ?thesis by (rule y5_Trans_descend[OF MST _ L]) (use n0 in simp)
 qed
 
+
+subsection \<open>Well-definedness holes (footnote audit): \<open>LastStep\<close>'s \<open>Min\<close> is nonempty,
+  and \<open>nextAdm\<close>'s \<open>\<exists>!\<close>\<close>
+
+text \<open>HOLE 1 --- the article's footnotes [59]/[61] (\<^file>\<open>../tmp/content.md\<close>, footnote
+  block): «この時簡約性と係数の基本性質より \<open>(Br(M)\<^bsub>J\<^sub>1\<^esub>)\<^bsub>0,0\<^esub> \<ge> (Br(M)\<^bsub>J\<^sub>1\<^esub>)\<^bsub>1,0\<^esub>\<close> である»
+  and «\<open>J = J\<^sub>1\<close> が条件を満たすため \<open>min\<close> が存在する».  On a \<^emph>\<open>reduced\<close> host the
+  coefficient inequality \<open>row-1 \<le> row-0\<close> (@{thm [source] m_6_6_reduced_coeff})
+  transports to the head of the last \<open>Br\<close>-block (@{thm [source] vgx_Br_last_head}),
+  so in the \<open>else\<close> branch of @{const LastStep} (heads \<^emph>\<open>differ\<close>) the inequality is
+  STRICT, and \<open>J\<^sub>1\<close> itself lies in the \<open>Min\<close>-set: the set is nonempty (and, by
+  correction A9, finite), so \<open>Min\<close> is not HOL junk.  This discharges the \<open>gt\<close> /
+  \<open>guard\<close> side conditions carried by @{thm [source] vgx_LastStep_lt_Lng_Br},
+  @{thm [source] vgx_LastStep_lt_of_guard} and
+  @{thm [source] ot_finRc_LastStep_guard_bounded_lt}.\<close>
+
+lemma y3_Br_last_head_coeff:
+  \<comment> \<open>footnote [59]: \<open>(Br M\<^bsub>J\<^sub>1\<^esub>)\<^bsub>1,0\<^esub> \<le> (Br M\<^bsub>J\<^sub>1\<^esub>)\<^bsub>0,0\<^esub>\<close> on a reduced mono host.\<close>
+  fixes M :: pairseq
+  assumes MR: "M \<in> RT_PS" and Mm: "monoT M" and Brne: "Br M \<noteq> []"
+  shows "entry (Br M ! (Lng (Br M) - 1)) 1 0 \<le> entry (Br M ! (Lng (Br M) - 1)) 0 0"
+proof -
+  let ?J1 = "Lng (Br M) - 1"
+  have MT: "M \<in> T_PS" using MR by (simp add: RT_PS_def)
+  have MP: "M \<in> PT_PS" using MT Mm by (simp add: PT_PS_def)
+  have J1Br: "?J1 < Lng (Br M)" using Brne by (cases "Br M") auto
+  have fnlt: "FirstNodes M ! ?J1 < Lng M" by (rule a1_FN_lt[OF MP J1Br])
+  have h0: "entry (Br M ! ?J1) 0 0 = entry M 0 (FirstNodes M ! ?J1)"
+    by (rule vgx_Br_last_head[OF MP Brne])
+  have h1: "entry (Br M ! ?J1) 1 0 = entry M 1 (FirstNodes M ! ?J1)"
+    by (rule vgx_Br_last_head[OF MP Brne])
+  have "entry M 1 (FirstNodes M ! ?J1) \<le> entry M 0 (FirstNodes M ! ?J1)"
+    by (rule m_6_6_reduced_coeff[OF MR fnlt])
+  thus ?thesis using h0 h1 by simp
+qed
+
+lemma y3_LastStep_gt:
+  \<comment> \<open>in the \<open>else\<close> branch (heads differ) the coefficient inequality is STRICT.\<close>
+  fixes M :: pairseq
+  assumes MR: "M \<in> RT_PS" and Mm: "monoT M" and Brne: "Br M \<noteq> []"
+    and neq: "entry (Br M ! (Lng (Br M) - 1)) 0 0 \<noteq> entry (Br M ! (Lng (Br M) - 1)) 1 0"
+  shows "entry (Br M ! (Lng (Br M) - 1)) 1 0 < entry (Br M ! (Lng (Br M) - 1)) 0 0"
+  using y3_Br_last_head_coeff[OF MR Mm Brne] neq by simp
+
+lemma y3_LastStep_J1_mem:
+  \<comment> \<open>footnote [61]: \<open>J = J\<^sub>1\<close> satisfies the condition, so the \<open>Min\<close>-set is nonempty.\<close>
+  fixes M :: pairseq
+  assumes MR: "M \<in> RT_PS" and Mm: "monoT M" and Brne: "Br M \<noteq> []"
+    and neq: "entry (Br M ! (Lng (Br M) - 1)) 0 0 \<noteq> entry (Br M ! (Lng (Br M) - 1)) 1 0"
+  shows "(Lng (Br M) - 1)
+           \<in> {J. J < Lng (Br M)
+                 \<and> entry (Br M ! (Lng (Br M) - 1)) 0 0 = entry (Br M ! J) 0 0
+                 \<and> entry (Br M ! J) 1 0 < entry (Br M ! J) 0 0}"
+proof -
+  have J1Br: "Lng (Br M) - 1 < Lng (Br M)" using Brne by (cases "Br M") auto
+  show ?thesis using J1Br y3_LastStep_gt[OF MR Mm Brne neq] by simp
+qed
+
+lemma y3_LastStep_set_nonempty:
+  fixes M :: pairseq
+  assumes MR: "M \<in> RT_PS" and Mm: "monoT M" and Brne: "Br M \<noteq> []"
+    and neq: "entry (Br M ! (Lng (Br M) - 1)) 0 0 \<noteq> entry (Br M ! (Lng (Br M) - 1)) 1 0"
+  shows "{J. J < Lng (Br M)
+             \<and> entry (Br M ! (Lng (Br M) - 1)) 0 0 = entry (Br M ! J) 0 0
+             \<and> entry (Br M ! J) 1 0 < entry (Br M ! J) 0 0} \<noteq> {}"
+  using y3_LastStep_J1_mem[OF MR Mm Brne neq] by blast
+
+text \<open>Guard-free drop-in for @{thm [source] ot_finRc_LastStep_guard_bounded_lt}: in the
+  \<open>else\<close> branch, reducedness alone (no \<open>gt\<close>, no \<open>guard\<close>, no \<open>fin\<close>) puts the \<open>Min\<close> in range.\<close>
+
+lemma y3_LastStep_bounded_lt_neq:
+  fixes M :: pairseq
+  assumes MR: "M \<in> RT_PS" and Mm: "monoT M" and Brne: "Br M \<noteq> []"
+    and neq: "entry (Br M ! (Lng (Br M) - 1)) 0 0 \<noteq> entry (Br M ! (Lng (Br M) - 1)) 1 0"
+  shows "Min {J. J < Lng (Br M)
+                 \<and> entry (Br M ! (Lng (Br M) - 1)) 0 0 = entry (Br M ! J) 0 0
+                 \<and> entry (Br M ! J) 1 0 < entry (Br M ! J) 0 0}
+         < Lng (Br M)"
+  by (rule ot_finRc_LastStep_bounded_lt[OF Brne y3_LastStep_gt[OF MR Mm Brne neq]])
+
+text \<open>Guard-free drop-in for @{thm [source] vgx_LastStep_lt_Lng_Br} and
+  @{thm [source] vgx_LastStep_lt_of_guard}: on a reduced mono host with \<open>Br M \<noteq> []\<close>,
+  \<open>LastStep M < Lng (Br M)\<close> --- \<^bold>\<open>unconditionally\<close> (both branches of the definition).\<close>
+
+lemma y3_LastStep_lt_Lng_Br:
+  fixes M :: pairseq
+  assumes MR: "M \<in> RT_PS" and Mm: "monoT M" and Brne: "Br M \<noteq> []"
+  shows "LastStep M < Lng (Br M)"
+proof -
+  let ?J1 = "Lng (Br M) - 1"
+  have J1Br: "?J1 < Lng (Br M)" using Brne by (cases "Br M") auto
+  show ?thesis
+  proof (cases "entry (Br M ! ?J1) 0 0 = entry (Br M ! ?J1) 1 0")
+    case True
+    hence "LastStep M = ?J1" using Brne unfolding LastStep_def Let_def by simp
+    thus ?thesis using J1Br by simp
+  next
+    case False
+    have gt: "entry (Br M ! ?J1) 1 0 < entry (Br M ! ?J1) 0 0"
+      by (rule y3_LastStep_gt[OF MR Mm Brne False])
+    have LS: "LastStep M = Min {J. J < Lng (Br M)
+                                   \<and> entry (Br M ! ?J1) 0 0 = entry (Br M ! J) 0 0
+                                   \<and> entry (Br M ! J) 1 0 < entry (Br M ! J) 0 0}"
+      by (rule vgx_LastStep_elsecase[OF Brne gt])
+    show ?thesis using LS y3_LastStep_bounded_lt_neq[OF MR Mm Brne False] by simp
+  qed
+qed
+
+lemma y3_LastStep_lt_Lng_Br_DT:
+  \<comment> \<open>the declared domain of @{const LastStep} is \<open>DT\<^bsub>PS\<^esub>\<close>, where the hypotheses are free.\<close>
+  fixes M :: pairseq
+  assumes MD: "M \<in> DT_PS" and Brne: "Br M \<noteq> []"
+  shows "LastStep M < Lng (Br M)"
+proof -
+  have MR: "M \<in> RT_PS" and Mm: "monoT M" using MD by (simp_all add: DT_PS_def)
+  show ?thesis by (rule y3_LastStep_lt_Lng_Br[OF MR Mm Brne])
+qed
+
+text \<open>HOLE 2 --- \<open>\<exists>!j\<^sub>0. nextAdm M 0 j\<^sub>0 (Lng M - 1)\<close>, assumed as \<open>uniq\<close> by
+  @{thm [source] m_7_4_Trans_nextAdm} / @{thm [source] m_7_4_Mark_nextAdm} and used by the
+  \<open>THE\<close>-binders of \<section>7.4.  UNIQUENESS is unconditional (the maximality clause of
+  @{const nextAdm} rules out a second, larger witness).  EXISTENCE holds for a
+  \<open>monoT\<close> host of length \<open>> 1\<close>: column \<open>0\<close> is always admissible
+  (@{thm [source] adm_zero}) and, by \<open>monoT\<close>, a row-0 ancestor of \<open>Lng M - 1\<close>; the
+  \<^emph>\<open>largest\<close> such column is the NextAdm-parent.\<close>
+
+lemma y3_nextAdm_unique:
+  fixes M :: pairseq
+  assumes A: "nextAdm M i a j1" and B: "nextAdm M i b j1"
+  shows "a = b"
+proof -
+  have Aa: "a < j1" and Amax: "\<And>j. a < j \<Longrightarrow> j < j1 \<Longrightarrow> \<not> leR M i j j1 \<or> \<not> adm M j"
+    using A unfolding nextAdm_def by blast+
+  have Bb: "b < j1" and Ble: "leR M i b j1" and Badm: "adm M b"
+    and Bmax: "\<And>j. b < j \<Longrightarrow> j < j1 \<Longrightarrow> \<not> leR M i j j1 \<or> \<not> adm M j"
+    using B unfolding nextAdm_def by blast+
+  have Ale: "leR M i a j1" and Aadm: "adm M a" using A unfolding nextAdm_def by blast+
+  show ?thesis
+  proof (rule ccontr)
+    assume ne: "a \<noteq> b"
+    show False
+    proof (cases "a < b")
+      case True
+      show False using Amax[OF True Bb] Ble Badm by simp
+    next
+      case False
+      hence ba: "b < a" using ne by simp
+      show False using Bmax[OF ba Aa] Ale Aadm by simp
+    qed
+  qed
+qed
+
+lemma y3_nextAdm_ex:
+  fixes M :: pairseq
+  assumes Mm: "monoT M" and L: "1 < Lng M"
+  shows "\<exists>j0. nextAdm M 0 j0 (Lng M - 1)"
+proof -
+  let ?j1 = "Lng M - 1"
+  let ?A = "{j. j < ?j1 \<and> leR M 0 j ?j1 \<and> adm M j}"
+  have j1pos: "0 < ?j1" using L by simp
+  have le00: "leR M 0 0 ?j1" using Mm by (simp add: monoT_def)
+  have zeroA: "0 \<in> ?A" using j1pos le00 adm_zero by simp
+  hence ne: "?A \<noteq> {}" by blast
+  have fin: "finite ?A" by (rule finite_subset[of _ "{..< ?j1}"]) auto
+  have mem: "Max ?A \<in> ?A" by (rule Max_in[OF fin ne])
+  have P1: "Max ?A < ?j1" and P2: "leR M 0 (Max ?A) ?j1" and P3: "adm M (Max ?A)"
+    using mem by simp_all
+  have maxcl: "\<forall>j. Max ?A < j \<and> j < ?j1 \<longrightarrow> \<not> leR M 0 j ?j1 \<or> \<not> adm M j"
+  proof (intro allI impI)
+    fix j assume H: "Max ?A < j \<and> j < ?j1"
+    show "\<not> leR M 0 j ?j1 \<or> \<not> adm M j"
+    proof (rule ccontr)
+      assume "\<not> (\<not> leR M 0 j ?j1 \<or> \<not> adm M j)"
+      hence jle: "leR M 0 j ?j1" and jadm: "adm M j" by auto
+      have jA: "j \<in> ?A" using H jle jadm by simp
+      have "j \<le> Max ?A" by (rule Max_ge[OF fin jA])
+      thus False using H by simp
+    qed
+  qed
+  have "nextAdm M 0 (Max ?A) ?j1"
+    using P1 P2 P3 maxcl unfolding nextAdm_def by blast
+  thus ?thesis by blast
+qed
+
+lemma y3_nextAdm_ex1:
+  fixes M :: pairseq
+  assumes Mm: "monoT M" and L: "1 < Lng M"
+  shows "\<exists>!j0. nextAdm M 0 j0 (Lng M - 1)"
+  using y3_nextAdm_ex[OF Mm L] y3_nextAdm_unique by blast
+
+text \<open>\<open>uniq\<close>-free restatements of the two \<section>7.4 consumers.\<close>
+
+lemma y3_7_4_Trans_nextAdm:
+  fixes M :: pairseq
+  assumes MR: "M \<in> RT_PS" and Mm: "monoT M" and L: "1 < Lng M"
+  shows "\<exists>!sb. scb_decomp (Trans (Pred M))
+                  (fst sb) (flatBT (Mark (Pred M) (THE j0. nextAdm M 0 j0 (Lng M - 1)))) (snd sb)
+            \<and> scb_decomp (Trans M)
+                  (fst sb) (flatBT (Mark M (THE j0. nextAdm M 0 j0 (Lng M - 1)))) (snd sb)"
+  by (rule m_7_4_Trans_nextAdm[OF MR y3_nextAdm_ex1[OF Mm L]])
+
+lemma y3_7_4_Mark_nextAdm:
+  fixes M :: pairseq
+  assumes MR: "M \<in> RT_PS" and Mm: "monoT M" and L: "1 < Lng M"
+    and jM: "(M, j) \<in> Marked"
+    and jle: "leR M 0 j (THE j0. nextAdm M 0 j0 (Lng M - 1))"
+  shows "\<exists>!sb. scb_decomp (Mark (Pred M) j)
+                  (fst sb) (flatBT (Mark (Pred M) (THE j0. nextAdm M 0 j0 (Lng M - 1)))) (snd sb)
+            \<and> scb_decomp (Mark M j)
+                  (fst sb) (flatBT (Mark M (THE j0. nextAdm M 0 j0 (Lng M - 1)))) (snd sb)"
+  by (rule m_7_4_Mark_nextAdm[OF MR y3_nextAdm_ex1[OF Mm L] jM jle])
+
 ML \<open>
   fun sorry_deps th =
     let
