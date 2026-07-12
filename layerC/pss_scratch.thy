@@ -14832,6 +14832,299 @@ theorem y3g_p_8_1_Trans_fseq_condI:
    apply (rule y3g_condI_exchange1_rtps[OF MR MP j1gt condI n1])
   by (rule y3g_condI_descent_rtps[OF MR MP j1gt condI n1])
 
+
+section \<open>r74: \<section>8.5 条件(V) の交換関係 — 記事の印字インデックス \<open>m\<^sub>n\<close> でのフル命題\<close>
+
+text \<open>With the CORRECTED \<open>operB\<close> (footnote [30] transposition fixed: \<open>x\<^sub>i = D\<^sub>u b[x\<^sub>i\<^sub>-\<^sub>1]\<close>,
+  \<open>a[n] = D\<^sub>v b[x\<^sub>n]\<close>) the article's printed pairing \<open>m\<^sub>n = n-1\<close> (adm) / \<open>m\<^sub>n = n\<close>
+  (non-adm) is EXACT — corrections A28 and friends were artifacts of the old,
+  transposed rule and are retracted.  Both legs are reconstructed here from the
+  already-green closed forms:
+
+    \<^item> ADM leg — @{thm [source] m_8_5_scbdec_adm_forms} gives
+      \<open>Trans(M[Suc k]) = s\<^sub>1 \<cdot> D\<^sub>e(t\<^sub>2)-tower(k) \<cdot> b\<^sub>1\<close> and
+      \<open>Trans(M)[k]    = s\<^sub>1 \<cdot> D\<^sub>e(0)-tower(k+1) \<cdot> b\<^sub>1\<close>.  At the SHARED surgery pair
+      \<open>(S,B)\<close> peeled to depth \<open>k\<close> the two cores are \<open>D\<^sub>e t\<^sub>2\<close> and \<open>D\<^sub>e(t\<^sub>2 + D\<^sub>e 0)\<close>,
+      so (1) \<open>Trans(M[n]) < Trans(M)[n-1]\<close> is immediate from \<open>+\<close>-self
+      (@{thm [source] lessBT_addBT_self}) — the mirror image of the already-proven
+      (3) @{thm [source] m_8_5_scbdec_prev_lt_M_condV_adm}, whose cores at the same
+      \<open>(S,B)\<close> are \<open>D\<^sub>e(t\<^sub>2 + D\<^sub>e 0)\<close> and \<open>D\<^sub>e(t\<^sub>2 + D\<^sub>e t\<^sub>2)\<close>.  So (1) and (3) sandwich
+      \<open>Trans(M)[n-1]\<close> STRICTLY between \<open>Trans(M[n])\<close> and \<open>Trans(M[n+1])\<close>.
+
+    \<^item> NON-ADM leg — @{thm [source] atx_nf3x} gives the tower closed forms with
+      cores \<open>D\<^sub>u(e5x_bodyM t\<^sub>2 e k)\<close> (for \<open>Trans(M[Suc k])\<close>) and
+      \<open>D\<^sub>u(e5x_bodyO t\<^sub>2 e m)\<close> (for \<open>Trans(M)[m]\<close>, \<open>m \<ge> 1\<close>), where
+      \<open>bodyM t e k = t + W e t t k\<close> and \<open>bodyO t e m = t + W e t 0 m\<close> (\<open>bodyM t e 0 = t\<close>).
+      The two comparisons at the ARTICLE index are pure \<open>BT\<close>-order facts:
+        \<open>bodyM(k) < bodyO(k+1)\<close>   (seed-shift: one extra tower level beats the seed,
+                                    @{thm [source] e5x_W_seed_shift}) \<Rightarrow> (1) at \<open>m\<^sub>n = n\<close>;
+        \<open>bodyO(k+1) < bodyM(k+1)\<close> (seed monotonicity \<open>0 < t\<^sub>2\<close> at EQUAL height,
+                                    @{thm [source] s85b_W_mono_seed} +
+                                    @{thm [source] m_8_5_scbdec_t2_nonzero_condV})
+                                                                    \<Rightarrow> (3) at \<open>m\<^sub>n = n\<close>.
+      (The previously-recorded "printed index fails non-adm, 0/60" was measured
+      against the OLD transposed \<open>operB\<close>; under the corrected rule the two bodies
+      interleave exactly as printed, \<open>bodyM(k) < bodyO(k+1) < bodyM(k+1)\<close>.)
+
+  NOTHING is assumed: every hypothesis below is an article hypothesis.\<close>
+
+subsection \<open>Pure \<open>BT\<close> tower comparisons at the article index (non-adm cores)\<close>
+
+text \<open>Seed monotonicity of the \<open>W\<close>-tower at EQUAL height: raising the seed from
+  \<open>0\<^sub>B\<close> to a nonzero \<open>t\<close> strictly increases the tower.  (Complement of
+  @{thm [source] e5x_W_seed_shift}, which trades the seed for one extra level.)\<close>
+
+lemma y3h_W_seed_mono0:
+  assumes t0: "t \<noteq> 0\<^sub>B"
+  shows "lessBT (s85b_W u t 0\<^sub>B k) (s85b_W u t t k)"
+proof -
+  have "lessBT 0\<^sub>B t" using t0 by (cases t) simp_all
+  thus ?thesis by (rule s85b_W_mono_seed)
+qed
+
+text \<open>(1)-core at the ARTICLE non-adm index: \<open>bodyM(k) < bodyO(Suc k)\<close> — the
+  tight form of @{thm [source] e5x_bodyM_lt_bodyO} (which shifted to \<open>Suc (Suc k)\<close>).\<close>
+
+lemma y3h_bodyM_lt_bodyO_tight:
+  shows "lessBP (DB (enat u) (e5x_bodyM t e k))
+                (DB (enat u) (e5x_bodyO t e (Suc k)))"
+proof (cases k)
+  case 0
+  have ne: "s85b_W e t 0\<^sub>B (Suc 0) \<noteq> 0\<^sub>B" by simp
+  have "lessBT t (t +\<^sub>B s85b_W e t 0\<^sub>B (Suc 0))"
+    by (rule lessBT_addBT_self[OF ne])
+  thus ?thesis using 0 by (simp add: e5x_bodyO_def)
+next
+  case (Suc j)
+  have wlt: "lessBT (s85b_W e t t (Suc j)) (s85b_W e t 0\<^sub>B (Suc (Suc j)))"
+    by (rule e5x_W_seed_shift)
+  have "lessBT (t +\<^sub>B s85b_W e t t (Suc j)) (t +\<^sub>B s85b_W e t 0\<^sub>B (Suc (Suc j)))"
+    by (rule lessBT_addBT_mono_right[OF wlt])
+  thus ?thesis using Suc by (simp add: e5x_bodyO_def)
+qed
+
+text \<open>(3)-core at the ARTICLE non-adm index: \<open>bodyO(Suc j) < bodyM(Suc j)\<close> —
+  same height, seed \<open>0\<^sub>B\<close> vs \<open>t\<close>.  Needs only \<open>t \<noteq> 0\<^sub>B\<close>.\<close>
+
+lemma y3h_bodyO_lt_bodyM:
+  assumes t0: "t \<noteq> 0\<^sub>B"
+  shows "lessBP (DB (enat u) (e5x_bodyO t e (Suc j)))
+                (DB (enat u) (e5x_bodyM t e (Suc j)))"
+proof -
+  have wlt: "lessBT (s85b_W e t 0\<^sub>B (Suc j)) (s85b_W e t t (Suc j))"
+    by (rule y3h_W_seed_mono0[OF t0])
+  have "lessBT (t +\<^sub>B s85b_W e t 0\<^sub>B (Suc j)) (t +\<^sub>B s85b_W e t t (Suc j))"
+    by (rule lessBT_addBT_mono_right[OF wlt])
+  thus ?thesis by (simp add: e5x_bodyO_def)
+qed
+
+subsection \<open>NON-ADM leg: exchange (1) and (3) at the article index \<open>m\<^sub>n = n\<close>\<close>
+
+text \<open>Both conclusions are STRICT.  Every hypothesis is an article hypothesis:
+  the tower closed forms come from the unconditional @{thm [source] atx_nf3x}.\<close>
+
+lemma y3h_exchange_condV_nonadm:
+  fixes M :: pairseq and n :: nat
+  assumes MST: "M \<in> ST_PS" and MP: "M \<in> PT_PS"
+    and cond: "transCondV M"
+    and nadm: "\<not> adm M (parent M 0 (Lng M - 1))"
+    and n1: "1 \<le> n"
+  shows "lessBT (Trans ((M::pairseq)[n])) (operB (Trans M) (numBT n))"
+    and "lessBT (operB (Trans M) (numBT n)) (Trans ((M::pairseq)[n + 1]))"
+proof -
+  have MR: "M \<in> RT_PS" using MST m_6_7_ST_PS_subseteq_RT_PS by blast
+  note J1pos = s85b_condV_setup(1)[OF MR MP cond]
+  note T1 = s85b_condV_setup(2)[OF MR MP cond]
+  obtain s0 s1 b0 b1 where
+      d1: "scb_decomp (Trans ((M::pairseq)[1])) s1
+             (flatBT (Dpt (enat (entry M 1 (transJm1 M))) (transT2 M))) b1"
+    and k1: "scb_kind1 (Trans M) s1 (flatBT (transC2 M)) b1"
+    using m_8_5_scbdec_fseq_condV[OF MR MP J1pos T1 cond] by blast
+  note forms = atx_nf3x[OF MST MP cond nadm d1 k1]
+  have Mform: "\<And>k. flatBT (Trans ((M::pairseq)[Suc k]))
+        = s1 @ flatBP (DB (enat (entry M 1 (transJm1 M)))
+            (e5x_bodyM (transT2 M) (entry M 1 (transJ0 M)) k)) @ b1"
+    using forms by blast
+  have Oform: "\<And>m. 1 \<le> m \<Longrightarrow> flatBT (operB (Trans M) (numBT m))
+        = s1 @ flatBP (DB (enat (entry M 1 (transJm1 M)))
+            (e5x_bodyO (transT2 M) (entry M 1 (transJ0 M)) m)) @ b1"
+    using forms by blast
+  have bRP: "\<forall>x \<in> set b1. x = RP" using d1 by (simp add: scb_decomp_def)
+  have t20: "transT2 M \<noteq> 0\<^sub>B"
+    by (rule m_8_5_scbdec_t2_nonzero_condV[OF MR MP cond])
+  obtain k where nk: "n = Suc k" using n1 by (cases n) auto
+  have fMn: "flatBT (Trans ((M::pairseq)[n]))
+        = s1 @ flatBP (DB (enat (entry M 1 (transJm1 M)))
+            (e5x_bodyM (transT2 M) (entry M 1 (transJ0 M)) k)) @ b1"
+    using Mform nk by simp
+  have fOn: "flatBT (operB (Trans M) (numBT n))
+        = s1 @ flatBP (DB (enat (entry M 1 (transJm1 M)))
+            (e5x_bodyO (transT2 M) (entry M 1 (transJ0 M)) (Suc k))) @ b1"
+    using Oform[OF n1] nk by simp
+  have fMn1: "flatBT (Trans ((M::pairseq)[n + 1]))
+        = s1 @ flatBP (DB (enat (entry M 1 (transJm1 M)))
+            (e5x_bodyM (transT2 M) (entry M 1 (transJ0 M)) (Suc k))) @ b1"
+    using Mform[of "Suc k"] nk by simp
+  show "lessBT (Trans ((M::pairseq)[n])) (operB (Trans M) (numBT n))"
+    by (rule scbext_lessBT[OF fMn fOn bRP y3h_bodyM_lt_bodyO_tight])
+  show "lessBT (operB (Trans M) (numBT n)) (Trans ((M::pairseq)[n + 1]))"
+    by (rule scbext_lessBT[OF fOn fMn1 bRP y3h_bodyO_lt_bodyM[OF t20]])
+qed
+
+subsection \<open>ADM leg: exchange (1) at the article index \<open>m\<^sub>n = n - 1\<close>\<close>
+
+text \<open>The mirror of @{thm [source] m_8_5_scbdec_prev_lt_M_condV_adm}: at the SAME
+  peeled surgery pair \<open>(S,B)\<close> (depth \<open>k\<close>), \<open>Trans(M[Suc k])\<close> has core \<open>D\<^sub>e t\<^sub>2\<close>
+  while \<open>Trans(M)[k]\<close> has core \<open>D\<^sub>e(t\<^sub>2 + D\<^sub>e 0)\<close>; \<open>D\<^sub>e 0 \<noteq> 0\<close> gives STRICT \<open><\<close>.
+  This is the article's printed (1), no shift.\<close>
+
+lemma y3h_M_lt_prev_condV_adm:
+  fixes M :: pairseq and k :: nat
+  assumes MST: "M \<in> ST_PS" and MP: "M \<in> PT_PS"
+    and cond: "transCondV M" and admj0: "adm M (transJ0 M)"
+  shows "lessBT (Trans ((M::pairseq)[Suc k])) (operB (Trans M) (numBT k))"
+proof -
+  have MR: "M \<in> RT_PS" using MST m_6_7_ST_PS_subseteq_RT_PS by blast
+  note J1pos = s85b_condV_setup(1)[OF MR MP cond]
+  note T1 = s85b_condV_setup(2)[OF MR MP cond]
+  note shape = m_8_5_scbdec_c1_shape[OF MR MP J1pos T1]
+  define e where "e = entry M 1 (transJ0 M)"
+  obtain s0 s1 b0 b1 where
+      inner: "scb_decomp (transT2 M +\<^sub>B Dpt (enat (entry M 1 (transJ1 M))) 0\<^sub>B)
+                s0 (flatBT (Dpt (enat (entry M 1 (transJ1 M))) 0\<^sub>B)) b0"
+    and d1: "scb_decomp (Trans ((M::pairseq)[1])) s1
+               (flatBT (Dpt (enat e) (transT2 M))) b1"
+    and fseq: "\<forall>n. flatBT (operB (Trans M) (numBT n)) =
+           s1 @ Dsym (enat e)
+              # concat (replicate (n + 1) (s0 @ [Dsym (enat e)]))
+              @ [Zsym]
+              @ concat (replicate (n + 1) b0) @ b1"
+    and mM: "\<forall>k. flatBT (Trans ((M::pairseq)[Suc k])) =
+           s1 @ Dsym (enat e)
+              # concat (replicate k (s0 @ [Dsym (enat e)]))
+              @ flatBT (transT2 M) @ concat (replicate k b0) @ b1"
+    using m_8_5_scbdec_adm_forms[OF MST MP cond admj0]
+    unfolding e_def by blast
+  have b0RP: "\<forall>x \<in> set b0. x = RP" using inner by (simp add: scb_decomp_def)
+  have b1RP: "\<forall>x \<in> set b1. x = RP" using d1 by (simp add: scb_decomp_def)
+  have cTB: "Dpt (enat (entry M 1 (transJ1 M))) 0\<^sub>B \<in> T_B" by (simp add: T_B_def)
+  have cprin: "\<exists>p. Dpt (enat (entry M 1 (transJ1 M))) 0\<^sub>B = Trm [p]" by auto
+  define cp0 where "cp0 = Dpt (enat e) 0\<^sub>B"
+  have cp0TB: "cp0 \<in> T_B" by (simp add: cp0_def T_B_def)
+  have cp0prin: "\<exists>p. cp0 = Trm [p]" by (auto simp: cp0_def)
+  have subst0: "scb_decomp (transT2 M +\<^sub>B cp0) s0 (flatBT cp0) b0"
+    by (rule m_7_2_add_scb_conj2[OF shape(3) cTB cprin cp0TB cp0prin inner])
+  have fcp0: "flatBT (transT2 M +\<^sub>B cp0) = s0 @ [Dsym (enat e), Zsym] @ b0"
+    using subst0 by (simp add: scb_decomp_def cp0_def)
+  define S where "S = s1 @ concat (replicate k (Dsym (enat e) # s0))"
+  define B where "B = concat (replicate k b0) @ b1"
+  have BRP: "\<forall>x \<in> set B. x = RP" using b0RP b1RP by (auto simp add: B_def)
+  \<comment> \<open>\<open>Trans(M)[k]\<close>: one tower level LEFT OVER, then the \<open>0\<^sub>B\<close> seed\<close>
+  have f0: "flatBT (operB (Trans M) (numBT k))
+            = S @ flatBT (Dpt (enat e) (transT2 M +\<^sub>B cp0)) @ B"
+  proof -
+    have "flatBT (operB (Trans M) (numBT k))
+          = s1 @ (Dsym (enat e)
+              # concat (replicate (Suc k) (s0 @ [Dsym (enat e)])))
+              @ [Zsym]
+              @ concat (replicate (Suc k) b0) @ b1"
+      using spec[OF fseq, of k] by simp
+    also have "\<dots> = S @ (Dsym (enat e) # s0)
+                    @ [Dsym (enat e), Zsym] @ b0 @ B"
+      by (simp add: S_def B_def s85b_crep_snoc s85b_crep_comm s85b_rot_cons s85b_crep_comm_cons s85b_crep_comm_snoc s85b_crep_comm_snoc0)
+    also have "\<dots> = S @ flatBT (Dpt (enat e) (transT2 M +\<^sub>B cp0)) @ B"
+      using fcp0 by simp
+    finally show ?thesis .
+  qed
+  \<comment> \<open>\<open>Trans(M[k+1])\<close> at the SAME pair: the tower stops here, core \<open>D\<^sub>e t\<^sub>2\<close>\<close>
+  have f1: "flatBT (Trans ((M::pairseq)[Suc k]))
+            = S @ flatBT (Dpt (enat e) (transT2 M)) @ B"
+  proof -
+    have "flatBT (Trans ((M::pairseq)[Suc k]))
+          = s1 @ (Dsym (enat e)
+              # concat (replicate k (s0 @ [Dsym (enat e)])))
+              @ flatBT (transT2 M) @ concat (replicate k b0) @ b1"
+      using spec[OF mM, of k] by simp
+    also have "\<dots> = S @ (Dsym (enat e) # flatBT (transT2 M)) @ B"
+      by (simp add: S_def B_def s85b_crep_snoc s85b_crep_comm s85b_rot_cons s85b_crep_comm_cons s85b_crep_comm_snoc s85b_crep_comm_snoc0)
+    also have "\<dots> = S @ flatBT (Dpt (enat e) (transT2 M)) @ B" by simp
+    finally show ?thesis .
+  qed
+  have g1: "flatBT (Trans ((M::pairseq)[Suc k]))
+            = S @ flatBP (DB (enat e) (transT2 M)) @ B"
+    using f1 by simp
+  have g0: "flatBT (operB (Trans M) (numBT k))
+            = S @ flatBP (DB (enat e) (transT2 M +\<^sub>B cp0)) @ B"
+    using f0 by simp
+  have cp0ne: "cp0 \<noteq> 0\<^sub>B" by (simp add: cp0_def)
+  have coreLt: "lessBP (DB (enat e) (transT2 M))
+                       (DB (enat e) (transT2 M +\<^sub>B cp0))"
+    using lessBT_addBT_self[OF cp0ne] by simp
+  show ?thesis by (rule scbext_lessBT[OF g1 g0 BRP coreLt])
+qed
+
+subsection \<open>THE ARTICLE'S \<section>8.5 命題, verbatim (both legs, printed index \<open>m\<^sub>n\<close>)\<close>
+
+text \<open>命題（条件(V)の下での\<open>Trans\<close>と基本列の交換関係）(\<section>8.5): exactly the statement
+  transcribed as @{thm [source] p_8_5_Trans_oper_exchange} — same hypotheses, same
+  \<open>m\<^sub>n\<close>, same three conclusions — now PROVED.  (1) and (3) are in fact STRICT.\<close>
+
+theorem y3h_p_8_5_Trans_oper_exchange:
+  fixes M :: pairseq and n :: nat
+  defines "j0 \<equiv> parent M 0 (Lng M - 1)"
+  defines "mn \<equiv> (if adm M j0 then n - 1 else n)"
+  assumes MST: "M \<in> ST_PS" and MP: "M \<in> PT_PS" and n1: "n \<ge> 1"
+    and j1gt: "Lng M - 1 > 1"
+    and cond: "transCondV M"
+  shows "leBT (Trans ((M::pairseq)[n])) (operB (Trans M) (numBT mn))"
+    and "lessBT (Trans ((M::pairseq)[n])) (Trans M)"
+    and "leBT (operB (Trans M) (numBT mn)) (Trans ((M::pairseq)[n + 1]))"
+proof -
+  have j0eq: "j0 = transJ0 M"
+    by (simp add: j0_def transJ0_def transJ1_def)
+  obtain k where nk: "n = Suc k" using n1 by (cases n) auto
+  show "leBT (Trans ((M::pairseq)[n])) (operB (Trans M) (numBT mn))"
+  proof (cases "adm M j0")
+    case True
+    hence admj0: "adm M (transJ0 M)" using j0eq by simp
+    have "lessBT (Trans ((M::pairseq)[Suc k])) (operB (Trans M) (numBT k))"
+      by (rule y3h_M_lt_prev_condV_adm[OF MST MP cond admj0])
+    thus ?thesis using True nk by (simp add: mn_def)
+  next
+    case False
+    hence nadm: "\<not> adm M (parent M 0 (Lng M - 1))" by (simp add: j0_def)
+    have "lessBT (Trans ((M::pairseq)[n])) (operB (Trans M) (numBT n))"
+      by (rule y3h_exchange_condV_nonadm(1)[OF MST MP cond nadm n1])
+    thus ?thesis using False by (simp add: mn_def)
+  qed
+  show "lessBT (Trans ((M::pairseq)[n])) (Trans M)"
+  proof (cases "adm M j0")
+    case True
+    hence admj0: "adm M (transJ0 M)" using j0eq by simp
+    show ?thesis
+      by (rule m_8_5_scbdec_exchange2_condV_adm[OF MST MP cond admj0 n1])
+  next
+    case False
+    hence nadm: "\<not> adm M (parent M 0 (Lng M - 1))" by (simp add: j0_def)
+    show ?thesis
+      by (rule atx_Trans_oper_exchange_condV_nonadm_uncond(2)[OF MST MP cond nadm n1])
+  qed
+  show "leBT (operB (Trans M) (numBT mn)) (Trans ((M::pairseq)[n + 1]))"
+  proof (cases "adm M j0")
+    case True
+    hence admj0: "adm M (transJ0 M)" using j0eq by simp
+    have "lessBT (operB (Trans M) (numBT k)) (Trans ((M::pairseq)[Suc (Suc k)]))"
+      by (rule m_8_5_scbdec_prev_lt_M_condV_adm[OF MST MP cond admj0])
+    thus ?thesis using True nk by (simp add: mn_def)
+  next
+    case False
+    hence nadm: "\<not> adm M (parent M 0 (Lng M - 1))" by (simp add: j0_def)
+    have "lessBT (operB (Trans M) (numBT n)) (Trans ((M::pairseq)[n + 1]))"
+      by (rule y3h_exchange_condV_nonadm(2)[OF MST MP cond nadm n1])
+    thus ?thesis using False by (simp add: mn_def)
+  qed
+qed
+
 ML \<open>
   fun sorry_deps th =
     let
@@ -14881,7 +15174,12 @@ ML \<open>
      ("y3g_condI_exchange1_rtps",    @{thm y3g_condI_exchange1_rtps}),
      ("y3g_condI_descent_rtps",      @{thm y3g_condI_descent_rtps}),
      ("y3g_p_8_1_Trans_fseq_condI(1)", @{thm y3g_p_8_1_Trans_fseq_condI(1)}),
-     ("y3g_p_8_1_Trans_fseq_condI(2)", @{thm y3g_p_8_1_Trans_fseq_condI(2)})];
+     ("y3g_p_8_1_Trans_fseq_condI(2)", @{thm y3g_p_8_1_Trans_fseq_condI(2)}),
+     \<comment> \<open>r74: the \<section>8.5 命題（条件(V)の下での\<open>Trans\<close>と基本列の交換関係）, all three
+         conclusions at the article's OWN printed index \<open>m\<^sub>n\<close> --- both legs\<close>
+     ("y3h_p_8_5_Trans_oper_exchange(1)", @{thm y3h_p_8_5_Trans_oper_exchange(1)}),
+     ("y3h_p_8_5_Trans_oper_exchange(2)", @{thm y3h_p_8_5_Trans_oper_exchange(2)}),
+     ("y3h_p_8_5_Trans_oper_exchange(3)", @{thm y3h_p_8_5_Trans_oper_exchange(3)})];
 
   \<comment> \<open>r72: assert the termination theorems carry NO free hypothesis left ---
       \<open>y5_PSS_wf\<close> must be a closed statement (no meta-premises, no schematics).\<close>
