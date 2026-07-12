@@ -99,7 +99,7 @@ Buchholzの\(\psi\)関数はBuchholzによって性質が十分に調べられ�
 - 簡約ペア数列の部分列は簡約とは限らないため、簡約ペア数列にしか興味がない場合でも簡約でないペア数列を用いる必要があった。
 
 - 標準形とは限らないペア数列を標準形に置き換える操作は不明であるので、標準形にしか興味が無い場合も標準形でないペア数列を用いる必要があった。
-definition nextR :: "pairseq \<Rightarrow> nat \<Rightarrow> nat \<Rightarrow> nat \<Rightarrow> bool"
+<<<UNRECOVERABLE line 102 — the transcript-recovered anchor here was CONTAMINATION (Isabelle source / our own English notes, not article text). The article's true line is unknown; consult tmp/original.html. Kept as a placeholder so line numbers stay stable.>>>
 - ペア数列の展開規則と\(\textrm{Trans}\)による像の基本列を比較する。
 
 - これにより、標準形ペア数列の\(\textrm{Trans}\)による像がBuchholzの順序数項を定めることを示す。
@@ -115,7 +115,7 @@ definition nextR :: "pairseq \<Rightarrow> nat \<Rightarrow> nat \<Rightarrow> n
 - [Buc1] W. Buchholz, A new system of proof-theoretic ordinal functions, Annals of Pure and Applied Logic, Volume 32, 1986, pp. 195--207.
 
 - [Buc2] W. Buchholz, Relating ordinals to proofs in a prespicious way, unpublished article.
-`Trans` / `Mark`. The well-foundedness of `(OT_B, <)` ([Buc1] Lemma 2.2) is the
+<<<UNRECOVERABLE line 118 — the transcript-recovered anchor here was CONTAMINATION (Isabelle source / our own English notes, not article text). The article's true line is unknown; consult tmp/original.html. Kept as a placeholder so line numbers stay stable.>>>
 # 記法[]
 
 \(\mathbb{N}\)で非負整数全体の集合を表し、\(\mathbb{N}_{+}\)で正整数全体の集合を表す。
@@ -123,7 +123,7 @@ definition nextR :: "pairseq \<Rightarrow> nat \<Rightarrow> nat \<Rightarrow> n
 クラス\(A\)に対し、集合\(a\)が\(A\)値配列であるとは、ある\(n \in \mathbb{N}\)が存在して\(a \in A^n\)ということである。このような\(n\)は\(a\)に対して一意であるので\(\textrm{Lng}(a)\)と表す。\(\textrm{Lng}(a) = 0\)の時、\(A\)に紛れのない限り\(a\)を\(()\)と表す。\(i < \textrm{Lng}(a)\)を満たす各\(i \in \mathbb{N}\)に対し、\(a\)の第\(i\)成分を\(a_i \in A\)と表す。
 
 \(i_0 \leq i_1\)を満たす各\(i_0,i_1 \in \mathbb{N}\)と、\(\{i \in \mathbb{N} \mid i_0 \leq i \leq i_1\}\)を定義域に含む各\(A\)値関数\(f\)に対し、長さが\(i_1-i_0+1\)であって任意の\(i \in \mathbb{N}\)に対し\(i \leq i_1-i_0\)ならば第\(i\)成分が\(f(i_0+i)\)であるような\(A\)値配列を\((f(i))_{i=i_0}^{i_1}\)と表す。\(i_0 \leq i_1\)を満たさないかまたは\(\{i \in \mathbb{N} \mid i_0 \leq i \leq i_1\}\)を\(f\)が定義域に含まないような各\(i_0,i_1 \in \mathbb{N}\)と各\(A\)値関数\(f\)に対し、\((a_i)_{i=i_0}^{i_1} := ()\)と置く。
-- **Lemma 2.1** (`<` strict linear order: irreflexive / transitive / trichotomous)
+<<<UNRECOVERABLE line 126 — the transcript-recovered anchor here was CONTAMINATION (Isabelle source / our own English notes, not article text). The article's true line is unknown; consult tmp/original.html. Kept as a placeholder so line numbers stay stable.>>>
 クラス\(A\)に対し、\(A\)値配列全体のクラスを\(A^{< \omega}\)と置き、\(A^{< \omega}\)上の二項演算
 \begin{eqnarray*}
 \oplus_A \colon (A^{< \omega})^2 & \to & A^{< \omega} \\
@@ -241,7 +241,7 @@ a & \mapsto & \bigoplus_A a
 \(j'\)の最大性から、任意の\(j \in \mathbb{N}\)に対し\(j' < j \leq j'_1\)かつ\((0,j) \leq_M (0,j'_1)\)ならば\(M_{1,j} \geq M_{1,j'_1}\)である。従って\((1,j') <_M^{\textrm{Next}} (1,j'_1)\)となるが、これは\(j'_0 < j'\)に反する。□
 
 系（直系先祖の基本性質）
-  assumes "(M, m) \<in> Marked" "j0' \<le> m" "m \<le> j1'" "j1' \<le> Lng M - 1"
+<<<UNRECOVERABLE line 244 — the transcript-recovered anchor here was CONTAMINATION (Isabelle source / our own English notes, not article text). The article's true line is unknown; consult tmp/original.html. Kept as a placeholder so line numbers stay stable.>>>
 任意の\(M \in T_{\textrm{PS}}\)と\(j_0,j,j_1 \in \mathbb{N}\)に対し、\(j_0 < j \leq j_1\)ならば以下が成り立つ：
 
 (1) \((0,j_0) \leq_M (0,j_1)\)ならば\(M_{0,j_0} < M_{0,j}\)である。
@@ -284,12 +284,12 @@ M & \mapsto & \textrm{Pred}(M)
 まだ順序数表記系の構造を与えていないが、\(\textrm{Pred}\)は\(\emptyset\)に対しては\(\emptyset\)を、後続順序数に対してその最大元を取る操作に対応する。
 
 写像
-definition adm :: "pairseq \<Rightarrow> nat \<Rightarrow> bool" where
+<<<UNRECOVERABLE line 287 — the transcript-recovered anchor here was CONTAMINATION (Isabelle source / our own English notes, not article text). The article's true line is unknown; consult tmp/original.html. Kept as a placeholder so line numbers stay stable.>>>
 \textrm{Derp} \colon T_{\textrm{PS}} & \to & T_{\textrm{PS}} \cup \{()\} \\
 M & \mapsto & \textrm{Derp}(M)
 \end{eqnarray*}
 を以下のように定める：
-definition AdmSet :: "pairseq \<Rightarrow> nat set" where
+<<<UNRECOVERABLE line 292 — the transcript-recovered anchor here was CONTAMINATION (Isabelle source / our own English notes, not article text). The article's true line is unknown; consult tmp/original.html. Kept as a placeholder so line numbers stay stable.>>>
 - \(j_1 := \textrm{Lng}(M)-1\)と置く。
 
 - \(\textrm{Derp}(M) := (M_j)_{j=1}^{j_1}\)である。
@@ -441,7 +441,7 @@ M & \mapsto & \textrm{IncrFirst}(M)
 - 複項ペア数列全体の部分集合を\(MT_{\textrm{PS}} \subset T_{\textrm{PS}}\)と置く。
 
 命題（複項性の判定条件）
-  shows "(Red M, m) \<in> Marked"
+<<<UNRECOVERABLE line 444 — the transcript-recovered anchor here was CONTAMINATION (Isabelle source / our own English notes, not article text). The article's true line is unknown; consult tmp/original.html. Kept as a placeholder so line numbers stay stable.>>>
 任意の\(M \in T_{\textrm{PS}}\)に対し、以下は同値である：
 
 (1) \(M\)は複項でない。
@@ -469,7 +469,7 @@ M & \mapsto & \textrm{IncrFirst}(M)
 命題（単項性の直系先祖による切片への遺伝性）
 
 任意の\(M \in T_{\textrm{PS}}\)と\(j'_0,j'_1 \in \mathbb{N}\)に対し、\(j'_0 < j'_1\)かつ\((0,j'_0) \leq_M (0,j'_1)\)ならば\((M_j)_{j=j'_0}^{j'_1}\)は単項である。
-  \<open>(i,j\<^sub>0) <\<^bsub>M\<^esub>\<^sup>NextAdm (i,j\<^sub>1)\<close> (§7.4): \<open>(i,j\<^sub>0) \<le>\<^sub>M (i,j\<^sub>1)\<close>, \<open>j\<^sub>0 < j\<^sub>1\<close>,
+<<<UNRECOVERABLE line 472 — the transcript-recovered anchor here was CONTAMINATION (Isabelle source / our own English notes, not article text). The article's true line is unknown; consult tmp/original.html. Kept as a placeholder so line numbers stay stable.>>>
 証明：
 
 \(M' := (M_j)_{j=j'_0}^{j'_1}\)と置く。任意の\(j \in \mathbb{N}\)に対し\(0 < j \leq j'_1-j'_0\)を満たすならば、直系先祖の基本性質 (1)と\((0,j'_0) \leq_M (0,j'_1)\)より\(M'_{0,0} = M_{0,j'_0} < M_{0,j'_0+j} = M'_{0,j}\)である。従って親の存在の判定条件 (3)より\((0,0) \leq_{M'} (0,j'_1-j'_0)\)である。\(\textrm{Lng}(M') = j'_1 - j'_0 > 0\)であるので、\(M'\)は零項でない。以上より\(M'\)は単項である。□
@@ -588,10 +588,10 @@ P(M) = P((M_j)_{j=0}^{j'_0-1}) \oplus_{\mathbb{N}^2} P((M_j)_{j=j'_0}^{j_1}) = P
 
 - \(j\)が非\(M\)許容であるとは、以下のいずれかを満たすということである：
 
-section \<open>§7 Buchholz の表記系への翻訳\<close>
+<<<UNRECOVERABLE line 591 — the transcript-recovered anchor here was CONTAMINATION (Isabelle source / our own English notes, not article text). The article's true line is unknown; consult tmp/original.html. Kept as a placeholder so line numbers stay stable.>>>
 
 - \((1,j-1) <_M^{\textrm{Next}} (1,j) <_M^{\textrm{Next}} (1,j+1)\)である。
-  The Buchholz notation system, transcribed from the cited reference
+<<<UNRECOVERABLE line 594 — the transcript-recovered anchor here was CONTAMINATION (Isabelle source / our own English notes, not article text). The article's true line is unknown; consult tmp/original.html. Kept as a placeholder so line numbers stay stable.>>>
 - \(j\)が\(M\)許容であるとは、\(j\)が非\(M\)許容でないということである。
 
 - \(M\)許容である自然数全体のなす部分集合を\(\mathbb{N}_M \subset \mathbb{N}\)と置く。
@@ -693,7 +693,7 @@ Q & \mapsto & \textrm{IdxSum}(Q)
 
 (2) 任意の\(j \in \mathbb{N}\)に対し、\(j \leq j_1\)かつ\((0,j_0) <_M^{\textrm{Next}} (0,j)\)を満たす一意な\(j \in \mathbb{N}\)が存在しないならば、ある\(J \in \mathbb{N}\)が存在して\(J \leq J_1\)かつ\(j = \textrm{IdxSum}(P(M))_J\)である。
 
-subsection \<open>§7.1 Buchholz の表記系 — 基本列と \<open>dom\<close> ([Buc1] §3)\<close>
+<<<UNRECOVERABLE line 696 — the transcript-recovered anchor here was CONTAMINATION (Isabelle source / our own English notes, not article text). The article's true line is unknown; consult tmp/original.html. Kept as a placeholder so line numbers stay stable.>>>
 
 \(P\)の再帰的定義と\(P\)と\(\textrm{IdxSum}\)の関係から即座に従う。□
 
@@ -2860,7 +2860,7 @@ M & \mapsto & \textrm{RightAnces}(M)
 
 \(M_{1,j_1} = v = u+1 = M_{1,j_0}+1 > 0\)かつ\(j_0+1 = 1 = j_1\)であるので\(M\)は条件(VI)を満たす。従って\(c_2^M = D_{v^M} D_{M_{1,j_1^M}} 0 = D_u D_v 0\)であり、\(\textrm{Trans}(M) = s_1^M c_2^M b_1^M = D_u D_v 0\)である。
 
-lemma idxsum_leftend_lmin:
+<<<UNRECOVERABLE line 2863 — the transcript-recovered anchor here was CONTAMINATION (Isabelle source / our own English notes, not article text). The article's true line is unknown; consult tmp/original.html. Kept as a placeholder so line numbers stay stable.>>>
 
 \(\textrm{Pred}(M) = ((j,j))_{j=u}^{v-1}\)であるので、帰納法の仮定から\(t_1^M = \textrm{Trans}(\textrm{Pred}(M)) = D_u D_{v-1} 0 \neq 0\)であるので\(M\)に対し条件(I)～(VI)が意味を持つ。
 
@@ -2955,7 +2955,7 @@ lemma idxsum_leftend_lmin:
 \(j_0\)が\(M\)許容より\(j_{-1} = j_0\)である。従って\(c_1 = \textrm{Mark}(\textrm{Pred}(M),j_{-1}) = \textrm{Trans}((\textrm{Pred}(M)_j)_{j=j_{-1}}^{j_1-1}) = \textrm{Trans}((M_j)_{j=j_0}^{j_1-1})\)である。また\(t_1 \neq 0\)かつ\((t_1,c_1) \in T_{\textrm{B}}^{\textrm{Marked}}\)から\(c_1 \in PT_{\textrm{B}}\)である。
 
 (2)が成り立つことを示す。
-lemma idxsum_lmin_leftend:
+<<<UNRECOVERABLE line 2958 — the transcript-recovered anchor here was CONTAMINATION (Isabelle source / our own English notes, not article text). The article's true line is unknown; consult tmp/original.html. Kept as a placeholder so line numbers stay stable.>>>
 \(j'_{-1} \leq j'_0 < j_0 < j_1\)より\(j'_{-1} \leq j_1-2\)である。\((0,j'_{-1}) \leq_M (0,j'_0) <_M^{\textrm{Next}} (0,j_0) <_M^{\textrm{Next}} (0,j_1)\)より\((M,j'_{-1}) \in T_{\textrm{PS}}^{\textrm{Marked}}\)である。従って基点の切片への遺伝性より\((\textrm{Pred}(M),j'_{-1}) \in T_{\textrm{PS}}^{\textrm{Marked}}\)である。\((M,j_0) \in T_{\textrm{PS}}^{\textrm{Marked}}\)と基点の切片への遺伝性より\(((M_j)_{j=j'_{-1}}^{j_1-1},j_0-j'_{-1}) \in T_{\textrm{PS}}^{\textrm{Marked}}\)である。
 
 (3), (4)が成り立つことを示す。
@@ -3087,7 +3087,7 @@ c_2^N & = & D_{v^N}(t_3^N + D_{N_{1,j_0^N}}(t_4^N + D_{N_{1,j_1^N}} 0)) = D_{M_{
 \(\textrm{Lng}(N) = j_0+(n-1)(j_1-j_0)+1\)より\(j_1^N = j_0+(n-1)(j_1-j_0) \geq j_0 + (j_1-j_0) \geq j_0+1 > 1\)であるので\(\textrm{Pred}(N)\)は零項でなく、\(\textrm{Trans}\)が零項性を保つことより\(t_1^N \neq 0\)である。従って\(N\)に対して条件(I)～(VI)が意味を持つ。
 
 \((0,j'_0) <_{M[n]}^{\textrm{Next}} (0,j_0+(n-1)(j_1-j_0))\)より\((0,j'_0) <_N^{\textrm{Next}} (0,j_0+(n-1)(j_1-j_0)) = (0,j_1^N)\)であるので\(j_0^N = j'_0\)であり、\(\textrm{Pred}(N) = (M[n]_j)_{j=0}^{j_0+(n-1)(j_1-j_0)-1} = M[n-1]\)である。従って\(t_1^N = \textrm{Trans}(\textrm{Pred}(N)) = \textrm{Trans}(M[n-1]) = \textrm{Trans}(M)[n-2]\)である。
-  @{thm [source] p_6_4_P_IdxSum_char_2}.\<close>
+<<<UNRECOVERABLE line 3090 — the transcript-recovered anchor here was CONTAMINATION (Isabelle source / our own English notes, not article text). The article's true line is unknown; consult tmp/original.html. Kept as a placeholder so line numbers stay stable.>>>
 \(j'_0 < j_0 \leq j_1-1\)と許容化の切片への遺伝性より\(\textrm{Adm}_N(j'_0) = \textrm{Adm}_{\textrm{Pred}(M)}(j'_0) = j'_{-1}\)である。従って\(j_{-1}^N = \textrm{Adm}_N(j_0^N) = \textrm{Adm}_N(j'_0) = j'_{-1}\)である。
 
 \(j_0^N+1 = j'_0+1 \leq j_0 < j_1 \leq j_0+(n-1)(j_1-j_0) = j_1^N\)より、\(N\)は条件(VI)を満たさない。□
@@ -3119,9 +3119,9 @@ c_2^N & = & D_{v^N}(t_3^N + D_{N_{1,j_0^N}}(t_4^N + D_{N_{1,j_1^N}} 0)) = D_{M_{
 \(\textrm{Trans}(M[n]) = \textrm{Trans}(M)[n-1]\)となることを\(n\)に関する数学的帰納法で示す。
 
 \(n = 1\)ならば\(\textrm{Trans}(M[n]) = s_1 c_1 b_1 =  c_1 = \textrm{Trans}(M)[n-1]\)である。
-  @{thm [source] p_6_4_P_leftend_mono}.\<close>
+<<<UNRECOVERABLE line 3122 — the transcript-recovered anchor here was CONTAMINATION (Isabelle source / our own English notes, not article text). The article's true line is unknown; consult tmp/original.html. Kept as a placeholder so line numbers stay stable.>>>
 \(n > 1\)ならば、帰納法の仮定より\(\textrm{Trans}(M[n-1]) = \textrm{Trans}(M)[n-2]\)であり、\(\textrm{Lng}(\textrm{Pred}(M)) = j_1 > 1\)より\(\textrm{Pred}(M) \neq (0,0)\)であるので\(\textrm{Trans}\)の再帰的定義より
-lemma m_6_4_P_leftend_mono:
+<<<UNRECOVERABLE line 3124 — the transcript-recovered anchor here was CONTAMINATION (Isabelle source / our own English notes, not article text). The article's true line is unknown; consult tmp/original.html. Kept as a placeholder so line numbers stay stable.>>>
 \begin{eqnarray*}
 \textrm{Trans}(M[n]) & = & \textrm{Trans}(\bigoplus_{\mathbb{N}^2} (\textrm{Pred}(M))_{k=0}^{n-2}) + \textrm{Trans}(\textrm{Pred}(M)) = \textrm{Trans}(M[n-1]) + t_1 = \textrm{Trans}(M)[n-2] + s_1 c_1 b_1 = c_1 \times (n-1) + c_1 \\
 & = & c_1 \times n = \textrm{Trans}(M)[n-1]
@@ -3161,7 +3161,7 @@ s_1 c_1 b_1 = t_1 = \textrm{Trans}(\textrm{Pred}(M)) = s'_{-1} \textrm{Mark}(\te
 
 であるので、加法とscb分解の関係とscb分解の合成則 (2)を反復して適用することで[54]
 
-    by (rule idxsum_leftend_lmin[OF assms(1) J1L])
+<<<UNRECOVERABLE line 3164 — the transcript-recovered anchor here was CONTAMINATION (Isabelle source / our own English notes, not article text). The article's true line is unknown; consult tmp/original.html. Kept as a placeholder so line numbers stay stable.>>>
 \textrm{Trans}(M) = s_1 c_2 b_1 = s'_{-1} D_{M_{1,j'_{-1}}}(t'_2+c_2) b'_{-1} = s'_{-1} D_{M_{1,j'_{-1}}}(t'_2 + D_{M_{1,j_0}}(t_2 + D_0 0)) b'_{-1}
 \end{eqnarray*}
 
@@ -3603,7 +3603,7 @@ M & \mapsto & \textrm{LastStep}(M)
 
 任意の\(M \in RT_{\textrm{PS}} \cap PT_{\textrm{PS}}\)と\(m \in \mathbb{N}\)に対し、\(j_1 := \textrm{Lng}(M)-1\)と置き、\(J_1 := \textrm{Lng}(\textrm{Br}(M))-1\)と置き、\(J_1 \geq 0\)として\(j'_0 := \textrm{Joints}(M)_{J_1}\)と置き、\(j'_1 := \textrm{FirstNodes}(M)_{J_1}\)と置き、\(M' := (M_j)_{j=m}^{j_1}\)と置くと、「\(m < j'_0\)」または「\(m = j'_0\)かつ\(M_{0,j'_1} = M_{1,j'_1}\)かつ\(\textrm{Br}(M)\)が降順」ならば、一意な\(j_0 \in \mathbb{N}\)が存在して以下を満たす：
 
-  @{thm [source] p_6_4_mono_slice_next}.\<close>
+<<<UNRECOVERABLE line 3606 — the transcript-recovered anchor here was CONTAMINATION (Isabelle source / our own English notes, not article text). The article's true line is unknown; consult tmp/original.html. Kept as a placeholder so line numbers stay stable.>>>
 
 (2) \(j'_0 \leq j_0\)である。
 
@@ -3711,7 +3711,7 @@ M & \mapsto & \textrm{LastStep}(M)
 <<<MISSING line 3711 — recover from original.html via tools/make_content.py>>>
 <<<MISSING line 3712 — recover from original.html via tools/make_content.py>>>
 <<<MISSING line 3713 — recover from original.html via tools/make_content.py>>>
-  @{thm [source] p_6_4_FirstNodes_TrMax_Joints} (statement rendered with
+<<<UNRECOVERABLE line 3714 — the transcript-recovered anchor here was CONTAMINATION (Isabelle source / our own English notes, not article text). The article's true line is unknown; consult tmp/original.html. Kept as a placeholder so line numbers stay stable.>>>
 <<<MISSING line 3715 — recover from original.html via tools/make_content.py>>>
 <<<MISSING line 3716 — recover from original.html via tools/make_content.py>>>
 <<<MISSING line 3717 — recover from original.html via tools/make_content.py>>>
@@ -6265,7 +6265,7 @@ G_u D_v 0 & = & \left\{ \begin{array}{ll} \{0\} \cup G_u 0 & (u \leq v) \\ \empt
 <<<MISSING line 6265 — recover from original.html via tools/make_content.py>>>
 <<<MISSING line 6266 — recover from original.html via tools/make_content.py>>>
 <<<MISSING line 6267 — recover from original.html via tools/make_content.py>>>
-text \<open>m: 命題（Lng の Red 不変性） — discharges p_6_5_Lng_Red.\<close>
+<<<UNRECOVERABLE line 6268 — the transcript-recovered anchor here was CONTAMINATION (Isabelle source / our own English notes, not article text). The article's true line is unknown; consult tmp/original.html. Kept as a placeholder so line numbers stay stable.>>>
 <<<MISSING line 6269 — recover from original.html via tools/make_content.py>>>
 <<<MISSING line 6270 — recover from original.html via tools/make_content.py>>>
 <<<MISSING line 6271 — recover from original.html via tools/make_content.py>>>

@@ -161,6 +161,29 @@ def footnotes_block(html):
     return out, len(items)
 
 
+CONTAMINATION = re.compile(
+    r"\\<open>|\\<Rightarrow>|\\<in>|@\{thm|^definition |^lemma |^theorem |^\s*assumes |^\s*shows ")
+
+
+def assert_uncontaminated(lines):
+    """Fail loudly if any line of the output looks like OUR sources rather than the article.
+
+    The anchor file is a majority vote over past session transcripts, and those transcripts
+    contain both the article AND our Isabelle sources.  Twenty lines of `pss_defs.thy` /
+    `pss_mechanized.thy` / our own English notes had leaked into content.md this way and were
+    sitting there as if they were the article's text — while corrections.md quotes content.md
+    to accuse the author of errors.  Those twenty are now pinned as <<<UNRECOVERABLE>>>
+    placeholders.  This check exists so it cannot happen again silently.
+    """
+    bad = [(i + 1, l) for i, l in enumerate(lines)
+           if l.strip() and CONTAMINATION.search(l) and "UNRECOVERABLE" not in l]
+    if bad:
+        for n, l in bad[:10]:
+            print("CONTAMINATED line %d: %s" % (n, l[:100]), file=sys.stderr)
+        sys.exit("ERROR: %d line(s) of content.md look like OUR sources, not the article. "
+                 "Never quote these as 原文." % len(bad))
+
+
 def main():
     if not os.path.exists(ORIGINAL):
         sys.exit("ERROR: %s not found (restore the external source first)" % ORIGINAL)
@@ -173,6 +196,7 @@ def main():
     bad = sum(1 for n, t in known.items() if final[n - 1] != t)
     fn, nfn = footnotes_block(html)
     final = final + fn
+    assert_uncontaminated(final)
     with open(OUT, "w", encoding="utf-8") as f:
         f.write("\n".join(final) + "\n")
     print("wrote %s: %d lines, %d anchor lines pinned (%d violations), "
