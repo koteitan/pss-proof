@@ -258,13 +258,57 @@ _BMS_BIN = os.environ.get(
                  "tmp", "yaBMS", "c", "bms"))
 
 def is_standard(M):
-    """True iff M is a standard-form pair sequence, per yaBMS `bms -s`.
-    Requires the yaBMS binary (set $BMS_BIN). Raises if it is not available."""
+    """True iff M is a standard-form pair sequence IN THE USUAL (u = 0) SENSE, per yaBMS `bms -s`.
+
+    🚨 THIS IS **NOT** THE ARTICLE'S ST_PS. DO NOT USE ITS NEGATION. 🚨
+
+    The article (content.md 1340-1346) takes ST_PS to be the least set containing the diagonal
+    ((j,j))_{j=u}^{v} for EVERY u <= v, closed under M[n] — and says so explicitly: "通常は標準形
+    ペア数列と言ったら 3 行バシク行列 ((0,0,0)(1,1,1)) の展開で現れるものを指すが、それは上の条件に
+    おいて u = 0 としたものに対応するため、ここでの流儀では標準形が通常より広い対象を指す".
+    `pss_defs.thy`'s `inductive_set ST_PS` is faithful to that.
+
+    yaBMS's isstd() seeds from column (0,0) only, so it decides the u = 0 orbit ALONE.  Measured on a
+    3000-element wide ST_PS orbit (diagSeq u v for u = 0..3, closed under oper): 2634 accepted, 366
+    REJECTED — every one of them a genuine ST_PS member with u > 0.  Witnesses: (1,1), (2,2),
+    (1,1)(2,2), (1,1)(2,2)(3,3).
+
+        is_standard(M) == True   ==>  M in ST_PS          SOUND
+        is_standard(M) == False  ==>  M not in ST_PS      **FALSE**
+
+    So filtering a corpus with `if not is_standard(M): continue` silently deletes the whole u > 0
+    region, and the inference "the counterexample is non-standard, therefore the claim holds on ST_PS"
+    is UNSOUND.  Use `is_standard_wide` below, or build the orbit directly from diagSeq(u, v).
+    """
     if not os.path.exists(_BMS_BIN):
         raise FileNotFoundError(
             f"yaBMS binary not found at {_BMS_BIN}; set $BMS_BIN to the `bms` tool.")
     out = subprocess.run([_BMS_BIN, "-s", fmt(M)], capture_output=True, text=True).stdout.strip()
     return out == "1"
+
+
+def is_standard_wide(M):
+    """True iff M is a standard form in the ARTICLE's (wider) sense — i.e. M in ST_PS.
+
+    ST_PS is the DIAGONAL-TRANSLATE family of the usual u = 0 orbit.  `oper` is equivariant under
+    adding (u, u) to every entry, and the first column of a diagSeq(u, v) orbit stays (u, u), so
+
+        M in orbit(diagSeq(u, ·))   iff   M - (u,u) in orbit(diagSeq(0, ·)),   u = M_{0,0}.
+
+    Verified: orbit(diagSeq 1 4) == (1,1)-translate of orbit(diagSeq 0 3), 26/26 elements, no
+    exceptions.  NOTE the translate is on BOTH coordinates — shifting row 0 alone is WRONG
+    (it maps (1,1)(2,2) to (0,1)(1,2), which is not even reduced).
+    """
+    if not M:
+        return False
+    u = M[0][0]
+    if M[0][1] != u:                      # a standard form always starts on the diagonal
+        return False
+    if u == 0:
+        return is_standard(M)
+    if any(a < u or b < u for (a, b) in M):
+        return False
+    return is_standard([(a - u, b - u) for (a, b) in M])
 
 if __name__=="__main__":
     # quick self-test: the §6.5 Red_le counterexample (article claims T_PS-wide; false)
