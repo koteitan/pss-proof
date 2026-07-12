@@ -84759,6 +84759,10 @@ lemma c4dx_condIV_exchange_assembled:
     \<comment> \<open>the article-form \<open>t\<^sub>2\<close> component bound (the only §8.4-side residual)\<close>
     and HB: "\<forall>c \<in> set (PB (transT2 M)).
                leBT (Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B) c"
+    and LbaseH: "\<And>s0 b0. scb_decomp (bpHeadT (Trans (s84x_N M))) s0
+                    (flatBT (Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B)) b0 \<Longrightarrow>
+                  leBT (Dpt (enat (entry M 1 (Lng M - 1) - 1)) 0\<^sub>B)
+                    (d4vx_ins s0 (entry M 1 (Lng M - 1) - 1) b0 0\<^sub>B)"
   shows "lessBT (Trans ((M::pairseq)[n])) (operB (Trans M) (numBT n))
        \<and> lessBT (Trans ((M::pairseq)[n])) (Trans M)
        \<and> lessBT (operB (Trans M) (numBT (n - 1))) (Trans ((M::pairseq)[n + 1]))"
@@ -84814,9 +84818,12 @@ proof -
       (d4vx_ins s0 (entry M 1 (Lng M - 1) - 1) b0
          (Dpt (enat (entry M 1 (Lng M - 1) - 1)) 0\<^sub>B))"
     by (rule c4dx_condIV_base1[OF MR MPT J1pos T1 cIV inner])
+  have Lbase: "leBT (Dpt (enat (entry M 1 (Lng M - 1) - 1)) 0\<^sub>B)
+                 (d4vx_ins s0 (entry M 1 (Lng M - 1) - 1) b0 0\<^sub>B)"
+    by (rule LbaseH[OF inner])
   show ?thesis
     by (rule c4cx_condIV_exchange_full[OF MST MPT hp cIV reg admeq n1 d1 d2 d3
-          uv bodyT bodyne dbbody inner k1 mn base0 base1])
+          uv bodyT bodyne dbbody inner k1 mn base0 base1 Lbase])
 qed
 
 (* ===== end round 28 front CONDIV13 ===== *)
@@ -84871,41 +84878,72 @@ lemma c4dx_condIV_exchange1:
     and base1: "lessBT (transT2 M)
                   (d4vx_ins s0 (entry M 1 (Lng M - 1) - 1) b0
                      (Dpt (enat (entry M 1 (Lng M - 1) - 1)) 0\<^sub>B))"
+    and Lbase: "leBT (Dpt (enat (entry M 1 (Lng M - 1) - 1)) 0\<^sub>B)
+                  (d4vx_ins s0 (entry M 1 (Lng M - 1) - 1) b0 0\<^sub>B)"
   shows "lessBT (Trans ((M::pairseq)[n])) (operB (Trans M) (numBT n))"
 proof -
   let ?e3 = "entry M 1 (s84x_jm3 M)"
+  let ?v1 = "entry M 1 (Lng M - 1)"
   let ?ub = "entry M 1 (Lng M - 1) - 1"
-  let ?X0 = "Dpt (enat ?ub) 0\<^sub>B"
   have MR: "M \<in> RT_PS" using MST m_6_7_ST_PS_subseteq_RT_PS by blast
   have TT: "Trans M \<in> T_B" by (rule m_7_3_Trans_in_T_B[OF MR])
-  have wrap: "flatBT body
-      = s0 @ flatBP (DB (enat (entry M 1 (Lng M - 1))) 0\<^sub>B) @ b0"
+  have Sn: "(n - 1) + 1 = n" using n1 by simp
+  have wrap: "flatBT body = s0 @ flatBP (DB (enat ?v1) 0\<^sub>B) @ b0"
     using inner by (simp add: scb_decomp_def)
   have b0RP: "\<forall>x \<in> set b0. x = RP" using inner by (simp add: scb_decomp_def)
   have fs_n: "flatBT (operB (Trans M) (numBT n))
       = s1 @ (Dsym (enat ?e3)
-           # concat (replicate n (s0 @ [Dsym (enat ?ub)]))
-           @ [Dsym (enat ?ub)] @ [Zsym] @ concat (replicate n b0)) @ b1"
+           # concat (replicate (n + 1) (s0 @ [Dsym (enat ?ub)]))
+           @ [Zsym] @ concat (replicate (n + 1) b0)) @ b1"
     by (rule d13x_fseq_condIII[OF TT uv bodyT dbbody bodyne inner k1])
-  have Xflat_n: "flatBT (d4vx_core s0 ?ub b0 ?X0 n)
-      = concat (replicate n (s0 @ [Dsym (enat ?ub)]))
-        @ flatBT ?X0 @ concat (replicate n b0)"
-    by (rule d4vx_core_flat[OF wrap b0RP])
+  have Yflat: "flatBT (d4vx_core s0 ?ub b0 0\<^sub>B k)
+      = concat (replicate k (s0 @ [Dsym (enat ?ub)]))
+        @ [Zsym] @ concat (replicate k b0)" for k
+    using d4vx_core_flat[OF wrap b0RP] by simp
   have fOn: "flatBT (operB (Trans M) (numBT n))
-      = s1 @ flatBP (DB (enat ?e3) (d4vx_core s0 ?ub b0 ?X0 n)) @ b1"
-    using fs_n Xflat_n by simp
+      = s1 @ flatBP (DB (enat ?e3) (d4vx_core s0 ?ub b0 0\<^sub>B (n + 1))) @ b1"
+    using fs_n Yflat[of "n + 1"] by simp
   have fMn: "flatBT (Trans ((M::pairseq)[n]))
       = s1 @ flatBP (DB (enat ?e3) (d4vx_core s0 ?ub b0 (transT2 M) (n - 1))) @ b1"
     using mnform[OF n1] by simp
   have dTM: "scb_decomp (Trans M) s1 (flatBT (Dpt (enat ?e3) body)) b1"
     using k1 by (simp add: scb_kind1_def)
   have b1RP: "\<forall>x \<in> set b1. x = RP" using dTM by (simp add: scb_decomp_def)
-  have Sn: "Suc (n - 1) = n" using n1 by simp
+  have A0lt2: "lessBT (transT2 M) (d4vx_core s0 ?ub b0 0\<^sub>B 2)"
+  proof -
+    have step: "leBT (d4vx_ins s0 ?ub b0 (Dpt (enat ?ub) 0\<^sub>B))
+                     (d4vx_ins s0 ?ub b0 (d4vx_ins s0 ?ub b0 0\<^sub>B))"
+    proof (cases "Dpt (enat ?ub) 0\<^sub>B = d4vx_ins s0 ?ub b0 0\<^sub>B")
+      case True thus ?thesis by simp
+    next
+      case False
+      hence lt: "lessBT (Dpt (enat ?ub) 0\<^sub>B) (d4vx_ins s0 ?ub b0 0\<^sub>B)"
+        using Lbase by blast
+      show ?thesis using c4cx_d4vx_ins_mono[OF wrap b0RP lt] by blast
+    qed
+    have "lessBT (transT2 M) (d4vx_ins s0 ?ub b0 (d4vx_ins s0 ?ub b0 0\<^sub>B))"
+      by (rule b1x_less_le_trans[OF base1 step])
+    thus ?thesis by (simp add: numeral_2_eq_2)
+  qed
+  have comp1: "d4vx_core s0 ?ub b0 (d4vx_core s0 ?ub b0 0\<^sub>B 2) (n - 1)
+                 = d4vx_core s0 ?ub b0 0\<^sub>B (n + 1)"
+  proof -
+    have "d4vx_core s0 ?ub b0 (d4vx_core s0 ?ub b0 0\<^sub>B 2) (n - 1)
+            = d4vx_core s0 ?ub b0 0\<^sub>B ((n - 1) + 2)"
+      by (rule c4cx_d4vx_core_compose)
+    also have "(n - 1) + 2 = n + 1" using n1 by simp
+    finally show ?thesis .
+  qed
   have AXn: "lessBT (d4vx_core s0 ?ub b0 (transT2 M) (n - 1))
-                    (d4vx_core s0 ?ub b0 ?X0 n)"
-    using c4dx_d4vx_core_AX[OF wrap b0RP base1, of "n - 1"] Sn by simp
+                    (d4vx_core s0 ?ub b0 0\<^sub>B (n + 1))"
+  proof -
+    have "lessBT (d4vx_core s0 ?ub b0 (transT2 M) (n - 1))
+                 (d4vx_core s0 ?ub b0 (d4vx_core s0 ?ub b0 0\<^sub>B 2) (n - 1))"
+      by (rule c4cx_d4vx_core_mono_base[OF wrap b0RP A0lt2])
+    thus ?thesis using comp1 by simp
+  qed
   have core1: "lessBP (DB (enat ?e3) (d4vx_core s0 ?ub b0 (transT2 M) (n - 1)))
-                      (DB (enat ?e3) (d4vx_core s0 ?ub b0 ?X0 n))"
+                      (DB (enat ?e3) (d4vx_core s0 ?ub b0 0\<^sub>B (n + 1)))"
     using AXn by simp
   show ?thesis by (rule scbext_lessBT[OF fMn fOn b1RP core1])
 qed
@@ -84931,6 +84969,10 @@ lemma c4dx_condIV_exchange12_assembled:
                (Dsym (enat (entry M 1 (s84x_jm2 M))) # s1')
                (flatBT (Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B)) b1'"
     and d3: "Trans (Pred (s84x_Np M)) = Dpt (enat (entry M 1 (s84x_jm2 M))) (transT2 M)"
+    and LbaseH: "\<And>s0 b0. scb_decomp (bpHeadT (transC2 M)) s0
+                    (flatBT (Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B)) b0 \<Longrightarrow>
+                  leBT (Dpt (enat (entry M 1 (Lng M - 1) - 1)) 0\<^sub>B)
+                    (d4vx_ins s0 (entry M 1 (Lng M - 1) - 1) b0 0\<^sub>B)"
   shows "lessBT (Trans ((M::pairseq)[n])) (operB (Trans M) (numBT n))
        \<and> lessBT (Trans ((M::pairseq)[n])) (Trans M)"
 proof -
@@ -84976,7 +85018,8 @@ proof -
          (Dpt (enat (entry M 1 (Lng M - 1) - 1)) 0\<^sub>B))"
     by (rule c4dx_condIV_base1[OF MR MPT J1pos T1 cIV inner])
   have c1: "lessBT (Trans ((M::pairseq)[n])) (operB (Trans M) (numBT n))"
-    by (rule c4dx_condIV_exchange1[OF MST n1 uv bodyT bodyne dbbody inner k1 mn base1])
+    by (rule c4dx_condIV_exchange1[OF MST n1 uv bodyT bodyne dbbody inner k1 mn base1
+          LbaseH[OF inner]])
   have c2: "lessBT (Trans ((M::pairseq)[n])) (Trans M)"
     by (rule d4vx_exchange2_condIV[OF MST MPT hp cIV reg admeq n1 d1 d2 d3])
   show ?thesis using c1 c2 by blast
@@ -89517,8 +89560,10 @@ lemma crx_condIII_exchange13:
                   cfbx_reg (s84x_jm2 M - s84x_jm3 M) (Red (Pred (s84x_N M)))"
     and M0RUN: "\<not> s84x_jm3 M < s84x_jm2 M \<Longrightarrow>
                   nextR M 1 (s84x_jm2 M) (s84x_jm2 M + 1)"
-    and LbaseH: "leBT (Dpt (enat (entry M 1 (Lng M - 1) - 1)) 0\<^sub>B)
-                  (d4vx_ins s0 (entry M 1 (Lng M - 1) - 1) b0 0\<^sub>B)"
+    and LbaseH: "\<And>s0 b0. scb_decomp (bpHeadT (Trans (s84x_N M))) s0
+                    (flatBT (Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B)) b0 \<Longrightarrow>
+                  leBT (Dpt (enat (entry M 1 (Lng M - 1) - 1)) 0\<^sub>B)
+                    (d4vx_ins s0 (entry M 1 (Lng M - 1) - 1) b0 0\<^sub>B)"
   shows "lessBT (Trans ((M::pairseq)[n])) (operB (Trans M) (numBT n))
        \<and> lessBT (operB (Trans M) (numBT (n - 1))) (Trans ((M::pairseq)[n + 1]))"
 proof -
@@ -89648,9 +89693,11 @@ proof -
   have base1: "lessBT (bpHeadT (Trans (Pred (s84x_N M))))
                  (d4vx_ins s0 ?ub b0 (Dpt (enat ?ub) 0\<^sub>B))"
     by (rule base1H[OF inner'])
+  have Lbase: "leBT (Dpt (enat ?ub) 0\<^sub>B) (d4vx_ins s0 ?ub b0 0\<^sub>B)"
+    by (rule LbaseH[OF inner'])
   show ?thesis
     by (rule w84x_exchange13_core[OF MST n1 uv bodyT bodyne dbbodyH inner'
-          k1 mn base0H base1 LbaseH])
+          k1 mn base0H base1 Lbase])
 qed
 
 text \<open>Conclusion (2) — the condIII DESCENT \<open>Trans(M[n]) < Trans M\<close> — OT-FREE:
@@ -92041,8 +92088,10 @@ lemma crg_condIII_exchange13:
                   cfbx_reg (s84x_jm2 M - s84x_jm3 M) (Red (Pred (s84x_N M)))"
     and M0RUN: "\<not> s84x_jm3 M < s84x_jm2 M \<Longrightarrow>
                   nextR M 1 (s84x_jm2 M) (s84x_jm2 M + 1)"
-    and LbaseH: "leBT (Dpt (enat (entry M 1 (Lng M - 1) - 1)) 0\<^sub>B)
-                  (d4vx_ins s0 (entry M 1 (Lng M - 1) - 1) b0 0\<^sub>B)"
+    and LbaseH: "\<And>s0 b0. scb_decomp (bpHeadT (Trans (s84x_N M))) s0
+                    (flatBT (Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B)) b0 \<Longrightarrow>
+                  leBT (Dpt (enat (entry M 1 (Lng M - 1) - 1)) 0\<^sub>B)
+                    (d4vx_ins s0 (entry M 1 (Lng M - 1) - 1) b0 0\<^sub>B)"
   shows "lessBT (Trans ((M::pairseq)[n])) (operB (Trans M) (numBT n))
        \<and> lessBT (operB (Trans M) (numBT (n - 1))) (Trans ((M::pairseq)[n + 1]))"
 proof -
@@ -92172,9 +92221,11 @@ proof -
   have base1: "lessBT (bpHeadT (Trans (Pred (s84x_N M))))
                  (d4vx_ins s0 ?ub b0 (Dpt (enat ?ub) 0\<^sub>B))"
     by (rule base1H[OF inner'])
+  have Lbase: "leBT (Dpt (enat ?ub) 0\<^sub>B) (d4vx_ins s0 ?ub b0 0\<^sub>B)"
+    by (rule LbaseH[OF inner'])
   show ?thesis
     by (rule w84x_exchange13_core[OF MST n1 uv bodyT bodyne dbbodyH inner'
-          k1 mn base0H base1 LbaseH])
+          k1 mn base0H base1 Lbase])
 qed
 
 
@@ -98810,8 +98861,10 @@ lemma cpx_condIII_exchange13:
                   cfbx_reg (s84x_jm2 M - s84x_jm3 M) (Red (Pred (s84x_N M)))"
     and M0RUN: "\<not> s84x_jm3 M < s84x_jm2 M \<Longrightarrow>
                   nextR M 1 (s84x_jm2 M) (s84x_jm2 M + 1)"
-    and LbaseH: "leBT (Dpt (enat (entry M 1 (Lng M - 1) - 1)) 0\<^sub>B)
-                  (d4vx_ins s0 (entry M 1 (Lng M - 1) - 1) b0 0\<^sub>B)"
+    and LbaseH: "\<And>s0 b0. scb_decomp (bpHeadT (Trans (s84x_N M))) s0
+                    (flatBT (Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B)) b0 \<Longrightarrow>
+                  leBT (Dpt (enat (entry M 1 (Lng M - 1) - 1)) 0\<^sub>B)
+                    (d4vx_ins s0 (entry M 1 (Lng M - 1) - 1) b0 0\<^sub>B)"
   shows "lessBT (Trans ((M::pairseq)[n])) (operB (Trans M) (numBT n))
        \<and> lessBT (operB (Trans M) (numBT (n - 1))) (Trans ((M::pairseq)[n + 1]))"
 proof -
@@ -98941,9 +98994,11 @@ proof -
   have base1: "lessBT (bpHeadT (Trans (Pred (s84x_N M))))
                  (d4vx_ins s0 ?ub b0 (Dpt (enat ?ub) 0\<^sub>B))"
     by (rule base1H[OF inner'])
+  have Lbase: "leBT (Dpt (enat ?ub) 0\<^sub>B) (d4vx_ins s0 ?ub b0 0\<^sub>B)"
+    by (rule LbaseH[OF inner'])
   show ?thesis
     by (rule w84x_exchange13_core[OF MST n1 uv bodyT bodyne dbbodyH inner'
-          k1 mn base0H base1 LbaseH])
+          k1 mn base0H base1 Lbase])
 qed
 
 
@@ -102110,8 +102165,10 @@ lemma cnv_condIV_nonadmeq_exchange13:
                   cfbx_reg (s84x_jm2 M - s84x_jm3 M) (Red (Pred (s84x_N M)))"
     and M0RUN: "\<not> s84x_jm3 M < s84x_jm2 M \<Longrightarrow>
                   nextR M 1 (s84x_jm2 M) (s84x_jm2 M + 1)"
-    and LbaseH: "leBT (Dpt (enat (entry M 1 (Lng M - 1) - 1)) 0\<^sub>B)
-                  (d4vx_ins s0 (entry M 1 (Lng M - 1) - 1) b0 0\<^sub>B)"
+    and LbaseH: "\<And>s0 b0. scb_decomp (bpHeadT (Trans (s84x_N M))) s0
+                    (flatBT (Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B)) b0 \<Longrightarrow>
+                  leBT (Dpt (enat (entry M 1 (Lng M - 1) - 1)) 0\<^sub>B)
+                    (d4vx_ins s0 (entry M 1 (Lng M - 1) - 1) b0 0\<^sub>B)"
   shows "lessBT (Trans ((M::pairseq)[n])) (operB (Trans M) (numBT n))
        \<and> lessBT (operB (Trans M) (numBT (n - 1))) (Trans ((M::pairseq)[n + 1]))"
 proof -
@@ -102236,9 +102293,11 @@ proof -
   have base1: "lessBT (bpHeadT (Trans (Pred (s84x_N M))))
                  (d4vx_ins s0 ?ub b0 (Dpt (enat ?ub) 0\<^sub>B))"
     by (rule base1H[OF inner'])
+  have Lbase: "leBT (Dpt (enat ?ub) 0\<^sub>B) (d4vx_ins s0 ?ub b0 0\<^sub>B)"
+    by (rule LbaseH[OF inner'])
   show ?thesis
     by (rule w84x_exchange13_core[OF MST n1 uv bodyT bodyne dbbodyH inner'
-          k1 mn base0H base1 LbaseH])
+          k1 mn base0H base1 Lbase])
 qed
 
 (* ---- clone 3: cnv_condIV_nonadmeq_descent ---- *)
