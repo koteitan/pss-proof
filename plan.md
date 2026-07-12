@@ -90,15 +90,8 @@ task.md のユーザー向け骨格に対する、作業側の詳細版。ユー
 - ✅ §6 ペア数列の基本性質 〔全節完了(2026-06-11)。docs `reducedness.md`/`red-le-domain.md`/`slice-Br-descending.md`〕
 - ✅ §7 Buchholzの表記系への翻訳 
 - 🚨 §8 停止性 〔r18: capstone `m_8_termination_modulo_CF`=停止性は CF-META(原典Pred同時帰納)+`buc1_2_2`整礎 の2点に崩壊。CF が唯一の Fable target〕
-  - 📘 [Buc1] 引用sorry(外部結果。自前証明は停止性に不要)〔**2026-07-12 ツリーから削除(ユーザー指示)**。**理由**: 原文自身が [Buc1] の結果(特に Lemma 2.2 = (OT_B,<) の整礎性)を**引用のみで済ませて**停止性を導いている。r71 で原文ルートを組み立てた結果(`y3_PSS_wf_of_KK_buc1`)、**引用したまま停止性は残差 KK ただ一つに帰着**することが判明——つまり **wf RPrel を自前で証明する必要は最初から無かった**。多ラウンド費やした自前証明ツリー(下記)は task.md/plan.md の追跡対象から外す。**コード(.thy)は全て保持**(ユーザー明示: 「thyはあってもok」)。
-    〔削除したサブツリーの記録(合計~r14、traceability 用)〕
-    - ✅ Lemma 2.1 lessBT 狭義線形順序 / ✅ Lemma 3.2a+3.3 OT閉包の直接証明[r1] — **実際に証明済**(termination chain が使用)。
-    - 🚨 Lemma 2.2 `(OT_B,<)` 整礎性 `buc1_2_2_OT_B_wf` — **未証明のまま外部引用として残す(📘)**。以下は自前証明の試行史:
-      - ✅ principal順序への還元[r1] / ✅ depth有界断片[r2]
-      - 🚨 unbounded-depth chain排除→level jump: ✅ wfs_(level-0 acc+rank基盤)[r2][0.423][0.73h] / ✅ wfj_(lvP-STRAT反証→head-index STRAT)[r1][0.284][0.25h] / ✅ wfc_(bookkeeping消去+非可述性確定)[r1][0.239][0.35h]
-      - 🚨 pbody-acc本体(distinguished sets): ✅ wds_(定義+Mset+D1+acc bridge)[r1][0.233][0.21h] / 🚨 残=y3_cof0(純順序論的cofinality。r70 で bwl_cof の W-所属節を無料化し縮約。y3_cof0⟹bwl_cof⟹wf RPrel)[r7][1.39][2.54h]
-      - ❌死枠(再挑戦禁止、REFUTED registry 参照): minimal-bad/head-level tower(wcl_upper)/lvP-STRAT/acc-based bwl_Wlev
-      - 🎯 r68 の成果は生きている: Buchholz[1]§2 2.4-2.8 を lfp 化で**無条件証明**(bwl_、全 D_ω-free 項が W*)。これが r70 の W-帰納 engine の土台になった〕
+  - ✅ [Buc1] 引用sorry 討伐(Lemma 2.1/3.2a+3.3/2.2 全て自前証明)〔**⚠️訂正(2026-07-12): 一度「不要」としてツリーから消したのは誤り**。ユーザー指摘「§8の子に[Buc1]が入っていると §8 には [Buc1] が真であることが必要という意味になる。必要なの、必要じゃないの?」→**必要**。停止性は (OT_B,<) の整礎性を要する。**そして r71 front B がそれを証明した**: Buchholz[1]§3 の **≪_k step-down 関係**を写経(y4_bachmann/y4_xseq_cof/y4_inner/y4_bump 等)し **y4_cof0("y3_cof0") → y4_bwl_cof("bwl_cof") → y4_wf_RPrel("wf RPrel") → `y4_buc1_2_2_OT_B_wf`("wf {(a,b). a∈OT_B ∧ b∈OT_B ∧ lessBT a b}")**。最後の文は **pss_paper の cited sorry `buc1_2_2_OT_B_wf` と verbatim 同一** ⟹ **[Buc1] Lemma 2.2 は我々の定理になった**。**循環監査を build に焼き込み済**(ML block、違反すれば error でビルドが落ちる=**緑ビルドそのものが監査**): y4_buc1_2_2_OT_B_wf/y4_wf_RPrel/y4_cof0/y4_bwl_cof は **sorry 依存ゼロ**(特に置換対象の pss_paper.buc1_2_2_OT_B_wf に依存しない=非循環)。**削除したサブツリーの記録**: 自前証明の道程 wfs_(level-0 acc+rank)[r2]/wfj_(head-index STRAT)[r1]/wfc_(bookkeeping消去)[r1]/wds_(distinguished sets)[r1]/bwl_(r68: Buchholz[1]§2 2.4-2.8 を lfp 化で無条件証明=全D_ω-free項がW*)/y3_(r70: W-帰納 engine)/y4_(r71: [1]§3 ≪_k で仕上げ)。❌死枠(再挑戦禁止): minimal-bad/head-level tower(wcl_upper)/lvP-STRAT/acc-based bwl_Wlev/fseq対応の等式化〕[r14]
+  - 🚨 停止性チェーンの sorry 除去(残=陳腐な buc1_3_2a_fseq_lt 引用1本)〔**build強制監査の結果**: 停止性定理 `y4_PSS_acc_of_KK` が継承する sorry は **`pss_paper.buc1_3_2a_fseq_lt` ただ1つ**。これは**陳腐**——同一の文が既に **`m_buc1_3_2a_fseq_lt`(layerB:49765)** として証明済(b1x_descent:49627 が土台)。**問題は順序**: 実消費者 layerB 27797/27874/36809/39574/39633/51962/51989 のうち前5つが 49765 **より前**でスコープ外→単純差替不可。**要**: b1x_descent+m_buc1_3_2a_fseq_lt(と依存)を 27797 より前へ前方移動、または pss_mechanized(layer A)へ移植 → PSS_A/B 再ビルド。**数学ではなく citation hygiene**。これを消せば **停止性チェーンは完全に sorry-free**(残差 KK のみ)〕[r0]
   - 🚨 §8.1 条件 (I) の下での展開規則
     - 🚨 命題（条件 (I) の下での $\textrm{Trans}$ と基本列の交換関係）
       - ✅ 交換則(1)本体〔`scx_condI_exchange1` 完全無条件(j0=0+j0>0、marking-nesting二重帰納)〕[r4]
