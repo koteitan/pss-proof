@@ -885,26 +885,9 @@ text \<open>\<^bold>\<open>CENSUS v4 (r55).\<close>  The \<open>OTpred\<close> r
   \<open>{otIII, otIV, PredNp, Lpv, L1v, TVall, ordIntC}\<close> plus the [Buc1] 2.2
   well-foundedness core (\<open>wfc_\<close> collapse residual).\<close>
 
-theorem od4_termination_census_v4:
-  assumes OTint: "\<And>N m. N \<in> ST_PS \<Longrightarrow> N \<in> PT_PS \<Longrightarrow> 1 < Lng N - 1 \<Longrightarrow>
-                  transCondIII N \<or> transCondIV N \<or> transCondV N \<Longrightarrow>
-                  Trans N \<in> OT_B \<Longrightarrow> 1 < m \<Longrightarrow> Trans ((N::pairseq)[m]) \<in> OT_B"
-    and TVall: "\<And>K. K \<in> ST_PS \<Longrightarrow> K \<in> PT_PS \<Longrightarrow> 1 < Lng K - 1 \<Longrightarrow>
-                  transCondII K \<Longrightarrow> c2sx_tailval K"
-    and ordIntC: "\<And>P n. P \<in> ST_PS \<Longrightarrow> P \<in> PT_PS \<Longrightarrow> 1 < Lng P - 1 \<Longrightarrow>
-                  transCondIII P \<or> transCondIV P \<or> transCondV P \<Longrightarrow>
-                  Trans P \<in> OT_B \<Longrightarrow> 1 < n \<Longrightarrow>
-                  leBT (Trans ((P::pairseq)[n])) (Trans P)"
-  shows "\<forall>M. M \<in> ST_PS \<longrightarrow> Trans M \<in> OT_B"
-    and "\<forall>M n. M \<in> ST_PS \<longrightarrow> 1 \<le> n \<longrightarrow> 1 < Lng M \<longrightarrow>
-           lessBT (Trans ((M::pairseq)[n])) (Trans M)"
-proof -
-  show "\<forall>M. M \<in> ST_PS \<longrightarrow> Trans M \<in> OT_B"
-    by (rule opx_termination_census_v3(1)[OF OTint TVall ordIntC od4_DEEPOT od4_NOBR])
-  show "\<forall>M n. M \<in> ST_PS \<longrightarrow> 1 \<le> n \<longrightarrow> 1 < Lng M \<longrightarrow>
-           lessBT (Trans ((M::pairseq)[n])) (Trans M)"
-    by (rule opx_termination_census_v3(2)[OF OTint TVall ordIntC od4_DEEPOT od4_NOBR])
-qed
+text \<open>\<open>od4_termination_census_v4\<close> is stated AFTER the \<open>oi5_\<close> regime block: under
+  the corrected Buchholz fundamental sequence the census carries an \<open>LbaseU\<close> slot,
+  which is discharged unconditionally by @{text oi5_LbaseU} (r72).\<close>
 
 (* ===== end r55-od4 part 2 (OTpred CLOSED: DEEPOT + NOBR discharged) ===== *)
 
@@ -981,6 +964,240 @@ lemma oi5_d4vx_core_TB:
   shows "d4vx_core s0 ub b0 t k \<in> T_B"
   by (induction k) (auto simp: tTB intro: oi5_d4vx_ins_TB[OF wrap b0RP WTB])
 
+subsection \<open>r72: \<open>base\<^sub>1\<close>, re-seeded to \<open>0\<^sub>B\<close> (the corrected operB tower seed)\<close>
+
+text \<open>\<^bold>\<open>\<open>base\<^sub>1\<^sup>Y\<close>: \<open>A\<^sub>0 < d4vx_ins s\<^sub>0 ub b\<^sub>0 0\<^sub>B\<close>.\<close>  Under the CORRECTED
+  Buchholz rule the operB core tower is seeded at \<open>0\<^sub>B\<close>, so the census \<open>base\<^sub>1\<close> must
+  bound \<open>A\<^sub>0\<close> by \<open>Y\<^sub>1 = ins 0\<^sub>B\<close> rather than by \<open>X\<^sub>1 = ins (D\<^bsub>ub\<^esub>0)\<close>.  This is
+  @{thm [source] crx_base1_of_nest} / @{thm [source] cnv_base1_of_nest} with the
+  inserted core replaced by \<open>0\<^sub>B\<close>: the surgery term seen ONE level up is then
+  \<open>c' = D\<^bsub>ub\<^esub>0\<close> instead of \<open>D\<^bsub>ub\<^esub>(D\<^bsub>ub\<^esub>0)\<close>, and the comparison is decided by the SAME
+  shared-wrapper growth step \<open>D\<^bsub>tv\<^esub>t\<^sub>2 < D\<^bsub>tv\<^esub>(t\<^sub>2 + c')\<close>, which needs only that \<open>c'\<close> is a
+  nonempty principal --- NOT what sits inside it.  (Empirically: 363/363 real
+  condIII/IV hosts, python/_r72_reseed_step0b.py.)\<close>
+
+lemma oy1_base1Y_condIII:
+  fixes M :: pairseq and u1 v1w u2 v2 s0 b0 :: "Sym list"
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS"
+    and J1pos: "transJ1 M > 0" and T1: "transT1 M \<noteq> 0\<^sub>B"
+    and cIII: "transCondIII M"
+    and dP: "scb_decomp (Trans (Pred (s84x_N M)))
+               (Dsym (enat (entry M 1 (s84x_jm3 M))) # u1)
+               (flatBT (transC1 M)) v1w"
+    and d2: "scb_decomp (Trans (s84x_N M))
+               (Dsym (enat (entry M 1 (s84x_jm3 M))) # u1)
+               (flatBT (transC2 M)) v1w"
+    and d4c2: "scb_decomp (transC2 M) u2
+                 (flatBT (Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B)) v2"
+    and inner: "scb_decomp (bpHeadT (Trans (s84x_N M))) s0
+                  (flatBT (Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B)) b0"
+  shows "lessBT (bpHeadT (Trans (Pred (s84x_N M))))
+           (d4vx_ins s0 (entry M 1 (Lng M - 1) - 1) b0 0\<^sub>B)"
+proof -
+  let ?v1 = "entry M 1 (Lng M - 1)"
+  let ?ub = "entry M 1 (Lng M - 1) - 1"
+  let ?e3 = "entry M 1 (s84x_jm3 M)"
+  let ?c = "Dpt (enat ?v1) 0\<^sub>B"
+  let ?c' = "Dpt (enat ?ub) 0\<^sub>B"
+  let ?A0 = "bpHeadT (Trans (Pred (s84x_N M)))"
+  let ?body = "bpHeadT (Trans (s84x_N M))"
+  have c1sh: "transC1 M = Dpt (transV M) (transT2 M)"
+    using m_8_5_scbdec_c1_shape(1,2)[OF MR MP J1pos T1] by simp
+  have c2sh: "transC2 M = Dpt (transV M) (transT2 M +\<^sub>B ?c)"
+    by (rule crx_c2_shape_condIII[OF cIII])
+  have t2TB: "transT2 M \<in> T_B" by (rule m_8_5_scbdec_c1_shape(3)[OF MR MP J1pos T1])
+  have cTB: "?c \<in> T_B" by (simp add: T_B_def)
+  have cp: "\<exists>p. ?c = Trm [p]" by auto
+  have c'TB: "?c' \<in> T_B" by (simp add: T_B_def)
+  have c'p: "\<exists>p. ?c' = Trm [p]" by auto
+  obtain w4 w4' where d4: "scb_decomp (transT2 M +\<^sub>B ?c) w4 (flatBT ?c) w4'"
+    using m_7_2_add_scb_conj1[OF t2TB cTB cp] unfolding MarkedB_def by auto
+  have d4': "scb_decomp (transT2 M +\<^sub>B ?c') w4 (flatBT ?c') w4'"
+    by (rule m_7_2_add_scb_conj2[OF t2TB cTB cp c'TB c'p d4])
+  have iptc: "isPTB_str (flatBT ?c)" by (rule isPTB_str_Dpt) simp_all
+  have d5: "scb_decomp (Dpt (transV M) (transT2 M +\<^sub>B ?c))
+              (Dsym (transV M) # w4) (flatBT ?c) w4'"
+    by (rule scb_Dpt_lift[OF d4 iptc])
+  have d5c2: "scb_decomp (transC2 M) (Dsym (transV M) # w4) (flatBT ?c) w4'"
+    using d5 c2sh by simp
+  have c2ne: "transC2 M \<noteq> Trm []" using c2sh by simp
+  have pin2: "u2 = Dsym (transV M) # w4 \<and> v2 = w4'"
+    by (rule m_7_2_scb_unique_sb[OF d4c2 d5c2 c2ne])
+  have fTN: "flatBT (Trans (s84x_N M))
+           = Dsym (enat ?e3) # u1 @ flatBT (transC2 M) @ v1w"
+    using d2 by (simp add: scb_decomp_def)
+  have fbody: "flatBT ?body = u1 @ flatBT (transC2 M) @ v1w"
+    by (rule vf2x_flat_head_bpHeadT[OF fTN])
+  have fc2: "flatBT (transC2 M) = u2 @ flatBT ?c @ v2"
+    using d4c2 by (simp add: scb_decomp_def)
+  have v1RP: "\<forall>x \<in> set v1w. x = RP" using d2 by (simp add: scb_decomp_def)
+  have v2RP: "\<forall>x \<in> set v2. x = RP" using d4c2 by (simp add: scb_decomp_def)
+  have b0RP': "\<forall>x \<in> set (v2 @ v1w). x = RP" using v1RP v2RP by auto
+  have fbody2: "flatBT ?body = (u1 @ u2) @ flatBT ?c @ (v2 @ v1w)"
+    using fbody fc2 by simp
+  have innerC: "scb_decomp ?body (u1 @ u2) (flatBT ?c) (v2 @ v1w)"
+    unfolding scb_decomp_def using fbody2 iptc b0RP' by simp
+  have bodyne: "?body \<noteq> Trm []"
+  proof
+    assume z: "?body = Trm []"
+    have "[Zsym] = u1 @ flatBT (transC2 M) @ v1w" using fbody z by simp
+    hence "[Zsym] = u1 @ (Dsym (transV M)
+             # flatBT (transT2 M +\<^sub>B ?c)) @ v1w" using c2sh by simp
+    thus False by (cases u1) auto
+  qed
+  have pin0: "s0 = u1 @ u2 \<and> b0 = v2 @ v1w"
+    by (rule m_7_2_scb_unique_sb[OF inner innerC bodyne])
+  have wrap: "flatBT ?body = s0 @ flatBP (DB (enat ?v1) 0\<^sub>B) @ b0"
+    using fbody2 pin0 by simp
+  have b0RP: "\<forall>x \<in> set b0. x = RP" using pin0 b0RP' by simp
+  have fins: "flatBT (d4vx_ins s0 ?ub b0 0\<^sub>B)
+            = s0 @ Dsym (enat ?ub) # flatBT 0\<^sub>B @ b0"
+    by (rule d4vx_ins_flat[OF wrap b0RP])
+  have ft2c': "flatBT (transT2 M +\<^sub>B ?c') = w4 @ flatBT ?c' @ w4'"
+    using d4' by (simp add: scb_decomp_def)
+  have fins2: "flatBT (d4vx_ins s0 ?ub b0 0\<^sub>B)
+      = u1 @ flatBP (DB (transV M) (transT2 M +\<^sub>B ?c')) @ v1w"
+  proof -
+    have "s0 @ Dsym (enat ?ub) # flatBT 0\<^sub>B @ b0
+        = u1 @ (u2 @ Dsym (enat ?ub) # flatBT 0\<^sub>B @ v2) @ v1w"
+      using pin0 by simp
+    also have "u2 @ Dsym (enat ?ub) # flatBT 0\<^sub>B @ v2
+             = Dsym (transV M) # (w4 @ flatBT ?c' @ w4')"
+      using pin2 by simp
+    also have "\<dots> = flatBP (DB (transV M) (transT2 M +\<^sub>B ?c'))"
+      using ft2c' by simp
+    finally show ?thesis using fins by simp
+  qed
+  have fPN: "flatBT (Trans (Pred (s84x_N M)))
+           = Dsym (enat ?e3) # u1 @ flatBT (transC1 M) @ v1w"
+    using dP by (simp add: scb_decomp_def)
+  have fA0: "flatBT ?A0 = u1 @ flatBT (transC1 M) @ v1w"
+    by (rule vf2x_flat_head_bpHeadT[OF fPN])
+  have fA0': "flatBT ?A0 = u1 @ flatBP (DB (transV M) (transT2 M)) @ v1w"
+    using fA0 c1sh by simp
+  have grow: "lessBT (transT2 M) (transT2 M +\<^sub>B ?c')"
+    using c4dx_lessBT_grow[of "transT2 M" "DB (enat ?ub) 0\<^sub>B"] by simp
+  have core: "lessBP (DB (transV M) (transT2 M))
+                     (DB (transV M) (transT2 M +\<^sub>B ?c'))"
+    using grow by simp
+  show ?thesis by (rule scbext_lessBT[OF fA0' fins2 v1RP core])
+qed
+
+lemma oy1_base1Y_condIV:
+  fixes M :: pairseq and u1 v1w u2 v2 s0 b0 :: "Sym list"
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS"
+    and J1pos: "transJ1 M > 0" and T1: "transT1 M \<noteq> 0\<^sub>B"
+    and cIV: "transCondIV M"
+    and dP: "scb_decomp (Trans (Pred (s84x_N M)))
+               (Dsym (enat (entry M 1 (s84x_jm3 M))) # u1)
+               (flatBT (transC1 M)) v1w"
+    and d2: "scb_decomp (Trans (s84x_N M))
+               (Dsym (enat (entry M 1 (s84x_jm3 M))) # u1)
+               (flatBT (transC2 M)) v1w"
+    and d4c2: "scb_decomp (transC2 M) u2
+                 (flatBT (Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B)) v2"
+    and inner: "scb_decomp (bpHeadT (Trans (s84x_N M))) s0
+                  (flatBT (Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B)) b0"
+  shows "lessBT (bpHeadT (Trans (Pred (s84x_N M))))
+           (d4vx_ins s0 (entry M 1 (Lng M - 1) - 1) b0 0\<^sub>B)"
+proof -
+  let ?v1 = "entry M 1 (Lng M - 1)"
+  let ?ub = "entry M 1 (Lng M - 1) - 1"
+  let ?e3 = "entry M 1 (s84x_jm3 M)"
+  let ?w = "enat (entry M 1 (transJ0 M))"
+  let ?c = "Dpt (enat ?v1) 0\<^sub>B"
+  let ?cc = "Dpt (enat ?ub) 0\<^sub>B"
+  let ?A0 = "bpHeadT (Trans (Pred (s84x_N M)))"
+  let ?body = "bpHeadT (Trans (s84x_N M))"
+  have c1sh: "transC1 M = Dpt (transV M) (transT2 M)"
+    using m_8_5_scbdec_c1_shape(1,2)[OF MR MP J1pos T1] by simp
+  obtain t3 t4 where t3TB: "t3 \<in> T_B" and t4TB: "t4 \<in> T_B"
+    and c2full: "transC2 M = Dpt (transV M) (t3 +\<^sub>B Dpt ?w (t4 +\<^sub>B ?c))"
+    and dich: "(t3 = transT2 M \<and> t4 = transT2 M)
+             \<or> transT2 M = t3 +\<^sub>B Dpt ?w t4"
+    using cnv_c2_shape_condIV[OF MR MP J1pos T1 cIV] by blast
+  obtain sB bB where holeU: "\<forall>c'. c' \<in> T_B \<longrightarrow> (\<exists>p. c' = Trm [p]) \<longrightarrow>
+      scb_decomp (t3 +\<^sub>B Dpt ?w (t4 +\<^sub>B c')) sB (flatBT c') bB"
+    using cnv_nested_hole_pair[OF t4TB, of t3 ?w] by blast
+  have cTB: "?c \<in> T_B" by (simp add: T_B_def)
+  have cp: "\<exists>p. ?c = Trm [p]" by auto
+  have ccTB: "?cc \<in> T_B" by (simp add: T_B_def)
+  have ccp: "\<exists>p. ?cc = Trm [p]" by auto
+  have dB: "scb_decomp (t3 +\<^sub>B Dpt ?w (t4 +\<^sub>B ?c)) sB (flatBT ?c) bB"
+    using holeU cTB cp by blast
+  have dBcc: "scb_decomp (t3 +\<^sub>B Dpt ?w (t4 +\<^sub>B ?cc)) sB (flatBT ?cc) bB"
+    using holeU ccTB ccp by blast
+  have iptc: "isPTB_str (flatBT ?c)" by (rule isPTB_str_Dpt) simp_all
+  have dc2can0: "scb_decomp (Dpt (transV M) (t3 +\<^sub>B Dpt ?w (t4 +\<^sub>B ?c)))
+                   (Dsym (transV M) # sB) (flatBT ?c) bB"
+    by (rule scb_Dpt_lift[OF dB iptc])
+  have dc2can: "scb_decomp (transC2 M) (Dsym (transV M) # sB) (flatBT ?c) bB"
+    using dc2can0 c2full by simp
+  have c2ne: "transC2 M \<noteq> Trm []" using c2full by simp
+  have pin2: "u2 = Dsym (transV M) # sB \<and> v2 = bB"
+    by (rule m_7_2_scb_unique_sb[OF d4c2 dc2can c2ne])
+  have fTN: "flatBT (Trans (s84x_N M))
+           = Dsym (enat ?e3) # u1 @ flatBT (transC2 M) @ v1w"
+    using d2 by (simp add: scb_decomp_def)
+  have fbody: "flatBT ?body = u1 @ flatBT (transC2 M) @ v1w"
+    by (rule vf2x_flat_head_bpHeadT[OF fTN])
+  have fc2: "flatBT (transC2 M) = u2 @ flatBT ?c @ v2"
+    using d4c2 by (simp add: scb_decomp_def)
+  have v1RP: "\<forall>x \<in> set v1w. x = RP" using d2 by (simp add: scb_decomp_def)
+  have v2RP: "\<forall>x \<in> set v2. x = RP" using d4c2 by (simp add: scb_decomp_def)
+  have b0RP': "\<forall>x \<in> set (v2 @ v1w). x = RP" using v1RP v2RP by auto
+  have fbody2: "flatBT ?body = (u1 @ u2) @ flatBT ?c @ (v2 @ v1w)"
+    using fbody fc2 by simp
+  have innerC: "scb_decomp ?body (u1 @ u2) (flatBT ?c) (v2 @ v1w)"
+    unfolding scb_decomp_def using fbody2 iptc b0RP' by simp
+  have bodyne: "?body \<noteq> Trm []"
+  proof
+    assume z: "?body = Trm []"
+    have "[Zsym] = u1 @ flatBT (transC2 M) @ v1w" using fbody z by simp
+    hence "[Zsym] = u1 @ (Dsym (transV M)
+             # flatBT (t3 +\<^sub>B Dpt ?w (t4 +\<^sub>B ?c))) @ v1w" using c2full by simp
+    thus False by (cases u1) auto
+  qed
+  have pin0: "s0 = u1 @ u2 \<and> b0 = v2 @ v1w"
+    by (rule m_7_2_scb_unique_sb[OF inner innerC bodyne])
+  have wrap: "flatBT ?body = s0 @ flatBP (DB (enat ?v1) 0\<^sub>B) @ b0"
+    using fbody2 pin0 by simp
+  have b0RP: "\<forall>x \<in> set b0. x = RP" using pin0 b0RP' by simp
+  have fins: "flatBT (d4vx_ins s0 ?ub b0 0\<^sub>B)
+            = s0 @ Dsym (enat ?ub) # flatBT 0\<^sub>B @ b0"
+    by (rule d4vx_ins_flat[OF wrap b0RP])
+  have fBcc: "flatBT (t3 +\<^sub>B Dpt ?w (t4 +\<^sub>B ?cc)) = sB @ flatBT ?cc @ bB"
+    using dBcc by (simp add: scb_decomp_def)
+  have fins2: "flatBT (d4vx_ins s0 ?ub b0 0\<^sub>B)
+      = u1 @ flatBP (DB (transV M) (t3 +\<^sub>B Dpt ?w (t4 +\<^sub>B ?cc))) @ v1w"
+  proof -
+    have "s0 @ Dsym (enat ?ub) # flatBT 0\<^sub>B @ b0
+        = u1 @ (u2 @ Dsym (enat ?ub) # flatBT 0\<^sub>B @ v2) @ v1w"
+      using pin0 by simp
+    also have "u2 @ Dsym (enat ?ub) # flatBT 0\<^sub>B @ v2
+             = Dsym (transV M) # (sB @ flatBT ?cc @ bB)"
+      using pin2 by simp
+    also have "\<dots> = flatBP (DB (transV M) (t3 +\<^sub>B Dpt ?w (t4 +\<^sub>B ?cc)))"
+      using fBcc by simp
+    finally show ?thesis using fins by simp
+  qed
+  have fPN: "flatBT (Trans (Pred (s84x_N M)))
+           = Dsym (enat ?e3) # u1 @ flatBT (transC1 M) @ v1w"
+    using dP by (simp add: scb_decomp_def)
+  have fA0: "flatBT ?A0 = u1 @ flatBT (transC1 M) @ v1w"
+    by (rule vf2x_flat_head_bpHeadT[OF fPN])
+  have fA0': "flatBT ?A0 = u1 @ flatBP (DB (transV M) (transT2 M)) @ v1w"
+    using fA0 c1sh by simp
+  have ccne: "?cc \<noteq> 0\<^sub>B" by simp
+  have grow: "lessBT (transT2 M) (t3 +\<^sub>B Dpt ?w (t4 +\<^sub>B ?cc))"
+    by (rule cnv_body_grow[OF dich ccne])
+  have core: "lessBP (DB (transV M) (transT2 M))
+                     (DB (transV M) (t3 +\<^sub>B Dpt ?w (t4 +\<^sub>B ?cc)))"
+    using grow by simp
+  show ?thesis by (rule scbext_lessBT[OF fA0' fins2 v1RP core])
+qed
+
+
 subsection \<open>The shared condIII / condIV exchange package (\<open>REGS\<close>/\<open>REGSP\<close>/\<open>RUN\<close>
   discharged; interleave bases and \<open>A\<^sub>0 \<in> T\<^bsub>B\<^esub>\<close> included)\<close>
 
@@ -1016,8 +1233,7 @@ lemma oi5_IIIIV_pkg:
     and "lessBT (Dpt (enat (entry M 1 (Lng M - 1) - 1)) 0\<^sub>B)
               (bpHeadT (Trans (Pred (s84x_N M))))"
     and "lessBT (bpHeadT (Trans (Pred (s84x_N M))))
-              (d4vx_ins s0 (entry M 1 (Lng M - 1) - 1) b0
-                 (Dpt (enat (entry M 1 (Lng M - 1) - 1)) 0\<^sub>B))"
+              (d4vx_ins s0 (entry M 1 (Lng M - 1) - 1) b0 0\<^sub>B)"
     and "bpHeadT (Trans (Pred (s84x_N M))) \<in> T_B"
 proof -
   let ?e3 = "entry M 1 (s84x_jm3 M)"
@@ -1090,16 +1306,16 @@ proof -
     show ?thesis by (rule cnv_base0_of_run[OF MST MPT hp j1gt cIV RUN])
   qed
   have base0: "lessBT (Dpt (enat ?ub) 0\<^sub>B) ?A0" using base0Np A0eq by simp
-  have base1: "lessBT ?A0 (d4vx_ins (u1 @ u2) ?ub (v2 @ w1) (Dpt (enat ?ub) 0\<^sub>B))"
+  have base1: "lessBT ?A0 (d4vx_ins (u1 @ u2) ?ub (v2 @ w1) 0\<^sub>B)"
   proof (cases "transCondIII M")
     case True
     show ?thesis
-      by (rule crx_base1_of_nest[OF MR MPT J1pos T1 True dPq d2q d4c2q inner])
+      by (rule oy1_base1Y_condIII[OF MR MPT J1pos T1 True dPq d2q d4c2q inner])
   next
     case False
     hence cIV: "transCondIV M" using branch by blast
     show ?thesis
-      by (rule cnv_base1_of_nest[OF MR MPT J1pos T1 cIV dPq d2q d4c2q inner])
+      by (rule oy1_base1Y_condIV[OF MR MPT J1pos T1 cIV dPq d2q d4c2q inner])
   qed
   \<comment> \<open>\<open>A\<^sub>0 \<in> T\<^bsub>B\<^esub>\<close>: read off the flat string\<close>
   have jm2lt: "s84x_jm2 M < Lng M - 1" by (rule s84c1_jm2_basic(1)[OF hp])
@@ -1214,6 +1430,418 @@ proof -
   show "Trans M \<in> T_B" by (rule m_7_3_Trans_in_T_B[OF MR])
 qed
 
+subsection \<open>r72: the \<open>LbaseU\<close> census slot, discharged UNCONDITIONALLY\<close>
+
+text \<open>Under the CORRECTED Buchholz fundamental sequence
+  (\<open>x\<^sub>0 = D\<^sub>u 0\<close>, \<open>x\<^bsub>j+1\<^esub> = D\<^sub>u (b[x\<^sub>j])\<close>) the census carries the slot
+
+    \<open>LbaseU\<close> : \<open>D\<^bsub>ub\<^esub>0 \<le> d4vx_ins s\<^sub>0 ub b\<^sub>0 0\<close>   (\<open>ub = v\<^sub>1 - 1\<close>),
+
+  the \<open>0\<^sub>B\<close>-seeded base step of the operB core tower.  It is PROVED in \<^theory>\<open>PSS_B.pss_wip\<close>
+  as @{thm [source] opf_Lbase_of_domB} from \<open>dom(body) = T\<^bsub>ub\<^esub>\<close> alone --- no \<open>RightNodes\<close>
+  bound and NO \<open>ltJ\<close>.  Its three inputs are exactly @{thm [source] oi5_regime}(3),(4)
+  and the OT-ness of the census body, which we supply here (@{text oi5_bodyOT}) for
+  BOTH regimes: \<open>ltJ\<close> (via the package's kind-1 anchor) and the condIV \<open>admeq\<close> corner
+  \<open>j\<^sub>-\<^sub>3 = j\<^sub>-\<^sub>1\<close> (via @{thm [source] c4dx_condIV_k1}, which is \<open>ltJ\<close>-free).\<close>
+
+text \<open>The regime dichotomy: on a condIII/IV \<open>hasParent\<close> host, either \<open>ltJ\<close> holds or
+  we are at the condIV \<open>admeq\<close> corner.  \<open>j\<^sub>-\<^sub>3 = Adm(j\<^sub>-\<^sub>2) \<le> Adm(j\<^sub>0) = j\<^sub>-\<^sub>1\<close> by
+  admissibilization-maximality (@{thm [source] adm_Adm_max}) since \<open>j\<^sub>-\<^sub>2 < j\<^sub>0\<close>
+  (@{thm [source] m_8_4_oper_props_1}); and under (III) \<open>j\<^sub>-\<^sub>1 = j\<^sub>0\<close>, which forces the
+  strict case.  So the equality corner is condIV-only.\<close>
+
+lemma oi5_ltJ_or_IVadmeq:
+  fixes M :: pairseq
+  assumes MST: "M \<in> ST_PS" and MPT: "M \<in> PT_PS"
+    and hp: "hasParent M 1 (Lng M - 1)"
+    and j1gt: "1 < Lng M - 1"
+    and branch: "transCondIII M \<or> transCondIV M"
+  shows "s84x_jm3 M < transJm1 M
+       \<or> (transCondIV M \<and> Adm M (s84x_jm2 M) = transJm1 M)"
+proof -
+  have jm2ltj0: "s84x_jm2 M < transJ0 M"
+    by (rule m_8_4_oper_props_1(1)[OF MST MPT hp j1gt branch])
+  have jm3le: "s84x_jm3 M \<le> s84x_jm2 M"
+    using adm_Adm_le by (simp add: s84x_jm3_def)
+  have admjm3: "adm M (s84x_jm3 M)"
+    using adm_Adm_adm by (simp add: s84x_jm3_def)
+  have jm3lej0: "s84x_jm3 M \<le> transJ0 M" using jm3le jm2ltj0 by linarith
+  have le: "s84x_jm3 M \<le> transJm1 M"
+    using adm_Adm_max[OF admjm3 jm3lej0] by (simp add: transJm1_def)
+  show ?thesis
+  proof (cases "s84x_jm3 M < transJm1 M")
+    case True
+    thus ?thesis by blast
+  next
+    case False
+    hence eq: "s84x_jm3 M = transJm1 M" using le by linarith
+    have cIV: "transCondIV M"
+    proof (cases "transCondIII M")
+      case True
+      have jm1eq: "transJm1 M = transJ0 M"
+        using True
+        by (simp add: transJm1_def transJ0_def transJ1_def transCondIII_def Adm_def)
+      have False using eq jm1eq jm3le jm2ltj0 by linarith
+      thus ?thesis by simp
+    next
+      case False
+      thus ?thesis using branch by blast
+    qed
+    show ?thesis using cIV eq by (simp add: s84x_jm3_def)
+  qed
+qed
+
+text \<open>\<^bold>\<open>The census body is in \<open>OT\<close>.\<close>  \<open>body = bpHeadT (Trans (s84x_N M))\<close> sits at the
+  kind-1 scb position of \<open>Trans M\<close> as the body of the principal \<open>D\<^bsub>e\<^sub>3\<^esub> body\<close>, so
+  OT-heredity (@{thm [source] m_8_7_OT_scb_recursive}) reads \<open>D\<^bsub>e\<^sub>3\<^esub> body \<in> OT\<close> off the
+  host's own \<open>Trans M \<in> OT\<^bsub>B\<^esub>\<close>, whence \<open>isOT\<^bsub>BT\<^esub> body\<close>.  The kind-1 anchor comes from
+  @{thm [source] oi5_IIIIV_pkg} under \<open>ltJ\<close>, and from @{thm [source] c4dx_condIV_k1} at
+  the condIV \<open>admeq\<close> corner (there \<open>j\<^sub>-\<^sub>3 = j\<^sub>-\<^sub>1\<close>, so \<open>Mark M j\<^sub>-\<^sub>3 = c\<^sub>2\<close>, i.e.
+  \<open>transC2 M = Trans (s84x_N M)\<close>).\<close>
+
+lemma oi5_bodyOT:
+  fixes M :: pairseq
+  assumes MST: "M \<in> ST_PS" and MPT: "M \<in> PT_PS"
+    and hp: "hasParent M 1 (Lng M - 1)"
+    and j1gt: "1 < Lng M - 1"
+    and branch: "transCondIII M \<or> transCondIV M"
+    and ihOT: "Trans M \<in> OT_B"
+  shows "isOT_BT (bpHeadT (Trans (s84x_N M)))"
+proof -
+  let ?e3 = "entry M 1 (s84x_jm3 M)"
+  let ?body = "bpHeadT (Trans (s84x_N M))"
+  have MR: "M \<in> RT_PS" using MST m_6_7_ST_PS_subseteq_RT_PS by blast
+  have MT: "M \<in> T_PS" using MPT by (simp add: PT_PS_def)
+  have bodyTB: "?body \<in> T_B" by (rule oi5_regime(3)[OF MST MPT hp j1gt branch])
+  have DptTB: "Dpt (enat ?e3) ?body \<in> T_B" using bodyTB by (simp add: T_B_def)
+  \<comment> \<open>the kind-1 anchor of \<open>Trans M\<close> at \<open>D\<^bsub>e\<^sub>3\<^esub> body\<close>, in BOTH regimes\<close>
+  have anchor: "\<exists>s1 b1. scb_decomp (Trans M) s1
+                  (flatBT (Dpt (enat ?e3) ?body)) b1"
+  proof (cases "s84x_jm3 M < transJm1 M")
+    case True
+    obtain s0' b0' s1 b1 where
+      k1: "scb_kind1 (Trans M) s1 (flatBT (Dpt (enat ?e3) ?body)) b1"
+      by (rule oi5_IIIIV_pkg[OF MST MPT hp j1gt branch True])
+    have "scb_decomp (Trans M) s1 (flatBT (Dpt (enat ?e3) ?body)) b1"
+      using k1 by (simp add: scb_kind1_def)
+    thus ?thesis by blast
+  next
+    case False
+    have cIV: "transCondIV M" and admeq: "Adm M (s84x_jm2 M) = transJm1 M"
+      using oi5_ltJ_or_IVadmeq[OF MST MPT hp j1gt branch] False by blast+
+    have jm3eq: "s84x_jm3 M = transJm1 M" using admeq by (simp add: s84x_jm3_def)
+    have nVI: "\<not> transCondVI M" using c4dx_condIV_excl(4)[OF cIV] .
+    have T1: "transT1 M \<noteq> 0\<^sub>B" using s84d_L4_regime[OF MST MPT hp nVI] by simp
+    have J1pos: "transJ1 M > 0" using j1gt by (simp add: transJ1_def)
+    \<comment> \<open>\<open>transC2 M = Trans (s84x_N M)\<close> at the \<open>admeq\<close> corner\<close>
+    have jm2lt: "s84x_jm2 M < Lng M - 1" by (rule s84c1_jm2_basic(1)[OF hp])
+    have jm3le: "s84x_jm3 M \<le> s84x_jm2 M"
+      using adm_Adm_le by (simp add: s84x_jm3_def)
+    have jm3lt: "s84x_jm3 M < Lng M - 1" using jm3le jm2lt by linarith
+    have mM3: "(M, s84x_jm3 M) \<in> Marked"
+      using s84d_jm3_Marked(1)[OF MR MT hp] by simp
+    have repr: "Mark M (s84x_jm3 M) = Trans (s84x_N M)"
+      using m_7_4_Mark_Trans_repr[OF mM3 MR jm3lt] by (simp add: s84x_N_def)
+    have mk2: "Mark M (transJm1 M) = transC2 M"
+      by (rule m_7_3_Mark_rightmost2[OF MR MPT J1pos T1])
+    have c2eq: "transC2 M = Trans (s84x_N M)" using repr mk2 jm3eq by simp
+    have k1: "scb_kind1 (Trans M) (s84x_s1 M)
+                (flatBT (Dpt (enat ?e3) (bpHeadT (transC2 M)))) (s84x_b1 M)"
+      by (rule c4dx_condIV_k1[OF MST MPT hp cIV admeq])
+    have "scb_decomp (Trans M) (s84x_s1 M)
+            (flatBT (Dpt (enat ?e3) ?body)) (s84x_b1 M)"
+      using k1 c2eq by (simp add: scb_kind1_def)
+    thus ?thesis by blast
+  qed
+  obtain s1 b1 where
+    scbd: "scb_decomp (Trans M) s1 (flatBT (Dpt (enat ?e3) ?body)) b1"
+    using anchor by blast
+  have DptOT: "Dpt (enat ?e3) ?body \<in> OT"
+    by (rule m_8_7_OT_scb_recursive[OF ihOT DptTB scbd])
+  hence "isOT_BT (Dpt (enat ?e3) ?body)" by (simp add: OT_def)
+  hence "isOT_BP (DB (enat ?e3) ?body)" by simp
+  thus ?thesis by simp
+qed
+
+text \<open>\<^bold>\<open>The \<open>LbaseU\<close> slot --- no hypothesis beyond the census premises.\<close>\<close>
+
+lemma oi5_LbaseU:
+  fixes Q :: pairseq and s0 b0 :: "Sym list"
+  assumes QST: "Q \<in> ST_PS" and QPT: "Q \<in> PT_PS"
+    and j1gt: "1 < Lng Q - 1"
+    and branch: "transCondIII Q \<or> transCondIV Q"
+    and ihOT: "Trans Q \<in> OT_B"
+    and hp: "hasParent Q 1 (Lng Q - 1)"
+    and inner: "scb_decomp (bpHeadT (Trans (s84x_N Q))) s0
+                 (flatBT (Dpt (enat (entry Q 1 (Lng Q - 1))) 0\<^sub>B)) b0"
+  shows "leBT (Dpt (enat (entry Q 1 (Lng Q - 1) - 1)) 0\<^sub>B)
+           (d4vx_ins s0 (entry Q 1 (Lng Q - 1) - 1) b0 0\<^sub>B)"
+proof -
+  note regime = oi5_regime[OF QST QPT hp j1gt branch]
+  have bodyOT: "isOT_BT (bpHeadT (Trans (s84x_N Q)))"
+    by (rule oi5_bodyOT[OF QST QPT hp j1gt branch ihOT])
+  show ?thesis
+    by (rule opf_Lbase_of_domB[OF regime(3) bodyOT regime(4) inner])
+qed
+
+subsection \<open>r72: tower algebra for the \<open>0\<^sub>B\<close>-seeded core, and the re-seeded \<open>base\<^sub>1\<close>\<close>
+
+text \<open>\<open>d4vx_core\<close> is \<open>ins\<^sup>k\<close>, so it is monotone in its seed and additive in its index.\<close>
+
+lemma oy1_core_mono:
+  fixes W :: BT and hole :: BP and s0 b0 :: "Sym list" and ub :: nat
+  assumes wrap: "flatBT W = s0 @ flatBP hole @ b0"
+    and b0RP: "\<forall>x \<in> set b0. x = RP"
+    and lt: "lessBT X Y"
+  shows "lessBT (d4vx_core s0 ub b0 X k) (d4vx_core s0 ub b0 Y k)"
+proof (induction k)
+  case 0
+  show ?case using lt by simp
+next
+  case (Suc k)
+  show ?case
+    using c4cx_d4vx_ins_mono[OF wrap b0RP Suc.IH, of ub] by simp
+qed
+
+lemma oy1_core_add:
+  "d4vx_core s0 ub b0 X (a + b) = d4vx_core s0 ub b0 (d4vx_core s0 ub b0 X b) a"
+  by (induction a) simp_all
+
+lemma oy1_ins_le_mono:
+  fixes W :: BT and hole :: BP
+  assumes wrap: "flatBT W = s0 @ flatBP hole @ b0"
+    and b0RP: "\<forall>x \<in> set b0. x = RP"
+    and le: "leBT X Y"
+  shows "leBT (d4vx_ins s0 ub b0 X) (d4vx_ins s0 ub b0 Y)"
+proof (cases "X = Y")
+  case True
+  thus ?thesis by simp
+next
+  case False
+  have "lessBT X Y" using le False by blast
+  thus ?thesis using c4cx_d4vx_ins_mono[OF wrap b0RP, of X Y ub] by blast
+qed
+
+text \<open>\<open>b1x_triG z b a\<close> quantifies over the interval \<open>[b, a]\<close>, so it is ANTITONE in
+  its upper endpoint: shrinking \<open>a\<close> only removes instances.\<close>
+
+lemma oy1_triG_antitone:
+  assumes tri: "b1x_triG z b a" and le: "leBT a' a"
+  shows "b1x_triG z b a'"
+  unfolding b1x_triG_def
+proof (intro allI impI)
+  fix u :: enat and c :: BT
+  assume bc: "leBT b c" and ca: "leBT c a'"
+  have "leBT c a" by (rule od4_leBT_trans[OF ca le])
+  thus "b1x_setle (GBT u b) (GBT u c \<union> GBT u z \<union> {Trm []})"
+    using tri bc unfolding b1x_triG_def by blast
+qed
+
+text \<open>\<^bold>\<open>\<open>base\<^sub>1\<close>, re-seeded to \<open>0\<^sub>B\<close>\<close> --- \<open>A\<^sub>0 < d4vx_ins s\<^sub>0 ub b\<^sub>0 0\<^sub>B = Y\<^sub>1\<close>.  This is
+  @{thm [source] crx_base1_of_nest} / @{thm [source] cnv_base1_of_nest} with the
+  inserted core \<open>D\<^bsub>ub\<^esub>0\<close> replaced by \<open>0\<^sub>B\<close>: the surgery term seen ONE level up is then
+  \<open>c' = D\<^bsub>ub\<^esub>0\<close> instead of \<open>D\<^bsub>ub\<^esub>(D\<^bsub>ub\<^esub>0)\<close>, and the comparison is decided by the SAME
+  shared-wrapper growth step \<open>D\<^bsub>tv\<^esub>t\<^sub>2 < D\<^bsub>tv\<^esub>(t\<^sub>2 + c')\<close> --- which needs only that \<open>c'\<close> is
+  a nonempty principal, NOT what sits inside it.  (Empirically: 363/363 real
+  condIII/IV hosts, python/_r72_reseed_step0b.py.)\<close>
+
+text \<open>The census-level \<open>base\<^sub>1\<^sup>Y\<close>: \<open>A\<^sub>0 < Y\<^sub>1\<close>, on the \<open>ltJ\<close> hosts (the raw
+  decompositions come from @{thm [source] cpx_condIII_mnform}, exactly as in
+  \<open>ot1_tri0_census\<close> below).\<close>
+
+lemma oy1_base1Y:
+  fixes N :: pairseq and s0 b0 :: "Sym list"
+  assumes NST: "N \<in> ST_PS" and NPT: "N \<in> PT_PS"
+    and hp: "hasParent N 1 (Lng N - 1)"
+    and j1gt: "1 < Lng N - 1"
+    and branch: "transCondIII N \<or> transCondIV N"
+    and ltJ: "s84x_jm3 N < transJm1 N"
+    and inner: "scb_decomp (bpHeadT (Trans (s84x_N N))) s0
+                 (flatBT (Dpt (enat (entry N 1 (Lng N - 1))) 0\<^sub>B)) b0"
+  shows "lessBT (bpHeadT (Trans (Pred (s84x_N N))))
+           (d4vx_ins s0 (entry N 1 (Lng N - 1) - 1) b0 0\<^sub>B)"
+proof -
+  have MR: "N \<in> RT_PS" using NST m_6_7_ST_PS_subseteq_RT_PS by blast
+  have REGS: "s84x_jm3 N < s84x_jm2 N \<Longrightarrow>
+                cfbx_reg (s84x_jm2 N - s84x_jm3 N) (Red (s84x_N N))"
+  proof -
+    assume g: "s84x_jm3 N < s84x_jm2 N"
+    show "cfbx_reg (s84x_jm2 N - s84x_jm3 N) (Red (s84x_N N))"
+      by (rule mcx_regS[OF NST NPT hp j1gt branch g])
+  qed
+  have REGSP: "s84x_jm3 N < s84x_jm2 N \<Longrightarrow> Br (Red (Pred (s84x_N N))) \<noteq> [] \<Longrightarrow>
+                 cfbx_reg (s84x_jm2 N - s84x_jm3 N) (Red (Pred (s84x_N N)))"
+  proof -
+    assume g: "s84x_jm3 N < s84x_jm2 N" and b: "Br (Red (Pred (s84x_N N))) \<noteq> []"
+    show "cfbx_reg (s84x_jm2 N - s84x_jm3 N) (Red (Pred (s84x_N N)))"
+      by (rule slx37_regSP_uncond[OF NST NPT hp j1gt branch g b])
+  qed
+  have nVI: "\<not> transCondVI N"
+  proof (cases "transCondIII N")
+    case True
+    thus ?thesis by (auto simp: transCondIII_def transCondVI_def)
+  next
+    case False
+    hence cIV: "transCondIV N" using branch by blast
+    show ?thesis using c4dx_condIV_excl(4)[OF cIV] .
+  qed
+  have J1pos: "transJ1 N > 0" using j1gt by (simp add: transJ1_def)
+  have T1: "transT1 N \<noteq> 0\<^sub>B"
+    using s84d_L4_regime[OF NST NPT hp nVI] by simp
+  obtain u1 u2 v2 w1 s1 b1 where
+      dPq: "scb_decomp (Trans (Pred (s84x_N N)))
+              (Dsym (enat (entry N 1 (s84x_jm3 N))) # u1) (flatBT (transC1 N)) w1"
+    and d2q: "scb_decomp (Trans (s84x_N N))
+              (Dsym (enat (entry N 1 (s84x_jm3 N))) # u1) (flatBT (transC2 N)) w1"
+    and d4c2q: "scb_decomp (transC2 N) u2
+              (flatBT (Dpt (enat (entry N 1 (Lng N - 1))) 0\<^sub>B)) v2"
+    using cpx_condIII_mnform[OF NST NPT hp j1gt branch ltJ REGS REGSP] by blast
+  show ?thesis
+  proof (cases "transCondIII N")
+    case True
+    show ?thesis
+      by (rule oy1_base1Y_condIII[OF MR NPT J1pos T1 True dPq d2q d4c2q inner])
+  next
+    case False
+    hence cIV: "transCondIV N" using branch by blast
+    show ?thesis
+      by (rule oy1_base1Y_condIV[OF MR NPT J1pos T1 cIV dPq d2q d4c2q inner])
+  qed
+qed
+
+
+text \<open>\<open>base\<^sub>1\<^sup>Y\<close> for the condIV \<open>admeq\<close> tower seed \<open>t\<^sub>2 = transT2 M\<close>: verbatim
+  @{thm [source] c4dx_condIV_base1} with the inserted core \<open>D\<^bsub>ub\<^esub>0\<close> replaced by \<open>0\<^sub>B\<close>
+  (so the one-level-up surgery term is \<open>c' = D\<^bsub>ub\<^esub>0\<close>); the growth step is again
+  seed-independent.\<close>
+
+lemma oy1_base1Y_t2:
+  fixes M :: pairseq and s0 b0 :: "Sym list"
+  assumes MR: "M \<in> RT_PS" and MP: "M \<in> PT_PS"
+    and J1pos: "transJ1 M > 0" and T1: "transT1 M \<noteq> 0\<^sub>B"
+    and cIV: "transCondIV M"
+    and inner: "scb_decomp (bpHeadT (transC2 M)) s0
+                  (flatBT (Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B)) b0"
+  shows "lessBT (transT2 M)
+           (d4vx_ins s0 (entry M 1 (Lng M - 1) - 1) b0 0\<^sub>B)"
+proof -
+  let ?v1 = "entry M 1 (Lng M - 1)"
+  let ?ub = "?v1 - 1"
+  let ?jpe = "entry M 1 (transJ0 M)"
+  let ?c = "Dpt (enat ?v1) 0\<^sub>B"
+  let ?c' = "Dpt (enat ?ub) 0\<^sub>B"
+  obtain t3 t4 where t3TB: "t3 \<in> T_B" and t4TB: "t4 \<in> T_B"
+    and body: "bpHeadT (transC2 M) = t3 +\<^sub>B Dpt (enat ?jpe) (t4 +\<^sub>B ?c)"
+    and rel: "(t3 = transT2 M \<and> t4 = transT2 M)
+              \<or> transT2 M = t3 +\<^sub>B Dpt (enat ?jpe) t4"
+    using c4dx_condIV_c2body_shape[OF MR MP J1pos T1 cIV] by blast
+  have cTB: "?c \<in> T_B" by (simp add: T_B_def)
+  have cp: "\<exists>p. ?c = Trm [p]" by auto
+  have c'TB: "?c' \<in> T_B" by (simp add: T_B_def)
+  have c'p: "\<exists>p. ?c' = Trm [p]" by auto
+  \<comment> \<open>shared trailing-principal wrapper of \<open>t\<^sub>4 + \<cdot>\<close>, for hole and insertion alike\<close>
+  obtain w4 w4' where d4: "scb_decomp (t4 +\<^sub>B ?c) w4 (flatBT ?c) w4'"
+    using m_7_2_add_scb_conj1[OF t4TB cTB cp] unfolding MarkedB_def by auto
+  have d4': "scb_decomp (t4 +\<^sub>B ?c') w4 (flatBT ?c') w4'"
+    by (rule m_7_2_add_scb_conj2[OF t4TB cTB cp c'TB c'p d4])
+  have iptc: "isPTB_str (flatBT ?c)" by (rule isPTB_str_Dpt) simp_all
+  have iptc': "isPTB_str (flatBT ?c')" by (rule isPTB_str_Dpt) simp_all
+  have d5: "scb_decomp (Dpt (enat ?jpe) (t4 +\<^sub>B ?c))
+              (Dsym (enat ?jpe) # w4) (flatBT ?c) w4'"
+    by (rule scb_Dpt_lift[OF d4 iptc])
+  have d5': "scb_decomp (Dpt (enat ?jpe) (t4 +\<^sub>B ?c'))
+              (Dsym (enat ?jpe) # w4) (flatBT ?c') w4'"
+    by (rule scb_Dpt_lift[OF d4' iptc'])
+  have bodyne: "bpHeadT (transC2 M) \<noteq> Trm []" by (rule bpHeadT_transC2_nonzero)
+  define STRUCT where "STRUCT = t3 +\<^sub>B Dpt (enat ?jpe) (t4 +\<^sub>B ?c')"
+  have flatSTRUCT: "flatBT STRUCT = s0 @ flatBT ?c' @ b0"
+  proof (cases "t3 = 0\<^sub>B")
+    case True
+    have bA: "bpHeadT (transC2 M) = Dpt (enat ?jpe) (t4 +\<^sub>B ?c)"
+      using body True by simp
+    have DA: "scb_decomp (bpHeadT (transC2 M)) (Dsym (enat ?jpe) # w4) (flatBT ?c) w4'"
+      using d5 bA by simp
+    have pin: "Dsym (enat ?jpe) # w4 = s0 \<and> w4' = b0"
+      by (rule m_7_2_scb_unique_sb[OF DA inner bodyne])
+    have SA: "STRUCT = Dpt (enat ?jpe) (t4 +\<^sub>B ?c')"
+      using STRUCT_def True by simp
+    show ?thesis using d5' SA pin by (simp add: scb_decomp_def)
+  next
+    case False
+    have X1: "length (untrm (Dpt (enat ?jpe) (t4 +\<^sub>B ?c))) = 1" by simp
+    have X1': "length (untrm (Dpt (enat ?jpe) (t4 +\<^sub>B ?c'))) = 1" by simp
+    have Yne: "untrm t3 \<noteq> []" using False by (cases t3) auto
+    have DA: "scb_decomp (bpHeadT (transC2 M))
+                (liftS t3 (Dsym (enat ?jpe) # w4)) (flatBT ?c) (w4' @ [RP])"
+      using scb_addBT_left[OF d5 X1 Yne] body by simp
+    have pin: "liftS t3 (Dsym (enat ?jpe) # w4) = s0 \<and> w4' @ [RP] = b0"
+      by (rule m_7_2_scb_unique_sb[OF DA inner bodyne])
+    have DA': "scb_decomp STRUCT
+                (liftS t3 (Dsym (enat ?jpe) # w4)) (flatBT ?c') (w4' @ [RP])"
+      using scb_addBT_left[OF d5' X1' Yne] STRUCT_def by simp
+    show ?thesis using DA' pin by (simp add: scb_decomp_def)
+  qed
+  have insEq: "d4vx_ins s0 ?ub b0 0\<^sub>B = STRUCT"
+  proof -
+    have "d4vx_ins s0 ?ub b0 0\<^sub>B = unflatBT (s0 @ flatBT ?c' @ b0)"
+      by (simp add: d4vx_ins_def)
+    also have "\<dots> = unflatBT (flatBT STRUCT)" using flatSTRUCT by simp
+    also have "\<dots> = STRUCT" by (rule unflatBT_flat)
+    finally show ?thesis .
+  qed
+  consider (A) "t3 = transT2 M \<and> t4 = transT2 M"
+    | (B) "transT2 M = t3 +\<^sub>B Dpt (enat ?jpe) t4"
+    using rel by blast
+  hence grow: "lessBT (transT2 M) STRUCT"
+  proof cases
+    case A
+    have "STRUCT = transT2 M +\<^sub>B Trm [DB (enat ?jpe) (t4 +\<^sub>B ?c')]"
+      using STRUCT_def A by simp
+    thus ?thesis
+      using c4dx_lessBT_grow[of "transT2 M" "DB (enat ?jpe) (t4 +\<^sub>B ?c')"] by simp
+  next
+    case B
+    have gi: "lessBT t4 (t4 +\<^sub>B ?c')"
+      using c4dx_lessBT_grow[of t4 "DB (enat ?ub) 0\<^sub>B"] by simp
+    have gl: "lessBT (Dpt (enat ?jpe) t4) (Dpt (enat ?jpe) (t4 +\<^sub>B ?c'))"
+      using gi by simp
+    have "lessBT (t3 +\<^sub>B Dpt (enat ?jpe) t4) (t3 +\<^sub>B Dpt (enat ?jpe) (t4 +\<^sub>B ?c'))"
+      by (rule lessBT_addBT_mono_right[OF gl])
+    thus ?thesis using B STRUCT_def by simp
+  qed
+  show ?thesis using grow insEq by simp
+qed
+
+
+text \<open>\<^bold>\<open>CENSUS v4 (r55, r72-relocated).\<close>  The \<open>OTpred\<close> residuals \<open>DEEPOT\<close> and \<open>NOBR\<close>
+  are GONE (@{thm [source] od4_DEEPOT}, @{thm [source] od4_NOBR}), and the corrected
+  rule's \<open>LbaseU\<close> slot is discharged by @{thm [source] oi5_LbaseU}: both termination
+  pillars rest on \<open>{OTint, TVall, ordIntC}\<close> alone.\<close>
+
+theorem od4_termination_census_v4:
+  assumes OTint: "\<And>N m. N \<in> ST_PS \<Longrightarrow> N \<in> PT_PS \<Longrightarrow> 1 < Lng N - 1 \<Longrightarrow>
+                  transCondIII N \<or> transCondIV N \<or> transCondV N \<Longrightarrow>
+                  Trans N \<in> OT_B \<Longrightarrow> 1 < m \<Longrightarrow> Trans ((N::pairseq)[m]) \<in> OT_B"
+    and TVall: "\<And>K. K \<in> ST_PS \<Longrightarrow> K \<in> PT_PS \<Longrightarrow> 1 < Lng K - 1 \<Longrightarrow>
+                  transCondII K \<Longrightarrow> c2sx_tailval K"
+    and ordIntC: "\<And>P n. P \<in> ST_PS \<Longrightarrow> P \<in> PT_PS \<Longrightarrow> 1 < Lng P - 1 \<Longrightarrow>
+                  transCondIII P \<or> transCondIV P \<or> transCondV P \<Longrightarrow>
+                  Trans P \<in> OT_B \<Longrightarrow> 1 < n \<Longrightarrow>
+                  leBT (Trans ((P::pairseq)[n])) (Trans P)"
+  shows "\<forall>M. M \<in> ST_PS \<longrightarrow> Trans M \<in> OT_B"
+    and "\<forall>M n. M \<in> ST_PS \<longrightarrow> 1 \<le> n \<longrightarrow> 1 < Lng M \<longrightarrow>
+           lessBT (Trans ((M::pairseq)[n])) (Trans M)"
+proof -
+  show "\<forall>M. M \<in> ST_PS \<longrightarrow> Trans M \<in> OT_B"
+    by (rule opx_termination_census_v3(1)[OF OTint TVall ordIntC od4_DEEPOT od4_NOBR
+          oi5_LbaseU])
+  show "\<forall>M n. M \<in> ST_PS \<longrightarrow> 1 \<le> n \<longrightarrow> 1 < Lng M \<longrightarrow>
+           lessBT (Trans ((M::pairseq)[n])) (Trans M)"
+    by (rule opx_termination_census_v3(2)[OF OTint TVall ordIntC od4_DEEPOT od4_NOBR
+          oi5_LbaseU])
+qed
+
+
 subsection \<open>The \<open>OTint\<close> step on \<open>hasParent\<close> condIII/IV hosts, modulo the two
   one-block tower facts \<open>OTA1\<close> and \<open>SETLE1\<close>\<close>
 
@@ -1248,9 +1876,9 @@ lemma oi5_OTint_IIIIV_hp:
           (GBT u (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
                     (bpHeadT (Trans (Pred (s84x_N P))))))
           (insert (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
-                     (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))
+                     0\<^sub>B)
                   (GBT u (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
-                            (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))))"
+                            0\<^sub>B)))"
     and NST: "N \<in> ST_PS" and NPT: "N \<in> PT_PS"
     and hp: "hasParent N 1 (Lng N - 1)"
     and j1gt: "1 < Lng N - 1"
@@ -1275,7 +1903,7 @@ proof -
           = s1 @ Dsym (enat ?e3)
               # flatBT (d4vx_core s0 ?ub b0 ?A0 (m - 1)) @ b1"
     and base0: "lessBT (Dpt (enat ?ub) 0\<^sub>B) ?A0"
-    and base1: "lessBT ?A0 (d4vx_ins s0 ?ub b0 (Dpt (enat ?ub) 0\<^sub>B))"
+    and base1: "lessBT ?A0 (d4vx_ins s0 ?ub b0 0\<^sub>B)"
     and A0TB: "?A0 \<in> T_B"
     by (rule oi5_IIIIV_pkg[OF NST NPT hp j1gt branch ltJ])
   note regime = oi5_regime[OF NST NPT hp j1gt branch]
@@ -1294,32 +1922,54 @@ proof -
     hence "[Zsym] = s0 @ [Dsym (enat ?v1), Zsym] @ b0" using z by simp
     thus False by (cases s0) auto
   qed
-  \<comment> \<open>towers\<close>
+  \<comment> \<open>towers.  r72: under the CORRECTED fundamental sequence the operB core is the
+      \<open>0\<^sub>B\<close>-seeded tower \<open>Y\<^sub>n = ins\<^sup>n 0\<^sub>B\<close>, ONE LEVEL DEEPER than the old \<open>X\<^sub>n = ins\<^sup>n(D\<^bsub>ub\<^esub>0)\<close>.
+      \<open>X\<^sub>0/X\<^sub>1\<close> survive only as the carriers of \<open>base\<^sub>0\<close>/\<open>base\<^sub>1\<close>.\<close>
   define X0 where "X0 = Dpt (enat ?ub) 0\<^sub>B"
   define A1 where "A1 = d4vx_ins s0 ?ub b0 ?A0"
-  define X1 where "X1 = d4vx_ins s0 ?ub b0 X0"
-  define X2 where "X2 = d4vx_ins s0 ?ub b0 X1"
+  define Y1 where "Y1 = d4vx_ins s0 ?ub b0 0\<^sub>B"
+  define Y2 where "Y2 = d4vx_ins s0 ?ub b0 Y1"
+  define Y3 where "Y3 = d4vx_ins s0 ?ub b0 Y2"
   have X0TB: "X0 \<in> T_B" by (simp add: X0_def T_B_def)
+  have ZTB: "0\<^sub>B \<in> T_B" by (simp add: T_B_def)
   have A1TB: "A1 \<in> T_B"
     unfolding A1_def by (rule oi5_d4vx_ins_TB[OF wrap b0RP bodyT A0TB])
-  have X1TB: "X1 \<in> T_B"
-    unfolding X1_def by (rule oi5_d4vx_ins_TB[OF wrap b0RP bodyT X0TB])
-  have X2TB: "X2 \<in> T_B"
-    unfolding X2_def by (rule oi5_d4vx_ins_TB[OF wrap b0RP bodyT X1TB])
+  have Y1TB: "Y1 \<in> T_B"
+    unfolding Y1_def by (rule oi5_d4vx_ins_TB[OF wrap b0RP bodyT ZTB])
+  have Y2TB: "Y2 \<in> T_B"
+    unfolding Y2_def by (rule oi5_d4vx_ins_TB[OF wrap b0RP bodyT Y1TB])
+  have Y3TB: "Y3 \<in> T_B"
+    unfolding Y3_def by (rule oi5_d4vx_ins_TB[OF wrap b0RP bodyT Y2TB])
   have fA1: "flatBT A1 = s0 @ Dsym (enat ?ub) # flatBT ?A0 @ b0"
     unfolding A1_def by (rule d4vx_ins_flat[OF wrap b0RP])
-  have fX1: "flatBT X1 = s0 @ Dsym (enat ?ub) # flatBT X0 @ b0"
-    unfolding X1_def by (rule d4vx_ins_flat[OF wrap b0RP])
-  have fX2: "flatBT X2 = s0 @ Dsym (enat ?ub) # flatBT X1 @ b0"
-    unfolding X2_def by (rule d4vx_ins_flat[OF wrap b0RP])
-  \<comment> \<open>orders (interleave at height 1)\<close>
-  note IL = c4cx_d4vx_core_interleave[OF wrap b0RP base0[folded X0_def]
-              base1[folded X0_def], of 1]
-  have ordlo: "leBT X1 A1"
-    using IL by (simp add: X1_def A1_def X0_def)
-  have ordhi: "leBT A1 X2"
-    using IL by (simp add: X1_def X2_def A1_def X0_def)
-  \<comment> \<open>the one-block facts\<close>
+  have fY1: "flatBT Y1 = s0 @ Dsym (enat ?ub) # flatBT 0\<^sub>B @ b0"
+    unfolding Y1_def by (rule d4vx_ins_flat[OF wrap b0RP])
+  have fY2: "flatBT Y2 = s0 @ Dsym (enat ?ub) # flatBT Y1 @ b0"
+    unfolding Y2_def by (rule d4vx_ins_flat[OF wrap b0RP])
+  have fY3: "flatBT Y3 = s0 @ Dsym (enat ?ub) # flatBT Y2 @ b0"
+    unfolding Y3_def by (rule d4vx_ins_flat[OF wrap b0RP])
+  \<comment> \<open>orders (\<open>ins\<close>-monotonicity, @{thm [source] c4cx_d4vx_ins_mono}):
+      \<open>Y\<^sub>1 \<le> A\<^sub>1\<close> from \<open>0\<^sub>B < A\<^sub>0\<close> (\<open>base\<^sub>0\<close>), \<open>A\<^sub>1 \<le> Y\<^sub>3\<close> from \<open>A\<^sub>0 < Y\<^sub>1 < Y\<^sub>2\<close>
+      (\<open>base\<^sub>1\<^sup>Y\<close>, r72)\<close>
+  have zltA0: "lessBT 0\<^sub>B ?A0"
+  proof -
+    have "lessBT 0\<^sub>B X0" by (simp add: X0_def)
+    thus ?thesis using base0[folded X0_def] lessBT_trans by blast
+  qed
+  have ordlo: "leBT Y1 A1"
+    unfolding Y1_def A1_def
+    using c4cx_d4vx_ins_mono[OF wrap b0RP zltA0, of ?ub] by blast
+  have A0ltY1: "lessBT ?A0 Y1" using base1[folded Y1_def] .
+  have zltY1: "lessBT 0\<^sub>B Y1" using zltA0 A0ltY1 lessBT_trans by blast
+  have Y1ltY2: "lessBT Y1 Y2"
+    unfolding Y1_def Y2_def
+    using c4cx_d4vx_ins_mono[OF wrap b0RP zltY1, of ?ub]
+    by (simp add: Y1_def)
+  have A0ltY2: "lessBT ?A0 Y2" using A0ltY1 Y1ltY2 lessBT_trans by blast
+  have ordhi: "leBT A1 Y3"
+    unfolding A1_def Y3_def
+    using c4cx_d4vx_ins_mono[OF wrap b0RP A0ltY2, of ?ub] by blast
+  \<comment> \<open>the one-block facts (the \<open>SETLE1\<close> slot is now \<open>Y\<^sub>1\<close>-seeded)\<close>
   have newOTe3: "isOT_BP (DB (enat ?e3) A1)"
     unfolding A1_def by (rule OTA1[OF NST NPT hp j1gt branch ihOT b0RP inner])
   have newOTub: "isOT_BP (DB (enat ?ub) A1)"
@@ -1333,22 +1983,32 @@ proof -
     hence "\<forall>x \<in> GBT (enat ?ub) A1. lessBT x A1" using gE3 by blast
     thus ?thesis using A1OT by simp
   qed
-  have setle: "\<And>u. b1x_setle (GBT u A1) (insert X1 (GBT u X1))"
-    unfolding A1_def X1_def X0_def
+  have setle: "\<And>u. b1x_setle (GBT u A1) (insert Y1 (GBT u Y1))"
+    unfolding A1_def Y1_def
     by (rule SETLE1[OF NST NPT hp j1gt branch ihOT b0RP inner])
-  \<comment> \<open>fseq closed forms of the donors\<close>
+  \<comment> \<open>fseq closed form of the donors: core \<open>= Y\<^bsub>n+1\<^esub>\<close>\<close>
   have fseq: "\<And>n. flatBT (operB (Trans N) (numBT n))
       = s1 @ (Dsym (enat ?e3)
-           # concat (replicate n (s0 @ [Dsym (enat ?ub)]))
-           @ [Dsym (enat ?ub)] @ [Zsym] @ concat (replicate n b0)) @ b1"
+           # concat (replicate (n + 1) (s0 @ [Dsym (enat ?ub)]))
+           @ [Zsym]
+           @ concat (replicate (n + 1) b0)) @ b1"
     by (rule d13x_fseq_condIII[OF TT uv bodyT dbbodyH bodyne inner k1])
-  have Xflat: "\<And>n. flatBT (d4vx_core s0 ?ub b0 X0 n)
+  have Yflat: "\<And>n. flatBT (d4vx_core s0 ?ub b0 0\<^sub>B n)
       = concat (replicate n (s0 @ [Dsym (enat ?ub)]))
-        @ flatBT X0 @ concat (replicate n b0)"
+        @ flatBT 0\<^sub>B @ concat (replicate n b0)"
     by (rule d4vx_core_flat[OF wrap b0RP])
-  have fseqX: "\<And>n. flatBT (operB (Trans N) (numBT n))
-      = s1 @ Dsym (enat ?e3) # flatBT (d4vx_core s0 ?ub b0 X0 n) @ b1"
-    using fseq Xflat by (simp add: X0_def)
+  have fseqY: "\<And>n. flatBT (operB (Trans N) (numBT n))
+      = s1 @ Dsym (enat ?e3) # flatBT (d4vx_core s0 ?ub b0 0\<^sub>B (Suc n)) @ b1"
+  proof -
+    fix n :: nat
+    have A: "flatBT (d4vx_core s0 ?ub b0 0\<^sub>B (Suc n))
+        = concat (replicate (Suc n) (s0 @ [Dsym (enat ?ub)]))
+          @ [Zsym] @ concat (replicate (Suc n) b0)"
+      using Yflat[of "Suc n"] by (simp del: d4vx_core.simps)
+    show "flatBT (operB (Trans N) (numBT n))
+        = s1 @ Dsym (enat ?e3) # flatBT (d4vx_core s0 ?ub b0 0\<^sub>B (Suc n)) @ b1"
+      using fseq[of n] A by (simp del: d4vx_core.simps)
+  qed
   \<comment> \<open>donor OT-ness ([Buc1] closure on the slot's own IH)\<close>
   have donOT: "\<And>n. isOT_BT (operB (Trans N) (numBT n))"
     using e4x_OT_B_operB_numBT[OF ihOT] by (simp add: OT_B_def OT_def)
@@ -1358,40 +2018,41 @@ proof -
   have mnm: "flatBT (Trans ((N::pairseq)[m]))
       = s1 @ Dsym (enat ?e3) # flatBT (d4vx_core s0 ?ub b0 ?A0 k) @ b1"
     using mn mgt mk by simp
-  \<comment> \<open>the transport, one application per index regime\<close>
+  \<comment> \<open>the transport, one application per index regime; cores are the FIXED triple
+      \<open>(Y\<^sub>1, A\<^sub>1, Y\<^sub>3)\<close> and the donors are \<open>numBT (k-1)\<close> / \<open>numBT (k+1)\<close>\<close>
   have isot: "isOT_BT (Trans ((N::pairseq)[m]))"
   proof (cases "k = 1")
     case True
-    \<comment> \<open>hole = the kind-1 position itself, head \<open>e\<^sub>3\<close>, cores \<open>(X\<^sub>1, A\<^sub>1, X\<^sub>2)\<close>\<close>
+    \<comment> \<open>hole = the kind-1 position itself, head \<open>e\<^sub>3\<close>; donors \<open>numBT 0\<close> / \<open>numBT 2\<close>\<close>
     have fA1c: "flatBT (d4vx_core s0 ?ub b0 ?A0 k) = flatBT A1"
       using True by (simp add: A1_def)
     have ourflat: "flatBT (Trans ((N::pairseq)[m]))
         = s1 @ flatBT (Dpt (enat ?e3) A1) @ b1"
       using mnm fA1c by simp
-    have loflat: "flatBT (operB (Trans N) (numBT 1))
-        = s1 @ flatBT (Dpt (enat ?e3) X1) @ b1"
-      using fseqX[of 1] by (simp add: X1_def)
-    have hiflat: "flatBT (operB (Trans N) (numBT 2))
-        = s1 @ flatBT (Dpt (enat ?e3) X2) @ b1"
+    have loflat: "flatBT (operB (Trans N) (numBT 0))
+        = s1 @ flatBT (Dpt (enat ?e3) Y1) @ b1"
+      using fseqY[of 0] by (simp add: Y1_def)
+    have hiflat: "flatBT (operB (Trans N) (numBT (Suc (Suc 0))))
+        = s1 @ flatBT (Dpt (enat ?e3) Y3) @ b1"
     proof -
-      have "d4vx_core s0 ?ub b0 X0 2 = X2"
-        by (simp add: numeral_2_eq_2 X1_def X2_def)
-      thus ?thesis using fseqX[of 2] by simp
+      have "d4vx_core s0 ?ub b0 0\<^sub>B (Suc (Suc (Suc 0))) = Y3"
+        by (simp add: Y1_def Y2_def Y3_def)
+      thus ?thesis using fseqY[of "Suc (Suc 0)"] by simp
     qed
     have ourdec: "scb_decomp (Trans ((N::pairseq)[m])) s1
                     (flatBT (Dpt (enat ?e3) A1)) b1"
       unfolding scb_decomp_def
       using ourflat b1RP isPTB_str_Dpt[of "enat ?e3" A1] A1TB
       by (simp add: T_B_def)
-    have lodec: "scb_decomp (operB (Trans N) (numBT 1)) s1
-                    (flatBT (Dpt (enat ?e3) X1)) b1"
+    have lodec: "scb_decomp (operB (Trans N) (numBT 0)) s1
+                    (flatBT (Dpt (enat ?e3) Y1)) b1"
       unfolding scb_decomp_def
-      using loflat b1RP isPTB_str_Dpt[of "enat ?e3" X1] X1TB
+      using loflat b1RP isPTB_str_Dpt[of "enat ?e3" Y1] Y1TB
       by (simp add: T_B_def)
-    have hidec: "scb_decomp (operB (Trans N) (numBT 2)) s1
-                    (flatBT (Dpt (enat ?e3) X2)) b1"
+    have hidec: "scb_decomp (operB (Trans N) (numBT (Suc (Suc 0)))) s1
+                    (flatBT (Dpt (enat ?e3) Y3)) b1"
       unfolding scb_decomp_def
-      using hiflat b1RP isPTB_str_Dpt[of "enat ?e3" X2] X2TB
+      using hiflat b1RP isPTB_str_Dpt[of "enat ?e3" Y3] Y3TB
       by (simp add: T_B_def)
     have "isOT_BT (Trans ((N::pairseq)[m]))"
       by (rule oix_transportD[OF otx3_transport lodec ourdec hidec
@@ -1403,7 +2064,8 @@ proof -
     have k'ne: "k' \<noteq> 0" using False kA by simp
     then obtain k2 where kB: "k' = Suc k2" by (cases k') auto
     have kk: "k = Suc (Suc k2)" using kA kB by simp
-    \<comment> \<open>hole = \<open>k - 1\<close> blocks deep, head \<open>ub\<close>, cores \<open>(X\<^sub>1, A\<^sub>1, X\<^sub>2)\<close>\<close>
+    \<comment> \<open>hole = \<open>k - 1\<close> blocks deep, head \<open>ub\<close>; donors \<open>numBT (Suc k2) = numBT (k-1)\<close>
+        and \<open>numBT (Suc k) = numBT (k+1)\<close>, cores \<open>(Y\<^sub>1, A\<^sub>1, Y\<^sub>3)\<close>\<close>
     let ?blk = "s0 @ [Dsym (enat ?ub)]"
     let ?S = "s1 @ Dsym (enat ?e3) # concat (replicate k2 ?blk) @ s0"
     let ?B = "concat (replicate (Suc k2) b0) @ b1"
@@ -1423,35 +2085,43 @@ proof -
     have ourflat: "flatBT (Trans ((N::pairseq)[m]))
         = ?S @ flatBT (Dpt (enat ?ub) A1) @ ?B"
       using mnm Aflat crepA crepB fA1 by simp
-    \<comment> \<open>lo donor at the deep hole\<close>
-    have loflat: "flatBT (operB (Trans N) (numBT k))
-        = ?S @ flatBT (Dpt (enat ?ub) X1) @ ?B"
-      using fseqX[of k] Xflat[of k] crepA crepB fX1 by simp
-    \<comment> \<open>hi donor at the deep hole\<close>
-    have crepA2: "concat (replicate (Suc k) ?blk)
+    \<comment> \<open>lo donor \<open>numBT (Suc k2) = numBT (k-1)\<close>: core \<open>Y\<^sub>1\<close> at the deep hole\<close>
+    have Fk: "flatBT (operB (Trans N) (numBT (Suc k2)))
+        = s1 @ Dsym (enat ?e3) # flatBT (d4vx_core s0 ?ub b0 0\<^sub>B k) @ b1"
+      using fseqY[of "Suc k2"] kk by (simp del: d4vx_core.simps)
+    have loflat: "flatBT (operB (Trans N) (numBT (Suc k2)))
+        = ?S @ flatBT (Dpt (enat ?ub) Y1) @ ?B"
+      using Fk Yflat[of k] crepA crepB fY1 by simp
+    \<comment> \<open>hi donor \<open>numBT (Suc k) = numBT (k+1)\<close>: core \<open>Y\<^sub>3\<close> at the deep hole\<close>
+    have crepA3: "concat (replicate (Suc (Suc k)) ?blk)
         = concat (replicate k2 ?blk) @ s0 @ [Dsym (enat ?ub)]
-          @ s0 @ [Dsym (enat ?ub)] @ s0 @ [Dsym (enat ?ub)]"
+          @ s0 @ [Dsym (enat ?ub)] @ s0 @ [Dsym (enat ?ub)]
+          @ s0 @ [Dsym (enat ?ub)]"
       using kk by (simp add: s85b_crep_comm_snoc s85b_crep_snoc s85b_crep_comm)
-    have crepB2: "concat (replicate (Suc k) b0)
-        = b0 @ b0 @ concat (replicate (Suc k2) b0)"
+    have crepB3: "concat (replicate (Suc (Suc k)) b0)
+        = b0 @ b0 @ b0 @ concat (replicate (Suc k2) b0)"
       using kk by simp
+    have Fh: "flatBT (operB (Trans N) (numBT (Suc k)))
+        = s1 @ Dsym (enat ?e3)
+            # flatBT (d4vx_core s0 ?ub b0 0\<^sub>B (Suc (Suc k))) @ b1"
+      using fseqY[of "Suc k"] by (simp del: d4vx_core.simps)
     have hiflat: "flatBT (operB (Trans N) (numBT (Suc k)))
-        = ?S @ flatBT (Dpt (enat ?ub) X2) @ ?B"
-      using fseqX[of "Suc k"] Xflat[of "Suc k"] crepA2 crepB2 fX2 fX1 by simp
+        = ?S @ flatBT (Dpt (enat ?ub) Y3) @ ?B"
+      using Fh Yflat[of "Suc (Suc k)"] crepA3 crepB3 fY1 fY2 fY3 by simp
     have ourdec: "scb_decomp (Trans ((N::pairseq)[m])) ?S
                     (flatBT (Dpt (enat ?ub) A1)) ?B"
       unfolding scb_decomp_def
       using ourflat BRP isPTB_str_Dpt[of "enat ?ub" A1] A1TB
       by (simp add: T_B_def)
-    have lodec: "scb_decomp (operB (Trans N) (numBT k)) ?S
-                    (flatBT (Dpt (enat ?ub) X1)) ?B"
+    have lodec: "scb_decomp (operB (Trans N) (numBT (Suc k2))) ?S
+                    (flatBT (Dpt (enat ?ub) Y1)) ?B"
       unfolding scb_decomp_def
-      using loflat BRP isPTB_str_Dpt[of "enat ?ub" X1] X1TB
+      using loflat BRP isPTB_str_Dpt[of "enat ?ub" Y1] Y1TB
       by (simp add: T_B_def)
     have hidec: "scb_decomp (operB (Trans N) (numBT (Suc k))) ?S
-                    (flatBT (Dpt (enat ?ub) X2)) ?B"
+                    (flatBT (Dpt (enat ?ub) Y3)) ?B"
       unfolding scb_decomp_def
-      using hiflat BRP isPTB_str_Dpt[of "enat ?ub" X2] X2TB
+      using hiflat BRP isPTB_str_Dpt[of "enat ?ub" Y3] Y3TB
       by (simp add: T_B_def)
     have "isOT_BT (Trans ((N::pairseq)[m]))"
       by (rule oix_transportD[OF otx3_transport lodec ourdec hidec
@@ -1497,9 +2167,9 @@ lemma oi5_OTint_condIII:
           (GBT u (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
                     (bpHeadT (Trans (Pred (s84x_N P))))))
           (insert (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
-                     (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))
+                     0\<^sub>B)
                   (GBT u (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
-                            (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))))"
+                            0\<^sub>B)))"
     and NST: "N \<in> ST_PS" and NPT: "N \<in> PT_PS" and j1gt: "1 < Lng N - 1"
     and cIII: "transCondIII N" and ihOT: "Trans N \<in> OT_B" and mgt: "1 < m"
   shows "Trans ((N::pairseq)[m]) \<in> OT_B"
@@ -1566,9 +2236,9 @@ lemma oi5_OTint_condIV:
           (GBT u (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
                     (bpHeadT (Trans (Pred (s84x_N P))))))
           (insert (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
-                     (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))
+                     0\<^sub>B)
                   (GBT u (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
-                            (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))))"
+                            0\<^sub>B)))"
     and IVADMEQ: "\<And>P n. P \<in> ST_PS \<Longrightarrow> P \<in> PT_PS \<Longrightarrow>
         hasParent P 1 (Lng P - 1) \<Longrightarrow> 1 < Lng P - 1 \<Longrightarrow> transCondIV P \<Longrightarrow>
         Adm P (s84x_jm2 P) = transJm1 P \<Longrightarrow> Trans P \<in> OT_B \<Longrightarrow> 1 < n \<Longrightarrow>
@@ -1638,9 +2308,9 @@ theorem oi5_termination_census:
           (GBT u (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
                     (bpHeadT (Trans (Pred (s84x_N P))))))
           (insert (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
-                     (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))
+                     0\<^sub>B)
                   (GBT u (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
-                            (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))))"
+                            0\<^sub>B)))"
     and IVADMEQ: "\<And>P n. P \<in> ST_PS \<Longrightarrow> P \<in> PT_PS \<Longrightarrow>
         hasParent P 1 (Lng P - 1) \<Longrightarrow> 1 < Lng P - 1 \<Longrightarrow> transCondIV P \<Longrightarrow>
         Adm P (s84x_jm2 P) = transJm1 P \<Longrightarrow> Trans P \<in> OT_B \<Longrightarrow> 1 < n \<Longrightarrow>
@@ -1671,11 +2341,11 @@ proof -
     by (rule oi5_OTint_condIV[OF OTA1 SETLE1 IVADMEQ IVNP])
   show "\<forall>M. M \<in> ST_PS \<longrightarrow> Trans M \<in> OT_B"
     by (rule oc4_termination_census_master_v2(1)[OF otIII otIV oi4_PredNp
-          oi4_Lpv DEEPOT NOBR FINRC])
+          oi4_Lpv DEEPOT NOBR FINRC oi5_LbaseU])
   show "\<forall>M n. M \<in> ST_PS \<longrightarrow> 1 \<le> n \<longrightarrow> 1 < Lng M \<longrightarrow>
            lessBT (Trans ((M::pairseq)[n])) (Trans M)"
     by (rule oc4_termination_census_master_v2(2)[OF otIII otIV oi4_PredNp
-          oi4_Lpv DEEPOT NOBR FINRC])
+          oi4_Lpv DEEPOT NOBR FINRC oi5_LbaseU])
 qed
 
 subsection \<open>The \<open>OTint\<close> slot and the \<open>OTmulti\<close> slot, same residuals\<close>
@@ -1701,9 +2371,9 @@ lemma oi5_OTint_slot:
           (GBT u (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
                     (bpHeadT (Trans (Pred (s84x_N P))))))
           (insert (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
-                     (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))
+                     0\<^sub>B)
                   (GBT u (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
-                            (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))))"
+                            0\<^sub>B)))"
     and IVADMEQ: "\<And>P n. P \<in> ST_PS \<Longrightarrow> P \<in> PT_PS \<Longrightarrow>
         hasParent P 1 (Lng P - 1) \<Longrightarrow> 1 < Lng P - 1 \<Longrightarrow> transCondIV P \<Longrightarrow>
         Adm P (s84x_jm2 P) = transJm1 P \<Longrightarrow> Trans P \<in> OT_B \<Longrightarrow> 1 < n \<Longrightarrow>
@@ -1740,9 +2410,9 @@ lemma oi5_OTmulti:
           (GBT u (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
                     (bpHeadT (Trans (Pred (s84x_N P))))))
           (insert (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
-                     (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))
+                     0\<^sub>B)
                   (GBT u (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
-                            (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))))"
+                            0\<^sub>B)))"
     and IVADMEQ: "\<And>P n. P \<in> ST_PS \<Longrightarrow> P \<in> PT_PS \<Longrightarrow>
         hasParent P 1 (Lng P - 1) \<Longrightarrow> 1 < Lng P - 1 \<Longrightarrow> transCondIV P \<Longrightarrow>
         Adm P (s84x_jm2 P) = transJm1 P \<Longrightarrow> Trans P \<in> OT_B \<Longrightarrow> 1 < n \<Longrightarrow>
@@ -1756,7 +2426,7 @@ lemma oi5_OTmulti:
     and mgt: "1 < m" and NPred: "(N::pairseq)[m] \<noteq> Pred N"
   shows "Trans ((N::pairseq)[m]) \<in> OT_B"
   by (rule oc4_OTmulti[OF oi5_OTint_slot[OF OTA1 SETLE1 IVADMEQ IVNP]
-        TVall NST mu ihOT mgt NPred])
+        TVall NST mu ihOT mgt NPred oi5_LbaseU])
 
 
 (* ===================================================================== *)
@@ -1791,9 +2461,9 @@ theorem oi6_termination_census:
           (GBT u (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
                     (bpHeadT (Trans (Pred (s84x_N P))))))
           (insert (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
-                     (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))
+                     0\<^sub>B)
                   (GBT u (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
-                            (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))))"
+                            0\<^sub>B)))"
     and IVADMEQ: "\<And>P n. P \<in> ST_PS \<Longrightarrow> P \<in> PT_PS \<Longrightarrow>
         hasParent P 1 (Lng P - 1) \<Longrightarrow> 1 < Lng P - 1 \<Longrightarrow> transCondIV P \<Longrightarrow>
         Adm P (s84x_jm2 P) = transJm1 P \<Longrightarrow> Trans P \<in> OT_B \<Longrightarrow> 1 < n \<Longrightarrow>
@@ -1996,9 +2666,9 @@ theorem oi7_termination_census:
           (GBT u (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
                     (bpHeadT (Trans (Pred (s84x_N P))))))
           (insert (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
-                     (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))
+                     0\<^sub>B)
                   (GBT u (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
-                            (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))))"
+                            0\<^sub>B)))"
     and IVADMEQ: "\<And>P n. P \<in> ST_PS \<Longrightarrow> P \<in> PT_PS \<Longrightarrow>
         hasParent P 1 (Lng P - 1) \<Longrightarrow> 1 < Lng P - 1 \<Longrightarrow> transCondIV P \<Longrightarrow>
         Adm P (s84x_jm2 P) = transJm1 P \<Longrightarrow> Trans P \<in> OT_B \<Longrightarrow> 1 < n \<Longrightarrow>
@@ -2434,15 +3104,15 @@ lemma ot2_IVADMEQ_of_pkg:
     and base0: "lessBT (Dpt (enat (entry M 1 (Lng M - 1) - 1)) 0\<^sub>B) (transT2 M)"
     and base1: "lessBT (transT2 M)
                   (d4vx_ins s0 (entry M 1 (Lng M - 1) - 1) b0
-                     (Dpt (enat (entry M 1 (Lng M - 1) - 1)) 0\<^sub>B))"
+                     0\<^sub>B)"
     and NEWOT: "\<And>k. isOT_BP (DB (enat (entry M 1 (s84x_jm3 M)))
                     (d4vx_core s0 (entry M 1 (Lng M - 1) - 1) b0 (transT2 M) k))"
     and SETLE: "\<And>k u. b1x_setle
         (GBT u (d4vx_core s0 (entry M 1 (Lng M - 1) - 1) b0 (transT2 M) k))
         (insert (d4vx_core s0 (entry M 1 (Lng M - 1) - 1) b0
-                  (Dpt (enat (entry M 1 (Lng M - 1) - 1)) 0\<^sub>B) k)
+                  0\<^sub>B k)
                 (GBT u (d4vx_core s0 (entry M 1 (Lng M - 1) - 1) b0
-                          (Dpt (enat (entry M 1 (Lng M - 1) - 1)) 0\<^sub>B) k)))"
+                          0\<^sub>B k)))"
   shows "Trans ((M::pairseq)[m]) \<in> OT_B"
 proof -
   let ?e3 = "entry M 1 (s84x_jm3 M)"
@@ -2457,57 +3127,75 @@ proof -
   have dTM: "scb_decomp (Trans M) s1 (flatBT (Dpt (enat ?e3) body)) b1"
     using k1 by (simp add: scb_kind1_def)
   have b1RP: "\<forall>x \<in> set b1. x = RP" using dTM by (simp add: scb_decomp_def)
-  have X0TB: "?X0 \<in> T_B" by (simp add: T_B_def)
+  have ZTB: "(0\<^sub>B :: BT) \<in> T_B" by (simp add: T_B_def)
   \<comment> \<open>tower \<open>T\<^bsub>B\<^esub>\<close>-membership\<close>
   have ATB: "\<And>k. d4vx_core s0 ?ub b0 (transT2 M) k \<in> T_B"
     by (rule oi5_d4vx_core_TB[OF wrap b0RP bodyT t2TB])
-  have WTB: "\<And>k. d4vx_core s0 ?ub b0 ?X0 k \<in> T_B"
-    by (rule oi5_d4vx_core_TB[OF wrap b0RP bodyT X0TB])
-  \<comment> \<open>donor closed forms and flats\<close>
+  have WTB: "\<And>k. d4vx_core s0 ?ub b0 0\<^sub>B k \<in> T_B"
+    by (rule oi5_d4vx_core_TB[OF wrap b0RP bodyT ZTB])
+  \<comment> \<open>donor closed forms and flats.  r72: the operB core is the \<open>0\<^sub>B\<close>-seeded tower,
+      ONE LEVEL DEEPER --- \<open>operB (numBT n)\<close> has core \<open>W\<^bsub>n+1\<^esub>\<close>, not \<open>W\<^sub>n\<close>.\<close>
   have fseq: "\<And>n. flatBT (operB (Trans M) (numBT n))
       = s1 @ (Dsym (enat ?e3)
-           # concat (replicate n (s0 @ [Dsym (enat ?ub)]))
-           @ [Dsym (enat ?ub)] @ [Zsym] @ concat (replicate n b0)) @ b1"
+           # concat (replicate (n + 1) (s0 @ [Dsym (enat ?ub)]))
+           @ [Zsym]
+           @ concat (replicate (n + 1) b0)) @ b1"
     by (rule d13x_fseq_condIII[OF TT uv bodyT dbbody bodyne inner k1])
-  have Xflat: "\<And>n. flatBT (d4vx_core s0 ?ub b0 ?X0 n)
+  have Xflat: "\<And>n. flatBT (d4vx_core s0 ?ub b0 0\<^sub>B n)
       = concat (replicate n (s0 @ [Dsym (enat ?ub)]))
-        @ flatBT ?X0 @ concat (replicate n b0)"
+        @ flatBT (0\<^sub>B :: BT) @ concat (replicate n b0)"
     by (rule d4vx_core_flat[OF wrap b0RP])
   have fWn: "\<And>n. flatBT (operB (Trans M) (numBT n))
-      = s1 @ flatBP (DB (enat ?e3) (d4vx_core s0 ?ub b0 ?X0 n)) @ b1"
-    using fseq Xflat by simp
+      = s1 @ flatBP (DB (enat ?e3) (d4vx_core s0 ?ub b0 0\<^sub>B (Suc n))) @ b1"
+  proof -
+    fix n :: nat
+    have A: "flatBT (d4vx_core s0 ?ub b0 0\<^sub>B (Suc n))
+        = concat (replicate (Suc n) (s0 @ [Dsym (enat ?ub)]))
+          @ [Zsym] @ concat (replicate (Suc n) b0)"
+      using Xflat[of "Suc n"] by (simp del: d4vx_core.simps)
+    show "flatBT (operB (Trans M) (numBT n))
+        = s1 @ flatBP (DB (enat ?e3) (d4vx_core s0 ?ub b0 0\<^sub>B (Suc n))) @ b1"
+      using fseq[of n] A by (simp del: d4vx_core.simps)
+  qed
   \<comment> \<open>index bookkeeping\<close>
   obtain k where mk: "m = Suc k" using mgt by (cases m) auto
   have k1n: "1 \<le> k" using mgt mk by simp
   have Sk: "Suc (m - 1) = m" using mgt by simp
+  have SkL: "Suc (m - 2) = m - 1" using mgt by simp
   have fMm: "flatBT (Trans ((M::pairseq)[m]))
       = s1 @ flatBP (DB (enat ?e3) (d4vx_core s0 ?ub b0 (transT2 M) (m - 1))) @ b1"
     using mnform[of m] mgt by simp
-  \<comment> \<open>the three aligned scb-decompositions at \<open>(s\<^sub>1, b\<^sub>1)\<close>, cores at head \<open>e\<^sub>3\<close>\<close>
+  \<comment> \<open>the three aligned scb-decompositions at \<open>(s\<^sub>1, b\<^sub>1)\<close>, cores at head \<open>e\<^sub>3\<close>;
+      donors are \<open>numBT (m-2)\<close> (core \<open>W\<^bsub>m-1\<^esub>\<close>) and \<open>numBT (m-1)\<close> (core \<open>W\<^sub>m\<close>)\<close>
   let ?A = "d4vx_core s0 ?ub b0 (transT2 M) (m - 1)"
-  let ?WL = "d4vx_core s0 ?ub b0 ?X0 (m - 1)"
-  let ?WH = "d4vx_core s0 ?ub b0 ?X0 m"
+  let ?WL = "d4vx_core s0 ?ub b0 0\<^sub>B (m - 1)"
+  let ?WH = "d4vx_core s0 ?ub b0 0\<^sub>B m"
   have ourdec: "scb_decomp (Trans ((M::pairseq)[m])) s1
                   (flatBT (Dpt (enat ?e3) ?A)) b1"
     unfolding scb_decomp_def
     using fMm b1RP isPTB_str_Dpt[of "enat ?e3" ?A] ATB by (simp add: T_B_def)
-  have lodec: "scb_decomp (operB (Trans M) (numBT (m - 1))) s1
+  have lodec: "scb_decomp (operB (Trans M) (numBT (m - 2))) s1
                   (flatBT (Dpt (enat ?e3) ?WL)) b1"
     unfolding scb_decomp_def
-    using fWn[of "m - 1"] b1RP isPTB_str_Dpt[of "enat ?e3" ?WL] WTB
+    using fWn[of "m - 2"] SkL b1RP isPTB_str_Dpt[of "enat ?e3" ?WL] WTB
     by (simp add: T_B_def)
-  have hidec: "scb_decomp (operB (Trans M) (numBT m)) s1
+  have hidec: "scb_decomp (operB (Trans M) (numBT (m - 1))) s1
                   (flatBT (Dpt (enat ?e3) ?WH)) b1"
     unfolding scb_decomp_def
-    using fWn[of m] b1RP isPTB_str_Dpt[of "enat ?e3" ?WH] WTB
+    using fWn[of "m - 1"] Sk b1RP isPTB_str_Dpt[of "enat ?e3" ?WH] WTB
     by (simp add: T_B_def)
   \<comment> \<open>donor OT-ness ([Buc1] 3.2 closure on the slot's own IH)\<close>
-  have loOT: "isOT_BT (operB (Trans M) (numBT (m - 1)))"
+  have loOT: "isOT_BT (operB (Trans M) (numBT (m - 2)))"
+    using e4x_OT_B_operB_numBT[OF ihOT, of "m - 2"] by (simp add: OT_B_def OT_def)
+  have hiOT: "isOT_BT (operB (Trans M) (numBT (m - 1)))"
     using e4x_OT_B_operB_numBT[OF ihOT, of "m - 1"] by (simp add: OT_B_def OT_def)
-  have hiOT: "isOT_BT (operB (Trans M) (numBT m))"
-    using e4x_OT_B_operB_numBT[OF ihOT, of m] by (simp add: OT_B_def OT_def)
-  \<comment> \<open>interleave orders \<open>W\<^bsub>m-1\<^esub> < A\<^bsub>m-1\<^esub> < W\<^bsub>m\<^esub>\<close>\<close>
-  note IL = c4cx_d4vx_core_interleave[OF wrap b0RP base0 base1, of "m - 1"]
+  \<comment> \<open>interleave orders \<open>W\<^bsub>m-1\<^esub> < A\<^bsub>m-1\<^esub> < W\<^bsub>m\<^esub>\<close> (seed \<open>0\<^sub>B\<close>, \<open>base\<^sub>1\<^sup>Y\<close>)\<close>
+  have base0Z: "lessBT (0\<^sub>B :: BT) (transT2 M)"
+  proof -
+    have "lessBT (0\<^sub>B :: BT) (Dpt (enat ?ub) 0\<^sub>B)" by simp
+    thus ?thesis using base0 lessBT_trans by blast
+  qed
+  note IL = c4cx_d4vx_core_interleave[OF wrap b0RP base0Z base1, of "m - 1"]
   have ordlo: "leBT ?WL ?A" using IL by simp
   have ordhi: "leBT ?A ?WH" using IL Sk by simp
   \<comment> \<open>the two clean tower facts\<close>
@@ -2569,9 +3257,9 @@ lemma ot2_IVADMEQ_mod:
           b1x_setle
             (GBT u (d4vx_core s0 (entry M 1 (Lng M - 1) - 1) b0 (transT2 M) k))
             (insert (d4vx_core s0 (entry M 1 (Lng M - 1) - 1) b0
-                      (Dpt (enat (entry M 1 (Lng M - 1) - 1)) 0\<^sub>B) k)
+                      0\<^sub>B k)
                     (GBT u (d4vx_core s0 (entry M 1 (Lng M - 1) - 1) b0
-                              (Dpt (enat (entry M 1 (Lng M - 1) - 1)) 0\<^sub>B) k)))"
+                              0\<^sub>B k)))"
   shows "Trans ((M::pairseq)[m]) \<in> OT_B"
 proof -
   have MR: "M \<in> RT_PS" using MST m_6_7_ST_PS_subseteq_RT_PS by blast
@@ -2632,8 +3320,8 @@ proof -
     by (rule s85b_complb_lessBT[OF ubv1 t2ne HB])
   have base1: "lessBT (transT2 M)
       (d4vx_ins s0 (entry M 1 (Lng M - 1) - 1) b0
-         (Dpt (enat (entry M 1 (Lng M - 1) - 1)) 0\<^sub>B))"
-    by (rule c4dx_condIV_base1[OF MR MPT J1pos T1 cIV inner])
+         0\<^sub>B)"
+    by (rule oy1_base1Y_t2[OF MR MPT J1pos T1 cIV inner])
   \<comment> \<open>discharge the two tower facts against this inner scb, then transport\<close>
   show ?thesis
     by (rule ot2_IVADMEQ_of_pkg[OF MST mgt ihOT t2TB uv bodyT bodyne dbbody
@@ -2764,9 +3452,9 @@ lemma oi8_OTint_IIIIV_hp:
           (GBT u (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
                     (bpHeadT (Trans (Pred (s84x_N P))))))
           (insert (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
-                     (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))
+                     0\<^sub>B)
                   (GBT u (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
-                            (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))))"
+                            0\<^sub>B)))"
     and NST: "N \<in> ST_PS" and NPT: "N \<in> PT_PS"
     and hp: "hasParent N 1 (Lng N - 1)"
     and j1gt: "1 < Lng N - 1"
@@ -2791,7 +3479,7 @@ proof -
           = s1 @ Dsym (enat ?e3)
               # flatBT (d4vx_core s0 ?ub b0 ?A0 (m - 1)) @ b1"
     and base0: "lessBT (Dpt (enat ?ub) 0\<^sub>B) ?A0"
-    and base1: "lessBT ?A0 (d4vx_ins s0 ?ub b0 (Dpt (enat ?ub) 0\<^sub>B))"
+    and base1: "lessBT ?A0 (d4vx_ins s0 ?ub b0 0\<^sub>B)"
     and A0TB: "?A0 \<in> T_B"
     by (rule oi5_IIIIV_pkg[OF NST NPT hp j1gt branch ltJ])
   note regime = oi5_regime[OF NST NPT hp j1gt branch]
@@ -2810,32 +3498,54 @@ proof -
     hence "[Zsym] = s0 @ [Dsym (enat ?v1), Zsym] @ b0" using z by simp
     thus False by (cases s0) auto
   qed
-  \<comment> \<open>towers\<close>
+  \<comment> \<open>towers.  r72: under the CORRECTED fundamental sequence the operB core is the
+      \<open>0\<^sub>B\<close>-seeded tower \<open>Y\<^sub>n = ins\<^sup>n 0\<^sub>B\<close>, ONE LEVEL DEEPER than the old \<open>X\<^sub>n = ins\<^sup>n(D\<^bsub>ub\<^esub>0)\<close>.
+      \<open>X\<^sub>0/X\<^sub>1\<close> survive only as the carriers of \<open>base\<^sub>0\<close>/\<open>base\<^sub>1\<close>.\<close>
   define X0 where "X0 = Dpt (enat ?ub) 0\<^sub>B"
   define A1 where "A1 = d4vx_ins s0 ?ub b0 ?A0"
-  define X1 where "X1 = d4vx_ins s0 ?ub b0 X0"
-  define X2 where "X2 = d4vx_ins s0 ?ub b0 X1"
+  define Y1 where "Y1 = d4vx_ins s0 ?ub b0 0\<^sub>B"
+  define Y2 where "Y2 = d4vx_ins s0 ?ub b0 Y1"
+  define Y3 where "Y3 = d4vx_ins s0 ?ub b0 Y2"
   have X0TB: "X0 \<in> T_B" by (simp add: X0_def T_B_def)
+  have ZTB: "0\<^sub>B \<in> T_B" by (simp add: T_B_def)
   have A1TB: "A1 \<in> T_B"
     unfolding A1_def by (rule oi5_d4vx_ins_TB[OF wrap b0RP bodyT A0TB])
-  have X1TB: "X1 \<in> T_B"
-    unfolding X1_def by (rule oi5_d4vx_ins_TB[OF wrap b0RP bodyT X0TB])
-  have X2TB: "X2 \<in> T_B"
-    unfolding X2_def by (rule oi5_d4vx_ins_TB[OF wrap b0RP bodyT X1TB])
+  have Y1TB: "Y1 \<in> T_B"
+    unfolding Y1_def by (rule oi5_d4vx_ins_TB[OF wrap b0RP bodyT ZTB])
+  have Y2TB: "Y2 \<in> T_B"
+    unfolding Y2_def by (rule oi5_d4vx_ins_TB[OF wrap b0RP bodyT Y1TB])
+  have Y3TB: "Y3 \<in> T_B"
+    unfolding Y3_def by (rule oi5_d4vx_ins_TB[OF wrap b0RP bodyT Y2TB])
   have fA1: "flatBT A1 = s0 @ Dsym (enat ?ub) # flatBT ?A0 @ b0"
     unfolding A1_def by (rule d4vx_ins_flat[OF wrap b0RP])
-  have fX1: "flatBT X1 = s0 @ Dsym (enat ?ub) # flatBT X0 @ b0"
-    unfolding X1_def by (rule d4vx_ins_flat[OF wrap b0RP])
-  have fX2: "flatBT X2 = s0 @ Dsym (enat ?ub) # flatBT X1 @ b0"
-    unfolding X2_def by (rule d4vx_ins_flat[OF wrap b0RP])
-  \<comment> \<open>orders (interleave at height 1)\<close>
-  note IL = c4cx_d4vx_core_interleave[OF wrap b0RP base0[folded X0_def]
-              base1[folded X0_def], of 1]
-  have ordlo: "leBT X1 A1"
-    using IL by (simp add: X1_def A1_def X0_def)
-  have ordhi: "leBT A1 X2"
-    using IL by (simp add: X1_def X2_def A1_def X0_def)
-  \<comment> \<open>the one-block facts\<close>
+  have fY1: "flatBT Y1 = s0 @ Dsym (enat ?ub) # flatBT 0\<^sub>B @ b0"
+    unfolding Y1_def by (rule d4vx_ins_flat[OF wrap b0RP])
+  have fY2: "flatBT Y2 = s0 @ Dsym (enat ?ub) # flatBT Y1 @ b0"
+    unfolding Y2_def by (rule d4vx_ins_flat[OF wrap b0RP])
+  have fY3: "flatBT Y3 = s0 @ Dsym (enat ?ub) # flatBT Y2 @ b0"
+    unfolding Y3_def by (rule d4vx_ins_flat[OF wrap b0RP])
+  \<comment> \<open>orders (\<open>ins\<close>-monotonicity, @{thm [source] c4cx_d4vx_ins_mono}):
+      \<open>Y\<^sub>1 \<le> A\<^sub>1\<close> from \<open>0\<^sub>B < A\<^sub>0\<close> (\<open>base\<^sub>0\<close>), \<open>A\<^sub>1 \<le> Y\<^sub>3\<close> from \<open>A\<^sub>0 < Y\<^sub>1 < Y\<^sub>2\<close>
+      (\<open>base\<^sub>1\<^sup>Y\<close>, r72)\<close>
+  have zltA0: "lessBT 0\<^sub>B ?A0"
+  proof -
+    have "lessBT 0\<^sub>B X0" by (simp add: X0_def)
+    thus ?thesis using base0[folded X0_def] lessBT_trans by blast
+  qed
+  have ordlo: "leBT Y1 A1"
+    unfolding Y1_def A1_def
+    using c4cx_d4vx_ins_mono[OF wrap b0RP zltA0, of ?ub] by blast
+  have A0ltY1: "lessBT ?A0 Y1" using base1[folded Y1_def] .
+  have zltY1: "lessBT 0\<^sub>B Y1" using zltA0 A0ltY1 lessBT_trans by blast
+  have Y1ltY2: "lessBT Y1 Y2"
+    unfolding Y1_def Y2_def
+    using c4cx_d4vx_ins_mono[OF wrap b0RP zltY1, of ?ub]
+    by (simp add: Y1_def)
+  have A0ltY2: "lessBT ?A0 Y2" using A0ltY1 Y1ltY2 lessBT_trans by blast
+  have ordhi: "leBT A1 Y3"
+    unfolding A1_def Y3_def
+    using c4cx_d4vx_ins_mono[OF wrap b0RP A0ltY2, of ?ub] by blast
+  \<comment> \<open>the one-block facts (the \<open>SETLE1\<close> slot is now \<open>Y\<^sub>1\<close>-seeded)\<close>
   have newOTe3: "isOT_BP (DB (enat ?e3) A1)"
     unfolding A1_def by (rule OTA1[OF NST NPT hp j1gt branch ihOT b0RP inner ltJ])
   have newOTub: "isOT_BP (DB (enat ?ub) A1)"
@@ -2849,22 +3559,32 @@ proof -
     hence "\<forall>x \<in> GBT (enat ?ub) A1. lessBT x A1" using gE3 by blast
     thus ?thesis using A1OT by simp
   qed
-  have setle: "\<And>u. b1x_setle (GBT u A1) (insert X1 (GBT u X1))"
-    unfolding A1_def X1_def X0_def
+  have setle: "\<And>u. b1x_setle (GBT u A1) (insert Y1 (GBT u Y1))"
+    unfolding A1_def Y1_def
     by (rule SETLE1[OF NST NPT hp j1gt branch ihOT b0RP inner ltJ])
-  \<comment> \<open>fseq closed forms of the donors\<close>
+  \<comment> \<open>fseq closed form of the donors: core \<open>= Y\<^bsub>n+1\<^esub>\<close>\<close>
   have fseq: "\<And>n. flatBT (operB (Trans N) (numBT n))
       = s1 @ (Dsym (enat ?e3)
-           # concat (replicate n (s0 @ [Dsym (enat ?ub)]))
-           @ [Dsym (enat ?ub)] @ [Zsym] @ concat (replicate n b0)) @ b1"
+           # concat (replicate (n + 1) (s0 @ [Dsym (enat ?ub)]))
+           @ [Zsym]
+           @ concat (replicate (n + 1) b0)) @ b1"
     by (rule d13x_fseq_condIII[OF TT uv bodyT dbbodyH bodyne inner k1])
-  have Xflat: "\<And>n. flatBT (d4vx_core s0 ?ub b0 X0 n)
+  have Yflat: "\<And>n. flatBT (d4vx_core s0 ?ub b0 0\<^sub>B n)
       = concat (replicate n (s0 @ [Dsym (enat ?ub)]))
-        @ flatBT X0 @ concat (replicate n b0)"
+        @ flatBT 0\<^sub>B @ concat (replicate n b0)"
     by (rule d4vx_core_flat[OF wrap b0RP])
-  have fseqX: "\<And>n. flatBT (operB (Trans N) (numBT n))
-      = s1 @ Dsym (enat ?e3) # flatBT (d4vx_core s0 ?ub b0 X0 n) @ b1"
-    using fseq Xflat by (simp add: X0_def)
+  have fseqY: "\<And>n. flatBT (operB (Trans N) (numBT n))
+      = s1 @ Dsym (enat ?e3) # flatBT (d4vx_core s0 ?ub b0 0\<^sub>B (Suc n)) @ b1"
+  proof -
+    fix n :: nat
+    have A: "flatBT (d4vx_core s0 ?ub b0 0\<^sub>B (Suc n))
+        = concat (replicate (Suc n) (s0 @ [Dsym (enat ?ub)]))
+          @ [Zsym] @ concat (replicate (Suc n) b0)"
+      using Yflat[of "Suc n"] by (simp del: d4vx_core.simps)
+    show "flatBT (operB (Trans N) (numBT n))
+        = s1 @ Dsym (enat ?e3) # flatBT (d4vx_core s0 ?ub b0 0\<^sub>B (Suc n)) @ b1"
+      using fseq[of n] A by (simp del: d4vx_core.simps)
+  qed
   \<comment> \<open>donor OT-ness ([Buc1] closure on the slot's own IH)\<close>
   have donOT: "\<And>n. isOT_BT (operB (Trans N) (numBT n))"
     using e4x_OT_B_operB_numBT[OF ihOT] by (simp add: OT_B_def OT_def)
@@ -2874,40 +3594,41 @@ proof -
   have mnm: "flatBT (Trans ((N::pairseq)[m]))
       = s1 @ Dsym (enat ?e3) # flatBT (d4vx_core s0 ?ub b0 ?A0 k) @ b1"
     using mn mgt mk by simp
-  \<comment> \<open>the transport, one application per index regime\<close>
+  \<comment> \<open>the transport, one application per index regime; cores are the FIXED triple
+      \<open>(Y\<^sub>1, A\<^sub>1, Y\<^sub>3)\<close> and the donors are \<open>numBT (k-1)\<close> / \<open>numBT (k+1)\<close>\<close>
   have isot: "isOT_BT (Trans ((N::pairseq)[m]))"
   proof (cases "k = 1")
     case True
-    \<comment> \<open>hole = the kind-1 position itself, head \<open>e\<^sub>3\<close>, cores \<open>(X\<^sub>1, A\<^sub>1, X\<^sub>2)\<close>\<close>
+    \<comment> \<open>hole = the kind-1 position itself, head \<open>e\<^sub>3\<close>; donors \<open>numBT 0\<close> / \<open>numBT 2\<close>\<close>
     have fA1c: "flatBT (d4vx_core s0 ?ub b0 ?A0 k) = flatBT A1"
       using True by (simp add: A1_def)
     have ourflat: "flatBT (Trans ((N::pairseq)[m]))
         = s1 @ flatBT (Dpt (enat ?e3) A1) @ b1"
       using mnm fA1c by simp
-    have loflat: "flatBT (operB (Trans N) (numBT 1))
-        = s1 @ flatBT (Dpt (enat ?e3) X1) @ b1"
-      using fseqX[of 1] by (simp add: X1_def)
-    have hiflat: "flatBT (operB (Trans N) (numBT 2))
-        = s1 @ flatBT (Dpt (enat ?e3) X2) @ b1"
+    have loflat: "flatBT (operB (Trans N) (numBT 0))
+        = s1 @ flatBT (Dpt (enat ?e3) Y1) @ b1"
+      using fseqY[of 0] by (simp add: Y1_def)
+    have hiflat: "flatBT (operB (Trans N) (numBT (Suc (Suc 0))))
+        = s1 @ flatBT (Dpt (enat ?e3) Y3) @ b1"
     proof -
-      have "d4vx_core s0 ?ub b0 X0 2 = X2"
-        by (simp add: numeral_2_eq_2 X1_def X2_def)
-      thus ?thesis using fseqX[of 2] by simp
+      have "d4vx_core s0 ?ub b0 0\<^sub>B (Suc (Suc (Suc 0))) = Y3"
+        by (simp add: Y1_def Y2_def Y3_def)
+      thus ?thesis using fseqY[of "Suc (Suc 0)"] by simp
     qed
     have ourdec: "scb_decomp (Trans ((N::pairseq)[m])) s1
                     (flatBT (Dpt (enat ?e3) A1)) b1"
       unfolding scb_decomp_def
       using ourflat b1RP isPTB_str_Dpt[of "enat ?e3" A1] A1TB
       by (simp add: T_B_def)
-    have lodec: "scb_decomp (operB (Trans N) (numBT 1)) s1
-                    (flatBT (Dpt (enat ?e3) X1)) b1"
+    have lodec: "scb_decomp (operB (Trans N) (numBT 0)) s1
+                    (flatBT (Dpt (enat ?e3) Y1)) b1"
       unfolding scb_decomp_def
-      using loflat b1RP isPTB_str_Dpt[of "enat ?e3" X1] X1TB
+      using loflat b1RP isPTB_str_Dpt[of "enat ?e3" Y1] Y1TB
       by (simp add: T_B_def)
-    have hidec: "scb_decomp (operB (Trans N) (numBT 2)) s1
-                    (flatBT (Dpt (enat ?e3) X2)) b1"
+    have hidec: "scb_decomp (operB (Trans N) (numBT (Suc (Suc 0)))) s1
+                    (flatBT (Dpt (enat ?e3) Y3)) b1"
       unfolding scb_decomp_def
-      using hiflat b1RP isPTB_str_Dpt[of "enat ?e3" X2] X2TB
+      using hiflat b1RP isPTB_str_Dpt[of "enat ?e3" Y3] Y3TB
       by (simp add: T_B_def)
     have "isOT_BT (Trans ((N::pairseq)[m]))"
       by (rule oix_transportD[OF otx3_transport lodec ourdec hidec
@@ -2919,7 +3640,8 @@ proof -
     have k'ne: "k' \<noteq> 0" using False kA by simp
     then obtain k2 where kB: "k' = Suc k2" by (cases k') auto
     have kk: "k = Suc (Suc k2)" using kA kB by simp
-    \<comment> \<open>hole = \<open>k - 1\<close> blocks deep, head \<open>ub\<close>, cores \<open>(X\<^sub>1, A\<^sub>1, X\<^sub>2)\<close>\<close>
+    \<comment> \<open>hole = \<open>k - 1\<close> blocks deep, head \<open>ub\<close>; donors \<open>numBT (Suc k2) = numBT (k-1)\<close>
+        and \<open>numBT (Suc k) = numBT (k+1)\<close>, cores \<open>(Y\<^sub>1, A\<^sub>1, Y\<^sub>3)\<close>\<close>
     let ?blk = "s0 @ [Dsym (enat ?ub)]"
     let ?S = "s1 @ Dsym (enat ?e3) # concat (replicate k2 ?blk) @ s0"
     let ?B = "concat (replicate (Suc k2) b0) @ b1"
@@ -2939,35 +3661,43 @@ proof -
     have ourflat: "flatBT (Trans ((N::pairseq)[m]))
         = ?S @ flatBT (Dpt (enat ?ub) A1) @ ?B"
       using mnm Aflat crepA crepB fA1 by simp
-    \<comment> \<open>lo donor at the deep hole\<close>
-    have loflat: "flatBT (operB (Trans N) (numBT k))
-        = ?S @ flatBT (Dpt (enat ?ub) X1) @ ?B"
-      using fseqX[of k] Xflat[of k] crepA crepB fX1 by simp
-    \<comment> \<open>hi donor at the deep hole\<close>
-    have crepA2: "concat (replicate (Suc k) ?blk)
+    \<comment> \<open>lo donor \<open>numBT (Suc k2) = numBT (k-1)\<close>: core \<open>Y\<^sub>1\<close> at the deep hole\<close>
+    have Fk: "flatBT (operB (Trans N) (numBT (Suc k2)))
+        = s1 @ Dsym (enat ?e3) # flatBT (d4vx_core s0 ?ub b0 0\<^sub>B k) @ b1"
+      using fseqY[of "Suc k2"] kk by (simp del: d4vx_core.simps)
+    have loflat: "flatBT (operB (Trans N) (numBT (Suc k2)))
+        = ?S @ flatBT (Dpt (enat ?ub) Y1) @ ?B"
+      using Fk Yflat[of k] crepA crepB fY1 by simp
+    \<comment> \<open>hi donor \<open>numBT (Suc k) = numBT (k+1)\<close>: core \<open>Y\<^sub>3\<close> at the deep hole\<close>
+    have crepA3: "concat (replicate (Suc (Suc k)) ?blk)
         = concat (replicate k2 ?blk) @ s0 @ [Dsym (enat ?ub)]
-          @ s0 @ [Dsym (enat ?ub)] @ s0 @ [Dsym (enat ?ub)]"
+          @ s0 @ [Dsym (enat ?ub)] @ s0 @ [Dsym (enat ?ub)]
+          @ s0 @ [Dsym (enat ?ub)]"
       using kk by (simp add: s85b_crep_comm_snoc s85b_crep_snoc s85b_crep_comm)
-    have crepB2: "concat (replicate (Suc k) b0)
-        = b0 @ b0 @ concat (replicate (Suc k2) b0)"
+    have crepB3: "concat (replicate (Suc (Suc k)) b0)
+        = b0 @ b0 @ b0 @ concat (replicate (Suc k2) b0)"
       using kk by simp
+    have Fh: "flatBT (operB (Trans N) (numBT (Suc k)))
+        = s1 @ Dsym (enat ?e3)
+            # flatBT (d4vx_core s0 ?ub b0 0\<^sub>B (Suc (Suc k))) @ b1"
+      using fseqY[of "Suc k"] by (simp del: d4vx_core.simps)
     have hiflat: "flatBT (operB (Trans N) (numBT (Suc k)))
-        = ?S @ flatBT (Dpt (enat ?ub) X2) @ ?B"
-      using fseqX[of "Suc k"] Xflat[of "Suc k"] crepA2 crepB2 fX2 fX1 by simp
+        = ?S @ flatBT (Dpt (enat ?ub) Y3) @ ?B"
+      using Fh Yflat[of "Suc (Suc k)"] crepA3 crepB3 fY1 fY2 fY3 by simp
     have ourdec: "scb_decomp (Trans ((N::pairseq)[m])) ?S
                     (flatBT (Dpt (enat ?ub) A1)) ?B"
       unfolding scb_decomp_def
       using ourflat BRP isPTB_str_Dpt[of "enat ?ub" A1] A1TB
       by (simp add: T_B_def)
-    have lodec: "scb_decomp (operB (Trans N) (numBT k)) ?S
-                    (flatBT (Dpt (enat ?ub) X1)) ?B"
+    have lodec: "scb_decomp (operB (Trans N) (numBT (Suc k2))) ?S
+                    (flatBT (Dpt (enat ?ub) Y1)) ?B"
       unfolding scb_decomp_def
-      using loflat BRP isPTB_str_Dpt[of "enat ?ub" X1] X1TB
+      using loflat BRP isPTB_str_Dpt[of "enat ?ub" Y1] Y1TB
       by (simp add: T_B_def)
     have hidec: "scb_decomp (operB (Trans N) (numBT (Suc k))) ?S
-                    (flatBT (Dpt (enat ?ub) X2)) ?B"
+                    (flatBT (Dpt (enat ?ub) Y3)) ?B"
       unfolding scb_decomp_def
-      using hiflat BRP isPTB_str_Dpt[of "enat ?ub" X2] X2TB
+      using hiflat BRP isPTB_str_Dpt[of "enat ?ub" Y3] Y3TB
       by (simp add: T_B_def)
     have "isOT_BT (Trans ((N::pairseq)[m]))"
       by (rule oix_transportD[OF otx3_transport lodec ourdec hidec
@@ -3006,9 +3736,9 @@ lemma oi8_OTint_condIII:
           (GBT u (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
                     (bpHeadT (Trans (Pred (s84x_N P))))))
           (insert (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
-                     (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))
+                     0\<^sub>B)
                   (GBT u (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
-                            (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))))"
+                            0\<^sub>B)))"
     and NST: "N \<in> ST_PS" and NPT: "N \<in> PT_PS" and j1gt: "1 < Lng N - 1"
     and cIII: "transCondIII N" and ihOT: "Trans N \<in> OT_B" and mgt: "1 < m"
   shows "Trans ((N::pairseq)[m]) \<in> OT_B"
@@ -3064,9 +3794,9 @@ lemma oi8_OTint_condIV:
           (GBT u (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
                     (bpHeadT (Trans (Pred (s84x_N P))))))
           (insert (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
-                     (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))
+                     0\<^sub>B)
                   (GBT u (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
-                            (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))))"
+                            0\<^sub>B)))"
     and IVADMEQ: "\<And>P n. P \<in> ST_PS \<Longrightarrow> P \<in> PT_PS \<Longrightarrow>
         hasParent P 1 (Lng P - 1) \<Longrightarrow> 1 < Lng P - 1 \<Longrightarrow> transCondIV P \<Longrightarrow>
         Adm P (s84x_jm2 P) = transJm1 P \<Longrightarrow> Trans P \<in> OT_B \<Longrightarrow> 1 < n \<Longrightarrow>
@@ -3138,9 +3868,9 @@ theorem oi8_termination_census:
           (GBT u (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
                     (bpHeadT (Trans (Pred (s84x_N P))))))
           (insert (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
-                     (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))
+                     0\<^sub>B)
                   (GBT u (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
-                            (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))))"
+                            0\<^sub>B)))"
     and IVADMEQ: "\<And>P n. P \<in> ST_PS \<Longrightarrow> P \<in> PT_PS \<Longrightarrow>
         hasParent P 1 (Lng P - 1) \<Longrightarrow> 1 < Lng P - 1 \<Longrightarrow> transCondIV P \<Longrightarrow>
         Adm P (s84x_jm2 P) = transJm1 P \<Longrightarrow> Trans P \<in> OT_B \<Longrightarrow> 1 < n \<Longrightarrow>
@@ -3161,11 +3891,11 @@ proof -
     by (rule oi8_OTint_condIV[OF OTA1 SETLE1 IVADMEQ ot2_IVNP])
   show "\<forall>M. M \<in> ST_PS \<longrightarrow> Trans M \<in> OT_B"
     by (rule oc4_termination_census_master_v2(1)[OF otIII otIV oi4_PredNp
-          oi4_Lpv od4_DEEPOT od4_NOBR FINRC])
+          oi4_Lpv od4_DEEPOT od4_NOBR FINRC oi5_LbaseU])
   show "\<forall>M n. M \<in> ST_PS \<longrightarrow> 1 \<le> n \<longrightarrow> 1 < Lng M \<longrightarrow>
            lessBT (Trans ((M::pairseq)[n])) (Trans M)"
     by (rule oc4_termination_census_master_v2(2)[OF otIII otIV oi4_PredNp
-          oi4_Lpv od4_DEEPOT od4_NOBR FINRC])
+          oi4_Lpv od4_DEEPOT od4_NOBR FINRC oi5_LbaseU])
 qed
 
 
@@ -3203,10 +3933,9 @@ lemma ot1_OTA1_reduce:
                    (flatBT (Dpt (enat (entry N 1 (Lng N - 1))) 0\<^sub>B)) b0"
     and nub: "isOT_BP (DB (enat (entry N 1 (Lng N - 1) - 1))
                 (bpHeadT (Trans (Pred (s84x_N N)))))"
-    and tri0: "b1x_triG (Dpt \<infinity> (Dpt (enat (entry N 1 (Lng N - 1) - 1)) 0\<^sub>B))
+    and tri0: "b1x_triG (Dpt \<infinity> 0\<^sub>B)
                 (bpHeadT (Trans (Pred (s84x_N N))))
-                (d4vx_ins s0 (entry N 1 (Lng N - 1) - 1) b0
-                   (Dpt (enat (entry N 1 (Lng N - 1) - 1)) 0\<^sub>B))"
+                (d4vx_ins s0 (entry N 1 (Lng N - 1) - 1) b0 0\<^sub>B)"
   shows "isOT_BP (DB (enat (entry N 1 (s84x_jm3 N)))
            (d4vx_ins s0 (entry N 1 (Lng N - 1) - 1) b0
               (bpHeadT (Trans (Pred (s84x_N N))))))"
@@ -3222,7 +3951,7 @@ proof -
     and inner: "scb_decomp ?body s0p (flatBT (Dpt (enat ?v1) 0\<^sub>B)) b0p"
     and k1: "scb_kind1 (Trans N) s1 (flatBT (Dpt (enat ?e3) ?body)) b1"
     and base0: "lessBT (Dpt (enat ?ub) 0\<^sub>B) ?A0"
-    and base1: "lessBT ?A0 (d4vx_ins s0p ?ub b0p (Dpt (enat ?ub) 0\<^sub>B))"
+    and base1: "lessBT ?A0 (d4vx_ins s0p ?ub b0p 0\<^sub>B)"
     and A0TB: "?A0 \<in> T_B"
     by (rule oi5_IIIIV_pkg[OF NST NPT hp j1gt branch ltJ])
   note regime = oi5_regime[OF NST NPT hp j1gt branch]
@@ -3243,8 +3972,10 @@ proof -
   \<comment> \<open>identify the census \<open>(s\<^sub>0,b\<^sub>0)\<close> with the package's\<close>
   have seq: "s0 = s0p" and beq: "b0 = b0p"
     using m_7_2_scb_unique_sb[OF inner_g inner bodyne] by simp_all
-  \<comment> \<open>towers over the package \<open>(s\<^sub>0,b\<^sub>0)\<close>\<close>
-  define X0 where "X0 = Dpt (enat ?ub) 0\<^sub>B"
+  \<comment> \<open>towers over the package \<open>(s\<^sub>0,b\<^sub>0)\<close>.  r72: the tower seed is \<open>0\<^sub>B\<close>
+      (the corrected operB core), so \<open>X\<^sub>1 = Y\<^sub>1\<close> is the core of \<open>numBT 0\<close> and
+      \<open>X\<^sub>2 = Y\<^sub>2\<close> that of \<open>numBT 1\<close>.\<close>
+  define X0 where "X0 = (0\<^sub>B :: BT)"
   define A1 where "A1 = d4vx_ins s0p ?ub b0p ?A0"
   define X1 where "X1 = d4vx_ins s0p ?ub b0p X0"
   define X2 where "X2 = d4vx_ins s0p ?ub b0p X1"
@@ -3263,35 +3994,45 @@ proof -
   \<comment> \<open>fseq closed forms of the donors\<close>
   have fseq: "\<And>n. flatBT (operB (Trans N) (numBT n))
       = s1 @ (Dsym (enat ?e3)
-           # concat (replicate n (s0p @ [Dsym (enat ?ub)]))
-           @ [Dsym (enat ?ub)] @ [Zsym] @ concat (replicate n b0p)) @ b1"
+           # concat (replicate (n + 1) (s0p @ [Dsym (enat ?ub)]))
+           @ [Zsym]
+           @ concat (replicate (n + 1) b0p)) @ b1"
     by (rule d13x_fseq_condIII[OF TT uv bodyT dbbodyH bodyne inner k1])
   have Xflat: "\<And>n. flatBT (d4vx_core s0p ?ub b0p X0 n)
       = concat (replicate n (s0p @ [Dsym (enat ?ub)]))
         @ flatBT X0 @ concat (replicate n b0p)"
     by (rule d4vx_core_flat[OF wrap b0RP])
   have fseqX: "\<And>n. flatBT (operB (Trans N) (numBT n))
-      = s1 @ Dsym (enat ?e3) # flatBT (d4vx_core s0p ?ub b0p X0 n) @ b1"
-    using fseq Xflat by (simp add: X0_def)
+      = s1 @ Dsym (enat ?e3) # flatBT (d4vx_core s0p ?ub b0p 0\<^sub>B (Suc n)) @ b1"
+  proof -
+    fix n :: nat
+    have A: "flatBT (d4vx_core s0p ?ub b0p 0\<^sub>B (Suc n))
+        = concat (replicate (Suc n) (s0p @ [Dsym (enat ?ub)]))
+          @ [Zsym] @ concat (replicate (Suc n) b0p)"
+      using Xflat[of "Suc n"] by (simp del: d4vx_core.simps add: X0_def)
+    show "flatBT (operB (Trans N) (numBT n))
+        = s1 @ Dsym (enat ?e3) # flatBT (d4vx_core s0p ?ub b0p 0\<^sub>B (Suc n)) @ b1"
+      using fseq[of n] A by (simp del: d4vx_core.simps)
+  qed
   have donOTB: "\<And>n. operB (Trans N) (numBT n) \<in> OT_B"
     using e4x_OT_B_operB_numBT[OF ihOT] by simp
-  \<comment> \<open>donor cores at the kind-1 hole (head e3): X1 at depth 1, X2 at depth 2\<close>
-  have loflat: "flatBT (operB (Trans N) (numBT 1))
+  \<comment> \<open>donor cores at the kind-1 hole (head e3): X1 = core of numBT 0, X2 = core of numBT 1\<close>
+  have loflat: "flatBT (operB (Trans N) (numBT 0))
       = s1 @ flatBT (Dpt (enat ?e3) X1) @ b1"
-    using fseqX[of 1] by (simp add: X1_def)
-  have hiflat: "flatBT (operB (Trans N) (numBT 2))
+    using fseqX[of 0] by (simp add: X1_def X0_def)
+  have hiflat: "flatBT (operB (Trans N) (numBT 1))
       = s1 @ flatBT (Dpt (enat ?e3) X2) @ b1"
   proof -
-    have "d4vx_core s0p ?ub b0p X0 2 = X2"
-      by (simp add: numeral_2_eq_2 X1_def X2_def)
-    thus ?thesis using fseqX[of 2] by simp
+    have "d4vx_core s0p ?ub b0p X0 (Suc (Suc 0)) = X2"
+      by (simp add: X1_def X2_def)
+    thus ?thesis using fseqX[of 1] by (simp add: X0_def)
   qed
-  have lodec: "scb_decomp (operB (Trans N) (numBT 1)) s1
+  have lodec: "scb_decomp (operB (Trans N) (numBT 0)) s1
                   (flatBT (Dpt (enat ?e3) X1)) b1"
     unfolding scb_decomp_def
     using loflat b1RP isPTB_str_Dpt[of "enat ?e3" X1] X1TB
     by (simp add: T_B_def)
-  have hidec: "scb_decomp (operB (Trans N) (numBT 2)) s1
+  have hidec: "scb_decomp (operB (Trans N) (numBT 1)) s1
                   (flatBT (Dpt (enat ?e3) X2)) b1"
     unfolding scb_decomp_def
     using hiflat b1RP isPTB_str_Dpt[of "enat ?e3" X2] X2TB
@@ -3301,20 +4042,24 @@ proof -
   proof -
     have DptTB: "Dpt (enat ?e3) X1 \<in> T_B" using X1TB by (simp add: T_B_def)
     have "Dpt (enat ?e3) X1 \<in> OT"
-      by (rule m_8_7_OT_scb_recursive[OF donOTB[of 1] DptTB lodec])
+      by (rule m_8_7_OT_scb_recursive[OF donOTB[of 0] DptTB lodec])
     thus ?thesis by (simp add: OT_def)
   qed
   have hiPe: "isOT_BP (DB (enat ?e3) X2)"
   proof -
     have DptTB: "Dpt (enat ?e3) X2 \<in> T_B" using X2TB by (simp add: T_B_def)
     have "Dpt (enat ?e3) X2 \<in> OT"
-      by (rule m_8_7_OT_scb_recursive[OF donOTB[of 2] DptTB hidec])
+      by (rule m_8_7_OT_scb_recursive[OF donOTB[of 1] DptTB hidec])
     thus ?thesis by (simp add: OT_def)
   qed
   have X1OT: "isOT_BT X1" using loPe by simp
   have X2OT: "isOT_BT X2" using hiPe by simp
   \<comment> \<open>base orders and the tri0 in package form\<close>
-  have o1: "leBT X0 ?A0" using base0 by (simp add: X0_def)
+  have o1: "leBT X0 ?A0"
+  proof -
+    have "lessBT (0\<^sub>B :: BT) (Dpt (enat ?ub) 0\<^sub>B)" by simp
+    thus ?thesis using base0 lessBT_trans by (auto simp: X0_def)
+  qed
   have o2: "leBT ?A0 X1" using base1 by (simp add: X1_def X0_def)
   have tri0p: "b1x_triG (Dpt \<infinity> X0) ?A0 X1"
     using tri0 seq beq by (simp add: X0_def X1_def)
@@ -3399,6 +4144,40 @@ proof -
 qed
 
 
+text \<open>\<^bold>\<open>r72\<close>: the \<open>tri0\<close> brick at the CORRECTED tower seed --- upper endpoint
+  \<open>Y\<^sub>1 = d4vx_ins s\<^sub>0 ub b\<^sub>0 0\<^sub>B\<close> instead of \<open>X\<^sub>1 = d4vx_ins s\<^sub>0 ub b\<^sub>0 (D\<^bsub>ub\<^esub>0)\<close>.
+  @{const b1x_triG} quantifies over the interval \<open>[A\<^sub>0, \<cdot>]\<close>, so it is antitone in its
+  upper endpoint (@{thm [source] oy1_triG_antitone}), and \<open>Y\<^sub>1 \<le> X\<^sub>1\<close> by
+  \<open>ins\<close>-monotonicity (\<open>0\<^sub>B < D\<^bsub>ub\<^esub>0\<close>).  So the proven census \<open>tri0\<close>
+  (@{thm [source] ot1_tri0_census}) transfers verbatim.\<close>
+
+lemma oy1_tri0Y_census:
+  fixes N :: pairseq and s0 b0 :: "Sym list" and z :: BT
+  assumes NST: "N \<in> ST_PS" and NPT: "N \<in> PT_PS"
+    and hp: "hasParent N 1 (Lng N - 1)"
+    and j1gt: "1 < Lng N - 1"
+    and branch: "transCondIII N \<or> transCondIV N"
+    and ltJ: "s84x_jm3 N < transJm1 N"
+    and inner_g: "scb_decomp (bpHeadT (Trans (s84x_N N))) s0
+                   (flatBT (Dpt (enat (entry N 1 (Lng N - 1))) 0\<^sub>B)) b0"
+  shows "b1x_triG z (bpHeadT (Trans (Pred (s84x_N N))))
+           (d4vx_ins s0 (entry N 1 (Lng N - 1) - 1) b0 0\<^sub>B)"
+proof -
+  let ?v1 = "entry N 1 (Lng N - 1)"
+  let ?ub = "entry N 1 (Lng N - 1) - 1"
+  have tri: "b1x_triG z (bpHeadT (Trans (Pred (s84x_N N))))
+               (d4vx_ins s0 ?ub b0 (Dpt (enat ?ub) 0\<^sub>B))"
+    by (rule ot1_tri0_census[OF NST NPT hp j1gt branch ltJ inner_g])
+  have wrap: "flatBT (bpHeadT (Trans (s84x_N N)))
+      = s0 @ flatBP (DB (enat ?v1) 0\<^sub>B) @ b0"
+    using inner_g by (simp add: scb_decomp_def)
+  have b0RP: "\<forall>x \<in> set b0. x = RP" using inner_g by (simp add: scb_decomp_def)
+  have zle: "leBT (0\<^sub>B :: BT) (Dpt (enat ?ub) 0\<^sub>B)" by simp
+  have le: "leBT (d4vx_ins s0 ?ub b0 0\<^sub>B) (d4vx_ins s0 ?ub b0 (Dpt (enat ?ub) 0\<^sub>B))"
+    by (rule oy1_ins_le_mono[OF wrap b0RP zle])
+  show ?thesis by (rule oy1_triG_antitone[OF tri le])
+qed
+
 text \<open>ot1_nub_from_A0OT: the newOT_body brick nub = isOT_BP (D_ub A0) from the
   SINGLE genuine unknown A0OT = isOT_BT A0 (A0 = bpHeadT(Trans(Pred(s84x_N N)))).
   Wiring = otx3_pOT at head ub with cores (X0, A0, X1): loP = isOT_BP(D_ub X0)
@@ -3431,7 +4210,7 @@ proof -
     and inner: "scb_decomp ?body s0p (flatBT (Dpt (enat ?v1) 0\<^sub>B)) b0p"
     and k1: "scb_kind1 (Trans N) s1 (flatBT (Dpt (enat ?e3) ?body)) b1"
     and base0: "lessBT (Dpt (enat ?ub) 0\<^sub>B) ?A0"
-    and base1: "lessBT ?A0 (d4vx_ins s0p ?ub b0p (Dpt (enat ?ub) 0\<^sub>B))"
+    and base1: "lessBT ?A0 (d4vx_ins s0p ?ub b0p 0\<^sub>B)"
     and A0TB: "?A0 \<in> T_B"
     by (rule oi5_IIIIV_pkg[OF NST NPT hp j1gt branch ltJ])
   note regime = oi5_regime[OF NST NPT hp j1gt branch]
@@ -3452,30 +4231,40 @@ proof -
   qed
   have seq: "s0 = s0p" and beq: "b0 = b0p"
     using m_7_2_scb_unique_sb[OF inner_g inner bodyne] by simp_all
-  define X0 where "X0 = Dpt (enat ?ub) 0\<^sub>B"
+  define X0 where "X0 = (0\<^sub>B :: BT)"
   define X1 where "X1 = d4vx_ins s0p ?ub b0p X0"
   have X0TB: "X0 \<in> T_B" by (simp add: X0_def T_B_def)
   have X1TB: "X1 \<in> T_B"
     unfolding X1_def by (rule oi5_d4vx_ins_TB[OF wrap b0RP bodyT X0TB])
-  \<comment> \<open>donor readoff: isOT_BP (D_e3 X1) from the [Buc1]-closure donor operB(numBT 1)\<close>
+  \<comment> \<open>donor readoff (r72): isOT_BP (D_e3 X1) from the [Buc1]-closure donor operB(numBT 0)\<close>
   have fseq: "\<And>n. flatBT (operB (Trans N) (numBT n))
       = s1 @ (Dsym (enat ?e3)
-           # concat (replicate n (s0p @ [Dsym (enat ?ub)]))
-           @ [Dsym (enat ?ub)] @ [Zsym] @ concat (replicate n b0p)) @ b1"
+           # concat (replicate (n + 1) (s0p @ [Dsym (enat ?ub)]))
+           @ [Zsym]
+           @ concat (replicate (n + 1) b0p)) @ b1"
     by (rule d13x_fseq_condIII[OF TT uv bodyT dbbodyH bodyne inner k1])
   have Xflat: "\<And>n. flatBT (d4vx_core s0p ?ub b0p X0 n)
       = concat (replicate n (s0p @ [Dsym (enat ?ub)]))
         @ flatBT X0 @ concat (replicate n b0p)"
     by (rule d4vx_core_flat[OF wrap b0RP])
   have fseqX: "\<And>n. flatBT (operB (Trans N) (numBT n))
-      = s1 @ Dsym (enat ?e3) # flatBT (d4vx_core s0p ?ub b0p X0 n) @ b1"
-    using fseq Xflat by (simp add: X0_def)
-  have donOTB: "operB (Trans N) (numBT 1) \<in> OT_B"
+      = s1 @ Dsym (enat ?e3) # flatBT (d4vx_core s0p ?ub b0p 0\<^sub>B (Suc n)) @ b1"
+  proof -
+    fix n :: nat
+    have A: "flatBT (d4vx_core s0p ?ub b0p 0\<^sub>B (Suc n))
+        = concat (replicate (Suc n) (s0p @ [Dsym (enat ?ub)]))
+          @ [Zsym] @ concat (replicate (Suc n) b0p)"
+      using Xflat[of "Suc n"] by (simp del: d4vx_core.simps add: X0_def)
+    show "flatBT (operB (Trans N) (numBT n))
+        = s1 @ Dsym (enat ?e3) # flatBT (d4vx_core s0p ?ub b0p 0\<^sub>B (Suc n)) @ b1"
+      using fseq[of n] A by (simp del: d4vx_core.simps)
+  qed
+  have donOTB: "operB (Trans N) (numBT 0) \<in> OT_B"
     using e4x_OT_B_operB_numBT[OF ihOT] by simp
-  have loflat: "flatBT (operB (Trans N) (numBT 1))
+  have loflat: "flatBT (operB (Trans N) (numBT 0))
       = s1 @ flatBT (Dpt (enat ?e3) X1) @ b1"
-    using fseqX[of 1] by (simp add: X1_def)
-  have lodec: "scb_decomp (operB (Trans N) (numBT 1)) s1
+    using fseqX[of 0] by (simp add: X1_def X0_def)
+  have lodec: "scb_decomp (operB (Trans N) (numBT 0)) s1
                   (flatBT (Dpt (enat ?e3) X1)) b1"
     unfolding scb_decomp_def
     using loflat b1RP isPTB_str_Dpt[of "enat ?e3" X1] X1TB
@@ -3498,15 +4287,18 @@ proof -
     hence "\<forall>x \<in> GBT (enat ?ub) X1. lessBT x X1" using gE3 by blast
     thus ?thesis using X1OT by simp
   qed
-  have loP: "isOT_BP (DB (enat ?ub) X0)"
-    using isOT_BP_Dpt_Dpt_Zero by (simp add: X0_def)
-  have o1: "leBT X0 ?A0" using base0 by (simp add: X0_def)
+  have loP: "isOT_BP (DB (enat ?ub) X0)" by (simp add: X0_def)
+  have o1: "leBT X0 ?A0"
+  proof -
+    have "lessBT (0\<^sub>B :: BT) (Dpt (enat ?ub) 0\<^sub>B)" by simp
+    thus ?thesis using base0 lessBT_trans by (auto simp: X0_def)
+  qed
   have o2: "leBT ?A0 X1" using base1 by (simp add: X1_def X0_def)
   have tri0: "b1x_triG (Dpt \<infinity> X0) ?A0 X1"
   proof -
-    have "b1x_triG (Dpt \<infinity> X0) ?A0
-            (d4vx_ins s0 ?ub b0 (Dpt (enat ?ub) 0\<^sub>B))"
-      by (rule ot1_tri0_census[OF NST NPT hp j1gt branch ltJ inner_g])
+    have "b1x_triG (Dpt \<infinity> (0\<^sub>B :: BT)) ?A0
+            (d4vx_ins s0 ?ub b0 0\<^sub>B)"
+      by (rule oy1_tri0Y_census[OF NST NPT hp j1gt branch ltJ inner_g])
     thus ?thesis using seq beq by (simp add: X0_def X1_def)
   qed
   show ?thesis
@@ -3535,11 +4327,10 @@ lemma ot1_OTA1_from_A0OT:
            (d4vx_ins s0 (entry N 1 (Lng N - 1) - 1) b0
               (bpHeadT (Trans (Pred (s84x_N N))))))"
 proof -
-  have tri0: "b1x_triG (Dpt \<infinity> (Dpt (enat (entry N 1 (Lng N - 1) - 1)) 0\<^sub>B))
+  have tri0: "b1x_triG (Dpt \<infinity> (0\<^sub>B :: BT))
                 (bpHeadT (Trans (Pred (s84x_N N))))
-                (d4vx_ins s0 (entry N 1 (Lng N - 1) - 1) b0
-                   (Dpt (enat (entry N 1 (Lng N - 1) - 1)) 0\<^sub>B))"
-    by (rule ot1_tri0_census[OF NST NPT hp j1gt branch ltJ inner_g])
+                (d4vx_ins s0 (entry N 1 (Lng N - 1) - 1) b0 0\<^sub>B)"
+    by (rule oy1_tri0Y_census[OF NST NPT hp j1gt branch ltJ inner_g])
   have nub: "isOT_BP (DB (enat (entry N 1 (Lng N - 1) - 1))
                (bpHeadT (Trans (Pred (s84x_N N)))))"
     by (rule ot1_nub_from_A0OT[OF NST NPT hp j1gt branch ltJ ihOT b0RP_g inner_g A0OT])
@@ -3573,9 +4364,9 @@ theorem oi8_census_via_A0OT:
           (GBT u (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
                     (bpHeadT (Trans (Pred (s84x_N P))))))
           (insert (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
-                     (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))
+                     0\<^sub>B)
                   (GBT u (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
-                            (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))))"
+                            0\<^sub>B)))"
     and IVADMEQ: "\<And>P n. P \<in> ST_PS \<Longrightarrow> P \<in> PT_PS \<Longrightarrow>
         hasParent P 1 (Lng P - 1) \<Longrightarrow> 1 < Lng P - 1 \<Longrightarrow> transCondIV P \<Longrightarrow>
         Adm P (s84x_jm2 P) = transJm1 P \<Longrightarrow> Trans P \<in> OT_B \<Longrightarrow> 1 < n \<Longrightarrow>
@@ -3652,21 +4443,25 @@ lemma ot2_tower_newOT:
     and euB: "e3 \<le> ub"
     and t2OT: "isOT_BT t2"
     and base0: "lessBT (Dpt (enat ub) 0\<^sub>B) t2"
-    and base1: "lessBT t2 (d4vx_ins s0 ub b0 (Dpt (enat ub) 0\<^sub>B))"
-    and tri0: "b1x_triG (Dpt \<infinity> (Dpt (enat ub) 0\<^sub>B)) t2
-                 (d4vx_ins s0 ub b0 (Dpt (enat ub) 0\<^sub>B))"
-    and Xe3: "\<And>j. isOT_BP (DB (enat e3) (d4vx_core s0 ub b0 (Dpt (enat ub) 0\<^sub>B) j))"
+    and base1: "lessBT t2 (d4vx_ins s0 ub b0 0\<^sub>B)"
+    and tri0: "b1x_triG (Dpt \<infinity> (0\<^sub>B :: BT)) t2
+                 (d4vx_ins s0 ub b0 0\<^sub>B)"
+    and Xe3: "\<And>j. isOT_BP (DB (enat e3) (d4vx_core s0 ub b0 0\<^sub>B j))"
   shows "isOT_BP (DB (enat e3) (d4vx_core s0 ub b0 t2 k))"
 proof -
-  let ?X0 = "Dpt (enat ub) 0\<^sub>B"
-  let ?W = "d4vx_core s0 ub b0 ?X0"
+  let ?W = "d4vx_core s0 ub b0 (0\<^sub>B :: BT)"
   let ?A = "d4vx_core s0 ub b0 t2"
   \<comment> \<open>X-tower OT facts (bodies, and head-\<open>ub\<close> principals by head antitone)\<close>
   have Wot: "isOT_BT (?W j)" for j using Xe3[of j] by simp
   have Xub: "isOT_BP (DB (enat ub) (?W j))" for j
     using oix_isOT_BP_head_antitone[OF Xe3[of j], of "enat ub"] euB by simp
   \<comment> \<open>interleave orders \<open>W\<^sub>j < A\<^sub>j < W\<^bsub>j+1\<^esub>\<close>\<close>
-  note IL = c4cx_d4vx_core_interleave[OF wrap b0RP base0 base1]
+  have base0Z: "lessBT (0\<^sub>B :: BT) t2"
+  proof -
+    have "lessBT (0\<^sub>B :: BT) (Dpt (enat ub) 0\<^sub>B)" by simp
+    thus ?thesis using base0 lessBT_trans by blast
+  qed
+  note IL = c4cx_d4vx_core_interleave[OF wrap b0RP base0Z base1]
   have ordlo: "leBT (?W j) (?A j)" for j using IL by blast
   have ordhi: "leBT (?A j) (?W (Suc j))" for j using IL by blast
   \<comment> \<open>the surgery-step flat, in the flatBP form otx3 consumes\<close>
@@ -3729,12 +4524,9 @@ lemma ot2_NEWOT_of_pkg:
     and base0: "lessBT (Dpt (enat (entry M 1 (Lng M - 1) - 1)) 0\<^sub>B) (transT2 M)"
     and base1: "lessBT (transT2 M)
                   (d4vx_ins s0 (entry M 1 (Lng M - 1) - 1) b0
-                     (Dpt (enat (entry M 1 (Lng M - 1) - 1)) 0\<^sub>B))"
-    and tri0: "b1x_triG
-                 (Dpt \<infinity> (Dpt (enat (entry M 1 (Lng M - 1) - 1)) 0\<^sub>B))
-                 (transT2 M)
-                 (d4vx_ins s0 (entry M 1 (Lng M - 1) - 1) b0
-                    (Dpt (enat (entry M 1 (Lng M - 1) - 1)) 0\<^sub>B))"
+                     0\<^sub>B)"
+    and tri0: "b1x_triG (Dpt \<infinity> (0\<^sub>B :: BT)) (transT2 M)
+                 (d4vx_ins s0 (entry M 1 (Lng M - 1) - 1) b0 0\<^sub>B)"
   shows "isOT_BP (DB (enat (entry M 1 (s84x_jm3 M)))
                     (d4vx_core s0 (entry M 1 (Lng M - 1) - 1) b0 (transT2 M) k))"
 proof -
@@ -3750,39 +4542,61 @@ proof -
   have dTM: "scb_decomp (Trans M) s1 (flatBT (Dpt (enat ?e3) body)) b1"
     using k1 by (simp add: scb_kind1_def)
   have b1RP: "\<forall>x \<in> set b1. x = RP" using dTM by (simp add: scb_decomp_def)
-  have X0TB: "?X0 \<in> T_B" by (simp add: T_B_def)
-  have WTB: "\<And>j. d4vx_core s0 ?ub b0 ?X0 j \<in> T_B"
+  have X0TB: "(0\<^sub>B :: BT) \<in> T_B" by (simp add: T_B_def)
+  have WTB: "\<And>j. d4vx_core s0 ?ub b0 0\<^sub>B j \<in> T_B"
     by (rule oi5_d4vx_core_TB[OF wrap b0RP bodyT X0TB])
   \<comment> \<open>operB fundamental sequence flat, at the shared \<open>(s1,b1)\<close>, core = X-tower\<close>
   have fseq: "\<And>n. flatBT (operB (Trans M) (numBT n))
       = s1 @ (Dsym (enat ?e3)
-           # concat (replicate n (s0 @ [Dsym (enat ?ub)]))
-           @ [Dsym (enat ?ub)] @ [Zsym] @ concat (replicate n b0)) @ b1"
+           # concat (replicate (n + 1) (s0 @ [Dsym (enat ?ub)]))
+           @ [Zsym]
+           @ concat (replicate (n + 1) b0)) @ b1"
     by (rule d13x_fseq_condIII[OF TT uv bodyT dbbody bodyne inner k1])
-  have Xflat: "\<And>n. flatBT (d4vx_core s0 ?ub b0 ?X0 n)
+  have Xflat: "\<And>n. flatBT (d4vx_core s0 ?ub b0 0\<^sub>B n)
       = concat (replicate n (s0 @ [Dsym (enat ?ub)]))
-        @ flatBT ?X0 @ concat (replicate n b0)"
+        @ flatBT (0\<^sub>B :: BT) @ concat (replicate n b0)"
     by (rule d4vx_core_flat[OF wrap b0RP])
+  \<comment> \<open>r72: the operB core is the \<open>0\<^sub>B\<close>-seeded tower ONE LEVEL DEEPER\<close>
   have fWn: "\<And>n. flatBT (operB (Trans M) (numBT n))
-      = s1 @ flatBP (DB (enat ?e3) (d4vx_core s0 ?ub b0 ?X0 n)) @ b1"
-    using fseq Xflat by simp
-  \<comment> \<open>X-tower OT principals from the [Buc1] 3.2 closure of the IH\<close>
-  have Xe3: "\<And>j. isOT_BP (DB (enat ?e3) (d4vx_core s0 ?ub b0 ?X0 j))"
+      = s1 @ flatBP (DB (enat ?e3) (d4vx_core s0 ?ub b0 0\<^sub>B (Suc n))) @ b1"
   proof -
-    fix j
-    have opOT: "operB (Trans M) (numBT j) \<in> OT_B"
-      by (rule e4x_OT_B_operB_numBT[OF ihOT])
-    have cTB: "Dpt (enat ?e3) (d4vx_core s0 ?ub b0 ?X0 j) \<in> T_B"
-      using WTB by (simp add: T_B_def)
-    have Xdec: "scb_decomp (operB (Trans M) (numBT j)) s1
-                  (flatBT (Dpt (enat ?e3) (d4vx_core s0 ?ub b0 ?X0 j))) b1"
-      unfolding scb_decomp_def
-      using fWn b1RP isPTB_str_Dpt[of "enat ?e3" "d4vx_core s0 ?ub b0 ?X0 j"] WTB
-      by (simp add: T_B_def)
-    have "Dpt (enat ?e3) (d4vx_core s0 ?ub b0 ?X0 j) \<in> OT"
-      by (rule m_8_7_OT_scb_recursive[OF opOT cTB Xdec])
-    thus "isOT_BP (DB (enat ?e3) (d4vx_core s0 ?ub b0 ?X0 j))"
-      by (simp add: OT_def)
+    fix n :: nat
+    have A: "flatBT (d4vx_core s0 ?ub b0 0\<^sub>B (Suc n))
+        = concat (replicate (Suc n) (s0 @ [Dsym (enat ?ub)]))
+          @ [Zsym] @ concat (replicate (Suc n) b0)"
+      using Xflat[of "Suc n"] by (simp del: d4vx_core.simps)
+    show "flatBT (operB (Trans M) (numBT n))
+        = s1 @ flatBP (DB (enat ?e3) (d4vx_core s0 ?ub b0 0\<^sub>B (Suc n))) @ b1"
+      using fseq[of n] A by (simp del: d4vx_core.simps)
+  qed
+  \<comment> \<open>W-tower OT principals from the [Buc1] 3.2 closure of the IH
+      (level \<open>j+1\<close> is the core of the donor \<open>numBT j\<close>; level \<open>0\<close> is \<open>0\<^sub>B\<close>)\<close>
+  have Xe3: "\<And>j. isOT_BP (DB (enat ?e3) (d4vx_core s0 ?ub b0 0\<^sub>B j))"
+  proof -
+    fix j :: nat
+    show "isOT_BP (DB (enat ?e3) (d4vx_core s0 ?ub b0 0\<^sub>B j))"
+    proof (cases j)
+      case 0
+      thus ?thesis by simp
+    next
+      case (Suc n)
+      have opOT: "operB (Trans M) (numBT n) \<in> OT_B"
+        by (rule e4x_OT_B_operB_numBT[OF ihOT])
+      have cTB: "Dpt (enat ?e3) (d4vx_core s0 ?ub b0 0\<^sub>B (Suc n)) \<in> T_B"
+        using WTB[of "Suc n"] by (simp add: T_B_def del: d4vx_core.simps)
+      have Xdec: "scb_decomp (operB (Trans M) (numBT n)) s1
+                    (flatBT (Dpt (enat ?e3) (d4vx_core s0 ?ub b0 0\<^sub>B (Suc n)))) b1"
+        unfolding scb_decomp_def
+        using fWn[of n] b1RP
+              isPTB_str_Dpt[of "enat ?e3" "d4vx_core s0 ?ub b0 0\<^sub>B (Suc n)"]
+              WTB[of "Suc n"]
+        by (simp add: T_B_def del: d4vx_core.simps)
+      have "Dpt (enat ?e3) (d4vx_core s0 ?ub b0 0\<^sub>B (Suc n)) \<in> OT"
+        by (rule m_8_7_OT_scb_recursive[OF opOT cTB Xdec])
+      hence "isOT_BP (DB (enat ?e3) (d4vx_core s0 ?ub b0 0\<^sub>B (Suc n)))"
+        by (simp add: OT_def)
+      thus ?thesis using Suc by simp
+    qed
   qed
   have euB: "?e3 \<le> ?ub" using uv by linarith
   show ?thesis
@@ -3805,22 +4619,26 @@ lemma ot2_tower_inv:
     and euB: "e3 \<le> ub"
     and t2OT: "isOT_BT t2"
     and base0: "lessBT (Dpt (enat ub) 0\<^sub>B) t2"
-    and base1: "lessBT t2 (d4vx_ins s0 ub b0 (Dpt (enat ub) 0\<^sub>B))"
-    and tri0: "b1x_triG (Dpt \<infinity> (Dpt (enat ub) 0\<^sub>B)) t2
-                 (d4vx_ins s0 ub b0 (Dpt (enat ub) 0\<^sub>B))"
-    and Xe3: "\<And>j. isOT_BP (DB (enat e3) (d4vx_core s0 ub b0 (Dpt (enat ub) 0\<^sub>B) j))"
+    and base1: "lessBT t2 (d4vx_ins s0 ub b0 0\<^sub>B)"
+    and tri0: "b1x_triG (Dpt \<infinity> (0\<^sub>B :: BT)) t2
+                 (d4vx_ins s0 ub b0 0\<^sub>B)"
+    and Xe3: "\<And>j. isOT_BP (DB (enat e3) (d4vx_core s0 ub b0 0\<^sub>B j))"
   shows "isOT_BT (d4vx_core s0 ub b0 t2 k)
-       \<and> b1x_triG (Dpt \<infinity> (d4vx_core s0 ub b0 (Dpt (enat ub) 0\<^sub>B) k))
+       \<and> b1x_triG (Dpt \<infinity> (d4vx_core s0 ub b0 0\<^sub>B k))
             (d4vx_core s0 ub b0 t2 k)
-            (d4vx_core s0 ub b0 (Dpt (enat ub) 0\<^sub>B) (Suc k))"
+            (d4vx_core s0 ub b0 0\<^sub>B (Suc k))"
 proof -
-  let ?X0 = "Dpt (enat ub) 0\<^sub>B"
-  let ?W = "d4vx_core s0 ub b0 ?X0"
+  let ?W = "d4vx_core s0 ub b0 (0\<^sub>B :: BT)"
   let ?A = "d4vx_core s0 ub b0 t2"
   have Wot: "isOT_BT (?W j)" for j using Xe3[of j] by simp
   have Xub: "isOT_BP (DB (enat ub) (?W j))" for j
     using oix_isOT_BP_head_antitone[OF Xe3[of j], of "enat ub"] euB by simp
-  note IL = c4cx_d4vx_core_interleave[OF wrap b0RP base0 base1]
+  have base0Z: "lessBT (0\<^sub>B :: BT) t2"
+  proof -
+    have "lessBT (0\<^sub>B :: BT) (Dpt (enat ub) 0\<^sub>B)" by simp
+    thus ?thesis using base0 lessBT_trans by blast
+  qed
+  note IL = c4cx_d4vx_core_interleave[OF wrap b0RP base0Z base1]
   have ordlo: "leBT (?W j) (?A j)" for j using IL by blast
   have ordhi: "leBT (?A j) (?W (Suc j))" for j using IL by blast
   have fins: "flatBT (d4vx_ins s0 ub b0 X) = s0 @ flatBP (DB (enat ub) X) @ b0" for X
@@ -4060,9 +4878,9 @@ theorem oi8_census_final:
           (GBT u (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
                     (bpHeadT (Trans (Pred (s84x_N P))))))
           (insert (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
-                     (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))
+                     0\<^sub>B)
                   (GBT u (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
-                            (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))))"
+                            0\<^sub>B)))"
     and IVADMEQ: "\<And>P n. P \<in> ST_PS \<Longrightarrow> P \<in> PT_PS \<Longrightarrow>
         hasParent P 1 (Lng P - 1) \<Longrightarrow> 1 < Lng P - 1 \<Longrightarrow> transCondIV P \<Longrightarrow>
         Adm P (s84x_jm2 P) = transJm1 P \<Longrightarrow> Trans P \<in> OT_B \<Longrightarrow> 1 < n \<Longrightarrow>
@@ -4165,21 +4983,21 @@ lemma ox5_body_driver_census:
   shows "b1x_setle
            (GBT u (bpHeadT (Trans (Pred (s84x_N N)))))
            (insert (d4vx_ins s0 (entry N 1 (Lng N - 1) - 1) b0
-                      (Dpt (enat (entry N 1 (Lng N - 1) - 1)) 0\<^sub>B))
+                      0\<^sub>B)
                    (GBT u (d4vx_ins s0 (entry N 1 (Lng N - 1) - 1) b0
-                             (Dpt (enat (entry N 1 (Lng N - 1) - 1)) 0\<^sub>B))))"
+                             0\<^sub>B)))"
 proof -
   let ?ub = "entry N 1 (Lng N - 1) - 1"
   let ?A0 = "bpHeadT (Trans (Pred (s84x_N N)))"
-  let ?X1 = "d4vx_ins s0 ?ub b0 (Dpt (enat ?ub) 0\<^sub>B)"
+  let ?X1 = "d4vx_ins s0 ?ub b0 0\<^sub>B"
   have tri0: "\<And>z. b1x_triG z ?A0 ?X1"
-    by (rule ot1_tri0_census[OF NST NPT hp j1gt branch ltJ inner])
+    by (rule oy1_tri0Y_census[OF NST NPT hp j1gt branch ltJ inner])
   \<comment> \<open>\<open>base\<^sub>1\<close> and the \<open>flat\<close> wrapper from the package (given \<open>(s\<^sub>0,b\<^sub>0)\<close> pinned)\<close>
   obtain s0' b0' s1 b1 where
       b0RP': "\<forall>x \<in> set b0'. x = RP"
     and inner': "scb_decomp (bpHeadT (Trans (s84x_N N))) s0'
          (flatBT (Dpt (enat (entry N 1 (Lng N - 1))) 0\<^sub>B)) b0'"
-    and base1': "lessBT ?A0 (d4vx_ins s0' ?ub b0' (Dpt (enat ?ub) 0\<^sub>B))"
+    and base1': "lessBT ?A0 (d4vx_ins s0' ?ub b0' 0\<^sub>B)"
     by (rule oi5_IIIIV_pkg[OF NST NPT hp j1gt branch ltJ])
   \<comment> \<open>\<open>(s\<^sub>0,b\<^sub>0)\<close> pinned by \<open>scb\<close>-uniqueness of the shared hole\<close>
   have bodyne: "bpHeadT (Trans (s84x_N N)) \<noteq> Trm []"
@@ -4194,7 +5012,7 @@ proof -
   qed
   have pin: "s0 = s0' \<and> b0 = b0'"
     by (rule m_7_2_scb_unique_sb[OF inner inner' bodyne])
-  have X1eq: "?X1 = d4vx_ins s0' ?ub b0' (Dpt (enat ?ub) 0\<^sub>B)" using pin by simp
+  have X1eq: "?X1 = d4vx_ins s0' ?ub b0' 0\<^sub>B" using pin by simp
   have base1: "lessBT ?A0 ?X1" using base1' X1eq by simp
   have X1ne: "?X1 \<noteq> Trm []" using base1 by (cases ?A0) auto
   show ?thesis by (rule ox5_body_driver[OF tri0 base1 X1ne])
@@ -4220,7 +5038,7 @@ qed
 (*                                                                        *)
 (*   ROUTE (setle analogue of scbext_triG, via otx2_align3 spine peel):   *)
 (*   the census target b1x_setle (GBT u A1) (insert X1 (GBT u X1)) with   *)
-(*   A1 = d4vx_ins s0 ub b0 A0, X1 = d4vx_ins s0 ub b0 X0 (SHARED wrapper) *)
+(*   A1 = d4vx_ins s0 ub b0 A0, X1 = d4vx_ins s0 ub b0 0\<^sub>B (SHARED wrapper) *)
 (*   reduces, by right-spine induction on the wrapper, to exactly THREE   *)
 (*   escape families:                                                     *)
 (*     (i)   the HOLE escapes GBP u (D_ub A0): dominated via              *)
@@ -4402,22 +5220,22 @@ text \<open>@{text ox6_setle_wrapped}: the @{const d4vx_ins} packaging.  With
 lemma ox6_setle_wrapped:
   fixes A0 X0 W :: BT and hole :: BP and s0 b0 :: "Sym list" and ub :: nat and u :: enat
   assumes ox5: "b1x_setle (GBT u A0)
-                  (insert (d4vx_ins s0 ub b0 X0) (GBT u (d4vx_ins s0 ub b0 X0)))"
-    and base1: "lessBT A0 (d4vx_ins s0 ub b0 X0)"
+                  (insert (d4vx_ins s0 ub b0 0\<^sub>B) (GBT u (d4vx_ins s0 ub b0 0\<^sub>B)))"
+    and base1: "lessBT A0 (d4vx_ins s0 ub b0 0\<^sub>B)"
     and wrap: "flatBT W = s0 @ flatBP hole @ b0"
     and b0RP: "\<forall>x \<in> set b0. x = RP"
     and spineH: "\<forall>t' sc bc. flatBT t' = sc @ flatBP (DB (enat ub) A0) @ bc
           \<longrightarrow> (\<forall>x\<in>set bc. x = RP) \<longrightarrow> size t' < size (d4vx_ins s0 ub b0 A0)
-          \<longrightarrow> leBT t' (d4vx_ins s0 ub b0 X0)"
+          \<longrightarrow> leBT t' (d4vx_ins s0 ub b0 0\<^sub>B)"
   shows "b1x_setle (GBT u (d4vx_ins s0 ub b0 A0))
-           (insert (d4vx_ins s0 ub b0 X0) (GBT u (d4vx_ins s0 ub b0 X0)))"
+           (insert (d4vx_ins s0 ub b0 0\<^sub>B) (GBT u (d4vx_ins s0 ub b0 0\<^sub>B)))"
 proof -
-  let ?X1 = "d4vx_ins s0 ub b0 X0"
+  let ?X1 = "d4vx_ins s0 ub b0 0\<^sub>B"
   let ?A1 = "d4vx_ins s0 ub b0 A0"
   have fA1: "flatBT ?A1 = s0 @ flatBP (DB (enat ub) A0) @ b0"
     using d4vx_ins_flat[OF wrap b0RP, of ub A0] by simp
-  have fX1: "flatBT ?X1 = s0 @ flatBP (DB (enat ub) X0) @ b0"
-    using d4vx_ins_flat[OF wrap b0RP, of ub X0] by simp
+  have fX1: "flatBT ?X1 = s0 @ flatBP (DB (enat ub) 0\<^sub>B) @ b0"
+    using d4vx_ins_flat[OF wrap b0RP, of ub "0\<^sub>B"] by simp
   have holeH: "b1x_setle (GBP u (DB (enat ub) A0)) (insert ?X1 (GBT u ?X1))"
     by (rule ox6_holeH[OF ox5 base1])
   show ?thesis
@@ -4446,14 +5264,14 @@ lemma ox6_SETLE1_reduce:
           \<longrightarrow> size t' < size (d4vx_ins s0 (entry N 1 (Lng N - 1) - 1) b0
                                 (bpHeadT (Trans (Pred (s84x_N N)))))
           \<longrightarrow> leBT t' (d4vx_ins s0 (entry N 1 (Lng N - 1) - 1) b0
-                        (Dpt (enat (entry N 1 (Lng N - 1) - 1)) 0\<^sub>B))"
+                        0\<^sub>B)"
   shows "b1x_setle
            (GBT u (d4vx_ins s0 (entry N 1 (Lng N - 1) - 1) b0
                      (bpHeadT (Trans (Pred (s84x_N N))))))
            (insert (d4vx_ins s0 (entry N 1 (Lng N - 1) - 1) b0
-                      (Dpt (enat (entry N 1 (Lng N - 1) - 1)) 0\<^sub>B))
+                      0\<^sub>B)
                    (GBT u (d4vx_ins s0 (entry N 1 (Lng N - 1) - 1) b0
-                             (Dpt (enat (entry N 1 (Lng N - 1) - 1)) 0\<^sub>B))))"
+                             0\<^sub>B)))"
 proof -
   let ?v1 = "entry N 1 (Lng N - 1)"
   let ?ub = "entry N 1 (Lng N - 1) - 1"
@@ -4462,14 +5280,14 @@ proof -
   let ?body = "bpHeadT (Trans (s84x_N N))"
   \<comment> \<open>the body driver \<open>ox5\<close>\<close>
   have ox5: "b1x_setle (GBT u ?A0)
-               (insert (d4vx_ins s0 ?ub b0 ?X0) (GBT u (d4vx_ins s0 ?ub b0 ?X0)))"
+               (insert (d4vx_ins s0 ?ub b0 0\<^sub>B) (GBT u (d4vx_ins s0 ?ub b0 0\<^sub>B)))"
     by (rule ox5_body_driver_census[OF NST NPT hp j1gt branch ltJ inner])
   \<comment> \<open>\<open>base\<^sub>1\<close> and the flat wrapper from the package (given \<open>(s\<^sub>0,b\<^sub>0)\<close> pinned)\<close>
   obtain s0' b0' s1 b1 where
       b0RP': "\<forall>x \<in> set b0'. x = RP"
     and inner': "scb_decomp ?body s0'
          (flatBT (Dpt (enat ?v1) 0\<^sub>B)) b0'"
-    and base1': "lessBT ?A0 (d4vx_ins s0' ?ub b0' ?X0)"
+    and base1': "lessBT ?A0 (d4vx_ins s0' ?ub b0' 0\<^sub>B)"
     by (rule oi5_IIIIV_pkg[OF NST NPT hp j1gt branch ltJ])
   have bodyne: "?body \<noteq> Trm []"
   proof
@@ -4481,7 +5299,7 @@ proof -
   qed
   have pin: "s0 = s0' \<and> b0 = b0'"
     by (rule m_7_2_scb_unique_sb[OF inner inner' bodyne])
-  have base1: "lessBT ?A0 (d4vx_ins s0 ?ub b0 ?X0)" using base1' pin by simp
+  have base1: "lessBT ?A0 (d4vx_ins s0 ?ub b0 0\<^sub>B)" using base1' pin by simp
   have b0RP: "\<forall>x \<in> set b0. x = RP" using b0RP' pin by simp
   have wrap: "flatBT ?body = s0 @ flatBP (DB (enat ?v1) 0\<^sub>B) @ b0"
     using inner by (simp add: scb_decomp_def)
@@ -4647,23 +5465,23 @@ lemma cnv_tri0_transT2:
                   (flatBT (Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B)) b0"
   shows "b1x_triG z (transT2 M)
            (d4vx_ins s0 (entry M 1 (Lng M - 1) - 1) b0
-              (Dpt (enat (entry M 1 (Lng M - 1) - 1)) 0\<^sub>B))"
+              0\<^sub>B)"
 proof -
   let ?v1 = "entry M 1 (Lng M - 1)"
   let ?ub = "entry M 1 (Lng M - 1) - 1"
   let ?jpe = "entry M 1 (transJ0 M)"
   let ?c = "Dpt (enat ?v1) 0\<^sub>B"
-  let ?cc = "Dpt (enat ?ub) (Dpt (enat ?ub) 0\<^sub>B)"
+  let ?cc = "Dpt (enat ?ub) 0\<^sub>B"
   obtain t3 t4 where t3TB: "t3 \<in> T_B" and t4TB: "t4 \<in> T_B"
     and body: "bpHeadT (transC2 M) = t3 +\<^sub>B Dpt (enat ?jpe) (t4 +\<^sub>B ?c)"
     and rel: "(t3 = transT2 M \<and> t4 = transT2 M)
               \<or> transT2 M = t3 +\<^sub>B Dpt (enat ?jpe) t4"
     using c4dx_condIV_c2body_shape[OF MR MP J1pos T1 cIV] by blast
-  have X0TB: "Dpt (enat ?ub) 0\<^sub>B \<in> T_B" by (simp add: T_B_def)
+  have X0TB: "(0\<^sub>B :: BT) \<in> T_B" by (simp add: T_B_def)
   have inner': "scb_decomp (t3 +\<^sub>B Dpt (enat ?jpe) (t4 +\<^sub>B Dpt (enat ?v1) 0\<^sub>B)) s0
                   (flatBT (Dpt (enat ?v1) 0\<^sub>B)) b0"
     using inner body by simp
-  have X1eq: "d4vx_ins s0 ?ub b0 (Dpt (enat ?ub) 0\<^sub>B)
+  have X1eq: "d4vx_ins s0 ?ub b0 0\<^sub>B
             = t3 +\<^sub>B Dpt (enat ?jpe) (t4 +\<^sub>B ?cc)"
     by (rule ot2_dins_addBT_of_shape[OF t3TB t4TB X0TB inner'])
   have prin: "b1x_triG z (transT2 M) (t3 +\<^sub>B Dpt (enat ?jpe) (t4 +\<^sub>B ?cc))"
@@ -4723,11 +5541,9 @@ lemma ot2_IVADMEQ_of_pkg_free:
     and base0: "lessBT (Dpt (enat (entry M 1 (Lng M - 1) - 1)) 0\<^sub>B) (transT2 M)"
     and base1: "lessBT (transT2 M)
                   (d4vx_ins s0 (entry M 1 (Lng M - 1) - 1) b0
-                     (Dpt (enat (entry M 1 (Lng M - 1) - 1)) 0\<^sub>B))"
-    and tri0: "b1x_triG (Dpt \<infinity> (Dpt (enat (entry M 1 (Lng M - 1) - 1)) 0\<^sub>B))
-                 (transT2 M)
-                 (d4vx_ins s0 (entry M 1 (Lng M - 1) - 1) b0
-                    (Dpt (enat (entry M 1 (Lng M - 1) - 1)) 0\<^sub>B))"
+                     0\<^sub>B)"
+    and tri0: "b1x_triG (Dpt \<infinity> (0\<^sub>B :: BT)) (transT2 M)
+                 (d4vx_ins s0 (entry M 1 (Lng M - 1) - 1) b0 0\<^sub>B)"
   shows "Trans ((M::pairseq)[m]) \<in> OT_B"
 proof -
   let ?e3 = "entry M 1 (s84x_jm3 M)"
@@ -4742,49 +5558,71 @@ proof -
   have dTM: "scb_decomp (Trans M) s1 (flatBT (Dpt (enat ?e3) body)) b1"
     using k1 by (simp add: scb_kind1_def)
   have b1RP: "\<forall>x \<in> set b1. x = RP" using dTM by (simp add: scb_decomp_def)
-  have X0TB: "?X0 \<in> T_B" by (simp add: T_B_def)
+  have X0TB: "(0\<^sub>B :: BT) \<in> T_B" by (simp add: T_B_def)
   have euB: "?e3 \<le> ?ub" using uv by linarith
   \<comment> \<open>tower \<open>T\<^bsub>B\<^esub>\<close>-membership\<close>
-  have WTB: "\<And>k. d4vx_core s0 ?ub b0 ?X0 k \<in> T_B"
+  have WTB: "\<And>k. d4vx_core s0 ?ub b0 0\<^sub>B k \<in> T_B"
     by (rule oi5_d4vx_core_TB[OF wrap b0RP bodyT X0TB])
   \<comment> \<open>donor closed forms and flats\<close>
   have fseq: "\<And>n. flatBT (operB (Trans M) (numBT n))
       = s1 @ (Dsym (enat ?e3)
-           # concat (replicate n (s0 @ [Dsym (enat ?ub)]))
-           @ [Dsym (enat ?ub)] @ [Zsym] @ concat (replicate n b0)) @ b1"
+           # concat (replicate (n + 1) (s0 @ [Dsym (enat ?ub)]))
+           @ [Zsym]
+           @ concat (replicate (n + 1) b0)) @ b1"
     by (rule d13x_fseq_condIII[OF TT uv bodyT dbbody bodyne inner k1])
-  have Xflat: "\<And>n. flatBT (d4vx_core s0 ?ub b0 ?X0 n)
+  have Xflat: "\<And>n. flatBT (d4vx_core s0 ?ub b0 0\<^sub>B n)
       = concat (replicate n (s0 @ [Dsym (enat ?ub)]))
-        @ flatBT ?X0 @ concat (replicate n b0)"
+        @ flatBT (0\<^sub>B :: BT) @ concat (replicate n b0)"
     by (rule d4vx_core_flat[OF wrap b0RP])
+  \<comment> \<open>r72: the operB core is the \<open>0\<^sub>B\<close>-seeded tower ONE LEVEL DEEPER\<close>
   have fWn: "\<And>n. flatBT (operB (Trans M) (numBT n))
-      = s1 @ flatBP (DB (enat ?e3) (d4vx_core s0 ?ub b0 ?X0 n)) @ b1"
-    using fseq Xflat by simp
-  \<comment> \<open>X-tower OT principals from the [Buc1] 3.2 closure of the IH\<close>
-  have Xe3: "\<And>j. isOT_BP (DB (enat ?e3) (d4vx_core s0 ?ub b0 ?X0 j))"
+      = s1 @ flatBP (DB (enat ?e3) (d4vx_core s0 ?ub b0 0\<^sub>B (Suc n))) @ b1"
   proof -
-    fix j
-    have opOT: "operB (Trans M) (numBT j) \<in> OT_B"
-      by (rule e4x_OT_B_operB_numBT[OF ihOT])
-    have cTB: "Dpt (enat ?e3) (d4vx_core s0 ?ub b0 ?X0 j) \<in> T_B"
-      using WTB by (simp add: T_B_def)
-    have Xdec: "scb_decomp (operB (Trans M) (numBT j)) s1
-                  (flatBT (Dpt (enat ?e3) (d4vx_core s0 ?ub b0 ?X0 j))) b1"
-      unfolding scb_decomp_def
-      using fWn b1RP isPTB_str_Dpt[of "enat ?e3" "d4vx_core s0 ?ub b0 ?X0 j"] WTB
-      by (simp add: T_B_def)
-    have "Dpt (enat ?e3) (d4vx_core s0 ?ub b0 ?X0 j) \<in> OT"
-      by (rule m_8_7_OT_scb_recursive[OF opOT cTB Xdec])
-    thus "isOT_BP (DB (enat ?e3) (d4vx_core s0 ?ub b0 ?X0 j))"
-      by (simp add: OT_def)
+    fix n :: nat
+    have A: "flatBT (d4vx_core s0 ?ub b0 0\<^sub>B (Suc n))
+        = concat (replicate (Suc n) (s0 @ [Dsym (enat ?ub)]))
+          @ [Zsym] @ concat (replicate (Suc n) b0)"
+      using Xflat[of "Suc n"] by (simp del: d4vx_core.simps)
+    show "flatBT (operB (Trans M) (numBT n))
+        = s1 @ flatBP (DB (enat ?e3) (d4vx_core s0 ?ub b0 0\<^sub>B (Suc n))) @ b1"
+      using fseq[of n] A by (simp del: d4vx_core.simps)
+  qed
+  \<comment> \<open>W-tower OT principals from the [Buc1] 3.2 closure of the IH
+      (level \<open>j+1\<close> is the core of the donor \<open>numBT j\<close>; level \<open>0\<close> is \<open>0\<^sub>B\<close>)\<close>
+  have Xe3: "\<And>j. isOT_BP (DB (enat ?e3) (d4vx_core s0 ?ub b0 0\<^sub>B j))"
+  proof -
+    fix j :: nat
+    show "isOT_BP (DB (enat ?e3) (d4vx_core s0 ?ub b0 0\<^sub>B j))"
+    proof (cases j)
+      case 0
+      thus ?thesis by simp
+    next
+      case (Suc n)
+      have opOT: "operB (Trans M) (numBT n) \<in> OT_B"
+        by (rule e4x_OT_B_operB_numBT[OF ihOT])
+      have cTB: "Dpt (enat ?e3) (d4vx_core s0 ?ub b0 0\<^sub>B (Suc n)) \<in> T_B"
+        using WTB[of "Suc n"] by (simp add: T_B_def del: d4vx_core.simps)
+      have Xdec: "scb_decomp (operB (Trans M) (numBT n)) s1
+                    (flatBT (Dpt (enat ?e3) (d4vx_core s0 ?ub b0 0\<^sub>B (Suc n)))) b1"
+        unfolding scb_decomp_def
+        using fWn[of n] b1RP
+              isPTB_str_Dpt[of "enat ?e3" "d4vx_core s0 ?ub b0 0\<^sub>B (Suc n)"]
+              WTB[of "Suc n"]
+        by (simp add: T_B_def del: d4vx_core.simps)
+      have "Dpt (enat ?e3) (d4vx_core s0 ?ub b0 0\<^sub>B (Suc n)) \<in> OT"
+        by (rule m_8_7_OT_scb_recursive[OF opOT cTB Xdec])
+      hence "isOT_BP (DB (enat ?e3) (d4vx_core s0 ?ub b0 0\<^sub>B (Suc n)))"
+        by (simp add: OT_def)
+      thus ?thesis using Suc by simp
+    qed
   qed
   \<comment> \<open>NEWOT and the joint tower invariant from the SETLE-free engine\<close>
   have newOTk: "\<And>k. isOT_BP (DB (enat ?e3) (d4vx_core s0 ?ub b0 (transT2 M) k))"
     by (rule ot2_tower_newOT[OF wrap b0RP euB t2OT base0 base1 tri0 Xe3])
   have INV: "\<And>k. isOT_BT (d4vx_core s0 ?ub b0 (transT2 M) k)
-      \<and> b1x_triG (Dpt \<infinity> (d4vx_core s0 ?ub b0 ?X0 k))
+      \<and> b1x_triG (Dpt \<infinity> (d4vx_core s0 ?ub b0 0\<^sub>B k))
             (d4vx_core s0 ?ub b0 (transT2 M) k)
-            (d4vx_core s0 ?ub b0 ?X0 (Suc k))"
+            (d4vx_core s0 ?ub b0 0\<^sub>B (Suc k))"
     by (rule ot2_tower_inv[OF wrap b0RP euB t2OT base0 base1 tri0 Xe3])
   \<comment> \<open>index bookkeeping\<close>
   have Sk: "Suc (m - 1) = m" using mgt by simp
@@ -4792,22 +5630,28 @@ proof -
       = s1 @ flatBP (DB (enat ?e3) (d4vx_core s0 ?ub b0 (transT2 M) (m - 1))) @ b1"
     using mnform[of m] mgt by simp
   let ?A = "d4vx_core s0 ?ub b0 (transT2 M) (m - 1)"
-  let ?WL = "d4vx_core s0 ?ub b0 ?X0 (m - 1)"
-  let ?WH = "d4vx_core s0 ?ub b0 ?X0 m"
-  have loflat: "flatBT (operB (Trans M) (numBT (m - 1)))
+  let ?WL = "d4vx_core s0 ?ub b0 0\<^sub>B (m - 1)"
+  let ?WH = "d4vx_core s0 ?ub b0 0\<^sub>B m"
+  have SkL: "Suc (m - 2) = m - 1" using mgt by simp
+  have loflat: "flatBT (operB (Trans M) (numBT (m - 2)))
       = s1 @ flatBP (DB (enat ?e3) ?WL) @ b1"
-    using fWn[of "m - 1"] by simp
-  have hiflat: "flatBT (operB (Trans M) (numBT m))
+    using fWn[of "m - 2"] SkL by simp
+  have hiflat: "flatBT (operB (Trans M) (numBT (m - 1)))
       = s1 @ flatBP (DB (enat ?e3) ?WH) @ b1"
-    using fWn[of m] by simp
-  have loOT: "isOT_BT (operB (Trans M) (numBT (m - 1)))"
+    using fWn[of "m - 1"] Sk by simp
+  have loOT: "isOT_BT (operB (Trans M) (numBT (m - 2)))"
+    using e4x_OT_B_operB_numBT[OF ihOT, of "m - 2"] by (simp add: OT_B_def OT_def)
+  have hiOT: "isOT_BT (operB (Trans M) (numBT (m - 1)))"
     using e4x_OT_B_operB_numBT[OF ihOT, of "m - 1"] by (simp add: OT_B_def OT_def)
-  have hiOT: "isOT_BT (operB (Trans M) (numBT m))"
-    using e4x_OT_B_operB_numBT[OF ihOT, of m] by (simp add: OT_B_def OT_def)
   have newOT: "isOT_BP (DB (enat ?e3) ?A)" by (rule newOTk)
   have triA: "b1x_triG (Dpt \<infinity> ?WL) ?A ?WH"
     using INV[of "m - 1"] Sk by simp
-  note IL = c4cx_d4vx_core_interleave[OF wrap b0RP base0 base1, of "m - 1"]
+  have base0Z: "lessBT (0\<^sub>B :: BT) (transT2 M)"
+  proof -
+    have "lessBT (0\<^sub>B :: BT) (Dpt (enat ?ub) 0\<^sub>B)" by simp
+    thus ?thesis using base0 lessBT_trans by blast
+  qed
+  note IL = c4cx_d4vx_core_interleave[OF wrap b0RP base0Z base1, of "m - 1"]
   have ordlo: "leBT ?WL ?A" using IL by simp
   have ordhi: "leBT ?A ?WH" using IL Sk by simp
   \<comment> \<open>final transport at head \<open>e\<^sub>3\<close>, SETLE-free\<close>
@@ -4934,15 +5778,13 @@ proof -
     by (rule s85b_complb_lessBT[OF ubv1 t2ne HB])
   have base1: "lessBT (transT2 M)
       (d4vx_ins s0 (entry M 1 (Lng M - 1) - 1) b0
-         (Dpt (enat (entry M 1 (Lng M - 1) - 1)) 0\<^sub>B))"
-    by (rule c4dx_condIV_base1[OF MR MPT J1pos T1 cIV inner])
+         0\<^sub>B)"
+    by (rule oy1_base1Y_t2[OF MR MPT J1pos T1 cIV inner])
   \<comment> \<open>the two clean tower inputs\<close>
   have t2OT: "isOT_BT (transT2 M)"
     by (rule ot2_transT2_OT[OF MST MPT hp cIV admeq ihOT])
-  have tri0: "b1x_triG (Dpt \<infinity> (Dpt (enat (entry M 1 (Lng M - 1) - 1)) 0\<^sub>B))
-                (transT2 M)
-                (d4vx_ins s0 (entry M 1 (Lng M - 1) - 1) b0
-                   (Dpt (enat (entry M 1 (Lng M - 1) - 1)) 0\<^sub>B))"
+  have tri0: "b1x_triG (Dpt \<infinity> (0\<^sub>B :: BT)) (transT2 M)
+                (d4vx_ins s0 (entry M 1 (Lng M - 1) - 1) b0 0\<^sub>B)"
     by (rule cnv_tri0_transT2[OF MR MPT J1pos T1 cIV inner])
   \<comment> \<open>assemble via the SETLE-free of_pkg\<close>
   show ?thesis
@@ -4967,9 +5809,9 @@ theorem oi8_census_final_ivadmeq:
           (GBT u (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
                     (bpHeadT (Trans (Pred (s84x_N P))))))
           (insert (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
-                     (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))
+                     0\<^sub>B)
                   (GBT u (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
-                            (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))))"
+                            0\<^sub>B)))"
     and FINRC: "\<And>K. K \<in> ST_PS \<Longrightarrow> K \<in> PT_PS \<Longrightarrow> 1 < Lng K - 1 \<Longrightarrow>
              transCondII K \<Longrightarrow> tvx_finRc K"
   shows "\<forall>M. M \<in> ST_PS \<longrightarrow> Trans M \<in> OT_B"
@@ -5140,26 +5982,26 @@ text \<open>@{text ox6_setle_wrapped_restr}: the @{const d4vx_ins} packaging of 
 lemma ox6_setle_wrapped_restr:
   fixes A0 X0 W :: BT and hole :: BP and s0 b0 :: "Sym list" and ub :: nat and u :: enat
   assumes ox5: "b1x_setle (GBT u A0)
-                  (insert (d4vx_ins s0 ub b0 X0) (GBT u (d4vx_ins s0 ub b0 X0)))"
-    and base1: "lessBT A0 (d4vx_ins s0 ub b0 X0)"
+                  (insert (d4vx_ins s0 ub b0 0\<^sub>B) (GBT u (d4vx_ins s0 ub b0 0\<^sub>B)))"
+    and base1: "lessBT A0 (d4vx_ins s0 ub b0 0\<^sub>B)"
     and wrap: "flatBT W = s0 @ flatBP hole @ b0"
     and b0RP: "\<forall>x \<in> set b0. x = RP"
     and spineH: "\<forall>t' tx' sc bc.
           flatBT t' = sc @ flatBP (DB (enat ub) A0) @ bc
-          \<longrightarrow> flatBT tx' = sc @ flatBP (DB (enat ub) X0) @ bc
+          \<longrightarrow> flatBT tx' = sc @ flatBP (DB (enat ub) 0\<^sub>B) @ bc
           \<longrightarrow> (\<forall>x\<in>set bc. x = RP)
-          \<longrightarrow> tx' \<in> GBT u (d4vx_ins s0 ub b0 X0)
+          \<longrightarrow> tx' \<in> GBT u (d4vx_ins s0 ub b0 0\<^sub>B)
           \<longrightarrow> size t' < size (d4vx_ins s0 ub b0 A0)
-          \<longrightarrow> leBT t' (d4vx_ins s0 ub b0 X0)"
+          \<longrightarrow> leBT t' (d4vx_ins s0 ub b0 0\<^sub>B)"
   shows "b1x_setle (GBT u (d4vx_ins s0 ub b0 A0))
-           (insert (d4vx_ins s0 ub b0 X0) (GBT u (d4vx_ins s0 ub b0 X0)))"
+           (insert (d4vx_ins s0 ub b0 0\<^sub>B) (GBT u (d4vx_ins s0 ub b0 0\<^sub>B)))"
 proof -
-  let ?X1 = "d4vx_ins s0 ub b0 X0"
+  let ?X1 = "d4vx_ins s0 ub b0 0\<^sub>B"
   let ?A1 = "d4vx_ins s0 ub b0 A0"
   have fA1: "flatBT ?A1 = s0 @ flatBP (DB (enat ub) A0) @ b0"
     using d4vx_ins_flat[OF wrap b0RP, of ub A0] by simp
-  have fX1: "flatBT ?X1 = s0 @ flatBP (DB (enat ub) X0) @ b0"
-    using d4vx_ins_flat[OF wrap b0RP, of ub X0] by simp
+  have fX1: "flatBT ?X1 = s0 @ flatBP (DB (enat ub) 0\<^sub>B) @ b0"
+    using d4vx_ins_flat[OF wrap b0RP, of ub "0\<^sub>B"] by simp
   have holeH: "b1x_setle (GBP u (DB (enat ub) A0)) (insert ?X1 (GBT u ?X1))"
     by (rule ox6_holeH[OF ox5 base1])
   show ?thesis
@@ -5184,22 +6026,21 @@ lemma ox6_SETLE1_reduce_restr:
     and spineH: "\<forall>t' tx' sc bc.
           flatBT t' = sc @ flatBP (DB (enat (entry N 1 (Lng N - 1) - 1))
                                       (bpHeadT (Trans (Pred (s84x_N N))))) @ bc
-          \<longrightarrow> flatBT tx' = sc @ flatBP (DB (enat (entry N 1 (Lng N - 1) - 1))
-                                      (Dpt (enat (entry N 1 (Lng N - 1) - 1)) 0\<^sub>B)) @ bc
+          \<longrightarrow> flatBT tx' = sc @ flatBP (DB (enat (entry N 1 (Lng N - 1) - 1)) 0\<^sub>B) @ bc
           \<longrightarrow> (\<forall>x\<in>set bc. x = RP)
           \<longrightarrow> tx' \<in> GBT u (d4vx_ins s0 (entry N 1 (Lng N - 1) - 1) b0
-                            (Dpt (enat (entry N 1 (Lng N - 1) - 1)) 0\<^sub>B))
+                            0\<^sub>B)
           \<longrightarrow> size t' < size (d4vx_ins s0 (entry N 1 (Lng N - 1) - 1) b0
                                 (bpHeadT (Trans (Pred (s84x_N N)))))
           \<longrightarrow> leBT t' (d4vx_ins s0 (entry N 1 (Lng N - 1) - 1) b0
-                        (Dpt (enat (entry N 1 (Lng N - 1) - 1)) 0\<^sub>B))"
+                        0\<^sub>B)"
   shows "b1x_setle
            (GBT u (d4vx_ins s0 (entry N 1 (Lng N - 1) - 1) b0
                      (bpHeadT (Trans (Pred (s84x_N N))))))
            (insert (d4vx_ins s0 (entry N 1 (Lng N - 1) - 1) b0
-                      (Dpt (enat (entry N 1 (Lng N - 1) - 1)) 0\<^sub>B))
+                      0\<^sub>B)
                    (GBT u (d4vx_ins s0 (entry N 1 (Lng N - 1) - 1) b0
-                             (Dpt (enat (entry N 1 (Lng N - 1) - 1)) 0\<^sub>B))))"
+                             0\<^sub>B)))"
 proof -
   let ?v1 = "entry N 1 (Lng N - 1)"
   let ?ub = "entry N 1 (Lng N - 1) - 1"
@@ -5208,14 +6049,14 @@ proof -
   let ?body = "bpHeadT (Trans (s84x_N N))"
   \<comment> \<open>the body driver \<open>ox5\<close>\<close>
   have ox5: "b1x_setle (GBT u ?A0)
-               (insert (d4vx_ins s0 ?ub b0 ?X0) (GBT u (d4vx_ins s0 ?ub b0 ?X0)))"
+               (insert (d4vx_ins s0 ?ub b0 0\<^sub>B) (GBT u (d4vx_ins s0 ?ub b0 0\<^sub>B)))"
     by (rule ox5_body_driver_census[OF NST NPT hp j1gt branch ltJ inner])
   \<comment> \<open>\<open>base\<^sub>1\<close> and the flat wrapper from the package (given \<open>(s\<^sub>0,b\<^sub>0)\<close> pinned)\<close>
   obtain s0' b0' s1 b1 where
       b0RP': "\<forall>x \<in> set b0'. x = RP"
     and inner': "scb_decomp ?body s0'
          (flatBT (Dpt (enat ?v1) 0\<^sub>B)) b0'"
-    and base1': "lessBT ?A0 (d4vx_ins s0' ?ub b0' ?X0)"
+    and base1': "lessBT ?A0 (d4vx_ins s0' ?ub b0' 0\<^sub>B)"
     by (rule oi5_IIIIV_pkg[OF NST NPT hp j1gt branch ltJ])
   have bodyne: "?body \<noteq> Trm []"
   proof
@@ -5227,7 +6068,7 @@ proof -
   qed
   have pin: "s0 = s0' \<and> b0 = b0'"
     by (rule m_7_2_scb_unique_sb[OF inner inner' bodyne])
-  have base1: "lessBT ?A0 (d4vx_ins s0 ?ub b0 ?X0)" using base1' pin by simp
+  have base1: "lessBT ?A0 (d4vx_ins s0 ?ub b0 0\<^sub>B)" using base1' pin by simp
   have b0RP: "\<forall>x \<in> set b0. x = RP" using b0RP' pin by simp
   have wrap: "flatBT ?body = s0 @ flatBP (DB (enat ?v1) 0\<^sub>B) @ b0"
     using inner by (simp add: scb_decomp_def)
@@ -5562,7 +6403,7 @@ proof -
           = s1 @ Dsym (enat ?e3)
               # flatBT (d4vx_core s0 ?ub b0 ?A0 (m - 1)) @ b1"
     and base0: "lessBT (Dpt (enat ?ub) 0\<^sub>B) ?A0"
-    and base1: "lessBT ?A0 (d4vx_ins s0 ?ub b0 (Dpt (enat ?ub) 0\<^sub>B))"
+    and base1: "lessBT ?A0 (d4vx_ins s0 ?ub b0 0\<^sub>B)"
     and A0TB: "?A0 \<in> T_B"
     by (rule oi5_IIIIV_pkg[OF NST NPT hp j1gt branch ltJ])
   have bodyT: "?body \<in> T_B" by (rule oi5_regime(3)[OF NST NPT hp j1gt branch])
@@ -6785,27 +7626,26 @@ lemma ot7_SETLE1_ltJ_of_head:
     and HEAD: "\<forall>t' tx' sc bc.
           flatBT t' = sc @ flatBP (DB (enat (entry N 1 (Lng N - 1) - 1))
                                       (bpHeadT (Trans (Pred (s84x_N N))))) @ bc
-          \<longrightarrow> flatBT tx' = sc @ flatBP (DB (enat (entry N 1 (Lng N - 1) - 1))
-                                      (Dpt (enat (entry N 1 (Lng N - 1) - 1)) 0\<^sub>B)) @ bc
+          \<longrightarrow> flatBT tx' = sc @ flatBP (DB (enat (entry N 1 (Lng N - 1) - 1)) 0\<^sub>B) @ bc
           \<longrightarrow> (\<forall>x\<in>set bc. x = RP)
           \<longrightarrow> tx' \<in> GBT u (d4vx_ins s0 (entry N 1 (Lng N - 1) - 1) b0
-                            (Dpt (enat (entry N 1 (Lng N - 1) - 1)) 0\<^sub>B))
+                            0\<^sub>B)
           \<longrightarrow> size t' < size (d4vx_ins s0 (entry N 1 (Lng N - 1) - 1) b0
                                 (bpHeadT (Trans (Pred (s84x_N N)))))
           \<longrightarrow> bpHeadV t' < bpHeadV (d4vx_ins s0 (entry N 1 (Lng N - 1) - 1) b0
-                                     (Dpt (enat (entry N 1 (Lng N - 1) - 1)) 0\<^sub>B))"
+                                     0\<^sub>B)"
   shows "b1x_setle
            (GBT u (d4vx_ins s0 (entry N 1 (Lng N - 1) - 1) b0
                      (bpHeadT (Trans (Pred (s84x_N N))))))
            (insert (d4vx_ins s0 (entry N 1 (Lng N - 1) - 1) b0
-                      (Dpt (enat (entry N 1 (Lng N - 1) - 1)) 0\<^sub>B))
+                      0\<^sub>B)
                    (GBT u (d4vx_ins s0 (entry N 1 (Lng N - 1) - 1) b0
-                             (Dpt (enat (entry N 1 (Lng N - 1) - 1)) 0\<^sub>B))))"
+                             0\<^sub>B)))"
 proof -
   let ?v1 = "entry N 1 (Lng N - 1)"
   let ?ub = "entry N 1 (Lng N - 1) - 1"
   let ?A0 = "bpHeadT (Trans (Pred (s84x_N N)))"
-  let ?X0 = "Dpt (enat ?ub) 0\<^sub>B"
+  let ?X0 = "(0\<^sub>B :: BT)"
   let ?body = "bpHeadT (Trans (s84x_N N))"
   let ?X1 = "d4vx_ins s0 ?ub b0 ?X0"
   let ?A1 = "d4vx_ins s0 ?ub b0 ?A0"
@@ -8413,7 +9253,7 @@ lemma bwl_operB_case_ii:
   assumes bne: "b \<noteq> Trm []" and g2: "domB b \<noteq> {Trm []}"
     and g3: "\<exists>u. v \<le> enat u \<and> domB b = TBv (enat u)"
   shows "operB (Trm [DB v b]) z
-           = Trm [DB v (xseq b (enat (tbvIdx (domB b))) (numNat z))]"
+           = Trm [DB v (operB b (xseq b (enat (tbvIdx (domB b))) (numNat z)))]"
 proof -
   have e1: "(b = Trm []) = False" using bne by simp
   have e2: "(domB b = {Trm []}) = False" using g2 by simp
@@ -8519,21 +9359,11 @@ proof (induction m rule: less_induct)
         ultimately show False by simp
       qed
       have g2: "domB c \<noteq> {Trm []}" using tu(2) bwl_TBv_neq_zero by simp
-      \<comment> \<open>the base point \<open>x\<^sub>0 = D\<^sub>k 0\<close> of the \<open>xseq\<close>, at EVERY level: below \<open>k\<close> by the
-         strong induction hypothesis (\<open>k < m\<close>), at/above \<open>k\<close> by the upward collapse\<close>
+      \<comment> \<open>r72: under the CORRECTED ([].4)(ii) (\<open>x\<^sub>0 = D\<^sub>k 0\<close>, \<open>x\<^bsub>j+1\<^esub> = D\<^sub>k (c[x\<^sub>j])\<close>,
+         \<open>(D\<^sub>v c)[n] = D\<^sub>v (c[x\<^sub>n])\<close>) the \<open>xseq\<close> lives in \<open>W\<^sub>k\<close> OUTRIGHT, so the A23
+         workaround (the base point at EVERY level, via the upward collapse) is
+         no longer needed --- only \<open>x\<^sub>0 = D\<^sub>k 0 \<in> W\<^sub>k\<close>.\<close>
       have Dk0: "Trm [DB (enat k) (Trm [])] \<in> bwl_W k" by (rule bwl_D_zero_W)
-      have base0: "Trm [DB (enat v') (Trm [DB (enat k) (Trm [])])] \<in> bwl_W v'" for v'
-      proof (cases "v' \<le> k")
-        case True
-        have "Trm [DB (enat k) (Trm [])]
-                \<in> {y. \<forall>v'' \<le> k. Trm [DB (enat v'') y] \<in> bwl_W v''}"
-          using less.IH[OF km] Dk0 by blast
-        thus ?thesis using True by blast
-      next
-        case False
-        hence kv: "k \<le> v'" by simp
-        show ?thesis by (rule bwl_key_collapse[OF kv Dk0])
-      qed
       fix v assume vm: "v \<le> m"
       show "Trm [DB (enat v) c] \<in> bwl_W v"
       proof (cases "k < v")
@@ -8563,21 +9393,22 @@ proof (induction m rule: less_induct)
         have dW: "domB (Trm [DB (enat v) c]) = NatSet"
           by (rule bwl_domB_case_ii[OF cne g2 g3])
         have tb: "tbvIdx (domB c) = k" using tu(2) by (simp add: bwl_tbvIdx)
-        \<comment> \<open>the \<open>xseq\<close> stays inside the invariant\<close>
-        have xY: "xseq c (enat k) j \<in> ?Y" for j
+        \<comment> \<open>the \<open>xseq\<close> stays inside \<open>W\<^sub>k\<close>: \<open>x\<^bsub>j+1\<^esub> = D\<^sub>k (c[x\<^sub>j])\<close>, and \<open>c[x\<^sub>j] \<in> ?Y\<close>
+           by \<open>tu(3)\<close>, so its \<open>D\<^sub>k\<close>-image is in \<open>W\<^sub>k\<close> (\<open>k \<le> m\<close>)\<close>
+        have xW: "xseq c (enat k) j \<in> bwl_W k" for j
         proof (induction j)
           case 0
           have x0: "xseq c (enat k) 0 = Trm [DB (enat k) (Trm [])]" by (rule b1x_xseq_0)
-          show ?case using x0 base0 by simp
+          show ?case using x0 Dk0 by simp
         next
           case (Suc j)
           have xs: "xseq c (enat k) (Suc j)
-                      = operB c (Trm [DB (enat k) (xseq c (enat k) j)])"
+                      = Trm [DB (enat k) (operB c (xseq c (enat k) j))]"
             by (rule b1x_xseq_Suc)
-          have zk: "Trm [DB (enat k) (xseq c (enat k) j)] \<in> bwl_W k"
-            using Suc.IH km by auto
-          have "operB c (Trm [DB (enat k) (xseq c (enat k) j)]) \<in> ?Y"
-            using tu(3) zk by blast
+          have cY: "operB c (xseq c (enat k) j) \<in> ?Y"
+            using tu(3) Suc.IH by blast
+          have "Trm [DB (enat k) (operB c (xseq c (enat k) j))] \<in> bwl_W k"
+            using cY km by auto
           thus ?case using xs by simp
         qed
         show ?thesis
@@ -8587,13 +9418,16 @@ proof (induction m rule: less_induct)
         next
           fix n
           have "operB (Trm [DB (enat v) c]) (numBT n)
-                  = Trm [DB (enat v) (xseq c (enat (tbvIdx (domB c))) (numNat (numBT n)))]"
+                  = Trm [DB (enat v)
+                      (operB c (xseq c (enat (tbvIdx (domB c))) (numNat (numBT n))))]"
             by (rule bwl_operB_case_ii[OF cne g2 g3])
           hence eq: "operB (Trm [DB (enat v) c]) (numBT n)
-                       = Trm [DB (enat v) (xseq c (enat k) n)]"
+                       = Trm [DB (enat v) (operB c (xseq c (enat k) n))]"
             using tb bwl_numNat_numBT by simp
-          have "xseq c (enat k) n \<in> ?Y" by (rule xY)
-          hence "Trm [DB (enat v) (xseq c (enat k) n)] \<in> bwl_W v" using vm by blast
+          have "xseq c (enat k) n \<in> bwl_W k" by (rule xW)
+          hence "operB c (xseq c (enat k) n) \<in> ?Y" using tu(3) by blast
+          hence "Trm [DB (enat v) (operB c (xseq c (enat k) n))] \<in> bwl_W v"
+            using vm by blast
           thus "operB (Trm [DB (enat v) c]) (numBT n) \<in> bwl_W v" using eq by simp
         qed
       qed
@@ -8740,31 +9574,32 @@ proof (rule bwl_WstarI)
       qed
     next
       case False
-      \<comment> \<open>[1] 2.6 case 4.2: \<open>v \<le> u\<close>, the \<open>xseq\<close> branch ([].4)(ii).  Buchholz's own
-         argument needs \<open>b[1] \<in> W\<^sup>*\<close>; with the [Buc2] correction the base point is
-         \<open>x\<^sub>0 = D\<^sub>u 0 \<in> W\<^sub>u \<subseteq> W\<^sup>*\<close> — available exactly because of the DOWNWARD collapse.\<close>
+      \<comment> \<open>[1] 2.6 case 4.2: \<open>v \<le> u\<close>, the \<open>xseq\<close> branch ([].4)(ii).  \<^bold>\<open>r72\<close>: under the
+         CORRECTED rule (\<open>x\<^sub>0 = D\<^sub>u 0\<close>, \<open>x\<^bsub>j+1\<^esub> = D\<^sub>u (b[x\<^sub>j])\<close>, \<open>(D\<^sub>v b)[n] = D\<^sub>v (b[x\<^sub>n])\<close>)
+         the whole case collapses to ONE invariant, \<open>x\<^sub>j \<in> W\<^sub>u\<close>: the base point is
+         \<open>D\<^sub>u 0 \<in> W\<^sub>u\<close> and the step is \<open>x\<^sub>j \<in> W\<^sub>u \<Longrightarrow> b[x\<^sub>j] \<in> W\<^sup>* \<Longrightarrow> D\<^sub>u (b[x\<^sub>j]) \<in> W\<^sub>u\<close>.
+         Buchholz's \<open>b[1] \<in> W\<^sup>*\<close> detour and the A23 base-point workaround are BOTH
+         unnecessary.\<close>
       hence vu: "enat v \<le> enat u" by simp
       have g3: "\<exists>u'. enat v \<le> enat u' \<and> domB b = TBv (enat u')"
         using vu tu(1) by blast
       have dW: "domB (Trm [DB (enat v) b]) = NatSet"
         by (rule bwl_domB_case_ii[OF bne g2 g3])
       have tb: "tbvIdx (domB b) = u" using tu(1) by (simp add: bwl_tbvIdx)
-      have xW: "xseq b (enat u) j \<in> bwl_Wstar" for j
+      have xW: "xseq b (enat u) j \<in> bwl_W u" for j
       proof (induction j)
         case 0
         have x0: "xseq b (enat u) 0 = Trm [DB (enat u) (Trm [])]" by (rule b1x_xseq_0)
-        have "Trm [DB (enat u) (Trm [])] \<in> bwl_Wstar"
-          by (rule bwl_W_in_Wstar[OF bwl_D_zero_W])
-        thus ?case using x0 by simp
+        show ?case using x0 bwl_D_zero_W by simp
       next
         case (Suc j)
         have xs: "xseq b (enat u) (Suc j)
-                    = operB b (Trm [DB (enat u) (xseq b (enat u) j)])"
+                    = Trm [DB (enat u) (operB b (xseq b (enat u) j))]"
           by (rule b1x_xseq_Suc)
-        have zu: "Trm [DB (enat u) (xseq b (enat u) j)] \<in> bwl_W u"
-          using Suc.IH by (rule bwl_WstarD)
-        have "operB b (Trm [DB (enat u) (xseq b (enat u) j)]) \<in> bwl_Wstar"
-          using tu(2) zu by blast
+        have bW: "operB b (xseq b (enat u) j) \<in> bwl_Wstar"
+          using tu(2) Suc.IH by blast
+        have "Trm [DB (enat u) (operB b (xseq b (enat u) j))] \<in> bwl_W u"
+          using bW by (rule bwl_WstarD)
         thus ?case using xs by simp
       qed
       show ?thesis
@@ -8774,13 +9609,15 @@ proof (rule bwl_WstarI)
       next
         fix n
         have "operB (Trm [DB (enat v) b]) (numBT n)
-                = Trm [DB (enat v) (xseq b (enat (tbvIdx (domB b))) (numNat (numBT n)))]"
+                = Trm [DB (enat v)
+                    (operB b (xseq b (enat (tbvIdx (domB b))) (numNat (numBT n))))]"
           by (rule bwl_operB_case_ii[OF bne g2 g3])
         hence eq: "operB (Trm [DB (enat v) b]) (numBT n)
-                     = Trm [DB (enat v) (xseq b (enat u) n)]"
+                     = Trm [DB (enat v) (operB b (xseq b (enat u) n))]"
           using tb bwl_numNat_numBT by simp
-        have "Trm [DB (enat v) (xseq b (enat u) n)] \<in> bwl_W v"
-          using xW by (rule bwl_WstarD)
+        have "operB b (xseq b (enat u) n) \<in> bwl_Wstar" using tu(2) xW by blast
+        hence "Trm [DB (enat v) (operB b (xseq b (enat u) n))] \<in> bwl_W v"
+          by (rule bwl_WstarD)
         thus "operB (Trm [DB (enat v) b]) (numBT n) \<in> bwl_W v" using eq by simp
       qed
     qed
@@ -9213,9 +10050,9 @@ theorem oi8_census_FINRC:
           (GBT u (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
                     (bpHeadT (Trans (Pred (s84x_N P))))))
           (insert (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
-                     (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))
+                     0\<^sub>B)
                   (GBT u (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
-                            (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))))"
+                            0\<^sub>B)))"
   shows "\<forall>M. M \<in> ST_PS \<longrightarrow> Trans M \<in> OT_B"
     and "\<forall>M n. M \<in> ST_PS \<longrightarrow> 1 \<le> n \<longrightarrow> 1 < Lng M \<longrightarrow>
            lessBT (Trans ((M::pairseq)[n])) (Trans M)"
@@ -9912,227 +10749,22 @@ proof (induction m arbitrary: k rule: less_induct)
 qed
 
 
-subsection \<open>(7) The census \<open>SETLE1_ltJ\<close> slot, modulo the head bound\<close>
+subsection \<open>(7) The census \<open>SETLE1_ltJ\<close> slot, modulo the head bound --- WITHDRAWN (r72)\<close>
 
-text \<open>@{text ox9_SETLE1_ltJ}: the \<open>SETLE1\<close> assumption of
-  @{thm [source] oi8_census_final_ivadmeq}, VERBATIM, discharged from the SINGLE
-  residual \<open>ALLH\<close>: every head occurring in \<open>body = bpHeadT (Trans (s84x_N N))\<close> is
-  \<open>\<ge> v\<^sub>1\<close>.  Everything else -- the \<open>G\<close>-descent (@{thm [source] ox8_body_rspine_lessBT}),
-  the body driver (@{thm [source] ox5_body_driver_census}), the hole
-  (@{thm [source] ox6_holeH}), the surgery structure
-  (@{thm [source] ox9_holeD_of_flat3}) and the transport
-  (@{thm [source] ox9_MAIN}) -- is unconditional.\<close>
+text \<open>\<^bold>\<open>r72 (corrected Buchholz fundamental sequence): the r69 \<open>ox9\<close> census route is
+  WITHDRAWN.\<close>  \<open>ox9_SETLE1_ltJ\<close> / \<open>oi9_census_SETLE_ok\<close> / \<open>oi9_census_OKH\<close> and the two
+  \<open>OKH\<close> capstones \<open>y3_PSS_acc_of_OKH_cofimg\<close> / \<open>y3_PSS_acc_of_OKH_bwl_cof\<close> lived on the
+  hypothesis \<open>ALLH = ox9_ok v\<^sub>1 (v\<^sub>1-1) body\<close>, which r70 REFUTED
+  (\<open>ox10_cex_not_ok\<close> below) --- so those census wrappers were already vacuous,
+  and the live route is \<open>ox10\<close>/\<open>ox11\<close>/\<open>ox12\<close> (the \<open>KK\<close> spine bound).  Under the corrected
+  rule the \<open>SETLE1\<close> slot's low donor core is \<open>Y\<^sub>1 = d4vx_ins s\<^sub>0 ub b\<^sub>0 0\<^sub>B\<close> (the operB core
+  is \<open>0\<^sub>B\<close>-seeded), and the \<open>ox9\<close> head-separation argument bounds an escape at head
+  exactly \<open>ub\<close> only by \<open>D\<^bsub>ub\<^esub>0\<close>, never by \<open>0\<^sub>B\<close> --- it cannot reach the new bound.  The
+  \<open>ox9_holeD\<close>/\<open>ox9_ok\<close>/\<open>ox9_lexP\<close> INFRASTRUCTURE is kept (\<open>ox10\<close>--\<open>ox12\<close> use it); only the
+  four refuted-route wrappers are removed.  No live theorem depended on them
+  (\<open>oi12_census\<close>, \<open>ox12_KK_free\<close>, \<open>y5_*\<close> all go through \<open>KK\<close>).\<close>
 
-lemma ox9_SETLE1_ltJ:
-  fixes N :: pairseq and s0 b0 :: "Sym list" and u :: enat
-  assumes NST: "N \<in> ST_PS" and NPT: "N \<in> PT_PS"
-    and hp: "hasParent N 1 (Lng N - 1)"
-    and j1gt: "1 < Lng N - 1"
-    and branch: "transCondIII N \<or> transCondIV N"
-    and ihOT: "Trans N \<in> OT_B"
-    and b0RP: "\<forall>x \<in> set b0. x = RP"
-    and inner: "scb_decomp (bpHeadT (Trans (s84x_N N))) s0
-                 (flatBT (Dpt (enat (entry N 1 (Lng N - 1))) 0\<^sub>B)) b0"
-    and ltJ: "s84x_jm3 N < transJm1 N"
-    and ALLH: "ox9_ok (enat (entry N 1 (Lng N - 1)))
-                      (enat (entry N 1 (Lng N - 1) - 1))
-                      (bpHeadT (Trans (s84x_N N)))"
-  shows "b1x_setle
-           (GBT u (d4vx_ins s0 (entry N 1 (Lng N - 1) - 1) b0
-                     (bpHeadT (Trans (Pred (s84x_N N))))))
-           (insert (d4vx_ins s0 (entry N 1 (Lng N - 1) - 1) b0
-                      (Dpt (enat (entry N 1 (Lng N - 1) - 1)) 0\<^sub>B))
-                   (GBT u (d4vx_ins s0 (entry N 1 (Lng N - 1) - 1) b0
-                             (Dpt (enat (entry N 1 (Lng N - 1) - 1)) 0\<^sub>B))))"
-proof -
-  let ?v1 = "entry N 1 (Lng N - 1)"
-  let ?ub = "entry N 1 (Lng N - 1) - 1"
-  let ?A0 = "bpHeadT (Trans (Pred (s84x_N N)))"
-  let ?X0 = "Dpt (enat ?ub) 0\<^sub>B"
-  let ?body = "bpHeadT (Trans (s84x_N N))"
-  let ?X1 = "d4vx_ins s0 ?ub b0 ?X0"
-  let ?A1 = "d4vx_ins s0 ?ub b0 ?A0"
-  \<comment> \<open>\<open>v\<^sub>1 > 0\<close> (both branches), so \<open>ub = v\<^sub>1 - 1 < v\<^sub>1\<close>\<close>
-  have v1pos: "0 < ?v1"
-    using branch by (auto simp: transCondIII_def transCondIV_def)
-  have ublt: "?ub < ?v1" using v1pos by simp
-  have pAlt: "lessBP (DB (enat ?ub) ?A0) (DB (enat ?v1) 0\<^sub>B)" using ublt by simp
-  \<comment> \<open>\<open>PXOK\<close>: a principal that reaches the leaf hole has head \<open>< v\<^sub>1\<close>, hence \<open>\<le> ub\<close>;
-      @{const ox9_ok} then hands the body bound \<open>XB < X\<^sub>0\<close> that decides the tie.\<close>
-  have PXOK: "\<And>x. ox9_okP (enat ?v1) (enat ?ub) x
-                \<Longrightarrow> lessBP x (DB (enat ?v1) 0\<^sub>B) \<Longrightarrow> lessBP x (DB (enat ?ub) ?X0)"
-  proof -
-    fix x assume hx: "ox9_okP (enat ?v1) (enat ?ub) x"
-      and lx: "lessBP x (DB (enat ?v1) 0\<^sub>B)"
-    obtain c XB where xc: "x = DB c XB" by (cases x)
-    have clt: "c < enat ?v1"
-    proof -
-      have "c < enat ?v1 \<or> (c = enat ?v1 \<and> lessBT XB 0\<^sub>B)" using lx xc by simp
-      thus ?thesis using ox9_lessBT_zero by blast
-    qed
-    have nge: "\<not> enat ?v1 \<le> c" using clt by simp
-    have bodylt: "lessBT XB (Dpt (enat ?ub) 0\<^sub>B)" using hx xc nge by simp
-    obtain c' where cn: "c = enat c'" using clt by (cases c) auto
-    have "c' < ?v1" using clt cn by simp
-    hence "c' \<le> ?ub" using ublt by simp
-    hence "c \<le> enat ?ub" using cn by simp
-    hence "c < enat ?ub \<or> c = enat ?ub" by auto
-    thus "lessBP x (DB (enat ?ub) ?X0)"
-    proof
-      assume "c < enat ?ub" thus ?thesis using xc by simp
-    next
-      assume "c = enat ?ub" thus ?thesis using xc bodylt by simp
-    qed
-  qed
-  \<comment> \<open>the body driver and \<open>base\<^sub>1\<close> (pin \<open>(s\<^sub>0,b\<^sub>0)\<close> against the package)\<close>
-  have ox5: "b1x_setle (GBT u ?A0) (insert ?X1 (GBT u ?X1))"
-    by (rule ox5_body_driver_census[OF NST NPT hp j1gt branch ltJ inner])
-  obtain s0' b0' s1 b1 where
-      b0RP': "\<forall>x \<in> set b0'. x = RP"
-    and inner': "scb_decomp ?body s0' (flatBT (Dpt (enat ?v1) 0\<^sub>B)) b0'"
-    and base1': "lessBT ?A0 (d4vx_ins s0' ?ub b0' ?X0)"
-    by (rule oi5_IIIIV_pkg[OF NST NPT hp j1gt branch ltJ])
-  have bodyne: "?body \<noteq> Trm []"
-  proof
-    assume z: "?body = Trm []"
-    have "flatBT ?body = s0 @ flatBT (Dpt (enat ?v1) 0\<^sub>B) @ b0"
-      using inner by (simp add: scb_decomp_def)
-    hence "[Zsym] = s0 @ [Dsym (enat ?v1), Zsym] @ b0" using z by simp
-    thus False by (cases s0) auto
-  qed
-  have pin: "s0 = s0' \<and> b0 = b0'"
-    by (rule m_7_2_scb_unique_sb[OF inner inner' bodyne])
-  have base1: "lessBT ?A0 ?X1" using base1' pin by simp
-  have holeH: "b1x_setle (GBP u (DB (enat ?ub) ?A0)) (insert ?X1 (GBT u ?X1))"
-    by (rule ox6_holeH[OF ox5 base1])
-  \<comment> \<open>the three flat surgery strings\<close>
-  have wrap: "flatBT ?body = s0 @ flatBP (DB (enat ?v1) 0\<^sub>B) @ b0"
-    using inner by (simp add: scb_decomp_def)
-  have fA1: "flatBT ?A1 = s0 @ flatBP (DB (enat ?ub) ?A0) @ b0"
-    using d4vx_ins_flat[OF wrap b0RP, of ?ub ?A0] by simp
-  have fX1: "flatBT ?X1 = s0 @ flatBP (DB (enat ?ub) ?X0) @ b0"
-    using d4vx_ins_flat[OF wrap b0RP, of ?ub ?X0] by simp
-  obtain dR where
-      hdA: "ox9_holeD dR (DB (enat ?v1) 0\<^sub>B) (DB (enat ?ub) ?A0) ?body ?A1"
-    and hdX: "ox9_holeD dR (DB (enat ?v1) 0\<^sub>B) (DB (enat ?ub) ?X0) ?body ?X1"
-    using ox9_holeD_of_flat3[OF wrap fA1 fX1 b0RP] by blast
-  \<comment> \<open>the \<open>G\<close>-descent, with aliveness read off the surgery structure\<close>
-  have DESC: "\<And>k. 1 \<le> k \<Longrightarrow> k \<le> dR \<Longrightarrow> lessBT (ox8_rsub ?body k) ?body"
-  proof -
-    fix k :: nat assume kge: "1 \<le> k" and kle: "k \<le> dR"
-    have alive: "\<forall>j<k. ox8_rsub ?body j \<noteq> 0\<^sub>B"
-    proof (intro allI impI)
-      fix j assume jk: "j < k"
-      have jle: "j \<le> dR" using jk kle by simp
-      have "ox9_holeD (dR - j) (DB (enat ?v1) 0\<^sub>B) (DB (enat ?ub) ?A0)
-              (ox8_rsub ?body j) (ox8_rsub ?A1 j)"
-        by (rule ox9_holeD_rsub[OF hdA jle])
-      thus "ox8_rsub ?body j \<noteq> 0\<^sub>B" by (rule ox9_holeD_ne)
-    qed
-    show "lessBT (ox8_rsub ?body k) ?body"
-      by (rule ox8_body_rspine_lessBT[OF NST NPT hp j1gt branch ihOT ltJ kge alive])
-  qed
-  \<comment> \<open>run the engine from the top (\<open>k = 0\<close>)\<close>
-  have e0: "dR - 0 = dR" by simp
-  have k0: "(0::nat) \<le> dR" by simp
-  have sub0: "GBT u (ox8_rsub ?X1 0) \<subseteq> GBT u ?X1" by simp
-  have top: "b1x_setle (GBT u (ox8_rsub ?A1 0)) (insert ?X1 (GBT u ?X1))"
-    by (rule ox9_engine[OF holeH hdA hdX pAlt PXOK ALLH DESC e0 k0 sub0])
-  thus ?thesis by simp
-qed
-
-
-subsection \<open>(8) The census roll-up: SETLE1 is CLOSED modulo the head bound\<close>
-
-text \<open>@{text oi9_census_SETLE_hge}: both termination pillars, with the \<open>SETLE1\<close>
-  slot of @{thm [source] oi8_census_final_ivadmeq} now DISCHARGED from the single
-  head bound \<open>HGE\<close>.  Residual set: \<open>{HGE, FINRC}\<close>.\<close>
-
-theorem oi9_census_SETLE_ok:
-  assumes HGE: "\<And>P. P \<in> ST_PS \<Longrightarrow> P \<in> PT_PS \<Longrightarrow>
-             hasParent P 1 (Lng P - 1) \<Longrightarrow> 1 < Lng P - 1 \<Longrightarrow>
-             transCondIII P \<or> transCondIV P \<Longrightarrow> Trans P \<in> OT_B \<Longrightarrow>
-             s84x_jm3 P < transJm1 P \<Longrightarrow>
-             ox9_ok (enat (entry P 1 (Lng P - 1)))
-                    (enat (entry P 1 (Lng P - 1) - 1))
-                    (bpHeadT (Trans (s84x_N P)))"
-    and FINRC: "\<And>K. K \<in> ST_PS \<Longrightarrow> K \<in> PT_PS \<Longrightarrow> 1 < Lng K - 1 \<Longrightarrow>
-             transCondII K \<Longrightarrow> tvx_finRc K"
-  shows "\<forall>M. M \<in> ST_PS \<longrightarrow> Trans M \<in> OT_B"
-    and "\<forall>M n. M \<in> ST_PS \<longrightarrow> 1 \<le> n \<longrightarrow> 1 < Lng M \<longrightarrow>
-           lessBT (Trans ((M::pairseq)[n])) (Trans M)"
-proof -
-  have SETLE1: "\<And>P s0 b0 u. P \<in> ST_PS \<Longrightarrow> P \<in> PT_PS \<Longrightarrow>
-        hasParent P 1 (Lng P - 1) \<Longrightarrow> 1 < Lng P - 1 \<Longrightarrow>
-        transCondIII P \<or> transCondIV P \<Longrightarrow> Trans P \<in> OT_B \<Longrightarrow>
-        (\<forall>x \<in> set b0. x = RP) \<Longrightarrow>
-        scb_decomp (bpHeadT (Trans (s84x_N P))) s0
-          (flatBT (Dpt (enat (entry P 1 (Lng P - 1))) 0\<^sub>B)) b0 \<Longrightarrow>
-        s84x_jm3 P < transJm1 P \<Longrightarrow>
-        b1x_setle
-          (GBT u (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
-                    (bpHeadT (Trans (Pred (s84x_N P))))))
-          (insert (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
-                     (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))
-                  (GBT u (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
-                            (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))))"
-  proof -
-    fix P :: pairseq and s0 b0 :: "Sym list" and u :: enat
-    assume A1: "P \<in> ST_PS" and A2: "P \<in> PT_PS"
-      and A3: "hasParent P 1 (Lng P - 1)" and A4: "1 < Lng P - 1"
-      and A5: "transCondIII P \<or> transCondIV P" and A6: "Trans P \<in> OT_B"
-      and A7: "\<forall>x \<in> set b0. x = RP"
-      and A8: "scb_decomp (bpHeadT (Trans (s84x_N P))) s0
-                (flatBT (Dpt (enat (entry P 1 (Lng P - 1))) 0\<^sub>B)) b0"
-      and A9: "s84x_jm3 P < transJm1 P"
-    have H: "ox9_ok (enat (entry P 1 (Lng P - 1)))
-                    (enat (entry P 1 (Lng P - 1) - 1))
-                    (bpHeadT (Trans (s84x_N P)))"
-      by (rule HGE[OF A1 A2 A3 A4 A5 A6 A9])
-    show "b1x_setle
-          (GBT u (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
-                    (bpHeadT (Trans (Pred (s84x_N P))))))
-          (insert (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
-                     (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))
-                  (GBT u (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
-                            (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))))"
-      by (rule ox9_SETLE1_ltJ[OF A1 A2 A3 A4 A5 A6 A7 A8 A9 H])
-  qed
-  show "\<forall>M. M \<in> ST_PS \<longrightarrow> Trans M \<in> OT_B"
-    by (rule oi8_census_final_ivadmeq(1)[OF SETLE1 FINRC])
-  show "\<forall>M n. M \<in> ST_PS \<longrightarrow> 1 \<le> n \<longrightarrow> 1 < Lng M \<longrightarrow>
-         lessBT (Trans ((M::pairseq)[n])) (Trans M)"
-    by (rule oi8_census_final_ivadmeq(2)[OF SETLE1 FINRC])
-qed
-
-(* ===== end r69 ox9 block (SETLE1 reduced to the head bound ox9_hge) ===== *)
-
-
-text \<open>\<^bold>\<open>Round-69 capstone.\<close>  \<open>FINRC\<close> is now a theorem
-  (@{thm [source] ot9_FINRC}, unconditional --- correction A9 root surgery), so the census
-  of @{thm [source] oi9_census_SETLE_ok} loses its \<open>FINRC\<close> slot outright.  BOTH
-  termination pillars therefore hold modulo the SINGLE residual \<open>OKH\<close> (\<open>ox9_ok\<close>
-  on the census body) --- plus, of course, the external [Buc1] 2.2.\<close>
-
-theorem oi9_census_OKH:
-  assumes HGE: "\<And>P. P \<in> ST_PS \<Longrightarrow> P \<in> PT_PS \<Longrightarrow>
-             hasParent P 1 (Lng P - 1) \<Longrightarrow> 1 < Lng P - 1 \<Longrightarrow>
-             transCondIII P \<or> transCondIV P \<Longrightarrow> Trans P \<in> OT_B \<Longrightarrow>
-             s84x_jm3 P < transJm1 P \<Longrightarrow>
-             ox9_ok (enat (entry P 1 (Lng P - 1)))
-                    (enat (entry P 1 (Lng P - 1) - 1))
-                    (bpHeadT (Trans (s84x_N P)))"
-  shows "\<forall>M. M \<in> ST_PS \<longrightarrow> Trans M \<in> OT_B"
-    and "\<forall>M n. M \<in> ST_PS \<longrightarrow> 1 \<le> n \<longrightarrow> 1 < Lng M \<longrightarrow>
-           lessBT (Trans ((M::pairseq)[n])) (Trans M)"
-proof -
-  show "\<forall>M. M \<in> ST_PS \<longrightarrow> Trans M \<in> OT_B"
-    by (rule oi9_census_SETLE_ok(1)[OF HGE ot9_FINRC])
-  show "\<forall>M n. M \<in> ST_PS \<longrightarrow> 1 \<le> n \<longrightarrow> 1 < Lng M \<longrightarrow>
-           lessBT (Trans ((M::pairseq)[n])) (Trans M)"
-    by (rule oi9_census_SETLE_ok(2)[OF HGE ot9_FINRC])
-qed
-
+(* ===== end r69 ox9 block (census wrappers withdrawn in r72; engine kept) ===== *)
 
 (* ===================================================================== *)
 (* ===== r70 (OKH front).  STEP-0 verdict: the r69 census residual  ==== *)
@@ -10355,7 +10987,7 @@ qed
 
 subsection \<open>(3) The census \<open>SETLE1\<close> slot from \<open>KK\<close>\<close>
 
-text \<open>Same statement as @{thm [source] ox9_SETLE1_ltJ}, with the refuted
+text \<open>Same statement as the (withdrawn) \<open>ox9_SETLE1_ltJ\<close>, with the refuted
   \<open>ALLH\<close> (= \<open>OKH\<close>) replaced by the (empirically true) spine bound \<open>KK\<close>.  The
   aliveness side condition of \<open>KK\<close> is the same one @{thm [source] ox8_body_rspine_lessBT}
   carries, and it is discharged inside from the hole structure.\<close>
@@ -10373,19 +11005,19 @@ lemma ox10_SETLE1_ltJ:
     and KK: "\<And>k. 1 \<le> k \<Longrightarrow> (\<forall>j<k. ox8_rsub (bpHeadT (Trans (s84x_N N))) j \<noteq> 0\<^sub>B)
               \<Longrightarrow> lessBT (ox8_rsub (bpHeadT (Trans (s84x_N N))) k)
                     (d4vx_ins s0 (entry N 1 (Lng N - 1) - 1) b0
-                       (Dpt (enat (entry N 1 (Lng N - 1) - 1)) 0\<^sub>B))"
+                       0\<^sub>B)"
   shows "b1x_setle
            (GBT u (d4vx_ins s0 (entry N 1 (Lng N - 1) - 1) b0
                      (bpHeadT (Trans (Pred (s84x_N N))))))
            (insert (d4vx_ins s0 (entry N 1 (Lng N - 1) - 1) b0
-                      (Dpt (enat (entry N 1 (Lng N - 1) - 1)) 0\<^sub>B))
+                      0\<^sub>B)
                    (GBT u (d4vx_ins s0 (entry N 1 (Lng N - 1) - 1) b0
-                             (Dpt (enat (entry N 1 (Lng N - 1) - 1)) 0\<^sub>B))))"
+                             0\<^sub>B)))"
 proof -
   let ?v1 = "entry N 1 (Lng N - 1)"
   let ?ub = "entry N 1 (Lng N - 1) - 1"
   let ?A0 = "bpHeadT (Trans (Pred (s84x_N N)))"
-  let ?X0 = "Dpt (enat ?ub) 0\<^sub>B"
+  let ?X0 = "(0\<^sub>B :: BT)"
   let ?body = "bpHeadT (Trans (s84x_N N))"
   let ?X1 = "d4vx_ins s0 ?ub b0 ?X0"
   let ?A1 = "d4vx_ins s0 ?ub b0 ?A0"
@@ -10399,7 +11031,7 @@ proof -
   obtain s0' b0' s1 b1 where
       b0RP': "\<forall>x \<in> set b0'. x = RP"
     and inner': "scb_decomp ?body s0' (flatBT (Dpt (enat ?v1) 0\<^sub>B)) b0'"
-    and base1': "lessBT ?A0 (d4vx_ins s0' ?ub b0' ?X0)"
+    and base1': "lessBT ?A0 (d4vx_ins s0' ?ub b0' 0\<^sub>B)"
     by (rule oi5_IIIIV_pkg[OF NST NPT hp j1gt branch ltJ])
   have bodyne: "?body \<noteq> Trm []"
   proof
@@ -10453,7 +11085,7 @@ qed
 subsection \<open>(4) The census roll-up: both pillars from \<open>KK\<close> alone\<close>
 
 text \<open>\<^bold>\<open>Round-70 capstone.\<close>  The r69 residual \<open>OKH\<close> is FALSE
-  (@{thm [source] ox10_cex_not_ok}), so @{thm [source] oi9_census_OKH} is vacuous.
+  (@{thm [source] ox10_cex_not_ok}), so the (r72-withdrawn) \<open>oi9_census_OKH\<close> was vacuous.
   Both termination pillars are re-derived here from the \<^emph>\<open>spine bound\<close> \<open>KK\<close>,
   which is TRUE on the whole deep census corpus (1212/1212 peel levels, all 8
   \<open>ox9_ok\<close>-refuting hosts included).  \<open>KK\<close> mentions neither \<open>A\<^sub>0\<close> nor any
@@ -10473,7 +11105,7 @@ theorem oi10_census_KK:
              (\<forall>j<k. ox8_rsub (bpHeadT (Trans (s84x_N P))) j \<noteq> 0\<^sub>B) \<Longrightarrow>
              lessBT (ox8_rsub (bpHeadT (Trans (s84x_N P))) k)
                (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
-                  (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))"
+                  0\<^sub>B)"
   shows "\<forall>M. M \<in> ST_PS \<longrightarrow> Trans M \<in> OT_B"
     and "\<forall>M n. M \<in> ST_PS \<longrightarrow> 1 \<le> n \<longrightarrow> 1 < Lng M \<longrightarrow>
            lessBT (Trans ((M::pairseq)[n])) (Trans M)"
@@ -10489,9 +11121,9 @@ proof -
           (GBT u (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
                     (bpHeadT (Trans (Pred (s84x_N P))))))
           (insert (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
-                     (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))
+                     0\<^sub>B)
                   (GBT u (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
-                            (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))))"
+                            0\<^sub>B)))"
   proof -
     fix P :: pairseq and s0 b0 :: "Sym list" and u :: enat
     assume A1: "P \<in> ST_PS" and A2: "P \<in> PT_PS"
@@ -10505,15 +11137,15 @@ proof -
                (\<forall>j<k. ox8_rsub (bpHeadT (Trans (s84x_N P))) j \<noteq> 0\<^sub>B) \<Longrightarrow>
                lessBT (ox8_rsub (bpHeadT (Trans (s84x_N P))) k)
                  (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
-                    (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))"
+                    0\<^sub>B)"
       by (rule KK[OF A1 A2 A3 A4 A5 A7 A8 A9])
     show "b1x_setle
           (GBT u (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
                     (bpHeadT (Trans (Pred (s84x_N P))))))
           (insert (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
-                     (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))
+                     0\<^sub>B)
                   (GBT u (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
-                            (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))))"
+                            0\<^sub>B)))"
       by (rule ox10_SETLE1_ltJ[OF A1 A2 A3 A4 A5 A7 A8 A9 H])
   qed
   show "\<forall>M. M \<in> ST_PS \<longrightarrow> Trans M \<in> OT_B"
@@ -11137,56 +11769,11 @@ proof -
   thus ?thesis using MST by blast
 qed
 
-text \<open>\<^bold>\<open>The round-70 capstone.\<close>  Feeding the r69 census
-  (@{thm [source] oi9_census_OKH}, both pillars modulo the single residual \<open>OKH\<close>)
-  into the engine: PSS termination modulo \<open>{OKH, y3_cofimg}\<close>, with the external
-  citation [Buc1] 2.2 (\<open>buc1_2_2_OT_B_wf\<close> / \<open>wf RPrel\<close>) COMPLETELY OUT of the
-  dependency graph.\<close>
-
-theorem y3_PSS_acc_of_OKH_cofimg:
-  assumes HGE: "\<And>P. P \<in> ST_PS \<Longrightarrow> P \<in> PT_PS \<Longrightarrow>
-             hasParent P 1 (Lng P - 1) \<Longrightarrow> 1 < Lng P - 1 \<Longrightarrow>
-             transCondIII P \<or> transCondIV P \<Longrightarrow> Trans P \<in> OT_B \<Longrightarrow>
-             s84x_jm3 P < transJm1 P \<Longrightarrow>
-             ox9_ok (enat (entry P 1 (Lng P - 1)))
-                    (enat (entry P 1 (Lng P - 1) - 1))
-                    (bpHeadT (Trans (s84x_N P)))"
-    and COF: "y3_cofimg"
-    and MST: "M \<in> ST_PS"
-  shows "M \<in> Wellfounded.acc y3_PSSrel"
-proof -
-  have TOT: "\<And>N. N \<in> ST_PS \<Longrightarrow> Trans N \<in> OT_B"
-    using oi9_census_OKH(1)[OF HGE] by blast
-  have DESC: "\<And>N n. N \<in> ST_PS \<Longrightarrow> 1 \<le> n \<Longrightarrow> 1 < Lng N \<Longrightarrow>
-                lessBT (Trans ((N::pairseq)[n])) (Trans N)"
-    using oi9_census_OKH(2)[OF HGE] by blast
-  show ?thesis by (rule y3_PSS_acc_of_cofimg[OF DESC TOT COF MST])
-qed
-
-text \<open>\<^bold>\<open>Consistency check\<close>: the old route still works — \<open>bwl_cof\<close> (r68's residual)
-  implies \<open>y3_cofimg\<close>, so nothing is lost by moving to the new engine.\<close>
-
-corollary y3_PSS_acc_of_OKH_bwl_cof:
-  assumes HGE: "\<And>P. P \<in> ST_PS \<Longrightarrow> P \<in> PT_PS \<Longrightarrow>
-             hasParent P 1 (Lng P - 1) \<Longrightarrow> 1 < Lng P - 1 \<Longrightarrow>
-             transCondIII P \<or> transCondIV P \<Longrightarrow> Trans P \<in> OT_B \<Longrightarrow>
-             s84x_jm3 P < transJm1 P \<Longrightarrow>
-             ox9_ok (enat (entry P 1 (Lng P - 1)))
-                    (enat (entry P 1 (Lng P - 1) - 1))
-                    (bpHeadT (Trans (s84x_N P)))"
-    and COF: "bwl_cof"
-    and MST: "M \<in> ST_PS"
-  shows "M \<in> Wellfounded.acc y3_PSSrel"
-proof -
-  have TOT: "\<And>N. N \<in> ST_PS \<Longrightarrow> Trans N \<in> OT_B"
-    using oi9_census_OKH(1)[OF HGE] by blast
-  have CF: "y3_cofimg" by (rule y3_cofimg_of_bwl_cof[OF COF TOT])
-  have DESC: "\<And>N n. N \<in> ST_PS \<Longrightarrow> 1 \<le> n \<Longrightarrow> 1 < Lng N \<Longrightarrow>
-                lessBT (Trans ((N::pairseq)[n])) (Trans N)"
-    using oi9_census_OKH(2)[OF HGE] by blast
-  show ?thesis by (rule y3_PSS_acc_of_cofimg[OF DESC TOT CF MST])
-qed
-
+text \<open>\<^bold>\<open>r72\<close>: the two \<open>OKH\<close> capstones (\<open>y3_PSS_acc_of_OKH_cofimg\<close> /
+  \<open>y3_PSS_acc_of_OKH_bwl_cof\<close>) are WITHDRAWN together with \<open>oi9_census_OKH\<close> --- their
+  \<open>OKH\<close> hypothesis was refuted in r70 (@{thm [source] ox10_cex_not_ok}), so they were
+  vacuous; the live capstones are \<open>y4_PSS_acc_of_KK\<close> / \<open>y4_PSS_wf_of_KK\<close> below,
+  driven by the \<open>KK\<close> spine bound.\<close>
 (* ===== end r70 y3 block ===== *)
 
 text \<open>\<^bold>\<open>MECHANICAL PROOF-TERM AUDIT (r70-y3, Isabelle2025-2).\<close>  The dependency
@@ -11196,8 +11783,8 @@ text \<open>\<^bold>\<open>MECHANICAL PROOF-TERM AUDIT (r70-y3, Isabelle2025-2).
   \<^item> @{thm [source] y3_PSS_acc_of_cofimg} (the engine): \<^bold>\<open>0 sorry-dependencies\<close>.
   \<^item> @{thm [source] y3_W_acc}, @{thm [source] y3_TBv_dfree_W},
     @{thm [source] y3_cof0_imp_bwl_cof}, @{thm [source] bwl_2_8_principal}: 0 each.
-  \<^item> @{thm [source] y3_PSS_acc_of_OKH_cofimg} (capstone) and
-    @{thm [source] oi9_census_OKH}: \<^bold>\<open>exactly ONE\<close> — \<open>pss_paper.buc1_3_2a_fseq_lt\<close>.
+  \<^item> the (r72-withdrawn) \<open>y3_PSS_acc_of_OKH_cofimg\<close> capstone and \<open>oi9_census_OKH\<close>:
+    \<^bold>\<open>exactly ONE\<close> — \<open>pss_paper.buc1_3_2a_fseq_lt\<close>.
 
   So \<open>buc1_2_2_OT_B_wf\<close> ([Buc1] Lemma 2.2, \<open>wf (<)\<close>) is \<^bold>\<open>OUT of the graph\<close>: the
   W-induction engine replaces it.  The single remaining \<open>sorry\<close> in the chain,
@@ -11246,7 +11833,7 @@ theorem y3_PSS_acc_of_KK_cofimg:
              (\<forall>j<k. ox8_rsub (bpHeadT (Trans (s84x_N P))) j \<noteq> 0\<^sub>B) \<Longrightarrow>
              lessBT (ox8_rsub (bpHeadT (Trans (s84x_N P))) k)
                (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
-                  (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))"
+                  0\<^sub>B)"
     and COF: "y3_cofimg"
     and MST: "M \<in> ST_PS"
   shows "M \<in> Wellfounded.acc y3_PSSrel"
@@ -11612,19 +12199,18 @@ lemma ox11_KK_of_BG:
                  = Trm (ps @ [DB (enat (entry N 1 (Lng N - 1))) 0\<^sub>B]) \<Longrightarrow>
                t = Trm (ps @ x # rest) \<Longrightarrow>
                lessBP x (DB (enat (entry N 1 (Lng N - 1))) 0\<^sub>B) \<Longrightarrow>
-               lessBP x (DB (enat (entry N 1 (Lng N - 1) - 1))
-                            (Dpt (enat (entry N 1 (Lng N - 1) - 1)) 0\<^sub>B))"
+               lessBP x (DB (enat (entry N 1 (Lng N - 1) - 1)) 0\<^sub>B)"
     and kge: "1 \<le> k"
     and alive: "\<forall>j<k. ox8_rsub (bpHeadT (Trans (s84x_N N))) j \<noteq> 0\<^sub>B"
   shows "lessBT (ox8_rsub (bpHeadT (Trans (s84x_N N))) k)
            (d4vx_ins s0 (entry N 1 (Lng N - 1) - 1) b0
-              (Dpt (enat (entry N 1 (Lng N - 1) - 1)) 0\<^sub>B))"
+              0\<^sub>B)"
 proof -
   let ?v1 = "entry N 1 (Lng N - 1)"
   let ?ub = "entry N 1 (Lng N - 1) - 1"
   let ?body = "bpHeadT (Trans (s84x_N N))"
   let ?A0 = "bpHeadT (Trans (Pred (s84x_N N)))"
-  let ?X0 = "Dpt (enat ?ub) 0\<^sub>B"
+  let ?X0 = "(0\<^sub>B :: BT)"
   let ?X1 = "d4vx_ins s0 ?ub b0 ?X0"
   let ?A1 = "d4vx_ins s0 ?ub b0 ?A0"
   let ?p = "DB (enat ?v1) 0\<^sub>B"
@@ -11796,8 +12382,7 @@ theorem oi11_census_BG:
                = Trm (ps @ [DB (enat (entry P 1 (Lng P - 1))) 0\<^sub>B]) \<Longrightarrow>
              t = Trm (ps @ x # rest) \<Longrightarrow>
              lessBP x (DB (enat (entry P 1 (Lng P - 1))) 0\<^sub>B) \<Longrightarrow>
-             lessBP x (DB (enat (entry P 1 (Lng P - 1) - 1))
-                          (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))"
+             lessBP x (DB (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B)"
   shows "\<forall>M. M \<in> ST_PS \<longrightarrow> Trans M \<in> OT_B"
     and "\<forall>M n. M \<in> ST_PS \<longrightarrow> 1 \<le> n \<longrightarrow> 1 < Lng M \<longrightarrow>
            lessBT (Trans ((M::pairseq)[n])) (Trans M)"
@@ -11813,9 +12398,9 @@ proof -
           (GBT u (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
                     (bpHeadT (Trans (Pred (s84x_N P))))))
           (insert (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
-                     (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))
+                     0\<^sub>B)
                   (GBT u (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
-                            (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))))"
+                            0\<^sub>B)))"
   proof -
     fix P :: pairseq and s0 b0 :: "Sym list" and u :: enat
     assume A1: "P \<in> ST_PS" and A2: "P \<in> PT_PS"
@@ -11833,29 +12418,28 @@ proof -
                    = Trm (ps @ [DB (enat (entry P 1 (Lng P - 1))) 0\<^sub>B]) \<Longrightarrow>
                  t = Trm (ps @ x # rest) \<Longrightarrow>
                  lessBP x (DB (enat (entry P 1 (Lng P - 1))) 0\<^sub>B) \<Longrightarrow>
-                 lessBP x (DB (enat (entry P 1 (Lng P - 1) - 1))
-                              (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))"
+                 lessBP x (DB (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B)"
       by (rule BG[OF A1 A2 A3 A4 A5 A6 A7 A8 A9])
     have H: "\<And>k. 1 \<le> k \<Longrightarrow>
                (\<forall>j<k. ox8_rsub (bpHeadT (Trans (s84x_N P))) j \<noteq> 0\<^sub>B) \<Longrightarrow>
                lessBT (ox8_rsub (bpHeadT (Trans (s84x_N P))) k)
                  (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
-                    (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))"
+                    0\<^sub>B)"
     proof -
       fix k :: nat assume kge: "1 \<le> k"
         and alv: "\<forall>j<k. ox8_rsub (bpHeadT (Trans (s84x_N P))) j \<noteq> 0\<^sub>B"
       show "lessBT (ox8_rsub (bpHeadT (Trans (s84x_N P))) k)
               (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
-                 (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))"
+                 0\<^sub>B)"
         by (rule ox11_KK_of_BG[OF A1 A2 A3 A4 A5 A6 A7 A8 A9 BG' kge alv])
     qed
     show "b1x_setle
           (GBT u (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
                     (bpHeadT (Trans (Pred (s84x_N P))))))
           (insert (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
-                     (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))
+                     0\<^sub>B)
                   (GBT u (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
-                            (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))))"
+                            0\<^sub>B)))"
       by (rule ox10_SETLE1_ltJ[OF A1 A2 A3 A4 A5 A7 A8 A9 H])
   qed
   show "\<forall>M. M \<in> ST_PS \<longrightarrow> Trans M \<in> OT_B"
@@ -11902,6 +12486,26 @@ text \<open>\<open>x\<^sub>0 = D\<^sub>u 0\<close>, \<open>x\<^bsub>i+1\<^esub> 
   immediate from the two PROVEN facts @{thm [source] b1x_lowerbound} (\<open>z \<le> c[z]\<close> on a
   \<open>T\<^sub>u\<close> domain) and @{thm [source] b1x_mono} (\<open>c[\<cdot>]\<close> strictly monotone there).\<close>
 
+text \<open>\<^bold>\<open>r72\<close>: with the CORRECTED rule every tower member is a \<open>D\<^sub>u\<close>-principal
+  (\<open>x\<^sub>0 = D\<^sub>u 0\<close>, \<open>x\<^bsub>j+1\<^esub> = D\<^sub>u (c[x\<^sub>j])\<close>), hence lies in \<open>T\<^sub>u = dom c\<close> --- which is what
+  makes \<open>c[x\<^sub>j]\<close> well-formed and the monotonicity toolkit applicable.\<close>
+
+lemma y4_xseq_Dpt: "\<exists>t. xseq c (enat u) n = Trm [DB (enat u) t]"
+proof (cases n)
+  case 0
+  thus ?thesis using b1x_xseq_0[of c "enat u"] by auto
+next
+  case (Suc j)
+  thus ?thesis using b1x_xseq_Suc[of c "enat u" j] by auto
+qed
+
+lemma y4_xseq_TBv: "xseq c (enat u) n \<in> TBv (enat u)"
+proof -
+  obtain t where "xseq c (enat u) n = Trm [DB (enat u) t]"
+    using y4_xseq_Dpt by blast
+  thus ?thesis using b1x_Dpt_TBv[of u t] by simp
+qed
+
 lemma y4_xseq_lt:
   assumes ot: "isOT_BT c" and dc: "domB c = TBv (enat u)"
   shows "lessBT (xseq c (enat u) n) (xseq c (enat u) (Suc n))"
@@ -11909,26 +12513,26 @@ proof (induction n)
   case 0
   have x0: "xseq c (enat u) 0 = Trm [DB (enat u) (Trm [])]" by (rule b1x_xseq_0)
   have x1: "xseq c (enat u) (Suc 0)
-              = operB c (Trm [DB (enat u) (xseq c (enat u) 0)])" by (rule b1x_xseq_Suc)
-  have zin: "Trm [DB (enat u) (xseq c (enat u) 0)] \<in> TBv (enat u)" by (rule b1x_Dpt_TBv)
-  have le: "leBT (Trm [DB (enat u) (xseq c (enat u) 0)])
-                 (operB c (Trm [DB (enat u) (xseq c (enat u) 0)]))"
+              = Trm [DB (enat u) (operB c (xseq c (enat u) 0))]" by (rule b1x_xseq_Suc)
+  have zin: "xseq c (enat u) 0 \<in> TBv (enat u)" by (rule y4_xseq_TBv)
+  have le: "leBT (xseq c (enat u) 0) (operB c (xseq c (enat u) 0))"
     by (rule b1x_lowerbound[OF ot dc zin])
-  have lt0: "lessBT (xseq c (enat u) 0) (Trm [DB (enat u) (xseq c (enat u) 0)])"
-    by (subst (1) x0) (simp add: x0)
-  show ?case using b1x_less_le_trans[OF lt0 le] x1 by simp
+  have z0ne: "lessBT (Trm []) (xseq c (enat u) 0)" using x0 by simp
+  have ne: "lessBT (Trm []) (operB c (xseq c (enat u) 0))"
+    using b1x_less_le_trans[OF z0ne le] .
+  show ?case using x0 x1 ne by simp
 next
   case (Suc n)
-  have e1: "xseq c (enat u) (Suc n) = operB c (Trm [DB (enat u) (xseq c (enat u) n)])"
-    by (rule b1x_xseq_Suc)
+  have e1: "xseq c (enat u) (Suc n)
+              = Trm [DB (enat u) (operB c (xseq c (enat u) n))]" by (rule b1x_xseq_Suc)
   have e2: "xseq c (enat u) (Suc (Suc n))
-              = operB c (Trm [DB (enat u) (xseq c (enat u) (Suc n))])" by (rule b1x_xseq_Suc)
-  have zlt: "lessBT (Trm [DB (enat u) (xseq c (enat u) n)])
-                    (Trm [DB (enat u) (xseq c (enat u) (Suc n))])"
-    using Suc.IH by simp
-  have z1: "Trm [DB (enat u) (xseq c (enat u) n)] \<in> TBv (enat u)" by (rule b1x_Dpt_TBv)
-  have z2: "Trm [DB (enat u) (xseq c (enat u) (Suc n))] \<in> TBv (enat u)" by (rule b1x_Dpt_TBv)
-  show ?case using b1x_mono[OF dc z1 z2 zlt] e1 e2 by simp
+              = Trm [DB (enat u) (operB c (xseq c (enat u) (Suc n)))]"
+    by (rule b1x_xseq_Suc)
+  have z1: "xseq c (enat u) n \<in> TBv (enat u)" by (rule y4_xseq_TBv)
+  have z2: "xseq c (enat u) (Suc n) \<in> TBv (enat u)" by (rule y4_xseq_TBv)
+  have blt: "lessBT (operB c (xseq c (enat u) n)) (operB c (xseq c (enat u) (Suc n)))"
+    by (rule b1x_mono[OF dc z1 z2 Suc.IH])
+  show ?case using e1 e2 blt by simp
 qed
 
 lemma y4_xseq_mono:
@@ -12057,8 +12661,8 @@ text \<open>\<^bold>\<open>The inner induction.\<close>  Along the \<open>T\<^su
 lemma y4_inner:
   assumes ot0: "isOT_BT c0" and dc0: "domB c0 = TBv (enat u)"
   shows "isOT_BT c' \<Longrightarrow> domB c' = TBv (enat u) \<Longrightarrow> isOT_BT y \<Longrightarrow> lessBT y c' \<Longrightarrow>
-         (\<forall>x \<in> GBT (enat u) y. \<exists>n. leBT x (xseq c0 (enat u) n)) \<Longrightarrow>
-         (\<exists>n. leBT y (operB c' (Trm [DB (enat u) (xseq c0 (enat u) n)])))"
+         (\<forall>x \<in> GBT (enat u) y. \<exists>n. leBT x (operB c0 (xseq c0 (enat u) n))) \<Longrightarrow>
+         (\<exists>n. leBT y (operB c' (xseq c0 (enat u) n)))"
 proof (induction c' arbitrary: y rule: measure_induct_rule[where f=size])
   case (less c' y)
   note GB = less.prems(5)
@@ -12097,7 +12701,7 @@ proof (induction c' arbitrary: y rule: measure_induct_rule[where f=size])
           show ?thesis
           proof (cases ys)
             case Nil
-            have "leBT y (Trm [DB (enat u) (xseq c0 (enat u) 0)])" using Trm Nil by simp
+            have "leBT y (xseq c0 (enat u) 0)" using Trm Nil by simp
             thus ?thesis using oper by auto
           next
             case (Cons r rs)
@@ -12110,21 +12714,36 @@ proof (induction c' arbitrary: y rule: measure_induct_rule[where f=size])
             proof (cases "w1 = enat u")
               case w1eq: True
               have y1G: "y1 \<in> GBT (enat u) y" using Trm Cons req w1eq by auto
-              obtain m where m: "leBT y1 (xseq c0 (enat u) m)" using GB y1G by blast
-              have "lessBT (xseq c0 (enat u) m) (xseq c0 (enat u) (Suc m))"
+              \<comment> \<open>r72: the escapes are bounded by the CORRECTED cofinal chain \<open>c\<^sub>0[x\<^sub>m]\<close>,
+                 and \<open>x\<^bsub>m+2\<^esub> = D\<^sub>u (c\<^sub>0[x\<^bsub>m+1\<^esub>])\<close>, so one step of strict increase suffices\<close>
+              obtain m where m: "leBT y1 (operB c0 (xseq c0 (enat u) m))"
+                using GB y1G by blast
+              have xlt: "lessBT (xseq c0 (enat u) m) (xseq c0 (enat u) (Suc m))"
                 by (rule y4_xseq_lt[OF ot0 dc0])
-              hence lt: "lessBT y1 (xseq c0 (enat u) (Suc m))" using m b1x_le_less_trans by blast
-              have "lessBP (DB w1 y1) (DB (enat u) (xseq c0 (enat u) (Suc m)))"
+              have z1: "xseq c0 (enat u) m \<in> TBv (enat u)" by (rule y4_xseq_TBv)
+              have z2: "xseq c0 (enat u) (Suc m) \<in> TBv (enat u)" by (rule y4_xseq_TBv)
+              have clt: "lessBT (operB c0 (xseq c0 (enat u) m))
+                                (operB c0 (xseq c0 (enat u) (Suc m)))"
+                by (rule b1x_mono[OF dc0 z1 z2 xlt])
+              have lt: "lessBT y1 (operB c0 (xseq c0 (enat u) (Suc m)))"
+                using m clt b1x_le_less_trans by blast
+              have xs: "xseq c0 (enat u) (Suc (Suc m))
+                          = Trm [DB (enat u) (operB c0 (xseq c0 (enat u) (Suc m)))]"
+                by (rule b1x_xseq_Suc)
+              have "lessBP (DB w1 y1)
+                      (DB (enat u) (operB c0 (xseq c0 (enat u) (Suc m))))"
                 using lt w1eq by simp
-              hence "lessBT y (Trm [DB (enat u) (xseq c0 (enat u) (Suc m))])"
-                using Trm Cons req by simp
+              hence "lessBT y (xseq c0 (enat u) (Suc (Suc m)))"
+                using Trm Cons req xs by simp
               thus ?thesis using oper by auto
             next
               case False
               hence w1s: "w1 < enat u" using w1le by simp
-              have "lessBP (DB w1 y1) (DB (enat u) (xseq c0 (enat u) 0))" using w1s by simp
-              hence "lessBT y (Trm [DB (enat u) (xseq c0 (enat u) 0)])"
-                using Trm Cons req by simp
+              have x0: "xseq c0 (enat u) 0 = Trm [DB (enat u) (Trm [])]"
+                by (rule b1x_xseq_0)
+              have "lessBP (DB w1 y1) (DB (enat u) (Trm []))" using w1s by simp
+              hence "lessBT y (xseq c0 (enat u) 0)"
+                using Trm Cons req x0 by simp
               thus ?thesis using oper by auto
             qed
           qed
@@ -12150,7 +12769,7 @@ proof (induction c' arbitrary: y rule: measure_induct_rule[where f=size])
           show ?thesis
           proof (cases ys)
             case Nil
-            have "leBT y (Trm [DB w (operB bb (Trm [DB (enat u) (xseq c0 (enat u) 0)]))])"
+            have "leBT y (Trm [DB w (operB bb (xseq c0 (enat u) 0))])"
               using Trm Nil by simp
             thus ?thesis using oper by auto
           next
@@ -12166,33 +12785,31 @@ proof (induction c' arbitrary: y rule: measure_induct_rule[where f=size])
               have uw: "enat u \<le> w" using wgt by simp
               have y1G: "y1 \<in> GBT (enat u) y" using Trm Cons req w1eq uw by auto
               have sub: "GBT (enat u) y1 \<subseteq> GBT (enat u) y" by (rule b1x_GBT_trans[OF y1G])
-              have GB1: "\<forall>x \<in> GBT (enat u) y1. \<exists>n. leBT x (xseq c0 (enat u) n)"
+              have GB1: "\<forall>x \<in> GBT (enat u) y1. \<exists>n. leBT x (operB c0 (xseq c0 (enat u) n))"
                 using GB sub by blast
-              obtain n where n: "leBT y1 (operB bb (Trm [DB (enat u) (xseq c0 (enat u) n)]))"
+              obtain n where n: "leBT y1 (operB bb (xseq c0 (enat u) n))"
                 using less.IH[OF szbb otbb dbb oty1 y1lt GB1] by blast
-              have zlt: "lessBT (Trm [DB (enat u) (xseq c0 (enat u) n)])
-                                (Trm [DB (enat u) (xseq c0 (enat u) (Suc n))])"
+              have zlt: "lessBT (xseq c0 (enat u) n)
+                                (xseq c0 (enat u) (Suc n))"
                 using y4_xseq_lt[OF ot0 dc0, of n] by simp
-              have z1: "Trm [DB (enat u) (xseq c0 (enat u) n)] \<in> TBv (enat u)"
-                by (rule b1x_Dpt_TBv)
-              have z2: "Trm [DB (enat u) (xseq c0 (enat u) (Suc n))] \<in> TBv (enat u)"
-                by (rule b1x_Dpt_TBv)
-              have blt: "lessBT (operB bb (Trm [DB (enat u) (xseq c0 (enat u) n)]))
-                                (operB bb (Trm [DB (enat u) (xseq c0 (enat u) (Suc n))]))"
+              have z1: "xseq c0 (enat u) n \<in> TBv (enat u)" by (rule y4_xseq_TBv)
+              have z2: "xseq c0 (enat u) (Suc n) \<in> TBv (enat u)" by (rule y4_xseq_TBv)
+              have blt: "lessBT (operB bb (xseq c0 (enat u) n))
+                                (operB bb (xseq c0 (enat u) (Suc n)))"
                 by (rule b1x_mono[OF dbb z1 z2 zlt])
-              have y1lt2: "lessBT y1 (operB bb (Trm [DB (enat u) (xseq c0 (enat u) (Suc n))]))"
+              have y1lt2: "lessBT y1 (operB bb (xseq c0 (enat u) (Suc n)))"
                 using n blt b1x_le_less_trans by blast
-              have "lessBP (DB w1 y1) (DB w (operB bb (Trm [DB (enat u) (xseq c0 (enat u) (Suc n))])))"
+              have "lessBP (DB w1 y1) (DB w (operB bb (xseq c0 (enat u) (Suc n))))"
                 using y1lt2 w1eq by simp
-              hence "lessBT y (Trm [DB w (operB bb (Trm [DB (enat u) (xseq c0 (enat u) (Suc n))]))])"
+              hence "lessBT y (Trm [DB w (operB bb (xseq c0 (enat u) (Suc n)))])"
                 using Trm Cons req by simp
               thus ?thesis using oper by auto
             next
               case False
               hence w1s: "w1 < w" using hlt by auto
-              have "lessBP (DB w1 y1) (DB w (operB bb (Trm [DB (enat u) (xseq c0 (enat u) 0)])))"
+              have "lessBP (DB w1 y1) (DB w (operB bb (xseq c0 (enat u) 0)))"
                 using w1s by simp
-              hence "lessBT y (Trm [DB w (operB bb (Trm [DB (enat u) (xseq c0 (enat u) 0)]))])"
+              hence "lessBT y (Trm [DB w (operB bb (xseq c0 (enat u) 0))])"
                 using Trm Cons req by simp
               thus ?thesis using oper by auto
             qed
@@ -12224,9 +12841,9 @@ proof (induction c' arbitrary: y rule: measure_induct_rule[where f=size])
         case True
         have "leBT (Trm (butlast cs))
                    (Trm (butlast cs) +\<^sub>B operB (Trm [last cs])
-                          (Trm [DB (enat u) (xseq c0 (enat u) 0)]))"
+                          (xseq c0 (enat u) 0))"
           by (rule y4_leBT_addBT_self)
-        hence "leBT y (operB c' (Trm [DB (enat u) (xseq c0 (enat u) 0)]))"
+        hence "leBT y (operB c' (xseq c0 (enat u) 0))"
           using True yeq operc leBT_trans by metis
         thus ?thesis by blast
       next
@@ -12240,17 +12857,17 @@ proof (induction c' arbitrary: y rule: measure_induct_rule[where f=size])
           using less.prems(3) yeq rseq y4_OT_suffix[of "butlast cs" rs] by simp
         have Gsub: "GBT (enat u) (Trm rs) \<subseteq> GBT (enat u) y"
           using yeq rseq y4_GBT_suffix[of "enat u" rs "butlast cs"] by simp
-        have GB': "\<forall>x \<in> GBT (enat u) (Trm rs). \<exists>n. leBT x (xseq c0 (enat u) n)"
+        have GB': "\<forall>x \<in> GBT (enat u) (Trm rs). \<exists>n. leBT x (operB c0 (xseq c0 (enat u) n))"
           using GB Gsub by blast
         obtain n where n: "leBT (Trm rs)
-              (operB (Trm [last cs]) (Trm [DB (enat u) (xseq c0 (enat u) n)]))"
+              (operB (Trm [last cs]) (xseq c0 (enat u) n))"
           using less.IH[OF szlast otlast dlast oty' y'lt GB'] by blast
         have "leBT (Trm (butlast cs) +\<^sub>B Trm rs)
                    (Trm (butlast cs) +\<^sub>B
-                     operB (Trm [last cs]) (Trm [DB (enat u) (xseq c0 (enat u) n)]))"
+                     operB (Trm [last cs]) (xseq c0 (enat u) n))"
           by (rule y4_leBT_addBT_mono_right[OF n])
         moreover have "Trm (butlast cs) +\<^sub>B Trm rs = y" using yeq rseq by simp
-        ultimately have "leBT y (operB c' (Trm [DB (enat u) (xseq c0 (enat u) n)]))"
+        ultimately have "leBT y (operB c' (xseq c0 (enat u) n))"
           using operc by simp
         thus ?thesis by blast
       qed
@@ -12266,10 +12883,10 @@ text \<open>\<^bold>\<open>The outer induction\<close> = the ([].4)(ii) residual
 lemma y4_xseq_cof:
   assumes ot: "isOT_BT c" and dc: "domB c = TBv (enat u)"
   shows "isOT_BT e \<Longrightarrow> lessBT e c \<Longrightarrow> (\<forall>x \<in> GBT (enat u) e. lessBT x c) \<Longrightarrow>
-         (\<exists>n. leBT e (xseq c (enat u) n))"
+         (\<exists>n. leBT e (operB c (xseq c (enat u) n)))"
 proof (induction e rule: measure_induct_rule[where f=size])
   case (less e)
-  have GB: "\<forall>x \<in> GBT (enat u) e. \<exists>n. leBT x (xseq c (enat u) n)"
+  have GB: "\<forall>x \<in> GBT (enat u) e. \<exists>n. leBT x (operB c (xseq c (enat u) n))"
   proof
     fix x assume xin: "x \<in> GBT (enat u) e"
     have szx: "size x < size e" by (rule b1x_GBT_size[OF xin])
@@ -12277,13 +12894,11 @@ proof (induction e rule: measure_induct_rule[where f=size])
     have xlt: "lessBT x c" using less.prems(3) xin by blast
     have xG: "\<forall>z \<in> GBT (enat u) x. lessBT z c"
       using b1x_GBT_trans[OF xin] less.prems(3) by blast
-    show "\<exists>n. leBT x (xseq c (enat u) n)" by (rule less.IH[OF szx otx xlt xG])
+    show "\<exists>n. leBT x (operB c (xseq c (enat u) n))"
+      by (rule less.IH[OF szx otx xlt xG])
   qed
-  obtain n where n: "leBT e (operB c (Trm [DB (enat u) (xseq c (enat u) n)]))"
+  show ?case
     using y4_inner[OF ot dc ot dc less.prems(1) less.prems(2) GB] by blast
-  have "operB c (Trm [DB (enat u) (xseq c (enat u) n)]) = xseq c (enat u) (Suc n)"
-    by (rule b1x_xseq_Suc[symmetric])
-  thus ?case using n by auto
 qed
 
 
@@ -12358,18 +12973,26 @@ proof (induction a arbitrary: n rule: measure_induct_rule[where f=size])
           show ?thesis
           proof (cases "\<exists>u. v \<le> enat u \<and> domB bb = TBv (enat u)")
             case kii: True
-            \<comment> \<open>([].4)(ii): \<open>a[n] = D\<^sub>v x\<^sub>n\<close> --- the tower, @{thm [source] y4_xseq_lt}.\<close>
+            \<comment> \<open>([].4)(ii), CORRECTED: \<open>a[n] = D\<^sub>v (bb[x\<^sub>n])\<close> --- the tower increases
+               (@{thm [source] y4_xseq_lt}) and \<open>bb[\<cdot>]\<close> is monotone on \<open>T\<^sub>u\<close>.\<close>
             obtain u where uu: "v \<le> enat u" and du: "domB bb = TBv (enat u)" using kii by blast
             have op: "\<And>z. operB a z
-                = Trm [DB v (xseq bb (enat (tbvIdx (domB bb))) (numNat z))]"
+                = Trm [DB v (operB bb
+                    (xseq bb (enat (tbvIdx (domB bb))) (numNat z)))]"
               using aeq bwl_operB_case_ii[OF bbne dnz kii] by simp
             have tid: "tbvIdx (domB bb) = u" using du bwl_tbvIdx by simp
-            have opn: "operB a (numBT n) = Trm [DB v (xseq bb (enat u) n)]"
+            have opn: "operB a (numBT n) = Trm [DB v (operB bb (xseq bb (enat u) n))]"
               using op[of "numBT n"] bwl_numNat_numBT[of n] tid by simp
-            have opsn: "operB a (numBT (Suc n)) = Trm [DB v (xseq bb (enat u) (Suc n))]"
+            have opsn: "operB a (numBT (Suc n))
+                = Trm [DB v (operB bb (xseq bb (enat u) (Suc n)))]"
               using op[of "numBT (Suc n)"] bwl_numNat_numBT[of "Suc n"] tid by simp
-            have "lessBT (xseq bb (enat u) n) (xseq bb (enat u) (Suc n))"
+            have xlt: "lessBT (xseq bb (enat u) n) (xseq bb (enat u) (Suc n))"
               by (rule y4_xseq_lt[OF otbb du])
+            have z1: "xseq bb (enat u) n \<in> TBv (enat u)" by (rule y4_xseq_TBv)
+            have z2: "xseq bb (enat u) (Suc n) \<in> TBv (enat u)" by (rule y4_xseq_TBv)
+            have "lessBT (operB bb (xseq bb (enat u) n))
+                         (operB bb (xseq bb (enat u) (Suc n)))"
+              by (rule b1x_mono[OF du z1 z2 xlt])
             thus ?thesis using opn opsn by simp
           next
             case kiii: False
@@ -12813,12 +13436,14 @@ proof (induction a arbitrary: b rule: measure_induct_rule[where f=size])
             obtain u' where vu: "v \<le> enat u'" and du: "domB c = TBv (enat u')" using kii by blast
             have da: "domB a = NatSet" using aeq bwl_domB_case_ii[OF cne dnz kii] by simp
             have tid: "tbvIdx (domB c) = u'" using du bwl_tbvIdx by simp
-            have opn: "\<And>n. operB a (numBT n) = Trm [DB v (xseq c (enat u') n)]"
+            have opn: "\<And>n. operB a (numBT n)
+                = Trm [DB v (operB c (xseq c (enat u') n))]"
               using aeq bwl_operB_case_ii[OF cne dnz kii] bwl_numNat_numBT tid by simp
             have c1: "\<exists>n. leBT b (operB a (numBT n))"
             proof (cases bs)
               case Nil
-              have "leBT b (Trm [DB v (xseq c (enat u') 0)])" using bbs Nil by simp
+              have "leBT b (Trm [DB v (operB c (xseq c (enat u') 0))])"
+                using bbs Nil by simp
               thus ?thesis using opn by metis
             next
               case (Cons r rs)
@@ -12827,7 +13452,8 @@ proof (induction a arbitrary: b rule: measure_induct_rule[where f=size])
               show ?thesis
               proof (cases "w < v")
                 case True
-                have "leBT b (Trm [DB v (xseq c (enat u') 0)])" using True bbs beq by simp
+                have "leBT b (Trm [DB v (operB c (xseq c (enat u') 0))])"
+                  using True bbs beq by simp
                 thus ?thesis using opn by metis
               next
                 case False
@@ -12838,14 +13464,22 @@ proof (induction a arbitrary: b rule: measure_induct_rule[where f=size])
                 have Gsub: "GBT (enat u') e \<subseteq> GBT v e" by (rule b1x_GBT_antitone[OF vu])
                 have G: "\<forall>x \<in> GBT (enat u') e. lessBT x c"
                   using Gv Gsub elt lessBT_trans by blast
-                obtain n where n: "leBT e (xseq c (enat u') n)"
+                \<comment> \<open>r72: the cofinal chain of the CORRECTED rule is \<open>c[x\<^sub>n]\<close>\<close>
+                obtain n where n: "leBT e (operB c (xseq c (enat u') n))"
                   using y4_xseq_cof[OF otc du ote elt G] by blast
-                have "lessBT (xseq c (enat u') n) (xseq c (enat u') (Suc n))"
+                have xlt: "lessBT (xseq c (enat u') n) (xseq c (enat u') (Suc n))"
                   by (rule y4_xseq_lt[OF otc du])
-                hence lt: "lessBT e (xseq c (enat u') (Suc n))"
-                  using n b1x_le_less_trans by blast
-                have "lessBP (DB w e) (DB v (xseq c (enat u') (Suc n)))" using lt wv by simp
-                hence "leBT b (Trm [DB v (xseq c (enat u') (Suc n))])" using bbs beq by simp
+                have z1: "xseq c (enat u') n \<in> TBv (enat u')" by (rule y4_xseq_TBv)
+                have z2: "xseq c (enat u') (Suc n) \<in> TBv (enat u')" by (rule y4_xseq_TBv)
+                have clt: "lessBT (operB c (xseq c (enat u') n))
+                                  (operB c (xseq c (enat u') (Suc n)))"
+                  by (rule b1x_mono[OF du z1 z2 xlt])
+                have lt: "lessBT e (operB c (xseq c (enat u') (Suc n)))"
+                  using n clt b1x_le_less_trans by blast
+                have "lessBP (DB w e) (DB v (operB c (xseq c (enat u') (Suc n))))"
+                  using lt wv by simp
+                hence "leBT b (Trm [DB v (operB c (xseq c (enat u') (Suc n)))])"
+                  using bbs beq by simp
                 thus ?thesis using opn by metis
               qed
             qed
@@ -13091,7 +13725,7 @@ theorem y4_PSS_acc_of_KK:
              (\<forall>j<k. ox8_rsub (bpHeadT (Trans (s84x_N P))) j \<noteq> 0\<^sub>B) \<Longrightarrow>
              lessBT (ox8_rsub (bpHeadT (Trans (s84x_N P))) k)
                (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
-                  (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))"
+                  0\<^sub>B)"
     and MST: "M \<in> ST_PS"
   shows "M \<in> Wellfounded.acc y3_PSSrel"
 proof -
@@ -13181,7 +13815,7 @@ theorem y4_PSS_wf_of_KK:
              (\<forall>j<k. ox8_rsub (bpHeadT (Trans (s84x_N P))) j \<noteq> 0\<^sub>B) \<Longrightarrow>
              lessBT (ox8_rsub (bpHeadT (Trans (s84x_N P))) k)
                (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
-                  (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))"
+                  0\<^sub>B)"
   shows "wf y3_PSSrel"
 proof -
   have TOT: "\<And>N. N \<in> ST_PS \<Longrightarrow> Trans N \<in> OT_B"
@@ -13222,7 +13856,7 @@ corollary y4_PSS_acc_of_KK_wf:
              (\<forall>j<k. ox8_rsub (bpHeadT (Trans (s84x_N P))) j \<noteq> 0\<^sub>B) \<Longrightarrow>
              lessBT (ox8_rsub (bpHeadT (Trans (s84x_N P))) k)
                (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
-                  (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))"
+                  0\<^sub>B)"
     and MST: "M \<in> ST_PS"
   shows "M \<in> Wellfounded.acc y3_PSSrel"
   by (rule acc_wfD[OF y4_PSS_wf_of_KK[OF KK]])
@@ -13424,13 +14058,13 @@ theorem ox12_KK:
     and alive: "\<forall>j<k. ox8_rsub (bpHeadT (Trans (s84x_N N))) j \<noteq> 0\<^sub>B"
   shows "lessBT (ox8_rsub (bpHeadT (Trans (s84x_N N))) k)
            (d4vx_ins s0 (entry N 1 (Lng N - 1) - 1) b0
-              (Dpt (enat (entry N 1 (Lng N - 1) - 1)) 0\<^sub>B))"
+              0\<^sub>B)"
 proof -
   let ?v1 = "entry N 1 (Lng N - 1)"
   let ?ub = "entry N 1 (Lng N - 1) - 1"
   let ?body = "bpHeadT (Trans (s84x_N N))"
   let ?A0 = "bpHeadT (Trans (Pred (s84x_N N)))"
-  let ?X0 = "Dpt (enat ?ub) 0\<^sub>B"
+  let ?X0 = "(0\<^sub>B :: BT)"
   let ?X1 = "d4vx_ins s0 ?ub b0 ?X0"
   let ?A1 = "d4vx_ins s0 ?ub b0 ?A0"
   let ?p = "DB (enat ?v1) 0\<^sub>B"
@@ -13481,9 +14115,9 @@ proof -
           (GBT u (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
                     (bpHeadT (Trans (Pred (s84x_N P))))))
           (insert (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
-                     (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))
+                     0\<^sub>B)
                   (GBT u (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
-                            (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))))"
+                            0\<^sub>B)))"
   proof -
     fix P :: pairseq and s0 b0 :: "Sym list" and u :: enat
     assume A1: "P \<in> ST_PS" and A2: "P \<in> PT_PS"
@@ -13497,22 +14131,22 @@ proof -
                (\<forall>j<k. ox8_rsub (bpHeadT (Trans (s84x_N P))) j \<noteq> 0\<^sub>B) \<Longrightarrow>
                lessBT (ox8_rsub (bpHeadT (Trans (s84x_N P))) k)
                  (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
-                    (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))"
+                    0\<^sub>B)"
     proof -
       fix k :: nat assume kge: "1 \<le> k"
         and alv: "\<forall>j<k. ox8_rsub (bpHeadT (Trans (s84x_N P))) j \<noteq> 0\<^sub>B"
       show "lessBT (ox8_rsub (bpHeadT (Trans (s84x_N P))) k)
               (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
-                 (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))"
+                 0\<^sub>B)"
         by (rule ox12_KK[OF A1 A2 A3 A4 A5 A6 A7 A8 A9 kge alv])
     qed
     show "b1x_setle
           (GBT u (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
                     (bpHeadT (Trans (Pred (s84x_N P))))))
           (insert (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
-                     (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))
+                     0\<^sub>B)
                   (GBT u (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
-                            (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))))"
+                            0\<^sub>B)))"
       by (rule ox10_SETLE1_ltJ[OF A1 A2 A3 A4 A5 A7 A8 A9 H])
   qed
   show "\<forall>M. M \<in> ST_PS \<longrightarrow> Trans M \<in> OT_B"
@@ -13543,7 +14177,7 @@ theorem ox12_KK_free:
     and alive: "\<forall>j<k. ox8_rsub (bpHeadT (Trans (s84x_N P))) j \<noteq> 0\<^sub>B"
   shows "lessBT (ox8_rsub (bpHeadT (Trans (s84x_N P))) k)
            (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
-              (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))"
+              0\<^sub>B)"
 proof -
   have A6: "Trans P \<in> OT_B" using oi12_census(1) A1 by blast
   show ?thesis by (rule ox12_KK[OF A1 A2 A3 A4 A5 A6 A7 A8 A9 kge alive])
