@@ -137,6 +137,30 @@ def reconstruct(regen, N, known):
     return [x if x is not None else "" for x in final]
 
 
+def footnotes_block(html):
+    """All 92 numbered footnotes, re-extracted from the HTML.
+
+    The anchor-reconstructed body ends at footnote [30] — the transcript never
+    recorded the tail, so footnotes [31]..[92] were MISSING from content.md for
+    the whole project.  They matter: most of them are the article's own
+    well-definedness arguments for the `max`/`min`/`THE` binders (e.g. [59]/[61]
+    justify that LastStep's `Min` is over a NONEMPTY set), i.e. exactly the class
+    of guard whose omission caused correction A39.
+
+    Appended AFTER the reconstructed body so no existing line number moves — the
+    `content.md line NNN` references scattered across the .thy sources stay valid.
+    """
+    import html2text
+    items = re.findall(r'<li id="cite[^"]*note-(\d+)"[^>]*>(.*?)</li>', html, re.S)
+    h = html2text.HTML2Text()
+    h.body_width, h.ignore_links, h.ul_item_mark = 0, True, "-"
+    out = ["", "", "# 脚注（全92件・番号付き、original.html から再抽出）[]", ""]
+    for n, body in items:
+        t = h.handle(body).replace("\\\\", "\\").strip().replace("\n", " ")
+        out += ["- [%s] %s" % (n, re.sub(r"\s+", " ", t)), ""]
+    return out, len(items)
+
+
 def main():
     if not os.path.exists(ORIGINAL):
         sys.exit("ERROR: %s not found (restore the external source first)" % ORIGINAL)
@@ -146,11 +170,13 @@ def main():
     regen = regen_from_html(html)
     N, known = load_anchors(ANCHORS)
     final = reconstruct(regen, N, known)
+    bad = sum(1 for n, t in known.items() if final[n - 1] != t)
+    fn, nfn = footnotes_block(html)
+    final = final + fn
     with open(OUT, "w", encoding="utf-8") as f:
         f.write("\n".join(final) + "\n")
-    bad = sum(1 for n, t in known.items() if final[n - 1] != t)
-    print("wrote %s: %d lines, %d anchor lines pinned (%d violations)"
-          % (OUT, len(final), len(known), bad))
+    print("wrote %s: %d lines, %d anchor lines pinned (%d violations), "
+          "%d footnotes appended" % (OUT, len(final), len(known), bad, nfn))
 
 
 if __name__ == "__main__":
