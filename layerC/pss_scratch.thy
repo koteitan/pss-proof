@@ -11258,4 +11258,71 @@ proof -
     using oi10_census_KK(2)[OF KK] by blast
   show ?thesis by (rule y3_PSS_acc_of_cofimg[OF DESC TOT COF MST])
 qed
+
+text \<open>\<^bold>\<open>Round-71: the ARTICLE'S OWN route, assembled.\<close>  The article derives termination
+  from the two pillars plus the well-ordering of \<open>(OT\<^bsub>B\<^esub>, <)\<close>, which it CITES as
+  [Buc1] Lemma 2.2 (@{thm [source] buc1_2_2_OT_B_wf} --- a legitimate external citation, carried
+  as a \<open>sorry\<close> in \<open>pss_paper\<close>).  Taking that citation, PSS termination follows from the
+  SINGLE residual \<open>KK\<close> --- one fewer unproven hypothesis than the citation-free route
+  @{thm [source] y3_PSS_acc_of_KK_cofimg}, which needs \<open>{KK, y3_cofimg}\<close>.  Both are kept:
+  this is the faithful transcription of the article; the other is ours, is citation-free, and
+  becomes the stronger result as soon as \<open>y3_cofimg\<close> is proved.\<close>
+
+theorem y3_PSS_wf_of_KK_buc1:
+  assumes KK: "\<And>P s0 b0 k. P \<in> ST_PS \<Longrightarrow> P \<in> PT_PS \<Longrightarrow>
+             hasParent P 1 (Lng P - 1) \<Longrightarrow> 1 < Lng P - 1 \<Longrightarrow>
+             transCondIII P \<or> transCondIV P \<Longrightarrow>
+             (\<forall>x \<in> set b0. x = RP) \<Longrightarrow>
+             scb_decomp (bpHeadT (Trans (s84x_N P))) s0
+               (flatBT (Dpt (enat (entry P 1 (Lng P - 1))) 0\<^sub>B)) b0 \<Longrightarrow>
+             s84x_jm3 P < transJm1 P \<Longrightarrow>
+             1 \<le> k \<Longrightarrow>
+             (\<forall>j<k. ox8_rsub (bpHeadT (Trans (s84x_N P))) j \<noteq> 0\<^sub>B) \<Longrightarrow>
+             lessBT (ox8_rsub (bpHeadT (Trans (s84x_N P))) k)
+               (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
+                  (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))"
+  shows "wf y3_PSSrel"
+proof -
+  have TOT: "\<And>N. N \<in> ST_PS \<Longrightarrow> Trans N \<in> OT_B"
+    using oi10_census_KK(1)[OF KK] by blast
+  have DESC: "\<And>N n. N \<in> ST_PS \<Longrightarrow> 1 \<le> n \<Longrightarrow> 1 < Lng N \<Longrightarrow>
+                lessBT (Trans ((N::pairseq)[n])) (Trans N)"
+    using oi10_census_KK(2)[OF KK] by blast
+  have wfR: "wf {(a, b). a \<in> OT_B \<and> b \<in> OT_B \<and> lessBT a b}"
+    by (rule buc1_2_2_OT_B_wf)
+  have sub: "y3_PSSrel
+               \<subseteq> inv_image {(a, b). a \<in> OT_B \<and> b \<in> OT_B \<and> lessBT a b} Trans"
+  proof
+    fix p :: "pairseq \<times> pairseq"
+    assume "p \<in> y3_PSSrel"
+    then obtain N M' n where p: "p = (N, M')" and MST': "M' \<in> ST_PS"
+      and Lg: "1 < Lng M'" and n1: "1 \<le> n" and Neq: "N = (M'::pairseq)[n]"
+      unfolding y3_PSSrel_def by auto
+    have NST: "N \<in> ST_PS"
+      using Neq MST' n1 by (simp add: ST_PS.oper)
+    have lt: "lessBT (Trans N) (Trans M')"
+      using Neq DESC[OF MST' n1 Lg] by simp
+    show "p \<in> inv_image {(a, b). a \<in> OT_B \<and> b \<in> OT_B \<and> lessBT a b} Trans"
+      using p TOT[OF NST] TOT[OF MST'] lt by simp
+  qed
+  show "wf y3_PSSrel"
+    by (rule wf_subset[OF wf_inv_image[OF wfR] sub])
+qed
+
+corollary y3_PSS_acc_of_KK_buc1:
+  assumes KK: "\<And>P s0 b0 k. P \<in> ST_PS \<Longrightarrow> P \<in> PT_PS \<Longrightarrow>
+             hasParent P 1 (Lng P - 1) \<Longrightarrow> 1 < Lng P - 1 \<Longrightarrow>
+             transCondIII P \<or> transCondIV P \<Longrightarrow>
+             (\<forall>x \<in> set b0. x = RP) \<Longrightarrow>
+             scb_decomp (bpHeadT (Trans (s84x_N P))) s0
+               (flatBT (Dpt (enat (entry P 1 (Lng P - 1))) 0\<^sub>B)) b0 \<Longrightarrow>
+             s84x_jm3 P < transJm1 P \<Longrightarrow>
+             1 \<le> k \<Longrightarrow>
+             (\<forall>j<k. ox8_rsub (bpHeadT (Trans (s84x_N P))) j \<noteq> 0\<^sub>B) \<Longrightarrow>
+             lessBT (ox8_rsub (bpHeadT (Trans (s84x_N P))) k)
+               (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0
+                  (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))"
+    and MST: "M \<in> ST_PS"
+  shows "M \<in> Wellfounded.acc y3_PSSrel"
+  by (rule acc_wfD[OF y3_PSS_wf_of_KK_buc1[OF KK]])
 end
