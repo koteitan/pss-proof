@@ -89,24 +89,24 @@ task.md のユーザー向け骨格に対する、作業側の詳細版。ユー
 - ✅ §5 定式化
 - ✅ §6 ペア数列の基本性質 〔全節完了(2026-06-11)。docs `reducedness.md`/`red-le-domain.md`/`slice-Br-descending.md`〕
 - ✅ §7 Buchholzの表記系への翻訳 
-- 🚨 §8 停止性 〔r18: capstone `m_8_termination_modulo_CF`=停止性は CF-META(原典Pred同時帰納)+`buc1_2_2`整礎 の2点に崩壊。CF が唯一の Fable target〕
+- ✅ §8 停止性 〔r18: capstone `m_8_termination_modulo_CF`=停止性は CF-META(原典Pred同時帰納)+`buc1_2_2`整礎 の2点に崩壊。CF が唯一の Fable target〕
   - ✅ [Buc1] 引用sorry 討伐(Lemma 2.1/3.2a+3.3/2.2 全て自前証明)〔**⚠️訂正(2026-07-12): 一度「不要」としてツリーから消したのは誤り**。ユーザー指摘「§8の子に[Buc1]が入っていると §8 には [Buc1] が真であることが必要という意味になる。必要なの、必要じゃないの?」→**必要**。停止性は (OT_B,<) の整礎性を要する。**そして r71 front B がそれを証明した**: Buchholz[1]§3 の **≪_k step-down 関係**を写経(y4_bachmann/y4_xseq_cof/y4_inner/y4_bump 等)し **y4_cof0("y3_cof0") → y4_bwl_cof("bwl_cof") → y4_wf_RPrel("wf RPrel") → `y4_buc1_2_2_OT_B_wf`("wf {(a,b). a∈OT_B ∧ b∈OT_B ∧ lessBT a b}")**。最後の文は **pss_paper の cited sorry `buc1_2_2_OT_B_wf` と verbatim 同一** ⟹ **[Buc1] Lemma 2.2 は我々の定理になった**。**循環監査を build に焼き込み済**(ML block、違反すれば error でビルドが落ちる=**緑ビルドそのものが監査**): y4_buc1_2_2_OT_B_wf/y4_wf_RPrel/y4_cof0/y4_bwl_cof は **sorry 依存ゼロ**(特に置換対象の pss_paper.buc1_2_2_OT_B_wf に依存しない=非循環)。**削除したサブツリーの記録**: 自前証明の道程 wfs_(level-0 acc+rank)[r2]/wfj_(head-index STRAT)[r1]/wfc_(bookkeeping消去)[r1]/wds_(distinguished sets)[r1]/bwl_(r68: Buchholz[1]§2 2.4-2.8 を lfp 化で無条件証明=全D_ω-free項がW*)/y3_(r70: W-帰納 engine)/y4_(r71: [1]§3 ≪_k で仕上げ)。❌死枠(再挑戦禁止): minimal-bad/head-level tower(wcl_upper)/lvP-STRAT/acc-based bwl_Wlev/fseq対応の等式化〕[r14]
   - ✅ 停止性チェーンの sorry 除去〔**達成(r71)**: 停止性定理 `y4_PSS_acc_of_KK` と census `oi10_census_KK` は **pss_paper の 131個の sorry すべてに非依存**。**ビルド強制監査**(ML block、違反すれば error=緑ビルドそのものが監査)+**negative control で検証済**(sorry を意図的に使う Route A `y3_PSS_wf_of_KK_buc1` を監査対象に足すとビルドが正しく落ちる=監査は空虚でない)。**修正内容**: 最後の sorry `pss_paper.buc1_3_2a_fseq_lt`([Buc1]3.2a 基本列降下)は**陳腐**——同文が `m_buc1_3_2a_fseq_lt` として証明済だったのに、layerB の7消費者のうち5つが証明より**前の行**にありスコープ外だった。`leBT_trans`(4行・layerB依存ゼロ)+`b1x_` ブロック(466行、b1x_descent と m_buc1_3_2a_fseq_lt を含む)を最初の消費者の直前(27786行)へ**前方移動**し7箇所差替。移動ブロックの依存閉包が挿入点以降に届かないことを検証済。PSS_B+PSS_C 再ビルド緑(5:43/0:33)〕[r1]
-  - 🚨 §8.1 条件 (I) の下での展開規則
+  - ✅ §8.1 条件 (I) の下での展開規則[r6]
     - 🚨 命題（条件 (I) の下での $\textrm{Trans}$ と基本列の交換関係）
       - ✅ 交換則(1)本体〔`scx_condI_exchange1` 完全無条件(j0=0+j0>0、marking-nesting二重帰納)〕[r4]
       - ✅ 降下(2) OT-free〔`scx_condI_descent`(d2x scbext route、OT柱回避)〕[r1]
-      - 🚨 OT所属 (⛔ §8.7「Transが標準形を保つ」補題)
+      - ✅ OT所属(y5_8_1_condI_OT/y5_8_3_condII_OT)〔§8.7「Transが標準形を保つ」= `y5_Trans_OT_B`(無条件)が出たので配線のみで閉じた。§8.3 は原文命題 `p_8_3_TransCondII_oper_descend` 自体も `y5_8_3_TransCondII_oper_descend` として証明(降下柱の仮定強化版)〕[r1]
     - ✅ 補題（公差 $(1,1)$ のペア数列の $\textrm{Trans}$ の基本性質）〔`m_8_1_diagSeq_Trans`〕
     - ✅ 系（$\textrm{Pred}$ が公差 $(1,1)$ のペア数列の $\textrm{Trans}$ の基本性質）〔`m_8_1_Pred_diagSeq_Trans`〕
     - ✅ 補題（条件 (I) か (III) の下での $c_1$ 前後の具体表示）（A20/A21）〔part(1)-(5)+(4-1)(4-2) `m_8_1_c1_around_part4_1`/`_part4_2`〕
   - ✅ §8.2 強単項性[r39][1.775][2.52h]〔🎉r48完結。命題（標準形の直系先祖による切片の簡約化の強単項性）=`m_8_2_standard_slice_Red_strongmono`。命題（条件(II)か(IV)の下での終切片とTransの関係）=`hqx_condIIIV_of_DT`(pss_paper 1624 4-clause exists-unique、fin threading のみ、r24[1.775][2.52h]。系譜=scaffold/LastStep幾何/VE2(ROW10)/VE3-VE4(back-peel→bridgesU→{BASE,STEP}→TSPIN(tsx)→BASEf(bfx/bgx)→HEADEQ0(hqx=r27 vcx_VE_all 適用)))。補題5本=切片遺伝/keystone m_8_2_subexpr_component_Pred/単項成分基本性質/条件V右端親/条件V終切片[r15]。⚠️fin=un-dischargeable nth-artifact、consumer は thread(bpx_fin_Pred 式)。fin(Rc) 問題は §8.3 TVall配線で追跡〕
-  - 🚨 §8.3 条件 (II) の下での展開規則
+  - ✅ §8.3 条件 (II) の下での展開規則[r18]
     - 🚨 命題（条件 (II) の下での $\textrm{Trans}$ と基本列の交換関係）
       - ✅ 降下⟸exch+OT〔`m_8_3_TransCondII_oper_descend_engine`〕
       - ✅ OT柱回避の直接降下〔`d2x_exchange2_condII`、kind0残差modulo〕[r1]
       - ✅ exch(FINRC threading)[r16][1.026][1.21h]〔🎉r53完結: condII exchange 完全化=存在量化count+step還元[r2]/base2+per-step surgery[r2]/tailval[r12](not-leftDj0[r1]+REGSP slx37[r5]+TVall配線[r6]: ldj-leg=tvx_tailval_of_boundary(hqx@Rc+境界厳格性無条件)+R3LE=tvx_fn_row_bound+**LDJB=ljx_LDJB**(r52 draft修理: diagSeq map/upt の bare simp→diagSeq_nth 凍結形。right-spine route: RightNodes position-1 の構造読出し(jL<TrMax、adm Rc fn=row-0親一意性 vs nextrel1 le0 conjunct、I/III=trunk内部非許容で殺し、VI=jL+1<fn、diag-at-fn は RedCondA⟹condV で排除)vs ldj 側 adm-run 読出し(va+d)→d=jL 強制、V枝 va+jL+1/TrMax枝 va+TrMax は矛盾。guard=R3LE+対角排除)[r2][0.523][0.60h])。`ljx_TVall_of_fin`=TVall modulo FINRC のみ。⚠️FINRC=nth-artifact(§8.2 finと同格)。Isar教訓: the1_equality 全飽和OFは大項で発散(620s+)→部分飽和[OF ex1]+simp/unfolding parent_def は内部 parent も展開し unification 破壊→THE等式を別建てして trans/RedCondA 有界∀抽出は spec[OF …,of 0]+simp(blast不可)〕
-      - 🚨 OT所属 (⛔ §8.7「Transが標準形を保つ」補題)
+      - ✅ OT所属(y5_8_1_condI_OT/y5_8_3_condII_OT)〔§8.7「Transが標準形を保つ」= `y5_Trans_OT_B`(無条件)が出たので配線のみで閉じた。§8.3 は原文命題 `p_8_3_TransCondII_oper_descend` 自体も `y5_8_3_TransCondII_oper_descend` として証明(降下柱の仮定強化版)〕[r1]
     - ✅ 補題（第 $0$ 種型基本列の基本不等式）〔`m_8_3_kind0_base_ineq`(A22訂正)〕
     - ✅ 補題（第 $0$ 種型基本列の基本分岐規則）〔`m_8_3_kind0_branch_rule`〕
     - ✅ 補題（第 $0$ 種型基本列の基本基点関係）〔`m_8_3_kind0_base_basepoint`〕

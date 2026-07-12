@@ -13763,6 +13763,48 @@ text \<open>\<^bold>\<open>Circularity / sorry audit\<close> (fails the build if
     statement is already proved as \<open>m_buc1_3_2a_fseq_lt\<close> (layerB).  Removing it is a
     citation-hygiene edit, not mathematics.\<close>
 
+subsection \<open>(9) The \<open>OT\<close>-membership slots of \<section>8.1 and \<section>8.3, now unblocked\<close>
+
+text \<open>Both the \<section>8.1 (condition (I)) and the \<section>8.3 (condition (II)) exchange
+  propositions were tracked with an open \<open>OT\<close>-membership slot, waiting on the \<section>8.7
+  lemma "\<open>Trans\<close> preserves standard form".  That lemma is now
+  @{thm [source] y5_Trans_OT_B}, unconditionally, so the slots close outright ---
+  and with them the article's \<section>8.3 statement
+  \<open>p_8_3_TransCondII_oper_descend\<close>, which is exactly the descent pillar under
+  strictly stronger hypotheses.\<close>
+
+theorem y5_8_1_condI_OT:
+  assumes MST: "M \<in> ST_PS" and MP: "M \<in> PT_PS"
+    and j1gt: "1 < Lng M - 1" and condI: "transCondI M" and n1: "1 \<le> n"
+  shows "Trans M \<in> OT_B" and "Trans ((M::pairseq)[n]) \<in> OT_B"
+proof -
+  show "Trans M \<in> OT_B" by (rule y5_Trans_OT_B[OF MST])
+  have "(M::pairseq)[n] \<in> ST_PS" using MST n1 by (simp add: ST_PS.oper)
+  thus "Trans ((M::pairseq)[n]) \<in> OT_B" by (rule y5_Trans_OT_B)
+qed
+
+theorem y5_8_3_condII_OT:
+  assumes MST: "M \<in> ST_PS" and MP: "M \<in> PT_PS"
+    and j1gt: "1 < Lng M - 1" and condII: "transCondII M" and n1: "1 \<le> n"
+  shows "Trans M \<in> OT_B" and "Trans ((M::pairseq)[n]) \<in> OT_B"
+proof -
+  show "Trans M \<in> OT_B" by (rule y5_Trans_OT_B[OF MST])
+  have "(M::pairseq)[n] \<in> ST_PS" using MST n1 by (simp add: ST_PS.oper)
+  thus "Trans ((M::pairseq)[n]) \<in> OT_B" by (rule y5_Trans_OT_B)
+qed
+
+text \<open>The article's \<section>8.3 proposition, verbatim (\<open>p_8_3_TransCondII_oper_descend\<close>).\<close>
+
+theorem y5_8_3_TransCondII_oper_descend:
+  fixes M :: pairseq
+  assumes MST: "M \<in> ST_PS" and MP: "M \<in> PT_PS" and n0: "0 < n"
+    and j1gt: "1 < Lng M - 1" and condII: "transCondII M"
+  shows "lessBT (Trans ((M::pairseq)[n])) (Trans M)"
+proof -
+  have L: "1 < Lng M" using j1gt by simp
+  show ?thesis by (rule y5_Trans_descend[OF MST _ L]) (use n0 in simp)
+qed
+
 ML \<open>
   fun sorry_deps th =
     let
@@ -13802,7 +13844,11 @@ ML \<open>
      ("y5_PSS_acc",          @{thm y5_PSS_acc}),
      ("y5_PSS_wf",           @{thm y5_PSS_wf}),
      \<comment> \<open>r72: the ARTICLE'S OWN termination statement, p_8_7_termination\<close>
-     ("y5_Fdom",             @{thm y5_Fdom})];
+     ("y5_Fdom",             @{thm y5_Fdom}),
+     \<comment> \<open>r72: the \<section>8.1 / \<section>8.3 OT-membership slots\<close>
+     ("y5_8_1_condI_OT",     @{thm y5_8_1_condI_OT(2)}),
+     ("y5_8_3_condII_OT",    @{thm y5_8_3_condII_OT(2)}),
+     ("y5_8_3_TransCondII_oper_descend", @{thm y5_8_3_TransCondII_oper_descend})];
 
   \<comment> \<open>r72: assert the termination theorems carry NO free hypothesis left ---
       \<open>y5_PSS_wf\<close> must be a closed statement (no meta-premises, no schematics).\<close>
