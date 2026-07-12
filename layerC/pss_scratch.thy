@@ -14875,7 +14875,13 @@ ML \<open>
      \<comment> \<open>r72: the \<section>8.1 / \<section>8.3 OT-membership slots\<close>
      ("y5_8_1_condI_OT",     @{thm y5_8_1_condI_OT(2)}),
      ("y5_8_3_condII_OT",    @{thm y5_8_3_condII_OT(2)}),
-     ("y5_8_3_TransCondII_oper_descend", @{thm y5_8_3_TransCondII_oper_descend})];
+     ("y5_8_3_TransCondII_oper_descend", @{thm y5_8_3_TransCondII_oper_descend}),
+     \<comment> \<open>r73: the \<section>8.1 proposition on its FULL article domain \<open>RT\<^bsub>PS\<^esub> \<inter> PT\<^bsub>PS\<^esub>\<close>
+         (the \<open>ST\<^bsub>PS\<^esub>\<close> scope gap) --- both conclusions, all \<open>n \<ge> 1\<close>\<close>
+     ("y3g_condI_exchange1_rtps",    @{thm y3g_condI_exchange1_rtps}),
+     ("y3g_condI_descent_rtps",      @{thm y3g_condI_descent_rtps}),
+     ("y3g_p_8_1_Trans_fseq_condI(1)", @{thm y3g_p_8_1_Trans_fseq_condI(1)}),
+     ("y3g_p_8_1_Trans_fseq_condI(2)", @{thm y3g_p_8_1_Trans_fseq_condI(2)})];
 
   \<comment> \<open>r72: assert the termination theorems carry NO free hypothesis left ---
       \<open>y5_PSS_wf\<close> must be a closed statement (no meta-premises, no schematics).\<close>
