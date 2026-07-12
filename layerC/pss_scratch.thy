@@ -15582,6 +15582,381 @@ text \<open>\<^bold>\<open>Part (2) — status.\<close>  \<open>Trans(M)[n-1] = 
   \<open>Trans\<close>-recursion step lemma for the (non-fseq) one-entry extension, which the
   \<section>8.4 corpus does not yet have.\<close>
 
+section \<open>r74 (y3s): the \<section>7 \<open>T\<^bsub>PS\<^esub>\<close> scope gap --- \<open>Red\<close>-iteration transport\<close>
+
+text \<open>The article states seven \<section>7.3/\<section>7.4 propositions for all \<open>M \<in> T\<^bsub>PS\<^esub>\<close>; we had
+  proved them only on \<open>RT\<^bsub>PS\<^esub>\<close>.  The obstruction is that \<open>Trans\<close>/\<open>Mark\<close>/\<open>RightAnces\<close>
+  are defined on a non-reduced \<open>M\<close> by \<open>Trans M := Trans (Red M)\<close>, and \<open>Red\<close> is NOT
+  idempotent on \<open>T\<^bsub>PS\<^esub>\<close> (correction A4, counterexample \<open>(0,0)(0,2)\<close>), so a single
+  \<open>Red\<close>-step need not land in \<open>RT\<^bsub>PS\<^esub>\<close> and the recursion unfolds again.
+
+  The right move is to transport along the \<^emph>\<open>iterated\<close> \<open>Red\<close>.  Define
+  \<open>RedStab M \<equiv> \<exists>k. (Red\<^sup>k) M \<in> RT\<^bsub>PS\<^esub>\<close> (this is precisely the domain of the
+  \<open>Trans\<close>/\<open>Mark\<close>/\<open>RightAnces\<close> recursions).  \<open>RedStab\<close> is NOT a vacuous side
+  condition: it holds for every \<open>M \<in> RT\<^bsub>PS\<^esub>\<close> (\<open>k=0\<close>), for every non-\<open>multiT\<close>
+  \<open>M \<in> T\<^bsub>PS\<^esub>\<close> (\<open>k=1\<close>, @{thm [source] idem_nonmulti}), and empirically for every
+  \<open>M \<in> T\<^bsub>PS\<^esub>\<close> whatsoever with \<open>k \<le> 2\<close> (exhaustive census: 7380/7380 sequences of
+  length \<open>\<le> 4\<close> over entries \<open>< 3\<close>, and 16275/16275 of length \<open>\<le> 3\<close> over entries
+  \<open>< 5\<close>, all reach a \<open>Red\<close>-fixed point in at most two steps; 0 failures).  So
+  \<open>RedStab = T\<^bsub>PS\<^esub>\<close> is a purely \<section>6 statement (\<open>Red (Red M) \<in> RT\<^bsub>PS\<^esub>\<close>), independent
+  of \<section>7; see \<open>y3s_RedStab_of_Red2\<close> for the one-line bridge.
+
+  On \<open>RedStab\<close> we prove FOUR of the seven article propositions verbatim
+  (\<open>p_7_3_Trans_zeroT\<close>, \<open>p_7_3_Pred_Trans_descend\<close>, \<open>p_7_4_RightAnces_RightNodes\<close>,
+  \<open>p_7_4_RightAnces_zeroT\<close>).  Of the other three:
+
+    \<^item> \<open>p_7_4_Mark_nextAdm\<close> (in correction A18's form) lifts only with its hypotheses
+      read off the REDUCT, see \<open>y3s_7_4_Mark_nextAdm_TPS_reduct\<close>;
+
+    \<^item> \<open>p_7_4_Trans_nextAdm\<close> and \<open>p_7_4_Trans_Mark_Pred\<close> are \<^bold>\<open>FALSE\<close> as stated on
+      \<open>T\<^bsub>PS\<^esub>\<close>.  \<^bold>\<open>PROPOSED CORRECTION\<close> (new id; \<open>corrections.md\<close> currently ends at
+      A44 --- not edited from here).  Witness (vetted \<open>red_model\<close>/\<open>trans_model\<close>):
+      \<open>M = (0,0)(0,1)(1,2)(1,0) \<in> T\<^bsub>PS\<^esub>\<close>, non-reduced, with
+      \<open>Red M = (0,0)(1,1)(2,2)(2,0) \<in> RT\<^bsub>PS\<^esub>\<close>.  Take \<open>m = j\<^sub>0 = 1\<close>, \<open>j\<^sub>1 = 3\<close>.
+      Then \<open>adm M 1\<close> and \<open>(0,1) \<le>\<^sub>M (0,3)\<close>, so \<open>(M,1) \<in> T\<^bsub>PS\<^esub>\<^sup>Marked\<close> and \<open>1\<close> is the
+      UNIQUE \<open><\<^bsub>M\<^esub>\<^sup>NextAdm\<close>-parent of \<open>3\<close> --- both propositions' hypotheses hold.
+      But \<open>Trans (Pred M) = D\<^sub>0(D\<^sub>2(0))\<close>, \<open>Mark (Pred M) 1 = D\<^sub>2(0)\<close>,
+      \<open>Trans M = D\<^sub>0(D\<^sub>2(0) + D\<^sub>1(D\<^sub>2(0) + D\<^sub>0(0)))\<close>, \<open>Mark M 1 = D\<^sub>0(0)\<close>, and there is
+      \<^bold>\<open>no\<close> \<open>(s\<^sub>0,b\<^sub>0)\<close> at all that scb-decomposes BOTH pairs (the two singleton scb
+      sets are disjoint) --- existence fails, not merely uniqueness.  Root cause:
+      \<open>Mark M m := Mark (Red M) m\<close> evaluates the basepoint at the reduct, but
+      \<open>\<le>\<^sub>M\<close> is NOT \<open>Red\<close>-invariant on \<open>T\<^bsub>PS\<^esub>\<close> (correction A4): here \<open>(0,1) \<le>\<^sub>M (0,3)\<close>
+      holds while \<open>(0,1) \<le>\<^bsub>Red M\<^esub> (0,3)\<close> FAILS, so column \<open>1\<close> is not a basepoint of
+      \<open>Red M\<close> and \<open>Mark\<close> returns a value unrelated to \<open>M\<close>'s own structure.  Census
+      (entries \<open>< 3\<close>, \<open>Lng \<le> 4\<close>): \<open>p_7_4_Trans_nextAdm\<close> 3990/4023,
+      \<open>p_7_4_Trans_Mark_Pred\<close> 4490/4523 --- 33 counterexamples each, ALL non-reduced;
+      on reduced \<open>M\<close> both hold (224/224), i.e. our \<open>RT\<^bsub>PS\<^esub>\<close> lemmas
+      @{thm [source] m_7_4_Trans_nextAdm}, @{thm [source] m_7_4_Trans_Mark_Pred}
+      are exactly right and the article's domain is the error.
+      The correct \<open>T\<^bsub>PS\<^esub>\<close>-level statement must read \<open>Marked\<close>/\<open>NextAdm\<close> off \<open>Red M\<close>,
+      or restrict to \<open>RT\<^bsub>PS\<^esub>\<close>.\<close>
+
+subsection \<open>Basic \<open>Red\<close>-iteration bricks\<close>
+
+lemma y3s_Red_T_PS:
+  assumes MT: "M \<in> T_PS" shows "Red M \<in> T_PS"
+proof -
+  have "Lng (Red M) = Lng M" by (rule m_6_5_Lng_Red[OF MT])
+  moreover have "0 < Lng M" using MT by (auto simp: T_PS_def)
+  ultimately have "Red M \<noteq> []" by auto
+  thus ?thesis by (simp add: T_PS_def)
+qed
+
+lemma y3s_Red_funpow_T_PS:
+  assumes MT: "M \<in> T_PS" shows "(Red ^^ k) M \<in> T_PS"
+  using MT by (induction k) (simp_all add: y3s_Red_T_PS)
+
+lemma y3s_Lng_funpow_Red:
+  assumes MT: "M \<in> T_PS" shows "Lng ((Red ^^ k) M) = Lng M"
+proof (induction k)
+  case 0 show ?case by simp
+next
+  case (Suc k)
+  have "(Red ^^ Suc k) M = Red ((Red ^^ k) M)" by simp
+  moreover have "Lng (Red ((Red ^^ k) M)) = Lng ((Red ^^ k) M)"
+    by (rule m_6_5_Lng_Red[OF y3s_Red_funpow_T_PS[OF MT]])
+  ultimately show ?case using Suc.IH by simp
+qed
+
+lemma y3s_zeroT_funpow_Red:
+  assumes MT: "M \<in> T_PS" shows "zeroT M \<longleftrightarrow> zeroT ((Red ^^ k) M)"
+proof (induction k)
+  case 0 show ?case by simp
+next
+  case (Suc k)
+  have "zeroT ((Red ^^ k) M) \<longleftrightarrow> zeroT (Red ((Red ^^ k) M))"
+    by (rule m_6_5_Red_zeroT[OF y3s_Red_funpow_T_PS[OF MT]])
+  thus ?case using Suc.IH by simp
+qed
+
+text \<open>\<open>Red\<close> commutes with \<open>Pred\<close> on all of \<open>T\<^bsub>PS\<^esub>\<close> (@{thm [source] m_6_5_Red_Pred},
+  unconditional), hence so does every iterate.\<close>
+
+lemma y3s_Pred_T_PS:
+  assumes MT: "M \<in> T_PS" shows "Pred M \<in> T_PS"
+proof (cases "Lng M \<le> 1")
+  case True thus ?thesis using MT by (simp add: Pred_def)
+next
+  case False
+  hence L: "1 < Lng M" by simp
+  have "Lng (butlast M) = Lng M - 1" by simp
+  hence "butlast M \<noteq> []" using L by (cases "butlast M") auto
+  thus ?thesis using False by (simp add: Pred_def T_PS_def)
+qed
+
+lemma y3s_Pred_funpow_Red:
+  assumes MT: "M \<in> T_PS" shows "(Red ^^ k) (Pred M) = Pred ((Red ^^ k) M)"
+proof (induction k)
+  case 0 show ?case by simp
+next
+  case (Suc k)
+  have "(Red ^^ Suc k) (Pred M) = Red ((Red ^^ k) (Pred M))" by simp
+  also have "\<dots> = Red (Pred ((Red ^^ k) M))" using Suc.IH by simp
+  also have "\<dots> = Pred (Red ((Red ^^ k) M))"
+    by (rule m_6_5_Red_Pred[OF y3s_Red_funpow_T_PS[OF MT]])
+  finally show ?case by simp
+qed
+
+text \<open>\<open>RT\<^bsub>PS\<^esub>\<close> is closed under \<open>Pred\<close> (for \<open>Lng > 1\<close>): \<open>Red (Pred M) = Pred (Red M)
+  = Pred M\<close>.\<close>
+
+lemma y3s_Pred_RT_PS:
+  assumes MR: "M \<in> RT_PS" and L: "1 < Lng M" shows "Pred M \<in> RT_PS"
+proof -
+  have MT: "M \<in> T_PS" using MR by (simp add: RT_PS_def)
+  have "Red (Pred M) = Pred (Red M)" by (rule m_6_5_Red_Pred[OF MT])
+  also have "\<dots> = Pred M" using MR by (simp add: RT_PS_def)
+  finally have e: "Red (Pred M) = Pred M" .
+  have "Pred M \<in> T_PS" by (rule y3s_Pred_T_PS[OF MT])
+  thus ?thesis using e by (simp add: RT_PS_def)
+qed
+
+subsection \<open>The stabilisation predicate and the domain transport\<close>
+
+definition RedStab :: "pairseq \<Rightarrow> bool" where
+  "RedStab M \<longleftrightarrow> (\<exists>k. (Red ^^ k) M \<in> RT_PS)"
+
+lemma y3s_RedStab_RT: "M \<in> RT_PS \<Longrightarrow> RedStab M"
+  unfolding RedStab_def by (rule exI[of _ 0]) simp
+
+lemma y3s_RedStab_nonmulti:
+  assumes MT: "M \<in> T_PS" and nm: "\<not> multiT M" shows "RedStab M"
+proof -
+  have "Red (Red M) = Red M" by (rule idem_nonmulti[OF MT nm])
+  hence "(Red ^^ 1) M \<in> RT_PS" using y3s_Red_T_PS[OF MT] by (simp add: RT_PS_def)
+  thus ?thesis unfolding RedStab_def by blast
+qed
+
+text \<open>The bridge to a full \<open>T\<^bsub>PS\<^esub>\<close> statement: the SINGLE remaining obligation is the
+  purely \<section>6 fact \<open>Red (Red M) \<in> RT\<^bsub>PS\<^esub>\<close> (\<open>Red\<close> is idempotent on its own image),
+  empirically true with 0 counterexamples.\<close>
+
+lemma y3s_RedStab_of_Red2:
+  assumes "Red (Red M) \<in> RT_PS" shows "RedStab M"
+  unfolding RedStab_def by (rule exI[of _ 2]) (use assms in \<open>simp add: numeral_2_eq_2\<close>)
+
+lemma y3s_Trans_dom_iter:
+  "(Red ^^ k) M \<in> RT_PS \<Longrightarrow> Trans_Mark_dom (Inl M)"
+proof (induction k arbitrary: M)
+  case 0 thus ?case by (simp add: m_7_3_Trans_welldef)
+next
+  case (Suc k)
+  have h: "(Red ^^ k) (Red M) \<in> RT_PS" using Suc.prems by (simp add: funpow_swap1)
+  have domR: "Trans_Mark_dom (Inl (Red M))" by (rule Suc.IH[OF h])
+  show ?case
+  proof (cases "M \<in> RT_PS")
+    case True thus ?thesis by (simp add: m_7_3_Trans_welldef)
+  next
+    case False
+    show ?thesis by (rule Trans_Mark.domintros(1)) (use False domR in \<open>simp_all\<close>)
+  qed
+qed
+
+lemma y3s_Mark_dom_iter:
+  "(Red ^^ k) M \<in> RT_PS \<Longrightarrow> Trans_Mark_dom (Inr (M, m))"
+proof (induction k arbitrary: M)
+  case 0 thus ?case by (simp add: m_7_3_Mark_welldef)
+next
+  case (Suc k)
+  have h: "(Red ^^ k) (Red M) \<in> RT_PS" using Suc.prems by (simp add: funpow_swap1)
+  have domR: "Trans_Mark_dom (Inr (Red M, m))" by (rule Suc.IH[OF h])
+  show ?case
+  proof (cases "M \<in> RT_PS")
+    case True thus ?thesis by (simp add: m_7_3_Mark_welldef)
+  next
+    case False
+    show ?thesis by (rule Trans_Mark.domintros(2)) (use False domR in \<open>simp_all\<close>)
+  qed
+qed
+
+lemma y3s_Trans_funpow_Red:
+  "(Red ^^ k) M \<in> RT_PS \<Longrightarrow> Trans M = Trans ((Red ^^ k) M)"
+proof (induction k arbitrary: M)
+  case 0 thus ?case by simp
+next
+  case (Suc k)
+  have h: "(Red ^^ k) (Red M) \<in> RT_PS" using Suc.prems by (simp add: funpow_swap1)
+  have IH: "Trans (Red M) = Trans ((Red ^^ k) (Red M))" by (rule Suc.IH[OF h])
+  have domM: "Trans_Mark_dom (Inl M)" by (rule y3s_Trans_dom_iter[OF Suc.prems])
+  have step: "Trans M = Trans (Red M)"
+  proof (cases "M \<in> RT_PS")
+    case True
+    hence "Red M = M" by (simp add: RT_PS_def)
+    thus ?thesis by simp
+  next
+    case False
+    show ?thesis using Trans.psimps[OF domM] False by simp
+  qed
+  show ?case using step IH by (simp add: funpow_swap1)
+qed
+
+lemma y3s_Mark_funpow_Red:
+  "(Red ^^ k) M \<in> RT_PS \<Longrightarrow> Mark M m = Mark ((Red ^^ k) M) m"
+proof (induction k arbitrary: M)
+  case 0 thus ?case by simp
+next
+  case (Suc k)
+  have h: "(Red ^^ k) (Red M) \<in> RT_PS" using Suc.prems by (simp add: funpow_swap1)
+  have IH: "Mark (Red M) m = Mark ((Red ^^ k) (Red M)) m" by (rule Suc.IH[OF h])
+  have domM: "Trans_Mark_dom (Inr (M, m))" by (rule y3s_Mark_dom_iter[OF Suc.prems])
+  have step: "Mark M m = Mark (Red M) m"
+  proof (cases "M \<in> RT_PS")
+    case True
+    hence "Red M = M" by (simp add: RT_PS_def)
+    thus ?thesis by simp
+  next
+    case False
+    show ?thesis using Mark.psimps[OF domM] False by simp
+  qed
+  show ?case using step IH by (simp add: funpow_swap1)
+qed
+
+lemma y3s_RightAnces_dom_iter:
+  "(Red ^^ k) M \<in> RT_PS \<Longrightarrow> RightAnces_dom M"
+proof (induction k arbitrary: M)
+  case 0 thus ?case by (simp add: RightAnces_dom_RT[rule_format])
+next
+  case (Suc k)
+  have h: "(Red ^^ k) (Red M) \<in> RT_PS" using Suc.prems by (simp add: funpow_swap1)
+  have domR: "RightAnces_dom (Red M)" by (rule Suc.IH[OF h])
+  show ?case
+  proof (cases "M \<in> RT_PS")
+    case True thus ?thesis by (simp add: RightAnces_dom_RT[rule_format])
+  next
+    case False
+    show ?thesis by (rule RightAnces.domintros) (use False domR in \<open>simp_all\<close>)
+  qed
+qed
+
+lemma y3s_RightAnces_funpow_Red:
+  "(Red ^^ k) M \<in> RT_PS \<Longrightarrow> RightAnces M = RightAnces ((Red ^^ k) M)"
+proof (induction k arbitrary: M)
+  case 0 thus ?case by simp
+next
+  case (Suc k)
+  have h: "(Red ^^ k) (Red M) \<in> RT_PS" using Suc.prems by (simp add: funpow_swap1)
+  have IH: "RightAnces (Red M) = RightAnces ((Red ^^ k) (Red M))" by (rule Suc.IH[OF h])
+  have domM: "RightAnces_dom M" by (rule y3s_RightAnces_dom_iter[OF Suc.prems])
+  have step: "RightAnces M = RightAnces (Red M)"
+  proof (cases "M \<in> RT_PS")
+    case True
+    hence "Red M = M" by (simp add: RT_PS_def)
+    thus ?thesis by simp
+  next
+    case False
+    show ?thesis using RightAnces.psimps[OF domM] False by simp
+  qed
+  show ?case using step IH by (simp add: funpow_swap1)
+qed
+
+subsection \<open>The article propositions, on \<open>T\<^bsub>PS\<^esub> \<inter> RedStab\<close>\<close>
+
+text \<open>(1) \<open>p_7_3_Trans_zeroT\<close>.  \<open>zeroT\<close> IS \<open>Red\<close>-invariant on all of \<open>T\<^bsub>PS\<^esub>\<close>
+  (@{thm [source] m_6_5_Red_zeroT}), so the \<open>RT\<^bsub>PS\<^esub>\<close> form
+  @{thm [source] m_7_3_Trans_zeroT} transports along the \<open>Red\<close>-iteration verbatim.\<close>
+
+theorem y3s_7_3_Trans_zeroT_TPS:
+  assumes MT: "M \<in> T_PS" and RS: "RedStab M"
+  shows "zeroT M \<longleftrightarrow> Trans M = 0\<^sub>B"
+proof -
+  obtain k where F: "(Red ^^ k) M \<in> RT_PS" using RS unfolding RedStab_def by blast
+  have "Trans M = Trans ((Red ^^ k) M)" by (rule y3s_Trans_funpow_Red[OF F])
+  moreover have "zeroT M \<longleftrightarrow> zeroT ((Red ^^ k) M)" by (rule y3s_zeroT_funpow_Red[OF MT])
+  moreover have "zeroT ((Red ^^ k) M) \<longleftrightarrow> Trans ((Red ^^ k) M) = 0\<^sub>B"
+    by (rule m_7_3_Trans_zeroT[OF F])
+  ultimately show ?thesis by simp
+qed
+
+text \<open>(2) \<open>p_7_3_Pred_Trans_descend\<close>.  \<open>Pred\<close> commutes with \<open>Red\<close> on all of \<open>T\<^bsub>PS\<^esub>\<close>
+  (@{thm [source] m_6_5_Red_Pred}, unconditional), so \<open>(Red\<^sup>k)(Pred M) = Pred ((Red\<^sup>k) M)\<close>,
+  which is again reduced (@{thm [source] y3s_Pred_RT_PS}); both sides transport and
+  @{thm [source] m_7_3_Pred_Trans_descend} applies at the reduct.\<close>
+
+theorem y3s_7_3_Pred_Trans_descend_TPS:
+  assumes MT: "M \<in> T_PS" and RS: "RedStab M" and L: "1 < Lng M"
+  shows "lessBT (Trans (Pred M)) (Trans M)"
+proof -
+  obtain k where F: "(Red ^^ k) M \<in> RT_PS" using RS unfolding RedStab_def by blast
+  have LF: "1 < Lng ((Red ^^ k) M)" using y3s_Lng_funpow_Red[OF MT] L by simp
+  have PF: "Pred ((Red ^^ k) M) \<in> RT_PS" by (rule y3s_Pred_RT_PS[OF F LF])
+  have e: "(Red ^^ k) (Pred M) = Pred ((Red ^^ k) M)" by (rule y3s_Pred_funpow_Red[OF MT])
+  have PFR: "(Red ^^ k) (Pred M) \<in> RT_PS" using e PF by simp
+  have tp: "Trans (Pred M) = Trans (Pred ((Red ^^ k) M))"
+    using y3s_Trans_funpow_Red[OF PFR] e by simp
+  have tm: "Trans M = Trans ((Red ^^ k) M)" by (rule y3s_Trans_funpow_Red[OF F])
+  show ?thesis
+    using m_7_3_Pred_Trans_descend[rule_format, OF F LF] tp tm by simp
+qed
+
+text \<open>(3) \<open>p_7_4_RightAnces_RightNodes\<close>.  \<open>RightAnces\<close> has the SAME non-reduced
+  branch \<open>RightAnces M := RightAnces (Red M)\<close>, so both sides transport along the
+  same iteration.\<close>
+
+theorem y3s_7_4_RightAnces_RightNodes_TPS:
+  assumes RS: "RedStab M"
+  shows "RightAnces M = RightNodes (Trans M)"
+proof -
+  obtain k where F: "(Red ^^ k) M \<in> RT_PS" using RS unfolding RedStab_def by blast
+  have "RightAnces M = RightAnces ((Red ^^ k) M)" by (rule y3s_RightAnces_funpow_Red[OF F])
+  also have "\<dots> = RightNodes (Trans ((Red ^^ k) M))"
+    by (rule m_7_4_RightAnces_RightNodes[OF F])
+  also have "\<dots> = RightNodes (Trans M)" using y3s_Trans_funpow_Red[OF F] by simp
+  finally show ?thesis .
+qed
+
+text \<open>(4) \<open>p_7_4_RightAnces_zeroT\<close>.\<close>
+
+theorem y3s_7_4_RightAnces_zeroT_TPS:
+  assumes MT: "M \<in> T_PS" and RS: "RedStab M"
+  shows "zeroT M \<longleftrightarrow> RightAnces M = []"
+proof -
+  have "RightAnces M = RightNodes (Trans M)"
+    by (rule y3s_7_4_RightAnces_RightNodes_TPS[OF RS])
+  moreover have "RightNodes (Trans M) = [] \<longleftrightarrow> Trans M = 0\<^sub>B"
+    by (rule rnsub_RightNodes_empty_iff)
+  moreover have "zeroT M \<longleftrightarrow> Trans M = 0\<^sub>B" by (rule y3s_7_3_Trans_zeroT_TPS[OF MT RS])
+  ultimately show ?thesis by simp
+qed
+
+text \<open>(5) \<open>p_7_4_Mark_nextAdm\<close> (in correction A18's form, i.e. with the
+  \<open>(M,j) \<in> Marked\<close> premise).  Its CONCLUSION is \<open>Mark\<close>/\<open>Trans\<close>-only, hence
+  \<open>Red\<close>-transportable; but its HYPOTHESES (\<open>nextAdm\<close>, \<open>leR\<close>, \<open>Marked\<close>) mention
+  \<open>\<le>\<^sub>M\<close> and \<open>adm\<close>, which are NOT \<open>Red\<close>-invariant on \<open>T\<^bsub>PS\<^esub>\<close> (correction A4).  So we
+  obtain the \<open>M\<close>-level conclusion for an arbitrary \<open>M \<in> T\<^bsub>PS\<^esub>\<close>, with the
+  hypotheses read off the REDUCT \<open>(Red\<^sup>k) M\<close> --- an honest, genuinely
+  \<open>T\<^bsub>PS\<^esub>\<close>-level statement, but not literally the article's (which reads them off
+  \<open>M\<close>).  The article's own form is empirically true but its \<open>M\<close>-to-reduct
+  hypothesis transfer is exactly the A4-false step, so we do not claim it.\<close>
+
+theorem y3s_7_4_Mark_nextAdm_TPS_reduct:
+  assumes MT: "M \<in> T_PS" and F: "(Red ^^ k) M \<in> RT_PS"
+    and uniq: "\<exists>!j0. nextAdm ((Red ^^ k) M) 0 j0 (Lng ((Red ^^ k) M) - 1)"
+    and jM: "((Red ^^ k) M, j) \<in> Marked"
+    and jle: "leR ((Red ^^ k) M) 0 j (THE j0. nextAdm ((Red ^^ k) M) 0 j0
+                                              (Lng ((Red ^^ k) M) - 1))"
+  shows "\<exists>!sb. scb_decomp (Mark (Pred M) j)
+                  (fst sb) (flatBT (Mark (Pred M)
+                     (THE j0. nextAdm ((Red ^^ k) M) 0 j0 (Lng ((Red ^^ k) M) - 1)))) (snd sb)
+            \<and> scb_decomp (Mark M j)
+                  (fst sb) (flatBT (Mark M
+                     (THE j0. nextAdm ((Red ^^ k) M) 0 j0 (Lng ((Red ^^ k) M) - 1)))) (snd sb)"
+proof -
+  let ?F = "(Red ^^ k) M"
+  let ?j0 = "THE j0. nextAdm ?F 0 j0 (Lng ?F - 1)"
+  have na: "nextAdm ?F 0 ?j0 (Lng ?F - 1)" by (rule theI'[OF uniq])
+  have j0lt: "?j0 < Lng ?F - 1" using na unfolding nextAdm_def by blast
+  have LF: "1 < Lng ?F" using j0lt by linarith
+  have base: "\<exists>!sb. scb_decomp (Mark (Pred ?F) j) (fst sb) (flatBT (Mark (Pred ?F) ?j0)) (snd sb)
+            \<and> scb_decomp (Mark ?F j) (fst sb) (flatBT (Mark ?F ?j0)) (snd sb)"
+    by (rule m_7_4_Mark_nextAdm[OF F uniq jM jle])
+  have pe: "(Red ^^ k) (Pred M) = Pred ?F" by (rule y3s_Pred_funpow_Red[OF MT])
+  have PF: "Pred ?F \<in> RT_PS" by (rule y3s_Pred_RT_PS[OF F LF])
+  have PFR: "(Red ^^ k) (Pred M) \<in> RT_PS" using pe PF by simp
+  have mM: "\<And>i. Mark M i = Mark ?F i" using y3s_Mark_funpow_Red[OF F] by simp
+  have mP: "\<And>i. Mark (Pred M) i = Mark (Pred ?F) i"
+    using y3s_Mark_funpow_Red[OF PFR] pe by simp
+  show ?thesis using base mM mP by simp
+qed
 ML \<open>
   fun sorry_deps th =
     let
