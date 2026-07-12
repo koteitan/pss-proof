@@ -84818,9 +84818,16 @@ proof -
       (d4vx_ins s0 (entry M 1 (Lng M - 1) - 1) b0
          (Dpt (enat (entry M 1 (Lng M - 1) - 1)) 0\<^sub>B))"
     by (rule c4dx_condIV_base1[OF MR MPT J1pos T1 cIV inner])
+  \<comment> \<open>the \<open>LbaseH\<close> slot is stated at the CENSUS body \<open>bpHeadT (Trans (s84x_N M))\<close>;
+     under \<open>admeq\<close> that term IS \<open>transC2 M\<close> (@{thm [source] w84x_TN_c2_of_admeq}).\<close>
+  have TNc2: "Trans (s84x_N M) = transC2 M"
+    by (rule w84x_TN_c2_of_admeq[OF MST MPT hp nVI admeq])
+  have inner': "scb_decomp (bpHeadT (Trans (s84x_N M))) s0
+              (flatBT (Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B)) b0"
+    using inner TNc2 by simp
   have Lbase: "leBT (Dpt (enat (entry M 1 (Lng M - 1) - 1)) 0\<^sub>B)
                  (d4vx_ins s0 (entry M 1 (Lng M - 1) - 1) b0 0\<^sub>B)"
-    by (rule LbaseH[OF inner])
+    by (rule LbaseH[OF inner'])
   show ?thesis
     by (rule c4cx_condIV_exchange_full[OF MST MPT hp cIV reg admeq n1 d1 d2 d3
           uv bodyT bodyne dbbody inner k1 mn base0 base1 Lbase])
@@ -89827,6 +89834,10 @@ lemma crx_condIII_exchange_full:
                   cfbx_reg (s84x_jm2 M - s84x_jm3 M) (Red (Pred (s84x_N M)))"
     and M0RUN: "\<not> s84x_jm3 M < s84x_jm2 M \<Longrightarrow>
                   nextR M 1 (s84x_jm2 M) (s84x_jm2 M + 1)"
+    and LbaseH: "\<And>s0 b0. scb_decomp (bpHeadT (Trans (s84x_N M))) s0
+                    (flatBT (Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B)) b0 \<Longrightarrow>
+                  leBT (Dpt (enat (entry M 1 (Lng M - 1) - 1)) 0\<^sub>B)
+                    (d4vx_ins s0 (entry M 1 (Lng M - 1) - 1) b0 0\<^sub>B)"
   shows "lessBT (Trans ((M::pairseq)[n])) (operB (Trans M) (numBT n))
        \<and> lessBT (Trans ((M::pairseq)[n])) (Trans M)
        \<and> lessBT (operB (Trans M) (numBT (n - 1))) (Trans ((M::pairseq)[n + 1]))"
@@ -89834,7 +89845,7 @@ proof -
   have tri: "lessBT (Trans ((M::pairseq)[n])) (operB (Trans M) (numBT n))
            \<and> lessBT (operB (Trans M) (numBT (n - 1))) (Trans ((M::pairseq)[n + 1]))"
     by (rule crx_condIII_exchange13[OF MST MPT hp j1gt cIII n1
-          REGS REGSP M0RUN])
+          REGS REGSP M0RUN LbaseH])
   have c2: "lessBT (Trans ((M::pairseq)[n])) (Trans M)"
     by (rule crx_condIII_descent[OF MST MPT hp j1gt cIII n1 REGS REGSP])
   show ?thesis using tri c2 by blast
@@ -90881,6 +90892,10 @@ lemma c4hx_condIV_exchange_full_of_regimes:
                  cfbx_reg (s84x_jm2 M - s84x_jm3 M) (s84x_N M)"
     and regSP: "s84x_jm3 M < s84x_jm2 M \<Longrightarrow>
                   cfbx_reg (s84x_jm2 M - s84x_jm3 M) (Pred (s84x_N M))"
+    and LbaseH: "\<And>s0 b0. scb_decomp (bpHeadT (Trans (s84x_N M))) s0
+                    (flatBT (Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B)) b0 \<Longrightarrow>
+                  leBT (Dpt (enat (entry M 1 (Lng M - 1) - 1)) 0\<^sub>B)
+                    (d4vx_ins s0 (entry M 1 (Lng M - 1) - 1) b0 0\<^sub>B)"
   shows "lessBT (Trans ((M::pairseq)[n])) (operB (Trans M) (numBT n))
        \<and> lessBT (Trans ((M::pairseq)[n])) (Trans M)
        \<and> lessBT (operB (Trans M) (numBT (n - 1))) (Trans ((M::pairseq)[n + 1]))"
@@ -90910,7 +90925,8 @@ proof -
               leBT (Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B) c"
     by (rule HB_condIV_t2_components[OF MST MPT hp cIV])
   show ?thesis
-    by (rule c4dx_condIV_exchange_assembled[OF MST MPT hp cIV reg admeq n1 d1 d2 d3 HB])
+    by (rule c4dx_condIV_exchange_assembled[OF MST MPT hp cIV reg admeq n1 d1 d2 d3 HB
+          LbaseH])
 qed
 
 
@@ -92345,6 +92361,10 @@ lemma crg_condIII_exchange_full:
                   cfbx_reg (s84x_jm2 M - s84x_jm3 M) (Red (Pred (s84x_N M)))"
     and M0RUN: "\<not> s84x_jm3 M < s84x_jm2 M \<Longrightarrow>
                   nextR M 1 (s84x_jm2 M) (s84x_jm2 M + 1)"
+    and LbaseH: "\<And>s0 b0. scb_decomp (bpHeadT (Trans (s84x_N M))) s0
+                    (flatBT (Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B)) b0 \<Longrightarrow>
+                  leBT (Dpt (enat (entry M 1 (Lng M - 1) - 1)) 0\<^sub>B)
+                    (d4vx_ins s0 (entry M 1 (Lng M - 1) - 1) b0 0\<^sub>B)"
   shows "lessBT (Trans ((M::pairseq)[n])) (operB (Trans M) (numBT n))
        \<and> lessBT (Trans ((M::pairseq)[n])) (Trans M)
        \<and> lessBT (operB (Trans M) (numBT (n - 1))) (Trans ((M::pairseq)[n + 1]))"
@@ -92352,7 +92372,7 @@ proof -
   have tri: "lessBT (Trans ((M::pairseq)[n])) (operB (Trans M) (numBT n))
            \<and> lessBT (operB (Trans M) (numBT (n - 1))) (Trans ((M::pairseq)[n + 1]))"
     by (rule crg_condIII_exchange13[OF MST MPT hp j1gt cIII n1
-          REGS REGSP M0RUN])
+          REGS REGSP M0RUN LbaseH])
   have c2: "lessBT (Trans ((M::pairseq)[n])) (Trans M)"
     by (rule crg_condIII_descent[OF MST MPT hp j1gt cIII n1 REGS REGSP])
   show ?thesis using tri c2 by blast
@@ -93558,6 +93578,10 @@ lemma c4wx_condIV_exchange_full_of_regimes:
                  cfbx_reg (s84x_jm2 M - s84x_jm3 M) (s84x_N M)"
     and regSP_R: "Br (Red (Pred (s84x_N M))) \<noteq> [] \<Longrightarrow>
                     cfbx_reg (s84x_jm2 M - s84x_jm3 M) (Red (Pred (s84x_N M)))"
+    and LbaseH: "\<And>s0 b0. scb_decomp (bpHeadT (Trans (s84x_N M))) s0
+                    (flatBT (Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B)) b0 \<Longrightarrow>
+                  leBT (Dpt (enat (entry M 1 (Lng M - 1) - 1)) 0\<^sub>B)
+                    (d4vx_ins s0 (entry M 1 (Lng M - 1) - 1) b0 0\<^sub>B)"
   shows "lessBT (Trans ((M::pairseq)[n])) (operB (Trans M) (numBT n))
        \<and> lessBT (Trans ((M::pairseq)[n])) (Trans M)
        \<and> lessBT (operB (Trans M) (numBT (n - 1))) (Trans ((M::pairseq)[n + 1]))"
@@ -93582,7 +93606,8 @@ proof -
               leBT (Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B) c"
     by (rule HB_condIV_t2_components[OF MST MPT hp cIV])
   show ?thesis
-    by (rule c4dx_condIV_exchange_assembled[OF MST MPT hp cIV reg admeq n1 d1 d2 d3 HB])
+    by (rule c4dx_condIV_exchange_assembled[OF MST MPT hp cIV reg admeq n1 d1 d2 d3 HB
+          LbaseH])
 qed
 
 (* ===== end r32-CONDIVCLOSE ===== *)
@@ -95494,6 +95519,10 @@ lemma c4rx_condIV_exchange_full:
     and noguard: "\<not> (s84x_jm3 M < s84x_jm2 M)"
     and regSP_R: "Br (Red (Pred (s84x_N M))) \<noteq> [] \<Longrightarrow>
                     cfbx_reg (s84x_jm2 M - s84x_jm3 M) (Red (Pred (s84x_N M)))"
+    and LbaseH: "\<And>s0 b0. scb_decomp (bpHeadT (Trans (s84x_N M))) s0
+                    (flatBT (Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B)) b0 \<Longrightarrow>
+                  leBT (Dpt (enat (entry M 1 (Lng M - 1) - 1)) 0\<^sub>B)
+                    (d4vx_ins s0 (entry M 1 (Lng M - 1) - 1) b0 0\<^sub>B)"
   shows "lessBT (Trans ((M::pairseq)[n])) (operB (Trans M) (numBT n))
        \<and> lessBT (Trans ((M::pairseq)[n])) (Trans M)
        \<and> lessBT (operB (Trans M) (numBT (n - 1))) (Trans ((M::pairseq)[n + 1]))"
@@ -95503,7 +95532,7 @@ proof -
     by (rule c4rx_condIV_regS_of_noguard[OF noguard])
   show ?thesis
     by (rule c4wx_condIV_exchange_full_of_regimes[OF MST MPT hp cIV admeq n1
-          regS regSP_R])
+          regS regSP_R LbaseH])
 qed
 
 (* ===== end r34-WIRECF condIV block ===== *)
@@ -95783,6 +95812,10 @@ lemma lbx_condIII_exchange_full_of_anc0:
     and REGSP: "s84x_jm3 M < s84x_jm2 M \<Longrightarrow>
                   cfbx_reg (s84x_jm2 M - s84x_jm3 M) (Red (Pred (s84x_N M)))"
     and ANC0: "le0 M (s84x_jm2 M + 1) (transJ0 M)"
+    and LbaseH: "\<And>s0 b0. scb_decomp (bpHeadT (Trans (s84x_N M))) s0
+                    (flatBT (Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B)) b0 \<Longrightarrow>
+                  leBT (Dpt (enat (entry M 1 (Lng M - 1) - 1)) 0\<^sub>B)
+                    (d4vx_ins s0 (entry M 1 (Lng M - 1) - 1) b0 0\<^sub>B)"
   shows "lessBT (Trans ((M::pairseq)[n])) (operB (Trans M) (numBT n))
        \<and> lessBT (Trans ((M::pairseq)[n])) (Trans M)
        \<and> lessBT (operB (Trans M) (numBT (n - 1))) (Trans ((M::pairseq)[n + 1]))"
@@ -95792,7 +95825,7 @@ proof -
                  nextR M 1 (s84x_jm2 M) (s84x_jm2 M + 1)"
     using lbx_M0RUN_of_anc0[OF MPT hp j1gt0 ANC0] by simp
   show ?thesis
-    by (rule crx_condIII_exchange_full[OF MST MPT hp j1gt cIII n1 REGS REGSP M0RUN])
+    by (rule crx_condIII_exchange_full[OF MST MPT hp j1gt cIII n1 REGS REGSP M0RUN LbaseH])
 qed
 
 text \<open>The task-named keystone @{thm [source] crg_condIII_exchange_full} with its
@@ -95818,6 +95851,10 @@ lemma lbx_crg_condIII_exchange_full_reduced:
     and REGSP: "Br (Red (Pred (s84x_N M))) \<noteq> [] \<Longrightarrow>
                   cfbx_reg (s84x_jm2 M - s84x_jm3 M) (Red (Pred (s84x_N M)))"
     and ANC0: "le0 M (s84x_jm2 M + 1) (transJ0 M)"
+    and LbaseH: "\<And>s0 b0. scb_decomp (bpHeadT (Trans (s84x_N M))) s0
+                    (flatBT (Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B)) b0 \<Longrightarrow>
+                  leBT (Dpt (enat (entry M 1 (Lng M - 1) - 1)) 0\<^sub>B)
+                    (d4vx_ins s0 (entry M 1 (Lng M - 1) - 1) b0 0\<^sub>B)"
   shows "lessBT (Trans ((M::pairseq)[n])) (operB (Trans M) (numBT n))
        \<and> lessBT (Trans ((M::pairseq)[n])) (Trans M)
        \<and> lessBT (operB (Trans M) (numBT (n - 1))) (Trans ((M::pairseq)[n + 1]))"
@@ -95835,7 +95872,7 @@ proof -
                  nextR M 1 (s84x_jm2 M) (s84x_jm2 M + 1)"
     using lbx_M0RUN_of_anc0[OF MPT hp j1gt0 ANC0] by simp
   show ?thesis
-    by (rule crg_condIII_exchange_full[OF MST MPT hp j1gt cIII n1 REGS REGSP M0RUN])
+    by (rule crg_condIII_exchange_full[OF MST MPT hp j1gt cIII n1 REGS REGSP M0RUN LbaseH])
 qed
 
 (* ===== end r35-LASTBLOCK M0RUN sharpening ===== *)
@@ -96351,6 +96388,10 @@ lemma lb2x_crg_condIII_exchange_full_wgap:
                   cfbx_reg (s84x_jm2 M - s84x_jm3 M) (Red (Pred (s84x_N M)))"
     and WGAP: "entry M 0 (transJ0 M)
                  = entry M 0 (s84x_jm2 M) + (transJ0 M - s84x_jm2 M)"
+    and LbaseH: "\<And>s0 b0. scb_decomp (bpHeadT (Trans (s84x_N M))) s0
+                    (flatBT (Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B)) b0 \<Longrightarrow>
+                  leBT (Dpt (enat (entry M 1 (Lng M - 1) - 1)) 0\<^sub>B)
+                    (d4vx_ins s0 (entry M 1 (Lng M - 1) - 1) b0 0\<^sub>B)"
   shows "lessBT (Trans ((M::pairseq)[n])) (operB (Trans M) (numBT n))
        \<and> lessBT (Trans ((M::pairseq)[n])) (Trans M)
        \<and> lessBT (operB (Trans M) (numBT (n - 1))) (Trans ((M::pairseq)[n + 1]))"
@@ -96359,7 +96400,7 @@ proof -
   have ANC0: "le0 M (s84x_jm2 M + 1) (transJ0 M)"
     by (rule lb2x_anc0_of_wgap[OF MST MPT hp j1gt branch WGAP])
   show ?thesis
-    by (rule lbx_crg_condIII_exchange_full_reduced[OF MST MPT hp j1gt cIII n1 REGSP ANC0])
+    by (rule lbx_crg_condIII_exchange_full_reduced[OF MST MPT hp j1gt cIII n1 REGSP ANC0 LbaseH])
 qed
 
 (* ===== end r36-LASTBLOCK2 ANC0 reduction ===== *)
@@ -96927,6 +96968,10 @@ lemma wgx37_condIII_exchange_full_of_ineq:
     and REGSP: "s84x_jm3 M < s84x_jm2 M \<Longrightarrow>
                   cfbx_reg (s84x_jm2 M - s84x_jm3 M) (Red (Pred (s84x_N M)))"
     and INEQ: "entry M 1 (s84x_jm2 M) < entry M 1 (s84x_jm2 M + 1)"
+    and LbaseH: "\<And>s0 b0. scb_decomp (bpHeadT (Trans (s84x_N M))) s0
+                    (flatBT (Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B)) b0 \<Longrightarrow>
+                  leBT (Dpt (enat (entry M 1 (Lng M - 1) - 1)) 0\<^sub>B)
+                    (d4vx_ins s0 (entry M 1 (Lng M - 1) - 1) b0 0\<^sub>B)"
   shows "lessBT (Trans ((M::pairseq)[n])) (operB (Trans M) (numBT n))
        \<and> lessBT (Trans ((M::pairseq)[n])) (Trans M)
        \<and> lessBT (operB (Trans M) (numBT (n - 1))) (Trans ((M::pairseq)[n + 1]))"
@@ -96935,7 +96980,7 @@ proof -
                  nextR M 1 (s84x_jm2 M) (s84x_jm2 M + 1)"
     using c3cx_M0RUN_of_a[OF hp INEQ] by simp
   show ?thesis
-    by (rule crx_condIII_exchange_full[OF MST MPT hp j1gt cIII n1 REGS REGSP M0RUN])
+    by (rule crx_condIII_exchange_full[OF MST MPT hp j1gt cIII n1 REGS REGSP M0RUN LbaseH])
 qed
 
 text \<open>Same exchange, expressed on the sharper true residual \<open>E1GE\<close> (which implies
@@ -96954,6 +96999,10 @@ lemma wgx37_condIII_exchange_full_of_e1ge:
     and REGSP: "s84x_jm3 M < s84x_jm2 M \<Longrightarrow>
                   cfbx_reg (s84x_jm2 M - s84x_jm3 M) (Red (Pred (s84x_N M)))"
     and E1GE: "entry M 1 (Lng M - 1) \<le> entry M 1 (s84x_jm2 M + 1)"
+    and LbaseH: "\<And>s0 b0. scb_decomp (bpHeadT (Trans (s84x_N M))) s0
+                    (flatBT (Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B)) b0 \<Longrightarrow>
+                  leBT (Dpt (enat (entry M 1 (Lng M - 1) - 1)) 0\<^sub>B)
+                    (d4vx_ins s0 (entry M 1 (Lng M - 1) - 1) b0 0\<^sub>B)"
   shows "lessBT (Trans ((M::pairseq)[n])) (operB (Trans M) (numBT n))
        \<and> lessBT (Trans ((M::pairseq)[n])) (Trans M)
        \<and> lessBT (operB (Trans M) (numBT (n - 1))) (Trans ((M::pairseq)[n + 1]))"
@@ -96962,7 +97011,7 @@ proof -
     by (rule wgx37_m0run_ineq_of_e1ge[OF hp E1GE])
   show ?thesis
     by (rule wgx37_condIII_exchange_full_of_ineq[OF MST MPT hp j1gt cIII n1
-          REGS REGSP INEQ])
+          REGS REGSP INEQ LbaseH])
 qed
 
 (* ===== end r37-WGAP block ===== *)
@@ -97857,6 +97906,10 @@ lemma e1x_condIII_exchange_full_uncond:
                  cfbx_reg (s84x_jm2 M - s84x_jm3 M) (Red (s84x_N M))"
     and REGSP: "s84x_jm3 M < s84x_jm2 M \<Longrightarrow>
                   cfbx_reg (s84x_jm2 M - s84x_jm3 M) (Red (Pred (s84x_N M)))"
+    and LbaseH: "\<And>s0 b0. scb_decomp (bpHeadT (Trans (s84x_N M))) s0
+                    (flatBT (Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B)) b0 \<Longrightarrow>
+                  leBT (Dpt (enat (entry M 1 (Lng M - 1) - 1)) 0\<^sub>B)
+                    (d4vx_ins s0 (entry M 1 (Lng M - 1) - 1) b0 0\<^sub>B)"
   shows "lessBT (Trans ((M::pairseq)[n])) (operB (Trans M) (numBT n))
        \<and> lessBT (Trans ((M::pairseq)[n])) (Trans M)
        \<and> lessBT (operB (Trans M) (numBT (n - 1))) (Trans ((M::pairseq)[n + 1]))"
@@ -97864,7 +97917,7 @@ proof -
   have E1GE: "entry M 1 (Lng M - 1) \<le> entry M 1 (s84x_jm2 M + 1)"
     by (rule e1x_e1ge_uncond[OF MST MPT hp j1gt])
   show ?thesis
-    by (rule wgx37_condIII_exchange_full_of_e1ge[OF MST MPT hp j1gt cIII n1 REGS REGSP E1GE])
+    by (rule wgx37_condIII_exchange_full_of_e1ge[OF MST MPT hp j1gt cIII n1 REGS REGSP E1GE LbaseH])
 qed
 
 text \<open>Same, on the \<open>crg\<close> route (the \<open>Br(Red(Pred N))\<close>-guarded \<open>REGSP\<close> form used by
@@ -97882,6 +97935,10 @@ lemma e1x_condIII_exchange_full_crg_uncond:
                  cfbx_reg (s84x_jm2 M - s84x_jm3 M) (Red (s84x_N M))"
     and REGSP: "Br (Red (Pred (s84x_N M))) \<noteq> [] \<Longrightarrow>
                   cfbx_reg (s84x_jm2 M - s84x_jm3 M) (Red (Pred (s84x_N M)))"
+    and LbaseH: "\<And>s0 b0. scb_decomp (bpHeadT (Trans (s84x_N M))) s0
+                    (flatBT (Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B)) b0 \<Longrightarrow>
+                  leBT (Dpt (enat (entry M 1 (Lng M - 1) - 1)) 0\<^sub>B)
+                    (d4vx_ins s0 (entry M 1 (Lng M - 1) - 1) b0 0\<^sub>B)"
   shows "lessBT (Trans ((M::pairseq)[n])) (operB (Trans M) (numBT n))
        \<and> lessBT (Trans ((M::pairseq)[n])) (Trans M)
        \<and> lessBT (operB (Trans M) (numBT (n - 1))) (Trans ((M::pairseq)[n + 1]))"
@@ -97892,7 +97949,7 @@ proof -
                  nextR M 1 (s84x_jm2 M) (s84x_jm2 M + 1)"
     using wgx37_m0run_of_e1ge[OF hp E1GE] by simp
   show ?thesis
-    by (rule crg_condIII_exchange_full[OF MST MPT hp j1gt cIII n1 REGS REGSP M0RUN])
+    by (rule crg_condIII_exchange_full[OF MST MPT hp j1gt cIII n1 REGS REGSP M0RUN LbaseH])
 qed
 
 (* ===== end r38-E1GE block ===== *)
@@ -99118,6 +99175,10 @@ lemma cpx_condIII_exchange_full:
                   cfbx_reg (s84x_jm2 M - s84x_jm3 M) (Red (Pred (s84x_N M)))"
     and M0RUN: "\<not> s84x_jm3 M < s84x_jm2 M \<Longrightarrow>
                   nextR M 1 (s84x_jm2 M) (s84x_jm2 M + 1)"
+    and LbaseH: "\<And>s0 b0. scb_decomp (bpHeadT (Trans (s84x_N M))) s0
+                    (flatBT (Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B)) b0 \<Longrightarrow>
+                  leBT (Dpt (enat (entry M 1 (Lng M - 1) - 1)) 0\<^sub>B)
+                    (d4vx_ins s0 (entry M 1 (Lng M - 1) - 1) b0 0\<^sub>B)"
   shows "lessBT (Trans ((M::pairseq)[n])) (operB (Trans M) (numBT n))
        \<and> lessBT (Trans ((M::pairseq)[n])) (Trans M)
        \<and> lessBT (operB (Trans M) (numBT (n - 1))) (Trans ((M::pairseq)[n + 1]))"
@@ -99125,7 +99186,7 @@ proof -
   have tri: "lessBT (Trans ((M::pairseq)[n])) (operB (Trans M) (numBT n))
            \<and> lessBT (operB (Trans M) (numBT (n - 1))) (Trans ((M::pairseq)[n + 1]))"
     by (rule cpx_condIII_exchange13[OF MST MPT hp j1gt cIII n1
-          REGS REGSP M0RUN])
+          REGS REGSP M0RUN LbaseH])
   have c2: "lessBT (Trans ((M::pairseq)[n])) (Trans M)"
     by (rule cpx_condIII_descent[OF MST MPT hp j1gt cIII n1 REGS REGSP])
   show ?thesis using tri c2 by blast
@@ -99147,6 +99208,10 @@ lemma cpx_condIII_exchange_uncond:
     and j1gt: "1 < Lng M - 1"
     and cIII: "transCondIII M"
     and n1: "1 \<le> n"
+    and LbaseH: "\<And>s0 b0. scb_decomp (bpHeadT (Trans (s84x_N M))) s0
+                    (flatBT (Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B)) b0 \<Longrightarrow>
+                  leBT (Dpt (enat (entry M 1 (Lng M - 1) - 1)) 0\<^sub>B)
+                    (d4vx_ins s0 (entry M 1 (Lng M - 1) - 1) b0 0\<^sub>B)"
   shows "lessBT (Trans ((M::pairseq)[n])) (operB (Trans M) (numBT n))
        \<and> lessBT (Trans ((M::pairseq)[n])) (Trans M)
        \<and> lessBT (operB (Trans M) (numBT (n - 1))) (Trans ((M::pairseq)[n + 1]))"
@@ -99168,7 +99233,7 @@ proof -
                  nextR M 1 (s84x_jm2 M) (s84x_jm2 M + 1)"
     using wgx37_m0run_of_e1ge[OF hp E1GE] by simp
   show ?thesis
-    by (rule cpx_condIII_exchange_full[OF MST MPT hp j1gt cIII n1 REGS REGSP M0RUN])
+    by (rule cpx_condIII_exchange_full[OF MST MPT hp j1gt cIII n1 REGS REGSP M0RUN LbaseH])
 qed
 
 
@@ -99202,12 +99267,17 @@ lemma cpx_exchIII_slot:
     and cIII: "transCondIII N" and m1: "1 < m"
     and noParentPred: "\<not> hasParent N 1 (Lng N - 1) \<Longrightarrow>
                          \<exists>k. leBT (Trans ((N::pairseq)[m])) (operB (Trans N) (numBT k))"
+    and LbaseH: "\<And>s0 b0. hasParent N 1 (Lng N - 1) \<Longrightarrow>
+                  scb_decomp (bpHeadT (Trans (s84x_N N))) s0
+                    (flatBT (Dpt (enat (entry N 1 (Lng N - 1))) 0\<^sub>B)) b0 \<Longrightarrow>
+                  leBT (Dpt (enat (entry N 1 (Lng N - 1) - 1)) 0\<^sub>B)
+                    (d4vx_ins s0 (entry N 1 (Lng N - 1) - 1) b0 0\<^sub>B)"
   shows "\<exists>k. leBT (Trans ((N::pairseq)[m])) (operB (Trans N) (numBT k))"
 proof (cases "hasParent N 1 (Lng N - 1)")
   case True
   have m1': "1 \<le> m" using m1 by simp
   have "lessBT (Trans ((N::pairseq)[m])) (operB (Trans N) (numBT m))"
-    using cpx_condIII_exchange_uncond[OF NST NP True j1gt cIII m1'] by simp
+    using cpx_condIII_exchange_uncond[OF NST NP True j1gt cIII m1' LbaseH[OF True]] by simp
   hence "leBT (Trans ((N::pairseq)[m])) (operB (Trans N) (numBT m))" by blast
   thus ?thesis by blast
 next
@@ -100561,6 +100631,10 @@ lemma cpx_condIV_exchange_full:
                  cfbx_reg (s84x_jm2 M - s84x_jm3 M) (Red (s84x_N M))"
     and REGSP: "s84x_jm3 M < s84x_jm2 M \<Longrightarrow> Br (Red (Pred (s84x_N M))) \<noteq> [] \<Longrightarrow>
                   cfbx_reg (s84x_jm2 M - s84x_jm3 M) (Red (Pred (s84x_N M)))"
+    and LbaseH: "\<And>s0 b0. scb_decomp (bpHeadT (Trans (s84x_N M))) s0
+                    (flatBT (Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B)) b0 \<Longrightarrow>
+                  leBT (Dpt (enat (entry M 1 (Lng M - 1) - 1)) 0\<^sub>B)
+                    (d4vx_ins s0 (entry M 1 (Lng M - 1) - 1) b0 0\<^sub>B)"
   shows "lessBT (Trans ((M::pairseq)[n])) (operB (Trans M) (numBT n))
        \<and> lessBT (Trans ((M::pairseq)[n])) (Trans M)
        \<and> lessBT (operB (Trans M) (numBT (n - 1))) (Trans ((M::pairseq)[n + 1]))"
@@ -100585,7 +100659,8 @@ proof -
               leBT (Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B) c"
     by (rule HB_condIV_t2_components[OF MST MPT hp cIV])
   show ?thesis
-    by (rule c4dx_condIV_exchange_assembled[OF MST MPT hp cIV reg admeq n1 d1 d2 d3 HB])
+    by (rule c4dx_condIV_exchange_assembled[OF MST MPT hp cIV reg admeq n1 d1 d2 d3 HB
+          LbaseH])
 qed
 
 text \<open>\<^bold>\<open>The condIV exchange triple, modulo the admeq gate ONLY.\<close>  \<open>REGS\<close> is
@@ -100602,6 +100677,10 @@ lemma cpx_condIV_exchange_uncond:
     and cIV: "transCondIV M"
     and admeq: "Adm M (s84x_jm2 M) = transJm1 M"
     and n1: "1 \<le> n"
+    and LbaseH: "\<And>s0 b0. scb_decomp (bpHeadT (Trans (s84x_N M))) s0
+                    (flatBT (Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B)) b0 \<Longrightarrow>
+                  leBT (Dpt (enat (entry M 1 (Lng M - 1) - 1)) 0\<^sub>B)
+                    (d4vx_ins s0 (entry M 1 (Lng M - 1) - 1) b0 0\<^sub>B)"
   shows "lessBT (Trans ((M::pairseq)[n])) (operB (Trans M) (numBT n))
        \<and> lessBT (Trans ((M::pairseq)[n])) (Trans M)
        \<and> lessBT (operB (Trans M) (numBT (n - 1))) (Trans ((M::pairseq)[n + 1]))"
@@ -100624,7 +100703,7 @@ proof -
       by (rule slx37_regSP_uncond[OF MST MPT hp j1gt branch g b])
   qed
   show ?thesis
-    by (rule cpx_condIV_exchange_full[OF MST MPT hp cIV admeq n1 REGS REGSP])
+    by (rule cpx_condIV_exchange_full[OF MST MPT hp cIV admeq n1 REGS REGSP LbaseH])
 qed
 
 (* ===== r42 merge: wt-s4b condIV non-admeq (admeq-free brick + all-uncond combiner; non-admeq residual isolated) ===== *)
@@ -100716,12 +100795,16 @@ lemma cnx_condIV_exchange_alluncond:
         lessBT (Trans ((M::pairseq)[n])) (operB (Trans M) (numBT n))
       \<and> lessBT (Trans ((M::pairseq)[n])) (Trans M)
       \<and> lessBT (operB (Trans M) (numBT (n - 1))) (Trans ((M::pairseq)[n + 1]))"
+    and LbaseH: "\<And>s0 b0. scb_decomp (bpHeadT (Trans (s84x_N M))) s0
+                    (flatBT (Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B)) b0 \<Longrightarrow>
+                  leBT (Dpt (enat (entry M 1 (Lng M - 1) - 1)) 0\<^sub>B)
+                    (d4vx_ins s0 (entry M 1 (Lng M - 1) - 1) b0 0\<^sub>B)"
   shows "lessBT (Trans ((M::pairseq)[n])) (operB (Trans M) (numBT n))
        \<and> lessBT (Trans ((M::pairseq)[n])) (Trans M)
        \<and> lessBT (operB (Trans M) (numBT (n - 1))) (Trans ((M::pairseq)[n + 1]))"
 proof (cases "Adm M (s84x_jm2 M) = transJm1 M")
   case True
-  show ?thesis by (rule cpx_condIV_exchange_uncond[OF MST MPT hp cIV True n1])
+  show ?thesis by (rule cpx_condIV_exchange_uncond[OF MST MPT hp cIV True n1 LbaseH])
 next
   case False
   show ?thesis by (rule nonadmeq_exch[OF False])
@@ -101542,12 +101625,17 @@ lemma npx_exchIII_slot_uncond:
   fixes N :: pairseq and m :: nat
   assumes NST: "N \<in> ST_PS" and NP: "N \<in> PT_PS" and j1gt: "1 < Lng N - 1"
     and cIII: "transCondIII N" and m1: "1 < m"
+    and LbaseH: "\<And>s0 b0. hasParent N 1 (Lng N - 1) \<Longrightarrow>
+                  scb_decomp (bpHeadT (Trans (s84x_N N))) s0
+                    (flatBT (Dpt (enat (entry N 1 (Lng N - 1))) 0\<^sub>B)) b0 \<Longrightarrow>
+                  leBT (Dpt (enat (entry N 1 (Lng N - 1) - 1)) 0\<^sub>B)
+                    (d4vx_ins s0 (entry N 1 (Lng N - 1) - 1) b0 0\<^sub>B)"
   shows "\<exists>k. leBT (Trans ((N::pairseq)[m])) (operB (Trans N) (numBT k))"
 proof (cases "hasParent N 1 (Lng N - 1)")
   case True
   have m1': "1 \<le> m" using m1 by simp
   have "lessBT (Trans ((N::pairseq)[m])) (operB (Trans N) (numBT m))"
-    using cpx_condIII_exchange_uncond[OF NST NP True j1gt cIII m1'] by simp
+    using cpx_condIII_exchange_uncond[OF NST NP True j1gt cIII m1' LbaseH[OF True]] by simp
   hence "leBT (Trans ((N::pairseq)[m])) (operB (Trans N) (numBT m))" by blast
   thus ?thesis by blast
 next
@@ -102314,6 +102402,10 @@ lemma cnv_condIV_nonadmeq_descent:
                  cfbx_reg (s84x_jm2 M - s84x_jm3 M) (Red (s84x_N M))"
     and REGSP: "s84x_jm3 M < s84x_jm2 M \<Longrightarrow> Br (Red (Pred (s84x_N M))) \<noteq> [] \<Longrightarrow>
                   cfbx_reg (s84x_jm2 M - s84x_jm3 M) (Red (Pred (s84x_N M)))"
+    and LbaseH: "\<And>s0 b0. scb_decomp (bpHeadT (Trans (s84x_N M))) s0
+                    (flatBT (Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B)) b0 \<Longrightarrow>
+                  leBT (Dpt (enat (entry M 1 (Lng M - 1) - 1)) 0\<^sub>B)
+                    (d4vx_ins s0 (entry M 1 (Lng M - 1) - 1) b0 0\<^sub>B)"
   shows "lessBT (Trans ((M::pairseq)[n])) (Trans M)"
 proof -
   let ?e3 = "entry M 1 (s84x_jm3 M)"
@@ -102412,6 +102504,10 @@ lemma cnv_nonadmeq_exch:
     and cIV: "transCondIV M"
     and nonadmeq: "Adm M (s84x_jm2 M) \<noteq> transJm1 M"
     and n1: "1 \<le> n"
+    and LbaseH: "\<And>s0 b0. scb_decomp (bpHeadT (Trans (s84x_N M))) s0
+                    (flatBT (Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B)) b0 \<Longrightarrow>
+                  leBT (Dpt (enat (entry M 1 (Lng M - 1) - 1)) 0\<^sub>B)
+                    (d4vx_ins s0 (entry M 1 (Lng M - 1) - 1) b0 0\<^sub>B)"
   shows "lessBT (Trans ((M::pairseq)[n])) (operB (Trans M) (numBT n))
        \<and> lessBT (Trans ((M::pairseq)[n])) (Trans M)
        \<and> lessBT (operB (Trans M) (numBT (n - 1))) (Trans ((M::pairseq)[n + 1]))"
@@ -102441,10 +102537,10 @@ proof -
   have tri: "lessBT (Trans ((M::pairseq)[n])) (operB (Trans M) (numBT n))
            \<and> lessBT (operB (Trans M) (numBT (n - 1))) (Trans ((M::pairseq)[n + 1]))"
     by (rule cnv_condIV_nonadmeq_exchange13[OF MST MPT hp j1gt cIV nonadmeq n1
-          REGS REGSP M0RUN])
+          REGS REGSP M0RUN LbaseH])
   have c2: "lessBT (Trans ((M::pairseq)[n])) (Trans M)"
     by (rule cnv_condIV_nonadmeq_descent[OF MST MPT hp j1gt cIV nonadmeq n1
-          REGS REGSP])
+          REGS REGSP LbaseH])
   show ?thesis using tri c2 by blast
 qed
 
@@ -102460,6 +102556,10 @@ lemma cnv_condIV_exchange_final:
     and hp: "hasParent M 1 (Lng M - 1)"
     and cIV: "transCondIV M"
     and n1: "1 \<le> n"
+    and LbaseH: "\<And>s0 b0. scb_decomp (bpHeadT (Trans (s84x_N M))) s0
+                    (flatBT (Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B)) b0 \<Longrightarrow>
+                  leBT (Dpt (enat (entry M 1 (Lng M - 1) - 1)) 0\<^sub>B)
+                    (d4vx_ins s0 (entry M 1 (Lng M - 1) - 1) b0 0\<^sub>B)"
   shows "lessBT (Trans ((M::pairseq)[n])) (operB (Trans M) (numBT n))
        \<and> lessBT (Trans ((M::pairseq)[n])) (Trans M)
        \<and> lessBT (operB (Trans M) (numBT (n - 1))) (Trans ((M::pairseq)[n + 1]))"
@@ -102468,9 +102568,9 @@ proof -
         lessBT (Trans ((M::pairseq)[n])) (operB (Trans M) (numBT n))
       \<and> lessBT (Trans ((M::pairseq)[n])) (Trans M)
       \<and> lessBT (operB (Trans M) (numBT (n - 1))) (Trans ((M::pairseq)[n + 1]))"
-    by (rule cnv_nonadmeq_exch[OF MST MPT hp cIV _ n1])
+    by (rule cnv_nonadmeq_exch[OF MST MPT hp cIV _ n1 LbaseH])
   show ?thesis
-    by (rule cnx_condIV_exchange_alluncond[OF MST MPT hp cIV n1 ne])
+    by (rule cnx_condIV_exchange_alluncond[OF MST MPT hp cIV n1 ne LbaseH])
 qed
 
 (* ===== end r45 CONDIV-NONADMEQ ===== *)
@@ -105986,12 +106086,17 @@ lemma dpx_exchIV_slot_uncond:
   fixes N :: pairseq and m :: nat
   assumes NST: "N \<in> ST_PS" and NP: "N \<in> PT_PS" and j1gt: "1 < Lng N - 1"
     and cIV: "transCondIV N" and m1: "1 < m"
+    and LbaseH: "\<And>s0 b0. hasParent N 1 (Lng N - 1) \<Longrightarrow>
+                  scb_decomp (bpHeadT (Trans (s84x_N N))) s0
+                    (flatBT (Dpt (enat (entry N 1 (Lng N - 1))) 0\<^sub>B)) b0 \<Longrightarrow>
+                  leBT (Dpt (enat (entry N 1 (Lng N - 1) - 1)) 0\<^sub>B)
+                    (d4vx_ins s0 (entry N 1 (Lng N - 1) - 1) b0 0\<^sub>B)"
   shows "\<exists>k. leBT (Trans ((N::pairseq)[m])) (operB (Trans N) (numBT k))"
 proof (cases "hasParent N 1 (Lng N - 1)")
   case True
   have m1': "1 \<le> m" using m1 by linarith
   have "lessBT (Trans ((N::pairseq)[m])) (operB (Trans N) (numBT m))"
-    using cnv_condIV_exchange_final[OF NST NP True cIV m1'] by blast
+    using cnv_condIV_exchange_final[OF NST NP True cIV m1' LbaseH[OF True]] by blast
   hence "leBT (Trans ((N::pairseq)[m])) (operB (Trans N) (numBT m))" by blast
   thus ?thesis by blast
 next
@@ -106061,6 +106166,13 @@ lemma dpx_fseq_descend_census:
     and TOT: "\<And>N. N \<in> ST_PS \<Longrightarrow> N \<in> PT_PS \<Longrightarrow> 1 < Lng N - 1 \<Longrightarrow> Trans N \<in> OT_B"
     and TVall: "\<And>K. K \<in> ST_PS \<Longrightarrow> K \<in> PT_PS \<Longrightarrow> 1 < Lng K - 1 \<Longrightarrow>
                   transCondII K \<Longrightarrow> c2sx_tailval K"
+    and LbaseU: "\<And>Q s0 b0. Q \<in> ST_PS \<Longrightarrow> Q \<in> PT_PS \<Longrightarrow> 1 < Lng Q - 1 \<Longrightarrow>
+                  transCondIII Q \<or> transCondIV Q \<Longrightarrow> Trans Q \<in> OT_B \<Longrightarrow>
+                  hasParent Q 1 (Lng Q - 1) \<Longrightarrow>
+                  scb_decomp (bpHeadT (Trans (s84x_N Q))) s0
+                    (flatBT (Dpt (enat (entry Q 1 (Lng Q - 1))) 0\<^sub>B)) b0 \<Longrightarrow>
+                  leBT (Dpt (enat (entry Q 1 (Lng Q - 1) - 1)) 0\<^sub>B)
+                    (d4vx_ins s0 (entry Q 1 (Lng Q - 1) - 1) b0 0\<^sub>B)"
   shows "lessBT (Trans ((M::pairseq)[n])) (Trans M)"
 proof -
   have exchI: "\<And>N m. N \<in> ST_PS \<Longrightarrow> N \<in> PT_PS \<Longrightarrow> 1 < Lng N - 1 \<Longrightarrow>
@@ -106081,11 +106193,35 @@ proof -
   have exchIII: "\<And>N m. N \<in> ST_PS \<Longrightarrow> N \<in> PT_PS \<Longrightarrow> 1 < Lng N - 1 \<Longrightarrow>
                   transCondIII N \<Longrightarrow> 1 < m \<Longrightarrow>
                   \<exists>k. leBT (Trans ((N::pairseq)[m])) (operB (Trans N) (numBT k))"
-    by (rule npx_exchIII_slot_uncond)
+  proof -
+    fix N :: pairseq and m :: nat
+    assume a1: "N \<in> ST_PS" and a2: "N \<in> PT_PS" and a3: "1 < Lng N - 1"
+      and a4: "transCondIII N" and a5: "1 < m"
+    have LB: "\<And>s0 b0. hasParent N 1 (Lng N - 1) \<Longrightarrow>
+                scb_decomp (bpHeadT (Trans (s84x_N N))) s0
+                  (flatBT (Dpt (enat (entry N 1 (Lng N - 1))) 0\<^sub>B)) b0 \<Longrightarrow>
+                leBT (Dpt (enat (entry N 1 (Lng N - 1) - 1)) 0\<^sub>B)
+                  (d4vx_ins s0 (entry N 1 (Lng N - 1) - 1) b0 0\<^sub>B)"
+      by (rule LbaseU[OF a1 a2 a3 disjI1[OF a4] TOT[OF a1 a2 a3]])
+    show "\<exists>k. leBT (Trans ((N::pairseq)[m])) (operB (Trans N) (numBT k))"
+      by (rule npx_exchIII_slot_uncond[OF a1 a2 a3 a4 a5 LB])
+  qed
   have exchIV: "\<And>N m. N \<in> ST_PS \<Longrightarrow> N \<in> PT_PS \<Longrightarrow> 1 < Lng N - 1 \<Longrightarrow>
                   transCondIV N \<Longrightarrow> 1 < m \<Longrightarrow>
                   \<exists>k. leBT (Trans ((N::pairseq)[m])) (operB (Trans N) (numBT k))"
-    by (rule dpx_exchIV_slot_uncond)
+  proof -
+    fix N :: pairseq and m :: nat
+    assume a1: "N \<in> ST_PS" and a2: "N \<in> PT_PS" and a3: "1 < Lng N - 1"
+      and a4: "transCondIV N" and a5: "1 < m"
+    have LB: "\<And>s0 b0. hasParent N 1 (Lng N - 1) \<Longrightarrow>
+                scb_decomp (bpHeadT (Trans (s84x_N N))) s0
+                  (flatBT (Dpt (enat (entry N 1 (Lng N - 1))) 0\<^sub>B)) b0 \<Longrightarrow>
+                leBT (Dpt (enat (entry N 1 (Lng N - 1) - 1)) 0\<^sub>B)
+                  (d4vx_ins s0 (entry N 1 (Lng N - 1) - 1) b0 0\<^sub>B)"
+      by (rule LbaseU[OF a1 a2 a3 disjI2[OF a4] TOT[OF a1 a2 a3]])
+    show "\<exists>k. leBT (Trans ((N::pairseq)[m])) (operB (Trans N) (numBT k))"
+      by (rule dpx_exchIV_slot_uncond[OF a1 a2 a3 a4 a5 LB])
+  qed
   have exchVI: "\<And>N m. N \<in> ST_PS \<Longrightarrow> N \<in> PT_PS \<Longrightarrow> 1 < Lng N - 1 \<Longrightarrow>
                   transCondVI N \<Longrightarrow> 1 < m \<Longrightarrow>
                   \<exists>k. leBT (Trans ((N::pairseq)[m])) (operB (Trans N) (numBT k))"
@@ -109618,6 +109754,13 @@ lemma asx_termination_census:
                   transCondII K \<Longrightarrow> c2sx_tailval K"
     and AP: "\<And>K. K \<in> ST_PS \<Longrightarrow>
                  \<forall>J. Suc J < Lng (P K) \<longrightarrow> leBT (Trans (P K ! Suc J)) (Trans (P K ! J))"
+    and LbaseU: "\<And>Q s0 b0. Q \<in> ST_PS \<Longrightarrow> Q \<in> PT_PS \<Longrightarrow> 1 < Lng Q - 1 \<Longrightarrow>
+                  transCondIII Q \<or> transCondIV Q \<Longrightarrow> Trans Q \<in> OT_B \<Longrightarrow>
+                  hasParent Q 1 (Lng Q - 1) \<Longrightarrow>
+                  scb_decomp (bpHeadT (Trans (s84x_N Q))) s0
+                    (flatBT (Dpt (enat (entry Q 1 (Lng Q - 1))) 0\<^sub>B)) b0 \<Longrightarrow>
+                  leBT (Dpt (enat (entry Q 1 (Lng Q - 1) - 1)) 0\<^sub>B)
+                    (d4vx_ins s0 (entry Q 1 (Lng Q - 1) - 1) b0 0\<^sub>B)"
   shows "\<forall>M. M \<in> ST_PS \<longrightarrow> Trans M \<in> OT_B"
     and "\<forall>M n. M \<in> ST_PS \<longrightarrow> 1 \<le> n \<longrightarrow> 1 < Lng M \<longrightarrow>
            lessBT (Trans ((M::pairseq)[n])) (Trans M)"
@@ -109634,7 +109777,7 @@ proof -
     fix M :: pairseq and n :: nat
     assume MST: "M \<in> ST_PS" and n1: "1 \<le> n" and L: "1 < Lng M"
     show "lessBT (Trans ((M::pairseq)[n])) (Trans M)"
-      by (rule dpx_fseq_descend_census[OF MST n1 L TOT TVall])
+      by (rule dpx_fseq_descend_census[OF MST n1 L TOT TVall LbaseU])
   qed
 qed
 
@@ -109685,17 +109828,24 @@ lemma asx_joint_induction:
                   transCondII K \<Longrightarrow> c2sx_tailval K"
     and AP: "\<And>K. K \<in> ST_PS \<Longrightarrow>
                  \<forall>J. Suc J < Lng (P K) \<longrightarrow> leBT (Trans (P K ! Suc J)) (Trans (P K ! J))"
+    and LbaseU: "\<And>Q s0 b0. Q \<in> ST_PS \<Longrightarrow> Q \<in> PT_PS \<Longrightarrow> 1 < Lng Q - 1 \<Longrightarrow>
+                  transCondIII Q \<or> transCondIV Q \<Longrightarrow> Trans Q \<in> OT_B \<Longrightarrow>
+                  hasParent Q 1 (Lng Q - 1) \<Longrightarrow>
+                  scb_decomp (bpHeadT (Trans (s84x_N Q))) s0
+                    (flatBT (Dpt (enat (entry Q 1 (Lng Q - 1))) 0\<^sub>B)) b0 \<Longrightarrow>
+                  leBT (Dpt (enat (entry Q 1 (Lng Q - 1) - 1)) 0\<^sub>B)
+                    (d4vx_ins s0 (entry Q 1 (Lng Q - 1) - 1) b0 0\<^sub>B)"
   shows "(\<forall>M. M \<in> ST_PS \<longrightarrow> Lng M \<le> L \<longrightarrow>
             (\<forall>n. 1 \<le> n \<longrightarrow> 1 < Lng M \<longrightarrow> lessBT (Trans ((M::pairseq)[n])) (Trans M)))
          \<and> (\<forall>N. N \<in> ST_PS \<longrightarrow> Lng N \<le> L \<longrightarrow> Trans N \<in> OT_B)"
 proof -
   have o: "\<forall>M. M \<in> ST_PS \<longrightarrow> Trans M \<in> OT_B"
     by (rule asx_termination_census(1)[OF slotNewOT slotTail slotAppg slotHeadWB
-          TVall AP])
+          TVall AP LbaseU])
   have d: "\<forall>M n. M \<in> ST_PS \<longrightarrow> 1 \<le> n \<longrightarrow> 1 < Lng M \<longrightarrow>
              lessBT (Trans ((M::pairseq)[n])) (Trans M)"
     by (rule asx_termination_census(2)[OF slotNewOT slotTail slotAppg slotHeadWB
-          TVall AP])
+          TVall AP LbaseU])
   show ?thesis using o d by blast
 qed
 
@@ -109904,11 +110054,18 @@ lemma apx_descent_of_otx_slots:
     and TVall: "\<And>K. K \<in> ST_PS \<Longrightarrow> K \<in> PT_PS \<Longrightarrow> 1 < Lng K - 1 \<Longrightarrow>
                   transCondII K \<Longrightarrow> c2sx_tailval K"
     and MST: "M \<in> ST_PS" and n1: "1 \<le> n" and L: "1 < Lng M"
+    and LbaseU: "\<And>Q s0 b0. Q \<in> ST_PS \<Longrightarrow> Q \<in> PT_PS \<Longrightarrow> 1 < Lng Q - 1 \<Longrightarrow>
+                  transCondIII Q \<or> transCondIV Q \<Longrightarrow> Trans Q \<in> OT_B \<Longrightarrow>
+                  hasParent Q 1 (Lng Q - 1) \<Longrightarrow>
+                  scb_decomp (bpHeadT (Trans (s84x_N Q))) s0
+                    (flatBT (Dpt (enat (entry Q 1 (Lng Q - 1))) 0\<^sub>B)) b0 \<Longrightarrow>
+                  leBT (Dpt (enat (entry Q 1 (Lng Q - 1) - 1)) 0\<^sub>B)
+                    (d4vx_ins s0 (entry Q 1 (Lng Q - 1) - 1) b0 0\<^sub>B)"
   shows "lessBT (Trans ((M::pairseq)[n])) (Trans M)"
 proof -
   have TOT: "\<And>N. N \<in> ST_PS \<Longrightarrow> N \<in> PT_PS \<Longrightarrow> 1 < Lng N - 1 \<Longrightarrow> Trans N \<in> OT_B"
     by (rule apx_Trans_OT_all_of_otx_slots[OF OTint OTpred OTmulti TVall])
-  show ?thesis by (rule dpx_fseq_descend_census[OF MST n1 L TOT TVall])
+  show ?thesis by (rule dpx_fseq_descend_census[OF MST n1 L TOT TVall LbaseU])
 qed
 
 lemma apx_descent_of_step:
@@ -109918,11 +110075,18 @@ lemma apx_descent_of_step:
     and TVall: "\<And>K. K \<in> ST_PS \<Longrightarrow> K \<in> PT_PS \<Longrightarrow> 1 < Lng K - 1 \<Longrightarrow>
                   transCondII K \<Longrightarrow> c2sx_tailval K"
     and MST: "M \<in> ST_PS" and n1: "1 \<le> n" and L: "1 < Lng M"
+    and LbaseU: "\<And>Q s0 b0. Q \<in> ST_PS \<Longrightarrow> Q \<in> PT_PS \<Longrightarrow> 1 < Lng Q - 1 \<Longrightarrow>
+                  transCondIII Q \<or> transCondIV Q \<Longrightarrow> Trans Q \<in> OT_B \<Longrightarrow>
+                  hasParent Q 1 (Lng Q - 1) \<Longrightarrow>
+                  scb_decomp (bpHeadT (Trans (s84x_N Q))) s0
+                    (flatBT (Dpt (enat (entry Q 1 (Lng Q - 1))) 0\<^sub>B)) b0 \<Longrightarrow>
+                  leBT (Dpt (enat (entry Q 1 (Lng Q - 1) - 1)) 0\<^sub>B)
+                    (d4vx_ins s0 (entry Q 1 (Lng Q - 1) - 1) b0 0\<^sub>B)"
   shows "lessBT (Trans ((M::pairseq)[n])) (Trans M)"
 proof -
   have TOT: "\<And>N. N \<in> ST_PS \<Longrightarrow> N \<in> PT_PS \<Longrightarrow> 1 < Lng N - 1 \<Longrightarrow> Trans N \<in> OT_B"
     by (rule apx_Trans_OT_all_of_step[OF OTstep])
-  show ?thesis by (rule dpx_fseq_descend_census[OF MST n1 L TOT TVall])
+  show ?thesis by (rule dpx_fseq_descend_census[OF MST n1 L TOT TVall LbaseU])
 qed
 
 text \<open>The r47 shared residual \<open>fseqD\<close> as a THEOREM modulo the slots (mono not
@@ -109944,10 +110108,17 @@ lemma apx_fseqD_grounded:
     and TVall: "\<And>K. K \<in> ST_PS \<Longrightarrow> K \<in> PT_PS \<Longrightarrow> 1 < Lng K - 1 \<Longrightarrow>
                   transCondII K \<Longrightarrow> c2sx_tailval K"
     and KST: "K \<in> ST_PS" and LK: "1 < Lng K" and n1: "1 \<le> n"
+    and LbaseU: "\<And>Q s0 b0. Q \<in> ST_PS \<Longrightarrow> Q \<in> PT_PS \<Longrightarrow> 1 < Lng Q - 1 \<Longrightarrow>
+                  transCondIII Q \<or> transCondIV Q \<Longrightarrow> Trans Q \<in> OT_B \<Longrightarrow>
+                  hasParent Q 1 (Lng Q - 1) \<Longrightarrow>
+                  scb_decomp (bpHeadT (Trans (s84x_N Q))) s0
+                    (flatBT (Dpt (enat (entry Q 1 (Lng Q - 1))) 0\<^sub>B)) b0 \<Longrightarrow>
+                  leBT (Dpt (enat (entry Q 1 (Lng Q - 1) - 1)) 0\<^sub>B)
+                    (d4vx_ins s0 (entry Q 1 (Lng Q - 1) - 1) b0 0\<^sub>B)"
   shows "leBT (Trans ((K::pairseq)[n])) (Trans K)"
 proof -
   have "lessBT (Trans ((K::pairseq)[n])) (Trans K)"
-    by (rule apx_descent_of_otx_slots[OF OTint OTpred OTmulti TVall KST n1 LK])
+    by (rule apx_descent_of_otx_slots[OF OTint OTpred OTmulti TVall KST n1 LK LbaseU])
   thus ?thesis by simp
 qed
 
@@ -109969,6 +110140,13 @@ lemma apx_AP_grounded:
     and TVall: "\<And>K. K \<in> ST_PS \<Longrightarrow> K \<in> PT_PS \<Longrightarrow> 1 < Lng K - 1 \<Longrightarrow>
                   transCondII K \<Longrightarrow> c2sx_tailval K"
     and NST: "N \<in> ST_PS"
+    and LbaseU: "\<And>Q s0 b0. Q \<in> ST_PS \<Longrightarrow> Q \<in> PT_PS \<Longrightarrow> 1 < Lng Q - 1 \<Longrightarrow>
+                  transCondIII Q \<or> transCondIV Q \<Longrightarrow> Trans Q \<in> OT_B \<Longrightarrow>
+                  hasParent Q 1 (Lng Q - 1) \<Longrightarrow>
+                  scb_decomp (bpHeadT (Trans (s84x_N Q))) s0
+                    (flatBT (Dpt (enat (entry Q 1 (Lng Q - 1))) 0\<^sub>B)) b0 \<Longrightarrow>
+                  leBT (Dpt (enat (entry Q 1 (Lng Q - 1) - 1)) 0\<^sub>B)
+                    (d4vx_ins s0 (entry Q 1 (Lng Q - 1) - 1) b0 0\<^sub>B)"
   shows "\<forall>J. Suc J < Lng (P N) \<longrightarrow> leBT (Trans (P N ! Suc J)) (Trans (P N ! J))"
 proof -
   have fseqD: "\<And>K n. K \<in> ST_PS \<Longrightarrow> monoT K \<Longrightarrow> 1 < Lng K \<Longrightarrow> 1 \<le> n \<Longrightarrow>
@@ -109977,7 +110155,7 @@ proof -
     fix K :: pairseq and n :: nat
     assume k1: "K \<in> ST_PS" and k2: "monoT K" and k3: "1 < Lng K" and k4: "1 \<le> n"
     have "lessBT (Trans ((K::pairseq)[n])) (Trans K)"
-      by (rule apx_descent_of_otx_slots[OF OTint OTpred OTmulti TVall k1 k4 k3])
+      by (rule apx_descent_of_otx_slots[OF OTint OTpred OTmulti TVall k1 k4 k3 LbaseU])
     thus "leBT (Trans ((K::pairseq)[n])) (Trans K)" by simp
   qed
   show ?thesis by (rule mdx_P_allpairs_leBT_modFseq[OF fseqD NST])
@@ -109990,6 +110168,13 @@ lemma apx_AP_grounded_of_step:
     and TVall: "\<And>K. K \<in> ST_PS \<Longrightarrow> K \<in> PT_PS \<Longrightarrow> 1 < Lng K - 1 \<Longrightarrow>
                   transCondII K \<Longrightarrow> c2sx_tailval K"
     and NST: "N \<in> ST_PS"
+    and LbaseU: "\<And>Q s0 b0. Q \<in> ST_PS \<Longrightarrow> Q \<in> PT_PS \<Longrightarrow> 1 < Lng Q - 1 \<Longrightarrow>
+                  transCondIII Q \<or> transCondIV Q \<Longrightarrow> Trans Q \<in> OT_B \<Longrightarrow>
+                  hasParent Q 1 (Lng Q - 1) \<Longrightarrow>
+                  scb_decomp (bpHeadT (Trans (s84x_N Q))) s0
+                    (flatBT (Dpt (enat (entry Q 1 (Lng Q - 1))) 0\<^sub>B)) b0 \<Longrightarrow>
+                  leBT (Dpt (enat (entry Q 1 (Lng Q - 1) - 1)) 0\<^sub>B)
+                    (d4vx_ins s0 (entry Q 1 (Lng Q - 1) - 1) b0 0\<^sub>B)"
   shows "\<forall>J. Suc J < Lng (P N) \<longrightarrow> leBT (Trans (P N ! Suc J)) (Trans (P N ! J))"
 proof -
   have fseqD: "\<And>K n. K \<in> ST_PS \<Longrightarrow> monoT K \<Longrightarrow> 1 < Lng K \<Longrightarrow> 1 \<le> n \<Longrightarrow>
@@ -109998,7 +110183,7 @@ proof -
     fix K :: pairseq and n :: nat
     assume k1: "K \<in> ST_PS" and k2: "monoT K" and k3: "1 < Lng K" and k4: "1 \<le> n"
     have "lessBT (Trans ((K::pairseq)[n])) (Trans K)"
-      by (rule apx_descent_of_step[OF OTstep TVall k1 k4 k3])
+      by (rule apx_descent_of_step[OF OTstep TVall k1 k4 k3 LbaseU])
     thus "leBT (Trans ((K::pairseq)[n])) (Trans K)" by simp
   qed
   show ?thesis by (rule mdx_P_allpairs_leBT_modFseq[OF fseqD NST])
@@ -110031,11 +110216,18 @@ lemma apx_multiD_grounded:
     and aeq: "Trans (take (Pcut N) N) = Trm as"
     and beq: "Trans (drop (Pcut N) N) = Trm bs"
     and asne: "as \<noteq> []" and bsne: "bs \<noteq> []"
+    and LbaseU: "\<And>Q s0 b0. Q \<in> ST_PS \<Longrightarrow> Q \<in> PT_PS \<Longrightarrow> 1 < Lng Q - 1 \<Longrightarrow>
+                  transCondIII Q \<or> transCondIV Q \<Longrightarrow> Trans Q \<in> OT_B \<Longrightarrow>
+                  hasParent Q 1 (Lng Q - 1) \<Longrightarrow>
+                  scb_decomp (bpHeadT (Trans (s84x_N Q))) s0
+                    (flatBT (Dpt (enat (entry Q 1 (Lng Q - 1))) 0\<^sub>B)) b0 \<Longrightarrow>
+                  leBT (Dpt (enat (entry Q 1 (Lng Q - 1) - 1)) 0\<^sub>B)
+                    (d4vx_ins s0 (entry Q 1 (Lng Q - 1) - 1) b0 0\<^sub>B)"
   shows "leBT (Trm [hd bs]) (Trm [last as])"
 proof -
   have AP: "\<And>K. K \<in> ST_PS \<Longrightarrow>
               \<forall>J. Suc J < Lng (P K) \<longrightarrow> leBT (Trans (P K ! Suc J)) (Trans (P K ! J))"
-    by (rule apx_AP_grounded[OF OTint OTpred OTmulti TVall])
+    by (rule apx_AP_grounded[OF OTint OTpred OTmulti TVall _ LbaseU])
   show ?thesis
     by (rule asx_multiD_of_allpairs[OF AP NST mu ne aeq beq asne bsne])
 qed
@@ -110060,6 +110252,13 @@ lemma apx_termination_final:
                   Trans ((N::pairseq)[m]) \<in> OT_B"
     and TVall: "\<And>K. K \<in> ST_PS \<Longrightarrow> K \<in> PT_PS \<Longrightarrow> 1 < Lng K - 1 \<Longrightarrow>
                   transCondII K \<Longrightarrow> c2sx_tailval K"
+    and LbaseU: "\<And>Q s0 b0. Q \<in> ST_PS \<Longrightarrow> Q \<in> PT_PS \<Longrightarrow> 1 < Lng Q - 1 \<Longrightarrow>
+                  transCondIII Q \<or> transCondIV Q \<Longrightarrow> Trans Q \<in> OT_B \<Longrightarrow>
+                  hasParent Q 1 (Lng Q - 1) \<Longrightarrow>
+                  scb_decomp (bpHeadT (Trans (s84x_N Q))) s0
+                    (flatBT (Dpt (enat (entry Q 1 (Lng Q - 1))) 0\<^sub>B)) b0 \<Longrightarrow>
+                  leBT (Dpt (enat (entry Q 1 (Lng Q - 1) - 1)) 0\<^sub>B)
+                    (d4vx_ins s0 (entry Q 1 (Lng Q - 1) - 1) b0 0\<^sub>B)"
   shows "\<forall>M. M \<in> ST_PS \<longrightarrow> Trans M \<in> OT_B"
     and "\<forall>M n. M \<in> ST_PS \<longrightarrow> 1 \<le> n \<longrightarrow> 1 < Lng M \<longrightarrow>
            lessBT (Trans ((M::pairseq)[n])) (Trans M)"
@@ -110072,7 +110271,7 @@ proof -
     fix M :: pairseq and n :: nat
     assume MST: "M \<in> ST_PS" and n1: "1 \<le> n" and L: "1 < Lng M"
     show "lessBT (Trans ((M::pairseq)[n])) (Trans M)"
-      by (rule apx_descent_of_otx_slots[OF OTint OTpred OTmulti TVall MST n1 L])
+      by (rule apx_descent_of_otx_slots[OF OTint OTpred OTmulti TVall MST n1 L LbaseU])
   qed
 qed
 
@@ -110081,6 +110280,13 @@ lemma apx_termination_final_of_step:
                      Trans ((N::pairseq)[n]) \<in> OT_B"
     and TVall: "\<And>K. K \<in> ST_PS \<Longrightarrow> K \<in> PT_PS \<Longrightarrow> 1 < Lng K - 1 \<Longrightarrow>
                   transCondII K \<Longrightarrow> c2sx_tailval K"
+    and LbaseU: "\<And>Q s0 b0. Q \<in> ST_PS \<Longrightarrow> Q \<in> PT_PS \<Longrightarrow> 1 < Lng Q - 1 \<Longrightarrow>
+                  transCondIII Q \<or> transCondIV Q \<Longrightarrow> Trans Q \<in> OT_B \<Longrightarrow>
+                  hasParent Q 1 (Lng Q - 1) \<Longrightarrow>
+                  scb_decomp (bpHeadT (Trans (s84x_N Q))) s0
+                    (flatBT (Dpt (enat (entry Q 1 (Lng Q - 1))) 0\<^sub>B)) b0 \<Longrightarrow>
+                  leBT (Dpt (enat (entry Q 1 (Lng Q - 1) - 1)) 0\<^sub>B)
+                    (d4vx_ins s0 (entry Q 1 (Lng Q - 1) - 1) b0 0\<^sub>B)"
   shows "\<forall>M. M \<in> ST_PS \<longrightarrow> Trans M \<in> OT_B"
     and "\<forall>M n. M \<in> ST_PS \<longrightarrow> 1 \<le> n \<longrightarrow> 1 < Lng M \<longrightarrow>
            lessBT (Trans ((M::pairseq)[n])) (Trans M)"
@@ -110093,7 +110299,7 @@ proof -
     fix M :: pairseq and n :: nat
     assume MST: "M \<in> ST_PS" and n1: "1 \<le> n" and L: "1 < Lng M"
     show "lessBT (Trans ((M::pairseq)[n])) (Trans M)"
-      by (rule apx_descent_of_step[OF OTstep TVall MST n1 L])
+      by (rule apx_descent_of_step[OF OTstep TVall MST n1 L LbaseU])
   qed
 qed
 
@@ -110608,6 +110814,13 @@ theorem tvx_termination_modOT:
                   entry (tvx_Rc K) 1 (tvx_fn K) \<le> entry (tvx_Rc K) 0 (tvx_fn K)"
     and FINRC: "\<And>K. K \<in> ST_PS \<Longrightarrow> K \<in> PT_PS \<Longrightarrow> 1 < Lng K - 1 \<Longrightarrow>
                   transCondII K \<Longrightarrow> tvx_finRc K"
+    and LbaseU: "\<And>Q s0 b0. Q \<in> ST_PS \<Longrightarrow> Q \<in> PT_PS \<Longrightarrow> 1 < Lng Q - 1 \<Longrightarrow>
+                  transCondIII Q \<or> transCondIV Q \<Longrightarrow> Trans Q \<in> OT_B \<Longrightarrow>
+                  hasParent Q 1 (Lng Q - 1) \<Longrightarrow>
+                  scb_decomp (bpHeadT (Trans (s84x_N Q))) s0
+                    (flatBT (Dpt (enat (entry Q 1 (Lng Q - 1))) 0\<^sub>B)) b0 \<Longrightarrow>
+                  leBT (Dpt (enat (entry Q 1 (Lng Q - 1) - 1)) 0\<^sub>B)
+                    (d4vx_ins s0 (entry Q 1 (Lng Q - 1) - 1) b0 0\<^sub>B)"
   shows "\<forall>M. M \<in> ST_PS \<longrightarrow> Trans M \<in> OT_B"
     and "\<forall>M n. M \<in> ST_PS \<longrightarrow> 1 \<le> n \<longrightarrow> 1 < Lng M \<longrightarrow>
            lessBT (Trans ((M::pairseq)[n])) (Trans M)"
@@ -110616,10 +110829,10 @@ proof -
                   transCondII K \<Longrightarrow> c2sx_tailval K"
     by (rule tvx_TVall_of_residuals[OF LDJB R3LE FINRC])
   show "\<forall>M. M \<in> ST_PS \<longrightarrow> Trans M \<in> OT_B"
-    by (rule apx_termination_final(1)[OF OTint OTpred OTmulti TVall])
+    by (rule apx_termination_final(1)[OF OTint OTpred OTmulti TVall LbaseU])
   show "\<forall>M n. M \<in> ST_PS \<longrightarrow> 1 \<le> n \<longrightarrow> 1 < Lng M \<longrightarrow>
            lessBT (Trans ((M::pairseq)[n])) (Trans M)"
-    by (rule apx_termination_final(2)[OF OTint OTpred OTmulti TVall])
+    by (rule apx_termination_final(2)[OF OTint OTpred OTmulti TVall LbaseU])
 qed
 
 (* ===== end r51 TVALL brick 2 (tvx_ assembly + revised census) ===== *)
@@ -110761,6 +110974,13 @@ theorem tvx_termination_modOT_sharp:
                     \<and> entry (tvx_Rc K) 1 (tvx_fn K) < entry (tvx_Rc K) 0 (tvx_fn K)"
     and FINRC: "\<And>K. K \<in> ST_PS \<Longrightarrow> K \<in> PT_PS \<Longrightarrow> 1 < Lng K - 1 \<Longrightarrow>
                   transCondII K \<Longrightarrow> tvx_finRc K"
+    and LbaseU: "\<And>Q s0 b0. Q \<in> ST_PS \<Longrightarrow> Q \<in> PT_PS \<Longrightarrow> 1 < Lng Q - 1 \<Longrightarrow>
+                  transCondIII Q \<or> transCondIV Q \<Longrightarrow> Trans Q \<in> OT_B \<Longrightarrow>
+                  hasParent Q 1 (Lng Q - 1) \<Longrightarrow>
+                  scb_decomp (bpHeadT (Trans (s84x_N Q))) s0
+                    (flatBT (Dpt (enat (entry Q 1 (Lng Q - 1))) 0\<^sub>B)) b0 \<Longrightarrow>
+                  leBT (Dpt (enat (entry Q 1 (Lng Q - 1) - 1)) 0\<^sub>B)
+                    (d4vx_ins s0 (entry Q 1 (Lng Q - 1) - 1) b0 0\<^sub>B)"
   shows "\<forall>M. M \<in> ST_PS \<longrightarrow> Trans M \<in> OT_B"
     and "\<forall>M n. M \<in> ST_PS \<longrightarrow> 1 \<le> n \<longrightarrow> 1 < Lng M \<longrightarrow>
            lessBT (Trans ((M::pairseq)[n])) (Trans M)"
@@ -110769,10 +110989,10 @@ proof -
                   transCondII K \<Longrightarrow> c2sx_tailval K"
     by (rule tvx_TVall_of_LDJB_fin[OF LDJB FINRC])
   show "\<forall>M. M \<in> ST_PS \<longrightarrow> Trans M \<in> OT_B"
-    by (rule apx_termination_final(1)[OF OTint OTpred OTmulti TVall])
+    by (rule apx_termination_final(1)[OF OTint OTpred OTmulti TVall LbaseU])
   show "\<forall>M n. M \<in> ST_PS \<longrightarrow> 1 \<le> n \<longrightarrow> 1 < Lng M \<longrightarrow>
            lessBT (Trans ((M::pairseq)[n])) (Trans M)"
-    by (rule apx_termination_final(2)[OF OTint OTpred OTmulti TVall])
+    by (rule apx_termination_final(2)[OF OTint OTpred OTmulti TVall LbaseU])
 qed
 
 (* ===== end r51 TVALL brick 3 (R3LE discharged, census sharpened) ===== *)
@@ -111222,6 +111442,119 @@ next
   qed
 qed
 
+
+text \<open>\<open>0\<^sub>B\<close>-SEEDED (A24-corrected) twins of the order/setle bricks: the operB
+  tower is now the \<open>0\<^sub>B\<close>-seeded tower one level DEEPER (@{thm [source]
+  m_8_5_scbdec_fseq_condV}), so the sandwich donors are \<open>A\<^sub>k = twr 0\<^sub>B k\<close>
+  (\<open>= operB (numBT (k-1))\<close>) and \<open>A\<^bsub>k+1\<^esub>\<close>, with \<open>V\<^sub>k = twr t\<^sub>2 k = Trans (M[k+1])\<close>
+  in between: \<open>A\<^sub>k \<le> V\<^sub>k \<le> A\<^bsub>k+1\<^esub>\<close>.  Both orders are pure base-monotonicity
+  (@{thm [source] oix_twr_base_mono}); NO \<open>t2lb\<close> (the old \<open>D\<^sub>e 0 < t\<^sub>2\<close> residual
+  \<open>HB\<close>) is needed any more --- \<open>0\<^sub>B \<le> t\<^sub>2\<close> is unconditional.\<close>
+
+lemma oix_twr_ord_lo0: "leBT (oix_twr t2 e 0\<^sub>B k) (oix_twr t2 e t2 k)"
+proof -
+  have z: "leBT (0\<^sub>B :: BT) t2" by (cases t2) auto
+  show ?thesis by (rule oix_twr_base_mono[OF z])
+qed
+
+lemma oix_twr_ord_hi0: "leBT (oix_twr t2 e t2 k) (oix_twr t2 e 0\<^sub>B (Suc k))"
+proof -
+  have ne: "Dpt (enat e) 0\<^sub>B \<noteq> 0\<^sub>B" by simp
+  have b: "leBT t2 (t2 +\<^sub>B Dpt (enat e) 0\<^sub>B)"
+    using lessBT_addBT_self[OF ne, of t2] by blast
+  have "leBT (oix_twr t2 e t2 k) (oix_twr t2 e (t2 +\<^sub>B Dpt (enat e) 0\<^sub>B) k)"
+    by (rule oix_twr_base_mono[OF b])
+  thus ?thesis using oix_twr_shift by simp
+qed
+
+lemma oix_condV_adm_setle0:
+  "b1x_setle (GBT u (oix_twr t2 e t2 (Suc k)))
+             (insert (oix_twr t2 e 0\<^sub>B (Suc k))
+                     (GBT u (oix_twr t2 e 0\<^sub>B (Suc k))))"
+proof (induction k)
+  case 0
+  show ?case
+    unfolding b1x_setle_def
+  proof
+    fix x assume x: "x \<in> GBT u (oix_twr t2 e t2 (Suc 0))"
+    let ?W1 = "oix_twr t2 e 0\<^sub>B (Suc 0)"
+    have W1eq: "?W1 = t2 +\<^sub>B Dpt (enat e) 0\<^sub>B" by simp
+    have xin: "x \<in> GBT u t2 \<union> GBT u (Dpt (enat e) t2)"
+      using x m_8_7_GBT_addBT[of u t2 "Dpt (enat e) t2"] by simp
+    show "\<exists>y \<in> insert ?W1 (GBT u ?W1). leBT x y"
+    proof (cases "x \<in> GBT u t2")
+      case True
+      have "x \<in> GBT u ?W1"
+        using True W1eq m_8_7_GBT_addBT[of u t2 "Dpt (enat e) 0\<^sub>B"]
+        by simp
+      thus ?thesis by blast
+    next
+      case False
+      hence xd: "x \<in> GBT u (Dpt (enat e) t2)" using xin by blast
+      have "GBT u (Dpt (enat e) t2)
+              = (if u \<le> enat e then insert t2 (GBT u t2) else {})" by simp
+      with xd False have xt2: "x = t2" by (auto split: if_splits)
+      have ne: "Dpt (enat e) 0\<^sub>B \<noteq> 0\<^sub>B" by simp
+      have "leBT x ?W1"
+        using xt2 W1eq lessBT_addBT_self[OF ne, of t2] by simp
+      thus ?thesis by blast
+    qed
+  qed
+next
+  case (Suc k)
+  show ?case
+    unfolding b1x_setle_def
+  proof
+    fix x assume x: "x \<in> GBT u (oix_twr t2 e t2 (Suc (Suc k)))"
+    let ?Vp = "oix_twr t2 e t2 (Suc k)"
+    let ?Wp = "oix_twr t2 e 0\<^sub>B (Suc k)"
+    let ?W = "oix_twr t2 e 0\<^sub>B (Suc (Suc k))"
+    have Weq: "?W = t2 +\<^sub>B Dpt (enat e) ?Wp" by simp
+    have xin: "x \<in> GBT u t2 \<union> GBT u (Dpt (enat e) ?Vp)"
+      using x m_8_7_GBT_addBT[of u t2 "Dpt (enat e) ?Vp"] by simp
+    show "\<exists>y \<in> insert ?W (GBT u ?W). leBT x y"
+    proof (cases "x \<in> GBT u t2")
+      case True
+      have "x \<in> GBT u ?W"
+        using True Weq m_8_7_GBT_addBT[of u t2 "Dpt (enat e) ?Wp"] by simp
+      thus ?thesis by blast
+    next
+      case False
+      hence xd: "x \<in> GBT u (Dpt (enat e) ?Vp)" using xin by blast
+      have unf: "GBT u (Dpt (enat e) ?Vp)
+              = (if u \<le> enat e then insert ?Vp (GBT u ?Vp) else {})" by simp
+      with xd have ue: "u \<le> enat e" by (auto split: if_splits)
+      from xd unf ue consider (top) "x = ?Vp" | (deep) "x \<in> GBT u ?Vp"
+        by (auto split: if_splits)
+      thus ?thesis
+      proof cases
+        case top
+        have base': "leBT t2 (t2 +\<^sub>B Dpt (enat e) 0\<^sub>B)"
+        proof -
+          have ne: "Dpt (enat e) 0\<^sub>B \<noteq> 0\<^sub>B" by simp
+          show ?thesis using lessBT_addBT_self[OF ne, of t2] by blast
+        qed
+        have "leBT ?Vp (oix_twr t2 e (t2 +\<^sub>B Dpt (enat e) 0\<^sub>B) (Suc k))"
+          by (rule oix_twr_base_mono[OF base'])
+        hence "leBT ?Vp ?W" using oix_twr_shift by simp
+        thus ?thesis using top by blast
+      next
+        case deep
+        from Suc.IH[unfolded b1x_setle_def] deep
+        obtain y where y: "y \<in> insert ?Wp (GBT u ?Wp)" and xy: "leBT x y"
+          by blast
+        have WpinW: "GBT u (Dpt (enat e) ?Wp) = insert ?Wp (GBT u ?Wp)"
+          using ue by simp
+        have "insert ?Wp (GBT u ?Wp) \<subseteq> GBT u ?W"
+          using Weq WpinW m_8_7_GBT_addBT[of u t2 "Dpt (enat e) ?Wp"] by auto
+        hence "y \<in> GBT u ?W" using y by blast
+        thus ?thesis using xy by blast
+      qed
+    qed
+  qed
+qed
+
+
 subsection \<open>The pure-\<open>BT\<close> sandwich-transport residual (the ONE open of this
   route --- condition-free, host-free)\<close>
 
@@ -111298,9 +111631,9 @@ proof -
     and kind1: "scb_kind1 (Trans N) s1 (flatBT (transC2 N)) b1"
     and fseq: "\<forall>n. flatBT (operB (Trans N) (numBT n)) =
            s1 @ Dsym (enat (entry N 1 (transJ0 N)))
-              # concat (replicate n (s0 @ [Dsym (enat (entry N 1 (transJ0 N)))]))
-              @ [Dsym (enat (entry N 1 (transJ0 N)))] @ [Zsym]
-              @ concat (replicate n b0) @ b1"
+              # concat (replicate (n + 1) (s0 @ [Dsym (enat (entry N 1 (transJ0 N)))]))
+              @ [Zsym]
+              @ concat (replicate (n + 1) b0) @ b1"
     and mM: "\<forall>k. flatBT (Trans ((N::pairseq)[Suc k])) =
            s1 @ Dsym (enat (entry N 1 (transJ0 N)))
               # concat (replicate k (s0 @ [Dsym (enat (entry N 1 (transJ0 N)))]))
@@ -111334,9 +111667,9 @@ proof -
   have k1: "1 \<le> k" using mgt mk by simp
   obtain k'' where kk: "k = Suc k''" using k1 by (cases k) auto
   let ?V = "oix_twr t2 e t2 k"
-  let ?WL = "oix_twr t2 e (Dpt (enat e) 0\<^sub>B) k"
-  let ?WH = "oix_twr t2 e (Dpt (enat e) 0\<^sub>B) (Suc k)"
-  have D0TB: "Dpt (enat e) 0\<^sub>B \<in> T_B" by (simp add: T_B_def)
+  let ?WL = "oix_twr t2 e 0\<^sub>B k"
+  let ?WH = "oix_twr t2 e 0\<^sub>B (Suc k)"
+  have D0TB: "(0\<^sub>B :: BT) \<in> T_B" by (simp add: T_B_def)
   have VTB: "?V \<in> T_B" by (rule oix_twr_TB[OF t2TB t2TB])
   have WLTB: "?WL \<in> T_B" by (rule oix_twr_TB[OF t2TB D0TB])
   have WHTB: "?WH \<in> T_B" by (rule oix_twr_TB[OF t2TB D0TB])
@@ -111344,14 +111677,16 @@ proof -
   note twrV = oix_twr_flat[OF inner' t2TB cTB cp t2TB, of e k]
   note twrWL = oix_twr_flat[OF inner' t2TB cTB cp D0TB, of e k]
   note twrWH = oix_twr_flat[OF inner' t2TB cTB cp D0TB, of e "Suc k"]
-  \<comment> \<open>the three aligned decompositions at \<open>(s\<^sub>1, b\<^sub>1)\<close>\<close>
+  \<comment> \<open>the three aligned decompositions at \<open>(s\<^sub>1, b\<^sub>1)\<close>.  A24: the operB core at
+     \<open>numBT n\<close> is the \<open>0\<^sub>B\<close>-seeded tower of height \<open>n+1\<close>, so the donors of the
+     \<open>M[m] = M[Suc k]\<close> core \<open>V\<^sub>k\<close> are \<open>operB (numBT (k-1))\<close> and \<open>operB (numBT k)\<close>.\<close>
   have ourflat: "flatBT (Trans ((N::pairseq)[m]))
                    = s1 @ flatBT (Dpt (enat e) ?V) @ b1"
     using mM mk twrV by (simp add: e_def t2_def)
-  have loflat: "flatBT (operB (Trans N) (numBT k))
+  have loflat: "flatBT (operB (Trans N) (numBT k''))
                    = s1 @ flatBT (Dpt (enat e) ?WL) @ b1"
-    using fseq twrWL by (simp add: e_def t2_def)
-  have hiflat: "flatBT (operB (Trans N) (numBT (Suc k)))
+    using fseq twrWL kk by (simp add: e_def t2_def)
+  have hiflat: "flatBT (operB (Trans N) (numBT k))
                    = s1 @ flatBT (Dpt (enat e) ?WH) @ b1"
     using fseq twrWH by (simp add: e_def t2_def)
   have ourdec: "scb_decomp (Trans ((N::pairseq)[m])) s1
@@ -111359,28 +111694,28 @@ proof -
     unfolding scb_decomp_def
     using ourflat b1RP isPTB_str_Dpt[of "enat e" ?V] VTB
     by (simp add: T_B_def)
-  have lodec: "scb_decomp (operB (Trans N) (numBT k)) s1
+  have lodec: "scb_decomp (operB (Trans N) (numBT k'')) s1
                   (flatBT (Dpt (enat e) ?WL)) b1"
     unfolding scb_decomp_def
     using loflat b1RP isPTB_str_Dpt[of "enat e" ?WL] WLTB
     by (simp add: T_B_def)
-  have hidec: "scb_decomp (operB (Trans N) (numBT (Suc k))) s1
+  have hidec: "scb_decomp (operB (Trans N) (numBT k)) s1
                   (flatBT (Dpt (enat e) ?WH)) b1"
     unfolding scb_decomp_def
     using hiflat b1RP isPTB_str_Dpt[of "enat e" ?WH] WHTB
     by (simp add: T_B_def)
   \<comment> \<open>donor OT-ness: [Buc1] 3.2 closure on the slot's own IH\<close>
-  have loOT: "isOT_BT (operB (Trans N) (numBT k))"
+  have loOT: "isOT_BT (operB (Trans N) (numBT k''))"
+    using e4x_OT_B_operB_numBT[OF ihOT, of k''] by (simp add: OT_B_def OT_def)
+  have hiOT: "isOT_BT (operB (Trans N) (numBT k))"
     using e4x_OT_B_operB_numBT[OF ihOT, of k] by (simp add: OT_B_def OT_def)
-  have hiOT: "isOT_BT (operB (Trans N) (numBT (Suc k)))"
-    using e4x_OT_B_operB_numBT[OF ihOT, of "Suc k"] by (simp add: OT_B_def OT_def)
-  \<comment> \<open>green obligations\<close>
-  have ordlo: "leBT ?WL ?V" by (rule oix_twr_ord_lo[OF t2lb])
-  have ordhi: "leBT ?V ?WH" by (rule oix_twr_ord_hi)
+  \<comment> \<open>green obligations (A24: both orders are pure base-monotonicity)\<close>
+  have ordlo: "leBT ?WL ?V" by (rule oix_twr_ord_lo0)
+  have ordhi: "leBT ?V ?WH" by (rule oix_twr_ord_hi0)
   have newOT: "isOT_BP (DB (enat e) ?V)"
     by (rule oix_condV_adm_newOT[OF t2OT hostGP ev HB t2ne])
   have setle: "\<And>u. b1x_setle (GBT u ?V) (insert ?WL (GBT u ?WL))"
-    unfolding kk by (rule oix_condV_adm_setle)
+    unfolding kk by (rule oix_condV_adm_setle0)
   \<comment> \<open>transport\<close>
   have isot: "isOT_BT (Trans ((N::pairseq)[m]))"
     by (rule oix_transportD[OF TR lodec ourdec hidec loOT hiOT newOT
@@ -111467,6 +111802,13 @@ lemma oix_census_modOPM:
                   Trans ((N::pairseq)[m]) \<in> OT_B"
     and TVall: "\<And>K. K \<in> ST_PS \<Longrightarrow> K \<in> PT_PS \<Longrightarrow> 1 < Lng K - 1 \<Longrightarrow>
                   transCondII K \<Longrightarrow> c2sx_tailval K"
+    and LbaseU: "\<And>Q s0 b0. Q \<in> ST_PS \<Longrightarrow> Q \<in> PT_PS \<Longrightarrow> 1 < Lng Q - 1 \<Longrightarrow>
+                  transCondIII Q \<or> transCondIV Q \<Longrightarrow> Trans Q \<in> OT_B \<Longrightarrow>
+                  hasParent Q 1 (Lng Q - 1) \<Longrightarrow>
+                  scb_decomp (bpHeadT (Trans (s84x_N Q))) s0
+                    (flatBT (Dpt (enat (entry Q 1 (Lng Q - 1))) 0\<^sub>B)) b0 \<Longrightarrow>
+                  leBT (Dpt (enat (entry Q 1 (Lng Q - 1) - 1)) 0\<^sub>B)
+                    (d4vx_ins s0 (entry Q 1 (Lng Q - 1) - 1) b0 0\<^sub>B)"
   shows "\<forall>M. M \<in> ST_PS \<longrightarrow> Trans M \<in> OT_B"
     and "\<forall>M n. M \<in> ST_PS \<longrightarrow> 1 \<le> n \<longrightarrow> 1 < Lng M \<longrightarrow>
            lessBT (Trans ((M::pairseq)[n])) (Trans M)"
@@ -111476,10 +111818,10 @@ proof -
                   Trans N \<in> OT_B \<Longrightarrow> 1 < m \<Longrightarrow> Trans ((N::pairseq)[m]) \<in> OT_B"
     by (rule oix_OTint_slot[OF TR otIII otIV otVnadm])
   show "\<forall>M. M \<in> ST_PS \<longrightarrow> Trans M \<in> OT_B"
-    using apx_termination_final(1)[OF OTint OTpred OTmulti TVall] .
+    using apx_termination_final(1)[OF OTint OTpred OTmulti TVall LbaseU] .
   show "\<forall>M n. M \<in> ST_PS \<longrightarrow> 1 \<le> n \<longrightarrow> 1 < Lng M \<longrightarrow>
            lessBT (Trans ((M::pairseq)[n])) (Trans M)"
-    using apx_termination_final(2)[OF OTint OTpred OTmulti TVall] .
+    using apx_termination_final(2)[OF OTint OTpred OTmulti TVall LbaseU] .
 qed
 
 subsection \<open>condV-NADM: the SAME towers under the rebased head
@@ -111509,13 +111851,21 @@ lemma oix_bodyM_twr:
   "e5x_bodyM t2 e (Suc j) = oix_twr t2 e t2 (Suc (Suc j))"
   by (simp add: oix_W_twr_t2)
 
-lemma oix_bodyO_twr:
-  assumes "1 \<le> n"
-  shows "e5x_bodyO t2 e n = oix_twr t2 e (Dpt (enat e) 0\<^sub>B) n"
-proof -
-  obtain j where nj: "n = Suc j" using assms by (cases n) auto
-  show ?thesis
-    unfolding e5x_bodyO_def nj by (simp add: oix_W_twr_D0)
+text \<open>A24: the \<open>operB\<close> core is the \<open>0\<^sub>B\<close>-seeded tower ONE LEVEL DEEPER
+  (\<open>e5x_bodyO t\<^sub>2 e n = twr\<^bsub>0\<^sub>B\<^esub>(n+1)\<close>) --- the old \<open>D\<^sub>e 0\<close>-seeded height-\<open>n\<close>
+  reading belonged to the mis-transcribed fundamental sequence.\<close>
+
+lemma oix_bodyO_twr: "e5x_bodyO t2 e n = oix_twr t2 e 0\<^sub>B (Suc n)"
+proof (induction n)
+  case 0
+  show ?case by (simp add: e5x_bodyO_def)
+next
+  case (Suc n)
+  have "e5x_bodyO t2 e (Suc n) = t2 +\<^sub>B Dpt (enat e) (e5x_bodyO t2 e n)"
+    by (simp add: e5x_bodyO_def)
+  also have "\<dots> = t2 +\<^sub>B Dpt (enat e) (oix_twr t2 e 0\<^sub>B (Suc n))"
+    using Suc.IH by simp
+  finally show ?case by simp
 qed
 
 text \<open>Order/\<open>descP\<close> bricks: transitivity of \<open>\<le>\<close>, the last principal is a lower
@@ -111779,54 +112129,56 @@ proof -
   have k1n: "1 \<le> k" using mgt mk by simp
   obtain k'' where kk: "k = Suc k''" using k1n by (cases k) auto
   let ?V = "oix_twr t2 e t2 (Suc k)"
-  let ?WL = "oix_twr t2 e (Dpt (enat e) 0\<^sub>B) (Suc k)"
-  let ?WH = "oix_twr t2 e (Dpt (enat e) 0\<^sub>B) (Suc (Suc k))"
-  have D0TB: "Dpt (enat e) 0\<^sub>B \<in> T_B" by (simp add: T_B_def)
+  let ?WL = "oix_twr t2 e 0\<^sub>B (Suc k)"
+  let ?WH = "oix_twr t2 e 0\<^sub>B (Suc (Suc k))"
+  have D0TB: "(0\<^sub>B :: BT) \<in> T_B" by (simp add: T_B_def)
   have VTB: "?V \<in> T_B" by (rule oix_twr_TB[OF t2TB t2TB])
   have WLTB: "?WL \<in> T_B" by (rule oix_twr_TB[OF t2TB D0TB])
   have WHTB: "?WH \<in> T_B" by (rule oix_twr_TB[OF t2TB D0TB])
-  \<comment> \<open>the three aligned decompositions (tower identities fold the \<open>e5x\<close> bodies)\<close>
+  \<comment> \<open>the three aligned decompositions (tower identities fold the \<open>e5x\<close> bodies).
+     A24: \<open>operB (numBT n)\<close> carries the \<open>0\<^sub>B\<close>-seeded tower of height \<open>n+1\<close>, so the
+     donors of \<open>V = twr t\<^sub>2 (k+1) = Trans (N[m])\<close> are at \<open>n = k\<close> and \<open>n = k+1\<close>.\<close>
   have bMk: "e5x_bodyM t2 e k = oix_twr t2 e t2 (Suc k)"
     unfolding kk by (rule oix_bodyM_twr)
-  have bOL: "e5x_bodyO t2 e (Suc k) = ?WL"
-    by (rule oix_bodyO_twr) simp
-  have bOH: "e5x_bodyO t2 e (Suc (Suc k)) = ?WH"
-    by (rule oix_bodyO_twr) simp
+  have bOL: "e5x_bodyO t2 e k = ?WL"
+    by (rule oix_bodyO_twr)
+  have bOH: "e5x_bodyO t2 e (Suc k) = ?WH"
+    by (rule oix_bodyO_twr)
   have ourflat: "flatBT (Trans ((N::pairseq)[m]))
                    = s1 @ flatBT (Dpt (enat u) ?V) @ b1"
     using Mform[of k] mk bMk by simp
-  have loflat: "flatBT (operB (Trans N) (numBT (Suc k)))
+  have loflat: "flatBT (operB (Trans N) (numBT k))
                    = s1 @ flatBT (Dpt (enat u) ?WL) @ b1"
-    using Oform[of "Suc k"] bOL by simp
-  have hiflat: "flatBT (operB (Trans N) (numBT (Suc (Suc k))))
+    using Oform[of k] k1n bOL by simp
+  have hiflat: "flatBT (operB (Trans N) (numBT (Suc k)))
                    = s1 @ flatBT (Dpt (enat u) ?WH) @ b1"
-    using Oform[of "Suc (Suc k)"] bOH by simp
+    using Oform[of "Suc k"] bOH by simp
   have ourdec: "scb_decomp (Trans ((N::pairseq)[m])) s1
                   (flatBT (Dpt (enat u) ?V)) b1"
     unfolding scb_decomp_def
     using ourflat b1RP isPTB_str_Dpt[of "enat u" ?V] VTB
     by (simp add: T_B_def)
-  have lodec: "scb_decomp (operB (Trans N) (numBT (Suc k))) s1
+  have lodec: "scb_decomp (operB (Trans N) (numBT k)) s1
                   (flatBT (Dpt (enat u) ?WL)) b1"
     unfolding scb_decomp_def
     using loflat b1RP isPTB_str_Dpt[of "enat u" ?WL] WLTB
     by (simp add: T_B_def)
-  have hidec: "scb_decomp (operB (Trans N) (numBT (Suc (Suc k)))) s1
+  have hidec: "scb_decomp (operB (Trans N) (numBT (Suc k))) s1
                   (flatBT (Dpt (enat u) ?WH)) b1"
     unfolding scb_decomp_def
     using hiflat b1RP isPTB_str_Dpt[of "enat u" ?WH] WHTB
     by (simp add: T_B_def)
-  have loOT: "isOT_BT (operB (Trans N) (numBT (Suc k)))"
+  have loOT: "isOT_BT (operB (Trans N) (numBT k))"
+    using e4x_OT_B_operB_numBT[OF ihOT, of k]
+    by (simp add: OT_B_def OT_def)
+  have hiOT: "isOT_BT (operB (Trans N) (numBT (Suc k)))"
     using e4x_OT_B_operB_numBT[OF ihOT, of "Suc k"]
     by (simp add: OT_B_def OT_def)
-  have hiOT: "isOT_BT (operB (Trans N) (numBT (Suc (Suc k))))"
-    using e4x_OT_B_operB_numBT[OF ihOT, of "Suc (Suc k)"]
-    by (simp add: OT_B_def OT_def)
-  have ordlo: "leBT ?WL ?V" by (rule oix_twr_ord_lo[OF t2lb])
-  have ordhi: "leBT ?V ?WH" by (rule oix_twr_ord_hi)
+  have ordlo: "leBT ?WL ?V" by (rule oix_twr_ord_lo0)
+  have ordhi: "leBT ?V ?WH" by (rule oix_twr_ord_hi0)
   have newOT: "isOT_BP (DB (enat u) ?V)" by (rule gen(1))
   have setle: "\<And>uu. b1x_setle (GBT uu ?V) (insert ?WL (GBT uu ?WL))"
-    by (rule oix_condV_adm_setle)
+    by (rule oix_condV_adm_setle0)
   have isot: "isOT_BT (Trans ((N::pairseq)[m]))"
     by (rule oix_transportD[OF TR lodec ourdec hidec loOT hiOT newOT
           ordlo ordhi setle])
@@ -111934,6 +112286,13 @@ lemma oix_census_modOPM2:
                   Trans ((N::pairseq)[m]) \<in> OT_B"
     and TVall: "\<And>K. K \<in> ST_PS \<Longrightarrow> K \<in> PT_PS \<Longrightarrow> 1 < Lng K - 1 \<Longrightarrow>
                   transCondII K \<Longrightarrow> c2sx_tailval K"
+    and LbaseU: "\<And>Q s0 b0. Q \<in> ST_PS \<Longrightarrow> Q \<in> PT_PS \<Longrightarrow> 1 < Lng Q - 1 \<Longrightarrow>
+                  transCondIII Q \<or> transCondIV Q \<Longrightarrow> Trans Q \<in> OT_B \<Longrightarrow>
+                  hasParent Q 1 (Lng Q - 1) \<Longrightarrow>
+                  scb_decomp (bpHeadT (Trans (s84x_N Q))) s0
+                    (flatBT (Dpt (enat (entry Q 1 (Lng Q - 1))) 0\<^sub>B)) b0 \<Longrightarrow>
+                  leBT (Dpt (enat (entry Q 1 (Lng Q - 1) - 1)) 0\<^sub>B)
+                    (d4vx_ins s0 (entry Q 1 (Lng Q - 1) - 1) b0 0\<^sub>B)"
   shows "\<forall>M. M \<in> ST_PS \<longrightarrow> Trans M \<in> OT_B"
     and "\<forall>M n. M \<in> ST_PS \<longrightarrow> 1 \<le> n \<longrightarrow> 1 < Lng M \<longrightarrow>
            lessBT (Trans ((M::pairseq)[n])) (Trans M)"
@@ -111943,10 +112302,10 @@ proof -
                   Trans N \<in> OT_B \<Longrightarrow> 1 < m \<Longrightarrow> Trans ((N::pairseq)[m]) \<in> OT_B"
     by (rule oix_OTint_slot2[OF TR otIII otIV PredNpH LpvH L1vH])
   show "\<forall>M. M \<in> ST_PS \<longrightarrow> Trans M \<in> OT_B"
-    using apx_termination_final(1)[OF OTint OTpred OTmulti TVall] .
+    using apx_termination_final(1)[OF OTint OTpred OTmulti TVall LbaseU] .
   show "\<forall>M n. M \<in> ST_PS \<longrightarrow> 1 \<le> n \<longrightarrow> 1 < Lng M \<longrightarrow>
            lessBT (Trans ((M::pairseq)[n])) (Trans M)"
-    using apx_termination_final(2)[OF OTint OTpred OTmulti TVall] .
+    using apx_termination_final(2)[OF OTint OTpred OTmulti TVall LbaseU] .
 qed
 
 (* ===== end r51-OIX block ===== *)
@@ -114907,15 +115266,22 @@ theorem ljx_termination_modOT:
                   Trans ((N::pairseq)[m]) \<in> OT_B"
     and FINRC: "\<And>K. K \<in> ST_PS \<Longrightarrow> K \<in> PT_PS \<Longrightarrow> 1 < Lng K - 1 \<Longrightarrow>
                   transCondII K \<Longrightarrow> tvx_finRc K"
+    and LbaseU: "\<And>Q s0 b0. Q \<in> ST_PS \<Longrightarrow> Q \<in> PT_PS \<Longrightarrow> 1 < Lng Q - 1 \<Longrightarrow>
+                  transCondIII Q \<or> transCondIV Q \<Longrightarrow> Trans Q \<in> OT_B \<Longrightarrow>
+                  hasParent Q 1 (Lng Q - 1) \<Longrightarrow>
+                  scb_decomp (bpHeadT (Trans (s84x_N Q))) s0
+                    (flatBT (Dpt (enat (entry Q 1 (Lng Q - 1))) 0\<^sub>B)) b0 \<Longrightarrow>
+                  leBT (Dpt (enat (entry Q 1 (Lng Q - 1) - 1)) 0\<^sub>B)
+                    (d4vx_ins s0 (entry Q 1 (Lng Q - 1) - 1) b0 0\<^sub>B)"
   shows "\<forall>M. M \<in> ST_PS \<longrightarrow> Trans M \<in> OT_B"
     and "\<forall>M n. M \<in> ST_PS \<longrightarrow> 1 \<le> n \<longrightarrow> 1 < Lng M \<longrightarrow>
            lessBT (Trans ((M::pairseq)[n])) (Trans M)"
 proof -
   show "\<forall>M. M \<in> ST_PS \<longrightarrow> Trans M \<in> OT_B"
-    by (rule tvx_termination_modOT_sharp(1)[OF OTint OTpred OTmulti ljx_LDJB FINRC])
+    by (rule tvx_termination_modOT_sharp(1)[OF OTint OTpred OTmulti ljx_LDJB FINRC LbaseU])
   show "\<forall>M n. M \<in> ST_PS \<longrightarrow> 1 \<le> n \<longrightarrow> 1 < Lng M \<longrightarrow>
            lessBT (Trans ((M::pairseq)[n])) (Trans M)"
-    by (rule tvx_termination_modOT_sharp(2)[OF OTint OTpred OTmulti ljx_LDJB FINRC])
+    by (rule tvx_termination_modOT_sharp(2)[OF OTint OTpred OTmulti ljx_LDJB FINRC LbaseU])
 qed
 
 (* ===== end r53 LDJB (ljx_): the ldj boundary residual CLOSED ===== *)
@@ -115765,6 +116131,13 @@ theorem opx_termination_census:
                   transCondIII P \<or> transCondIV P \<or> transCondV P \<Longrightarrow>
                   Trans P \<in> OT_B \<Longrightarrow> 1 < n \<Longrightarrow>
                   leBT (Trans ((P::pairseq)[n])) (Trans P)"
+    and LbaseU: "\<And>Q s0 b0. Q \<in> ST_PS \<Longrightarrow> Q \<in> PT_PS \<Longrightarrow> 1 < Lng Q - 1 \<Longrightarrow>
+                  transCondIII Q \<or> transCondIV Q \<Longrightarrow> Trans Q \<in> OT_B \<Longrightarrow>
+                  hasParent Q 1 (Lng Q - 1) \<Longrightarrow>
+                  scb_decomp (bpHeadT (Trans (s84x_N Q))) s0
+                    (flatBT (Dpt (enat (entry Q 1 (Lng Q - 1))) 0\<^sub>B)) b0 \<Longrightarrow>
+                  leBT (Dpt (enat (entry Q 1 (Lng Q - 1) - 1)) 0\<^sub>B)
+                    (d4vx_ins s0 (entry Q 1 (Lng Q - 1) - 1) b0 0\<^sub>B)"
   shows "\<forall>M. M \<in> ST_PS \<longrightarrow> Trans M \<in> OT_B"
     and "\<forall>M n. M \<in> ST_PS \<longrightarrow> 1 \<le> n \<longrightarrow> 1 < Lng M \<longrightarrow>
            lessBT (Trans ((M::pairseq)[n])) (Trans M)"
@@ -115774,10 +116147,10 @@ proof -
                   Trans ((N::pairseq)[m]) \<in> OT_B"
     by (rule opx_OTmulti[OF OTint TVall ordIntC])
   show "\<forall>M. M \<in> ST_PS \<longrightarrow> Trans M \<in> OT_B"
-    by (rule apx_termination_final(1)[OF OTint OTpred OTmulti TVall])
+    by (rule apx_termination_final(1)[OF OTint OTpred OTmulti TVall LbaseU])
   show "\<forall>M n. M \<in> ST_PS \<longrightarrow> 1 \<le> n \<longrightarrow> 1 < Lng M \<longrightarrow>
            lessBT (Trans ((M::pairseq)[n])) (Trans M)"
-    by (rule apx_termination_final(2)[OF OTint OTpred OTmulti TVall])
+    by (rule apx_termination_final(2)[OF OTint OTpred OTmulti TVall LbaseU])
 qed
 
 subsection \<open>The \<open>OTpred\<close> removal analysis --- keystone FRESH clauses are FREE\<close>
@@ -116258,6 +116631,13 @@ theorem opx_termination_census_v3:
                   Trans (Pred K) \<in> OT_B"
     and NOBR: "\<And>K. K \<in> ST_PS \<Longrightarrow> monoT K \<Longrightarrow> Br K = [] \<Longrightarrow> 1 < Lng K - 1 \<Longrightarrow>
                   Trans K \<in> OT_B \<Longrightarrow> Trans (Pred K) \<in> OT_B"
+    and LbaseU: "\<And>Q s0 b0. Q \<in> ST_PS \<Longrightarrow> Q \<in> PT_PS \<Longrightarrow> 1 < Lng Q - 1 \<Longrightarrow>
+                  transCondIII Q \<or> transCondIV Q \<Longrightarrow> Trans Q \<in> OT_B \<Longrightarrow>
+                  hasParent Q 1 (Lng Q - 1) \<Longrightarrow>
+                  scb_decomp (bpHeadT (Trans (s84x_N Q))) s0
+                    (flatBT (Dpt (enat (entry Q 1 (Lng Q - 1))) 0\<^sub>B)) b0 \<Longrightarrow>
+                  leBT (Dpt (enat (entry Q 1 (Lng Q - 1) - 1)) 0\<^sub>B)
+                    (d4vx_ins s0 (entry Q 1 (Lng Q - 1) - 1) b0 0\<^sub>B)"
   shows "\<forall>M. M \<in> ST_PS \<longrightarrow> Trans M \<in> OT_B"
     and "\<forall>M n. M \<in> ST_PS \<longrightarrow> 1 \<le> n \<longrightarrow> 1 < Lng M \<longrightarrow>
            lessBT (Trans ((M::pairseq)[n])) (Trans M)"
@@ -116282,10 +116662,10 @@ proof -
                   Trans ((N::pairseq)[m]) \<in> OT_B"
     by (rule opx_OTmulti[OF OTint TVall ordIntC])
   show "\<forall>M. M \<in> ST_PS \<longrightarrow> Trans M \<in> OT_B"
-    by (rule apx_termination_final(1)[OF OTint OTpred OTmulti TVall])
+    by (rule apx_termination_final(1)[OF OTint OTpred OTmulti TVall LbaseU])
   show "\<forall>M n. M \<in> ST_PS \<longrightarrow> 1 \<le> n \<longrightarrow> 1 < Lng M \<longrightarrow>
            lessBT (Trans ((M::pairseq)[n])) (Trans M)"
-    by (rule apx_termination_final(2)[OF OTint OTpred OTmulti TVall])
+    by (rule apx_termination_final(2)[OF OTint OTpred OTmulti TVall LbaseU])
 qed
 
 (* ===== end r53 OPM part 2 (OTpred slot eliminated; census v3) ===== *)
@@ -116680,17 +117060,24 @@ lemma otx3_census:
              Trans ((N::pairseq)[m]) \<in> OT_B"
     and TVall: "\<And>K. K \<in> ST_PS \<Longrightarrow> K \<in> PT_PS \<Longrightarrow> 1 < Lng K - 1 \<Longrightarrow>
              transCondII K \<Longrightarrow> c2sx_tailval K"
+    and LbaseU: "\<And>Q s0 b0. Q \<in> ST_PS \<Longrightarrow> Q \<in> PT_PS \<Longrightarrow> 1 < Lng Q - 1 \<Longrightarrow>
+                  transCondIII Q \<or> transCondIV Q \<Longrightarrow> Trans Q \<in> OT_B \<Longrightarrow>
+                  hasParent Q 1 (Lng Q - 1) \<Longrightarrow>
+                  scb_decomp (bpHeadT (Trans (s84x_N Q))) s0
+                    (flatBT (Dpt (enat (entry Q 1 (Lng Q - 1))) 0\<^sub>B)) b0 \<Longrightarrow>
+                  leBT (Dpt (enat (entry Q 1 (Lng Q - 1) - 1)) 0\<^sub>B)
+                    (d4vx_ins s0 (entry Q 1 (Lng Q - 1) - 1) b0 0\<^sub>B)"
   shows "\<forall>M. M \<in> ST_PS \<longrightarrow> Trans M \<in> OT_B"
     and "\<forall>M n. M \<in> ST_PS \<longrightarrow> 1 \<le> n \<longrightarrow> 1 < Lng M \<longrightarrow>
            lessBT (Trans ((M::pairseq)[n])) (Trans M)"
 proof -
   show "\<forall>M. M \<in> ST_PS \<longrightarrow> Trans M \<in> OT_B"
     by (rule oix_census_modOPM2(1)[OF otx3_transport otIII otIV PredNpH LpvH
-          L1vH OTpred OTmulti TVall])
+          L1vH OTpred OTmulti TVall LbaseU])
   show "\<forall>M n. M \<in> ST_PS \<longrightarrow> 1 \<le> n \<longrightarrow> 1 < Lng M \<longrightarrow>
            lessBT (Trans ((M::pairseq)[n])) (Trans M)"
     by (rule oix_census_modOPM2(2)[OF otx3_transport otIII otIV PredNpH LpvH
-          L1vH OTpred OTmulti TVall])
+          L1vH OTpred OTmulti TVall LbaseU])
 qed
 
 (* ===== end r53-otx3 block ===== *)
@@ -117386,6 +117773,12 @@ lemma oc4_ordIntC_strict:
     and cond: "transCondIII P \<or> transCondIV P \<or> transCondV P"
     and POT: "Trans P \<in> OT_B"
     and ngt: "1 < n"
+    and LbaseH: "\<And>s0 b0. hasParent P 1 (Lng P - 1) \<Longrightarrow>
+                  transCondIII P \<or> transCondIV P \<Longrightarrow>
+                  scb_decomp (bpHeadT (Trans (s84x_N P))) s0
+                    (flatBT (Dpt (enat (entry P 1 (Lng P - 1))) 0\<^sub>B)) b0 \<Longrightarrow>
+                  leBT (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B)
+                    (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0 0\<^sub>B)"
   shows "lessBT (Trans ((P::pairseq)[n])) (Trans P)"
 proof -
   have n1: "1 \<le> n" using ngt by linarith
@@ -117404,7 +117797,8 @@ proof -
     proof (cases "hasParent P 1 (Lng P - 1)")
       case True
       show ?thesis
-        using cpx_condIII_exchange_uncond[OF PST PPT True j1gt cIII n1] by blast
+        using cpx_condIII_exchange_uncond[OF PST PPT True j1gt cIII n1
+               LbaseH[OF True disjI1[OF cIII]]] by blast
     next
       case False
       have epos: "0 < entry P 1 (Lng P - 1)"
@@ -117423,7 +117817,8 @@ proof -
     proof (cases "hasParent P 1 (Lng P - 1)")
       case True
       show ?thesis
-        using cnv_condIV_exchange_final[OF PST PPT True cIV n1] by blast
+        using cnv_condIV_exchange_final[OF PST PPT True cIV n1
+               LbaseH[OF True disjI2[OF cIV]]] by blast
     next
       case False
       have epos: "0 < entry P 1 (Lng P - 1)"
@@ -117458,11 +117853,36 @@ text \<open>The residual in its EXACT census shape (the \<open>ordIntC\<close> h
 
 lemma oc4_ordIntC:
   fixes P :: pairseq and n :: nat
-  assumes "P \<in> ST_PS" and "P \<in> PT_PS" and "1 < Lng P - 1"
-    and "transCondIII P \<or> transCondIV P \<or> transCondV P"
-    and "Trans P \<in> OT_B" and "1 < n"
+  assumes PST: "P \<in> ST_PS" and PPT: "P \<in> PT_PS" and j1: "1 < Lng P - 1"
+    and cond: "transCondIII P \<or> transCondIV P \<or> transCondV P"
+    and POT: "Trans P \<in> OT_B" and ngt: "1 < n"
+    and LbaseU: "\<And>Q s0 b0. Q \<in> ST_PS \<Longrightarrow> Q \<in> PT_PS \<Longrightarrow> 1 < Lng Q - 1 \<Longrightarrow>
+                  transCondIII Q \<or> transCondIV Q \<Longrightarrow> Trans Q \<in> OT_B \<Longrightarrow>
+                  hasParent Q 1 (Lng Q - 1) \<Longrightarrow>
+                  scb_decomp (bpHeadT (Trans (s84x_N Q))) s0
+                    (flatBT (Dpt (enat (entry Q 1 (Lng Q - 1))) 0\<^sub>B)) b0 \<Longrightarrow>
+                  leBT (Dpt (enat (entry Q 1 (Lng Q - 1) - 1)) 0\<^sub>B)
+                    (d4vx_ins s0 (entry Q 1 (Lng Q - 1) - 1) b0 0\<^sub>B)"
   shows "leBT (Trans ((P::pairseq)[n])) (Trans P)"
-  using oc4_ordIntC_strict[OF assms] by blast
+proof -
+  have LB: "\<And>s0 b0. hasParent P 1 (Lng P - 1) \<Longrightarrow>
+              transCondIII P \<or> transCondIV P \<Longrightarrow>
+              scb_decomp (bpHeadT (Trans (s84x_N P))) s0
+                (flatBT (Dpt (enat (entry P 1 (Lng P - 1))) 0\<^sub>B)) b0 \<Longrightarrow>
+              leBT (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B)
+                (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0 0\<^sub>B)"
+  proof -
+    fix s0 b0 assume hp: "hasParent P 1 (Lng P - 1)"
+      and branch: "transCondIII P \<or> transCondIV P"
+      and dec: "scb_decomp (bpHeadT (Trans (s84x_N P))) s0
+                  (flatBT (Dpt (enat (entry P 1 (Lng P - 1))) 0\<^sub>B)) b0"
+    show "leBT (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B)
+            (d4vx_ins s0 (entry P 1 (Lng P - 1) - 1) b0 0\<^sub>B)"
+      by (rule LbaseU[OF PST PPT j1 branch POT hp dec])
+  qed
+  show ?thesis
+    using oc4_ordIntC_strict[OF PST PPT j1 cond POT ngt LB] by blast
+qed
 
 subsection \<open>THE COMBINED TERMINATION CENSUS --- both pillars modulo
   \<open>{otIII, otIV, PredNp, Lpv, L1v, DEEPOT, NOBR, FINRC}\<close>\<close>
@@ -117522,6 +117942,13 @@ theorem oc4_termination_census_master:
              Trans K \<in> OT_B \<Longrightarrow> Trans (Pred K) \<in> OT_B"
     and FINRC: "\<And>K. K \<in> ST_PS \<Longrightarrow> K \<in> PT_PS \<Longrightarrow> 1 < Lng K - 1 \<Longrightarrow>
              transCondII K \<Longrightarrow> tvx_finRc K"
+    and LbaseU: "\<And>Q s0 b0. Q \<in> ST_PS \<Longrightarrow> Q \<in> PT_PS \<Longrightarrow> 1 < Lng Q - 1 \<Longrightarrow>
+                  transCondIII Q \<or> transCondIV Q \<Longrightarrow> Trans Q \<in> OT_B \<Longrightarrow>
+                  hasParent Q 1 (Lng Q - 1) \<Longrightarrow>
+                  scb_decomp (bpHeadT (Trans (s84x_N Q))) s0
+                    (flatBT (Dpt (enat (entry Q 1 (Lng Q - 1))) 0\<^sub>B)) b0 \<Longrightarrow>
+                  leBT (Dpt (enat (entry Q 1 (Lng Q - 1) - 1)) 0\<^sub>B)
+                    (d4vx_ins s0 (entry Q 1 (Lng Q - 1) - 1) b0 0\<^sub>B)"
   shows "\<forall>M. M \<in> ST_PS \<longrightarrow> Trans M \<in> OT_B"
     and "\<forall>M n. M \<in> ST_PS \<longrightarrow> 1 \<le> n \<longrightarrow> 1 < Lng M \<longrightarrow>
            lessBT (Trans ((M::pairseq)[n])) (Trans M)"
@@ -117534,10 +117961,12 @@ proof -
                   transCondII K \<Longrightarrow> c2sx_tailval K"
     by (rule ljx_TVall_of_fin[OF FINRC])
   show "\<forall>M. M \<in> ST_PS \<longrightarrow> Trans M \<in> OT_B"
-    by (rule opx_termination_census_v3(1)[OF OTint TVall oc4_ordIntC DEEPOT NOBR])
+    by (rule opx_termination_census_v3(1)[OF OTint TVall oc4_ordIntC[OF _ _ _ _ _ _ LbaseU]
+          DEEPOT NOBR LbaseU])
   show "\<forall>M n. M \<in> ST_PS \<longrightarrow> 1 \<le> n \<longrightarrow> 1 < Lng M \<longrightarrow>
            lessBT (Trans ((M::pairseq)[n])) (Trans M)"
-    by (rule opx_termination_census_v3(2)[OF OTint TVall oc4_ordIntC DEEPOT NOBR])
+    by (rule opx_termination_census_v3(2)[OF OTint TVall oc4_ordIntC[OF _ _ _ _ _ _ LbaseU]
+          DEEPOT NOBR LbaseU])
 qed
 
 (* ===== end r54-OC4 block 1 (ordIntC closed + master census) ===== *)
@@ -117558,8 +117987,15 @@ lemma oc4_OTmulti:
                   transCondII K \<Longrightarrow> c2sx_tailval K"
     and NST: "N \<in> ST_PS" and mu: "multiT N" and ihOT: "Trans N \<in> OT_B"
     and mgt: "1 < m" and NPred: "(N::pairseq)[m] \<noteq> Pred N"
+    and LbaseU: "\<And>Q s0 b0. Q \<in> ST_PS \<Longrightarrow> Q \<in> PT_PS \<Longrightarrow> 1 < Lng Q - 1 \<Longrightarrow>
+                  transCondIII Q \<or> transCondIV Q \<Longrightarrow> Trans Q \<in> OT_B \<Longrightarrow>
+                  hasParent Q 1 (Lng Q - 1) \<Longrightarrow>
+                  scb_decomp (bpHeadT (Trans (s84x_N Q))) s0
+                    (flatBT (Dpt (enat (entry Q 1 (Lng Q - 1))) 0\<^sub>B)) b0 \<Longrightarrow>
+                  leBT (Dpt (enat (entry Q 1 (Lng Q - 1) - 1)) 0\<^sub>B)
+                    (d4vx_ins s0 (entry Q 1 (Lng Q - 1) - 1) b0 0\<^sub>B)"
   shows "Trans ((N::pairseq)[m]) \<in> OT_B"
-  by (rule opx_OTmulti[OF OTint TVall oc4_ordIntC NST mu ihOT mgt NPred])
+  by (rule opx_OTmulti[OF OTint TVall oc4_ordIntC[OF _ _ _ _ _ _ LbaseU] NST mu ihOT mgt NPred])
 
 (* ===== end r54-OC4 block 2 (OTmulti slot modulo {OTint,TVall}) ===== *)
 
@@ -117620,17 +118056,24 @@ theorem oc4_termination_census_master_v2:
              Trans K \<in> OT_B \<Longrightarrow> Trans (Pred K) \<in> OT_B"
     and FINRC: "\<And>K. K \<in> ST_PS \<Longrightarrow> K \<in> PT_PS \<Longrightarrow> 1 < Lng K - 1 \<Longrightarrow>
              transCondII K \<Longrightarrow> tvx_finRc K"
+    and LbaseU: "\<And>Q s0 b0. Q \<in> ST_PS \<Longrightarrow> Q \<in> PT_PS \<Longrightarrow> 1 < Lng Q - 1 \<Longrightarrow>
+                  transCondIII Q \<or> transCondIV Q \<Longrightarrow> Trans Q \<in> OT_B \<Longrightarrow>
+                  hasParent Q 1 (Lng Q - 1) \<Longrightarrow>
+                  scb_decomp (bpHeadT (Trans (s84x_N Q))) s0
+                    (flatBT (Dpt (enat (entry Q 1 (Lng Q - 1))) 0\<^sub>B)) b0 \<Longrightarrow>
+                  leBT (Dpt (enat (entry Q 1 (Lng Q - 1) - 1)) 0\<^sub>B)
+                    (d4vx_ins s0 (entry Q 1 (Lng Q - 1) - 1) b0 0\<^sub>B)"
   shows "\<forall>M. M \<in> ST_PS \<longrightarrow> Trans M \<in> OT_B"
     and "\<forall>M n. M \<in> ST_PS \<longrightarrow> 1 \<le> n \<longrightarrow> 1 < Lng M \<longrightarrow>
            lessBT (Trans ((M::pairseq)[n])) (Trans M)"
 proof -
   show "\<forall>M. M \<in> ST_PS \<longrightarrow> Trans M \<in> OT_B"
     by (rule oc4_termination_census_master(1)[OF otIII otIV PredNpH LpvH oc4_L1v
-          DEEPOT NOBR FINRC])
+          DEEPOT NOBR FINRC LbaseU])
   show "\<forall>M n. M \<in> ST_PS \<longrightarrow> 1 \<le> n \<longrightarrow> 1 < Lng M \<longrightarrow>
            lessBT (Trans ((M::pairseq)[n])) (Trans M)"
     by (rule oc4_termination_census_master(2)[OF otIII otIV PredNpH LpvH oc4_L1v
-          DEEPOT NOBR FINRC])
+          DEEPOT NOBR FINRC LbaseU])
 qed
 
 (* ===== end r54-OC4 block 3 (L1v closed; census tightened to 7 residuals) ===== *)
@@ -117796,6 +118239,13 @@ lemma oi4_census_IIIIV:
              Trans ((N::pairseq)[m]) \<in> OT_B"
     and FINRC: "\<And>K. K \<in> ST_PS \<Longrightarrow> K \<in> PT_PS \<Longrightarrow> 1 < Lng K - 1 \<Longrightarrow>
              transCondII K \<Longrightarrow> tvx_finRc K"
+    and LbaseU: "\<And>Q s0 b0. Q \<in> ST_PS \<Longrightarrow> Q \<in> PT_PS \<Longrightarrow> 1 < Lng Q - 1 \<Longrightarrow>
+                  transCondIII Q \<or> transCondIV Q \<Longrightarrow> Trans Q \<in> OT_B \<Longrightarrow>
+                  hasParent Q 1 (Lng Q - 1) \<Longrightarrow>
+                  scb_decomp (bpHeadT (Trans (s84x_N Q))) s0
+                    (flatBT (Dpt (enat (entry Q 1 (Lng Q - 1))) 0\<^sub>B)) b0 \<Longrightarrow>
+                  leBT (Dpt (enat (entry Q 1 (Lng Q - 1) - 1)) 0\<^sub>B)
+                    (d4vx_ins s0 (entry Q 1 (Lng Q - 1) - 1) b0 0\<^sub>B)"
   shows "\<forall>M. M \<in> ST_PS \<longrightarrow> Trans M \<in> OT_B"
     and "\<forall>M n. M \<in> ST_PS \<longrightarrow> 1 \<le> n \<longrightarrow> 1 < Lng M \<longrightarrow>
            lessBT (Trans ((M::pairseq)[n])) (Trans M)"
@@ -117805,10 +118255,10 @@ proof -
                   Trans N \<in> OT_B \<Longrightarrow> 1 < m \<Longrightarrow> Trans ((N::pairseq)[m]) \<in> OT_B"
     by (rule oi4_OTint_slot_IIIIV[OF otIII otIV])
   show "\<forall>M. M \<in> ST_PS \<longrightarrow> Trans M \<in> OT_B"
-    by (rule ljx_termination_modOT(1)[OF OTint OTpred OTmulti FINRC])
+    by (rule ljx_termination_modOT(1)[OF OTint OTpred OTmulti FINRC LbaseU])
   show "\<forall>M n. M \<in> ST_PS \<longrightarrow> 1 \<le> n \<longrightarrow> 1 < Lng M \<longrightarrow>
            lessBT (Trans ((M::pairseq)[n])) (Trans M)"
-    by (rule ljx_termination_modOT(2)[OF OTint OTpred OTmulti FINRC])
+    by (rule ljx_termination_modOT(2)[OF OTint OTpred OTmulti FINRC LbaseU])
 qed
 
 (* ===== end r54 oi4 base3 block ===== *)
