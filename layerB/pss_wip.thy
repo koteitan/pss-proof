@@ -80256,8 +80256,10 @@ lemma w84x_condIII_exchange13_of_sliceregs:
                   lessBT (bpHeadT (Trans (Pred (s84x_N M))))
                     (d4vx_ins s0 (entry M 1 (Lng M - 1) - 1) b0
                        (Dpt (enat (entry M 1 (Lng M - 1) - 1)) 0\<^sub>B))"
-    and LbaseH: "leBT (Dpt (enat (entry M 1 (Lng M - 1) - 1)) 0\<^sub>B)
-                  (d4vx_ins s0 (entry M 1 (Lng M - 1) - 1) b0 0\<^sub>B)"
+    and LbaseH: "\<And>s0 b0. scb_decomp (bpHeadT (Trans (s84x_N M))) s0
+                    (flatBT (Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B)) b0 \<Longrightarrow>
+                  leBT (Dpt (enat (entry M 1 (Lng M - 1) - 1)) 0\<^sub>B)
+                    (d4vx_ins s0 (entry M 1 (Lng M - 1) - 1) b0 0\<^sub>B)"
   shows "lessBT (Trans ((M::pairseq)[n])) (operB (Trans M) (numBT n))
        \<and> lessBT (operB (Trans M) (numBT (n - 1))) (Trans ((M::pairseq)[n + 1]))"
 proof -
@@ -80341,9 +80343,11 @@ proof -
   have base1: "lessBT (bpHeadT (Trans (Pred (s84x_N M))))
                  (d4vx_ins s0 ?ub b0 (Dpt (enat ?ub) 0\<^sub>B))"
     by (rule base1H[OF inner])
+  have Lbase: "leBT (Dpt (enat ?ub) 0\<^sub>B) (d4vx_ins s0 ?ub b0 0\<^sub>B)"
+    by (rule LbaseH[OF inner])
   show ?thesis
     by (rule w84x_exchange13_core[OF MST n1 uv bodyT bodyne dbbodyH inner
-          k1 mn base0H base1 LbaseH])
+          k1 mn base0H base1 Lbase])
 qed
 
 text \<open>Conclusion (2) — the condIII DESCENT \<open>Trans(M[n]) < Trans M\<close> — OT-FREE:
@@ -80463,6 +80467,10 @@ lemma w84x_condIII_exchange_full_of_sliceregs:
                        (Dpt (enat (entry M 1 (Lng M - 1) - 1)) 0\<^sub>B))"
     and A0ltH: "lessBT (bpHeadT (Trans (Pred (s84x_N M))))
                        (bpHeadT (Trans (s84x_N M)))"
+    and LbaseH: "\<And>s0 b0. scb_decomp (bpHeadT (Trans (s84x_N M))) s0
+                    (flatBT (Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B)) b0 \<Longrightarrow>
+                  leBT (Dpt (enat (entry M 1 (Lng M - 1) - 1)) 0\<^sub>B)
+                    (d4vx_ins s0 (entry M 1 (Lng M - 1) - 1) b0 0\<^sub>B)"
   shows "lessBT (Trans ((M::pairseq)[n])) (operB (Trans M) (numBT n))
        \<and> lessBT (Trans ((M::pairseq)[n])) (Trans M)
        \<and> lessBT (operB (Trans M) (numBT (n - 1))) (Trans ((M::pairseq)[n + 1]))"
@@ -80470,7 +80478,7 @@ proof -
   have tri: "lessBT (Trans ((M::pairseq)[n])) (operB (Trans M) (numBT n))
            \<and> lessBT (operB (Trans M) (numBT (n - 1))) (Trans ((M::pairseq)[n + 1]))"
     by (rule w84x_condIII_exchange13_of_sliceregs[OF MST MPT hp j1gt cIII n1
-          regS regSP dbbodyH base0H base1H])
+          regS regSP dbbodyH base0H base1H LbaseH])
   have c2: "lessBT (Trans ((M::pairseq)[n])) (Trans M)"
     by (rule w84x_condIII_descent_of_sliceregs[OF MST MPT hp j1gt cIII n1
           regS regSP A0ltH])
