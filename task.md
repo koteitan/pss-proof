@@ -57,7 +57,7 @@
             - ✅ bookkeeping全消去+非可述性確定+staged ladder(wfc_)[r1][0.239][0.35h]
             - 🚨 pbody-acc本体(distinguished sets route)
               - ✅ 定義+Mset+D1 union+acc bridge+基本閉包(wds_)[r1][0.233][0.21h]
-              - ✅ [Buc1]2.2 を停止性から除去(r70: fseq対応は等式でないと反証したが、W-帰納engine y3_PSS_acc_of_cofimg で wf/buc1_2_2/bwl_cof を依存グラフから排除。proof-term audit済)[r7][1.39][2.54h]
+              - 🚨🤖 残=y3_cof0(純順序論的cofinality。r70でbwl_cofのW-所属節を無料化し縮約。y3_cof0⟹bwl_cof⟹wf RPrel。[1]§3 ≪_k が梃子)[r7][1.39][2.54h]
   - 🚨 §8.1 条件 (I) の下での展開規則
     - 🚨 命題（条件 (I) の下での $\textrm{Trans}$ と基本列の交換関係）
       - ✅ 交換則(1)本体[r4]
@@ -96,9 +96,10 @@
     - ✅ 補題（順序数項の末尾項の零化可能性）
     - ❌ 補題（$\textrm{Pred}$ と $[0]$ の関係）
     - ✅ 補題（順序数項の基本例）
-    - 🚨 定理（停止性）= y3_PSS_acc_of_KK_cofimg(wf/[Buc1]2.2/bwl_cof 不使用)
-      - ⛔ KK(「補題（基本列の降下性）」配下 census で追跡)
-      - 🚨🤖 y3_cofimg(Trans-image限定Bachmann型cofinality、[1]§3 の ≪_k 機構が梃子)[r0]
+    - 🚨 定理（停止性）= wf y3_PSSrel
+      - ⛔ KK(「補題（基本列の降下性）」配下 census で追跡。両ルート共通の残差)
+      - ✅ (A)原文ルート組立(y3_PSS_wf_of_KK_buc1。📘[Buc1]2.2 引用+残=KK のみ)
+      - 🚨🤖 (B)引用フリールート(y3_PSS_acc_of_KK_cofimg。残=KK+y3_cofimg。y3_cofimg 証明で引用を完全排除)[r0]
     - 🚨 補題（$\textrm{Trans}$ が標準形を保つこと）= OT所属
       - ✅ clean部（rank0/T_B/単項leaf）
       - ✅ 還元 isOT⟸R1/R2/R3
