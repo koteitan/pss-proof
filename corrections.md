@@ -9,7 +9,8 @@
 > - **その根源は A23 の誤読**：[Buc2] による基本列 \(([\ ].4)(\mathrm{ii})\) の差し替えを、我々は
 >   「外側の \(b[\cdot]\) が余分」と読んだが、正しくは **\(x_i\) の中で \(D_u\) と \(b[\cdot]\) が転置した誤植**
 >   だった。誤った基本列の上で §7.2/§8.5/§8.6/§8.7 の原文が偽に見えていた。A23 は訂正案を書き直した。
-> - **A5 / A12 / A13 は「訂正案そのものが偽」**。著者に誤った修正を提案するところだった。書き直し中。
+> - **A5 / A12 / A13 は「訂正案そのものが偽」だった**。著者に誤った修正を提案するところだった。**書き直し済**
+>   （いずれも我々が既に Isabelle で証明した正しい形に差し替えた）。
 > - **引用元だった `tmp/content.md` は原文ではなかった**：過去ログからの再構成に我々自身の Isabelle
 >   ソース 20 行が混入していた（`f72310b` で除去、`make_content.py` にガード追加）。
 >   **引用の ground truth は `tmp/original.html`**。
@@ -203,31 +204,40 @@ $\textrm{Red}(M[n])$ に一致する**ことを与えるが、末尾ブロック
 帰納法が閉じると思われる（同時に、A4 の定義域の論点—$T_{\textrm{PS}}$ 全域では命題が偽—も、
 この補題が標準形でのみ成り立つことと整合する）。
 
-## A5. §6.6 命題（簡約性の切片への遺伝性）: 前提 $j'_0 \le \textrm{TrMax}(M)$ は弱すぎる（反例あり）
+## A5. §6.6 命題（簡約性の切片への遺伝性）: 前提 \(j'_0 \le \textrm{TrMax}(M)\) は弱すぎる（反例あり）
 
 ### 位置
 §6.6 簡約性 / 命題（簡約性の切片への遺伝性）
 
 ### 原文
-任意の $M \in RT_{\textrm{PS}}$ に対し、$j_1 := \textrm{Lng}(M)-1$ と置くと、任意の
-$j'_0,j'_1 \in \mathbb{N}$ に対し $j'_0 \le \textrm{TrMax}(M) \le j'_1 \le j_1$ ならば
-$(M_j)_{j=j'_0}^{j'_1}$ は簡約である。
+任意の \(M \in RT_{\textrm{PS}}\) に対し、\(j_1 := \textrm{Lng}(M)-1\) と置くと、任意の
+\(j'_0,j'_1 \in \mathbb{N}\) に対し \(j'_0 \le \textrm{TrMax}(M) \le j'_1 \le j_1\) ならば
+\((M_j)_{j=j'_0}^{j'_1}\) は簡約である。
 
 ### 訂正案
-任意の $M \in RT_{\textrm{PS}}$ に対し、$j_1 := \textrm{Lng}(M)-1$ と置くと、任意の $j'_1 \in \mathbb{N}$ に対し $\textrm{TrMax}(M) \le j'_1 \le j_1$ ならば $(M_j)_{j=0}^{j'_1}$ は簡約である。
+任意の \(M \in RT_{\textrm{PS}} \cap PT_{\textrm{PS}}\) に対し、\(j_1 := \textrm{Lng}(M)-1\)、
+\(J_1 := \textrm{Lng}(\textrm{Br}(M))-1\) と置くと、任意の \(j'_0,j'_1 \in \mathbb{N}\) に対し
+\(j'_0 \le \textrm{Joints}(M)_{J_1}\) かつ \(\textrm{TrMax}(M) \le j'_1 \le j_1\) ならば
+\((M_j)_{j=j'_0}^{j'_1}\) は簡約である。
 
 ### 原文の問題点
-前提 $j'_0 \le \textrm{TrMax}(M)$ が弱すぎ、$T_{\textrm{PS}}$（標準形に限っても）で偽。反例:
+前提 \(j'_0 \le \textrm{TrMax}(M)\) が弱すぎ、簡約（標準形に限っても）で偽。反例:
 
 $$M = (0,0)(1,1)(1,0)$$
 
-- $M$ は標準形（yaBMS で確認）かつ簡約（$\textrm{Red}(M)=M$）、$\textrm{TrMax}(M)=1$。
-- $j'_0=1=\textrm{TrMax}(M) \le j'_1=2 \le j_1=2$ をとると $(M_j)_{j=1}^{2} = (1,1)(1,0)$。
-- $\textrm{Red}((1,1)(1,0)) = (1,1)(0,0) \neq (1,1)(1,0)$ なので切片は簡約でない。
+- \(M\) は標準形かつ簡約（\(\textrm{Red}(M)=M\)）、\(\textrm{TrMax}(M)=1\)。
+- \(j'_0=1=\textrm{TrMax}(M) \le j'_1=2 \le j_1=2\) をとると \((M_j)_{j=1}^{2} = (1,1)(1,0)\)。
+- \(\textrm{Red}((1,1)(1,0)) = (1,1)(0,0) \neq (1,1)(1,0)\) なので切片は簡約でない。
 
-原因: $j'_0 = \textrm{TrMax}$ だと幹の根（index 0）を落とした切片になり、切片の幹構造が変わる。
-証明「$\textrm{Red}$ の再帰的定義と $\textrm{Red}$ と $\textrm{Pred}$ の可換性より即座」も、
-$\textrm{Red}$ と $\textrm{Pred}$ の可換性は真だが、それだけでは従わない。
+全数検証（\(\textrm{Lng} \le 5\)、成分 \(\le 2\)）で、原文の前提を満たす 2198 例中 **231 例が偽**。
+上界を \(\textrm{Joints}(M)_{J_1}\)（\(\le \textrm{TrMax}(M)\)）に強めると **1592 例で反例 0**。
+
+この上界は姉妹命題「単項性の切片への遺伝性」と同じ形であり、また記事自身が本命題を適用している
+箇所（§8.4 の証明）でも \(j'_0 \le \textrm{Joints}(M)_{J_1} \le \textrm{TrMax}(M)\) が満たされている
+ので、この強化で記事の他の議論は壊れない。
+
+（補足：\(\textrm{TrMax}\)・\(\textrm{Br}\)・\(\textrm{Joints}\) は単項ペア数列に対して定義されるので、
+\(M \in PT_{\textrm{PS}}\) も明示した。）
 
 ## A6. §6.7 命題（標準形の単項成分が標準形であること）: 証明が依拠する単調性補題 $S_{k-1}\subseteq S_k$ の省略
 
@@ -368,7 +378,7 @@ scb分解 \((s,c,b)\) の定義は、対象項が空項 \(()\)（`Trm []`）で�
 
 このため、\(t = ()\) の場合に (2) は反例を持つ。\(t=()\), \(s=()\), \(c=(Zsym)\), \(b=()\) を取ると \((s,c,b)\) は \(t=()\) の scb分解である（\(t=()\) なので \(c\) への主表現条件は不要、`flatBT () = () = s\frown c\frown b` は \(c=(Zsym)\) では成り立たないため厳密には \(c\) の取り方に注意が必要だが、定義上 \(t=()\) で主表現条件が外れる帰結として中央成分が主表現でない分解が許容され得る点が問題の核）。しかし \(D_v t = D_v() \neq ()\) は常に非空項なので、その scb分解 \((D_v s, c, b)\) は \(c\) が主表現列であることを要求する。\(c=(Zsym)\) は主表現列ではない（主表現の平坦化は必ず `Dsym` で始まり `Zsym` で始まることはない）ので、(2) の結論は成り立たない。
 
-## A12. §7.2 命題（scb分解の置換可能性）: 前提に \(t_0\neq()\) または \(c_1\) が主表現列であることが必要（反例あり） [軽微]
+## A12. §7.2 命題（scb分解の置換可能性）: 選言前提の左側が空項で空回りする（反例あり） [軽微]
 
 ### 位置
 §7.2「命題（scb分解の置換可能性）」。形式化では `p_7_2_scb_replaceable`。
@@ -377,14 +387,28 @@ scb分解 \((s,c,b)\) の定義は、対象項が空項 \(()\)（`Trm []`）で�
 \(c_0, c_1 \in T_{\textrm{B}}\)、\((c_0\) が主表現列でない\() \vee (c_1\) が主表現列\()\)、\(t_0 \in T_{\textrm{B}}\)、\((s, \textrm{flat}(c_0), b)\) が \(t_0\) の scb分解であるとする。このとき \(t_1 \in T_{\textrm{B}}\) が存在して \(\textrm{flat}(t_1) = s\frown\textrm{flat}(c_1)\frown b\) かつ \((s, \textrm{flat}(c_1), b)\) が \(t_1\) の scb分解となる。
 
 ### 訂正案
-$c_0, c_1 \in T_{\textrm{B}}$、$t_0 \in T_{\textrm{B}}$、$t_0 \neq ()$、$(s, \textrm{flat}(c_0), b)$ が $t_0$ の scb分解であるとする。このとき $t_1 \in T_{\textrm{B}}$ が存在して $\textrm{flat}(t_1) = s\frown\textrm{flat}(c_1)\frown b$ かつ $(s, \textrm{flat}(c_1), b)$ が $t_1$ の scb分解となる。
+選言前提を \(c_0\) についてのものから、\(c_1\) と**結果**についてのものに置き換える：
+
+\(c_0, c_1 \in T_{\textrm{B}}\)、\(t_0 \in T_{\textrm{B}}\)、\((s, \textrm{flat}(c_0), b)\) が \(t_0\) の scb分解、
+かつ \((c_1\) が主表現列\() \vee (s\frown\textrm{flat}(c_1)\frown b = \textrm{flat}(0))\) であるとする。
+このとき \(t_1 \in T_{\textrm{B}}\) が存在して \(\textrm{flat}(t_1) = s\frown\textrm{flat}(c_1)\frown b\) かつ \((s, \textrm{flat}(c_1), b)\) が \(t_1\) の scb分解となる。
 
 ### 原文の問題点
-scb分解の主表現条件は、対象項が空項 \(()\) のときのみ外れる（[[A11]] と同じ穴）。原文の選言前提 \((\neg\textrm{principal}(c_0)) \vee \textrm{principal}(c_1)\) は、\(c_0 = ()\)（\(\neg\textrm{principal}\) で左成立）のとき \(c_1\) が**非主表現（複項）でも満たされてしまう**。
+scb分解の定義は「\(t \neq 0\) ならば \(c\) は主表現」なので、主表現条件は対象項が零項のときだけ外れる。
+原文の選言前提 \((\neg\textrm{principal}(c_0)) \vee \textrm{principal}(c_1)\) は、\(c_0 = 0\) のとき
+**左側だけで成立してしまい、\(c_1\) に何の制約も課さない**。
 
-反例: \(t_0 = c_0 = ()\)（空項）、\(s=b=()\)、\(c_1 = D_0() \cdot D_1()\)（複項＝2項のタプル、非主表現）。前提はすべて成立（\((s,\textrm{flat}(c_0),b)\) は \(t_0=()\) の scb分解、選言前提は左で成立）。だが結論の \(t_1\) は \(\textrm{flat}(t_1)=\textrm{flat}(c_1)\) と flat の単射性（`m_7_flatBT_inj`）から \(t_1 = c_1\) に限られ、\(c_1 \neq ()\) なので scb分解 \((s,\textrm{flat}(c_1),b)\) は \(\textrm{principal}(\textrm{flat}(c_1))\) を要求するが、\(c_1\) は複項ゆえ偽。よって結論が成り立たない。
+反例: \(t_0 = c_0 = 0\)（零項）、\(s = b = ()\)、\(c_1 = D_0 0 + D_1 0\)（複項＝非主表現）。前提はすべて成立する。
+しかし結論の \(t_1\) は \(\textrm{flat}(t_1) = \textrm{flat}(c_1)\) と flat の単射性から \(t_1 = c_1 \neq 0\) に限られ、
+scb分解 \((s,\textrm{flat}(c_1),b)\) は \(c_1\) が主表現であることを要求するが、\(c_1\) は複項なので偽。
 
-## A13. §7.2 系（加法とscb分解の関係）(3): \(D_v(t+c)\) の出現位置が一意でないため偽（反例あり） [軽微]
+訂正案の形（\(c_1\) が主表現、または結果が零項）が正しいことは形式的に確認済み
+（`m_7_2_scb_replaceable_corr_mod_image`）。
+
+（当初この項目は「選言を落として \(t_0 \neq 0\) を課す」という訂正案を書いていたが、それでは
+\(c_0\) が主表現・\(c_1\) が複項という反例が復活するため**誤り**であった。訂正案を差し替えた。）
+
+## A13. §7.2 系（加法とscb分解の関係）(3): \(D_v(t+c)\) の出現位置と \(c\) の出現位置が同一とは限らない（反例あり） [軽微]
 
 ### 位置
 §7.2「系（加法とscb分解の関係）」の (3)。形式化では `p_7_2_add_scb` の第3主張。
@@ -393,12 +417,36 @@ scb分解の主表現条件は、対象項が空項 \(()\) のときのみ外れ
 \(c' \in T_{\textrm{B}}\) が主表現、\(u_1 \in T_{\textrm{B}}\)、\(\textrm{flat}(u_1) = s_1 \frown D_v\,\textrm{flat}(t+c) \frown b_1\)、\((s_0, \textrm{flat}(c), b_0)\) が \(u_1\) の scb分解であるとき、ある \(u_1'\) が存在して \(\textrm{flat}(u_1') = s_1 \frown D_v\,\textrm{flat}(t+c') \frown b_1\) かつ \((s_0, \textrm{flat}(c'), b_0)\) が \(u_1'\) の scb分解となる。
 
 ### 訂正案
-$c' \in T_{\textrm{B}}$ が主表現、$u_1 \in T_{\textrm{B}}$、$\textrm{flat}(u_1) = s_1 \frown D_v\,\textrm{flat}(t+c) \frown b_1$、$(s_0, \textrm{flat}(c), b_0)$ が $u_1$ の scb分解、**かつ $s_0 = s_1 \frown D_v\,\textrm{flat}(t)$**（2 出現の一致）であるとき、ある $u_1'$ が存在して $\textrm{flat}(u_1') = s_1 \frown D_v\,\textrm{flat}(t+c') \frown b_1$ かつ $(s_0, \textrm{flat}(c'), b_0)$ が $u_1'$ の scb分解となる。
+2つの出現が同一であることを、\(\textrm{flat}(t+c)\) の末尾主表現としての分割で明示する。すなわち、
+\(\textrm{pre}, \textrm{post}\) を
+
+- \(\textrm{flat}(t+c) = \textrm{pre} \frown \textrm{flat}(c) \frown \textrm{post}\)、
+- \(\textrm{post}\) は閉じ括弧 \(\underline{)}\) のみからなる、
+- \(\textrm{flat}(t+c') = \textrm{pre} \frown \textrm{flat}(c') \frown \textrm{post}\)
+
+を満たすものとし、前提に
+
+$$s_0 = s_1 \frown D_v \frown \textrm{pre}, \qquad b_0 = \textrm{post} \frown b_1$$
+
+を加える。
 
 ### 原文の問題点
-主張は暗黙に「\(s_1 \frown D_v\,\textrm{flat}(t+c) \frown b_1\) で指す \(D_v(t+c)\) の出現と、\((s_0,\textrm{flat}(c),b_0)\) が指す \(c\) の出現が**同一の部分項**」を仮定しているが、これは前提から従わない。\(u_1\) が \(D_v(t+c)\) と別の \(c\) を**両方**部分項に持つとき、第1主表現を \(s_1\,D_v\dots b_1\) で、第2主表現の \(c\) を \((s_0,\textrm{flat}(c),b_0)\) で指す配置が成立し、\(c\to c'\) 置換後に要求される2つの flat 文字列が食い違う。
+主張は暗黙に「\(s_1 \frown D_v\,\textrm{flat}(t+c) \frown b_1\) が指す \(D_v(t+c)\) の中の \(c\) と、
+\((s_0,\textrm{flat}(c),b_0)\) が指す \(c\) が**同一の部分項**」を仮定しているが、これは前提から従わない。
+\(u_1\) が \(c\) を複数箇所に持つとき、両者が別の出現を指す配置が成立する。
 
-反例: \(t=0\), \(c=D_0 0\), \(c'=D_0(D_0 0)\), \(v=0\), \(u_1=(D_0(D_0 0), D_0 0)\)（2主表現タプル）。\(s_1\,D_v\,\textrm{flat}(t+c)\,b_1\) は**第1**主表現を、\((s_0,\textrm{flat}(c),b_0)\) は**第2**主表現を指す。結論の \(u_1'\) は \(\textrm{flat}(u_1')=s_1\,D_v\,\textrm{flat}(t+c')\,b_1\)（第1側置換）と \(\textrm{flat}(u_1')=s_0\,\textrm{flat}(c')\,b_0\)（第2側置換）を同時に満たす必要があるが、両文字列は相異なるので flat の単射性（`m_7_flatBT_inj`）より存在しない。
+反例: \(t=0\)、\(c=D_0 0\)、\(c'=D_0(D_0 0)\)、\(v=0\)、\(u_1 = D_0(D_0 0) + D_0 0\)（2主表現）。
+\(s_1 \frown D_v\,\textrm{flat}(t+c) \frown b_1\) は**第1**主表現を、\((s_0,\textrm{flat}(c),b_0)\) は**第2**主表現を指す。
+結論の \(u_1'\) は \(\textrm{flat}(u_1') = s_1 D_v \textrm{flat}(t+c') b_1\)（第1側の置換）と
+\(\textrm{flat}(u_1') = s_0 \textrm{flat}(c') b_0\)（第2側の置換）を同時に満たす必要があるが、
+この2文字列は相異なるので flat の単射性より \(u_1'\) は存在しない。
+
+訂正案の整合条件が正しいことは形式的に確認済み（`m_7_2_add_scb_conj3`、layerB）。
+
+（当初この項目は整合条件を \(s_0 = s_1 \frown D_v\,\textrm{flat}(t)\) と書いていたが、これは誤りである
+——\(t = 0\) のとき余分な \(\underline{0}\) が入り、\(t\) が主表現や複項のときは括弧 \(\underline{(}\) と
+\(\underline{,}\) が抜けるため、\(\textrm{flat}\) の連結として成立しない。上記の \(\textrm{pre}/\textrm{post}\)
+による分割に差し替えた。）
 
 ## A14. 【取り下げ】§7.2 命題（scb分解の一意性）(3)(4)(5)
 
