@@ -50863,109 +50863,106 @@ proof (induction a arbitrary: z rule: measure_induct_rule[where f=size])
             case kind1: True
             then obtain w where dbw: "domB b = TBv (enat w)" and vw: "v \<le> enat w"
               by blast
-            \<comment> \<open>case ([].4)(ii), [Buc2]-modified: the \<open>xseq\<close> tower\<close>
-            have zibT: "Trm [DB (enat w) t] \<in> domB b \<or> Trm [DB (enat w) t] \<in> NatSet"
-              for t using dbw b1x_Dpt_TBv by simp
-            have IHt: "b1x_triG (Trm [DB (enat w) t])
-                         (operB b (Trm [DB (enat w) t])) b
-                       \<and> (isOT_BT (Trm [DB (enat w) t]) \<longrightarrow>
-                          dfree_BT (Trm [DB (enat w) t]) \<longrightarrow>
-                          isOT_BT (operB b (Trm [DB (enat w) t]))
-                          \<and> dfree_BT (operB b (Trm [DB (enat w) t])))" for t
-              by (rule less.IH[OF szb otb dfb bne zibT])
-            have xd: "lessBT (xseq b (enat w) i) b" for i
+            \<comment> \<open>case ([].4)(ii), [Buc2]-modified: the \<open>xseq\<close> tower
+              \<open>x\<^sub>0 = D\<^sub>w 0\<close>, \<open>x\<^sub>i\<^sub>+\<^sub>1 = D\<^sub>w (b[x\<^sub>i])\<close>, and \<open>a[z] = D\<^sub>v (b[x\<^sub>n\<^sub>u\<^sub>m\<^sub>N\<^sub>a\<^sub>t\<^sub> \<^sub>z])\<close>.
+              Every \<open>x\<^sub>i\<close> is \<open>D\<^sub>w\<close>-headed, hence \<open>x\<^sub>i \<in> T\<^sub>w = domB b\<close> (\<open>xin\<close>), so the
+              induction hypothesis is available at every tower level, and the
+              value \<open>D\<^sub>v (b[x\<^sub>n])\<close> has exactly the ([].4)(iii) shape with \<open>z := x\<^sub>n\<close>.\<close>
+            have xin: "xseq b (enat w) i \<in> TBv (enat w)" for i
             proof (cases i)
-              case 0 thus ?thesis using b1x_xseq_0 b1x_Dw0_lt[OF otb dbw] by simp
+              case 0 thus ?thesis using b1x_xseq_0 b1x_Dpt_TBv by simp
             next
-              case (Suc j)
-              have "lessBT (operB b (Trm [DB (enat w) (xseq b (enat w) j)])) b"
-                by (rule b1x_descent[OF otb bne zibT])
-              thus ?thesis using Suc b1x_xseq_Suc by simp
+              case (Suc j) thus ?thesis using b1x_xseq_Suc b1x_Dpt_TBv by simp
             qed
+            have zib: "xseq b (enat w) i \<in> domB b \<or> xseq b (enat w) i \<in> NatSet"
+              for i using xin dbw by simp
+            have IHz: "b1x_triG t (operB b t) b
+                       \<and> (isOT_BT t \<longrightarrow> dfree_BT t \<longrightarrow>
+                          isOT_BT (operB b t) \<and> dfree_BT (operB b t))"
+              if tin: "t \<in> TBv (enat w)" for t
+            proof -
+              have dz: "t \<in> domB b \<or> t \<in> NatSet" using tin dbw by simp
+              show ?thesis by (rule less.IH[OF szb otb dfb bne dz])
+            qed
+            have triX: "b1x_triG (xseq b (enat w) i)
+                          (operB b (xseq b (enat w) i)) b" for i
+              using IHz[OF xin] by blast
+            have Ylt: "lessBT (operB b (xseq b (enat w) i)) b" for i
+              by (rule b1x_descent[OF otb bne zib])
+            have Yle: "leBT (operB b (xseq b (enat w) i)) b" for i
+              using Ylt by blast
+            have xlow: "leBT (xseq b (enat w) i) (operB b (xseq b (enat w) i))"
+              for i by (rule b1x_lowerbound[OF otb dbw xin])
+            \<comment> \<open>tower strict increase: \<open>x\<^sub>i < x\<^sub>i\<^sub>+\<^sub>1\<close> (and the derived \<open>b[x\<^sub>i] < b[x\<^sub>i\<^sub>+\<^sub>1]\<close>)\<close>
+            have x0ne: "xseq b (enat w) 0 \<noteq> Trm []" by (simp add: b1x_xseq_0)
+            have Y0ne: "operB b (xseq b (enat w) 0) \<noteq> Trm []"
+              using xlow[of 0] x0ne by auto
             have T1: "lessBT (xseq b (enat w) i) (xseq b (enat w) (Suc i))" for i
             proof (induction i)
               case 0
-              have s0: "xseq b (enat w) 0 = Trm [DB (enat w) (Trm [])]"
-                by (rule b1x_xseq_0)
-              have lt0: "lessBT (xseq b (enat w) 0)
-                           (Trm [DB (enat w) (xseq b (enat w) 0)])"
-                using s0 by simp
-              have lb: "leBT (Trm [DB (enat w) (xseq b (enat w) 0)])
-                          (operB b (Trm [DB (enat w) (xseq b (enat w) 0)]))"
-                by (rule b1x_lowerbound[OF otb dbw b1x_Dpt_TBv])
-              have "lessBT (xseq b (enat w) 0)
-                      (operB b (Trm [DB (enat w) (xseq b (enat w) 0)]))"
-                by (rule b1x_less_le_trans[OF lt0 lb])
-              thus ?case using b1x_xseq_Suc by simp
+              have "lessBT (Trm []) (operB b (xseq b (enat w) 0))"
+                using Y0ne by simp
+              thus ?case by (simp add: b1x_xseq_0 b1x_xseq_Suc)
             next
               case (Suc i)
-              have zlt: "lessBT (Trm [DB (enat w) (xseq b (enat w) i)])
-                           (Trm [DB (enat w) (xseq b (enat w) (Suc i))])"
-                using Suc.IH by simp
-              have "lessBT (operB b (Trm [DB (enat w) (xseq b (enat w) i)]))
-                      (operB b (Trm [DB (enat w) (xseq b (enat w) (Suc i))]))"
-                by (rule b1x_mono[OF dbw b1x_Dpt_TBv b1x_Dpt_TBv zlt])
-              thus ?case using b1x_xseq_Suc by simp
+              have "lessBT (operB b (xseq b (enat w) i))
+                      (operB b (xseq b (enat w) (Suc i)))"
+                by (rule b1x_mono[OF dbw xin xin Suc.IH])
+              thus ?case by (simp add: b1x_xseq_Suc)
             qed
-            have TI: "leBT (xseq b (enat w) i) c' \<Longrightarrow> leBT c' b \<Longrightarrow>
-                        b1x_setle (GBT u (xseq b (enat w) i))
+            have Ymono: "lessBT (operB b (xseq b (enat w) i))
+                           (operB b (xseq b (enat w) (Suc i)))" for i
+              by (rule b1x_mono[OF dbw xin xin T1])
+            \<comment> \<open>tower \<open>G\<close>-control invariant on the VALUES \<open>b[x\<^sub>i]\<close>\<close>
+            have TI: "leBT (operB b (xseq b (enat w) i)) c' \<Longrightarrow> leBT c' b \<Longrightarrow>
+                        b1x_setle (GBT u (operB b (xseq b (enat w) i)))
                           (insert c' (GBT u c' \<union> {Trm []}))" for i c' u
             proof (induction i arbitrary: c' u)
               case 0
-              have "GBT u (xseq b (enat w) 0) \<subseteq> {Trm []}"
+              have main: "b1x_setle (GBT u (operB b (xseq b (enat w) 0)))
+                    (GBT u c' \<union> GBT u (xseq b (enat w) 0) \<union> {Trm []})"
+                by (rule b1x_triG_D[OF triX 0(1) 0(2)])
+              have g0: "GBT u (xseq b (enat w) 0) \<subseteq> {Trm []}"
                 by (auto simp: b1x_xseq_0 split: if_splits)
-              hence "GBT u (xseq b (enat w) 0) \<subseteq> insert c' (GBT u c' \<union> {Trm []})"
-                by blast
-              thus ?case by (rule b1x_setle_subset)
+              show ?case
+                by (rule b1x_setle_widen[OF main]) (use g0 in blast)
             next
               case (Suc i)
-              have xsuc: "xseq b (enat w) (Suc i)
-                            = operB b (Trm [DB (enat w) (xseq b (enat w) i)])"
-                by (rule b1x_xseq_Suc)
-              have triB: "b1x_triG (Trm [DB (enat w) (xseq b (enat w) i)])
-                            (operB b (Trm [DB (enat w) (xseq b (enat w) i)])) b"
-                using IHt by blast
-              have le1: "leBT (operB b (Trm [DB (enat w) (xseq b (enat w) i)])) c'"
-                using Suc.prems(1) xsuc by simp
-              have main: "b1x_setle
-                    (GBT u (operB b (Trm [DB (enat w) (xseq b (enat w) i)])))
-                    (GBT u c' \<union> GBT u (Trm [DB (enat w) (xseq b (enat w) i)])
-                     \<union> {Trm []})"
-                by (rule b1x_triG_D[OF triB le1 Suc.prems(2)])
-              have xic: "lessBT (xseq b (enat w) i) c'"
-                by (rule b1x_less_le_trans[OF T1[of i] Suc.prems(1)])
-              have IHi: "b1x_setle (GBT u (xseq b (enat w) i))
+              have main: "b1x_setle (GBT u (operB b (xseq b (enat w) (Suc i))))
+                    (GBT u c' \<union> GBT u (xseq b (enat w) (Suc i)) \<union> {Trm []})"
+                by (rule b1x_triG_D[OF triX Suc.prems(1) Suc.prems(2)])
+              have Yic: "leBT (operB b (xseq b (enat w) i)) c'"
+                using Ymono[of i] Suc.prems(1) by (blast intro: lessBT_trans)
+              have IHi: "b1x_setle (GBT u (operB b (xseq b (enat w) i)))
                            (insert c' (GBT u c' \<union> {Trm []}))"
-                using Suc.IH Suc.prems(2) xic by blast
+                using Suc.IH[OF Yic Suc.prems(2)] .
               have "\<exists>y\<in>insert c' (GBT u c' \<union> {Trm []}). leBT x y"
-                if xin: "x \<in> GBT u (xseq b (enat w) (Suc i))" for x
+                if xin': "x \<in> GBT u (operB b (xseq b (enat w) (Suc i)))" for x
               proof -
-                have xin': "x \<in> GBT u (operB b (Trm [DB (enat w) (xseq b (enat w) i)]))"
-                  using xin xsuc by simp
                 obtain y where
-                  yin: "y \<in> GBT u c' \<union> GBT u (Trm [DB (enat w) (xseq b (enat w) i)])
-                          \<union> {Trm []}"
+                  yin: "y \<in> GBT u c' \<union> GBT u (xseq b (enat w) (Suc i)) \<union> {Trm []}"
                   and xy: "leBT x y"
                   using main xin' unfolding b1x_setle_def by blast
                 consider (A) "y \<in> GBT u c' \<union> {Trm []}"
-                  | (B) "y \<in> GBT u (Trm [DB (enat w) (xseq b (enat w) i)])"
+                  | (B) "y \<in> GBT u (xseq b (enat w) (Suc i))"
                   using yin by blast
                 thus ?thesis
                 proof cases
                   case A thus ?thesis using xy by blast
                 next
                   case B
-                  have Bsub: "y = xseq b (enat w) i \<or> y \<in> GBT u (xseq b (enat w) i)"
-                    using B by (auto split: if_splits)
+                  have Bsub: "y = operB b (xseq b (enat w) i)
+                                \<or> y \<in> GBT u (operB b (xseq b (enat w) i))"
+                    using B by (auto simp: b1x_xseq_Suc split: if_splits)
                   show ?thesis
-                  proof (cases "y = xseq b (enat w) i")
+                  proof (cases "y = operB b (xseq b (enat w) i)")
                     case True
-                    have xle: "leBT x (xseq b (enat w) i)" using xy True by simp
-                    have "lessBT x c'" by (rule b1x_le_less_trans[OF xle xic])
+                    have "leBT x c'" using xy True Yic by (blast intro: lessBT_trans)
                     thus ?thesis by blast
                   next
                     case False
-                    hence yG: "y \<in> GBT u (xseq b (enat w) i)" using Bsub by blast
+                    hence yG: "y \<in> GBT u (operB b (xseq b (enat w) i))"
+                      using Bsub by blast
                     obtain y2 where y2in: "y2 \<in> insert c' (GBT u c' \<union> {Trm []})"
                       and yy2: "leBT y y2"
                       using IHi yG unfolding b1x_setle_def by blast
@@ -50976,74 +50973,95 @@ proof (induction a arbitrary: z rule: measure_induct_rule[where f=size])
               qed
               thus ?case unfolding b1x_setle_def by blast
             qed
+            \<comment> \<open>tower closure invariant: \<open>x\<^sub>i \<in> OT\<close>, \<open>D\<^sub>\<omega>\<close>-free, and
+              \<open>G\<^sub>v x\<^sub>i < b[x\<^sub>i]\<close> (the \<open>Gz\<close> premise of the \<open>G\<close>-control lemma)\<close>
+            have Gwb: "\<forall>x\<in>GBT (enat w) b. lessBT x b"
+              using Gvb b1x_GBT_antitone[OF vw] by blast
             have CL: "isOT_BT (xseq b (enat w) i) \<and> dfree_BT (xseq b (enat w) i)
                       \<and> (\<forall>x\<in>GBT v (xseq b (enat w) i).
-                           lessBT x (xseq b (enat w) i))" for i
+                           lessBT x (operB b (xseq b (enat w) i)))" for i
             proof (induction i)
               case 0
               have s0: "xseq b (enat w) 0 = Trm [DB (enat w) (Trm [])]"
                 by (rule b1x_xseq_0)
-              have g0: "\<forall>x\<in>GBT v (xseq b (enat w) 0). lessBT x (xseq b (enat w) 0)"
+              have ot0: "isOT_BT (xseq b (enat w) 0)" by (simp add: s0)
+              have df0: "dfree_BT (xseq b (enat w) 0)" by (simp add: s0)
+              have g0: "GBT v (xseq b (enat w) 0) \<subseteq> {Trm []}"
                 by (auto simp: s0 split: if_splits)
-              show ?case using s0 g0 by simp
+              have "\<forall>x\<in>GBT v (xseq b (enat w) 0).
+                      lessBT x (operB b (xseq b (enat w) 0))"
+                using g0 Y0ne by auto
+              thus ?case using ot0 df0 by blast
             next
               case (Suc i)
-              have xsuc: "xseq b (enat w) (Suc i)
-                            = operB b (Trm [DB (enat w) (xseq b (enat w) i)])"
-                by (rule b1x_xseq_Suc)
               have oti: "isOT_BT (xseq b (enat w) i)"
                 and dfi: "dfree_BT (xseq b (enat w) i)"
-                and gvi: "\<forall>x\<in>GBT v (xseq b (enat w) i). lessBT x (xseq b (enat w) i)"
+                and Pi: "\<forall>x\<in>GBT v (xseq b (enat w) i).
+                           lessBT x (operB b (xseq b (enat w) i))"
                 using Suc.IH by blast+
-              have gwi: "\<forall>x\<in>GBT (enat w) (xseq b (enat w) i).
-                           lessBT x (xseq b (enat w) i)"
-                using gvi b1x_GBT_antitone[OF vw] by blast
-              have otzi: "isOT_BT (Trm [DB (enat w) (xseq b (enat w) i)])"
-                using oti gwi by simp
-              have dfzi: "dfree_BT (Trm [DB (enat w) (xseq b (enat w) i)])"
-                using dfi by simp
-              have otSuc: "isOT_BT (operB b (Trm [DB (enat w) (xseq b (enat w) i)]))"
-                and dfSuc: "dfree_BT (operB b (Trm [DB (enat w) (xseq b (enat w) i)]))"
-                using IHt[of "xseq b (enat w) i"] otzi dfzi by blast+
-              have triB: "b1x_triG (Trm [DB (enat w) (xseq b (enat w) i)])
-                            (operB b (Trm [DB (enat w) (xseq b (enat w) i)])) b"
-                using IHt by blast
-              have lei: "leBT (operB b (Trm [DB (enat w) (xseq b (enat w) i)])) b"
-                using xd[of "Suc i"] xsuc by auto
-              have xilt: "lessBT (xseq b (enat w) i)
-                            (operB b (Trm [DB (enat w) (xseq b (enat w) i)]))"
-                using T1[of i] xsuc by simp
-              have Gzi: "\<forall>x\<in>GBT v (Trm [DB (enat w) (xseq b (enat w) i)]).
-                           lessBT x (operB b (Trm [DB (enat w) (xseq b (enat w) i)]))"
+              have Pwi: "\<forall>x\<in>GBT (enat w) (xseq b (enat w) i).
+                           lessBT x (operB b (xseq b (enat w) i))"
+                using Pi b1x_GBT_antitone[OF vw] by blast
+              have otY: "isOT_BT (operB b (xseq b (enat w) i))"
+                and dfY: "dfree_BT (operB b (xseq b (enat w) i))"
+                using IHz[OF xin] oti dfi by blast+
+              have GvY: "\<forall>x\<in>GBT v (operB b (xseq b (enat w) i)).
+                           lessBT x (operB b (xseq b (enat w) i))"
+                by (rule b1x_G_control[OF triX Yle Gvb Pi])
+              have GwY: "\<forall>x\<in>GBT (enat w) (operB b (xseq b (enat w) i)).
+                           lessBT x (operB b (xseq b (enat w) i))"
+                by (rule b1x_G_control[OF triX Yle Gwb Pwi])
+              have xsuc: "xseq b (enat w) (Suc i)
+                            = Trm [DB (enat w) (operB b (xseq b (enat w) i))]"
+                by (rule b1x_xseq_Suc)
+              have otSuc: "isOT_BT (xseq b (enat w) (Suc i))"
+                using xsuc otY GwY by simp
+              have dfSuc: "dfree_BT (xseq b (enat w) (Suc i))"
+                using xsuc dfY by simp
+              have PSuc: "\<forall>x\<in>GBT v (xseq b (enat w) (Suc i)).
+                            lessBT x (operB b (xseq b (enat w) (Suc i)))"
               proof
-                fix x assume "x \<in> GBT v (Trm [DB (enat w) (xseq b (enat w) i)])"
-                hence dis: "x = xseq b (enat w) i \<or> x \<in> GBT v (xseq b (enat w) i)"
-                  by (auto split: if_splits)
-                show "lessBT x (operB b (Trm [DB (enat w) (xseq b (enat w) i)]))"
-                proof (cases "x = xseq b (enat w) i")
-                  case True thus ?thesis using xilt by simp
+                fix x assume "x \<in> GBT v (xseq b (enat w) (Suc i))"
+                hence dis: "x = operB b (xseq b (enat w) i)
+                              \<or> x \<in> GBT v (operB b (xseq b (enat w) i))"
+                  using xsuc by (auto split: if_splits)
+                show "lessBT x (operB b (xseq b (enat w) (Suc i)))"
+                proof (cases "x = operB b (xseq b (enat w) i)")
+                  case True thus ?thesis using Ymono[of i] by simp
                 next
                   case False
-                  hence "lessBT x (xseq b (enat w) i)" using dis gvi by blast
-                  thus ?thesis using xilt by (rule lessBT_trans)
+                  hence "lessBT x (operB b (xseq b (enat w) i))"
+                    using dis GvY by blast
+                  thus ?thesis using Ymono[of i] by (rule lessBT_trans)
                 qed
               qed
-              have GvSuc: "\<forall>x\<in>GBT v (operB b (Trm [DB (enat w) (xseq b (enat w) i)])).
-                             lessBT x (operB b (Trm [DB (enat w) (xseq b (enat w) i)]))"
-                by (rule b1x_G_control[OF triB lei Gvb Gzi])
-              show ?case using xsuc otSuc dfSuc GvSuc by simp
+              show ?case using otSuc dfSuc PSuc by blast
             qed
-            have opz: "operB a z = Trm [DB v (xseq b (enat w) (numNat z))]"
+            \<comment> \<open>readback of the value and the three conclusions\<close>
+            have opz: "operB a z
+                         = Trm [DB v (operB b (xseq b (enat w) (numNat z)))]"
               using aeq operB_kind1_unfold[OF dbw vw bne] by simp
+            have otXn: "isOT_BT (xseq b (enat w) (numNat z))"
+              and dfXn: "dfree_BT (xseq b (enat w) (numNat z))"
+              and PXn: "\<forall>x\<in>GBT v (xseq b (enat w) (numNat z)).
+                          lessBT x (operB b (xseq b (enat w) (numNat z)))"
+              using CL[of "numNat z"] by blast+
+            have otYn: "isOT_BT (operB b (xseq b (enat w) (numNat z)))"
+              and dfYn: "dfree_BT (operB b (xseq b (enat w) (numNat z)))"
+              using IHz[OF xin] otXn dfXn by blast+
+            have GvYn: "\<forall>x\<in>GBT v (operB b (xseq b (enat w) (numNat z))).
+                          lessBT x (operB b (xseq b (enat w) (numNat z)))"
+              by (rule b1x_G_control[OF triX Yle Gvb PXn])
             have triFull: "b1x_triG z (operB a z) a"
             proof (rule b1x_triG_I)
               fix u c
               assume l1: "leBT (operB a z) c" and l2: "leBT c a"
-              have l1': "leBT (Trm [DB v (xseq b (enat w) (numNat z))]) c"
+              have l1': "leBT (Trm [DB v (operB b (xseq b (enat w) (numNat z)))]) c"
                 using l1 opz by simp
               have l2': "leBT c (Trm [DB v b])" using l2 aeq by simp
               obtain c0 c1 where ceq: "c = Trm (DB v c0 # c1)"
-                and xc0: "leBT (xseq b (enat w) (numNat z)) c0" and c0b: "leBT c0 b"
+                and Yc0: "leBT (operB b (xseq b (enat w) (numNat z))) c0"
+                and c0b: "leBT c0 b"
                 using b1x_sandwich_Dpt[OF l1' l2'] by blast
               show "b1x_setle (GBT u (operB a z)) (GBT u c \<union> GBT u z \<union> {Trm []})"
               proof (cases "u \<le> v")
@@ -51053,25 +51071,25 @@ proof (induction a arbitrary: z rule: measure_induct_rule[where f=size])
               next
                 case True
                 have GL: "GBT u (operB a z)
-                            = insert (xseq b (enat w) (numNat z))
-                                (GBT u (xseq b (enat w) (numNat z)))"
+                            = insert (operB b (xseq b (enat w) (numNat z)))
+                                (GBT u (operB b (xseq b (enat w) (numNat z))))"
                   using opz True by simp
                 have c0in: "c0 \<in> GBT u c" using ceq True by simp
                 have Gc0sub: "GBT u c0 \<subseteq> GBT u c" using ceq True by fastforce
-                have ti: "b1x_setle (GBT u (xseq b (enat w) (numNat z)))
+                have ti: "b1x_setle (GBT u (operB b (xseq b (enat w) (numNat z))))
                             (insert c0 (GBT u c0 \<union> {Trm []}))"
-                  by (rule TI[OF xc0 c0b])
-                have ti': "b1x_setle (GBT u (xseq b (enat w) (numNat z)))
+                  by (rule TI[OF Yc0 c0b])
+                have ti': "b1x_setle (GBT u (operB b (xseq b (enat w) (numNat z))))
                              (GBT u c \<union> GBT u z \<union> {Trm []})"
                   by (rule b1x_setle_widen[OF ti]) (use c0in Gc0sub in blast)
                 show ?thesis
-                  using GL ti' xc0 c0in unfolding b1x_setle_def by auto
+                  using GL ti' Yc0 c0in unfolding b1x_setle_def by auto
               qed
             qed
             have otRes: "isOT_BT (operB a z)"
-              using opz CL[of "numNat z"] by simp
+              using opz otYn GvYn by simp
             have dfRes: "dfree_BT (operB a z)"
-              using opz CL[of "numNat z"] vfin by simp
+              using opz dfYn vfin by simp
             show ?thesis using triFull otRes dfRes by blast
           next
             case nk1: False
@@ -51458,10 +51476,9 @@ lemma m_8_5_scbdec_fseq_condV:
     \<and> scb_kind1 (Trans M) s\<^sub>1 (flatBT (transC2 M)) b\<^sub>1
     \<and> (\<forall>n. flatBT (operB (Trans M) (numBT n)) =
            s\<^sub>1 @ (Dsym (enat (entry M 1 (transJm1 M)))
-              # concat (replicate n (s\<^sub>0 @ [Dsym (enat (entry M 1 (transJ0 M)))]))
-              @ [Dsym (enat (entry M 1 (transJ0 M)))]
+              # concat (replicate (n + 1) (s\<^sub>0 @ [Dsym (enat (entry M 1 (transJ0 M)))]))
               @ [Zsym]
-              @ concat (replicate n b\<^sub>0))
+              @ concat (replicate (n + 1) b\<^sub>0))
            @ b\<^sub>1)"
 proof -
   note shape = m_8_5_scbdec_c1_shape[OF MR MP J1pos T1]
@@ -51559,37 +51576,33 @@ proof -
     using cond unfolding transCondV_def transJ0_def transJ1_def by arith
   have main: "\<And>n. flatBT (operB (Trans M) (numBT n)) =
         s1 @ (Dsym (enat (entry M 1 (transJm1 M)))
-           # concat (replicate n (s0 @ [Dsym (enat (entry M 1 (transJ0 M)))]))
-           @ [Dsym (enat (entry M 1 (transJ0 M)))]
+           # concat (replicate (n + 1) (s0 @ [Dsym (enat (entry M 1 (transJ0 M)))]))
            @ [Zsym]
-           @ concat (replicate n b0))
+           @ concat (replicate (n + 1) b0))
         @ b1"
   proof -
     fix n
     have "entry M 1 (transJ1 M) > entry M 1 (transJm1 M) \<and>
           flatBT (operB (Trans M) (numBT n)) =
             s1 @ (Dsym (enat (entry M 1 (transJm1 M)))
-               # concat (replicate n (s0 @ [Dsym (enat (entry M 1 (transJ1 M) - 1))]))
-               @ [Dsym (enat (entry M 1 (transJ1 M) - 1))]
+               # concat (replicate (n + 1) (s0 @ [Dsym (enat (entry M 1 (transJ1 M) - 1))]))
                @ [Zsym]
-               @ concat (replicate n b0))
+               @ concat (replicate (n + 1) b0))
             @ b1"
       by (rule m_7_2_scb_fseq_kind1_general[OF TT uv bodyT dbbody bodyne inner k1body])
     thus "flatBT (operB (Trans M) (numBT n)) =
         s1 @ (Dsym (enat (entry M 1 (transJm1 M)))
-           # concat (replicate n (s0 @ [Dsym (enat (entry M 1 (transJ0 M)))]))
-           @ [Dsym (enat (entry M 1 (transJ0 M)))]
+           # concat (replicate (n + 1) (s0 @ [Dsym (enat (entry M 1 (transJ0 M)))]))
            @ [Zsym]
-           @ concat (replicate n b0))
+           @ concat (replicate (n + 1) b0))
         @ b1"
       using j0v by simp
   qed
   have fseq_all: "\<forall>n. flatBT (operB (Trans M) (numBT n)) =
         s1 @ (Dsym (enat (entry M 1 (transJm1 M)))
-           # concat (replicate n (s0 @ [Dsym (enat (entry M 1 (transJ0 M)))]))
-           @ [Dsym (enat (entry M 1 (transJ0 M)))]
+           # concat (replicate (n + 1) (s0 @ [Dsym (enat (entry M 1 (transJ0 M)))]))
            @ [Zsym]
-           @ concat (replicate n b0))
+           @ concat (replicate (n + 1) b0))
         @ b1"
     using main by blast
   have "scb_decomp (transT2 M +\<^sub>B Dpt (enat (entry M 1 (transJ1 M))) 0\<^sub>B)
@@ -51599,10 +51612,9 @@ proof -
       \<and> scb_kind1 (Trans M) s1 (flatBT (transC2 M)) b1
       \<and> (\<forall>n. flatBT (operB (Trans M) (numBT n)) =
              s1 @ (Dsym (enat (entry M 1 (transJm1 M)))
-                # concat (replicate n (s0 @ [Dsym (enat (entry M 1 (transJ0 M)))]))
-                @ [Dsym (enat (entry M 1 (transJ0 M)))]
+                # concat (replicate (n + 1) (s0 @ [Dsym (enat (entry M 1 (transJ0 M)))]))
                 @ [Zsym]
-                @ concat (replicate n b0))
+                @ concat (replicate (n + 1) b0))
              @ b1)"
     using inner d1 k1 fseq_all by blast
   thus ?thesis by blast
@@ -62324,19 +62336,17 @@ lemma d13x_fseq_condIII:
                (flatBT (Dpt (enat (entry M 1 (s84x_jm3 M))) body)) b1"
   shows "flatBT (operB (Trans M) (numBT n))
            = s1 @ (Dsym (enat (entry M 1 (s84x_jm3 M)))
-                # concat (replicate n (s0 @ [Dsym (enat (entry M 1 (Lng M - 1) - 1))]))
-                @ [Dsym (enat (entry M 1 (Lng M - 1) - 1))]
+                # concat (replicate (n + 1) (s0 @ [Dsym (enat (entry M 1 (Lng M - 1) - 1))]))
                 @ [Zsym]
-                @ concat (replicate n b0))
+                @ concat (replicate (n + 1) b0))
              @ b1"
 proof -
   have "entry M 1 (Lng M - 1) > entry M 1 (s84x_jm3 M) \<and>
         flatBT (operB (Trans M) (numBT n))
            = s1 @ (Dsym (enat (entry M 1 (s84x_jm3 M)))
-                # concat (replicate n (s0 @ [Dsym (enat (entry M 1 (Lng M - 1) - 1))]))
-                @ [Dsym (enat (entry M 1 (Lng M - 1) - 1))]
+                # concat (replicate (n + 1) (s0 @ [Dsym (enat (entry M 1 (Lng M - 1) - 1))]))
                 @ [Zsym]
-                @ concat (replicate n b0))
+                @ concat (replicate (n + 1) b0))
              @ b1"
     by (rule m_7_2_scb_fseq_kind1_general[OF TT uv bodyT dbbody bodyne inner k1])
   thus ?thesis by blast
