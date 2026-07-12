@@ -13162,16 +13162,14 @@ text \<open>\<^bold>\<open>(a) The oracle audit is STRUCTURALLY IMPOSSIBLE in th
 
 
 
-text \<open>\<^bold>\<open>Round-71: the ARTICLE'S OWN route, assembled.\<close>  The article derives termination
-  from the two pillars plus the well-ordering of \<open>(OT\<^bsub>B\<^esub>, <)\<close>, which it CITES as
-  [Buc1] Lemma 2.2 (@{thm [source] buc1_2_2_OT_B_wf} --- a legitimate external citation, carried
-  as a \<open>sorry\<close> in \<open>pss_paper\<close>).  Taking that citation, PSS termination follows from the
-  SINGLE residual \<open>KK\<close> --- one fewer unproven hypothesis than the citation-free route
-  @{thm [source] y3_PSS_acc_of_KK_cofimg}, which needs \<open>{KK, y3_cofimg}\<close>.  Both are kept:
-  this is the faithful transcription of the article; the other is ours, is citation-free, and
-  becomes the stronger result as soon as \<open>y3_cofimg\<close> is proved.\<close>
+text \<open>\<^bold>\<open>The ARTICLE'S OWN route, assembled --- and now CITATION-FREE.\<close>  The article derives
+  termination from the two pillars plus the well-ordering of \<open>(OT\<^bsub>B\<^esub>, <)\<close>, which it CITES
+  as [Buc1] Lemma 2.2.  We no longer need the citation: the very same statement is our own
+  theorem @{thm [source] y4_buc1_2_2_OT_B_wf}.  So this is the article's route, transcribed
+  faithfully, with the citation slot filled by our proof --- PSS termination in the article's
+  own \<open>wf\<close> form, modulo the SINGLE residual \<open>KK\<close>, with no \<open>sorry\<close> anywhere.\<close>
 
-theorem y3_PSS_wf_of_KK_buc1:
+theorem y4_PSS_wf_of_KK:
   assumes KK: "\<And>P s0 b0 k. P \<in> ST_PS \<Longrightarrow> P \<in> PT_PS \<Longrightarrow>
              hasParent P 1 (Lng P - 1) \<Longrightarrow> 1 < Lng P - 1 \<Longrightarrow>
              transCondIII P \<or> transCondIV P \<Longrightarrow>
@@ -13192,7 +13190,7 @@ proof -
                 lessBT (Trans ((N::pairseq)[n])) (Trans N)"
     using oi10_census_KK(2)[OF KK] by blast
   have wfR: "wf {(a, b). a \<in> OT_B \<and> b \<in> OT_B \<and> lessBT a b}"
-    by (rule buc1_2_2_OT_B_wf)
+    by (rule y4_buc1_2_2_OT_B_wf)
   have sub: "y3_PSSrel
                \<subseteq> inv_image {(a, b). a \<in> OT_B \<and> b \<in> OT_B \<and> lessBT a b} Trans"
   proof
@@ -13212,7 +13210,7 @@ proof -
     by (rule wf_subset[OF wf_inv_image[OF wfR] sub])
 qed
 
-corollary y3_PSS_acc_of_KK_buc1:
+corollary y4_PSS_acc_of_KK_wf:
   assumes KK: "\<And>P s0 b0 k. P \<in> ST_PS \<Longrightarrow> P \<in> PT_PS \<Longrightarrow>
              hasParent P 1 (Lng P - 1) \<Longrightarrow> 1 < Lng P - 1 \<Longrightarrow>
              transCondIII P \<or> transCondIV P \<Longrightarrow>
@@ -13227,7 +13225,7 @@ corollary y3_PSS_acc_of_KK_buc1:
                   (Dpt (enat (entry P 1 (Lng P - 1) - 1)) 0\<^sub>B))"
     and MST: "M \<in> ST_PS"
   shows "M \<in> Wellfounded.acc y3_PSSrel"
-  by (rule acc_wfD[OF y3_PSS_wf_of_KK_buc1[OF KK]])
+  by (rule acc_wfD[OF y4_PSS_wf_of_KK[OF KK]])
 
 
 text \<open>\<^bold>\<open>Circularity / sorry audit\<close> (fails the build if violated, so a green build IS
@@ -13269,6 +13267,7 @@ ML \<open>
      ("y4_cof0",             @{thm y4_cof0}),
      ("y4_bwl_cof",          @{thm y4_bwl_cof}),
      ("y4_PSS_acc_of_KK",    @{thm y4_PSS_acc_of_KK}),
+     ("y4_PSS_wf_of_KK",     @{thm y4_PSS_wf_of_KK}),
      ("oi10_census_KK",      @{thm oi10_census_KK(1)})];
 \<close>
 end

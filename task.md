@@ -84,9 +84,8 @@
     - ❌ 補題（$\textrm{Pred}$ と $[0]$ の関係）
     - ✅ 補題（順序数項の基本例）
     - 🚨 定理（停止性）= wf y3_PSSrel
-      - ⛔ KK(「補題（基本列の降下性）」配下 census で追跡。両ルート共通の残差)
-      - ✅ (A)原文ルート組立(y3_PSS_wf_of_KK_buc1。📘[Buc1]2.2 引用+残=KK のみ)
-      - 🚨🤖 (B)引用フリールート(y3_PSS_acc_of_KK_cofimg。残=KK+y3_cofimg。y3_cofimg 証明で引用を完全排除)[r0]
+      - ⛔ KK(「補題（基本列の降下性）」配下 census で追跡。唯一の残差)
+      - ✅ 原文ルート組立(y4_PSS_wf_of_KK。sorry非依存、残=KK のみ)[r2][0.264][1.25h]
     - 🚨 補題（$\textrm{Trans}$ が標準形を保つこと）= OT所属
       - ✅ clean部（rank0/T_B/単項leaf）
       - ✅ 還元 isOT⟸R1/R2/R3
@@ -104,7 +103,7 @@
             - ✅ tri0 CRUX(scbext_triG engine+crx/cnv_tri0_of_nest、ltJ不要)[r1][0.297][0.65h]
             - ✅ ltJ再スレッド+oi8 census(OTA1を単一A0OTへ還元、oi8_census_via_A0OT)[r1][0.284][0.59h]
             - ✅ A0OT(=isOT_BT(bpHeadT(Trans(Pred(s84x_N N))))、od4 RT_PS弱化+Red slice経由、OTA1柱完結)[r1][0.230][0.56h]
-            - 🚨🤖 SETLE1_ltJ(r70でOKH/leafcond反証→guard除去でengine再構成(ox10_)、残=KK=lessBT(ox8_rsub WB k) X1(walk-level、~4000水準0失敗))[r12][2.42][5.12h]
+            - 🚨 SETLE1_ltJ(r70でOKH/leafcond反証→guard除去でengine再構成(ox10_)、残=KK=lessBT(ox8_rsub WB k) X1(walk-level、~4300水準0失敗))[r13][2.68][6.37h]
           - ✅ IVNP(condIV no-parent隅=Pred除去、ot2_IVNP)[r1][0.257][0.65h]
           - ✅ IVADMEQ(condIV adm-eq隅、SETLE-free tower engine+Red-slice regime、ot2_IVADMEQ)[r4][1.074][2.60h]
       - ✅ OTpred(with-parent Pred corner OT-step、無仮定master od4_OTpred_mono→od4_OTpred_final無残差)[r4][0.817][1.41h]
