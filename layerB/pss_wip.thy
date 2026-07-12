@@ -27783,6 +27783,482 @@ text \<open>§8.1 命題（条件(I)の下での\<open>Trans\<close>と基本列
   Cites only proved/legitimate-external facts (\<open>buc1_*\<close> is an [Buc1] citation,
   see pss_paper.thy 804–823); no forward/circular reference to \<open>p_8_1_*\<close>.\<close>
 
+
+(* ===== moved here in r71 (citation hygiene): leBT_trans + the b1x_ Buchholz-[] block, *)
+(*   so that m_buc1_3_2a_fseq_lt (our PROOF of [Buc1] 3.2a) is in scope for the call     *)
+(*   sites below, which previously had to cite the pss_paper SORRY buc1_3_2a_fseq_lt.    *)
+
+lemma leBT_trans:
+  assumes "leBT a b" and "leBT b c" shows "leBT a c"
+  using assms by (metis lessBT_trans)
+
+lemma b1x_operB_dom_all: "domB_operB_xseq_dom (Inr (Inl (a, z)))"
+proof (induction a arbitrary: z rule: measure_induct_rule[where f=size])
+  case (less a z)
+  show ?case
+  proof (rule domB_operB_xseq.domintros(2))
+    show "domB_operB_xseq_dom (Inl x2)"
+      if "a = Trm [DB x1 x2]" "x2 \<noteq> Trm []" for x1 x2
+      by (rule domB_dom_all)
+  next
+    show "domB_operB_xseq_dom (Inr (Inl (x2, Trm [])))"
+      if "a = Trm [DB x1 x2]" "x2 \<noteq> Trm []" "{Trm []} = domB x2" for x1 x2
+    proof -
+      have "size x2 < size a" using that(1) by simp
+      thus ?thesis by (rule less.IH)
+    qed
+  next
+    show "xb = Trm []"
+      if "a = Trm [DB x1 x2]" "x2 \<noteq> Trm []" "x1 \<le> enat u"
+         "domB x2 = TBv (enat u)"
+         "\<not> domB_operB_xseq_dom
+              (Inr (Inr (x2, enat (tbvIdx (TBv (enat u))), numNat z)))"
+         "xb \<in> TBv (enat u)" for x1 x2 u xb
+      using xseq_dom_TBv_body[OF that(4)] that(5) by simp
+  next
+    show "Trm [] \<in> TBv (enat u)"
+      if "a = Trm [DB x1 x2]" "x2 \<noteq> Trm []" "x1 \<le> enat u"
+         "domB x2 = TBv (enat u)"
+         "\<not> domB_operB_xseq_dom
+              (Inr (Inr (x2, enat (tbvIdx (TBv (enat u))), numNat z)))"
+         for x1 x2 u
+      by (simp add: TBv_def)
+  next
+    show "xb = Trm []"
+      if "a = Trm [DB x1 x2]" "x2 \<noteq> Trm []"
+         "\<forall>u. x1 \<le> enat u \<longrightarrow> domB x2 \<noteq> TBv (enat u)"
+         "\<not> domB_operB_xseq_dom (Inr (Inl (x2, z)))"
+         "xb \<in> domB x2" for x1 x2 xb
+    proof -
+      have "size x2 < size a" using that(1) by simp
+      from less.IH[OF this] that(4) show ?thesis by simp
+    qed
+  next
+    show "Trm [] \<in> domB x2"
+      if "a = Trm [DB x1 x2]" "x2 \<noteq> Trm []"
+         "\<forall>u. x1 \<le> enat u \<longrightarrow> domB x2 \<noteq> TBv (enat u)"
+         "\<not> domB_operB_xseq_dom (Inr (Inl (x2, z)))" for x1 x2
+    proof -
+      have "size x2 < size a" using that(1) by simp
+      from less.IH[OF this] that(4) show ?thesis by simp
+    qed
+  next
+    show "domB_operB_xseq_dom (Inr (Inl (Trm [x21a], z)))"
+      if "a = Trm [DB x1 x2, x21a]" for x1 x2 x21a
+    proof -
+      have "size (Trm [x21a] :: BT) < size a" using that by simp
+      thus ?thesis by (rule less.IH)
+    qed
+  next
+    show "domB_operB_xseq_dom (Inr (Inl (Trm [last x22a], z)))"
+      if "a = Trm (DB x1 x2 # x21a # x22a)" "x22a \<noteq> []" for x1 x2 x21a x22a
+    proof -
+      have "last x22a \<in> set x22a" using that(2) by simp
+      hence "size (last x22a) \<le> size_list size x22a"
+        by (induction x22a) auto
+      hence "size (Trm [last x22a] :: BT) < size a"
+        using that by (cases x22a) auto
+      thus ?thesis by (rule less.IH)
+    qed
+  qed
+qed
+
+lemma b1x_xseq_dom_all: "domB_operB_xseq_dom (Inr (Inr (b, u, i)))"
+proof (induction i)
+  case 0
+  show ?case by (rule domB_operB_xseq.domintros(3)) simp_all
+next
+  case (Suc i)
+  show ?case
+  proof (rule domB_operB_xseq.domintros(3))
+    show "domB_operB_xseq_dom (Inr (Inr (b, u, nat)))"
+      if "Suc i = Suc nat" for nat
+      using Suc.IH that by simp
+  next
+    show "domB_operB_xseq_dom (Inr (Inl (b, Dpt u (xseq b u nat))))"
+      if "Suc i = Suc nat" for nat
+      by (rule b1x_operB_dom_all)
+  qed
+qed
+
+text \<open>Hence \<open>operB\<close>/\<open>xseq\<close> unfold unconditionally.\<close>
+
+lemma b1x_operB_unfold:
+  "operB a z =
+     (case a of Trm xs \<Rightarrow> (case xs of
+        [] \<Rightarrow> Trm []
+      | [DB v b] \<Rightarrow>
+          (if b = Trm [] then
+             (if v = 0 then Trm []
+              else if v = \<infinity> then Dprin (enat (numNat z + 1)) (Trm [])
+              else z)
+           else
+             (let db = domB b in
+              if db = {Trm []} then multBT (Dprin v (operB b (Trm []))) (numNat z + 1)
+              else if (\<exists>u. v \<le> enat u \<and> db = TBv (enat u))
+                   then Dprin v (xseq b (enat (tbvIdx db)) (numNat z))
+              else Dprin v (operB b z)))
+      | (p # q # rest) \<Rightarrow>
+          addBT (Trm (butlast (p # q # rest))) (operB (Trm [last (p # q # rest)]) z)))"
+  by (rule operB.psimps[OF b1x_operB_dom_all])
+
+lemma b1x_xseq_0: "xseq b u 0 = Trm [DB u (Trm [])]"
+  by (subst xseq.psimps[OF b1x_xseq_dom_all]) simp
+
+lemma b1x_xseq_Suc: "xseq b u (Suc j) = operB b (Trm [DB u (xseq b u j)])"
+  by (subst xseq.psimps[OF b1x_xseq_dom_all]) simp
+
+text \<open>Branch-shape lemmas (one per arm of the \<open>operB\<close> recursion).\<close>
+
+lemma b1x_operB_zero: "operB (Trm []) z = Trm []"
+  by (subst b1x_operB_unfold) simp
+
+lemma b1x_operB_D0: "operB (Trm [DB 0 (Trm [])]) z = Trm []"
+  by (subst b1x_operB_unfold) simp
+
+lemma b1x_operB_Dinf:
+  "operB (Trm [DB \<infinity> (Trm [])]) z = Trm [DB (enat (numNat z + 1)) (Trm [])]"
+  by (subst b1x_operB_unfold) simp
+
+lemma b1x_operB_Dsucc:
+  assumes "v \<noteq> 0" "v \<noteq> \<infinity>"
+  shows "operB (Trm [DB v (Trm [])]) z = z"
+proof -
+  have g1: "(v = 0) = False" using assms(1) by simp
+  have g2: "(v = \<infinity>) = False" using assms(2) by simp
+  show ?thesis by (subst b1x_operB_unfold) (simp add: g1 g2)
+qed
+
+lemma b1x_operB_case_i:
+  assumes "b \<noteq> Trm []" "domB b = {Trm []}"
+  shows "operB (Trm [DB v b]) z
+           = multBT (Trm [DB v (operB b (Trm []))]) (numNat z + 1)"
+  using assms by (subst b1x_operB_unfold) (simp add: Let_def)
+
+lemma b1x_operB_case_iii:
+  assumes "b \<noteq> Trm []" "domB b \<noteq> {Trm []}"
+    and "\<not> (\<exists>u. v \<le> enat u \<and> domB b = TBv (enat u))"
+  shows "operB (Trm [DB v b]) z = Trm [DB v (operB b z)]"
+proof -
+  have g1: "(b = Trm []) = False" using assms(1) by simp
+  have g2: "(domB b = {Trm []}) = False" using assms(2) by simp
+  have g3: "(\<exists>u. v \<le> enat u \<and> domB b = TBv (enat u)) = False" using assms(3) by simp
+  show ?thesis by (subst b1x_operB_unfold) (simp add: Let_def g1 g2 g3)
+qed
+
+lemma b1x_operB_multi:
+  "operB (Trm (p # q # rest)) z
+     = Trm (butlast (p # q # rest)) +\<^sub>B operB (Trm [last (p # q # rest)]) z"
+proof (cases p)
+  case (DB v b)
+  show ?thesis
+    unfolding DB by (subst b1x_operB_unfold) simp
+qed
+
+lemma b1x_domB_case_iii:
+  assumes "b \<noteq> Trm []" "domB b \<noteq> {Trm []}"
+    and "\<not> (\<exists>u. v \<le> enat u \<and> domB b = TBv (enat u))"
+  shows "domB (Trm [DB v b]) = domB b"
+proof -
+  have g1: "(b = Trm []) = False" using assms(1) by simp
+  have g2: "(domB b = {Trm []}) = False" using assms(2) by simp
+  have g3: "(\<exists>u. v \<le> enat u \<and> domB b = TBv (enat u)) = False" using assms(3) by simp
+  show ?thesis by (subst domB_unfold) (simp add: Let_def g1 g2 g3)
+qed
+
+lemma b1x_domB_Dsucc:
+  assumes "v \<noteq> 0" "v \<noteq> \<infinity>"
+  shows "domB (Trm [DB v (Trm [])]) = TBv (enat (the_enat v - 1))"
+proof -
+  have g1: "(v = 0) = False" using assms(1) by simp
+  have g2: "(v = \<infinity>) = False" using assms(2) by simp
+  show ?thesis by (subst domB_unfold) (simp add: g1 g2)
+qed
+
+lemma b1x_mult_single: "multBT (Trm [q]) n = Trm (replicate n q)"
+  by (induction n) (simp_all add: replicate_append_same)
+
+text \<open>\<open>simp\<close> computes \<open>multBT \<dash> (Suc n)\<close> into the snoc shape
+  \<open>replicate n q @ [q]\<close>; the following lemmas work directly on that shape.\<close>
+
+lemma b1x_lessBT_replsnoc:
+  assumes "lessBP q p"
+  shows "lessBT (Trm (replicate n q @ [q])) (Trm [p])"
+  using assms by (cases n) simp_all
+
+lemma b1x_leBT_head_replsnoc: "leBT (Trm [q]) (Trm (replicate n q @ [q]))"
+  by (cases n) simp_all
+
+lemma b1x_GBT_replsnoc: "GBT u (Trm (replicate n q @ [q])) = GBP u q"
+  by auto
+
+subsection \<open>Order and \<open>T\<^sub>v\<close>-membership helpers\<close>
+
+lemma b1x_lessBP_single: "lessBT (Trm [p]) (Trm [q]) \<longleftrightarrow> lessBP p q"
+  by (cases p; cases q) simp
+
+lemma b1x_lessBP_asym: "lessBP p q \<Longrightarrow> \<not> lessBP q p"
+  using lessBP_trans lessBP_irrefl by blast
+
+lemma b1x_leBT_single_idx:
+  assumes "leBT (Trm [DB h1 c1]) (Trm [DB h2 c2])"
+  shows "h1 \<le> h2"
+  using assms by (auto simp: order_less_imp_le)
+
+lemma b1x_zero_TBv: "Trm [] \<in> TBv v"
+  by (simp add: TBv_def)
+
+lemma b1x_NatSet_TBv: "z \<in> NatSet \<Longrightarrow> z \<in> TBv (enat w)"
+  by (auto simp: NatSet_def numBT_def TBv_def zero_enat_def)
+
+lemma b1x_Dpt_TBv: "Trm [DB (enat w) t] \<in> TBv (enat w)"
+  by (simp add: TBv_def)
+
+lemma b1x_TBv_lt_head:
+  assumes "z \<in> TBv (enat w)" "enat w < h"
+  shows "lessBT z (Trm (DB h c # rest))"
+proof (cases z)
+  case (Trm zs)
+  show ?thesis
+  proof (cases zs)
+    case Nil thus ?thesis using Trm by simp
+  next
+    case (Cons zp zr)
+    obtain hz bz where zp: "zp = DB hz bz" by (cases zp)
+    have "hz \<le> enat w" using assms(1) Trm Cons zp by (auto simp: TBv_def)
+    hence "hz < h" using assms(2) by (rule le_less_trans)
+    thus ?thesis using Trm Cons zp by simp
+  qed
+qed
+
+lemma b1x_descP_last_hd:
+  "descP ps \<Longrightarrow> ps \<noteq> [] \<Longrightarrow> leBT (Trm [last ps]) (Trm [hd ps])"
+proof (induction ps rule: descP.induct)
+  case 1 thus ?case by simp
+next
+  case (2 p) thus ?case by simp
+next
+  case (3 p q ps)
+  have h1: "leBT (Trm [q]) (Trm [p])" and hd: "descP (q # ps)"
+    using "3.prems"(1) by simp_all
+  have ihx: "leBT (Trm [last (q # ps)]) (Trm [hd (q # ps)])"
+    by (rule "3.IH"[OF hd]) simp
+  hence lq: "leBT (Trm [last (q # ps)]) (Trm [q])" by simp
+  have "leBT (Trm [last (q # ps)]) (Trm [p])" by (rule leBT_trans[OF lq h1])
+  thus ?case by simp
+qed
+
+subsection \<open>Head-index bound of a \<open>T\<^sub>w\<close>-domain term, and \<open>D\<^sub>w 0 < b\<close>\<close>
+
+lemma b1x_TBv_head_gt:
+  assumes "domB (Trm [DB h c]) = TBv (enat w)"
+  shows "enat w < h"
+proof (cases "c = Trm []")
+  case True
+  have unf: "domB (Trm [DB h c])
+               = (if h = 0 then {Trm []} else if h = \<infinity> then NatSet
+                  else TBv (enat (the_enat h - 1)))"
+    using True by (subst domB_unfold) simp
+  have h0: "h \<noteq> 0"
+    using unf assms zero_set_neq_TBv by (auto split: if_splits)
+  have hinf: "h \<noteq> \<infinity>"
+    using unf assms NatSet_neq_TBv h0 by (auto split: if_splits)
+  obtain k where hk: "h = enat k" using hinf by (cases h) auto
+  have "TBv (enat (k - 1)) = TBv (enat w)"
+    using unf assms h0 hinf hk by simp
+  hence kw: "k - 1 = w" by (rule TBv_enat_inj)
+  have "k \<noteq> 0" using h0 hk by (simp add: zero_enat_def)
+  thus ?thesis using hk kw by simp
+next
+  case False
+  have "\<not> (\<exists>u'. h \<le> enat u' \<and> domB c = TBv (enat u'))" "domB c = TBv (enat w)"
+    using domB_single_TBv_struct[OF assms False] by auto
+  hence "\<not> h \<le> enat w" by blast
+  thus ?thesis by (simp add: not_le)
+qed
+
+lemma b1x_Dw0_lt:
+  assumes ot: "isOT_BT b" and db: "domB b = TBv (enat w)"
+  shows "lessBT (Trm [DB (enat w) (Trm [])]) b"
+proof -
+  obtain bs where beq: "b = Trm bs" by (cases b)
+  have bne: "bs \<noteq> []"
+  proof
+    assume "bs = []"
+    hence "domB b = {}" using beq by (subst domB_unfold) simp
+    thus False using db b1x_zero_TBv by auto
+  qed
+  obtain h0 c0 where hd0: "hd bs = DB h0 c0" by (cases "hd bs")
+  have dlast: "domB (Trm [last bs]) = TBv (enat w)"
+    using db beq domB_last_component[OF bne] by simp
+  obtain hl cl where lst: "last bs = DB hl cl" by (cases "last bs")
+  have wl: "enat w < hl" using b1x_TBv_head_gt dlast lst by simp
+  have dsc: "descP bs" using ot beq by simp
+  have lehd: "leBT (Trm [last bs]) (Trm [hd bs])"
+    using b1x_descP_last_hd[OF dsc bne] .
+  have lehd': "leBT (Trm [DB hl cl]) (Trm [DB h0 c0])" using lehd lst hd0 by simp
+  have hlh0: "hl \<le> h0" by (rule b1x_leBT_single_idx[OF lehd'])
+  have wh: "enat w < h0" using wl hlh0 by (rule less_le_trans)
+  have "lessBP (DB (enat w) (Trm [])) (hd bs)" using wh hd0 by simp
+  thus ?thesis using beq bne hd0 by (cases bs) auto
+qed
+
+subsection \<open>Descent — [Buc1] Lemma 3.2(a) for numeral and in-domain arguments\<close>
+
+text \<open>\<open>a \<in> OT\<close>, \<open>a \<noteq> 0\<close>, \<open>z \<in> dom(a) \<union> \<nat>\<close> \<open>\<Longrightarrow>\<close> \<open>a[z] < a\<close>.  Strong induction
+  on \<open>size a\<close>, mirroring the \<open>operB\<close> recursion.  The \<open>\<union> \<nat>\<close> widening makes the
+  statement usable for EVERY numeral even when \<open>dom(a) = {0}\<close> or \<open>T\<^sub>u\<close> (the
+  bracket then ignores \<open>z\<close> resp. accepts it since \<open>\<nat> \<subseteq> T\<^sub>u\<close>); \<open>isOT\<close> is needed
+  only through @{thm [source] b1x_Dw0_lt} (kind-1 tower base, via \<open>descP\<close>).\<close>
+
+lemma b1x_descent:
+  "isOT_BT a \<Longrightarrow> a \<noteq> Trm [] \<Longrightarrow> z \<in> domB a \<or> z \<in> NatSet \<Longrightarrow>
+   lessBT (operB a z) a"
+proof (induction a arbitrary: z rule: measure_induct_rule[where f=size])
+  case (less a z)
+  obtain xs where axs: "a = Trm xs" by (cases a)
+  show ?case
+  proof (cases xs)
+    case Nil thus ?thesis using less.prems(2) axs by simp
+  next
+    case ConsP: (Cons p ps)
+    show ?thesis
+    proof (cases ps)
+      case Nil
+      obtain v b where peq: "p = DB v b" by (cases p)
+      have aeq: "a = Trm [DB v b]" using axs ConsP Nil peq by simp
+      show ?thesis
+      proof (cases "b = Trm []")
+        case True
+        show ?thesis
+        proof (cases "v = 0")
+          case True
+          hence "operB a z = Trm []"
+            using aeq \<open>b = Trm []\<close> b1x_operB_D0 by simp
+          thus ?thesis using less.prems(2) by simp
+        next
+          case False
+          show ?thesis
+          proof (cases "v = \<infinity>")
+            case True
+            hence "operB a z = Trm [DB (enat (numNat z + 1)) (Trm [])]"
+              using aeq \<open>b = Trm []\<close> b1x_operB_Dinf by simp
+            thus ?thesis using aeq True by simp
+          next
+            case vfin: False
+            have opz: "operB a z = z"
+              using aeq \<open>b = Trm []\<close> b1x_operB_Dsucc[OF \<open>v \<noteq> 0\<close> vfin] by simp
+            have da: "domB a = TBv (enat (the_enat v - 1))"
+              using aeq \<open>b = Trm []\<close> b1x_domB_Dsucc[OF \<open>v \<noteq> 0\<close> vfin] by simp
+            have zin: "z \<in> TBv (enat (the_enat v - 1))"
+              using less.prems(3) da b1x_NatSet_TBv by auto
+            obtain k where hk: "v = enat k" using vfin by (cases v) auto
+            have "k \<noteq> 0" using \<open>v \<noteq> 0\<close> hk by (simp add: zero_enat_def)
+            hence "enat (the_enat v - 1) < v" using hk by simp
+            hence "lessBT z (Trm (DB v (Trm []) # []))"
+              using b1x_TBv_lt_head[OF zin] by simp
+            thus ?thesis using aeq opz \<open>b = Trm []\<close> by simp
+          qed
+        qed
+      next
+        case bne: False
+        have otb: "isOT_BT b" using less.prems(1) aeq by simp
+        have szb: "size b < size a" using aeq by simp
+        show ?thesis
+        proof (cases "domB b = {Trm []}")
+          case dbz: True
+          have Xlt: "lessBT (operB b (Trm [])) b"
+            by (rule less.IH[OF szb otb bne]) (simp add: dbz)
+          have opz: "operB a z
+                  = Trm (replicate (numNat z) (DB v (operB b (Trm [])))
+                         @ [DB v (operB b (Trm []))])"
+            using aeq b1x_operB_case_i[OF bne dbz] b1x_mult_single by simp
+          have "lessBP (DB v (operB b (Trm []))) (DB v b)" using Xlt by simp
+          hence "lessBT (Trm (replicate (numNat z) (DB v (operB b (Trm [])))
+                              @ [DB v (operB b (Trm []))]))
+                        (Trm [DB v b])"
+            by (rule b1x_lessBT_replsnoc)
+          thus ?thesis using opz aeq by simp
+        next
+          case dbnz: False
+          show ?thesis
+          proof (cases "\<exists>u. v \<le> enat u \<and> domB b = TBv (enat u)")
+            case True
+            then obtain w where dbw: "domB b = TBv (enat w)" and vw: "v \<le> enat w"
+              by blast
+            have xlt: "lessBT (xseq b (enat w) i) b" for i
+            proof (cases i)
+              case 0
+              thus ?thesis using b1x_xseq_0 b1x_Dw0_lt[OF otb dbw] by simp
+            next
+              case (Suc j)
+              have "Trm [DB (enat w) (xseq b (enat w) j)] \<in> domB b"
+                using dbw b1x_Dpt_TBv by simp
+              hence "lessBT (operB b (Trm [DB (enat w) (xseq b (enat w) j)])) b"
+                by (intro less.IH[OF szb otb bne]) simp
+              thus ?thesis using Suc b1x_xseq_Suc by simp
+            qed
+            have "operB a z = Trm [DB v (xseq b (enat w) (numNat z))]"
+              using aeq operB_kind1_unfold[OF dbw vw bne] by simp
+            thus ?thesis using aeq xlt[of "numNat z"] by simp
+          next
+            case nk1: False
+            have opz: "operB a z = Trm [DB v (operB b z)]"
+              using aeq b1x_operB_case_iii[OF bne dbnz nk1] by simp
+            have da: "domB a = domB b"
+              using aeq b1x_domB_case_iii[OF bne dbnz nk1] by simp
+            have "lessBT (operB b z) b"
+              using less.IH[OF szb otb bne] less.prems(3) da by auto
+            thus ?thesis using aeq opz by simp
+          qed
+        qed
+      qed
+    next
+      case ConsQ: (Cons q rest)
+      have xseq_eq: "xs = p # q # rest" using ConsP ConsQ by simp
+      have ne: "xs \<noteq> []" using xseq_eq by simp
+      have szlast: "size (Trm [last xs] :: BT) < size a"
+      proof -
+        have lastin: "last (p # q # rest) \<in> set (q # rest)" by (cases rest) auto
+        have szl: "size (last (p # q # rest)) \<le> size_list size (q # rest)"
+          by (rule size_list_estimation'[OF lastin order_refl])
+        have szpos: "0 < size p" by (cases p) simp
+        show ?thesis using szl szpos axs xseq_eq by simp
+      qed
+      have otl: "isOT_BT (Trm [last xs])"
+        using less.prems(1) axs isOT_BT_last ne by simp
+      have lne: "Trm [last xs] \<noteq> Trm []" by simp
+      have dl: "domB a = domB (Trm [last xs])"
+        using axs domB_last_component[OF ne] by simp
+      have Ylt: "lessBT (operB (Trm [last xs]) z) (Trm [last xs])"
+        using less.IH[OF szlast otl lne] less.prems(3) dl by auto
+      have "operB a z
+              = Trm (butlast xs) +\<^sub>B operB (Trm [last xs]) z"
+        using axs xseq_eq b1x_operB_multi by simp
+      moreover have
+        "lessBT (Trm (butlast xs) +\<^sub>B operB (Trm [last xs]) z)
+                (Trm (butlast xs) +\<^sub>B Trm [last xs])"
+        by (rule lessBT_addBT_mono_right[OF Ylt])
+      moreover have "Trm (butlast xs) +\<^sub>B Trm [last xs] = a"
+        using axs ne by (simp add: append_butlast_last_id)
+      ultimately show ?thesis by simp
+    qed
+  qed
+qed
+
+text \<open>\<^bold>\<open>Target (b)\<close>: [Buc1] Lemma 3.2(a) as cited — statement identical to
+  \<open>buc1_3_2a_fseq_lt\<close> (pss_paper.thy 820–823).\<close>
+
+lemma m_buc1_3_2a_fseq_lt:
+  assumes "a \<in> OT_B" and "a \<noteq> Trm []"
+  shows "lessBT (operB a (numBT n)) a"
+proof -
+  have "isOT_BT a" using assms(1) by (simp add: OT_B_def OT_def)
+  moreover have "numBT n \<in> NatSet" by (auto simp: NatSet_def)
+  ultimately show ?thesis using b1x_descent assms(2) by blast
+qed
+
+
 lemma m_8_1_Trans_fseq_condI_descent:
   assumes MR: "M \<in> RT_PS"
     and j1: "Lng M - 1 > 1"
@@ -27794,7 +28270,7 @@ proof -
   hence nz: "\<not> zeroT M" by (simp add: zeroT_def)
   have tz: "Trans M \<noteq> 0\<^sub>B" using m_7_3_Trans_zeroT[OF MR] nz by blast
   have L: "lessBT (operB (Trans M) (numBT (n - 1))) (Trans M)"
-    by (rule buc1_3_2a_fseq_lt[OF OT tz])
+    by (rule m_buc1_3_2a_fseq_lt[OF OT tz])
   show ?thesis using L commute by simp
 qed
 
@@ -27871,7 +28347,7 @@ proof -
     obtain k where ke: "Trans (M[n]) = operB (Trans M) (numBT k)"
       using exch[OF n1] by blast
     have "lessBT (operB (Trans M) (numBT k)) (Trans M)"
-      by (rule buc1_3_2a_fseq_lt[OF TOT Tne])
+      by (rule m_buc1_3_2a_fseq_lt[OF TOT Tne])
     thus ?thesis using ke by simp
   qed
 qed
@@ -36806,7 +37282,7 @@ proof -
     obtain k where ke: "leBT (Trans (M[n])) (operB (Trans M) (numBT k))"
       using exch[OF n1] by blast
     have lt: "lessBT (operB (Trans M) (numBT k)) (Trans M)"
-      by (rule buc1_3_2a_fseq_lt[OF TOT Tne])
+      by (rule m_buc1_3_2a_fseq_lt[OF TOT Tne])
     show ?thesis using ke lt by (metis lessBT_trans)
   qed
 qed
@@ -36884,10 +37360,6 @@ lemma leBT_Zero_left_any: "leBT 0\<^sub>B t"
 
 lemma leBT_refl: "leBT a a"
   by simp
-
-lemma leBT_trans:
-  assumes "leBT a b" and "leBT b c" shows "leBT a c"
-  using assms by (metis lessBT_trans)
 
 lemma leBT_funpow_mono:
   assumes mono: "\<And>x y. leBT x y \<Longrightarrow> leBT (C x) (C y)"
@@ -39571,7 +40043,7 @@ proof -
     obtain k where ke: "leBT (Trans (M[n])) (operB (Trans M) (numBT k))"
       using exch[OF n1] by blast
     have lt: "lessBT (operB (Trans M) (numBT k)) (Trans M)"
-      by (rule buc1_3_2a_fseq_lt[OF TOT Tne])
+      by (rule m_buc1_3_2a_fseq_lt[OF TOT Tne])
     show ?thesis using ke lt by (metis lessBT_trans)
   qed
 qed
@@ -39630,7 +40102,7 @@ proof -
   have comm: "Trans (M[n]) = operB (Trans M) (numBT (n - 1))"
     unfolding M_def by (rule m_8_6_diagSeq_condVI_commute[OF j1 n0])
   have lt: "lessBT (operB (Trans M) (numBT (n - 1))) (Trans M)"
-    by (rule buc1_3_2a_fseq_lt[OF OT Tne])
+    by (rule m_buc1_3_2a_fseq_lt[OF OT Tne])
   show ?thesis using comm lt by simp
 qed
 
@@ -49305,472 +49777,6 @@ text \<open>The whole mutual recursion terminates on EVERY argument: \<open>oper
   the guard of the \<open>xseq\<close> branch).  This subsumes the earlier branch-wise
   domain lemmas (\<open>operB_dom_d0succ\<close>, \<open>operB_dom_kind1\<close>, …).\<close>
 
-lemma b1x_operB_dom_all: "domB_operB_xseq_dom (Inr (Inl (a, z)))"
-proof (induction a arbitrary: z rule: measure_induct_rule[where f=size])
-  case (less a z)
-  show ?case
-  proof (rule domB_operB_xseq.domintros(2))
-    show "domB_operB_xseq_dom (Inl x2)"
-      if "a = Trm [DB x1 x2]" "x2 \<noteq> Trm []" for x1 x2
-      by (rule domB_dom_all)
-  next
-    show "domB_operB_xseq_dom (Inr (Inl (x2, Trm [])))"
-      if "a = Trm [DB x1 x2]" "x2 \<noteq> Trm []" "{Trm []} = domB x2" for x1 x2
-    proof -
-      have "size x2 < size a" using that(1) by simp
-      thus ?thesis by (rule less.IH)
-    qed
-  next
-    show "xb = Trm []"
-      if "a = Trm [DB x1 x2]" "x2 \<noteq> Trm []" "x1 \<le> enat u"
-         "domB x2 = TBv (enat u)"
-         "\<not> domB_operB_xseq_dom
-              (Inr (Inr (x2, enat (tbvIdx (TBv (enat u))), numNat z)))"
-         "xb \<in> TBv (enat u)" for x1 x2 u xb
-      using xseq_dom_TBv_body[OF that(4)] that(5) by simp
-  next
-    show "Trm [] \<in> TBv (enat u)"
-      if "a = Trm [DB x1 x2]" "x2 \<noteq> Trm []" "x1 \<le> enat u"
-         "domB x2 = TBv (enat u)"
-         "\<not> domB_operB_xseq_dom
-              (Inr (Inr (x2, enat (tbvIdx (TBv (enat u))), numNat z)))"
-         for x1 x2 u
-      by (simp add: TBv_def)
-  next
-    show "xb = Trm []"
-      if "a = Trm [DB x1 x2]" "x2 \<noteq> Trm []"
-         "\<forall>u. x1 \<le> enat u \<longrightarrow> domB x2 \<noteq> TBv (enat u)"
-         "\<not> domB_operB_xseq_dom (Inr (Inl (x2, z)))"
-         "xb \<in> domB x2" for x1 x2 xb
-    proof -
-      have "size x2 < size a" using that(1) by simp
-      from less.IH[OF this] that(4) show ?thesis by simp
-    qed
-  next
-    show "Trm [] \<in> domB x2"
-      if "a = Trm [DB x1 x2]" "x2 \<noteq> Trm []"
-         "\<forall>u. x1 \<le> enat u \<longrightarrow> domB x2 \<noteq> TBv (enat u)"
-         "\<not> domB_operB_xseq_dom (Inr (Inl (x2, z)))" for x1 x2
-    proof -
-      have "size x2 < size a" using that(1) by simp
-      from less.IH[OF this] that(4) show ?thesis by simp
-    qed
-  next
-    show "domB_operB_xseq_dom (Inr (Inl (Trm [x21a], z)))"
-      if "a = Trm [DB x1 x2, x21a]" for x1 x2 x21a
-    proof -
-      have "size (Trm [x21a] :: BT) < size a" using that by simp
-      thus ?thesis by (rule less.IH)
-    qed
-  next
-    show "domB_operB_xseq_dom (Inr (Inl (Trm [last x22a], z)))"
-      if "a = Trm (DB x1 x2 # x21a # x22a)" "x22a \<noteq> []" for x1 x2 x21a x22a
-    proof -
-      have "last x22a \<in> set x22a" using that(2) by simp
-      hence "size (last x22a) \<le> size_list size x22a"
-        by (induction x22a) auto
-      hence "size (Trm [last x22a] :: BT) < size a"
-        using that by (cases x22a) auto
-      thus ?thesis by (rule less.IH)
-    qed
-  qed
-qed
-
-lemma b1x_xseq_dom_all: "domB_operB_xseq_dom (Inr (Inr (b, u, i)))"
-proof (induction i)
-  case 0
-  show ?case by (rule domB_operB_xseq.domintros(3)) simp_all
-next
-  case (Suc i)
-  show ?case
-  proof (rule domB_operB_xseq.domintros(3))
-    show "domB_operB_xseq_dom (Inr (Inr (b, u, nat)))"
-      if "Suc i = Suc nat" for nat
-      using Suc.IH that by simp
-  next
-    show "domB_operB_xseq_dom (Inr (Inl (b, Dpt u (xseq b u nat))))"
-      if "Suc i = Suc nat" for nat
-      by (rule b1x_operB_dom_all)
-  qed
-qed
-
-text \<open>Hence \<open>operB\<close>/\<open>xseq\<close> unfold unconditionally.\<close>
-
-lemma b1x_operB_unfold:
-  "operB a z =
-     (case a of Trm xs \<Rightarrow> (case xs of
-        [] \<Rightarrow> Trm []
-      | [DB v b] \<Rightarrow>
-          (if b = Trm [] then
-             (if v = 0 then Trm []
-              else if v = \<infinity> then Dprin (enat (numNat z + 1)) (Trm [])
-              else z)
-           else
-             (let db = domB b in
-              if db = {Trm []} then multBT (Dprin v (operB b (Trm []))) (numNat z + 1)
-              else if (\<exists>u. v \<le> enat u \<and> db = TBv (enat u))
-                   then Dprin v (xseq b (enat (tbvIdx db)) (numNat z))
-              else Dprin v (operB b z)))
-      | (p # q # rest) \<Rightarrow>
-          addBT (Trm (butlast (p # q # rest))) (operB (Trm [last (p # q # rest)]) z)))"
-  by (rule operB.psimps[OF b1x_operB_dom_all])
-
-lemma b1x_xseq_0: "xseq b u 0 = Trm [DB u (Trm [])]"
-  by (subst xseq.psimps[OF b1x_xseq_dom_all]) simp
-
-lemma b1x_xseq_Suc: "xseq b u (Suc j) = operB b (Trm [DB u (xseq b u j)])"
-  by (subst xseq.psimps[OF b1x_xseq_dom_all]) simp
-
-text \<open>Branch-shape lemmas (one per arm of the \<open>operB\<close> recursion).\<close>
-
-lemma b1x_operB_zero: "operB (Trm []) z = Trm []"
-  by (subst b1x_operB_unfold) simp
-
-lemma b1x_operB_D0: "operB (Trm [DB 0 (Trm [])]) z = Trm []"
-  by (subst b1x_operB_unfold) simp
-
-lemma b1x_operB_Dinf:
-  "operB (Trm [DB \<infinity> (Trm [])]) z = Trm [DB (enat (numNat z + 1)) (Trm [])]"
-  by (subst b1x_operB_unfold) simp
-
-lemma b1x_operB_Dsucc:
-  assumes "v \<noteq> 0" "v \<noteq> \<infinity>"
-  shows "operB (Trm [DB v (Trm [])]) z = z"
-proof -
-  have g1: "(v = 0) = False" using assms(1) by simp
-  have g2: "(v = \<infinity>) = False" using assms(2) by simp
-  show ?thesis by (subst b1x_operB_unfold) (simp add: g1 g2)
-qed
-
-lemma b1x_operB_case_i:
-  assumes "b \<noteq> Trm []" "domB b = {Trm []}"
-  shows "operB (Trm [DB v b]) z
-           = multBT (Trm [DB v (operB b (Trm []))]) (numNat z + 1)"
-  using assms by (subst b1x_operB_unfold) (simp add: Let_def)
-
-lemma b1x_operB_case_iii:
-  assumes "b \<noteq> Trm []" "domB b \<noteq> {Trm []}"
-    and "\<not> (\<exists>u. v \<le> enat u \<and> domB b = TBv (enat u))"
-  shows "operB (Trm [DB v b]) z = Trm [DB v (operB b z)]"
-proof -
-  have g1: "(b = Trm []) = False" using assms(1) by simp
-  have g2: "(domB b = {Trm []}) = False" using assms(2) by simp
-  have g3: "(\<exists>u. v \<le> enat u \<and> domB b = TBv (enat u)) = False" using assms(3) by simp
-  show ?thesis by (subst b1x_operB_unfold) (simp add: Let_def g1 g2 g3)
-qed
-
-lemma b1x_operB_multi:
-  "operB (Trm (p # q # rest)) z
-     = Trm (butlast (p # q # rest)) +\<^sub>B operB (Trm [last (p # q # rest)]) z"
-proof (cases p)
-  case (DB v b)
-  show ?thesis
-    unfolding DB by (subst b1x_operB_unfold) simp
-qed
-
-lemma b1x_domB_case_iii:
-  assumes "b \<noteq> Trm []" "domB b \<noteq> {Trm []}"
-    and "\<not> (\<exists>u. v \<le> enat u \<and> domB b = TBv (enat u))"
-  shows "domB (Trm [DB v b]) = domB b"
-proof -
-  have g1: "(b = Trm []) = False" using assms(1) by simp
-  have g2: "(domB b = {Trm []}) = False" using assms(2) by simp
-  have g3: "(\<exists>u. v \<le> enat u \<and> domB b = TBv (enat u)) = False" using assms(3) by simp
-  show ?thesis by (subst domB_unfold) (simp add: Let_def g1 g2 g3)
-qed
-
-lemma b1x_domB_Dsucc:
-  assumes "v \<noteq> 0" "v \<noteq> \<infinity>"
-  shows "domB (Trm [DB v (Trm [])]) = TBv (enat (the_enat v - 1))"
-proof -
-  have g1: "(v = 0) = False" using assms(1) by simp
-  have g2: "(v = \<infinity>) = False" using assms(2) by simp
-  show ?thesis by (subst domB_unfold) (simp add: g1 g2)
-qed
-
-lemma b1x_mult_single: "multBT (Trm [q]) n = Trm (replicate n q)"
-  by (induction n) (simp_all add: replicate_append_same)
-
-text \<open>\<open>simp\<close> computes \<open>multBT \<dash> (Suc n)\<close> into the snoc shape
-  \<open>replicate n q @ [q]\<close>; the following lemmas work directly on that shape.\<close>
-
-lemma b1x_lessBT_replsnoc:
-  assumes "lessBP q p"
-  shows "lessBT (Trm (replicate n q @ [q])) (Trm [p])"
-  using assms by (cases n) simp_all
-
-lemma b1x_leBT_head_replsnoc: "leBT (Trm [q]) (Trm (replicate n q @ [q]))"
-  by (cases n) simp_all
-
-lemma b1x_GBT_replsnoc: "GBT u (Trm (replicate n q @ [q])) = GBP u q"
-  by auto
-
-subsection \<open>Order and \<open>T\<^sub>v\<close>-membership helpers\<close>
-
-lemma b1x_lessBP_single: "lessBT (Trm [p]) (Trm [q]) \<longleftrightarrow> lessBP p q"
-  by (cases p; cases q) simp
-
-lemma b1x_lessBP_asym: "lessBP p q \<Longrightarrow> \<not> lessBP q p"
-  using lessBP_trans lessBP_irrefl by blast
-
-lemma b1x_leBT_single_idx:
-  assumes "leBT (Trm [DB h1 c1]) (Trm [DB h2 c2])"
-  shows "h1 \<le> h2"
-  using assms by (auto simp: order_less_imp_le)
-
-lemma b1x_zero_TBv: "Trm [] \<in> TBv v"
-  by (simp add: TBv_def)
-
-lemma b1x_NatSet_TBv: "z \<in> NatSet \<Longrightarrow> z \<in> TBv (enat w)"
-  by (auto simp: NatSet_def numBT_def TBv_def zero_enat_def)
-
-lemma b1x_Dpt_TBv: "Trm [DB (enat w) t] \<in> TBv (enat w)"
-  by (simp add: TBv_def)
-
-lemma b1x_TBv_lt_head:
-  assumes "z \<in> TBv (enat w)" "enat w < h"
-  shows "lessBT z (Trm (DB h c # rest))"
-proof (cases z)
-  case (Trm zs)
-  show ?thesis
-  proof (cases zs)
-    case Nil thus ?thesis using Trm by simp
-  next
-    case (Cons zp zr)
-    obtain hz bz where zp: "zp = DB hz bz" by (cases zp)
-    have "hz \<le> enat w" using assms(1) Trm Cons zp by (auto simp: TBv_def)
-    hence "hz < h" using assms(2) by (rule le_less_trans)
-    thus ?thesis using Trm Cons zp by simp
-  qed
-qed
-
-lemma b1x_descP_last_hd:
-  "descP ps \<Longrightarrow> ps \<noteq> [] \<Longrightarrow> leBT (Trm [last ps]) (Trm [hd ps])"
-proof (induction ps rule: descP.induct)
-  case 1 thus ?case by simp
-next
-  case (2 p) thus ?case by simp
-next
-  case (3 p q ps)
-  have h1: "leBT (Trm [q]) (Trm [p])" and hd: "descP (q # ps)"
-    using "3.prems"(1) by simp_all
-  have ihx: "leBT (Trm [last (q # ps)]) (Trm [hd (q # ps)])"
-    by (rule "3.IH"[OF hd]) simp
-  hence lq: "leBT (Trm [last (q # ps)]) (Trm [q])" by simp
-  have "leBT (Trm [last (q # ps)]) (Trm [p])" by (rule leBT_trans[OF lq h1])
-  thus ?case by simp
-qed
-
-subsection \<open>Head-index bound of a \<open>T\<^sub>w\<close>-domain term, and \<open>D\<^sub>w 0 < b\<close>\<close>
-
-lemma b1x_TBv_head_gt:
-  assumes "domB (Trm [DB h c]) = TBv (enat w)"
-  shows "enat w < h"
-proof (cases "c = Trm []")
-  case True
-  have unf: "domB (Trm [DB h c])
-               = (if h = 0 then {Trm []} else if h = \<infinity> then NatSet
-                  else TBv (enat (the_enat h - 1)))"
-    using True by (subst domB_unfold) simp
-  have h0: "h \<noteq> 0"
-    using unf assms zero_set_neq_TBv by (auto split: if_splits)
-  have hinf: "h \<noteq> \<infinity>"
-    using unf assms NatSet_neq_TBv h0 by (auto split: if_splits)
-  obtain k where hk: "h = enat k" using hinf by (cases h) auto
-  have "TBv (enat (k - 1)) = TBv (enat w)"
-    using unf assms h0 hinf hk by simp
-  hence kw: "k - 1 = w" by (rule TBv_enat_inj)
-  have "k \<noteq> 0" using h0 hk by (simp add: zero_enat_def)
-  thus ?thesis using hk kw by simp
-next
-  case False
-  have "\<not> (\<exists>u'. h \<le> enat u' \<and> domB c = TBv (enat u'))" "domB c = TBv (enat w)"
-    using domB_single_TBv_struct[OF assms False] by auto
-  hence "\<not> h \<le> enat w" by blast
-  thus ?thesis by (simp add: not_le)
-qed
-
-lemma b1x_Dw0_lt:
-  assumes ot: "isOT_BT b" and db: "domB b = TBv (enat w)"
-  shows "lessBT (Trm [DB (enat w) (Trm [])]) b"
-proof -
-  obtain bs where beq: "b = Trm bs" by (cases b)
-  have bne: "bs \<noteq> []"
-  proof
-    assume "bs = []"
-    hence "domB b = {}" using beq by (subst domB_unfold) simp
-    thus False using db b1x_zero_TBv by auto
-  qed
-  obtain h0 c0 where hd0: "hd bs = DB h0 c0" by (cases "hd bs")
-  have dlast: "domB (Trm [last bs]) = TBv (enat w)"
-    using db beq domB_last_component[OF bne] by simp
-  obtain hl cl where lst: "last bs = DB hl cl" by (cases "last bs")
-  have wl: "enat w < hl" using b1x_TBv_head_gt dlast lst by simp
-  have dsc: "descP bs" using ot beq by simp
-  have lehd: "leBT (Trm [last bs]) (Trm [hd bs])"
-    using b1x_descP_last_hd[OF dsc bne] .
-  have lehd': "leBT (Trm [DB hl cl]) (Trm [DB h0 c0])" using lehd lst hd0 by simp
-  have hlh0: "hl \<le> h0" by (rule b1x_leBT_single_idx[OF lehd'])
-  have wh: "enat w < h0" using wl hlh0 by (rule less_le_trans)
-  have "lessBP (DB (enat w) (Trm [])) (hd bs)" using wh hd0 by simp
-  thus ?thesis using beq bne hd0 by (cases bs) auto
-qed
-
-subsection \<open>Descent — [Buc1] Lemma 3.2(a) for numeral and in-domain arguments\<close>
-
-text \<open>\<open>a \<in> OT\<close>, \<open>a \<noteq> 0\<close>, \<open>z \<in> dom(a) \<union> \<nat>\<close> \<open>\<Longrightarrow>\<close> \<open>a[z] < a\<close>.  Strong induction
-  on \<open>size a\<close>, mirroring the \<open>operB\<close> recursion.  The \<open>\<union> \<nat>\<close> widening makes the
-  statement usable for EVERY numeral even when \<open>dom(a) = {0}\<close> or \<open>T\<^sub>u\<close> (the
-  bracket then ignores \<open>z\<close> resp. accepts it since \<open>\<nat> \<subseteq> T\<^sub>u\<close>); \<open>isOT\<close> is needed
-  only through @{thm [source] b1x_Dw0_lt} (kind-1 tower base, via \<open>descP\<close>).\<close>
-
-lemma b1x_descent:
-  "isOT_BT a \<Longrightarrow> a \<noteq> Trm [] \<Longrightarrow> z \<in> domB a \<or> z \<in> NatSet \<Longrightarrow>
-   lessBT (operB a z) a"
-proof (induction a arbitrary: z rule: measure_induct_rule[where f=size])
-  case (less a z)
-  obtain xs where axs: "a = Trm xs" by (cases a)
-  show ?case
-  proof (cases xs)
-    case Nil thus ?thesis using less.prems(2) axs by simp
-  next
-    case ConsP: (Cons p ps)
-    show ?thesis
-    proof (cases ps)
-      case Nil
-      obtain v b where peq: "p = DB v b" by (cases p)
-      have aeq: "a = Trm [DB v b]" using axs ConsP Nil peq by simp
-      show ?thesis
-      proof (cases "b = Trm []")
-        case True
-        show ?thesis
-        proof (cases "v = 0")
-          case True
-          hence "operB a z = Trm []"
-            using aeq \<open>b = Trm []\<close> b1x_operB_D0 by simp
-          thus ?thesis using less.prems(2) by simp
-        next
-          case False
-          show ?thesis
-          proof (cases "v = \<infinity>")
-            case True
-            hence "operB a z = Trm [DB (enat (numNat z + 1)) (Trm [])]"
-              using aeq \<open>b = Trm []\<close> b1x_operB_Dinf by simp
-            thus ?thesis using aeq True by simp
-          next
-            case vfin: False
-            have opz: "operB a z = z"
-              using aeq \<open>b = Trm []\<close> b1x_operB_Dsucc[OF \<open>v \<noteq> 0\<close> vfin] by simp
-            have da: "domB a = TBv (enat (the_enat v - 1))"
-              using aeq \<open>b = Trm []\<close> b1x_domB_Dsucc[OF \<open>v \<noteq> 0\<close> vfin] by simp
-            have zin: "z \<in> TBv (enat (the_enat v - 1))"
-              using less.prems(3) da b1x_NatSet_TBv by auto
-            obtain k where hk: "v = enat k" using vfin by (cases v) auto
-            have "k \<noteq> 0" using \<open>v \<noteq> 0\<close> hk by (simp add: zero_enat_def)
-            hence "enat (the_enat v - 1) < v" using hk by simp
-            hence "lessBT z (Trm (DB v (Trm []) # []))"
-              using b1x_TBv_lt_head[OF zin] by simp
-            thus ?thesis using aeq opz \<open>b = Trm []\<close> by simp
-          qed
-        qed
-      next
-        case bne: False
-        have otb: "isOT_BT b" using less.prems(1) aeq by simp
-        have szb: "size b < size a" using aeq by simp
-        show ?thesis
-        proof (cases "domB b = {Trm []}")
-          case dbz: True
-          have Xlt: "lessBT (operB b (Trm [])) b"
-            by (rule less.IH[OF szb otb bne]) (simp add: dbz)
-          have opz: "operB a z
-                  = Trm (replicate (numNat z) (DB v (operB b (Trm [])))
-                         @ [DB v (operB b (Trm []))])"
-            using aeq b1x_operB_case_i[OF bne dbz] b1x_mult_single by simp
-          have "lessBP (DB v (operB b (Trm []))) (DB v b)" using Xlt by simp
-          hence "lessBT (Trm (replicate (numNat z) (DB v (operB b (Trm [])))
-                              @ [DB v (operB b (Trm []))]))
-                        (Trm [DB v b])"
-            by (rule b1x_lessBT_replsnoc)
-          thus ?thesis using opz aeq by simp
-        next
-          case dbnz: False
-          show ?thesis
-          proof (cases "\<exists>u. v \<le> enat u \<and> domB b = TBv (enat u)")
-            case True
-            then obtain w where dbw: "domB b = TBv (enat w)" and vw: "v \<le> enat w"
-              by blast
-            have xlt: "lessBT (xseq b (enat w) i) b" for i
-            proof (cases i)
-              case 0
-              thus ?thesis using b1x_xseq_0 b1x_Dw0_lt[OF otb dbw] by simp
-            next
-              case (Suc j)
-              have "Trm [DB (enat w) (xseq b (enat w) j)] \<in> domB b"
-                using dbw b1x_Dpt_TBv by simp
-              hence "lessBT (operB b (Trm [DB (enat w) (xseq b (enat w) j)])) b"
-                by (intro less.IH[OF szb otb bne]) simp
-              thus ?thesis using Suc b1x_xseq_Suc by simp
-            qed
-            have "operB a z = Trm [DB v (xseq b (enat w) (numNat z))]"
-              using aeq operB_kind1_unfold[OF dbw vw bne] by simp
-            thus ?thesis using aeq xlt[of "numNat z"] by simp
-          next
-            case nk1: False
-            have opz: "operB a z = Trm [DB v (operB b z)]"
-              using aeq b1x_operB_case_iii[OF bne dbnz nk1] by simp
-            have da: "domB a = domB b"
-              using aeq b1x_domB_case_iii[OF bne dbnz nk1] by simp
-            have "lessBT (operB b z) b"
-              using less.IH[OF szb otb bne] less.prems(3) da by auto
-            thus ?thesis using aeq opz by simp
-          qed
-        qed
-      qed
-    next
-      case ConsQ: (Cons q rest)
-      have xseq_eq: "xs = p # q # rest" using ConsP ConsQ by simp
-      have ne: "xs \<noteq> []" using xseq_eq by simp
-      have szlast: "size (Trm [last xs] :: BT) < size a"
-      proof -
-        have lastin: "last (p # q # rest) \<in> set (q # rest)" by (cases rest) auto
-        have szl: "size (last (p # q # rest)) \<le> size_list size (q # rest)"
-          by (rule size_list_estimation'[OF lastin order_refl])
-        have szpos: "0 < size p" by (cases p) simp
-        show ?thesis using szl szpos axs xseq_eq by simp
-      qed
-      have otl: "isOT_BT (Trm [last xs])"
-        using less.prems(1) axs isOT_BT_last ne by simp
-      have lne: "Trm [last xs] \<noteq> Trm []" by simp
-      have dl: "domB a = domB (Trm [last xs])"
-        using axs domB_last_component[OF ne] by simp
-      have Ylt: "lessBT (operB (Trm [last xs]) z) (Trm [last xs])"
-        using less.IH[OF szlast otl lne] less.prems(3) dl by auto
-      have "operB a z
-              = Trm (butlast xs) +\<^sub>B operB (Trm [last xs]) z"
-        using axs xseq_eq b1x_operB_multi by simp
-      moreover have
-        "lessBT (Trm (butlast xs) +\<^sub>B operB (Trm [last xs]) z)
-                (Trm (butlast xs) +\<^sub>B Trm [last xs])"
-        by (rule lessBT_addBT_mono_right[OF Ylt])
-      moreover have "Trm (butlast xs) +\<^sub>B Trm [last xs] = a"
-        using axs ne by (simp add: append_butlast_last_id)
-      ultimately show ?thesis by simp
-    qed
-  qed
-qed
-
-text \<open>\<^bold>\<open>Target (b)\<close>: [Buc1] Lemma 3.2(a) as cited — statement identical to
-  \<open>buc1_3_2a_fseq_lt\<close> (pss_paper.thy 820–823).\<close>
-
-lemma m_buc1_3_2a_fseq_lt:
-  assumes "a \<in> OT_B" and "a \<noteq> Trm []"
-  shows "lessBT (operB a (numBT n)) a"
-proof -
-  have "isOT_BT a" using assms(1) by (simp add: OT_B_def OT_def)
-  moreover have "numBT n \<in> NatSet" by (auto simp: NatSet_def)
-  ultimately show ?thesis using b1x_descent assms(2) by blast
-qed
-
 subsection \<open>Mixed transitivity (explicit, to keep \<open>blast\<close> away from chain rules)\<close>
 
 lemma b1x_le_less_trans:
@@ -51959,7 +51965,7 @@ proof -
       obtain k where ke: "leBT (Trans ((M::pairseq)[n])) (operB (Trans M) (numBT k))"
         using exchIII[OF MST MP j1gt cIII n2] by blast
       have lt: "lessBT (operB (Trans M) (numBT k)) (Trans M)"
-        by (rule buc1_3_2a_fseq_lt[OF TOTM Tne])
+        by (rule m_buc1_3_2a_fseq_lt[OF TOTM Tne])
       show ?thesis using ke lt by (metis lessBT_trans)
     next
       case cIV
@@ -51986,7 +51992,7 @@ proof -
       obtain k where ke: "leBT (Trans ((M::pairseq)[n])) (operB (Trans M) (numBT k))"
         using exchIV[OF MST MP j1gt cIV n2] by blast
       have lt: "lessBT (operB (Trans M) (numBT k)) (Trans M)"
-        by (rule buc1_3_2a_fseq_lt[OF TOTM Tne])
+        by (rule m_buc1_3_2a_fseq_lt[OF TOTM Tne])
       show ?thesis using ke lt by (metis lessBT_trans)
     next
       case cV
