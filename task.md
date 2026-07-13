@@ -44,10 +44,10 @@
 - ✅ corrections.md の全数監査(44件中15件が我々の誤り=取り下げ。うち11件は operB 誤読1つから派生)[r4]
 - ✅ §5 定式化
 - 🚨 §6 ペア数列の基本性質
-  - 🚨🤖 $\textrm{Red}(\textrm{Red}(M)) \in RT_{PS}$（§7 の全残差がこれ1本に依存。28000例0反例だが未証明）
+  - ✅ $\textrm{Red}(\textrm{Red}(M)) \in RT_{PS}$（y3r_RED2、無条件。§7 の4命題を $T_{PS}$ で解禁）
   - 🚨 命題（単項性と $\textrm{Red}$ の関係）の $M_{1,0}=0$ の場合（原文は真。我々の nat 減算のため未証明）
 - 🚨 §7 Buchholzの表記系への翻訳
-  - ⛔ 4命題を $T_{PS}$ へ（$\textrm{Red}(\textrm{Red}(M)) \in RT_{PS}$ 待ち。現在 $T_{PS} \cap \textrm{RedStab}$ で証明済）
+  - ✅ 4命題を $T_{PS}$ へ（y3r_7_*_TPS、原文どおりの形）
   - 🚨 系（$\textrm{Mark}$ と NextAdm の関係）の $T_{PS}$ 版（結論は移送可、仮定が移送不可）
   - 🚨 偽命題の sorry 残置（pss_paper に訂正未反映。取り下げ15件を除いた真の偽命題のみ）
 - 🚨 §8 停止性
