@@ -22843,6 +22843,328 @@ text \<open>\<^bold>\<open>Do not look for a \<open>T\<^bsub>PS\<^esub>\<close> 
   \<open>j\<^sub>0 \<le> transJm1 N\<close> (@{thm [source] y4f_Mark_nest_Pred_joint_sharp}); \<open>Marked\<close>-ness of
   \<open>j\<^sub>0\<close> is merely a convenient stronger sufficient condition, and it is also the thing
   that transports through the \<open>multiT\<close> recursion (@{thm [source] y4d_Mark_nest_Pred_joint}).\<close>
+(* ===================================================================== *)
+(* r81-Y6: the T_PS TRANSPORT and the ASSEMBLY of the §7.4 Mark/NextAdm   *)
+(* proposition (article's 系, correction A18's form).                     *)
+(*                                                                        *)
+(* (1) y6_scb_self / y6_scb_self_unique: the SELF scb-decomposition of a  *)
+(*     principal-or-zero term is ([],[]) --- and it is the ONLY one.      *)
+(* (2) y6_Mark_selfnest_RT / y6_Mark_selfnest_TPS: the REFLEXIVE half of  *)
+(*     the proposition (j = j0) --- UNCONDITIONALLY on T_PS.  No Marked,  *)
+(*     no adm, no nextAdm, no ancestry.  This is precisely the half that  *)
+(*     Brick A (adm (Red (Red M)) j0) killed: y3z_brickA_false's witness  *)
+(*     is a j = j0 exercise.                                              *)
+(* (3) y6_7_4_Mark_nextAdm_TPS: the article's statement, on ALL of T_PS,  *)
+(*     with the hypotheses read off M (NOT off the reduct), modulo the    *)
+(*     RELAXED (adm-free) §7 nesting engine as an explicit 'assumes'.     *)
+(* ===================================================================== *)
+
+section \<open>r81-Y6 --- \<section>7.4 \<open>Mark\<close>/\<open>NextAdm\<close> on \<open>T\<^bsub>PS\<^esub>\<close>: transport and assembly\<close>
+
+subsection \<open>The self scb-decomposition of a principal-or-zero term\<close>
+
+text \<open>If \<open>t\<close> is \<open>0\<^sub>B\<close> or a single principal term, then \<open>([], flat t, [])\<close> IS an
+  scb-decomposition of \<open>t\<close>, and \<^emph>\<open>every\<close> scb-decomposition of \<open>t\<close> whose core is
+  \<open>flat t\<close> is that one (a length count on \<open>flat t = s @ flat t @ b\<close>).\<close>
+
+lemma y6_scb_self_unique:
+  assumes d: "scb_decomp t s (flatBT t) b"
+  shows "s = [] \<and> b = []"
+proof -
+  have e: "flatBT t = s @ flatBT t @ b" using d by (simp add: scb_decomp_def)
+  have L: "length (flatBT t) = length s + (length (flatBT t) + length b)"
+    using arg_cong[where f = length, OF e] by simp
+  have s0: "length s = 0" using L by linarith
+  have b0: "length b = 0" using L by linarith
+  show ?thesis using s0 b0 by simp
+qed
+
+lemma y6_scb_self:
+  assumes p: "t = 0\<^sub>B \<or> isPTB_str (flatBT t)"
+  shows "scb_decomp t [] (flatBT t) []"
+  using p by (auto simp: scb_decomp_def)
+
+subsection \<open>The reflexive half (\<open>j = j\<^sub>0\<close>), unconditionally\<close>
+
+text \<open>\<^bold>\<open>The \<open>j = j\<^sub>0\<close> case of the \<section>7.4 proposition needs no hypothesis at all\<close>
+  beyond \<open>M \<in> T\<^bsub>PS\<^esub>\<close>: by @{thm [source] y3y_Mark_princ} the value of \<open>Mark\<close> at
+  \<^emph>\<open>every\<close> column of a reduced sequence is principal-or-zero, hence self-nests
+  uniquely --- and both \<open>Mark N m\<close> and \<open>Mark (Pred N) m\<close> are such values
+  (\<open>Pred\<close> preserves \<open>RT\<^bsub>PS\<^esub>\<close>, @{thm [source] Pred_RT_PS}).\<close>
+
+theorem y6_Mark_selfnest_RT:
+  assumes NR: "N \<in> RT_PS"
+  shows "\<exists>!sb. scb_decomp (Mark (Pred N) m) (fst sb) (flatBT (Mark (Pred N) m)) (snd sb)
+             \<and> scb_decomp (Mark N m) (fst sb) (flatBT (Mark N m)) (snd sb)"
+proof -
+  have PR: "Pred N \<in> RT_PS" by (rule Pred_RT_PS[OF NR])
+  have p1: "scb_decomp (Mark (Pred N) m) [] (flatBT (Mark (Pred N) m)) []"
+    by (rule y6_scb_self) (rule y3y_Mark_princ(2)[OF PR])
+  have p2: "scb_decomp (Mark N m) [] (flatBT (Mark N m)) []"
+    by (rule y6_scb_self) (rule y3y_Mark_princ(2)[OF NR])
+  show ?thesis
+  proof (rule ex1I[of _ "([], [])"])
+    show "scb_decomp (Mark (Pred N) m) (fst ([], []))
+             (flatBT (Mark (Pred N) m)) (snd ([], []))
+        \<and> scb_decomp (Mark N m) (fst ([], [])) (flatBT (Mark N m)) (snd ([], []))"
+      using p1 p2 by simp
+  next
+    fix sb :: "Sym list \<times> Sym list"
+    assume a: "scb_decomp (Mark (Pred N) m) (fst sb) (flatBT (Mark (Pred N) m)) (snd sb)
+             \<and> scb_decomp (Mark N m) (fst sb) (flatBT (Mark N m)) (snd sb)"
+    have "fst sb = [] \<and> snd sb = []" using y6_scb_self_unique[of "Mark N m"] a by blast
+    thus "sb = ([], [])" by (cases sb) simp
+  qed
+qed
+
+text \<open>Transport to \<open>T\<^bsub>PS\<^esub>\<close>: \<open>Mark M i = Mark (Red\<^sup>2 M) i\<close> (@{thm [source] y3s_Mark_funpow_Red})
+  and --- the crux --- \<open>Mark (Pred M) i = Mark (Pred (Red\<^sup>2 M)) i\<close>, which holds because
+  \<open>Red\<close> COMMUTES with \<open>Pred\<close> on all of \<open>T\<^bsub>PS\<^esub>\<close> (@{thm [source] m_6_5_Red_Pred},
+  @{thm [source] y3s_Pred_funpow_Red}: \<open>Red\<^sup>k (Pred M) = Pred (Red\<^sup>k M)\<close>) and \<open>Red\<^sup>2 M\<close> is
+  reduced (@{thm [source] y3r_RED2}).  So the \<^emph>\<open>subject matter\<close> of the proposition
+  transports verbatim; only \<open>adm\<close>/\<open>Marked\<close>/\<open>nextAdm\<close> --- its \<^emph>\<open>hypotheses\<close> --- do not.\<close>
+
+theorem y6_Mark_selfnest_TPS:
+  assumes MT: "M \<in> T_PS"
+  shows "\<exists>!sb. scb_decomp (Mark (Pred M) m) (fst sb) (flatBT (Mark (Pred M) m)) (snd sb)
+             \<and> scb_decomp (Mark M m) (fst sb) (flatBT (Mark M m)) (snd sb)"
+proof -
+  let ?R = "Red (Red M)"
+  have RR: "?R \<in> RT_PS" by (rule y3r_RED2[OF MT])
+  have F2: "(Red ^^ 2) M = ?R" by (simp add: numeral_2_eq_2)
+  have F: "(Red ^^ 2) M \<in> RT_PS" using RR F2 by simp
+  have pe: "(Red ^^ 2) (Pred M) = Pred ?R"
+    using y3s_Pred_funpow_Red[OF MT, of 2] F2 by simp
+  have PF: "Pred ?R \<in> RT_PS" by (rule Pred_RT_PS[OF RR])
+  have PFR: "(Red ^^ 2) (Pred M) \<in> RT_PS" using pe PF by simp
+  have mM: "\<And>i. Mark M i = Mark ?R i" using y3s_Mark_funpow_Red[OF F] F2 by simp
+  have mP: "\<And>i. Mark (Pred M) i = Mark (Pred ?R) i"
+    using y3s_Mark_funpow_Red[OF PFR] pe by simp
+  have base: "\<exists>!sb. scb_decomp (Mark (Pred ?R) m) (fst sb)
+                       (flatBT (Mark (Pred ?R) m)) (snd sb)
+                   \<and> scb_decomp (Mark ?R m) (fst sb) (flatBT (Mark ?R m)) (snd sb)"
+    by (rule y6_Mark_selfnest_RT[OF RR])
+  show ?thesis using base mM mP by simp
+qed
+
+subsection \<open>The article's \<section>7.4 proposition on \<open>T\<^bsub>PS\<^esub>\<close>, modulo the relaxed engine\<close>
+
+text \<open>\<^bold>\<open>The assembly.\<close>  The hypotheses are read off \<open>M\<close>, exactly as the article
+  states them (correction A18's form).  The only thing assumed is the
+  \<^bold>\<open>relaxed nesting engine\<close> \<open>ENG\<close>: @{thm [source] Mark_nest_common_marked} with the
+  two \<open>Marked\<close> premises weakened to their \<open>\<le>\<^sub>M\<close>-halves (i.e. \<open>adm\<close> DROPPED at both
+  columns), and only for the STRICT case \<open>m < m'\<close> --- the reflexive case is
+  discharged here by @{thm [source] y6_Mark_selfnest_TPS}.  Every hypothesis of
+  \<open>ENG\<close> is one this proof can actually supply at the reduct \<open>R = Red (Red M)\<close>:
+
+    \<^item> \<open>R \<in> RT\<^bsub>PS\<^esub>\<close> --- @{thm [source] y3r_RED2};
+    \<^item> \<open>le\<^sub>0 R j j\<^sub>0\<close>, \<open>le\<^sub>0 R j (Lng R - 1)\<close>, \<open>le\<^sub>0 R j\<^sub>0 (Lng R - 1)\<close> --- (F),
+      @{thm [source] y3w_Red2_le0}: \<open>Red\<close> only ADDS row-0 ancestor edges;
+    \<^item> \<open>j < j\<^sub>0\<close>, \<open>j\<^sub>0 < Lng R - 1\<close> --- from \<open>nextAdm\<close> and \<open>Lng (Red\<^sup>2 M) = Lng M\<close>.
+
+  \<^bold>\<open>adm is NOT among them\<close>, and cannot be: \<open>adm R j\<^sub>0\<close> is refuted by
+  @{thm [source] y3z_brickA_false}.  So \<open>ENG\<close> is exactly the residue of the whole
+  \<open>T\<^bsub>PS\<^esub>\<close> statement.\<close>
+
+theorem y6_7_4_Mark_nextAdm_TPS:
+  assumes ENG: "\<And>N m m'. N \<in> RT_PS \<Longrightarrow> le0 N m m' \<Longrightarrow> le0 N m (Lng N - 1)
+                  \<Longrightarrow> le0 N m' (Lng N - 1) \<Longrightarrow> m < m' \<Longrightarrow> m' < Lng N - 1
+                  \<Longrightarrow> \<exists>!sb. scb_decomp (Mark (Pred N) m) (fst sb)
+                               (flatBT (Mark (Pred N) m')) (snd sb)
+                          \<and> scb_decomp (Mark N m) (fst sb)
+                               (flatBT (Mark N m')) (snd sb)"
+    and MT: "M \<in> T_PS"
+    and uniq: "\<exists>!j0. nextAdm M 0 j0 (Lng M - 1)"
+    and jM: "(M, j) \<in> Marked"
+    and jle: "leR M 0 j (THE j0. nextAdm M 0 j0 (Lng M - 1))"
+  shows "\<exists>!sb. scb_decomp (Mark (Pred M) j)
+                  (fst sb) (flatBT (Mark (Pred M)
+                     (THE j0. nextAdm M 0 j0 (Lng M - 1)))) (snd sb)
+            \<and> scb_decomp (Mark M j)
+                  (fst sb) (flatBT (Mark M
+                     (THE j0. nextAdm M 0 j0 (Lng M - 1)))) (snd sb)"
+proof -
+  let ?j0 = "THE j0. nextAdm M 0 j0 (Lng M - 1)"
+  let ?R = "Red (Red M)"
+  have RR: "?R \<in> RT_PS" by (rule y3r_RED2[OF MT])
+  have F2: "(Red ^^ 2) M = ?R" by (simp add: numeral_2_eq_2)
+  have F: "(Red ^^ 2) M \<in> RT_PS" using RR F2 by simp
+  have na: "nextAdm M 0 ?j0 (Lng M - 1)" by (rule theI'[OF uniq])
+  have j0lt: "?j0 < Lng M - 1" using na unfolding nextAdm_def by blast
+  have LR: "Lng ?R = Lng M" using y3s_Lng_funpow_Red[OF MT, of 2] F2 by simp
+  have j0ltR: "?j0 < Lng ?R - 1" using j0lt LR by simp
+  \<comment> \<open>the three \<open>\<le>\<^sub>M\<close> facts, read off \<open>M\<close> \<dots>\<close>
+  have leRA: "leR M 0 ?j0 (Lng M - 1)" using na unfolding nextAdm_def by blast
+  have leA_M: "le0 M ?j0 (Lng M - 1)" using leRA by (simp add: leR_def)
+  have leRB: "leR M 0 j (Lng M - 1)" using jM by (simp add: Marked_def)
+  have leB_M: "le0 M j (Lng M - 1)" using leRB by (simp add: leR_def)
+  have lejj_M: "le0 M j ?j0" using jle by (simp add: leR_def)
+  \<comment> \<open>\<dots> and transported to the reduct by (F)\<close>
+  have leA: "le0 ?R ?j0 (Lng ?R - 1)" using y3w_Red2_le0[OF MT leA_M] LR by simp
+  have leB: "le0 ?R j (Lng ?R - 1)" using y3w_Red2_le0[OF MT leB_M] LR by simp
+  have lejj: "le0 ?R j ?j0" by (rule y3w_Red2_le0[OF MT lejj_M])
+  have jle0: "j \<le> ?j0"
+  proof -
+    have "(nextrel0 M)\<^sup>*\<^sup>* j ?j0" using jle by (simp add: leR_def le0_def)
+    thus ?thesis by (rule nextrel0_rtrancl_mono)
+  qed
+  have pe: "(Red ^^ 2) (Pred M) = Pred ?R"
+    using y3s_Pred_funpow_Red[OF MT, of 2] F2 by simp
+  have PF: "Pred ?R \<in> RT_PS" by (rule Pred_RT_PS[OF RR])
+  have PFR: "(Red ^^ 2) (Pred M) \<in> RT_PS" using pe PF by simp
+  have mM: "\<And>i. Mark M i = Mark ?R i" using y3s_Mark_funpow_Red[OF F] F2 by simp
+  have mP: "\<And>i. Mark (Pred M) i = Mark (Pred ?R) i"
+    using y3s_Mark_funpow_Red[OF PFR] pe by simp
+  show ?thesis
+  proof (cases "j = ?j0")
+    case eq: True
+    have self: "\<exists>!sb. scb_decomp (Mark (Pred M) j) (fst sb)
+                         (flatBT (Mark (Pred M) j)) (snd sb)
+                     \<and> scb_decomp (Mark M j) (fst sb) (flatBT (Mark M j)) (snd sb)"
+      by (rule y6_Mark_selfnest_TPS[OF MT])
+    show ?thesis using self eq by simp
+  next
+    case False
+    hence jlt: "j < ?j0" using jle0 by simp
+    have base: "\<exists>!sb. scb_decomp (Mark (Pred ?R) j) (fst sb)
+                         (flatBT (Mark (Pred ?R) ?j0)) (snd sb)
+                     \<and> scb_decomp (Mark ?R j) (fst sb) (flatBT (Mark ?R ?j0)) (snd sb)"
+      by (rule ENG[OF RR lejj leB leA jlt j0ltR])
+    show ?thesis using base mM mP by simp
+  qed
+qed
+
+text \<open>\<^bold>\<open>STATUS (r81)\<close>.  The \<open>T\<^bsub>PS\<^esub>\<close> transport is \<^bold>\<open>complete\<close>: nothing about \<open>Pred\<close>,
+  \<open>Mark\<close>, \<open>Lng\<close> or \<open>\<le>\<^sub>0\<close> is left to prove, and the reflexive case is closed
+  outright.  The \<^bold>\<open>single\<close> residual of the article's \<section>7.4 系 on \<open>T\<^bsub>PS\<^esub>\<close> is the
+  relaxed engine \<open>ENG\<close> above --- an \<open>RT\<^bsub>PS\<^esub>\<close>-only, \<open>adm\<close>-free statement.
+
+  \<^bold>\<open>\<open>ENG\<close> IS FALSE\<close> (r81, next subsection).  Hence
+  @{thm [source] y6_7_4_Mark_nextAdm_TPS} is a \<^emph>\<open>valid but vacuous\<close> implication ---
+  it is kept only because it pins the residue exactly, and the residue turns out
+  to be refutable.  \<^bold>\<open>The article's \<section>7.4 系 does NOT hold on \<open>T\<^bsub>PS\<^esub>\<close>.\<close>\<close>
+
+
+(* ===================================================================== *)
+(* r81-Y6Z: THE TARGET IS FALSE.                                          *)
+(*                                                                        *)
+(* The article's §7.4 系 does NOT extend from RT_PS to T_PS, and the       *)
+(* adm-free ("relaxed") §7 nesting engine is FALSE already on RT_PS.      *)
+(* The MECHANISM is proved here outright (y6z_no_common_position); the    *)
+(* witnesses are computed with the vetted model (python/red_model.py,     *)
+(* python/trans_model.py) and recorded below.                             *)
+(* ===================================================================== *)
+
+section \<open>r81-Y6Z --- refutation: \<open>adm\<close> at the OUTER column is load-bearing\<close>
+
+subsection \<open>The mechanism, proved: coinciding cores + differing ambients\<close>
+
+text \<open>\<^bold>\<open>The obstruction.\<close>  The \<section>7.4 conclusion asks for \<^emph>\<open>one\<close> scb-position
+  \<open>(s\<^sub>0,b\<^sub>0)\<close> that works simultaneously for the \<open>Pred\<close>-side and the \<open>M\<close>-side.  Both
+  decompositions have the SAME \<open>(s\<^sub>0,b\<^sub>0)\<close> but DIFFERENT cores --- \<open>Mark (Pred N) m'\<close>
+  resp. \<open>Mark N m'\<close>.  So if the two cores happen to \<^emph>\<open>coincide\<close> while the two
+  ambient terms do not, the two equations
+    \<open>flat (Mark (Pred N) m) = s\<^sub>0 @ flat (Mark (Pred N) m') @ b\<^sub>0\<close>,
+    \<open>flat (Mark N m)        = s\<^sub>0 @ flat (Mark N m')        @ b\<^sub>0\<close>
+  have equal right-hand sides, forcing \<open>Mark (Pred N) m = Mark N m\<close> by injectivity of
+  \<open>flat\<close> (@{thm [source] m_7_flatBT_inj}) --- a contradiction.  No \<open>Mark\<close>-computation,
+  no \<open>Red\<close>, no hypothesis whatsoever is needed for this.\<close>
+
+lemma y6z_no_common_position:
+  assumes core: "Mark N m' = Mark (Pred N) m'"
+      and ne: "Mark N m \<noteq> Mark (Pred N) m"
+  shows "\<not> (\<exists>sb. scb_decomp (Mark (Pred N) m) (fst sb) (flatBT (Mark (Pred N) m')) (snd sb)
+               \<and> scb_decomp (Mark N m) (fst sb) (flatBT (Mark N m')) (snd sb))"
+proof
+  assume "\<exists>sb. scb_decomp (Mark (Pred N) m) (fst sb) (flatBT (Mark (Pred N) m')) (snd sb)
+             \<and> scb_decomp (Mark N m) (fst sb) (flatBT (Mark N m')) (snd sb)"
+  then obtain sb where
+       d1: "scb_decomp (Mark (Pred N) m) (fst sb) (flatBT (Mark (Pred N) m')) (snd sb)"
+   and d2: "scb_decomp (Mark N m) (fst sb) (flatBT (Mark N m')) (snd sb)" by blast
+  have e1: "flatBT (Mark (Pred N) m) = fst sb @ flatBT (Mark (Pred N) m') @ snd sb"
+    using d1 by (simp add: scb_decomp_def)
+  have e2: "flatBT (Mark N m) = fst sb @ flatBT (Mark N m') @ snd sb"
+    using d2 by (simp add: scb_decomp_def)
+  have "flatBT (Mark (Pred N) m) = flatBT (Mark N m)" using e1 e2 core by simp
+  hence "Mark (Pred N) m = Mark N m" by (rule m_7_flatBT_inj)
+  thus False using ne by simp
+qed
+
+corollary y6z_nest_false_at:
+  assumes core: "Mark N m' = Mark (Pred N) m'"
+      and ne: "Mark N m \<noteq> Mark (Pred N) m"
+  shows "\<not> (\<exists>!sb. scb_decomp (Mark (Pred N) m) (fst sb) (flatBT (Mark (Pred N) m')) (snd sb)
+                \<and> scb_decomp (Mark N m) (fst sb) (flatBT (Mark N m')) (snd sb))"
+  using y6z_no_common_position[OF core ne] by blast
+
+subsection \<open>The witnesses (vetted model), and what they kill\<close>
+
+text \<open>\<^bold>\<open>(1) The relaxed engine \<open>ENG\<close> is FALSE on \<open>RT\<^bsub>PS\<^esub>\<close>.\<close>  Witness
+
+    \<open>N = (0,0)(1,1)(1,1)(2,2)(3,3)(3,3)\<close>,   \<open>m = 0\<close>,   \<open>m' = 3\<close>.
+
+  \<open>N\<close> is reduced (\<open>N \<in> RT\<^bsub>PS\<^esub>\<close>), \<open>Lng N = 6\<close>, and \<^emph>\<open>every\<close> hypothesis of \<open>ENG\<close> holds:
+  \<open>le\<^sub>0 N 0 3\<close>, \<open>le\<^sub>0 N 0 5\<close>, \<open>le\<^sub>0 N 3 5\<close> (row 0 is \<open>0,1,1,2,3,3\<close>), \<open>0 < 3\<close>,
+  \<open>3 < Lng N - 1 = 5\<close>.  The only thing that fails is the DROPPED hypothesis:
+  \<open>adm N 3 = False\<close> (columns \<open>2,3,4\<close> of \<open>N\<close> are \<open>(1,1),(2,2),(3,3)\<close>, so both rows
+  strictly increase across \<open>2 \<to> 3 \<to> 4\<close> --- @{thm [source] y3w_nadm_local}).  The
+  \<open>Mark\<close> values (vetted model):
+
+    \<open>Mark (Pred N) 3 = D\<^sub>3 0 = Mark N 3\<close>            (the two cores COINCIDE),
+    \<open>Mark (Pred N) 0 = D\<^sub>0 (D\<^sub>1 0 \<oplus> D\<^sub>1 (D\<^sub>3 0))\<close>,
+    \<open>Mark N 0        = D\<^sub>0 (D\<^sub>1 0 \<oplus> D\<^sub>1 (D\<^sub>3 0 \<oplus> D\<^sub>3 0))\<close>   (the ambients DIFFER).
+
+  So @{thm [source] y6z_nest_false_at} applies verbatim: there is NO common
+  scb-position (the \<open>Pred\<close>-side has the unique position
+  \<open>s\<^sub>0 = D\<^sub>0 \<^bold>( D\<^sub>1 Z \<^bold>, D\<^sub>1\<close>, \<open>b\<^sub>0 = \<^bold>)\<close>, the \<open>M\<close>-side the unique position
+  \<open>s\<^sub>0 = D\<^sub>0 \<^bold>( D\<^sub>1 Z \<^bold>, D\<^sub>1 \<^bold>( D\<^sub>3 Z \<^bold>,\<close>, \<open>b\<^sub>0 = \<^bold>)\<^bold>)\<close> --- the scb-tail condition
+  "\<open>b\<close> is all \<open>\<^bold>)\<close>" pins the \<^emph>\<open>rightmost\<close> occurrence of the core, and the surgery
+  has implanted a SECOND copy of \<open>D\<^sub>3 0\<close> to the right of the first).
+
+  \<^bold>\<open>Why \<open>adm\<close> was load-bearing\<close>: at an admissible \<open>m'\<close> the value \<open>Mark N m'\<close> is the
+  surgically GROWN block (it moves in step with \<open>Mark N m\<close>); at the non-admissible
+  \<open>m' = 3\<close> the \<open>Mark\<close> recursion takes its FALLBACK branch and returns the bare leaf
+  \<open>D\<^bsub>N\<^sub>1\<^sub>,\<^sub>j\<^sub>1\<^esub> 0 = D\<^sub>3 0\<close> --- which is exactly what \<open>Mark (Pred N) 3\<close> returns as well
+  (\<open>N\<^sub>1\<^sub>,\<^sub>5 = 3 = (Pred N)\<^sub>1\<^sub>,\<^sub>4\<close>).  Cores coincide, ambients do not.  \<open>adm\<close> at the
+  OUTER column cannot be dropped.
+
+  \<^bold>\<open>(2) The article's \<section>7.4 系 is FALSE on \<open>T\<^bsub>PS\<^esub>\<close>.\<close>  Witness
+
+    \<open>M = (1,0)(5,3)(2,5)(3,3)(6,5)(5,7)\<close>,   \<open>j = 0\<close>,   \<open>j\<^sub>0 = 3\<close>.
+
+  \<open>M \<in> T\<^bsub>PS\<^esub>\<close>; row 0 is \<open>1,5,2,3,6,5\<close>, row 1 is \<open>0,3,5,3,5,7\<close>; \<open>j\<^sub>1 = 5\<close>.  All
+  hypotheses of the proposition (A18's form) hold:
+
+    \<^item> \<open>\<exists>!j\<^sub>0. nextAdm M 0 j\<^sub>0 5\<close>, and that \<open>j\<^sub>0\<close> is \<open>3\<close> (the \<open>\<le>\<^sub>0\<close>-ancestors of \<open>5\<close> are
+      \<open>0,2,3\<close>; \<open>2\<close> and \<open>0\<close> are disqualified because the admissible \<open>3\<close> lies
+      \<open>\<le>\<^sub>0\<close>-between them and \<open>5\<close>);
+    \<^item> \<open>(M,0) \<in> T\<^bsub>PS\<^esub>\<^sup>Marked\<close> (\<open>adm M 0\<close> always, and \<open>le\<^sub>0 M 0 5\<close> via \<open>0 \<to> 2 \<to> 3 \<to> 5\<close>);
+    \<^item> \<open>le\<^sub>R M 0 0 3\<close> (via \<open>0 \<to> 2 \<to> 3\<close>).
+
+  And \<open>Red M = N\<close> above (already reduced, so \<open>Red (Red M) = N\<close> too), whence by
+  @{thm [source] y3s_Mark_funpow_Red} and @{thm [source] y3s_Pred_funpow_Red}
+  \<open>Mark M i = Mark N i\<close> and \<open>Mark (Pred M) i = Mark (Pred N) i\<close> for every \<open>i\<close>:
+  the conclusion demanded at \<open>(M,0,3)\<close> IS the conclusion refuted at \<open>(N,0,3)\<close>.
+  @{thm [source] y6z_nest_false_at} kills it.
+
+  \<^bold>\<open>Censuses\<close> (this round; \<open>python/_y6_census.py\<close>, \<open>python/_y6_engine.py\<close>,
+  \<open>python/_y6_hunt.py\<close>; the models are memoised in \<open>python/_y6_fast.py\<close> and
+  cross-validated against the raw \<open>trans_model\<close>):
+
+    \<^item> \<^bold>\<open>Why this was missed for four rounds\<close>: the proposition has NO counterexample
+      at entries \<open>\<le> 3\<close> / \<open>Lng \<le> 4\<close> (4523 non-vacuous exercises, 0 failures --- the
+      very census that was quoted as evidence), and none at any bound previously
+      swept.  The smallest witnesses need \<open>Lng = 6\<close> AND a row-1 entry \<open>\<ge> 5\<close>.  This
+      is the project's \<^bold>\<open>fifth\<close> entry-bounded false positive.
+    \<^item> random \<open>T\<^bsub>PS\<^esub>\<close> sweep, entries \<open>\<le> 8\<close>, \<open>Lng \<le> 6\<close>: failures appear
+      (\<approx>1 per \<open>10\<^sup>4\<close> non-vacuous exercises); random sweep entries \<open>\<le> 12\<close>, \<open>Lng \<le> 8\<close>:
+      failures appear at \<approx>7 per \<open>10\<^sup>4\<close>.
+    \<^item> the \<open>Mark\<close>-transport (*) \<open>Mark (Pred M) i = Mark (Pred (Red (Red M))) i\<close> --- the
+      thing this front was asked to check first --- is TRUE (it is a theorem:
+      @{thm [source] m_6_5_Red_Pred} + @{thm [source] y3s_Mark_funpow_Red}), and
+      5000 random sequences at entries \<open>\<le> 20\<close>, \<open>Lng \<le> 10\<close> confirm it: 0 violations.
+      The transport was never the problem; the STATEMENT is false.\<close>
+
 
 ML \<open>
   fun sorry_deps th =
@@ -23005,7 +23327,17 @@ ML \<open>
      ("y4e_Mark_nest_relaxed",    @{thm y4e_Mark_nest_relaxed}),
      ("y4e_Mark_nest_relaxed_Pred", @{thm y4e_Mark_nest_relaxed_Pred}),
      ("y4f_surg_guard_of_jm1",    @{thm y4f_surg_guard_of_jm1}),
-     ("y4f_Mark_nest_Pred_joint_sharp", @{thm y4f_Mark_nest_Pred_joint_sharp})];
+     ("y4f_Mark_nest_Pred_joint_sharp", @{thm y4f_Mark_nest_Pred_joint_sharp}),
+     \<comment> \<open>r81: the \<section>7.4 \<open>Mark\<close>/\<open>NextAdm\<close> proposition on \<open>T\<^bsub>PS\<^esub>\<close> --- reflexive case
+         UNCONDITIONAL, general case modulo the relaxed (adm-free) engine only\<close>
+     ("y6_Mark_selfnest_RT",      @{thm y6_Mark_selfnest_RT}),
+     ("y6_Mark_selfnest_TPS",     @{thm y6_Mark_selfnest_TPS}),
+     ("y6_7_4_Mark_nextAdm_TPS",  @{thm y6_7_4_Mark_nextAdm_TPS}),
+     \<comment> \<open>r81: the REFUTATION mechanism --- the \<section>7.4 nesting conclusion is
+         impossible wherever the outer column's \<open>Mark\<close> is \<open>Pred\<close>-stable and the
+         inner column's is not (which is what a NON-admissible outer column does)\<close>
+     ("y6z_no_common_position",   @{thm y6z_no_common_position}),
+     ("y6z_nest_false_at",        @{thm y6z_nest_false_at})];
 
   \<comment> \<open>r72: assert the termination theorems carry NO free hypothesis left ---
       \<open>y5_PSS_wf\<close> must be a closed statement (no meta-premises, no schematics).\<close>
