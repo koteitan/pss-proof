@@ -46,7 +46,9 @@
 - ✅ §6 ペア数列の基本性質[r2]
 - 🚨 §7 Buchholzの表記系への翻訳
   - ✅ 4命題を $T_{PS}$ へ（y3r_7_*_TPS、原文どおりの形）
-  - 🚨 系（$\textrm{Mark}$ と NextAdm の関係）の $T_{PS}$ 版（**真**。(F)証明済→残=(C4) と engine 緩和の2事実）
+  - 🚨 系（$\textrm{Mark}$ と NextAdm の関係）の $T_{PS}$ 版（命題自体は**真**）
+    - ✅ (F) $\le_M$ の Red 保存 + engine 内側列の無仮定緩和[r3][0.291][3.60h]
+    - 🚨🤖 直接ルート：$\textrm{Mark}$/$\textrm{Trans}$ の再帰で直接証明（$\textrm{Red}$ 後の Marked 性を経由しない）[r0]
   - ✅ 偽命題9件の訂正形を証明・監査登録（y3u_*。凍結層の偽言明は引用ゼロのまま）
 - ✅ §8 停止性
 - ✅ 停止性チェーン外の stale 引用（y3t_toplevel_OT_tail_annihilate。layerB 版は引用ゼロと確認）
