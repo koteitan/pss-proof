@@ -16982,7 +16982,9 @@ text \<open>\<^bold>\<open>VERDICT (r76, empirical): \<open>p_7_4_Mark_nextAdm\<
   of which \<^bold>\<open>6458\<close> are strictly non-trivial (\<open>j < j\<^sub>0\<close>; the other 39258 are the
   reflexive \<open>j = j\<^sub>0\<close> case, which must NOT be mistaken for a real test ---
   cf. the 12 empirical false positives of this project).  \<^bold>\<open>0 failures\<close>, on the
-  non-reduced \<open>M\<close> as well.
+  non-reduced \<open>M\<close> as well.  Second, independent sweep (wider entries): entries
+  \<open>< 4\<close>, \<open>Lng \<le> 4\<close> --- \<^bold>\<open>50288\<close> exercises, \<^bold>\<open>8080\<close> strictly non-trivial,
+  \<^bold>\<open>0 failures\<close>.
 
   \<^bold>\<open>WHY IT SURVIVES WHERE A45/A46 DIE\<close>: its conclusion mentions ONLY \<open>Mark\<close>, and
   \<open>Mark M m = Mark (Red\<^sup>k M) m\<close>, so BOTH the outer term and the core are read off the
