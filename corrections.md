@@ -18,6 +18,7 @@
 - 原文は HTML（内部の LaTeX ソース）なので、訂正は HTML 内 LaTeX 記述への修正として記す。
 - 数式は MathJax 記法（`$...$` / `$$...$$`）で書く。
 - **「原文」節には論文の該当箇所を逐語引用し、「訂正案」節には、原文をそっくりそれに置き換えると論文が正しくなる、訂正後の本文そのものを書く**（原文と訂正案は平行な文章になる）。
+  - **「原文」節・「訂正案」節では引用記法（`> `）を使わない**。地の文としてそのまま書く（引用の入れ子は読みにくく、平行に並べて見比べられない）。
   - 何をどう直すか、という**訂正動作**は書かない。**訂正後の本文**をそのまま書く。理由・機構は「原文の問題点」「原因」「反例」など別の見出しに書く。
   - 悪い例（訂正動作を書いている）:
     ```
@@ -95,9 +96,9 @@ $M_{0,j'_0} - M_{1,j'_0}$ を用いており、$m$ は $j'_0$ の誤記と判断
 §6.4 幹と枝 / 系（$\textrm{FirstNodes}$ と $\textrm{Joints}$ の単調性）の主張 (4)
 
 ### 原文
-> 任意の\(M \in PT_{\textrm{PS}}\)と\(J'_0,J'_1 \in \mathbb{N}\)に対し、\(J_1 := \textrm{Lng}(\textrm{Br}(M))-1\)と置くと、\(J'_0 < J'_1 \leq J_1\)ならば以下が成り立つ：
->
-> (4) 任意の\(i \in \{0,1\}\)に対し\(M_{i,\textrm{Joints}(M)_{J'_0}} > M_{i,\textrm{Joints}(M)_{J'_1}}\)である。
+任意の\(M \in PT_{\textrm{PS}}\)と\(J'_0,J'_1 \in \mathbb{N}\)に対し、\(J_1 := \textrm{Lng}(\textrm{Br}(M))-1\)と置くと、\(J'_0 < J'_1 \leq J_1\)ならば以下が成り立つ：
+
+(4) 任意の\(i \in \{0,1\}\)に対し\(M_{i,\textrm{Joints}(M)_{J'_0}} > M_{i,\textrm{Joints}(M)_{J'_1}}\)である。
 
 ### 訂正案
 (4) 任意の\(i \in \{0,1\}\)に対し\(M_{i,\textrm{Joints}(M)_{J'_0}} \geq M_{i,\textrm{Joints}(M)_{J'_1}}\)である。更に\(\textrm{Joints}(M)_{J'_0} > \textrm{Joints}(M)_{J'_1}\)ならば\(M_{i,\textrm{Joints}(M)_{J'_0}} > M_{i,\textrm{Joints}(M)_{J'_1}}\)である。
@@ -247,10 +248,10 @@ $$M = (0,0)(1,1)(1,0)$$
 （case $\textrm{Lng}(P(M')_{J_0}) > 1$ の最終文）。命題の主張そのものは**真**であり、訂正は不要。
 
 ### 原文
-> \((P(M')_J)_{J=0}^{J_0-1} \in S_{k_0-1}T_{\textrm{PS}}^{< \omega}\)であり、\(P(M')_{J_0} \in S_{k_0-1}T_{\textrm{PS}}\)より帰納法の仮定から\(P(P(M')_{J_0}[n]) \in S_{k_0-1}T_{\textrm{PS}}^{< \omega}\)であるので、\(P(M) \in S_{k_0-1}T_{\textrm{PS}}^{< \omega}\)である。□
+\((P(M')_J)_{J=0}^{J_0-1} \in S_{k_0-1}T_{\textrm{PS}}^{< \omega}\)であり、\(P(M')_{J_0} \in S_{k_0-1}T_{\textrm{PS}}\)より帰納法の仮定から\(P(P(M')_{J_0}[n]) \in S_{k_0-1}T_{\textrm{PS}}^{< \omega}\)であるので、\(P(M) \in S_{k_0-1}T_{\textrm{PS}}^{< \omega}\)である。□
 
 ### 訂正案
-> \((P(M')_J)_{J=0}^{J_0-1} \in S_{k_0-1}T_{\textrm{PS}}^{< \omega}\)であり、\(P(M')_{J_0} \in S_{k_0-1}T_{\textrm{PS}}\)より帰納法の仮定から\(P(P(M')_{J_0}[n]) \in S_{k_0-1}T_{\textrm{PS}}^{< \omega}\)であるので、\(P(M) \in S_{k_0-1}T_{\textrm{PS}}^{< \omega}\)である。ここで任意の\(k \in \mathbb{N}\)に対し\(S_kT_{\textrm{PS}} \subseteq S_{k+1}T_{\textrm{PS}}\)である。実際、任意の\(u \leq v\)に対し\(\textrm{diagSeq}(u,v) = \textrm{Pred}(\textrm{diagSeq}(u,v+1)) = \textrm{diagSeq}(u,v+1)[1]\)であるから\(S_0T_{\textrm{PS}} \subseteq S_1T_{\textrm{PS}}\)であり、一般の\(k\)については\(k\)に関する数学的帰納法から従う。従って\(S_{k_0-1}T_{\textrm{PS}}^{< \omega} \subseteq S_{k_0}T_{\textrm{PS}}^{< \omega}\)であり、\(P(M) \in S_{k_0}T_{\textrm{PS}}^{< \omega}\)である。□
+\((P(M')_J)_{J=0}^{J_0-1} \in S_{k_0-1}T_{\textrm{PS}}^{< \omega}\)であり、\(P(M')_{J_0} \in S_{k_0-1}T_{\textrm{PS}}\)より帰納法の仮定から\(P(P(M')_{J_0}[n]) \in S_{k_0-1}T_{\textrm{PS}}^{< \omega}\)であるので、\(P(M) \in S_{k_0-1}T_{\textrm{PS}}^{< \omega}\)である。ここで任意の\(k \in \mathbb{N}\)に対し\(S_kT_{\textrm{PS}} \subseteq S_{k+1}T_{\textrm{PS}}\)である。実際、任意の\(u \leq v\)に対し\(\textrm{diagSeq}(u,v) = \textrm{Pred}(\textrm{diagSeq}(u,v+1)) = \textrm{diagSeq}(u,v+1)[1]\)であるから\(S_0T_{\textrm{PS}} \subseteq S_1T_{\textrm{PS}}\)であり、一般の\(k\)については\(k\)に関する数学的帰納法から従う。従って\(S_{k_0-1}T_{\textrm{PS}}^{< \omega} \subseteq S_{k_0}T_{\textrm{PS}}^{< \omega}\)であり、\(P(M) \in S_{k_0}T_{\textrm{PS}}^{< \omega}\)である。□
 
 ### 原文の問題点
 命題の主張は「任意の\(k \in \mathbb{N}\)と\(M \in S_kT_{\textrm{PS}}\)に対し、\(P(M) \in S_kT_{\textrm{PS}}^{< \omega}\)である」であるから、
@@ -310,20 +311,20 @@ $j_1 = j_0^N + n(j_1^N-j_0^N) - 1$
 §8.2「強単項性」, 写像 LastStep の定義（\(J_1\) を置く一文）。
 
 ### 原文
-> \(J_1 := \textrm{Lng}(\textrm{Br}(M))\)と置く。
-> \(J_1 = 0\)ならば\(\textrm{LastStep}(M) = 0\)である[58]。
-> \(J_1 > 0\)とする[59]。
-> \((\textrm{Br}(M)_{J_1})_{0,0} = (\textrm{Br}(M)_{J_1})_{1,0}\)ならば\(\textrm{LastStep}(M) = J_1\)である[60]。
-> \((\textrm{Br}(M)_{J_1})_{0,0} > (\textrm{Br}(M)_{J_1})_{1,0}\)ならば\(\textrm{LastStep}(M) := \min \{J \in \mathbb{N} \mid (\textrm{Br}(M)_{J_1})_{0,0} = (\textrm{Br}(M)_J)_{0,0} > (\textrm{Br}(M)_J)_{1,0}\}\)である[61]。
+\(J_1 := \textrm{Lng}(\textrm{Br}(M))\)と置く。
+\(J_1 = 0\)ならば\(\textrm{LastStep}(M) = 0\)である[58]。
+\(J_1 > 0\)とする[59]。
+\((\textrm{Br}(M)_{J_1})_{0,0} = (\textrm{Br}(M)_{J_1})_{1,0}\)ならば\(\textrm{LastStep}(M) = J_1\)である[60]。
+\((\textrm{Br}(M)_{J_1})_{0,0} > (\textrm{Br}(M)_{J_1})_{1,0}\)ならば\(\textrm{LastStep}(M) := \min \{J \in \mathbb{N} \mid (\textrm{Br}(M)_{J_1})_{0,0} = (\textrm{Br}(M)_J)_{0,0} > (\textrm{Br}(M)_J)_{1,0}\}\)である[61]。
 
 （脚注[61]: 「\(J = J_1\)が条件を満たすため\(\min\)が存在する。」）
 
 ### 訂正案
-> \(\textrm{Lng}(\textrm{Br}(M)) = 0\)ならば\(\textrm{LastStep}(M) = 0\)である[58]。
-> \(\textrm{Lng}(\textrm{Br}(M)) > 0\)とする[59]。
-> \(J_1 := \textrm{Lng}(\textrm{Br}(M))-1\)と置く。
-> \((\textrm{Br}(M)_{J_1})_{0,0} = (\textrm{Br}(M)_{J_1})_{1,0}\)ならば\(\textrm{LastStep}(M) = J_1\)である[60]。
-> \((\textrm{Br}(M)_{J_1})_{0,0} > (\textrm{Br}(M)_{J_1})_{1,0}\)ならば\(\textrm{LastStep}(M) := \min \{J \in \mathbb{N} \mid J \leq J_1 \wedge (\textrm{Br}(M)_{J_1})_{0,0} = (\textrm{Br}(M)_J)_{0,0} > (\textrm{Br}(M)_J)_{1,0}\}\)である[61]。
+\(\textrm{Lng}(\textrm{Br}(M)) = 0\)ならば\(\textrm{LastStep}(M) = 0\)である[58]。
+\(\textrm{Lng}(\textrm{Br}(M)) > 0\)とする[59]。
+\(J_1 := \textrm{Lng}(\textrm{Br}(M))-1\)と置く。
+\((\textrm{Br}(M)_{J_1})_{0,0} = (\textrm{Br}(M)_{J_1})_{1,0}\)ならば\(\textrm{LastStep}(M) = J_1\)である[60]。
+\((\textrm{Br}(M)_{J_1})_{0,0} > (\textrm{Br}(M)_{J_1})_{1,0}\)ならば\(\textrm{LastStep}(M) := \min \{J \in \mathbb{N} \mid J \leq J_1 \wedge (\textrm{Br}(M)_{J_1})_{0,0} = (\textrm{Br}(M)_J)_{0,0} > (\textrm{Br}(M)_J)_{1,0}\}\)である[61]。
 
 ### 原文の問題点
 \(\textrm{Br}(M)\) の添字は \(0,\dots,\textrm{Lng}(\textrm{Br}(M))-1\) の範囲なので、\(J_1 := \textrm{Lng}(\textrm{Br}(M))\) と
@@ -359,40 +360,40 @@ else 節の \(\min\) の内包 \(\{J \in \mathbb{N} \mid \dots\}\) には添字�
 脚注 **[19]**、命題（単項性と \(\textrm{Red}\) の関係）、および系（直系先祖の \(\textrm{Red}\) 不変性）**の証明**。
 
 ### 原文（\(\textrm{Red}\) の定義の当該分岐）
-> \(M_{1,0} > 0\)とする。
-> \(N := \textrm{Red}(((j,j))_{j=0}^{M_{1,0}-1} \oplus_{\mathbb{N}^2} \textrm{IncrFirst}^{M_{1,0}}(M))\)と置く[17]。
-> \(j_1 := \textrm{Lng}(N) - 1\)と置く。
-> \(M_{1,0} \leq j_1\)かつ\((N_j)_{j=M_{1,0}}^{j_1} \in PT_{\textrm{PS}}\)ならば\(\textrm{Red}(M) := ((N_{0,j}-N_{0,M_{1,0}}+N_{1,M_{1,0}},N_{1,j}))_{j=M_{1,0}}^{j_1}\)である[18]。
-> \(M_{1,0} \leq j_1\)かつ\((N_j)_{j=M_{1,0}}^{j_1} \in T_{\textrm{PS}} \setminus PT_{\textrm{PS}}\)ならば\(\textrm{Red}(M) := M\)である[19]。
-> \(M_{1,0} > j_1\)ならば\(\textrm{Red}(M) := M\)である[20]。
+\(M_{1,0} > 0\)とする。
+\(N := \textrm{Red}(((j,j))_{j=0}^{M_{1,0}-1} \oplus_{\mathbb{N}^2} \textrm{IncrFirst}^{M_{1,0}}(M))\)と置く[17]。
+\(j_1 := \textrm{Lng}(N) - 1\)と置く。
+\(M_{1,0} \leq j_1\)かつ\((N_j)_{j=M_{1,0}}^{j_1} \in PT_{\textrm{PS}}\)ならば\(\textrm{Red}(M) := ((N_{0,j}-N_{0,M_{1,0}}+N_{1,M_{1,0}},N_{1,j}))_{j=M_{1,0}}^{j_1}\)である[18]。
+\(M_{1,0} \leq j_1\)かつ\((N_j)_{j=M_{1,0}}^{j_1} \in T_{\textrm{PS}} \setminus PT_{\textrm{PS}}\)ならば\(\textrm{Red}(M) := M\)である[19]。
+\(M_{1,0} > j_1\)ならば\(\textrm{Red}(M) := M\)である[20]。
 
 ### 原文（脚注[19]、それが参照する命題、および系の証明）
-> [19] 後で証明する単項性と\(\textrm{Red}\)の関係により、この分岐が生じないことが分かる。
+[19] 後で証明する単項性と\(\textrm{Red}\)の関係により、この分岐が生じないことが分かる。
 
-> 命題（単項性と\(\textrm{Red}\)の関係）
->
-> 任意の\(M \in PT_{\textrm{PS}}\)に対し、\(N := \textrm{Red}(((j,j))_{j=0}^{M_{1,0}-1} \oplus_{\mathbb{N}^2} \textrm{IncrFirst}^{M_{1,0}}(M))\)と置き\(j_1 := \textrm{Lng}(N)-1\)と置くと、\((N_j)_{j=M_{1,0}}^{j_1} \in PT_{\textrm{PS}}\)である。
->
-> 証明：
-> \(N\)の定義より、\(\textrm{Lng}(M) = j_1 - M_{1,0} + 1\)でありかつ任意の\((i,j), (i',j') \in \mathbb{N}^2\)に対し以下は同値である：
-> (1) \((i,j) \leq_M (i',j')\)である。
-> (2) \((i,j+M_{1,0}) \leq_N (i',j'+M_{1,0})\)である。
-> 従って直系先祖の\(\textrm{Red}\)不変性より従う。□
+命題（単項性と\(\textrm{Red}\)の関係）
 
-> 系（直系先祖の\(\textrm{Red}\)不変性）
->
-> 任意の\(M \in T_{\textrm{PS}}\)に対し、\(\leq_M\)と\(\leq_{\textrm{Red}(M)}\)は一致する。
->
-> 証明：
-> \(\textrm{Lng}\)の\(\textrm{Red}\)不変性と\(\textrm{Red}\)の再帰的定義により、\(\textrm{Lng}(M)\)に関する数学帰納法から即座に従う。□
+任意の\(M \in PT_{\textrm{PS}}\)に対し、\(N := \textrm{Red}(((j,j))_{j=0}^{M_{1,0}-1} \oplus_{\mathbb{N}^2} \textrm{IncrFirst}^{M_{1,0}}(M))\)と置き\(j_1 := \textrm{Lng}(N)-1\)と置くと、\((N_j)_{j=M_{1,0}}^{j_1} \in PT_{\textrm{PS}}\)である。
+
+証明：
+\(N\)の定義より、\(\textrm{Lng}(M) = j_1 - M_{1,0} + 1\)でありかつ任意の\((i,j), (i',j') \in \mathbb{N}^2\)に対し以下は同値である：
+(1) \((i,j) \leq_M (i',j')\)である。
+(2) \((i,j+M_{1,0}) \leq_N (i',j'+M_{1,0})\)である。
+従って直系先祖の\(\textrm{Red}\)不変性より従う。□
+
+系（直系先祖の\(\textrm{Red}\)不変性）
+
+任意の\(M \in T_{\textrm{PS}}\)に対し、\(\leq_M\)と\(\leq_{\textrm{Red}(M)}\)は一致する。
+
+証明：
+\(\textrm{Lng}\)の\(\textrm{Red}\)不変性と\(\textrm{Red}\)の再帰的定義により、\(\textrm{Lng}(M)\)に関する数学帰納法から即座に従う。□
 
 ### 訂正案
-（系の主張の定義域は [[A4]] の通り補正する。ここでは証明を次に置き換える。）
+系（直系先祖の\(\textrm{Red}\)不変性）
 
-> 系（直系先祖の\(\textrm{Red}\)不変性）
->
-> 証明：
-> \(\textrm{Lng}\)の\(\textrm{Red}\)不変性と\(\textrm{Red}\)の再帰的定義により、\(\textrm{Red}\)の再帰の呼び出し関係に関する整礎帰納法から従う（\(\textrm{Red}\)が well-defined であることから、この呼び出し関係は整礎である）。□
+任意の\(M \in T_{\textrm{PS}}\)に対し、\(\leq_M\)と\(\leq_{\textrm{Red}(M)}\)は一致する（定義域は [[A4]] の通り補正する）。
+
+証明：
+\(\textrm{Lng}\)の\(\textrm{Red}\)不変性と\(\textrm{Red}\)の再帰的定義により、\(\textrm{Red}\)の再帰の呼び出し関係に関する整礎帰納法から従う（\(\textrm{Red}\)が well-defined であることから、この呼び出し関係は整礎である）。□
 
 ### 原文の問題点（[19] のみ。[20] は循環ではない）
 依存を辿ると次のようになる。
@@ -422,16 +423,16 @@ else 節の \(\min\) の内包 \(\{J \in \mathbb{N} \mid \dots\}\) には添字�
 §7.2「命題（scb分解の合成則）」の (2)。形式化では `p_7_2_scb_compose` の第2主張に対応する。
 
 ### 原文
-> 命題（scb分解の合成則）
->
-> 任意の\(t \in T_{\textrm{B}}\)に対し、以下が成り立つ：
->
-> (2) 任意の\(v \in \mathbb{N}\)と\(s,c,b \in \Sigma^{< \omega}\)に対し、\((s,c,b)\)が\(t\)のscb分解であるならば\((D_v s,c,b)\)は\(D_v t\)のscb分解である。
+命題（scb分解の合成則）
+
+任意の\(t \in T_{\textrm{B}}\)に対し、以下が成り立つ：
+
+(2) 任意の\(v \in \mathbb{N}\)と\(s,c,b \in \Sigma^{< \omega}\)に対し、\((s,c,b)\)が\(t\)のscb分解であるならば\((D_v s,c,b)\)は\(D_v t\)のscb分解である。
 
 （scb分解の定義：「\((s,c,b)\)が\(t\)のscb分解であるとは、以下を満たすということである：\(t = scb\)である。**\(t \neq 0\)ならば\(c \in PT_{\textrm{B}}\)である。** \(b\)は\(\underline{)}\)のみからなる文字列である。」）
 
 ### 訂正案
-> (2) 任意の\(v \in \mathbb{N}\)と\(s,c,b \in \Sigma^{< \omega}\)に対し、\(c \in PT_{\textrm{B}}\)かつ\((s,c,b)\)が\(t\)のscb分解であるならば\((D_v s,c,b)\)は\(D_v t\)のscb分解である。
+(2) 任意の\(v \in \mathbb{N}\)と\(s,c,b \in \Sigma^{< \omega}\)に対し、\(c \in PT_{\textrm{B}}\)かつ\((s,c,b)\)が\(t\)のscb分解であるならば\((D_v s,c,b)\)は\(D_v t\)のscb分解である。
 
 ### 原文の問題点
 scb分解の定義では、中央成分 \(c\) が主表現（\(c \in PT_{\textrm{B}}\)）であることが要求されるのは
@@ -511,24 +512,24 @@ scb分解 \((s,\textrm{flat}(c_1),b)\) は \(c_1\) が主表現であること�
 命題の主張そのものは**真**であり、訂正は証明のみでよい。
 
 ### 原文
-> \(M\)が簡約でないとする。
-> \(\textrm{Trans}(M) :=　\textrm{Trans}(\textrm{Red}(M))\)である。
-> \(\textrm{Mark}(M,m) := \textrm{Mark}(\textrm{Red}(M),m)\)である[47]。
+\(M\)が簡約でないとする。
+\(\textrm{Trans}(M) :=　\textrm{Trans}(\textrm{Red}(M))\)である。
+\(\textrm{Mark}(M,m) := \textrm{Mark}(\textrm{Red}(M),m)\)である[47]。
 
-> 命題（\(\textrm{Trans}\)のwell-defined性）
->
-> 上の条件を全て満たす写像\(\textrm{Trans}\)と\(\textrm{Mark}\)が一意に存在する。
->
-> 証明：
-> \(\textrm{Lng}(M)\)に関する数学的帰納法より即座に従う。□
+命題（\(\textrm{Trans}\)のwell-defined性）
+
+上の条件を全て満たす写像\(\textrm{Trans}\)と\(\textrm{Mark}\)が一意に存在する。
+
+証明：
+\(\textrm{Lng}(M)\)に関する数学的帰納法より即座に従う。□
 
 ### 訂正案
-> 命題（\(\textrm{Trans}\)のwell-defined性）
->
-> 上の条件を全て満たす写像\(\textrm{Trans}\)と\(\textrm{Mark}\)が一意に存在する。
->
-> 証明：
-> \(\textrm{Lng}(M)\)と\(\textrm{Red}\)の軌道の長さ（\(\textrm{Red}^k(M)\)が\(\textrm{Red}\)の不動点に到達する最小の\(k\)）の対に関する辞書式帰納法より従う。□
+命題（\(\textrm{Trans}\)のwell-defined性）
+
+上の条件を全て満たす写像\(\textrm{Trans}\)と\(\textrm{Mark}\)が一意に存在する。
+
+証明：
+\(\textrm{Lng}(M)\)と\(\textrm{Red}\)の軌道の長さ（\(\textrm{Red}^k(M)\)が\(\textrm{Red}\)の不動点に到達する最小の\(k\)）の対に関する辞書式帰納法より従う。□
 
 ### 原文の問題点（証明のみ）
 非簡約分岐 \(\textrm{Trans}(M) := \textrm{Trans}(\textrm{Red}(M))\) は \(\textrm{Lng}\) を保つ
@@ -601,18 +602,18 @@ ST_PS 閉包（diagSeq から \(M[n], n\ge1\) で BFS、7046 個）で違反は�
 §7.3「命題（右端第\(1\)基点の Mark の基本性質）」ほか、Mark の基点・順序を \(D_{M_{1,m}} 0\) 等の主表現で特徴づける §7.3 命題群。形式化では `p_7_3_Mark_rightmost1` 等。
 
 ### 原文
-> 命題（右端第\(1\)基点のMarkの基本性質）
->
-> 任意の\((M,m) \in RT_{\textrm{PS}}^{\textrm{Marked}}\)に対し、\(j_1 := \textrm{Lng}(M) - 1\)と置くと以下は同値である：
->
-> (1) \(m = j_1\)である。
-> (2) \(\textrm{Mark}(M,m) = D_{M_{1,m}} 0\)である。
+命題（右端第\(1\)基点のMarkの基本性質）
+
+任意の\((M,m) \in RT_{\textrm{PS}}^{\textrm{Marked}}\)に対し、\(j_1 := \textrm{Lng}(M) - 1\)と置くと以下は同値である：
+
+(1) \(m = j_1\)である。
+(2) \(\textrm{Mark}(M,m) = D_{M_{1,m}} 0\)である。
 
 ### 訂正案
-> 任意の\((M,m) \in RT_{\textrm{PS}}^{\textrm{Marked}}\)に対し、\(j_1 := \textrm{Lng}(M) - 1\)と置くと、\(M\)が零項でないならば以下は同値である：
->
-> (1) \(m = j_1\)である。
-> (2) \(\textrm{Mark}(M,m) = D_{M_{1,m}} 0\)である。
+任意の\((M,m) \in RT_{\textrm{PS}}^{\textrm{Marked}}\)に対し、\(j_1 := \textrm{Lng}(M) - 1\)と置くと、\(M\)が零項でないならば以下は同値である：
+
+(1) \(m = j_1\)である。
+(2) \(\textrm{Mark}(M,m) = D_{M_{1,m}} 0\)である。
 
 ### 原文の問題点
 \(M = ((0,0))\)（零項、\(\in RT_{\textrm{PS}}\)、\((M,0) \in T_{\textrm{PS}}^{\textrm{Marked}}\)）で \(m = 0 = j_1\)
@@ -636,18 +637,18 @@ ST_PS 閉包（diagSeq から \(M[n], n\ge1\) で BFS、7046 個）で違反は�
 §7.4「系（$\textrm{Mark}$ と $<_M^{\textrm{NextAdm}}$ の関係）」（形式化では `p_7_4_Mark_nextAdm`）。
 
 ### 原文
-> 系（\(\textrm{Mark}\)と\(<_M^{\textrm{NextAdm}}\)の関係）
->
-> \(M \in T_{\textrm{PS}}\)とし、\(j_1 := \textrm{Lng}(M) - 1\)と置く。\((0,j_0) <_M^{\textrm{NextAdm}} (0,j_1)\)を満たす一意な\(j_0 \in \mathbb{N}\)が存在するとする。任意の\(j \in \mathbb{N}\)に対し、\((0,j) \leq_M (0,j_0)\)ならば、一意な\((s_0,b_0) \in (\Sigma^{< \omega})^2\)が存在し、以下を満たす：
->
-> (1) \((s_0,\textrm{Mark}(\textrm{Pred}(M),j_0),b_0)\)は\(\textrm{Mark}(\textrm{Pred}(M),j)\)のscb分解である。
-> (2) \((s_0,\textrm{Mark}(M,j_0),b_0)\)は\(\textrm{Mark}(M,j)\)のscb分解である。
+系（\(\textrm{Mark}\)と\(<_M^{\textrm{NextAdm}}\)の関係）
+
+\(M \in T_{\textrm{PS}}\)とし、\(j_1 := \textrm{Lng}(M) - 1\)と置く。\((0,j_0) <_M^{\textrm{NextAdm}} (0,j_1)\)を満たす一意な\(j_0 \in \mathbb{N}\)が存在するとする。任意の\(j \in \mathbb{N}\)に対し、\((0,j) \leq_M (0,j_0)\)ならば、一意な\((s_0,b_0) \in (\Sigma^{< \omega})^2\)が存在し、以下を満たす：
+
+(1) \((s_0,\textrm{Mark}(\textrm{Pred}(M),j_0),b_0)\)は\(\textrm{Mark}(\textrm{Pred}(M),j)\)のscb分解である。
+(2) \((s_0,\textrm{Mark}(M,j_0),b_0)\)は\(\textrm{Mark}(M,j)\)のscb分解である。
 
 ### 訂正案
-> \(M \in T_{\textrm{PS}}\)とし、\(j_1 := \textrm{Lng}(M) - 1\)と置く。\((0,j_0) <_M^{\textrm{NextAdm}} (0,j_1)\)を満たす一意な\(j_0 \in \mathbb{N}\)が存在するとする。任意の\(j \in \mathbb{N}\)に対し、\((0,j) \leq_M (0,j_0)\)かつ\((M,j) \in T_{\textrm{PS}}^{\textrm{Marked}}\)ならば、一意な\((s_0,b_0) \in (\Sigma^{< \omega})^2\)が存在し、以下を満たす：
->
-> (1) \((s_0,\textrm{Mark}(\textrm{Pred}(M),j_0),b_0)\)は\(\textrm{Mark}(\textrm{Pred}(M),j)\)のscb分解である。
-> (2) \((s_0,\textrm{Mark}(M,j_0),b_0)\)は\(\textrm{Mark}(M,j)\)のscb分解である。
+\(M \in T_{\textrm{PS}}\)とし、\(j_1 := \textrm{Lng}(M) - 1\)と置く。\((0,j_0) <_M^{\textrm{NextAdm}} (0,j_1)\)を満たす一意な\(j_0 \in \mathbb{N}\)が存在するとする。任意の\(j \in \mathbb{N}\)に対し、\((0,j) \leq_M (0,j_0)\)かつ\((M,j) \in T_{\textrm{PS}}^{\textrm{Marked}}\)ならば、一意な\((s_0,b_0) \in (\Sigma^{< \omega})^2\)が存在し、以下を満たす：
+
+(1) \((s_0,\textrm{Mark}(\textrm{Pred}(M),j_0),b_0)\)は\(\textrm{Mark}(\textrm{Pred}(M),j)\)のscb分解である。
+(2) \((s_0,\textrm{Mark}(M,j_0),b_0)\)は\(\textrm{Mark}(M,j)\)のscb分解である。
 
 ### 原文の問題点
 仮定 \((0,j) \leq_M (0,j_0)\)（行 0 の直系先祖関係）は \(j\) の \(M\) 許容性を**含意しない**。
@@ -687,14 +688,14 @@ $(M,m_0),(M,m_1)\in T_{\textrm{PS}}^{\textrm{Marked}}$ に対し、次は同値�
 §8.1「補題（条件(I)か(III)の下での $c_1$ 前後の具体表示）」の (1)。
 
 ### 原文
-> 補題（条件(I)か(III)の下での\(c_1\)前後の具体表示）
->
-> 任意の\(M \in RT_{\textrm{PS}} \cap PT_{\textrm{PS}}\)に対し、\(\textrm{Trans}\)の再帰的定義中に導入した記号を用いると、\(j_0\)が\(M\)許容かつ\(j_1 > 1\)かつ\(M_{1,j_0} \geq M_{1,j_1}\)ならば、以下が成り立つ：
->
-> (1) \(t_1 \neq 0\)であり\(M\)は条件(I)か(III)を満たし\(\textrm{Trans}((M_j)_{j=j_0}^{j_1-1}) = c_1 \in PT_{\textrm{B}}\)である。
+補題（条件(I)か(III)の下での\(c_1\)前後の具体表示）
+
+任意の\(M \in RT_{\textrm{PS}} \cap PT_{\textrm{PS}}\)に対し、\(\textrm{Trans}\)の再帰的定義中に導入した記号を用いると、\(j_0\)が\(M\)許容かつ\(j_1 > 1\)かつ\(M_{1,j_0} \geq M_{1,j_1}\)ならば、以下が成り立つ：
+
+(1) \(t_1 \neq 0\)であり\(M\)は条件(I)か(III)を満たし\(\textrm{Trans}((M_j)_{j=j_0}^{j_1-1}) = c_1 \in PT_{\textrm{B}}\)である。
 
 ### 訂正案
-> (1) \(t_1 \neq 0\)であり\(M\)は条件(I)か(III)を満たし\(c_1 \in PT_{\textrm{B}}\)である。更に\(j_0 < j_1-1\)または\(M_{0,j_0} = M_{1,j_0}\)（すなわち切片\((M_j)_{j=j_0}^{j_1-1}\)が簡約）ならば\(\textrm{Trans}((M_j)_{j=j_0}^{j_1-1}) = c_1\)である。
+(1) \(t_1 \neq 0\)であり\(M\)は条件(I)か(III)を満たし\(c_1 \in PT_{\textrm{B}}\)である。更に\(j_0 < j_1-1\)または\(M_{0,j_0} = M_{1,j_0}\)（すなわち切片\((M_j)_{j=j_0}^{j_1-1}\)が簡約）ならば\(\textrm{Trans}((M_j)_{j=j_0}^{j_1-1}) = c_1\)である。
 
 ### 原文の問題点
 \(j_0 = j_1-1\)（切片 \((M_j)_{j=j_0}^{j_1-1}\) が単項の \(((M_{0,j_0},M_{1,j_0}))\)）かつ
@@ -785,20 +786,18 @@ maxlen5 maxe3 で反例多数(独立検証、sweep agent)。
 §8.5 補題（条件(V)の下での各種scb分解）(content.md 5213) part (5)、およびその証明 (content.md 5267, 5329)
 
 ### 原文
-> (5) \(\textrm{Trans}(M[n]) = s_1 D_{M_{1,j_{-1}}} (s'_1 D_{M_{1,j_0}})^n t_2 (b'_1)^n b_1\) である。
+(5) \(\textrm{Trans}(M[n]) = s_1 D_{M_{1,j_{-1}}} (s'_1 D_{M_{1,j_0}})^n t_2 (b'_1)^n b_1\) である。
 
-（\(n \in \mathbb{N}_{+}\) 全体で主張されている。証明中の該当2箇所は次の通り。）
+(4) の証明冒頭 (content.md 5267): \(\textrm{Trans}(L_n) = s_1 D_{M_{1,j_{-1}}} (s'_1 D_{M_{1,j_0}})^{2n} 0 (b'_1)^{2n} b_1\)
 
-> (4) の証明冒頭 (content.md 5267): \(\textrm{Trans}(L_n) = s_1 D_{M_{1,j_{-1}}} (s'_1 D_{M_{1,j_0}})^{2n} 0 (b'_1)^{2n} b_1\)
-
-> (5) の証明の \(n=1\) の場合 (content.md 5329): \((s'_1 D_{M_{1,j_0}})^{2n-2}\)
+(5) の証明の \(n=1\) の場合 (content.md 5329): \((s'_1 D_{M_{1,j_0}})^{2n-2}\)
 
 ### 訂正案
-> (5) \(n \geq 2\) ならば \(\textrm{Trans}(M[n]) = s_1 D_{M_{1,j_{-1}}} (s'_1 D_{M_{1,j_0}})^n t_2 (b'_1)^n b_1\) であり、\(n = 1\) ならば \(\textrm{Trans}(M[1]) = s_1 D_{M_{1,j_{-1}}} t_2 b_1\) である。
+(5) \(n \geq 2\) ならば \(\textrm{Trans}(M[n]) = s_1 D_{M_{1,j_{-1}}} (s'_1 D_{M_{1,j_0}})^n t_2 (b'_1)^n b_1\) であり、\(n = 1\) ならば \(\textrm{Trans}(M[1]) = s_1 D_{M_{1,j_{-1}}} t_2 b_1\) である。
 
-> (4) の証明冒頭: \(\textrm{Trans}(L_n) = s_1 D_{M_{1,j_{-1}}} (s'_1 D_{M_{1,j_0}})^{n+1} 0 (b'_1)^{n+1} b_1\)
+(4) の証明冒頭: \(\textrm{Trans}(L_n) = s_1 D_{M_{1,j_{-1}}} (s'_1 D_{M_{1,j_0}})^{n+1} 0 (b'_1)^{n+1} b_1\)
 
-> (5) の証明の \(n=1\) の場合: \((s'_1 D_{M_{1,j_0}})^{0}\)
+(5) の証明の \(n=1\) の場合: \((s'_1 D_{M_{1,j_0}})^{0}\)
 
 ### 原文の問題点
 主張 (5) の指数 \(n\) は \(n \geq 2\) では正しいが、\(n = 1\) では成立しない。実際、\(M[1] = \textrm{Pred}(M)\) であり、原文証明の (5) の基底 (content.md 5329) 自身が
@@ -877,10 +876,10 @@ maxlen5 maxe3 で反例多数(独立検証、sweep agent)。
 §5.3 基本列（写像 \([\ ]\)）の定義。
 
 ### 原文
-> \(G := (M_j)_{j=0}^{j_0-1} \in T_{\textrm{PS}}\)と置く。
+\(G := (M_j)_{j=0}^{j_0-1} \in T_{\textrm{PS}}\)と置く。
 
 ### 訂正案
-> \(G := (M_j)_{j=0}^{j_0-1} \in T_{\textrm{PS}} \cup \{()\}\)と置く。
+\(G := (M_j)_{j=0}^{j_0-1} \in T_{\textrm{PS}} \cup \{()\}\)と置く。
 
 ### 原文の問題点
 \(j_0 = 0\) は実際に起こる（例 \(M = ((0,0),(1,1))\)：\(i_1 = 1\)、\(j_1 = 1\) の親として \(j_0 = 0\) が
@@ -910,22 +909,22 @@ maxlen5 maxe3 で反例多数(独立検証、sweep agent)。
 §7.4 許容的親子関係、命題（\(\textrm{Trans}\)と\(<_M^{\textrm{NextAdm}}\)の関係）。形式化では `p_7_4_Trans_nextAdm`。
 
 ### 原文
-> 命題（\(\textrm{Trans}\)と\(<_M^{\textrm{NextAdm}}\)の関係）
->
-> \(M \in T_{\textrm{PS}}\)とし、\(j_1 := \textrm{Lng}(M) - 1\)と置く。\((0,j_0) <_M^{\textrm{NextAdm}} (0,j_1)\)を満たす一意な\(j_0 \in \mathbb{N}\)が存在するならば、一意な\((s_0,b_0) \in (\Sigma^{< \omega})^2\)が存在し、以下を満たす：
->
-> (1) \((s_0,\textrm{Mark}(\textrm{Pred}(M),j_0),b_0)\)は\(\textrm{Trans}(\textrm{Pred}(M))\)のscb分解である。
->
-> (2) \((s_0,\textrm{Mark}(M,j_0),b_0)\)は\(\textrm{Trans}(M)\)のscb分解である。
+命題（\(\textrm{Trans}\)と\(<_M^{\textrm{NextAdm}}\)の関係）
+
+\(M \in T_{\textrm{PS}}\)とし、\(j_1 := \textrm{Lng}(M) - 1\)と置く。\((0,j_0) <_M^{\textrm{NextAdm}} (0,j_1)\)を満たす一意な\(j_0 \in \mathbb{N}\)が存在するならば、一意な\((s_0,b_0) \in (\Sigma^{< \omega})^2\)が存在し、以下を満たす：
+
+(1) \((s_0,\textrm{Mark}(\textrm{Pred}(M),j_0),b_0)\)は\(\textrm{Trans}(\textrm{Pred}(M))\)のscb分解である。
+
+(2) \((s_0,\textrm{Mark}(M,j_0),b_0)\)は\(\textrm{Trans}(M)\)のscb分解である。
 
 ### 訂正案
-> 命題（\(\textrm{Trans}\)と\(<_M^{\textrm{NextAdm}}\)の関係）
->
-> \(M \in RT_{\textrm{PS}}\)とし、\(j_1 := \textrm{Lng}(M) - 1\)と置く。\((0,j_0) <_M^{\textrm{NextAdm}} (0,j_1)\)を満たす一意な\(j_0 \in \mathbb{N}\)が存在するならば、一意な\((s_0,b_0) \in (\Sigma^{< \omega})^2\)が存在し、以下を満たす：
->
-> (1) \((s_0,\textrm{Mark}(\textrm{Pred}(M),j_0),b_0)\)は\(\textrm{Trans}(\textrm{Pred}(M))\)のscb分解である。
->
-> (2) \((s_0,\textrm{Mark}(M,j_0),b_0)\)は\(\textrm{Trans}(M)\)のscb分解である。
+命題（\(\textrm{Trans}\)と\(<_M^{\textrm{NextAdm}}\)の関係）
+
+\(M \in RT_{\textrm{PS}}\)とし、\(j_1 := \textrm{Lng}(M) - 1\)と置く。\((0,j_0) <_M^{\textrm{NextAdm}} (0,j_1)\)を満たす一意な\(j_0 \in \mathbb{N}\)が存在するならば、一意な\((s_0,b_0) \in (\Sigma^{< \omega})^2\)が存在し、以下を満たす：
+
+(1) \((s_0,\textrm{Mark}(\textrm{Pred}(M),j_0),b_0)\)は\(\textrm{Trans}(\textrm{Pred}(M))\)のscb分解である。
+
+(2) \((s_0,\textrm{Mark}(M,j_0),b_0)\)は\(\textrm{Trans}(M)\)のscb分解である。
 
 ### 原文の問題点
 \(M\) が簡約でないとき偽。反例：
@@ -952,22 +951,22 @@ $(0,1) \leq_{\textrm{Red}(M)} (0,3)$ は成立せず、列 $1$ は $\textrm{Red}
 §7.4 許容的親子関係、系（\(\textrm{Trans}\)の\(\textrm{Mark}\)と\(\textrm{Pred}\)による表示）。形式化では `p_7_4_Trans_Mark_Pred`。
 
 ### 原文
-> 系（\(\textrm{Trans}\)の\(\textrm{Mark}\)と\(\textrm{Pred}\)による表示）
->
-> 任意の\((M,m) \in T_{\textrm{PS}}^{\textrm{Marked}}\)に対し、\(m < \textrm{Lng}(M) - 1\)ならば一意な\((s_0,b_0) \in (\Sigma^{< \omega})^2\)が存在し、以下を満たす：
->
-> (1) \((s_0,\textrm{Mark}(\textrm{Pred}(M),m),b_0)\)は\(\textrm{Trans}(\textrm{Pred}(M))\)のscb分解である。
->
-> (2) \((s_0,\textrm{Mark}(M,m),b_0)\)は\(\textrm{Trans}(M)\)のscb分解である。
+系（\(\textrm{Trans}\)の\(\textrm{Mark}\)と\(\textrm{Pred}\)による表示）
+
+任意の\((M,m) \in T_{\textrm{PS}}^{\textrm{Marked}}\)に対し、\(m < \textrm{Lng}(M) - 1\)ならば一意な\((s_0,b_0) \in (\Sigma^{< \omega})^2\)が存在し、以下を満たす：
+
+(1) \((s_0,\textrm{Mark}(\textrm{Pred}(M),m),b_0)\)は\(\textrm{Trans}(\textrm{Pred}(M))\)のscb分解である。
+
+(2) \((s_0,\textrm{Mark}(M,m),b_0)\)は\(\textrm{Trans}(M)\)のscb分解である。
 
 ### 訂正案
-> 系（\(\textrm{Trans}\)の\(\textrm{Mark}\)と\(\textrm{Pred}\)による表示）
->
-> 任意の\((M,m) \in RT_{\textrm{PS}}^{\textrm{Marked}}\)に対し、\(m < \textrm{Lng}(M) - 1\)ならば一意な\((s_0,b_0) \in (\Sigma^{< \omega})^2\)が存在し、以下を満たす：
->
-> (1) \((s_0,\textrm{Mark}(\textrm{Pred}(M),m),b_0)\)は\(\textrm{Trans}(\textrm{Pred}(M))\)のscb分解である。
->
-> (2) \((s_0,\textrm{Mark}(M,m),b_0)\)は\(\textrm{Trans}(M)\)のscb分解である。
+系（\(\textrm{Trans}\)の\(\textrm{Mark}\)と\(\textrm{Pred}\)による表示）
+
+任意の\((M,m) \in RT_{\textrm{PS}}^{\textrm{Marked}}\)に対し、\(m < \textrm{Lng}(M) - 1\)ならば一意な\((s_0,b_0) \in (\Sigma^{< \omega})^2\)が存在し、以下を満たす：
+
+(1) \((s_0,\textrm{Mark}(\textrm{Pred}(M),m),b_0)\)は\(\textrm{Trans}(\textrm{Pred}(M))\)のscb分解である。
+
+(2) \((s_0,\textrm{Mark}(M,m),b_0)\)は\(\textrm{Trans}(M)\)のscb分解である。
 
 ### 原文の問題点
 [[A45]] と同一の反例 $M = (0,0)(0,1)(1,2)(1,0)$ で偽。$\textrm{Mark}(M,1) = D_0 0$、
