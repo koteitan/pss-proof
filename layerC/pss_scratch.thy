@@ -18935,7 +18935,394 @@ text \<open>\<^bold>\<open>Residual\<close> (honest note): under condition (IV) 
   exactly when \<open>Adm\<^bsub>M\<^esub>(j\<^sub>-\<^sub>2) = j\<^sub>-\<^sub>1\<close> (the \<open>admeq\<close> corner).  There the \<open>L\<^sub>n\<close> closed form
   comes from L5 (@{thm [source] y3i_L5_various_scb_IIIV}) rather than L6, in the
   \<open>s84x_s1\<close>/\<open>s84x_b1\<close> context; its \<open>operB\<close> counterpart is the \<open>c4cx2\<close>/\<open>cfax\<close> family.
-  Not assembled here.\<close>
+  \<^bold>\<open>CLOSED in r77 below\<close> (\<open>y3m_p_8_4_oper_basic_part2_condIV_admeq\<close>), and in fact
+  by the SAME generic kind-1 fseq law, not by the \<open>c4cx2\<close>/\<open>cfax\<close> family.\<close>
+
+
+(* ===================================================================== *)
+(* r77-Y3M: \<section>8.4 補題 part (2), the condIV admeq corner --- and the FULL    *)
+(*   condition-(III)-or-(IV) statement with NO regime side condition.       *)
+(*                                                                         *)
+(* At the corner  Adm(j_-2) = j_-1  the whole (u0,u1,u2) three-level tower  *)
+(* of L6 COLLAPSES: j_-3 = j_-1, so N = the c2 host itself                  *)
+(* (Trans(N) = Mark(j_-3) = Mark(j_-1) = c_2), the middle scb level is      *)
+(* vacuous, and the L_n closed form is the TWO-level L5 one, in the         *)
+(* (s84x_s1, s84x_b1) context.  Its operB counterpart is the SAME generic   *)
+(* kind-1 fseq law d13x_fseq_condIII: that law is stated for an ARBITRARY   *)
+(* (s1,b1,body) with  k1 : scb_kind1 (Trans M) s1 (D_{e3} body) b1  and     *)
+(* inner : scb_decomp body s0 (D_{e1} 0) b0 --- and the admeq corner owns   *)
+(* exactly such a pair:  k1 = c4dx_condIV_k1 (ltJ-free, body = bpHeadT c2), *)
+(* inner = the L5 witness sb unlifted off the principal head of c2          *)
+(* (w84x_scb_unlift).  Both closed forms then live in ONE (s1,b1,sb)        *)
+(* context and coincide by  j_-3 = j_-1  (admeq) and  M(1,j_-2) = v_1 - 1   *)
+(* (RedCondA, y3l_e2_eq_ub).  No c4cx2/cfax detour is needed.               *)
+(* ===================================================================== *)
+
+section \<open>r77-Y3M --- \<section>8.4 補題 part (2): the condIV \<open>admeq\<close> corner\<close>
+
+subsection \<open>The corner collapse: \<open>Trans(N) = c\<^sub>2\<close>, and \<open>c\<^sub>2\<close> is principal at \<open>M\<^bsub>1,j\<^sub>-\<^sub>1\<^esub>\<close>\<close>
+
+lemma y3m_c2_principal:
+  fixes M :: pairseq
+  assumes MST: "M \<in> ST_PS" and MPT: "M \<in> PT_PS"
+    and hp: "hasParent M 1 (Lng M - 1)"
+    and nVI: "\<not> transCondVI M"
+  shows "transC2 M = Dpt (enat (entry M 1 (transJm1 M))) (bpHeadT (transC2 M))"
+proof -
+  have MR: "M \<in> RT_PS" using MST m_6_7_ST_PS_subseteq_RT_PS by blast
+  have j1gt: "1 < Lng M - 1" and T1: "transT1 M \<noteq> 0\<^sub>B"
+    using s84d_L4_regime[OF MST MPT hp nVI] by simp_all
+  have J1pos: "transJ1 M > 0" using j1gt by (simp add: transJ1_def)
+  have vval: "transV M = enat (entry M 1 (transJm1 M))"
+    using m_8_5_scbdec_c1_shape(1)[OF MR MPT J1pos T1] .
+  show ?thesis
+    using transC2_single_principal_head(2)[OF MR MPT J1pos T1] vval by simp
+qed
+
+text \<open>Under \<open>admeq\<close> the marked ancestor \<open>j\<^sub>-\<^sub>3 = Adm\<^bsub>M\<^esub>(j\<^sub>-\<^sub>2)\<close> IS \<open>j\<^sub>-\<^sub>1\<close>, so the
+  \<open>Mark\<close>-representation of the \<open>N\<close>-slice (@{thm [source] m_7_4_Mark_Trans_repr}) and the
+  right-end second-basepoint law (@{thm [source] m_7_3_Mark_rightmost2}) name the SAME
+  term: \<open>Trans(N) = Mark\<^bsub>M\<^esub>(j\<^sub>-\<^sub>3) = Mark\<^bsub>M\<^esub>(j\<^sub>-\<^sub>1) = c\<^sub>2\<close>.\<close>
+
+lemma y3m_N_eq_c2:
+  fixes M :: pairseq
+  assumes MST: "M \<in> ST_PS" and MPT: "M \<in> PT_PS"
+    and hp: "hasParent M 1 (Lng M - 1)"
+    and nVI: "\<not> transCondVI M"
+    and admeq: "Adm M (s84x_jm2 M) = transJm1 M"
+  shows "Trans (s84x_N M) = transC2 M"
+proof -
+  have MR: "M \<in> RT_PS" using MST m_6_7_ST_PS_subseteq_RT_PS by blast
+  have MT: "M \<in> T_PS" using MPT by (simp add: PT_PS_def)
+  have j1gt: "1 < Lng M - 1" and T1: "transT1 M \<noteq> 0\<^sub>B"
+    using s84d_L4_regime[OF MST MPT hp nVI] by simp_all
+  have J1pos: "transJ1 M > 0" using j1gt by (simp add: transJ1_def)
+  have mM3: "(M, s84x_jm3 M) \<in> Marked" and jm3le: "s84x_jm3 M \<le> s84x_jm2 M"
+    and jm2lt: "s84x_jm2 M < Lng M - 1"
+    using s84d_jm3_Marked[OF MR MT hp] by simp_all
+  have jm3lt: "s84x_jm3 M < Lng M - 1" using jm3le jm2lt by linarith
+  have repr: "Mark M (s84x_jm3 M) = Trans (s84x_N M)"
+    using m_7_4_Mark_Trans_repr[OF mM3 MR jm3lt] by (simp add: s84x_N_def)
+  have mk2: "Mark M (transJm1 M) = transC2 M"
+    by (rule m_7_3_Mark_rightmost2[OF MR MPT J1pos T1])
+  have jm3eq: "s84x_jm3 M = transJm1 M" using admeq by (simp add: s84x_jm3_def)
+  show ?thesis using repr mk2 jm3eq by simp
+qed
+
+subsection \<open>Part (2) at the \<open>admeq\<close> corner\<close>
+
+text \<open>\<^bold>\<open>Part (2)\<close> of \<section>8.4 補題 (content.md 5008) in the remaining regime: condition
+  (IV) with \<open>Adm\<^bsub>M\<^esub>(j\<^sub>-\<^sub>2) = j\<^sub>-\<^sub>1\<close>.  Both closed forms are assembled in the single
+  \<open>(s\<^sub>1, b\<^sub>1, sb)\<close> context: \<open>Trans(L\<^sub>n)\<close> from L5 (@{thm [source] y3i_L5_various_scb_IIIV}),
+  \<open>operB (Trans M) (n-1)\<close> from the generic kind-1 fseq law
+  (@{thm [source] d13x_fseq_condIII}) fed with the \<open>ltJ\<close>-free kind-1 anchor
+  @{thm [source] c4dx_condIV_k1}.\<close>
+
+theorem y3m_p_8_4_oper_basic_part2_condIV_admeq:
+  fixes M :: pairseq and n :: nat
+  assumes MST: "M \<in> ST_PS" and MPT: "M \<in> PT_PS"
+    and hp: "hasParent M 1 (Lng M - 1)"
+    and j1gt: "1 < Lng M - 1"
+    and cIV: "transCondIV M"
+    and admeq: "Adm M (s84x_jm2 M) = transJm1 M"
+    and n1: "1 \<le> n"
+  shows "operB (Trans M) (numBT (n - 1))
+       = Trans (((\<lambda>N. (N::pairseq)[1]) ^^ (Lng M - 1 - 1 - s84x_jm2 M))
+                  ((M::pairseq)[n+1]))"
+proof -
+  let ?e1 = "entry M 1 (Lng M - 1)"
+  let ?e2 = "entry M 1 (s84x_jm2 M)"
+  let ?e3 = "entry M 1 (s84x_jm3 M)"
+  let ?ub = "entry M 1 (Lng M - 1) - 1"
+  let ?body = "bpHeadT (transC2 M)"
+  have branch: "transCondIII M \<or> transCondIV M" using cIV by simp
+  have nVI: "\<not> transCondVI M" by (rule y3l_nVI_of_branch[OF branch])
+  have jm3eq: "s84x_jm3 M = transJm1 M" using admeq by (simp add: s84x_jm3_def)
+  have NC2: "Trans (s84x_N M) = transC2 M"
+    by (rule y3m_N_eq_c2[OF MST MPT hp nVI admeq])
+  note REG = oi5_regime[OF MST MPT hp j1gt branch]
+  have TT: "Trans M \<in> T_B" by (rule REG(5))
+  have uv: "?e3 < ?e1" by (rule REG(1))
+  have bodyT: "?body \<in> T_B" using REG(3) NC2 by simp
+  have dbbody: "domB ?body = TBv (enat ?ub)" using REG(4) NC2 by simp
+  have e2ub: "?e2 = ?ub" by (rule y3l_e2_eq_ub[OF MST hp])
+  have reg: "s84x_jm2 M < transJ0 M \<or> adm M (transJ0 M)"
+    using m_8_4_oper_props_1(1)[OF MST MPT hp j1gt branch] by blast
+  \<comment> \<open>the L5 witness pair: it owns BOTH the \<open>c\<^sub>2\<close>-hole scb and the \<open>L\<^sub>n\<close> closed form\<close>
+  obtain sb where
+      d1: "scb_decomp (transC2 M)
+             (Dsym (enat (entry M 1 (transJm1 M))) # fst sb)
+             (flatBT (Dpt (enat ?e1) 0\<^sub>B)) (snd sb)"
+  and cL: "flatBT (Trans (s84x_L M n))
+             = s84x_s1 M @ Dsym (enat (entry M 1 (transJm1 M)))
+                 # concat (replicate n (fst sb @ [Dsym (enat ?e2)]))
+                 @ [Zsym] @ concat (replicate n (snd sb)) @ s84x_b1 M"
+    using ex1_implies_ex[OF y3i_L5_various_scb_IIIV[OF MST MPT hp nVI reg admeq n1]]
+    by auto
+  \<comment> \<open>\<open>inner\<close>: strip the principal head \<open>D\<^bsub>M\<^sub>1\<^sub>,\<^sub>j\<^sub>-\<^sub>1\<^esub>\<close> off the \<open>c\<^sub>2\<close> decomposition\<close>
+  have c2bv: "transC2 M = Dpt (enat (entry M 1 (transJm1 M))) ?body"
+    by (rule y3m_c2_principal[OF MST MPT hp nVI])
+  have d1': "scb_decomp (Dpt (enat (entry M 1 (transJm1 M))) ?body)
+               (Dsym (enat (entry M 1 (transJm1 M))) # fst sb)
+               (flatBT (Dpt (enat ?e1) 0\<^sub>B)) (snd sb)"
+    using d1 c2bv by simp
+  have inner: "scb_decomp ?body (fst sb) (flatBT (Dpt (enat ?e1) 0\<^sub>B)) (snd sb)"
+    by (rule w84x_scb_unlift[OF d1'])
+  have wrap: "flatBT ?body = fst sb @ flatBP (DB (enat ?e1) 0\<^sub>B) @ snd sb"
+    using inner by (simp add: scb_decomp_def)
+  have bodyne: "?body \<noteq> Trm []"
+  proof
+    assume z: "?body = Trm []"
+    hence "[Zsym] = fst sb @ [Dsym (enat ?e1), Zsym] @ snd sb" using wrap by simp
+    thus False by (cases "fst sb") auto
+  qed
+  \<comment> \<open>the kind-1 anchor at \<open>(s\<^sub>1,b\<^sub>1)\<close> --- \<open>ltJ\<close>-free, valid exactly at the corner\<close>
+  have k1: "scb_kind1 (Trans M) (s84x_s1 M) (flatBT (Dpt (enat ?e3) ?body)) (s84x_b1 M)"
+    by (rule c4dx_condIV_k1[OF MST MPT hp cIV admeq])
+  \<comment> \<open>the \<open>operB\<close> closed form at index \<open>n-1\<close>, in the SAME \<open>(s\<^sub>1,b\<^sub>1,sb)\<close> context\<close>
+  have fOp: "flatBT (operB (Trans M) (numBT (n - 1)))
+      = s84x_s1 M @ (Dsym (enat ?e3)
+            # concat (replicate ((n - 1) + 1) (fst sb @ [Dsym (enat ?ub)]))
+            @ [Zsym]
+            @ concat (replicate ((n - 1) + 1) (snd sb)))
+        @ s84x_b1 M"
+    by (rule d13x_fseq_condIII[OF TT uv bodyT dbbody bodyne inner k1])
+  have cnt: "(n - 1) + 1 = n" using n1 by simp
+  have feq: "flatBT (operB (Trans M) (numBT (n - 1)))
+           = flatBT (Trans (s84x_L M n))"
+    using fOp cnt e2ub cL jm3eq by simp
+  have "operB (Trans M) (numBT (n - 1)) = Trans (s84x_L M n)"
+    using arg_cong[where f = unflatBT, OF feq]
+    by (simp add: unflatBT_flat)
+  thus ?thesis using y3l_L_eq_op1pow[OF MST MPT hp j1gt n1] by simp
+qed
+
+subsection \<open>Part (2) on the article's FULL hypotheses (condition (III) or (IV))\<close>
+
+text \<open>The regime dichotomy @{thm [source] oi5_ltJ_or_IVadmeq} exhausts the two cases,
+  so part (2) holds with the article's printed hypotheses and NO side condition.\<close>
+
+theorem y3m_p_8_4_oper_basic_part2_full:
+  fixes M :: pairseq and n :: nat
+  assumes MST: "M \<in> ST_PS" and MPT: "M \<in> PT_PS"
+    and hp: "hasParent M 1 (Lng M - 1)"
+    and j1gt: "1 < Lng M - 1"
+    and branch: "transCondIII M \<or> transCondIV M"
+    and n1: "1 \<le> n"
+  shows "operB (Trans M) (numBT (n - 1))
+       = Trans (((\<lambda>N. (N::pairseq)[1]) ^^ (Lng M - 1 - 1 - s84x_jm2 M))
+                  ((M::pairseq)[n+1]))"
+proof (cases "s84x_jm3 M < transJm1 M")
+  case True
+  show ?thesis
+    by (rule y3l_p_8_4_oper_basic_part2[OF MST MPT hp j1gt branch True n1])
+next
+  case False
+  have "transCondIV M \<and> Adm M (s84x_jm2 M) = transJm1 M"
+    using oi5_ltJ_or_IVadmeq[OF MST MPT hp j1gt branch] False by blast
+  thus ?thesis
+    using y3m_p_8_4_oper_basic_part2_condIV_admeq[OF MST MPT hp j1gt _ _ n1] by blast
+qed
+
+
+(* ===================================================================== *)
+(* r77-Y3U: the CORRECTED forms of the genuinely-FALSE pss_paper          *)
+(*   statements.                                                          *)
+(*                                                                        *)
+(* pss_paper.thy holds ~130 article statements as `sorry' (by design: the *)
+(* statements live there, the proofs elsewhere).  NINE of them are        *)
+(* propositions we have REFUTED, i.e. FALSE statements carrying a         *)
+(* `sorry' --- inconsistent axioms.  The ML audit at the end of this file *)
+(* proves that NOTHING in the termination chain cites them, but they are  *)
+(* a landmine.  pss_paper is frozen (layer A), so we cannot edit them;    *)
+(* instead we state and prove HERE, under the y3u_ prefix, the CORRECTED  *)
+(* form of each (per the corresponding correction Axx of corrections.md), *)
+(* and register every y3u_ fact in the ML audit list below.  The `text'   *)
+(* block after the lemmas is the register: false p_* |-> its replacement. *)
+(*                                                                        *)
+(* NOTE the fifteen RETRACTED corrections (A14 A24 A25 A26 A27 A28 A32    *)
+(* A33 A34 A35 A36 A37 A38 A42 A43): those article statements are TRUE    *)
+(* and are NOT touched here.                                              *)
+(* ===================================================================== *)
+
+section \<open>r77-Y3U --- corrected forms of the FALSE \<open>pss_paper\<close> statements\<close>
+
+subsection \<open>A12 --- \<section>7.2 命題（scb分解の置換可能性）\<close>
+
+text \<open>@{thm [source] p_7_2_scb_replaceable} is FALSE: its disjunctive premise
+  \<open>(\<not> principal c\<^sub>0) \<or> principal c\<^sub>1\<close> is satisfied by the LEFT disjunct alone when
+  \<open>c\<^sub>0 = 0\<close>, and then constrains \<open>c\<^sub>1\<close> not at all --- take \<open>t\<^sub>0 = c\<^sub>0 = 0\<close>, \<open>s = b = ()\<close>,
+  \<open>c\<^sub>1 = D\<^sub>0 0 + D\<^sub>1 0\<close> (multi, hence non-principal): the conclusion's \<open>t\<^sub>1\<close> is forced to
+  \<open>c\<^sub>1\<close> by \<open>flat\<close>-injectivity, but \<open>scb_decomp t\<^sub>1 s (flat c\<^sub>1) b\<close> then demands
+  \<open>isPTB_str (flat c\<^sub>1)\<close>, which fails.  Correction \<^bold>\<open>A12\<close> moves the disjunction to
+  \<open>c\<^sub>1\<close> and the RESULT: \<open>principal c\<^sub>1 \<or> s\<frown>flat(c\<^sub>1)\<frown>b = flat(0)\<close>.
+
+  Proof of the corrected form: the \<open>image\<close> half (existence of \<open>t\<^sub>1 \<in> T\<^bsub>B\<^esub>\<close> with that
+  flattening) is @{thm [source] scbrepl_image_principal} on the principal leg --- for
+  \<open>t\<^sub>0 \<noteq> 0\<close> the scb-decomposition itself forces \<open>c\<^sub>0\<close> principal, and \<open>t\<^sub>0 = 0\<close> collapses
+  \<open>s\<close> and \<open>b\<close> to \<open>()\<close> so \<open>t\<^sub>1 = c\<^sub>1\<close> serves; the \<open>scb\<close> half is then
+  @{thm [source] m_7_2_scb_replaceable_corr_mod_image}.\<close>
+
+theorem y3u_p_7_2_scb_replaceable:
+  fixes c\<^sub>0 c\<^sub>1 t\<^sub>0 :: BT and s b :: "Sym list"
+  assumes c0TB: "c\<^sub>0 \<in> T_B" and c1TB: "c\<^sub>1 \<in> T_B" and t0TB: "t\<^sub>0 \<in> T_B"
+    and d0: "scb_decomp t\<^sub>0 s (flatBT c\<^sub>0) b"
+    and side: "isPTB_str (flatBT c\<^sub>1) \<or> s @ flatBT c\<^sub>1 @ b = [Zsym]"
+  shows "\<exists>t\<^sub>1. t\<^sub>1 \<in> T_B \<and> flatBT t\<^sub>1 = s @ flatBT c\<^sub>1 @ b
+            \<and> scb_decomp t\<^sub>1 s (flatBT c\<^sub>1) b"
+proof -
+  have image: "\<exists>t\<^sub>1. t\<^sub>1 \<in> T_B \<and> flatBT t\<^sub>1 = s @ flatBT c\<^sub>1 @ b"
+  proof (cases "t\<^sub>0 = Trm []")
+    case True
+    \<comment> \<open>zero host: \<open>flat t\<^sub>0 = [Zsym]\<close> has length 1 and \<open>flat c\<^sub>0 \<noteq> ()\<close>, so \<open>s = b = ()\<close>\<close>
+    have fl: "flatBT t\<^sub>0 = s @ flatBT c\<^sub>0 @ b" using d0 by (simp add: scb_decomp_def)
+    have z: "s @ flatBT c\<^sub>0 @ b = [Zsym]" using fl True by simp
+    have cne: "flatBT c\<^sub>0 \<noteq> []" by (rule flatBT_nonempty)
+    have s0: "s = []"
+    proof (rule ccontr)
+      assume "s \<noteq> []"
+      then obtain x xs where sx: "s = x # xs" by (cases s) auto
+      have "length (s @ flatBT c\<^sub>0 @ b) \<ge> 2"
+        using sx cne by (cases "flatBT c\<^sub>0") auto
+      thus False using z by simp
+    qed
+    have b0: "b = []"
+    proof (rule ccontr)
+      assume "b \<noteq> []"
+      then obtain y ys where by': "b = y # ys" by (cases b) auto
+      have "length (s @ flatBT c\<^sub>0 @ b) \<ge> 2"
+        using by' cne by (cases "flatBT c\<^sub>0") auto
+      thus False using z by simp
+    qed
+    have "flatBT c\<^sub>1 = s @ flatBT c\<^sub>1 @ b" using s0 b0 by simp
+    thus ?thesis using c1TB by blast
+  next
+    case False
+    \<comment> \<open>non-zero host: the scb-decomposition forces \<open>c\<^sub>0\<close> principal\<close>
+    have pc0: "isPTB_str (flatBT c\<^sub>0)" using d0 False by (simp add: scb_decomp_def)
+    then obtain p\<^sub>0 where p0: "dfree_BP p\<^sub>0" "flatBT c\<^sub>0 = flatBP p\<^sub>0"
+      by (auto simp: isPTB_str_def)
+    have c0eq: "c\<^sub>0 = Trm [p\<^sub>0]"
+      by (rule m_7_flatBT_inj) (use p0(2) in simp)
+    show ?thesis
+    proof (cases "isPTB_str (flatBT c\<^sub>1)")
+      case True
+      then obtain p\<^sub>1 where p1: "dfree_BP p\<^sub>1" "flatBT c\<^sub>1 = flatBP p\<^sub>1"
+        by (auto simp: isPTB_str_def)
+      have c1eq: "c\<^sub>1 = Trm [p\<^sub>1]"
+        by (rule m_7_flatBT_inj) (use p1(2) in simp)
+      show ?thesis
+        by (rule scbrepl_image_principal[OF t0TB c0eq c1TB c1eq d0])
+    next
+      case False
+      \<comment> \<open>then the RESULT is the zero term, and \<open>t\<^sub>1 = 0\<close> serves\<close>
+      have zr: "s @ flatBT c\<^sub>1 @ b = [Zsym]" using side False by blast
+      have "(Trm [] :: BT) \<in> T_B" by (simp add: T_B_def)
+      thus ?thesis using zr by auto
+    qed
+  qed
+  show ?thesis
+    by (rule m_7_2_scb_replaceable_corr_mod_image[OF c1TB d0 side image])
+qed
+
+subsection \<open>A11 --- \<section>7.2 命題（scb分解の合成則）(2)\<close>
+
+text \<open>@{thm [source] p_7_2_scb_compose}(2) is FALSE as printed: it concludes
+  \<open>scb_decomp (D\<^sub>v t) (D\<^sub>v \<frown> s) c b\<close> unconditionally, but \<open>D\<^sub>v t \<noteq> 0\<close> always, so the
+  conclusion DEMANDS \<open>isPTB_str c\<close>, which the premise \<open>scb_decomp t s c b\<close> does not
+  supply when \<open>t = 0\<close> (\<open>s = b = ()\<close>, \<open>c = [Zsym]\<close> is a counterexample --- see
+  @{thm [source] scbcomp_compose2_counterexample}).  Correction \<^bold>\<open>A11\<close>: add \<open>c \<in> PT\<^bsub>B\<^esub>\<close>.\<close>
+
+lemmas y3u_p_7_2_scb_compose_2 = scbcomp_compose2_PT
+
+subsection \<open>A13 --- \<section>7.2 系（加法とscb分解の関係）(3)\<close>
+
+text \<open>@{thm [source] p_7_2_add_scb}(3) is FALSE: it tacitly assumes that the \<open>c\<close>
+  singled out by \<open>(s\<^sub>0, flat c, b\<^sub>0)\<close> is the SAME occurrence as the \<open>c\<close> inside
+  \<open>D\<^sub>v(t+c)\<close>; with \<open>u\<^sub>1 = D\<^sub>0(D\<^sub>0 0) + D\<^sub>0 0\<close> the two point at different principal
+  components and no \<open>u\<^sub>1'\<close> can satisfy both replacements.  Correction \<^bold>\<open>A13\<close>: pin the
+  occurrence with the \<open>pre\<close>/\<open>post\<close> split of \<open>flat (t+c)\<close>
+  (\<open>s\<^sub>0 = s\<^sub>1 \<frown> D\<^sub>v \<frown> pre\<close>, \<open>b\<^sub>0 = post \<frown> b\<^sub>1\<close>).\<close>
+
+lemmas y3u_p_7_2_add_scb_3 = m_7_2_add_scb_conj3_uncond
+
+subsection \<open>A17 --- \<section>7.3 命題（右端第1基点の \<open>Mark\<close> の基本性質）\<close>
+
+text \<open>@{thm [source] p_7_3_Mark_rightmost1} is FALSE at the zero-term base
+  \<open>M = ((0,0))\<close>, \<open>m = 0\<close>: there \<open>m = Lng M - 1\<close> but \<open>Mark M m = 0 \<noteq> D\<^bsub>0\<^esub>0\<close> (the
+  systematic zero-term edge of correction A16).  Correction \<^bold>\<open>A17\<close>: add \<open>\<not> zeroT M\<close>.\<close>
+
+lemmas y3u_p_7_3_Mark_rightmost1 = m_7_3_Mark_rightmost1
+
+subsection \<open>A45 / A46 --- \<section>7.4 系（\<open>Trans\<close> と NextAdm / \<open>Mark\<close>・\<open>Pred\<close> 表示）\<close>
+
+text \<open>@{thm [source] p_7_4_Trans_nextAdm} and @{thm [source] p_7_4_Trans_Mark_Pred}
+  are FALSE on the printed domain \<open>T\<^bsub>PS\<^esub>\<close> (witness \<open>M = (0,0)(0,1)(1,2)(1,0)\<close>: the
+  claimed \<open>(s\<^sub>0,b\<^sub>0)\<close> does not exist).  Corrections \<^bold>\<open>A45\<close>/\<^bold>\<open>A46\<close>: restrict to
+  \<open>M \<in> RT\<^bsub>PS\<^esub>\<close>.  (This is not a \<open>Red\<close>-transport gap that r75's \<open>RedStab = T\<^bsub>PS\<^esub>\<close> could
+  close: the \<open>Mark\<close>/\<open>Trans\<close> pair of a NON-reduced host genuinely has no common scb
+  frame.)\<close>
+
+lemmas y3u_p_7_4_Trans_nextAdm  = m_7_4_Trans_nextAdm
+lemmas y3u_p_7_4_Trans_Mark_Pred = m_7_4_Trans_Mark_Pred
+
+subsection \<open>A18 --- \<section>7.4 系（\<open>Mark\<close> と \<open><\<^sup>NextAdm\<close> の関係）\<close>
+
+text \<open>@{thm [source] p_7_4_Mark_nextAdm} is FALSE as printed because the ancestor \<open>j\<close>
+  is only required to satisfy \<open>(0,j) \<le>\<^sub>M (0,j\<^sub>0)\<close>, which does not put \<open>j\<close> in the domain
+  of \<open>Mark\<^bsub>M\<^esub>\<close> (25 counterexamples).  Correction \<^bold>\<open>A18\<close>: add \<open>(M,j) \<in> Marked\<close>.  Our
+  mechanized form additionally carries \<open>M \<in> RT\<^bsub>PS\<^esub>\<close> (an honest over-restriction: the
+  bare A18 form is believed true on all of \<open>T\<^bsub>PS\<^esub>\<close>, cf. the r76-Y3P verdict, but only
+  the \<open>RT\<^bsub>PS\<^esub>\<close> version is proved).\<close>
+
+lemmas y3u_p_7_4_Mark_nextAdm = m_7_4_Mark_nextAdm
+
+subsection \<open>A20 / A21 --- \<section>8.1 補題（条件(I)か(III)の下での \<open>c\<^sub>1\<close> 前後の具体表示）\<close>
+
+text \<open>@{thm [source] p_8_1_condI_III_c1_around} is FALSE in two places.
+  \<^bold>\<open>A20\<close> (part (1)): \<open>Trans(seg M j\<^sub>0 (j\<^sub>1-1)) = c\<^sub>1\<close> fails on a NON-reduced mono slice
+  (the slice must be guarded by \<open>j\<^sub>0 < j\<^sub>1 - 1\<close>); the remaining conclusions of (1) are
+  unconditional.  \<^bold>\<open>A21\<close> (part (5)): the fseq block's parent \<open>j\<^sub>0\<^sup>N = j'\<^sub>0\<close> is false under
+  condition (III) --- it needs condition (I).\<close>
+
+lemmas y3u_p_8_1_c1_around_part1 = m_8_1_c1_around_part1
+lemmas y3u_p_8_1_c1_around_part5 = m_8_1_c1_around_part5
+
+subsection \<open>A22 --- \<section>8.3 補題（第0種型基本列の基本不等式）\<close>
+
+text \<open>@{thm [source] p_8_3_kind0_base_ineq}'s right-hand side drops the leading \<open>j\<^sub>0 +\<close>
+  of the index (correction \<^bold>\<open>A22\<close>, 軽微): the index must be
+  \<open>j\<^sub>0 + q'(j\<^sub>1-j\<^sub>0) + r'\<close>.\<close>
+
+lemmas y3u_p_8_3_kind0_base_ineq = m_8_3_kind0_base_ineq
+
+subsection \<open>The register: which \<open>pss_paper\<close> statements are FALSE\<close>
+
+text \<open>\<^bold>\<open>For the record.\<close>  The following \<^emph>\<open>nine\<close> \<open>sorry\<close>-carrying statements of
+  \<^theory>\<open>PSS_A.pss_paper\<close> are FALSE as transcribed (each is a faithful transcription of
+  an article claim that we refuted); NOTHING cites them (the ML audit below proves the
+  termination chain is free of every \<open>pss_paper\<close> \<open>sorry\<close>), and each is superseded by the
+  corrected theorem named beside it:
+
+  \<^item> \<open>p_7_2_scb_replaceable\<close> (A12) \<mapsto> @{thm [source] y3u_p_7_2_scb_replaceable}
+  \<^item> \<open>p_7_2_scb_compose\<close> (2nd conclusion, A11) \<mapsto> @{thm [source] y3u_p_7_2_scb_compose_2}
+  \<^item> \<open>p_7_2_add_scb\<close> (3rd conclusion, A13) \<mapsto> @{thm [source] y3u_p_7_2_add_scb_3}
+  \<^item> \<open>p_7_3_Mark_rightmost1\<close> (A17) \<mapsto> @{thm [source] y3u_p_7_3_Mark_rightmost1}
+  \<^item> \<open>p_7_4_Trans_nextAdm\<close> (A45) \<mapsto> @{thm [source] y3u_p_7_4_Trans_nextAdm}
+  \<^item> \<open>p_7_4_Mark_nextAdm\<close> (A18) \<mapsto> @{thm [source] y3u_p_7_4_Mark_nextAdm}
+  \<^item> \<open>p_7_4_Trans_Mark_Pred\<close> (A46) \<mapsto> @{thm [source] y3u_p_7_4_Trans_Mark_Pred}
+  \<^item> \<open>p_8_1_condI_III_c1_around\<close> (A20 for part (1), A21 for part (5))
+      \<mapsto> @{thm [source] y3u_p_8_1_c1_around_part1}, @{thm [source] y3u_p_8_1_c1_around_part5}
+  \<^item> \<open>p_8_3_kind0_base_ineq\<close> (A22) \<mapsto> @{thm [source] y3u_p_8_3_kind0_base_ineq}
+
+  Every OTHER \<open>pss_paper\<close> statement is either true as printed, or was transcribed in its
+  ALREADY-CORRECTED form (A3 drops the false strict clause (4); A4 carries
+  \<open>M \<in> anchored_slice\<close>; A5 carries \<open>j'\<^sub>0 = 0\<close>; A16's false \<open>\<Sigma>\<^sub>B\<close> display and A19's reversed
+  pair are simply not transcribed; A9/A23/A40 are definition-level and applied in
+  \<^theory>\<open>PSS_A.pss_defs\<close>/\<^theory>\<open>PSS_A.pss_paper\<close>; A6/A7/A8/A10/A15 fault the article's
+  PROOF, not its statement; A29/A30/A31 target lemmas left DEFERRED as \<open>text\<close> notes with
+  no \<open>sorry\<close>).  The fifteen retracted accusations (A14, A24--A28, A32--A38, A42, A43) are
+  NOT false: those article statements are true and are untouched.\<close>
 
 
 ML \<open>
@@ -19051,7 +19438,28 @@ ML \<open>
      ("y3l_L_eq_op1pow",      @{thm y3l_L_eq_op1pow}),
      ("y3l_p_8_4_oper_basic_part2", @{thm y3l_p_8_4_oper_basic_part2}),
      ("y3l_p_8_4_oper_basic_part2_condIII",
-        @{thm y3l_p_8_4_oper_basic_part2_condIII})];
+        @{thm y3l_p_8_4_oper_basic_part2_condIII}),
+     \<comment> \<open>r77: \<section>8.4 補題 part (2) --- the condIV \<open>admeq\<close> corner, and the FULL
+         (III)-or-(IV) statement with no regime side condition\<close>
+     ("y3m_c2_principal",     @{thm y3m_c2_principal}),
+     ("y3m_N_eq_c2",          @{thm y3m_N_eq_c2}),
+     ("y3m_p_8_4_oper_basic_part2_condIV_admeq",
+        @{thm y3m_p_8_4_oper_basic_part2_condIV_admeq}),
+     ("y3m_p_8_4_oper_basic_part2_full",
+        @{thm y3m_p_8_4_oper_basic_part2_full}),
+     \<comment> \<open>r77: the CORRECTED forms of the nine FALSE \<open>pss_paper\<close> statements ---
+         each must itself be free of every \<open>pss_paper\<close> \<open>sorry\<close> (in particular it
+         must not cite the false statement it replaces)\<close>
+     ("y3u_p_7_2_scb_replaceable",   @{thm y3u_p_7_2_scb_replaceable}),
+     ("y3u_p_7_2_scb_compose_2",     @{thm y3u_p_7_2_scb_compose_2}),
+     ("y3u_p_7_2_add_scb_3",         @{thm y3u_p_7_2_add_scb_3}),
+     ("y3u_p_7_3_Mark_rightmost1",   @{thm y3u_p_7_3_Mark_rightmost1}),
+     ("y3u_p_7_4_Trans_nextAdm",     @{thm y3u_p_7_4_Trans_nextAdm}),
+     ("y3u_p_7_4_Mark_nextAdm",      @{thm y3u_p_7_4_Mark_nextAdm}),
+     ("y3u_p_7_4_Trans_Mark_Pred",   @{thm y3u_p_7_4_Trans_Mark_Pred}),
+     ("y3u_p_8_1_c1_around_part1",   @{thm y3u_p_8_1_c1_around_part1}),
+     ("y3u_p_8_1_c1_around_part5",   @{thm y3u_p_8_1_c1_around_part5}),
+     ("y3u_p_8_3_kind0_base_ineq",   @{thm y3u_p_8_3_kind0_base_ineq})];
 
   \<comment> \<open>r72: assert the termination theorems carry NO free hypothesis left ---
       \<open>y5_PSS_wf\<close> must be a closed statement (no meta-premises, no schematics).\<close>
