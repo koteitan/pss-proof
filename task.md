@@ -44,13 +44,6 @@
 - ✅ corrections.md の全数監査(44件中15件が我々の誤り=取り下げ。うち11件は operB 誤読1つから派生)[r4]
 - ✅ §5 定式化
 - ✅ §6 ペア数列の基本性質[r2]
-- 🚨 §7 Buchholzの表記系への翻訳
-  - ✅ 4命題を $T_{PS}$ へ（y3r_7_*_TPS、原文どおりの形）
-  - 🚨 系（$\textrm{Mark}$ と NextAdm の関係）の $T_{PS}$ 版（命題自体は**真**）
-    - ✅ (F) $\le_M$ の Red 保存 + engine 内側列の無仮定緩和[r3][0.291][3.60h]
-    - ✅ 反射半（$j = j_0$）＝簡約形の全列で $\textrm{Mark}$ が主要項か零（y3y_Mark_princ、仮定は $RT_{PS}$ のみ）[r1]
-    - 🚨🤖 非反射半（$j < j_0$）＝ engine の差し替え（$\textrm{Red}$ 後の Marked 性を経由しない nesting）[r0]
-    - 🚨🤖 $T_{PS}$ への移送と本体の組み立て（y3t_7_4_Mark_nextAdm_TPS）[r0]
-  - ✅ 偽命題9件の訂正形を証明・監査登録（y3u_*。凍結層の偽言明は引用ゼロのまま）
+- ✅ §7 Buchholzの表記系への翻訳（系（$\textrm{Mark}$ と NextAdm）の原文 $T_{PS}$ 版は**偽**＝訂正A47。反例を機械証明）[r5][0.92][5.3h]
 - ✅ §8 停止性
 - ✅ 停止性チェーン外の stale 引用（y3t_toplevel_OT_tail_annihilate。layerB 版は引用ゼロと確認）

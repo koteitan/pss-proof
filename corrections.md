@@ -2,7 +2,7 @@
 
 > ## 全数監査済み (2026-07-13)
 >
-> A1〜A46 を原文（`tmp/original.html`）と突き合わせて全数検証した。**このファイルに残る 30 件が現在の訂正案**である。
+> A1〜A46 を原文（`tmp/original.html`）と突き合わせて全数検証した。**このファイルに残る 31 件が現在の訂正案**である。
 > 検証で取り下げた 16 件と、その取り下げ理由・経緯は [corrections-old.md](corrections-old.md) にある。
 
 
@@ -620,7 +620,7 @@ ST_PS 閉包（diagSeq から \(M[n], n\ge1\) で BFS、7046 個）で違反は�
 ### メタ観察
 §7.3 は \(\textrm{Trans}\)/\(\textrm{Mark}\) の再帰的定義の**零項基底枝**（\(M_0 = (0,0) \Rightarrow 0\)）と、主表現としての \(D_0 0\)（="+1"）の二重性により、零項を明示除外しないと多くの命題が崩れる（[[A16]] 単項性命題、本 A17 基点系）。形式化は一貫して \(\neg\textrm{zeroT}\)／\(RT_{\textrm{PS}} \cap PT_{\textrm{PS}}\) 域で機械化する方針。
 
-## A18. §7.4 系（Mark と \(<_M^{\textrm{NextAdm}}\) の関係）: 仮定の祖先 \(j\) に「\(M\) 許容（\((M,j)\in\textrm{Marked}\)）」を補う必要
+## A18. §7.4 系（Mark と \(<_M^{\textrm{NextAdm}}\) の関係）: 仮定の祖先 \(j\) に「\(M\) 許容（\((M,j)\in\textrm{Marked}\)）」を補う必要（補わないと偽）
 
 ### 位置
 §7.4「系（$\textrm{Mark}$ と $<_M^{\textrm{NextAdm}}$ の関係）」（形式化では `p_7_4_Mark_nextAdm`）。
@@ -645,6 +645,8 @@ ST_PS 閉包（diagSeq から \(M[n], n\ge1\) で BFS、7046 個）で違反は�
 
 ### 経験的確認
 簡約列の閉包（`enum_reduced_tiling(maxlen=5,maxe=3)`、長さ\(\ge2\) で 1465 件、全件で \(j_1\) の NextAdm 親が一意）を走査し、\(j_0\) の行0祖先 \(j\le_M j_0\) で \(\neg\textrm{adm}\,M\,j\) となる**反例 25 件**を確認。最小例 \(M=((0,0),(1,1),(2,2),(3,1))\)、\(j_0=2\)、非許容祖先 \(j=1\)（`python/_admj_audit.py`）。よって原文のままでは \(\textrm{Mark}(M,j)\) が定義域外の対象を指す。
+
+（この系は [[A47]] により定義域も \(RT_{\textrm{PS}}\) に制限する必要がある。両方の訂正を反映した全文は [[A47]] の訂正案を参照。）
 
 ## A19. §7.4 命題（Mark が順序関係を保つこと）: 結論 (2) の対が反転していて偽
 
@@ -960,3 +962,56 @@ $(0,1) \leq_{\textrm{Red}(M)} (0,3)$ は成立せず、列 $1$ は $\textrm{Red}
 $\textrm{Mark}(\textrm{Pred}(M),1) = D_2 0$ となり、両者を同時に scb 分解する $(s_0,b_0)$ が存在しない。
 原因は [[A45]] と同じく、基点が簡約後の列から読まれる一方 $\leq_M$ が $\textrm{Red}$ 不変でないこと（[[A4]]）。
 （悉皆検査：反例 33 件、すべて非簡約。簡約な $M$ では 224/224 成立。）
+
+## A47. §7.4 系（$\textrm{Mark}$ と $<_M^{\textrm{NextAdm}}$ の関係）: 定義域が $T_{PS}$ では偽（反例あり。$RT_{PS}$ に制限が必要）
+
+### 位置
+§7.4 許容的親子関係、系（\(\textrm{Mark}\)と\(<_M^{\textrm{NextAdm}}\)の関係）。形式化では `p_7_4_Mark_nextAdm`。
+
+### 原文
+\(M \in T_{\textrm{PS}}\)とし、\(j_1 := \textrm{Lng}(M) - 1\)と置く。\((0,j_0) <_M^{\textrm{NextAdm}} (0,j_1)\)を満たす一意な\(j_0 \in \mathbb{N}\)が存在するとする。任意の\(j \in \mathbb{N}\)に対し、\((0,j) \leq_M (0,j_0)\)ならば、一意な\((s_0,b_0) \in (\Sigma^{< \omega})^2\)が存在し、以下を満たす：
+
+(1) \((s_0,\textrm{Mark}(\textrm{Pred}(M),j_0),b_0)\)は\(\textrm{Mark}(\textrm{Pred}(M),j)\)のscb分解である。
+
+(2) \((s_0,\textrm{Mark}(M,j_0),b_0)\)は\(\textrm{Mark}(M,j)\)のscb分解である。
+
+### 訂正案
+（定義域の制限に加え、[[A18]] の仮定 \((M,j) \in T_{\textrm{PS}}^{\textrm{Marked}}\) も併せて補った全文である。）
+
+\(M \in RT_{\textrm{PS}}\)とし、\(j_1 := \textrm{Lng}(M) - 1\)と置く。\((0,j_0) <_M^{\textrm{NextAdm}} (0,j_1)\)を満たす一意な\(j_0 \in \mathbb{N}\)が存在するとする。任意の\(j \in \mathbb{N}\)に対し、\((0,j) \leq_M (0,j_0)\)かつ\((M,j) \in T_{\textrm{PS}}^{\textrm{Marked}}\)ならば、一意な\((s_0,b_0) \in (\Sigma^{< \omega})^2\)が存在し、以下を満たす：
+
+(1) \((s_0,\textrm{Mark}(\textrm{Pred}(M),j_0),b_0)\)は\(\textrm{Mark}(\textrm{Pred}(M),j)\)のscb分解である。
+
+(2) \((s_0,\textrm{Mark}(M,j_0),b_0)\)は\(\textrm{Mark}(M,j)\)のscb分解である。
+
+### 原文の問題点
+\(M\) が簡約でないとき偽。[[A45]]・[[A46]] と同じ族で、根本原因も同じ [[A4]] である：
+\(\textrm{Trans}(M) := \textrm{Trans}(\textrm{Red}(M))\)・\(\textrm{Mark}(M,m) := \textrm{Mark}(\textrm{Red}(M),m)\) は
+**簡約後の列**で計算される一方、仮定の \(\leq_M\)・\(<_M^{\textrm{NextAdm}}\)・\(M\) 許容性は
+**元の列**から読まれる。\(\leq_M\) は \(\textrm{Red}\) 不変ではないので、\(M\) で許容的な列 \(j_0\) が
+\(\textrm{Red}^2(M)\) では許容的でなくなりうる。
+
+破綻の機構は単純である。結論は \(\textrm{Pred}\) 側と \(M\) 側の**両方**を同時に分解する
+**ひとつの** \((s_0,b_0)\) を要求する。ところが \(\textrm{Mark}(M,j_0) = \textrm{Mark}(\textrm{Pred}(M),j_0)\)
+（中心が一致）でありながら \(\textrm{Mark}(M,j) \neq \textrm{Mark}(\textrm{Pred}(M),j)\)（周囲が相違）となる配置では、
+2つのscb等式の右辺が一致してしまい、\(\textrm{flat}\) の単射性から
+\(\textrm{Mark}(M,j) = \textrm{Mark}(\textrm{Pred}(M),j)\) が強制されて矛盾する。すなわち共通の
+\((s_0,b_0)\) は**存在しない**（一意性ではなく存在が破れる）。非簡約な \(M\) では、\(j_0\) が
+\(\textrm{Red}^2(M)\) で非許容的になった結果、まさにこの配置が生じる。
+
+### 反例
+$$M = (0,0)(4,2)(2,6)(4,2)(8,4)(6,4) \in T_{\textrm{PS}} \setminus RT_{\textrm{PS}}$$
+
+\(j_1 = 5\)。\((0,j_0) <_M^{\textrm{NextAdm}} (0,5)\) を満たす \(j_0\) は \(j_0 = 3\) ただひとつ。
+\(j = 0\)（および \(j = 2\)）に対し、\(0\) は \(M\) 許容的かつ \((0,0) \leq_M (0,5)\) なので
+\((M,0) \in T_{\textrm{PS}}^{\textrm{Marked}}\) であり、\((0,0) \leq_M (0,3)\) も成立する
+（**仮定は原文の形でも [[A18]] の形でも全て成立する**）。しかし
+
+- \(\textrm{Red}(M) = \textrm{Red}^2(M) = (0,0)(1,1)(1,1)(2,2)(3,3)(3,3)\) であり、**この簡約形では列 \(3\) は許容的でない**。
+- \(\textrm{Mark}(M,3) = D_3 0 = \textrm{Mark}(\textrm{Pred}(M),3)\)（中心が一致）、
+  \(\textrm{Mark}(M,0) = D_0(D_1 0 + D_1(D_3 0 + D_3 0)) \neq D_0(D_1 0 + D_1(D_3 0)) = \textrm{Mark}(\textrm{Pred}(M),0)\)（周囲が相違）。
+- \(\textrm{Pred}\) 側のscb分解は 1 個、\(M\) 側も 1 個あるが、**共通のものは 0 個**。結論の \((s_0,b_0)\) は存在しない。
+
+反例と機構はいずれも Isabelle/HOL で機械証明済み（`y6z_7_4_Mark_nextAdm_TPS_false`、`y6z_no_common_position`。
+`sorry` 非依存を build 強制監査）。簡約な \(M\) では成立し、その形（訂正案の形）も証明済み
+（`m_7_4_Mark_nextAdm`）。
