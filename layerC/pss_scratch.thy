@@ -22992,7 +22992,20 @@ ML \<open>
      ("y3w_Red2_le0",             @{thm y3w_Red2_le0}),
      ("y3w_Red2_leR0",            @{thm y3w_Red2_leR0}),
      ("y3w_nadm_local",           @{thm y3w_nadm_local}),
-     ("y3w_7_4_Mark_nextAdm_TPS_of_adm", @{thm y3w_7_4_Mark_nextAdm_TPS_of_adm})];
+     ("y3w_7_4_Mark_nextAdm_TPS_of_adm", @{thm y3w_7_4_Mark_nextAdm_TPS_of_adm}),
+     \<comment> \<open>r80: \<open>Mark N k\<close> is principal-or-zero for EVERY column of a reduced \<open>N\<close>\<close>
+     ("y3y_Mark_princ(1)",        @{thm y3y_Mark_princ(1)}),
+     ("y3y_Mark_princ(2)",        @{thm y3y_Mark_princ(2)}),
+     \<comment> \<open>r81-Y4: the FREE nesting engine --- no \<open>adm\<close>, no \<open>Marked\<close>, no ancestry, no range
+         condition; and the honest \<open>RT\<^bsub>PS\<^esub>\<close> JOINT engine, whose real hypothesis is the
+         surgery guard \<open>j\<^sub>0 \<le> transJm1 N\<close> and not \<open>Marked\<close>-ness\<close>
+     ("y4b_Mark_nest_free",       @{thm y4b_Mark_nest_free}),
+     ("y4c_Mark_nest_free_ex1",   @{thm y4c_Mark_nest_free_ex1}),
+     ("y4d_Mark_nest_Pred_joint", @{thm y4d_Mark_nest_Pred_joint}),
+     ("y4e_Mark_nest_relaxed",    @{thm y4e_Mark_nest_relaxed}),
+     ("y4e_Mark_nest_relaxed_Pred", @{thm y4e_Mark_nest_relaxed_Pred}),
+     ("y4f_surg_guard_of_jm1",    @{thm y4f_surg_guard_of_jm1}),
+     ("y4f_Mark_nest_Pred_joint_sharp", @{thm y4f_Mark_nest_Pred_joint_sharp})];
 
   \<comment> \<open>r72: assert the termination theorems carry NO free hypothesis left ---
       \<open>y5_PSS_wf\<close> must be a closed statement (no meta-premises, no schematics).\<close>
