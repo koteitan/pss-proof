@@ -19486,6 +19486,953 @@ text \<open>\<^bold>\<open>STATUS (r77, honest)\<close>: the proposition itself 
   \<open>python/_y3_74_nest_relax.py\<close>, \<open>python/_y3_74_brickA_mechanism.py\<close>.\<close>
 
 
+
+(* ===================================================================== *)
+(* r78-Y3W (TARGET): (F) --- Red only ADDS row-0 ancestor edges.          *)
+(* le0 M a b ==> le0 (Red M) a b, on ALL of T_PS, by Red.pinduct.         *)
+(* ===================================================================== *)
+
+section \<open>r78-Y3W --- (F): \<open>Red\<close> only ADDS row-0 ancestor edges\<close>
+
+subsection \<open>The value-level characterisation of \<open>le\<^sub>0\<close>\<close>
+
+text \<open>\<open>le\<^sub>0 M a b\<close> holds iff \<open>a \<le> b\<close> and \<open>M\<^bsub>0,a\<^esub>\<close> is \<^emph>\<open>strictly\<close> below every entry
+  in the window \<open>(a,b]\<close>.  Both halves are already in the corpus
+  (@{thm [source] m_5_1_ancestor_basic_1} / @{thm [source] m_5_1_parent_exists_3});
+  packaging them as an iff makes \<open>le\<^sub>0\<close> a purely \<^emph>\<open>local, value-level\<close> predicate,
+  which is what lets every branch of the \<open>Red\<close> recursion be handled by a window
+  or a uniform row-0 shift.\<close>
+
+lemma y3w_le0_bounds:
+  assumes "le0 M a b" shows "a \<le> b \<and> b < Lng M \<and> a < Lng M"
+  using assms nextrel0_rtrancl_mono by (auto simp: le0_def)
+
+lemma y3w_le0_iff:
+  assumes ab: "a \<le> b" and bL: "b < Lng M"
+  shows "le0 M a b \<longleftrightarrow> (\<forall>j. a < j \<longrightarrow> j \<le> b \<longrightarrow> entry M 0 a < entry M 0 j)"
+proof
+  have MT: "M \<in> T_PS" using bL by (auto simp: T_PS_def)
+  assume L: "le0 M a b"
+  hence "leR M 0 a b" by (simp add: leR_def)
+  thus "\<forall>j. a < j \<longrightarrow> j \<le> b \<longrightarrow> entry M 0 a < entry M 0 j"
+    using m_5_1_ancestor_basic_1[OF MT] by blast
+next
+  have MT: "M \<in> T_PS" using bL by (auto simp: T_PS_def)
+  assume H: "\<forall>j. a < j \<longrightarrow> j \<le> b \<longrightarrow> entry M 0 a < entry M 0 j"
+  show "le0 M a b"
+  proof (cases "a = b")
+    case True
+    thus ?thesis using bL by (simp add: le0_refl)
+  next
+    case False
+    hence alt: "a < b" using ab by simp
+    have "leR M 0 a b" using m_5_1_parent_exists_3[OF MT alt bL] H by blast
+    thus ?thesis by (simp add: leR_def)
+  qed
+qed
+
+text \<open>The \<^emph>\<open>window\<close> transfer lemma: if the row-0 entries of \<open>X\<close> over the index
+  window \<open>[F, F+q\<^sub>b]\<close> are those of \<open>C\<close> over \<open>[0,q\<^sub>b]\<close> shifted by a constant \<open>d\<close>,
+  then \<open>le\<^sub>0\<close> transfers both ways.  (Constant row-0 shifts are order-preserving,
+  so \<open>d\<close> covers \<open>IncrFirst\<^bsup>k\<^esup>\<close> and the diagonal-prefix embedding at once.)\<close>
+
+lemma y3w_le0_window:
+  assumes qab: "qa \<le> qb" and qb: "qb < Lng C" and bX: "F + qb < Lng X"
+    and E: "\<And>k. k \<le> qb \<Longrightarrow> entry X 0 (F + k) = entry C 0 k + d"
+  shows "le0 X (F + qa) (F + qb) \<longleftrightarrow> le0 C qa qb"
+proof -
+  have i1: "le0 X (F + qa) (F + qb)
+            \<longleftrightarrow> (\<forall>j. F + qa < j \<longrightarrow> j \<le> F + qb \<longrightarrow> entry X 0 (F + qa) < entry X 0 j)"
+    by (rule y3w_le0_iff) (use qab bX in simp_all)
+  have i2: "le0 C qa qb \<longleftrightarrow> (\<forall>j. qa < j \<longrightarrow> j \<le> qb \<longrightarrow> entry C 0 qa < entry C 0 j)"
+    by (rule y3w_le0_iff[OF qab qb])
+  have Ea: "entry X 0 (F + qa) = entry C 0 qa + d" using E[OF qab] .
+  show ?thesis
+  proof
+    assume "le0 X (F + qa) (F + qb)"
+    hence H: "\<forall>j. F + qa < j \<longrightarrow> j \<le> F + qb \<longrightarrow> entry X 0 (F + qa) < entry X 0 j"
+      using i1 by simp
+    have "\<forall>j. qa < j \<longrightarrow> j \<le> qb \<longrightarrow> entry C 0 qa < entry C 0 j"
+    proof (intro allI impI)
+      fix j assume j1: "qa < j" and j2: "j \<le> qb"
+      have "entry X 0 (F + qa) < entry X 0 (F + j)" using H j1 j2 by simp
+      thus "entry C 0 qa < entry C 0 j" using Ea E[OF j2] by simp
+    qed
+    thus "le0 C qa qb" using i2 by simp
+  next
+    assume "le0 C qa qb"
+    hence H: "\<forall>j. qa < j \<longrightarrow> j \<le> qb \<longrightarrow> entry C 0 qa < entry C 0 j" using i2 by simp
+    have "\<forall>j. F + qa < j \<longrightarrow> j \<le> F + qb \<longrightarrow> entry X 0 (F + qa) < entry X 0 j"
+    proof (intro allI impI)
+      fix j assume j1: "F + qa < j" and j2: "j \<le> F + qb"
+      have jge: "F \<le> j" using j1 by simp
+      obtain k where jk: "j = F + k" using jge by (metis le_add_diff_inverse)
+      have k1: "qa < k" using j1 jk by simp
+      have k2: "k \<le> qb" using j2 jk by simp
+      have "entry C 0 qa < entry C 0 k" using H k1 k2 by simp
+      thus "entry X 0 (F + qa) < entry X 0 j" using Ea E[OF k2] jk by simp
+    qed
+    thus "le0 X (F + qa) (F + qb)" using i1 by simp
+  qed
+qed
+
+lemma y3w_nonmulti_le0_from0:
+  assumes MT: "M \<in> T_PS" and nm: "\<not> multiT M" and bL: "b < Lng M"
+  shows "le0 M 0 b"
+proof -
+  have H: "\<forall>j. 0 < j \<and> j < Lng M \<longrightarrow> entry M 0 0 < entry M 0 j"
+    using m_6_2_multi_crit_12[OF MT] nm by simp
+  have "\<forall>j. 0 < j \<longrightarrow> j \<le> b \<longrightarrow> entry M 0 0 < entry M 0 j" using H bL by auto
+  thus ?thesis using y3w_le0_iff[of 0 b M] bL by simp
+qed
+
+subsection \<open>Concatenation bookkeeping\<close>
+
+lemma y3w_concat_bound:
+  assumes JL: "J < length Q" and q: "q < length (Q ! J)"
+  shows "sum_list (map length (take J Q)) + q < length (concat Q)"
+proof -
+  have "take (Suc J) Q = take J Q @ [Q ! J]" using JL by (simp add: take_Suc_conv_app_nth)
+  hence e: "sum_list (map length (take (Suc J) Q))
+            = sum_list (map length (take J Q)) + length (Q ! J)" by simp
+  have "sum_list (map length (take (Suc J) Q))
+          \<le> sum_list (map length (take (length Q) Q))"
+    by (rule idxsum_sum_take_mono) (use JL in simp)
+  hence "sum_list (map length (take (Suc J) Q)) \<le> length (concat Q)"
+    by (simp add: length_concat)
+  thus ?thesis using e q by simp
+qed
+
+lemma y3w_entry_concat:
+  assumes JL: "J < length Q" and q: "q < length (Q ! J)"
+  shows "entry (concat Q) i (sum_list (map length (take J Q)) + q) = entry (Q ! J) i q"
+  using nth_concat_block[OF JL q] by (simp add: entry_def)
+
+text \<open>If two block lists have pointwise equal block lengths then their prefix
+  sums agree --- used to align \<open>P M\<close> with \<open>map Red (P M)\<close>, and \<open>Br M\<close> with the
+  \<open>Red\<close>-block list.\<close>
+
+lemma y3w_maplen_eq:
+  assumes "length Q = length Q'"
+    and "\<And>I. I < length Q \<Longrightarrow> length (Q ! I) = length (Q' ! I)"
+  shows "map length Q = map length Q'"
+  by (rule nth_equalityI) (use assms in auto)
+
+subsection \<open>\<open>Br\<close>-block bookkeeping for a core-nontrunk \<open>M\<close>\<close>
+
+lemma y3w_Br_tne:
+  assumes JBr: "J < Lng (Br M)" shows "TrMax M \<noteq> Lng M - 1"
+proof
+  assume "TrMax M = Lng M - 1"
+  hence "Br M = []" by (simp add: Br_def)
+  with JBr show False by simp
+qed
+
+lemma y3w_Br_concat:
+  assumes tne: "TrMax M \<noteq> Lng M - 1"
+  shows "seg M (TrMax M + 1) (Lng M - 1) = concat (Br M)"
+  using tne by (simp add: Br_def idxsum_concat_P)
+
+lemma y3w_entry_block:
+  assumes M: "M \<in> PT_PS" and JBr: "J < Lng (Br M)" and q: "q < Lng (Br M ! J)"
+  shows "entry M i (FirstNodes M ! J + q) = entry (Br M ! J) i q"
+proof -
+  let ?T = "TrMax M"
+  let ?N = "seg M (?T + 1) (Lng M - 1)"
+  have tne: "?T \<noteq> Lng M - 1" by (rule y3w_Br_tne[OF JBr])
+  have NC: "?N = concat (Br M)" by (rule y3w_Br_concat[OF tne])
+  have JL: "J < length (Br M)" using JBr by simp
+  have idx: "IdxSum (Br M) ! J = sum_list (map length (take J (Br M)))"
+    by (rule idxsum_nth) (use JL in simp)
+  have FN: "FirstNodes M ! J = ?T + 1 + IdxSum (Br M) ! J"
+    by (rule FirstNodes_nth[OF JL])
+  have qq: "q < length (Br M ! J)" using q by simp
+  have bnd: "sum_list (map length (take J (Br M))) + q < length (concat (Br M))"
+    by (rule y3w_concat_bound[OF JL qq])
+  have bnd': "IdxSum (Br M) ! J + q < Lng ?N" using bnd idx NC by simp
+  have "entry ?N i (IdxSum (Br M) ! J + q) = entry (Br M ! J) i q"
+    using y3w_entry_concat[OF JL qq] NC idx by simp
+  moreover have "entry ?N i (IdxSum (Br M) ! J + q)
+                   = entry M i (?T + 1 + (IdxSum (Br M) ! J + q))"
+    by (rule entry_seg[OF bnd'])
+  ultimately show ?thesis using FN by (simp add: add.assoc)
+qed
+
+lemma y3w_block_locate:
+  assumes M: "M \<in> PT_PS" and tne: "TrMax M \<noteq> Lng M - 1"
+    and p1: "TrMax M < p" and p2: "p < Lng M"
+  shows "\<exists>J q. J < Lng (Br M) \<and> q < Lng (Br M ! J) \<and> p = FirstNodes M ! J + q"
+proof -
+  let ?T = "TrMax M"
+  let ?N = "seg M (?T + 1) (Lng M - 1)"
+  have NC: "?N = concat (Br M)" by (rule y3w_Br_concat[OF tne])
+  have LN: "Lng ?N = Lng M - 1 - ?T" by simp
+  have plt: "p - (?T + 1) < length (concat (Br M))" using p1 p2 NC LN by simp
+  obtain J q where JL: "J < length (Br M)" and qL: "q < length (Br M ! J)"
+    and pe: "p - (?T + 1) = sum_list (map length (take J (Br M))) + q"
+    using a1_concat_locate_raw[OF plt] by blast
+  have idx: "IdxSum (Br M) ! J = sum_list (map length (take J (Br M)))"
+    by (rule idxsum_nth) (use JL in simp)
+  have FN: "FirstNodes M ! J = ?T + 1 + IdxSum (Br M) ! J"
+    by (rule FirstNodes_nth[OF JL])
+  have "p = FirstNodes M ! J + q" using pe idx FN p1 by simp
+  thus ?thesis using JL qL by auto
+qed
+
+lemma y3w_block_leftmin:
+  assumes M: "M \<in> PT_PS" and JBr: "J < Lng (Br M)"
+    and p1: "TrMax M < p" and p2: "p < FirstNodes M ! J"
+  shows "entry M 0 (FirstNodes M ! J) \<le> entry M 0 p"
+proof -
+  let ?T = "TrMax M"
+  let ?N = "seg M (?T + 1) (Lng M - 1)"
+  have MT: "M \<in> T_PS" using M by (simp add: PT_PS_def)
+  have tne: "?T \<noteq> Lng M - 1" by (rule y3w_Br_tne[OF JBr])
+  have NC: "?N = concat (Br M)" by (rule y3w_Br_concat[OF tne])
+  have brQ: "Br M = P ?N" using tne by (simp add: Br_def)
+  have tb: "?T \<le> Lng M - 1" by (rule TrMax_bound[OF MT])
+  have trlt: "?T < Lng M - 1" using tb tne by linarith
+  have NT: "?N \<in> T_PS" using trlt by (simp add: T_PS_def seg_def)
+  have JL: "J < length (P ?N)" using JBr brQ by simp
+  have lmin: "\<forall>j < IdxSum (P ?N) ! J. entry ?N 0 j \<ge> entry ?N 0 (IdxSum (P ?N) ! J)"
+    using idxsum_leftend_lmin[OF NT JL] by simp
+  have idxb: "IdxSum (P ?N) ! J = IdxSum (Br M) ! J" using brQ by simp
+  have FN: "FirstNodes M ! J = ?T + 1 + IdxSum (Br M) ! J"
+    by (rule FirstNodes_nth) (use JBr in simp)
+  have jlt: "p - (?T + 1) < IdxSum (Br M) ! J" using p1 p2 FN by simp
+  have LNpos: "0 < Lng ?N" using trlt by simp
+  have bnd: "IdxSum (Br M) ! J < Lng ?N"
+  proof -
+    have "IdxSum (P ?N) ! J \<le> Lng ?N - 1" using idxsum_leftend_lmin[OF NT JL] by simp
+    thus ?thesis using idxb LNpos by simp
+  qed
+  have e1: "entry ?N 0 (IdxSum (Br M) ! J) = entry M 0 (FirstNodes M ! J)"
+    using entry_seg[OF bnd] FN idxb by simp
+  have plt: "p - (?T + 1) < Lng ?N" using jlt bnd by simp
+  have e2: "entry ?N 0 (p - (?T + 1)) = entry M 0 p"
+    using entry_seg[OF plt] p1 by simp
+  have lminb: "\<And>k. k < IdxSum (Br M) ! J
+                 \<Longrightarrow> entry ?N 0 (IdxSum (Br M) ! J) \<le> entry ?N 0 k"
+    using lmin idxb by simp
+  have inst: "entry ?N 0 (IdxSum (Br M) ! J) \<le> entry ?N 0 (p - (?T + 1))"
+    by (rule lminb[OF jlt])
+  show ?thesis using inst e1 e2 by simp
+qed
+
+lemma y3w_entry_Red_block:
+  assumes M: "M \<in> PT_PS" and c0: "entry M 0 0 = 0" and c1: "entry M 1 0 = 0"
+    and JBr: "J < Lng (Br M)" and q: "q < Lng (Br M ! J)"
+  shows "entry (Red M) 0 (FirstNodes M ! J + q)
+       = entry ((IncrFirst ^^ (Joints M ! J + 1 - npJ M J)) (Red (NJ M J))) 0 q"
+proof -
+  let ?T = "TrMax M"
+  let ?B = "\<lambda>J. (IncrFirst ^^ (Joints M ! J + 1 - npJ M J)) (Red (NJ M J))"
+  let ?Bs = "map ?B [0..<Lng (Br M)]"
+  have MT: "M \<in> T_PS" using M by (simp add: PT_PS_def)
+  have mono: "monoT M" using M by (simp add: PT_PS_def)
+  have nz: "\<not> zeroT M" using mono by (simp add: monoT_def)
+  have nmu: "\<not> multiT M" using mono by (simp add: multiT_def)
+  have tne: "?T \<noteq> Lng M - 1" by (rule y3w_Br_tne[OF JBr])
+  have rM: "Red M = diagSeq 0 ?T @ concat ?Bs"
+    by (rule d_Red_core_nontrunk_unfold[OF MT nz nmu c0 c1 tne])
+  \<comment> \<open>each block has the length of its \<open>Br\<close>-component\<close>
+  have lenB: "\<And>I. I < Lng (Br M) \<Longrightarrow> Lng (?B I) = Lng (Br M ! I)"
+  proof -
+    fix I assume IL: "I < Lng (Br M)"
+    have brIne: "Br M ! I \<noteq> []" by (rule Br_component_nonempty[OF M IL])
+    have NJne: "NJ M I \<noteq> []" by (simp add: NJ_def)
+    have NJT: "NJ M I \<in> T_PS" using NJne by (simp add: T_PS_def)
+    have "Lng (?B I) = Lng (Red (NJ M I))" by simp
+    also have "\<dots> = Lng (NJ M I)" by (rule m_6_5_Lng_Red[OF NJT])
+    also have "\<dots> = Lng (Br M ! I)" by (rule Lng_NJ[OF brIne])
+    finally show "Lng (?B I) = Lng (Br M ! I)" .
+  qed
+  have lenBs: "length ?Bs = length (Br M)" by simp
+  have maplen: "map length ?Bs = map length (Br M)"
+    by (rule y3w_maplen_eq) (use lenB in auto)
+  have JL: "J < length ?Bs" using JBr by simp
+  have JL': "J < length (Br M)" using JBr by simp
+  have qB: "q < length (?Bs ! J)" using q lenB[OF JBr] JBr by simp
+  have sumeq: "sum_list (map length (take J ?Bs)) = sum_list (map length (take J (Br M)))"
+    using maplen by (metis take_map)
+  have idx: "IdxSum (Br M) ! J = sum_list (map length (take J (Br M)))"
+    by (rule idxsum_nth) (use JL' in simp)
+  have FN: "FirstNodes M ! J = ?T + 1 + IdxSum (Br M) ! J"
+    by (rule FirstNodes_nth[OF JL'])
+  have bnd: "sum_list (map length (take J ?Bs)) + q < length (concat ?Bs)"
+    by (rule y3w_concat_bound[OF JL qB])
+  have hi: "entry (diagSeq 0 ?T @ concat ?Bs) 0 (Suc ?T + (IdxSum (Br M) ! J + q))
+              = entry (concat ?Bs) 0 (IdxSum (Br M) ! J + q)"
+    by (rule entry_diagSeq_append_hi) (use bnd sumeq idx in simp)
+  have inner: "entry (concat ?Bs) 0 (IdxSum (Br M) ! J + q) = entry (?Bs ! J) 0 q"
+    using y3w_entry_concat[OF JL qB] sumeq idx by simp
+  have BJ: "?Bs ! J = ?B J" using JBr by simp
+  have "entry (Red M) 0 (FirstNodes M ! J + q)
+          = entry (diagSeq 0 ?T @ concat ?Bs) 0 (Suc ?T + (IdxSum (Br M) ! J + q))"
+    using rM FN by (simp add: add.assoc)
+  also have "\<dots> = entry (?Bs ! J) 0 q" using hi inner by simp
+  finally show ?thesis using BJ by simp
+qed
+
+subsection \<open>(F) --- the theorem\<close>
+
+text \<open>\<^bold>\<open>(F)\<close>: \<open>Red\<close> only \<^emph>\<open>adds\<close> row-0 ancestor edges.  The converse is FALSE
+  (correction A4).  Proof by @{thm [source] Red.pinduct}; each branch is a
+  window or a uniform row-0 shift, thanks to the value-level characterisation
+  @{thm [source] y3w_le0_iff}:
+
+  \<^item> \<open>zeroT\<close>: \<open>Lng M = 1\<close>, reflexive.
+  \<^item> \<open>multiT\<close>: \<open>a\<close> and \<open>b\<close> must lie in the SAME \<open>P\<close>-block (a block left end is a
+    row-0 left-minimum, so an edge cannot cross it); then the block IH.
+  \<^item> core, full trunk: \<open>Red M = diagSeq 0 (Lng M - 1)\<close>, row 0 is the identity, so
+    EVERY \<open>le\<^sub>0\<close> holds.
+  \<^item> core, non-trunk: if \<open>a \<le> TrMax M\<close> then \<open>(Red M)\<^bsub>0,a\<^esub> = a\<close> and every entry to
+    its right is \<open>> a\<close> (trunk: identity; block \<open>J\<close>: row-0 min \<open>Joints M ! J + 1\<close>,
+    and \<open>a \<le> Joints M ! J\<close> because \<open>a\<close> is a row-0 ancestor of the block's first
+    node).  If \<open>a > TrMax M\<close> then \<open>a\<close> and \<open>b\<close> are in the same branch block, and
+    the block IH on \<open>NJ M J\<close> applies (the \<open>q\<^sub>a = 0\<close> corner is free: \<open>NJ M J\<close> is
+    non-multi, so \<open>le\<^sub>0 (NJ M J) 0 q\<close> holds for every \<open>q\<close>).
+  \<^item> \<open>m\<^sub>1\<^sub>0 = 0, m\<^sub>0\<^sub>0 > 0\<close>: uniform row-0 shift.
+  \<^item> \<open>m\<^sub>1\<^sub>0 > 0\<close>: embed into the diagonal-prefixed argument, apply the IH, and read
+    back through the (order-preserving) rebase of the \<open>m\<^sub>1\<^sub>0\<close>-suffix.\<close>
+
+theorem y3w_Red_le0:
+  assumes MT: "M \<in> T_PS" and le: "le0 M a b"
+  shows "le0 (Red M) a b"
+proof -
+  have domM: "Red_dom M" by (rule m_6_5_Red_welldef[OF MT])
+  have "M \<in> T_PS \<longrightarrow> (\<forall>a b. le0 M a b \<longrightarrow> le0 (Red M) a b)"
+    using domM
+  proof (induction M rule: Red.pinduct)
+    case (1 M)
+    note dom   = 1(1)
+    note IH_mu = 1(2)
+    note IH_bz = 1(3)
+    note IH_sh = 1(4)
+    note IH_m1 = 1(5)
+    show ?case
+    proof (rule impI)
+      assume MT': "M \<in> T_PS"
+      have Mne: "M \<noteq> []" using MT' by (simp add: T_PS_def)
+      have LMpos: "0 < Lng M" using Mne by (cases M) auto
+      have LR: "Lng (Red M) = Lng M" by (rule m_6_5_Lng_Red[OF MT'])
+      show "\<forall>a b. le0 M a b \<longrightarrow> le0 (Red M) a b"
+      proof (intro allI impI)
+        fix a b :: nat
+        assume le: "le0 M a b"
+        have ab: "a \<le> b" and bL: "b < Lng M" using y3w_le0_bounds[OF le] by simp_all
+        have bR: "b < Lng (Red M)" using bL LR by simp
+        have anc: "\<And>j. a < j \<Longrightarrow> j \<le> b \<Longrightarrow> entry M 0 a < entry M 0 j"
+          using y3w_le0_iff[OF ab bL] le by blast
+        show "le0 (Red M) a b"
+        proof (cases "zeroT M")
+          case True
+          have rM: "Red M = [(0,0)]" using Red.psimps[OF dom] True by simp
+          have "Lng M = 1" using True by (simp add: zeroT_def)
+          hence "a = 0" and "b = 0" using ab bL by simp_all
+          thus ?thesis using rM by (simp add: le0_refl)
+        next
+          case nz: False
+          show ?thesis
+          proof (cases "multiT M")
+            \<comment> \<open>\<^bold>\<open>multi\<close>: \<open>a\<close> and \<open>b\<close> lie in one and the same \<open>P\<close>-block.\<close>
+            case mu: True
+            let ?Q = "P M"
+            let ?R = "map Red ?Q"
+            have rM: "Red M = concat ?R" using Red.psimps[OF dom] nz mu by simp
+            have QC: "concat ?Q = M" by (rule idxsum_concat_P)
+            have QT: "\<And>I. I < length ?Q \<Longrightarrow> ?Q ! I \<in> T_PS"
+              using idxsum_P_component_nonempty[OF MT'] by (auto simp: T_PS_def)
+            have lenR: "\<And>I. I < length ?Q \<Longrightarrow> length (?R ! I) = length (?Q ! I)"
+              using QT m_6_5_Lng_Red by auto
+            have maplen: "map length ?R = map length ?Q"
+              by (rule y3w_maplen_eq) (use lenR in auto)
+            \<comment> \<open>locate \<open>b\<close>\<close>
+            have bC: "b < length (concat ?Q)" using bL QC by simp
+            obtain I qb where IL: "I < length ?Q" and qbL: "qb < length (?Q ! I)"
+              and be: "b = sum_list (map length (take I ?Q)) + qb"
+              using a1_concat_locate_raw[OF bC] by blast
+            let ?s = "sum_list (map length (take I ?Q))"
+            have idxs: "IdxSum ?Q ! I = ?s" by (rule idxsum_nth) (use IL in simp)
+            \<comment> \<open>the block left end \<open>?s\<close> is a row-0 left-minimum, so \<open>a\<close> cannot be to its left\<close>
+            have sa: "?s \<le> a"
+            proof (rule ccontr)
+              assume "\<not> ?s \<le> a"
+              hence alt: "a < ?s" by simp
+              have sle: "?s \<le> b" using be by simp
+              have "entry M 0 a < entry M 0 ?s" using anc[OF alt sle] .
+              moreover have "entry M 0 ?s \<le> entry M 0 a"
+                using idxsum_leftend_lmin[OF MT' IL] idxs alt by simp
+              ultimately show False by simp
+            qed
+            obtain qa where qae: "a = ?s + qa" using sa by (metis le_add_diff_inverse)
+            have qab: "qa \<le> qb" using ab qae be by simp
+            \<comment> \<open>transfer down into the block\<close>
+            have Ein: "\<And>k. k \<le> qb \<Longrightarrow> entry M 0 (?s + k) = entry (?Q ! I) 0 k + 0"
+            proof -
+              fix k assume "k \<le> qb"
+              hence kl: "k < length (?Q ! I)" using qbL by simp
+              show "entry M 0 (?s + k) = entry (?Q ! I) 0 k + 0"
+                using y3w_entry_concat[OF IL kl] QC by simp
+            qed
+            have bx: "?s + qb < Lng M" using be bL by simp
+            have qbL': "qb < Lng (?Q ! I)" using qbL by simp
+            have inblk: "le0 (?Q ! I) qa qb"
+            proof -
+              have "le0 M (?s + qa) (?s + qb) \<longleftrightarrow> le0 (?Q ! I) qa qb"
+                by (rule y3w_le0_window[OF qab qbL' bx Ein])
+              thus ?thesis using le qae be by simp
+            qed
+            \<comment> \<open>the block IH\<close>
+            have Iin: "?Q ! I \<in> set ?Q" using IL by (rule nth_mem)
+            have ihI: "?Q ! I \<in> T_PS \<longrightarrow> (\<forall>x y. le0 (?Q ! I) x y \<longrightarrow> le0 (Red (?Q ! I)) x y)"
+              by (rule IH_mu[OF nz mu Iin])
+            have redblk: "le0 (Red (?Q ! I)) qa qb" using ihI QT[OF IL] inblk by blast
+            \<comment> \<open>transfer back up into \<open>Red M = concat (map Red (P M))\<close>\<close>
+            have ILR: "I < length ?R" using IL by simp
+            have qbR: "qb < length (?R ! I)" using qbL lenR[OF IL] by simp
+            have sR: "sum_list (map length (take I ?R)) = ?s"
+              using maplen by (metis take_map)
+            have Eout: "\<And>k. k \<le> qb \<Longrightarrow> entry (Red M) 0 (?s + k) = entry (Red (?Q ! I)) 0 k + 0"
+            proof -
+              fix k assume "k \<le> qb"
+              hence kl: "k < length (?R ! I)" using qbR by simp
+              have "entry (concat ?R) 0 (?s + k) = entry (?R ! I) 0 k"
+                using y3w_entry_concat[OF ILR kl] sR by simp
+              thus "entry (Red M) 0 (?s + k) = entry (Red (?Q ! I)) 0 k + 0"
+                using rM IL by simp
+            qed
+            have qbRL: "qb < Lng (Red (?Q ! I))" using qbR lenR[OF IL] IL by simp
+            have bxr: "?s + qb < Lng (Red M)" using be bR by simp
+            have "le0 (Red M) (?s + qa) (?s + qb)"
+              using y3w_le0_window[OF qab qbRL bxr Eout] redblk by simp
+            thus ?thesis using qae be by simp
+          next
+            case nmu: False
+            have mono: "monoT M" using nz nmu by (simp add: multiT_def)
+            have Mpt: "M \<in> PT_PS" using MT' mono by (simp add: PT_PS_def)
+            have m00min: "\<And>j. 0 < j \<Longrightarrow> j < Lng M \<Longrightarrow> entry M 0 0 < entry M 0 j"
+              using m_6_2_multi_crit_12[OF MT'] nmu by blast
+            let ?j1  = "Lng M - 1"
+            let ?j1' = "TrMax M"
+            let ?m00 = "entry M 0 0"
+            let ?m10 = "entry M 1 0"
+            show ?thesis
+            proof (cases "?m00 = 0 \<and> ?m10 = 0")
+              case core: True
+              hence c0: "?m00 = 0" and c1: "?m10 = 0" by simp_all
+              show ?thesis
+              proof (cases "?j1' = ?j1")
+                \<comment> \<open>\<^bold>\<open>full trunk\<close>: \<open>Red M\<close> is the diagonal, row 0 is the identity.\<close>
+                case True
+                have rM: "Red M = diagSeq ?m10 (?m10 + ?j1)"
+                  using Red.psimps[OF dom] nz nmu c0 c1 True by (simp add: Let_def)
+                have rM': "Red M = diagSeq 0 ?j1" using rM c1 by simp
+                have ent: "\<And>j. j < Lng M \<Longrightarrow> entry (Red M) 0 j = j"
+                proof -
+                  fix j assume "j < Lng M"
+                  hence "j < Suc ?j1 - 0" using LMpos by simp
+                  thus "entry (Red M) 0 j = j" using rM' entry_diagSeq[of j ?j1 0 0] by simp
+                qed
+                have "\<forall>j. a < j \<longrightarrow> j \<le> b \<longrightarrow> entry (Red M) 0 a < entry (Red M) 0 j"
+                  using ent ab bL by auto
+                thus ?thesis using y3w_le0_iff[OF ab bR] by simp
+              next
+                case tne: False
+                let ?T = "TrMax M"
+                let ?B = "\<lambda>J. (IncrFirst ^^ (Joints M ! J + 1 - npJ M J)) (Red (NJ M J))"
+                have trunk: "\<And>j. j \<le> ?T \<Longrightarrow> entry (Red M) 0 j = j"
+                  by (rule a1_Red_trunk_row0[OF Mpt c0 c1 tne])
+                have tb: "?T \<le> Lng M - 1" by (rule TrMax_bound[OF MT'])
+                show ?thesis
+                proof (cases "a \<le> ?T")
+                  \<comment> \<open>\<^bold>\<open>a on the trunk\<close>: \<open>(Red M)\<^bsub>0,a\<^esub> = a\<close>, and everything to its right is \<open>> a\<close>.\<close>
+                  case aT: True
+                  have ya: "entry (Red M) 0 a = a" by (rule trunk[OF aT])
+                  have big: "\<And>j. a < j \<Longrightarrow> j \<le> b \<Longrightarrow> a < entry (Red M) 0 j"
+                  proof -
+                    fix j assume ja: "a < j" and jb: "j \<le> b"
+                    show "a < entry (Red M) 0 j"
+                    proof (cases "j \<le> ?T")
+                      case True
+                      thus ?thesis using trunk[OF True] ja by simp
+                    next
+                      case jT: False
+                      hence jgt: "?T < j" by simp
+                      have jlt: "j < Lng M" using jb bL by simp
+                      obtain J q where JBr: "J < Lng (Br M)" and qL: "q < Lng (Br M ! J)"
+                        and je: "j = FirstNodes M ! J + q"
+                        using y3w_block_locate[OF Mpt tne jgt jlt] by blast
+                      have FNle: "FirstNodes M ! J \<le> j" using je by simp
+                      have FNgt: "?T < FirstNodes M ! J"
+                        using FirstNodes_nth[of J M] JBr by simp
+                      have aFN: "a < FirstNodes M ! J" using aT FNgt by simp
+                      have FNb: "FirstNodes M ! J \<le> b" using FNle jb by simp
+                      have vlt: "entry M 0 a < entry M 0 (FirstNodes M ! J)"
+                        using anc[OF aFN FNb] .
+                      have par: "nextR M 0 (Joints M ! J) (FirstNodes M ! J)"
+                        by (rule Joints_parent_nextR[OF Mpt JBr])
+                      have aJ: "a \<le> Joints M ! J"
+                        by (rule nextR0_largest_below[OF par aFN vlt])
+                      have qB: "q < Lng (?B J)"
+                      proof -
+                        have brne: "Br M ! J \<noteq> []" by (rule Br_component_nonempty[OF Mpt JBr])
+                        have NJT: "NJ M J \<in> T_PS" by (simp add: NJ_def T_PS_def)
+                        have "Lng (?B J) = Lng (Br M ! J)"
+                          using m_6_5_Lng_Red[OF NJT] Lng_NJ[OF brne] by simp
+                        thus ?thesis using qL by simp
+                      qed
+                      have bmin: "Joints M ! J + 1 \<le> entry (?B J) 0 q"
+                        by (rule if2_block_row0_min[OF Mpt c0 c1 JBr qB])
+                      have "entry (Red M) 0 j = entry (?B J) 0 q"
+                        using y3w_entry_Red_block[OF Mpt c0 c1 JBr qL] je by simp
+                      thus ?thesis using bmin aJ by simp
+                    qed
+                  qed
+                  have "\<forall>j. a < j \<longrightarrow> j \<le> b \<longrightarrow> entry (Red M) 0 a < entry (Red M) 0 j"
+                    using big ya by simp
+                  thus ?thesis using y3w_le0_iff[OF ab bR] by simp
+                next
+                  \<comment> \<open>\<^bold>\<open>a off the trunk\<close>: \<open>a\<close> and \<open>b\<close> are in one and the same branch block.\<close>
+                  case aT: False
+                  hence agt: "?T < a" by simp
+                  have bgt: "?T < b" using agt ab by simp
+                  obtain J qb where JBr: "J < Lng (Br M)" and qbL: "qb < Lng (Br M ! J)"
+                    and be: "b = FirstNodes M ! J + qb"
+                    using y3w_block_locate[OF Mpt tne bgt bL] by blast
+                  let ?F = "FirstNodes M ! J"
+                  have FNb: "?F \<le> b" using be by simp
+                  have Fa: "?F \<le> a"
+                  proof (rule ccontr)
+                    assume "\<not> ?F \<le> a"
+                    hence alt: "a < ?F" by simp
+                    have "entry M 0 a < entry M 0 ?F" using anc[OF alt FNb] .
+                    moreover have "entry M 0 ?F \<le> entry M 0 a"
+                      by (rule y3w_block_leftmin[OF Mpt JBr agt alt])
+                    ultimately show False by simp
+                  qed
+                  obtain qa where qae: "a = ?F + qa" using Fa by (metis le_add_diff_inverse)
+                  have qab: "qa \<le> qb" using ab qae be by simp
+                  \<comment> \<open>down into \<open>Br M ! J\<close>\<close>
+                  have Ein: "\<And>k. k \<le> qb \<Longrightarrow> entry M 0 (?F + k) = entry (Br M ! J) 0 k + 0"
+                    using y3w_entry_block[OF Mpt JBr] qbL by simp
+                  have bxF: "?F + qb < Lng M" using be bL by simp
+                  have inbr: "le0 (Br M ! J) qa qb"
+                  proof -
+                    have "le0 M (?F + qa) (?F + qb) \<longleftrightarrow> le0 (Br M ! J) qa qb"
+                      by (rule y3w_le0_window[OF qab qbL bxF Ein])
+                    thus ?thesis using le qae be by simp
+                  qed
+                  \<comment> \<open>from \<open>Br M ! J\<close> to \<open>NJ M J\<close> (they differ only at index 0)\<close>
+                  have brne: "Br M ! J \<noteq> []" by (rule Br_component_nonempty[OF Mpt JBr])
+                  have NJne: "NJ M J \<noteq> []" by (simp add: NJ_def)
+                  have NJT: "NJ M J \<in> T_PS" using NJne by (simp add: T_PS_def)
+                  have LNJ: "Lng (NJ M J) = Lng (Br M ! J)" by (rule Lng_NJ[OF brne])
+                  have NJtail: "\<And>k. 0 < k \<Longrightarrow> k < Lng (Br M ! J)
+                                    \<Longrightarrow> entry (NJ M J) 0 k = entry (Br M ! J) 0 k"
+                  proof -
+                    fix k assume k0: "0 < k" and kl: "k < Lng (Br M ! J)"
+                    obtain k' where kk: "k = Suc k'" using k0 by (cases k) auto
+                    have tlnth: "tl (Br M ! J) ! k' = (Br M ! J) ! Suc k'"
+                      using brne by (cases "Br M ! J") auto
+                    have "NJ M J ! k = tl (Br M ! J) ! k'" using kk by (simp add: NJ_def)
+                    also have "\<dots> = (Br M ! J) ! k" using tlnth kk by simp
+                    finally show "entry (NJ M J) 0 k = entry (Br M ! J) 0 k"
+                      by (simp add: entry_def)
+                  qed
+                  have innj: "le0 (NJ M J) qa qb"
+                  proof (cases "qa = 0")
+                    case True
+                    have nmNJ: "\<not> multiT (NJ M J)" by (rule NJ_nonmulti[OF Mpt c0 c1 JBr])
+                    have "qb < Lng (NJ M J)" using qbL LNJ by simp
+                    thus ?thesis using y3w_nonmulti_le0_from0[OF NJT nmNJ] True by simp
+                  next
+                    case False
+                    hence qa0: "0 < qa" by simp
+                    have i1: "le0 (NJ M J) qa qb
+                              \<longleftrightarrow> (\<forall>j. qa < j \<longrightarrow> j \<le> qb \<longrightarrow> entry (NJ M J) 0 qa < entry (NJ M J) 0 j)"
+                      by (rule y3w_le0_iff[OF qab]) (use qbL LNJ in simp)
+                    have i2: "le0 (Br M ! J) qa qb
+                              \<longleftrightarrow> (\<forall>j. qa < j \<longrightarrow> j \<le> qb \<longrightarrow> entry (Br M ! J) 0 qa < entry (Br M ! J) 0 j)"
+                      by (rule y3w_le0_iff[OF qab qbL])
+                    have "\<forall>j. qa < j \<longrightarrow> j \<le> qb \<longrightarrow> entry (NJ M J) 0 qa < entry (NJ M J) 0 j"
+                    proof (intro allI impI)
+                      fix j assume j1: "qa < j" and j2: "j \<le> qb"
+                      have jl: "j < Lng (Br M ! J)" using j2 qbL by simp
+                      have ql: "qa < Lng (Br M ! J)" using j1 jl by simp
+                      have "entry (Br M ! J) 0 qa < entry (Br M ! J) 0 j"
+                        using inbr i2 j1 j2 by simp
+                      thus "entry (NJ M J) 0 qa < entry (NJ M J) 0 j"
+                        using NJtail[OF qa0 ql] NJtail[of j] j1 qa0 jl by simp
+                    qed
+                    thus ?thesis using i1 by simp
+                  qed
+                  \<comment> \<open>the branch IH on \<open>NJ M J\<close>\<close>
+                  have Jmem: "J \<in> set [0..<Lng (Br M)]" using JBr by simp
+                  have core': "?m00 = 0 \<and> ?m10 = 0" using core by simp
+                  have npE: "(if entry (Br M ! J) 1 0 = 0 then 0
+                              else Suc (THE j. nextR M 1 j (FirstNodes M ! J))) = npJ M J"
+                    by (simp add: npJ_def)
+                  have argE: "((entry M 0 0 + Joints M ! J + 1, entry M 1 0 + npJ M J)
+                               # tl (Br M ! J)) = NJ M J" by (simp add: NJ_def)
+                  have ih: "NJ M J \<in> T_PS \<longrightarrow>
+                              (\<forall>x y. le0 (NJ M J) x y \<longrightarrow> le0 (Red (NJ M J)) x y)"
+                    using IH_bz[OF nz nmu refl refl refl refl core' tne Jmem]
+                    by (simp only: npE argE)
+                  have redNJ: "le0 (Red (NJ M J)) qa qb" using ih NJT innj by blast
+                  \<comment> \<open>lift through \<open>IncrFirst\<^bsup>e\<^esup>\<close> and back into \<open>Red M\<close>\<close>
+                  let ?e = "Joints M ! J + 1 - npJ M J"
+                  have LRNJ: "Lng (Red (NJ M J)) = Lng (Br M ! J)"
+                    using m_6_5_Lng_Red[OF NJT] LNJ by simp
+                  have EB: "\<And>k. k \<le> qb \<Longrightarrow> entry (?B J) 0 (0 + k) = entry (Red (NJ M J)) 0 k + ?e"
+                  proof -
+                    fix k assume "k \<le> qb"
+                    hence kl: "k < Lng (Red (NJ M J))" using qbL LRNJ by simp
+                    show "entry (?B J) 0 (0 + k) = entry (Red (NJ M J)) 0 k + ?e"
+                      using entry_funpow_IncrFirst0[OF kl, of ?e] by simp
+                  qed
+                  have qbB: "qb < Lng (?B J)" using qbL LRNJ by simp
+                  have qbRNJ: "qb < Lng (Red (NJ M J))" using qbL LRNJ by simp
+                  have bxB: "0 + qb < Lng (?B J)" using qbB by simp
+                  have inB: "le0 (?B J) qa qb"
+                  proof -
+                    have "le0 (?B J) (0 + qa) (0 + qb) \<longleftrightarrow> le0 (Red (NJ M J)) qa qb"
+                      by (rule y3w_le0_window[OF qab qbRNJ bxB EB])
+                    thus ?thesis using redNJ by simp
+                  qed
+                  have Eout: "\<And>k. k \<le> qb \<Longrightarrow> entry (Red M) 0 (?F + k) = entry (?B J) 0 k + 0"
+                    using y3w_entry_Red_block[OF Mpt c0 c1 JBr] qbL by simp
+                  have bxR: "?F + qb < Lng (Red M)" using be bR by simp
+                  have "le0 (Red M) (?F + qa) (?F + qb)"
+                    using y3w_le0_window[OF qab qbB bxR Eout] inB by simp
+                  thus ?thesis using qae be by simp
+                qed
+              qed
+            next
+              case nc: False
+              show ?thesis
+              proof (cases "?m10 = 0")
+                \<comment> \<open>\<^bold>\<open>uniform row-0 shift\<close> (\<open>m\<^sub>1\<^sub>0 = 0\<close>, \<open>m\<^sub>0\<^sub>0 > 0\<close>).\<close>
+                case c1z: True
+                let ?sh = "shiftRow0 M"
+                have rM_sh: "Red M = Red ?sh" by (rule cdn_Red_shiftRow0_m10z[OF MT' mono c1z])
+                have shT: "?sh \<in> T_PS" by (simp add: T_PS_def shiftRow0_def Mne)
+                have Lsh: "Lng ?sh = Lng M" by simp
+                have esh: "\<And>j. j < Lng M \<Longrightarrow> entry ?sh 0 j = entry M 0 j - ?m00"
+                  by (simp add: shiftRow0_def entry_def)
+                have gem: "\<And>j. j < Lng M \<Longrightarrow> ?m00 \<le> entry M 0 j"
+                proof -
+                  fix j assume jl: "j < Lng M"
+                  show "?m00 \<le> entry M 0 j"
+                  proof (cases "j = 0")
+                    case True thus ?thesis by simp
+                  next
+                    case False
+                    thus ?thesis using m00min[of j] jl by simp
+                  qed
+                qed
+                have insh: "le0 ?sh a b"
+                proof -
+                  have "\<forall>j. a < j \<longrightarrow> j \<le> b \<longrightarrow> entry ?sh 0 a < entry ?sh 0 j"
+                  proof (intro allI impI)
+                    fix j assume j1: "a < j" and j2: "j \<le> b"
+                    have jl: "j < Lng M" using j2 bL by simp
+                    have al: "a < Lng M" using ab bL by simp
+                    have "entry M 0 a < entry M 0 j" using anc[OF j1 j2] .
+                    thus "entry ?sh 0 a < entry ?sh 0 j"
+                      using esh[OF al] esh[OF jl] gem[OF al] by simp
+                  qed
+                  thus ?thesis using y3w_le0_iff[OF ab] bL Lsh by simp
+                qed
+                have SAeq: "map (\<lambda>j. (entry M 0 j - ?m00, entry M 1 j)) [0..<Suc (Lng M - 1)] = ?sh"
+                proof -
+                  have "Suc (Lng M - 1) = Lng M" using LMpos by simp
+                  thus ?thesis by (simp add: shiftRow0_def)
+                qed
+                have ih: "?sh \<in> T_PS \<longrightarrow> (\<forall>x y. le0 ?sh x y \<longrightarrow> le0 (Red ?sh) x y)"
+                  using IH_sh[OF nz nmu refl refl refl refl nc c1z] SAeq by simp
+                have "le0 (Red ?sh) a b" using ih shT insh by blast
+                thus ?thesis using rM_sh by simp
+              next
+                \<comment> \<open>\<^bold>\<open>diagonal-prefix\<close> branch (\<open>m\<^sub>1\<^sub>0 > 0\<close>).\<close>
+                case c1p: False
+                have pos: "0 < ?m10" using c1p by simp
+                let ?argM = "diagSeq 0 (?m10 - 1) @ (IncrFirst ^^ ?m10) M"
+                let ?N = "Red ?argM"
+                have funM_ne: "(IncrFirst ^^ ?m10) M \<noteq> []"
+                  using Mne by (metis Lng_funpow_IncrFirst length_0_conv)
+                have argMT: "?argM \<in> T_PS" using funM_ne by (simp add: T_PS_def)
+                have LN: "Lng ?N = Lng M + ?m10"
+                  using m_6_5_monoT_Red_fact1_Lng[OF MT' pos] by simp
+                have jN_ge: "?m10 \<le> Lng ?N - 1" using LN LMpos by linarith
+                have segN_PT: "seg ?N ?m10 (Lng ?N - 1) \<in> PT_PS"
+                  using m_6_5_monoT_Red_m10pos[OF Mpt pos] by simp
+                have thenM: "?m10 \<le> Lng ?N - 1 \<and> seg ?N ?m10 (Lng ?N - 1) \<in> PT_PS"
+                  using jN_ge segN_PT by simp
+                have rM: "Red M = map (\<lambda>j. (entry ?N 0 j - entry ?N 0 ?m10 + entry ?N 1 ?m10,
+                                            entry ?N 1 j)) [?m10..<Suc (Lng ?N - 1)]"
+                  using Red.psimps[OF dom] nz nmu nc c1p thenM by (simp add: Let_def)
+                \<comment> \<open>row-0 entries of \<open>Red M\<close>, read off the rebase\<close>
+                have eRed: "\<And>k. k < Lng M \<Longrightarrow>
+                    entry (Red M) 0 k
+                      = entry ?N 0 (?m10 + k) - entry ?N 0 ?m10 + entry ?N 1 ?m10"
+                proof -
+                  fix k assume kl: "k < Lng M"
+                  have len: "Suc (Lng ?N - 1) - ?m10 = Lng M" using LN LMpos by simp
+                  have klen: "k < length [?m10..<Suc (Lng ?N - 1)]"
+                    using kl len by (simp del: upt_Suc)
+                  have nth1: "(Red M) ! k
+                        = (\<lambda>j. (entry ?N 0 j - entry ?N 0 ?m10 + entry ?N 1 ?m10,
+                                entry ?N 1 j)) ([?m10..<Suc (Lng ?N - 1)] ! k)"
+                    unfolding rM by (rule nth_map[OF klen])
+                  have nth2: "[?m10..<Suc (Lng ?N - 1)] ! k = ?m10 + k"
+                    using klen by (simp del: upt_Suc)
+                  show "entry (Red M) 0 k
+                          = entry ?N 0 (?m10 + k) - entry ?N 0 ?m10 + entry ?N 1 ?m10"
+                    using nth1 nth2 by (simp add: entry_def)
+                qed
+                \<comment> \<open>the \<open>m\<^sub>1\<^sub>0\<close>-suffix of \<open>?N\<close> is mono, so its row-0 left end is the strict min\<close>
+                have Lseg: "Lng (seg ?N ?m10 (Lng ?N - 1)) = Lng M" using LN LMpos by simp
+                have segT: "seg ?N ?m10 (Lng ?N - 1) \<in> T_PS" using segN_PT by (simp add: PT_PS_def)
+                have segnm: "\<not> multiT (seg ?N ?m10 (Lng ?N - 1))"
+                  using segN_PT by (simp add: PT_PS_def multiT_def)
+                have segmin: "\<And>k. 0 < k \<Longrightarrow> k < Lng M \<Longrightarrow> entry ?N 0 ?m10 < entry ?N 0 (?m10 + k)"
+                proof -
+                  fix k assume k0: "0 < k" and kl: "k < Lng M"
+                  have kseg: "k < Lng (seg ?N ?m10 (Lng ?N - 1))" using kl Lseg by simp
+                  have z: "0 < Lng (seg ?N ?m10 (Lng ?N - 1))" using Lseg LMpos by simp
+                  have "entry (seg ?N ?m10 (Lng ?N - 1)) 0 0
+                          < entry (seg ?N ?m10 (Lng ?N - 1)) 0 k"
+                    using m_6_2_multi_crit_12[OF segT] segnm k0 kseg by blast
+                  thus "entry ?N 0 ?m10 < entry ?N 0 (?m10 + k)"
+                    using entry_seg[OF z, of 0] entry_seg[OF kseg, of 0] by simp
+                qed
+                have segge: "\<And>k. k < Lng M \<Longrightarrow> entry ?N 0 ?m10 \<le> entry ?N 0 (?m10 + k)"
+                proof -
+                  fix k assume kl: "k < Lng M"
+                  show "entry ?N 0 ?m10 \<le> entry ?N 0 (?m10 + k)"
+                  proof (cases "k = 0")
+                    case True thus ?thesis by simp
+                  next
+                    case False
+                    thus ?thesis using segmin[of k] kl by simp
+                  qed
+                qed
+                \<comment> \<open>embed \<open>le\<^sub>0 M a b\<close> into \<open>?argM\<close>\<close>
+                have LargM: "Lng ?argM = ?m10 + Lng M" using pos by simp
+                have eArg: "\<And>k. k < Lng M \<Longrightarrow> entry ?argM 0 (?m10 + k) = entry M 0 k + ?m10"
+                proof -
+                  fix k assume kl: "k < Lng M"
+                  have kl': "k < Lng ((IncrFirst ^^ ?m10) M)" using kl by simp
+                  have "entry ?argM 0 (Suc (?m10 - 1) + k)
+                          = entry ((IncrFirst ^^ ?m10) M) 0 k"
+                    by (rule entry_diagSeq_append_hi[OF kl'])
+                  thus "entry ?argM 0 (?m10 + k) = entry M 0 k + ?m10"
+                    using pos entry_funpow_IncrFirst0[OF kl, of ?m10] by simp
+                qed
+                have bA: "?m10 + b < Lng ?argM" using bL LargM by simp
+                have inArg: "le0 ?argM (?m10 + a) (?m10 + b)"
+                proof -
+                  have "le0 ?argM (?m10 + a) (?m10 + b) \<longleftrightarrow> le0 M a b"
+                    by (rule y3w_le0_window[OF ab bL bA]) (use eArg bL in simp)
+                  thus ?thesis using le by simp
+                qed
+                have ih: "?argM \<in> T_PS \<longrightarrow> (\<forall>x y. le0 ?argM x y \<longrightarrow> le0 (Red ?argM) x y)"
+                  using IH_m1[OF nz nmu refl refl refl refl nc c1p] by simp
+                have inN: "le0 ?N (?m10 + a) (?m10 + b)" using ih argMT inArg by blast
+                have bN: "?m10 + b < Lng ?N" using bL LN by simp
+                have ancN: "\<And>j. ?m10 + a < j \<Longrightarrow> j \<le> ?m10 + b
+                              \<Longrightarrow> entry ?N 0 (?m10 + a) < entry ?N 0 j"
+                  using y3w_le0_iff[of "?m10 + a" "?m10 + b" ?N] ab bN inN by simp
+                \<comment> \<open>read back\<close>
+                have al: "a < Lng M" using ab bL by simp
+                have "\<forall>j. a < j \<longrightarrow> j \<le> b \<longrightarrow> entry (Red M) 0 a < entry (Red M) 0 j"
+                proof (intro allI impI)
+                  fix j assume j1: "a < j" and j2: "j \<le> b"
+                  have jl: "j < Lng M" using j2 bL by simp
+                  have XY: "entry ?N 0 (?m10 + a) < entry ?N 0 (?m10 + j)"
+                    using ancN[of "?m10 + j"] j1 j2 by simp
+                  have cX: "entry ?N 0 ?m10 \<le> entry ?N 0 (?m10 + a)"
+                    by (rule segge[OF al])
+                  have sub: "entry ?N 0 (?m10 + a) - entry ?N 0 ?m10
+                             < entry ?N 0 (?m10 + j) - entry ?N 0 ?m10"
+                    using XY cX by linarith
+                  show "entry (Red M) 0 a < entry (Red M) 0 j"
+                    using eRed[OF al] eRed[OF jl] sub by simp
+                qed
+                thus ?thesis using y3w_le0_iff[OF ab bR] by simp
+              qed
+            qed
+          qed
+        qed
+      qed
+    qed
+  qed
+  thus ?thesis using MT le by blast
+qed
+
+text \<open>(F) at the reduct \<open>R = Red (Red M)\<close>, which is where the \<section>7 engine lives.\<close>
+
+corollary y3w_Red2_le0:
+  assumes MT: "M \<in> T_PS" and le: "le0 M a b"
+  shows "le0 (Red (Red M)) a b"
+proof -
+  have R1: "Red M \<in> T_PS" by (rule y3r_Red_TPS[OF MT])
+  show ?thesis by (rule y3w_Red_le0[OF R1 y3w_Red_le0[OF MT le]])
+qed
+
+corollary y3w_Red2_leR0:
+  assumes MT: "M \<in> T_PS" and le: "leR M 0 a b"
+  shows "leR (Red (Red M)) 0 a b"
+  using y3w_Red2_le0[OF MT] le by (simp add: leR_def)
+
+subsection \<open>The residue of the \<section>7.4 proposition on \<open>T\<^bsub>PS\<^esub>\<close>: pure admissibility\<close>
+
+text \<open>With (F) the \<open>\<le>\<^sub>M\<close>-half of both bricks of
+  @{thm [source] y3t_7_4_Mark_nextAdm_TPS_of_bricks} is free, so the whole residue
+  of the \<open>T\<^bsub>PS\<^esub>\<close> statement is \<^bold>\<open>admissibility at the reduct\<close> --- \<open>adm R j\<^sub>0\<close> and
+  \<open>adm R j\<close> for \<open>R = Red (Red M)\<close>.  \<open>Red\<close> can destroy admissibility (correction A4)
+  and this is now provably the ONLY thing it can destroy here.\<close>
+
+lemma y3w_le0_adj:
+  assumes j: "Suc j < Lng M"
+  shows "le0 M j (Suc j) \<longleftrightarrow> entry M 0 j < entry M 0 (Suc j)"
+proof -
+  have "le0 M j (Suc j)
+        \<longleftrightarrow> (\<forall>k. j < k \<longrightarrow> k \<le> Suc j \<longrightarrow> entry M 0 j < entry M 0 k)"
+    by (rule y3w_le0_iff) (use j in simp_all)
+  moreover have "(\<forall>k. j < k \<longrightarrow> k \<le> Suc j \<longrightarrow> entry M 0 j < entry M 0 k)
+                 \<longleftrightarrow> entry M 0 j < entry M 0 (Suc j)"
+  proof
+    assume "\<forall>k. j < k \<longrightarrow> k \<le> Suc j \<longrightarrow> entry M 0 j < entry M 0 k"
+    thus "entry M 0 j < entry M 0 (Suc j)" by simp
+  next
+    assume H: "entry M 0 j < entry M 0 (Suc j)"
+    show "\<forall>k. j < k \<longrightarrow> k \<le> Suc j \<longrightarrow> entry M 0 j < entry M 0 k"
+    proof (intro allI impI)
+      fix k assume k1: "j < k" and k2: "k \<le> Suc j"
+      have "k = Suc j" using k1 k2 by simp
+      thus "entry M 0 j < entry M 0 k" using H by simp
+    qed
+  qed
+  ultimately show ?thesis by simp
+qed
+
+lemma y3w_nextrel1_adj:
+  assumes j: "Suc j < Lng M"
+  shows "nextrel1 M j (Suc j)
+         \<longleftrightarrow> entry M 0 j < entry M 0 (Suc j) \<and> entry M 1 j < entry M 1 (Suc j)"
+proof
+  assume H: "nextrel1 M j (Suc j)"
+  hence "le0 M j (Suc j)" and "entry M 1 j < entry M 1 (Suc j)"
+    by (simp_all add: nextrel1_def)
+  thus "entry M 0 j < entry M 0 (Suc j) \<and> entry M 1 j < entry M 1 (Suc j)"
+    using y3w_le0_adj[OF j] by simp
+next
+  assume H: "entry M 0 j < entry M 0 (Suc j) \<and> entry M 1 j < entry M 1 (Suc j)"
+  have le: "le0 M j (Suc j)" using y3w_le0_adj[OF j] H by simp
+  have between: "\<forall>k. j < k \<and> le0 M k (Suc j) \<longrightarrow> entry M 1 k \<ge> entry M 1 (Suc j)"
+  proof (intro allI impI)
+    fix k assume hk: "j < k \<and> le0 M k (Suc j)"
+    hence "k \<le> Suc j" using y3w_le0_bounds by blast
+    hence "k = Suc j" using hk by simp
+    thus "entry M 1 k \<ge> entry M 1 (Suc j)" by simp
+  qed
+  show "nextrel1 M j (Suc j)"
+    unfolding nextrel1_def using j le between H by simp
+qed
+
+text \<open>\<open>nadm\<close> is a purely LOCAL, two-step condition: \<open>j\<close> is non-admissible exactly
+  when \<^emph>\<open>both\<close> rows strictly increase across \<open>j-1 \<to> j \<to> j+1\<close>
+  (empirically 414768/414768 at \<open>Lng \<le> 4\<close>, entries \<open>< 4\<close>).\<close>
+
+lemma y3w_nadm_local:
+  assumes m1: "0 < m" and m2: "Suc m < Lng M"
+  shows "nadm M m \<longleftrightarrow>
+           (entry M 0 (m - 1) < entry M 0 m \<and> entry M 1 (m - 1) < entry M 1 m
+          \<and> entry M 0 m < entry M 0 (Suc m) \<and> entry M 1 m < entry M 1 (Suc m))"
+proof -
+  have sm: "Suc (m - 1) = m" using m1 by simp
+  have b1: "Suc (m - 1) < Lng M" using sm m2 by simp
+  have e1: "nextR M 1 (m - 1) m
+              \<longleftrightarrow> entry M 0 (m - 1) < entry M 0 m \<and> entry M 1 (m - 1) < entry M 1 m"
+    using y3w_nextrel1_adj[OF b1] sm by (simp add: nextR_def)
+  have e2: "nextR M 1 m (m + 1)
+              \<longleftrightarrow> entry M 0 m < entry M 0 (Suc m) \<and> entry M 1 m < entry M 1 (Suc m)"
+    using y3w_nextrel1_adj[OF m2] by (simp add: nextR_def)
+  have nb: "\<not> (m > Lng M)" using m2 by simp
+  show ?thesis using nb e1 e2 by (simp add: nadm_def)
+qed
+
+lemma y3w_adm_0: "adm M 0"
+  by (simp add: adm_def nadm_def nextR_def nextrel1_def)
+
+text \<open>\<^bold>\<open>The \<section>7.4 \<open>Mark\<close>/\<open>NextAdm\<close> proposition on \<open>T\<^bsub>PS\<^esub>\<close>, with the residue reduced
+  to the two \<open>adm\<close> facts\<close> --- the \<open>\<le>\<^sub>M\<close>-halves of both bricks are discharged by (F).\<close>
+
+theorem y3w_7_4_Mark_nextAdm_TPS_of_adm:
+  assumes MT: "M \<in> T_PS"
+    and uniq: "\<exists>!j0. nextAdm M 0 j0 (Lng M - 1)"
+    and jM: "(M, j) \<in> Marked"
+    and jle: "leR M 0 j (THE j0. nextAdm M 0 j0 (Lng M - 1))"
+    and admA: "adm (Red (Red M)) (THE j0. nextAdm M 0 j0 (Lng M - 1))"
+    and admB: "adm (Red (Red M)) j"
+  shows "\<exists>!sb. scb_decomp (Mark (Pred M) j)
+                  (fst sb) (flatBT (Mark (Pred M)
+                     (THE j0. nextAdm M 0 j0 (Lng M - 1)))) (snd sb)
+            \<and> scb_decomp (Mark M j)
+                  (fst sb) (flatBT (Mark M
+                     (THE j0. nextAdm M 0 j0 (Lng M - 1)))) (snd sb)"
+proof -
+  let ?j0 = "THE j0. nextAdm M 0 j0 (Lng M - 1)"
+  let ?R = "Red (Red M)"
+  have RR: "?R \<in> RT_PS" by (rule y3r_RED2[OF MT])
+  have RT: "?R \<in> T_PS" using RR by (simp add: RT_PS_def)
+  have F2: "(Red ^^ 2) M = ?R" by (simp add: numeral_2_eq_2)
+  have LR: "Lng ?R = Lng M" using y3s_Lng_funpow_Red[OF MT, of 2] F2 by simp
+  have na: "nextAdm M 0 ?j0 (Lng M - 1)" by (rule theI'[OF uniq])
+  have leA: "leR M 0 ?j0 (Lng M - 1)" using na unfolding nextAdm_def by blast
+  have leB: "leR M 0 j (Lng M - 1)" using jM by (simp add: Marked_def)
+  have brickA: "(?R, ?j0) \<in> Marked"
+    using RT admA y3w_Red2_leR0[OF MT leA] LR by (simp add: Marked_def)
+  have brickB: "(?R, j) \<in> Marked"
+    using RT admB y3w_Red2_leR0[OF MT leB] LR by (simp add: Marked_def)
+  show ?thesis
+    by (rule y3t_7_4_Mark_nextAdm_TPS_of_bricks[OF MT uniq jM jle brickA brickB])
+qed
+
+text \<open>\<^bold>\<open>STATUS (r78, honest)\<close>.  \<^bold>\<open>(F) is now a THEOREM\<close>
+  (@{thm [source] y3w_Red_le0} / @{thm [source] y3w_Red2_le0}, sorry-free, on ALL of
+  \<open>T\<^bsub>PS\<^esub>\<close>, no side condition): \<open>le\<^sub>0 M a b \<Longrightarrow> le\<^sub>0 (Red M) a b\<close>.  The converse is FALSE
+  (correction A4).  Consequently the \<section>7.4 \<open>Mark\<close>/\<open>NextAdm\<close> proposition on \<open>T\<^bsub>PS\<^esub>\<close>
+  is now \<^bold>\<open>green modulo exactly two \<open>adm\<close> facts\<close>
+  (@{thm [source] y3w_7_4_Mark_nextAdm_TPS_of_adm}):
+
+    \<^item> \<^bold>\<open>Brick A\<close>: \<open>adm (Red (Red M)) j\<^sub>0\<close>;
+    \<^item> \<^bold>\<open>Brick B\<close>: \<open>adm (Red (Red M)) j\<close>.
+
+  By @{thm [source] y3w_nadm_local} each of these is a concrete four-inequality
+  statement: \<open>adm R m\<close> fails exactly when \<^emph>\<open>both\<close> rows of \<open>R\<close> strictly increase
+  across \<open>m-1 \<to> m \<to> m+1\<close>.
+
+  \<^bold>\<open>What remains, and what is known about it\<close>:
+
+    \<^item> \<^bold>\<open>(C4)\<close> (Brick A): for \<open>(M,m) \<in> T\<^bsub>PS\<^esub>\<^sup>Marked\<close> with a strict row-0 \<open>M\<close>-ancestor
+      (\<open>\<exists>i<m. le\<^sub>0 M i m\<close>), \<open>adm (Red (Red M)) m\<close> --- 4523/4523 non-vacuous at
+      \<open>Lng \<le> 4\<close>, entries \<open>< 3\<close> (re-run this round), and without the proviso it fails
+      95/11903.  \<open>j < j\<^sub>0\<close> with \<open>leR M 0 j j\<^sub>0\<close> supplies exactly that ancestor for
+      \<open>m = j\<^sub>0\<close>.  NOT yet proved: the proviso "\<open>m\<close> has a strict row-0 \<open>M\<close>-ancestor" is
+      equivalent to "\<open>m\<close> is NOT a \<open>P\<close>-component left end of \<open>M\<close>"
+      (@{thm [source] idxsum_lmin_leftend} / @{thm [source] idxsum_leftend_lmin}), but
+      \<open>P\<close>-component left ends are NOT \<open>Red\<close>-invariant at the FIRST \<open>Red\<close> (they are at
+      the second, by the (D)-invariant @{thm [source] y3r_Red_comp_diag}), so the
+      obvious "left-end \<Rightarrow> left-end" transport route is CLOSED
+      (counterexample \<open>M = (0,0)(0,1)(1,2)\<close>: \<open>0,1\<close> are the \<open>P\<close>-left-ends of \<open>M\<close>,
+      but \<open>Red M = (0,0)(1,1)(2,2)\<close> has only \<open>0\<close>).
+
+    \<^item> \<^bold>\<open>Brick B\<close> genuinely FAILS (144/6458) and needs the engine relaxation of
+      @{thm [source] Mark_nest_common_marked} to an unmarked inner column, not a
+      transport.\<close>
 ML \<open>
   fun sorry_deps th =
     let
@@ -19626,7 +20573,15 @@ ML \<open>
      ("y3t_toplevel_OT_tail_annihilate", @{thm y3t_toplevel_OT_tail_annihilate}),
      \<comment> \<open>r77: the \<section>7.4 \<open>Mark\<close>/\<open>NextAdm\<close> proposition on \<open>T\<^bsub>PS\<^esub>\<close>, modulo the two
          \<open>Marked\<close>-transport bricks (Brick A / Brick B) --- sorry-free\<close>
-     ("y3t_7_4_Mark_nextAdm_TPS_of_bricks", @{thm y3t_7_4_Mark_nextAdm_TPS_of_bricks})];
+     ("y3t_7_4_Mark_nextAdm_TPS_of_bricks", @{thm y3t_7_4_Mark_nextAdm_TPS_of_bricks}),
+     \<comment> \<open>r78: (F) --- \<open>Red\<close> only ADDS row-0 ancestor edges, on ALL of \<open>T\<^bsub>PS\<^esub>\<close>;
+         and the \<section>7.4 \<open>Mark\<close>/\<open>NextAdm\<close> proposition on \<open>T\<^bsub>PS\<^esub>\<close> with its residue
+         reduced to the two \<open>adm\<close> facts at the reduct\<close>
+     ("y3w_Red_le0",              @{thm y3w_Red_le0}),
+     ("y3w_Red2_le0",             @{thm y3w_Red2_le0}),
+     ("y3w_Red2_leR0",            @{thm y3w_Red2_leR0}),
+     ("y3w_nadm_local",           @{thm y3w_nadm_local}),
+     ("y3w_7_4_Mark_nextAdm_TPS_of_adm", @{thm y3w_7_4_Mark_nextAdm_TPS_of_adm})];
 
   \<comment> \<open>r72: assert the termination theorems carry NO free hypothesis left ---
       \<open>y5_PSS_wf\<close> must be a closed statement (no meta-premises, no schematics).\<close>
