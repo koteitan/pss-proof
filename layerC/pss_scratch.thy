@@ -19376,6 +19376,111 @@ proof (induction t' rule: wf_induct_rule[OF y4_buc1_2_2_OT_B_wf])
 qed
 
 
+
+(* ===================================================================== *)
+(* r77-Y3P2 (TARGET 1): the §7.4 Mark/NextAdm proposition on T_PS ---     *)
+(* the residue, MACHINE-CHECKED, and the mechanism of Brick A pinned.     *)
+(* NOT closed: see the honest status note below.                          *)
+(* ===================================================================== *)
+
+section \<open>r77-Y3P2 --- \<section>7.4 \<open>Mark\<close>/\<open>NextAdm\<close> on \<open>T\<^bsub>PS\<^esub>\<close>: the two bricks, machine-checked\<close>
+
+text \<open>The \<open>T\<^bsub>PS\<^esub>\<close>-level proposition (correction A18's form, hypotheses read off \<open>M\<close>)
+  follows from the \<open>RT\<^bsub>PS\<^esub>\<close> engine @{thm [source] Mark_nest_common_marked} applied at
+  the reduct \<open>R := Red (Red M)\<close> (\<open>y3r_RED2\<close>), because \<open>Mark M i = Mark R i\<close> and
+  \<open>Mark (Pred M) i = Mark (Pred R) i\<close>.  What does NOT transport is the
+  \<open>Marked\<close>-ness of the two columns (correction A4: \<open>adm\<close> / \<open>\<le>\<^sub>M\<close> are not
+  \<open>Red\<close>-invariant).  The lemma below is exactly that reduction, with the two
+  missing facts as explicit hypotheses --- so the residue of the \<open>T\<^bsub>PS\<^esub>\<close> statement
+  is now machine-checked rather than prose:
+
+    \<^item> \<^bold>\<open>Brick A\<close>: \<open>(R, j\<^sub>0) \<in> T\<^bsub>PS\<^esub>\<^sup>Marked\<close>;
+    \<^item> \<^bold>\<open>Brick B\<close>: \<open>(R, j) \<in> T\<^bsub>PS\<^esub>\<^sup>Marked\<close>.\<close>
+
+theorem y3t_7_4_Mark_nextAdm_TPS_of_bricks:
+  assumes MT: "M \<in> T_PS"
+    and uniq: "\<exists>!j0. nextAdm M 0 j0 (Lng M - 1)"
+    and jM: "(M, j) \<in> Marked"
+    and jle: "leR M 0 j (THE j0. nextAdm M 0 j0 (Lng M - 1))"
+    and brickA: "(Red (Red M), THE j0. nextAdm M 0 j0 (Lng M - 1)) \<in> Marked"
+    and brickB: "(Red (Red M), j) \<in> Marked"
+  shows "\<exists>!sb. scb_decomp (Mark (Pred M) j)
+                  (fst sb) (flatBT (Mark (Pred M)
+                     (THE j0. nextAdm M 0 j0 (Lng M - 1)))) (snd sb)
+            \<and> scb_decomp (Mark M j)
+                  (fst sb) (flatBT (Mark M
+                     (THE j0. nextAdm M 0 j0 (Lng M - 1)))) (snd sb)"
+proof -
+  let ?j0 = "THE j0. nextAdm M 0 j0 (Lng M - 1)"
+  let ?R = "Red (Red M)"
+  have RR: "?R \<in> RT_PS" by (rule y3r_RED2[OF MT])
+  have F2: "(Red ^^ 2) M = ?R" by (simp add: numeral_2_eq_2)
+  have F: "(Red ^^ 2) M \<in> RT_PS" using RR F2 by simp
+  have na: "nextAdm M 0 ?j0 (Lng M - 1)" by (rule theI'[OF uniq])
+  have j0lt: "?j0 < Lng M - 1" using na unfolding nextAdm_def by blast
+  have LR: "Lng ?R = Lng M" using y3s_Lng_funpow_Red[OF MT, of 2] F2 by simp
+  have j0ltR: "?j0 < Lng ?R - 1" using j0lt LR by simp
+  have LM: "1 < Lng M" using j0lt by linarith
+  have LRR: "1 < Lng ?R" using LM LR by simp
+  have jle0: "j \<le> ?j0"
+  proof -
+    have "(nextrel0 M)\<^sup>*\<^sup>* j ?j0" using jle by (simp add: leR_def le0_def)
+    thus ?thesis by (rule nextrel0_rtrancl_mono)
+  qed
+  have base: "\<exists>!sb. scb_decomp (Mark (Pred ?R) j) (fst sb) (flatBT (Mark (Pred ?R) ?j0)) (snd sb)
+            \<and> scb_decomp (Mark ?R j) (fst sb) (flatBT (Mark ?R ?j0)) (snd sb)"
+    by (rule Mark_nest_common_marked[OF RR brickB brickA jle0 j0ltR])
+  have pe: "(Red ^^ 2) (Pred M) = Pred ?R"
+    using y3s_Pred_funpow_Red[OF MT, of 2] F2 by simp
+  have PF: "Pred ?R \<in> RT_PS" by (rule y3s_Pred_RT_PS[OF RR LRR])
+  have PFR: "(Red ^^ 2) (Pred M) \<in> RT_PS" using pe PF by simp
+  have mM: "\<And>i. Mark M i = Mark ?R i" using y3s_Mark_funpow_Red[OF F] F2 by simp
+  have mP: "\<And>i. Mark (Pred M) i = Mark (Pred ?R) i"
+    using y3s_Mark_funpow_Red[OF PFR] pe by simp
+  show ?thesis using base mM mP by simp
+qed
+
+text \<open>\<^bold>\<open>STATUS (r77, honest)\<close>: the proposition itself is \<^bold>\<open>still not proved\<close> on
+  \<open>T\<^bsub>PS\<^esub>\<close>; the two bricks above are the whole residue.  What r77 adds is the
+  \<^bold>\<open>mechanism\<close> of Brick A, pinned empirically to a single, sharp, \<^emph>\<open>provable-looking\<close>
+  \<section>6 statement (vetted \<open>python/red_model\<close>; \<open>R := Red (Red M)\<close>):
+
+    \<^item> \<^bold>\<open>(F) \<open>Red\<close> only ADDS row-0 (and row-1) ancestor edges\<close>: for every
+      \<open>M \<in> T\<^bsub>PS\<^esub>\<close> and all \<open>a,b\<close>, \<open>le\<^sub>0 M a b \<Longrightarrow> le\<^sub>0 R a b\<close> (38970/38970 instances,
+      entries \<open>< 3\<close>, \<open>Lng \<le> 4\<close>; likewise \<open>le\<^sub>1\<close>, 31946/31946; the converse is FALSE
+      --- that is exactly correction A4).  Consequently the \<open>\<le>\<^sub>M\<close>-half of BOTH
+      bricks is free: \<open>leR M 0 m (Lng M - 1) \<Longrightarrow> leR R 0 m (Lng R - 1)\<close>.  So
+      \<^bold>\<open>Brick A \<equiv> \<open>adm R j\<^sub>0\<close>\<close> and \<^bold>\<open>Brick B \<equiv> \<open>adm R j\<close>\<close> --- admissibility is the
+      ONLY thing \<open>Red\<close> can destroy (it destroys it by CREATING a row-0 edge, which
+      turns a \<open>nextrel\<^sub>1\<close>-gap into a \<open>nextrel\<^sub>1\<close>-step, i.e. makes \<open>j\<close> non-admissible).
+
+    \<^item> \<^bold>\<open>(C4) why \<open>j < j\<^sub>0\<close> saves Brick A\<close>: for \<open>M \<in> T\<^bsub>PS\<^esub>\<close> and \<open>(M,m) \<in> T\<^bsub>PS\<^esub>\<^sup>Marked\<close>,
+      \<^bold>\<open>if \<open>m\<close> has ANY strict row-0 \<open>M\<close>-ancestor\<close> (\<open>\<exists>i < m. le\<^sub>0 M i m\<close>) \<^bold>\<open>then\<close>
+      \<open>adm R m\<close> --- 4523/4523 (entries \<open>< 3\<close>, \<open>Lng \<le> 4\<close>), whereas WITHOUT that
+      proviso \<open>adm R m\<close> fails 95/11903 (e.g. \<open>M = (0,0)(0,1)(1,2)\<close>, \<open>m = 1\<close>:
+      \<open>R = (0,0)(1,1)(2,2)\<close> and \<open>Red\<close> has created the row-0 edge \<open>0 \<to> 1\<close>, so
+      \<open>1\<close> becomes non-admissible in \<open>R\<close>).  In the proposition, \<open>j < j\<^sub>0\<close> together
+      with \<open>leR M 0 j j\<^sub>0\<close> supplies precisely that strict row-0 ancestor for
+      \<open>m = j\<^sub>0\<close> --- which is why the reflexive exercises (\<open>j = j\<^sub>0\<close>, no strict
+      ancestor available) are exactly the ones where Brick A fails (725 of them).
+      Note \<open>j\<close> itself need NOT have one, which is why Brick B genuinely fails
+      (144/6458) and needs the engine relaxation, not a transport.
+
+  \<^bold>\<open>NEXT STEPS\<close> (in order): (1) prove (F) --- an induction over the \<open>Red\<close> recursion
+  (\<open>Red_dom\<close>), the missing \<section>6 brick; the existing \<open>m_6_5_Red_le_final\<close> gives \<open>=\<close>
+  only on \<open>anchored_slice\<close> (via \<open>congR\<close>), while (F) is the \<open>\<Longrightarrow>\<close>-half on ALL of
+  \<open>T\<^bsub>PS\<^esub>\<close>.  (2) prove (C4) from (F) plus the \<open>Red\<close> left-end/diagonal invariants
+  (\<open>m_6_5_Red_leftend_row0_min\<close>, \<open>y3r_Red_comp_diag\<close>) --- this closes Brick A and
+  hence @{thm [source] y3t_7_4_Mark_nextAdm_TPS_of_bricks}'s first hypothesis.
+  (3) Brick B stays: relax @{thm [source] Mark_nest_common_marked} to an UNMARKED
+  inner column (only \<open>le\<^sub>0 R j (Lng R - 1)\<close>, which (F) gives), i.e. re-prove
+  @{thm [source] m_7_3_Trans_Mark_MarkedB} and @{thm [source] Mark_MarkedB_nest}
+  with \<open>adm\<close> dropped from the inner column; the \<open>MarkedB\<close> invariant for such
+  columns is empirically intact (7/7 non-vacuous at \<open>Lng \<le> 4\<close> --- a THIN census,
+  do not trust it before widening).  Sweeps: \<open>python/_y3_74_marknextadm_tps.py\<close>,
+  \<open>python/_y3_74_nest_relax.py\<close>, \<open>python/_y3_74_brickA_mechanism.py\<close>.\<close>
+
+
 ML \<open>
   fun sorry_deps th =
     let
@@ -19513,7 +19618,10 @@ ML \<open>
      ("y3u_p_8_3_kind0_base_ineq",   @{thm y3u_p_8_3_kind0_base_ineq}),
      \<comment> \<open>r77: the \<section>8.7 top-level tail annihilation, freed of the
          sorry'd \<open>buc1_2_2_OT_B_wf\<close> citation (uses \<open>y4_buc1_2_2_OT_B_wf\<close>)\<close>
-     ("y3t_toplevel_OT_tail_annihilate", @{thm y3t_toplevel_OT_tail_annihilate})];
+     ("y3t_toplevel_OT_tail_annihilate", @{thm y3t_toplevel_OT_tail_annihilate}),
+     \<comment> \<open>r77: the \<section>7.4 \<open>Mark\<close>/\<open>NextAdm\<close> proposition on \<open>T\<^bsub>PS\<^esub>\<close>, modulo the two
+         \<open>Marked\<close>-transport bricks (Brick A / Brick B) --- sorry-free\<close>
+     ("y3t_7_4_Mark_nextAdm_TPS_of_bricks", @{thm y3t_7_4_Mark_nextAdm_TPS_of_bricks})];
 
   \<comment> \<open>r72: assert the termination theorems carry NO free hypothesis left ---
       \<open>y5_PSS_wf\<close> must be a closed statement (no meta-premises, no schematics).\<close>
