@@ -19446,8 +19446,10 @@ text \<open>\<^bold>\<open>STATUS (r77, honest)\<close>: the proposition itself 
   \<section>6 statement (vetted \<open>python/red_model\<close>; \<open>R := Red (Red M)\<close>):
 
     \<^item> \<^bold>\<open>(F) \<open>Red\<close> only ADDS row-0 (and row-1) ancestor edges\<close>: for every
-      \<open>M \<in> T\<^bsub>PS\<^esub>\<close> and all \<open>a,b\<close>, \<open>le\<^sub>0 M a b \<Longrightarrow> le\<^sub>0 R a b\<close> (38970/38970 instances,
-      entries \<open>< 3\<close>, \<open>Lng \<le> 4\<close>; likewise \<open>le\<^sub>1\<close>, 31946/31946; the converse is FALSE
+      \<open>M \<in> T\<^bsub>PS\<^esub>\<close> and all \<open>a,b\<close>, \<open>le\<^sub>0 M a b \<Longrightarrow> le\<^sub>0 R a b\<close> (38970/38970 instances at
+      entries \<open>< 3\<close>, \<open>Lng \<le> 4\<close>; two wider, independent sweeps: 390640/390640 at
+      entries \<open>< 4\<close>, \<open>Lng \<le> 4\<close> and 463005/463005 at entries \<open>< 3\<close>, \<open>Lng \<le> 5\<close>;
+      likewise \<open>le\<^sub>1\<close>, 31946/31946; the converse is FALSE
       --- that is exactly correction A4).  Consequently the \<open>\<le>\<^sub>M\<close>-half of BOTH
       bricks is free: \<open>leR M 0 m (Lng M - 1) \<Longrightarrow> leR R 0 m (Lng R - 1)\<close>.  So
       \<^bold>\<open>Brick A \<equiv> \<open>adm R j\<^sub>0\<close>\<close> and \<^bold>\<open>Brick B \<equiv> \<open>adm R j\<close>\<close> --- admissibility is the
@@ -19456,8 +19458,11 @@ text \<open>\<^bold>\<open>STATUS (r77, honest)\<close>: the proposition itself 
 
     \<^item> \<^bold>\<open>(C4) why \<open>j < j\<^sub>0\<close> saves Brick A\<close>: for \<open>M \<in> T\<^bsub>PS\<^esub>\<close> and \<open>(M,m) \<in> T\<^bsub>PS\<^esub>\<^sup>Marked\<close>,
       \<^bold>\<open>if \<open>m\<close> has ANY strict row-0 \<open>M\<close>-ancestor\<close> (\<open>\<exists>i < m. le\<^sub>0 M i m\<close>) \<^bold>\<open>then\<close>
-      \<open>adm R m\<close> --- 4523/4523 (entries \<open>< 3\<close>, \<open>Lng \<le> 4\<close>), whereas WITHOUT that
-      proviso \<open>adm R m\<close> fails 95/11903 (e.g. \<open>M = (0,0)(0,1)(1,2)\<close>, \<open>m = 1\<close>:
+      \<open>adm R m\<close> --- 4523/4523 (entries \<open>< 3\<close>, \<open>Lng \<le> 4\<close>), and in the two wider
+      sweeps 50288/50288 (entries \<open>< 4\<close>, \<open>Lng \<le> 4\<close>) and 45716/45716 (entries \<open>< 3\<close>,
+      \<open>Lng \<le> 5\<close>) --- exactly the non-vacuous exercise counts of the proposition's
+      own census.  WITHOUT that proviso \<open>adm R m\<close> fails 95/11903 (resp. 1700/120192
+      and 869/112145) (e.g. \<open>M = (0,0)(0,1)(1,2)\<close>, \<open>m = 1\<close>:
       \<open>R = (0,0)(1,1)(2,2)\<close> and \<open>Red\<close> has created the row-0 edge \<open>0 \<to> 1\<close>, so
       \<open>1\<close> becomes non-admissible in \<open>R\<close>).  In the proposition, \<open>j < j\<^sub>0\<close> together
       with \<open>leR M 0 j j\<^sub>0\<close> supplies precisely that strict row-0 ancestor for
