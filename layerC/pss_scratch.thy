@@ -15957,6 +15957,411 @@ proof -
     using y3s_Mark_funpow_Red[OF PFR] pe by simp
   show ?thesis using base mM mP by simp
 qed
+
+
+(* ===================================================================== *)
+(* r75-Y3I: the §8.4 "internal-symbol" lemma cluster (content.md 4265,   *)
+(* 4389, 4507, 4605, 4702, 4802) --- exposure of the Trans-recursion     *)
+(* let-symbols + the six lemmas as top-level y3i_* statements.           *)
+(*                                                                       *)
+(* AUDIT NOTE (r75): the six lemmas were NOT missing from the .thy body  *)
+(* --- they were transcribed and (largely) proved in layerB under the    *)
+(* m_8_4_* names; what was missing were (a) top-level y3i-level          *)
+(* statements naming them as the article's lemmas, and (b) the           *)
+(* UNCONDITIONAL forms of L4(2)(3), L5 and L6, which layerB left         *)
+(* "green-modulo" the reduced-slice regimes REGS/REGSP.  Those regimes   *)
+(* are now owned unconditionally (mcx_regS / slx37_regSP_uncond), so all *)
+(* three are closed here.                                                *)
+(* ===================================================================== *)
+
+section \<open>r75-Y3I --- \<section>8.4 の \<open>Trans\<close> 内部記号クラスタ（六補題）\<close>
+
+subsection \<open>Exposure of the remaining \<open>Trans\<close>-recursion \<open>let\<close>-symbols (\<open>t\<^sub>3\<close>, \<open>t\<^sub>4\<close>)\<close>
+
+text \<open>\<open>j\<^sub>1, j\<^sub>0, j\<^sub>-\<^sub>1, t\<^sub>1, c\<^sub>1, v, t\<^sub>2, c\<^sub>2\<close> are already exposed in \<open>pss_paper\<close>
+  (\<^const>\<open>transJ1\<close>, \<^const>\<open>transJ0\<close>, \<^const>\<open>transJm1\<close>, \<^const>\<open>transT1\<close>,
+  \<^const>\<open>transC1\<close>, \<^const>\<open>transV\<close>, \<^const>\<open>transT2\<close>, \<^const>\<open>transC2\<close>),
+  \<open>j\<^sub>-\<^sub>2, j\<^sub>-\<^sub>3\<close> and the article-local sequences \<open>N, N', L', L\<^sub>n\<close> in \<open>pss_wip\<close>
+  (\<^const>\<open>s84x_jm2\<close>, \<^const>\<open>s84x_jm3\<close>, \<^const>\<open>s84x_N\<close>, \<^const>\<open>s84x_Np\<close>,
+  \<^const>\<open>s84x_Lp\<close>, \<^const>\<open>s84x_L\<close>), and the scb strings \<open>s\<^sub>1, b\<^sub>1\<close> as
+  \<^const>\<open>s84x_s1\<close> / \<^const>\<open>s84x_b1\<close>.  The only \<open>let\<close>-symbols with no top-level
+  name yet are \<open>t\<^sub>3\<close> and \<open>t\<^sub>4\<close> (used inside the last \<^const>\<open>transC2\<close> branch);
+  they are added here, mirroring the \<open>let\<close>-chain of \<^const>\<open>Trans\<close> verbatim.\<close>
+
+definition y3i_leftDj0 :: "pairseq \<Rightarrow> bool" where
+  "y3i_leftDj0 M =
+     (bpHeadV (PB (transT2 M) ! (Lng (PB (transT2 M)) - 1))
+        = enat (entry M 1 (transJ0 M)))"
+
+definition y3i_t3 :: "pairseq \<Rightarrow> BT" where
+  "y3i_t3 M = (if y3i_leftDj0 M
+               then SigmaB (take (Lng (PB (transT2 M)) - 1) (PB (transT2 M)))
+               else transT2 M)"
+
+definition y3i_t4 :: "pairseq \<Rightarrow> BT" where
+  "y3i_t4 M = (if y3i_leftDj0 M
+               then bpHeadT (PB (transT2 M) ! (Lng (PB (transT2 M)) - 1))
+               else transT2 M)"
+
+text \<open>Bridge: the four \<^const>\<open>transC2\<close> branches in terms of the exposed symbols
+  (the last one is the only place \<open>t\<^sub>3\<close>/\<open>t\<^sub>4\<close> occur).  Definitional.\<close>
+
+lemma y3i_transC2_branches:
+  "transCondI M \<or> transCondIII M \<or> transCondV M \<Longrightarrow>
+     transC2 M = Dpt (transV M) (transT2 M +\<^sub>B Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B)"
+  "\<not> (transCondI M \<or> transCondIII M \<or> transCondV M) \<Longrightarrow> transCondVI M \<Longrightarrow>
+     transC2 M = Dpt (transV M) (Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B)"
+  "\<not> (transCondI M \<or> transCondIII M \<or> transCondV M) \<Longrightarrow> \<not> transCondVI M \<Longrightarrow>
+     transT2 M = 0\<^sub>B \<Longrightarrow>
+     transC2 M = Dpt (transV M)
+                   (Dpt (enat (entry M 1 (transJ0 M)))
+                        (Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B))"
+  "\<not> (transCondI M \<or> transCondIII M \<or> transCondV M) \<Longrightarrow> \<not> transCondVI M \<Longrightarrow>
+     transT2 M \<noteq> 0\<^sub>B \<Longrightarrow>
+     transC2 M = Dpt (transV M)
+                   (y3i_t3 M +\<^sub>B Dpt (enat (entry M 1 (transJ0 M)))
+                                    (y3i_t4 M +\<^sub>B Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B))"
+  by (simp_all add: transC2_def y3i_t3_def y3i_t4_def y3i_leftDj0_def
+                    transJ1_def Let_def)
+
+text \<open>Faithfulness bridge (\<open>Trans M = s\<^sub>1 c\<^sub>2 b\<^sub>1\<close>): on the \<open>Trans\<close>-recursion's
+  own branch (\<open>M\<close> reduced mono, \<open>j\<^sub>1 > 0\<close>, \<open>t\<^sub>1 \<noteq> 0\<close>) the value of \<^const>\<open>Trans\<close>
+  is the \<open>(s\<^sub>1,b\<^sub>1)\<close>-context of \<^const>\<open>transC1\<close> inside \<open>t\<^sub>1 = Trans (Pred M)\<close>, with
+  \<^const>\<open>transC1\<close> replaced by \<^const>\<open>transC2\<close>.  Both the scb form and the
+  string form.\<close>
+
+lemma y3i_Trans_s1_c2_b1:
+  assumes MST: "M \<in> ST_PS" and MPT: "M \<in> PT_PS"
+    and hp: "hasParent M 1 (Lng M - 1)" and nVI: "\<not> transCondVI M"
+  shows "scb_decomp (Trans M) (s84x_s1 M) (flatBT (transC2 M)) (s84x_b1 M)"
+    and "Trans M = unflatBT (s84x_s1 M @ flatBT (transC2 M) @ s84x_b1 M)"
+proof -
+  show d: "scb_decomp (Trans M) (s84x_s1 M) (flatBT (transC2 M)) (s84x_b1 M)"
+    by (rule cnx_condIV_Trans_c2_decomp[OF MST MPT hp nVI])
+  have "flatBT (Trans M) = s84x_s1 M @ flatBT (transC2 M) @ s84x_b1 M"
+    using d by (simp add: scb_decomp_def)
+  thus "Trans M = unflatBT (s84x_s1 M @ flatBT (transC2 M) @ s84x_b1 M)"
+    using unflatBT_flat[of "Trans M"] by simp
+qed
+
+subsection \<open>The branch dichotomy needed by L4/L5 (\<open>guard \<Longrightarrow> (III) \<or> (IV)\<close>)\<close>
+
+text \<open>Under the L5 hypothesis set (\<open>\<not>(VI)\<close>, 「\<open>j\<^sub>-\<^sub>2 < j\<^sub>0\<close> または \<open>j\<^sub>0\<close> が \<open>M\<close> 許容」)
+  a STRICT \<open>j\<^sub>-\<^sub>3 < j\<^sub>-\<^sub>2\<close> forces condition (III) or (IV): if \<open>M\<^bsub>1,j\<^sub>0\<^esub> \<ge> M\<^bsub>1,j\<^sub>1\<^esub>\<close> we
+  are in (III)/(IV) outright; otherwise \<open>j\<^sub>-\<^sub>2 = j\<^sub>0\<close>
+  (@{thm [source] s84c1_e1lt_imp_jm2_eq_j0}), so the hypothesis forces \<open>j\<^sub>0\<close>
+  admissible, whence \<open>j\<^sub>-\<^sub>3 = Adm\<^bsub>M\<^esub>(j\<^sub>0) = j\<^sub>0 = j\<^sub>-\<^sub>2\<close> — contradicting the guard.
+  This is what unlocks the reduced-slice regimes \<open>REGS\<close>/\<open>REGSP\<close>
+  (@{thm [source] mcx_regS}, @{thm [source] slx37_regSP_uncond}) for L4/L5.\<close>
+
+lemma y3i_branch_of_guard:
+  assumes MST: "M \<in> ST_PS" and MPT: "M \<in> PT_PS"
+    and hp: "hasParent M 1 (Lng M - 1)" and nVI: "\<not> transCondVI M"
+    and reg: "s84x_jm2 M < transJ0 M \<or> adm M (transJ0 M)"
+    and guard: "s84x_jm3 M < s84x_jm2 M"
+  shows "transCondIII M \<or> transCondIV M"
+proof -
+  have j1gt: "1 < Lng M - 1" using s84d_L4_regime[OF MST MPT hp nVI] by simp
+  have j1pos: "0 < Lng M - 1" using j1gt by simp
+  have e1pos: "0 < entry M 1 (Lng M - 1)" by (rule s84c1_e1j1_pos[OF hp])
+  show ?thesis
+  proof (cases "entry M 1 (Lng M - 1) \<le> entry M 1 (transJ0 M)")
+    case True
+    thus ?thesis using e1pos
+      by (cases "adm M (parent M 0 (Lng M - 1))")
+         (auto simp: transCondIII_def transCondIV_def transJ0_def transJ1_def)
+  next
+    case False
+    hence lt: "entry M 1 (transJ0 M) < entry M 1 (Lng M - 1)" by simp
+    have jm2eq: "s84x_jm2 M = transJ0 M"
+      by (rule s84c1_e1lt_imp_jm2_eq_j0[OF MPT hp j1pos lt])
+    have admj0: "adm M (transJ0 M)" using reg jm2eq by simp
+    have "Adm M (transJ0 M) = transJ0 M" using admj0 by (simp add: Adm_def)
+    hence "s84x_jm3 M = s84x_jm2 M" using jm2eq by (simp add: s84x_jm3_def)
+    thus ?thesis using guard by simp
+  qed
+qed
+
+lemma y3i_REGS:
+  assumes MST: "M \<in> ST_PS" and MPT: "M \<in> PT_PS"
+    and hp: "hasParent M 1 (Lng M - 1)" and nVI: "\<not> transCondVI M"
+    and reg: "s84x_jm2 M < transJ0 M \<or> adm M (transJ0 M)"
+    and guard: "s84x_jm3 M < s84x_jm2 M"
+  shows "cfbx_reg (s84x_jm2 M - s84x_jm3 M) (Red (s84x_N M))"
+proof -
+  have j1gt: "1 < Lng M - 1" using s84d_L4_regime[OF MST MPT hp nVI] by simp
+  show ?thesis
+    by (rule mcx_regS[OF MST MPT hp j1gt
+          y3i_branch_of_guard[OF MST MPT hp nVI reg guard] guard])
+qed
+
+lemma y3i_REGSP:
+  assumes MST: "M \<in> ST_PS" and MPT: "M \<in> PT_PS"
+    and hp: "hasParent M 1 (Lng M - 1)" and nVI: "\<not> transCondVI M"
+    and reg: "s84x_jm2 M < transJ0 M \<or> adm M (transJ0 M)"
+    and guard: "s84x_jm3 M < s84x_jm2 M"
+    and Brne: "Br (Red (Pred (s84x_N M))) \<noteq> []"
+  shows "cfbx_reg (s84x_jm2 M - s84x_jm3 M) (Red (Pred (s84x_N M)))"
+proof -
+  have j1gt: "1 < Lng M - 1" using s84d_L4_regime[OF MST MPT hp nVI] by simp
+  show ?thesis
+    by (rule slx37_regSP_uncond[OF MST MPT hp j1gt
+          y3i_branch_of_guard[OF MST MPT hp nVI reg guard] guard Brne])
+qed
+
+subsection \<open>L1 (content.md 4265) 補題（条件(III)～(V)の下での右端の置き換えと\<open>Trans\<close>の関係）\<close>
+
+text \<open>原文: 「任意の \<open>M \<in> ST\<^bsub>PS\<^esub> \<inter> PT\<^bsub>PS\<^esub>\<close> に対し、\<open>Trans\<close> の再帰的定義中に導入した
+  記号を用い、\<open>(1,j\<^sub>-\<^sub>2) <\<^sub>M\<^sup>Next (1,j\<^sub>1)\<close> を満たす一意な \<open>j\<^sub>-\<^sub>2\<close> が存在するとして
+  \<open>N' := (M\<^sub>j)\<^bsub>j=j\<^sub>-\<^sub>2\<^esub>\<^bsup>j\<^sub>1\<^esup>\<close>、\<open>L' := (M\<^sub>j)\<^bsub>j=j\<^sub>-\<^sub>2\<^esub>\<^bsup>j\<^sub>1-1\<^esup> \<oplus> ((M\<^bsub>0,j\<^sub>1\<^esub>,M\<^bsub>1,j\<^sub>-\<^sub>2\<^esub>))\<close> と置くと、
+  \<open>j\<^sub>-\<^sub>2 < j\<^sub>1-1\<close> ならば一意な \<open>(s,b)\<close> が存在して (1) \<open>(s,D\<^bsub>M\<^sub>1\<^sub>,\<^sub>j\<^sub>1\<^esub>0,b)\<close> は \<open>Trans(N')\<close>
+  の scb 分解、(2)(3) \<open>Trans(L')\<close> の scb 分解である。」
+  **訂正 A30: 印字された part (3) の中心 \<open>D\<^bsub>M\<^sub>1\<^sub>,\<^sub>j\<^sub>0\<^esub>(t\<^sub>2 + D\<^bsub>M\<^sub>1\<^sub>,\<^sub>j\<^sub>0\<^esub>0)\<close> は偽（反例
+  \<open>(0,0)(1,1)(2,2)(3,1)(4,0)(5,1)(6,2)(6,1)\<close>）。原文証明自身の結語どおり (2)(3) は
+  ともに中心 \<open>D\<^bsub>M\<^sub>1\<^sub>,\<^sub>j\<^sub>-\<^sub>2\<^esub>0\<close>（場合分け不要）であり、以下はその訂正形。\<close>
+
+lemma y3i_L1_rightend_Trans:
+  assumes MST: "M \<in> ST_PS" and MPT: "M \<in> PT_PS"
+    and hp: "hasParent M 1 (Lng M - 1)"
+    and rng: "s84x_jm2 M + 1 < Lng M - 1"
+  shows "\<exists>!sb. scb_decomp (Trans (s84x_Np M)) (fst sb)
+                 (flatBT (Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B)) (snd sb)
+             \<and> scb_decomp (Trans (s84x_Lp M)) (fst sb)
+                 (flatBT (Dpt (enat (entry M 1 (s84x_jm2 M))) 0\<^sub>B)) (snd sb)"
+  by (rule m_8_4_rightend_Trans[OF MST MPT hp rng])
+
+subsection \<open>L2 (content.md 4389) 補題（条件(III)～(VI)の下での展開規則の基本性質）\<close>
+
+text \<open>原文 parts (1)-(5): (1) (III)/(IV) ならば \<open>j\<^sub>-\<^sub>2 < j\<^sub>0\<close>、(V)/(VI) ならば
+  \<open>j\<^sub>-\<^sub>2 = j\<^sub>0\<close>; (2) \<open>L\<^sub>n\<close> は簡約かつ単項; (3) \<open>\<le>\<^sub>M\<close> と \<open>\<le>\<^bsub>L\<^sub>1\<^esub>\<close> は
+  \<open>(1,j\<^sub>1)\<close> を除く全ノード上で一致; (4) 「(VI) または \<open>j\<^sub>0\<close> 許容」ならば \<open>L\<^sub>1\<close> は (I)/(III)、
+  否ならば (II)/(IV); (5) \<open>n > 1\<close> ならば一意な \<open>(s',b')\<close> が (5-1)(5-2)(5-3) を満たす。
+  **訂正 A31: (5-3) は \<open>Pred N'\<close> が零項のとき偽（\<open>Trans(Pred N') = 0\<^sub>B\<close> は主項文字列でない）
+  ので \<open>\<not> zeroT (Pred N')\<close> のガードを付す（以下の \<open>(5)\<close> の第三連言）。\<close>
+
+lemma y3i_L2_oper_props:
+  assumes MST: "M \<in> ST_PS" and MPT: "M \<in> PT_PS"
+    and hp: "hasParent M 1 (Lng M - 1)" and j1gt: "1 < Lng M - 1"
+  shows "transCondIII M \<or> transCondIV M \<Longrightarrow> s84x_jm2 M < transJ0 M"
+    and "transCondV M \<or> transCondVI M \<Longrightarrow> s84x_jm2 M = transJ0 M"
+    and "n \<ge> 1 \<Longrightarrow> s84x_L M n \<in> RT_PS \<and> monoT (s84x_L M n)"
+    and "j < Lng M \<Longrightarrow> j' < Lng M \<Longrightarrow> leR M 0 j j' = leR (s84x_L M 1) 0 j j'"
+    and "j < Lng M \<Longrightarrow> j' < Lng M \<Longrightarrow> j \<noteq> Lng M - 1 \<Longrightarrow> j' \<noteq> Lng M - 1 \<Longrightarrow>
+           leR M 1 j j' = leR (s84x_L M 1) 1 j j'"
+    and "transCondVI M \<or> adm M (transJ0 M) \<Longrightarrow>
+           transCondI (s84x_L M 1) \<or> transCondIII (s84x_L M 1)"
+    and "\<not> transCondVI M \<Longrightarrow> \<not> adm M (transJ0 M) \<Longrightarrow>
+           transCondII (s84x_L M 1) \<or> transCondIV (s84x_L M 1)"
+    and "n > 1 \<Longrightarrow>
+      \<exists>!sb. scb_decomp (Trans (s84x_L M (n - 1))) (fst sb)
+              (flatBT (Dpt (enat (entry M 1 (s84x_jm2 M))) 0\<^sub>B)) (snd sb)
+          \<and> scb_decomp (Trans (s84x_L M n)) (fst sb)
+              (flatBT (Trans (s84x_Lp M))) (snd sb)
+          \<and> (\<not> zeroT (Pred (s84x_Np M)) \<longrightarrow>
+               scb_decomp (Trans ((M::pairseq)[n])) (fst sb)
+                 (flatBT (Trans (Pred (s84x_Np M)))) (snd sb))"
+  subgoal by (rule m_8_4_oper_props_1(1)[OF MST MPT hp j1gt])
+  subgoal by (rule m_8_4_oper_props_1(2)[OF MST MPT hp j1gt])
+  subgoal using m_8_4_oper_props_2[OF MST MPT hp j1gt] by blast
+  subgoal by (rule m_8_4_oper_props_3(1)[OF MST MPT hp j1gt])
+  subgoal by (rule m_8_4_oper_props_3(2)[OF MST MPT hp j1gt])
+  subgoal by (rule m_8_4_oper_props_4(1)[OF MST MPT hp j1gt])
+  subgoal by (rule m_8_4_oper_props_4(2)[OF MST MPT hp j1gt])
+  subgoal by (rule m_8_4_oper_props_5[OF MST MPT hp j1gt])
+  done
+
+subsection \<open>L3 (content.md 4507) 補題（条件(III)～(VI)の下での\<open>Trans\<close>とscb分解の関係）\<close>
+
+text \<open>原文: 「任意の \<open>M \<in> RT\<^bsub>PS\<^esub> \<inter> PT\<^bsub>PS\<^esub>\<close>、\<open>j\<^sub>1 > 1\<close>、\<open>j\<^sub>-\<^sub>3 := Adm\<^bsub>M\<^esub>(j\<^sub>-\<^sub>2)\<close>、
+  \<open>N := (M\<^sub>j)\<^bsub>j=j\<^sub>-\<^sub>3\<^esub>\<^bsup>j\<^sub>1\<^esup>\<close> に対し、一意な \<open>(s',b')\<close> が存在して \<open>(s',Trans(N),b')\<close> は
+  \<open>Trans(M)\<close> の第1種 scb 分解である。」\<close>
+
+lemma y3i_L3_Trans_scb:
+  assumes MR: "M \<in> RT_PS" and MPT: "M \<in> PT_PS"
+    and j1gt: "1 < Lng M - 1" and hp: "hasParent M 1 (Lng M - 1)"
+  shows "\<exists>!sb. scb_kind1 (Trans M) (fst sb) (flatBT (Trans (s84x_N M))) (snd sb)"
+  by (rule m_8_4_Trans_scb[OF MR MPT j1gt hp])
+
+subsection \<open>L4 (content.md 4605) 補題（条件(III)～(V)の下での切片のscb分解）\<close>
+
+text \<open>原文: 「\<open>M\<close> が条件 (VI) を満たさずかつ \<open>Adm\<^bsub>M\<^esub>(j\<^sub>-\<^sub>2) = j\<^sub>-\<^sub>1\<close> ならば、一意な
+  \<open>(s'\<^sub>1,b'\<^sub>1)\<close> が存在して (1) \<open>(D\<^bsub>M\<^sub>1\<^sub>,\<^sub>j\<^sub>-\<^sub>1\<^esub>s'\<^sub>1, D\<^bsub>M\<^sub>1\<^sub>,\<^sub>j\<^sub>1\<^esub>0, b'\<^sub>1)\<close> は \<open>c\<^sub>2\<close> の scb 分解、
+  (2) \<open>(D\<^bsub>M\<^sub>1\<^sub>,\<^sub>j\<^sub>-\<^sub>2\<^esub>s'\<^sub>1, D\<^bsub>M\<^sub>1\<^sub>,\<^sub>j\<^sub>1\<^esub>0, b'\<^sub>1)\<close> は \<open>Trans(N')\<close> の scb 分解、
+  (3) \<open>Trans(Pred(N')) = D\<^bsub>M\<^sub>1\<^sub>,\<^sub>j\<^sub>-\<^sub>2\<^esub>t\<^sub>2\<close> である。」
+  Part (1) は @{thm [source] m_8_4_slice_scb_part1}（既証）。 (2)(3) は \<open>j\<^sub>-\<^sub>1 \<mapsto> j\<^sub>-\<^sub>2\<close>
+  の頭 rebase であり、\<section>8.2 終切片補題 @{thm [source] m_8_2_condV_terminal_slice_Trans}
+  経由の縮約切片値転送（@{thm [source] cpx_d2_condIV} / @{thm [source] cpx_d3_condIV}）で
+  閉じる。その REGS/REGSP は @{thm [source] y3i_REGS} / @{thm [source] y3i_REGSP}
+  が供給する（そのために \<open>reg\<close>「\<open>j\<^sub>-\<^sub>2 < j\<^sub>0\<close> または \<open>j\<^sub>0\<close> 許容」を仮定に置く。これは
+  下流 L5 の仮定でもあり、原文 L4 の (V) 側の regime を正確に表す）。\<close>
+
+lemma y3i_L4_slice_scb:
+  assumes MST: "M \<in> ST_PS" and MPT: "M \<in> PT_PS"
+    and hp: "hasParent M 1 (Lng M - 1)"
+    and nVI: "\<not> transCondVI M"
+    and reg: "s84x_jm2 M < transJ0 M \<or> adm M (transJ0 M)"
+    and admeq: "Adm M (s84x_jm2 M) = transJm1 M"
+  shows "\<exists>!sb. scb_decomp (transC2 M)
+                 (Dsym (enat (entry M 1 (transJm1 M))) # fst sb)
+                 (flatBT (Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B)) (snd sb)
+             \<and> scb_decomp (Trans (s84x_Np M))
+                 (Dsym (enat (entry M 1 (s84x_jm2 M))) # fst sb)
+                 (flatBT (Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B)) (snd sb)"
+    and "Trans (Pred (s84x_Np M))
+           = Dpt (enat (entry M 1 (s84x_jm2 M))) (transT2 M)"
+proof -
+  have REGS: "s84x_jm3 M < s84x_jm2 M \<Longrightarrow>
+                cfbx_reg (s84x_jm2 M - s84x_jm3 M) (Red (s84x_N M))"
+    using y3i_REGS[OF MST MPT hp nVI reg] by simp
+  have REGSP: "s84x_jm3 M < s84x_jm2 M \<Longrightarrow> Br (Red (Pred (s84x_N M))) \<noteq> [] \<Longrightarrow>
+                 cfbx_reg (s84x_jm2 M - s84x_jm3 M) (Red (Pred (s84x_N M)))"
+    using y3i_REGSP[OF MST MPT hp nVI reg] by simp
+  have rng: "s84x_jm2 M + 1 < Lng M - 1" by (rule s84d_L5_rng[OF MST MPT hp nVI])
+  note P1 = m_8_4_slice_scb_part1[OF MST MPT hp nVI admeq]
+  show d3: "Trans (Pred (s84x_Np M))
+              = Dpt (enat (entry M 1 (s84x_jm2 M))) (transT2 M)"
+    by (rule cpx_d3_condIV[OF MST MPT hp nVI admeq rng REGSP])
+  obtain sb where d1: "scb_decomp (transC2 M)
+                         (Dsym (enat (entry M 1 (transJm1 M))) # fst sb)
+                         (flatBT (Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B)) (snd sb)"
+    using ex1_implies_ex[OF P1] by auto
+  have d2: "scb_decomp (Trans (s84x_Np M))
+              (Dsym (enat (entry M 1 (s84x_jm2 M))) # fst sb)
+              (flatBT (Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B)) (snd sb)"
+    by (rule cpx_d2_condIV[OF MST MPT hp nVI admeq REGS d1])
+  show "\<exists>!sb. scb_decomp (transC2 M)
+                (Dsym (enat (entry M 1 (transJm1 M))) # fst sb)
+                (flatBT (Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B)) (snd sb)
+            \<and> scb_decomp (Trans (s84x_Np M))
+                (Dsym (enat (entry M 1 (s84x_jm2 M))) # fst sb)
+                (flatBT (Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B)) (snd sb)"
+  proof (rule ex1I[of _ sb])
+    show "scb_decomp (transC2 M)
+            (Dsym (enat (entry M 1 (transJm1 M))) # fst sb)
+            (flatBT (Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B)) (snd sb)
+        \<and> scb_decomp (Trans (s84x_Np M))
+            (Dsym (enat (entry M 1 (s84x_jm2 M))) # fst sb)
+            (flatBT (Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B)) (snd sb)"
+      using d1 d2 by blast
+  next
+    fix sb' assume "scb_decomp (transC2 M)
+                      (Dsym (enat (entry M 1 (transJm1 M))) # fst sb')
+                      (flatBT (Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B)) (snd sb')
+                  \<and> scb_decomp (Trans (s84x_Np M))
+                      (Dsym (enat (entry M 1 (s84x_jm2 M))) # fst sb')
+                      (flatBT (Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B)) (snd sb')"
+    hence "scb_decomp (transC2 M)
+             (Dsym (enat (entry M 1 (transJm1 M))) # fst sb')
+             (flatBT (Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B)) (snd sb')" by blast
+    thus "sb' = sb" using P1 d1 by blast
+  qed
+qed
+
+subsection \<open>L5 (content.md 4702) 補題（条件(III)～(V)の下での各種scb分解）\<close>
+
+text \<open>原文 (1)–(5): 一意な \<open>(s'\<^sub>1,b'\<^sub>1)\<close> が \<open>c\<^sub>2\<close>/\<open>Trans(N')\<close>/\<open>Trans(L')\<close> の scb 分解を
+  与え、\<open>Trans(Pred N') = D\<^bsub>M\<^sub>1\<^sub>,\<^sub>j\<^sub>-\<^sub>2\<^esub>t\<^sub>2\<close>、かつ
+  \<open>Trans(L\<^sub>n) = s\<^sub>1 D\<^bsub>M\<^sub>1\<^sub>,\<^sub>j\<^sub>-\<^sub>1\<^esub>(s'\<^sub>1 D\<^bsub>M\<^sub>1\<^sub>,\<^sub>j\<^sub>-\<^sub>2\<^esub>)\<^sup>n 0 (b'\<^sub>1)\<^sup>n b\<^sub>1\<close>、
+  \<open>Trans(M[n]) = s\<^sub>1 D\<^bsub>M\<^sub>1\<^sub>,\<^sub>j\<^sub>-\<^sub>1\<^esub>(s'\<^sub>1 D\<^bsub>M\<^sub>1\<^sub>,\<^sub>j\<^sub>-\<^sub>2\<^esub>)\<^bsup>n-1\<^esup> t\<^sub>2 (b'\<^sub>1)\<^bsup>n-1\<^esup> b\<^sub>1\<close>。
+  **UNCONDITIONAL now: the two transports \<open>d2\<close>/\<open>d3\<close> that
+  @{thm [source] m_8_4_various_scb_IIIV_from_slice} took as hypotheses are the L4
+  parts (2)(3) just proved.\<close>
+
+lemma y3i_L5_various_scb_IIIV:
+  assumes MST: "M \<in> ST_PS" and MPT: "M \<in> PT_PS"
+    and hp: "hasParent M 1 (Lng M - 1)"
+    and nVI: "\<not> transCondVI M"
+    and reg: "s84x_jm2 M < transJ0 M \<or> adm M (transJ0 M)"
+    and admeq: "Adm M (s84x_jm2 M) = transJm1 M"
+    and n1: "n \<ge> 1"
+  shows "\<exists>!sb. scb_decomp (transC2 M)
+                 (Dsym (enat (entry M 1 (transJm1 M))) # fst sb)
+                 (flatBT (Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B)) (snd sb)
+             \<and> scb_decomp (Trans (s84x_Np M))
+                 (Dsym (enat (entry M 1 (s84x_jm2 M))) # fst sb)
+                 (flatBT (Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B)) (snd sb)
+             \<and> scb_decomp (Trans (s84x_Lp M))
+                 (Dsym (enat (entry M 1 (s84x_jm2 M))) # fst sb)
+                 (flatBT (Dpt (enat (entry M 1 (s84x_jm2 M))) 0\<^sub>B)) (snd sb)
+             \<and> Trans (Pred (s84x_Np M))
+                 = Dpt (enat (entry M 1 (s84x_jm2 M))) (transT2 M)
+             \<and> flatBT (Trans (s84x_L M n))
+                 = s84x_s1 M @ Dsym (enat (entry M 1 (transJm1 M)))
+                     # concat (replicate n
+                         (fst sb @ [Dsym (enat (entry M 1 (s84x_jm2 M)))]))
+                     @ [Zsym] @ concat (replicate n (snd sb)) @ s84x_b1 M
+             \<and> flatBT (Trans ((M::pairseq)[n]))
+                 = s84x_s1 M @ Dsym (enat (entry M 1 (transJm1 M)))
+                     # concat (replicate (n - 1)
+                         (fst sb @ [Dsym (enat (entry M 1 (s84x_jm2 M)))]))
+                     @ flatBT (transT2 M)
+                     @ concat (replicate (n - 1) (snd sb)) @ s84x_b1 M"
+proof -
+  note L4 = y3i_L4_slice_scb[OF MST MPT hp nVI reg admeq]
+  obtain sb where d1: "scb_decomp (transC2 M)
+                         (Dsym (enat (entry M 1 (transJm1 M))) # fst sb)
+                         (flatBT (Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B)) (snd sb)"
+    and d2: "scb_decomp (Trans (s84x_Np M))
+               (Dsym (enat (entry M 1 (s84x_jm2 M))) # fst sb)
+               (flatBT (Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B)) (snd sb)"
+    using ex1_implies_ex[OF L4(1)] by auto
+  show ?thesis
+    by (rule m_8_4_various_scb_IIIV_from_slice[OF MST MPT hp nVI reg admeq n1
+          d1 d2 L4(2)])
+qed
+
+subsection \<open>L6 (content.md 4802) 補題（条件(III)か(IV)の下での各種scb分解）\<close>
+
+text \<open>原文 (1)–(6): 一意な \<open>(s'\<^sub>0,s'\<^sub>1,s'\<^sub>2,b'\<^sub>2,b'\<^sub>1,b'\<^sub>0)\<close> が \<open>Trans(M)\<close>/\<open>Trans(Pred N)\<close>/
+  \<open>Trans(N)\<close>/\<open>c\<^sub>2\<close>/\<open>Trans(Pred N')\<close>/\<open>Trans(N')\<close>/\<open>Trans(L')\<close> の scb 分解と、\<open>Trans(L\<^sub>n)\<close>、
+  \<open>Trans(M[n])\<close> の閉形式を与える。 **UNCONDITIONAL: the reduced-slice regimes
+  REGS/REGSP that @{thm [source] cpx_various_scb_IIIIV} took as hypotheses are
+  now owned by @{thm [source] mcx_regS} / @{thm [source] slx37_regSP_uncond}.\<close>
+
+lemma y3i_L6_various_scb_IIIIV:
+  assumes MST: "M \<in> ST_PS" and MPT: "M \<in> PT_PS"
+    and hp: "hasParent M 1 (Lng M - 1)"
+    and j1gt: "1 < Lng M - 1"
+    and branch: "transCondIII M \<or> transCondIV M"
+    and ltJ: "s84x_jm3 M < transJm1 M"
+    and n1: "n \<ge> 1"
+  shows "\<exists>!x. case x of (u0, u1, u2, v2, v1, v0) \<Rightarrow>
+         scb_decomp (Trans M) u0 (flatBT (Trans (s84x_N M))) v0
+       \<and> scb_decomp (Trans (Pred (s84x_N M)))
+           (Dsym (enat (entry M 1 (s84x_jm3 M))) # u1) (flatBT (transC1 M)) v1
+       \<and> scb_decomp (Trans (s84x_N M))
+           (Dsym (enat (entry M 1 (s84x_jm3 M))) # u1) (flatBT (transC2 M)) v1
+       \<and> scb_decomp (transC2 M) u2
+           (flatBT (Dpt (enat (entry M 1 (Lng M - 1))) 0\<^sub>B)) v2
+       \<and> scb_decomp (Trans (Pred (s84x_Np M)))
+           (Dsym (enat (entry M 1 (s84x_jm2 M))) # u1) (flatBT (transC1 M)) v1
+       \<and> scb_decomp (Trans (s84x_Np M))
+           (Dsym (enat (entry M 1 (s84x_jm2 M))) # u1) (flatBT (transC2 M)) v1
+       \<and> scb_decomp (Trans (s84x_Lp M))
+           (Dsym (enat (entry M 1 (s84x_jm2 M))) # u1 @ u2)
+           (flatBT (Dpt (enat (entry M 1 (s84x_jm2 M))) 0\<^sub>B)) (v2 @ v1)
+       \<and> flatBT (Trans (s84x_L M n))
+           = u0 @ Dsym (enat (entry M 1 (s84x_jm3 M)))
+               # concat (replicate n
+                   (u1 @ u2 @ [Dsym (enat (entry M 1 (s84x_jm2 M)))]))
+               @ [Zsym] @ concat (replicate n (v2 @ v1)) @ v0
+       \<and> flatBT (Trans ((M::pairseq)[n]))
+           = u0 @ Dsym (enat (entry M 1 (s84x_jm3 M)))
+               # concat (replicate (n - 1)
+                   (u1 @ u2 @ [Dsym (enat (entry M 1 (s84x_jm2 M)))]))
+               @ u1 @ flatBT (transC1 M) @ v1
+               @ concat (replicate (n - 1) (v2 @ v1)) @ v0"
+proof -
+  have REGS: "s84x_jm3 M < s84x_jm2 M \<Longrightarrow>
+                cfbx_reg (s84x_jm2 M - s84x_jm3 M) (Red (s84x_N M))"
+    using mcx_regS[OF MST MPT hp j1gt branch] by simp
+  have REGSP: "s84x_jm3 M < s84x_jm2 M \<Longrightarrow> Br (Red (Pred (s84x_N M))) \<noteq> [] \<Longrightarrow>
+                 cfbx_reg (s84x_jm2 M - s84x_jm3 M) (Red (Pred (s84x_N M)))"
+    using slx37_regSP_uncond[OF MST MPT hp j1gt branch] by simp
+  show ?thesis
+    by (rule cpx_various_scb_IIIIV[OF MST MPT hp j1gt branch ltJ n1 REGS REGSP])
+qed
+
 ML \<open>
   fun sorry_deps th =
     let
@@ -16014,7 +16419,20 @@ ML \<open>
      ("y3h_p_8_5_Trans_oper_exchange(3)", @{thm y3h_p_8_5_Trans_oper_exchange(3)}),
      \<comment> \<open>r74: the \<section>8.4 補題（条件(III)か(IV)の下での基本列の基本性質）, parts (1) and (3)\<close>
      ("y3h_p_8_4_oper_basic(1)", @{thm y3h_p_8_4_oper_basic(1)}),
-     ("y3h_p_8_4_oper_basic(2)", @{thm y3h_p_8_4_oper_basic(2)})];
+     ("y3h_p_8_4_oper_basic(2)", @{thm y3h_p_8_4_oper_basic(2)}),
+     \<comment> \<open>r75: the \<section>8.4 internal-symbol lemma cluster (the six article lemmas)\<close>
+     ("y3i_Trans_s1_c2_b1(1)",   @{thm y3i_Trans_s1_c2_b1(1)}),
+     ("y3i_Trans_s1_c2_b1(2)",   @{thm y3i_Trans_s1_c2_b1(2)}),
+     ("y3i_L1_rightend_Trans",   @{thm y3i_L1_rightend_Trans}),
+     ("y3i_L2_oper_props(1)",    @{thm y3i_L2_oper_props(1)}),
+     ("y3i_L2_oper_props(3)",    @{thm y3i_L2_oper_props(3)}),
+     ("y3i_L2_oper_props(6)",    @{thm y3i_L2_oper_props(6)}),
+     ("y3i_L2_oper_props(8)",    @{thm y3i_L2_oper_props(8)}),
+     ("y3i_L3_Trans_scb",        @{thm y3i_L3_Trans_scb}),
+     ("y3i_L4_slice_scb(1)",     @{thm y3i_L4_slice_scb(1)}),
+     ("y3i_L4_slice_scb(2)",     @{thm y3i_L4_slice_scb(2)}),
+     ("y3i_L5_various_scb_IIIV", @{thm y3i_L5_various_scb_IIIV}),
+     ("y3i_L6_various_scb_IIIIV", @{thm y3i_L6_various_scb_IIIIV})];
 
   \<comment> \<open>r72: assert the termination theorems carry NO free hypothesis left ---
       \<open>y5_PSS_wf\<close> must be a closed statement (no meta-premises, no schematics).\<close>
