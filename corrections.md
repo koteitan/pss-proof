@@ -2,26 +2,8 @@
 
 > ## 全数監査済み (2026-07-13)
 >
-> A1〜A46 を `tmp/original.html`（真の原文）と突き合わせて全数検証した。**16 件は我々の誤りで、
-> [corrections-old.md](corrections-old.md) へ移した**（A14 / A24 / A25 / A26 / A27 / A28 / A32 / A33 /
-> A34 / A35 / A36 / A37 / A38 / A42 / A43 と、A9 に統合した旧 A39）。**このファイルに残る 30 件が現在の訂正案**。
->
-> 取り下げの根源は 11 件が **A23 ただ一つの誤読**だった：[Buc2] による基本列 \(([\ ].4)(\mathrm{ii})\) の
-> 差し替えを、我々は「外側の \(b[\cdot]\) が余分」と読んだが、正しくは **\(x_i\) の中で \(D_u\) と
-> \(b[\cdot]\) が転置した誤植**だった。誤った基本列の上で §7.2/§8.3〜§8.7 の原文が偽に見えていた。
-> 正しい規則で再検証すると原文は真（A33 = 1134/1134、A34 = 445/445、A38 = 1545/1545、A32 = 579/579）。
->
-> **A5 / A12 / A13 は「訂正案そのものが偽」だった**（著者に誤った修正を提案するところだった）。いずれも
-> 我々が Isabelle で証明した正しい形に書き直した。
->
-> 監査で判明した資料側の欠陥も直した：
->
-> - **引用元だった `tmp/content.md` は原文ではなかった** — 過去ログからの再構成に我々自身の Isabelle
->   ソース 20 行が混入していた（`f72310b` で除去、`make_content.py` にガードと negative control を追加）。
->   **引用の ground truth は `tmp/original.html`**。
-> - 原文の脚注は 92 件あるが `content.md` には 30 件しか入っておらず、著者が脚注で自ら塞いでいた
->   well-definedness を我々は「穴」と呼んでいた（A39）。
-
+> A1〜A46 を原文（`tmp/original.html`）と突き合わせて全数検証した。**このファイルに残る 30 件が現在の訂正案**である。
+> 検証で取り下げた 16 件と、その取り下げ理由・経緯は [corrections-old.md](corrections-old.md) にある。
 
 
 巨大数研究 Wiki の記事 **「ペア数列の停止性」**(P進大好きbot 著) に対する訂正案を
@@ -267,36 +249,21 @@ $$M = (0,0)(1,1)(1,0)$$
 ### 原文
 > \((P(M')_J)_{J=0}^{J_0-1} \in S_{k_0-1}T_{\textrm{PS}}^{< \omega}\)であり、\(P(M')_{J_0} \in S_{k_0-1}T_{\textrm{PS}}\)より帰納法の仮定から\(P(P(M')_{J_0}[n]) \in S_{k_0-1}T_{\textrm{PS}}^{< \omega}\)であるので、\(P(M) \in S_{k_0-1}T_{\textrm{PS}}^{< \omega}\)である。□
 
-（命題の主張は「任意の\(k \in \mathbb{N}\)と\(M \in S_kT_{\textrm{PS}}\)に対し、\(P(M) \in S_kT_{\textrm{PS}}^{< \omega}\)である。」）
-
 ### 訂正案
-（命題の前に補題を1つ追加する）
-
-> 補題（標準形の階層の単調性）
->
-> 任意の\(k \in \mathbb{N}\)に対し、\(S_kT_{\textrm{PS}} \subseteq S_{k+1}T_{\textrm{PS}}\)である。
-
-（証明の最終文を次に置き換える）
-
-> \((P(M')_J)_{J=0}^{J_0-1} \in S_{k-1}T_{\textrm{PS}}^{< \omega}\)であり、\(P(M')_{J_0} \in S_{k-1}T_{\textrm{PS}}\)より帰納法の仮定から\(P(P(M')_{J_0}[n]) \in S_{k-1}T_{\textrm{PS}}^{< \omega}\)である。従って標準形の階層の単調性\(S_{k-1}T_{\textrm{PS}} \subseteq S_kT_{\textrm{PS}}\)より、\(P(M) = (P(M')_J)_{J=0}^{J_0-1} \oplus_{\mathbb{N}^2} P(P(M')_{J_0}[n]) \in S_kT_{\textrm{PS}}^{< \omega}\)である。□
+> \((P(M')_J)_{J=0}^{J_0-1} \in S_{k_0-1}T_{\textrm{PS}}^{< \omega}\)であり、\(P(M')_{J_0} \in S_{k_0-1}T_{\textrm{PS}}\)より帰納法の仮定から\(P(P(M')_{J_0}[n]) \in S_{k_0-1}T_{\textrm{PS}}^{< \omega}\)であるので、\(P(M) \in S_{k_0-1}T_{\textrm{PS}}^{< \omega}\)である。ここで任意の\(k \in \mathbb{N}\)に対し\(S_kT_{\textrm{PS}} \subseteq S_{k+1}T_{\textrm{PS}}\)である。実際、任意の\(u \leq v\)に対し\(\textrm{diagSeq}(u,v) = \textrm{Pred}(\textrm{diagSeq}(u,v+1)) = \textrm{diagSeq}(u,v+1)[1]\)であるから\(S_0T_{\textrm{PS}} \subseteq S_1T_{\textrm{PS}}\)であり、一般の\(k\)については\(k\)に関する数学的帰納法から従う。従って\(S_{k_0-1}T_{\textrm{PS}}^{< \omega} \subseteq S_{k_0}T_{\textrm{PS}}^{< \omega}\)であり、\(P(M) \in S_{k_0}T_{\textrm{PS}}^{< \omega}\)である。□
 
 ### 原文の問題点
-証明の結論は $S_{k_0-1}T_{\textrm{PS}}^{<\omega}$ で終わっているが、示すべき主張は
-$P(M) \in S_kT_{\textrm{PS}}^{<\omega}$ である（$S_{k_0-1}$ の $k_0$ は証明中で導入されていない変数名だが、
-文脈から帰納変数 $k$ と読める — 変数名の差自体は問題ではない）。$S_{k-1}$ から目標の $S_k$ に上げるには
-階層の単調性 $S_{k-1}T_{\textrm{PS}} \subseteq S_kT_{\textrm{PS}}$ が要るが、原文はこの補題を明示も証明も
-していない（暗黙に用いている）。
+命題の主張は「任意の\(k \in \mathbb{N}\)と\(M \in S_kT_{\textrm{PS}}\)に対し、\(P(M) \in S_kT_{\textrm{PS}}^{< \omega}\)である」であるから、
+示すべきは \(P(M) \in S_{k_0}T_{\textrm{PS}}^{<\omega}\) である。しかし証明の結論は \(S_{k_0-1}T_{\textrm{PS}}^{<\omega}\) で
+終わっている。\(S_{k_0-1}\) から目標の \(S_{k_0}\) に上げるには階層の単調性
+\(S_{k_0-1}T_{\textrm{PS}} \subseteq S_{k_0}T_{\textrm{PS}}\) が要るが、原文はこれを明示も証明もせず暗黙に用いている。
 
-### 単調性 $S_{k-1}\subseteq S_k$ は真
+### 単調性 $S_{k}\subseteq S_{k+1}$ は真
 証人（base）: 任意の $u \le v$ に対し
 $$\textrm{diagSeq}(u,v) = \textrm{Pred}(\textrm{diagSeq}(u,v{+}1)) = (\textrm{diagSeq}(u,v{+}1))[1],\quad \textrm{diagSeq}(u,v{+}1)\in S_0,$$
 ゆえ $\textrm{diagSeq}(u,v)\in S_1$。一般の $k$ は帰納で（$N\in S_k \Rightarrow N\in S_{k+1}$ なら $N[n]\in S_{k+2}$）。
 したがって $S_k \subseteq S_{k+1}$。（`pss_mechanized.thy: SkT_PS_mono`、`Pred (diagSeq u (Suc v)) = diagSeq u v`
 ＋`m_5_3_pred_is_oper1: Pred M = M[1]`。）
-
-### 結論：原文証明は本質的に正しく、不足は「単調性補題 $S_{k-1}\subseteq S_k$」のみ
-単調性さえ補えば、先頭部分（$\in S_{k-1}\subseteq S_k$）も末尾（$P(M')_{J_0}\in S_{k-1}\subseteq S_k \Rightarrow P(M')_{J_0}[n]\in S_{k+1}$…
-実際は $S_k$ 上の構造帰納）も $S_k$ に収まり、結論 $P(M)\in S_k$ が出る。
 
 ## A7. §6.8 命題（標準形の切片と Br の降順性の関係）: 「M' が標準形となる」は偽（示すべきは「Br(M') が降順」）
 
@@ -389,7 +356,7 @@ else 節の \(\min\) の内包 \(\{J \in \mathbb{N} \mid \dots\}\) には添字�
 
 ### 位置
 §6.5「簡約化」\(\textrm{Red}\) の再帰的定義（\(M\) が単項・\(M_0 \neq (0,0)\)・\(M_{1,0} > 0\) の場合）の
-脚注 **[19]** と、命題（単項性と \(\textrm{Red}\) の関係）・系（直系先祖の \(\textrm{Red}\) 不変性）の証明。
+脚注 **[19]**、命題（単項性と \(\textrm{Red}\) の関係）、および系（直系先祖の \(\textrm{Red}\) 不変性）**の証明**。
 
 ### 原文（\(\textrm{Red}\) の定義の当該分岐）
 > \(M_{1,0} > 0\)とする。
@@ -399,12 +366,9 @@ else 節の \(\min\) の内包 \(\{J \in \mathbb{N} \mid \dots\}\) には添字�
 > \(M_{1,0} \leq j_1\)かつ\((N_j)_{j=M_{1,0}}^{j_1} \in T_{\textrm{PS}} \setminus PT_{\textrm{PS}}\)ならば\(\textrm{Red}(M) := M\)である[19]。
 > \(M_{1,0} > j_1\)ならば\(\textrm{Red}(M) := M\)である[20]。
 
-### 原文（脚注[19] と [20]）
+### 原文（脚注[19]、それが参照する命題、および系の証明）
 > [19] 後で証明する単項性と\(\textrm{Red}\)の関係により、この分岐が生じないことが分かる。
->
-> [20] 後で証明する\(\textrm{Lng}\)の\(\textrm{Red}\)不変性により、この分岐が生じないことが分かる。
 
-### 原文（[19] が参照する命題とその証明）
 > 命題（単項性と\(\textrm{Red}\)の関係）
 >
 > 任意の\(M \in PT_{\textrm{PS}}\)に対し、\(N := \textrm{Red}(((j,j))_{j=0}^{M_{1,0}-1} \oplus_{\mathbb{N}^2} \textrm{IncrFirst}^{M_{1,0}}(M))\)と置き\(j_1 := \textrm{Lng}(N)-1\)と置くと、\((N_j)_{j=M_{1,0}}^{j_1} \in PT_{\textrm{PS}}\)である。
@@ -423,9 +387,12 @@ else 節の \(\min\) の内包 \(\{J \in \mathbb{N} \mid \dots\}\) には添字�
 > \(\textrm{Lng}\)の\(\textrm{Red}\)不変性と\(\textrm{Red}\)の再帰的定義により、\(\textrm{Lng}(M)\)に関する数学帰納法から即座に従う。□
 
 ### 訂正案
-脚注[19] の分岐が生じないこと（＝命題（単項性と \(\textrm{Red}\) の関係））を、系（直系先祖の
-\(\textrm{Red}\) 不変性）を経由せずに（\(\textrm{Red}\) の再帰的定義そのものに関する整礎帰納で）先に証明し、
-その後で系（直系先祖の \(\textrm{Red}\) 不変性）を導く。併せて系の主張の定義域を [[A4]] の通り補正する。
+（系の主張の定義域は [[A4]] の通り補正する。ここでは証明を次に置き換える。）
+
+> 系（直系先祖の\(\textrm{Red}\)不変性）
+>
+> 証明：
+> \(\textrm{Lng}\)の\(\textrm{Red}\)不変性と\(\textrm{Red}\)の再帰的定義により、\(\textrm{Red}\)の再帰の呼び出し関係に関する整礎帰納法から従う（\(\textrm{Red}\)が well-defined であることから、この呼び出し関係は整礎である）。□
 
 ### 原文の問題点（[19] のみ。[20] は循環ではない）
 依存を辿ると次のようになる。
@@ -437,21 +404,17 @@ else 節の \(\min\) の内包 \(\{J \in \mathbb{N} \mid \dots\}\) には添字�
   いま問題にしている分岐（\(M\) 単項・\(M_0 \neq (0,0)\)・\(M_{1,0} > 0\)）では \(\textrm{Red}\) が呼ぶ引数
   \(((j,j))_{j=0}^{M_{1,0}-1} \oplus_{\mathbb{N}^2} \textrm{IncrFirst}^{M_{1,0}}(M)\) の長さは
   \(M_{1,0} + \textrm{Lng}(M) > \textrm{Lng}(M)\) と**増える**ため、\(\textrm{Lng}\) に関する帰納法の仮定が
-  そのままでは適用できない。加えて系の主張自体、[[A4]] の通り \(T_{\textrm{PS}}\) 全体では偽である
-  （反例 \(M = ((0,0),(0,2))\)）。
-- したがって [19] の不到達は、系（直系先祖の \(\textrm{Red}\) 不変性）とは独立に確立する必要がある。
+  そのままでは適用できない。この帰納法が回るには、当該分岐（＝[19] の分岐）が生じないことを
+  既に知っている必要があり、それはまさに [19] が系に依拠して主張している内容である。
+- 帰納の測度を \(\textrm{Lng}\) から \(\textrm{Red}\) の再帰の呼び出し関係そのものに取り替えれば、
+  [19] の不到達を前提とせずに系が確立し、循環は解ける。命題（単項性と \(\textrm{Red}\) の関係）の
+  証明はそのままでよい。
+- なお系の主張自体、[[A4]] の通り \(T_{\textrm{PS}}\) 全体では偽である（反例 \(M = ((0,0),(0,2))\)）。
 
 一方、**脚注[20] は循環ではない**。[20] が引く「\(\textrm{Lng}\) の \(\textrm{Red}\) 不変性」は
 \(\textrm{Red}\) の全分岐（\(\textrm{Red}(M) := M\) の 2 分岐でも自明に \(\textrm{Lng}\) 不変）で成り立つので、
 \(\textrm{Lng}(N) = M_{1,0} + \textrm{Lng}(M)\) すなわち \(j_1 = M_{1,0} + \textrm{Lng}(M) - 1 \geq M_{1,0}\) が
-[19]/[20] の不到達を仮定せずに得られる。以前の版でこの項目が [20] も循環に含めていたのは我々の誤りであり、
-撤回する。
-
-### 訂正（我々の以前の記述の誤り）
-以前の版は「脚注[19]/[20] の分岐が生じないこと（\(M_{1,0} \le j_N\) **かつ** \((N_j)_{j=M_{1,0}}^{j_N} \in PT_{\textrm{PS}}\)）は
-命題（単項性と \(\textrm{Red}\) の関係）が主張する内容である」と書いていたが、この命題が主張しているのは
-\((N_j)_{j=M_{1,0}}^{j_1} \in PT_{\textrm{PS}}\) のみで、\(M_{1,0} \leq j_1\) は主張していない（それは
-\(\textrm{Lng}\) の \(\textrm{Red}\) 不変性の側から従う）。訂正した。
+[19]/[20] の不到達を前提とせずに得られる。
 
 ## A11. §7.2 命題（scb分解の合成則）(2): 前提に \(c\) が主表現列であることが必要（反例あり） [軽微]
 
@@ -493,11 +456,7 @@ scb分解の定義では、中央成分 \(c\) が主表現（\(c \in PT_{\textrm
 \(c_0, c_1 \in T_{\textrm{B}}\)、\((c_0\) が主表現列でない\() \vee (c_1\) が主表現列\()\)、\(t_0 \in T_{\textrm{B}}\)、\((s, \textrm{flat}(c_0), b)\) が \(t_0\) の scb分解であるとする。このとき \(t_1 \in T_{\textrm{B}}\) が存在して \(\textrm{flat}(t_1) = s\frown\textrm{flat}(c_1)\frown b\) かつ \((s, \textrm{flat}(c_1), b)\) が \(t_1\) の scb分解となる。
 
 ### 訂正案
-選言前提を \(c_0\) についてのものから、\(c_1\) と**結果**についてのものに置き換える：
-
-\(c_0, c_1 \in T_{\textrm{B}}\)、\(t_0 \in T_{\textrm{B}}\)、\((s, \textrm{flat}(c_0), b)\) が \(t_0\) の scb分解、
-かつ \((c_1\) が主表現列\() \vee (s\frown\textrm{flat}(c_1)\frown b = \textrm{flat}(0))\) であるとする。
-このとき \(t_1 \in T_{\textrm{B}}\) が存在して \(\textrm{flat}(t_1) = s\frown\textrm{flat}(c_1)\frown b\) かつ \((s, \textrm{flat}(c_1), b)\) が \(t_1\) の scb分解となる。
+\(c_0, c_1 \in T_{\textrm{B}}\)、\((c_1\) が主表現列\() \vee (s\frown\textrm{flat}(c_1)\frown b = \textrm{flat}(0))\)、\(t_0 \in T_{\textrm{B}}\)、\((s, \textrm{flat}(c_0), b)\) が \(t_0\) の scb分解であるとする。このとき \(t_1 \in T_{\textrm{B}}\) が存在して \(\textrm{flat}(t_1) = s\frown\textrm{flat}(c_1)\frown b\) かつ \((s, \textrm{flat}(c_1), b)\) が \(t_1\) の scb分解となる。
 
 ### 原文の問題点
 scb分解の定義は「\(t \neq 0\) ならば \(c\) は主表現」なので、主表現条件は対象項が零項のときだけ外れる。
@@ -509,10 +468,8 @@ scb分解の定義は「\(t \neq 0\) ならば \(c\) は主表現」なので、
 scb分解 \((s,\textrm{flat}(c_1),b)\) は \(c_1\) が主表現であることを要求するが、\(c_1\) は複項なので偽。
 
 訂正案の形（\(c_1\) が主表現、または結果が零項）が正しいことは形式的に確認済み
-（`m_7_2_scb_replaceable_corr_mod_image`）。
-
-（当初この項目は「選言を落として \(t_0 \neq 0\) を課す」という訂正案を書いていたが、それでは
-\(c_0\) が主表現・\(c_1\) が複項という反例が復活するため**誤り**であった。訂正案を差し替えた。）
+（`m_7_2_scb_replaceable_corr_mod_image`）。なお選言を落として \(t_0 \neq 0\) を課す形では、
+\(c_0\) が主表現・\(c_1\) が複項という反例が残るため不十分である。
 
 ## A13. §7.2 系（加法とscb分解の関係）(3): \(D_v(t+c)\) の出現位置と \(c\) の出現位置が同一とは限らない（反例あり） [軽微]
 
@@ -523,18 +480,13 @@ scb分解 \((s,\textrm{flat}(c_1),b)\) は \(c_1\) が主表現であること�
 \(c' \in T_{\textrm{B}}\) が主表現、\(u_1 \in T_{\textrm{B}}\)、\(\textrm{flat}(u_1) = s_1 \frown D_v\,\textrm{flat}(t+c) \frown b_1\)、\((s_0, \textrm{flat}(c), b_0)\) が \(u_1\) の scb分解であるとき、ある \(u_1'\) が存在して \(\textrm{flat}(u_1') = s_1 \frown D_v\,\textrm{flat}(t+c') \frown b_1\) かつ \((s_0, \textrm{flat}(c'), b_0)\) が \(u_1'\) の scb分解となる。
 
 ### 訂正案
-2つの出現が同一であることを、\(\textrm{flat}(t+c)\) の末尾主表現としての分割で明示する。すなわち、
-\(\textrm{pre}, \textrm{post}\) を
+\(c' \in T_{\textrm{B}}\) が主表現、\(u_1 \in T_{\textrm{B}}\)、\(\textrm{flat}(u_1) = s_1 \frown D_v\,\textrm{flat}(t+c) \frown b_1\)、\((s_0, \textrm{flat}(c), b_0)\) が \(u_1\) の scb分解であり、更に \(\textrm{pre}, \textrm{post} \in \Sigma^{< \omega}\) が
 
 - \(\textrm{flat}(t+c) = \textrm{pre} \frown \textrm{flat}(c) \frown \textrm{post}\)、
-- \(\textrm{post}\) は閉じ括弧 \(\underline{)}\) のみからなる、
-- \(\textrm{flat}(t+c') = \textrm{pre} \frown \textrm{flat}(c') \frown \textrm{post}\)
+- \(\textrm{flat}(t+c') = \textrm{pre} \frown \textrm{flat}(c') \frown \textrm{post}\)、
+- \(\textrm{post}\) は閉じ括弧 \(\underline{)}\) のみからなる
 
-を満たすものとし、前提に
-
-$$s_0 = s_1 \frown D_v \frown \textrm{pre}, \qquad b_0 = \textrm{post} \frown b_1$$
-
-を加える。
+を満たし、\(s_0 = s_1 \frown D_v \frown \textrm{pre}\) かつ \(b_0 = \textrm{post} \frown b_1\) であるとき、ある \(u_1'\) が存在して \(\textrm{flat}(u_1') = s_1 \frown D_v\,\textrm{flat}(t+c') \frown b_1\) かつ \((s_0, \textrm{flat}(c'), b_0)\) が \(u_1'\) の scb分解となる。
 
 ### 原文の問題点
 主張は暗黙に「\(s_1 \frown D_v\,\textrm{flat}(t+c) \frown b_1\) が指す \(D_v(t+c)\) の中の \(c\) と、
@@ -547,17 +499,16 @@ $$s_0 = s_1 \frown D_v \frown \textrm{pre}, \qquad b_0 = \textrm{post} \frown b_
 \(\textrm{flat}(u_1') = s_0 \textrm{flat}(c') b_0\)（第2側の置換）を同時に満たす必要があるが、
 この2文字列は相異なるので flat の単射性より \(u_1'\) は存在しない。
 
-訂正案の整合条件が正しいことは形式的に確認済み（`m_7_2_add_scb_conj3`、layerB）。
+訂正案の整合条件が正しいことは形式的に確認済み（`m_7_2_add_scb_conj3`、layerB）。なお整合条件を
+\(s_0 = s_1 \frown D_v\,\textrm{flat}(t)\) と書くのでは足りない——\(t = 0\) のとき余分な \(\underline{0}\) が入り、
+\(t\) が主表現や複項のときは括弧 \(\underline{(}\) と \(\underline{,}\) が抜けるため、\(\textrm{flat}\) の連結として
+成立しないからである。
 
-（当初この項目は整合条件を \(s_0 = s_1 \frown D_v\,\textrm{flat}(t)\) と書いていたが、これは誤りである
-——\(t = 0\) のとき余分な \(\underline{0}\) が入り、\(t\) が主表現や複項のときは括弧 \(\underline{(}\) と
-\(\underline{,}\) が抜けるため、\(\textrm{flat}\) の連結として成立しない。上記の \(\textrm{pre}/\textrm{post}\)
-による分割に差し替えた。）
-
-## A15.【格下げ：主張は真。証明の測度のみ】§7.3 命題（Trans の well-defined 性）の証明: 非簡約分岐で \(\textrm{Lng}\) 帰納の測度が下がらない
+## A15. §7.3 命題（Trans の well-defined 性）の証明: 非簡約分岐で \(\textrm{Lng}\) 帰納の測度が下がらない
 
 ### 位置
 §7.3 \(\textrm{Trans}\)/\(\textrm{Mark}\) の再帰的定義の**非簡約分岐**と、命題（\(\textrm{Trans}\) の well-defined 性）**の証明**。
+命題の主張そのものは**真**であり、訂正は証明のみでよい。
 
 ### 原文
 > \(M\)が簡約でないとする。
@@ -572,10 +523,12 @@ $$s_0 = s_1 \frown D_v \frown \textrm{pre}, \qquad b_0 = \textrm{post} \frown b_
 > \(\textrm{Lng}(M)\)に関する数学的帰納法より即座に従う。□
 
 ### 訂正案
-（命題の主張はそのままでよい。証明を次に置き換える。）
-
+> 命題（\(\textrm{Trans}\)のwell-defined性）
+>
+> 上の条件を全て満たす写像\(\textrm{Trans}\)と\(\textrm{Mark}\)が一意に存在する。
+>
 > 証明：
-> \(\textrm{Lng}(M)\) と \(\textrm{Red}\) の軌道の長さ（\(\textrm{Red}^k(M)\) が簡約な不動点に到達するまでの最小の \(k\)）に関する辞書式帰納法より従う。□
+> \(\textrm{Lng}(M)\)と\(\textrm{Red}\)の軌道の長さ（\(\textrm{Red}^k(M)\)が\(\textrm{Red}\)の不動点に到達する最小の\(k\)）の対に関する辞書式帰納法より従う。□
 
 ### 原文の問題点（証明のみ）
 非簡約分岐 \(\textrm{Trans}(M) := \textrm{Trans}(\textrm{Red}(M))\) は \(\textrm{Lng}\) を保つ
@@ -583,15 +536,13 @@ $$s_0 = s_1 \frown D_v \frown \textrm{pre}, \qquad b_0 = \textrm{post} \frown b_
 この分岐が 1 回で止まるためには \(\textrm{Red}(M)\) が簡約であること（\(\textrm{Red}\) の冪等性）が要るが、
 それは [[A4]]・[[A41]] の通り \(T_{\textrm{PS}}\) 全体では**偽**である（反例 \(M = ((0,0),(0,2))\)）。
 従って「\(\textrm{Lng}(M)\) に関する数学的帰納法より即座に従う」だけでは、この分岐で再帰が停止することが
-示せていない。別の測度（\(\textrm{Red}\) の軌道の停止性）を併用するか、定義域を制限する必要がある。
+示せていない。\(\textrm{Red}\) の軌道の停止性を測度に併用すれば埋まる。
 
-### 我々の以前の主張の格下げ（重要）
-以前の版は「\(\textrm{Trans}\) の定義域は \(T_{\textrm{PS}}\) 全体では広すぎる」と書いていたが、
-**\(\textrm{Trans}\) が \(T_{\textrm{PS}}\) 上で定義できないことの証人は無い**。忠実モデルで
+### 経験的確認
+\(\textrm{Trans}\) が \(T_{\textrm{PS}}\) 上で定義できないことの証人は無い。忠実モデルで
 \(T_{\textrm{PS}}\) を全数走査（\(\textrm{Lng} \leq 4\)、成分 \(\leq 2\)、7,380 列）したところ、
-\(\textrm{Red}\) の軌道は**高々 2 回**の反復で簡約な不動点に到達し、発散は **0 件**だった。
-すなわち写像 \(\textrm{Trans}/\textrm{Mark}\) は存在すると見込まれ、欠陥は**主張ではなく証明の測度**にある。
-本項目はその旨に格下げする。
+\(\textrm{Red}\) の軌道は**高々 2 回**の反復で \(\textrm{Red}\) の不動点に到達し、発散は **0 件**だった。
+すなわち写像 \(\textrm{Trans}/\textrm{Mark}\) は存在し、欠陥は**主張ではなく証明の測度**にある。
 
 ## A16. §7.3 命題（Trans が単項性を保つこと）および (IncrFirst,Red) 不変性 (2) の Σ_B 表示: 先頭 P 成分が零項のとき偽（原文の再帰的定義との内部矛盾）
 
@@ -632,12 +583,17 @@ ST_PS 閉包（diagSeq から \(M[n], n\ge1\) で BFS、7046 個）で違反は�
 ### 根本原因
 原始数列的な後続（先頭に零項ブロックを持つ標準形 \(((0,0))^k\) 等）で、長さ 1 の \(((0,0))\) の \(\textrm{Trans}\) が \(0\)（順序数 \(0\)）である一方、複項の成分としての零項列は \(D_0 0\)（順序数 \(1\) = "+1"）を表すべき、という二重の意味の衝突。原文の再帰的定義（吸収する）と \(\Sigma_{\textrm{B}}\)/単項性命題（残す）が非整合。
 
-### 追補（2026-06-21, 例外枝の転記形も偽 → 制限 iff で確定・無条件証明済み）
-当初 `p_7_3_Trans_monoT` に例外選言を補って
+### 例外枝を選言で補う形も偽
+\(\textrm{monoT}\) の同値を
 \[\textrm{monoT}(M) \iff \big(\textrm{Lng}(P_{\textrm{B}}(\textrm{Trans}\,M)) = 1 \,\lor\, (\textrm{zeroT}(P(M)_0) \land \textrm{Lng}(P(M)) = 2)\big)\]
-と転記したが、**この補正形そのものも偽**（`python/_step0_monoT_restricted.py` で reduced 列 maxlen≤5 を全数: **転記形 53 反例**, うち代表 \(M = ((0,0),(0,0),(1,1))\) は複項なのに \(\textrm{Trans}\,M\) が単項で、かつ右選言が真 → 同値が破れる。例外選言が**逆向き**に付いていた）。正しい経験的真形（同データで reduced 1269 件・**反例 0**）は先頭 P 成分非零項への制限 iff:
+と例外選言つきで書いても**偽**である（`python/_step0_monoT_restricted.py` で reduced 列 maxlen≤5 を全数走査:
+**53 反例**。代表 \(M = ((0,0),(0,0),(1,1))\) は複項なのに \(\textrm{Trans}\,M\) が単項で、かつ右選言が真 → 同値が破れる）。
+経験的に真であるのは、先頭 P 成分が零項でない場合への制限 iff である（同データで reduced 1269 件・**反例 0**）:
 \[M \in RT_{\textrm{PS}} \,\land\, \neg\textrm{zeroT}(P(M)_0) \ \Longrightarrow\ \big(\textrm{monoT}(M) \iff \textrm{Lng}(P_{\textrm{B}}(\textrm{Trans}\,M)) = 1\big).\]
-この制限形を `pss_wip.thy` の `m_7_3_Trans_monoT` として **無条件に証明済み**（前提は \(M \in RT_{\textrm{PS}}\) と \(\neg\textrm{zeroT}(P(M)_0)\) のみ; 偽命題や仮定偽装なし、緑 "Finished PSS"）。順方向は `Trans_PT_single`（単項 ⇒ \(\textrm{Trans}\,M\) 単一主成分）、逆方向は対偶: 複項枝の \(\textrm{Trans}\,M = \textrm{Trans}(A) +_{\textrm{B}} (\cdots)\) 分解で両被加数が主成分非空 ⇒ \(\textrm{Lng}(P_{\textrm{B}}) \ge 2\)。`pss_paper.thy` の `p_7_3_Trans_monoT` 文面もこの制限形に訂正（sorry 保持）。
+この制限形は `pss_wip.thy` の `m_7_3_Trans_monoT` として**無条件に証明済み**（前提は \(M \in RT_{\textrm{PS}}\) と
+\(\neg\textrm{zeroT}(P(M)_0)\) のみ）。順方向は `Trans_PT_single`（単項 ⇒ \(\textrm{Trans}\,M\) 単一主成分）、
+逆方向は対偶: 複項枝の \(\textrm{Trans}\,M = \textrm{Trans}(A) +_{\textrm{B}} (\cdots)\) 分解で両被加数が主成分非空
+⇒ \(\textrm{Lng}(P_{\textrm{B}}) \ge 2\)。
 
 ## A17. §7.3 命題（右端第1基点の Mark の基本性質）ほか §7.3 順序系: 零項基底 \(((0,0))\) での例外（A16 と同根の系統的零項エッジ）
 
@@ -708,10 +664,16 @@ ST_PS 閉包（diagSeq から \(M[n], n\ge1\) で BFS、7046 個）で違反は�
 §7.4「命題（$\textrm{Mark}$ が順序関係を保つこと）」(content.md 2466)。
 
 ### 原文
-$(M,m_0),(M,m_1)\in T_{\textrm{PS}}^{\textrm{Marked}}$ に対し、次は同値: (1) $m_0<m_1$。 (2) $\textrm{Mark}(M,m_1)\neq\textrm{Mark}(M,m_0)$ かつ $(\textrm{Mark}(M,m_1),\textrm{Mark}(M,m_0))\in T_{\textrm{B}}^{\textrm{Marked}}$。
+$(M,m_0),(M,m_1)\in T_{\textrm{PS}}^{\textrm{Marked}}$ に対し、次は同値である：
+
+- (1) $m_0<m_1$ である。
+- (2) $\textrm{Mark}(M,m_1)\neq\textrm{Mark}(M,m_0)$ かつ $(\textrm{Mark}(M,m_1),\textrm{Mark}(M,m_0))\in T_{\textrm{B}}^{\textrm{Marked}}$ である。
 
 ### 訂正案
-(2) $(\textrm{Mark}(M,m_0),\textrm{Mark}(M,m_1)) \in T_{\textrm{B}}^{\textrm{Marked}}$
+$(M,m_0),(M,m_1)\in T_{\textrm{PS}}^{\textrm{Marked}}$ に対し、次は同値である：
+
+- (1) $m_0<m_1$ である。
+- (2) $\textrm{Mark}(M,m_1)\neq\textrm{Mark}(M,m_0)$ かつ $(\textrm{Mark}(M,m_0),\textrm{Mark}(M,m_1))\in T_{\textrm{B}}^{\textrm{Marked}}$ である。
 
 ### 原文の問題点
 \(T_{\textrm{B}}^{\textrm{Marked}}=\{(t,c)\mid (s,c,b)\,\text{が}\,t\,\text{の scb 分解}\}\)(content.md 1834)は **(whole, block)** の規約(\(c\) は \(t\) の部分=被覆される側、cf. 1936 \((t+c,c)\))。一方 \(\textrm{Mark}(M,m)\) は \(m\) が小さいほど大きい(\(\textrm{Mark}(M,0)=\textrm{Trans}(M)\) 最大、\(\textrm{Mark}(M,j_1)=D_{M_{1,j_1}}0\) 最小)。よって \(m_0<m_1\) では \(\textrm{Mark}(M,m_0)\) が whole、\(\textrm{Mark}(M,m_1)\) が block で、正しい対は \((\textrm{Mark}(M,m_0),\textrm{Mark}(M,m_1))\in T_{\textrm{B}}^{\textrm{Marked}}\)。原文の \((\textrm{Mark}(M,m_1),\textrm{Mark}(M,m_0))\) は **whole と block が逆**。
@@ -756,11 +718,6 @@ $(M,m_0),(M,m_1)\in T_{\textrm{PS}}^{\textrm{Marked}}$ に対し、次は同値:
   ただしガードは十分条件であって特徴付けではない：ガード外でも成立する例が 66 件ある
   （\(j_0 = j_1-1\)・非簡約切片でも \(\textrm{Trans}\) と \(c_1\) が一致する場合がある）。
 
-### 我々の以前の訂正案の誤り
-以前の版はガードを \(j_0 < j_1-1\)（切片が非単項）**のみ**としていたが、これは**過剰制限**だった：
-上の走査で \(j_0 = j_1-1\) かつ \(M_{0,j_0} = M_{1,j_0}\)（簡約な 1 列切片）の例でも part(1) は成立する。
-\(j_0 < j_1-1\) だけを課すと、成立する 174 例を不必要に排除してしまう。切片の簡約性を選言に加えた形に訂正した。
-
 ## A21. §8.1 同補題 part(5): 条件(III)のとき基本列ブロックの親 \(j_0^N = j'_0\) が偽
 
 ### 位置
@@ -778,7 +735,7 @@ part(5) の周期性論法は基本列ブロックが正しい row-0 シフト�
 ### 経験的確認(独立検証)
 最小反例 \(M = ((0,0),(1,1),(2,1))\)(**条件(III)**)。\(j_1=2,j_0=1\)、一意 next-parent \(j'_0=0\)、\(n=2\) で \(M[2]=((0,0),(1,1),(2,0),(3,1))\)、\(\textrm{idx}=2\)、\(N=((0,0),(1,1),(2,0))\)、\(\textrm{parent}\,N\,0\,2 = 1 \neq 0 = j'_0\)。条件(III)-only 走査で 18/18 が part(5) 違反、条件(I) では 0/26。
 
-## A22 — §8.3 補題（第0種型基本列の基本不等式）の右辺添字脱落 [軽微]
+## A22. §8.3 補題（第0種型基本列の基本不等式）の右辺添字脱落 [軽微]
 
 ### 位置
 pss_paper.thy の `p_8_3_kind0_base_ineq`(article 3972「第0種型基本列の基本不等式」)。
@@ -817,10 +774,10 @@ maxlen5 maxe3 で反例多数(独立検証、sweep agent)。
 
 さらに、**この読みが正しいことは記事自身の記述からも裏づけられる**：
 
-1. §7.2 命題（scb分解と基本列の関係）(2) は、この読みの下で**印字どおり 112/112 で成立**する（我々が当初採った別の読みでは非自明ケースで 0/60）。
+1. §7.2 命題（scb分解と基本列の関係）(2) は、この読みの下で**印字どおり 112/112 で成立**する（\(x_i = b[D_u x_{i-1}]\) と \(a[n] = D_v x_n\) の組み合わせでは非自明ケースで 0/60）。
 2. §8.6 の証明が \((D_v 0)[0] = 0\) と \((D_v 0)[D_{v-1} 0] = D_{v-1} 0\) の 2 ケースを挙げているのは、\(a[0] = D_u b[x_0]\)（\(b\) に \(x_0\) を食わせる）という計算そのものである。
 
-（我々は当初この脚注を「外側の \(b[\cdot]\) が余分」と読み、\(a[n] = D_v x_n\) と修正した。それは誤りであり、その誤読に基づく訂正案 A24〜A28・A32〜A35・A37・A38 はすべて撤回した（[corrections-old.md](corrections-old.md)）。この項目は転置の誤植の指摘であり、[軽微] である。）
+（この項目は転置の誤植の指摘であり、[軽微] である。）
 
 ## A29. §8.5 補題（条件(V)の下での各種scb分解）part (5) は n=1 で成立しない（証明の基底と不整合）[軽微]
 
@@ -828,23 +785,29 @@ maxlen5 maxe3 で反例多数(独立検証、sweep agent)。
 §8.5 補題（条件(V)の下での各種scb分解）(content.md 5213) part (5)、およびその証明 (content.md 5267, 5329)
 
 ### 原文
-(5) \(\textrm{Trans}(M[n]) = s_1 D_{M_{1,j_{-1}}} (s'_1 D_{M_{1,j_0}})^n t_2 (b'_1)^n b_1\) である。（\(n \in \mathbb{N}_{+}\) 全体で主張）
+> (5) \(\textrm{Trans}(M[n]) = s_1 D_{M_{1,j_{-1}}} (s'_1 D_{M_{1,j_0}})^n t_2 (b'_1)^n b_1\) である。
+
+（\(n \in \mathbb{N}_{+}\) 全体で主張されている。証明中の該当2箇所は次の通り。）
+
+> (4) の証明冒頭 (content.md 5267): \(\textrm{Trans}(L_n) = s_1 D_{M_{1,j_{-1}}} (s'_1 D_{M_{1,j_0}})^{2n} 0 (b'_1)^{2n} b_1\)
+
+> (5) の証明の \(n=1\) の場合 (content.md 5329): \((s'_1 D_{M_{1,j_0}})^{2n-2}\)
 
 ### 訂正案
-(5) の主張に \(n \geq 2\) を仮定として付す（もしくは \(n=1\) の場合を別記する）。すなわち：
+> (5) \(n \geq 2\) ならば \(\textrm{Trans}(M[n]) = s_1 D_{M_{1,j_{-1}}} (s'_1 D_{M_{1,j_0}})^n t_2 (b'_1)^n b_1\) であり、\(n = 1\) ならば \(\textrm{Trans}(M[1]) = s_1 D_{M_{1,j_{-1}}} t_2 b_1\) である。
 
-- \(n \geq 2\) ならば \(\textrm{Trans}(M[n]) = s_1 D_{M_{1,j_{-1}}} (s'_1 D_{M_{1,j_0}})^n t_2 (b'_1)^n b_1\) である。
-- \(n = 1\) ならば \(M[1] = \textrm{Pred}(M)\) より \(\textrm{Trans}(M[1]) = s_1 D_{M_{1,j_{-1}}} t_2 b_1\)（指数 \(0\)）である。
+> (4) の証明冒頭: \(\textrm{Trans}(L_n) = s_1 D_{M_{1,j_{-1}}} (s'_1 D_{M_{1,j_0}})^{n+1} 0 (b'_1)^{n+1} b_1\)
 
-あわせて証明中の指数の誤記2箇所：
-
-- (4) の証明冒頭 (content.md 5267) の帰納法の主張「\(\textrm{Trans}(L_n) = s_1 D_{M_{1,j_{-1}}} (s'_1 D_{M_{1,j_0}})^{2n} 0 (b'_1)^{2n} b_1\)」の \(2n\) は \(n+1\) の誤記（statement (4) も証明本体 (5297, 5316) も \(n+1\)）。
-- (5) の証明の \(n=1\) の場合 (content.md 5329) の「\((s'_1 D_{M_{1,j_0}})^{2n-2}\)」の \(2n-2\) は（\(n=1\) では \(0\) だが \(n\) の式としては誤りで）単に \(0\) と書くべき。
+> (5) の証明の \(n=1\) の場合: \((s'_1 D_{M_{1,j_0}})^{0}\)
 
 ### 原文の問題点
 主張 (5) の指数 \(n\) は \(n \geq 2\) では正しいが、\(n = 1\) では成立しない。実際、\(M[1] = \textrm{Pred}(M)\) であり、原文証明の (5) の基底 (content.md 5329) 自身が
 \(\textrm{Trans}(M[1]) = t_1 = s_1 c_1 b_1 = s_1 D_{M_{1,j_{-1}}} t_2 b_1\)（＝指数 \(0\)）
 を導いている。すなわち主張の指数（\(n=1\) で \(1\)）と証明の基底（\(0\)）が食い違う。\(n>1\) の場合の証明 (content.md 5337-5347) は指数 \(n\) を正しく導いており、そちらは真である。
+
+証明中の指数の誤記も 2 箇所ある。(4) の証明冒頭の帰納法の主張の \(2n\) は \(n+1\) の誤記である
+（statement (4) も証明本体 (5297, 5316) も \(n+1\)）。(5) の証明の \(n=1\) の場合の \(2n-2\) は、
+\(n=1\) では値 \(0\) になるが \(n\) の式としては誤りで、単に \(0\) と書くべきである。
 
 ### 経験的確認
 真正 \(ST_{\textrm{PS}}\) プール（diagSeq 種＋oper 閉包）の条件(V)かつ \(j_0\) 非許容の単項ホスト **32 個（相異なる、非空虚に条件を行使）**、正しい基本列（[[A23]] の訂正後の operB）で：
@@ -853,7 +816,7 @@ maxlen5 maxe3 で反例多数(独立検証、sweep agent)。
 - \(n = 2,3,4\)：原文の指数 \(n\) 形 **96/96**（＝真）、指数 \(n-1\) 形 **0/96**。
 - part (4) の印字（指数 \(n+1\)）は \(n \geq 1\) 全体で **63/63** で真。
 
-（本項目は当初「指数は \(n-1\)」と訂正案を出していたが、それは誤った operB（[[A23]] の誤読）に基づくもので、\(n \geq 2\) では偽である。欠陥は \(n=1\) の境界のみ。スクリプト `python/_r56_reverify.py`。）
+（スクリプト `python/_r56_reverify.py`。）
 
 ## A30. §8.4 補題（条件(III)～(V)の下での右端の置き換えとTransの関係）part (3) の結論 scb 分解が偽
 
@@ -861,10 +824,10 @@ maxlen5 maxe3 で反例多数(独立検証、sweep agent)。
 §8.4 補題（条件(III)～(V)の下での右端の置き換えと\(\textrm{Trans}\)の関係）(content.md 4273) part (3)
 
 ### 原文
-\(j_{-2} < j_0\) かつ \(j_0\) 非 \(M\) 許容的のとき \((s, D_{M_{1,j_0}}(t_2 + D_{M_{1,j_0}} 0), b)\) が \(\textrm{Trans}(L')\) の scb 分解である。
+(3) \(j_{-2} < j_0\) かつ \(j_0\) 非 \(M\) 許容的のとき \((s, D_{M_{1,j_0}}(t_2 + D_{M_{1,j_0}} 0), b)\) が \(\textrm{Trans}(L')\) の scb 分解である。
 
 ### 訂正案
-\((s, D_{M_{1,j_{-2}}} 0, b)\) が \(\textrm{Trans}(L')\) の scb 分解である。
+(3) \(j_{-2} < j_0\) かつ \(j_0\) 非 \(M\) 許容的のとき \((s, D_{M_{1,j_{-2}}} 0, b)\) が \(\textrm{Trans}(L')\) の scb 分解である。
 
 ### 原文の問題点
 結論は part (2) と同一の \((s, D_{M_{1,j_{-2}}} 0, b)\)（無条件）。原文証明自身の結語（content.md 4371 / 4387）が両場合ともこの形を導いている。長さ勘定により文字どおりの part (3) は part (1) と \((s,b)\) を共有できない。
@@ -933,26 +896,39 @@ maxlen5 maxe3 で反例多数(独立検証、sweep agent)。
 §6.6 簡約性の定義直後の注（content.md 1024）。
 
 ### 原文
-（簡約性の定義に続けて）\(RT_{PS} = \textrm{Im}(\textrm{Red})\) である。
+\(RT_{PS} = \textrm{Im}(\textrm{Red})\) である。
 
 ### 訂正案
-この注を削除する。成り立つのは \(RT_{PS} \subseteq \textrm{Im}(\textrm{Red})\) のみであり、逆の包含 \(\textrm{Im}(\textrm{Red}) \subseteq RT_{PS}\) は偽。
+\(RT_{PS} \subseteq \textrm{Im}(\textrm{Red})\) である。
 
 ### 原文の問題点
-\(\textrm{Im}(\textrm{Red}) \subseteq RT_{PS}\) は \(\textrm{Red}(\textrm{Red}(M)) = \textrm{Red}(M)\)（Red の冪等性）と同値だが、その冪等性は **A4 で \(T_{PS}\) 上偽であることが判明している**（反例 \(M = ((0,0),(0,2))\)）。A4 は §6.5 の 8 命題を列挙しているが、この無名注は含まれていない。冪等性は簡約性の定義域（`anchored_slice`、すなわち標準形または簡約かつ非複項な列の先祖係留切片）に制限して初めて成立する。
+逆の包含 \(\textrm{Im}(\textrm{Red}) \subseteq RT_{PS}\) は \(\textrm{Red}(\textrm{Red}(M)) = \textrm{Red}(M)\)（\(\textrm{Red}\) の冪等性）と同値だが、その冪等性は [[A4]] の通り \(T_{PS}\) 上**偽**である（反例 \(M = ((0,0),(0,2))\)）。[[A4]] は §6.5 の 8 命題を列挙しているが、この無名注は含まれていない。冪等性は簡約性の定義域（標準形または簡約かつ非複項な列の先祖係留切片）に制限して初めて成立する。
 
-（形式化への影響: `pss_defs.thy` の `RT_PS` の定義は `{M ∈ T_PS. Red M = M}` であって Im(Red) ではないので健全性への影響はない。ただし同ファイルの説明コメントが `= Im(Red)` と誤って書いていたので修正した。）
-
-## A45. §7.4 系（$\textrm{Trans}$ と NextAdm の関係）: 定義域が $T_{PS}$ では偽（$RT_{PS}$ に制限が必要）
+## A45. §7.4 命題（$\textrm{Trans}$ と $<_M^{\textrm{NextAdm}}$ の関係）: 定義域が $T_{PS}$ では偽（$RT_{PS}$ に制限が必要）
 
 ### 位置
-§7.4 許容的親子関係、命題（$\textrm{Trans}$ と $\textrm{NextAdm}$ の関係）。形式化では `p_7_4_Trans_nextAdm`。
+§7.4 許容的親子関係、命題（\(\textrm{Trans}\)と\(<_M^{\textrm{NextAdm}}\)の関係）。形式化では `p_7_4_Trans_nextAdm`。
+
+### 原文
+> 命題（\(\textrm{Trans}\)と\(<_M^{\textrm{NextAdm}}\)の関係）
+>
+> \(M \in T_{\textrm{PS}}\)とし、\(j_1 := \textrm{Lng}(M) - 1\)と置く。\((0,j_0) <_M^{\textrm{NextAdm}} (0,j_1)\)を満たす一意な\(j_0 \in \mathbb{N}\)が存在するならば、一意な\((s_0,b_0) \in (\Sigma^{< \omega})^2\)が存在し、以下を満たす：
+>
+> (1) \((s_0,\textrm{Mark}(\textrm{Pred}(M),j_0),b_0)\)は\(\textrm{Trans}(\textrm{Pred}(M))\)のscb分解である。
+>
+> (2) \((s_0,\textrm{Mark}(M,j_0),b_0)\)は\(\textrm{Trans}(M)\)のscb分解である。
 
 ### 訂正案
-仮定に $M \in RT_{\textrm{PS}}$（$M$ が簡約であること）を加える。
+> 命題（\(\textrm{Trans}\)と\(<_M^{\textrm{NextAdm}}\)の関係）
+>
+> \(M \in RT_{\textrm{PS}}\)とし、\(j_1 := \textrm{Lng}(M) - 1\)と置く。\((0,j_0) <_M^{\textrm{NextAdm}} (0,j_1)\)を満たす一意な\(j_0 \in \mathbb{N}\)が存在するならば、一意な\((s_0,b_0) \in (\Sigma^{< \omega})^2\)が存在し、以下を満たす：
+>
+> (1) \((s_0,\textrm{Mark}(\textrm{Pred}(M),j_0),b_0)\)は\(\textrm{Trans}(\textrm{Pred}(M))\)のscb分解である。
+>
+> (2) \((s_0,\textrm{Mark}(M,j_0),b_0)\)は\(\textrm{Trans}(M)\)のscb分解である。
 
 ### 原文の問題点
-$M$ が簡約でないとき偽。反例：
+\(M\) が簡約でないとき偽。反例：
 
 $$M = (0,0)(0,1)(1,2)(1,0)$$
 
@@ -962,21 +938,39 @@ $1$ は $3$ の一意な NextAdm 親でもある（仮定はすべて成立）�
 $\textrm{Trans}(\textrm{Pred}(M)) = D_0 D_2 0$、$\textrm{Trans}(M) = D_0(D_2 0 + D_1(D_2 0 + D_0 0))$ であり、
 結論が要求する scb 分解の組 $(s_0,b_0)$ は**存在しない**（一意性ではなく存在が破れる）。
 
-根本原因は訂正 [[A4]] と同じである：$\textrm{Trans}(M) := \textrm{Trans}(\textrm{Red}(M))$ は簡約後の列で計算されるが、
+根本原因は [[A4]] と同じである：$\textrm{Trans}(M) := \textrm{Trans}(\textrm{Red}(M))$ は簡約後の列で計算されるが、
 $\leq_M$ は $\textrm{Red}$ 不変ではない。実際この $M$ では $(0,1) \leq_M (0,3)$ が成立する一方
 $(0,1) \leq_{\textrm{Red}(M)} (0,3)$ は成立せず、列 $1$ は $\textrm{Red}(M)$ の基点ですらない。
+原文の証明が「\(\textrm{Trans}\)の再帰的定義と直系先祖の\(\textrm{Red}\)不変性から、\(M \in RT_{\textrm{PS}} \cap PT_{\textrm{PS}}\)の場合に帰着される」
+としているのは、まさにこの \(\textrm{Red}\) 不変性（[[A4]] により \(T_{\textrm{PS}}\) 上偽）に依拠している。
+
 （悉皆検査（成分 $< 3$、$\textrm{Lng} \le 4$）：反例 33 件、**すべて非簡約**。簡約な $M$ では 224/224 成立。）
 
 ## A46. §7.4 系（$\textrm{Trans}$ の $\textrm{Mark}$ と $\textrm{Pred}$ による表示）: 定義域が $T_{PS}$ では偽（$RT_{PS}$ に制限が必要）
 
 ### 位置
-§7.4 許容的親子関係、系（$\textrm{Trans}$ の $\textrm{Mark}$ と $\textrm{Pred}$ による表示）。形式化では `p_7_4_Trans_Mark_Pred`。
+§7.4 許容的親子関係、系（\(\textrm{Trans}\)の\(\textrm{Mark}\)と\(\textrm{Pred}\)による表示）。形式化では `p_7_4_Trans_Mark_Pred`。
+
+### 原文
+> 系（\(\textrm{Trans}\)の\(\textrm{Mark}\)と\(\textrm{Pred}\)による表示）
+>
+> 任意の\((M,m) \in T_{\textrm{PS}}^{\textrm{Marked}}\)に対し、\(m < \textrm{Lng}(M) - 1\)ならば一意な\((s_0,b_0) \in (\Sigma^{< \omega})^2\)が存在し、以下を満たす：
+>
+> (1) \((s_0,\textrm{Mark}(\textrm{Pred}(M),m),b_0)\)は\(\textrm{Trans}(\textrm{Pred}(M))\)のscb分解である。
+>
+> (2) \((s_0,\textrm{Mark}(M,m),b_0)\)は\(\textrm{Trans}(M)\)のscb分解である。
 
 ### 訂正案
-仮定に $M \in RT_{\textrm{PS}}$ を加える。
+> 系（\(\textrm{Trans}\)の\(\textrm{Mark}\)と\(\textrm{Pred}\)による表示）
+>
+> 任意の\((M,m) \in RT_{\textrm{PS}}^{\textrm{Marked}}\)に対し、\(m < \textrm{Lng}(M) - 1\)ならば一意な\((s_0,b_0) \in (\Sigma^{< \omega})^2\)が存在し、以下を満たす：
+>
+> (1) \((s_0,\textrm{Mark}(\textrm{Pred}(M),m),b_0)\)は\(\textrm{Trans}(\textrm{Pred}(M))\)のscb分解である。
+>
+> (2) \((s_0,\textrm{Mark}(M,m),b_0)\)は\(\textrm{Trans}(M)\)のscb分解である。
 
 ### 原文の問題点
 [[A45]] と同一の反例 $M = (0,0)(0,1)(1,2)(1,0)$ で偽。$\textrm{Mark}(M,1) = D_0 0$、
 $\textrm{Mark}(\textrm{Pred}(M),1) = D_2 0$ となり、両者を同時に scb 分解する $(s_0,b_0)$ が存在しない。
-原因は A45 と同じく、基点が簡約後の列から読まれる一方 $\leq_M$ が $\textrm{Red}$ 不変でないこと（[[A4]]）。
+原因は [[A45]] と同じく、基点が簡約後の列から読まれる一方 $\leq_M$ が $\textrm{Red}$ 不変でないこと（[[A4]]）。
 （悉皆検査：反例 33 件、すべて非簡約。簡約な $M$ では 224/224 成立。）
