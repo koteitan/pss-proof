@@ -19325,6 +19325,57 @@ text \<open>\<^bold>\<open>For the record.\<close>  The following \<^emph>\<open
   NOT false: those article statements are true and are untouched.\<close>
 
 
+
+(* ===================================================================== *)
+(* r77-Y3T (TARGET 2): stale-citation hygiene.                            *)
+(* layerB's m_8_7_toplevel_OT_tail_annihilate runs its well-founded       *)
+(* induction on wf_induct_rule[OF buc1_2_2_OT_B_wf] --- the SORRY'd       *)
+(* pss_paper citation.  The very same statement is our own theorem        *)
+(* y4_buc1_2_2_OT_B_wf (layerC, sorry-free).  layerB is frozen, so the    *)
+(* lemma is RESTATED here verbatim and re-proved from y4_..., and         *)
+(* registered in the ML audit below.  (No live result consumes the        *)
+(* layerB copy: grep finds zero uses outside its own statement.)          *)
+(* ===================================================================== *)
+
+section \<open>r77-Y3T --- \<open>m_8_7_toplevel_OT_tail_annihilate\<close>, freed of the sorry'd citation\<close>
+
+lemma y3t_toplevel_OT_tail_annihilate:
+  assumes t'OT: "t' \<in> OT_B"
+    and step: "\<And>r. r \<in> OT_B \<Longrightarrow> r \<noteq> 0\<^sub>B \<Longrightarrow>
+                  \<exists>r'. operB (q +\<^sub>B Dpt (enat u) r) (numBT 0) = q +\<^sub>B Dpt (enat u) r'
+                     \<and> r' \<in> OT_B \<and> lessBT r' r"
+  shows "\<exists>k. ((\<lambda>a. operB a (numBT 0)) ^^ k) (q +\<^sub>B Dpt (enat u) t')
+              = q +\<^sub>B Dpt (enat u) 0\<^sub>B"
+  using t'OT
+proof (induction t' rule: wf_induct_rule[OF y4_buc1_2_2_OT_B_wf])
+  case (1 t')
+  let ?op = "\<lambda>a. operB a (numBT 0)"
+  show ?case
+  proof (cases "t' = 0\<^sub>B")
+    case True
+    have "(?op ^^ 0) (q +\<^sub>B Dpt (enat u) t') = q +\<^sub>B Dpt (enat u) 0\<^sub>B"
+      using True by simp
+    thus ?thesis by blast
+  next
+    case False
+    obtain t'' where st: "?op (q +\<^sub>B Dpt (enat u) t') = q +\<^sub>B Dpt (enat u) t''"
+      and t''OT: "t'' \<in> OT_B" and t''lt: "lessBT t'' t'"
+      using step[OF "1.prems" False] by blast
+    have rel: "(t'', t') \<in> {(a, b). a \<in> OT_B \<and> b \<in> OT_B \<and> lessBT a b}"
+      using t''OT "1.prems" t''lt by simp
+    obtain k where kval:
+      "(?op ^^ k) (q +\<^sub>B Dpt (enat u) t'') = q +\<^sub>B Dpt (enat u) 0\<^sub>B"
+      using "1.IH"[OF rel t''OT] by blast
+    have "(?op ^^ (Suc k)) (q +\<^sub>B Dpt (enat u) t')
+            = (?op ^^ k) (?op (q +\<^sub>B Dpt (enat u) t'))"
+      by (simp add: funpow_Suc_right comp_def del: funpow.simps)
+    also have "\<dots> = (?op ^^ k) (q +\<^sub>B Dpt (enat u) t'')" using st by simp
+    also have "\<dots> = q +\<^sub>B Dpt (enat u) 0\<^sub>B" using kval by simp
+    finally show ?thesis by blast
+  qed
+qed
+
+
 ML \<open>
   fun sorry_deps th =
     let
@@ -19459,7 +19510,10 @@ ML \<open>
      ("y3u_p_7_4_Trans_Mark_Pred",   @{thm y3u_p_7_4_Trans_Mark_Pred}),
      ("y3u_p_8_1_c1_around_part1",   @{thm y3u_p_8_1_c1_around_part1}),
      ("y3u_p_8_1_c1_around_part5",   @{thm y3u_p_8_1_c1_around_part5}),
-     ("y3u_p_8_3_kind0_base_ineq",   @{thm y3u_p_8_3_kind0_base_ineq})];
+     ("y3u_p_8_3_kind0_base_ineq",   @{thm y3u_p_8_3_kind0_base_ineq}),
+     \<comment> \<open>r77: the \<section>8.7 top-level tail annihilation, freed of the
+         sorry'd \<open>buc1_2_2_OT_B_wf\<close> citation (uses \<open>y4_buc1_2_2_OT_B_wf\<close>)\<close>
+     ("y3t_toplevel_OT_tail_annihilate", @{thm y3t_toplevel_OT_tail_annihilate})];
 
   \<comment> \<open>r72: assert the termination theorems carry NO free hypothesis left ---
       \<open>y5_PSS_wf\<close> must be a closed statement (no meta-premises, no schematics).\<close>
