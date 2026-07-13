@@ -20433,6 +20433,145 @@ text \<open>\<^bold>\<open>STATUS (r78, honest)\<close>.  \<^bold>\<open>(F) is 
     \<^item> \<^bold>\<open>Brick B\<close> genuinely FAILS (144/6458) and needs the engine relaxation of
       @{thm [source] Mark_nest_common_marked} to an unmarked inner column, not a
       transport.\<close>
+
+
+(* ===================================================================== *)
+(* r79-Y3X (TARGET 1): Brick A --- (C4).                                  *)
+(* Base bricks for the admissibility transport along Red.                 *)
+(* ===================================================================== *)
+
+section \<open>r79-Y3X --- Brick A: admissibility survives \<open>Red\<close> on marked ancestral columns\<close>
+
+subsection \<open>Elementary \<open>adm\<close> bricks\<close>
+
+text \<open>\<open>adm\<close> is FREE at the right end: \<open>nadm M m\<close> asks for a \<open>nextrel\<^sub>1\<close>-step
+  \<open>m \<to> m+1\<close>, which needs \<open>m + 1 < Lng M\<close>.\<close>
+
+lemma y3x_adm_last:
+  assumes m: "m < Lng M" and e: "Lng M \<le> Suc m"
+  shows "adm M m"
+  using m e by (auto simp: adm_def nadm_def nextR_def nextrel1_def)
+
+text \<open>An admissible \<open>m > 0\<close> is at or beyond the trunk: below \<open>TrMax M\<close> every
+  consecutive \<open>nextrel\<^sub>1\<close>-step holds (@{thm [source] TrMax_in_S}), so \<open>m < TrMax M\<close>
+  would make \<open>m\<close> non-admissible.\<close>
+
+lemma y3x_TrMax_le_of_adm:
+  assumes MT: "M \<in> T_PS" and m0: "0 < m" and a: "adm M m"
+  shows "TrMax M \<le> m"
+proof (rule ccontr)
+  assume "\<not> TrMax M \<le> m"
+  hence lt: "m < TrMax M" by simp
+  have S: "\<forall>j'<TrMax M. nextR M 1 j' (j' + 1)" by (rule TrMax_in_S[OF MT])
+  have p1: "m - 1 < TrMax M" using lt by simp
+  have e1: "nextR M 1 (m - 1) m" using S p1 m0 by (metis Suc_diff_1 Suc_eq_plus1)
+  have e2: "nextR M 1 m (m + 1)" using S lt by blast
+  have "nadm M m" using e1 e2 by (simp add: nadm_def)
+  thus False using a by (simp add: adm_def)
+qed
+
+subsection \<open>Row-generic block bookkeeping (the \<open>i\<close>-indexed forms of r78)\<close>
+
+lemma y3x_entry_NJ_hi:
+  assumes "0 < j" and "j < Lng (Br M ! J)"
+  shows "entry (NJ M J) i j = entry (Br M ! J) i j"
+proof -
+  have "NJ M J ! j = Br M ! J ! j"
+    unfolding NJ_def using assms by (rule nth_Cons_tl)
+  thus ?thesis by (simp add: entry_def)
+qed
+
+lemma y3x_entry_Red_block:
+  assumes M: "M \<in> PT_PS" and c0: "entry M 0 0 = 0" and c1: "entry M 1 0 = 0"
+    and JBr: "J < Lng (Br M)" and q: "q < Lng (Br M ! J)"
+  shows "entry (Red M) i (FirstNodes M ! J + q)
+       = entry ((IncrFirst ^^ (Joints M ! J + 1 - npJ M J)) (Red (NJ M J))) i q"
+proof -
+  let ?T = "TrMax M"
+  let ?B = "\<lambda>J. (IncrFirst ^^ (Joints M ! J + 1 - npJ M J)) (Red (NJ M J))"
+  let ?Bs = "map ?B [0..<Lng (Br M)]"
+  have MT: "M \<in> T_PS" using M by (simp add: PT_PS_def)
+  have mono: "monoT M" using M by (simp add: PT_PS_def)
+  have nz: "\<not> zeroT M" using mono by (simp add: monoT_def)
+  have nmu: "\<not> multiT M" using mono by (simp add: multiT_def)
+  have tne: "?T \<noteq> Lng M - 1" by (rule y3w_Br_tne[OF JBr])
+  have rM: "Red M = diagSeq 0 ?T @ concat ?Bs"
+    by (rule d_Red_core_nontrunk_unfold[OF MT nz nmu c0 c1 tne])
+  have lenB: "\<And>I. I < Lng (Br M) \<Longrightarrow> Lng (?B I) = Lng (Br M ! I)"
+  proof -
+    fix I assume IL: "I < Lng (Br M)"
+    have brIne: "Br M ! I \<noteq> []" by (rule Br_component_nonempty[OF M IL])
+    have NJne: "NJ M I \<noteq> []" by (simp add: NJ_def)
+    have NJT: "NJ M I \<in> T_PS" using NJne by (simp add: T_PS_def)
+    have "Lng (?B I) = Lng (Red (NJ M I))" by simp
+    also have "\<dots> = Lng (NJ M I)" by (rule m_6_5_Lng_Red[OF NJT])
+    also have "\<dots> = Lng (Br M ! I)" by (rule Lng_NJ[OF brIne])
+    finally show "Lng (?B I) = Lng (Br M ! I)" .
+  qed
+  have maplen: "map length ?Bs = map length (Br M)"
+    by (rule y3w_maplen_eq) (use lenB in auto)
+  have JL: "J < length ?Bs" using JBr by simp
+  have JL': "J < length (Br M)" using JBr by simp
+  have qB: "q < length (?Bs ! J)" using q lenB[OF JBr] JBr by simp
+  have sumeq: "sum_list (map length (take J ?Bs)) = sum_list (map length (take J (Br M)))"
+    using maplen by (metis take_map)
+  have idx: "IdxSum (Br M) ! J = sum_list (map length (take J (Br M)))"
+    by (rule idxsum_nth) (use JL' in simp)
+  have FN: "FirstNodes M ! J = ?T + 1 + IdxSum (Br M) ! J"
+    by (rule FirstNodes_nth[OF JL'])
+  have bnd: "sum_list (map length (take J ?Bs)) + q < length (concat ?Bs)"
+    by (rule y3w_concat_bound[OF JL qB])
+  have hi: "entry (diagSeq 0 ?T @ concat ?Bs) i (Suc ?T + (IdxSum (Br M) ! J + q))
+              = entry (concat ?Bs) i (IdxSum (Br M) ! J + q)"
+    by (rule entry_diagSeq_append_hi) (use bnd sumeq idx in simp)
+  have inner: "entry (concat ?Bs) i (IdxSum (Br M) ! J + q) = entry (?Bs ! J) i q"
+    using y3w_entry_concat[OF JL qB] sumeq idx by simp
+  have BJ: "?Bs ! J = ?B J" using JBr by simp
+  have "entry (Red M) i (FirstNodes M ! J + q)
+          = entry (diagSeq 0 ?T @ concat ?Bs) i (Suc ?T + (IdxSum (Br M) ! J + q))"
+    using rM FN by (simp add: add.assoc)
+  also have "\<dots> = entry (?Bs ! J) i q" using hi inner by simp
+  finally show ?thesis using BJ by simp
+qed
+
+subsection \<open>The row-1 parent behind \<open>npJ\<close>\<close>
+
+text \<open>When \<open>npJ M J > 0\<close> it is \<open>p\<^sub>1 + 1\<close> for the (unique) row-1 parent \<open>p\<^sub>1\<close> of the
+  first node of branch \<open>J\<close>.  This is the fact hidden inside the proof of
+  @{thm [source] npJ_le_Joints_Suc}; we expose it.\<close>
+
+lemma y3x_npJ_parent:
+  assumes M: "M \<in> PT_PS" and core1: "entry M 1 0 = 0" and JBr: "J < Lng (Br M)"
+    and pos: "0 < npJ M J"
+  shows "nextR M 1 (npJ M J - 1) (FirstNodes M ! J)"
+proof -
+  have MT: "M \<in> T_PS" using M by (simp add: PT_PS_def)
+  have monoM: "monoT M" using M by (simp add: PT_PS_def)
+  let ?f = "FirstNodes M ! J"
+  have nzbr: "entry (Br M ! J) 1 0 \<noteq> 0" using pos by (simp add: npJ_def split: if_splits)
+  have fnTr: "Joints M ! J \<le> TrMax M \<and> TrMax M < ?f"
+    by (rule m_6_4_FirstNodes_TrMax_Joints[OF M JBr])
+  have nxJ: "nextR M 0 (Joints M ! J) ?f" by (rule Joints_parent_nextR[OF M JBr])
+  have fL: "?f < Lng M" using nxJ by (simp add: nextR_def nextrel0_def)
+  have fpos: "0 < ?f" using fnTr by linarith
+  have eBf1: "entry M 1 ?f = entry (Br M ! J) 1 0"
+    by (rule entry_FirstNodes_eq_component_gen[OF M JBr])
+  have f1pos: "0 < entry M 1 ?f" using eBf1 nzbr by simp
+  have e10_lt: "entry M 1 0 < entry M 1 ?f" using core1 f1pos by simp
+  have le00f: "leR M 0 0 ?f"
+  proof -
+    have root: "leR M 0 0 (Lng M - 1)" using monoM by (simp add: monoT_def)
+    have fle: "?f \<le> Lng M - 1" using fL by simp
+    show ?thesis by (rule m_5_1_ancestor_tree_1[OF MT root _ fle]) simp
+  qed
+  obtain p1 where p1: "0 \<le> p1" "p1 < ?f" "nextR M 1 p1 ?f"
+    using m_5_1_parent_exists_2[OF MT fpos fL e10_lt le00f] by blast
+  have ex1: "\<exists>!j. nextR M 1 j ?f" using p1(3) nextR1_unique by blast
+  have the_p1: "(THE j. nextR M 1 j ?f) = p1" using p1(3) by (rule the1_equality[OF ex1])
+  have np: "npJ M J = Suc p1" using nzbr the_p1 by (simp add: npJ_def)
+  show ?thesis using np p1(3) by simp
+qed
+
 ML \<open>
   fun sorry_deps th =
     let
