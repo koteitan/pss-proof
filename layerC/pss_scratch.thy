@@ -16965,6 +16965,54 @@ next
   show ?thesis
     using Neq m0 segN mono RT by (simp add: PT_PS_def)
 qed
+
+
+section \<open>r76-Y3P --- \<section>7.4 命題（\<open>Mark\<close>と\<open><\<^bsub>M\<^esub>\<^sup>NextAdm\<close>の関係）: TRUE on \<open>T\<^bsub>PS\<^esub>\<close> (verdict, not yet proved)\<close>
+
+text \<open>\<^bold>\<open>VERDICT (r76, empirical): \<open>p_7_4_Mark_nextAdm\<close> (in correction A18's form) is
+  TRUE on all of \<open>T\<^bsub>PS\<^esub>\<close>\<close> --- unlike its two siblings \<open>p_7_4_Trans_nextAdm\<close> and
+  \<open>p_7_4_Trans_Mark_Pred\<close>, which are FALSE there (corrections A45/A46, witness
+  \<open>M = (0,0)(0,1)(1,2)(1,0)\<close>).  So NO correction is proposed for it; the article's
+  domain \<open>T\<^bsub>PS\<^esub>\<close> stands, and our \<open>m_7_4_Mark_nextAdm\<close> (\<open>RT\<^bsub>PS\<^esub>\<close>) is a restriction,
+  not the definitive form.
+
+  Census (vetted \<open>red_model\<close>/\<open>trans_model\<close>, hypotheses = A18 form: \<open>M \<in> T\<^bsub>PS\<^esub>\<close>,
+  a UNIQUE \<open>NextAdm\<close>-parent \<open>j\<^sub>0\<close> of the last column, \<open>(M,j) \<in> T\<^bsub>PS\<^esub>\<^sup>Marked\<close>,
+  \<open>(0,j) \<le>\<^sub>M (0,j\<^sub>0)\<close>): entries \<open>< 3\<close>, \<open>Lng \<le> 5\<close> --- \<^bold>\<open>45716\<close> non-vacuous exercises,
+  of which \<^bold>\<open>6458\<close> are strictly non-trivial (\<open>j < j\<^sub>0\<close>; the other 39258 are the
+  reflexive \<open>j = j\<^sub>0\<close> case, which must NOT be mistaken for a real test ---
+  cf. the 12 empirical false positives of this project).  \<^bold>\<open>0 failures\<close>, on the
+  non-reduced \<open>M\<close> as well.
+
+  \<^bold>\<open>WHY IT SURVIVES WHERE A45/A46 DIE\<close>: its conclusion mentions ONLY \<open>Mark\<close>, and
+  \<open>Mark M m = Mark (Red\<^sup>k M) m\<close>, so BOTH the outer term and the core are read off the
+  same reduct \<open>R := Red (Red M)\<close> (\<open>y3r_RED2\<close>).  A45/A46 pair a \<open>Red\<close>-blind \<open>Trans\<close>
+  with an \<open>M\<close>-level basepoint and break.
+
+  \<^bold>\<open>WHY IT IS NOT PROVED HERE\<close>: the hypotheses still do not transport to \<open>R\<close>
+  (\<open>adm\<close>/\<open>\<le>\<^sub>M\<close> are not \<open>Red\<close>-invariant, correction A4), and the \<open>RT\<^bsub>PS\<^esub>\<close> engine
+  @{thm [source] Mark_nest_common_marked} wants BOTH columns \<open>R\<close>-marked.  The census
+  pins the exact residue --- two bricks, both non-vacuously exercised:
+
+    \<^item> \<^bold>\<open>Brick A\<close> (\<open>j\<^sub>0\<close> survives): in every strictly non-trivial exercise
+      (6458/6458) \<open>(R, j\<^sub>0) \<in> T\<^bsub>PS\<^esub>\<^sup>Marked\<close> holds --- while it FAILS in 725 of the
+      reflexive ones.  So \<open>j < j\<^sub>0\<close> somehow forces the \<open>NextAdm\<close>-parent to stay
+      admissible-and-ancestral through \<open>Red\<close>.  (Mechanism unknown; this is the
+      interesting one.)
+    \<^item> \<^bold>\<open>Brick B\<close> (engine relaxation): \<open>(R, j) \<in> T\<^bsub>PS\<^esub>\<^sup>Marked\<close> FAILS in 144 of the
+      6458 non-trivial exercises, yet the nesting still holds.  Empirically the
+      INNER column need not be marked: on reduced \<open>M\<close> with \<open>j \<le> j\<^sub>0 < Lng M - 1\<close>,
+      \<open>(M,j\<^sub>0) \<in> T\<^bsub>PS\<^esub>\<^sup>Marked\<close> ALONE gives the unique common scb-position (419/419,
+      entries \<open>< 3\<close>, \<open>Lng \<le> 4\<close>; whereas marking only \<open>j\<close> fails 159/173).  Of the
+      unmarked-inner cases 147/159 collapse (\<open>Mark M j = Mark M j\<^sub>0\<close>) and 12 nest
+      properly, so a case split on the collapse is available.  Relaxing
+      \<open>Mark_nest_common_marked\<close> means relaxing its ingredients
+      (@{thm [source] m_7_4_Trans_Mark_Pred}, @{thm [source] Mark_MarkedB_nest},
+      \<open>mark_marked_principal\<close>) to unmarked inner columns.
+
+  The reflexive case \<open>j = j\<^sub>0\<close> needs neither brick, only \<open>Mark R j\<close> principal-or-zero.
+  Reference sweeps: \<open>python/_y3_74_marknextadm_tps.py\<close>, \<open>python/_y3_74_nest_relax.py\<close>.\<close>
+
 ML \<open>
   fun sorry_deps th =
     let
