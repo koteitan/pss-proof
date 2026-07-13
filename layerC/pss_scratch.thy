@@ -16915,6 +16915,56 @@ theorem y3r_7_4_RightAnces_zeroT_TPS:
   assumes MT: "M \<in> T_PS"
   shows "zeroT M \<longleftrightarrow> RightAnces M = []"
   by (rule y3s_7_4_RightAnces_zeroT_TPS[OF MT y3r_RedStab_TPS[OF MT]])
+
+
+(* ===================================================================== *)
+(* r76-Y3Q: \<section>6.5 命題（単項性と Red の関係） --- the article's statement    *)
+(* on its FULL domain PT_PS, i.e. WITHOUT the m10>0 side condition that   *)
+(* pss_mechanized's m_6_5_monoT_Red_m10pos carries.                      *)
+(* ===================================================================== *)
+
+section \<open>r76-Y3Q --- \<section>6.5 命題（単項性と \<open>Red\<close> の関係）on all of \<open>PT\<^bsub>PS\<^esub>\<close>\<close>
+
+text \<open>The article (content.md 946) states, for EVERY \<open>M \<in> PT\<^bsub>PS\<^esub>\<close>:
+  with \<open>N := Red(((j,j))\<^bsub>j=0\<^esub>\<^bsup>M\<^bsub>1,0\<^esub>-1\<^esup> \<oplus> IncrFirst\<^bsup>M\<^bsub>1,0\<^esub>\<^esup>(M))\<close> and \<open>j\<^sub>1 := Lng N - 1\<close>,
+  the suffix \<open>(N\<^sub>j)\<^bsub>j=M\<^bsub>1,0\<^esub>\<^esub>\<^bsup>j\<^sub>1\<^esup>\<close> is mono.  Our \<open>m_6_5_monoT_Red_m10pos\<close> proves it
+  only under the extra hypothesis \<open>0 < M\<^bsub>1,0\<^esub>\<close>, because Isabelle's nat subtraction
+  turns the article's leading diagonal into the spurious singleton \<open>[(0,0)]\<close> at
+  \<open>M\<^bsub>1,0\<^esub> = 0\<close> (\<open>0 - 1 = 0\<close>).  That is OUR encoding artefact, not the article's
+  claim: the article reads the index in \<open>\<int>\<close> (\<open>\<S>\<close> notation: \<open>(a\<^sub>i)\<^bsub>i=i\<^sub>0\<^esub>\<^bsup>i\<^sub>1\<^esup> := ()\<close>
+  whenever \<open>\<not> i\<^sub>0 \<le> i\<^sub>1\<close>; and \<open>\<Oplus>\<^sub>A a := ()\<close> for \<open>j\<^sub>1 = -1\<close>), so the leading diagonal
+  is the EMPTY sequence at \<open>M\<^bsub>1,0\<^esub> = 0\<close>.  We retracted the (old A42) accusation
+  accordingly.  Here we close the remaining gap: with the guarded diagonal
+  (\<open>if 0 < m\<^sub>1\<^sub>0 then diagSeq 0 (m\<^sub>1\<^sub>0 - 1) else []\<close>, the same guard pattern already
+  used by \<open>m_6_6_reduced_leftend\<close>), the article's statement holds on ALL of
+  \<open>PT\<^bsub>PS\<^esub>\<close>, with NO side condition.  At \<open>m\<^sub>1\<^sub>0 = 0\<close> the construction degenerates to
+  \<open>N = Red M\<close> and the claim is exactly \<open>monoT (Red M)\<close>, i.e.
+  @{thm [source] m_6_5_Red_preserves_monoT} --- which is unconditional.\<close>
+
+theorem y3q_6_5_monoT_Red:
+  assumes M: "M \<in> PT_PS"
+  defines "N \<equiv> Red ((if 0 < entry M 1 0 then diagSeq 0 (entry M 1 0 - 1) else [])
+                     @ (IncrFirst ^^ (entry M 1 0)) M)"
+  shows "seg N (entry M 1 0) (Lng N - 1) \<in> PT_PS"
+proof (cases "0 < entry M 1 0")
+  case True
+  have Neq: "N = Red (diagSeq 0 (entry M 1 0 - 1) @ (IncrFirst ^^ (entry M 1 0)) M)"
+    unfolding N_def using True by simp
+  show ?thesis
+    using m_6_5_monoT_Red_m10pos[OF M True] Neq by simp
+next
+  case False
+  hence m0: "entry M 1 0 = 0" by simp
+  have Neq: "N = Red M" unfolding N_def using m0 by simp
+  have MT: "M \<in> T_PS" using M by (simp add: PT_PS_def)
+  have RT: "Red M \<in> T_PS" by (rule y3s_Red_T_PS[OF MT])
+  have LR: "0 < Lng (Red M)" using RT by (simp add: T_PS_def)
+  have segN: "seg (Red M) 0 (Lng (Red M) - 1) = Red M"
+    using seg_to_last_eq_drop[OF LR] by simp
+  have mono: "monoT (Red M)" by (rule m_6_5_Red_preserves_monoT[OF M])
+  show ?thesis
+    using Neq m0 segN mono RT by (simp add: PT_PS_def)
+qed
 ML \<open>
   fun sorry_deps th =
     let
@@ -16995,7 +17045,11 @@ ML \<open>
      ("y3r_7_3_Trans_zeroT_TPS",  @{thm y3r_7_3_Trans_zeroT_TPS}),
      ("y3r_7_3_Pred_Trans_descend_TPS", @{thm y3r_7_3_Pred_Trans_descend_TPS}),
      ("y3r_7_4_RightAnces_RightNodes_TPS", @{thm y3r_7_4_RightAnces_RightNodes_TPS}),
-     ("y3r_7_4_RightAnces_zeroT_TPS", @{thm y3r_7_4_RightAnces_zeroT_TPS})];
+     ("y3r_7_4_RightAnces_zeroT_TPS", @{thm y3r_7_4_RightAnces_zeroT_TPS}),
+
+     \<comment> \<open>r76: the \<section>6.5 命題（単項性と \<open>Red\<close> の関係）on its FULL domain \<open>PT\<^bsub>PS\<^esub>\<close>
+         (guarded leading diagonal; no \<open>m\<^sub>1\<^sub>0 > 0\<close> side condition)\<close>
+     ("y3q_6_5_monoT_Red",        @{thm y3q_6_5_monoT_Red})];
 
   \<comment> \<open>r72: assert the termination theorems carry NO free hypothesis left ---
       \<open>y5_PSS_wf\<close> must be a closed statement (no meta-premises, no schematics).\<close>
