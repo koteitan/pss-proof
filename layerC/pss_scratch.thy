@@ -21096,6 +21096,313 @@ text \<open>\<^bold>\<open>STATUS (r79, honest)\<close>.  The r77/r78 reduction
       no admissibility at all --- that is the natural next brick.
     \<^item> Sweeps: \<open>python/red_model.py\<close>, \<open>python/trans_model.py\<close> (both vetted).\<close>
 
+(* ===================================================================== *)
+(* r80-Y3Y: the DIRECT route on the Mark/Trans recursion.                 *)
+(* Brick (P): for a REDUCED N, Mark N m is dfree and principal-or-zero    *)
+(* for EVERY column m --- no adm, no Marked, no ancestry hypothesis.      *)
+(* This is the ingredient the old (dead) route tried to obtain by         *)
+(* transporting Marked-ness through Red (refuted by y3z_C4_false).        *)
+(* ===================================================================== *)
+
+section \<open>r80-Y3Y --- unconditional principality of \<open>Mark\<close> on \<open>RT\<^bsub>PS\<^esub>\<close>\<close>
+
+text \<open>\<^bold>\<open>Brick (P)\<close>.  Every value of \<open>Mark N m\<close> at a reduced \<open>N\<close> is a \<open>D\<^sub>\<omega>\<close>-free
+  Buchholz term which is either \<open>0\<^sub>B\<close> or a \<^emph>\<open>single principal\<close> term
+  (\<open>isPTB_str\<close> of its flattening) --- for \<^bold>\<open>every\<close> column \<open>m\<close>, admissible or not,
+  marked or not, in range or not.  The frozen @{thm [source] Mark_marked_isPTB}
+  derives this from \<open>(N,m) \<in> Marked\<close> via the \<open>MarkedB\<close> invariant; that route is
+  unavailable here (the reduct of a marked \<open>T\<^bsub>PS\<^esub>\<close>-column need not be marked ---
+  @{thm [source] y3z_brickA_false}).  Instead we run the \<open>Mark\<close> recursion itself:
+  in the surgery branch the principality of the substituted value
+  \<open>c\<^sub>0 = Mark (Pred N) m\<close> comes from the \<^emph>\<open>induction hypothesis\<close> rather than from
+  \<open>Marked\<close>-ness, and the principality of the implanted block \<open>c\<^sub>2 = transC2 N\<close> is
+  already hypothesis-free (@{thm [source] m_8_5_isPTB_str_transC2_std},
+  @{thm [source] dfree_transC2}); the fallback / leaf branches are \<open>D\<^bsub>v\<^esub> 0\<close> outright.
+  Census (this round, python/_y3_74_princ_wide.py): 0 failures, all exercises
+  non-vacuous (the statement has no hypothesis beyond \<open>N \<in> RT\<^bsub>PS\<^esub>\<close>).\<close>
+
+lemma y3y_Mark_princ_aux:
+  "N \<in> RT_PS \<longrightarrow> (\<forall>m. dfree_BT (Mark N m)
+                       \<and> (Mark N m = 0\<^sub>B \<or> isPTB_str (flatBT (Mark N m))))"
+proof (induction N rule: measure_induct_rule[where f=Lng])
+  case (less N)
+  show ?case
+  proof (rule impI, rule allI)
+    assume NR: "N \<in> RT_PS"
+    fix m :: nat
+    have NT: "N \<in> T_PS" using NR by (simp add: RT_PS_def)
+    have Nne: "N \<noteq> []" using NT by (simp add: T_PS_def)
+    have domK: "\<And>k. Trans_Mark_dom (Inr (N, k))" by (rule m_7_3_Mark_welldef[OF NR])
+    let ?j1 = "Lng N - 1"
+    show "dfree_BT (Mark N m) \<and> (Mark N m = 0\<^sub>B \<or> isPTB_str (flatBT (Mark N m)))"
+    proof (cases "Lng N = 1")
+      case True
+      \<comment> \<open>(A) one column: \<open>N = [(v,v)]\<close>\<close>
+      obtain v where Nv: "N = [(v, v)]" using m_6_6_oneColumn[OF NT] NR True by auto
+      have kv: "Mark N m = (if v = 0 then 0\<^sub>B else Dpt (enat v) 0\<^sub>B)"
+        using Nv Mark_singleton by simp
+      show ?thesis
+      proof (cases "v = 0")
+        case True thus ?thesis using kv by simp
+      next
+        case False
+        have "isPTB_str (flatBT (Dpt (enat v) 0\<^sub>B))" by (rule isPTB_str_Dpt) simp_all
+        thus ?thesis using kv False by simp
+      qed
+    next
+      case notone: False
+      have L: "1 < Lng N" using Nne notone by (cases N) auto
+      have Lgt1: "\<not> Lng N \<le> Suc 0" using L by simp
+      show ?thesis
+      proof (cases "monoT N")
+        case mono: True
+        have predRT: "Pred N \<in> RT_PS" by (rule Pred_RT_PS[OF NR])
+        have predb: "Pred N = butlast N" using L by (simp add: Pred_def)
+        have LPredlt: "Lng (Pred N) < Lng N" using predb L by simp
+        have IHpred: "\<And>k. dfree_BT (Mark (Pred N) k)
+                        \<and> (Mark (Pred N) k = 0\<^sub>B \<or> isPTB_str (flatBT (Mark (Pred N) k)))"
+          using less.IH[OF LPredlt] predRT by blast
+        show ?thesis
+        proof (cases "Trans (Pred N) = 0\<^sub>B")
+          case t1z: True
+          \<comment> \<open>(B) \<open>t\<^sub>1 = 0\<close>: both values are principal \<open>D\<^bsub>v\<^esub>\<close>-terms\<close>
+          have kv: "Mark N m = (if m = 0 then Dpt 0 (Dpt (enat (entry N 1 ?j1)) 0\<^sub>B)
+                                else Dpt (enat (entry N 1 ?j1)) 0\<^sub>B)"
+            using Mark.psimps[OF domK] NR Lgt1 mono t1z by (simp add: Let_def)
+          have i1: "isPTB_str (flatBT (Dpt 0 (Dpt (enat (entry N 1 ?j1)) 0\<^sub>B)))"
+            by (rule isPTB_str_Dpt) (simp_all add: zero_enat_def)
+          have i2: "isPTB_str (flatBT (Dpt (enat (entry N 1 ?j1)) 0\<^sub>B))"
+            by (rule isPTB_str_Dpt) simp_all
+          show ?thesis using kv i1 i2 by (cases "m = 0") (simp_all add: zero_enat_def)
+        next
+          case t1ne: False
+          \<comment> \<open>(C) the surgery regime: mirror the \<open>let\<close>-chain of the definition\<close>
+          have hp: "hasParent N 0 ?j1" by (rule monoT_hasParent0_last[OF NT mono L])
+          let ?bv = "entry N 1 (Lng N - 1)"
+          define jp where "jp = parent N 0 (Lng N - 1)"
+          define jm1 where "jm1 = Adm N jp"
+          have transJ1eq: "transJ1 N = ?j1" by (simp add: transJ1_def)
+          have transJ0eq: "transJ0 N = jp" by (simp add: transJ0_def transJ1_def jp_def)
+          have transJm1eq: "transJm1 N = jm1"
+            by (simp add: transJm1_def jm1_def transJ0eq)
+          define c1 where "c1 = Mark (Pred N) (Adm N jp)"
+          define vv where "vv = bpHeadV c1"
+          define tt2 where "tt2 = bpHeadT c1"
+          define JJ1 where "JJ1 = Lng (PB tt2) - 1"
+          define pj where "pj = PB tt2 ! JJ1"
+          define ldj where "ldj = (bpHeadV pj = enat (entry N 1 jp))"
+          define tt3 where "tt3 = (if ldj then SigmaB (take JJ1 (PB tt2)) else tt2)"
+          define tt4 where "tt4 = (if ldj then bpHeadT pj else tt2)"
+          define c2 where "c2 = (if transCondI N \<or> transCondIII N \<or> transCondV N
+                         then Dpt vv (tt2 +\<^sub>B Dpt (enat ?bv) 0\<^sub>B)
+                         else if transCondVI N
+                         then Dpt vv (Dpt (enat ?bv) 0\<^sub>B)
+                         else if tt2 = 0\<^sub>B
+                         then Dpt vv (Dpt (enat (entry N 1 jp)) (Dpt (enat ?bv) 0\<^sub>B))
+                         else Dpt vv (tt3 +\<^sub>B Dpt (enat (entry N 1 jp))
+                                            (tt4 +\<^sub>B Dpt (enat ?bv) 0\<^sub>B)))"
+          have c1eqT: "c1 = transC1 N"
+            by (simp add: c1_def transC1_def transJm1eq jm1_def)
+          have c2eqT: "c2 = transC2 N"
+            unfolding c2_def transC2_def Let_def
+              vv_def tt2_def c1eqT transV_def transT2_def
+              JJ1_def pj_def ldj_def tt3_def tt4_def transJ1_def transJ0eq
+            by simp
+          have c1eq: "c1 = Mark (Pred N) jm1" by (simp add: c1_def jm1_def)
+          \<comment> \<open>\<open>c\<^sub>1\<close> is the marked block of the ADMISSIBILIZED parent --- always Marked\<close>
+          have mkjm1: "(Pred N, jm1) \<in> Marked"
+            using Marked_Pred_Adm[OF NT L hp] jp_def jm1_def by simp
+          have NP: "N \<in> PT_PS" using NT mono by (simp add: PT_PS_def)
+          have J1pos: "transJ1 N > 0" using L by (simp add: transJ1_def)
+          have T1ne: "transT1 N \<noteq> 0\<^sub>B" using t1ne by (simp add: transT1_def)
+          have pc1: "Lng (PB (transC1 N)) = 1"
+            by (rule transC1_single_principal[OF NR NP J1pos T1ne])
+          have c1TB: "transC1 N \<in> T_B"
+            using m_7_3_Mark_in_T_B[OF predRT mkjm1] c1eq c1eqT by simp
+          have c1Dpt: "transC1 N = Dpt (transV N) (transT2 N)"
+            using principal_reconstruct[OF pc1] by (simp add: transV_def transT2_def)
+          have vne: "transV N \<noteq> \<infinity>" using c1TB c1Dpt by (auto simp: T_B_def)
+          have t2df: "dfree_BT (transT2 N)" using c1TB c1Dpt by (auto simp: T_B_def)
+          \<comment> \<open>\<open>c\<^sub>2\<close> is a dfree single principal term --- hypothesis-free\<close>
+          have c2df: "dfree_BT c2" using dfree_transC2[OF vne t2df] c2eqT by simp
+          have c2pc1: "Lng (PB c2) = 1" using transC2_single_principal c2eqT by simp
+          have c2recon: "c2 = Dpt (bpHeadV c2) (bpHeadT c2)"
+            by (rule principal_reconstruct[OF c2pc1])
+          obtain pc2 where c2p: "c2 = Trm [pc2]"
+            using c2recon by (metis BT.exhaust untrm.simps)
+          have iptc2: "isPTB_str (flatBT (Trm [pc2]))"
+          proof -
+            have "dfree_BT (Trm [pc2])" using c2df c2p by simp
+            thus ?thesis by (auto simp: isPTB_str_def)
+          qed
+          have c1p: "c1 = Trm [DB (transV N) (transT2 N)]" using c1Dpt c1eqT by simp
+          show ?thesis
+          proof (cases "m < ?j1")
+            case mlt_false: False
+            have kv: "Mark N m = Dpt (enat ?bv) 0\<^sub>B"
+              using Mark.psimps[OF domK] NR Lgt1 mono t1ne mlt_false
+              unfolding Let_def jp_def[symmetric] by simp
+            have "isPTB_str (flatBT (Dpt (enat ?bv) 0\<^sub>B))"
+              by (rule isPTB_str_Dpt) simp_all
+            thus ?thesis using kv by simp
+          next
+            case mlt: True
+            define c0 where "c0 = Mark (Pred N) m"
+            define sm1 where
+              "sm1 = (SOME sb. scb_decomp c0 (fst sb) (flatBT c1) (snd sb))"
+            have mark_val_raw: "Mark N m = (if (Mark (Pred N) m, c1) \<in> MarkedB
+                  then unflatBT
+                         (fst (SOME sb. scb_decomp (Mark (Pred N) m) (fst sb)
+                                          (flatBT c1) (snd sb))
+                          @ flatBT c2
+                          @ snd (SOME sb. scb_decomp (Mark (Pred N) m) (fst sb)
+                                            (flatBT c1) (snd sb)))
+                  else Dpt (enat ?bv) 0\<^sub>B)"
+              using Mark.psimps[OF domK] NR Lgt1 mono t1ne mlt
+              unfolding Let_def jp_def[symmetric] c1_def[symmetric] vv_def[symmetric]
+                        tt2_def[symmetric] JJ1_def[symmetric] pj_def[symmetric]
+                        ldj_def[symmetric] tt3_def[symmetric] tt4_def[symmetric]
+                        c2_def[symmetric]
+              by simp
+            have mark_val: "Mark N m = (if (c0, c1) \<in> MarkedB
+                  then unflatBT (fst sm1 @ flatBT c2 @ snd sm1)
+                  else Dpt (enat ?bv) 0\<^sub>B)"
+              using mark_val_raw by (simp add: c0_def sm1_def)
+            show ?thesis
+            proof (cases "(c0, c1) \<in> MarkedB")
+              case mbc_false: False
+              \<comment> \<open>the FALLBACK branch: the leaf \<open>D\<^bsub>N\<^sub>1\<^sub>,\<^sub>j\<^sub>1\<^esub> 0\<close>\<close>
+              have kv: "Mark N m = Dpt (enat ?bv) 0\<^sub>B" using mark_val mbc_false by simp
+              have "isPTB_str (flatBT (Dpt (enat ?bv) 0\<^sub>B))"
+                by (rule isPTB_str_Dpt) simp_all
+              thus ?thesis using kv by simp
+            next
+              case mbc: True
+              \<comment> \<open>the SURGERY branch: \<open>c\<^sub>1 \<mapsto> c\<^sub>2\<close> inside \<open>c\<^sub>0 = Mark (Pred N) m\<close>\<close>
+              have exsm: "\<exists>sb. scb_decomp c0 (fst sb) (flatBT c1) (snd sb)"
+                using mbc unfolding MarkedB_def by auto
+              have dsm: "scb_decomp c0 (fst sm1) (flatBT c1) (snd sm1)"
+                unfolding sm1_def by (rule someI_ex[OF exsm])
+              have c1Dsym: "flatBT c1 = Dsym (transV N) # flatBT (transT2 N)"
+                using c1eqT c1Dpt by simp
+              have c0ne: "c0 \<noteq> 0\<^sub>B"
+              proof
+                assume z: "c0 = 0\<^sub>B"
+                have "flatBT c0 = fst sm1 @ flatBT c1 @ snd sm1"
+                  using dsm by (simp add: scb_decomp_def)
+                hence "Dsym (transV N) \<in> set (flatBT c0)" using c1Dsym by simp
+                thus False using z by simp
+              qed
+              \<comment> \<open>\<^bold>\<open>here the IH replaces the \<open>Marked\<close> hypothesis of the frozen engine\<close>\<close>
+              have c0df: "dfree_BT c0" using IHpred[of m] c0_def by simp
+              have iptc0: "isPTB_str (flatBT c0)"
+                using IHpred[of m] c0_def c0ne by simp
+              then obtain pc0 where pc0l: "flatBT c0 = flatBP pc0" and pc0d: "dfree_BP pc0"
+                by (auto simp: isPTB_str_def)
+              have c0p: "c0 = Trm [pc0]"
+              proof -
+                have "flatBT c0 = flatBT (Trm [pc0])" using pc0l by simp
+                thus ?thesis by (rule m_7_flatBT_inj)
+              qed
+              have dsm': "scb_decomp (Trm [pc0]) (fst sm1)
+                            (flatBT (Trm [DB (transV N) (transT2 N)])) (snd sm1)"
+                using dsm c0p c1p by simp
+              obtain pm where pmf: "flatBP pm = fst sm1 @ flatBT (Trm [pc2]) @ snd sm1"
+                  and pmd: "scb_decomp (Trm [pm]) (fst sm1) (flatBT (Trm [pc2])) (snd sm1)"
+                using scb_replace_principal_BP[OF dsm' iptc2] by blast
+              have markM: "Mark N m = Trm [pm]"
+              proof -
+                have "flatBT (Trm [pm]) = fst sm1 @ flatBT c2 @ snd sm1"
+                  using pmf c2p by simp
+                thus ?thesis using mark_val mbc unflatBT_flat[of "Trm [pm]"] by simp
+              qed
+              have flatc0: "flatBT c0 = fst sm1 @ flatBT c1 @ snd sm1"
+                using dsm by (simp add: scb_decomp_def)
+              have sm_sub: "set (fst sm1) \<subseteq> set (flatBT c0)"
+                and bm_sub: "set (snd sm1) \<subseteq> set (flatBT c0)"
+                using flatc0 by auto
+              have dfm: "dfree_BT (Trm [pm])"
+              proof -
+                have "\<And>v'. Dsym v' \<in> set (flatBT (Trm [pm])) \<Longrightarrow> v' \<noteq> \<infinity>"
+                proof -
+                  fix v' assume "Dsym v' \<in> set (flatBT (Trm [pm]))"
+                  hence "Dsym v' \<in> set (flatBT c0) \<or> Dsym v' \<in> set (flatBT c2)"
+                    using pmf c2p sm_sub bm_sub by auto
+                  thus "v' \<noteq> \<infinity>" using c0df c2df dfree_flat_BT by blast
+                qed
+                thus ?thesis using dfree_flat_BT by blast
+              qed
+              have iptm: "isPTB_str (flatBT (Trm [pm]))"
+                using dfm by (auto simp: isPTB_str_def)
+              show ?thesis using markM dfm iptm by simp
+            qed
+          qed
+        qed
+      next
+        case nmono: False
+        \<comment> \<open>(D) the \<open>multiT\<close> branch: \<open>Mark\<close> descends to the last \<open>P\<close>-component\<close>
+        have nzN: "\<not> zeroT N" using notone by (auto simp: zeroT_def)
+        have muN: "multiT N" using nzN nmono by (simp add: multiT_def)
+        have cut: "0 < Pcut N \<and> Pcut N \<le> ?j1" using Pcut_le[OF L] by simp
+        let ?PJ = "drop (Pcut N) N"
+        have PJeq: "P N ! (Lng (P N) - 1) = ?PJ"
+          by (rule trans_multiT_last_component(1)[OF NT muN])
+        have Pne: "P N \<noteq> []" by (rule P_nonempty)
+        have J1lt: "Lng (P N) - 1 < Lng (P N)" using Pne by (cases "P N") auto
+        have PJRT: "?PJ \<in> RT_PS"
+          using m_6_6_P_reduced[OF NT] NR J1lt PJeq by auto
+        have LPJ: "Lng ?PJ = Lng N - Pcut N" by simp
+        have LPJlt: "Lng ?PJ < Lng N" using LPJ cut L by linarith
+        have cc1: "(N \<notin> RT_PS) = False" using NR by simp
+        have cc2: "(?j1 = 0) = False" using L by simp
+        have cc3: "monoT N = False" using nmono by simp
+        have meq2: "m - (?j1 - Lng (drop (Pcut N) N) + 1) = m - Pcut N"
+        proof -
+          have "?j1 - Lng ?PJ + 1 = Pcut N" using LPJ cut by linarith
+          thus ?thesis by simp
+        qed
+        have markM: "Mark N m = (if ?PJ = [(0, 0)] then Dpt 0 0\<^sub>B
+                                 else Mark ?PJ (m - Pcut N))"
+        proof -
+          have raw: "Mark N m =
+              (if P N ! (Lng (P N) - 1) = [(0, 0)] then Dpt 0 0\<^sub>B
+               else Mark (P N ! (Lng (P N) - 1))
+                      (m - (?j1 - Lng (P N ! (Lng (P N) - 1)) + 1)))"
+            by (subst Mark.psimps[OF domK]) (simp only: cc1 cc2 cc3 if_False Let_def)
+          show ?thesis unfolding raw PJeq meq2 ..
+        qed
+        show ?thesis
+        proof (cases "?PJ = [(0, 0)]")
+          case True
+          have kv: "Mark N m = Dpt 0 0\<^sub>B" using markM True by simp
+          have "isPTB_str (flatBT (Dpt 0 0\<^sub>B))"
+            by (rule isPTB_str_Dpt) (simp_all add: zero_enat_def)
+          thus ?thesis using kv by (simp add: zero_enat_def)
+        next
+          case False
+          have kv: "Mark N m = Mark ?PJ (m - Pcut N)" using markM False by simp
+          have IHall: "\<forall>k. dfree_BT (Mark ?PJ k)
+                            \<and> (Mark ?PJ k = 0\<^sub>B \<or> isPTB_str (flatBT (Mark ?PJ k)))"
+            using less.IH[OF LPJlt] PJRT by blast
+          show ?thesis unfolding kv using IHall by blast
+        qed
+      qed
+    qed
+  qed
+qed
+
+theorem y3y_Mark_princ:
+  assumes NR: "N \<in> RT_PS"
+  shows "dfree_BT (Mark N m)"
+    and "Mark N m = 0\<^sub>B \<or> isPTB_str (flatBT (Mark N m))"
+  using y3y_Mark_princ_aux[rule_format, OF NR] by simp_all
+
+corollary y3y_Mark_isPTB:
+  assumes NR: "N \<in> RT_PS" and ne: "Mark N m \<noteq> 0\<^sub>B"
+  shows "isPTB_str (flatBT (Mark N m))"
+  using y3y_Mark_princ(2)[OF NR] ne by blast
+
+
 ML \<open>
   fun sorry_deps th =
     let
