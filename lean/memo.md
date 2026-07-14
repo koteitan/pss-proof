@@ -96,9 +96,37 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
     **忠実性検証済**: `oper` が `python/red_model.py` と一致。成分 `< 4`・長さ `≤ 4` の
     **全 69,904 列 × n=0..3 = 279,616 回**の評価でチェックサム一致（`142031081`）。
     定義を変えたらこの検証をやり直すこと（`scratchpad/opersum.lean` と同型のチェックサム比較）。
-  - `PSS/Mono.lean` — `monoT`,`P`,`Br`,`Joints`,`TrMax`,`FirstNodes`
-  - `PSS/Adm.lean` — `adm`,許容化,`Marked`
-  - `PSS/Red.lean` — `Red`,`reduced`(`RT_PS`)。**整礎再帰の停止性証明が要る**（Isa: `Red_welldef`）
+  - ✅ `PSS/Mono.lean` — `zeroT`,`monoT`,`multiT`,`Pcut`,`P`,`IdxSum`,`TrMax`,`Br`,`FirstNodes`,`Joints`。
+    `P` の再帰も燃料 `Lng M`（1 段で長さが真に減る）。
+    **忠実性検証済**（成分 `< 4`・長さ `≤ 4` の全 69,904 列でチェックサム一致）:
+    `monoT`/`multiT`/`P`/`TrMax`/`Br`/`FirstNodes` は全列で一致、`Joints` は
+    **定義される 10,224 列**で一致（原文/Isabelle の `THE` は親が一意でないとき未定義。
+    「定義されるか」の判定自体も python と完全一致）。
+  - ✅ `PSS/Adm.lean` — `nadm`,`adm`,`AdmSet`,`Adm`,`Marked`。
+    **忠実性検証済**（`adm`/`Adm` とも全 69,904 列でチェックサム一致）。
+  - 🚨 `PSS/Red.lean` — `Red`,`reduced`(`RT_PS`),`RedCondA`,`RedCondB`,`diagSeq`。**次の標的**。
+
+    ★**ここは Isabelle と Lean で事情が違う。設計判断が要る。**
+    Isabelle は `function (domintros)` で **停止性を後回しにして** `Red` を定義できるが、
+    **Lean は定義の時点で測度を要求する**。選択肢:
+
+    1. **燃料方式**（`le0`/`P` と同じ）: `RedAux : ℕ → PS → PS` を定義し `Red M := RedAux (nu M) M`。
+       「燃料が足りる」ことが §6.5 well-definedness そのもの。定義は即座に通り、計算もできる。
+       **推奨。** ただし燃料切れの戻り値が下流に漏れないよう、`Red` の等式補題を
+       「燃料が足りるとき」の形で先に用意すること。
+    2. **整礎再帰**: `termination_by nu M` を書き、各分岐の減少補題を先に全部証明する。
+       忠実だが、**§6.5 の停止性証明（Isabelle で ~1,300 行）を定義の前に払う**ことになる。
+
+    測度は Isabelle 側にそのままある。**発明するな、移植しろ**:
+    - `nu M = if multiT M then 1 + Σ_J muMono (P M)_J else muMono M`（`pss_mechanized.thy:6395`）
+    - `muMono M = if M₀ = (0,0) then 2·betaM M else 2·betaM (coreReduce M) + 1`（同 6390）
+    - 停止性定理 `m_6_5_Red_welldef`（同 6471、`nu` による測度帰納法）
+    - 補助群は同 5185 以降（`diagSeq` の長さ・対角前置が幹を伸ばすこと・枝が真に短いこと）
+
+    `Red` が入ったら**最初に書くべきは A4 の反例**:
+    `Red [(0,0),(0,2)] = [(0,0),(2,2)]` かつ `Red [(0,0),(2,2)] = [(0,0),(1,1)]`
+    → `Red` は `T_PS` 上で冪等でない。`by decide` か `by native_decide` で 1 行。
+    これが原文の誤り 30 件のうち A4/A41/A45/A46/A47 の共通の根。
   - `PSS/Standard.lean` — `ST_PS`
   - `PSS/Buchholz.lean` — `T_B`,`<_B`,基本列(`operB`),`dom`,`OT_B`。**A23 の転置に注意**
   - `PSS/Scb.lean` — scb 分解
