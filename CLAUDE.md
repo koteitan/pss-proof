@@ -202,6 +202,7 @@ at the repo root, not in `layerB`/`layerC`.
   truth-check, blocker-first reporting, parent-builds-at-merge). It exists
   because aggressive fan-out produced circular false proofs and multi-hour
   stalls.
+- don't use agent teams. use workflow.
 
 ## Design documents (`docs/`)
 
