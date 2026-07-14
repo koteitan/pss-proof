@@ -26,7 +26,7 @@
 
 ## 進捗ツリー
 
-- 🚨 **定義層 `PSS/`**（§5 定式化。命題は置かない。移植元 `isabelle/pss_defs.thy`）
+- ✅ **定義層 `PSS/`**（§5 定式化。命題は置かない。移植元 `isabelle/pss_defs.thy`）[r8]
   - ✅ ペア数列 `T_PS` / `Lng` / 親子関係 / 直系先祖 / `Pred` / 基本列 `oper` / `IncrFirst` — `PSS/Defs.lean`[r1]
   - ✅ 単項性 `monoT` / 単項成分 `P` / 幹と枝 `Br`,`Joints`,`TrMax`,`FirstNodes` — `PSS/Mono.lean`[r1]
   - ✅ 許容性 `adm` / 許容化 / 基点 `Marked` — `PSS/Adm.lean`[r1]
@@ -34,7 +34,7 @@
   - ✅ 標準形 `ST_PS` — `PSS/Standard.lean`[r1]
   - ✅ Buchholz の表記系 `T_B`,`<_B`,基本列,`dom`,`OT_B` — `PSS/Buchholz.lean`[r1]
   - ✅ scb 分解（Σ 上の文字列） — `PSS/Scb.lean`[r1]
-  - 🚨 翻訳写像 `Trans` / `Mark` — `PSS/Trans.lean`
+  - ✅ 翻訳写像 `Trans` / `Mark` — `PSS/Trans.lean`[r1]
 
 - 🚨 **§5 定式化**
   - 🚨 §5.1 命題（親の存在の判定条件） — `5.1-parent-exists`

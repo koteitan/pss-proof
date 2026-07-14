@@ -89,7 +89,7 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
 
 凡例: 訂正 = `corrections.md` の A 番号。Isa = `isabelle/` 側の対応補題（証明の設計図）。
 
-- **定義層 `PSS/`** — 移植元は `isabelle/pss_defs.thy` 一本。ここは「証明」ではなく「転記」。
+- ✅ **定義層 `PSS/`** — 移植元は `isabelle/pss_defs.thy` 一本。ここは「証明」ではなく「転記」。[r8]
   - ✅ `PSS/Defs.lean` — `T_PS`,`Lng`,`entry`,親子(`nextrel0/1`),直系先祖(`le0/le1`),`Pred`,`Derp`,
     `idx1`,`hasParent`,`parent`,基本列 `oper`,`seg`,`IncrFirst`。**全部 `Bool` 値＝計算可能**。
     `≤_M` は `Relation.ReflTransGen` ではなく**燃料 `Lng M` の再帰**（辺は必ず添字を増やすので十分）。
@@ -125,8 +125,11 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
   - ✅ `PSS/Scb.lean` — `Sym`, `flatBT`/`flatBP`, `RightNodes`, `isPTB_str`,
     `scb_decomp`, 第 0/1 種分解, `MarkedB`。flatten と右端 spine は相互構造再帰、
     principal 項の存在量化を含む分解条件は `Prop` として原定義を直接移植した。[r1]
-  - `PSS/Trans.lean` — `Trans`,`Mark`。**相互再帰＋停止性**（Isa: `Trans_Mark_invariant_aux`）
-    - 原文の `LastStep` の添字は誤り（A9: `J₁` の `−1` 脱落）。訂正後で定義すること。
+  - ✅ `PSS/Trans.lean` — 実行可能な `unflatBT`/scb 文脈選択、条件 (I)–(VI)、
+    燃料付き相互再帰 `Trans`/`Mark` を移植。A9 訂正後の添字を採用。
+    **忠実性検証済**: 成分 `< 3`・長さ `≤ 3` の全 819 列について `Trans`、全添字の
+    `Mark`、条件 (I)–(VI) が Python 正本と一致（チェックサム `531635224`;
+    `python/trans_checksum.{py,lean}`）。kimina はエラー・sorry なし、全 `lake build` 成功。[r1]
 
 - **§5 定式化** — 素直。Lean でも短いはず。
   - `5.4-F-welldefined` — 訂正 **A1**（第 2 引数 `n` → `f(n)`）。Isa: `p_5_4_F_oper_dom/_val`
