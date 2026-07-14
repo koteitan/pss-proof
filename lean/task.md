@@ -32,7 +32,7 @@
   - ✅ 許容性 `adm` / 許容化 / 基点 `Marked` — `PSS/Adm.lean`[r1]
   - ✅ 簡約化 `Red` / 簡約性 `RT_PS` — `PSS/Red.lean`[r1]
   - ✅ 標準形 `ST_PS` — `PSS/Standard.lean`[r1]
-  - 🚨 Buchholz の表記系 `T_B`,`<_B`,基本列,`dom`,`OT_B` — `PSS/Buchholz.lean`
+  - ✅ Buchholz の表記系 `T_B`,`<_B`,基本列,`dom`,`OT_B` — `PSS/Buchholz.lean`[r1]
   - 🚨 scb 分解（Σ 上の文字列） — `PSS/Scb.lean`
   - 🚨 翻訳写像 `Trans` / `Mark` — `PSS/Trans.lean`
 

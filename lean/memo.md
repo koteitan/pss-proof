@@ -115,7 +115,13 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
   - ✅ `PSS/Standard.lean` — `STPS`, rank 階層 `SkTPS`, 訂正 A4 用の `anchoredSlice`。
     Isabelle の `inductive_set ST_PS` と `SkT_PS` を直接移植。`anchoredSlice` は
     標準形または簡約単項列の、上段直系先祖に沿った切片として原定義どおりに置いた。[r1]
-  - `PSS/Buchholz.lean` — `T_B`,`<_B`,基本列(`operB`),`dom`,`OT_B`。**A23 の転置に注意**
+  - ✅ `PSS/Buchholz.lean` — 相互帰納型 `BT`/`BP`, 辞書式順序, `G_u`, `T_B`, `OT_B`,
+    `domB`, 基本列 `operB`, `xseq`, `PB`/`SigmaB`。`dom` は内部で四値タグ `BDom`
+    （`∅`/`{0}`/`ℕ`/`T_u`）として計算し、公開時に集合へ戻す。`operB`/`xseq` は
+    `(部分項の重み, 呼出し相, xseq 添字)` の辞書式測度で停止性を証明済み。A23 の転置を
+    訂正した `x_{i+1}=D_u(b[x_i])` を採用。**忠実性検証済**: 有限指標 0–2、深さ 2、
+    principal 数 ≤ 2 の全 1,561 項で Python 正本と一致。定義群チェックサム `177483501`、
+    全 2,436,721 項対の順序チェックサム `877667618`（`python/buchholz_checksum.lean`）。[r1]
   - `PSS/Scb.lean` — scb 分解
   - `PSS/Trans.lean` — `Trans`,`Mark`。**相互再帰＋停止性**（Isa: `Trans_Mark_invariant_aux`）
     - 原文の `LastStep` の添字は誤り（A9: `J₁` の `−1` 脱落）。訂正後で定義すること。
