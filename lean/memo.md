@@ -162,6 +162,9 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
     - ✅ `6.2-P-components-nonmulti` — `Pcut` の範囲・祖先条件を `find?` から取り出し、
       「入力長 ≤ 燃料」を不変量とする `PAux` 帰納法で全成分が零項または
       単項と証明。併せて `multiT M ↔ 1 < length (P M)` も証明。Isa: `m_6_2_P_components_1`, `_2`。[r1]
+    - ✅ `6.2-P-additivity` — `PAux` が入力長以上の燃料で安定することと、`Pcut`
+      より左の上段係数の最小性を証明。列長の強帰納法で `take`/`drop` 版の
+      加法性を示し、`seg` 版の原命題へ戻した。Isa: `m_6_2_P_additive`。[r1]
   - `6.4-P-IdxSum-characterization` — 訂正 **A3**（系(4) の `>` は `≥`。joint 共有時のみ偽）
   - §6.5 簡約化 — **ここが A4 の震源**。
     - `6.5-Red-idempotence` — **原文は `T_PS` で偽（A4）**。`RT_PS` 上でのみ真。

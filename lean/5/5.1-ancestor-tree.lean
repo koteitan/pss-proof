@@ -69,7 +69,7 @@ theorem ancestor_tree_1
     intro k hj₀k hkj
     exact ancestor_basic_1 M j₀ k j₁ hM hj₀k (hkj.trans hjj₁) hanc
 
-private theorem row0_transitive_at
+theorem row0_transitive
     (M : PS) (a b c : ℕ) (hM : TPS M)
     (hab : leR M 0 a b = true) (hbc : leR M 0 b c = true) :
     leR M 0 a c = true := by
@@ -117,7 +117,7 @@ private theorem le1Aux_implies_row0_at
           have hn := hpnext
           simp [nextrel1] at hn
           simpa [leR] using hn.1.2
-        exact row0_transitive_at M a p b hM hap0 hpb0
+        exact row0_transitive M a p b hM hap0 hpb0
 
 private theorem row1_implies_row0_at
     (M : PS) (a b : ℕ) (hM : TPS M) (h : leR M 1 a b = true) :
@@ -146,7 +146,7 @@ theorem ancestor_tree_2
     have hrow0prefix := ancestor_tree_1 M j₀ j j₁ hM hrow0full hj₀j hjj₁
     apply parent_exists_4 M j₀ j hM hj₀lt hjbound
     · intro k hj₀k hkj
-      have hkj₁ := row0_transitive_at M k j j₁ hM hkj hanc0
+      have hkj₁ := row0_transitive M k j j₁ hM hkj hanc0
       have hklej := le0_index_at hkj
       exact ancestor_basic_2 M j₀ k j₁ hM hj₀k
         (hklej.trans hjj₁) hanc1 hkj₁
@@ -154,5 +154,6 @@ theorem ancestor_tree_2
 
 #print axioms ancestor_tree_1
 #print axioms ancestor_tree_2
+#print axioms row0_transitive
 
 end PSS

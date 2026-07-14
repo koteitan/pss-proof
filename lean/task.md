@@ -52,7 +52,7 @@
     - ✅ 命題（単項性の直系先祖による切片への遺伝性） — `6.2-mono-ancestor-slice`[r1]
     - ✅ 命題（`P` の `IncrFirst` 同変性） — `6.2-P-IncrFirst-equivariance`[r1]
     - ✅ 命題（`P` の各成分の非複項性） — `6.2-P-components-nonmulti`[r1]
-    - 🚨 命題（`P` の加法性） — `6.2-P-additivity`
+    - ✅ 命題（`P` の加法性） — `6.2-P-additivity`[r1]
     - 🚨 命題（`P` と基本列の関係） — `6.2-P-fseq`
     - 🚨 命題（非複項性と基本列の関係） — `6.2-nonmulti-fseq`
   - 🚨 §6.3 許容性
