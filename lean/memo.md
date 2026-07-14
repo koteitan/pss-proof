@@ -91,7 +91,8 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
 
 - ✅ **定義層 `PSS/`** — 移植元は `isabelle/pss_defs.thy` 一本。ここは「証明」ではなく「転記」。[r8]
   - ✅ `PSS/Defs.lean` — `T_PS`,`Lng`,`entry`,親子(`nextrel0/1`),直系先祖(`le0/le1`),`Pred`,`Derp`,
-    `idx1`,`hasParent`,`parent`,基本列 `oper`,`seg`,`IncrFirst`。**全部 `Bool` 値＝計算可能**。
+    `idx1`,`hasParent`,`parent`,基本列 `oper`,`seg`,`FTrace`/`Fdom`/`Fval`,`IncrFirst`。
+    `Fval` は停止トレース上の値を読み、停止域外のみ `0` で全域化。その他は **`Bool` 値＝計算可能**。
     `≤_M` は `Relation.ReflTransGen` ではなく**燃料 `Lng M` の再帰**（辺は必ず添字を増やすので十分）。
     **忠実性検証済**: `oper` が `python/red_model.py` と一致。成分 `< 4`・長さ `≤ 4` の
     **全 69,904 列 × n=0..3 = 279,616 回**の評価でチェックサム一致（`142031081`）。
@@ -131,7 +132,7 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
     `Mark`、条件 (I)–(VI) が Python 正本と一致（チェックサム `531635224`;
     `python/trans_checksum.{py,lean}`）。kimina はエラー・sorry なし、全 `lake build` 成功。[r1]
 
-- **§5 定式化** — 素直。Lean でも短いはず。
+- ✅ **§5 定式化** — 全 6 項目を証明済み。[r6]
   - ✅ `5.1-parent-exists` — 燃料付き `le0Aux`/`le1Aux` の添字単調性、行 0 の区間閉性・
     推移性を局所補題として示し、4 分岐を証明。Isa: `m_5_1_parent_exists_1`–`_4`。[r1]
   - ✅ `5.1-parent-basic` — `nextrel0`/`nextrel1` の中間点に対する最小性条件を直接展開して証明。[r1]
@@ -141,7 +142,8 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
     行 0/1 の木構造を証明。Isa: `m_5_1_ancestor_tree_1`, `_2`。[r1]
   - ✅ `5.3-pred-is-oper1` — 親あり分岐の `n=1` ブロックを `drop`/`take_add` で始切片へ戻し、
     `Pred M = M.take (Lng M - 1)` と一致させた。A40 は付随型主張のみ。[r1]
-  - `5.4-F-welldefined` — 訂正 **A1**（第 2 引数 `n` → `f(n)`）。Isa: `p_5_4_F_oper_dom/_val`
+  - ✅ `5.4-F-welldefined` — 訂正 **A1**（第 2 引数 `n` → `f(n)`）。停止トレースの
+    先頭 1 段を除く操作として domain 同値と値保存を証明。Isa: `m_5_4_F_oper_dom/_val`。[r1]
   - なお §5.3 の型主張 `G ∈ T_PS` は `j₀=0` で偽（訂正 **A40**）。定義層で回避する。
 
 - **§6 ペア数列の基本性質** — Isa: `m_6_*`（`pss_mechanized.thy`）。§6 は全部証明済み。

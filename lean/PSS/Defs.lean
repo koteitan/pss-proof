@@ -141,6 +141,37 @@ def oper (M : PS) (n : ℕ) : PS :=
           (List.range' j0 (j1 - j0)).map (fun j =>
             (entry M 0 j + k * d0, entry M 1 j + k * d1))))
 
+/-! ## §5.4 ペア数列システム -/
+
+/-- `F` の有限停止トレース。値を計算できるよう `Type` に置く。 -/
+inductive FTrace (f : ℕ → ℕ) : PS → ℕ → Type where
+  | base {M n} : Lng M = 1 → FTrace f M n
+  | step {M n} : 1 < Lng M → FTrace f (oper M n) (f n) → FTrace f M n
+
+/-- `Dom(F)`: 有限停止トレースが存在すること。 -/
+def Fdom (f : ℕ → ℕ) (M : PS) (n : ℕ) : Prop := Nonempty (FTrace f M n)
+
+namespace Fdom
+
+theorem base {f : ℕ → ℕ} {M : PS} {n : ℕ} (h : Lng M = 1) : Fdom f M n :=
+  ⟨.base h⟩
+
+theorem step {f : ℕ → ℕ} {M : PS} {n : ℕ}
+    (hM : 1 < Lng M) (h : Fdom f (oper M n) (f n)) : Fdom f M n :=
+  ⟨.step hM (Classical.choice h)⟩
+
+end Fdom
+
+/-- 停止トレースに沿って `F_M(n)` の値を読む。 -/
+def FvalFromTrace {f : ℕ → ℕ} {M : PS} {n : ℕ} : FTrace f M n → ℕ
+  | .base _ => f n
+  | .step _ h => FvalFromTrace h
+
+/-- `F_M(n)`。停止域外の値は原典同様に意味を持たず、Lean では既定値 `0` で全域化する。 -/
+noncomputable def Fval (f : ℕ → ℕ) (M : PS) (n : ℕ) : ℕ := by
+  classical
+  exact if h : Fdom f M n then FvalFromTrace (Classical.choice h) else 0
+
 /-! ## §6.1 最上行のインクリメント -/
 
 /-- `IncrFirst M`: 上段（第 0 成分）を全部 1 増やす。 -/
