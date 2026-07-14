@@ -134,7 +134,7 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
 - **§5 定式化** — 素直。Lean でも短いはず。
   - ✅ `5.1-parent-exists` — 燃料付き `le0Aux`/`le1Aux` の添字単調性、行 0 の区間閉性・
     推移性を局所補題として示し、4 分岐を証明。Isa: `m_5_1_parent_exists_1`–`_4`。[r1]
-  - `5.1-parent-basic`
+  - ✅ `5.1-parent-basic` — `nextrel0`/`nextrel1` の中間点に対する最小性条件を直接展開して証明。[r1]
   - `5.1-ancestor-basic`
   - `5.1-ancestor-tree`
   - `5.3-pred-is-oper1`
