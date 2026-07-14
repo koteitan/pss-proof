@@ -1,1 +1,1 @@
--- §5 の命題ファイルをここに import する（1 命題 = 1 ファイル）。
+import «5».«5.1-parent-exists»

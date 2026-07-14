@@ -132,6 +132,12 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
     `python/trans_checksum.{py,lean}`）。kimina はエラー・sorry なし、全 `lake build` 成功。[r1]
 
 - **§5 定式化** — 素直。Lean でも短いはず。
+  - ✅ `5.1-parent-exists` — 燃料付き `le0Aux`/`le1Aux` の添字単調性、行 0 の区間閉性・
+    推移性を局所補題として示し、4 分岐を証明。Isa: `m_5_1_parent_exists_1`–`_4`。[r1]
+  - `5.1-parent-basic`
+  - `5.1-ancestor-basic`
+  - `5.1-ancestor-tree`
+  - `5.3-pred-is-oper1`
   - `5.4-F-welldefined` — 訂正 **A1**（第 2 引数 `n` → `f(n)`）。Isa: `p_5_4_F_oper_dom/_val`
   - なお §5.3 の型主張 `G ∈ T_PS` は `j₀=0` で偽（訂正 **A40**）。定義層で回避する。
 
