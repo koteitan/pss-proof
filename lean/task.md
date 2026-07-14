@@ -30,7 +30,7 @@
   - ✅ ペア数列 `T_PS` / `Lng` / 親子関係 / 直系先祖 / `Pred` / 基本列 `oper` / `IncrFirst` — `PSS/Defs.lean`[r1]
   - ✅ 単項性 `monoT` / 単項成分 `P` / 幹と枝 `Br`,`Joints`,`TrMax`,`FirstNodes` — `PSS/Mono.lean`[r1]
   - ✅ 許容性 `adm` / 許容化 / 基点 `Marked` — `PSS/Adm.lean`[r1]
-  - 🚨 簡約化 `Red` / 簡約性 `RT_PS` — `PSS/Red.lean`
+  - ✅ 簡約化 `Red` / 簡約性 `RT_PS` — `PSS/Red.lean`[r1]
   - 🚨 標準形 `ST_PS` — `PSS/Standard.lean`
   - 🚨 Buchholz の表記系 `T_B`,`<_B`,基本列,`dom`,`OT_B` — `PSS/Buchholz.lean`
   - 🚨 scb 分解（Σ 上の文字列） — `PSS/Scb.lean`
