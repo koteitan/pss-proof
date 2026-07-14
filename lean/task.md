@@ -39,7 +39,7 @@
 - 🚨 **§5 定式化**
   - ✅ §5.1 命題（親の存在の判定条件） — `5.1-parent-exists`[r1]
   - ✅ §5.1 命題（親の基本性質） — `5.1-parent-basic`[r1]
-  - 🚨 §5.1 系（直系先祖の基本性質） — `5.1-ancestor-basic`
+  - ✅ §5.1 系（直系先祖の基本性質） — `5.1-ancestor-basic`[r1]
   - 🚨 §5.1 系（直系先祖の木構造） — `5.1-ancestor-tree`
   - 🚨 §5.3 命題（`Pred` が `[1]` で表されること） — `5.3-pred-is-oper1`
   - 🚨 §5.4 命題（ペア数列システム `F` の well-defined 性） — `5.4-F-welldefined`
