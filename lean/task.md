@@ -27,7 +27,7 @@
 ## 進捗ツリー
 
 - 🚨 **定義層 `PSS/`**（§5 定式化。命題は置かない。移植元 `isabelle/pss_defs.thy`）
-  - 🚨 ペア数列 `T_PS` / `Lng` / 親子関係 / 直系先祖 / `Pred` / 基本列 `oper` / `IncrFirst` — `PSS/Defs.lean`
+  - ✅ ペア数列 `T_PS` / `Lng` / 親子関係 / 直系先祖 / `Pred` / 基本列 `oper` / `IncrFirst` — `PSS/Defs.lean`[r1]
   - 🚨 単項性 `monoT` / 単項成分 `P` / 幹と枝 `Br`,`Joints`,`TrMax`,`FirstNodes` — `PSS/Mono.lean`
   - 🚨 許容性 `adm` / 許容化 / 基点 `Marked` — `PSS/Adm.lean`
   - 🚨 簡約化 `Red` / 簡約性 `RT_PS` — `PSS/Red.lean`

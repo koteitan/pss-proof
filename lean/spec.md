@@ -121,7 +121,13 @@ Lake はモジュール名 `«7».«7.2-scb-unique»` を `7/7.2-scb-unique.lean
 
 **すべての命題ファイルはこの形にする。** ヘッダは機械可読なので勝手に項目を減らさないこと。
 
+**`import` は必ずファイルの一番上**（ドキュメントコメントより前）。Lean はそれ以外を受け付けない
+（`invalid 'import' command, it must be used in the beginning of the file`）。
+
 ```lean
+import PSS.Scb
+import «7».«7.2-scb-compose»
+
 /-!
 # §7.2 命題（scb分解の一意性）
 
@@ -132,8 +138,6 @@ Lake はモジュール名 `«7».«7.2-scb-unique»` を `7/7.2-scb-unique.lean
 - 依存: PSS.Scb, «7».«7.2-scb-compose»
 - 状態: 🚨 未証明   ／ ✅ 証明済（sorry 0）
 -/
-import PSS.Scb
-import «7».«7.2-scb-compose»
 
 namespace PSS
 

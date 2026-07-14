@@ -90,7 +90,12 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
 凡例: 訂正 = `corrections.md` の A 番号。Isa = `isabelle/` 側の対応補題（証明の設計図）。
 
 - **定義層 `PSS/`** — 移植元は `isabelle/pss_defs.thy` 一本。ここは「証明」ではなく「転記」。
-  - `PSS/Defs.lean` — `T_PS`,`Lng`,親子,直系先祖,`Pred`,基本列 `oper`,`IncrFirst`
+  - ✅ `PSS/Defs.lean` — `T_PS`,`Lng`,`entry`,親子(`nextrel0/1`),直系先祖(`le0/le1`),`Pred`,`Derp`,
+    `idx1`,`hasParent`,`parent`,基本列 `oper`,`seg`,`IncrFirst`。**全部 `Bool` 値＝計算可能**。
+    `≤_M` は `Relation.ReflTransGen` ではなく**燃料 `Lng M` の再帰**（辺は必ず添字を増やすので十分）。
+    **忠実性検証済**: `oper` が `python/red_model.py` と一致。成分 `< 4`・長さ `≤ 4` の
+    **全 69,904 列 × n=0..3 = 279,616 回**の評価でチェックサム一致（`142031081`）。
+    定義を変えたらこの検証をやり直すこと（`scratchpad/opersum.lean` と同型のチェックサム比較）。
   - `PSS/Mono.lean` — `monoT`,`P`,`Br`,`Joints`,`TrMax`,`FirstNodes`
   - `PSS/Adm.lean` — `adm`,許容化,`Marked`
   - `PSS/Red.lean` — `Red`,`reduced`(`RT_PS`)。**整礎再帰の停止性証明が要る**（Isa: `Red_welldef`）

@@ -61,6 +61,17 @@ cd ~/proofs/pss-proof/git/lean && lake build
 - サーバは `lake env <repl>` を `cwd = LEAN_SERVER_PROJECT_DIR` で起動する。
   つまり **REPL は必ず本リポジトリの Lean プロジェクトを見る**。`PSS.*` がそのまま import できる。
 - 初回の `import Mathlib` は 5 秒ほどかかるが、REPL は使い回されるので 2 回目以降は速い。
+- ★**`PSS/*.lean` を編集したら `cd lean && lake build` してから kimina を再起動する。**
+  REPL は **header 単位でキャッシュされ、`LEAN_SERVER_MAX_REPL_USES=-1` なので永久に使い回される**。
+  再起動しないと **`lake build` 済みの新しい定義が snippet から見えない**
+  （`Unknown identifier PSS.oper` が出る。実際に踏んだ）。命題ファイル（`5/`…`8/`）を
+  編集するだけなら再起動は不要 — snippet は本文をそのまま流すので常に最新。
+
+  ```sh
+  cd ~/proofs/pss-proof/git/lean && lake build
+  pkill -f "python -m server"
+  cd ../../kimina-lean-server && setsid nohup .venv/bin/python -m server > /tmp/kimina-pss.log 2>&1 &
+  ```
 
 ## 2. ヘルスチェック
 
