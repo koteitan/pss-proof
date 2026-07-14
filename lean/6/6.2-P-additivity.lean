@@ -21,7 +21,7 @@ private theorem le0Aux_refl_add (M : PS) (fuel j : ℕ) :
     le0Aux M fuel j j = true := by
   cases fuel <;> simp [le0Aux]
 
-private theorem Pcut_props_add (M : PS) (hlen : 1 < Lng M) :
+theorem Pcut_props (M : PS) (hlen : 1 < Lng M) :
     0 < Pcut M ∧ Pcut M ≤ Lng M - 1 ∧
       leR M 0 (Pcut M) (Lng M - 1) = true := by
   let q : ℕ → Bool := fun j =>
@@ -49,7 +49,7 @@ private theorem Pcut_props_add (M : PS) (hlen : 1 < Lng M) :
   simp [q] at hqc
   exact ⟨hqc.1.1, hqc.1.2, hqc.2⟩
 
-private theorem Pcut_not_candidate_add (M : PS) (hlen : 1 < Lng M)
+theorem Pcut_not_candidate (M : PS) (hlen : 1 < Lng M)
     (j : ℕ) (hj : j < Pcut M) :
     ((0 < j) && (j ≤ Lng M - 1) &&
       leR M 0 j (Lng M - 1)) = false := by
@@ -89,13 +89,13 @@ private theorem next0_le_add (M : PS) (a b : ℕ)
         exact ⟨a, hablt, hn, le0Aux_refl_add M fuel a⟩
   simp [leR, le0, haL, hbL, haux]
 
-private theorem Pcut_left_min_add (M : PS) (hM : TPS M)
+theorem Pcut_left_min (M : PS) (hM : TPS M)
     (hmulti : multiT M = true) (hlen : 1 < Lng M) :
     ∀ j, j < Pcut M → entry M 0 (Pcut M) ≤ entry M 0 j := by
   intro j hj
   by_contra hnot
   have hlt : entry M 0 j < entry M 0 (Pcut M) := by omega
-  have hc := Pcut_props_add M hlen
+  have hc := Pcut_props M hlen
   rcases hc with ⟨hcpos, hcle, hanc⟩
   have hcL : Pcut M < Lng M := by omega
   obtain ⟨p, hjp, hpc, hpnext⟩ :=
@@ -114,7 +114,7 @@ private theorem Pcut_left_min_add (M : PS) (hM : TPS M)
     simp [hmulti] at hmfalse
   · have hppos : 0 < p := Nat.pos_of_ne_zero hp0
     have hpbound : p ≤ Lng M - 1 := by omega
-    have hfalse := Pcut_not_candidate_add M hlen p hpc
+    have hfalse := Pcut_not_candidate M hlen p hpc
     simp [hppos, hpbound, hplast] at hfalse
 
 private theorem pAux_succ_eq_add (fuel : ℕ) (M : PS)
@@ -129,7 +129,7 @@ private theorem pAux_succ_eq_add (fuel : ℕ) (M : PS)
       by_cases hs : (multiT M && decide (1 < Lng M)) = true
       · have hsplit : multiT M = true ∧ 1 < Lng M := by simpa using hs
         have hlen : 1 < Lng M := hsplit.2
-        have hc := Pcut_props_add M hlen
+        have hc := Pcut_props M hlen
         have hclt : Pcut M < Lng M := by omega
         have hprelen : Lng (M.take (Pcut M)) = Pcut M := by
           simp [Nat.min_eq_left hclt.le]
@@ -145,7 +145,7 @@ private theorem pAux_succ_eq_add (fuel : ℕ) (M : PS)
             PAux fuel (M.take (Pcut M)) ++ [M.drop (Pcut M)] else [M])
         rw [if_neg hs, if_neg hs]
 
-private theorem pAux_eq_length_add (fuel : ℕ) (M : PS)
+theorem PAux_stable (fuel : ℕ) (M : PS)
     (hbound : Lng M ≤ fuel) : PAux fuel M = PAux (Lng M) M := by
   induction fuel with
   | zero =>
@@ -159,16 +159,16 @@ private theorem pAux_eq_length_add (fuel : ℕ) (M : PS)
           PAux (fuel + 1) M = PAux fuel M := pAux_succ_eq_add fuel M hb
           _ = PAux (Lng M) M := ih hb
 
-private theorem P_of_nonmulti_add (M : PS) (hm : multiT M = false) :
+theorem P_nonmulti_eq (M : PS) (hm : multiT M = false) :
     P M = [M] := by
   unfold P
   cases Lng M <;> simp [PAux, hm]
 
-private theorem P_step_add (M : PS) (hm : multiT M = true)
+theorem P_multi_step (M : PS) (hm : multiT M = true)
     (hlen : 1 < Lng M) :
     P M = P (M.take (Pcut M)) ++ [M.drop (Pcut M)] := by
   have hs : (multiT M && decide (1 < Lng M)) = true := by simp [hm, hlen]
-  have hc := Pcut_props_add M hlen
+  have hc := Pcut_props M hlen
   have hclt : Pcut M < Lng M := by omega
   have hprelen : Lng (M.take (Pcut M)) = Pcut M := by
     simp [Nat.min_eq_left hclt.le]
@@ -178,10 +178,10 @@ private theorem P_step_add (M : PS) (hm : multiT M = true)
   | zero => omega
   | succ fuel =>
       rw [PAux, if_pos hs]
-      have hstable := pAux_eq_length_add fuel (M.take (Pcut M)) (by simpa [heq] using hbound)
+      have hstable := PAux_stable fuel (M.take (Pcut M)) (by simpa [heq] using hbound)
       simpa using congrArg (fun xs => xs ++ [M.drop (Pcut M)]) hstable
 
-private theorem drop_eq_seg_add (M : PS) (k : ℕ) (hk : k < Lng M) :
+theorem drop_eq_seg (M : PS) (k : ℕ) (hk : k < Lng M) :
     M.drop k = seg M k (Lng M - 1) := by
   apply List.ext_getElem
   · have hpred : Lng M - 1 + 1 = Lng M := by omega
@@ -192,7 +192,7 @@ private theorem drop_eq_seg_add (M : PS) (k : ℕ) (hk : k < Lng M) :
       exact Nat.add_lt_of_lt_sub' hj₁
     simp [seg, List.getElem_range', entry, hkj]
 
-private theorem P_drop_ancestor_add (M : PS) (c : ℕ) (hM : TPS M)
+theorem P_drop_ancestor (M : PS) (c : ℕ) (hM : TPS M)
     (hcpos : 0 < c) (hcle : c ≤ Lng M - 1)
     (hanc : leR M 0 c (Lng M - 1) = true) :
     P (M.drop c) = [M.drop c] := by
@@ -209,17 +209,17 @@ private theorem P_drop_ancestor_add (M : PS) (c : ℕ) (hM : TPS M)
     · have hlt : c < Lng M - 1 := by omega
       have hmseg := mono_ancestor_slice M c (Lng M - 1) hM hlt hanc
       have hmdrop : monoT (M.drop c) = true := by
-        rw [drop_eq_seg_add M c hcL]
+        rw [drop_eq_seg M c hcL]
         exact hmseg
       simp [multiT, hmdrop]
-  exact P_of_nonmulti_add (M.drop c) hnonmulti
+  exact P_nonmulti_eq (M.drop c) hnonmulti
 
-private theorem entry_take_add (M : PS) (k i j : ℕ) (hj : j < k) :
+theorem entry_take (M : PS) (k i j : ℕ) (hj : j < k) :
     entry (M.take k) i j = entry M i j := by
   unfold entry
   rw [List.getElem?_take_of_lt hj]
 
-private theorem entry_drop_add (M : PS) (k i j : ℕ) :
+theorem entry_drop (M : PS) (k i j : ℕ) :
     entry (M.drop k) i j = entry M i (k + j) := by
   unfold entry
   rw [List.getElem?_drop]
@@ -233,10 +233,10 @@ private theorem P_additive_take_drop (M : PS) (j₀ : ℕ) (hM : TPS M)
   | h n ih =>
       have hlen : 1 < Lng M := by omega
       by_cases hmulti : multiT M = true
-      · have hc := Pcut_props_add M hlen
+      · have hc := Pcut_props M hlen
         rcases hc with ⟨hcpos, hcle, hanc⟩
         have hcL : Pcut M < Lng M := by omega
-        have hcutmin := Pcut_left_min_add M hM hmulti hlen
+        have hcutmin := Pcut_left_min M hM hmulti hlen
         have hjc : j₀ ≤ Pcut M := by
           by_contra hnot
           have hcj : Pcut M < j₀ := by omega
@@ -244,8 +244,8 @@ private theorem P_additive_take_drop (M : PS) (j₀ : ℕ) (hM : TPS M)
             hM hcj hjlast hanc
           have hreverse := hmin (Pcut M) hcj
           omega
-        have hstep := P_step_add M hmulti hlen
-        have hdrop := P_drop_ancestor_add M (Pcut M) hM hcpos hcle hanc
+        have hstep := P_multi_step M hmulti hlen
+        have hdrop := P_drop_ancestor M (Pcut M) hM hcpos hcle hanc
         by_cases heq : j₀ = Pcut M
         · subst j₀
           rw [hstep, hdrop]
@@ -259,8 +259,8 @@ private theorem P_additive_take_drop (M : PS) (j₀ : ℕ) (hM : TPS M)
             omega
           have hMpmin : ∀ j, j < j₀ → entry Mp 0 j₀ ≤ entry Mp 0 j := by
             intro j hj
-            rw [entry_take_add M (Pcut M) 0 j₀ hjltc,
-              entry_take_add M (Pcut M) 0 j (hj.trans hjltc)]
+            rw [entry_take M (Pcut M) 0 j₀ hjltc,
+              entry_take M (Pcut M) 0 j (hj.trans hjltc)]
             exact hmin j hj
           have hIH₁ : P Mp = P (Mp.take j₀) ++ P (Mp.drop j₀) := by
             apply ih (Lng Mp) (by omega) Mp j₀ hMp
@@ -281,7 +281,7 @@ private theorem P_additive_take_drop (M : PS) (j₀ : ℕ) (hM : TPS M)
           have hsum : j₀ + d = Pcut M := by simp [d, Nat.add_sub_of_le hjc]
           have hMsmin : ∀ j, j < d → entry Ms 0 d ≤ entry Ms 0 j := by
             intro j hj
-            rw [entry_drop_add M j₀ 0 d, entry_drop_add M j₀ 0 j, hsum]
+            rw [entry_drop M j₀ 0 d, entry_drop M j₀ 0 j, hsum]
             apply hcutmin
             omega
           have hIH₂ : P Ms = P (Ms.take d) ++ P (Ms.drop d) := by
@@ -307,7 +307,7 @@ private theorem P_additive_take_drop (M : PS) (j₀ : ℕ) (hM : TPS M)
         have hreverse := hmin 0 hjpos
         omega
 
-private theorem take_eq_seg_add (M : PS) (j₀ : ℕ)
+theorem take_eq_seg (M : PS) (j₀ : ℕ)
     (hjpos : 0 < j₀) (hjlast : j₀ ≤ Lng M - 1) :
     M.take j₀ = seg M 0 (j₀ - 1) := by
   apply List.ext_getElem
@@ -323,10 +323,12 @@ theorem P_additivity (M : PS) (j₀ : ℕ) (hM : TPS M)
     (hjpos : 0 < j₀) (hjlast : j₀ ≤ Lng M - 1)
     (hmin : ∀ j, j < j₀ → entry M 0 j₀ ≤ entry M 0 j) :
     P M = P (seg M 0 (j₀ - 1)) ++ P (seg M j₀ (Lng M - 1)) := by
-  rw [← take_eq_seg_add M j₀ hjpos hjlast,
-    ← drop_eq_seg_add M j₀ (by omega)]
+  rw [← take_eq_seg M j₀ hjpos hjlast,
+    ← drop_eq_seg M j₀ (by omega)]
   exact P_additive_take_drop M j₀ hM hjpos hjlast hmin
 
 #print axioms P_additivity
+#print axioms PAux_stable
+#print axioms P_multi_step
 
 end PSS
