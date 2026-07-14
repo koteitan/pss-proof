@@ -122,7 +122,9 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
     訂正した `x_{i+1}=D_u(b[x_i])` を採用。**忠実性検証済**: 有限指標 0–2、深さ 2、
     principal 数 ≤ 2 の全 1,561 項で Python 正本と一致。定義群チェックサム `177483501`、
     全 2,436,721 項対の順序チェックサム `877667618`（`python/buchholz_checksum.lean`）。[r1]
-  - `PSS/Scb.lean` — scb 分解
+  - ✅ `PSS/Scb.lean` — `Sym`, `flatBT`/`flatBP`, `RightNodes`, `isPTB_str`,
+    `scb_decomp`, 第 0/1 種分解, `MarkedB`。flatten と右端 spine は相互構造再帰、
+    principal 項の存在量化を含む分解条件は `Prop` として原定義を直接移植した。[r1]
   - `PSS/Trans.lean` — `Trans`,`Mark`。**相互再帰＋停止性**（Isa: `Trans_Mark_invariant_aux`）
     - 原文の `LastStep` の添字は誤り（A9: `J₁` の `−1` 脱落）。訂正後で定義すること。
 
