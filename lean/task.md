@@ -48,7 +48,7 @@
   - ✅ §6.1 命題（`≤_M` の `IncrFirst` 不変性） — `6.1-le-IncrFirst-invariance`[r1]
   - 🚨 §6.2 単項性
     - ✅ 命題（複項性の判定条件） — `6.2-multi-criterion`[r1]
-    - 🚨 系（単項性の始切片への遺伝性） — `6.2-mono-prefix`
+    - ✅ 系（単項性の始切片への遺伝性） — `6.2-mono-prefix`[r1]
     - ✅ 命題（単項性の直系先祖による切片への遺伝性） — `6.2-mono-ancestor-slice`[r1]
     - 🚨 命題（`P` の `IncrFirst` 同変性） — `6.2-P-IncrFirst-equivariance`
     - 🚨 命題（`P` の各成分の非複項性） — `6.2-P-components-nonmulti`

@@ -154,6 +154,8 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
       行 0 祖先関係の三者同値。§5.1 の親存在 (3) と祖先係数増加へ還元。[r1]
     - ✅ `6.2-mono-ancestor-slice` — `seg` の長さ・係数読出しを証明し、元列の行 0 祖先上の
       係数増加から切片末尾への祖先関係を再構成。Isa: `m_6_2_mono_ancestor_slice`。[r1]
+    - ✅ `6.2-mono-prefix` — 元列の単項性から末尾祖先関係を読み、§5.1 木構造で `j₀` へ
+      切り詰めて `mono_ancestor_slice` を適用。Isa: `m_6_2_mono_prefix`。[r1]
   - `6.4-P-IdxSum-characterization` — 訂正 **A3**（系(4) の `>` は `≥`。joint 共有時のみ偽）
   - §6.5 簡約化 — **ここが A4 の震源**。
     - `6.5-Red-idempotence` — **原文は `T_PS` で偽（A4）**。`RT_PS` 上でのみ真。
