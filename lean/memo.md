@@ -149,6 +149,9 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
 - **§6 ペア数列の基本性質** — Isa: `m_6_*`（`pss_mechanized.thy`）。§6 は全部証明済み。
   - ✅ `6.1-le-IncrFirst-invariance` — 行 0/1 の辺と燃料付き推移閉包が上段一様 +1 で
     不変なことを順に示した。Isa: `m_6_1_le_IncrFirst_inv`。[r1]
+  - §6.2 単項性
+    - ✅ `6.2-multi-criterion` — 非複項性、左端からの上段係数の狭義増加、末尾への
+      行 0 祖先関係の三者同値。§5.1 の親存在 (3) と祖先係数増加へ還元。[r1]
   - `6.4-P-IdxSum-characterization` — 訂正 **A3**（系(4) の `>` は `≥`。joint 共有時のみ偽）
   - §6.5 簡約化 — **ここが A4 の震源**。
     - `6.5-Red-idempotence` — **原文は `T_PS` で偽（A4）**。`RT_PS` 上でのみ真。
