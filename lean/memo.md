@@ -112,7 +112,9 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
     （チェックサム `505375848`; `python/red_checksum.lean`）。A4 の反例も `#guard` 3 本で固定:
     `Red [(0,0),(0,2)] = [(0,0),(2,2)]`, `Red [(0,0),(2,2)] = [(0,0),(1,1)]`,
     よって `Red` は `T_PS` 上で冪等でない。[r1]
-  - `PSS/Standard.lean` — `ST_PS`
+  - ✅ `PSS/Standard.lean` — `STPS`, rank 階層 `SkTPS`, 訂正 A4 用の `anchoredSlice`。
+    Isabelle の `inductive_set ST_PS` と `SkT_PS` を直接移植。`anchoredSlice` は
+    標準形または簡約単項列の、上段直系先祖に沿った切片として原定義どおりに置いた。[r1]
   - `PSS/Buchholz.lean` — `T_B`,`<_B`,基本列(`operB`),`dom`,`OT_B`。**A23 の転置に注意**
   - `PSS/Scb.lean` — scb 分解
   - `PSS/Trans.lean` — `Trans`,`Mark`。**相互再帰＋停止性**（Isa: `Trans_Mark_invariant_aux`）
