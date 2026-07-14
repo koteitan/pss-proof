@@ -1,4 +1,4 @@
-import «6».«6.5-Red-welldefined»
+import PSS.Red
 import «6».«6.4-mono-slice»
 
 /-!
