@@ -147,6 +147,8 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
   - なお §5.3 の型主張 `G ∈ T_PS` は `j₀=0` で偽（訂正 **A40**）。定義層で回避する。
 
 - **§6 ペア数列の基本性質** — Isa: `m_6_*`（`pss_mechanized.thy`）。§6 は全部証明済み。
+  - ✅ `6.1-le-IncrFirst-invariance` — 行 0/1 の辺と燃料付き推移閉包が上段一様 +1 で
+    不変なことを順に示した。Isa: `m_6_1_le_IncrFirst_inv`。[r1]
   - `6.4-P-IdxSum-characterization` — 訂正 **A3**（系(4) の `>` は `≥`。joint 共有時のみ偽）
   - §6.5 簡約化 — **ここが A4 の震源**。
     - `6.5-Red-idempotence` — **原文は `T_PS` で偽（A4）**。`RT_PS` 上でのみ真。

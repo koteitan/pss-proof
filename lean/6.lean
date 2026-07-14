@@ -1,1 +1,1 @@
--- §6 の命題ファイルをここに import する（1 命題 = 1 ファイル）。
+import «6».«6.1-le-IncrFirst-invariance»

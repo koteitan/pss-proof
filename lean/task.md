@@ -45,7 +45,7 @@
   - ✅ §5.4 命題（ペア数列システム `F` の well-defined 性） — `5.4-F-welldefined`[r1]
 
 - 🚨 **§6 ペア数列の基本性質**
-  - 🚨 §6.1 命題（`≤_M` の `IncrFirst` 不変性） — `6.1-le-IncrFirst-invariance`
+  - ✅ §6.1 命題（`≤_M` の `IncrFirst` 不変性） — `6.1-le-IncrFirst-invariance`[r1]
   - 🚨 §6.2 単項性
     - 🚨 命題（複項性の判定条件） — `6.2-multi-criterion`
     - 🚨 系（単項性の始切片への遺伝性） — `6.2-mono-prefix`
