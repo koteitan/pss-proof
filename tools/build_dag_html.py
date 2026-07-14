@@ -2,7 +2,7 @@
 """Wrap dag.svg (dark) into a zoomable/pannable dark-mode dag.html.
 Run after regenerating dag.svg from dag.dot. No external JS deps."""
 import os
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ROOT = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'isabelle')
 svg = open(os.path.join(ROOT, 'dag.svg')).read()
 svg_inner = svg[svg.find('<svg'):]  # drop XML decl/doctype
 

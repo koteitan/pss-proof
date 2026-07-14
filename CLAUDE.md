@@ -1,11 +1,33 @@
 # CLAUDE.md — pss-proof developer guide
 
-Formal verification, in Isabelle/HOL, of the termination of the pair sequence
-system (ペア数列システム). The source is P進大好きbot's article "ペア数列の停止性"
-(Termination of the pair sequence system) on the Googology Wiki. This file is a
-working guide for contributors (human and Claude alike). For the overall picture
-see [README.md](README.md); for progress see [task.md](task.md); for proposed
-corrections to the source see [corrections.md](corrections.md).
+Formal verification of the termination of the pair sequence system (ペア数列システム).
+The source is P進大好きbot's article "ペア数列の停止性" (Termination of the pair sequence
+system) on the Googology Wiki. Proposed corrections to the source: [corrections.md](corrections.md)
+(30 live) and [corrections-old.md](corrections-old.md) (17 retracted — our own errors).
+
+## Where things are (2026-07-14 reorganization)
+
+| dir | what | status |
+|---|---|---|
+| `isabelle/` | Isabelle/HOL formalization. **Termination proved: zero hypotheses, zero `sorry`** (build-enforced ML audit). | **DONE / frozen** |
+| `lean/` | Lean 4 port. One article proposition = one file (`lean/7/7.2-scb-unique.lean`). | **ACTIVE** |
+| `python/` | Counterexample search + numeric models (`red_model.py`, `trans_model.py` are canonical) | shared |
+| `tools/` | Article processing (`make_content.py` regenerates `tmp/content.md`) | shared |
+
+**Current work is the Lean port.** Read, in this order:
+[lean/spec.md](lean/spec.md) (structure) → [lean/step.md](lean/step.md) (procedure) →
+[lean/task.md](lean/task.md) (progress tree) → [lean/memo.md](lean/memo.md) (design +
+dead ends) → [lean/kimina.md](lean/kimina.md) (the Lean check server, incl. how workflow
+agents use it).
+
+The Isabelle progress tree is [isabelle/task.md](isabelle/task.md) (all ✅);
+its design notes are [isabelle/memo.md](isabelle/memo.md). **The Isabelle proof is the
+blueprint for the Lean port** — when a Lean proof stalls, the answer is almost always
+already in `isabelle/pss_mechanized.thy` or `isabelle/layerC/pss_scratch.thy`. grep first.
+
+The sections below describe the **Isabelle** side. They still apply when working in
+`isabelle/` (note: all `isbman` commands now run from `isabelle/`, e.g.
+`cd isabelle && isbman build -d . -v PSS_C`).
 
 ## Build — layered session split (append-only; never reprocess the stable body)
 

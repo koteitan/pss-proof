@@ -7,7 +7,7 @@ invisible edges c[i]->c[i+2], then renders. dag.html gets the zoom/pan/touch UI.
 Run after editing dag.dot:  python3 tools/render_dag.py
 """
 import os, re, subprocess
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ROOT = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'isabelle')
 DOT  = os.path.join(ROOT, 'dag.dot')
 THRESH = 10   # ranks with >= THRESH nodes get 2-columned
 

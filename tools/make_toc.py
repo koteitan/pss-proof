@@ -16,7 +16,7 @@ the .thy at the reported line. Grep by lemma NAME still goes straight to the
 import re
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = Path(__file__).resolve().parent.parent / 'isabelle'
 FILES = [
     'pss_defs.thy',
     'pss_paper.thy',

@@ -106,7 +106,7 @@ text \<open>
   sequence.  The article states the equivalence of: (1) \<open>(M,n) \<in> Dom F\<close>;
   (2) \<open>(M[n],n) \<in> Dom F\<close>; (3) both, together with \<open>F\<^sub>M(n) = F\<^bsub>M[n]\<^esub>(n)\<close>.
 
-  CORRECTED form (see @{file "corrections.md"} entry A1): the article's second
+  CORRECTED form (see @{file "../corrections.md"} entry A1): the article's second
   argument \<open>n\<close> is an apparent typo for \<open>f n\<close>, and the substantive content is
   the case \<open>Lng M > 1\<close> (for \<open>Lng M = 1\<close> the relation is trivial since
   \<open>M[n] = M\<close>).
@@ -302,7 +302,7 @@ text \<open>NOTE (correction A3): the article's statement (4),
   \<open>(0,0)(1,1)(2,1)(3,1)(2,0)\<close> both branches join at index 1, so
   \<open>Joints = [1,1]\<close> and (4) reads \<open>1 > 1\<close>.  We transcribe the corrected statement
   with parts (1)(2)(3) only (the article's "(4) follows immediately from (3)"
-  overlooks that (3) is non-strict).  See @{file "corrections.md"} A3.\<close>
+  overlooks that (3) is non-strict).  See @{file "../corrections.md"} A3.\<close>
 
 lemma p_6_4_FirstNodes_Joints_mono:
   assumes "M \<in> PT_PS" "J0' < J1'" "J1' < Lng (Br M)"

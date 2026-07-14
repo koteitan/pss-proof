@@ -7,3 +7,4 @@ scratch.thy
 build*.log
 __pycache__/
 *.pyc
+isabelle/tmp

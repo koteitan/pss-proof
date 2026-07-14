@@ -2,9 +2,16 @@
 
 Version: **v0.1.16**
 
-ペア数列システム（pair sequence system）の停止性証明を Isabelle/HOL で形式検証するプロジェクト。
+ペア数列システム（pair sequence system）の停止性証明を形式検証するプロジェクト。
 
 P進大好きbot 氏のブログ記事「ペア数列の停止性」（巨大数研究 Wiki）の証明を、できるだけ忠実に形式化することを目標とする。
+
+| ディレクトリ | 内容 | 状態 |
+|---|---|---|
+| [`isabelle/`](isabelle/) | Isabelle/HOL 版 | **完了**（停止性を仮定ゼロ・`sorry` ゼロで証明） |
+| [`lean/`](lean/) | Lean 4 版（原文の命題 1 つ = ファイル 1 つ） | **作業中** |
+| `python/` | 反例探索・数値検証モデル | 共通 |
+| `tools/` | 原文処理 | 共通 |
 
 ## 結果
 
@@ -16,23 +23,26 @@ theorem y5_Fdom   : ...                     (* 原文の言明 p_8_7_termination
 ```
 
 - 外部文献 [Buc1] の補題（2.1 / 2.2 / 3.2a / 3.3）も**すべて自前で証明**しており、引用による穴は無い。
-- `sorry` に依存していないことは **ML の監査ブロックがビルド時に強制**する（`layerC/pss_scratch.thy` 末尾）。
-  停止性の定理群が `pss_paper.thy` の 131 個の `sorry` のいずれかに到達したら、`error` でビルドが落ちる。
+- `sorry` に依存していないことは **ML の監査ブロックがビルド時に強制**する（`isabelle/layerC/pss_scratch.thy` 末尾）。
+  停止性の定理群が `isabelle/pss_paper.thy` の 131 個の `sorry` のいずれかに到達したら、`error` でビルドが落ちる。
   **緑ビルド＝監査合格**であり、negative control（意図的に汚した定理を混ぜるとビルドが落ちる）で検証済み。
 
-原文の全命題・補題・系・定理の形式化も完了している（[`task.md`](task.md) の進捗ツリー参照）。
-その過程で原文の誤りを 31 件見つけた（下記）。
+原文の全命題・補題・系・定理の形式化も完了している（[`isabelle/task.md`](isabelle/task.md) の進捗ツリー参照）。
+その過程で原文の誤りを 30 件見つけた（下記）。
 
-## ファイル構成
+## ファイル構成（Isabelle 版）
 
 | ファイル | 役割 |
 |---|---|
-| `pss_defs.thy` | 論文の定義の形式化（共通） |
-| `pss_paper.thy` | 論文の命題・補題・系・定理のステートメントのみを転記（すべて `sorry`） |
-| `pss_mechanized.thy` | 独自の機械化証明（`sorry` を解消） |
-| `layerB/pss_wip.thy` | 証明済みの本体（凍結層） |
-| `layerC/pss_scratch.thy` | 作業中の最上層＋停止性の仕上げ＋ML 監査ブロック |
-| `ROOT` | Isabelle セッション定義（`PSS_A` ← `PSS_B` ← `PSS_C` の入れ子） |
+| `isabelle/pss_defs.thy` | 論文の定義の形式化（共通） |
+| `isabelle/pss_paper.thy` | 論文の命題・補題・系・定理のステートメントのみを転記（すべて `sorry`） |
+| `isabelle/pss_mechanized.thy` | 独自の機械化証明（`sorry` を解消） |
+| `isabelle/layerB/pss_wip.thy` | 証明済みの本体（凍結層） |
+| `isabelle/layerC/pss_scratch.thy` | 作業中の最上層＋停止性の仕上げ＋ML 監査ブロック |
+| `isabelle/ROOT` | Isabelle セッション定義（`PSS_A` ← `PSS_B` ← `PSS_C` の入れ子） |
+
+Lean 版の構成は [`lean/spec.md`](lean/spec.md)、進捗は [`lean/task.md`](lean/task.md)、
+作業手順は [`lean/step.md`](lean/step.md) にある。
 
 各事実は `<§番号>_<内容>` 形式で命名し、コメントに元論文の節番号（§）と日本語名を付けて
 元論文と対応付けられるようにしている。`pss_paper.thy` の `p_` 接頭辞が論文の主張、
@@ -40,24 +50,33 @@ theorem y5_Fdom   : ...                     (* 原文の言明 p_8_7_termination
 
 ## 進捗
 
-各命題・補題・系・定理の証明状況は [`task.md`](task.md) に進捗ツリー（未証明🚨 / 証明済✅ / 原文偽❌ / 作業中🤖）としてまとめている。
+各命題・補題・系・定理の証明状況は [`isabelle/task.md`](isabelle/task.md) と [`lean/task.md`](lean/task.md) に進捗ツリー（未証明🚨 / 証明済✅ / 原文偽❌ / 作業中🤖）としてまとめている。
 
 ## 原文への訂正案
 
 形式化の過程で見つかった原論文の誤記・訂正案は [`corrections.md`](corrections.md) に、原文 HTML への修正として集約している（著者フィードバック用）。**31 件**。
 
-いったん訂正案として書いたが、全数監査の結果**我々の側の誤りだった 16 件**は
+いったん訂正案として書いたが、全数監査の結果**我々の側の誤りだった 17 件**は
 [`corrections-old.md`](corrections-old.md) に分離してある（著者に送ってはならない）。
 
 ## ビルド
 
-層分割セッションのうち、作業中の最上層だけをビルドする：
+**Isabelle**（層分割セッションのうち、作業中の最上層だけをビルドする）：
 
 ```
-isbman build -d . -v PSS_C
+cd isabelle && isbman build -d . -v PSS_C
 ```
 
 緑の判定は `Finished PSS_C` がちょうど 1 行、`***` で始まる行が 0 行、`AUDIT FAILED` が 0 行。
+
+**Lean**：
+
+```
+cd lean && lake build
+```
+
+ただし `lake build` は `sorry` を warning でしか報告しない。証明の判定には
+[`lean/step.md`](lean/step.md) の「緑の定義」に従い `python3 python/check_lean.py <file>` を使う。
 
 ## 出典・引用 (Reference)
 - W. Buchholz, "[A new system of proof-theoretic ordinal functions](https://www.sciencedirect.com/science/article/pii/0168007286900527)", Annals of Pure and Applied Logic, Volume 32, 1986, pp. 195–207.
