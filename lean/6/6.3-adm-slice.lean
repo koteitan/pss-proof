@@ -136,7 +136,7 @@ private theorem nextR1_take_adm (M : PS) (n a b : ℕ)
     nextR (M.take n) 1 a b = nextR M 1 a b := by
   simp [nextR, nextrel1_take_adm M n a b hn ha hb]
 
-private theorem seg_eq_take_drop_adm (M : PS) (s e : ℕ)
+theorem seg_eq_take_drop_adm (M : PS) (s e : ℕ)
     (hse : s ≤ e) (he : e < Lng M) :
     seg M s e = (M.drop s).take (e + 1 - s) := by
   apply List.ext_getElem

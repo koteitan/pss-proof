@@ -10,3 +10,10 @@ import «6».«6.2-nonmulti-fseq»
 import «6».«6.3-adm-slice»
 import «6».«6.3-admof-slice»
 import «6».«6.3-marked-slice»
+import «6».«6.4-P-IdxSum»
+import «6».«6.4-P-IdxSum-characterization»
+import «6».«6.4-P-leftend-mono»
+import «6».«6.4-mono-slice-next»
+import «6».«6.4-FirstNodes-TrMax-Joints»
+import «6».«6.4-FirstNodes-Joints-mono»
+import «6».«6.4-mono-slice»

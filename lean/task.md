@@ -48,14 +48,7 @@
   - ✅ §6.1 命題（`≤_M` の `IncrFirst` 不変性） — `6.1-le-IncrFirst-invariance`[r1]
   - ✅ §6.2 単項性[r8]
   - ✅ §6.3 許容性[r3]
-  - 🚨 §6.4 幹と枝
-    - 🚨 命題（`P` と `IdxSum` の関係） — `6.4-P-IdxSum`
-    - 🚨 系（`P` と `IdxSum` の合成の特徴付け） — `6.4-P-IdxSum-characterization`
-    - 🚨 命題（`P` の各成分の左端の単調性） — `6.4-P-leftend-mono`
-    - 🚨 命題（切片の単項成分と `<^Next` の関係） — `6.4-mono-slice-next`
-    - 🚨 命題（`FirstNodes` と `TrMax` と `Joints` の関係） — `6.4-FirstNodes-TrMax-Joints`
-    - 🚨 系（`FirstNodes` と `Joints` の単調性） — `6.4-FirstNodes-Joints-mono`
-    - 🚨 系（単項性の切片への遺伝性） — `6.4-mono-slice`
+  - ✅ §6.4 幹と枝[r7]
   - 🚨 §6.5 簡約化
     - 🚨 命題（`Red` の well-defined 性） — `6.5-Red-welldefined`
     - 🚨 命題（`Red` の `IncrFirst` 不変性） — `6.5-Red-IncrFirst-invariance`
