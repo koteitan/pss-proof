@@ -159,6 +159,9 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
     - ✅ `6.2-P-IncrFirst-equivariance` — `zeroT`/`monoT`/`multiT` と `Pcut` の
       `IncrFirst` 不変性を示し、燃料付き `PAux` の帰納法で `P` が成分ごとに
       `IncrFirst` と可換であることを証明。Isa: `m_6_2_P_IncrFirst`。[r1]
+    - ✅ `6.2-P-components-nonmulti` — `Pcut` の範囲・祖先条件を `find?` から取り出し、
+      「入力長 ≤ 燃料」を不変量とする `PAux` 帰納法で全成分が零項または
+      単項と証明。併せて `multiT M ↔ 1 < length (P M)` も証明。Isa: `m_6_2_P_components_1`, `_2`。[r1]
   - `6.4-P-IdxSum-characterization` — 訂正 **A3**（系(4) の `>` は `≥`。joint 共有時のみ偽）
   - §6.5 簡約化 — **ここが A4 の震源**。
     - `6.5-Red-idempotence` — **原文は `T_PS` で偽（A4）**。`RT_PS` 上でのみ真。
