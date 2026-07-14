@@ -19309,8 +19309,21 @@ text \<open>\<^bold>\<open>For the record.\<close>  The following \<^emph>\<open
   \<^item> \<open>p_7_2_add_scb\<close> (3rd conclusion, A13) \<mapsto> @{thm [source] y3u_p_7_2_add_scb_3}
   \<^item> \<open>p_7_3_Mark_rightmost1\<close> (A17) \<mapsto> @{thm [source] y3u_p_7_3_Mark_rightmost1}
   \<^item> \<open>p_7_4_Trans_nextAdm\<close> (A45) \<mapsto> @{thm [source] y3u_p_7_4_Trans_nextAdm}
-  \<^item> \<open>p_7_4_Mark_nextAdm\<close> (A18) \<mapsto> @{thm [source] y3u_p_7_4_Mark_nextAdm}
+  \<^item> \<open>p_7_4_Mark_nextAdm\<close> (A18 \<^bold>\<open>and A47\<close>) \<mapsto> @{thm [source] y3u_p_7_4_Mark_nextAdm}
+      --- FALSE for TWO independent reasons: the ancestor \<open>j\<close> needs \<open>(M,j) \<in> Marked\<close> (A18),
+      \<^bold>\<open>and\<close> the printed domain \<open>T\<^bsub>PS\<^esub>\<close> is too wide (A47, witness
+      \<open>M = (0,0)(4,2)(2,6)(4,2)(8,4)(6,4)\<close>, \<open>j\<^sub>0 = 3\<close>, \<open>j \<in> {0,2}\<close>: every hypothesis holds
+      --- the article's AND A18's --- yet no common \<open>(s\<^sub>0,b\<^sub>0)\<close> EXISTS).  Both are needed:
+      @{thm [source] y3u_p_7_4_Mark_nextAdm} carries \<open>M \<in> RT\<^bsub>PS\<^esub>\<close> and the \<open>Marked\<close>
+      premise.  The refutation is \<open>y6z_7_4_Mark_nextAdm_TPS_false\<close> (r82, below), and its
+      mechanism (coinciding cores, differing ambients) is \<open>y6z_no_common_position\<close>.
   \<^item> \<open>p_7_4_Trans_Mark_Pred\<close> (A46) \<mapsto> @{thm [source] y3u_p_7_4_Trans_Mark_Pred}
+
+  \<^bold>\<open>The \<section>7.4 family is a single defect, not three.\<close>  A45, A46 and A47 all say the same
+  thing about three neighbouring statements: the printed domain is \<open>T\<^bsub>PS\<^esub>\<close> and must be
+  \<open>RT\<^bsub>PS\<^esub>\<close>.  The root cause is correction \<^bold>\<open>A4\<close> --- \<open>Trans\<close>/\<open>Mark\<close> are computed on
+  \<open>Red M\<close> while \<open>\<le>\<^sub>M\<close>, \<open><\<^sup>NextAdm\<^sub>M\<close> and \<open>M\<close>-admissibility are read off \<open>M\<close>, and \<open>\<le>\<^sub>M\<close>
+  is NOT \<open>Red\<close>-invariant.
   \<^item> \<open>p_8_1_condI_III_c1_around\<close> (A20 for part (1), A21 for part (5))
       \<mapsto> @{thm [source] y3u_p_8_1_c1_around_part1}, @{thm [source] y3u_p_8_1_c1_around_part5}
   \<^item> \<open>p_8_3_kind0_base_ineq\<close> (A22) \<mapsto> @{thm [source] y3u_p_8_3_kind0_base_ineq}
