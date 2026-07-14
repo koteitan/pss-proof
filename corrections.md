@@ -2,8 +2,8 @@
 
 > ## 全数監査済み (2026-07-13)
 >
-> A1〜A47 を原文（`tmp/original.html`）と突き合わせて全数検証した。**このファイルに残る 31 件が現在の訂正案**である。
-> 検証で取り下げた 16 件と、その取り下げ理由・経緯は [corrections-old.md](corrections-old.md) にある。
+> A1〜A47 を原文（`tmp/original.html`）と突き合わせて全数検証した。**このファイルに残る 30 件が現在の訂正案**である。
+> 検証で取り下げた 17 件と、その取り下げ理由・経緯は [corrections-old.md](corrections-old.md) にある。
 
 
 巨大数研究 Wiki の記事 **「ペア数列の停止性」**(P進大好きbot 著) に対する訂正案を
@@ -357,6 +357,14 @@ $j_1 = j_0^N + n(j_1^N-j_0^N) - 1$ である。
 に書き換える必要がある（\(\mathbb{N}\) 上の減算を避けるため）。他の箇所（例：§6.4 や §8.1）では
 \(J_1 := \textrm{Lng}(\textrm{Br}(M))-1\) と置かれており、ここだけ \(-1\) が落ちている。
 
+### 決定的な証拠（記事内部の矛盾）
+\(\textrm{LastStep}\) の定義（content.md 3304）の**直後の命題**（content.md 3316、命題（条件(II)か(IV)の下での終切片と \(\textrm{Trans}\) の関係））は、**同じ記号 \(J_1\) を**
+
+「\(J_1 := \textrm{Lng}(\textrm{Br}(M))-1\)と置き、\(J_1 \geq 0\)として…」
+
+と、\(-1\) 付きで置き直している。すなわち記事は 12 行のうちに同じ記号を2通りに定義しており、
+\(\textrm{Br}(M)_{J_1}\) を実在する最終成分として使っている以上、意図されているのは \(-1\) 付きの方である。
+
 ### 補足（else 節の \(\min\) の集合の well-formedness）
 else 節の \(\min\) の内包 \(\{J \in \mathbb{N} \mid \dots\}\) には添字上界がない。\(\mathbb{N}\) の空でない
 部分集合の \(\min\) は常に存在する（脚注[61]の通り \(J = J_1\) が属するので空でない）ので、**有限性は
@@ -678,8 +686,15 @@ $(M,m_0),(M,m_1)\in T_{\textrm{PS}}^{\textrm{Marked}}$ に対し、次は同値�
 ### 原文の問題点
 \(T_{\textrm{B}}^{\textrm{Marked}}=\{(t,c)\mid (s,c,b)\,\text{が}\,t\,\text{の scb 分解}\}\)(content.md 1834)は **(whole, block)** の規約(\(c\) は \(t\) の部分=被覆される側、cf. 1936 \((t+c,c)\))。一方 \(\textrm{Mark}(M,m)\) は \(m\) が小さいほど大きい(\(\textrm{Mark}(M,0)=\textrm{Trans}(M)\) 最大、\(\textrm{Mark}(M,j_1)=D_{M_{1,j_1}}0\) 最小)。よって \(m_0<m_1\) では \(\textrm{Mark}(M,m_0)\) が whole、\(\textrm{Mark}(M,m_1)\) が block で、正しい対は \((\textrm{Mark}(M,m_0),\textrm{Mark}(M,m_1))\in T_{\textrm{B}}^{\textrm{Marked}}\)。原文の \((\textrm{Mark}(M,m_1),\textrm{Mark}(M,m_0))\) は **whole と block が逆**。
 
-### 確認(機械証明による)
-`Mark_MarkedB_nest`(green): \((M,m),(M,m')\in\textrm{Marked}\wedge m\le m'\wedge M\in RT_{\textrm{PS}}\Rightarrow(\textrm{Mark}\,M\,m,\textrm{Mark}\,M\,m')\in\textrm{MarkedB}\)。すなわち小 index が whole。`MarkedB_antisym`(green)より両向きの nest は項の一致を強制するので、\(m_0<m_1\)(狭義, 像が相異なる)では原文の逆向き対は偽。
+### 経験的確認
+簡約な \(M\)（成分 \(\leq 4\)、\(\textrm{Lng} \leq 4\)、乱択 400 列）から、\((M,m_0),(M,m_1) \in T_{\textrm{PS}}^{\textrm{Marked}}\)
+かつ \(m_0 < m_1\) かつ像が相異なる組を全て取り出した **249 例**（すべて非空虚に仮定を行使）で：
+
+- 原文の向き \((\textrm{Mark}(M,m_1),\textrm{Mark}(M,m_0)) \in T_{\textrm{B}}^{\textrm{Marked}}\)：**0/249**（＝常に偽）
+- 訂正の向き \((\textrm{Mark}(M,m_0),\textrm{Mark}(M,m_1)) \in T_{\textrm{B}}^{\textrm{Marked}}\)：**249/249**（＝常に真）
+
+### 確認（機械証明による）
+`Mark_MarkedB_nest`（緑）: \((M,m),(M,m')\in\textrm{Marked}\wedge m\le m'\wedge M\in RT_{\textrm{PS}}\Rightarrow(\textrm{Mark}\,M\,m,\textrm{Mark}\,M\,m')\in\textrm{MarkedB}\)。すなわち小さい添字が whole 側。`MarkedB_antisym`（緑）より両向きの入れ子は項の一致を強制するので、\(m_0<m_1\)（狭義、像が相異なる）では原文の向きは偽。
 
 ## A20. §8.1 補題（条件(I)か(III)の下での c_1 前後の具体表示）part(1): 非簡約な単項切片で「Trans(切片) = c_1」が偽（反例あり）
 
@@ -886,22 +901,6 @@ $(M,m_0),(M,m_1)\in T_{\textrm{PS}}^{\textrm{Marked}}$ に対し、次は同値�
 ### 原因
 原文の証明は Mark と \(\textrm{Trans}\) の表示ステップを使うが、その表示は印付き切片が零項でないことを要求する（我々の形式化では `m_7_4_Mark_Trans_repr` の同じガード）。そのガードが (5-3) の主張に転記されていない。
 
-## A39. §8.2 写像 LastStep の定義: 最小値をとる集合 \(\{J \in \mathbb{N} \mid \cdots\}\) に添字上界 \(J \le J_1\) が無くて未定義 [軽微]
-
-### 位置
-§8.2 写像 \(\textrm{LastStep}\) の定義（content.md 3312）の第3ケース（\((\textrm{Br}(M)_{J_1})_{0,0} > (\textrm{Br}(M)_{J_1})_{1,0}\) の場合）。
-
-### 原文
-\((\textrm{Br}(M)_{J_1})_{0,0} > (\textrm{Br}(M)_{J_1})_{1,0}\)ならば\(\textrm{LastStep}(M) := \min \{J \in \mathbb{N} \mid (\textrm{Br}(M)_{J_1})_{0,0} = (\textrm{Br}(M)_J)_{0,0} > (\textrm{Br}(M)_J)_{1,0}\}\)である。
-
-### 訂正案
-\((\textrm{Br}(M)_{J_1})_{0,0} > (\textrm{Br}(M)_{J_1})_{1,0}\)ならば\(\textrm{LastStep}(M) := \min \{J \in \mathbb{N} \mid J \le J_1 \wedge (\textrm{Br}(M)_{J_1})_{0,0} = (\textrm{Br}(M)_J)_{0,0} > (\textrm{Br}(M)_J)_{1,0}\}\)である。
-
-### 原文の問題点
-集合 \(\{J \in \mathbb{N} \mid \cdots\}\) の \(J\) に上界がなく、\(J > J_1 = \textrm{Lng}(\textrm{Br}(M))-1\) では \(\textrm{Br}(M)_J\) が \(\textrm{Br}(M)\) の添字範囲外を参照する。記事は \(j_0 := \min\{j \in \mathbb{N} \mid 0 < j \le j_1 \wedge (0,j) \le_M (0,j_1)\}\)（content.md 490）では上界 \(j \le j_1\) を明示しており、LastStep の \(\min\) だけ上界を欠くのは非整合。\(J \le J_1\) を補えば集合は \(\{0,\dots,J_1\}\) の部分集合として有限になり（\(J = J_1\) が条件を満たすので非空、脚注[61]）、\(\min\) が明確に存在する。
-
-（形式化 `LastStep`(pss_defs.thy:516) はこの \(\min\) を `Min {J. …}` と転写したが、Isabelle では範囲外 \(J\) で `Br M ! J` が nth-overflow の junk を返し集合が余有限になりうるため `Min`（`Min_le`/`Min_in` が finite 要求）が未定義同然になり、`LastStep M < Lng(Br M)` が `Br M ≠ []` だけからは証明できない。上界 \(J \le J_1\) を課すか、nat 上 total な `LEAST` に替えれば解消する。）
-
 ## A40. §5.3 基本列の定義中の型主張 \(G \in T_{PS}\) が \(j_0 = 0\) のとき偽 [軽微]
 
 ### 位置
@@ -920,6 +919,18 @@ $(M,m_0),(M,m_1)\in T_{\textrm{PS}}^{\textrm{Marked}}$ に対し、次は同値�
 型主張 \(G \in T_{\textrm{PS}}\) はこの場合に成り立たない。値そのもの（\(M[n] = G \oplus \cdots\)）は
 \(G = ()\) の読みで正しく、以降の議論も影響を受けないので、型主張を \(T_{\textrm{PS}} \cup \{()\}\) に
 広げるだけでよい。
+
+### 反例
+$$M = ((0,0),(1,1))$$
+
+\(j_1 = 1\)、\(M_{j_1} = (1,1) \neq (0,0)\)、\(i_1 = \max\{i \in \{0,1\} \mid M_{i,1} > 0\} = 1\)。
+行 \(1\) は \(M_{1,0} = 0 < 1 = M_{1,1}\) なので \((1,0) <_M^{\textrm{Next}} (1,1)\) であり、
+これを満たす \(j_0\) は \(j_0 = 0\) ただひとつ。よって記法の約束
+（\(i_0 > i_1\) のとき \((a_i)_{i=i_0}^{i_1} := ()\)）により \(G = (M_j)_{j=0}^{-1} = ()\) である。
+
+一方、原文の定式化の節（content.md 163）は「集合 \(M\) がペア数列であるとは、\(M\) が \(()\) でない
+\(\mathbb{N}^2\) 値配列であるということである」と定めており、\(T_{\textrm{PS}}\) は空列を含まない。
+したがってこの \(M\) に対し型主張 \(G \in T_{\textrm{PS}}\) は成り立たない。
 
 ## A41. §6.6 「\(RT_{\textrm{PS}} = \textrm{Im}(\textrm{Red})\)」は偽（\(\textrm{Red}\) の冪等性が \(T_{\textrm{PS}}\) で偽であるため）
 
