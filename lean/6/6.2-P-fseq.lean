@@ -136,7 +136,7 @@ private theorem nextrel0_drop_fseq (M : PS) (c a b : ℕ)
       have hs := hall (c + k) (List.mem_range.mpr (by omega))
       simpa [entry_drop, hab, hkb] using hs
 
-private theorem le0Aux_index_fseq {M : PS} {fuel a b : ℕ}
+theorem le0Aux_index_fseq {M : PS} {fuel a b : ℕ}
     (h : le0Aux M fuel a b = true) : a ≤ b := by
   induction fuel generalizing b with
   | zero =>
@@ -167,7 +167,7 @@ private theorem le0Aux_mono_succ_fseq (M : PS) (fuel a b : ℕ)
       · exact Or.inl h
       · exact Or.inr ⟨p, hpb, hpnext, ih p hap⟩
 
-private theorem le0Aux_mono_fseq (M : PS) (f g a b : ℕ) (hfg : f ≤ g)
+theorem le0Aux_mono_fseq (M : PS) (f g a b : ℕ) (hfg : f ≤ g)
     (h : le0Aux M f a b = true) : le0Aux M g a b = true := by
   induction g generalizing f with
   | zero =>
@@ -179,7 +179,7 @@ private theorem le0Aux_mono_fseq (M : PS) (f g a b : ℕ) (hfg : f ≤ g)
       · have hfg' : f ≤ g := by omega
         exact le0Aux_mono_succ_fseq M g a b (ih f hfg' h)
 
-private theorem le0Aux_bound_fseq (M : PS) (fuel a b : ℕ)
+theorem le0Aux_bound_fseq (M : PS) (fuel a b : ℕ)
     (h : le0Aux M fuel a b = true) : le0Aux M (b + 1) a b = true := by
   induction fuel generalizing b with
   | zero =>
@@ -259,7 +259,7 @@ private theorem le0_drop_fseq (M : PS) (c a b : ℕ)
     have hsmall := le0Aux_bound_fseq (M.drop c) (Lng M) a b hshift
     exact le0Aux_mono_fseq (M.drop c) (b + 1) (Lng M - c) a b (by omega) hsmall
 
-private theorem le0_index_fseq {M : PS} {a b : ℕ}
+theorem le0_index_fseq {M : PS} {a b : ℕ}
     (h : le0 M a b = true) : a ≤ b := by
   have hh := h
   simp only [le0, Bool.and_eq_true] at hh

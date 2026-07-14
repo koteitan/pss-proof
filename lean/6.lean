@@ -7,3 +7,6 @@ import «6».«6.2-P-components-nonmulti»
 import «6».«6.2-P-additivity»
 import «6».«6.2-P-fseq»
 import «6».«6.2-nonmulti-fseq»
+import «6».«6.3-adm-slice»
+import «6».«6.3-admof-slice»
+import «6».«6.3-marked-slice»

@@ -47,10 +47,7 @@
 - 🚨 **§6 ペア数列の基本性質**
   - ✅ §6.1 命題（`≤_M` の `IncrFirst` 不変性） — `6.1-le-IncrFirst-invariance`[r1]
   - ✅ §6.2 単項性[r8]
-  - 🚨 §6.3 許容性
-    - 🚨 命題（許容性の切片への遺伝性） — `6.3-adm-slice`
-    - 🚨 命題（許容化の切片への遺伝性） — `6.3-admof-slice`
-    - 🚨 命題（基点の切片への遺伝性） — `6.3-marked-slice`
+  - ✅ §6.3 許容性[r3]
   - 🚨 §6.4 幹と枝
     - 🚨 命題（`P` と `IdxSum` の関係） — `6.4-P-IdxSum`
     - 🚨 系（`P` と `IdxSum` の合成の特徴付け） — `6.4-P-IdxSum-characterization`
