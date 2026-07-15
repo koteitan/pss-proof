@@ -196,7 +196,9 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
     長1の簡約形が対角単要素と一致することを証明。Isa: `m_6_6_oneColumn`。[r1]
   - `6.6-ancestor-slice-Red-IncrFirst` — 訂正 **A2**（指数の添字 `m` が未定義 → `j'₀`）
     ＋ 訂正 **A5**（前提 `j′₀ ≤ TrMax` が弱すぎる。反例 113 件）
-  - `6.6-RT-image-of-Red` — 訂正 **A41**（`RT_PS = Im(Red)` は偽）。Isa: `m_6_6_*`
+  - ✅ `6.6-RT-image-of-Red` — 訂正 **A41** に従い、`Red` を `T_PS` に制限した像を
+    `RedImage` として定義し、成立する包含 `RT_PS ⊆ RedImage` を証明。逆包含は
+    `(0,0)(0,2)` の像 `(0,0)(2,2)` が非簡約である反例を `decide` で固定した。[r1]
   - `6.6-reduced-iff-condAB` — §6.6 のキーストーン。Isa: `reduced ⟺ RedCondA ∧ RedCondB`（無条件）
   - `6.7-standard-reduced` — `ST_PS ⊆ RT_PS`。Isa: `m_6_7_*`（e096355）。
     **`has_gz⟹D` / GTWF ルートは偽。escape readback で gate-free 化したのが正解**
