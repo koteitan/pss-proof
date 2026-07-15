@@ -73,7 +73,7 @@
     - 🚨 補題（簡約性と係数の基本性質） — `6.6-reduced-coeff`
     - ✅ 補題（簡約性と左端の関係） — `6.6-reduced-leftend`[r1]
     - ✅ 補題（条件(A)と(B)と係数の基本性質） — `6.6-condAB-coeff`[r1]
-    - 🚧 定理（任意の `T_PS` は二回の `Red` で簡約される） — `6.6-Red2`[r0]
+    - ✅ 定理（任意の `T_PS` は二回の `Red` で簡約される） — `6.6-Red2`[r1]
     - 🚨 系（直系先祖による切片と `Red` と `IncrFirst` の関係） — `6.6-ancestor-slice-Red-IncrFirst`
     - ✅ 系（`1` 列ペア数列の基本性質） — `6.6-one-column`[r1]
     - ✅ `RT_PS` と `Red` の像の関係 — `6.6-RT-image-of-Red`[r1]

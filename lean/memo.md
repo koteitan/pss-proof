@@ -241,12 +241,13 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
     復元する補題を証明。`Red_P_stable` と
     `RTPS M ↔ ∀ J < (P M).length, RTPS ((P M).getD J [])` の両方向を完成した。
     Isa: `m_6_6_Red_P_stable`, `m_6_6_P_reduced`。[r1]
-  - 🚧 `6.6-Red2` — §7 の全 `T_PS` 版に必要な Isabelle `y3r_RED2` を移植中。
-    第一段階として、非複項入力の `Red` が対角左端と内部の狭義 row-0 最小を持つこと、および
-    `Red M` の全 `P` 成分が対角左端を持つ不変条件 (D) を証明した。さらに、非複項・内部狭義最小・
-    左端非増加を満たすブロック列を `P` がちょうど元の境界で再分解するリスト補題を完成。
-    いずれも sorry 0、axioms は `[propext, Classical.choice, Quot.sound]`。残件は非複項入力に対する
-    一段 `Red` の既約性を接続し、(D) から `RTPS (Red X)`、最終的に `RTPS (Red (Red M))` を得る部分。[r0]
+  - ✅ `6.6-Red2` — Isabelle `y3r_RED2` を移植。非複項入力の `Red` に対し、
+    対角幹、枝ブロック、`TrMax` / `Br` / `Joints` / `branchNP` / `redNJ` の二回目不変性を
+    構成し、子枝の強帰納から `Red_nonmulti_RTPS` を完成した。また非複項・内部狭義
+    row-0 最小・左端非増加ブロック列を `P` が元の境界で再分解する補題と、
+    `Red M` の全 `P` 成分が対角左端を持つ不変条件 (D) を接続。公開定理
+    `Red2 : TPS M → RTPS (Red (Red M))` は sorry 0、axioms は
+    `[propext, Classical.choice, Quot.sound]`。Isa: `y3r_RED2`。[r1]
   - ✅ `6.7-standard-prefix` — `STPS ⊆ TPS` を生成規則で証明し、欠落列数に関する強帰納法を実装。
     真の始切片で `Pred M = oper M 1` を使って標準形を一段下げ、`Pred = take (Lng-1)` により
     元と一段下の始切片が一致することを示した。Isa: `m_6_7_standard_prefix`。[r1]
