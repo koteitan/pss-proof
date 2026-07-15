@@ -126,6 +126,8 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
   - ✅ `PSS/Scb.lean` — `Sym`, `flatBT`/`flatBP`, `RightNodes`, `isPTB_str`,
     `scb_decomp`, 第 0/1 種分解, `MarkedB`。flatten と右端 spine は相互構造再帰、
     principal 項の存在量化を含む分解条件は `Prop` として原定義を直接移植した。[r1]
+  - ✅ `PSS/Flat.lean` — 重み付き prefix 非負性から `flatBP` の prefix-free 性を示し、
+    `flatBT` の単射性と完全項文字列に付加できる接尾辞が空であることを証明。[r1]
   - ✅ `PSS/Trans.lean` — 実行可能な `unflatBT`/scb 文脈選択、条件 (I)–(VI)、
     燃料付き相互再帰 `Trans`/`Mark` を移植。A9 訂正後の添字を採用。
     **忠実性検証済**: 成分 `< 3`・長さ `≤ 3` の全 819 列について `Trans`、全添字の
@@ -257,6 +259,11 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
     文字列連結の結合則と右括弧 tail の閉性から直接証明。第 2 主張は訂正 A11 に従い
     `isPTB_str c` を仮定した `scb_compose_dprin` として証明し、無条件版が
     `t=0, c=[.zero]` で偽になる反例も固定した。Isa: `m_7_2_scb_compose`, `scbcomp_compose2_PT`。[r1]
+  - ✅ `7.2-scb-triviality` — `MarkedB` の witness と `flatBT` 単射性を使い、`t=c`、
+    全分解の前後文脈が空であること、空前置部の分解が存在することの三条件を同値化。
+    接尾辞側の逆向きは完全項文字列の prefix-free 性で閉じた。Isa: `m_7_2_scb_triviality`。[r1]
+  - `7.2-scb-unique` — 第 1 主張（固定した `c` に対する `(s,b)` の一意性）は、末尾の
+    連続右括弧数を数えて証明済。残る dom 判定・種の排他性・第 0/1 種分解全体の一意性は未完。
   - `7.2-scb-*` — 訂正 **A12**（選言が零項で空回り）、**A13**（系(3) 出現位置は同一とは限らない）
   - `7.2-scb-fseq` — 訂正 **A23**（脚注[30] の基本列の転置）。Isa: `m_7_2_scb_fseq_kind1_general`
   - `7.3-Trans-welldefined` — 訂正 **A15**（原文の測度は下がらない）。
