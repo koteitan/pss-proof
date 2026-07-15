@@ -357,6 +357,19 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
     全 4 ケース 780 例（120/120/420/120）で反例 0、既存の全 819 列チェックサムも
     `531635224` のまま一致。全 `lake build` は 3,019 jobs 成功。
     Isa: `m_8_1_Pred_diagSeq_Trans`, `p_8_1_Pred_diagSeq_Trans`。[r1]
+  - ✅ `8.6-const2nd-Trans` — 公差 `(1,0)` の一般列
+    `((m+j,u))_{j=0}^{j₁}` の `Red` が正規列 `((u+j,u))_{j=0}^{j₁}` になることを、
+    `RedCondA`・非複項性と `Red_rebase_nonmulti` から直接証明した。正規列については
+    一定な第 1 行から全添字の許容性を、第 0 行の連続辺から直前列が親であることを示し、
+    十分な任意燃料の `TransAux` を `j₁` で帰納した。非零段階の `c₁=D_u0`、
+    条件(I)/(III)による `c₂=D_u(D_u0)`、塔の最内側 scb 文脈を実行探索器に対して一般の
+    高さで固定し、parser の完全性から置換後が一段高い塔になることまで閉じた。
+    公開定理 `const2nd_Trans` は原文どおり `M` の明示定義と `TPS M` を受け、右辺を
+    関数反復 `(D_u)^[j₁+1] 0` で述べる。sorry 0、axioms は
+    `[propext, Classical.choice, Quot.sound]`。独立 Python モデルは
+    `0≤m,u,j₁≤4` の全 125 例（零 5、塔 120）で `Red`・`Trans` とも反例 0、既存の
+    全 819 列チェックサムも Lean/Python とも `531635224` のまま一致。全 `lake build` は
+    3,020 jobs 成功。Isa: `m_8_6_const2nd_Trans`, `p_8_6_const2nd_Trans`。[r1]
   - `8.1-condI-III-c1-around` — 訂正 **A20**（補題(1) は非簡約 1 列切片で偽）
     ＋ **A21**（補題(5) の条件(III)で `j₀ᴺ = j′₀` が偽）
   - `8.2-*` — `LastStep` の添字は A9 で訂正済みの形を使う。
