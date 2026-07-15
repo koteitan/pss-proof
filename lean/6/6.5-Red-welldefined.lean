@@ -323,7 +323,7 @@ def redNJ (M : PS) (J : ℕ) : PS :=
   let np := if entry block 1 0 = 0 then 0 else parent M 1 firstNode + 1
   (entry M 0 0 + joint + 1, entry M 1 0 + np) :: block.tail
 
-private theorem Br_component_TPS (M : PS) (J : ℕ) (hM : TPS M)
+theorem Br_component_TPS (M : PS) (J : ℕ) (hM : TPS M)
     (hJ : J < (Br M).length) : TPS ((Br M).getD J []) := by
   have hbound := TrMax_bound M hM
   have hne : TrMax M ≠ Lng M - 1 := by
@@ -387,7 +387,7 @@ private theorem trunk_row0_inc_core (M : PS) (j : ℕ) (hM : TPS M)
       have hih := ih (by omega)
       omega
 
-private theorem Joints_nextR_FirstNodes (M : PS) (J : ℕ)
+theorem Joints_nextR_FirstNodes (M : PS) (J : ℕ)
     (hM : TPS M) (hmono : monoT M = true)
     (hJ : J < (Br M).length) :
     nextR M 0 ((Joints M).getD J 0) ((FirstNodes M).getD J 0) = true := by
@@ -438,7 +438,7 @@ private theorem entry_cons_tail_pos (Q : PS) (x : ℕ × ℕ) (i j : ℕ)
       | zero => omega
       | succ j => simp [entry]
 
-private theorem redNJ_length (M : PS) (J : ℕ)
+theorem redNJ_length (M : PS) (J : ℕ)
     (hblock : TPS ((Br M).getD J [])) :
     Lng (redNJ M J) = Lng ((Br M).getD J []) := by
   unfold redNJ
@@ -455,7 +455,7 @@ private theorem redNJ_entry_hi (M : PS) (J j : ℕ)
       entry M 1 0 + if entry ((Br M).getD J []) 1 0 = 0 then 0
         else parent M 1 ((FirstNodes M).getD J 0) + 1) 0 j hjpos hj
 
-private theorem redNJ_multi_false (M : PS) (J : ℕ)
+theorem redNJ_multi_false (M : PS) (J : ℕ)
     (hM : TPS M) (hmono : monoT M = true)
     (hcore0 : entry M 0 0 = 0) (hJ : J < (Br M).length) :
     multiT (redNJ M J) = false := by
