@@ -410,7 +410,21 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
     全819列の既存 Trans/Mark チェックサムは Lean/Python とも `531635224` のまま一致し、
     全 `lake build` は3,031 jobs成功（3.70秒）。Isa: `Trans_Pred_multi_last`,
     `m_7_3_Pred_Trans_descend`, `scbext_lessBT`。[r1]
-  - `7.3-Mark-rightmost1` — 訂正 **A17**（零項基底で例外。反例あり）
+  - ✅ `7.3-Mark-rightmost1` — 訂正 **A17**。まず `m≤m'` の簡約基点に対して
+    `(Mark M m, Mark M m')∈MarkedB` となる入れ子補題を長さ強帰納で証明した。mono の
+    surgery 枝では、`Pred M` 上の帰納仮定から `c₁` の scb 文脈が必ず存在することを示し、
+    二つの `replaceScb_spec` を `scb_compose` と固定中央文字列の一意性で同期した。右端枝は
+    `c₂` に最終列の `D` が現れることを全4定義枝で構成した。これを使い、`c₂` の body が
+    常に非零、したがって flatten 長が3以上であることから、右端より前の `Mark` が長さ2の
+    `D_(entry M 1 m) 0` にはなれない `Mark_tail_nonzero` を得た。順向きは mono の公開再帰式と
+    multi の最終 `P` 成分への強帰納で閉じ、補正済み iff
+    `m_7_3_Mark_rightmost1` を完成。原文が `[(0,0)]` で失敗することも形式的反例として固定した。
+    公開定理は sorry 0、axioms は `[propext, Classical.choice, Quot.sound]`。独立 Python 監査は
+    成分 `<3`・長さ `≤4` の簡約286列、基点509件、入れ子770件で反例0。Lean 内監査は全819列
+    （簡約62列、基点101件、入れ子144件）で全4検査が反例0。既存の全819列チェックサムも
+    Lean/Python とも `531635224` のまま一致し、全 `lake build` は3,032 jobs成功（5.8秒）。
+    Isa: `Mark_MarkedB_nest`, `Mark_rightmost1_forward`, `Mark_tail_nonzero`,
+    `m_7_3_Mark_rightmost1`。[r1]
   - `7.3-Trans-preserves-monoT` — **原文は偽（A16）**。反例 `(0,0)(0,0)`。
     ❌ 停止性には不要。反例だけ機械証明して先に進む。
   - `7.4-Mark-nextAdm` — 訂正 **A18**（祖先 `j` に `(M,j) ∈ Marked` が要る）
