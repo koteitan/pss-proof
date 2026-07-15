@@ -110,7 +110,7 @@
     - ✅ 命題（`c₁` と `c₂` の大小関係） — `7.3-c1-c2-order`[r2]
     - ✅ 命題（`Pred` の `Trans` に関する降下性） — `7.3-Pred-Trans-descend`[r1]
     - ✅ 命題（右端第 `1` 基点の `Mark` の基本性質） — `7.3-Mark-rightmost1`[r1]
-    - 🚨 命題（`Trans` が単項性を保つこと） — `7.3-Trans-preserves-monoT`
+    - ✅ 命題（`Trans` が単項性を保つこと） — `7.3-Trans-preserves-monoT`[r1]
   - 🚨 §7.4 許容的親子関係
     - 🚨 命題（`Adm_M` と `<^NextAdm` の関係） — `7.4-Adm-nextAdm`
     - 🚨 命題（`Trans` と `<^NextAdm` の関係） — `7.4-Trans-nextAdm`

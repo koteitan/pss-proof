@@ -425,8 +425,19 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
     Lean/Python とも `531635224` のまま一致し、全 `lake build` は3,032 jobs成功（5.8秒）。
     Isa: `Mark_MarkedB_nest`, `Mark_rightmost1_forward`, `Mark_tail_nonzero`,
     `m_7_3_Mark_rightmost1`。[r1]
-  - `7.3-Trans-preserves-monoT` — **原文は偽（A16）**。反例 `(0,0)(0,0)`。
-    ❌ 停止性には不要。反例だけ機械証明して先に進む。
+  - ✅ `7.3-Trans-preserves-monoT` — 訂正 **A16**。原文は先頭 `P` 成分が零項のとき偽だが、
+    `RTPS M` かつ `zeroT ((P M).getD 0 []) = false` の訂正域では
+    `monoT M ↔ Lng (PB (Trans M)) = 1` を証明した。順向きの中核
+    `Trans_monoT_principal` は長さ強帰納で、mono の零前駆枝を直接 principal とし、surgery 枝では
+    `Pred M` の単項性を `monoT_Pred_long` へ下ろし、帰納仮定の principal `t₁` に
+    `replaceScb_principal` を適用した。逆向きは対偶を取り、multi 再帰式
+    `Trans M = Trans A + (D₀0 または Trans J)` の左右がとも非零であることを先頭 `P` 非零条件と
+    `Trans_preserves_zeroT` から示し、`PB` 長が2以上になるため1と矛盾させた。原文反例
+    `M=[(0,0),(0,0)]`（非 mono だが `Trans M=D₀0`）も kernel 計算で固定した。公開定理は sorry 0、
+    axioms は `[propext, Classical.choice, Quot.sound]`。独立 Python 監査は成分 `<3`・長さ `≤4` の
+    簡約286列中の訂正対象267列で反例0、Lean 内監査も全819列中の簡約62列・対象57列で反例0。
+    全819列チェックサムは `531635224` のまま、全 `lake build` は3,033 jobs成功（2.7秒）。
+    Isa: `Trans_PT_single`, `m_7_3_Trans_monoT`。[r1]
   - `7.4-Mark-nextAdm` — 訂正 **A18**（祖先 `j` に `(M,j) ∈ Marked` が要る）
     ＋ **A46/A47**（原文の `T_PS` 版は偽）。Isa: `y6z_7_4_Mark_nextAdm_TPS_false`
   - `7.4-Trans-nextAdm` — 訂正 **A45**（`T_PS` で偽）
