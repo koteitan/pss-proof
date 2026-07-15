@@ -238,6 +238,11 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
     ＋ 訂正 **A8**（`j₁` の式が off-by-one）
 
 - **§7 Buchholz の表記系への翻訳** — Isa: `m_7_*`。§7 全節証明済み。
+  - ✅ `7.1-lessBT-linear-order` — `BT`・`BP`・`List BP` の三者に対する相互再帰補題として、
+    `lessBT`/`lessBP`/`lessBPList` の反射律否定、推移律、三分律を直接証明した。
+    定義層の mutual inductive 自動 `BEq` は opaque で `LawfulBEq` を導出できなかったため、
+    同値な透明相互再帰比較器と等値反映則を `PSS/Buchholz.lean` に明示した。
+    Isa: `m_7_1_lessBT_linord`。[r1]
   - ✅ `7.1-term-components` — `BT.trm ps` に場合分けし、`PB` の空性が `ps=[]` と同値であることと、
     各 principal を singleton 項へ写してから `flatMap untrm` すると元の `ps` に戻ることをリスト帰納で証明。
     `T_B` 前提に依存しない定義上の恒等式として原文の (1)(2) を同時に得た。Isa: `m_7_1_term_components`。[r1]
