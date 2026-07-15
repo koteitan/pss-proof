@@ -183,6 +183,9 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
       A4 非依存の前向き定理は `nu` 強帰納法で、core 非 trunk の枝ブロック下界、row-0 shift の
       再帰、正の `m₁₀` 分岐の `monoT_Red_m10pos` を組み合わせた。係留切片が零項または単項で
       あることから逆向きを導き、原文 `TPS` 版の反例 `(0,0)(0,1)` も `decide` で固定した。[r1]
+    - ✅ `6.5-P-Red-equivariance` — `anchoredSlice` とその `Red` がともに非複項であることを上の
+      零項・単項分解と単項性保存から示し、`P_nonmulti_eq` で両辺を `[Red M]` に簡約した。
+      原文 `TPS` 版の同じ反例 `(0,0)(0,1)` も `decide` で固定した。[r1]
   - `6.6-ancestor-slice-Red-IncrFirst` — 訂正 **A2**（指数の添字 `m` が未定義 → `j'₀`）
     ＋ 訂正 **A5**（前提 `j′₀ ≤ TrMax` が弱すぎる。反例 113 件）
   - `6.6-RT-image-of-Red` — 訂正 **A41**（`RT_PS = Im(Red)` は偽）。Isa: `m_6_6_*`
