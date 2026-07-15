@@ -370,6 +370,18 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
     `0≤m,u,j₁≤4` の全 125 例（零 5、塔 120）で `Red`・`Trans` とも反例 0、既存の
     全 819 列チェックサムも Lean/Python とも `531635224` のまま一致。全 `lake build` は
     3,020 jobs 成功。Isa: `m_8_6_const2nd_Trans`, `p_8_6_const2nd_Trans`。[r1]
+  - ✅ `8.6-diagSeq-Trans-fseq` — 対角列 `diagSeq u (u+j₁)`（`1<j₁`）の基本列を、
+    第0行 `u+j`・第1行 `min (u+j) (u+j₁-1)` で表す正規展開列 `runSeq` として定義し、
+    `oper` の逐語定義から両者の一致を証明した。展開列では第0行の親が常に直前列、
+    第1行の親が対角部では直前列・定数部では対角部右端となることを示し、条件(A)(B)から
+    簡約性を直接導いた。十分な任意燃料の `TransAux` を定数部の長さで帰納し、右端基点
+    `c₁=D_p0`（`p=u+j₁-1`）、条件(III)による `c₂=D_p(D_p0)`、最内側 scb の実行探索と
+    parser 完全性を接続して `Trans(runSeq u p n)=D_u(D_p^n0)` を得た。公開定理
+    `diagSeq_Trans_fseq` は記事どおり `M` の明示定義・`TPS M`・`0<n`・`1<j₁` を受ける。
+    sorry 0、axioms は `[propext, Classical.choice, Quot.sound]`。独立 Python モデルは
+    `0≤u≤4, 2≤j₁≤6, 1≤n≤4` の全100例で `oper/runSeq`・`Red`・`Trans` とも反例0。
+    既存の全819列チェックサムも `531635224` のまま一致し、全 `lake build` は3,021 jobs成功。
+    Isa: `m_8_6_diagSeq_Trans_oper`, `p_8_6_diagSeq_Trans_oper`。[r1]
   - `8.1-condI-III-c1-around` — 訂正 **A20**（補題(1) は非簡約 1 列切片で偽）
     ＋ **A21**（補題(5) の条件(III)で `j₀ᴺ = j′₀` が偽）
   - `8.2-*` — `LastStep` の添字は A9 で訂正済みの形を使う。

@@ -153,7 +153,7 @@
     - 🚨 補題（条件(V)の下での基本列の scb 分解） — `8.5-fseq-scb-decomposition`
   - 🚨 §8.6 条件(VI)の下での展開規則
     - ✅ 補題（公差 `(1,0)` のペア数列の `Trans` の基本性質） — `8.6-const2nd-Trans` [r1]
-    - 🚨 補題（公差 `(1,1)` のペア数列の `Trans` の展開規則） — `8.6-diagSeq-Trans-fseq`
+    - ✅ 補題（公差 `(1,1)` のペア数列の `Trans` の展開規則） — `8.6-diagSeq-Trans-fseq` [r1]
     - 🚨 補題（順序数項の末尾単項の零化可能性） — `8.6-trailing-principal-annihilable`
     - 🚨 命題（条件(VI)の下での `Trans` と基本列の交換関係） — `8.6-Trans-fseq-condVI`
   - 🚨 §8.7 主結果
