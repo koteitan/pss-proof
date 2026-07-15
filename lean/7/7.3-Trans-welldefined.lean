@@ -6,6 +6,7 @@ import «6».«6.6-reduced-leftend»
 import «6».«6.6-condAB-coeff»
 import «6».«6.6-one-column»
 import «6».«6.6-Red2»
+import «6».«6.6-reduced-iff-condAB»
 import «7».«7.2-scb-replaceable»
 import «7».«7.2-scb-compose»
 import «7».«7.2-add-scb»

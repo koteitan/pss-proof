@@ -216,13 +216,17 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
   - ✅ `6.6-RT-image-of-Red` — 訂正 **A41** に従い、`Red` を `T_PS` に制限した像を
     `RedImage` として定義し、成立する包含 `RT_PS ⊆ RedImage` を証明。逆包含は
     `(0,0)(0,2)` の像 `(0,0)(2,2)` が非簡約である反例を `decide` で固定した。[r1]
-  - 🚧 `6.6-reduced-iff-condAB` — §6.6 のキーストーン。Isa: `reduced ⟺ RedCondA ∧ RedCondB`（無条件）。Lean では逆向き `RedCondA∧RedCondB → RTPS` を完成済み。複項は全 `P` 成分が真に短いことから長さ強帰納し、非複項は `Red_rebase_nonmulti` へ落とした。併せて、末尾未満の `take` が `nextR` と親を保つことから `RedCondA_Pred` / `RedCondB_Pred` を証明済み（sorry 0）。残りは順向き `RTPS → RedCondA∧RedCondB` の mono/core 部分。
-    `6.6-P-condAB` で `P` ブロック左端を親辺が越えないことを
-    `P_leftend_lmin + ancestor_basic_1` から証明し、親のオフセット対応、
-    `RedCondAB_P_component`, `RedCondAB_of_P_components` を完成。A3 の
-    `RTPS_iff_P_components` と組み合わせ、多成分の再帰粘合補題
-    `RTPS_iff_condAB_multi` まで接続済み。残件は非零単項の前向き
-    `RTPS → RedCondA`。[r0]
+  - ✅ `6.6-reduced-iff-condAB` — §6.6 のキーストーン
+    `RTPS M ↔ RedCondA M = true ∧ RedCondB M = true` を無条件で完成。逆向きは複項の
+    `P` 成分への長さ強帰納と非複項の `Red_rebase_nonmulti`、順向きは
+    `Pred` と末尾条件の同一強帰納で証明した。非幹分岐は RED2 の最終枝を取り出し、
+    その簡約像に row-1 左端まで対角接頭辞を補った core 列が元より真に短いことを
+    `branchNP` / `FirstNodes` / `IdxSum` から導いて帰納仮定を適用。枝内の親と係数を
+    `seg` で戻し、row-0 跨ぎは親の一意性、row-1 跨ぎは最後の結節と幹の対角性で処理。
+    公開定理 `RTPS_condAB`, `RTPS_iff_condAB` は Kimina `rc=0`, sorry 0、axioms は
+    `[propext, Classical.choice, Quot.sound]`。`python/red_66_audit.py` の 7,380 列で反例 0、
+    全 `lake build` は 3,038 jobs 成功（31.45秒）。Isa: `p_6_6_reduced_iff_cond`,
+    `kst_reduced_imp_condAB_uncond`。[r1]
   - ✅ `6.6-condAB-coeff` — 親なし上段係数の零性を `parent_exists_1`、親なし下段係数の零性を
     `P` 成分の左端と成分内単項性から証明。燃料付き `le1Aux` の親辺延長も機械化し、条件(A)下の
     上段添字上界、条件(B)を加えた上下段比較、祖先関係に欠損がある場合の狭義添字上界を

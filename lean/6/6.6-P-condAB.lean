@@ -11,6 +11,56 @@ import «6».«6.5-Red-le-invariance»
 
 namespace PSS
 
+theorem no_parent_zero (M : PS) (i : ℕ) : hasParent M i 0 = false := by
+  apply Bool.eq_false_iff.mpr
+  intro hp
+  have hn := hasParent_next_fseq M i 0 hp
+  by_cases hi : i = 0
+  · simp [nextR, hi, nextrel0] at hn
+  · simp [nextR, hi, nextrel1] at hn
+
+theorem RedCondB_apply (M : PS) (hM : TPS M)
+    (hB : RedCondB M = true) (j : ℕ) (hj : j < Lng M)
+    (hnp : hasParent M 0 j = false) :
+    entry M 0 j = entry M 1 j := by
+  have hh := hB
+  simp only [RedCondB, List.all_eq_true, List.mem_range] at hh
+  have hpos : 0 < Lng M := List.length_pos_of_ne_nil hM
+  have hj' : j < Lng M - 1 + 1 := by omega
+  have hjB := hh j hj'
+  simpa [hnp] using hjB
+
+theorem RedCondB_head_eq (M : PS) (hM : TPS M)
+    (hB : RedCondB M = true) :
+    entry M 0 0 = entry M 1 0 := by
+  exact RedCondB_apply M hM hB 0 (List.length_pos_of_ne_nil hM)
+    (no_parent_zero M 0)
+
+/-- The only genuinely new column in a `Pred` induction for condition (A)
+is the final one.  This predicate isolates that local obligation. -/
+def RedCondATop (M : PS) : Prop :=
+  ∀ i, i < 2 → hasParent M i (Lng M - 1) = true →
+    entry M i (parent M i (Lng M - 1)) + 1 =
+      entry M i (Lng M - 1)
+
+/-- Every positive column of a mono sequence has a row-zero parent. -/
+theorem mono_hasParent_row0 (M : PS) (hM : TPS M)
+    (hmono : monoT M = true) (j : ℕ)
+    (hjpos : 0 < j) (hjL : j < Lng M) :
+    hasParent M 0 j = true := by
+  have hfull : leR M 0 0 (Lng M - 1) = true := by
+    have hh := hmono
+    simp only [monoT, Bool.and_eq_true] at hh
+    exact hh.2
+  have hjlast : j ≤ Lng M - 1 := by omega
+  have hanc := ancestor_tree_1 M 0 j (Lng M - 1) hM hfull
+    (Nat.zero_le _) hjlast
+  have hstrict := ancestor_basic_1 M 0 j j hM hjpos (le_refl _) hanc
+  rcases parent_exists_1 M 0 j hM hjpos hjL hstrict with
+    ⟨p, hp0, hpj, hp⟩
+  exact (hasParent_iff_unique_fseq M 0 j).mpr
+    ⟨p, hp, fun q hq => row0_parent_unique M q p j hq hp⟩
+
 /-- `P M` のブロックは `IdxSum` から始まる非空の切片である。 -/
 theorem P_block_data (M : PS) (J : ℕ) (hM : TPS M)
     (hJ : J < (P M).length) :

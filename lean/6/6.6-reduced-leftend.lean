@@ -596,11 +596,36 @@ theorem RTPS_diag_prefix (M : PS) (u : ℕ) (hR : RTPS M)
     simp [RTPS, reduced, hne, hredN]
   simpa [N, m] using And.intro hRT hmonoN
 
+/-- Condition (A) on a sequence with a nonempty diagonal prefix descends to
+the original suffix.  This packages the suffix as a `seg`, so all parent
+bookkeeping at the prefix/suffix junction is discharged by `RedCondA_seg`. -/
+theorem RedCondA_of_diag_prefix (M : PS) (m : ℕ) (hM : TPS M)
+    (hm : 0 < m)
+    (hA : RedCondA (diagSeq 0 (m - 1) ++ M) = true) :
+    RedCondA M = true := by
+  let N := diagSeq 0 (m - 1) ++ M
+  have hMpos : 0 < Lng M := List.length_pos_of_ne_nil hM
+  have hDlen : Lng (diagSeq 0 (m - 1)) = m := by
+    simp [diagSeq]
+    omega
+  have hNlen : Lng N = m + Lng M := by simp [N, hDlen]
+  have hmN : m < Lng N := by omega
+  have hmend : m ≤ Lng N - 1 := by omega
+  have hend : Lng N - 1 < Lng N := by omega
+  have hseg := RedCondA_seg N m (Lng N - 1) hmend hend
+    (by simpa [N] using hA)
+  have hdrop : N.drop m = M := by simp [N, hDlen]
+  calc
+    RedCondA M = RedCondA (N.drop m) := by rw [hdrop]
+    _ = RedCondA (seg N m (Lng N - 1)) := by rw [drop_eq_seg N m hmN]
+    _ = true := hseg
+
 #print axioms Red_diag_eq_coreReduce
 #print axioms Red_eq_coreReduce_suffix
 #print axioms Red_coreReduce_eq_diag_Red
 #print axioms Red_diag_prefix
 #print axioms monoT_diag_prefix
 #print axioms RTPS_diag_prefix
+#print axioms RedCondA_of_diag_prefix
 
 end PSS

@@ -1,5 +1,6 @@
 import «8».«8.1-diagSeq-Trans»
 import «6».«6.6-condAB-coeff»
+import «6».«6.6-reduced-iff-condAB»
 
 /-!
 # §8.1 系（`Pred` が対角列である場合の `Trans`）

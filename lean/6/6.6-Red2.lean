@@ -953,6 +953,291 @@ private theorem redNJ_Red_core_nontrunk (M : PS) (J : ℕ)
     ← red2BranchBlock_head_row1 M J hM hcore.2 hJ]
   exact cons_entries_tail B hBT
 
+/-- The final branch component occupies the suffix beginning at its
+`FirstNodes` index. -/
+private theorem Br_last_eq_seg_red2 (M : PS) (hM : TPS M)
+    (ht : TrMax M ≠ Lng M - 1) :
+    let J := (Br M).length - 1
+    (Br M).getD J [] =
+      seg M ((FirstNodes M).getD J 0) (Lng M - 1) := by
+  let J := (Br M).length - 1
+  let s := TrMax M + 1
+  let N := seg M s (Lng M - 1)
+  have hBrne : Br M ≠ [] := by simp [Br, ht, P_nonempty]
+  have hJ : J < (Br M).length := by
+    have hBrpos := List.length_pos_of_ne_nil hBrne
+    dsimp [J]
+    omega
+  have htrlt : TrMax M < Lng M - 1 := by
+    have hb := TrMax_bound M hM
+    omega
+  have hsL : s < Lng M := by dsimp [s]; omega
+  have hNpos : 0 < Lng N := by simp [N, s]; omega
+  have hNT : TPS N := List.ne_nil_of_length_pos hNpos
+  have hBr : Br M = P N := by simp [Br, N, s, ht]
+  have hJP : J < (P N).length := by simpa [hBr] using hJ
+  let a := (IdxSum (P N)).getD J 0
+  have hcomp := P_IdxSum N J hNT (by omega : J ≤ (P N).length - 1)
+  have htotal : (IdxSum (P N)).getD (P N).length 0 = Lng N := by
+    calc
+      (IdxSum (P N)).getD (P N).length 0 = Lng (P N).flatten :=
+        idxSum_total (P N)
+      _ = Lng N := congrArg Lng (P_concat N)
+  have hJs : J + 1 = (P N).length := by
+    dsimp [J]
+    rw [← hBr]
+    omega
+  have haL : a < Lng N := by
+    have hpos := P_component_nonempty N J hNT hJP
+    have hdiff := idxSum_diff (P N) J hJP
+    dsimp [a]
+    rw [hJs, htotal] at hdiff
+    omega
+  have hblockDrop : (P N).getD J [] = N.drop a := by
+    calc
+      (P N).getD J [] =
+          seg N a ((IdxSum (P N)).getD (J + 1) 0 - 1) := by
+            simpa [a] using hcomp
+      _ = seg N a (Lng N - 1) := by rw [hJs, htotal]
+      _ = N.drop a := (drop_eq_seg N a haL).symm
+  have hNdrop : N = M.drop s := by
+    symm
+    simpa [N] using drop_eq_seg M s hsL
+  have hoff : (FirstNodes M).getD J 0 = s + a := by
+    rw [FirstNodes_getD M J hJ, hBr]
+  calc
+    (Br M).getD J [] = (P N).getD J [] := by rw [hBr]
+    _ = N.drop a := hblockDrop
+    _ = (M.drop s).drop a := by rw [hNdrop]
+    _ = M.drop (s + a) := by rw [List.drop_drop]
+    _ = seg M (s + a) (Lng M - 1) := drop_eq_seg M (s + a) (by
+      have hNlen : Lng N = Lng M - s := by
+        simp [N]
+        omega
+      omega)
+    _ = seg M ((FirstNodes M).getD J 0) (Lng M - 1) := by rw [hoff]
+
+private theorem Br_eq_red2BranchBlocks_of_RTPS_core (M : PS)
+    (hR : RTPS M) (hmono : monoT M = true)
+    (hcore : entry M 0 0 = 0 ∧ entry M 1 0 = 0)
+    (ht : TrMax M ≠ Lng M - 1) :
+    Br M = red2BranchBlocks M := by
+  have hM := RTPS_TPS M hR
+  have hBr := Br_Red_core_nontrunk M hM hmono hcore ht
+  rw [RTPS_Red_eq M hR] at hBr
+  exact hBr
+
+private theorem Br_component_eq_red2BranchBlock_of_RTPS_core (M : PS)
+    (J : ℕ) (hR : RTPS M) (hmono : monoT M = true)
+    (hcore : entry M 0 0 = 0 ∧ entry M 1 0 = 0)
+    (ht : TrMax M ≠ Lng M - 1) (hJ : J < (Br M).length) :
+    (Br M).getD J [] = red2BranchBlock M J := by
+  have hBr := Br_eq_red2BranchBlocks_of_RTPS_core M hR hmono hcore ht
+  rw [hBr, red2BranchBlocks_getD M J hJ]
+
+/-- A row-one parent entering the final branch from the left lies no later
+than that branch's row-zero joint. -/
+private theorem row1_parent_le_last_joint (M : PS) (hM : TPS M)
+    (hmono : monoT M = true) (ht : TrMax M ≠ Lng M - 1)
+    (hp : hasParent M 1 (Lng M - 1) = true)
+    (hcross : parent M 1 (Lng M - 1) <
+      (FirstNodes M).getD ((Br M).length - 1) 0) :
+    parent M 1 (Lng M - 1) ≤
+      (Joints M).getD ((Br M).length - 1) 0 := by
+  let J := (Br M).length - 1
+  let j := Lng M - 1
+  let p := parent M 1 j
+  let f := (FirstNodes M).getD J 0
+  let a := (Joints M).getD J 0
+  have hBrne : Br M ≠ [] := by simp [Br, ht, P_nonempty]
+  have hJ : J < (Br M).length := by
+    have hpos := List.length_pos_of_ne_nil hBrne
+    dsimp [J]
+    omega
+  have hjL : j < Lng M := by
+    have hpos : 0 < Lng M := List.length_pos_of_ne_nil hM
+    change Lng M - 1 < Lng M
+    omega
+  have hnext1 : nextR M 1 p j = true := by
+    simpa [p, j] using hasParent_next_fseq M 1 (Lng M - 1) hp
+  have hpj := (nextR_implies_row0 M 1 p j hnext1).1
+  have hpj0 := (nextR_implies_row0 M 1 p j hnext1).2
+  have hnext0 : nextR M 0 a f = true := by
+    simpa [a, f] using Joints_nextR_FirstNodes M J hM hmono hJ
+  have hfL := (nextR_implies_row0 M 0 a f hnext0).2
+  have hflt : f < Lng M := by
+    have hh := hnext0
+    simp only [nextR, if_pos, nextrel0, Bool.and_eq_true,
+      decide_eq_true_eq] at hh
+    exact hh.1.1.1.2
+  have hfj : f ≤ j := by dsimp [j]; omega
+  have hpf : p < f := by simpa [p, f, j, J] using hcross
+  have hp0f : leR M 0 p f = true :=
+    ancestor_tree_1 M p f j hM hpj0 hpf.le hfj
+  have hep : entry M 0 p < entry M 0 f :=
+    ancestor_basic_1 M p f f hM hpf (le_refl _) hp0f
+  have hpa : p ≤ a := nextR0_largest_below M a p f hnext0 hpf hep
+  simpa [p, a, j, J] using hpa
+
+private theorem last_branch_le0 (M : PS) (hR : RTPS M)
+    (hmono : monoT M = true)
+    (hcore : entry M 0 0 = 0 ∧ entry M 1 0 = 0)
+    (ht : TrMax M ≠ Lng M - 1)
+    (hlong : 1 < Lng (redNJ M ((Br M).length - 1))) :
+    leR M 0 ((FirstNodes M).getD ((Br M).length - 1) 0)
+      (Lng M - 1) = true := by
+  let J := (Br M).length - 1
+  let B := (Br M).getD J []
+  let f := (FirstNodes M).getD J 0
+  let j := Lng M - 1
+  have hM := RTPS_TPS M hR
+  have hBrne : Br M ≠ [] := by simp [Br, ht, P_nonempty]
+  have hJ : J < (Br M).length := by
+    have hpos := List.length_pos_of_ne_nil hBrne
+    dsimp [J]
+    omega
+  have hBT : TPS B := by simpa [B] using Br_component_TPS M J hM hJ
+  have hBL : 1 < Lng B := by
+    have hlen := redNJ_length M J (by simpa [B] using hBT)
+    simpa [B, J] using hlong.trans_eq hlen
+  have hBmono : monoT B = true := by
+    rcases Br_component_nonmulti M J hM hJ with hz | hm
+    · have hh := hz
+      simp only [zeroT, Bool.and_eq_true, beq_iff_eq] at hh
+      have hOne : Lng B = 1 := by simpa [B] using hh.1
+      omega
+    · simpa [B] using hm
+  have hfull : leR B 0 0 (Lng B - 1) = true := by
+    have hh := hBmono
+    simp only [monoT, Bool.and_eq_true] at hh
+    exact hh.2
+  have hseg : B = seg M f j := by
+    simpa [B, f, j, J] using Br_last_eq_seg_red2 M hM ht
+  have hjL : j < Lng M := by
+    have hpos : 0 < Lng M := List.length_pos_of_ne_nil hM
+    change Lng M - 1 < Lng M
+    omega
+  have hfL : f < Lng M := by
+    have hnext := Joints_nextR_FirstNodes M J hM hmono hJ
+    have hh := hnext
+    simp only [nextR, if_pos, nextrel0, Bool.and_eq_true,
+      decide_eq_true_eq] at hh
+    simpa [f] using hh.1.1.1.2
+  have hfj : f ≤ j := by dsimp [j]; omega
+  have hseg0 : 0 < Lng (seg M f j) := by rw [← hseg]; exact List.length_pos_of_ne_nil hBT
+  have hsegLast : Lng B - 1 < Lng (seg M f j) := by rw [← hseg]; omega
+  have hshift := leR0_seg_adm M f j 0 (Lng B - 1) hfj hjL hseg0 hsegLast
+  have hend : f + (Lng B - 1) = j := by
+    have hlen : Lng B = j + 1 - f := by simp [hseg]
+    omega
+  have hh : leR (seg M f j) 0 0 (Lng B - 1) = true := by
+    rw [← hseg]
+    exact hfull
+  rw [hshift] at hh
+  have hh' : leR M 0 f j = true := by
+    simpa only [Nat.add_zero, hend] using hh
+  simpa [f, j, J] using hh'
+
+/-- The difficult row-one cross-branch case at the last column.  The parent
+is first pinned below the last joint, after which the trunk value and the
+minimality clause of `nextrel1` leave only a unit gap. -/
+private theorem row1_cross_last_step (M : PS) (hR : RTPS M)
+    (hmono : monoT M = true)
+    (hcore : entry M 0 0 = 0 ∧ entry M 1 0 = 0)
+    (ht : TrMax M ≠ Lng M - 1)
+    (hlong : 1 < Lng (redNJ M ((Br M).length - 1)))
+    (hp : hasParent M 1 (Lng M - 1) = true)
+    (hcross : parent M 1 (Lng M - 1) <
+      (FirstNodes M).getD ((Br M).length - 1) 0) :
+    entry M 1 (parent M 1 (Lng M - 1)) + 1 =
+      entry M 1 (Lng M - 1) := by
+  let J := (Br M).length - 1
+  let j := Lng M - 1
+  let p := parent M 1 j
+  let f := (FirstNodes M).getD J 0
+  let a := (Joints M).getD J 0
+  have hM := RTPS_TPS M hR
+  have hBrne : Br M ≠ [] := by simp [Br, ht, P_nonempty]
+  have hJ : J < (Br M).length := by
+    have hpos := List.length_pos_of_ne_nil hBrne
+    dsimp [J]
+    omega
+  have hpa : p ≤ a := by
+    simpa [p, a, j, f, J] using
+      row1_parent_le_last_joint M hM hmono ht hp hcross
+  have haTr : a ≤ TrMax M := by
+    simpa [a] using (FirstNodes_TrMax_Joints M J hM hmono hJ).1
+  have hpTr : p ≤ TrMax M := hpa.trans haTr
+  have hep : entry M 1 p = p := by
+    have hh := Red_core_prefix_diag M hmono hcore 1 p hpTr
+    rw [RTPS_Red_eq M hR] at hh
+    exact hh
+  have hnext : nextR M 1 p j = true := by
+    simpa [p, j] using hasParent_next_fseq M 1 (Lng M - 1) hp
+  have hnr : nextrel1 M p j = true := by simpa [nextR] using hnext
+  have hnr' := hnr
+  simp only [nextrel1, Bool.and_eq_true, decide_eq_true_eq,
+    List.all_eq_true, List.mem_range] at hnr'
+  have hpval : p < entry M 1 j := by
+    have hs := hnr'.1.1.2
+    rw [hep] at hs
+    exact hs
+  have hminimal : ∀ q, p < q → le0 M q j = true →
+      entry M 1 j ≤ entry M 1 q := by
+    intro q hpq hq
+    have hqL : q < Lng M := by
+      have hh := hq
+      simp only [le0, Bool.and_eq_true, decide_eq_true_eq] at hh
+      exact hh.1.1
+    have hm := hnr'.2 q hqL
+    simp [hpq, hq] at hm
+    exact hm
+  have hupper : entry M 1 j ≤ p + 1 := by
+    by_cases hplt : p < a
+    · have hqA : p + 1 ≤ a := by omega
+      have hqTr : p + 1 ≤ TrMax M := hqA.trans haTr
+      have heq : entry M 1 (p + 1) = p + 1 := by
+        have hh := Red_core_prefix_diag M hmono hcore 1 (p + 1) hqTr
+        rw [RTPS_Red_eq M hR] at hh
+        exact hh
+      have hqj : p + 1 < j := by
+        have htrlt : TrMax M < Lng M - 1 := by
+          have hb := TrMax_bound M hM
+          omega
+        dsimp [j]
+        omega
+      have hq0j : leR M 0 (p + 1) j = true := by
+        apply slice_le0_to_index M (p + 1) j hM hmono hBrne
+        · simpa [a, J] using hqA
+        · exact hqj
+        · dsimp [j]
+          exact le_rfl
+      have hq0j' : le0 M (p + 1) j = true := by simpa [leR] using hq0j
+      have hh := hminimal (p + 1) (by omega) hq0j'
+      rwa [heq] at hh
+    · have hpeq : p = a := by omega
+      have hlefj : leR M 0 f j = true := by
+        simpa [f, j, J] using last_branch_le0 M hR hmono hcore ht hlong
+      have hlefj' : le0 M f j = true := by simpa [leR] using hlefj
+      have hpf : p < f := by simpa [p, f, j, J] using hcross
+      have hB := Br_component_eq_red2BranchBlock_of_RTPS_core
+        M J hR hmono hcore ht hJ
+      have heoff : entry M 1 f = branchNP M J := by
+        calc
+          entry M 1 f = entry ((Br M).getD J []) 1 0 := by
+            simpa [f] using entry_FirstNodes_eq_component_mr M J 1 hM hJ
+          _ = entry (red2BranchBlock M J) 1 0 := by rw [hB]
+          _ = branchNP M J :=
+            red2BranchBlock_head_row1 M J hM hcore.2 hJ
+      have hnp : branchNP M J ≤ a + 1 := by
+        simpa [a, branchNP] using
+          redNJ_np_le_joint M J hM hmono hcore.2 hJ
+      have hh := hminimal f hpf hlefj'
+      rw [heoff] at hh
+      omega
+  have hres : entry M 1 j = p + 1 := by omega
+  rw [hep, hres]
+
 private theorem Red_core_nontrunk_RTPS (M : PS) (hM : TPS M)
     (hmono : monoT M = true)
     (hcore : entry M 0 0 = 0 ∧ entry M 1 0 = 0)
@@ -1038,6 +1323,272 @@ theorem Red_nonmulti_RTPS (M : PS) (hM : TPS M)
     (fun X hXT hmono hcore ht hchildren =>
       Red_core_nontrunk_RTPS X hXT hmono hcore ht hchildren)
     M hM hnm
+
+/-- The non-trunk final-column case of the forward §6.6 keystone.  All
+strictly smaller reduced images are supplied by the surrounding length
+induction; RED2's branch decomposition handles the only cross-branch edge. -/
+theorem RTPS_mono_core_nontrunk_RedCondATop_of_smaller (M : PS)
+    (hR : RTPS M) (hmono : monoT M = true)
+    (hcore : entry M 0 0 = 0 ∧ entry M 1 0 = 0)
+    (ht : TrMax M ≠ Lng M - 1)
+    (IH : ∀ X, RTPS X → monoT X = true →
+      entry X 0 0 = 0 → entry X 1 0 = 0 →
+      Lng X < Lng M → RedCondA X = true) :
+    RedCondATop M := by
+  let J := (Br M).length - 1
+  let B := (Br M).getD J []
+  let N := redNJ M J
+  let R := Red N
+  let f := (FirstNodes M).getD J 0
+  let a := (Joints M).getD J 0
+  let j := Lng M - 1
+  let k := Lng B - 1
+  have hM := RTPS_TPS M hR
+  have hMpos : 0 < Lng M := List.length_pos_of_ne_nil hM
+  have hBrne : Br M ≠ [] := by simp [Br, ht, P_nonempty]
+  have hJ : J < (Br M).length := by
+    have hpos := List.length_pos_of_ne_nil hBrne
+    dsimp [J]
+    omega
+  have hBT : TPS B := by simpa [B] using Br_component_TPS M J hM hJ
+  have hNJT : TPS N := by
+    apply List.ne_nil_of_length_pos
+    change 0 < Lng N
+    have hlen := redNJ_length M J (by simpa [B] using hBT)
+    rw [hlen]
+    exact List.length_pos_of_ne_nil hBT
+  have hBred : B = red2BranchBlock M J := by
+    simpa [B] using Br_component_eq_red2BranchBlock_of_RTPS_core
+      M J hR hmono hcore ht hJ
+  have hseg : B = seg M f j := by
+    simpa [B, f, j, J] using Br_last_eq_seg_red2 M hM ht
+  have hjL : j < Lng M := by dsimp [j]; omega
+  have hnext0 := Joints_nextR_FirstNodes M J hM hmono hJ
+  have hfL : f < Lng M := by
+    have hh := hnext0
+    simp only [nextR, if_pos, nextrel0, Bool.and_eq_true,
+      decide_eq_true_eq] at hh
+    simpa [f] using hh.1.1.1.2
+  have hfj : f ≤ j := by dsimp [j]; omega
+  have hend : f + k = j := by
+    have hlen : Lng B = j + 1 - f := by simp [hseg]
+    dsimp [k]
+    omega
+  have hNlen : Lng N = Lng B := by
+    simpa [N, B] using redNJ_length M J (by simpa [B] using hBT)
+  have hRlen : Lng R = Lng B := by
+    calc
+      Lng R = Lng N := by simpa [R] using Lng_Red_invariance N hNJT
+      _ = Lng B := hNlen
+  have hNJnm : multiT N = false := by
+    simpa [N] using redNJ_multi_false M J hM hmono hcore.1 hJ
+  have hRR : RTPS R := by
+    simpa [R] using Red_nonmulti_RTPS N hNJT hNJnm
+  have he0f : entry M 0 f = a + 1 := by
+    calc
+      entry M 0 f = entry B 0 0 := by
+        simpa [B, f] using entry_FirstNodes_eq_component_mr M J 0 hM hJ
+      _ = entry (red2BranchBlock M J) 0 0 := by rw [hBred]
+      _ = a + 1 := by
+        simpa [a] using red2BranchBlock_head M J hM hmono hcore hJ
+  have he1f : entry M 1 f = branchNP M J := by
+    calc
+      entry M 1 f = entry B 1 0 := by
+        simpa [B, f] using entry_FirstNodes_eq_component_mr M J 1 hM hJ
+      _ = entry (red2BranchBlock M J) 1 0 := by rw [hBred]
+      _ = branchNP M J := red2BranchBlock_head_row1 M J hM hcore.2 hJ
+  intro i hi hp
+  have hnext : nextR M i (parent M i j) j = true := by
+    simpa [j] using hasParent_next_fseq M i (Lng M - 1) hp
+  have hpj : parent M i j < j :=
+    (nextR_implies_row0 M i (parent M i j) j hnext).1
+  by_cases hk0 : k = 0
+  · have hjf : j = f := by omega
+    by_cases hi0 : i = 0
+    · subst i
+      have hpar : parent M 0 f = a := by
+        exact parent_eq_of_nextR0 M a f (by simpa [a, f] using hnext0)
+      have hea : entry M 0 a = a := by
+        have haTr := (FirstNodes_TrMax_Joints M J hM hmono hJ).1
+        have hh := Red_core_prefix_diag M hmono hcore 0 a (by simpa [a] using haTr)
+        rw [RTPS_Red_eq M hR] at hh
+        exact hh
+      change entry M 0 (parent M 0 j) + 1 = entry M 0 j
+      rw [hjf, hpar, hea, he0f]
+    · have hi1 : i = 1 := by omega
+      subst i
+      have hstrict : entry M 1 (parent M 1 j) < entry M 1 j := by
+        have hh := hnext
+        simp only [nextR, if_neg (by omega : ¬1 = 0), nextrel1,
+          Bool.and_eq_true, decide_eq_true_eq] at hh
+        exact hh.1.1.2
+      have hraw : entry B 1 0 ≠ 0 := by
+        intro hz
+        have he : entry M 1 f = entry B 1 0 := by
+          simpa [B, f] using entry_FirstNodes_eq_component_mr M J 1 hM hJ
+        rw [hjf, he, hz] at hstrict
+        omega
+      have hpa : parent M 1 j ≤ a := by
+        apply row1_parent_le_last_joint M hM hmono ht hp
+        simpa [j, f, J, hjf] using hpj
+      have hpTr : parent M 1 j ≤ TrMax M :=
+        hpa.trans (by simpa [a] using
+          (FirstNodes_TrMax_Joints M J hM hmono hJ).1)
+      have hep : entry M 1 (parent M 1 j) = parent M 1 j := by
+        have hh := Red_core_prefix_diag M hmono hcore 1 (parent M 1 j) hpTr
+        rw [RTPS_Red_eq M hR] at hh
+        exact hh
+      change entry M 1 (parent M 1 j) + 1 = entry M 1 j
+      rw [hep, hjf, he1f, branchNP, if_neg (by simpa [B] using hraw)]
+  · have hkpos : 0 < k := Nat.pos_of_ne_zero hk0
+    have hkL : k < Lng B := by dsimp [k]; omega
+    have hlong : 1 < Lng N := by rw [hNlen]; dsimp [k] at hkpos; omega
+    have hRnm : multiT R = false := by
+      simpa [R] using Red_preserves_nonmulti N hNJT hNJnm
+    have hRzero : zeroT R = false := by
+      apply Bool.eq_false_iff.mpr
+      intro hz
+      have hh := hz
+      simp only [zeroT, Bool.and_eq_true, beq_iff_eq] at hh
+      have hRone : Lng R = 1 := hh.1
+      rw [hRlen] at hRone
+      rw [hNlen] at hlong
+      omega
+    have hRmono : monoT R = true := by
+      have hh := hRnm
+      simp [multiT, hRzero] at hh
+      exact hh
+    let m := entry R 1 0
+    let C := (if 0 < m then diagSeq 0 (m - 1) else []) ++ R
+    have hCfacts := RTPS_diag_prefix R 0 hRR hRmono (Nat.zero_le m)
+    have hCR : RTPS C := by simpa [C, m] using hCfacts.1
+    have hCmono : monoT C = true := by simpa [C, m] using hCfacts.2
+    have hRhead : entry R 0 0 = entry R 1 0 :=
+      RTPS_mono_head_eq R hRR hRmono
+    have hC00 : entry C 0 0 = 0 := by
+      by_cases hm : 0 < m
+      · simp [C, hm, diagSeq, entry]
+      · have hm0 : m = 0 := by omega
+        simpa [C, hm, m, hm0] using hRhead
+    have hC10 : entry C 1 0 = 0 := by
+      by_cases hm : 0 < m
+      · simp [C, hm, diagSeq, entry]
+      · have hm0 : m = 0 := by omega
+        simpa [C, hm, m, hm0]
+    have hmNP : m = branchNP M J := by
+      have hh := red2BranchBlock_head_row1 M J hM hcore.2 hJ
+      rw [red2BranchBlock, entry_IncrFirstN_one] at hh
+      simpa [m, R, N] using hh
+    have hmf : m < f := by
+      rw [hmNP]
+      by_cases hJ0 : J = 0
+      · rw [hJ0]
+        exact lt_of_le_of_lt
+          (branchNP_zero_le_TrMax M hM hmono hcore.2 ht)
+          (by simpa [f, hJ0] using
+            (FirstNodes_TrMax_Joints M 0 hM hmono (by simpa [hJ0] using hJ)).2)
+      · have hJpos : 0 < J := Nat.pos_of_ne_zero hJ0
+        have hprev : J - 1 < (Br M).length := by omega
+        have hprevT := Br_component_TPS M (J - 1) hM hprev
+        have hprevPos : 0 < Lng ((Br M).getD (J - 1) []) :=
+          List.length_pos_of_ne_nil hprevT
+        have hdiff := idxSum_diff (Br M) (J - 1) hprev
+        have hidxPos : 0 < (IdxSum (Br M)).getD J 0 := by
+          have hsucc : J - 1 + 1 = J := by omega
+          rw [hsucc] at hdiff
+          omega
+        have hnpLe : branchNP M J ≤ a + 1 := by
+          simpa [branchNP, a] using
+            redNJ_np_le_joint M J hM hmono hcore.2 hJ
+        have haTr : a ≤ TrMax M := by
+          simpa [a] using (FirstNodes_TrMax_Joints M J hM hmono hJ).1
+        have hfEq := FirstNodes_getD M J hJ
+        simp only [f] at hfEq
+        omega
+    have hClen : Lng C = m + Lng R := by
+      by_cases hm : 0 < m
+      · simp [C, hm, diagSeq]
+        omega
+      · have hm0 : m = 0 := by omega
+        simp [C, hm, hm0]
+    have hMlen : Lng M = f + Lng B := by
+      have hBlen : Lng B = j + 1 - f := by simp [hseg]
+      dsimp [j] at hBlen
+      omega
+    have hCshort : Lng C < Lng M := by
+      rw [hClen, hRlen, hMlen]
+      omega
+    have hCA : RedCondA C = true :=
+      IH C hCR hCmono hC00 hC10 hCshort
+    have hRA : RedCondA R = true := by
+      by_cases hm : 0 < m
+      · apply RedCondA_of_diag_prefix R m (RTPS_TPS R hRR) hm
+        simpa [C, hm] using hCA
+      · simpa [C, hm] using hCA
+    have hBA : RedCondA B = true := by
+      have hh := RedCondA_rebaseRow0 0 (branchE M J) R
+        (by intro q hq; omega) hRA
+      rw [← IncrFirstN_eq_rebaseRow0_zero] at hh
+      rw [hBred]
+      simpa [red2BranchBlock, R, N] using hh
+    by_cases hin : f ≤ parent M i j
+    · let q := parent M i j - f
+      have hfq : f + q = parent M i j := by simp [q, hin]
+      have hqk : q < k := by omega
+      have hqL : q < Lng B := hqk.trans hkL
+      have hnextB : nextR B i q k = true := by
+        rw [hseg, nextR_seg_adm M f j i q k hfj hjL
+          (by rw [← hseg]; exact hqL) (by rw [← hseg]; exact hkL)]
+        simpa only [hfq, hend] using hnext
+      have huniqB : ∀ r, nextR B i r k = true → r = q := by
+        intro r hr
+        by_cases hi0 : i = 0
+        · subst i
+          exact row0_parent_unique B r q k hr hnextB
+        · have hi1 : i = 1 := by omega
+          subst i
+          exact nextR1_unique_mr B r q k hr hnextB
+      have hpB : hasParent B i k = true :=
+        (hasParent_iff_unique_fseq B i k).mpr ⟨q, hnextB, huniqB⟩
+      have hparB : parent B i k = q :=
+        parent_eq_of_unique_fseq B i k q hnextB huniqB
+      have hh := RedCondA_apply B hBA i k hi hkL hpB
+      rw [hparB, hseg,
+        entry_seg M f j i q (by rw [← hseg]; exact hqL),
+        entry_seg M f j i k (by rw [← hseg]; exact hkL),
+        hfq, hend] at hh
+      simpa [j] using hh
+    · have hcross : parent M i j < f := Nat.lt_of_not_ge hin
+      by_cases hi0 : i = 0
+      · subst i
+        have hBmono : monoT B = true := by
+          rcases Br_component_nonmulti M J hM hJ with hz | hm
+          · have hh := hz
+            simp only [zeroT, Bool.and_eq_true, beq_iff_eq] at hh
+            have hOne : Lng B = 1 := by simpa [B] using hh.1
+            omega
+          · simpa [B] using hm
+        have hpB := mono_hasParent_row0 B hBT hBmono k hkpos hkL
+        have hlocal := hasParent_next_fseq B 0 k hpB
+        have hlift : nextR M 0 (f + parent B 0 k) j = true := by
+          have hs := nextR_seg_adm M f j 0 (parent B 0 k) k hfj hjL
+            (by rw [← hseg];
+                exact (nextR_implies_row0 B 0 (parent B 0 k) k hlocal).1.trans hkL)
+            (by rw [← hseg]; exact hkL)
+          rw [← hseg] at hs
+          have hh : nextR M 0 (f + parent B 0 k) (f + k) = true := by
+            rw [← hs]
+            exact hlocal
+          rw [hend] at hh
+          exact hh
+        have heq := row0_parent_unique M (parent M 0 j)
+          (f + parent B 0 k) j hnext hlift
+        omega
+      · have hi1 : i = 1 := by omega
+        subst i
+        simpa [j, J, f, N] using
+          row1_cross_last_step M hR hmono hcore ht hlong hp
+            (by simpa [j, J, f] using hcross)
 
 private theorem Red_blocks_headNonincreasing (X : PS) (hX : TPS X)
     (hdiag : ∀ I, I < (P X).length →

@@ -1,6 +1,7 @@
 import «6».«6.6-P-condAB»
 import «6».«6.6-reduced-leftend»
 import «6».«6.5-Red-Pred-commute»
+import «6».«6.6-Red2»
 
 /-!
 # §6.6 命題（簡約性と係数の関係）
@@ -9,35 +10,10 @@ import «6».«6.5-Red-Pred-commute»
 - 訂正: なし
 - Isabelle: `p_6_6_reduced_iff_cond`, `kst_reduced_imp_condAB_uncond`
 - 依存: §6.5 `Red_rebase_nonmulti`, §6.2
-- 状態: 🚨 証明作業中
+- 状態: ✅ 証明済（sorry 0）
 -/
 
 namespace PSS
-
-theorem no_parent_zero (M : PS) (i : ℕ) : hasParent M i 0 = false := by
-  apply Bool.eq_false_iff.mpr
-  intro hp
-  have hn := hasParent_next_fseq M i 0 hp
-  by_cases hi : i = 0
-  · simp [nextR, hi, nextrel0] at hn
-  · simp [nextR, hi, nextrel1] at hn
-
-theorem RedCondB_apply (M : PS) (hM : TPS M)
-    (hB : RedCondB M = true) (j : ℕ) (hj : j < Lng M)
-    (hnp : hasParent M 0 j = false) :
-    entry M 0 j = entry M 1 j := by
-  have hh := hB
-  simp only [RedCondB, List.all_eq_true, List.mem_range] at hh
-  have hpos : 0 < Lng M := List.length_pos_of_ne_nil hM
-  have hj' : j < Lng M - 1 + 1 := by omega
-  have hjB := hh j hj'
-  simpa [hnp] using hjB
-
-theorem RedCondB_head_eq (M : PS) (hM : TPS M)
-    (hB : RedCondB M = true) :
-    entry M 0 0 = entry M 1 0 := by
-  exact RedCondB_apply M hM hB 0 (List.length_pos_of_ne_nil hM)
-    (no_parent_zero M 0)
 
 theorem rebaseRow0_self_of_head_eq_nonmulti (M : PS) (hM : TPS M)
     (hnm : multiT M = false)
@@ -86,23 +62,6 @@ theorem RTPS_of_condAB_nonmulti (M : PS) (hM : TPS M)
   have hfix : Red M = M := hred.trans hid
   have hne : M ≠ [] := hM
   simp [RTPS, reduced, hne, hfix]
-
-theorem mono_hasParent_row0 (M : PS) (hM : TPS M)
-    (hmono : monoT M = true) (j : ℕ)
-    (hjpos : 0 < j) (hjL : j < Lng M) :
-    hasParent M 0 j = true := by
-  have hfull : leR M 0 0 (Lng M - 1) = true := by
-    have hh := hmono
-    simp only [monoT, Bool.and_eq_true] at hh
-    exact hh.2
-  have hjlast : j ≤ Lng M - 1 := by omega
-  have hanc := ancestor_tree_1 M 0 j (Lng M - 1) hM hfull
-    (Nat.zero_le _) hjlast
-  have hstrict := ancestor_basic_1 M 0 j j hM hjpos (le_refl _) hanc
-  rcases parent_exists_1 M 0 j hM hjpos hjL hstrict with
-    ⟨p, hp0, hpj, hp⟩
-  exact (hasParent_iff_unique_fseq M 0 j).mpr
-    ⟨p, hp, fun q hq => row0_parent_unique M q p j hq hp⟩
 
 theorem RTPS_mono_RedCondB (M : PS) (hR : RTPS M)
     (hmono : monoT M = true) : RedCondB M = true := by
@@ -157,29 +116,6 @@ theorem RTPS_iff_condAB_multi (M : PS) (hM : TPS M)
     intro J hJ
     apply (IH J hJ).mpr
     exact RedCondAB_P_component M J hM hA hB hJ
-
-/-- Condition (A) on a sequence with a nonempty diagonal prefix descends to
-the original suffix.  This packages the suffix as a `seg`, so all parent
-bookkeeping at the prefix/suffix junction is discharged by `RedCondA_seg`. -/
-theorem RedCondA_of_diag_prefix (M : PS) (m : ℕ) (hM : TPS M)
-    (hm : 0 < m)
-    (hA : RedCondA (diagSeq 0 (m - 1) ++ M) = true) :
-    RedCondA M = true := by
-  let N := diagSeq 0 (m - 1) ++ M
-  have hMpos : 0 < Lng M := List.length_pos_of_ne_nil hM
-  have hDlen : Lng (diagSeq 0 (m - 1)) = m := by
-    simp [diagSeq]
-    omega
-  have hNlen : Lng N = m + Lng M := by simp [N, hDlen]
-  have hmN : m < Lng N := by omega
-  have hmend : m ≤ Lng N - 1 := by omega
-  have hend : Lng N - 1 < Lng N := by omega
-  have hseg := RedCondA_seg N m (Lng N - 1) hmend hend (by simpa [N] using hA)
-  have hdrop : N.drop m = M := by simp [N, hDlen]
-  calc
-    RedCondA M = RedCondA (N.drop m) := by rw [hdrop]
-    _ = RedCondA (seg N m (Lng N - 1)) := by rw [drop_eq_seg N m hmN]
-    _ = true := hseg
 
 /-! ## Coefficient conditions on `Pred`
 
@@ -315,13 +251,6 @@ private theorem P_component_length_lt_of_multi (M : PS) (J : ℕ)
       rw [show J = (J - 1) + 1 by omega, hdiff]
       omega
     omega
-
-/-- The only genuinely new column in the `Pred` induction for condition (A)
-is the final one.  This predicate isolates that local obligation. -/
-def RedCondATop (M : PS) : Prop :=
-  ∀ i, i < 2 → hasParent M i (Lng M - 1) = true →
-    entry M i (parent M i (Lng M - 1)) + 1 =
-      entry M i (Lng M - 1)
 
 theorem nextR0_consecutive_of_strict (M : PS) (j : ℕ)
     (hL : j + 1 < Lng M)
@@ -483,6 +412,100 @@ theorem RTPS_mono_core_RedCondA_of_top
             entry_take M (Lng M - 1) i j hjlt] at hstep
           exact hstep
 
+/-- One `Pred` step for the core forward implication.  The final-column
+obligation is supplied for the current sequence, while all earlier columns
+come from condition (A) on the strictly shorter predecessor. -/
+theorem RTPS_mono_core_RedCondA_of_top_smaller (M : PS)
+    (hR : RTPS M) (hmono : monoT M = true)
+    (he00 : entry M 0 0 = 0) (he10 : entry M 1 0 = 0)
+    (htop : RedCondATop M)
+    (IH : ∀ X, RTPS X → monoT X = true →
+      entry X 0 0 = 0 → entry X 1 0 = 0 →
+      Lng X < Lng M → RedCondA X = true) :
+    RedCondA M = true := by
+  have hM : TPS M := RTPS_TPS M hR
+  have hpos : 0 < Lng M := List.length_pos_of_ne_nil hM
+  apply RedCondA_intro
+  intro i j hi hj hp
+  have hi2 : i < 2 := by omega
+  by_cases hjtop : j = Lng M - 1
+  · subst j
+    exact htop i hi2 hp
+  · have hjlt : j < Lng M - 1 := by omega
+    by_cases hsmall : Lng M ≤ 2
+    · have hj0 : j = 0 := by omega
+      subst j
+      rw [no_parent_zero M i] at hp
+      contradiction
+    · have hlen : 1 < Lng M := by omega
+      have hlong : 2 < Lng M := by omega
+      have hpredR : RTPS (Pred M) := RTPS_Pred M hR
+      have hpredMono : monoT (Pred M) = true :=
+        monoT_Pred_long M hM hmono hlong
+      have hpredLen : Lng (Pred M) = Lng M - 1 := length_Pred M hlen
+      have hpredLt : Lng (Pred M) < Lng M := by rw [hpredLen]; omega
+      have he00Pred : entry (Pred M) 0 0 = 0 := by
+        rw [Pred_eq_take M hlen,
+          entry_take M (Lng M - 1) 0 0 (by omega)]
+        exact he00
+      have he10Pred : entry (Pred M) 1 0 = 0 := by
+        rw [Pred_eq_take M hlen,
+          entry_take M (Lng M - 1) 1 0 (by omega)]
+        exact he10
+      have hAPred := IH (Pred M) hpredR hpredMono he00Pred he10Pred hpredLt
+      have hpPred : hasParent (Pred M) i j = true := by
+        rw [Pred_eq_take M hlen,
+          hasParent_take_of_lt M (Lng M - 1) i j (by omega) hjlt]
+        exact hp
+      have hstep := RedCondA_apply (Pred M) hAPred i j hi
+        (by rw [hpredLen]; exact hjlt) hpPred
+      have hpar := parent_Pred_eq_of_lt M i j hlen hjlt hp
+      rw [hpar] at hstep
+      have hparlt : parent M i j < Lng M - 1 := by
+        have hnext := hasParent_next_fseq M i j hp
+        have hh := (nextR_implies_row0 M i (parent M i j) j hnext).1
+        omega
+      rw [Pred_eq_take M hlen,
+        entry_take M (Lng M - 1) i (parent M i j) hparlt,
+        entry_take M (Lng M - 1) i j hjlt] at hstep
+      exact hstep
+
+/-- Unconditional core of the forward keystone.  Strong induction on length
+simultaneously supplies condition (A) on RED2's padded branch reduct and on
+`Pred M`; the current final column is the trunk lemma or RED2. -/
+theorem RTPS_mono_core_RedCondA (M : PS) (hR : RTPS M)
+    (hmono : monoT M = true)
+    (he00 : entry M 0 0 = 0) (he10 : entry M 1 0 = 0) :
+    RedCondA M = true := by
+  generalize hn : Lng M = n
+  induction n using Nat.strong_induction_on generalizing M with
+  | h n ih =>
+      have hsmaller : ∀ X, RTPS X → monoT X = true →
+          entry X 0 0 = 0 → entry X 1 0 = 0 →
+          Lng X < Lng M → RedCondA X = true := by
+        intro X hXR hXmono hX00 hX10 hXL
+        have hXn : Lng X < n := by rw [← hn]; exact hXL
+        exact ih (Lng X) hXn X hXR hXmono hX00 hX10 rfl
+      have htop : RedCondATop M := by
+        by_cases htr : TrMax M = Lng M - 1
+        · exact RTPS_mono_core_RedCondATop_trunk M hR hmono he00 he10 htr
+        · exact RTPS_mono_core_nontrunk_RedCondATop_of_smaller M hR hmono
+            ⟨he00, he10⟩ htr hsmaller
+      exact RTPS_mono_core_RedCondA_of_top_smaller M hR hmono he00 he10
+        htop hsmaller
+
+/-- The final-column condition for every reduced mono core sequence. -/
+theorem RTPS_mono_core_RedCondATop (M : PS) (hR : RTPS M)
+    (hmono : monoT M = true)
+    (he00 : entry M 0 0 = 0) (he10 : entry M 1 0 = 0) :
+    RedCondATop M := by
+  by_cases htr : TrMax M = Lng M - 1
+  · exact RTPS_mono_core_RedCondATop_trunk M hR hmono he00 he10 htr
+  · apply RTPS_mono_core_nontrunk_RedCondATop_of_smaller M hR hmono
+      ⟨he00, he10⟩ htr
+    intro X hXR hXmono hX00 hX10 _hXL
+    exact RTPS_mono_core_RedCondA X hXR hXmono hX00 hX10
+
 /-- Uniform reduction of the full forward implication to the core
 final-column step.  The positive left end is moved to zero by the diagonal
 prefix lemma, while the multi branch recurses on strictly shorter `P`
@@ -574,6 +597,21 @@ theorem RTPS_of_condAB (M : PS) (hM : TPS M)
       · have hnm : multiT M = false := Bool.eq_false_of_not_eq_true hmulti
         exact RTPS_of_condAB_nonmulti M hM hA hB hnm
 
+/-- Forward half of the §6.6 keystone. -/
+theorem RTPS_condAB (M : PS) (hR : RTPS M) :
+    RedCondA M = true ∧ RedCondB M = true := by
+  apply RTPS_condAB_of_core_top (M := M) (hR := hR)
+  intro N hNR hmono he00 he10
+  exact RTPS_mono_core_RedCondATop N hNR hmono he00 he10
+
+/-- Reducedness is equivalent to the two executable coefficient conditions. -/
+theorem RTPS_iff_condAB (M : PS) (hM : TPS M) :
+    RTPS M ↔ RedCondA M = true ∧ RedCondB M = true := by
+  constructor
+  · exact RTPS_condAB M
+  · rintro ⟨hA, hB⟩
+    exact RTPS_of_condAB M hM hA hB
+
 #print axioms RTPS_of_condAB_nonmulti
 #print axioms RTPS_mono_head_eq
 #print axioms RTPS_mono_RedCondB
@@ -583,8 +621,12 @@ theorem RTPS_of_condAB (M : PS) (hM : TPS M)
 #print axioms RedCondA_Pred
 #print axioms RedCondB_Pred
 #print axioms RTPS_mono_core_RedCondA_of_top
+#print axioms RTPS_mono_core_RedCondA
+#print axioms RTPS_mono_core_RedCondATop
 #print axioms RTPS_mono_core_RedCondATop_trunk
 #print axioms RTPS_condAB_of_core_nontrunk_top
 #print axioms RTPS_of_condAB
+#print axioms RTPS_condAB
+#print axioms RTPS_iff_condAB
 
 end PSS

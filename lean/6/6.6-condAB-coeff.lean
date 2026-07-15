@@ -1,4 +1,4 @@
-import «6».«6.6-reduced-iff-condAB»
+import «6».«6.6-P-condAB»
 import «6».«6.4-mono-slice»
 
 /-!

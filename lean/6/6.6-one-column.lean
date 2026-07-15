@@ -1,4 +1,5 @@
-import «6».«6.6-reduced-iff-condAB»
+import «6».«6.6-P-condAB»
+import «6».«6.6-reduced-leftend»
 
 /-!
 # §6.6 系（`1` 列ペア数列の基本性質）
