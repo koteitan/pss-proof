@@ -262,11 +262,13 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
   - ✅ `7.2-scb-triviality` — `MarkedB` の witness と `flatBT` 単射性を使い、`t=c`、
     全分解の前後文脈が空であること、空前置部の分解が存在することの三条件を同値化。
     接尾辞側の逆向きは完全項文字列の prefix-free 性で閉じた。Isa: `m_7_2_scb_triviality`。[r1]
-  - `7.2-scb-unique` — 第 1 主張（固定した `c` に対する `(s,b)` の一意性）は末尾の
-    連続右括弧数で証明済。第 3 主張は flatten の最後の `zero` 直前にある `D` 添字が
-    ambient term と scb occurrence で一致することから、非零項での第 0/1 種排他性を証明し、
-    零項では両種が成立する A14 反例も固定した。RightNodes 長が同じ右端 occurrence の開始位置を
-    強帰納法で固定し、第 0 種分解全体の一意性も証明済。残る dom 判定・第 1 種分解全体の一意性は未完。
+  - ✅ `7.2-scb-unique` — 固定した `c` に対する `(s,b)` の一意性を末尾の連続右括弧数で証明。
+    `RightNodes` suffix の開始位置を、kind0 では長さ2、kind1 では「末尾未満となる最後の index」から
+    固定し、両種の分解全体の一意性と非零項での排他性を得た。定義域側は有限タグ `rnDom` を導入し、
+    `T_B` 上で `domTag t = rnDom (RightNodes t)` を相互構造帰納、四タグの集合値の相異を具体的 witness
+    で証明した。任意の右端 suffix の scb occurrence 実現と、自然数形の再帰的な kind0/kind1 構成を
+    結合して `domB t = NatSet ↔ scb_kind0_able t ∨ scb_kind1_able t` を閉じた。訂正 A14 に従い
+    非零条件を明記し、零項で両種が成立する原文反例も固定。Isa: `m_7_2_scb_unique_*`。[r3]
   - ✅ `7.2-scb-replaceable` — `flatBP` の prefix 重みで符号境界をまたぐ occurrence を排除し、
     項・principal・principal 列の相互構造帰納で任意の完全 principal 文字列の置換手術を証明。
     訂正 A12 に従い「置換後が principal、または全体が零文字列」の形を閉じ、原文の

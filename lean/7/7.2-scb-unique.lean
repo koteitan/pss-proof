@@ -1,4 +1,5 @@
 import PSS.Flat
+import «7».«7.2-scb-compose»
 
 /-!
 # §7.2 命題（scb 分解の一意性）
@@ -1110,12 +1111,569 @@ theorem scb_kinds_exclusive_original_false :
     cases p with
     | db u a => simp [flatBP] at hp
 
+/-! ## `domB` と右端 spine の分類 -/
+
+/-- `domTag` を有限な右端 index 列だけから計算する純リスト版。 -/
+private def rnDom : List ℕ → BDom
+  | [] => .empty
+  | [v] => if v = 0 then .zeroOnly else .below (v - 1)
+  | v :: w :: ws =>
+      match rnDom (w :: ws) with
+      | .zeroOnly => .naturals
+      | .below u => if v ≤ u then .naturals else .below u
+      | d => d
+
+/-- `rnDom` が自然数定義域へ遷移することを表す、右から再帰的な形条件。 -/
+private def rnNat : List ℕ → Bool
+  | [] => false
+  | [_] => false
+  | v :: w :: ws =>
+      rnNat (w :: ws) || decide ((w :: ws).getLastD 0 = 0) ||
+        decide (v < (w :: ws).getLastD 0)
+
+/-- 非空 index 列に対する `rnDom` の完全分類。 -/
+private theorem rnDom_classify (R : List ℕ) (hR : R ≠ []) :
+    rnDom R =
+      if rnNat R then BDom.naturals
+      else if R.getLastD 0 = 0 then BDom.zeroOnly
+      else BDom.below (R.getLastD 0 - 1) := by
+  classical
+  induction R with
+  | nil => exact (hR rfl).elim
+  | cons v vs ih =>
+      cases vs with
+      | nil => simp [rnDom, rnNat]
+      | cons w ws =>
+          simp only [rnDom, rnNat]
+          rw [ih (by simp)]
+          by_cases hn : rnNat (w :: ws) = true
+          · simp [hn]
+          · by_cases hz : (w :: ws).getLastD 0 = 0
+            · change (w :: ws).getLast?.getD 0 = 0 at hz
+              simp [hn, hz]
+            · have hpos : 0 < (w :: ws).getLastD 0 :=
+                Nat.pos_of_ne_zero hz
+              by_cases hv : v < (w :: ws).getLastD 0
+              · have hle : v ≤ (w :: ws).getLastD 0 - 1 := by omega
+                change (w :: ws).getLast?.getD 0 ≠ 0 at hz
+                change v < (w :: ws).getLast?.getD 0 at hv
+                change v ≤ (w :: ws).getLast?.getD 0 - 1 at hle
+                simp [hn, hz, hv, hle]
+              · have hnle : ¬v ≤ (w :: ws).getLastD 0 - 1 := by omega
+                change (w :: ws).getLast?.getD 0 ≠ 0 at hz
+                change ¬v < (w :: ws).getLast?.getD 0 at hv
+                change ¬v ≤ (w :: ws).getLast?.getD 0 - 1 at hnle
+                simp [hn, hz, hv, hnle]
+
+private theorem RightNodes_ne_nil_of_ne_zero {t : BT} (ht : t ≠ BZero) :
+    RightNodes t ≠ [] := by
+  rcases t with ⟨ps⟩
+  cases ps with
+  | nil => exact (ht rfl).elim
+  | cons p ps =>
+      simpa [RightNodes] using rightNodesList_ne_nil (p :: ps) (by simp)
+
+private def DomRN_BT (t : BT) : Prop :=
+  dfree_BT t = true → domTag t = rnDom (RightNodes t)
+
+private def DomRN_BP (p : BP) : Prop :=
+  dfree_BP p = true → domTagBP p = rnDom (rightNodesBP p)
+
+private def DomRN_List (ps : List BP) : Prop :=
+  dfree_BPList ps = true → domTagList ps = rnDom (rightNodesList ps)
+
+/-- `D_ω`-free 項では、実装上の定義域タグは右端 index 列だけで決まる。 -/
+private theorem domTag_eq_rnDom (t : BT) : DomRN_BT t := by
+  exact BT.rec
+    (motive_1 := DomRN_BT)
+    (motive_2 := DomRN_BP)
+    (motive_3 := DomRN_List)
+    (fun ps ih hdf => by
+      simpa [DomRN_BT, domTag, RightNodes] using ih hdf)
+    (fun v a ih hdf => by
+      simp [dfree_BP] at hdf
+      have hvtop : v ≠ ⊤ := hdf.1
+      have hdfa : dfree_BT a = true := hdf.2
+      have hvcoe : (v.toNat : ℕ∞) = v := ENat.coe_toNat hvtop
+      by_cases ha0 : a = BZero
+      · subst a
+        by_cases hv0 : v = 0
+        · subst v
+          simp [DomRN_BP, domTagBP, rightNodesBP, RightNodes,
+            rightNodesList, rnDom, BZero]
+        · have hvnat0 : v.toNat ≠ 0 := by
+            simpa [ENat.toNat_eq_zero, hvtop] using hv0
+          simp [DomRN_BP, domTagBP, rightNodesBP, RightNodes,
+            rightNodesList, rnDom, BZero, hv0, hvtop, hvnat0]
+      · have hRne : RightNodes a ≠ [] := RightNodes_ne_nil_of_ne_zero ha0
+        have hiha : domTag a = rnDom (RightNodes a) := ih hdfa
+        cases hR : RightNodes a with
+        | nil => exact (hRne hR).elim
+        | cons w ws =>
+            cases htag : rnDom (w :: ws) with
+            | empty =>
+                simp [DomRN_BP, domTagBP, rightNodesBP, rnDom, ha0,
+                  hiha, hR, htag]
+            | zeroOnly =>
+                simp [DomRN_BP, domTagBP, rightNodesBP, rnDom, ha0,
+                  hiha, hR, htag]
+            | naturals =>
+                simp [DomRN_BP, domTagBP, rightNodesBP, rnDom, ha0,
+                  hiha, hR, htag]
+            | below u =>
+                have hle : (v ≤ (u : ℕ∞)) ↔ v.toNat ≤ u := by
+                  rw [← hvcoe]
+                  simp
+                simp [DomRN_BP, domTagBP, rightNodesBP, rnDom, ha0,
+                  hiha, hR, htag, hle])
+    (by simp [DomRN_List, domTagList, rnDom, rightNodesList])
+    (fun p ps ihp ihps hdf => by
+      have hsplit : dfree_BP p = true ∧ dfree_BPList ps = true := by
+        simpa [dfree_BPList] using hdf
+      cases ps with
+      | nil =>
+          simpa [DomRN_List, domTagList, rightNodesList] using ihp hsplit.1
+      | cons q qs =>
+          simpa [DomRN_List, domTagList, rightNodesList] using ihps hsplit.2)
+    t
+
+private theorem nestedD0_not_nat :
+    Dprin 0 (Dprin 0 BZero) ∉ NatSet := by
+  rintro ⟨n, hn⟩
+  have hn1 : n = 1 := by
+    have hlen := congrArg numNat hn
+    simp [Dprin, BZero, numBT, numNat] at hlen
+    omega
+  subst n
+  simp [Dprin, BZero, numBT] at hn
+
+/-- 四種類の `BDom` タグのうち、集合として `NatSet` になるものは
+`naturals` だけである。 -/
+private theorem BDom_toSet_eq_NatSet_iff (d : BDom) :
+    d.toSet = NatSet ↔ d = .naturals := by
+  cases d with
+  | empty =>
+      constructor
+      · intro h
+        have hz : BZero ∈ NatSet := ⟨0, by simp [numBT, BZero]⟩
+        rw [← h] at hz
+        simpa [BDom.toSet] using hz
+      · simp
+  | zeroOnly =>
+      constructor
+      · intro h
+        have h₁ : numBT 1 ∈ NatSet := ⟨1, rfl⟩
+        rw [← h] at h₁
+        simp [BDom.toSet, numBT, BZero] at h₁
+      · simp
+  | naturals => simp [BDom.toSet]
+  | below u =>
+      constructor
+      · intro h
+        have hx : Dprin 0 (Dprin 0 BZero) ∈ (BDom.below u).toSet := by
+          simp [BDom.toSet, TBv, Dprin]
+        rw [h] at hx
+        exact (nestedD0_not_nat hx).elim
+      · simp
+
+/-- 非零 `T_B` 項について、`domB = NatSet` は右端 spine の再帰形条件と同値。 -/
+private theorem domB_eq_NatSet_iff_rnNat {t : BT}
+    (htb : t ∈ T_B) (ht : t ≠ BZero) :
+    domB t = NatSet ↔ rnNat (RightNodes t) = true := by
+  have hRne : RightNodes t ≠ [] := RightNodes_ne_nil_of_ne_zero ht
+  have htag : domTag t = rnDom (RightNodes t) := domTag_eq_rnDom t htb
+  rw [domB, BDom_toSet_eq_NatSet_iff, htag,
+    rnDom_classify (RightNodes t) hRne]
+  by_cases hn : rnNat (RightNodes t) = true
+  · simp [hn]
+  · by_cases hz : (RightNodes t).getLastD 0 = 0
+    · have hz' : (RightNodes t).getLast?.getD 0 = 0 := by
+        simpa only [List.getLastD_eq_getLast?] using hz
+      simp [hn, hz']
+    · have hz' : (RightNodes t).getLast?.getD 0 ≠ 0 := by
+        simpa only [List.getLastD_eq_getLast?] using hz
+      simp [hn, hz']
+
+private theorem dfree_BP_of_mem {ps : List BP} {p : BP}
+    (hdf : dfree_BPList ps = true) (hp : p ∈ ps) :
+    dfree_BP p = true := by
+  induction ps with
+  | nil => simp at hp
+  | cons q qs ih =>
+      simp [dfree_BPList] at hdf
+      rcases List.mem_cons.mp hp with hp | hp
+      · simpa [hp] using hdf.1
+      · exact ih hdf.2 hp
+
+/-- 非零項の最後の top-level principal は scb 分解として印付けられ、
+その `RightNodes` は元の項と一致する。 -/
+private theorem scb_last_component {t : BT}
+    (htb : t ∈ T_B) (ht : t ≠ BZero) :
+    ∃ p s b, dfree_BP p = true ∧
+      scb_decomp t s (flatBP p) b ∧
+      RightNodes (.trm [p]) = RightNodes t := by
+  rcases t with ⟨ps⟩
+  cases ps with
+  | nil => exact (ht rfl).elim
+  | cons p ps =>
+      have hdf : dfree_BPList (p :: ps) = true := htb
+      cases ps with
+      | nil =>
+          refine ⟨p, [], [], ?_, ?_, ?_⟩
+          · simpa [dfree_BPList] using hdf
+          · refine ⟨by simp [flatBT], ?_, by simp⟩
+            intro _
+            exact ⟨p, by simpa [dfree_BPList] using hdf, rfl⟩
+          · simp [RightNodes, rightNodesList]
+      | cons q qs =>
+          let tail : List BP := q :: qs
+          have htail : tail ≠ [] := by simp [tail]
+          let lastp : BP := tail.getLast htail
+          have hsplit : tail.dropLast ++ [lastp] = tail := by
+            exact List.dropLast_append_getLast htail
+          have hps : p :: tail = (p :: tail.dropLast) ++ [lastp] := by
+            simp only [List.cons_append]
+            rw [hsplit]
+          have hlastMem : lastp ∈ p :: tail := by
+            simp [lastp, tail, List.getLast_mem]
+          have hdflast : dfree_BP lastp = true :=
+            dfree_BP_of_mem hdf hlastMem
+          refine ⟨lastp, .lp :: flatComponentRun (p :: tail.dropLast),
+            [.rp], hdflast, ?_, ?_⟩
+          · refine ⟨?_, ?_, by simp⟩
+            · rw [hps]
+              simpa [List.append_assoc] using
+                flatBT_multi_snoc p tail.dropLast lastp
+            · intro _
+              exact ⟨lastp, hdflast, rfl⟩
+          · have hrn := rightNodesList_snoc (p :: tail.dropLast) lastp
+            rw [hps]
+            simpa [RightNodes, rightNodesList] using hrn.symm
+
+/-- 右端 spine の任意の深さは、その suffix を `RightNodes` に持つ
+principal の scb 分解として実現される。 -/
+private theorem scb_suffix_realized (t : BT) (j : ℕ)
+    (htb : t ∈ T_B) (ht : t ≠ BZero)
+    (hj : j < (RightNodes t).length) :
+    ∃ p s b, dfree_BP p = true ∧
+      scb_decomp t s (flatBP p) b ∧
+      RightNodes (.trm [p]) = (RightNodes t).drop j := by
+  obtain ⟨p₀, s₀, b₀, hp₀df, hp₀dec, hp₀rn⟩ :=
+    scb_last_component htb ht
+  cases j with
+  | zero =>
+      exact ⟨p₀, s₀, b₀, hp₀df, hp₀dec, by simpa using hp₀rn⟩
+  | succ j =>
+      rcases p₀ with ⟨u, a⟩
+      have hdfa : dfree_BT a = true := by
+        simp [dfree_BP] at hp₀df
+        exact hp₀df.2
+      have hj' : j < (RightNodes a).length := by
+        rw [← hp₀rn] at hj
+        simpa [RightNodes, rightNodesList, rightNodesBP] using hj
+      have ha : a ≠ BZero := by
+        intro ha
+        subst a
+        simp [RightNodes, rightNodesList, rightNodesBP, BZero] at hj'
+      obtain ⟨p, s, b, hpdf, hdec, hrn⟩ :=
+        scb_suffix_realized a j hdfa ha hj'
+      have hc : isPTB_str (flatBP p) := ⟨p, hpdf, rfl⟩
+      have hlift : scb_decomp (Dprin u a) (.dsym u :: s) (flatBP p) b :=
+        scb_compose_dprin u a s (flatBP p) b hdec hc
+      have hcomp : scb_decomp t (s₀ ++ (.dsym u :: s))
+          (flatBP p) (b ++ b₀) :=
+        scb_compose t (Dprin u a) s₀ (.dsym u :: s)
+          (flatBP p) b b₀ ⟨.db u a, rfl⟩ hp₀dec hlift
+      refine ⟨p, s₀ ++ (.dsym u :: s), b ++ b₀, hpdf, hcomp, ?_⟩
+      rw [← hp₀rn]
+      simpa [RightNodes, rightNodesList, rightNodesBP] using hrn
+termination_by (RightNodes t).length
+decreasing_by
+  rw [← hp₀rn]
+  simp [RightNodes, rightNodesList, rightNodesBP]
+
+private theorem getLastD_eq_getD_last {R : List ℕ} (hR : R ≠ []) :
+    R.getLastD 0 = R.getD (R.length - 1) 0 := by
+  rw [List.getLastD_eq_getLast?, getLast?_eq_some_getD_last R 0 hR]
+  rfl
+
+private theorem rnNat_false_last_zero_singleton {R : List ℕ}
+    (hR : R ≠ []) (hn : rnNat R = false) (hz : R.getLastD 0 = 0) :
+    R = [0] := by
+  cases R with
+  | nil => exact (hR rfl).elim
+  | cons v vs =>
+      cases vs with
+      | nil =>
+          simp [List.getLastD] at hz
+          simpa [hz]
+      | cons w ws =>
+          have hz' : (w :: ws).getLastD 0 = 0 := by
+            simpa using hz
+          have hzopt : (w :: ws).getLast?.getD 0 = 0 := by
+            simpa only [List.getLastD_eq_getLast?] using hz'
+          simp [rnNat] at hn
+          exact (hn.1.2 hzopt).elim
+
+/-- `rnNat` がまだ発火していない suffix では、末尾 index はそれ以前の
+すべての index 以下である。 -/
+private theorem rnNat_false_internal_ge : ∀ R : List ℕ,
+    rnNat R = false → ∀ k, k < R.length - 1 →
+      R.getLastD 0 ≤ R.getD k 0
+  | [], _, k, hk => by simp at hk
+  | [v], _, k, hk => by simp at hk
+  | v :: w :: ws, hn, k, hk => by
+      let tail := w :: ws
+      simp [rnNat, tail] at hn
+      have htail : rnNat tail = false := hn.1.1
+      have hvle : tail.getLastD 0 ≤ v := by
+        simpa only [List.getLastD_eq_getLast?] using hn.2
+      cases k with
+      | zero =>
+          have hlast : (v :: tail).getLastD 0 = tail.getLastD 0 := by
+            simp [tail]
+          simp only [List.getD_cons_zero]
+          rw [hlast]
+          exact hvle
+      | succ k =>
+          have hk' : k < tail.length - 1 := by
+            simp [tail] at hk ⊢
+            omega
+          have ih := rnNat_false_internal_ge tail htail k hk'
+          simpa [tail] using ih
+
+private theorem rnNat_cons_of_tail {v : ℕ} {R : List ℕ}
+    (hR : R ≠ []) (hn : rnNat R = true) :
+    rnNat (v :: R) = true := by
+  cases R with
+  | nil => exact (hR rfl).elim
+  | cons w ws => simp [rnNat, hn]
+
+/-- 自然数形を持つ suffix があれば、元の列も自然数形を持つ。 -/
+private theorem rnNat_of_drop : ∀ (R : List ℕ) (k : ℕ),
+    rnNat (R.drop k) = true → rnNat R = true
+  | R, 0, h => by simpa using h
+  | [], _ + 1, h => by simp [rnNat] at h
+  | v :: vs, k + 1, h => by
+      have ht : rnNat vs = true := rnNat_of_drop vs k (by simpa using h)
+      have hvne : vs ≠ [] := by
+        intro hz
+        subst vs
+        simp [rnNat] at ht
+      exact rnNat_cons_of_tail hvne ht
+
+private theorem rnNat_of_kind0_shape {R : List ℕ}
+    (hlen : R.length = 2) (hz : R.getD 1 0 = 0) :
+    rnNat R = true := by
+  cases R with
+  | nil => simp at hlen
+  | cons v vs =>
+      cases vs with
+      | nil => simp at hlen
+      | cons w ws =>
+          cases ws with
+          | nil =>
+              have hz' : w = 0 := by simpa using hz
+              simp [rnNat, hz']
+          | cons z zs => simp at hlen
+
+private theorem rnNat_of_kind1_shape {R : List ℕ}
+    (hj : 1 ≤ R.length - 1)
+    (hlt : R.getD 0 0 < R.getD (R.length - 1) 0) :
+    rnNat R = true := by
+  cases R with
+  | nil => simp at hj
+  | cons v vs =>
+      cases vs with
+      | nil => simp at hj
+      | cons w ws =>
+          have hlastCons : (v :: w :: ws).getLastD 0 =
+              (v :: w :: ws).getD ((v :: w :: ws).length - 1) 0 :=
+            getLastD_eq_getD_last (by simp)
+          have hvCons : v < (v :: w :: ws).getLastD 0 := by
+            rw [hlastCons]
+            simpa using hlt
+          have hv : v < (w :: ws).getLastD 0 := by
+            simpa using hvCons
+          have hvopt : v < (w :: ws).getLast?.getD 0 := by
+            simpa only [List.getLastD_eq_getLast?] using hv
+          simp only [rnNat]
+          simp [hvopt]
+
+/-- `rnNat` が tail では未発火だが新しい先頭で発火する場合、その全列は
+第 1 種 scb の index 条件を満たす。 -/
+private theorem kind1_shape_of_prepend {v : ℕ} {R : List ℕ}
+    (hR : R ≠ []) (hn : rnNat R = false)
+    (hlt : v < R.getLastD 0) :
+    let r := v :: R
+    let j1 := r.length - 1
+    1 ≤ j1 ∧ r.getD 0 0 < r.getD j1 0 ∧
+      ∀ j, 0 < j → j < j1 → r.getD j1 0 ≤ r.getD j 0 := by
+  dsimp
+  have hlen : 1 ≤ (v :: R).length - 1 := by
+    cases R <;> simp_all
+  have hlast : (v :: R).getLastD 0 =
+      (v :: R).getD ((v :: R).length - 1) 0 :=
+    getLastD_eq_getD_last (by simp)
+  have hsame : (v :: R).getLastD 0 = R.getLastD 0 := by
+    cases R <;> simp_all
+  have hlast' : (v :: R).getLastD 0 =
+      (v :: R).getD R.length 0 := by
+    simpa using hlast
+  refine ⟨hlen, ?_, ?_⟩
+  · rw [← hlast', hsame]
+    simpa using hlt
+  · intro j hjpos hjlt
+    obtain ⟨k, rfl⟩ := Nat.exists_eq_succ_of_ne_zero (by omega : j ≠ 0)
+    have hk : k < R.length - 1 := by
+      simp at hjlt
+      omega
+    have hi := rnNat_false_internal_ge R hn k hk
+    rw [← hlast', hsame]
+    simpa using hi
+
+/-- kind0/kind1 scb occurrence は、元の項の右端 spine を自然数形にする。 -/
+private theorem kindable_imp_rnNat {t : BT} (ht : t ≠ BZero) :
+    scb_kind0_able t ∨ scb_kind1_able t →
+      rnNat (RightNodes t) = true := by
+  rintro (hk | hk)
+  · rcases hk with ⟨s, c, b, hk⟩
+    rcases hk.1.2.1 ht with ⟨p, _, hc⟩
+    have hocc : flatBT t = s ++ flatBP p ++ b := by
+      simpa [hc] using hk.1.1
+    obtain ⟨k, hdrop⟩ :=
+      scb_occurrence_rightNodes_suffix hocc hk.1.2.2
+    have hshape := hk.2 p hc
+    have hpNat : rnNat (RightNodes (.trm [p])) = true :=
+      rnNat_of_kind0_shape hshape.1 hshape.2
+    have hdropNat : rnNat ((RightNodes t).drop k) = true := by
+      rw [← hdrop]
+      exact hpNat
+    exact rnNat_of_drop (RightNodes t) k hdropNat
+  · rcases hk with ⟨s, c, b, hk⟩
+    rcases hk.1.2.1 ht with ⟨p, _, hc⟩
+    have hocc : flatBT t = s ++ flatBP p ++ b := by
+      simpa [hc] using hk.1.1
+    obtain ⟨k, hdrop⟩ :=
+      scb_occurrence_rightNodes_suffix hocc hk.1.2.2
+    have hshape := hk.2 p hc
+    have hpNat : rnNat (RightNodes (.trm [p])) = true :=
+      rnNat_of_kind1_shape hshape.1 hshape.2.1
+    have hdropNat : rnNat ((RightNodes t).drop k) = true := by
+      rw [← hdrop]
+      exact hpNat
+    exact rnNat_of_drop (RightNodes t) k hdropNat
+
+private theorem scb_kind0_able_lift_last {t a : BT} {u : ℕ∞}
+    {s₀ b₀ s c b : List Sym}
+    (hout : scb_decomp t s₀ (flatBP (.db u a)) b₀)
+    (ha : a ≠ BZero) (hin : scb_kind0 a s c b) :
+    scb_kind0_able t := by
+  have hc : isPTB_str c := hin.1.2.1 ha
+  have hlift : scb_decomp (Dprin u a) (.dsym u :: s) c b :=
+    scb_compose_dprin u a s c b hin.1 hc
+  have hout' : scb_decomp t s₀ (flatBT (Dprin u a)) b₀ := by
+    simpa [Dprin, flatBT] using hout
+  have hcomp : scb_decomp t (s₀ ++ (.dsym u :: s)) c (b ++ b₀) :=
+    scb_compose t (Dprin u a) s₀ (.dsym u :: s) c b b₀
+      ⟨.db u a, rfl⟩ hout' hlift
+  exact ⟨s₀ ++ (.dsym u :: s), c, b ++ b₀, hcomp, hin.2⟩
+
+private theorem scb_kind1_able_lift_last {t a : BT} {u : ℕ∞}
+    {s₀ b₀ s c b : List Sym}
+    (hout : scb_decomp t s₀ (flatBP (.db u a)) b₀)
+    (ha : a ≠ BZero) (hin : scb_kind1 a s c b) :
+    scb_kind1_able t := by
+  have hc : isPTB_str c := hin.1.2.1 ha
+  have hlift : scb_decomp (Dprin u a) (.dsym u :: s) c b :=
+    scb_compose_dprin u a s c b hin.1 hc
+  have hout' : scb_decomp t s₀ (flatBT (Dprin u a)) b₀ := by
+    simpa [Dprin, flatBT] using hout
+  have hcomp : scb_decomp t (s₀ ++ (.dsym u :: s)) c (b ++ b₀) :=
+    scb_compose t (Dprin u a) s₀ (.dsym u :: s) c b b₀
+      ⟨.db u a, rfl⟩ hout' hlift
+  exact ⟨s₀ ++ (.dsym u :: s), c, b ++ b₀, hcomp, hin.2⟩
+
+/-- 右端 spine の自然数形から kind0 または kind1 の scb 分解を構成する。 -/
+private theorem rnNat_imp_kindable (t : BT)
+    (htb : t ∈ T_B) (ht : t ≠ BZero)
+    (hn : rnNat (RightNodes t) = true) :
+    scb_kind0_able t ∨ scb_kind1_able t := by
+  obtain ⟨p₀, s₀, b₀, hp₀df, hp₀dec, hp₀rn⟩ :=
+    scb_last_component htb ht
+  rcases p₀ with ⟨u, a⟩
+  have hdfa : dfree_BT a = true := by
+    simp [dfree_BP] at hp₀df
+    exact hp₀df.2
+  have hspine : RightNodes t = u.toNat :: RightNodes a := by
+    rw [← hp₀rn]
+    simp [RightNodes, rightNodesList, rightNodesBP]
+  rw [hspine] at hn
+  cases hRa : RightNodes a with
+  | nil => simp [rnNat, hRa] at hn
+  | cons w ws =>
+      let R := w :: ws
+      have hR : RightNodes a = R := by simpa [R] using hRa
+      have hRne : R ≠ [] := by simp [R]
+      have ha : a ≠ BZero := by
+        intro ha
+        subst a
+        simp [R, RightNodes, rightNodesList, BZero] at hR
+      by_cases htail : rnNat R = true
+      · have htailA : rnNat (RightNodes a) = true := by
+          rw [hR]
+          exact htail
+        have hrec := rnNat_imp_kindable a hdfa ha htailA
+        rcases hrec with hk | hk
+        · rcases hk with ⟨s, c, b, hk⟩
+          exact Or.inl (scb_kind0_able_lift_last hp₀dec ha hk)
+        · rcases hk with ⟨s, c, b, hk⟩
+          exact Or.inr (scb_kind1_able_lift_last hp₀dec ha hk)
+      · have htailFalse : rnNat R = false := by
+          cases h : rnNat R <;> simp_all
+        by_cases hz : R.getLastD 0 = 0
+        · have hsingle : R = [0] :=
+            rnNat_false_last_zero_singleton hRne htailFalse hz
+          refine Or.inl ⟨s₀, flatBP (.db u a), b₀, hp₀dec, ?_⟩
+          intro q hq
+          have hqp : q = .db u a := flatBP_injective hq.symm
+          subst q
+          simp [RightNodes, rightNodesList, rightNodesBP, hR, hsingle]
+        · have hzopt : R.getLast?.getD 0 ≠ 0 := by
+            simpa only [← List.getLastD_eq_getLast?] using hz
+          have hnR : rnNat (u.toNat :: R) = true := by
+            simpa [hR] using hn
+          have huvopt : u.toNat < R.getLast?.getD 0 := by
+            simpa [rnNat, R, htailFalse, hzopt] using hnR
+          have huv : u.toNat < R.getLastD 0 := by
+            simpa only [List.getLastD_eq_getLast?] using huvopt
+          have hshape := kind1_shape_of_prepend hRne htailFalse huv
+          refine Or.inr ⟨s₀, flatBP (.db u a), b₀, hp₀dec, ?_⟩
+          intro q hq
+          have hqp : q = .db u a := flatBP_injective hq.symm
+          subst q
+          simpa [RightNodes, rightNodesList, rightNodesBP, hR] using hshape
+termination_by (RightNodes t).length
+decreasing_by
+  rw [hspine]
+  simp
+
+/-- 訂正 A14 後の第 2 主張。非零 `T_B` 項の定義域が自然数全体であることと、
+第 0 種または第 1 種 scb 分解可能性は同値。 -/
+theorem scb_domB_iff_kindable {t : BT} (htb : t ∈ T_B) (ht : t ≠ BZero) :
+    domB t = NatSet ↔ scb_kind0_able t ∨ scb_kind1_able t := by
+  rw [domB_eq_NatSet_iff_rnNat htb ht]
+  constructor
+  · exact rnNat_imp_kindable t htb ht
+  · exact kindable_imp_rnNat ht
+
 #print axioms scb_unique_decomp
 #print axioms scb_occurrence_bottom
 #print axioms scb_kind1_drop_index_pin
 #print axioms scb_kind0_unique
 #print axioms scb_kind1_unique
 #print axioms scb_kinds_exclusive
+#print axioms scb_domB_iff_kindable
 #print axioms scb_kinds_exclusive_original_false
 
 end PSS
