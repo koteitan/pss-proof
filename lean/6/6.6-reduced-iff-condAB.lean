@@ -1,4 +1,4 @@
-import «6».«6.5-Red-le-invariance»
+import «6».«6.6-P-condAB»
 
 /-!
 # §6.6 命題（簡約性と係数の関係）
@@ -234,9 +234,32 @@ theorem RTPS_iff_condAB_zeroT (M : PS) (hM : TPS M)
     have hnm : multiT M = false := by simp [multiT, hz]
     exact RTPS_of_condAB_nonmulti M hM hA hB hnm
 
+/-- The `multiT` branch of the keystone equivalence.  Once the equivalence is
+known recursively on every `P` component, reducedness and conditions (A), (B)
+are transferred blockwise in both directions. -/
+theorem RTPS_iff_condAB_multi (M : PS) (hM : TPS M)
+    (_hmulti : multiT M = true)
+    (IH : ∀ J, J < (P M).length →
+      (RTPS ((P M).getD J []) ↔
+        RedCondA ((P M).getD J []) = true ∧
+          RedCondB ((P M).getD J []) = true)) :
+    RTPS M ↔ RedCondA M = true ∧ RedCondB M = true := by
+  constructor
+  · intro hR
+    have hblocksR := (RTPS_iff_P_components M hM).mp hR
+    apply RedCondAB_of_P_components M hM
+    intro J hJ
+    exact (IH J hJ).mp (hblocksR J hJ)
+  · rintro ⟨hA, hB⟩
+    apply (RTPS_iff_P_components M hM).mpr
+    intro J hJ
+    apply (IH J hJ).mpr
+    exact RedCondAB_P_component M J hM hA hB hJ
+
 #print axioms RTPS_of_condAB_nonmulti
 #print axioms RTPS_mono_head_eq
 #print axioms RTPS_mono_RedCondB
 #print axioms RTPS_iff_condAB_zeroT
+#print axioms RTPS_iff_condAB_multi
 
 end PSS
