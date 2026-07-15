@@ -9,7 +9,7 @@ import «6».«6.5-Lng-Red-invariance»
   必要となる `0 < m₁₀` 版を先に形式化する
 - Isabelle: `m_6_5_monoT_Red_m10pos`
 - 依存: `6.5-Red-welldefined`, `6.5-Lng-Red-invariance`, §6.4
-- 状態: 🚨 証明作業中
+- 状態: ✅ 証明済（sorry 0）
 -/
 
 namespace PSS
@@ -521,5 +521,279 @@ theorem joints_coreReduce_ge_m10 (M : PS) (J : ℕ) (hM : TPS M)
   have hmjoint : m ≤ (Joints B).getD J 0 :=
     nextR0_largest_below B ((Joints B).getD J 0) m f hnext hmf hstrictB
   simpa [m, B] using hmjoint
+
+private def branchNP (M : PS) (J : ℕ) : ℕ :=
+  if entry ((Br M).getD J []) 1 0 = 0 then 0
+  else parent M 1 ((FirstNodes M).getD J 0) + 1
+
+private def branchE (M : PS) (J : ℕ) : ℕ :=
+  (Joints M).getD J 0 + 1 - branchNP M J
+
+private theorem redNJ_entry0_mr (M : PS) (J : ℕ) :
+    entry (redNJ M J) 0 0 = entry M 0 0 + (Joints M).getD J 0 + 1 := by
+  simp [redNJ, entry]
+
+private theorem redNJ_entry1_mr (M : PS) (J : ℕ) :
+    entry (redNJ M J) 1 0 = entry M 1 0 + branchNP M J := by
+  simp [redNJ, branchNP, entry]
+
+private theorem Red_zero_mr (M : PS) (hz : zeroT M = true) :
+    Red M = [(0, 0)] := by
+  unfold Red
+  rw [RedAux, if_pos hz]
+
+/-- The core/non-trunk equation for `Red`, with every recursive fuel call
+replaced by the total `Red` supplied by well-definedness. -/
+private theorem Red_core_nontrunk_mr (M : PS) (hM : TPS M)
+    (hmono : monoT M = true)
+    (hcore : entry M 0 0 = 0 ∧ entry M 1 0 = 0)
+    (ht : TrMax M ≠ Lng M - 1) :
+    Red M = diagSeq 0 (TrMax M) ++
+      (List.range (Br M).length).flatMap (fun J =>
+        IncrFirstN (branchE M J) (Red (redNJ M J))) := by
+  have hz : zeroT M = false := by
+    have hh := hmono
+    simp [monoT] at hh
+    exact hh.1
+  have hmulti : multiT M = false := by simp [multiT, hmono]
+  change RedAux (nu M + 1) M = _
+  rw [RedAux, if_neg (by simpa using hz), if_neg (by simpa using hmulti),
+    if_pos hcore, if_neg ht]
+  congr 1
+  apply List.flatMap_congr
+  intro J hJmem
+  have hJ : J < (Br M).length := List.mem_range.mp hJmem
+  have hbT := Br_component_TPS M J hM hJ
+  have hNJT : TPS (redNJ M J) := by
+    apply List.ne_nil_of_length_pos
+    change 0 < Lng (redNJ M J)
+    rw [redNJ_length M J hbT]
+    exact List.length_pos_of_ne_nil hbT
+  have hdesc := nu_redNJ_lt M J hM hmono hcore hJ
+  change IncrFirstN _ (RedAux (nu M) (redNJ M J)) =
+    IncrFirstN (branchE M J) (Red (redNJ M J))
+  have he : (Joints M).getD J 0 + 1 -
+      (if entry ((Br M).getD J []) 1 0 = 0 then 0
+       else parent M 1 ((FirstNodes M).getD J 0) + 1) = branchE M J := by
+    rfl
+  rw [he, RedAux_stable (redNJ M J) hNJT (nu M) hdesc]
+
+private theorem branchNP_le_Red_entry_mr (M : PS) (J k : ℕ)
+    (hM : TPS M) (hmono : monoT M = true)
+    (hcore : entry M 0 0 = 0 ∧ entry M 1 0 = 0)
+    (hJ : J < (Br M).length) (hk : k < Lng (Red (redNJ M J))) :
+    branchNP M J ≤ entry (Red (redNJ M J)) 0 k := by
+  have hbT := Br_component_TPS M J hM hJ
+  have hNJT : TPS (redNJ M J) := by
+    apply List.ne_nil_of_length_pos
+    change 0 < Lng (redNJ M J)
+    rw [redNJ_length M J hbT]
+    exact List.length_pos_of_ne_nil hbT
+  have hNJmulti := redNJ_multi_false M J hM hmono hcore.1 hJ
+  have hnp := redNJ_np_le_joint M J hM hmono hcore.2 hJ
+  have hguard : entry (redNJ M J) 1 0 ≤ entry (redNJ M J) 0 0 := by
+    rw [redNJ_entry0_mr, redNJ_entry1_mr, hcore.1, hcore.2]
+    simpa [branchNP] using hnp
+  have hroot := Red_leftend_ge_row1_nonmulti (redNJ M J) hNJT hNJmulti hguard
+  have hroot' : branchNP M J ≤ entry (Red (redNJ M J)) 0 0 := by
+    rw [redNJ_entry1_mr, hcore.2] at hroot
+    simpa using hroot
+  by_cases hz : zeroT (redNJ M J) = true
+  · have he1 : entry (redNJ M J) 1 0 = 0 := by
+      have hh := hz
+      simp only [zeroT, Bool.and_eq_true, beq_iff_eq] at hh
+      exact hh.2
+    rw [redNJ_entry1_mr, hcore.2] at he1
+    omega
+  · have hNJmono : monoT (redNJ M J) = true := by
+      have hh := hNJmulti
+      simp [multiT, hz] at hh
+      exact hh
+    have hmin := Red_leftend_row0_min (redNJ M J) hNJT hNJmono k hk
+    omega
+
+private theorem branch_block_row0_ge_joint_mr (M : PS) (J : ℕ)
+    (hM : TPS M) (hmono : monoT M = true)
+    (hcore : entry M 0 0 = 0 ∧ entry M 1 0 = 0)
+    (hJ : J < (Br M).length) (p : ℕ × ℕ)
+    (hp : p ∈ IncrFirstN (branchE M J) (Red (redNJ M J))) :
+    (Joints M).getD J 0 + 1 ≤ p.1 := by
+  rw [IncrFirstN_eq_map] at hp
+  rcases List.mem_map.mp hp with ⟨q, hq, rfl⟩
+  obtain ⟨k, hk, hget⟩ := List.mem_iff_getElem.mp hq
+  have hqentry : q.1 = entry (Red (redNJ M J)) 0 k := by
+    rw [entry0_eq_fst_getElem_mr (Red (redNJ M J)) k hk]
+    exact congrArg Prod.fst hget.symm
+  have hnpEntry := branchNP_le_Red_entry_mr M J k hM hmono hcore hJ hk
+  have hnpJoint := redNJ_np_le_joint M J hM hmono hcore.2 hJ
+  change (Joints M).getD J 0 + 1 ≤ q.1 + branchE M J
+  simp only [branchE]
+  rw [hqentry]
+  have hnpJoint' : branchNP M J ≤ (Joints M).getD J 0 + 1 := by
+    simpa [branchNP] using hnpJoint
+  omega
+
+/-- Every index in the branch tail of `Red (coreReduce M)` has row zero
+strictly above the original positive `m₁₀` anchor. -/
+theorem redB_tail_row0_above_anchor (M : PS) (hM : TPS M)
+    (hmono : monoT M = true) (hpos : 0 < entry M 1 0) :
+    ∀ j, TrMax (coreReduce M) < j → j < Lng (Red (coreReduce M)) →
+      entry M 1 0 < entry (Red (coreReduce M)) 0 j := by
+  let B := coreReduce M
+  have hBT : TPS B := by
+    apply List.ne_nil_of_length_pos
+    have hm : entry M 1 0 ≠ 0 := by omega
+    change 0 < Lng B
+    simp [B, coreReduce, hm, diagSeq, IncrFirstN_eq_map]
+  have hmonoB : monoT B = true := by
+    have hmultiB := coreReduce_multi_false M hM hmono
+    have hcoreB := coreReduce_core M hM
+    have hBL : Lng B = entry M 1 0 + Lng M := by
+      have hm : entry M 1 0 ≠ 0 := by omega
+      simp [B, coreReduce, hm, diagSeq, IncrFirstN_eq_map]
+      omega
+    have hMpos := List.length_pos_of_ne_nil hM
+    change 0 < Lng M at hMpos
+    have hzB : zeroT B = false := by
+      have hLne : Lng B ≠ 1 := by omega
+      simp [zeroT, hLne]
+    simpa [B, multiT, hzB] using hmultiB
+  have hcoreB : entry B 0 0 = 0 ∧ entry B 1 0 = 0 := by
+    simpa [B] using coreReduce_core M hM
+  intro j htj hjL
+  have htjB : TrMax B < j := by simpa [B] using htj
+  have hjLB : j < Lng (Red B) := by simpa [B] using hjL
+  by_cases ht : TrMax B = Lng B - 1
+  · have hLR := Lng_Red_invariance B hBT
+    omega
+  · let tail := (List.range (Br B).length).flatMap (fun J =>
+        IncrFirstN (branchE B J) (Red (redNJ B J)))
+    have hred : Red B = diagSeq 0 (TrMax B) ++ tail := by
+      simpa [tail] using Red_core_nontrunk_mr B hBT hmonoB hcoreB ht
+    have hDlen : Lng (diagSeq 0 (TrMax B)) = TrMax B + 1 := by
+      simp [diagSeq]
+    have hjD : Lng (diagSeq 0 (TrMax B)) ≤ j := by omega
+    let k := j - Lng (diagSeq 0 (TrMax B))
+    have hk : k < Lng tail := by
+      have hjTotal := hjLB
+      rw [hred] at hjTotal
+      simp only [List.length_append] at hjTotal
+      change j < Lng (diagSeq 0 (TrMax B)) + Lng tail at hjTotal
+      change j - Lng (diagSeq 0 (TrMax B)) < Lng tail
+      omega
+    have he : entry (Red B) 0 j = entry tail 0 k := by
+      rw [hred]
+      exact entry_append_right_mr (diagSeq 0 (TrMax B)) tail 0 j hjD
+    have htailEntry : entry tail 0 k = tail[k].1 :=
+      entry0_eq_fst_getElem_mr tail k hk
+    have hmem : tail[k] ∈ tail := List.getElem_mem hk
+    change tail[k] ∈ (List.range (Br B).length).flatMap (fun J =>
+      IncrFirstN (branchE B J) (Red (redNJ B J))) at hmem
+    rcases List.mem_flatMap.mp hmem with ⟨J, hJmem, hp⟩
+    have hJ : J < (Br B).length := List.mem_range.mp hJmem
+    have hjoint := branch_block_row0_ge_joint_mr B J hBT hmonoB hcoreB hJ tail[k] hp
+    have hmjoint : entry M 1 0 ≤ (Joints B).getD J 0 := by
+      simpa [B] using joints_coreReduce_ge_m10 M J hM hmono hpos
+        (by simpa [B] using hJ)
+    change entry M 1 0 < entry (Red B) 0 j
+    rw [he, htailEntry]
+    omega
+
+/-- The positive diagonal anchor is the strict row-zero minimum of the
+suffix of `Red (coreReduce M)` beginning at that anchor. -/
+theorem redB_row0_strict_suffix_min (M : PS) (hM : TPS M)
+    (hmono : monoT M = true) (hpos : 0 < entry M 1 0) :
+    entry (Red (coreReduce M)) 0 (entry M 1 0) = entry M 1 0 ∧
+      ∀ j, entry M 1 0 < j → j < Lng (Red (coreReduce M)) →
+        entry M 1 0 < entry (Red (coreReduce M)) 0 j := by
+  constructor
+  · exact redB_prefix_diag M hM hmono hpos 0 (entry M 1 0) (le_refl _)
+  · intro j hmj hjL
+    by_cases hjtr : j ≤ TrMax (coreReduce M)
+    · have he := Red_core_prefix_diag (coreReduce M) (by
+          have hmulti := coreReduce_multi_false M hM hmono
+          have hcore := coreReduce_core M hM
+          have hBL : Lng (coreReduce M) = entry M 1 0 + Lng M := by
+            have hm : entry M 1 0 ≠ 0 := by omega
+            simp [coreReduce, hm, diagSeq, IncrFirstN_eq_map]
+            omega
+          have hMpos := List.length_pos_of_ne_nil hM
+          change 0 < Lng M at hMpos
+          have hz : zeroT (coreReduce M) = false := by
+            have hLne : Lng (coreReduce M) ≠ 1 := by omega
+            simp [zeroT, hLne]
+          simpa [multiT, hz] using hmulti)
+        (coreReduce_core M hM) 0 j hjtr
+      omega
+    · exact redB_tail_row0_above_anchor M hM hmono hpos j (by omega) hjL
+
+/-- The positive-`m₁₀` instance of the paper's monoT/Red proposition.  It is
+the guard required by the fifth branch of `Red`. -/
+theorem monoT_Red_m10pos (M : PS) (hM : TPS M)
+    (hmono : monoT M = true) (hpos : 0 < entry M 1 0) :
+    let N := Red (coreReduce M)
+    let S := seg N (entry M 1 0) (Lng N - 1)
+    TPS S ∧ monoT S = true := by
+  let m := entry M 1 0
+  let B := coreReduce M
+  let N := Red B
+  let jN := Lng N - 1
+  let S := seg N m jN
+  have hBL : Lng B = m + Lng M := by
+    have hm : entry M 1 0 ≠ 0 := by omega
+    simp [B, m, coreReduce, hm, diagSeq, IncrFirstN_eq_map]
+    omega
+  have hBT : TPS B := by
+    apply List.ne_nil_of_length_pos
+    change 0 < Lng B
+    rw [hBL]
+    omega
+  have hNL : Lng N = m + Lng M := by
+    calc
+      Lng N = Lng B := Lng_Red_invariance B hBT
+      _ = m + Lng M := hBL
+  have hMpos := List.length_pos_of_ne_nil hM
+  change 0 < Lng M at hMpos
+  have hmN : m < Lng N := by rw [hNL]; omega
+  have hmj : m ≤ jN := by simp [jN]; omega
+  have hSL : Lng S = jN + 1 - m := by simp [S]
+  have hST : TPS S := by
+    apply List.ne_nil_of_length_pos
+    change 0 < Lng S
+    rw [hSL]
+    omega
+  have hNT : TPS N := by
+    apply List.ne_nil_of_length_pos
+    change 0 < Lng N
+    omega
+  have hstrict := (redB_row0_strict_suffix_min M hM hmono hpos).2
+  have hmonoS : monoT S = true := by
+    by_cases heq : m = jN
+    · have hS1 : Lng S = 1 := by rw [hSL, ← heq]; omega
+      have he1N : entry N 1 m = m := by
+        simpa [N, B, m] using
+          redB_prefix_diag M hM hmono hpos 1 (entry M 1 0) (le_refl _)
+      have he1S : entry S 1 0 = m := by
+        have he := entry_seg N m jN 1 0 (by rw [hSL]; omega)
+        simpa [S] using he.trans he1N
+      have hzS : zeroT S = false := by
+        simp [zeroT, hS1, he1S]
+        omega
+      have hleS : leR S 0 0 (Lng S - 1) = true := by
+        simp [hS1, leR, le0, le0Aux]
+      simp [monoT, hzS, hleS]
+    · have hlt : m < jN := by omega
+      have hjNL : jN < Lng N := by simp [jN]; omega
+      have hanc : leR N 0 m jN = true := by
+        apply parent_exists_3 N m jN hNT hlt hjNL
+        intro j hmj' hjj
+        have hjLN : j < Lng N := hjj.trans_lt hjNL
+        have hs := hstrict j hmj' (by simpa [N, B, m] using hjLN)
+        have hanchor := (redB_row0_strict_suffix_min M hM hmono hpos).1
+        have hanchorN : entry N 0 m = m := by simpa [N, B, m] using hanchor
+        have hsN : m < entry N 0 j := by simpa [N, B, m] using hs
+        omega
+      exact mono_ancestor_slice N m jN hNT hlt hanc
+  simpa [N, B, S, m, jN] using And.intro hST hmonoS
 
 end PSS

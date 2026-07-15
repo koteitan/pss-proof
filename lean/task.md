@@ -57,7 +57,7 @@
     - 🚨 系（直系先祖の `Red` 不変性） — `6.5-Red-le-invariance`
     - 🚨 系（`Red` が単項性を保つこと） — `6.5-Red-preserves-monoT`
     - 🚨 系（`P` の `Red` 同変性） — `6.5-P-Red-equivariance`
-    - 🚨 命題（単項性と `Red` の関係） — `6.5-monoT-Red`
+    - ✅ 命題（単項性と `Red` の関係） — `6.5-monoT-Red`[r1]
     - 🚨 命題（`Red` の冪等性） — `6.5-Red-idempotence`
     - 🚨 命題（`Red` と `Pred` の可換性） — `6.5-Red-Pred-commute`
     - 🚨 命題（`Red` と基本列の可換性） — `6.5-Red-fseq-commute`
