@@ -1,7 +1,7 @@
 import PSS.Defs
 
 /-!
-# PSS.Adm — §6.3 許容性 / 許容化 / 基点
+# PSS.Adm — §6.3 許容性 / 許容化 / 基点、§7.4 許容的親子関係
 
 移植元: `isabelle/pss_defs.thy` §6.3。
 -/
@@ -24,6 +24,13 @@ def AdmSet (M : PS) : Set ℕ := {j | adm M j = true}
 def Adm (M : PS) (j : ℕ) : ℕ :=
   if adm M j then j
   else ((List.range j).reverse.find? (fun j' => adm M j')).getD 0
+
+/-- `nextAdm M i j₀ j₁`（許容的親子関係）: `j₀` は行 `i` における
+`j₁` の真の許容祖先であり、その間に許容な祖先がない。 -/
+def nextAdm (M : PS) (i j₀ j₁ : ℕ) : Bool :=
+  leR M i j₀ j₁ && decide (j₀ < j₁) && adm M j₀ &&
+    (List.range j₁).all fun j =>
+      !decide (j₀ < j) || !leR M i j j₁ || !adm M j
 
 /-- `Marked`（`T_PS^Marked`）: 基点付きペア数列。 -/
 def Marked (M : PS) (m : ℕ) : Prop :=

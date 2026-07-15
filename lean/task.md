@@ -26,10 +26,10 @@
 
 ## 進捗ツリー
 
-- ✅ **定義層 `PSS/`**（§5 定式化。命題は置かない。移植元 `isabelle/pss_defs.thy`）[r8]
+- ✅ **定義層 `PSS/`**（§5 定式化。命題は置かない。移植元 `isabelle/pss_defs.thy`）[r9]
   - ✅ ペア数列 `T_PS` / `Lng` / 親子関係 / 直系先祖 / `Pred` / 基本列 `oper` / `IncrFirst` — `PSS/Defs.lean`[r1]
   - ✅ 単項性 `monoT` / 単項成分 `P` / 幹と枝 `Br`,`Joints`,`TrMax`,`FirstNodes` — `PSS/Mono.lean`[r1]
-  - ✅ 許容性 `adm` / 許容化 / 基点 `Marked` — `PSS/Adm.lean`[r1]
+  - ✅ 許容性 `adm` / 許容化 / 許容的親子関係 / 基点 `Marked` — `PSS/Adm.lean`[r2]
   - ✅ 簡約化 `Red` / 簡約性 `RT_PS` — `PSS/Red.lean`[r1]
   - ✅ 標準形 `ST_PS` — `PSS/Standard.lean`[r1]
   - ✅ Buchholz の表記系 `T_B`,`<_B`,基本列,`dom`,`OT_B` — `PSS/Buchholz.lean`[r1]
@@ -112,7 +112,7 @@
     - ✅ 命題（右端第 `1` 基点の `Mark` の基本性質） — `7.3-Mark-rightmost1`[r1]
     - ✅ 命題（`Trans` が単項性を保つこと） — `7.3-Trans-preserves-monoT`[r1]
   - 🚨 §7.4 許容的親子関係
-    - 🚨 命題（`Adm_M` と `<^NextAdm` の関係） — `7.4-Adm-nextAdm`
+    - ✅ 命題（`Adm_M` と `<^NextAdm` の関係） — `7.4-Adm-nextAdm`[r1]
     - 🚨 命題（`Trans` と `<^NextAdm` の関係） — `7.4-Trans-nextAdm`
     - 🚨 系（`Mark` と `<^NextAdm` の関係） — `7.4-Mark-nextAdm`
     - 🚨 系（`Trans` の `Mark` と `Pred` による表示） — `7.4-Trans-Mark-Pred`

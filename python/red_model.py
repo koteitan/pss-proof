@@ -248,6 +248,10 @@ def AdmSet(M): return frozenset(j for j in range(Lng(M)+1) if adm(M,j))   # ℕ_
 def Adm(M,j):                                        # 許容化 Adm_M(j)
     if adm(M,j): return j
     return max(jp for jp in range(j) if adm(M,jp))
+def nextAdm(M,i,j0,j1):                             # 許容的親子関係
+    if not (leR(M,i,j0,j1) and j0<j1 and adm(M,j0)): return False
+    return all((not leR(M,i,j,j1)) or (not adm(M,j))
+               for j in range(j0+1,j1))
 def marked(M,m):                                     # (M,m) ∈ Marked
     return Lng(M)>=1 and adm(M,m) and leR(M,0,m,Lng(M)-1)
 

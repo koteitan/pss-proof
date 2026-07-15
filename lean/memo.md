@@ -89,7 +89,7 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
 
 凡例: 訂正 = `corrections.md` の A 番号。Isa = `isabelle/` 側の対応補題（証明の設計図）。
 
-- ✅ **定義層 `PSS/`** — 移植元は `isabelle/pss_defs.thy` 一本。ここは「証明」ではなく「転記」。[r8]
+- ✅ **定義層 `PSS/`** — 移植元は `isabelle/pss_defs.thy` 一本。ここは「証明」ではなく「転記」。[r9]
   - ✅ `PSS/Defs.lean` — `T_PS`,`Lng`,`entry`,親子(`nextrel0/1`),直系先祖(`le0/le1`),`Pred`,`Derp`,
     `idx1`,`hasParent`,`parent`,基本列 `oper`,`seg`,`FTrace`/`Fdom`/`Fval`,`IncrFirst`。
     `Fval` は停止トレース上の値を読み、停止域外のみ `0` で全域化。その他は **`Bool` 値＝計算可能**。
@@ -103,7 +103,7 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
     `monoT`/`multiT`/`P`/`TrMax`/`Br`/`FirstNodes` は全列で一致、`Joints` は
     **定義される 10,224 列**で一致（原文/Isabelle の `THE` は親が一意でないとき未定義。
     「定義されるか」の判定自体も python と完全一致）。
-  - ✅ `PSS/Adm.lean` — `nadm`,`adm`,`AdmSet`,`Adm`,`Marked`。
+  - ✅ `PSS/Adm.lean` — `nadm`,`adm`,`AdmSet`,`Adm`,`nextAdm`,`Marked`。[r2]
     **忠実性検証済**（`adm`/`Adm` とも全 69,904 列でチェックサム一致）。
   - ✅ `PSS/Red.lean` — `diagSeq`,`Red`,`reduced`(`RT_PS`),`RedCondA`,`RedCondB`。
     Isabelle の停止性測度 `betaM` / `coreReduce` / `muMono` / `nu` を移植し、
@@ -438,6 +438,15 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
     簡約286列中の訂正対象267列で反例0、Lean 内監査も全819列中の簡約62列・対象57列で反例0。
     全819列チェックサムは `531635224` のまま、全 `lake build` は3,033 jobs成功（2.7秒）。
     Isa: `Trans_PT_single`, `m_7_3_Trans_monoT`。[r1]
+  - ✅ `7.4-Adm-nextAdm` — Isabelle の `nextAdm` を「許容な真の祖先で、中間に許容な
+    祖先がない」という有限 Bool 関係として `PSS/Adm.lean` に追加した。構造補題として
+    `Adm M j` が `j` の第1行祖先となる `adm_row1_ancestry` と、第1行祖先が第0行祖先でもある
+    `row1_implies_row0` を公開し、親へ至る祖先鎖と親の最大性から原文どおり
+    `Adm_nextAdm` を証明した。公開3定理は sorry 0、axioms は
+    `[propext, Classical.choice, Quot.sound]`。独立 Python 監査は成分 `<3`・長さ `≤4` の
+    全7,380列、親を持つ5,440件（第0行4,023・第1行1,417）で反例0。Lean 内監査も全819列、
+    対象508件（第0行378・第1行130）で反例0。全 `lake build` は3,034 jobs成功（定義層からの
+    再構築を含め約12秒）。Isa: `m_7_4_Adm_nextAdm`。[r1]
   - `7.4-Mark-nextAdm` — 訂正 **A18**（祖先 `j` に `(M,j) ∈ Marked` が要る）
     ＋ **A46/A47**（原文の `T_PS` 版は偽）。Isa: `y6z_7_4_Mark_nextAdm_TPS_false`
   - `7.4-Trans-nextAdm` — 訂正 **A45**（`T_PS` で偽）
