@@ -227,6 +227,11 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
   - ✅ `6.7-standard-prefix` — `STPS ⊆ TPS` を生成規則で証明し、欠落列数に関する強帰納法を実装。
     真の始切片で `Pred M = oper M 1` を使って標準形を一段下げ、`Pred = take (Lng-1)` により
     元と一段下の始切片が一致することを示した。Isa: `m_6_7_standard_prefix`。[r1]
+  - ✅ `6.7-standard-P-components` — rank 階層の単調性 `SkTPS k M → SkTPS (k+1) M` を、
+    対角列を一列延長して `Pred = oper _ 1` とする基底証人から証明。rank の外帰納と長さの
+    内強帰納を組み合わせ、非複項分岐は `nonmulti_fseq_1/2`、複項分岐は `P_fseq_1/2` で処理した。
+    末尾再帰では `Pcut > 0` から先頭ブロック列の正長さを導き、厳密な長さ減少を確立した。
+    Isa: `SkT_PS_mono`, `m_6_7_standard_P_components`。[r1]
   - `6.7-standard-reduced` — `ST_PS ⊆ RT_PS`。Isa: `m_6_7_*`（e096355）。
     **`has_gz⟹D` / GTWF ルートは偽。escape readback で gate-free 化したのが正解**
   - `6.8-standard-slice-Br-descending` — 訂正 **A7**（「`M′` が標準形」は偽。`Br(M′)` が降順が正）
