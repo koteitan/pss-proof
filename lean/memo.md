@@ -211,8 +211,13 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
     `[propext, Classical.choice, Quot.sound]`。独立 Python モデルの簡約始切片447件で反例0。
     全 `lake build` は3,024 jobs成功（キャッシュ済み2.24秒）。
     Isa: `herd_6_6_reduced_slice`。[r1]
-  - `6.6-ancestor-slice-Red-IncrFirst` — 訂正 **A2**（指数の添字 `m` が未定義 → `j'₀`）
-    ＋ 訂正 **A5**（前提 `j′₀ ≤ TrMax` が弱すぎる。反例 113 件）
+  - ✅ `6.6-ancestor-slice-Red-IncrFirst` — 訂正 **A2**（反復回数の添字
+    `m` が未定義 → `j'₀`）を反映。直系先祖で係留した切片 `S` の単項性と
+    `RedCondA` を導き、`Red S = rebaseRow0 (entry S 0 0) (entry S 1 0) S`
+    の閉形式から `S = IncrFirstN (M₀,j₀-M₁,j₀) (Red S)` を列ごとに復元。
+    `Red S` の簡約性は `Red_nonmulti_RTPS`、単項性は
+    `Red_preserves_monoT_forward` で得た。Kimina `rc=0`, sorry 0、axioms は
+    `[propext, Classical.choice, Quot.sound]`。Isa: `m_6_6_ancestor_slice_Red_IncrFirst`。[r1]
   - ✅ `6.6-RT-image-of-Red` — 訂正 **A41** に従い、`Red` を `T_PS` に制限した像を
     `RedImage` として定義し、成立する包含 `RT_PS ⊆ RedImage` を証明。逆包含は
     `(0,0)(0,2)` の像 `(0,0)(2,2)` が非簡約である反例を `decide` で固定した。[r1]
@@ -235,6 +240,14 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
     解析し、row-1 左端の保存を証明。先頭対角 prefix については `coreReduce` 上の連続 row-1 辺を
     構成して `TrMax` まで持ち上げ、正係数出力の添字を直接計算して prefix の最終列を固定した。
     Isa: `m_6_6_Red_leftend_1`, `_2`。[r1]
+  - ✅ `6.6-reduced-coeff` — `RTPS_iff_condAB` で簡約列から条件 (A)(B) を取り出し、
+    列番号の強帰納を row-1 親あり、row-0 親のみ、両親なしに分岐。
+    row-1 親ありは (A) と row-0 祖先上の狭義増加、row-0 親のみは
+    `parent_exists_2` の対偶、両親なしは (B) で
+    `entry M 1 j ≤ entry M 0 j` を得た。Kimina `rc=0`, sorry 0、axioms は
+    `[propext, Classical.choice, Quot.sound]`。長さ3・係数0..4 の全 16,275 列（簡約235列）で
+    `reduced` 版・条件 (A)(B) 版とも反例 0。全 `lake build` は 3,040 jobs
+    成功（4.54秒）。Isa: `m_6_6_reduced_coeff`。[r1]
   - ✅ `6.6-reduced-leftend` — `bumpAt` の cut 不変性を対角 prefix より右だけに反復して
     `Red (diagSeq 0 (m₁₀-1) ++ M) = diagSeq 0 (m₁₀-1) ++ Red M` を証明。
     `Red (coreReduce M)` の対角 prefix / `Red M` suffix 分解、一般の guarded prefix の単項性、
