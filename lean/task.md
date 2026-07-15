@@ -87,7 +87,7 @@
 - 🚨 **§7 Buchholz の表記系への翻訳**
   - 🚨 §7.1 Buchholz の表記系
     - 🚨 命題（`<_B` が狭義線形順序であること） — `7.1-lessBT-linear-order`
-    - 🚨 命題（順序数項の単項成分の基本性質） — `7.1-term-components`
+    - ✅ 命題（順序数項の単項成分の基本性質） — `7.1-term-components`[r1]
     - 🚨 命題（順序数項のカッコの個数が左右で等しいこと） — `7.1-paren-balance`
     - 📘 [Buc1] Lemma 2.2（`OT_B` の整礎性） — `7.1-buchholz-wf`
     - 🚨 [Buc1] Lemma 3.2a（基本列の狭義減少性） — `7.1-buchholz-fseq-lt`
