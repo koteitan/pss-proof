@@ -382,6 +382,17 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
     `0≤u≤4, 2≤j₁≤6, 1≤n≤4` の全100例で `oper/runSeq`・`Red`・`Trans` とも反例0。
     既存の全819列チェックサムも `531635224` のまま一致し、全 `lake build` は3,021 jobs成功。
     Isa: `m_8_6_diagSeq_Trans_oper`, `p_8_6_diagSeq_Trans_oper`。[r1]
+  - ✅ `8.6-trailing-principal-annihilable` — 訂正 A23 後の正しい Buchholz 基本列に対し、
+    原文どおり任意の scb/right-spine 文脈中の `D_u(t'+D_v0)` が `1≤k≤v+1` 回の `[0]` で
+    `D_ut'` へ置換されることを証明した。旧 A25 は A23 の旧誤読から生じたため撤回済み。
+    一歩の核心を「即時削除または `D_v0→D_{v-1}0`」の二分岐として機械化し、外側が
+    `T_{v-1}` のままなら plain descent、途中で自然数域へ移るなら最初の kind-1 host が
+    正確に `D_{v-1}0` を渡すことを、`RightNodes` suffix と `rnDom` で示した。その後 `v` の
+    強帰納法で上界を閉じた。公開定理 `trailing_principal_annihilable` は sorry 0、axioms は
+    `[propext, Classical.choice, Quot.sound]`。Lean 内にも旧反例候補の正しい 2 手軌道を
+    `#guard` で固定。独立 Python モデルは `t'` 6種、`0≤u,v≤4`、深さ2までの一般右端文脈
+    21,900例で一歩分岐・有界零化とも反例0。既存の全819列チェックサムは Lean/Python とも
+    `531635224` のまま一致し、全 `lake build` は3,022 jobs成功。[r1]
   - `8.1-condI-III-c1-around` — 訂正 **A20**（補題(1) は非簡約 1 列切片で偽）
     ＋ **A21**（補題(5) の条件(III)で `j₀ᴺ = j′₀` が偽）
   - `8.2-*` — `LastStep` の添字は A9 で訂正済みの形を使う。

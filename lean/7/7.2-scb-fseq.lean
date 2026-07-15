@@ -88,7 +88,7 @@ private theorem domTagBP_below_struct {w : ℕ∞} {a : BT} {m : ℕ}
         subst k
         exact ⟨by simp, lt_of_not_ge hle⟩
 
-private theorem operB_dprin_below {w : ℕ∞} {a z : BT} {m : ℕ}
+theorem operB_dprin_below {w : ℕ∞} {a z : BT} {m : ℕ}
     (ha : a ≠ BZero) (htag : domTag a = .below m)
     (hmw : (m : ℕ∞) < w) :
     operB (Dprin w a) z = Dprin w (operB a z) := by
@@ -125,7 +125,7 @@ theorem scb_fseq_succ (t₀ t₁ : BT) (v n : ℕ)
 /-- If a `NatSet`-domain principal occurrence lies on the scb/right spine,
 `operB` transforms that principal and leaves the surrounding flat context
 unchanged.  The domain tag of every enclosing spine node is again `naturals`. -/
-private theorem operB_scb_spine {t : BT} {p p' : BP} {z : BT}
+theorem operB_scb_spine {t : BT} {p p' : BP} {z : BT}
     {s b : List Sym}
     (hocc : flatBT t = s ++ flatBP p ++ b)
     (hb : ∀ x ∈ b, x = .rp)
@@ -326,7 +326,7 @@ private theorem operB_scb_spine {t : BT} {p p' : BP} {z : BT}
 /-- The `below m` analogue of `operB_scb_spine`.  Here the ambient tag is an
 input: it forces every principal strictly above the marked occurrence to take
 the plain descent branch of `operB`. -/
-private theorem operB_scb_spine_below {t : BT} {p p' : BP} {z : BT}
+theorem operB_scb_spine_below {t : BT} {p p' : BP} {z : BT}
     {s b : List Sym} {m : ℕ}
     (hocc : flatBT t = s ++ flatBP p ++ b)
     (hb : ∀ x ∈ b, x = .rp)
@@ -583,7 +583,7 @@ theorem scb_fseq_decomp {t₀ t₁ t : BT} {u v n : ℕ}
 
 /-! ## The kind-1 tower -/
 
-private theorem operB_dprin_kind1 {body z : BT} {u : ℕ∞} {m : ℕ}
+theorem operB_dprin_kind1 {body z : BT} {u : ℕ∞} {m : ℕ}
     (hne : body ≠ BZero) (htag : domTag body = .below m)
     (hle : u ≤ (m : ℕ∞)) :
     operB (Dprin u body) z =
