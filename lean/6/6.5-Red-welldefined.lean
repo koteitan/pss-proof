@@ -316,7 +316,7 @@ theorem nu_coreReduce_lt (M : PS) (hM : TPS M)
 
 /-! The remaining recursive argument in the core/branch case. -/
 
-private def redNJ (M : PS) (J : ℕ) : PS :=
+def redNJ (M : PS) (J : ℕ) : PS :=
   let block := (Br M).getD J []
   let firstNode := (FirstNodes M).getD J 0
   let joint := (Joints M).getD J 0
