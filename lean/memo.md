@@ -395,6 +395,21 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
     対象21例で反例0、既存の全819列チェックサムも Lean/Python とも `531635224` で一致。
     全 `lake build` は3,030 jobs成功（6.10秒）。Isa: `p_7_3_c1_c2`,
     `transC1_lessBT_transC2_full`, `NAbound_holds`。[r2]
+  - ✅ `7.3-Pred-Trans-descend` — まず flatten の一意可読性に沿う BT/BP/principal-list の
+    同時構造帰納法により、任意の完全 principal code を狭義に大きい code へ置換すれば
+    包含項全体も狭義増加する `flat_principal_replacement_lt` を証明した（記事の
+    `scbext_lessBT` より強く、共通 suffix の all-`)` 条件を実際には要しない）。単項分岐は
+    `Trans_Mark_mono_equations` の零枝を直接計算し、非零枝を `replaceScb_spec` と完成済み
+    `transC1_lessBT_transC2_full` で閉じた。複項分岐は `P_Pred_multi` から、末尾 `P` 成分
+    `J` の長さが 1 より大きいとき `Trans(Pred M)=Trans A+Trans(Pred J)`（零成分時は
+    `D₀0`）を復元し、`Lng J` の強帰納法と `addBT_lt_right_bf` を適用した。これで
+    `RTPS` 版を得た後、`Red_Pred`、`Trans_Red`、`Red2` により記事どおり任意の `TPS` へ
+    持ち上げた。公開定理 `Pred_Trans_descend` / `m_7_3_Pred_Trans_descend` は sorry 0、
+    axioms は `[propext, Classical.choice, Quot.sound]`。独立 Python モデルは成分 `<3`・
+    長さ `≤4` の対象7,371列で反例0、Lean 内監査も長さ `≤3` の対象810列で反例0。
+    全819列の既存 Trans/Mark チェックサムは Lean/Python とも `531635224` のまま一致し、
+    全 `lake build` は3,031 jobs成功（3.70秒）。Isa: `Trans_Pred_multi_last`,
+    `m_7_3_Pred_Trans_descend`, `scbext_lessBT`。[r1]
   - `7.3-Mark-rightmost1` — 訂正 **A17**（零項基底で例外。反例あり）
   - `7.3-Trans-preserves-monoT` — **原文は偽（A16）**。反例 `(0,0)(0,0)`。
     ❌ 停止性には不要。反例だけ機械証明して先に進む。
