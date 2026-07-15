@@ -53,6 +53,27 @@ private theorem redPositiveOut_entry1_head (M N : PS)
     simp [R, List.getElem_map, List.getElem_range']
   simp [entry, List.getElem?_eq_getElem hRpos, hget]
 
+private theorem redPositiveOut_head_diag_rl (M N : PS)
+    (hmj : entry M 1 0 ≤ Lng N - 1)
+    (hmono : monoT (seg N (entry M 1 0) (Lng N - 1)) = true) :
+    entry (redPositiveOut_ri M N) 0 0 =
+      entry (redPositiveOut_ri M N) 1 0 := by
+  let m := entry M 1 0
+  let jN := Lng N - 1
+  unfold redPositiveOut_ri
+  dsimp only
+  rw [if_pos (by simp [hmj, hmono])]
+  have hlen : 0 < jN + 1 - m := by
+    dsimp [m, jN]
+    omega
+  let R := (List.range' m (jN + 1 - m)).map (fun j =>
+    (entry N 0 j - entry N 0 m + entry N 1 m, entry N 1 j))
+  change entry R 0 0 = entry R 1 0
+  have hRpos : 0 < Lng R := by simp [R, hlen]
+  have hget : R[0] = (entry N 1 m, entry N 1 m) := by
+    simp [R, List.getElem_map, List.getElem_range']
+  simp [entry, List.getElem?_eq_getElem hRpos, hget]
+
 private theorem nextR1_consecutive_rl (M : PS) (j : ℕ)
     (hL : j + 1 < Lng M)
     (he0 : entry M 0 j < entry M 0 (j + 1))
@@ -209,6 +230,80 @@ theorem Red_leftend_row1 (M : PS) (hM : TPS M) :
                   redB_prefix_diag M hM hmono hpos 1 (entry M 1 0) (le_refl _)
               rw [hred]
               exact hout.trans hanchor
+
+/-- Reduction gives every non-multi input a diagonal first column.  This is
+the first invariant needed for the second-reduct theorem; unlike
+`RTPS_mono_head_eq`, it does not assume that the input was already reduced. -/
+theorem Red_nonmulti_head_eq (M : PS) (hM : TPS M)
+    (hnm : multiT M = false) :
+    entry (Red M) 0 0 = entry (Red M) 1 0 := by
+  by_cases hz : zeroT M = true
+  · rw [Red_zero_mr M hz]
+    simp [entry]
+  · have hz' : zeroT M = false := Bool.eq_false_of_not_eq_true hz
+    have hmono : monoT M = true := by
+      have hh := hnm
+      simp [multiT, hz'] at hh
+      exact hh
+    by_cases hm : entry M 1 0 = 0
+    · by_cases hc0 : entry M 0 0 = 0
+      · have hcore : entry M 0 0 = 0 ∧ entry M 1 0 = 0 := ⟨hc0, hm⟩
+        have hleft : entry (Red M) 0 0 = 0 :=
+          Red_core_prefix_diag M hmono hcore 0 0 (Nat.zero_le _)
+        rw [Red_leftend_row1 M hM, hleft, hm]
+      · let C := coreReduce M
+        have hnoncore : ¬(entry M 0 0 = 0 ∧ entry M 1 0 = 0) := by
+          simp [hc0]
+        have hred : Red M = Red C := by
+          simpa [C, hm] using Red_noncore_ri M hM hmono hnoncore
+        have hCT : TPS C := by simpa [C] using coreReduce_TPS M hM
+        have hCcore : entry C 0 0 = 0 ∧ entry C 1 0 = 0 := by
+          simpa [C] using coreReduce_core M hM
+        have hCnm : multiT C = false := by
+          simpa [C] using coreReduce_multi_false M hM hmono
+        have hRedC0 : entry (Red C) 0 0 = 0 := by
+          by_cases hzC : zeroT C = true
+          · rw [Red_zero_mr C hzC]
+            simp [entry]
+          · have hzC' : zeroT C = false := Bool.eq_false_of_not_eq_true hzC
+            have hmonoC : monoT C = true := by
+              have hh := hCnm
+              simp [multiT, hzC'] at hh
+              exact hh
+            exact Red_core_prefix_diag C hmonoC hCcore 0 0 (Nat.zero_le _)
+        calc
+          entry (Red M) 0 0 = entry (Red C) 0 0 := by rw [hred]
+          _ = 0 := hRedC0
+          _ = entry M 1 0 := hm.symm
+          _ = entry (Red M) 1 0 := (Red_leftend_row1 M hM).symm
+    · have hpos : 0 < entry M 1 0 := by omega
+      have hnoncore : ¬(entry M 0 0 = 0 ∧ entry M 1 0 = 0) := by
+        intro h
+        exact hm h.2
+      let C := coreReduce M
+      let N := Red C
+      let m := entry M 1 0
+      have hCT : TPS C := by simpa [C] using coreReduce_TPS M hM
+      have hCL : Lng C = m + Lng M := by
+        simp [C, m, coreReduce, hm, diagSeq, IncrFirstN_eq_map]
+        omega
+      have hNL : Lng N = m + Lng M := by
+        calc
+          Lng N = Lng C := Lng_Red_invariance C hCT
+          _ = m + Lng M := hCL
+      have hMpos : 0 < Lng M := List.length_pos_of_ne_nil hM
+      have hmj : m ≤ Lng N - 1 := by rw [hNL]; omega
+      have hmonoS : monoT (seg N m (Lng N - 1)) = true := by
+        simpa [N, C, m] using (monoT_Red_m10pos M hM hmono hpos).2
+      have hdiag : entry (redPositiveOut_ri M N) 0 0 =
+          entry (redPositiveOut_ri M N) 1 0 := by
+        apply redPositiveOut_head_diag_rl M N
+        · simpa [m] using hmj
+        · simpa [m] using hmonoS
+      have hred : Red M = redPositiveOut_ri M N := by
+        simpa [N, C, hm] using Red_noncore_ri M hM hmono hnoncore
+      rw [hred]
+      exact hdiag
 
 /-- A leading diagonal prefix of a mono sequence is copied by `Red`. -/
 theorem Red_leading_diag (M : PS) (hM : TPS M)
