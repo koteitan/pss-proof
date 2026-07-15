@@ -262,7 +262,16 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
     `[propext, Classical.choice, Quot.sound]`。独立 Python モデルは深さ 2 の 1,561 項
     （`OT` 496 項）で domain 降下・各項 4 自然数の拡張とも反例 0。
     Isa: `b1x_descent`, `m_buc1_3_2a_fseq_lt`。[r1]
-  - `7.1-buchholz-fseq-closed` — Isa: `m_buc1_3_2_OT_B_closed`（完全証明済み）
+  - ✅ `7.1-buchholz-fseq-closed` — [Buc1] Lemma 3.3 の閉性を、Isabelle の
+    `b1x_master` と同じ「閉性＋Lemma 3.6 の `G` 制御」の同時 `btWeight` 強帰納で証明した。
+    `G_u` 要素の真部分項性・推移性・添字反単調性、sandwich 分解、`G` 制御の最小反例法を
+    Lean の有限 `gatherBT` 上で機械化。訂正 A23 の kind-1 分岐は、`x_i` の狭義増加、
+    `b[x_i]` の tower `G` 制御、`x_i ∈ OT_B` の3帰納不変条件で閉じた。
+    公開定理 `buchholz_fseq_closed_general` / `buchholz_fseq_closed` は sorry 0、axioms は
+    `[propext, Classical.choice, Quot.sound]`。独立 Python モデルは深さ2の1,561項
+    （`OT` 496項）で domain 閉性および各項4自然数の拡張とも反例0、全 `lake build` は
+    3,016 jobs 成功。
+    Isa: `b1x_master`, `m_buc1_3_2_OT_B_closed`。[r1]
   - ✅ `7.2-scb-compose` — principal 成分内の scb 分解を外側へ結合する第 1 主張を、
     文字列連結の結合則と右括弧 tail の閉性から直接証明。第 2 主張は訂正 A11 に従い
     `isPTB_str c` を仮定した `scb_compose_dprin` として証明し、無条件版が

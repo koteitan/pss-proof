@@ -72,11 +72,11 @@ private theorem operB_snoc_bf (ps : List BP) (p : BP) (z : BT) :
     addBT (.trm ps) (operB (.trm [p]) z)
   rw [bOperCore_list_snoc_bf, operB_single_bf]
 
-private theorem domTag_snoc_bf (ps : List BP) (p : BP) :
+theorem domTag_snoc_bf (ps : List BP) (p : BP) :
     domTag (.trm (ps ++ [p])) = domTagBP p := by
   simp [domTag, domTagList_snoc_bf]
 
-private theorem addBT_lt_right_bf (pre x y : BT)
+theorem addBT_lt_right_bf (pre x y : BT)
     (hxy : lessBT x y = true) :
     lessBT (addBT pre x) (addBT pre y) = true := by
   rcases pre with ⟨ps⟩
@@ -93,7 +93,7 @@ private theorem lessBP_single_bf (p q : BP) :
     lessBT (.trm [p]) (.trm [q]) = lessBP p q := by
   simp [lessBT, lessBPList]
 
-private theorem leBT_single_index_bf (h₁ h₂ : ℕ∞) (c₁ c₂ : BT)
+theorem leBT_single_index_bf (h₁ h₂ : ℕ∞) (c₁ c₂ : BT)
     (h : leBT (Dprin h₁ c₁) (Dprin h₂ c₂) = true) : h₁ ≤ h₂ := by
   have hh :
       ((h₁ < h₂ ∨ h₁ = h₂ ∧ lessBT c₁ c₂ = true) ∨
@@ -116,7 +116,7 @@ private theorem Dprin_mem_TBv_bf (w : ℕ) (t : BT) :
     Dprin (w : ℕ∞) t ∈ TBv (w : ℕ∞) := by
   simp [Dprin, TBv]
 
-private theorem TBv_lt_head_bf {z c : BT} {w : ℕ} {h : ℕ∞} {rest : List BP}
+theorem TBv_lt_head_bf {z c : BT} {w : ℕ} {h : ℕ∞} {rest : List BP}
     (hz : z ∈ TBv (w : ℕ∞)) (hwh : (w : ℕ∞) < h) :
     lessBT z (.trm (.db h c :: rest)) = true := by
   rcases z with ⟨zs⟩
@@ -168,7 +168,7 @@ private theorem leBT_replicate_snoc_head_bf (q : BP) (n : ℕ) :
       generalize List.replicate n q = qs
       cases qs <;> rfl
 
-private theorem descP_last_head_bf (p : BP) (ps : List BP)
+theorem descP_last_head_bf (p : BP) (ps : List BP)
     (hdesc : descP (p :: ps) = true) :
     leBT (.trm [(p :: ps).getLast (by simp)]) (.trm [p]) = true := by
   induction ps generalizing p with
@@ -201,7 +201,7 @@ private theorem isOT_BPList_mem_bf (ps : List BP)
         exact hsplit.1
       · exact ih hsplit.2 hp
 
-private theorem domTagBP_below_head_bf {h : ℕ∞} {c : BT} {w : ℕ}
+theorem domTagBP_below_head_bf {h : ℕ∞} {c : BT} {w : ℕ}
     (htag : domTagBP (.db h c) = .below w) : (w : ℕ∞) < h := by
   by_cases hc : c = BZero
   · subst c
@@ -228,9 +228,10 @@ private theorem domTagBP_below_head_bf {h : ℕ∞} {c : BT} {w : ℕ}
           subst k
           exact lt_of_not_ge hle
 
-private theorem Dw_zero_lt_of_OT_tag_below_bf (b : BT) (w : ℕ)
-    (hot : isOT_BT b = true) (htag : domTag b = .below w) :
-    lessBT (Dprin (w : ℕ∞) BZero) b = true := by
+theorem TBv_lt_of_OT_tag_below_bf (b z : BT) (w : ℕ)
+    (hot : isOT_BT b = true) (htag : domTag b = .below w)
+    (hz : z ∈ TBv (w : ℕ∞)) :
+    lessBT z b = true := by
   rcases b with ⟨bs⟩
   have hne : bs ≠ [] := by
     intro hnil
@@ -257,8 +258,13 @@ private theorem Dw_zero_lt_of_OT_tag_below_bf (b : BT) (w : ℕ)
   rcases q with ⟨hq, cq⟩
   have hhq : h ≤ hq := leBT_single_index_bf h hq c cq (by simpa [Dprin] using hle)
   have hwq : (w : ℕ∞) < hq := hwh.trans_le hhq
-  change lessBPList [.db (w : ℕ∞) BZero] (.db hq cq :: qs) = true
-  simp [lessBPList, lessBP, hwq]
+  exact TBv_lt_head_bf hz hwq
+
+private theorem Dw_zero_lt_of_OT_tag_below_bf (b : BT) (w : ℕ)
+    (hot : isOT_BT b = true) (htag : domTag b = .below w) :
+    lessBT (Dprin (w : ℕ∞) BZero) b = true := by
+  apply TBv_lt_of_OT_tag_below_bf b (Dprin (w : ℕ∞) BZero) w hot htag
+  exact Dprin_mem_TBv_bf w BZero
 
 private theorem bpWeight_mem_succ_le_bf (p : BP) (ps : List BP)
     (hp : p ∈ ps) : bpWeight p + 1 ≤ bpListWeight ps := by

@@ -91,7 +91,7 @@
     - ✅ 命題（順序数項のカッコの個数が左右で等しいこと） — `7.1-paren-balance`[r1]
     - 📘 [Buc1] Lemma 2.2（`OT_B` の整礎性） — `7.1-buchholz-wf`
     - ✅ [Buc1] Lemma 3.2a（基本列の狭義減少性） — `7.1-buchholz-fseq-lt`[r1]
-    - 🚨 [Buc1] Lemma 3.2（`OT_B` の基本列閉包） — `7.1-buchholz-fseq-closed`
+    - ✅ [Buc1] Lemma 3.2（`OT_B` の基本列閉包） — `7.1-buchholz-fseq-closed`[r1]
   - 🚨 §7.2 scb 分解
     - ✅ 命題（scb分解の置換可能性） — `7.2-scb-replaceable`[r1]
     - ✅ 命題（scb分解の合成則） — `7.2-scb-compose`[r1]
