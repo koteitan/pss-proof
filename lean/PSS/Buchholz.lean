@@ -245,7 +245,8 @@ mutual
     | p :: ps => bpWeight p + bpListWeight ps + 1
 end
 
-private inductive BOperState where
+/-- Internal call states of the shared `operB`/`xseq` recursion. -/
+inductive BOperState where
   | term (a z : BT)
   | princ (p : BP) (z : BT)
   | list (ps : List BP) (z : BT)
@@ -262,7 +263,9 @@ private def bOperMeasure : BOperState → ℕ × ℕ × ℕ
 `xseq b u (i+1)` から同じ `b` の `operB` へ移るときは測度の第 2 成分が `1 → 0`、
 反復自身では第 3 成分 `i` が減る。`operB` からの全呼出しは真部分項へ進む。 -/
 set_option linter.unnecessarySeqFocus false in
-private def bOperCore (s : BOperState) : BT :=
+/-- Shared well-founded recursion core for `operB` and `xseq`.
+Exposed so proposition files can use its definitional reduction equations. -/
+def bOperCore (s : BOperState) : BT :=
   match s with
   | .term (.trm ps) z => bOperCore (.list ps z)
   | .list [] _ => BZero

@@ -98,7 +98,7 @@
     - ✅ 命題（scb分解の自明性の判定条件） — `7.2-scb-triviality`[r1]
     - ✅ 命題（scb分解の一意性） — `7.2-scb-unique`[r3]
     - ✅ 系（加法とscb分解の関係） — `7.2-add-scb`[r1]
-    - 🚨 命題（scb分解と基本列の関係） — `7.2-scb-fseq`
+    - ✅ 命題（scb分解と基本列の関係） — `7.2-scb-fseq`[r1]
     - ✅ 命題（`RightNodes` と部分表現の関係） — `7.2-RightNodes-subexpr`[r1]
   - 🚨 §7.3 翻訳写像
     - 🚨 命題（`Trans` の well-defined 性） — `7.3-Trans-welldefined`

@@ -284,7 +284,17 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
     `RightNodes (spineSub t₀ t) = RightNodes t₀ ++ RightNodes t` の保存則を結合し、`[v]` の前後を
     なす pair の存在一意性まで閉じた。Isa: `m_7_2_RightNodes_subexpr`。[r1]
   - `7.2-scb-*` — 訂正 **A12**（選言が零項で空回り）、**A13**（系(3) 出現位置は同一とは限らない）
-  - `7.2-scb-fseq` — 訂正 **A23**（脚注[30] の基本列の転置）。Isa: `m_7_2_scb_fseq_kind1_general`
+  - ✅ `7.2-scb-fseq` — (1-1) の末尾 successor-body 計算を `bOperCore` の再帰式から直接証明し、
+    (1-2) は scb occurrence を囲む任意の右端 spine を保存する `NatSet` domain 輸送として閉じた。
+    第 3 主張では `T_{v-1}` domain 用の同型輸送と、訂正 **A23** の
+    `x_{i+1}=D_{v-1}(body[x_i])` 塔を証明。原文の二重 scb 仮定だけから marked principal
+    `c₂=D_u(body)`、`u<v`、`domTag body=.below(v-1)` を `RightNodes` の kind-1 境界条件で復元し、
+    記事どおり `(s₀D_{v-1})^(n+1) 0 b₀^(n+1)` を得た。途中の塔単体は `n` 層だが、
+    `operB body` が最後の 1 層を加えるため **A24 による指数変更は不要**。独立 Python モデルで
+    記事式 112/112（一方が非空の文脈 60 例を含む）一致、塔単体式は同文脈で 0/60 と確認した。
+    `bOperCore` の再帰式と `rnDom`/末尾 scb 構文補題を再利用可能 API として公開（定義値は不変）。
+    Isa: `m_7_2_scb_fseq_succ`, `m_7_2_scb_fseq_scb`,
+    `m_7_2_scb_fseq_kind1_general`。[r1]
   - `7.3-Trans-welldefined` — 訂正 **A15**（原文の測度は下がらない）。
     Isa: `Trans_Mark_invariant_aux`（停止性＋値域 `(Trans,Mark) ∈ T_B^Marked`、域は `RT_PS`）
   - `7.3-Mark-rightmost1` — 訂正 **A17**（零項基底で例外。反例あり）

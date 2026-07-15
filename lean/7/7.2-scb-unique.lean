@@ -52,7 +52,7 @@ private theorem scb_straddle_excluded {m : List Sym} {p : BP} {a : BT}
     exact hnozero hzmem
 
 /-- multi 項の、最後の principal より前にある完全成分とコンマの列。 -/
-private def flatComponentRun : List BP → List Sym
+def flatComponentRun : List BP → List Sym
   | [] => []
   | p :: ps => flatBP p ++ .cm :: flatComponentRun ps
 
@@ -126,7 +126,7 @@ private theorem flatBPTail_snoc (ps : List BP) (p : BP) :
   | cons q qs ih =>
       simp [flatBPTail, flatComponentRun, ih, List.append_assoc]
 
-private theorem flatBT_multi_snoc (p : BP) (ps : List BP) (q : BP) :
+theorem flatBT_multi_snoc (p : BP) (ps : List BP) (q : BP) :
     flatBT (.trm ((p :: ps) ++ [q])) =
       .lp :: (flatComponentRun (p :: ps) ++ flatBP q) ++ [.rp] := by
   cases ps with
@@ -146,7 +146,7 @@ private theorem rightNodesList_snoc (ps : List BP) (p : BP) :
       | nil => simp [rightNodesList]
       | cons r rs => simpa [rightNodesList] using ih
 
-private theorem flatBP_length_ge_two (p : BP) : 2 ≤ (flatBP p).length := by
+theorem flatBP_length_ge_two (p : BP) : 2 ≤ (flatBP p).length := by
   rcases p with ⟨u, a⟩
   have hne : flatBT a ≠ [] := by
     intro h
@@ -158,7 +158,7 @@ private theorem flatBP_length_ge_two (p : BP) : 2 ≤ (flatBP p).length := by
 
 /-- multi 項では、右括弧尾部を持つ principal occurrence は最後の
 top-level principal の開始位置より左には始まらない。 -/
-private theorem scb_cut_reaches_last (p : BP) (ps : List BP) (q pp : BP)
+theorem scb_cut_reaches_last (p : BP) (ps : List BP) (q pp : BP)
     (s b : List Sym)
     (h : flatBT (.trm ((p :: ps) ++ [q])) = s ++ flatBP pp ++ b)
     (hb : ∀ x ∈ b, x = .rp) :
@@ -187,7 +187,7 @@ private theorem scb_cut_reaches_last (p : BP) (ps : List BP) (q pp : BP)
 
 /-- 最後の top-level principal 以後にある occurrence は、その principal 全体か、
 その引数内の occurrence のどちらかである。 -/
-private theorem scb_last_dichotomy {pre post s b : List Sym} {q pp : BP}
+theorem scb_last_dichotomy {pre post s b : List Sym} {q pp : BP}
     (h : pre ++ flatBP q ++ post = s ++ flatBP pp ++ b)
     (hb : ∀ x ∈ b, x = .rp) (hpost : ∀ x ∈ post, x = .rp)
     (hcut : pre.length ≤ s.length) :
@@ -611,8 +611,7 @@ private theorem scb_unique_nonzero {t : BT} {s₀ s₁ c b₀ b₁ : List Sym}
 
 /-- 固定した中央文字列 `c` を持つ scb 分解では、前置部 `s` と右括弧尾部 `b` が一意。
 原文の一意性命題の第 1 主張。 -/
-theorem scb_unique_decomp (t : BT) (s₀ s₁ c b₀ b₁ : List Sym)
-    (_htb : t ∈ T_B)
+theorem scb_unique_decomp_unconditional (t : BT) (s₀ s₁ c b₀ b₁ : List Sym)
     (h₀ : scb_decomp t s₀ c b₀) (h₁ : scb_decomp t s₁ c b₁) :
     s₀ = s₁ ∧ b₀ = b₁ := by
   by_cases ht : t = BZero
@@ -636,6 +635,13 @@ theorem scb_unique_decomp (t : BT) (s₀ s₁ c b₀ b₁ : List Sym)
     simp only [List.append_nil] at e₀ e₁
     exact ⟨List.append_cancel_right (e₀.symm.trans e₁), rfl⟩
   · exact scb_unique_nonzero h₀ h₁ ht
+
+/-- Backwards-compatible statement of the paper's first uniqueness conjunct. -/
+theorem scb_unique_decomp (t : BT) (s₀ s₁ c b₀ b₁ : List Sym)
+    (_htb : t ∈ T_B)
+    (h₀ : scb_decomp t s₀ c b₀) (h₁ : scb_decomp t s₁ c b₁) :
+    s₀ = s₁ ∧ b₀ = b₁ :=
+  scb_unique_decomp_unconditional t s₀ s₁ c b₀ b₁ h₀ h₁
 
 private theorem scb_same_cut_unique {t : BT}
     {s₀ s₁ c₀ c₁ b₀ b₁ : List Sym}
@@ -1114,7 +1120,7 @@ theorem scb_kinds_exclusive_original_false :
 /-! ## `domB` と右端 spine の分類 -/
 
 /-- `domTag` を有限な右端 index 列だけから計算する純リスト版。 -/
-private def rnDom : List ℕ → BDom
+def rnDom : List ℕ → BDom
   | [] => .empty
   | [v] => if v = 0 then .zeroOnly else .below (v - 1)
   | v :: w :: ws =>
@@ -1183,7 +1189,7 @@ private def DomRN_List (ps : List BP) : Prop :=
   dfree_BPList ps = true → domTagList ps = rnDom (rightNodesList ps)
 
 /-- `D_ω`-free 項では、実装上の定義域タグは右端 index 列だけで決まる。 -/
-private theorem domTag_eq_rnDom (t : BT) : DomRN_BT t := by
+private theorem domTag_eq_rnDom_core (t : BT) : DomRN_BT t := by
   exact BT.rec
     (motive_1 := DomRN_BT)
     (motive_2 := DomRN_BP)
@@ -1236,6 +1242,13 @@ private theorem domTag_eq_rnDom (t : BT) : DomRN_BT t := by
       | cons q qs =>
           simpa [DomRN_List, domTagList, rightNodesList] using ihps hsplit.2)
     t
+
+/-- On a `D_ω`-free term, `domTag` is computed solely from its right-node
+index list.  This is the reusable equality form of the internal simultaneous
+induction above. -/
+theorem domTag_eq_rnDom (t : BT) (hdf : dfree_BT t = true) :
+    domTag t = rnDom (RightNodes t) :=
+  domTag_eq_rnDom_core t hdf
 
 private theorem nestedD0_not_nat :
     Dprin 0 (Dprin 0 BZero) ∉ NatSet := by
