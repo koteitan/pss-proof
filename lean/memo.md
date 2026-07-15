@@ -346,7 +346,7 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
     `531635224` のまま一致。全 `lake build` は 3,017 jobs 成功。
     Isa: `m_7_3_twoColumn_Trans`, `m_7_3_twoColumn_Marked`,
     `m_7_3_twoColumn_Mark`, `p_7_3_twoColumn`。[r1]
-  - 🚧 `7.3-Trans-welldefined` — 訂正 **A15** の簡約核部分として、実行可能 parser の完全性と
+  - ✅ `7.3-Trans-welldefined` — 訂正 **A15** の簡約核部分として、実行可能 parser の完全性と
     `unflatBT (flatBT t) = t`、scb 文脈選択の健全性、置換後の `T_B` / principal /
     `MarkedB` 保存を証明。`Pred` と複項の始切片・右端成分の長さが真に
     減少することから、`TransAux` / `MarkAux` の十分な燃料間での値の一意性を
@@ -356,9 +356,11 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
     sorry 0、axioms は `[propext, Classical.choice, Quot.sound]`。`scbContexts` の比較を
     命題的等値比較に強化した後も、Python/Lean の全 819 列チェックサムは
     `531635224` で一致。全 `lake build` は 3,025 jobs 成功（7.31秒）。
-    Isa: `m_7_3_Trans_welldef`, `m_7_3_Mark_welldef`,
-    `Trans_Mark_invariant_aux`。[r2] 原文どおり全 `TPS` 上の一意存在へ戻す残件は、
-    `Red` 軌道が2段で簡約形へ達する `y3r_RED2` のLean移植と、その軌道測度による値輸送。
+    RED2 完成後、`TransAux` / `MarkAux` を同時に二段展開し、同長の `Red` 軌道から
+    `Red (Red M)` の簡約核へ輸送。公開定理 `Trans_Mark_welldefined` により、
+    原文の非簡約再帰式を全 `TPS` で満たす一意な値を得た。sorry 0、axioms は
+    `[propext, Classical.choice, Quot.sound]`。Isa: `m_7_3_Trans_welldef`,
+    `m_7_3_Mark_welldef`, `Trans_Mark_invariant_aux`。[r3]
   - ✅ `7.3-Trans-IncrFirst-Red` — 訂正 **A16** の先頭 `P` 成分非零条件下で、
     `P M = P (take (Pcut M) M) ++ [drop (Pcut M) M]` に沿う長さ強帰納を行い、
     `Trans M = SigmaB ((P M).map transPComponent)` を証明した。複項枝では始切片の

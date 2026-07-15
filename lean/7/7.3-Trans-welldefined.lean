@@ -5,6 +5,7 @@ import «6».«6.6-P-preserves-reduced»
 import «6».«6.6-reduced-leftend»
 import «6».«6.6-condAB-coeff»
 import «6».«6.6-one-column»
+import «6».«6.6-Red2»
 import «7».«7.2-scb-replaceable»
 import «7».«7.2-scb-compose»
 import «7».«7.2-add-scb»
@@ -17,7 +18,7 @@ import PSS.Trans
 - 訂正: A15（`RTPS` 核と有限 `Red` 軌道を組み合わせる）
 - Isabelle: `Pred_RT_PS`, `trans_multiT_prefix_RT_PS`,
   `trans_multiT_last_component`, `Trans_Mark_invariant_aux`
-- 状態: 🚧 `RTPS` 上の再帰値不変条件まで証明済。全 `TPS` 版は RED2 待ち
+- 状態: ✅ 証明済（sorry 0）
 -/
 
 namespace PSS
@@ -1638,6 +1639,117 @@ theorem Trans_Mark_mem_MarkedB (M : PS) (m : ℕ) (hR : RTPS M)
     (hm : Marked M m) : (Trans M, Mark M m) ∈ MarkedB :=
   (Trans_Mark_invariant M hR).2.2 m hm |>.2
 
+private theorem transMark_fuel_after_red_ge (M : PS) (hM : TPS M) :
+    Lng (Red M) ≤ transFuel M - 1 := by
+  have hmul : Lng M + 1 ≤ 8 * (nu M + 1) * (Lng M + 1) :=
+    Nat.le_mul_of_pos_left (Lng M + 1) (by positivity)
+  rw [Lng_Red_invariance M hM]
+  simp only [transFuel]
+  omega
+
+private theorem transMark_fuel_after_red2_ge (M : PS) (hM : TPS M) :
+    Lng (Red (Red M)) ≤ transFuel M - 2 := by
+  have hRM : TPS (Red M) := Red_TPS M hM
+  have hfactor : 2 ≤ 8 * (nu M + 1) := by
+    calc
+      2 ≤ 8 * 1 := by norm_num
+      _ ≤ 8 * (nu M + 1) :=
+        Nat.mul_le_mul_left 8 (Nat.succ_le_succ (Nat.zero_le (nu M)))
+  have hmul : Lng M + 2 ≤ 8 * (nu M + 1) * (Lng M + 1) := by
+    calc
+      Lng M + 2 ≤ 2 * (Lng M + 1) := by omega
+      _ ≤ (8 * (nu M + 1)) * (Lng M + 1) :=
+        Nat.mul_le_mul_right (Lng M + 1) hfactor
+  rw [Lng_Red_invariance (Red M) hRM, Lng_Red_invariance M hM]
+  simp only [transFuel]
+  omega
+
+/-- Joint one-step value equation when the reduct has reached the reduced
+kernel. -/
+theorem Trans_Mark_Red_of_Red_reduced (M : PS) (hM : TPS M)
+    (hRR : RTPS (Red M)) :
+    Trans M = Trans (Red M) ∧ ∀ m, Mark M m = Mark (Red M) m := by
+  by_cases hR : RTPS M
+  · have hfix := RTPS_Red_eq M hR
+    constructor
+    · simp [hfix]
+    · intro m
+      simp [hfix]
+  · have hred : reduced M = false := Bool.eq_false_of_not_eq_true hR
+    have hirr := TransAux_MarkAux_fuel_irrel_RTPS (Red M) hRR
+      (transFuel M - 1) (transFuel (Red M))
+      (transMark_fuel_after_red_ge M hM)
+      (transFuel_ge_length (Red M))
+    constructor
+    · calc
+        Trans M = TransAux (transFuel M - 1) (Red M) := by
+          rw [Trans, show transFuel M = (transFuel M - 1) + 1 by
+            have : 0 < transFuel M := by simp [transFuel]
+            omega]
+          simp [TransAux, hred]
+        _ = TransAux (transFuel (Red M)) (Red M) := hirr.1
+        _ = Trans (Red M) := rfl
+    · intro m
+      calc
+        Mark M m = MarkAux (transFuel M - 1) (Red M) m := by
+          rw [Mark, show transFuel M = (transFuel M - 1) + 1 by
+            have : 0 < transFuel M := by simp [transFuel]
+            omega]
+          simp [MarkAux, hred]
+        _ = MarkAux (transFuel (Red M)) (Red M) m := hirr.2 m
+        _ = Mark (Red M) m := rfl
+
+/-- Corrected A15: the public fuel-bounded functions satisfy the simultaneous
+non-reduced recursion equations on every pair sequence.  RED2 bounds the
+same-length `Red` orbit by two steps, after which fuel irrelevance on the
+reduced kernel supplies uniqueness of the values. -/
+theorem Trans_Mark_welldefined (M : PS) (hM : TPS M) :
+    Trans M = Trans (Red M) ∧ ∀ m, Mark M m = Mark (Red M) m := by
+  have hRR2 := Red2 M hM
+  by_cases hRR : RTPS (Red M)
+  · exact Trans_Mark_Red_of_Red_reduced M hM hRR
+  · have hRM : TPS (Red M) := Red_TPS M hM
+    have hredR : reduced (Red M) = false :=
+      Bool.eq_false_of_not_eq_true hRR
+    have hredM : reduced M = false := by
+      apply Bool.eq_false_of_not_eq_true
+      intro hR
+      have hfix : Red M = M := RTPS_Red_eq M hR
+      exact hRR (by simpa [hfix] using hR)
+    have hfuel : 2 ≤ transFuel M := by
+      have hfactor : 2 ≤ 8 * (nu M + 1) := by
+        calc
+          2 ≤ 8 * 1 := by norm_num
+          _ ≤ 8 * (nu M + 1) :=
+            Nat.mul_le_mul_left 8 (Nat.succ_le_succ (Nat.zero_le (nu M)))
+      calc
+        2 ≤ 2 * (Lng M + 1) := by omega
+        _ ≤ (8 * (nu M + 1)) * (Lng M + 1) :=
+          Nat.mul_le_mul_right (Lng M + 1) hfactor
+        _ ≤ transFuel M := by simp [transFuel]
+    have hirr := TransAux_MarkAux_fuel_irrel_RTPS (Red (Red M)) hRR2
+      (transFuel M - 2) (transFuel (Red (Red M)))
+      (transMark_fuel_after_red2_ge M hM)
+      (transFuel_ge_length (Red (Red M)))
+    have hstepR := Trans_Mark_Red_of_Red_reduced (Red M) hRM hRR2
+    constructor
+    · calc
+        Trans M = TransAux (transFuel M - 2) (Red (Red M)) := by
+          rw [Trans, show transFuel M = (transFuel M - 2) + 2 by omega]
+          simp [TransAux, hredM, hredR]
+        _ = TransAux (transFuel (Red (Red M))) (Red (Red M)) := hirr.1
+        _ = Trans (Red (Red M)) := rfl
+        _ = Trans (Red M) := hstepR.1.symm
+    · intro m
+      calc
+        Mark M m = MarkAux (transFuel M - 2) (Red (Red M)) m := by
+          rw [Mark, show transFuel M = (transFuel M - 2) + 2 by omega]
+          simp [MarkAux, hredM, hredR]
+        _ = MarkAux (transFuel (Red (Red M))) (Red (Red M)) m :=
+          hirr.2 m
+        _ = Mark (Red (Red M)) m := rfl
+        _ = Mark (Red M) m := (hstepR.2 m).symm
+
 #print axioms TransAux_MarkAux_fuel_irrel_RTPS
 #print axioms Trans_eq_lengthAux
 #print axioms Mark_eq_lengthAux
@@ -1650,5 +1762,7 @@ theorem Trans_Mark_mem_MarkedB (M : PS) (m : ℕ) (hR : RTPS M)
 #print axioms Trans_mem_T_B
 #print axioms Mark_mem_T_B
 #print axioms Trans_Mark_mem_MarkedB
+#print axioms Trans_Mark_Red_of_Red_reduced
+#print axioms Trans_Mark_welldefined
 
 end PSS
