@@ -713,7 +713,7 @@ private theorem Red_core_nontrunk_ri (M : PS) (hM : TPS M)
     rfl
   rw [he, RedAux_stable (redNJ M J) hNJT (nu M) hdesc]
 
-private def redPositiveOut_ri (M N : PS) : PS :=
+def redPositiveOut_ri (M N : PS) : PS :=
   let m := entry M 1 0
   let jN := Lng N - 1
   let S := seg N m jN
@@ -722,7 +722,7 @@ private def redPositiveOut_ri (M N : PS) : PS :=
       (entry N 0 j - entry N 0 m + entry N 1 m, entry N 1 j))
   else M
 
-private theorem Red_noncore_ri (M : PS) (hM : TPS M)
+theorem Red_noncore_ri (M : PS) (hM : TPS M)
     (hmono : monoT M = true)
     (hnoncore : ¬(entry M 0 0 = 0 ∧ entry M 1 0 = 0)) :
     Red M = if entry M 1 0 = 0 then Red (coreReduce M)

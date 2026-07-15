@@ -22,4 +22,5 @@ import «6».«6.5-Red-IncrFirst-invariance»
 import «6».«6.5-Red-idempotence»
 import «6».«6.5-Lng-Red-invariance»
 import «6».«6.5-Red-preserves-zeroT»
+import «6».«6.5-Red-preserves-monoT»
 import «6».«6.5-monoT-Red»

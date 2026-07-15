@@ -18,7 +18,7 @@ private theorem entry_append_left_mr (A B : PS) (i j : ℕ)
     (hj : j < Lng A) : entry (A ++ B) i j = entry A i j := by
   simp [entry, List.getElem?_append_left hj]
 
-private theorem entry_append_right_mr (A B : PS) (i j : ℕ)
+theorem entry_append_right_mr (A B : PS) (i j : ℕ)
     (hj : Lng A ≤ j) : entry (A ++ B) i j = entry B i (j - Lng A) := by
   simp [entry, List.getElem?_append_right hj]
 
@@ -113,7 +113,7 @@ private theorem mono_row0_min_mr (M : PS) (hM : TPS M)
         (by omega) (by omega) hfull
       omega
 
-private theorem entry0_eq_fst_getElem_mr (M : PS) (j : ℕ)
+theorem entry0_eq_fst_getElem_mr (M : PS) (j : ℕ)
     (hj : j < Lng M) : entry M 0 j = M[j].1 := by
   simp [entry, List.getElem?_eq_getElem hj]
 
@@ -526,7 +526,7 @@ private def branchNP (M : PS) (J : ℕ) : ℕ :=
   if entry ((Br M).getD J []) 1 0 = 0 then 0
   else parent M 1 ((FirstNodes M).getD J 0) + 1
 
-private def branchE (M : PS) (J : ℕ) : ℕ :=
+def branchE (M : PS) (J : ℕ) : ℕ :=
   (Joints M).getD J 0 + 1 - branchNP M J
 
 private theorem redNJ_entry0_mr (M : PS) (J : ℕ) :
@@ -544,7 +544,7 @@ private theorem Red_zero_mr (M : PS) (hz : zeroT M = true) :
 
 /-- The core/non-trunk equation for `Red`, with every recursive fuel call
 replaced by the total `Red` supplied by well-definedness. -/
-private theorem Red_core_nontrunk_mr (M : PS) (hM : TPS M)
+theorem Red_core_nontrunk_mr (M : PS) (hM : TPS M)
     (hmono : monoT M = true)
     (hcore : entry M 0 0 = 0 ∧ entry M 1 0 = 0)
     (ht : TrMax M ≠ Lng M - 1) :
@@ -612,7 +612,7 @@ private theorem branchNP_le_Red_entry_mr (M : PS) (J k : ℕ)
     have hmin := Red_leftend_row0_min (redNJ M J) hNJT hNJmono k hk
     omega
 
-private theorem branch_block_row0_ge_joint_mr (M : PS) (J : ℕ)
+theorem branch_block_row0_ge_joint_mr (M : PS) (J : ℕ)
     (hM : TPS M) (hmono : monoT M = true)
     (hcore : entry M 0 0 = 0 ∧ entry M 1 0 = 0)
     (hJ : J < (Br M).length) (p : ℕ × ℕ)

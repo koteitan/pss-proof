@@ -177,8 +177,12 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
       `RTPS M` から定義展開だけで `Red M = M` を取り出して冪等性を示した。原文版の反例
       `M=(0,0)(0,2)` は `by decide` で機械証明し、`Red(Red M) ≠ Red M` を固定した。[r1]
     - `6.5-Red-le-invariance` / `6.5-Red-preserves-monoT` / `6.5-P-Red-equivariance`
-      — 同じく `T_PS` では偽。定義域を `RT_PS` に制限（A4）。Isa: `m_6_5_Red_le_final`,
+      — 同じく `T_PS` では偽。訂正 A4 の `anchoredSlice` に制限。Isa: `m_6_5_Red_le_final`,
         `m_6_5_monoCong`（勝ち筋＝閉形式 `Red M = rebase(M)` に持ち込む）
+    - ✅ `6.5-Red-preserves-monoT` — A4 の正確な訂正版に従い `anchoredSlice` 上の同値を証明。
+      A4 非依存の前向き定理は `nu` 強帰納法で、core 非 trunk の枝ブロック下界、row-0 shift の
+      再帰、正の `m₁₀` 分岐の `monoT_Red_m10pos` を組み合わせた。係留切片が零項または単項で
+      あることから逆向きを導き、原文 `TPS` 版の反例 `(0,0)(0,1)` も `decide` で固定した。[r1]
   - `6.6-ancestor-slice-Red-IncrFirst` — 訂正 **A2**（指数の添字 `m` が未定義 → `j'₀`）
     ＋ 訂正 **A5**（前提 `j′₀ ≤ TrMax` が弱すぎる。反例 113 件）
   - `6.6-RT-image-of-Red` — 訂正 **A41**（`RT_PS = Im(Red)` は偽）。Isa: `m_6_6_*`
