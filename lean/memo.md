@@ -188,10 +188,11 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
       原文 `TPS` 版の同じ反例 `(0,0)(0,1)` も `decide` で固定した。[r1]
     - 🚧 `6.5-Red-le-invariance` — `rebaseRow0` を定義し、長さ・各成分・`nextrel0/1`・
       `le0/1`・`nextR`・`leR` が row-0 の一様な差引きで不変となることを証明した。
-      `RedCondA` から幹上の成分が左端から対角的に増えること、および core 全体が幹なら
-      `Red M = M` となることまで機械化済み。次は非複項について
+      `RedCondA` の rebase・任意切片・枝成分への遺伝、`redNJ` と枝成分の一致、帰納仮定による
+      各 lifted branch block の復元を追加し、core の trunk/非-trunk 両分岐で `Red M = M` を
+      機械化した。次は正の `m₁₀` の `coreReduce` ブロック値を組み立て、非複項について
       `Red M = rebaseRow0 (entry M 0 0) (entry M 1 0) M` の閉形式を強帰納法で証明し、
-      A4 の `anchoredSlice` 版 `leR M = leR (Red M)` へ接続する。全体 build 2993 jobs 成功。[r0]
+      A4 の `anchoredSlice` 版 `leR M = leR (Red M)` へ接続する。[r0]
   - `6.6-ancestor-slice-Red-IncrFirst` — 訂正 **A2**（指数の添字 `m` が未定義 → `j'₀`）
     ＋ 訂正 **A5**（前提 `j′₀ ≤ TrMax` が弱すぎる。反例 113 件）
   - `6.6-RT-image-of-Red` — 訂正 **A41**（`RT_PS = Im(Red)` は偽）。Isa: `m_6_6_*`

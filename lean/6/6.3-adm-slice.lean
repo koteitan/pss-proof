@@ -13,7 +13,7 @@ import «6».«6.2-P-fseq»
 
 namespace PSS
 
-private theorem nextrel0_take_adm (M : PS) (n a b : ℕ)
+theorem nextrel0_take_adm (M : PS) (n a b : ℕ)
     (hn : n ≤ Lng M) (ha : a < n) (hb : b < n) :
     nextrel0 (M.take n) a b = nextrel0 M a b := by
   apply Bool.eq_iff_iff.mpr
@@ -92,7 +92,7 @@ theorem le0_take_adm (M : PS) (n a b : ℕ)
     have ht := le0Aux_take_bwd_adm M n (b + 1) a b hn hb hsmall
     exact le0Aux_mono_fseq (M.take n) (b + 1) n a b (by omega) ht
 
-private theorem nextrel1_take_adm (M : PS) (n a b : ℕ)
+theorem nextrel1_take_adm (M : PS) (n a b : ℕ)
     (hn : n ≤ Lng M) (ha : a < n) (hb : b < n) :
     nextrel1 (M.take n) a b = nextrel1 M a b := by
   apply Bool.eq_iff_iff.mpr
@@ -136,6 +136,14 @@ private theorem nextR1_take_adm (M : PS) (n a b : ℕ)
     nextR (M.take n) 1 a b = nextR M 1 a b := by
   simp [nextR, nextrel1_take_adm M n a b hn ha hb]
 
+theorem nextR_take_adm (M : PS) (n i a b : ℕ)
+    (hn : n ≤ Lng M) (ha : a < n) (hb : b < n) :
+    nextR (M.take n) i a b = nextR M i a b := by
+  by_cases hi : i = 0
+  · subst i
+    simp [nextR, nextrel0_take_adm M n a b hn ha hb]
+  · simp [nextR, hi, nextrel1_take_adm M n a b hn ha hb]
+
 theorem seg_eq_take_drop_adm (M : PS) (s e : ℕ)
     (hse : s ≤ e) (he : e < Lng M) :
     seg M s e = (M.drop s).take (e + 1 - s) := by
@@ -169,6 +177,29 @@ theorem nextR1_seg_adm (M : PS) (s e a b : ℕ)
       rw [seg_eq_take_drop_adm M s e hse he]
     _ = nextR D 1 a b := nextR1_take_adm D len a b hlen haLen hbLen
     _ = nextR M 1 (s + a) (s + b) := nextR_drop M s 1 a b haD hbD
+
+theorem nextR_seg_adm (M : PS) (s e i a b : ℕ)
+    (hse : s ≤ e) (he : e < Lng M)
+    (ha : a < Lng (seg M s e)) (hb : b < Lng (seg M s e)) :
+    nextR (seg M s e) i a b = nextR M i (s + a) (s + b) := by
+  let D := M.drop s
+  let len := e + 1 - s
+  have hlen : len ≤ Lng D := by
+    have hh := Nat.sub_le_sub_right (show e + 1 ≤ Lng M by omega) s
+    simpa [len, D] using hh
+  have haLen : a < len := by simpa [len] using ha
+  have hbLen : b < len := by simpa [len] using hb
+  have haD : a < Lng M - s := by
+    have : a < Lng D := haLen.trans_le hlen
+    simpa [D] using this
+  have hbD : b < Lng M - s := by
+    have : b < Lng D := hbLen.trans_le hlen
+    simpa [D] using this
+  calc
+    nextR (seg M s e) i a b = nextR (D.take len) i a b := by
+      rw [seg_eq_take_drop_adm M s e hse he]
+    _ = nextR D i a b := nextR_take_adm D len i a b hlen haLen hbLen
+    _ = nextR M i (s + a) (s + b) := nextR_drop M s i a b haD hbD
 
 theorem leR0_seg_adm (M : PS) (s e a b : ℕ)
     (hse : s ≤ e) (he : e < Lng M)

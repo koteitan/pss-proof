@@ -349,7 +349,7 @@ private theorem P_component_leftend_mr (M : PS) (J i : ℕ)
   rw [hcomp]
   exact entry_seg M _ _ i 0 hsegpos
 
-private theorem entry_FirstNodes_eq_component_mr (M : PS) (J i : ℕ)
+theorem entry_FirstNodes_eq_component_mr (M : PS) (J i : ℕ)
     (hM : TPS M)
     (hJ : J < (Br M).length) :
     entry M i ((FirstNodes M).getD J 0) =
@@ -522,22 +522,22 @@ theorem joints_coreReduce_ge_m10 (M : PS) (J : ℕ) (hM : TPS M)
     nextR0_largest_below B ((Joints B).getD J 0) m f hnext hmf hstrictB
   simpa [m, B] using hmjoint
 
-private def branchNP (M : PS) (J : ℕ) : ℕ :=
+def branchNP (M : PS) (J : ℕ) : ℕ :=
   if entry ((Br M).getD J []) 1 0 = 0 then 0
   else parent M 1 ((FirstNodes M).getD J 0) + 1
 
 def branchE (M : PS) (J : ℕ) : ℕ :=
   (Joints M).getD J 0 + 1 - branchNP M J
 
-private theorem redNJ_entry0_mr (M : PS) (J : ℕ) :
+theorem redNJ_entry0_mr (M : PS) (J : ℕ) :
     entry (redNJ M J) 0 0 = entry M 0 0 + (Joints M).getD J 0 + 1 := by
   simp [redNJ, entry]
 
-private theorem redNJ_entry1_mr (M : PS) (J : ℕ) :
+theorem redNJ_entry1_mr (M : PS) (J : ℕ) :
     entry (redNJ M J) 1 0 = entry M 1 0 + branchNP M J := by
   simp [redNJ, branchNP, entry]
 
-private theorem Red_zero_mr (M : PS) (hz : zeroT M = true) :
+theorem Red_zero_mr (M : PS) (hz : zeroT M = true) :
     Red M = [(0, 0)] := by
   unfold Red
   rw [RedAux, if_pos hz]

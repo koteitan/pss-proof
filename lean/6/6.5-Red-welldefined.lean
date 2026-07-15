@@ -510,7 +510,7 @@ theorem redNJ_multi_false (M : PS) (J : ℕ)
     have hm : monoT (redNJ M J) = true := by simp [monoT, hz, hle]
     simp [multiT, hz, hm]
 
-private theorem Br_component_length_bound (M : PS) (J : ℕ)
+theorem Br_component_length_bound (M : PS) (J : ℕ)
     (hM : TPS M) (hJ : J < (Br M).length) :
     Lng ((Br M).getD J []) ≤ Lng M - TrMax M - 1 := by
   have hne : TrMax M ≠ Lng M - 1 := by
