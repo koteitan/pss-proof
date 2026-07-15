@@ -1,4 +1,5 @@
 import «6».«6.6-P-condAB»
+import «6».«6.6-reduced-leftend»
 
 /-!
 # §6.6 命題（簡約性と係数の関係）
@@ -11,16 +12,6 @@ import «6».«6.6-P-condAB»
 -/
 
 namespace PSS
-
-theorem RTPS_TPS (M : PS) (hM : RTPS M) : TPS M := by
-  have hh := hM
-  simp only [RTPS, reduced, Bool.and_eq_true, beq_iff_eq] at hh
-  simpa [TPS] using hh.1
-
-theorem RTPS_Red_eq (M : PS) (hM : RTPS M) : Red M = M := by
-  have hh := hM
-  simp only [RTPS, reduced, Bool.and_eq_true, beq_iff_eq] at hh
-  exact hh.2
 
 theorem no_parent_zero (M : PS) (i : ℕ) : hasParent M i 0 = false := by
   apply Bool.eq_false_iff.mpr
@@ -95,96 +86,6 @@ theorem RTPS_of_condAB_nonmulti (M : PS) (hM : TPS M)
   have hne : M ≠ [] := hM
   simp [RTPS, reduced, hne, hfix]
 
-private theorem redPositiveOut_head_diag (M N : PS)
-    (hmj : entry M 1 0 ≤ Lng N - 1)
-    (hmono : monoT (seg N (entry M 1 0) (Lng N - 1)) = true) :
-    entry (redPositiveOut_ri M N) 0 0 =
-      entry (redPositiveOut_ri M N) 1 0 := by
-  let m := entry M 1 0
-  let jN := Lng N - 1
-  unfold redPositiveOut_ri
-  dsimp only
-  rw [if_pos (by simp [hmj, hmono])]
-  have hlen : 0 < jN + 1 - m := by
-    dsimp [m, jN]
-    omega
-  let R := (List.range' m (jN + 1 - m)).map (fun j =>
-    (entry N 0 j - entry N 0 m + entry N 1 m, entry N 1 j))
-  change entry R 0 0 = entry R 1 0
-  have hRpos : 0 < Lng R := by simp [R, hlen]
-  have hget : R[0] = (entry N 1 m, entry N 1 m) := by
-    simp [R, List.getElem_map, List.getElem_range']
-  simp [entry, List.getElem?_eq_getElem hRpos, hget]
-
-/-- The first column of every reduced mono sequence is diagonal. -/
-theorem RTPS_mono_head_eq (M : PS) (hR : RTPS M)
-    (hmono : monoT M = true) :
-    entry M 0 0 = entry M 1 0 := by
-  have hM := RTPS_TPS M hR
-  have hfix := RTPS_Red_eq M hR
-  have hnm : multiT M = false := by simp [multiT, hmono]
-  by_cases hm : entry M 1 0 = 0
-  · by_cases hc0 : entry M 0 0 = 0
-    · omega
-    · let C := coreReduce M
-      have hnoncore : ¬(entry M 0 0 = 0 ∧ entry M 1 0 = 0) := by
-        simp [hc0]
-      have hred : Red M = Red C := by
-        simpa [C, hm] using Red_noncore_ri M hM hmono hnoncore
-      have hCT : TPS C := by simpa [C] using coreReduce_TPS M hM
-      have hCcore : entry C 0 0 = 0 ∧ entry C 1 0 = 0 := by
-        simpa [C] using coreReduce_core M hM
-      have hCnm : multiT C = false := by
-        simpa [C] using coreReduce_multi_false M hM hmono
-      have hRedC0 : entry (Red C) 0 0 = 0 := by
-        by_cases hzC : zeroT C = true
-        · rw [Red_zero_mr C hzC]
-          simp [entry]
-        · have hzC' : zeroT C = false := Bool.eq_false_of_not_eq_true hzC
-          have hmonoC : monoT C = true := by
-            have hh := hCnm
-            simp [multiT, hzC'] at hh
-            exact hh
-          exact Red_core_prefix_diag C hmonoC hCcore 0 0 (Nat.zero_le _)
-      have hc0z : entry M 0 0 = 0 := by
-        calc
-          entry M 0 0 = entry (Red M) 0 0 := by rw [hfix]
-          _ = entry (Red C) 0 0 := by rw [hred]
-          _ = 0 := hRedC0
-      exact False.elim (hc0 hc0z)
-  · have hpos : 0 < entry M 1 0 := by omega
-    have hnoncore : ¬(entry M 0 0 = 0 ∧ entry M 1 0 = 0) := by
-      intro h
-      exact hm h.2
-    let C := coreReduce M
-    let N := Red C
-    let m := entry M 1 0
-    have hCT : TPS C := by simpa [C] using coreReduce_TPS M hM
-    have hCL : Lng C = m + Lng M := by
-      simp [C, m, coreReduce, hm, diagSeq, IncrFirstN_eq_map]
-      omega
-    have hNL : Lng N = m + Lng M := by
-      calc
-        Lng N = Lng C := Lng_Red_invariance C hCT
-        _ = m + Lng M := hCL
-    have hMpos : 0 < Lng M := List.length_pos_of_ne_nil hM
-    have hmj : m ≤ Lng N - 1 := by rw [hNL]; omega
-    have hmonoS : monoT (seg N m (Lng N - 1)) = true := by
-      simpa [N, C, m] using (monoT_Red_m10pos M hM hmono hpos).2
-    have hdiag : entry (redPositiveOut_ri M N) 0 0 =
-        entry (redPositiveOut_ri M N) 1 0 := by
-      apply redPositiveOut_head_diag M N
-      · simpa [m] using hmj
-      · simpa [m] using hmonoS
-    have hred : Red M = redPositiveOut_ri M N := by
-      simpa [N, C, hm] using Red_noncore_ri M hM hmono hnoncore
-    calc
-      entry M 0 0 = entry (Red M) 0 0 := by rw [hfix]
-      _ = entry (redPositiveOut_ri M N) 0 0 := by rw [hred]
-      _ = entry (redPositiveOut_ri M N) 1 0 := hdiag
-      _ = entry (Red M) 1 0 := by rw [hred]
-      _ = entry M 1 0 := by rw [hfix]
-
 theorem mono_hasParent_row0 (M : PS) (hM : TPS M)
     (hmono : monoT M = true) (j : ℕ)
     (hjpos : 0 < j) (hjL : j < Lng M) :
@@ -256,10 +157,34 @@ theorem RTPS_iff_condAB_multi (M : PS) (hM : TPS M)
     apply (IH J hJ).mpr
     exact RedCondAB_P_component M J hM hA hB hJ
 
+/-- Condition (A) on a sequence with a nonempty diagonal prefix descends to
+the original suffix.  This packages the suffix as a `seg`, so all parent
+bookkeeping at the prefix/suffix junction is discharged by `RedCondA_seg`. -/
+theorem RedCondA_of_diag_prefix (M : PS) (m : ℕ) (hM : TPS M)
+    (hm : 0 < m)
+    (hA : RedCondA (diagSeq 0 (m - 1) ++ M) = true) :
+    RedCondA M = true := by
+  let N := diagSeq 0 (m - 1) ++ M
+  have hMpos : 0 < Lng M := List.length_pos_of_ne_nil hM
+  have hDlen : Lng (diagSeq 0 (m - 1)) = m := by
+    simp [diagSeq]
+    omega
+  have hNlen : Lng N = m + Lng M := by simp [N, hDlen]
+  have hmN : m < Lng N := by omega
+  have hmend : m ≤ Lng N - 1 := by omega
+  have hend : Lng N - 1 < Lng N := by omega
+  have hseg := RedCondA_seg N m (Lng N - 1) hmend hend (by simpa [N] using hA)
+  have hdrop : N.drop m = M := by simp [N, hDlen]
+  calc
+    RedCondA M = RedCondA (N.drop m) := by rw [hdrop]
+    _ = RedCondA (seg N m (Lng N - 1)) := by rw [drop_eq_seg N m hmN]
+    _ = true := hseg
+
 #print axioms RTPS_of_condAB_nonmulti
 #print axioms RTPS_mono_head_eq
 #print axioms RTPS_mono_RedCondB
 #print axioms RTPS_iff_condAB_zeroT
 #print axioms RTPS_iff_condAB_multi
+#print axioms RedCondA_of_diag_prefix
 
 end PSS

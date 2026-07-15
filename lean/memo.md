@@ -214,6 +214,11 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
     解析し、row-1 左端の保存を証明。先頭対角 prefix については `coreReduce` 上の連続 row-1 辺を
     構成して `TrMax` まで持ち上げ、正係数出力の添字を直接計算して prefix の最終列を固定した。
     Isa: `m_6_6_Red_leftend_1`, `_2`。[r1]
+  - ✅ `6.6-reduced-leftend` — `bumpAt` の cut 不変性を対角 prefix より右だけに反復して
+    `Red (diagSeq 0 (m₁₀-1) ++ M) = diagSeq 0 (m₁₀-1) ++ Red M` を証明。
+    `Red (coreReduce M)` の対角 prefix / `Red M` suffix 分解、一般の guarded prefix の単項性、
+    prefix 左端が正の場合の共通対角 prefix 消去を組み合わせ、訂正後の
+    `RTPS_diag_prefix` を完成した。Isa: `m_6_6_Red_diag_prefix`, `m_6_6_reduced_leftend`。[r1]
   - ✅ `6.6-P-preserves-reduced` — 複項分岐の `Red M = flatten (map Red (P M))` と `P_concat`を
     組み合わせ、`Lng_Red_invariance` が与えるブロック長プロファイルから連結前のリストを
     復元する補題を証明。`Red_P_stable` と
