@@ -25,3 +25,4 @@ import «6».«6.5-Red-preserves-zeroT»
 import «6».«6.5-Red-preserves-monoT»
 import «6».«6.5-P-Red-equivariance»
 import «6».«6.5-monoT-Red»
+import «6».«6.5-Red-Pred-commute»

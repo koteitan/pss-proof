@@ -188,6 +188,14 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
     - ✅ `6.5-P-Red-equivariance` — `anchoredSlice` とその `Red` がともに非複項であることを上の
       零項・単項分解と単項性保存から示し、`P_nonmulti_eq` で両辺を `[Red M]` に簡約した。
       原文 `TPS` 版の同じ反例 `(0,0)(0,1)` も `decide` で固定した。[r1]
+    - ✅ `6.5-Red-Pred-commute` — `Pred` による最終列削除を `P` 成分、`coreReduce`、`TrMax`、
+      `Br`、`Joints`、`redNJ` へ順に輸送した。core 非 trunk では枝ブロック列の最後だけが、
+      長さ 1 なら消滅し、長さ 2 以上なら `Pred` される残差補題を証明。`nu` 強帰納法で複項の
+      最終 `P` 成分、各 `redNJ`、非 core の `coreReduce` に帰納仮定を適用し、全分岐を閉じた。
+      公開定理 `Red_Pred` は sorry 0、axioms は
+      `[propext, Classical.choice, Quot.sound]`。独立 Python モデルは長さ4・成分0..2の全7,380列で
+      反例0。全 `lake build` は3,023 jobs成功（キャッシュ済み4.50秒）。
+      Isa: `m_6_5_Red_Pred`。[r1]
     - 🚧 `6.5-Red-le-invariance` — `rebaseRow0` による親子関係不変性、係数条件(A)の切片・枝への
       遺伝、core の trunk/非-trunk 復元、正の `m₁₀` の枝ブロック値と終切片再構成を完成。
       長さ強帰納法で Isabelle `m_6_5_Red_rebase` に対応する
