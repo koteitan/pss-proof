@@ -74,7 +74,7 @@
     - 🚨 補題（簡約性と左端の関係） — `6.6-reduced-leftend`
     - 🚨 補題（条件(A)と(B)と係数の基本性質） — `6.6-condAB-coeff`
     - 🚨 系（直系先祖による切片と `Red` と `IncrFirst` の関係） — `6.6-ancestor-slice-Red-IncrFirst`
-    - 🚨 系（`1` 列ペア数列の基本性質） — `6.6-one-column`
+    - ✅ 系（`1` 列ペア数列の基本性質） — `6.6-one-column`[r1]
     - 🚨 `RT_PS` と `Red` の像の関係 — `6.6-RT-image-of-Red`
   - 🚨 §6.7 標準形
     - 🚨 命題（標準形の簡約性） — `6.7-standard-reduced`

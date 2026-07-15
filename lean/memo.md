@@ -186,13 +186,14 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
     - ✅ `6.5-P-Red-equivariance` — `anchoredSlice` とその `Red` がともに非複項であることを上の
       零項・単項分解と単項性保存から示し、`P_nonmulti_eq` で両辺を `[Red M]` に簡約した。
       原文 `TPS` 版の同じ反例 `(0,0)(0,1)` も `decide` で固定した。[r1]
-    - 🚧 `6.5-Red-le-invariance` — `rebaseRow0` を定義し、長さ・各成分・`nextrel0/1`・
-      `le0/1`・`nextR`・`leR` が row-0 の一様な差引きで不変となることを証明した。
-      `RedCondA` の rebase・任意切片・枝成分への遺伝、`redNJ` と枝成分の一致、帰納仮定による
-      各 lifted branch block の復元を追加し、core の trunk/非-trunk 両分岐で `Red M = M` を
-      機械化した。次は正の `m₁₀` の `coreReduce` ブロック値を組み立て、非複項について
-      `Red M = rebaseRow0 (entry M 0 0) (entry M 1 0) M` の閉形式を強帰納法で証明し、
-      A4 の `anchoredSlice` 版 `leR M = leR (Red M)` へ接続する。[r0]
+    - 🚧 `6.5-Red-le-invariance` — `rebaseRow0` による親子関係不変性、係数条件(A)の切片・枝への
+      遺伝、core の trunk/非-trunk 復元、正の `m₁₀` の枝ブロック値と終切片再構成を完成。
+      長さ強帰納法で Isabelle `m_6_5_Red_rebase` に対応する
+      `Red_rebase_nonmulti` を証明し、`RedCondA + nonmulti` 下の `leR` 不変性まで接続済み。
+      A4 の無条件 `anchoredSlice` 形に残るのは、§6.6 reduced 及び §6.7 standard の
+      `RedCondA` 前提鏖のみ。[r0]
+  - ✅ `6.6-one-column` — 任意の単要素に対し `Red [(a,b)] = [(b,b)]` を閉形式から導き、
+    長1の簡約形が対角単要素と一致することを証明。Isa: `m_6_6_oneColumn`。[r1]
   - `6.6-ancestor-slice-Red-IncrFirst` — 訂正 **A2**（指数の添字 `m` が未定義 → `j'₀`）
     ＋ 訂正 **A5**（前提 `j′₀ ≤ TrMax` が弱すぎる。反例 113 件）
   - `6.6-RT-image-of-Red` — 訂正 **A41**（`RT_PS = Im(Red)` は偽）。Isa: `m_6_6_*`

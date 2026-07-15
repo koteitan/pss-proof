@@ -1937,6 +1937,52 @@ theorem Red_rebase_nonmulti (M : PS) (hM : TPS M)
       intro X hlen hXT hXA hXnm
       exact ih (Lng X) (by omega) X hXT hXA hXnm rfl
 
+theorem Red_le_of_condA_nonmulti (M : PS) (hM : TPS M)
+    (hA : RedCondA M = true) (hnm : multiT M = false)
+    (i j₀ j₁ : ℕ) :
+    leR M i j₀ j₁ = leR (Red M) i j₀ j₁ := by
+  have hfloor : ∀ j < Lng M, entry M 0 0 ≤ entry M 0 j := by
+    by_cases hz : zeroT M = true
+    · have hL : Lng M = 1 := by
+        have hh := hz
+        simp only [zeroT, Bool.and_eq_true, beq_iff_eq] at hh
+        exact hh.1
+      intro j hj
+      have : j = 0 := by omega
+      subst j
+      exact le_rfl
+    · have hz' : zeroT M = false := Bool.eq_false_of_not_eq_true hz
+      have hmono : monoT M = true := by
+        have hh := hnm
+        simp [multiT, hz'] at hh
+        exact hh
+      intro j hj
+      exact mono_row0_min_mr M hM hmono j hj
+  rw [Red_rebase_nonmulti M hM hA hnm]
+  exact congrFun (congrFun (congrFun (leR_rebaseRow0
+    (entry M 0 0) (entry M 1 0) M hfloor).symm i) j₀) j₁
+
+theorem anchoredSlice_TPS (M : PS) (hM : anchoredSlice M) : TPS M := by
+  rcases hM with ⟨S, a, b, hsource, hab, hbL, hanc, rfl⟩
+  apply List.ne_nil_of_length_pos
+  simp
+  omega
+
+theorem anchoredSlice_nonmulti (M : PS) (hM : anchoredSlice M) :
+    multiT M = false := by
+  rcases anchoredSlice_zero_or_mono M hM with hz | hmono
+  · simp [multiT, hz]
+  · simp [multiT, hmono]
+
+/-- The A4 headline once the source-side coefficient condition has been
+discharged.  The unconditional anchored theorem is completed after the
+standard/reduced `RedCondA` prerequisites. -/
+theorem Red_le_anchored_of_condA (M : PS) (hM : anchoredSlice M)
+    (hA : RedCondA M = true) (i j₀ j₁ : ℕ) :
+    leR M i j₀ j₁ = leR (Red M) i j₀ j₁ := by
+  exact Red_le_of_condA_nonmulti M (anchoredSlice_TPS M hM) hA
+    (anchoredSlice_nonmulti M hM) i j₀ j₁
+
 #print axioms leR_rebaseRow0
 #print axioms trunk_entries_offset
 
