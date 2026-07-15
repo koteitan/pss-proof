@@ -246,6 +246,10 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
   - ✅ `7.1-term-components` — `BT.trm ps` に場合分けし、`PB` の空性が `ps=[]` と同値であることと、
     各 principal を singleton 項へ写してから `flatMap untrm` すると元の `ps` に戻ることをリスト帰納で証明。
     `T_B` 前提に依存しない定義上の恒等式として原文の (1)(2) を同時に得た。Isa: `m_7_1_term_components`。[r1]
+  - ✅ `7.1-paren-balance` — `BT.rec` の三 motive を `flatBT`・`flatBP`・`flatBPTail` の
+    左右括弧数一致に設定し、項・principal・principal リストを同時に構造帰納した。
+    multi 項では外側の `.lp` と `.rp` が一つずつ増え、内部の一致を保存する。
+    Isa: `m_7_1_paren_balance`。[r1]
   - `7.1-buchholz-wf` 📘 — [Buc1] Lemma 2.2。原文も引用のみ。**Lean でも引用（`axiom`）でよいか要判断**。
     Isabelle 版は `sorry` 引用のまま（停止性定理はこれに依存しない形になっている）。
   - `7.1-buchholz-fseq-lt` / `-closed` — Isa: `m_buc1_3_2a_*`, `b1x_operB_dom_all`（完全証明済み）
