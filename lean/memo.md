@@ -339,19 +339,29 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
     `531635224` のまま一致。全 `lake build` は 3,017 jobs 成功。
     Isa: `m_7_3_twoColumn_Trans`, `m_7_3_twoColumn_Marked`,
     `m_7_3_twoColumn_Mark`, `p_7_3_twoColumn`。[r1]
-  - ✅ `7.3-Trans-welldefined` — 訂正 **A15**（原文の非簡約分岐では
-    `Lng` が下がらないため、域を `RTPS` に修正）。実行可能 parser の完全性と
+  - 🚧 `7.3-Trans-welldefined` — 訂正 **A15** の簡約核部分として、実行可能 parser の完全性と
     `unflatBT (flatBT t) = t`、scb 文脈選択の健全性、置換後の `T_B` / principal /
     `MarkedB` 保存を証明。`Pred` と複項の始切片・右端成分の長さが真に
     減少することから、`TransAux` / `MarkAux` の十分な燃料間での値の一意性を
     同時強帰納で閉じた。さらに単列、単項の零/非零 `Trans Pred`、複項の
     全分岐で値不変条件 `Trans_Mark_invariant`を証明し、`Trans M ∈ T_B`、
-    `Mark M m ∈ T_B`、`(Trans M, Mark M m) ∈ MarkedB` を公開定理化。
+    `Mark M m ∈ T_B`、`(Trans M, Mark M m) ∈ MarkedB` を `RTPS` 上で公開定理化。
     sorry 0、axioms は `[propext, Classical.choice, Quot.sound]`。`scbContexts` の比較を
     命題的等値比較に強化した後も、Python/Lean の全 819 列チェックサムは
     `531635224` で一致。全 `lake build` は 3,025 jobs 成功（7.31秒）。
     Isa: `m_7_3_Trans_welldef`, `m_7_3_Mark_welldef`,
-    `Trans_Mark_invariant_aux`。[r2]
+    `Trans_Mark_invariant_aux`。[r2] 原文どおり全 `TPS` 上の一意存在へ戻す残件は、
+    `Red` 軌道が2段で簡約形へ達する `y3r_RED2` のLean移植と、その軌道測度による値輸送。
+  - 🚧 `7.3-Trans-IncrFirst-Red` — 訂正 **A16** の先頭 `P` 成分非零条件下で、
+    `P M = P (take (Pcut M) M) ++ [drop (Pcut M) M]` に沿う長さ強帰納を行い、
+    `Trans M = SigmaB ((P M).map transPComponent)` を証明した。複項枝では始切片の
+    `RTPS`、右端成分の `RTPS` と `zeroT J ↔ J=[(0,0)]` を使って公開再帰式へ接続する。
+    (1) の `Red` / `IncrFirst` 不変性は、A15 の正しい軌道境界
+    `RTPS (Red (Red M))` の下まで証明済みで、1回目の `Red` が未簡約でも燃料を2段展開して
+    同じ `Red (Red M)` 上の値へ帰着する。公開定理は sorry 0、axioms は
+    `[propext, Classical.choice, Quot.sound]`。残件は Isabelle `y3r_RED2` のLean移植により
+    この境界条件を全 `TPS` で消去すること。Isa: `m_7_3_Trans_Red`,
+    `m_7_3_Trans_IncrFirst`, `m_7_3_Trans_P_equivariance`。
   - `7.3-Mark-rightmost1` — 訂正 **A17**（零項基底で例外。反例あり）
   - `7.3-Trans-preserves-monoT` — **原文は偽（A16）**。反例 `(0,0)(0,0)`。
     ❌ 停止性には不要。反例だけ機械証明して先に進む。

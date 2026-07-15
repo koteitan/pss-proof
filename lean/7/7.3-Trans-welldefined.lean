@@ -14,10 +14,10 @@ import PSS.Trans
 # §7.3 命題（`Trans` の well-defined 性）
 
 - 原文: `tmp/content.md` の「命題（`Trans` の well-defined 性）」
-- 訂正: A15（停止性・値域の証明域は `RTPS`）
+- 訂正: A15（`RTPS` 核と有限 `Red` 軌道を組み合わせる）
 - Isabelle: `Pred_RT_PS`, `trans_multiT_prefix_RT_PS`,
   `trans_multiT_last_component`, `Trans_Mark_invariant_aux`
-- 状態: ✅ 証明済（sorry 0）
+- 状態: 🚧 `RTPS` 上の再帰値不変条件まで証明済。全 `TPS` 版は RED2 待ち
 -/
 
 namespace PSS
@@ -1273,6 +1273,18 @@ private theorem Trans_Mark_multi_eq (M : PS) (hR : RTPS M)
         simp only [MarkAux, hred, Bool.not_true, Bool.false_eq_true,
           ↓reduceIte, lastIdx, hL, Nat.succ_sub_one, hnmono]
         simp [hfuel0, hpJraw, hjFuel, hJM]
+
+/-- Public recursion equations for the multi branch of `Trans` and `Mark`. -/
+theorem Trans_Mark_multi_equations (M : PS) (hR : RTPS M)
+    (hmulti : multiT M = true) :
+    let A := M.take (Pcut M)
+    let J := M.drop (Pcut M)
+    (Trans M = if J == [(0, 0)] then
+        addBT (Trans A) (Dprin 0 BZero)
+      else addBT (Trans A) (Trans J)) ∧
+    ∀ m, Mark M m = if J == [(0, 0)] then Dprin 0 BZero
+      else Mark J (m - Pcut M) :=
+  Trans_Mark_multi_eq M hR hmulti
 
 private theorem trans_inv_mono_hard (M : PS) (hR : RTPS M)
     (hlen : 1 < Lng M) (hmono : monoT M = true)
