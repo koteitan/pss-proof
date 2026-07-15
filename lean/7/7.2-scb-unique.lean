@@ -982,6 +982,64 @@ theorem scb_kind1_drop_index_pin (R : List ℕ) (k₀ k₁ : ℕ)
   · exact heq
   · exact (not_lt_of_ge (hinterR₁ k₀ hgt hk₀L) hheadR₀).elim
 
+/-- 訂正 A14 後の第 5 主張。非零項の第 1 種 scb 分解は一意。 -/
+theorem scb_kind1_unique {t : BT} {s₀ s₁ c₀ c₁ b₀ b₁ : List Sym}
+    (_htb : t ∈ T_B) (ht : t ≠ BZero)
+    (h₀ : scb_kind1 t s₀ c₀ b₀) (h₁ : scb_kind1 t s₁ c₁ b₁) :
+    (s₀, c₀, b₀) = (s₁, c₁, b₁) := by
+  rcases h₀.1.2.1 ht with ⟨p₀, _, hc₀⟩
+  rcases h₁.1.2.1 ht with ⟨p₁, _, hc₁⟩
+  have hocc₀ : flatBT t = s₀ ++ flatBP p₀ ++ b₀ := by
+    simpa [hc₀] using h₀.1.1
+  have hocc₁ : flatBT t = s₁ ++ flatBP p₁ ++ b₁ := by
+    simpa [hc₁] using h₁.1.1
+  obtain ⟨k₀, hk₀⟩ :=
+    scb_occurrence_rightNodes_suffix hocc₀ h₀.1.2.2
+  obtain ⟨k₁, hk₁⟩ :=
+    scb_occurrence_rightNodes_suffix hocc₁ h₁.1.2.2
+  let R := RightNodes t
+  let r₀ := RightNodes (.trm [p₀])
+  let r₁ := RightNodes (.trm [p₁])
+  have hs₀ :
+      1 ≤ r₀.length - 1 ∧
+        r₀.getD 0 0 < r₀.getD (r₀.length - 1) 0 ∧
+        ∀ j, 0 < j → j < r₀.length - 1 →
+          r₀.getD (r₀.length - 1) 0 ≤ r₀.getD j 0 := by
+    simpa [r₀] using h₀.2 p₀ hc₀
+  have hs₁ :
+      1 ≤ r₁.length - 1 ∧
+        r₁.getD 0 0 < r₁.getD (r₁.length - 1) 0 ∧
+        ∀ j, 0 < j → j < r₁.length - 1 →
+          r₁.getD (r₁.length - 1) 0 ≤ r₁.getD j 0 := by
+    simpa [r₁] using h₁.2 p₁ hc₁
+  have hlen₀ : 2 ≤ r₀.length := by omega
+  have hlen₁ : 2 ≤ r₁.length := by omega
+  have hk₀' : r₀ = R.drop k₀ := by simpa [r₀, R] using hk₀
+  have hk₁' : r₁ = R.drop k₁ := by simpa [r₁, R] using hk₁
+  have hk₀lt : k₀ < R.length := by
+    rw [hk₀'] at hlen₀
+    simp only [List.length_drop] at hlen₀
+    omega
+  have hk₁lt : k₁ < R.length := by
+    rw [hk₁'] at hlen₁
+    simp only [List.length_drop] at hlen₁
+    omega
+  have hk : k₀ = k₁ := by
+    apply scb_kind1_drop_index_pin R k₀ k₁ hk₀lt hk₁lt
+    · simpa [← hk₀'] using hlen₀
+    · simpa [← hk₁'] using hlen₁
+    · simpa [← hk₀'] using hs₀.2.1
+    · simpa [← hk₀'] using hs₀.2.2
+    · simpa [← hk₁'] using hs₁.2.1
+    · simpa [← hk₁'] using hs₁.2.2
+  have hrn : (RightNodes (.trm [p₀])).length =
+      (RightNodes (.trm [p₁])).length := by
+    have : r₀ = r₁ := hk₀'.trans (by simpa [hk] using hk₁'.symm)
+    simpa [r₀, r₁] using congrArg List.length this
+  have hcut := scb_occurrence_rightNodes_length_pins_cut
+    hocc₀ h₀.1.2.2 hocc₁ h₁.1.2.2 hrn
+  exact scb_same_cut_unique ht h₀.1 h₁.1 hcut
+
 /-- 訂正 A14 後の第 3 主張。非零項は第 0 種と第 1 種の両方には分解できない。 -/
 theorem scb_kinds_exclusive {t : BT} (ht : t ≠ BZero) :
     ¬scb_kind0_able t ∨ ¬scb_kind1_able t := by
@@ -1055,6 +1113,8 @@ theorem scb_kinds_exclusive_original_false :
 #print axioms scb_unique_decomp
 #print axioms scb_occurrence_bottom
 #print axioms scb_kind1_drop_index_pin
+#print axioms scb_kind0_unique
+#print axioms scb_kind1_unique
 #print axioms scb_kinds_exclusive
 #print axioms scb_kinds_exclusive_original_false
 
