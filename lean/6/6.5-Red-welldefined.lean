@@ -103,7 +103,7 @@ private theorem nextR1_consecutive_wd (M : PS) (j : ℕ)
     · simp [hjk, hle]
   · simp [hjk]
 
-private theorem le_TrMax_intro_wd (M : PS) (n : ℕ) (hM : TPS M)
+theorem le_TrMax_intro_wd (M : PS) (n : ℕ) (hM : TPS M)
     (hall : ∀ j < n, nextR M 1 j (j + 1) = true) :
     n ≤ TrMax M := by
   let q := fun j => !nextR M 1 j (j + 1)
@@ -146,7 +146,7 @@ private theorem entry_diagSeq_wd (m i j : ℕ) (hm : 0 < m) (hj : j < m) :
     simp [diagSeq]
   simp [entry, List.getElem?_eq_getElem hlen, hget]
 
-private theorem coreReduce_prefix_step (M : PS) (j : ℕ) (hM : TPS M)
+theorem coreReduce_prefix_step (M : PS) (j : ℕ) (hM : TPS M)
     (hm : entry M 1 0 ≠ 0) (hj : j < entry M 1 0) :
     nextR (coreReduce M) 1 j (j + 1) = true := by
   let m := entry M 1 0
@@ -210,7 +210,7 @@ private theorem entry0_eq_fst_getElem (M : PS) (j : ℕ) (hj : j < Lng M) :
     entry M 0 j = M[j].1 := by
   simp [entry, List.getElem?_eq_getElem hj]
 
-private theorem entry_coreReduce_zero (M : PS) (j : ℕ)
+theorem entry_coreReduce_zero (M : PS) (j : ℕ)
     (hm : entry M 1 0 = 0) (hj : j < Lng M) :
     entry (coreReduce M) 0 j = entry M 0 j - entry M 0 0 := by
   have hlen : Lng (coreReduce M) = Lng M := by simp [coreReduce, hm]
@@ -344,7 +344,7 @@ theorem Br_component_TPS (M : PS) (J : ℕ) (hM : TPS M)
   have hpos := P_component_nonempty N J hNT hJ
   exact List.ne_nil_of_length_pos hpos
 
-private theorem Br_component_nonmulti (M : PS) (J : ℕ) (hM : TPS M)
+theorem Br_component_nonmulti (M : PS) (J : ℕ) (hM : TPS M)
     (hJ : J < (Br M).length) :
     zeroT ((Br M).getD J []) = true ∨
       monoT ((Br M).getD J []) = true := by
@@ -412,7 +412,7 @@ theorem Joints_nextR_FirstNodes (M : PS) (J : ℕ)
   rw [Joints_getD M J hJ]
   exact hnext
 
-private theorem redNJ_head_le_block (M : PS) (J : ℕ)
+theorem redNJ_head_le_block (M : PS) (J : ℕ)
     (hM : TPS M) (hmono : monoT M = true)
     (hcore0 : entry M 0 0 = 0) (hJ : J < (Br M).length) :
     (Joints M).getD J 0 + 1 ≤ entry ((Br M).getD J []) 0 0 := by
@@ -447,7 +447,7 @@ theorem redNJ_length (M : PS) (J : ℕ)
   simpa [Nat.succ_eq_add_one, Nat.add_comm] using
     Nat.succ_pred_eq_of_pos hpos
 
-private theorem redNJ_entry_hi (M : PS) (J j : ℕ)
+theorem redNJ_entry_hi (M : PS) (J j : ℕ)
     (hjpos : 0 < j) (hj : j < Lng ((Br M).getD J [])) :
     entry (redNJ M J) 0 j = entry ((Br M).getD J []) 0 j := by
   exact entry_cons_tail_pos ((Br M).getD J [])
@@ -594,7 +594,7 @@ private theorem P_member_TPS_wd (M Q : PS) (hM : TPS M) (hQ : Q ∈ P M) :
   rw [heq] at hpos
   exact List.ne_nil_of_length_pos hpos
 
-private theorem coreReduce_TPS (M : PS) (hM : TPS M) : TPS (coreReduce M) := by
+theorem coreReduce_TPS (M : PS) (hM : TPS M) : TPS (coreReduce M) := by
   apply List.ne_nil_of_length_pos
   by_cases hm : entry M 1 0 = 0
   · have hlen : Lng (coreReduce M) = Lng M := by simp [coreReduce, hm]

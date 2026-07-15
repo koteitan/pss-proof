@@ -51,7 +51,7 @@
   - ✅ §6.4 幹と枝[r7]
   - 🚨 §6.5 簡約化
     - ✅ 命題（`Red` の well-defined 性） — `6.5-Red-welldefined`[r2]
-    - 🚨 命題（`Red` の `IncrFirst` 不変性） — `6.5-Red-IncrFirst-invariance`
+    - ✅ 命題（`Red` の `IncrFirst` 不変性） — `6.5-Red-IncrFirst-invariance`[r2]
     - ✅ 命題（`Lng` の `Red` 不変性） — `6.5-Lng-Red-invariance`[r1]
     - ✅ 系（`Red` が零項性を保つこと） — `6.5-Red-preserves-zeroT`[r1]
     - 🚨 系（直系先祖の `Red` 不変性） — `6.5-Red-le-invariance`
