@@ -38,7 +38,7 @@ private theorem monoT_IncrFirst_ri (M : PS) :
     monoT (IncrFirst M) = monoT M := by
   simp [monoT, zeroT_IncrFirst_ri, le_IncrFirst_invariance]
 
-private theorem multiT_IncrFirst_ri (M : PS) :
+theorem multiT_IncrFirst_ri (M : PS) :
     multiT (IncrFirst M) = multiT M := by
   simp [multiT, zeroT_IncrFirst_ri, monoT_IncrFirst_ri]
 
@@ -858,14 +858,14 @@ private theorem nextR_IncrFirst_ri (M : PS) :
     simp [IncrFirst, bumpAt, bumpV]
   rw [heq, nextR_bumpAt]
 
-private theorem nextR_IncrFirstN_ri (k : ℕ) (M : PS) :
+theorem nextR_IncrFirstN_ri (k : ℕ) (M : PS) :
     nextR (IncrFirstN k M) = nextR M := by
   induction k generalizing M with
   | zero => rfl
   | succ k ih =>
       rw [IncrFirstN, ih, nextR_IncrFirst_ri]
 
-private theorem TrMax_coreReduce_pos_shift (M : PS) (hM : TPS M)
+theorem TrMax_coreReduce_pos_shift (M : PS) (hM : TPS M)
     (hmono : monoT M = true) (hpos : 0 < entry M 1 0) :
     entry M 1 0 + TrMax M ≤ TrMax (coreReduce M) := by
   let m := entry M 1 0

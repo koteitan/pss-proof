@@ -14,7 +14,7 @@ import «6».«6.5-Lng-Red-invariance»
 
 namespace PSS
 
-private theorem entry_append_left_mr (A B : PS) (i j : ℕ)
+theorem entry_append_left_mr (A B : PS) (i j : ℕ)
     (hj : j < Lng A) : entry (A ++ B) i j = entry A i j := by
   simp [entry, List.getElem?_append_left hj]
 
@@ -22,7 +22,7 @@ theorem entry_append_right_mr (A B : PS) (i j : ℕ)
     (hj : Lng A ≤ j) : entry (A ++ B) i j = entry B i (j - Lng A) := by
   simp [entry, List.getElem?_append_right hj]
 
-private theorem entry_diagSeq_zero_mr (t i j : ℕ) (hj : j ≤ t) :
+theorem entry_diagSeq_zero_mr (t i j : ℕ) (hj : j ≤ t) :
     entry (diagSeq 0 t) i j = j := by
   have hlen : j < Lng (diagSeq 0 t) := by
     simp [diagSeq]
