@@ -69,7 +69,7 @@
     - 🚨 命題（`P` が簡約性を保つこと） — `6.6-P-preserves-reduced`
     - 🚨 命題（簡約性が基本列で保たれること） — `6.6-reduced-fseq`
     - 🚨 命題（簡約性と係数の関係） — `6.6-reduced-iff-condAB`
-    - 🚨 補題（`Red` と左端の関係） — `6.6-Red-leftend`
+    - ✅ 補題（`Red` と左端の関係） — `6.6-Red-leftend`[r1]
     - 🚨 補題（簡約性と係数の基本性質） — `6.6-reduced-coeff`
     - 🚨 補題（簡約性と左端の関係） — `6.6-reduced-leftend`
     - ✅ 補題（条件(A)と(B)と係数の基本性質） — `6.6-condAB-coeff`[r1]

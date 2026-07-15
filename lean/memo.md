@@ -204,6 +204,10 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
     `P` 成分の左端と成分内単項性から証明。燃料付き `le1Aux` の親辺延長も機械化し、条件(A)下の
     上段添字上界、条件(B)を加えた上下段比較、祖先関係に欠損がある場合の狭義添字上界を
     強帰納法でまとめた。Isa: `m_6_6_condAB_coeff`, `condAB_row1_noparent_zero`。[r1]
+  - ✅ `6.6-Red-leftend` — `nu` 強帰納法で `Red` の零・複項・core・row-0 shift・正係数の全分岐を
+    解析し、row-1 左端の保存を証明。先頭対角 prefix については `coreReduce` 上の連続 row-1 辺を
+    構成して `TrMax` まで持ち上げ、正係数出力の添字を直接計算して prefix の最終列を固定した。
+    Isa: `m_6_6_Red_leftend_1`, `_2`。[r1]
   - `6.7-standard-reduced` — `ST_PS ⊆ RT_PS`。Isa: `m_6_7_*`（e096355）。
     **`has_gz⟹D` / GTWF ルートは偽。escape readback で gate-free 化したのが正解**
   - `6.8-standard-slice-Br-descending` — 訂正 **A7**（「`M′` が標準形」は偽。`Br(M′)` が降順が正）
