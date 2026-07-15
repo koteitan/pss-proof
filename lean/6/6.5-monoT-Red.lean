@@ -99,7 +99,7 @@ theorem redB_prefix_diag (M : PS) (hM : TPS M)
     (coreReduce_core M hM) i j
   exact le_trans hj (coreReduce_m10_le_TrMax M hM hpos)
 
-private theorem mono_row0_min_mr (M : PS) (hM : TPS M)
+theorem mono_row0_min_mr (M : PS) (hM : TPS M)
     (hmono : monoT M = true) (k : ℕ) (hk : k < Lng M) :
     entry M 0 0 ≤ entry M 0 k := by
   cases k with
@@ -310,7 +310,7 @@ theorem Red_leftend_ge_row1_nonmulti (M : PS) (hM : TPS M)
         · rw [hred, if_neg hc]
           exact hguard
 
-private theorem nextR1_unique_mr (M : PS) (p q k : ℕ)
+theorem nextR1_unique_mr (M : PS) (p q k : ℕ)
     (hp : nextR M 1 p k = true) (hq : nextR M 1 q k = true) : p = q := by
   have hhp := hp
   simp only [nextR, if_neg (by omega : ¬1 = 0), nextrel1,

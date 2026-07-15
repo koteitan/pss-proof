@@ -664,7 +664,7 @@ theorem cutOK_redNJ (M : PS) (J : ℕ) (hM : TPS M)
 private def branchE_ri (M : PS) (J : ℕ) : ℕ :=
   (Joints M).getD J 0 + 1 - branchNP_ri M J
 
-private theorem Red_core_trunk_ri (M : PS) (hM : TPS M)
+theorem Red_core_trunk_ri (M : PS) (hM : TPS M)
     (hmono : monoT M = true)
     (hcore : entry M 0 0 = 0 ∧ entry M 1 0 = 0)
     (ht : TrMax M = Lng M - 1) :
