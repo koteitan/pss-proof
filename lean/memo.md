@@ -224,6 +224,9 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
     復元する補題を証明。`Red_P_stable` と
     `RTPS M ↔ ∀ J < (P M).length, RTPS ((P M).getD J [])` の両方向を完成した。
     Isa: `m_6_6_Red_P_stable`, `m_6_6_P_reduced`。[r1]
+  - ✅ `6.7-standard-prefix` — `STPS ⊆ TPS` を生成規則で証明し、欠落列数に関する強帰納法を実装。
+    真の始切片で `Pred M = oper M 1` を使って標準形を一段下げ、`Pred = take (Lng-1)` により
+    元と一段下の始切片が一致することを示した。Isa: `m_6_7_standard_prefix`。[r1]
   - `6.7-standard-reduced` — `ST_PS ⊆ RT_PS`。Isa: `m_6_7_*`（e096355）。
     **`has_gz⟹D` / GTWF ルートは偽。escape readback で gate-free 化したのが正解**
   - `6.8-standard-slice-Br-descending` — 訂正 **A7**（「`M′` が標準形」は偽。`Br(M′)` が降順が正）
