@@ -113,9 +113,9 @@
     - ✅ 命題（`Trans` が単項性を保つこと） — `7.3-Trans-preserves-monoT`[r1]
   - 🚨 §7.4 許容的親子関係
     - ✅ 命題（`Adm_M` と `<^NextAdm` の関係） — `7.4-Adm-nextAdm`[r1]
-    - 🚨 命題（`Trans` と `<^NextAdm` の関係） — `7.4-Trans-nextAdm`
+    - ✅ 命題（`Trans` と `<^NextAdm` の関係） — `7.4-Trans-nextAdm`[r1]
     - 🚨 系（`Mark` と `<^NextAdm` の関係） — `7.4-Mark-nextAdm`
-    - 🚨 系（`Trans` の `Mark` と `Pred` による表示） — `7.4-Trans-Mark-Pred`
+    - ✅ 系（`Trans` の `Mark` と `Pred` による表示） — `7.4-Trans-Mark-Pred`[r1]
     - 🚨 命題（`Mark` の `Trans` による表示） — `7.4-Mark-Trans-repr`
     - 🚨 系（`Trans` の `Mark` と切片による表示） — `7.4-Trans-Mark-seg`
     - 🚨 系（`RightNodes` と `Mark` の関係） — `7.4-RightNodes-Mark`

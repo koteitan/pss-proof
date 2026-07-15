@@ -447,9 +447,29 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
     全7,380列、親を持つ5,440件（第0行4,023・第1行1,417）で反例0。Lean 内監査も全819列、
     対象508件（第0行378・第1行130）で反例0。全 `lake build` は3,034 jobs成功（定義層からの
     再構築を含め約12秒）。Isa: `m_7_4_Adm_nextAdm`。[r1]
+  - ✅ `7.4-Trans-nextAdm` — 訂正 **A45**。一意な最終列の `nextAdm` 親を
+    `Classical.choose` で取り、`nextAdm` の4条件からその列が `Marked` かつ最終列未満であることを
+    展開して、完成済み `Trans_Mark_Pred` へ直接帰着した。原文 `TPS` 版の反例
+    `[(0,0),(0,1),(1,2),(1,0)]` は、親が一意に `1` であること、4個の `Trans`/`Mark` 値、
+    `Pred` 側の一意な scb 文脈を kernel 計算で固定し、同じ文脈が `M` 側の flatten 等式と
+    矛盾するところまで形式証明した。公開定理と反例は sorry 0、axioms は
+    `[propext, Classical.choice, Quot.sound]`。独立 Python 監査は成分 `<3`・長さ `≤4` の
+    全7,380列中、簡約286列・一意親188件で反例0。Lean 内監査も全819列・一意親35件で反例0、
+    同じ非簡約反例の共通 scb 文脈が0件であることを確認した。Isa:
+    `m_7_4_Trans_nextAdm`。[r1]
   - `7.4-Mark-nextAdm` — 訂正 **A18**（祖先 `j` に `(M,j) ∈ Marked` が要る）
-    ＋ **A46/A47**（原文の `T_PS` 版は偽）。Isa: `y6z_7_4_Mark_nextAdm_TPS_false`
-  - `7.4-Trans-nextAdm` — 訂正 **A45**（`T_PS` で偽）
+    ＋ **A47**（原文の `T_PS` 版は偽）。Isa: `y6z_7_4_Mark_nextAdm_TPS_false`
+  - ✅ `7.4-Trans-Mark-Pred` — 訂正 **A46**。`Lng M` の強帰納法で共通 scb 文脈の存在を
+    証明した。mono の零前駆枝は自己分解、非零 surgery 枝は `c₁→c₂` の外側・内側の
+    `replaceScb_spec` を `scb_compose` と無条件一意性で同期した。multi 枝では最終 `P` 成分 `J`
+    へ帰納し、`Mark_Pred_multi_last` を新たに証明して `Trans_Pred_multi_last` と揃え、
+    `Trans A` が零なら文脈をそのまま輸送、非零なら `scb_addBT_left_74` で両側へ同じ prefix を
+    持ち上げた。最後の一意性は `Trans(Pred M)` 側の固定中央文字列一意性だけで閉じた。
+    公開定理は sorry 0、axioms は `[propext, Classical.choice, Quot.sound]`。独立 Python 監査は
+    簡約286列の proper marked 224件、Lean 内監査は39件で反例0。A45 と共通の非簡約反例も
+    Lean の `Trans_nextAdm_original_counterexample` が形式的に排除する。全 `lake build` は
+    3,036 jobs成功（キャッシュ済み1.00秒）。Isa: `Mark_Pred_multi_last`,
+    `scb_addBT_left`, `m_7_4_Trans_Mark_Pred`。[r1]
   - `7.4-Mark-Trans-repr` — §7.4 のキーストーン。Isa: `m_7_4_Mark_Trans_repr`（無仮定・`sorry`0）
   - **§7.4 の `Mark` は簡約形の全列で principal-or-zero**（Isa: `y3y_Mark_princ`）。
     これは原文にない我々の補題だが、§7.4 を `RT_PS` 上で回すのに効く。**Lean でも先に用意しろ。**
