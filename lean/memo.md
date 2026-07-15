@@ -201,7 +201,7 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
   - ✅ `6.6-RT-image-of-Red` — 訂正 **A41** に従い、`Red` を `T_PS` に制限した像を
     `RedImage` として定義し、成立する包含 `RT_PS ⊆ RedImage` を証明。逆包含は
     `(0,0)(0,2)` の像 `(0,0)(2,2)` が非簡約である反例を `decide` で固定した。[r1]
-  - 🚧 `6.6-reduced-iff-condAB` — §6.6 のキーストーン。Isa: `reduced ⟺ RedCondA ∧ RedCondB`（無条件）。
+  - 🚧 `6.6-reduced-iff-condAB` — §6.6 のキーストーン。Isa: `reduced ⟺ RedCondA ∧ RedCondB`（無条件）。Lean では逆向き `RedCondA∧RedCondB → RTPS` を完成済み。複項は全 `P` 成分が真に短いことから長さ強帰納し、非複項は `Red_rebase_nonmulti` へ落とした。併せて、末尾未満の `take` が `nextR` と親を保つことから `RedCondA_Pred` / `RedCondB_Pred` を証明済み（sorry 0）。残りは順向き `RTPS → RedCondA∧RedCondB` の mono/core 部分。
     `6.6-P-condAB` で `P` ブロック左端を親辺が越えないことを
     `P_leftend_lmin + ancestor_basic_1` から証明し、親のオフセット対応、
     `RedCondAB_P_component`, `RedCondAB_of_P_components` を完成。A3 の

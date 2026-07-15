@@ -180,11 +180,171 @@ theorem RedCondA_of_diag_prefix (M : PS) (m : ℕ) (hM : TPS M)
     _ = RedCondA (seg N m (Lng N - 1)) := by rw [drop_eq_seg N m hmN]
     _ = true := hseg
 
+/-! ## Coefficient conditions on `Pred`
+
+The last column plays no role in any parent edge whose target lies strictly
+below it.  We record the corresponding `take` fact once; it is the common
+input to both coefficient conditions and, later, to reducedness of `Pred`. -/
+
+theorem hasParent_take_of_lt (M : PS) (n i j : ℕ)
+    (hn : n ≤ Lng M) (hj : j < n) :
+    hasParent (M.take n) i j = hasParent M i j := by
+  apply Bool.eq_iff_iff.mpr
+  rw [hasParent_iff_unique_fseq, hasParent_iff_unique_fseq]
+  constructor
+  · rintro ⟨p, hp, huniq⟩
+    have hpj : p < j := (nextR_implies_row0 (M.take n) i p j hp).1
+    have hpn : p < n := hpj.trans hj
+    have hpM : nextR M i p j = true := by
+      simpa only [nextR_take_adm M n i p j hn hpn hj] using hp
+    refine ⟨p, hpM, ?_⟩
+    intro q hqM
+    have hqj : q < j := (nextR_implies_row0 M i q j hqM).1
+    have hqn : q < n := hqj.trans hj
+    have hq : nextR (M.take n) i q j = true := by
+      simpa only [nextR_take_adm M n i q j hn hqn hj] using hqM
+    exact huniq q hq
+  · rintro ⟨p, hpM, huniq⟩
+    have hpj : p < j := (nextR_implies_row0 M i p j hpM).1
+    have hpn : p < n := hpj.trans hj
+    have hp : nextR (M.take n) i p j = true := by
+      simpa only [nextR_take_adm M n i p j hn hpn hj] using hpM
+    refine ⟨p, hp, ?_⟩
+    intro q hq
+    have hqj : q < j := (nextR_implies_row0 (M.take n) i q j hq).1
+    have hqn : q < n := hqj.trans hj
+    have hqM : nextR M i q j = true := by
+      simpa only [nextR_take_adm M n i q j hn hqn hj] using hq
+    exact huniq q hqM
+
+/-- `RedCondA` is inherited by deletion of the final column. -/
+theorem RedCondA_Pred (M : PS) (hM : TPS M)
+    (hA : RedCondA M = true) : RedCondA (Pred M) = true := by
+  by_cases hlen : Lng M ≤ 1
+  · simpa [Pred, hlen] using hA
+  · have hgt : 1 < Lng M := by omega
+    have hPred : Pred M = M.take (Lng M - 1) := by
+      simp [Pred, hlen, List.dropLast_eq_take]
+    apply RedCondA_intro
+    intro i j hi hj hp
+    have hjTake : j < Lng M - 1 := by
+      rw [hPred] at hj
+      simp only [List.length_take, Nat.min_eq_left (Nat.sub_le _ _)] at hj
+      exact hj
+    have hjM : j < Lng M := hjTake.trans_le (Nat.sub_le _ _)
+    have hpM : hasParent M i j = true := by
+      rw [hPred, hasParent_take_of_lt M (Lng M - 1) i j (by omega) hjTake] at hp
+      exact hp
+    have hbase := RedCondA_apply M hA i j hi hjM hpM
+    let p := parent (Pred M) i j
+    have hnextP : nextR (Pred M) i p j = true :=
+      hasParent_next_fseq (Pred M) i j hp
+    have hpj : p < j := (nextR_implies_row0 (Pred M) i p j hnextP).1
+    have hpn : p < Lng M - 1 := hpj.trans hjTake
+    have hnextM : nextR M i p j = true := by
+      rw [hPred] at hnextP
+      simpa only [nextR_take_adm M (Lng M - 1) i p j (by omega) hpn hjTake]
+        using hnextP
+    obtain ⟨q, hq, huniqM⟩ :=
+      (hasParent_iff_unique_fseq M i j).mp hpM
+    have hpq : p = q := huniqM p hnextM
+    have hparM : parent M i j = p := by
+      apply parent_eq_of_unique_fseq M i j p hnextM
+      intro y hy
+      exact (huniqM y hy).trans hpq.symm
+    have hparTake : parent (M.take (Lng M - 1)) i j = p := by
+      dsimp [p]
+      rw [← hPred]
+    rw [hPred, hparTake]
+    rw [entry_take M (Lng M - 1) i p hpn,
+      entry_take M (Lng M - 1) i j hjTake]
+    simpa [hparM] using hbase
+
+/-- `RedCondB` is inherited by deletion of the final column. -/
+theorem RedCondB_Pred (M : PS) (hM : TPS M)
+    (hB : RedCondB M = true) : RedCondB (Pred M) = true := by
+  by_cases hlen : Lng M ≤ 1
+  · simpa [Pred, hlen] using hB
+  · have hgt : 1 < Lng M := by omega
+    have hPred : Pred M = M.take (Lng M - 1) := by
+      simp [Pred, hlen, List.dropLast_eq_take]
+    simp only [RedCondB, List.all_eq_true, List.mem_range]
+    intro j hj
+    have hjTake : j < Lng M - 1 := by
+      rw [hPred] at hj
+      simp only [List.length_take, Nat.min_eq_left (Nat.sub_le _ _)] at hj
+      omega
+    have hjM : j < Lng M - 1 + 1 := by omega
+    have hBall := hB
+    simp only [RedCondB, List.all_eq_true, List.mem_range] at hBall
+    have hBj := hBall j hjM
+    rw [hPred, hasParent_take_of_lt M (Lng M - 1) 0 j (by omega) hjTake,
+      entry_take M (Lng M - 1) 0 j hjTake,
+      entry_take M (Lng M - 1) 1 j hjTake]
+    exact hBj
+
+private theorem P_component_length_lt_of_multi (M : PS) (J : ℕ)
+    (hM : TPS M) (hmulti : multiT M = true)
+    (hJ : J < (P M).length) :
+    Lng ((P M).getD J []) < Lng M := by
+  have hQtwo : 1 < (P M).length :=
+    (P_components_multi_iff M hM).mp hmulti
+  obtain ⟨_, hBpos, hBend⟩ := P_block_data M J hM hJ
+  by_cases hJ0 : J = 0
+  · subst J
+    obtain ⟨_, hB1pos, hB1end⟩ :=
+      P_block_data M 1 hM (by omega)
+    have hsum0 : (IdxSum (P M)).getD 0 0 = 0 := by
+      simpa using idxSum_getD (P M) 0 (Nat.zero_le _)
+    have hdiff0 := idxSum_diff (P M) 0 (by omega : 0 < (P M).length)
+    have hstart1 :
+        (IdxSum (P M)).getD 1 0 = Lng ((P M).getD 0 []) := by
+      rw [hdiff0, hsum0]
+      omega
+    have hB1end' :
+        (IdxSum (P M)).getD 1 0 + Lng ((P M).getD 1 []) - 1 < Lng M :=
+      hB1end
+    omega
+  · have hJpos : 0 < J := Nat.pos_of_ne_zero hJ0
+    have hprev : J - 1 < (P M).length := by omega
+    have hprevpos : 0 < Lng ((P M).getD (J - 1) []) :=
+      P_component_nonempty M (J - 1) hM hprev
+    have hdiff := idxSum_diff (P M) (J - 1) hprev
+    have hstartpos : 0 < (IdxSum (P M)).getD J 0 := by
+      rw [show J = (J - 1) + 1 by omega, hdiff]
+      omega
+    omega
+
+/-- Backward half of the §6.6 keystone: the two executable coefficient
+conditions force `Red` to fix every nonempty pair sequence. -/
+theorem RTPS_of_condAB (M : PS) (hM : TPS M)
+    (hA : RedCondA M = true) (hB : RedCondB M = true) : RTPS M := by
+  generalize hn : Lng M = n
+  induction n using Nat.strong_induction_on generalizing M with
+  | h n ih =>
+      by_cases hmulti : multiT M = true
+      · apply (RTPS_iff_P_components M hM).mpr
+        intro J hJ
+        let B := (P M).getD J []
+        have hBT : TPS B := by
+          apply List.ne_nil_of_length_pos
+          simpa [B] using P_component_nonempty M J hM hJ
+        obtain ⟨hBA, hBB⟩ := RedCondAB_P_component M J hM hA hB hJ
+        have hBL : Lng B < n := by
+          rw [← hn]
+          simpa [B] using P_component_length_lt_of_multi M J hM hmulti hJ
+        exact ih (Lng B) hBL B hBT hBA hBB rfl
+      · have hnm : multiT M = false := Bool.eq_false_of_not_eq_true hmulti
+        exact RTPS_of_condAB_nonmulti M hM hA hB hnm
+
 #print axioms RTPS_of_condAB_nonmulti
 #print axioms RTPS_mono_head_eq
 #print axioms RTPS_mono_RedCondB
 #print axioms RTPS_iff_condAB_zeroT
 #print axioms RTPS_iff_condAB_multi
 #print axioms RedCondA_of_diag_prefix
+#print axioms RedCondA_Pred
+#print axioms RedCondB_Pred
+#print axioms RTPS_of_condAB
 
 end PSS
