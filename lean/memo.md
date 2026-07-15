@@ -312,6 +312,18 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
     `bOperCore` の再帰式と `rnDom`/末尾 scb 構文補題を再利用可能 API として公開（定義値は不変）。
     Isa: `m_7_2_scb_fseq_succ`, `m_7_2_scb_fseq_scb`,
     `m_7_2_scb_fseq_kind1_general`。[r1]
+  - ✅ `7.3-two-column` — `RTPS_mono_head_eq` で先頭を `(v,v)` に固定し、燃料付き
+    `TransAux` / `MarkAux` の一列計算と自明 scb 文脈を直接評価して、原文の五結論
+    （`Trans`、両列の `Marked`、`Mark 0`、`Mark 1`）を証明した。一般の未完成な
+    `RTPS → RedCondA` は使わず、`RTPS_diag_prefix` で `0,…,v` を左へ補った簡約核列を作り、
+    `v<b` の場合は末尾が幹上にあることと `Red_core_prefix_diag` から専用係数則
+    `b=v+1` を導いた。公開定理 `two_column` / `two_column_Trans` /
+    `two_column_Marked` / `two_column_Mark` は sorry 0、axioms は
+    `[propext, Classical.choice, Quot.sound]`。Python 正本では成分 `<6` の全二列から得た
+    `RTPS ∧ monoT` 20件で五結論・専用係数則とも反例0、既存の全819列チェックサムも
+    `531635224` のまま一致。全 `lake build` は 3,017 jobs 成功。
+    Isa: `m_7_3_twoColumn_Trans`, `m_7_3_twoColumn_Marked`,
+    `m_7_3_twoColumn_Mark`, `p_7_3_twoColumn`。[r1]
   - `7.3-Trans-welldefined` — 訂正 **A15**（原文の測度は下がらない）。
     Isa: `Trans_Mark_invariant_aux`（停止性＋値域 `(Trans,Mark) ∈ T_B^Marked`、域は `RT_PS`）
   - `7.3-Mark-rightmost1` — 訂正 **A17**（零項基底で例外。反例あり）

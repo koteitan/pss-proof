@@ -102,7 +102,7 @@
     - ✅ 命題（`RightNodes` と部分表現の関係） — `7.2-RightNodes-subexpr`[r1]
   - 🚨 §7.3 翻訳写像
     - 🚨 命題（`Trans` の well-defined 性） — `7.3-Trans-welldefined`
-    - 🚨 命題（`2` 列ペア数列の基本性質） — `7.3-two-column`
+    - ✅ 命題（`2` 列ペア数列の基本性質） — `7.3-two-column`[r1]
     - 🚨 命題（`Trans` の `(IncrFirst,Red)` 不変 `P` 同変性） — `7.3-Trans-IncrFirst-Red`
     - 🚨 命題（`Mark` の `(IncrFirst,Red,P)` 不変性） — `7.3-Mark-IncrFirst-Red`
     - 🚨 命題（`Trans` が零項性を保つこと） — `7.3-Trans-preserves-zeroT`
