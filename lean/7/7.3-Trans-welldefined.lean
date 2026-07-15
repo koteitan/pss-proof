@@ -843,7 +843,9 @@ private theorem marked_Pred_local (M : PS) (m : ℕ)
       _ = Pred M := (Pred_eq_take M hlen).symm
   simpa [hseg] using hs
 
-private theorem marked_Pred_Adm_local (M : PS)
+/-- The admissible ancestor of the last row-0 parent remains marked after
+removing the final column. -/
+theorem Marked_Pred_Adm (M : PS)
     (hM : TPS M) (hlen : 1 < Lng M)
     (hp : hasParent M 0 (Lng M - 1) = true) :
     Marked (Pred M) (Adm M (parent M 0 (Lng M - 1))) := by
@@ -1309,7 +1311,7 @@ private theorem trans_inv_mono_hard (M : PS) (hR : RTPS M)
   have hp : hasParent M 0 (Lng M - 1) = true :=
     mono_hasParent_row0 M hM hmono (Lng M - 1) (by omega) (by omega)
   have hc₁Marked : Marked (Pred M) (Adm M jp) := by
-    simpa [jp] using marked_Pred_Adm_local M hM hlen hp
+    simpa [jp] using Marked_Pred_Adm M hM hlen hp
   have hc₁facts := IHmk (Adm M jp) hc₁Marked
   have hc₁TB : c₁ ∈ T_B := by simpa [c₁] using hc₁facts.1
   have ht₁c₁ : (t₁, c₁) ∈ MarkedB := by
@@ -1758,6 +1760,7 @@ theorem Trans_Mark_welldefined (M : PS) (hM : TPS M) :
 #print axioms trans_multi_last_component
 #print axioms trans_multi_prefix_seg
 
+#print axioms Marked_Pred_Adm
 #print axioms Trans_Mark_invariant
 #print axioms Trans_mem_T_B
 #print axioms Mark_mem_T_B
