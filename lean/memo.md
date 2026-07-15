@@ -253,7 +253,10 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
   - `7.1-buchholz-wf` 📘 — [Buc1] Lemma 2.2。原文も引用のみ。**Lean でも引用（`axiom`）でよいか要判断**。
     Isabelle 版は `sorry` 引用のまま（停止性定理はこれに依存しない形になっている）。
   - `7.1-buchholz-fseq-lt` / `-closed` — Isa: `m_buc1_3_2a_*`, `b1x_operB_dom_all`（完全証明済み）
-  - `7.2-scb-triviality` — 訂正 **A11**（前提に単項性が要る）
+  - ✅ `7.2-scb-compose` — principal 成分内の scb 分解を外側へ結合する第 1 主張を、
+    文字列連結の結合則と右括弧 tail の閉性から直接証明。第 2 主張は訂正 A11 に従い
+    `isPTB_str c` を仮定した `scb_compose_dprin` として証明し、無条件版が
+    `t=0, c=[.zero]` で偽になる反例も固定した。Isa: `m_7_2_scb_compose`, `scbcomp_compose2_PT`。[r1]
   - `7.2-scb-*` — 訂正 **A12**（選言が零項で空回り）、**A13**（系(3) 出現位置は同一とは限らない）
   - `7.2-scb-fseq` — 訂正 **A23**（脚注[30] の基本列の転置）。Isa: `m_7_2_scb_fseq_kind1_general`
   - `7.3-Trans-welldefined` — 訂正 **A15**（原文の測度は下がらない）。

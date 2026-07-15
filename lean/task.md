@@ -94,7 +94,7 @@
     - 🚨 [Buc1] Lemma 3.2（`OT_B` の基本列閉包） — `7.1-buchholz-fseq-closed`
   - 🚨 §7.2 scb 分解
     - 🚨 命題（scb分解の置換可能性） — `7.2-scb-replaceable`
-    - 🚨 命題（scb分解の合成則） — `7.2-scb-compose`
+    - ✅ 命題（scb分解の合成則） — `7.2-scb-compose`[r1]
     - 🚨 命題（scb分解の自明性の判定条件） — `7.2-scb-triviality`
     - 🚨 命題（scb分解の一意性） — `7.2-scb-unique`
     - 🚨 系（加法とscb分解の関係） — `7.2-add-scb`
