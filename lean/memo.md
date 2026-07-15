@@ -337,6 +337,16 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
     これは原文にない我々の補題だが、§7.4 を `RT_PS` 上で回すのに効く。**Lean でも先に用意しろ。**
 
 - **§8 停止性** — Isa: `m_8_*` ＋ `layerC`。**停止性 = 「基本列の降下性」＋「`OT` 所属」の 2 本柱**。
+  - ✅ `8.1-diagSeq-Trans` — `u<v` の対角列について、十分な任意燃料で
+    `TransAux` と `MarkAux · 0` がともに `D_u(D_v 0)` となる同時帰納不変条件を証明した。
+    2列基底は一列計算を直接展開し、帰納段階は末尾上段親が直前列、かつその `Adm` が 0
+    であることを `range.reverse.find?` まで計算して条件(VI)に還元した。自明な自己 scb 文脈で
+    `D_u(D_v 0)` を `D_u(D_{v+1}0)` に置換し、燃料下界を `transFuel` から閉じた。
+    公開定理 `diagSeq_Trans` は sorry 0、axioms は
+    `[propext, Classical.choice, Quot.sound]`。独立 Python モデルは `0≤u<v≤8` の36例で
+    `Trans`・`Mark 0`・条件(VI)とも反例0、既存の全819列チェックサムも
+    `531635224` のまま一致。全 `lake build` は 3,018 jobs 成功。
+    Isa: `m_8_1_diagSeq_Trans`, `p_8_1_diagSeq_Trans`。[r1]
   - `8.1-condI-III-c1-around` — 訂正 **A20**（補題(1) は非簡約 1 列切片で偽）
     ＋ **A21**（補題(5) の条件(III)で `j₀ᴺ = j′₀` が偽）
   - `8.2-*` — `LastStep` の添字は A9 で訂正済みの形を使う。
