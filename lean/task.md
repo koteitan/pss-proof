@@ -65,7 +65,7 @@
     - 🚨 系（許容化の `Red` 不変性） — `6.5-admof-Red-invariance`
     - 🚨 系（`Red` が基点を保つこと） — `6.5-Red-preserves-marked`
   - 🚨 §6.6 簡約性
-    - 🚨 命題（簡約性の切片への遺伝性） — `6.6-reduced-slice`
+    - ✅ 命題（簡約性の切片への遺伝性） — `6.6-reduced-slice`[r1]
     - ✅ 命題（`P` が簡約性を保つこと） — `6.6-P-preserves-reduced`[r1]
     - 🚨 命題（簡約性が基本列で保たれること） — `6.6-reduced-fseq`
     - 🚨 命題（簡約性と係数の関係） — `6.6-reduced-iff-condAB`

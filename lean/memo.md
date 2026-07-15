@@ -204,6 +204,13 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
       `RedCondA` 前提鏖のみ。[r0]
   - ✅ `6.6-one-column` — 任意の単要素に対し `Red [(a,b)] = [(b,b)]` を閉形式から導き、
     長1の簡約形が対角単要素と一致することを証明。Isa: `m_6_6_oneColumn`。[r1]
+  - ✅ `6.6-reduced-slice` — `Red_Pred` から簡約形の `Pred` 閉性 `RTPS_Pred` を導き、
+    `Pred` の反復が `take (Lng M-k)` と一致することを帰納証明した。訂正 A5 の始点 `j₀=0`
+    の下で始切片を反復 `Pred` と同定し、簡約性を輸送。実際には任意の非空始切片について成立する。
+    公開定理 `RTPS_slice` は sorry 0、axioms は
+    `[propext, Classical.choice, Quot.sound]`。独立 Python モデルの簡約始切片447件で反例0。
+    全 `lake build` は3,024 jobs成功（キャッシュ済み2.24秒）。
+    Isa: `herd_6_6_reduced_slice`。[r1]
   - `6.6-ancestor-slice-Red-IncrFirst` — 訂正 **A2**（指数の添字 `m` が未定義 → `j'₀`）
     ＋ 訂正 **A5**（前提 `j′₀ ≤ TrMax` が弱すぎる。反例 113 件）
   - ✅ `6.6-RT-image-of-Red` — 訂正 **A41** に従い、`Red` を `T_PS` に制限した像を

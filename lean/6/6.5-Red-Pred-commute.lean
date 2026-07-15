@@ -1349,6 +1349,17 @@ theorem Red_Pred (M : PS) (hM : TPS M) :
         have hpredRed : Pred (Red M) = Red M := by simp [Pred, hredL]
         rw [hpredM, hpredRed]
 
+/-- Deleting the final column preserves reducedness. -/
+theorem RTPS_Pred (M : PS) (hM : RTPS M) : RTPS (Pred M) := by
+  have hh := hM
+  simp only [RTPS, reduced, Bool.and_eq_true, beq_iff_eq] at hh
+  have hMT : TPS M := by simpa [TPS] using hh.1
+  have hPT := Pred_TPS M hMT
+  have hfix : Red (Pred M) = Pred M := by rw [Red_Pred M hMT, hh.2]
+  simp only [RTPS, reduced, Bool.and_eq_true, beq_iff_eq]
+  exact ⟨by simpa [TPS] using hPT, hfix⟩
+
 #print axioms Red_Pred
+#print axioms RTPS_Pred
 
 end PSS
