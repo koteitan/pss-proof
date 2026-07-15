@@ -457,8 +457,24 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
     全7,380列中、簡約286列・一意親188件で反例0。Lean 内監査も全819列・一意親35件で反例0、
     同じ非簡約反例の共通 scb 文脈が0件であることを確認した。Isa:
     `m_7_4_Trans_nextAdm`。[r1]
-  - `7.4-Mark-nextAdm` — 訂正 **A18**（祖先 `j` に `(M,j) ∈ Marked` が要る）
-    ＋ **A47**（原文の `T_PS` 版は偽）。Isa: `y6z_7_4_Mark_nextAdm_TPS_false`
+  - ✅ `7.4-Mark-nextAdm` — 訂正 **A18**（祖先 `j` に `(M,j) ∈ Marked` が要る）
+    ＋ **A47**（原文の `T_PS` 版は偽）。両列 `m≤m'` の共通 scb 位置を示す
+    `Mark_nest_common_marked` を公開した。`m=m'` は `Mark` が principal-or-zero であることから
+    自己分解し、`m<m'` は両端の `Trans_Mark_Pred` 文脈に
+    `Mark_MarkedB_nest` を合成し、無条件 scb 一意性で `Pred M` 側と `M` 側の位置を
+    同期した。本体は一意な `nextAdm` 親が `Marked` で最終列未満であることを定義から
+    取り出し、第0行祖先関係を自然数順序に落として補助定理へ帰着した。
+    A18 の簡約反例 `[(0,0),(1,1),(2,2),(3,1)]` は列 `1` が親 `2` の祖先だが
+    未許容であること、A47 の非簡約反例
+    `[(0,0),(4,2),(2,6),(4,2),(8,4),(6,4)]` は中心 `Mark _ 3` が一致する一方で
+    外側 `Mark _ 0` が異なるため共通文脈が存在しないことまで Lean 定理で固定した。
+    公開定理と両反例は sorry 0、axioms は通常の
+    `[propext, Classical.choice, Quot.sound]`（A18 反例は choice 不要）。独立 Python 監査は
+    成分 `<3`・長さ `≤4` の全7,380列中、簡約286列の入れ子260件・本体224件で
+    反例0。Lean 内監査は全819列の入れ子43件・本体39件で反例0。
+    Kimina も no errors/no sorry、全 `lake build` は3,037 jobs成功（2.75秒）。
+    Isa: `Mark_nest_common_marked`, `m_7_4_Mark_nextAdm`,
+    `y6z_7_4_Mark_nextAdm_TPS_false`。[r1]
   - ✅ `7.4-Trans-Mark-Pred` — 訂正 **A46**。`Lng M` の強帰納法で共通 scb 文脈の存在を
     証明した。mono の零前駆枝は自己分解、非零 surgery 枝は `c₁→c₂` の外側・内側の
     `replaceScb_spec` を `scb_compose` と無条件一意性で同期した。multi 枝では最終 `P` 成分 `J`
