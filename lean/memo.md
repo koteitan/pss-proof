@@ -369,6 +369,13 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
     `Trans_P_equivariance` は sorry 0、axioms は
     `[propext, Classical.choice, Quot.sound]`。Isa: `m_7_3_Trans_Red`,
     `m_7_3_Trans_IncrFirst`, `m_7_3_Trans_P_equivariance`。[r1]
+  - ✅ `7.3-Mark-IncrFirst-Red` — `TransAux_MarkAux_fuel_irrel_RTPS` の `MarkAux` 側を
+    RED2 軌道の二段展開に接続し、全 `TPS` 上で `Mark_Red` と
+    `Mark_IncrFirst` を証明。P 成分式は簡約形の複項入力に対し、最終成分を
+    `drop (Pcut M) M`、添字 offset を `Pcut M` とする訂正形で完成した。原文の
+    `Lng M - Lng(component) - 1` は off-by-one。公開定理は sorry 0、axioms は
+    `[propext, Classical.choice, Quot.sound]`。Isa: `m_7_3_Mark_Red`,
+    `m_7_3_Mark_IncrFirst`, `m_7_3_Mark_P_invariance`。[r1]
   - `7.3-Mark-rightmost1` — 訂正 **A17**（零項基底で例外。反例あり）
   - `7.3-Trans-preserves-monoT` — **原文は偽（A16）**。反例 `(0,0)(0,0)`。
     ❌ 停止性には不要。反例だけ機械証明して先に進む。
