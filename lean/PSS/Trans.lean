@@ -70,9 +70,9 @@ def scbContexts (t : BT) (c : List Sym) : List (List Sym × List Sym) :=
   (List.range (f.length - c.length + 1)).filterMap fun i =>
     let s := f.take i
     let b := f.drop (i + c.length)
-    if (f.drop i).take c.length == c &&
+    if decide ((f.drop i).take c.length = c) &&
         (t == BZero || isPTBStr c) &&
-        b.all (· == .rp) then
+        b.all (fun x => decide (x = .rp)) then
       some (s, b)
     else none
 

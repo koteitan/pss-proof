@@ -339,8 +339,19 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
     `531635224` のまま一致。全 `lake build` は 3,017 jobs 成功。
     Isa: `m_7_3_twoColumn_Trans`, `m_7_3_twoColumn_Marked`,
     `m_7_3_twoColumn_Mark`, `p_7_3_twoColumn`。[r1]
-  - `7.3-Trans-welldefined` — 訂正 **A15**（原文の測度は下がらない）。
-    Isa: `Trans_Mark_invariant_aux`（停止性＋値域 `(Trans,Mark) ∈ T_B^Marked`、域は `RT_PS`）
+  - ✅ `7.3-Trans-welldefined` — 訂正 **A15**（原文の非簡約分岐では
+    `Lng` が下がらないため、域を `RTPS` に修正）。実行可能 parser の完全性と
+    `unflatBT (flatBT t) = t`、scb 文脈選択の健全性、置換後の `T_B` / principal /
+    `MarkedB` 保存を証明。`Pred` と複項の始切片・右端成分の長さが真に
+    減少することから、`TransAux` / `MarkAux` の十分な燃料間での値の一意性を
+    同時強帰納で閉じた。さらに単列、単項の零/非零 `Trans Pred`、複項の
+    全分岐で値不変条件 `Trans_Mark_invariant`を証明し、`Trans M ∈ T_B`、
+    `Mark M m ∈ T_B`、`(Trans M, Mark M m) ∈ MarkedB` を公開定理化。
+    sorry 0、axioms は `[propext, Classical.choice, Quot.sound]`。`scbContexts` の比較を
+    命題的等値比較に強化した後も、Python/Lean の全 819 列チェックサムは
+    `531635224` で一致。全 `lake build` は 3,025 jobs 成功（7.31秒）。
+    Isa: `m_7_3_Trans_welldef`, `m_7_3_Mark_welldef`,
+    `Trans_Mark_invariant_aux`。[r2]
   - `7.3-Mark-rightmost1` — 訂正 **A17**（零項基底で例外。反例あり）
   - `7.3-Trans-preserves-monoT` — **原文は偽（A16）**。反例 `(0,0)(0,0)`。
     ❌ 停止性には不要。反例だけ機械証明して先に進む。
