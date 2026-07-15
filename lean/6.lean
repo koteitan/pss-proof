@@ -19,6 +19,7 @@ import «6».«6.4-FirstNodes-Joints-mono»
 import «6».«6.4-mono-slice»
 import «6».«6.5-Red-welldefined»
 import «6».«6.5-Red-IncrFirst-invariance»
+import «6».«6.5-Red-idempotence»
 import «6».«6.5-Lng-Red-invariance»
 import «6».«6.5-Red-preserves-zeroT»
 import «6».«6.5-monoT-Red»

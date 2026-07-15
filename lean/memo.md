@@ -173,9 +173,9 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
     - ✅ `6.5-monoT-Red` — `coreReduce` の正の `m₁₀` 対角アンカーについて、Red 後の
       branch tail の row-0 値がすべてアンカーより真に大きいことを証明。左端最小性、
       `np ≤ joint+1`、`m₁₀ ≤ joint` を組み合わせ、終切片が `TPS ∧ monoT` であることを導いた。[r1]
-    - `6.5-Red-idempotence` — **原文は `T_PS` で偽（A4）**。`RT_PS` 上でのみ真。
-      反例 `Red((0,0)(0,2)) = (0,0)(2,2)`, `Red((0,0)(2,2)) = (0,0)(1,1)`。
-      **Lean では `decide` で反例定理を書ける。最初にこれを書け**（下流の議論の土台になる）。
+    - ✅ `6.5-Red-idempotence` — **原文は `T_PS` で偽（A4）**なので `RT_PS` 上に制限。
+      `RTPS M` から定義展開だけで `Red M = M` を取り出して冪等性を示した。原文版の反例
+      `M=(0,0)(0,2)` は `by decide` で機械証明し、`Red(Red M) ≠ Red M` を固定した。[r1]
     - `6.5-Red-le-invariance` / `6.5-Red-preserves-monoT` / `6.5-P-Red-equivariance`
       — 同じく `T_PS` では偽。定義域を `RT_PS` に制限（A4）。Isa: `m_6_5_Red_le_final`,
         `m_6_5_monoCong`（勝ち筋＝閉形式 `Red M = rebase(M)` に持ち込む）
