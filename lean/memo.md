@@ -347,6 +347,16 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
     `Trans`・`Mark 0`・条件(VI)とも反例0、既存の全819列チェックサムも
     `531635224` のまま一致。全 `lake build` は 3,018 jobs 成功。
     Isa: `m_8_1_diagSeq_Trans`, `p_8_1_diagSeq_Trans`。[r1]
+  - ✅ `8.1-Pred-diagSeq-Trans` — 対角列 `diagSeq u v` に 1 列 `(wp,w)` を
+    追加した翻訳を、`wp=v+1`、`u<wp≤v ∧ w=wp`、`u+1<wp≤v ∧ w<wp`、
+    `wp=u+1 ∧ w<wp` の 4 ケースに分けて原文どおり計算した。追加列の `RTPS`、
+    第 0 行の親、内部 `Adm=0`、右端直前基点の許容性を直接証明し、十分な任意燃料の
+    `diagSeq` 翻訳・左右の `MarkAux` を `transC2Core` の各分岐と scb 置換へ接続した。
+    公開定理 `Pred_diagSeq_Trans` は sorry 0、axioms は
+    `[propext, Classical.choice, Quot.sound]`。独立 Python モデルは `0≤u<v≤8` の
+    全 4 ケース 780 例（120/120/420/120）で反例 0、既存の全 819 列チェックサムも
+    `531635224` のまま一致。全 `lake build` は 3,019 jobs 成功。
+    Isa: `m_8_1_Pred_diagSeq_Trans`, `p_8_1_Pred_diagSeq_Trans`。[r1]
   - `8.1-condI-III-c1-around` — 訂正 **A20**（補題(1) は非簡約 1 列切片で偽）
     ＋ **A21**（補題(5) の条件(III)で `j₀ᴺ = j′₀` が偽）
   - `8.2-*` — `LastStep` の添字は A9 で訂正済みの形を使う。

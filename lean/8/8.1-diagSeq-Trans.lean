@@ -603,6 +603,62 @@ private theorem diagSeq_aux_dT (u v fuel : ℕ) (huv : u < v)
         rw [hfg]
         exact diagSeq_step_aux_dT u v g huv' hchild.1 hchild.2
 
+/-- At the rightmost basepoint, the mono branch of `MarkAux` returns the
+last row-one coefficient, independently of the recursive child value. -/
+theorem MarkAux_rightmost_reduced_mono (fuel : ℕ) (M : PS)
+    (hred : reduced M = true) (hmono : monoT M = true) (hlen : 1 < Lng M) :
+    MarkAux (fuel + 1) M (Lng M - 1) =
+      Dprin (entry M 1 (Lng M - 1) : ℕ∞) BZero := by
+  rw [MarkAux]
+  simp [hred]
+  rw [if_neg (by
+    intro h
+    change transJ1 M = 0 at h
+    change Lng M - 1 = 0 at h
+    omega)]
+  simp [hmono]
+  have hm0 : Lng M - 1 ≠ 0 := by omega
+  by_cases ht : (TransAux fuel (Pred M) == BZero) = true
+  · simp [ht, hm0]
+    change Dprin (entry M 1 (transJ1 M) : ℕ∞) BZero =
+      Dprin (entry M 1 (Lng M - 1) : ℕ∞) BZero
+    rfl
+  · simp [ht]
+    rw [if_neg (by
+      change ¬Lng M - 1 < transJ1 M
+      have hj1 : transJ1 M = Lng M - 1 := rfl
+      rw [hj1]
+      exact Nat.lt_irrefl _)]
+    change Dprin (entry M 1 (transJ1 M) : ℕ∞) BZero =
+      Dprin (entry M 1 (Lng M - 1) : ℕ∞) BZero
+    rfl
+
+/-- Reusable fuel-stable form of `diagSeq_Trans`, paired with the leftmost
+mark needed by the recursive translation of an appended column. -/
+theorem diagSeq_TransAux_MarkAux (u v fuel : ℕ) (huv : u < v)
+    (hfuel : v - u + 1 ≤ fuel) :
+    TransAux fuel (diagSeq u v) =
+        Dprin (u : ℕ∞) (Dprin (v : ℕ∞) BZero) ∧
+      MarkAux fuel (diagSeq u v) 0 =
+        Dprin (u : ℕ∞) (Dprin (v : ℕ∞) BZero) :=
+  diagSeq_aux_dT u v fuel huv hfuel
+
+/-- Fuel-stable rightmost mark of a nontrivial diagonal pair sequence. -/
+theorem diagSeq_MarkAux_rightmost (u v fuel : ℕ) (huv : u < v)
+    (hfuel : v - u + 1 ≤ fuel) :
+    MarkAux fuel (diagSeq u v) (Lng (diagSeq u v) - 1) =
+      Dprin (v : ℕ∞) BZero := by
+  let g := fuel - 1
+  have hfg : fuel = g + 1 := by dsimp [g]; omega
+  have hrm := diagSeq_reduced_mono_dT u v huv
+  have he : entry (diagSeq u v) 1 (Lng (diagSeq u v) - 1) = v := by
+    have hlen : 1 < Lng (diagSeq u v) := by rw [length_diagSeq_dT]; omega
+    rw [entry_diagSeq_dT u v 1 (Lng (diagSeq u v) - 1) (by omega),
+      length_diagSeq_dT]
+    omega
+  rw [hfg, MarkAux_rightmost_reduced_mono g (diagSeq u v) hrm.1 hrm.2
+    (by rw [length_diagSeq_dT]; omega), he]
+
 /-- §8.1 (article 2837): the translation of a nontrivial diagonal pair
 sequence is the two-level Buchholz principal term determined by its two
 endpoints. -/
@@ -621,5 +677,8 @@ theorem diagSeq_Trans (u v : ℕ) (huv : u < v) :
   exact (diagSeq_aux_dT u v (transFuel (diagSeq u v)) huv hbound).1
 
 #print axioms diagSeq_Trans
+#print axioms MarkAux_rightmost_reduced_mono
+#print axioms diagSeq_TransAux_MarkAux
+#print axioms diagSeq_MarkAux_rightmost
 
 end PSS

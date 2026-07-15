@@ -124,7 +124,7 @@
 - 🚨 **§8 停止性**
   - 🚨 §8.1 条件(I)の下での展開規則
     - ✅ 補題（公差 `(1,1)` のペア数列の `Trans` の基本性質） — `8.1-diagSeq-Trans` [r1]
-    - 🚨 系（`Pred` と公差 `(1,1)` のペア数列の `Trans` の基本性質） — `8.1-Pred-diagSeq-Trans`
+    - ✅ 系（`Pred` と公差 `(1,1)` のペア数列の `Trans` の基本性質） — `8.1-Pred-diagSeq-Trans` [r1]
     - 🚨 補題（条件(I)か(III)の下での `c₁` 前後の具体表示） — `8.1-condI-III-c1-around`
     - 🚨 命題（条件(I)の下での `Trans` と基本列の交換関係） — `8.1-Trans-fseq-condI`
   - 🚨 §8.2 強単項性
