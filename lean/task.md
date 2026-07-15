@@ -107,7 +107,7 @@
     - ✅ 命題（`Trans` の `(IncrFirst,Red)` 不変 `P` 同変性） — `7.3-Trans-IncrFirst-Red`[r1]
     - ✅ 命題（`Mark` の `(IncrFirst,Red,P)` 不変性） — `7.3-Mark-IncrFirst-Red`[r1]
     - ✅ 命題（`Trans` が零項性を保つこと） — `7.3-Trans-preserves-zeroT`[r1]
-    - 🚨 命題（`c₁` と `c₂` の大小関係） — `7.3-c1-c2-order`
+    - ✅ 命題（`c₁` と `c₂` の大小関係） — `7.3-c1-c2-order`[r2]
     - 🚨 命題（`Pred` の `Trans` に関する降下性） — `7.3-Pred-Trans-descend`
     - 🚨 命題（右端第 `1` 基点の `Mark` の基本性質） — `7.3-Mark-rightmost1`
     - 🚨 命題（`Trans` が単項性を保つこと） — `7.3-Trans-preserves-monoT`

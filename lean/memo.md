@@ -384,6 +384,17 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
     `Trans_preserves_zeroT : TPS M → (zeroT M = true ↔ Trans M = BZero)` は
     sorry 0、axioms は `[propext, Classical.choice, Quot.sound]`。
     Isa: `m_7_3_Trans_zeroT`。[r1]
+  - ✅ `7.3-c1-c2-order` — `c₂` の全定義枝が単一 principal であることと、非零 `t₁` の
+    marked scb 成分から `c₁` の単項性を復元した。狭義不等式の条件(I)/(III)/(V)枝と通常枝は
+    Buchholz 項の辞書式順序・加法で閉じ、条件(VI)枝には `flatIdx` と suffix 最大値
+    `row1Bound` を導入。`Mark` の長さ強帰納により、置換 scb 内を含む全 `D` 添字が
+    対応する第1行 suffix の最大値以下であることを証明し、`Adm` から右端親までの
+    `nextrel1` 連鎖と `j′+1=j₁` により先頭添字の狭義比較へ落とした。公開定理
+    `transC1_lessBT_transC2_full` と記事の3結論を束ねる `c1_c2_order` は sorry 0、axioms は
+    `[propext, Classical.choice, Quot.sound]`。独立 Python モデルは成分 `<3`・長さ `≤3` の
+    対象21例で反例0、既存の全819列チェックサムも Lean/Python とも `531635224` で一致。
+    全 `lake build` は3,030 jobs成功（6.10秒）。Isa: `p_7_3_c1_c2`,
+    `transC1_lessBT_transC2_full`, `NAbound_holds`。[r2]
   - `7.3-Mark-rightmost1` — 訂正 **A17**（零項基底で例外。反例あり）
   - `7.3-Trans-preserves-monoT` — **原文は偽（A16）**。反例 `(0,0)(0,0)`。
     ❌ 停止性には不要。反例だけ機械証明して先に進む。

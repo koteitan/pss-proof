@@ -164,7 +164,7 @@ private theorem isPTBStr_flatBP (p : BP) :
       some (p, []) := by simpa using hp
   simp [isPTBStr, hp']
 
-private theorem principal_flat_properties {c : BT} (hc : c ∈ T_B)
+theorem principal_flat_properties {c : BT} (hc : c ∈ T_B)
     (hcP : ∃ p, c = .trm [p]) :
     isPTB_str (flatBT c) ∧ isPTBStr (flatBT c) = true := by
   obtain ⟨p, rfl⟩ := hcP
@@ -238,7 +238,7 @@ private theorem scbContexts_mem_decomp {t : BT} {s c b : List Sym}
       simpa [hb] using hx
   next hcond => simp at hout
 
-private theorem scbContexts_head_decomp {t : BT} {s c b : List Sym}
+theorem scbContexts_head_decomp {t : BT} {s c b : List Sym}
     (hc : isPTB_str c)
     (hh : (scbContexts t c).head? = some (s, b)) :
     scb_decomp t s c b := by
@@ -267,7 +267,7 @@ private theorem scbContexts_head_exists {t c : BT}
       apply scbContexts_mem_decomp hcptb
       simp [hlist]
 
-private theorem replaceScb_preserves_marked {t c₁ c₂ : BT}
+theorem replaceScb_preserves_marked {t c₁ c₂ : BT}
     (ht : t ∈ T_B) (hc₁ : c₁ ∈ T_B) (hc₁P : ∃ p, c₁ = .trm [p])
     (hc₂ : c₂ ∈ T_B) (hc₂P : ∃ p, c₂ = .trm [p])
     (hm : (t, c₁) ∈ MarkedB) :
@@ -314,7 +314,7 @@ private theorem replaceScb_ne_zero {t c₁ c₂ : BT}
   have hmarked := (replaceScb_preserves_marked ht hc₁ hc₁P hc₂ hc₂P hm).2
   exact markedB_host_ne_zero_of_principal hc₂P hmarked
 
-private theorem replaceScb_spec {t c₁ c₂ : BT}
+theorem replaceScb_spec {t c₁ c₂ : BT}
     (ht : t ∈ T_B) (hc₁ : c₁ ∈ T_B) (hc₁P : ∃ p, c₁ = .trm [p])
     (hc₂ : c₂ ∈ T_B) (hc₂P : ∃ p, c₂ = .trm [p])
     (hm : (t, c₁) ∈ MarkedB) :
@@ -343,7 +343,7 @@ private theorem principal_of_flatBT_head_dsym {t : BT}
       | nil => exact ⟨p, rfl⟩
       | cons q qs => simp [flatBT] at h
 
-private theorem replaceScb_principal {c₀ c₁ c₂ : BT}
+theorem replaceScb_principal {c₀ c₁ c₂ : BT}
     (hc₀ : c₀ ∈ T_B) (hc₀P : ∃ p, c₀ = .trm [p])
     (hc₁ : c₁ ∈ T_B) (hc₁P : ∃ p, c₁ = .trm [p])
     (hc₂ : c₂ ∈ T_B) (hc₂P : ∃ p, c₂ = .trm [p])
@@ -370,7 +370,7 @@ private theorem replaceScb_principal {c₀ c₁ c₂ : BT}
         simpa [hx] using hh
   exact principal_of_flatBT_head_dsym hhead
 
-private theorem marked_component_principal {t c : BT}
+theorem marked_component_principal {t c : BT}
     (ht : t ≠ BZero) (hm : (t, c) ∈ MarkedB) :
     ∃ p, c = .trm [p] := by
   rcases hm with ⟨s, b, hd⟩
@@ -390,7 +390,7 @@ private theorem addBT_ne_zero_right (a b : BT) (hb : b ≠ BZero) :
 private theorem BZero_mem_T_B : BZero ∈ T_B := by
   simp [T_B, BZero, dfree_BT, dfree_BPList]
 
-private theorem Dprin_mem_T_B {v : ℕ∞} {t : BT} (hv : v ≠ ⊤)
+theorem Dprin_mem_T_B {v : ℕ∞} {t : BT} (hv : v ≠ ⊤)
     (ht : t ∈ T_B) : Dprin v t ∈ T_B := by
   simpa [T_B, Dprin, dfree_BT, dfree_BP, dfree_BPList, hv] using ht
 
@@ -517,7 +517,7 @@ private theorem transC2Core_principal (M : PS) (w : ℕ∞) (t₂ : BT) :
     · exact ⟨_, rfl⟩
     · split <;> exact ⟨_, rfl⟩
 
-private theorem transC2Core_properties (M : PS) (c₁ : BT)
+theorem transC2Core_properties (M : PS) (c₁ : BT)
     (hc₁ : c₁ ∈ T_B) (hc₁P : ∃ p, c₁ = .trm [p]) :
     transC2Core M (bpHeadV c₁) (bpHeadT c₁) ∈ T_B ∧
       ∃ p, transC2Core M (bpHeadV c₁) (bpHeadT c₁) = .trm [p] := by
@@ -829,7 +829,7 @@ private theorem row1_implies_row0_local (M : PS) (a b : ℕ)
   simp only [le1, Bool.and_eq_true, decide_eq_true_eq] at hh
   exact le1Aux_implies_row0_local M (Lng M) a b hM hh.1.2 hh.2
 
-private theorem marked_Pred_local (M : PS) (m : ℕ)
+theorem Marked_Pred (M : PS) (m : ℕ)
     (hM : TPS M) (hlen : 1 < Lng M)
     (hm : Marked M m) (hmlast : m < Lng M - 1) :
     Marked (Pred M) m := by
@@ -869,9 +869,9 @@ theorem Marked_Pred_Adm (M : PS)
     row0_transitive M a jp j₁ hM hle₀ hstep₀
   have hm : Marked M a := by
     exact ⟨hM, haAdm, by simpa [j₁] using hfull⟩
-  simpa [a, jp, j₁] using marked_Pred_local M a hM hlen hm haLast
+  simpa [a, jp, j₁] using Marked_Pred M a hM hlen hm haLast
 
-private theorem multi_Marked_last_component_local (M : PS) (m : ℕ)
+theorem multi_Marked_last_component (M : PS) (m : ℕ)
     (hM : TPS M) (hmulti : multiT M = true) (hm : Marked M m) :
     Pcut M ≤ m ∧ Marked (M.drop (Pcut M)) (m - Pcut M) := by
   have hlen : 1 < Lng M := multi_length_fseq M hM hmulti
@@ -1137,7 +1137,7 @@ theorem Mark_eq_lengthAux (M : PS) (m : ℕ) (hR : RTPS M) :
   exact (TransAux_MarkAux_fuel_irrel_RTPS M hR
     (transFuel M) (Lng M) (transFuel_ge_length M) (le_refl _)).2 m
 
-private theorem Trans_Mark_mono_eq (M : PS) (hR : RTPS M)
+theorem Trans_Mark_mono_equations (M : PS) (hR : RTPS M)
     (hlen : 1 < Lng M) (hmono : monoT M = true) :
     (Trans M =
       let j₁ := lastIdx M
@@ -1330,7 +1330,7 @@ private theorem trans_inv_mono_hard (M : PS) (hR : RTPS M)
   have hc₂db : (c₂, db) ∈ MarkedB := by
     simpa [c₂, db, j₁] using
       transC2Core_marked_fallback M c₁ hc₁TB hc₁P
-  have heq := Trans_Mark_mono_eq M hR hlen hmono
+  have heq := Trans_Mark_mono_equations M hR hlen hmono
   have hTrans : Trans M = replaceScb t₁ c₁ c₂ := by
     simpa [j₁, jp, t₁, c₁, c₂, ht₁ne'] using heq.1
   have hrepFacts := replaceScb_preserves_marked
@@ -1347,7 +1347,7 @@ private theorem trans_inv_mono_hard (M : PS) (hR : RTPS M)
   by_cases hmlt : m < j₁
   · let c₀ := Mark (Pred M) m
     have hmPred : Marked (Pred M) m := by
-      apply marked_Pred_local M m hM hlen hmM
+      apply Marked_Pred M m hM hlen hmM
       simpa [j₁] using hmlt
     have hc₀facts := IHmk m hmPred
     have hc₀TB : c₀ ∈ T_B := by simpa [c₀] using hc₀facts.1
@@ -1484,7 +1484,7 @@ private theorem trans_inv_multi (M : PS) (hR : RTPS M)
       exact addBT_ne_zero_right _ _ hTJne
     refine ⟨hTransTB, hTransNe, ?_⟩
     intro m hm
-    have hmJ := (multi_Marked_last_component_local M m hM hmulti hm).2
+    have hmJ := (multi_Marked_last_component M m hM hmulti hm).2
     have hmk := IHJ (m - Pcut M) hmJ
     rw [hMark m]
     refine ⟨by simpa [J] using hmk.1, ?_⟩
@@ -1561,7 +1561,7 @@ theorem Trans_Mark_invariant (M : PS) (hR : RTPS M) :
           · let j₁ := lastIdx M
             let db := Dprin (entry M 1 j₁ : ℕ∞) BZero
             let out := Dprin 0 db
-            have heq := Trans_Mark_mono_eq M hR hlen hmono
+            have heq := Trans_Mark_mono_equations M hR hlen hmono
             have hTrans : Trans M = out := by
               simpa [j₁, db, out, ht₁z] using heq.1
             have hMark : ∀ m, Mark M m = if m == 0 then out else db := by
@@ -1756,11 +1756,19 @@ theorem Trans_Mark_welldefined (M : PS) (hM : TPS M) :
 #print axioms Trans_eq_lengthAux
 #print axioms Mark_eq_lengthAux
 
+#print axioms principal_flat_properties
+#print axioms scbContexts_head_decomp
+#print axioms replaceScb_spec
+#print axioms transC2Core_properties
+
 #print axioms trans_multi_prefix_RTPS
 #print axioms trans_multi_last_component
 #print axioms trans_multi_prefix_seg
 
 #print axioms Marked_Pred_Adm
+#print axioms Marked_Pred
+#print axioms multi_Marked_last_component
+#print axioms Trans_Mark_mono_equations
 #print axioms Trans_Mark_invariant
 #print axioms Trans_mem_T_B
 #print axioms Mark_mem_T_B
