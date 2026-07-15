@@ -208,6 +208,11 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
     解析し、row-1 左端の保存を証明。先頭対角 prefix については `coreReduce` 上の連続 row-1 辺を
     構成して `TrMax` まで持ち上げ、正係数出力の添字を直接計算して prefix の最終列を固定した。
     Isa: `m_6_6_Red_leftend_1`, `_2`。[r1]
+  - ✅ `6.6-P-preserves-reduced` — 複項分岐の `Red M = flatten (map Red (P M))` と `P_concat`を
+    組み合わせ、`Lng_Red_invariance` が与えるブロック長プロファイルから連結前のリストを
+    復元する補題を証明。`Red_P_stable` と
+    `RTPS M ↔ ∀ J < (P M).length, RTPS ((P M).getD J [])` の両方向を完成した。
+    Isa: `m_6_6_Red_P_stable`, `m_6_6_P_reduced`。[r1]
   - `6.7-standard-reduced` — `ST_PS ⊆ RT_PS`。Isa: `m_6_7_*`（e096355）。
     **`has_gz⟹D` / GTWF ルートは偽。escape readback で gate-free 化したのが正解**
   - `6.8-standard-slice-Br-descending` — 訂正 **A7**（「`M′` が標準形」は偽。`Br(M′)` が降順が正）
