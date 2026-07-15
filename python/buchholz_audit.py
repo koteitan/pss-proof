@@ -60,7 +60,7 @@ def main():
         if d == 'zero': return [ZERO]
         if d == 'N': return [nat(n) for n in range(4)]
         u = d[1]; return [z for z in terms if in_Tv(z,u)][:12]
-    desc_fail=[]; mono_fail=[]; ot_fail=[]
+    desc_fail=[]; desc_nat_fail=[]; mono_fail=[]; ot_fail=[]
     for a in ot:
         ws = doms_witnesses(a)
         for z in ws:
@@ -68,6 +68,14 @@ def main():
             az = bracket(a,z)
             if not lt_term(az, a): desc_fail.append((fmt(a),fmt(z),fmt(az)))
             if in_OT(a) and in_OT(z) and not in_OT(az): ot_fail.append((fmt(a),fmt(z),fmt(az)))
+        # The executable Lean theorem is strengthened to every numeral even
+        # when dom(a) is {0} or T_u; these branches ignore/accept the numeral.
+        if not is_zero(a):
+            for n in range(4):
+                z = nat(n)
+                az = bracket(a, z)
+                if not lt_term(az, a):
+                    desc_nat_fail.append((fmt(a), n, fmt(az)))
         # 3.2b monotonicity on T_u domains
         d = dom(a)
         if isinstance(d,tuple):
@@ -76,8 +84,9 @@ def main():
                     if in_dom(z,a) and in_dom(z2,a) and lt_term(z,z2):
                         if not lt_term(bracket(a,z), bracket(a,z2)):
                             mono_fail.append((fmt(a),fmt(z),fmt(z2)))
-    print(f"[3.2a] a[z]<a fails={len(desc_fail)}  [3.2b] monotone fails={len(mono_fail)}  [3.3] a[z]∈OT fails={len(ot_fail)}")
+    print(f"[3.2a] a[z]<a fails={len(desc_fail)} numeral-extension fails={len(desc_nat_fail)}  [3.2b] monotone fails={len(mono_fail)}  [3.3] a[z]∈OT fails={len(ot_fail)}")
     for x in desc_fail[:5]: print("   desc FAIL:", x)
+    for x in desc_nat_fail[:5]: print("   numeral FAIL:", x)
     for x in ot_fail[:5]: print("   OT   FAIL:", x)
 
 if __name__ == "__main__": main()

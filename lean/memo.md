@@ -254,7 +254,15 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
     Isa: `m_7_1_paren_balance`。[r1]
   - `7.1-buchholz-wf` 📘 — [Buc1] Lemma 2.2。原文も引用のみ。**Lean でも引用（`axiom`）でよいか要判断**。
     Isabelle 版は `sorry` 引用のまま（停止性定理はこれに依存しない形になっている）。
-  - `7.1-buchholz-fseq-lt` / `-closed` — Isa: `m_buc1_3_2a_*`, `b1x_operB_dom_all`（完全証明済み）
+  - ✅ `7.1-buchholz-fseq-lt` — `btWeight` 強帰納で `operB` の全分岐を直接解析し、
+    [Buc1] Lemma 3.2(a) を証明。帰納命題は `z ∈ domB a ∨ z ∈ NatSet` へ強化し、
+    `{0}`・`T_u` domain に対する実行可能定義の自然数拡張も含めた。kind-1 は
+    `xseq b u i = D_u(…) ∈ T_u`、multi 項は末尾 principal の `domTag` と `OT` を輸送して閉じる。
+    公開定理 `buchholz_fseq_descent` / `buchholz_fseq_lt` は sorry 0、axioms は
+    `[propext, Classical.choice, Quot.sound]`。独立 Python モデルは深さ 2 の 1,561 項
+    （`OT` 496 項）で domain 降下・各項 4 自然数の拡張とも反例 0。
+    Isa: `b1x_descent`, `m_buc1_3_2a_fseq_lt`。[r1]
+  - `7.1-buchholz-fseq-closed` — Isa: `m_buc1_3_2_OT_B_closed`（完全証明済み）
   - ✅ `7.2-scb-compose` — principal 成分内の scb 分解を外側へ結合する第 1 主張を、
     文字列連結の結合則と右括弧 tail の閉性から直接証明。第 2 主張は訂正 A11 に従い
     `isPTB_str c` を仮定した `scb_compose_dprin` として証明し、無条件版が
