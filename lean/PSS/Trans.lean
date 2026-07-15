@@ -84,8 +84,12 @@ def replaceScb (t c₁ c₂ : BT) : BT :=
 
 /-! ## 条件 (I)–(VI) -/
 
-private def lastIdx (M : PS) : ℕ := Lng M - 1
-private def lastParent (M : PS) : ℕ := parent M 0 (lastIdx M)
+/-- Index of the final column.  Public because proofs about the recursive
+equations of `TransAux` and `MarkAux` need to normalize this guard. -/
+def lastIdx (M : PS) : ℕ := Lng M - 1
+
+/-- Row-zero parent of the final column. -/
+def lastParent (M : PS) : ℕ := parent M 0 (lastIdx M)
 
 /-- 条件 (I)。 -/
 def transCondI (M : PS) : Bool :=
