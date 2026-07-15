@@ -9,6 +9,502 @@ import PSS.Flat
 
 namespace PSS
 
+/-! ## 右端 principal への降下で使う flatten 補題 -/
+
+private theorem allRP_zero_not_mem {b : List Sym}
+    (hb : ∀ x ∈ b, x = .rp) : .zero ∉ b := by
+  intro hz
+  have := hb .zero hz
+  cases this
+
+/-- 完全な項文字列と principal 文字列が右括弧尾部をまたいで重なることはない。 -/
+private theorem scb_straddle_excluded {m : List Sym} {p : BP} {a : BT}
+    {us : List Sym}
+    (h : m ++ flatBP p = flatBT a ++ us)
+    (hus : ∀ x ∈ us, x = .rp) :
+    us = [] := by
+  by_contra hne
+  have hnozero : .zero ∉ us := allRP_zero_not_mem hus
+  rcases List.append_eq_append_iff.mp h with
+    ⟨mid, hterm, hrest⟩ | ⟨mid, hm, husplit⟩
+  · have hmid : mid ≠ [] := by
+      intro hz
+      subst mid
+      simp only [List.nil_append] at hrest
+      have hzmem : .zero ∈ us := by
+        rw [← hrest]
+        exact flatBP_zero_mem p
+      exact hnozero hzmem
+    have hmnonneg : 0 ≤ flatSum m :=
+      flatBT_properPrefix_nonneg hterm hmid
+    have hw := congrArg flatSum h
+    simp [flatBP_sum, flatBT_sum, flatSum_allRP hus] at hw
+    have hlenNat : 0 < us.length := by
+      cases us with
+      | nil => exact (hne rfl).elim
+      | cons x xs => simp
+    have hlenInt : 0 < (us.length : ℤ) := by exact_mod_cast hlenNat
+    omega
+  · have hzmem : .zero ∈ us := by
+      rw [husplit]
+      exact List.mem_append.mpr (Or.inr (flatBP_zero_mem p))
+    exact hnozero hzmem
+
+/-- multi 項の、最後の principal より前にある完全成分とコンマの列。 -/
+private def flatComponentRun : List BP → List Sym
+  | [] => []
+  | p :: ps => flatBP p ++ .cm :: flatComponentRun ps
+
+/-- `flatComponentRun ms` の後ろにまだ文字があるなら、右括弧尾部を持つ
+principal occurrence の開始位置はその成分列をすべて通過している。 -/
+private theorem scb_peel_components {pp : BP} {b tail : List Sym}
+    (ms : List BP) (s : List Sym)
+    (h : s ++ flatBP pp ++ b = flatComponentRun ms ++ tail)
+    (hb : ∀ x ∈ b, x = .rp) :
+    (flatComponentRun ms).length ≤ s.length := by
+  induction ms generalizing s with
+  | nil => simp [flatComponentRun]
+  | cons r ms ih =>
+      have heq : s ++ (flatBP pp ++ b) =
+          flatBP r ++ (.cm :: (flatComponentRun ms ++ tail)) := by
+        simpa [flatComponentRun, List.append_assoc] using h
+      rcases List.append_eq_append_iff.mp heq with
+        ⟨mid, hr, hafter⟩ | ⟨mid, hs, hafter⟩
+      · have hmid : mid ≠ [] := by
+          intro hm
+          subst mid
+          simp only [List.nil_append] at hafter
+          rcases pp with ⟨u, a⟩
+          simp [flatBP] at hafter
+        have hsnonneg : 0 ≤ flatSum s :=
+          flatBP_properPrefix_nonneg hr hmid
+        have hmweight := congrArg flatSum hr
+        simp [flatBP_sum] at hmweight
+        have hmneg : flatSum mid ≤ -1 := by omega
+        rcases List.append_eq_append_iff.mp hafter with
+          ⟨d, hmidEq, hbEq⟩ | ⟨d, hppEq, htailEq⟩
+        · have hcm : .cm ∈ b := by
+            rw [hbEq]
+            simp
+          have := hb .cm hcm
+          cases this
+        · have hd : d ≠ [] := by
+            intro hd
+            subst d
+            simp only [List.nil_append] at htailEq
+            have hcm : .cm ∈ b := by
+              rw [← htailEq]
+              simp
+            have := hb .cm hcm
+            cases this
+          have hmnonneg : 0 ≤ flatSum mid :=
+            flatBP_properPrefix_nonneg hppEq hd
+          omega
+      · have hmid : mid ≠ [] := by
+          intro hm
+          subst mid
+          simp only [List.nil_append] at hafter
+          rcases pp with ⟨u, a⟩
+          simp [flatBP] at hafter
+        cases mid with
+        | nil => exact (hmid rfl).elim
+        | cons x xs =>
+            have hx : x = .cm := by
+              simpa using (congrArg List.head? hafter).symm
+            subst x
+            have hrec : xs ++ flatBP pp ++ b = flatComponentRun ms ++ tail := by
+              simpa [List.append_assoc] using hafter.symm
+            have hle := ih xs hrec
+            simp [flatComponentRun, hs, List.append_assoc]
+            omega
+
+private theorem flatBPTail_snoc (ps : List BP) (p : BP) :
+    flatBPTail (ps ++ [p]) = .cm :: (flatComponentRun ps ++ flatBP p) := by
+  induction ps with
+  | nil => simp [flatBPTail, flatComponentRun]
+  | cons q qs ih =>
+      simp [flatBPTail, flatComponentRun, ih, List.append_assoc]
+
+private theorem flatBT_multi_snoc (p : BP) (ps : List BP) (q : BP) :
+    flatBT (.trm ((p :: ps) ++ [q])) =
+      .lp :: (flatComponentRun (p :: ps) ++ flatBP q) ++ [.rp] := by
+  cases ps with
+  | nil => simp [flatBT, flatBPTail, flatComponentRun]
+  | cons r rs =>
+      change .lp :: (flatBP p ++ flatBPTail (r :: (rs ++ [q]))) ++ [.rp] = _
+      rw [show r :: (rs ++ [q]) = (r :: rs) ++ [q] by rfl,
+        flatBPTail_snoc]
+      simp [flatComponentRun, List.append_assoc]
+
+private theorem rightNodesList_snoc (ps : List BP) (p : BP) :
+    rightNodesList (ps ++ [p]) = rightNodesBP p := by
+  induction ps with
+  | nil => simp [rightNodesList]
+  | cons q qs ih =>
+      cases qs with
+      | nil => simp [rightNodesList]
+      | cons r rs => simpa [rightNodesList] using ih
+
+private theorem flatBP_length_ge_two (p : BP) : 2 ≤ (flatBP p).length := by
+  rcases p with ⟨u, a⟩
+  have hne : flatBT a ≠ [] := by
+    intro h
+    have := flatBT_zero_mem a
+    simp [h] at this
+  cases hfa : flatBT a with
+  | nil => exact (hne hfa).elim
+  | cons x xs => simp [flatBP, hfa]
+
+/-- multi 項では、右括弧尾部を持つ principal occurrence は最後の
+top-level principal の開始位置より左には始まらない。 -/
+private theorem scb_cut_reaches_last (p : BP) (ps : List BP) (q pp : BP)
+    (s b : List Sym)
+    (h : flatBT (.trm ((p :: ps) ++ [q])) = s ++ flatBP pp ++ b)
+    (hb : ∀ x ∈ b, x = .rp) :
+    1 + (flatComponentRun (p :: ps)).length ≤ s.length := by
+  have hshape := flatBT_multi_snoc p ps q
+  have hsne : s ≠ [] := by
+    intro hs
+    subst s
+    rcases pp with ⟨u, a⟩
+    have hh := congrArg List.head? (h.symm.trans hshape)
+    simp [flatBP] at hh
+  cases s with
+  | nil => exact (hsne rfl).elim
+  | cons x xs =>
+      have hx : x = .lp := by
+        have hh := congrArg List.head? (h.symm.trans hshape)
+        simpa using hh
+      subst x
+      have hpeel : xs ++ flatBP pp ++ b =
+          flatComponentRun (p :: ps) ++ (flatBP q ++ [.rp]) := by
+        have he := h.symm.trans hshape
+        simpa [List.append_assoc] using he
+      have hle := scb_peel_components (p :: ps) xs hpeel hb
+      simp
+      omega
+
+/-- 最後の top-level principal 以後にある occurrence は、その principal 全体か、
+その引数内の occurrence のどちらかである。 -/
+private theorem scb_last_dichotomy {pre post s b : List Sym} {q pp : BP}
+    (h : pre ++ flatBP q ++ post = s ++ flatBP pp ++ b)
+    (hb : ∀ x ∈ b, x = .rp) (hpost : ∀ x ∈ post, x = .rp)
+    (hcut : pre.length ≤ s.length) :
+    (s.length = pre.length ∧ flatBP pp = flatBP q ∧ b = post) ∨
+      ∃ u a s₂ b₂, q = .db u a ∧
+        flatBT a = s₂ ++ flatBP pp ++ b₂ ∧
+        (∀ x ∈ b₂, x = .rp) ∧
+        s.length = pre.length + 1 + s₂.length := by
+  have heq : pre ++ (flatBP q ++ post) = s ++ (flatBP pp ++ b) := by
+    simpa [List.append_assoc] using h
+  rcases List.append_eq_append_iff.mp heq with
+    ⟨mid, hs, hafter⟩ | ⟨mid, hpre, hafter⟩
+  · cases mid with
+    | nil =>
+        simp only [List.append_nil, List.nil_append] at hs hafter
+        subst s
+        rcases flatBP_cancel hafter.symm with ⟨hpq, hbp⟩
+        exact Or.inl ⟨rfl, hpq, hbp⟩
+    | cons x xs =>
+        rcases q with ⟨u, a⟩
+        have hx : x = .dsym u := by
+          simpa [flatBP] using (congrArg List.head? hafter).symm
+        subst x
+        have hinner : flatBT a ++ post = xs ++ flatBP pp ++ b := by
+          simpa [flatBP, List.append_assoc] using hafter
+        have hoverlap : (xs ++ flatBP pp) ++ b = flatBT a ++ post := by
+          simpa [List.append_assoc] using hinner.symm
+        rcases List.append_eq_append_iff.mp hoverlap with
+          ⟨us, hterm, hbsplit⟩ | ⟨us, hmark, hpostsplit⟩
+        · have hus : ∀ z ∈ us, z = .rp := by
+            intro z hz
+            exact hb z (by rw [hbsplit]; simp [hz])
+          exact Or.inr ⟨u, a, xs, us, rfl, by
+            simpa [List.append_assoc] using hterm, hus, by simp [hs]; omega⟩
+        · have hus : ∀ z ∈ us, z = .rp := by
+            intro z hz
+            exact hpost z (by rw [hpostsplit]; simp [hz])
+          have hunil : us = [] := scb_straddle_excluded hmark hus
+          subst us
+          simp only [List.append_nil, List.nil_append] at hmark hpostsplit
+          exact Or.inr ⟨u, a, xs, [], rfl, by
+            simpa [List.append_assoc] using hmark.symm, by simp, by simp [hs]; omega⟩
+  · have hmidlen : mid.length = 0 := by
+      have hpLen := congrArg List.length hpre
+      simp at hpLen
+      omega
+    have hmid : mid = [] := by
+      cases mid with
+      | nil => rfl
+      | cons x xs => simp at hmidlen
+    subst mid
+    simp only [List.append_nil, List.nil_append] at hpre hafter
+    subst pre
+    rcases flatBP_cancel hafter with ⟨hpq, hbp⟩
+    exact Or.inl ⟨rfl, hpq, hbp⟩
+
+/-- 右括弧尾部を持つ principal occurrence の `RightNodes` は、周囲の項の
+`RightNodes` の suffix である。記事の kind-1 maximality の構文的核心。 -/
+theorem scb_occurrence_rightNodes_suffix {t : BT} {pp : BP} {s b : List Sym}
+    (hocc : flatBT t = s ++ flatBP pp ++ b)
+    (hb : ∀ x ∈ b, x = .rp) :
+    ∃ k, RightNodes (.trm [pp]) = (RightNodes t).drop k := by
+  generalize hn : (flatBT t).length = n
+  induction n using Nat.strong_induction_on generalizing t s pp b with
+  | h n ih =>
+      rcases t with ⟨ys⟩
+      cases ys with
+      | nil =>
+          have hlen := congrArg List.length hocc
+          have hge := flatBP_length_ge_two pp
+          simp [flatBT] at hlen
+          omega
+      | cons y ys =>
+          let full : List BP := y :: ys
+          have hfull : full ≠ [] := by simp [full]
+          let init := full.dropLast
+          let q := full.getLast hfull
+          have hsnoc : init ++ [q] = full :=
+            List.dropLast_append_getLast hfull
+          have hlist : init ++ [q] = y :: ys := by
+            simpa [full] using hsnoc
+          have hocc' : flatBT (.trm (init ++ [q])) = s ++ flatBP pp ++ b := by
+            rw [hsnoc]
+            simpa [full] using hocc
+          have hn' : (flatBT (.trm (init ++ [q]))).length = n := by
+            rw [hsnoc]
+            simpa [full] using hn
+          cases hi : init with
+          | nil =>
+              have hlistSingle : [q] = y :: ys := by
+                simpa [hi] using hlist
+              have hoccSingle : flatBT (.trm [q]) = s ++ flatBP pp ++ b := by
+                simpa [hi] using hocc'
+              have hnSingle : (flatBT (.trm [q])).length = n := by
+                simpa [hi] using hn'
+              have hd := scb_last_dichotomy
+                (pre := []) (post := []) (q := q) (pp := pp)
+                (h := by simpa [flatBT, List.append_assoc] using hoccSingle)
+                hb (by simp) (by simp)
+              rcases hd with hmax | ⟨u, a, s₂, b₂, hq, haocc, hb₂, _⟩
+              · have hpq : pp = q := flatBP_injective hmax.2.1
+                refine ⟨0, ?_⟩
+                rw [← hlistSingle]
+                simpa [RightNodes, rightNodesList, hpq]
+              ·
+                have hlt : (flatBT a).length < n := by
+                  rw [← hnSingle, hq]
+                  simp [flatBT, flatBP]
+                obtain ⟨k, hk⟩ :=
+                  ih (flatBT a).length hlt (t := a) (s := s₂)
+                    (pp := pp) (b := b₂) haocc hb₂ rfl
+                refine ⟨k.succ, ?_⟩
+                rw [← hlistSingle, hq]
+                simpa [RightNodes, rightNodesList, rightNodesBP] using hk
+          | cons p ps =>
+              have hlistMulti : (p :: ps) ++ [q] = y :: ys := by
+                simpa [hi] using hlist
+              have hoccMulti : flatBT (.trm ((p :: ps) ++ [q])) =
+                  s ++ flatBP pp ++ b := by
+                simpa [hi] using hocc'
+              have hnMulti : (flatBT (.trm ((p :: ps) ++ [q]))).length = n := by
+                simpa [hi] using hn'
+              have hshape := flatBT_multi_snoc p ps q
+              have hsplit :
+                  (.lp :: flatComponentRun (p :: ps)) ++ flatBP q ++ [.rp] =
+                    s ++ flatBP pp ++ b := by
+                simpa [List.append_assoc] using hshape.symm.trans hoccMulti
+              have hcut := scb_cut_reaches_last p ps q pp s b hoccMulti hb
+              have hcut' : (.lp :: flatComponentRun (p :: ps)).length ≤ s.length := by
+                simp
+                omega
+              have hd := scb_last_dichotomy
+                (pre := .lp :: flatComponentRun (p :: ps))
+                (post := [.rp]) (q := q) (pp := pp)
+                hsplit hb (by simp) hcut'
+              rcases hd with hmax | ⟨u, a, s₂, b₂, hq, haocc, hb₂, _⟩
+              · have hpq : pp = q := flatBP_injective hmax.2.1
+                refine ⟨0, ?_⟩
+                simp only [List.drop_zero]
+                rw [← hlistMulti]
+                change rightNodesBP pp = rightNodesList ((p :: ps) ++ [q])
+                rw [rightNodesList_snoc, hpq]
+              ·
+                have hlt : (flatBT a).length < n := by
+                  rw [← hnMulti, flatBT_multi_snoc, hq]
+                  simp [flatBP]
+                  omega
+                obtain ⟨k, hk⟩ :=
+                  ih (flatBT a).length hlt (t := a) (s := s₂)
+                    (pp := pp) (b := b₂) haocc hb₂ rfl
+                have hrn : RightNodes (.trm (y :: ys)) =
+                    u.toNat :: RightNodes a := by
+                  rw [← hlistMulti, RightNodes, rightNodesList_snoc, hq]
+                  simp [rightNodesBP]
+                refine ⟨k.succ, ?_⟩
+                rw [hrn]
+                simpa using hk
+
+private theorem scb_cut_pin_at_last
+    {n : ℕ} {pre post s₀ s₁ b₀ b₁ : List Sym} {q p₀ p₁ : BP}
+    (h₀ : pre ++ flatBP q ++ post = s₀ ++ flatBP p₀ ++ b₀)
+    (hb₀ : ∀ x ∈ b₀, x = .rp)
+    (h₁ : pre ++ flatBP q ++ post = s₁ ++ flatBP p₁ ++ b₁)
+    (hb₁ : ∀ x ∈ b₁, x = .rp)
+    (hpost : ∀ x ∈ post, x = .rp)
+    (hcut₀ : pre.length ≤ s₀.length) (hcut₁ : pre.length ≤ s₁.length)
+    (hrn : (RightNodes (.trm [p₀])).length =
+      (RightNodes (.trm [p₁])).length)
+    (hsmaller : ∀ u a, q = .db u a → (flatBT a).length < n)
+    (hrec : ∀ {a : BT} {r₀ r₁ : BP} {z₀ z₁ d₀ d₁ : List Sym},
+      (flatBT a).length < n →
+      flatBT a = z₀ ++ flatBP r₀ ++ d₀ → (∀ x ∈ d₀, x = .rp) →
+      flatBT a = z₁ ++ flatBP r₁ ++ d₁ → (∀ x ∈ d₁, x = .rp) →
+      (RightNodes (.trm [r₀])).length = (RightNodes (.trm [r₁])).length →
+      z₀.length = z₁.length) :
+    s₀.length = s₁.length := by
+  have hd₀ := scb_last_dichotomy h₀ hb₀ hpost hcut₀
+  have hd₁ := scb_last_dichotomy h₁ hb₁ hpost hcut₁
+  rcases hd₀ with hm₀ | ⟨u₀, a₀, z₀, d₀, hq₀, ha₀, hd₀, hs₀⟩
+  · rcases hd₁ with hm₁ | ⟨u₁, a₁, z₁, d₁, hq₁, ha₁, hd₁, hs₁⟩
+    · exact hm₀.1.trans hm₁.1.symm
+    · have hp₀q : p₀ = q := flatBP_injective hm₀.2.1
+      have hlen₀ : (RightNodes (.trm [p₀])).length =
+          1 + (RightNodes a₁).length := by
+        rw [hp₀q, hq₁]
+        simp [RightNodes, rightNodesList, rightNodesBP]
+        omega
+      obtain ⟨k, hk⟩ := scb_occurrence_rightNodes_suffix ha₁ hd₁
+      have hle : (RightNodes (.trm [p₁])).length ≤ (RightNodes a₁).length := by
+        rw [hk]
+        simp
+      omega
+  · rcases hd₁ with hm₁ | ⟨u₁, a₁, z₁, d₁, hq₁, ha₁, hd₁, hs₁⟩
+    · have hp₁q : p₁ = q := flatBP_injective hm₁.2.1
+      have hlen₁ : (RightNodes (.trm [p₁])).length =
+          1 + (RightNodes a₀).length := by
+        rw [hp₁q, hq₀]
+        simp [RightNodes, rightNodesList, rightNodesBP]
+        omega
+      obtain ⟨k, hk⟩ := scb_occurrence_rightNodes_suffix ha₀ hd₀
+      have hle : (RightNodes (.trm [p₀])).length ≤ (RightNodes a₀).length := by
+        rw [hk]
+        simp
+      omega
+    · have hqa : BP.db u₀ a₀ = BP.db u₁ a₁ := hq₀.symm.trans hq₁
+      have haeq : a₀ = a₁ := by injection hqa
+      subst a₁
+      have hz : z₀.length = z₁.length :=
+        hrec (hsmaller u₀ a₀ hq₀) ha₀ hd₀ ha₁ hd₁ hrn
+      omega
+
+/-- 同じ項の二つの右端 occurrence で marked-principal の `RightNodes` 長が
+等しければ、文字列内の開始位置も等しい。 -/
+theorem scb_occurrence_rightNodes_length_pins_cut
+    {t : BT} {p₀ p₁ : BP} {s₀ s₁ b₀ b₁ : List Sym}
+    (h₀ : flatBT t = s₀ ++ flatBP p₀ ++ b₀)
+    (hb₀ : ∀ x ∈ b₀, x = .rp)
+    (h₁ : flatBT t = s₁ ++ flatBP p₁ ++ b₁)
+    (hb₁ : ∀ x ∈ b₁, x = .rp)
+    (hrn : (RightNodes (.trm [p₀])).length =
+      (RightNodes (.trm [p₁])).length) :
+    s₀.length = s₁.length := by
+  generalize hn : (flatBT t).length = n
+  induction n using Nat.strong_induction_on generalizing t s₀ s₁ p₀ p₁ b₀ b₁ with
+  | h n ih =>
+      rcases t with ⟨ys⟩
+      cases ys with
+      | nil =>
+          have hlen := congrArg List.length h₀
+          have hge := flatBP_length_ge_two p₀
+          simp [flatBT] at hlen
+          omega
+      | cons y ys =>
+          let full : List BP := y :: ys
+          have hfull : full ≠ [] := by simp [full]
+          let init := full.dropLast
+          let q := full.getLast hfull
+          have hsnoc : init ++ [q] = full :=
+            List.dropLast_append_getLast hfull
+          have h₀' : flatBT (.trm (init ++ [q])) = s₀ ++ flatBP p₀ ++ b₀ := by
+            rw [hsnoc]
+            simpa [full] using h₀
+          have h₁' : flatBT (.trm (init ++ [q])) = s₁ ++ flatBP p₁ ++ b₁ := by
+            rw [hsnoc]
+            simpa [full] using h₁
+          have hn' : (flatBT (.trm (init ++ [q]))).length = n := by
+            rw [hsnoc]
+            simpa [full] using hn
+          have hrec : ∀ {a : BT} {r₀ r₁ : BP} {z₀ z₁ d₀ d₁ : List Sym},
+              (flatBT a).length < n →
+              flatBT a = z₀ ++ flatBP r₀ ++ d₀ → (∀ x ∈ d₀, x = .rp) →
+              flatBT a = z₁ ++ flatBP r₁ ++ d₁ → (∀ x ∈ d₁, x = .rp) →
+              (RightNodes (.trm [r₀])).length =
+                (RightNodes (.trm [r₁])).length →
+              z₀.length = z₁.length := by
+            intro a r₀ r₁ z₀ z₁ d₀ d₁ hlt ha₀ hd₀ ha₁ hd₁ hre
+            exact ih (flatBT a).length hlt (t := a) (s₀ := z₀) (s₁ := z₁)
+              (p₀ := r₀) (p₁ := r₁) (b₀ := d₀) (b₁ := d₁)
+              ha₀ hd₀ ha₁ hd₁ hre rfl
+          cases hi : init with
+          | nil =>
+              have h₀s : flatBT (.trm [q]) = s₀ ++ flatBP p₀ ++ b₀ := by
+                simpa [hi] using h₀'
+              have h₁s : flatBT (.trm [q]) = s₁ ++ flatBP p₁ ++ b₁ := by
+                simpa [hi] using h₁'
+              have hns : (flatBT (.trm [q])).length = n := by
+                simpa [hi] using hn'
+              have hsmall : ∀ u a, q = .db u a → (flatBT a).length < n := by
+                intro u a hq
+                rw [← hns, hq]
+                simp [flatBT, flatBP]
+              apply scb_cut_pin_at_last
+                (n := n) (pre := []) (post := []) (q := q)
+                (p₀ := p₀) (p₁ := p₁)
+              · simpa [flatBT, List.append_assoc] using h₀s
+              · exact hb₀
+              · simpa [flatBT, List.append_assoc] using h₁s
+              · exact hb₁
+              · simp
+              · simp
+              · simp
+              · exact hrn
+              · exact hsmall
+              · exact hrec
+          | cons p ps =>
+              have h₀m : flatBT (.trm ((p :: ps) ++ [q])) =
+                  s₀ ++ flatBP p₀ ++ b₀ := by
+                simpa [hi] using h₀'
+              have h₁m : flatBT (.trm ((p :: ps) ++ [q])) =
+                  s₁ ++ flatBP p₁ ++ b₁ := by
+                simpa [hi] using h₁'
+              have hnm : (flatBT (.trm ((p :: ps) ++ [q]))).length = n := by
+                simpa [hi] using hn'
+              have hshape := flatBT_multi_snoc p ps q
+              have hs₀ :
+                  (.lp :: flatComponentRun (p :: ps)) ++ flatBP q ++ [.rp] =
+                    s₀ ++ flatBP p₀ ++ b₀ := by
+                simpa [List.append_assoc] using hshape.symm.trans h₀m
+              have hs₁ :
+                  (.lp :: flatComponentRun (p :: ps)) ++ flatBP q ++ [.rp] =
+                    s₁ ++ flatBP p₁ ++ b₁ := by
+                simpa [List.append_assoc] using hshape.symm.trans h₁m
+              have hc₀ := scb_cut_reaches_last p ps q p₀ s₀ b₀ h₀m hb₀
+              have hc₁ := scb_cut_reaches_last p ps q p₁ s₁ b₁ h₁m hb₁
+              have hc₀' : (.lp :: flatComponentRun (p :: ps)).length ≤ s₀.length := by
+                simp
+                omega
+              have hc₁' : (.lp :: flatComponentRun (p :: ps)).length ≤ s₁.length := by
+                simp
+                omega
+              have hsmall : ∀ u a, q = .db u a → (flatBT a).length < n := by
+                intro u a hq
+                rw [← hnm, flatBT_multi_snoc, hq]
+                simp [flatBP]
+                omega
+              exact scb_cut_pin_at_last (n := n) hs₀ hb₀ hs₁ hb₁
+                (by simp) hc₀' hc₁' hrn hsmall hrec
+
 /-- 文字列末尾の連続した右括弧の個数。 -/
 private def trailRP (xs : List Sym) : ℕ :=
   (xs.reverse.takeWhile (· = .rp)).length
@@ -139,6 +635,62 @@ theorem scb_unique_decomp (t : BT) (s₀ s₁ c b₀ b₁ : List Sym)
     simp only [List.append_nil] at e₀ e₁
     exact ⟨List.append_cancel_right (e₀.symm.trans e₁), rfl⟩
   · exact scb_unique_nonzero h₀ h₁ ht
+
+private theorem scb_same_cut_unique {t : BT}
+    {s₀ s₁ c₀ c₁ b₀ b₁ : List Sym}
+    (ht : t ≠ BZero)
+    (h₀ : scb_decomp t s₀ c₀ b₀) (h₁ : scb_decomp t s₁ c₁ b₁)
+    (hlen : s₀.length = s₁.length) :
+    (s₀, c₀, b₀) = (s₁, c₁, b₁) := by
+  rcases h₀ with ⟨he₀, hp₀, hb₀⟩
+  rcases h₁ with ⟨he₁, hp₁, hb₁⟩
+  rcases hp₀ ht with ⟨p₀, _, hc₀⟩
+  rcases hp₁ ht with ⟨p₁, _, hc₁⟩
+  have he : s₀ ++ (c₀ ++ b₀) = s₁ ++ (c₁ ++ b₁) := by
+    simpa [List.append_assoc] using he₀.symm.trans he₁
+  have hparts : s₀ = s₁ ∧ c₀ ++ b₀ = c₁ ++ b₁ := by
+    rcases List.append_eq_append_iff.mp he with
+      ⟨mid, hs₁, htail⟩ | ⟨mid, hs₀, htail⟩
+    · have hm : mid = [] := by
+        have hl := congrArg List.length hs₁
+        simp at hl
+        have : mid.length = 0 := by omega
+        cases mid <;> simp_all
+      subst mid
+      simp only [List.append_nil, List.nil_append] at hs₁ htail
+      exact ⟨hs₁.symm, htail⟩
+    · have hm : mid = [] := by
+        have hl := congrArg List.length hs₀
+        simp at hl
+        have : mid.length = 0 := by omega
+        cases mid <;> simp_all
+      subst mid
+      simp only [List.append_nil, List.nil_append] at hs₀ htail
+      exact ⟨hs₀, htail.symm⟩
+  have hflat : flatBP p₀ ++ b₀ = flatBP p₁ ++ b₁ := by
+    simpa [hc₀, hc₁] using hparts.2
+  rcases flatBP_cancel hflat with ⟨hpflat, hbeq⟩
+  have hceq : c₀ = c₁ := hc₀.trans (hpflat.trans hc₁.symm)
+  simp [hparts.1, hceq, hbeq]
+
+/-- 訂正 A14 後の第 4 主張。非零項の第 0 種 scb 分解は一意。 -/
+theorem scb_kind0_unique {t : BT} {s₀ s₁ c₀ c₁ b₀ b₁ : List Sym}
+    (_htb : t ∈ T_B) (ht : t ≠ BZero)
+    (h₀ : scb_kind0 t s₀ c₀ b₀) (h₁ : scb_kind0 t s₁ c₁ b₁) :
+    (s₀, c₀, b₀) = (s₁, c₁, b₁) := by
+  rcases h₀.1.2.1 ht with ⟨p₀, _, hc₀⟩
+  rcases h₁.1.2.1 ht with ⟨p₁, _, hc₁⟩
+  have hocc₀ : flatBT t = s₀ ++ flatBP p₀ ++ b₀ := by
+    simpa [hc₀] using h₀.1.1
+  have hocc₁ : flatBT t = s₁ ++ flatBP p₁ ++ b₁ := by
+    simpa [hc₁] using h₁.1.1
+  have hrn₀ := (h₀.2 p₀ hc₀).1
+  have hrn₁ := (h₁.2 p₁ hc₁).1
+  have hrn : (RightNodes (.trm [p₀])).length =
+      (RightNodes (.trm [p₁])).length := hrn₀.trans hrn₁.symm
+  have hcut := scb_occurrence_rightNodes_length_pins_cut
+    hocc₀ h₀.1.2.2 hocc₁ h₁.1.2.2 hrn
+  exact scb_same_cut_unique ht h₀.1 h₁.1 hcut
 
 /-! ## 第 0 種・第 1 種の排他性 -/
 

@@ -93,11 +93,11 @@
     - 🚨 [Buc1] Lemma 3.2a（基本列の狭義減少性） — `7.1-buchholz-fseq-lt`
     - 🚨 [Buc1] Lemma 3.2（`OT_B` の基本列閉包） — `7.1-buchholz-fseq-closed`
   - 🚨 §7.2 scb 分解
-    - 🚨 命題（scb分解の置換可能性） — `7.2-scb-replaceable`
+    - ✅ 命題（scb分解の置換可能性） — `7.2-scb-replaceable`[r1]
     - ✅ 命題（scb分解の合成則） — `7.2-scb-compose`[r1]
     - ✅ 命題（scb分解の自明性の判定条件） — `7.2-scb-triviality`[r1]
     - 🚨 命題（scb分解の一意性） — `7.2-scb-unique`
-    - 🚨 系（加法とscb分解の関係） — `7.2-add-scb`
+    - ✅ 系（加法とscb分解の関係） — `7.2-add-scb`[r1]
     - 🚨 命題（scb分解と基本列の関係） — `7.2-scb-fseq`
     - 🚨 命題（`RightNodes` と部分表現の関係） — `7.2-RightNodes-subexpr`
   - 🚨 §7.3 翻訳写像

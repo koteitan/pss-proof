@@ -9,23 +9,23 @@ import PSS.Scb
 
 namespace PSS
 
-private def flatWeight : Sym → ℤ
+def flatWeight : Sym → ℤ
   | .lp => 1
   | .cm => 1
   | .rp => -1
   | .zero => -1
   | .dsym _ => 0
 
-private def flatSum (xs : List Sym) : ℤ :=
+def flatSum (xs : List Sym) : ℤ :=
   (xs.map flatWeight).sum
 
-@[simp] private theorem flatSum_nil : flatSum [] = 0 := rfl
+@[simp] theorem flatSum_nil : flatSum [] = 0 := rfl
 
-@[simp] private theorem flatSum_cons (x : Sym) (xs : List Sym) :
+@[simp] theorem flatSum_cons (x : Sym) (xs : List Sym) :
     flatSum (x :: xs) = flatWeight x + flatSum xs := by
   simp [flatSum]
 
-@[simp] private theorem flatSum_append (xs ys : List Sym) :
+@[simp] theorem flatSum_append (xs ys : List Sym) :
     flatSum (xs ++ ys) = flatSum xs + flatSum ys := by
   simp [flatSum]
 
@@ -158,6 +158,75 @@ private theorem flatBP_good (p : BP) : FlatGood (flatBP p) :=
   match p with
   | .db u a => good_cons_zero (.dsym u) (flatBT a) (by rfl) (flatBT_good a)
 
+/-! ## flatten 文字列の公開された重み不変量 -/
+
+/-- 完全な項文字列の括弧重みは `-1`。 -/
+theorem flatBT_sum (t : BT) : flatSum (flatBT t) = -1 :=
+  (flatBT_good t).1
+
+/-- 完全な principal 文字列の括弧重みは `-1`。 -/
+theorem flatBP_sum (p : BP) : flatSum (flatBP p) = -1 :=
+  (flatBP_good p).1
+
+/-- 完全な項文字列の真の prefix は非負の括弧重みを持つ。 -/
+theorem flatBT_properPrefix_nonneg {t : BT} {pre rest : List Sym}
+    (h : flatBT t = pre ++ rest) (hr : rest ≠ []) :
+    0 ≤ flatSum pre :=
+  (flatBT_good t).2 pre rest h hr
+
+/-- 完全な principal 文字列の真の prefix は非負の括弧重みを持つ。 -/
+theorem flatBP_properPrefix_nonneg {p : BP} {pre rest : List Sym}
+    (h : flatBP p = pre ++ rest) (hr : rest ≠ []) :
+    0 ≤ flatSum pre :=
+  (flatBP_good p).2 pre rest h hr
+
+/-- 右括弧だけからなる文字列の重み。 -/
+theorem flatSum_allRP {b : List Sym} (hb : ∀ x ∈ b, x = .rp) :
+    flatSum b = -(b.length : ℤ) := by
+  induction b with
+  | nil => rfl
+  | cons x b ih =>
+      have hx : x = .rp := hb x (by simp)
+      have htail : ∀ y ∈ b, y = .rp := by
+        intro y hy
+        exact hb y (by simp [hy])
+      subst x
+      simp [ih htail, flatWeight]
+
+private def AllFlatZero : List BP → Prop
+  | [] => True
+  | p :: ps => .zero ∈ flatBP p ∧ AllFlatZero ps
+
+private theorem flatBT_zero_mem_aux (t : BT) : .zero ∈ flatBT t := by
+  exact BT.rec
+    (motive_1 := fun t => .zero ∈ flatBT t)
+    (motive_2 := fun p => .zero ∈ flatBP p)
+    (motive_3 := AllFlatZero)
+    (fun ps hps => by
+      cases ps with
+      | nil => simp [flatBT]
+      | cons p ps =>
+          rcases hps with ⟨hp, hps⟩
+          cases ps with
+          | nil => simpa [flatBT] using hp
+          | cons q qs =>
+              have hinner : .zero ∈ flatBP p ++ flatBPTail (q :: qs) :=
+                List.mem_append.mpr (Or.inl hp)
+              simpa [flatBT] using hinner)
+    (fun u a ha => by simpa [flatBP] using ha)
+    trivial
+    (fun _ _ hp hps => ⟨hp, hps⟩)
+    t
+
+/-- すべての完全な項文字列は `zero` を含む。 -/
+theorem flatBT_zero_mem (t : BT) : .zero ∈ flatBT t :=
+  flatBT_zero_mem_aux t
+
+/-- すべての完全な principal 文字列は `zero` を含む。 -/
+theorem flatBP_zero_mem (p : BP) : .zero ∈ flatBP p := by
+  rcases p with ⟨u, a⟩
+  simpa [flatBP] using flatBT_zero_mem a
+
 /-- `flatBP` は prefix-free。先頭の principal 文字列と残りを同時に消去できる。 -/
 theorem flatBP_cancel {p q : BP} {xs ys : List Sym}
     (h : flatBP p ++ xs = flatBP q ++ ys) :
@@ -267,6 +336,15 @@ private theorem flatBT_injective_aux (t : BT) :
 theorem flatBT_injective {t c : BT} (h : flatBT t = flatBT c) : t = c :=
   flatBT_injective_aux t c h
 
+/-- `flatBP` は単射。 -/
+theorem flatBP_injective {p q : BP} (h : flatBP p = flatBP q) : p = q := by
+  rcases p with ⟨u, a⟩
+  rcases q with ⟨v, c⟩
+  have huv : u = v := by simpa [flatBP] using congrArg List.head? h
+  subst v
+  have hac : flatBT a = flatBT c := by simpa [flatBP] using h
+  simp [flatBT_injective hac]
+
 /-- 完全な項文字列の後ろに別の文字列を付けても完全な項文字列になるなら、
 その余分な接尾辞は空。 -/
 theorem flatBT_append_suffix_nil {t c : BT} {b : List Sym}
@@ -276,8 +354,47 @@ theorem flatBT_append_suffix_nil {t c : BT} {b : List Sym}
   have hminus := (flatBT_good c).1
   omega
 
+/-- A complete principal code occurring across `flatBP p ++ tail` is either
+entirely inside `flatBP p`, or starts in `tail`.  In particular, a complete
+principal code cannot straddle the boundary of another complete principal
+code. -/
+theorem flatBP_localize_append {p q : BP} {tail s b : List Sym}
+    (h : flatBP p ++ tail = s ++ flatBP q ++ b) :
+    (∃ inside,
+        flatBP p = s ++ flatBP q ++ inside ∧ b = inside ++ tail) ∨
+      (∃ after,
+        s = flatBP p ++ after ∧ tail = after ++ flatBP q ++ b) := by
+  have h' : flatBP p ++ tail = s ++ (flatBP q ++ b) := by
+    simpa [List.append_assoc] using h
+  rcases List.append_eq_append_iff.mp h' with
+      ⟨mid, hs, htail⟩ | ⟨mid, hp, hrest⟩
+  · exact Or.inr ⟨mid, hs, by simpa [List.append_assoc] using htail⟩
+  · have hcross : flatBP q ++ b = mid ++ tail := by
+      simpa [List.append_assoc] using hrest
+    rcases List.append_eq_append_iff.mp hcross with
+        ⟨w, hmid, hb⟩ | ⟨w, hq, htail'⟩
+    · exact Or.inl ⟨w, by simpa [List.append_assoc, hmid] using hp,
+        by simpa [List.append_assoc] using hb⟩
+    · by_cases hw : w = []
+      · subst w
+        have hmq : mid = flatBP q := by simpa using hq.symm
+        exact Or.inl ⟨[], by simpa [hmq] using hp, by simpa using htail'.symm⟩
+      · by_cases hm : mid = []
+        · subst mid
+          have hsp : s = flatBP p := by simpa using hp.symm
+          exact Or.inr ⟨[], by simpa using hsp, by simpa [hq] using htail'⟩
+        · have hsnonneg : 0 ≤ flatSum s :=
+            (flatBP_good p).2 s mid hp hm
+          have hmidnonneg : 0 ≤ flatSum mid :=
+            (flatBP_good q).2 mid w hq hw
+          have hpminus : flatSum (flatBP p) = -1 := (flatBP_good p).1
+          rw [hp, flatSum_append] at hpminus
+          omega
+
 #print axioms flatBP_cancel
 #print axioms flatBT_injective
+#print axioms flatBP_injective
 #print axioms flatBT_append_suffix_nil
+#print axioms flatBP_localize_append
 
 end PSS

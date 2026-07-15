@@ -265,7 +265,16 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
   - `7.2-scb-unique` — 第 1 主張（固定した `c` に対する `(s,b)` の一意性）は末尾の
     連続右括弧数で証明済。第 3 主張は flatten の最後の `zero` 直前にある `D` 添字が
     ambient term と scb occurrence で一致することから、非零項での第 0/1 種排他性を証明し、
-    零項では両種が成立する A14 反例も固定した。残る dom 判定・第 0/1 種分解全体の一意性は未完。
+    零項では両種が成立する A14 反例も固定した。RightNodes 長が同じ右端 occurrence の開始位置を
+    強帰納法で固定し、第 0 種分解全体の一意性も証明済。残る dom 判定・第 1 種分解全体の一意性は未完。
+  - ✅ `7.2-scb-replaceable` — `flatBP` の prefix 重みで符号境界をまたぐ occurrence を排除し、
+    項・principal・principal 列の相互構造帰納で任意の完全 principal 文字列の置換手術を証明。
+    訂正 A12 に従い「置換後が principal、または全体が零文字列」の形を閉じ、原文の
+    `t₀=c₀=0`・multi `c₁` 反例も固定した。Isa: `gensurg_main`, `y3u_p_7_2_scb_replaceable`。[r1]
+  - ✅ `7.2-add-scb` — 加法を principal リスト連結として解析し、末尾 principal の marked 性と
+    同じ scb 文脈での末尾置換を証明。一般置換手術で外側 `D_v(t+c)` の像を構成し、訂正 A13 の
+    occurrence alignment 前提下で第 3 主張を閉じた。非 alignment 原文の具体反例も証明。
+    Isa: `m_7_2_add_scb_conj1/2/3_uncond`。[r1]
   - `7.2-scb-*` — 訂正 **A12**（選言が零項で空回り）、**A13**（系(3) 出現位置は同一とは限らない）
   - `7.2-scb-fseq` — 訂正 **A23**（脚注[30] の基本列の転置）。Isa: `m_7_2_scb_fseq_kind1_general`
   - `7.3-Trans-welldefined` — 訂正 **A15**（原文の測度は下がらない）。
