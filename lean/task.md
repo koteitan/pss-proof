@@ -27,22 +27,8 @@
 ## 進捗ツリー
 
 - ✅ **定義層 `PSS/`**（§5 定式化。命題は置かない。移植元 `isabelle/pss_defs.thy`）[r9]
-  - ✅ ペア数列 `T_PS` / `Lng` / 親子関係 / 直系先祖 / `Pred` / 基本列 `oper` / `IncrFirst` — `PSS/Defs.lean`[r1]
-  - ✅ 単項性 `monoT` / 単項成分 `P` / 幹と枝 `Br`,`Joints`,`TrMax`,`FirstNodes` — `PSS/Mono.lean`[r1]
-  - ✅ 許容性 `adm` / 許容化 / 許容的親子関係 / 基点 `Marked` — `PSS/Adm.lean`[r2]
-  - ✅ 簡約化 `Red` / 簡約性 `RT_PS` — `PSS/Red.lean`[r1]
-  - ✅ 標準形 `ST_PS` — `PSS/Standard.lean`[r1]
-  - ✅ Buchholz の表記系 `T_B`,`<_B`,基本列,`dom`,`OT_B` — `PSS/Buchholz.lean`[r1]
-  - ✅ scb 分解（Σ 上の文字列） — `PSS/Scb.lean`[r1]
-  - ✅ 翻訳写像 `Trans` / `Mark` — `PSS/Trans.lean`[r1]
 
 - ✅ **§5 定式化**[r6]
-  - ✅ §5.1 命題（親の存在の判定条件） — `5.1-parent-exists`[r1]
-  - ✅ §5.1 命題（親の基本性質） — `5.1-parent-basic`[r1]
-  - ✅ §5.1 系（直系先祖の基本性質） — `5.1-ancestor-basic`[r1]
-  - ✅ §5.1 系（直系先祖の木構造） — `5.1-ancestor-tree`[r1]
-  - ✅ §5.3 命題（`Pred` が `[1]` で表されること） — `5.3-pred-is-oper1`[r1]
-  - ✅ §5.4 命題（ペア数列システム `F` の well-defined 性） — `5.4-F-welldefined`[r1]
 
 - 🚨 **§6 ペア数列の基本性質**
   - ✅ §6.1 命題（`≤_M` の `IncrFirst` 不変性） — `6.1-le-IncrFirst-invariance`[r1]
@@ -93,24 +79,8 @@
     - 📘 [Buc1] Lemma 2.2（`OT_B` の整礎性） — `7.1-buchholz-wf`
     - ✅ [Buc1] Lemma 3.2a（基本列の狭義減少性） — `7.1-buchholz-fseq-lt`[r1]
     - ✅ [Buc1] Lemma 3.2（`OT_B` の基本列閉包） — `7.1-buchholz-fseq-closed`[r1]
-  - 🚨 §7.2 scb 分解
-    - ✅ 命題（scb分解の置換可能性） — `7.2-scb-replaceable`[r1]
-    - ✅ 命題（scb分解の合成則） — `7.2-scb-compose`[r1]
-    - ✅ 命題（scb分解の自明性の判定条件） — `7.2-scb-triviality`[r1]
-    - ✅ 命題（scb分解の一意性） — `7.2-scb-unique`[r3]
-    - ✅ 系（加法とscb分解の関係） — `7.2-add-scb`[r1]
-    - ✅ 命題（scb分解と基本列の関係） — `7.2-scb-fseq`[r1]
-    - ✅ 命題（`RightNodes` と部分表現の関係） — `7.2-RightNodes-subexpr`[r1]
-  - 🚨 §7.3 翻訳写像
-    - ✅ 命題（`Trans` の well-defined 性） — `7.3-Trans-welldefined`[r3]
-    - ✅ 命題（`2` 列ペア数列の基本性質） — `7.3-two-column`[r1]
-    - ✅ 命題（`Trans` の `(IncrFirst,Red)` 不変 `P` 同変性） — `7.3-Trans-IncrFirst-Red`[r1]
-    - ✅ 命題（`Mark` の `(IncrFirst,Red,P)` 不変性） — `7.3-Mark-IncrFirst-Red`[r1]
-    - ✅ 命題（`Trans` が零項性を保つこと） — `7.3-Trans-preserves-zeroT`[r1]
-    - ✅ 命題（`c₁` と `c₂` の大小関係） — `7.3-c1-c2-order`[r2]
-    - ✅ 命題（`Pred` の `Trans` に関する降下性） — `7.3-Pred-Trans-descend`[r1]
-    - ✅ 命題（右端第 `1` 基点の `Mark` の基本性質） — `7.3-Mark-rightmost1`[r1]
-    - ✅ 命題（`Trans` が単項性を保つこと） — `7.3-Trans-preserves-monoT`[r1]
+  - ✅ §7.2 scb 分解[r9]
+  - ✅ §7.3 翻訳写像[r12]
   - 🚨 §7.4 許容的親子関係
     - ✅ 命題（`Adm_M` と `<^NextAdm` の関係） — `7.4-Adm-nextAdm`[r1]
     - ✅ 命題（`Trans` と `<^NextAdm` の関係） — `7.4-Trans-nextAdm`[r1]
