@@ -378,6 +378,12 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
     `Lng M - Lng(component) - 1` は off-by-one。公開定理は sorry 0、axioms は
     `[propext, Classical.choice, Quot.sound]`。Isa: `m_7_3_Mark_Red`,
     `m_7_3_Mark_IncrFirst`, `m_7_3_Mark_P_invariance`。[r1]
+  - ✅ `7.3-Trans-preserves-zeroT` — 順向きは `Trans_Red` と `Red_zero_mr` で
+    `[(0,0)]` の直接計算へ帰着。逆向きは `Red_preserves_zeroT` を二回適用し、
+    RED2 で得た簡約核の `Trans_Mark_invariant` が与える非零性に反証させた。
+    `Trans_preserves_zeroT : TPS M → (zeroT M = true ↔ Trans M = BZero)` は
+    sorry 0、axioms は `[propext, Classical.choice, Quot.sound]`。
+    Isa: `m_7_3_Trans_zeroT`。[r1]
   - `7.3-Mark-rightmost1` — 訂正 **A17**（零項基底で例外。反例あり）
   - `7.3-Trans-preserves-monoT` — **原文は偽（A16）**。反例 `(0,0)(0,0)`。
     ❌ 停止性には不要。反例だけ機械証明して先に進む。
