@@ -200,6 +200,10 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
     `RedImage` として定義し、成立する包含 `RT_PS ⊆ RedImage` を証明。逆包含は
     `(0,0)(0,2)` の像 `(0,0)(2,2)` が非簡約である反例を `decide` で固定した。[r1]
   - `6.6-reduced-iff-condAB` — §6.6 のキーストーン。Isa: `reduced ⟺ RedCondA ∧ RedCondB`（無条件）
+  - ✅ `6.6-condAB-coeff` — 親なし上段係数の零性を `parent_exists_1`、親なし下段係数の零性を
+    `P` 成分の左端と成分内単項性から証明。燃料付き `le1Aux` の親辺延長も機械化し、条件(A)下の
+    上段添字上界、条件(B)を加えた上下段比較、祖先関係に欠損がある場合の狭義添字上界を
+    強帰納法でまとめた。Isa: `m_6_6_condAB_coeff`, `condAB_row1_noparent_zero`。[r1]
   - `6.7-standard-reduced` — `ST_PS ⊆ RT_PS`。Isa: `m_6_7_*`（e096355）。
     **`has_gz⟹D` / GTWF ルートは偽。escape readback で gate-free 化したのが正解**
   - `6.8-standard-slice-Br-descending` — 訂正 **A7**（「`M′` が標準形」は偽。`Br(M′)` が降順が正）
