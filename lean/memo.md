@@ -160,8 +160,8 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
     `FirstNodes` 増加・`Joints` 非増加・係数非増加、および単項性の切片遺伝を証明。
     訂正 **A3** に従い、偽である `Joints` の狭義減少は主張しない。Isa: `m_6_4_*`。[r7]
   - §6.5 簡約化 — **ここが A4 の震源**。
-    - ✅ `6.5-Red-welldefined` — Lean では `RedAux (nu M + 1)` により全域関数として構成済み。
-      対応する値の存在一意性を証明。[r1]
+    - ✅ `6.5-Red-welldefined` — `P` 成分・`N_J`・`coreReduce` の全再帰先で `nu` の厳密減少を
+      証明し、`nu M` より大きい任意の燃料に対する `RedAux` の値の一致と存在一意性を証明。[r2]
     - ✅ `6.5-Lng-Red-invariance` — `RedAux` の全燃料に一般化し、複項成分・枝成分・
       `coreReduce` の全分岐で長さ保存を帰納証明。[r1]
     - ✅ `6.5-Red-preserves-zeroT` — 長さ1の非零項について `m₁>0` 分岐を直接解析し、
