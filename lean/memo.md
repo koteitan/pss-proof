@@ -359,16 +359,16 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
     Isa: `m_7_3_Trans_welldef`, `m_7_3_Mark_welldef`,
     `Trans_Mark_invariant_aux`。[r2] 原文どおり全 `TPS` 上の一意存在へ戻す残件は、
     `Red` 軌道が2段で簡約形へ達する `y3r_RED2` のLean移植と、その軌道測度による値輸送。
-  - 🚧 `7.3-Trans-IncrFirst-Red` — 訂正 **A16** の先頭 `P` 成分非零条件下で、
+  - ✅ `7.3-Trans-IncrFirst-Red` — 訂正 **A16** の先頭 `P` 成分非零条件下で、
     `P M = P (take (Pcut M) M) ++ [drop (Pcut M) M]` に沿う長さ強帰納を行い、
     `Trans M = SigmaB ((P M).map transPComponent)` を証明した。複項枝では始切片の
     `RTPS`、右端成分の `RTPS` と `zeroT J ↔ J=[(0,0)]` を使って公開再帰式へ接続する。
-    (1) の `Red` / `IncrFirst` 不変性は、A15 の正しい軌道境界
-    `RTPS (Red (Red M))` の下まで証明済みで、1回目の `Red` が未簡約でも燃料を2段展開して
-    同じ `Red (Red M)` 上の値へ帰着する。公開定理は sorry 0、axioms は
-    `[propext, Classical.choice, Quot.sound]`。残件は Isabelle `y3r_RED2` のLean移植により
-    この境界条件を全 `TPS` で消去すること。Isa: `m_7_3_Trans_Red`,
-    `m_7_3_Trans_IncrFirst`, `m_7_3_Trans_P_equivariance`。
+    (1) の `Red` / `IncrFirst` 不変性は、1回目の `Red` が未簡約でも燃料を2段展開して
+    同じ `Red (Red M)` 上の値へ帰着する証明を `Red2` と接続し、全 `TPS` で成立させた。
+    公開定理 `Trans_Red` / `Trans_IncrFirst` / `Trans_IncrFirst_Red` /
+    `Trans_P_equivariance` は sorry 0、axioms は
+    `[propext, Classical.choice, Quot.sound]`。Isa: `m_7_3_Trans_Red`,
+    `m_7_3_Trans_IncrFirst`, `m_7_3_Trans_P_equivariance`。[r1]
   - `7.3-Mark-rightmost1` — 訂正 **A17**（零項基底で例外。反例あり）
   - `7.3-Trans-preserves-monoT` — **原文は偽（A16）**。反例 `(0,0)(0,0)`。
     ❌ 停止性には不要。反例だけ機械証明して先に進む。

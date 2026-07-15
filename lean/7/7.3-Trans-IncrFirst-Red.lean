@@ -1,5 +1,5 @@
 import «7».«7.3-Trans-welldefined»
-import «6».«6.5-Red-IncrFirst-invariance»
+import «6».«6.6-Red2»
 
 /-!
 # §7.3 命題（`Trans` の `(IncrFirst, Red)` 不変 `P` 同変性）
@@ -8,16 +8,10 @@ import «6».«6.5-Red-IncrFirst-invariance»
 - 訂正: A15（`Red` 軌道が簡約形に達する域）、A16（先頭 `P` 成分は非零項）
 - Isabelle: `m_7_3_Trans_Red`, `m_7_3_Trans_IncrFirst`,
   `m_7_3_Trans_P_equivariance`
-- 状態: 🚧 証明中
+- 状態: ✅ 証明済（sorry 0）
 -/
 
 namespace PSS
-
-private theorem Red_TPS (M : PS) (hM : TPS M) : TPS (Red M) := by
-  apply List.ne_nil_of_length_pos
-  change 0 < Lng (Red M)
-  rw [Lng_Red_invariance M hM]
-  exact List.length_pos_of_ne_nil hM
 
 private theorem fuel_after_red_ge (M : PS) (hM : TPS M) :
     Lng (Red M) ≤ transFuel M - 1 := by
@@ -64,9 +58,8 @@ theorem Trans_Red_of_Red_reduced (M : PS) (hM : TPS M)
           (fuel_after_red_ge M hM) (transFuel_ge_length (Red M))).1
       _ = Trans (Red M) := rfl
 
-/-- One reduction step leaves `Trans` unchanged as soon as the second reduct
-is reduced.  RED2 later discharges this side condition on every `TPS`. -/
-theorem Trans_Red (M : PS) (hM : TPS M) (hRR2 : RTPS (Red (Red M))) :
+private theorem Trans_Red_of_Red2 (M : PS) (hM : TPS M)
+    (hRR2 : RTPS (Red (Red M))) :
     Trans M = Trans (Red M) := by
   by_cases hRR : RTPS (Red M)
   · exact Trans_Red_of_Red_reduced M hM hRR
@@ -102,8 +95,7 @@ theorem Trans_Red (M : PS) (hM : TPS M) (hRR2 : RTPS (Red (Red M))) :
       _ = Trans (Red M) :=
         (Trans_Red_of_Red_reduced (Red M) hRM hRR2).symm
 
-/-- `Trans` is invariant under incrementing row zero on the RED2 domain. -/
-theorem Trans_IncrFirst (M : PS) (hM : TPS M)
+private theorem Trans_IncrFirst_of_Red2 (M : PS) (hM : TPS M)
     (hRR2 : RTPS (Red (Red M))) :
     Trans (IncrFirst M) = Trans M := by
   have hIT : TPS (IncrFirst M) := by
@@ -113,15 +105,24 @@ theorem Trans_IncrFirst (M : PS) (hM : TPS M)
     simpa [hRI] using hRR2
   calc
     Trans (IncrFirst M) = Trans (Red (IncrFirst M)) :=
-      Trans_Red (IncrFirst M) hIT hRRI2
+      Trans_Red_of_Red2 (IncrFirst M) hIT hRRI2
     _ = Trans (Red M) := by rw [hRI]
-    _ = Trans M := (Trans_Red M hM hRR2).symm
+    _ = Trans M := (Trans_Red_of_Red2 M hM hRR2).symm
 
-/-- Part (1) of the corrected invariance proposition on the RED2 domain. -/
-theorem Trans_IncrFirst_Red (M : PS) (hM : TPS M)
-    (hRR2 : RTPS (Red (Red M))) :
+/-- Reduction leaves `Trans` invariant on every pair sequence. -/
+theorem Trans_Red (M : PS) (hM : TPS M) :
+    Trans M = Trans (Red M) :=
+  Trans_Red_of_Red2 M hM (Red2 M hM)
+
+/-- Incrementing row zero leaves `Trans` invariant on every pair sequence. -/
+theorem Trans_IncrFirst (M : PS) (hM : TPS M) :
+    Trans (IncrFirst M) = Trans M :=
+  Trans_IncrFirst_of_Red2 M hM (Red2 M hM)
+
+/-- Part (1) of the corrected invariance proposition. -/
+theorem Trans_IncrFirst_Red (M : PS) (hM : TPS M) :
     Trans M = Trans (Red M) ∧ Trans M = Trans (IncrFirst M) :=
-  ⟨Trans_Red M hM hRR2, (Trans_IncrFirst M hM hRR2).symm⟩
+  ⟨Trans_Red M hM, (Trans_IncrFirst M hM).symm⟩
 
 /-- The contribution assigned to one principal component in corrected A16. -/
 def transPComponent (J : PS) : BT :=
