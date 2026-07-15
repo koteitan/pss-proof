@@ -277,6 +277,12 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
     同じ scb 文脈での末尾置換を証明。一般置換手術で外側 `D_v(t+c)` の像を構成し、訂正 A13 の
     occurrence alignment 前提下で第 3 主張を閉じた。非 alignment 原文の具体反例も証明。
     Isa: `m_7_2_add_scb_conj1/2/3_uncond`。[r1]
+  - ✅ `7.2-RightNodes-subexpr` — 右端 principal spine の底の零引数だけを置換する `spineSub` を
+    項・principal・principal 列の相互構造再帰で定義。flatten の最後の `.zero` を挟む canonical
+    prefix/suffix 分解を同じ構造帰納で証明し、全 `.rp` tail との位置合わせから置換後も同じ
+    `(s,b)` 文脈を持つことを示した。`T_B`、最上位 principal 数 `numNat = Lng (PB ·)`、および
+    `RightNodes (spineSub t₀ t) = RightNodes t₀ ++ RightNodes t` の保存則を結合し、`[v]` の前後を
+    なす pair の存在一意性まで閉じた。Isa: `m_7_2_RightNodes_subexpr`。[r1]
   - `7.2-scb-*` — 訂正 **A12**（選言が零項で空回り）、**A13**（系(3) 出現位置は同一とは限らない）
   - `7.2-scb-fseq` — 訂正 **A23**（脚注[30] の基本列の転置）。Isa: `m_7_2_scb_fseq_kind1_general`
   - `7.3-Trans-welldefined` — 訂正 **A15**（原文の測度は下がらない）。
