@@ -353,6 +353,17 @@ parent/Lng 形に落としてから作業する。
     **sorry 残 1**: (4-1)(4-2)=Isabelle part4 の front-peel 基盤 ~3000 行
     （キャンペーン級）。目標形は訂正後で確定済み＝後続 wave は in-place で
     sorry を潰すだけ。
+    **Wave B-1 完了（r3, 全4 agent 緑、lake 3080 jobs）**: 兄弟ファイル 4 本新設。
+    `8.1-part4-peel`＝両エンジン（`Trans_front_peel`/`Mark_rightmost_adjacent_peel`、
+    2 塔機構は `two_column_Trans` で代替、`Marked Q (k+1)` 仮定は Lean では不要だが
+    忠実性のため保持）／`8.1-part4-setup`＝setup＋head（Isa 570 行の head は
+    `Mark_leftend_form_proper` 公開済みで崩壊）／`8.1-part4-mid`＝Nred/Adm0/
+    cond42/cond41／`8.1-part4-trans`＝TransN_41＋segpos（private engine
+    `part4_TransN_engine_pt` が Adm0/cond41 の役割を吸収、python audit 1856 例
+    0 反例）。**残 = part4_1（Isa 32085）＋TransN_42（32629）＋part4_2（32827）
+    ＋in-place c1_around_4 差し替え（親）**。昇格候補: adm_row1_ancestry（3 重）/
+    row1_implies_row0（3 重）/entry_IncrFirstN_one（3 重）/IncrFirstN 不変量
+    pack（_pt 私的）。
     ⚠️重複警告: `adm_row1_ancestry`/`row1_implies_row0`/`Trans_singleton` が複数ファイルで
     private 重複 → PSS/Adm・PSS/Defs・PSS/Trans へ昇格すべき。
   - ✅ `8.2-standard-slice-Red-strongmono` — **完了（2026-07-17、6.8 クローズと同時）**。[r2]
