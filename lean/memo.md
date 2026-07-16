@@ -119,6 +119,34 @@ pss_mechanized ~21500–21951）:
   tiling 読み出し）に d1pos 版（`entry_oper_tiling_block_zero` の
   `+ q*δ` シフト付き読み出し）を足すところから始める。
 
+## 4.6 実行待ちプラン: 8.1 part (3-1) = Mark gap-peel エンジン（2026-07-16 調査済）
+
+**目標**: `lean/8/8.1-condI-III-c1-around.lean` の sorry (3-1)（`c1_around_3` 内）を閉じる。
+Isabelle 連鎖 = 4 部品（layerB/pss_wip.thy）:
+1. **`Trans_gap_2tower`** (19569–19788, ~220 行): 簡約 mono `N`・両端 Marked・内部全非許容
+   → `Trans N = D_{N₁,₀}(D_{N₁,last} 0)`。Lng 帰納。base = `two_column_Trans`
+   （**Lean 済**, 7.3-two-column:482）。step = Pred 剥がし:
+   `transJm1 N = 0`（非許容伝播 `Adm_eq_0_of_nadm_below` — 要移植、小）、
+   `Trans N = transC2 N`（Adm0 での Trans 展開 `Trans_eq_transC2_Adm0` — 要移植。
+   Lean の Trans 展開補題は 7.3-Trans-welldefined の TransAux 機構から作る）、
+   `transC1 N = Trans (Pred N)`（`ra_Mark0_eq_Trans`: `Mark Q 0 = Trans Q` for
+   `(Q,0)∈Marked` — 要確認/移植）、IH、最後に condVI 判定と transC2 の形の計算。
+2. **`Mark_gap_rightmost_peel`** (19789–19910, ~120 行): `b = 右端` の場合。
+   `Mark_rightmost1_forward`（**Lean 済** 7.3:522）＋`Mark_Trans_repr`（**Lean 済**
+   7.4:984）＋`Trans_slice_eq_Red`（要移植; Lean は `Trans_Red` 7.3-Trans-IncrFirst-Red:113
+   ＋ `ancestor_slice_Red_IncrFirst` で組める）＋IncrFirst 不変量
+   （`entry_funpow_IncrFirst1`/`adm_funpow_IncrFirst_eq` — 要移植、小。IncrFirstN は
+   行 0 のみ変えるので行 1 entry と adm は不変）＋2tower。
+3. **`Mark_gap_peel`** (19922–20055, ~130 行): 一般 `b`。Lng 強帰納で Pred に転送:
+   `Marked_Pred`（**Lean 済** 7.3:833）、`nextR1_pred_agree`（要移植、小: butlast は
+   内部 nextR1 を保つ）、共通 scb 位置転送 `Mark_nest_common_marked`（**Lean 済**
+   7.4-Mark-nextAdm:40）＋`Mark_marked_isPTB`（要確認）＋`scb_decomp_self`
+   （private 複製 7.4-Trans-Mark-Pred:14）。
+4. **`m_8_1_c1_around_part3_1`** (20058–20155, ~100 行): 組み立て。
+
+**規模感**: Lean ~700 行・新規小補題 ~6 本。Trans 展開の罠は 7.3 系ファイルの
+`TransAux_MarkAux_fuel_irrel_RTPS` と `transC2Core_properties` を先に読むこと。
+
 ---
 
 ## 5. ツリー（task.md と同構造 ＋ 注釈）
