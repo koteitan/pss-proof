@@ -248,8 +248,12 @@ parent/Lng 形に落としてから作業する。
     左右括弧数一致に設定し、項・principal・principal リストを同時に構造帰納した。
     multi 項では外側の `.lp` と `.rp` が一つずつ増え、内部の一致を保存する。
     Isa: `m_7_1_paren_balance`。[r1]
-  - `7.1-buchholz-wf` 📘 — [Buc1] Lemma 2.2。原文も引用のみ。**Lean でも引用（`axiom`）でよいか要判断**。
-    Isabelle 版は `sorry` 引用のまま（停止性定理はこれに依存しない形になっている）。
+  - 🚨 `7.1-buchholz-wf` — [Buc1] Lemma 2.2。原文は引用のみだが **Lean でも自前証明すると
+    決定（2026-07-16 ユーザー）**。Isa: `y4_buc1_2_2_OT_B_wf`（layerC:13700、sorry 0・仮定 0。
+    `y4_bachmann` 核の W-階層帰納。y4 block ≈ layerC 12493–13700 ＋ y3 W-機構 11247–11777、
+    合わせて ~2k 行のキャンペーン級）。§8.7 の `8.7-OT-tail-annihilable`（layerC:19363 が
+    `wf_induct_rule[OF y4_buc1_2_2_OT_B_wf]`）と `8.7-termination` が依存するので、
+    Wave D 後半までに専用 wave を充てる。
   - ✅ `7.1-buchholz-fseq-lt` — `btWeight` 強帰納で `operB` の全分岐を直接解析し、
     [Buc1] Lemma 3.2(a) を証明。帰納命題は `z ∈ domB a ∨ z ∈ NatSet` へ強化し、
     `{0}`・`T_u` domain に対する実行可能定義の自然数拡張も含めた。kind-1 は

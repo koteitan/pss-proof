@@ -134,11 +134,13 @@ dispatcher。先に dispatcher を named-仮定 modulo で移植し、交換則
 （⛔ マーク済み）。`8.7-OT-tail-annihilable` は wf 帰納
 （`y3t_toplevel_OT_tail_annihilate`、layerC:19355）を使うので ↓ の決定後。
 
-### 決定事項（ユーザー判断待ち）
-- **📘 `7.1-buchholz-wf`（[Buc1] Lemma 2.2 = OT_B 整礎性）の扱い**:
-  Isabelle は最終的に自前証明した（`y4_buc1_2_2_OT_B_wf`、layerC、sorry-free）。
-  Lean でも同様に自前証明するか（キャンペーン級）、それとも別の扱いにするか。
-  §8.7 の wf 帰納系（tail-annihilable・termination）がこれに依存。
+### 決定済み（2026-07-16 ユーザー）
+- **`7.1-buchholz-wf`（[Buc1] Lemma 2.2 = OT_B 整礎性）は Lean でも自前証明する**。
+  Isabelle の y4 campaign（`y4_buc1_2_2_OT_B_wf`、layerC:13700、`y4_bachmann` 核の
+  W-階層帰納。y4 block ≈ layerC 12493–13700 ＋ y3 W-機構 11247–11777、~2k 行）を移植。
+  §8.7 の wf 帰納系（tail-annihilable・termination）が依存するため、
+  **Wave D 後半までに専用 wave（Wave E 相当）を充てる**。axiom 引用はしない
+  （最終定理の axioms を `[propext, Classical.choice, Quot.sound]` のまま保つ）。
 
 ## 5. 統合手順（親、wave 完了ごと）
 
