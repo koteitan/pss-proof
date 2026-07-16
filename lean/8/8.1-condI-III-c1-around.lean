@@ -733,6 +733,144 @@ private theorem Trans_gap_2tower_gp (N : PS) (hR : RTPS N) (hm0 : Marked N 0)
       (Dprin (entry N 1 (Lng N - 1) : ℕ∞) BZero) :=
   Trans_gap_2tower_aux_gp (Lng N) N (le_refl _) hR hm0 hmL hL hgap
 
+/-! ## part (3-1) エンジン層 2/3: 右端へのギャップ剥がし
+（Isabelle `Mark_gap_rightmost_peel`, layerB:19789）
+
+`Mark Q a` を `Mark_Trans_repr` で値化し、切片を `Red` して 2 塔を適用。
+`IncrFirstN` は行 1 の entry と許容性を変えない。 -/
+
+private theorem adm_IncrFirstN_gp (k : ℕ) (M : PS) (j : ℕ) :
+    adm (IncrFirstN k M) j = adm M j := by
+  simp [adm, nadm, nextR_IncrFirstN_ri]
+
+private theorem entry_IncrFirstN_one_gp (n : ℕ) (M : PS) (j : ℕ)
+    (hj : j < Lng M) :
+    entry (IncrFirstN n M) 1 j = entry M 1 j := by
+  rw [IncrFirstN_eq_map]
+  simp [entry, List.getElem?_eq_getElem hj, List.getElem_map]
+
+private theorem Mark_gap_rightmost_peel_gp (Q : PS) (a : ℕ)
+    (hQR : RTPS Q) (hma : Marked Q a) (hmb : Marked Q (Lng Q - 1))
+    (hab : a < Lng Q - 1)
+    (hgap : ∀ k, a < k → k < Lng Q - 1 → adm Q k = false) :
+    Mark Q a = Dprin (entry Q 1 a : ℕ∞) (Mark Q (Lng Q - 1)) := by
+  have hQT : TPS Q := RTPS_TPS Q hQR
+  have hL : 1 < Lng Q := by omega
+  have hzQ : zeroT Q = false := by
+    rw [Bool.eq_false_iff]
+    intro h
+    simp only [zeroT, Bool.and_eq_true, beq_iff_eq] at h
+    omega
+  have hmarkb : Mark Q (Lng Q - 1)
+      = Dprin (entry Q 1 (Lng Q - 1) : ℕ∞) BZero :=
+    Mark_rightmost1_forward Q hQR hzQ
+  have hrepr : Mark Q a = Trans (seg Q a (Lng Q - 1)) :=
+    Mark_Trans_repr Q a hma hQR hab
+  have hleMa : leR Q 0 a (Lng Q - 1) = true := hma.2.2
+  have hfacts := ancestor_slice_Red_IncrFirst Q a (Lng Q - 1) hQR hab
+    (le_refl _) hleMa
+  have hRedN : Red (Red (seg Q a (Lng Q - 1))) = Red (seg Q a (Lng Q - 1)) :=
+    hfacts.1
+  have hmonoN : monoT (Red (seg Q a (Lng Q - 1))) = true := hfacts.2.1
+  have hIF : seg Q a (Lng Q - 1)
+      = IncrFirstN (entry Q 0 a - entry Q 1 a) (Red (seg Q a (Lng Q - 1))) :=
+    hfacts.2.2
+  have hLS : Lng (seg Q a (Lng Q - 1)) = Lng Q - 1 + 1 - a := by
+    simp [seg]
+  have hLN : Lng (Red (seg Q a (Lng Q - 1))) = Lng Q - 1 + 1 - a := by
+    have h1 : Lng (IncrFirstN (entry Q 0 a - entry Q 1 a)
+        (Red (seg Q a (Lng Q - 1))))
+        = Lng (Red (seg Q a (Lng Q - 1))) := by
+      simp [IncrFirstN_eq_map]
+    have h2 := congrArg Lng hIF
+    rw [h1] at h2
+    rw [← h2]
+    simp [seg]
+  have hLN1 : 1 < Lng (Red (seg Q a (Lng Q - 1))) := by omega
+  have hNT : TPS (Red (seg Q a (Lng Q - 1))) := by
+    apply List.ne_nil_of_length_pos
+    change 0 < Lng (Red (seg Q a (Lng Q - 1)))
+    omega
+  have hNR : RTPS (Red (seg Q a (Lng Q - 1))) := by
+    show reduced (Red (seg Q a (Lng Q - 1))) = true
+    have hne : Red (seg Q a (Lng Q - 1)) ≠ [] := hNT
+    simp [reduced, hne, hRedN]
+  have hSTrans : Trans (seg Q a (Lng Q - 1))
+      = Trans (Red (seg Q a (Lng Q - 1))) := by
+    apply Trans_Red
+    apply List.ne_nil_of_length_pos
+    change 0 < Lng (seg Q a (Lng Q - 1))
+    omega
+  -- 両端 Marked
+  have hmonoLe : leR (Red (seg Q a (Lng Q - 1))) 0 0
+      (Lng (Red (seg Q a (Lng Q - 1))) - 1) = true := by
+    have hh := hmonoN
+    simp only [monoT, Bool.and_eq_true] at hh
+    exact hh.2
+  have hN0M : Marked (Red (seg Q a (Lng Q - 1))) 0 :=
+    ⟨hNT, adm_zero_gp _, hmonoLe⟩
+  have hNlastM : Marked (Red (seg Q a (Lng Q - 1)))
+      (Lng (Red (seg Q a (Lng Q - 1))) - 1) :=
+    ⟨hNT, adm_last_gp _, leR0_refl_gp _ _ (by omega)⟩
+  -- 内部の非許容性は `Q` から輸送される
+  have hgapN : ∀ k, 0 < k → k < Lng (Red (seg Q a (Lng Q - 1))) - 1 →
+      adm (Red (seg Q a (Lng Q - 1))) k = false := by
+    intro k hk0 hkL
+    have hadm1 : adm (seg Q a (Lng Q - 1)) k
+        = adm (Red (seg Q a (Lng Q - 1))) k := by
+      conv_lhs => rw [hIF]
+      exact adm_IncrFirstN_gp _ _ _
+    have hkS : k < Lng (seg Q a (Lng Q - 1)) := by omega
+    have hadm2 : adm (seg Q a (Lng Q - 1)) k = adm Q (a + k) := by
+      have e1 : nextR (seg Q a (Lng Q - 1)) 1 (k - 1) k
+          = nextR Q 1 (a + (k - 1)) (a + k) :=
+        nextR_seg_adm Q a (Lng Q - 1) 1 (k - 1) k (by omega) (by omega)
+          (by omega) (by omega)
+      have e2 : nextR (seg Q a (Lng Q - 1)) 1 k (k + 1)
+          = nextR Q 1 (a + k) (a + (k + 1)) :=
+        nextR_seg_adm Q a (Lng Q - 1) 1 k (k + 1) (by omega) (by omega)
+          (by omega) (by omega)
+      have i1 : a + (k - 1) = a + k - 1 := by omega
+      have i2 : a + (k + 1) = a + k + 1 := by omega
+      rw [i1] at e1
+      rw [i2] at e2
+      have d1 : decide (Lng (seg Q a (Lng Q - 1)) < k) = false := by
+        simp
+        omega
+      have d2 : decide (Lng Q < a + k) = false := by
+        simp
+        omega
+      simp only [adm, nadm, e1, e2, d1, d2]
+    have hQside : adm Q (a + k) = false := hgap (a + k) (by omega) (by omega)
+    rw [← hadm1, hadm2, hQside]
+  -- 2 塔
+  have htower := Trans_gap_2tower_gp (Red (seg Q a (Lng Q - 1))) hNR hN0M
+    hNlastM hLN1 hgapN
+  -- 行 1 entry の対応（`IncrFirstN` は行 1 を変えない）
+  have hIF1 : ∀ j, j < Lng (Red (seg Q a (Lng Q - 1))) →
+      entry (seg Q a (Lng Q - 1)) 1 j
+      = entry (Red (seg Q a (Lng Q - 1))) 1 j := by
+    intro j hj
+    conv_lhs => rw [hIF]
+    exact entry_IncrFirstN_one_gp _ _ j hj
+  have he0 : entry (Red (seg Q a (Lng Q - 1))) 1 0 = entry Q 1 a := by
+    have h1 := hIF1 0 (by omega)
+    have h2 : entry (seg Q a (Lng Q - 1)) 1 0 = entry Q 1 (a + 0) :=
+      entry_seg Q a (Lng Q - 1) 1 0 (by omega)
+    rw [← h1, h2]
+    simp
+  have heLast : entry (Red (seg Q a (Lng Q - 1))) 1
+      (Lng (Red (seg Q a (Lng Q - 1))) - 1) = entry Q 1 (Lng Q - 1) := by
+    have h1 := hIF1 (Lng (Red (seg Q a (Lng Q - 1))) - 1) (by omega)
+    have h2 : entry (seg Q a (Lng Q - 1)) 1
+        (Lng (Red (seg Q a (Lng Q - 1))) - 1)
+        = entry Q 1 (a + (Lng (Red (seg Q a (Lng Q - 1))) - 1)) :=
+      entry_seg Q a (Lng Q - 1) 1 _ (by omega)
+    have h3 : a + (Lng (Red (seg Q a (Lng Q - 1))) - 1) = Lng Q - 1 := by
+      omega
+    rw [← h1, h2, h3]
+  rw [hrepr, hSTrans, htower, he0, heLast, hmarkb]
+
 /-! ## 原文形の反例（A20 / A21） -/
 
 private theorem c1_around_1_cex_vals :
