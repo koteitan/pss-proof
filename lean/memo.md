@@ -165,80 +165,15 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
     Isa: `b1x_master`, `m_buc1_3_2_OT_B_closed`。[r1]
   - ✅ §7.2 scb 分解 — 全7項目を証明済み。[r9]
   - ✅ §7.3 翻訳写像 — 全9項目を証明済み。[r12]
-  - ✅ `7.4-Adm-nextAdm` — Isabelle の `nextAdm` を「許容な真の祖先で、中間に許容な
-    祖先がない」という有限 Bool 関係として `PSS/Adm.lean` に追加した。構造補題として
-    `Adm M j` が `j` の第1行祖先となる `adm_row1_ancestry` と、第1行祖先が第0行祖先でもある
-    `row1_implies_row0` を公開し、親へ至る祖先鎖と親の最大性から原文どおり
-    `Adm_nextAdm` を証明した。公開3定理は sorry 0、axioms は
-    `[propext, Classical.choice, Quot.sound]`。独立 Python 監査は成分 `<3`・長さ `≤4` の
-    全7,380列、親を持つ5,440件（第0行4,023・第1行1,417）で反例0。Lean 内監査も全819列、
-    対象508件（第0行378・第1行130）で反例0。全 `lake build` は3,034 jobs成功（定義層からの
-    再構築を含め約12秒）。Isa: `m_7_4_Adm_nextAdm`。[r1]
-  - ✅ `7.4-Trans-nextAdm` — 訂正 **A45**。一意な最終列の `nextAdm` 親を
-    `Classical.choose` で取り、`nextAdm` の4条件からその列が `Marked` かつ最終列未満であることを
-    展開して、完成済み `Trans_Mark_Pred` へ直接帰着した。原文 `TPS` 版の反例
-    `[(0,0),(0,1),(1,2),(1,0)]` は、親が一意に `1` であること、4個の `Trans`/`Mark` 値、
-    `Pred` 側の一意な scb 文脈を kernel 計算で固定し、同じ文脈が `M` 側の flatten 等式と
-    矛盾するところまで形式証明した。公開定理と反例は sorry 0、axioms は
-    `[propext, Classical.choice, Quot.sound]`。独立 Python 監査は成分 `<3`・長さ `≤4` の
-    全7,380列中、簡約286列・一意親188件で反例0。Lean 内監査も全819列・一意親35件で反例0、
-    同じ非簡約反例の共通 scb 文脈が0件であることを確認した。Isa:
-    `m_7_4_Trans_nextAdm`。[r1]
-  - ✅ `7.4-Mark-nextAdm` — 訂正 **A18**（祖先 `j` に `(M,j) ∈ Marked` が要る）
-    ＋ **A47**（原文の `T_PS` 版は偽）。両列 `m≤m'` の共通 scb 位置を示す
-    `Mark_nest_common_marked` を公開した。`m=m'` は `Mark` が principal-or-zero であることから
-    自己分解し、`m<m'` は両端の `Trans_Mark_Pred` 文脈に
-    `Mark_MarkedB_nest` を合成し、無条件 scb 一意性で `Pred M` 側と `M` 側の位置を
-    同期した。本体は一意な `nextAdm` 親が `Marked` で最終列未満であることを定義から
-    取り出し、第0行祖先関係を自然数順序に落として補助定理へ帰着した。
-    A18 の簡約反例 `[(0,0),(1,1),(2,2),(3,1)]` は列 `1` が親 `2` の祖先だが
-    未許容であること、A47 の非簡約反例
-    `[(0,0),(4,2),(2,6),(4,2),(8,4),(6,4)]` は中心 `Mark _ 3` が一致する一方で
-    外側 `Mark _ 0` が異なるため共通文脈が存在しないことまで Lean 定理で固定した。
-    公開定理と両反例は sorry 0、axioms は通常の
-    `[propext, Classical.choice, Quot.sound]`（A18 反例は choice 不要）。独立 Python 監査は
-    成分 `<3`・長さ `≤4` の全7,380列中、簡約286列の入れ子260件・本体224件で
-    反例0。Lean 内監査は全819列の入れ子43件・本体39件で反例0。
-    Kimina も no errors/no sorry、全 `lake build` は3,037 jobs成功（2.75秒）。
-    Isa: `Mark_nest_common_marked`, `m_7_4_Mark_nextAdm`,
-    `y6z_7_4_Mark_nextAdm_TPS_false`。[r1]
-  - ✅ `7.4-Trans-Mark-Pred` — 訂正 **A46**。`Lng M` の強帰納法で共通 scb 文脈の存在を
-    証明した。mono の零前駆枝は自己分解、非零 surgery 枝は `c₁→c₂` の外側・内側の
-    `replaceScb_spec` を `scb_compose` と無条件一意性で同期した。multi 枝では最終 `P` 成分 `J`
-    へ帰納し、`Mark_Pred_multi_last` を新たに証明して `Trans_Pred_multi_last` と揃え、
-    `Trans A` が零なら文脈をそのまま輸送、非零なら `scb_addBT_left_74` で両側へ同じ prefix を
-    持ち上げた。最後の一意性は `Trans(Pred M)` 側の固定中央文字列一意性だけで閉じた。
-    公開定理は sorry 0、axioms は `[propext, Classical.choice, Quot.sound]`。独立 Python 監査は
-    簡約286列の proper marked 224件、Lean 内監査は39件で反例0。A45 と共通の非簡約反例も
-    Lean の `Trans_nextAdm_original_counterexample` が形式的に排除する。全 `lake build` は
-    3,036 jobs成功（キャッシュ済み1.00秒）。Isa: `Mark_Pred_multi_last`,
-    `scb_addBT_left`, `m_7_4_Trans_Mark_Pred`。[r1]
-  - ✅ `7.4-Mark-Trans-repr` — `Lng M` の強帰納法で §7.4 のキーストーンを証明した。
-    `m=0` は `Mark M 0 = Trans M`、複項は最終 `P` 成分への縮小、単項境界は簡約条件(A)から
-    条件(I)/(III)/(VI)の網羅と2列評価、単項内部は `Red` 切片の基点・係数・4条件を移送し、
-    `Mark M m` と切片の `Trans` が同一 scb 文脈で同じ `c₂` を置換することに帰着した。
-    公開最終定理 `Mark_Trans_repr` は原文どおり `Marked M m`、`RTPS M`、`m < Lng M - 1`
-    から `Mark M m = Trans (seg M m (Lng M - 1))` を与える。Kimina は sorry 0、axioms は
-    `[propext, Classical.choice, Quot.sound]`。全 `lake build` は3,048 jobs成功（6.3秒）。
-    Isa: `m_7_4_Mark_Trans_repr`。[r1]
-  - ✅ `7.4-Trans-Mark-seg` — `Lng M` の強帰納法で末尾列を `Pred` により一列ずつ除き、
-    `Trans_Mark_Pred` が与える `Trans (Pred M)`／`Trans M` の共通 scb 位置を輸送した。
-    `m` が前駆列の右端に達する基底では `Mark_rightmost1_forward` により中心項を
-    `Dprin (entry M 1 m) BZero` と同定し、再帰段では `scb_unique_decomp_unconditional` で
-    帰納仮定と一段輸送の位置を同期した。公開定理 `Trans_Mark_seg` は原文どおりの一意存在を
-    与え、専用監査は sorry 0、axioms は `[propext, Classical.choice, Quot.sound]`。
-    全 `lake build` は3,049 jobs成功（3.4秒）。Isa: `m_7_4_Trans_Mark_seg`。[r1]
-  - ✅ `7.4-RightNodes-Mark` — §7.2 の `RightNodes` 部分表現補題について、証明で未使用だった
-    挿入本体の principal 仮定を外した一般版と flatten 輸送版を公開した。さらに任意の非空な
-    先頭切片が `RTPS` を保つ強い `RTPS_initial_slice`、簡約単項列の `Trans` が左端第1成分を
-    外側添字に持つ `Trans_mono_leftend_form` を証明した。終切片を `Red` した単項列へ後者を
-    適用して `Mark M m = D_(M₁,m) t` を固定し、`Trans_Mark_seg` の共通 scb 位置で `D_(M₁,m) 0`
-    を同じ本体 `t` に置換した。`flatBT` の単射で置換後を `Trans M` と同定して3本の
-    `RightNodes` 分解を得た。変更3ファイルの専用監査はすべて sorry 0、公開定理の axioms は
-    `[propext, Classical.choice, Quot.sound]`。全 `lake build` は3,050 jobs成功（5.2秒）。
-    Isa: `m_7_4_RightNodes_subexpr_gen`, `seg_0_RT_PS`, `m_7_4_RightNodes_Mark`。[r1]
-  - **§7.4 の `Mark` は簡約形の全列で principal-or-zero**（Isa: `y3y_Mark_princ`）。
-    これは原文にない我々の補題だが、§7.4 を `RT_PS` 上で回すのに効く。**Lean でも先に用意しろ。**
+  - ✅ §7.4 許容的親子関係 — 訂正 A18・A45・A46・A47 に従い、必要な命題を `RTPS` と
+    `Marked` の正しい定義域で全9件形式化した。`Adm`／`Trans`／`Mark` の次許容祖先関係から、
+    `Mark` の終切片 `Trans` 表示、`Trans` の切片分解、`RightNodes` 分解までを scb 文脈の
+    合成・無条件一意性と `Lng` 強帰納で証明した。最後に原文の再帰を忠実に表す燃料付き
+    `RightAncesAux` を定義し、単項枝は終端初期切片と `RightNodes_Mark`、複項枝は最終 `P`
+    成分への帰着により `RightAnces M = RightNodes (Trans M)` を示し、
+    `RightAnces M = [] ↔ zeroT M` を導いた。全公開最終定理は専用 Kimina 監査で
+    no errors/no sorry、axioms は通常の `[propext, Classical.choice, Quot.sound]` 以下。
+    全 `lake build` は3,052 jobs成功（2.44秒）。Isa: `m_7_4_*`。[r9]
 
 - **§8 停止性** — Isa: `m_8_*` ＋ `layerC`。**停止性 = 「基本列の降下性」＋「`OT` 所属」の 2 本柱**。
   - ✅ `8.1-diagSeq-Trans` — `u<v` の対角列について、十分な任意燃料で
