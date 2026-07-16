@@ -278,6 +278,13 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
     `nextrel0` の最小性節読み出し（private `nextrel0_interior_min_83`）＋omega。
     Isa: `m_8_3_kind0_base_ineq` (layerB/pss_wip.thy:13700、engine `oper_d0zero_nth`+
     `parent_block_entry0_min` 相当)。rc=0・sorry 0・axioms 正常・#guard 5 本。[r1]
+  - ✅ `8.3-kind0-branch-rule` — **親が main loop で直接証明（一発緑）**。nadm → 行 1 基底辺、
+    `le0_adjacent`（6.5-Red-le-core）→ 行 0 基底辺。行 0 谷=`oper_tiling_block_floor`、
+    行 1 谷=閉じ込め補題（6.8 private `oper_d0zero_le0_confined_68` を `_83` に複製、
+    昇格候補）＋div/mod 分解で `j=idx` に潰す（積アトムは omega が扱える形に整列、
+    cancel は `lt_of_mul_lt_mul_right`/`le_of_mul_le_mul_right`）。
+    Isa: `m_8_3_kind0_branch_rule` (layerB/pss_wip.thy:16920)。python pool 検証 0 反例・
+    rc=0・sorry 0・axioms 正常・#guard 9 本。[r1]
   - ✅ `8.7-OT-examples` — OT_B 基本例 4 本（`OT_examples_1..4`）。**親が main loop で直接証明**
     （workflow 全滅のため）。(1)(2)=gather の if 分岐を明示分解、(3)=multBT→replicate 帰納＋
     descP/isOT/dfree の replicate 補題、(4)=塔の G 集合特徴付け＋狭義単調の帰納

@@ -70,7 +70,7 @@
     - 🚨 命題（条件(II)か(IV)の下での終切片と `Trans` の関係） — `8.2-condIIIV-terminal-slice-Trans`
   - 🚨 §8.3 条件(II)の下での展開規則
     - ✅ 補題（第 `0` 種型基本列の基本不等式） — `8.3-kind0-base-ineq`[r1]
-    - 🚨 補題（第 `0` 種型基本列の基本分岐規則） — `8.3-kind0-branch-rule`
+    - ✅ 補題（第 `0` 種型基本列の基本分岐規則） — `8.3-kind0-branch-rule`[r1]
     - 🚨 補題（第 `0` 種型基本列の基本基点関係） — `8.3-kind0-base-basepoint`
     - 🚨 命題（条件(II)の下での `Trans` と基本列の交換関係） — `8.3-Trans-fseq-condII`
   - 🚨 §8.4 条件(III)か(IV)の下での展開規則
