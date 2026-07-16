@@ -266,6 +266,21 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
     → RedCondA/B → RTPS、`Pcut = j₁`、j₁ 帰納で multi 分岐が 1 列ずつ `D_u 0` を積む
     （Isa: `m_8_7_cnst_Trans`, pss_wip.thy 16005）。rc=0・sorry 0・axioms 正常・
     python audit 81 例 0 反例（`python/const00_trans_audit.py`）。[r1]
+  - ✅ `8.2-strongmono-slice` — **親が main loop で直接証明**。mono=`mono_slice`（6.4）、
+    reduced=幹対角性（`RTPS_mono_head_eq`+`trunk_entries_offset`→IncrFirst 指数 0、
+    `ancestor_slice_Red_IncrFirst`）、降順性=**P-take 境界対応**で `M` から輸送:
+    private `P_take_at_boundary_sms`（境界カットで `P (take b M) = take K (P M)`、
+    Pcut 再帰）＋`P_take_prefix_eq_sms`（一般カットは左最小値転送＋境界 2 回で
+    `J = K'` に pin、Isabelle `P_take_prefix_eq` 同形）＋成分頭読み出しの行一般化
+    （private `P_component_leftend_i_sms`）＋private `TrMax_seg_ancestor_sms`
+    （`le_TrMax_intro_wd`/`TrMax_stop_uncond`/`nextR1_seg_adm` で挟む）。
+    FirstNodes 対応は不要になった（P リストの頭だけで cdomB が閉じる）。
+    罠: **`rw` は `Lng` abbrev 越しに `List.length_*` をマッチできない**（simp は可）
+    → `show`/defeq-have で `.length` 形に落としてから rw。`List.take_append_of_le_length`
+    が正名（`take_append_eq_append_take` は無い）。
+    Isa: `m_8_2_strongmono_slice` (layerB:27757)+`_mono_reduced` (27395)。
+    昇格候補: `TrMax_seg_ancestor_sms`/`P_take_*_sms`（§8.2 後続と 8.1(3-1) が使う）。
+    rc=0・sorry 0・axioms 正常・#guard 5 本。[r1]
   - `8.2-*` — `LastStep` の添字は A9 で訂正済みの形を使う。
     Isa の注意: `Pred_oper0` は標準入力で偽（反例 `M=(0,0)(1,1)(2,1)`）だが**定理は健全**
     （`Σ_B` 降下和ルートで回避）。**原文 §8 の証明には gap があるが、定理は真。**
