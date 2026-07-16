@@ -2464,6 +2464,687 @@ theorem le0_oper_tiling_block_lift_one (M : PS) (n q a b : ℕ)
   rw [hfa, hfb] at hmapped
   simpa [N, B, j₁, j₀, w] using hmapped
 
+/-- A prefix node reaching a positive-shift block start already reaches the
+active parent in the original sequence. -/
+theorem le0_oper_tiling_prefix_back_one (M : PS) (n q p : ℕ)
+    (hM : TPS M)
+    (hlast : 1 < Lng M)
+    (hzero : ¬(entry M 0 (Lng M - 1) = 0 ∧
+      entry M 1 (Lng M - 1) = 0))
+    (hp : hasParent M (idx1 M (Lng M - 1)) (Lng M - 1) = true)
+    (hi₁ : idx1 M (Lng M - 1) = 1)
+    (hq : q < n)
+    (hpref : p < parent M 1 (Lng M - 1))
+    (hreach : le0 (oper M n) p
+      (parent M 1 (Lng M - 1) +
+        q * (Lng M - 1 - parent M 1 (Lng M - 1))) = true) :
+    le0 M p (parent M 1 (Lng M - 1)) = true := by
+  let j₁ := Lng M - 1
+  let i₁ := idx1 M j₁
+  let j₀ := parent M 1 j₁
+  let w := j₁ - j₀
+  let N := oper M n
+  let B := j₀ + q * w
+  have hi₁' : i₁ = 1 := by simpa [i₁, j₁] using hi₁
+  have hj₀idx : parent M i₁ j₁ = j₀ := by simp [j₀, hi₁']
+  have hnextTop := hasParent_next_fseq M i₁ j₁ (by
+    simpa [i₁, j₁] using hp)
+  have hj₀lt : j₀ < j₁ :=
+    (nextR_implies_row0 M i₁ j₀ j₁ (by
+      simpa [hj₀idx] using hnextTop)).1
+  have hwpos : 0 < w := by simp [w]; omega
+  have hn : 1 ≤ n := by omega
+  have hN : TPS N := by simpa [N] using oper_TPS M n hM hn
+  have hpref' : p < j₀ := by simpa [j₀, j₁] using hpref
+  have hreach' : leR N 0 p B = true := by
+    simpa [leR, N, B, hi₁, j₁, j₀, w, Nat.add_assoc] using hreach
+  have hprefixReach : le0 N p j₀ = true := by
+    have hr := ancestor_tree_1 N p j₀ B hN hreach'
+      hpref'.le (by simp [B])
+    simpa [leR] using hr
+  have hj₀M : j₀ < Lng M := by omega
+  have hpM : p < Lng M := hpref'.trans hj₀M
+  have hreadStart : entry N 0 j₀ = entry M 0 j₀ := by
+    have hr := entry_oper_tiling_block_zero M n 0 0
+      hlast hzero hp (by omega)
+      (by simpa [hi₁, j₁, j₀, w] using hwpos)
+    simpa [N, hi₁, j₁, j₀, w] using hr
+  have hmapped := le0_map_interval_rf N M id p j₀ p j₀
+    (le_refl _) (le_refl _) (by simpa using hpM) (by simpa using hj₀M)
+    (fun u v hpu hvj hstep => Or.inr (by
+      have hdata := hstep
+      simp only [nextrel0, Bool.and_eq_true, decide_eq_true_eq,
+        List.all_eq_true] at hdata
+      have huv : u < v := hdata.1.1.2
+      have huj : u < j₀ := huv.trans_le hvj
+      have huM : u < Lng M := huj.trans hj₀M
+      have hvM : v < Lng M := hvj.trans_lt hj₀M
+      have huread := entry_oper_tiling_prefix M n 0 u
+        hlast hzero hp (by simpa [hi₁, j₁, j₀] using huj)
+      have hvread : entry N 0 v = entry M 0 v := by
+        by_cases hvlt : v < j₀
+        · exact entry_oper_tiling_prefix M n 0 v hlast hzero hp
+            (by simpa [hi₁, j₁, j₀] using hvlt)
+        · have hveq : v = j₀ := by omega
+          simpa [hveq] using hreadStart
+      simp only [id_eq, nextrel0, Bool.and_eq_true, decide_eq_true_eq,
+        List.all_eq_true, List.mem_range]
+      refine ⟨⟨⟨⟨huM, hvM⟩, huv⟩, ?_⟩, ?_⟩
+      · rw [← huread, ← hvread]
+        exact hdata.1.2
+      · intro z hzv
+        by_cases huz : u < z
+        · simp only [huz, decide_true, Bool.not_true, Bool.false_or,
+            decide_eq_true_eq]
+          have hzj : z < j₀ := hzv.trans_le hvj
+          have hzread := entry_oper_tiling_prefix M n 0 z
+            hlast hzero hp (by simpa [hi₁, j₁, j₀] using hzj)
+          have hzval := hdata.2 z (List.mem_range.mpr hzv)
+          rw [← hvread, ← hzread]
+          simpa [huz] using hzval
+        · simp [huz])) hprefixReach
+  simpa using hmapped
+
+/-- Row-zero reachability ending at the active parent transfers from the
+original prefix to a positive-shift tiling. -/
+theorem le0_oper_tiling_prefix_lift_one (M : PS) (n p : ℕ)
+    (hM : TPS M)
+    (hlast : 1 < Lng M)
+    (hzero : ¬(entry M 0 (Lng M - 1) = 0 ∧
+      entry M 1 (Lng M - 1) = 0))
+    (hp : hasParent M (idx1 M (Lng M - 1)) (Lng M - 1) = true)
+    (hi₁ : idx1 M (Lng M - 1) = 1)
+    (hn : 1 ≤ n)
+    (hpref : p < parent M 1 (Lng M - 1))
+    (hreach : le0 M p (parent M 1 (Lng M - 1)) = true) :
+    le0 (oper M n) p (parent M 1 (Lng M - 1)) = true := by
+  let j₁ := Lng M - 1
+  let i₁ := idx1 M j₁
+  let j₀ := parent M 1 j₁
+  let w := j₁ - j₀
+  let N := oper M n
+  have hi₁' : i₁ = 1 := by simpa [i₁, j₁] using hi₁
+  have hj₀idx : parent M i₁ j₁ = j₀ := by simp [j₀, hi₁']
+  have hnextTop := hasParent_next_fseq M i₁ j₁ (by
+    simpa [i₁, j₁] using hp)
+  have hnextTop' : nextR M i₁ j₀ j₁ = true := by
+    simpa [hj₀idx] using hnextTop
+  have hj₀lt : j₀ < j₁ :=
+    (nextR_implies_row0 M i₁ j₀ j₁ hnextTop').1
+  have hwpos : 0 < w := by simp [w]; omega
+  have hlen : Lng N = j₀ + n * w := by
+    simpa [N, j₁, i₁, j₀, w, hj₀idx] using
+      length_oper_tiling M n hlast hzero hp
+  have hj₀N : j₀ < Lng N := by rw [hlen]; nlinarith
+  have hpref' : p < j₀ := by simpa [j₀, j₁] using hpref
+  have hpN : p < Lng N := hpref'.trans hj₀N
+  have hreadStart : entry N 0 j₀ = entry M 0 j₀ := by
+    have hr := entry_oper_tiling_block_zero M n 0 0
+      hlast hzero hp (by omega)
+      (by simpa [hi₁, j₁, j₀, w] using hwpos)
+    simpa [N, hi₁, j₁, j₀, w] using hr
+  have hmapped := le0_map_interval_rf M N id p j₀ p j₀
+    (le_refl _) (le_refl _) (by simpa using hpN) (by simpa using hj₀N)
+    (fun u v hpu hvj hstep => Or.inr (by
+      have hdata := hstep
+      simp only [nextrel0, Bool.and_eq_true, decide_eq_true_eq,
+        List.all_eq_true] at hdata
+      have huv : u < v := hdata.1.1.2
+      have huj : u < j₀ := huv.trans_le hvj
+      have huN : u < Lng N := huj.trans hj₀N
+      have hvN : v < Lng N := hvj.trans_lt hj₀N
+      have huread := entry_oper_tiling_prefix M n 0 u
+        hlast hzero hp (by simpa [hi₁, j₁, j₀] using huj)
+      have hvread : entry N 0 v = entry M 0 v := by
+        by_cases hvlt : v < j₀
+        · exact entry_oper_tiling_prefix M n 0 v hlast hzero hp
+            (by simpa [hi₁, j₁, j₀] using hvlt)
+        · have hveq : v = j₀ := by omega
+          simpa [hveq] using hreadStart
+      simp only [id_eq, nextrel0, Bool.and_eq_true, decide_eq_true_eq,
+        List.all_eq_true, List.mem_range]
+      refine ⟨⟨⟨⟨huN, hvN⟩, huv⟩, ?_⟩, ?_⟩
+      · rw [huread, hvread]
+        exact hdata.1.2
+      · intro z hzv
+        by_cases huz : u < z
+        · simp only [huz, decide_true, Bool.not_true, Bool.false_or,
+            decide_eq_true_eq]
+          have hzj : z < j₀ := hzv.trans_le hvj
+          have hzread := entry_oper_tiling_prefix M n 0 z
+            hlast hzero hp (by simpa [hi₁, j₁, j₀] using hzj)
+          have hzval := hdata.2 z (List.mem_range.mpr hzv)
+          rw [hvread, hzread]
+          simpa [huz] using hzval
+        · simp [huz])) (by simpa [j₀, j₁] using hreach)
+  simpa [N, j₀, j₁] using hmapped
+
+/-- Reaching the start of a later positive-shift block reflects to reaching
+the end of the original active slice. -/
+theorem le0_oper_tiling_cross_back_one (M : PS) (n q₀ q s : ℕ)
+    (hM : TPS M)
+    (hlast : 1 < Lng M)
+    (hzero : ¬(entry M 0 (Lng M - 1) = 0 ∧
+      entry M 1 (Lng M - 1) = 0))
+    (hp : hasParent M (idx1 M (Lng M - 1)) (Lng M - 1) = true)
+    (hi₁ : idx1 M (Lng M - 1) = 1)
+    (hq₀q : q₀ < q) (hqn : q < n)
+    (hs : s < Lng M - 1 - parent M 1 (Lng M - 1))
+    (hreach : le0 (oper M n)
+      (parent M 1 (Lng M - 1) +
+        q₀ * (Lng M - 1 - parent M 1 (Lng M - 1)) + s)
+      (parent M 1 (Lng M - 1) +
+        q * (Lng M - 1 - parent M 1 (Lng M - 1))) = true) :
+    le0 M (parent M 1 (Lng M - 1) + s) (Lng M - 1) = true := by
+  let j₁ := Lng M - 1
+  let i₁ := idx1 M j₁
+  let j₀ := parent M 1 j₁
+  let w := j₁ - j₀
+  let N := oper M n
+  let B₀ := j₀ + q₀ * w
+  let source := B₀ + s
+  let cut := B₀ + w
+  let target := j₀ + q * w
+  let d := entry M 0 j₁ - entry M 0 j₀
+  let f := fun u => j₀ + (u - B₀)
+  have hi₁' : i₁ = 1 := by simpa [i₁, j₁] using hi₁
+  have hj₀idx : parent M i₁ j₁ = j₀ := by simp [j₀, hi₁']
+  have hnextTop := hasParent_next_fseq M i₁ j₁ (by
+    simpa [i₁, j₁] using hp)
+  have hnextTop' : nextR M i₁ j₀ j₁ = true := by
+    simpa [hj₀idx] using hnextTop
+  have hj₀lt : j₀ < j₁ :=
+    (nextR_implies_row0 M i₁ j₀ j₁ hnextTop').1
+  have hrowReach : leR M 0 j₀ j₁ = true :=
+    (nextR_implies_row0 M i₁ j₀ j₁ hnextTop').2
+  have hrowStrict : entry M 0 j₀ < entry M 0 j₁ :=
+    ancestor_basic_1 M j₀ j₁ j₁ hM hj₀lt (le_refl _) hrowReach
+  have hrowLe : entry M 0 j₀ ≤ entry M 0 j₁ := hrowStrict.le
+  have hwpos : 0 < w := by simp [w]; omega
+  have hs' : s < w := by simpa [j₁, j₀, w] using hs
+  have hn : 1 ≤ n := by omega
+  have hN : TPS N := by simpa [N] using oper_TPS M n hM hn
+  have hsourceCut : source ≤ cut := by simp [source, cut]; omega
+  have hcutTarget : cut ≤ target := by
+    simp [cut, target, B₀]
+    nlinarith
+  have hreachR : leR N 0 source target = true := by
+    simpa [leR, N, source, target, B₀, hi₁, j₁, j₀, w,
+      Nat.add_assoc] using hreach
+  have hcutReach : le0 N source cut = true := by
+    have hr := ancestor_tree_1 N source cut target hN hreachR
+      hsourceCut hcutTarget
+    simpa [leR] using hr
+  have hj₁M : j₁ < Lng M := by simp [j₁]; omega
+  have hj₀w : j₀ + w = j₁ := by simp [w]; omega
+  have hdadd : entry M 0 j₀ + d = entry M 0 j₁ := by
+    exact Nat.add_sub_of_le hrowLe
+  have hread (t : ℕ) (ht : t ≤ w) :
+      entry N 0 (B₀ + t) = entry M 0 (j₀ + t) + q₀ * d := by
+    by_cases htw : t < w
+    · have hr := entry_oper_tiling_block_zero M n q₀ t
+        hlast hzero hp (hq₀q.trans hqn)
+        (by simpa [hi₁, j₁, j₀, w] using htw)
+      simpa [N, B₀, d, hi₁, j₁, j₀, w, Nat.add_assoc] using hr
+    · have hteq : t = w := by omega
+      subst t
+      have hqnext : q₀ + 1 < n := by omega
+      have hr := entry_oper_tiling_block_zero M n (q₀ + 1) 0
+        hlast hzero hp hqnext
+        (by simpa [hi₁, j₁, j₀, w] using hwpos)
+      have hindex : B₀ + w = j₀ + (q₀ + 1) * w := by
+        simp [B₀, Nat.add_mul]
+        omega
+      have hr' : entry N 0 (B₀ + w) =
+          entry M 0 j₀ + (q₀ + 1) * d := by
+        rw [hindex]
+        simpa [N, d, hi₁, j₁, j₀, w, Nat.add_assoc] using hr
+      rw [hr', hj₀w, Nat.add_mul]
+      simp only [one_mul]
+      omega
+  have hfsource : f source = j₀ + s := by simp [f, source, B₀]
+  have hfcut : f cut = j₁ := by simp [f, cut, B₀, hj₀w]
+  have hsourceM : f source < Lng M := by
+    rw [hfsource]
+    omega
+  have hcutM : f cut < Lng M := by simpa [hfcut] using hj₁M
+  have hmapped := le0_map_interval_rf N M f source cut source cut
+    (le_refl _) (le_refl _) hsourceM hcutM
+    (fun u v hsu hvc hstep => Or.inr (by
+      have hdata := hstep
+      simp only [nextrel0, Bool.and_eq_true, decide_eq_true_eq,
+        List.all_eq_true] at hdata
+      have huv : u < v := hdata.1.1.2
+      have hB₀u : B₀ ≤ u := by simp [source] at hsu; omega
+      have hB₀v : B₀ ≤ v := hB₀u.trans (Nat.le_of_lt huv)
+      let tu := u - B₀
+      let tv := v - B₀
+      have huform : u = B₀ + tu := by dsimp only [tu]; omega
+      have hvform : v = B₀ + tv := by dsimp only [tv]; omega
+      have htutv : tu < tv := by omega
+      have htvw : tv ≤ w := by simp [cut] at hvc; omega
+      have htuw : tu ≤ w := (Nat.le_of_lt htutv).trans htvw
+      have hfu : f u = j₀ + tu := by simp [f, tu, Nat.add_sub_of_le hB₀u]
+      have hfv : f v = j₀ + tv := by simp [f, tv, Nat.add_sub_of_le hB₀v]
+      have hfuM : f u < Lng M := by rw [hfu]; omega
+      have hfvM : f v < Lng M := by rw [hfv]; omega
+      have huread := hread tu htuw
+      have hvread := hread tv htvw
+      rw [hfu, hfv]
+      simp only [nextrel0, Bool.and_eq_true, decide_eq_true_eq,
+        List.all_eq_true, List.mem_range]
+      refine ⟨⟨⟨⟨hfuM, hfvM⟩, by omega⟩, ?_⟩, ?_⟩
+      · rw [huform, hvform, huread, hvread] at hdata
+        omega
+      · intro z hzv
+        by_cases huz : j₀ + tu < z
+        · simp only [huz, decide_true, Bool.not_true, Bool.false_or,
+            decide_eq_true_eq]
+          have hj₀z : j₀ ≤ z := by omega
+          let tz := z - j₀
+          have hzform : z = j₀ + tz := by dsimp only [tz]; omega
+          have htuz : tu < tz := by omega
+          have htzv : tz < tv := by rw [hzform] at hzv; omega
+          have htzw : tz ≤ w := (Nat.le_of_lt htzv).trans htvw
+          let zN := B₀ + tz
+          have hzNu : u < zN := by simp [zN]; rw [huform]; omega
+          have hzNv : zN < v := by simp [zN]; rw [hvform]; omega
+          have hzread := hread tz htzw
+          have hzval := hdata.2 zN (List.mem_range.mpr hzNv)
+          rw [hvform, hvread, show zN = B₀ + tz by rfl, hzread] at hzval
+          have hzNu' : u < B₀ + tz := by simpa [zN] using hzNu
+          have hzineq : entry M 0 (j₀ + tv) + q₀ * d ≤
+              entry M 0 (j₀ + tz) + q₀ * d :=
+            by simpa [hzNu'] using hzval
+          simpa [hzform] using hzineq
+        · simp [huz])) hcutReach
+  rw [hfsource, hfcut] at hmapped
+  simpa [j₁, j₀] using hmapped
+
+/-- In a positive-shift tiling, the original active parent reaches every
+column of every generated block. -/
+theorem le0_oper_tiling_start_one (M : PS) (n q s : ℕ)
+    (hM : TPS M)
+    (hlast : 1 < Lng M)
+    (hzero : ¬(entry M 0 (Lng M - 1) = 0 ∧
+      entry M 1 (Lng M - 1) = 0))
+    (hp : hasParent M (idx1 M (Lng M - 1)) (Lng M - 1) = true)
+    (hi₁ : idx1 M (Lng M - 1) = 1)
+    (hq : q < n)
+    (hs : s < Lng M - 1 - parent M 1 (Lng M - 1)) :
+    le0 (oper M n) (parent M 1 (Lng M - 1))
+      (parent M 1 (Lng M - 1) +
+        q * (Lng M - 1 - parent M 1 (Lng M - 1)) + s) = true := by
+  let j₁ := Lng M - 1
+  let i₁ := idx1 M j₁
+  let j₀ := parent M 1 j₁
+  let w := j₁ - j₀
+  let N := oper M n
+  let target := j₀ + q * w + s
+  let d := entry M 0 j₁ - entry M 0 j₀
+  have hi₁' : i₁ = 1 := by simpa [i₁, j₁] using hi₁
+  have hj₀idx : parent M i₁ j₁ = j₀ := by simp [j₀, hi₁']
+  have hnextTop := hasParent_next_fseq M i₁ j₁ (by
+    simpa [i₁, j₁] using hp)
+  have hnextTop' : nextR M i₁ j₀ j₁ = true := by
+    simpa [hj₀idx] using hnextTop
+  have hj₀lt : j₀ < j₁ :=
+    (nextR_implies_row0 M i₁ j₀ j₁ hnextTop').1
+  have htopReach : leR M 0 j₀ j₁ = true :=
+    (nextR_implies_row0 M i₁ j₀ j₁ hnextTop').2
+  have hrowStrict : entry M 0 j₀ < entry M 0 j₁ :=
+    ancestor_basic_1 M j₀ j₁ j₁ hM hj₀lt (le_refl _) htopReach
+  have hdpos : 0 < d := by simp [d, Nat.sub_pos_iff_lt, hrowStrict]
+  have hwpos : 0 < w := by simp [w]; omega
+  have hs' : s < w := by simpa [j₁, j₀, w] using hs
+  have hn : 1 ≤ n := by omega
+  have hN : TPS N := by simpa [N] using oper_TPS M n hM hn
+  have hlen : Lng N = j₀ + n * w := by
+    simpa [N, j₁, i₁, j₀, w, hj₀idx] using
+      length_oper_tiling M n hlast hzero hp
+  have htargetN : target < Lng N := by
+    rw [hlen]
+    simp [target]
+    nlinarith
+  have hstartRead : entry N 0 j₀ = entry M 0 j₀ := by
+    have hr := entry_oper_tiling_block_zero M n 0 0
+      hlast hzero hp (by omega)
+      (by simpa [hi₁, j₁, j₀, w] using hwpos)
+    simpa [N, d, hi₁, j₁, j₀, w] using hr
+  by_cases htargetEq : target = j₀
+  · have hj₀N : j₀ < Lng N := by rw [← htargetEq]; exact htargetN
+    have haux : le0Aux N (Lng N) j₀ j₀ = true := by
+      cases Lng N <;> simp [le0Aux]
+    change le0 N j₀ target = true
+    rw [htargetEq]
+    simp [le0, hj₀N, haux]
+  · have hj₀target : j₀ < target := by simp [target] at htargetEq; omega
+    have hr := parent_exists_3 N j₀ target hN hj₀target htargetN
+      (fun k hj₀k hktarget => by
+        let r := (k - j₀) / w
+        let t := (k - j₀) % w
+        have htw : t < w := Nat.mod_lt _ hwpos
+        have hdiv : w * r + t = k - j₀ := by
+          simpa [r, t] using Nat.div_add_mod (k - j₀) w
+        have hkform : k = j₀ + r * w + t := by
+          calc
+            k = j₀ + (k - j₀) := (Nat.add_sub_of_le hj₀k.le).symm
+            _ = j₀ + (w * r + t) := by rw [hdiv]
+            _ = j₀ + r * w + t := by simp [Nat.mul_comm, Nat.add_assoc]
+        have hrle : r ≤ q := by
+          by_contra hnot
+          have hqr : q < r := by omega
+          have hmul : (q + 1) * w ≤ r * w :=
+            Nat.mul_le_mul_right w (by omega)
+          simp [target] at hktarget
+          rw [hkform] at hktarget
+          nlinarith
+        have hrn : r < n := hrle.trans_lt hq
+        have hkread := entry_oper_tiling_block_zero M n r t
+          hlast hzero hp hrn
+          (by simpa [hi₁, j₁, j₀, w] using htw)
+        have hkread' : entry N 0 k = entry M 0 (j₀ + t) + r * d := by
+          rw [hkform]
+          simpa [N, d, hi₁, j₁, j₀, w, Nat.add_assoc] using hkread
+        have hfloor : entry M 0 j₀ ≤ entry M 0 (j₀ + t) := by
+          by_cases htzero : t = 0
+          · simp [htzero]
+          · have htpos : 0 < t := Nat.pos_of_ne_zero htzero
+            have hf := (oper_tiling_strict_floor M t hM hp htpos (by
+              simpa [hi₁, j₁, j₀, w] using htw.le)).le
+            simpa [hi₁, j₁, j₀] using hf
+        rw [hstartRead, hkread']
+        by_cases hrzero : r = 0
+        · have htpos : 0 < t := by
+            by_contra hnot
+            have htzero : t = 0 := Nat.eq_zero_of_not_pos hnot
+            rw [hrzero, htzero] at hdiv
+            simp at hdiv
+            omega
+          have hf := oper_tiling_strict_floor M t hM hp htpos (by
+            simpa [hi₁, j₁, j₀, w] using htw.le)
+          rw [hrzero]
+          simp only [zero_mul, Nat.add_zero]
+          simpa [hi₁, j₁, j₀] using hf
+        · have hrpos : 0 < r := Nat.pos_of_ne_zero hrzero
+          have hshift : 0 < r * d := Nat.mul_pos hrpos hdpos
+          omega)
+    simpa [leR, N, target, j₁, j₀, w, Nat.add_assoc] using hr
+
+set_option maxHeartbeats 1000000 in
+/-- The row-one parent of a positive-shift interior column lies either in the
+copied prefix or in that column's own block. -/
+theorem parent_oper_tiling_interior_block_or_prefix_one
+    (M : PS) (n q s : ℕ)
+    (hM : TPS M)
+    (hlast : 1 < Lng M)
+    (hzero : ¬(entry M 0 (Lng M - 1) = 0 ∧
+      entry M 1 (Lng M - 1) = 0))
+    (hp : hasParent M (idx1 M (Lng M - 1)) (Lng M - 1) = true)
+    (hi₁ : idx1 M (Lng M - 1) = 1)
+    (hq : q < n) (hspos : 0 < s)
+    (hs : s < Lng M - 1 - parent M 1 (Lng M - 1))
+    (hpy : hasParent (oper M n) 1
+      (parent M 1 (Lng M - 1) +
+        q * (Lng M - 1 - parent M 1 (Lng M - 1)) + s) = true) :
+    parent (oper M n) 1
+        (parent M 1 (Lng M - 1) +
+          q * (Lng M - 1 - parent M 1 (Lng M - 1)) + s) <
+      parent M 1 (Lng M - 1) ∨
+    (parent M 1 (Lng M - 1) ≤
+        parent (oper M n) 1
+          (parent M 1 (Lng M - 1) +
+            q * (Lng M - 1 - parent M 1 (Lng M - 1)) + s) ∧
+      (parent (oper M n) 1
+          (parent M 1 (Lng M - 1) +
+            q * (Lng M - 1 - parent M 1 (Lng M - 1)) + s) -
+          parent M 1 (Lng M - 1)) /
+        (Lng M - 1 - parent M 1 (Lng M - 1)) = q) := by
+  let j₁ := Lng M - 1
+  let i₁ := idx1 M j₁
+  let j₀ := parent M 1 j₁
+  let w := j₁ - j₀
+  let N := oper M n
+  let B := j₀ + q * w
+  let y := B + s
+  let p := parent N 1 y
+  have hi₁' : i₁ = 1 := by simpa [i₁, j₁] using hi₁
+  have hj₀idx : parent M i₁ j₁ = j₀ := by simp [j₀, hi₁']
+  have hnextTop := hasParent_next_fseq M i₁ j₁ (by
+    simpa [i₁, j₁] using hp)
+  have hnextTop' : nextR M 1 j₀ j₁ = true := by
+    simpa [hi₁', hj₀idx] using hnextTop
+  have hj₀lt : j₀ < j₁ :=
+    (nextR_implies_row0 M 1 j₀ j₁ hnextTop').1
+  have htopReach : leR M 0 j₀ j₁ = true :=
+    (nextR_implies_row0 M 1 j₀ j₁ hnextTop').2
+  have hwpos : 0 < w := by simp [w]; omega
+  have hs' : s < w := by simpa [j₁, j₀, w] using hs
+  have hpy' : hasParent N 1 y = true := by
+    simpa [N, y, B, j₁, j₀, w, Nat.add_assoc] using hpy
+  have hpnext : nextR N 1 p y = true := by
+    simpa [p] using hasParent_next_fseq N 1 y hpy'
+  have hpdata := hpnext
+  simp only [nextR, if_neg (by decide : (1 : ℕ) ≠ 0), nextrel1,
+    Bool.and_eq_true, decide_eq_true_eq, List.all_eq_true] at hpdata
+  have hplt : p < y := hpdata.1.1.1.2
+  have hpreach : le0 N p y = true := hpdata.1.2
+  have hpstrict : entry N 1 p < entry N 1 y := hpdata.1.1.2
+  have hvalley : ∀ z, p < z → le0 N z y = true →
+      entry N 1 y ≤ entry N 1 z := by
+    intro z hpz hzreach
+    have hzbound : z < Lng N := by
+      have hh := hzreach
+      simp only [le0, Bool.and_eq_true, decide_eq_true_eq] at hh
+      exact hh.1.1
+    have hz := hpdata.2 z (List.mem_range.mpr hzbound)
+    simpa [hpz, hzreach] using hz
+  by_cases hpref : p < j₀
+  · exact Or.inl (by
+      simpa [N, p, y, B, j₁, j₀, w, Nat.add_assoc] using hpref)
+  · right
+    have hpge : j₀ ≤ p := by omega
+    refine ⟨by simpa [N, p, y, B, j₁, j₀, w, Nat.add_assoc] using hpge, ?_⟩
+    let qp := (p - j₀) / w
+    let sp := (p - j₀) % w
+    have hspw : sp < w := Nat.mod_lt _ hwpos
+    have hpform : p = j₀ + qp * w + sp := by
+      have hdiv : qp * w + sp = p - j₀ := by
+        simpa [qp, sp, Nat.mul_comm] using Nat.div_add_mod (p - j₀) w
+      calc
+        p = j₀ + (p - j₀) := (Nat.add_sub_of_le hpge).symm
+        _ = j₀ + (qp * w + sp) := by rw [hdiv]
+        _ = j₀ + qp * w + sp := by omega
+    have hqple : qp ≤ q := by
+      by_contra hnot
+      have hqqp : q < qp := by omega
+      have hmul : (q + 1) * w ≤ qp * w :=
+        Nat.mul_le_mul_right w (by omega)
+      simp [y, B] at hplt
+      nlinarith
+    change qp = q
+    by_contra hqpne
+    have hqplt : qp < q := by omega
+    have hqpn : qp < n := hqplt.trans hq
+    have hpB : p < B := by
+      have hmul : (qp + 1) * w ≤ q * w :=
+        Nat.mul_le_mul_right w (by omega)
+      rw [hpform]
+      simp [B]
+      nlinarith
+    have hbaseReach : le0 M j₀ (j₀ + s) = true := by
+      have hr := ancestor_tree_1 M j₀ (j₀ + s) j₁ hM htopReach
+        (by omega) (by rw [← show j₀ + w = j₁ by simp [w]; omega]; omega)
+      simpa [leR] using hr
+    have hBreach : le0 N B y = true := by
+      have hr := le0_oper_tiling_block_lift_one M n q 0 s
+        hlast hzero hp hi₁ hq hspos hs hbaseReach
+      simpa [N, B, y, j₁, j₀, w, Nat.add_assoc] using hr
+    have hstar : entry N 1 y ≤ entry M 1 j₀ := by
+      have hBread := entry_oper_tiling_block_one M n q 0
+        hlast hzero hp hq
+        (by simpa [hi₁, j₁, j₀, w] using hwpos)
+      have hval := hvalley B hpB hBreach
+      rw [show entry N 1 B = entry M 1 j₀ by
+        simpa [N, B, hi₁, j₁, j₀, w, Nat.add_assoc] using hBread] at hval
+      exact hval
+    have hpread := entry_oper_tiling_block_one M n qp sp
+      hlast hzero hp hqpn
+      (by simpa [hi₁, j₁, j₀, w] using hspw)
+    have hpread' : entry N 1 p = entry M 1 (j₀ + sp) := by
+      rw [hpform]
+      simpa [N, hi₁, j₁, j₀, w, Nat.add_assoc] using hpread
+    by_cases hspzero : sp = 0
+    · rw [hpread', hspzero] at hpstrict
+      exact (Nat.not_lt_of_ge hstar hpstrict)
+    · have hsppos : 0 < sp := Nat.pos_of_ne_zero hspzero
+      have hn : 1 ≤ n := by omega
+      have hN : TPS N := by simpa [N] using oper_TPS M n hM hn
+      have hpBReach : le0 N p B = true := by
+        have hr := ancestor_tree_1 N p B y hN (by simpa [leR] using hpreach)
+          hpB.le (by simp [y, B])
+        simpa [leR] using hr
+      have hcross := le0_oper_tiling_cross_back_one M n qp q sp
+        hM hlast hzero hp hi₁ hqplt hq hspw (by
+          simpa [N, B, p, hpform, j₁, j₀, w, Nat.add_assoc] using hpBReach)
+      have hcross' : le0 M (j₀ + sp) j₁ = true := by
+        simpa [j₁, j₀] using hcross
+      have htopData := hnextTop'
+      simp only [nextR, if_neg (by decide : (1 : ℕ) ≠ 0), nextrel1,
+        Bool.and_eq_true, decide_eq_true_eq, List.all_eq_true] at htopData
+      have htopStrict : entry M 1 j₀ < entry M 1 j₁ :=
+        htopData.1.1.2
+      have hspBound : j₀ + sp < Lng M := by omega
+      have htopVal := htopData.2 (j₀ + sp)
+        (List.mem_range.mpr hspBound)
+      have hge : entry M 1 j₁ ≤ entry M 1 (j₀ + sp) := by
+        simpa [hsppos, hcross'] using htopVal
+      rw [hpread'] at hpstrict
+      omega
+
+/-- A parented positive-shift interior column has a parented base column in
+the original active slice. -/
+theorem hasParent_oper_tiling_interior_base_one
+    (M : PS) (n q s : ℕ)
+    (hM : TPS M)
+    (hlast : 1 < Lng M)
+    (hzero : ¬(entry M 0 (Lng M - 1) = 0 ∧
+      entry M 1 (Lng M - 1) = 0))
+    (hp : hasParent M (idx1 M (Lng M - 1)) (Lng M - 1) = true)
+    (hi₁ : idx1 M (Lng M - 1) = 1)
+    (hq : q < n) (hspos : 0 < s)
+    (hs : s < Lng M - 1 - parent M 1 (Lng M - 1))
+    (hpy : hasParent (oper M n) 1
+      (parent M 1 (Lng M - 1) +
+        q * (Lng M - 1 - parent M 1 (Lng M - 1)) + s) = true) :
+    hasParent M 1 (parent M 1 (Lng M - 1) + s) = true := by
+  let j₁ := Lng M - 1
+  let i₁ := idx1 M j₁
+  let j₀ := parent M 1 j₁
+  let w := j₁ - j₀
+  let N := oper M n
+  let B := j₀ + q * w
+  let y := B + s
+  let base := j₀ + s
+  let p := parent N 1 y
+  have hi₁' : i₁ = 1 := by simpa [i₁, j₁] using hi₁
+  have hj₀idx : parent M i₁ j₁ = j₀ := by simp [j₀, hi₁']
+  have hnextTop := hasParent_next_fseq M i₁ j₁ (by
+    simpa [i₁, j₁] using hp)
+  have hnextTop' : nextR M 1 j₀ j₁ = true := by
+    simpa [hi₁', hj₀idx] using hnextTop
+  have hj₀lt : j₀ < j₁ :=
+    (nextR_implies_row0 M 1 j₀ j₁ hnextTop').1
+  have htopReach : leR M 0 j₀ j₁ = true :=
+    (nextR_implies_row0 M 1 j₀ j₁ hnextTop').2
+  have hwpos : 0 < w := by simp [w]; omega
+  have hs' : s < w := by simpa [j₁, j₀, w] using hs
+  have hbaseBound : base < Lng M := by simp [base, j₀]; omega
+  have hbaseReach : le0 M j₀ base = true := by
+    have hr := ancestor_tree_1 M j₀ base j₁ hM htopReach
+      (by simp [base]) (by simp [base]; omega)
+    simpa [leR] using hr
+  have hpy' : hasParent N 1 y = true := by
+    simpa [N, y, B, j₁, j₀, w, Nat.add_assoc] using hpy
+  have hpnext : nextR N 1 p y = true := by
+    simpa [p] using hasParent_next_fseq N 1 y hpy'
+  have hpdata := hpnext
+  simp only [nextR, if_neg (by decide : (1 : ℕ) ≠ 0), nextrel1,
+    Bool.and_eq_true, decide_eq_true_eq, List.all_eq_true] at hpdata
+  have hplt : p < y := hpdata.1.1.1.2
+  have hpreach : le0 N p y = true := hpdata.1.2
+  have hpstrict : entry N 1 p < entry N 1 y := hpdata.1.1.2
+  have hyread := entry_oper_tiling_block_one M n q s
+    hlast hzero hp hq (by simpa [hi₁, j₁, j₀, w] using hs')
+  have hyread' : entry N 1 y = entry M 1 base := by
+    simpa [N, y, B, base, hi₁, j₁, j₀, w, Nat.add_assoc] using hyread
+  have suff (b : ℕ) (hbb : b < base)
+      (hstrict : entry M 1 b < entry M 1 base)
+      (hreach : le0 M b base = true) : hasParent M 1 base = true := by
+    obtain ⟨r, _, _, hr⟩ := parent_exists_2 M b base hM hbb hbaseBound
+      hstrict (by simpa [leR] using hreach)
+    exact (hasParent_iff_unique_fseq M 1 base).mpr
+      ⟨r, hr, fun u hu => nextR1_unique_mr M u r base hu hr⟩
+  have hclass := parent_oper_tiling_interior_block_or_prefix_one M n q s
+    hM hlast hzero hp hi₁ hq hspos hs hpy
+  rcases hclass with hpref | ⟨hpge, hpblock⟩
+  · have hpref' : p < j₀ := by
+      simpa [N, p, y, B, j₁, j₀, w, Nat.add_assoc] using hpref
+    have hn : 1 ≤ n := by omega
+    have hN : TPS N := by simpa [N] using oper_TPS M n hM hn
+    have hpBReach : le0 N p B = true := by
+      have hr := ancestor_tree_1 N p B y hN (by simpa [leR] using hpreach)
+        (by omega) (by simp [y, B])
+      simpa [leR] using hr
+    have hpj₀Reach := le0_oper_tiling_prefix_back_one M n q p
+      hM hlast hzero hp hi₁ hq
+      (by simpa [j₁, j₀] using hpref')
+      (by simpa [N, B, hi₁, j₁, j₀, w, Nat.add_assoc] using hpBReach)
+    have hpbaseReach : le0 M p base = true := by
+      have hr := row0_transitive M p j₀ base hM
+        (by simpa [leR] using hpj₀Reach) (by simpa [leR] using hbaseReach)
+      simpa [leR] using hr
+    have hpread := entry_oper_tiling_prefix M n 1 p hlast hzero hp
+      (by simpa [hi₁, j₁, j₀] using hpref')
+    have hpread' : entry N 1 p = entry M 1 p := by simpa [N] using hpread
+    have hpbaseStrict : entry M 1 p < entry M 1 base := by
+      rw [hpread', hyread'] at hpstrict
+      exact hpstrict
+    have hpbase : p < base := by simp [base]; omega
+    exact suff p hpbase hpbaseStrict hpbaseReach
+  · have hpge' : j₀ ≤ p := by
+      simpa [N, p, y, B, j₁, j₀, w, Nat.add_assoc] using hpge
+    have hpblock' : (p - j₀) / w = q := by
+      simpa [N, p, y, B, j₁, j₀, w, Nat.add_assoc] using hpblock
+    let sp := (p - j₀) % w
+    have hspw : sp < w := Nat.mod_lt _ hwpos
+    have hdiv : w * ((p - j₀) / w) + sp = p - j₀ := by
+      simpa [sp] using Nat.div_add_mod (p - j₀) w
+    have hpform : p = j₀ + q * w + sp := by
+      calc
+        p = j₀ + (p - j₀) := (Nat.add_sub_of_le hpge').symm
+        _ = j₀ + (w * ((p - j₀) / w) + sp) := by rw [hdiv]
+        _ = j₀ + q * w + sp := by
+          rw [hpblock']
+          simp [Nat.mul_comm, Nat.add_assoc]
+    have hsps : sp < s := by simp [y, B] at hplt; rw [hpform] at hplt; omega
+    have hblockReach := le0_oper_tiling_block_back_one M n q sp s
+      hlast hzero hp hi₁ hq hsps hs (by
+        simpa [N, p, y, B, hpform, j₁, j₀, w,
+          Nat.add_assoc] using hpreach)
+    have hpread := entry_oper_tiling_block_one M n q sp
+      hlast hzero hp hq
+      (by simpa [hi₁, j₁, j₀, w] using hspw)
+    have hpread' : entry N 1 p = entry M 1 (j₀ + sp) := by
+      rw [hpform]
+      simpa [N, hi₁, j₁, j₀, w, Nat.add_assoc] using hpread
+    have hstrict : entry M 1 (j₀ + sp) < entry M 1 base := by
+      rw [hpread', hyread'] at hpstrict
+      exact hpstrict
+    have hbb : j₀ + sp < base := by simp [base]; omega
+    exact suff (j₀ + sp) hbb hstrict (by
+      simpa [base, j₁, j₀] using hblockReach)
+
 set_option maxHeartbeats 1000000 in
 /-- If the row-one parent of an interior base column stays in the active
 slice, its copy in every positive-shift block is the row-one parent there. -/
@@ -2649,6 +3330,302 @@ theorem RedCondA_oper_tiling_row1_one_interior (M : PS) (n q s : ℕ)
     simpa [N, B, xbase, hi₁, j₁, j₀, w, Nat.add_assoc] using hxread]
   exact hbase
 
+private theorem nextrel1_intro_rf (M : PS) (p x : ℕ)
+    (hpM : p < Lng M) (hxM : x < Lng M) (hpx : p < x)
+    (hstrict : entry M 1 p < entry M 1 x)
+    (hreach : le0 M p x = true)
+    (hvalley : ∀ u, u < Lng M → p < u → le0 M u x = true →
+      entry M 1 x ≤ entry M 1 u) :
+    nextrel1 M p x = true := by
+  simp only [nextrel1, Bool.and_eq_true, decide_eq_true_eq,
+    List.all_eq_true, List.mem_range]
+  refine ⟨⟨⟨⟨⟨hpM, hxM⟩, hpx⟩, hstrict⟩, hreach⟩, ?_⟩
+  intro u huM
+  by_cases hpu : p < u
+  · by_cases hux : le0 M u x = true
+    · simp [hpu, hux, hvalley u huM hpu hux]
+    · simp [hpu, hux]
+  · simp [hpu]
+
+set_option maxHeartbeats 1500000 in
+/-- If the base parent of a positive-shift interior column lies in the copied
+prefix, the generated column has that same row-one parent. -/
+theorem parent_oper_tiling_interior_escape_one
+    (M : PS) (n q s : ℕ)
+    (hM : TPS M)
+    (hlast : 1 < Lng M)
+    (hzero : ¬(entry M 0 (Lng M - 1) = 0 ∧
+      entry M 1 (Lng M - 1) = 0))
+    (hp : hasParent M (idx1 M (Lng M - 1)) (Lng M - 1) = true)
+    (hi₁ : idx1 M (Lng M - 1) = 1)
+    (hq : q < n) (hspos : 0 < s)
+    (hs : s < Lng M - 1 - parent M 1 (Lng M - 1))
+    (hpy : hasParent (oper M n) 1
+      (parent M 1 (Lng M - 1) +
+        q * (Lng M - 1 - parent M 1 (Lng M - 1)) + s) = true)
+    (hbaseParent : hasParent M 1
+      (parent M 1 (Lng M - 1) + s) = true)
+    (hescape : parent M 1 (parent M 1 (Lng M - 1) + s) <
+      parent M 1 (Lng M - 1)) :
+    parent (oper M n) 1
+        (parent M 1 (Lng M - 1) +
+          q * (Lng M - 1 - parent M 1 (Lng M - 1)) + s) =
+      parent M 1 (parent M 1 (Lng M - 1) + s) := by
+  let j₁ := Lng M - 1
+  let i₁ := idx1 M j₁
+  let j₀ := parent M 1 j₁
+  let w := j₁ - j₀
+  let N := oper M n
+  let B := j₀ + q * w
+  let y := B + s
+  let base := j₀ + s
+  let p := parent N 1 y
+  let pb := parent M 1 base
+  have hi₁' : i₁ = 1 := by simpa [i₁, j₁] using hi₁
+  have hj₀idx : parent M i₁ j₁ = j₀ := by simp [j₀, hi₁']
+  have hnextTop := hasParent_next_fseq M i₁ j₁ (by
+    simpa [i₁, j₁] using hp)
+  have hnextTop' : nextR M 1 j₀ j₁ = true := by
+    simpa [hi₁', hj₀idx] using hnextTop
+  have hj₀lt : j₀ < j₁ :=
+    (nextR_implies_row0 M 1 j₀ j₁ hnextTop').1
+  have htopReach : leR M 0 j₀ j₁ = true :=
+    (nextR_implies_row0 M 1 j₀ j₁ hnextTop').2
+  have hwpos : 0 < w := by simp [w]; omega
+  have hs' : s < w := by simpa [j₁, j₀, w] using hs
+  have hn : 1 ≤ n := by omega
+  have hN : TPS N := by simpa [N] using oper_TPS M n hM hn
+  have hbaseM : base < Lng M := by simp [base, j₀]; omega
+  have hbaseReach : le0 M j₀ base = true := by
+    have hr := ancestor_tree_1 M j₀ base j₁ hM htopReach
+      (by simp [base]) (by simp [base]; omega)
+    simpa [leR] using hr
+  have hpy' : hasParent N 1 y = true := by
+    simpa [N, y, B, j₁, j₀, w, Nat.add_assoc] using hpy
+  have hpnext : nextR N 1 p y = true := by
+    simpa [p] using hasParent_next_fseq N 1 y hpy'
+  have hpdata := hpnext
+  simp only [nextR, if_neg (by decide : (1 : ℕ) ≠ 0), nextrel1,
+    Bool.and_eq_true, decide_eq_true_eq, List.all_eq_true] at hpdata
+  have hplt : p < y := hpdata.1.1.1.2
+  have hpreach : le0 N p y = true := hpdata.1.2
+  have hpstrict : entry N 1 p < entry N 1 y := hpdata.1.1.2
+  have hpvalley : ∀ u, p < u → le0 N u y = true →
+      entry N 1 y ≤ entry N 1 u := by
+    intro u hpu hureach
+    have huN : u < Lng N := by
+      have hh := hureach
+      simp only [le0, Bool.and_eq_true, decide_eq_true_eq] at hh
+      exact hh.1.1
+    have hu := hpdata.2 u (List.mem_range.mpr huN)
+    simpa [hpu, hureach] using hu
+  have hyread := entry_oper_tiling_block_one M n q s
+    hlast hzero hp hq (by simpa [hi₁, j₁, j₀, w] using hs')
+  have hyread' : entry N 1 y = entry M 1 base := by
+    simpa [N, y, B, base, hi₁, j₁, j₀, w, Nat.add_assoc] using hyread
+  have hbaseParent' : hasParent M 1 base = true := by
+    simpa [base, j₀, j₁] using hbaseParent
+  have hpbnext : nextR M 1 pb base = true := by
+    simpa [pb] using hasParent_next_fseq M 1 base hbaseParent'
+  have hpref : p < j₀ := by
+    by_contra hpnot
+    have hpge : j₀ ≤ p := by omega
+    have hclass := parent_oper_tiling_interior_block_or_prefix_one M n q s
+      hM hlast hzero hp hi₁ hq hspos hs hpy
+    rcases hclass with hpre | ⟨_, hblock⟩
+    · have : p < j₀ := by
+        simpa [N, p, y, B, j₁, j₀, w, Nat.add_assoc] using hpre
+      omega
+    · have hblock' : (p - j₀) / w = q := by
+        simpa [N, p, y, B, j₁, j₀, w, Nat.add_assoc] using hblock
+      let sp := (p - j₀) % w
+      have hspw : sp < w := Nat.mod_lt _ hwpos
+      have hdiv : w * ((p - j₀) / w) + sp = p - j₀ := by
+        simpa [sp] using Nat.div_add_mod (p - j₀) w
+      have hpform : p = B + sp := by
+        calc
+          p = j₀ + (p - j₀) := (Nat.add_sub_of_le hpge).symm
+          _ = j₀ + (w * ((p - j₀) / w) + sp) := by rw [hdiv]
+          _ = B + sp := by
+            rw [hblock']
+            simp [B, Nat.mul_comm, Nat.add_assoc]
+      have hsps : sp < s := by rw [hpform] at hplt; simp [y, B] at hplt; omega
+      have hcReach := le0_oper_tiling_block_back_one M n q sp s
+        hlast hzero hp hi₁ hq hsps hs (by
+          simpa [N, p, y, B, hpform, j₁, j₀, w,
+            Nat.add_assoc] using hpreach)
+      have hpread := entry_oper_tiling_block_one M n q sp
+        hlast hzero hp hq
+        (by simpa [hi₁, j₁, j₀, w] using hspw)
+      have hpread' : entry N 1 p = entry M 1 (j₀ + sp) := by
+        rw [hpform]
+        simpa [N, B, hi₁, j₁, j₀, w, Nat.add_assoc] using hpread
+      have hcstrict : entry M 1 (j₀ + sp) < entry M 1 base := by
+        rw [hpread', hyread'] at hpstrict
+        exact hpstrict
+      have hcM : j₀ + sp < Lng M := by omega
+      have hcbase : j₀ + sp < base := by simp [base]; omega
+      have hcvalley : ∀ u, u < Lng M → j₀ + sp < u →
+          le0 M u base = true → entry M 1 base ≤ entry M 1 u := by
+        intro u huM hcu hureach
+        have hubase : u ≤ base := le0_index_rf hureach
+        by_cases hueq : u = base
+        · subst u; simp
+        · have hult : u < base := lt_of_le_of_ne hubase hueq
+          have hj₀u : j₀ ≤ u := by omega
+          let t := u - j₀
+          have huform : u = j₀ + t := by simp [t, Nat.add_sub_of_le hj₀u]
+          have htsp : sp < t := by rw [huform] at hcu; omega
+          have hts : t < s := by rw [huform] at hult; simp [base] at hult; omega
+          have htw : t < w := hts.trans hs'
+          have hLift := le0_oper_tiling_block_lift_one M n q t s
+            hlast hzero hp hi₁ hq hts hs (by
+              simpa [base, huform, j₁, j₀] using hureach)
+          have hLift' : le0 N (B + t) y = true := by
+            simpa [N, B, y, j₁, j₀, w, Nat.add_assoc] using hLift
+          have hgt : p < B + t := by rw [hpform]; omega
+          have hval := hpvalley (B + t) hgt hLift'
+          have huread := entry_oper_tiling_block_one M n q t
+            hlast hzero hp hq
+            (by simpa [hi₁, j₁, j₀, w] using htw)
+          rw [hyread', show entry N 1 (B + t) = entry M 1 u by
+            rw [huform]
+            simpa [N, B, hi₁, j₁, j₀, w, Nat.add_assoc] using huread] at hval
+          exact hval
+      have hcnext1 := nextrel1_intro_rf M (j₀ + sp) base hcM hbaseM
+        hcbase hcstrict (by simpa [base, j₁, j₀] using hcReach) hcvalley
+      have hcnext : nextR M 1 (j₀ + sp) base = true := by
+        simpa [nextR] using hcnext1
+      have heq : j₀ + sp = pb :=
+        nextR1_unique_mr M (j₀ + sp) pb base hcnext hpbnext
+      have hesc' : pb < j₀ := by simpa [pb, base, j₀, j₁] using hescape
+      rw [heq] at hcbase
+      omega
+  have hpj₀ReachN : le0 N p B = true := by
+    have hr := ancestor_tree_1 N p B y hN (by simpa [leR] using hpreach)
+      (by omega) (by simp [y, B])
+    simpa [leR] using hr
+  have hpj₀Reach := le0_oper_tiling_prefix_back_one M n q p
+    hM hlast hzero hp hi₁ hq (by simpa [j₁, j₀] using hpref)
+    (by simpa [N, B, hi₁, j₁, j₀, w, Nat.add_assoc] using hpj₀ReachN)
+  have hpbaseReach : le0 M p base = true := by
+    have hr := row0_transitive M p j₀ base hM
+      (by simpa [leR] using hpj₀Reach) (by simpa [leR] using hbaseReach)
+    simpa [leR] using hr
+  have hpread := entry_oper_tiling_prefix M n 1 p hlast hzero hp
+    (by simpa [hi₁, j₁, j₀] using hpref)
+  have hpread' : entry N 1 p = entry M 1 p := by simpa [N] using hpread
+  have hpbaseStrict : entry M 1 p < entry M 1 base := by
+    rw [hpread', hyread'] at hpstrict
+    exact hpstrict
+  have hpM : p < Lng M := by omega
+  have hpbase : p < base := by simp [base]; omega
+  have hpbaseValley : ∀ u, u < Lng M → p < u → le0 M u base = true →
+      entry M 1 base ≤ entry M 1 u := by
+    intro u huM hpu hureach
+    have hubase : u ≤ base := le0_index_rf hureach
+    by_cases hupre : u < j₀
+    · have huj₀ : le0 M u j₀ = true := by
+        have hr := ancestor_tree_1 M u j₀ base hM
+          (by simpa [leR] using hureach) (by omega) (by simp [base])
+        simpa [leR] using hr
+      have huj₀N := le0_oper_tiling_prefix_lift_one M n u hM
+        hlast hzero hp hi₁ hn (by simpa [j₁, j₀] using hupre)
+        (by simpa [j₁, j₀] using huj₀)
+      have hj₀y := le0_oper_tiling_start_one M n q s
+        hM hlast hzero hp hi₁ hq hs
+      have huyN : le0 N u y = true := by
+        have hr := row0_transitive N u j₀ y hN
+          (by simpa [N, leR, j₁, j₀] using huj₀N)
+          (by simpa [N, y, B, leR, j₁, j₀, w,
+            Nat.add_assoc] using hj₀y)
+        simpa [leR] using hr
+      have hval := hpvalley u hpu huyN
+      have huread := entry_oper_tiling_prefix M n 1 u hlast hzero hp
+        (by simpa [hi₁, j₁, j₀] using hupre)
+      rw [hyread', show entry N 1 u = entry M 1 u by simpa [N] using huread] at hval
+      exact hval
+    · have hj₀u : j₀ ≤ u := by omega
+      by_cases hueq : u = base
+      · subst u; simp
+      · have hult : u < base := lt_of_le_of_ne hubase hueq
+        let t := u - j₀
+        have huform : u = j₀ + t := by simp [t, Nat.add_sub_of_le hj₀u]
+        have hts : t < s := by rw [huform] at hult; simp [base] at hult; omega
+        have htw : t < w := hts.trans hs'
+        have hLift := le0_oper_tiling_block_lift_one M n q t s
+          hlast hzero hp hi₁ hq hts hs (by
+            simpa [base, huform, j₁, j₀] using hureach)
+        have hLift' : le0 N (B + t) y = true := by
+          simpa [N, B, y, j₁, j₀, w, Nat.add_assoc] using hLift
+        have hgt : p < B + t := by omega
+        have hval := hpvalley (B + t) hgt hLift'
+        have huread := entry_oper_tiling_block_one M n q t
+          hlast hzero hp hq
+          (by simpa [hi₁, j₁, j₀, w] using htw)
+        rw [hyread', show entry N 1 (B + t) = entry M 1 u by
+          rw [huform]
+          simpa [N, B, hi₁, j₁, j₀, w, Nat.add_assoc] using huread] at hval
+        exact hval
+  have hpnextBase1 := nextrel1_intro_rf M p base hpM hbaseM hpbase
+    hpbaseStrict hpbaseReach hpbaseValley
+  have hpnextBase : nextR M 1 p base = true := by
+    simpa [nextR] using hpnextBase1
+  have heq : p = pb := nextR1_unique_mr M p pb base hpnextBase hpbnext
+  simpa [N, p, pb, y, B, base, j₁, j₀, w, Nat.add_assoc] using heq
+
+/-- Row-one condition (A) for a positive-shift interior column whose base
+parent escapes into the copied prefix. -/
+theorem RedCondA_oper_tiling_row1_one_escape (M : PS) (n q s : ℕ)
+    (hM : TPS M)
+    (hlast : 1 < Lng M)
+    (hzero : ¬(entry M 0 (Lng M - 1) = 0 ∧
+      entry M 1 (Lng M - 1) = 0))
+    (hp : hasParent M (idx1 M (Lng M - 1)) (Lng M - 1) = true)
+    (hi₁ : idx1 M (Lng M - 1) = 1)
+    (hA : RedCondA M = true)
+    (hq : q < n) (hspos : 0 < s)
+    (hs : s < Lng M - 1 - parent M 1 (Lng M - 1))
+    (hpy : hasParent (oper M n) 1
+      (parent M 1 (Lng M - 1) +
+        q * (Lng M - 1 - parent M 1 (Lng M - 1)) + s) = true)
+    (hbaseParent : hasParent M 1
+      (parent M 1 (Lng M - 1) + s) = true)
+    (hescape : parent M 1 (parent M 1 (Lng M - 1) + s) <
+      parent M 1 (Lng M - 1)) :
+    entry (oper M n) 1
+        (parent (oper M n) 1
+          (parent M 1 (Lng M - 1) +
+            q * (Lng M - 1 - parent M 1 (Lng M - 1)) + s)) + 1 =
+      entry (oper M n) 1
+        (parent M 1 (Lng M - 1) +
+          q * (Lng M - 1 - parent M 1 (Lng M - 1)) + s) := by
+  let j₁ := Lng M - 1
+  let j₀ := parent M 1 j₁
+  let w := j₁ - j₀
+  let N := oper M n
+  let B := j₀ + q * w
+  let base := j₀ + s
+  let pb := parent M 1 base
+  have hs' : s < w := by simpa [j₁, j₀, w] using hs
+  have hbaseParent' : hasParent M 1 base = true := by
+    simpa [base, j₀, j₁] using hbaseParent
+  have hpar := parent_oper_tiling_interior_escape_one M n q s hM
+    hlast hzero hp hi₁ hq hspos hs hpy hbaseParent hescape
+  have hxread := entry_oper_tiling_block_one M n q s
+    hlast hzero hp hq (by simpa [hi₁, j₁, j₀, w] using hs')
+  have hpread := entry_oper_tiling_prefix M n 1 pb hlast hzero hp
+    (by simpa [hi₁, pb, base, j₁, j₀] using hescape)
+  have hbase := RedCondA_apply M hA 1 base (by omega)
+    (by simp [base, j₀]; omega) hbaseParent'
+  change entry N 1 (parent N 1 (B + s)) + 1 = entry N 1 (B + s)
+  rw [show parent N 1 (B + s) = pb by
+    simpa [N, B, pb, base, j₁, j₀, w, Nat.add_assoc] using hpar]
+  rw [show entry N 1 pb = entry M 1 pb by simpa [N] using hpread]
+  rw [show entry N 1 (B + s) = entry M 1 base by
+    simpa [N, B, base, hi₁, j₁, j₀, w, Nat.add_assoc] using hxread]
+  exact hbase
+
 private theorem P_getLastD_mem_rf (M : PS) :
     (P M).getLastD [] ∈ P M := by
   have hne := P_nonempty M
@@ -2723,8 +3700,16 @@ theorem RTPS_oper_of_nonmulti_steps
 #print axioms RedCondA_oper_tiling_row1_zero
 #print axioms le0_oper_tiling_block_back_one
 #print axioms le0_oper_tiling_block_lift_one
+#print axioms le0_oper_tiling_prefix_back_one
+#print axioms le0_oper_tiling_prefix_lift_one
+#print axioms le0_oper_tiling_cross_back_one
+#print axioms le0_oper_tiling_start_one
+#print axioms parent_oper_tiling_interior_block_or_prefix_one
+#print axioms hasParent_oper_tiling_interior_base_one
 #print axioms parent_oper_tiling_interior_one
 #print axioms RedCondA_oper_tiling_row1_one_interior
+#print axioms parent_oper_tiling_interior_escape_one
+#print axioms RedCondA_oper_tiling_row1_one_escape
 #print axioms RTPS_oper_of_nonmulti_steps
 
 end PSS
