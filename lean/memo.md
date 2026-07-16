@@ -85,6 +85,42 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
 
 ---
 
+## 4.5 キャンペーン作戦図: 6.8 d1pos leg（クリティカルパス、2026-07-16 調査）
+
+**目標**: `RankSuccD1posLeg`（`lean/6/6.8-standard-slice-Br-descending.lean` ~4211 の
+名前付き仮定）を定理化 → `6.8` ✅ ＋ `8.2-standard-slice-Red-strongmono` ✅（ブリッジ配線済）
+の 2 項目が同時に落ちる。
+
+**Isabelle 側の最終構造**（`m_6_8_slice_Br_descending_monoT` の d1pos 枝、
+pss_mechanized ~21500–21951）:
+1. brle（切片が末尾ブロックに収まる系）は既存機構で処理済（Lean の d0zero 側と対応）。
+2. ¬brle（跨りスライス）が本体。dispatch は 3 regime:
+   - `oper_d1pos_notbrle_Br_align_regA`（Br の整列と非空性、~14886）
+   - `oper_d1pos_low_anchor_shamt0`（shamt=0 アンカー: seg M と seg N の
+     IncrFirst^0 一致・境界 entry 等式・P 長一致、~14536 の ANCHOR brick 系）
+   - `oper_d1pos_notbrle_LOW_take_eq_{regA,regB,boundary}`（regime 別の
+     take-eq 主 brick、~13557–14700）
+3. 支える brick 群: H1 brick（10587、`python/d1pos_fold_shape.py` 550/0）、
+   within-block le0（12593 RESIDUAL 注記）、GENERAL brick（14331）、
+   ACROSS-BLOCK P-COLLAPSE（14480、「core missing brick」だった）、
+   ANCHOR（14536）、stop-from-tnc（17266）、regime-B mLmin（17553）。
+   `oper_d1pos*` 全体で 694 箇所 ≈ 8–12k 行。
+
+**Lean 移植の指針**:
+- wave 分解はこの brick 境界で切る（1 agent = 1 brick 族、green-modulo で
+  上位を先に配線してから下位を埋める、Isabelle と同順）。
+- **今日の教訓を適用せよ**: le0 の持ち上げ/転送は `ancestor_basic_1`＋entry 一致＋
+  `parent_exists_3` の値特徴付けで書けることが多い（8.3-base-basepoint で
+  rtrancl 機構を全廃できた）。P の take 対応は `8.2-strongmono-slice` の
+  `P_take_at_boundary_sms`/`P_take_prefix_eq_sms` が流用可能（左最小値は
+  行 0 の値だけで決まる—d1pos の δ シフトは**ブロック内の行 0 の順序を保つ**ので、
+  ブロック内左最小値判定はシフト不変。跨り比較だけが brick の本体）。
+- d0zero 側の Lean 資産（6.8 ファイルの `*_68` private 群、6.6-reduced-fseq の
+  tiling 読み出し）に d1pos 版（`entry_oper_tiling_block_zero` の
+  `+ q*δ` シフト付き読み出し）を足すところから始める。
+
+---
+
 ## 5. ツリー（task.md と同構造 ＋ 注釈）
 
 凡例: 訂正 = `corrections.md` の A 番号。Isa = `isabelle/` 側の対応補題（証明の設計図）。
@@ -280,7 +316,7 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
     が正名（`take_append_eq_append_take` は無い）。
     Isa: `m_8_2_strongmono_slice` (layerB:27757)+`_mono_reduced` (27395)。
     昇格候補: `TrMax_seg_ancestor_sms`/`P_take_*_sms`（§8.2 後続と 8.1(3-1) が使う）。
-    rc=0・sorry 0・axioms 正常・#guard 5 本。[r1]
+    rc=0・sorry 0・axioms 正常・#guard 5 本・python pool 2692 例 0 反例。[r1]
   - `8.2-*` — `LastStep` の添字は A9 で訂正済みの形を使う。
     Isa の注意: `Pred_oper0` は標準入力で偽（反例 `M=(0,0)(1,1)(2,1)`）だが**定理は健全**
     （`Σ_B` 降下和ルートで回避）。**原文 §8 の証明には gap があるが、定理は真。**
