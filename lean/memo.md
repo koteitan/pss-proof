@@ -338,14 +338,13 @@ parent/Lng 形に落としてから作業する。
     21,900例で一歩分岐・有界零化とも反例0。既存の全819列チェックサムは Lean/Python とも
     `531635224` のまま一致し、全 `lake build` は3,022 jobs成功。[r1]
   - 🚨 `8.1-condI-III-c1-around` — 訂正 **A20**（補題(1) は非簡約 1 列切片で偽）
-    ＋ **A21**（補題(5) の条件(III)で `j₀ᴺ = j′₀` が偽）。5 部構成。[r1]
-    **wave1 で (1)(2)(3-2) 緑**（(1) は A20 訂正の完全形。反例定理
-    `c1_around_1_original_false`/`c1_around_5_original_false` も機械証明済み）。
-    **sorry 残 3**: (3-1)=`Mark_gap_peel` engine（Isa: `Mark_gap_rightmost_peel`+
-    `Trans_gap_2tower`+`Mark_nest_common_marked` 移送、pss_wip.thy 19700–20155）／
-    (4-1)(4-2)=Isabelle part4 の front-peel 基盤 ~3000 行／(5)=§8.3 kind0 oper-block 基盤
-    （`m_8_1_c1_around_part5`, pss_wip.thy 18176）。目標形は訂正後で確定済み＝後続 wave は
-    in-place で sorry を潰すだけ。
+    ＋ **A21**（補題(5) の条件(III)で `j₀ᴺ = j′₀` が偽）。5 部構成。[r2]
+    **(1)(2)(3-1)(3-2)(5) 緑**（(1) は A20 訂正の完全形。反例定理
+    `c1_around_1_original_false`/`c1_around_5_original_false` も機械証明済み。
+    (3-1)(5) は 2026-07-16 solo でクローズ — §4.6 参照）。
+    **sorry 残 1**: (4-1)(4-2)=Isabelle part4 の front-peel 基盤 ~3000 行
+    （キャンペーン級）。目標形は訂正後で確定済み＝後続 wave は in-place で
+    sorry を潰すだけ。
     ⚠️重複警告: `adm_row1_ancestry`/`row1_implies_row0`/`Trans_singleton` が複数ファイルで
     private 重複 → PSS/Adm・PSS/Defs・PSS/Trans へ昇格すべき。
   - 🚨 `8.2-standard-slice-Red-strongmono` — **⛔6.8 のみ待ち**。[r1]
