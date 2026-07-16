@@ -141,6 +141,12 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
       `[propext, Classical.choice, Quot.sound]`。独立 Python モデルは長さ4・成分0..2の全7,380列で
       反例0。全 `lake build` は3,023 jobs成功（キャッシュ済み4.50秒）。
       Isa: `m_6_5_Red_Pred`。[r1]
+    - ✅ `6.5-Red-fseq-commute` — 訂正 A4 の `anchoredSlice` 上で `Red_oper` を証明。
+      `Red M = rebaseRow0 M₀₀ M₁₀ M` の閉形式と、第0行再基底が `oper` と交換する補題を
+      `oper` の非タイル・真正タイル両分岐から示した。反復 `Pred` ブロック分岐は
+      `nonmulti_fseq_1` と `Red_Pred`、非複項分岐は `nonmulti_fseq_2` と条件(A)保存を使用し、
+      `RTPS_oper` で再基底側の固定性を閉じた。`check_lean.py` rc=0、sorry 0、公開定理の axioms は
+      `[propext, Classical.choice, Quot.sound]`。Isa: `m_6_5_Red_oper_final`。[r1]
     - 🚧 `6.5-Red-le-invariance` — `rebaseRow0` による親子関係不変性、係数条件(A)の切片・枝への
       遺伝、core の trunk/非-trunk 復元、正の `m₁₀` の枝ブロック値と終切片再構成を完成。
       長さ強帰納法で Isabelle `m_6_5_Red_rebase` に対応する
