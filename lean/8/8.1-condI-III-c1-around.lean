@@ -871,6 +871,138 @@ private theorem Mark_gap_rightmost_peel_gp (Q : PS) (a : ℕ)
     rw [← h1, h2, h3]
   rw [hrepr, hSTrans, htower, he0, heLast, hmarkb]
 
+/-! ## part (3-1) エンジン層 3/3: 一般ギャップ剥がし
+（Isabelle `Mark_gap_peel`, layerB:19922）
+
+`b` が右端なら 2/3、内部なら `Pred Q` へ転送して強 `Lng` 帰納。`Pred Q` 上の
+剥がし等式を `Mark_nest_common_marked` の共通 scb 位置で `Q` に持ち上げる。 -/
+
+private theorem Mark_marked_principal_gp (N : PS) (k : ℕ)
+    (hR : RTPS N) (hk : Marked N k) (hL : 1 < Lng N) :
+    ∃ p, Mark N k = .trm [p] := by
+  have hTransNe : Trans N ≠ BZero := by
+    intro hzero
+    have hz : zeroT N = true :=
+      (Trans_preserves_zeroT N (RTPS_TPS N hR)).2 hzero
+    simp only [zeroT, Bool.and_eq_true, beq_iff_eq] at hz
+    omega
+  exact marked_component_principal hTransNe
+    (Trans_Mark_mem_MarkedB N k hR hk)
+
+private theorem Mark_gap_peel_aux_gp : ∀ (n : ℕ) (Q : PS) (a b : ℕ), Lng Q ≤ n →
+    RTPS Q → Marked Q a → Marked Q b → a < b → b ≤ Lng Q - 1 →
+    (∀ k, a < k → k < b → adm Q k = false) →
+    Mark Q a = Dprin (entry Q 1 a : ℕ∞) (Mark Q b)
+  | 0, Q, a, b, hn, hR, _, _, _, _, _ => by
+      have hQT : TPS Q := RTPS_TPS Q hR
+      have := List.length_pos_of_ne_nil hQT
+      omega
+  | n + 1, Q, a, b, hn, hR, hma, hmb, hab, hbub, hgap => by
+      have hQT : TPS Q := RTPS_TPS Q hR
+      have hL : 1 < Lng Q := by omega
+      by_cases hbrm : b = Lng Q - 1
+      · rw [hbrm] at hmb hab hgap ⊢
+        exact Mark_gap_rightmost_peel_gp Q a hR hma hmb hab hgap
+      · have hbint : b < Lng Q - 1 := by omega
+        have hPredEq : Pred Q = Q.take (Lng Q - 1) := Pred_eq_take Q hL
+        have hPredL : Lng (Pred Q) = Lng Q - 1 := by
+          rw [hPredEq]
+          simp
+        have hPredT : TPS (Pred Q) := by
+          apply List.ne_nil_of_length_pos
+          change 0 < Lng (Pred Q)
+          omega
+        have hRP : RTPS (Pred Q) := RTPS_Pred Q hR
+        have hmaP : Marked (Pred Q) a := Marked_Pred Q a hQT hL hma (by omega)
+        have hmbP : Marked (Pred Q) b := Marked_Pred Q b hQT hL hmb (by omega)
+        have he1a : entry (Pred Q) 1 a = entry Q 1 a := by
+          rw [hPredEq]
+          exact entry_take Q (Lng Q - 1) 1 a (by omega)
+        -- ギャップ非許容性は `Pred Q` に降りる
+        have hgapP : ∀ k, a < k → k < b → adm (Pred Q) k = false := by
+          intro k hka hkb
+          have hadmN : adm Q k = false := hgap k hka hkb
+          have hnadmN : nadm Q k = true := by
+            simpa [adm] using hadmN
+          have e1 : nextR (Pred Q) 1 (k - 1) k = nextR Q 1 (k - 1) k := by
+            rw [hPredEq]
+            exact nextR_take_adm Q (Lng Q - 1) 1 (k - 1) k (by omega) (by omega)
+              (by omega)
+          have e2 : nextR (Pred Q) 1 k (k + 1) = nextR Q 1 k (k + 1) := by
+            rw [hPredEq]
+            exact nextR_take_adm Q (Lng Q - 1) 1 k (k + 1) (by omega) (by omega)
+              (by omega)
+          have hpairN : nextR Q 1 (k - 1) k = true ∧ nextR Q 1 k (k + 1) = true := by
+            simp only [nadm, Bool.or_eq_true, Bool.and_eq_true,
+              decide_eq_true_eq] at hnadmN
+            rcases hnadmN with h | h
+            · exfalso
+              omega
+            · exact h
+          have hnadmP : nadm (Pred Q) k = true := by
+            simp only [nadm, Bool.or_eq_true, Bool.and_eq_true, decide_eq_true_eq]
+            right
+            rw [e1, e2]
+            exact hpairN
+          simp [adm, hnadmP]
+        -- `Pred Q` 上の剥がし: 内部なら帰納、境界なら右端剥がし
+        have hrelP : Mark (Pred Q) a
+            = Dprin (entry Q 1 a : ℕ∞) (Mark (Pred Q) b) := by
+          by_cases hbP : b < Lng (Pred Q) - 1
+          · have hres := Mark_gap_peel_aux_gp n (Pred Q) a b (by omega) hRP
+              hmaP hmbP hab (by omega) hgapP
+            rwa [he1a] at hres
+          · have hbLP : b < Lng (Pred Q) := by omega
+            have hbPrm : b = Lng (Pred Q) - 1 := by omega
+            have hmbP' : Marked (Pred Q) (Lng (Pred Q) - 1) := by
+              rwa [hbPrm] at hmbP
+            have hres := Mark_gap_rightmost_peel_gp (Pred Q) a hRP hmaP hmbP'
+              (by omega) (fun k hk1 hk2 => hgapP k hk1 (by omega))
+            rw [he1a] at hres
+            rwa [← hbPrm] at hres
+        -- `Mark (Pred Q) b` は principal
+        have hprinP := Mark_marked_principal_gp (Pred Q) b hRP hmbP (by omega)
+        obtain ⟨p, hp⟩ := hprinP
+        have hPTB : isPTB_str (flatBT (Mark (Pred Q) b)) := by
+          rw [hp]
+          have hTB : Mark (Pred Q) b ∈ T_B := Mark_mem_T_B (Pred Q) b hRP hmbP
+          rw [hp] at hTB
+          exact (principal_flat_properties hTB ⟨p, rfl⟩).1
+        have hself : scb_decomp (Mark (Pred Q) b) [] (flatBT (Mark (Pred Q) b)) [] :=
+          ⟨by simp, fun _ => hPTB, by simp⟩
+        -- dP: `Pred Q` 側の scb 位置は `[D_{Q1,a}]`
+        have hdP : scb_decomp (Mark (Pred Q) a) [.dsym (entry Q 1 a : ℕ∞)]
+            (flatBT (Mark (Pred Q) b)) [] := by
+          have hlift := scb_compose_dprin (entry Q 1 a : ℕ∞) (Mark (Pred Q) b) []
+            (flatBT (Mark (Pred Q) b)) [] hself hPTB
+          rwa [← hrelP] at hlift
+        -- 共通 scb 位置で `Q` に転送
+        obtain ⟨sb, ⟨hsbP, hsbQ⟩, _⟩ :=
+          Mark_nest_common_marked Q a b hR hma hmb hab.le hbint
+        have hsbeq := scb_unique_decomp_unconditional (Mark (Pred Q) a) sb.1
+          [.dsym (entry Q 1 a : ℕ∞)] (flatBT (Mark (Pred Q) b)) sb.2 [] hsbP hdP
+        have hdQ : scb_decomp (Mark Q a) [.dsym (entry Q 1 a : ℕ∞)]
+            (flatBT (Mark Q b)) [] := by
+          rw [← hsbeq.1, ← hsbeq.2]
+          exact hsbQ
+        have hflat : flatBT (Mark Q a)
+            = flatBT (Dprin (entry Q 1 a : ℕ∞) (Mark Q b)) := by
+          have h1 := hdQ.1
+          have h2 : flatBT (Dprin (entry Q 1 a : ℕ∞) (Mark Q b))
+              = .dsym (entry Q 1 a : ℕ∞) :: flatBT (Mark Q b) := rfl
+          rw [h2, h1]
+          simp
+        exact flatBT_injective hflat
+
+/-- 一般ギャップ剥がし（Isabelle `Mark_gap_peel`）: `a < b` が両方基点で
+間が全部非許容なら `Mark Q a = D_{Q₁,a}(Mark Q b)`。 -/
+private theorem Mark_gap_peel_gp (Q : PS) (a b : ℕ)
+    (hR : RTPS Q) (hma : Marked Q a) (hmb : Marked Q b)
+    (hab : a < b) (hbub : b ≤ Lng Q - 1)
+    (hgap : ∀ k, a < k → k < b → adm Q k = false) :
+    Mark Q a = Dprin (entry Q 1 a : ℕ∞) (Mark Q b) :=
+  Mark_gap_peel_aux_gp (Lng Q) Q a b (le_refl _) hR hma hmb hab hbub hgap
+
 /-! ## 原文形の反例（A20 / A21） -/
 
 private theorem c1_around_1_cex_vals :
