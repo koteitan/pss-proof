@@ -221,6 +221,13 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
     から `Mark M m = Trans (seg M m (Lng M - 1))` を与える。Kimina は sorry 0、axioms は
     `[propext, Classical.choice, Quot.sound]`。全 `lake build` は3,048 jobs成功（6.3秒）。
     Isa: `m_7_4_Mark_Trans_repr`。[r1]
+  - ✅ `7.4-Trans-Mark-seg` — `Lng M` の強帰納法で末尾列を `Pred` により一列ずつ除き、
+    `Trans_Mark_Pred` が与える `Trans (Pred M)`／`Trans M` の共通 scb 位置を輸送した。
+    `m` が前駆列の右端に達する基底では `Mark_rightmost1_forward` により中心項を
+    `Dprin (entry M 1 m) BZero` と同定し、再帰段では `scb_unique_decomp_unconditional` で
+    帰納仮定と一段輸送の位置を同期した。公開定理 `Trans_Mark_seg` は原文どおりの一意存在を
+    与え、専用監査は sorry 0、axioms は `[propext, Classical.choice, Quot.sound]`。
+    全 `lake build` は3,049 jobs成功（3.4秒）。Isa: `m_7_4_Trans_Mark_seg`。[r1]
   - **§7.4 の `Mark` は簡約形の全列で principal-or-zero**（Isa: `y3y_Mark_princ`）。
     これは原文にない我々の補題だが、§7.4 を `RT_PS` 上で回すのに効く。**Lean でも先に用意しろ。**
 

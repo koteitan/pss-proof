@@ -58,7 +58,7 @@
     - ✅ 系（`Mark` と `<^NextAdm` の関係） — `7.4-Mark-nextAdm`[r1]
     - ✅ 系（`Trans` の `Mark` と `Pred` による表示） — `7.4-Trans-Mark-Pred`[r1]
     - ✅ 命題（`Mark` の `Trans` による表示） — `7.4-Mark-Trans-repr`[r1]
-    - 🚨 系（`Trans` の `Mark` と切片による表示） — `7.4-Trans-Mark-seg`
+    - ✅ 系（`Trans` の `Mark` と切片による表示） — `7.4-Trans-Mark-seg`[r1]
     - 🚨 系（`RightNodes` と `Mark` の関係） — `7.4-RightNodes-Mark`
     - 🚨 命題（`RightNodes` と `RightAnces` の関係） — `7.4-RightAnces-RightNodes`
     - 🚨 系（非零項の `RightAnces` が非空であること） — `7.4-RightAnces-zeroT`
