@@ -28,7 +28,7 @@ theorem y5_Fdom   : ...                     (* 原文の言明 p_8_7_termination
   **緑ビルド＝監査合格**であり、negative control（意図的に汚した定理を混ぜるとビルドが落ちる）で検証済み。
 
 原文の全命題・補題・系・定理の形式化も完了している（[`isabelle/task.md`](isabelle/task.md) の進捗ツリー参照）。
-その過程で原文の誤りを 30 件見つけた（下記）。
+その過程で原文の訂正案を 30 件見つけた（下記）。
 
 ## ファイル構成（Isabelle 版）
 
@@ -54,10 +54,7 @@ Lean 版の構成は [`lean/spec.md`](lean/spec.md)、進捗は [`lean/task.md`]
 
 ## 原文への訂正案
 
-形式化の過程で見つかった原論文の誤記・訂正案は [`corrections.md`](corrections.md) に、原文 HTML への修正として集約している（著者フィードバック用）。**31 件**。
-
-いったん訂正案として書いたが、全数監査の結果**我々の側の誤りだった 17 件**は
-[`corrections-old.md`](corrections-old.md) に分離してある（著者に送ってはならない）。
+形式化の過程で見つかった原論文の訂正案は [`corrections.md`](corrections.md) に、原文 HTML への修正として集約している。**31 件**。
 
 ## ビルド
 
