@@ -160,9 +160,18 @@ private 実装済（エラー 0、既存 sorry 3 は不変）。**Lean 版は Is
 `entry_IncrFirstN_one_gp`（`nextR_IncrFirstN_ri`＝6.5-Red-IncrFirst-invariance:861 公開）。
 **罠: `rw [hIF]` は RHS の `Red (seg …)` 内の seg まで書き換える** → `conv_lhs` か
 添字一般化（∀ j 形）で回避。
-残り = 部品 3（gap_peel: Lng 帰納＋`Mark_nest_common_marked` 転送。
-`Mark_marked_isPTB` の Lean 対応物の確認から）・部品 4（part3_1 組み立て、
-layerB:20058–20155）。
+**全 4 部品完了・part (3-1) クローズ**（7de0170、8.1 の sorry 3→2）:
+部品 3（`Mark_gap_peel_gp`）= Lng 強帰納＋`Mark_nest_common_marked` の共通 scb 位置
+転送＋`scb_unique_decomp_unconditional`＋`scb_compose_dprin`＋`flatBT_injective`。
+principal 性は `marked_component_principal`+`Trans_Mark_mem_MarkedB`+`Mark_mem_T_B`
+（`Mark_marked_isPTB` 複製不要）。部品 4（組み立て）= 間隙非許容は `Adm_max`、
+Marked 事実は `c1_around_2` を再利用、`adm M j₀` で許容化恒等（`simp [transJm1, Adm, hadm]`）。
+**注意: f3b9906 のコミットメッセージは stale ファイル事故で「engine 2/3」だが中身は
+engine 3/3**（7de0170 のメッセージに訂正注記済）。cwd ずれ（lake build 後の
+`cd lean` 残留）で commit-msg を 2 回誤用— **lake build と git は同一コマンドで
+連結しない**こと。
+8.1 の残 sorry = part (4)（前剥がし ~3000 行基盤）と part (5)（kind0 基盤は
+8.3 で構築済み、Trans 内部量の seg-oper 転送が本体）。
 
 ---
 
