@@ -223,7 +223,21 @@ parent/Lng 形に落としてから作業する。
     `[propext, Classical.choice, Quot.sound]`。Isa: `m_6_7_*`。[r3]
   - 🚨 §6.8 降順性
     - 🚨🤖 `6.8-standard-slice-Br-descending` — 訂正 **A7**（「`M′` が標準形」は偽。
-      `Br(M′)` が降順が正）＋訂正 **A8**（`j₁` の式が off-by-one）。[r1]
+      `Br(M′)` が降順が正）＋訂正 **A8**（`j₁` の式が off-by-one）。[r2]
+      **Wave A-1 完了（r2, 全4 agent 緑）**: 兄弟ファイル 4 本新設（`6.8-d1pos-dispatch/
+      -base/-trmax/-le0.lean`、lake 3067 jobs 緑）。dispatch = assembly
+      `oper_d1pos_notbrle_LOW_take_eq`（Isa 21497–21960）＋leg
+      `rankSuccD1posLeg_of_bricks : 22 named Props → RankSuccD1posLeg`（Isa 23785–23967）、
+      end-to-end 合成 typecheck 済＝残作業は 22 Props の証明のみ。base 7 本（LOW_source_eq/
+      le0_confined/entry0_boundary/nextrel0_transfer/block_chain/le0_blockstarts/seg_mono）、
+      trmax 8 本（TrMax_eqI/TrMax_stop/le1_imp_entry1_le/nextR1_boundary_stop_of_prefix/
+      _d1pos/TrMax_seg_oper_d1pos_eq/_notbrle_uncapped/_brle_uncapped）、le0 10 本
+      （nextrel0_within〜ctx_tnc_capped、brle_capped 込み）全公開。
+      **即討ち可能な Props 3 本**: ctx_tnc_capped/nextR1_boundary_stop_d1pos は
+      le0/trmax の既存定理そのもの（引数順のみ違い）、ctx_period_tncstrict_uncapped は
+      notbrle_uncapped の ~40 行の系（Isa 20045–20087）。
+      **kimina 新罠**: 未ビルド module の import は import エラーを出さず header 全体を
+      無言で汚染（PS/ℕ まで壊れる）。新ファイルを import する前に lake build 必須。
       **wave1 で 39 エラー全修復＋組み立て完了**（rc=0・sorry 0・axioms 正常、4374 行）。
       ただし主定理 `standard_slice_Br_descending_of_d1pos` は仮定 `RankSuccD1posLeg`
       （＝Isabelle の `oper_d1pos_notbrle_*` brick 群、`pss_mechanized.thy` ~9302–21950 の
