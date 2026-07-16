@@ -405,16 +405,24 @@ parent/Lng 形に落としてから作業する。
     Isa: `m_8_2_strongmono_slice` (layerB:27757)+`_mono_reduced` (27395)。
     昇格候補: `TrMax_seg_ancestor_sms`/`P_take_*_sms`（§8.2 後続と 8.1(3-1) が使う）。
     rc=0・sorry 0・axioms 正常・#guard 5 本・python pool 2692 例 0 反例。[r1]
-  - 🚨🤖 `8.2-condV-rightmost-parent` — Isa: `m_8_2_condV_rightmost_parent`
-    （layerB:42048）、p 文 = pss_paper:1588。不足 helper 8 本（wf21_Br_eq_seg／
-    le0_monoT_seg_into_list／le0_above_parent／joint_row1_eq／branch_col0_val／
-    det_imp_joint_lt_TrMax／Joints_parent_nextR／Joints_nth。
-    monoT_hasParent0_last は 6.6-P-condAB に Lean 済）。Wave C-1 で単独 agent。
+  - ✅ `8.2-condV-rightmost-parent` — **完了（2026-07-17、Wave C-1）**。[r1]
+    p 文 = pss_paper:1588 と 1:1（PT_PS→monoT 規約、descendingB Bool 版）。
+    Isa: `m_8_2_condV_rightmost_parent`（layerB:42048）。helper 6 本公開
+    （wf21_Br_eq_seg／le0_monoT_seg_into_list／le0_above_parent／joint_row1_eq／
+    branch_col0_val／det_imp_joint_lt_TrMax）。Joints_nth 系は既存の
+    Joints_getD／Joints_nextR_FirstNodes／mono_hasParent_row0 で代替、
+    rtrancl 分解は全て le0 値特徴付けで置換。rc=0・sorry 0・axioms 正常。
   - 🚨🤖 `8.2-subexpr-component-Pred` — Isa: `m_8_2_subexpr_component_Pred`
     （layerB:29702、基盤 19256–29886 ≈10.6k 行）、p 文 = pss_paper:1523。
-    Wave C-1 = 下層 3 file（setup＋clause1／clause2·4 core＋keystone／Adm0 ctx 群）。
-    Adm0 組み立て（20828）・nogB（23780）・witness(wid) 機構（25365–29701）・
-    最終組み立ては C-2 以降。
+    **Wave C-1 完了（下層 3 file 全緑、lake 3086 jobs）**: `8.2-subexpr-setup`
+    （setup 10 連言＋clause1、Trans_eq_transC2_Adm0 は 7.4 の Mark 連鎖で代替）／
+    `8.2-subexpr-adm0-cores`（clause2/4 core＋lastbranch_eq_j1＋clause1_keystone）／
+    `8.2-subexpr-adm0-ctx`（ctx 11 本。私的 _sx: adm_TrMax(_succ)/nextR1_TrMax_fail/
+    row0_valley_last/row1_last_bound/t2_nonzero_condIIorIV — 昇格候補）。
+    lastbranch_eq_j1 が cores/ctx で二重（_sx 私的と cores 公開）→ dedup 候補。
+    **C-2 = Adm0 組み立て（20828）／gB＋nogB（23704–25364）／
+    clause34_of_witness（25365–27018）／wid 機構＋transport（28837–29604）**。
+    C-3 = Adm0_full・Admpos_of_wid・of_wid・wid・最終組み立て＋忠実 p 文 file。
   - `8.2-*` — `LastStep` の添字は A9 で訂正済みの形を使う。
     Isa の注意: `Pred_oper0` は標準入力で偽（反例 `M=(0,0)(1,1)(2,1)`）だが**定理は健全**
     （`Σ_B` 降下和ルートで回避）。**原文 §8 の証明には gap があるが、定理は真。**
