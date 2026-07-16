@@ -153,16 +153,11 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
     非タイル分岐と既存の条件(B)保存を合わせて Isabelle `m_6_6_reduced_oper` と同じ主張を得た。
     `check_lean.py` rc=0、sorry 0、公開定理の axioms は
     `[propext, Classical.choice, Quot.sound]`。[r17]
-  - ✅ `6.7-standard-prefix` — `STPS ⊆ TPS` を生成規則で証明し、欠落列数に関する強帰納法を実装。
-    真の始切片で `Pred M = oper M 1` を使って標準形を一段下げ、`Pred = take (Lng-1)` により
-    元と一段下の始切片が一致することを示した。Isa: `m_6_7_standard_prefix`。[r1]
-  - ✅ `6.7-standard-P-components` — rank 階層の単調性 `SkTPS k M → SkTPS (k+1) M` を、
-    対角列を一列延長して `Pred = oper _ 1` とする基底証人から証明。rank の外帰納と長さの
-    内強帰納を組み合わせ、非複項分岐は `nonmulti_fseq_1/2`、複項分岐は `P_fseq_1/2` で処理した。
-    末尾再帰では `Pcut > 0` から先頭ブロック列の正長さを導き、厳密な長さ減少を確立した。
-    Isa: `SkT_PS_mono`, `m_6_7_standard_P_components`。[r1]
-  - `6.7-standard-reduced` — `ST_PS ⊆ RT_PS`。Isa: `m_6_7_*`（e096355）。
-    **`has_gz⟹D` / GTWF ルートは偽。escape readback で gate-free 化したのが正解**
+  - ✅ §6.7 標準形 — `STPS ⊆ TPS` の始切片遺伝、rank 階層の単調性による単項成分保存、
+    および `STPS` の生成帰納法と `RTPS_oper` による簡約性 `STPS_RTPS` を完成。
+    対角列の簡約性は零列を分離し、正の末尾から `RTPS_diag_prefix` で復元した。
+    `check_lean.py` rc=0、sorry 0、公開定理の axioms は
+    `[propext, Classical.choice, Quot.sound]`。Isa: `m_6_7_*`。[r3]
   - `6.8-standard-slice-Br-descending` — 訂正 **A7**（「`M′` が標準形」は偽。`Br(M′)` が降順が正）
     ＋ 訂正 **A8**（`j₁` の式が off-by-one）
 

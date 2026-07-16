@@ -51,10 +51,7 @@
     - 🚨 系（許容化の `Red` 不変性） — `6.5-admof-Red-invariance`
     - 🚨 系（`Red` が基点を保つこと） — `6.5-Red-preserves-marked`
   - ✅ §6.6 簡約性[r17]
-  - 🚨 §6.7 標準形
-    - 🚨 命題（標準形の簡約性） — `6.7-standard-reduced`
-    - ✅ 命題（標準形の単項成分が標準形であること） — `6.7-standard-P-components`[r1]
-    - ✅ 命題（標準形の始切片への遺伝性） — `6.7-standard-prefix`[r1]
+  - ✅ §6.7 標準形[r3]
   - 🚨 §6.8 降順性
     - 🚨 命題（標準形の切片と `Br` の降順性の関係） — `6.8-standard-slice-Br-descending`
     - 🚨 命題（標準形の単項成分が降順であること） — `6.8-standard-P-descending`
