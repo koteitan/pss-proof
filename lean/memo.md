@@ -213,7 +213,14 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
     Lean の `Trans_nextAdm_original_counterexample` が形式的に排除する。全 `lake build` は
     3,036 jobs成功（キャッシュ済み1.00秒）。Isa: `Mark_Pred_multi_last`,
     `scb_addBT_left`, `m_7_4_Trans_Mark_Pred`。[r1]
-  - `7.4-Mark-Trans-repr` — §7.4 のキーストーン。Isa: `m_7_4_Mark_Trans_repr`（無仮定・`sorry`0）
+  - ✅ `7.4-Mark-Trans-repr` — `Lng M` の強帰納法で §7.4 のキーストーンを証明した。
+    `m=0` は `Mark M 0 = Trans M`、複項は最終 `P` 成分への縮小、単項境界は簡約条件(A)から
+    条件(I)/(III)/(VI)の網羅と2列評価、単項内部は `Red` 切片の基点・係数・4条件を移送し、
+    `Mark M m` と切片の `Trans` が同一 scb 文脈で同じ `c₂` を置換することに帰着した。
+    公開最終定理 `Mark_Trans_repr` は原文どおり `Marked M m`、`RTPS M`、`m < Lng M - 1`
+    から `Mark M m = Trans (seg M m (Lng M - 1))` を与える。Kimina は sorry 0、axioms は
+    `[propext, Classical.choice, Quot.sound]`。全 `lake build` は3,048 jobs成功（6.3秒）。
+    Isa: `m_7_4_Mark_Trans_repr`。[r1]
   - **§7.4 の `Mark` は簡約形の全列で principal-or-zero**（Isa: `y3y_Mark_princ`）。
     これは原文にない我々の補題だが、§7.4 を `RT_PS` 上で回すのに効く。**Lean でも先に用意しろ。**
 
