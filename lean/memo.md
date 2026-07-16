@@ -123,8 +123,9 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
     `check_lean.py` rc=0、sorry 0、公開定理の axioms は
     `[propext, Classical.choice, Quot.sound]`。Isa: `m_6_7_*`。[r3]
   - 🚨 §6.8 降順性
-    - 🚨 `6.8-standard-slice-Br-descending` — 訂正 **A7**（「`M′` が標準形」は偽。
+    - 🚨🤖 `6.8-standard-slice-Br-descending` — 訂正 **A7**（「`M′` が標準形」は偽。
       `Br(M′)` が降順が正）＋訂正 **A8**（`j₁` の式が off-by-one）。
+      codex 遺産 4083 行（sorry 0・エラー 39 残）の修復から。wave1 fable。
     - ✅ `6.8-standard-P-descending` — `STPS` の生成帰納法で証明。複項親では `P_fseq_1/2` により
       不変 prefix と最終成分の基本列へ分解し、prefix 間・prefix/tail 間は帰納仮定、tail 内は
       非複項成分の左列保存で閉じた。`check_lean.py` rc=0、sorry 0、公開定理の axioms は
@@ -232,8 +233,13 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
     `#guard` で固定。独立 Python モデルは `t'` 6種、`0≤u,v≤4`、深さ2までの一般右端文脈
     21,900例で一歩分岐・有界零化とも反例0。既存の全819列チェックサムは Lean/Python とも
     `531635224` のまま一致し、全 `lake build` は3,022 jobs成功。[r1]
-  - `8.1-condI-III-c1-around` — 訂正 **A20**（補題(1) は非簡約 1 列切片で偽）
-    ＋ **A21**（補題(5) の条件(III)で `j₀ᴺ = j′₀` が偽）
+  - 🚨🤖 `8.1-condI-III-c1-around` — 訂正 **A20**（補題(1) は非簡約 1 列切片で偽）
+    ＋ **A21**（補題(5) の条件(III)で `j₀ᴺ = j′₀` が偽）。5 部構成、
+    Isa: (1)/(2)/(3-2)=repr 応用、(3-1)/(4-1)/(4-2)=front-peel、(5)=M[n] 周期性。wave1 fable。
+  - 🚨🤖 `8.2-standard-slice-Red-strongmono` — 強単項性の定義導入（§8.2 の 6 項目がこれ待ち）。
+    Isa: `p_8_2_standard_slice_Red_strongmono`。wave1 fable。
+  - 🚨🤖 `8.7-const00-Trans` — 8.6-const2nd-Trans と同族（完成済みの型を流用）。
+    Isa: `p_8_7_const00_Trans`。wave1 fable。
   - `8.2-*` — `LastStep` の添字は A9 で訂正済みの形を使う。
     Isa の注意: `Pred_oper0` は標準入力で偽（反例 `M=(0,0)(1,1)(2,1)`）だが**定理は健全**
     （`Σ_B` 降下和ルートで回避）。**原文 §8 の証明には gap があるが、定理は真。**
