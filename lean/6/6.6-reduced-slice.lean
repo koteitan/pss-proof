@@ -60,6 +60,26 @@ theorem RTPS_slice (M : PS) (j₀ j₁ : ℕ) (hM : RTPS M)
   rw [← heq]
   exact RTPS_iterate_Pred M k hM
 
+/-- Strong form used by §7.4: every nonempty trunk-anchored initial slice of
+a reduced sequence is reduced; no lower bound involving `TrMax` is needed. -/
+theorem RTPS_initial_slice (M : PS) (m : ℕ) (hM : RTPS M)
+    (hm : m ≤ Lng M - 1) : RTPS (seg M 0 m) := by
+  have hh := hM
+  simp only [RTPS, reduced, Bool.and_eq_true, beq_iff_eq] at hh
+  have hMT : TPS M := by simpa [TPS] using hh.1
+  have hpos : 0 < Lng M := List.length_pos_of_ne_nil hMT
+  let k := Lng M - 1 - m
+  have hk : k < Lng M := by dsimp [k]; omega
+  have hremain : Lng M - k = m + 1 := by dsimp [k]; omega
+  have hmL : m < Lng M := by omega
+  have htakeSeg : M.take (m + 1) = seg M 0 m := by
+    simpa using (seg_eq_take_drop_adm M 0 m (Nat.zero_le _) hmL).symm
+  have heq : (Pred^[k]) M = seg M 0 m := by
+    rw [iterate_Pred_take M k hk, hremain, htakeSeg]
+  rw [← heq]
+  exact RTPS_iterate_Pred M k hM
+
 #print axioms RTPS_slice
+#print axioms RTPS_initial_slice
 
 end PSS

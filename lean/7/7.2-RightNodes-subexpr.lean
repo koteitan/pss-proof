@@ -463,6 +463,57 @@ theorem rightNodes_subexpr {t t₀ : BT} {v : ℕ} {s b : List Sym}
       exact Prod.ext hfst hsnd
   exact ⟨t₁, ht₁, hflat₁, hnum, huniq⟩
 
+/-- Principality-free form of the `RightNodes` splitting engine.  The body
+inserted below `D_v` may be a multi-term; only its Buchholz well-formedness is
+needed by downstream uses. -/
+theorem rightNodes_subexpr_general {t t₀ : BT} {v : ℕ} {s b : List Sym}
+    (_ht : t ∈ T_B) (hb : ∀ x ∈ b, x = .rp) (_ht₀ : t₀ ∈ T_B)
+    (hocc : flatBT t₀ =
+      s ++ flatBT (Dprin (v : ℕ∞) BZero) ++ b) :
+    ∃! aa : List ℕ × List ℕ,
+      RightNodes (spineSub t₀ t) = aa.1 ++ [v] ++ aa.2 ∧
+      RightNodes t₀ = aa.1 ++ [v] ∧
+      RightNodes (Dprin (v : ℕ∞) t) = [v] ++ aa.2 := by
+  have ht₀ne : t₀ ≠ BZero := by
+    intro hz
+    subst t₀
+    have hlen := congrArg List.length hocc
+    simp [BZero, Dprin, flatBT, flatBP] at hlen
+    omega
+  have hrn : RightNodes (spineSub t₀ t) =
+      RightNodes t₀ ++ RightNodes t :=
+    rightNodes_spineSub t₀ t ht₀ne
+  obtain ⟨a₀, hrn₀⟩ := rightNodes_ends_at_occurrence hocc hb
+  let a₁ := RightNodes t
+  have hrnD : RightNodes (Dprin (v : ℕ∞) t) = [v] ++ a₁ := by
+    simp [a₁, Dprin, RightNodes, rightNodesList, rightNodesBP]
+  have hrnSub : RightNodes (spineSub t₀ t) = a₀ ++ [v] ++ a₁ := by
+    rw [hrn, hrn₀]
+  refine ⟨(a₀, a₁), ⟨hrnSub, hrn₀, hrnD⟩, ?_⟩
+  intro aa haa
+  have hfst : aa.1 = a₀ :=
+    List.append_cancel_right (haa.2.1.symm.trans hrn₀)
+  have hsnd : aa.2 = a₁ :=
+    List.append_cancel_left (haa.2.2.symm.trans hrnD)
+  exact Prod.ext hfst hsnd
+
+/-- Flattening companion to `rightNodes_subexpr_general`. -/
+theorem flat_spineSub_at_dprin_occurrence {t₀ c : BT} {v : ℕ}
+    {s b : List Sym}
+    (hocc : flatBT t₀ =
+      s ++ flatBT (Dprin (v : ℕ∞) BZero) ++ b)
+    (hb : ∀ x ∈ b, x = .rp) :
+    flatBT (spineSub t₀ c) =
+      s ++ flatBT (Dprin (v : ℕ∞) c) ++ b := by
+  apply flat_spineSub_at_occurrence hocc hb
+  intro hz
+  subst t₀
+  have hlen := congrArg List.length hocc
+  simp [BZero, Dprin, flatBT, flatBP] at hlen
+  omega
+
 #print axioms rightNodes_subexpr
+#print axioms rightNodes_subexpr_general
+#print axioms flat_spineSub_at_dprin_occurrence
 
 end PSS

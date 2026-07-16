@@ -228,6 +228,15 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
     帰納仮定と一段輸送の位置を同期した。公開定理 `Trans_Mark_seg` は原文どおりの一意存在を
     与え、専用監査は sorry 0、axioms は `[propext, Classical.choice, Quot.sound]`。
     全 `lake build` は3,049 jobs成功（3.4秒）。Isa: `m_7_4_Trans_Mark_seg`。[r1]
+  - ✅ `7.4-RightNodes-Mark` — §7.2 の `RightNodes` 部分表現補題について、証明で未使用だった
+    挿入本体の principal 仮定を外した一般版と flatten 輸送版を公開した。さらに任意の非空な
+    先頭切片が `RTPS` を保つ強い `RTPS_initial_slice`、簡約単項列の `Trans` が左端第1成分を
+    外側添字に持つ `Trans_mono_leftend_form` を証明した。終切片を `Red` した単項列へ後者を
+    適用して `Mark M m = D_(M₁,m) t` を固定し、`Trans_Mark_seg` の共通 scb 位置で `D_(M₁,m) 0`
+    を同じ本体 `t` に置換した。`flatBT` の単射で置換後を `Trans M` と同定して3本の
+    `RightNodes` 分解を得た。変更3ファイルの専用監査はすべて sorry 0、公開定理の axioms は
+    `[propext, Classical.choice, Quot.sound]`。全 `lake build` は3,050 jobs成功（5.2秒）。
+    Isa: `m_7_4_RightNodes_subexpr_gen`, `seg_0_RT_PS`, `m_7_4_RightNodes_Mark`。[r1]
   - **§7.4 の `Mark` は簡約形の全列で principal-or-zero**（Isa: `y3y_Mark_princ`）。
     これは原文にない我々の補題だが、§7.4 を `RT_PS` 上で回すのに効く。**Lean でも先に用意しろ。**
 
