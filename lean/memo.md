@@ -123,9 +123,14 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
     `check_lean.py` rc=0、sorry 0、公開定理の axioms は
     `[propext, Classical.choice, Quot.sound]`。Isa: `m_6_7_*`。[r3]
   - 🚨 §6.8 降順性
-    - 🚨🤖 `6.8-standard-slice-Br-descending` — 訂正 **A7**（「`M′` が標準形」は偽。
-      `Br(M′)` が降順が正）＋訂正 **A8**（`j₁` の式が off-by-one）。
-      codex 遺産 4083 行（sorry 0・エラー 39 残）の修復から。wave1 fable。
+    - 🚨 `6.8-standard-slice-Br-descending` — 訂正 **A7**（「`M′` が標準形」は偽。
+      `Br(M′)` が降順が正）＋訂正 **A8**（`j₁` の式が off-by-one）。[r1]
+      **wave1 で 39 エラー全修復＋組み立て完了**（rc=0・sorry 0・axioms 正常、4374 行）。
+      ただし主定理 `standard_slice_Br_descending_of_d1pos` は仮定 `RankSuccD1posLeg`
+      （＝Isabelle の `oper_d1pos_notbrle_*` brick 群、`pss_mechanized.thy` ~9302–21950 の
+      数千行）付きの**条件付き**。残作業=この producer 場合分けの移植のみ。
+      昇格候補(needs): `STPS_exists_rank`(§6.7 の困難方向)/`take_pred_eq_dropLast`/
+      `P_last_anchor` API/`seg_of_seg`（現在 `*_68` private）。
     - ✅ `6.8-standard-P-descending` — `STPS` の生成帰納法で証明。複項親では `P_fseq_1/2` により
       不変 prefix と最終成分の基本列へ分解し、prefix 間・prefix/tail 間は帰納仮定、tail 内は
       非複項成分の左列保存で閉じた。`check_lean.py` rc=0、sorry 0、公開定理の axioms は
@@ -233,13 +238,25 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
     `#guard` で固定。独立 Python モデルは `t'` 6種、`0≤u,v≤4`、深さ2までの一般右端文脈
     21,900例で一歩分岐・有界零化とも反例0。既存の全819列チェックサムは Lean/Python とも
     `531635224` のまま一致し、全 `lake build` は3,022 jobs成功。[r1]
-  - 🚨🤖 `8.1-condI-III-c1-around` — 訂正 **A20**（補題(1) は非簡約 1 列切片で偽）
-    ＋ **A21**（補題(5) の条件(III)で `j₀ᴺ = j′₀` が偽）。5 部構成、
-    Isa: (1)/(2)/(3-2)=repr 応用、(3-1)/(4-1)/(4-2)=front-peel、(5)=M[n] 周期性。wave1 fable。
+  - 🚨 `8.1-condI-III-c1-around` — 訂正 **A20**（補題(1) は非簡約 1 列切片で偽）
+    ＋ **A21**（補題(5) の条件(III)で `j₀ᴺ = j′₀` が偽）。5 部構成。[r1]
+    **wave1 で (1)(2)(3-2) 緑**（(1) は A20 訂正の完全形。反例定理
+    `c1_around_1_original_false`/`c1_around_5_original_false` も機械証明済み）。
+    **sorry 残 3**: (3-1)=`Mark_gap_peel` engine（Isa: `Mark_gap_rightmost_peel`+
+    `Trans_gap_2tower`+`Mark_nest_common_marked` 移送、pss_wip.thy 19700–20155）／
+    (4-1)(4-2)=Isabelle part4 の front-peel 基盤 ~3000 行／(5)=§8.3 kind0 oper-block 基盤
+    （`m_8_1_c1_around_part5`, pss_wip.thy 18176）。目標形は訂正後で確定済み＝後続 wave は
+    in-place で sorry を潰すだけ。
+    ⚠️重複警告: `adm_row1_ancestry`/`row1_implies_row0`/`Trans_singleton` が複数ファイルで
+    private 重複 → PSS/Adm・PSS/Defs・PSS/Trans へ昇格すべき。
   - 🚨🤖 `8.2-standard-slice-Red-strongmono` — 強単項性の定義導入（§8.2 の 6 項目がこれ待ち）。
-    Isa: `p_8_2_standard_slice_Red_strongmono`。wave1 fable。
-  - 🚨🤖 `8.7-const00-Trans` — 8.6-const2nd-Trans と同族（完成済みの型を流用）。
-    Isa: `p_8_7_const00_Trans`。wave1 fable。
+    Isa: `p_8_2_standard_slice_Red_strongmono`。wave1 で classifier 誤爆により未起動 →
+    wave1b (wf_e55eee93-8eb) で再走中。
+  - ✅ `8.7-const00-Trans` — `Trans (replicate (j₁+1) (u,u)) = multBT (D_u 0) (if u=0 then j₁
+    else j₁+1)`。Isa `p_8_7_const00_Trans` と逐語一致を親が確認。定数列は親子辺ゼロ
+    → RedCondA/B → RTPS、`Pcut = j₁`、j₁ 帰納で multi 分岐が 1 列ずつ `D_u 0` を積む
+    （Isa: `m_8_7_cnst_Trans`, pss_wip.thy 16005）。rc=0・sorry 0・axioms 正常・
+    python audit 81 例 0 反例（`python/const00_trans_audit.py`）。[r1]
   - `8.2-*` — `LastStep` の添字は A9 で訂正済みの形を使う。
     Isa の注意: `Pred_oper0` は標準入力で偽（反例 `M=(0,0)(1,1)(2,1)`）だが**定理は健全**
     （`Σ_B` 降下和ルートで回避）。**原文 §8 の証明には gap があるが、定理は真。**

@@ -39,7 +39,7 @@
   - ✅ §6.6 簡約性[r17]
   - ✅ §6.7 標準形[r3]
   - 🚨 §6.8 降順性
-    - 🚨🤖 命題（標準形の切片と `Br` の降順性の関係） — `6.8-standard-slice-Br-descending`
+    - 🚨 命題（標準形の切片と `Br` の降順性の関係） — `6.8-standard-slice-Br-descending`[r1]
     - ✅ 命題（標準形の単項成分が降順であること） — `6.8-standard-P-descending`[r1]
 
 - 🚨 **§7 Buchholz の表記系への翻訳**
@@ -58,7 +58,7 @@
   - 🚨 §8.1 条件(I)の下での展開規則
     - ✅ 補題（公差 `(1,1)` のペア数列の `Trans` の基本性質） — `8.1-diagSeq-Trans` [r1]
     - ✅ 系（`Pred` と公差 `(1,1)` のペア数列の `Trans` の基本性質） — `8.1-Pred-diagSeq-Trans` [r1]
-    - 🚨🤖 補題（条件(I)か(III)の下での `c₁` 前後の具体表示） — `8.1-condI-III-c1-around`
+    - 🚨 補題（条件(I)か(III)の下での `c₁` 前後の具体表示） — `8.1-condI-III-c1-around`[r1]
     - 🚨 命題（条件(I)の下での `Trans` と基本列の交換関係） — `8.1-Trans-fseq-condI`
   - 🚨 §8.2 強単項性
     - 🚨🤖 命題（標準形の直系先祖による切片の簡約化の強単項性） — `8.2-standard-slice-Red-strongmono`
@@ -90,7 +90,7 @@
     - ✅ 補題（順序数項の末尾単項の零化可能性） — `8.6-trailing-principal-annihilable` [r1]
     - 🚨 命題（条件(VI)の下での `Trans` と基本列の交換関係） — `8.6-Trans-fseq-condVI`
   - 🚨 §8.7 主結果
-    - 🚨🤖 補題（公差 `(0,0)` のペア数列の `Trans` の基本性質） — `8.7-const00-Trans`
+    - ✅ 補題（公差 `(0,0)` のペア数列の `Trans` の基本性質） — `8.7-const00-Trans`[r1]
     - 🚨 補題（基本列の降下性） — `8.7-fseq-descend`
     - 🚨 補題（順序数項の再帰構造） — `8.7-OT-scb-recursive`
     - 🚨 補題（順序数項の共終数の遺伝性） — `8.7-OT-dom-hereditary`
