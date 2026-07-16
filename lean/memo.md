@@ -249,9 +249,18 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
     in-place で sorry を潰すだけ。
     ⚠️重複警告: `adm_row1_ancestry`/`row1_implies_row0`/`Trans_singleton` が複数ファイルで
     private 重複 → PSS/Adm・PSS/Defs・PSS/Trans へ昇格すべき。
-  - 🚨🤖 `8.2-standard-slice-Red-strongmono` — 強単項性の定義導入（§8.2 の 6 項目がこれ待ち）。
-    Isa: `p_8_2_standard_slice_Red_strongmono`。wave1 で classifier 誤爆により未起動 →
-    wave1b (wf_e55eee93-8eb) で再走中。
+  - 🚨 `8.2-standard-slice-Red-strongmono` — **⛔6.8 のみ待ち**。[r1]
+    §8.2 語彙を計算可能に定義済み: `cdomB`/`descendingB`/`strongMono`/`DTPS`(+Decidable)。
+    数値検証: 実標準形プール 442 形×先祖切片 13,264 例 0 違反（maxlen 13, 成分≤15,
+    `python/strongmono_audit.py`）＋全 69,904 列チェックサム一致＋#guard 9 本。
+    仮定明示版 `standard_slice_Red_strongmono_of_Br_descending` は **sorry-free**。
+    忠実版の残 sorry はちょうど 1 個＝§6.8 命題そのもの（private
+    `standard_slice_Br_descending_dep` に単離）。6.8 が緑になったら import＋
+    `descendingB_iff` ブリッジで差し替えるだけ（getD 形を意図的に一致させてある）。
+    後続 §8.2 の 6 項目はこのファイルから `strongMono`/`DTPS` を import する。
+    昇格候補: `Br_IncrFirstN`/`descendingB_of_map_IncrFirstN`/`TrMax_IncrFirstN` 等
+    （現在 `*_sm` private）。Isa: `m_8_2_standard_slice_Red_strongmono`
+    (layerB/pss_wip.thy:15020)。
   - ✅ `8.7-const00-Trans` — `Trans (replicate (j₁+1) (u,u)) = multBT (D_u 0) (if u=0 then j₁
     else j₁+1)`。Isa `p_8_7_const00_Trans` と逐語一致を親が確認。定数列は親子辺ゼロ
     → RedCondA/B → RTPS、`Pcut = j₁`、j₁ 帰納で multi 分岐が 1 列ずつ `D_u 0` を積む

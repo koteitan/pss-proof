@@ -61,7 +61,7 @@
     - 🚨 補題（条件(I)か(III)の下での `c₁` 前後の具体表示） — `8.1-condI-III-c1-around`[r1]
     - 🚨 命題（条件(I)の下での `Trans` と基本列の交換関係） — `8.1-Trans-fseq-condI`
   - 🚨 §8.2 強単項性
-    - 🚨🤖 命題（標準形の直系先祖による切片の簡約化の強単項性） — `8.2-standard-slice-Red-strongmono`
+    - 🚨 命題（標準形の直系先祖による切片の簡約化の強単項性） — `8.2-standard-slice-Red-strongmono`[r1] ⛔6.8
     - 🚨 補題（強単項性の切片への遺伝性） — `8.2-strongmono-slice`
     - 🚨 補題（部分表現の単項成分と `Pred` の関係） — `8.2-subexpr-component-Pred`
     - 🚨 補題（強単項性の下での部分表現の単項成分の基本性質） — `8.2-subexpr-component-strongmono`
