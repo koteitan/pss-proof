@@ -1,5 +1,5 @@
 import «6».«6.5-Red-IncrFirst-invariance»
-import «6».«6.5-Red-le-invariance»
+import «6».«6.5-Red-le-core»
 import «6».«6.2-multi-criterion»
 
 /-!

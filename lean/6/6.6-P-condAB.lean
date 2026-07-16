@@ -1,5 +1,5 @@
 import «6».«6.6-P-preserves-reduced»
-import «6».«6.5-Red-le-invariance»
+import «6».«6.5-Red-le-core»
 
 /-!
 # §6.6 `P` ブロックと係数条件 (A), (B)

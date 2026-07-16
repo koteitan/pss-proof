@@ -106,53 +106,11 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
     幹を `TrMax` の最初の不成立点として解析した。枝成分内の行 0 祖先関係を元の列へ移送し、
     `FirstNodes` 増加・`Joints` 非増加・係数非増加、および単項性の切片遺伝を証明。
     訂正 **A3** に従い、偽である `Joints` の狭義減少は主張しない。Isa: `m_6_4_*`。[r7]
-  - §6.5 簡約化 — **ここが A4 の震源**。
-    - ✅ `6.5-Red-welldefined` — `P` 成分・`N_J`・`coreReduce` の全再帰先で `nu` の厳密減少を
-      証明し、`nu M` より大きい任意の燃料に対する `RedAux` の値の一致と存在一意性を証明。[r2]
-    - ✅ `6.5-Red-IncrFirst-invariance` — cut 以上の上段値だけを 1 増加する `bumpAt` を導入し、
-      親子・幹・枝・`P`・`redNJ` の対応と三種の再帰 cut 継承を証明。到達する再帰先がすべて
-      非複項であることを使う `nu` 強帰納法で `Red (bumpAt X n) = Red X` を示し、
-      `coreReduce (IncrFirst M) = bumpAt (coreReduce M) m₁₀` から最終定理を導いた。[r2]
-    - ✅ `6.5-Lng-Red-invariance` — `RedAux` の全燃料に一般化し、複項成分・枝成分・
-      `coreReduce` の全分岐で長さ保存を帰納証明。[r1]
-    - ✅ `6.5-Red-preserves-zeroT` — 長さ1の非零項について `m₁>0` 分岐を直接解析し、
-      簡約後の下段左端が非零のままであることから両方向を証明。[r1]
-    - ✅ `6.5-monoT-Red` — `coreReduce` の正の `m₁₀` 対角アンカーについて、Red 後の
-      branch tail の row-0 値がすべてアンカーより真に大きいことを証明。左端最小性、
-      `np ≤ joint+1`、`m₁₀ ≤ joint` を組み合わせ、終切片が `TPS ∧ monoT` であることを導いた。[r1]
-    - ✅ `6.5-Red-idempotence` — **原文は `T_PS` で偽（A4）**なので `RT_PS` 上に制限。
-      `RTPS M` から定義展開だけで `Red M = M` を取り出して冪等性を示した。原文版の反例
-      `M=(0,0)(0,2)` は `by decide` で機械証明し、`Red(Red M) ≠ Red M` を固定した。[r1]
-    - `6.5-Red-le-invariance` / `6.5-Red-preserves-monoT` / `6.5-P-Red-equivariance`
-      — 同じく `T_PS` では偽。訂正 A4 の `anchoredSlice` に制限。Isa: `m_6_5_Red_le_final`,
-        `m_6_5_monoCong`（勝ち筋＝閉形式 `Red M = rebase(M)` に持ち込む）
-    - ✅ `6.5-Red-preserves-monoT` — A4 の正確な訂正版に従い `anchoredSlice` 上の同値を証明。
-      A4 非依存の前向き定理は `nu` 強帰納法で、core 非 trunk の枝ブロック下界、row-0 shift の
-      再帰、正の `m₁₀` 分岐の `monoT_Red_m10pos` を組み合わせた。係留切片が零項または単項で
-      あることから逆向きを導き、原文 `TPS` 版の反例 `(0,0)(0,1)` も `decide` で固定した。[r1]
-    - ✅ `6.5-P-Red-equivariance` — `anchoredSlice` とその `Red` がともに非複項であることを上の
-      零項・単項分解と単項性保存から示し、`P_nonmulti_eq` で両辺を `[Red M]` に簡約した。
-      原文 `TPS` 版の同じ反例 `(0,0)(0,1)` も `decide` で固定した。[r1]
-    - ✅ `6.5-Red-Pred-commute` — `Pred` による最終列削除を `P` 成分、`coreReduce`、`TrMax`、
-      `Br`、`Joints`、`redNJ` へ順に輸送した。core 非 trunk では枝ブロック列の最後だけが、
-      長さ 1 なら消滅し、長さ 2 以上なら `Pred` される残差補題を証明。`nu` 強帰納法で複項の
-      最終 `P` 成分、各 `redNJ`、非 core の `coreReduce` に帰納仮定を適用し、全分岐を閉じた。
-      公開定理 `Red_Pred` は sorry 0、axioms は
-      `[propext, Classical.choice, Quot.sound]`。独立 Python モデルは長さ4・成分0..2の全7,380列で
-      反例0。全 `lake build` は3,023 jobs成功（キャッシュ済み4.50秒）。
-      Isa: `m_6_5_Red_Pred`。[r1]
-    - ✅ `6.5-Red-fseq-commute` — 訂正 A4 の `anchoredSlice` 上で `Red_oper` を証明。
-      `Red M = rebaseRow0 M₀₀ M₁₀ M` の閉形式と、第0行再基底が `oper` と交換する補題を
-      `oper` の非タイル・真正タイル両分岐から示した。反復 `Pred` ブロック分岐は
-      `nonmulti_fseq_1` と `Red_Pred`、非複項分岐は `nonmulti_fseq_2` と条件(A)保存を使用し、
-      `RTPS_oper` で再基底側の固定性を閉じた。`check_lean.py` rc=0、sorry 0、公開定理の axioms は
-      `[propext, Classical.choice, Quot.sound]`。Isa: `m_6_5_Red_oper_final`。[r1]
-    - 🚧 `6.5-Red-le-invariance` — `rebaseRow0` による親子関係不変性、係数条件(A)の切片・枝への
-      遺伝、core の trunk/非-trunk 復元、正の `m₁₀` の枝ブロック値と終切片再構成を完成。
-      長さ強帰納法で Isabelle `m_6_5_Red_rebase` に対応する
-      `Red_rebase_nonmulti` を証明し、`RedCondA + nonmulti` 下の `leR` 不変性まで接続済み。
-      A4 の無条件 `anchoredSlice` 形に残るのは、§6.6 reduced 及び §6.7 standard の
-      `RedCondA` 前提鏖のみ。[r0]
+  - ✅ §6.5 簡約化 — `Red` の停止性・閉形式・長さ/零項/単項性・`P`・冪等性・`Pred`・基本列を
+    形式化。偽である原文の大域形は訂正 A4 に従い `anchoredSlice` へ制限し、標準形の簡約性から
+    条件(A)を供給して `leR` と `nextR` の不変性を証明した。そこから `AdmSet`・`Adm`・`Marked`
+    の保存も導出。全公開定理は `check_lean.py` rc=0、sorry 0、axioms は
+    `[propext, Classical.choice, Quot.sound]`。Isa: `m_6_5_*_final`。[r16]
   - ✅ §6.6 簡約性 — `RTPS ↔ RedCondA ∧ RedCondB`、切片・`P`・係数・左端・`Red²` の
     全補題に加え、基本列保存 `RTPS_oper` を完成。真正タイルの条件(A)は row 0 と row 1 を分離し、
     row 1 の正シフトを prefix、ブロック先頭、ブロック内親、prefix 逃避親に分類して親を読み戻した。

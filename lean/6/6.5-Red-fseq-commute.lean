@@ -1,4 +1,4 @@
-import «6».«6.7-standard-reduced»
+import «6».«6.5-Red-le-invariance»
 
 /-!
 # §6.5 命題（`Red` と基本列の可換性）
@@ -177,15 +177,6 @@ private theorem oper_rebaseRow0_commute_rf (M : PS) (d n : ℕ)
     change oper Y n = rebaseRow0 c d (oper M n)
     rw [hopY, hopM, hpred]
 
-private theorem anchoredSlice_RedCondA_rf (M : PS)
-    (hM : anchoredSlice M) : RedCondA M = true := by
-  rcases hM with ⟨S, a, b, hsource, hab, hbL, hanc, rfl⟩
-  have hR : RTPS S := by
-    rcases hsource with hST | hRT
-    · exact STPS_RTPS S hST
-    · exact hRT.1
-  exact RedCondA_seg S a b hab hbL (RTPS_condAB S hR).1
-
 private theorem RedCondA_oper_rf (M : PS) (n : ℕ) (hM : TPS M)
     (hA : RedCondA M = true) (hn : 1 ≤ n) :
     RedCondA (oper M n) = true := by
@@ -215,7 +206,7 @@ theorem Red_oper (M : PS) (n : ℕ) (hM : anchoredSlice M) (hn : 1 ≤ n) :
     oper (Red M) n = Red (oper M n) := by
   have hMT : TPS M := anchoredSlice_TPS M hM
   have hnm : multiT M = false := anchoredSlice_nonmulti M hM
-  have hA : RedCondA M = true := anchoredSlice_RedCondA_rf M hM
+  have hA : RedCondA M = true := anchoredSlice_RedCondA M hM
   by_cases hz : zeroT M = true
   · have hL : Lng M = 1 := by
       have hh := hz
