@@ -250,8 +250,16 @@ parent/Lng 形に落としてから作業する。
       period_boundary_cleMB（21135）＋ctx_notbrleNp/verbatim（20172/20322）。
       セル支度の boundary trio（undercut/mLmin/cle、20488–20583）も未移植。
       dedup 候補: anchor_lt_of_uniform_witness（_ra/_rb 二重私的）、d1pos_agree
-      （_dt/_pd 二重）、TPS_of_P_multi（三重）、trunk_le1_pd（新規、公開価値あり）、
-      TrMax_seg_oper_d1pos_eq_regA_nb（Isa 15218、規約 A-3 が使うかも）。
+      （_dt/_pd 二重）、TPS_of_P_multi（三重→五重）、trunk_le1_pd（新規、公開価値あり）、
+      TrMax_seg_oper_d1pos_eq_regA（_nb/_ca 二重、Isa 15218）。
+      **Wave A-3 3/4 完了（r4, lake 3074 jobs）**: `6.8-d1pos-cell-regA/-regB/
+      -boundary.lean` 緑＝**Props 20/22**（残 = LOW_take_eq_periodic と
+      low_anchor_shamt0 の 2 つ、担当 agent が月次 spend limit で死亡）。
+      regA セル＋ctx_notbrleNp 対／regB セル（clt_regB 呼びは cleMB 仮定で冗長と
+      判明、statement 不変）／boundary セル＋undercut/mLmin/cle/cleMB。
+      periodic の書きかけ（8 エラー）は `6.8-d1pos-cell-periodic.lean.draft` に退避、
+      resume で再走中。全 22 落ちたら親が最終配線（22 _holds →
+      `rankSuccD1posLeg_of_bricks` → 無条件版）→ 6.8 ✅＋8.2 ブリッジ。
       **wave1 で 39 エラー全修復＋組み立て完了**（rc=0・sorry 0・axioms 正常、4374 行）。
       ただし主定理 `standard_slice_Br_descending_of_d1pos` は仮定 `RankSuccD1posLeg`
       （＝Isabelle の `oper_d1pos_notbrle_*` brick 群、`pss_mechanized.thy` ~9302–21950 の
