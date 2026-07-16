@@ -147,69 +147,12 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
       `Red_rebase_nonmulti` を証明し、`RedCondA + nonmulti` 下の `leR` 不変性まで接続済み。
       A4 の無条件 `anchoredSlice` 形に残るのは、§6.6 reduced 及び §6.7 standard の
       `RedCondA` 前提鏖のみ。[r0]
-  - ✅ `6.6-one-column` — 任意の単要素に対し `Red [(a,b)] = [(b,b)]` を閉形式から導き、
-    長1の簡約形が対角単要素と一致することを証明。Isa: `m_6_6_oneColumn`。[r1]
-  - ✅ `6.6-reduced-slice` — `Red_Pred` から簡約形の `Pred` 閉性 `RTPS_Pred` を導き、
-    `Pred` の反復が `take (Lng M-k)` と一致することを帰納証明した。訂正 A5 の始点 `j₀=0`
-    の下で始切片を反復 `Pred` と同定し、簡約性を輸送。実際には任意の非空始切片について成立する。
-    公開定理 `RTPS_slice` は sorry 0、axioms は
-    `[propext, Classical.choice, Quot.sound]`。独立 Python モデルの簡約始切片447件で反例0。
-    全 `lake build` は3,024 jobs成功（キャッシュ済み2.24秒）。
-    Isa: `herd_6_6_reduced_slice`。[r1]
-  - ✅ `6.6-ancestor-slice-Red-IncrFirst` — 訂正 **A2**（反復回数の添字
-    `m` が未定義 → `j'₀`）を反映。直系先祖で係留した切片 `S` の単項性と
-    `RedCondA` を導き、`Red S = rebaseRow0 (entry S 0 0) (entry S 1 0) S`
-    の閉形式から `S = IncrFirstN (M₀,j₀-M₁,j₀) (Red S)` を列ごとに復元。
-    `Red S` の簡約性は `Red_nonmulti_RTPS`、単項性は
-    `Red_preserves_monoT_forward` で得た。Kimina `rc=0`, sorry 0、axioms は
-    `[propext, Classical.choice, Quot.sound]`。Isa: `m_6_6_ancestor_slice_Red_IncrFirst`。[r1]
-  - ✅ `6.6-RT-image-of-Red` — 訂正 **A41** に従い、`Red` を `T_PS` に制限した像を
-    `RedImage` として定義し、成立する包含 `RT_PS ⊆ RedImage` を証明。逆包含は
-    `(0,0)(0,2)` の像 `(0,0)(2,2)` が非簡約である反例を `decide` で固定した。[r1]
-  - ✅ `6.6-reduced-iff-condAB` — §6.6 のキーストーン
-    `RTPS M ↔ RedCondA M = true ∧ RedCondB M = true` を無条件で完成。逆向きは複項の
-    `P` 成分への長さ強帰納と非複項の `Red_rebase_nonmulti`、順向きは
-    `Pred` と末尾条件の同一強帰納で証明した。非幹分岐は RED2 の最終枝を取り出し、
-    その簡約像に row-1 左端まで対角接頭辞を補った core 列が元より真に短いことを
-    `branchNP` / `FirstNodes` / `IdxSum` から導いて帰納仮定を適用。枝内の親と係数を
-    `seg` で戻し、row-0 跨ぎは親の一意性、row-1 跨ぎは最後の結節と幹の対角性で処理。
-    公開定理 `RTPS_condAB`, `RTPS_iff_condAB` は Kimina `rc=0`, sorry 0、axioms は
-    `[propext, Classical.choice, Quot.sound]`。`python/red_66_audit.py` の 7,380 列で反例 0、
-    全 `lake build` は 3,038 jobs 成功（31.45秒）。Isa: `p_6_6_reduced_iff_cond`,
-    `kst_reduced_imp_condAB_uncond`。[r1]
-  - ✅ `6.6-condAB-coeff` — 親なし上段係数の零性を `parent_exists_1`、親なし下段係数の零性を
-    `P` 成分の左端と成分内単項性から証明。燃料付き `le1Aux` の親辺延長も機械化し、条件(A)下の
-    上段添字上界、条件(B)を加えた上下段比較、祖先関係に欠損がある場合の狭義添字上界を
-    強帰納法でまとめた。Isa: `m_6_6_condAB_coeff`, `condAB_row1_noparent_zero`。[r1]
-  - ✅ `6.6-Red-leftend` — `nu` 強帰納法で `Red` の零・複項・core・row-0 shift・正係数の全分岐を
-    解析し、row-1 左端の保存を証明。先頭対角 prefix については `coreReduce` 上の連続 row-1 辺を
-    構成して `TrMax` まで持ち上げ、正係数出力の添字を直接計算して prefix の最終列を固定した。
-    Isa: `m_6_6_Red_leftend_1`, `_2`。[r1]
-  - ✅ `6.6-reduced-coeff` — `RTPS_iff_condAB` で簡約列から条件 (A)(B) を取り出し、
-    列番号の強帰納を row-1 親あり、row-0 親のみ、両親なしに分岐。
-    row-1 親ありは (A) と row-0 祖先上の狭義増加、row-0 親のみは
-    `parent_exists_2` の対偶、両親なしは (B) で
-    `entry M 1 j ≤ entry M 0 j` を得た。Kimina `rc=0`, sorry 0、axioms は
-    `[propext, Classical.choice, Quot.sound]`。長さ3・係数0..4 の全 16,275 列（簡約235列）で
-    `reduced` 版・条件 (A)(B) 版とも反例 0。全 `lake build` は 3,040 jobs
-    成功（4.54秒）。Isa: `m_6_6_reduced_coeff`。[r1]
-  - ✅ `6.6-reduced-leftend` — `bumpAt` の cut 不変性を対角 prefix より右だけに反復して
-    `Red (diagSeq 0 (m₁₀-1) ++ M) = diagSeq 0 (m₁₀-1) ++ Red M` を証明。
-    `Red (coreReduce M)` の対角 prefix / `Red M` suffix 分解、一般の guarded prefix の単項性、
-    prefix 左端が正の場合の共通対角 prefix 消去を組み合わせ、訂正後の
-    `RTPS_diag_prefix` を完成した。Isa: `m_6_6_Red_diag_prefix`, `m_6_6_reduced_leftend`。[r1]
-  - ✅ `6.6-P-preserves-reduced` — 複項分岐の `Red M = flatten (map Red (P M))` と `P_concat`を
-    組み合わせ、`Lng_Red_invariance` が与えるブロック長プロファイルから連結前のリストを
-    復元する補題を証明。`Red_P_stable` と
-    `RTPS M ↔ ∀ J < (P M).length, RTPS ((P M).getD J [])` の両方向を完成した。
-    Isa: `m_6_6_Red_P_stable`, `m_6_6_P_reduced`。[r1]
-  - ✅ `6.6-Red2` — Isabelle `y3r_RED2` を移植。非複項入力の `Red` に対し、
-    対角幹、枝ブロック、`TrMax` / `Br` / `Joints` / `branchNP` / `redNJ` の二回目不変性を
-    構成し、子枝の強帰納から `Red_nonmulti_RTPS` を完成した。また非複項・内部狭義
-    row-0 最小・左端非増加ブロック列を `P` が元の境界で再分解する補題と、
-    `Red M` の全 `P` 成分が対角左端を持つ不変条件 (D) を接続。公開定理
-    `Red2 : TPS M → RTPS (Red (Red M))` は sorry 0、axioms は
-    `[propext, Classical.choice, Quot.sound]`。Isa: `y3r_RED2`。[r1]
+  - ✅ §6.6 簡約性 — `RTPS ↔ RedCondA ∧ RedCondB`、切片・`P`・係数・左端・`Red²` の
+    全補題に加え、基本列保存 `RTPS_oper` を完成。真正タイルの条件(A)は row 0 と row 1 を分離し、
+    row 1 の正シフトを prefix、ブロック先頭、ブロック内親、prefix 逃避親に分類して親を読み戻した。
+    非タイル分岐と既存の条件(B)保存を合わせて Isabelle `m_6_6_reduced_oper` と同じ主張を得た。
+    `check_lean.py` rc=0、sorry 0、公開定理の axioms は
+    `[propext, Classical.choice, Quot.sound]`。[r17]
   - ✅ `6.7-standard-prefix` — `STPS ⊆ TPS` を生成規則で証明し、欠落列数に関する強帰納法を実装。
     真の始切片で `Pred M = oper M 1` を使って標準形を一段下げ、`Pred = take (Lng-1)` により
     元と一段下の始切片が一致することを示した。Isa: `m_6_7_standard_prefix`。[r1]

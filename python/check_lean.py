@@ -39,7 +39,13 @@ def server_url() -> str:
 
 
 def check(code: str, ident: str) -> dict:
-    body = json.dumps({"snippets": [{"id": ident, "code": code}]}).encode()
+    # Large chapter files can take longer than kimina's 30-second API default
+    # even though the same file builds normally with Lake.  Keep the HTTP
+    # timeout and the server-side Lean command timeout in the same regime.
+    body = json.dumps({
+        "snippets": [{"id": ident, "code": code}],
+        "timeout": 300,
+    }).encode()
     req = urllib.request.Request(
         server_url(), data=body, headers={"Content-Type": "application/json"}
     )
