@@ -1,3 +1,5 @@
+import «8».«8.3-kind0-base-basepoint»
+import «6».«6.6-reduced-fseq»
 import «7».«7.4-Mark-Trans-repr»
 import «7».«7.3-Trans-preserves-zeroT»
 import «6».«6.3-marked-slice»
@@ -1038,6 +1040,301 @@ theorem c1_around_4 (M : PS) (j₀' : ℕ) (hR : RTPS M) (hmono : monoT M = true
               (addBT t34.1 (Dprin (entry M 1 j₀' : ℕ∞)
                 (addBT t34.2 (transC1 M))))) := by
   sorry
+
+/-! ## part (5) エンジン層（§8.3 kind0 基盤の 8.1 側接着）
+
+`entry` の接頭辞一致（`z ≤ j₀`）、`nextrel1`/`adm`/`Adm` の接頭辞転送
+（値特徴付け経由、8.3-base-basepoint と同型）、prefix→最終ブロック開始の
+行 0 辺（Isabelle `oper_d0zero_prefix_to_lastblock`）。 -/
+
+private theorem entry_ne_zero_p5 (X : PS) (i z : ℕ) (hi : i ≠ 0) :
+    entry X i z = entry X 1 z := by
+  unfold entry
+  cases X[z]? <;> simp [hi]
+
+/-- `oper` の接頭辞一致（`z ≤ j₀` を含む）: 全行。 -/
+private theorem entry_oper_prefix_le_p5 (M : PS) (n i z : ℕ)
+    (hlast : 1 < Lng M)
+    (hzero : ¬(entry M 0 (Lng M - 1) = 0 ∧ entry M 1 (Lng M - 1) = 0))
+    (hp : hasParent M (idx1 M (Lng M - 1)) (Lng M - 1) = true)
+    (hi₁ : idx1 M (Lng M - 1) = 0)
+    (hn : 0 < n)
+    (hj₀lt : parent M 0 (Lng M - 1) < Lng M - 1)
+    (hz : z ≤ parent M 0 (Lng M - 1)) :
+    entry (oper M n) i z = entry M i z := by
+  rcases Nat.lt_or_eq_of_le hz with h | h
+  · exact entry_oper_tiling_prefix M n i z hlast hzero hp (by rw [hi₁]; exact h)
+  · subst h
+    by_cases hi : i = 0
+    · subst hi
+      have hh := entry_oper_tiling_block_zero M n 0 0 hlast hzero hp hn
+        (by rw [hi₁]; omega)
+      rw [hi₁] at hh
+      simpa using hh
+    · rw [entry_ne_zero_p5 (oper M n) i _ hi, entry_ne_zero_p5 M i _ hi]
+      have hh := entry_oper_tiling_block_one M n 0 0 hlast hzero hp hn
+        (by rw [hi₁]; omega)
+      rw [hi₁] at hh
+      simpa using hh
+
+/-- 接頭辞領域の `le0` 転送（値特徴付け経由、両方向を担う一般形）。 -/
+private theorem le0_agree_lift_p5 (A B : PS) (c x y : ℕ)
+    (hAT : TPS A) (hBT : TPS B)
+    (agree : ∀ i z, z ≤ c → entry A i z = entry B i z)
+    (hcB : c < Lng B) (hy : y ≤ c)
+    (h : leR A 0 x y = true) : leR B 0 x y = true := by
+  have hxy : x ≤ y := by
+    have hh : le0 A x y = true := by simpa [leR] using h
+    simp only [le0, Bool.and_eq_true] at hh
+    exact le0Aux_index_fseq hh.2
+  rcases Nat.eq_or_lt_of_le hxy with heq | hlt
+  · subst heq
+    simp [leR, le0, show x < Lng B by omega, le0Aux_refl_gp]
+  · apply parent_exists_3 B x y hBT hlt (by omega)
+    intro k hxk hky
+    have hbase : entry A 0 x < entry A 0 k :=
+      ancestor_basic_1 A x k y hAT hxk hky h
+    rw [agree 0 x (by omega), agree 0 k (by omega)] at hbase
+    exact hbase
+
+/-- 接頭辞領域の `nextrel1` 転送（`y ≤ c`、`A → B`）。 -/
+private theorem nextrel1_prefix_imp_p5 (A B : PS) (c x y : ℕ)
+    (hAT : TPS A) (hBT : TPS B)
+    (agree : ∀ i z, z ≤ c → entry A i z = entry B i z)
+    (hcA : c < Lng A) (hcB : c < Lng B) (hy : y ≤ c)
+    (h : nextrel1 A x y = true) : nextrel1 B x y = true := by
+  have agree' : ∀ i z, z ≤ c → entry B i z = entry A i z := by
+    intro i z hz
+    exact (agree i z hz).symm
+  have hh := h
+  simp only [nextrel1, Bool.and_eq_true, decide_eq_true_eq] at hh
+  have hxy : x < y := hh.1.1.1.2
+  have he1A : entry A 1 x < entry A 1 y := hh.1.1.2
+  have hle0A : le0 A x y = true := hh.1.2
+  have hvalleyA := hh.2
+  have hle0B : leR B 0 x y = true :=
+    le0_agree_lift_p5 A B c x y hAT hBT agree hcB hy
+      (by simpa [leR] using hle0A)
+  simp only [nextrel1, Bool.and_eq_true, decide_eq_true_eq]
+  refine ⟨⟨⟨⟨⟨by omega, by omega⟩, hxy⟩, ?_⟩, by simpa [leR] using hle0B⟩, ?_⟩
+  · rw [← agree 1 x (by omega), ← agree 1 y hy]
+    exact he1A
+  · rw [List.all_eq_true]
+    intro j hjmem
+    by_cases hcase : x < j ∧ le0 B j y = true
+    · have hjy : j ≤ y := by
+        have hh' := hcase.2
+        simp only [le0, Bool.and_eq_true] at hh'
+        exact le0Aux_index_fseq hh'.2
+      have hle0Aj : le0 A j y = true := by
+        have := le0_agree_lift_p5 B A c j y hBT hAT agree' hcA hy
+          (by simpa [leR] using hcase.2)
+        simpa [leR] using this
+      have hjA : j < Lng A := by omega
+      have hv := List.all_eq_true.mp hvalleyA j (List.mem_range.mpr hjA)
+      simp only [hle0Aj, hcase.1, decide_true, Bool.and_true, Bool.not_true,
+        Bool.false_or, decide_eq_true_eq] at hv
+      have hgoal : entry B 1 y ≤ entry B 1 j := by
+        rw [← agree 1 y hy, ← agree 1 j (by omega)]
+        exact hv
+      simp [hgoal]
+    · rcases not_and_or.mp hcase with h' | h'
+      · simp [h']
+      · have h'' : le0 B j y = false := by
+          revert h'
+          simp
+        simp [h'']
+
+/-- 接頭辞領域の `adm` 一致（`j + 1 ≤ c`）。 -/
+private theorem adm_prefix_agree_eq_p5 (A B : PS) (c j : ℕ)
+    (hAT : TPS A) (hBT : TPS B)
+    (agree : ∀ i z, z ≤ c → entry A i z = entry B i z)
+    (hcA : c < Lng A) (hcB : c < Lng B) (hjc : j + 1 ≤ c) :
+    adm A j = adm B j := by
+  have agree' : ∀ i z, z ≤ c → entry B i z = entry A i z := by
+    intro i z hz
+    exact (agree i z hz).symm
+  have hpair : (nextR A 1 (j - 1) j = true ∧ nextR A 1 j (j + 1) = true)
+      ↔ (nextR B 1 (j - 1) j = true ∧ nextR B 1 j (j + 1) = true) := by
+    constructor
+    · rintro ⟨h1, h2⟩
+      exact ⟨by
+        simp only [nextR] at h1 ⊢
+        exact nextrel1_prefix_imp_p5 A B c (j - 1) j hAT hBT agree hcA hcB
+          (by omega) (by simpa using h1), by
+        simp only [nextR] at h2 ⊢
+        exact nextrel1_prefix_imp_p5 A B c j (j + 1) hAT hBT agree hcA hcB
+          (by omega) (by simpa using h2)⟩
+    · rintro ⟨h1, h2⟩
+      exact ⟨by
+        simp only [nextR] at h1 ⊢
+        exact nextrel1_prefix_imp_p5 B A c (j - 1) j hBT hAT agree' hcB hcA
+          (by omega) (by simpa using h1), by
+        simp only [nextR] at h2 ⊢
+        exact nextrel1_prefix_imp_p5 B A c j (j + 1) hBT hAT agree' hcB hcA
+          (by omega) (by simpa using h2)⟩
+  have hnadm : nadm A j = nadm B j := by
+    have hgA : decide (Lng A < j) = false := by
+      simp
+      omega
+    have hgB : decide (Lng B < j) = false := by
+      simp
+      omega
+    simp only [nadm, hgA, hgB, Bool.false_or]
+    cases hA : (nextR A 1 (j - 1) j && nextR A 1 j (j + 1)) with
+    | false =>
+        cases hB : (nextR B 1 (j - 1) j && nextR B 1 j (j + 1)) with
+        | false => rfl
+        | true =>
+            exfalso
+            have hBpair : nextR B 1 (j - 1) j = true
+                ∧ nextR B 1 j (j + 1) = true := by
+              simpa [Bool.and_eq_true] using hB
+            have hApair := hpair.mpr hBpair
+            have hAt : (nextR A 1 (j - 1) j && nextR A 1 j (j + 1)) = true := by
+              simp [hApair.1, hApair.2]
+            rw [hAt] at hA
+            cases hA
+    | true =>
+        have hApair : nextR A 1 (j - 1) j = true
+            ∧ nextR A 1 j (j + 1) = true := by
+          simpa [Bool.and_eq_true] using hA
+        have hBpair := hpair.mp hApair
+        have hBt : (nextR B 1 (j - 1) j && nextR B 1 j (j + 1)) = true := by
+          simp [hBpair.1, hBpair.2]
+        rw [hBt]
+  simp [adm, hnadm]
+
+/-- `adm` が `≤ j` で一致すれば許容化も一致。 -/
+private theorem find_adm_congr_p5 (A B : PS) :
+    ∀ (l : List ℕ), (∀ k ∈ l, adm A k = adm B k) →
+      l.find? (fun j' => adm A j') = l.find? (fun j' => adm B j')
+  | [], _ => rfl
+  | x :: xs, h => by
+      have hx : adm A x = adm B x := h x (by simp)
+      have ih := find_adm_congr_p5 A B xs
+        (fun k hk => h k (List.mem_cons_of_mem _ hk))
+      cases hpx : adm B x with
+      | true =>
+          rw [List.find?_cons_of_pos (by rw [hx]; exact hpx),
+            List.find?_cons_of_pos hpx]
+      | false =>
+          rw [List.find?_cons_of_neg (by rw [hx, hpx]; simp),
+            List.find?_cons_of_neg (by rw [hpx]; simp), ih]
+
+private theorem Adm_eq_of_adm_below_p5 (A B : PS) (j : ℕ)
+    (h : ∀ k, k ≤ j → adm A k = adm B k) : Adm A j = Adm B j := by
+  unfold Adm
+  rw [h j (le_refl j)]
+  cases hj : adm B j with
+  | true => simp
+  | false =>
+      simp only [Bool.false_eq_true, if_false]
+      congr 1
+      apply find_adm_congr_p5
+      intro k hk
+      have : k < j := by
+        have := List.mem_range.mp (List.mem_reverse.mp hk)
+        exact this
+      exact h k (by omega)
+
+/-- prefix → 最終ブロック開始の行 0 辺
+（Isabelle `oper_d0zero_prefix_to_lastblock`）。 -/
+private theorem oper_prefix_to_lastblock_p5 (M : PS) (n j₀' : ℕ)
+    (hMT : TPS M)
+    (hlast : 1 < Lng M)
+    (hzero : ¬(entry M 0 (Lng M - 1) = 0 ∧ entry M 1 (Lng M - 1) = 0))
+    (hp : hasParent M (idx1 M (Lng M - 1)) (Lng M - 1) = true)
+    (hi₁ : idx1 M (Lng M - 1) = 0)
+    (hn : 0 < n)
+    (hj₀lt : parent M 0 (Lng M - 1) < Lng M - 1)
+    (hstep : nextrel0 M j₀' (parent M 0 (Lng M - 1)) = true) :
+    nextrel0 (oper M n) j₀'
+      (parent M 0 (Lng M - 1)
+        + (n - 1) * (Lng M - 1 - parent M 0 (Lng M - 1))) = true := by
+  have hdec := hstep
+  simp only [nextrel0, Bool.and_eq_true, decide_eq_true_eq,
+    List.all_eq_true, List.mem_range, Bool.or_eq_true, Bool.not_eq_true',
+    decide_eq_false_iff_not] at hdec
+  have hj₀'lt : j₀' < parent M 0 (Lng M - 1) := hdec.1.1.2
+  have he0lt : entry M 0 j₀' < entry M 0 (parent M 0 (Lng M - 1)) := hdec.1.2
+  have hvalM := hdec.2
+  have hw : 0 < (Lng M - 1) - parent M 0 (Lng M - 1) := by omega
+  have hlen : Lng (oper M n) = parent M 0 (Lng M - 1)
+      + n * ((Lng M - 1) - parent M 0 (Lng M - 1)) := by
+    simpa [hi₁] using length_oper_tiling M n hlast hzero hp
+  have hrel : n * ((Lng M - 1) - parent M 0 (Lng M - 1))
+      = (n - 1) * ((Lng M - 1) - parent M 0 (Lng M - 1))
+        + ((Lng M - 1) - parent M 0 (Lng M - 1)) := by
+    cases n with
+    | zero => omega
+    | succ m => simp [Nat.succ_mul]
+  have hidxlt : parent M 0 (Lng M - 1)
+      + (n - 1) * (Lng M - 1 - parent M 0 (Lng M - 1)) < Lng (oper M n) := by
+    omega
+  -- 読み出し
+  have hej₀' : entry (oper M n) 0 j₀' = entry M 0 j₀' :=
+    entry_oper_tiling_prefix M n 0 j₀' hlast hzero hp (by rw [hi₁]; omega)
+  have heidxl : entry (oper M n) 0
+      (parent M 0 (Lng M - 1) + (n - 1) * ((Lng M - 1) - parent M 0 (Lng M - 1)))
+      = entry M 0 (parent M 0 (Lng M - 1)) := by
+    have hh := entry_oper_tiling_block_zero M n (n - 1) 0 hlast hzero hp
+      (by omega) (by rw [hi₁]; omega)
+    rw [hi₁] at hh
+    simpa using hh
+  have hfloor : ∀ x, parent M 0 (Lng M - 1) ≤ x → x < Lng (oper M n) →
+      entry M 0 (parent M 0 (Lng M - 1)) ≤ entry (oper M n) 0 x := by
+    intro x hx hxL
+    have hh := oper_tiling_block_floor M n x hMT hlast hzero hp
+      (by rw [hi₁]; exact hx) hxL
+    rw [hi₁] at hh
+    exact hh
+  simp only [nextrel0, Bool.and_eq_true, decide_eq_true_eq]
+  refine ⟨⟨⟨⟨by omega, hidxlt⟩, by
+    have h1w : (Lng M - 1) - parent M 0 (Lng M - 1)
+        ≤ (n - 1) * ((Lng M - 1) - parent M 0 (Lng M - 1)) ∨ n = 1 := by
+      cases n with
+      | zero => omega
+      | succ m =>
+          cases m with
+          | zero => omega
+          | succ m' =>
+              left
+              calc (Lng M - 1) - parent M 0 (Lng M - 1)
+                  = 1 * ((Lng M - 1) - parent M 0 (Lng M - 1)) := by omega
+                _ ≤ (m' + 1 + 1 - 1) * ((Lng M - 1) - parent M 0 (Lng M - 1)) :=
+                    Nat.mul_le_mul_right _ (by omega)
+    rcases h1w with h1w | h1w
+    · omega
+    · subst h1w
+      omega⟩, ?_⟩, ?_⟩
+  · rw [hej₀', heidxl]
+    exact he0lt
+  · rw [List.all_eq_true]
+    intro j hjmem
+    have hjlt : j < parent M 0 (Lng M - 1)
+        + (n - 1) * (Lng M - 1 - parent M 0 (Lng M - 1)) :=
+      List.mem_range.mp hjmem
+    by_cases hgt : j₀' < j
+    · have hval : entry (oper M n) 0
+          (parent M 0 (Lng M - 1)
+            + (n - 1) * (Lng M - 1 - parent M 0 (Lng M - 1)))
+          ≤ entry (oper M n) 0 j := by
+        rw [heidxl]
+        by_cases hjj₀ : j < parent M 0 (Lng M - 1)
+        · -- 接頭辞: `M` の谷を輸送
+          have hej : entry (oper M n) 0 j = entry M 0 j :=
+            entry_oper_tiling_prefix M n 0 j hlast hzero hp (by rw [hi₁]; omega)
+          rw [hej]
+          rcases hvalM j hjj₀ with h | h
+          · exact absurd hgt h
+          · exact h
+        · -- ブロック域: 床
+          have hge : parent M 0 (Lng M - 1) ≤ j := by omega
+          have hjL : j < Lng (oper M n) := by omega
+          exact hfloor j hge hjL
+      simp [hval]
+    · simp [hgt]
 
 /-! ## part (5) — 基本列 `M[n]` の最終ブロック切片（A21 訂正形 = 条件(I)を仮定） -/
 
