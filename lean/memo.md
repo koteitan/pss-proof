@@ -271,8 +271,10 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
     （`Σ_B` 降下和ルートで回避）。**原文 §8 の証明には gap があるが、定理は真。**
   - 🚨 `8.3-kind0-base-ineq` — §8.3 の起点補題。8.1 part(5) の kind0 基盤でもある。
     Isa: `p_8_3_kind0_base_ineq`。wave2 fable。
-  - 🚨 `8.7-OT-examples` — OT_B の基本所属 4 本。Isa: `p_8_7_OT_examples`。
-    計算可能定義なので decide 寄りで閉じるはず。wave2 fable。
+  - ✅ `8.7-OT-examples` — OT_B 基本例 4 本（`OT_examples_1..4`）。**親が main loop で直接証明**
+    （workflow 全滅のため）。(1)(2)=gather の if 分岐を明示分解、(3)=multBT→replicate 帰納＋
+    descP/isOT/dfree の replicate 補題、(4)=塔の G 集合特徴付け＋狭義単調の帰納
+    （Isa `m_8_7_OT_examples` の構造をそのまま移植）。rc=0・sorry 0・axioms 正常・#guard 5 本。[r1]
   - `8.3-kind0-base-basepoint` — 訂正 **A22**（1 文に誤植 3 つ。反例あり）
   - `8.4-rightmost-replace-Trans` — 訂正 **A30**（scb 分解が偽。長さ勘定で決まる）
     ＋ **A31**（補題(5-3) のガード欠落）

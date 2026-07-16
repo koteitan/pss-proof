@@ -96,6 +96,6 @@
     - 🚨 補題（順序数項の共終数の遺伝性） — `8.7-OT-dom-hereditary`
     - 🚨 補題（順序数項の末尾項の零化可能性） — `8.7-OT-tail-annihilable`
     - 🚨 補題（`Pred` と `[0]` の関係） — `8.7-Pred-oper0`
-    - 🚨 補題（順序数項の基本例） — `8.7-OT-examples`
+    - ✅ 補題（順序数項の基本例） — `8.7-OT-examples`[r1]
     - 🚨 補題（`Trans` が標準形を保つこと） — `8.7-Trans-preserves-OT`
     - 🚨 **定理（標準形ペア数列システムの停止性）** — `8.7-termination`
