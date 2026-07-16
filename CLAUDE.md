@@ -15,7 +15,7 @@ system) on the Googology Wiki. Proposed corrections to the source: [corrections.
 | `tools/` | Article processing (`make_content.py` regenerates `tmp/content.md`) | shared |
 
 **Current work is the Lean port, driven by the wave plan in
-[workflow.md](workflow.md) (start there after a fresh session).** Read, in this order:
+[lean/workflow.md](lean/workflow.md) (start there after a fresh session).** Read, in this order:
 [lean/spec.md](lean/spec.md) (structure) → [lean/step.md](lean/step.md) (procedure) →
 [lean/task.md](lean/task.md) (progress tree) → [lean/memo.md](lean/memo.md) (design +
 dead ends) → [lean/kimina.md](lean/kimina.md) (the Lean check server, incl. how workflow
