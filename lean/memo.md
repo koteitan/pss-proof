@@ -423,6 +423,10 @@ parent/Lng 形に落としてから作業する。
     **C-2 = Adm0 組み立て（20828）／gB＋nogB（23704–25364）／
     clause34_of_witness（25365–27018）／wid 機構＋transport（28837–29604）**。
     C-3 = Adm0_full・Admpos_of_wid・of_wid・wid・最終組み立て＋忠実 p 文 file。
+    ⚠️**C-2 は Fable 月次上限（99%）で 4 agent とも起動 6 分で死亡**（2026-07-17）。
+    骨格（各 sorry 1、121–223 行）を `8.2-subexpr-{adm0,gB,clause34,wid}.lean.draft`
+    に退避（lake glob 外）。上限解除後に再走するか、solo main-loop で draft から
+    仕上げる。**Fable 枯渇時は workflow を起動しない**（起動即死で骨格すら進まない）。
   - `8.2-*` — `LastStep` の添字は A9 で訂正済みの形を使う。
     Isa の注意: `Pred_oper0` は標準入力で偽（反例 `M=(0,0)(1,1)(2,1)`）だが**定理は健全**
     （`Σ_B` 降下和ルートで回避）。**原文 §8 の証明には gap があるが、定理は真。**
