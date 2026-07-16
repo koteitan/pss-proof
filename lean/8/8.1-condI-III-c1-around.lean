@@ -1367,7 +1367,241 @@ theorem c1_around_5 (M : PS) (j₀' n : ℕ) (hR : RTPS M) (hmono : monoT M = tr
       (transJ0 M + (n - 1) * (transJ1 M - transJ0 M)))) ≠ BZero ∧
     transCondVI (seg (oper M n) 0
       (transJ0 M + (n - 1) * (transJ1 M - transJ0 M))) = false := by
-  sorry
+  have htJ1 : transJ1 M = Lng M - 1 := rfl
+  have htJ0 : transJ0 M = parent M 0 (Lng M - 1) := rfl
+  simp only [htJ0, htJ1]
+  have hM : TPS M := RTPS_TPS M hR
+  have hlen : 1 < Lng M := by omega
+  have he1z : entry M 1 (Lng M - 1) = 0 := by
+    have hh := hcondI
+    simp only [transCondI, Bool.and_eq_true, beq_iff_eq] at hh
+    exact hh.1
+  have hp0 : hasParent M 0 (Lng M - 1) = true :=
+    mono_hasParent_row0 M hM hmono (Lng M - 1) (by omega) (by omega)
+  have hi₁ : idx1 M (Lng M - 1) = 0 := by
+    simp [idx1, he1z]
+  have hpar : hasParent M (idx1 M (Lng M - 1)) (Lng M - 1) = true := by
+    rw [hi₁]
+    exact hp0
+  have hnext0 : nextrel0 M (parent M 0 (Lng M - 1)) (Lng M - 1) = true := by
+    simpa [nextR] using hasParent_next_fseq M 0 (Lng M - 1) hp0
+  have hj₀lt : parent M 0 (Lng M - 1) < Lng M - 1 := by
+    have hh := hnext0
+    simp only [nextrel0, Bool.and_eq_true, decide_eq_true_eq] at hh
+    exact hh.1.1.2
+  have he0j₀ : entry M 0 (parent M 0 (Lng M - 1)) < entry M 0 (Lng M - 1) := by
+    have hh := hnext0
+    simp only [nextrel0, Bool.and_eq_true, decide_eq_true_eq] at hh
+    exact hh.1.2
+  have hzero : ¬(entry M 0 (Lng M - 1) = 0 ∧ entry M 1 (Lng M - 1) = 0) := by
+    omega
+  have hw : 0 < (Lng M - 1) - parent M 0 (Lng M - 1) := by omega
+  have hstep : nextrel0 M j₀' (parent M 0 (Lng M - 1)) = true := by
+    have := np
+    rw [htJ0] at this
+    simpa [nextR] using this
+  have hj₀'lt : j₀' < parent M 0 (Lng M - 1) := by
+    have hh := hstep
+    simp only [nextrel0, Bool.and_eq_true, decide_eq_true_eq] at hh
+    exact hh.1.1.2
+  have hlenMn : Lng (oper M n) = parent M 0 (Lng M - 1)
+      + n * ((Lng M - 1) - parent M 0 (Lng M - 1)) := by
+    simpa [hi₁] using length_oper_tiling M n hlen hzero hpar
+  have hwq : (Lng M - 1) - parent M 0 (Lng M - 1)
+      ≤ (n - 1) * ((Lng M - 1) - parent M 0 (Lng M - 1)) := by
+    calc (Lng M - 1) - parent M 0 (Lng M - 1)
+        = 1 * ((Lng M - 1) - parent M 0 (Lng M - 1)) := by omega
+      _ ≤ (n - 1) * ((Lng M - 1) - parent M 0 (Lng M - 1)) :=
+          Nat.mul_le_mul_right _ (by omega)
+  have hrel : n * ((Lng M - 1) - parent M 0 (Lng M - 1))
+      = (n - 1) * ((Lng M - 1) - parent M 0 (Lng M - 1))
+        + ((Lng M - 1) - parent M 0 (Lng M - 1)) := by
+    cases n with
+    | zero => omega
+    | succ m => simp [Nat.succ_mul]
+  have hidxlt : parent M 0 (Lng M - 1)
+      + (n - 1) * ((Lng M - 1) - parent M 0 (Lng M - 1)) < Lng (oper M n) := by
+    omega
+  have hidxgt1 : 1 < parent M 0 (Lng M - 1)
+      + (n - 1) * ((Lng M - 1) - parent M 0 (Lng M - 1)) := by omega
+  have hMnT : TPS (oper M n) := oper_TPS M n hM (by omega)
+  -- (1) 基点
+  have conj1 : Marked (oper M n)
+      (parent M 0 (Lng M - 1)
+        + (n - 1) * ((Lng M - 1) - parent M 0 (Lng M - 1))) :=
+    ((kind0_base_basepoint M n hR (by omega) hp0 he1z).1 hn).1
+  -- (2) 行 0 の辺
+  have conj2 : nextrel0 (oper M n) j₀'
+      (parent M 0 (Lng M - 1)
+        + (n - 1) * ((Lng M - 1) - parent M 0 (Lng M - 1))) = true :=
+    oper_prefix_to_lastblock_p5 M n j₀' hM hlen hzero hpar hi₁ (by omega)
+      hj₀lt hstep
+  -- (3) 切片の長さ
+  have hLS : Lng (seg (oper M n) 0
+      (parent M 0 (Lng M - 1)
+        + (n - 1) * ((Lng M - 1) - parent M 0 (Lng M - 1))))
+      = parent M 0 (Lng M - 1)
+        + (n - 1) * ((Lng M - 1) - parent M 0 (Lng M - 1)) + 1 := by
+    simp [seg]
+  -- (4) 切片内の親
+  have hnextRMn : nextR (oper M n) 0 j₀'
+      (parent M 0 (Lng M - 1)
+        + (n - 1) * ((Lng M - 1) - parent M 0 (Lng M - 1))) = true := by
+    simpa [nextR] using conj2
+  have hparS : parent (seg (oper M n) 0
+      (parent M 0 (Lng M - 1)
+        + (n - 1) * ((Lng M - 1) - parent M 0 (Lng M - 1)))) 0
+      (parent M 0 (Lng M - 1)
+        + (n - 1) * ((Lng M - 1) - parent M 0 (Lng M - 1))) = j₀' := by
+    apply parent_eq_of_unique_fseq
+    · have hseg := nextR_seg_adm (oper M n) 0
+        (parent M 0 (Lng M - 1)
+          + (n - 1) * ((Lng M - 1) - parent M 0 (Lng M - 1))) 0 j₀'
+        (parent M 0 (Lng M - 1)
+          + (n - 1) * ((Lng M - 1) - parent M 0 (Lng M - 1)))
+        (Nat.zero_le _) hidxlt (by rw [hLS]; omega) (by rw [hLS]; omega)
+      rw [hseg]
+      simpa using hnextRMn
+    · intro q hq
+      have hqS : q < Lng (seg (oper M n) 0
+          (parent M 0 (Lng M - 1)
+            + (n - 1) * ((Lng M - 1) - parent M 0 (Lng M - 1)))) := by
+        have hh : nextrel0 (seg (oper M n) 0
+            (parent M 0 (Lng M - 1)
+              + (n - 1) * ((Lng M - 1) - parent M 0 (Lng M - 1)))) q
+            (parent M 0 (Lng M - 1)
+              + (n - 1) * ((Lng M - 1) - parent M 0 (Lng M - 1))) = true := by
+          simpa [nextR] using hq
+        simp only [nextrel0, Bool.and_eq_true, decide_eq_true_eq] at hh
+        exact hh.1.1.1.1
+      have hseg := nextR_seg_adm (oper M n) 0
+        (parent M 0 (Lng M - 1)
+          + (n - 1) * ((Lng M - 1) - parent M 0 (Lng M - 1))) 0 q
+        (parent M 0 (Lng M - 1)
+          + (n - 1) * ((Lng M - 1) - parent M 0 (Lng M - 1)))
+        (Nat.zero_le _) hidxlt hqS (by rw [hLS]; omega)
+      rw [hseg] at hq
+      have hq' : nextR (oper M n) 0 q
+          (parent M 0 (Lng M - 1)
+            + (n - 1) * ((Lng M - 1) - parent M 0 (Lng M - 1))) = true := by
+        simpa using hq
+      exact row0_parent_unique (oper M n) q j₀' _ hq' hnextRMn
+  have hlastS : lastIdx (seg (oper M n) 0
+      (parent M 0 (Lng M - 1)
+        + (n - 1) * ((Lng M - 1) - parent M 0 (Lng M - 1))))
+      = parent M 0 (Lng M - 1)
+        + (n - 1) * ((Lng M - 1) - parent M 0 (Lng M - 1)) := by
+    show Lng (seg (oper M n) 0
+      (parent M 0 (Lng M - 1)
+        + (n - 1) * ((Lng M - 1) - parent M 0 (Lng M - 1)))) - 1 = _
+    omega
+  have conj4 : transJ0 (seg (oper M n) 0
+      (parent M 0 (Lng M - 1)
+        + (n - 1) * ((Lng M - 1) - parent M 0 (Lng M - 1)))) = j₀' := by
+    show parent (seg (oper M n) 0
+      (parent M 0 (Lng M - 1)
+        + (n - 1) * ((Lng M - 1) - parent M 0 (Lng M - 1)))) 0
+      (lastIdx (seg (oper M n) 0
+        (parent M 0 (Lng M - 1)
+          + (n - 1) * ((Lng M - 1) - parent M 0 (Lng M - 1))))) = j₀'
+    rw [hlastS]
+    exact hparS
+  -- (5) 許容化の移送
+  have hAdmS : Adm (seg (oper M n) 0
+      (parent M 0 (Lng M - 1)
+        + (n - 1) * ((Lng M - 1) - parent M 0 (Lng M - 1)))) j₀'
+      = Adm (oper M n) j₀' := by
+    have hh := admof_slice (oper M n) 0 j₀'
+      (parent M 0 (Lng M - 1)
+        + (n - 1) * ((Lng M - 1) - parent M 0 (Lng M - 1)))
+      hMnT (Nat.zero_le _) (by omega) (by omega)
+    simpa using hh
+  have hadmagree : ∀ k, k ≤ j₀' → adm (oper M n) k = adm M k := by
+    intro k hk
+    exact adm_prefix_agree_eq_p5 (oper M n) M (parent M 0 (Lng M - 1)) k hMnT hM
+      (fun i z hz => entry_oper_prefix_le_p5 M n i z hlen hzero hpar hi₁
+        (by omega) hj₀lt hz)
+      (by omega) (by omega) (by omega)
+  have hAdmMn : Adm (oper M n) j₀' = Adm M j₀' :=
+    Adm_eq_of_adm_below_p5 (oper M n) M j₀' hadmagree
+  have conj5 : transJm1 (seg (oper M n) 0
+      (parent M 0 (Lng M - 1)
+        + (n - 1) * ((Lng M - 1) - parent M 0 (Lng M - 1)))) = Adm M j₀' := by
+    show Adm (seg (oper M n) 0
+      (parent M 0 (Lng M - 1)
+        + (n - 1) * ((Lng M - 1) - parent M 0 (Lng M - 1))))
+      (transJ0 (seg (oper M n) 0
+        (parent M 0 (Lng M - 1)
+          + (n - 1) * ((Lng M - 1) - parent M 0 (Lng M - 1))))) = Adm M j₀'
+    rw [conj4, hAdmS, hAdmMn]
+  -- (6) `Trans (Pred N) ≠ 0`
+  have hnotle : ¬ (Lng (seg (oper M n) 0
+      (parent M 0 (Lng M - 1)
+        + (n - 1) * ((Lng M - 1) - parent M 0 (Lng M - 1)))) ≤ 1) := by omega
+  have hPredS_eq : Pred (seg (oper M n) 0
+      (parent M 0 (Lng M - 1)
+        + (n - 1) * ((Lng M - 1) - parent M 0 (Lng M - 1))))
+      = (seg (oper M n) 0
+        (parent M 0 (Lng M - 1)
+          + (n - 1) * ((Lng M - 1) - parent M 0 (Lng M - 1)))).dropLast := by
+    unfold Pred
+    rw [if_neg hnotle]
+  have hLPredS : Lng (Pred (seg (oper M n) 0
+      (parent M 0 (Lng M - 1)
+        + (n - 1) * ((Lng M - 1) - parent M 0 (Lng M - 1)))))
+      = parent M 0 (Lng M - 1)
+        + (n - 1) * ((Lng M - 1) - parent M 0 (Lng M - 1)) := by
+    rw [hPredS_eq]
+    show ((seg (oper M n) 0
+      (parent M 0 (Lng M - 1)
+        + (n - 1) * ((Lng M - 1) - parent M 0 (Lng M - 1)))).dropLast).length = _
+    rw [List.length_dropLast]
+    have h2 : (seg (oper M n) 0
+        (parent M 0 (Lng M - 1)
+          + (n - 1) * ((Lng M - 1) - parent M 0 (Lng M - 1)))).length
+        = parent M 0 (Lng M - 1)
+          + (n - 1) * ((Lng M - 1) - parent M 0 (Lng M - 1)) + 1 := hLS
+    omega
+  have hPredST : TPS (Pred (seg (oper M n) 0
+      (parent M 0 (Lng M - 1)
+        + (n - 1) * ((Lng M - 1) - parent M 0 (Lng M - 1))))) := by
+    apply List.ne_nil_of_length_pos
+    have h3 : (Pred (seg (oper M n) 0
+        (parent M 0 (Lng M - 1)
+          + (n - 1) * ((Lng M - 1) - parent M 0 (Lng M - 1))))).length
+        = parent M 0 (Lng M - 1)
+          + (n - 1) * ((Lng M - 1) - parent M 0 (Lng M - 1)) := hLPredS
+    omega
+  have conj6 : Trans (Pred (seg (oper M n) 0
+      (parent M 0 (Lng M - 1)
+        + (n - 1) * ((Lng M - 1) - parent M 0 (Lng M - 1))))) ≠ BZero := by
+    intro h0
+    have hz := (Trans_preserves_zeroT _ hPredST).mpr h0
+    simp only [zeroT, Bool.and_eq_true, beq_iff_eq] at hz
+    omega
+  -- (7) 条件 (VI) 不成立（間隔が 2 以上）
+  have conj7 : transCondVI (seg (oper M n) 0
+      (parent M 0 (Lng M - 1)
+        + (n - 1) * ((Lng M - 1) - parent M 0 (Lng M - 1)))) = false := by
+    rw [Bool.eq_false_iff]
+    intro h
+    simp only [transCondVI, Bool.and_eq_true, decide_eq_true_eq,
+      beq_iff_eq] at h
+    have h3 := h.2
+    have h4 : lastParent (seg (oper M n) 0
+        (parent M 0 (Lng M - 1)
+          + (n - 1) * ((Lng M - 1) - parent M 0 (Lng M - 1)))) = j₀' := by
+      show parent (seg (oper M n) 0
+        (parent M 0 (Lng M - 1)
+          + (n - 1) * ((Lng M - 1) - parent M 0 (Lng M - 1)))) 0
+        (lastIdx (seg (oper M n) 0
+          (parent M 0 (Lng M - 1)
+            + (n - 1) * ((Lng M - 1) - parent M 0 (Lng M - 1))))) = j₀'
+      rw [hlastS]
+      exact hparS
+    rw [h4, hlastS] at h3
+    omega
+  exact ⟨conj1, hnextRMn, by omega, conj4, conj5, conj6, conj7⟩
 
 /-! ## 原文形の反例（A20 / A21） -/
 
