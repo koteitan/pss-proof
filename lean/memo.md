@@ -304,5 +304,20 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
   - `8.5-*` — **最難所**。Isa の keystone は
     `bpHeadT(Trans(slice@B)) = C(bpHeadT(Trans slice))`（depth-shift self-similar）。
     13 個の死路が `isabelle/memo.md` に列挙してある。**着手前に必ず読め。**
+  - 🚨 `8.3-Trans-fseq-condII` ⛔8.7-fseq-descend — 原文命題は (1)-(3) が Trans 再帰の
+    内部記号依存で deferred、転記済みは降下結論 (4) のみ（`p_8_3_TransCondII_oper_descend`）。
+    Isabelle は `y5_8_3_TransCondII_oper_descend`（layerC 14432）＝**大域降下柱
+    `y5_Trans_descend` への一行還元**。Lean でも `8.7-fseq-descend`（ST_PS 全域の
+    Trans(M[n])<Trans(M)）が先＝それの系として閉じる。単独移植は不可。
+  - ✅ `8.7-OT-scb-recursive` — **親が main loop で直接証明（一発緑）**。scb 分解の核は
+    右スパイン principal＝`isOT` 下方遺伝。descent は 7.2-scb-unique の
+    `scb_occurrence_rightNodes_suffix` の帰納骨格（`scb_last_dichotomy`+
+    `scb_cut_reaches_last` 公開済）を流用、conclusion を `isOT_BP pp` に差し替え。
+    Isa: `m_8_7_OT_scb_recursive` (layerB/pss_wip.thy:17915)。rc=0・axioms 正常。[r1]
+  - ✅ `8.7-OT-dom-hereditary` — **親が main loop で直接証明（一発緑）**。同じ descent 骨格で
+    conclusion を `domTag t = .naturals` に。principal ステップは `domTagBP` の match が
+    `.naturals` を透過（`a ≠ BZero` は長さ勘定）、multi は `domTag_snoc_bf`（7.1 公開）。
+    `BDom_toSet_eq_NatSet_iff`+`nestedD0_not_nat` は 7.2-scb-unique private の複製（昇格候補）。
+    Isa: `m_8_7_OT_dom_hereditary` (layerB/pss_wip.thy:17802)。rc=0・axioms 正常。[r1]
   - `8.7-fseq-descend` — Isa: `m_8_7_fseq_descend_dispatcher`（7 つの交換則に還元される）
   - `8.7-termination` ★ — Isa: `y5_PSS_wf` / `y5_Fdom`。ここに全部が集まる。

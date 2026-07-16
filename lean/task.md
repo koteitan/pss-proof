@@ -72,7 +72,7 @@
     - ✅ 補題（第 `0` 種型基本列の基本不等式） — `8.3-kind0-base-ineq`[r1]
     - ✅ 補題（第 `0` 種型基本列の基本分岐規則） — `8.3-kind0-branch-rule`[r1]
     - ✅ 補題（第 `0` 種型基本列の基本基点関係） — `8.3-kind0-base-basepoint`[r1]
-    - 🚨 命題（条件(II)の下での `Trans` と基本列の交換関係） — `8.3-Trans-fseq-condII`
+    - 🚨 命題（条件(II)の下での `Trans` と基本列の交換関係） — `8.3-Trans-fseq-condII` ⛔8.7-fseq-descend
   - 🚨 §8.4 条件(III)か(IV)の下での展開規則
     - 🚨 命題（条件(III)か(IV)の下での `Trans` と基本列の交換関係） — `8.4-Trans-fseq-condIII-IV`
     - 🚨 補題（右端の非許容直系先祖の基本性質） — `8.4-rightmost-nonadm-ancestor`
@@ -92,8 +92,8 @@
   - 🚨 §8.7 主結果
     - ✅ 補題（公差 `(0,0)` のペア数列の `Trans` の基本性質） — `8.7-const00-Trans`[r1]
     - 🚨 補題（基本列の降下性） — `8.7-fseq-descend`
-    - 🚨 補題（順序数項の再帰構造） — `8.7-OT-scb-recursive`
-    - 🚨 補題（順序数項の共終数の遺伝性） — `8.7-OT-dom-hereditary`
+    - ✅ 補題（順序数項の再帰構造） — `8.7-OT-scb-recursive`[r1]
+    - ✅ 補題（順序数項の共終数の遺伝性） — `8.7-OT-dom-hereditary`[r1]
     - 🚨 補題（順序数項の末尾項の零化可能性） — `8.7-OT-tail-annihilable`
     - 🚨 補題（`Pred` と `[0]` の関係） — `8.7-Pred-oper0`
     - ✅ 補題（順序数項の基本例） — `8.7-OT-examples`[r1]
