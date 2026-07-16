@@ -10,6 +10,7 @@ import «6».«6.6-reduced-leftend»
 import «6».«6.6-ancestor-slice-Red-IncrFirst»
 import «6».«6.7-standard-reduced»
 import «6».«6.7-standard-prefix»
+import «6».«6.8-d1pos-final»
 
 /-!
 # §8.2 命題（標準形の直系先祖による切片の簡約化の強単項性）
@@ -204,20 +205,23 @@ private theorem descendingB_of_map_IncrFirstN_sm (k : ℕ) (Q : List PS)
   · intro hEq
     exact h1 (by omega)
 
-/-! ## §6.8 依存（未緑ファイルの隔離） -/
+/-! ## §6.8 依存（`6.8-d1pos-final` の無条件版へのブリッジ） -/
 
 /-- §6.8 命題（標準形の切片と `Br` の降順性の関係）の降順性部分（`descendingB` 版）。
 
-対応する Lean ファイル `6/6.8-standard-slice-Br-descending.lean`（訂正 A7・A8、
-Isabelle: `m_6_8_standard_slice_Br_descending`）は本稿執筆時点で未緑のため import
-できない。同ファイルが緑になり次第、この private sorry を
-`descendingB_iff`＋`cdomB_iff` 経由で同ファイルの `descending (Br (seg M j₀' j₁'))`
-（Prop 版, getD ベース）へ橋渡しして置き換える。本ファイル唯一の sorry。 -/
+`6/6.8-d1pos-final.lean` の無条件版 `standard_slice_Br_descending`（Prop 版・getD
+ベース、訂正 A7・A8、Isabelle: `m_6_8_standard_slice_Br_descending`）を
+`descendingB_iff`＋`cdomB_iff` 経由で `Bool` 版へ橋渡しする。 -/
 private theorem standard_slice_Br_descending_dep (M : PS) (j₀' j₁' : ℕ)
     (hM : STPS M) (hlt : j₀' < j₁') (hj₁ : j₁' ≤ Lng M - 1)
     (hanc : leR M 0 j₀' j₁' = true) :
     descendingB (Br (seg M j₀' j₁')) = true := by
-  sorry
+  have hdesc := (standard_slice_Br_descending M j₀' j₁' hM hlt hj₁ hanc).2
+  rw [descendingB_iff]
+  intro J₀ J₁ h01 hJ₁
+  have hc := hdesc J₀ J₁ h01 hJ₁
+  rw [cdomB_iff]
+  exact ⟨hc.1, hc.2⟩
 
 /-! ## 主定理 -/
 

@@ -85,7 +85,7 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
 
 ---
 
-## 4.5 キャンペーン作戦図: 6.8 d1pos leg（クリティカルパス、2026-07-16 調査）
+## 4.5 キャンペーン作戦図: 6.8 d1pos leg — ✅ 完了（2026-07-17。以下は史料）
 
 **目標**: `RankSuccD1posLeg`（`lean/6/6.8-standard-slice-Br-descending.lean` ~4211 の
 名前付き仮定）を定理化 → `6.8` ✅ ＋ `8.2-standard-slice-Red-strongmono` ✅（ブリッジ配線済）
@@ -221,55 +221,23 @@ parent/Lng 形に落としてから作業する。
     対角列の簡約性は零列を分離し、正の末尾から `RTPS_diag_prefix` で復元した。
     `check_lean.py` rc=0、sorry 0、公開定理の axioms は
     `[propext, Classical.choice, Quot.sound]`。Isa: `m_6_7_*`。[r3]
-  - 🚨 §6.8 降順性
-    - 🚨🤖 `6.8-standard-slice-Br-descending` — 訂正 **A7**（「`M′` が標準形」は偽。
-      `Br(M′)` が降順が正）＋訂正 **A8**（`j₁` の式が off-by-one）。[r2]
-      **Wave A-1 完了（r2, 全4 agent 緑）**: 兄弟ファイル 4 本新設（`6.8-d1pos-dispatch/
-      -base/-trmax/-le0.lean`、lake 3067 jobs 緑）。dispatch = assembly
-      `oper_d1pos_notbrle_LOW_take_eq`（Isa 21497–21960）＋leg
-      `rankSuccD1posLeg_of_bricks : 22 named Props → RankSuccD1posLeg`（Isa 23785–23967）、
-      end-to-end 合成 typecheck 済＝残作業は 22 Props の証明のみ。base 7 本（LOW_source_eq/
-      le0_confined/entry0_boundary/nextrel0_transfer/block_chain/le0_blockstarts/seg_mono）、
-      trmax 8 本（TrMax_eqI/TrMax_stop/le1_imp_entry1_le/nextR1_boundary_stop_of_prefix/
-      _d1pos/TrMax_seg_oper_d1pos_eq/_notbrle_uncapped/_brle_uncapped）、le0 10 本
-      （nextrel0_within〜ctx_tnc_capped、brle_capped 込み）全公開。
-      **即討ち可能な Props 3 本**: ctx_tnc_capped/nextR1_boundary_stop_d1pos は
-      le0/trmax の既存定理そのもの（引数順のみ違い）、ctx_period_tncstrict_uncapped は
-      notbrle_uncapped の ~40 行の系（Isa 20045–20087）。
-      **kimina 新罠**: 未ビルド module の import は import エラーを出さず header 全体を
-      無言で汚染（PS/ℕ まで壊れる）。新ファイルを import する前に lake build 必須。
-      **Wave A-2 完了（r3, 全4 agent 緑、lake 3071 jobs）**: `6.8-d1pos-notbrle/
-      -anchor-regA/-anchor-regB/-period.lean` 新設。**22 Props 中 14 討伐**
-      （notbrle: branch_anchor/ctx_tnc_prefix/Br_align_regA、regB: ctx_multiM/
-      ctx_le0Np/lenPSeq_unified、period: ctx_tnc_capped/nextR1_boundary_stop_d1pos/
-      tncstrict_uncapped/ctx_period_le0Np/stop_direct/stop_direct_strict/
-      period_fullShift/period_boundary_geom）。anchor 層（seg_low_verbatim〜clt_regA/
-      regB、anchor_coincide_regA/A2/B/B2、lowshift 系、row0_agree、stop_of_tnc、
-      period_unified 等）全公開。**残 8 Props** = 4 セル（LOW_take_eq_regA/regB/
-      boundary/periodic、Isa 17737–18670・20584）＋low_anchor_shamt0（20904）＋
-      period_boundary_cleMB（21135）＋ctx_notbrleNp/verbatim（20172/20322）。
-      セル支度の boundary trio（undercut/mLmin/cle、20488–20583）も未移植。
-      dedup 候補: anchor_lt_of_uniform_witness（_ra/_rb 二重私的）、d1pos_agree
-      （_dt/_pd 二重）、TPS_of_P_multi（三重→五重）、trunk_le1_pd（新規、公開価値あり）、
-      TrMax_seg_oper_d1pos_eq_regA（_nb/_ca 二重、Isa 15218）。
-      **Wave A-3 3/4 完了（r4, lake 3074 jobs）**: `6.8-d1pos-cell-regA/-regB/
-      -boundary.lean` 緑＝**Props 20/22**（残 = LOW_take_eq_periodic と
-      low_anchor_shamt0 の 2 つ、担当 agent が月次 spend limit で死亡）。
-      regA セル＋ctx_notbrleNp 対／regB セル（clt_regB 呼びは cleMB 仮定で冗長と
-      判明、statement 不変）／boundary セル＋undercut/mLmin/cle/cleMB。
-      periodic の書きかけ（8 エラー）は `6.8-d1pos-cell-periodic.lean.draft` に退避、
-      resume で再走中。全 22 落ちたら親が最終配線（22 _holds →
-      `rankSuccD1posLeg_of_bricks` → 無条件版）→ 6.8 ✅＋8.2 ブリッジ。
-      **wave1 で 39 エラー全修復＋組み立て完了**（rc=0・sorry 0・axioms 正常、4374 行）。
-      ただし主定理 `standard_slice_Br_descending_of_d1pos` は仮定 `RankSuccD1posLeg`
-      （＝Isabelle の `oper_d1pos_notbrle_*` brick 群、`pss_mechanized.thy` ~9302–21950 の
-      数千行）付きの**条件付き**。残作業=この producer 場合分けの移植のみ。
-      昇格候補(needs): `STPS_exists_rank`(§6.7 の困難方向)/`take_pred_eq_dropLast`/
-      `P_last_anchor` API/`seg_of_seg`（現在 `*_68` private）。
-    - ✅ `6.8-standard-P-descending` — `STPS` の生成帰納法で証明。複項親では `P_fseq_1/2` により
-      不変 prefix と最終成分の基本列へ分解し、prefix 間・prefix/tail 間は帰納仮定、tail 内は
-      非複項成分の左列保存で閉じた。`check_lean.py` rc=0、sorry 0、公開定理の axioms は
-      `[propext, Classical.choice, Quot.sound]`。Isa: `m_6_8_standard_P_descending`。[r1]
+  - ✅ §6.8 降順性[r6] — `6.8-standard-slice-Br-descending`（訂正 **A7**/**A8**、[r5]）＋
+    `6.8-standard-P-descending`（[r1]、`STPS` 生成帰納法・`P_fseq_1/2` 分解）。
+    前者は **d1pos campaign（wave A-1〜A-3＋solo 仕上げ、2026-07-17 完了）**:
+    兄弟ファイル 13 本（`6.8-d1pos-dispatch/-base/-trmax/-le0/-notbrle/-anchor-regA/
+    -anchor-regB/-period/-cell-regA/-cell-regB/-cell-boundary/-cell-periodic/-final`）に
+    分割移植し、dispatch の 22 named Props（`D1pos_*`、Isa `oper_d1pos_*` 89 本
+    ≈8–12k 行に対応）を全数 `_holds` 定理で討伐 → `6.8-d1pos-final.lean` の
+    `rankSuccD1posLeg_proved` で仮定を実体化し**無条件版
+    `standard_slice_Br_descending`** を得た（rc=0・sorry 0・axioms
+    `[propext, Classical.choice, Quot.sound]`、lake 3076 jobs）。
+    Isa: `m_6_8_standard_slice_Br_descending`（pss_mechanized 24002）。
+    勝ち筋: green-modulo top-down 配線／le0 の値特徴付け（rtrancl・燃料帰納 全廃）／
+    既存 `_68` 資産の public 昇格。周辺知見: regB セルの `clt_regB` 呼びは cleMB
+    仮定で冗長（statement 不変）。dedup 候補（私的重複）: anchor_lt_of_uniform_witness
+    （_ra/_rb）、d1pos_agree（_dt/_pd）、TPS_of_P_multi（5 重）、trunk_le1_pd
+    （公開価値あり）、TrMax_seg_oper_d1pos_eq_regA（_nb/_ca、Isa 15218）。
+    昇格候補: `STPS_exists_rank_68`/`take_pred_eq_dropLast_68`/`P_last_anchor` API。
 
 - 🚨 **§7 Buchholz の表記系への翻訳** — Isa: `m_7_*`。
   - ✅ `7.1-lessBT-linear-order` — `BT`・`BP`・`List BP` の三者に対する相互再帰補題として、
@@ -387,14 +355,14 @@ parent/Lng 形に落としてから作業する。
     sorry を潰すだけ。
     ⚠️重複警告: `adm_row1_ancestry`/`row1_implies_row0`/`Trans_singleton` が複数ファイルで
     private 重複 → PSS/Adm・PSS/Defs・PSS/Trans へ昇格すべき。
-  - 🚨 `8.2-standard-slice-Red-strongmono` — **⛔6.8 のみ待ち**。[r1]
+  - ✅ `8.2-standard-slice-Red-strongmono` — **完了（2026-07-17、6.8 クローズと同時）**。[r2]
     §8.2 語彙を計算可能に定義済み: `cdomB`/`descendingB`/`strongMono`/`DTPS`(+Decidable)。
     数値検証: 実標準形プール 442 形×先祖切片 13,264 例 0 違反（maxlen 13, 成分≤15,
     `python/strongmono_audit.py`）＋全 69,904 列チェックサム一致＋#guard 9 本。
-    仮定明示版 `standard_slice_Red_strongmono_of_Br_descending` は **sorry-free**。
-    忠実版の残 sorry はちょうど 1 個＝§6.8 命題そのもの（private
-    `standard_slice_Br_descending_dep` に単離）。6.8 が緑になったら import＋
-    `descendingB_iff` ブリッジで差し替えるだけ（getD 形を意図的に一致させてある）。
+    仮定明示版 `standard_slice_Red_strongmono_of_Br_descending` と忠実版
+    `standard_slice_Red_strongmono` とも sorry 0・axioms 正常。§6.8 依存は
+    `6.8-d1pos-final` を import し、無条件版 `standard_slice_Br_descending` を
+    `descendingB_iff`＋`cdomB_iff` で `Bool` 版へ橋渡し（予定どおり getD 形一致）。
     後続 §8.2 の 6 項目はこのファイルから `strongMono`/`DTPS` を import する。
     昇格候補: `Br_IncrFirstN`/`descendingB_of_map_IncrFirstN`/`TrMax_IncrFirstN` 等
     （現在 `*_sm` private）。Isa: `m_8_2_standard_slice_Red_strongmono`

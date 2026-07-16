@@ -4,15 +4,15 @@
 （§4.5/§4.6 = キャンペーン作戦図、§3/§4 = 罠と死路） → `lean/step.md`（緑の定義） →
 `lean/kimina.md`（検証サーバ）。Isabelle 側は完了・凍結（`isabelle/`、証明の設計図として grep する）。
 
-## 0. 現在地（2026-07-16 時点、main = `31bed4e`・全緑 push 済）
+## 0. 現在地（2026-07-17 時点・全緑 push 済）
 
-- ✅ 済: 定義層 / §5 / §6.1–6.7 / 6.8-standard-P-descending / §7（📘 7.1-buchholz-wf 除く）/
-  §8.1 diagSeq 2 本 / §8.2 strongmono-slice / §8.3（keystone 除く 3 本）/
-  §8.6 3 本 / §8.7 の const00・OT-examples・OT-scb-recursive・OT-dom-hereditary。
-- 🚨 残（**全てキャンペーン級**）: 下の Wave 計画参照。
+- ✅ 済: 定義層 / §5 / **§6 全節（6.8 d1pos campaign 完了、Wave A クローズ）** /
+  §7（7.1-buchholz-wf 除く）/ §8.1 diagSeq 2 本 / §8.2 standard-slice-Red-strongmono
+  ＋ strongmono-slice / §8.3（keystone 除く 3 本）/ §8.6 3 本 /
+  §8.7 の const00・OT-examples・OT-scb-recursive・OT-dom-hereditary。
+- 🚨 残（**全てキャンペーン級**）: 下の Wave 計画参照（Wave A は ✅ 済）。
 - `8.1-condI-III-c1-around` は sorry 残 1（part (4) のみ。(1)(2)(3-1)(3-2)(5) は緑）。
-- `8.2-standard-slice-Red-strongmono` は sorry 残 1（= §6.8 命題そのもの。6.8 が
-  緑になれば `descendingB_iff` ブリッジで即クローズ、配線済み）。
+- `7.1-buchholz-wf` は自前証明に決定（下記「決定済み」参照、Wave E 相当）。
 
 ## 1. 実行ルール（ユーザー指示）
 
@@ -92,7 +92,7 @@ Workflow スクリプト構造は過去 wave のものを再利用可
 
 ## 4. Wave 計画（優先順）
 
-### Wave A — 6.8 d1pos leg（クリティカルパス、最優先）
+### Wave A — 6.8 d1pos leg — ✅ 完了（2026-07-17。A-1〜A-3＋solo 仕上げ、以下は史料）
 **閉じると `6.8` と `8.2-standard-slice-Red-strongmono` の 2 項目が同時に ✅**
 （後者はブリッジ配線済み）。目標 = `lean/6/6.8-standard-slice-Br-descending.lean` の
 名前付き仮定 `RankSuccD1posLeg`（~4211 行目）を定理化。

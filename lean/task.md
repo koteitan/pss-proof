@@ -30,7 +30,7 @@
 
 - ✅ **§5 定式化**[r6]
 
-- 🚨 **§6 ペア数列の基本性質**
+- ✅ **§6 ペア数列の基本性質**
   - ✅ §6.1 命題（`≤_M` の `IncrFirst` 不変性） — `6.1-le-IncrFirst-invariance`[r1]
   - ✅ §6.2 単項性[r8]
   - ✅ §6.3 許容性[r3]
@@ -38,9 +38,7 @@
   - ✅ §6.5 簡約化[r16]
   - ✅ §6.6 簡約性[r17]
   - ✅ §6.7 標準形[r3]
-  - 🚨 §6.8 降順性
-    - 🚨🤖 命題（標準形の切片と `Br` の降順性の関係） — `6.8-standard-slice-Br-descending`[r4]
-    - ✅ 命題（標準形の単項成分が降順であること） — `6.8-standard-P-descending`[r1]
+  - ✅ §6.8 降順性[r6]
 
 - 🚨 **§7 Buchholz の表記系への翻訳**
   - 🚨 §7.1 Buchholz の表記系
@@ -61,7 +59,7 @@
     - 🚨 補題（条件(I)か(III)の下での `c₁` 前後の具体表示） — `8.1-condI-III-c1-around`[r2]
     - 🚨 命題（条件(I)の下での `Trans` と基本列の交換関係） — `8.1-Trans-fseq-condI`
   - 🚨 §8.2 強単項性
-    - 🚨 命題（標準形の直系先祖による切片の簡約化の強単項性） — `8.2-standard-slice-Red-strongmono`[r1] ⛔6.8
+    - ✅ 命題（標準形の直系先祖による切片の簡約化の強単項性） — `8.2-standard-slice-Red-strongmono`[r2]
     - ✅ 補題（強単項性の切片への遺伝性） — `8.2-strongmono-slice`[r1]
     - 🚨 補題（部分表現の単項成分と `Pred` の関係） — `8.2-subexpr-component-Pred`
     - 🚨 補題（強単項性の下での部分表現の単項成分の基本性質） — `8.2-subexpr-component-strongmono`
