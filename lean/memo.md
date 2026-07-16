@@ -122,8 +122,13 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
     対角列の簡約性は零列を分離し、正の末尾から `RTPS_diag_prefix` で復元した。
     `check_lean.py` rc=0、sorry 0、公開定理の axioms は
     `[propext, Classical.choice, Quot.sound]`。Isa: `m_6_7_*`。[r3]
-  - `6.8-standard-slice-Br-descending` — 訂正 **A7**（「`M′` が標準形」は偽。`Br(M′)` が降順が正）
-    ＋ 訂正 **A8**（`j₁` の式が off-by-one）
+  - 🚨 §6.8 降順性
+    - 🚨 `6.8-standard-slice-Br-descending` — 訂正 **A7**（「`M′` が標準形」は偽。
+      `Br(M′)` が降順が正）＋訂正 **A8**（`j₁` の式が off-by-one）。
+    - ✅ `6.8-standard-P-descending` — `STPS` の生成帰納法で証明。複項親では `P_fseq_1/2` により
+      不変 prefix と最終成分の基本列へ分解し、prefix 間・prefix/tail 間は帰納仮定、tail 内は
+      非複項成分の左列保存で閉じた。`check_lean.py` rc=0、sorry 0、公開定理の axioms は
+      `[propext, Classical.choice, Quot.sound]`。Isa: `m_6_8_standard_P_descending`。[r1]
 
 - 🚨 **§7 Buchholz の表記系への翻訳** — Isa: `m_7_*`。
   - ✅ `7.1-lessBT-linear-order` — `BT`・`BP`・`List BP` の三者に対する相互再帰補題として、

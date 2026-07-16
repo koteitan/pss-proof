@@ -40,7 +40,7 @@
   - ✅ §6.7 標準形[r3]
   - 🚨 §6.8 降順性
     - 🚨 命題（標準形の切片と `Br` の降順性の関係） — `6.8-standard-slice-Br-descending`
-    - 🚨 命題（標準形の単項成分が降順であること） — `6.8-standard-P-descending`
+    - ✅ 命題（標準形の単項成分が降順であること） — `6.8-standard-P-descending`[r1]
 
 - 🚨 **§7 Buchholz の表記系への翻訳**
   - 🚨 §7.1 Buchholz の表記系
