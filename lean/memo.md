@@ -154,10 +154,15 @@ private 実装済（エラー 0、既存 sorry 3 は不変）。**Lean 版は Is
 出るため、TransAux の手展開が不要。新設 private: `adm_zero_gp`/`adm_last_gp`/
 `find_adm_zero_gp`/`Adm_eq_zero_of_nadm_below_gp`（許容化ゼロ落ち）。
 条件 (VI) の確立は nadm→行1辺→`le0_adjacent`→行0隣接→両行 parent=j₁-1→`RedCondA_apply`。
-残り = 部品 2（rightmost_peel）・部品 3（gap_peel）・部品 4（part3_1 組み立て）。
-部品 2 の `Trans_slice_eq_Red` は `Trans_Red`（7.3-Trans-IncrFirst-Red:113）＋
-`ancestor_slice_Red_IncrFirst` で構成し、IncrFirst 側の adm/Adm 不変量は
-7.4-Mark-Trans-repr の private `adm_IncrFirstN_74`/`Adm_IncrFirstN_74` を複製する。
+**部品 2（`Mark_gap_rightmost_peel_gp`）も完了**（577f577、エラー 0・sorry 不変）:
+`Mark_Trans_repr`＋`Trans_Red` で値化 → `ancestor_slice_Red_IncrFirst` の Red 切片 N に
+2 塔適用。adm/行1-entry の IncrFirstN 不変量は private `adm_IncrFirstN_gp`/
+`entry_IncrFirstN_one_gp`（`nextR_IncrFirstN_ri`＝6.5-Red-IncrFirst-invariance:861 公開）。
+**罠: `rw [hIF]` は RHS の `Red (seg …)` 内の seg まで書き換える** → `conv_lhs` か
+添字一般化（∀ j 形）で回避。
+残り = 部品 3（gap_peel: Lng 帰納＋`Mark_nest_common_marked` 転送。
+`Mark_marked_isPTB` の Lean 対応物の確認から）・部品 4（part3_1 組み立て、
+layerB:20058–20155）。
 
 ---
 
