@@ -1,4 +1,6 @@
 import «8».«8.3-kind0-base-basepoint»
+import «8».«8.1-part4-one»
+import «8».«8.1-part4-two»
 import «6».«6.6-reduced-fseq»
 import «7».«7.4-Mark-Trans-repr»
 import «7».«7.3-Trans-preserves-zeroT»
@@ -1025,7 +1027,9 @@ theorem c1_around_3 (M : PS) (j₀' : ℕ) (hR : RTPS M) (hmono : monoT M = true
 
 Isabelle 側は `m_8_1_c1_around_part4_setup` / `_Nred` / `_Adm0` / `_cond41` / `_cond42` /
 `_TransN_41` / `_TransN_42` / `_segpos` を経て `m_8_1_c1_around_part4_1` /
-`m_8_1_c1_around_part4_2`（約 3000 行の前剥がし基盤）。Lean 未移植のため sorry。 -/
+`m_8_1_c1_around_part4_2`（約 3000 行の前剥がし基盤）。Lean 側は
+`8.1-part4-peel`〜`8.1-part4-two` の兄弟ファイル群（wave B-1/B-2）に移植済みで、
+両 leg を `c1_around_part4_1` / `c1_around_part4_2` で閉じる。 -/
 theorem c1_around_4 (M : PS) (j₀' : ℕ) (hR : RTPS M) (hmono : monoT M = true)
     (hadm : adm M (transJ0 M) = true) (hj1 : 1 < transJ1 M)
     (hge : entry M 1 (transJ1 M) ≤ entry M 1 (transJ0 M))
@@ -1038,8 +1042,9 @@ theorem c1_around_4 (M : PS) (j₀' : ℕ) (hR : RTPS M) (hmono : monoT M = true
         ∃! t34 : BT × BT, Mark (Pred M) (Adm M j₀')
           = Dprin (entry M 1 (Adm M j₀') : ℕ∞)
               (addBT t34.1 (Dprin (entry M 1 j₀' : ℕ∞)
-                (addBT t34.2 (transC1 M))))) := by
-  sorry
+                (addBT t34.2 (transC1 M))))) :=
+  ⟨fun hguard => c1_around_part4_1 M j₀' hR hmono hadm hj1 hge np hadj hguard,
+   fun hguard => c1_around_part4_2 M j₀' hR hmono hadm hj1 hge np hadj hguard⟩
 
 /-! ## part (5) エンジン層（§8.3 kind0 基盤の 8.1 側接着）
 
@@ -1347,7 +1352,7 @@ private theorem oper_prefix_to_lastblock_p5 (M : PS) (n j₀' : ℕ)
 
 Isabelle `m_8_1_c1_around_part5`（§8.3 kind0 基盤 `Lng_operI` /
 `oper_d0zero_prefix_to_lastblock` / `repr_parent_M_to_seg` / `adm_prefix_agree_eq`
-に依存）。Lean 未移植のため sorry。 -/
+に依存）。Lean 移植済（1f62b92、solo）。 -/
 theorem c1_around_5 (M : PS) (j₀' n : ℕ) (hR : RTPS M) (hmono : monoT M = true)
     (hadm : adm M (transJ0 M) = true) (hj1 : 1 < transJ1 M)
     (hge : entry M 1 (transJ1 M) ≤ entry M 1 (transJ0 M))

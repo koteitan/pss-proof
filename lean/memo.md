@@ -345,7 +345,7 @@ parent/Lng 形に落としてから作業する。
     `#guard` で固定。独立 Python モデルは `t'` 6種、`0≤u,v≤4`、深さ2までの一般右端文脈
     21,900例で一歩分岐・有界零化とも反例0。既存の全819列チェックサムは Lean/Python とも
     `531635224` のまま一致し、全 `lake build` は3,022 jobs成功。[r1]
-  - 🚨🤖 `8.1-condI-III-c1-around` — 訂正 **A20**（補題(1) は非簡約 1 列切片で偽）
+  - ✅ `8.1-condI-III-c1-around` — 訂正 **A20**（補題(1) は非簡約 1 列切片で偽）
     ＋ **A21**（補題(5) の条件(III)で `j₀ᴺ = j′₀` が偽）。5 部構成。[r2]
     **(1)(2)(3-1)(3-2)(5) 緑**（(1) は A20 訂正の完全形。反例定理
     `c1_around_1_original_false`/`c1_around_5_original_false` も機械証明済み。
@@ -360,10 +360,17 @@ parent/Lng 形に落としてから作業する。
     `Mark_leftend_form_proper` 公開済みで崩壊）／`8.1-part4-mid`＝Nred/Adm0/
     cond42/cond41／`8.1-part4-trans`＝TransN_41＋segpos（private engine
     `part4_TransN_engine_pt` が Adm0/cond41 の役割を吸収、python audit 1856 例
-    0 反例）。**残 = part4_1（Isa 32085）＋TransN_42（32629）＋part4_2（32827）
-    ＋in-place c1_around_4 差し替え（親）**。昇格候補: adm_row1_ancestry（3 重）/
-    row1_implies_row0（3 重）/entry_IncrFirstN_one（3 重）/IncrFirstN 不変量
-    pack（_pt 私的）。
+    0 反例）。
+    **Wave B-2 完了（r4, 2 agent 緑）→ 全クローズ（2026-07-17）**:
+    `8.1-part4-one`＝part4_1（Isa 32085–32277。part1/part2 引用は
+    Mark_Trans_repr＋seg_Pred_eq＋Mark_leftend_form_proper で私的再導出、
+    python audit 288 例 0 反例）／`8.1-part4-two`＝TransN_42＋part4_2
+    （4-1 engine の (V)-guard 版で cond42 吸収、`ex1_Dpt_addBT_two` 移植）。
+    親が in-place で c1_around_4 の sorry を両 leg 適用で差し替え → **ファイル全体
+    rc=0・sorry 0・全 8 公開定理 axioms 正常（lake 3082 jobs）**。
+    昇格候補: adm_row1_ancestry（3 重）/row1_implies_row0（3 重）/
+    entry_IncrFirstN_one（3 重）/IncrFirstN 不変量 pack（_pt 私的）/
+    addBT_principal_split（_p1/_p2 と 7.2-add-scb 私的）。
     ⚠️重複警告: `adm_row1_ancestry`/`row1_implies_row0`/`Trans_singleton` が複数ファイルで
     private 重複 → PSS/Adm・PSS/Defs・PSS/Trans へ昇格すべき。
   - ✅ `8.2-standard-slice-Red-strongmono` — **完了（2026-07-17、6.8 クローズと同時）**。[r2]
