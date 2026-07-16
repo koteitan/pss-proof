@@ -39,7 +39,7 @@
   - ✅ §6.6 簡約性[r17]
   - ✅ §6.7 標準形[r3]
   - 🚨 §6.8 降順性
-    - 🚨 命題（標準形の切片と `Br` の降順性の関係） — `6.8-standard-slice-Br-descending`[r1]
+    - 🚨🤖 命題（標準形の切片と `Br` の降順性の関係） — `6.8-standard-slice-Br-descending`[r1]
     - ✅ 命題（標準形の単項成分が降順であること） — `6.8-standard-P-descending`[r1]
 
 - 🚨 **§7 Buchholz の表記系への翻訳**
@@ -58,7 +58,7 @@
   - 🚨 §8.1 条件(I)の下での展開規則
     - ✅ 補題（公差 `(1,1)` のペア数列の `Trans` の基本性質） — `8.1-diagSeq-Trans` [r1]
     - ✅ 系（`Pred` と公差 `(1,1)` のペア数列の `Trans` の基本性質） — `8.1-Pred-diagSeq-Trans` [r1]
-    - 🚨 補題（条件(I)か(III)の下での `c₁` 前後の具体表示） — `8.1-condI-III-c1-around`[r1]
+    - 🚨🤖 補題（条件(I)か(III)の下での `c₁` 前後の具体表示） — `8.1-condI-III-c1-around`[r1]
     - 🚨 命題（条件(I)の下での `Trans` と基本列の交換関係） — `8.1-Trans-fseq-condI`
   - 🚨 §8.2 強単項性
     - 🚨 命題（標準形の直系先祖による切片の簡約化の強単項性） — `8.2-standard-slice-Red-strongmono`[r1] ⛔6.8
@@ -69,7 +69,7 @@
     - 🚨 補題（条件(V)の下での終切片と `Trans` の関係） — `8.2-condV-terminal-slice-Trans`
     - 🚨 命題（条件(II)か(IV)の下での終切片と `Trans` の関係） — `8.2-condIIIV-terminal-slice-Trans`
   - 🚨 §8.3 条件(II)の下での展開規則
-    - 🚨 補題（第 `0` 種型基本列の基本不等式） — `8.3-kind0-base-ineq`
+    - 🚨🤖 補題（第 `0` 種型基本列の基本不等式） — `8.3-kind0-base-ineq`
     - 🚨 補題（第 `0` 種型基本列の基本分岐規則） — `8.3-kind0-branch-rule`
     - 🚨 補題（第 `0` 種型基本列の基本基点関係） — `8.3-kind0-base-basepoint`
     - 🚨 命題（条件(II)の下での `Trans` と基本列の交換関係） — `8.3-Trans-fseq-condII`
@@ -96,6 +96,6 @@
     - 🚨 補題（順序数項の共終数の遺伝性） — `8.7-OT-dom-hereditary`
     - 🚨 補題（順序数項の末尾項の零化可能性） — `8.7-OT-tail-annihilable`
     - 🚨 補題（`Pred` と `[0]` の関係） — `8.7-Pred-oper0`
-    - 🚨 補題（順序数項の基本例） — `8.7-OT-examples`
+    - 🚨🤖 補題（順序数項の基本例） — `8.7-OT-examples`
     - 🚨 補題（`Trans` が標準形を保つこと） — `8.7-Trans-preserves-OT`
     - 🚨 **定理（標準形ペア数列システムの停止性）** — `8.7-termination`

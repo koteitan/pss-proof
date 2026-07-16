@@ -123,7 +123,7 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
     `check_lean.py` rc=0、sorry 0、公開定理の axioms は
     `[propext, Classical.choice, Quot.sound]`。Isa: `m_6_7_*`。[r3]
   - 🚨 §6.8 降順性
-    - 🚨 `6.8-standard-slice-Br-descending` — 訂正 **A7**（「`M′` が標準形」は偽。
+    - 🚨🤖 `6.8-standard-slice-Br-descending` — 訂正 **A7**（「`M′` が標準形」は偽。
       `Br(M′)` が降順が正）＋訂正 **A8**（`j₁` の式が off-by-one）。[r1]
       **wave1 で 39 エラー全修復＋組み立て完了**（rc=0・sorry 0・axioms 正常、4374 行）。
       ただし主定理 `standard_slice_Br_descending_of_d1pos` は仮定 `RankSuccD1posLeg`
@@ -238,7 +238,7 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
     `#guard` で固定。独立 Python モデルは `t'` 6種、`0≤u,v≤4`、深さ2までの一般右端文脈
     21,900例で一歩分岐・有界零化とも反例0。既存の全819列チェックサムは Lean/Python とも
     `531635224` のまま一致し、全 `lake build` は3,022 jobs成功。[r1]
-  - 🚨 `8.1-condI-III-c1-around` — 訂正 **A20**（補題(1) は非簡約 1 列切片で偽）
+  - 🚨🤖 `8.1-condI-III-c1-around` — 訂正 **A20**（補題(1) は非簡約 1 列切片で偽）
     ＋ **A21**（補題(5) の条件(III)で `j₀ᴺ = j′₀` が偽）。5 部構成。[r1]
     **wave1 で (1)(2)(3-2) 緑**（(1) は A20 訂正の完全形。反例定理
     `c1_around_1_original_false`/`c1_around_5_original_false` も機械証明済み）。
@@ -269,6 +269,10 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
   - `8.2-*` — `LastStep` の添字は A9 で訂正済みの形を使う。
     Isa の注意: `Pred_oper0` は標準入力で偽（反例 `M=(0,0)(1,1)(2,1)`）だが**定理は健全**
     （`Σ_B` 降下和ルートで回避）。**原文 §8 の証明には gap があるが、定理は真。**
+  - 🚨🤖 `8.3-kind0-base-ineq` — §8.3 の起点補題。8.1 part(5) の kind0 基盤でもある。
+    Isa: `p_8_3_kind0_base_ineq`。wave2 fable。
+  - 🚨🤖 `8.7-OT-examples` — OT_B の基本所属 4 本。Isa: `p_8_7_OT_examples`。
+    計算可能定義なので decide 寄りで閉じるはず。wave2 fable。
   - `8.3-kind0-base-basepoint` — 訂正 **A22**（1 文に誤植 3 つ。反例あり）
   - `8.4-rightmost-replace-Trans` — 訂正 **A30**（scb 分解が偽。長さ勘定で決まる）
     ＋ **A31**（補題(5-3) のガード欠落）
