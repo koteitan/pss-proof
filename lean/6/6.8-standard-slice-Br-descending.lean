@@ -150,7 +150,7 @@ theorem descending_append {A B : List PS}
     simpa [hjD] using hh
   exact cdom_trans (cdom_trans hC (hjunc hAne hBne)) hD
 
-private theorem descending_append_junction_68 {A B : List PS}
+theorem descending_append_junction_68 {A B : List PS}
     (h : descending (A ++ B)) (hA : A ≠ []) (hB : B ≠ []) :
     cdom (A.getD (A.length - 1) []) (B.getD 0 []) := by
   have hAlast : A.length - 1 < A.length := by
@@ -271,19 +271,19 @@ theorem descending_shift_append {Q PRE : List PS} {TL : PS} {c : ℕ}
   · intro htie
     exact htail1.trans (hbase.2 (by omega))
 
-private theorem seg_getElem_68 (M : PS) (a b i : ℕ)
+theorem seg_getElem_68 (M : PS) (a b i : ℕ)
     (hi : i < Lng (seg M a b)) :
     (seg M a b)[i] = (entry M 0 (a + i), entry M 1 (a + i)) := by
   simp [seg, List.getElem_range']
 
-private theorem getLastD_eq_getD_last_68 {α : Type} (Q : List α) (d : α)
+theorem getLastD_eq_getD_last_68 {α : Type} (Q : List α) (d : α)
     (hQ : Q ≠ []) : Q.getLastD d = Q.getD (Q.length - 1) d := by
   cases h : Q with
   | nil => exact (hQ h).elim
   | cons x xs =>
       simp [List.getLastD, List.getD, List.getLast_eq_getElem]
 
-private theorem getD_dropLast_68 {α : Type} (Q : List α) (d : α)
+theorem getD_dropLast_68 {α : Type} (Q : List α) (d : α)
     (j : ℕ) (hj : j < Q.dropLast.length) :
     Q.dropLast.getD j d = Q.getD j d := by
   have hjQ : j < Q.length := hj.trans_le (by simp)
@@ -293,7 +293,7 @@ private theorem getD_dropLast_68 {α : Type} (Q : List α) (d : α)
 
 /-- A positive fundamental-sequence step agrees with its source strictly
 before the source's last column. -/
-private theorem entry_oper_lt_last_68 (M : PS) (n i x : ℕ)
+theorem entry_oper_lt_last_68 (M : PS) (n i x : ℕ)
     (hlen : 1 < Lng M) (hn : 1 ≤ n)
     (hi : i = 0 ∨ i = 1) (hx : x < Lng M - 1) :
     entry (oper M n) i x = entry M i x := by
@@ -329,7 +329,7 @@ private theorem entry_oper_lt_last_68 (M : PS) (n i x : ℕ)
         simp [oper, hlastNe, hz, i₁, hpfalse]
       rw [hop, Pred_eq_take M hlen, entry_take M (Lng M - 1) i x hx]
 
-private theorem seg_oper_eq_68 (M : PS) (n a b : ℕ)
+theorem seg_oper_eq_68 (M : PS) (n a b : ℕ)
     (hlen : 1 < Lng M) (hn : 1 ≤ n)
     (hab : a ≤ b) (hb : b < Lng M - 1) :
     seg (oper M n) a b = seg M a b := by
@@ -489,7 +489,7 @@ theorem monoT_seg_of_le0_68 (M : PS) (a b : ℕ)
     exact (Nat.zero_le b).trans_lt hb
   exact mono_ancestor_slice M a b hM hab (by simpa [leR] using hle)
 
-private theorem parent_block_le0_68 (M : PS) (j₀ j₁ s : ℕ)
+theorem parent_block_le0_68 (M : PS) (j₀ j₁ s : ℕ)
     (hM : TPS M) (hnext : nextR M 0 j₀ j₁ = true)
     (hs : s < j₁ - j₀) : le0 M j₀ (j₀ + s) = true := by
   have hj₀lt := (nextR_implies_row0 M 0 j₀ j₁ hnext).1
@@ -498,7 +498,7 @@ private theorem parent_block_le0_68 (M : PS) (j₀ j₁ s : ℕ)
     (by omega) (by omega)
   simpa [leR] using hpart
 
-private theorem parent_block_entry0_min_68 (M : PS) (j₀ j₁ s : ℕ)
+theorem parent_block_entry0_min_68 (M : PS) (j₀ j₁ s : ℕ)
     (hM : TPS M) (hnext : nextR M 0 j₀ j₁ = true)
     (hs : s < j₁ - j₀) :
     entry M 0 j₀ ≤ entry M 0 (j₀ + s) := by
@@ -509,7 +509,7 @@ private theorem parent_block_entry0_min_68 (M : PS) (j₀ j₁ s : ℕ)
       (by omega) le_rfl (by simpa [leR] using hle)
     exact hgrowth.le
 
-private theorem P_seg_single_of_le0_68 (M : PS) (a b : ℕ)
+theorem P_seg_single_of_le0_68 (M : PS) (a b : ℕ)
     (hb : b < Lng M) (hab : a ≤ b) (hle : le0 M a b = true) :
     P (seg M a b) = [seg M a b] := by
   have hnm : multiT (seg M a b) = false := by
@@ -532,7 +532,7 @@ private theorem P_seg_single_of_le0_68 (M : PS) (a b : ℕ)
           omega
   exact P_nonmulti_eq (seg M a b) hnm
 
-private theorem TrMax_eq_of_prefix_agree_68
+theorem TrMax_eq_of_prefix_agree_68
     (M N : PS) (c : ℕ) (hM : TPS M) (hN : TPS N)
     (hagree : ∀ j, j ≤ c → M.getD j (0, 0) = N.getD j (0, 0))
     (hcM : c < Lng M) (hcN : c < Lng N)
@@ -573,7 +573,7 @@ private theorem TrMax_eq_of_prefix_agree_68
   rw [hstop] at hstep
   simp at hstep
 
-private theorem TrMax_lt_last_of_row1_zero_68
+theorem TrMax_lt_last_of_row1_zero_68
     (M : PS) (hM : TPS M) (hlen : 1 < Lng M)
     (hz : entry M 1 (Lng M - 1) = 0) :
     TrMax M < Lng M - 1 := by
@@ -589,7 +589,7 @@ private theorem TrMax_lt_last_of_row1_zero_68
     Bool.and_eq_true, decide_eq_true_eq] at hdata
   omega
 
-private theorem nextR_prefix_agree_68
+theorem nextR_prefix_agree_68
     (M N : PS) (c i x y : ℕ)
     (hagree : ∀ j, j ≤ c → M.getD j (0, 0) = N.getD j (0, 0))
     (hcM : c < Lng M) (hcN : c < Lng N)
@@ -615,7 +615,7 @@ private theorem nextR_prefix_agree_68
     _ = nextR N i x y :=
       nextR_take_adm N (c + 1) i x y (by omega) (by omega) (by omega)
 
-private theorem TrMax_eq_of_prefix_agree_sym_68
+theorem TrMax_eq_of_prefix_agree_sym_68
     (M N : PS) (c : ℕ) (hM : TPS M) (hN : TPS N)
     (hagree : ∀ j, j ≤ c → M.getD j (0, 0) = N.getD j (0, 0))
     (hcM : c < Lng M) (hcN : c < Lng N)
@@ -631,7 +631,7 @@ private theorem TrMax_eq_of_prefix_agree_sym_68
     (fun j hj => (hagree j hj).symm) hcN hcM (by omega) hstopN
   exact hh.symm
 
-private theorem trunk_entry1_mono_68 (M : PS) (a b : ℕ)
+theorem trunk_entry1_mono_68 (M : PS) (a b : ℕ)
     (hM : TPS M) (hab : a ≤ b) (hb : b ≤ TrMax M) :
     entry M 1 a ≤ entry M 1 b := by
   induction b generalizing a with
@@ -652,7 +652,7 @@ private theorem trunk_entry1_mono_68 (M : PS) (a b : ℕ)
           Bool.and_eq_true, decide_eq_true_eq] at hdata
         exact hleft.trans hdata.1.1.2.le
 
-private theorem seg_oper_prefix_agree_68
+theorem seg_oper_prefix_agree_68
     (N : PS) (n a b c : ℕ)
     (hlen : 1 < Lng N) (hn : 1 ≤ n)
     (hcM : c < Lng (seg (oper N n) a b))
@@ -674,7 +674,7 @@ private theorem seg_oper_prefix_agree_68
 
 /-! At the first d0-zero tiling boundary, the reduced trunk of the old
 slice cannot acquire one more row-1 step in the expanded slice. -/
-private theorem nextR1_boundary_stop_d0zero_caseA_68
+theorem nextR1_boundary_stop_d0zero_caseA_68
     (N : PS) (n j₀' j₁' : ℕ)
     (hNT : TPS N) (hlen : 1 < Lng N)
     (hzero : ¬(entry N 0 (Lng N - 1) = 0 ∧
@@ -809,7 +809,7 @@ private theorem nextR1_boundary_stop_d0zero_caseA_68
     rw [het, het1] at hstrict
     omega
 
-private theorem TrMax_seg_oper_d0zero_eq_caseA_68
+theorem TrMax_seg_oper_d0zero_eq_caseA_68
     (N : PS) (n j₀' j₁' : ℕ)
     (hNT : TPS N) (hlen : 1 < Lng N)
     (hzero : ¬(entry N 0 (Lng N - 1) = 0 ∧
@@ -872,13 +872,13 @@ private theorem TrMax_seg_oper_d0zero_eq_caseA_68
   exact TrMax_eq_of_prefix_agree_68 Mp Np c hMpT hNpT hagree hcM hcN
     htconf (by simpa [Mp, Np] using hstop)
 
-private theorem leR0_refl_68 (M : PS) (a : ℕ) (ha : a < Lng M) :
+theorem leR0_refl_68 (M : PS) (a : ℕ) (ha : a < Lng M) :
     leR M 0 a a = true := by
   have haux : le0Aux M (Lng M) a a = true := by
     cases Lng M <;> simp [le0Aux]
   simp [leR, le0, ha, haux]
 
-private theorem leR0_transfer_seg_eq_68
+theorem leR0_transfer_seg_eq_68
     (M N : PS) (a b : ℕ) (hab : a < b)
     (hbM : b < Lng M) (hbN : b < Lng N)
     (hseg : seg M a b = seg N a b)
@@ -895,7 +895,7 @@ private theorem leR0_transfer_seg_eq_68
     (by simp; omega) (by simp; omega)] at hlocalN
   simpa [Nat.add_sub_of_le hab.le] using hlocalN
 
-private theorem P_component_head_ge_68
+theorem P_component_head_ge_68
     (S : PS) (v J : ℕ) (hS : TPS S)
     (hJ : J < (P S).length)
     (hall : ∀ i, i < Lng S → v ≤ entry S 0 i) :
@@ -918,7 +918,7 @@ private theorem P_component_head_ge_68
   rw [P_component_leftend S J hS hJ]
   exact hall a ha
 
-private theorem P_first_component_head_68
+theorem P_first_component_head_68
     (S : PS) (i : ℕ) (hS : TPS S) :
     entry ((P S).getD 0 []) i 0 = entry S i 0 := by
   have hPpos : 0 < (P S).length := List.length_pos_of_ne_nil (P_nonempty S)
@@ -937,7 +937,7 @@ private theorem P_first_component_head_68
     simp
   rw [hidx0]
 
-private theorem P_seg_split_at_68
+theorem P_seg_split_at_68
     (M : PS) (a c b : ℕ) (hM : TPS M)
     (hac : a < c) (hcb : c ≤ b) (hb : b < Lng M)
     (hmin : ∀ x, a ≤ x → x < c → entry M 0 c ≤ entry M 0 x) :
@@ -978,7 +978,7 @@ private theorem P_seg_split_at_68
   rw [hleft, hright] at hsplit
   exact hsplit
 
-private theorem replicate_append_heads_68
+theorem replicate_append_heads_68
     (q : ℕ) (C D : PS) (v₀ v₁ : ℕ)
     (hC₀ : entry C 0 0 = v₀) (hC₁ : entry C 1 0 = v₁)
     (hD₀ : entry D 0 0 = v₀) (hD₁ : entry D 1 0 = v₁) :
@@ -998,7 +998,7 @@ private theorem replicate_append_heads_68
   · rw [h, hD₀, hD₁]
     exact ⟨rfl, rfl⟩
 
-private theorem P_terminal_split_above_parent_68
+theorem P_terminal_split_above_parent_68
     (N : PS) (j₀ j₁ a : ℕ) (hNT : TPS N)
     (hnext : nextR N 0 j₀ j₁ = true)
     (ha₀ : j₀ < a) (ha₁ : a < j₁) :
@@ -1055,7 +1055,7 @@ private theorem P_terminal_split_above_parent_68
   rw [hleft, hright, hsingle] at hsplit
   exact hsplit
 
-private theorem entry_diagSeq_68 (u v i j : ℕ)
+theorem entry_diagSeq_68 (u v i j : ℕ)
     (hj : j < Lng (diagSeq u v)) :
     entry (diagSeq u v) i j = u + j := by
   have hget : (diagSeq u v)[j]? = some (u + j, u + j) := by
@@ -1064,7 +1064,7 @@ private theorem entry_diagSeq_68 (u v i j : ℕ)
     simp [diagSeq, List.getElem_map, List.getElem_range']
   simp [entry, hget]
 
-private theorem nextR1_consecutive_68 (M : PS) (j : ℕ)
+theorem nextR1_consecutive_68 (M : PS) (j : ℕ)
     (hL : j + 1 < Lng M)
     (he0 : entry M 0 j < entry M 0 (j + 1))
     (he1 : entry M 1 j < entry M 1 (j + 1)) :
@@ -1095,7 +1095,7 @@ private theorem nextR1_consecutive_68 (M : PS) (j : ℕ)
     · simp [hjk, hle]
   · simp [hjk]
 
-private theorem TrMax_diagSeq_68 (u v : ℕ) (huv : u ≤ v) :
+theorem TrMax_diagSeq_68 (u v : ℕ) (huv : u ≤ v) :
     TrMax (diagSeq u v) = v - u := by
   have hT : TPS (diagSeq u v) := by
     apply List.ne_nil_of_length_pos
@@ -1120,7 +1120,7 @@ private theorem TrMax_diagSeq_68 (u v : ℕ) (huv : u ≤ v) :
   rw [hlen] at hupper
   omega
 
-private theorem Br_diagSeq_68 (u v : ℕ) (huv : u ≤ v) :
+theorem Br_diagSeq_68 (u v : ℕ) (huv : u ≤ v) :
     Br (diagSeq u v) = [] := by
   have htr := TrMax_diagSeq_68 u v huv
   have hlen : Lng (diagSeq u v) - 1 = v - u := by
@@ -1128,7 +1128,7 @@ private theorem Br_diagSeq_68 (u v : ℕ) (huv : u ≤ v) :
     omega
   simp [Br, htr, hlen]
 
-private theorem seg_diagSeq_68 (u v a b : ℕ)
+theorem seg_diagSeq_68 (u v a b : ℕ)
     (hab : a ≤ b) (hb : b ≤ v - u) (huv : u ≤ v) :
     seg (diagSeq u v) a b = diagSeq (u + a) (u + b) := by
   apply List.ext_getElem
@@ -1266,7 +1266,7 @@ private theorem rankSucc_multi_predecessor
     (rankSucc_multi_value_rank k N M n hN hM hn hmultiN hmonoM)
     hmonoM hlt hj₁ hanc
 
-private theorem reaching_old_end_forces_tiling
+theorem reaching_old_end_forces_tiling
     (N M : PS) (n j₁ : ℕ)
     (hM : M = oper N n) (hNlen : 1 < Lng N)
     (hjlarge : Lng N - 1 ≤ j₁) (hjM : j₁ ≤ Lng M - 1) :
@@ -1294,7 +1294,7 @@ private theorem reaching_old_end_forces_tiling
       omega
     · rfl
 
-private theorem oper_d0zero_expand_68
+theorem oper_d0zero_expand_68
     (N : PS) (n : ℕ) (hNlen : 1 < Lng N)
     (hzero : ¬(entry N 0 (Lng N - 1) = 0 ∧
       entry N 1 (Lng N - 1) = 0))
@@ -1310,7 +1310,7 @@ private theorem oper_d0zero_expand_68
   have hexpand := oper_tiling_expand N n hNlen hzero hp
   simpa [hi] using hexpand
 
-private theorem oper_d0zero_le0_confined_68
+theorem oper_d0zero_le0_confined_68
     (N : PS) (n a b : ℕ) (hNT : TPS N)
     (hNlen : 1 < Lng N)
     (hzero : ¬(entry N 0 (Lng N - 1) = 0 ∧
@@ -1380,7 +1380,7 @@ private theorem oper_d0zero_le0_confined_68
   rw [hBentry] at hgrowth
   omega
 
-private theorem oper_d0zero_slice_within_block_68
+theorem oper_d0zero_slice_within_block_68
     (N : PS) (n a b : ℕ) (hNT : TPS N)
     (hNlen : 1 < Lng N)
     (hzero : ¬(entry N 0 (Lng N - 1) = 0 ∧
@@ -1474,7 +1474,7 @@ private theorem oper_d0zero_slice_within_block_68
       rw [har, hr0, hr1]
       simp [Nat.add_assoc]
 
-private theorem oper_d0zero_block_seg_68
+theorem oper_d0zero_block_seg_68
     (M : PS) (n q s : ℕ)
     (hlen : 1 < Lng M)
     (hzero : ¬(entry M 0 (Lng M - 1) = 0 ∧
@@ -1513,7 +1513,7 @@ private theorem oper_d0zero_block_seg_68
     simpa [B, j₁, j₀, w, Nat.add_assoc] using
       congrArg₂ Prod.mk hread0 hread1
 
-private theorem oper_d0zero_seg_P_split_68
+theorem oper_d0zero_seg_P_split_68
     (M : PS) (n a k s : ℕ) (hMT : TPS M)
     (hlen : 1 < Lng M)
     (hzero : ¬(entry M 0 (Lng M - 1) = 0 ∧
@@ -1631,7 +1631,7 @@ private theorem oper_d0zero_seg_P_split_68
   rw [hleft, hright0, hblock, hsingle] at hsplit
   simpa [Q, E, B, j₁, j₀, w] using hsplit
 
-private theorem oper_d0zero_seg_P_hfold_68
+theorem oper_d0zero_seg_P_hfold_68
     (M : PS) (n a m : ℕ) (hMT : TPS M)
     (hlen : 1 < Lng M)
     (hzero : ¬(entry M 0 (Lng M - 1) = 0 ∧
@@ -1712,7 +1712,7 @@ private theorem oper_d0zero_seg_P_hfold_68
         rw [hstep, hih, List.append_assoc, hrepl]
         simp [blk, j₀, j₁]
 
-private theorem oper_d0zero_seg_P_blk1fold_68
+theorem oper_d0zero_seg_P_blk1fold_68
     (M : PS) (n m s : ℕ) (hMT : TPS M)
     (hlen : 1 < Lng M)
     (hzero : ¬(entry M 0 (Lng M - 1) = 0 ∧
@@ -1791,7 +1791,7 @@ private theorem oper_d0zero_seg_P_blk1fold_68
       rw [hpre] at hsplit
       simpa [j₁, j₀, w, a, blk, part] using hsplit
 
-private theorem oper_d0zero_seg_P_blk0fold_68
+theorem oper_d0zero_seg_P_blk0fold_68
     (M : PS) (n q s : ℕ) (hMT : TPS M)
     (hlen : 1 < Lng M)
     (hzero : ¬(entry M 0 (Lng M - 1) = 0 ∧
@@ -1987,7 +1987,7 @@ private theorem rankSucc_d0zero_within_block
   rw [hslice]
   exact ih N a b hN hmonoN hab (by omega) hancN
 
-private theorem rankSucc_d0zero_straddle_caseA_68
+theorem rankSucc_d0zero_straddle_caseA_68
     (k : ℕ)
     (ih : ∀ (X : PS) (a b : ℕ), SkTPS k X → monoT X = true →
       a < b → b ≤ Lng X - 1 → leR X 0 a b = true →
@@ -2255,7 +2255,7 @@ private theorem rankSucc_d0zero_straddle_caseA_68
     rw [hBrMp]
     exact hYdesc
 
-private theorem d0zero_Br_descending_branch_at_parent_68
+theorem d0zero_Br_descending_branch_at_parent_68
     (N : PS) (n j₀' j₁' : ℕ)
     (hNT : TPS N) (hlen : 1 < Lng N)
     (hzero : ¬(entry N 0 (Lng N - 1) = 0 ∧
@@ -2366,7 +2366,7 @@ private theorem d0zero_Br_descending_branch_at_parent_68
   rw [hBr]
   exact hYdesc
 
-private theorem d0zero_Br_descending_caseB_68
+theorem d0zero_Br_descending_caseB_68
     (N : PS) (n j₀' j₁' : ℕ)
     (hNT : TPS N) (hlen : 1 < Lng N)
     (hzero : ¬(entry N 0 (Lng N - 1) = 0 ∧
@@ -2577,7 +2577,7 @@ private theorem d0zero_Br_descending_caseB_68
   rw [hMbr]
   exact hAll
 
-private theorem d0zero_Br_descending_caseC_68
+theorem d0zero_Br_descending_caseC_68
     (N : PS) (n j₀' j₁' : ℕ)
     (hNT : TPS N) (hlen : 1 < Lng N)
     (hzero : ¬(entry N 0 (Lng N - 1) = 0 ∧
@@ -2969,7 +2969,7 @@ private theorem d0zero_Br_descending_caseC_68
     rw [hNewFold]
     exact hAll
 
-private theorem rankSucc_d0zero_68
+theorem rankSucc_d0zero_68
     (k : ℕ)
     (ih : ∀ (X : PS) (a b : ℕ), SkTPS k X → monoT X = true →
       a < b → b ≤ Lng X - 1 → leR X 0 a b = true →
@@ -3072,14 +3072,14 @@ private theorem rankSucc_d0zero_68
           simpa [hM] using hh
 
 /-- Taking all but the last element is the same as `dropLast`. -/
-private theorem take_pred_eq_dropLast_68 {α : Type} (l : List α) :
+theorem take_pred_eq_dropLast_68 {α : Type} (l : List α) :
     l.take (l.length - 1) = l.dropLast := by
   rw [List.dropLast_eq_take]
 
 /-- The last left endpoint of a multi-component principal decomposition is a
 positive row-zero left minimum, and the suffix starting there is precisely
 the final non-multi component. -/
-private theorem P_last_anchor_68
+theorem P_last_anchor_68
     (S : PS) (hS : TPS S) (hmulti : 1 < (P S).length) :
     let J := (P S).length - 1
     let c := (IdxSum (P S)).getD J 0
@@ -3129,7 +3129,7 @@ private theorem P_last_anchor_68
     exact hlist
   exact ⟨hcpos, hcle, hlmin, hnmTail, hfold⟩
 
-private theorem P_last_anchor_butlast_68
+theorem P_last_anchor_butlast_68
     (S : PS) (hS : TPS S) (hmulti : 1 < (P S).length) :
     let c := (IdxSum (P S)).getD ((P S).length - 1) 0
     (P S).dropLast = P (seg S 0 (c - 1)) := by
@@ -3150,7 +3150,7 @@ private theorem P_last_anchor_butlast_68
     _ = P (seg S 0 ((IdxSum (P S)).getD ((P S).length - 1) 0 - 1)) := by
         simp
 
-private theorem P_last_anchor_tail_entry_68
+theorem P_last_anchor_tail_entry_68
     (S : PS) (i : ℕ) (hS : TPS S) (hmulti : 1 < (P S).length) :
     let c := (IdxSum (P S)).getD ((P S).length - 1) 0
     entry (seg S c (Lng S - 1)) i 0 = entry S i c := by
@@ -3166,7 +3166,7 @@ private theorem P_last_anchor_tail_entry_68
   simpa using entry_seg S ((IdxSum (P S)).getD ((P S).length - 1) 0)
     (Lng S - 1) i 0 hpos
 
-private theorem P_last_anchor_getD_68
+theorem P_last_anchor_getD_68
     (S : PS) (hS : TPS S) (hmulti : 1 < (P S).length) :
     let J := (P S).length - 1
     let c := (IdxSum (P S)).getD J 0
@@ -3182,7 +3182,7 @@ private theorem P_last_anchor_getD_68
     seg S ((IdxSum (P S)).getD ((P S).length - 1) 0) (Lng S - 1)
   rw [P_IdxSum S ((P S).length - 1) hS (le_refl _), hnext]
 
-private theorem P_last_anchor_collapse_68
+theorem P_last_anchor_collapse_68
     (S base : PS) (BN : List PS) (sh : ℕ)
     (hS : TPS S) (hmulti : 1 < (P S).length)
     (hshift :
@@ -3205,7 +3205,7 @@ private theorem P_last_anchor_collapse_68
   rw [← hlow, ← take_pred_eq_dropLast_68 (P S)]
   exact hfold
 
-private theorem notmulti_seg_prefix_68
+theorem notmulti_seg_prefix_68
     (M : PS) (b : ℕ) (hM : TPS M) (hnm : multiT M = false)
     (hb : b < Lng M) : multiT (seg M 0 b) = false := by
   by_cases hb0 : b = 0
@@ -3230,7 +3230,7 @@ private theorem notmulti_seg_prefix_68
 
 /-- Cutting a sequence anywhere strictly after its last principal anchor does
 not change the principal-component prefix before the last component. -/
-private theorem P_dropLast_seg_zero_after_anchor_68
+theorem P_dropLast_seg_zero_after_anchor_68
     (S : PS) (m : ℕ) (hS : TPS S) (hmulti : 1 < (P S).length)
     (hcm : (IdxSum (P S)).getD ((P S).length - 1) 0 < m)
     (hm : m ≤ Lng S) :
@@ -3327,13 +3327,13 @@ private theorem P_dropLast_seg_zero_after_anchor_68
     P_last_anchor_butlast_68 S hS hmulti
   rw [hdropQ, hleftEq, hdropS]
 
-private theorem last_anchor_eq_sum_dropLast_68 (S : PS) :
+theorem last_anchor_eq_sum_dropLast_68 (S : PS) :
     (IdxSum (P S)).getD ((P S).length - 1) 0 =
       (((P S).dropLast).map Lng).sum := by
   rw [idxSum_getD (P S) ((P S).length - 1) (by omega)]
   simp [List.dropLast_eq_take]
 
-private theorem last_anchor_ge_of_leftmin_68
+theorem last_anchor_ge_of_leftmin_68
     (S : PS) (k : ℕ) (hS : TPS S) (hk : k ≤ Lng S - 1)
     (hmin : ∀ j, j < k → entry S 0 k ≤ entry S 0 j) :
     k ≤ (IdxSum (P S)).getD ((P S).length - 1) 0 := by
@@ -3348,7 +3348,7 @@ shift on the prefix ending immediately before the comparison boundary.  The
 only possible extra component is the one starting at that boundary; its
 presence is characterized by the same row-zero left-minimum condition on both
 sides. -/
-private theorem P_length_eq_of_shift_prefix_boundary_68
+theorem P_length_eq_of_shift_prefix_boundary_68
     (S Sn : PS) (sh : ℕ) (hS : TPS S) (hSn : TPS Sn)
     (hmultiS : 1 < (P S).length) (hmultiSn : 1 < (P Sn).length)
     (hmS : Lng Sn - 1 ≤ Lng S - 1)
@@ -3495,7 +3495,7 @@ private theorem P_length_eq_of_shift_prefix_boundary_68
 /-- Unified comparison of the last anchors across an all-but-boundary uniform
 shift.  It covers both an anchor strictly inside the shared prefix and an
 anchor exactly at its right boundary. -/
-private theorem last_anchor_coincide_shift_prefix_68
+theorem last_anchor_coincide_shift_prefix_68
     (S Sn : PS) (sh : ℕ) (hS : TPS S) (hSn : TPS Sn)
     (hmultiS : 1 < (P S).length) (hmultiSn : 1 < (P Sn).length)
     (hmS : Lng Sn - 1 ≤ Lng S - 1)
@@ -3667,7 +3667,7 @@ private theorem last_anchor_coincide_shift_prefix_68
 the proof in the article's `j₋₂ / w / δ` coordinates while delegating the
 literal `oper` expansion to the generic §6.6 tiling API. -/
 
-private theorem oper_d1pos_parent_lt_68
+theorem oper_d1pos_parent_lt_68
     (N : PS) (hp : hasParent N (idx1 N (Lng N - 1))
       (Lng N - 1) = true)
     (hi : idx1 N (Lng N - 1) = 1) :
@@ -3676,7 +3676,7 @@ private theorem oper_d1pos_parent_lt_68
   exact (nextR_implies_row0 N 1 (parent N 1 (Lng N - 1))
     (Lng N - 1) hnext).1
 
-private theorem length_oper_d1pos_68
+theorem length_oper_d1pos_68
     (N : PS) (n : ℕ) (hlen : 1 < Lng N)
     (hzero : ¬(entry N 0 (Lng N - 1) = 0 ∧
       entry N 1 (Lng N - 1) = 0))
@@ -3687,7 +3687,7 @@ private theorem length_oper_d1pos_68
       n * (Lng N - 1 - parent N 1 (Lng N - 1)) := by
   simpa [hi] using length_oper_tiling N n hlen hzero hp
 
-private theorem entry_oper_d1pos_zero_68
+theorem entry_oper_d1pos_zero_68
     (N : PS) (n q s : ℕ) (hlen : 1 < Lng N)
     (hzero : ¬(entry N 0 (Lng N - 1) = 0 ∧
       entry N 1 (Lng N - 1) = 0))
@@ -3705,7 +3705,7 @@ private theorem entry_oper_d1pos_zero_68
   simpa [hi] using entry_oper_tiling_block_zero N n q s hlen hzero hp hq
     (by simpa [hi] using hs)
 
-private theorem entry_oper_d1pos_one_68
+theorem entry_oper_d1pos_one_68
     (N : PS) (n q s : ℕ) (hlen : 1 < Lng N)
     (hzero : ¬(entry N 0 (Lng N - 1) = 0 ∧
       entry N 1 (Lng N - 1) = 0))
@@ -3721,7 +3721,7 @@ private theorem entry_oper_d1pos_one_68
   simpa [hi] using entry_oper_tiling_block_one N n q s hlen hzero hp hq
     (by simpa [hi] using hs)
 
-private theorem entry_oper_d1pos_prefix_68
+theorem entry_oper_d1pos_prefix_68
     (N : PS) (n i x : ℕ) (hlen : 1 < Lng N)
     (hzero : ¬(entry N 0 (Lng N - 1) = 0 ∧
       entry N 1 (Lng N - 1) = 0))
@@ -3735,7 +3735,7 @@ private theorem entry_oper_d1pos_prefix_68
 
 /-- A slice ending before block `q + 1` is independent of any later tiling
 blocks.  This is the period-reduction step used to normalize the hard case. -/
-private theorem seg_oper_d1pos_period_reduce_68
+theorem seg_oper_d1pos_period_reduce_68
     (N : PS) (n q a b : ℕ) (hlen : 1 < Lng N)
     (hzero : ¬(entry N 0 (Lng N - 1) = 0 ∧
       entry N 1 (Lng N - 1) = 0))
@@ -3796,7 +3796,7 @@ private theorem seg_oper_d1pos_period_reduce_68
 
 /-- A sub-slice contained in one positive-row-one block is the corresponding
 source slice with a uniform row-zero shift. -/
-private theorem seg_oper_d1pos_block_eq_68
+theorem seg_oper_d1pos_block_eq_68
     (N : PS) (n q s₀ e₀ : ℕ) (hlen : 1 < Lng N)
     (hzero : ¬(entry N 0 (Lng N - 1) = 0 ∧
       entry N 1 (Lng N - 1) = 0))
@@ -3840,7 +3840,7 @@ private theorem seg_oper_d1pos_block_eq_68
       entry_oper_d1pos_one_68 N n q (s₀ + r) hlen hzero hp hi hq
         (by simpa [j₀, w] using hr)]
 
-private theorem P_seg_oper_d1pos_block_eq_68
+theorem P_seg_oper_d1pos_block_eq_68
     (N : PS) (n q s₀ e₀ : ℕ) (hlen : 1 < Lng N)
     (hzero : ¬(entry N 0 (Lng N - 1) = 0 ∧
       entry N 1 (Lng N - 1) = 0))
@@ -3861,14 +3861,14 @@ private theorem P_seg_oper_d1pos_block_eq_68
   rw [seg_oper_d1pos_block_eq_68 N n q s₀ e₀ hlen hzero hp hi hq hse he,
     P_IncrFirstN_equivariance]
 
-private theorem TrMax_IncrFirstN_68 (sh : ℕ) (S : PS) :
+theorem TrMax_IncrFirstN_68 (sh : ℕ) (S : PS) :
     TrMax (IncrFirstN sh S) = TrMax S := by
   simp [TrMax, nextR_IncrFirstN_ri]
 
 /-- Conditional formula-G trunk correspondence.  The reference endpoint may
 be capped at the source's old last column; only the prefix through `c` is
 needed. -/
-private theorem TrMax_seg_oper_d1pos_eq_span_68
+theorem TrMax_seg_oper_d1pos_eq_span_68
     (N : PS) (n q s₀ a b j₀' j₁' sh : ℕ)
     (_hNT : TPS N) (hlen : 1 < Lng N)
     (hzero : ¬(entry N 0 (Lng N - 1) = 0 ∧
@@ -3950,7 +3950,7 @@ private theorem TrMax_seg_oper_d1pos_eq_span_68
 /-- The exact information required from the positive-row-one block geometry.
 It deliberately contains no descendingness premise, so its eventual proof is
 non-circular; descendingness of the source branch comes from the rank IH. -/
-private def d1posAlignment_68 (N Mp : PS) : Prop :=
+def d1posAlignment_68 (N Mp : PS) : Prop :=
   ∃ a b sh LOW TL,
     a < b ∧ b ≤ Lng N - 1 ∧ le0 N a b = true ∧
     Br Mp = LOW ++ [TL] ∧ Br (seg N a b) ≠ [] ∧
@@ -3967,7 +3967,7 @@ private def d1posAlignment_68 (N Mp : PS) : Prop :=
         entry ((Br (seg N a b)).getD
           ((Br (seg N a b)).length - 1) []) 1 0
 
-private theorem descending_of_d1posAlignment_68
+theorem descending_of_d1posAlignment_68
     (k : ℕ)
     (ih : ∀ (X : PS) (a b : ℕ), SkTPS k X → monoT X = true →
       a < b → b ≤ Lng X - 1 → leR X 0 a b = true →
@@ -3993,7 +3993,7 @@ private theorem descending_of_d1posAlignment_68
 
 /-- Convert the last-anchor comparison of two branch regions into the exact
 alignment record consumed by the rank-induction assembly. -/
-private theorem d1posAlignment_of_anchor_data_68
+theorem d1posAlignment_of_anchor_data_68
     (N Mp S Sn : PS) (a b sh : ℕ)
     (hab : a < b) (hb : b ≤ Lng N - 1) (hle : le0 N a b = true)
     (hBrM : Br Mp = P S) (hBrN : Br (seg N a b) = P Sn)
@@ -4077,7 +4077,7 @@ private theorem d1posAlignment_of_anchor_data_68
   exact ⟨a, b, sh, LOW, TL, hab, hb, hle, hfold, hQne, hlen,
     hheads, htail0, htail1⟩
 
-private theorem d1posAlignment_of_P_data_68
+theorem d1posAlignment_of_P_data_68
     (N Mp S Sn : PS) (a b sh : ℕ)
     (hab : a < b) (hb : b ≤ Lng N - 1) (hle : le0 N a b = true)
     (hBrM : Br Mp = P S) (hBrN : Br (seg N a b) = P Sn)
@@ -4161,7 +4161,7 @@ private theorem d1posAlignment_of_P_data_68
 /-- Package the reusable end of every positive-row-one geometric regime: a
 uniformly shifted prefix and the two boundary comparisons determine the whole
 branch alignment. -/
-private theorem d1posAlignment_of_shift_boundary_68
+theorem d1posAlignment_of_shift_boundary_68
     (N Mp S Sn : PS) (a b sh : ℕ)
     (hab : a < b) (hb : b ≤ Lng N - 1) (hle : le0 N a b = true)
     (hBrM : Br Mp = P S) (hBrN : Br (seg N a b) = P Sn)
@@ -4195,7 +4195,7 @@ rank 帰納の 4 ケースのうち、d1pos（末尾第 1 成分が正で切片�
 残る全ケースと WLOG 還元は無条件に完結している。 -/
 
 /-- 標準形は必ずどこかの rank 階層に属する（`ST_PS = ⋃ₖ SkT_PS` の一方向）。 -/
-private theorem STPS_exists_rank_68 (M : PS) (hM : STPS M) :
+theorem STPS_exists_rank_68 (M : PS) (hM : STPS M) :
     ∃ k, SkTPS k M := by
   induction hM with
   | diag u v huv => exact ⟨0, u, v, rfl, huv⟩
