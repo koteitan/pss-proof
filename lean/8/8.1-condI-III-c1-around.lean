@@ -459,6 +459,280 @@ theorem c1_around_5 (M : PS) (j₀' n : ℕ) (hR : RTPS M) (hmono : monoT M = tr
       (transJ0 M + (n - 1) * (transJ1 M - transJ0 M))) = false := by
   sorry
 
+/-! ## part (3-1) エンジン層 1/3: 全非許容ギャップの 2 塔
+（Isabelle `Trans_gap_2tower`, layerB/pss_wip.thy:19569）
+
+簡約 mono `N`・両端 Marked・内部全非許容なら
+`Trans N = D_{N₁,₀}(D_{N₁,last} 0)`。Isabelle は Trans 再帰の手展開だったが、
+Lean では `Mark_zero_eq_Trans`＋`Mark_transJm1_eq_transC2`（7.4-Mark-Trans-repr）
+経由で `Trans N = transC2 N` が既存補題 2 本から出るため大幅に短い。 -/
+
+private theorem adm_zero_gp (M : PS) : adm M 0 = true := by
+  simp [adm, nadm, nextR, nextrel1]
+
+private theorem adm_last_gp (M : PS) : adm M (Lng M - 1) = true := by
+  have h1 : nextrel1 M (Lng M - 1) (Lng M - 1 + 1) = false := by
+    rw [Bool.eq_false_iff]
+    intro h
+    simp only [nextrel1, Bool.and_eq_true, decide_eq_true_eq] at h
+    have := h.1.1.1.1.2
+    omega
+  simp [adm, nadm, nextR, h1]
+
+private theorem le0Aux_refl_gp (M : PS) (fuel j : ℕ) : le0Aux M fuel j j = true := by
+  cases fuel <;> simp [le0Aux]
+
+private theorem leR0_refl_gp (M : PS) (x : ℕ) (hx : x < Lng M) :
+    leR M 0 x x = true := by
+  simp [leR, le0, hx, le0Aux_refl_gp]
+
+private theorem find_adm_zero_gp (M : PS) :
+    ∀ j, adm M 0 = true → (∀ k, 1 ≤ k → k < j → adm M k = false) → 0 < j →
+      (((List.range j).reverse.find? (fun j' => adm M j')).getD 0) = 0
+  | 0, _, _, h0 => absurd h0 (by omega)
+  | 1, hadm0, _, _ => by
+      simp [List.range_succ, hadm0]
+  | (j + 2), hadm0, hfail, _ => by
+      rw [show List.range (j + 2) = List.range (j + 1) ++ [j + 1] from
+        List.range_succ, List.reverse_append]
+      simp only [List.reverse_singleton, List.singleton_append]
+      rw [List.find?_cons_of_neg (by
+        rw [hfail (j + 1) (by omega) (by omega)]
+        simp)]
+      exact find_adm_zero_gp M (j + 1) hadm0
+        (fun k h1 hk => hfail k h1 (by omega)) (by omega)
+
+/-- 全非許容ギャップの下では許容化は `0` に落ちる（Isabelle `Adm_eq_0_of_nadm_below`）。 -/
+private theorem Adm_eq_zero_of_nadm_below_gp (M : PS) (j : ℕ)
+    (h : ∀ k, 1 ≤ k → k ≤ j → adm M k = false) : Adm M j = 0 := by
+  unfold Adm
+  by_cases hj : j = 0
+  · subst hj
+    simp [adm_zero_gp]
+  · have hja : adm M j = false := h j (by omega) (le_refl j)
+    rw [hja]
+    simp only [Bool.false_eq_true, if_false]
+    exact find_adm_zero_gp M j (adm_zero_gp M)
+      (fun k h1 hk => h k h1 (by omega)) (by omega)
+
+private theorem Trans_gap_2tower_aux_gp : ∀ (n : ℕ) (N : PS), Lng N ≤ n → RTPS N →
+    Marked N 0 → Marked N (Lng N - 1) → 1 < Lng N →
+    (∀ k, 0 < k → k < Lng N - 1 → adm N k = false) →
+    Trans N = Dprin (entry N 1 0 : ℕ∞)
+      (Dprin (entry N 1 (Lng N - 1) : ℕ∞) BZero)
+  | 0, N, hn, _, _, _, hL, _ => by omega
+  | n + 1, N, hn, hR, hm0, hmL, hL, hgap => by
+      have hNT : TPS N := RTPS_TPS N hR
+      have hmono : monoT N = true := by
+        have hz : zeroT N = false := by
+          rw [Bool.eq_false_iff]
+          intro h
+          simp only [zeroT, Bool.and_eq_true, beq_iff_eq] at h
+          omega
+        have hle : leR N 0 0 (Lng N - 1) = true := hm0.2.2
+        simp [monoT, hz, hle]
+      by_cases hL2 : Lng N = 2
+      · -- 基底: 2 列
+        have h2 := two_column_Trans N hR hmono hL2
+        have hidx : Lng N - 1 = 1 := by omega
+        rw [hidx, h2]
+      · have hL3 : 2 < Lng N := by omega
+        -- 行 0 の親は存在し（mono）、`transJm1 N = 0`
+        have hpar0 : hasParent N 0 (Lng N - 1) = true :=
+          mono_hasParent_row0 N hNT hmono (Lng N - 1) (by omega) (by omega)
+        have hparlt : parent N 0 (Lng N - 1) < Lng N - 1 := by
+          have hnx := hasParent_next_fseq N 0 (Lng N - 1) hpar0
+          exact (nextR_implies_row0 N 0 _ _ hnx).1
+        have hAdm0 : Adm N (lastParent N) = 0 := by
+          apply Adm_eq_zero_of_nadm_below_gp
+          intro k h1 hk
+          have hklt : k < Lng N - 1 := by
+            have : lastParent N < Lng N - 1 := by
+              simpa [lastParent, lastIdx] using hparlt
+            omega
+          exact hgap k (by omega) hklt
+        have hJm1 : transJm1 N = 0 := by
+          simpa [transJm1, transJ0] using hAdm0
+        -- `Pred N` の基本量
+        have hPredEq : Pred N = N.take (Lng N - 1) := Pred_eq_take N hL
+        have hPredL : Lng (Pred N) = Lng N - 1 := by
+          rw [hPredEq]
+          simp
+        have hPredT : TPS (Pred N) := by
+          apply List.ne_nil_of_length_pos
+          change 0 < Lng (Pred N)
+          omega
+        have hRP : RTPS (Pred N) := RTPS_Pred N hR
+        have ht₁ : Trans (Pred N) ≠ BZero := by
+          intro h0
+          have hzP := (Trans_preserves_zeroT (Pred N) hPredT).mpr h0
+          simp only [zeroT, Bool.and_eq_true, beq_iff_eq] at hzP
+          omega
+        -- `Trans N = transC2 N`
+        have hTC2 : Trans N = transC2 N := by
+          have h1 := Mark_transJm1_eq_transC2 N hR hmono hL ht₁
+          have h2 : Mark N 0 = Trans N := Mark_zero_eq_Trans N hR hm0
+          rw [hJm1, h2] at h1
+          exact h1
+        -- IH を `Pred N` に
+        have hm0P : Marked (Pred N) 0 := Marked_Pred N 0 hNT hL hm0 (by omega)
+        have hmLP : Marked (Pred N) (Lng (Pred N) - 1) := by
+          refine ⟨hPredT, adm_last_gp (Pred N), leR0_refl_gp (Pred N) _ (by omega)⟩
+        have hgapP : ∀ k, 0 < k → k < Lng (Pred N) - 1 → adm (Pred N) k = false := by
+          intro k hk0 hkL
+          have hkN : k < Lng N - 2 := by omega
+          have hadmN : adm N k = false := hgap k hk0 (by omega)
+          have hnadmN : nadm N k = true := by
+            simpa [adm] using hadmN
+          have e1 : nextR (Pred N) 1 (k - 1) k = nextR N 1 (k - 1) k := by
+            rw [hPredEq]
+            exact nextR_take_adm N (Lng N - 1) 1 (k - 1) k (by omega) (by omega)
+              (by omega)
+          have e2 : nextR (Pred N) 1 k (k + 1) = nextR N 1 k (k + 1) := by
+            rw [hPredEq]
+            exact nextR_take_adm N (Lng N - 1) 1 k (k + 1) (by omega) (by omega)
+              (by omega)
+          have hpairN : nextR N 1 (k - 1) k = true ∧ nextR N 1 k (k + 1) = true := by
+            simp only [nadm, Bool.or_eq_true, Bool.and_eq_true,
+              decide_eq_true_eq] at hnadmN
+            rcases hnadmN with h | h
+            · exfalso
+              omega
+            · exact h
+          have hnadmP : nadm (Pred N) k = true := by
+            simp only [nadm, Bool.or_eq_true, Bool.and_eq_true, decide_eq_true_eq]
+            right
+            rw [e1, e2]
+            exact hpairN
+          simp [adm, hnadmP]
+        have hIH := Trans_gap_2tower_aux_gp n (Pred N) (by omega) hRP hm0P hmLP
+          (by omega) hgapP
+        -- `Pred N` の行 1 entry は `N` のもの
+        have he0 : entry (Pred N) 1 0 = entry N 1 0 := by
+          rw [hPredEq]
+          exact entry_take N (Lng N - 1) 1 0 (by omega)
+        have hePidx : Lng (Pred N) - 1 = Lng N - 2 := by omega
+        have heP : entry (Pred N) 1 (Lng (Pred N) - 1) = entry N 1 (Lng N - 2) := by
+          rw [hePidx, hPredEq]
+          exact entry_take N (Lng N - 1) 1 (Lng N - 2) (by omega)
+        -- `transC1/transV/transT2` の値
+        have hC1 : transC1 N = Trans (Pred N) := by
+          have h0 : Mark (Pred N) 0 = Trans (Pred N) :=
+            Mark_zero_eq_Trans (Pred N) hRP hm0P
+          simp [transC1, hJm1, h0]
+        have hC1v : transC1 N = Dprin (entry N 1 0 : ℕ∞)
+            (Dprin (entry N 1 (Lng N - 2) : ℕ∞) BZero) := by
+          rw [hC1, hIH, he0, heP]
+        have hV : transV N = (entry N 1 0 : ℕ∞) := by
+          simp [transV, hC1v, bpHeadV, Dprin]
+        -- `j₁ - 1` は非許容 → 行 1 の辺 → 行 0 の隣接辺 → 両行の親 = `j₁ - 1`
+        have hnadm1 : nadm N (Lng N - 2) = true := by
+          have := hgap (Lng N - 2) (by omega) (by omega)
+          simpa [adm] using this
+        have hpair1 : nextR N 1 (Lng N - 2) (Lng N - 2 + 1) = true := by
+          simp only [nadm, Bool.or_eq_true, Bool.and_eq_true,
+            decide_eq_true_eq] at hnadm1
+          rcases hnadm1 with h | h
+          · exfalso
+            omega
+          · exact h.2
+        have hj₁idx : Lng N - 2 + 1 = Lng N - 1 := by omega
+        rw [hj₁idx] at hpair1
+        have hnr1 : nextrel1 N (Lng N - 2) (Lng N - 1) = true := by
+          simpa [nextR] using hpair1
+        have hle0adj : le0 N (Lng N - 2) (Lng N - 1) = true := by
+          have hh := hnr1
+          simp only [nextrel1, Bool.and_eq_true, decide_eq_true_eq] at hh
+          exact hh.1.2
+        have hnr0 : nextrel0 N (Lng N - 2) (Lng N - 1) = true := by
+          have hb : le0 N (Lng N - 2) (Lng N - 2 + 1) = true := by
+            rw [hj₁idx]
+            exact hle0adj
+          have hstep := le0_adjacent N (Lng N - 2) hb
+          rwa [hj₁idx] at hstep
+        have hpar0v : parent N 0 (Lng N - 1) = Lng N - 2 := by
+          obtain ⟨p, hpnext, hpuniq⟩ :=
+            (hasParent_iff_unique_fseq N 0 (Lng N - 1)).mp hpar0
+          have h1 : Lng N - 2 = p := hpuniq _ (by simpa [nextR] using hnr0)
+          have h2 : parent N 0 (Lng N - 1) = p :=
+            parent_eq_of_unique_fseq N 0 (Lng N - 1) p hpnext hpuniq
+          omega
+        have hstrict1 : entry N 1 (Lng N - 2) < entry N 1 (Lng N - 1) := by
+          have hh := hnr1
+          simp only [nextrel1, Bool.and_eq_true, decide_eq_true_eq] at hh
+          exact hh.1.1.2
+        have hpar1 : hasParent N 1 (Lng N - 1) = true := by
+          rw [hasParent_iff_unique_fseq]
+          refine ⟨Lng N - 2, by simpa [nextR] using hnr1, ?_⟩
+          intro q hq
+          have hq1 : nextrel1 N q (Lng N - 1) = true := by
+            simpa [nextR] using hq
+          by_contra hne
+          have hqlt : q < Lng N - 1 := by
+            have hh := hq1
+            simp only [nextrel1, Bool.and_eq_true, decide_eq_true_eq] at hh
+            exact hh.1.1.1.2
+          have hqlt1 : q < Lng N - 2 := by omega
+          have hh := hq1
+          simp only [nextrel1, Bool.and_eq_true, decide_eq_true_eq,
+            List.all_eq_true, List.mem_range] at hh
+          have hval := hh.2 (Lng N - 2) (by omega)
+          simp only [hqlt1, hle0adj, decide_true, Bool.and_true, Bool.not_true,
+            Bool.false_or, decide_eq_true_eq] at hval
+          omega
+        have hpar1v : parent N 1 (Lng N - 1) = Lng N - 2 := by
+          obtain ⟨p, hpnext, hpuniq⟩ :=
+            (hasParent_iff_unique_fseq N 1 (Lng N - 1)).mp hpar1
+          have h1 : Lng N - 2 = p := hpuniq _ (by simpa [nextR] using hnr1)
+          have h2 : parent N 1 (Lng N - 1) = p :=
+            parent_eq_of_unique_fseq N 1 (Lng N - 1) p hpnext hpuniq
+          omega
+        have hA : RedCondA N = true := (RTPS_condAB N hR).1
+        have hstep1 : entry N 1 (parent N 1 (Lng N - 1)) + 1
+            = entry N 1 (Lng N - 1) :=
+          RedCondA_apply N hA 1 (Lng N - 1) (by omega) (by omega) hpar1
+        rw [hpar1v] at hstep1
+        -- 条件 (VI) 成立、(I)/(III)/(V) 不成立
+        have hcondVI : transCondVI N = true := by
+          simp only [transCondVI, lastIdx, lastParent, Bool.and_eq_true,
+            decide_eq_true_eq, beq_iff_eq]
+          rw [hpar0v]
+          refine ⟨⟨by omega, by omega⟩, by omega⟩
+        have hcondI : transCondI N = false := by
+          rw [Bool.eq_false_iff]
+          intro h
+          simp only [transCondI, lastIdx, Bool.and_eq_true, beq_iff_eq] at h
+          omega
+        have hcondIII : transCondIII N = false := by
+          rw [Bool.eq_false_iff]
+          intro h
+          simp only [transCondIII, lastIdx, lastParent, Bool.and_eq_true,
+            decide_eq_true_eq] at h
+          rw [hpar0v] at h
+          omega
+        have hcondV : transCondV N = false := by
+          rw [Bool.eq_false_iff]
+          intro h
+          simp only [transCondV, lastIdx, lastParent, Bool.and_eq_true,
+            decide_eq_true_eq, beq_iff_eq] at h
+          rw [hpar0v] at h
+          omega
+        -- `transC2` の潰れ
+        have hC2 : transC2 N = Dprin (transV N)
+            (Dprin (entry N 1 (Lng N - 1) : ℕ∞) BZero) := by
+          simp only [transC2, transC2Core, lastIdx, hcondI, hcondIII, hcondV,
+            hcondVI]
+          simp
+        rw [hTC2, hC2, hV]
+
+/-- 全非許容ギャップの 2 塔（Isabelle `Trans_gap_2tower`）。 -/
+private theorem Trans_gap_2tower_gp (N : PS) (hR : RTPS N) (hm0 : Marked N 0)
+    (hmL : Marked N (Lng N - 1)) (hL : 1 < Lng N)
+    (hgap : ∀ k, 0 < k → k < Lng N - 1 → adm N k = false) :
+    Trans N = Dprin (entry N 1 0 : ℕ∞)
+      (Dprin (entry N 1 (Lng N - 1) : ℕ∞) BZero) :=
+  Trans_gap_2tower_aux_gp (Lng N) N (le_refl _) hR hm0 hmL hL hgap
+
 /-! ## 原文形の反例（A20 / A21） -/
 
 private theorem c1_around_1_cex_vals :

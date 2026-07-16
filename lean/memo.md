@@ -147,6 +147,18 @@ Isabelle 連鎖 = 4 部品（layerB/pss_wip.thy）:
 **規模感**: Lean ~700 行・新規小補題 ~6 本。Trans 展開の罠は 7.3 系ファイルの
 `TransAux_MarkAux_fuel_irrel_RTPS` と `transC2Core_properties` を先に読むこと。
 
+**進捗 (2026-07-16)**: 部品 1（`Trans_gap_2tower_gp`）**完了** — 8.1 ファイルに
+private 実装済（エラー 0、既存 sorry 3 は不変）。**Lean 版は Isabelle より大幅短縮**:
+`Trans N = Mark N 0 = Mark N (transJm1 N) = transC2 N` が既存の
+`Mark_zero_eq_Trans`＋`Mark_transJm1_eq_transC2`（7.4-Mark-Trans-repr 公開済）で
+出るため、TransAux の手展開が不要。新設 private: `adm_zero_gp`/`adm_last_gp`/
+`find_adm_zero_gp`/`Adm_eq_zero_of_nadm_below_gp`（許容化ゼロ落ち）。
+条件 (VI) の確立は nadm→行1辺→`le0_adjacent`→行0隣接→両行 parent=j₁-1→`RedCondA_apply`。
+残り = 部品 2（rightmost_peel）・部品 3（gap_peel）・部品 4（part3_1 組み立て）。
+部品 2 の `Trans_slice_eq_Red` は `Trans_Red`（7.3-Trans-IncrFirst-Red:113）＋
+`ancestor_slice_Red_IncrFirst` で構成し、IncrFirst 側の adm/Adm 不変量は
+7.4-Mark-Trans-repr の private `adm_IncrFirstN_74`/`Adm_IncrFirstN_74` を複製する。
+
 ---
 
 ## 5. ツリー（task.md と同構造 ＋ 注釈）
