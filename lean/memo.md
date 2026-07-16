@@ -238,6 +238,20 @@ parent/Lng 形に落としてから作業する。
       notbrle_uncapped の ~40 行の系（Isa 20045–20087）。
       **kimina 新罠**: 未ビルド module の import は import エラーを出さず header 全体を
       無言で汚染（PS/ℕ まで壊れる）。新ファイルを import する前に lake build 必須。
+      **Wave A-2 完了（r3, 全4 agent 緑、lake 3071 jobs）**: `6.8-d1pos-notbrle/
+      -anchor-regA/-anchor-regB/-period.lean` 新設。**22 Props 中 14 討伐**
+      （notbrle: branch_anchor/ctx_tnc_prefix/Br_align_regA、regB: ctx_multiM/
+      ctx_le0Np/lenPSeq_unified、period: ctx_tnc_capped/nextR1_boundary_stop_d1pos/
+      tncstrict_uncapped/ctx_period_le0Np/stop_direct/stop_direct_strict/
+      period_fullShift/period_boundary_geom）。anchor 層（seg_low_verbatim〜clt_regA/
+      regB、anchor_coincide_regA/A2/B/B2、lowshift 系、row0_agree、stop_of_tnc、
+      period_unified 等）全公開。**残 8 Props** = 4 セル（LOW_take_eq_regA/regB/
+      boundary/periodic、Isa 17737–18670・20584）＋low_anchor_shamt0（20904）＋
+      period_boundary_cleMB（21135）＋ctx_notbrleNp/verbatim（20172/20322）。
+      セル支度の boundary trio（undercut/mLmin/cle、20488–20583）も未移植。
+      dedup 候補: anchor_lt_of_uniform_witness（_ra/_rb 二重私的）、d1pos_agree
+      （_dt/_pd 二重）、TPS_of_P_multi（三重）、trunk_le1_pd（新規、公開価値あり）、
+      TrMax_seg_oper_d1pos_eq_regA_nb（Isa 15218、規約 A-3 が使うかも）。
       **wave1 で 39 エラー全修復＋組み立て完了**（rc=0・sorry 0・axioms 正常、4374 行）。
       ただし主定理 `standard_slice_Br_descending_of_d1pos` は仮定 `RankSuccD1posLeg`
       （＝Isabelle の `oper_d1pos_notbrle_*` brick 群、`pss_mechanized.thy` ~9302–21950 の
