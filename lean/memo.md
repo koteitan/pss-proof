@@ -170,8 +170,17 @@ Marked 事実は `c1_around_2` を再利用、`adm M j₀` で許容化恒等（
 engine 3/3**（7de0170 のメッセージに訂正注記済）。cwd ずれ（lake build 後の
 `cd lean` 残留）で commit-msg を 2 回誤用— **lake build と git は同一コマンドで
 連結しない**こと。
-8.1 の残 sorry = part (4)（前剥がし ~3000 行基盤）と part (5)（kind0 基盤は
-8.3 で構築済み、Trans 内部量の seg-oper 転送が本体）。
+**part (5) もクローズ**（1f62b92、sorry 2→1）: conj(1)=`kind0_base_basepoint`
+（8.3 ファイルを import）、conj(2)=`oper_prefix_to_lastblock_p5`、conj(4)=
+一般行 0 親一意性 `row0_parent_unique`＋`nextR_seg_adm` 転送、conj(5)=
+`admof_slice`＋接頭辞 adm/Adm 一致（`nextrel1_prefix_imp_p5` 両方向＋
+`find_adm_congr_p5`）、conj(6)=`Lng (Pred N) = idx > 1` だけで
+`Trans_preserves_zeroT`（TPS 版なので M[n-1] 同定不要）、conj(7)=間隔 ≥ 2。
+**罠: `Lng` は abbrev だが omega/rw はシンタクティック** — `Lng X` と `X.length` は
+別アトム。defeq-cast（`have h : X.length = _ := hLng形`）で橋渡しする。
+goal の transJ0/transJ1 形は冒頭で `simp only [htJ0, htJ1]`（rfl 証明の書換）で
+parent/Lng 形に落としてから作業する。
+**8.1 の残 sorry = part (4) のみ**（前剥がし ~3000 行基盤、キャンペーン級）。
 
 ---
 
