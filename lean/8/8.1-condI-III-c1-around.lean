@@ -319,146 +319,6 @@ theorem c1_around_2 (M : PS) (j₀' : ℕ) (hR : RTPS M) (hmono : monoT M = true
   rw [hidx]
   exact hsegMk
 
-/-! ## part (3) — `j′₀ + 1 = j₀`（隣接する次親） -/
-
-/-- 原文 part (3-2) 単独（sorry 0 で監査可能な形）: `j′₀ + 1 = j₀` のとき、前件
-`j′₋₁ < j′₀ ∧ M_{1,j′₀} ≥ M_{1,j₀}` は空虚に偽である。`Adm M j′₀ < j′₀` は
-`j′₀` の非 `M` 許容を強制し、非許容の定義から `(1,j′₀) <^Next (1,j′₀+1)`、
-隣接性 `j′₀ + 1 = j₀` から `M_{1,j′₀} < M_{1,j₀}` となって前件と矛盾する。
-Isabelle: `m_8_1_c1_around_part3_2`。 -/
-theorem c1_around_3_2 (M : PS) (j₀' : ℕ) (_hR : RTPS M)
-    (np : nextR M 0 j₀' (transJ0 M) = true)
-    (hadj : j₀' + 1 = transJ0 M) :
-    Adm M j₀' < j₀' ∧ entry M 1 (transJ0 M) ≤ entry M 1 j₀' →
-      Mark (Pred M) (Adm M j₀')
-        = Dprin (entry M 1 (Adm M j₀') : ℕ∞)
-            (Dprin (entry M 1 j₀' : ℕ∞) (transC1 M)) := by
-  rintro ⟨hAdmLt, hgeE⟩
-  exfalso
-  -- `Adm M j′₀ < j′₀` は `¬ adm M j′₀` を強制する
-  have hnotadm : adm M j₀' = false := by
-    cases hja : adm M j₀' with
-    | true =>
-        have : Adm M j₀' = j₀' := by simp [Adm, hja]
-        omega
-    | false => rfl
-  have hnadm : nadm M j₀' = true := by
-    have h := hnotadm
-    simp only [adm, Bool.not_eq_false'] at h
-    exact h
-  -- `j′₀ < Lng M`（next 関係から）
-  have hn0 : nextrel0 M j₀' (transJ0 M) = true := by
-    simpa [nextR] using np
-  have hj0'L : j₀' < Lng M := by
-    have hh := hn0
-    simp only [nextrel0, Bool.and_eq_true, decide_eq_true_eq] at hh
-    exact hh.1.1.1.1
-  -- 非許容の第 2 分岐: `(1, j′₀) <^Next (1, j′₀ + 1)`
-  have hpair : nextR M 1 (j₀' - 1) j₀' = true ∧
-      nextR M 1 j₀' (j₀' + 1) = true := by
-    have hn := hnadm
-    simp only [nadm, Bool.or_eq_true, decide_eq_true_eq,
-      Bool.and_eq_true] at hn
-    rcases hn with hn | hn
-    · omega
-    · exact hn
-  have hnr1 : nextrel1 M j₀' (j₀' + 1) = true := by
-    simpa [nextR] using hpair.2
-  have hlt1 : entry M 1 j₀' < entry M 1 (j₀' + 1) := by
-    have hh := hnr1
-    simp only [nextrel1, Bool.and_eq_true, decide_eq_true_eq] at hh
-    exact hh.1.1.2
-  rw [hadj] at hlt1
-  omega
-
-/-- 原文 part (3): `j′₀ + 1 = j₀` のとき
-(3-1) `j′₋₁ = j′₀` または `M_{1,j′₀}+1 = M_{1,j₀}` ならば
-`Mark(Pred M, j′₋₁) = D_{M_{1,j′₋₁}} c₁`、
-(3-2) `j′₋₁ < j′₀` かつ `M_{1,j′₀} ≥ M_{1,j₀}` ならば
-`Mark(Pred M, j′₋₁) = D_{M_{1,j′₋₁}} D_{M_{1,j′₀}} c₁`。
-(3-2) の前件は空虚に偽（`Adm M j′₀ < j′₀` は `j′₀` の非許容を強制し、
-隣接性から `M_{1,j′₀} < M_{1,j₀}` になる）。
-
-(3-1) は Isabelle `m_8_1_c1_around_part3_1`（`Mark_gap_peel` 経由）に対応するが、
-gap 剥がしエンジンが Lean 未移植のため sorry。 -/
-theorem c1_around_3 (M : PS) (j₀' : ℕ) (hR : RTPS M) (hmono : monoT M = true)
-    (hadm : adm M (transJ0 M) = true) (hj1 : 1 < transJ1 M)
-    (hge : entry M 1 (transJ1 M) ≤ entry M 1 (transJ0 M))
-    (np : nextR M 0 j₀' (transJ0 M) = true)
-    (hadj : j₀' + 1 = transJ0 M) :
-    ((Adm M j₀' = j₀' ∨ entry M 1 j₀' + 1 = entry M 1 (transJ0 M)) →
-        Mark (Pred M) (Adm M j₀')
-          = Dprin (entry M 1 (Adm M j₀') : ℕ∞) (transC1 M)) ∧
-    (Adm M j₀' < j₀' ∧ entry M 1 (transJ0 M) ≤ entry M 1 j₀' →
-        Mark (Pred M) (Adm M j₀')
-          = Dprin (entry M 1 (Adm M j₀') : ℕ∞)
-              (Dprin (entry M 1 j₀' : ℕ∞) (transC1 M))) := by
-  constructor
-  · -- (3-1): Isabelle 版は `Mark_gap_peel`（間隙が全て非許容のとき
-    -- `Mark Q a = D_{Q_{1,a}} (Mark Q b)`）で閉じる。Lean 未移植。
-    sorry
-  · -- (3-2): 前件が空虚に偽（`c1_around_3_2` に単独 green 版）
-    exact c1_around_3_2 M j₀' hR np hadj
-
-/-! ## part (4) — `j′₀ + 1 < j₀`（離れた次親） -/
-
-/-- 原文 part (4): `j′₀ + 1 < j₀` のとき
-(4-1) `j′₋₁ = j′₀` または `M_{1,j′₀}+1 = M_{1,j₀}` ならば一意な `t′₂ ∈ T_B` が存在して
-`Mark(Pred M, j′₋₁) = D_{M_{1,j′₋₁}}(t′₂ + c₁)`、
-(4-2) `j′₋₁ < j′₀` かつ `M_{1,j′₀} ≥ M_{1,j₀}` ならば一意な `(t′₃,t′₄) ∈ T_B²` が存在して
-`Mark(Pred M, j′₋₁) = D_{M_{1,j′₋₁}}(t′₃ + D_{M_{1,j′₀}}(t′₄ + c₁))`。
-
-Isabelle 側は `m_8_1_c1_around_part4_setup` / `_Nred` / `_Adm0` / `_cond41` / `_cond42` /
-`_TransN_41` / `_TransN_42` / `_segpos` を経て `m_8_1_c1_around_part4_1` /
-`m_8_1_c1_around_part4_2`（約 3000 行の前剥がし基盤）。Lean 未移植のため sorry。 -/
-theorem c1_around_4 (M : PS) (j₀' : ℕ) (hR : RTPS M) (hmono : monoT M = true)
-    (hadm : adm M (transJ0 M) = true) (hj1 : 1 < transJ1 M)
-    (hge : entry M 1 (transJ1 M) ≤ entry M 1 (transJ0 M))
-    (np : nextR M 0 j₀' (transJ0 M) = true)
-    (hadj : j₀' + 1 < transJ0 M) :
-    ((Adm M j₀' = j₀' ∨ entry M 1 j₀' + 1 = entry M 1 (transJ0 M)) →
-        ∃! t₂' : BT, Mark (Pred M) (Adm M j₀')
-          = Dprin (entry M 1 (Adm M j₀') : ℕ∞) (addBT t₂' (transC1 M))) ∧
-    (Adm M j₀' < j₀' ∧ entry M 1 (transJ0 M) ≤ entry M 1 j₀' →
-        ∃! t34 : BT × BT, Mark (Pred M) (Adm M j₀')
-          = Dprin (entry M 1 (Adm M j₀') : ℕ∞)
-              (addBT t34.1 (Dprin (entry M 1 j₀' : ℕ∞)
-                (addBT t34.2 (transC1 M))))) := by
-  sorry
-
-/-! ## part (5) — 基本列 `M[n]` の最終ブロック切片（A21 訂正形 = 条件(I)を仮定） -/
-
-/-- 原文 part (5)（訂正 A21 適用後）: 条件(I)の下で、`n > 1`、
-`idx = j₀ + (n-1)(j₁-j₀)`、`N = (M[n]_j)_{j=0}^{idx}` と置くと、
-`(M[n], idx) ∈ Marked`、`(0,j′₀) <_{M[n]}^Next (0,idx)`、`j₁^N = idx`、
-`j₀^N = j′₀`、`j₋₁^N = j′₋₁`、`t₁^N ≠ 0`、`N` は条件(VI)を満たさない。
-（原文は条件(III)でも `j₀^N = j′₀` を主張するがこれは偽 — A21。
-`c1_around_5_original_false` を参照。）
-
-Isabelle `m_8_1_c1_around_part5`（§8.3 kind0 基盤 `Lng_operI` /
-`oper_d0zero_prefix_to_lastblock` / `repr_parent_M_to_seg` / `adm_prefix_agree_eq`
-に依存）。Lean 未移植のため sorry。 -/
-theorem c1_around_5 (M : PS) (j₀' n : ℕ) (hR : RTPS M) (hmono : monoT M = true)
-    (hadm : adm M (transJ0 M) = true) (hj1 : 1 < transJ1 M)
-    (hge : entry M 1 (transJ1 M) ≤ entry M 1 (transJ0 M))
-    (hcondI : transCondI M = true)
-    (np : nextR M 0 j₀' (transJ0 M) = true)
-    (hn : 1 < n) :
-    Marked (oper M n) (transJ0 M + (n - 1) * (transJ1 M - transJ0 M)) ∧
-    nextR (oper M n) 0 j₀'
-      (transJ0 M + (n - 1) * (transJ1 M - transJ0 M)) = true ∧
-    Lng (seg (oper M n) 0 (transJ0 M + (n - 1) * (transJ1 M - transJ0 M))) - 1
-      = transJ0 M + (n - 1) * (transJ1 M - transJ0 M) ∧
-    transJ0 (seg (oper M n) 0
-      (transJ0 M + (n - 1) * (transJ1 M - transJ0 M))) = j₀' ∧
-    transJm1 (seg (oper M n) 0
-      (transJ0 M + (n - 1) * (transJ1 M - transJ0 M))) = Adm M j₀' ∧
-    Trans (Pred (seg (oper M n) 0
-      (transJ0 M + (n - 1) * (transJ1 M - transJ0 M)))) ≠ BZero ∧
-    transCondVI (seg (oper M n) 0
-      (transJ0 M + (n - 1) * (transJ1 M - transJ0 M))) = false := by
-  sorry
-
 /-! ## part (3-1) エンジン層 1/3: 全非許容ギャップの 2 塔
 （Isabelle `Trans_gap_2tower`, layerB/pss_wip.thy:19569）
 
@@ -1002,6 +862,215 @@ private theorem Mark_gap_peel_gp (Q : PS) (a b : ℕ)
     (hgap : ∀ k, a < k → k < b → adm Q k = false) :
     Mark Q a = Dprin (entry Q 1 a : ℕ∞) (Mark Q b) :=
   Mark_gap_peel_aux_gp (Lng Q) Q a b (le_refl _) hR hma hmb hab hbub hgap
+
+/-! ## part (3) — `j′₀ + 1 = j₀`（隣接する次親） -/
+
+/-- 原文 part (3-2) 単独（sorry 0 で監査可能な形）: `j′₀ + 1 = j₀` のとき、前件
+`j′₋₁ < j′₀ ∧ M_{1,j′₀} ≥ M_{1,j₀}` は空虚に偽である。`Adm M j′₀ < j′₀` は
+`j′₀` の非 `M` 許容を強制し、非許容の定義から `(1,j′₀) <^Next (1,j′₀+1)`、
+隣接性 `j′₀ + 1 = j₀` から `M_{1,j′₀} < M_{1,j₀}` となって前件と矛盾する。
+Isabelle: `m_8_1_c1_around_part3_2`。 -/
+theorem c1_around_3_2 (M : PS) (j₀' : ℕ) (_hR : RTPS M)
+    (np : nextR M 0 j₀' (transJ0 M) = true)
+    (hadj : j₀' + 1 = transJ0 M) :
+    Adm M j₀' < j₀' ∧ entry M 1 (transJ0 M) ≤ entry M 1 j₀' →
+      Mark (Pred M) (Adm M j₀')
+        = Dprin (entry M 1 (Adm M j₀') : ℕ∞)
+            (Dprin (entry M 1 j₀' : ℕ∞) (transC1 M)) := by
+  rintro ⟨hAdmLt, hgeE⟩
+  exfalso
+  -- `Adm M j′₀ < j′₀` は `¬ adm M j′₀` を強制する
+  have hnotadm : adm M j₀' = false := by
+    cases hja : adm M j₀' with
+    | true =>
+        have : Adm M j₀' = j₀' := by simp [Adm, hja]
+        omega
+    | false => rfl
+  have hnadm : nadm M j₀' = true := by
+    have h := hnotadm
+    simp only [adm, Bool.not_eq_false'] at h
+    exact h
+  -- `j′₀ < Lng M`（next 関係から）
+  have hn0 : nextrel0 M j₀' (transJ0 M) = true := by
+    simpa [nextR] using np
+  have hj0'L : j₀' < Lng M := by
+    have hh := hn0
+    simp only [nextrel0, Bool.and_eq_true, decide_eq_true_eq] at hh
+    exact hh.1.1.1.1
+  -- 非許容の第 2 分岐: `(1, j′₀) <^Next (1, j′₀ + 1)`
+  have hpair : nextR M 1 (j₀' - 1) j₀' = true ∧
+      nextR M 1 j₀' (j₀' + 1) = true := by
+    have hn := hnadm
+    simp only [nadm, Bool.or_eq_true, decide_eq_true_eq,
+      Bool.and_eq_true] at hn
+    rcases hn with hn | hn
+    · omega
+    · exact hn
+  have hnr1 : nextrel1 M j₀' (j₀' + 1) = true := by
+    simpa [nextR] using hpair.2
+  have hlt1 : entry M 1 j₀' < entry M 1 (j₀' + 1) := by
+    have hh := hnr1
+    simp only [nextrel1, Bool.and_eq_true, decide_eq_true_eq] at hh
+    exact hh.1.1.2
+  rw [hadj] at hlt1
+  omega
+
+/-- 原文 part (3): `j′₀ + 1 = j₀` のとき
+(3-1) `j′₋₁ = j′₀` または `M_{1,j′₀}+1 = M_{1,j₀}` ならば
+`Mark(Pred M, j′₋₁) = D_{M_{1,j′₋₁}} c₁`、
+(3-2) `j′₋₁ < j′₀` かつ `M_{1,j′₀} ≥ M_{1,j₀}` ならば
+`Mark(Pred M, j′₋₁) = D_{M_{1,j′₋₁}} D_{M_{1,j′₀}} c₁`。
+(3-2) の前件は空虚に偽（`Adm M j′₀ < j′₀` は `j′₀` の非許容を強制し、
+隣接性から `M_{1,j′₀} < M_{1,j₀}` になる）。
+
+(3-1) は Isabelle `m_8_1_c1_around_part3_1`（`Mark_gap_peel` 経由）に対応するが、
+gap 剥がしエンジンが Lean 未移植のため sorry。 -/
+theorem c1_around_3 (M : PS) (j₀' : ℕ) (hR : RTPS M) (hmono : monoT M = true)
+    (hadm : adm M (transJ0 M) = true) (hj1 : 1 < transJ1 M)
+    (hge : entry M 1 (transJ1 M) ≤ entry M 1 (transJ0 M))
+    (np : nextR M 0 j₀' (transJ0 M) = true)
+    (hadj : j₀' + 1 = transJ0 M) :
+    ((Adm M j₀' = j₀' ∨ entry M 1 j₀' + 1 = entry M 1 (transJ0 M)) →
+        Mark (Pred M) (Adm M j₀')
+          = Dprin (entry M 1 (Adm M j₀') : ℕ∞) (transC1 M)) ∧
+    (Adm M j₀' < j₀' ∧ entry M 1 (transJ0 M) ≤ entry M 1 j₀' →
+        Mark (Pred M) (Adm M j₀')
+          = Dprin (entry M 1 (Adm M j₀') : ℕ∞)
+              (Dprin (entry M 1 j₀' : ℕ∞) (transC1 M))) := by
+  constructor
+  · -- (3-1): `Pred M` 上で `Mark_gap_peel_gp`（間隙 `j′₋₁ < k < j₀ = j′₀+1` は
+    -- `j′₋₁ = Adm M j′₀` の最大性から全て非許容）
+    intro _hguard
+    have hM : TPS M := RTPS_TPS M hR
+    have htJ1 : transJ1 M = Lng M - 1 := rfl
+    have hlen : 1 < Lng M := by omega
+    have hjm1 : transJm1 M = transJ0 M := by
+      simp [transJm1, Adm, hadm]
+    have hc1 : transC1 M = Mark (Pred M) (transJ0 M) := by
+      simp [transC1, hjm1]
+    have hp : hasParent M 0 (Lng M - 1) = true :=
+      mono_hasParent_row0 M hM hmono (Lng M - 1) (by omega) (by omega)
+    have hj0lt : transJ0 M < Lng M - 1 := by
+      show parent M 0 (Lng M - 1) < Lng M - 1
+      exact parent_lt_of_hasParent M 0 (Lng M - 1) hp
+    have hnpar : nextR M 0 (transJ0 M) (Lng M - 1) = true := by
+      show nextR M 0 (parent M 0 (Lng M - 1)) (Lng M - 1) = true
+      exact hasParent_next_fseq M 0 (Lng M - 1) hp
+    have hleJ0 : leR M 0 (transJ0 M) (Lng M - 1) = true :=
+      nextR0_leR M _ _ hnpar
+    have haLe : Adm M j₀' ≤ j₀' := Adm_le M j₀'
+    have hpredA : Marked (Pred M) (Adm M j₀') :=
+      (c1_around_2 M j₀' hR hmono hadm hj1 hge np).2.1
+    have hmarkedJ0 : Marked M (transJ0 M) := ⟨hM, hadm, hleJ0⟩
+    have hpredJ0 : Marked (Pred M) (transJ0 M) :=
+      Marked_Pred M _ hM hlen hmarkedJ0 (by omega)
+    have hPredEq : Pred M = M.take (Lng M - 1) := Pred_eq_take M hlen
+    have hPredL : Lng (Pred M) = Lng M - 1 := by
+      rw [hPredEq]
+      simp
+    have hRP : RTPS (Pred M) := RTPS_Pred M hR
+    have hgap : ∀ k, Adm M j₀' < k → k < transJ0 M →
+        adm (Pred M) k = false := by
+      intro k hka hkb
+      have hklej : k ≤ j₀' := by omega
+      have hadmMk : adm M k = false := by
+        cases hbool : adm M k with
+        | false => rfl
+        | true =>
+            exfalso
+            have := Adm_max M k j₀' hbool hklej
+            omega
+      have hnadmN : nadm M k = true := by
+        simpa [adm] using hadmMk
+      have e1 : nextR (Pred M) 1 (k - 1) k = nextR M 1 (k - 1) k := by
+        rw [hPredEq]
+        exact nextR_take_adm M (Lng M - 1) 1 (k - 1) k (by omega) (by omega)
+          (by omega)
+      have e2 : nextR (Pred M) 1 k (k + 1) = nextR M 1 k (k + 1) := by
+        rw [hPredEq]
+        exact nextR_take_adm M (Lng M - 1) 1 k (k + 1) (by omega) (by omega)
+          (by omega)
+      have hpairN : nextR M 1 (k - 1) k = true ∧ nextR M 1 k (k + 1) = true := by
+        simp only [nadm, Bool.or_eq_true, Bool.and_eq_true,
+          decide_eq_true_eq] at hnadmN
+        rcases hnadmN with h | h
+        · exfalso
+          omega
+        · exact h
+      have hnadmP : nadm (Pred M) k = true := by
+        simp only [nadm, Bool.or_eq_true, Bool.and_eq_true, decide_eq_true_eq]
+        right
+        rw [e1, e2]
+        exact hpairN
+      simp [adm, hnadmP]
+    have hpeel := Mark_gap_peel_gp (Pred M) (Adm M j₀') (transJ0 M) hRP hpredA
+      hpredJ0 (by omega) (by omega) hgap
+    have he1 : entry (Pred M) 1 (Adm M j₀') = entry M 1 (Adm M j₀') := by
+      rw [hPredEq]
+      exact entry_take M (Lng M - 1) 1 (Adm M j₀') (by omega)
+    rw [hc1, ← he1]
+    exact hpeel
+  · -- (3-2): 前件が空虚に偽（`c1_around_3_2` に単独 green 版）
+    exact c1_around_3_2 M j₀' hR np hadj
+
+/-! ## part (4) — `j′₀ + 1 < j₀`（離れた次親） -/
+
+/-- 原文 part (4): `j′₀ + 1 < j₀` のとき
+(4-1) `j′₋₁ = j′₀` または `M_{1,j′₀}+1 = M_{1,j₀}` ならば一意な `t′₂ ∈ T_B` が存在して
+`Mark(Pred M, j′₋₁) = D_{M_{1,j′₋₁}}(t′₂ + c₁)`、
+(4-2) `j′₋₁ < j′₀` かつ `M_{1,j′₀} ≥ M_{1,j₀}` ならば一意な `(t′₃,t′₄) ∈ T_B²` が存在して
+`Mark(Pred M, j′₋₁) = D_{M_{1,j′₋₁}}(t′₃ + D_{M_{1,j′₀}}(t′₄ + c₁))`。
+
+Isabelle 側は `m_8_1_c1_around_part4_setup` / `_Nred` / `_Adm0` / `_cond41` / `_cond42` /
+`_TransN_41` / `_TransN_42` / `_segpos` を経て `m_8_1_c1_around_part4_1` /
+`m_8_1_c1_around_part4_2`（約 3000 行の前剥がし基盤）。Lean 未移植のため sorry。 -/
+theorem c1_around_4 (M : PS) (j₀' : ℕ) (hR : RTPS M) (hmono : monoT M = true)
+    (hadm : adm M (transJ0 M) = true) (hj1 : 1 < transJ1 M)
+    (hge : entry M 1 (transJ1 M) ≤ entry M 1 (transJ0 M))
+    (np : nextR M 0 j₀' (transJ0 M) = true)
+    (hadj : j₀' + 1 < transJ0 M) :
+    ((Adm M j₀' = j₀' ∨ entry M 1 j₀' + 1 = entry M 1 (transJ0 M)) →
+        ∃! t₂' : BT, Mark (Pred M) (Adm M j₀')
+          = Dprin (entry M 1 (Adm M j₀') : ℕ∞) (addBT t₂' (transC1 M))) ∧
+    (Adm M j₀' < j₀' ∧ entry M 1 (transJ0 M) ≤ entry M 1 j₀' →
+        ∃! t34 : BT × BT, Mark (Pred M) (Adm M j₀')
+          = Dprin (entry M 1 (Adm M j₀') : ℕ∞)
+              (addBT t34.1 (Dprin (entry M 1 j₀' : ℕ∞)
+                (addBT t34.2 (transC1 M))))) := by
+  sorry
+
+/-! ## part (5) — 基本列 `M[n]` の最終ブロック切片（A21 訂正形 = 条件(I)を仮定） -/
+
+/-- 原文 part (5)（訂正 A21 適用後）: 条件(I)の下で、`n > 1`、
+`idx = j₀ + (n-1)(j₁-j₀)`、`N = (M[n]_j)_{j=0}^{idx}` と置くと、
+`(M[n], idx) ∈ Marked`、`(0,j′₀) <_{M[n]}^Next (0,idx)`、`j₁^N = idx`、
+`j₀^N = j′₀`、`j₋₁^N = j′₋₁`、`t₁^N ≠ 0`、`N` は条件(VI)を満たさない。
+（原文は条件(III)でも `j₀^N = j′₀` を主張するがこれは偽 — A21。
+`c1_around_5_original_false` を参照。）
+
+Isabelle `m_8_1_c1_around_part5`（§8.3 kind0 基盤 `Lng_operI` /
+`oper_d0zero_prefix_to_lastblock` / `repr_parent_M_to_seg` / `adm_prefix_agree_eq`
+に依存）。Lean 未移植のため sorry。 -/
+theorem c1_around_5 (M : PS) (j₀' n : ℕ) (hR : RTPS M) (hmono : monoT M = true)
+    (hadm : adm M (transJ0 M) = true) (hj1 : 1 < transJ1 M)
+    (hge : entry M 1 (transJ1 M) ≤ entry M 1 (transJ0 M))
+    (hcondI : transCondI M = true)
+    (np : nextR M 0 j₀' (transJ0 M) = true)
+    (hn : 1 < n) :
+    Marked (oper M n) (transJ0 M + (n - 1) * (transJ1 M - transJ0 M)) ∧
+    nextR (oper M n) 0 j₀'
+      (transJ0 M + (n - 1) * (transJ1 M - transJ0 M)) = true ∧
+    Lng (seg (oper M n) 0 (transJ0 M + (n - 1) * (transJ1 M - transJ0 M))) - 1
+      = transJ0 M + (n - 1) * (transJ1 M - transJ0 M) ∧
+    transJ0 (seg (oper M n) 0
+      (transJ0 M + (n - 1) * (transJ1 M - transJ0 M))) = j₀' ∧
+    transJm1 (seg (oper M n) 0
+      (transJ0 M + (n - 1) * (transJ1 M - transJ0 M))) = Adm M j₀' ∧
+    Trans (Pred (seg (oper M n) 0
+      (transJ0 M + (n - 1) * (transJ1 M - transJ0 M)))) ≠ BZero ∧
+    transCondVI (seg (oper M n) 0
+      (transJ0 M + (n - 1) * (transJ1 M - transJ0 M))) = false := by
+  sorry
 
 /-! ## 原文形の反例（A20 / A21） -/
 
