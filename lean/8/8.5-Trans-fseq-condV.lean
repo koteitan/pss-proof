@@ -24,7 +24,7 @@ import «7».«7.3-Pred-Trans-descend»
   **非 adm 枝**（`ST_PS` で到達可能、Isabelle r16-E1 が `Lng ≥ 9` の実例を確認）
   については、Isabelle が証明したのは添字 `n + 1` の形
   （`atx_Trans_oper_exchange_condV_nonadm_uncond`）であり、原文の添字 `mₙ = n`
-  の形は**移植していない**。したがって忠実版 `Trans_oper_exchange` は
+  の形は**移植していない**。したがって忠実版 `Trans_oper_exchange_condV` は
   **adm 枝限定**で述べる（非 adm 枝の原文添字の真偽判定は本ファイルの scope 外
   ——`needs` 参照）。`FseqDesc_exchV` 形（`∃ k`）は**全 host 無条件**。
 - Isabelle（設計図）:
@@ -545,7 +545,7 @@ theorem Trans_oper_exchange_condV_nonadm_uncond
 （`p_8_5_Trans_oper_exchange`, isabelle/pss_paper.thy:2070）、**adm 枝**。
 原文の添字 `mₙ = n - 1` のままで (1)(2)(3) の三結論がすべて成立する
 （しかも `≤` ではなく `<` で厳密）。訂正は不要。 -/
-theorem Trans_oper_exchange
+theorem Trans_oper_exchange_condV
     (hAF : ExchV_scbdec_adm_forms) (hshape : ExchV_scbdec_c1_shape)
     (hsetup : ExchV_condV_setup) (ht2ne : ExchV_t2_nonzero_condV)
     (M : PS) (n : ℕ) (hST : STPS M) (hmono : monoT M = true) (hn : 1 ≤ n)
@@ -604,7 +604,7 @@ theorem Trans_oper_descend_condV
 
 #print axioms Trans_oper_exchange_condV_adm_uncond
 #print axioms Trans_oper_exchange_condV_nonadm_uncond
-#print axioms Trans_oper_exchange
+#print axioms Trans_oper_exchange_condV
 #print axioms exchV_holds
 #print axioms Trans_oper_descend_condV
 

@@ -642,8 +642,35 @@ parent/Lng 形に落としてから作業する。
     A29 の対象は隣の `8.5-scb-decompositions`（原文 content.md 5213「各種scb分解」）
     の part (5)（`Trans(M[n]) = s₁D_{M₁,j₋₁}(s'₁D_{M₁,j₀})ⁿt₂(b'₁)ⁿb₁` が n=1 で偽）。
     本項目に part (5) は存在しない。
-  - 🚨🤖 `8.1-Trans-fseq-condI` — **交換則 exchI**（descend の Prop）。p 文 =
-    pss_paper:1769。Isa: `scx_condI_exchange1` 系。Wave H。
+  - 🚨🤖 `8.1-Trans-fseq-condI` — **Wave H で green-modulo 完成（緑、593 行）**。
+    p 文 = pss_paper:1769。`exchI_holds (hCF : CondI_masterCF) : FseqDesc_exchI`
+    ＝**型そのものが descend の Prop**なので elaborator が drop-in を保証（目視照合不要。
+    以後この作法を標準にせよ）。**露出 Prop は 1 本だけ**: `CondI_masterCF`
+    （Isa `scx_condI_j0pos_masterCF` 83639＝r28-STEPCORE ブロック 82085–83900 の ~2000 行）。
+    j₀=0 側の 2 入力は descend が既に露出している Props を再利用（新規露出を増やさない）。
+  - 🚨 **descend の 16 Props 討伐状況（Wave H の sweep、`8.7-fseq-descend-props.lean`）**:
+    無条件 3（subexpr_Adm0_clause1／condVI engine／m_6_2_P_oper_2←**`P_fseq_2`。名前が
+    Isabelle と違うので name-grep では見つからない＝content-grep せよ**）＋
+    縮約 4（Trans_preserves_OT←12 OTdisp／exchIII・exchIV←Exch84 2 本／exchVI←CondVI 3 本）。
+    残 9 の所在: exchV=**名前衝突だけが障害**（下記、解消済＝次波で即配線可）／
+    exchI←CondI_masterCF（8.1 file）／exchII←CondII_masterCF（8.3 file）／
+    condII engine=**無条件で討伐済**（8.3 file）／`m_8_6_rcseq_Trans`＝
+    **「小さいから移植せよ」という私の指示は誤り**（rcseq 基盤が Lean に皆無、
+    Trans.psimps 値展開の罠付き。**有望**: `8.6-const2nd-Trans` の `const2ndSeq` が
+    同じ形＝移植でなく特殊化で済む可能性）／`m_7_3_Trans_leftmost_2`＝§7.3 は緑なのに
+    **twin 無し**（Isa 16569 clause(2)、要 `_pc` 16067 ~400 行）＝専用 agent 推奨／
+    operI_j0zero_trans_mult（Isa 36977）／TransCondV engine（Isa 37496、condVI engine が雛形）／
+    f7x_Trans_append_Pblocks（Isa 51888）。
+  - 🚨🚨 **名前衝突の地雷（2026-07-17 発見・除去）**: `PSS.Trans_oper_exchange` が
+    `8.4-Trans-fseq-condIII-IV`(229) と `8.5-Trans-fseq-condV`(548) で**別主張として
+    二重宣言**され、co-import すると**エラーを出さずヘッダが汚染**（`trivial` すら
+    Unknown になる）。各ファイル単独では緑・個別 lake build も通るので**検出されない**。
+    descend は exchIII/IV と exchV の両方を要るので**降下柱がブロックされていた**。
+    親が 8.5 側を `Trans_oper_exchange_condV` に改名して解消（co-import 検証済）。
+    **再発防止**: 統合時に `grep -rh '^theorem \|^def ' lean/{5,6,7,8} | awk '{print $2}'
+    | sort | uniq -d` で公開名の重複を検査する（2026-07-17 実行時は他に 0 件）。
+    ⚠️**stale REPL 注意**: 汚染 header は kimina にキャッシュされるので、改名後の再テストは
+    import を 1 行足して fresh header にすること。
   - 🚨🤖 `8.4-Trans-fseq-condIII-IV` — **Wave F で green-modulo 完成（緑）**。
     p 文 = pss_paper:1909。`exch_condIII`/`exch_condIV` が 8.7-fseq-descend の
     `FseqDesc_exchIII`/`_exchIV` の drop-in。
