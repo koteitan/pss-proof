@@ -434,9 +434,20 @@ parent/Lng 形に落としてから作業する。
     `8.2-subexpr-wid`（**partial**: `def wid`＋`wid_iff`＋`keystone_imp_wid`＋
     `ft_transport`＋`jt_transport`。Isabelle に wid の definition は無く
     `m_8_2_wid` の結論形を def 化した）。
-    **wid 残 3 本（wid_step/wid_of_predRN/wid_of_predwid）の blocker**:
-    Admpos body-split engine `trans_admpos_body_split`（layerB:26573）が Lean 未移植
-    → C-3 で先に移植する。
+    **Wave C-3 完了（4 file 緑）→ キャンペーンは残穴 2 本のみ**:
+    `8.2-subexpr-admpos-engine`（`trans_admpos_body_split`＋wid_step/wid_of_predRN/
+    wid_of_predwid。**C-2 の blocker 報告は誤りだった**: 3 本のうち 2 本は既存資産で
+    無料だった＝`trans_admpos_outer_principal`←`Trans_principal_head`、
+    `trans_surgery_localized`←`Trans_Mark_Pred`＋`Mark_transJm1_eq_transC2`。
+    副産物 `Trans_mono_RN_ge2`/`Mark0_ne_Mark` は §7.4 へ昇格候補＝A19 Mark順序も解禁）
+    ／`8.2-subexpr-adm0-full`（Adm0_full は**無条件**、Admpos_of_wid）
+    ／`8.2-subexpr-of-wid`／`8.2-subexpr-final`（**`wid_holds`＋
+    `subexpr_component_Pred`＋忠実版 `subexpr_component_Pred_faithful` 完成**、
+    SXP_* Props modulo）。
+    **残穴 2**: ①`ScbOuterSurgerySplit`（Isa `scb_outer_surgery_split` 26412、161 行、
+    **純 BT/Sym 組合せ論・PS 非依存**＝独立 agent 可）②`TransAdmposBodySplitWfin`
+    （Isa `trans_admpos_body_split_wfin` 26699）。この 2 本を討てば親の配線
+    （SXP_*/Adm0_full_hyp/Admpos_of_wid_hyp の差し込み）だけで項目 ✅。
     🚨**教訓（2026-07-17、2 回踏んだ）**: ①Fable 月次上限で agent は死ぬが
     **ディスクの成果物は生きる**。今回 4 本とも「骨格」ではなく**完成済み**で、
     checker を回す前に死んだだけだった ②私の「sorry 1 個残存」判定は
