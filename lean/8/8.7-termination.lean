@@ -8,9 +8,14 @@ import «8».«8.7-OT-dom-hereditary»
 import «8».«8.7-OT-tail-annihilable»
 import «8».«8.7-const00-Trans»
 import «8».«8.7-Trans-preserves-OT»
+import «8».«8.7-Trans-preserves-OT-props»
 import «8».«8.7-fseq-descend»
 import «8».«8.7-fseq-descend-props»
 import «8».«8.7-fseq-descend-props2»
+import «8».«8.7-descend-last2»
+import «8».«8.7-otx-condI-eqs»
+import «8».«8.7-otx-condVI-eqs»
+import «8».«8.4-exch84-noparent»
 
 /-!
 # §8.7 定理（標準形ペア数列システムの停止性） — 主定理
@@ -194,38 +199,23 @@ Isabelle 側では全て証明済みなので、移植すればそのまま外�
 ＋ 条件 (V) 2（`ExchVres_adm_M_tower` / `ExchV_nf3x`）＋ 条件 (VI) 2
 ＋ 未配線 `FseqDesc_*` 2。 -/
 structure TerminationResidual : Prop where
-  /-- OT 柱 (1/12)。Isabelle `exchI`（`scx_condI_exchange1` が供給）。 -/
-  otExchI : OTdisp_exchI
-  /-- OT 柱 (2/12)。Isabelle `exchII`（`c2sx_exchange_ex_condII_of_tailval`）。 -/
-  otExchII : OTdisp_exchII
-  /-- OT 柱 (3/12)。Isabelle `OTint`（条件 (III)/(IV)/(V) の内部枝）。 -/
+  /-- OT 柱 (1/3)。Isabelle `OTint`（条件 (III)/(IV)/(V) の内部枝）。 -/
   otInt : OTdisp_OTint
-  /-- OT 柱 (4/12)。Isabelle `OTpred`（`opx_OTpred_of_residuals`）。 -/
+  /-- OT 柱 (2/3)。Isabelle `OTpred`（`opx_OTpred_of_residuals`）。 -/
   otPred : OTdisp_OTpred
-  /-- OT 柱 (5/12)。Isabelle `OTmulti`（`opx_OTmulti`）。 -/
+  /-- OT 柱 (3/3)。Isabelle `OTmulti`（`opx_OTmulti`）。 -/
   otMulti : OTdisp_OTmulti
-  /-- OT 柱 (6/12)。Isabelle `otx_zerocol_predval` (pss_wip.thy:85474)。 -/
-  otZeroCol : OTdisp_zerocol_predval
-  /-- OT 柱 (7/12)。Isabelle `m_8_1_Trans_fseq_condI_n1`。 -/
-  otCondIn1 : OTdisp_Trans_fseq_condI_n1
-  /-- OT 柱 (8/12)。Isabelle `otx_condI_j0z_eq` (pss_wip.thy:85292)。 -/
-  otCondIj0 : OTdisp_condI_j0z_eq
-  /-- OT 柱 (9/12)。Isabelle `otx_condI_j1eq1_eq` (pss_wip.thy:85516)。 -/
-  otCondIj1 : OTdisp_condI_j1eq1_eq
-  /-- OT 柱 (10/12)。Isabelle `otx_condVI_j1eq1_eq` (pss_wip.thy:85582)。 -/
-  otCondVIj1 : OTdisp_condVI_j1eq1_eq
-  /-- OT 柱 (11/12)。Isabelle `otx_condVI_adm_eq` (pss_wip.thy:85236)。 -/
-  otCondVIadm : OTdisp_condVI_adm_eq
-  /-- OT 柱 (12/12)。Isabelle `otx_condVI_nadm_eq` (pss_wip.thy:85260)。 -/
-  otCondVInadm : OTdisp_condVI_nadm_eq
-  /-- 条件 (I) の交換則の核。Isabelle `scx_condI_j0pos_masterCF` (pss_wip.thy:83639)。 -/
+  /-- 条件 (I) の交換則の核。Isabelle `scx_condI_j0pos_masterCF` (pss_wip.thy:83639)。
+  OT 柱の `exchI` / `condI_n1`(※) / `condI_j0z` 各交換と降下柱の `exchI` を供給。
+  (※ `condI_n1` は wave L で `8.7-otx-condI-eqs` が無条件化したので、そちら経由。) -/
   condI : CondI_masterCF
-  /-- 条件 (II) の交換則の核。Isabelle `c2sx_condII_masterCF` (pss_wip.thy:87430)。 -/
+  /-- 条件 (II) の交換則の核。Isabelle `c2sx_condII_masterCF` (pss_wip.thy:87430)。
+  OT 柱の `exchII` と降下柱の `exchII` を供給。 -/
   condII : CondII_masterCF
-  /-- 条件 (III)/(IV) の交換則 (1/2)。`8.4-Trans-fseq-condIII-IV`:121。 -/
+  /-- 条件 (III)/(IV) の交換則。`8.4-Trans-fseq-condIII-IV`:121。
+  `noParent` 脚 (旧 `exch84noParent`) は wave L で `8.4-exch84-noparent` が
+  無条件で供給済み。 -/
   exch84producer : Exch84_condIIIIV_producer
-  /-- 条件 (III)/(IV) の交換則 (2/2)。`8.4-Trans-fseq-condIII-IV`:152。 -/
-  exch84noParent : Exch84_condIIIIV_noParent
   /-- 条件 (V) (1/2)。`8.5-exchV-props`:412 の `ExchVres_adm_M_tower`
   ＝ Isabelle `m_8_5_scbdec_adm_forms` (pss_wip.thy:57556) の結論 (4)(5) のみ
   （塔の閉形式 ＝ `m_8_4_oper_props_5` 同 :54005 ＋ `s84x_L` 帰納）。
@@ -236,15 +226,11 @@ structure TerminationResidual : Prop where
   (pss_wip.thy:86273)。§8.4 クラスタ側の brick で、`8.5-exchV-props` の
   scope 外として唯一残ったもの。 -/
   exchVnf3x : ExchV_nf3x
-  /-- 条件 (VI) の許容枝。`8.6-Trans-fseq-condVI`:220。 -/
+  /-- 条件 (VI) の許容枝。`8.6-Trans-fseq-condVI`:220。OT 柱の `condVI_j1`(※)/
+  `condVI_adm` も供給。(※ `condVI_j1` は wave L で `8.7-otx-condVI-eqs` が無条件化。) -/
   condVIadmTower : CondVIAdmTowerScb
-  /-- 条件 (VI) の非許容枝。`8.6-Trans-fseq-condVI`:236。 -/
+  /-- 条件 (VI) の非許容枝。`8.6-Trans-fseq-condVI`:236。OT 柱の `condVI_nadm` も供給。 -/
   condVInadm : CondVIExchNadm
-  /-- 未配線 (1/3)。Isabelle `operI_j0zero_trans_mult` (pss_wip.thy:36977)。
-  ⚠️ `8.1-Trans-fseq-condI` は**これを消費する側**であって供給しない。 -/
-  operIj0zeroMult : FseqDesc_operI_j0zero_trans_mult
-  /-- 未配線 (2/2)。Isabelle `f7x_Trans_append_Pblocks` (pss_wip.thy:51888)。 -/
-  transAppendPblocks : FseqDesc_f7x_Trans_append_Pblocks
 
 /-! ## 3. OT 柱 — `Trans(ST_PS) ⊆ OT_B`（Isabelle `y5_Trans_OT_B`） -/
 
@@ -253,8 +239,15 @@ structure TerminationResidual : Prop where
 `8.7-Trans-preserves-OT`:489 の `Trans_preserves_OT` に残差の 12 本を渡すだけ。 -/
 theorem Trans_STPS_OT_B (H : TerminationResidual) (M : PS) (hM : STPS M) :
     Trans M ∈ OT_B :=
-  Trans_preserves_OT H.otExchI H.otExchII H.otInt H.otPred H.otMulti H.otZeroCol
-    H.otCondIn1 H.otCondIj0 H.otCondIj1 H.otCondVIj1 H.otCondVIadm H.otCondVInadm
+  Trans_preserves_OT
+    (OTdisp_exchI_of_CondI H.condI) (OTdisp_exchII_of_CondII H.condII)
+    H.otInt H.otPred H.otMulti OTdisp_zerocol_predval_holds
+    OTdisp_Trans_fseq_condI_n1_holds
+    (OTdisp_condI_j0z_eq_of_CondI H.condI operI_j0zero_trans_mult_holds
+      FseqDesc_m_8_2_subexpr_component_Pred_Adm0_clause1_holds)
+    OTdisp_condI_j1eq1_eq_holds OTdisp_condVI_j1eq1_eq_holds
+    (OTdisp_condVI_adm_eq_of_CondVIAdmTowerScb H.condVIadmTower)
+    (OTdisp_condVI_nadm_eq_of_CondVIExchNadm H.condVInadm)
     M hM
 
 /-- `8.6-Trans-fseq-condVI`:247 の名前付き仮定 `TransPreservesOT` は OT 柱と
@@ -278,9 +271,15 @@ private theorem exchVadmForms_term (H : TerminationResidual) :
 
 private theorem fseqDescTOT_term (H : TerminationResidual) :
     FseqDesc_Trans_preserves_OT :=
-  FseqDesc_Trans_preserves_OT_of_OTdisp H.otExchI H.otExchII H.otInt H.otPred
-    H.otMulti H.otZeroCol H.otCondIn1 H.otCondIj0 H.otCondIj1 H.otCondVIj1
-    H.otCondVIadm H.otCondVInadm
+  FseqDesc_Trans_preserves_OT_of_OTdisp
+    (OTdisp_exchI_of_CondI H.condI) (OTdisp_exchII_of_CondII H.condII)
+    H.otInt H.otPred H.otMulti OTdisp_zerocol_predval_holds
+    OTdisp_Trans_fseq_condI_n1_holds
+    (OTdisp_condI_j0z_eq_of_CondI H.condI operI_j0zero_trans_mult_holds
+      FseqDesc_m_8_2_subexpr_component_Pred_Adm0_clause1_holds)
+    OTdisp_condI_j1eq1_eq_holds OTdisp_condVI_j1eq1_eq_holds
+    (OTdisp_condVI_adm_eq_of_CondVIAdmTowerScb H.condVIadmTower)
+    (OTdisp_condVI_nadm_eq_of_CondVIExchNadm H.condVInadm)
 
 /-- Isabelle `y5_Trans_descend` (pss_scratch.thy:14208)。
 原文「補題（基本列の降下性）」(§8.7, 原文 5869)。 -/
@@ -291,13 +290,13 @@ theorem Trans_fseq_descend (H : TerminationResidual) (M : PS) (n : ℕ)
     (fseqDescTOT_term H)
     (FseqDesc_exchI_of_CondI H.condI)
     (FseqDesc_exchII_of_CondII H.condII)
-    (FseqDesc_exchIII_of_Exch84 H.exch84producer H.exch84noParent)
-    (FseqDesc_exchIV_of_Exch84 H.exch84producer H.exch84noParent)
+    (FseqDesc_exchIII_of_Exch84 H.exch84producer Exch84_condIIIIV_noParent_holds_enp)
+    (FseqDesc_exchIV_of_Exch84 H.exch84producer Exch84_condIIIIV_noParent_holds_enp)
     (FseqDesc_exchV_of_ExchV (exchVadmForms_term H) c1_shape_holds
       condV_setup_holds t2_nonzero_condV_holds H.exchVnf3x fseq_condV_holds)
     (FseqDesc_exchVI_of_CondVI H.condVIadmTower H.condVInadm
       (transPreservesOT_term H))
-    H.operIj0zeroMult
+    operI_j0zero_trans_mult_holds
     FseqDesc_m_8_2_subexpr_component_Pred_Adm0_clause1_holds
     FseqDesc_m_8_6_rcseq_Trans_holds
     FseqDesc_m_8_3_TransCondII_oper_descend_engine_holds
@@ -306,7 +305,7 @@ theorem Trans_fseq_descend (H : TerminationResidual) (M : PS) (n : ℕ)
       t2_nonzero_condV_holds H.exchVnf3x fseq_condV_holds)
     FseqDesc_m_8_6_TransCondVI_oper_descend_engine_holds
     FseqDesc_m_6_2_P_oper_2_holds
-    H.transAppendPblocks
+    f7x_Trans_append_Pblocks_holds
     m_7_3_Trans_leftmost_2_dropin
     M n hM hn hL
 

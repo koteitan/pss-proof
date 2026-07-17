@@ -750,7 +750,7 @@ parent/Lng 形に落としてから作業する。
   - `8.5-*` — **最難所**。Isa の keystone は
     `bpHeadT(Trans(slice@B)) = C(bpHeadT(Trans slice))`（depth-shift self-similar）。
     13 個の死路が `isabelle/memo.md` に列挙してある。**着手前に必ず読め。**
-  - 🚨🤖 `8.3-Trans-fseq-condII` ⛔8.7-fseq-descend — 原文命題は (1)-(3) が Trans 再帰の
+  - 🚨 `8.3-Trans-fseq-condII` ⛔8.7-fseq-descend — 原文命題は (1)-(3) が Trans 再帰の
     内部記号依存で deferred、転記済みは降下結論 (4) のみ（`p_8_3_TransCondII_oper_descend`）。
     Isabelle は `y5_8_3_TransCondII_oper_descend`（layerC 14432）＝**大域降下柱
     `y5_Trans_descend` への一行還元**。Lean でも `8.7-fseq-descend`（ST_PS 全域の
@@ -849,3 +849,33 @@ parent/Lng 形に落としてから作業する。
     FseqDesc_* には専用の数値監査が無い。
     **最良のレバレッジ = 12 OTdisp_***（OT 柱と、`FseqDesc_Trans_preserves_OT`＋
     `TransPreservesOT` 経由で降下柱の exchVI の**両方**に効く）。
+  - 🎉 **Wave L（2026-07-18、Opus 16 並列）で `TerminationResidual` を 22 → 9 葉に削減**。
+    主定理 `p_8_7_termination` は緑・公理 `[propext, Classical.choice, Quot.sound]` のまま。
+    **無条件で閉じた葉（新規ファイル、house pattern）**:
+    `OTdisp_Trans_fseq_condI_n1`＋`OTdisp_condI_j1eq1_eq`（`8.7-otx-condI-eqs`）／
+    `OTdisp_condVI_j1eq1_eq`（`8.7-otx-condVI-eqs`）／`Exch84_condIIIIV_noParent`
+    （`8.4-exch84-noparent`、residual `Exch84_noParent_domTag` を自前証明して合成）。
+    **既存資産の配線で消えた葉**: `otExchI`/`otExchII`（`condI`/`condII` から
+    `OTdisp_exch{I,II}_of_Cond*` で導出＝独立残差でなかった）／`otZeroCol`
+    （`-props:283` が既に無条件供給。新規 zerocol ファイルは同名衝突ハザードなので破棄）／
+    `otCondIj0`（`OTdisp_condI_j0z_eq_of_CondI` に `condI`＋既存 2 証明を渡す）／
+    `otCondVIadm`/`otCondVInadm`（`condVIadmTower`/`condVInadm` へ吸収）／
+    `operIj0zeroMult`/`transAppendPblocks`（`8.7-descend-last2` に Wave J で既に証明済＝
+    **主定理が未 import だった配線漏れ**。これを import して消滅）。
+    🚨**配線漏れの教訓**: `audit_8_7_termination.py` は `8.7-termination.lean` の import 閉包
+    しか歩かないので、閉包外の緑ディスチャージャ（`8.7-descend-last2`／
+    `8.7-Trans-preserves-OT-props`）を「未証明葉」と誤カウントしていた＝**残差の一部は
+    数学でなく import 追加だけで消える**。統合時は緑ファイルが閉包内かを必ず確認。
+    **残り 9 葉**（`audit` 出力、うち `FseqDesc_m_7_3_Trans_leftmost_2` は `m_7_3_Trans_leftmost_2_dropin`
+    で配線済＝名前マッチ誤検出＝実質 8）: ①`CondI_masterCF`（r28-STEPCORE ~2000 行。
+    Wave L で `scx_stepA`/`scx_stepB` を `8.1-condI-masterCF` に bank、残=chunk5 組立）
+    ②`CondII_masterCF`（残=`CondII_TailvalAll_ST`＝tvx/cdx/ljx/wnx/hqx/dkax 連鎖 ~3200 行。
+    Wave L で tvx 境界＋`tvx_finRc` を `8.3-condII-masterCF-port` に bank、残=R3LE 系）
+    ③`Exch84_condIIIIV_pkg`（§8.4 巨大 corpus ~72k 行。`8.4-exch84-producer` が slicepkg
+    ＝oi5 出力形に還元済で d13x 層を回避、次 wave の的が縮小）④⑤`CondVI_scbdec_{adm,nadm}_forms_v6`
+    （§8.4 L-tower infra。`8.6-condVI-exch-nadm` agent が blocker を精密地図化: 未移植
+    `Trans_funpow_IncrFirst`/`a1_Red_funpow_IncrFirst` が壁。この L-tower は §8.5
+    `ExchVres_adm_M_tower` とも共有＝閉じれば複数葉が同時解禁）⑥⑦⑧`OTdisp_{OTint,OTpred,OTmulti}`
+    （OT transport pillar。**`OTpred` は最も近い**: `od4_OTpred_final`(scratch:874) が
+    3 除外仮定なしで強く証明、`8.7-otdisp-OTpred` が Brick A=`od4R_op` 逆保存 ~380 行を bank 済。
+    `OTmulti` は `OTint` に依存、`OTint` は transport 層 ~1000 occ で最重量）。

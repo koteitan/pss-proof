@@ -1273,6 +1273,717 @@ theorem scx_mark_pin (M : PS) (n : ℕ) (X : BT) (s' b' : List Sym)
     rw [← unflatBT_flat (Mark (oper M n)
       (Adm M (parent M 0 (parent M 0 (Lng M - 1))))), hfeq, unflatBT_flat]
 
+/-! ## §4 一歩の surgery — Isabelle `scx_stepA` / `scx_stepB`
+
+Isabelle の `scx_stepA` (:82938) / `scx_stepB` (:83254) は共通の前置き（`N` 束の
+折り畳み）を持つ。Lean では `N` 束は §3 の `scx_N_*` が既に個別定理として与えて
+いるので、両者の差は「`transC1 N` の形」と「最終の再梱包」だけになる。 -/
+
+/-- Isabelle `addscb_princ_isPTB` / `isPTB_str_Dpt`。 -/
+private theorem principal_flat_isPTB_cm1 {c : BT} (hc : c ∈ T_B)
+    (hcP : ∃ p, c = .trm [p]) : isPTB_str (flatBT c) := by
+  obtain ⟨p, rfl⟩ := hcP
+  refine ⟨p, ?_, by simp [flatBT]⟩
+  simpa [T_B, dfree_BT, dfree_BPList] using hc
+
+/-- Isabelle `s84c2_Trans_c2_decomp`。`Trans (Pred M)` 内の `c₁` の scb 文脈は
+`Trans M` では `c₂` の scb 文脈になる（`Trans_Mark_mono_equations`(1) ＋
+`replaceScb_spec`）。 -/
+private theorem Trans_c1_c2_decomp_cm1 (M : PS) (hR : RTPS M)
+    (hmono : monoT M = true) (hlen : 1 < Lng M) (ht₁ : Trans (Pred M) ≠ BZero) :
+    ∃ s b : List Sym,
+      scb_decomp (Trans (Pred M)) s (flatBT (transC1 M)) b ∧
+      scb_decomp (Trans M) s (flatBT (transC2 M)) b := by
+  have hM : TPS M := RTPS_TPS M hR
+  have hp : hasParent M 0 (Lng M - 1) = true :=
+    mono_hasParent_row0 M hM hmono (Lng M - 1) (by omega) (by omega)
+  have hmarked : Marked (Pred M) (Adm M (parent M 0 (Lng M - 1))) :=
+    Marked_Pred_Adm M hM hlen hp
+  have hpredR : RTPS (Pred M) := RTPS_Pred M hR
+  have ht₁TB : Trans (Pred M) ∈ T_B := Trans_mem_T_B (Pred M) hpredR
+  have hc₁TB : transC1 M ∈ T_B := by
+    simpa [transC1, transJm1, transJ0, lastParent] using
+      Mark_mem_T_B (Pred M) _ hpredR hmarked
+  have ht₁c₁ : (Trans (Pred M), transC1 M) ∈ MarkedB := by
+    simpa [transC1, transJm1, transJ0, lastParent] using
+      Trans_Mark_mem_MarkedB (Pred M) _ hpredR hmarked
+  have hc₁P : ∃ p, transC1 M = .trm [p] :=
+    marked_component_principal ht₁ ht₁c₁
+  have hc₂facts := transC2Core_properties M (transC1 M) hc₁TB hc₁P
+  have hc₂TB : transC2 M ∈ T_B := by
+    simpa [transC2, transV, transT2] using hc₂facts.1
+  have hc₂P : ∃ p, transC2 M = .trm [p] := by
+    simpa [transC2, transV, transT2] using hc₂facts.2
+  have hTrans : Trans M = replaceScb (Trans (Pred M)) (transC1 M) (transC2 M) := by
+    simpa [ht₁, transC1, transC2, transV, transT2, transJm1, transJ0,
+      lastParent] using (Trans_Mark_mono_equations M hR hlen hmono).1
+  obtain ⟨s, b, hd, _hout, hd2⟩ :=
+    replaceScb_spec ht₁TB hc₁TB hc₁P hc₂TB hc₂P ht₁c₁
+  exact ⟨s, b, hd, by rw [hTrans]; exact hd2⟩
+
+/-- Isabelle `scx_stepA` (pss_wip.thy:82938)。case A（`j₋₁' = j₀'` または
+`M_{1,j₀'} + 1 = M_{1,j₀}`）の一歩の surgery: 反復 `n - 1` から `n` へ、
+`Mark (M[n]) j₋₁' = D_va(τ +_B c₁·n)` と、その基底 scb 対 `(s',b')` での分解を
+同時に進める。
+
+Isabelle との差: `scx_mark_pin` が `Mark` 側を `Trans` 側の分解から完全に決める
+ので、Lean では **`dTn` 一本を作れば結論の 2 つ組が出る**（`suffices`）。 -/
+theorem scx_stepA (M : PS) (n va : ℕ) (tau c1 : BT) (s' b' : List Sym)
+    (hR : RTPS M) (hmono : monoT M = true) (hj1 : 1 < Lng M - 1)
+    (hI : transCondI M = true) (hj0pos : 0 < parent M 0 (Lng M - 1)) (hn : 2 ≤ n)
+    (hc1 : c1 = Mark (Pred M) (Adm M (parent M 0 (Lng M - 1))))
+    (caseA : Adm M (parent M 0 (parent M 0 (Lng M - 1)))
+               = parent M 0 (parent M 0 (Lng M - 1))
+             ∨ entry M 1 (parent M 0 (parent M 0 (Lng M - 1))) + 1
+               = entry M 1 (parent M 0 (Lng M - 1)))
+    (vaE : va = entry M 1 (Adm M (parent M 0 (parent M 0 (Lng M - 1)))))
+    (tauT : tau ∈ T_B)
+    (dInit : scb_decomp (Trans (Pred M)) s'
+      (flatBT (Mark (Pred M) (Adm M (parent M 0 (parent M 0 (Lng M - 1)))))) b')
+    (mkIH : Mark (oper M (n - 1)) (Adm M (parent M 0 (parent M 0 (Lng M - 1))))
+      = Dprin (va : ℕ∞) (addBT tau (multBT c1 (n - 1))))
+    (dIH : scb_decomp (Trans (oper M (n - 1))) s'
+      (flatBT (Dprin (va : ℕ∞) (addBT tau (multBT c1 (n - 1))))) b') :
+    Mark (oper M n) (Adm M (parent M 0 (parent M 0 (Lng M - 1))))
+        = Dprin (va : ℕ∞) (addBT tau (multBT c1 n))
+      ∧ scb_decomp (Trans (oper M n)) s'
+          (flatBT (Dprin (va : ℕ∞) (addBT tau (multBT c1 n)))) b' := by
+  -- `scx_mark_pin` により `Mark` 側は `Trans` 側の分解から決まる
+  suffices dTn : scb_decomp (Trans (oper M n)) s'
+      (flatBT (Dprin (va : ℕ∞) (addBT tau (multBT c1 n)))) b' from
+    ⟨scx_mark_pin M n _ s' b' hR hmono hj1 hI hj0pos hn dInit dTn, dTn⟩
+  obtain ⟨hp0, e1z, hadm, _hle0j0, _hpj0, hnp, hge, hj0'lt⟩ :=
+    scx_host_basic M hR hmono hj1 hI hj0pos
+  have hM : TPS M := RTPS_TPS M hR
+  obtain ⟨_, hj0lt, _, _, hL⟩ := kind0_facts_cf1 M hp0 e1z
+  have hn1 : 1 ≤ n := by omega
+  have hw1 : 1 ≤ Lng M - 1 - parent M 0 (Lng M - 1) := by omega
+  -- `N` 束
+  have hLngMn := scx_Lng_oper_idx M n hp0 e1z hn1
+  have hidxlt : parent M 0 (Lng M - 1)
+      + (n - 1) * (Lng M - 1 - parent M 0 (Lng M - 1)) < Lng (oper M n) := by
+    rw [hLngMn]; omega
+  obtain ⟨hNtake, hLngN⟩ := scx_N_take M n _ hp0 e1z hidxlt
+  obtain ⟨hmkIdx, _hnx0, hT1N, _hnVI, hJ0N, hJm1N⟩ :=
+    scx_N_marked_edge M n hR hmono hj1 hI hj0pos hn
+  have hPredN := scx_N_Pred M n hp0 e1z hn
+  obtain ⟨hNR, hNmono⟩ := scx_N_RTPS_monoT M n hR hmono hj1 hI hj0pos hn
+  have heNidx := scx_N_entry1_idx M n hp0 e1z hn1
+  have heNj0' := scx_N_entry_le_j0 M n 1 (parent M 0 (parent M 0 (Lng M - 1)))
+    hp0 e1z hn1 (Or.inr rfl) (le_of_lt hj0'lt)
+  have hnxN := scx_N_nextR M n hR hmono hj1 hI hj0pos hn
+  have hj0ltidx : parent M 0 (Lng M - 1)
+      < parent M 0 (Lng M - 1) + (n - 1) * (Lng M - 1 - parent M 0 (Lng M - 1)) := by
+    have : 1 * (Lng M - 1 - parent M 0 (Lng M - 1))
+        ≤ (n - 1) * (Lng M - 1 - parent M 0 (Lng M - 1)) :=
+      Nat.mul_le_mul_right _ (by omega)
+    omega
+  -- `Trans`-記号の折り畳み
+  have hJ1N : transJ1 (seg (oper M n) 0
+      (parent M 0 (Lng M - 1)
+        + (n - 1) * (Lng M - 1 - parent M 0 (Lng M - 1))))
+      = parent M 0 (Lng M - 1)
+        + (n - 1) * (Lng M - 1 - parent M 0 (Lng M - 1)) := by
+    simp [transJ1, lastIdx, hLngN]
+  have hLNgt : 1 < Lng (seg (oper M n) 0
+      (parent M 0 (Lng M - 1)
+        + (n - 1) * (Lng M - 1 - parent M 0 (Lng M - 1)))) := by
+    rw [hLngN]; omega
+  have hC1N : transC1 (seg (oper M n) 0
+      (parent M 0 (Lng M - 1)
+        + (n - 1) * (Lng M - 1 - parent M 0 (Lng M - 1))))
+      = Dprin (va : ℕ∞) (addBT tau (multBT c1 (n - 1))) := by
+    rw [transC1, hJm1N, hPredN]; exact mkIH
+  have hVN : transV (seg (oper M n) 0
+      (parent M 0 (Lng M - 1)
+        + (n - 1) * (Lng M - 1 - parent M 0 (Lng M - 1)))) = (va : ℕ∞) := by
+    rw [transV, hC1N]; rfl
+  have hT2N : transT2 (seg (oper M n) 0
+      (parent M 0 (Lng M - 1)
+        + (n - 1) * (Lng M - 1 - parent M 0 (Lng M - 1))))
+      = addBT tau (multBT c1 (n - 1)) := by
+    rw [transT2, hC1N]; rfl
+  -- 分類: `N` は条件 (I) / (III) / (V) のいずれか
+  have hspacn : parent M 0 (parent M 0 (Lng M - 1)) + 1
+      < parent M 0 (Lng M - 1)
+        + (n - 1) * (Lng M - 1 - parent M 0 (Lng M - 1)) := by omega
+  have hclsA : transCondI (seg (oper M n) 0
+        (parent M 0 (Lng M - 1)
+          + (n - 1) * (Lng M - 1 - parent M 0 (Lng M - 1)))) = true
+      ∨ transCondIII (seg (oper M n) 0
+        (parent M 0 (Lng M - 1)
+          + (n - 1) * (Lng M - 1 - parent M 0 (Lng M - 1)))) = true
+      ∨ transCondV (seg (oper M n) 0
+        (parent M 0 (Lng M - 1)
+          + (n - 1) * (Lng M - 1 - parent M 0 (Lng M - 1)))) = true := by
+    have hlp : lastParent (seg (oper M n) 0
+        (parent M 0 (Lng M - 1)
+          + (n - 1) * (Lng M - 1 - parent M 0 (Lng M - 1))))
+        = parent M 0 (parent M 0 (Lng M - 1)) := by
+      simpa [transJ0] using hJ0N
+    have hli : lastIdx (seg (oper M n) 0
+        (parent M 0 (Lng M - 1)
+          + (n - 1) * (Lng M - 1 - parent M 0 (Lng M - 1))))
+        = parent M 0 (Lng M - 1)
+          + (n - 1) * (Lng M - 1 - parent M 0 (Lng M - 1)) := by
+      simpa [transJ1] using hJ1N
+    by_cases hcase : Adm M (parent M 0 (parent M 0 (Lng M - 1)))
+        = parent M 0 (parent M 0 (Lng M - 1))
+    · -- `j₋₁' = j₀'`: `j₀'` は `M` 許容 ⇒ 接頭辞一致で `N` 許容
+      have hadmM : adm M (parent M 0 (parent M 0 (Lng M - 1))) = true := by
+        have := Adm_adm M (parent M 0 (parent M 0 (Lng M - 1)))
+        rwa [hcase] at this
+      have hNT : TPS (seg (oper M n) 0
+          (parent M 0 (Lng M - 1)
+            + (n - 1) * (Lng M - 1 - parent M 0 (Lng M - 1)))) :=
+        RTPS_TPS _ hNR
+      have hadmN : adm (seg (oper M n) 0
+          (parent M 0 (Lng M - 1)
+            + (n - 1) * (Lng M - 1 - parent M 0 (Lng M - 1))))
+          (parent M 0 (parent M 0 (Lng M - 1))) = true := by
+        have hagree : ∀ i z, z ≤ parent M 0 (Lng M - 1) →
+            entry (seg (oper M n) 0
+              (parent M 0 (Lng M - 1)
+                + (n - 1) * (Lng M - 1 - parent M 0 (Lng M - 1)))) i z
+              = entry M i z := by
+          intro i z hz
+          by_cases hi : i = 0 ∨ i = 1
+          · exact scx_N_entry_le_j0 M n i z hp0 e1z hn1 hi hz
+          · have hi0 : i ≠ 0 := fun h => hi (Or.inl h)
+            rw [entry_row_ne_zero_cf1 _ i z hi0, entry_row_ne_zero_cf1 M i z hi0]
+            exact scx_N_entry_le_j0 M n 1 z hp0 e1z hn1 (Or.inr rfl) hz
+        rw [← adm_prefix_agree_eq_cf1 M (seg (oper M n) 0
+            (parent M 0 (Lng M - 1)
+              + (n - 1) * (Lng M - 1 - parent M 0 (Lng M - 1))))
+            (parent M 0 (Lng M - 1)) (parent M 0 (parent M 0 (Lng M - 1)))
+            hM hNT (fun i z hz => (hagree i z hz).symm) (by omega)
+            (by rw [hLngN]; omega) (by omega)]
+        exact hadmM
+      by_cases hz0 : entry M 1 (parent M 0 (Lng M - 1)) = 0
+      · left
+        simp only [transCondI, Bool.and_eq_true, beq_iff_eq]
+        exact ⟨by rw [hli, heNidx]; exact hz0, by rw [hlp]; exact hadmN⟩
+      · have hbnd : entry M 1 (parent M 0 (Lng M - 1))
+            ≤ entry M 1 (parent M 0 (parent M 0 (Lng M - 1))) + 1 :=
+          scx_row1_bound M _ _ hR hnp
+        by_cases hle : entry M 1 (parent M 0 (Lng M - 1))
+            ≤ entry M 1 (parent M 0 (parent M 0 (Lng M - 1)))
+        · right; left
+          simp only [transCondIII, Bool.and_eq_true, decide_eq_true_eq]
+          refine ⟨⟨by rw [hli, heNidx]; omega, ?_⟩, by rw [hlp]; exact hadmN⟩
+          rw [hli, heNidx, hlp, heNj0']; exact hle
+        · right; right
+          simp only [transCondV, Bool.and_eq_true, decide_eq_true_eq,
+            beq_iff_eq]
+          refine ⟨⟨by rw [hli, heNidx]; omega, ?_⟩, ?_⟩
+          · rw [hli, heNidx, hlp, heNj0']; omega
+          · rw [hli, hlp]; omega
+    · -- `j₋₁' < j₀'`: case A の第 2 枝 `M_{1,j₀'} + 1 = M_{1,j₀}`
+      have heq : entry M 1 (parent M 0 (parent M 0 (Lng M - 1))) + 1
+          = entry M 1 (parent M 0 (Lng M - 1)) := by
+        rcases caseA with h | h
+        · exact absurd h hcase
+        · exact h
+      right; right
+      simp only [transCondV, Bool.and_eq_true, decide_eq_true_eq, beq_iff_eq]
+      refine ⟨⟨by rw [hli, heNidx]; omega, ?_⟩, ?_⟩
+      · rw [hli, heNidx, hlp, heNj0']; exact heq
+      · rw [hli, hlp]; omega
+  -- `c₂` の値
+  have hc2NE : transC2 (seg (oper M n) 0
+      (parent M 0 (Lng M - 1)
+        + (n - 1) * (Lng M - 1 - parent M 0 (Lng M - 1))))
+      = Dprin (va : ℕ∞) (addBT (addBT tau (multBT c1 (n - 1)))
+          (Dprin (entry M 1 (parent M 0 (Lng M - 1)) : ℕ∞) BZero)) := by
+    have hcls : (transCondI (seg (oper M n) 0
+          (parent M 0 (Lng M - 1)
+            + (n - 1) * (Lng M - 1 - parent M 0 (Lng M - 1))))
+        || transCondIII (seg (oper M n) 0
+          (parent M 0 (Lng M - 1)
+            + (n - 1) * (Lng M - 1 - parent M 0 (Lng M - 1))))
+        || transCondV (seg (oper M n) 0
+          (parent M 0 (Lng M - 1)
+            + (n - 1) * (Lng M - 1 - parent M 0 (Lng M - 1))))) = true := by
+      rcases hclsA with h | h | h <;> simp [h]
+    rw [transC2, transC2Core]
+    simp only [hcls, if_true, hVN, hT2N]
+    congr 1
+    · rw [transJ1] at hJ1N
+      rw [hJ1N, heNidx]
+  -- 単項分解の骨格
+  have hNRne : Trans (Pred (seg (oper M n) 0
+      (parent M 0 (Lng M - 1)
+        + (n - 1) * (Lng M - 1 - parent M 0 (Lng M - 1))))) ≠ BZero := hT1N
+  obtain ⟨sN, bN, dPn, dWn⟩ :=
+    Trans_c1_c2_decomp_cm1 _ hNR hNmono hLNgt hNRne
+  have dPn' : scb_decomp (Trans (oper M (n - 1))) sN
+      (flatBT (Dprin (va : ℕ∞) (addBT tau (multBT c1 (n - 1))))) bN := by
+    rw [← hC1N, ← hPredN]; exact dPn
+  have hTn1ne : Trans (oper M (n - 1)) ≠ BZero := by rw [← hPredN]; exact hT1N
+  obtain ⟨hps, hpb⟩ := scb_unique_decomp_unconditional (Trans (oper M (n - 1)))
+    sN s' _ bN b' dPn' dIH
+  rw [hps, hpb] at dWn
+  have dWnE : scb_decomp (Trans (seg (oper M n) 0
+      (parent M 0 (Lng M - 1)
+        + (n - 1) * (Lng M - 1 - parent M 0 (Lng M - 1))))) s'
+      (flatBT (Dprin (va : ℕ∞) (addBT (addBT tau (multBT c1 (n - 1)))
+        (Dprin (entry M 1 (parent M 0 (Lng M - 1)) : ℕ∞) BZero)))) b' := by
+    rw [← hc2NE]; exact dWn
+  -- `T_B` と形の事実
+  have hpredR : RTPS (Pred M) := RTPS_Pred M hR
+  have hmkA : Marked (Pred M) (Adm M (parent M 0 (Lng M - 1))) :=
+    Marked_Pred_Adm M hM (by omega) hp0
+  have hc1TB : c1 ∈ T_B := by
+    rw [hc1]; exact Mark_mem_T_B (Pred M) _ hpredR hmkA
+  have hc1P : ∃ p, c1 = .trm [p] := by
+    have := (c1_around_1 M hR hmono hadm hj1 hge).2.2.2.2
+    rw [hc1]
+    simpa [transC1, transJm1, transJ0, lastParent, lastIdx] using this
+  have hleafTB : Dprin (entry M 1 (parent M 0 (Lng M - 1)) : ℕ∞) BZero ∈ T_B :=
+    Dprin_mem_T_B (by simp) BZero_mem_T_B_cf1
+  have hleafP : ∃ p, Dprin (entry M 1 (parent M 0 (Lng M - 1)) : ℕ∞) BZero
+      = BT.trm [p] := ⟨_, rfl⟩
+  have hbodyTB : addBT tau (multBT c1 (n - 1)) ∈ T_B :=
+    addBT_mem_T_B tauT (multBT_mem_T_B_cf1 hc1TB _)
+  have hiptleaf : isPTB_str (flatBT
+      (Dprin (entry M 1 (parent M 0 (Lng M - 1)) : ℕ∞) BZero)) :=
+    principal_flat_isPTB_cm1 hleafTB hleafP
+  have hiptc1 : isPTB_str (flatBT c1) := principal_flat_isPTB_cm1 hc1TB hc1P
+  -- 追加された葉の標準内部位置
+  obtain ⟨si, bi, iA0⟩ : ∃ si bi, scb_decomp
+      (addBT (addBT tau (multBT c1 (n - 1)))
+        (Dprin (entry M 1 (parent M 0 (Lng M - 1)) : ℕ∞) BZero))
+      si (flatBT (Dprin (entry M 1 (parent M 0 (Lng M - 1)) : ℕ∞) BZero)) bi :=
+    add_scb_marked _ _ hbodyTB hleafTB hleafP
+  have iA : scb_decomp (Dprin (va : ℕ∞)
+      (addBT (addBT tau (multBT c1 (n - 1)))
+        (Dprin (entry M 1 (parent M 0 (Lng M - 1)) : ℕ∞) BZero)))
+      (.dsym (va : ℕ∞) :: si)
+      (flatBT (Dprin (entry M 1 (parent M 0 (Lng M - 1)) : ℕ∞) BZero)) bi :=
+    scb_compose_dprin _ _ _ _ _ iA0 hiptleaf
+  -- 閉形式の再結合
+  have hsnoc : multBT c1 n = addBT (multBT c1 (n - 1)) c1 := by
+    conv_lhs => rw [show n = (n - 1) + 1 by omega]
+    rfl
+  have hassocX : addBT (addBT tau (multBT c1 (n - 1))) c1
+      = addBT tau (multBT c1 n) := by
+    rw [hsnoc, addBT_assoc_cf1]
+  by_cases hw : Lng M - 1 - parent M 0 (Lng M - 1) = 1
+  · -- `w = 1`: `N = M[n]` かつ `c₁` 自身が右端の葉
+    have hc1w1v : c1 = Dprin (entry M 1 (parent M 0 (Lng M - 1)) : ℕ∞) BZero := by
+      rw [hc1]; exact scx_c1_w1 M hR hmono hj1 hI hw
+    have hNMn : seg (oper M n) 0
+        (parent M 0 (Lng M - 1)
+          + (n - 1) * (Lng M - 1 - parent M 0 (Lng M - 1))) = oper M n := by
+      rw [hNtake]
+      have hlen2 : (oper M n).length =
+          parent M 0 (Lng M - 1) + (n - 1) * (Lng M - 1 - parent M 0 (Lng M - 1))
+            + (Lng M - 1 - parent M 0 (Lng M - 1)) := hLngMn
+      have h2 : parent M 0 (Lng M - 1)
+          + (n - 1) * (Lng M - 1 - parent M 0 (Lng M - 1)) + 1
+          = (oper M n).length := by omega
+      rw [h2, List.take_length]
+    have hceq : addBT (addBT tau (multBT c1 (n - 1)))
+        (Dprin (entry M 1 (parent M 0 (Lng M - 1)) : ℕ∞) BZero)
+        = addBT tau (multBT c1 n) := by
+      rw [← hc1w1v]; exact hassocX
+    rw [hNMn, hceq] at dWnE
+    exact dWnE
+  · -- `w ≥ 2`: 葉を `c₁` に貼り替えて外側の分解を組み直す
+    have hw2 : 1 < Lng M - 1 - parent M 0 (Lng M - 1) := by omega
+    have hidxlt1 : parent M 0 (Lng M - 1)
+        + (n - 1) * (Lng M - 1 - parent M 0 (Lng M - 1))
+        < Lng (oper M n) - 1 := by rw [hLngMn]; omega
+    have hMnR : RTPS (oper M n) := RTPS_oper M n hR hn1
+    obtain ⟨sb0f, sb0s, TMS1, TMS2⟩ :=
+      Trans_Mark_seg_exists (oper M n) _ hmkIdx hMnR (by omega) hidxlt1
+    have heMnidx : entry (oper M n) 1
+        (parent M 0 (Lng M - 1)
+          + (n - 1) * (Lng M - 1 - parent M 0 (Lng M - 1)))
+        = entry M 1 (parent M 0 (Lng M - 1)) := by
+      rw [← heNidx, hNtake, entry, entry, List.getElem?_take_of_lt (by omega)]
+    have dseg : scb_decomp (Trans (seg (oper M n) 0
+        (parent M 0 (Lng M - 1)
+          + (n - 1) * (Lng M - 1 - parent M 0 (Lng M - 1))))) sb0f
+        (flatBT (Dprin (entry M 1 (parent M 0 (Lng M - 1)) : ℕ∞) BZero)) sb0s := by
+      rw [← heMnidx]; exact TMS1
+    have dCI : scb_decomp (Trans (seg (oper M n) 0
+        (parent M 0 (Lng M - 1)
+          + (n - 1) * (Lng M - 1 - parent M 0 (Lng M - 1)))))
+        (s' ++ (.dsym (va : ℕ∞) :: si))
+        (flatBT (Dprin (entry M 1 (parent M 0 (Lng M - 1)) : ℕ∞) BZero))
+        (bi ++ b') :=
+      scb_compose_str_cf1 dWnE iA (by simp [Dprin, BZero])
+    obtain ⟨hp1, hp2⟩ := scb_unique_decomp_unconditional _ sb0f
+      (s' ++ (.dsym (va : ℕ∞) :: si)) _ sb0s (bi ++ b') dseg dCI
+    subst hp1; subst hp2
+    have hmarkidx : Mark (oper M n)
+        (parent M 0 (Lng M - 1)
+          + (n - 1) * (Lng M - 1 - parent M 0 (Lng M - 1))) = c1 := by
+      rw [hc1]; exact scx_mark_idx M n hR hmono hj1 hI hj0pos hn hw2
+    have dmark' : scb_decomp (Trans (oper M n))
+        (s' ++ (.dsym (va : ℕ∞) :: si)) (flatBT c1) (bi ++ b') := by
+      rw [← hmarkidx]; exact TMS2
+    -- 同じ内部位置で葉を `c₁` に置換
+    have iA2_0 : scb_decomp (addBT (addBT tau (multBT c1 (n - 1))) c1) si
+        (flatBT c1) bi :=
+      add_scb_replace_last _ _ _ _ _ hbodyTB hleafTB hleafP hc1TB hc1P iA0
+    have iA2 : scb_decomp (Dprin (va : ℕ∞)
+        (addBT (addBT tau (multBT c1 (n - 1))) c1))
+        (.dsym (va : ℕ∞) :: si) (flatBT c1) bi :=
+      scb_compose_dprin _ _ _ _ _ iA2_0 hiptc1
+    -- 外側の分解を組み直す
+    have hXnTB : Dprin (va : ℕ∞) (addBT tau (multBT c1 n)) ∈ T_B :=
+      Dprin_mem_T_B (by simp) (addBT_mem_T_B tauT (multBT_mem_T_B_cf1 hc1TB _))
+    have hiptXn : isPTB_str (flatBT (Dprin (va : ℕ∞) (addBT tau (multBT c1 n)))) :=
+      principal_flat_isPTB_cm1 hXnTB ⟨_, rfl⟩
+    have fMn : flatBT (Trans (oper M n))
+        = (s' ++ (.dsym (va : ℕ∞) :: si)) ++ flatBT c1 ++ (bi ++ b') := dmark'.1
+    have fX2 : flatBT (Dprin (va : ℕ∞) (addBT tau (multBT c1 n)))
+        = (.dsym (va : ℕ∞) :: si) ++ flatBT c1 ++ bi := by
+      rw [← hassocX]; exact iA2.1
+    refine ⟨?_, fun _ => hiptXn, dIH.2.2⟩
+    rw [fMn, fX2]
+    simp [List.append_assoc]
+
+/-! ### case B の PB 補助 -/
+
+private theorem PB_addBT_app_cm1 (a b : BT) : PB (addBT a b) = PB a ++ PB b := by
+  rcases a with ⟨as⟩; rcases b with ⟨bs⟩; simp [PB, addBT, untrm]
+
+private theorem PB_Dprin_single_cm1 (v : ℕ∞) (t : BT) :
+    PB (Dprin v t) = [Dprin v t] := by simp [PB, Dprin, untrm]
+
+private theorem SigmaB_PB_cm1 (t : BT) : SigmaB (PB t) = t := by
+  rcases t with ⟨ps⟩
+  simp only [PB, untrm, SigmaB]
+  congr 1
+  induction ps with
+  | nil => rfl
+  | cons p ps ih => simp [untrm, ih]
+
+/-- Isabelle `scx_stepB` (pss_wip.thy:83254)。case B（`j₋₁' < j₀'` かつ
+`M_{1,j₀} ≤ M_{1,j₀'}`）の一歩の surgery。`c₁` の 2 段ネスト
+`D_va(t₃ +_B D_vb(t₄ +_B c₁·n))` を反復とともに進める。`N` は else 分岐
+（`¬(I∨III∨V) ∧ ¬VI ∧ t₂≠0 ∧ leftDj₀`）に落ちるので `transC2Core` の最終分岐で
+葉が 2 段下に追加される。 -/
+theorem scx_stepB (M : PS) (n va vb : ℕ) (t3 t4 c1 : BT) (s' b' : List Sym)
+    (hR : RTPS M) (hmono : monoT M = true) (hj1 : 1 < Lng M - 1)
+    (hI : transCondI M = true) (hj0pos : 0 < parent M 0 (Lng M - 1)) (hn : 2 ≤ n)
+    (hc1 : c1 = Mark (Pred M) (Adm M (parent M 0 (Lng M - 1))))
+    (caseB1 : Adm M (parent M 0 (parent M 0 (Lng M - 1)))
+               < parent M 0 (parent M 0 (Lng M - 1)))
+    (caseB2 : entry M 1 (parent M 0 (Lng M - 1))
+               ≤ entry M 1 (parent M 0 (parent M 0 (Lng M - 1))))
+    (vaE : va = entry M 1 (Adm M (parent M 0 (parent M 0 (Lng M - 1)))))
+    (vbE : vb = entry M 1 (parent M 0 (parent M 0 (Lng M - 1))))
+    (t3T : t3 ∈ T_B) (t4T : t4 ∈ T_B)
+    (dInit : scb_decomp (Trans (Pred M)) s'
+      (flatBT (Mark (Pred M) (Adm M (parent M 0 (parent M 0 (Lng M - 1)))))) b')
+    (mkIH : Mark (oper M (n - 1)) (Adm M (parent M 0 (parent M 0 (Lng M - 1))))
+      = Dprin (va : ℕ∞) (addBT t3 (Dprin (vb : ℕ∞)
+          (addBT t4 (multBT c1 (n - 1))))))
+    (dIH : scb_decomp (Trans (oper M (n - 1))) s'
+      (flatBT (Dprin (va : ℕ∞) (addBT t3 (Dprin (vb : ℕ∞)
+        (addBT t4 (multBT c1 (n - 1))))))) b') :
+    Mark (oper M n) (Adm M (parent M 0 (parent M 0 (Lng M - 1))))
+        = Dprin (va : ℕ∞) (addBT t3 (Dprin (vb : ℕ∞) (addBT t4 (multBT c1 n))))
+      ∧ scb_decomp (Trans (oper M n)) s'
+          (flatBT (Dprin (va : ℕ∞) (addBT t3 (Dprin (vb : ℕ∞)
+            (addBT t4 (multBT c1 n)))))) b' := by
+  suffices dTn : scb_decomp (Trans (oper M n)) s'
+      (flatBT (Dprin (va : ℕ∞) (addBT t3 (Dprin (vb : ℕ∞)
+        (addBT t4 (multBT c1 n)))))) b' from
+    ⟨scx_mark_pin M n _ s' b' hR hmono hj1 hI hj0pos hn dInit dTn, dTn⟩
+  obtain ⟨hp0, e1z, hadm, _hle0j0, _hpj0, hnp, hge, hj0'lt⟩ :=
+    scx_host_basic M hR hmono hj1 hI hj0pos
+  have hM : TPS M := RTPS_TPS M hR
+  obtain ⟨_, hj0lt, _, _, hL⟩ := kind0_facts_cf1 M hp0 e1z
+  have hn1 : 1 ≤ n := by omega
+  -- `N` 束
+  have hLngMn := scx_Lng_oper_idx M n hp0 e1z hn1
+  have hidxlt : parent M 0 (Lng M - 1)
+      + (n - 1) * (Lng M - 1 - parent M 0 (Lng M - 1)) < Lng (oper M n) := by
+    rw [hLngMn]; omega
+  obtain ⟨hNtake, hLngN⟩ := scx_N_take M n _ hp0 e1z hidxlt
+  obtain ⟨hmkIdx, _hnx0, hT1N, hnVIN, hJ0N, hJm1N⟩ :=
+    scx_N_marked_edge M n hR hmono hj1 hI hj0pos hn
+  have hPredN := scx_N_Pred M n hp0 e1z hn
+  obtain ⟨hNR, hNmono⟩ := scx_N_RTPS_monoT M n hR hmono hj1 hI hj0pos hn
+  have heNidx := scx_N_entry1_idx M n hp0 e1z hn1
+  have heNj0' := scx_N_entry_le_j0 M n 1 (parent M 0 (parent M 0 (Lng M - 1)))
+    hp0 e1z hn1 (Or.inr rfl) (le_of_lt hj0'lt)
+  have hj0ltidx : parent M 0 (Lng M - 1)
+      < parent M 0 (Lng M - 1) + (n - 1) * (Lng M - 1 - parent M 0 (Lng M - 1)) := by
+    have : 1 * (Lng M - 1 - parent M 0 (Lng M - 1))
+        ≤ (n - 1) * (Lng M - 1 - parent M 0 (Lng M - 1)) :=
+      Nat.mul_le_mul_right _ (by omega)
+    omega
+  -- 略記
+  set idx := parent M 0 (Lng M - 1)
+    + (n - 1) * (Lng M - 1 - parent M 0 (Lng M - 1)) with hidxdef
+  set N := seg (oper M n) 0 idx with hNdef
+  set j0' := parent M 0 (parent M 0 (Lng M - 1)) with hj0'def
+  -- `Trans`-記号の折り畳み
+  have hLNgt : 1 < Lng N := by rw [hLngN]; omega
+  have hC1N : transC1 N
+      = Dprin (va : ℕ∞) (addBT t3 (Dprin (vb : ℕ∞) (addBT t4 (multBT c1 (n - 1))))) := by
+    rw [transC1, hJm1N, hPredN]; exact mkIH
+  have hVN : transV N = (va : ℕ∞) := by rw [transV, hC1N]; rfl
+  have hT2N : transT2 N
+      = addBT t3 (Dprin (vb : ℕ∞) (addBT t4 (multBT c1 (n - 1)))) := by
+    rw [transT2, hC1N]; rfl
+  have hLPN : lastParent N = j0' := hJ0N
+  have hLIN : lastIdx N = idx := by simp [lastIdx, hLngN]
+  -- else 分岐の分類: `N` は非許容 (parent M 0 j0)
+  have hAdmNeq : Adm N j0' = Adm M j0' := by
+    have h : Adm N (transJ0 N) = Adm M j0' := hJm1N
+    rwa [hJ0N] at h
+  have hnadmN : adm N j0' = false := by
+    cases hh : adm N j0' with
+    | false => rfl
+    | true =>
+      exfalso
+      have hAeq : Adm N j0' = j0' := by simp [Adm, hh]
+      rw [hAdmNeq] at hAeq
+      omega
+  have hentryLI : entry N 1 (lastIdx N) = entry M 1 (parent M 0 (Lng M - 1)) := by
+    rw [hLIN]; exact heNidx
+  have hentryLP : entry N 1 (lastParent N) = vb := by
+    rw [hLPN, heNj0', ← vbE]
+  -- 分類 booleans
+  have hnI : transCondI N = false := by
+    simp only [transCondI, Bool.and_eq_false_iff]; right; rw [hLPN]; exact hnadmN
+  have hnIII : transCondIII N = false := by
+    simp only [transCondIII, Bool.and_eq_false_iff]; right; rw [hLPN]; exact hnadmN
+  have hnV : transCondV N = false := by
+    -- 条件 V の中段等式 `M_{1,j₀'}+1 = M_{1,j₀}` は caseB2 と矛盾
+    simp only [transCondV, Bool.and_eq_false_iff]
+    left; right
+    simp only [beq_eq_false_iff_ne, ne_eq]
+    rw [hentryLP, hentryLI]
+    omega
+  -- `t₂ ≠ 0`
+  have ht2Nne : transT2 N ≠ BZero := by
+    rw [hT2N]
+    rcases t3 with ⟨as⟩
+    simp [addBT, Dprin, BZero]
+  -- `c₂` の値（leftDj₀ 分岐）
+  have hpt2 : PB (transT2 N)
+      = PB t3 ++ [Dprin (vb : ℕ∞) (addBT t4 (multBT c1 (n - 1)))] := by
+    rw [hT2N, PB_addBT_app_cm1, PB_Dprin_single_cm1]
+  have hgetD : (PB (transT2 N)).getD ((PB (transT2 N)).length - 1) BZero
+      = Dprin (vb : ℕ∞) (addBT t4 (multBT c1 (n - 1))) := by
+    rw [hpt2]
+    have hlm : (PB t3 ++ [Dprin (vb : ℕ∞) (addBT t4 (multBT c1 (n - 1)))]).length - 1
+        = (PB t3).length := by simp
+    rw [hlm, List.getD_eq_getElem?_getD,
+      List.getElem?_append_right (Nat.le_refl _)]
+    simp
+  have htake : SigmaB ((PB (transT2 N)).take ((PB (transT2 N)).length - 1)) = t3 := by
+    rw [hpt2]
+    have hlm : (PB t3 ++ [Dprin (vb : ℕ∞) (addBT t4 (multBT c1 (n - 1)))]).length - 1
+        = (PB t3).length := by simp
+    rw [hlm, List.take_left]
+    exact SigmaB_PB_cm1 t3
+  have hbT : bpHeadT ((PB (transT2 N)).getD ((PB (transT2 N)).length - 1) BZero)
+      = addBT t4 (multBT c1 (n - 1)) := by
+    rw [hgetD]; simp [bpHeadT, Dprin]
+  have hleftB : (bpHeadV ((PB (transT2 N)).getD ((PB (transT2 N)).length - 1) BZero)
+      == (entry N 1 (lastParent N) : ℕ∞)) = true := by
+    rw [hgetD]
+    simp only [bpHeadV, Dprin]
+    rw [hentryLP]; simp
+  have hnA' : ¬((transCondI N || transCondIII N || transCondV N) = true) := by
+    rw [hnI, hnIII, hnV]; simp
+  have hnVI' : ¬(transCondVI N = true) := by rw [hnVIN]; simp
+  have ht₂' : ¬((transT2 N == BZero) = true) := by simpa using ht2Nne
+  have hc2NE : transC2 N
+      = Dprin (va : ℕ∞) (addBT t3 (Dprin (vb : ℕ∞)
+          (addBT (addBT t4 (multBT c1 (n - 1)))
+            (Dprin (entry M 1 (parent M 0 (Lng M - 1)) : ℕ∞) BZero)))) := by
+    show transC2Core N (transV N) (transT2 N) = _
+    simp only [transC2Core]
+    rw [if_neg hnA', if_neg hnVI', if_neg ht₂', if_pos hleftB, if_pos hleftB,
+      hbT, hVN, htake, hentryLI, hentryLP]
+  -- 単項分解
+  have hNRne : Trans (Pred N) ≠ BZero := hT1N
+  obtain ⟨sN, bN, dPn, dWn⟩ :=
+    Trans_c1_c2_decomp_cm1 _ hNR hNmono hLNgt hNRne
+  have dPn' : scb_decomp (Trans (oper M (n - 1))) sN
+      (flatBT (Dprin (va : ℕ∞) (addBT t3 (Dprin (vb : ℕ∞)
+        (addBT t4 (multBT c1 (n - 1))))))) bN := by
+    rw [← hC1N, ← hPredN]; exact dPn
+  have hTn1ne : Trans (oper M (n - 1)) ≠ BZero := by rw [← hPredN]; exact hT1N
+  obtain ⟨hps, hpb⟩ := scb_unique_decomp_unconditional (Trans (oper M (n - 1)))
+    sN s' _ bN b' dPn' dIH
+  rw [hps, hpb] at dWn
+  have dWnE : scb_decomp (Trans N) s'
+      (flatBT (Dprin (va : ℕ∞) (addBT t3 (Dprin (vb : ℕ∞)
+          (addBT (addBT t4 (multBT c1 (n - 1)))
+            (Dprin (entry M 1 (parent M 0 (Lng M - 1)) : ℕ∞) BZero)))))) b' := by
+    rw [← hc2NE]; exact dWn
+  -- `T_B`・形の事実
+  have hpredR : RTPS (Pred M) := RTPS_Pred M hR
+  have hmkA : Marked (Pred M) (Adm M (parent M 0 (Lng M - 1))) :=
+    Marked_Pred_Adm M hM (by omega) hp0
+  have hc1TB : c1 ∈ T_B := by rw [hc1]; exact Mark_mem_T_B (Pred M) _ hpredR hmkA
+  have hc1P : ∃ p, c1 = .trm [p] := by
+    have := (c1_around_1 M hR hmono hadm hj1 hge).2.2.2.2
+    rw [hc1]
+    simpa [transC1, transJm1, transJ0, lastParent, lastIdx] using this
+  have hleafTB : Dprin (entry M 1 (parent M 0 (Lng M - 1)) : ℕ∞) BZero ∈ T_B :=
+    Dprin_mem_T_B (by simp) BZero_mem_T_B_cf1
+  have hleafP : ∃ p, Dprin (entry M 1 (parent M 0 (Lng M - 1)) : ℕ∞) BZero
+      = BT.trm [p] := ⟨_, rfl⟩
+  have hbody4TB : addBT t4 (multBT c1 (n - 1)) ∈ T_B :=
+    addBT_mem_T_B t4T (multBT_mem_T_B_cf1 hc1TB _)
+  have hiptleaf : isPTB_str (flatBT
+      (Dprin (entry M 1 (parent M 0 (Lng M - 1)) : ℕ∞) BZero)) :=
+    principal_flat_isPTB_cm1 hleafTB hleafP
+  have hiptc1 : isPTB_str (flatBT c1) := principal_flat_isPTB_cm1 hc1TB hc1P
+  -- 内側 2 段の scb 位置（葉版）
+  obtain ⟨si, bi, iI0⟩ : ∃ si bi, scb_decomp
+      (addBT (addBT t4 (multBT c1 (n - 1)))
+        (Dprin (entry M 1 (parent M 0 (Lng M - 1)) : ℕ∞) BZero))
+      si (flatBT (Dprin (entry M 1 (parent M 0 (Lng M - 1)) : ℕ∞) BZero)) bi :=
+    add_scb_marked _ _ hbody4TB hleafTB hleafP
+  have iI : scb_decomp (Dprin (vb : ℕ∞)
+      (addBT (addBT t4 (multBT c1 (n - 1)))
+        (Dprin (entry M 1 (parent M 0 (Lng M - 1)) : ℕ∞) BZero)))
+      (.dsym (vb : ℕ∞) :: si)
+      (flatBT (Dprin (entry M 1 (parent M 0 (Lng M - 1)) : ℕ∞) BZero)) bi :=
+    scb_compose_dprin _ _ _ _ _ iI0 hiptleaf
+  have hmidTB : Dprin (vb : ℕ∞) (addBT (addBT t4 (multBT c1 (n - 1)))
+      (Dprin (entry M 1 (parent M 0 (Lng M - 1)) : ℕ∞) BZero)) ∈ T_B :=
+    Dprin_mem_T_B (by simp) (addBT_mem_T_B hbody4TB hleafTB)
+  have hmidP : ∃ p, Dprin (vb : ℕ∞) (addBT (addBT t4 (multBT c1 (n - 1)))
+      (Dprin (entry M 1 (parent M 0 (Lng M - 1)) : ℕ∞) BZero)) = .trm [p] := ⟨_, rfl⟩
+  obtain ⟨so, bo, iO0⟩ : ∃ so bo, scb_decomp
+      (addBT t3 (Dprin (vb : ℕ∞) (addBT (addBT t4 (multBT c1 (n - 1)))
+        (Dprin (entry M 1 (parent M 0 (Lng M - 1)) : ℕ∞) BZero))))
+      so (flatBT (Dprin (vb : ℕ∞) (addBT (addBT t4 (multBT c1 (n - 1)))
+        (Dprin (entry M 1 (parent M 0 (Lng M - 1)) : ℕ∞) BZero)))) bo :=
+    add_scb_marked _ _ t3T hmidTB hmidP
+  have hiptmid : isPTB_str (flatBT (Dprin (vb : ℕ∞)
+      (addBT (addBT t4 (multBT c1 (n - 1)))
+        (Dprin (entry M 1 (parent M 0 (Lng M - 1)) : ℕ∞) BZero)))) :=
+    principal_flat_isPTB_cm1 hmidTB hmidP
+  have iO : scb_decomp (Dprin (va : ℕ∞)
+      (addBT t3 (Dprin (vb : ℕ∞) (addBT (addBT t4 (multBT c1 (n - 1)))
+        (Dprin (entry M 1 (parent M 0 (Lng M - 1)) : ℕ∞) BZero)))))
+      (.dsym (va : ℕ∞) :: so)
+      (flatBT (Dprin (vb : ℕ∞) (addBT (addBT t4 (multBT c1 (n - 1)))
+        (Dprin (entry M 1 (parent M 0 (Lng M - 1)) : ℕ∞) BZero)))) bo :=
+    scb_compose_dprin _ _ _ _ _ iO0 hiptmid
+  have iComp : scb_decomp (Dprin (va : ℕ∞)
+      (addBT t3 (Dprin (vb : ℕ∞) (addBT (addBT t4 (multBT c1 (n - 1)))
+        (Dprin (entry M 1 (parent M 0 (Lng M - 1)) : ℕ∞) BZero)))))
+      ((.dsym (va : ℕ∞) :: so) ++ (.dsym (vb : ℕ∞) :: si))
+      (flatBT (Dprin (entry M 1 (parent M 0 (Lng M - 1)) : ℕ∞) BZero)) (bi ++ bo) :=
+    scb_compose_str_cf1 iO iI (by simp [Dprin, BZero])
+  -- 閉形式の再結合
+  have hsnoc : multBT c1 n = addBT (multBT c1 (n - 1)) c1 := by
+    conv_lhs => rw [show n = (n - 1) + 1 by omega]
+    rfl
+  have hassocX : addBT (addBT t4 (multBT c1 (n - 1))) c1 = addBT t4 (multBT c1 n) := by
+    rw [hsnoc, addBT_assoc_cf1]
+  by_cases hw : Lng M - 1 - parent M 0 (Lng M - 1) = 1
+  · -- `w = 1`: `N = M[n]`、`c₁` 自身が右端葉
+    have hc1w1v : c1 = Dprin (entry M 1 (parent M 0 (Lng M - 1)) : ℕ∞) BZero := by
+      rw [hc1]; exact scx_c1_w1 M hR hmono hj1 hI hw
+    have hNMn : N = oper M n := by
+      rw [hNtake]
+      have hlen2 : (oper M n).length
+          = idx + (Lng M - 1 - parent M 0 (Lng M - 1)) := hLngMn
+      have h2 : idx + 1 = (oper M n).length := by omega
+      rw [h2, List.take_length]
+    have hceq : addBT (addBT t4 (multBT c1 (n - 1)))
+        (Dprin (entry M 1 (parent M 0 (Lng M - 1)) : ℕ∞) BZero)
+        = addBT t4 (multBT c1 n) := by
+      rw [← hc1w1v]; exact hassocX
+    rw [hNMn, hceq] at dWnE
+    exact dWnE
+  · -- `w ≥ 2`: 2 段の葉を `c₁` に貼り替える
+    have hw2 : 1 < Lng M - 1 - parent M 0 (Lng M - 1) := by omega
+    have hidxlt1 : idx < Lng (oper M n) - 1 := by rw [hidxdef, hLngMn]; omega
+    have hMnR : RTPS (oper M n) := RTPS_oper M n hR hn1
+    obtain ⟨sb0f, sb0s, TMS1, TMS2⟩ :=
+      Trans_Mark_seg_exists (oper M n) idx hmkIdx hMnR (by rw [hidxdef]; omega) hidxlt1
+    have heMnidx : entry (oper M n) 1 idx
+        = entry M 1 (parent M 0 (Lng M - 1)) := by
+      rw [← heNidx, hNtake]
+      simp only [entry]
+      rw [List.getElem?_take_of_lt (show idx < idx + 1 by omega)]
+    have dseg : scb_decomp (Trans N) sb0f
+        (flatBT (Dprin (entry M 1 (parent M 0 (Lng M - 1)) : ℕ∞) BZero)) sb0s := by
+      rw [hNdef, ← heMnidx]; exact TMS1
+    have dCI : scb_decomp (Trans N)
+        (s' ++ ((.dsym (va : ℕ∞) :: so) ++ (.dsym (vb : ℕ∞) :: si)))
+        (flatBT (Dprin (entry M 1 (parent M 0 (Lng M - 1)) : ℕ∞) BZero))
+        ((bi ++ bo) ++ b') :=
+      scb_compose_str_cf1 dWnE iComp (by simp [Dprin, BZero])
+    obtain ⟨hp1, hp2⟩ := scb_unique_decomp_unconditional (Trans N) sb0f
+      (s' ++ ((.dsym (va : ℕ∞) :: so) ++ (.dsym (vb : ℕ∞) :: si))) _
+      sb0s ((bi ++ bo) ++ b') dseg dCI
+    subst hp1; subst hp2
+    have hmarkidx : Mark (oper M n) idx = c1 := by
+      rw [hc1, hidxdef]; exact scx_mark_idx M n hR hmono hj1 hI hj0pos hn hw2
+    have dmark' : scb_decomp (Trans (oper M n))
+        (s' ++ ((.dsym (va : ℕ∞) :: so) ++ (.dsym (vb : ℕ∞) :: si)))
+        (flatBT c1) ((bi ++ bo) ++ b') := by
+      rw [← hmarkidx]; exact TMS2
+    -- 葉を `c₁` に置換（2 段）
+    have iI2_0 : scb_decomp (addBT (addBT t4 (multBT c1 (n - 1))) c1) si
+        (flatBT c1) bi :=
+      add_scb_replace_last _ _ _ _ _ hbody4TB hleafTB hleafP hc1TB hc1P iI0
+    have iI2 : scb_decomp (Dprin (vb : ℕ∞)
+        (addBT (addBT t4 (multBT c1 (n - 1))) c1))
+        (.dsym (vb : ℕ∞) :: si) (flatBT c1) bi :=
+      scb_compose_dprin _ _ _ _ _ iI2_0 hiptc1
+    have hmid2TB : Dprin (vb : ℕ∞) (addBT (addBT t4 (multBT c1 (n - 1))) c1) ∈ T_B :=
+      Dprin_mem_T_B (by simp) (addBT_mem_T_B hbody4TB hc1TB)
+    have hmid2P : ∃ p, Dprin (vb : ℕ∞) (addBT (addBT t4 (multBT c1 (n - 1))) c1)
+        = .trm [p] := ⟨_, rfl⟩
+    have iO2_0 : scb_decomp
+        (addBT t3 (Dprin (vb : ℕ∞) (addBT (addBT t4 (multBT c1 (n - 1))) c1)))
+        so (flatBT (Dprin (vb : ℕ∞) (addBT (addBT t4 (multBT c1 (n - 1))) c1))) bo :=
+      add_scb_replace_last _ _ _ _ _ t3T hmidTB hmidP hmid2TB hmid2P iO0
+    have hiptmid2 : isPTB_str (flatBT (Dprin (vb : ℕ∞)
+        (addBT (addBT t4 (multBT c1 (n - 1))) c1))) :=
+      principal_flat_isPTB_cm1 hmid2TB hmid2P
+    have iO2 : scb_decomp (Dprin (va : ℕ∞)
+        (addBT t3 (Dprin (vb : ℕ∞) (addBT (addBT t4 (multBT c1 (n - 1))) c1))))
+        (.dsym (va : ℕ∞) :: so)
+        (flatBT (Dprin (vb : ℕ∞) (addBT (addBT t4 (multBT c1 (n - 1))) c1))) bo :=
+      scb_compose_dprin _ _ _ _ _ iO2_0 hiptmid2
+    have iComp2 : scb_decomp (Dprin (va : ℕ∞)
+        (addBT t3 (Dprin (vb : ℕ∞) (addBT (addBT t4 (multBT c1 (n - 1))) c1))))
+        ((.dsym (va : ℕ∞) :: so) ++ (.dsym (vb : ℕ∞) :: si))
+        (flatBT c1) (bi ++ bo) :=
+      scb_compose_str_cf1 iO2 iI2 (by simp [Dprin, BZero])
+    -- 外側を組み直す
+    have hXnTB : Dprin (va : ℕ∞)
+        (addBT t3 (Dprin (vb : ℕ∞) (addBT t4 (multBT c1 n)))) ∈ T_B :=
+      Dprin_mem_T_B (by simp) (addBT_mem_T_B t3T (Dprin_mem_T_B (by simp)
+        (addBT_mem_T_B t4T (multBT_mem_T_B_cf1 hc1TB _))))
+    have hiptXn : isPTB_str (flatBT (Dprin (va : ℕ∞)
+        (addBT t3 (Dprin (vb : ℕ∞) (addBT t4 (multBT c1 n)))))) :=
+      principal_flat_isPTB_cm1 hXnTB ⟨_, rfl⟩
+    have fMn : flatBT (Trans (oper M n))
+        = (s' ++ ((.dsym (va : ℕ∞) :: so) ++ (.dsym (vb : ℕ∞) :: si)))
+          ++ flatBT c1 ++ ((bi ++ bo) ++ b') := dmark'.1
+    have fX2 : flatBT (Dprin (va : ℕ∞)
+        (addBT t3 (Dprin (vb : ℕ∞) (addBT t4 (multBT c1 n)))))
+        = ((.dsym (va : ℕ∞) :: so) ++ (.dsym (vb : ℕ∞) :: si)) ++ flatBT c1
+          ++ (bi ++ bo) := by
+      rw [show addBT t4 (multBT c1 n)
+          = addBT (addBT t4 (multBT c1 (n - 1))) c1 from hassocX.symm]
+      exact iComp2.1
+    refine ⟨?_, fun _ => hiptXn, dIH.2.2⟩
+    rw [fMn, fX2]
+    simp [List.append_assoc]
+
 /-! ## 公開定理の axioms 監査 -/
 
 #print axioms scx_take_RTPS
@@ -1298,5 +2009,7 @@ theorem scx_mark_pin (M : PS) (n : ℕ) (X : BT) (s' b' : List Sym)
 #print axioms scx_marked_jm1p
 #print axioms scx_scb_context_eq_of_prefix
 #print axioms scx_mark_pin
+#print axioms scx_stepA
+#print axioms scx_stepB
 
 end PSS
