@@ -93,11 +93,26 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
   ツリーの §8 項目は 38 で p 文より 5 多いが、これは **pss_paper が text のみ・DEFERRED
   とした記事命題**（`8.4-rightmost-replace-Trans`/`8.4-oper-basic`/`8.4-scb-decompositions`/
   `8.5-scb-decompositions`/`8.5-fseq-scb-decomposition`）に対応＝正しい。
-- **§5–§7: 穴の証拠なし**。p 文 95 件（§5=13/§6=55/§7=27）に対し Lean ファイルは
-  6/65/34 本。§5 は 1 file が複数 p 文を束ねる（`5.1-parent-exists` ⊃ p_5_1_parent_exists_1..4）。
+- **§5–§7: p 文ベースでは穴の証拠なし**。p 文 95 件（§5=13/§6=55/§7=27）に対し Lean
+  ファイルは 6/65/34 本。§5 は 1 file が複数 p 文を束ねる（`5.1-parent-exists` ⊃
+  p_5_1_parent_exists_1..4）。
 - 🚨**「lean/ から p 文名を grep」は無効な点検**（45/95 が未参照だが全部偽陽性。
   Lean のヘッダは p 文名ではなく原文位置＋m_ 名を引用する規約のため）。
-  将来やるなら**原文位置か statement 一致でマップする監査スクリプト**を書くこと。
+- 🚨🚨**この点検自体が不十分だった（同日、2 件目の穴を別経路で発見）**:
+  §7.4 の命題「Mark が順序関係を保つこと」（content.md 2466、訂正 A19）は
+  **pss_paper.thy に転記が無い**ため p 文ベースの点検では**原理的に見えない**。
+  Isabelle は `m_7_4_Mark_order`（layerB:9707）で証明済み＝**転記だけが欠落**していた。
+  **正しい点検 = 原文（tmp/content.md）の「命題（…）」「補題（…）」見出しを全数抽出し、
+  各々にツリー項目があるか照合すること**。corrections.md の A 番号は原文見出しを
+  引用しているので、**A 番号の対象命題がツリーに無ければ穴**という交差検査も有効
+  （実際 A19 からこの穴を発見した）。次にやるなら見出し抽出スクリプトを書く。
+- **A 番号 × ツリー全数照合の結果（同日実施、live 30 件）**: task.md/memo.md に
+  未言及の A 番号は 9 件（A5/A6/A10/A11/A12/A13/A15/A17/A40）だが、**すべて対応
+  Lean ファイルが存在**（A5→6.6-reduced-slice、A6→6.7-standard-P-components、
+  A11→7.2-scb-compose、A12→7.2-scb-replaceable、A13→7.2-add-scb、
+  A15→7.3-Trans-welldefined、A17→7.3-Mark-rightmost1、A40→5.3-pred-is-oper1。
+  A10 は脚注[19] の循環指摘で命題ではない）＝**畳み込み時に A 番号注記が落ちただけで
+  穴ではない**。穴だったのは A19 の 1 件のみで、解消済み。
 
 ## 4.5 キャンペーン作戦図: 6.8 d1pos leg — ✅ 完了（2026-07-17。以下は史料）
 
@@ -310,7 +325,20 @@ parent/Lng 形に落としてから作業する。
     Isa: `b1x_master`, `m_buc1_3_2_OT_B_closed`。[r1]
   - ✅ §7.2 scb 分解 — 全7項目を証明済み。[r9]
   - ✅ §7.3 翻訳写像 — 全9項目を証明済み。[r12]
-  - ✅ §7.4 許容的親子関係 — 訂正 A18・A45・A46・A47 に従い、必要な命題を `RTPS` と
+  - ✅ §7.4 許容的親子関係[r10] — **2026-07-17 に 10 件目 `7.4-Mark-order` を追加**
+    （命題「`Mark` が順序関係を保つこと」、原文 content.md 2466、**訂正 A19**）。
+    🚨**カバレッジ穴だった**: この命題は **pss_paper.thy に転記が無く**（p_7_4_* は 9 本のみ、
+    text 注記も無い）、Lean ツリーにも項目が無かった。Isabelle は `m_7_4_Mark_order`
+    （layerB:9707）で**証明済みなのに逐語転記だけ欠落**していた＝「p 文の有無」で
+    カバレッジを測ると見落とす種類の穴（[[green-build-blind-spots]]）。
+    Lean は A19 訂正案と逐語一致で証明:
+    `m0 < m1 ↔ Mark M m1 ≠ Mark M m0 ∧ (Mark M m0, Mark M m1) ∈ MarkedB`
+    （原文 (2) は whole/block が逆で偽、経験的に 0/249）。ファイル
+    `7.4-Mark-order.lean` には昇格した `Trans_mono_RN_ge2`（Isa 9011）と
+    `Mark0_ne_Mark`（Isa 9636）も同梱（8.2 engine の私的 `_ape` 複製の昇格元。
+    親は engine 側の複製を削除して import に差し替えてよい）。
+    `Mark0_ne_Mark` が Mark_order の `m₀ = 0` 枝そのもので、これが最後のピースだった。
+  - ✅ §7.4（既存 9 件）— 訂正 A18・A45・A46・A47 に従い、必要な命題を `RTPS` と
     `Marked` の正しい定義域で全9件形式化した。`Adm`／`Trans`／`Mark` の次許容祖先関係から、
     `Mark` の終切片 `Trans` 表示、`Trans` の切片分解、`RightNodes` 分解までを scb 文脈の
     合成・無条件一意性と `Lng` 強帰納で証明した。最後に原文の再帰を忠実に表す燃料付き
@@ -473,10 +501,29 @@ parent/Lng 形に落としてから作業する。
     ／`8.2-subexpr-of-wid`／`8.2-subexpr-final`（**`wid_holds`＋
     `subexpr_component_Pred`＋忠実版 `subexpr_component_Pred_faithful` 完成**、
     SXP_* Props modulo）。
-    **残穴 2**: ①`ScbOuterSurgerySplit`（Isa `scb_outer_surgery_split` 26412、161 行、
-    **純 BT/Sym 組合せ論・PS 非依存**＝独立 agent 可）②`TransAdmposBodySplitWfin`
-    （Isa `trans_admpos_body_split_wfin` 26699）。この 2 本を討てば親の配線
-    （SXP_*/Adm0_full_hyp/Admpos_of_wid_hyp の差し込み）だけで項目 ✅。
+    **Wave C-4 で残穴 2 本とも討伐（2026-07-17）**:
+    `7.2-scb-outer-surgery-split`（Isa 26412。drop-in を agent が機械検証済＝
+    `example : ScbOuterSurgerySplit := scb_outer_surgery_split` が緑。Isabelle の
+    4 依存はすべて既存 API で解決＝`flatBP_cancel`/`flatBT_injective`/
+    `flatBT_multi_snoc`/`List.dropLast_append_getLast`。私的 `scb_to_last_sos` は
+    Isabelle 版より**強く**（s/b の整列も返す）scb 一意性の再呼び出しが不要に）／
+    `8.2-subexpr-admpos-wfin`（Isa 26699。**型がそのまま named Prop**
+    `theorem trans_admpos_body_split_wfin (hsplit : ScbOuterSurgerySplit) :
+    TransAdmposBodySplitWfin`＝shape 不一致リスクなし。Isabelle が 30 行かけた
+    有限性 `w ≠ ⊤` は `Trans_mem_T_B`→`dfree_BP` の構造的経路で短縮）。
+    **→ 残りは親の配線のみ**（ScbOuterSurgerySplit/TransAdmposBodySplitWfin/
+    Adm0_full_hyp/Admpos_of_wid_hyp/SXP_* を差し込む）。
+    **敵対的数値監査（`python/audit_82_subexpr.py`、親も再実行して AUDIT OK）**:
+    実標準形プール 14,618 形（diagSeq→oper 閉包＋祖先切片 Red＋Pred 閉包、
+    maxlen 15/成分≤19）で**反例 0**。非空虚 14,566 例が wid/keystone/of_wid/
+    ft_transport/jt_transport を実行。Lean の `Joints`/`reduced` と python モデルの
+    綴りの一致も 14,618/0 で確認。
+    ⚠️**監査の発見（健全性ではない）**: ①`subexpr_component_Pred_Adm0`（adm0 file）は
+    **仮定が相互矛盾＝空虚**（hgB ∧ he0gt ∧ hnadmj0 = False）。**Isabelle も同形**
+    （20828 は nogB の condA 枝＝同じ矛盾文脈でしか呼ばれない）で、キャンペーンは
+    `Adm0_full`（27019）を配線するので**死んだ公開名**。②keystone の clause (2) は
+    プール全体で 0 回発火（非存在ガードが立たない）③`SXP_wid_cpU` は非空虚 18 例のみ
+    ＝検証が薄い。
     🚨**教訓（2026-07-17、2 回踏んだ）**: ①Fable 月次上限で agent は死ぬが
     **ディスクの成果物は生きる**。今回 4 本とも「骨格」ではなく**完成済み**で、
     checker を回す前に死んだだけだった ②私の「sorry 1 個残存」判定は
