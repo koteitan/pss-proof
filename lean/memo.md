@@ -270,7 +270,22 @@ parent/Lng 形に落としてから作業する。
     決定（2026-07-16 ユーザー）**。Wave E で基盤 2 file（W 階層／y4 bachmann 群）に着手。
     ⚠️**転記の要点**: Isabelle が証明したのは意味論版 2.2(a)(b)(c)（`o`/ψ/基数が要る＝
     definitional HOL では**陳述不能**）ではなく、原文が実際に使う帰結
-    **`wf {(a,b). a∈OT_B ∧ b∈OT_B ∧ lessBT a b}`**（純構文的）。Lean も同形で移植する。Isa: `y4_buc1_2_2_OT_B_wf`（layerC:13700、sorry 0・仮定 0。
+    **`wf {(a,b). a∈OT_B ∧ b∈OT_B ∧ lessBT a b}`**（純構文的）。Lean も同形で移植する。
+    **Wave E で基盤 2 file 完成（両方緑）**: `7.1-buchholz-wf-W`（W 階層の定義層
+    `bwl_Aop`/`bwl_Aset`/`bwl_Wf`/`bwl_W`＋(A1)(A2) 機構＋y3_ 系 13 本。
+    Isabelle の `primrec bwl_Wf` は Lean の構造帰納＋自前 lfp（`⋂₀{Y | f Y ⊆ Y}`
+    ＋Knaster–Tarski 2 面、~15 行）で素直に載った。非空性 `bwl_W_zero` で
+    vacuous でないことも確認）／`7.1-buchholz-wf-bachmann`（**y4 block 全 23 補題を
+    green-modulo 無しで完成**、`y4_bachmann` 込み）。
+    **bachmann 側の 2 つの判断**（統合時に効く）: ①Isabelle の operB multi は
+    **末尾 principal 還元**だが Lean の `bOperCore` は**頭剥がし**なので
+    `y4_inner`/`y4_bachmann` は末尾再帰＝`y4_prefix_split` は忠実移植したが
+    engine では未使用 ②domain は `domTag c = .below u` 形で記述し、Isabelle 逐語の
+    集合形は `y4_bachmann_domB` で別途供給（bridge `domB_below_iff_b4` 経由）。
+    **残 = [Buc1] §2 本体**（`bwl_2_1`〜`bwl_2_8`、pss_scratch ~8695–9733）:
+    W 側が Prop 化した `Bwl28Principal`（bwl_2_8_principal 9733）と
+    `Bwl24bAdd`（bwl_2_4b_add 8965）を定理化し、その上で `y4_buc1_2_2_OT_B_wf`
+    （13700）＋distinguished sets（`wds_`/`wcl_`/`wfj_` 群、r63 ブロック）を移植。Isa: `y4_buc1_2_2_OT_B_wf`（layerC:13700、sorry 0・仮定 0。
     `y4_bachmann` 核の W-階層帰納。y4 block ≈ layerC 12493–13700 ＋ y3 W-機構 11247–11777、
     合わせて ~2k 行のキャンペーン級）。§8.7 の `8.7-OT-tail-annihilable`（layerC:19363 が
     `wf_induct_rule[OF y4_buc1_2_2_OT_B_wf]`）と `8.7-termination` が依存するので、
@@ -567,10 +582,20 @@ parent/Lng 形に落としてから作業する。
     `.naturals` を透過（`a ≠ BZero` は長さ勘定）、multi は `domTag_snoc_bf`（7.1 公開）。
     `BDom_toSet_eq_NatSet_iff`+`nestedD0_not_nat` は 7.2-scb-unique private の複製（昇格候補）。
     Isa: `m_8_7_OT_dom_hereditary` (layerB/pss_wip.thy:17802)。rc=0・axioms 正常。[r1]
-  - 🚨🤖 `8.7-fseq-descend` — p 文 = pss_paper:2253。Isa:
-    `m_8_7_fseq_descend_dispatcher`（layerB:52353、7 つの交換則に還元される）。
-    Wave E で green-modulo 移植（交換則を named Props に露出）。
-  - 🚨🤖 `8.6-Trans-fseq-condVI` — p 文 = pss_paper:2218。Isa: engine
-    `m_8_6_TransCondVI_oper_descend_engine`（layerB:40250）＋`c6zx_condVI_oper_L`
-    （72257）。Wave E。
+  - 🚨🤖 `8.7-fseq-descend` — **Wave E で green-modulo 完成（緑、sorry 0、853 行）**。
+    `m_8_7_fseq_descend_dispatcher`（Isa layerB:52353）＋`f7x_fseq_descend_mono`
+    （52051）を 1:1 移植し、**p 文 `p_8_7_fseq_descend`（pss_paper:2253）と
+    `p_8_3_TransCondII_oper_descend` の両方を出力**（＝⛔ だった 8.3 項目も同時に解禁）。
+    **露出した named Prop は 7 交換則系の 16 本のみ**（FseqDesc_Trans_preserves_OT／
+    exchI/II/III-IV/V/VI 等）。dispatcher の場合分け・mono 6 分岐・multi 枝・
+    条件(I)/(VI) の `Lng M = 2` 枝（oper 直接計算＋`const00_Trans`/`two_column_Trans`）
+    は**自前証明**＝Isabelle の補題 2 本を回避。
+    **停止性への幹線が Lean でもチェックリスト化された**: 残りは 16 Props の討伐。
+  - 🚨🤖 `8.6-Trans-fseq-condVI` — **Wave E で partial（緑、公開 4 本）**。
+    engine `m_8_6_TransCondVI_oper_descend_engine`（Isa 40250）は**無条件**で移植
+    （n=1 枝は Pred 降下のみ・condVI 不使用、n>1 は [Buc1] 3.2(a)。`Trans M ≠ 0` は
+    `Trans_preserves_zeroT` でここで討伐＝残差でない）。対角ホスト
+    `m_8_6_diagSeq_condVI_commute`/`_descent`（40305/40331）も無条件。
+    残 named Props 3（`CondVIAdmTowerScb` 等＝Isabelle の証明内部で確立される
+    flat 閉形式 flatMn/ov/b1RP）。
   - `8.7-termination` ★ — Isa: `y5_PSS_wf` / `y5_Fdom`。ここに全部が集まる。
