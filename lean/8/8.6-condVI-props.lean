@@ -140,7 +140,7 @@ private theorem condVI_not135_v6p {M : PS} (hcond : transCondVI M = true) :
     simp [transCondV, h]
   simp [hI, hIII, hV]
 
-private theorem condVI_transC2_v6p {M : PS} (hcond : transCondVI M = true) :
+theorem condVI_transC2_v6p {M : PS} (hcond : transCondVI M = true) :
     transC2 M = Dprin (transV M) (Dprin (entry M 1 (Lng M - 1) : ℕ∞) BZero) := by
   have h135 := condVI_not135_v6p hcond
   simp [transC2, transC2Core, h135, hcond, lastIdx]
@@ -326,7 +326,7 @@ private theorem condVI_jm1_adm_v6p {M : PS} (hadm : adm M (transJ0 M) = true) :
     transJm1 M = transJ0 M := by
   simp [transJm1, Adm, hadm]
 
-private theorem condVI_transC1_adm_v6p (M : PS) (hR : RTPS M)
+theorem condVI_transC1_adm_v6p (M : PS) (hR : RTPS M)
     (hcond : transCondVI M = true) (hj₁ : 1 < Lng M - 1)
     (hadm : adm M (transJ0 M) = true) :
     transC1 M = Dprin (entry M 1 (transJ0 M) : ℕ∞) BZero := by
