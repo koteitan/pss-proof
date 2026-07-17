@@ -283,6 +283,18 @@ parent/Lng 形に落としてから作業する。
     Isa: `m_7_1_paren_balance`。[r1]
   - ✅ `7.1-buchholz-wf` — **完了（2026-07-17、仮定ゼロ・236 行）**。
     `buchholz_wf : WellFounded (fun a b : BT => a ∈ OT_B ∧ b ∈ OT_B ∧ lessBT a b = true)`。
+    🚨🚨**言葉遣いの厳守（2026-07-17 ユーザー指摘、私が実際に誤記した）**:
+    証明したのは **`(OT_B, <_B)` の整礎性**であって、**[Buc1] Lemma 2.2 ではない**。
+    2.2 の本体は評価写像 `o` についての (a) `o(a) ∈ C₀(ε_{Ω_ω+1})` / (b)
+    `G_u o(a) = {o(x) | x ∈ G_u a}` / (c) `a < c ⟹ o(a) < o(c)` ＝**意味論の命題**で、
+    `o`・ψ_v・Ω_u（正則基数の可算列）を要するため **definitional HOL でも Lean でも
+    陳述すら不可能**（ℵ_ω サイズの器が作れない＝独立。[[buc1-2-2-is-not-what-we-proved]]）。
+    整礎性は 2.2(c) の**系**（狭義単調埋め込み ⟹ 無限降下列なし）だが逆は成り立たず
+    （wf から `o` は復元できない）、原文が 2.2 から使うのは整礎性だけ（content.md
+    5978/6331「[Buc1] Lemma 2.2より (OT_B,<) は整礎である」）なので、**使用に対して
+    過不足のない唯一の転記形**がこれ。Isabelle の `buc1_2_2_OT_B_wf` /
+    `y4_buc1_2_2_OT_B_wf` も同じ理由で wf 文（名前の「2.2」は出典表示）。
+    ⚠️報告・コミットメッセージで「Lemma 2.2 を証明した」と書くな（今日書いてしまった）。
     親が独立検証: `example : OT_B_wf := buchholz_wf` が緑＝8.7-OT-tail の残差も同時に消滅。
     🎉🎉**勝ち筋（数千行を回避）**: Isabelle の
     `bwl_cof → bwl_Wstar_total_of_cof(9927) → bwo_2_2_wf(7834) → y4_wf_RPrel(13689)
