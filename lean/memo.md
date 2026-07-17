@@ -461,7 +461,16 @@ parent/Lng 形に落としてから作業する。
     （Isa `m_8_7_OT_examples` の構造をそのまま移植）。rc=0・sorry 0・axioms 正常・#guard 5 本。[r1]
   - `8.4-rightmost-replace-Trans` — 訂正 **A30**（scb 分解が偽。長さ勘定で決まる）
     ＋ **A31**（補題(5-3) のガード欠落）
-  - `8.5-Joints-FirstNodes-basic` — 訂正 **A29**（補題(5) が `n=1` で偽）
+  - 🚨🤖 `8.2-condV-terminal-slice-Trans` — p 文 = pss_paper:1607、Isa:
+    `m_8_2_condV_terminal_slice_Trans`（layerB:77102、~49 行。`_modVE` 版 61039 も）。
+    今日 ✅ の `condV_rightmost_parent` を消費する自然な次項目。Wave D で agent。
+  - 🚨🤖 `8.4-rightmost-nonadm-ancestor` — p 文 = pss_paper:1931、Isa:
+    `m_8_4_rightmost_nonadm_ancestor`（layerB:40628、~256 行）。Wave D。
+  - 🚨🤖 `8.4-oper-basic` — p 文 = pss_paper:2017、Isa: `m_8_4_oper_basic_part1`
+    （layerB:13897、~60 行）＋後続 part。Wave D。
+  - 🚨🤖 `8.5-Joints-FirstNodes-basic` — 訂正 **A29**（補題(5) が `n=1` で偽）。
+    p 文 = pss_paper:2098、Isa: `m_8_5_Joints_FirstNodes_basic`（layerB:40416、
+    ~212 行）＋`_condV` 版（60636）。Wave D。
   - `8.5-*` — **最難所**。Isa の keystone は
     `bpHeadT(Trans(slice@B)) = C(bpHeadT(Trans slice))`（depth-shift self-similar）。
     13 個の死路が `isabelle/memo.md` に列挙してある。**着手前に必ず読め。**
