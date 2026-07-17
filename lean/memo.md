@@ -423,10 +423,24 @@ parent/Lng 形に落としてから作業する。
     **C-2 = Adm0 組み立て（20828）／gB＋nogB（23704–25364）／
     clause34_of_witness（25365–27018）／wid 機構＋transport（28837–29604）**。
     C-3 = Adm0_full・Admpos_of_wid・of_wid・wid・最終組み立て＋忠実 p 文 file。
-    ⚠️**C-2 は Fable 月次上限（99%）で 4 agent とも起動 6 分で死亡**（2026-07-17）。
-    骨格（各 sorry 1、121–223 行）を `8.2-subexpr-{adm0,gB,clause34,wid}.lean.draft`
-    に退避（lake glob 外）。上限解除後に再走するか、solo main-loop で draft から
-    仕上げる。**Fable 枯渇時は workflow を起動しない**（起動即死で骨格すら進まない）。
+    **Wave C-2 完了（2026-07-17、Opus 4 並列、lake 個別ビルド緑）**:
+    `8.2-subexpr-adm0`（Adm0 組み立て、Isa 20828–20961）／`8.2-subexpr-gB`
+    （gB_Adm0_condA＋nogB、Isa 23704–25364。nogB の condA 枝は Isabelle が親
+    Adm0 を呼ぶところを keystone 直呼びに変更＝依存を切った、statement 不変）／
+    `8.2-subexpr-clause34`（clause34_of_witness、Isa 25365–27018）／
+    `8.2-subexpr-wid`（**partial**: `def wid`＋`wid_iff`＋`keystone_imp_wid`＋
+    `ft_transport`＋`jt_transport`。Isabelle に wid の definition は無く
+    `m_8_2_wid` の結論形を def 化した）。
+    **wid 残 3 本（wid_step/wid_of_predRN/wid_of_predwid）の blocker**:
+    Admpos body-split engine `trans_admpos_body_split`（layerB:26573）が Lean 未移植
+    → C-3 で先に移植する。
+    🚨**教訓（2026-07-17、2 回踏んだ）**: ①Fable 月次上限で agent は死ぬが
+    **ディスクの成果物は生きる**。今回 4 本とも「骨格」ではなく**完成済み**で、
+    checker を回す前に死んだだけだった ②私の「sorry 1 個残存」判定は
+    **`grep -c sorry` が docstring の「状態: ✅ sorry 0」を拾った偽陽性**。
+    残 sorry は必ず `check_lean.py` で判定せよ（grep 禁止）③**workflow 走行中に
+    `lake build` するな**——glob が in-flight の書きかけを拾って必ず失敗する。
+    個別モジュール指定（`lake build «8».«8.2-subexpr-adm0» …`）なら安全。
   - `8.2-*` — `LastStep` の添字は A9 で訂正済みの形を使う。
     Isa の注意: `Pred_oper0` は標準入力で偽（反例 `M=(0,0)(1,1)(2,1)`）だが**定理は健全**
     （`Σ_B` 降下和ルートで回避）。**原文 §8 の証明には gap があるが、定理は真。**
