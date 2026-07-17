@@ -475,16 +475,52 @@ parent/Lng 形に落としてから作業する。
     （Isa `m_8_7_OT_examples` の構造をそのまま移植）。rc=0・sorry 0・axioms 正常・#guard 5 本。[r1]
   - `8.4-rightmost-replace-Trans` — 訂正 **A30**（scb 分解が偽。長さ勘定で決まる）
     ＋ **A31**（補題(5-3) のガード欠落）
-  - 🚨🤖 `8.2-condV-terminal-slice-Trans` — p 文 = pss_paper:1607、Isa:
-    `m_8_2_condV_terminal_slice_Trans`（layerB:77102、~49 行。`_modVE` 版 61039 も）。
-    今日 ✅ の `condV_rightmost_parent` を消費する自然な次項目。Wave D で agent。
-  - 🚨🤖 `8.4-rightmost-nonadm-ancestor` — p 文 = pss_paper:1931、Isa:
-    `m_8_4_rightmost_nonadm_ancestor`（layerB:40628、~256 行）。Wave D。
-  - 🚨🤖 `8.4-oper-basic` — p 文 = pss_paper:2017、Isa: `m_8_4_oper_basic_part1`
-    （layerB:13897、~60 行）＋後続 part。Wave D。
-  - 🚨🤖 `8.5-Joints-FirstNodes-basic` — 訂正 **A29**（補題(5) が `n=1` で偽）。
-    p 文 = pss_paper:2098、Isa: `m_8_5_Joints_FirstNodes_basic`（layerB:40416、
-    ~212 行）＋`_condV` 版（60636）。Wave D。
+  - 🚨 `8.2-condV-terminal-slice-Trans` — **partial（Wave D, r1）**: p 文
+    （pss_paper:1607）を**仮定 `hVE` modulo で緑化**＝Isabelle の
+    `m_8_2_condV_terminal_slice_Trans_modVE`（layerB:61039）と同形。非 VE 半分
+    `condV_terminal_slice_principal` は**無条件で完成**。残差は 1 本だけ:
+    `condV_VE : bpHeadT (Trans (seg M m (Lng M-1))) = bpHeadT (Trans M)`（Isa
+    `vcx_VE_all` 77076）。**これは 14k 行キャンペーン**（a0x_/vjx_/vsx_/vbax_/vcx_
+    群、layerB 63208–77095、271 補題）で、原文は該当ステップを**省略している**
+    （content.md L3676–3708 が空白ブロック）。分解案 = (a) base `a0x_base_VE`
+    (b) step `vsx_VE_step`+`vcx_VEj1eq` (c) RPERS `vsx_RPERS`/`vjx_RPj1eq`。
+    ⚠️原文の証明は A16（Trans の単項性保存＝偽）と「簡約性の切片遺伝」（偽）を
+    使うが、移植は `Trans_mono_leftend_form` と `ancestor_slice_Red_IncrFirst`
+    経由で迂回済（Isabelle の modVE と同構造）。
+  - ✅ `8.4-rightmost-nonadm-ancestor` — **完了（Wave D, r1）**。p 文 =
+    pss_paper:1931 と逐語一致（訂正無し。A30/A31 は §8.4 の別命題で無関係を確認）。
+    Isa: `m_8_4_rightmost_nonadm_ancestor`（layerB:40628）。rc=0・sorry 0・
+    axioms 正常。Isabelle が `m_8_2_standard_slice_Red_strongmono` で取る
+    `monoT (Red N)` は Lean では `ancestor_slice_Red_IncrFirst` が直接供給
+    （＝`hmono` 仮定が不要になったが、p 文忠実性のため引数は保持）。
+  - 🚨 `8.4-fseq-basic` — **partial（Wave D, r1）**: part (1) のみ緑
+    （`oper_basic_part1`: `M[n] = M[n+1][1]^{j₁-j₋₂}`）。p 文 = **pss_paper:2017
+    `p_8_4_oper_basic`**（＝原文 content.md **5000**「補題（条件(III)か(IV)の下での
+    基本列の基本性質）」）、Isa: `m_8_4_oper_basic_part1`（layerB:13897）。
+    **part (2) は Isabelle 側も未証明**（layerC:15570 に障害を明記: 右辺が `M[n]`＋
+    ブロック 1 エントリで `M[m]` 形でないため既存 Trans 閉形式が効かない。経験的には
+    真 130/130、旧訂正 A33 の取り下げも追認）。part (3) も未。
+    🚨**この項目は 2026-07-17 まで進捗ツリーに存在しなかった＝カバレッジ穴**
+    （原文 §8.4 の 9 命題中これだけ落ちていた）。Wave D の agent が
+    「ミッションの項目名（展開規則）と p 文ポインタ（基本列）が別物」と指摘して発覚。
+  - 🚨 `8.4-oper-basic` — 原文 content.md **4389**「補題（条件(III)～(VI)の下での
+    展開規則の基本性質）」。**pss_paper:1955 は text のみ・partially DEFERRED**
+    （part(1)-(4) は露出済み定義で陳述可、part(5) が `(s',b')` の scb 成分未露出で
+    ブロック）。⚠️**`p_8_4_oper_basic`(2017) はこの項目ではない**（上の
+    `8.4-fseq-basic` が正しい対応）。Isabelle 名に釣られるな。
+  - ✅ `8.5-Joints-FirstNodes-basic` — **完了（Wave D, r1）**。p 文 =
+    pss_paper:2098（原文 content.md 5165）の shows 4 本を逐語。訂正**無し**。
+    Isa: `m_8_5_Joints_FirstNodes_basic`（layerB:40416）を移植（`_condV` 版 60636 は
+    結論同一の言い換えで、p 文の仮定形に一致する 40416 版が正解）。原文 (3) は
+    未露出記号 `t₂` 参照のため pss_paper 自身が DEFERRED＝scope 外。
+    🚨**訂正 A29 はこの項目ではない**（既存 memo の誤帰属を 2026-07-17 に修正）:
+    A29 の対象は隣の `8.5-scb-decompositions`（原文 content.md 5213「各種scb分解」）
+    の part (5)（`Trans(M[n]) = s₁D_{M₁,j₋₁}(s'₁D_{M₁,j₀})ⁿt₂(b'₁)ⁿb₁` が n=1 で偽）。
+    本項目に part (5) は存在しない。
+  - `8.5-scb-decompositions` — 訂正 **A29**（part (5)
+    `Trans(M[n]) = s₁D_{M₁,j₋₁}(s'₁D_{M₁,j₀})ⁿt₂(b'₁)ⁿb₁` が `n=1` で偽。原文
+    content.md 5213 の (5)＝5225、証明 5267/5329）[軽微]。**A29 はここ**であって
+    `8.5-Joints-FirstNodes-basic` ではない（2026-07-17 誤帰属を訂正）。
   - `8.5-*` — **最難所**。Isa の keystone は
     `bpHeadT(Trans(slice@B)) = C(bpHeadT(Trans slice))`（depth-shift self-similar）。
     13 個の死路が `isabelle/memo.md` に列挙してある。**着手前に必ず読め。**

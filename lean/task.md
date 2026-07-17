@@ -73,13 +73,14 @@
     - 🚨 命題（条件(II)の下での `Trans` と基本列の交換関係） — `8.3-Trans-fseq-condII` ⛔8.7-fseq-descend
   - 🚨 §8.4 条件(III)か(IV)の下での展開規則
     - 🚨 命題（条件(III)か(IV)の下での `Trans` と基本列の交換関係） — `8.4-Trans-fseq-condIII-IV`
-    - 🚨🤖 補題（右端の非許容直系先祖の基本性質） — `8.4-rightmost-nonadm-ancestor`
+    - ✅ 補題（右端の非許容直系先祖の基本性質） — `8.4-rightmost-nonadm-ancestor`[r1]
+    - 🚨 補題（条件(III)か(IV)の下での基本列の基本性質） — `8.4-fseq-basic`[r1]
     - 🚨 補題（条件(III)～(V)の下での右端の置き換えと `Trans` の関係） — `8.4-rightmost-replace-Trans`
-    - 🚨🤖 補題（条件(III)～(VI)の下での展開規則の基本性質） — `8.4-oper-basic`
+    - 🚨 補題（条件(III)～(VI)の下での展開規則の基本性質） — `8.4-oper-basic`
     - 🚨 補題群（条件(III)～(VI)の下での各種 scb 分解） — `8.4-scb-decompositions`
   - 🚨 §8.5 条件(V)の下での展開規則
     - 🚨 命題（条件(V)の下での `Trans` と基本列の交換関係） — `8.5-Trans-fseq-condV`
-    - 🚨🤖 補題（条件(V)の下での `Joints` と `FirstNodes` と `t₂` の基本性質） — `8.5-Joints-FirstNodes-basic`
+    - ✅ 補題（条件(V)の下での `Joints` と `FirstNodes` と `t₂` の基本性質） — `8.5-Joints-FirstNodes-basic`[r1]
     - 🚨 補題（条件(V)の下での各種 scb 分解） — `8.5-scb-decompositions`
     - 🚨 補題（条件(V)の下での基本列の scb 分解） — `8.5-fseq-scb-decomposition`
   - 🚨 §8.6 条件(VI)の下での展開規則
