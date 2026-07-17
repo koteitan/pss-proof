@@ -1,4 +1,5 @@
 import «7».«7.1-buchholz-fseq-lt»
+import «7».«7.1-buchholz-wf»
 import «7».«7.1-buchholz-fseq-closed»
 import PSS.Buchholz
 
@@ -256,7 +257,25 @@ theorem toplevel_OT_tail_annihilate (hwf : OT_B_wf)
   refine ⟨r', ?_, hr'OT, hr'lt⟩
   rw [operB_addBT_Dprin_ota, heq]
 
+/-! ## `OT_B_wf` の実体化（2026-07-17、親配線）
+
+[Buc1] 補題 2.2 が `7.1-buchholz-wf` で**仮定ゼロで証明された**ので、名前付き仮定
+`OT_B_wf` を落として無条件形にする。 -/
+
+/-- `OT_B_wf` は `buchholz_wf`（`7.1-buchholz-wf`、仮定ゼロ）そのもの。 -/
+theorem OT_B_wf_holds : OT_B_wf := buchholz_wf
+
+/-- 補題（順序数項の末尾項の零化可能性）の **無条件形**（top-level 値レベル）。 -/
+theorem toplevel_OT_tail_annihilate_uncond
+    (q : BT) (u : ℕ) {t' : BT} (t'OT : t' ∈ OT_B) :
+    ∃ k, ((fun a => operB a (numBT 0))^[k])
+            (addBT q (Dprin (u : ℕ∞) t'))
+          = addBT q (Dprin (u : ℕ∞) BZero) :=
+  toplevel_OT_tail_annihilate OT_B_wf_holds q u t'OT
+
 #print axioms toplevel_OT_tail_annihilate_of_step
 #print axioms toplevel_OT_tail_annihilate
+#print axioms OT_B_wf_holds
+#print axioms toplevel_OT_tail_annihilate_uncond
 
 end PSS

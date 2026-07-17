@@ -40,14 +40,8 @@
   - ✅ §6.7 標準形[r3]
   - ✅ §6.8 降順性[r6]
 
-- 🚨 **§7 Buchholz の表記系への翻訳**
-  - 🚨 §7.1 Buchholz の表記系
-    - ✅ 命題（`<_B` が狭義線形順序であること） — `7.1-lessBT-linear-order`[r1]
-    - ✅ 命題（順序数項の単項成分の基本性質） — `7.1-term-components`[r1]
-    - ✅ 命題（順序数項のカッコの個数が左右で等しいこと） — `7.1-paren-balance`[r1]
-    - 🚨🤖 [Buc1] Lemma 2.2（`OT_B` の整礎性、自前証明） — `7.1-buchholz-wf`
-    - ✅ [Buc1] Lemma 3.2a（基本列の狭義減少性） — `7.1-buchholz-fseq-lt`[r1]
-    - ✅ [Buc1] Lemma 3.2（`OT_B` の基本列閉包） — `7.1-buchholz-fseq-closed`[r1]
+- ✅ **§7 Buchholz の表記系への翻訳**
+  - ✅ §7.1 Buchholz の表記系[r6]
   - ✅ §7.2 scb 分解[r9]
   - ✅ §7.3 翻訳写像[r12]
   - ✅ §7.4 許容的親子関係[r10]
@@ -93,7 +87,7 @@
     - 🚨🤖 補題（基本列の降下性） — `8.7-fseq-descend`
     - ✅ 補題（順序数項の再帰構造） — `8.7-OT-scb-recursive`[r1]
     - ✅ 補題（順序数項の共終数の遺伝性） — `8.7-OT-dom-hereditary`[r1]
-    - 🚨🤖 補題（順序数項の末尾項の零化可能性） — `8.7-OT-tail-annihilable`
+    - ✅ 補題（順序数項の末尾項の零化可能性、top-level 値形） — `8.7-OT-tail-annihilable`[r1]
     - 🚨 補題（`Pred` と `[0]` の関係） — `8.7-Pred-oper0`
     - ✅ 補題（順序数項の基本例） — `8.7-OT-examples`[r1]
     - 🚨🤖 補題（`Trans` が標準形を保つこと） — `8.7-Trans-preserves-OT`

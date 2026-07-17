@@ -281,7 +281,26 @@ parent/Lng 形に落としてから作業する。
     左右括弧数一致に設定し、項・principal・principal リストを同時に構造帰納した。
     multi 項では外側の `.lp` と `.rp` が一つずつ増え、内部の一致を保存する。
     Isa: `m_7_1_paren_balance`。[r1]
-  - 🚨🤖 `7.1-buchholz-wf` — [Buc1] Lemma 2.2。原文は引用のみだが **Lean でも自前証明すると
+  - ✅ `7.1-buchholz-wf` — **完了（2026-07-17、仮定ゼロ・236 行）**。
+    `buchholz_wf : WellFounded (fun a b : BT => a ∈ OT_B ∧ b ∈ OT_B ∧ lessBT a b = true)`。
+    親が独立検証: `example : OT_B_wf := buchholz_wf` が緑＝8.7-OT-tail の残差も同時に消滅。
+    🎉🎉**勝ち筋（数千行を回避）**: Isabelle の
+    `bwl_cof → bwl_Wstar_total_of_cof(9927) → bwo_2_2_wf(7834) → y4_wf_RPrel(13689)
+    → wfox_tuple_lift → y4_buc1_2_2_OT_B_wf` という **RPrel 経由の迂回は歴史的な
+    dead code**（r66 が `bwo_Wstar_total` を残差に切り出した後、r68 が `bwl_acc_of_W`
+    (9808) を証明した時点で不要になっていた）。**`y3_dfree_W_ex`(11382、Lean 移植済)
+    ＋`bwl_acc_of_W`＋「OT_B 外の項は RTrel-前者を持たないので自明に acc」**で
+    全 BT の Acc が直接出る＝RPrel/bwo_Wstar/wfj_tuple_acc/wfox_tuple_lift すべて不要。
+    弱化ではない（`bwo_2_2_wf_iff`(7871) が `bwo_Wstar_total ⟺ wf RPrel` を示しており
+    残差に overshoot が無かった）。~180 行・初回 checker で緑。
+    構成: §0 RTrelW（`wfox_goal_eq_RTrel` は `OT_B = OT ∩ T_B` から Iff.rfl に潰れる）
+    ／§1 dom 非退化／§2 `bwl_cof_wfe`＝y3_cof0＋y3_cof0_imp_bwl_cof 融合
+    （`y4_bachmann_domB` が y3_cof0 を literal に供給、`y3_TBv_dfree_W` が
+    `z ∈ W_m` 節を無料で復元）／§3 `acc_of_W_wfe`＝`bwl_acc_of_W`(9808) が本体
+    （A2-最小性＋zero/num/tu 場合分け、閉性は `buchholz_fseq_closed(_general)`）
+    ／§4 短絡／§5 目標。**反空虚性も確認**（BZero/D_0 0/D_1 0 ∈ OT_B、0 < D_0 0 < D_1 0）。
+    ⚠️7.1→8.7 の向きで import せよ（8.7 から 7.1 は循環）。
+  - （史料）当初の方針メモ: 原文は引用のみだが **Lean でも自前証明すると
     決定（2026-07-16 ユーザー）**。Wave E で基盤 2 file（W 階層／y4 bachmann 群）に着手。
     ⚠️**転記の要点**: Isabelle が証明したのは意味論版 2.2(a)(b)(c)（`o`/ψ/基数が要る＝
     definitional HOL では**陳述不能**）ではなく、原文が実際に使う帰結
