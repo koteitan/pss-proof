@@ -252,8 +252,11 @@ parent/Lng 形に落としてから作業する。
     左右括弧数一致に設定し、項・principal・principal リストを同時に構造帰納した。
     multi 項では外側の `.lp` と `.rp` が一つずつ増え、内部の一致を保存する。
     Isa: `m_7_1_paren_balance`。[r1]
-  - 🚨 `7.1-buchholz-wf` — [Buc1] Lemma 2.2。原文は引用のみだが **Lean でも自前証明すると
-    決定（2026-07-16 ユーザー）**。Isa: `y4_buc1_2_2_OT_B_wf`（layerC:13700、sorry 0・仮定 0。
+  - 🚨🤖 `7.1-buchholz-wf` — [Buc1] Lemma 2.2。原文は引用のみだが **Lean でも自前証明すると
+    決定（2026-07-16 ユーザー）**。Wave E で基盤 2 file（W 階層／y4 bachmann 群）に着手。
+    ⚠️**転記の要点**: Isabelle が証明したのは意味論版 2.2(a)(b)(c)（`o`/ψ/基数が要る＝
+    definitional HOL では**陳述不能**）ではなく、原文が実際に使う帰結
+    **`wf {(a,b). a∈OT_B ∧ b∈OT_B ∧ lessBT a b}`**（純構文的）。Lean も同形で移植する。Isa: `y4_buc1_2_2_OT_B_wf`（layerC:13700、sorry 0・仮定 0。
     `y4_bachmann` 核の W-階層帰納。y4 block ≈ layerC 12493–13700 ＋ y3 W-機構 11247–11777、
     合わせて ~2k 行のキャンペーン級）。§8.7 の `8.7-OT-tail-annihilable`（layerC:19363 が
     `wf_induct_rule[OF y4_buc1_2_2_OT_B_wf]`）と `8.7-termination` が依存するので、
@@ -539,5 +542,10 @@ parent/Lng 形に落としてから作業する。
     `.naturals` を透過（`a ≠ BZero` は長さ勘定）、multi は `domTag_snoc_bf`（7.1 公開）。
     `BDom_toSet_eq_NatSet_iff`+`nestedD0_not_nat` は 7.2-scb-unique private の複製（昇格候補）。
     Isa: `m_8_7_OT_dom_hereditary` (layerB/pss_wip.thy:17802)。rc=0・axioms 正常。[r1]
-  - `8.7-fseq-descend` — Isa: `m_8_7_fseq_descend_dispatcher`（7 つの交換則に還元される）
+  - 🚨🤖 `8.7-fseq-descend` — p 文 = pss_paper:2253。Isa:
+    `m_8_7_fseq_descend_dispatcher`（layerB:52353、7 つの交換則に還元される）。
+    Wave E で green-modulo 移植（交換則を named Props に露出）。
+  - 🚨🤖 `8.6-Trans-fseq-condVI` — p 文 = pss_paper:2218。Isa: engine
+    `m_8_6_TransCondVI_oper_descend_engine`（layerB:40250）＋`c6zx_condVI_oper_L`
+    （72257）。Wave E。
   - `8.7-termination` ★ — Isa: `y5_PSS_wf` / `y5_Fdom`。ここに全部が集まる。
