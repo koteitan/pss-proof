@@ -740,6 +740,13 @@ parent/Lng 形に落としてから作業する。
     `Trans(M[n]) = s₁D_{M₁,j₋₁}(s'₁D_{M₁,j₀})ⁿt₂(b'₁)ⁿb₁` が `n=1` で偽。原文
     content.md 5213 の (5)＝5225、証明 5267/5329）[軽微]。**A29 はここ**であって
     `8.5-Joints-FirstNodes-basic` ではない（2026-07-17 誤帰属を訂正）。
+  - 🚨🤖 `8.2-condIIIV-terminal-slice-Trans` — p 文 = pss_paper:1627（原文 ~3314）。
+    未着手だった項目。condV 版（`8.2-condV-terminal-slice-Trans`）が構造の雛形。
+    condV 版は原文が VE ステップを省略しているため hVE 仮定付きだったので、
+    II/IV 版に同じ穴があるかを確認させる。Wave K。
+  - 🚨🤖 `8.7-Pred-oper0` — p 文 = pss_paper:2298（原文 ~6014、PT_B は PT_PS の誤植）。
+    **標準入力で偽**（反例 M=(0,0)(1,1)(2,1)）と記録済。停止性連鎖は Σ_B 降下和で迂回
+    するので**この項目は停止性に不要**＝反例の機械証明＋訂正形が成果物。Wave K。
   - `8.5-*` — **最難所**。Isa の keystone は
     `bpHeadT(Trans(slice@B)) = C(bpHeadT(Trans slice))`（depth-shift self-similar）。
     13 個の死路が `isabelle/memo.md` に列挙してある。**着手前に必ず読め。**
