@@ -614,14 +614,40 @@ parent/Lng 形に落としてから作業する。
     A29 の対象は隣の `8.5-scb-decompositions`（原文 content.md 5213「各種scb分解」）
     の part (5)（`Trans(M[n]) = s₁D_{M₁,j₋₁}(s'₁D_{M₁,j₀})ⁿt₂(b'₁)ⁿb₁` が n=1 で偽）。
     本項目に part (5) は存在しない。
-  - 🚨🤖 `8.4-Trans-fseq-condIII-IV` — **交換則 1/7**（8.7-fseq-descend が要求）。
-    p 文 = pss_paper:1909（`p_8_4_Trans_oper_exchange`）。Isa:
-    `m_8_4_Trans_oper_exchange_corrected_condIII`（layerB:62656）＋condIV 版。Wave F。
-  - 🚨🤖 `8.5-Trans-fseq-condV` — **交換則 1/7**。p 文 = pss_paper:2070
-    （`p_8_5_Trans_oper_exchange`）。Isa: `m_8_5_Trans_oper_exchange_condV_adm`
-    （layerB:58346）／`_adm_uncond`（60884）／`_nonadm`（61656）。最重量級。Wave F。
-  - 🚨🤖 `8.7-Trans-preserves-OT` — **停止性 2 本柱の片方**（descent と並ぶ「OT 所属」）。
-    p 文 = pss_paper:2317。Isa: `y5_Trans_OT_B`（layerC）。Wave F。
+  - 🚨🤖 `8.4-Trans-fseq-condIII-IV` — **Wave F で green-modulo 完成（緑）**。
+    p 文 = pss_paper:1909。`exch_condIII`/`exch_condIV` が 8.7-fseq-descend の
+    `FseqDesc_exchIII`/`_exchIV` の drop-in。
+    🚨🚨**重大**: 私が指定した blueprint `m_8_4_Trans_oper_exchange_corrected_condIII`
+    （layerB:62656、核 `d13x_exchange13_condIII` 62514、単文字塔 `d13x_T` 62328）は
+    **空虚（仮定束が充足不能）**。Isabelle 自身が後の round で撤回している
+    （pss_wip:78648「the r21b-CONDIV-M refutation was of the WRONG single-letter d13x_T
+    form; the d4vx_core form with base transT2 M is correct」）。agent は数値でも確認
+    （d13x の主張は実 ST_PS プールで 0/39）。**正しい engine は `w84x_exchange13_core`
+    （79789）**＝base-generic（条件非依存なので III/IV 兼用、conclusions 39/39）。
+    🚨**名前の "corrected" は A32 だが A32 は取り下げ済**（corrections-old.md:101、
+    operB 誤読の巻き添え）＝**訂正なしで原文どおりが正しい**（原文 (1)
+    `Trans(M[n]) ≤ Trans(M)[n-1]` は真、agent 39/39・取り下げ時 579/579）。
+    ⚠️正直な留保: w84x engine が出すのは弱い `Trans(M[n]) < Trans(M)[n]` で、
+    原文 (1) の強形は **Isabelle 側でも未証明**。descend の Prop は ∃k 形なので
+    k := m で足り実害なし。
+  - 🚨🤖 `8.5-Trans-fseq-condV` — **Wave F で green-modulo 完成（緑、6 Props）**。
+    `exchV_holds` が `FseqDesc_exchV` の drop-in（全ホストで成立、adm 枝 k=m-1／
+    非 adm 枝 k=m+1）。露出 Props 6 本はすべて **Isabelle で証明済**の補題の逐語形。
+    🚨**発見: `isabelle/memo.md:130` の「(1)=A28 で偽」は stale**（**A28 は取り下げ済**、
+    corrections-old.md:95）。塔を `s85b_W` 言語で読むと adm 枝は**原文の印字どおりの
+    添字 `mₙ = n-1`** で厳密に交錯する（`Trans(M[n]) < Trans(M)[n-1] < Trans(M[n+1])`）
+    ＝**訂正不要で原文が正しい**。しかも **Isabelle 自身の
+    `m_8_5_Trans_oper_exchange_condV_adm_uncond` は弱い添字 `n` でしか述べていない**ので、
+    Lean 版のほうが**鋭い**。両方（原文添字＝conj(1)／Isabelle 添字＝conj(2)）を出力。
+  - 🚨🤖 `8.7-Trans-preserves-OT` — **Wave F で green-modulo 完成（緑、12 Props）**。
+    blueprint `y5_Trans_OT_B` は census 塔への一行だったので追跡し、実体
+    **`otx_Trans_preserves_OT_dispatch`（layerB:85710）**＝ST_PS 帰納を全分岐移植
+    （base＋11 分岐: Lng≤1／N[n]=Pred N の 4 枝／N[n]≠Pred N の condI–VI＋multiT）。
+    🚨**構造的発見: OT 柱に必要なのは {OTint, OTpred, OTmulti, exchI, exchII} だけで
+    `LbaseU` は descent 専用＝2 本柱は分離可能**（Isabelle は census で同時に証明して
+    いるが、分ける必要はない）。`Trans_preserves_OT : ∀ M, STPS M → Trans M ∈ OT_B` は
+    descend の `FseqDesc_Trans_preserves_OT` **より強い**（monoT も Lng 条件も不要）。
+    8.6-condVI の `TransPreservesOT` Prop も同形で同時に討てる。
   - `8.5-scb-decompositions` — 訂正 **A29**（part (5)
     `Trans(M[n]) = s₁D_{M₁,j₋₁}(s'₁D_{M₁,j₀})ⁿt₂(b'₁)ⁿb₁` が `n=1` で偽。原文
     content.md 5213 の (5)＝5225、証明 5267/5329）[軽微]。**A29 はここ**であって
