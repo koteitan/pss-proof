@@ -62,7 +62,7 @@
     - ✅ 命題（標準形の直系先祖による切片の簡約化の強単項性） — `8.2-standard-slice-Red-strongmono`[r2]
     - ✅ 補題（強単項性の切片への遺伝性） — `8.2-strongmono-slice`[r1]
     - 🚨🤖 補題（部分表現の単項成分と `Pred` の関係） — `8.2-subexpr-component-Pred`
-    - 🚨 補題（強単項性の下での部分表現の単項成分の基本性質） — `8.2-subexpr-component-strongmono`
+    - 🚨🤖 補題（強単項性の下での部分表現の単項成分の基本性質） — `8.2-subexpr-component-strongmono`
     - ✅ 補題（条件(V)の下での右端の親の基本性質） — `8.2-condV-rightmost-parent`[r1]
     - 🚨🤖 補題（条件(V)の下での終切片と `Trans` の関係） — `8.2-condV-terminal-slice-Trans`
     - 🚨 命題（条件(II)か(IV)の下での終切片と `Trans` の関係） — `8.2-condIIIV-terminal-slice-Trans`
@@ -93,7 +93,7 @@
     - 🚨🤖 補題（基本列の降下性） — `8.7-fseq-descend`
     - ✅ 補題（順序数項の再帰構造） — `8.7-OT-scb-recursive`[r1]
     - ✅ 補題（順序数項の共終数の遺伝性） — `8.7-OT-dom-hereditary`[r1]
-    - 🚨 補題（順序数項の末尾項の零化可能性） — `8.7-OT-tail-annihilable`
+    - 🚨🤖 補題（順序数項の末尾項の零化可能性） — `8.7-OT-tail-annihilable`
     - 🚨 補題（`Pred` と `[0]` の関係） — `8.7-Pred-oper0`
     - ✅ 補題（順序数項の基本例） — `8.7-OT-examples`[r1]
     - 🚨🤖 補題（`Trans` が標準形を保つこと） — `8.7-Trans-preserves-OT`

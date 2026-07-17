@@ -531,6 +531,13 @@ parent/Lng 形に落としてから作業する。
     残 sorry は必ず `check_lean.py` で判定せよ（grep 禁止）③**workflow 走行中に
     `lake build` するな**——glob が in-flight の書きかけを拾って必ず失敗する。
     個別モジュール指定（`lake build «8».«8.2-subexpr-adm0» …`）なら安全。
+  - 🚨🤖 `8.2-subexpr-component-strongmono` — p 文 = pss_paper:1563。Isa:
+    `m_8_2_subexpr_component_strongmono`（layerB:34924）＋`_of_witness`（33330）／
+    `_of_factAB`（34014）／`m_8_2_wit_step_thr`（34088）。Wave G。
+  - 🚨🤖 `8.7-OT-tail-annihilable` — p 文 = pss_paper:2284。Isa:
+    `y3t_toplevel_OT_tail_annihilate`（layerC:19355）。**wf 帰納
+    （`wf_induct_rule[OF y4_buc1_2_2_OT_B_wf]`）を使う**ので、Lean では OT_B の整礎性を
+    named Prop で受けて green-modulo（7.1-buchholz-wf キャンペーンの完成待ち）。Wave G。
   - `8.2-*` — `LastStep` の添字は A9 で訂正済みの形を使う。
     Isa の注意: `Pred_oper0` は標準入力で偽（反例 `M=(0,0)(1,1)(2,1)`）だが**定理は健全**
     （`Σ_B` 降下和ルートで回避）。**原文 §8 の証明には gap があるが、定理は真。**
