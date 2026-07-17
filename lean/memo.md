@@ -879,3 +879,26 @@ parent/Lng 形に落としてから作業する。
     （OT transport pillar。**`OTpred` は最も近い**: `od4_OTpred_final`(scratch:874) が
     3 除外仮定なしで強く証明、`8.7-otdisp-OTpred` が Brick A=`od4R_op` 逆保存 ~380 行を bank 済。
     `OTmulti` は `OTint` に依存、`OTint` は transport 層 ~1000 occ で最重量）。
+  - 🎉 **Wave M（2026-07-18、Opus 8 並列）で `CondI_masterCF` を無条件クローズ＝残差 9 → 8 葉**。
+    主定理は緑・公理クリーンのまま。`8.1-condI-masterCF-chunk5` が `scx_condI_j0pos_masterCF`
+    （r28-STEPCORE の chunk-5 組立）を Wave L bank 済の `scx_stepA`/`scx_stepB`＋c1_around 群
+    から glue（新規数学なし、house pattern）。termination の `condI` フィールドを削除し
+    `H.condI` を `scx_condI_j0pos_masterCF` に置換（OT 柱 exchI/condI_j0z＋降下柱 exchI を直接供給）。
+    **同時に大量の brick を bank**（緑・未配線、次 wave 用）:
+    ①`TV_R3LE`（CondII tailval の 6 残差の 1 つを無条件クローズ。`8.3-condII-R3LE`。
+    残 5=TrunkLeg/BoundaryLeg/NotLdjLeg/LDJB/Dichotomy）
+    ②OTpred **Brick B** 完全クローズ（`od4_scbext_R`＋`otx2_peel`/`otx2_top_shape`、`8.7-otpred-brickB`）
+    ③OTpred **Brick C0** 完全クローズ（最重量 `od4_condVI_nadm_c1`＋engine `wnx_run_entries` 再構築、
+    `8.7-otpred-brickC0`）④OTpred Brick D 部分（`od4_master_R_of_site`＝Brick C modulo。`8.7-otpred-brickD`）
+    ⑤condVI L-tower **fact(a)** クローズ（`s84c1_marked_L`/`s84c1_adm_L_mstar`/`s84c1_le0_L_mstar`、
+    condVI regime の w=1 collapse で plain oper 化。`8.6-condVI-Ltower-facta`）
+    ⑥**funpow IncrFirst プリミティブ 2 本**（`Trans_funpow_IncrFirst`/`a1_Red_funpow_IncrFirst`、
+    複数葉の共通 blocker。`8.6-Trans-Red-funpow-IncrFirst`）
+    ⑦s84x 語彙定義＋RUN leg 基礎（`8.4-s84x-vocab-run`。ltJ 仮定不整合の調査結果も needs に）。
+    **残り 8 葉**（`FseqDesc_m_7_3_Trans_leftmost_2` は dropin 配線済の名前マッチ誤検出＝実質 7）:
+    `CondII_masterCF`（残 5 TV brick）／`Exch84_condIIIIV_pkg`（s84x 語彙 bank 済、次=RUN/REGS/base/mnform）／
+    `CondVI_scbdec_{adm,nadm}_forms_v6`（fact(a)＋IncrFirst 済、残=fact(b)(c)(d)組立）／
+    `OTdisp_{OTint,OTpred,OTmulti}`（**OTpred が最接近**: Brick A/B/C0 済、残=Brick C 組立
+    ＝od4_site_c2 の残 5 easy 枝＋`od4_master_R`＋final glue `od4_OTpred_final`）。
+    parent promotion 実施: `trans_surgery_localized_v6p`→public（OTpred Brick D 用）。
+    R3LE agent が要求した追加 promotion 候補は memo 末尾/コミットに記録（全て private _r3 で自己完結済）。
