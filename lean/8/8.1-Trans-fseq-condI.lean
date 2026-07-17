@@ -201,7 +201,7 @@ private theorem bOperCore_list_snoc_ci (ps : List BP) (p : BP) (z : BT) :
 
 /-- `D_v(t₂ +_B D₀0)` の基本列は `(D_v t₂) ×_B (n+1)`。`scb_fseq_succ` の
 `t₀ = 0_B` 特殊化だが、`v : ℕ∞` を一般のまま扱う（`transV M` は `ℕ∞`）。 -/
-private theorem operB_succ_body_ci (t₂ : BT) (v : ℕ∞) (n : ℕ) :
+theorem operB_succ_body_ci (t₂ : BT) (v : ℕ∞) (n : ℕ) :
     operB (Dprin v (addBT t₂ (Dprin 0 BZero))) (numBT n) =
       multBT (Dprin v t₂) (n + 1) := by
   rcases t₂ with ⟨ps₂⟩

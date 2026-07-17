@@ -246,7 +246,7 @@ private theorem lessBT_BZero_Dprin_fd (v : ℕ∞) (a : BT) :
 /-! ## 親が唯一のときの `parent M i 1 = 0` -/
 
 /-- Isabelle `f7x_parent_one_zero` (pss_wip.thy:51861)。 -/
-private theorem parent_one_zero_fd (M : PS) (i : ℕ)
+theorem parent_one_zero_fd (M : PS) (i : ℕ)
     (hp : hasParent M i 1 = true) : parent M i 1 = 0 := by
   have hmem : parent M i 1 ∈ parents M i 1 := by
     unfold parent
@@ -359,7 +359,7 @@ private theorem oper_of_no_parent_fd (M : PS) (n : ℕ) (hj : Lng M - 1 ≠ 0)
 
 /-- `Lng M = 2` かつ末尾に親があるときの `M[n]` の閉形式。
 `d₀`/`d₁` は Isabelle の `oper_def` の `Let` 束縛そのもの。 -/
-private theorem oper_len2_fd (M : PS) (hL : Lng M = 2)
+theorem oper_len2_fd (M : PS) (hL : Lng M = 2)
     (hnz : ¬(entry M 0 1 = 0 ∧ entry M 1 1 = 0))
     (hp : hasParent M (idx1 M 1) 1 = true) (d0 d1 : ℕ)
     (hd0 : (if 0 < idx1 M 1 then

@@ -781,6 +781,24 @@ parent/Lng 形に落としてから作業する。
     `m_8_6_diagSeq_condVI_commute`/`_descent`（40305/40331）も無条件。
     残 named Props 3（`CondVIAdmTowerScb` 等＝Isabelle の証明内部で確立される
     flat 閉形式 flatMn/ov/b1RP）。
+  - 🚨 **OT 柱の 12 OTdisp Props（`8.7-Trans-preserves-OT-props.lean`、Wave J）**:
+    **7/12 配線**（うち `OTdisp_zerocol_predval` は**無条件・新規証明**: 末尾列 (0,0) なら
+    `Trans M` は後続項 `Trans(Pred M) +_B D_0 0` で基本列が添字非依存。
+    `nextrel0` が恒偽→`le0Aux` が反射に潰れる→`Pcut M = Lng M - 1`→multiT→
+    `Trans_Mark_multi_equations` の `J == [(0,0)]` 枝）。
+    残り 5 の内訳（agent が読んで確定）:
+    ①🚨**`OTdisp_OTint` の安い道は閉じている**（**重要な否定的結果**）: 条件 (III)/(IV)/(V) は
+    **狭義 lessBT しか出さず**（8.4:229／8.5:459/511。exchV_holds が leBT なのは
+    `leBT = (== || lessBT)` だから）、**`OT_B` は lessBT で下方閉ではない**（正規形の集合）ので
+    `buchholz_fseq_closed` から `Trans (oper N m) ∈ OT_B` へは渡せない。
+    `OT_dom_hereditary` 経由の本格移植が要る。②`OTdisp_OTpred`（Isa `opx_OTpred_of_residuals`）
+    ③`OTdisp_OTmulti`（`opx_OTmulti`）— ②③とも Lean に twin 無し。
+    ④⑤`OTdisp_condI_j1eq1_eq`／`OTdisp_condVI_j1eq1_eq`（Isa otx_* 85516/85582）＝
+    **数学的には解決済み**（`Lng M = 2` 境界で `const00_Trans`＋`two_column_Trans` で
+    算術が一致することを agent が検証）**障害は `private` だけ**だった
+    → **親が 2026-07-17 に `oper_len2_fd`/`parent_one_zero_fd`（8.7-fseq-descend）と
+    `operB_succ_body_ci`（8.1-Trans-fseq-condI）を public 昇格**（両ファイル緑・衝突なし）。
+    次の agent はこの 2 Props を新規数学なしで閉じられる。
   - 🚨🤖 `8.7-termination` ★ — **Wave J で組み上がった（緑、公開 6 本）＝残差は 27 本ちょうど**。
     `p_8_7_termination (H : TerminationResidual) (f M n) (hM : STPS M) (hn : 1 ≤ n)
     (hf : ∀ k, 1 ≤ k → 1 ≤ f k) : Fdom f M n` が **pss_paper:2329 と逐語一致**（親が確認）。
