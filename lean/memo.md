@@ -472,7 +472,25 @@ parent/Lng 形に落としてから作業する。
     branch_col0_val／det_imp_joint_lt_TrMax）。Joints_nth 系は既存の
     Joints_getD／Joints_nextR_FirstNodes／mono_hasParent_row0 で代替、
     rtrancl 分解は全て le0 値特徴付けで置換。rc=0・sorry 0・axioms 正常。
-  - 🚨🤖 `8.2-subexpr-component-Pred` — Isa: `m_8_2_subexpr_component_Pred`
+  - ✅ `8.2-subexpr-component-Pred` — **完了（2026-07-17、Wave C-1〜C-4＋G の 5 波）**。
+    **無条件形 `keystone`＋原文忠実形 `keystone_faithful`**（＝ Isa `m_8_2_keystone`
+    32461 と `p_8_2_subexpr_component_Pred` pss_paper:1523）が
+    `8.2-subexpr-component-Pred.lean`（旧 -chainOK、1281 行・公開 33 本）に。
+    green-modulo は**完全に解消**（SXP_* 5 本すべて討伐）。
+    最後の 2 残差の討ち方: baseU←`Br (Pred M) = []` は Pred M が全幹＝対角列
+    （`diagSeq_Trans` の 2 段塔）／`Lng M = 3` は `two_column_Trans`。
+    cpU←branchPar→descAdm→chainOK→widTrM→cpU の連鎖（branchPar 32434 は無条件）。
+    `chainOK` は WF 再帰 def（dite ガードで再帰呼び出しにガードを可視化、
+    `termination_by Lng M`＋`length_Pred`）＝Isabelle の function/measure と 1:1。
+    **監査（`python/audit_82_chainOK.py`）**: 14,618 形プールで**反例 0**（20 主張）。
+    負対照も健全: (N1)「Admpos∧good⟹widTrM」は 3,000/14,417 で反証＝プールが
+    chainOK の非局所性を実際に突いている、(N2)「chainOK ⟺ good∧TrMax≥1∧descAdm」は
+    0 不一致（Isa 31108 と一致）。
+    ⚠️**監査の指摘（ドキュメントのみ）**: Isabelle の wip:30713 のコメントは反証例を
+    「Admpos∧j1eq⟹widTrM が偽、反例 (0,0)(1,0)(1,1)(2,0)」と書くが、その列は
+    **j1eq が偽**（FirstNodes[J1]=2 ≠ Lng-1=3）＝実際には弱い「Admpos∧good」形の反例。
+    数学は無傷（widTrM は非局所で chainOK は必要）。A 番号は不要（言明でなくコメント）。
+  - （旧記述）Isa: `m_8_2_subexpr_component_Pred`
     （layerB:29702、基盤 19256–29886 ≈10.6k 行）、p 文 = pss_paper:1523。
     **Wave C-1 完了（下層 3 file 全緑、lake 3086 jobs）**: `8.2-subexpr-setup`
     （setup 10 連言＋clause1、Trans_eq_transC2_Adm0 は 7.4 の Mark 連鎖で代替）／
@@ -531,13 +549,23 @@ parent/Lng 形に落としてから作業する。
     残 sorry は必ず `check_lean.py` で判定せよ（grep 禁止）③**workflow 走行中に
     `lake build` するな**——glob が in-flight の書きかけを拾って必ず失敗する。
     個別モジュール指定（`lake build «8».«8.2-subexpr-adm0» …`）なら安全。
-  - 🚨🤖 `8.2-subexpr-component-strongmono` — p 文 = pss_paper:1563。Isa:
-    `m_8_2_subexpr_component_strongmono`（layerB:34924）＋`_of_witness`（33330）／
-    `_of_factAB`（34014）／`m_8_2_wit_step_thr`（34088）。Wave G。
-  - 🚨🤖 `8.7-OT-tail-annihilable` — p 文 = pss_paper:2284。Isa:
-    `y3t_toplevel_OT_tail_annihilate`（layerC:19355）。**wf 帰納
-    （`wf_induct_rule[OF y4_buc1_2_2_OT_B_wf]`）を使う**ので、Lean では OT_B の整礎性を
-    named Prop で受けて green-modulo（7.1-buchholz-wf キャンペーンの完成待ち）。Wave G。
+  - 🚨🤖 `8.2-subexpr-component-strongmono` — **Wave G で partial（緑、472 行、公開 4 本）**。
+    p 文 = pss_paper:1563。**無条件部分**: 原文 clause (1)＋∃! の一意性半分
+    （`subexpr_leftend_unique_sm2`＝Isa 14900、`Trans_mono_leftend_form`＋
+    `Trans_preserves_zeroT`＋Dprin 単射性）／`wit_step_thr`（34088）＋その支持
+    （wit_PB_relax 33742／wit_PB_tail_bound 33765／rn1_outer_inner_trailing 28912）／
+    `_of_witness`（33330）／`_of_factAB`（34014）。
+    **残 named Props 2**（どちらも Isabelle では無条件）: `SXSM_factA_uncond`
+    （Isa `m_8_2_factA_uncond` 35084）ほか。
+  - 🚨🤖 `8.7-OT-tail-annihilable` — **Wave G で完成（緑、残 Prop は `OT_B_wf` の 1 本のみ）**。
+    p 文 = pss_paper:2284、Isa `y3t_toplevel_OT_tail_annihilate`（layerC:19355）＝
+    layerB `m_8_7_toplevel_OT_tail_annihilate`（27288）。wf 帰納の構造は 1:1。
+    🎉**Isabelle より強い**: Isabelle は両版とも一歩降下 `step` を**仮定**しており、
+    layerB:27264-27285 が「step を全 t'∈OT_B で discharge するには operB の
+    OT_B 上全域性＝[Buc1] Lemma 3.2 が要る（引用 buc1_* に無い）＝これが正確な残差」と
+    明記している。**Lean では `operB` が構成的に全域**（`bOperCore` の
+    `termination_by` WF 再帰）なので step は討伐でき、残差は `OT_B_wf` だけになった。
+    → **7.1-buchholz-wf が閉じれば本項目も自動的に閉じる**。
   - `8.2-*` — `LastStep` の添字は A9 で訂正済みの形を使う。
     Isa の注意: `Pred_oper0` は標準入力で偽（反例 `M=(0,0)(1,1)(2,1)`）だが**定理は健全**
     （`Σ_B` 降下和ルートで回避）。**原文 §8 の証明には gap があるが、定理は真。**
