@@ -774,4 +774,27 @@ parent/Lng 形に落としてから作業する。
     `m_8_6_diagSeq_condVI_commute`/`_descent`（40305/40331）も無条件。
     残 named Props 3（`CondVIAdmTowerScb` 等＝Isabelle の証明内部で確立される
     flat 閉形式 flatMn/ov/b1RP）。
-  - `8.7-termination` ★ — Isa: `y5_PSS_wf` / `y5_Fdom`。ここに全部が集まる。
+  - 🚨🤖 `8.7-termination` ★ — **Wave J で組み上がった（緑、公開 6 本）＝残差は 27 本ちょうど**。
+    `p_8_7_termination (H : TerminationResidual) (f M n) (hM : STPS M) (hn : 1 ≤ n)
+    (hf : ∀ k, 1 ≤ k → 1 ≤ f k) : Fdom f M n` が **pss_paper:2329 と逐語一致**（親が確認）。
+    原文の集合形（`ST_PS × ℕ₊ ⊂ Dom(F)`, content.md 5851）も `STPS_prod_pos_subset_Fdom` で提供。
+    訂正は該当なし（A26/A27/A38 は §8.7 の**補題**についてで、しかも取り下げ済）。
+    構成 = `buchholz_wf`（仮定ゼロ）＋OT 柱（12 OTdisp_*）＋降下柱（16 FseqDesc_*、14 配線済）。
+    Isabelle の `wf_subset∘wf_inv_image` は Lean の `InvImage.wf`＋Acc 帰納に。
+    **残差 27 の根拠は機械検証**（`python/audit_8_7_termination.py`: 123 ファイルの import 閉包を
+    歩いて葉 Prop を数え **28 葉、うち `TransPreservesOT` は OT 柱の結論と同一なので 12 OTdisp_*
+    から導出できて 27**。閉包内に**主張の異なる同名宣言なし**も確認＝8.4/8.5 の地雷は解消済、
+    `RankSuccD1posLeg`/`OT_B_wf` は CLOSED 表示）。
+    **Isabelle より短い**: `y5_Fdom` は ST_PS 非空性のため oper の 3 分岐展開に ~120 行を要するが、
+    Lean は §6.7 の `STPS_RTPS`＋`RTPS_TPS`（`TPS M ≡ M ≠ []`）で 2 行。
+    ⚠️`8.7-Pred-oper0` は経由していない（標準入力で偽、反例 M=(0,0)(1,1)(2,1)。Isabelle も
+    Σ_B 降下和で迂回。定理自体は健全）。
+    🚨**agent が挙げた 2 つの留保（隠さず記録）**: ①**`8.7-fseq-descend:50` のヘッダ
+    「全 16 本は #guard 数値検証済み＝空虚ではない」は過大主張**（同ファイルの #guard は 1 個だけ）。
+    実際 `OTdisp_exchII`＝条件 (II) は **ST_PS 上で 0 インスタンス**（18318/32056 標準形、
+    8.3-TransCondII-engine:73 も既に記録）＝ST_PS 上は空虚の疑い。**健全性は無傷**:
+    `CondII_masterCF` は RT_PS 上の言明で witness が実在する（(0,0)(1,1)(2,2)(2,0)）ので
+    非空虚な仮定であり、空回りするのは (II) 枝だけ。②Exch84_*／CondVI*／未配線 3 本の
+    FseqDesc_* には専用の数値監査が無い。
+    **最良のレバレッジ = 12 OTdisp_***（OT 柱と、`FseqDesc_Trans_preserves_OT`＋
+    `TransPreservesOT` 経由で降下柱の exchVI の**両方**に効く）。
