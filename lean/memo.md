@@ -560,6 +560,14 @@ parent/Lng 形に落としてから作業する。
     A29 の対象は隣の `8.5-scb-decompositions`（原文 content.md 5213「各種scb分解」）
     の part (5)（`Trans(M[n]) = s₁D_{M₁,j₋₁}(s'₁D_{M₁,j₀})ⁿt₂(b'₁)ⁿb₁` が n=1 で偽）。
     本項目に part (5) は存在しない。
+  - 🚨🤖 `8.4-Trans-fseq-condIII-IV` — **交換則 1/7**（8.7-fseq-descend が要求）。
+    p 文 = pss_paper:1909（`p_8_4_Trans_oper_exchange`）。Isa:
+    `m_8_4_Trans_oper_exchange_corrected_condIII`（layerB:62656）＋condIV 版。Wave F。
+  - 🚨🤖 `8.5-Trans-fseq-condV` — **交換則 1/7**。p 文 = pss_paper:2070
+    （`p_8_5_Trans_oper_exchange`）。Isa: `m_8_5_Trans_oper_exchange_condV_adm`
+    （layerB:58346）／`_adm_uncond`（60884）／`_nonadm`（61656）。最重量級。Wave F。
+  - 🚨🤖 `8.7-Trans-preserves-OT` — **停止性 2 本柱の片方**（descent と並ぶ「OT 所属」）。
+    p 文 = pss_paper:2317。Isa: `y5_Trans_OT_B`（layerC）。Wave F。
   - `8.5-scb-decompositions` — 訂正 **A29**（part (5)
     `Trans(M[n]) = s₁D_{M₁,j₋₁}(s'₁D_{M₁,j₀})ⁿt₂(b'₁)ⁿb₁` が `n=1` で偽。原文
     content.md 5213 の (5)＝5225、証明 5267/5329）[軽微]。**A29 はここ**であって
