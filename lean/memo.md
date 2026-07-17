@@ -614,6 +614,8 @@ parent/Lng 形に落としてから作業する。
     A29 の対象は隣の `8.5-scb-decompositions`（原文 content.md 5213「各種scb分解」）
     の part (5)（`Trans(M[n]) = s₁D_{M₁,j₋₁}(s'₁D_{M₁,j₀})ⁿt₂(b'₁)ⁿb₁` が n=1 で偽）。
     本項目に part (5) は存在しない。
+  - 🚨🤖 `8.1-Trans-fseq-condI` — **交換則 exchI**（descend の Prop）。p 文 =
+    pss_paper:1769。Isa: `scx_condI_exchange1` 系。Wave H。
   - 🚨🤖 `8.4-Trans-fseq-condIII-IV` — **Wave F で green-modulo 完成（緑）**。
     p 文 = pss_paper:1909。`exch_condIII`/`exch_condIV` が 8.7-fseq-descend の
     `FseqDesc_exchIII`/`_exchIV` の drop-in。
