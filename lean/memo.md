@@ -85,6 +85,20 @@ Isabelle 版で潰した偽命題・行き止まり。**同じ道を Lean で走
 
 ---
 
+## 4.4 カバレッジ点検（2026-07-17 実施）
+
+`8.4-fseq-basic` の穴（§8.4 の記事命題 9 本中 1 本がツリーに無かった）を受けて全点検した。
+
+- **§8: 33 p 文すべてにツリー項目が対応**（穴は `8.4-fseq-basic` の 1 件のみで、解消済）。
+  ツリーの §8 項目は 38 で p 文より 5 多いが、これは **pss_paper が text のみ・DEFERRED
+  とした記事命題**（`8.4-rightmost-replace-Trans`/`8.4-oper-basic`/`8.4-scb-decompositions`/
+  `8.5-scb-decompositions`/`8.5-fseq-scb-decomposition`）に対応＝正しい。
+- **§5–§7: 穴の証拠なし**。p 文 95 件（§5=13/§6=55/§7=27）に対し Lean ファイルは
+  6/65/34 本。§5 は 1 file が複数 p 文を束ねる（`5.1-parent-exists` ⊃ p_5_1_parent_exists_1..4）。
+- 🚨**「lean/ から p 文名を grep」は無効な点検**（45/95 が未参照だが全部偽陽性。
+  Lean のヘッダは p 文名ではなく原文位置＋m_ 名を引用する規約のため）。
+  将来やるなら**原文位置か statement 一致でマップする監査スクリプト**を書くこと。
+
 ## 4.5 キャンペーン作戦図: 6.8 d1pos leg — ✅ 完了（2026-07-17。以下は史料）
 
 **目標**: `RankSuccD1posLeg`（`lean/6/6.8-standard-slice-Br-descending.lean` ~4211 の
