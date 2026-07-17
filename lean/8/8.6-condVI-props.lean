@@ -211,7 +211,7 @@ private theorem transC2_principal_v6p (M : PS) (hcond : transCondVI M = true) :
     ∃ p, transC2 M = .trm [p] :=
   ⟨.db (transV M) _, by simpa [Dprin] using condVI_transC2_v6p hcond⟩
 
-private theorem trans_surgery_localized_v6p (M : PS) (hR : RTPS M)
+theorem trans_surgery_localized_v6p (M : PS) (hR : RTPS M)
     (hmono : monoT M = true) (hj₁ : 0 < transJ1 M) (ht₁ : transT1 M ≠ BZero)
     (hc₂P : ∃ p, transC2 M = .trm [p]) :
     ∃ s b, scb_decomp (Trans (Pred M)) s (flatBT (transC1 M)) b ∧
