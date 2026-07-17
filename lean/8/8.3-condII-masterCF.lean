@@ -3,6 +3,7 @@ import «7».«7.3-Trans-welldefined»
 import «7».«7.4-RightNodes-Mark»
 import «8».«8.2-subexpr-adm0-ctx»
 import «8».«8.3-TransCondII-engine»
+import «8».«8.7-Trans-preserves-OT»
 
 /-!
 # §8.3 条件(II) — `CondII_masterCF` の討伐（`c2sx_` 連鎖の移植）
@@ -46,13 +47,29 @@ import «8».«8.3-TransCondII-engine»
     のは `RTPS + CondII_tailval` 版（＝本ファイルの `condII_masterCF_of_tailval`）
     までで、`RTPS ⟹ CondII_tailval`（`CondII_TailvalAll`）は Isabelle には
     **存在しない**（ST_PS 版しかない）。
-  * 数値監査（`python/audit_83_condII_masterCF.py`）: RT_PS 条件(II) ホスト
-    **10 本**（成分 < 6、`Lng ≤ 5` 全数）で `CondII_tailval` は **10/10 成立**、
-    `ldj` 両枝を含む。`masterCF` の結論も Isabelle の witness で 10/10 成立。
+  * ⚠️ **`c2sx_tailval` の供給元は全 9 本を確認した**（`shows "c2sx_tailval"` を
+    全数 grep）。RT_PS 版は 2 本存在するが**どちらも追加仮定つき**:
+    `c2sx_tailval_trunk` (87720, 仮定 `TR`＝`TrMax (Red (seg …)) = Lng (…) - 1`)、
+    `c2sx_tailval_of_reg` (87838, 仮定 `¬ldj` ＋ `REG`＝`cfbx_reg …`)。
+    **無仮定**の供給元（`cdx_tailval_notldj` 90424 / `tvx_TVall_of_LDJB_fin`
+    110714 / `tvx_TVall_of_residuals` 110948 / `ljx_TVall_of_fin` 115242）は
+    **すべて `ST_PS` 束縛**。すなわち「RT_PS 上で無条件の tailval」は
+    corpus に**存在しない**（名前ではなく `shows` の内容で全数確認済み）。
+  * 数値監査（`python/audit_83_condII_tailval_deep.py`、`PSS_CAP=10 PSS_LMAX=5`）:
+    reduced 数列 **330106 本**を走査し、RT_PS 条件(II) ホスト **144 本**
+    （**成分最大 9**＝`memo.md` par.3 の危険帯 6〜9 の**内側**、`ldj` 両枝
+    True=44 / False=100）で `CondII_tailval` は **144/144 成立・反例 0**。
+    ただし**予備監査の母数は過少申告だった**:
+    `audit_83_condII_masterCF.py` は「成分 < 6・`Lng ≤ 5` で 10 本」と報告するが、
+    それは **`M[0]` を `(0,0)` に釘付け**していたため。`reduced` は 0 列目に
+    `M[0] = (a,a)` しか課さない（`a > 0` も RT_PS）ので、同じ境界で実際には
+    **46 本**ある（`ldj` 両枝: True=14 / False=32）。deep 版は `(a,a)` を全数
+    展開し、かつ `reduced` の**前緊閉性**（`RTPS_Pred` が証明済＝butlast で閉じる
+    ⟹ 全 prefix が reduced）で DFS 枝刈りするので、`memo.md` par.3 の警告する
+    **成分 6〜9 の帯**まで到達できる（予備監査の `CAP=6` はこの帯の**手前**で
+    止まっており、記録された 13 件の偽陽性と同じ形をしていた）。
     よって `CondII_masterCF` は**真らしい**が、**未証明**であり、engine ヘッダの
     「Isabelle では定理」は RT_PS 版については**誤り**。
-    （engine ヘッダの「RT プールは 1 本」は `LMAX` の off-by-one で、実際は
-    `Lng ≤ 5` で 10 本ある。）
 
 - 訂正: **A36 は取り下げ済み**（`corrections-old.md:138`）＝存在形 (`∃ c`) が原文に
   忠実。`c2sx_ldj` は原文の「`P(t₂)_{J₁}` の左端が `D_{M₁,ⱼ₀}` であるか否かに従って
@@ -74,7 +91,24 @@ import «8».«8.3-TransCondII-engine»
     `CondII_TailvalAll`）。`CondII_masterCF` を drop-in で充足する（house pattern）。
   - `condII_exchII_of_residuals` … 同 2 本から `FseqDesc_exchII` まで通す
     （親の独立検証用。`OTdisp_exchII` は byte-identical なので同時に落ちる）。
+  - 🎯 `condII_exchII_of_ST_residuals` / `condII_OTdispII_of_ST_residuals` …
+    🤖 GREEN-MODULO（`CondII_step` ＋ `CondII_TailvalAll_ST`）。
+    **engine の `CondII_masterCF` を経由せずに両柱の `exchII` を供給する**。
+    残差が**両方とも Isabelle の定理**（`c2sx_step` / `y3j_condII_tailval`）に
+    なるので、`condII_exchII_of_residuals` より**厳密に望ましい**（後者の
+    `CondII_TailvalAll` は RT_PS 無条件版＝corpus に存在しない）。
+    `OTdisp_exchII` が `FseqDesc_exchII` と定義的に同一であることは
+    `condII_OTdispII_of_ST_residuals` が**型検査で機械確認**している。
   - sorry 0、axioms = propext/Classical.choice/Quot.sound。
+
+- 📌 **親への推奨**（本ファイルの外＝engine の 1 行修正）: ビルド済み
+  «8».«8.3-TransCondII-engine»:212 の `CondII_masterCF` の `RTPS M` を
+  **`STPS M` に変える**（`exchII_of_masterCF`:225 の `STPS_RTPS` の行が不要に
+  なるだけ）。消費者（`FseqDesc_exchII`:78 / `OTdisp_exchII`:88）は**両方とも
+  `STPS N`** を渡してくるので RT_PS 版は誰も要求しておらず、この 1 行で残差は
+  Isabelle の定理 2 本（`c2sx_step` / `y3j_condII_tailval`）だけになる。
+  本ファイルはその修正を待たずに `condII_exchII_of_ST_residuals` で
+  同じ結論（両柱の `exchII`）を既に供給している。
 -/
 
 namespace PSS
@@ -653,26 +687,118 @@ theorem condII_masterCF_of_tailval (hstep : CondII_step) :
 強い形が要る。ヘッダの 🚨🚨 を参照。 -/
 
 /-- Isabelle `y3j_condII_tailval` (layerC/pss_scratch.thy:17079) の **`RT_PS` 版**。
-Isabelle は `ljx_TVall_of_fin` ＋ `ot9_FINRC` で `ST_PS` 上に落とす。 -/
+Isabelle は `ljx_TVall_of_fin` ＋ `ot9_FINRC` で `ST_PS` 上に落とす。
+
+🚨 **この `RT_PS` 版は偽**（`lean/8/8.3-condII-tailval.lean` の
+`not_CondII_TailvalAll` が反例 `(0,0)(1,1)(2,2)(2,0)(2,2)(2,0)` で機械証明）。
+史料として残すだけで、**使うな**。実在するのは下の `CondII_TailvalAll_ST`。 -/
 def CondII_TailvalAll : Prop :=
   ∀ M : PS, RTPS M → monoT M = true → 1 < Lng M - 1 → transCondII M = true →
+    CondII_tailval M
+
+/-- Isabelle `y3j_condII_tailval` (layerC/pss_scratch.thy:17076) の **1:1** 移植。
+あちらは `ljx_TVall_of_fin[OF ot9_FINRC]` で**無条件に落ちる定理**である
+（`CondII_TailvalAll` の `RT_PS` 版とは違い、これは実在する）。 -/
+def CondII_TailvalAll_ST : Prop :=
+  ∀ M : PS, STPS M → monoT M = true → 1 < Lng M - 1 → transCondII M = true →
     CondII_tailval M
 
 /-- **本ファイルの成果物**: ビルド済み «8».«8.3-TransCondII-engine» の
 `CondII_masterCF` を、2 本の名前付き残差から drop-in で充足する（house pattern）。
 `exchII_of_masterCF` に食わせれば `FseqDesc_exchII` が、同型の `OTdisp_exchII`
 も同時に落ちる。 -/
-theorem condII_masterCF_holds (hstep : CondII_step) (hTV : CondII_TailvalAll) :
+theorem condII_masterCF_holds (hstep : CondII_step) (hTV : CondII_TailvalAll_ST) :
     CondII_masterCF := by
-  intro M hR hmono hj1 hcond
+  intro M hST hmono hj1 hcond
+  have hR : RTPS M := STPS_RTPS M hST
   exact condII_masterCF_of_tailval hstep M hR hmono hj1 hcond
-    (hTV M hR hmono hj1 hcond)
+    (hTV M hST hmono hj1 hcond)
 
 /-- 親による独立検証用: `CondII_masterCF` が実際に `FseqDesc_exchII` を出すこと
 （`exchII_of_masterCF` はビルド済み engine :223）。 -/
-theorem condII_exchII_of_residuals (hstep : CondII_step) (hTV : CondII_TailvalAll) :
+theorem condII_exchII_of_residuals (hstep : CondII_step) (hTV : CondII_TailvalAll_ST) :
     FseqDesc_exchII :=
   exchII_of_masterCF (condII_masterCF_holds hstep hTV)
+
+/-! ## 🎯 Isabelle に裏打ちされた `exchII` 供給ルート（本ラウンドの主成果）
+
+上の `condII_masterCF_holds` は engine の `CondII_masterCF` を drop-in するために
+`CondII_TailvalAll`（**RT_PS 版**）を要求する。しかしヘッダ 🚨🚨 のとおり、これは
+Isabelle corpus に**存在しない**（`y3j_condII_tailval` は `MST : M ∈ ST_PS`。
+その供給連鎖 `ljx_TVall_of_fin` (pss_wip.thy:115242) ＋ `ot9_FINRC`
+(pss_scratch.thy:10032) も**両方とも ST_PS 束縛**）。
+
+**ところが `RT_PS` 版は誰も必要としていない**: `CondII_masterCF` の唯一の消費者で
+ある `FseqDesc_exchII` (`8.7-fseq-descend`:78) と `OTdisp_exchII`
+(`8.7-Trans-preserves-OT`:88) は**どちらも仮定が `STPS N`** であり（両者は
+byte-identical）、engine の `exchII_of_masterCF` は `STPS_RTPS` で `RTPS` に
+落としてから `CondII_masterCF` を呼んでいる。すなわち engine が
+`CondII_masterCF` を `RTPS` 上で述べたのは**不要な強化**であって、
+その強化のぶんだけ Isabelle corpus の外に出てしまっている。
+
+そこで本節は engine の `CondII_masterCF` を**経由せず**、
+`CondII_step`（Isabelle `c2sx_step` の 1:1、`RT_PS`）と
+`CondII_TailvalAll_ST`（Isabelle `y3j_condII_tailval` の 1:1、**あちらでは定理**）
+から `FseqDesc_exchII` を直接供給する。`condII_exchII_of_residuals` との違いは
+**残差 2 本が両方とも Isabelle 側の定理である**こと＝移植可能であること。
+
+engine 側を直すなら `CondII_masterCF` の `RTPS M` を `STPS M` に変えるだけでよい
+（`exchII_of_masterCF` の `STPS_RTPS` の行が不要になる）。 -/
+
+
+/-- Isabelle `operB_marked_scb_value` (pss_wip.thy:37100)。engine :165 の
+private 版と同一内容（private は module を跨げないので複製）。 -/
+private theorem operB_marked_scb_value_cf2 {t₀ t₁ t : BT} {u v n : ℕ}
+    {s b : List Sym}
+    (ht₀ : t₀ ∈ T_B) (ht₁ : t₁ ∈ T_B) (ht : t ∈ T_B)
+    (hd : scb_decomp t s
+      (flatBT (Dprin (u : ℕ∞)
+        (addBT t₀ (Dprin (v : ℕ∞) (addBT t₁ (Dprin 0 BZero)))))) b) :
+    operB t (numBT n)
+      = unflatBT (s ++ flatBT (Dprin (u : ℕ∞)
+          (addBT t₀ (multBT (Dprin (v : ℕ∞) t₁) (n + 1)))) ++ b) := by
+  have hd2 := scb_fseq_decomp (n := n) ht₀ ht₁ ht hd
+  calc operB t (numBT n)
+      = unflatBT (flatBT (operB t (numBT n))) := (unflatBT_flat _).symm
+    _ = _ := by rw [hd2.1]
+
+/-- Isabelle `c2ex_exch_of_lhs_closed_ex` (pss_wip.thy:70717)。engine :185 の
+private 版と同一内容（同上の理由で複製）。 -/
+private theorem exch_of_lhs_closed_ex_cf2
+    {M : PS} {n u v : ℕ} {t₀ t₁ : BT} {s b : List Sym}
+    (ht₀ : t₀ ∈ T_B) (ht₁ : t₁ ∈ T_B) (htT : Trans M ∈ T_B)
+    (hd : scb_decomp (Trans M) s
+      (flatBT (Dprin (u : ℕ∞)
+        (addBT t₀ (Dprin (v : ℕ∞) (addBT t₁ (Dprin 0 BZero)))))) b)
+    (hlhs : ∀ m, 1 < m → ∃ c, 1 ≤ c ∧ Trans (oper M m)
+      = unflatBT (s ++ flatBT (Dprin (u : ℕ∞)
+          (addBT t₀ (multBT (Dprin (v : ℕ∞) t₁) c))) ++ b))
+    (hn : 1 < n) :
+    ∃ k, Trans (oper M n) = operB (Trans M) (numBT k) := by
+  obtain ⟨c, hc1, hlc⟩ := hlhs n hn
+  obtain ⟨k, rfl⟩ : ∃ k, c = k + 1 := ⟨c - 1, by omega⟩
+  exact ⟨k, by rw [hlc, operB_marked_scb_value_cf2 (n := k) ht₀ ht₁ htT hd]⟩
+
+/-- **本ラウンドの主成果**: `FseqDesc_exchII` を、**両方とも Isabelle の定理である**
+2 本の残差（`CondII_step` ＝ `c2sx_step`、`CondII_TailvalAll_ST` ＝
+`y3j_condII_tailval`）から供給する。engine の `CondII_masterCF`（RT_PS 版、
+Isabelle に裏打ちなし）を経由しない。`OTdisp_exchII` は byte-identical なので
+同時に落ちる（下の `condII_OTdispII_of_ST_residuals`）。 -/
+theorem condII_exchII_of_ST_residuals
+    (hstep : CondII_step) (hTV : CondII_TailvalAll_ST) : FseqDesc_exchII := by
+  intro N m hST hmono hj1 hcond hm
+  have hR : RTPS N := STPS_RTPS N hST
+  have htT : Trans N ∈ T_B := Trans_mem_T_B N hR
+  obtain ⟨s, b, u, v, t₀, t₁, ht₀, ht₁, hd, hlhs⟩ :=
+    condII_masterCF_of_tailval hstep N hR hmono hj1 hcond
+      (hTV N hST hmono hj1 hcond)
+  exact exch_of_lhs_closed_ex_cf2 ht₀ ht₁ htT hd hlhs hm
+
+/-- `OTdisp_exchII`（OT 所属柱）も同じ 2 本から落ちる（`FseqDesc_exchII` と
+byte-identical であることの機械的確認を兼ねる）。 -/
+theorem condII_OTdispII_of_ST_residuals
+    (hstep : CondII_step) (hTV : CondII_TailvalAll_ST) : OTdisp_exchII :=
+  condII_exchII_of_ST_residuals hstep hTV
 
 #print axioms condII_host_basic_holds
 #print axioms condII_c1_shape_holds
@@ -682,5 +808,7 @@ theorem condII_exchII_of_residuals (hstep : CondII_step) (hTV : CondII_TailvalAl
 #print axioms condII_masterCF_of_tailval
 #print axioms condII_masterCF_holds
 #print axioms condII_exchII_of_residuals
+#print axioms condII_exchII_of_ST_residuals
+#print axioms condII_OTdispII_of_ST_residuals
 
 end PSS

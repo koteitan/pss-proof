@@ -206,10 +206,18 @@ Isabelle 側の仮定 `TV : c2sx_tailval M` は `y3j_condII_tailval`
 **無条件に**落とすので、ここでは `TV` を持たない形で露出する
 （＝Isabelle では定理。空虚な仮定ではない）。
 
-`ST_PS` ではなく `RT_PS` 上で述べるのは Isabelle の `masterCF` と同じ
-（`MR : M ∈ RT_PS`）。`exchII` 側の `STPS` からは `STPS_RTPS` で落ちる。 -/
+🚨 **2026-07-17 訂正（親）: `RT_PS` → `ST_PS`**。当初は Isabelle の `masterCF`
+（`MR : M ∈ RT_PS`）に合わせて `RTPS` で述べていたが、**その形は偽**である:
+`lean/8/8.3-condII-tailval.lean` の `not_CondII_masterCF` が反例
+`M = (0,0)(1,1)(2,2)(2,0)(2,2)(2,0)`（`RTPS ∧ monoT ∧ 1 < Lng-1 ∧ transCondII` を
+すべて満たす＝空虚でない反例）で機械証明した。
+原因: Isabelle の `c2sx_condII_masterCF`(87430) は `TV : c2sx_tailval M` を**仮定**として
+持ち、その discharger `y3j_condII_tailval`(layerC:17079) は **`M ∈ ST_PS`** を要求する。
+`RT_PS ⟹ tailval` は Isabelle のどこにも無く、実際に偽だった。
+消費者（`exchII_of_masterCF` / OT 柱側）はいずれも `STPS N` を持っており
+`STPS_RTPS` で弱めていただけなので、`STPS` 版でそのまま通る。 -/
 def CondII_masterCF : Prop :=
-  ∀ M : PS, RTPS M → monoT M = true → 1 < Lng M - 1 → transCondII M = true →
+  ∀ M : PS, STPS M → monoT M = true → 1 < Lng M - 1 → transCondII M = true →
     ∃ (s b : List Sym) (u v : ℕ) (t₀ t₁ : BT), t₀ ∈ T_B ∧ t₁ ∈ T_B ∧
       scb_decomp (Trans M) s
         (flatBT (Dprin (u : ℕ∞)
@@ -224,7 +232,7 @@ theorem exchII_of_masterCF (hCF : CondII_masterCF) : FseqDesc_exchII := by
   intro N m hST hmono hj1 hcond hm
   have hR : RTPS N := STPS_RTPS N hST
   have htT : Trans N ∈ T_B := Trans_mem_T_B N hR
-  obtain ⟨s, b, u, v, t₀, t₁, ht₀, ht₁, hd, hlhs⟩ := hCF N hR hmono hj1 hcond
+  obtain ⟨s, b, u, v, t₀, t₁, ht₀, ht₁, hd, hlhs⟩ := hCF N hST hmono hj1 hcond
   exact exch_of_lhs_closed_ex_c2 ht₀ ht₁ htT hd hlhs hm
 
 #print axioms TransCondII_oper1_descend

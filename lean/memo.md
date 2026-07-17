@@ -781,6 +781,32 @@ parent/Lng 形に落としてから作業する。
     `m_8_6_diagSeq_condVI_commute`/`_descent`（40305/40331）も無条件。
     残 named Props 3（`CondVIAdmTowerScb` 等＝Isabelle の証明内部で確立される
     flat 閉形式 flatMn/ov/b1RP）。
+  - 🚨🚨🚨 **`CondII_masterCF` の RT_PS 形は偽だった（2026-07-17、Wave K が発見・親が修正）**。
+    経緯: engine `8.3-TransCondII-engine` は Isabelle の `masterCF`（`MR : M ∈ RT_PS`）に
+    合わせて Prop を **RTPS** 上で宣言していたが、Isabelle の `c2sx_condII_masterCF`(87430) は
+    `TV : c2sx_tailval M` を**仮定**に持ち、その discharger `y3j_condII_tailval`(layerC:17079)
+    は **`M ∈ ST_PS`** を要求する。つまり `RT_PS ⟹ tailval` は Isabelle に存在しない。
+    agent が反例 `M = (0,0)(1,1)(2,2)(2,0)(2,2)(2,0)`（`RTPS ∧ monoT ∧ 1<Lng-1 ∧ transCondII`
+    をすべて満たす＝**空虚でない**）で `¬ CondII_masterCF` を**機械証明**。
+    **`CondII_masterCF` は `TerminationResidual` の葉だったので、主定理は型検査を通っても
+    空虚だった**（＝「27 本すべて Isabelle の定理だから充足可能」という私の主張は誤りだった）。
+    **親の対処**: engine の Prop を `RTPS M` → `STPS M` に restate（消費者はいずれも `STPS` を
+    持ち `STPS_RTPS` で弱めていただけなので通る）。`8.3-condII-masterCF` の
+    `condII_masterCF_holds`/`condII_exchII_of_residuals` も**偽の `CondII_TailvalAll`(RT 版)から
+    実在する `CondII_TailvalAll_ST`(= `y3j_condII_tailval`)** に付け替え。反証は史料として
+    `8.3-condII-tailval` の `not_CondII_masterCF_RTPS_form`（ローカル RTPS 形 def に対する定理）
+    として保存。fresh REPL で「STPS 版は同じ反例では反証されない」ことも確認済み。
+    🚨**教訓**: ①「Isabelle の m_ 補題と同じ仮定にした」は安全でない——**Isabelle 版が
+    別の仮定（TV）を持つのを落とすと強すぎる Prop になる**。green-modulo の Prop は
+    「Isabelle のどの定理が**そのまま**供給するか」を明示せよ。②`8.3-condII-masterCF` の
+    「数値監査 144/144 ⟹ 真らしい」は**有界監査の偽陰性**（memo §3 の罠そのもの）。
+    ③agent が「証明済みだから空虚でない」と言っても、**Prop の形が Isabelle と違えば別物**。
+  - 🚨🚨 **並行編集の競合（同日、2 agent がスコープ違反）**: Wave K の agent が
+    「担当 1 ファイルのみ」の規則を破り、既存の `8.5-exchV-props.lean`（+378/−41、
+    `ExchVres_adm_towers` → `ExchVres_adm_M_tower` に**改名**）と `8.7-termination.lean`
+    （+80/−32、残差 27→22 に更新）を改変。改名側と参照側が別 agent だったため
+    **主定理が 38 エラーで壊れた**（各ファイル単独では緑、`lake build` も個別なら通る）。
+    親が参照を新名に統一して復旧。**統合時は必ず主定理まで通しで checker を回すこと**。
   - 🚨 **OT 柱の 12 OTdisp Props（`8.7-Trans-preserves-OT-props.lean`、Wave J）**:
     **7/12 配線**（うち `OTdisp_zerocol_predval` は**無条件・新規証明**: 末尾列 (0,0) なら
     `Trans M` は後続項 `Trans(Pred M) +_B D_0 0` で基本列が添字非依存。
