@@ -902,3 +902,27 @@ parent/Lng 形に落としてから作業する。
     ＝od4_site_c2 の残 5 easy 枝＋`od4_master_R`＋final glue `od4_OTpred_final`）。
     parent promotion 実施: `trans_surgery_localized_v6p`→public（OTpred Brick D 用）。
     R3LE agent が要求した追加 promotion 候補は memo 末尾/コミットに記録（全て private _r3 で自己完結済）。
+  - 🎉🎉 **Wave N（2026-07-18、Opus 8 並列）で 2 葉クローズ＝残差 8 → 6**。
+    主定理は緑・公理クリーンのまま（full build 3160 jobs）。
+    **① `OTdisp_OTpred` 無条件クローズ**（`8.7-otpred-close`）: Brick A/B/C0/D＋promotion 済
+    `condVI_transC2_v6p`/`condVI_transC1_adm_v6p` を組んで `od4_site_c2`（Brick C, transC2 6 枝
+    dispatch）→`od4_master_R`→`od4_OTpred_mono`→multi leg `opx_OTpred_multi_of_mono`→
+    `OTdisp_OTpred_holds`。termination の `otPred` フィールド削除。
+    **② `CondVI_scbdec_adm_forms_v6` 無条件クローズ**（`8.6-condVI-adm-forms`）: adm L-tower
+    `CondVIres_adm_Ltower_v6p` を移植（`c6zx_condVI_baseL_free` 経由、nadm より簡単）。
+    termination の `condVIadmTower` フィールド削除、`condVIAdmTowerScb_of_scbforms_v6` で供給。
+    **bank（緑・未クローズ）**: ③`TV_TrunkLeg`（CondII の 6 TV brick の 1 つ、`8.3-condII-TrunkLeg`。
+    `wnx_trunk_diagSeq`＝reduced+TrMax=末尾⟹diagSeq、`c2sx_slice_jm1_c1` も）
+    ④`e1x_ineq_nonanc`＋`e1x_e1ge_uncond`（Exch84 RUN leg 完成、`8.4-exch84-e1ge-run`）
+    ⑤condVI nadm の fact(b)`c6nx_Mark_L_mstar_condVI`＋fact(d)`c6nx_condVI_uv`
+    （`8.6-condVI-nadm-forms`。**KEY**: condVI+reduced で d0=1 なので IncrFirst 不要、const2nd_Trans で直接）
+    ⑥OTint transport 基盤 `d4vx_ins`/`d4vx_core`/`d4vx_ins_flat`/`b1x_setle`/`b1x_triG`
+    （`8.7-otint-transport-prims`）⑦CondII NotLdjLeg/BoundaryLeg 部分 bank。
+    **残り 6 葉**（`FseqDesc_m_7_3_Trans_leftmost_2` は誤検出＝実質 5）: `CondII_masterCF`
+    （残 TV brick=NotLdjLeg/BoundaryLeg/LDJB/Dichotomy）／`CondVIres_nadm_Ltower_v6p`
+    （nadm 唯一の残差。**ROOT BLOCKER=`m_7_3_Mark_rightmost2` 未移植**＝fact(c)`c6nx_t2eq` が
+    詰まる。加えて assembly `m_8_4_oper_props_5`(~203L) が要る）／`Exch84_condIIIIV_pkg`
+    （RUN 済、残=REGS/base/mnform）／`OTdisp_OTint`（transport 基盤 bank 済、残=`oix_transport`
+    /`oix_transportD` 本体）／`OTdisp_OTmulti`（OTint 依存）。
+    promotion 実施済: `condVI_transC2_v6p`/`condVI_transC1_adm_v6p`→public（5299780）。
+    **次 wave の最優先候補**: m_7_3_Mark_rightmost2 移植（nadm 解禁）＋ CondII の残 TV brick。
