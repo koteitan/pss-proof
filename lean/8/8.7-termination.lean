@@ -26,6 +26,9 @@ import «8».«8.5-exchV-M-tower»
 import «8».«8.7-otdisp-OTint»
 import «8».«8.7-otdisp-OTint-condIIIIV»
 import «8».«8.7-otdisp-OTint-condV»
+import «8».«8.7-otint-transport-data»
+import «8».«8.5-exchV-M-tower-close»
+import «8».«8.7-otdisp-OTmulti2»
 
 /-!
 # §8.7 定理（標準形ペア数列システムの停止性） — 主定理
@@ -220,11 +223,11 @@ structure TerminationResidual : Prop where
   `OTint` は wave Q で 4 hasParent legs に分解され、condV 両枝は条件 (V) 塔から、
   condIII/IV は `exch84slicepkg`＋下の `otIIIIVdata` から供給＝どちらも
   残差フィールドではなくなった。） -/
-  otMulti : OTdisp_OTmulti
-  /-- OT 柱 (2/2)。条件 (III)/(IV) の OT 内部枝の transport 残差
-  （`8.7-otdisp-OTint-condIIIIV`:47、Isabelle `OTA1_ltJ`/`SETLE1_ltJ` 対）。
-  `OTint_hp_condIII/IV_of_slicepkg` が `exch84slicepkg` と併せて消費する。 -/
-  otIIIIVdata : OTintIIIIV_transportData
+  otMultiInterior : OTmulti_interior_om2
+  /-- OT 柱 (2/2)。条件 (III)/(IV) の OT 内部枝の transport 残差、wave R で
+  4 conjunct → 2 に絞り込み（`8.7-otint-transport-data`:  `OTA1_ltJ`/`SETLE1_ltJ` 対のみ。
+  T_B 側 2 conjunct は無条件済）。`otIIIIVdata_of_otSetle` で旧形を導出。 -/
+  otSetle : OTintIIIIV_otSetleResidual
   /-- 条件 (II) の交換則の核。Isabelle `c2sx_condII_masterCF` (pss_wip.thy:87430)。
   OT 柱の `exchII` と降下柱の `exchII` を供給。
   （条件 (I) の核 `CondI_masterCF` は wave M で `8.1-condI-masterCF-chunk5` が無条件証明
@@ -240,7 +243,7 @@ structure TerminationResidual : Prop where
   7.4-Mark 依存 fact 束（`Oper5Residual` と同族＝同じ L 塔 campaign が供給予定）。
   `exchV_M_tower_of_residual` → `ExchV_M_tower` → `8.5-exchV-props2` の 2 本で
   `ExchVres_adm_M_tower` と `ExchV_nf3x` の両方が出る。 -/
-  exchVMres : ExchVMTowerResidual
+  exchVMcore : ExchVMCoreResidual
 
 /-- 条件 (VI) 許容枝の供給（wave N 統合）。`8.6-condVI-adm-forms` が閉じた
 `CondVI_scbdec_adm_forms_v6` を `8.6-condVI-close` の
@@ -266,7 +269,7 @@ private theorem exch84producer_term (H : TerminationResidual) :
 `ExchV_M_tower`（`8.5-exchV-M-tower`）を経て、adm 塔と `nf3x` の両方を
 `8.5-exchV-props2` で導出。 -/
 private theorem exchVMtower_term (H : TerminationResidual) : ExchV_M_tower :=
-  exchV_M_tower_of_residual H.exchVMres
+  exchV_M_tower_of_residual (exchVMres_of_core H.exchVMcore)
 
 private theorem exchVresAdm_term (H : TerminationResidual) : ExchVres_adm_M_tower :=
   exchVres_adm_M_tower_of_M_tower (exchVMtower_term H)
@@ -278,10 +281,16 @@ private theorem exchVnf3x_term (H : TerminationResidual) : ExchV_nf3x :=
 condIII/IV legs（slicepkg＋transport 残差、`8.7-otdisp-OTint-condIIIIV`）と
 condV 両 legs（条件 (V) 塔から、`8.7-otdisp-OTint-condV`）＋
 `OTdisp_OTpred_holds` を通す。旧フィールド `otInt` は残差ではなくなった。 -/
+private theorem otIIIIVdata_term (H : TerminationResidual) : OTintIIIIV_transportData :=
+  otIIIIVdata_of_otSetle H.otSetle
+
+private theorem otMulti_term (H : TerminationResidual) : OTdisp_OTmulti :=
+  OTdisp_OTmulti_of_interior_om2 H.otMultiInterior
+
 private theorem otInt_term (H : TerminationResidual) : OTdisp_OTint :=
   OTdisp_OTint_of_legs OTdisp_OTpred_holds
-    (OTint_hp_condIII_of_slicepkg H.exch84slicepkg H.otIIIIVdata)
-    (OTint_hp_condIV_of_slicepkg H.exch84slicepkg H.otIIIIVdata)
+    (OTint_hp_condIII_of_slicepkg H.exch84slicepkg (otIIIIVdata_term H))
+    (OTint_hp_condIV_of_slicepkg H.exch84slicepkg (otIIIIVdata_term H))
     (OTint_hp_condV_adm_holds (exchVresAdm_term H))
     (OTint_hp_condV_nadm_holds (exchVnf3x_term H))
 
@@ -294,7 +303,7 @@ theorem Trans_STPS_OT_B (H : TerminationResidual) (M : PS) (hM : STPS M) :
     Trans M ∈ OT_B :=
   Trans_preserves_OT
     (OTdisp_exchI_of_CondI scx_condI_j0pos_masterCF) (OTdisp_exchII_of_CondII H.condII)
-    (otInt_term H) OTdisp_OTpred_holds H.otMulti OTdisp_zerocol_predval_holds
+    (otInt_term H) OTdisp_OTpred_holds (otMulti_term H) OTdisp_zerocol_predval_holds
     OTdisp_Trans_fseq_condI_n1_holds
     (OTdisp_condI_j0z_eq_of_CondI scx_condI_j0pos_masterCF operI_j0zero_trans_mult_holds
       FseqDesc_m_8_2_subexpr_component_Pred_Adm0_clause1_holds)
@@ -326,7 +335,7 @@ private theorem fseqDescTOT_term (H : TerminationResidual) :
     FseqDesc_Trans_preserves_OT :=
   FseqDesc_Trans_preserves_OT_of_OTdisp
     (OTdisp_exchI_of_CondI scx_condI_j0pos_masterCF) (OTdisp_exchII_of_CondII H.condII)
-    (otInt_term H) OTdisp_OTpred_holds H.otMulti OTdisp_zerocol_predval_holds
+    (otInt_term H) OTdisp_OTpred_holds (otMulti_term H) OTdisp_zerocol_predval_holds
     OTdisp_Trans_fseq_condI_n1_holds
     (OTdisp_condI_j0z_eq_of_CondI scx_condI_j0pos_masterCF operI_j0zero_trans_mult_holds
       FseqDesc_m_8_2_subexpr_component_Pred_Adm0_clause1_holds)

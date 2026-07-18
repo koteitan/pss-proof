@@ -633,7 +633,9 @@ parent/Lng 形に落としてから作業する。
     （workflow 全滅のため）。(1)(2)=gather の if 分岐を明示分解、(3)=multBT→replicate 帰納＋
     descP/isOT/dfree の replicate 補題、(4)=塔の G 集合特徴付け＋狭義単調の帰納
     （Isa `m_8_7_OT_examples` の構造をそのまま移植）。rc=0・sorry 0・axioms 正常・#guard 5 本。[r1]
-  - 🚨🤖 `8.4-rightmost-replace-Trans` — 訂正 **A30**（scb 分解が偽。長さ勘定で決まる）
+  - 🚨 `8.4-rightmost-replace-Trans`[r1] — Wave R で A30/A31 の反例を機械証明＋訂正形を
+    green-modulo Prop `Rightmost84ReplaceCorrected` として露出（原文 DEFERRED、8.5-scb-dec 方式）。
+    残=訂正形の universal 証明。訂正 **A30**（scb 分解が偽。長さ勘定で決まる）
     ＋ **A31**（補題(5-3) のガード欠落）
   - 🚨 `8.2-condV-terminal-slice-Trans` — **partial（Wave D, r1）**: p 文
     （pss_paper:1607）を**仮定 `hVE` modulo で緑化**＝Isabelle の
@@ -1022,6 +1024,24 @@ parent/Lng 形に落としてから作業する。
     2 フィールドを `exchVMres : ExchVMTowerResidual` 1 本に置換。
     **現フィールド 5**: `otMulti`／`otIIIIVdata`／`condII`／`exch84slicepkg`／`exchVMres`。
     audit は 4 葉表示（exchV 過少計上バグ込み、下記）。
+  - 🎉 **Wave R（2026-07-18 夜、Opus 8、全緑）— Oper5 完全クローズ＋TV_LDJB 陥落＋3 フィールド絞り込み**:
+    ①`8.4-oper5-residual` 拡張完了: `oper5Residual_holds`/`oper5Support_unconditional`/
+    `oper_props_5_unconditional`（§8.4 part(5) 無条件）②`8.3-condII-LDJB-lttrmax`:
+    **`tv_ldjb_holds : TV_LDJB` 無条件**（CondII TV 残=NotLdjReg/TvxBoundaryData の 2、共に VE 待ち）
+    ③otIIIIVdata→`OTintIIIIV_otSetleResidual`（OTA1_ltJ/SETLE1_ltJ 対のみ。T_B 側 2 conjunct
+    無条件化、`8.7-otint-transport-data`。otx3_core_tri/otx3_pOT の実装名は docstring と異なり
+    private のまま）④exchVMres→`ExchVMCoreResidual`（4 conjunct、bridge 2 本無条件、
+    `8.5-exchV-M-tower-close`。⚠️core の conjunct(3)=∀n Oper5Residual は①で落とせる＝次に絞れ）
+    ⑤otMulti→`OTmulti_interior_om2`（multi 構造分解完了、残=mono 末尾成分 6-way interior、
+    `8.7-otdisp-OTmulti2`）⑥VE: RPj1eq 討伐＋**訂正: VE_all の残差は 5 だった**→現残=
+    {BASE-triple(8.2-condV-VE-base2), BpaxVEstep(65663), VEj1eqResidual(77061, 要 bpx2_BASE 等),
+    BpaxRPERS(65860)}（`8.2-condV-VE-close`）⑦slicepkg: `exch84slicepkg_holds` modulo 4 legs
+    （`ltJ_or_IVadmeq_sp` 無条件。残=Mnform_condIIIIV(98605)/Mnform_condIV_admeq_sp/
+    Base0_A0bridge/Base1p_condIIIIV(oy1 layerC:979/1086)。`8.4-exch84-slicepkg`）
+    ⑧`8.4-rightmost-replace-Trans`[r1]: A30/A31 反例機械証明＋訂正形 green-modulo（板は 🚨 へ）。
+    **termination 配線替え: フィールド 5 のまま全て絞り込み**
+    （`otMultiInterior`/`otSetle`/`condII`/`exch84slicepkg`/`exchVMcore`、main 緑・公理クリーン、
+    build 3191 jobs）。audit 3 葉表示（exchV 過少計上込み）。
     ⚠️**audit の過少計上バグ（2026-07-18 発見）**: `audit_8_7_termination.py` は
     `ExchV_nf3x ← nf3x_holds`・`ExchV_scbdec_adm_forms ← adm_forms_holds` を CLOSED 扱い
     するが、**両 discharger は仮定付き**（`ExchVres_{adm,nadm}_M_tower` を要求）。

@@ -355,4 +355,420 @@ private theorem L_tail_o5r (M : PS) (n : ℕ)
   intro j _
   rfl
 
+/-! ## 7. 基本列の L-append 形と `L_n`/`M[n]` の RT_PS 所属・末尾切片 -/
+
+/-- `(n−1)·w < n·w`（`n ≥ 1`, `w > 0`）。 -/
+private theorem sub_mul_lt_o5r (k w : ℕ) (hk : 1 ≤ k) (hw : 0 < w) :
+    (k - 1) * w < k * w := by
+  have h := mult_pred_o5r k w hk; omega
+
+/-- `range'` の先頭剥がし（`n > 0`）。 -/
+private theorem range'_eq_cons_o5r (s n : ℕ) (hn : 0 < n) :
+    List.range' s n = s :: List.range' (s + 1) (n - 1) := by
+  obtain ⟨k, rfl⟩ : ∃ k, n = k + 1 := ⟨n - 1, by omega⟩
+  rfl
+
+/-- `M[m+1] = L_m ++ 残り`（`idx1 = 1` に特殊化した L-append 形）。
+Isabelle `s84c1_oper_Suc_eq_L_app`（`s84x_L` 形、wip:52886）。 -/
+private theorem oper_succ_L_o5r (M : PS) (m : ℕ)
+    (hlast : 1 < Lng M)
+    (hnz : ¬(entry M 0 (Lng M - 1) = 0 ∧ entry M 1 (Lng M - 1) = 0))
+    (hp' : hasParent M (idx1 M (Lng M - 1)) (Lng M - 1) = true)
+    (hidx : idx1 M (Lng M - 1) = 1)
+    (hjm2lt : s84x_jm2 M < Lng M - 1) :
+    oper M (m + 1) = s84x_L M m ++
+      (List.range' (s84x_jm2 M + 1) (Lng M - 1 - s84x_jm2 M - 1)).map
+        (fun j => (entry M 0 j
+                     + m * (entry M 0 (Lng M - 1) - entry M 0 (s84x_jm2 M)),
+                   entry M 1 j)) := by
+  have hj0 : parent M (idx1 M (Lng M - 1)) (Lng M - 1) = s84x_jm2 M := by
+    unfold s84x_jm2; rw [hidx]
+  have hd1 : (if 1 < idx1 M (Lng M - 1)
+             then entry M 1 (Lng M - 1) - entry M 1 (parent M (idx1 M (Lng M - 1)) (Lng M - 1))
+             else 0) = 0 := by rw [hidx]; simp
+  have hd0 : (if 0 < idx1 M (Lng M - 1)
+             then entry M 0 (Lng M - 1) - entry M 0 (parent M (idx1 M (Lng M - 1)) (Lng M - 1))
+             else 0) = entry M 0 (Lng M - 1) - entry M 0 (s84x_jm2 M) := by
+    rw [hidx]; simp [s84x_jm2]
+  have happ := oper_succ_append_o5r M m hlast hnz hp'
+  simp only [hd0, hd1, Nat.mul_zero, Nat.add_zero] at happ
+  simp only [hj0] at happ
+  rw [happ, range'_eq_cons_o5r (s84x_jm2 M) (Lng M - 1 - s84x_jm2 M) (by omega),
+    List.map_cons, s84x_L_append_o5r]
+  rw [List.append_assoc]
+  rfl
+
+/-- 葉(5) `L_n ∈ RT_PS`（Isabelle `m_8_4_oper_props_2(1)`）。
+`L_n = seg (M[n+1]) 0 (Lng (M[n]))` を `RTPS_initial_slice` に通す。 -/
+private theorem RTPS_L_o5r (M : PS) (n : ℕ)
+    (hST : STPS M) (hp : hasParent M 1 (Lng M - 1) = true) (hj1 : 1 < Lng M - 1) (hn : 1 ≤ n) :
+    RTPS (s84x_L M n) := by
+  have hMT : TPS M := RTPS_TPS M (STPS_RTPS M hST)
+  obtain ⟨hidx, hlast, hnz, hp', hj0, hjm2lt, he0lt⟩ := setup_o5r M hMT hp hj1
+  have hSuccST : STPS (oper M (n + 1)) := STPS.oper hST (n + 1) (by omega)
+  have hSuccR : RTPS (oper M (n + 1)) := STPS_RTPS _ hSuccST
+  have hLng_n := Lng_oper_o5r M n hMT hp hj1
+  have hLng_n1 := Lng_oper_o5r M (n + 1) hMT hp hj1
+  have hLngL_n : Lng (s84x_L M n) = Lng (oper M n) + 1 := by rw [s84x_L_append_o5r]; simp
+  have hlt_succ : Lng (oper M n) < Lng (oper M (n + 1)) := by
+    rw [hLng_n, hLng_n1]
+    have hexp : (n + 1) * (Lng M - 1 - s84x_jm2 M)
+        = n * (Lng M - 1 - s84x_jm2 M) + (Lng M - 1 - s84x_jm2 M) := by ring
+    omega
+  have hslice := RTPS_initial_slice (oper M (n + 1)) (Lng (oper M n)) hSuccR (by omega)
+  have hprefix : seg (oper M (n + 1)) 0 (Lng (oper M n)) = s84x_L M n := by
+    rw [seg_eq_take_drop_adm (oper M (n + 1)) 0 (Lng (oper M n)) (Nat.zero_le _) hlt_succ]
+    simp only [List.drop_zero, Nat.sub_zero]
+    have hsucc := oper_succ_L_o5r M n hlast hnz hp' hidx hjm2lt
+    rw [hsucc]
+    exact List.take_left' hLngL_n
+  rw [hprefix] at hslice
+  exact hslice
+
+/-- `M[n]` の末尾切片 = `IncrFirstN kk (Pred N')`（Isabelle `s84c1_Mn_tail`）。 -/
+private theorem Mn_tail_o5r (M : PS) (n : ℕ)
+    (hM : TPS M) (hp : hasParent M 1 (Lng M - 1) = true) (hj1 : 1 < Lng M - 1) (hn : 1 ≤ n) :
+    seg (oper M n) (s84x_ms M n) (Lng (oper M n) - 1)
+      = IncrFirstN ((n - 1) * (entry M 0 (Lng M - 1) - entry M 0 (s84x_jm2 M)))
+          (Pred (s84x_Np M)) := by
+  obtain ⟨hidx, hlast, hnz, hp', hj0, hjm2lt, he0lt⟩ := setup_o5r M hM hp hj1
+  have hLng_n : Lng (oper M n) = s84x_jm2 M + n * (Lng M - 1 - s84x_jm2 M) :=
+    Lng_oper_o5r M n hM hp hj1
+  have hms_eq : s84x_ms M n = s84x_jm2 M + (n - 1) * (Lng M - 1 - s84x_jm2 M) := by
+    simp only [s84x_ms, s84x_w]
+  have hms_lt : s84x_ms M n < Lng (oper M n) := by
+    rw [hLng_n, hms_eq]
+    have := sub_mul_lt_o5r n (Lng M - 1 - s84x_jm2 M) hn (by omega); omega
+  rw [seg_to_drop_o5r (oper M n) (s84x_ms M n) hms_lt]
+  have hblock : (oper M n).drop (s84x_ms M n)
+      = (List.range' (s84x_jm2 M) (Lng M - 1 - s84x_jm2 M)).map
+          (fun j => (entry M 0 j
+                       + (n - 1) * (entry M 0 (Lng M - 1) - entry M 0 (s84x_jm2 M)),
+                     entry M 1 j)) := by
+    have h := oper_lastblock_o5r M (n - 1) hM hp hj1
+    rw [Nat.sub_add_cancel hn] at h
+    rw [hms_eq]; exact h
+  rw [hblock, Pred_Np_o5r M hjm2lt]
+  have hseg_range : seg M (s84x_jm2 M) (Lng M - 2)
+      = (List.range' (s84x_jm2 M) (Lng M - 1 - s84x_jm2 M)).map
+          (fun j => (entry M 0 j, entry M 1 j)) := by
+    unfold seg
+    rw [show Lng M - 2 + 1 - s84x_jm2 M = Lng M - 1 - s84x_jm2 M from by omega]
+  rw [hseg_range, IncrFirstN_eq_map, List.map_map]
+  apply List.map_congr_left
+  intro j _
+  rfl
+
+/-! ## 8. 葉(4) `le0`: `le0 (L_n) m* (Lng (L_n) − 1)`（Isabelle `s84c1_le0_L_mstar`） -/
+
+/-- `leR X 0 a b = le0 X a b`（定義展開、`i = 0` 分岐）。 -/
+private theorem leRz_o5r (X : PS) (a b : ℕ) : leR X 0 a b = le0 X a b := rfl
+
+private theorem le0_L_o5r (M : PS) (n : ℕ)
+    (hM : TPS M) (hp : hasParent M 1 (Lng M - 1) = true) (hj1 : 1 < Lng M - 1) (hn : 1 ≤ n) :
+    le0 (s84x_L M n) (s84x_ms M n) (Lng (s84x_L M n) - 1) = true := by
+  obtain ⟨hidx, hlast, hnz, hp', hj0, hjm2lt, he0lt⟩ := setup_o5r M hM hp hj1
+  have hLng_n : Lng (oper M n) = s84x_jm2 M + n * (Lng M - 1 - s84x_jm2 M) :=
+    Lng_oper_o5r M n hM hp hj1
+  have hLngL : Lng (s84x_L M n) = Lng (oper M n) + 1 := by rw [s84x_L_append_o5r]; simp
+  have hms_eq : s84x_ms M n = s84x_jm2 M + (n - 1) * (Lng M - 1 - s84x_jm2 M) := by
+    simp only [s84x_ms, s84x_w]
+  have hsplit : n * (Lng M - 1 - s84x_jm2 M)
+      = (n - 1) * (Lng M - 1 - s84x_jm2 M) + (Lng M - 1 - s84x_jm2 M) :=
+    mult_pred_o5r n (Lng M - 1 - s84x_jm2 M) hn
+  have hle0M : le0 M (s84x_jm2 M) (Lng M - 1) = true := (s84c1_jm2_basic M hp).2.2
+  -- step 1: `le0 N' 0 w`
+  have harg : s84x_jm2 M + (Lng M - 1 - s84x_jm2 M) = Lng M - 1 := by omega
+  have le0Np : le0 (s84x_Np M) 0 (Lng M - 1 - s84x_jm2 M) = true := by
+    have hconv := leR0_seg_adm M (s84x_jm2 M) (Lng M - 1) 0 (Lng M - 1 - s84x_jm2 M)
+      (le_of_lt hjm2lt) (by omega) (by simp only [length_seg]; omega)
+      (by simp only [length_seg]; omega)
+    simp only [leRz_o5r, Nat.add_zero, harg] at hconv
+    show le0 (seg M (s84x_jm2 M) (Lng M - 1)) 0 (Lng M - 1 - s84x_jm2 M) = true
+    rw [hconv]; exact hle0M
+  -- step 2: transport to `L'`（行0 が `N'` と一致）
+  have hlenNpLp : Lng (s84x_Np M) = Lng (s84x_Lp M) := by
+    simp only [s84x_Np, s84x_Lp, length_seg]; simp; omega
+  have hφ : ∀ j, j < Lng (s84x_Np M) →
+      entry (s84x_Lp M) 0 j = id (entry (s84x_Np M) 0 j) := by
+    intro j _
+    rw [Np_snoc_o5r M hjm2lt]
+    exact entry0_append_congr_o5r (seg M (s84x_jm2 M) (Lng M - 2))
+      (entry M 0 (Lng M - 1), entry M 1 (s84x_jm2 M))
+      (entry M 0 (Lng M - 1), entry M 1 (Lng M - 1)) rfl j
+  have le0Lp : le0 (s84x_Lp M) 0 (Lng M - 1 - s84x_jm2 M) = true := by
+    rw [le0_row0_o5r (s84x_Np M) (s84x_Lp M) id hlenNpLp strictMono_id hφ
+        0 (Lng M - 1 - s84x_jm2 M)]
+    exact le0Np
+  -- step 3: `IncrFirst` 冪不変性
+  have le0IF : le0 (IncrFirstN ((n - 1) * (entry M 0 (Lng M - 1) - entry M 0 (s84x_jm2 M)))
+      (s84x_Lp M)) 0 (Lng M - 1 - s84x_jm2 M) = true := by
+    have h := congrFun (congrFun (congrFun
+        (leR_IncrFirstN ((n - 1) * (entry M 0 (Lng M - 1) - entry M 0 (s84x_jm2 M)))
+          (s84x_Lp M)) 0) 0) (Lng M - 1 - s84x_jm2 M)
+    have h' : le0 (IncrFirstN ((n - 1) * (entry M 0 (Lng M - 1) - entry M 0 (s84x_jm2 M)))
+        (s84x_Lp M)) 0 (Lng M - 1 - s84x_jm2 M) = le0 (s84x_Lp M) 0 (Lng M - 1 - s84x_jm2 M) := by
+      simpa [leR] using h
+    rw [h']; exact le0Lp
+  -- step 4: 末尾切片 = `IncrFirstN kk L'`、`adm_le0_seg` で持ち上げ
+  have hmsw : s84x_ms M n + (Lng M - 1 - s84x_jm2 M) = Lng (s84x_L M n) - 1 := by
+    rw [hLngL, hLng_n, hms_eq]; omega
+  have hconv2 := leR0_seg_adm (s84x_L M n) (s84x_ms M n) (Lng (s84x_L M n) - 1) 0
+    (Lng M - 1 - s84x_jm2 M)
+    (by rw [hLngL, hLng_n, hms_eq]; omega)
+    (by rw [hLngL]; omega)
+    (by simp only [length_seg]; rw [hLngL, hLng_n, hms_eq]; omega)
+    (by simp only [length_seg]; rw [hLngL, hLng_n, hms_eq]; omega)
+  rw [L_tail_o5r M n hM hp hj1 hn] at hconv2
+  simp only [leRz_o5r, Nat.add_zero, hmsw] at hconv2
+  rw [← hconv2]; exact le0IF
+
+/-! ## 9. 葉(4) `adm`: `adm (L_n) m*`（Isabelle `s84c1_adm_L_mstar`、背理法） -/
+
+private theorem adm_L_o5r (M : PS) (n : ℕ)
+    (hM : TPS M) (hp : hasParent M 1 (Lng M - 1) = true) (hj1 : 1 < Lng M - 1) (hn : 2 ≤ n) :
+    adm (s84x_L M n) (s84x_ms M n) = true := by
+  obtain ⟨hidx, hlast, hnz, hp', hj0, hjm2lt, he0lt⟩ := setup_o5r M hM hp hj1
+  have hn1 : 1 ≤ n := by omega
+  have hLng_n : Lng (oper M n) = s84x_jm2 M + n * (Lng M - 1 - s84x_jm2 M) :=
+    Lng_oper_o5r M n hM hp hj1
+  have hLngL : Lng (s84x_L M n) = Lng (oper M n) + 1 := by rw [s84x_L_append_o5r]; simp
+  have hms_eq : s84x_ms M n = s84x_jm2 M + (n - 1) * (Lng M - 1 - s84x_jm2 M) := by
+    simp only [s84x_ms, s84x_w]
+  have hsplit : n * (Lng M - 1 - s84x_jm2 M)
+      = (n - 1) * (Lng M - 1 - s84x_jm2 M) + (Lng M - 1 - s84x_jm2 M) :=
+    mult_pred_o5r n (Lng M - 1 - s84x_jm2 M) hn1
+  have hw1 : 1 ≤ (n - 1) * (Lng M - 1 - s84x_jm2 M) := by
+    have := Nat.mul_le_mul (show 1 ≤ n - 1 by omega) (show 1 ≤ Lng M - 1 - s84x_jm2 M by omega)
+    omega
+  have hms_lt : s84x_ms M n < Lng (oper M n) := by rw [hLng_n, hms_eq]; omega
+  have hms_pos : 1 ≤ s84x_ms M n := by rw [hms_eq]; omega
+  have hmsm1_lt : s84x_ms M n - 1 < Lng (oper M n) := by omega
+  have hms_le_Ln : s84x_ms M n ≤ Lng (s84x_L M n) := by omega
+  -- entries of `M[n]` at `m*` and `m*-1`, transported to `L_n`
+  have hom := entry_oper_ms_o5r M n hM hp hj1 hn1
+  have hom1 := entry_oper_msm1_o5r M n hM hp hj1 hn
+  have hEmsL0 : entry (s84x_L M n) 0 (s84x_ms M n)
+      = entry M 0 (s84x_jm2 M)
+          + (n - 1) * (entry M 0 (Lng M - 1) - entry M 0 (s84x_jm2 M)) := by
+    rw [entry_L_eq_oper_o5r M n 0 (s84x_ms M n) hms_lt]; exact hom.1
+  have hEmsL1 : entry (s84x_L M n) 1 (s84x_ms M n) = entry M 1 (s84x_jm2 M) := by
+    rw [entry_L_eq_oper_o5r M n 1 (s84x_ms M n) hms_lt]; exact hom.2
+  have hEm1L0 : entry (s84x_L M n) 0 (s84x_ms M n - 1)
+      = entry M 0 (Lng M - 2)
+          + (n - 2) * (entry M 0 (Lng M - 1) - entry M 0 (s84x_jm2 M)) := by
+    rw [entry_L_eq_oper_o5r M n 0 (s84x_ms M n - 1) hmsm1_lt]; exact hom1.1
+  have hEm1L1 : entry (s84x_L M n) 1 (s84x_ms M n - 1) = entry M 1 (Lng M - 2) := by
+    rw [entry_L_eq_oper_o5r M n 1 (s84x_ms M n - 1) hmsm1_lt]; exact hom1.2
+  -- 背理法の本体: `nextR (L_n) 1 (m*-1) m* = true` から False
+  have himp : nextR (s84x_L M n) 1 (s84x_ms M n - 1) (s84x_ms M n) = true → False := by
+    intro hedge
+    have hn1e : nextrel1 (s84x_L M n) (s84x_ms M n - 1) (s84x_ms M n) = true := by
+      simpa [nextR] using hedge
+    simp only [nextrel1, Bool.and_eq_true, decide_eq_true_eq, List.all_eq_true,
+      List.mem_range] at hn1e
+    obtain ⟨⟨⟨⟨⟨_, _⟩, _⟩, he1lt⟩, hle0e⟩, _⟩ := hn1e
+    -- 隣接 `le0` を `nextrel0` に潰す
+    have hmssucc : s84x_ms M n - 1 + 1 = s84x_ms M n := by omega
+    have hle0e' : le0 (s84x_L M n) (s84x_ms M n - 1) (s84x_ms M n - 1 + 1) = true := by
+      rw [hmssucc]; exact hle0e
+    have hn0e := le0_adjacent (s84x_L M n) (s84x_ms M n - 1) hle0e'
+    rw [hmssucc] at hn0e
+    simp only [nextrel0, Bool.and_eq_true, decide_eq_true_eq] at hn0e
+    obtain ⟨⟨⟨⟨_, _⟩, _⟩, he0e⟩, _⟩ := hn0e
+    -- ブロック構造から成分を読む
+    rw [hEm1L1, hEmsL1] at he1lt
+    rw [hEm1L0, hEmsL0] at he0e
+    -- `r0lt'`
+    have hsplitd : (n - 1) * (entry M 0 (Lng M - 1) - entry M 0 (s84x_jm2 M))
+        = (n - 2) * (entry M 0 (Lng M - 1) - entry M 0 (s84x_jm2 M))
+          + (entry M 0 (Lng M - 1) - entry M 0 (s84x_jm2 M)) := by
+      have h := mult_pred_o5r (n - 1) (entry M 0 (Lng M - 1) - entry M 0 (s84x_jm2 M)) (by omega)
+      rw [show n - 1 - 1 = n - 2 from by omega] at h
+      exact h
+    have r0lt' : entry M 0 (Lng M - 2) < entry M 0 (Lng M - 1) := by omega
+    -- `M` 側の親辺 `(1, Lng-2) <^Next (1, Lng-1)`
+    have hLngM : 0 < Lng M := by omega
+    have n0M : nextrel0 M (Lng M - 2) (Lng M - 1) = true := by
+      simp only [nextrel0, Bool.and_eq_true, decide_eq_true_eq, List.all_eq_true, List.mem_range]
+      refine ⟨⟨⟨⟨by omega, by omega⟩, by omega⟩, r0lt'⟩, ?_⟩
+      intro j hj
+      have hnlt : ¬(Lng M - 2 < j) := by omega
+      simp [hnlt]
+    have le0M : le0 M (Lng M - 2) (Lng M - 1) = true :=
+      nextR0_leR M (Lng M - 2) (Lng M - 1) (by simpa [nextR] using n0M)
+    have e1M : entry M 1 (Lng M - 2) < entry M 1 (Lng M - 1) := by
+      have hjm2b := (s84c1_jm2_basic M hp).2.1
+      omega
+    have n1M : nextrel1 M (Lng M - 2) (Lng M - 1) = true := by
+      simp only [nextrel1, Bool.and_eq_true, decide_eq_true_eq, List.all_eq_true, List.mem_range]
+      refine ⟨⟨⟨⟨⟨by omega, by omega⟩, by omega⟩, e1M⟩, le0M⟩, ?_⟩
+      intro j hj
+      by_cases hjeq : j = Lng M - 1
+      · subst hjeq; simp
+      · have hnlt : ¬(Lng M - 2 < j) := by omega
+        simp [hnlt]
+    have e2 : nextR M 1 (Lng M - 2) (Lng M - 1) = true := by simpa [nextR] using n1M
+    have jm2eq : Lng M - 2 = s84x_jm2 M :=
+      nextR1_unique_mr M (Lng M - 2) (s84x_jm2 M) (Lng M - 1) e2 (s84c1_nextR1_jm2 M hp)
+    rw [jm2eq] at he1lt
+    exact (lt_irrefl _ he1lt)
+  -- `adm = !nadm`、両選言が偽
+  have hnadm : nadm (s84x_L M n) (s84x_ms M n) = false := by
+    unfold nadm
+    have h1 : decide (Lng (s84x_L M n) < s84x_ms M n) = false := by
+      simp only [decide_eq_false_iff_not]; omega
+    have h2 : nextR (s84x_L M n) 1 (s84x_ms M n - 1) (s84x_ms M n) = false := by
+      cases h : nextR (s84x_L M n) 1 (s84x_ms M n - 1) (s84x_ms M n) with
+      | false => rfl
+      | true => exact (himp h).elim
+    rw [h1, h2]; simp
+  simp only [adm, hnadm, Bool.not_false]
+
+/-! ## 10. 葉(4) 完成: `Marked (L_n) m*`（Isabelle `s84c1_marked_L`） -/
+
+private theorem marked_L_o5r (M : PS) (n : ℕ)
+    (hM : TPS M) (hp : hasParent M 1 (Lng M - 1) = true) (hj1 : 1 < Lng M - 1) (hn : 2 ≤ n) :
+    Marked (s84x_L M n) (s84x_ms M n) := by
+  refine ⟨?_, adm_L_o5r M n hM hp hj1 hn, ?_⟩
+  · rw [s84x_L_append_o5r]; simp [TPS]
+  · rw [leRz_o5r]; exact le0_L_o5r M n hM hp hj1 (by omega)
+
+/-! ## 11. 末尾切片 `Red` の RT_PS 所属（Isabelle `slice_Red_in_RT_PS`） -/
+
+/-- `Red (seg N m (Lng N − 1)) ∈ RT_PS`（許容祖先切片の簡約は簡約形）。 -/
+private theorem RTPS_Red_tail_o5r (N : PS) (m : ℕ)
+    (hN : RTPS N) (hmlt : m < Lng N - 1)
+    (hle : leR N 0 m (Lng N - 1) = true) :
+    RTPS (Red (seg N m (Lng N - 1))) := by
+  have hNT : TPS N := RTPS_TPS N hN
+  have hmono : monoT (seg N m (Lng N - 1)) = true :=
+    mono_ancestor_slice N m (Lng N - 1) hNT hmlt hle
+  have hnm : multiT (seg N m (Lng N - 1)) = false := by simp [multiT, hmono]
+  have hST : TPS (seg N m (Lng N - 1)) := by
+    apply List.ne_nil_of_length_pos; simp only [length_seg]; omega
+  exact Red_nonmulti_RTPS (seg N m (Lng N - 1)) hST hnm
+
+/-! ## 12. 葉(8): `Mark (L_n) m* = Trans L'`（Isabelle `s84c1_Mark_L_mstar`） -/
+
+private theorem mark_L_o5r (M : PS) (n : ℕ)
+    (hST : STPS M) (hp : hasParent M 1 (Lng M - 1) = true) (hj1 : 1 < Lng M - 1) (hn : 2 ≤ n) :
+    Mark (s84x_L M n) (s84x_ms M n) = Trans (s84x_Lp M) := by
+  have hMT : TPS M := RTPS_TPS M (STPS_RTPS M hST)
+  obtain ⟨hidx, hlast, hnz, hp', hj0, hjm2lt, he0lt⟩ := setup_o5r M hMT hp hj1
+  have hn1 : 1 ≤ n := by omega
+  have hLng_n : Lng (oper M n) = s84x_jm2 M + n * (Lng M - 1 - s84x_jm2 M) :=
+    Lng_oper_o5r M n hMT hp hj1
+  have hLngL : Lng (s84x_L M n) = Lng (oper M n) + 1 := by rw [s84x_L_append_o5r]; simp
+  have hms_eq : s84x_ms M n = s84x_jm2 M + (n - 1) * (Lng M - 1 - s84x_jm2 M) := by
+    simp only [s84x_ms, s84x_w]
+  have hsplit : n * (Lng M - 1 - s84x_jm2 M)
+      = (n - 1) * (Lng M - 1 - s84x_jm2 M) + (Lng M - 1 - s84x_jm2 M) :=
+    mult_pred_o5r n (Lng M - 1 - s84x_jm2 M) hn1
+  have hmslt : s84x_ms M n < Lng (s84x_L M n) - 1 := by rw [hLngL, hLng_n, hms_eq]; omega
+  have hmk : Marked (s84x_L M n) (s84x_ms M n) := marked_L_o5r M n hMT hp hj1 hn
+  have hLnRT : RTPS (s84x_L M n) := RTPS_L_o5r M n hST hp hj1 hn1
+  have hle_marked : leR (s84x_L M n) 0 (s84x_ms M n) (Lng (s84x_L M n) - 1) = true := hmk.2.2
+  have hrepr : Mark (s84x_L M n) (s84x_ms M n)
+      = Trans (seg (s84x_L M n) (s84x_ms M n) (Lng (s84x_L M n) - 1)) :=
+    Mark_Trans_repr (s84x_L M n) (s84x_ms M n) hmk hLnRT hmslt
+  have htail := L_tail_o5r M n hMT hp hj1 hn1
+  have LpT : TPS (s84x_Lp M) := by unfold s84x_Lp; simp [TPS]
+  have RedLp0 := RTPS_Red_tail_o5r (s84x_L M n) (s84x_ms M n) hLnRT hmslt hle_marked
+  rw [htail, a1_Red_funpow_IncrFirst (s84x_Lp M)
+      ((n - 1) * (entry M 0 (Lng M - 1) - entry M 0 (s84x_jm2 M))) LpT] at RedLp0
+  rw [hrepr, htail, Trans_funpow_IncrFirst (s84x_Lp M)
+      ((n - 1) * (entry M 0 (Lng M - 1) - entry M 0 (s84x_jm2 M))) LpT RedLp0]
+
+/-! ## 13. 葉(9): 内部レジーム `Marked (M[n]) m*` かつ `Mark (M[n]) m* = Trans (Pred N')`
+    （Isabelle `s84c1_Mark_Mn_mstar`） -/
+
+private theorem interior_o5r (M : PS) (n : ℕ)
+    (hST : STPS M) (hp : hasParent M 1 (Lng M - 1) = true) (hj1 : 1 < Lng M - 1) (hn : 2 ≤ n)
+    (hint : s84x_jm2 M + 1 < Lng M - 1) :
+    Marked (oper M n) (s84x_ms M n)
+    ∧ Mark (oper M n) (s84x_ms M n) = Trans (Pred (s84x_Np M)) := by
+  have hMT : TPS M := RTPS_TPS M (STPS_RTPS M hST)
+  obtain ⟨hidx, hlast, hnz, hp', hj0, hjm2lt, he0lt⟩ := setup_o5r M hMT hp hj1
+  have hn1 : 1 ≤ n := by omega
+  have hLng_n : Lng (oper M n) = s84x_jm2 M + n * (Lng M - 1 - s84x_jm2 M) :=
+    Lng_oper_o5r M n hMT hp hj1
+  have hLngL : Lng (s84x_L M n) = Lng (oper M n) + 1 := by rw [s84x_L_append_o5r]; simp
+  have hms_eq : s84x_ms M n = s84x_jm2 M + (n - 1) * (Lng M - 1 - s84x_jm2 M) := by
+    simp only [s84x_ms, s84x_w]
+  have hsplit : n * (Lng M - 1 - s84x_jm2 M)
+      = (n - 1) * (Lng M - 1 - s84x_jm2 M) + (Lng M - 1 - s84x_jm2 M) :=
+    mult_pred_o5r n (Lng M - 1 - s84x_jm2 M) hn1
+  have hnwpos : 1 ≤ n * (Lng M - 1 - s84x_jm2 M) := by
+    have := Nat.mul_le_mul (show 1 ≤ n by omega) (show 1 ≤ Lng M - 1 - s84x_jm2 M by omega)
+    omega
+  have hLnoperpos : 1 ≤ Lng (oper M n) := by rw [hLng_n]; omega
+  have hmsltL : s84x_ms M n < Lng (s84x_L M n) - 1 := by rw [hLngL, hLng_n, hms_eq]; omega
+  have hmkL : Marked (s84x_L M n) (s84x_ms M n) := marked_L_o5r M n hMT hp hj1 hn
+  have hLnT : TPS (s84x_L M n) := hmkL.1
+  have hLngLn1 : 1 < Lng (s84x_L M n) := by rw [hLngL]; omega
+  have hmkPred : Marked (Pred (s84x_L M n)) (s84x_ms M n) :=
+    Marked_Pred (s84x_L M n) (s84x_ms M n) hLnT hLngLn1 hmkL hmsltL
+  have hPredL : Pred (s84x_L M n) = oper M n := by
+    rw [Pred, if_neg (by omega), s84x_L_append_o5r]; simp
+  have hmkMn : Marked (oper M n) (s84x_ms M n) := by rw [← hPredL]; exact hmkPred
+  refine ⟨hmkMn, ?_⟩
+  -- Mark 部
+  have hMnRT : RTPS (oper M n) := STPS_RTPS _ (STPS.oper hST n hn1)
+  have hmsltMn : s84x_ms M n < Lng (oper M n) - 1 := by rw [hLng_n, hms_eq]; omega
+  have hle_marked : leR (oper M n) 0 (s84x_ms M n) (Lng (oper M n) - 1) = true := hmkMn.2.2
+  have hrepr : Mark (oper M n) (s84x_ms M n)
+      = Trans (seg (oper M n) (s84x_ms M n) (Lng (oper M n) - 1)) :=
+    Mark_Trans_repr (oper M n) (s84x_ms M n) hmkMn hMnRT hmsltMn
+  have htail := Mn_tail_o5r M n hMT hp hj1 hn1
+  have PnT : TPS (Pred (s84x_Np M)) := by
+    rw [Pred_Np_o5r M hjm2lt]; apply List.ne_nil_of_length_pos
+    simp only [length_seg]; omega
+  have RedPn0 := RTPS_Red_tail_o5r (oper M n) (s84x_ms M n) hMnRT hmsltMn hle_marked
+  rw [htail, a1_Red_funpow_IncrFirst (Pred (s84x_Np M))
+      ((n - 1) * (entry M 0 (Lng M - 1) - entry M 0 (s84x_jm2 M))) PnT] at RedPn0
+  rw [hrepr, htail, Trans_funpow_IncrFirst (Pred (s84x_Np M))
+      ((n - 1) * (entry M 0 (Lng M - 1) - entry M 0 (s84x_jm2 M))) PnT RedPn0]
+
+/-! ## 14. 残差 `Oper5Residual` の discharge、および無条件 `Oper5Support` -/
+
+/-- Isabelle `s84c1_marked_L`/`s84c1_Mark_L_mstar`/`s84c1_Mark_Mn_mstar` の合流。
+`8.4-oper5-support` が緑モジュロ入力としていた束 `Oper5Residual` を無仮定で閉じる。 -/
+theorem oper5Residual_holds (M : PS) (n : ℕ)
+    (hST : STPS M) (_hmono : monoT M = true)
+    (hp : hasParent M 1 (Lng M - 1) = true) (hj1 : 1 < Lng M - 1) (hn : 1 < n) :
+    Oper5Residual M n := by
+  have hMT : TPS M := RTPS_TPS M (STPS_RTPS M hST)
+  have hn2 : 2 ≤ n := hn
+  refine ⟨marked_L_o5r M n hMT hp hj1 hn2, mark_L_o5r M n hST hp hj1 hn2, ?_⟩
+  intro hint
+  exact interior_o5r M n hST hp hj1 hn2 hint
+
+/-- 残差を discharge した結果、`Oper5Support` は `oper5Support_holds` と合成して
+`STPS`/`monoT`/`hasParent`/`1 < Lng M − 1`/`1 < n` の下で無条件に成立する。 -/
+theorem oper5Support_unconditional (M : PS) (n : ℕ)
+    (hST : STPS M) (hmono : monoT M = true)
+    (hp : hasParent M 1 (Lng M - 1) = true) (hj1 : 1 < Lng M - 1) (hn : 1 < n) :
+    Oper5Support M n :=
+  oper5Support_holds M n hST hmono hp hj1 hn (oper5Residual_holds M n hST hmono hp hj1 hn)
+
+/-- 残差が閉じたので、§8.4 命題 part (5)（Isabelle `m_8_4_oper_props_5`）は
+green-modulo 入力なしに、`STPS`/`monoT`/`hasParent`/`1 < Lng M − 1`/`1 < n` のみで成立する。 -/
+theorem oper_props_5_unconditional (M : PS) (n : ℕ)
+    (hST : STPS M) (hmono : monoT M = true)
+    (hp : hasParent M 1 (Lng M - 1) = true) (hj1 : 1 < Lng M - 1) (hn : 1 < n) :
+    ∃! sb : List Sym × List Sym,
+      scb_decomp (Trans (s84x_L M (n - 1))) sb.1
+          (flatBT (Dprin (entry M 1 (s84x_jm2 M) : ℕ∞) BZero)) sb.2
+        ∧ scb_decomp (Trans (s84x_L M n)) sb.1 (flatBT (Trans (s84x_Lp M))) sb.2
+        ∧ (¬ (zeroT (Pred (s84x_Np M)) = true) →
+             scb_decomp (Trans (oper M n)) sb.1
+               (flatBT (Trans (Pred (s84x_Np M)))) sb.2) :=
+  m_8_4_oper_props_5 M n hST hmono hp hj1 hn
+    (oper5Support_unconditional M n hST hmono hp hj1 hn)
+
+#print axioms oper5Residual_holds
+#print axioms oper5Support_unconditional
+#print axioms oper_props_5_unconditional
+
 end PSS
