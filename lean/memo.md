@@ -872,6 +872,20 @@ parent/Lng 形に落としてから作業する。
     2 フィールドを `exchVMres : ExchVMTowerResidual` 1 本に置換。
     **現フィールド 5**: `otMulti`／`otIIIIVdata`／`condII`／`exch84slicepkg`／`exchVMres`。
     audit は 4 葉表示（exchV 過少計上バグ込み、下記）。
+  - **Wave W（2026-07-19、Opus 6、全緑）— 深部原子の攻略＋🚨反証 1 件**:
+    ①readback: **T2 形は condIV で大域的に偽**（普遍 readback 補題は存在しない）＝値ルートでなく
+    **c2-hole エンジン（s84d_c2hole/s84d_corepair_* wip 52658–54005 ~1400 行）が忠実ルート**。
+    rm84Exists→`Rightmost84ReadbackShared` に配線替え済（`8.4-rightmost-readback`。
+    `mark_tower2_eq_trans_rrLp` 無条件も獲得）②ox 完結: `ox10_SETLE1_close_oc` が SETLE1 を
+    setle core の形で産出（残=census 2 葉 ox5(4974)/KKraw(8539)。`8.7-otint-ox-close`）
+    ③MnformBottomExt→`SliceExtTupleResidual`（from_slice port、`8.4-exch84-from-slice`）
+    ④d4a 討伐 modulo `NestScbD4aTargetValue`（`8.4-exch84-d4a`）
+    ⑤🚨**`NestScbCornerTriple_ns` は偽と機械証明**（corner で dP の要求 scb 分解が不成立、
+    `8.4-exch84-corner` に反証。**`8.4-exch84-nest-scb` の corner 枝は言明の再設計が必要**＝
+    exch84_nestScbTriple_holds の corner 側仮定は充足不能。次 wave で jm3eq ルートの正しい形を
+    Isabelle から採り直せ）⑥**VE34 入口完成**: family 地図＋`VE34_backpeel`/`VE34_of_reg`/
+    `condIIIV_of_VE2_VE34` 骨格（`8.2-condIIIV-VE34-entry`、wip 92559–108722 の 2 本柱地図付き）。
+    **現フィールド 5**: `otMultiIntCond`/`otSetleCore`/`condIIIVts`/`exch84slicepkg`/`rm84Readback`。
   - **Wave V（2026-07-19、Opus 6、全緑）— `c2l1NotLD` フィールド討伐（6→5）＋深部原子の地図完成**:
     ①**`nadmC2L1NotLD_holds` 無条件**（atx_notLD/atx_condV_nadm_t2_components の完全 port、
     `8.5-exchV-notld`）→ termination の `c2l1NotLD` フィールド削除。
