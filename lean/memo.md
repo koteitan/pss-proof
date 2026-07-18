@@ -872,6 +872,24 @@ parent/Lng 形に落としてから作業する。
     2 フィールドを `exchVMres : ExchVMTowerResidual` 1 本に置換。
     **現フィールド 5**: `otMulti`／`otIIIIVdata`／`condII`／`exch84slicepkg`／`exchVMres`。
     audit は 4 葉表示（exchV 過少計上バグ込み、下記）。
+  - **Wave Y（2026-07-19、Opus 4、全緑）— 🚨反証 2 件（危険回避）＋slicepkg 再配線＋setle 還元**:
+    ①🚨**`C2HoleSliceTransport_ch` は偽**（cex M=(0,0)(1,1)(2,1) condIII: Trans(s84x_Np M) が
+    余分な外側 principal D_{M1,jm2} を持つ。c2hole 設計は暗黙に condV を仮定していた。
+    **`Rightmost84ReadbackShared` も同根で偽**＝termination の rm84Readback フィールドが
+    充足不能だった→**即日 `rm84Exists : Rightmost84ReplaceExists`（真）に戻した**。
+    正しい閉じ方=head-aware 還元: condIII/IV では Trans(s84x_Np M)=Dprin(M1,jm2)(transC2 M)、
+    condV でのみ head 併合。93/93 condIII で transport 破綻を数値確認。`8.4-c2hole-transport`）
+    ②**slicepkg 再配線完了**（`8.4-mnform-corner-dispatch`。MnformBottomResidual 自体も偽と判明
+    →生きている下流 ∀M MnformResidual M を ltJ/corner dispatch で供給、
+    `exch84slicepkg_of_dispatch_md` が新ルート。残={NestScbD4aTransport_ns(→ReducedValue),
+    TransC2HoleDecomp_md, MnformBottomExtResidual(→SliceExtTupleEngines_st),
+    MnformCornerResidual_md(=oi5_bodyOT), Base0/Base1p}）
+    ③setle 側完全組立（`8.7-otint-setle-assembly`: `otSetleCore_of_leaves` で otSetleCore は
+    {OixCoreTri, A0OTNub, Tri0Census, OTintIIIIV_setleCensus} の 4 葉に還元）
+    ④VE34 続行（`8.2-condIIIV-VE34-reg`: 修正 regime 機構＋無条件 RPERS＋BASE 幾何、
+    wip 94469–95469）。
+    **現フィールド 5**: `otMultiIntCond`/`otSetleCore`(4 葉)/`condIIIVts`(VE34)/
+    `exch84slicepkg`(新 dispatch 経由 6 残差)/`rm84Exists`(head-aware 再設計待ち)。
   - **Wave X（2026-07-19 深夜、Opus 6、全緑）— c2hole エンジン完成＋ox census 討伐＋🚨nestScbTriple 全体が偽**:
     ①**c2hole エンジン完全 port**（`8.4-c2hole-engine`、s84d_c2hole/corepair 系 1:1、hole 定義は
     transC2Core と defeq）→ `rightmost84ReplaceExists_of_transport_ch` で rm84 フィールドは
