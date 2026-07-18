@@ -872,6 +872,15 @@ parent/Lng 形に落としてから作業する。
     2 フィールドを `exchVMres : ExchVMTowerResidual` 1 本に置換。
     **現フィールド 5**: `otMulti`／`otIIIIVdata`／`condII`／`exch84slicepkg`／`exchVMres`。
     audit は 4 葉表示（exchV 過少計上バグ込み、下記）。
+  - **Wave AD（2026-07-19 昼、Opus 4、全緑）— 🚨scbDecompPkg 反証（8 個目）＋R-facts 3 conjunct 化**:
+    ①rfacts: Frame 全 5 部を討伐/還元→残差 `Rm84RFacts`（dich/RTPS(R)/adm 一致の 3 conjunct、
+    閉じ方の詳細ルートを needs に文書化済——nextrel1 boolean 構築の fragility 対策込み。
+    `8.4-rm84-rfacts`）②🚨**`Exch84_scbDecompPkg` は偽**（corner で dP が長さ矛盾＝
+    NestScbCornerTriple 反証の系。**ltJ guard 付き版 `exch84ScbDecompPkgLtJ_holds_sp2` は
+    無条件討伐**。Base0/1p は pkg 経由でなく ltJ/corner dispatch で再証明要——配線案は
+    ファイルヘッダに。`8.4-scbdecomp-pkg`）③SliceExtTupleEngines→3 tight Props（L1 flat 討伐、
+    `8.4-slice-ext-engines`）④**deep5→deep4**（VE2RegPrefixReg 上部討伐、
+    `condIIIVterminalSlice_of_deep4`＋`condII_masterCF_of_deep4`、`8.2-condIIIV-deep5`）。
   - **Wave AC（2026-07-19 朝、Opus 4、全緑）— 🎉d4a transport 完全無条件化＋rm84 surgery frame**:
     ①🎉**`nestScbD4aReducedValue_holds`＋`nestScbD4aTransport_dk` 無条件**（regime 側=slx37＋
     vcx_VE_all 転送、trunk 側=crg_slice_value_of_trunk port。`8.4-d4a-trunk`）→
