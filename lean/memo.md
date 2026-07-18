@@ -872,6 +872,20 @@ parent/Lng 形に落としてから作業する。
     2 フィールドを `exchVMres : ExchVMTowerResidual` 1 本に置換。
     **現フィールド 5**: `otMulti`／`otIIIIVdata`／`condII`／`exch84slicepkg`／`exchVMres`。
     audit は 4 葉表示（exchV 過少計上バグ込み、下記）。
+  - **Wave AA（2026-07-19 未明、Opus 4、全緑）— 3 フィールドの残差が値レベルまで尖鋭化**:
+    ①rm84: head-stripped エンジン `c2holeInner_scb_ha` で scb 側 2 義務を無条件討伐→
+    残差は**純値 2 等式 `Rm84HeadValue`**（Np 半分=closed condV terminal-slice ×2 適用＋bridgeA、
+    Lp 半分=非単項 readback＝既知 blocker。`8.4-rm84-head-aware` に攻め筋文書化済）
+    ②slx37: mcx_regSP_of_diag＋DIAG sandwich port→残差は**単一 tie-break `RegspStrictlt_sx`**
+    （=slx37_strictlt_eqd 97052。閉じ方=8.2-strongmono-props の private Pred-branch 転送
+    （Br/FirstNodes/Joints_Pred_core）の index-level 再導出＋Regs_MCOND_holds。`8.4-regsp-slx37`）
+    ③corner engine: 10 conjunct 中 5＋k1 配線を無条件討伐→残差 `MnformCornerCoreResidual_ce`
+    5 葉（`8.4-corner-engine`）④**VE34 組立 capstone 完成**: `condIIIVterminalSlice_of_residuals`
+    （=vg7x backpeel 形）＋`condIIIVterminalSlice_of_VE`（=hqx 形）→ condIIIVts は
+    {VE34Base4, VE2/VE3/VE4 Residual} に還元（`8.2-condIIIV-VE34-assembly`）。
+    **残フィールド 5 の残差スタック**: rm84={NpValue, LpValue}／slicepkg={StrictLt, CornerCore 5 葉,
+    SliceExtTupleEngines, Base0/1p 残}／otSetleCore=census 3 葉／condIIIVts={VE2,VE3,VE4,Base4}／
+    otMultiIntCond=供給待ち。**promotion 候補: 8.2-strongmono-props の Pred-branch core 3 本**。
   - **Wave Z（2026-07-19 深夜〜、Opus 4、3 完走＋1 が 5h limit で mid-run 死→遺留緑回収）**:
     ①**OixCoreTri 討伐**（otx3 tri-core 全再帰を _cl で再導出、`8.7-otint-census-leaves`）→
     `otSetleCore_of_3leaves`＝otSetleCore は {A0OTNub, Tri0Census, setleCensus} の 3 葉に。
