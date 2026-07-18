@@ -872,6 +872,20 @@ parent/Lng 形に落としてから作業する。
     2 フィールドを `exchVMres : ExchVMTowerResidual` 1 本に置換。
     **現フィールド 5**: `otMulti`／`otIIIIVdata`／`condII`／`exch84slicepkg`／`exchVMres`。
     audit は 4 葉表示（exchV 過少計上バグ込み、下記）。
+  - **Wave Z（2026-07-19 深夜〜、Opus 4、3 完走＋1 が 5h limit で mid-run 死→遺留緑回収）**:
+    ①**OixCoreTri 討伐**（otx3 tri-core 全再帰を _cl で再導出、`8.7-otint-census-leaves`）→
+    `otSetleCore_of_3leaves`＝otSetleCore は {A0OTNub, Tri0Census, setleCensus} の 3 葉に。
+    3 葉とも census 具体 provenance が要る（抽象からは導出不能と検証済み）＝§8.4 producer 系
+    campaign。②**TransC2HoleDecomp_md 討伐**（c2hole_scb_ch 経由の直撃、`8.4-slicepkg-residuals`）。
+    (2)corner mnform=c4dx_condIV_k1 系未移植、(3)D4aReducedValue=**Regsp_slx37_regSP
+    （slx37_regSP_uncond）に帰着**（slice_Trans_principal_head の body 保存に VEReg 必要）
+    ③VE34 STEP: `vs2x_VE34_step` は純再組立（VE34goal⟺VE3∧VE4）と判明（`8.2-condIIIV-VE34-step`）
+    ④rm84-head-aware: agent は limit 死だが**遺留ファイル緑（8 宣言）で回収**（`8.4-rm84-head-aware`、
+    checkpoint 規律の勝利。続きは同ファイル拡張で）。
+    **残フィールド 5 の攻略地図が完全化**: rm84=head-aware 続行／slicepkg={D4a(→slx37), corner
+    engine, BottomExt(→SliceExtTupleEngines), Base0/1p}／otSetleCore=census 3 葉／
+    condIIIVts=VE34（reg/RPERS/BASE/STEP 済、残=BASE-geom 続き＋backpeel 組立＋hqx 接続）／
+    otMultiIntCond=他フィールド供給待ち（空虚）。**slx37_regSP が 2 残差の共通鍵**。
   - **Wave Y（2026-07-19、Opus 4、全緑）— 🚨反証 2 件（危険回避）＋slicepkg 再配線＋setle 還元**:
     ①🚨**`C2HoleSliceTransport_ch` は偽**（cex M=(0,0)(1,1)(2,1) condIII: Trans(s84x_Np M) が
     余分な外側 principal D_{M1,jm2} を持つ。c2hole 設計は暗黙に condV を仮定していた。
