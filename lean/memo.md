@@ -633,7 +633,7 @@ parent/Lng 形に落としてから作業する。
     （workflow 全滅のため）。(1)(2)=gather の if 分岐を明示分解、(3)=multBT→replicate 帰納＋
     descP/isOT/dfree の replicate 補題、(4)=塔の G 集合特徴付け＋狭義単調の帰納
     （Isa `m_8_7_OT_examples` の構造をそのまま移植）。rc=0・sorry 0・axioms 正常・#guard 5 本。[r1]
-  - 🚨 `8.4-rightmost-replace-Trans`[r1] — Wave R で A30/A31 の反例を機械証明＋訂正形を
+  - 🚨🤖 `8.4-rightmost-replace-Trans`[r1] — Wave R で A30/A31 の反例を機械証明＋訂正形を
     green-modulo Prop `Rightmost84ReplaceCorrected` として露出（原文 DEFERRED、8.5-scb-dec 方式）。
     残=訂正形の universal 証明。訂正 **A30**（scb 分解が偽。長さ勘定で決まる）
     ＋ **A31**（補題(5-3) のガード欠落）
@@ -712,7 +712,7 @@ parent/Lng 形に落としてから作業する。
     | sort | uniq -d` で公開名の重複を検査する（2026-07-17 実行時は他に 0 件）。
     ⚠️**stale REPL 注意**: 汚染 header は kimina にキャッシュされるので、改名後の再テストは
     import を 1 行足して fresh header にすること。
-  - 🚨 `8.4-Trans-fseq-condIII-IV` — **Wave F で green-modulo 完成（緑）**。
+  - 🚨🤖 `8.4-Trans-fseq-condIII-IV` — **Wave F で green-modulo 完成（緑）**。
     p 文 = pss_paper:1909。`exch_condIII`/`exch_condIV` が 8.7-fseq-descend の
     `FseqDesc_exchIII`/`_exchIV` の drop-in。
     🚨🚨**重大**: 私が指定した blueprint `m_8_4_Trans_oper_exchange_corrected_condIII`
@@ -728,7 +728,7 @@ parent/Lng 形に落としてから作業する。
     ⚠️正直な留保: w84x engine が出すのは弱い `Trans(M[n]) < Trans(M)[n]` で、
     原文 (1) の強形は **Isabelle 側でも未証明**。descend の Prop は ∃k 形なので
     k := m で足り実害なし。
-  - 🚨 `8.5-Trans-fseq-condV` — **Wave F で green-modulo 完成（緑、6 Props）**。
+  - 🚨🤖 `8.5-Trans-fseq-condV` — **Wave F で green-modulo 完成（緑、6 Props）**。
     `exchV_holds` が `FseqDesc_exchV` の drop-in（全ホストで成立、adm 枝 k=m-1／
     非 adm 枝 k=m+1）。露出 Props 6 本はすべて **Isabelle で証明済**の補題の逐語形。
     🚨**発見: `isabelle/memo.md:130` の「(1)=A28 で偽」は stale**（**A28 は取り下げ済**、
@@ -737,7 +737,7 @@ parent/Lng 形に落としてから作業する。
     ＝**訂正不要で原文が正しい**。しかも **Isabelle 自身の
     `m_8_5_Trans_oper_exchange_condV_adm_uncond` は弱い添字 `n` でしか述べていない**ので、
     Lean 版のほうが**鋭い**。両方（原文添字＝conj(1)／Isabelle 添字＝conj(2)）を出力。
-  - 🚨 `8.7-Trans-preserves-OT` — **Wave F で green-modulo 完成（緑、12 Props）**。
+  - 🚨🤖 `8.7-Trans-preserves-OT` — **Wave F で green-modulo 完成（緑、12 Props）**。
     blueprint `y5_Trans_OT_B` は census 塔への一行だったので追跡し、実体
     **`otx_Trans_preserves_OT_dispatch`（layerB:85710）**＝ST_PS 帰納を全分岐移植
     （base＋11 分岐: Lng≤1／N[n]=Pred N の 4 枝／N[n]≠Pred N の condI–VI＋multiT）。
@@ -750,7 +750,7 @@ parent/Lng 形に落としてから作業する。
     `Trans(M[n]) = s₁D_{M₁,j₋₁}(s'₁D_{M₁,j₀})ⁿt₂(b'₁)ⁿb₁` が `n=1` で偽。原文
     content.md 5213 の (5)＝5225、証明 5267/5329）[軽微]。**A29 はここ**であって
     `8.5-Joints-FirstNodes-basic` ではない（2026-07-17 誤帰属を訂正）。
-  - 🚨 `8.2-condIIIV-terminal-slice-Trans` — p 文 = pss_paper:1627（原文 ~3314）。
+  - 🚨🤖 `8.2-condIIIV-terminal-slice-Trans` — p 文 = pss_paper:1627（原文 ~3314）。
     未着手だった項目。condV 版（`8.2-condV-terminal-slice-Trans`）が構造の雛形。
     condV 版は原文が VE ステップを省略しているため hVE 仮定付きだったので、
     II/IV 版に同じ穴があるかを確認させる。Wave K。
@@ -765,7 +765,7 @@ parent/Lng 形に落としてから作業する。
   - `8.5-*` — **最難所**。Isa の keystone は
     `bpHeadT(Trans(slice@B)) = C(bpHeadT(Trans slice))`（depth-shift self-similar）。
     13 個の死路が `isabelle/memo.md` に列挙してある。**着手前に必ず読め。**
-  - 🚨 `8.3-Trans-fseq-condII` ⛔8.7-fseq-descend — 原文命題は (1)-(3) が Trans 再帰の
+  - 🚨🤖 `8.3-Trans-fseq-condII` ⛔8.7-fseq-descend — 原文命題は (1)-(3) が Trans 再帰の
     内部記号依存で deferred、転記済みは降下結論 (4) のみ（`p_8_3_TransCondII_oper_descend`）。
     Isabelle は `y5_8_3_TransCondII_oper_descend`（layerC 14432）＝**大域降下柱
     `y5_Trans_descend` への一行還元**。Lean でも `8.7-fseq-descend`（ST_PS 全域の
@@ -780,7 +780,7 @@ parent/Lng 形に落としてから作業する。
     `.naturals` を透過（`a ≠ BZero` は長さ勘定）、multi は `domTag_snoc_bf`（7.1 公開）。
     `BDom_toSet_eq_NatSet_iff`+`nestedD0_not_nat` は 7.2-scb-unique private の複製（昇格候補）。
     Isa: `m_8_7_OT_dom_hereditary` (layerB/pss_wip.thy:17802)。rc=0・axioms 正常。[r1]
-  - 🚨 `8.7-fseq-descend` — **Wave E で green-modulo 完成（緑、sorry 0、853 行）**。
+  - 🚨🤖 `8.7-fseq-descend` — **Wave E で green-modulo 完成（緑、sorry 0、853 行）**。
     `m_8_7_fseq_descend_dispatcher`（Isa layerB:52353）＋`f7x_fseq_descend_mono`
     （52051）を 1:1 移植し、**p 文 `p_8_7_fseq_descend`（pss_paper:2253）と
     `p_8_3_TransCondII_oper_descend` の両方を出力**（＝⛔ だった 8.3 項目も同時に解禁）。
@@ -840,7 +840,7 @@ parent/Lng 形に落としてから作業する。
     → **親が 2026-07-17 に `oper_len2_fd`/`parent_one_zero_fd`（8.7-fseq-descend）と
     `operB_succ_body_ci`（8.1-Trans-fseq-condI）を public 昇格**（両ファイル緑・衝突なし）。
     次の agent はこの 2 Props を新規数学なしで閉じられる。
-  - 🚨 `8.7-termination` ★ — **Wave J で組み上がった（緑、公開 6 本）＝残差は 27 本ちょうど**。
+  - 🚨🤖 `8.7-termination` ★ — **Wave J で組み上がった（緑、公開 6 本）＝残差は 27 本ちょうど**。
     `p_8_7_termination (H : TerminationResidual) (f M n) (hM : STPS M) (hn : 1 ≤ n)
     (hf : ∀ k, 1 ≤ k → 1 ≤ f k) : Fdom f M n` が **pss_paper:2329 と逐語一致**（親が確認）。
     原文の集合形（`ST_PS × ℕ₊ ⊂ Dom(F)`, content.md 5851）も `STPS_prod_pos_subset_Fdom` で提供。

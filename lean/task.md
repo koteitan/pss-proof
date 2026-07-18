@@ -55,21 +55,21 @@
     - ✅ 補題（強単項性の下での部分表現の単項成分の基本性質） — `8.2-subexpr-component-strongmono`[r2]
     - ✅ 補題（条件(V)の下での右端の親の基本性質） — `8.2-condV-rightmost-parent`[r1]
     - ✅ 補題（条件(V)の下での終切片と `Trans` の関係） — `8.2-condV-terminal-slice-Trans-close`
-    - 🚨 命題（条件(II)か(IV)の下での終切片と `Trans` の関係） — `8.2-condIIIV-terminal-slice-Trans`
+    - 🚨🤖 命題（条件(II)か(IV)の下での終切片と `Trans` の関係） — `8.2-condIIIV-terminal-slice-Trans`
   - 🚨 §8.3 条件(II)の下での展開規則
     - ✅ 補題（第 `0` 種型基本列の基本不等式） — `8.3-kind0-base-ineq`[r1]
     - ✅ 補題（第 `0` 種型基本列の基本分岐規則） — `8.3-kind0-branch-rule`[r1]
     - ✅ 補題（第 `0` 種型基本列の基本基点関係） — `8.3-kind0-base-basepoint`[r1]
-    - 🚨 命題（条件(II)の下での `Trans` と基本列の交換関係） — `8.3-Trans-fseq-condII` ⛔8.7-fseq-descend
+    - 🚨🤖 命題（条件(II)の下での `Trans` と基本列の交換関係） — `8.3-Trans-fseq-condII` ⛔8.7-fseq-descend
   - 🚨 §8.4 条件(III)か(IV)の下での展開規則
-    - 🚨 命題（条件(III)か(IV)の下での `Trans` と基本列の交換関係） — `8.4-Trans-fseq-condIII-IV`
+    - 🚨🤖 命題（条件(III)か(IV)の下での `Trans` と基本列の交換関係） — `8.4-Trans-fseq-condIII-IV`
     - ✅ 補題（右端の非許容直系先祖の基本性質） — `8.4-rightmost-nonadm-ancestor`[r1]
     - 🚨 補題（条件(III)か(IV)の下での基本列の基本性質） — `8.4-fseq-basic`[r1]
-    - 🚨 補題（条件(III)～(V)の下での右端の置き換えと `Trans` の関係） — `8.4-rightmost-replace-Trans`[r1]
+    - 🚨🤖 補題（条件(III)～(V)の下での右端の置き換えと `Trans` の関係） — `8.4-rightmost-replace-Trans`[r1]
     - 🚨 補題（条件(III)～(VI)の下での展開規則の基本性質） — `8.4-oper-basic`
     - 🚨 補題群（条件(III)～(VI)の下での各種 scb 分解） — `8.4-scb-decompositions`
   - 🚨 §8.5 条件(V)の下での展開規則
-    - 🚨 命題（条件(V)の下での `Trans` と基本列の交換関係） — `8.5-Trans-fseq-condV`
+    - 🚨🤖 命題（条件(V)の下での `Trans` と基本列の交換関係） — `8.5-Trans-fseq-condV`
     - ✅ 補題（条件(V)の下での `Joints` と `FirstNodes` と `t₂` の基本性質） — `8.5-Joints-FirstNodes-basic`[r1]
     - ✅ 補題（条件(V) admissible 底3値と non-admissible 導出層） — `8.5-exchV-values-close`
     - 🚨 補題（条件(V)の下での各種 scb 分解） — `8.5-scb-decompositions`
@@ -81,11 +81,11 @@
     - 🚨 命題（条件(VI)の下での `Trans` と基本列の交換関係） — `8.6-Trans-fseq-condVI`
   - 🚨 §8.7 主結果
     - ✅ 補題（公差 `(0,0)` のペア数列の `Trans` の基本性質） — `8.7-const00-Trans`[r1]
-    - 🚨 補題（基本列の降下性） — `8.7-fseq-descend`
+    - 🚨🤖 補題（基本列の降下性） — `8.7-fseq-descend`
     - ✅ 補題（順序数項の再帰構造） — `8.7-OT-scb-recursive`[r1]
     - ✅ 補題（順序数項の共終数の遺伝性） — `8.7-OT-dom-hereditary`[r1]
     - ✅ 補題（順序数項の末尾項の零化可能性、top-level 値形） — `8.7-OT-tail-annihilable`[r1]
     - 🚨 補題（`Pred` と `[0]` の関係） — `8.7-Pred-oper0`[r1]
     - ✅ 補題（順序数項の基本例） — `8.7-OT-examples`[r1]
-    - 🚨 補題（`Trans` が標準形を保つこと） — `8.7-Trans-preserves-OT`
-    - 🚨 **定理（標準形ペア数列システムの停止性）** — `8.7-termination`
+    - 🚨🤖 補題（`Trans` が標準形を保つこと） — `8.7-Trans-preserves-OT`
+    - 🚨🤖 **定理（標準形ペア数列システムの停止性）** — `8.7-termination`
