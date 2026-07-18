@@ -872,6 +872,18 @@ parent/Lng 形に落としてから作業する。
     2 フィールドを `exchVMres : ExchVMTowerResidual` 1 本に置換。
     **現フィールド 5**: `otMulti`／`otIIIIVdata`／`condII`／`exch84slicepkg`／`exchVMres`。
     audit は 4 葉表示（exchV 過少計上バグ込み、下記）。
+  - 🎉 **Wave AF（2026-07-19 午後、Opus 4、全緑）— Kind1Shape・L1SliceData 陥落＋condIIIVts は VE3/VE4 のみ**:
+    ①corner: `Base1pCorner`＋`CornerC2Kind1` 討伐（RightAnces chain 不要の condIV pin 技。
+    残=`CornerCoreReadouts_cc` のみ=d4vx_core 塔（c4cx2_condIV_mnform_of_slice）。`8.4-corner-deep`）
+    ②🎉**`kind1Shape_holds` 無条件**（812 行、s84c3_RightAnces_chain 55372 の完全 port。
+    set N/Q で rewrite loop 回避。`8.4-kind1-shape`）③🎉**`l1SliceData_holds` 無条件**
+    （L1 幾何を条件非依存に再導出、s84d_c2hole_L1 を成分別合同で迂回。`8.4-l1-slice-data`）
+    ④deep3→**deep2 相当**: EqdiagMlevel 討伐（ROW10=既存 reduced_coeff で Min/Max 機構不要）→
+    **condIIIVts 残={VE3Base, VE3Step, VE4Base, VE4Step}**（§7.4 head-shift readback surgery。
+    ⚠️naive prefix-append 帰納は反証済→m_7_4_Trans_Mark_Pred＋Mark_Trans_repr で。
+    `8.2-condIIIV-deep3`）。
+    **slicepkg 残差**: SliceExt→{Np_c2decomp_sc3}（Kind1/L1/C7 済）＋CornerCoreReadouts＋
+    （Base 系は corner 済で dispatch 完結間近）。**otSetleCore=census 3 葉が最後の山**。
   - 🎉 **Wave AE（2026-07-19 午後、Opus 4、全緑）— `rm84Exists` フィールド陥落＝残差 4**:
     ①🎉**`rm84RFacts_holds` 無条件**（s84c2_R_facts 完全 port、iff1 は factor-by-factor 構築で
     fragility 回避）→`rightmost84ReplaceExists_rc2` 無条件→**termination の rm84Exists 削除
