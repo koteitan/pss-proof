@@ -1024,6 +1024,22 @@ parent/Lng 形に落としてから作業する。
     2 フィールドを `exchVMres : ExchVMTowerResidual` 1 本に置換。
     **現フィールド 5**: `otMulti`／`otIIIIVdata`／`condII`／`exch84slicepkg`／`exchVMres`。
     audit は 4 葉表示（exchV 過少計上バグ込み、下記）。
+  - **Wave T（2026-07-19 未明、Opus 6、全緑）— 3 フィールド 1:1 絞り込み＋slicepkg legs 前進**:
+    ①condII→`CondIIIVterminalSlice`（`8.3-condII-Boundary-close`。**重要発見: vcx_VE_all は
+    VE2/VE3/VE4 を供給しない**——それらは condII/IV 用 VE34 back-peel（wip 93171–108761、
+    ~15.6k 行未移植、vg2x_/vg3x_/vg4x_/vg7x_/bfx_/bgx_/hqx_）。vcx_VE_all が閉じるのは
+    HEADEQ0(108441) だけ。**VE34 campaign が condII の律速**）②otSetle→`OTintIIIIV_otSetleCore`
+    （OTA1 の G 条件は閉じた。残 2 原子=isOT_BT(ins A0)（ot1_A0OT scratch:4762）＋SETLE1
+    （ox10_SETLE1_ltJ scratch:10995、ox5–ox10 spine-descent ~1000 行未移植）。`8.7-otint-setle`）
+    ③otMultiInterior→`OTmulti_interior_notCondI_om2`（条件(I) 完全クローズ。**実ホスト 220/220 が
+    条件(I)＝残差領域は経験的に空虚**。`8.7-otmulti-interior`＋audit script）
+    ④mnform 両 leg 討伐 modulo `MnformResidual`（塔帰納は無条件、`8.4-exch84-mnform`）
+    ⑤Base1p＋Base0_A0bridge 討伐 modulo `Exch84_scbDecompPkg`/`Cnv_c2_shape_condIV`/
+    `Cnv_nested_hole_pair`（`8.4-exch84-base1p`）⑥nadm 原子→`Rightmost84ReplaceCorrected`＋
+    `NadmW2nostr`＋`NadmC2L1` の 3 分解（`8.5-exchV-nadm-atomics`）。
+    **現フィールド 5（全て絞り込み後）**: `otMultiNotCondI`/`otSetleCore`/`condIIIVts`/
+    `exch84slicepkg`/`exchVMnadmAtomic`。**残る深部キャンペーン**: VE34 back-peel（最大）／
+    ox5–ox10＋ot1_A0OT／MnformResidual＋scbDecompPkg 群／NadmW2nostr・NadmC2L1。
   - 🎉 **Wave R（2026-07-18 夜、Opus 8、全緑）— Oper5 完全クローズ＋TV_LDJB 陥落＋3 フィールド絞り込み**:
     ①`8.4-oper5-residual` 拡張完了: `oper5Residual_holds`/`oper5Support_unconditional`/
     `oper_props_5_unconditional`（§8.4 part(5) 無条件）②`8.3-condII-LDJB-lttrmax`:

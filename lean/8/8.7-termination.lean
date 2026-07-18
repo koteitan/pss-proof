@@ -30,6 +30,9 @@ import «8».«8.7-otint-transport-data»
 import «8».«8.5-exchV-M-tower-close»
 import «8».«8.5-exchV-values-close»
 import «8».«8.7-otdisp-OTmulti2»
+import «8».«8.3-condII-Boundary-close»
+import «8».«8.7-otint-setle»
+import «8».«8.7-otmulti-interior»
 
 /-!
 # §8.7 定理（標準形ペア数列システムの停止性） — 主定理
@@ -224,16 +227,16 @@ structure TerminationResidual : Prop where
   `OTint` は wave Q で 4 hasParent legs に分解され、condV 両枝は条件 (V) 塔から、
   condIII/IV は `exch84slicepkg`＋下の `otIIIIVdata` から供給＝どちらも
   残差フィールドではなくなった。） -/
-  otMultiInterior : OTmulti_interior_om2
+  otMultiNotCondI : OTmulti_interior_notCondI_om2
   /-- OT 柱 (2/2)。条件 (III)/(IV) の OT 内部枝の transport 残差、wave R で
   4 conjunct → 2 に絞り込み（`8.7-otint-transport-data`:  `OTA1_ltJ`/`SETLE1_ltJ` 対のみ。
   T_B 側 2 conjunct は無条件済）。`otIIIIVdata_of_otSetle` で旧形を導出。 -/
-  otSetle : OTintIIIIV_otSetleResidual
+  otSetleCore : OTintIIIIV_otSetleCore
   /-- 条件 (II) の交換則の核。Isabelle `c2sx_condII_masterCF` (pss_wip.thy:87430)。
   OT 柱の `exchII` と降下柱の `exchII` を供給。
   （条件 (I) の核 `CondI_masterCF` は wave M で `8.1-condI-masterCF-chunk5` が無条件証明
   ＝`scx_condI_j0pos_masterCF`。残差フィールドではなくなり、OT/降下柱とも直接供給。） -/
-  condII : CondII_masterCF
+  condIIIVts : CondIIIVterminalSlice
   /-- 条件 (III)/(IV) の交換則の真の残差。wave P で `8.4-exch84-regsp` が
   `Exch84_condIIIIV_pkg_holds : slicepkg → pkg` を証明したので、フィールドは
   producer → pkg → slicepkg（`8.4-exch84-producer`:128、oi5 出力形）まで細くなった。
@@ -285,10 +288,10 @@ condIII/IV legs（slicepkg＋transport 残差、`8.7-otdisp-OTint-condIIIIV`）�
 condV 両 legs（条件 (V) 塔から、`8.7-otdisp-OTint-condV`）＋
 `OTdisp_OTpred_holds` を通す。旧フィールド `otInt` は残差ではなくなった。 -/
 private theorem otIIIIVdata_term (H : TerminationResidual) : OTintIIIIV_transportData :=
-  otIIIIVdata_of_otSetle H.otSetle
+  otIIIIVdata_of_otSetle (otSetle_holds H.otSetleCore)
 
 private theorem otMulti_term (H : TerminationResidual) : OTdisp_OTmulti :=
-  OTdisp_OTmulti_of_interior_om2 H.otMultiInterior
+  OTdisp_OTmulti_of_interior_om2 (otMultiInterior_holds H.otMultiNotCondI)
 
 private theorem otInt_term (H : TerminationResidual) : OTdisp_OTint :=
   OTdisp_OTint_of_legs OTdisp_OTpred_holds
@@ -305,7 +308,7 @@ private theorem otInt_term (H : TerminationResidual) : OTdisp_OTint :=
 theorem Trans_STPS_OT_B (H : TerminationResidual) (M : PS) (hM : STPS M) :
     Trans M ∈ OT_B :=
   Trans_preserves_OT
-    (OTdisp_exchI_of_CondI scx_condI_j0pos_masterCF) (OTdisp_exchII_of_CondII H.condII)
+    (OTdisp_exchI_of_CondI scx_condI_j0pos_masterCF) (OTdisp_exchII_of_CondII (condII_masterCF_of_condIIIV H.condIIIVts))
     (otInt_term H) OTdisp_OTpred_holds (otMulti_term H) OTdisp_zerocol_predval_holds
     OTdisp_Trans_fseq_condI_n1_holds
     (OTdisp_condI_j0z_eq_of_CondI scx_condI_j0pos_masterCF operI_j0zero_trans_mult_holds
@@ -337,7 +340,7 @@ private theorem exchVadmForms_term (H : TerminationResidual) :
 private theorem fseqDescTOT_term (H : TerminationResidual) :
     FseqDesc_Trans_preserves_OT :=
   FseqDesc_Trans_preserves_OT_of_OTdisp
-    (OTdisp_exchI_of_CondI scx_condI_j0pos_masterCF) (OTdisp_exchII_of_CondII H.condII)
+    (OTdisp_exchI_of_CondI scx_condI_j0pos_masterCF) (OTdisp_exchII_of_CondII (condII_masterCF_of_condIIIV H.condIIIVts))
     (otInt_term H) OTdisp_OTpred_holds (otMulti_term H) OTdisp_zerocol_predval_holds
     OTdisp_Trans_fseq_condI_n1_holds
     (OTdisp_condI_j0z_eq_of_CondI scx_condI_j0pos_masterCF operI_j0zero_trans_mult_holds
@@ -354,7 +357,7 @@ theorem Trans_fseq_descend (H : TerminationResidual) (M : PS) (n : ℕ)
   p_8_7_fseq_descend
     (fseqDescTOT_term H)
     (FseqDesc_exchI_of_CondI scx_condI_j0pos_masterCF)
-    (FseqDesc_exchII_of_CondII H.condII)
+    (FseqDesc_exchII_of_CondII (condII_masterCF_of_condIIIV H.condIIIVts))
     (FseqDesc_exchIII_of_Exch84 (exch84producer_term H) Exch84_condIIIIV_noParent_holds_enp)
     (FseqDesc_exchIV_of_Exch84 (exch84producer_term H) Exch84_condIIIIV_noParent_holds_enp)
     (FseqDesc_exchV_of_ExchV (exchVadmForms_term H) c1_shape_holds
