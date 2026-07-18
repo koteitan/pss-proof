@@ -872,6 +872,18 @@ parent/Lng 形に落としてから作業する。
     2 フィールドを `exchVMres : ExchVMTowerResidual` 1 本に置換。
     **現フィールド 5**: `otMulti`／`otIIIIVdata`／`condII`／`exch84slicepkg`／`exchVMres`。
     audit は 4 葉表示（exchV 過少計上バグ込み、下記）。
+  - 🎉 **Wave AG（2026-07-19 夕、Opus 4、全緑）— slicepkg フィールドが単一原子に**:
+    ①**Np_c2decomp 無条件討伐＋連鎖組立**（`8.4-np-c2decomp`: C7Rightend/SliceExtTupleEngines/
+    SliceExtTupleResidual も同時に無条件化、`exch84slicepkg_of_cornerReadouts_nc2` で
+    **slicepkg 全体が CornerCoreReadouts_cc 1 本 modulo に**）②corner readouts: LEAF3/5 討伐、
+    LEAF4 は `CornerNpSliceValue_cr2` 1 本に還元（505/505 数値検証。閉じ方=Red(s84x_N M)
+    全 slice 版の regsp-strictlt 類似。`8.4-corner-readouts`）→**termination の exch84slicepkg
+    フィールドを `cornerNpValue : CornerNpSliceValue_cr2` に置換**（原子 1 本）
+    ③VE Base: 最小 base（Lng=TrMax+2）両討伐→残差を run-region 限定 `VE3/VE4BaseDeep` に尖鋭化
+    （`8.2-condIIIV-ve34-base`）④VE Step: 幾何準備のみ（**bpx_ round は Isabelle でも
+    研究フロンティア級**の注記。`8.2-condIIIV-ve34-step`）。
+    **現フィールド 4**: `otMultiIntCond`(空虚)/`otSetleCore`(census 3 葉)/
+    `condIIIVts`({VE3/4 BaseDeep, VE3/4 Step})/`cornerNpValue`(1 値等式)。
   - 🎉 **Wave AF（2026-07-19 午後、Opus 4、全緑）— Kind1Shape・L1SliceData 陥落＋condIIIVts は VE3/VE4 のみ**:
     ①corner: `Base1pCorner`＋`CornerC2Kind1` 討伐（RightAnces chain 不要の condIV pin 技。
     残=`CornerCoreReadouts_cc` のみ=d4vx_core 塔（c4cx2_condIV_mnform_of_slice）。`8.4-corner-deep`）
