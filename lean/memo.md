@@ -872,6 +872,16 @@ parent/Lng 形に落としてから作業する。
     2 フィールドを `exchVMres : ExchVMTowerResidual` 1 本に置換。
     **現フィールド 5**: `otMulti`／`otIIIIVdata`／`condII`／`exch84slicepkg`／`exchVMres`。
     audit は 4 葉表示（exchV 過少計上バグ込み、下記）。
+  - 🎉 **Wave AE（2026-07-19 午後、Opus 4、全緑）— `rm84Exists` フィールド陥落＝残差 4**:
+    ①🎉**`rm84RFacts_holds` 無条件**（s84c2_R_facts 完全 port、iff1 は factor-by-factor 構築で
+    fragility 回避）→`rightmost84ReplaceExists_rc2` 無条件→**termination の rm84Exists 削除
+    （フィールド 5→4）**（`8.4-rm84-rfacts-close`）②Base0/1p 両 leg 討伐（ltJ/corner dispatch、
+    残=既存 MnformCornerResidual＋新 `Base1pCorner_bl3` 1 本。`8.4-base-legs`）
+    ③C7Rightend→rm84 に統合（rc2 で即閉）＋`Np_c2decomp_sc3`（w84x_d4b_dispatch 79198。
+    残深部=Kind1Shape(s84c3_RightAnces_chain 55372)/L1SliceData(s84d_L1_data 59295)。
+    `8.4-slice-ext-close`）④deep4 前進（VE2 prefix geom 討伐、`8.2-condIIIV-deep4`）。
+    **現フィールド 4**: `otMultiIntCond`(空虚)/`otSetleCore`(census 3 葉)/`condIIIVts`(deep4)/
+    `exch84slicepkg`(残={SliceExt 3 深部, CornerCore 2, Base1pCorner, MnformCornerCore 5 葉})。
   - **Wave AD（2026-07-19 昼、Opus 4、全緑）— 🚨scbDecompPkg 反証（8 個目）＋R-facts 3 conjunct 化**:
     ①rfacts: Frame 全 5 部を討伐/還元→残差 `Rm84RFacts`（dich/RTPS(R)/adm 一致の 3 conjunct、
     閉じ方の詳細ルートを needs に文書化済——nextrel1 boolean 構築の fragility 対策込み。
