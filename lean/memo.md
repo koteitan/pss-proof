@@ -972,6 +972,39 @@ parent/Lng 形に落としてから作業する。
     **次 wave 候補**: ①7.1 promotion→Oix 3 本 discharge＋OixAlign3（oix uncond 化）
     ②nadm 組立（fact(c) c6nx_t2eq＋c6zx_L_tower(72166)/c6nx_condVI_exch_nadm_uncond(76705)
     ＋Oper5Support の s84c1 群）③LDJB readouts ④VE campaign 始動（a0x_base_VE から）。
+  - 🎉🎉 **Wave P（2026-07-18、Opus 8 並列、全 8 file 緑）で残差 6 → 5 葉（真のフィールド 7 → 6）**。
+    主定理は緑・公理クリーンのまま（full build 3176 jobs、termination 再配線済）。
+    **① `CondVIres_nadm_Ltower_v6p` 無条件クローズ**（`8.6-condVI-nadm-close`、
+    `CondVIres_nadm_Ltower_holds_nc`）: adm 兄弟の w=1-collapse ルートを踏襲し
+    **`m_8_4_oper_props_5` 非依存**で閉じた。fact(c)=`c6nx_t2eq` は `m_7_3_Mark_rightmost2`
+    を Pred M に適用（corner Lng=3 は `two_column_Mark`）。連鎖で `CondVIExchNadm`／
+    `CondVI_scbdec_nadm_forms_v6` が落ち、termination の `condVInadm` フィールド削除。
+    **② `oix_transport` 無条件化**（`8.7-otint-uncond`、`oix_transport_uncond`）:
+    3 twins（promotion 済）＋ `OixAlign3` 移植（otx2_peel/top_shape は 8.7-otpred-brickB
+    の公開分を再利用、join3/align3 に拡張）。b1x_triG↔triGBC は defeq 確認済。
+    **③ Exch84 大進撃**: REGS の 3 残差全滅（`Regs_jm3Marked_holds`/`Regs_MCOND_holds`
+    =`8.4-exch84-mcond`、`regs_jm2_lt_transJ0_holds`=`8.4-parent-max`。
+    **⚠️memo 旧記録の訂正: parent_max の新規移植は不要だった**——公開済み
+    `nextR0_largest_below`+`ancestor_basic_1` で値レベル閉じ）＝`regS_holds` 無条件化。
+    さらに `Exch84_condIIIIV_pkg_holds : slicepkg → pkg`（`8.4-exch84-regsp`）で
+    termination フィールドを producer→**slicepkg** に細化。Regsp/Base0/Base1p/Mnform の
+    忠実 Prop 定義と membership scaffolding（`Regsp_of_disj_sharp`）も bank。
+    **④ Oper5Support 7/10 クローズ**（`8.4-oper5-support`、`oper5Support_holds` は
+    `Oper5Residual`（§7.4-Mark 依存の 3 葉: marked_L/Mark_L_mstar/interior regime）modulo。
+    oper_succ_append 恒等式 = M[m+1]=L_m++tail が新基盤）
+    **⑤ LDJB readouts 3/5**: `RN_ldj_pj_holds`+`TVX_pos1ldj_holds`（`8.3-condII-LDJB-readouts`）
+    ＋`TVX_dstrict_ldjb_holds`（⑥内）→ `TV_LDJB` 残= RN_a0_trmax/RN_a0_lt_trmax の 2 本
+    （roadmap は readouts ファイルの needs に詳細）
+    **⑥ VE 周縁 7 本公開**（`8.2-condV-VE-wnx`）: `repr_entry1_shift_gen`（public 化）／
+    `wnx_seg_transport_W1/W2/W3`／`c2sx_reach_leab/leam`／`TVX_dstrict_ldjb_holds`。
+    wnx_run_entries は 8.7-otpred-brickC0 に既公開（重複回避）。
+    **残 5 葉（実質 4）**: `CondII_masterCF`（TV 残= NotLdjReg[VE 依存]/TvxBoundaryData
+    [VE 依存]/LDJB 2 readouts）／`Exch84_condIIIIV_slicepkg`（disj_sharp/Base0/Base1p/
+    Mnform/oi5 組立）／`OTdisp_OTint`（**oix uncond 済→残= 8.7-otdisp-OTint の 4 hasParent
+    legs**: oix_OTint_condV_adm wip:111599/condV_nadm 112041/oi8_condIII scratch:3716/
+    condIV 3774）／`OTdisp_OTmulti`（OTint 待ち）＋ audit 見落とし分 §8.5 塔
+    `ExchVres_adm_M_tower`/`ExchV_nf3x`（`ExchV_M_tower` 1 本に還元済（props2）、
+    実体= m_8_4_oper_props_5＋s84x_L 帰納＝④の campaign と同根）。
     ⚠️**audit の過少計上バグ（2026-07-18 発見）**: `audit_8_7_termination.py` は
     `ExchV_nf3x ← nf3x_holds`・`ExchV_scbdec_adm_forms ← adm_forms_holds` を CLOSED 扱い
     するが、**両 discharger は仮定付き**（`ExchVres_{adm,nadm}_M_tower` を要求）。

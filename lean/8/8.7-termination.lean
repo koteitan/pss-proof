@@ -19,6 +19,8 @@ import «8».«8.4-exch84-noparent»
 import «8».«8.1-condI-masterCF-chunk5»
 import «8».«8.7-otpred-close»
 import «8».«8.6-condVI-adm-forms»
+import «8».«8.6-condVI-nadm-close»
+import «8».«8.4-exch84-regsp»
 
 /-!
 # §8.7 定理（標準形ペア数列システムの停止性） — 主定理
@@ -39,13 +41,15 @@ import «8».«8.6-condVI-adm-forms»
     `y5_Trans_descend` (同 :14208)。
   * 組み立ての本体は `y4_PSS_wf_of_KK` (同 :13806)。
   Isabelle 側は **仮定ゼロ・sorry ゼロ**で閉じている。
-- 状態: 🤖 **GREEN-MODULO 7**（sorry 0、axioms = propext/Classical.choice/Quot.sound）。
+- 状態: 🤖 **GREEN-MODULO 6**（sorry 0、axioms = propext/Classical.choice/Quot.sound）。
   下の `TerminationResidual`（wave L 22→10、wave M `CondI_masterCF` →9、
-  wave N `OTdisp_OTpred`＋`CondVI_scbdec_adm_forms_v6` 無条件化により →7 フィールド）が、
+  wave N `OTdisp_OTpred`＋`CondVI_scbdec_adm_forms_v6` →7、
+  wave P `CondVIExchNadm` 無条件化（nadm L-tower）＋ `Exch84` の
+  producer→slicepkg 細化により →6 フィールド）が、
   Lean 版の停止性定理と**無条件**の停止性定理を隔てる**全て**である。
-  現行 7 フィールド = OT 柱 `OTdisp_OTint`/`OTdisp_OTmulti` ＋ `CondII_masterCF` ＋
-  `Exch84_condIIIIV_producer` ＋ 条件 (V) `ExchVres_adm_M_tower`/`ExchV_nf3x` ＋
-  条件 (VI) 非許容 `CondVIExchNadm`。（以下の詳細表は残差 22 時点の史料。）
+  現行 6 フィールド = OT 柱 `OTdisp_OTint`/`OTdisp_OTmulti` ＋ `CondII_masterCF` ＋
+  `Exch84_condIIIIV_slicepkg` ＋ 条件 (V) `ExchVres_adm_M_tower`/`ExchV_nf3x`。
+  （以下の詳細表は残差 22 時点の史料。）
 
 ## 組み立て（Isabelle `y4_PSS_wf_of_KK` / `y5_Fdom` と 1:1）
 
@@ -217,10 +221,11 @@ structure TerminationResidual : Prop where
   （条件 (I) の核 `CondI_masterCF` は wave M で `8.1-condI-masterCF-chunk5` が無条件証明
   ＝`scx_condI_j0pos_masterCF`。残差フィールドではなくなり、OT/降下柱とも直接供給。） -/
   condII : CondII_masterCF
-  /-- 条件 (III)/(IV) の交換則。`8.4-Trans-fseq-condIII-IV`:121。
-  `noParent` 脚 (旧 `exch84noParent`) は wave L で `8.4-exch84-noparent` が
-  無条件で供給済み。 -/
-  exch84producer : Exch84_condIIIIV_producer
+  /-- 条件 (III)/(IV) の交換則の真の残差。wave P で `8.4-exch84-regsp` が
+  `Exch84_condIIIIV_pkg_holds : slicepkg → pkg` を証明したので、フィールドは
+  producer → pkg → slicepkg（`8.4-exch84-producer`:128、oi5 出力形）まで細くなった。
+  `noParent` 脚は wave L の `8.4-exch84-noparent` が無条件供給済み。 -/
+  exch84slicepkg : Exch84_condIIIIV_slicepkg
   /-- 条件 (V) (1/2)。`8.5-exchV-props`:412 の `ExchVres_adm_M_tower`
   ＝ Isabelle `m_8_5_scbdec_adm_forms` (pss_wip.thy:57556) の結論 (4)(5) のみ
   （塔の閉形式 ＝ `m_8_4_oper_props_5` 同 :54005 ＋ `s84x_L` 帰納）。
@@ -231,17 +236,26 @@ structure TerminationResidual : Prop where
   (pss_wip.thy:86273)。§8.4 クラスタ側の brick で、`8.5-exchV-props` の
   scope 外として唯一残ったもの。 -/
   exchVnf3x : ExchV_nf3x
-  /-- 条件 (VI) の非許容枝。`8.6-Trans-fseq-condVI`:236。OT 柱の `condVI_nadm` も供給。
-  （許容枝 `CondVIAdmTowerScb` は wave N で `8.6-condVI-adm-forms` が
-  `CondVI_scbdec_adm_forms_v6` を無条件証明し、`condVIAdmTowerScb_of_scbforms_v6`
-  で供給＝残差フィールドではなくなった。OT 柱 `condVI_j1` は wave L で無条件化済。） -/
-  condVInadm : CondVIExchNadm
 
 /-- 条件 (VI) 許容枝の供給（wave N 統合）。`8.6-condVI-adm-forms` が閉じた
 `CondVI_scbdec_adm_forms_v6` を `8.6-condVI-close` の
 `condVIAdmTowerScb_of_scbforms_v6` に通す。残差ではないので `H` を取らない。 -/
 private theorem condVIadmTower_term : CondVIAdmTowerScb :=
   condVIAdmTowerScb_of_scbforms_v6 CondVI_scbdec_adm_forms_v6_holds
+
+/-- 条件 (VI) 非許容枝の供給（wave P 統合）。`8.6-condVI-nadm-close` が閉じた
+`CondVIres_nadm_Ltower_v6p` を `8.6-condVI-props` の `condVIExchNadm_holds_v6p`
+に通す。旧フィールド `condVInadm`＝残差ではなくなった（wave N の許容枝と対）。
+OT 柱の `condVI_nadm` もこれが供給。 -/
+private theorem condVInadm_term : CondVIExchNadm :=
+  condVIExchNadm_holds_v6p CondVIres_nadm_Ltower_holds_nc
+
+/-- 条件 (III)/(IV) producer の供給（wave P 統合）: slicepkg → pkg → producer
+（`8.4-exch84-regsp` の `Exch84_condIIIIV_pkg_holds` ＋ `8.4-exch84-props` の
+`Exch84_condIIIIV_producer_holds`）。 -/
+private theorem exch84producer_term (H : TerminationResidual) :
+    Exch84_condIIIIV_producer :=
+  Exch84_condIIIIV_producer_holds (Exch84_condIIIIV_pkg_holds H.exch84slicepkg)
 
 /-! ## 3. OT 柱 — `Trans(ST_PS) ⊆ OT_B`（Isabelle `y5_Trans_OT_B`） -/
 
@@ -258,7 +272,7 @@ theorem Trans_STPS_OT_B (H : TerminationResidual) (M : PS) (hM : STPS M) :
       FseqDesc_m_8_2_subexpr_component_Pred_Adm0_clause1_holds)
     OTdisp_condI_j1eq1_eq_holds OTdisp_condVI_j1eq1_eq_holds
     (OTdisp_condVI_adm_eq_of_CondVIAdmTowerScb condVIadmTower_term)
-    (OTdisp_condVI_nadm_eq_of_CondVIExchNadm H.condVInadm)
+    (OTdisp_condVI_nadm_eq_of_CondVIExchNadm condVInadm_term)
     M hM
 
 /-- `8.6-Trans-fseq-condVI`:247 の名前付き仮定 `TransPreservesOT` は OT 柱と
@@ -290,7 +304,7 @@ private theorem fseqDescTOT_term (H : TerminationResidual) :
       FseqDesc_m_8_2_subexpr_component_Pred_Adm0_clause1_holds)
     OTdisp_condI_j1eq1_eq_holds OTdisp_condVI_j1eq1_eq_holds
     (OTdisp_condVI_adm_eq_of_CondVIAdmTowerScb condVIadmTower_term)
-    (OTdisp_condVI_nadm_eq_of_CondVIExchNadm H.condVInadm)
+    (OTdisp_condVI_nadm_eq_of_CondVIExchNadm condVInadm_term)
 
 /-- Isabelle `y5_Trans_descend` (pss_scratch.thy:14208)。
 原文「補題（基本列の降下性）」(§8.7, 原文 5869)。 -/
@@ -301,11 +315,11 @@ theorem Trans_fseq_descend (H : TerminationResidual) (M : PS) (n : ℕ)
     (fseqDescTOT_term H)
     (FseqDesc_exchI_of_CondI scx_condI_j0pos_masterCF)
     (FseqDesc_exchII_of_CondII H.condII)
-    (FseqDesc_exchIII_of_Exch84 H.exch84producer Exch84_condIIIIV_noParent_holds_enp)
-    (FseqDesc_exchIV_of_Exch84 H.exch84producer Exch84_condIIIIV_noParent_holds_enp)
+    (FseqDesc_exchIII_of_Exch84 (exch84producer_term H) Exch84_condIIIIV_noParent_holds_enp)
+    (FseqDesc_exchIV_of_Exch84 (exch84producer_term H) Exch84_condIIIIV_noParent_holds_enp)
     (FseqDesc_exchV_of_ExchV (exchVadmForms_term H) c1_shape_holds
       condV_setup_holds t2_nonzero_condV_holds H.exchVnf3x fseq_condV_holds)
-    (FseqDesc_exchVI_of_CondVI condVIadmTower_term H.condVInadm
+    (FseqDesc_exchVI_of_CondVI condVIadmTower_term condVInadm_term
       (transPreservesOT_term H))
     operI_j0zero_trans_mult_holds
     FseqDesc_m_8_2_subexpr_component_Pred_Adm0_clause1_holds
