@@ -65,7 +65,7 @@ private theorem le1Aux_chain_ps (M : PS) (a : ℕ) (b fuel : ℕ)
           exact hstep j haj (by omega)
         · omega
 
-private theorem adm_row1_ancestry_ps (M : PS) (j : ℕ)
+theorem adm_row1_ancestry_ps (M : PS) (j : ℕ)
     (hM : TPS M) (hj : j ≤ Lng M - 1) :
     leR M 1 (Adm M j) j = true := by
   have hL : 0 < Lng M := List.length_pos_of_ne_nil hM

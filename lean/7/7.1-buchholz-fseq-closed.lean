@@ -71,7 +71,7 @@ private theorem BZero_le_bc (a : BT) : leBT BZero a = true := by
 private def setLeBC (M N : Set BT) : Prop :=
   ∀ x, x ∈ M → ∃ y, y ∈ N ∧ leBT x y = true
 
-private def triGBC (z b a : BT) : Prop :=
+def triGBC (z b a : BT) : Prop :=
   ∀ u c, leBT b c = true → leBT c a = true →
     setLeBC (GBT u b) (GBT u c ∪ GBT u z ∪ {BZero})
 
@@ -251,7 +251,7 @@ private theorem GBT_antitone_bc {u v : ℕ∞} (huv : u ≤ v) (t : BT) :
 
 /-! Buchholz Lemma 3.4: `G`-control transfers the ordinal side condition. -/
 
-private theorem G_control_bc {z b a : BT} {u : ℕ∞}
+theorem G_control_bc {z b a : BT} {u : ℕ∞}
     (htri : triGBC z b a) (hba : leBT b a = true)
     (hGa : ∀ x ∈ GBT u a, lessBT x a = true)
     (hGz : ∀ x ∈ GBT u z, lessBT x b = true) :
@@ -331,7 +331,7 @@ private theorem leBT_cons_iff_bc (p q : BP) (ps qs : List BP) :
     Bool.and_eq_true, beq_iff_eq, BT.trm.injEq, List.cons.injEq]
   tauto
 
-private theorem sandwich_prefix_bc (ps xs ys : List BP) (c : BT)
+theorem sandwich_prefix_bc (ps xs ys : List BP) (c : BT)
     (h₁ : leBT (.trm (ps ++ xs)) c = true)
     (h₂ : leBT c (.trm (ps ++ ys)) = true) :
     ∃ cs, c = .trm (ps ++ cs) ∧
@@ -376,7 +376,7 @@ private theorem sandwich_prefix_bc (ps xs ys : List BP) (c : BT)
           subst qs
           exact ⟨ds, rfl, hdx, hdy⟩
 
-private theorem sandwich_Dprin_bc {v : ℕ∞} {x y c : BT}
+theorem sandwich_Dprin_bc {v : ℕ∞} {x y c : BT}
     (h₁ : leBT (Dprin v x) c = true)
     (h₂ : leBT c (Dprin v y) = true) :
     ∃ c₀ cs, c = .trm (.db v c₀ :: cs) ∧

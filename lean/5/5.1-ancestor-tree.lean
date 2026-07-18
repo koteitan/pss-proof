@@ -97,7 +97,7 @@ theorem row0_transitive
       ancestor_basic_1 M b k c hM hbk hkc hbc
     omega
 
-private theorem le1Aux_implies_row0_at
+theorem le1Aux_implies_row0_at
     (M : PS) (fuel a b : ℕ) (hM : TPS M) (hb : b < Lng M)
     (h : le1Aux M fuel a b = true) : leR M 0 a b = true := by
   induction fuel generalizing b with
@@ -119,7 +119,7 @@ private theorem le1Aux_implies_row0_at
           simpa [leR] using hn.1.2
         exact row0_transitive M a p b hM hap0 hpb0
 
-private theorem row1_implies_row0_at
+theorem row1_implies_row0_at
     (M : PS) (a b : ℕ) (hM : TPS M) (h : leR M 1 a b = true) :
     leR M 0 a b = true := by
   have h1 : le1 M a b = true := by simpa [leR] using h

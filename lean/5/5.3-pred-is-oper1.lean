@@ -40,7 +40,7 @@ private theorem hasParent_next
   have hparent : parent M i j₁ = p := by simp [parent, hp]
   simpa [hparent] using hpNext
 
-private theorem hasParent_parent_lt
+theorem hasParent_parent_lt
     (M : PS) (i j₁ : ℕ) (h : hasParent M i j₁ = true) :
     parent M i j₁ < j₁ := by
   have hn := hasParent_next M i j₁ h

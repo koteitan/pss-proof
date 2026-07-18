@@ -147,7 +147,7 @@ private theorem e1_le_e1par_of_notnextR1_r3 (M : PS) (j : ℕ) (hM : TPS M)
 `(Pred K, a) ∈ Marked` から `leR K 0 a (Lng K - 2)`。
 Isabelle は `Pred_RT_PS` + `le0_prefix_agree` を rtrancl 帰納で回すが、ここでは値特徴付け
 `ancestor_basic_1` + `parent_exists_3` + `entry_Pred`（前者切片との接尾一致）で迂回する。 -/
-private theorem condII_reach_r3 (K : PS) (a : ℕ) (hKR : RTPS K) (hL : 1 < Lng K)
+theorem condII_reach_r3 (K : PS) (a : ℕ) (hKR : RTPS K) (hL : 1 < Lng K)
     (hmk : Marked (Pred K) a) (hab : a < Lng K - 2) :
     leR K 0 a (Lng K - 2) = true := by
   have hKT : TPS K := RTPS_TPS K hKR
