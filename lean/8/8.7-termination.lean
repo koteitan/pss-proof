@@ -39,6 +39,7 @@ import «8».«8.4-rightmost-readback»
 import «8».«8.4-rm84-rfacts-close»
 import «8».«8.4-np-c2decomp»
 import «8».«8.4-corner-readouts»
+import «8».«8.4-corner-np-value»
 import «8».«8.3-condII-Boundary-close»
 import «8».«8.7-otint-setle»
 import «8».«8.7-otmulti-interior»
@@ -246,11 +247,6 @@ structure TerminationResidual : Prop where
   （条件 (I) の核 `CondI_masterCF` は wave M で `8.1-condI-masterCF-chunk5` が無条件証明
   ＝`scx_condI_j0pos_masterCF`。残差フィールドではなくなり、OT/降下柱とも直接供給。） -/
   condIIIVts : CondIIIVterminalSlice
-  /-- 条件 (III)/(IV) の交換則の真の残差。wave P で `8.4-exch84-regsp` が
-  `Exch84_condIIIIV_pkg_holds : slicepkg → pkg` を証明したので、フィールドは
-  producer → pkg → slicepkg（`8.4-exch84-producer`:128、oi5 出力形）まで細くなった。
-  `noParent` 脚は wave L の `8.4-exch84-noparent` が無条件供給済み。 -/
-  cornerNpValue : CornerNpSliceValue_cr2
 
 /-- 条件 (VI) 許容枝の供給（wave N 統合）。`8.6-condVI-adm-forms` が閉じた
 `CondVI_scbdec_adm_forms_v6` を `8.6-condVI-close` の
@@ -270,7 +266,7 @@ private theorem condVInadm_term : CondVIExchNadm :=
 `Exch84_condIIIIV_producer_holds`）。 -/
 private theorem exch84producer_term (H : TerminationResidual) :
     Exch84_condIIIIV_producer :=
-  Exch84_condIIIIV_producer_holds (Exch84_condIIIIV_pkg_holds (exch84slicepkg_of_cornerReadouts_nc2 (cornerCoreReadouts_of_residual H.cornerNpValue)))
+  Exch84_condIIIIV_producer_holds (Exch84_condIIIIV_pkg_holds (exch84slicepkg_of_cornerReadouts_nc2 (cornerCoreReadouts_of_residual cornerNpSliceValue_holds_cnv)))
 
 /-- 条件 (V) 塔の供給（wave Q 統合）: 単一残差 `ExchVMTowerResidual` から
 `ExchV_M_tower`（`8.5-exchV-M-tower`）を経て、adm 塔と `nf3x` の両方を
@@ -300,8 +296,8 @@ private theorem otMulti_term (H : TerminationResidual) : OTdisp_OTmulti :=
 
 private theorem otInt_term (H : TerminationResidual) : OTdisp_OTint :=
   OTdisp_OTint_of_legs OTdisp_OTpred_holds
-    (OTint_hp_condIII_of_slicepkg (exch84slicepkg_of_cornerReadouts_nc2 (cornerCoreReadouts_of_residual H.cornerNpValue)) (otIIIIVdata_term H))
-    (OTint_hp_condIV_of_slicepkg (exch84slicepkg_of_cornerReadouts_nc2 (cornerCoreReadouts_of_residual H.cornerNpValue)) (otIIIIVdata_term H))
+    (OTint_hp_condIII_of_slicepkg (exch84slicepkg_of_cornerReadouts_nc2 (cornerCoreReadouts_of_residual cornerNpSliceValue_holds_cnv)) (otIIIIVdata_term H))
+    (OTint_hp_condIV_of_slicepkg (exch84slicepkg_of_cornerReadouts_nc2 (cornerCoreReadouts_of_residual cornerNpSliceValue_holds_cnv)) (otIIIIVdata_term H))
     (OTint_hp_condV_adm_holds (exchVresAdm_term H))
     (OTint_hp_condV_nadm_holds (exchVnf3x_term H))
 

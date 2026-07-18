@@ -872,6 +872,14 @@ parent/Lng 形に落としてから作業する。
     2 フィールドを `exchVMres : ExchVMTowerResidual` 1 本に置換。
     **現フィールド 5**: `otMulti`／`otIIIIVdata`／`condII`／`exch84slicepkg`／`exchVMres`。
     audit は 4 葉表示（exchV 過少計上バグ込み、下記）。
+  - 🎉 **Wave AH（2026-07-19 夜、Opus 4、全緑）— `cornerNpValue` フィールド陥落＝残差 3**:
+    ①🎉**`cornerNpSliceValue_holds_cnv` 無条件**（np_c2decomp の valNp 連鎖を全 slice へ、
+    `8.4-corner-np-value`）→ **旧 slicepkg 系フィールド完全消滅（4→3）**
+    ②census: `censusPin_tc`（provenance で抽象 binder を具体値に pin する機構）＋setleCensus の
+    0<v1 討伐→otSetleCore は {A0OT_an(真の未知), CensusProvenance(←mnform 連鎖で供給可),
+    Tri0CruxConcrete, SetleCensusWrapper, SetleCensusSpine, NubRegimeE3/NubGControl} 構造に
+    （`8.7-otint-tri0-census`＋`8.7-otint-a0ot-nub`）③VE BaseDeep 前進（`8.2-condIIIV-basedeep`）。
+    **現フィールド 3**: `otMultiIntCond`(空虚)/`otSetleCore`/`condIIIVts`。
   - 🎉 **Wave AG（2026-07-19 夕、Opus 4、全緑）— slicepkg フィールドが単一原子に**:
     ①**Np_c2decomp 無条件討伐＋連鎖組立**（`8.4-np-c2decomp`: C7Rightend/SliceExtTupleEngines/
     SliceExtTupleResidual も同時に無条件化、`exch84slicepkg_of_cornerReadouts_nc2` で
