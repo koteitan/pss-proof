@@ -10,11 +10,13 @@ Two questions, both of which cost us real time when answered by guesswork:
    the widest in the project.  This walks the closure and reports every duplicated
    top-level name, flagging those whose statement text differs.
 
-2. **Residual Props** — which named `Prop`s (`FseqDesc_*`, `OTdisp_*`, `ExchV_*`,
+2. **Residual Props** — which named `Prop`s (`FseqDesc_*`, `OTdisp_*`, `ExchV*`,
    `Exch84_*`, `Cond*_masterCF`, `CondVI*`) are declared in the closure, and which
    of them are discharged by a `_holds` theorem somewhere in the closure.  What is
    declared-but-not-discharged is exactly what stands between us and the
-   unconditional termination theorem.
+   unconditional termination theorem.  The authoritative top-level count is the
+   field list of `TerminationResidual`; the lower-level leaf graph is diagnostic
+   only and must never be substituted for that count.
 
     python3 python/audit_8_7_termination.py
     python3 python/audit_8_7_termination.py lean/8/8.7-termination.lean
@@ -31,7 +33,7 @@ IMPORT_RE = re.compile(r"^import\s+(.+?)\s*$", re.M)
 DECL_RE = re.compile(
     r"^(theorem|lemma|def|abbrev|inductive|structure|instance)\s+([^\s:({\[]+)", re.M
 )
-PROP_PREFIXES = ("FseqDesc_", "OTdisp_", "ExchV_", "Exch84_", "CondI_", "CondII_",
+PROP_PREFIXES = ("FseqDesc_", "OTdisp_", "ExchV", "Exch84_", "CondI_", "CondII_",
                  "CondVI", "TransPreservesOT", "OT_B_wf", "RankSuccD1posLeg")
 
 
@@ -84,6 +86,23 @@ def decls(path: str) -> dict[str, str]:
     return out
 
 
+def termination_residual_fields(path: str) -> list[tuple[str, str]]:
+    """Read the authoritative field list of `TerminationResidual` from `path`."""
+    src = open(path, encoding="utf-8").read()
+    start = re.search(r"^structure\s+TerminationResidual\s*:\s*Prop\s+where\s*$", src, re.M)
+    if not start:
+        return []
+    tail = src[start.end():]
+    stop = re.search(
+        r"^(?:private\s+)?(?:theorem|lemma|def|abbrev|inductive|structure|instance)\s+",
+        tail,
+        re.M,
+    )
+    body = tail[:stop.start()] if stop else tail
+    return re.findall(r"^\s{2}([A-Za-z_][A-Za-z0-9_']*)\s*:\s*"
+                      r"([A-Za-z_][A-Za-z0-9_'.]*)\s*$", body, re.M)
+
+
 def main() -> int:
     root = sys.argv[1] if len(sys.argv) > 1 else "lean/8/8.7-termination.lean"
     root = os.path.join(REPO, root) if not os.path.isabs(root) else root
@@ -93,6 +112,7 @@ def main() -> int:
 
     files = closure(root)
     print(f"import closure of {os.path.relpath(root, REPO)}: {len(files)} files\n")
+    residual_fields = termination_residual_fields(root)
 
     # ---- 1. collisions -------------------------------------------------------
     where: dict[str, list[tuple[str, str]]] = {}
@@ -117,8 +137,10 @@ def main() -> int:
     # TYPE is X (the house pattern `theorem foo : SomeProp := by ...`); its
     # dependencies are the other Props named in its binders.  A Prop is CLOSED if
     # some discharger's dependencies are all CLOSED (least fixed point).
+    residual_types = {typ for _, typ in residual_fields}
     props = {n: hits[0][0] for n, hits in where.items()
-             if n.startswith(PROP_PREFIXES) and re.match(r"def \S+\s*:\s*Prop\b", hits[0][1])}
+             if (n.startswith(PROP_PREFIXES) or n in residual_types)
+             and re.match(r"def \S+\s*:\s*Prop\b", hits[0][1])}
     dischargers: dict[str, list[tuple[str, frozenset[str]]]] = {}
     for f in files:
         for name, stmt in decls(f).items():
@@ -161,10 +183,19 @@ def main() -> int:
             name, deps = min(wiring, key=lambda x: len(x[1]))
             note = f"  [{name} reduces it to {len(deps)}: {', '.join(sorted(deps))}]"
         print(f"      {p:58s} {props[p]}{note}")
-    print(f"\n== VERDICT ==\n  {len(leaves)} leaf Props stand between us and the "
-          f"unconditional termination theorem.")
-    print("  (`TerminationResidual` in lean/8/8.7-termination.lean bundles these,"
-          "\n   minus `TransPreservesOT`, which that file derives from the 12 `OTdisp_*`.)")
+    print("\n== authoritative TerminationResidual fields ==")
+    if residual_fields:
+        for field, typ in residual_fields:
+            status = f"CLOSED by {closed[typ]}" if typ in closed else "OPEN"
+            print(f"      {field:22s} : {typ:40s} [{status}]")
+    else:
+        print("  !! structure TerminationResidual was not found")
+        bad += 1
+
+    print(f"\n== VERDICT ==\n  {len(residual_fields)} TerminationResidual fields stand between "
+          "us and the unconditional termination theorem.")
+    print(f"  The named-Prop graph has {len(leaves)} lower-level leaves; this is diagnostic "
+          "and may differ from the authoritative field count.")
     return 1 if bad else 0
 
 

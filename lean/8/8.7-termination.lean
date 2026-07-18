@@ -239,11 +239,11 @@ structure TerminationResidual : Prop where
   `noParent` 脚は wave L の `8.4-exch84-noparent` が無条件供給済み。 -/
   exch84slicepkg : Exch84_condIIIIV_slicepkg
   /-- 条件 (V)（wave Q 統合で旧 2 フィールド `exchVresAdmTowers`/`exchVnf3x` を
-  1 本化）。`8.5-exchV-M-tower`:83 の `ExchVMTowerResidual`＝条件 (V) 塔の
-  7.4-Mark 依存 fact 束（`Oper5Residual` と同族＝同じ L 塔 campaign が供給予定）。
+  1 本化）。`Oper5Residual` は `8.4-oper5-residual` で既に閉じたため、残るのは
+  `8.5-exchV-M-tower-close` の値方程式 3 本 (`PredNp`/`Lpv`/`L1v`) だけ。
   `exchV_M_tower_of_residual` → `ExchV_M_tower` → `8.5-exchV-props2` の 2 本で
   `ExchVres_adm_M_tower` と `ExchV_nf3x` の両方が出る。 -/
-  exchVMcore : ExchVMCoreResidual
+  exchVMvalues : ExchVMValueResidual
 
 /-- 条件 (VI) 許容枝の供給（wave N 統合）。`8.6-condVI-adm-forms` が閉じた
 `CondVI_scbdec_adm_forms_v6` を `8.6-condVI-close` の
@@ -269,7 +269,7 @@ private theorem exch84producer_term (H : TerminationResidual) :
 `ExchV_M_tower`（`8.5-exchV-M-tower`）を経て、adm 塔と `nf3x` の両方を
 `8.5-exchV-props2` で導出。 -/
 private theorem exchVMtower_term (H : TerminationResidual) : ExchV_M_tower :=
-  exchV_M_tower_of_residual (exchVMres_of_core H.exchVMcore)
+  exchV_M_tower_of_residual (exchVMres_of_values H.exchVMvalues)
 
 private theorem exchVresAdm_term (H : TerminationResidual) : ExchVres_adm_M_tower :=
   exchVres_adm_M_tower_of_M_tower (exchVMtower_term H)

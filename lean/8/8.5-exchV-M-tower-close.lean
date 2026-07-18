@@ -1,4 +1,5 @@
 import «8».«8.5-exchV-M-tower»
+import «8».«8.4-oper5-residual»
 import «5».«5.1-ancestor-basic»
 import «6».«6.2-P-fseq»
 import «6».«6.4-FirstNodes-Joints-mono»
@@ -17,9 +18,9 @@ import «6».«6.6-condAB-coeff»
   * (b) `s84x_jm2 M = transJ0 M`（同 `(4)`）
   を条件(V) ホスト（`STPS`＋`monoT`＋`transCondV`）から **無条件に** 証明し、残る
   4 連言（`(∀ n>1, Oper5Residual)`／`PredNp`／`Lpv`／`L1v`）を狭い named Prop
-  `ExchVMCoreResidual` へ切り出す（house pattern：`exchVMres_of_core` の型が
-  `ExchVMTowerResidual` そのもの）。これで `ExchVMTowerResidual` 残差は
-  6 連言 → 4 連言（`ExchVMCoreResidual`）へ縮む。
+  `ExchVMCoreResidual` へ切り出す。さらに `8.4-oper5-residual` で既に閉じた
+  `Oper5Residual` をここで消去し、真の残差を値方程式 3 本だけの
+  `ExchVMValueResidual` まで縮める。
 
 ## 移植方針
 
@@ -37,8 +38,8 @@ import «6».«6.6-condAB-coeff»
 
 ## 残差 `ExchVMCoreResidual`（4 連言）について
 
-`(∀ n>1, Oper5Residual M n)`（§7.4 Mark 依存、並行 agent が閉包中）／`PredNp`／`Lpv`／
-`L1v` は本ファイルでは触らない。`PredNp`/`Lpv`/`L1v` は Isabelle でも adm 枝
+`(∀ n>1, Oper5Residual M n)` は `oper5Residual_holds` で無条件に閉じる。
+`PredNp`/`Lpv`/`L1v` は Isabelle でも adm 枝
 （§7.4/§8.4 Mark；Lean 側は `ExchV_scbdec_adm_forms` 残差, `8.5-Trans-fseq-condV`:106）／
 非 adm 枝（§8.2 VE 残差）に分かれ、**どちらも Lean 未移植**なので named Prop へ委譲する。
 
@@ -53,8 +54,9 @@ import «6».«6.6-condAB-coeff»
   «6».«6.5-monoT-Red» (`nextR1_unique_mr`)、«6».«6.6-P-condAB»
   (`mono_hasParent_row0`)、«6».«6.6-condAB-coeff» (`parent_lt_of_hasParent`)。
 - 訂正: なし。
-- 状態: 🤖 GREEN-MODULO（sorry 0、axioms = propext/Classical.choice/Quot.sound）。
-  残差 `ExchVMCoreResidual`（4 連言）1 本。幾何橋 2 連言は無条件に閉じる。
+- 状態: ⚠️ GREEN-MODULO（sorry 0、axioms = propext/Classical.choice/Quot.sound）。
+  残差 `ExchVMValueResidual`（値方程式 3 連言）1 本。幾何橋 2 連言と
+  `Oper5Residual` は無条件に閉じる。
 - Private helper suffix: `_mc`。
 -/
 
@@ -156,6 +158,24 @@ def ExchVMCoreResidual : Prop :=
           ++ [Sym.zero]
           ++ (List.replicate (exchV_tail M 1) b₀).flatten ++ b₁
 
+/-- `ExchVMCoreResidual` から、既に無条件化済みの `Oper5Residual` を落とした
+真の値方程式残差。残るのは `PredNp` / `Lpv` / `L1v` の 3 連言だけである。 -/
+def ExchVMValueResidual : Prop :=
+  ∀ (M : PS) (s₀ s₁ b₀ b₁ : List Sym), STPS M → monoT M = true → transCondV M = true →
+    scb_decomp (addBT (transT2 M) (Dprin (entry M 1 (transJ1 M) : ℕ∞) BZero))
+      s₀ (flatBT (Dprin (entry M 1 (transJ1 M) : ℕ∞) BZero)) b₀ →
+    scb_decomp (Trans (oper M 1)) s₁
+      (flatBT (Dprin (entry M 1 (transJm1 M) : ℕ∞) (transT2 M))) b₁ →
+    Trans (Pred (s84x_Np M)) = Dprin (entry M 1 (transJ0 M) : ℕ∞) (transT2 M) ∧
+    Trans (s84x_Lp M) = Dprin (entry M 1 (transJ0 M) : ℕ∞)
+      (addBT (transT2 M) (Dprin (entry M 1 (transJ0 M) : ℕ∞) BZero)) ∧
+    flatBT (Trans (s84x_L M 1))
+      = s₁ ++ Sym.dsym (entry M 1 (transJm1 M) : ℕ∞)
+          :: (List.replicate (exchV_tail M 1)
+                (s₀ ++ [Sym.dsym (entry M 1 (transJ0 M) : ℕ∞)])).flatten
+          ++ [Sym.zero]
+          ++ (List.replicate (exchV_tail M 1) b₀).flatten ++ b₁
+
 /-! ## 本体 -/
 
 /-- **`ExchVMTowerResidual` の drop-in**（house pattern）。橋 2 連言
@@ -167,6 +187,27 @@ theorem exchVMres_of_core (h : ExchVMCoreResidual) : ExchVMTowerResidual := by
   obtain ⟨hp, hjm2⟩ := condV_bridge_hp_jm2_mc M hM hmono hcond
   exact ⟨hp, hjm2, h M s₀ s₁ b₀ b₁ hST hmono hcond hd₀ hd₁⟩
 
+/-- `oper5Residual_holds` を条件 (V) の幾何橋へ適用し、4 連言の core 残差を
+値方程式 3 連言だけから構成する。 -/
+theorem exchVMcore_of_values (h : ExchVMValueResidual) : ExchVMCoreResidual := by
+  intro M s₀ s₁ b₀ b₁ hST hmono hcond hd₀ hd₁
+  have hM : TPS M := STPS_TPS M hST
+  obtain ⟨hp, _hjm2⟩ := condV_bridge_hp_jm2_mc M hM hmono hcond
+  have hrng : transJ0 M + 1 < Lng M - 1 := by
+    have hc := hcond
+    simp only [transCondV, Bool.and_eq_true, decide_eq_true_eq, beq_iff_eq] at hc
+    simpa [transJ0, lastParent, lastIdx] using hc.2
+  have hj1 : 1 < Lng M - 1 := by omega
+  refine ⟨?_, h M s₀ s₁ b₀ b₁ hST hmono hcond hd₀ hd₁⟩
+  intro n hn
+  exact oper5Residual_holds M n hST hmono hp hj1 hn
+
+/-- `ExchVMValueResidual` から塔 engine が要求する元の残差を直接供給する drop-in。 -/
+theorem exchVMres_of_values (h : ExchVMValueResidual) : ExchVMTowerResidual :=
+  exchVMres_of_core (exchVMcore_of_values h)
+
 #print axioms exchVMres_of_core
+#print axioms exchVMcore_of_values
+#print axioms exchVMres_of_values
 
 end PSS

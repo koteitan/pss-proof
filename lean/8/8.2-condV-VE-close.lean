@@ -26,9 +26,9 @@ import «8».«8.2-strongmono-props»
   * `m = Joints N ! J₁ ∧ descending` 枝: `Joints ! JP = Joints ! J₁` の境界で
     対角性を squeeze（`condA` の joint+1 恒等式／`descending` の `cdom`／`reduced_coeff`／
     `entry_Pred` 輸送）して右選言。`descendingB (Br (Pred N))` は `descending_Br_Pred`。
-- 状態: ⚠️ 部分（sorry 0、rc=0）。`RPj1eqResidual` は **無条件で閉じた**。
-  `vcx_VE_all` の完全無条件化に残るのは深部 surgery ブリック
-  {BASE(=`BaseMLtTrMax`/`BaseVEAdm0`/`BaseVEStrict`), `BpaxVEstep`, `VEj1eqResidual`,
+- 状態: ⚠️ 部分（sorry 0、rc=0）。`RPj1eqResidual` と `BaseMLtTrMax` は
+  **無条件で閉じた**。`vcx_VE_all` の完全無条件化に残るのは深部 surgery ブリック
+  {BASE(=`BaseVEAdm0`/`BaseVEStrict`), `BpaxVEstep`, `VEj1eqResidual`,
   `BpaxRPERS`} の四本（いずれも `scb_decomp` surgery を要し、Lean 側に双子が無い）。
 -/
 
@@ -231,15 +231,15 @@ theorem rpj1eq_vc (m : ℕ) : RPj1eqResidual m := by
 /-! ## キャップストーン: `RPj1eq` を除去した `vcx_VE_all`（Isabelle `vcx_VE_all`, 77076） -/
 
 /-- Isabelle `vcx_VE_all` (layerB 77076) の骨格から、`RPj1eqResidual` を本ファイルの
-`rpj1eq_vc` で除去した front-facing 版。BASE 脚は `8.2-condV-VE-base2` の `a0x_base_VE_vb2`
-で三つの named Prop に分解して露出する。残る残差は深部 surgery ブリック
-{BASE 三本, `BpaxVEstep`, `VEj1eqResidual`, `BpaxRPERS`} のみ。 -/
+`rpj1eq_vc` で除去した front-facing 版。BASE 脚の幾何残差 `BaseMLtTrMax` も
+`8.2-condV-VE-base2` で無条件に閉じた。残る残差は深部 surgery ブリック
+{BASE 二本, `BpaxVEstep`, `VEj1eqResidual`, `BpaxRPERS`} のみ。 -/
 theorem vcx_VE_all_modRPclosed (m : ℕ)
-    (hMLt : BaseMLtTrMax m) (hAdm0 : BaseVEAdm0 m) (hStrict : BaseVEStrict m)
+    (hAdm0 : BaseVEAdm0 m) (hStrict : BaseVEStrict m)
     (hstepBpax : BpaxVEstep m) (hstepJ1 : VEj1eqResidual m) (hrpBpax : BpaxRPERS m)
     (M : PS) (hM : VEReg m M) : VEeq m M :=
   vsx_VE_all_modResidual m
-    (a0x_base_VE_vb2 m hMLt hAdm0 hStrict)
+    (a0x_base_VE_vb2 m hAdm0 hStrict)
     hstepBpax hstepJ1 hrpBpax (rpj1eq_vc m) M hM
 
 #print axioms rpj1eq_vc

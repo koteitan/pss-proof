@@ -4,15 +4,23 @@
 （§4.5/§4.6 = キャンペーン作戦図、§3/§4 = 罠と死路） → `lean/step.md`（緑の定義） →
 `lean/kimina.md`（検証サーバ）。Isabelle 側は完了・凍結（`isabelle/`、証明の設計図として grep する）。
 
-## 0. 現在地（2026-07-17 時点・全緑 push 済）
+## 0. 現在地（2026-07-18 Wave R 継続・Codex 作業中）
 
-- ✅ 済: 定義層 / §5 / **§6 全節（6.8 d1pos campaign 完了、Wave A クローズ）** /
-  §7（7.1-buchholz-wf 除く）/ §8.1 diagSeq 2 本 / §8.2 standard-slice-Red-strongmono
-  ＋ strongmono-slice / §8.3（keystone 除く 3 本）/ §8.6 3 本 /
-  §8.7 の const00・OT-examples・OT-scb-recursive・OT-dom-hereditary。
-- 🚨 残（**全てキャンペーン級**）: 下の Wave 計画参照（Wave A は ✅ 済）。
-- `8.1-condI-III-c1-around` は sorry 残 1（part (4) のみ。(1)(2)(3-1)(3-2)(5) は緑）。
-- `7.1-buchholz-wf` は自前証明に決定（下記「決定済み」参照、Wave E 相当）。
+- ✅ 定義層 / §5 / §6 / §7 / §8.1 は完了。`7.1-buchholz-wf` と
+  `8.1-condI-III-c1-around` part (4) も既に無条件で閉じた。
+- §8.2 の subexpr/strongmono/rightmost-parent は完了。残る terminal-slice 2 本は
+  §8.2 VE 本体に依存する green-modulo。
+- `lean/8/8.7-termination.lean` は error 0 / sorry 0 / 公理
+  `[propext, Classical.choice, Quot.sound]` で緑。ただし原文の無条件形との間に
+  `TerminationResidual` の **5 フィールド**が残る:
+  `otMultiInterior` / `otSetle` / `condII` / `exch84slicepkg` / `exchVMvalues`。
+- **最優先は §8.2 VE campaign**。これは `condII` の NotLdj/Boundary 2 脚と
+  `exchVMvalues` の非 adm 底3式に共通する律速で、2フィールドを同時に解禁する。
+- Codex 継続で `BaseMLtTrMax` を無条件に閉じ、VE BASE 残差は
+  `BaseVEAdm0` / `BaseVEStrict` の2本になった。また `oper5Residual_holds` を上位へ
+  配線し、ExchV 残差は `PredNp` / `Lpv` / `L1v` の3値式だけになった。
+- `python/audit_8_7_termination.py` の named-Prop 葉数は補助診断にすぎない。
+  進捗の正本は必ず `TerminationResidual` のフィールド一覧で数える。
 
 ## 1. 実行ルール（ユーザー指示）
 
@@ -90,7 +98,18 @@ Workflow スクリプト構造は過去 wave のものを再利用可
 （`/home/koteitan/.claude/projects/-home-koteitan-proofs-pss-proof-git/8b6b910e-60c9-4662-aff1-4806ad270a61/workflows/scripts/lean-port-wave1b-strongmono-wf_e55eee93-8eb.js`
 が単発 port の完全な雛形。schema: file/status/summary/sorry_count/checker_tail/needs）。
 
-## 4. Wave 計画（優先順）
+## 4. 現行 Wave 計画（優先順）
+
+1. **VE**: `BaseVEAdm0` / `BaseVEStrict` →
+   `BpaxVEstep` / `BpaxRPERS` / `VEj1eqResidual` → `vcx_VE_all`。
+2. **VE consumers**: `TV_NotLdjReg` / `TvxBoundaryData` → `CondII_masterCF`、および
+   ExchV の `PredNp` / `Lpv` / `L1v`。`Oper5Residual` 脚は Wave R で閉じている。
+3. **独立柱**: Exch84 slicepkg 4脚と OTint `OTA1_ltJ` / `SETLE1_ltJ`。
+4. **最終柱**: `OTmulti_interior_om2` の条件 (I)〜(VI) dispatch。
+5. 5フィールドが消えたら `p_8_7_termination` を残差引数なしで公開し、臨界路外の
+   §8 未完命題を訂正込みで閉じる。
+
+以下の Wave A〜D 記述は 2026-07-17 時点の履歴であり、現在の着手順には使わない。
 
 ### Wave A — 6.8 d1pos leg — ✅ 完了（2026-07-17。A-1〜A-3＋solo 仕上げ、以下は史料）
 **閉じると `6.8` と `8.2-standard-slice-Red-strongmono` の 2 項目が同時に ✅**
