@@ -872,6 +872,17 @@ parent/Lng 形に落としてから作業する。
     2 フィールドを `exchVMres : ExchVMTowerResidual` 1 本に置換。
     **現フィールド 5**: `otMulti`／`otIIIIVdata`／`condII`／`exch84slicepkg`／`exchVMres`。
     audit は 4 葉表示（exchV 過少計上バグ込み、下記）。
+  - **Wave AC（2026-07-19 朝、Opus 4、全緑）— 🎉d4a transport 完全無条件化＋rm84 surgery frame**:
+    ①🎉**`nestScbD4aReducedValue_holds`＋`nestScbD4aTransport_dk` 無条件**（regime 側=slx37＋
+    vcx_VE_all 転送、trunk 側=crg_slice_value_of_trunk port。`8.4-d4a-trunk`）→
+    **slicepkg dispatch 残り 4**: {SliceExtTupleEngines_st, corner(→CornerC2Kind1_cc＋
+    CornerCoreReadouts_cc), Base0/1p（共通鍵=Exch84_scbDecompPkg）}
+    ②rm84 surgery: 正ルートの上部構造 port＋**残差 `Rm84SurgeryFrame` は 45/45＋cex＋A30 で
+    数値検証済（死残差でない）**（`8.4-rm84-surgery`。core-swap は Red(s84x_Np M) への
+    c2hole 適用で Wave-Y 反証を回避。残=R-facts 系 L4 part(2)(3)）
+    ③corner core: 5 葉→{CornerC2Kind1_cc, CornerCoreReadouts_cc}＋TransC2HoleDecomp_md 再利用
+    （`8.4-corner-core`）④VE deep6→**deep5**（VE2TrunkLeg 討伐、`condIIIVterminalSlice_of_deep5`、
+    `8.2-condIIIV-deep6`）。
   - **Wave AB（2026-07-19 朝、Opus 4、全緑）— 🎉StrictLt 討伐＝slx37 無条件化＋🚨value ルート死路確定**:
     ①🎉**`RegspStrictlt_holds`＋`Regsp_slx37_regSP_holds` 無条件**（public Pred-branch cores＋
     Regs_MCOND＋DTPS tie-break＋trunk 対角の完全 port、`8.4-regsp-strictlt`）→
