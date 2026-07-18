@@ -30,6 +30,10 @@ import «8».«8.7-otint-transport-data»
 import «8».«8.5-exchV-M-tower-close»
 import «8».«8.5-exchV-values-close»
 import «8».«8.7-otdisp-OTmulti2»
+import «8».«8.7-otmulti-notcondI»
+import «8».«8.5-exchV-nadm-w2nostr»
+import «8».«8.5-exchV-nadm-c2l1»
+import «8».«8.4-rightmost-replace-close»
 import «8».«8.3-condII-Boundary-close»
 import «8».«8.7-otint-setle»
 import «8».«8.7-otmulti-interior»
@@ -227,7 +231,7 @@ structure TerminationResidual : Prop where
   `OTint` は wave Q で 4 hasParent legs に分解され、condV 両枝は条件 (V) 塔から、
   condIII/IV は `exch84slicepkg`＋下の `otIIIIVdata` から供給＝どちらも
   残差フィールドではなくなった。） -/
-  otMultiNotCondI : OTmulti_interior_notCondI_om2
+  otMultiIntCond : OTmulti_interior_intCond_nc1
   /-- OT 柱 (2/2)。条件 (III)/(IV) の OT 内部枝の transport 残差、wave R で
   4 conjunct → 2 に絞り込み（`8.7-otint-transport-data`:  `OTA1_ltJ`/`SETLE1_ltJ` 対のみ。
   T_B 側 2 conjunct は無条件済）。`otIIIIVdata_of_otSetle` で旧形を導出。 -/
@@ -248,7 +252,8 @@ structure TerminationResidual : Prop where
   (`PredNp`/`Np`/`c₂(L₁)`) だけ。
   `exchV_M_tower_of_residual` → `ExchV_M_tower` → `8.5-exchV-props2` の 2 本で
   `ExchVres_adm_M_tower` と `ExchV_nf3x` の両方が出る。 -/
-  exchVMnadmAtomic : ExchVMNadmAtomicPackage
+  rm84Exists : Rightmost84ReplaceExists
+  c2l1NotLD : NadmC2L1NotLD
 
 /-- 条件 (VI) 許容枝の供給（wave N 統合）。`8.6-condVI-adm-forms` が閉じた
 `CondVI_scbdec_adm_forms_v6` を `8.6-condVI-close` の
@@ -275,7 +280,10 @@ private theorem exch84producer_term (H : TerminationResidual) :
 `8.5-exchV-props2` で導出。 -/
 private theorem exchVMtower_term (H : TerminationResidual) : ExchV_M_tower :=
   exchV_M_tower_of_residual
-    (exchVMres_of_values (exchVMvalues_of_nadm_package H.exchVMnadmAtomic))
+    (exchVMres_of_values (exchVMvalues_of_nadm_package
+      (exchVMNadmAtomicPackage_of_parts
+        (rightmost84ReplaceCorrected_of_exists H.rm84Exists)
+        nadmW2nostr_holds (nadmC2L1_of_notLD H.c2l1NotLD))))
 
 private theorem exchVresAdm_term (H : TerminationResidual) : ExchVres_adm_M_tower :=
   exchVres_adm_M_tower_of_M_tower (exchVMtower_term H)
@@ -291,7 +299,7 @@ private theorem otIIIIVdata_term (H : TerminationResidual) : OTintIIIIV_transpor
   otIIIIVdata_of_otSetle (otSetle_holds H.otSetleCore)
 
 private theorem otMulti_term (H : TerminationResidual) : OTdisp_OTmulti :=
-  OTdisp_OTmulti_of_interior_om2 (otMultiInterior_holds H.otMultiNotCondI)
+  OTdisp_OTmulti_of_interior_om2 (otMultiInterior_holds (otMultiNotCondI_nc1_holds H.otMultiIntCond))
 
 private theorem otInt_term (H : TerminationResidual) : OTdisp_OTint :=
   OTdisp_OTint_of_legs OTdisp_OTpred_holds
