@@ -11,10 +11,19 @@ the residual; an empty corner set means it is vacuous.
 Only cheap index conditions are computed (no Trans/Mark)."""
 import sys, os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from red_model import (Lng, entry, monoT, zeroT, oper, parent, adm, Adm, reduced,
-                       hasParent)
+from red_model import (Lng, entry, monoT, zeroT, oper, parent, adm, Adm, Red,
+                       seg, Pred, hasParent)
+from trans_model import Trans, Mark, flatBT
 
 def hasParent1(M): return hasParent(M, 1, Lng(M) - 1)
+
+def is_reduced(M):
+    # red_model.reduced compares list-of-lists vs list-of-tuples (type mismatch);
+    # normalise both sides before comparing.
+    return [tuple(x) for x in Red([list(x) for x in M])] == [tuple(x) for x in M]
+
+def s84x_N(M): return seg(M, s84x_jm3(M), Lng(M) - 1)
+def transC1(M): return Mark(Pred([list(x) for x in M]), transJm1(M))
 
 def lastParent(M): return parent(M, 0, Lng(M) - 1)
 def transJ0(M): return lastParent(M)
@@ -37,7 +46,7 @@ def transCondIII(M):
     return (entry(M,1,j1) > 0 and entry(M,1,j1) <= entry(M,1,jp)
             and adm(M, jp))
 
-def build_orbit(umax=3, vmax=4, steps=40, nmax=4, cap=40000, lenmax=11):
+def build_orbit(umax=2, vmax=3, steps=12, nmax=3, cap=5000, lenmax=8):
     seen = set(); frontier = []
     for u in range(umax+1):
         for v in range(u, vmax+1):
@@ -66,7 +75,7 @@ if __name__ == "__main__":
         M = [list(x) for x in Mt]
         L = Lng(M)
         if L < 3 or zeroT(M) or not monoT(M): continue
-        if not reduced(M): continue
+        if not is_reduced(M): continue
         if not hasParent1(M): continue
         if not (1 < L - 1): continue
         cIV = transCondIV(M); cIII = transCondIII(M)
@@ -75,11 +84,17 @@ if __name__ == "__main__":
         j3 = s84x_jm3(M); jm1 = transJm1(M)
         if j3 is None or jm1 is None: continue
         if j3 == jm1:
-            if cIV: corners.append((Mt, j3, jm1, s84x_jm2(M)))
-            if cIII: corners_III.append((Mt, j3, jm1, s84x_jm2(M)))
+            # collapse: is flatBT(Trans(Pred(s84x_N M))) == flatBT(transC1 M)?
+            PN = Pred([list(x) for x in s84x_N(M)])
+            collapse = flatBT(Trans([list(x) for x in PN])) == flatBT(transC1(M))
+            if cIV: corners.append((Mt, j3, jm1, s84x_jm2(M), collapse))
+            if cIII: corners_III.append((Mt, j3, jm1, s84x_jm2(M), collapse))
     print(f"premise-satisfying (condIII or IV) = {n_prem}", flush=True)
     print(f"condIV admeq corners (jm3==jm1)    = {len(corners)}", flush=True)
     print(f"condIII admeq corners (should be 0)= {len(corners_III)}", flush=True)
-    for (Mt,j3,jm1,j2) in corners[:25]:
+    all_collapse = all(c[4] for c in corners)
+    print(f"ALL condIV corners collapse Trans(Pred N)=transC1 (=> dP degenerate, "
+          f"residual FALSE): {all_collapse}", flush=True)
+    for (Mt,j3,jm1,j2,coll) in corners[:25]:
         s = ''.join(f'({a},{b})' for a,b in Mt)
-        print(f"  CORNER M={s}  jm3={j3} jm1={jm1} jm2={j2}")
+        print(f"  CORNER M={s}  jm3={j3} jm1={jm1} jm2={j2}  collapse={coll}")
