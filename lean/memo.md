@@ -872,6 +872,20 @@ parent/Lng 形に落としてから作業する。
     2 フィールドを `exchVMres : ExchVMTowerResidual` 1 本に置換。
     **現フィールド 5**: `otMulti`／`otIIIIVdata`／`condII`／`exch84slicepkg`／`exchVMres`。
     audit は 4 葉表示（exchV 過少計上バグ込み、下記）。
+  - **Wave AB（2026-07-19 朝、Opus 4、全緑）— 🎉StrictLt 討伐＝slx37 無条件化＋🚨value ルート死路確定**:
+    ①🎉**`RegspStrictlt_holds`＋`Regsp_slx37_regSP_holds` 無条件**（public Pred-branch cores＋
+    Regs_MCOND＋DTPS tie-break＋trunk 対角の完全 port、`8.4-regsp-strictlt`）→
+    **REGSP slicepkg leg 解禁**。D4aReducedValue の regime 側も解禁（残=trunk 側
+    crg_slice_value_of_trunk 91399 のみ）②🚨**Rm84Np/Lp/HeadValue 全て偽**（cex=(0,0)(1,1)(2,1)
+    condIII: c2-hole 内側 readback は jm2≠j0 で 1 principal ずれる。Wave AA の value 分解は
+    condV/hostM30 の一致点だけで成立していた＝**7 個目の反証**。`8.4-rm84-np-value`+
+    `8.4-rm84-lp-value` に機械反証）。**正ルート=Rm84HeadShared（存在 scb 形、無傷）または
+    surgery（Isabelle m_8_4_rightend_Trans）**。termination フィールドは rm84Exists（真形）の
+    ままなので無事 ③VE234: 3 値残差を**regime 分離 6 深残差**に還元
+    （`condIIIVterminalSlice_of_deep6`、`8.2-condIIIV-VE234`）。
+    **次の的**: rm84=Rm84HeadShared/surgery 直撃（m_8_4_rightend_Trans を grep）／
+    slicepkg=D4a trunk 側＋corner core 5 葉＋SliceExtTupleEngines＋Base 残／
+    condIIIVts=deep6／otSetleCore=census 3 葉。
   - **Wave AA（2026-07-19 未明、Opus 4、全緑）— 3 フィールドの残差が値レベルまで尖鋭化**:
     ①rm84: head-stripped エンジン `c2holeInner_scb_ha` で scb 側 2 義務を無条件討伐→
     残差は**純値 2 等式 `Rm84HeadValue`**（Np 半分=closed condV terminal-slice ×2 適用＋bridgeA、
