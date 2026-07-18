@@ -872,6 +872,16 @@ parent/Lng 形に落としてから作業する。
     2 フィールドを `exchVMres : ExchVMTowerResidual` 1 本に置換。
     **現フィールド 5**: `otMulti`／`otIIIIVdata`／`condII`／`exch84slicepkg`／`exchVMres`。
     audit は 4 葉表示（exchV 過少計上バグ込み、下記）。
+  - 🎉 **Wave AK（2026-07-20 朝、Opus 3、全緑）— spine gap 討伐＋A0OTNub 完結＋🚨9 個目の反証**:
+    ①**`a0otNub_holds` 無条件**（NubGControl は OixGControl_holds パターンの bridge で即閉。
+    `8.7-a0otnub-assembly`）②🎉**`setleCensusSpine_holds_a3c` 無条件**（Isabelle 側も deferred
+    だった align3 gap を**新規 node-count monovariant（nodesBT）ルート**で討伐——数値 4M+ 事前検証。
+    `8.7-align3-close`）③🚨**`SetleCensusWrapperCondIVCorner_wc` は偽**（corner 24/24 が
+    degenerate 形＝shape refinement 仮説の真逆。障害は Lean 内で純粋証明
+    `corner_wrapper_conclusion_unsat_cs`: A₀=1 principal vs ins 0_B=2 principals で
+    wrapper 共有は構造的に不可能。**census 側の corner 義務を別 pivot（body/D_e3 レベル等）に
+    再配管する再設計が必要**。`8.7-corner-shape`）。
+    **otSetleCore 残**=corner census 再設計 1 点のみ（spine/A0OT/Tri0/Provenance/Wrapper-ltJ 全て済）。
   - 🎉 **Wave AJ（2026-07-20 未明、Opus 4、全緑）— Tri0Crux 無条件討伐**:
     ①**`tri0CruxConcrete_holds` 無条件**（ltJ/corner 再 dispatch。corner 側は collapse で
     scb wrapper 不要＝新残差ゼロ。`8.7-tri0-dispatch`）②wrapper condIV: ltJ 側完全討伐→
