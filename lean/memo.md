@@ -872,6 +872,22 @@ parent/Lng 形に落としてから作業する。
     2 フィールドを `exchVMres : ExchVMTowerResidual` 1 本に置換。
     **現フィールド 5**: `otMulti`／`otIIIIVdata`／`condII`／`exch84slicepkg`／`exchVMres`。
     audit は 4 葉表示（exchV 過少計上バグ込み、下記）。
+  - **Wave V（2026-07-19、Opus 6、全緑）— `c2l1NotLD` フィールド討伐（6→5）＋深部原子の地図完成**:
+    ①**`nadmC2L1NotLD_holds` 無条件**（atx_notLD/atx_condV_nadm_t2_components の完全 port、
+    `8.5-exchV-notld`）→ termination の `c2l1NotLD` フィールド削除。
+    ②nestScbTriple 討伐 modulo {`NestScbD4aTransport_ns`(=cpx_d4a_all 98511、cfbx_reg 正則性
+    エンジン要), `NestScbCornerTriple_ns`(condIV admeq corner 78636)}（`8.4-exch84-nest-scb`。
+    s84d_dec2_nest_scb 本体は完全 port 済）③MnformBottom→`MnformBottomExtResidual`
+    （ubeq 無条件・c2-c5 は triple から。残=hflat/c1/c7/L1flat/M1flat=
+    m_8_4_various_scb_IIIIV_from_slice 60034、`8.4-exch84-mnform-bottom`）
+    ④rm84Exists **blocked だが core 完成**: `rr84_shared_of_readback`（値 2 本が既知なら機械組立）。
+    残=Trans(N')/Trans(L') の自己相似 readback 2 値（`8.4-rightmost-exists`）
+    ⑤A0OT→{`OixCoreTri`(otx3_core_tri 2517), `A0OTNub`(ot1_A0OT 4762=真の未知), `Tri0Census`(4081)}
+    （`8.7-otint-a0ot`）⑥ox5–ox10 engine 前半 port（ox8_rsub/ox9_holeD 系緑、
+    残=`Ox10SETLE1Residual_ox` の 3 入力、`8.7-otint-ox-engine`）。
+    **現フィールド 5**: `otMultiIntCond`(空虚)/`otSetleCore`/`condIIIVts`(VE34)/
+    `exch84slicepkg`/`rm84Exists`。残る深部=VE34 back-peel/cfbx_reg 正則性/ox 後半/A0OT nub/
+    readback 2 値/from_slice エンジン。
   - **Wave U（2026-07-19、Opus 6、全緑）— 2 討伐＋4 絞り込み（配線替えは未実施・次セッション冒頭で）**:
     ①`nadmW2nostr_holds` **無条件討伐**（`8.5-exchV-nadm-w2nostr`、VE 資産をフル活用）
     ②otMultiNotCondI→`OTmulti_interior_intCond_nc1` 1 本（condVI 全枝＋zero-leg クローズ。

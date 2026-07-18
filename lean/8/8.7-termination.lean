@@ -34,6 +34,7 @@ import «8».«8.7-otmulti-notcondI»
 import «8».«8.5-exchV-nadm-w2nostr»
 import «8».«8.5-exchV-nadm-c2l1»
 import «8».«8.4-rightmost-replace-close»
+import «8».«8.5-exchV-notld»
 import «8».«8.3-condII-Boundary-close»
 import «8».«8.7-otint-setle»
 import «8».«8.7-otmulti-interior»
@@ -253,7 +254,6 @@ structure TerminationResidual : Prop where
   `exchV_M_tower_of_residual` → `ExchV_M_tower` → `8.5-exchV-props2` の 2 本で
   `ExchVres_adm_M_tower` と `ExchV_nf3x` の両方が出る。 -/
   rm84Exists : Rightmost84ReplaceExists
-  c2l1NotLD : NadmC2L1NotLD
 
 /-- 条件 (VI) 許容枝の供給（wave N 統合）。`8.6-condVI-adm-forms` が閉じた
 `CondVI_scbdec_adm_forms_v6` を `8.6-condVI-close` の
@@ -283,7 +283,7 @@ private theorem exchVMtower_term (H : TerminationResidual) : ExchV_M_tower :=
     (exchVMres_of_values (exchVMvalues_of_nadm_package
       (exchVMNadmAtomicPackage_of_parts
         (rightmost84ReplaceCorrected_of_exists H.rm84Exists)
-        nadmW2nostr_holds (nadmC2L1_of_notLD H.c2l1NotLD))))
+        nadmW2nostr_holds (nadmC2L1_of_notLD nadmC2L1NotLD_holds))))
 
 private theorem exchVresAdm_term (H : TerminationResidual) : ExchVres_adm_M_tower :=
   exchVres_adm_M_tower_of_M_tower (exchVMtower_term H)
