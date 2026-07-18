@@ -872,6 +872,18 @@ parent/Lng 形に落としてから作業する。
     2 フィールドを `exchVMres : ExchVMTowerResidual` 1 本に置換。
     **現フィールド 5**: `otMulti`／`otIIIIVdata`／`condII`／`exch84slicepkg`／`exchVMres`。
     audit は 4 葉表示（exchV 過少計上バグ込み、下記）。
+  - 🎉 **Wave AI（2026-07-19 深夜、Opus 4、全緑）— CensusProvenance・A0OT 討伐**:
+    ①**`censusProvenance_holds_cp` 無条件**（live mnform 連鎖の完全配線）＋wrapper condIII 討伐
+    （condIV 側=新残差 `SetleCensusWrapperCondIV_cp`。`8.7-census-provenance`）
+    ②**`A0OT_holds_ac` 討伐**（CensusProvenance 帰着＝実質無条件。ot1_A0OT 完全 port、
+    ltJ guard 回避の transport 設計。NubRegimeE3 も討伐。`8.7-a0ot-close`）
+    ③tri0 両枝配線＋spine を真の gap `SpineSurgeryTransportCensus_ts`（=ox7_align3_track、
+    Isabelle STATUS §7）に還元（`8.7-tri0-spine`。⚠️**stale 注意: tri0CruxConcrete_of_pkg_ts は
+    反証済みの Exch84_scbDecompPkg を仮定に取る**——ltJ 領域では exch84ScbDecompPkgLtJ_holds_sp2
+    で供給可、corner 側は別配線が要る＝次 wave で dispatch 修正）
+    ④otMultiIntCond→condII 限定 `OTmulti_interior_condII_on`（III-V 討伐。`8.7-otmulti-narrow`）。
+    **otSetleCore 残**={Tri0Crux 供給の corner 側, SetleCensusWrapperCondIV, SpineSurgery(真 gap)}。
+    **otMultiIntCond**→condII のみ（condIIIVts 陥落で自動）。
   - 🎉 **Wave AH（2026-07-19 夜、Opus 4、全緑）— `cornerNpValue` フィールド陥落＝残差 3**:
     ①🎉**`cornerNpSliceValue_holds_cnv` 無条件**（np_c2decomp の valNp 連鎖を全 slice へ、
     `8.4-corner-np-value`）→ **旧 slicepkg 系フィールド完全消滅（4→3）**
