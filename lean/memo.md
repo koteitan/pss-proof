@@ -872,6 +872,21 @@ parent/Lng 形に落としてから作業する。
     2 フィールドを `exchVMres : ExchVMTowerResidual` 1 本に置換。
     **現フィールド 5**: `otMulti`／`otIIIIVdata`／`condII`／`exch84slicepkg`／`exchVMres`。
     audit は 4 葉表示（exchV 過少計上バグ込み、下記）。
+  - **Wave X（2026-07-19 深夜、Opus 6、全緑）— c2hole エンジン完成＋ox census 討伐＋🚨nestScbTriple 全体が偽**:
+    ①**c2hole エンジン完全 port**（`8.4-c2hole-engine`、s84d_c2hole/corepair 系 1:1、hole 定義は
+    transC2Core と defeq）→ `rightmost84ReplaceExists_of_transport_ch` で rm84 フィールドは
+    `C2HoleSliceTransport_ch` 1 本に還元。⚠️**agent の「p_8_2_condV_terminal_slice_Trans 未証明に
+    gate」判定は STALE**——それは codex が閉じた（8.2-condV-terminal-slice-Trans-close ✅）。
+    **次 wave 最優先: closed terminal-slice で C2HoleSliceTransport_ch を discharge**
+    ②**ox5 census 討伐**（`8.7-otint-ox5-census`、[Buc1] 3.5 congruence 系も再導出。
+    残=census wrapper 事実（oi5 pkg 系、配線時に hflat から供給可の見込み））
+    ③KKraw: 抽象降下エンジン緑（`8.7-otint-kkraw`、census 具体化が残）
+    ④SliceExtTuple→`SliceExtTupleEngines_st` ⑤d4a-target 討伐→`NestScbD4aReducedValue`
+    ⑥🚨**`exch84_nestScbTriple_false_cr : ¬Exch84_nestScbTriple`**（corner の反証を全体に持ち上げ）
+    ＋正しい corner Prop `CornerCollapse_cr` は**証明済み**（`8.4-corner-redesign`）。
+    **帰結: nestScbTriple 経由の mnform 配線（mnformBottomResidual_holds の第1仮定）は死路**＝
+    次 wave で CornerCollapse ベースの dispatch に mnform/scbDecompPkg 系を配線し直せ。
+    フィールド 5 は不変（rm84Readback の swap は transport discharge と同時に実施予定）。
   - **Wave W（2026-07-19、Opus 6、全緑）— 深部原子の攻略＋🚨反証 1 件**:
     ①readback: **T2 形は condIV で大域的に偽**（普遍 readback 補題は存在しない）＝値ルートでなく
     **c2-hole エンジン（s84d_c2hole/s84d_corepair_* wip 52658–54005 ~1400 行）が忠実ルート**。
