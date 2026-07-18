@@ -47,16 +47,12 @@
   - ✅ §7.4 許容的親子関係[r10]
 
 - 🚨 **§8 停止性**
-  - 🚨 §8.1 条件(I)の下での展開規則
-    - ✅ 補題（公差 `(1,1)` のペア数列の `Trans` の基本性質） — `8.1-diagSeq-Trans` [r1]
-    - ✅ 系（`Pred` と公差 `(1,1)` のペア数列の `Trans` の基本性質） — `8.1-Pred-diagSeq-Trans` [r1]
-    - ✅ 補題（条件(I)か(III)の下での `c₁` 前後の具体表示） — `8.1-condI-III-c1-around`[r4]
-    - 🚨🤖 命題（条件(I)の下での `Trans` と基本列の交換関係） — `8.1-Trans-fseq-condI`
+  - ✅ §8.1 条件(I)の下での展開規則[r9]
   - 🚨 §8.2 強単項性
     - ✅ 命題（標準形の直系先祖による切片の簡約化の強単項性） — `8.2-standard-slice-Red-strongmono`[r2]
     - ✅ 補題（強単項性の切片への遺伝性） — `8.2-strongmono-slice`[r1]
     - ✅ 補題（部分表現の単項成分と `Pred` の関係） — `8.2-subexpr-component-Pred`[r5]
-    - 🚨🤖 補題（強単項性の下での部分表現の単項成分の基本性質） — `8.2-subexpr-component-strongmono`
+    - ✅ 補題（強単項性の下での部分表現の単項成分の基本性質） — `8.2-subexpr-component-strongmono`[r2]
     - ✅ 補題（条件(V)の下での右端の親の基本性質） — `8.2-condV-rightmost-parent`[r1]
     - 🚨🤖 補題（条件(V)の下での終切片と `Trans` の関係） — `8.2-condV-terminal-slice-Trans`
     - 🚨🤖 命題（条件(II)か(IV)の下での終切片と `Trans` の関係） — `8.2-condIIIV-terminal-slice-Trans`
@@ -88,7 +84,7 @@
     - ✅ 補題（順序数項の再帰構造） — `8.7-OT-scb-recursive`[r1]
     - ✅ 補題（順序数項の共終数の遺伝性） — `8.7-OT-dom-hereditary`[r1]
     - ✅ 補題（順序数項の末尾項の零化可能性、top-level 値形） — `8.7-OT-tail-annihilable`[r1]
-    - 🚨🤖 補題（`Pred` と `[0]` の関係） — `8.7-Pred-oper0`
+    - 🚨 補題（`Pred` と `[0]` の関係） — `8.7-Pred-oper0`[r1]
     - ✅ 補題（順序数項の基本例） — `8.7-OT-examples`[r1]
     - 🚨🤖 補題（`Trans` が標準形を保つこと） — `8.7-Trans-preserves-OT`
     - 🚨🤖 **定理（標準形ペア数列システムの停止性）** — `8.7-termination`

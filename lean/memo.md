@@ -580,7 +580,11 @@ parent/Lng 形に落としてから作業する。
     残 sorry は必ず `check_lean.py` で判定せよ（grep 禁止）③**workflow 走行中に
     `lake build` するな**——glob が in-flight の書きかけを拾って必ず失敗する。
     個別モジュール指定（`lake build «8».«8.2-subexpr-adm0» …`）なら安全。
-  - 🚨🤖 `8.2-subexpr-component-strongmono` — **Wave G で partial（緑、472 行、公開 4 本）**。
+  - ✅ `8.2-subexpr-component-strongmono`[r2] — **クローズ（2026-07-18 board 更新で確定）**。
+    残っていた 2 Prop（`SXSM_factA_uncond`/`SXSM_factB`）は Wave K の
+    `8.2-strongmono-props` が `sxsm_factA_uncond_holds`/`sxsm_factB_holds`（無仮定・
+    house pattern・緑）で供給済＝`subexpr_component_strongmono` は型合成で無条件化済。
+    （以下は Wave G 時の記録）
     p 文 = pss_paper:1563。**無条件部分**: 原文 clause (1)＋∃! の一意性半分
     （`subexpr_leftend_unique_sm2`＝Isa 14900、`Trans_mono_leftend_form`＋
     `Trans_preserves_zeroT`＋Dprin 単射性）／`wit_step_thr`（34088）＋その支持
@@ -673,7 +677,11 @@ parent/Lng 形に落としてから作業する。
     A29 の対象は隣の `8.5-scb-decompositions`（原文 content.md 5213「各種scb分解」）
     の part (5)（`Trans(M[n]) = s₁D_{M₁,j₋₁}(s'₁D_{M₁,j₀})ⁿt₂(b'₁)ⁿb₁` が n=1 で偽）。
     本項目に part (5) は存在しない。
-  - 🚨🤖 `8.1-Trans-fseq-condI` — **Wave H で green-modulo 完成（緑、593 行）**。
+  - ✅ `8.1-Trans-fseq-condI`[r3] — **クローズ（2026-07-18 board 更新で確定）**。
+    Wave H の green-modulo（露出 Prop は `CondI_masterCF` 1 本のみ）に対し、Wave M の
+    `8.1-condI-masterCF-chunk5` が `scx_condI_j0pos_masterCF : CondI_masterCF` を
+    無仮定・緑で供給済＝`p_8_1_Trans_fseq_condI`/`exchI_holds` は型合成で無条件化済。
+    **これで §8.1 全 4 項目 ✅（task.md は畳んで [r9]）**。（以下は Wave H 時の記録）
     p 文 = pss_paper:1769。`exchI_holds (hCF : CondI_masterCF) : FseqDesc_exchI`
     ＝**型そのものが descend の Prop**なので elaborator が drop-in を保証（目視照合不要。
     以後この作法を標準にせよ）。**露出 Prop は 1 本だけ**: `CondI_masterCF`
@@ -744,9 +752,14 @@ parent/Lng 形に落としてから作業する。
     未着手だった項目。condV 版（`8.2-condV-terminal-slice-Trans`）が構造の雛形。
     condV 版は原文が VE ステップを省略しているため hVE 仮定付きだったので、
     II/IV 版に同じ穴があるかを確認させる。Wave K。
-  - 🚨🤖 `8.7-Pred-oper0` — p 文 = pss_paper:2298（原文 ~6014、PT_B は PT_PS の誤植）。
-    **標準入力で偽**（反例 M=(0,0)(1,1)(2,1)）と記録済。停止性連鎖は Σ_B 降下和で迂回
-    するので**この項目は停止性に不要**＝反例の機械証明＋訂正形が成果物。Wave K。
+  - 🚨 `8.7-Pred-oper0`[r1] — p 文 = pss_paper:2298（原文 ~6014、PT_B は PT_PS の誤植）。
+    🚨**旧記録の反転（Wave K、8 度目の偽陽性）**: 「標準入力で偽（反例 M=(0,0)(1,1)(2,1)）」
+    は**誤りだった**——Wave K がその M は反例で**ない**ことを機械証明
+    （`p_8_7_Pred_oper0_alleged_cex_not_a_counterexample`＋条件 I/V の証人 2 本、緑）。
+    命題は真の可能性が高い。一般形 `PredOper0` は未証明（Prop 露出のみ。原文証明は
+    零化可能性の**ネスト形**を使うが Lean には top-level 形しか無い＝
+    `8.7-OT-tail-annihilable` のネスト版が要る）。停止性連鎖には不要（Σ_B 降下和迂回）。
+    現在 agent 不在。
   - `8.5-*` — **最難所**。Isa の keystone は
     `bpHeadT(Trans(slice@B)) = C(bpHeadT(Trans slice))`（depth-shift self-similar）。
     13 個の死路が `isabelle/memo.md` に列挙してある。**着手前に必ず読め。**
@@ -959,3 +972,10 @@ parent/Lng 形に落としてから作業する。
     **次 wave 候補**: ①7.1 promotion→Oix 3 本 discharge＋OixAlign3（oix uncond 化）
     ②nadm 組立（fact(c) c6nx_t2eq＋c6zx_L_tower(72166)/c6nx_condVI_exch_nadm_uncond(76705)
     ＋Oper5Support の s84c1 群）③LDJB readouts ④VE campaign 始動（a0x_base_VE から）。
+    ⚠️**audit の過少計上バグ（2026-07-18 発見）**: `audit_8_7_termination.py` は
+    `ExchV_nf3x ← nf3x_holds`・`ExchV_scbdec_adm_forms ← adm_forms_holds` を CLOSED 扱い
+    するが、**両 discharger は仮定付き**（`ExchVres_{adm,nadm}_M_tower` を要求）。
+    真の残差 = `TerminationResidual` の**フィールド一覧**（`exchVresAdmTowers`/`exchVnf3x`
+    を含む）で数えること。audit の「6 葉」は exchV の塔 2 本を見落とした値。
+    この塔は §8.4 L-tower（`m_8_4_oper_props_5`＋`s84x_L` 帰納＝Oper5Support/nadm 組立と
+    同一 campaign）が供給予定。
