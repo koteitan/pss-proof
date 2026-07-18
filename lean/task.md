@@ -43,7 +43,7 @@
     - ✅ 補題（強単項性の下での部分表現の単項成分の基本性質） — `8.2-subexpr-component-strongmono`[r2]
     - ✅ 補題（条件(V)の下での右端の親の基本性質） — `8.2-condV-rightmost-parent`[r1]
     - ✅ 補題（条件(V)の下での終切片と `Trans` の関係） — `8.2-condV-terminal-slice-Trans-close`
-    - 🚨 命題（条件(II)か(IV)の下での終切片と `Trans` の関係） — `8.2-condIIIV-terminal-slice-Trans`
+    - 🚨🤖 命題（条件(II)か(IV)の下での終切片と `Trans` の関係） — `8.2-condIIIV-terminal-slice-Trans`
   - 🚨 §8.3 条件(II)の下での展開規則
     - ✅ 補題（第 `0` 種型基本列の基本不等式） — `8.3-kind0-base-ineq`[r1]
     - ✅ 補題（第 `0` 種型基本列の基本分岐規則） — `8.3-kind0-branch-rule`[r1]
