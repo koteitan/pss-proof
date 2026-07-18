@@ -560,7 +560,7 @@ parent/Lng 形に落としてから作業する。
     | sort | uniq -d` で公開名の重複を検査する（2026-07-17 実行時は他に 0 件）。
     ⚠️**stale REPL 注意**: 汚染 header は kimina にキャッシュされるので、改名後の再テストは
     import を 1 行足して fresh header にすること。
-  - 🚨🤖 `8.4-Trans-fseq-condIII-IV` — **Wave F で green-modulo 完成（緑）**。
+  - ✅ `8.4-Trans-fseq-condIII-IV`[r18] — **Wave F で green-modulo 完成（緑）**。
     p 文 = pss_paper:1909。`exch_condIII`/`exch_condIV` が 8.7-fseq-descend の
     `FseqDesc_exchIII`/`_exchIV` の drop-in。
     🚨🚨**重大**: 私が指定した blueprint `m_8_4_Trans_oper_exchange_corrected_condIII`

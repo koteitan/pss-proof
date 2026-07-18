@@ -50,7 +50,7 @@
     - ✅ 補題（第 `0` 種型基本列の基本基点関係） — `8.3-kind0-base-basepoint`[r1]
     - 🚨🤖 命題（条件(II)の下での `Trans` と基本列の交換関係） — `8.3-Trans-fseq-condII` ⛔8.7-fseq-descend
   - 🚨 §8.4 条件(III)か(IV)の下での展開規則
-    - 🚨🤖 命題（条件(III)か(IV)の下での `Trans` と基本列の交換関係） — `8.4-Trans-fseq-condIII-IV`
+    - ✅ 命題（条件(III)か(IV)の下での `Trans` と基本列の交換関係） — `8.4-Trans-fseq-condIII-IV`[r18]
     - ✅ 補題（右端の非許容直系先祖の基本性質） — `8.4-rightmost-nonadm-ancestor`[r1]
     - 🚨 補題（条件(III)か(IV)の下での基本列の基本性質） — `8.4-fseq-basic`[r1]
     - ✅ 補題（条件(III)～(V)の下での右端の置き換えと `Trans` の関係） — `8.4-rightmost-replace-Trans`[r8]
