@@ -1050,13 +1050,47 @@ parent/Lng 形に落としてから作業する。
     この塔は §8.4 L-tower（`m_8_4_oper_props_5`＋`s84x_L` 帰納＝Oper5Support/nadm 組立と
     同一 campaign）が供給予定。
   - 🎉 **Codex 継続（2026-07-18）**: ① `8.2-condV-VE-base2` の
-    `baseMLtTrMax_holds` を公開済み rightmost-parent 3補題から無条件証明。BASE 残差を
-    `BaseVEAdm0`/`BaseVEStrict` の2本へ縮約。② `8.4-oper5-residual` の
+    `baseMLtTrMax_holds` を公開済み rightmost-parent 3補題から無条件証明。② `8.4-oper5-residual` の
     `oper5Residual_holds` を `8.5-exchV-M-tower-close` へ配線し、旧
     `ExchVMCoreResidual`（4連言）を `ExchVMValueResidual`（`PredNp`/`Lpv`/`L1v` の
     3値式）へ縮約。`TerminationResidual` の第5フィールド名は `exchVMvalues`。
     ③ audit を修正し、正本5フィールドと named-Prop 下位葉を分けて表示。
     ④ strict/collapse 共通の BASE ブリック `baseMint_holds` / `baseLeR_holds` /
-    `basePredVE_holds` を無条件化。最後は真の極小基底の `Pred N` を対角列へ同定して
-    `diagSeq_Trans` を両辺へ適用する Isabelle `vbax_base_baseIH` の移植。
-    対象を含む `lake build` は 3123 jobs 完走、追加ブリックも rc=0・sorry 0・公理クリーン。
+    `basePredVE_holds` を無条件化。⑤ `Pred N` の対角列形と
+    `Pred_diagSeq_Trans` の直接計算で `BaseVEStrict` / `BaseVEAdm0` も無条件化し、
+    `a0x_base_VE_vb2` の残差引数を 0 にした。⑥ `bpax_RPERS` も `Pred` の
+    枝数・最終 joint/first-node 保存から無条件化。⑦ Isabelle `bpax_VE_step`
+    の6 discharger（`lerR`/`id2R`/`id3R`/`tneR`/`intMR`/`intNR`）と scb surgery heart
+    を移植し、`bpaxVEstep_holds` も無条件化。Lean 側は
+    `scb_unique_decomp_unconditional` と実行可能 `unflatBT` parser を使い、Isabelle の
+    principal-image/非零仮定を要しない短縮証明になった。
+    ⑧ `VEj1eqResidual` の deepen/collapse 両枝も閉じ、無条件
+    `vcx_VE_all` を公開。対象 build 3065 jobs は完走、追加ブリックも sorry 0・公理
+    `[propext, Classical.choice, Quot.sound]` のみ。⑨これを
+    `8.2-condV-terminal-slice-Trans-close` へ配線し、原文の条件(V)終切片定理を
+    無条件化。⑩ `wnx_seg_transport_W1/W2` と VE を合成して
+    `tv_notldjreg_holds` / `tv_notldjleg_holds` を閉じた。既閉の Dichotomy / Trunk /
+    LDJB / R3LE と合わせた `condII_masterCF_of_boundaryData` により、CondII の残差は
+    **`TvxBoundaryData` 1本のみ**。
+    ⑪ ExchV の公開再利用層として `transC2_condV_eq` / `trans_surgery_shared_xv`
+    （`8.5-exchV-props`）、`s84x_L_eq_append` / `RTPS_s84x_L` /
+    `nextrel0_row0_congr` / `le0_row0_congr` / `seg_to_last_eq_drop`
+    （`8.4-oper5-residual`）を追加。⑫ `8.5-exchV-values-close` で Isabelle の
+    admissible 経路を移植し、`exchV_Np_adm` / `exchV_PredNp_adm` /
+    `exchV_Lp_adm` / `exchV_L1_decomp_adm` を経て `exchV_values_adm` が
+    `PredNp` / `Lpv` / `L1v` の3値を一括で閉じる。元の
+    `ExchVMValueResidual` は `exchVMvalues_of_nadm` により、訂正済み §8.4 の
+    `Rightmost84ReplaceCorrected` と non-admissible 枝だけの
+    `ExchVMNadmValueResidual` へ縮約。対象 build 3040 jobs 完走、sorry 0・公理は
+    `[propext, Classical.choice, Quot.sound]` のみ。
+    ⑬ 続けて Isabelle `nf2x_Lpv` / `nf2x_L1v` を移植。
+    `exchV_Lp_of_Np` は `Np` 値から `Lpv` を adm 非依存で導出し、
+    `exchV_L1_decomp_of_c2` は `L₁` と host の `Pred` / `j₀` / `Adm(j₀)` を
+    接頭辞一致で同定して `c₂(L₁)` から `L1v` を導出する。これにより
+    `ExchVMNadmValueResidual` を原子3値 `PredNp` / `Np` / `c₂(L₁)` の
+    `ExchVMNadmAtomicResidual` へ縮約。§8.4 訂正済み右端置換と束ねた
+    `ExchVMNadmAtomicPackage` を `TerminationResidual.exchVMnadmAtomic` へ配線し、
+    旧 `exchVMvalues : ExchVMValueResidual` を置換した。停止性 target build は
+    **3125 jobs 完走**、主定理群は sorry 0・公理
+    `[propext, Classical.choice, Quot.sound]` のみ。audit 正本は引き続き5フィールド、
+    条件(V)フィールド内部だけが4原子（右端置換 + 3 slice 値）へ細化した。

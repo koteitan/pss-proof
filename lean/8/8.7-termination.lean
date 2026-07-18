@@ -28,6 +28,7 @@ import «8».«8.7-otdisp-OTint-condIIIIV»
 import «8».«8.7-otdisp-OTint-condV»
 import «8».«8.7-otint-transport-data»
 import «8».«8.5-exchV-M-tower-close»
+import «8».«8.5-exchV-values-close»
 import «8».«8.7-otdisp-OTmulti2»
 
 /-!
@@ -49,14 +50,14 @@ import «8».«8.7-otdisp-OTmulti2»
     `y5_Trans_descend` (同 :14208)。
   * 組み立ての本体は `y4_PSS_wf_of_KK` (同 :13806)。
   Isabelle 側は **仮定ゼロ・sorry ゼロ**で閉じている。
-- 状態: 🤖 **GREEN-MODULO 6**（sorry 0、axioms = propext/Classical.choice/Quot.sound）。
+- 状態: 🤖 **GREEN-MODULO 5**（sorry 0、axioms = propext/Classical.choice/Quot.sound）。
   下の `TerminationResidual`（wave L 22→10、wave M `CondI_masterCF` →9、
-  wave N `OTdisp_OTpred`＋`CondVI_scbdec_adm_forms_v6` →7、
-  wave P `CondVIExchNadm` 無条件化（nadm L-tower）＋ `Exch84` の
-  producer→slicepkg 細化により →6 フィールド）が、
+  wave N `OTdisp_OTpred`＋`CondVI_scbdec_adm_forms_v6` →7、wave P →6、
+  wave Q 以後の OTint 組立と残差細化で →5 フィールド）が、
   Lean 版の停止性定理と**無条件**の停止性定理を隔てる**全て**である。
-  現行 6 フィールド = OT 柱 `OTdisp_OTint`/`OTdisp_OTmulti` ＋ `CondII_masterCF` ＋
-  `Exch84_condIIIIV_slicepkg` ＋ 条件 (V) `ExchVres_adm_M_tower`/`ExchV_nf3x`。
+  現行5フィールド = `otMultiInterior` / `otSetle` / `condII` /
+  `exch84slicepkg` / `exchVMnadmAtomic`。最後の条件(V)フィールドは
+  §8.4 訂正済み右端置換 + non-admissible 原子3値 (`PredNp`/`Np`/`c₂(L₁)`)。
   （以下の詳細表は残差 22 時点の史料。）
 
 ## 組み立て（Isabelle `y4_PSS_wf_of_KK` / `y5_Fdom` と 1:1）
@@ -239,11 +240,12 @@ structure TerminationResidual : Prop where
   `noParent` 脚は wave L の `8.4-exch84-noparent` が無条件供給済み。 -/
   exch84slicepkg : Exch84_condIIIIV_slicepkg
   /-- 条件 (V)（wave Q 統合で旧 2 フィールド `exchVresAdmTowers`/`exchVnf3x` を
-  1 本化）。`Oper5Residual` は `8.4-oper5-residual` で既に閉じたため、残るのは
-  `8.5-exchV-M-tower-close` の値方程式 3 本 (`PredNp`/`Lpv`/`L1v`) だけ。
+  1 本化）。admissible 枝と `Lpv`/`L1v` の導出は閉じたため、残るのは
+  `8.5-exchV-values-close` の訂正済み §8.4 右端置換と non-admissible 原子3値
+  (`PredNp`/`Np`/`c₂(L₁)`) だけ。
   `exchV_M_tower_of_residual` → `ExchV_M_tower` → `8.5-exchV-props2` の 2 本で
   `ExchVres_adm_M_tower` と `ExchV_nf3x` の両方が出る。 -/
-  exchVMvalues : ExchVMValueResidual
+  exchVMnadmAtomic : ExchVMNadmAtomicPackage
 
 /-- 条件 (VI) 許容枝の供給（wave N 統合）。`8.6-condVI-adm-forms` が閉じた
 `CondVI_scbdec_adm_forms_v6` を `8.6-condVI-close` の
@@ -269,7 +271,8 @@ private theorem exch84producer_term (H : TerminationResidual) :
 `ExchV_M_tower`（`8.5-exchV-M-tower`）を経て、adm 塔と `nf3x` の両方を
 `8.5-exchV-props2` で導出。 -/
 private theorem exchVMtower_term (H : TerminationResidual) : ExchV_M_tower :=
-  exchV_M_tower_of_residual (exchVMres_of_values H.exchVMvalues)
+  exchV_M_tower_of_residual
+    (exchVMres_of_values (exchVMvalues_of_nadm_package H.exchVMnadmAtomic))
 
 private theorem exchVresAdm_term (H : TerminationResidual) : ExchVres_adm_M_tower :=
   exchVres_adm_M_tower_of_M_tower (exchVMtower_term H)

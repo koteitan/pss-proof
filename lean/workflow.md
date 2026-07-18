@@ -8,17 +8,23 @@
 
 - ✅ 定義層 / §5 / §6 / §7 / §8.1 は完了。`7.1-buchholz-wf` と
   `8.1-condI-III-c1-around` part (4) も既に無条件で閉じた。
-- §8.2 の subexpr/strongmono/rightmost-parent は完了。残る terminal-slice 2 本は
-  §8.2 VE 本体に依存する green-modulo。
+- §8.2 の subexpr/strongmono/rightmost-parent は完了。条件(V) terminal-slice は
+  `8.2-condV-terminal-slice-Trans-close` で無条件に閉じた。残る同節の原文定理は
+  condII/IV terminal-slice 1 本。
 - `lean/8/8.7-termination.lean` は error 0 / sorry 0 / 公理
   `[propext, Classical.choice, Quot.sound]` で緑。ただし原文の無条件形との間に
   `TerminationResidual` の **5 フィールド**が残る:
   `otMultiInterior` / `otSetle` / `condII` / `exch84slicepkg` / `exchVMvalues`。
-- **最優先は §8.2 VE campaign**。これは `condII` の NotLdj/Boundary 2 脚と
-  `exchVMvalues` の非 adm 底3式に共通する律速で、2フィールドを同時に解禁する。
-- Codex 継続で `BaseMLtTrMax` を無条件に閉じ、VE BASE 残差は
-  `BaseVEAdm0` / `BaseVEStrict` の2本になった。また `oper5Residual_holds` を上位へ
-  配線し、ExchV 残差は `PredNp` / `Lpv` / `L1v` の3値式だけになった。
+- **§8.2 VE campaign は完了**。無条件 `vcx_VE_all` を条件(V) terminal-slice と
+  CondII `TV_NotLdjReg` へ配線済み。次の最優先は CondII 境界データと
+  ExchV の non-admissible 底値への接続。
+- Codex 継続で VE BASE 脚（`BaseMLtTrMax` / `BaseVEAdm0` / `BaseVEStrict`）、
+  `BpaxRPERS`、scb surgery STEP の `BpaxVEstep`、最後の `VEj1eqResidual` を
+  すべて無条件に閉じ、`vcx_VE_all` を公開した。さらに `TV_NotLdjReg` も閉じ、
+  `CondII_masterCF` の残差は **`TvxBoundaryData` 1本のみ**。ExchV は admissible 枝の
+  `PredNp` / `Lpv` / `L1v` を閉じ、元の3値残差を **訂正済み §8.4 右端置換
+  `Rightmost84ReplaceCorrected` + non-admissible 原子3値 (`PredNp` / `Np` /
+  `c₂(L₁)`) の **`ExchVMNadmAtomicPackage`** まで縮約し、停止性の正本へ配線した。
 - `python/audit_8_7_termination.py` の named-Prop 葉数は補助診断にすぎない。
   進捗の正本は必ず `TerminationResidual` のフィールド一覧で数える。
 
@@ -100,10 +106,12 @@ Workflow スクリプト構造は過去 wave のものを再利用可
 
 ## 4. 現行 Wave 計画（優先順）
 
-1. **VE**: `BaseVEAdm0` / `BaseVEStrict` →
-   `BpaxVEstep` / `BpaxRPERS` / `VEj1eqResidual` → `vcx_VE_all`。
-2. **VE consumers**: `TV_NotLdjReg` / `TvxBoundaryData` → `CondII_masterCF`、および
-   ExchV の `PredNp` / `Lpv` / `L1v`。`Oper5Residual` 脚は Wave R で閉じている。
+1. **VE consumers / ExchV bottom**: `TvxBoundaryData` → `CondII_masterCF`。
+   ExchV の admissible 3値式と non-admissible の `Lpv` / `L1v` 導出は閉じた。
+   残りは `ExchVMNadmAtomicPackage` の §8.4 `Rightmost84ReplaceCorrected` と
+   原子3値 `PredNp` / `Np` / `c₂(L₁)` を閉じる。
+2. **§8.2 condII/IV**: `vg2x_VE34` 系を閉じ、残る terminal-slice 原文定理と
+   CondII 境界脚を同時に解禁する。
 3. **独立柱**: Exch84 slicepkg 4脚と OTint `OTA1_ltJ` / `SETLE1_ltJ`。
 4. **最終柱**: `OTmulti_interior_om2` の条件 (I)〜(VI) dispatch。
 5. 5フィールドが消えたら `p_8_7_termination` を残差引数なしで公開し、臨界路外の

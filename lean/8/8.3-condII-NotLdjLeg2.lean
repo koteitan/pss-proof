@@ -64,11 +64,9 @@ import «6».«6.8-standard-slice-Br-descending»
 * ✅ `tv_notldjleg_of_reg : TV_NotLdjReg → TV_NotLdjLeg`（無条件還元）。
   `TV_NotLdjLeg` は `TV_Dichotomy`（本ファイルで閉）＋ `TV_TrunkLeg`（既閉）
   ＋ `TV_NotLdjReg` の 3 脚だったが、前 2 本が閉じたので **残差は `TV_NotLdjReg` の 1 本のみ**。
-* ⚠️ `TV_NotLdjReg`（Isabelle `c2sx_tailval_of_reg`, layerB:87838）は**未閉**。
-  その証明は §8.2 の VE 本体 `wnx_transfer_of_reg` (80867) と
-  `ncx_deadm_of_w2nostr` (77489) を要し、両者は Lean 未移植（VE 残差
-  {BASE, STEP, RPERS} が «8».«8.2-condV-VE-base» で未達）。よって
-  `tv_notldjleg_holds : TV_NotLdjLeg` は本 wave では無条件には出せない。
+* ✅ 後続 «8».«8.3-condII-NotLdjReg-close» が無条件 `vcx_VE_all` と
+  `wnx_seg_transport_W1/W2` を配線して `TV_NotLdjReg` を閉じ、
+  `tv_notldjleg_holds : TV_NotLdjLeg` を公開する。本ファイル自身は還元層を担う。
 -/
 
 namespace PSS

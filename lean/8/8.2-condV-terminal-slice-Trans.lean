@@ -23,11 +23,10 @@ import «7».«7.4-RightNodes-Mark»
     - `m_6_4_mono_slice` / `le0_monoT_seg_into_list` / `slice_Red_in_RT_PS` /
       `m_7_3_Trans_Red` / `repr_entry1_shift_gen` / `m_6_5_Red_preserves_monoT`
       → 下記 `condV_terminal_slice_principal` に集約
-  - 未移植: `vcx_VE_all`（値方程式 `VE`
-    `bpHeadT (Trans (seg M m (Lng M - 1))) = bpHeadT (Trans M)`）。
-    Isabelle 側では `cfbx_VE_backpeel` (63230) に始まり `a0x_*`/`vjx_*`/`vsx_*`/
-    `vbax_*`/`vcx_*` の約 14000 行・271 補題の back-peel 帰納法。単一ファイルの
-    射程外のため、本ファイルは `VE` を仮定に持つ `_modVE` 形までを緑で提供する。
+  - `vcx_VE_all`（値方程式 `VE`）は後続
+    «8».«8.2-condV-VE-close» で無条件化済み。import cycle を避けるため、本ファイルは
+    `VE` 仮定付き `_modVE` 形を提供し、原文の無条件形は後続
+    «8».«8.2-condV-terminal-slice-Trans-close» が公開する。
 - 依存: `8.2-condV-rightmost-parent`（`le0_monoT_seg_into_list`）、
   `6.4-mono-slice`（`mono_slice`）、`6.4-FirstNodes-TrMax-Joints`
   （`FirstNodes_TrMax_Joints`/`TrMax_bound`）、`6.2-mono-ancestor-slice`
@@ -41,8 +40,8 @@ import «7».«7.4-RightNodes-Mark»
   （`ancestor_slice_Red_IncrFirst`）、`Trans (seg …) = Trans (Red (seg …))` と
   `entry (Red (seg M m j₁)) 1 0 = M₁,ₘ`（`IncrFirstN` は行 1 を動かさない）で
   頭指標を `M₁,ₘ` に読み替える。`VE` が両者の深部末尾を同定する。
-- 状態: ⚠️ 部分（sorry 0、rc=0）。公開定理はすべて無条件または `VE` 仮定付き。
-  原文の主張そのもの（`VE` 込み）は `vcx_VE_all` の移植待ち。
+- 状態: ✅ 本ファイルの `_modVE` 層は完了（sorry 0）。原文の無条件形も後続
+  «8».«8.2-condV-terminal-slice-Trans-close» で完了。
 -/
 
 namespace PSS

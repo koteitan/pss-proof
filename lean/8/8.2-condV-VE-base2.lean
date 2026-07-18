@@ -1,6 +1,7 @@
 import «8».«8.2-condV-VE-base»
 import «8».«8.2-condV-rightmost-parent»
 import «8».«8.2-subexpr-component-Pred»
+import «8».«8.1-Pred-diagSeq-Trans»
 
 /-!
 # §8.2 値方程式 `VE` の BASE 脚（`Lng = TrMax + 2` 極小基底）
@@ -12,15 +13,15 @@ import «8».«8.2-subexpr-component-Pred»
 - Isabelle（`isabelle/layerB/pss_wip.thy`）:
   - `a0x_base_VE` (75701) → `a0x_base_VE_vb2`（本ファイルの公開主定理）。
     Isabelle は `a0x_base_VE = vbx_base_VE_modAdm0[OF reg base a0x_base_VE_Adm0]` で
-    閉じる。本ファイルはその **modAdm0 の上位骨格**（`transJm1` 二分岐）を Lean 側で
-    証明し、二つの genuinely-hard 枝を named Prop に隔離する。
+    閉じる。本ファイルはその `transJm1` 二分岐を Lean 側で証明し、
+    両分岐も `Pred N` の対角列形と `Pred_diagSeq_Trans` の直接計算で閉じる。
   - `vbx_base_transJm1_zero_or_TrMax` (74440) → `transJm1_zero_or_TrMax_vb2`
     （Lean 側で **完全証明**。`Adm_adm`/`Adm_le`/`Joints_getD`/`FirstNodes_TrMax_Joints`/
     `VEReg_base_j1p_eq`/`adm_le_TrMax_cases` で閉じる）。
   - `adm_le_TrMax_cases` (isabelle/pss_mechanized.thy 32296) → `adm_le_TrMax_cases_vb2`
     （private 再証明。`8.2-subexpr-component-Pred` の `_ck` は private のため再掲）。
   - `vbx_base_VE_modAdm0` (74476) の骨格 = `a0x_base_VE_vb2` の証明本体。
-- 露出する named Prop（green-modulo。各々が Isabelle の 1 補題に対応）:
+- 中間 named Prop（各々が Isabelle の 1 補題に対応し、本ファイル内で無条件に閉じる）:
   - `BaseMLtTrMax`  = `bihx_base_m_lt_TrMax` (71267) を BASE 体制に特化（`m < TrMax N`）。
     第二枝に必要な `joint_row1_eq`/`branch_col0_val`/`det_imp_joint_lt_TrMax` は
     Wave C-1 で公開済みなので、本ファイルで無条件に閉じる。
@@ -34,10 +35,10 @@ import «8».«8.2-subexpr-component-Pred»
   `m < TrMax N`（`BaseMLtTrMax`）より `m < transJm1 N` を得て `BaseVEStrict`。
   得られる `a0x_base_VE_vb2 m …` は型がちょうど `VE_backpeel_TrMax` の BASE 仮定
   `∀ N, VEReg m N → Lng N = TrMax N + 2 → VEeq m N` に一致する（末尾 `example` で確認）。
-- 状態: ⚠️ 部分（sorry 0、rc=0）。BASE 脚の**上位骨格は無条件**。
-  `BaseMLtTrMax` は閉じ、残差は {`BaseVEAdm0`, `BaseVEStrict`} の2本。
-  加えて strict/collapse の双方が使う基底ブリック `baseMint_holds` / `baseLeR_holds` /
-  `basePredVE_holds` を無条件化済み。
+- 状態: ✅ 完了（sorry 0、rc=0）。`BaseMLtTrMax` / `BaseVEAdm0` /
+  `BaseVEStrict` と共通基底ブリック `baseMint_holds` / `baseLeR_holds` /
+  `basePredVE_holds` をすべて無条件化。`a0x_base_VE_vb2` は残差引数 0 で
+  `VE_backpeel_TrMax` の BASE 仮定を与える。
 -/
 
 namespace PSS
@@ -108,7 +109,7 @@ private theorem transJm1_zero_or_TrMax_vb2 (m : ℕ) (N : PS)
     rw [hj0] at h1; omega
   exact adm_le_TrMax_cases_vb2 N (transJm1 N) hM hadmJ hleJ
 
-/-! ## 露出する named Prop（BASE 脚の残差＝二つの hard 枝＋一つの幾何残差） -/
+/-! ## BASE 脚の中間 named Prop（以下ですべて無条件に閉じる） -/
 
 /-- Isabelle `bihx_base_m_lt_TrMax` (wip 71267) を BASE 体制に特化。
 第二枝 `m = Joints ∧ descending` は未移植の `m_8_2_*` 連鎖を要する。 -/
@@ -187,7 +188,6 @@ theorem basePredVE_holds (m : ℕ) (N : PS) (hreg : VEReg m N)
     baseMint_holds m N ⟨hR, hmono, hBrne, hcases⟩ hbase
   have hL3 : 2 < Lng N := by omega
   have hL1 : 1 < Lng N := by omega
-  have htrbase : TrMax N = Lng N - 2 := by omega
   have htrne : TrMax N ≠ Lng N - 1 := by omega
   have hpredR : RTPS (Pred N) := RTPS_Pred N hR
   have hLP : Lng (Pred N) = Lng N - 1 := length_Pred N hL1
@@ -232,38 +232,391 @@ theorem basePredVE_holds (m : ℕ) (N : PS) (hreg : VEReg m N)
   rw [htSeg, htPred]
   rfl
 
-/-! ## BASE 脚（Isabelle `a0x_base_VE`, 75701 の modAdm0 骨格） -/
+/-! ## strict BASE: 対角幹＋末尾列の直接計算 -/
 
-/-- Isabelle `a0x_base_VE` (wip 75701) の上位骨格。三つの named Prop 残差を消費し、
+/-- 対角幹に末尾列を付けた列の終切片は、対角幹の左端だけを `m` だけ進める。 -/
+private theorem seg_diagApp_vb2 (u v wp w m : ℕ) (huv : u < v)
+    (hm : m < v - u) :
+    seg (diagSeq u v ++ [(wp, w)]) m
+      (Lng (diagSeq u v ++ [(wp, w)]) - 1) =
+      diagSeq (u + m) v ++ [(wp, w)] := by
+  apply List.ext_getElem
+  · simp [diagSeq]
+    omega
+  · intro i hiL hiR
+    have hlenD : Lng (diagSeq (u + m) v) = v + 1 - (u + m) := by
+      simp [diagSeq]
+    by_cases hi : i < Lng (diagSeq (u + m) v)
+    · rw [seg_getElem_68 _ m _ i hiL]
+      have hmi : m + i < Lng (diagSeq u v) := by
+        simp [diagSeq] at hi ⊢
+        omega
+      rw [entry_append_left_mr _ _ 0 _ hmi,
+        entry_append_left_mr _ _ 1 _ hmi]
+      rw [entry_diagSeq_68 u v 0 (m + i) hmi,
+        entry_diagSeq_68 u v 1 (m + i) hmi]
+      simp only [List.getElem_append_left hi]
+      simp [diagSeq, List.getElem_map, List.getElem_range']
+      omega
+    · have hieq : i = Lng (diagSeq (u + m) v) := by
+        simp [diagSeq] at hi hiR
+        omega
+      subst i
+      rw [seg_getElem_68 _ m _ _ hiL]
+      have hidx : m + Lng (diagSeq (u + m) v) = Lng (diagSeq u v) := by
+        simp [diagSeq]
+        omega
+      rw [hidx]
+      rw [entry_append_right_mr _ _ 0 _ (le_refl _),
+        entry_append_right_mr _ _ 1 _ (le_refl _)]
+      simp [entry]
+
+/-- Isabelle `vbx_base_VE_strict`。極小基底の `Pred N` は対角列であり、
+`m < transJm1 N` は末尾列の行0親が対角幹の右端であることを強制する。
+したがって `N` とその終切片は同じ末尾二段塔を持ち、外側の指標だけが
+`u` から `u+m` へ変わるので `bpHeadT` は一致する。 -/
+theorem baseVEStrict_holds (m : ℕ) : BaseVEStrict m := by
+  intro N hreg hbase hstr
+  obtain ⟨hR, hmono, hBrne, hcases⟩ := hreg
+  have hM : TPS N := RTPS_TPS N hR
+  have hNne : N ≠ [] := hM
+  by_cases hm0 : m = 0
+  · subst m
+    exact VE_index0 N hNne
+  have hmint : m < Lng N - 2 :=
+    baseMint_holds m N ⟨hR, hmono, hBrne, hcases⟩ hbase
+  have hL3 : 2 < Lng N := by omega
+  have hL1 : 1 < Lng N := by omega
+  have htrne : TrMax N ≠ Lng N - 1 := by omega
+  have hpredR : RTPS (Pred N) := RTPS_Pred N hR
+  have hLP : Lng (Pred N) = Lng N - 1 := length_Pred N hL1
+  have htrP : TrMax (Pred N) = TrMax N :=
+    TrMax_Pred_nontrunk N hM hL1 htrne
+  have htrPeq : TrMax (Pred N) = Lng (Pred N) - 1 := by omega
+  have hmonoP : monoT (Pred N) = true := monoT_Pred_long N hM hmono hL3
+  let u := entry (Pred N) 1 0
+  let v := u + (Lng (Pred N) - 1)
+  have huv : u < v := by dsimp [v]; omega
+  have hdiag : Pred N = diagSeq u v := by
+    apply List.ext_getElem
+    · change Lng (Pred N) = Lng (diagSeq u v)
+      simp [diagSeq, v]
+      omega
+    · intro i hiP _hiD
+      have hiL : i < Lng (Pred N) := hiP
+      obtain ⟨he0, he1⟩ :=
+        baseU_alltrunk_diag_entry (Pred N) i hpredR hmonoP htrPeq hiL
+      have hPi : (Pred N)[i] = (entry (Pred N) 0 i, entry (Pred N) 1 i) := by
+        simp [entry, List.getElem?_eq_getElem hiL]
+      rw [hPi, he0, he1]
+      simp [u, diagSeq, List.getElem_map, List.getElem_range']
+  let wp := (N.getLast hNne).1
+  let w := (N.getLast hNne).2
+  have hPredDrop : Pred N = N.dropLast := by
+    simp [Pred, show ¬Lng N ≤ 1 by omega]
+  have hshape : N = diagSeq u v ++ [(wp, w)] := by
+    calc
+      N = N.dropLast ++ [N.getLast hNne] :=
+        (List.dropLast_append_getLast hNne).symm
+      _ = Pred N ++ [(wp, w)] := by simp [← hPredDrop, wp, w]
+      _ = diagSeq u v ++ [(wp, w)] := by rw [hdiag]
+  have hp : hasParent N 0 (Lng N - 1) = true :=
+    mono_hasParent_row0 N hM hmono (Lng N - 1) (by omega) (by omega)
+  have hJ0lt : transJ0 N < Lng N - 1 := by
+    simpa [transJ0, lastParent, lastIdx] using
+      parent_lt_of_hasParent N 0 (Lng N - 1) hp
+  have hJ0ltD := hJ0lt
+  rw [hshape] at hJ0ltD
+  have hbound : transJ0 (diagSeq u v ++ [(wp, w)]) ≤ v - u := by
+    have hlenApp : Lng (diagSeq u v ++ [(wp, w)]) = v - u + 2 := by
+      simp [diagSeq]
+      omega
+    rw [hlenApp] at hJ0ltD
+    omega
+  have hposN : 0 < transJm1 N := by omega
+  have hposD : 0 < transJm1 (diagSeq u v ++ [(wp, w)]) := by
+    simpa only [hshape] using hposN
+  have hj0D : transJ0 (diagSeq u v ++ [(wp, w)]) = v - u :=
+    diagApp_transJm1_pos_forces_parent_rightmost u v wp w huv hbound hposD
+  have hj0N : transJ0 N = v - u := by
+    rw [hshape]
+    exact hj0D
+  have hparent : parent N 0 (Lng N - 1) = v - u := by
+    simpa [transJ0, lastParent, lastIdx] using hj0N
+  have hparD : v - u < Lng (diagSeq u v) := by
+    simp [diagSeq]
+    omega
+  have hepar : entry N 0 (parent N 0 (Lng N - 1)) = v := by
+    rw [hparent, hshape, entry_append_left_mr _ _ 0 _ hparD,
+      entry_diagSeq_68 u v 0 (v - u) hparD]
+    omega
+  have helast0 : entry N 0 (Lng N - 1) = wp := by
+    rw [hshape]
+    have hidx : Lng (diagSeq u v ++ [(wp, w)]) - 1 = Lng (diagSeq u v) := by simp
+    rw [hidx, entry_append_right_mr _ _ 0 _ (le_refl _)]
+    simp [entry]
+  have helast1 : entry N 1 (Lng N - 1) = w := by
+    rw [hshape]
+    have hidx : Lng (diagSeq u v ++ [(wp, w)]) - 1 = Lng (diagSeq u v) := by simp
+    rw [hidx, entry_append_right_mr _ _ 1 _ (le_refl _)]
+    simp [entry]
+  have hA : RedCondA N = true := (RTPS_condAB N hR).1
+  have htop := RedCondA_apply N hA 0 (Lng N - 1) (by omega) (by omega) hp
+  have hwp : wp = v + 1 := by rw [hepar, helast0] at htop; omega
+  have hwle : w ≤ wp := by
+    have hc := reduced_coeff N hR (Lng N - 1) (by omega)
+    rwa [helast1, helast0] at hc
+  have hwv : w ≤ v := by
+    have hwle' : w ≤ v + 1 := by omega
+    by_contra hnot
+    have hw : w = v + 1 := by omega
+    have hdiagN : N = diagSeq u (v + 1) := by
+      rw [hshape, hwp, hw, diagSeq_succ_eq_append u v huv.le]
+    have hbrzero : Br N = [] := by
+      rw [hdiagN]
+      exact Br_diagSeq_68 u (v + 1) (by omega)
+    exact hBrne hbrzero
+  have hmvu : m < v - u := by
+    have hadmle : transJm1 N ≤ transJ0 N := by
+      unfold transJm1
+      exact Adm_le N (transJ0 N)
+    rw [hj0N] at hadmle
+    omega
+  have hslice :
+      seg N m (Lng N - 1) = diagSeq (u + m) v ++ [(v + 1, w)] := by
+    rw [hshape, hwp]
+    exact seg_diagApp_vb2 u v (v + 1) w m huv hmvu
+  have htN : Trans N =
+      Dprin (u : ℕ∞) (Dprin (v : ℕ∞) (Dprin (w : ℕ∞) BZero)) := by
+    rw [hshape, hwp]
+    exact diagApp_last_Trans u v w huv hwv
+  have htS : Trans (seg N m (Lng N - 1)) =
+      Dprin (u + m : ℕ∞) (Dprin (v : ℕ∞) (Dprin (w : ℕ∞) BZero)) := by
+    rw [hslice]
+    exact diagApp_last_Trans (u + m) v w (by omega) hwv
+  unfold VEeq
+  rw [htS, htN]
+  rfl
+
+/-- Isabelle `a0x_base_VE_Adm0`。`transJm1 N = 0` の極小基底も、対角幹に
+付く末尾列の位置で場合分けして直接計算できる。行1値が行0値と等しい枝では
+case 2、狭義に小さい枝では付着位置により case 3/4 となる。`VEReg` の
+`m ≤ Joints(last)` は切片後も同じ case に留まるために必要な境界を与える。 -/
+theorem baseVEAdm0_holds (m : ℕ) : BaseVEAdm0 m := by
+  intro N hreg hbase hAdm0
+  have heq : VEj1p N = Lng N - 1 := VEReg_base_j1p_eq m N hreg hbase
+  unfold VEj1p at heq
+  obtain ⟨hR, hmono, hBrne, hcases⟩ := hreg
+  have hM : TPS N := RTPS_TPS N hR
+  have hNne : N ≠ [] := hM
+  by_cases hm0 : m = 0
+  · subst m
+    exact VE_index0 N hNne
+  have hmint : m < Lng N - 2 :=
+    baseMint_holds m N ⟨hR, hmono, hBrne, hcases⟩ hbase
+  have hL3 : 2 < Lng N := by omega
+  have hL1 : 1 < Lng N := by omega
+  have htrne : TrMax N ≠ Lng N - 1 := by omega
+  have hpredR : RTPS (Pred N) := RTPS_Pred N hR
+  have hLP : Lng (Pred N) = Lng N - 1 := length_Pred N hL1
+  have htrP : TrMax (Pred N) = TrMax N :=
+    TrMax_Pred_nontrunk N hM hL1 htrne
+  have htrPeq : TrMax (Pred N) = Lng (Pred N) - 1 := by omega
+  have hmonoP : monoT (Pred N) = true := monoT_Pred_long N hM hmono hL3
+  let u := entry (Pred N) 1 0
+  let v := u + (Lng (Pred N) - 1)
+  have huv : u < v := by dsimp [v]; omega
+  have hdiag : Pred N = diagSeq u v := by
+    apply List.ext_getElem
+    · change Lng (Pred N) = Lng (diagSeq u v)
+      simp [diagSeq, v]
+      omega
+    · intro i hiP _hiD
+      have hiL : i < Lng (Pred N) := hiP
+      obtain ⟨he0, he1⟩ :=
+        baseU_alltrunk_diag_entry (Pred N) i hpredR hmonoP htrPeq hiL
+      have hPi : (Pred N)[i] = (entry (Pred N) 0 i, entry (Pred N) 1 i) := by
+        simp [entry, List.getElem?_eq_getElem hiL]
+      rw [hPi, he0, he1]
+      simp [u, diagSeq, List.getElem_map, List.getElem_range']
+  let wp := (N.getLast hNne).1
+  let w := (N.getLast hNne).2
+  have hPredDrop : Pred N = N.dropLast := by
+    simp [Pred, show ¬Lng N ≤ 1 by omega]
+  have hshape : N = diagSeq u v ++ [(wp, w)] := by
+    calc
+      N = N.dropLast ++ [N.getLast hNne] :=
+        (List.dropLast_append_getLast hNne).symm
+      _ = Pred N ++ [(wp, w)] := by simp [← hPredDrop, wp, w]
+      _ = diagSeq u v ++ [(wp, w)] := by rw [hdiag]
+  have hp : hasParent N 0 (Lng N - 1) = true :=
+    mono_hasParent_row0 N hM hmono (Lng N - 1) (by omega) (by omega)
+  have hplt : parent N 0 (Lng N - 1) < Lng N - 1 :=
+    parent_lt_of_hasParent N 0 (Lng N - 1) hp
+  have hlastIdx : Lng N - 1 = Lng (diagSeq u v) := by
+    rw [hshape]
+    simp
+  have hpD : parent N 0 (Lng N - 1) < Lng (diagSeq u v) := by
+    rw [← hlastIdx]
+    exact hplt
+  have hepar : entry N 0 (parent N 0 (Lng N - 1)) =
+      u + parent N 0 (Lng N - 1) := by
+    calc
+      entry N 0 (parent N 0 (Lng N - 1)) =
+          entry (diagSeq u v ++ [(wp, w)]) 0 (parent N 0 (Lng N - 1)) :=
+        congrArg (fun Q : PS => entry Q 0 (parent N 0 (Lng N - 1))) hshape
+      _ = entry (diagSeq u v) 0 (parent N 0 (Lng N - 1)) :=
+        entry_append_left_mr _ _ 0 _ hpD
+      _ = u + parent N 0 (Lng N - 1) :=
+        entry_diagSeq_68 u v 0 _ hpD
+  have helast0 : entry N 0 (Lng N - 1) = wp := by
+    rw [hshape]
+    have hidx : Lng (diagSeq u v ++ [(wp, w)]) - 1 = Lng (diagSeq u v) := by simp
+    rw [hidx, entry_append_right_mr _ _ 0 _ (le_refl _)]
+    simp [entry]
+  have helast1 : entry N 1 (Lng N - 1) = w := by
+    rw [hshape]
+    have hidx : Lng (diagSeq u v ++ [(wp, w)]) - 1 = Lng (diagSeq u v) := by simp
+    rw [hidx, entry_append_right_mr _ _ 1 _ (le_refl _)]
+    simp [entry]
+  have hA : RedCondA N = true := (RTPS_condAB N hR).1
+  have htop := RedCondA_apply N hA 0 (Lng N - 1) (by omega) (by omega) hp
+  have hparentFormula : parent N 0 (Lng N - 1) = wp - u - 1 := by
+    rw [hepar, helast0] at htop
+    omega
+  have huwp : u < wp := by
+    rw [hepar, helast0] at htop
+    omega
+  have hpBound : parent N 0 (Lng N - 1) ≤ v - u := by
+    have hlenD : Lng (diagSeq u v) = v + 1 - u := by simp [diagSeq]
+    rw [hlenD] at hpD
+    omega
+  have hwpBound : wp ≤ v + 1 := by
+    rw [hepar, helast0] at htop
+    omega
+  have hj0N : transJ0 N = wp - u - 1 := by
+    simpa [transJ0, lastParent, lastIdx] using hparentFormula
+  have hJ : (Br N).length - 1 < (Br N).length := by
+    cases hb : Br N with
+    | nil => exact absurd hb hBrne
+    | cons a t => simp
+  have hjoint : (Joints N).getD ((Br N).length - 1) 0 =
+      parent N 0 (Lng N - 1) := by
+    have h := Joints_getD N ((Br N).length - 1) hJ
+    rw [heq] at h
+    exact h
+  have hjointP : (Joints N).getD ((Br N).length - 1) 0 = wp - u - 1 :=
+    hjoint.trans hparentFormula
+  have hmleP : m ≤ wp - u - 1 := by
+    have hmle : m ≤ (Joints N).getD ((Br N).length - 1) 0 := by
+      rcases hcases with hlt | ⟨hme, _⟩
+      · exact hlt.le
+      · exact hme.le
+    rwa [hjointP] at hmle
+  have hwle : w ≤ wp := by
+    have hc := reduced_coeff N hR (Lng N - 1) (by omega)
+    rwa [helast1, helast0] at hc
+  have right_w_le (hwpLast : wp = v + 1) : w ≤ v := by
+    by_contra hnot
+    have hw : w = v + 1 := by omega
+    have hdiagN : N = diagSeq u (v + 1) := by
+      rw [hshape, hwpLast, hw, diagSeq_succ_eq_append u v huv.le]
+    have hbrzero : Br N = [] := by
+      rw [hdiagN]
+      exact Br_diagSeq_68 u (v + 1) (by omega)
+    exact hBrne hbrzero
+  have hwpv : wp ≤ v := by
+    by_contra hnot
+    have hwpLast : wp = v + 1 := by omega
+    have hwv : w ≤ v := right_w_le hwpLast
+    have hjm : transJm1 N = v - u := by
+      rw [hshape, hwpLast]
+      exact diagApp_last_transJm1 u v w huv hwv
+    rw [hAdm0] at hjm
+    omega
+  have hmvu : m < v - u := by omega
+  have hslice :
+      seg N m (Lng N - 1) = diagSeq (u + m) v ++ [(wp, w)] := by
+    rw [hshape]
+    exact seg_diagApp_vb2 u v wp w m huv hmvu
+  by_cases hweq : w = wp
+  · have humwp : u + m < wp := by omega
+    have htN : Trans N = Dprin (u : ℕ∞)
+        (addBT (Dprin (v : ℕ∞) BZero) (Dprin (w : ℕ∞) BZero)) := by
+      rw [hshape]
+      exact (Pred_diagSeq_Trans u v wp w huv).2.1 ⟨huwp, hwpv, hweq⟩
+    have htS : Trans (seg N m (Lng N - 1)) = Dprin (u + m : ℕ∞)
+        (addBT (Dprin (v : ℕ∞) BZero) (Dprin (w : ℕ∞) BZero)) := by
+      rw [hslice]
+      exact (Pred_diagSeq_Trans (u + m) v wp w (by omega)).2.1
+        ⟨humwp, hwpv, hweq⟩
+    unfold VEeq
+    rw [htS, htN]
+    rfl
+  · have hwwp : w < wp := by omega
+    by_cases hfirst : wp = u + 1
+    · have hmzero : m = 0 := by omega
+      subst m
+      exact VE_index0 N hNne
+    · have hgap : u + 1 < wp := by omega
+      have hmltP : m < wp - u - 1 := by
+        rcases hcases with hlt | ⟨_hme, hdiagLast, _hdesc⟩
+        · rwa [hjointP] at hlt
+        · change entry N 0 ((FirstNodes N).getD ((Br N).length - 1) 0) =
+            entry N 1 ((FirstNodes N).getD ((Br N).length - 1) 0) at hdiagLast
+          rw [heq, helast0, helast1] at hdiagLast
+          exact absurd hdiagLast.symm hweq
+      have hgapS : u + m + 1 < wp := by omega
+      have htN : Trans N = Dprin (u : ℕ∞)
+          (addBT (Dprin (v : ℕ∞) BZero)
+            (Dprin (wp - 1 : ℕ∞)
+              (addBT (Dprin (v : ℕ∞) BZero) (Dprin (w : ℕ∞) BZero)))) := by
+        rw [hshape]
+        exact (Pred_diagSeq_Trans u v wp w huv).2.2.1
+          ⟨hgap, hwpv, hwwp⟩
+      have htS : Trans (seg N m (Lng N - 1)) = Dprin (u + m : ℕ∞)
+          (addBT (Dprin (v : ℕ∞) BZero)
+            (Dprin (wp - 1 : ℕ∞)
+              (addBT (Dprin (v : ℕ∞) BZero) (Dprin (w : ℕ∞) BZero)))) := by
+        rw [hslice]
+        exact (Pred_diagSeq_Trans (u + m) v wp w (by omega)).2.2.1
+          ⟨hgapS, hwpv, hwwp⟩
+      unfold VEeq
+      rw [htS, htN]
+      rfl
+
+/-! ## BASE 脚（Isabelle `a0x_base_VE`, 75701） -/
+
+/-- Isabelle `a0x_base_VE` (wip 75701)。三つの無条件補題を組み立て、
 型は `VE_backpeel_TrMax` の BASE 仮定に一致する。
 
 Isabelle `vbx_base_VE_modAdm0` (74476) と同じ二分岐：`transJm1 N = 0` なら
 `BaseVEAdm0`、さもなくば二分岐（`transJm1_zero_or_TrMax_vb2`）より `transJm1 N = TrMax N`
 となり、`BaseMLtTrMax`（`m < TrMax N`）から `m < transJm1 N` を得て `BaseVEStrict`。 -/
-theorem a0x_base_VE_vb2 (m : ℕ)
-    (hAdm0 : BaseVEAdm0 m) (hStrict : BaseVEStrict m) :
+theorem a0x_base_VE_vb2 (m : ℕ) :
     ∀ N : PS, VEReg m N → Lng N = TrMax N + 2 → VEeq m N := by
   intro N hreg hbase
   rcases transJm1_zero_or_TrMax_vb2 m N hreg hbase with h0 | hT
-  · exact hAdm0 N hreg hbase h0
+  · exact baseVEAdm0_holds m N hreg hbase h0
   · have hmlt : m < TrMax N := baseMLtTrMax_holds m N hreg hbase
     have hstr : m < transJm1 N := by rw [hT]; exact hmlt
-    exact hStrict N hreg hbase hstr
+    exact baseVEStrict_holds m N hreg hbase hstr
 
 /-! ## 差し込み確認: `a0x_base_VE_vb2` が `VE_backpeel_TrMax` の BASE 枠に一致する。 -/
 
 example (m : ℕ)
-    (hAdm0 : BaseVEAdm0 m) (hStrict : BaseVEStrict m)
     (STEP : ∀ N : PS, VEReg m N → TrMax N + 2 < Lng N →
       VEReg m (Pred N) → VEeq m (Pred N) → VEeq m N)
     (RPERS : ∀ N : PS, VEReg m N → TrMax N + 2 < Lng N → VEReg m (Pred N))
     (M : PS) (hM : VEReg m M) : VEeq m M :=
-  VE_backpeel_TrMax m (a0x_base_VE_vb2 m hAdm0 hStrict) STEP RPERS M hM
+  VE_backpeel_TrMax m (a0x_base_VE_vb2 m) STEP RPERS M hM
 
 #print axioms baseMLtTrMax_holds
 #print axioms baseMint_holds
 #print axioms baseLeR_holds
 #print axioms basePredVE_holds
+#print axioms baseVEStrict_holds
+#print axioms baseVEAdm0_holds
 #print axioms transJm1_zero_or_TrMax_vb2
 #print axioms a0x_base_VE_vb2
 

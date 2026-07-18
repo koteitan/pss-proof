@@ -351,6 +351,13 @@ private theorem transC2_condV_xv (M : PS) (hcond : transCondV M = true) :
     simp [hcond]
   simp [transC2, transC2Core, hA, transJ1]
 
+/-- 条件(V) 枝における `transC2` の公開閉形式。
+後続の ExchV 底値証明が再帰定義の分岐を再展開せず利用するための入口。 -/
+theorem transC2_condV_eq (M : PS) (hcond : transCondV M = true) :
+    transC2 M = Dprin (transV M)
+      (addBT (transT2 M) (Dprin (entry M 1 (transJ1 M) : ℕ∞) BZero)) :=
+  transC2_condV_xv M hcond
+
 /-- `c₂` は principal（`transC2Core_principal` 相当を `transC2_condV_e5` の形から）。 -/
 private theorem transC2_principal_xv (M : PS) (hcond : transCondV M = true) :
     ∃ p, transC2 M = .trm [p] :=
@@ -395,6 +402,15 @@ private theorem trans_surgery_localized_xv (M : PS) (hR : RTPS M)
       lastParent, ht₁b] using heq
   rw [hTM]
   exact hd₂
+
+/-- mono host の `Trans (Pred M)` における `transC1 M` の scb 文脈を、
+`Trans M` における `transC2 M` の文脈へ共有する公開 surgery 入口。 -/
+theorem trans_surgery_shared_xv (M : PS) (hR : RTPS M)
+    (hmono : monoT M = true) (hj₁ : 0 < transJ1 M) (ht₁ : transT1 M ≠ BZero)
+    (hc₂P : ∃ p, transC2 M = .trm [p]) :
+    ∃ s b, scb_decomp (Trans (Pred M)) s (flatBT (transC1 M)) b ∧
+      scb_decomp (Trans M) s (flatBT (transC2 M)) b :=
+  trans_surgery_localized_xv M hR hmono hj₁ ht₁ hc₂P
 
 /-! ### 本体 -/
 

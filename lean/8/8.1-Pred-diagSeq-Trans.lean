@@ -1133,6 +1133,78 @@ theorem Pred_diagSeq_Trans (u v wp w : ℕ) (huv : u < v) :
     subst wp
     exact diagApp_case4_Trans_pD u v w huv hwwp
 
+/-- The first branch of `Pred_diagSeq_Trans` does not actually need the
+lower bound `u < w`.  This slightly sharper public form is useful when the
+last coefficient is `0`, a case that occurs in the true §8.2 base regime. -/
+theorem diagApp_last_Trans (u v w : ℕ) (huv : u < v) (hwv : w ≤ v) :
+    Trans (diagSeq u v ++ [(v + 1, w)]) =
+      Dprin (u : ℕ∞) (Dprin (v : ℕ∞) (Dprin (w : ℕ∞) BZero)) :=
+  diagApp_case1_Trans_pD u v w huv hwv
+
+/-- For an attachment immediately to the right of the diagonal prefix,
+`transJm1` is the prefix's rightmost index. -/
+theorem diagApp_last_transJm1 (u v w : ℕ) (huv : u < v) (hwv : w ≤ v) :
+    transJm1 (diagSeq u v ++ [(v + 1, w)]) = v - u := by
+  have hd := (diagApp_case1_data_pD u v w huv hwv).1
+  unfold transJm1
+  rw [hd]
+  simp [diagSeq]
+  omega
+
+/-- Appending the next diagonal column extends a diagonal sequence by one. -/
+theorem diagSeq_succ_eq_append (u v : ℕ) (huv : u ≤ v) :
+    diagSeq u (v + 1) = diagSeq u v ++ [(v + 1, v + 1)] := by
+  have hrange :
+      List.range' u (v + 1 + 1 - u) =
+        List.range' u (v + 1 - u) ++ [v + 1] := by
+    calc
+      List.range' u (v + 1 + 1 - u) =
+          List.range' u ((v + 1 - u) + 1) := by
+            congr 1
+            omega
+      _ = List.range' u (v + 1 - u) ++
+          List.range' (u + (v + 1 - u)) 1 := List.range'_append_1.symm
+      _ = List.range' u (v + 1 - u) ++ [v + 1] := by
+        rw [Nat.add_sub_of_le (by omega : u ≤ v + 1)]
+        simp
+  simp [diagSeq, hrange]
+
+/-- A positive `transJm1` rules out an attachment inside the diagonal
+prefix.  Hence the new column is attached immediately to its right end. -/
+theorem diagApp_transJm1_pos_forces_last (u v wp w : ℕ)
+    (huv : u < v) (huwp : u < wp) (hwpv : wp ≤ v + 1)
+    (hpos : 0 < transJm1 (diagSeq u v ++ [(wp, w)])) : wp = v + 1 := by
+  by_contra hne
+  have hwpv' : wp ≤ v := by omega
+  have hi := diagApp_indices_pD u v wp w huv huwp (by omega)
+  have hpint : wp - u - 1 < v - u := by omega
+  have hzero : Adm (diagSeq u v ++ [(wp, w)]) (wp - u - 1) = 0 :=
+    Adm_diagApp_interior_zero_pD u v wp w (wp - u - 1) huv hpint
+  unfold transJm1 at hpos
+  rw [hi.2.1, hzero] at hpos
+  omega
+
+/-- In a diagonal prefix followed by one column, positive `transJm1` forces
+the row-zero parent index to be the rightmost index of the prefix.  Unlike
+`diagApp_transJm1_pos_forces_last`, this form needs no coefficient bounds. -/
+theorem diagApp_transJm1_pos_forces_parent_rightmost (u v wp w : ℕ)
+    (huv : u < v)
+    (hbound : transJ0 (diagSeq u v ++ [(wp, w)]) ≤ v - u)
+    (hpos : 0 < transJm1 (diagSeq u v ++ [(wp, w)])) :
+    transJ0 (diagSeq u v ++ [(wp, w)]) = v - u := by
+  by_contra hne
+  have hjlt : transJ0 (diagSeq u v ++ [(wp, w)]) < v - u := by omega
+  have hzero := Adm_diagApp_interior_zero_pD u v wp w
+    (transJ0 (diagSeq u v ++ [(wp, w)])) huv hjlt
+  unfold transJm1 at hpos
+  rw [hzero] at hpos
+  omega
+
 #print axioms Pred_diagSeq_Trans
+#print axioms diagApp_last_Trans
+#print axioms diagApp_last_transJm1
+#print axioms diagSeq_succ_eq_append
+#print axioms diagApp_transJm1_pos_forces_last
+#print axioms diagApp_transJm1_pos_forces_parent_rightmost
 
 end PSS

@@ -219,7 +219,7 @@ private theorem Np_snoc_o5r (M : PS) (hjm2lt : s84x_jm2 M < Lng M - 1) :
   simp
 
 /-- `Pred N' = seg M j₋₂ (Lng M − 2)`。Isabelle `s84c1_Pred_Np`。 -/
-private theorem Pred_Np_o5r (M : PS) (hjm2lt : s84x_jm2 M < Lng M - 1) :
+theorem Pred_s84x_Np (M : PS) (hjm2lt : s84x_jm2 M < Lng M - 1) :
     Pred (s84x_Np M) = seg M (s84x_jm2 M) (Lng M - 2) := by
   have hlen : 1 < Lng (s84x_Np M) := by
     simp only [s84x_Np, length_seg]; omega
@@ -448,7 +448,7 @@ private theorem Mn_tail_o5r (M : PS) (n : ℕ)
     have h := oper_lastblock_o5r M (n - 1) hM hp hj1
     rw [Nat.sub_add_cancel hn] at h
     rw [hms_eq]; exact h
-  rw [hblock, Pred_Np_o5r M hjm2lt]
+  rw [hblock, Pred_s84x_Np M hjm2lt]
   have hseg_range : seg M (s84x_jm2 M) (Lng M - 2)
       = (List.range' (s84x_jm2 M) (Lng M - 1 - s84x_jm2 M)).map
           (fun j => (entry M 0 j, entry M 1 j)) := by
@@ -722,7 +722,7 @@ private theorem interior_o5r (M : PS) (n : ℕ)
     Mark_Trans_repr (oper M n) (s84x_ms M n) hmkMn hMnRT hmsltMn
   have htail := Mn_tail_o5r M n hMT hp hj1 hn1
   have PnT : TPS (Pred (s84x_Np M)) := by
-    rw [Pred_Np_o5r M hjm2lt]; apply List.ne_nil_of_length_pos
+    rw [Pred_s84x_Np M hjm2lt]; apply List.ne_nil_of_length_pos
     simp only [length_seg]; omega
   have RedPn0 := RTPS_Red_tail_o5r (oper M n) (s84x_ms M n) hMnRT hmsltMn hle_marked
   rw [htail, a1_Red_funpow_IncrFirst (Pred (s84x_Np M))
@@ -767,8 +767,49 @@ theorem oper_props_5_unconditional (M : PS) (n : ℕ)
   m_8_4_oper_props_5 M n hST hmono hp hj1 hn
     (oper5Support_unconditional M n hST hmono hp hj1 hn)
 
+/-! ## 15. ExchV 底段で再利用する公開幾何補題 -/
+
+/-- `s84x_L` の定義展開。底段 `n = 1` の列形を読む公開入口。 -/
+theorem s84x_L_eq_append (M : PS) (n : ℕ) :
+    s84x_L M n = oper M n ++
+      [(entry M 0 (s84x_jm2 M)
+          + n * (entry M 0 (Lng M - 1) - entry M 0 (s84x_jm2 M)),
+        entry M 1 (s84x_jm2 M))] :=
+  s84x_L_append_o5r M n
+
+/-- `s84x_L M n` は `n ≥ 1` なら簡約ペア数列。 -/
+theorem RTPS_s84x_L (M : PS) (n : ℕ)
+    (hST : STPS M) (hp : hasParent M 1 (Lng M - 1) = true)
+    (hj1 : 1 < Lng M - 1) (hn : 1 ≤ n) :
+    RTPS (s84x_L M n) :=
+  RTPS_L_o5r M n hST hp hj1 hn
+
+/-- 長さと行0が狭義単調な写像で対応する列では `nextrel0` が一致する。 -/
+theorem nextrel0_row0_congr (X Y : PS) (φ : ℕ → ℕ)
+    (hlen : Lng X = Lng Y) (hmono : StrictMono φ)
+    (hφ : ∀ j, j < Lng X → entry Y 0 j = φ (entry X 0 j))
+    (a b : ℕ) : nextrel0 Y a b = nextrel0 X a b :=
+  nextrel0_row0_o5r X Y φ hlen hmono hφ a b
+
+/-- 長さと行0が狭義単調な写像で対応する列では `le0` が一致する。 -/
+theorem le0_row0_congr (X Y : PS) (φ : ℕ → ℕ)
+    (hlen : Lng X = Lng Y) (hmono : StrictMono φ)
+    (hφ : ∀ j, j < Lng X → entry Y 0 j = φ (entry X 0 j))
+    (a b : ℕ) : le0 Y a b = le0 X a b :=
+  le0_row0_o5r X Y φ hlen hmono hφ a b
+
+/-- 終端までの `seg` は `drop`。 -/
+theorem seg_to_last_eq_drop (X : PS) (a : ℕ) (ha : a < Lng X) :
+    seg X a (Lng X - 1) = X.drop a :=
+  seg_to_drop_o5r X a ha
+
 #print axioms oper5Residual_holds
 #print axioms oper5Support_unconditional
 #print axioms oper_props_5_unconditional
+#print axioms Pred_s84x_Np
+#print axioms RTPS_s84x_L
+#print axioms nextrel0_row0_congr
+#print axioms le0_row0_congr
+#print axioms seg_to_last_eq_drop
 
 end PSS

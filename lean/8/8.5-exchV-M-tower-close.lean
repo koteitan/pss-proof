@@ -87,7 +87,7 @@ private theorem s84c1_anc_le_j0_mc (M : PS) (hMT : TPS M) (hmono : monoT M = tru
 /-- 条件(V) 下の橋 (3)(4): 行1の親存在 `hasParent M 1 (Lng M-1)` と親値
 `s84x_jm2 M = transJ0 M`。核は `nextrel1 M (transJ0 M) (Lng M-1)` の最小性で、
 最小性連言は `s84c1_anc_le_j0_mc`（行0親最大性）に帰着する。 -/
-private theorem condV_bridge_hp_jm2_mc (M : PS) (hM : TPS M)
+theorem condV_bridge_hp_jm2 (M : PS) (hM : TPS M)
     (hmono : monoT M = true) (hcond : transCondV M = true) :
     hasParent M 1 (Lng M - 1) = true ∧ s84x_jm2 M = transJ0 M := by
   -- 条件(V) の算術（`j₀ + 1 < Lng M - 1`, `M_{1,j₀} + 1 = M_{1,j₁}`）
@@ -184,7 +184,7 @@ def ExchVMValueResidual : Prop :=
 theorem exchVMres_of_core (h : ExchVMCoreResidual) : ExchVMTowerResidual := by
   intro M s₀ s₁ b₀ b₁ hST hmono hcond hd₀ hd₁
   have hM : TPS M := STPS_TPS M hST
-  obtain ⟨hp, hjm2⟩ := condV_bridge_hp_jm2_mc M hM hmono hcond
+  obtain ⟨hp, hjm2⟩ := condV_bridge_hp_jm2 M hM hmono hcond
   exact ⟨hp, hjm2, h M s₀ s₁ b₀ b₁ hST hmono hcond hd₀ hd₁⟩
 
 /-- `oper5Residual_holds` を条件 (V) の幾何橋へ適用し、4 連言の core 残差を
@@ -192,7 +192,7 @@ theorem exchVMres_of_core (h : ExchVMCoreResidual) : ExchVMTowerResidual := by
 theorem exchVMcore_of_values (h : ExchVMValueResidual) : ExchVMCoreResidual := by
   intro M s₀ s₁ b₀ b₁ hST hmono hcond hd₀ hd₁
   have hM : TPS M := STPS_TPS M hST
-  obtain ⟨hp, _hjm2⟩ := condV_bridge_hp_jm2_mc M hM hmono hcond
+  obtain ⟨hp, _hjm2⟩ := condV_bridge_hp_jm2 M hM hmono hcond
   have hrng : transJ0 M + 1 < Lng M - 1 := by
     have hc := hcond
     simp only [transCondV, Bool.and_eq_true, decide_eq_true_eq, beq_iff_eq] at hc
@@ -209,5 +209,6 @@ theorem exchVMres_of_values (h : ExchVMValueResidual) : ExchVMTowerResidual :=
 #print axioms exchVMres_of_core
 #print axioms exchVMcore_of_values
 #print axioms exchVMres_of_values
+#print axioms condV_bridge_hp_jm2
 
 end PSS
