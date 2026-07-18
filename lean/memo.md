@@ -1024,6 +1024,19 @@ parent/Lng 形に落としてから作業する。
     2 フィールドを `exchVMres : ExchVMTowerResidual` 1 本に置換。
     **現フィールド 5**: `otMulti`／`otIIIIVdata`／`condII`／`exch84slicepkg`／`exchVMres`。
     audit は 4 葉表示（exchV 過少計上バグ込み、下記）。
+  - **Wave U（2026-07-19、Opus 6、全緑）— 2 討伐＋4 絞り込み（配線替えは未実施・次セッション冒頭で）**:
+    ①`nadmW2nostr_holds` **無条件討伐**（`8.5-exchV-nadm-w2nostr`、VE 資産をフル活用）
+    ②otMultiNotCondI→`OTmulti_interior_intCond_nc1` 1 本（condVI 全枝＋zero-leg クローズ。
+    残=II–V の interior OT 所属＝他フィールドから供給可能・経験的空虚。`8.7-otmulti-notcondI`）
+    ③NadmC2L1→`NadmC2L1NotLD`（=atx_notLD 86198。値組立・congruence 層は無条件。`8.5-exchV-nadm-c2l1`）
+    ④Rightmost84Corrected⟺`Rightmost84ReplaceExists`（∃! の一意性半分は無条件討伐。
+    `8.4-rightmost-replace-close`）⑤MnformResidual→`MnformBottomResidual`（=cpx_various_scb_IIIIV
+    @m=1 の生 scb タプル。`8.4-exch84-mnform-residual`）⑥Cnv 2 本無条件討伐＋
+    scbDecompPkg→`Exch84_nestScbTriple`（=s84d_dec2_nest_scb 系。`8.4-exch84-scbdecomp`）。
+    **次セッション冒頭の配線替え（未実施）**: otMultiNotCondI→intCond 1:1／exchVMnadmAtomic→
+    {Rightmost84ReplaceExists, NadmC2L1NotLD}（w2nostr 済）／exch84slicepkg→
+    {MnformBottomResidual, Exch84_nestScbTriple}（cnv/base 済）。実質原子=intCond(空虚)/
+    otSetleCore 2 原子/condIIIVts(VE34)/mnformBottom/nestScbTriple/rm84Exists/c2l1NotLD。
   - **Wave T（2026-07-19 未明、Opus 6、全緑）— 3 フィールド 1:1 絞り込み＋slicepkg legs 前進**:
     ①condII→`CondIIIVterminalSlice`（`8.3-condII-Boundary-close`。**重要発見: vcx_VE_all は
     VE2/VE3/VE4 を供給しない**——それらは condII/IV 用 VE34 back-peel（wip 93171–108761、
