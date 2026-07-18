@@ -750,7 +750,7 @@ parent/Lng 形に落としてから作業する。
     `Trans(M[n]) = s₁D_{M₁,j₋₁}(s'₁D_{M₁,j₀})ⁿt₂(b'₁)ⁿb₁` が `n=1` で偽。原文
     content.md 5213 の (5)＝5225、証明 5267/5329）[軽微]。**A29 はここ**であって
     `8.5-Joints-FirstNodes-basic` ではない（2026-07-17 誤帰属を訂正）。
-  - 🚨🤖 `8.2-condIIIV-terminal-slice-Trans` — p 文 = pss_paper:1627（原文 ~3314）。
+  - 🚨 `8.2-condIIIV-terminal-slice-Trans` — p 文 = pss_paper:1627（原文 ~3314）。
     未着手だった項目。condV 版（`8.2-condV-terminal-slice-Trans`）が構造の雛形。
     condV 版は原文が VE ステップを省略しているため hVE 仮定付きだったので、
     II/IV 版に同じ穴があるかを確認させる。Wave K。
@@ -765,7 +765,7 @@ parent/Lng 形に落としてから作業する。
   - `8.5-*` — **最難所**。Isa の keystone は
     `bpHeadT(Trans(slice@B)) = C(bpHeadT(Trans slice))`（depth-shift self-similar）。
     13 個の死路が `isabelle/memo.md` に列挙してある。**着手前に必ず読め。**
-  - 🚨🤖 `8.3-Trans-fseq-condII` ⛔8.7-fseq-descend — 原文命題は (1)-(3) が Trans 再帰の
+  - 🚨 `8.3-Trans-fseq-condII` ⛔8.7-fseq-descend — 原文命題は (1)-(3) が Trans 再帰の
     内部記号依存で deferred、転記済みは降下結論 (4) のみ（`p_8_3_TransCondII_oper_descend`）。
     Isabelle は `y5_8_3_TransCondII_oper_descend`（layerC 14432）＝**大域降下柱
     `y5_Trans_descend` への一行還元**。Lean でも `8.7-fseq-descend`（ST_PS 全域の
