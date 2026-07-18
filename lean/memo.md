@@ -1005,6 +1005,23 @@ parent/Lng 形に落としてから作業する。
     condIV 3774）／`OTdisp_OTmulti`（OTint 待ち）＋ audit 見落とし分 §8.5 塔
     `ExchVres_adm_M_tower`/`ExchV_nf3x`（`ExchV_M_tower` 1 本に還元済（props2）、
     実体= m_8_4_oper_props_5＋s84x_L 帰納＝④の campaign と同根）。
+  - 🎉 **Wave Q（2026-07-18、並走していた別セッションが起動→PC 再起動で中断→本セッションが
+    回収統合）— 残差フィールド 6 → 5、OTint 陥落**。中断死した wave の遺留 8 ファイルは
+    **全て緑**（rc=0・sorry 0・公理クリーン）で全回収:
+    ①`8.7-otdisp-OTint-condV`: condV 両 leg（`OTint_hp_condV_{adm,nadm}_holds`、
+    条件(V)塔残差から）②`8.7-otdisp-OTint-condIIIIV`: condIII/IV leg
+    （slicepkg＋新残差 `OTintIIIIV_transportData`=Isabelle OTA1_ltJ/SETLE1_ltJ 対）
+    ③`8.5-exchV-M-tower`: `exchV_M_tower_of_residual`（残差 `ExchVMTowerResidual`
+    ＝L 塔 7.4-Mark fact 束、Oper5Residual と同族）④`8.2-condV-VE-base2`+`8.2-condV-VE-step`:
+    **VE campaign の BASE/STEP/RPERS**＋`vsx_VE_all_modResidual`（VEj1eq/RPj1eq 残差 modulo）
+    ⑤`8.3-condII-LDJB-a0trmax`: `RN_a0_trmax_holds`（TV_LDJB 残=RN_a0_lt_trmax のみ）
+    ⑥`8.4-exch84-base0`: `Base0_condIIIIV_holds` ⑦`8.4-oper5-residual`: torso
+    （private 群のみ・書きかけ。継続 agent はこのファイルを拡張せよ）。
+    **termination 配線替え（本セッション）**: `otInt` フィールド削除（4 legs 組立
+    `OTdisp_OTint_of_legs`＋`otInt_term` で導出）、`exchVresAdmTowers`/`exchVnf3x` の
+    2 フィールドを `exchVMres : ExchVMTowerResidual` 1 本に置換。
+    **現フィールド 5**: `otMulti`／`otIIIIVdata`／`condII`／`exch84slicepkg`／`exchVMres`。
+    audit は 4 葉表示（exchV 過少計上バグ込み、下記）。
     ⚠️**audit の過少計上バグ（2026-07-18 発見）**: `audit_8_7_termination.py` は
     `ExchV_nf3x ← nf3x_holds`・`ExchV_scbdec_adm_forms ← adm_forms_holds` を CLOSED 扱い
     するが、**両 discharger は仮定付き**（`ExchVres_{adm,nadm}_M_tower` を要求）。
