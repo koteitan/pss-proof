@@ -926,3 +926,36 @@ parent/Lng 形に落としてから作業する。
     /`oix_transportD` 本体）／`OTdisp_OTmulti`（OTint 依存）。
     promotion 実施済: `condVI_transC2_v6p`/`condVI_transC1_adm_v6p`→public（5299780）。
     **次 wave の最優先候補**: m_7_3_Mark_rightmost2 移植（nadm 解禁）＋ CondII の残 TV brick。
+  - **Wave O（2026-07-18、Opus 8 並列、全 8 file 緑 bank）— 葉クローズ 0 だが内部残差を大幅削減**:
+    ①`m_7_3_Mark_rightmost2` 完全クローズ（`7.3-Mark-rightmost2`）——**実体は既移植
+    `Mark_transJm1_eq_transC2`（7.4-Mark-Trans-repr:231）の名前/仮定形ギャップだった**
+    （[[asset-blindness]] の実例。「ROOT BLOCKER 未移植」は誤記録）。nadm fact(c) 解禁。
+    ②`m_8_4_oper_props_5` engine 緑（`8.4-oper-props5`。`Oper5Support` 1 Prop（10 葉）modulo。
+    残=s84c1_* 値クラスタ wip:52660–54005 ~1350L。s84x_L/s84x_Lp 語彙定義もここ）
+    ③**TV_Dichotomy 無条件クローズ**（`8.3-condII-Dichotomy`、`TV_Dichotomy_holds`、
+    cdx_d_le_joints wip:90230 の 1:1）→ CondII TV 残=NotLdj/Boundary/LDJB の 3
+    ④TV_NotLdjLeg→`TV_NotLdjReg` 1 本へ還元（`8.3-condII-NotLdjLeg2`、`tv_notldjleg_of_reg`。
+    Dichotomy を private 複製で自己完結、TrunkLeg_holds 再利用）
+    ⑤TV_BoundaryLeg→`TvxBoundaryData` 1 本へ還元（`8.3-condII-BoundaryLeg2`、
+    `tv_boundaryleg_of_data`。portable 前座=wnx_seg_transport(80767)/repr_entry1_shift_gen
+    (12828、8.1-part4-trans:357 に private 双子)/tvx_d_lt_TrMax(110442)/c2sx_reach(87666)(1)(2)）
+    ⑥TV_LDJB→5 readouts へ還元（`8.3-condII-LDJB`、`TV_LDJB_of_readouts`＝RN_ldj_pj/
+    RN_a0_trmax/RN_a0_lt_trmax(114847 最重量)/TVX_pos1ldj/TVX_dstrict。TV_R3LE_holds 再利用）
+    ⑦Exch84 REGS leg（`8.4-exch84-regs`、`regS_holds`＝mcx_regS(94021) drop-in。
+    `Regs_jm3Marked`/`Regs_jm2_lt_transJ0`（要 parent_max 新規移植）/`Regs_MCOND`(93796)
+    の 3 Prop modulo。**cfbx_reg/cfbx_j1p は VEReg/VEj1p（8.2-condV-VE-base）として既存**。
+    REGSP/base/mnform 未着手）
+    ⑧OTint transport 心臓部（`8.7-otint-transport`、oix_transport/oix_transportD 定義
+    ＋otx2_/otx3_ 全 assembly＋btWeight 帰納 otx3_core）。`oix_transport_holds` は 4 Prop
+    modulo — **うち 3 本（OixSandwichPrefix/OixSandwichDpt/OixGControl）は
+    7.1-buchholz-fseq-closed の private 双子（sandwich_prefix_bc:334/sandwich_Dprin_bc:379/
+    G_control_bc:254）＝promotion だけで落ちる**。残 1=OixAlign3（otx2_align3 wip:114296、
+    flatinj toolkit ~200L）。OTdisp_OTint 本体はさらに下流の 4 hasParent legs
+    （8.7-otdisp-OTint 宣言済、oix_OTint_condV_adm wip:111599 等）。
+    🚨 **構造的発見: CondII の NotLdj/Boundary 両葉の深部が §8.2 VE body
+    （vcx_VE_all/vg2x_VE34、~14k 行未移植）に合流**＝VE キャンペーンが CondII 完了の律速。
+    promotion 候補: condII_reach_r3（8.3-condII-R3LE:150 private、LDJB が複製中）／
+    7.1 の 3 twins／adm_row1_ancestry 系（§5/§8.1 privates、Regs_jm3Marked 用）。
+    **次 wave 候補**: ①7.1 promotion→Oix 3 本 discharge＋OixAlign3（oix uncond 化）
+    ②nadm 組立（fact(c) c6nx_t2eq＋c6zx_L_tower(72166)/c6nx_condVI_exch_nadm_uncond(76705)
+    ＋Oper5Support の s84c1 群）③LDJB readouts ④VE campaign 始動（a0x_base_VE から）。
