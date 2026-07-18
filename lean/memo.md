@@ -872,6 +872,16 @@ parent/Lng 形に落としてから作業する。
     2 フィールドを `exchVMres : ExchVMTowerResidual` 1 本に置換。
     **現フィールド 5**: `otMulti`／`otIIIIVdata`／`condII`／`exch84slicepkg`／`exchVMres`。
     audit は 4 葉表示（exchV 過少計上バグ込み、下記）。
+  - 🎉 **Wave AJ（2026-07-20 未明、Opus 4、全緑）— Tri0Crux 無条件討伐**:
+    ①**`tri0CruxConcrete_holds` 無条件**（ltJ/corner 再 dispatch。corner 側は collapse で
+    scb wrapper 不要＝新残差ゼロ。`8.7-tri0-dispatch`）②wrapper condIV: ltJ 側完全討伐→
+    残差=admeq corner のみ `SetleCensusWrapperCondIVCorner_wc`（**degenerate 形なら構造的に偽
+    ＝corner⇒nested 形の shape refinement（c4dx_condIV_c2body_shape admeq 版）が正しい的**。
+    `8.7-wrapper-condiv`）③spine align3: family 地図＋peel 前半 port→単一 Prop に還元
+    （`8.7-spine-align3`）④VE continue: basedeep 残差束の latent bug 発見・修正込み前進
+    （`8.2-condIIIV-ve-continue`）。
+    **otSetleCore 残**={NubGControl([Buc1]3.4 generic), SpineSurgery census 具体化,
+    WrapperCondIVCorner(shape refinement), （A0OT/Tri0/Provenance/RegimeE3 は済）}。
   - 🎉 **Wave AI（2026-07-19 深夜、Opus 4、全緑）— CensusProvenance・A0OT 討伐**:
     ①**`censusProvenance_holds_cp` 無条件**（live mnform 連鎖の完全配線）＋wrapper condIII 討伐
     （condIV 側=新残差 `SetleCensusWrapperCondIV_cp`。`8.7-census-provenance`）
