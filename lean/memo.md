@@ -633,7 +633,7 @@ parent/Lng 形に落としてから作業する。
     （workflow 全滅のため）。(1)(2)=gather の if 分岐を明示分解、(3)=multBT→replicate 帰納＋
     descP/isOT/dfree の replicate 補題、(4)=塔の G 集合特徴付け＋狭義単調の帰納
     （Isa `m_8_7_OT_examples` の構造をそのまま移植）。rc=0・sorry 0・axioms 正常・#guard 5 本。[r1]
-  - `8.4-rightmost-replace-Trans` — 訂正 **A30**（scb 分解が偽。長さ勘定で決まる）
+  - 🚨🤖 `8.4-rightmost-replace-Trans` — 訂正 **A30**（scb 分解が偽。長さ勘定で決まる）
     ＋ **A31**（補題(5-3) のガード欠落）
   - 🚨 `8.2-condV-terminal-slice-Trans` — **partial（Wave D, r1）**: p 文
     （pss_paper:1607）を**仮定 `hVE` modulo で緑化**＝Isabelle の
