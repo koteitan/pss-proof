@@ -3,52 +3,61 @@
 # isabelle/ — Isabelle/HOL 形式化のファイル構成
 
 ペア数列システムの停止性の Isabelle/HOL 版。**停止性は仮定ゼロ・`sorry` ゼロで証明済み**
-（ビルド時に ML 監査ブロックが強制）。状態は**完了・凍結**。
+（ビルド時に ML 監査ブロックが強制）。
 
-## ディレクトリ構成
+> **状態**：`lean/` と同型のレイアウト（章ディレクトリ＋1 命題 1 ファイル＋共有 `PSS/` 層）へ
+> **再編中**。以下は**再編後の目標構成**。共有/章ローカルの正確な境界とセッション構成は
+> 依存 DAG 解析（reorg Phase 0）で確定する。
+
+## ディレクトリ構成（目標）
 
 ```
 isabelle/
-├── ROOT                    入れ子セッション定義 PSS_A ← PSS_B ← PSS_C
-├── pss_defs.thy            §4–§6 の定義の形式化（共有）              542 行
-├── pss_paper.thy           論文の命題・補題・系・定理の主張のみ転記（全 sorry） 2,334 行
-├── pss_mechanized.thy      独自の機械化証明（pss_paper の sorry を解消） 65,913 行
-├── layerB/
-│   └── pss_wip.thy         旧キャンペーンの証明済み本体（凍結）        119,055 行
-├── layerC/
-│   └── pss_scratch.thy     作業中の最上層＋停止性の仕上げ＋ML 監査ブロック 25,102 行
-├── docs/                   設計ノート（red-termination, buchholz, thy-toc …）
-├── task.md                 進捗ツリー（全 ✅）
-├── memo.md                 設計メモ・死路
-└── agent-workflow.md       サブエージェント規約
+├── ROOT                    セッション定義（DAG 順: PSS ← §5 ← §6 ← §7 ← §8）
+├── PSS/                    共有層：定義＋跨章ヘルパ（≥2 章が使うもの、~482）
+│   ├── Defs.thy            §4–§6 の定義
+│   ├── Seg.thy             seg_* entry_* le0_*
+│   ├── Idxsum.thy          idxsum_* oper_* poper_*
+│   ├── Mono.thy            単調性 / IncrFirst
+│   ├── Adm.thy             adm_*（許容性）
+│   ├── Red.thy             §6.5 Red 簡約
+│   ├── Standard.thy        ST_PS / RT_PS
+│   ├── Scb.thy             scb_*
+│   ├── Buchholz.thy        §7 [Buc1] 表記系（operB_* domB_* TrMax_* …）
+│   └── Trans.thy           Trans（tran* repr_* rnsub_* …）
+├── 5/                      §5: 13 命題（+局所ヘルパ 5）
+│   ├── p_5_1_parent_exists_1.thy
+│   │   …
+│   └── p_5_4_F_oper_val.thy
+├── 6/                      §6: 55 命題（+局所ヘルパ 636）
+├── 7/                      §7: 27 命題（+局所ヘルパ 199）
+└── 8/                      §8: 33 命題（+局所ヘルパ 2,171）
+    ├── p_8_7_termination.thy   主定理
+    │   …
+    └── audit.thy               ML 監査（全定理の sorry 依存をビルド時に検査）
 ```
 
-## 層分割セッション（ROOT）
+## ヘルパの振り分け
 
-巨大な証明本体を凍結ヒープに置き、毎回はアクティブ最上層だけを建て直す設計。
+各補助補題を **usage-chapter set** で機械的に配置する：**≥2 章が（推移的に）使う → 共有
+`PSS/`**、**1 章のみ → その章ディレクトリのローカル**。約 4,400 補助補題のうち共有は
+~482（13%）、残りは章ローカル（§8 が 2,171 で最大）。
 
-| セッション | dir | theory | 役割 | 緑判定 |
-|---|---|---|---|---|
-| `PSS_A` | `.` | `pss_defs`＋`pss_paper`＋`pss_mechanized` | 凍結ベース | `Finished PSS_A` |
-| `PSS_B` | `layerB` | `pss_wip` | 凍結ベース | `Finished PSS_B` |
-| `PSS_C` | `layerC` | `pss_scratch` | アクティブ最上層 | `Finished PSS_C` |
+## セッション（ROOT）
 
-import 連鎖：`pss_defs ← pss_paper ← pss_mechanized ← pss_wip ← pss_scratch`
-（後ろ 2 つはセッション修飾で import）。
+依存 DAG に沿った層：`PSS`（共有・凍結）← `PSS_5` ← `PSS_6` ← `PSS_7` ← `PSS_8`。
+各セッションは一度だけビルド＝凍結ヒープの再処理なし。ML 監査は最上位セッションの
+`8/audit.thy` 末尾に置く。
 
 ## 命名
 
-- `p_<§>_<slug>` ＝論文の主張（`pss_paper.thy`）、`m_<§>_<slug>` ＝独自証明（`pss_mechanized.thy`）。
-- 補助補題は内容接頭辞（`idxsum_`, `poper_`, `seg_`, `adm_`, `scb_`, `Lng_` …）。
+- ファイル名＝命題名 `p_<§>_<slug>.thy`（例 `p_8_7_termination.thy`）、theory 名も同じ。
+  独自証明は `m_<§>_<slug>`、補助補題は内容接頭辞（`seg_`, `idxsum_`, `adm_`, `scb_` …）。
+- **Isabelle の theory 名はドット/ハイフン不可・数字始まり不可**。`lean` の
+  `8.7-termination.lean` 相当は `p_8_7_termination.thy`（ディレクトリ名 `5/`…`8/` は可）。
 
 ## ビルド
 
-ルート [../README.md](../README.md) のビルド節を参照。フルビルドは
-`cd isabelle && isbman build -d . -v PSS_A PSS_B PSS_C`。緑の判定は `Finished PSS_C` が
+フルビルドは最上位セッションを建てる（依存で `PSS`・§5–§7 も建つ）：
+`cd isabelle && isbman build -d . -v PSS_8`。緑の判定は対象セッションの `Finished` が
 ちょうど 1 行、`***` で始まる行が 0 行、`AUDIT FAILED` が 0 行。
-
-## 予定（Lean 化）
-
-この層分割 monolith を `lean/` と同型 ── 章ディレクトリ `5/ 6/ 7/ 8/` ＋ 1 命題 1 ファイル
-＋ 共有 `PSS/` 層 ── へ再編する作業を計画・進行中。約 128 命題・約 4,400 補助補題を、
-usage-chapter set（≥2 章で使うヘルパ＝共有 `PSS/`、1 章のみ＝章ローカル）で機械的に振り分ける。
