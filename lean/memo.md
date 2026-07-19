@@ -888,6 +888,18 @@ parent/Lng 形に落としてから作業する。
     （素 `VE4BaseDeep` の弱化）。**残**={`RunSqueeze_vn`（=descending squeeze＋nextrel0 valley
     squeeze＋単一列幾何の値証明）, `VE3RunBase_bd`/`VE3RunStep_bd`/`PIN_bd`/`TSPIN_bd`（§7.4 surgery）,
     field-level 再配線（DTPS→`VE34Reg4D`で `VE3/4BaseDeepD` を場に接続、dead `condIIIVterminalSlice_of_runpeel` 退役）}。
+  - **Wave AR（2026-07-21 未明、Opus 2、全緑）— 🚨11 個目の反証＋STEP の正ルート確立**:
+    ①🚨**点wise {PIN_bd, TSPIN_bd} は偽**（descending 落ちドメインの再発。cex=
+    (0,0)(1,1)(2,2)(2,1)(2,2)(2,0)。`not_pin_tspin_pt`）——**生きた置換を同時構築**:
+    run-base pinned 組立 `transPinRunBaseD_pt` 無条件＋VE4 側は
+    `VE4BaseDeepD_of_runstep_pt` で単一残差 `TransPinRunStepD_pt`（IH 消費型＝
+    unified peel の BaseRunStep_up slot で吸収）に（`8.2-condIIIV-pin-tspin`）
+    ②**検証結果: bgx は STEP を tsx へ委譲**（回避不可）。IH-carrying tsx/bpx ルートを port し
+    `Step_up_of_surgery_ss` で**点wise VE3/VE4Step を連鎖から排除**。残差=
+    {`TSPINStep_ss`(唯一の深部 §7.4 head-transport＝tsx_assembly), 幾何 4
+    {StepTerminalReady/FrontPred/TermPred/PredIndex}_ss}（`8.2-condIIIV-step-surgery`）。
+    **無条件化までの残**: TransPinRunStepD（=BaseRunStep IH slot）＋TSPINStep＋幾何 Props
+    ＋最終組立の配線替え（VE4 chain と Step slot の差し替え）。
   - 🎉🎉 **Wave AQ（2026-07-20 深夜、Opus 2、全緑）— 具体 4 brick 全討伐＝残り surgery 4 本**:
     ①**census＋slice-data 両方無条件**（`BgxNotleftRun0_cs2`=260 行 census 完全 port、
     `BgxMpSliceData_cs2`。`8.2-condIIIV-census-slice`）→ 閉形式 2 brick
