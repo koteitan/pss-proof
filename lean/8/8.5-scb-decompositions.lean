@@ -1,4 +1,15 @@
 import «8».«8.5-Trans-fseq-condV»
+import «8».«8.5-exchV-props»
+import «8».«8.5-exchV-props2»
+import «8».«8.5-exchV-M-tower»
+import «8».«8.5-exchV-M-tower-close»
+import «8».«8.5-exchV-values-close»
+import «8».«8.5-exchV-nadm-atomics»
+import «8».«8.5-exchV-nadm-w2nostr»
+import «8».«8.5-exchV-nadm-c2l1»
+import «8».«8.5-exchV-notld»
+import «8».«8.4-rightmost-replace-close»
+import «8».«8.4-rm84-rfacts-close»
 
 /-!
 # §8.5 補題（条件(V)の下での各種scb分解）part (5) ＋ 訂正 A29
@@ -33,6 +44,12 @@ import «8».«8.5-Trans-fseq-condV»
   `flatBPTail` / `scb_decomp`）、`PSS.Buchholz`（`addBT` / `Dprin` / `BZero`）。
   **`7.2-scb-unique` は不要**: 本ファイルの反証は `(s'₁,b'₁)` の一意性を使わず
   **任意の** `(s'₁,b'₁)` に対して原文形を否定する（一意性より強い）。
+  無条件版 `scbdec_condV_part5_corrected_uncond` のために exchV discharge 連鎖
+  （`8.5-exchV-props`/`props2`/`M-tower`/`M-tower-close`/`values-close`/
+  `nadm-atomics`/`nadm-w2nostr`/`nadm-c2l1`/`notld`、`8.4-rightmost-replace-close`/
+  `8.4-rm84-rfacts-close`＝`8.5-Trans-fseq-condV-close` と同一の import 集合）も追加。
+  これらは公開 discharger `condV_setup_holds` / `fseq_condV_holds` /
+  `nf3x_holds_xv2 (exchVMtower_sd5)` を供給し、3 named Prop を無条件化する。
 - 数値検証: `python/audit_85_scbdec5.py`。真正 `ST_PS` プール（diagSeq 種＋oper 閉包、
   pool=1500 / mono host=1188）で、条件(V)＋`j₀` 非許容＋`j₁>1` を満たす host は
   **21 個**（＝仮定は非空虚。A29 本文の 32 個はプール設定違い）。そのうえで
@@ -42,8 +59,10 @@ import «8».«8.5-Trans-fseq-condV»
   最小 host は `M = (0,0)(1,1)(2,2)(2,2)`（`Lng=4`）。Lean 側でも
   `nonvacuous_sd5` で `STPS` 導出（`diagSeq 0 3` から `oper` 7 段）ごと機械確認。
 - ツリー項目: 補題（条件(V)の下での各種scb分解）(§8.5, content.md 5213) の part (5)。
-- 状態: GREEN（sorry 0）。`ExchV_nf3x`（既存の named Prop、新規残差ではない）上の
-  green-modulo。part (1)–(4) は本ファイルの scope 外（`needs` 参照）。
+- 状態: GREEN（sorry 0）。part (5) は **無条件**
+  （`scbdec_condV_part5_corrected_uncond`＝3 named Prop を公開 discharger で供給）。
+  `_corrected` / `_corrected_full` は Prop 仮定を保持した green-modulo 版として併存。
+  part (1)–(4) は本ファイルの scope 外（`needs` 参照）。
 -/
 
 namespace PSS
@@ -224,6 +243,59 @@ theorem scbdec_condV_part5_corrected_full (hsetup : ExchV_condV_setup)
     scbdec_condV_part5_corrected hNF M s₁ b₁ hST hmono hcond hnadm hd₁ hk₁
   exact ⟨s₁, b₁, s', b', hd₁, hk₁, hinner, hbase, htower⟩
 
+/-! ## 無条件版（3 named Prop をすべて公開 discharger で供給）
+
+`scbdec_condV_part5_corrected_full` の 3 仮定
+（`ExchV_condV_setup` / `ExchV_scbdec_fseq_condV` / `ExchV_nf3x`）は、いずれも
+exchV corpus で**無条件に discharge 済み**:
+* `condV_setup_holds : ExchV_condV_setup`（`8.5-exchV-props`）
+* `fseq_condV_holds : ExchV_scbdec_fseq_condV`（`8.5-exchV-props`）
+* `nf3x_holds_xv2 (h : ExchV_M_tower) : ExchV_nf3x`（`8.5-exchV-props2`）、
+  `ExchV_M_tower` は下記 `exchVMtower_sd5` で無条件供給。
+
+したがって残差 Prop 0 の無条件定理が得られる。 -/
+
+/-- `ExchV_M_tower` の無条件供給。`8.5-Trans-fseq-condV-close`:60 の private
+`exchVMtower_vc`（＝`8.7-termination`:260 `exchVMtower_term`）の逐語再構成。 -/
+private theorem exchVMtower_sd5 : ExchV_M_tower :=
+  exchV_M_tower_of_residual
+    (exchVMres_of_values (exchVMvalues_of_nadm_package
+      (exchVMNadmAtomicPackage_of_parts
+        (rightmost84ReplaceCorrected_of_exists rightmost84ReplaceExists_rc2)
+        nadmW2nostr_holds (nadmC2L1_of_notLD nadmC2L1NotLD_holds))))
+
+/-- **補題（条件(V)の下での各種scb分解）part (5)、訂正 A29 形、無条件版**
+（原文 `tmp/content.md`:5225、`isabelle/pss_paper.thy`:2117 は DEFERRED）。
+
+`scbdec_condV_part5_corrected_full` の 3 named Prop 仮定を、無条件公開 discharger
+`condV_setup_holds` / `fseq_condV_holds` / `nf3x_holds_xv2 exchVMtower_sd5` で
+供給して消去した。よって仮定は `STPS`＋`monoT`＋条件(V)＋`j₀` 非許容のみ。
+
+`M ∈ ST_PS`、`monoT M`、条件(V)、`j₀` が非 `M` 許容のとき、原文の共有手術対
+`(s₁,b₁)` と内側 scb 対 `(s'₁,b'₁)` が存在して
+
+* `n = 1` → `Trans(M[1]) = s₁ D_{M₁,j₋₁} t₂ b₁`（**指数 0**、訂正 A29）
+* `n > 1` → `Trans(M[n]) = s₁ D_{M₁,j₋₁} (s'₁ D_{M₁,j₀})^n t₂ (b'₁)^n b₁`
+
+が成り立つ。原文 (5) が `n = 1` でも指数 `n` を主張して偽である点は
+`scbdec_condV_part5_original_false` を参照。 -/
+theorem scbdec_condV_part5_corrected_uncond (M : PS)
+    (hST : STPS M) (hmono : monoT M = true) (hcond : transCondV M = true)
+    (hnadm : adm M (transJ0 M) = false) :
+    ∃ s₁ b₁ s' b' : List Sym,
+      scb_decomp (Trans (oper M 1)) s₁
+        (flatBT (Dprin (entry M 1 (transJm1 M) : ℕ∞) (transT2 M))) b₁ ∧
+      scb_kind1 (Trans M) s₁ (flatBT (transC2 M)) b₁ ∧
+      scb_decomp (addBT (transT2 M) (Dprin (entry M 1 (transJ1 M) : ℕ∞) BZero))
+        s' (flatBT (Dprin (entry M 1 (transJ1 M) : ℕ∞) BZero)) b' ∧
+      flatBT (Trans (oper M 1))
+        = s₁ ++ Sym.dsym (entry M 1 (transJm1 M) : ℕ∞) :: flatBT (transT2 M) ++ b₁ ∧
+      (∀ n : ℕ, 1 < n → flatBT (Trans (oper M n))
+        = s₁ ++ Sym.dsym (entry M 1 (transJm1 M) : ℕ∞)
+            :: scb5Pow s' b' (entry M 1 (transJ0 M) : ℕ∞) (transT2 M) n ++ b₁) :=
+  scbdec_condV_part5_corrected_full condV_setup_holds fseq_condV_holds
+    (nf3x_holds_xv2 exchVMtower_sd5) M hST hmono hcond hnadm
+
 /-! ## 原文形の反証（訂正 A29） -/
 
 /-- **原文 (5) は `n = 1` で偽**（文字列レベルの不可能性）。
@@ -323,6 +395,7 @@ theorem nonvacuous_sd5 :
 
 #print axioms scbdec_condV_part5_corrected
 #print axioms scbdec_condV_part5_corrected_full
+#print axioms scbdec_condV_part5_corrected_uncond
 #print axioms scbdec_condV_part5_original_false_str
 #print axioms scbdec_condV_part5_original_false
 #print axioms nonvacuous_sd5

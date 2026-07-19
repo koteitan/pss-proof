@@ -231,8 +231,11 @@ parent/Lng 形に落としてから作業する。
   - ✅ **§8.2 強単項性**[r49] — 全 7 項目 ✅（詳細注釈は畳み込みで削除、git 履歴参照。condIIIV 終切片=Wave AH〜AV+配線 `condIIIVterminalSlice_holds`、condV 終切片=codex close）
   - ✅ **§8.3 条件(II)の下での展開規則**[r22] — 全 4 項目 ✅（kind0 3 本＋p ファイル `8.3-Trans-fseq-condII`=Wave AX 新設。結論(4) 逐語・(1)-(3) は Isabelle p 文と同じ modelling note で内部局所量として deferred。A36 は取り下げ済で原文のまま）
   - ✅ **§8.6 条件(VI)の下での展開規則**[r11] — 全 4 項目 ✅（`p_8_6_Trans_fseq_condVI_uncond` = 8.6-Trans-fseq-condVI-close、3 named Props を公開供給で落とした無条件 twin）
-  - ✅ `8.5-Trans-fseq-condV`[r11] — **無条件クローズ（Wave AX、8.5-Trans-fseq-condV-close）**: p ファイル公開 5 定理の無条件 `_vc` twin 全部（6 Props を Wave AW と同一の公開連鎖で供給。 内容一致確認済 content.md:5153 / pss_paper.thy:2070）
-  - 🚨🤖 `8.4-fseq-basic` — part(1)=`8.4-fseq-basic`[r1]（Wave D）、part(3)=`8.4-fseq-basic-close`[r1] 無条件（`oper_basic_part3_uncond`、y3h engine port）。**残=part(2)**: `oper_basic_part2` は単一残差 `Oper84BasicPart2Residual`（=L6 slice 閉形式 Trans(M[n+1][1]^w′)、Isabelle y3i_L6_various_scb_IIIIV）modulo。 A33 は取り下げ済（経験的に真 130/130）
+  - ✅ **§8.5 条件(V)の下での展開規則**[r15] — 全 5 項目 ✅（condV 交換則 `_vc` twins／scb分解 part(5)=A29 訂正形の無条件＋原文形の機械反証／基本列 scb 分解=非許容枝 `p_8_5_fseq_scb_decomp_nadm_uncond`（pss_paper 2128 は DEFERRED、Lean は statable 分を転記＝parity 超過。許容枝・一意性節は原文どおり 未転記で Isabelle parity）。旧詳細は git 履歴）
+  - ✅ `8.4-oper-basic`[r1] — Wave AY 新設。part(1) 両枝/part(2)簡約/part(5)full（A31 guard）を既存資産へ委譲＋s84c1 port。parts(2-mono)(3)(4) は pss_paper:1955 DEFERRED と同一 scope＝未転記（header に明記）。名前 crossover 回避（`oper_rule_basic_*`）
+  - ✅ `8.4-scb-decompositions`[r1] — Wave AY 新設、公開 7 本（dec1 engine で存在残差 も討伐）。(4)(5)閉形式・六つ組・一意性節は pss_paper:1968-1999 DEFERRED と同一 scope＝未転記（header に明記）
+  - 🚨 `8.7-Pred-oper0`[r2] — 一般形は真（806/806、旧偽判定は反転済み）。 `8.7-Pred-oper0-general` が一般文 `PredOper0_pg` を単一残差 `TransPredScbInsert_pg`（Trans/Trans∘Pred の scb 文脈共有＝原文 6018-6058 の本体、 Isabelle 側も未証明）へ無条件還元＋具体 2 系列で end-to-end 実証。 零化側は `trailing_principal_annihilable` が既在（asset-blindness 13 回目）
+  - 🚨 `8.4-fseq-basic` — part(1)[r1]/part(3)=`8.4-fseq-basic-close`[r1] 無条件。 part(2)=`8.4-fseq-basic-part2` が operB 側 leg (A) を無条件討伐し、残差を `L6TransSliceClosed_p2`（L6 slice engine=m_8_4_various_scb_IIIIV_from_slice wip:60034 の port、producer 座標）1 本へ尖鋭化
   - ✅ `8.1-diagSeq-Trans` — `u<v` の対角列について、十分な任意燃料で
     `TransAux` と `MarkAux · 0` がともに `D_u(D_v 0)` となる同時帰納不変条件を証明した。
     2列基底は一列計算を直接展開し、帰納段階は末尾上段親が直前列、かつその `Adm` が 0
@@ -312,20 +315,6 @@ parent/Lng 形に落としてから作業する。
     axioms 正常。Isabelle が `m_8_2_standard_slice_Red_strongmono` で取る
     `monoT (Red N)` は Lean では `ancestor_slice_Red_IncrFirst` が直接供給
     （＝`hmono` 仮定が不要になったが、p 文忠実性のため引数は保持）。
-  - 🚨🤖 `8.4-oper-basic` — 原文 content.md **4389**「補題（条件(III)～(VI)の下での
-    展開規則の基本性質）」。**pss_paper:1955 は text のみ・partially DEFERRED**
-    （part(1)-(4) は露出済み定義で陳述可、part(5) が `(s',b')` の scb 成分未露出で
-    ブロック）。⚠️**`p_8_4_oper_basic`(2017) はこの項目ではない**（上の
-    `8.4-fseq-basic` が正しい対応）。Isabelle 名に釣られるな。
-  - ✅ `8.5-Joints-FirstNodes-basic` — **完了（Wave D, r1）**。p 文 =
-    pss_paper:2098（原文 content.md 5165）の shows 4 本を逐語。訂正**無し**。
-    Isa: `m_8_5_Joints_FirstNodes_basic`（layerB:40416）を移植（`_condV` 版 60636 は
-    結論同一の言い換えで、p 文の仮定形に一致する 40416 版が正解）。原文 (3) は
-    未露出記号 `t₂` 参照のため pss_paper 自身が DEFERRED＝scope 外。
-    🚨**訂正 A29 はこの項目ではない**（既存 memo の誤帰属を 2026-07-17 に修正）:
-    A29 の対象は隣の `8.5-scb-decompositions`（原文 content.md 5213「各種scb分解」）
-    の part (5)（`Trans(M[n]) = s₁D_{M₁,j₋₁}(s'₁D_{M₁,j₀})ⁿt₂(b'₁)ⁿb₁` が n=1 で偽）。
-    本項目に part (5) は存在しない。
   - ✅ `8.1-Trans-fseq-condI`[r3] — **クローズ（2026-07-18 board 更新で確定）**。
     Wave H の green-modulo（露出 Prop は `CondI_masterCF` 1 本のみ）に対し、Wave M の
     `8.1-condI-masterCF-chunk5` が `scx_condI_j0pos_masterCF : CondI_masterCF` を
@@ -384,20 +373,6 @@ parent/Lng 形に落としてから作業する。
     いるが、分ける必要はない）。`Trans_preserves_OT : ∀ M, STPS M → Trans M ∈ OT_B` は
     descend の `FseqDesc_Trans_preserves_OT` **より強い**（monoT も Lng 条件も不要）。
     8.6-condVI の `TransPreservesOT` Prop も同形で同時に討てる。
-  - 🚨🤖 `8.5-scb-decompositions` — 訂正 **A29**（part (5)
-    `Trans(M[n]) = s₁D_{M₁,j₋₁}(s'₁D_{M₁,j₀})ⁿt₂(b'₁)ⁿb₁` が `n=1` で偽。原文
-    content.md 5213 の (5)＝5225、証明 5267/5329）[軽微]。**A29 はここ**であって
-    `8.5-Joints-FirstNodes-basic` ではない（2026-07-17 誤帰属を訂正）。
-  - 🚨🤖 `8.4-scb-decompositions` — 原文 §8.4「補題群（条件(III)～(VI)の下での各種 scb 分解）」。Wave AY で p ファイル新設中（既存 8.4-exch84/np-c2decomp 資産の再露出が主）。
-  - 🚨🤖 `8.5-fseq-scb-decomposition` — 原文 §8.5「補題（条件(V)の下での基本列の scb 分解）」。Wave AY で p ファイル新設中（fseq_condV_holds が核の可能性）。
-  - 🚨🤖 `8.7-Pred-oper0`[r1] — p 文 = pss_paper:2298（原文 ~6014、PT_B は PT_PS の誤植）。
-    🚨**旧記録の反転（Wave K、8 度目の偽陽性）**: 「標準入力で偽（反例 M=(0,0)(1,1)(2,1)）」
-    は**誤りだった**——Wave K がその M は反例で**ない**ことを機械証明
-    （`p_8_7_Pred_oper0_alleged_cex_not_a_counterexample`＋条件 I/V の証人 2 本、緑）。
-    命題は真の可能性が高い。一般形 `PredOper0` は未証明（Prop 露出のみ。原文証明は
-    零化可能性の**ネスト形**を使うが Lean には top-level 形しか無い＝
-    `8.7-OT-tail-annihilable` のネスト版が要る）。停止性連鎖には不要（Σ_B 降下和迂回）。
-    現在 agent 不在。
   - `8.5-*` — **最難所**。Isa の keystone は
     `bpHeadT(Trans(slice@B)) = C(bpHeadT(Trans slice))`（depth-shift self-similar）。
     13 個の死路が `isabelle/memo.md` に列挙してある。**着手前に必ず読め。**
@@ -664,6 +639,19 @@ parent/Lng 形に落としてから作業する。
     （素 `VE4BaseDeep` の弱化）。**残**={`RunSqueeze_vn`（=descending squeeze＋nextrel0 valley
     squeeze＋単一列幾何の値証明）, `VE3RunBase_bd`/`VE3RunStep_bd`/`PIN_bd`/`TSPIN_bd`（§7.4 surgery）,
     field-level 再配線（DTPS→`VE34Reg4D`で `VE3/4BaseDeepD` を場に接続、dead `condIIIVterminalSlice_of_runpeel` 退役）}。
+  - 🎯 **Wave AY（2026-07-21、Opus 6、全緑）— 最終カバレッジ掃討: 4 討伐＋2 尖鋭化、残 2 葉**:
+    ①`8.4-oper-basic` ✅（新設、crossover 回避。part1 両枝/2r/5-A31。3/4 は pss_paper DEFERRED parity）
+    ②`8.4-scb-decompositions` ✅（新設 7 本、dec1 engine で存在残差討伐。deferred 節は header 明記）
+    ③`8.5-scb-decompositions` ✅（既存ファイル発見＝asset-blindness、A29 訂正形を無条件化
+    `scbdec_condV_part5_corrected_uncond`＋原文形 n=1 偽の機械反証維持）
+    ④`8.5-fseq-scb-decomposition` ✅（新設。nadm 枝 3 分解、親が nf3x 供給で
+    `_uncond` 化。⚠️原文の証人 t'₀ は自身の (5)' と矛盾（指数 n+2 vs n+1）＝header 記録、
+    機械化塔 e5x_bodyM の t'=t₂ が正）→ **§8.5[r15] 畳み**
+    ⑤part(2): operB 側 leg (A) 無条件討伐、残差を `L6TransSliceClosed_p2` 1 本へ
+    ⑥`8.7-Pred-oper0`: 一般文を単一残差 `TransPredScbInsert_pg` へ無条件還元＋
+    数値 806/806＋具体 2 系列 end-to-end。零化側は既存 `trailing_principal_annihilable`
+    で完結（asset-blindness 13 回目）。
+    **残り open = {`L6TransSliceClosed_p2`, `TransPredScbInsert_pg`} の 2 葉のみ。**
   - 🎯 **Wave AX（2026-07-21、Opus 4、全緑）— 原文カバレッジ 4 連戦: 3 完落＋1 分割**:
     ①`8.5-Trans-fseq-condV` ✅（instantiation close、公開 5 定理の無条件 twin）
     ②`8.3-Trans-fseq-condII` ✅（p ファイル新設、Trans_fseq_descend の系として 1 行証明。
