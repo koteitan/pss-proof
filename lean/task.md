@@ -44,16 +44,16 @@
     - 🚨 補題（条件(III)か(IV)の下での基本列の基本性質） — `8.4-fseq-basic`
       - ✅ part (1) — `8.4-fseq-basic`[r1]
       - ✅ part (3) — `8.4-fseq-basic-close`[r1]
-      - 🚨 part (2) — `8.4-fseq-basic-close`
+      - 🚨🤖 part (2) — `8.4-fseq-basic-close`
     - ✅ 補題（条件(III)～(V)の下での右端の置き換えと `Trans` の関係） — `8.4-rightmost-replace-Trans`[r8]
-    - 🚨 補題（条件(III)～(VI)の下での展開規則の基本性質） — `8.4-oper-basic`
-    - 🚨 補題群（条件(III)～(VI)の下での各種 scb 分解） — `8.4-scb-decompositions`
+    - 🚨🤖 補題（条件(III)～(VI)の下での展開規則の基本性質） — `8.4-oper-basic`
+    - 🚨🤖 補題群（条件(III)～(VI)の下での各種 scb 分解） — `8.4-scb-decompositions`
   - 🚨 §8.5 条件(V)の下での展開規則
     - ✅ 命題（条件(V)の下での `Trans` と基本列の交換関係） — `8.5-Trans-fseq-condV`[r11]
     - ✅ 補題（条件(V)の下での `Joints` と `FirstNodes` と `t₂` の基本性質） — `8.5-Joints-FirstNodes-basic`[r1]
     - ✅ 補題（条件(V) admissible 底3値と non-admissible 導出層） — `8.5-exchV-values-close`
-    - 🚨 補題（条件(V)の下での各種 scb 分解） — `8.5-scb-decompositions`
-    - 🚨 補題（条件(V)の下での基本列の scb 分解） — `8.5-fseq-scb-decomposition`
+    - 🚨🤖 補題（条件(V)の下での各種 scb 分解） — `8.5-scb-decompositions`
+    - 🚨🤖 補題（条件(V)の下での基本列の scb 分解） — `8.5-fseq-scb-decomposition`
   - ✅ §8.6 条件(VI)の下での展開規則[r11]
   - 🚨 §8.7 主結果
     - ✅ 補題（公差 `(0,0)` のペア数列の `Trans` の基本性質） — `8.7-const00-Trans`[r1]
@@ -61,7 +61,7 @@
     - ✅ 補題（順序数項の再帰構造） — `8.7-OT-scb-recursive`[r1]
     - ✅ 補題（順序数項の共終数の遺伝性） — `8.7-OT-dom-hereditary`[r1]
     - ✅ 補題（順序数項の末尾項の零化可能性、top-level 値形） — `8.7-OT-tail-annihilable`[r1]
-    - 🚨 補題（`Pred` と `[0]` の関係） — `8.7-Pred-oper0`[r1]
+    - 🚨🤖 補題（`Pred` と `[0]` の関係） — `8.7-Pred-oper0`[r1]
     - ✅ 補題（順序数項の基本例） — `8.7-OT-examples`[r1]
     - ✅ 補題（`Trans` が標準形を保つこと） — `8.7-Trans-preserves-OT`[r38]
     - ✅ **定理（標準形ペア数列システムの停止性）** — `8.7-termination`[r1]

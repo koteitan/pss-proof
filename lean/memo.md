@@ -312,7 +312,7 @@ parent/Lng 形に落としてから作業する。
     axioms 正常。Isabelle が `m_8_2_standard_slice_Red_strongmono` で取る
     `monoT (Red N)` は Lean では `ancestor_slice_Red_IncrFirst` が直接供給
     （＝`hmono` 仮定が不要になったが、p 文忠実性のため引数は保持）。
-  - 🚨 `8.4-oper-basic` — 原文 content.md **4389**「補題（条件(III)～(VI)の下での
+  - 🚨🤖 `8.4-oper-basic` — 原文 content.md **4389**「補題（条件(III)～(VI)の下での
     展開規則の基本性質）」。**pss_paper:1955 は text のみ・partially DEFERRED**
     （part(1)-(4) は露出済み定義で陳述可、part(5) が `(s',b')` の scb 成分未露出で
     ブロック）。⚠️**`p_8_4_oper_basic`(2017) はこの項目ではない**（上の
@@ -388,7 +388,7 @@ parent/Lng 形に落としてから作業する。
     `Trans(M[n]) = s₁D_{M₁,j₋₁}(s'₁D_{M₁,j₀})ⁿt₂(b'₁)ⁿb₁` が `n=1` で偽。原文
     content.md 5213 の (5)＝5225、証明 5267/5329）[軽微]。**A29 はここ**であって
     `8.5-Joints-FirstNodes-basic` ではない（2026-07-17 誤帰属を訂正）。
-  - 🚨 `8.7-Pred-oper0`[r1] — p 文 = pss_paper:2298（原文 ~6014、PT_B は PT_PS の誤植）。
+  - 🚨🤖 `8.7-Pred-oper0`[r1] — p 文 = pss_paper:2298（原文 ~6014、PT_B は PT_PS の誤植）。
     🚨**旧記録の反転（Wave K、8 度目の偽陽性）**: 「標準入力で偽（反例 M=(0,0)(1,1)(2,1)）」
     は**誤りだった**——Wave K がその M は反例で**ない**ことを機械証明
     （`p_8_7_Pred_oper0_alleged_cex_not_a_counterexample`＋条件 I/V の証人 2 本、緑）。
