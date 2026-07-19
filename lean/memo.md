@@ -888,6 +888,17 @@ parent/Lng 形に落としてから作業する。
     （素 `VE4BaseDeep` の弱化）。**残**={`RunSqueeze_vn`（=descending squeeze＋nextrel0 valley
     squeeze＋単一列幾何の値証明）, `VE3RunBase_bd`/`VE3RunStep_bd`/`PIN_bd`/`TSPIN_bd`（§7.4 surgery）,
     field-level 再配線（DTPS→`VE34Reg4D`で `VE3/4BaseDeepD` を場に接続、dead `condIIIVterminalSlice_of_runpeel` 退役）}。
+  - 🎉 **Wave AO（2026-07-20 夕、Opus 2、全緑）— `HEADEQ0All` 討伐（最終 2 Props の片方）**:
+    ①🎉**`headEq0All_holds` 無条件**（hqx_HEADEQ0 完全 port: trunk corner=diagSeq 閉形式、
+    branching=VEReg 構築→vcx_VE_all。未移植とされた 5 brick 中 3 は公開双子あり
+    （kfwd=RTPS_mono_head_eq／bfx_TrMax_Pred_base=TrMax_Pred_nontrunk／
+    Joints_parent_nextR=Joints_nextR_FirstNodes）。`8.2-condIIIV-headeq0-close`）
+    ②bgx 還元: 統一 peel に載せる設計が正解と検証——HEADEQ0 消費は run-base BASE slot のみ。
+    `BgxVE34RedHE0_of_bricks_bg` で**残差 6 本に分解**: HEADEQ0 依存の閉形式 2
+    {`BgxBaseFormNotleft_bg`(106329+census 106972), `BgxMpForm_bg`(106407)}＋
+    HEADEQ0 非依存の peel slot 4 {BaseRunStep_up(106565), Step_up(tsx), RunStepGuardJoint_up,
+    StepRegPres_up(vg7x_RPERS)}（`8.2-condIIIV-bgx-reduction`）。
+    **無条件化までの残 = この 6 本**。
   - 🎉 **Wave AN（2026-07-20 午後、Opus 2、全緑）— HEADEQ0 capstone 組立＋統一帰納完成**:
     ①**HEADEQ0 campaign 入口**（`8.2-condIIIV-headeq0`）: hqx_/bgx_ 完全地図＋
     `hqx_VE34_of_DT_hq` capstone を **{`BgxVE34RedHE0_hq`(bgx 還元 ~1000 行),
