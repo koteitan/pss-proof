@@ -232,7 +232,7 @@ parent/Lng 形に落としてから作業する。
   - ✅ **§8.3 条件(II)の下での展開規則**[r22] — 全 4 項目 ✅（kind0 3 本＋p ファイル `8.3-Trans-fseq-condII`=Wave AX 新設。結論(4) 逐語・(1)-(3) は Isabelle p 文と同じ modelling note で内部局所量として deferred。A36 は取り下げ済で原文のまま）
   - ✅ **§8.6 条件(VI)の下での展開規則**[r11] — 全 4 項目 ✅（`p_8_6_Trans_fseq_condVI_uncond` = 8.6-Trans-fseq-condVI-close、3 named Props を公開供給で落とした無条件 twin）
   - ✅ `8.5-Trans-fseq-condV`[r11] — **無条件クローズ（Wave AX、8.5-Trans-fseq-condV-close）**: p ファイル公開 5 定理の無条件 `_vc` twin 全部（6 Props を Wave AW と同一の公開連鎖で供給。 内容一致確認済 content.md:5153 / pss_paper.thy:2070）
-  - 🚨 `8.4-fseq-basic` — part(1)=`8.4-fseq-basic`[r1]（Wave D）、part(3)=`8.4-fseq-basic-close`[r1] 無条件（`oper_basic_part3_uncond`、y3h engine port）。**残=part(2)**: `oper_basic_part2` は単一残差 `Oper84BasicPart2Residual`（=L6 slice 閉形式 Trans(M[n+1][1]^w′)、Isabelle y3i_L6_various_scb_IIIIV）modulo。 A33 は取り下げ済（経験的に真 130/130）
+  - 🚨🤖 `8.4-fseq-basic` — part(1)=`8.4-fseq-basic`[r1]（Wave D）、part(3)=`8.4-fseq-basic-close`[r1] 無条件（`oper_basic_part3_uncond`、y3h engine port）。**残=part(2)**: `oper_basic_part2` は単一残差 `Oper84BasicPart2Residual`（=L6 slice 閉形式 Trans(M[n+1][1]^w′)、Isabelle y3i_L6_various_scb_IIIIV）modulo。 A33 は取り下げ済（経験的に真 130/130）
   - ✅ `8.1-diagSeq-Trans` — `u<v` の対角列について、十分な任意燃料で
     `TransAux` と `MarkAux · 0` がともに `D_u(D_v 0)` となる同時帰納不変条件を証明した。
     2列基底は一列計算を直接展開し、帰納段階は末尾上段親が直前列、かつその `Adm` が 0
@@ -384,10 +384,12 @@ parent/Lng 形に落としてから作業する。
     いるが、分ける必要はない）。`Trans_preserves_OT : ∀ M, STPS M → Trans M ∈ OT_B` は
     descend の `FseqDesc_Trans_preserves_OT` **より強い**（monoT も Lng 条件も不要）。
     8.6-condVI の `TransPreservesOT` Prop も同形で同時に討てる。
-  - `8.5-scb-decompositions` — 訂正 **A29**（part (5)
+  - 🚨🤖 `8.5-scb-decompositions` — 訂正 **A29**（part (5)
     `Trans(M[n]) = s₁D_{M₁,j₋₁}(s'₁D_{M₁,j₀})ⁿt₂(b'₁)ⁿb₁` が `n=1` で偽。原文
     content.md 5213 の (5)＝5225、証明 5267/5329）[軽微]。**A29 はここ**であって
     `8.5-Joints-FirstNodes-basic` ではない（2026-07-17 誤帰属を訂正）。
+  - 🚨🤖 `8.4-scb-decompositions` — 原文 §8.4「補題群（条件(III)～(VI)の下での各種 scb 分解）」。Wave AY で p ファイル新設中（既存 8.4-exch84/np-c2decomp 資産の再露出が主）。
+  - 🚨🤖 `8.5-fseq-scb-decomposition` — 原文 §8.5「補題（条件(V)の下での基本列の scb 分解）」。Wave AY で p ファイル新設中（fseq_condV_holds が核の可能性）。
   - 🚨🤖 `8.7-Pred-oper0`[r1] — p 文 = pss_paper:2298（原文 ~6014、PT_B は PT_PS の誤植）。
     🚨**旧記録の反転（Wave K、8 度目の偽陽性）**: 「標準入力で偽（反例 M=(0,0)(1,1)(2,1)）」
     は**誤りだった**——Wave K がその M は反例で**ない**ことを機械証明
