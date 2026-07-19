@@ -40,6 +40,9 @@ import «8».«8.4-rm84-rfacts-close»
 import «8».«8.4-np-c2decomp»
 import «8».«8.4-corner-readouts»
 import «8».«8.4-corner-np-value»
+import «8».«8.7-corner-census»
+import «8».«8.7-a0otnub-assembly»
+import «8».«8.7-align3-close»
 import «8».«8.3-condII-Boundary-close»
 import «8».«8.7-otint-setle»
 import «8».«8.7-otmulti-interior»
@@ -238,10 +241,6 @@ structure TerminationResidual : Prop where
   condIII/IV は `exch84slicepkg`＋下の `otIIIIVdata` から供給＝どちらも
   残差フィールドではなくなった。） -/
   otMultiIntCond : OTmulti_interior_intCond_nc1
-  /-- OT 柱 (2/2)。条件 (III)/(IV) の OT 内部枝の transport 残差、wave R で
-  4 conjunct → 2 に絞り込み（`8.7-otint-transport-data`:  `OTA1_ltJ`/`SETLE1_ltJ` 対のみ。
-  T_B 側 2 conjunct は無条件済）。`otIIIIVdata_of_otSetle` で旧形を導出。 -/
-  otSetleCore : OTintIIIIV_otSetleCore
   /-- 条件 (II) の交換則の核。Isabelle `c2sx_condII_masterCF` (pss_wip.thy:87430)。
   OT 柱の `exchII` と降下柱の `exchII` を供給。
   （条件 (I) の核 `CondI_masterCF` は wave M で `8.1-condI-masterCF-chunk5` が無条件証明
@@ -289,7 +288,7 @@ condIII/IV legs（slicepkg＋transport 残差、`8.7-otdisp-OTint-condIIIIV`）�
 condV 両 legs（条件 (V) 塔から、`8.7-otdisp-OTint-condV`）＋
 `OTdisp_OTpred_holds` を通す。旧フィールド `otInt` は残差ではなくなった。 -/
 private theorem otIIIIVdata_term (H : TerminationResidual) : OTintIIIIV_transportData :=
-  otIIIIVdata_of_otSetle (otSetle_holds H.otSetleCore)
+  otIIIIVdata_of_otSetle (otSetle_holds (otSetleCore_of_parts_cc2 a0otNub_holds setleCensusSpine_holds_a3c))
 
 private theorem otMulti_term (H : TerminationResidual) : OTdisp_OTmulti :=
   OTdisp_OTmulti_of_interior_om2 (otMultiInterior_holds (otMultiNotCondI_nc1_holds H.otMultiIntCond))

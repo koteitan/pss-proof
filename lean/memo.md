@@ -872,6 +872,34 @@ parent/Lng 形に落としてから作業する。
     2 フィールドを `exchVMres : ExchVMTowerResidual` 1 本に置換。
     **現フィールド 5**: `otMulti`／`otIIIIVdata`／`condII`／`exch84slicepkg`／`exchVMres`。
     audit は 4 葉表示（exchV 過少計上バグ込み、下記）。
+  - **VE34 continue（condIIIVts、`8.2-condIIIV-ve-next`、全緑・公理クリーン）— 補正 run-peel 持続を
+    Pred-free 残差一本に尖鋭化＋LIVE 帰納法**: ve-continue の Pred レベル残差
+    `RunPeelGuardJointBase_vc2` を、`Pred` を含まない純 N レベル残差 **`RunSqueeze_vn`**
+    ＝{`bfx_run_prev`(2)ガード `entry N 1 (Lng-2) < entry N 0 (Lng-2)` ／ `bfx_JEQ`
+    `Joints N!(Br.len-2)=Joints N!(Br.len-1)` ／ BASE 単一列幾何 `FirstNodes N!(Br.len-2)=Lng-2`}
+    に無条件で還元（`RunPeelGuardJointBase_of_squeeze_vn`）。橋渡しは機械的 `Pred` 転送
+    （`FirstNodes/Joints_Pred_core`＋`entry_Pred`）＋枝数減少 `bfx_BrLen_Pred_base`
+    （`Br_Pred_core_nontrunk`＋`wf21_Br_eq_seg` で最終枝長=1 を読む＝`BrLen_Pred_base_vn`）のみ。
+    キャップストーン `RunPeelPreservedD_of_squeeze_vn`（補正 run-peel 持続を `RunSqueeze_vn`
+    一本 modulo）。さらに **死んだ `VE3BaseDeep_of_residuals`（偽の `RunPeelPreserved_bd` 依存）を
+    補正体制 `VE34Reg4D` 上の LIVE 版 `VE3BaseDeepD_of_residuals` に置換**（leaf 残差
+    `{VE3RunBase_bd, VE3RunStep_bd}`＋`VE3_minbase_vb` は素 `VE34Reg4` で足りる）→
+    `VE3BaseDeepD_of_squeeze`（VE3goal を `RunSqueeze_vn`＋leaf 2 本から）／`VE4BaseDeepD`
+    （素 `VE4BaseDeep` の弱化）。**残**={`RunSqueeze_vn`（=descending squeeze＋nextrel0 valley
+    squeeze＋単一列幾何の値証明）, `VE3RunBase_bd`/`VE3RunStep_bd`/`PIN_bd`/`TSPIN_bd`（§7.4 surgery）,
+    field-level 再配線（DTPS→`VE34Reg4D`で `VE3/4BaseDeepD` を場に接続、dead `condIIIVterminalSlice_of_runpeel` 退役）}。
+  - 🎉🎉 **Wave AL（2026-07-20 午前、Opus 2、全緑）— `otSetleCore` フィールド陥落＝残差 2**:
+    ①**corner census 再配管の決着**: 偽 wrapper は**そもそも不要だった**——唯一の消費先
+    （ox5_census の scbext_triG 経由 G-control）は無条件の `tri0CruxConcrete_holds` で直接供給可。
+    z=D_∞ 変種 `ox5_body_driver_cc2` で組立→`otSetleCore_of_parts_cc2 : A0OTNub →
+    SetleCensusSpine → otSetleCore`、両入力は Wave AK 討伐済＝**otSetleCore 無条件化**
+    （termination から削除、フィールド 3→2）。（`8.7-corner-census`）
+    ②VE: run-peel 修正チェーン前進——Pred-free `RunSqueeze_vn` 3 conjunct に尖鋭化＋
+    dead ルート（refuted RunPeelPreserved_bd）の置換 `VE3BaseDeepD_of_residuals`
+    （`8.2-condIIIV-ve-next`）。
+    **現フィールド 2**: `otMultiIntCond`（condII のみ＝condIIIVts 陥落で自動）／`condIIIVts`
+    （残={RunSqueeze_vn, VE3RunBase/RunStep, PIN/TSPIN, Step 系, field 再配管}）＝
+    **実質 VE34 一本勝負**。
   - 🎉 **Wave AK（2026-07-20 朝、Opus 3、全緑）— spine gap 討伐＋A0OTNub 完結＋🚨9 個目の反証**:
     ①**`a0otNub_holds` 無条件**（NubGControl は OixGControl_holds パターンの bridge で即閉。
     `8.7-a0otnub-assembly`）②🎉**`setleCensusSpine_holds_a3c` 無条件**（Isabelle 側も deferred
