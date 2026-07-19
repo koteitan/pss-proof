@@ -639,6 +639,18 @@ parent/Lng 形に落としてから作業する。
     （素 `VE4BaseDeep` の弱化）。**残**={`RunSqueeze_vn`（=descending squeeze＋nextrel0 valley
     squeeze＋単一列幾何の値証明）, `VE3RunBase_bd`/`VE3RunStep_bd`/`PIN_bd`/`TSPIN_bd`（§7.4 surgery）,
     field-level 再配線（DTPS→`VE34Reg4D`で `VE3/4BaseDeepD` を場に接続、dead `condIIIVterminalSlice_of_runpeel` 退役）}。
+  - 🎯 **Wave AZ（2026-07-21、Opus 2、全緑）— 最終 2 葉の本体攻略**:
+    ①L6: **塔帰納 `l6_tower_l6` port 完了**（oper_rule_basic_part5 を単段に、
+    scb_unique_decomp_unconditional で穴 pin、condV 塔テンプレ流用）＋operB 側 flat。
+    残差は `L6TowerResidual`＝底読出し 4 葉 {op1pow 橋 (y3l_L_eq_op1pow)/ub_eq/
+    base depth-1 (base5、twins=LEAF3・hL1flat)/lpv (s84d_dec*)} に縮退。数値 164/164
+    （`8.4-l6-slice-close`）
+    ②Pred-oper0: **I/III/V 枝討伐（677/806）**——master key は `Trans_c1_c2_decomp`
+    （条件非依存の共有 (s,b)）＋transC2Core 第1枝。一般定理は残差 2 本
+    {`PredOper0_nestedCond_residual_psi`（condII/IV の 2 段入れ子零化＝原文 6018-6058
+    の核、Isabelle も sorry。単一挿入述語では表現不能を flat 不一致で確証）,
+    `PredOper0_t1zero_residual_psi`（t1=0 隅、top-level 零化要）} へ
+    （`8.7-pred-scb-insert`）。
   - 🎯 **Wave AY（2026-07-21、Opus 6、全緑）— 最終カバレッジ掃討: 4 討伐＋2 尖鋭化、残 2 葉**:
     ①`8.4-oper-basic` ✅（新設、crossover 回避。part1 両枝/2r/5-A31。3/4 は pss_paper DEFERRED parity）
     ②`8.4-scb-decompositions` ✅（新設 7 本、dec1 engine で存在残差討伐。deferred 節は header 明記）
