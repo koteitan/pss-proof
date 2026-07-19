@@ -233,7 +233,7 @@ parent/Lng 形に落としてから作業する。
   - ✅ **§8.6 条件(VI)の下での展開規則**[r11] — 全 4 項目 ✅（`p_8_6_Trans_fseq_condVI_uncond` = 8.6-Trans-fseq-condVI-close、3 named Props を公開供給で落とした無条件 twin）
   - ✅ **§8.5 条件(V)の下での展開規則**[r15] — 全 5 項目 ✅（condV 交換則 `_vc` twins／scb分解 part(5)=A29 訂正形の無条件＋原文形の機械反証／基本列 scb 分解=非許容枝 `p_8_5_fseq_scb_decomp_nadm_uncond`（pss_paper 2128 は DEFERRED、Lean は statable 分を転記＝parity 超過。許容枝・一意性節は原文どおり 未転記で Isabelle parity）。旧詳細は git 履歴）
   - ✅ **§8.7 主結果**[r53] — 全 9 項目 ✅（主定理 `p_8_7_termination` 無条件・公理 3 つ。最後の `8.7-Pred-oper0`[r5] は **beyond-Isabelle**: 原文 p_8_7_OT_tail_annihilable scb 形（Isabelle sorry）を `scb_body_annihilable_ta`（btWeight 強帰納カスケード、8.7-scb-tail-annihilation 682 行）で完全証明し `p_8_7_Pred_oper0_pg_uncond` 無条件着地。詳細は git 履歴と Wave BB 節）
-  - 🚨🤖 `8.4-fseq-basic` — part(1)[r1]/part(3)=`8.4-fseq-basic-close`[r1] 無条件。part(2)[r4]=frontier `8.4-l6-readouts-close`: 残差 `L6BaseCoreResidual`（正準 3 事実: base5 型 L1=operB-base 一致/Lp 単主部/ub pin）。壁は §8.4 L1/Lp slice 幾何＝`L1SliceData_se`（8.4-slice-ext-engines の named leaf、l1Base_se が L1 flat を無条件構築済）＋Lp rightend surgery（cfbx_reg 系）。数値 41/41（経由: part2→l6-slice-close→l6-base-readouts→l6-readouts-close）
+  - 🚨 `8.4-fseq-basic` — part(1)[r1]/part(3)=`8.4-fseq-basic-close`[r1] 無条件。part(2)[r6]: `L6BaseCoreResidual`（8.4-l6-readouts-close）の 3 事実は Wave BC で 2 残差へ縮退——(3')=`l6_base_leaf3_holds` modulo `L1SliceWrapperBridge`（8.4-l1-slice-close。producer↔幾何の座標橋。⚠️L1SliceData_se は l1SliceData_holds で既討伐＝14 回目の asset-blindness）、(4')(2)=`lp_half2_lpc` modulo `LpReadoutResidual`（8.4-lp-readout-close。Lp 単主部＋lpv flat）。両残差とも数値 41/41 の真命題。壁=Isabelle base5 wrapper pinning（wip:60231）＋m_8_4_rightend_Trans（wip:54650）＝cfbx_reg/REGS/REGSP corpus port。攻め筋 memo: base5 の sbL/holeL1 局所構成を c2hole 資産（l1SliceData_holds/leaf3_cr2/c2hole_scb_ch）で再現
   - ✅ `8.4-oper-basic`[r1] — Wave AY 新設。part(1) 両枝/part(2)簡約/part(5)full（A31 guard）を既存資産へ委譲＋s84c1 port。parts(2-mono)(3)(4) は pss_paper:1955 DEFERRED と同一 scope＝未転記（header に明記）。名前 crossover 回避（`oper_rule_basic_*`）
   - ✅ `8.4-scb-decompositions`[r1] — Wave AY 新設、公開 7 本（dec1 engine で存在残差 も討伐）。(4)(5)閉形式・六つ組・一意性節は pss_paper:1968-1999 DEFERRED と同一 scope＝未転記（header に明記）
   - ✅ `8.1-diagSeq-Trans` — `u<v` の対角列について、十分な任意燃料で
@@ -569,6 +569,12 @@ parent/Lng 形に落としてから作業する。
     （素 `VE4BaseDeep` の弱化）。**残**={`RunSqueeze_vn`（=descending squeeze＋nextrel0 valley
     squeeze＋単一列幾何の値証明）, `VE3RunBase_bd`/`VE3RunStep_bd`/`PIN_bd`/`TSPIN_bd`（§7.4 surgery）,
     field-level 再配線（DTPS→`VE34Reg4D`で `VE3/4BaseDeepD` を場に接続、dead `condIIIVterminalSlice_of_runpeel` 退役）}。
+  - 🎯 **Wave BC（2026-07-22、Opus 2、全緑）— 最終葉、2 残差へ縮退（ユーザー指示で wave 停止）**:
+    (3')=L1 側は oper_rule_basic_part5 単段で両辺 peel 完了、残差 `L1SliceWrapperBridge`
+    （wrapper 恒等式＝base5 の sbL pinning）。(4')(2)=Lp 側は head-forcing で ub pin を
+    幾何 1 命題に還元、残差 `LpReadoutResidual`（Lp 単主部＋lpv、= m_8_4_rightend_Trans）。
+    どちらも cfbx_reg corpus 未 port が真因（4 wave 連続で同じ壁に到達＝次キャンペーンは
+    corpus 本体の port が正攻法）。
   - 🎉 **Wave BB（2026-07-22、Opus 2、全緑）— beyond-Isabelle 撃破で §8.7 完結、残 1 葉**:
     ①🎉 **`8.7-Pred-oper0` 完全クローズ**: 一般 scb 尾部零化 `scb_body_annihilable_ta`
     （btWeight 強帰納: 末尾主部の body を再帰零化→8.6 エンジンで除去→prefix 再帰）を
