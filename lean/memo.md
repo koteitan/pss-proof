@@ -234,8 +234,8 @@ parent/Lng 形に落としてから作業する。
   - ✅ **§8.5 条件(V)の下での展開規則**[r15] — 全 5 項目 ✅（condV 交換則 `_vc` twins／scb分解 part(5)=A29 訂正形の無条件＋原文形の機械反証／基本列 scb 分解=非許容枝 `p_8_5_fseq_scb_decomp_nadm_uncond`（pss_paper 2128 は DEFERRED、Lean は statable 分を転記＝parity 超過。許容枝・一意性節は原文どおり 未転記で Isabelle parity）。旧詳細は git 履歴）
   - ✅ `8.4-oper-basic`[r1] — Wave AY 新設。part(1) 両枝/part(2)簡約/part(5)full（A31 guard）を既存資産へ委譲＋s84c1 port。parts(2-mono)(3)(4) は pss_paper:1955 DEFERRED と同一 scope＝未転記（header に明記）。名前 crossover 回避（`oper_rule_basic_*`）
   - ✅ `8.4-scb-decompositions`[r1] — Wave AY 新設、公開 7 本（dec1 engine で存在残差 も討伐）。(4)(5)閉形式・六つ組・一意性節は pss_paper:1968-1999 DEFERRED と同一 scope＝未転記（header に明記）
-  - 🚨 `8.7-Pred-oper0`[r2] — 一般形は真（806/806、旧偽判定は反転済み）。 `8.7-Pred-oper0-general` が一般文 `PredOper0_pg` を単一残差 `TransPredScbInsert_pg`（Trans/Trans∘Pred の scb 文脈共有＝原文 6018-6058 の本体、 Isabelle 側も未証明）へ無条件還元＋具体 2 系列で end-to-end 実証。 零化側は `trailing_principal_annihilable` が既在（asset-blindness 13 回目）
-  - 🚨 `8.4-fseq-basic` — part(1)[r1]/part(3)=`8.4-fseq-basic-close`[r1] 無条件。 part(2)=`8.4-fseq-basic-part2` が operB 側 leg (A) を無条件討伐し、残差を `L6TransSliceClosed_p2`（L6 slice engine=m_8_4_various_scb_IIIIV_from_slice wip:60034 の port、producer 座標）1 本へ尖鋭化
+  - 🚨🤖 `8.7-Pred-oper0`[r2] — 一般形は真（806/806、旧偽判定は反転済み）。 `8.7-Pred-oper0-general` が一般文 `PredOper0_pg` を単一残差 `TransPredScbInsert_pg`（Trans/Trans∘Pred の scb 文脈共有＝原文 6018-6058 の本体、 Isabelle 側も未証明）へ無条件還元＋具体 2 系列で end-to-end 実証。 零化側は `trailing_principal_annihilable` が既在（asset-blindness 13 回目）
+  - 🚨🤖 `8.4-fseq-basic` — part(1)[r1]/part(3)=`8.4-fseq-basic-close`[r1] 無条件。 part(2)=`8.4-fseq-basic-part2` が operB 側 leg (A) を無条件討伐し、残差を `L6TransSliceClosed_p2`（L6 slice engine=m_8_4_various_scb_IIIIV_from_slice wip:60034 の port、producer 座標）1 本へ尖鋭化
   - ✅ `8.1-diagSeq-Trans` — `u<v` の対角列について、十分な任意燃料で
     `TransAux` と `MarkAux · 0` がともに `D_u(D_v 0)` となる同時帰納不変条件を証明した。
     2列基底は一列計算を直接展開し、帰納段階は末尾上段親が直前列、かつその `Adm` が 0
