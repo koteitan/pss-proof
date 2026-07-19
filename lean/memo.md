@@ -888,6 +888,27 @@ parent/Lng 形に落としてから作業する。
     （素 `VE4BaseDeep` の弱化）。**残**={`RunSqueeze_vn`（=descending squeeze＋nextrel0 valley
     squeeze＋単一列幾何の値証明）, `VE3RunBase_bd`/`VE3RunStep_bd`/`PIN_bd`/`TSPIN_bd`（§7.4 surgery）,
     field-level 再配線（DTPS→`VE34Reg4D`で `VE3/4BaseDeepD` を場に接続、dead `condIIIVterminalSlice_of_runpeel` 退役）}。
+  - 🎯 **Wave AU（2026-07-21、Opus 2、全緑）— capstone 一本化＋tsx_assembly 深部 scb コア陥落**:
+    ①capstone 組み直し完了: `baseRunStep_up_cw : BaseRunStep_up` **無条件**＋
+    `ve34_on_reg4D_cw : TspinAssemblyIH_tc → ∀ M ∈ VE34Reg4D, VE34goal M`（残差 1 本）。
+    **ボーナス成功: termination field まで合成到達**
+    `condIIIVterminalSlice_of_assembly_cw : TspinAssemblyIH_tc → VE2Residual →
+    CondIIIVterminalSlice`（DTPS ホスト経由で descending を確保し VE2 だけに
+    ギャップを封じ込め）。**新顕在ギャップ = `VE2Residual`**（Isabelle vg3x_VE2 94418
+    = {VE2TrunkLeg（純幹 closed form crg_slice_value_of_trunk）, VE2RegLeg（cfbx_reg
+    back-peel）}）（`8.2-condIIIV-capstone`）
+    ②tsx_assembly の**深部 scb コア完全 port** `tsx_assembly_scb_core_as`（104073 の
+    r46 深部。F=0/F≠0 両ケース）＋`tsx_scb_Dpt_lift_as`（唯一の真欠落工具 103577）。
+    🚨**asset-blindness 12 回目**: 「欠落 4 工具」中 3 つは公開双子が既存
+    （Trans_unflat_transC2→`Trans_c1_c2_decomp`(8.3-condII-masterCF)/
+    scbimg_image_BT→`principal_replacement_image`(7.2-scb-replaceable)/
+    m_7_3_Trans_Mark_MarkedB→`Trans_Mark_mem_MarkedB`(7.3-Trans-welldefined)）。
+    残差=`TspinGeomIH_as`（スライス自然性: tsx_c1_eq 103771/tsx_c2_eq 103971/
+    tsx_t1_identified 104001＋bpx_step_setup/tsx_jp_geom/tsx_parent_slice/
+    tsx_Adm_slice。深部 scb はゼロ。部分双子= transC1_Red_terminal_slice:610/
+    transC2_congr_74:623 in 7.4-Mark-Trans-repr）（`8.2-condIIIV-assembly`）。
+    **残 Props = {TspinGeomIH_as, VE2TrunkLeg, VE2RegLeg}——全て routine 領域、
+    深部（研究フロンティア）は消滅。**
   - 🎯 **Wave AT（2026-07-21、Opus 2、全緑）— run-step 柱 完全陥落・残差は tsx_assembly 1 本に**:
     ①`TransPinRunStepD_pt` も点wise では証明不能（bgx_VE34_base_step の t2eq/isleft が
     ihVE4 を本質使用。数値では形は真＝12 個目の反証ではない）→ **IH-carrying
