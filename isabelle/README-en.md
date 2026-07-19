@@ -33,8 +33,9 @@ isabelle/
 │   └── p_5_4_F_oper_val.thy
 ├── 6/                      §6: 55 propositions (+636 local helpers)
 ├── 7/                      §7: 27 propositions (+199 local helpers)
-└── 8/                      §8: 33 propositions (+2,171 local helpers)
-    ├── p_8_7_termination.thy   main theorem
+└── 8/                      §8: 33 propositions + 2,171 local helpers
+    ├── p_8_7_termination.thy   proposition (main theorem)
+    ├── aux_8_4_corner.thy      local helper (topic-grouped; shared within the chapter)
     │   …
     └── audit.thy               ML audit (build-time check of sorry dependencies)
 ```
@@ -45,6 +46,19 @@ Each auxiliary lemma is placed mechanically by its **usage-chapter set**: **used
 (transitively) by ≥2 chapters → shared `PSS/`**; **used by one chapter → that chapter's
 dir**. Of the ~4,400 auxiliary lemmas, ~482 (13%) are shared; the rest are chapter-local
 (§8 has the most, 2,171).
+
+## Where chapter-local helpers live
+
+A chapter-local helper stays **inside its own chapter directory**, in one of two ways:
+
+- **used by a single proposition** → inlined in that proposition's file
+  `p_<§>_<slug>.thy` (proposition + its private lemmas).
+- **shared by several propositions of the chapter** → grouped into a **topic-based local
+  helper theory** (the analogue of `lean`'s `8/8.4-corner-core.lean`; an Isabelle-valid
+  name such as `aux_8_4_corner.thy`), imported by the proposition files that use it.
+
+Which case applies (inlined vs. its own file) is decided by the intra-chapter usage
+(Phase 0 DAG).
 
 ## Sessions (ROOT)
 
