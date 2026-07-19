@@ -36,14 +36,7 @@
 
 - 🚨 **§8 停止性**
   - ✅ §8.1 条件(I)の下での展開規則[r9]
-  - 🚨 §8.2 強単項性
-    - ✅ 命題（標準形の直系先祖による切片の簡約化の強単項性） — `8.2-standard-slice-Red-strongmono`[r2]
-    - ✅ 補題（強単項性の切片への遺伝性） — `8.2-strongmono-slice`[r1]
-    - ✅ 補題（部分表現の単項成分と `Pred` の関係） — `8.2-subexpr-component-Pred`[r5]
-    - ✅ 補題（強単項性の下での部分表現の単項成分の基本性質） — `8.2-subexpr-component-strongmono`[r2]
-    - ✅ 補題（条件(V)の下での右端の親の基本性質） — `8.2-condV-rightmost-parent`[r1]
-    - ✅ 補題（条件(V)の下での終切片と `Trans` の関係） — `8.2-condV-terminal-slice-Trans-close`
-    - ✅ 命題（条件(II)か(IV)の下での終切片と `Trans` の関係） — `8.2-condIIIV-terminal-slice-Trans`[r38]
+  - ✅ §8.2 強単項性[r49]
   - 🚨 §8.3 条件(II)の下での展開規則
     - ✅ 補題（第 `0` 種型基本列の基本不等式） — `8.3-kind0-base-ineq`[r1]
     - ✅ 補題（第 `0` 種型基本列の基本分岐規則） — `8.3-kind0-branch-rule`[r1]

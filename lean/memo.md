@@ -228,6 +228,7 @@ parent/Lng 形に落としてから作業する。
   自前証明済（仮定 0）。詳細は git 履歴参照。Isa: `m_7_*`。
 
 - **§8 停止性** — Isa: `m_8_*` ＋ `layerC`。**停止性 = 「基本列の降下性」＋「`OT` 所属」の 2 本柱**。
+  - ✅ **§8.2 強単項性**[r49] — 全 7 項目 ✅（詳細注釈は畳み込みで削除、git 履歴参照。condIIIV 終切片=Wave AH〜AV+配線 `condIIIVterminalSlice_holds`、condV 終切片=codex close）
   - ✅ `8.1-diagSeq-Trans` — `u<v` の対角列について、十分な任意燃料で
     `TransAux` と `MarkAux · 0` がともに `D_u(D_v 0)` となる同時帰納不変条件を証明した。
     2列基底は一列計算を直接展開し、帰納段階は末尾上段親が直前列、かつその `Adm` が 0
@@ -312,134 +313,11 @@ parent/Lng 形に落としてから作業する。
     addBT_principal_split（_p1/_p2 と 7.2-add-scb 私的）。
     ⚠️重複警告: `adm_row1_ancestry`/`row1_implies_row0`/`Trans_singleton` が複数ファイルで
     private 重複 → PSS/Adm・PSS/Defs・PSS/Trans へ昇格すべき。
-  - ✅ `8.2-standard-slice-Red-strongmono` — **完了（2026-07-17、6.8 クローズと同時）**。[r2]
-    §8.2 語彙を計算可能に定義済み: `cdomB`/`descendingB`/`strongMono`/`DTPS`(+Decidable)。
-    数値検証: 実標準形プール 442 形×先祖切片 13,264 例 0 違反（maxlen 13, 成分≤15,
-    `python/strongmono_audit.py`）＋全 69,904 列チェックサム一致＋#guard 9 本。
-    仮定明示版 `standard_slice_Red_strongmono_of_Br_descending` と忠実版
-    `standard_slice_Red_strongmono` とも sorry 0・axioms 正常。§6.8 依存は
-    `6.8-d1pos-final` を import し、無条件版 `standard_slice_Br_descending` を
-    `descendingB_iff`＋`cdomB_iff` で `Bool` 版へ橋渡し（予定どおり getD 形一致）。
-    後続 §8.2 の 6 項目はこのファイルから `strongMono`/`DTPS` を import する。
-    昇格候補: `Br_IncrFirstN`/`descendingB_of_map_IncrFirstN`/`TrMax_IncrFirstN` 等
-    （現在 `*_sm` private）。Isa: `m_8_2_standard_slice_Red_strongmono`
-    (layerB/pss_wip.thy:15020)。
   - ✅ `8.7-const00-Trans` — `Trans (replicate (j₁+1) (u,u)) = multBT (D_u 0) (if u=0 then j₁
     else j₁+1)`。Isa `p_8_7_const00_Trans` と逐語一致を親が確認。定数列は親子辺ゼロ
     → RedCondA/B → RTPS、`Pcut = j₁`、j₁ 帰納で multi 分岐が 1 列ずつ `D_u 0` を積む
     （Isa: `m_8_7_cnst_Trans`, pss_wip.thy 16005）。rc=0・sorry 0・axioms 正常・
     python audit 81 例 0 反例（`python/const00_trans_audit.py`）。[r1]
-  - ✅ `8.2-strongmono-slice` — **親が main loop で直接証明**。mono=`mono_slice`（6.4）、
-    reduced=幹対角性（`RTPS_mono_head_eq`+`trunk_entries_offset`→IncrFirst 指数 0、
-    `ancestor_slice_Red_IncrFirst`）、降順性=**P-take 境界対応**で `M` から輸送:
-    private `P_take_at_boundary_sms`（境界カットで `P (take b M) = take K (P M)`、
-    Pcut 再帰）＋`P_take_prefix_eq_sms`（一般カットは左最小値転送＋境界 2 回で
-    `J = K'` に pin、Isabelle `P_take_prefix_eq` 同形）＋成分頭読み出しの行一般化
-    （private `P_component_leftend_i_sms`）＋private `TrMax_seg_ancestor_sms`
-    （`le_TrMax_intro_wd`/`TrMax_stop_uncond`/`nextR1_seg_adm` で挟む）。
-    FirstNodes 対応は不要になった（P リストの頭だけで cdomB が閉じる）。
-    罠: **`rw` は `Lng` abbrev 越しに `List.length_*` をマッチできない**（simp は可）
-    → `show`/defeq-have で `.length` 形に落としてから rw。`List.take_append_of_le_length`
-    が正名（`take_append_eq_append_take` は無い）。
-    Isa: `m_8_2_strongmono_slice` (layerB:27757)+`_mono_reduced` (27395)。
-    昇格候補: `TrMax_seg_ancestor_sms`/`P_take_*_sms`（§8.2 後続と 8.1(3-1) が使う）。
-    rc=0・sorry 0・axioms 正常・#guard 5 本・python pool 2692 例 0 反例。[r1]
-  - ✅ `8.2-condV-rightmost-parent` — **完了（2026-07-17、Wave C-1）**。[r1]
-    p 文 = pss_paper:1588 と 1:1（PT_PS→monoT 規約、descendingB Bool 版）。
-    Isa: `m_8_2_condV_rightmost_parent`（layerB:42048）。helper 6 本公開
-    （wf21_Br_eq_seg／le0_monoT_seg_into_list／le0_above_parent／joint_row1_eq／
-    branch_col0_val／det_imp_joint_lt_TrMax）。Joints_nth 系は既存の
-    Joints_getD／Joints_nextR_FirstNodes／mono_hasParent_row0 で代替、
-    rtrancl 分解は全て le0 値特徴付けで置換。rc=0・sorry 0・axioms 正常。
-  - ✅ `8.2-subexpr-component-Pred` — **完了（2026-07-17、Wave C-1〜C-4＋G の 5 波）**。
-    **無条件形 `keystone`＋原文忠実形 `keystone_faithful`**（＝ Isa `m_8_2_keystone`
-    32461 と `p_8_2_subexpr_component_Pred` pss_paper:1523）が
-    `8.2-subexpr-component-Pred.lean`（旧 -chainOK、1281 行・公開 33 本）に。
-    green-modulo は**完全に解消**（SXP_* 5 本すべて討伐）。
-    最後の 2 残差の討ち方: baseU←`Br (Pred M) = []` は Pred M が全幹＝対角列
-    （`diagSeq_Trans` の 2 段塔）／`Lng M = 3` は `two_column_Trans`。
-    cpU←branchPar→descAdm→chainOK→widTrM→cpU の連鎖（branchPar 32434 は無条件）。
-    `chainOK` は WF 再帰 def（dite ガードで再帰呼び出しにガードを可視化、
-    `termination_by Lng M`＋`length_Pred`）＝Isabelle の function/measure と 1:1。
-    **監査（`python/audit_82_chainOK.py`）**: 14,618 形プールで**反例 0**（20 主張）。
-    負対照も健全: (N1)「Admpos∧good⟹widTrM」は 3,000/14,417 で反証＝プールが
-    chainOK の非局所性を実際に突いている、(N2)「chainOK ⟺ good∧TrMax≥1∧descAdm」は
-    0 不一致（Isa 31108 と一致）。
-    ⚠️**監査の指摘（ドキュメントのみ）**: Isabelle の wip:30713 のコメントは反証例を
-    「Admpos∧j1eq⟹widTrM が偽、反例 (0,0)(1,0)(1,1)(2,0)」と書くが、その列は
-    **j1eq が偽**（FirstNodes[J1]=2 ≠ Lng-1=3）＝実際には弱い「Admpos∧good」形の反例。
-    数学は無傷（widTrM は非局所で chainOK は必要）。A 番号は不要（言明でなくコメント）。
-  - （旧記述）Isa: `m_8_2_subexpr_component_Pred`
-    （layerB:29702、基盤 19256–29886 ≈10.6k 行）、p 文 = pss_paper:1523。
-    **Wave C-1 完了（下層 3 file 全緑、lake 3086 jobs）**: `8.2-subexpr-setup`
-    （setup 10 連言＋clause1、Trans_eq_transC2_Adm0 は 7.4 の Mark 連鎖で代替）／
-    `8.2-subexpr-adm0-cores`（clause2/4 core＋lastbranch_eq_j1＋clause1_keystone）／
-    `8.2-subexpr-adm0-ctx`（ctx 11 本。私的 _sx: adm_TrMax(_succ)/nextR1_TrMax_fail/
-    row0_valley_last/row1_last_bound/t2_nonzero_condIIorIV — 昇格候補）。
-    lastbranch_eq_j1 が cores/ctx で二重（_sx 私的と cores 公開）→ dedup 候補。
-    **C-2 = Adm0 組み立て（20828）／gB＋nogB（23704–25364）／
-    clause34_of_witness（25365–27018）／wid 機構＋transport（28837–29604）**。
-    C-3 = Adm0_full・Admpos_of_wid・of_wid・wid・最終組み立て＋忠実 p 文 file。
-    **Wave C-2 完了（2026-07-17、Opus 4 並列、lake 個別ビルド緑）**:
-    `8.2-subexpr-adm0`（Adm0 組み立て、Isa 20828–20961）／`8.2-subexpr-gB`
-    （gB_Adm0_condA＋nogB、Isa 23704–25364。nogB の condA 枝は Isabelle が親
-    Adm0 を呼ぶところを keystone 直呼びに変更＝依存を切った、statement 不変）／
-    `8.2-subexpr-clause34`（clause34_of_witness、Isa 25365–27018）／
-    `8.2-subexpr-wid`（**partial**: `def wid`＋`wid_iff`＋`keystone_imp_wid`＋
-    `ft_transport`＋`jt_transport`。Isabelle に wid の definition は無く
-    `m_8_2_wid` の結論形を def 化した）。
-    **Wave C-3 完了（4 file 緑）→ キャンペーンは残穴 2 本のみ**:
-    `8.2-subexpr-admpos-engine`（`trans_admpos_body_split`＋wid_step/wid_of_predRN/
-    wid_of_predwid。**C-2 の blocker 報告は誤りだった**: 3 本のうち 2 本は既存資産で
-    無料だった＝`trans_admpos_outer_principal`←`Trans_principal_head`、
-    `trans_surgery_localized`←`Trans_Mark_Pred`＋`Mark_transJm1_eq_transC2`。
-    副産物 `Trans_mono_RN_ge2`/`Mark0_ne_Mark` は §7.4 へ昇格候補＝A19 Mark順序も解禁）
-    ／`8.2-subexpr-adm0-full`（Adm0_full は**無条件**、Admpos_of_wid）
-    ／`8.2-subexpr-of-wid`／`8.2-subexpr-final`（**`wid_holds`＋
-    `subexpr_component_Pred`＋忠実版 `subexpr_component_Pred_faithful` 完成**、
-    SXP_* Props modulo）。
-    **Wave C-4 で残穴 2 本とも討伐（2026-07-17）**:
-    `7.2-scb-outer-surgery-split`（Isa 26412。drop-in を agent が機械検証済＝
-    `example : ScbOuterSurgerySplit := scb_outer_surgery_split` が緑。Isabelle の
-    4 依存はすべて既存 API で解決＝`flatBP_cancel`/`flatBT_injective`/
-    `flatBT_multi_snoc`/`List.dropLast_append_getLast`。私的 `scb_to_last_sos` は
-    Isabelle 版より**強く**（s/b の整列も返す）scb 一意性の再呼び出しが不要に）／
-    `8.2-subexpr-admpos-wfin`（Isa 26699。**型がそのまま named Prop**
-    `theorem trans_admpos_body_split_wfin (hsplit : ScbOuterSurgerySplit) :
-    TransAdmposBodySplitWfin`＝shape 不一致リスクなし。Isabelle が 30 行かけた
-    有限性 `w ≠ ⊤` は `Trans_mem_T_B`→`dfree_BP` の構造的経路で短縮）。
-    **→ 残りは親の配線のみ**（ScbOuterSurgerySplit/TransAdmposBodySplitWfin/
-    Adm0_full_hyp/Admpos_of_wid_hyp/SXP_* を差し込む）。
-    **敵対的数値監査（`python/audit_82_subexpr.py`、親も再実行して AUDIT OK）**:
-    実標準形プール 14,618 形（diagSeq→oper 閉包＋祖先切片 Red＋Pred 閉包、
-    maxlen 15/成分≤19）で**反例 0**。非空虚 14,566 例が wid/keystone/of_wid/
-    ft_transport/jt_transport を実行。Lean の `Joints`/`reduced` と python モデルの
-    綴りの一致も 14,618/0 で確認。
-    ⚠️**監査の発見（健全性ではない）**: ①`subexpr_component_Pred_Adm0`（adm0 file）は
-    **仮定が相互矛盾＝空虚**（hgB ∧ he0gt ∧ hnadmj0 = False）。**Isabelle も同形**
-    （20828 は nogB の condA 枝＝同じ矛盾文脈でしか呼ばれない）で、キャンペーンは
-    `Adm0_full`（27019）を配線するので**死んだ公開名**。②keystone の clause (2) は
-    プール全体で 0 回発火（非存在ガードが立たない）③`SXP_wid_cpU` は非空虚 18 例のみ
-    ＝検証が薄い。
-    🚨**教訓（2026-07-17、2 回踏んだ）**: ①Fable 月次上限で agent は死ぬが
-    **ディスクの成果物は生きる**。今回 4 本とも「骨格」ではなく**完成済み**で、
-    checker を回す前に死んだだけだった ②私の「sorry 1 個残存」判定は
-    **`grep -c sorry` が docstring の「状態: ✅ sorry 0」を拾った偽陽性**。
-    残 sorry は必ず `check_lean.py` で判定せよ（grep 禁止）③**workflow 走行中に
-    `lake build` するな**——glob が in-flight の書きかけを拾って必ず失敗する。
-    個別モジュール指定（`lake build «8».«8.2-subexpr-adm0» …`）なら安全。
-  - ✅ `8.2-subexpr-component-strongmono`[r2] — **クローズ（2026-07-18 board 更新で確定）**。
-    残っていた 2 Prop（`SXSM_factA_uncond`/`SXSM_factB`）は Wave K の
-    `8.2-strongmono-props` が `sxsm_factA_uncond_holds`/`sxsm_factB_holds`（無仮定・
-    house pattern・緑）で供給済＝`subexpr_component_strongmono` は型合成で無条件化済。
-    （以下は Wave G 時の記録）
-    p 文 = pss_paper:1563。**無条件部分**: 原文 clause (1)＋∃! の一意性半分
-    （`subexpr_leftend_unique_sm2`＝Isa 14900、`Trans_mono_leftend_form`＋
-    `Trans_preserves_zeroT`＋Dprin 単射性）／`wit_step_thr`（34088）＋その支持
-    （wit_PB_relax 33742／wit_PB_tail_bound 33765／rn1_outer_inner_trailing 28912）／
-    `_of_witness`（33330）／`_of_factAB`（34014）。
-    **残 named Props 2**（どちらも Isabelle では無条件）: `SXSM_factA_uncond`
-    （Isa `m_8_2_factA_uncond` 35084）ほか。
   - ✅ `8.7-OT-tail-annihilable` — **Wave G で本体完成後、`OT_B_wf` も閉じて無条件化済み**。[r1]
     p 文 = pss_paper:2284、Isa `y3t_toplevel_OT_tail_annihilate`（layerC:19355）＝
     layerB `m_8_7_toplevel_OT_tail_annihilate`（27288）。wf 帰納の構造は 1:1。
@@ -485,18 +363,6 @@ parent/Lng 形に落としてから作業する。
     green-modulo Prop `Rightmost84ReplaceCorrected` として露出（原文 DEFERRED、8.5-scb-dec 方式）。
     残=訂正形の universal 証明。訂正 **A30**（scb 分解が偽。長さ勘定で決まる）
     ＋ **A31**（補題(5-3) のガード欠落）
-  - 🚨 `8.2-condV-terminal-slice-Trans` — **partial（Wave D, r1）**: p 文
-    （pss_paper:1607）を**仮定 `hVE` modulo で緑化**＝Isabelle の
-    `m_8_2_condV_terminal_slice_Trans_modVE`（layerB:61039）と同形。非 VE 半分
-    `condV_terminal_slice_principal` は**無条件で完成**。残差は 1 本だけ:
-    `condV_VE : bpHeadT (Trans (seg M m (Lng M-1))) = bpHeadT (Trans M)`（Isa
-    `vcx_VE_all` 77076）。**これは 14k 行キャンペーン**（a0x_/vjx_/vsx_/vbax_/vcx_
-    群、layerB 63208–77095、271 補題）で、原文は該当ステップを**省略している**
-    （content.md L3676–3708 が空白ブロック）。分解案 = (a) base `a0x_base_VE`
-    (b) step `vsx_VE_step`+`vcx_VEj1eq` (c) RPERS `vsx_RPERS`/`vjx_RPj1eq`。
-    ⚠️原文の証明は A16（Trans の単項性保存＝偽）と「簡約性の切片遺伝」（偽）を
-    使うが、移植は `Trans_mono_leftend_form` と `ancestor_slice_Red_IncrFirst`
-    経由で迂回済（Isabelle の modVE と同構造）。
   - ✅ `8.4-rightmost-nonadm-ancestor` — **完了（Wave D, r1）**。p 文 =
     pss_paper:1931 と逐語一致（訂正無し。A30/A31 は §8.4 の別命題で無関係を確認）。
     Isa: `m_8_4_rightmost_nonadm_ancestor`（layerB:40628）。rc=0・sorry 0・
@@ -598,10 +464,6 @@ parent/Lng 形に落としてから作業する。
     `Trans(M[n]) = s₁D_{M₁,j₋₁}(s'₁D_{M₁,j₀})ⁿt₂(b'₁)ⁿb₁` が `n=1` で偽。原文
     content.md 5213 の (5)＝5225、証明 5267/5329）[軽微]。**A29 はここ**であって
     `8.5-Joints-FirstNodes-basic` ではない（2026-07-17 誤帰属を訂正）。
-  - ✅ `8.2-condIIIV-terminal-slice-Trans`[r38] — p 文 = pss_paper:1627（原文 ~3314）。**Wave AV+配線で無条件クローズ（`condIIIVterminalSlice_holds`、8.2-condIIIV-close）＝ termination の `condIIIVts` field 削除済み。**
-    未着手だった項目。condV 版（`8.2-condV-terminal-slice-Trans`）が構造の雛形。
-    condV 版は原文が VE ステップを省略しているため hVE 仮定付きだったので、
-    II/IV 版に同じ穴があるかを確認させる。Wave K。
   - 🚨 `8.7-Pred-oper0`[r1] — p 文 = pss_paper:2298（原文 ~6014、PT_B は PT_PS の誤植）。
     🚨**旧記録の反転（Wave K、8 度目の偽陽性）**: 「標準入力で偽（反例 M=(0,0)(1,1)(2,1)）」
     は**誤りだった**——Wave K がその M は反例で**ない**ことを機械証明
