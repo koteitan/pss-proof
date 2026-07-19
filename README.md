@@ -1,6 +1,6 @@
 # pss-proof
 
-Version: **v0.1.16**
+Version: **v0.1.17**
 
 ペア数列システム（pair sequence system）の停止性証明を形式検証するプロジェクト。
 
@@ -58,7 +58,13 @@ Lean 版の構成は [`lean/spec.md`](lean/spec.md)、進捗は [`lean/task.md`]
 
 ## ビルド
 
-**Isabelle**（層分割セッションのうち、作業中の最上層だけをビルドする）：
+**Isabelle** — フルビルド（`PSS_A → PSS_B → PSS_C` を最初から全部建てる）：
+
+```
+cd isabelle && isbman build -d . -v PSS_A PSS_B PSS_C
+```
+
+毎ラウンドは作業中の最上層だけ：
 
 ```
 cd isabelle && isbman build -d . -v PSS_C
