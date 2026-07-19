@@ -1,0 +1,2 @@
+helper	consumer_chapter	later_dependency	dependency_chapter	resolution
+pss_wip.Trans_two_zero	7	pss_wip.m_8_7_cnst_Trans	8	relocate m_8_7_cnst_Trans verbatim to PSS/After_6 as a neutral shared helper; keep Trans_two_zero chapter-7-local

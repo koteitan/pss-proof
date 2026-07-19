@@ -1,0 +1,99 @@
+{
+  "acyclic": true,
+  "article_proposition_count": 128,
+  "chapter_file_counts": {
+    "5": 13,
+    "6": 55,
+    "7": 27,
+    "8": 33
+  },
+  "chapter_file_graph_acyclic": true,
+  "chapter_file_graph_cyclic_nodes": [],
+  "chapter_file_graph_topological_order_count": 128,
+  "chapter_file_upper_import_count": 0,
+  "chapter_file_upper_imports": [],
+  "chapter_local_helper_count": 1283,
+  "chapter_proof_status_counts": {
+    "5": {
+      "exact-clean-proof": 13
+    },
+    "6": {
+      "exact-clean-proof": 54,
+      "named-corrected-or-partial": 1
+    },
+    "7": {
+      "exact-clean-proof": 17,
+      "named-corrected-or-partial": 8,
+      "unmapped": 2
+    },
+    "8": {
+      "exact-clean-proof": 25,
+      "named-corrected-or-partial": 2,
+      "unmapped": 6
+    }
+  },
+  "cyclic_nodes": [],
+  "declared_fact_group_count_before_shadowing": 4365,
+  "external_identity_edge_count": 506517,
+  "fact_count": 4353,
+  "fact_group_count_before_source_filter": 5806,
+  "helper_count_non_pm": 3571,
+  "identity_fact_count": 6612,
+  "internal_direct_edge_count": 15283,
+  "internal_identity_edge_count": 49900,
+  "partition_counts": {
+    "PSS/compat-unreached": 1277,
+    "PSS/cross-chapter": 1011,
+    "chapter-5/local": 1,
+    "chapter-6/local": 52,
+    "chapter-7/local": 93,
+    "chapter-8/local": 1137
+  },
+  "partition_placement_violation_count": 1,
+  "partition_placement_violations": [
+    [
+      "pss_wip.Trans_two_zero",
+      8,
+      7
+    ]
+  ],
+  "partition_post_resolution_violation_count": 0,
+  "partition_stage_counts": {
+    "PSS/compat-unreached@PSS/after-5": 73,
+    "PSS/compat-unreached@PSS/after-6": 135,
+    "PSS/compat-unreached@PSS/after-7": 119,
+    "PSS/compat-unreached@PSS/after-8": 304,
+    "PSS/compat-unreached@PSS/pre-5": 646,
+    "PSS/cross-chapter@PSS/after-5": 63,
+    "PSS/cross-chapter@PSS/after-6": 277,
+    "PSS/cross-chapter@PSS/after-7": 46,
+    "PSS/cross-chapter@PSS/pre-5": 625,
+    "chapter-5/local@PSS/after-5": 1,
+    "chapter-6/local@PSS/after-5": 14,
+    "chapter-6/local@PSS/after-6": 8,
+    "chapter-6/local@PSS/pre-5": 30,
+    "chapter-7/local@PSS/after-6": 20,
+    "chapter-7/local@PSS/after-7": 30,
+    "chapter-7/local@PSS/after-8": 1,
+    "chapter-7/local@PSS/pre-5": 42,
+    "chapter-8/local@PSS/after-5": 17,
+    "chapter-8/local@PSS/after-6": 113,
+    "chapter-8/local@PSS/after-7": 106,
+    "chapter-8/local@PSS/after-8": 355,
+    "chapter-8/local@PSS/pre-5": 546
+  },
+  "proof_status_counts": {
+    "exact-clean-proof": 109,
+    "named-corrected-or-partial": 11,
+    "unmapped": 8
+  },
+  "serial_append_order_violations": 0,
+  "serial_violation_edges": [],
+  "shadowed_fact_group_count": 12,
+  "shared_helper_count": 2288,
+  "source": "Thm_Deps.thm_deps",
+  "topological_order_count": 4353,
+  "upper_triangular_clean_edge_count": 0,
+  "upper_triangular_fact_edge_count": 0,
+  "upper_triangular_probe_candidate_count": 22
+}
