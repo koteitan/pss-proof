@@ -369,7 +369,7 @@ parent/Lng 形に落としてから作業する。
     axioms 正常。Isabelle が `m_8_2_standard_slice_Red_strongmono` で取る
     `monoT (Red N)` は Lean では `ancestor_slice_Red_IncrFirst` が直接供給
     （＝`hmono` 仮定が不要になったが、p 文忠実性のため引数は保持）。
-  - 🚨 `8.4-fseq-basic` — **partial（Wave D, r1）**: part (1) のみ緑
+  - 🚨🤖 `8.4-fseq-basic` — **partial（Wave D, r1）**: part (1) のみ緑
     （`oper_basic_part1`: `M[n] = M[n+1][1]^{j₁-j₋₂}`）。p 文 = **pss_paper:2017
     `p_8_4_oper_basic`**（＝原文 content.md **5000**「補題（条件(III)か(IV)の下での
     基本列の基本性質）」）、Isa: `m_8_4_oper_basic_part1`（layerB:13897）。
@@ -442,7 +442,7 @@ parent/Lng 形に落としてから作業する。
     ⚠️正直な留保: w84x engine が出すのは弱い `Trans(M[n]) < Trans(M)[n]` で、
     原文 (1) の強形は **Isabelle 側でも未証明**。descend の Prop は ∃k 形なので
     k := m で足り実害なし。
-  - 🚨 `8.5-Trans-fseq-condV` — **Wave F で green-modulo 完成（緑、6 Props）**。
+  - 🚨🤖 `8.5-Trans-fseq-condV` — **Wave F で green-modulo 完成（緑、6 Props）**。
     `exchV_holds` が `FseqDesc_exchV` の drop-in（全ホストで成立、adm 枝 k=m-1／
     非 adm 枝 k=m+1）。露出 Props 6 本はすべて **Isabelle で証明済**の補題の逐語形。
     🚨**発見: `isabelle/memo.md:130` の「(1)=A28 で偽」は stale**（**A28 は取り下げ済**、
@@ -475,7 +475,7 @@ parent/Lng 形に落としてから作業する。
   - `8.5-*` — **最難所**。Isa の keystone は
     `bpHeadT(Trans(slice@B)) = C(bpHeadT(Trans slice))`（depth-shift self-similar）。
     13 個の死路が `isabelle/memo.md` に列挙してある。**着手前に必ず読め。**
-  - 🚨 `8.3-Trans-fseq-condII`（⛔解消済み・p ファイル未作成が残り） — 原文命題は (1)-(3) が Trans 再帰の
+  - 🚨🤖 `8.3-Trans-fseq-condII`（⛔解消済み・p ファイル未作成が残り） — 原文命題は (1)-(3) が Trans 再帰の
     内部記号依存で deferred、転記済みは降下結論 (4) のみ（`p_8_3_TransCondII_oper_descend`）。
     Isabelle は `y5_8_3_TransCondII_oper_descend`（layerC 14432）＝**大域降下柱
     `y5_Trans_descend` への一行還元**。Lean でも `8.7-fseq-descend`（ST_PS 全域の
@@ -499,7 +499,7 @@ parent/Lng 形に落としてから作業する。
     条件(I)/(VI) の `Lng M = 2` 枝（oper 直接計算＋`const00_Trans`/`two_column_Trans`）
     は**自前証明**＝Isabelle の補題 2 本を回避。
     **停止性への幹線が Lean でもチェックリスト化された**: 残りは 16 Props の討伐。
-  - 🚨 `8.6-Trans-fseq-condVI` — **Wave E で partial（緑、公開 4 本）**。
+  - 🚨🤖 `8.6-Trans-fseq-condVI` — **Wave E で partial（緑、公開 4 本）**。
     engine `m_8_6_TransCondVI_oper_descend_engine`（Isa 40250）は**無条件**で移植
     （n=1 枝は Pred 降下のみ・condVI 不使用、n>1 は [Buc1] 3.2(a)。`Trans M ≠ 0` は
     `Trans_preserves_zeroT` でここで討伐＝残差でない）。対角ホスト
