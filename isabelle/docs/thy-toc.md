@@ -23,185 +23,236 @@ Format: `line<TAB>kind<TAB>text`. Regenerate after every C->B fold.
 488	subsection	§7.4 許容的親子関係 (Admissible parent relation)
 504	section	§8 停止性 (Termination)
 
+## PSS/After_5_1_Ancestor_Tree_1.thy
+
+
+## PSS/After_5_1_Parent_Exists_1.thy
+
+
+## PSS/Pre_5.thy
+
+5	section	Helper facts about the basic definitions
+
+## 5/P_5_1_ancestor_basic_1.thy
+
+
+## 5/P_5_1_ancestor_basic_2.thy
+
+
+## 5/P_5_1_ancestor_tree_1.thy
+
+
+## 5/P_5_1_ancestor_tree_2.thy
+
+
+## 5/P_5_1_parent_basic_1.thy
+
+
+## 5/P_5_1_parent_basic_2.thy
+
+
+## 5/P_5_1_parent_exists_1.thy
+
+5	section	§5 定式化
+7	subsection	§5.1 親子関係
+10	section	§5.1 親子関係
+
+## 5/P_5_1_parent_exists_2.thy
+
+
+## 5/P_5_1_parent_exists_3.thy
+
+
+## 5/P_5_1_parent_exists_4.thy
+
+
+## 5/P_5_3_pred_is_oper1.thy
+
+5	subsection	§5.3 基本列
+8	section	§5.3 基本列
+
+## 5/P_5_4_F_oper_dom.thy
+
+5	subsection	§5.4 ペア数列システム
+17	section	§5.4 ペア数列システム
+
+## 5/P_5_4_F_oper_val.thy
+
+
+## 5/Support_5_1_Parent_Exists_4.thy
+
+
 ## pss_paper.thy
 
-20	section	§5 定式化
-22	subsection	§5.1 親子関係
-92	subsection	§5.3 基本列
-102	subsection	§5.4 ペア数列システム
-126	section	§6 ペア数列の基本性質
-128	subsection	§6.1 最上行のインクリメント
-137	subsection	§6.2 単項性
-225	subsection	§6.3 許容性
-249	subsection	§6.4 幹と枝
-323	subsection	§6.5 簡約化
-455	subsection	§6.6 簡約性
-551	subsection	§6.7 標準形
-580	subsection	§6.8 降順性
-598	section	§7 Buchholz の表記系への翻訳
-612	subsection	§7.1 Buchholz の表記系 — 項と順序 ([Buc1] §2)
-703	subsection	§7.1 Buchholz の表記系 — 基本列と \<open>dom\<close> ([Buc1] §3)
-840	subsection	§7.2 scb分解 ([Buc1] のアルファベット \<open>\<Sigma>\<close> 上)
-1084	subsection	§7.3 翻訳写像 (Trans / Mark)
-1336	subsection	§7.4 許容的親子関係
-1477	section	§8 停止性 (Termination)
-1479	subsection	§8.2 強単項性 (Strong-monomiality)
-1651	subsection	§8.1 条件(I)の下での展開規則 (Expansion rule under condition (I))
-1777	subsection	§8.3 条件(II)の下での展開規則
-1872	subsection	§8.4 条件(III)か(IV)の下での展開規則
-2033	subsection	§8.5 条件(V)の下での展開規則
-2138	subsection	§8.6 条件(VI)の下での展開規則 (Expansion rule under condition (VI))
-2235	subsection	§8.7 主結果 (Main result)
+35	section	§6 ペア数列の基本性質
+37	subsection	§6.1 最上行のインクリメント
+46	subsection	§6.2 単項性
+134	subsection	§6.3 許容性
+158	subsection	§6.4 幹と枝
+232	subsection	§6.5 簡約化
+364	subsection	§6.6 簡約性
+460	subsection	§6.7 標準形
+489	subsection	§6.8 降順性
+507	section	§7 Buchholz の表記系への翻訳
+521	subsection	§7.1 Buchholz の表記系 — 項と順序 ([Buc1] §2)
+612	subsection	§7.1 Buchholz の表記系 — 基本列と \<open>dom\<close> ([Buc1] §3)
+749	subsection	§7.2 scb分解 ([Buc1] のアルファベット \<open>\<Sigma>\<close> 上)
+993	subsection	§7.3 翻訳写像 (Trans / Mark)
+1245	subsection	§7.4 許容的親子関係
+1386	section	§8 停止性 (Termination)
+1388	subsection	§8.2 強単項性 (Strong-monomiality)
+1560	subsection	§8.1 条件(I)の下での展開規則 (Expansion rule under condition (I))
+1686	subsection	§8.3 条件(II)の下での展開規則
+1781	subsection	§8.4 条件(III)か(IV)の下での展開規則
+1942	subsection	§8.5 条件(V)の下での展開規則
+2047	subsection	§8.6 条件(VI)の下での展開規則 (Expansion rule under condition (VI))
+2144	subsection	§8.7 主結果 (Main result)
 
 ## pss_mechanized.thy
 
-17	section	Helper facts about the basic definitions
-49	section	§5.1 親子関係
-476	section	§5.3 基本列
-551	section	§5.4 ペア数列システム
-586	section	§6.1 最上行のインクリメント
-623	section	§6.2 単項性
-1269	subsection	§6.3 許容性
-2641	section	§6.4 幹と枝
-3206	subsection	§6.2 単項性: 非複項列の基本列 (non-multi expansion)
-4866	section	§7.4 許容的親子関係 (Admissible parent relation)
-5052	section	Faithfulness lemmas (忠実性補題)
-5059	subsection	§5.1 \<open>\<le>\<^sub>M\<close> as the article's chain
-5160	subsection	§5.4 the uniform expansion step
-5187	section	§6.5 Red termination: foundational helpers
-5198	subsection	Diagonal segments \<open>diagSeq a b = ((j,j))\<^bsub>j=a\<^esub>\<^bsup>b\<^esup>\<close>
-5217	subsection	Branch length bound
-5258	subsection	Trunk of a diagonal segment
-5343	subsection	\<open>\<le>\<^sub>M\<close> on a diagonal segment is the index order (both rows)
-5449	subsection	\<open>IncrFirst\<close>-invariance of \<open>TrMax\<close> (and its iterate)
-5464	subsection	Trunk extension by a diagonal prefix
-5640	subsection	The core measure \<open>\<beta>\<close> and the one-step \<open>coreReduce\<close>
-6384	subsection	The termination measure \<open>\<nu>\<close>
-6858	subsection	§6.5 命題（単項性と Red の関係）の補助事実 (content.md 946-958)
-7231	subsection	§6.5 補正定義域 \<open>anchored_slice\<close> の基本性質 (correction A4)
-7354	section	§6.7 標準形の階層和による表示
-7963	subsection	§6.7 標準形の始切片への遺伝性
-8134	subsection	§6.7 標準形の単項成分が標準形であること (P-components are standard, same rank)
-8408	subsection	§6.8 降順性 (standard \<open>P\<close>-components are descending)
-24117	section	§7.1 Buchholz notation: principal components (命題（順序数項の単項成分の基本性質）)
-24211	subsection	§7.1 [Buc1] Lemma 2.1 — \<open>lessBT\<close> は狭義全順序
-24582	subsection	§6.6 補題（簡約性と係数の基本性質）への部品: branch-6 rebase は row0\<ge>row1 を保つ
-24696	subsection	§6.5 TAIL: branch-tail row-0 values of \<open>Red (coreReduce M)\<close> exceed \<open>m\<^sub>1\<^sub>0\<close>
-25322	subsection	CASCADE-A: dead-branch[20] unreachability (\<open>p_6_5_monoT_Red\<close>, m10>0)
-25681	subsection	§6.4 NJ-alignment: tail-\<open>IncrFirst\<close> equivariance of trunk/branches
-25965	subsubsection	Trunk/branch equalities for the \<open>coreReduce\<close> pair
-26527	banner	Red_Pred helper block from workflow predh-T1
-26689	banner	Red_Pred helper block from workflow predh-T2
-26690	subsection	T2: \<open>diagSeq\<close> butlast arithmetic and \<open>Red\<close> of a core diagonal
-26787	banner	Red_Pred helper block from workflow predh-T3
-26849	banner	Red_Pred helper block from workflow predh-T4
-26850	subsection	§6.5 T4: structural pieces of \<open>Red(Pred M)=Pred(Red M)
-26920	banner	Br-under-Pred decomposition (T3(ii) corrected)
-27101	banner	keystone foundation block from workflow kf-local
-27208	banner	keystone foundation block from workflow kf-stab
-27292	banner	keystone foundation block from workflow kf-diag
-27506	banner	keystone concat-transfer block from workflow kc-rcpb
-27508	banner	block inheritance of RedCondA/RedCondB (worktree kc-rcpb)
-27813	banner	keystone concat-transfer block from workflow kc-clift
-27815	banner	C2 (concat-lifting): forward transfer of RedCondA/RedCondB
-28219	subsection	§6.5 engine: \<open>Red (IncrFirst M) = Red M\<close> — bankable branch lemmas
-28519	subsection	The cut-anchored \<open>Red_IncrFirst\<close> engine (B2 deliverable)
-28999	subsection	The \<open>cut_bump\<close> \<open>Red\<close>-collapse engine lemma
-29705	subsection	The \<open>(B2)\<close> deliverable and \<open>Red\<close>/\<open>IncrFirst\<close> invariance (\<open>p_6_5_Red_IncrFirst\<close>)
-29796	subsection	§6.5 命題（\<open>Red\<close>の冪等性）— bankable branch bricks (idempotency)
-29863	subsection	The MASTER-KEY ancestor-structure \<open>Red\<close> congruence engine
-30361	subsection	Master-key: \<open>congR\<close> nextrel-congruence of \<open>Red\<close> (\<open>cdn_red_cong\<close>)
-31389	subsection	§6.5/§6.6 idempotency keystone residual (B2): \<open>Red (coreReduce (Red M)) = Red (coreReduce M)\<close>
-31883	banner	final-layer block from workflow fl-s
-31885	subsection	§6.6 final layer (S): \<open>Red\<close>-output structure on the core-nontrunk branch
-32106	banner	final-layer block from workflow fl-d
-32107	subsection	D (idempotency domain): reusable core-nontrunk \<open>Red\<close> unfold (\<open>NJ\<close> form)
-32170	banner	final-layer block: idempotency re-decomposition (fin)
-32364	banner	keystone: Red preserves monoT (forward direction of p_6_5_Red_monoT)
-32774	banner	final-layer block (if2): idempotency re-decomposition + B1 + finish
-32776	subsection	§6.6 final layer (if2): \<open>Red\<close>-output re-decomposition and idempotency
-33125	subsection	§6.5/§6.6 idempotency closing chain (a1)
-34151	banner	Red_Pred (5/6 branches, conditional) from tf-a3
-34153	banner	Red_Pred assembly (workflow tf-a3)
-34154	subsection	§6.5 命題（\<open>Red\<close>と\<open>Pred\<close>の可換性）の組立て \<open>m_6_5_Red_Pred\<close>
-34730	banner	block from workflow t2-rpred
-34731	subsection	§6.5 命題（\<open>Red\<close>と\<open>Pred\<close>の可換性）— core-nontrunk \<open>Hbr\<close> の解消
-36128	banner	block from workflow t2-rnsub
-36129	subsection	§7.2 命題（\<open>RightNodes\<close>と部分表現の関係） — m_7_2_RightNodes_subexpr
-36718	banner	block from workflow t2-key
-36771	banner	block from workflow t2-elead
-36773	subsection	§6.6 補題（簡約性と左端の関係）— (e) keystone tool
-36878	banner	block from workflow t2-scbuniq
-36880	subsection	§7.2 scb分解の一意性 (1) — the \<open>(s,b)\<close>-part is unique for fixed \<open>c\<close>
-36992	banner	block from workflow t2-scbtriv
-36993	section	§7.2 scb分解の自明性の判定条件 (p_7_2_scb_triviality)
-37085	subsection	§6.5 命題（\<open>Red\<close>と基本列の可換性） — \<open>m_6_5_Red_oper\<close>
-37109	banner	block from workflow t3-ecrux : §6.6 簡約性と左端の関係 (e)-lemma support
-37111	subsection	§6.6 対角セグメントの分割 (diagonal split, ecrux)
-37140	banner	§6.6 命題（簡約性の切片への遺伝性） herd block (t3-herd)
-37261	subsection	§7 flatBT injectivity — m_7_flatBT_inj
-37683	subsection	§7.2 命題（scb分解の合成則） — m_7_2_scb_compose
-37796	subsection	§6.6 keystone (e)-CRUX: prepending a diagonal segment
-38006	subsection	§7.2 命題（scb分解の自明性の判定条件） — m_7_2_scb_triviality
-38104	section	§7.2 scb分解の一意性（無条件版） (p_7_2_scb_unique, conjunct (1))
-38162	subsection	§6.6 keystone (e)-CRUX: \<open>Red (diagSeq 0 (m\<^sub>1\<^sub>0-1) @ M) = diagSeq 0 (m\<^sub>1\<^sub>0-1) @ Red M\<close>
-38373	section	§7.2 命題（scb分解の置換可能性） — m_7_2_scb_replaceable (partial / BLOCKER)
-38613	section	§6.6 KEYSTONE chain — (e) 補題（簡約性と左端の関係） and the keystone iff
-38914	subsection	§7.2 系（加法とscb分解の関係） — m_7_2_add_scb (Front B)
-39094	subsection	§6.6 keystone forward — \<open>M \<in> RT\<^bsub>PS\<^esub> \<Longrightarrow> RedCondA M \<and> RedCondB M\<close> (Front A)
-39500	section	§7.2 第0種/第1種 scb分解の一意性 (p_7_2_scb_unique conjuncts (4),(5))
-39559	section	§6.6 keystone forward (monoT core): \<open>reduced \<Longrightarrow> RedCondA \<and> RedCondB\<close>
-39777	subsection	§7.2 scb分解の一意性 — the central \<open>c\<close>-equality \<open>m_7_2_scb_c_unique\<close>
-40130	section	Front A (wf11) — \<open>IncrFirst ^^ k\<close> structure bricks (incf_pow_*)
-40230	section	Front A (wf12) — keystone-forward last-block locate (STEP b)
-40340	section	Front B (wf12) — global-last-\<open>Zsym\<close> alignment of the marked principal
-40435	section	Front A (wf13) — keystone forward monoT core, full \<open>Lng\<close>-induction (Ncons)
-40659	section	Front B (wf14) — scb cut-pinning: \<open>rnsub_cut_ge_pre\<close> and kind-uniqueness
-41254	section	Front A (wf15) — \<open>condA_top\<close> in-block last-column entry transfer
-41443	section	§7.2 kind-1 RightNodes length-pin (rnsub_kind1_len_pin)
-41696	section	Front A (wf16) — \<open>condA_top\<close> in-block parent correspondence
-41864	section	§7.2 種の排他性 (p_7_2_scb_unique conjunct (3), with t \<noteq> Trm []) — wf16-kinds
-42010	section	§7.2 dom-可分解性 (p_7_2_scb_unique conjunct (2)) — scb側 forward + domB blocker
-42152	section	Front A (wf17) — \<open>condA_top\<close> diagonal-prefix \<open>RedCondA\<close> transfer (B)
-42249	section	Front B (wf17-A) — \<open>condA_top\<close> CROSS-BLOCK half (\<open>p < off\<close>) at the last column
-42531	section	Front B (wf18) — \<open>condA_top\<close> ROW-1 CROSS-BLOCK at \<open>kk > 0\<close> (the last sub-case)
-42625	section	Front B (wf19) — \<open>valpin\<close>: the last input for \<open>condA_top\<close> row-1 \<open>kk>0\<close> cross-block
-42772	section	Front A (wf19) — GLUE: \<open>Lng N < Lng M\<close>, in-block transfer, and \<open>condA_top_all\<close>
-43528	section	Front B (wf20) — \<open>parpin\<close>: diagonal-prefix parent reconstruction of the last column
-43735	section	Front A (wf21) — RAW-branch \<open>N\<close> for the non-circular \<open>r1cross\<close> route
-44149	section	Front A (wf22) — non-circular \<open>r1cross\<close> via M's TRUNK structure
-47865	banner	Front B: rebaseRow0 preservation bricks
-47961	banner	Front B: nu-descent brick
-48027	banner	Front B: nu-bounded m10pos variant
-48196	banner	Front B: conditional nu-induction assembly
-48822	subsection	§6.5 \<open>Red\<close>-invariance of ancestor order via the \<open>congR\<close> bridge (Front A)
-48992	subsection	§6.5 Anchored slices are never \<open>multiT\<close> (Front B reduction key)
-49045	subsection	Front A: \<open>congR M (Red M)\<close> for \<open>RedCondA\<close>+\<open>monoT\<close> (mono mono-core for \<open>p_6_5_Red_le\<close>)
-49213	subsection	Target (1): anchored slices satisfy \<open>RedCondA\<close>
-49271	subsection	Target (2): assembling \<open>m_6_5_Red_le\<close>
-49337	subsection	Front B (tag pss-stps-condA): \<open>ST_PS \<Longrightarrow> RedCondA\<close> bricks
-49389	subsection	Front B (tag pss-stps-condB): \<open>ST_PS \<Longrightarrow> RedCondB\<close> bricks and assembly
-59477	section	§6.5–§6.7 article-faithful standard-reducedness skeleton (bf_)
-59502	subsection	(i) \<open>Red\<close> と基本列の可換性 — non-shift (LIGHT) and assembly
-59562	subsection	(ii) 簡約性が基本列で保たれること — \<open>m_6_6_red_preserved_by_oper\<close>
-59603	subsection	(iii) 標準形の簡約性 — \<open>m_6_7_standard_reduced_faithful\<close>
-59645	subsection	(iv) \<open>stdCA\<close> — \<open>bf_stdCA_faithful\<close>
-59673	subsection	(v) Residual discharge — \<open>diag_red\<close>, \<open>predRdegen\<close>, and the \<open>anch\<close> domain gap
-59844	subsection	(vi) Wiring the \<open>shift\<close> residual to the \<open>operCA\<close>/\<open>operCB\<close> tiling bricks
-59972	subsection	(vii) §6.7 \<open>D(N)\<close> crux assembly — \<open>m_6_7_oper_gstrict\<close> (induct skeleton)
-60083	subsection	(viii) §6.7 \<open>DISJ\<close> residual — WG reflection core (\<open>wg_reflect_core\<close>)
-60152	subsection	(ix) §6.7 \<open>DISJ\<close> \<open>w = 1\<close> foundation — verbatim prefix parent agreement
-60224	subsection	(x) §6.7 row-1 tree inheritance — \<open>m_6_7_treewf\<close> (the core invariant)
-60334	subsection	(xi) §6.7 GLOBAL row-1 tree wellformedness — \<open>m_6_7_globaltreewf\<close>
-61972	section	§6.5 monoCong bricks (towards m_6_5_congR_self_Red_monoT)
-64349	section	§6.5 系（\<open>Red\<close>が単項性を保つこと）/ 系（\<open>P\<close>の\<open>Red\<close>同変性） — A4 final forms
-64412	section	§6.5 命題（\<open>Red\<close>が許容性を保つこと）/ 系（許容化の\<open>Red
-64489	section	§6.6 系（\<open>1\<close>列ペア数列の基本性質） / 命題（\<open>P\<close>が簡約性を保つこと）
-64546	section	§6.6 補題（簡約性と係数の基本性質）
-64676	section	§6.6 系（直系先祖による切片と\<open>Red\<close>と\<open>IncrFirst\<close>の関係） (correction A2)
-64777	section	§6.6 命題（簡約性が基本列で保たれること）
-64893	section	§6.5 命題（\<open>Red\<close>と基本列の可換性） — A4 final form
-65215	section	§7.2 GENERALIZED PRINCIPAL-REPLACEMENT SURGERY — scbrepl_image residual (A13 + c1-around 4-1)
+21	section	§6.1 最上行のインクリメント
+58	section	§6.2 単項性
+704	subsection	§6.3 許容性
+2076	section	§6.4 幹と枝
+2641	subsection	§6.2 単項性: 非複項列の基本列 (non-multi expansion)
+4301	section	§7.4 許容的親子関係 (Admissible parent relation)
+4487	section	Faithfulness lemmas (忠実性補題)
+4494	subsection	§5.1 \<open>\<le>\<^sub>M\<close> as the article's chain
+4595	subsection	§5.4 the uniform expansion step
+4622	section	§6.5 Red termination: foundational helpers
+4633	subsection	Diagonal segments \<open>diagSeq a b = ((j,j))\<^bsub>j=a\<^esub>\<^bsup>b\<^esup>\<close>
+4652	subsection	Branch length bound
+4693	subsection	Trunk of a diagonal segment
+4778	subsection	\<open>\<le>\<^sub>M\<close> on a diagonal segment is the index order (both rows)
+4884	subsection	\<open>IncrFirst\<close>-invariance of \<open>TrMax\<close> (and its iterate)
+4899	subsection	Trunk extension by a diagonal prefix
+5075	subsection	The core measure \<open>\<beta>\<close> and the one-step \<open>coreReduce\<close>
+5819	subsection	The termination measure \<open>\<nu>\<close>
+6293	subsection	§6.5 命題（単項性と Red の関係）の補助事実 (content.md 946-958)
+6666	subsection	§6.5 補正定義域 \<open>anchored_slice\<close> の基本性質 (correction A4)
+6789	section	§6.7 標準形の階層和による表示
+7398	subsection	§6.7 標準形の始切片への遺伝性
+7569	subsection	§6.7 標準形の単項成分が標準形であること (P-components are standard, same rank)
+7843	subsection	§6.8 降順性 (standard \<open>P\<close>-components are descending)
+23552	section	§7.1 Buchholz notation: principal components (命題（順序数項の単項成分の基本性質）)
+23646	subsection	§7.1 [Buc1] Lemma 2.1 — \<open>lessBT\<close> は狭義全順序
+24017	subsection	§6.6 補題（簡約性と係数の基本性質）への部品: branch-6 rebase は row0\<ge>row1 を保つ
+24131	subsection	§6.5 TAIL: branch-tail row-0 values of \<open>Red (coreReduce M)\<close> exceed \<open>m\<^sub>1\<^sub>0\<close>
+24757	subsection	CASCADE-A: dead-branch[20] unreachability (\<open>p_6_5_monoT_Red\<close>, m10>0)
+25116	subsection	§6.4 NJ-alignment: tail-\<open>IncrFirst\<close> equivariance of trunk/branches
+25400	subsubsection	Trunk/branch equalities for the \<open>coreReduce\<close> pair
+25962	banner	Red_Pred helper block from workflow predh-T1
+26124	banner	Red_Pred helper block from workflow predh-T2
+26125	subsection	T2: \<open>diagSeq\<close> butlast arithmetic and \<open>Red\<close> of a core diagonal
+26222	banner	Red_Pred helper block from workflow predh-T3
+26284	banner	Red_Pred helper block from workflow predh-T4
+26285	subsection	§6.5 T4: structural pieces of \<open>Red(Pred M)=Pred(Red M)
+26355	banner	Br-under-Pred decomposition (T3(ii) corrected)
+26536	banner	keystone foundation block from workflow kf-local
+26643	banner	keystone foundation block from workflow kf-stab
+26727	banner	keystone foundation block from workflow kf-diag
+26941	banner	keystone concat-transfer block from workflow kc-rcpb
+26943	banner	block inheritance of RedCondA/RedCondB (worktree kc-rcpb)
+27248	banner	keystone concat-transfer block from workflow kc-clift
+27250	banner	C2 (concat-lifting): forward transfer of RedCondA/RedCondB
+27654	subsection	§6.5 engine: \<open>Red (IncrFirst M) = Red M\<close> — bankable branch lemmas
+27954	subsection	The cut-anchored \<open>Red_IncrFirst\<close> engine (B2 deliverable)
+28434	subsection	The \<open>cut_bump\<close> \<open>Red\<close>-collapse engine lemma
+29140	subsection	The \<open>(B2)\<close> deliverable and \<open>Red\<close>/\<open>IncrFirst\<close> invariance (\<open>p_6_5_Red_IncrFirst\<close>)
+29231	subsection	§6.5 命題（\<open>Red\<close>の冪等性）— bankable branch bricks (idempotency)
+29298	subsection	The MASTER-KEY ancestor-structure \<open>Red\<close> congruence engine
+29796	subsection	Master-key: \<open>congR\<close> nextrel-congruence of \<open>Red\<close> (\<open>cdn_red_cong\<close>)
+30824	subsection	§6.5/§6.6 idempotency keystone residual (B2): \<open>Red (coreReduce (Red M)) = Red (coreReduce M)\<close>
+31318	banner	final-layer block from workflow fl-s
+31320	subsection	§6.6 final layer (S): \<open>Red\<close>-output structure on the core-nontrunk branch
+31541	banner	final-layer block from workflow fl-d
+31542	subsection	D (idempotency domain): reusable core-nontrunk \<open>Red\<close> unfold (\<open>NJ\<close> form)
+31605	banner	final-layer block: idempotency re-decomposition (fin)
+31799	banner	keystone: Red preserves monoT (forward direction of p_6_5_Red_monoT)
+32209	banner	final-layer block (if2): idempotency re-decomposition + B1 + finish
+32211	subsection	§6.6 final layer (if2): \<open>Red\<close>-output re-decomposition and idempotency
+32560	subsection	§6.5/§6.6 idempotency closing chain (a1)
+33586	banner	Red_Pred (5/6 branches, conditional) from tf-a3
+33588	banner	Red_Pred assembly (workflow tf-a3)
+33589	subsection	§6.5 命題（\<open>Red\<close>と\<open>Pred\<close>の可換性）の組立て \<open>m_6_5_Red_Pred\<close>
+34165	banner	block from workflow t2-rpred
+34166	subsection	§6.5 命題（\<open>Red\<close>と\<open>Pred\<close>の可換性）— core-nontrunk \<open>Hbr\<close> の解消
+35563	banner	block from workflow t2-rnsub
+35564	subsection	§7.2 命題（\<open>RightNodes\<close>と部分表現の関係） — m_7_2_RightNodes_subexpr
+36153	banner	block from workflow t2-key
+36206	banner	block from workflow t2-elead
+36208	subsection	§6.6 補題（簡約性と左端の関係）— (e) keystone tool
+36313	banner	block from workflow t2-scbuniq
+36315	subsection	§7.2 scb分解の一意性 (1) — the \<open>(s,b)\<close>-part is unique for fixed \<open>c\<close>
+36427	banner	block from workflow t2-scbtriv
+36428	section	§7.2 scb分解の自明性の判定条件 (p_7_2_scb_triviality)
+36520	subsection	§6.5 命題（\<open>Red\<close>と基本列の可換性） — \<open>m_6_5_Red_oper\<close>
+36544	banner	block from workflow t3-ecrux : §6.6 簡約性と左端の関係 (e)-lemma support
+36546	subsection	§6.6 対角セグメントの分割 (diagonal split, ecrux)
+36575	banner	§6.6 命題（簡約性の切片への遺伝性） herd block (t3-herd)
+36696	subsection	§7 flatBT injectivity — m_7_flatBT_inj
+37118	subsection	§7.2 命題（scb分解の合成則） — m_7_2_scb_compose
+37231	subsection	§6.6 keystone (e)-CRUX: prepending a diagonal segment
+37441	subsection	§7.2 命題（scb分解の自明性の判定条件） — m_7_2_scb_triviality
+37539	section	§7.2 scb分解の一意性（無条件版） (p_7_2_scb_unique, conjunct (1))
+37597	subsection	§6.6 keystone (e)-CRUX: \<open>Red (diagSeq 0 (m\<^sub>1\<^sub>0-1) @ M) = diagSeq 0 (m\<^sub>1\<^sub>0-1) @ Red M\<close>
+37808	section	§7.2 命題（scb分解の置換可能性） — m_7_2_scb_replaceable (partial / BLOCKER)
+38048	section	§6.6 KEYSTONE chain — (e) 補題（簡約性と左端の関係） and the keystone iff
+38349	subsection	§7.2 系（加法とscb分解の関係） — m_7_2_add_scb (Front B)
+38529	subsection	§6.6 keystone forward — \<open>M \<in> RT\<^bsub>PS\<^esub> \<Longrightarrow> RedCondA M \<and> RedCondB M\<close> (Front A)
+38935	section	§7.2 第0種/第1種 scb分解の一意性 (p_7_2_scb_unique conjuncts (4),(5))
+38994	section	§6.6 keystone forward (monoT core): \<open>reduced \<Longrightarrow> RedCondA \<and> RedCondB\<close>
+39212	subsection	§7.2 scb分解の一意性 — the central \<open>c\<close>-equality \<open>m_7_2_scb_c_unique\<close>
+39565	section	Front A (wf11) — \<open>IncrFirst ^^ k\<close> structure bricks (incf_pow_*)
+39665	section	Front A (wf12) — keystone-forward last-block locate (STEP b)
+39775	section	Front B (wf12) — global-last-\<open>Zsym\<close> alignment of the marked principal
+39870	section	Front A (wf13) — keystone forward monoT core, full \<open>Lng\<close>-induction (Ncons)
+40094	section	Front B (wf14) — scb cut-pinning: \<open>rnsub_cut_ge_pre\<close> and kind-uniqueness
+40689	section	Front A (wf15) — \<open>condA_top\<close> in-block last-column entry transfer
+40878	section	§7.2 kind-1 RightNodes length-pin (rnsub_kind1_len_pin)
+41131	section	Front A (wf16) — \<open>condA_top\<close> in-block parent correspondence
+41299	section	§7.2 種の排他性 (p_7_2_scb_unique conjunct (3), with t \<noteq> Trm []) — wf16-kinds
+41445	section	§7.2 dom-可分解性 (p_7_2_scb_unique conjunct (2)) — scb側 forward + domB blocker
+41587	section	Front A (wf17) — \<open>condA_top\<close> diagonal-prefix \<open>RedCondA\<close> transfer (B)
+41684	section	Front B (wf17-A) — \<open>condA_top\<close> CROSS-BLOCK half (\<open>p < off\<close>) at the last column
+41966	section	Front B (wf18) — \<open>condA_top\<close> ROW-1 CROSS-BLOCK at \<open>kk > 0\<close> (the last sub-case)
+42060	section	Front B (wf19) — \<open>valpin\<close>: the last input for \<open>condA_top\<close> row-1 \<open>kk>0\<close> cross-block
+42207	section	Front A (wf19) — GLUE: \<open>Lng N < Lng M\<close>, in-block transfer, and \<open>condA_top_all\<close>
+42963	section	Front B (wf20) — \<open>parpin\<close>: diagonal-prefix parent reconstruction of the last column
+43170	section	Front A (wf21) — RAW-branch \<open>N\<close> for the non-circular \<open>r1cross\<close> route
+43584	section	Front A (wf22) — non-circular \<open>r1cross\<close> via M's TRUNK structure
+47300	banner	Front B: rebaseRow0 preservation bricks
+47396	banner	Front B: nu-descent brick
+47462	banner	Front B: nu-bounded m10pos variant
+47631	banner	Front B: conditional nu-induction assembly
+48257	subsection	§6.5 \<open>Red\<close>-invariance of ancestor order via the \<open>congR\<close> bridge (Front A)
+48427	subsection	§6.5 Anchored slices are never \<open>multiT\<close> (Front B reduction key)
+48480	subsection	Front A: \<open>congR M (Red M)\<close> for \<open>RedCondA\<close>+\<open>monoT\<close> (mono mono-core for \<open>p_6_5_Red_le\<close>)
+48648	subsection	Target (1): anchored slices satisfy \<open>RedCondA\<close>
+48706	subsection	Target (2): assembling \<open>m_6_5_Red_le\<close>
+48772	subsection	Front B (tag pss-stps-condA): \<open>ST_PS \<Longrightarrow> RedCondA\<close> bricks
+48824	subsection	Front B (tag pss-stps-condB): \<open>ST_PS \<Longrightarrow> RedCondB\<close> bricks and assembly
+58912	section	§6.5–§6.7 article-faithful standard-reducedness skeleton (bf_)
+58937	subsection	(i) \<open>Red\<close> と基本列の可換性 — non-shift (LIGHT) and assembly
+58997	subsection	(ii) 簡約性が基本列で保たれること — \<open>m_6_6_red_preserved_by_oper\<close>
+59038	subsection	(iii) 標準形の簡約性 — \<open>m_6_7_standard_reduced_faithful\<close>
+59080	subsection	(iv) \<open>stdCA\<close> — \<open>bf_stdCA_faithful\<close>
+59108	subsection	(v) Residual discharge — \<open>diag_red\<close>, \<open>predRdegen\<close>, and the \<open>anch\<close> domain gap
+59279	subsection	(vi) Wiring the \<open>shift\<close> residual to the \<open>operCA\<close>/\<open>operCB\<close> tiling bricks
+59407	subsection	(vii) §6.7 \<open>D(N)\<close> crux assembly — \<open>m_6_7_oper_gstrict\<close> (induct skeleton)
+59518	subsection	(viii) §6.7 \<open>DISJ\<close> residual — WG reflection core (\<open>wg_reflect_core\<close>)
+59587	subsection	(ix) §6.7 \<open>DISJ\<close> \<open>w = 1\<close> foundation — verbatim prefix parent agreement
+59659	subsection	(x) §6.7 row-1 tree inheritance — \<open>m_6_7_treewf\<close> (the core invariant)
+59769	subsection	(xi) §6.7 GLOBAL row-1 tree wellformedness — \<open>m_6_7_globaltreewf\<close>
+61407	section	§6.5 monoCong bricks (towards m_6_5_congR_self_Red_monoT)
+63784	section	§6.5 系（\<open>Red\<close>が単項性を保つこと）/ 系（\<open>P\<close>の\<open>Red\<close>同変性） — A4 final forms
+63847	section	§6.5 命題（\<open>Red\<close>が許容性を保つこと）/ 系（許容化の\<open>Red
+63924	section	§6.6 系（\<open>1\<close>列ペア数列の基本性質） / 命題（\<open>P\<close>が簡約性を保つこと）
+63981	section	§6.6 補題（簡約性と係数の基本性質）
+64111	section	§6.6 系（直系先祖による切片と\<open>Red\<close>と\<open>IncrFirst\<close>の関係） (correction A2)
+64212	section	§6.6 命題（簡約性が基本列で保たれること）
+64328	section	§6.5 命題（\<open>Red\<close>と基本列の可換性） — A4 final form
+64650	section	§7.2 GENERALIZED PRINCIPAL-REPLACEMENT SURGERY — scbrepl_image residual (A13 + c1-around 4-1)
 
 ## layerB/pss_wip.thy
 

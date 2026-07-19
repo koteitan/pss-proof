@@ -5,11 +5,11 @@ The source is P進大好きbot's article "ペア数列の停止性" (Termination
 system) on the Googology Wiki. Proposed corrections to the source: [corrections.md](corrections.md)
 (30 live) and [corrections-old.md](corrections-old.md) (17 retracted — our own errors).
 
-## Where things are (2026-07-14 reorganization)
+## Where things are (2026-07-20 reorganization)
 
 | dir | what | status |
 |---|---|---|
-| `isabelle/` | Isabelle/HOL formalization. **Termination proved: zero hypotheses, zero `sorry`** (build-enforced ML audit). | **DONE / frozen** |
+| `isabelle/` | Isabelle/HOL formalization. **Termination proved: zero hypotheses, zero `sorry`** (build-enforced ML audit). The approved file-layout reorganization is incremental; §5 is the completed pilot. | **PROOF frozen / layout reorg** |
 | `lean/` | Lean 4 port. One article proposition = one file (`lean/7/7.2-scb-unique.lean`). | **ACTIVE** |
 | `python/` | Counterexample search + numeric models (`red_model.py`, `trans_model.py` are canonical) | shared |
 | `tools/` | Article processing (`make_content.py` regenerates `tmp/content.md`) | shared |
@@ -21,10 +21,12 @@ system) on the Googology Wiki. Proposed corrections to the source: [corrections.
 dead ends) → [lean/kimina.md](lean/kimina.md) (the Lean check server, incl. how workflow
 agents use it).
 
-The Isabelle progress tree is [isabelle/task.md](isabelle/task.md) (all ✅);
+The Isabelle progress tree is [isabelle/task.md](isabelle/task.md) (all ✅), and
+the layout migration is governed by [isabelle/REORG-PLAN.md](isabelle/REORG-PLAN.md);
 its design notes are [isabelle/memo.md](isabelle/memo.md). **The Isabelle proof is the
 blueprint for the Lean port** — when a Lean proof stalls, the answer is almost always
-already in `isabelle/pss_mechanized.thy` or `isabelle/layerC/pss_scratch.thy`. grep first.
+already in `isabelle/5/`, `isabelle/PSS/`, `isabelle/pss_mechanized.thy`, or
+`isabelle/layerC/pss_scratch.thy`. grep first.
 
 The sections below describe the **Isabelle** side. They still apply when working in
 `isabelle/` (note: all `isbman` commands now run from `isabelle/`, e.g.
@@ -39,7 +41,7 @@ and imports its parent's top theory **session-qualified** (`imports "PSS_A.pss_m
 
 | session | dir | theory | role | green check |
 |---|---|---|---|---|
-| `PSS_A` | `.` | `pss_defs`+`pss_paper`+**`pss_mechanized`** | FROZEN base | `Finished PSS_A` |
+| `PSS_A` | `.` | `pss_defs` + `PSS/` + `5/` + `pss_paper` + **`pss_mechanized`** | FROZEN base | `Finished PSS_A` |
 | `PSS_B` | `layerB` | `pss_wip` | FROZEN base | `Finished PSS_B` |
 | `PSS_C` | `layerC` | `pss_scratch` | **ACTIVE top** (current work) | `Finished PSS_C` |
 
@@ -74,9 +76,9 @@ isbman build -m "pss-..." -d . -v PSS_B   # one-time: freeze the base (build A t
   build after syncing past the fold commit. After every fold, regenerate the TOC
   (`python3 tools/make_toc.py` → `docs/thy-toc.md`): a line-anchored index of all
   banner comments and section headings — agents grep it for topic/round/prefix
-  orientation, then jump into the .thy at the reported line. Do NOT split the frozen
-  theory into thematic files: the body is in append (= dependency) order, grep cost
-  is size-independent, and `PSS_B` is never rebuilt per round anyway.
+  orientation, then jump into the .thy at the reported line. The only authorized
+  split of the frozen theories is the dependency-ordered chapter migration in
+  `isabelle/REORG-PLAN.md`; keep the layered sessions and green gates intact.
 - **Green = the target session's OWN `Finished` line**, NOT a bare `Finished PSS`
   (substring-matches all layers). Active build green: `grep -c 'Finished PSS_C'`
   == 1; plus no real errors and `sorry`/`oops` == 0 in the edited theory. (A `***`
@@ -107,21 +109,26 @@ The Isabelle build only needs `tmp/content.md` to *exist* (`@{file}` check).
 | File | Layer / dir | Role |
 |---|---|---|
 | `pss_defs.thy` | a (`.`) | Formalized **definitions** of the article (pair-sequence side, §4–§6) |
-| `pss_paper.thy` | a (`.`) | **Statements only** of the article's propositions/lemmas/corollaries/theorems, transcribed as `sorry`. The §7 Buchholz notation system (definitions of the external reference [Buc1]) also lives here |
-| `pss_mechanized.thy` | a (`.`) | Our own **mechanized proofs** discharging the `sorry`s |
+| `PSS/*.thy` | a (`PSS/`) | Dependency-ordered shared helpers; `Pre_5` plus proposition-dependent frontier shards |
+| `5/P_*.thy` | a (`5/`) | One §5 article proposition per theory, with its exact clean proof and proposition-local material |
+| `5/Support_*.thy` | a (`5/`) | Helpers used only within chapter 5 but shared by more than one proposition step |
+| `pss_paper.thy` | a (`.`) | Remaining §6–§8 article statements, transcribed as `sorry`; imports the completed §5 proposition theories. The §7 Buchholz notation system also lives here |
+| `pss_mechanized.thy` | a (`.`) | Remaining §6–§8 mechanized proofs; imports the completed §5 layer through `pss_paper` |
 | `layerB/pss_wip.thy` | b | Earlier campaign's proven body — now FROZEN into the base heap |
 | `layerC/pss_scratch.thy` | c | **ACTIVE** layer: the lemmas currently being proven (see the Build section) |
 
-Import chain: `pss_defs` ← `pss_paper` ← `pss_mechanized` ← `pss_wip` ← `pss_scratch`
-(the last two cross-session, imported session-qualified). Active work happens in
-`layerC/pss_scratch.thy`; the rest is pre-built. `@{file}` antiquotations live only
-in the layer-a theories (which stay in `.`), so the `tmp/` symlink is only needed
-at the repo root, not in `layerB`/`layerC`.
+Import chain: `pss_defs` ← `PSS/Pre_5` ← §5 proposition/frontier theories ←
+`pss_paper` ← `pss_mechanized` ← `pss_wip` ← `pss_scratch` (the last two
+cross-session, imported session-qualified). Active proof work happens in
+`layerC/pss_scratch.thy`; the rest is pre-built. When moving an `@{file}`
+antiquotation into a chapter directory, adjust its relative path and add a local
+`tmp` symlink only if it still addresses `tmp/...`.
 
 ## Naming and traceability
 
-- Article claims are named `p_<§>_<slug>` in `pss_paper.thy` (e.g.
-  `p_6_4_mono_slice`); our proofs are `m_<§>_<slug>` in `pss_mechanized.thy`.
+- Article claims are named `p_<§>_<slug>` and their proofs `m_<§>_<slug>`. For §5
+  both live in the matching `5/P_<§>_<slug>.thy`; unmigrated chapters retain
+  `p_` in `pss_paper.thy` and `m_` in their current proof layer.
 - Tag every fact's comment with the article section (§) and the original
   Japanese name, so it can be matched against `tmp/content.md` (the extracted
   article text).

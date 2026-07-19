@@ -11,8 +11,28 @@ session PSS_A = HOL +
   options [document = false, quick_and_dirty]
   sessions
     "HOL-Library"
+  directories
+    "PSS"
+    "5"
   theories
     pss_defs
+    Pre_5
+    P_5_1_parent_exists_1
+    P_5_1_parent_exists_2
+    After_5_1_Parent_Exists_1
+    P_5_1_parent_exists_3
+    P_5_1_parent_basic_1
+    P_5_1_parent_basic_2
+    P_5_1_ancestor_basic_1
+    P_5_1_ancestor_tree_1
+    After_5_1_Ancestor_Tree_1
+    P_5_1_ancestor_basic_2
+    Support_5_1_Parent_Exists_4
+    P_5_1_parent_exists_4
+    P_5_1_ancestor_tree_2
+    P_5_3_pred_is_oper1
+    P_5_4_F_oper_dom
+    P_5_4_F_oper_val
     pss_paper
     pss_mechanized
 
