@@ -888,6 +888,16 @@ parent/Lng 形に落としてから作業する。
     （素 `VE4BaseDeep` の弱化）。**残**={`RunSqueeze_vn`（=descending squeeze＋nextrel0 valley
     squeeze＋単一列幾何の値証明）, `VE3RunBase_bd`/`VE3RunStep_bd`/`PIN_bd`/`TSPIN_bd`（§7.4 surgery）,
     field-level 再配線（DTPS→`VE34Reg4D`で `VE3/4BaseDeepD` を場に接続、dead `condIIIVterminalSlice_of_runpeel` 退役）}。
+  - 🎉 **Wave AP（2026-07-20 夜、Opus 3、全緑）— regime 持続 2 本無条件討伐＋残 brick 再編**:
+    ①🎉**`stepRegPres_up_holds`＋`runStepGuardJoint_up_holds` 無条件**（vg7x_RPERS＋
+    bfx_gtP_base/Joints_Pred_last。`8.2-condIIIV-reg-pres`）②peel-values: JEQ を D-regime で
+    完全 port（jeqBaseD_pv）＋TermPred transport 討伐＋**構造発見: 旧 reduction は descending を
+    捨てる lossy 設計→D 保存版 `BaseRunStep_of_geomD_pv` が正**（`8.2-condIIIV-peel-values`）
+    ③base-forms: 組立無条件＋残差 2 に縮小 {`BgxNotleftRun0_bf`(census 106972、
+    strongmono は済・bgx_trunk_Trans 等 5 brick 要), `BgxMpSliceData_bf`(transJm1(slice)=0＋
+    cond(I|III|V)、nextR-seg/row1_last_bound の public 化要)}（`8.2-condIIIV-base-forms`）。
+    **無条件化までの残 brick 6**: {BgxNotleftRun0, BgxMpSliceData, TerminalSliceReadyD,
+    FrontPredBaseTransportD(←bfx_LastStep_Pred_base), VE3Step, VE4Step(=研究フロンティア級)}。
   - 🎉 **Wave AO（2026-07-20 夕、Opus 2、全緑）— `HEADEQ0All` 討伐（最終 2 Props の片方）**:
     ①🎉**`headEq0All_holds` 無条件**（hqx_HEADEQ0 完全 port: trunk corner=diagSeq 閉形式、
     branching=VEReg 構築→vcx_VE_all。未移植とされた 5 brick 中 3 は公開双子あり
