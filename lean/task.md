@@ -44,7 +44,7 @@
     - 🚨 補題（条件(III)か(IV)の下での基本列の基本性質） — `8.4-fseq-basic`
       - ✅ part (1) — `8.4-fseq-basic`[r1]
       - ✅ part (3) — `8.4-fseq-basic-close`[r1]
-      - 🚨 part (2) — `8.4-l6-readouts-close`[r4]
+      - 🚨🤖 part (2) — `8.4-l6-readouts-close`[r4]
     - ✅ 補題（条件(III)～(V)の下での右端の置き換えと `Trans` の関係） — `8.4-rightmost-replace-Trans`[r8]
     - ✅ 補題（条件(III)～(VI)の下での展開規則の基本性質） — `8.4-oper-basic`[r1]
     - ✅ 補題群（条件(III)～(VI)の下での各種 scb 分解） — `8.4-scb-decompositions`[r1]
