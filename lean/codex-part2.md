@@ -1,7 +1,7 @@
 # Instructions: close the last open leaf — §8.4 fseq-basic part (2)
 
 （koteitan → codex への指示書。2026-07-22 作成、本線セッション cd058bfc による。
-以下は agent 向けなので英語。базовые rules は spec.md / step.md / kimina.md を先に読むこと。）
+以下は agent 向けなので英語。基本ルールは spec.md / step.md / kimina.md を先に読むこと。）
 
 ## 0. Context — where the project stands
 
