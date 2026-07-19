@@ -888,6 +888,17 @@ parent/Lng 形に落としてから作業する。
     （素 `VE4BaseDeep` の弱化）。**残**={`RunSqueeze_vn`（=descending squeeze＋nextrel0 valley
     squeeze＋単一列幾何の値証明）, `VE3RunBase_bd`/`VE3RunStep_bd`/`PIN_bd`/`TSPIN_bd`（§7.4 surgery）,
     field-level 再配線（DTPS→`VE34Reg4D`で `VE3/4BaseDeepD` を場に接続、dead `condIIIVterminalSlice_of_runpeel` 退役）}。
+  - 🎉 **Wave AN（2026-07-20 午後、Opus 2、全緑）— HEADEQ0 capstone 組立＋統一帰納完成**:
+    ①**HEADEQ0 campaign 入口**（`8.2-condIIIV-headeq0`）: hqx_/bgx_ 完全地図＋
+    `hqx_VE34_of_DT_hq` capstone を **{`BgxVE34RedHE0_hq`(bgx 還元 ~1000 行),
+    `HEADEQ0All_hq`(hqx_HEADEQ0 240 行)} の 2 Props modulo で組立**。vcx_VE_all 討伐済の
+    検証結果=HEADEQ0 の branching case の深部値のみ供給（trunk corner=diagSeq closed form、
+    glue が要る）。未移植 brick: bgx_headedge/bfx_gtN/bfx_TrMax_Pred_base/
+    kfwd_reduced_monoT_diag00/diagSeq_getElem rename。名前対応表も確立
+    （vg2x_VE34=VE34goal 等）②**統一 backpeel 帰納完成**（`8.2-condIIIV-unified-peel`、
+    bfx_VE34_backpeel_fin3 の正しい frame、BASE 保存なし、9 定理緑）。
+    **condIIIVts への 2 経路**: (A) hqx 経路={BgxVE34RedHE0, HEADEQ0All}（本命）
+    (B) 統一帰納経路={PIN/TSPIN/VE3RunBase/RunStep(→幾何3Props)/VE3/4Step}。
   - **Wave AM（2026-07-20 昼、Opus 2、全緑）— 🚨10 個目の反証＋真の閉路が HEADEQ0 と判明**:
     ①🚨**`RunSqueeze_vn`／`RunPeelPreservedD_vc2` は偽**（cex=(0,0)(1,1)(2,2)(2,0)(3,1)(2,0):
     BASE の peel 後 Pred が STEP になる＝**BASE 保存という設計自体が欠陥**。正=Isabelle
