@@ -5,8 +5,9 @@ session PSS_A = HOL +
 
     LAYER a (stable, pre-built heap; rebuilt only when wip graduates into mechanized):
       pss_defs       formalized definitions of the article (shared)
-      pss_paper      faithful transcription of the article's statements (all sorry)
-      pss_mechanized own machine-checked proofs discharging those statements
+      PSS, 5, 6      dependency-ordered shared helpers and one-proposition theories
+      pss_paper      faithful transcription of the remaining §7–§8 statements
+      pss_mechanized machine-checked proofs for the remaining §7–§8 statements
   "
   options [document = false, quick_and_dirty]
   sessions
@@ -14,6 +15,7 @@ session PSS_A = HOL +
   directories
     "PSS"
     "5"
+    "6"
   theories
     pss_defs
     Pre_5
@@ -33,6 +35,229 @@ session PSS_A = HOL +
     P_5_3_pred_is_oper1
     P_5_4_F_oper_dom
     P_5_4_F_oper_val
+    After_5
+    Frontier_6_001
+    P_6_1_le_IncrFirst_inv
+    Frontier_6_002
+    Support_6_001
+    P_6_2_multi_crit_23
+    P_6_2_multi_crit_12
+    Frontier_6_003
+    P_6_2_mono_ancestor_slice
+    P_6_2_mono_prefix
+    Frontier_6_004
+    P_6_2_P_components_2
+    Frontier_6_005
+    P_6_2_P_IncrFirst
+    Frontier_6_006
+    P_6_2_P_additive
+    Frontier_6_007
+    P_6_2_P_components_1
+    Frontier_6_008
+    P_6_3_adm_slice
+    Frontier_6_009
+    P_6_3_admof_slice
+    P_6_3_marked_slice
+    Frontier_6_010
+    P_6_2_P_oper_1
+    P_6_2_P_oper_2
+    Frontier_6_011
+    P_6_4_P_IdxSum
+    Frontier_6_012
+    P_6_4_P_IdxSum_char_1
+    P_6_4_P_IdxSum_char_2
+    Frontier_6_013
+    P_6_4_P_leftend_mono
+    Frontier_6_014
+    P_6_2_nonmulti_oper_1
+    P_6_2_nonmulti_oper_2
+    P_6_4_mono_slice_next
+    Frontier_6_015
+    P_6_4_FirstNodes_TrMax_Joints
+    Frontier_6_016
+    Support_6_002
+    P_6_4_FirstNodes_Joints_mono
+    Frontier_6_017
+    P_6_4_mono_slice
+    Frontier_6_018
+    P_6_6_condAB_coeff
+    Frontier_6_019
+    Support_6_003
+    Frontier_6_020
+    Support_6_004
+    Frontier_6_021
+    P_6_5_Red_welldef
+    P_6_5_Lng_Red
+    Support_6_005
+    Frontier_6_022
+    Support_6_006
+    Frontier_6_023
+    P_6_5_Red_zeroT
+    Frontier_6_024
+    P_6_7_ST_eq_Union_SkT
+    P_6_6_Red_leftend_1
+    Support_6_007
+    Frontier_6_025
+    Support_6_008
+    P_6_7_standard_prefix
+    Frontier_6_026
+    P_6_7_standard_P_components
+    Support_6_009
+    P_6_8_standard_P_descending
+    Frontier_6_027
+    Support_6_010
+    Frontier_6_028
+    Support_6_011
+    Frontier_6_029
+    Support_6_012
+    Frontier_6_030
+    Support_6_013
+    Frontier_6_031
+    Support_6_014
+    Frontier_6_032
+    Support_6_015
+    Frontier_6_033
+    Support_6_016
+    Frontier_6_034
+    Support_6_017
+    Frontier_6_035
+    Support_6_018
+    Frontier_6_036
+    Support_6_019
+    Frontier_6_037
+    Support_6_020
+    Frontier_6_038
+    Support_6_021
+    Frontier_6_039
+    Support_6_022
+    Frontier_6_040
+    Support_6_023
+    Frontier_6_041
+    Support_6_024
+    P_6_8_standard_slice_Br_descending
+    Support_6_025
+    Frontier_6_042
+    P_6_5_monoT_Red
+    Frontier_6_043
+    Support_6_026
+    Frontier_6_044
+    P_6_6_Red_leftend_2
+    Frontier_6_045
+    Support_6_027
+    Frontier_6_046
+    Support_6_028
+    Frontier_6_047
+    Support_6_029
+    Frontier_6_048
+    Support_6_030
+    Frontier_6_049
+    Support_6_031
+    Frontier_6_050
+    Support_6_032
+    P_6_6_P_reduced
+    Support_6_033
+    Frontier_6_051
+    Support_6_034
+    P_6_5_Red_IncrFirst
+    Frontier_6_052
+    Support_6_035
+    Frontier_6_053
+    Support_6_036
+    Frontier_6_054
+    Support_6_037
+    Frontier_6_055
+    P_6_5_Red_idem
+    Frontier_6_056
+    Support_6_038
+    Frontier_6_057
+    P_6_5_Red_Pred
+    Support_6_039
+    Frontier_6_058
+    Support_6_040
+    Frontier_6_059
+    P_6_6_reduced_slice
+    Frontier_6_060
+    Support_6_041
+    Frontier_6_061
+    P_6_6_reduced_leftend
+    Frontier_6_062
+    Support_6_042
+    Frontier_6_063
+    Support_6_043
+    Frontier_6_064
+    Support_6_044
+    Frontier_6_065
+    Support_6_045
+    Frontier_6_066
+    Support_6_046
+    P_6_6_reduced_coeff
+    Frontier_6_067
+    Support_6_047
+    Frontier_6_068
+    Support_6_048
+    Frontier_6_069
+    Support_6_049
+    Frontier_6_070
+    P_6_6_reduced_iff_cond
+    Support_6_050
+    Frontier_6_071
+    Support_6_051
+    Frontier_6_072
+    Support_6_052
+    Frontier_6_073
+    Support_6_053
+    Frontier_6_074
+    Support_6_054
+    Frontier_6_075
+    Support_6_055
+    Frontier_6_076
+    Support_6_056
+    Frontier_6_077
+    Support_6_057
+    Frontier_6_078
+    Support_6_058
+    Frontier_6_079
+    Support_6_059
+    Frontier_6_080
+    Support_6_060
+    Frontier_6_081
+    Support_6_061
+    Frontier_6_082
+    Support_6_062
+    Frontier_6_083
+    Support_6_063
+    Frontier_6_084
+    Support_6_064
+    Frontier_6_085
+    Support_6_065
+    Frontier_6_086
+    Support_6_066
+    Frontier_6_087
+    P_6_7_standard_reduced
+    Frontier_6_088
+    Support_6_067
+    Frontier_6_089
+    Support_6_068
+    Frontier_6_090
+    Support_6_069
+    P_6_5_Red_le
+    P_6_5_Red_monoT
+    Support_6_070
+    P_6_5_P_Red
+    Support_6_071
+    P_6_5_Red_adm
+    P_6_5_admof_Red
+    P_6_5_Red_marked
+    Frontier_6_091
+    P_6_6_oneColumn
+    Frontier_6_092
+    Support_6_072
+    P_6_6_ancestor_slice_Red_IncrFirst
+    Frontier_6_093
+    P_6_6_reduced_oper
+    Support_6_073
+    P_6_5_Red_oper
+    After_6
     pss_paper
     pss_mechanized
 

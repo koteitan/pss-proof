@@ -9,7 +9,7 @@ system) on the Googology Wiki. Proposed corrections to the source: [corrections.
 
 | dir | what | status |
 |---|---|---|
-| `isabelle/` | Isabelle/HOL formalization. **Termination proved: zero hypotheses, zero `sorry`** (build-enforced ML audit). The approved file-layout reorganization is incremental; §5 is the completed pilot. | **PROOF frozen / layout reorg** |
+| `isabelle/` | Isabelle/HOL formalization. **Termination proved: zero hypotheses, zero `sorry`** (build-enforced ML audit). The approved file-layout reorganization is incremental; §5 and §6 are complete. | **PROOF frozen / layout reorg** |
 | `lean/` | Lean 4 port. One article proposition = one file (`lean/7/7.2-scb-unique.lean`). | **ACTIVE** |
 | `python/` | Counterexample search + numeric models (`red_model.py`, `trans_model.py` are canonical) | shared |
 | `tools/` | Article processing (`make_content.py` regenerates `tmp/content.md`) | shared |
@@ -25,7 +25,7 @@ The Isabelle progress tree is [isabelle/task.md](isabelle/task.md) (all ✅), an
 the layout migration is governed by [isabelle/REORG-PLAN.md](isabelle/REORG-PLAN.md);
 its design notes are [isabelle/memo.md](isabelle/memo.md). **The Isabelle proof is the
 blueprint for the Lean port** — when a Lean proof stalls, the answer is almost always
-already in `isabelle/5/`, `isabelle/PSS/`, `isabelle/pss_mechanized.thy`, or
+already in `isabelle/5/`, `isabelle/6/`, `isabelle/PSS/`, `isabelle/pss_mechanized.thy`, or
 `isabelle/layerC/pss_scratch.thy`. grep first.
 
 The sections below describe the **Isabelle** side. They still apply when working in
@@ -109,16 +109,17 @@ The Isabelle build only needs `tmp/content.md` to *exist* (`@{file}` check).
 | File | Layer / dir | Role |
 |---|---|---|
 | `pss_defs.thy` | a (`.`) | Formalized **definitions** of the article (pair-sequence side, §4–§6) |
-| `PSS/*.thy` | a (`PSS/`) | Dependency-ordered shared helpers; `Pre_5` plus proposition-dependent frontier shards |
-| `5/P_*.thy` | a (`5/`) | One §5 article proposition per theory, with its exact clean proof and proposition-local material |
-| `5/Support_*.thy` | a (`5/`) | Helpers used only within chapter 5 but shared by more than one proposition step |
-| `pss_paper.thy` | a (`.`) | Remaining §6–§8 article statements, transcribed as `sorry`; imports the completed §5 proposition theories. The §7 Buchholz notation system also lives here |
-| `pss_mechanized.thy` | a (`.`) | Remaining §6–§8 mechanized proofs; imports the completed §5 layer through `pss_paper` |
+| `PSS/*.thy` | a (`PSS/`) | Dependency-ordered shared helpers; chapter boundaries are exposed by `After_5` and `After_6` |
+| `5/P_*.thy`, `6/P_*.thy` | a (`5/`, `6/`) | One §5 or §6 article proposition per theory, with its exact clean proof and proposition-local material |
+| `5/Support_*.thy`, `6/Support_*.thy` | a (`5/`, `6/`) | Helpers used only within one chapter but shared by more than one proposition step |
+| `pss_paper.thy` | a (`.`) | Remaining §7–§8 article statements, transcribed as `sorry`; imports the completed §5–§6 proposition theories. The §7 Buchholz notation system also lives here |
+| `pss_mechanized.thy` | a (`.`) | Remaining §7–§8 mechanized proofs; imports the completed §5–§6 layer through `pss_paper` |
 | `layerB/pss_wip.thy` | b | Earlier campaign's proven body — now FROZEN into the base heap |
 | `layerC/pss_scratch.thy` | c | **ACTIVE** layer: the lemmas currently being proven (see the Build section) |
 
 Import chain: `pss_defs` ← `PSS/Pre_5` ← §5 proposition/frontier theories ←
-`pss_paper` ← `pss_mechanized` ← `pss_wip` ← `pss_scratch` (the last two
+`PSS/After_5` ← §6 proposition/frontier theories ← `PSS/After_6` ← `pss_paper` ←
+`pss_mechanized` ← `pss_wip` ← `pss_scratch` (the last two
 cross-session, imported session-qualified). Active proof work happens in
 `layerC/pss_scratch.thy`; the rest is pre-built. When moving an `@{file}`
 antiquotation into a chapter directory, adjust its relative path and add a local
@@ -126,8 +127,8 @@ antiquotation into a chapter directory, adjust its relative path and add a local
 
 ## Naming and traceability
 
-- Article claims are named `p_<§>_<slug>` and their proofs `m_<§>_<slug>`. For §5
-  both live in the matching `5/P_<§>_<slug>.thy`; unmigrated chapters retain
+- Article claims are named `p_<§>_<slug>` and their proofs `m_<§>_<slug>`. For §5–§6
+  both live in the matching chapter `P_<§>_<slug>.thy`; unmigrated chapters retain
   `p_` in `pss_paper.thy` and `m_` in their current proof layer.
 - Tag every fact's comment with the article section (§) and the original
   Japanese name, so it can be matched against `tmp/content.md` (the extracted
@@ -188,7 +189,7 @@ antiquotation into a chapter directory, adjust its relative path and add a local
   the `Lng = 1` conjunct (`zeroT_def`) and contradict `1 < Lng ..`, don't `simp`
   the whole `zeroT_def` (it evaluates the `entry ..` conjunct into garbage).
 
-## Reusable helpers (in `pss_mechanized.thy`; grep for them)
+## Reusable helpers (in `PSS/` and `6/`; grep for them)
 
 - List/segment: `drop_eq_map_nth`, `seg_0_eq_take`, `seg_to_last_eq_drop`,
   `drop_eq_seg`, `Lng_seg`, `entry_seg`, `T_PS_Lng_gt1`, `multiT_imp_Lng_gt1`,

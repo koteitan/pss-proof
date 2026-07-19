@@ -183,6 +183,35 @@ proof (induction M rule: measure_induct_rule[where f=Lng])
       hence "Lng (drop (Pcut M) M) < Lng M" using cut L1 by linarith
       thus ?thesis using less.IH dropRT[OF L mu] by blast
     qed
+    have multi: "\<not> Lng M \<le> Suc 0 \<Longrightarrow> \<not> monoT M \<Longrightarrow> multiT M"
+    proof -
+      assume L: "\<not> Lng M \<le> Suc 0" and nm: "\<not> monoT M"
+      have L1: "1 < Lng M" using L by simp
+      have "\<not> zeroT M" using L1 by (simp add: zeroT_def)
+      thus "multiT M" using nm by (simp add: multiT_def)
+    qed
+    have prefPD: "\<not> Lng M \<le> Suc 0 \<Longrightarrow> \<not> monoT M
+        \<Longrightarrow> Trans_Mark_dom
+          (Inl (seg M 0 (Lng M - Suc (Lng (P M ! (Lng (P M) - Suc 0))))))"
+    proof -
+      assume L: "\<not> Lng M \<le> Suc 0" and nm: "\<not> monoT M"
+      have mu: "multiT M" by (rule multi[OF L nm])
+      have pjeq: "P M ! (Lng (P M) - Suc 0) = drop (Pcut M) M"
+        using trans_multiT_last_component(1)[OF MT mu] by simp
+      have len: "Lng (P M ! (Lng (P M) - Suc 0)) = Lng M - Pcut M"
+        using pjeq by simp
+      show ?thesis using prefD[OF L mu] len by simp
+    qed
+    have compD: "\<not> Lng M \<le> Suc 0 \<Longrightarrow> \<not> monoT M
+        \<Longrightarrow> Trans_Mark_dom (Inl (P M ! (Lng (P M) - Suc 0)))
+          \<and> (\<forall>m. Trans_Mark_dom (Inr (P M ! (Lng (P M) - Suc 0), m)))"
+    proof -
+      assume L: "\<not> Lng M \<le> Suc 0" and nm: "\<not> monoT M"
+      have mu: "multiT M" by (rule multi[OF L nm])
+      have pjeq: "P M ! (Lng (P M) - Suc 0) = drop (Pcut M) M"
+        using trans_multiT_last_component(1)[OF MT mu] by simp
+      show ?thesis using dropD[OF L mu] pjeq by simp
+    qed
     have inl: "Trans_Mark_dom (Inl M)"
     proof (rule Trans_Mark.domintros(1))
       show "M \<notin> RT_PS \<Longrightarrow> Trans_Mark_dom (Inl (Red M))" using MR by simp
@@ -194,28 +223,22 @@ proof (induction M rule: measure_induct_rule[where f=Lng])
         if "M \<in> RT_PS" "\<not> Lng M \<le> Suc 0" "monoT M" "Trans (Pred M) \<noteq> 0\<^sub>B"
         using predD that by blast
     next
-      show "Trans_Mark_dom (Inl (seg M 0 (Lng M - Suc (Lng M - Pcut M))))"
+      show "Trans_Mark_dom
+          (Inl (seg M 0 (Lng M - Suc (Lng (P M ! (Lng (P M) - Suc 0))))))"
         if "M \<in> RT_PS" "\<not> Lng M \<le> Suc 0" "\<not> monoT M"
-           "[(0, 0)] = drop (Pcut M) M" "multiT M"
-        using prefD that by blast
+           "[(0, 0)] = P M ! (Lng (P M) - Suc 0)"
+        by (rule prefPD[OF that(2) that(3)])
     next
-      show "Trans_Mark_dom (Inl (seg M 0 (Lng M - Suc (Lng M - Pcut M))))"
+      show "Trans_Mark_dom
+          (Inl (seg M 0 (Lng M - Suc (Lng (P M ! (Lng (P M) - Suc 0))))))"
         if "M \<in> RT_PS" "\<not> Lng M \<le> Suc 0" "\<not> monoT M"
-           "drop (Pcut M) M \<noteq> [(0, 0)]" "multiT M"
-        using prefD that by blast
+           "P M ! (Lng (P M) - Suc 0) \<noteq> [(0, 0)]"
+        by (rule prefPD[OF that(2) that(3)])
     next
-      show "Trans_Mark_dom (Inl (seg M 0 0))"
-        if "M \<in> RT_PS" "\<not> Lng M \<le> Suc 0" "\<not> monoT M" "M \<noteq> [(0, 0)]" "\<not> multiT M"
-        using vac that by blast
-    next
-      show "Trans_Mark_dom (Inl (drop (Pcut M) M))"
+      show "Trans_Mark_dom (Inl (P M ! (Lng (P M) - Suc 0)))"
         if "M \<in> RT_PS" "\<not> Lng M \<le> Suc 0" "\<not> monoT M"
-           "drop (Pcut M) M \<noteq> [(0, 0)]" "multiT M"
-        using dropD that by blast
-    next
-      show "Trans_Mark_dom (Inl M)"
-        if "M \<in> RT_PS" "\<not> Lng M \<le> Suc 0" "\<not> monoT M" "M \<noteq> [(0, 0)]" "\<not> multiT M"
-        using vac that by blast
+           "P M ! (Lng (P M) - Suc 0) \<noteq> [(0, 0)]"
+        using compD[OF that(2) that(3)] by blast
     qed
     have inr: "\<And>m. Trans_Mark_dom (Inr (M, m))"
     proof -
@@ -237,15 +260,12 @@ proof (induction M rule: measure_induct_rule[where f=Lng])
              "m < Lng M - Suc 0"
           using predD that by blast
       next
-        show "Trans_Mark_dom (Inr (drop (Pcut M) M,
-                                   m - Suc (Lng M - Suc (Lng M - Pcut M))))"
+        show "Trans_Mark_dom
+          (Inr (P M ! (Lng (P M) - Suc 0),
+                m - Suc (Lng M - Suc (Lng (P M ! (Lng (P M) - Suc 0))))))"
           if "M \<in> RT_PS" "\<not> Lng M \<le> Suc 0" "\<not> monoT M"
-             "drop (Pcut M) M \<noteq> [(0, 0)]" "multiT M"
-          using dropD that by blast
-      next
-        show "Trans_Mark_dom (Inr (M, m - Suc 0))"
-          if "M \<in> RT_PS" "\<not> Lng M \<le> Suc 0" "\<not> monoT M" "M \<noteq> [(0, 0)]" "\<not> multiT M"
-          using vac that by blast
+             "P M ! (Lng (P M) - Suc 0) \<noteq> [(0, 0)]"
+          using compD[OF that(2) that(3)] by blast
       qed
     qed
     show "Trans_Mark_dom (Inl M) \<and> (\<forall>m. Trans_Mark_dom (Inr (M, m)))"
@@ -8230,8 +8250,13 @@ proof (induction M rule: measure_induct_rule[where f=Lng])
       apply (rule RightAnces.domintros)
       subgoal using MR by simp
       subgoal using segD2 by blast
-      subgoal using multiD2 by blast
-      subgoal using vacD by blast
+      subgoal premises prems
+      proof -
+        have j1: "Lng M - Suc 0 \<noteq> 0" using prems(2) by linarith
+        have D: "RightAnces_dom (P M ! (Lng (P M) - 1))"
+          by (rule multiD[OF j1 prems(3)])
+        show ?thesis using D by simp
+      qed
       done
   qed
 qed
