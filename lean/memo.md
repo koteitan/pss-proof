@@ -888,6 +888,15 @@ parent/Lng 形に落としてから作業する。
     （素 `VE4BaseDeep` の弱化）。**残**={`RunSqueeze_vn`（=descending squeeze＋nextrel0 valley
     squeeze＋単一列幾何の値証明）, `VE3RunBase_bd`/`VE3RunStep_bd`/`PIN_bd`/`TSPIN_bd`（§7.4 surgery）,
     field-level 再配線（DTPS→`VE34Reg4D`で `VE3/4BaseDeepD` を場に接続、dead `condIIIVterminalSlice_of_runpeel` 退役）}。
+  - 🎉🎉 **Wave AQ（2026-07-20 深夜、Opus 2、全緑）— 具体 4 brick 全討伐＝残り surgery 4 本**:
+    ①**census＋slice-data 両方無条件**（`BgxNotleftRun0_cs2`=260 行 census 完全 port、
+    `BgxMpSliceData_cs2`。`8.2-condIIIV-census-slice`）→ 閉形式 2 brick
+    （BgxBaseFormNotleft/BgxMpForm）が無条件化 ②**TerminalSliceReadyD＋
+    FrontPredBaseTransportD 両方無条件**（LastStep 転送 bfx_LastStep_Pred_base 込み。
+    `8.2-condIIIV-frontpred`）。
+    **無条件停止性定理までの残 = §7.4 head-shift surgery 4 本のみ**:
+    {`PIN_bd`, `TSPIN_bd`}（BaseRunStep の最後の 2 入力）＋{`VE3Step`, `VE4Step`}
+    （STEP slot、tsx_/bpx_VE34_step——研究フロンティア級）。
   - 🎉 **Wave AP（2026-07-20 夜、Opus 3、全緑）— regime 持続 2 本無条件討伐＋残 brick 再編**:
     ①🎉**`stepRegPres_up_holds`＋`runStepGuardJoint_up_holds` 無条件**（vg7x_RPERS＋
     bfx_gtP_base/Joints_Pred_last。`8.2-condIIIV-reg-pres`）②peel-values: JEQ を D-regime で
