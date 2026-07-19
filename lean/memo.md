@@ -451,7 +451,7 @@ parent/Lng 形に落としてから作業する。
     ＝**訂正不要で原文が正しい**。しかも **Isabelle 自身の
     `m_8_5_Trans_oper_exchange_condV_adm_uncond` は弱い添字 `n` でしか述べていない**ので、
     Lean 版のほうが**鋭い**。両方（原文添字＝conj(1)／Isabelle 添字＝conj(2)）を出力。
-  - 🚨🤖 `8.7-Trans-preserves-OT` — **Wave F で green-modulo 完成（緑、12 Props）**。
+  - ✅ `8.7-Trans-preserves-OT`[r38] — **無条件クローズ（2026-07-21 Wave AW）**: `Trans_STPS_OT_B`（8.7-termination）が仮定 0。OT 柱 38 ファイルの合流。（旧記録: Wave F で green-modulo 完成（緑、12 Props）。）
     blueprint `y5_Trans_OT_B` は census 塔への一行だったので追跡し、実体
     **`otx_Trans_preserves_OT_dispatch`（layerB:85710）**＝ST_PS 帰納を全分岐移植
     （base＋11 分岐: Lng≤1／N[n]=Pred N の 4 枝／N[n]≠Pred N の condI–VI＋multiT）。
@@ -475,7 +475,7 @@ parent/Lng 形に落としてから作業する。
   - `8.5-*` — **最難所**。Isa の keystone は
     `bpHeadT(Trans(slice@B)) = C(bpHeadT(Trans slice))`（depth-shift self-similar）。
     13 個の死路が `isabelle/memo.md` に列挙してある。**着手前に必ず読め。**
-  - 🚨 `8.3-Trans-fseq-condII` ⛔8.7-fseq-descend — 原文命題は (1)-(3) が Trans 再帰の
+  - 🚨 `8.3-Trans-fseq-condII`（⛔解消済み・p ファイル未作成が残り） — 原文命題は (1)-(3) が Trans 再帰の
     内部記号依存で deferred、転記済みは降下結論 (4) のみ（`p_8_3_TransCondII_oper_descend`）。
     Isabelle は `y5_8_3_TransCondII_oper_descend`（layerC 14432）＝**大域降下柱
     `y5_Trans_descend` への一行還元**。Lean でも `8.7-fseq-descend`（ST_PS 全域の
@@ -490,7 +490,7 @@ parent/Lng 形に落としてから作業する。
     `.naturals` を透過（`a ≠ BZero` は長さ勘定）、multi は `domTag_snoc_bf`（7.1 公開）。
     `BDom_toSet_eq_NatSet_iff`+`nestedD0_not_nat` は 7.2-scb-unique private の複製（昇格候補）。
     Isa: `m_8_7_OT_dom_hereditary` (layerB/pss_wip.thy:17802)。rc=0・axioms 正常。[r1]
-  - 🚨 `8.7-fseq-descend` — **Wave E で green-modulo 完成（緑、sorry 0、853 行）**。
+  - ✅ `8.7-fseq-descend`[r4] — **無条件クローズ（2026-07-21）**: `Trans_fseq_descend`（8.7-termination）が仮定 0。（旧記録: Wave E で green-modulo 完成（緑、sorry 0、853 行）。）
     `m_8_7_fseq_descend_dispatcher`（Isa layerB:52353）＋`f7x_fseq_descend_mono`
     （52051）を 1:1 移植し、**p 文 `p_8_7_fseq_descend`（pss_paper:2253）と
     `p_8_3_TransCondII_oper_descend` の両方を出力**（＝⛔ だった 8.3 項目も同時に解禁）。
@@ -550,7 +550,7 @@ parent/Lng 形に落としてから作業する。
     → **親が 2026-07-17 に `oper_len2_fd`/`parent_one_zero_fd`（8.7-fseq-descend）と
     `operB_succ_body_ci`（8.1-Trans-fseq-condI）を public 昇格**（両ファイル緑・衝突なし）。
     次の agent はこの 2 Props を新規数学なしで閉じられる。
-  - 🚨 `8.7-termination` ★ — **Wave J で組み上がった（緑、公開 6 本）＝残差は 27 本ちょうど**。
+  - ✅ `8.7-termination`[r1] ★ — 🎉🎉 **無条件達成（2026-07-21、Wave AW 統合）**: `p_8_7_termination` 仮定 0・sorry 0・axioms = propext/Classical.choice/Quot.sound。`TerminationResidual` 構造ごと削除、audit VERDICT=0。（旧記録: Wave J で組み上がった（緑、公開 6 本）＝残差は 27 本ちょうど。）
     `p_8_7_termination (H : TerminationResidual) (f M n) (hM : STPS M) (hn : 1 ≤ n)
     (hf : ∀ k, 1 ≤ k → 1 ≤ f k) : Fdom f M n` が **pss_paper:2329 と逐語一致**（親が確認）。
     原文の集合形（`ST_PS × ℕ₊ ⊂ Dom(F)`, content.md 5851）も `STPS_prod_pos_subset_Fdom` で提供。
@@ -750,6 +750,24 @@ parent/Lng 形に落としてから作業する。
     （素 `VE4BaseDeep` の弱化）。**残**={`RunSqueeze_vn`（=descending squeeze＋nextrel0 valley
     squeeze＋単一列幾何の値証明）, `VE3RunBase_bd`/`VE3RunStep_bd`/`PIN_bd`/`TSPIN_bd`（§7.4 surgery）,
     field-level 再配線（DTPS→`VE34Reg4D`で `VE3/4BaseDeepD` を場に接続、dead `condIIIVterminalSlice_of_runpeel` 退役）}。
+  - 🎉🎉🎉 **Wave AW＋最終統合（2026-07-21）— `p_8_7_termination` 無条件化達成（Lean 移植の主目標完遂）**:
+    ①condII interior 脚 `OTmulti_interior_condII_on` を**独立 2 route が同時完全証明**
+    （`8.7-otmulti-condII-close`=Route A 採用・`8.7-otmulti-condII-blueprint`=Route B 保険。
+    骨子一致: CondII_masterCF 無条件化→FseqDesc_exchII の**等式**→OT_B operB 閉包＋
+    buchholz_fseq_lt。Lng=2 隅は lastParent=parent M 0 1=0（hasParent 不要の新補題）＋
+    `adm_zero` で transCondII=false＝空虚を機械証明）
+    ②親統合: `otMultiIntCond_term`（narrow 還元＋otInt_term＋exchIII/IV/V 脚＋①）で
+    最終フィールド陥落 → **`TerminationResidual` 構造ごと削除、全 `_term` helper と
+    公開 6 定理（`Trans_STPS_OT_B`/`Trans_fseq_descend`/`PSS_wf`/`PSS_acc`/
+    `p_8_7_termination`/`STPS_prod_pos_subset_Fdom`）が仮定 0 に**。
+    build 3301 jobs 緑・checker rc=0・axioms = propext/Classical.choice/Quot.sound・
+    audit VERDICT=0。板: `8.7-termination`[r1]/`8.7-fseq-descend`[r4]/
+    `8.7-Trans-preserves-OT`[r38] ✅、8.3 の ⛔ 解消。
+    **残り＝原文カバレッジのみ**: `8.3-Trans-fseq-condII`（p ファイル新規作成、
+    exchII 等式は既に無条件）/`8.5-Trans-fseq-condV`（instantiation close、供給 6 Props
+    全て無条件化済み）/`8.4-fseq-basic`(2)(3)/`8.4-oper-basic`/`8.4-scb-decompositions`/
+    `8.5-scb-decompositions`/`8.5-fseq-scb-decomposition`/`8.6-Trans-fseq-condVI`/
+    `8.7-Pred-oper0`（一般形）。停止性連鎖には全て不要。
   - 🎉 **Wave AV＋最終配線（2026-07-21、Opus 3＋親、全緑）— `condIIIVts` field 陥落・§8.2 condII/IV 命題 ✅**:
     ①スライス自然性 `tsx_c1_eq_sn`/`tsx_c2_eq_sn` 完全 port（`8.2-condIIIV-slice-nat`。
     Mark/Trans の fuel head を unfold しない calc+congrArg 流儀が鍵）
