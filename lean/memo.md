@@ -232,10 +232,10 @@ parent/Lng 形に落としてから作業する。
   - ✅ **§8.3 条件(II)の下での展開規則**[r22] — 全 4 項目 ✅（kind0 3 本＋p ファイル `8.3-Trans-fseq-condII`=Wave AX 新設。結論(4) 逐語・(1)-(3) は Isabelle p 文と同じ modelling note で内部局所量として deferred。A36 は取り下げ済で原文のまま）
   - ✅ **§8.6 条件(VI)の下での展開規則**[r11] — 全 4 項目 ✅（`p_8_6_Trans_fseq_condVI_uncond` = 8.6-Trans-fseq-condVI-close、3 named Props を公開供給で落とした無条件 twin）
   - ✅ **§8.5 条件(V)の下での展開規則**[r15] — 全 5 項目 ✅（condV 交換則 `_vc` twins／scb分解 part(5)=A29 訂正形の無条件＋原文形の機械反証／基本列 scb 分解=非許容枝 `p_8_5_fseq_scb_decomp_nadm_uncond`（pss_paper 2128 は DEFERRED、Lean は statable 分を転記＝parity 超過。許容枝・一意性節は原文どおり 未転記で Isabelle parity）。旧詳細は git 履歴）
+  - ✅ **§8.7 主結果**[r53] — 全 9 項目 ✅（主定理 `p_8_7_termination` 無条件・公理 3 つ。最後の `8.7-Pred-oper0`[r5] は **beyond-Isabelle**: 原文 p_8_7_OT_tail_annihilable scb 形（Isabelle sorry）を `scb_body_annihilable_ta`（btWeight 強帰納カスケード、8.7-scb-tail-annihilation 682 行）で完全証明し `p_8_7_Pred_oper0_pg_uncond` 無条件着地。詳細は git 履歴と Wave BB 節）
+  - 🚨 `8.4-fseq-basic` — part(1)[r1]/part(3)=`8.4-fseq-basic-close`[r1] 無条件。part(2)[r4]=frontier `8.4-l6-readouts-close`: 残差 `L6BaseCoreResidual`（正準 3 事実: base5 型 L1=operB-base 一致/Lp 単主部/ub pin）。壁は §8.4 L1/Lp slice 幾何＝`L1SliceData_se`（8.4-slice-ext-engines の named leaf、l1Base_se が L1 flat を無条件構築済）＋Lp rightend surgery（cfbx_reg 系）。数値 41/41（経由: part2→l6-slice-close→l6-base-readouts→l6-readouts-close）
   - ✅ `8.4-oper-basic`[r1] — Wave AY 新設。part(1) 両枝/part(2)簡約/part(5)full（A31 guard）を既存資産へ委譲＋s84c1 port。parts(2-mono)(3)(4) は pss_paper:1955 DEFERRED と同一 scope＝未転記（header に明記）。名前 crossover 回避（`oper_rule_basic_*`）
   - ✅ `8.4-scb-decompositions`[r1] — Wave AY 新設、公開 7 本（dec1 engine で存在残差 も討伐）。(4)(5)閉形式・六つ組・一意性節は pss_paper:1968-1999 DEFERRED と同一 scope＝未転記（header に明記）
-  - 🚨🤖 `8.7-Pred-oper0`[r4] — 一般形は真（806/806、旧偽判定は反転済み）。 `8.7-Pred-oper0-general` が一般文 `PredOper0_pg` を単一残差 `TransPredScbInsert_pg`（Trans/Trans∘Pred の scb 文脈共有＝原文 6018-6058 の本体、 Isabelle 側も未証明）へ無条件還元＋具体 2 系列で end-to-end 実証。 零化側は `trailing_principal_annihilable` が既在（asset-blindness 13 回目）
-  - 🚨🤖 `8.4-fseq-basic` — part(1)[r1]/part(3)=`8.4-fseq-basic-close`[r1] 無条件。part(2)[r3]=frontier `8.4-l6-base-readouts`: operB 側 leg (A)＋塔帰納＋op1pow 橋まで討伐済み、残差 `L6BaseReadoutsResidual`（底読出し 3 葉、壁=cfbx_reg 正則性 corpus 未 port）1 本 modulo（経由: 8.4-fseq-basic-part2 → 8.4-l6-slice-close → 8.4-l6-base-readouts）
   - ✅ `8.1-diagSeq-Trans` — `u<v` の対角列について、十分な任意燃料で
     `TransAux` と `MarkAux · 0` がともに `D_u(D_v 0)` となる同時帰納不変条件を証明した。
     2列基底は一列計算を直接展開し、帰納段階は末尾上段親が直前列、かつその `Adm` が 0
@@ -284,27 +284,9 @@ parent/Lng 形に落としてから作業する。
     addBT_principal_split（_p1/_p2 と 7.2-add-scb 私的）。
     ⚠️重複警告: `adm_row1_ancestry`/`row1_implies_row0`/`Trans_singleton` が複数ファイルで
     private 重複 → PSS/Adm・PSS/Defs・PSS/Trans へ昇格すべき。
-  - ✅ `8.7-const00-Trans` — `Trans (replicate (j₁+1) (u,u)) = multBT (D_u 0) (if u=0 then j₁
-    else j₁+1)`。Isa `p_8_7_const00_Trans` と逐語一致を親が確認。定数列は親子辺ゼロ
-    → RedCondA/B → RTPS、`Pcut = j₁`、j₁ 帰納で multi 分岐が 1 列ずつ `D_u 0` を積む
-    （Isa: `m_8_7_cnst_Trans`, pss_wip.thy 16005）。rc=0・sorry 0・axioms 正常・
-    python audit 81 例 0 反例（`python/const00_trans_audit.py`）。[r1]
-  - ✅ `8.7-OT-tail-annihilable` — **Wave G で本体完成後、`OT_B_wf` も閉じて無条件化済み**。[r1]
-    p 文 = pss_paper:2284、Isa `y3t_toplevel_OT_tail_annihilate`（layerC:19355）＝
-    layerB `m_8_7_toplevel_OT_tail_annihilate`（27288）。wf 帰納の構造は 1:1。
-    🎉**Isabelle より強い**: Isabelle は両版とも一歩降下 `step` を**仮定**しており、
-    layerB:27264-27285 が「step を全 t'∈OT_B で discharge するには operB の
-    OT_B 上全域性＝[Buc1] Lemma 3.2 が要る（引用 buc1_* に無い）＝これが正確な残差」と
-    明記している。**Lean では `operB` が構成的に全域**（`bOperCore` の
-    `termination_by` WF 再帰）なので step は討伐でき、残差は `OT_B_wf` だけになった。
-    → **7.1-buchholz-wf が閉じれば本項目も自動的に閉じる**。
   - `8.2-*` — `LastStep` の添字は A9 で訂正済みの形を使う。
     Isa の注意: `Pred_oper0` は標準入力で偽（反例 `M=(0,0)(1,1)(2,1)`）だが**定理は健全**
     （`Σ_B` 降下和ルートで回避）。**原文 §8 の証明には gap があるが、定理は真。**
-  - ✅ `8.7-OT-examples` — OT_B 基本例 4 本（`OT_examples_1..4`）。**親が main loop で直接証明**
-    （workflow 全滅のため）。(1)(2)=gather の if 分岐を明示分解、(3)=multBT→replicate 帰納＋
-    descP/isOT/dfree の replicate 補題、(4)=塔の G 集合特徴付け＋狭義単調の帰納
-    （Isa `m_8_7_OT_examples` の構造をそのまま移植）。rc=0・sorry 0・axioms 正常・#guard 5 本。[r1]
   - ✅ `8.4-rightmost-replace-Trans`[r8] — Wave R で A30/A31 の反例を機械証明＋訂正形を
     green-modulo Prop `Rightmost84ReplaceCorrected` として露出（原文 DEFERRED、8.5-scb-dec 方式）。
     残=訂正形の universal 証明。訂正 **A30**（scb 分解が偽。長さ勘定で決まる）
@@ -364,37 +346,9 @@ parent/Lng 形に落としてから作業する。
     ⚠️正直な留保: w84x engine が出すのは弱い `Trans(M[n]) < Trans(M)[n]` で、
     原文 (1) の強形は **Isabelle 側でも未証明**。descend の Prop は ∃k 形なので
     k := m で足り実害なし。
-  - ✅ `8.7-Trans-preserves-OT`[r38] — **無条件クローズ（2026-07-21 Wave AW）**: `Trans_STPS_OT_B`（8.7-termination）が仮定 0。OT 柱 38 ファイルの合流。（旧記録: Wave F で green-modulo 完成（緑、12 Props）。）
-    blueprint `y5_Trans_OT_B` は census 塔への一行だったので追跡し、実体
-    **`otx_Trans_preserves_OT_dispatch`（layerB:85710）**＝ST_PS 帰納を全分岐移植
-    （base＋11 分岐: Lng≤1／N[n]=Pred N の 4 枝／N[n]≠Pred N の condI–VI＋multiT）。
-    🚨**構造的発見: OT 柱に必要なのは {OTint, OTpred, OTmulti, exchI, exchII} だけで
-    `LbaseU` は descent 専用＝2 本柱は分離可能**（Isabelle は census で同時に証明して
-    いるが、分ける必要はない）。`Trans_preserves_OT : ∀ M, STPS M → Trans M ∈ OT_B` は
-    descend の `FseqDesc_Trans_preserves_OT` **より強い**（monoT も Lng 条件も不要）。
-    8.6-condVI の `TransPreservesOT` Prop も同形で同時に討てる。
   - `8.5-*` — **最難所**。Isa の keystone は
     `bpHeadT(Trans(slice@B)) = C(bpHeadT(Trans slice))`（depth-shift self-similar）。
     13 個の死路が `isabelle/memo.md` に列挙してある。**着手前に必ず読め。**
-  - ✅ `8.7-OT-scb-recursive` — **親が main loop で直接証明（一発緑）**。scb 分解の核は
-    右スパイン principal＝`isOT` 下方遺伝。descent は 7.2-scb-unique の
-    `scb_occurrence_rightNodes_suffix` の帰納骨格（`scb_last_dichotomy`+
-    `scb_cut_reaches_last` 公開済）を流用、conclusion を `isOT_BP pp` に差し替え。
-    Isa: `m_8_7_OT_scb_recursive` (layerB/pss_wip.thy:17915)。rc=0・axioms 正常。[r1]
-  - ✅ `8.7-OT-dom-hereditary` — **親が main loop で直接証明（一発緑）**。同じ descent 骨格で
-    conclusion を `domTag t = .naturals` に。principal ステップは `domTagBP` の match が
-    `.naturals` を透過（`a ≠ BZero` は長さ勘定）、multi は `domTag_snoc_bf`（7.1 公開）。
-    `BDom_toSet_eq_NatSet_iff`+`nestedD0_not_nat` は 7.2-scb-unique private の複製（昇格候補）。
-    Isa: `m_8_7_OT_dom_hereditary` (layerB/pss_wip.thy:17802)。rc=0・axioms 正常。[r1]
-  - ✅ `8.7-fseq-descend`[r4] — **無条件クローズ（2026-07-21）**: `Trans_fseq_descend`（8.7-termination）が仮定 0。（旧記録: Wave E で green-modulo 完成（緑、sorry 0、853 行）。）
-    `m_8_7_fseq_descend_dispatcher`（Isa layerB:52353）＋`f7x_fseq_descend_mono`
-    （52051）を 1:1 移植し、**p 文 `p_8_7_fseq_descend`（pss_paper:2253）と
-    `p_8_3_TransCondII_oper_descend` の両方を出力**（＝⛔ だった 8.3 項目も同時に解禁）。
-    **露出した named Prop は 7 交換則系の 16 本のみ**（FseqDesc_Trans_preserves_OT／
-    exchI/II/III-IV/V/VI 等）。dispatcher の場合分け・mono 6 分岐・multi 枝・
-    条件(I)/(VI) の `Lng M = 2` 枝（oper 直接計算＋`const00_Trans`/`two_column_Trans`）
-    は**自前証明**＝Isabelle の補題 2 本を回避。
-    **停止性への幹線が Lean でもチェックリスト化された**: 残りは 16 Props の討伐。
   - 🚨🚨🚨 **`CondII_masterCF` の RT_PS 形は偽だった（2026-07-17、Wave K が発見・親が修正）**。
     経緯: engine `8.3-TransCondII-engine` は Isabelle の `masterCF`（`MR : M ∈ RT_PS`）に
     合わせて Prop を **RTPS** 上で宣言していたが、Isabelle の `c2sx_condII_masterCF`(87430) は
@@ -439,30 +393,6 @@ parent/Lng 形に落としてから作業する。
     → **親が 2026-07-17 に `oper_len2_fd`/`parent_one_zero_fd`（8.7-fseq-descend）と
     `operB_succ_body_ci`（8.1-Trans-fseq-condI）を public 昇格**（両ファイル緑・衝突なし）。
     次の agent はこの 2 Props を新規数学なしで閉じられる。
-  - ✅ `8.7-termination`[r1] ★ — 🎉🎉 **無条件達成（2026-07-21、Wave AW 統合）**: `p_8_7_termination` 仮定 0・sorry 0・axioms = propext/Classical.choice/Quot.sound。`TerminationResidual` 構造ごと削除、audit VERDICT=0。（旧記録: Wave J で組み上がった（緑、公開 6 本）＝残差は 27 本ちょうど。）
-    `p_8_7_termination (H : TerminationResidual) (f M n) (hM : STPS M) (hn : 1 ≤ n)
-    (hf : ∀ k, 1 ≤ k → 1 ≤ f k) : Fdom f M n` が **pss_paper:2329 と逐語一致**（親が確認）。
-    原文の集合形（`ST_PS × ℕ₊ ⊂ Dom(F)`, content.md 5851）も `STPS_prod_pos_subset_Fdom` で提供。
-    訂正は該当なし（A26/A27/A38 は §8.7 の**補題**についてで、しかも取り下げ済）。
-    構成 = `buchholz_wf`（仮定ゼロ）＋OT 柱（12 OTdisp_*）＋降下柱（16 FseqDesc_*、14 配線済）。
-    Isabelle の `wf_subset∘wf_inv_image` は Lean の `InvImage.wf`＋Acc 帰納に。
-    **残差 27 の根拠は機械検証**（`python/audit_8_7_termination.py`: 123 ファイルの import 閉包を
-    歩いて葉 Prop を数え **28 葉、うち `TransPreservesOT` は OT 柱の結論と同一なので 12 OTdisp_*
-    から導出できて 27**。閉包内に**主張の異なる同名宣言なし**も確認＝8.4/8.5 の地雷は解消済、
-    `RankSuccD1posLeg`/`OT_B_wf` は CLOSED 表示）。
-    **Isabelle より短い**: `y5_Fdom` は ST_PS 非空性のため oper の 3 分岐展開に ~120 行を要するが、
-    Lean は §6.7 の `STPS_RTPS`＋`RTPS_TPS`（`TPS M ≡ M ≠ []`）で 2 行。
-    ⚠️`8.7-Pred-oper0` は経由していない（標準入力で偽、反例 M=(0,0)(1,1)(2,1)。Isabelle も
-    Σ_B 降下和で迂回。定理自体は健全）。
-    🚨**agent が挙げた 2 つの留保（隠さず記録）**: ①**`8.7-fseq-descend:50` のヘッダ
-    「全 16 本は #guard 数値検証済み＝空虚ではない」は過大主張**（同ファイルの #guard は 1 個だけ）。
-    実際 `OTdisp_exchII`＝条件 (II) は **ST_PS 上で 0 インスタンス**（18318/32056 標準形、
-    8.3-TransCondII-engine:73 も既に記録）＝ST_PS 上は空虚の疑い。**健全性は無傷**:
-    `CondII_masterCF` は RT_PS 上の言明で witness が実在する（(0,0)(1,1)(2,2)(2,0)）ので
-    非空虚な仮定であり、空回りするのは (II) 枝だけ。②Exch84_*／CondVI*／未配線 3 本の
-    FseqDesc_* には専用の数値監査が無い。
-    **最良のレバレッジ = 12 OTdisp_***（OT 柱と、`FseqDesc_Trans_preserves_OT`＋
-    `TransPreservesOT` 経由で降下柱の exchVI の**両方**に効く）。
   - 🎉 **Wave L（2026-07-18、Opus 16 並列）で `TerminationResidual` を 22 → 9 葉に削減**。
     主定理 `p_8_7_termination` は緑・公理 `[propext, Classical.choice, Quot.sound]` のまま。
     **無条件で閉じた葉（新規ファイル、house pattern）**:
@@ -639,6 +569,19 @@ parent/Lng 形に落としてから作業する。
     （素 `VE4BaseDeep` の弱化）。**残**={`RunSqueeze_vn`（=descending squeeze＋nextrel0 valley
     squeeze＋単一列幾何の値証明）, `VE3RunBase_bd`/`VE3RunStep_bd`/`PIN_bd`/`TSPIN_bd`（§7.4 surgery）,
     field-level 再配線（DTPS→`VE34Reg4D`で `VE3/4BaseDeepD` を場に接続、dead `condIIIVterminalSlice_of_runpeel` 退役）}。
+  - 🎉 **Wave BB（2026-07-22、Opus 2、全緑）— beyond-Isabelle 撃破で §8.7 完結、残 1 葉**:
+    ①🎉 **`8.7-Pred-oper0` 完全クローズ**: 一般 scb 尾部零化 `scb_body_annihilable_ta`
+    （btWeight 強帰納: 末尾主部の body を再帰零化→8.6 エンジンで除去→prefix 再帰）を
+    構築し、condII は `condII_c2_val_holds`、**condIV は RTPS transC2Core 第4枝を自前展開**
+    （STPS 限定の Cnv 形を回避）で両クローズ →
+    `predOper0_scbCtx_residual_holds_pc`＋`p_8_7_Pred_oper0_pg_uncond` **無条件**
+    （`8.7-scb-tail-annihilation` 682 行。原文 p_8_7_OT_tail_annihilable scb 形＝
+    Isabelle sorry の初機械証明）→ **§8.7[r53] 全 ✅ 畳み**
+    ②L6: producer 座標の文字列代数を全 peel し、残差を `L6BaseCoreResidual`
+    （正準 3 事実）へ尖鋭化（`8.4-l6-readouts-close`、数値 41/41）。
+    値ショートカット Rm84LpValue/MnformBottomResidual は偽と再確認＝真の壁は
+    `L1SliceData_se`（8.4-slice-ext-engines）＋Lp rightend surgery の port。
+    **残り open = part(2) の 1 葉のみ。**
   - 🎯 **Wave BA（2026-07-21、Opus 2、全緑）— 残 2 葉の縮退が深部フロンティアに到達（wave 一旦停止）**:
     ①L6: op1pow 橋を完全 port（y3l_op1pow_take: op1 反復=take）。残る底読出し 3 葉は
     `L6BaseReadoutsResidual` に束ね、**cfbx_reg 正則性（REGS/REGSP 未 port、
