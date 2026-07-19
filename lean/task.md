@@ -34,20 +34,4 @@
 
 - ✅ **§7 Buchholz の表記系への翻訳**[r37]
 
-- 🚨 **§8 停止性**
-  - ✅ §8.1 条件(I)の下での展開規則[r9]
-  - ✅ §8.2 強単項性[r49]
-  - ✅ §8.3 条件(II)の下での展開規則[r22]
-  - 🚨 §8.4 条件(III)か(IV)の下での展開規則
-    - ✅ 命題（条件(III)か(IV)の下での `Trans` と基本列の交換関係） — `8.4-Trans-fseq-condIII-IV`[r18]
-    - ✅ 補題（右端の非許容直系先祖の基本性質） — `8.4-rightmost-nonadm-ancestor`[r1]
-    - 🚨 補題（条件(III)か(IV)の下での基本列の基本性質） — `8.4-fseq-basic`
-      - ✅ part (1) — `8.4-fseq-basic`[r1]
-      - ✅ part (3) — `8.4-fseq-basic-close`[r1]
-      - 🚨 part (2) — `8.4-l6-readouts-close`[r6]
-    - ✅ 補題（条件(III)～(V)の下での右端の置き換えと `Trans` の関係） — `8.4-rightmost-replace-Trans`[r8]
-    - ✅ 補題（条件(III)～(VI)の下での展開規則の基本性質） — `8.4-oper-basic`[r1]
-    - ✅ 補題群（条件(III)～(VI)の下での各種 scb 分解） — `8.4-scb-decompositions`[r1]
-  - ✅ §8.5 条件(V)の下での展開規則[r15]
-  - ✅ §8.6 条件(VI)の下での展開規則[r11]
-  - ✅ §8.7 主結果[r53]
+- ✅ **§8 停止性**[r197]

@@ -227,15 +227,19 @@ parent/Lng 形に落としてから作業する。
 - ✅ **§7 Buchholz の表記系への翻訳**[r37] — 全 4 節＋[Buc1] 3.2a/3.2 ✅、`7.1-buchholz-wf` も
   自前証明済（仮定 0）。詳細は git 履歴参照。Isa: `m_7_*`。
 
-- **§8 停止性** — Isa: `m_8_*` ＋ `layerC`。**停止性 = 「基本列の降下性」＋「`OT` 所属」の 2 本柱**。
-  - ✅ **§8.2 強単項性**[r49] — 全 7 項目 ✅（詳細注釈は畳み込みで削除、git 履歴参照。condIIIV 終切片=Wave AH〜AV+配線 `condIIIVterminalSlice_holds`、condV 終切片=codex close）
-  - ✅ **§8.3 条件(II)の下での展開規則**[r22] — 全 4 項目 ✅（kind0 3 本＋p ファイル `8.3-Trans-fseq-condII`=Wave AX 新設。結論(4) 逐語・(1)-(3) は Isabelle p 文と同じ modelling note で内部局所量として deferred。A36 は取り下げ済で原文のまま）
-  - ✅ **§8.6 条件(VI)の下での展開規則**[r11] — 全 4 項目 ✅（`p_8_6_Trans_fseq_condVI_uncond` = 8.6-Trans-fseq-condVI-close、3 named Props を公開供給で落とした無条件 twin）
-  - ✅ **§8.5 条件(V)の下での展開規則**[r15] — 全 5 項目 ✅（condV 交換則 `_vc` twins／scb分解 part(5)=A29 訂正形の無条件＋原文形の機械反証／基本列 scb 分解=非許容枝 `p_8_5_fseq_scb_decomp_nadm_uncond`（pss_paper 2128 は DEFERRED、Lean は statable 分を転記＝parity 超過。許容枝・一意性節は原文どおり 未転記で Isabelle parity）。旧詳細は git 履歴）
-  - ✅ **§8.7 主結果**[r53] — 全 9 項目 ✅（主定理 `p_8_7_termination` 無条件・公理 3 つ。最後の `8.7-Pred-oper0`[r5] は **beyond-Isabelle**: 原文 p_8_7_OT_tail_annihilable scb 形（Isabelle sorry）を `scb_body_annihilable_ta`（btWeight 強帰納カスケード、8.7-scb-tail-annihilation 682 行）で完全証明し `p_8_7_Pred_oper0_pg_uncond` 無条件着地。詳細は git 履歴と Wave BB 節）
-  - 🚨 `8.4-fseq-basic` — part(1)[r1]/part(3)=`8.4-fseq-basic-close`[r1] 無条件。part(2)[r6]: `L6BaseCoreResidual`（8.4-l6-readouts-close）の 3 事実は Wave BC で 2 残差へ縮退——(3')=`l6_base_leaf3_holds` modulo `L1SliceWrapperBridge`（8.4-l1-slice-close。producer↔幾何の座標橋。⚠️L1SliceData_se は l1SliceData_holds で既討伐＝14 回目の asset-blindness）、(4')(2)=`lp_half2_lpc` modulo `LpReadoutResidual`（8.4-lp-readout-close。Lp 単主部＋lpv flat）。両残差とも数値 41/41 の真命題。壁=Isabelle base5 wrapper pinning（wip:60231）＋m_8_4_rightend_Trans（wip:54650）＝cfbx_reg/REGS/REGSP corpus port。攻め筋 memo: base5 の sbL/holeL1 局所構成を c2hole 資産（l1SliceData_holds/leaf3_cr2/c2hole_scb_ch）で再現
-  - ✅ `8.4-oper-basic`[r1] — Wave AY 新設。part(1) 両枝/part(2)簡約/part(5)full（A31 guard）を既存資産へ委譲＋s84c1 port。parts(2-mono)(3)(4) は pss_paper:1955 DEFERRED と同一 scope＝未転記（header に明記）。名前 crossover 回避（`oper_rule_basic_*`）
-  - ✅ `8.4-scb-decompositions`[r1] — Wave AY 新設、公開 7 本（dec1 engine で存在残差 も討伐）。(4)(5)閉形式・六つ組・一意性節は pss_paper:1968-1999 DEFERRED と同一 scope＝未転記（header に明記）
+- ✅ **§8 停止性**[r197] — 全 7 節 ✅。`8.4-part2-close` の
+  `oper_basic_part2_uncond`（part (2)[r7]、公理 3 つ）で §8.4[r38] と §8[r197] を完結。
+  **原文カバレッジ完了**（全進捗ツリー ✅）。主定理 `p_8_7_termination` は従来どおり無条件。
+
+### §8 作業ログ（史料）
+
+  - 🎉 **Wave BD（2026-07-20、Codex、全緑）— 最終葉を閉じ原文カバレッジ完了**:
+    既存の無条件 `sliceExtTupleResidual_holds_nc2`／corner dispatch から canonical
+    `MnformResidual M` を直接取り、その同一証人上で `oper_rule_basic_part5` の L 切片塔帰納と
+    `scb_fseq_kind1` の operB 閉形式を一致させた。過剰に全称量化された中間
+    `L1SliceWrapperBridge`／`LpReadoutResidual` の再同定を迂回し、原文 part (2) の逐語形
+    `oper_basic_part2_uncond` を `8.4-part2-close` で無条件証明。kimina、全 3319 jobs、
+    `8.7-termination` canary はすべて緑、公理は `[propext, Classical.choice, Quot.sound]`。
   - ✅ `8.1-diagSeq-Trans` — `u<v` の対角列について、十分な任意燃料で
     `TransAux` と `MarkAux · 0` がともに `D_u(D_v 0)` となる同時帰納不変条件を証明した。
     2列基底は一列計算を直接展開し、帰納段階は末尾上段親が直前列、かつその `Adm` が 0
