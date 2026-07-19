@@ -37,29 +37,24 @@
 - 🚨 **§8 停止性**
   - ✅ §8.1 条件(I)の下での展開規則[r9]
   - ✅ §8.2 強単項性[r49]
-  - 🚨 §8.3 条件(II)の下での展開規則
-    - ✅ 補題（第 `0` 種型基本列の基本不等式） — `8.3-kind0-base-ineq`[r1]
-    - ✅ 補題（第 `0` 種型基本列の基本分岐規則） — `8.3-kind0-branch-rule`[r1]
-    - ✅ 補題（第 `0` 種型基本列の基本基点関係） — `8.3-kind0-base-basepoint`[r1]
-    - 🚨🤖 命題（条件(II)の下での `Trans` と基本列の交換関係） — `8.3-Trans-fseq-condII`
+  - ✅ §8.3 条件(II)の下での展開規則[r22]
   - 🚨 §8.4 条件(III)か(IV)の下での展開規則
     - ✅ 命題（条件(III)か(IV)の下での `Trans` と基本列の交換関係） — `8.4-Trans-fseq-condIII-IV`[r18]
     - ✅ 補題（右端の非許容直系先祖の基本性質） — `8.4-rightmost-nonadm-ancestor`[r1]
-    - 🚨🤖 補題（条件(III)か(IV)の下での基本列の基本性質） — `8.4-fseq-basic`[r1]
+    - 🚨 補題（条件(III)か(IV)の下での基本列の基本性質） — `8.4-fseq-basic`
+      - ✅ part (1) — `8.4-fseq-basic`[r1]
+      - ✅ part (3) — `8.4-fseq-basic-close`[r1]
+      - 🚨 part (2) — `8.4-fseq-basic-close`
     - ✅ 補題（条件(III)～(V)の下での右端の置き換えと `Trans` の関係） — `8.4-rightmost-replace-Trans`[r8]
     - 🚨 補題（条件(III)～(VI)の下での展開規則の基本性質） — `8.4-oper-basic`
     - 🚨 補題群（条件(III)～(VI)の下での各種 scb 分解） — `8.4-scb-decompositions`
   - 🚨 §8.5 条件(V)の下での展開規則
-    - 🚨🤖 命題（条件(V)の下での `Trans` と基本列の交換関係） — `8.5-Trans-fseq-condV`
+    - ✅ 命題（条件(V)の下での `Trans` と基本列の交換関係） — `8.5-Trans-fseq-condV`[r11]
     - ✅ 補題（条件(V)の下での `Joints` と `FirstNodes` と `t₂` の基本性質） — `8.5-Joints-FirstNodes-basic`[r1]
     - ✅ 補題（条件(V) admissible 底3値と non-admissible 導出層） — `8.5-exchV-values-close`
     - 🚨 補題（条件(V)の下での各種 scb 分解） — `8.5-scb-decompositions`
     - 🚨 補題（条件(V)の下での基本列の scb 分解） — `8.5-fseq-scb-decomposition`
-  - 🚨 §8.6 条件(VI)の下での展開規則
-    - ✅ 補題（公差 `(1,0)` のペア数列の `Trans` の基本性質） — `8.6-const2nd-Trans` [r1]
-    - ✅ 補題（公差 `(1,1)` のペア数列の `Trans` の展開規則） — `8.6-diagSeq-Trans-fseq` [r1]
-    - ✅ 補題（順序数項の末尾単項の零化可能性） — `8.6-trailing-principal-annihilable` [r1]
-    - 🚨🤖 命題（条件(VI)の下での `Trans` と基本列の交換関係） — `8.6-Trans-fseq-condVI`
+  - ✅ §8.6 条件(VI)の下での展開規則[r11]
   - 🚨 §8.7 主結果
     - ✅ 補題（公差 `(0,0)` のペア数列の `Trans` の基本性質） — `8.7-const00-Trans`[r1]
     - ✅ 補題（基本列の降下性） — `8.7-fseq-descend`[r4]

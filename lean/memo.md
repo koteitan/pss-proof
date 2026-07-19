@@ -229,6 +229,10 @@ parent/Lng 形に落としてから作業する。
 
 - **§8 停止性** — Isa: `m_8_*` ＋ `layerC`。**停止性 = 「基本列の降下性」＋「`OT` 所属」の 2 本柱**。
   - ✅ **§8.2 強単項性**[r49] — 全 7 項目 ✅（詳細注釈は畳み込みで削除、git 履歴参照。condIIIV 終切片=Wave AH〜AV+配線 `condIIIVterminalSlice_holds`、condV 終切片=codex close）
+  - ✅ **§8.3 条件(II)の下での展開規則**[r22] — 全 4 項目 ✅（kind0 3 本＋p ファイル `8.3-Trans-fseq-condII`=Wave AX 新設。結論(4) 逐語・(1)-(3) は Isabelle p 文と同じ modelling note で内部局所量として deferred。A36 は取り下げ済で原文のまま）
+  - ✅ **§8.6 条件(VI)の下での展開規則**[r11] — 全 4 項目 ✅（`p_8_6_Trans_fseq_condVI_uncond` = 8.6-Trans-fseq-condVI-close、3 named Props を公開供給で落とした無条件 twin）
+  - ✅ `8.5-Trans-fseq-condV`[r11] — **無条件クローズ（Wave AX、8.5-Trans-fseq-condV-close）**: p ファイル公開 5 定理の無条件 `_vc` twin 全部（6 Props を Wave AW と同一の公開連鎖で供給。 内容一致確認済 content.md:5153 / pss_paper.thy:2070）
+  - 🚨 `8.4-fseq-basic` — part(1)=`8.4-fseq-basic`[r1]（Wave D）、part(3)=`8.4-fseq-basic-close`[r1] 無条件（`oper_basic_part3_uncond`、y3h engine port）。**残=part(2)**: `oper_basic_part2` は単一残差 `Oper84BasicPart2Residual`（=L6 slice 閉形式 Trans(M[n+1][1]^w′)、Isabelle y3i_L6_various_scb_IIIIV）modulo。 A33 は取り下げ済（経験的に真 130/130）
   - ✅ `8.1-diagSeq-Trans` — `u<v` の対角列について、十分な任意燃料で
     `TransAux` と `MarkAux · 0` がともに `D_u(D_v 0)` となる同時帰納不変条件を証明した。
     2列基底は一列計算を直接展開し、帰納段階は末尾上段親が直前列、かつその `Adm` が 0
@@ -249,42 +253,6 @@ parent/Lng 形に落としてから作業する。
     全 4 ケース 780 例（120/120/420/120）で反例 0、既存の全 819 列チェックサムも
     `531635224` のまま一致。全 `lake build` は 3,019 jobs 成功。
     Isa: `m_8_1_Pred_diagSeq_Trans`, `p_8_1_Pred_diagSeq_Trans`。[r1]
-  - ✅ `8.6-const2nd-Trans` — 公差 `(1,0)` の一般列
-    `((m+j,u))_{j=0}^{j₁}` の `Red` が正規列 `((u+j,u))_{j=0}^{j₁}` になることを、
-    `RedCondA`・非複項性と `Red_rebase_nonmulti` から直接証明した。正規列については
-    一定な第 1 行から全添字の許容性を、第 0 行の連続辺から直前列が親であることを示し、
-    十分な任意燃料の `TransAux` を `j₁` で帰納した。非零段階の `c₁=D_u0`、
-    条件(I)/(III)による `c₂=D_u(D_u0)`、塔の最内側 scb 文脈を実行探索器に対して一般の
-    高さで固定し、parser の完全性から置換後が一段高い塔になることまで閉じた。
-    公開定理 `const2nd_Trans` は原文どおり `M` の明示定義と `TPS M` を受け、右辺を
-    関数反復 `(D_u)^[j₁+1] 0` で述べる。sorry 0、axioms は
-    `[propext, Classical.choice, Quot.sound]`。独立 Python モデルは
-    `0≤m,u,j₁≤4` の全 125 例（零 5、塔 120）で `Red`・`Trans` とも反例 0、既存の
-    全 819 列チェックサムも Lean/Python とも `531635224` のまま一致。全 `lake build` は
-    3,020 jobs 成功。Isa: `m_8_6_const2nd_Trans`, `p_8_6_const2nd_Trans`。[r1]
-  - ✅ `8.6-diagSeq-Trans-fseq` — 対角列 `diagSeq u (u+j₁)`（`1<j₁`）の基本列を、
-    第0行 `u+j`・第1行 `min (u+j) (u+j₁-1)` で表す正規展開列 `runSeq` として定義し、
-    `oper` の逐語定義から両者の一致を証明した。展開列では第0行の親が常に直前列、
-    第1行の親が対角部では直前列・定数部では対角部右端となることを示し、条件(A)(B)から
-    簡約性を直接導いた。十分な任意燃料の `TransAux` を定数部の長さで帰納し、右端基点
-    `c₁=D_p0`（`p=u+j₁-1`）、条件(III)による `c₂=D_p(D_p0)`、最内側 scb の実行探索と
-    parser 完全性を接続して `Trans(runSeq u p n)=D_u(D_p^n0)` を得た。公開定理
-    `diagSeq_Trans_fseq` は記事どおり `M` の明示定義・`TPS M`・`0<n`・`1<j₁` を受ける。
-    sorry 0、axioms は `[propext, Classical.choice, Quot.sound]`。独立 Python モデルは
-    `0≤u≤4, 2≤j₁≤6, 1≤n≤4` の全100例で `oper/runSeq`・`Red`・`Trans` とも反例0。
-    既存の全819列チェックサムも `531635224` のまま一致し、全 `lake build` は3,021 jobs成功。
-    Isa: `m_8_6_diagSeq_Trans_oper`, `p_8_6_diagSeq_Trans_oper`。[r1]
-  - ✅ `8.6-trailing-principal-annihilable` — 訂正 A23 後の正しい Buchholz 基本列に対し、
-    原文どおり任意の scb/right-spine 文脈中の `D_u(t'+D_v0)` が `1≤k≤v+1` 回の `[0]` で
-    `D_ut'` へ置換されることを証明した。旧 A25 は A23 の旧誤読から生じたため撤回済み。
-    一歩の核心を「即時削除または `D_v0→D_{v-1}0`」の二分岐として機械化し、外側が
-    `T_{v-1}` のままなら plain descent、途中で自然数域へ移るなら最初の kind-1 host が
-    正確に `D_{v-1}0` を渡すことを、`RightNodes` suffix と `rnDom` で示した。その後 `v` の
-    強帰納法で上界を閉じた。公開定理 `trailing_principal_annihilable` は sorry 0、axioms は
-    `[propext, Classical.choice, Quot.sound]`。Lean 内にも旧反例候補の正しい 2 手軌道を
-    `#guard` で固定。独立 Python モデルは `t'` 6種、`0≤u,v≤4`、深さ2までの一般右端文脈
-    21,900例で一歩分岐・有界零化とも反例0。既存の全819列チェックサムは Lean/Python とも
-    `531635224` のまま一致し、全 `lake build` は3,022 jobs成功。[r1]
   - ✅ `8.1-condI-III-c1-around` — 訂正 **A20**（補題(1) は非簡約 1 列切片で偽）
     ＋ **A21**（補題(5) の条件(III)で `j₀ᴺ = j′₀` が偽）。5 部構成。[r2]
     **(1)(2)(3-1)(3-2)(5) 緑**（(1) は A20 訂正の完全形。反例定理
@@ -330,31 +298,6 @@ parent/Lng 形に落としてから作業する。
   - `8.2-*` — `LastStep` の添字は A9 で訂正済みの形を使う。
     Isa の注意: `Pred_oper0` は標準入力で偽（反例 `M=(0,0)(1,1)(2,1)`）だが**定理は健全**
     （`Σ_B` 降下和ルートで回避）。**原文 §8 の証明には gap があるが、定理は真。**
-  - ✅ `8.3-kind0-base-ineq` — §8.3 の起点補題（8.1 part(5) の kind0 基盤でもある）。
-    **親が main loop で直接証明**。訂正 **A22**（軽微: 右辺添字の `j₀+` 脱落）の訂正形を証明し、
-    原文添字のままは偽であることも機械証明（`kind0_base_ineq_original_false`、反例
-    `M=(9,0)(0,0)(1,1)(2,1)(1,0)`, n=2, q=1, q'=0, r'=1）。
-    証明=既存公開ヘルパーだけで閉じる: `entry_oper_tiling_block_zero`（6.6-reduced-fseq、
-    ブロック q・オフセット s の読み出し、i₁=0 でシフト消滅）＋`hasParent_next_fseq`／
-    `nextrel0` の最小性節読み出し（private `nextrel0_interior_min_83`）＋omega。
-    Isa: `m_8_3_kind0_base_ineq` (layerB/pss_wip.thy:13700、engine `oper_d0zero_nth`+
-    `parent_block_entry0_min` 相当)。rc=0・sorry 0・axioms 正常・#guard 5 本。[r1]
-  - ✅ `8.3-kind0-branch-rule` — **親が main loop で直接証明（一発緑）**。nadm → 行 1 基底辺、
-    `le0_adjacent`（6.5-Red-le-core）→ 行 0 基底辺。行 0 谷=`oper_tiling_block_floor`、
-    行 1 谷=閉じ込め補題（6.8 private `oper_d0zero_le0_confined_68` を `_83` に複製、
-    昇格候補）＋div/mod 分解で `j=idx` に潰す（積アトムは omega が扱える形に整列、
-    cancel は `lt_of_mul_lt_mul_right`/`le_of_mul_le_mul_right`）。
-    Isa: `m_8_3_kind0_branch_rule` (layerB/pss_wip.thy:16920)。python pool 検証 0 反例・
-    rc=0・sorry 0・axioms 正常・#guard 9 本。[r1]
-  - ✅ `8.3-kind0-base-basepoint` — **親が main loop で直接証明**。(1) 最終ブロック開始が
-    基点（許容性=行0最小へ隣接辺不可、到達性=最終ブロック内）、(2) `Adm_M(j₀)` が基点
-    （許容性=行1辺の接頭辞逆転送、到達性=祖先鎖の延長）。**勝ち筋: `le0` の持ち上げ/転送を
-    全部「`ancestor_basic_1`（le0→値）＋entry一致＋`parent_exists_3`（値→le0）」で構成**、
-    Isabelle の rtrancl 操作・燃料帰納を完全回避。`RTPS_oper`/`oper_tiling_strict_floor`/
-    `adm_row1_ancestry`+`row1_implies_row0`（7.4）を再利用。
-    罠: `Bool.eq_false_or_eq_true` の枝順は true が先 → `cases hbool : nadm ...` で回避。
-    Isa: `m_8_3_kind0_base_basepoint` (layerB/pss_wip.thy:17284)。python 検証 287 例
-    0 反例・rc=0・sorry 0・axioms 正常・#guard 9 本。[r1]
   - ✅ `8.7-OT-examples` — OT_B 基本例 4 本（`OT_examples_1..4`）。**親が main loop で直接証明**
     （workflow 全滅のため）。(1)(2)=gather の if 分岐を明示分解、(3)=multBT→replicate 帰納＋
     descP/isOT/dfree の replicate 補題、(4)=塔の G 集合特徴付け＋狭義単調の帰納
@@ -369,16 +312,6 @@ parent/Lng 形に落としてから作業する。
     axioms 正常。Isabelle が `m_8_2_standard_slice_Red_strongmono` で取る
     `monoT (Red N)` は Lean では `ancestor_slice_Red_IncrFirst` が直接供給
     （＝`hmono` 仮定が不要になったが、p 文忠実性のため引数は保持）。
-  - 🚨🤖 `8.4-fseq-basic` — **partial（Wave D, r1）**: part (1) のみ緑
-    （`oper_basic_part1`: `M[n] = M[n+1][1]^{j₁-j₋₂}`）。p 文 = **pss_paper:2017
-    `p_8_4_oper_basic`**（＝原文 content.md **5000**「補題（条件(III)か(IV)の下での
-    基本列の基本性質）」）、Isa: `m_8_4_oper_basic_part1`（layerB:13897）。
-    **part (2) は Isabelle 側も未証明**（layerC:15570 に障害を明記: 右辺が `M[n]`＋
-    ブロック 1 エントリで `M[m]` 形でないため既存 Trans 閉形式が効かない。経験的には
-    真 130/130、旧訂正 A33 の取り下げも追認）。part (3) も未。
-    🚨**この項目は 2026-07-17 まで進捗ツリーに存在しなかった＝カバレッジ穴**
-    （原文 §8.4 の 9 命題中これだけ落ちていた）。Wave D の agent が
-    「ミッションの項目名（展開規則）と p 文ポインタ（基本列）が別物」と指摘して発覚。
   - 🚨 `8.4-oper-basic` — 原文 content.md **4389**「補題（条件(III)～(VI)の下での
     展開規則の基本性質）」。**pss_paper:1955 は text のみ・partially DEFERRED**
     （part(1)-(4) は露出済み定義で陳述可、part(5) が `(s',b')` の scb 成分未露出で
@@ -442,15 +375,6 @@ parent/Lng 形に落としてから作業する。
     ⚠️正直な留保: w84x engine が出すのは弱い `Trans(M[n]) < Trans(M)[n]` で、
     原文 (1) の強形は **Isabelle 側でも未証明**。descend の Prop は ∃k 形なので
     k := m で足り実害なし。
-  - 🚨🤖 `8.5-Trans-fseq-condV` — **Wave F で green-modulo 完成（緑、6 Props）**。
-    `exchV_holds` が `FseqDesc_exchV` の drop-in（全ホストで成立、adm 枝 k=m-1／
-    非 adm 枝 k=m+1）。露出 Props 6 本はすべて **Isabelle で証明済**の補題の逐語形。
-    🚨**発見: `isabelle/memo.md:130` の「(1)=A28 で偽」は stale**（**A28 は取り下げ済**、
-    corrections-old.md:95）。塔を `s85b_W` 言語で読むと adm 枝は**原文の印字どおりの
-    添字 `mₙ = n-1`** で厳密に交錯する（`Trans(M[n]) < Trans(M)[n-1] < Trans(M[n+1])`）
-    ＝**訂正不要で原文が正しい**。しかも **Isabelle 自身の
-    `m_8_5_Trans_oper_exchange_condV_adm_uncond` は弱い添字 `n` でしか述べていない**ので、
-    Lean 版のほうが**鋭い**。両方（原文添字＝conj(1)／Isabelle 添字＝conj(2)）を出力。
   - ✅ `8.7-Trans-preserves-OT`[r38] — **無条件クローズ（2026-07-21 Wave AW）**: `Trans_STPS_OT_B`（8.7-termination）が仮定 0。OT 柱 38 ファイルの合流。（旧記録: Wave F で green-modulo 完成（緑、12 Props）。）
     blueprint `y5_Trans_OT_B` は census 塔への一行だったので追跡し、実体
     **`otx_Trans_preserves_OT_dispatch`（layerB:85710）**＝ST_PS 帰納を全分岐移植
@@ -475,11 +399,6 @@ parent/Lng 形に落としてから作業する。
   - `8.5-*` — **最難所**。Isa の keystone は
     `bpHeadT(Trans(slice@B)) = C(bpHeadT(Trans slice))`（depth-shift self-similar）。
     13 個の死路が `isabelle/memo.md` に列挙してある。**着手前に必ず読め。**
-  - 🚨🤖 `8.3-Trans-fseq-condII`（⛔解消済み・p ファイル未作成が残り） — 原文命題は (1)-(3) が Trans 再帰の
-    内部記号依存で deferred、転記済みは降下結論 (4) のみ（`p_8_3_TransCondII_oper_descend`）。
-    Isabelle は `y5_8_3_TransCondII_oper_descend`（layerC 14432）＝**大域降下柱
-    `y5_Trans_descend` への一行還元**。Lean でも `8.7-fseq-descend`（ST_PS 全域の
-    Trans(M[n])<Trans(M)）が先＝それの系として閉じる。単独移植は不可。
   - ✅ `8.7-OT-scb-recursive` — **親が main loop で直接証明（一発緑）**。scb 分解の核は
     右スパイン principal＝`isOT` 下方遺伝。descent は 7.2-scb-unique の
     `scb_occurrence_rightNodes_suffix` の帰納骨格（`scb_last_dichotomy`+
@@ -499,13 +418,6 @@ parent/Lng 形に落としてから作業する。
     条件(I)/(VI) の `Lng M = 2` 枝（oper 直接計算＋`const00_Trans`/`two_column_Trans`）
     は**自前証明**＝Isabelle の補題 2 本を回避。
     **停止性への幹線が Lean でもチェックリスト化された**: 残りは 16 Props の討伐。
-  - 🚨🤖 `8.6-Trans-fseq-condVI` — **Wave E で partial（緑、公開 4 本）**。
-    engine `m_8_6_TransCondVI_oper_descend_engine`（Isa 40250）は**無条件**で移植
-    （n=1 枝は Pred 降下のみ・condVI 不使用、n>1 は [Buc1] 3.2(a)。`Trans M ≠ 0` は
-    `Trans_preserves_zeroT` でここで討伐＝残差でない）。対角ホスト
-    `m_8_6_diagSeq_condVI_commute`/`_descent`（40305/40331）も無条件。
-    残 named Props 3（`CondVIAdmTowerScb` 等＝Isabelle の証明内部で確立される
-    flat 閉形式 flatMn/ov/b1RP）。
   - 🚨🚨🚨 **`CondII_masterCF` の RT_PS 形は偽だった（2026-07-17、Wave K が発見・親が修正）**。
     経緯: engine `8.3-TransCondII-engine` は Isabelle の `masterCF`（`MR : M ∈ RT_PS`）に
     合わせて Prop を **RTPS** 上で宣言していたが、Isabelle の `c2sx_condII_masterCF`(87430) は
@@ -750,6 +662,17 @@ parent/Lng 形に落としてから作業する。
     （素 `VE4BaseDeep` の弱化）。**残**={`RunSqueeze_vn`（=descending squeeze＋nextrel0 valley
     squeeze＋単一列幾何の値証明）, `VE3RunBase_bd`/`VE3RunStep_bd`/`PIN_bd`/`TSPIN_bd`（§7.4 surgery）,
     field-level 再配線（DTPS→`VE34Reg4D`で `VE3/4BaseDeepD` を場に接続、dead `condIIIVterminalSlice_of_runpeel` 退役）}。
+  - 🎯 **Wave AX（2026-07-21、Opus 4、全緑）— 原文カバレッジ 4 連戦: 3 完落＋1 分割**:
+    ①`8.5-Trans-fseq-condV` ✅（instantiation close、公開 5 定理の無条件 twin）
+    ②`8.3-Trans-fseq-condII` ✅（p ファイル新設、Trans_fseq_descend の系として 1 行証明。
+    A36 取り下げ確認）③`8.6-Trans-fseq-condVI` ✅（「未移植ブリック 3 本」は stale＝
+    全て既存公開定理で供給可、`p_8_6_Trans_fseq_condVI_uncond`）→ **§8.3[r22]/§8.6[r11]
+    全 ✅ で畳み**。④`8.4-fseq-basic`: part(3) 完全 port（y3h engine、scbext_reflect＋
+    core_TB_of_flat。親が `oper_basic_part3_uncond` 追記で無条件化）、part(2) は緑 modulo
+    `Oper84BasicPart2Residual`（L6 slice 閉形式、Isabelle y3i）＝唯一の残差。
+    ⚠️agent が board を勝手に編集し part(2) 残差付きで ✅ 宣言→親が分割修正
+    （🚨行 inline ✅ 禁止規則）。**残り open = 8.4 part(2)/oper-basic/scb-decomp×2(8.4,8.5)/
+    8.5-fseq-scb-decomp/8.7-Pred-oper0 の 6 つ＝全て停止性に不要のカバレッジ**。
   - 🎉🎉🎉 **Wave AW＋最終統合（2026-07-21）— `p_8_7_termination` 無条件化達成（Lean 移植の主目標完遂）**:
     ①condII interior 脚 `OTmulti_interior_condII_on` を**独立 2 route が同時完全証明**
     （`8.7-otmulti-condII-close`=Route A 採用・`8.7-otmulti-condII-blueprint`=Route B 保険。
