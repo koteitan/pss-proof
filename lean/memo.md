@@ -888,6 +888,23 @@ parent/Lng 形に落としてから作業する。
     （素 `VE4BaseDeep` の弱化）。**残**={`RunSqueeze_vn`（=descending squeeze＋nextrel0 valley
     squeeze＋単一列幾何の値証明）, `VE3RunBase_bd`/`VE3RunStep_bd`/`PIN_bd`/`TSPIN_bd`（§7.4 surgery）,
     field-level 再配線（DTPS→`VE34Reg4D`で `VE3/4BaseDeepD` を場に接続、dead `condIIIVterminalSlice_of_runpeel` 退役）}。
+  - 🎯 **Wave AT（2026-07-21、Opus 2、全緑）— run-step 柱 完全陥落・残差は tsx_assembly 1 本に**:
+    ①`TransPinRunStepD_pt` も点wise では証明不能（bgx_VE34_base_step の t2eq/isleft が
+    ihVE4 を本質使用。数値では形は真＝12 個目の反証ではない）→ **IH-carrying
+    `transPinRunStepIH_rp` として完全 port（残差ゼロ）**＋live 読出し
+    `VE4goal_runstep_of_IH_rp`（`8.2-condIIIV-runstep-pin`）
+    ②STEP 柱の IH-carrying 化完了: leadform 無条件 port
+    （`tspinCanonicalIH_of_assembly_tc`）＋`step_up_of_assembly_tc :
+    TspinAssemblyIH_tc → Step_up`。**残差 = `TspinAssemblyIH_tc`
+    （=tsx_assembly 104073 の結論 Trans N = D_{N1,0}(F +_B Trans Mp)、IH 付き）唯一本**。
+    port には 4 scb 工具が必要: Trans_unflat_transC2（無）/scbimg_image_BT
+    （private twin=principal_replacement_image, 8.7-otint-transport-prims）/
+    m_7_3_Trans_Mark_MarkedB（無）/tsx_scb_Dpt_lift（無）。
+    scb_addBT_left_74・scb_unique_decomp_unconditional は private
+    （`8.2-condIIIV-tspin-close`）。
+    **次の配線: capstone を {BaseRunStep_up 無条件（IH ルート）＋
+    step_up_of_assembly_tc} で組み直し→ ve34_on_reg4D は modulo TspinAssemblyIH_tc
+    のみ→ tsx_assembly port で全クローズ。**
   - 🎯 **Wave AS（2026-07-21、Opus 2、全緑）— 残差が正確に 2 本に確定（機械保証付き）**:
     ①幾何 STEP quartet {StepTerminalReady/StepPredIndex/StepTermPred/StepFrontPred}_ss
     **全討伐**（bpx_step_setup 系 port。STEP は分岐数保存で BASE より単純＝JEQ 不要）＋
