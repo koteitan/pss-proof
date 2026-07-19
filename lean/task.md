@@ -43,7 +43,7 @@
     - ✅ 補題（強単項性の下での部分表現の単項成分の基本性質） — `8.2-subexpr-component-strongmono`[r2]
     - ✅ 補題（条件(V)の下での右端の親の基本性質） — `8.2-condV-rightmost-parent`[r1]
     - ✅ 補題（条件(V)の下での終切片と `Trans` の関係） — `8.2-condV-terminal-slice-Trans-close`
-    - 🚨🤖 命題（条件(II)か(IV)の下での終切片と `Trans` の関係） — `8.2-condIIIV-terminal-slice-Trans`
+    - ✅ 命題（条件(II)か(IV)の下での終切片と `Trans` の関係） — `8.2-condIIIV-terminal-slice-Trans`[r38]
   - 🚨 §8.3 条件(II)の下での展開規則
     - ✅ 補題（第 `0` 種型基本列の基本不等式） — `8.3-kind0-base-ineq`[r1]
     - ✅ 補題（第 `0` 種型基本列の基本分岐規則） — `8.3-kind0-branch-rule`[r1]
@@ -75,5 +75,5 @@
     - ✅ 補題（順序数項の末尾項の零化可能性、top-level 値形） — `8.7-OT-tail-annihilable`[r1]
     - 🚨 補題（`Pred` と `[0]` の関係） — `8.7-Pred-oper0`[r1]
     - ✅ 補題（順序数項の基本例） — `8.7-OT-examples`[r1]
-    - 🚨 補題（`Trans` が標準形を保つこと） — `8.7-Trans-preserves-OT`
+    - 🚨🤖 補題（`Trans` が標準形を保つこと） — `8.7-Trans-preserves-OT`
     - 🚨 **定理（標準形ペア数列システムの停止性）** — `8.7-termination`

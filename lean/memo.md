@@ -585,7 +585,7 @@ parent/Lng 形に落としてから作業する。
     ＝**訂正不要で原文が正しい**。しかも **Isabelle 自身の
     `m_8_5_Trans_oper_exchange_condV_adm_uncond` は弱い添字 `n` でしか述べていない**ので、
     Lean 版のほうが**鋭い**。両方（原文添字＝conj(1)／Isabelle 添字＝conj(2)）を出力。
-  - 🚨 `8.7-Trans-preserves-OT` — **Wave F で green-modulo 完成（緑、12 Props）**。
+  - 🚨🤖 `8.7-Trans-preserves-OT` — **Wave F で green-modulo 完成（緑、12 Props）**。
     blueprint `y5_Trans_OT_B` は census 塔への一行だったので追跡し、実体
     **`otx_Trans_preserves_OT_dispatch`（layerB:85710）**＝ST_PS 帰納を全分岐移植
     （base＋11 分岐: Lng≤1／N[n]=Pred N の 4 枝／N[n]≠Pred N の condI–VI＋multiT）。
@@ -598,7 +598,7 @@ parent/Lng 形に落としてから作業する。
     `Trans(M[n]) = s₁D_{M₁,j₋₁}(s'₁D_{M₁,j₀})ⁿt₂(b'₁)ⁿb₁` が `n=1` で偽。原文
     content.md 5213 の (5)＝5225、証明 5267/5329）[軽微]。**A29 はここ**であって
     `8.5-Joints-FirstNodes-basic` ではない（2026-07-17 誤帰属を訂正）。
-  - 🚨🤖 `8.2-condIIIV-terminal-slice-Trans` — p 文 = pss_paper:1627（原文 ~3314）。
+  - ✅ `8.2-condIIIV-terminal-slice-Trans`[r38] — p 文 = pss_paper:1627（原文 ~3314）。**Wave AV+配線で無条件クローズ（`condIIIVterminalSlice_holds`、8.2-condIIIV-close）＝ termination の `condIIIVts` field 削除済み。**
     未着手だった項目。condV 版（`8.2-condV-terminal-slice-Trans`）が構造の雛形。
     condV 版は原文が VE ステップを省略しているため hVE 仮定付きだったので、
     II/IV 版に同じ穴があるかを確認させる。Wave K。
@@ -888,6 +888,20 @@ parent/Lng 形に落としてから作業する。
     （素 `VE4BaseDeep` の弱化）。**残**={`RunSqueeze_vn`（=descending squeeze＋nextrel0 valley
     squeeze＋単一列幾何の値証明）, `VE3RunBase_bd`/`VE3RunStep_bd`/`PIN_bd`/`TSPIN_bd`（§7.4 surgery）,
     field-level 再配線（DTPS→`VE34Reg4D`で `VE3/4BaseDeepD` を場に接続、dead `condIIIVterminalSlice_of_runpeel` 退役）}。
+  - 🎉 **Wave AV＋最終配線（2026-07-21、Opus 3＋親、全緑）— `condIIIVts` field 陥落・§8.2 condII/IV 命題 ✅**:
+    ①スライス自然性 `tsx_c1_eq_sn`/`tsx_c2_eq_sn` 完全 port（`8.2-condIIIV-slice-nat`。
+    Mark/Trans の fuel head を unfold しない calc+congrArg 流儀が鍵）
+    ②`tspinGeomIH_of_slicenat_gi`＋`tspinAssemblyIH_of_slicenat_gi`（`8.2-condIIIV-geomih`。
+    tsx_t1_identified port。tsx_jp_geom 系は c1/c2_eq の内部でのみ必要と判明＝不要）
+    ③🎉 **VE2Residual 無条件クローズ**（`8.2-condIIIV-ve2`。asset-blindness 逆転:
+    deep4/5/6 に VE2 チェーンが既在、真の残りは EqdiagMlevel だけ→port 完了）
+    ④親配線 `8.2-condIIIV-close`: **`condIIIVterminalSlice_holds` 無条件・公理クリーン**
+    → `8.7-termination` の `condIIIVts` field 削除（3 use sites を差し替え）。
+    **残差フィールドは `otMultiIntCond` ただ 1 本**（audit VERDICT=1）。
+    攻め筋: `8.7-otmulti-narrow` が condII 脚 `OTmulti_interior_condII_on` だけに還元済み
+    → FseqDesc_exchII の**等式**形（condII_masterCF 経由、今や無条件）＋
+    OT_B operB 閉包（private 4 箇所に既在）＋ Lng L = 2 隅の空虚性で閉じる。
+    Isabelle 藍図 = opx_OTmulti（pss_wip 115556）の condII 枝。
   - 🎯 **Wave AU（2026-07-21、Opus 2、全緑）— capstone 一本化＋tsx_assembly 深部 scb コア陥落**:
     ①capstone 組み直し完了: `baseRunStep_up_cw : BaseRunStep_up` **無条件**＋
     `ve34_on_reg4D_cw : TspinAssemblyIH_tc → ∀ M ∈ VE34Reg4D, VE34goal M`（残差 1 本）。
