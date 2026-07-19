@@ -234,8 +234,8 @@ parent/Lng 形に落としてから作業する。
   - ✅ **§8.5 条件(V)の下での展開規則**[r15] — 全 5 項目 ✅（condV 交換則 `_vc` twins／scb分解 part(5)=A29 訂正形の無条件＋原文形の機械反証／基本列 scb 分解=非許容枝 `p_8_5_fseq_scb_decomp_nadm_uncond`（pss_paper 2128 は DEFERRED、Lean は statable 分を転記＝parity 超過。許容枝・一意性節は原文どおり 未転記で Isabelle parity）。旧詳細は git 履歴）
   - ✅ `8.4-oper-basic`[r1] — Wave AY 新設。part(1) 両枝/part(2)簡約/part(5)full（A31 guard）を既存資産へ委譲＋s84c1 port。parts(2-mono)(3)(4) は pss_paper:1955 DEFERRED と同一 scope＝未転記（header に明記）。名前 crossover 回避（`oper_rule_basic_*`）
   - ✅ `8.4-scb-decompositions`[r1] — Wave AY 新設、公開 7 本（dec1 engine で存在残差 も討伐）。(4)(5)閉形式・六つ組・一意性節は pss_paper:1968-1999 DEFERRED と同一 scope＝未転記（header に明記）
-  - 🚨🤖 `8.7-Pred-oper0`[r2] — 一般形は真（806/806、旧偽判定は反転済み）。 `8.7-Pred-oper0-general` が一般文 `PredOper0_pg` を単一残差 `TransPredScbInsert_pg`（Trans/Trans∘Pred の scb 文脈共有＝原文 6018-6058 の本体、 Isabelle 側も未証明）へ無条件還元＋具体 2 系列で end-to-end 実証。 零化側は `trailing_principal_annihilable` が既在（asset-blindness 13 回目）
-  - 🚨🤖 `8.4-fseq-basic` — part(1)[r1]/part(3)=`8.4-fseq-basic-close`[r1] 無条件。 part(2)=`8.4-fseq-basic-part2` が operB 側 leg (A) を無条件討伐し、残差を `L6TransSliceClosed_p2`（L6 slice engine=m_8_4_various_scb_IIIIV_from_slice wip:60034 の port、producer 座標）1 本へ尖鋭化
+  - 🚨 `8.7-Pred-oper0`[r4] — 一般形は真（806/806、旧偽判定は反転済み）。 `8.7-Pred-oper0-general` が一般文 `PredOper0_pg` を単一残差 `TransPredScbInsert_pg`（Trans/Trans∘Pred の scb 文脈共有＝原文 6018-6058 の本体、 Isabelle 側も未証明）へ無条件還元＋具体 2 系列で end-to-end 実証。 零化側は `trailing_principal_annihilable` が既在（asset-blindness 13 回目）
+  - 🚨 `8.4-fseq-basic` — part(1)[r1]/part(3)=`8.4-fseq-basic-close`[r1] 無条件。 part(2)=`8.4-fseq-basic-part2` が operB 側 leg (A) を無条件討伐し、残差を `L6TransSliceClosed_p2`（L6 slice engine=m_8_4_various_scb_IIIIV_from_slice wip:60034 の port、producer 座標）1 本へ尖鋭化
   - ✅ `8.1-diagSeq-Trans` — `u<v` の対角列について、十分な任意燃料で
     `TransAux` と `MarkAux · 0` がともに `D_u(D_v 0)` となる同時帰納不変条件を証明した。
     2列基底は一列計算を直接展開し、帰納段階は末尾上段親が直前列、かつその `Adm` が 0
@@ -639,6 +639,20 @@ parent/Lng 形に落としてから作業する。
     （素 `VE4BaseDeep` の弱化）。**残**={`RunSqueeze_vn`（=descending squeeze＋nextrel0 valley
     squeeze＋単一列幾何の値証明）, `VE3RunBase_bd`/`VE3RunStep_bd`/`PIN_bd`/`TSPIN_bd`（§7.4 surgery）,
     field-level 再配線（DTPS→`VE34Reg4D`で `VE3/4BaseDeepD` を場に接続、dead `condIIIVterminalSlice_of_runpeel` 退役）}。
+  - 🎯 **Wave BA（2026-07-21、Opus 2、全緑）— 残 2 葉の縮退が深部フロンティアに到達（wave 一旦停止）**:
+    ①L6: op1pow 橋を完全 port（y3l_op1pow_take: op1 反復=take）。残る底読出し 3 葉は
+    `L6BaseReadoutsResidual` に束ね、**cfbx_reg 正則性（REGS/REGSP 未 port、
+    MnformResidual と同じ壁。MnformBottomResidual は偽=Wave Y）が真のブロッカー**と確定
+    （`8.4-l6-base-readouts`。`oper_basic_part2_br` で part(2) は本残差 1 本 modulo）
+    ②Pred-oper0: **t1=0 隅 完全クローズ**（`PredOper0_t1zero_residual_holds_pc`、
+    Isabelle-sorry の片方撃破。D_0(D_j1 0)→D_0 0→0 の 2 段）。condII/IV 隅は
+    数値モデル訂正（2 段でなく kind-1 カスケード、k≤13）の上で唯一残差
+    `PredOper0_scbCtx_residual_pc` に還元＝**原文 p_8_7_OT_tail_annihilable の scb 形
+    ＝Isabelle 自身も sorry の一般 scb 尾部零化**（trailing_principal_annihilable の
+    ~200 行一般化＋condIV RTPS 閉形式が要る）（`8.7-pred-oper0-corners`）。
+    **状態: 主定理無条件・ツリーは 2 葉（part(2)/Pred-oper0）のみ open、どちらも
+    多 wave 級の新キャンペーン（cfbx_reg port／beyond-Isabelle 零化）。weekly 90% 到達
+    のため wave 停止・保守運用へ。**
   - 🎯 **Wave AZ（2026-07-21、Opus 2、全緑）— 最終 2 葉の本体攻略**:
     ①L6: **塔帰納 `l6_tower_l6` port 完了**（oper_rule_basic_part5 を単段に、
     scb_unique_decomp_unconditional で穴 pin、condV 塔テンプレ流用）＋operB 側 flat。
