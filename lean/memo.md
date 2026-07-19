@@ -888,6 +888,17 @@ parent/Lng 形に落としてから作業する。
     （素 `VE4BaseDeep` の弱化）。**残**={`RunSqueeze_vn`（=descending squeeze＋nextrel0 valley
     squeeze＋単一列幾何の値証明）, `VE3RunBase_bd`/`VE3RunStep_bd`/`PIN_bd`/`TSPIN_bd`（§7.4 surgery）,
     field-level 再配線（DTPS→`VE34Reg4D`で `VE3/4BaseDeepD` を場に接続、dead `condIIIVterminalSlice_of_runpeel` 退役）}。
+  - **Wave AM（2026-07-20 昼、Opus 2、全緑）— 🚨10 個目の反証＋真の閉路が HEADEQ0 と判明**:
+    ①🚨**`RunSqueeze_vn`／`RunPeelPreservedD_vc2` は偽**（cex=(0,0)(1,1)(2,2)(2,0)(3,1)(2,0):
+    BASE の peel 後 Pred が STEP になる＝**BASE 保存という設計自体が欠陥**。正=Isabelle
+    bfx_VE34_backpeel_fin3(105252) の**統一 BASE-or-STEP 強帰納**（BASE 保存不要）。
+    `8.2-condIIIV-runsqueeze` に機械反証）②**stale 訂正: §8.2 keystone は移植済み**
+    （`keystone` in 8.2-subexpr-component-Pred！）→ `VE3RunStep_of_reductions_vv` が
+    幾何 3 Props modulo で討伐（`8.2-condIIIV-ve-values`）③**戦略転換情報**: bfx_ の
+    carried residuals（SPLIT0/PIN/TSPIN）の真の閉路は **hqx_/bgx_ HEADEQ0 ルート
+    （wip 106236–108686、~2450 行）＝これ 1 本で VE3All/VE4All 全部が閉じる**。
+    **次の計画**: ①統一 backpeel 帰納の再設計（BASE 保存撤去）②HEADEQ0 campaign
+    （bgx_ 還元→hqx_HEADEQ0 討伐→hqx_VE34_of_DT）③幾何 3 Props。
   - 🎉🎉 **Wave AL（2026-07-20 午前、Opus 2、全緑）— `otSetleCore` フィールド陥落＝残差 2**:
     ①**corner census 再配管の決着**: 偽 wrapper は**そもそも不要だった**——唯一の消費先
     （ox5_census の scbext_triG 経由 G-control）は無条件の `tri0CruxConcrete_holds` で直接供給可。
