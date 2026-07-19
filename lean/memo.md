@@ -888,6 +888,22 @@ parent/Lng 形に落としてから作業する。
     （素 `VE4BaseDeep` の弱化）。**残**={`RunSqueeze_vn`（=descending squeeze＋nextrel0 valley
     squeeze＋単一列幾何の値証明）, `VE3RunBase_bd`/`VE3RunStep_bd`/`PIN_bd`/`TSPIN_bd`（§7.4 surgery）,
     field-level 再配線（DTPS→`VE34Reg4D`で `VE3/4BaseDeepD` を場に接続、dead `condIIIVterminalSlice_of_runpeel` 退役）}。
+  - 🎯 **Wave AS（2026-07-21、Opus 2、全緑）— 残差が正確に 2 本に確定（機械保証付き）**:
+    ①幾何 STEP quartet {StepTerminalReady/StepPredIndex/StepTermPred/StepFrontPred}_ss
+    **全討伐**（bpx_step_setup 系 port。STEP は分岐数保存で BASE より単純＝JEQ 不要）＋
+    **capstone `ve34_on_reg4D_modulo_gm : TransPinRunStepD_pt → TSPINStep_ss →
+    ∀ M, VE34Reg4D M → VE34goal M`**——全 slot の生き配線を機械検証
+    （refuted PIN/TSPIN/点wise VE3/VE4Step 非依存。step-surgery の旧 capstone は
+    un-instantiable と判明→本 capstone が置換）。VE3 run-base SPLIT0 も独立再証明
+    （`ve3RunBaseD_gm`）（`8.2-condIIIV-geometry`）
+    ②TSPIN: 下半分 port `tspinStep_of_canonical_tp` で単一等式残差 `TspinCanonical_tp`
+    （=tsx_assembly∘leadform の正準 pinned 形）に還元。数値検証 7/7 STEP witness 成立。
+    ⚠️**点wise TSPINStep_ss は IH `VE34goal (Pred N)` なしでは証明不能**
+    （tsx_t1_identified の ihVE4 step が本質使用）→ **配線指示: TSPINStep_ss を
+    IH-carrying に再定式化**（Step_up_of_pieces_ss は regDP/ihP を既に scope に持つ）
+    （`8.2-condIIIV-tspin`）。
+    **残 = {TransPinRunStepD_pt（bgx_VE34_base_step isleft-selector 未 port）,
+    TspinCanonical_tp（IH 付き tsx_assembly port）}＋TSPIN IH 化の配線＋最終組立接続。**
   - **Wave AR（2026-07-21 未明、Opus 2、全緑）— 🚨11 個目の反証＋STEP の正ルート確立**:
     ①🚨**点wise {PIN_bd, TSPIN_bd} は偽**（descending 落ちドメインの再発。cex=
     (0,0)(1,1)(2,2)(2,1)(2,2)(2,0)。`not_pin_tspin_pt`）——**生きた置換を同時構築**:
