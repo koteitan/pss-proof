@@ -20,8 +20,11 @@ are exactly those two:
         for t' in OT_B:
           exists k.  ([0]^k)(q +_B D_u t') = q +_B D_u 0
 
-  (C) The A26 witness.  layerB/pss_wip.thy:26788 claims the article lemma is
-      FALSE for a NESTED marked principal (t = D_0(D_1(D_1 0))).  A26 was
+  (C) The A26 witness.  Before the chapter relocation, layerB/pss_wip.thy
+      claimed the article lemma is FALSE for a NESTED marked principal
+      (t = D_0(D_1(D_1 0))); the leaf now lives in
+      isabelle/8/P_8_7_OT_tail_annihilable.thy, whose header records the
+      retraction instead of the falsity claim.  A26 was
       later RETRACTED (it is a product of the operB/A23 misreading, same as
       A25 -- see the header of 8.6-trailing-principal-annihilable.lean).  We
       re-check the witness under the CORRECTED (A23) operB to confirm the

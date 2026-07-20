@@ -3,7 +3,7 @@
 Formal verification of the termination of the pair sequence system (ペア数列システム).
 The source is P進大好きbot's article "ペア数列の停止性" (Termination of the pair sequence
 system) on the Googology Wiki. Proposed corrections to the source: [corrections.md](corrections.md)
-(30 live) and [corrections-old.md](corrections-old.md) (17 retracted — our own errors).
+(30 live) and [corrections-old.md](corrections-old.md) (16 retracted — our own errors).
 
 ## Where things are (2026-07-20 reorganization)
 
@@ -25,7 +25,7 @@ The Isabelle progress tree is [isabelle/task.md](isabelle/task.md) (all ✅), an
 the layout migration is governed by [isabelle/REORG-PLAN.md](isabelle/REORG-PLAN.md);
 its design notes are [isabelle/memo.md](isabelle/memo.md). **The Isabelle proof is the
 blueprint for the Lean port** — when a Lean proof stalls, the answer is almost always
-already in `isabelle/5/`, `isabelle/6/`, `isabelle/7/`, `isabelle/PSS/`, `isabelle/pss_mechanized.thy`, or
+already in `isabelle/5/`, `isabelle/6/`, `isabelle/7/`, `isabelle/8/`, `isabelle/PSS/`, or
 `isabelle/layerC/pss_scratch.thy`. grep first.
 
 The sections below describe the **Isabelle** side. They still apply when working in
@@ -41,7 +41,7 @@ and imports its parent's top theory **session-qualified** (`imports "PSS_A.pss_m
 
 | session | dir | theory | role | green check |
 |---|---|---|---|---|
-| `PSS_A` | `.` | `pss_defs` + `PSS/` + `5/` + `pss_paper` + **`pss_mechanized`** | FROZEN base | `Finished PSS_A` |
+| `PSS_A` | `.` | `pss_defs` + `PSS/` + `5/` + `6/` + `pss_paper` + `7/` + `8/` + **`8/audit`** | FROZEN base | `Finished PSS_A` |
 | `PSS_B` | `layerB` | `pss_wip` | FROZEN base | `Finished PSS_B` |
 | `PSS_C` | `layerC` | `pss_scratch` | **ACTIVE top** (current work) | `Finished PSS_C` |
 
@@ -110,16 +110,18 @@ The Isabelle build only needs `tmp/content.md` to *exist* (`@{file}` check).
 |---|---|---|
 | `pss_defs.thy` | a (`.`) | Formalized **definitions** of the article (pair-sequence side, §4–§6) |
 | `PSS/*.thy` | a (`PSS/`) | Dependency-ordered shared helpers; chapter boundaries are exposed by `After_5`, `After_6`, and `After_7` |
-| `5/P_*.thy`, `6/P_*.thy`, `7/P_*.thy` | a (`5/`–`7/`) | One §5–§7 article proposition per theory, with its exact or named-corrected clean proof and proposition-local material |
-| `5/Support_*.thy`, `6/Support_*.thy`, `7/Support_*.thy` | a (`5/`–`7/`) | Helpers used only within one chapter but shared by more than one proposition step |
-| `pss_paper.thy` | a (`.`) | §7 Buchholz definitions plus the remaining §8 article statements, transcribed as `sorry`; imports the completed §5–§6 proposition theories before the §7 chain |
-| `pss_mechanized.thy` | a (`.`) | Remaining §8 mechanized proofs; imports the completed §7 layer through `PSS/After_7` |
+| `5/P_*.thy` … `8/P_*.thy` | a (`5/`–`8/`) | One §5–§8 article proposition per theory, with its exact or named-corrected clean proof and proposition-local material |
+| `5/Support_*.thy` … `8/Support_*.thy` | a (`5/`–`8/`) | Helpers used only within one chapter but shared by more than one proposition step |
+| `8/audit.thy` | a (`8/`) | **ML AUDIT**: fails the build if any termination fact reaches a `sorry`-carrying statement. Last theory of `PSS_A`, so a green `PSS_A` IS the audit |
+| `pss_paper.thy` | a (`.`) | §7 transcription of the **external** reference [Buc1] — its definitions plus the three cited [Buc1] lemmas left as `sorry`. Holds no article statement of its own any more |
+| `pss_mechanized.thy` | a (`.`) | Compatibility shim after the relocation (imports `audit`); the §8 body it used to hold is now `8/Support_8_A–C` |
 | `layerB/pss_wip.thy` | b | Earlier campaign's proven body — now FROZEN into the base heap |
 | `layerC/pss_scratch.thy` | c | **ACTIVE** layer: the lemmas currently being proven (see the Build section) |
 
 Import chain: `pss_defs` ← `PSS/Pre_5` ← §5 proposition/frontier theories ←
 `PSS/After_5` ← §6 proposition/frontier theories ← `PSS/After_6` ← `pss_paper` ←
-§7 proposition/frontier theories ← `PSS/After_7` ← `pss_mechanized` ←
+§7 proposition/frontier theories ← `PSS/After_7` ← `8/Support_8_A–C` ← §8
+proposition theories ← `8/audit` ← `pss_mechanized` ←
 `pss_wip` ← `pss_scratch` (the last two
 cross-session, imported session-qualified). Active proof work happens in
 `layerC/pss_scratch.thy`; the rest is pre-built. When moving an `@{file}`
@@ -128,10 +130,10 @@ antiquotation into a chapter directory, adjust its relative path and add a local
 
 ## Naming and traceability
 
-- Article claims are named `p_<§>_<slug>` and their proofs `m_<§>_<slug>`. For §5–§7
+- Article claims are named `p_<§>_<slug>` and their proofs `m_<§>_<slug>`. For §5–§8
   both live in the matching chapter `P_<§>_<slug>.thy`; named-corrected claims use
-  the correction-specific theorem name in that same proposition theory. Unmigrated chapters retain
-  `p_` in `pss_paper.thy` and `m_` in their current proof layer.
+  the correction-specific theorem name in that same proposition theory. The relocation
+  is complete, so no chapter keeps its statements in `pss_paper.thy` any more.
 - Tag every fact's comment with the article section (§) and the original
   Japanese name, so it can be matched against `tmp/content.md` (the extracted
   article text).

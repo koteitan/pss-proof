@@ -7,12 +7,14 @@ text \<open>
   Faithful transcription of the *statements* (命題 / 補題 / 系 / 定理) of
   P進大好きbot's article "ペア数列の停止性", in the order they appear.
 
-  Every remaining §8 statement here is left as @{command sorry}: this file records WHAT
-  the article claims, not the proofs.  Statements whose proof the article
-  itself omits, and statements we have simply not yet proved, are all
-  @{command sorry} here.  The §5–§6 proofs live with their proposition theories
-  under \<open>5/\<close> and \<open>6/\<close>; proofs for the remaining chapters live in
-  @{file "pss_mechanized.thy"}.
+  After the chapter relocation this file holds no article statement of its own:
+  every §5–§8 proposition now lives with its proof in the matching
+  per-proposition theory under \<open>5/\<close>, \<open>6/\<close>, \<open>7/\<close> and \<open>8/\<close>.  What remains here is
+  the §7 transcription of the \<^bold>\<open>external\<close> reference [Buc1] — its definitions,
+  plus the three cited [Buc1] lemmas kept as @{command sorry} because they belong
+  to that reference rather than to this article (\<open>buc1_2_2_OT_B_wf\<close>,
+  \<open>buc1_3_2a_fseq_lt\<close>, \<open>buc1_3_2_OT_B_closed\<close>; our own proofs of the latter two
+  are the \<open>m_buc1_*\<close> facts under \<open>7/\<close>).
 
   Naming / traceability: each fact is named \<open>p_<sec>_<slug>\<close> and carries a
   comment with the article section (§) and the original Japanese name, so it
