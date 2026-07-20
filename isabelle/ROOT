@@ -17,6 +17,7 @@ session PSS_A = HOL +
     "5"
     "6"
     "7"
+    "8"
   theories
     pss_defs
     Pre_5
@@ -394,6 +395,43 @@ session PSS_A = HOL +
     P_7_4_RightAnces_zeroT
     P_7_2_scb_replaceable
     After_7
+    Support_8_A
+    Support_8_B
+    Support_8_C
+    P_8_2_standard_slice_Red_strongmono
+    P_8_2_strongmono_slice
+    P_8_2_subexpr_component_Pred
+    P_8_2_subexpr_component_strongmono
+    P_8_2_condV_rightmost_parent
+    P_8_2_condV_terminal_slice_Trans
+    P_8_2_condIIIV_terminal_slice_Trans
+    P_8_1_diagSeq_Trans
+    P_8_1_Pred_diagSeq_Trans
+    P_8_1_condI_III_c1_around
+    P_8_1_Trans_fseq_condI
+    P_8_3_kind0_base_ineq
+    P_8_3_kind0_branch_rule
+    P_8_3_kind0_base_basepoint
+    P_8_3_TransCondII_oper_descend
+    P_8_4_Trans_oper_exchange
+    P_8_4_rightmost_nonadm_ancestor
+    P_8_4_oper_basic
+    P_8_5_Trans_oper_exchange
+    P_8_5_Joints_FirstNodes_basic
+    P_8_6_const2nd_Trans
+    P_8_6_diagSeq_Trans_oper
+    P_8_6_trailing_principal_annihilable
+    P_8_6_Trans_fseq_condVI
+    P_8_7_const00_Trans
+    P_8_7_fseq_descend
+    P_8_7_OT_scb_recursive
+    P_8_7_OT_dom_hereditary
+    P_8_7_OT_tail_annihilable
+    P_8_7_Pred_oper0
+    P_8_7_OT_examples
+    P_8_7_Trans_preserves_OT
+    P_8_7_termination
+    audit
     pss_mechanized
 
 session PSS_B in "layerB" = PSS_A +

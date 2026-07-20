@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """ANALYSIS for the §8 central question: are the annihilation/fseq lemmas applied
 ONLY in the clean regime (v_inner=0 ∨ u≥v_inner, i.e. leaf t'=0 OR top-level) or
-in the A25/A26-false NESTED regime?
+in the regime historically labelled "A25/A26-false"?  Both corrections were
+later retracted after the A23 operB misreading was fixed (corrections-old.md).
 
 We reconstruct, for each M in (reduced ∩ monoT) reaching the §7.3 Trans recursion
 (conditions I-VI), the actual marked-principal shapes consumed by:
@@ -15,9 +16,11 @@ For each, we record:
   t'           = body being preserved/annihilated
   w            = index of the trailing D_w 0 (for §8.6)   [None for §8.7]
   is_leaf      = (t' == 0_B)                  -> trivially clean (D_u(D_w 0))
-  clean_peel   = (w==0) or (u >= w)           -> A25 clean regime for one peel
+  clean_peel   = (w==0) or (u >= w)           -> restricted one-peel regime
+                                                     (A25 was later retracted)
   nested_pos   = is the marked principal nested strictly inside an outer principal
-                 of the host term Trans(M)?  (A26 falsity trigger)
+                 of the host term Trans(M)?  (historical A26 trigger; A26 was
+                                               later retracted)
 We then evaluate, via buchholz.bracket, whether the actual [0]-orbit realises the
 claimed annihilation, on the EXACT terms produced by the Trans recursion.
 """
@@ -65,8 +68,9 @@ def domidx_of_principal(p):
     return u, b
 
 def classify_86(u, tprime_buc, w):
-    """§8.6: marked principal D_u(t' + D_w 0). Clean regime per A25: w==0 or u>=w
-    OR t'==0 (leaf, always clean since then it's D_u(D_w 0))."""
+    """§8.6: marked principal D_u(t' + D_w 0). The restricted one-peel regime
+    historically discussed under A25 is w==0 or u>=w, with t'==0 also trivially
+    clean (then the term is D_u(D_w 0)); A25 was later retracted."""
     is_leaf = (tprime_buc == [])
     clean = is_leaf or (w == 0) or (u >= w)
     return is_leaf, clean

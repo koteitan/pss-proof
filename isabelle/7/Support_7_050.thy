@@ -41,12 +41,14 @@ text \<open>The article states seven \<section>7.3/\<section>7.4 propositions fo
   (\<open>p_7_3_Trans_zeroT\<close>, \<open>p_7_3_Pred_Trans_descend\<close>, \<open>p_7_4_RightAnces_RightNodes\<close>,
   \<open>p_7_4_RightAnces_zeroT\<close>).  Of the other three:
 
-    \<^item> \<open>p_7_4_Mark_nextAdm\<close> (in correction A18's form) lifts only with its hypotheses
-      read off the REDUCT, see \<open>y3s_7_4_Mark_nextAdm_TPS_reduct\<close>;
+    \<^item> \<open>p_7_4_Mark_nextAdm\<close> is covered by recorded correction A47
+      (retaining correction A18's corrected pair/order); it lifts only with its
+      hypotheses read off the REDUCT, see \<open>y3s_7_4_Mark_nextAdm_TPS_reduct\<close>;
 
     \<^item> \<open>p_7_4_Trans_nextAdm\<close> and \<open>p_7_4_Trans_Mark_Pred\<close> are \<^bold>\<open>FALSE\<close> as stated on
-      \<open>T\<^bsub>PS\<^esub>\<close>.  \<^bold>\<open>PROPOSED CORRECTION\<close> (new id; \<open>corrections.md\<close> currently ends at
-      A44 --- not edited from here).  Witness (vetted \<open>red_model\<close>/\<open>trans_model\<close>):
+      \<open>T\<^bsub>PS\<^esub>\<close>.  These are the recorded corrections A45
+      (\<open>p_7_4_Trans_nextAdm\<close>) and A46 (\<open>p_7_4_Trans_Mark_Pred\<close>), respectively.
+      Witness (vetted \<open>red_model\<close>/\<open>trans_model\<close>):
       \<open>M = (0,0)(0,1)(1,2)(1,0) \<in> T\<^bsub>PS\<^esub>\<close>, non-reduced, with
       \<open>Red M = (0,0)(1,1)(2,2)(2,0) \<in> RT\<^bsub>PS\<^esub>\<close>.  Take \<open>m = j\<^sub>0 = 1\<close>, \<open>j\<^sub>1 = 3\<close>.
       Then \<open>adm M 1\<close> and \<open>(0,1) \<le>\<^sub>M (0,3)\<close>, so \<open>(M,1) \<in> T\<^bsub>PS\<^esub>\<^sup>Marked\<close> and \<open>1\<close> is the
