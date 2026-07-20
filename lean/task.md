@@ -1,37 +1,26 @@
-# 進捗管理（Lean 版）
+# 進捗管理（Isabelle レイアウト reorg — lean/ 同型化）
 
 <!--
-## 注意事項
-- **ツリーの 1 行 = 原文の命題 1 つ = Lean ファイル 1 つ**（`lean/<章>/<節>-<name>.lean`）。
-  行末の `<節>-<name>` がそのままファイル名。構造の仕様は spec.md、手順は step.md。
-- 凡例: **各項目には必ず 🚨（未証明）または ✅（証明済）を付ける**（司令マーカー）。
-  - 🚨🤖 ＝ workflow エージェント作業中
-  - 📘 ＝ [Buc1] 引用（外部結果。原文も証明せず引用のみ）
-  - ⛔ X ＝ X 待ち（X が解けるまでこの項目は解けない）
-  - ❌ ＝ 原文偽（訂正 Axx）かつ停止性に不要（迂回・証明対象外の死枝。✅ でも 🚨 でもない）
-- **✅ を付けてよいのは step.md §1 の 3 条件を全部満たしたときだけ**。
-  `lake build` が通っただけでは駄目（Lean は `sorry` を warning で通す）。
-  `python3 python/check_lean.py <file>` が **rc=0**、かつ `#print axioms` に **`sorryAx` 無し**、
-  かつ**主張が原文（訂正後）と一致**していること。
-- **進捗ツリーを編集するときは task.md と memo.md の両方を同じように編集する**
-  （同一アイテム名・同一ツリー構造を保つ。task.md=骨格のみ、memo.md=同じツリー＋詳細注釈）。
-- 進捗ツリー以外をこのページに書かない。
-- **各アイテムはアイテムを区別する情報のみを１行で。それ以上は書かない**。
-  訂正番号・Isabelle の対応補題名・難易度・計画は **memo.md** に書く。
-- 子がすべて ✅ のノードは子を畳む（子を書かない）。
-- **🚨 行に ✅(done部) を inline 禁止**。done と未done が混在したら ✅子/🚨子 に分割する。
-- **ラウンド消費数 `[rN]`**：そのアイテムに何ラウンド費やしたかを末尾に付ける。
-  分岐時は消費済みを子へ配分、子孫が全て ✅ になったら合計して畳む。
+- この件: isabelle/ を lean/ と同型へ再編（章ディレクトリ 5/6/7/8 ＋ 1命題1ファイル ＋ 共有 PSS/ 層）。
+- 仕様書: isabelle/REORG-PLAN.md（branch codex）。設計の核心=usage-chapter set でヘルパを共有/章ローカルに分割。
+- 不変条件: 0 sorry / ML AUDIT pass / 元の注釈を全部移送＋参照修正 / 章ごと green gate / 移設(複製でなく移動)。
+- 承認: 夜間ユーザー不在のため supervisor(Claude) が各 phase を自律承認。auto-approve は codex-autoapprove.sh(二層)。
+- マーカー: ✅=完了+supervisor 検証 / 🚨🤖=codex 作業中 / 🚨=未着手 / ❌=原文偽(該当なし)
+- 旧 lean/task.md(Lean 移植 §5-§8 全✅) は git 3daca28 に退避。復元 `git show 3daca28:lean/task.md`。
 -->
 
 ## 進捗ツリー
 
-- ✅ **定義層 `PSS/`**（§5 定式化。命題は置かない。移植元 `isabelle/pss_defs.thy`）[r9]
-
-- ✅ **§5 定式化**[r6]
-
-- ✅ **§6 ペア数列の基本性質**[r61]
-
-- ✅ **§7 Buchholz の表記系への翻訳**[r37]
-
-- ✅ **§8 停止性**[r197]
+- ✅ **Phase 0（依存 DAG 分析、ファイル無変更）** — `Thm_Deps.thm_deps` で fact 単位 DAG(4353 facts, 非巡回)。章グラフ非巡回・上位 import 0。共有 PSS/ 2288 / 章ローカル 1283。上三角の実エッジ 0(22 候補は命名アーティファクト)。unmapped 8(§7:2, §8:6)。baseline green+audit。commit 35c2cc3
+- ✅ **§5（13命題）パイロット** — sorry 0・内容移設・注釈保存＋参照修正。PSS_A/B/C green+audit。commit 1baf7bb
+- ✅ **§6（55命題; exact54+corrected1）** — 移設(pss_mechanized −569, pss_paper −119 行)。sorry regression なし(pss_scratch 33=33)。corrected は 6/P_6_6_reduced_leftend guarded 形。green+audit。commit 667a3c2
+- ✅ **§7（27命題; exact17+corrected8+unmapped2）** — unmapped 2 を Red-stability family から忠実再構成(stub せず)。移設(pss_wip −31595, pss_mechanized −4909)。sorry 0・regression なし・green+audit。commit 46a9841
+- 🚨🤖 **§8（33命題; exact25+corrected2+unmapped6）** — codex 作業中(最終章)。**構造は完成: 命題ファイル 33/33＋`8/audit.thy`(ML AUDIT 移設済)生成、`fail` 残ゼロ**。実 sorry は §8.1 の documented stub 1件のみ。最終厳密検証中・未commit
+  - 🚨 §8.1（4: exact3+❌1）— condI_III_c1_around=❌原文偽(A20 part1/A21 part5)。**documented stub 適用済**(原文どおりの文, `8/P_8_1_condI_III_c1_around.thy:80`)＋proven parts(m_8_1_c1_around_part*, main:pss_wip)複製。supervisor 判断: 訂正を発明せず main を忠実複製(2026-07-20 夜)
+  - 🚨 §8.2（7: exact6+unmapped1）— unmapped: condIIIV_terminal_slice_Trans
+  - 🚨 §8.3（4: exact3+corrected1）— corrected: kind0_base_ineq
+  - 🚨 §8.4（3: exact2+corrected1）— corrected: Trans_oper_exchange
+  - 🚨 §8.5（2: exact2）
+  - 🚨🤖 §8.6（4: exact2+unmapped2）— codex 作業中: Trans_fseq_condVI を修正→一時セッションで厳密検証中。trailing_principal_annihilable も同経路
+  - 🚨🤖 §8.7（9: exact7+unmapped2）— ★主定理 p_8_7_termination 含む。修正理論を §8.6 と同期検証中。unmapped: OT_tail_annihilable, Pred_oper0(⚠️原文で偽/一般形未証明の既知難物)
+- 🚨 **仕上げ** — 全章後: ROOT/CLAUDE.md 整合・docs/TOC 再生成・独立フル rebuild で最終 green 検証
