@@ -3,13 +3,13 @@
 Formal verification of the termination of the pair sequence system (ペア数列システム).
 The source is P進大好きbot's article "ペア数列の停止性" (Termination of the pair sequence
 system) on the Googology Wiki. Proposed corrections to the source: [corrections.md](corrections.md)
-(30 live) and [corrections-old.md](corrections-old.md) (17 retracted — our own errors).
+(30 live) and [corrections-old.md](corrections-old.md) (16 retracted — our own errors).
 
-## Where things are (2026-07-14 reorganization)
+## Where things are (2026-07-20 reorganization)
 
 | dir | what | status |
 |---|---|---|
-| `isabelle/` | Isabelle/HOL formalization. **Termination proved: zero hypotheses, zero `sorry`** (build-enforced ML audit). | **DONE / frozen** |
+| `isabelle/` | Isabelle/HOL formalization. **Termination proved: zero hypotheses, zero `sorry`** (build-enforced ML audit). The approved file-layout reorganization is incremental; §5–§7 are complete. | **PROOF frozen / layout reorg** |
 | `lean/` | Lean 4 port. One article proposition = one file (`lean/7/7.2-scb-unique.lean`). | **ACTIVE** |
 | `python/` | Counterexample search + numeric models (`red_model.py`, `trans_model.py` are canonical) | shared |
 | `tools/` | Article processing (`make_content.py` regenerates `tmp/content.md`) | shared |
@@ -21,10 +21,12 @@ system) on the Googology Wiki. Proposed corrections to the source: [corrections.
 dead ends) → [lean/kimina.md](lean/kimina.md) (the Lean check server, incl. how workflow
 agents use it).
 
-The Isabelle progress tree is [isabelle/task.md](isabelle/task.md) (all ✅);
+The Isabelle progress tree is [isabelle/task.md](isabelle/task.md) (all ✅), and
+the layout migration is governed by [isabelle/REORG-PLAN.md](isabelle/REORG-PLAN.md);
 its design notes are [isabelle/memo.md](isabelle/memo.md). **The Isabelle proof is the
 blueprint for the Lean port** — when a Lean proof stalls, the answer is almost always
-already in `isabelle/pss_mechanized.thy` or `isabelle/layerC/pss_scratch.thy`. grep first.
+already in `isabelle/5/`, `isabelle/6/`, `isabelle/7/`, `isabelle/8/`, `isabelle/PSS/`, or
+`isabelle/layerC/pss_scratch.thy`. grep first.
 
 The sections below describe the **Isabelle** side. They still apply when working in
 `isabelle/` (note: all `isbman` commands now run from `isabelle/`, e.g.
@@ -39,7 +41,7 @@ and imports its parent's top theory **session-qualified** (`imports "PSS_A.pss_m
 
 | session | dir | theory | role | green check |
 |---|---|---|---|---|
-| `PSS_A` | `.` | `pss_defs`+`pss_paper`+**`pss_mechanized`** | FROZEN base | `Finished PSS_A` |
+| `PSS_A` | `.` | `pss_defs` + `PSS/` + `5/` + `6/` + `pss_paper` + `7/` + `8/` + **`8/audit`** | FROZEN base | `Finished PSS_A` |
 | `PSS_B` | `layerB` | `pss_wip` | FROZEN base | `Finished PSS_B` |
 | `PSS_C` | `layerC` | `pss_scratch` | **ACTIVE top** (current work) | `Finished PSS_C` |
 
@@ -74,9 +76,9 @@ isbman build -m "pss-..." -d . -v PSS_B   # one-time: freeze the base (build A t
   build after syncing past the fold commit. After every fold, regenerate the TOC
   (`python3 tools/make_toc.py` → `docs/thy-toc.md`): a line-anchored index of all
   banner comments and section headings — agents grep it for topic/round/prefix
-  orientation, then jump into the .thy at the reported line. Do NOT split the frozen
-  theory into thematic files: the body is in append (= dependency) order, grep cost
-  is size-independent, and `PSS_B` is never rebuilt per round anyway.
+  orientation, then jump into the .thy at the reported line. The only authorized
+  split of the frozen theories is the dependency-ordered chapter migration in
+  `isabelle/REORG-PLAN.md`; keep the layered sessions and green gates intact.
 - **Green = the target session's OWN `Finished` line**, NOT a bare `Finished PSS`
   (substring-matches all layers). Active build green: `grep -c 'Finished PSS_C'`
   == 1; plus no real errors and `sorry`/`oops` == 0 in the edited theory. (A `***`
@@ -107,21 +109,31 @@ The Isabelle build only needs `tmp/content.md` to *exist* (`@{file}` check).
 | File | Layer / dir | Role |
 |---|---|---|
 | `pss_defs.thy` | a (`.`) | Formalized **definitions** of the article (pair-sequence side, §4–§6) |
-| `pss_paper.thy` | a (`.`) | **Statements only** of the article's propositions/lemmas/corollaries/theorems, transcribed as `sorry`. The §7 Buchholz notation system (definitions of the external reference [Buc1]) also lives here |
-| `pss_mechanized.thy` | a (`.`) | Our own **mechanized proofs** discharging the `sorry`s |
+| `PSS/*.thy` | a (`PSS/`) | Dependency-ordered shared helpers; chapter boundaries are exposed by `After_5`, `After_6`, and `After_7` |
+| `5/P_*.thy` … `8/P_*.thy` | a (`5/`–`8/`) | One §5–§8 article proposition per theory, with its exact or named-corrected clean proof and proposition-local material |
+| `5/Support_*.thy` … `8/Support_*.thy` | a (`5/`–`8/`) | Helpers used only within one chapter but shared by more than one proposition step |
+| `8/audit.thy` | a (`8/`) | **ML AUDIT**: fails the build if any termination fact reaches a `sorry`-carrying statement. Last theory of `PSS_A`, so a green `PSS_A` IS the audit |
+| `pss_paper.thy` | a (`.`) | §7 transcription of the **external** reference [Buc1] — its definitions plus the three cited [Buc1] lemmas left as `sorry`. Holds no article statement of its own any more |
+| `pss_mechanized.thy` | a (`.`) | Compatibility shim after the relocation (imports `audit`); the §8 body it used to hold is now `8/Support_8_A–C` |
 | `layerB/pss_wip.thy` | b | Earlier campaign's proven body — now FROZEN into the base heap |
 | `layerC/pss_scratch.thy` | c | **ACTIVE** layer: the lemmas currently being proven (see the Build section) |
 
-Import chain: `pss_defs` ← `pss_paper` ← `pss_mechanized` ← `pss_wip` ← `pss_scratch`
-(the last two cross-session, imported session-qualified). Active work happens in
-`layerC/pss_scratch.thy`; the rest is pre-built. `@{file}` antiquotations live only
-in the layer-a theories (which stay in `.`), so the `tmp/` symlink is only needed
-at the repo root, not in `layerB`/`layerC`.
+Import chain: `pss_defs` ← `PSS/Pre_5` ← §5 proposition/frontier theories ←
+`PSS/After_5` ← §6 proposition/frontier theories ← `PSS/After_6` ← `pss_paper` ←
+§7 proposition/frontier theories ← `PSS/After_7` ← `8/Support_8_A–C` ← §8
+proposition theories ← `8/audit` ← `pss_mechanized` ←
+`pss_wip` ← `pss_scratch` (the last two
+cross-session, imported session-qualified). Active proof work happens in
+`layerC/pss_scratch.thy`; the rest is pre-built. When moving an `@{file}`
+antiquotation into a chapter directory, adjust its relative path and add a local
+`tmp` symlink only if it still addresses `tmp/...`.
 
 ## Naming and traceability
 
-- Article claims are named `p_<§>_<slug>` in `pss_paper.thy` (e.g.
-  `p_6_4_mono_slice`); our proofs are `m_<§>_<slug>` in `pss_mechanized.thy`.
+- Article claims are named `p_<§>_<slug>` and their proofs `m_<§>_<slug>`. For §5–§8
+  both live in the matching chapter `P_<§>_<slug>.thy`; named-corrected claims use
+  the correction-specific theorem name in that same proposition theory. The relocation
+  is complete, so no chapter keeps its statements in `pss_paper.thy` any more.
 - Tag every fact's comment with the article section (§) and the original
   Japanese name, so it can be matched against `tmp/content.md` (the extracted
   article text).
@@ -181,7 +193,7 @@ at the repo root, not in `layerB`/`layerC`.
   the `Lng = 1` conjunct (`zeroT_def`) and contradict `1 < Lng ..`, don't `simp`
   the whole `zeroT_def` (it evaluates the `entry ..` conjunct into garbage).
 
-## Reusable helpers (in `pss_mechanized.thy`; grep for them)
+## Reusable helpers (in `PSS/` and `6/`; grep for them)
 
 - List/segment: `drop_eq_map_nth`, `seg_0_eq_take`, `seg_to_last_eq_drop`,
   `drop_eq_seg`, `Lng_seg`, `entry_seg`, `T_PS_Lng_gt1`, `multiT_imp_Lng_gt1`,

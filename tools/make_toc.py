@@ -19,6 +19,11 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent / 'isabelle'
 FILES = [
     'pss_defs.thy',
+] + [
+    path.relative_to(ROOT).as_posix()
+    for chapter_dir in ('PSS', '5', '6', '7', '8')
+    for path in sorted((ROOT / chapter_dir).glob('*.thy'))
+] + [
     'pss_paper.thy',
     'pss_mechanized.thy',
     'layerB/pss_wip.thy',

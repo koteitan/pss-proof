@@ -54,7 +54,7 @@ Lean 版の構成は [`lean/spec.md`](lean/spec.md)、進捗は [`lean/task.md`]
 
 ## 原文への訂正案
 
-形式化の過程で見つかった原論文の訂正案は [`corrections.md`](corrections.md) に、原文 HTML への修正として集約している。**31 件**。
+形式化の過程で見つかった原論文の訂正案は [`corrections.md`](corrections.md) に、原文 HTML への修正として集約している。**30 件**（取り下げた 16 件は [`corrections-old.md`](corrections-old.md)）。
 
 ## ビルド
 

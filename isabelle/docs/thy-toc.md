@@ -23,1628 +23,2852 @@ Format: `line<TAB>kind<TAB>text`. Regenerate after every C->B fold.
 488	subsection	§7.4 許容的親子関係 (Admissible parent relation)
 504	section	§8 停止性 (Termination)
 
-## pss_paper.thy
+## PSS/After_5.thy
 
-20	section	§5 定式化
-22	subsection	§5.1 親子関係
-92	subsection	§5.3 基本列
-102	subsection	§5.4 ペア数列システム
-126	section	§6 ペア数列の基本性質
-128	subsection	§6.1 最上行のインクリメント
-137	subsection	§6.2 単項性
-225	subsection	§6.3 許容性
-249	subsection	§6.4 幹と枝
-323	subsection	§6.5 簡約化
-455	subsection	§6.6 簡約性
-551	subsection	§6.7 標準形
-580	subsection	§6.8 降順性
-598	section	§7 Buchholz の表記系への翻訳
-612	subsection	§7.1 Buchholz の表記系 — 項と順序 ([Buc1] §2)
-703	subsection	§7.1 Buchholz の表記系 — 基本列と \<open>dom\<close> ([Buc1] §3)
-840	subsection	§7.2 scb分解 ([Buc1] のアルファベット \<open>\<Sigma>\<close> 上)
-1084	subsection	§7.3 翻訳写像 (Trans / Mark)
-1336	subsection	§7.4 許容的親子関係
-1477	section	§8 停止性 (Termination)
-1479	subsection	§8.2 強単項性 (Strong-monomiality)
-1651	subsection	§8.1 条件(I)の下での展開規則 (Expansion rule under condition (I))
-1777	subsection	§8.3 条件(II)の下での展開規則
-1872	subsection	§8.4 条件(III)か(IV)の下での展開規則
-2033	subsection	§8.5 条件(V)の下での展開規則
-2138	subsection	§8.6 条件(VI)の下での展開規則 (Expansion rule under condition (VI))
-2235	subsection	§8.7 主結果 (Main result)
 
-## pss_mechanized.thy
+## PSS/After_5_1_Ancestor_Tree_1.thy
 
-17	section	Helper facts about the basic definitions
-49	section	§5.1 親子関係
-476	section	§5.3 基本列
-551	section	§5.4 ペア数列システム
-586	section	§6.1 最上行のインクリメント
-623	section	§6.2 単項性
-1269	subsection	§6.3 許容性
-2641	section	§6.4 幹と枝
-3206	subsection	§6.2 単項性: 非複項列の基本列 (non-multi expansion)
-4866	section	§7.4 許容的親子関係 (Admissible parent relation)
-5052	section	Faithfulness lemmas (忠実性補題)
-5059	subsection	§5.1 \<open>\<le>\<^sub>M\<close> as the article's chain
-5160	subsection	§5.4 the uniform expansion step
-5187	section	§6.5 Red termination: foundational helpers
-5198	subsection	Diagonal segments \<open>diagSeq a b = ((j,j))\<^bsub>j=a\<^esub>\<^bsup>b\<^esup>\<close>
-5217	subsection	Branch length bound
-5258	subsection	Trunk of a diagonal segment
-5343	subsection	\<open>\<le>\<^sub>M\<close> on a diagonal segment is the index order (both rows)
-5449	subsection	\<open>IncrFirst\<close>-invariance of \<open>TrMax\<close> (and its iterate)
-5464	subsection	Trunk extension by a diagonal prefix
-5640	subsection	The core measure \<open>\<beta>\<close> and the one-step \<open>coreReduce\<close>
-6384	subsection	The termination measure \<open>\<nu>\<close>
-6858	subsection	§6.5 命題（単項性と Red の関係）の補助事実 (content.md 946-958)
-7231	subsection	§6.5 補正定義域 \<open>anchored_slice\<close> の基本性質 (correction A4)
-7354	section	§6.7 標準形の階層和による表示
-7963	subsection	§6.7 標準形の始切片への遺伝性
-8134	subsection	§6.7 標準形の単項成分が標準形であること (P-components are standard, same rank)
-8408	subsection	§6.8 降順性 (standard \<open>P\<close>-components are descending)
-24117	section	§7.1 Buchholz notation: principal components (命題（順序数項の単項成分の基本性質）)
-24211	subsection	§7.1 [Buc1] Lemma 2.1 — \<open>lessBT\<close> は狭義全順序
-24582	subsection	§6.6 補題（簡約性と係数の基本性質）への部品: branch-6 rebase は row0\<ge>row1 を保つ
-24696	subsection	§6.5 TAIL: branch-tail row-0 values of \<open>Red (coreReduce M)\<close> exceed \<open>m\<^sub>1\<^sub>0\<close>
-25322	subsection	CASCADE-A: dead-branch[20] unreachability (\<open>p_6_5_monoT_Red\<close>, m10>0)
-25681	subsection	§6.4 NJ-alignment: tail-\<open>IncrFirst\<close> equivariance of trunk/branches
-25965	subsubsection	Trunk/branch equalities for the \<open>coreReduce\<close> pair
-26527	banner	Red_Pred helper block from workflow predh-T1
-26689	banner	Red_Pred helper block from workflow predh-T2
-26690	subsection	T2: \<open>diagSeq\<close> butlast arithmetic and \<open>Red\<close> of a core diagonal
-26787	banner	Red_Pred helper block from workflow predh-T3
-26849	banner	Red_Pred helper block from workflow predh-T4
-26850	subsection	§6.5 T4: structural pieces of \<open>Red(Pred M)=Pred(Red M)
-26920	banner	Br-under-Pred decomposition (T3(ii) corrected)
-27101	banner	keystone foundation block from workflow kf-local
-27208	banner	keystone foundation block from workflow kf-stab
-27292	banner	keystone foundation block from workflow kf-diag
-27506	banner	keystone concat-transfer block from workflow kc-rcpb
-27508	banner	block inheritance of RedCondA/RedCondB (worktree kc-rcpb)
-27813	banner	keystone concat-transfer block from workflow kc-clift
-27815	banner	C2 (concat-lifting): forward transfer of RedCondA/RedCondB
-28219	subsection	§6.5 engine: \<open>Red (IncrFirst M) = Red M\<close> — bankable branch lemmas
-28519	subsection	The cut-anchored \<open>Red_IncrFirst\<close> engine (B2 deliverable)
-28999	subsection	The \<open>cut_bump\<close> \<open>Red\<close>-collapse engine lemma
-29705	subsection	The \<open>(B2)\<close> deliverable and \<open>Red\<close>/\<open>IncrFirst\<close> invariance (\<open>p_6_5_Red_IncrFirst\<close>)
-29796	subsection	§6.5 命題（\<open>Red\<close>の冪等性）— bankable branch bricks (idempotency)
-29863	subsection	The MASTER-KEY ancestor-structure \<open>Red\<close> congruence engine
-30361	subsection	Master-key: \<open>congR\<close> nextrel-congruence of \<open>Red\<close> (\<open>cdn_red_cong\<close>)
-31389	subsection	§6.5/§6.6 idempotency keystone residual (B2): \<open>Red (coreReduce (Red M)) = Red (coreReduce M)\<close>
-31883	banner	final-layer block from workflow fl-s
-31885	subsection	§6.6 final layer (S): \<open>Red\<close>-output structure on the core-nontrunk branch
-32106	banner	final-layer block from workflow fl-d
-32107	subsection	D (idempotency domain): reusable core-nontrunk \<open>Red\<close> unfold (\<open>NJ\<close> form)
-32170	banner	final-layer block: idempotency re-decomposition (fin)
-32364	banner	keystone: Red preserves monoT (forward direction of p_6_5_Red_monoT)
-32774	banner	final-layer block (if2): idempotency re-decomposition + B1 + finish
-32776	subsection	§6.6 final layer (if2): \<open>Red\<close>-output re-decomposition and idempotency
-33125	subsection	§6.5/§6.6 idempotency closing chain (a1)
-34151	banner	Red_Pred (5/6 branches, conditional) from tf-a3
-34153	banner	Red_Pred assembly (workflow tf-a3)
-34154	subsection	§6.5 命題（\<open>Red\<close>と\<open>Pred\<close>の可換性）の組立て \<open>m_6_5_Red_Pred\<close>
-34730	banner	block from workflow t2-rpred
-34731	subsection	§6.5 命題（\<open>Red\<close>と\<open>Pred\<close>の可換性）— core-nontrunk \<open>Hbr\<close> の解消
-36128	banner	block from workflow t2-rnsub
-36129	subsection	§7.2 命題（\<open>RightNodes\<close>と部分表現の関係） — m_7_2_RightNodes_subexpr
-36718	banner	block from workflow t2-key
-36771	banner	block from workflow t2-elead
-36773	subsection	§6.6 補題（簡約性と左端の関係）— (e) keystone tool
-36878	banner	block from workflow t2-scbuniq
-36880	subsection	§7.2 scb分解の一意性 (1) — the \<open>(s,b)\<close>-part is unique for fixed \<open>c\<close>
-36992	banner	block from workflow t2-scbtriv
-36993	section	§7.2 scb分解の自明性の判定条件 (p_7_2_scb_triviality)
-37085	subsection	§6.5 命題（\<open>Red\<close>と基本列の可換性） — \<open>m_6_5_Red_oper\<close>
-37109	banner	block from workflow t3-ecrux : §6.6 簡約性と左端の関係 (e)-lemma support
-37111	subsection	§6.6 対角セグメントの分割 (diagonal split, ecrux)
-37140	banner	§6.6 命題（簡約性の切片への遺伝性） herd block (t3-herd)
-37261	subsection	§7 flatBT injectivity — m_7_flatBT_inj
-37683	subsection	§7.2 命題（scb分解の合成則） — m_7_2_scb_compose
-37796	subsection	§6.6 keystone (e)-CRUX: prepending a diagonal segment
-38006	subsection	§7.2 命題（scb分解の自明性の判定条件） — m_7_2_scb_triviality
-38104	section	§7.2 scb分解の一意性（無条件版） (p_7_2_scb_unique, conjunct (1))
-38162	subsection	§6.6 keystone (e)-CRUX: \<open>Red (diagSeq 0 (m\<^sub>1\<^sub>0-1) @ M) = diagSeq 0 (m\<^sub>1\<^sub>0-1) @ Red M\<close>
-38373	section	§7.2 命題（scb分解の置換可能性） — m_7_2_scb_replaceable (partial / BLOCKER)
-38613	section	§6.6 KEYSTONE chain — (e) 補題（簡約性と左端の関係） and the keystone iff
-38914	subsection	§7.2 系（加法とscb分解の関係） — m_7_2_add_scb (Front B)
-39094	subsection	§6.6 keystone forward — \<open>M \<in> RT\<^bsub>PS\<^esub> \<Longrightarrow> RedCondA M \<and> RedCondB M\<close> (Front A)
-39500	section	§7.2 第0種/第1種 scb分解の一意性 (p_7_2_scb_unique conjuncts (4),(5))
-39559	section	§6.6 keystone forward (monoT core): \<open>reduced \<Longrightarrow> RedCondA \<and> RedCondB\<close>
-39777	subsection	§7.2 scb分解の一意性 — the central \<open>c\<close>-equality \<open>m_7_2_scb_c_unique\<close>
-40130	section	Front A (wf11) — \<open>IncrFirst ^^ k\<close> structure bricks (incf_pow_*)
-40230	section	Front A (wf12) — keystone-forward last-block locate (STEP b)
-40340	section	Front B (wf12) — global-last-\<open>Zsym\<close> alignment of the marked principal
-40435	section	Front A (wf13) — keystone forward monoT core, full \<open>Lng\<close>-induction (Ncons)
-40659	section	Front B (wf14) — scb cut-pinning: \<open>rnsub_cut_ge_pre\<close> and kind-uniqueness
-41254	section	Front A (wf15) — \<open>condA_top\<close> in-block last-column entry transfer
-41443	section	§7.2 kind-1 RightNodes length-pin (rnsub_kind1_len_pin)
-41696	section	Front A (wf16) — \<open>condA_top\<close> in-block parent correspondence
-41864	section	§7.2 種の排他性 (p_7_2_scb_unique conjunct (3), with t \<noteq> Trm []) — wf16-kinds
-42010	section	§7.2 dom-可分解性 (p_7_2_scb_unique conjunct (2)) — scb側 forward + domB blocker
-42152	section	Front A (wf17) — \<open>condA_top\<close> diagonal-prefix \<open>RedCondA\<close> transfer (B)
-42249	section	Front B (wf17-A) — \<open>condA_top\<close> CROSS-BLOCK half (\<open>p < off\<close>) at the last column
-42531	section	Front B (wf18) — \<open>condA_top\<close> ROW-1 CROSS-BLOCK at \<open>kk > 0\<close> (the last sub-case)
-42625	section	Front B (wf19) — \<open>valpin\<close>: the last input for \<open>condA_top\<close> row-1 \<open>kk>0\<close> cross-block
-42772	section	Front A (wf19) — GLUE: \<open>Lng N < Lng M\<close>, in-block transfer, and \<open>condA_top_all\<close>
-43528	section	Front B (wf20) — \<open>parpin\<close>: diagonal-prefix parent reconstruction of the last column
-43735	section	Front A (wf21) — RAW-branch \<open>N\<close> for the non-circular \<open>r1cross\<close> route
-44149	section	Front A (wf22) — non-circular \<open>r1cross\<close> via M's TRUNK structure
-47865	banner	Front B: rebaseRow0 preservation bricks
-47961	banner	Front B: nu-descent brick
-48027	banner	Front B: nu-bounded m10pos variant
-48196	banner	Front B: conditional nu-induction assembly
-48822	subsection	§6.5 \<open>Red\<close>-invariance of ancestor order via the \<open>congR\<close> bridge (Front A)
-48992	subsection	§6.5 Anchored slices are never \<open>multiT\<close> (Front B reduction key)
-49045	subsection	Front A: \<open>congR M (Red M)\<close> for \<open>RedCondA\<close>+\<open>monoT\<close> (mono mono-core for \<open>p_6_5_Red_le\<close>)
-49213	subsection	Target (1): anchored slices satisfy \<open>RedCondA\<close>
-49271	subsection	Target (2): assembling \<open>m_6_5_Red_le\<close>
-49337	subsection	Front B (tag pss-stps-condA): \<open>ST_PS \<Longrightarrow> RedCondA\<close> bricks
-49389	subsection	Front B (tag pss-stps-condB): \<open>ST_PS \<Longrightarrow> RedCondB\<close> bricks and assembly
-59477	section	§6.5–§6.7 article-faithful standard-reducedness skeleton (bf_)
-59502	subsection	(i) \<open>Red\<close> と基本列の可換性 — non-shift (LIGHT) and assembly
-59562	subsection	(ii) 簡約性が基本列で保たれること — \<open>m_6_6_red_preserved_by_oper\<close>
-59603	subsection	(iii) 標準形の簡約性 — \<open>m_6_7_standard_reduced_faithful\<close>
-59645	subsection	(iv) \<open>stdCA\<close> — \<open>bf_stdCA_faithful\<close>
-59673	subsection	(v) Residual discharge — \<open>diag_red\<close>, \<open>predRdegen\<close>, and the \<open>anch\<close> domain gap
-59844	subsection	(vi) Wiring the \<open>shift\<close> residual to the \<open>operCA\<close>/\<open>operCB\<close> tiling bricks
-59972	subsection	(vii) §6.7 \<open>D(N)\<close> crux assembly — \<open>m_6_7_oper_gstrict\<close> (induct skeleton)
-60083	subsection	(viii) §6.7 \<open>DISJ\<close> residual — WG reflection core (\<open>wg_reflect_core\<close>)
-60152	subsection	(ix) §6.7 \<open>DISJ\<close> \<open>w = 1\<close> foundation — verbatim prefix parent agreement
-60224	subsection	(x) §6.7 row-1 tree inheritance — \<open>m_6_7_treewf\<close> (the core invariant)
-60334	subsection	(xi) §6.7 GLOBAL row-1 tree wellformedness — \<open>m_6_7_globaltreewf\<close>
-61972	section	§6.5 monoCong bricks (towards m_6_5_congR_self_Red_monoT)
-64349	section	§6.5 系（\<open>Red\<close>が単項性を保つこと）/ 系（\<open>P\<close>の\<open>Red\<close>同変性） — A4 final forms
-64412	section	§6.5 命題（\<open>Red\<close>が許容性を保つこと）/ 系（許容化の\<open>Red
-64489	section	§6.6 系（\<open>1\<close>列ペア数列の基本性質） / 命題（\<open>P\<close>が簡約性を保つこと）
-64546	section	§6.6 補題（簡約性と係数の基本性質）
-64676	section	§6.6 系（直系先祖による切片と\<open>Red\<close>と\<open>IncrFirst\<close>の関係） (correction A2)
-64777	section	§6.6 命題（簡約性が基本列で保たれること）
-64893	section	§6.5 命題（\<open>Red\<close>と基本列の可換性） — A4 final form
-65215	section	§7.2 GENERALIZED PRINCIPAL-REPLACEMENT SURGERY — scbrepl_image residual (A13 + c1-around 4-1)
 
-## layerB/pss_wip.thy
+## PSS/After_5_1_Parent_Exists_1.thy
+
+
+## PSS/After_6.thy
+
+
+## PSS/After_7.thy
+
+
+## PSS/Frontier_6_001.thy
+
+5	section	§6.1 最上行のインクリメント
+
+## PSS/Frontier_6_002.thy
+
+5	section	§6.2 単項性
+
+## PSS/Frontier_6_003.thy
+
+
+## PSS/Frontier_6_004.thy
+
+
+## PSS/Frontier_6_005.thy
+
+
+## PSS/Frontier_6_006.thy
+
+
+## PSS/Frontier_6_007.thy
+
+
+## PSS/Frontier_6_008.thy
+
+5	subsection	§6.3 許容性
+
+## PSS/Frontier_6_009.thy
+
+
+## PSS/Frontier_6_010.thy
+
+
+## PSS/Frontier_6_011.thy
+
+5	section	§6.4 幹と枝
+
+## PSS/Frontier_6_012.thy
+
+
+## PSS/Frontier_6_013.thy
+
+
+## PSS/Frontier_6_014.thy
+
+5	subsection	§6.2 単項性: 非複項列の基本列 (non-multi expansion)
+
+## PSS/Frontier_6_015.thy
+
+
+## PSS/Frontier_6_016.thy
+
+
+## PSS/Frontier_6_017.thy
+
+
+## PSS/Frontier_6_018.thy
+
+
+## PSS/Frontier_6_019.thy
+
+
+## PSS/Frontier_6_020.thy
+
+5	section	§6.5 Red termination: foundational helpers
+16	subsection	Diagonal segments \<open>diagSeq a b = ((j,j))\<^bsub>j=a\<^esub>\<^bsup>b\<^esup>\<close>
+35	subsection	Branch length bound
+76	subsection	Trunk of a diagonal segment
+161	subsection	\<open>\<le>\<^sub>M\<close> on a diagonal segment is the index order (both rows)
+216	subsection	\<open>IncrFirst\<close>-invariance of \<open>TrMax\<close> (and its iterate)
+231	subsection	Trunk extension by a diagonal prefix
+407	subsection	The core measure \<open>\<beta>\<close> and the one-step \<open>coreReduce\<close>
+
+## PSS/Frontier_6_021.thy
+
+223	subsection	The termination measure \<open>\<nu>\<close>
+
+## PSS/Frontier_6_022.thy
+
+
+## PSS/Frontier_6_023.thy
+
+124	subsection	§6.5 補正定義域 \<open>anchored_slice\<close> の基本性質 (correction A4)
+
+## PSS/Frontier_6_024.thy
+
+5	section	§6.7 標準形の階層和による表示
+
+## PSS/Frontier_6_025.thy
+
+5	subsection	§6.7 標準形の始切片への遺伝性
+
+## PSS/Frontier_6_026.thy
+
+5	subsection	§6.7 標準形の単項成分が標準形であること (P-components are standard, same rank)
+
+## PSS/Frontier_6_027.thy
+
+
+## PSS/Frontier_6_028.thy
+
+
+## PSS/Frontier_6_029.thy
+
+
+## PSS/Frontier_6_030.thy
+
+
+## PSS/Frontier_6_031.thy
+
+
+## PSS/Frontier_6_032.thy
+
+
+## PSS/Frontier_6_033.thy
+
+
+## PSS/Frontier_6_034.thy
+
+
+## PSS/Frontier_6_035.thy
+
+
+## PSS/Frontier_6_036.thy
+
+
+## PSS/Frontier_6_037.thy
+
+
+## PSS/Frontier_6_038.thy
+
+
+## PSS/Frontier_6_039.thy
+
+
+## PSS/Frontier_6_040.thy
+
+
+## PSS/Frontier_6_041.thy
+
+
+## PSS/Frontier_6_042.thy
+
+5	subsection	§6.5 TAIL: branch-tail row-0 values of \<open>Red (coreReduce M)\<close> exceed \<open>m\<^sub>1\<^sub>0\<close>
+631	subsection	CASCADE-A: dead-branch[20] unreachability (\<open>p_6_5_monoT_Red\<close>, m10>0)
+
+## PSS/Frontier_6_043.thy
+
+5	subsection	§6.4 NJ-alignment: tail-\<open>IncrFirst\<close> equivariance of trunk/branches
+289	subsubsection	Trunk/branch equalities for the \<open>coreReduce\<close> pair
+
+## PSS/Frontier_6_044.thy
+
+
+## PSS/Frontier_6_045.thy
+
+5	banner	Red_Pred helper block from workflow predh-T1
+167	banner	Red_Pred helper block from workflow predh-T2
+168	subsection	T2: \<open>diagSeq\<close> butlast arithmetic and \<open>Red\<close> of a core diagonal
+
+## PSS/Frontier_6_046.thy
+
+5	banner	Red_Pred helper block from workflow predh-T3
+67	banner	Red_Pred helper block from workflow predh-T4
+68	subsection	§6.5 T4: structural pieces of \<open>Red(Pred M)=Pred(Red M)
+
+## PSS/Frontier_6_047.thy
+
+5	banner	keystone foundation block from workflow kf-local
+
+## PSS/Frontier_6_048.thy
+
+5	banner	keystone foundation block from workflow kf-stab
+
+## PSS/Frontier_6_049.thy
+
+5	banner	keystone concat-transfer block from workflow kc-rcpb
+7	banner	block inheritance of RedCondA/RedCondB (worktree kc-rcpb)
+
+## PSS/Frontier_6_050.thy
+
+5	banner	keystone concat-transfer block from workflow kc-clift
+7	banner	C2 (concat-lifting): forward transfer of RedCondA/RedCondB
+
+## PSS/Frontier_6_051.thy
+
+5	subsection	§6.5 engine: \<open>Red (IncrFirst M) = Red M\<close> — bankable branch lemmas
+305	subsection	The cut-anchored \<open>Red_IncrFirst\<close> engine (B2 deliverable)
+785	subsection	The \<open>cut_bump\<close> \<open>Red\<close>-collapse engine lemma
+1491	subsection	The \<open>(B2)\<close> deliverable and \<open>Red\<close>/\<open>IncrFirst\<close> invariance (\<open>p_6_5_Red_IncrFirst\<close>)
+
+## PSS/Frontier_6_052.thy
+
+5	subsection	§6.5 命題（\<open>Red\<close>の冪等性）— bankable branch bricks (idempotency)
+72	subsection	The MASTER-KEY ancestor-structure \<open>Red\<close> congruence engine
+
+## PSS/Frontier_6_053.thy
+
+
+## PSS/Frontier_6_054.thy
+
+146	subsection	Master-key: \<open>congR\<close> nextrel-congruence of \<open>Red\<close> (\<open>cdn_red_cong\<close>)
+1174	subsection	§6.5/§6.6 idempotency keystone residual (B2): \<open>Red (coreReduce (Red M)) = Red (coreReduce M)\<close>
+1668	banner	final-layer block from workflow fl-s
+1670	subsection	§6.6 final layer (S): \<open>Red\<close>-output structure on the core-nontrunk branch
+1891	banner	final-layer block from workflow fl-d
+1892	subsection	D (idempotency domain): reusable core-nontrunk \<open>Red\<close> unfold (\<open>NJ\<close> form)
+1955	banner	final-layer block: idempotency re-decomposition (fin)
+2149	banner	keystone: Red preserves monoT (forward direction of p_6_5_Red_monoT)
+
+## PSS/Frontier_6_055.thy
+
+5	banner	final-layer block (if2): idempotency re-decomposition + B1 + finish
+7	subsection	§6.6 final layer (if2): \<open>Red\<close>-output re-decomposition and idempotency
+356	subsection	§6.5/§6.6 idempotency closing chain (a1)
+
+## PSS/Frontier_6_056.thy
+
+5	banner	Red_Pred (5/6 branches, conditional) from tf-a3
+7	banner	Red_Pred assembly (workflow tf-a3)
+8	subsection	§6.5 命題（\<open>Red\<close>と\<open>Pred\<close>の可換性）の組立て \<open>m_6_5_Red_Pred\<close>
+
+## PSS/Frontier_6_057.thy
+
+5	banner	block from workflow t2-rpred
+6	subsection	§6.5 命題（\<open>Red\<close>と\<open>Pred\<close>の可換性）— core-nontrunk \<open>Hbr\<close> の解消
+
+## PSS/Frontier_6_058.thy
+
+100	subsection	§6.5 命題（\<open>Red\<close>と基本列の可換性） — \<open>m_6_5_Red_oper\<close>
+
+## PSS/Frontier_6_059.thy
+
+5	banner	block from workflow t3-ecrux : §6.6 簡約性と左端の関係 (e)-lemma support
+7	subsection	§6.6 対角セグメントの分割 (diagonal split, ecrux)
+36	banner	§6.6 命題（簡約性の切片への遺伝性） herd block (t3-herd)
+
+## PSS/Frontier_6_060.thy
+
+5	subsection	§6.6 keystone (e)-CRUX: prepending a diagonal segment
+120	subsection	§6.6 keystone (e)-CRUX: \<open>Red (diagSeq 0 (m\<^sub>1\<^sub>0-1) @ M) = diagSeq 0 (m\<^sub>1\<^sub>0-1) @ Red M\<close>
+
+## PSS/Frontier_6_061.thy
+
+5	section	§6.6 KEYSTONE chain — (e) 補題（簡約性と左端の関係） and the keystone iff
+
+## PSS/Frontier_6_062.thy
+
+83	subsection	§6.6 keystone forward — \<open>M \<in> RT\<^bsub>PS\<^esub> \<Longrightarrow> RedCondA M \<and> RedCondB M\<close> (Front A)
+357	section	§6.6 keystone forward (monoT core): \<open>reduced \<Longrightarrow> RedCondA \<and> RedCondB\<close>
+630	section	Front A (wf12) — keystone-forward last-block locate (STEP b)
+740	section	Front A (wf13) — keystone forward monoT core, full \<open>Lng\<close>-induction (Ncons)
+
+## PSS/Frontier_6_063.thy
+
+5	section	Front A (wf15) — \<open>condA_top\<close> in-block last-column entry transfer
+194	section	Front A (wf16) — \<open>condA_top\<close> in-block parent correspondence
+362	section	Front A (wf17) — \<open>condA_top\<close> diagonal-prefix \<open>RedCondA\<close> transfer (B)
+459	section	Front B (wf17-A) — \<open>condA_top\<close> CROSS-BLOCK half (\<open>p < off\<close>) at the last column
+
+## PSS/Frontier_6_064.thy
+
+5	section	Front A (wf19) — GLUE: \<open>Lng N < Lng M\<close>, in-block transfer, and \<open>condA_top_all\<close>
+776	section	Front A (wf22) — non-circular \<open>r1cross\<close> via M's TRUNK structure
+
+## PSS/Frontier_6_065.thy
+
+
+## PSS/Frontier_6_066.thy
+
+
+## PSS/Frontier_6_067.thy
+
+
+## PSS/Frontier_6_068.thy
+
+
+## PSS/Frontier_6_069.thy
+
+105	banner	Front B: rebaseRow0 preservation bricks
+201	banner	Front B: nu-descent brick
+267	banner	Front B: nu-bounded m10pos variant
+
+## PSS/Frontier_6_070.thy
+
+
+## PSS/Frontier_6_071.thy
+
+5	subsection	Target (2): assembling \<open>m_6_5_Red_le\<close>
+
+## PSS/Frontier_6_072.thy
+
+5	subsection	Front B (tag pss-stps-condA): \<open>ST_PS \<Longrightarrow> RedCondA\<close> bricks
+57	subsection	Front B (tag pss-stps-condB): \<open>ST_PS \<Longrightarrow> RedCondB\<close> bricks and assembly
+
+## PSS/Frontier_6_073.thy
+
+
+## PSS/Frontier_6_074.thy
+
+
+## PSS/Frontier_6_075.thy
+
+
+## PSS/Frontier_6_076.thy
+
+
+## PSS/Frontier_6_077.thy
+
+
+## PSS/Frontier_6_078.thy
+
+
+## PSS/Frontier_6_079.thy
+
+
+## PSS/Frontier_6_080.thy
+
+
+## PSS/Frontier_6_081.thy
+
+
+## PSS/Frontier_6_082.thy
+
+
+## PSS/Frontier_6_083.thy
+
+20	subsection	(vi) Wiring the \<open>shift\<close> residual to the \<open>operCA\<close>/\<open>operCB\<close> tiling bricks
+
+## PSS/Frontier_6_084.thy
+
+5	subsection	(x) §6.7 row-1 tree inheritance — \<open>m_6_7_treewf\<close> (the core invariant)
+
+## PSS/Frontier_6_085.thy
+
+5	subsection	(xi) §6.7 GLOBAL row-1 tree wellformedness — \<open>m_6_7_globaltreewf\<close>
+
+## PSS/Frontier_6_086.thy
+
+
+## PSS/Frontier_6_087.thy
+
+
+## PSS/Frontier_6_088.thy
+
+13	section	§6.5 monoCong bricks (towards m_6_5_congR_self_Red_monoT)
+
+## PSS/Frontier_6_089.thy
+
+
+## PSS/Frontier_6_090.thy
+
+
+## PSS/Frontier_6_091.thy
+
+5	section	§6.6 系（\<open>1\<close>列ペア数列の基本性質） / 命題（\<open>P\<close>が簡約性を保つこと）
+
+## PSS/Frontier_6_092.thy
+
+5	section	§6.6 補題（簡約性と係数の基本性質）
+
+## PSS/Frontier_6_093.thy
+
+5	section	§6.6 命題（簡約性が基本列で保たれること）
+
+## PSS/Frontier_7_001.thy
+
+
+## PSS/Frontier_7_002.thy
+
+
+## PSS/Frontier_7_003.thy
+
+5	subsection	§7.1 [Buc1] Lemma 2.1 — \<open>lessBT\<close> は狭義全順序
+
+## PSS/Frontier_7_004.thy
+
+5	banner	block from workflow t2-rnsub
+6	subsection	§7.2 命題（\<open>RightNodes\<close>と部分表現の関係） — m_7_2_RightNodes_subexpr
+
+## PSS/Frontier_7_005.thy
+
+
+## PSS/Frontier_7_006.thy
+
+
+## PSS/Frontier_7_007.thy
+
+
+## PSS/Frontier_7_008.thy
+
+
+## PSS/Frontier_7_009.thy
+
+5	banner	block from workflow t2-scbuniq
+7	subsection	§7.2 scb分解の一意性 (1) — the \<open>(s,b)\<close>-part is unique for fixed \<open>c\<close>
+
+## PSS/Frontier_7_010.thy
+
+24	subsection	§7 flatBT injectivity — m_7_flatBT_inj
+
+## PSS/Frontier_7_011.thy
+
+5	subsection	§7.2 命題（scb分解の合成則） — m_7_2_scb_compose
+
+## PSS/Frontier_7_012.thy
+
+5	subsection	§7.2 命題（scb分解の自明性の判定条件） — m_7_2_scb_triviality
+
+## PSS/Frontier_7_013.thy
+
+5	subsection	§7.2 系（加法とscb分解の関係） — m_7_2_add_scb (Front B)
+
+## PSS/Frontier_7_014.thy
+
+
+## PSS/Frontier_7_015.thy
+
+5	section	Front B (wf14) — scb cut-pinning: \<open>rnsub_cut_ge_pre\<close> and kind-uniqueness
+
+## PSS/Frontier_7_016.thy
+
+
+## PSS/Frontier_7_017.thy
+
+
+## PSS/Frontier_7_018.thy
 
 104	section	§7.3 命題（\<open>Trans\<close>の well-defined 性） — totality on RT_PS
-340	section	§7.3 命題（\<open>2\<close>列ペア数列の基本性質）, part (1): the \<open>Trans\<close> value
-647	section	§7.3 命題（\<open>Trans\<close>の\<open>(IncrFirst,Red)\<close>不変性） — A4-corrected domain
-2215	section	§7.3 命題（\<open>Trans
-2390	section	§7.3 命題（\<open>Trans\<close>が零項性を保つこと）— content.md 2254
-2421	section	Term-level \<open>lessBT\<close> facts about \<open>+\<^sub>B\<close> (end-context inequality extension)
-2456	section	§7.3 部分表現の不等式の延長性 (scb inequality-extension, content.md 1749)
-2823	section	§7.3 \<open>c\<^sub>2\<close> is a single principal term (claim (2) of \<open>p_7_3_c1_c2\<close>)
-2837	section	§7.3 \<open>c\<^sub>1\<close> is a single principal term (claim (1) of \<open>p_7_3_c1_c2\<close>)
-2887	section	§7.3 命題（右端第1基点の \<open>Mark\<close> の基本性質）— content.md 2294 (forward)
-3048	section	§7.3 \<open>c\<^sub>1 < c\<^sub>2\<close> (claim (3) of 命題（\<open>c\<^sub>1\<close>と\<open>c\<^sub>2\<close>の大小関係）, content.md 2270)
-3330	section	§7.3 NAbound prerequisite: index-set of a \<open>BT\<close> term (\<open>flatIdx\<close>)
-4171	section	§7.3 NAbound: condition-VI structural bound (Lemma B) and assembly
-4347	section	§7.3 命題（\<open>Pred\<close>-on-\<open>Trans\<close> descent）: \<open>lessBT (Trans (Pred M)) (Trans M)\<close>
-4791	section	§7.3 系（\<open>Mark\<close> の左端の基本性質）— content.md 2310
-6218	section	§7.3 命題（右端第2基点の \<open>Mark\<close> の基本性質）— content.md 2334
-6377	section	§7.3 命題（\<open>Trans\<close> の最左単項成分の左端の基本性質）— content.md 2339
-7913	section	§7.4 系（\<open>RightNodes\<close> と \<open>Mark\<close> の関係） — m_7_4_RightNodes_Mark
-8134	section	§7.4 命題（\<open>RightNodes\<close> と \<open>RightAnces\<close> の一致） — m_7_4_RightAnces_RightNodes
-9205	section	§7.4 系（\<open>Mark\<close>と\<open><\<^bsub>M\<^esub>\<^sup>NextAdm\<close>の関係） — m_7_4_Mark_nextAdm
-9755	section	§8.1 補題（公差\<open>(1,1)\<close>のペア数列の\<open>Trans\<close>）, article 2837
-10020	section	§8.1 系（\<open>Pred\<close>が公差\<open>(1,1)\<close>のペア数列の\<open>Trans\<close>）— content.md 2871
-10972	section	§8 infra: Trans/Mark of a non-reduced ancestor slice = of its Red
-11812	section	§7.4 monoT-interior basepoint index-shift bridge (A)
-12059	section	§7.4 monoT-interior identity (2): \<open>transC1 M = transC1 N\<close> (B)
-12103	section	§7.4 monoT-interior identity (3): \<open>transC2 M = transC2 N\<close> (C)
-12147	section	§7.4 monoT-interior identity (3) — transCond correspondences (Step 1)
-12388	section	§7.4 monoT-interior core (Step 3): \<open>Mark M m = Trans (seg M m j\<^sub>1)\<close>
-12620	section	§7.4 keystone, monoT-interior markShift discharge (Step 2)
-12943	section	§7.4 keystone: \<open>Mark M m = Trans (seg M m (Lng M - 1))\<close> (Step 4)
-13314	banner	integrated from wt-73
-13316	section	§7.3 系（条件(II)か(IV)の下で \<open>t\<^sub>2\<close> が \<open>0\<close> でないこと）— content.md 2310
-13421	section	§7.3 系（左端第\<open>1\<close>基点の \<open>Mark\<close> の基本性質）— content.md 2417
-13459	section	§7.3 \<open>Pred\<close> preserves \<open>PT\<^bsub>PS\<^esub>\<close> on the \<open>t\<^sub>1 \<noteq> 0\<close> branch (helper for (d)/(e))
-13513	section	§7.3 系（\<open>s\<^sub>1\<close> と \<open>b\<^sub>1\<close> の空性と基点の関係）— content.md 2444
-13584	section	§7.3 系（\<open>s\<^sub>-\<^sub>1\<close> と \<open>b\<^sub>-\<^sub>1\<close> の空性と基点の関係）— content.md 2470
-13662	banner	integrated from wt-s3
-13664	section	§8.3 条件(II)の下での展開規則 — kind-0 fundamental sequence (round 1)
-13745	banner	integrated from wt-s4
-13747	section	§8.4 条件(III)/(IV) 展開規則 — round-1 sweep (memory pss-section-priority)
-13937	banner	integrated from wt-s6
-13939	section	§8.6 補題（公差\<open>(1,0)\<close>のペア数列の\<open>Trans\<close>の基本性質） — content.md 5496
-14672	banner	integrated from wt-s7
-14674	section	§8.7 OT (ordinal-term) infrastructure
-14890	banner	round-2 from wt-r82
-15073	banner	round-2 from wt-r86
-15075	section	§8.6 condition (VI) — paper-lemma discharge layer
-15750	banner	round-2 from wt-r87
-16012	banner	§7.3 Trans-leftmost from wt-7lm
-16014	section	§7.3 命題（\<open>Trans\<close> の最左単項成分の左端の基本性質） — full form (1)(2)(3)
-16846	section	§7.1 [Buc1] dom/oper domain predicate — \<open>domB\<close> is total
-16902	section	§8.3 kind-0 fundamental sequence: branch rule (round 3)
-17085	section	§8.3 kind-0 fundamental sequence: base basepoint (round 3)
-17506	section	§7.2 系（加法とscb分解の関係） (3) — corrected with the alignment premise (A13)
-17590	subsection	§8.1 c1-around part (5): \<open>M[n]\<close> fundamental-sequence periodicity (A21, condition (I))
-17645	section	§8.7 \<open>dom\<close>-heredity and \<open>OT\<close>-heredity along an scb-occurrence
-18403	section	§8.1 c1-around engine: \<open>Trans\<close> front-peel and \<open>Mark\<close>-adjacency
-21313	section	§7.2 dom-可分解性 (p_7_2_scb_unique conjunct (2)) — domB side now unblocked
-21994	section	§7.2 BT fundamental sequence on successor-form terms (conjuncts (1),(1-2))
-22430	section	§7.2 p_7_2_scb_fseq conjunct (1-2): lifting operB through an scb-decomp
-23064	section	§7.2 第1種 scb分解の一意性 — conjunct (5) clean assembly (no rneq)
-23093	section	§7.3 命題（\<open>Trans\<close>の\<open>(IncrFirst,Red)\<close>不変\<open>P\<close>同変性）(2) — the \<open>\<Sigma>\<^bsub>B\<^esub>
-23245	section	§7.3 命題（\<open>Mark\<close> の \<open>(IncrFirst,Red,P)\<close> 不変性）part (2): the P-invariance
-23413	section	§7.2 系（加法とscb分解の関係） (3) — UNCONDITIONAL (A13, image residual discharged)
-23918	section	§7.3 系（\<open>Trans\<close>と非可算基数の関係）: \<open>Trans M = D\<^bsub>v\<^esub> 0 \<longleftrightarrow> M
-24321	section	§7.1 [Buc1] Lemma 3.2: termination of the \<open>xseq\<close> tower (\<open>operB\<close> kind-1)
-24737	section	§8.6/§8.7 \<open>[0]\<close>-零化 (annihilation): atomic single-step \<open>operB \<dash> (numBT 0)\<close> facts
-24820	subsection	§8.7 \<open>[0]\<close>-零化 of a nested principal \<open>D\<^sub>u(D\<^sub>w 0)\<close>
-26199	section	§8.6 末尾単項の零化可能性 — the clean-descent one-\<open>[0]
-26317	section	§8.3 命題（条件(II)の下での\<open>Trans\<close>と基本列の交換関係）— leaf (\<open>n = 1\<close>) descent
-26353	section	§8.2 keystone Admpos branch, STEP 1: confinement \<open>\<rightarrow>
-26786	section	§8.7 末尾項の零化可能性 — A26 correction and the provable TOP-LEVEL slice
-27001	section	§8.2 keystone closure: \<open>m_8_2_subexpr_component_Pred\<close> assembly
-27258	subsection	§8.7 末尾項の零化可能性 — corrected TOP-LEVEL general body (WF induction)
-28013	banner	moved here in r71 (citation hygiene): leBT_trans + the b1x_ Buchholz-[] block,
-28242	subsection	Order and \<open>T\<^sub>v\<close>-membership helpers
-28298	subsection	Head-index bound of a \<open>T\<^sub>w\<close>-domain term, and \<open>D\<^sub>w 0 < b\<close>
-28353	subsection	Descent — [Buc1] Lemma 3.2(a) for numeral and in-domain arguments
-28525	section	§8.3 命題（条件(II)の下での \<open>Trans
-28603	section	§8.2 keystone assembly: \<open>m_8_2_subexpr_component_Pred_of_wid
-39451	section	§8.5 condition-(V) marking-nesting surgery (step2/base2) — building blocks
-40221	section	§8.6 命題（条件(VI)の下での \<open>Trans
-40400	banner	2026-07-11 C->B fold: scratch body of rounds up to r54
-49458	banner	round 14 front K (wt2 60ddf3b)
-49987	banner	round 14 front B1 (wt-b1 a384356)
-49989	section	r14-B1: [Buc1] Lemma 3.2/3.3 for \<open>operB\<close> — the \<open>buc1_*\<close> citation lemmas
-50009	subsection	Unconditional totality of \<open>operB\<close>/\<open>xseq\<close>
-50020	subsection	Mixed transitivity (explicit, to keep \<open>blast\<close> away from chain rules)
-50044	subsection	Monotonicity ([Buc1] 3.2(b)) and the lower bound on a \<open>T\<^sub>w\<close> domain
-50210	subsection	\<open>G\<close>-set utilities
-50303	subsection	The \<open>\<triangleleft>\<^sub>z\<close> relation of [Buc1] §3 (G-part) and Lemmas 3.4/3.5
-50543	subsection	\<open>domB\<close> shape classification and non-vanishing on \<open>\<nat>\<close> domains
-50733	subsection	Master induction: [Buc1] Lemma 3.6 (G-part) + Lemma 3.3 (closure)
-51248	banner	round 14 front S5 (wt-s5 8db2e21)
-51250	section	r14-S5 — §8.5 DEFERRED scb-decomposition lemmas (ARTICLE ROUTE)
-51760	banner	round 14 front F7 (wt-f7 f0649a7)
-51762	banner	r14-F7: §8.7 fseq_descend DISPATCHER
-51764	section	§8.7 補題（基本列の降下性） — the DISPATCHER (r14-F7)
-51783	subsection	Small order/algebra helpers
-51878	subsection	\<open>Trans\<close>-additivity across a \<open>P\<close>-block boundary
-52023	subsection	The MONO dispatcher
-52337	subsection	The FULL dispatcher (\<open>m_8_7_fseq_descend_dispatcher\<close>)
-52597	banner	end r14-F7 block
-52600	banner	round 14 front S4a (wt-s4a 96eefa1)
-52652	banner	round 14 front S4p-C1 (wt-s4a 5629dc2): m_8_4_oper_props_1..5
-52664	subsection	s84c1: parent-arithmetic setup for the §8.4 L2 cluster
-52833	subsection	s84c1: block structure of \<open>M[n]\<close> and the appended sequences \<open>L\<^sub>n\<close>
-53008	subsection	s84c1: parent-relation congruence under entrywise agreement
-53148	subsection	s84c1: the sequence \<open>L\<^sub>1 = Pred M \<oplus> ((M\<^bsub>0,j\<^sub>1\<^esub>, M\<^bsub>1,j\<^sub>-\<^sub>2\<^esub>))\<close>
-53389	subsection	s84c1: the last block of \<open>M[n]\<close> and the \<open>IncrFirst\<close>-power tails
-53652	subsection	s84c1: the basepoint \<open>m\<^sup>* = j\<^sub>-\<^sub>2 + (n-1)w\<close> of \<open>L\<^sub>n\<close> is Marked
-53875	subsection	s84c1: \<open>Mark\<close> at the basepoint, and 補題 part (5)
-54197	banner	round 14 front S4p-C2 (wt-s4b f34fce7): m_8_4_rightend_Trans
-55171	banner	round 14 front S4p-C3 (wt-s4c c86202b): m_8_4_Trans_scb
-55173	section	r14-S4p-C3 — §8.4 補題（条件(III)～(VI)の下での\<open>Trans\<close>とscb分解の関係） m_8_4_Trans_scb
-55197	subsection	\<open>(IncrFirst ^^ k)\<close> invariance of the row-1 data
-55223	subsection	The window predicate and its glue law
-55363	subsection	The chain invariant of \<^const>\<open>RightAnces\<close> on reduced mono sequences
-55772	subsection	§8.4 補題（条件(III)～(VI)の下での\<open>Trans\<close>とscb分解の関係）
-56109	banner	round 15 front K2 (wt2 5d401ad): colcase_full / anchor_fold_kernel
-56111	banner	round 15 front K2 (wt2)
-56113	section	r15-K2: the NON-trunk-stuck colcase route and the full anchor colcase
-56954	banner	round 15 front S5b (wt-s5 bbee38b): condV adm exchange triple
-56956	banner	round 15 front S5b (wt-s5): §8.5 condV scb-decomposition, ADM case
-56958	section	r15-S5b: §8.5 条件(V) 各種scb分解/基本列のscb分解 — 許容 \<open>j\<^sub>0\<close> ケースの完全形
-57004	subsection	List helpers
-57065	subsection	Condition (V) pins the row-1 parent (\<open>j\<^sub>-\<^sub>2 = j\<^sub>0\<close>) and the recursion guards
-57143	subsection	\<open>t\<^sub>2 \<noteq> 0\<close> under condition (V) (unconditional; adm not needed)
-57185	subsection	The three slice values: \<open>Trans N' = c\<^sub>2\<close>, \<open>Trans (Pred N') = c\<^sub>1\<close>, \<open>Trans L'\<close>
-57378	subsection	The tower base: \<open>Trans (L\<^sub>1)\<close> via the surgery of \<open>L\<^sub>1\<close> itself
-57545	subsection	MASTER closed forms: \<open>Trans (L\<^sub>n)\<close> and \<open>Trans (M[n])\<close> for ALL \<open>n \<ge> 1\<close>
-57757	subsection	基本列のscb分解 (adm case, corrected): the common-pair triple, ALL \<open>n \<ge> 1\<close>
-57955	subsection	The corrected exchange relations, ALL \<open>n \<ge> 1\<close>
-58383	banner	round 15 front S4d (wt-s4b 4b8c2c2): L4 part1 / L5 / L6 modulo terminal-slice
-58384	banner	round 15 front S4d: §8.4 various-scb cluster — unblocked bricks
-58412	subsection	s84d: the \<open>c\<^sub>2\<close> rightmost-hole engine
-58778	subsection	s84d: L6 kernel bricks (conjuncts (1) and (2))
-59170	subsection	s84d: list-algebra helpers for the replicate formulas
-59199	subsection	s84d: the \<open>L\<^sub>1\<close> recursion-data congruences
-60577	section	r16-E1: 条件(V) — 非許容 \<open>j\<^sub>0\<close> の到達可能性（反証）と許容側残差の完全解消
-60608	subsection	The row-1 parent edge under condition (V) (no adm hypothesis)
-60628	subsection	Joints/FirstNodes basic lemma with hypotheses reduced to condition (V)
-60671	subsection	HB discharged: the adm-case \<open>t\<^sub>2\<close>-component lower bound
-60877	subsection	The condition-(V) adm-case exchange triple, fully unconditional
-60910	subsection	Dispatcher wiring: the \<open>exchV\<close> hypothesis weakened to its non-adm leg
-60969	banner	round 16b front E2 (wt-s5 10425ca): terminal-slice modVE reduction
-60971	section	§8.2 round-16 front E2 — terminal-slice / \<open>Trans\<close> reduction
-61108	banner	round 16b front E3 (wt-s4b f7f018a): condIII exchange(2) + descent tower
-61110	banner	round 16 front E3 (wt-s4b): §8.4 condIII exchange, A32-corrected
-61111	section	r16b-E3 — §8.4 命題（条件(III)か(IV)の下での\<open>Trans\<close>と基本列の交換関係） A32-corrected
-61123	subsection	The §8.4 two-letter descent tower \<open>e3x_H\<close>
-61195	subsection	Conclusion (2): the §8.4 descent \<open>Trans(M[n]) < Trans M\<close> (condition III)
-61351	banner	round 16b front E4 (wt-b1 1609775): OT preserve via exchange-value reduction
-61356	section	r16b-E4 — §8.7 OT-membership via the [Buc1] OT_B-closure (article route)
-61498	banner	round 16b front E5 (wt2 178de9f): non-adm condV exchange + dispatcher condV
-61500	banner	round 16b front E5: condition (V) NON-ADM exchange/descent
-61501	section	r16b-E5: 条件(V) — 非許容 \<open>j\<^sub>0\<close> の交換関係と降下性
-61529	subsection	The tower inner bodies and the pure \<open>BT\<close>-order comparisons
-61639	subsection	非許容 (V) の交換関係 (1) と降下性 (2)（tower閉形式を仮定して）
-61740	subsection	Dispatcher: the condition-(V) branch FULLY closed modulo the tower forms
-61808	banner	round 17 front FPEEL (wt2 be2ab28): VE reduced to FPEEL_STEP + scaffold
-61809	banner	round 17 front FPEEL (wt2, Opus): front-peel reduction of VE'
-61811	section	§8.2 round-17 front FPEEL — VE' reduced + slice-peel infrastructure
-61975	banner	round 17 front DII (wt-s5 5069466): condII descent
-61976	banner	round 17 front DII (wt-s5): §8.3 condition-(II) DESCENT
-61977	section	r17-DII — §8.3 命題（条件(II)の下での\<open>Trans
-62003	subsection	The kind-0 replicate helpers \<open>d2x_multBT_*\<close>
-62039	subsection	The condition-(II) descent \<open>d2x_exchange2_condII\<close>
-62123	banner	round 17 front DVI (wt-s4b 076869e): condVI descent
-62124	banner	round 17 front DVI (wt-s4b): section 8.6 condition-(VI) DESCENT
-62125	section	r17-DVI: section 8.6 condition-(VI) Trans/fseq exchange (3) DESCENT
-62294	banner	round 17 front D13 (wt-b1 68ca5d1): condIII (1)(3)+triple
-62298	section	r17-D13 — §8.4 condIII exchange conclusions (1) and (3) (jm3 route)
-62320	subsection	The base-parametrised two-letter tower \<open>d13x_T\<close> and its interleaving
-62408	subsection	The operB fundamental-sequence closed form at the \<open>j\<^sub>-\<^sub>3\<close> head
-62500	subsection	Conclusions (1) and (3) of the §8.4 condIII exchange triple
-62640	subsection	The assembled A32-corrected §8.4 exchange triple (condition III)
-62708	banner	round 18 front CONS (wt2 873380b): collapse to CF-META + capstone m_8_termination_modulo_CF
-62709	banner	r18-CONS: CONSOLIDATION onto the single residual CF
-62756	subsection	The generic descent from \<open>CF\<close> (subsumes the four condition descents)
-62776	subsection	The cond-(II) \<open>lhs\<close> residual from its CF-META instance
-62802	subsection	The cond-(VI) \<open>cf'\<close> residual from its CF-META instance
-62822	subsection	CAPSTONE — the two §8 pillars modulo \<open>CF\<close> (+ \<open>stepval\<close>)
-62874	banner	round 19 front CFA (wt2): condIII CF-META tower engine
-62877	section	r19-CFA — the article Pred-simultaneous KIND-1 CF-META tower engine
-62921	subsection	The raw concat tower closed form (pure block-reading engine)
-63055	subsection	The \<open>d13x_T\<close> tower form = \<open>mnform\<close> (CF-META KIND-1 general instance)
-63113	subsection	The condition-(III) exchange (1)/(3) DESCENT bottoms on the four CF value facts
-63173	banner	round 19 front CFB (wt-s5): article back-peel induction skeleton for VE
-63180	section	r19-CFB — back-peel (\<open>Pred\<close>) induction skeleton for \<open>VE'\<close>
-63365	banner	round 19 front CFC (wt-s4b): VE Pred-stable domain + surgery peel
-63366	banner	round 19 front CFC (wt-s4b): VE' Pred-simultaneous induction core
-63579	banner	round 19 front CONDIV (wt-b1): full condIV exchange + both-condition assembly
-63582	banner	round 19 front CONDIV (wt-b1): §8.4 condIV exchange TRIPLE + assembly
-63584	section	r19-CONDIV — §8.4 命題（条件(III)か(IV)の下での\<open>Trans\<close>と基本列の交換関係） condition (IV)
-63675	subsection	The assembled A32-corrected §8.4 exchange triple (conditions III AND IV)
-63743	subsection	The condIV fundamental-sequence core tower \<open>d4vx_core\<close> (scb-block insertion)
-63837	subsection	Conclusion (2), OT-free: the §8.4 descent \<open>Trans(M[n]) < Trans M\<close> (condition IV)
-63998	subsection	The assembled A32-corrected §8.4 exchange triple (conditions III AND IV), OT-free
-64076	banner	round 19 front CONDI (wt-f7): condI j0>0 exchange reduced to CF_I
-64079	banner	round 19 front CONDI (wt-f7): §8.1 condition-(I), j0>0 exchange (1)
-64080	subsection	r19-CONDI: §8.1 condition-(I), \<open>j\<^sub>0 > 0\<close> exchange (1) modulo the CF residual
-64155	banner	round 19 front NFALL (wt-s4a): non-adm condV NFall (operB half uncond)
-64156	banner	round 19 front NFALL (wt-s4a): non-adm condV tower closed forms (NFall)
-64158	section	r19-NFALL — the non-adm condition (V) tower closed forms (CF-META instance)
-64193	subsection	The \<open>operB\<close> value form (UNCONDITIONAL, from the fseq closed form)
-64298	subsection	The M-tower flat form (joint \<open>L\<^sub>n\<close>/\<open>M[n]\<close> induction, modulo the 3 base pieces)
-64546	subsection	\<open>NFall\<close> reduced to the 3 non-adm slice base pieces
-64598	banner	round 20 WFORD (wt-s4b 702dae4): [Buc1] Lemma 2.2 reduced to WF of the principal order (multiset layer discharged, both directions)
-64602	section	[Buc1] Lemma 2.2: well-foundedness of \<open>(OT\<^bsub>B\<^esub>, <)\<close> (WFORD attack, r20)
-65027	banner	round 21 CFCTRANS (wt-s4a: id2/id3 interior identities for non-marked m<=transJm1)
-65035	section	r21-CFCTRANS — VE' interior-core identities @{text \<open>transC1 M = transC1 N
-65587	banner	round 21 BPSTEPA (wt2: back-peel STEP inductive core + RPERS discharged)
-65590	banner	round 21 front BPSTEPA (wt2): §8.2 terminal-slice back-peel STEP
-65592	section	r21-BPSTEPA — §8.2 terminal-slice back-peel STEP (the genuine CF core)
-66020	banner	round 21 BPSTEPB (wt-s5: RPERS proven, BASE->PEEL)
-66023	banner	round 21 front BPSTEPB (wt-s5): BASE + RPERS of cfbx back-peel
-66025	section	r21-BPSTEPB — \<open>cfbx\<close> back-peel induction: BASE (\<open>j\<^sub>1' = j\<^sub>1
-66328	banner	round 21 VALFACTS (wt-s4b: condIII value facts fPN/fLp (2 of 4))
-66331	banner	round 21 front VALFACTS (wt-s4b): CFA condIII CF value facts
-66333	section	r21-VALFACTS — condIII CF value facts \<open>fPN\<close> / \<open>fLp
-66592	banner	round 21 NFALL2 (wt-b1: non-adm condV derivation layer)
-66598	section	r21-NFALL2 — non-adm condition-(V) slice-value base pieces
-66887	banner	round 21 STEPVAL (wt-f7: stepval condI/II discharged, III/VI wrapper)
-66890	banner	round 21 front STEPVAL (wt-f7): the §8.7 OT-pillar `stepval` residual
-66892	section	r21-STEPVAL — the §8.7 OT-pillar \<open>stepval\<close> residual, split coincidence / interleaving
-66920	subsection	Generic bridges: exchange EQUALITY \<Longrightarrow> stepval / OT-step (op0-power 0)
-66952	subsection	Coincidence regime: cond (I)/(II) \<open>stepval\<close> and OT-step, modulo CF
-67000	subsection	Interleaving regime: reduce \<open>stepval\<close> to the flat closed form
-67084	subsection	Capstone: OT-preservation, \<open>stepval\<close> split coincidence / interleaving
-67186	banner	round 21b CONDIV_ (wt-s4c: condI exchange lhsCF->step tighten)
-67188	banner	round 21b front CONDI-V (wt-s4c): §8.1 condI j0>0 exchange, lhsCF -> step
-67189	subsection	r21b-CONDI-V: §8.1 condition-(I), \<open>j\<^sub>0>0\<close> exchange from \<open>dM\<close>+\<open>step\<close> (\<open>CF\<^sub>I\<close> reduced to the single surgery)
-67251	banner	round 21b CONDIVM (wt-y2: condIV exchange-of-CFvalues (condIII-form refuted))
-67254	banner	round 21b front CONDIV-M (wt-y2): condIV mnform value fact / exchange core
-67257	section	r21b-CONDIV-M — the §8.4 condition-(IV) exchange core bottoms on the four CF value facts
-67407	banner	round 21b CONDVIC (wt-y3: condVI cf discharged for diagonal host)
-67415	section	r21b-CONDVI-C — the condition-(VI) CF-META value fact (\<open>cf'
-67691	banner	round 21b WFPRIN (wt-y4: Buc1 wf RPrel bounded-norm fragment WF (finite))
-67694	banner	round 21b front WFPRIN (wt-y4): bounded-norm fragment of [Buc1] Lemma 2.2 residual wf RPrel
-67696	section	[Buc1] Lemma 2.2 residual (r21b-WFPRIN): the BOUNDED-NORM fragment of \<open>wf RPrel\<close>
-67730	subsection	A structure-and-coefficient norm on \<open>BT\<close>/\<open>BP\<close>
-67772	subsection	Bounded-norm finiteness (the \<open>D\<^sub>\<omega>\<close>-free terms of norm \<open>\<le> N\<close> form a finite set)
-67881	subsection	The bounded principal fragment \<open>RPrel_bnd\<close> is WF (finite + acyclic)
-67911	subsection	Reduction of \<open>wf RPrel\<close> to the absence of an UNBOUNDED-norm descending chain
-67961	subsection	The same fragment at term/goal level (\<open>RTrel_bnd\<close>, directly the goal restriction)
-68046	banner	end round 21b front WFPRIN
-68049	banner	round 22 SURGINT22 (wt-s5: surgery residuals tne/intM/intN+lerR/id2/id3 => VE modulo {BASE})
-68052	banner	round 22 SURGINT (wt-s5): surgery-interiority residuals tneR/intMR/intNR
-68054	section	r22-SURGINT — the surgery-interiority residuals \<open>tneR\<close>/\<open>intMR\<close>/\<open>intNR
-68434	banner	round 22 WIRESTEP22 (wt2: id2/id3 wiring + domain-inclusion wsx_regime_ancJm1)
-68437	banner	round 22 WIRESTEP (wt2): discharge id2R/id3R via ctx_interior_ids; collapse STEP
-68735	banner	round 22 LERPROVE22 (wt-s4a: lerR discharged (lrx_lerR))
-68737	banner	round 22 front LERPROVE (wt-s4a): §8.2 terminal-slice residual lerR
-68739	section	r22-LERPROVE — \<open>lerR\<close> DISCHARGED (regime row-0 ancestry of the last index)
-68831	banner	round 22 BASEPEEL22 (wt-s4b: BASE reduced to surgery family + baseIH)
-68833	banner	round 22 front BASEPEEL (wt-s4b): §8.2 terminal-slice BASE (j1'=j1)
-68835	section	r22-BASEPEEL — §8.2 terminal-slice BACK-peel BASE (\<open>j\<^sub>1' = j\<^sub>1
-69078	banner	round 22 VALFACTS222 (wt-b1: condIII baseM/baseL => veM/veL residuals)
-69081	banner	round 22 front VALFACTS2 (wt-b1): condIII CF value facts baseM/baseL
-69083	section	r22-VALFACTS2 — condIII CF value facts \<open>baseM\<close>/\<open>baseL
-69482	banner	round 22 NFALL322 (wt-f7: non-adm NpVal/PredNp => de-adm kernel)
-69784	banner	round 23 CONDVIGEN (wt-s4a: condVI descent UNCONDITIONAL for general adm hosts)
-69787	banner	round 23 front CONDVIGEN (wt-s4a): GENERAL condVI cf value fact
-69789	section	r23-CONDVIGEN — the condition-(VI) cf value fact for GENERAL hosts (adm-\<open>j\<^sub>0\<close>)
-70383	banner	round 23 CONDIVCORE (wt-f7: condIV core proven (c4cx_condIV_exchange_full))
-70455	subsection	Conclusions (1) and (3) of the §8.4 exchange triple, condition (IV)
-70697	banner	round 23 CONDIIEX (wt-b1: condII existential-count exchange (A36))
-70700	banner	round 23 front CONDIIEX (wt-b1): §8.3 condII EXISTENTIAL-count exchange
-70814	banner	round 23 VEML (wt-s4b: condIII veM/veL => de-adm kernel KER)
-70816	banner	round 23 VEML (wt-s4b: condIII veM/veL => single generic de-adm kernel)
-70818	section	r23-VEML — condIII \<open>veM\<close>/\<open>veL
-71059	banner	round 23 DEADM (wt-s5: non-adm condV c2L1 closed => {de-adm kernel,notLD})
-71234	banner	round 23 BASEIH (wt2: VE BASE modulo {id2,id3,intM,intN,baseIH}; route A refuted)
-71256	section	r23-BASEIH — §8.2 terminal-slice BASE (\<open>j\<^sub>1' = j\<^sub>1
-71436	banner	round 24 DEADMKERB (wt-s5: WRAP local atom => KER/DEADM/consumers modulo WRAP)
-71441	section	r24-DEADMKERB — the de-admissibilization kernel \<open>KER\<close> / \<open>DEADM
-71743	banner	round 24 DEADMKERA (wt2: regime-free KER refuted; dkax slice-principal-gen infra)
-71745	banner	round 24 DEADMKERA (wt2): de-adm kernel KER investigation
-71747	section	r24-DEADMKERA — the general (regime-free) de-adm kernel \<open>KER
-71852	banner	round 24 VEBASEART (wt-s4b: article route B = induction on j1-TrMax (vbax_VE_backpeel))
-71877	section	r24-VEBASEART — §8.2 terminal-slice article TRUE BASE (\<open>Lng = TrMax+2
-72119	banner	round 24 CONDVIZERO (wt-f7: condVI descent M1j0=0 UNCONDITIONAL => §8.6 descent all hosts)
-72123	banner	round 24 CONDVIZERO (wt-f7): condVI descent for M_{1,j0}=0 + all adm
-72125	section	r24-CONDVIZERO — the condition-(VI) descent for the \<open>M\<^bsub>1,j\<^sub>0\<^esub> = 0
-72157	subsection	The raw L-tower closed form (L-part of the CF engine, \<open>zeroT\<close>-free)
-72252	subsection	The boundary identity \<open>M[Suc n] = L\<^sub>n\<close> and the \<open>u\<close>-free base value fact
-72431	subsection	The condition-(VI) descent for ALL admissible-\<open>j\<^sub>0\<close> hosts (\<open>u \<ge> 0\<close>)
-72531	subsection	The condition-(VI) descent for the \<open>M\<^bsub>1,j\<^sub>0\<^esub> = 0\<close> case
-72574	subsection	The non-admissible-\<open>j\<^sub>0
-72889	banner	round 24 NOTLD (wt-b1: notLD reduced to lph)
-72891	banner	round 24 front NOTLD (wt-b1): the condV last-principal-head residual
-72972	banner	round 24 WFRP2 (wt-s4a: wf RPrel general = psi-ordinal obstruction (refutation))
-72979	section	r24-WFRP2 — general \<open>wf RPrel
-73025	subsection	The fixed principal \<open>p = D\<^sub>1 0\<close> and the witness family \<open>q\<^sub>n = D\<^sub>0 n\<close>
-73077	subsection	The norm is unbounded below the fixed principal \<open>p\<close> (CRUX refuted)
-73132	subsection	The predecessor set of a fixed \<open>OT\<close>-principal is infinite
-73160	banner	end round 24 front WFRP2
-73163	banner	round 25 CONDVI13 (wt-s4a: §8.6 condVI exchange (1)(3) UNCONDITIONAL adm (A37))
-73166	banner	round 25 front CONDVI13 (wt-s4a): §8.6 condVI exchange (1) and (3)
-73168	section	r25-CONDVI13 — §8.6 condition-(VI) Trans/fseq exchange conclusions (1) and (3)
-73196	subsection	Generic engine: the operB fundamental-sequence value and the tower matchers
-73297	subsection	The condition-(VI) exchange (1)/(2)/(3), admissible \<open>j\<^sub>0\<close> (unconditional)
-73501	subsection	The condition-(VI) exchange (1)/(2)/(3), non-admissible \<open>j\<^sub>0\<close> (modulo \<open>t2eq\<close>)
-73743	banner	end round 25 front CONDVI13
-73745	banner	round 25 W2 (wt-s5: W2=VE(1) modulo {VE1,SR} -- de-adm=VE convergence)
-73748	banner	round 25 front W2 (wt-s5): body-transfer W2 = VE'(1) on reduced slices
-73750	section	r25-W2 — the WRAP body-transfer \<open>W2\<close> decomposed into \<open>nadm
-73894	banner	end round 25 front W2
-73896	banner	round 25 W1 (wt2: W1 refuted (needs leR); w1x reachability-discharge bricks)
-73898	banner	round 25 front W1 (wt2): W1-as-stated REFUTED; corrected reach-conditioned bricks
-73900	section	r25-W1 --- the unconditioned single-column atom \<open>W1\<close> (hence \<open>W2\<close> and \<open>WRAP
-74101	banner	end round 25 front W1
-74103	banner	round 25 VESTEP (wt-s4b: VE step+RPERS closed j1p<j1 & m=0; modulo {VEj1eq,RPj1eq})
-74106	banner	round 25 VESTEP (wt-s4b: route-B STEP + RPERS of the j1-TrMax induction for VE')
-74108	section	r25-VESTEP — §8.2 terminal-slice route-B (\<open>j\<^sub>1 - TrMax
-74268	banner	end round 25 front VESTEP
-74270	banner	round 25 VEBASE (wt-b1: VE base surgery residuals closed on m<transJm1; modulo Adm0-subcase)
-74272	banner	round 25 front VEBASE (wt-b1): IH-free BASE (j1-TrMax=1) of VE' induction
-74274	section	r25-VEBASE — §8.2 terminal-slice article TRUE BASE (\<open>Lng = TrMax+2
-74495	banner	end round 25 front VEBASE
-74497	banner	round 25 LPH (wt-f7: lph reduced to a nat-list-index residual; c2L1 closes from it)
-74500	banner	round 25 front LPH (wt-f7): lph reduced to a RightNodes chain-index fact
-74700	banner	end round 25 front LPH
-74703	banner	r26 merge: wt2 block
-74704	banner	round 26 VEJ1EQ (wt2: close the j1'=j1 branch residuals of the VE' induction)
-74706	section	r26-VEJ1EQ — §8.2 terminal-slice route-B (\<open>j\<^sub>1 - TrMax
-74923	banner	end round 26 front VEJ1EQ (RPj1eq)
-75063	banner	end round 26 front VEJ1EQ (deepen)
-75138	banner	end round 26 front VEJ1EQ (reduction + capstone)
-75141	banner	r26 merge: wt-s5 block
-75143	banner	round 26 front ADM0BASE (wt-s5): close the Adm0 base sub-case of VE'
-75707	banner	end round 26 front ADM0BASE
-75710	banner	r26 merge: wt-s4b block
-75712	banner	round 26 VE1CORE (wt-s4b): VE'(1)-as-stated / W2 REFUTED; correct guard = regime
-75714	section	r26-VE1CORE — the \<open>VE1\<close> premise of \<open>w2x_W2_of_VE1
-75811	banner	end round 26 front VE1CORE
-75814	banner	r26 merge: wt-b1 block
-75816	banner	round 26 WRAPFIX (wt-b1: reach-corrected de-adm cascade; dkfx prefix)
-76181	banner	end round 26 front WRAPFIX
-76184	banner	r26 merge: wt-f7 block
-76316	banner	end round 26 front LPH2
-76319	banner	r26 merge: wt-s4a block
-76321	banner	round 26 front CONDVINADM (wt-s4a): discharge the §8.6 condVI exch nadm owed pieces
-76323	section	r26-CONDVINADM \<open>\<close> §8.6 condition-(VI) exchange, non-admissible \<open>j\<^sub>0\<close>, UNCONDITIONAL
-76350	subsection	The \<open>Ult\<close> residual: \<open>transV M < M\<^bsub>1,j\<^sub>1\<^esub>\<close> (condVI copy of \<open>m_8_5_condV_uv\<close>)
-76389	subsection	The M-side non-admissibility facts at \<open>j\<^sub>0\<close>
-76449	subsection	\<open>Pred M\<close> is a condition-(VI) host
-76540	subsection	\<open>transJm1 M = transJm1 (Pred M)\<close>
-76617	subsection	The \<open>t2eq\<close> residual: \<open>transT2 M = D\<^bsub>M\<^sub>1\<^sub>,\<^sub>j\<^sub>0\<^esub> 0\<close>
-76695	subsection	The fully unconditional condition-(VI) exchange, non-admissible \<open>j\<^sub>0\<close>
-76735	banner	end round 26 front CONDVINADM
-76739	banner	r27 merge: wt2 block
-76740	banner	round 27 front VECLOSE (wt2, vcx prefix): close VE' unconditionally
-76742	section	r27-VECLOSE --- the \<open>\<S>\<^bold>8.2\<close> terminal-slice value equation \<open>VE'
-77124	banner	end round 27 front VECLOSE
-77128	banner	r27 merge: wt-f7 block
-77130	banner	r27 front SHARP: close the SHARP residual (lph/notLD/c2L1)
-77133	section	r27-SHARP \<open>\<close> terminal-slice \<^const>\<open>RightAnces\<close> reduction of the SHARP residual
-77432	banner	r27 merge: wt-s5 block
-77689	banner	end round 27 front NADMCONDV
-77693	banner	r27 merge: wt-s4b block
-77697	section	r27-CONDIII — condIII \<open>veM\<close>/\<open>veL\<close> discharged modulo \<open>VE'
-77971	banner	end round 27 front CONDIII
-77975	banner	r27 merge: wt-b1 block
-77976	banner	round 27 front WFRPREL (wt-b1): [Buc1] Lemma 2.2 residual — the DEPTH-BOUNDED fragment of wf RPrel
-77978	section	[Buc1] Lemma 2.2 residual (r27-WFRPREL): the DEPTH-BOUNDED fragment of \<open>wf RPrel\<close>
-78023	subsection	A max nesting-depth on \<open>BT\<close> / \<open>BP\<close>
-78090	subsection	The depth-bounded restrictions \<open>RPrel_dep\<close> / \<open>RTrel_dep\<close>
-78124	subsection	The CROSS-INDEX step: \<open>wf (RTrel_dep d) \<Longrightarrow> wf (RPrel_dep (Suc d))\<close> (index stabilisation)
-78178	subsection	The tuple layer (depth-guarded): \<open>wf (RPrel_dep d) \<Longrightarrow> wf (RTrel_dep d)\<close>
-78414	subsection	Closing the mutual induction: \<open>wf (RPrel_dep d)\<close> / \<open>wf (RTrel_dep d)\<close> for every \<open>d\<close>
-78445	subsection	The sharpened residual: no unbounded-DEPTH descending chain
-78541	banner	end round 27 front WFRPREL
-78544	banner	r27 merge: wt-s4a block
-78545	banner	round 27 front CONDIVII (wt-s4a): §8.3 condII lhs_ex reduction
-78547	section	r27-CONDIVII — §8.3 condition-(II) \<open>lhs_ex\<close> reduced to base + one per-step surgery
-78620	banner	end round 27 front CONDIVII target (1)
-78623	banner	round 27 front CONDIVII (wt-s4a): §8.4 condIV mnform DISCHARGED
-78625	section	r27-CONDIVII — the condition-(IV) \<open>mnform\<close> IS the PROVEN \<open>j\<^sub>-\<^sub>1
-78789	banner	end round 27 front CONDIVII target (2) mnform
-78794	banner	r28 merge: wt-s4b block
-78796	banner	round 28 front WIRE84 (wt-s4b): cash in VE' — the terminal-
-78797	banner	slice VALUE transport from cfbx_reg (mechanical layer)
-78800	section	r28-WIRE84 (A) — the terminal-slice VALUE transport from \<open>cfbx_reg\<close>
-78879	banner	end round 28 front WIRE84 block (A)
-78883	banner	round 28 front WIRE84 (B): condIII §8.4 wiring modulo the
-78884	banner	SLICE-level regime facts
-78887	section	r28-WIRE84 (B) — condIII \<open>baseML\<close>/\<open>d4\<close>-transports modulo slice regimes
-79040	banner	end round 28 front WIRE84 block (B) stage 1
-79044	banner	round 28 front WIRE84 (B) stage 2: the §8.4 L5/L6 slice
-79045	banner	transports d2/d3/d4a/d4b re-derived from the slice regimes
-79048	section	r28-WIRE84 (B2) — the §8.4 transports \<open>d2\<close>/\<open>d3\<close>/\<open>d4a\<close>/\<open>d4b\<close> from slice regimes
-79316	banner	end round 28 front WIRE84 block (B) stage 2
-79320	banner	round 28 front WIRE84 (B) stage 3: L5 transports d2/d3 +
-79321	banner	the condIII baseM/baseL FINAL (guarded-regime) forms
-79324	section	r28-WIRE84 (B3) — the L5 (\<open>admeq\<close>) transports \<open>d2\<close>/\<open>d3
-79696	banner	end round 28 front WIRE84 block (B) stage 3
-79700	banner	round 28 front WIRE84 (C): the condIII exchange (1)/(3) on
-79701	banner	the CORRECT d4vx_core route
-79704	section	r28-WIRE84 (C) — the condIII exchange (1)/(3) via the \<open>d4vx_core\<close> towers
-79911	banner	end round 28 front WIRE84 block (C) part 1
-80220	banner	end round 28 front WIRE84 block (C) part 2 (mnform)
-80503	banner	end round 28 front WIRE84 block (C)
-80506	banner	r28 merge: wt-s5 block
-80511	section	r28-W2NOSTR --- the no-straddle body-transfer atom \<open>W2nostr
-80578	subsection	Adjacent-step parent extraction and the non-admissible run arithmetic
-81006	subsection	The genuine-host setup and the \<open>c = Lng M - 1\<close> regime guard
-81277	subsection	The two W2nostr transfer instances
-81425	subsection	Capstone: the non-adm condition-(V) exchange with \<open>W2nostr\<close> DISCHARGED
-81498	banner	end round 28 front W2NOSTR
-81501	banner	r28 merge: wt-f7 block
-81506	section	r28-SHARP2 --- \<open>{len2, redB}
-82077	banner	end round 28 front SHARP2
-82081	banner	r28 merge: wt-s4a block
-82083	banner	round 28 front STEPCORE (wt-s4a): condI j0>0 marking-nesting closed form
-82085	section	r28-STEPCORE — the condition-(I) \<open>j\<^sub>0 > 0
-82121	subsection	scx: BT / scb foundations
-82218	subsection	scx: the reduced row-1 coefficient bound across a row-0 parent edge
-82276	subsection	scx: interior row-0 parents from the mono chain
-82318	banner	end r28 STEPCORE chunk 1 (foundations)
-82320	subsection	scx: host-context basics for condition (I) with \<open>j\<^sub>0 > 0\<close>
-82398	subsection	scx: the last-block-start prefix \<open>N\<close> of the iterate (structure bundle)
-82597	subsection	scx: the marked value at the last block start, and the \<open>w = 1\<close> core
-82681	banner	end r28 STEPCORE chunk 2 (host + N structure)
-82683	subsection	scx: \<open>j\<^sub>-\<^sub>1'\<close> is a basepoint of the iterate, and the Mark pinning
-82934	banner	end r28 STEPCORE chunk 3 (jm1' basepoint + Mark pinning)
-82936	subsection	scx: the per-step surgery, case A (\<open>X\<^sub>n = D\<^bsub>va\<^esub>(\<tau> +\<^sub>B c\<^sub>1 \<cdot> n)\<close>)
-83249	banner	end r28 STEPCORE chunk 4a (step, case A)
-83629	banner	end r28 STEPCORE chunk 4b (step, case B)
-83631	subsection	scx: the master \<open>CF\<^sub>I\<close> package — \<open>dM\<close> + \<open>lhsCF\<close> witnesses exist
-84094	subsection	scx: the condition-(I) exchange (1), FULLY UNCONDITIONAL
-84154	banner	end r28 STEPCORE chunk 5 (masterCF + condI exchange (1))
-84156	subsection	scx: the condition-(I) DESCENT, OT-free
-84252	banner	end r28 STEPCORE chunk 6 (condI descent, OT-free)
-84255	banner	r28 merge: wt2 block
-84256	banner	round 28 front CONDIV13 (wt2): condIV exchange (1)/(3) producer data
-84313	subsection	Order and list helpers
-84330	subsection	The condition-agnostic \<open>uv\<close> bound \<open>M\<^bsub>1,j\<^sub>-\<^sub>3\<^esub> < M\<^bsub>1,j\<^sub>1\<^esub>\<close>
-84367	subsection	Condition (IV) excludes the other \<open>transC2\<close> branches
-84385	subsection	The condIV \<open>c\<^sub>2\<close>-body shape and the article's \<open>leftDj0\<close> dichotomy
-84475	subsection	The \<open>domB\<close> value of the condIV \<open>c\<^sub>2\<close>-body
-84539	subsection	\<open>k1\<close> at the \<open>mnform\<close> witnesses \<open>s84x_s1/b1\<close> (witness matching)
-84622	subsection	\<open>base1\<close>: one scb-block insertion on \<open>D\<^bsub>ub\<^esub> 0\<close> strictly exceeds \<open>t\<^sub>2\<close>
-84836	banner	end round 28 front CONDIV13
-84838	banner	round 28 front CONDIV13, part 2: HB-free (1)+(2) assembly
-84841	subsection	HB-free partial assembly: conclusions (1) and (2) need only \<open>base1\<close>
-85035	banner	end round 28 front CONDIV13 part 2
-85038	banner	r28 merge: wt-b1 block
-85043	section	r28-OTMEM — \<open>stepval\<close> is UNSATISFIABLE; the per-branch salvage map
-85102	subsection	The \<open>[0]\<close>-orbit of numerals
-85192	subsection	REFUTATION: \<open>stepval\<close> is unsatisfiable on \<open>ST\<^bsub>PS\<^esub>\<close>
-85229	subsection	TRUE legs I: condition (VI), \<open>j\<^sub>1 > 1\<close> (from the proven exchange equalities)
-85281	subsection	TRUE legs II: condition (I) — \<open>n = 1\<close> and the whole \<open>j\<^sub>0 = 0\<close> branch
-85341	subsection	TRUE legs III: the zero-last-column \<open>Pred\<close> corner
-85508	subsection	TRUE legs IV: the two-column (\<open>j\<^sub>1 = 1\<close>) hosts, \<open>n \<ge> 2\<close>
-85668	subsection	\<open>0\<^sub>B \<in> OT\<^bsub>B\<^esub>\<close>
-85673	subsection	The mixed per-branch OT dispatcher (replacing the vacuous closure route)
-85985	banner	end round 28 front OTMEM
-85989	banner	r29a merge: wt-f7 block
-85993	section	r29a-ATOMS --- the non-adm condition-(V) \<open>c\<^sub>2(L\<^sub>1)
-86066	subsection	The non-adm \<open>t\<^sub>2\<close>-component lower bound (article 基本性質 (3))
-86192	subsection	\<open>notLD\<close>: the last principal of \<open>t\<^sub>2\<close> does not carry the head \<open>M\<^bsub>1,j\<^sub>0\<^esub>\<close>
-86246	subsection	\<open>c2L1\<close> CLOSED on the genuine regime
-86264	subsection	Capstone: the non-adm condition-(V) exchange modulo \<open>{d1h, k1h}\<close> ONLY
-86356	banner	end round 29a front ATOMS
-86360	banner	r29a merge: wt-s4a block
-86428	subsection	c2sx: the branch data of the condition-(II) \<open>c\<^sub>2
-86453	subsection	c2sx: \<open>BT\<close> helpers
-86472	subsection	c2sx: host-context basics for condition (II)
-86544	subsection	c2sx: the marked-column value \<open>c\<^sub>1 = D\<^bsub>va\<^esub> t\<^sub>2\<close>
-86601	subsection	c2sx: the \<open>c\<^sub>2\<close> value and the base split \<open>t\<^sub>2 = t\<^sub>3 +\<^sub>B X\<^bsup>cnt\<^sub>1\<^esup>\<close>
-86702	banner	end r29a CONDII chunk 1 (defs + host + c1/c2 + split)
-86704	subsection	c2sx: the last-block-start prefix \<open>N\<close> of the condition-(II) iterate
-86985	subsection	c2sx: the marked value at the last block start is the tail-slice value
-87019	subsection	c2sx: \<open>j\<^sub>-\<^sub>1\<close> is a basepoint of every iterate, and the Mark pinning
-87197	banner	end r29a CONDII chunk 2 (N-facts + mark-idx + pinning)
-87425	banner	end r29a CONDII chunk 3 (per-step surgery)
-87427	subsection	c2sx: the master \<open>CF\<^sub>I\<^sub>I\<close> package — \<open>dM\<close> + existential \<open>lhs_ex
-87625	banner	end r29a CONDII chunk 4 (masterCF + endpoints)
-87627	subsection	c2sx: tail-slice dischargers — bridge, reach, trunk and regime cases
-87902	banner	end r29a CONDII chunk 5 (bridge + dischargers)
-87904	subsection	c2sx: the shared \<open>exchII
-87925	banner	end r29a CONDII chunk 6 (exchII rewiring)
-87929	banner	r29a merge: wt-s4b block
-87933	banner	round 29a front CIIIREG: closing the condIII exchange
-87934	banner	residuals {regS, regSP} + {dbbodyH, base0H, base1H,
-87935	banner	A0ltH} of w84x_condIII_exchange_full_of_sliceregs
-87938	section	r29a-CIIIREG (A) --- \<open>dbbodyH\<close>: the \<open>domB
-88320	banner	r29a-CIIIREG (B): the condIII BT-side residuals A0ltH /
-88321	banner	base1H / base0H, decoupled from the regime producers
-88324	section	r29a-CIIIREG (B) --- \<open>A0ltH\<close>/\<open>base1H\<close> from the nest tuple, \<open>base0H
-88769	banner	r29a-CIIIREG (C): the RED-slice regime re-cut -- the r28
-88770	banner	raw-slice regimes regS/regSP are FALSE on genuine hosts;
-88771	banner	the TRUE regimes live at Red(N)/Red(Pred N)
-88774	section	r29a-CIIIREG (C) --- transports \<open>d4a\<close>/\<open>d4b\<close> from the RED-slice regimes
-89230	banner	r29a-CIIIREG (D): the condIII exchange TRIPLE re-assembled
-89231	banner	on the TRUE (Red-slice) regimes, with all four BT-side
-89232	banner	residuals of r28 (dbbodyH/base0H/base1H/A0ltH) DISCHARGED
-89857	banner	r29a-CIIIREG (E): structural bricks toward REGS --- the
-89858	banner	memberships/Brne/descending half is PROVEN; the residual
-89859	banner	core of REGS is exactly the m-condition
-89862	section	r29a-CIIIREG (E) --- \<open>REGS\<close> reduced to its \<open>m\<close>-condition core
-90080	banner	r30 merge: wt-s4a block
-90082	banner	round 30 front CONDIIIV (wt-s4a): the §8.2 命題（条件(II)か
-90083	banner	(IV)の下での終切片と Trans の関係） p_8_2_condIIIV reduced to
-90084	banner	the sharp VE-residual triple {VE2, VE3, VE4}
-90125	subsection	Pure-BT algebra: \<open>+\<^sub>B\<close> left-cancellation and the condIIIV \<open>\<exists>!\<close> scaffold
-90199	subsection	The not-leftDj0 GUARD: structural \<open>d \<le> Joints\<close> core (the \<open>lt\<close>-case)
-90480	banner	r30 merge: wt-s4b block
-90482	banner	r30-CIIIREGIME: REGS sharpened to its geometric core.
-90483	banner	EMPIRICAL (verify-rank-depth): on GENUINE standard condIII
-90484	banner	guard hosts, the reduced ancestor slice Red (s84x_N M) has
-90485	banner	EXACTLY ONE branch, and that branch attaches at the
-90486	banner	(admissible) trunk right end, so its LAST joint = TrMax.
-90487	banner	Hence REGS is always the STRICT (d1) disjunct of MCOND,
-90488	banner	m = j-2 - j-3 < TrMax(Red N) = Joints(Red N)!last.
-90489	banner	python/_crg_jointlast_probe.py: jl==TrMax 65/65 branchy;
-90490	banner	d1 46/46; python/_crg_struct.py: one-branch 65/65.
-90491	banner	The joint>=TrMax half is a genuinely NEW structural fact
-90492	banner	(NOT the m_8_2 singleton-last-branch j1eq regime, NOT the
-90493	banner	m_8_4 non-adm interior joint regime): here the joint sits
-90494	banner	at the ADMISSIBLE trunk end.  It is isolated below as the
-90495	banner	single hypothesis JGE; the m < TrMax half is DISCHARGED
-90496	banner	unconditionally from the run brick crx_trmax_run.
-90499	section	r30-CIIIREGIME --- \<open>REGS
-90545	banner	r30 merge: wt2 block
-90548	banner	round 30 front CONDIVHB, part 1: the condIV t2-component lower bound (HB)
-90866	banner	round 30 front CONDIVHB, part 2: d1-d3 wiring -> condIV exchange full
-90934	banner	r31 merge: wt-s4a block
-90936	banner	r31 front VEGEOM: LastStep slice geometry (STEP 1)
-91051	subsection	STEP 1 (cont.) — slice geometry \<open>0 \<le> j\<^sub>0' \<le> TrMax M \<le> m\<^sub>1 < j\<^sub>1\<close> and monoT endpoints
-91153	subsection	STEP 1 (cont.) — reduced-form principality of a monoT slice
-91204	subsection	The slice-level reduction \<open>vgx_condIIIV_of_VE\<close> (the missing \<open>cdx_condIIIV_of_VE\<close>)
-91316	subsection	VE2 route: reduction to the prefix regime \<open>cfbx_reg j\<^sub>0' (seg M 0 m\<^sub>1)\<close>
-91356	banner	r31 merge: wt-s4b block
-91359	banner	r31-JGEBYP (target 3): the REGSP kousa-(1,1) trunk BYPASS.
-91360	banner	On the pure-trunk branch Br (Red (Pred (s84x_N M))) = [] the
-91361	banner	reduced slice is an all-trunk reduced-mono sequence, hence a
-91362	banner	diagonal diagSeq u v (baseU_alltrunk_diag_entry), so its
-91363	banner	Trans has the explicit closed form D_u (D_v 0)
-91364	banner	(m_8_1_diagSeq_Trans).  This discharges the two facts that
-91365	banner	crx_d4a_of_redreg draws from cfbx_reg -- the slice-value
-91366	banner	(w84x_slice_value_of_reg) and monoT of the reduced slice --
-91367	banner	WITHOUT the false unconditional REGSP (which is FALSE exactly
-91368	banner	on this Br = [] branch).  crg_d4a_all then dispatches on
-91369	banner	Br (Red (Pred (s84x_N M))): the trunk closed form vs. the
-91370	banner	existing regime route, so the exchange no longer needs the
-91371	banner	false REGSP but only its Br <> [] restriction (TRUE).
-91374	section	r31-JGEBYP --- the REGSP kousa-\<open>(1,1)\<close> trunk bypass at the \<open>d4a\<close> level
-91714	banner	r31-JGEBYP: the condIII exchange cascade REWIRED through the
-91715	banner	trunk bypass -- crg_various_scb_IIIIV/mnform/exchange13/
-91716	banner	descent/exchange_full call crg_d4a_all at the d4a step, so
-91717	banner	the FALSE unconditional REGSP is replaced by its TRUE
-91718	banner	Br(Red(Pred(s84x_N M)))<>[] restriction (the pure-trunk
-91719	banner	Br=[] branch is discharged by crg_d4a_trunk).  REGS/M0RUN
-91720	banner	threaded unchanged.
-91723	section	r31-JGEBYP --- condIII exchange rewired through the trunk bypass
-92382	banner	r31 merge: wt-b1 block
-92533	banner	end round 31 front OTRES
-92535	banner	r32 merge: wt-s4a block
-92541	banner	r32 VEGEOM2: VE2 close via prefix regime + VE3/VE4 skeleton
-92544	section	r32-VEGEOM2 --- \<open>\<S>8.2\<close> condII/IV terminal-slice VE2 (prefix regime) close
-93150	banner	r32 VEGEOM2: VE3/VE4 back-peel induction SKELETON
-93153	section	r32-VEGEOM2 --- \<open>\<S>8.2\<close> condII/IV VE3/VE4 back-peel induction skeleton
-93260	banner	r32 merge: wt-s4b block
-93264	banner	r32-CONDIIICLOSE (wt-s4b, c3cx_ prefix): condIII exchange
-93265	banner	residuals {JGE, M0RUN, REGSP}.  KEY EMPIRICAL CORRECTION:
-93266	banner	the r31 residual (1) JGE is FALSE (see below).  M0RUN is
-93267	banner	sharpened here to a single entry inequality.
-93270	section	r32-CONDIIICLOSE --- condIII exchange residuals: JGE refuted, M0RUN sharpened
-93388	banner	end r32 front CONDIIICLOSE
-93390	banner	r32 merge: wt-b1 block
-93396	banner	r32-CONDIVCLOSE: the condIV d3 (regSP) trunk BYPASS, Red
-93397	banner	route.  The r30/r31 c4hx wiring routed d3 through
-93398	banner	w84x_d3_IIIV_dispatch, whose regime consumer
-93399	banner	(w84x_subslice_value) needs the RAW slice seg M jm3 (Lng-2)
-93400	banner	to be REDUCED -- empirically FALSE on ~40% of the Br<>[]
-93401	banner	branch and ~57% of the Br=[] branch (RAWRED_regime 3/5,
-93402	banner	RAWRED_trunk 3/7).  So the raw-slice regSP is a bad residual.
-93403	banner	Instead we rebuild d3 UNIFORMLY on the RED route (like the
-93404	banner	condIII crx_d4a cascade): the same value fact
-93405	banner	Trans (seg M jm2 (Lng-2))
-93406	banner	= D_{M_{1,jm2}} (bpHeadT (Trans (seg M jm3 (Lng-2))))
-93407	banner	is produced by crg_slice_red_value_trunk on Br(Red slice)=[]
-93408	banner	and by crx_slice_red_value on Br(Red slice)<>[].  Since
-93409	banner	Br(raw)=[] <=> Br(Red raw)=[] (COINCIDE 25/25), and the
-93410	banner	body bpHeadT(...) = transT2 M is the Red-independent Mark
-93411	banner	readback (w84x_PN_c1_of_admeq), the d3 goal closes on the
-93412	banner	whole trunk branch WITH NO regime hypothesis, leaving only
-93413	banner	the Br(Red)<>[]-guarded RED-slice regime
-93414	banner	cfbx_reg (jm2-jm3) (Red (Pred (s84x_N M)))
-93415	banner	-- which is EXACTLY condIII's REGSP (crg_d4a_all), SHARED,
-93416	banner	and empirically TRUE (REGSAT_red 6/6, no CEX; contrast the
-93417	banner	raw-slice form).  GOAL_trunk 7/7 confirms the trunk close.
-93420	section	r32-CONDIVCLOSE --- condIV d3 rebuilt on the Red route (trunk bypass + shared REGSP)
-93613	banner	end r32-CONDIVCLOSE
-93616	banner	r33 merge: wt-s4b block
-93620	banner	r33-MCOND (mcx_ prefix): the reduced-slice branch-geometry
-93621	banner	core d <= Joints (Red (s84x_N M)) ! last -- the SHARP true
-93622	banner	REGS/REGSP residual (JGE was refuted in r32).
-93625	section	r33-MCOND --- the reduced-slice branch-geometry \<open>\<le>\<close> core
-94214	banner	r33 merge: wt-s4a block
-94218	banner	r33-VE34 ROW10: the branch-head row-1 <= row-0 invariant
-94219	banner	(vg3x_ prefix).  Closes the ROW10 residual carried through
-94220	banner	vg2x_VE2 / vg2x_eqdiag_M, making VE2 UNCONDITIONAL.
-94222	banner	ROW10 generalises to  entry M 1 j <= entry M 0 j  for ALL j
-94223	banner	of a reduced M (RedCondA + RedCondB; NO monoT, NO zero-start
-94224	banner	e00/e10 needed -- so it is strictly more general than
-94225	banner	m_6_6_condAB_coeff whose row0>=row1 conjunct assumes
-94226	banner	entry M 0 0 = entry M 1 0 = 0).  EMPIRICAL (python _r33):
-94227	banner	MAIN entry1<=entry0 all j 2051/0; sub-facts (a) hasParent1 j
-94228	banner	=> hasParent0 j 1014/0 and (b) entry1 j>0 <=> hasParent1 j
-94229	banner	1014/0 over reduced monoT.  Route: row-1 parent EXISTS whenever
-94230	banner	some le0-ancestor has strictly smaller row-1 (Max of that set
-94231	banner	is the parent; nextR1_unique gives uniqueness); a node with NO
-94232	banner	row-1 parent is <= every le0-ancestor's row-1, and the le0-root
-94233	banner	(RedCondB) pins entry0=entry1 there, monotone up to j.
-94236	section	r33-VE34-ROW10 --- reduced row-1 <= row-0 (unconditional), VE2 closed
-94447	banner	r33-VE34 GUARD FINDING + corrected back-peel skeleton
-94448	banner	(vg3x_ prefix).
-94450	banner	EMPIRICAL REFUTATION (python _r33_ve34): vg2x_VE34 is FALSE
-94451	banner	on the r32 regime vg2x_reg2 (RT_PS & PT_PS & Br!=[]) alone.
-94452	banner	It holds EXACTLY when the GUARD holds -- i.e. the last-branch
-94453	banner	first node j1' = FirstNodes M!(Lng(Br M)-1) is NON-diagonal
-94454	banner	(entry M 1 j1' < entry M 0 j1'):
-94455	banner	guard=True  => VE34  24/24  (desc True 23/23, desc False 1/1)
-94456	banner	guard=False => VE34   0/13  (VE4 fails; e.g. diagonal last
-94457	banner	node (0,0)(1,1)(2,2)(2,2), VE4=False).
-94458	banner	Consequently the r32 residuals BASE/STEP/RPERS stated over
-94459	banner	vg2x_reg2 are REFUTED; the guard must sit in the regime.  The
-94460	banner	corrected regime vg3x_reg3 = vg2x_reg2 & guard makes them
-94461	banner	TRUE and is the one the downstream consumer
-94462	banner	vgx_condIIIV_of_VE supplies (it already assumes the guard and
-94463	banner	DT_PS).  This block gives the corrected green back-peel
-94464	banner	wrapper vg3x_VE34_backpeel + the DT_PS connector.
-94467	section	r33-VE34 --- GUARD is required for vg2x_VE34; corrected back-peel skeleton
-94549	banner	r33 merge: wt-b1 block
-94553	banner	r33-OTLOCAL: the LOCAL OTint route — per-condition OT_B
-94554	banner	membership from the exchange closed forms, bypassing the
-94555	banner	§8.5 surgery keystone {resid, multiD}
-94558	section	r33-OTLOCAL --- the LOCAL \<open>OTint\<close> route: per-condition \<open>OT\<^bsub>B\<^esub>
-94626	subsection	Reusable per-condition \<open>OT\<^bsub>B\<^esub>\<close>-membership from an operB / op0-tower closed form
-94654	subsection	\<open>condVI\<close> \<open>OTint\<close> --- UNCONDITIONAL (exact \<open>operB\<close> equality, both regimes)
-94682	subsection	\<open>condI\<close> \<open>OTint\<close> --- from the \<open>operB\<close> equality (closure principle)
-94697	subsection	\<open>condV\<close>-adm \<open>OTint\<close> --- keystone-FREE via the op0-tower value identity
-94717	subsection	The LOCAL \<open>OTint\<close> dispatcher --- keystone \<open>{resid, multiD}\<close> BYPASSED
-94774	subsection	Capstone: \<open>Trans M \<in> OT\<^bsub>B\<^esub>\<close> with the \<open>OTint\<close> slot on the LOCAL route
-94832	banner	end r33-OTLOCAL
-94834	banner	r34 merge: wt-s4b block
-94837	banner	r34-DIAGM0RUN (dgx_ prefix): shared DIAG reduction
-94838	banner	The shared equality-diag residual of mcx_regSP_of_diag
-94839	banner	(SHARED by condIII Br<>[]-REGSP and condIV shared-REGSP and
-94840	banner	the condII not-leftDj0 tailval leg) is REDUCED to a single
-94841	banner	sharp inequality  strictlt :
-94842	banner	entry RN' 1 d  <  entry RN' 1 fnp
-94843	banner	(RN' = Red(Pred(s84x_N M)), d = jm2-jm3, fnp = last-branch
-94844	banner	first node of RN').  The DIAG then follows by the SAME
-94845	banner	reduced-slice sandwich as mcx_MCOND_RN's equality leg, mirrored
-94846	banner	in RN' coordinates: e0fn_v (RedCondA row-0 + trunk diagonal)
-94847	banner	gives entry RN' 0 fnp = entry RN' 1 d + 1; m_6_6_reduced_coeff
-94848	banner	gives entry RN' 1 fnp <= entry RN' 0 fnp; strictlt closes the
-94849	banner	lower bound.  (RN' does NOT carry a terminal row-1 edge at d
-94850	banner	-- nextR M 1 jm2 (Lng M-2) fails 2/52 -- so the RN-terminal
-94851	banner	valley cannot be mirrored; strictlt is exactly what is left.)
-94853	banner	EMPIRICAL (python/_r34_diag*.py): strictlt (equiv.
-94854	banner	le0 M (jm3+fnp) (Lng M-1),  equiv.  d = parent RN' 1 fnp,
-94855	banner	equiv.  fn_RN < T for the FULL slice RN) holds 52/52 on the
-94856	banner	genuine condIII/IV straddle corpus; the diag conclusion 52/52.
-94857	banner	The crux is entangled with the equality + Pred structure
-94858	banner	(general reduced monoT slices DO admit singleton last
-94859	banner	branches, 143 found), so it does not reduce further abstractly.
-94862	section	r34-DIAGM0RUN --- shared DIAG reduced to the sharp strictlt inequality
-95030	banner	end r34-DIAGM0RUN dgx_regSP reduction
-95033	banner	r34-DIAGM0RUN (dgx_ prefix): M0RUN easy-case reduction
-95034	banner	M0RUN reduces (via the committed c3cx_M0RUN_of_a) to the
-95035	banner	SINGLE inequality  entry M 1 jm2 < entry M 1 (jm2+1)  (jm2 =
-95036	banner	s84x_jm2 M = parent M 1 (Lng M-1)).  This inequality holds
-95037	banner	whenever jm2+1 is a row-0 ANCESTOR of the terminal
-95038	banner	(le0 M (jm2+1) (Lng M-1)): then the row-1 parent valley of
-95039	banner	jm2 -> (Lng M-1) (s84c1_jm2_univ) pins
-95040	banner	entry M 1 (Lng M-1) <= entry M 1 (jm2+1),
-95041	banner	and entry M 1 jm2 < entry M 1 (Lng M-1) (s84c1_jm2_basic(2))
-95042	banner	closes it.  This discharges the EASY branch; the residual is
-95043	banner	the non-ancestor branch (~3%, 49/1562 over an ST_PS oper-orbit
-95044	banner	corpus), where jm2+1 is a row-0 CHILD of jm2 (nextrel0, from
-95045	banner	c3cx_nextrel0_adj_of_le0) off the terminal's chain -- there
-95046	banner	entry M 1 (jm2+1) = entry M 1 jm2 + 1 is a genuine ST_PS
-95047	banner	last-block (diagonal-ramp) fact (the row-1 parent = jm2 is
-95048	banner	equivalent to the goal, so reducedness gives no shortcut).
-95049	banner	EMPIRICAL (python/_r34_m0.py): the diagonal step
-95050	banner	entry M i (jm2+1) = entry M i jm2 + 1 (both rows)
-95051	banner	holds 1562/1562 over the adm-edge ST_PS corpus.
-95079	banner	end r34-DIAGM0RUN M0RUN easy-case
-95081	banner	r34 merge: wt-s4a block
-95085	banner	r34-VE34B  --- CORRECTED guarded VE34 regime (vg4x_)
-95087	banner	EMPIRICAL REFUTATION of the r33 back-peel BASE obligation
-95088	banner	(python ve34_base2 / probe over reduced monoT hosts, GRID<4,
-95089	banner	L<=5): the r33 regime vg3x_reg3 = vg2x_reg2 & guard is NOT
-95090	banner	enough for vg2x_VE34 at the base.  Over guarded bases
-95091	banner	(cfbx_j1p N = Lng N-1, guard e1<e0 at j1'), vg2x_VE34 holds
-95092	banner	EXACTLY when the last joint j0' = Joints N!(Lng(Br N)-1) is
-95093	banner	NON-M-admissible, i.e. 0 < j0' < TrMax N:
-95094	banner	nadm j0'  =>  VE34   19/19
-95095	banner	adm  j0'  =>  VE34    0/106  (VE4 fails; e.g. j0'=0 host
-95096	banner	(0,0)(1,1)(1,0) and j0'=TrMax host
-95097	banner	(0,0)(1,1)(2,2)(3,0)).
-95098	banner	This is exactly the article's case (2) hypothesis "j'_0 is
-95099	banner	non-M-admissible" (§8.2, 部分表現の単項成分とPredの関係).
-95100	banner	The consumer vgx_condIIIV_of_VE ALREADY assumes 0<j0' (j0pos)
-95101	banner	and j0'<TrMax M (j0lt), so the missing condition sits at the
-95102	banner	consumer boundary; we fold it into the regime as vg4x_reg4
-95103	banner	= vg3x_reg3 & 0<j0' & j0'<TrMax.  RPERS is then CLEAN: at the
-95104	banner	STEP (j1' < j1) Pred only shortens the last branch, so the
-95105	banner	last joint j0', the trunk TrMax and the guard node j1' are all
-95106	banner	unchanged (wid_Joints_Pred / TrMax_Pred / wid_FirstNodes_Pred).
-95109	section	r34-VE34B --- corrected guarded VE34 regime \<open>vg4x_reg4
-95460	banner	end r34-VE34B corrected regime skeleton
-95462	banner	r34 merge: wt-b1 block
-95466	banner	r34-WIRECF (c4rx_ prefix): condIV regS residual RESOLVED
-95467	banner	VACUOUSLY -- the guard j-3 < j-2 never fires on condIV.
-95470	section	r34-WIRECF --- condIV \<open>regS\<close> is vacuous (the guard never fires)
-95538	banner	end r34-WIRECF condIV block
-95542	banner	r34-WIRECF (cfvx_ prefix): cfVadm op0-tower is FALSE for e>0
-95543	banner	-- condV-adm OT-int leg is op0-tower ONLY on the e=0 regime.
-95546	section	r34-WIRECF --- \<open>cfVadm\<close> op0-tower REFUTED for \<open>e > 0\<close>; honest condV-adm split
-95674	banner	end r34-WIRECF cfVadm block
-95676	banner	r35 merge: wt-s4b block (r35-LASTBLOCK)
-95679	banner	r35-LASTBLOCK (lbx_ prefix): M0RUN sharpened to a single
-95680	banner	UNCONDITIONAL row-0 reachability fact; non-anc branch shown
-95681	banner	VACUOUS under (III)/(IV).
-95683	banner	EMPIRICAL DISCOVERY (python/probe_ciii.py, genuine (III)/(IV)
-95684	banner	oper-orbit corpus, monoT hosts, admJm2 = the M0RUN branch
-95685	banner	\<not>(j\<^sub>-\<^sub>3<j\<^sub>-\<^sub>2) i.e. adm M j\<^sub>-\<^sub>2):
-95686	banner	admJm2_nonanc                = 0    / 912   -- NON-ANC EMPTY
-95687	banner	admJm2_anc  (le0 M (j\<^sub>-\<^sub>2+1) j\<^sub>1)= 912  / 912
-95688	banner	le0 M (j\<^sub>-\<^sub>2+1) (transJ0 M)     = 912  / 912  (ANC0)
-95689	banner	[j\<^sub>-\<^sub>2, j\<^sub>0] consecutive nextrel0 = 912  / 912
-95690	banner	e0 strictly increasing on [j\<^sub>-\<^sub>2,j\<^sub>0] = 912/912
-95691	banner	j\<^sub>-\<^sub>2 < j\<^sub>0 (= transJ0)             = 912  / 912  (forced by (III))
-95692	banner	So the r34 M0RUN ``non-ancestor'' residual DOES NOT OCCUR in
-95693	banner	the genuine (III)/(IV) regime: (III) forces
-95694	banner	M\<^bsub>1,j\<^sub>0\<^esub> \<ge> M\<^bsub>1,j\<^sub>1\<^esub> = M\<^bsub>1,j\<^sub>-\<^sub>2\<^esub>+1 > M\<^bsub>1,j\<^sub>-\<^sub>2\<^esub>,  hence  j\<^sub>-\<^sub>2 < j\<^sub>0
-95695	banner	(m_8_4_oper_props_1(1)); and the whole ascension window
-95696	banner	[j\<^sub>-\<^sub>2, j\<^sub>0] is a consecutive row-0 chain, so j\<^sub>-\<^sub>2+1 is a row-0
-95697	banner	ANCESTOR of j\<^sub>1.  M0RUN then closes via
-95698	banner	@{thm dgx_M0RUN_of_le0anc}.  We sharpen the named M0RUN
-95699	banner	assumption to the SINGLE unconditional row-0 fact
-95700	banner	ANC0 :  le0 M (s84x_jm2 M + 1) (transJ0 M)
-95701	banner	(pure row-0 reachability, no run-edge nextrel1), and rebuild
-95702	banner	crx_condIII_exchange_full with {REGS, REGSP, ANC0} in place of
-95703	banner	{REGS, REGSP, M0RUN}.  ANC0 is the terminal-region last-block
-95704	banner	diagonal-ramp fact (row-0 side is FREE from RedCondA, below);
-95705	banner	the residual is exactly ``the [j\<^sub>-\<^sub>2,j\<^sub>0] ascension is consecutive''
-95706	banner	which rests on the ST_PS oper block layout (M = P[n], non-diag
-95707	banner	under (III)), i.e. @{thm s84c1_oper_lastblock}.
-95710	section	r35-LASTBLOCK --- M0RUN sharpened to the ANC0 row-0 reachability fact
-95878	banner	end r35-LASTBLOCK M0RUN sharpening
-95880	banner	r35 merge: wt-s4a block (r35-VE34)
-95884	banner	r35-VE34 (vg5x_ prefix): the guarded VE34 BASE.
-95885	banner	Reduce the back-peel BASE  (vg4x_reg4 N & cfbx_j1p N=Lng N-1
-95886	banner	==> vg2x_VE34 N)  to the two article terminal-slice bridges
-95887	banner	(parts (1),(3) of content.md 3314) + the growth split.
-95890	section	r35-VE34 --- guarded VE34 BASE reduced to the two terminal-slice bridges
-96058	banner	r35 merge: wt-b1 block (r35-OTDEEP)
-96061	banner	r35-OTDEEP (otx_ prefix): the four deep-insertion OTint legs
-96062	banner	{otIII, otIV, otVnadm, otVadmDeep}: validation, negative
-96063	banner	findings, and the single shared surgery-keystone residual
-96066	section	r35-OTDEEP --- the deep-insertion \<open>OTint
-96245	banner	end r35-OTDEEP block
-96247	banner	r36 merge: wt-s4b block (r36-LASTBLOCK2)
-96250	banner	r36-LASTBLOCK2 (lb2x_ prefix): ANC0 discharge scaffolding.
-96251	banner	The row-0 ascension-window fact ANC0 = le0 M (jm2+1) transJ0
-96252	banner	is reduced to the SINGLE row-0 gap equality
-96253	banner	WGAP : entry M 0 (transJ0 M)
-96254	banner	= entry M 0 (s84x_jm2 M) + (transJ0 M - jm2)
-96255	banner	(the ``last-block diagonal ramp'' equality).  Its (<=) half
-96256	banner	is FREE (lb2x_le0_row0_bound: along a row-0 le0-chain in a
-96257	banner	reduced M the row-0 value grows by <= the index distance,
-96258	banner	since every chain step is a UNIQUE-parent +1 step by
-96259	banner	RedCondA); the (>=) half is exactly ``the ascension window
-96260	banner	has no row-0 plateau'', the genuine ST_PS last-block fact.
-96261	banner	Given WGAP the chain from jm2 to transJ0 is forced CONSEC
-96262	banner	(pigeonhole: gap = index-gap), so le0 M (jm2+1) transJ0.
-96263	banner	EMPIRICAL (python/_r36_anc0.py, _r36_d0w.py): ANC0 and the
-96264	banner	window-consecutive form hold 2099/2099 and 1665/1665 over
-96265	banner	the genuine condIII/IV ST_PS oper corpus (deep Lng>=10).
-96268	section	r36-LASTBLOCK2 --- ANC0 reduced to the row-0 last-block gap equality WGAP
-96406	banner	end r36-LASTBLOCK2 ANC0 reduction
-96409	banner	r36-LASTBLOCK2 (lb2x_ prefix): strictlt sharpened to the
-96410	banner	d = jlp EQUALITY case.
-96411	banner	dgx_regSP_of_lt takes the sharp inequality strictlt as an
-96412	banner	UNCONDITIONAL hypothesis, but strictlt is FALSE in general on
-96413	banner	the reduced Pred-slice: EMPIRICALLY (python/_r36_strictlt.py)
-96414	banner	it holds only 453/553 over the brne guard corpus.  Inspection
-96415	banner	of dgx_regSP_diag_of_lt shows strictlt is CONSUMED only in the
-96416	banner	equality case  d = Joints RN' ! last  (the DIAG hypothesis of
-96417	banner	mcx_regSP_of_diag is itself guarded by exactly that equality).
-96418	banner	So the TRUE residual is strictlt-UNDER-(d=jlp), which the r34
-96419	banner	census confirms 52/52 (python/_r34_diag_deep.py filters d=jlp
-96420	banner	before checking).  lb2x_regSP_of_lt_eqd re-plumbs
-96421	banner	dgx_regSP_of_lt to require strictlt only under that guard.
-96424	section	r36-LASTBLOCK2 --- REGSP with strictlt guarded by the \<open>d = jlp\<close> equality
-96479	banner	end r36-LASTBLOCK2 strictlt-eqd sharpening
-96481	banner	r36 merge: wt-s4a block (r36-BRIDGES)
-96484	banner	r36-BRIDGES (vg6x_ prefix): the VE34 guarded BASE bridges.
-96485	banner	FINDING: the r35 `bridges` obligation is EQUIVALENT to the
-96486	banner	VE34 base residual itself (modulo the two slice principals,
-96487	banner	which are provable), i.e. it is NOT a strict reduction.
-96746	banner	r36 merge: wt-b1 block (r36-VESTEP)
-96750	banner	r36-VESTEP (wt-b1, vs2x_ prefix): the VE34 STEP (article §8.2
-96751	banner	cases 3,4 head-shift) reduced to the head-shift residual.
-96754	section	r36-VESTEP --- \<open>\<S>8.2\<close> condII/IV VE3/VE4 back-peel STEP (cases 3,4 head-shift)
-96855	banner	r37 merge: wt-s4b block (r37-WGAP)
-96859	banner	r37-WGAP (wgx37_ prefix): WGAP / ANC0 are FALSE on ST_PS.
-96861	banner	The r35/r36 reduction of the condIII M0RUN residual to
-96862	banner	ANC0 : le0 M (s84x_jm2 M + 1) (transJ0 M)
-96863	banner	WGAP : entry M 0 (transJ0 M)
-96864	banner	= entry M 0 (s84x_jm2 M) + (transJ0 M - s84x_jm2 M)
-96865	banner	is an OVERSHOOT: ANC0 ==> M0RUN but ANC0 (hence WGAP) is FALSE
-96866	banner	on ST_PS.  MINIMAL COUNTEREXAMPLE (python/_r37_*.py verified,
-96867	banner	genuinely in ST_PS via an explicit oper derivation):
-96868	banner	M = (0,0)(1,1)(2,1)(1,1)(2,1)
-96869	banner	diagSeq 0 2 = (0,0)(1,1)(2,2) --[3]--> (0,0)(1,1)(2,1)(3,1)
-96870	banner	--[2]--> ... (9 oper steps total) ... --[2]--> M
-96871	banner	so M : ST_PS; M reduced, monoT (M : PT_PS); hasParent M 1 4;
-96872	banner	1 < Lng M - 1 = 4; transCondIII M (adm M (transJ0 M = 3)).
-96873	banner	jm2 = s84x_jm2 M = parent M 1 4 = 0;  j0 = transJ0 M = 3.
-96874	banner	row 0 of M = [0,1,2,1,2].
-96875	banner	WGAP: entry M 0 3 = 1  BUT  entry M 0 0 + (3-0) = 3.  FALSE.
-96876	banner	ANC0: le0 M 1 3 is FALSE (1 does not row-0-reach 3).
-96877	banner	The window [jm2,j0] = [0,3] has row 0 = [0,1,2,1]; it is NOT
-96878	banner	a consecutive nextrel0 chain -- the chain 0 -> 3 JUMPS
-96879	banner	(nextrel0 M 0 3 holds, valley entry M 0 1 = 1, M 0 2 = 2
-96880	banner	both >= entry M 0 3 = 1).
-96882	banner	WHY r36 "273/273" and r35 "non-anc VACUOUS 0/912" were FALSE
-96883	banner	POSITIVES: shallow oper-orbit (steps=6); the CEX first appears
-96884	banner	at oper-depth 9.  r32 (line ~53083) already recorded the
-96885	banner	non-ancestor branch at 1253/4566 (~27%), NOT vacuous, and that
-96886	banner	M0RUN reduces to the SINGLE row-1 inequality
-96887	banner	(i)  entry M 1 (s84x_jm2 M) < entry M 1 (s84x_jm2 M + 1)
-96888	banner	(r32: 4566/4566), a genuine ST_PS last-block fact on the
-96889	banner	non-ancestor branch.  The CEX above is exactly such a
-96890	banner	non-ancestor host with adm M jm2.
-96892	banner	CORRECT (TRUE) RESIDUAL.  M0RUN is discharged from (i) by the
-96893	banner	committed c3cx_M0RUN_of_a.  A sharper true residual is
-96894	banner	E1GE : entry M 1 (Lng M - 1) <= entry M 1 (s84x_jm2 M + 1)
-96895	banner	(==> (i), since entry M 1 jm2 < entry M 1 (Lng M - 1) always).
-96896	banner	E1GE holds on BOTH the ancestor and the non-ancestor branch
-96897	banner	(empirical r37 python/_r37_ineq.py: 1357/1357 genuine
-96898	banner	condIII/IV adm-jm2 ST_PS hosts, incl. 21 non-ancestor and 932
-96899	banner	deep Lng>=10; (i) idem 1357/1357).  Its ancestor branch is
-96900	banner	FREE (s84c1_jm2_univ).  Below we re-base the condIII exchange
-96901	banner	onto (i) and onto E1GE, REPLACING the refuted ANC0/WGAP route
-96902	banner	(lb2x_anc0_of_wgap / lb2x_crg_condIII_exchange_full_wgap take
-96903	banner	a hypothesis, WGAP, that is FALSE and cannot be discharged).
-96906	section	r37-WGAP --- WGAP/ANC0 refuted; the condIII \<open>M0RUN
-97017	banner	end r37-WGAP block
-97019	banner	r37 merge: wt-s4a block (r37-STRICTLT)
-97023	banner	r37-STRICTLT (slx37_ prefix): the guarded strictlt fact
-97024	banner	proven UNCONDITIONALLY, filling the strictlt_eqd slot of
-97025	banner	lb2x_regSP_of_lt_eqd => REGSP (cfbx_reg) unconditional.
-97027	banner	Target:  d = Joints RN' ! last  (RN' = Red(Pred(s84x_N M)))
-97028	banner	==>  entry RN' 1 d < entry RN' 1 (FirstNodes RN' ! last).
-97029	banner	UNIFIED argument (no singleton case-split):
-97030	banner	* wid_{JBr,FirstNodes,Joints}_Pred transport the last-branch
-97031	banner	first node/joint of RN' = Pred RN back to RN at index
-97032	banner	lastp  (lastp = Lng(Br RN')-1 < Lng(Br RN)).
-97033	banner	* guard d = Joints RN ! lastp;  RedCondA row-0 gives
-97034	banner	entry RN 0 fJ = entry RN 0 d + 1  (fJ = FirstNodes RN!lastp).
-97035	banner	* descending(Br RN) at (lastp,last) + trunk row-0 strict
-97036	banner	increase + d <= last-joint (mcx_d_le_last_joint) FORCE
-97037	banner	d = jl (last joint) and equal row-0 heads, so the tie-break
-97038	banner	gives entry RN 1 fJ >= entry RN 1 fn.
-97039	banner	* mcx_MCOND_RN (at d = jl) makes the last-branch head fn
-97040	banner	DIAGONAL: entry RN 1 fn = entry RN 1 d + 1.
-97041	banner	* hence entry RN 1 fJ >= entry RN 1 d + 1 > entry RN 1 d;
-97042	banner	butlast (RN' = Pred RN) transports it to RN' coordinates.
-97043	banner	EMPIRICAL: python/_r36_strictlt2.py eqd 98/98 (r34 census 52/52).
-97044	banner	Audit (rule 4): cites only proven facts (mcx_MCOND_RN,
-97045	banner	mcx_d_le_last_joint, wid_*_Pred, RedCondA/B via
-97046	banner	m_6_6_reduced_iff_cond, descending via DT_PS); no sorry-p_*/
-97047	banner	buc1_*, no refuted/vacuous endpoints.
-97050	section	r37-STRICTLT --- the \<open>d = jlp\<close> guarded \<open>strictlt\<close>, unconditional REGSP
-97341	banner	end r37-STRICTLT
-97343	banner	r37 merge: wt-b1 block (r37-VEREGIME)
-97347	banner	r37-VEREGIME --- descending-carrying corrected VE34 regime
-97348	banner	vg7x_reg4 (re-thread descending(Br) into the back-peel)
-97350	banner	r36 REFUTED vg2x_VE34 over vg4x_reg4: the regime chain
-97351	banner	vg2x_reg2/vg3x_reg3/vg4x_reg4 DROPPED descending(Br).  CEX
-97352	banner	N=(0,0)(1,1)(2,2)(2,1)(2,2)(2,0): vg4x_reg4 holds but
-97353	banner	descending(Br N) FALSE and the STEP/BASE bridges fail.  With
-97354	banner	descending(Br) IN the regime, 0/3168 fail (empirical).
-97356	banner	FIX: define vg7x_reg4 N = vg4x_reg4 N & descending (Br N).
-97357	banner	Then vg7x_reg4 N = N in RT_PS & monoT N & descending (Br N)
-97358	banner	= N in DT_PS,  so:
-97359	banner	* RPERS(descending) is DISCHARGED unconditionally by the
-97360	banner	already-proven descending_Br_Pred (frozen base, layerB):
-97361	banner	Pred of a DT_PS host with Br<>[] and 1<Lng(Pred) stays in
-97362	banner	DT_PS, so descending(Br(Pred N)) transfers.  vg4x part
-97363	banner	persists by the proven clean vg4x_RPERS.
-97364	banner	* The consumer vgx_condIIIV_of_VE ALREADY assumes M in DT_PS,
-97365	banner	which is EXACTLY what supplies descending(Br M) at the top;
-97366	banner	ST_PS hosts are standard (=> DT_PS) so it holds and threads
-97367	banner	down to where vg7x_VE34_of_DT is applied.
-97368	banner	Deliverable: corrected regime + dispatcher + RPERS + consumer
-97369	banner	wiring; BASE/STEP now carry descending(Br N) (r36 CEX excluded).
-97372	section	r37-VEREGIME --- descending-carrying VE34 regime \<open>vg7x_reg4
-97580	banner	r38 merge: wt-s4b block (r38-E1GE)
-97583	banner	r38-E1GE (e1x_ prefix): the NON-ANCESTOR branch of E1GE,
-97584	banner	discharging the last condIII M0RUN residual (INEQ)
-97585	banner	UNCONDITIONALLY.
-97587	banner	INEQ = entry M 1 jm2 < entry M 1 (jm2+1) is (per the scratch
-97588	banner	comment at c3cx_M0RUN_of_a) a genuine ST_PS/oper structure
-97589	banner	fact.  Proof (contradiction): assume
-97590	banner	entry M 1 (jm2+1) <= entry M 1 jm2.
-97591	banner	Peel the first row-0 edge of le0 M jm2 j1 to a child a
-97592	banner	(nextrel0 M jm2 a, le0 M a j1); NON-anc => a <> jm2+1 =>
-97593	banner	a > jm2+1.  Both jm2+1 and a are nextrel0-children of jm2
-97594	banner	with EQUAL row-0 (RedCondA => entry0 = entry0 jm2 + 1).  On
-97595	banner	the anchored slice S = seg M jm2 j1 (monoT, descending(Br S)
-97596	banner	by m_6_8_standard_slice_Br_descending) the assumption forces
-97597	banner	TrMax S = 0, so jm2+1 = FirstNodes S ! 0 and a (= FirstNodes
-97598	banner	S ! Ja by branch_component_le0 + the row-0 valley) are two
-97599	banner	branch heads with EQUAL row-0.  descending's row-1 tie-break
-97600	banner	(descending_cdomD/cdom_def) forces
-97601	banner	entry M 1 a <= entry M 1 (jm2+1) <= entry M 1 jm2,
-97602	banner	but the nextrel1 M jm2 j1 valley gives
-97603	banner	entry M 1 a >= entry M 1 j1 > entry M 1 jm2  -- contra.
-97604	banner	EMPIRICAL (deep oper-orbit BFS, ST_PS = oper-orbit of diags,
-97605	banner	depth<=24 len<=30; python/_r38_e1ge_deep2.py 403/403,
-97606	banner	_r38_e1ge_struct.py all sub-facts 507/507, _r38_slice.py
-97607	banner	a-is-FirstNode 430/430).  Audit (rule 4): cites only proven
-97608	banner	facts (m_6_8_standard_slice_Br_descending, branch_component_le0,
-97609	banner	descending_cdomD, entry_FirstNodes_eq_component_gen, RedCondA
-97610	banner	via m_6_6, c3cx_nextrel0_adj_of_le0, wit_FirstNodes0, ...);
-97611	banner	no sorry/refuted/circular citation.
-97614	section	r38-E1GE --- non-ancestor branch of E1GE (INEQ), unconditional condIII M0RUN
-97955	banner	end r38-E1GE block
-97957	banner	r38 merge: wt-s4a block (r38-BRIDGES2)
-97960	banner	r38-BRIDGES2 (vg8x_ prefix): the VE34 BASE bridges over
-97961	banner	vg7x_reg4 (= DT_PS base).  r37 FIXED the regime to vg7x
-97962	banner	(= vg4x_reg4 AND descending (Br N)).  Over the DESCENDING
-97963	banner	regime the r36 counterexample
-97964	banner	N = (0,0)(1,1)(2,2)(2,1)(2,2)(2,0)  (non-descending Br)
-97965	banner	is EXCLUDED, so the two article terminal-slice readbacks
-97966	banner	brN (part (1)) / brMp (part (3)) are TRUE.  DEEP empirical
-97967	banner	confirmation over the EXACT structural domain vg7x_reg4 base
-97968	banner	(reduced & monoT & descending, cfbx_j1p = Lng-1) :
-97969	banner	templates (Lng 4..12, single/double branch)  24/24 ok
-97970	banner	constructive multi-branch (Lng 4..7, up to 4 branches)
-97971	banner	141/141 ok
-97972	banner	curated deep multi-branch, LastStep<J1 (harder brN case,
-97973	banner	Lng up to 9)                            8/8 ok
-97974	banner	r36 CEX (non-descending) : check_bridges FAILS (excluded).
-97975	banner	0 failures on ~173 genuine descending base hosts; the
-97976	banner	discriminating condition is EXACTLY descending(Br).
-97979	section	r38-BRIDGES2 --- VE34 BASE over the DESCENDING regime \<open>vg7x_reg4
-98132	banner	r38 merge: wt-b1 block (r38-VESTEP2)
-98136	banner	r38-VESTEP2 --- the VE34 back-peel STEP over vg7x_reg4
-98137	banner	reduced to the SAME terminal-slice readback (bridges)
-98138	banner	as the BASE, via the STEP-host Trans FORM (keystone 3/4).
-98141	section	r38-VESTEP2 --- STEP-host \<open>Trans
-98477	banner	r39 merge: wt-s4b block (r39-COMPOSE)
-98481	banner	r39-COMPOSE (cpx_ prefix): FULLY-UNCONDITIONAL condIII
-98482	banner	exchange.  The crg cascade guards REGSP by Br(Red(Pred N))
-98483	banner	<> [], and crg_d4a_all EAGERLY evaluates REGSP[OF Br<>[]],
-98484	banner	which forces a cfbx_reg at the !guard (jm3=jm2, d=0) corner.
-98485	banner	That d=0 cfbx_reg is TRUE (deep BFS: B4fail=0) but needs a
-98486	banner	fresh Pred-slice diagonal proof.  We AVOID it: crx_d4a_dispatch
-98487	banner	already closes the !guard case by the slice equality
-98488	banner	s84x_Np M = s84x_N M (no REGSP), so we re-thread the cascade
-98489	banner	with REGSP guarded by BOTH  guard AND Br<>[]  (the exact
-98490	banner	intersection that slx37_regSP_uncond proves).  cpx_d4a_all
-98491	banner	builds rp LAZILY (rp g := REGSP[OF g Br<>[]]), so REGSP is
-98492	banner	only evaluated inside crx_d4a_dispatch's guard branch.  Then
-98493	banner	REGS=mcx_regS, REGSP=slx37_regSP_uncond, M0RUN=E1GE close all
-98494	banner	three residuals with NO hypotheses (only MST/MPT/hp/j1gt/
-98495	banner	cIII/n1).  Audit (rule 4): cites only proven facts
-98496	banner	(crg_d4a_trunk/crx_d4a_dispatch/slx37/mcx_regS/e1x_e1ge);
-98497	banner	no sorry-p_*/buc1_*, no refuted/vacuous endpoint.
-98500	section	r39-COMPOSE --- fully-unconditional condIII exchange (cpx_ prefix)
-99288	banner	r39 merge: wt-s4a block (r39-BRIDGESU)
-99292	banner	r39-BRIDGESU --- setup bricks for the terminal-slice
-99293	banner	scb-decomposition surgery route to bridgesU (VE3/VE4).
-99296	section	r39-BRIDGESU --- terminal-slice \<open>M' = seg N j\<^sub>0' (Lng N - 1)
-99382	banner	r39 merge: wt-b1 block (r39-OTKEY)
-99386	banner	r39-OTKEY (otkx_ prefix): the surgery keystone {resid,multiD}
-99387	banner	multiD -> a PURE §6.2 P-component prefix fact (surgery-FREE)
-99390	section	r39-OTKEY --- de-entangling the OT-pillar keystone \<open>multiD
-99503	banner	r40 merge: wt-b1 block (r40-KEYSTONE)
-99507	banner	r40-KEYSTONE (kyx_ prefix): the §8.2 keystone RightNodes
-99508	banner	residual is DISSOLVED --- m_8_2_keystone (PSS_B) is already
-99509	banner	UNCONDITIONAL; apply it to the terminal slice.
-99740	banner	r40 merge: wt-s4a block (r40-PCOMPPREFIX-refute)
-99807	banner	r40b merge: wt-s4b block (Fable OT-resid: rgx_ cluster)
-99809	section	DELIVERABLE — §8.7 OT keystone residual \<open>resid\<close> SHARPENED (r40b)
-100375	banner	r41 merge: wt-s4b block (condIV cpx re-thread)
-100379	banner	r41-CONDIV (cpx_ prefix): condIV exchange re-threaded onto
-100380	banner	the RED-slice regimes (REGS=Red(N), REGSP=Red(Pred N)),
-100381	banner	mirroring the r39 condIII cpx cascade.  The DEAD
-100382	banner	c4hx_/c4wx_condIV_exchange_full_of_regimes used the RAW
-100383	banner	slice cfbx_reg (s84x_N M / Pred(s84x_N M)), FALSE on
-100384	banner	unreduced slices.  Here d2/d3 are re-threaded through the
-100385	banner	REDUCED-slice value transport crx_slice_red_value (Br<>[])
-100386	banner	/ crg_slice_red_value_trunk (Br=[]), so REGS is discharg-
-100387	banner	ed by mcx_regS and REGSP by slx37_regSP_uncond (branch=IV)
-100388	banner	+ the pure-trunk corner.  d1 is free (m_8_4_slice_scb_
-100389	banner	part1), HB free (HB_condIV_t2_components), reg free
-100390	banner	(m_8_4_oper_props_1(1)).  Net: cpx_condIV_exchange_uncond
-100391	banner	rests on the admeq gate ONLY.  Audit (rule 4): cites only
-100392	banner	PROVEN facts; carries no sorry/refuted/DEAD-raw-slice.
-100395	section	r41-CONDIV --- condIV exchange on the RED-slice regimes (cpx_ prefix)
-100709	banner	r42 merge: wt-s4b condIV non-admeq (admeq-free brick + all-uncond combiner; non-admeq residual isolated)
-100713	banner	r42-CONDIV-NONADMEQ --- the condIV exchange on the
-100714	banner	NON-admeq branch (Adm M (s84x_jm2 M) \<noteq> transJm1 M).
-100715	banner	Deep-validation (python/_r42_v2.py, _r42_cex_probe.py):
-100716	banner	non-admeq condIV hosts are RARE (~2% of condIV hosts) and
-100717	banner	DEGENERATE: jm2 < j0 AND jm3 < jm1, with the deep-hole
-100718	banner	head e1jm1 = entry M 1 (transJm1 M) reaching v1 =
-100719	banner	entry M 1 (Lng M - 1).  The exchange triple STILL holds
-100720	banner	empirically (all 3 conjuncts, n=1..3, 100%), but the
-100721	banner	admeq slice-transport route (d2/d3 onto the reduced
-100722	banner	jm2-slice) is OUTRIGHT FALSE there: when jm2 = 0 the
-100723	banner	jm2-slice s84x_Np = M itself, so
-100724	banner	Trans (s84x_Np M) = Trans M \<noteq> Dpt (e1jm2) (bpHeadT c2).
-100725	banner	The generic fseq engine m_7_2_scb_fseq_kind1_general also
-100726	banner	fails (it needs u < v, but the correct deep hole is the
-100727	banner	innermost D_{v1} 0 with head u = v1 = v).  So the non-admeq
-100728	banner	case needs a DIFFERENT (degenerate u=v) fseq analysis.
-100731	section	r42-CONDIV-NONADMEQ --- condIV exchange on the \<open>\<not>admeq\<close> branch
-100813	banner	r43 merge: wt-s4b bridgesU readoff => {BASE,STEP} reduction (readoff⟺VE34; modReadoff interface closed onto the article terminal-slice induction)
-100816	banner	r43 RDX: the §8.2 condII/IV bridgesU readoff residual
-100818	section	r43-RDX --- the \<open>readoff
-100962	banner	r44 merge: wt-s4a — slotNewOT C1 (snx_newOT_of_sliceTrans/snx_slotNewOT_modSlice)
-100966	banner	r44 front C1 (snx_ prefix): §8.7 slotNewOT — the appended
-100967	banner	principal D_x q of Trans M is an ordinal-term principal.
-100970	section	r44-C1 --- §8.7 slotNewOT reduction (snx_ prefix)
-101058	banner	r44 merge: wt-s4c — slotAppg C3 (sax_slotAppg_modcore)
-101062	banner	r44 slotAppg (C3 core): sax_ prefix
-101063	banner	§8.7 deep-insertion appended-principal G_B-bound.
-101064	banner	Target = the slotAppg assumption of
-101065	banner	rgx_Trans_preserves_OT_of_slots (~59988).  STEP-0 empirics
-101066	banner	(python/step0_slotAppg): appg holds 984/984 real hosts
-101067	banner	(deep Lng>=20: 21/21, zero fail; every applicable host had
-101068	banner	v0<=x).  The v0>x branch is vacuous (empty G-set) and is
-101069	banner	discharged inside rgx_appg_split; the q=0_B branch is
-101070	banner	trivial (0_B < any nonempty body / GBT v0 0_B = {}).  What
-101071	banner	remains — the genuine descent core — is the (v0<=x /\
-101072	banner	q<>0_B) regime, isolated here as the two named residuals
-101073	banner	sax_qcore / sax_Gcore.  See report for the obstruction:
-101074	banner	qcore/Gcore encode the outer-level-minimality invariant of
-101075	banner	Trans (v0=entry M 1 0 small enough vs the deposited heads),
-101076	banner	which is a fragment of "Trans M in OT" itself and is NOT
-101077	banner	derivable from predOT/newOT/descP locally (OT counterexample
-101078	banner	q=Trm[DB 5 0], x=0, ps=[] : all local data hold yet
-101079	banner	lessBT q (Dpt 0 q) is False).
-101082	section	r44-slotAppg --- appended-principal \<open>G\<^sub>B\<close>-bound reduction (sax_ prefix)
-101142	banner	r44 merge: wt-s4b — slotTail C2 (stx_slotTail_properprefix_from_descent; falseness-check TRUE)
-101206	banner	r45 merge: wt-y1 — condIII noParentPred CLOSED (npx_, exchIII slot unconditional)
-101208	banner	r45 front NOPARENT (npx_): the condIII noParentPred residual
-101212	banner	r45-NOPARENT --- closing the noParentPred residual of
-101213	banner	cpx_exchIII_slot: the condIII dispatcher slot goes
-101214	banner	UNCONDITIONAL.
-101217	section	r45-NOPARENT (\<open>npx_\<close> prefix) --- the \<open>noParentPred
-101275	subsection	\<open>oper\<close> collapses to \<open>Pred\<close> on the no-parent branch
-101295	subsection	The no-parent characterisation: every \<open>le0\<close>-ancestor of \<open>j\<^sub>1
-101368	subsection	\<open>domB\<close> heredity through a \<open>T\<^bsub>m\<^esub>\<close>-dominating head
-101409	subsection	\<open>domB (Trans N) = T\<^bsub>e-1\<^esub>
-101488	subsection	The condIII \<open>(m,k) = (0,0)
-101589	subsection	The \<open>noParentPred\<close> residual, closed
-101615	subsection	\<open>cpx_exchIII_slot\<close> UNCONDITIONAL --- the condIII dispatcher slot
-101646	banner	end r45 front NOPARENT
-101648	banner	r45 merge: wt-s4c — condIV nonadmeq_exch CLOSED (cnv_, condIV exchange fully unconditional)
-101651	banner	r45 CONDIV-NONADMEQ (cnv_ prefix): discharge of the nonadmeq_exch
-101655	banner	r45-CNV --- the condIV exchange triple on the NON-admeq
-101656	banner	branch, discharging the sole residual nonadmeq_exch of
-101657	banner	cnx_condIV_exchange_alluncond.  KEY INSIGHT: the r39
-101658	banner	condIII route (cpx_condIII_mnform + w84x_exchange13_core)
-101659	banner	is anchored at the j-3 slice and only needs
-101660	banner	branch = (III or IV) and ltJ: j-3 < j-1 --- NO admeq.
-101661	banner	Under NON-admeq condIV, ltJ holds outright: j-3 = Adm(j-2)
-101662	banner	<= Adm(j0) = j-1 by Adm-monotonicity (adm_Adm_max), and
-101663	banner	nonadmeq gives strictness.  So the whole non-admeq regime
-101664	banner	(including the degenerate e1jm1 = v1 hosts where transC2 is
-101665	banner	NOT kind1-able) is covered by the j-3-anchored kind1 anchor
-101666	banner	D_{e3}(bpHeadT (Trans N)) with u = e1jm3 < v1 (c4dx_uv):
-101667	banner	no u = v degenerate fseq analysis and no (a)/(b) host case
-101668	banner	split is needed.  The only condIII-specific bricks of the
-101669	banner	r39 assembly are the base facts (crx_base0_of_run /
-101670	banner	crx_base1_of_nest / crx_A0lt_of_nest), whose cIII enters
-101671	banner	solely through the FLAT c2 shape crx_c2_shape_condIII;
-101672	banner	under condIV the c2 body is the NESTED
-101673	banner	t3 + D_{e1j0}(t4 + D_v1 0) (c4dx_condIV_c2body_shape), and
-101674	banner	the same growth/surgery arguments go through one nesting
-101675	banner	level deeper (uniform hole pair via m_7_2_add_scb_conj1/2 +
-101676	banner	scb_Dpt_lift + scb_addBT_left).  Empirical basis:
-101677	banner	python/_r42_r32exch.py (exchange 3/3 conjuncts on the
-101678	banner	non-admeq host, e1jm1 = v1 hosts are the only ones found)
-101679	banner	+ python/_r42_cex_probe.py (structural readback).
-101682	section	r45-CNV --- condIV exchange on the \<open>\<not>admeq\<close> branch: full discharge
-102576	banner	end r45 CONDIV-NONADMEQ
-102578	banner	r45 merge: wt-s4b — {BASE,STEP} back-peel: STEP closed modulo TSPIN (bpx_)
-102580	banner	r45 {BASE,STEP}: wt-s4b block (bpx_ prefix)
-102584	banner	r45-BASESTEP (bpx_ prefix): the §8.2 terminal-slice back-
-102585	banner	peel {BASE, STEP} of vg7x_VE34_of_DT.  STEP is DISCHARGED
-102586	banner	modulo the SINGLE named transport equation TSPIN (+ fin);
-102587	banner	BASE remains carried (see obstruction note below).
-103397	banner	r45 merge: wt-s4a — spine qp-descent REFUTED; slotTail slot modulo devel (spx_)
-103399	banner	r45 spine (spx_ prefix): slotTail C2 — descent hypothesis REFUTED,
-103400	banner	corrected deposit-development route (spx_slotTail_modDevel)
-103402	section	r45-spine --- §8.7 slotTail: \<open>leBT q qp\<close> REFUTED; corrected route (spx_ prefix)
-103507	banner	r46 merge: wt-s4b — TSPIN CLOSED (tsx_, VE34 modulo BASEf only)
-103510	banner	r46 TSPIN (tsx_ prefix): the terminal-slice transport equation
-103513	banner	r46-TSPIN (tsx_ prefix): the terminal-slice transport
-103514	banner	equation TSPIN of bpx_VE34_step_modTSPIN is DISCHARGED
-103515	banner	(with the STEP-context hypotheses reg/lt/regP/ihP/fin).
-103516	banner	Route: Mark-surgery naturality of the Trans recursion at
-103517	banner	the (non-admissible) last joint.  The slice Mp = seg N j0'
-103518	banner	(Lng N - 1) runs the SAME mono-surgery recursion as N:
-103519	banner	transC1 Mp = transC1 N (Mark repr + Adm slice heredity),
-103520	banner	transC2 Mp = transC2 N (condition transport), and the scb
-103521	banner	assembly lifts the slice decomposition into the host's
-103522	banner	(scb_addBT_left + Dpt-lift + scb uniqueness), yielding
-103523	banner	Trans N = D_{N10}(F +B Trans Mp)
-103524	banner	from the IH-identified Pred form.  Empirically validated
-103525	banner	(scratchpad tsx_validate.py: transC1/transC2 naturality,
-103526	banner	assembly, parent/Adm transport -- 0 failures on the
-103527	banner	enumerated vg7x_reg4 STEP corpus).
-103530	section	r46-TSPIN --- the terminal-slice transport equation (tsx_ prefix)
-104358	banner	end r46 TSPIN (tsx_)
-104360	banner	r46 merge: wt-y1 — BASEf run-peel machinery (bfx_, modulo {TSPIN-base,PIN,SPLIT0})
-104363	banner	r46 BASEf block (bfx_ prefix)
-104366	banner	r46-BASEF (bfx_ prefix): the {BASE} slot of the §8.2 VE34
-104367	banner	back-peel, mechanized as the article's SAME-HEAD-RUN
-104368	banner	induction.  The run-peel machinery (r>0) is PROVEN: JEQ
-104369	banner	(run branches share the joint), regime/fin/LastStep/front/
-104370	banner	terminal stability under the branch-peel, and the VE3
-104371	banner	transport.  Residuals: {TSPIN (extended to base hosts),
-104372	banner	PIN, SPLIT0}.
-105522	banner	end r46 BASEf block (bfx_)
-105524	banner	r46 merge: wt-s4a — devel->devpair sharpening (dvx_, one witness closes slotTail+slotNewOT)
-105526	banner	r46 devel (dvx_ prefix): §8.7 slotTail/slotNewOT — deposit-development
-105527	banner	witness reduction: devel \<Longleftarrow> devpair (+ fseq-descent slot)
-105529	section	r46-devel --- the \<open>devel
-105821	banner	r46 merge: wt-s4c — fseq-descent census (dpx_, modulo {TOT,TVall}; exchIV/VI slots unconditional)
-105824	banner	r46 DISPATCH (dpx_ prefix): the §8.7 fseq-descent dispatcher census
-105827	banner	r46-DPX --- definitive premise census of the descent
-105828	banner	dispatcher m_8_7_fseq_descend_dispatcher.  Wired here:
-105829	banner	exchI   = scx_condI_exchange1              (unconditional)
-105830	banner	exchII  = c2sx_exchange_ex_condII_of_tailval  (mod TVall)
-105831	banner	exchIII = npx_exchIII_slot_uncond          (unconditional)
-105832	banner	exchIV  = cnv_condIV_exchange_final (hasParent branch)
-105833	banner	+ the NEW noParent corner CLOSED here (dpx_)
-105834	banner	exchV   = atx_nf3x through dispatcher_condV (unconditional)
-105835	banner	exchVI  = c613x_condVI_exch_adm + c6nx_..._nadm_uncond
-105836	banner	RESULT (dpx_fseq_descend_census): 補題（基本列の降下性）
-105837	banner	GREEN modulo exactly {TOT, TVall}.
-105909	subsection	The condIV no-parent \<open>k = 0\<close> readback (inequality form)
-106061	subsection	The condIV no-parent \<open>exchIV\<close> leg, and the slot UNCONDITIONAL
-106107	subsection	The \<open>exchVI\<close> slot, unconditional
-106135	subsection	THE CENSUS: 補題（基本列の降下性） modulo exactly \<open>{TOT, TVall}\<close>
-106234	banner	end r46 DISPATCH (dpx_)
-106236	banner	r47 merge: wt-y1 — BASE-family: run-STEP closed, NOTLEFT0 closed -> VE34 modulo SINGLE residual HEADEQ0 (bgx_)
-106239	banner	r47-BASEFAM (bgx_ prefix): the three residuals of
-106240	banner	bfx_VE34_of_DT_modTSPIN_PIN_SPLIT0 attacked through the
-106241	banner	Adm0 SHARP VALUE FORMS.  At a BASE host (cfbx_j1p = Lng-1)
-106242	banner	the recursion is the Adm0 one: transJm1 N = 0, so
-106243	banner	Trans N = transC2 N with transC1 N = Trans (Pred N); the
-106244	banner	transC2 body is EXPLICIT (clause-2/clause-4 shape by the
-106245	banner	isleft selector).  The terminal slice Mp = seg N j0' (j1)
-106246	banner	runs the SAME Adm0 recursion with parent 0 (admissible!),
-106247	banner	in the condA branch, giving the closed form
-106248	banner	Trans Mp = D_{N1,j0'}(bpHeadT (Trans (Pred Mp))
-106249	banner	+B D_{N1,j1} 0)                 (bgx_Mp_form)
-106250	banner	STEP-0 empirics (python/_r47_basefam.py, 27 constructive
-106251	banner	reg7 BASE hosts, GRID 4x4 L<=5 + 3x3 L=6):
-106252	banner	ADM0/JPBASE/NOJUMP/MPFORM/CL2/CL4/TSB 27/27,
-106253	banner	ISLEFT <-> run-step 27/27, HEADEQ/FRONT0/SPLIT0 17/17
-106254	banner	(all 17 run-base hosts), HEADEQ FAILS at run-step 0/10
-106255	banner	(as designed: there the deposit is the IH-identified
-106256	banner	LAST principal, not the whole Pred body).
-106257	banner	RESULT: run-STEP base hosts close FULLY (PIN+TSPIN from the
-106258	banner	clause-4 form + IH; VE3 = bfx_VE3_base_step); run-BASE
-106259	banner	hosts close modulo {NOTLEFT0, HEADEQ0} (this file's
-106260	banner	residuals; NOTLEFT0 falls to the strong-monomiality census
-106261	banner	below).
-107304	banner	end r47 BASEFAM (bgx_)
-107306	banner	r47 merge: wt-s4a — devpair: D_0 0_B corner CLOSED + devchain weakening (dpr_)
-107309	banner	r47 DEVPAIR (dpr_ prefix): the packaged §8.7 witness
-107310	banner	residual of dvx_devel_of_devpair / dvx_two_slots_of_devpair
-107313	section	r47-DPR --- the \<open>devpair
-107357	subsection	Brick (iii): the \<open>D\<^sub>0 0\<^sub>B\<close> corner witness, CLOSED
-107438	subsection	The equal-deposit case of \<open>devpair\<close>: one witness suffices
-107480	subsection	The multi-step development chain \<open>dpr_dev
-107587	subsection	Consumers: both §8.7 slots modulo the WEAKENED residual
-107676	banner	end r47 DEVPAIR (dpr_)
-107678	banner	r47 merge: wt-s4c — slotAppg modulo {depdom,deple} (hgx_; slice-only reduction refuted by abstract CEX)
-107681	banner	r47 head-gap (hgx_): §8.7 slotAppg via deposit OT-membership
-107684	section	r47 --- §8.7 slotAppg head-gap reduction (hgx_ prefix)
-108027	banner	end r47 head-gap (hgx_)
-108029	banner	r47 merge: wt-s4b — multiD DISSOLVED into descent pillar (mdx_, modulo fseqD only)
-108032	banner	r47 multiD (mdx_ prefix): the LAST §8.7 slot with no route
-108033	banner	DISSOLVED into the descent pillar --- adjacent-P-component
-108034	banner	Trans descent by ST_PS generation induction, modulo ONE
-108035	banner	named residual fseqD (the mono fseq descent).
-108038	section	r47-multiD (mdx_) --- the \<open>multiD
-108377	banner	end r47 multiD (mdx_)
-108379	banner	r48 merge: wt-y1 — HEADEQ0 CLOSED -> VE34 + p_8_2_condIIIV modulo fin only (hqx_)
-108381	banner	r48 HEADEQ0 (hqx_): the single remaining VE34 residual CLOSED
-108384	banner	r48-HEADEQ0 (hqx_ prefix).  KEY DIAGNOSIS: HEADEQ0 at a
-108385	banner	run-base host N is EXACTLY the (r27-PROVEN) terminal-slice
-108386	banner	value equation cfbx_VE (vcx_VE_all) at host Q = Pred N and
-108387	banner	offset m = j0' = Joints N ! (Lng (Br N) - 1):
-108388	banner	Pred (seg N j0' (Lng N-1)) = seg (Pred N) j0' (Lng(Pred N)-1)
-108389	banner	-- the terminal slice OF Pred N.  So the ONLY new content is
-108390	banner	the regime membership cfbx_reg j0' (Pred N):
-108391	banner	- the second-to-last joint jq = Joints N ! (Lng(Br N)-2)
-108392	banner	sits at or above j0' (descending heads + condA edges +
-108393	banner	trunk offsets, exactly the jqge step of bgx_notleft_run0);
-108394	banner	- if jq > j0': FIRST disjunct of cfbx_reg;
-108395	banner	- if jq = j0' (shared joint): the run-base LastStep
-108396	banner	minimality forbids a guarded head there, so the head is
-108397	banner	EQUAL (reduced coeff) -- the SECOND disjunct, descending
-108398	banner	from Pred N \<in> DT_PS (bfx_PredDT_base).
-108399	banner	The Br (Pred N) = [] corner (minimal base Lng N = TrMax+2)
-108400	banner	is the diagSeq closed form on both sides (m_8_1_diagSeq_Trans).
-108401	banner	Then the r47 capstones bgx_VE34_of_reg_modHEADEQ /
-108402	banner	bgx_VE34_of_DT_modHEADEQ close VE34 with NO residual beyond
-108403	banner	fin (hqx_VE34_of_reg / hqx_VE34_of_DT).
-108761	banner	end r48 HEADEQ0 (hqx_)
-108763	banner	r48 merge: wt-s4a — devchain modulo non-corner branchwit; IncrFirst-normalized branch witnesses (dcx_)
-108766	banner	r48 devchain (dcx_): the dpr_ devchain residual via
-108767	banner	IncrFirst-NORMALIZED BRANCH witnesses + corner dispatch
-108913	subsection	Core assembly: \<open>devchain\<close> from ONE normalized-branch witness
-108988	subsection	Consumers: both §8.7 slots modulo {non-corner \<open>branchwit
-109062	banner	end r48 devchain (dcx_)
-109064	banner	r48 merge: wt-s4c — depdom sharply reduced {freshdom,preddomNE,transfer}; slotAppg wired (ddx_)
-109067	banner	r48 depdom (ddx_ prefix): closing §8.7 slotAppg's deposit
-109068	banner	outer-G_B residual.  Target = the depdom assumption of
-109069	banner	hgx_slotAppg_modDom (~67591).
-109070	banner	STEP-0 empirics (python/_r48_depdom_step0{,b}.py, corpus
-109071	banner	Lng<=18, 1737 applicable frame hosts):
-109072	banner	(i)   ps = [] DOMINATES: 1721/1737 (99.1%); there the
-109073	banner	v0-rooted term Dpt v0 (Dpt x q) IS Trans M itself
-109074	banner	(1721/1721), so the hgx_depdom_of_sliceV0 witness
-109075	banner	route is DEAD for ps=[] (a shorter witness would
-109076	banner	contradict Trans faithfulness; found 0/1721).
-109077	banner	(ii)  for ps = [] the predecessor body is ALWAYS a single
-109078	banner	principal with the SAME head x (1721/1721): the
-109079	banner	keystone lands in the proper-prefix cases (3)/(4),
-109080	banner	so a6 = Trans (Pred M) in OT_B gives EXACTLY the
-109081	banner	predecessor depdom (the G_B-half of
-109082	banner	isOT_BP (DB v0 (Dpt x q'))) FOR FREE.
-109083	banner	(iii) terminal slices seg M j (Lng M - 1) NEVER carry the
-109084	banner	v0-rooted term for ps <> [] (0/14, r48 run 1); the
-109085	banner	16/16 global witnesses found for ps <> [] are a
-109086	banner	branch-repetition artifact (witness = the prefix
-109087	banner	minus the last branch, whose ps happened to equal
-109088	banner	the deposit) -- NOT a general mechanism.
-109089	banner	(iv)  escape profile: over all 1737 hosts, EVERY escape
-109090	banner	y in {q} u G_v0(q) is 0_B, or has head index < x,
-109091	banner	or head = x with body < q (esc_bad = 0) -- the
-109092	banner	true invariant is a hereditary head cap at x.
-109093	banner	Architecture: realign the keystone (fresh vs deepened
-109094	banner	deposit), discharge the ps=[] predecessor bound from a6,
-109095	banner	and reduce depdom to THREE sharp named residuals:
-109096	banner	freshdom (whole-body corner), preddomNE (the ps<>[]
-109097	banner	predecessor last-principal v0-bound -- needs the pillar
-109098	banner	invariant strengthening), transfer (the single Pred->M
-109099	banner	deposit-body step).  transfer is PROVEN here for the
-109100	banner	top-level append shape q = q' +B Dpt w 0B, w <= x (the
-109101	banner	condI/III/V/VI anchor-at-deposit case), evidencing
-109102	banner	tractability of the general step.
-109105	section	r48 depdom --- §8.7 slotAppg deposit outer-\<open>G\<^sub>B\<close> reduction (ddx_ prefix)
-109486	banner	end r48 depdom (ddx_)
-109488	banner	r48 merge: wt-s4b — joint length-induction refuted; termination census modulo {4 slots,TVall,AP} (asx_)
-109491	banner	r48 ASSEMBLY (asx_): the termination-theorem skeleton.
-109492	banner	The two pillars (descent dpx_, OT mdx_/rgx_) tied together
-109493	banner	at the GLOBAL level, modulo ONE new knot residual AP
-109494	banner	(adjacent-P-component all-pairs descent) + the four r47
-109495	banner	value slots + TVall.  The length-indexed simultaneous
-109496	banner	induction the r47 plan envisioned is PROVABLY NOT
-109497	banner	well-founded with the r46/r47 engines (audit below).
-109610	subsection	The knot residual \<open>AP\<close> dissolves \<open>multiD\<close>
-109654	subsection	OT half: \<open>Trans\<close> preserves standard\<open>\<rightarrow>\<close>OT modulo \<open>{4 slots, AP}\<close>
-109852	subsection	The knot, made explicit in Isar
-109878	subsection	Post-knot takeover: once \<open>AP\<close> is grounded, \<open>devchain
-109916	banner	end r48 ASSEMBLY (asx_)
-109918	banner	r49 merge: wt-s4b — AP GROUNDED via r28 otx dispatcher; census upgraded to {OTint,OTpred,OTmulti,TVall} (apx_)
-109920	banner	r49 AP-KNOT (apx_): AP grounded
-109922	section	r49 AP-KNOT (\<open>apx_\<close>) --- \<open>AP
-110039	subsection	Global descent and \<open>fseqD\<close>, modulo the same slots
-110125	subsection	THE TARGET: \<open>AP\<close> grounded (exact census shape)
-110192	subsection	Downstream corollary: the \<open>multiD\<close> keystone grounded
-110235	subsection	The upgraded termination census: BOTH pillars, \<open>AP\<close> discharged
-110334	banner	end r49 AP-KNOT (apx_)
-110336	banner	r51 merge: wt-y1 — TVall modulo {LDJB,FINRC}: ldj-leg via hqx at Rc + R3LE discharged; census sharpened (tvx_)
-110339	banner	r51 TVALL (tvx_): the condition-(II) tail-slice ldj-leg via the
-110340	banner	\<S>8.2 terminal-slice proposition applied at the reduced
-110341	banner	ancestor slice Rc = Red (seg M (Adm M j0) (Lng M - 2))
-110343	section	r51-TVALL --- the \<open>leftDj0\<close> leg of \<open>c2sx_tailval\<close> (prefix \<open>tvx_\<close>)
-110388	subsection	tvx: the boundary strictness \<open>0 < d < TrMax R\<^sub>c\<close> (unconditional)
-110525	subsection	tvx: the boundary discharger --- tail-slice value AND \<open>leftDj0\<close>
-110644	banner	end r51 TVALL brick 1 (tvx_ boundary discharger)
-110647	subsection	tvx: named boundary data and the fin-threaded census slot
-110681	subsection	tvx: the assembled \<open>TVall\<close>, modulo the named residuals
-110838	banner	end r51 TVALL brick 2 (tvx_ assembly + revised census)
-110841	subsection	tvx: the first-node row bound (\<open>R3LE\<close> DISCHARGED)
-110941	subsection	tvx: the SHARPENED census --- \<open>TVall\<close> modulo \<open>{LDJB, FINRC}\<close> only
-110998	banner	end r51 TVALL brick 3 (R3LE discharged, census sharpened)
-111000	banner	r51 merge: wt-s4c — OTint condV leg closed modulo oix_transport; III/IV carried (oix_)
-111003	banner	r51-OIX (oix_ prefix): the OTint census slot attacked from
-111004	banner	the per-condition VALUE forms.  condV-adm leg (both e = 0
-111005	banner	and e > 0, uniformly) is reduced to ONE pure-BT residual
-111006	banner	oix_transport (right-spine sandwich substitution); ALL
-111007	banner	host-specific obligations (tower value form, orders, newOT,
-111008	banner	G-domination) are discharged GREEN below.
-111011	section	r51-OIX --- \<open>OTint
-111061	subsection	Pure-\<open>BT\<close> bricks: band exclusion and the prefix \<open>G\<close>-guard
-111127	subsection	The condV-adm block tower \<open>block\<^sup>k(base)\<close>, \<open>block(x) = t\<^sub>2 + D\<^sub>e x\<close>
-111258	subsection	\<open>newOT\<close>: the substituted core \<open>D\<^sub>e(V\<^sub>k)\<close> is an OT principal (GREEN)
-111348	subsection	\<open>setle\<close>: \<open>G\<close>-domination of \<open>V\<close>-towers by \<open>W
-111558	subsection	The pure-\<open>BT
-111595	subsection	The condV-adm \<open>OTint\<close> leg, closed modulo \<open>oix_transport
-111732	subsection	The exact \<open>OTint
-112193	subsection	The \<open>OTint
-112311	banner	end r51-OIX block
-112313	banner	r51 merge: wt-y3 — buc1: level-0 acc UNCONDITIONAL + goal == single residual wfs_level_jump; wellorder/rank toolkit (wfs_)
-112319	section	r51 wfs — \<open>wf RPrel\<close> via level stratification and the semantic rank
-112356	subsection	(1) Infra probe: \<open><o\<close> and \<open>Wellfounded.acc\<close> from Main
-112367	subsection	(2) The D-index level \<open>wfs_lvT / wfs_lvP\<close>
-112406	subsection	Structural size (for the paired strong inductions)
-112428	subsection	\<open>descP\<close>: every component is \<open>\<le>\<close> the head
-112450	subsection	(3) STRAT-0: level-0 OT terms are downward closed under \<open><\<close>
-112592	subsection	(4) DEPTH-MONO-0: on level-0 OT terms the order bounds the depth
-112754	subsection	(5) Level-0 accessibility and the LEVEL-JUMP residual
-112904	subsection	(6) \<open>wfs_acc_total
-113015	subsection	(7) The semantic rank \<open>wfs_rk\<close> into \<open>(ordLess, wf_ordLess)\<close>
-113144	banner	end r51 buc1-semantic front (wfs_)
-113146	banner	r52 merge: wt-y3 — buc1 jump r52: STRAT-n(lvP) refuted -> head-index STRAT; frag machinery; collapse-core residual + tuple-acc bricks (wfj_)
-113151	section	r52 wfj — opening the level jump: STRAT-\<open>n\<close> refuted, head-index fragments
-113168	subsection	(1a) Head index \<open>wfj_hd\<close>: the TRUE STRAT-\<open>n\<close>
-113192	subsection	(1b) STRAT-\<open>n\<close> for \<open>wfs_lvP\<close> is FALSE for every \<open>n \<ge> 1\<close>
-113238	subsection	(2) The head-index fragments \<open>wfj_frag
-113346	subsection	(3) The jump opening: \<open>G
-113582	subsection	(4) First engine brick: the ACC-LOCAL tuple lift
-113817	banner	end r52 buc1 level-jump front (wfj_)
-113819	banner	r52 merge: wt-s4c — oix_transport level-peel bricks (otx2_, salvaged)
-113822	banner	r52-OTX2 (otx2_ prefix): the r51 pure-BT residual
-113823	banner	oix_transport DISCHARGED as a theorem.
-113826	section	r52-OTX2 --- discharging @{const oix_transport}
-113854	subsection	Order and \<open>descP\<close> bricks
-113915	subsection	Alignment: the shared \<open>(s, b)
-114389	banner	end r52-otx2 alignment bricks
-114391	banner	r53 merge: wt-y1 — LDJB CLOSED -> TVall modulo FINRC; pillars {OTint,OTpred,OTmulti,FINRC} (ljx_)
-114394	banner	r52 LDJB (ljx_): the LAST TVall residual closed via the
-114395	banner	RightAnces/RightNodes right-spine route (NO hqx, NO fin).
-114398	section	r52-LDJB --- \<open>ldj \<Longrightarrow> d = j\<^sub>L \<and> guard
-114441	subsection	ljx: elementary bricks
-114533	subsection	ljx: the ldj side --- position 1 of the right spine is \<open>v\<^sub>0\<close>
-114604	subsection	ljx: the structural side at \<open>j\<^sub>L = TrMax R\<^sub>c
-114728	subsection	ljx: r53 bricks --- prefix transport (\<open>nextrel0\<close>/\<open>adm\<close>/\<open>Adm
-114837	subsection	ljx: the structural side at \<open>j\<^sub>L < TrMax R\<^sub>c
-115119	subsection	ljx: the LDJB residual CLOSED, and the census updates
-115287	banner	end r53 LDJB (ljx_): the ldj boundary residual CLOSED
-115289	banner	r53 merge: wt-s4b — OTmulti modulo {OTint,TVall,ordIntC}; OTpred modulo {DEEPOT,NOBR} (opx_)
-115293	banner	r52 OPX: the OTpred / OTmulti census slots (opx_ prefix)
-115296	section	r52-OPX --- the \<open>OTmulti\<close> / \<open>OTpred\<close> census slots
-115343	subsection	Order and \<open>descP\<close> bricks
-115468	subsection	The \<open>OT\<^bsub>B\<^esub>\<close> reassembly brick
-115506	subsection	\<open>operB\<close> localisation to the last top-level principal
-115538	subsection	Mono components have singleton \<open>Trans\<close> lists
-115554	subsection	THE OTmulti SLOT, reduced to \<open>{OTint, TVall, ordIntC}\<close>
-116099	banner	end r52 OPX part 1 (bricks + OTmulti)
-116102	banner	r53 OPM: census v2 (OTmulti discharged) + OTpred removal
-116103	banner	analysis (fresh keystone clauses closed, deepened =
-116104	banner	single named residual DEEPOT)
-116107	section	r53-OPM --- census v2 (\<open>OTmulti\<close> discharged) and the \<open>OTpred
-116156	subsection	The \<open>OTpred\<close> removal analysis --- keystone FRESH clauses are FREE
-116289	banner	end r53 OPM part 1 (census v2 + OTpred removal bricks)
-116291	subsection	\<open>OTpred\<close> on multi hosts REDUCES to \<open>OTpred
-116516	subsection	THE MONO \<open>OTpred\<close> assembly and the FULL \<open>OTpred
-116671	banner	end r53 OPM part 2 (OTpred slot eliminated; census v3)
-116673	banner	r53 merge: wt-s4c — oix_transport THEOREM -> OTint condV residual-free; slot modulo {otIII,otIV,PredNp,Lpv,L1v} (otx3_)
-116676	banner	r53-OTX3 (otx3_ prefix): oix_transport ASSEMBLED as a
-116677	banner	THEOREM from the r52 otx2_ bricks; the OTint condV legs
-116678	banner	and the census drop the transport hypothesis.
-116681	section	r53-OTX3 --- @{const oix_transport} discharged; transport-free census
-116702	subsection	Bricks: \<open>setle \<Rightarrow> \<triangleleft>
-116867	subsection	The context recursion and the transport theorem
-116950	banner	end r53-otx3 transport theorem
-116952	subsection	Transport-free consumers: the condV \<open>OTint\<close> legs and the census
-117083	banner	end r53-otx3 block
-117085	banner	r53 merge: wt-y3 — collapse core: impredicativity established; residual = pbody-acc / staged jump ladder (wfc_)
-117091	section	r53 wfc — the collapse core: the head recursion is discharged
-117113	subsection	(1) \<open>G\<close>-set antitonicity and secured-content propagation
-117177	subsection	(2) The same-head acc lift: body \<open>RTrel
-117223	subsection	(3) The head recursion is free: body accessibility \<open>\<Longrightarrow>\<close> \<open>wf RPrel\<close>
-117448	banner	end r53 wfc block 1 (head-recursion discharge + tuple reflection)
-117450	subsection	(5) The \<open>lvP
-117726	banner	end r53 wfc block 2 (lvP-staged bootstrap + jump-step residual)
-117728	banner	r54 merge: wt-y1 — ordIntC CLOSED + L1v CLOSED + master census 7 residuals (oc4_)
-117731	banner	r54-OC4 (oc4_ prefix) --- (1) the ordIntC residual of
-117732	banner	opx_OTmulti CLOSED (leBT weakening of the closed interior
-117733	banner	exchange legs III/IV/V); (2) the COMBINED termination
-117734	banner	census: both pillars modulo
-117735	banner	{otIII, otIV, PredNp, Lpv, L1v, DEEPOT, NOBR, FINRC}.
-117738	section	r54-OC4 --- \<open>ordIntC\<close> closed and the combined termination census
-117740	subsection	The \<open>ordIntC\<close> residual, closed (strict form first)
-117972	banner	end r54-OC4 block 1 (ordIntC closed + master census)
-117974	subsection	Wiring bonus: the \<open>OTmulti\<close> slot modulo \<open>{OTint, TVall}\<close> only
-118000	banner	end r54-OC4 block 2 (OTmulti slot modulo {OTint,TVall})
-118002	subsection	The \<open>L1v
-118079	banner	end r54-OC4 block 3 (L1v closed; census tightened to 7 residuals)
-118081	banner	r54 merge: wt-s4c — base3 {PredNp,Lpv,L1v} DISCHARGED -> OTint modulo {otIII,otIV} (oi4_)
-118087	section	r54 oi4 --- the \<open>OTint\<close> base3 \<open>{PredNp, Lpv, L1v}\<close> discharged
-118104	subsection	The two \<open>DEADM\<close> kernel instances, packaged
-118148	subsection	The base3 pieces as THEOREMS (exact r53 slot shapes)
-118186	subsection	The condV-NADM \<open>OTint\<close> leg, RESIDUAL-FREE
-118202	subsection	The \<open>OTint\<close> slot modulo \<open>{otIII, otIV}\<close> and the census
-118264	banner	end r54 oi4 base3 block
-118266	banner	r54 merge: wt-y3 — distinguished sets blocks 1+2: definition, Mset, D1 union, acc bridge (wds_)
-118273	section	r54 wds — distinguished sets (ausgezeichnete Mengen) for the collapse
-118323	subsection	(1) The tuple hull and finiteness of the \<open>G\<close>-trace
-118357	subsection	(2) The definition, destructors, and the acc bridge
-118462	subsection	(4) \<open>M\<^sub>v\<close>: the union of all \<open>v\<close>-distinguished sets, basic closure
-118506	subsection	(5) D1: the union lemma — \<open>M\<^sub>v\<close> is itself \<open>v\<close>-distinguished
-118586	banner	end r54 wds block 1 (definition + comparability + Mset + D1)
-118591	subsection	(6) D3: the collapse lemma — THE residual for r55+
-118630	subsection	(7) The Hauptlemma: collapse \<open>\<Longrightarrow>\<close> every \<open>OT\<close>+\<open>dfree
-118691	subsection	(8) The chain: collapse \<open>\<Longrightarrow>\<close> \<open>wfc_pbody_acc\<close> \<open>\<Longrightarrow>\<close> [Buc1] 2.2
-118743	subsection	(9) Converse sanity: the residual is EXACTLY theorem-strength
-118830	banner	end r54 wds block 2 (collapse residual + Hauptlemma + full chain)
-118834	banner	r72-LBASE (opf_ prefix): the scb-wrapper BASE comparison
-118835	banner	leBT (D_ub 0) (d4vx_ins s0 ub b0 0_B)  --- PROVED.
-118838	section	r72-LBASE --- the \<open>Lbase
-119053	banner	end r72-LBASE
 
-## layerC/pss_scratch.thy
+## PSS/Frontier_7_019.thy
+
+
+## PSS/Frontier_7_020.thy
+
+1467	section	§7.3 命題（\<open>Trans
+
+## PSS/Frontier_7_021.thy
+
+5	section	Term-level \<open>lessBT\<close> facts about \<open>+\<^sub>B\<close> (end-context inequality extension)
+40	section	§7.3 部分表現の不等式の延長性 (scb inequality-extension, content.md 1749)
+407	section	§7.3 \<open>c\<^sub>2\<close> is a single principal term (claim (2) of \<open>p_7_3_c1_c2\<close>)
+421	section	§7.3 \<open>c\<^sub>1\<close> is a single principal term (claim (1) of \<open>p_7_3_c1_c2\<close>)
+471	section	§7.3 命題（右端第1基点の \<open>Mark\<close> の基本性質）— content.md 2294 (forward)
+905	section	§7.3 NAbound prerequisite: index-set of a \<open>BT\<close> term (\<open>flatIdx\<close>)
+1746	section	§7.3 NAbound: condition-VI structural bound (Lemma B) and assembly
+
+## PSS/Frontier_7_022.thy
+
+5	section	§7.3 命題（\<open>Pred\<close>-on-\<open>Trans\<close> descent）: \<open>lessBT (Trans (Pred M)) (Trans M)\<close>
+
+## PSS/Frontier_7_023.thy
+
+5	section	§7.3 系（\<open>Mark\<close> の左端の基本性質）— content.md 2310
+
+## PSS/Frontier_7_024.thy
+
+41	section	§7.3 命題（\<open>Trans\<close> の最左単項成分の左端の基本性質）— content.md 2339
+
+## PSS/Frontier_7_025.thy
+
+
+## PSS/Frontier_7_026.thy
+
+5	section	§7.4 系（\<open>RightNodes\<close> と \<open>Mark\<close> の関係） — m_7_4_RightNodes_Mark
+
+## PSS/Frontier_7_027.thy
+
+5	section	§7.4 命題（\<open>RightNodes\<close> と \<open>RightAnces\<close> の一致） — m_7_4_RightAnces_RightNodes
+
+## PSS/Frontier_7_028.thy
+
+
+## PSS/Frontier_7_029.thy
+
+
+## PSS/Frontier_7_030.thy
+
+5	section	§7.4 系（\<open>Mark\<close>と\<open><\<^bsub>M\<^esub>\<^sup>NextAdm\<close>の関係） — m_7_4_Mark_nextAdm
+
+## PSS/Frontier_7_031.thy
+
+
+## PSS/Frontier_7_032.thy
+
+
+## PSS/Frontier_7_033.thy
+
+17	section	§8 infra: Trans/Mark of a non-reduced ancestor slice = of its Red
+
+## PSS/Frontier_7_034.thy
+
+
+## PSS/Frontier_7_035.thy
+
+8	section	§7.4 monoT-interior basepoint index-shift bridge (A)
+
+## PSS/Frontier_7_036.thy
+
+10	section	§7.4 monoT-interior identity (3) — transCond correspondences (Step 1)
+
+## PSS/Frontier_7_037.thy
+
+8	section	§7.4 keystone, monoT-interior markShift discharge (Step 2)
+
+## PSS/Frontier_7_038.thy
+
+
+## PSS/Frontier_7_039.thy
+
+5	banner	integrated from wt-73
+7	section	§7.3 系（条件(II)か(IV)の下で \<open>t\<^sub>2\<close> が \<open>0\<close> でないこと）— content.md 2310
+
+## PSS/Frontier_7_040.thy
+
+5	section	§7.3 \<open>Pred\<close> preserves \<open>PT\<^bsub>PS\<^esub>\<close> on the \<open>t\<^sub>1 \<noteq> 0\<close> branch (helper for (d)/(e))
+
+## PSS/Frontier_7_041.thy
+
+5	banner	integrated from wt-s7
+7	section	§8.7 OT (ordinal-term) infrastructure
+22	banner	round-2 from wt-r87
+
+## PSS/Frontier_7_042.thy
+
+241	banner	§7.3 Trans-leftmost from wt-7lm
+243	section	§7.3 命題（\<open>Trans\<close> の最左単項成分の左端の基本性質） — full form (1)(2)(3)
+
+## PSS/Frontier_7_043.thy
+
+
+## PSS/Frontier_7_044.thy
+
+
+## PSS/Frontier_7_045.thy
+
+5	section	§7.1 [Buc1] dom/oper domain predicate — \<open>domB\<close> is total
+
+## PSS/Frontier_7_046.thy
+
+152	section	§7.2 dom-可分解性 (p_7_2_scb_unique conjunct (2)) — domB side now unblocked
+
+## PSS/Frontier_7_047.thy
+
+
+## PSS/Frontier_7_048.thy
+
+5	section	§7.2 BT fundamental sequence on successor-form terms (conjuncts (1),(1-2))
+
+## PSS/Frontier_7_049.thy
+
+5	section	§7.2 p_7_2_scb_fseq conjunct (1-2): lifting operB through an scb-decomp
+
+## PSS/Frontier_7_050.thy
+
+
+## PSS/Frontier_7_051.thy
+
+
+## PSS/Frontier_7_052.thy
+
+5	section	§7.1 [Buc1] Lemma 3.2: termination of the \<open>xseq\<close> tower (\<open>operB\<close> kind-1)
+421	section	§8.6/§8.7 \<open>[0]\<close>-零化 (annihilation): atomic single-step \<open>operB \<dash> (numBT 0)\<close> facts
+443	subsection	§8.7 \<open>[0]\<close>-零化 of a nested principal \<open>D\<^sub>u(D\<^sub>w 0)\<close>
+
+## PSS/Frontier_7_053.thy
+
+
+## PSS/Frontier_7_054.thy
+
+
+## PSS/Frontier_7_055.thy
+
+5	subsection	The stabilisation predicate and the domain transport
+
+## PSS/Pre_5.thy
+
+5	section	Helper facts about the basic definitions
+
+## 5/P_5_1_ancestor_basic_1.thy
+
+
+## 5/P_5_1_ancestor_basic_2.thy
+
+
+## 5/P_5_1_ancestor_tree_1.thy
+
+
+## 5/P_5_1_ancestor_tree_2.thy
+
+
+## 5/P_5_1_parent_basic_1.thy
+
+
+## 5/P_5_1_parent_basic_2.thy
+
+
+## 5/P_5_1_parent_exists_1.thy
+
+5	section	§5 定式化
+7	subsection	§5.1 親子関係
+10	section	§5.1 親子関係
+
+## 5/P_5_1_parent_exists_2.thy
+
+
+## 5/P_5_1_parent_exists_3.thy
+
+
+## 5/P_5_1_parent_exists_4.thy
+
+
+## 5/P_5_3_pred_is_oper1.thy
+
+5	subsection	§5.3 基本列
+8	section	§5.3 基本列
+
+## 5/P_5_4_F_oper_dom.thy
+
+5	subsection	§5.4 ペア数列システム
+17	section	§5.4 ペア数列システム
+
+## 5/P_5_4_F_oper_val.thy
+
+
+## 5/Support_5_1_Parent_Exists_4.thy
+
+
+## 6/P_6_1_le_IncrFirst_inv.thy
+
+5	section	§6 ペア数列の基本性質
+7	subsection	§6.1 最上行のインクリメント
+
+## 6/P_6_2_P_IncrFirst.thy
+
+
+## 6/P_6_2_P_additive.thy
+
+
+## 6/P_6_2_P_components_1.thy
+
+
+## 6/P_6_2_P_components_2.thy
+
+
+## 6/P_6_2_P_oper_1.thy
+
+
+## 6/P_6_2_P_oper_2.thy
+
+
+## 6/P_6_2_mono_ancestor_slice.thy
+
+
+## 6/P_6_2_mono_prefix.thy
+
+
+## 6/P_6_2_multi_crit_12.thy
+
+5	subsection	§6.2 単項性
+
+## 6/P_6_2_multi_crit_23.thy
+
+
+## 6/P_6_2_nonmulti_oper_1.thy
+
+
+## 6/P_6_2_nonmulti_oper_2.thy
+
+
+## 6/P_6_3_adm_slice.thy
+
+5	subsection	§6.3 許容性
+
+## 6/P_6_3_admof_slice.thy
+
+
+## 6/P_6_3_marked_slice.thy
+
+
+## 6/P_6_4_FirstNodes_Joints_mono.thy
+
+
+## 6/P_6_4_FirstNodes_TrMax_Joints.thy
+
+
+## 6/P_6_4_P_IdxSum.thy
+
+5	subsection	§6.4 幹と枝
+
+## 6/P_6_4_P_IdxSum_char_1.thy
+
+
+## 6/P_6_4_P_IdxSum_char_2.thy
+
+
+## 6/P_6_4_P_leftend_mono.thy
+
+
+## 6/P_6_4_mono_slice.thy
+
+
+## 6/P_6_4_mono_slice_next.thy
+
+
+## 6/P_6_5_Lng_Red.thy
+
+
+## 6/P_6_5_P_Red.thy
+
+
+## 6/P_6_5_Red_IncrFirst.thy
+
+
+## 6/P_6_5_Red_Pred.thy
+
+
+## 6/P_6_5_Red_adm.thy
+
+
+## 6/P_6_5_Red_idem.thy
+
+
+## 6/P_6_5_Red_le.thy
+
+
+## 6/P_6_5_Red_marked.thy
+
+
+## 6/P_6_5_Red_monoT.thy
+
+7	section	§6.5 系（\<open>Red\<close>が単項性を保つこと）/ 系（\<open>P\<close>の\<open>Red\<close>同変性） — A4 final forms
+
+## 6/P_6_5_Red_oper.thy
+
+
+## 6/P_6_5_Red_welldef.thy
+
+5	subsection	§6.5 簡約化
+
+## 6/P_6_5_Red_zeroT.thy
+
+
+## 6/P_6_5_admof_Red.thy
+
+
+## 6/P_6_5_monoT_Red.thy
+
+
+## 6/P_6_6_P_reduced.thy
+
+
+## 6/P_6_6_Red_leftend_1.thy
+
+
+## 6/P_6_6_Red_leftend_2.thy
+
+
+## 6/P_6_6_ancestor_slice_Red_IncrFirst.thy
+
+8	section	§6.6 系（直系先祖による切片と\<open>Red\<close>と\<open>IncrFirst\<close>の関係） (correction A2)
+
+## 6/P_6_6_condAB_coeff.thy
+
+
+## 6/P_6_6_oneColumn.thy
+
+
+## 6/P_6_6_reduced_coeff.thy
+
+
+## 6/P_6_6_reduced_iff_cond.thy
+
+
+## 6/P_6_6_reduced_leftend.thy
+
+
+## 6/P_6_6_reduced_oper.thy
+
+
+## 6/P_6_6_reduced_slice.thy
+
+5	subsection	§6.6 簡約性
+
+## 6/P_6_7_ST_eq_Union_SkT.thy
+
+
+## 6/P_6_7_standard_P_components.thy
+
+
+## 6/P_6_7_standard_prefix.thy
+
+
+## 6/P_6_7_standard_reduced.thy
+
+5	subsection	§6.7 標準形
+
+## 6/P_6_8_standard_P_descending.thy
+
+
+## 6/P_6_8_standard_slice_Br_descending.thy
+
+5	subsection	§6.8 降順性
+
+## 6/Support_6_001.thy
+
+
+## 6/Support_6_002.thy
+
+
+## 6/Support_6_003.thy
+
+5	subsection	§5.4 the uniform expansion step
+
+## 6/Support_6_004.thy
+
+
+## 6/Support_6_005.thy
+
+5	subsection	§6.5 命題（単項性と Red の関係）の補助事実 (content.md 946-958)
+
+## 6/Support_6_006.thy
+
+
+## 6/Support_6_007.thy
+
+
+## 6/Support_6_008.thy
+
+
+## 6/Support_6_009.thy
+
+5	subsection	§6.8 降順性 (standard \<open>P\<close>-components are descending)
+
+## 6/Support_6_010.thy
+
+
+## 6/Support_6_011.thy
+
+
+## 6/Support_6_012.thy
+
+
+## 6/Support_6_013.thy
+
+
+## 6/Support_6_014.thy
+
+
+## 6/Support_6_015.thy
+
+
+## 6/Support_6_016.thy
+
+
+## 6/Support_6_017.thy
+
+
+## 6/Support_6_018.thy
+
+
+## 6/Support_6_019.thy
+
+
+## 6/Support_6_020.thy
+
+
+## 6/Support_6_021.thy
+
+
+## 6/Support_6_022.thy
+
+
+## 6/Support_6_023.thy
+
+
+## 6/Support_6_024.thy
+
+
+## 6/Support_6_025.thy
+
+5	subsection	§6.6 補題（簡約性と係数の基本性質）への部品: branch-6 rebase は row0\<ge>row1 を保つ
+
+## 6/Support_6_026.thy
+
+
+## 6/Support_6_027.thy
+
+
+## 6/Support_6_028.thy
+
+47	banner	Br-under-Pred decomposition (T3(ii) corrected)
+
+## 6/Support_6_029.thy
+
+
+## 6/Support_6_030.thy
+
+60	banner	keystone foundation block from workflow kf-diag
+
+## 6/Support_6_031.thy
+
+
+## 6/Support_6_032.thy
+
+
+## 6/Support_6_033.thy
+
+
+## 6/Support_6_034.thy
+
+
+## 6/Support_6_035.thy
+
+
+## 6/Support_6_036.thy
+
+
+## 6/Support_6_037.thy
+
+
+## 6/Support_6_038.thy
+
+
+## 6/Support_6_039.thy
+
+5	banner	block from workflow t2-key
+
+## 6/Support_6_040.thy
+
+
+## 6/Support_6_041.thy
+
+
+## 6/Support_6_042.thy
+
+
+## 6/Support_6_043.thy
+
+5	section	Front B (wf18) — \<open>condA_top\<close> ROW-1 CROSS-BLOCK at \<open>kk > 0\<close> (the last sub-case)
+99	section	Front B (wf19) — \<open>valpin\<close>: the last input for \<open>condA_top\<close> row-1 \<open>kk>0\<close> cross-block
+
+## 6/Support_6_044.thy
+
+
+## 6/Support_6_045.thy
+
+
+## 6/Support_6_046.thy
+
+
+## 6/Support_6_047.thy
+
+
+## 6/Support_6_048.thy
+
+
+## 6/Support_6_049.thy
+
+5	banner	Front B: conditional nu-induction assembly
+
+## 6/Support_6_050.thy
+
+5	subsection	§6.5 \<open>Red\<close>-invariance of ancestor order via the \<open>congR\<close> bridge (Front A)
+78	subsection	§6.5 Anchored slices are never \<open>multiT\<close> (Front B reduction key)
+131	subsection	Front A: \<open>congR M (Red M)\<close> for \<open>RedCondA\<close>+\<open>monoT\<close> (mono mono-core for \<open>p_6_5_Red_le\<close>)
+299	subsection	Target (1): anchored slices satisfy \<open>RedCondA\<close>
+
+## 6/Support_6_051.thy
+
+
+## 6/Support_6_052.thy
+
+
+## 6/Support_6_053.thy
+
+
+## 6/Support_6_054.thy
+
+
+## 6/Support_6_055.thy
+
+
+## 6/Support_6_056.thy
+
+
+## 6/Support_6_057.thy
+
+
+## 6/Support_6_058.thy
+
+
+## 6/Support_6_059.thy
+
+
+## 6/Support_6_060.thy
+
+
+## 6/Support_6_061.thy
+
+
+## 6/Support_6_062.thy
+
+206	section	§6.5–§6.7 article-faithful standard-reducedness skeleton (bf_)
+231	subsection	(i) \<open>Red\<close> と基本列の可換性 — non-shift (LIGHT) and assembly
+291	subsection	(ii) 簡約性が基本列で保たれること — \<open>m_6_6_red_preserved_by_oper\<close>
+332	subsection	(iii) 標準形の簡約性 — \<open>m_6_7_standard_reduced_faithful\<close>
+374	subsection	(iv) \<open>stdCA\<close> — \<open>bf_stdCA_faithful\<close>
+
+## 6/Support_6_063.thy
+
+5	subsection	(vii) §6.7 \<open>D(N)\<close> crux assembly — \<open>m_6_7_oper_gstrict\<close> (induct skeleton)
+
+## 6/Support_6_064.thy
+
+
+## 6/Support_6_065.thy
+
+
+## 6/Support_6_066.thy
+
+
+## 6/Support_6_067.thy
+
+
+## 6/Support_6_068.thy
+
+
+## 6/Support_6_069.thy
+
+
+## 6/Support_6_070.thy
+
+
+## 6/Support_6_071.thy
+
+5	section	§6.5 命題（\<open>Red\<close>が許容性を保つこと）/ 系（許容化の\<open>Red
+
+## 6/Support_6_072.thy
+
+
+## 6/Support_6_073.thy
+
+5	section	§6.5 命題（\<open>Red\<close>と基本列の可換性） — A4 final form
+
+## 7/P_7_1_lessBT_linord.thy
+
+
+## 7/P_7_1_paren_balance.thy
+
+
+## 7/P_7_1_term_components.thy
+
+5	section	§7.1 Buchholz notation: principal components (命題（順序数項の単項成分の基本性質）)
+
+## 7/P_7_2_RightNodes_subexpr.thy
+
+
+## 7/P_7_2_add_scb.thy
+
+5	section	§7.2 系（加法とscb分解の関係） (3) — UNCONDITIONAL (A13, image residual discharged)
+
+## 7/P_7_2_scb_compose.thy
+
+
+## 7/P_7_2_scb_fseq.thy
+
+
+## 7/P_7_2_scb_replaceable.thy
+
+26	section	r77-Y3U --- corrected forms of the FALSE article statements
+28	subsection	A12 --- \<section>7.2 命題（scb分解の置換可能性）
+
+## 7/P_7_2_scb_triviality.thy
+
+
+## 7/P_7_2_scb_unique.thy
+
+5	section	§7.2 第1種 scb分解の一意性 — conjunct (5) clean assembly (no rneq)
+
+## 7/P_7_3_Mark_IncrFirst_Red.thy
+
+
+## 7/P_7_3_Mark_rightmost1.thy
+
+
+## 7/P_7_3_Pred_Trans_descend.thy
+
+
+## 7/P_7_3_Trans_IncrFirst_Red.thy
+
+
+## 7/P_7_3_Trans_monoT.thy
+
+
+## 7/P_7_3_Trans_zeroT.thy
+
+5	subsection	The four \<section>7 propositions, now on bare \<open>T\<^bsub>PS\<^esub>\<close>
+
+## 7/P_7_3_c1_c2.thy
+
+
+## 7/P_7_3_twoColumn.thy
+
+
+## 7/P_7_4_Adm_nextAdm.thy
+
+64	subsection	§7.4 許容的親子関係
+
+## 7/P_7_4_Mark_Trans_repr.thy
+
+
+## 7/P_7_4_Mark_nextAdm.thy
+
+
+## 7/P_7_4_RightAnces_RightNodes.thy
+
+
+## 7/P_7_4_RightAnces_zeroT.thy
+
+
+## 7/P_7_4_RightNodes_Mark.thy
+
+
+## 7/P_7_4_Trans_Mark_Pred.thy
+
+
+## 7/P_7_4_Trans_Mark_seg.thy
+
+
+## 7/P_7_4_Trans_nextAdm.thy
+
+
+## 7/Support_7_001.thy
+
+5	section	§7.4 許容的親子関係 (Admissible parent relation)
+
+## 7/Support_7_002.thy
+
+
+## 7/Support_7_003.thy
+
+
+## 7/Support_7_004.thy
+
+
+## 7/Support_7_005.thy
+
+
+## 7/Support_7_006.thy
+
+
+## 7/Support_7_007.thy
+
+
+## 7/Support_7_008.thy
+
+
+## 7/Support_7_009.thy
+
+5	section	§7.2 scb分解の一意性（無条件版） (p_7_2_scb_unique, conjunct (1))
+63	section	§7.2 命題（scb分解の置換可能性） — m_7_2_scb_replaceable (partial / BLOCKER)
+
+## 7/Support_7_010.thy
+
+
+## 7/Support_7_011.thy
+
+67	section	§7.2 第0種/第1種 scb分解の一意性 (p_7_2_scb_unique conjuncts (4),(5))
+140	subsection	§7.2 scb分解の一意性 — the central \<open>c\<close>-equality \<open>m_7_2_scb_c_unique\<close>
+
+## 7/Support_7_012.thy
+
+
+## 7/Support_7_013.thy
+
+386	section	§7.2 kind-1 RightNodes length-pin (rnsub_kind1_len_pin)
+639	section	§7.2 種の排他性 (p_7_2_scb_unique conjunct (3), with t \<noteq> Trm []) — wf16-kinds
+785	section	§7.2 dom-可分解性 (p_7_2_scb_unique conjunct (2)) — scb側 forward + domB blocker
+929	section	§7.2 GENERALIZED PRINCIPAL-REPLACEMENT SURGERY — scbrepl_image residual (A13 + c1-around 4-1)
+
+## 7/Support_7_014.thy
+
+
+## 7/Support_7_015.thy
+
+
+## 7/Support_7_016.thy
+
+5	section	§7.3 命題（\<open>2\<close>列ペア数列の基本性質）, part (1): the \<open>Trans\<close> value
+
+## 7/Support_7_017.thy
+
+5	section	§7.3 命題（\<open>Trans\<close>の\<open>(IncrFirst,Red)\<close>不変性） — A4-corrected domain
+
+## 7/Support_7_018.thy
+
+23	section	§7.3 命題（\<open>Trans\<close>が零項性を保つこと）— content.md 2254
+
+## 7/Support_7_019.thy
+
+
+## 7/Support_7_020.thy
+
+5	section	§7.3 命題（右端第2基点の \<open>Mark\<close> の基本性質）— content.md 2334
+
+## 7/Support_7_021.thy
+
+
+## 7/Support_7_022.thy
+
+
+## 7/Support_7_023.thy
+
+
+## 7/Support_7_024.thy
+
+
+## 7/Support_7_025.thy
+
+
+## 7/Support_7_026.thy
+
+
+## 7/Support_7_027.thy
+
+
+## 7/Support_7_028.thy
+
+
+## 7/Support_7_029.thy
+
+
+## 7/Support_7_030.thy
+
+8	section	§7.4 monoT-interior identity (2): \<open>transC1 M = transC1 N\<close> (B)
+52	section	§7.4 monoT-interior identity (3): \<open>transC2 M = transC2 N\<close> (C)
+
+## 7/Support_7_031.thy
+
+8	section	§7.4 monoT-interior core (Step 3): \<open>Mark M m = Trans (seg M m j\<^sub>1)\<close>
+
+## 7/Support_7_032.thy
+
+
+## 7/Support_7_033.thy
+
+100	section	§7.4 keystone: \<open>Mark M m = Trans (seg M m (Lng M - 1))\<close> (Step 4)
+
+## 7/Support_7_034.thy
+
+83	section	§7.3 系（左端第\<open>1\<close>基点の \<open>Mark\<close> の基本性質）— content.md 2417
+
+## 7/Support_7_035.thy
+
+5	section	§7.3 系（\<open>s\<^sub>1\<close> と \<open>b\<^sub>1\<close> の空性と基点の関係）— content.md 2444
+76	section	§7.3 系（\<open>s\<^sub>-\<^sub>1\<close> と \<open>b\<^sub>-\<^sub>1\<close> の空性と基点の関係）— content.md 2470
+
+## 7/Support_7_036.thy
+
+
+## 7/Support_7_037.thy
+
+
+## 7/Support_7_038.thy
+
+
+## 7/Support_7_039.thy
+
+5	section	§7.2 系（加法とscb分解の関係） (3) — corrected with the alignment premise (A13)
+
+## 7/Support_7_040.thy
+
+
+## 7/Support_7_041.thy
+
+
+## 7/Support_7_042.thy
+
+
+## 7/Support_7_043.thy
+
+
+## 7/Support_7_044.thy
+
+
+## 7/Support_7_045.thy
+
+5	section	§7.3 命題（\<open>Trans\<close>の\<open>(IncrFirst,Red)\<close>不変\<open>P\<close>同変性）(2) — the \<open>\<Sigma>\<^bsub>B\<^esub>
+157	section	§7.3 命題（\<open>Mark\<close> の \<open>(IncrFirst,Red,P)\<close> 不変性）part (2): the P-invariance
+
+## 7/Support_7_046.thy
+
+5	section	§7.3 系（\<open>Trans\<close>と非可算基数の関係）: \<open>Trans M = D\<^bsub>v\<^esub> 0 \<longleftrightarrow> M
+
+## 7/Support_7_047.thy
+
+
+## 7/Support_7_048.thy
+
+
+## 7/Support_7_049.thy
+
+
+## 7/Support_7_050.thy
+
+21	section	r74 (y3s): the \<section>7 \<open>T\<^bsub>PS\<^esub>\<close> scope gap --- \<open>Red\<close>-iteration transport
+72	subsection	Basic \<open>Red\<close>-iteration bricks
+
+## 7/Support_7_051.thy
+
+127	subsection	The article propositions, on \<open>T\<^bsub>PS\<^esub> \<inter> RedStab\<close>
+196	section	r75: RED2 --- \<open>Red (Red M) \<in> RT\<^bsub>PS\<^esub>\<close> for every \<open>M \<in> T\<^bsub>PS\<^esub>\<close>
+341	subsection	Two list-level lemmas about concatenations of \<open>Red\<close>-blocks
+523	subsection	The \<open>P\<close>-component left ends, and invariant (D)
+630	subsection	The main lemma and RED2
+
+## 8/P_8_1_Pred_diagSeq_Trans.thy
+
+
+## 8/P_8_1_Trans_fseq_condI.thy
+
+
+## 8/P_8_1_condI_III_c1_around.thy
+
+
+## 8/P_8_1_diagSeq_Trans.thy
+
+5	subsection	§8.1 条件(I)の下での展開規則 (Expansion rule under condition (I))
+
+## 8/P_8_2_condIIIV_terminal_slice_Trans.thy
+
+
+## 8/P_8_2_condV_rightmost_parent.thy
+
+
+## 8/P_8_2_condV_terminal_slice_Trans.thy
+
+
+## 8/P_8_2_standard_slice_Red_strongmono.thy
+
+5	section	§8 停止性 (Termination)
+7	subsection	§8.2 強単項性 (Strong-monomiality)
+
+## 8/P_8_2_strongmono_slice.thy
+
+
+## 8/P_8_2_subexpr_component_Pred.thy
+
+
+## 8/P_8_2_subexpr_component_strongmono.thy
+
+
+## 8/P_8_3_TransCondII_oper_descend.thy
+
+
+## 8/P_8_3_kind0_base_basepoint.thy
+
+
+## 8/P_8_3_kind0_base_ineq.thy
+
+5	subsection	§8.3 条件(II)の下での展開規則
+
+## 8/P_8_3_kind0_branch_rule.thy
+
+
+## 8/P_8_4_Trans_oper_exchange.thy
+
+5	subsection	§8.4 条件(III)か(IV)の下での展開規則
+
+## 8/P_8_4_oper_basic.thy
+
+
+## 8/P_8_4_rightmost_nonadm_ancestor.thy
+
+
+## 8/P_8_5_Joints_FirstNodes_basic.thy
+
+
+## 8/P_8_5_Trans_oper_exchange.thy
+
+5	subsection	§8.5 条件(V)の下での展開規則
+
+## 8/P_8_6_Trans_fseq_condVI.thy
+
+
+## 8/P_8_6_const2nd_Trans.thy
+
+26	subsection	§8.6 条件(VI)の下での展開規則 (Expansion rule under condition (VI))
+
+## 8/P_8_6_diagSeq_Trans_oper.thy
+
+
+## 8/P_8_6_trailing_principal_annihilable.thy
+
+
+## 8/P_8_7_OT_dom_hereditary.thy
+
+
+## 8/P_8_7_OT_examples.thy
+
+
+## 8/P_8_7_OT_scb_recursive.thy
+
+
+## 8/P_8_7_OT_tail_annihilable.thy
+
+
+## 8/P_8_7_Pred_oper0.thy
+
+
+## 8/P_8_7_Trans_preserves_OT.thy
+
+
+## 8/P_8_7_const00_Trans.thy
+
+5	subsection	§8.7 主結果 (Main result)
+
+## 8/P_8_7_fseq_descend.thy
+
+
+## 8/P_8_7_termination.thy
+
+
+## 8/Support_8_A.thy
+
+88	section	Faithfulness lemmas (忠実性補題)
+95	subsection	§5.1 \<open>\<le>\<^sub>M\<close> as the article's chain
+1578	banner	block from workflow t2-elead
+1580	subsection	§6.6 補題（簡約性と左端の関係）— (e) keystone tool
+1590	banner	block from workflow t2-scbtriv
+1591	section	§7.2 scb分解の自明性の判定条件 (p_7_2_scb_triviality)
+1899	section	Front A (wf11) — \<open>IncrFirst ^^ k\<close> structure bricks (incf_pow_*)
+1913	section	Front B (wf12) — global-last-\<open>Zsym\<close> alignment of the marked principal
+2066	section	Front B (wf20) — \<open>parpin\<close>: diagonal-prefix parent reconstruction of the last column
+2273	section	Front A (wf21) — RAW-branch \<open>N\<close> for the non-circular \<open>r1cross\<close> route
+5456	subsection	(v) Residual discharge — \<open>diag_red\<close>, \<open>predRdegen\<close>, and the \<open>anch\<close> domain gap
+5706	subsection	(viii) §6.7 \<open>DISJ\<close> residual — WG reflection core (\<open>wg_reflect_core\<close>)
+5775	subsection	(ix) §6.7 \<open>DISJ\<close> \<open>w = 1\<close> foundation — verbatim prefix parent agreement
+
+## 8/Support_8_B.thy
+
+45	section	§7.3 \<open>c\<^sub>1 < c\<^sub>2\<close> (claim (3) of 命題（\<open>c\<^sub>1\<close>と\<open>c\<^sub>2\<close>の大小関係）, content.md 2270)
+123	section	§8.1 補題（公差\<open>(1,1)\<close>のペア数列の\<open>Trans\<close>）, article 2837
+388	section	§8.1 系（\<open>Pred\<close>が公差\<open>(1,1)\<close>のペア数列の\<open>Trans\<close>）— content.md 2871
+1625	banner	integrated from wt-s3
+1627	section	§8.3 条件(II)の下での展開規則 — kind-0 fundamental sequence (round 1)
+1708	banner	integrated from wt-s4
+1710	section	§8.4 条件(III)/(IV) 展開規則 — round-1 sweep (memory pss-section-priority)
+1900	banner	integrated from wt-s6
+1902	section	§8.6 補題（公差\<open>(1,0)\<close>のペア数列の\<open>Trans\<close>の基本性質） — content.md 5496
+2836	banner	round-2 from wt-r82
+3019	banner	round-2 from wt-r86
+3021	section	§8.6 condition (VI) — paper-lemma discharge layer
+3709	section	§8.3 kind-0 fundamental sequence: branch rule (round 3)
+3892	section	§8.3 kind-0 fundamental sequence: base basepoint (round 3)
+4313	subsection	§8.1 c1-around part (5): \<open>M[n]\<close> fundamental-sequence periodicity (A21, condition (I))
+4368	section	§8.7 \<open>dom\<close>-heredity and \<open>OT\<close>-heredity along an scb-occurrence
+4979	section	§8.1 c1-around engine: \<open>Trans\<close> front-peel and \<open>Mark\<close>-adjacency
+8883	section	§8.6 末尾単項の零化可能性 — proved restricted slices
+8999	section	§8.3 命題（条件(II)の下での\<open>Trans\<close>と基本列の交換関係）— leaf (\<open>n = 1\<close>) descent
+9035	section	§8.2 keystone Admpos branch, STEP 1: confinement \<open>\<rightarrow>
+9468	section	§8.7 末尾項の零化可能性 — A26 retracted; proved TOP-LEVEL slice
+9669	section	§8.2 keystone closure: \<open>m_8_2_subexpr_component_Pred\<close> assembly
+9926	subsection	§8.7 末尾項の零化可能性 — corrected TOP-LEVEL general body (WF induction)
+10681	banner	moved here in r71 (citation hygiene): leBT_trans + the b1x_ Buchholz-[] block,
+10910	subsection	Order and \<open>T\<^sub>v\<close>-membership helpers
+10966	subsection	Head-index bound of a \<open>T\<^sub>w\<close>-domain term, and \<open>D\<^sub>w 0 < b\<close>
+11021	subsection	Descent — [Buc1] Lemma 3.2(a) for numeral and in-domain arguments
+11193	section	§8.3 命題（条件(II)の下での \<open>Trans
+11271	section	§8.2 keystone assembly: \<open>m_8_2_subexpr_component_Pred_of_wid
+22123	section	§8.5 condition-(V) marking-nesting surgery (step2/base2) — building blocks
+22893	section	§8.6 命題（条件(VI)の下での \<open>Trans
+23072	banner	2026-07-11 C->B fold: scratch body of rounds up to r54
+32130	banner	round 14 front K (wt2 60ddf3b)
+32659	banner	round 14 front B1 (wt-b1 a384356)
+32661	section	r14-B1: [Buc1] Lemma 3.2/3.3 for \<open>operB\<close> — the \<open>buc1_*\<close> citation lemmas
+32681	subsection	Unconditional totality of \<open>operB\<close>/\<open>xseq\<close>
+32692	subsection	Mixed transitivity (explicit, to keep \<open>blast\<close> away from chain rules)
+32716	subsection	Monotonicity ([Buc1] 3.2(b)) and the lower bound on a \<open>T\<^sub>w\<close> domain
+32882	subsection	\<open>G\<close>-set utilities
+32975	subsection	The \<open>\<triangleleft>\<^sub>z\<close> relation of [Buc1] §3 (G-part) and Lemmas 3.4/3.5
+33215	subsection	\<open>domB\<close> shape classification and non-vanishing on \<open>\<nat>\<close> domains
+33405	subsection	Master induction: [Buc1] Lemma 3.6 (G-part) + Lemma 3.3 (closure)
+33920	banner	round 14 front S5 (wt-s5 8db2e21)
+33922	section	r14-S5 — §8.5 DEFERRED scb-decomposition lemmas (ARTICLE ROUTE)
+34432	banner	round 14 front F7 (wt-f7 f0649a7)
+34434	banner	r14-F7: §8.7 fseq_descend DISPATCHER
+34436	section	§8.7 補題（基本列の降下性） — the DISPATCHER (r14-F7)
+34455	subsection	Small order/algebra helpers
+34550	subsection	\<open>Trans\<close>-additivity across a \<open>P\<close>-block boundary
+34695	subsection	The MONO dispatcher
+35009	subsection	The FULL dispatcher (\<open>m_8_7_fseq_descend_dispatcher\<close>)
+35269	banner	end r14-F7 block
+35272	banner	round 14 front S4a (wt-s4a 96eefa1)
+35324	banner	round 14 front S4p-C1 (wt-s4a 5629dc2): m_8_4_oper_props_1..5
+35336	subsection	s84c1: parent-arithmetic setup for the §8.4 L2 cluster
+35505	subsection	s84c1: block structure of \<open>M[n]\<close> and the appended sequences \<open>L\<^sub>n\<close>
+35680	subsection	s84c1: parent-relation congruence under entrywise agreement
+35820	subsection	s84c1: the sequence \<open>L\<^sub>1 = Pred M \<oplus> ((M\<^bsub>0,j\<^sub>1\<^esub>, M\<^bsub>1,j\<^sub>-\<^sub>2\<^esub>))\<close>
+36061	subsection	s84c1: the last block of \<open>M[n]\<close> and the \<open>IncrFirst\<close>-power tails
+36324	subsection	s84c1: the basepoint \<open>m\<^sup>* = j\<^sub>-\<^sub>2 + (n-1)w\<close> of \<open>L\<^sub>n\<close> is Marked
+36547	subsection	s84c1: \<open>Mark\<close> at the basepoint, and 補題 part (5)
+36869	banner	round 14 front S4p-C2 (wt-s4b f34fce7): m_8_4_rightend_Trans
+37843	banner	round 14 front S4p-C3 (wt-s4c c86202b): m_8_4_Trans_scb
+37845	section	r14-S4p-C3 — §8.4 補題（条件(III)～(VI)の下での\<open>Trans\<close>とscb分解の関係） m_8_4_Trans_scb
+37869	subsection	\<open>(IncrFirst ^^ k)\<close> invariance of the row-1 data
+37895	subsection	The window predicate and its glue law
+38035	subsection	The chain invariant of \<^const>\<open>RightAnces\<close> on reduced mono sequences
+38444	subsection	§8.4 補題（条件(III)～(VI)の下での\<open>Trans\<close>とscb分解の関係）
+38781	banner	round 15 front K2 (wt2 5d401ad): colcase_full / anchor_fold_kernel
+38783	banner	round 15 front K2 (wt2)
+38785	section	r15-K2: the NON-trunk-stuck colcase route and the full anchor colcase
+39626	banner	round 15 front S5b (wt-s5 bbee38b): condV adm exchange triple
+39628	banner	round 15 front S5b (wt-s5): §8.5 condV scb-decomposition, ADM case
+39630	section	r15-S5b: §8.5 条件(V) 各種scb分解/基本列のscb分解 — 許容 \<open>j\<^sub>0\<close> ケースの完全形
+39676	subsection	List helpers
+39737	subsection	Condition (V) pins the row-1 parent (\<open>j\<^sub>-\<^sub>2 = j\<^sub>0\<close>) and the recursion guards
+39815	subsection	\<open>t\<^sub>2 \<noteq> 0\<close> under condition (V) (unconditional; adm not needed)
+39857	subsection	The three slice values: \<open>Trans N' = c\<^sub>2\<close>, \<open>Trans (Pred N') = c\<^sub>1\<close>, \<open>Trans L'\<close>
+40050	subsection	The tower base: \<open>Trans (L\<^sub>1)\<close> via the surgery of \<open>L\<^sub>1\<close> itself
+40217	subsection	MASTER closed forms: \<open>Trans (L\<^sub>n)\<close> and \<open>Trans (M[n])\<close> for ALL \<open>n \<ge> 1\<close>
+40429	subsection	基本列のscb分解 (adm case, corrected): the common-pair triple, ALL \<open>n \<ge> 1\<close>
+40627	subsection	The corrected exchange relations, ALL \<open>n \<ge> 1\<close>
+41055	banner	round 15 front S4d (wt-s4b 4b8c2c2): L4 part1 / L5 / L6 modulo terminal-slice
+41056	banner	round 15 front S4d: §8.4 various-scb cluster — unblocked bricks
+41084	subsection	s84d: the \<open>c\<^sub>2\<close> rightmost-hole engine
+41450	subsection	s84d: L6 kernel bricks (conjuncts (1) and (2))
+41842	subsection	s84d: list-algebra helpers for the replicate formulas
+41871	subsection	s84d: the \<open>L\<^sub>1\<close> recursion-data congruences
+43249	section	r16-E1: 条件(V) — 非許容 \<open>j\<^sub>0\<close> の到達可能性（反証）と許容側残差の完全解消
+43280	subsection	The row-1 parent edge under condition (V) (no adm hypothesis)
+43300	subsection	Joints/FirstNodes basic lemma with hypotheses reduced to condition (V)
+43343	subsection	HB discharged: the adm-case \<open>t\<^sub>2\<close>-component lower bound
+43549	subsection	The condition-(V) adm-case exchange triple, fully unconditional
+43582	subsection	Dispatcher wiring: the \<open>exchV\<close> hypothesis weakened to its non-adm leg
+43641	banner	round 16b front E2 (wt-s5 10425ca): terminal-slice modVE reduction
+43643	section	§8.2 round-16 front E2 — terminal-slice / \<open>Trans\<close> reduction
+43780	banner	round 16b front E3 (wt-s4b f7f018a): condIII exchange(2) + descent tower
+43782	banner	round 16 front E3 (wt-s4b): §8.4 condIII exchange, A32-corrected
+43783	section	r16b-E3 — §8.4 命題（条件(III)か(IV)の下での\<open>Trans\<close>と基本列の交換関係） A32-corrected
+43795	subsection	The §8.4 two-letter descent tower \<open>e3x_H\<close>
+43867	subsection	Conclusion (2): the §8.4 descent \<open>Trans(M[n]) < Trans M\<close> (condition III)
+44023	banner	round 16b front E4 (wt-b1 1609775): OT preserve via exchange-value reduction
+44028	section	r16b-E4 — §8.7 OT-membership via the [Buc1] OT_B-closure (article route)
+44170	banner	round 16b front E5 (wt2 178de9f): non-adm condV exchange + dispatcher condV
+44172	banner	round 16b front E5: condition (V) NON-ADM exchange/descent
+44173	section	r16b-E5: 条件(V) — 非許容 \<open>j\<^sub>0\<close> の交換関係と降下性
+44201	subsection	The tower inner bodies and the pure \<open>BT\<close>-order comparisons
+44311	subsection	非許容 (V) の交換関係 (1) と降下性 (2)（tower閉形式を仮定して）
+44412	subsection	Dispatcher: the condition-(V) branch FULLY closed modulo the tower forms
+44480	banner	round 17 front FPEEL (wt2 be2ab28): VE reduced to FPEEL_STEP + scaffold
+44481	banner	round 17 front FPEEL (wt2, Opus): front-peel reduction of VE'
+44483	section	§8.2 round-17 front FPEEL — VE' reduced + slice-peel infrastructure
+44647	banner	round 17 front DII (wt-s5 5069466): condII descent
+44648	banner	round 17 front DII (wt-s5): §8.3 condition-(II) DESCENT
+44649	section	r17-DII — §8.3 命題（条件(II)の下での\<open>Trans
+44675	subsection	The kind-0 replicate helpers \<open>d2x_multBT_*\<close>
+44711	subsection	The condition-(II) descent \<open>d2x_exchange2_condII\<close>
+44795	banner	round 17 front DVI (wt-s4b 076869e): condVI descent
+44796	banner	round 17 front DVI (wt-s4b): section 8.6 condition-(VI) DESCENT
+44797	section	r17-DVI: section 8.6 condition-(VI) Trans/fseq exchange (3) DESCENT
+44966	banner	round 17 front D13 (wt-b1 68ca5d1): condIII (1)(3)+triple
+44970	section	r17-D13 — §8.4 condIII exchange conclusions (1) and (3) (jm3 route)
+44992	subsection	The base-parametrised two-letter tower \<open>d13x_T\<close> and its interleaving
+45080	subsection	The operB fundamental-sequence closed form at the \<open>j\<^sub>-\<^sub>3\<close> head
+45172	subsection	Conclusions (1) and (3) of the §8.4 condIII exchange triple
+45312	subsection	The assembled A32-corrected §8.4 exchange triple (condition III)
+45380	banner	round 18 front CONS (wt2 873380b): collapse to CF-META + capstone m_8_termination_modulo_CF
+45381	banner	r18-CONS: CONSOLIDATION onto the single residual CF
+45428	subsection	The generic descent from \<open>CF\<close> (subsumes the four condition descents)
+45448	subsection	The cond-(II) \<open>lhs\<close> residual from its CF-META instance
+45474	subsection	The cond-(VI) \<open>cf'\<close> residual from its CF-META instance
+45494	subsection	CAPSTONE — the two §8 pillars modulo \<open>CF\<close> (+ \<open>stepval\<close>)
+45546	banner	round 19 front CFA (wt2): condIII CF-META tower engine
+45549	section	r19-CFA — the article Pred-simultaneous KIND-1 CF-META tower engine
+45593	subsection	The raw concat tower closed form (pure block-reading engine)
+45727	subsection	The \<open>d13x_T\<close> tower form = \<open>mnform\<close> (CF-META KIND-1 general instance)
+45785	subsection	The condition-(III) exchange (1)/(3) DESCENT bottoms on the four CF value facts
+45845	banner	round 19 front CFB (wt-s5): article back-peel induction skeleton for VE
+45852	section	r19-CFB — back-peel (\<open>Pred\<close>) induction skeleton for \<open>VE'\<close>
+46037	banner	round 19 front CFC (wt-s4b): VE Pred-stable domain + surgery peel
+46038	banner	round 19 front CFC (wt-s4b): VE' Pred-simultaneous induction core
+46251	banner	round 19 front CONDIV (wt-b1): full condIV exchange + both-condition assembly
+46254	banner	round 19 front CONDIV (wt-b1): §8.4 condIV exchange TRIPLE + assembly
+46256	section	r19-CONDIV — §8.4 命題（条件(III)か(IV)の下での\<open>Trans\<close>と基本列の交換関係） condition (IV)
+46347	subsection	The assembled A32-corrected §8.4 exchange triple (conditions III AND IV)
+46415	subsection	The condIV fundamental-sequence core tower \<open>d4vx_core\<close> (scb-block insertion)
+46509	subsection	Conclusion (2), OT-free: the §8.4 descent \<open>Trans(M[n]) < Trans M\<close> (condition IV)
+46670	subsection	The assembled A32-corrected §8.4 exchange triple (conditions III AND IV), OT-free
+46748	banner	round 19 front CONDI (wt-f7): condI j0>0 exchange reduced to CF_I
+46751	banner	round 19 front CONDI (wt-f7): §8.1 condition-(I), j0>0 exchange (1)
+46752	subsection	r19-CONDI: §8.1 condition-(I), \<open>j\<^sub>0 > 0\<close> exchange (1) modulo the CF residual
+46827	banner	round 19 front NFALL (wt-s4a): non-adm condV NFall (operB half uncond)
+46828	banner	round 19 front NFALL (wt-s4a): non-adm condV tower closed forms (NFall)
+46830	section	r19-NFALL — the non-adm condition (V) tower closed forms (CF-META instance)
+46865	subsection	The \<open>operB\<close> value form (UNCONDITIONAL, from the fseq closed form)
+46970	subsection	The M-tower flat form (joint \<open>L\<^sub>n\<close>/\<open>M[n]\<close> induction, modulo the 3 base pieces)
+47218	subsection	\<open>NFall\<close> reduced to the 3 non-adm slice base pieces
+47270	banner	round 20 WFORD (wt-s4b 702dae4): [Buc1] Lemma 2.2 reduced to WF of the principal order (multiset layer discharged, both directions)
+47274	section	[Buc1] Lemma 2.2: well-foundedness of \<open>(OT\<^bsub>B\<^esub>, <)\<close> (WFORD attack, r20)
+47699	banner	round 21 CFCTRANS (wt-s4a: id2/id3 interior identities for non-marked m<=transJm1)
+47707	section	r21-CFCTRANS — VE' interior-core identities @{text \<open>transC1 M = transC1 N
+48259	banner	round 21 BPSTEPA (wt2: back-peel STEP inductive core + RPERS discharged)
+48262	banner	round 21 front BPSTEPA (wt2): §8.2 terminal-slice back-peel STEP
+48264	section	r21-BPSTEPA — §8.2 terminal-slice back-peel STEP (the genuine CF core)
+48692	banner	round 21 BPSTEPB (wt-s5: RPERS proven, BASE->PEEL)
+48695	banner	round 21 front BPSTEPB (wt-s5): BASE + RPERS of cfbx back-peel
+48697	section	r21-BPSTEPB — \<open>cfbx\<close> back-peel induction: BASE (\<open>j\<^sub>1' = j\<^sub>1
+49000	banner	round 21 VALFACTS (wt-s4b: condIII value facts fPN/fLp (2 of 4))
+49003	banner	round 21 front VALFACTS (wt-s4b): CFA condIII CF value facts
+49005	section	r21-VALFACTS — condIII CF value facts \<open>fPN\<close> / \<open>fLp
+49264	banner	round 21 NFALL2 (wt-b1: non-adm condV derivation layer)
+49270	section	r21-NFALL2 — non-adm condition-(V) slice-value base pieces
+49559	banner	round 21 STEPVAL (wt-f7: stepval condI/II discharged, III/VI wrapper)
+49562	banner	round 21 front STEPVAL (wt-f7): the §8.7 OT-pillar `stepval` residual
+49564	section	r21-STEPVAL — the §8.7 OT-pillar \<open>stepval\<close> residual, split coincidence / interleaving
+49592	subsection	Generic bridges: exchange EQUALITY \<Longrightarrow> stepval / OT-step (op0-power 0)
+49624	subsection	Coincidence regime: cond (I)/(II) \<open>stepval\<close> and OT-step, modulo CF
+49672	subsection	Interleaving regime: reduce \<open>stepval\<close> to the flat closed form
+49756	subsection	Capstone: OT-preservation, \<open>stepval\<close> split coincidence / interleaving
+49858	banner	round 21b CONDIV_ (wt-s4c: condI exchange lhsCF->step tighten)
+49860	banner	round 21b front CONDI-V (wt-s4c): §8.1 condI j0>0 exchange, lhsCF -> step
+49861	subsection	r21b-CONDI-V: §8.1 condition-(I), \<open>j\<^sub>0>0\<close> exchange from \<open>dM\<close>+\<open>step\<close> (\<open>CF\<^sub>I\<close> reduced to the single surgery)
+49923	banner	round 21b CONDIVM (wt-y2: condIV exchange-of-CFvalues (condIII-form refuted))
+49926	banner	round 21b front CONDIV-M (wt-y2): condIV mnform value fact / exchange core
+49929	section	r21b-CONDIV-M — the §8.4 condition-(IV) exchange core bottoms on the four CF value facts
+50079	banner	round 21b CONDVIC (wt-y3: condVI cf discharged for diagonal host)
+50087	section	r21b-CONDVI-C — the condition-(VI) CF-META value fact (\<open>cf'
+50363	banner	round 21b WFPRIN (wt-y4: Buc1 wf RPrel bounded-norm fragment WF (finite))
+50366	banner	round 21b front WFPRIN (wt-y4): bounded-norm fragment of [Buc1] Lemma 2.2 residual wf RPrel
+50368	section	[Buc1] Lemma 2.2 residual (r21b-WFPRIN): the BOUNDED-NORM fragment of \<open>wf RPrel\<close>
+50402	subsection	A structure-and-coefficient norm on \<open>BT\<close>/\<open>BP\<close>
+50444	subsection	Bounded-norm finiteness (the \<open>D\<^sub>\<omega>\<close>-free terms of norm \<open>\<le> N\<close> form a finite set)
+50553	subsection	The bounded principal fragment \<open>RPrel_bnd\<close> is WF (finite + acyclic)
+50583	subsection	Reduction of \<open>wf RPrel\<close> to the absence of an UNBOUNDED-norm descending chain
+50633	subsection	The same fragment at term/goal level (\<open>RTrel_bnd\<close>, directly the goal restriction)
+50718	banner	end round 21b front WFPRIN
+50721	banner	round 22 SURGINT22 (wt-s5: surgery residuals tne/intM/intN+lerR/id2/id3 => VE modulo {BASE})
+50724	banner	round 22 SURGINT (wt-s5): surgery-interiority residuals tneR/intMR/intNR
+50726	section	r22-SURGINT — the surgery-interiority residuals \<open>tneR\<close>/\<open>intMR\<close>/\<open>intNR
+51106	banner	round 22 WIRESTEP22 (wt2: id2/id3 wiring + domain-inclusion wsx_regime_ancJm1)
+51109	banner	round 22 WIRESTEP (wt2): discharge id2R/id3R via ctx_interior_ids; collapse STEP
+51407	banner	round 22 LERPROVE22 (wt-s4a: lerR discharged (lrx_lerR))
+51409	banner	round 22 front LERPROVE (wt-s4a): §8.2 terminal-slice residual lerR
+51411	section	r22-LERPROVE — \<open>lerR\<close> DISCHARGED (regime row-0 ancestry of the last index)
+51503	banner	round 22 BASEPEEL22 (wt-s4b: BASE reduced to surgery family + baseIH)
+51505	banner	round 22 front BASEPEEL (wt-s4b): §8.2 terminal-slice BASE (j1'=j1)
+51507	section	r22-BASEPEEL — §8.2 terminal-slice BACK-peel BASE (\<open>j\<^sub>1' = j\<^sub>1
+51750	banner	round 22 VALFACTS222 (wt-b1: condIII baseM/baseL => veM/veL residuals)
+51753	banner	round 22 front VALFACTS2 (wt-b1): condIII CF value facts baseM/baseL
+51755	section	r22-VALFACTS2 — condIII CF value facts \<open>baseM\<close>/\<open>baseL
+52154	banner	round 22 NFALL322 (wt-f7: non-adm NpVal/PredNp => de-adm kernel)
+52456	banner	round 23 CONDVIGEN (wt-s4a: condVI descent UNCONDITIONAL for general adm hosts)
+52459	banner	round 23 front CONDVIGEN (wt-s4a): GENERAL condVI cf value fact
+52461	section	r23-CONDVIGEN — the condition-(VI) cf value fact for GENERAL hosts (adm-\<open>j\<^sub>0\<close>)
+53055	banner	round 23 CONDIVCORE (wt-f7: condIV core proven (c4cx_condIV_exchange_full))
+53127	subsection	Conclusions (1) and (3) of the §8.4 exchange triple, condition (IV)
+53369	banner	round 23 CONDIIEX (wt-b1: condII existential-count exchange (A36))
+53372	banner	round 23 front CONDIIEX (wt-b1): §8.3 condII EXISTENTIAL-count exchange
+53486	banner	round 23 VEML (wt-s4b: condIII veM/veL => de-adm kernel KER)
+53488	banner	round 23 VEML (wt-s4b: condIII veM/veL => single generic de-adm kernel)
+53490	section	r23-VEML — condIII \<open>veM\<close>/\<open>veL
+53731	banner	round 23 DEADM (wt-s5: non-adm condV c2L1 closed => {de-adm kernel,notLD})
+53906	banner	round 23 BASEIH (wt2: VE BASE modulo {id2,id3,intM,intN,baseIH}; route A refuted)
+53928	section	r23-BASEIH — §8.2 terminal-slice BASE (\<open>j\<^sub>1' = j\<^sub>1
+54108	banner	round 24 DEADMKERB (wt-s5: WRAP local atom => KER/DEADM/consumers modulo WRAP)
+54113	section	r24-DEADMKERB — the de-admissibilization kernel \<open>KER\<close> / \<open>DEADM
+54415	banner	round 24 DEADMKERA (wt2: regime-free KER refuted; dkax slice-principal-gen infra)
+54417	banner	round 24 DEADMKERA (wt2): de-adm kernel KER investigation
+54419	section	r24-DEADMKERA — the general (regime-free) de-adm kernel \<open>KER
+54524	banner	round 24 VEBASEART (wt-s4b: article route B = induction on j1-TrMax (vbax_VE_backpeel))
+54549	section	r24-VEBASEART — §8.2 terminal-slice article TRUE BASE (\<open>Lng = TrMax+2
+54791	banner	round 24 CONDVIZERO (wt-f7: condVI descent M1j0=0 UNCONDITIONAL => §8.6 descent all hosts)
+54795	banner	round 24 CONDVIZERO (wt-f7): condVI descent for M_{1,j0}=0 + all adm
+54797	section	r24-CONDVIZERO — the condition-(VI) descent for the \<open>M\<^bsub>1,j\<^sub>0\<^esub> = 0
+54829	subsection	The raw L-tower closed form (L-part of the CF engine, \<open>zeroT\<close>-free)
+54924	subsection	The boundary identity \<open>M[Suc n] = L\<^sub>n\<close> and the \<open>u\<close>-free base value fact
+55103	subsection	The condition-(VI) descent for ALL admissible-\<open>j\<^sub>0\<close> hosts (\<open>u \<ge> 0\<close>)
+55203	subsection	The condition-(VI) descent for the \<open>M\<^bsub>1,j\<^sub>0\<^esub> = 0\<close> case
+55246	subsection	The non-admissible-\<open>j\<^sub>0
+55561	banner	round 24 NOTLD (wt-b1: notLD reduced to lph)
+55563	banner	round 24 front NOTLD (wt-b1): the condV last-principal-head residual
+55644	banner	round 24 WFRP2 (wt-s4a: wf RPrel general = psi-ordinal obstruction (refutation))
+55651	section	r24-WFRP2 — general \<open>wf RPrel
+55697	subsection	The fixed principal \<open>p = D\<^sub>1 0\<close> and the witness family \<open>q\<^sub>n = D\<^sub>0 n\<close>
+55749	subsection	The norm is unbounded below the fixed principal \<open>p\<close> (CRUX refuted)
+55804	subsection	The predecessor set of a fixed \<open>OT\<close>-principal is infinite
+55832	banner	end round 24 front WFRP2
+55835	banner	round 25 CONDVI13 (wt-s4a: §8.6 condVI exchange (1)(3) UNCONDITIONAL adm (A37))
+55838	banner	round 25 front CONDVI13 (wt-s4a): §8.6 condVI exchange (1) and (3)
+55840	section	r25-CONDVI13 — §8.6 condition-(VI) Trans/fseq exchange conclusions (1) and (3)
+55868	subsection	Generic engine: the operB fundamental-sequence value and the tower matchers
+55969	subsection	The condition-(VI) exchange (1)/(2)/(3), admissible \<open>j\<^sub>0\<close> (unconditional)
+56173	subsection	The condition-(VI) exchange (1)/(2)/(3), non-admissible \<open>j\<^sub>0\<close> (modulo \<open>t2eq\<close>)
+56415	banner	end round 25 front CONDVI13
+56417	banner	round 25 W2 (wt-s5: W2=VE(1) modulo {VE1,SR} -- de-adm=VE convergence)
+56420	banner	round 25 front W2 (wt-s5): body-transfer W2 = VE'(1) on reduced slices
+56422	section	r25-W2 — the WRAP body-transfer \<open>W2\<close> decomposed into \<open>nadm
+56566	banner	end round 25 front W2
+56568	banner	round 25 W1 (wt2: W1 refuted (needs leR); w1x reachability-discharge bricks)
+56570	banner	round 25 front W1 (wt2): W1-as-stated REFUTED; corrected reach-conditioned bricks
+56572	section	r25-W1 --- the unconditioned single-column atom \<open>W1\<close> (hence \<open>W2\<close> and \<open>WRAP
+56773	banner	end round 25 front W1
+56775	banner	round 25 VESTEP (wt-s4b: VE step+RPERS closed j1p<j1 & m=0; modulo {VEj1eq,RPj1eq})
+56778	banner	round 25 VESTEP (wt-s4b: route-B STEP + RPERS of the j1-TrMax induction for VE')
+56780	section	r25-VESTEP — §8.2 terminal-slice route-B (\<open>j\<^sub>1 - TrMax
+56940	banner	end round 25 front VESTEP
+56942	banner	round 25 VEBASE (wt-b1: VE base surgery residuals closed on m<transJm1; modulo Adm0-subcase)
+56944	banner	round 25 front VEBASE (wt-b1): IH-free BASE (j1-TrMax=1) of VE' induction
+56946	section	r25-VEBASE — §8.2 terminal-slice article TRUE BASE (\<open>Lng = TrMax+2
+57167	banner	end round 25 front VEBASE
+57169	banner	round 25 LPH (wt-f7: lph reduced to a nat-list-index residual; c2L1 closes from it)
+57172	banner	round 25 front LPH (wt-f7): lph reduced to a RightNodes chain-index fact
+57372	banner	end round 25 front LPH
+57375	banner	r26 merge: wt2 block
+57376	banner	round 26 VEJ1EQ (wt2: close the j1'=j1 branch residuals of the VE' induction)
+57378	section	r26-VEJ1EQ — §8.2 terminal-slice route-B (\<open>j\<^sub>1 - TrMax
+57595	banner	end round 26 front VEJ1EQ (RPj1eq)
+57735	banner	end round 26 front VEJ1EQ (deepen)
+57810	banner	end round 26 front VEJ1EQ (reduction + capstone)
+57813	banner	r26 merge: wt-s5 block
+57815	banner	round 26 front ADM0BASE (wt-s5): close the Adm0 base sub-case of VE'
+58379	banner	end round 26 front ADM0BASE
+58382	banner	r26 merge: wt-s4b block
+58384	banner	round 26 VE1CORE (wt-s4b): VE'(1)-as-stated / W2 REFUTED; correct guard = regime
+58386	section	r26-VE1CORE — the \<open>VE1\<close> premise of \<open>w2x_W2_of_VE1
+58483	banner	end round 26 front VE1CORE
+58486	banner	r26 merge: wt-b1 block
+58488	banner	round 26 WRAPFIX (wt-b1: reach-corrected de-adm cascade; dkfx prefix)
+58853	banner	end round 26 front WRAPFIX
+58856	banner	r26 merge: wt-f7 block
+58988	banner	end round 26 front LPH2
+58991	banner	r26 merge: wt-s4a block
+58993	banner	round 26 front CONDVINADM (wt-s4a): discharge the §8.6 condVI exch nadm owed pieces
+58995	section	r26-CONDVINADM \<open>\<close> §8.6 condition-(VI) exchange, non-admissible \<open>j\<^sub>0\<close>, UNCONDITIONAL
+59022	subsection	The \<open>Ult\<close> residual: \<open>transV M < M\<^bsub>1,j\<^sub>1\<^esub>\<close> (condVI copy of \<open>m_8_5_condV_uv\<close>)
+59061	subsection	The M-side non-admissibility facts at \<open>j\<^sub>0\<close>
+59121	subsection	\<open>Pred M\<close> is a condition-(VI) host
+59212	subsection	\<open>transJm1 M = transJm1 (Pred M)\<close>
+59289	subsection	The \<open>t2eq\<close> residual: \<open>transT2 M = D\<^bsub>M\<^sub>1\<^sub>,\<^sub>j\<^sub>0\<^esub> 0\<close>
+59367	subsection	The fully unconditional condition-(VI) exchange, non-admissible \<open>j\<^sub>0\<close>
+59407	banner	end round 26 front CONDVINADM
+59411	banner	r27 merge: wt2 block
+59412	banner	round 27 front VECLOSE (wt2, vcx prefix): close VE' unconditionally
+59414	section	r27-VECLOSE --- the \<open>\<S>\<^bold>8.2\<close> terminal-slice value equation \<open>VE'
+59796	banner	end round 27 front VECLOSE
+59800	banner	r27 merge: wt-f7 block
+59802	banner	r27 front SHARP: close the SHARP residual (lph/notLD/c2L1)
+59805	section	r27-SHARP \<open>\<close> terminal-slice \<^const>\<open>RightAnces\<close> reduction of the SHARP residual
+60104	banner	r27 merge: wt-s5 block
+60361	banner	end round 27 front NADMCONDV
+60365	banner	r27 merge: wt-s4b block
+60369	section	r27-CONDIII — condIII \<open>veM\<close>/\<open>veL\<close> discharged modulo \<open>VE'
+60643	banner	end round 27 front CONDIII
+60647	banner	r27 merge: wt-b1 block
+60648	banner	round 27 front WFRPREL (wt-b1): [Buc1] Lemma 2.2 residual — the DEPTH-BOUNDED fragment of wf RPrel
+60650	section	[Buc1] Lemma 2.2 residual (r27-WFRPREL): the DEPTH-BOUNDED fragment of \<open>wf RPrel\<close>
+60695	subsection	A max nesting-depth on \<open>BT\<close> / \<open>BP\<close>
+60762	subsection	The depth-bounded restrictions \<open>RPrel_dep\<close> / \<open>RTrel_dep\<close>
+60796	subsection	The CROSS-INDEX step: \<open>wf (RTrel_dep d) \<Longrightarrow> wf (RPrel_dep (Suc d))\<close> (index stabilisation)
+60850	subsection	The tuple layer (depth-guarded): \<open>wf (RPrel_dep d) \<Longrightarrow> wf (RTrel_dep d)\<close>
+61086	subsection	Closing the mutual induction: \<open>wf (RPrel_dep d)\<close> / \<open>wf (RTrel_dep d)\<close> for every \<open>d\<close>
+61117	subsection	The sharpened residual: no unbounded-DEPTH descending chain
+61213	banner	end round 27 front WFRPREL
+61216	banner	r27 merge: wt-s4a block
+61217	banner	round 27 front CONDIVII (wt-s4a): §8.3 condII lhs_ex reduction
+61219	section	r27-CONDIVII — §8.3 condition-(II) \<open>lhs_ex\<close> reduced to base + one per-step surgery
+61292	banner	end round 27 front CONDIVII target (1)
+61295	banner	round 27 front CONDIVII (wt-s4a): §8.4 condIV mnform DISCHARGED
+61297	section	r27-CONDIVII — the condition-(IV) \<open>mnform\<close> IS the PROVEN \<open>j\<^sub>-\<^sub>1
+61461	banner	end round 27 front CONDIVII target (2) mnform
+61466	banner	r28 merge: wt-s4b block
+61468	banner	round 28 front WIRE84 (wt-s4b): cash in VE' — the terminal-
+61469	banner	slice VALUE transport from cfbx_reg (mechanical layer)
+61472	section	r28-WIRE84 (A) — the terminal-slice VALUE transport from \<open>cfbx_reg\<close>
+61551	banner	end round 28 front WIRE84 block (A)
+61555	banner	round 28 front WIRE84 (B): condIII §8.4 wiring modulo the
+61556	banner	SLICE-level regime facts
+61559	section	r28-WIRE84 (B) — condIII \<open>baseML\<close>/\<open>d4\<close>-transports modulo slice regimes
+61712	banner	end round 28 front WIRE84 block (B) stage 1
+61716	banner	round 28 front WIRE84 (B) stage 2: the §8.4 L5/L6 slice
+61717	banner	transports d2/d3/d4a/d4b re-derived from the slice regimes
+61720	section	r28-WIRE84 (B2) — the §8.4 transports \<open>d2\<close>/\<open>d3\<close>/\<open>d4a\<close>/\<open>d4b\<close> from slice regimes
+61988	banner	end round 28 front WIRE84 block (B) stage 2
+61992	banner	round 28 front WIRE84 (B) stage 3: L5 transports d2/d3 +
+61993	banner	the condIII baseM/baseL FINAL (guarded-regime) forms
+61996	section	r28-WIRE84 (B3) — the L5 (\<open>admeq\<close>) transports \<open>d2\<close>/\<open>d3
+62368	banner	end round 28 front WIRE84 block (B) stage 3
+62372	banner	round 28 front WIRE84 (C): the condIII exchange (1)/(3) on
+62373	banner	the CORRECT d4vx_core route
+62376	section	r28-WIRE84 (C) — the condIII exchange (1)/(3) via the \<open>d4vx_core\<close> towers
+62583	banner	end round 28 front WIRE84 block (C) part 1
+62892	banner	end round 28 front WIRE84 block (C) part 2 (mnform)
+63175	banner	end round 28 front WIRE84 block (C)
+63178	banner	r28 merge: wt-s5 block
+63183	section	r28-W2NOSTR --- the no-straddle body-transfer atom \<open>W2nostr
+63250	subsection	Adjacent-step parent extraction and the non-admissible run arithmetic
+63678	subsection	The genuine-host setup and the \<open>c = Lng M - 1\<close> regime guard
+63949	subsection	The two W2nostr transfer instances
+64097	subsection	Capstone: the non-adm condition-(V) exchange with \<open>W2nostr\<close> DISCHARGED
+64170	banner	end round 28 front W2NOSTR
+64173	banner	r28 merge: wt-f7 block
+64178	section	r28-SHARP2 --- \<open>{len2, redB}
+64749	banner	end round 28 front SHARP2
+64753	banner	r28 merge: wt-s4a block
+64755	banner	round 28 front STEPCORE (wt-s4a): condI j0>0 marking-nesting closed form
+64757	section	r28-STEPCORE — the condition-(I) \<open>j\<^sub>0 > 0
+64793	subsection	scx: BT / scb foundations
+64890	subsection	scx: the reduced row-1 coefficient bound across a row-0 parent edge
+64948	subsection	scx: interior row-0 parents from the mono chain
+64990	banner	end r28 STEPCORE chunk 1 (foundations)
+64992	subsection	scx: host-context basics for condition (I) with \<open>j\<^sub>0 > 0\<close>
+65070	subsection	scx: the last-block-start prefix \<open>N\<close> of the iterate (structure bundle)
+65269	subsection	scx: the marked value at the last block start, and the \<open>w = 1\<close> core
+65353	banner	end r28 STEPCORE chunk 2 (host + N structure)
+65355	subsection	scx: \<open>j\<^sub>-\<^sub>1'\<close> is a basepoint of the iterate, and the Mark pinning
+65606	banner	end r28 STEPCORE chunk 3 (jm1' basepoint + Mark pinning)
+65608	subsection	scx: the per-step surgery, case A (\<open>X\<^sub>n = D\<^bsub>va\<^esub>(\<tau> +\<^sub>B c\<^sub>1 \<cdot> n)\<close>)
+65921	banner	end r28 STEPCORE chunk 4a (step, case A)
+66301	banner	end r28 STEPCORE chunk 4b (step, case B)
+66303	subsection	scx: the master \<open>CF\<^sub>I\<close> package — \<open>dM\<close> + \<open>lhsCF\<close> witnesses exist
+66766	subsection	scx: the condition-(I) exchange (1), FULLY UNCONDITIONAL
+66826	banner	end r28 STEPCORE chunk 5 (masterCF + condI exchange (1))
+66828	subsection	scx: the condition-(I) DESCENT, OT-free
+66924	banner	end r28 STEPCORE chunk 6 (condI descent, OT-free)
+66927	banner	r28 merge: wt2 block
+66928	banner	round 28 front CONDIV13 (wt2): condIV exchange (1)/(3) producer data
+66985	subsection	Order and list helpers
+67002	subsection	The condition-agnostic \<open>uv\<close> bound \<open>M\<^bsub>1,j\<^sub>-\<^sub>3\<^esub> < M\<^bsub>1,j\<^sub>1\<^esub>\<close>
+67039	subsection	Condition (IV) excludes the other \<open>transC2\<close> branches
+67057	subsection	The condIV \<open>c\<^sub>2\<close>-body shape and the article's \<open>leftDj0\<close> dichotomy
+67147	subsection	The \<open>domB\<close> value of the condIV \<open>c\<^sub>2\<close>-body
+67211	subsection	\<open>k1\<close> at the \<open>mnform\<close> witnesses \<open>s84x_s1/b1\<close> (witness matching)
+67294	subsection	\<open>base1\<close>: one scb-block insertion on \<open>D\<^bsub>ub\<^esub> 0\<close> strictly exceeds \<open>t\<^sub>2\<close>
+67508	banner	end round 28 front CONDIV13
+67510	banner	round 28 front CONDIV13, part 2: HB-free (1)+(2) assembly
+67513	subsection	HB-free partial assembly: conclusions (1) and (2) need only \<open>base1\<close>
+67707	banner	end round 28 front CONDIV13 part 2
+67710	banner	r28 merge: wt-b1 block
+67715	section	r28-OTMEM — \<open>stepval\<close> is UNSATISFIABLE; the per-branch salvage map
+67779	subsection	The \<open>[0]\<close>-orbit of numerals
+67869	subsection	REFUTATION: \<open>stepval\<close> is unsatisfiable on \<open>ST\<^bsub>PS\<^esub>\<close>
+67906	subsection	TRUE legs I: condition (VI), \<open>j\<^sub>1 > 1\<close> (from the proven exchange equalities)
+67958	subsection	TRUE legs II: condition (I) — \<open>n = 1\<close> and the whole \<open>j\<^sub>0 = 0\<close> branch
+68018	subsection	TRUE legs III: the zero-last-column \<open>Pred\<close> corner
+68185	subsection	TRUE legs IV: the two-column (\<open>j\<^sub>1 = 1\<close>) hosts, \<open>n \<ge> 2\<close>
+68345	subsection	\<open>0\<^sub>B \<in> OT\<^bsub>B\<^esub>\<close>
+68350	subsection	The mixed per-branch OT dispatcher (replacing the vacuous closure route)
+68662	banner	end round 28 front OTMEM
+68666	banner	r29a merge: wt-f7 block
+68670	section	r29a-ATOMS --- the non-adm condition-(V) \<open>c\<^sub>2(L\<^sub>1)
+68743	subsection	The non-adm \<open>t\<^sub>2\<close>-component lower bound (article 基本性質 (3))
+68869	subsection	\<open>notLD\<close>: the last principal of \<open>t\<^sub>2\<close> does not carry the head \<open>M\<^bsub>1,j\<^sub>0\<^esub>\<close>
+68923	subsection	\<open>c2L1\<close> CLOSED on the genuine regime
+68941	subsection	Capstone: the non-adm condition-(V) exchange modulo \<open>{d1h, k1h}\<close> ONLY
+69033	banner	end round 29a front ATOMS
+69037	banner	r29a merge: wt-s4a block
+69105	subsection	c2sx: the branch data of the condition-(II) \<open>c\<^sub>2
+69130	subsection	c2sx: \<open>BT\<close> helpers
+69149	subsection	c2sx: host-context basics for condition (II)
+69221	subsection	c2sx: the marked-column value \<open>c\<^sub>1 = D\<^bsub>va\<^esub> t\<^sub>2\<close>
+69278	subsection	c2sx: the \<open>c\<^sub>2\<close> value and the base split \<open>t\<^sub>2 = t\<^sub>3 +\<^sub>B X\<^bsup>cnt\<^sub>1\<^esup>\<close>
+69379	banner	end r29a CONDII chunk 1 (defs + host + c1/c2 + split)
+69381	subsection	c2sx: the last-block-start prefix \<open>N\<close> of the condition-(II) iterate
+69662	subsection	c2sx: the marked value at the last block start is the tail-slice value
+69696	subsection	c2sx: \<open>j\<^sub>-\<^sub>1\<close> is a basepoint of every iterate, and the Mark pinning
+69874	banner	end r29a CONDII chunk 2 (N-facts + mark-idx + pinning)
+70102	banner	end r29a CONDII chunk 3 (per-step surgery)
+70104	subsection	c2sx: the master \<open>CF\<^sub>I\<^sub>I\<close> package — \<open>dM\<close> + existential \<open>lhs_ex
+70302	banner	end r29a CONDII chunk 4 (masterCF + endpoints)
+70304	subsection	c2sx: tail-slice dischargers — bridge, reach, trunk and regime cases
+70579	banner	end r29a CONDII chunk 5 (bridge + dischargers)
+70581	subsection	c2sx: the shared \<open>exchII
+70602	banner	end r29a CONDII chunk 6 (exchII rewiring)
+70606	banner	r29a merge: wt-s4b block
+70610	banner	round 29a front CIIIREG: closing the condIII exchange
+70611	banner	residuals {regS, regSP} + {dbbodyH, base0H, base1H,
+70612	banner	A0ltH} of w84x_condIII_exchange_full_of_sliceregs
+70615	section	r29a-CIIIREG (A) --- \<open>dbbodyH\<close>: the \<open>domB
+70997	banner	r29a-CIIIREG (B): the condIII BT-side residuals A0ltH /
+70998	banner	base1H / base0H, decoupled from the regime producers
+71001	section	r29a-CIIIREG (B) --- \<open>A0ltH\<close>/\<open>base1H\<close> from the nest tuple, \<open>base0H
+71446	banner	r29a-CIIIREG (C): the RED-slice regime re-cut -- the r28
+71447	banner	raw-slice regimes regS/regSP are FALSE on genuine hosts;
+71448	banner	the TRUE regimes live at Red(N)/Red(Pred N)
+71451	section	r29a-CIIIREG (C) --- transports \<open>d4a\<close>/\<open>d4b\<close> from the RED-slice regimes
+71907	banner	r29a-CIIIREG (D): the condIII exchange TRIPLE re-assembled
+71908	banner	on the TRUE (Red-slice) regimes, with all four BT-side
+71909	banner	residuals of r28 (dbbodyH/base0H/base1H/A0ltH) DISCHARGED
+72534	banner	r29a-CIIIREG (E): structural bricks toward REGS --- the
+72535	banner	memberships/Brne/descending half is PROVEN; the residual
+72536	banner	core of REGS is exactly the m-condition
+72539	section	r29a-CIIIREG (E) --- \<open>REGS\<close> reduced to its \<open>m\<close>-condition core
+72757	banner	r30 merge: wt-s4a block
+72759	banner	round 30 front CONDIIIV (wt-s4a): the §8.2 命題（条件(II)か
+72760	banner	(IV)の下での終切片と Trans の関係） p_8_2_condIIIV reduced to
+72761	banner	the sharp VE-residual triple {VE2, VE3, VE4}
+72802	subsection	Pure-BT algebra: \<open>+\<^sub>B\<close> left-cancellation and the condIIIV \<open>\<exists>!\<close> scaffold
+72876	subsection	The not-leftDj0 GUARD: structural \<open>d \<le> Joints\<close> core (the \<open>lt\<close>-case)
+73157	banner	r30 merge: wt-s4b block
+73159	banner	r30-CIIIREGIME: REGS sharpened to its geometric core.
+73160	banner	EMPIRICAL (verify-rank-depth): on GENUINE standard condIII
+73161	banner	guard hosts, the reduced ancestor slice Red (s84x_N M) has
+73162	banner	EXACTLY ONE branch, and that branch attaches at the
+73163	banner	(admissible) trunk right end, so its LAST joint = TrMax.
+73164	banner	Hence REGS is always the STRICT (d1) disjunct of MCOND,
+73165	banner	m = j-2 - j-3 < TrMax(Red N) = Joints(Red N)!last.
+73166	banner	python/_crg_jointlast_probe.py: jl==TrMax 65/65 branchy;
+73167	banner	d1 46/46; python/_crg_struct.py: one-branch 65/65.
+73168	banner	The joint>=TrMax half is a genuinely NEW structural fact
+73169	banner	(NOT the m_8_2 singleton-last-branch j1eq regime, NOT the
+73170	banner	m_8_4 non-adm interior joint regime): here the joint sits
+73171	banner	at the ADMISSIBLE trunk end.  It is isolated below as the
+73172	banner	single hypothesis JGE; the m < TrMax half is DISCHARGED
+73173	banner	unconditionally from the run brick crx_trmax_run.
+73176	section	r30-CIIIREGIME --- \<open>REGS
+73222	banner	r30 merge: wt2 block
+73225	banner	round 30 front CONDIVHB, part 1: the condIV t2-component lower bound (HB)
+73543	banner	round 30 front CONDIVHB, part 2: d1-d3 wiring -> condIV exchange full
+73611	banner	r31 merge: wt-s4a block
+73613	banner	r31 front VEGEOM: LastStep slice geometry (STEP 1)
+73728	subsection	STEP 1 (cont.) — slice geometry \<open>0 \<le> j\<^sub>0' \<le> TrMax M \<le> m\<^sub>1 < j\<^sub>1\<close> and monoT endpoints
+73830	subsection	STEP 1 (cont.) — reduced-form principality of a monoT slice
+73881	subsection	The slice-level reduction \<open>vgx_condIIIV_of_VE\<close> (the missing \<open>cdx_condIIIV_of_VE\<close>)
+73993	subsection	VE2 route: reduction to the prefix regime \<open>cfbx_reg j\<^sub>0' (seg M 0 m\<^sub>1)\<close>
+74033	banner	r31 merge: wt-s4b block
+74036	banner	r31-JGEBYP (target 3): the REGSP kousa-(1,1) trunk BYPASS.
+74037	banner	On the pure-trunk branch Br (Red (Pred (s84x_N M))) = [] the
+74038	banner	reduced slice is an all-trunk reduced-mono sequence, hence a
+74039	banner	diagonal diagSeq u v (baseU_alltrunk_diag_entry), so its
+74040	banner	Trans has the explicit closed form D_u (D_v 0)
+74041	banner	(m_8_1_diagSeq_Trans).  This discharges the two facts that
+74042	banner	crx_d4a_of_redreg draws from cfbx_reg -- the slice-value
+74043	banner	(w84x_slice_value_of_reg) and monoT of the reduced slice --
+74044	banner	WITHOUT the false unconditional REGSP (which is FALSE exactly
+74045	banner	on this Br = [] branch).  crg_d4a_all then dispatches on
+74046	banner	Br (Red (Pred (s84x_N M))): the trunk closed form vs. the
+74047	banner	existing regime route, so the exchange no longer needs the
+74048	banner	false REGSP but only its Br <> [] restriction (TRUE).
+74051	section	r31-JGEBYP --- the REGSP kousa-\<open>(1,1)\<close> trunk bypass at the \<open>d4a\<close> level
+74391	banner	r31-JGEBYP: the condIII exchange cascade REWIRED through the
+74392	banner	trunk bypass -- crg_various_scb_IIIIV/mnform/exchange13/
+74393	banner	descent/exchange_full call crg_d4a_all at the d4a step, so
+74394	banner	the FALSE unconditional REGSP is replaced by its TRUE
+74395	banner	Br(Red(Pred(s84x_N M)))<>[] restriction (the pure-trunk
+74396	banner	Br=[] branch is discharged by crg_d4a_trunk).  REGS/M0RUN
+74397	banner	threaded unchanged.
+74400	section	r31-JGEBYP --- condIII exchange rewired through the trunk bypass
+75059	banner	r31 merge: wt-b1 block
+75210	banner	end round 31 front OTRES
+75212	banner	r32 merge: wt-s4a block
+75218	banner	r32 VEGEOM2: VE2 close via prefix regime + VE3/VE4 skeleton
+75221	section	r32-VEGEOM2 --- \<open>\<S>8.2\<close> condII/IV terminal-slice VE2 (prefix regime) close
+75827	banner	r32 VEGEOM2: VE3/VE4 back-peel induction SKELETON
+75830	section	r32-VEGEOM2 --- \<open>\<S>8.2\<close> condII/IV VE3/VE4 back-peel induction skeleton
+75937	banner	r32 merge: wt-s4b block
+75941	banner	r32-CONDIIICLOSE (wt-s4b, c3cx_ prefix): condIII exchange
+75942	banner	residuals {JGE, M0RUN, REGSP}.  KEY EMPIRICAL CORRECTION:
+75943	banner	the r31 residual (1) JGE is FALSE (see below).  M0RUN is
+75944	banner	sharpened here to a single entry inequality.
+75947	section	r32-CONDIIICLOSE --- condIII exchange residuals: JGE refuted, M0RUN sharpened
+76065	banner	end r32 front CONDIIICLOSE
+76067	banner	r32 merge: wt-b1 block
+76073	banner	r32-CONDIVCLOSE: the condIV d3 (regSP) trunk BYPASS, Red
+76074	banner	route.  The r30/r31 c4hx wiring routed d3 through
+76075	banner	w84x_d3_IIIV_dispatch, whose regime consumer
+76076	banner	(w84x_subslice_value) needs the RAW slice seg M jm3 (Lng-2)
+76077	banner	to be REDUCED -- empirically FALSE on ~40% of the Br<>[]
+76078	banner	branch and ~57% of the Br=[] branch (RAWRED_regime 3/5,
+76079	banner	RAWRED_trunk 3/7).  So the raw-slice regSP is a bad residual.
+76080	banner	Instead we rebuild d3 UNIFORMLY on the RED route (like the
+76081	banner	condIII crx_d4a cascade): the same value fact
+76082	banner	Trans (seg M jm2 (Lng-2))
+76083	banner	= D_{M_{1,jm2}} (bpHeadT (Trans (seg M jm3 (Lng-2))))
+76084	banner	is produced by crg_slice_red_value_trunk on Br(Red slice)=[]
+76085	banner	and by crx_slice_red_value on Br(Red slice)<>[].  Since
+76086	banner	Br(raw)=[] <=> Br(Red raw)=[] (COINCIDE 25/25), and the
+76087	banner	body bpHeadT(...) = transT2 M is the Red-independent Mark
+76088	banner	readback (w84x_PN_c1_of_admeq), the d3 goal closes on the
+76089	banner	whole trunk branch WITH NO regime hypothesis, leaving only
+76090	banner	the Br(Red)<>[]-guarded RED-slice regime
+76091	banner	cfbx_reg (jm2-jm3) (Red (Pred (s84x_N M)))
+76092	banner	-- which is EXACTLY condIII's REGSP (crg_d4a_all), SHARED,
+76093	banner	and empirically TRUE (REGSAT_red 6/6, no CEX; contrast the
+76094	banner	raw-slice form).  GOAL_trunk 7/7 confirms the trunk close.
+76097	section	r32-CONDIVCLOSE --- condIV d3 rebuilt on the Red route (trunk bypass + shared REGSP)
+76290	banner	end r32-CONDIVCLOSE
+76293	banner	r33 merge: wt-s4b block
+76297	banner	r33-MCOND (mcx_ prefix): the reduced-slice branch-geometry
+76298	banner	core d <= Joints (Red (s84x_N M)) ! last -- the SHARP true
+76299	banner	REGS/REGSP residual (JGE was refuted in r32).
+76302	section	r33-MCOND --- the reduced-slice branch-geometry \<open>\<le>\<close> core
+76891	banner	r33 merge: wt-s4a block
+76895	banner	r33-VE34 ROW10: the branch-head row-1 <= row-0 invariant
+76896	banner	(vg3x_ prefix).  Closes the ROW10 residual carried through
+76897	banner	vg2x_VE2 / vg2x_eqdiag_M, making VE2 UNCONDITIONAL.
+76899	banner	ROW10 generalises to  entry M 1 j <= entry M 0 j  for ALL j
+76900	banner	of a reduced M (RedCondA + RedCondB; NO monoT, NO zero-start
+76901	banner	e00/e10 needed -- so it is strictly more general than
+76902	banner	m_6_6_condAB_coeff whose row0>=row1 conjunct assumes
+76903	banner	entry M 0 0 = entry M 1 0 = 0).  EMPIRICAL (python _r33):
+76904	banner	MAIN entry1<=entry0 all j 2051/0; sub-facts (a) hasParent1 j
+76905	banner	=> hasParent0 j 1014/0 and (b) entry1 j>0 <=> hasParent1 j
+76906	banner	1014/0 over reduced monoT.  Route: row-1 parent EXISTS whenever
+76907	banner	some le0-ancestor has strictly smaller row-1 (Max of that set
+76908	banner	is the parent; nextR1_unique gives uniqueness); a node with NO
+76909	banner	row-1 parent is <= every le0-ancestor's row-1, and the le0-root
+76910	banner	(RedCondB) pins entry0=entry1 there, monotone up to j.
+76913	section	r33-VE34-ROW10 --- reduced row-1 <= row-0 (unconditional), VE2 closed
+77124	banner	r33-VE34 GUARD FINDING + corrected back-peel skeleton
+77125	banner	(vg3x_ prefix).
+77127	banner	EMPIRICAL REFUTATION (python _r33_ve34): vg2x_VE34 is FALSE
+77128	banner	on the r32 regime vg2x_reg2 (RT_PS & PT_PS & Br!=[]) alone.
+77129	banner	It holds EXACTLY when the GUARD holds -- i.e. the last-branch
+77130	banner	first node j1' = FirstNodes M!(Lng(Br M)-1) is NON-diagonal
+77131	banner	(entry M 1 j1' < entry M 0 j1'):
+77132	banner	guard=True  => VE34  24/24  (desc True 23/23, desc False 1/1)
+77133	banner	guard=False => VE34   0/13  (VE4 fails; e.g. diagonal last
+77134	banner	node (0,0)(1,1)(2,2)(2,2), VE4=False).
+77135	banner	Consequently the r32 residuals BASE/STEP/RPERS stated over
+77136	banner	vg2x_reg2 are REFUTED; the guard must sit in the regime.  The
+77137	banner	corrected regime vg3x_reg3 = vg2x_reg2 & guard makes them
+77138	banner	TRUE and is the one the downstream consumer
+77139	banner	vgx_condIIIV_of_VE supplies (it already assumes the guard and
+77140	banner	DT_PS).  This block gives the corrected green back-peel
+77141	banner	wrapper vg3x_VE34_backpeel + the DT_PS connector.
+77144	section	r33-VE34 --- GUARD is required for vg2x_VE34; corrected back-peel skeleton
+77226	banner	r33 merge: wt-b1 block
+77230	banner	r33-OTLOCAL: the LOCAL OTint route — per-condition OT_B
+77231	banner	membership from the exchange closed forms, bypassing the
+77232	banner	§8.5 surgery keystone {resid, multiD}
+77235	section	r33-OTLOCAL --- the LOCAL \<open>OTint\<close> route: per-condition \<open>OT\<^bsub>B\<^esub>
+77303	subsection	Reusable per-condition \<open>OT\<^bsub>B\<^esub>\<close>-membership from an operB / op0-tower closed form
+77331	subsection	\<open>condVI\<close> \<open>OTint\<close> --- UNCONDITIONAL (exact \<open>operB\<close> equality, both regimes)
+77359	subsection	\<open>condI\<close> \<open>OTint\<close> --- from the \<open>operB\<close> equality (closure principle)
+77374	subsection	\<open>condV\<close>-adm \<open>OTint\<close> --- keystone-FREE via the op0-tower value identity
+77394	subsection	The LOCAL \<open>OTint\<close> dispatcher --- keystone \<open>{resid, multiD}\<close> BYPASSED
+77451	subsection	Capstone: \<open>Trans M \<in> OT\<^bsub>B\<^esub>\<close> with the \<open>OTint\<close> slot on the LOCAL route
+77509	banner	end r33-OTLOCAL
+77511	banner	r34 merge: wt-s4b block
+77514	banner	r34-DIAGM0RUN (dgx_ prefix): shared DIAG reduction
+77515	banner	The shared equality-diag residual of mcx_regSP_of_diag
+77516	banner	(SHARED by condIII Br<>[]-REGSP and condIV shared-REGSP and
+77517	banner	the condII not-leftDj0 tailval leg) is REDUCED to a single
+77518	banner	sharp inequality  strictlt :
+77519	banner	entry RN' 1 d  <  entry RN' 1 fnp
+77520	banner	(RN' = Red(Pred(s84x_N M)), d = jm2-jm3, fnp = last-branch
+77521	banner	first node of RN').  The DIAG then follows by the SAME
+77522	banner	reduced-slice sandwich as mcx_MCOND_RN's equality leg, mirrored
+77523	banner	in RN' coordinates: e0fn_v (RedCondA row-0 + trunk diagonal)
+77524	banner	gives entry RN' 0 fnp = entry RN' 1 d + 1; m_6_6_reduced_coeff
+77525	banner	gives entry RN' 1 fnp <= entry RN' 0 fnp; strictlt closes the
+77526	banner	lower bound.  (RN' does NOT carry a terminal row-1 edge at d
+77527	banner	-- nextR M 1 jm2 (Lng M-2) fails 2/52 -- so the RN-terminal
+77528	banner	valley cannot be mirrored; strictlt is exactly what is left.)
+77530	banner	EMPIRICAL (python/_r34_diag*.py): strictlt (equiv.
+77531	banner	le0 M (jm3+fnp) (Lng M-1),  equiv.  d = parent RN' 1 fnp,
+77532	banner	equiv.  fn_RN < T for the FULL slice RN) holds 52/52 on the
+77533	banner	genuine condIII/IV straddle corpus; the diag conclusion 52/52.
+77534	banner	The crux is entangled with the equality + Pred structure
+77535	banner	(general reduced monoT slices DO admit singleton last
+77536	banner	branches, 143 found), so it does not reduce further abstractly.
+77539	section	r34-DIAGM0RUN --- shared DIAG reduced to the sharp strictlt inequality
+77707	banner	end r34-DIAGM0RUN dgx_regSP reduction
+77710	banner	r34-DIAGM0RUN (dgx_ prefix): M0RUN easy-case reduction
+77711	banner	M0RUN reduces (via the committed c3cx_M0RUN_of_a) to the
+77712	banner	SINGLE inequality  entry M 1 jm2 < entry M 1 (jm2+1)  (jm2 =
+77713	banner	s84x_jm2 M = parent M 1 (Lng M-1)).  This inequality holds
+77714	banner	whenever jm2+1 is a row-0 ANCESTOR of the terminal
+77715	banner	(le0 M (jm2+1) (Lng M-1)): then the row-1 parent valley of
+77716	banner	jm2 -> (Lng M-1) (s84c1_jm2_univ) pins
+77717	banner	entry M 1 (Lng M-1) <= entry M 1 (jm2+1),
+77718	banner	and entry M 1 jm2 < entry M 1 (Lng M-1) (s84c1_jm2_basic(2))
+77719	banner	closes it.  This discharges the EASY branch; the residual is
+77720	banner	the non-ancestor branch (~3%, 49/1562 over an ST_PS oper-orbit
+77721	banner	corpus), where jm2+1 is a row-0 CHILD of jm2 (nextrel0, from
+77722	banner	c3cx_nextrel0_adj_of_le0) off the terminal's chain -- there
+77723	banner	entry M 1 (jm2+1) = entry M 1 jm2 + 1 is a genuine ST_PS
+77724	banner	last-block (diagonal-ramp) fact (the row-1 parent = jm2 is
+77725	banner	equivalent to the goal, so reducedness gives no shortcut).
+77726	banner	EMPIRICAL (python/_r34_m0.py): the diagonal step
+77727	banner	entry M i (jm2+1) = entry M i jm2 + 1 (both rows)
+77728	banner	holds 1562/1562 over the adm-edge ST_PS corpus.
+77756	banner	end r34-DIAGM0RUN M0RUN easy-case
+77758	banner	r34 merge: wt-s4a block
+77762	banner	r34-VE34B  --- CORRECTED guarded VE34 regime (vg4x_)
+77764	banner	EMPIRICAL REFUTATION of the r33 back-peel BASE obligation
+77765	banner	(python ve34_base2 / probe over reduced monoT hosts, GRID<4,
+77766	banner	L<=5): the r33 regime vg3x_reg3 = vg2x_reg2 & guard is NOT
+77767	banner	enough for vg2x_VE34 at the base.  Over guarded bases
+77768	banner	(cfbx_j1p N = Lng N-1, guard e1<e0 at j1'), vg2x_VE34 holds
+77769	banner	EXACTLY when the last joint j0' = Joints N!(Lng(Br N)-1) is
+77770	banner	NON-M-admissible, i.e. 0 < j0' < TrMax N:
+77771	banner	nadm j0'  =>  VE34   19/19
+77772	banner	adm  j0'  =>  VE34    0/106  (VE4 fails; e.g. j0'=0 host
+77773	banner	(0,0)(1,1)(1,0) and j0'=TrMax host
+77774	banner	(0,0)(1,1)(2,2)(3,0)).
+77775	banner	This is exactly the article's case (2) hypothesis "j'_0 is
+77776	banner	non-M-admissible" (§8.2, 部分表現の単項成分とPredの関係).
+77777	banner	The consumer vgx_condIIIV_of_VE ALREADY assumes 0<j0' (j0pos)
+77778	banner	and j0'<TrMax M (j0lt), so the missing condition sits at the
+77779	banner	consumer boundary; we fold it into the regime as vg4x_reg4
+77780	banner	= vg3x_reg3 & 0<j0' & j0'<TrMax.  RPERS is then CLEAN: at the
+77781	banner	STEP (j1' < j1) Pred only shortens the last branch, so the
+77782	banner	last joint j0', the trunk TrMax and the guard node j1' are all
+77783	banner	unchanged (wid_Joints_Pred / TrMax_Pred / wid_FirstNodes_Pred).
+77786	section	r34-VE34B --- corrected guarded VE34 regime \<open>vg4x_reg4
+78137	banner	end r34-VE34B corrected regime skeleton
+78139	banner	r34 merge: wt-b1 block
+78143	banner	r34-WIRECF (c4rx_ prefix): condIV regS residual RESOLVED
+78144	banner	VACUOUSLY -- the guard j-3 < j-2 never fires on condIV.
+78147	section	r34-WIRECF --- condIV \<open>regS\<close> is vacuous (the guard never fires)
+78215	banner	end r34-WIRECF condIV block
+78219	banner	r34-WIRECF (cfvx_ prefix): cfVadm op0-tower is FALSE for e>0
+78220	banner	-- condV-adm OT-int leg is op0-tower ONLY on the e=0 regime.
+78223	section	r34-WIRECF --- \<open>cfVadm\<close> op0-tower REFUTED for \<open>e > 0\<close>; honest condV-adm split
+78351	banner	end r34-WIRECF cfVadm block
+78353	banner	r35 merge: wt-s4b block (r35-LASTBLOCK)
+78356	banner	r35-LASTBLOCK (lbx_ prefix): M0RUN sharpened to a single
+78357	banner	UNCONDITIONAL row-0 reachability fact; non-anc branch shown
+78358	banner	VACUOUS under (III)/(IV).
+78360	banner	EMPIRICAL DISCOVERY (python/probe_ciii.py, genuine (III)/(IV)
+78361	banner	oper-orbit corpus, monoT hosts, admJm2 = the M0RUN branch
+78362	banner	\<not>(j\<^sub>-\<^sub>3<j\<^sub>-\<^sub>2) i.e. adm M j\<^sub>-\<^sub>2):
+78363	banner	admJm2_nonanc                = 0    / 912   -- NON-ANC EMPTY
+78364	banner	admJm2_anc  (le0 M (j\<^sub>-\<^sub>2+1) j\<^sub>1)= 912  / 912
+78365	banner	le0 M (j\<^sub>-\<^sub>2+1) (transJ0 M)     = 912  / 912  (ANC0)
+78366	banner	[j\<^sub>-\<^sub>2, j\<^sub>0] consecutive nextrel0 = 912  / 912
+78367	banner	e0 strictly increasing on [j\<^sub>-\<^sub>2,j\<^sub>0] = 912/912
+78368	banner	j\<^sub>-\<^sub>2 < j\<^sub>0 (= transJ0)             = 912  / 912  (forced by (III))
+78369	banner	So the r34 M0RUN ``non-ancestor'' residual DOES NOT OCCUR in
+78370	banner	the genuine (III)/(IV) regime: (III) forces
+78371	banner	M\<^bsub>1,j\<^sub>0\<^esub> \<ge> M\<^bsub>1,j\<^sub>1\<^esub> = M\<^bsub>1,j\<^sub>-\<^sub>2\<^esub>+1 > M\<^bsub>1,j\<^sub>-\<^sub>2\<^esub>,  hence  j\<^sub>-\<^sub>2 < j\<^sub>0
+78372	banner	(m_8_4_oper_props_1(1)); and the whole ascension window
+78373	banner	[j\<^sub>-\<^sub>2, j\<^sub>0] is a consecutive row-0 chain, so j\<^sub>-\<^sub>2+1 is a row-0
+78374	banner	ANCESTOR of j\<^sub>1.  M0RUN then closes via
+78375	banner	@{thm dgx_M0RUN_of_le0anc}.  We sharpen the named M0RUN
+78376	banner	assumption to the SINGLE unconditional row-0 fact
+78377	banner	ANC0 :  le0 M (s84x_jm2 M + 1) (transJ0 M)
+78378	banner	(pure row-0 reachability, no run-edge nextrel1), and rebuild
+78379	banner	crx_condIII_exchange_full with {REGS, REGSP, ANC0} in place of
+78380	banner	{REGS, REGSP, M0RUN}.  ANC0 is the terminal-region last-block
+78381	banner	diagonal-ramp fact (row-0 side is FREE from RedCondA, below);
+78382	banner	the residual is exactly ``the [j\<^sub>-\<^sub>2,j\<^sub>0] ascension is consecutive''
+78383	banner	which rests on the ST_PS oper block layout (M = P[n], non-diag
+78384	banner	under (III)), i.e. @{thm s84c1_oper_lastblock}.
+78387	section	r35-LASTBLOCK --- M0RUN sharpened to the ANC0 row-0 reachability fact
+78555	banner	end r35-LASTBLOCK M0RUN sharpening
+78557	banner	r35 merge: wt-s4a block (r35-VE34)
+78561	banner	r35-VE34 (vg5x_ prefix): the guarded VE34 BASE.
+78562	banner	Reduce the back-peel BASE  (vg4x_reg4 N & cfbx_j1p N=Lng N-1
+78563	banner	==> vg2x_VE34 N)  to the two article terminal-slice bridges
+78564	banner	(parts (1),(3) of content.md 3314) + the growth split.
+78567	section	r35-VE34 --- guarded VE34 BASE reduced to the two terminal-slice bridges
+78735	banner	r35 merge: wt-b1 block (r35-OTDEEP)
+78738	banner	r35-OTDEEP (otx_ prefix): the four deep-insertion OTint legs
+78739	banner	{otIII, otIV, otVnadm, otVadmDeep}: validation, negative
+78740	banner	findings, and the single shared surgery-keystone residual
+78743	section	r35-OTDEEP --- the deep-insertion \<open>OTint
+78922	banner	end r35-OTDEEP block
+78924	banner	r36 merge: wt-s4b block (r36-LASTBLOCK2)
+78927	banner	r36-LASTBLOCK2 (lb2x_ prefix): ANC0 discharge scaffolding.
+78928	banner	The row-0 ascension-window fact ANC0 = le0 M (jm2+1) transJ0
+78929	banner	is reduced to the SINGLE row-0 gap equality
+78930	banner	WGAP : entry M 0 (transJ0 M)
+78931	banner	= entry M 0 (s84x_jm2 M) + (transJ0 M - jm2)
+78932	banner	(the ``last-block diagonal ramp'' equality).  Its (<=) half
+78933	banner	is FREE (lb2x_le0_row0_bound: along a row-0 le0-chain in a
+78934	banner	reduced M the row-0 value grows by <= the index distance,
+78935	banner	since every chain step is a UNIQUE-parent +1 step by
+78936	banner	RedCondA); the (>=) half is exactly ``the ascension window
+78937	banner	has no row-0 plateau'', the genuine ST_PS last-block fact.
+78938	banner	Given WGAP the chain from jm2 to transJ0 is forced CONSEC
+78939	banner	(pigeonhole: gap = index-gap), so le0 M (jm2+1) transJ0.
+78940	banner	EMPIRICAL (python/_r36_anc0.py, _r36_d0w.py): ANC0 and the
+78941	banner	window-consecutive form hold 2099/2099 and 1665/1665 over
+78942	banner	the genuine condIII/IV ST_PS oper corpus (deep Lng>=10).
+78945	section	r36-LASTBLOCK2 --- ANC0 reduced to the row-0 last-block gap equality WGAP
+79083	banner	end r36-LASTBLOCK2 ANC0 reduction
+79086	banner	r36-LASTBLOCK2 (lb2x_ prefix): strictlt sharpened to the
+79087	banner	d = jlp EQUALITY case.
+79088	banner	dgx_regSP_of_lt takes the sharp inequality strictlt as an
+79089	banner	UNCONDITIONAL hypothesis, but strictlt is FALSE in general on
+79090	banner	the reduced Pred-slice: EMPIRICALLY (python/_r36_strictlt.py)
+79091	banner	it holds only 453/553 over the brne guard corpus.  Inspection
+79092	banner	of dgx_regSP_diag_of_lt shows strictlt is CONSUMED only in the
+79093	banner	equality case  d = Joints RN' ! last  (the DIAG hypothesis of
+79094	banner	mcx_regSP_of_diag is itself guarded by exactly that equality).
+79095	banner	So the TRUE residual is strictlt-UNDER-(d=jlp), which the r34
+79096	banner	census confirms 52/52 (python/_r34_diag_deep.py filters d=jlp
+79097	banner	before checking).  lb2x_regSP_of_lt_eqd re-plumbs
+79098	banner	dgx_regSP_of_lt to require strictlt only under that guard.
+79101	section	r36-LASTBLOCK2 --- REGSP with strictlt guarded by the \<open>d = jlp\<close> equality
+79156	banner	end r36-LASTBLOCK2 strictlt-eqd sharpening
+79158	banner	r36 merge: wt-s4a block (r36-BRIDGES)
+79161	banner	r36-BRIDGES (vg6x_ prefix): the VE34 guarded BASE bridges.
+79162	banner	FINDING: the r35 `bridges` obligation is EQUIVALENT to the
+79163	banner	VE34 base residual itself (modulo the two slice principals,
+79164	banner	which are provable), i.e. it is NOT a strict reduction.
+79423	banner	r36 merge: wt-b1 block (r36-VESTEP)
+79427	banner	r36-VESTEP (wt-b1, vs2x_ prefix): the VE34 STEP (article §8.2
+79428	banner	cases 3,4 head-shift) reduced to the head-shift residual.
+79431	section	r36-VESTEP --- \<open>\<S>8.2\<close> condII/IV VE3/VE4 back-peel STEP (cases 3,4 head-shift)
+79532	banner	r37 merge: wt-s4b block (r37-WGAP)
+79536	banner	r37-WGAP (wgx37_ prefix): WGAP / ANC0 are FALSE on ST_PS.
+79538	banner	The r35/r36 reduction of the condIII M0RUN residual to
+79539	banner	ANC0 : le0 M (s84x_jm2 M + 1) (transJ0 M)
+79540	banner	WGAP : entry M 0 (transJ0 M)
+79541	banner	= entry M 0 (s84x_jm2 M) + (transJ0 M - s84x_jm2 M)
+79542	banner	is an OVERSHOOT: ANC0 ==> M0RUN but ANC0 (hence WGAP) is FALSE
+79543	banner	on ST_PS.  MINIMAL COUNTEREXAMPLE (python/_r37_*.py verified,
+79544	banner	genuinely in ST_PS via an explicit oper derivation):
+79545	banner	M = (0,0)(1,1)(2,1)(1,1)(2,1)
+79546	banner	diagSeq 0 2 = (0,0)(1,1)(2,2) --[3]--> (0,0)(1,1)(2,1)(3,1)
+79547	banner	--[2]--> ... (9 oper steps total) ... --[2]--> M
+79548	banner	so M : ST_PS; M reduced, monoT (M : PT_PS); hasParent M 1 4;
+79549	banner	1 < Lng M - 1 = 4; transCondIII M (adm M (transJ0 M = 3)).
+79550	banner	jm2 = s84x_jm2 M = parent M 1 4 = 0;  j0 = transJ0 M = 3.
+79551	banner	row 0 of M = [0,1,2,1,2].
+79552	banner	WGAP: entry M 0 3 = 1  BUT  entry M 0 0 + (3-0) = 3.  FALSE.
+79553	banner	ANC0: le0 M 1 3 is FALSE (1 does not row-0-reach 3).
+79554	banner	The window [jm2,j0] = [0,3] has row 0 = [0,1,2,1]; it is NOT
+79555	banner	a consecutive nextrel0 chain -- the chain 0 -> 3 JUMPS
+79556	banner	(nextrel0 M 0 3 holds, valley entry M 0 1 = 1, M 0 2 = 2
+79557	banner	both >= entry M 0 3 = 1).
+79559	banner	WHY r36 "273/273" and r35 "non-anc VACUOUS 0/912" were FALSE
+79560	banner	POSITIVES: shallow oper-orbit (steps=6); the CEX first appears
+79561	banner	at oper-depth 9.  r32 (line ~53083) already recorded the
+79562	banner	non-ancestor branch at 1253/4566 (~27%), NOT vacuous, and that
+79563	banner	M0RUN reduces to the SINGLE row-1 inequality
+79564	banner	(i)  entry M 1 (s84x_jm2 M) < entry M 1 (s84x_jm2 M + 1)
+79565	banner	(r32: 4566/4566), a genuine ST_PS last-block fact on the
+79566	banner	non-ancestor branch.  The CEX above is exactly such a
+79567	banner	non-ancestor host with adm M jm2.
+79569	banner	CORRECT (TRUE) RESIDUAL.  M0RUN is discharged from (i) by the
+79570	banner	committed c3cx_M0RUN_of_a.  A sharper true residual is
+79571	banner	E1GE : entry M 1 (Lng M - 1) <= entry M 1 (s84x_jm2 M + 1)
+79572	banner	(==> (i), since entry M 1 jm2 < entry M 1 (Lng M - 1) always).
+79573	banner	E1GE holds on BOTH the ancestor and the non-ancestor branch
+79574	banner	(empirical r37 python/_r37_ineq.py: 1357/1357 genuine
+79575	banner	condIII/IV adm-jm2 ST_PS hosts, incl. 21 non-ancestor and 932
+79576	banner	deep Lng>=10; (i) idem 1357/1357).  Its ancestor branch is
+79577	banner	FREE (s84c1_jm2_univ).  Below we re-base the condIII exchange
+79578	banner	onto (i) and onto E1GE, REPLACING the refuted ANC0/WGAP route
+79579	banner	(lb2x_anc0_of_wgap / lb2x_crg_condIII_exchange_full_wgap take
+79580	banner	a hypothesis, WGAP, that is FALSE and cannot be discharged).
+79583	section	r37-WGAP --- WGAP/ANC0 refuted; the condIII \<open>M0RUN
+79694	banner	end r37-WGAP block
+79696	banner	r37 merge: wt-s4a block (r37-STRICTLT)
+79700	banner	r37-STRICTLT (slx37_ prefix): the guarded strictlt fact
+79701	banner	proven UNCONDITIONALLY, filling the strictlt_eqd slot of
+79702	banner	lb2x_regSP_of_lt_eqd => REGSP (cfbx_reg) unconditional.
+79704	banner	Target:  d = Joints RN' ! last  (RN' = Red(Pred(s84x_N M)))
+79705	banner	==>  entry RN' 1 d < entry RN' 1 (FirstNodes RN' ! last).
+79706	banner	UNIFIED argument (no singleton case-split):
+79707	banner	* wid_{JBr,FirstNodes,Joints}_Pred transport the last-branch
+79708	banner	first node/joint of RN' = Pred RN back to RN at index
+79709	banner	lastp  (lastp = Lng(Br RN')-1 < Lng(Br RN)).
+79710	banner	* guard d = Joints RN ! lastp;  RedCondA row-0 gives
+79711	banner	entry RN 0 fJ = entry RN 0 d + 1  (fJ = FirstNodes RN!lastp).
+79712	banner	* descending(Br RN) at (lastp,last) + trunk row-0 strict
+79713	banner	increase + d <= last-joint (mcx_d_le_last_joint) FORCE
+79714	banner	d = jl (last joint) and equal row-0 heads, so the tie-break
+79715	banner	gives entry RN 1 fJ >= entry RN 1 fn.
+79716	banner	* mcx_MCOND_RN (at d = jl) makes the last-branch head fn
+79717	banner	DIAGONAL: entry RN 1 fn = entry RN 1 d + 1.
+79718	banner	* hence entry RN 1 fJ >= entry RN 1 d + 1 > entry RN 1 d;
+79719	banner	butlast (RN' = Pred RN) transports it to RN' coordinates.
+79720	banner	EMPIRICAL: python/_r36_strictlt2.py eqd 98/98 (r34 census 52/52).
+79721	banner	Audit (rule 4): cites only proven facts (mcx_MCOND_RN,
+79722	banner	mcx_d_le_last_joint, wid_*_Pred, RedCondA/B via
+79723	banner	m_6_6_reduced_iff_cond, descending via DT_PS); no sorry-p_*/
+79724	banner	buc1_*, no refuted/vacuous endpoints.
+79727	section	r37-STRICTLT --- the \<open>d = jlp\<close> guarded \<open>strictlt\<close>, unconditional REGSP
+80018	banner	end r37-STRICTLT
+80020	banner	r37 merge: wt-b1 block (r37-VEREGIME)
+80024	banner	r37-VEREGIME --- descending-carrying corrected VE34 regime
+80025	banner	vg7x_reg4 (re-thread descending(Br) into the back-peel)
+80027	banner	r36 REFUTED vg2x_VE34 over vg4x_reg4: the regime chain
+80028	banner	vg2x_reg2/vg3x_reg3/vg4x_reg4 DROPPED descending(Br).  CEX
+80029	banner	N=(0,0)(1,1)(2,2)(2,1)(2,2)(2,0): vg4x_reg4 holds but
+80030	banner	descending(Br N) FALSE and the STEP/BASE bridges fail.  With
+80031	banner	descending(Br) IN the regime, 0/3168 fail (empirical).
+80033	banner	FIX: define vg7x_reg4 N = vg4x_reg4 N & descending (Br N).
+80034	banner	Then vg7x_reg4 N = N in RT_PS & monoT N & descending (Br N)
+80035	banner	= N in DT_PS,  so:
+80036	banner	* RPERS(descending) is DISCHARGED unconditionally by the
+80037	banner	already-proven descending_Br_Pred (frozen base, layerB):
+80038	banner	Pred of a DT_PS host with Br<>[] and 1<Lng(Pred) stays in
+80039	banner	DT_PS, so descending(Br(Pred N)) transfers.  vg4x part
+80040	banner	persists by the proven clean vg4x_RPERS.
+80041	banner	* The consumer vgx_condIIIV_of_VE ALREADY assumes M in DT_PS,
+80042	banner	which is EXACTLY what supplies descending(Br M) at the top;
+80043	banner	ST_PS hosts are standard (=> DT_PS) so it holds and threads
+80044	banner	down to where vg7x_VE34_of_DT is applied.
+80045	banner	Deliverable: corrected regime + dispatcher + RPERS + consumer
+80046	banner	wiring; BASE/STEP now carry descending(Br N) (r36 CEX excluded).
+80049	section	r37-VEREGIME --- descending-carrying VE34 regime \<open>vg7x_reg4
+80257	banner	r38 merge: wt-s4b block (r38-E1GE)
+80260	banner	r38-E1GE (e1x_ prefix): the NON-ANCESTOR branch of E1GE,
+80261	banner	discharging the last condIII M0RUN residual (INEQ)
+80262	banner	UNCONDITIONALLY.
+80264	banner	INEQ = entry M 1 jm2 < entry M 1 (jm2+1) is (per the scratch
+80265	banner	comment at c3cx_M0RUN_of_a) a genuine ST_PS/oper structure
+80266	banner	fact.  Proof (contradiction): assume
+80267	banner	entry M 1 (jm2+1) <= entry M 1 jm2.
+80268	banner	Peel the first row-0 edge of le0 M jm2 j1 to a child a
+80269	banner	(nextrel0 M jm2 a, le0 M a j1); NON-anc => a <> jm2+1 =>
+80270	banner	a > jm2+1.  Both jm2+1 and a are nextrel0-children of jm2
+80271	banner	with EQUAL row-0 (RedCondA => entry0 = entry0 jm2 + 1).  On
+80272	banner	the anchored slice S = seg M jm2 j1 (monoT, descending(Br S)
+80273	banner	by m_6_8_standard_slice_Br_descending) the assumption forces
+80274	banner	TrMax S = 0, so jm2+1 = FirstNodes S ! 0 and a (= FirstNodes
+80275	banner	S ! Ja by branch_component_le0 + the row-0 valley) are two
+80276	banner	branch heads with EQUAL row-0.  descending's row-1 tie-break
+80277	banner	(descending_cdomD/cdom_def) forces
+80278	banner	entry M 1 a <= entry M 1 (jm2+1) <= entry M 1 jm2,
+80279	banner	but the nextrel1 M jm2 j1 valley gives
+80280	banner	entry M 1 a >= entry M 1 j1 > entry M 1 jm2  -- contra.
+80281	banner	EMPIRICAL (deep oper-orbit BFS, ST_PS = oper-orbit of diags,
+80282	banner	depth<=24 len<=30; python/_r38_e1ge_deep2.py 403/403,
+80283	banner	_r38_e1ge_struct.py all sub-facts 507/507, _r38_slice.py
+80284	banner	a-is-FirstNode 430/430).  Audit (rule 4): cites only proven
+80285	banner	facts (m_6_8_standard_slice_Br_descending, branch_component_le0,
+80286	banner	descending_cdomD, entry_FirstNodes_eq_component_gen, RedCondA
+80287	banner	via m_6_6, c3cx_nextrel0_adj_of_le0, wit_FirstNodes0, ...);
+80288	banner	no sorry/refuted/circular citation.
+80291	section	r38-E1GE --- non-ancestor branch of E1GE (INEQ), unconditional condIII M0RUN
+80632	banner	end r38-E1GE block
+80634	banner	r38 merge: wt-s4a block (r38-BRIDGES2)
+80637	banner	r38-BRIDGES2 (vg8x_ prefix): the VE34 BASE bridges over
+80638	banner	vg7x_reg4 (= DT_PS base).  r37 FIXED the regime to vg7x
+80639	banner	(= vg4x_reg4 AND descending (Br N)).  Over the DESCENDING
+80640	banner	regime the r36 counterexample
+80641	banner	N = (0,0)(1,1)(2,2)(2,1)(2,2)(2,0)  (non-descending Br)
+80642	banner	is EXCLUDED, so the two article terminal-slice readbacks
+80643	banner	brN (part (1)) / brMp (part (3)) are TRUE.  DEEP empirical
+80644	banner	confirmation over the EXACT structural domain vg7x_reg4 base
+80645	banner	(reduced & monoT & descending, cfbx_j1p = Lng-1) :
+80646	banner	templates (Lng 4..12, single/double branch)  24/24 ok
+80647	banner	constructive multi-branch (Lng 4..7, up to 4 branches)
+80648	banner	141/141 ok
+80649	banner	curated deep multi-branch, LastStep<J1 (harder brN case,
+80650	banner	Lng up to 9)                            8/8 ok
+80651	banner	r36 CEX (non-descending) : check_bridges FAILS (excluded).
+80652	banner	0 failures on ~173 genuine descending base hosts; the
+80653	banner	discriminating condition is EXACTLY descending(Br).
+80656	section	r38-BRIDGES2 --- VE34 BASE over the DESCENDING regime \<open>vg7x_reg4
+80809	banner	r38 merge: wt-b1 block (r38-VESTEP2)
+80813	banner	r38-VESTEP2 --- the VE34 back-peel STEP over vg7x_reg4
+80814	banner	reduced to the SAME terminal-slice readback (bridges)
+80815	banner	as the BASE, via the STEP-host Trans FORM (keystone 3/4).
+80818	section	r38-VESTEP2 --- STEP-host \<open>Trans
+81154	banner	r39 merge: wt-s4b block (r39-COMPOSE)
+81158	banner	r39-COMPOSE (cpx_ prefix): FULLY-UNCONDITIONAL condIII
+81159	banner	exchange.  The crg cascade guards REGSP by Br(Red(Pred N))
+81160	banner	<> [], and crg_d4a_all EAGERLY evaluates REGSP[OF Br<>[]],
+81161	banner	which forces a cfbx_reg at the !guard (jm3=jm2, d=0) corner.
+81162	banner	That d=0 cfbx_reg is TRUE (deep BFS: B4fail=0) but needs a
+81163	banner	fresh Pred-slice diagonal proof.  We AVOID it: crx_d4a_dispatch
+81164	banner	already closes the !guard case by the slice equality
+81165	banner	s84x_Np M = s84x_N M (no REGSP), so we re-thread the cascade
+81166	banner	with REGSP guarded by BOTH  guard AND Br<>[]  (the exact
+81167	banner	intersection that slx37_regSP_uncond proves).  cpx_d4a_all
+81168	banner	builds rp LAZILY (rp g := REGSP[OF g Br<>[]]), so REGSP is
+81169	banner	only evaluated inside crx_d4a_dispatch's guard branch.  Then
+81170	banner	REGS=mcx_regS, REGSP=slx37_regSP_uncond, M0RUN=E1GE close all
+81171	banner	three residuals with NO hypotheses (only MST/MPT/hp/j1gt/
+81172	banner	cIII/n1).  Audit (rule 4): cites only proven facts
+81173	banner	(crg_d4a_trunk/crx_d4a_dispatch/slx37/mcx_regS/e1x_e1ge);
+81174	banner	no sorry-p_*/buc1_*, no refuted/vacuous endpoint.
+81177	section	r39-COMPOSE --- fully-unconditional condIII exchange (cpx_ prefix)
+81965	banner	r39 merge: wt-s4a block (r39-BRIDGESU)
+81969	banner	r39-BRIDGESU --- setup bricks for the terminal-slice
+81970	banner	scb-decomposition surgery route to bridgesU (VE3/VE4).
+81973	section	r39-BRIDGESU --- terminal-slice \<open>M' = seg N j\<^sub>0' (Lng N - 1)
+82059	banner	r39 merge: wt-b1 block (r39-OTKEY)
+82063	banner	r39-OTKEY (otkx_ prefix): the surgery keystone {resid,multiD}
+82064	banner	multiD -> a PURE §6.2 P-component prefix fact (surgery-FREE)
+82067	section	r39-OTKEY --- de-entangling the OT-pillar keystone \<open>multiD
+82180	banner	r40 merge: wt-b1 block (r40-KEYSTONE)
+82184	banner	r40-KEYSTONE (kyx_ prefix): the §8.2 keystone RightNodes
+82185	banner	residual is DISSOLVED --- m_8_2_keystone (PSS_B) is already
+82186	banner	UNCONDITIONAL; apply it to the terminal slice.
+82417	banner	r40 merge: wt-s4a block (r40-PCOMPPREFIX-refute)
+82484	banner	r40b merge: wt-s4b block (Fable OT-resid: rgx_ cluster)
+82486	section	DELIVERABLE — §8.7 OT keystone residual \<open>resid\<close> SHARPENED (r40b)
+83052	banner	r41 merge: wt-s4b block (condIV cpx re-thread)
+83056	banner	r41-CONDIV (cpx_ prefix): condIV exchange re-threaded onto
+83057	banner	the RED-slice regimes (REGS=Red(N), REGSP=Red(Pred N)),
+83058	banner	mirroring the r39 condIII cpx cascade.  The DEAD
+83059	banner	c4hx_/c4wx_condIV_exchange_full_of_regimes used the RAW
+83060	banner	slice cfbx_reg (s84x_N M / Pred(s84x_N M)), FALSE on
+83061	banner	unreduced slices.  Here d2/d3 are re-threaded through the
+83062	banner	REDUCED-slice value transport crx_slice_red_value (Br<>[])
+83063	banner	/ crg_slice_red_value_trunk (Br=[]), so REGS is discharg-
+83064	banner	ed by mcx_regS and REGSP by slx37_regSP_uncond (branch=IV)
+83065	banner	+ the pure-trunk corner.  d1 is free (m_8_4_slice_scb_
+83066	banner	part1), HB free (HB_condIV_t2_components), reg free
+83067	banner	(m_8_4_oper_props_1(1)).  Net: cpx_condIV_exchange_uncond
+83068	banner	rests on the admeq gate ONLY.  Audit (rule 4): cites only
+83069	banner	PROVEN facts; carries no sorry/refuted/DEAD-raw-slice.
+83072	section	r41-CONDIV --- condIV exchange on the RED-slice regimes (cpx_ prefix)
+83386	banner	r42 merge: wt-s4b condIV non-admeq (admeq-free brick + all-uncond combiner; non-admeq residual isolated)
+83390	banner	r42-CONDIV-NONADMEQ --- the condIV exchange on the
+83391	banner	NON-admeq branch (Adm M (s84x_jm2 M) \<noteq> transJm1 M).
+83392	banner	Deep-validation (python/_r42_v2.py, _r42_cex_probe.py):
+83393	banner	non-admeq condIV hosts are RARE (~2% of condIV hosts) and
+83394	banner	DEGENERATE: jm2 < j0 AND jm3 < jm1, with the deep-hole
+83395	banner	head e1jm1 = entry M 1 (transJm1 M) reaching v1 =
+83396	banner	entry M 1 (Lng M - 1).  The exchange triple STILL holds
+83397	banner	empirically (all 3 conjuncts, n=1..3, 100%), but the
+83398	banner	admeq slice-transport route (d2/d3 onto the reduced
+83399	banner	jm2-slice) is OUTRIGHT FALSE there: when jm2 = 0 the
+83400	banner	jm2-slice s84x_Np = M itself, so
+83401	banner	Trans (s84x_Np M) = Trans M \<noteq> Dpt (e1jm2) (bpHeadT c2).
+83402	banner	The generic fseq engine m_7_2_scb_fseq_kind1_general also
+83403	banner	fails (it needs u < v, but the correct deep hole is the
+83404	banner	innermost D_{v1} 0 with head u = v1 = v).  So the non-admeq
+83405	banner	case needs a DIFFERENT (degenerate u=v) fseq analysis.
+83408	section	r42-CONDIV-NONADMEQ --- condIV exchange on the \<open>\<not>admeq\<close> branch
+83490	banner	r43 merge: wt-s4b bridgesU readoff => {BASE,STEP} reduction (readoff⟺VE34; modReadoff interface closed onto the article terminal-slice induction)
+83493	banner	r43 RDX: the §8.2 condII/IV bridgesU readoff residual
+83495	section	r43-RDX --- the \<open>readoff
+83639	banner	r44 merge: wt-s4a — slotNewOT C1 (snx_newOT_of_sliceTrans/snx_slotNewOT_modSlice)
+83643	banner	r44 front C1 (snx_ prefix): §8.7 slotNewOT — the appended
+83644	banner	principal D_x q of Trans M is an ordinal-term principal.
+83647	section	r44-C1 --- §8.7 slotNewOT reduction (snx_ prefix)
+83735	banner	r44 merge: wt-s4c — slotAppg C3 (sax_slotAppg_modcore)
+83739	banner	r44 slotAppg (C3 core): sax_ prefix
+83740	banner	§8.7 deep-insertion appended-principal G_B-bound.
+83741	banner	Target = the slotAppg assumption of
+83742	banner	rgx_Trans_preserves_OT_of_slots (~59988).  STEP-0 empirics
+83743	banner	(python/step0_slotAppg): appg holds 984/984 real hosts
+83744	banner	(deep Lng>=20: 21/21, zero fail; every applicable host had
+83745	banner	v0<=x).  The v0>x branch is vacuous (empty G-set) and is
+83746	banner	discharged inside rgx_appg_split; the q=0_B branch is
+83747	banner	trivial (0_B < any nonempty body / GBT v0 0_B = {}).  What
+83748	banner	remains — the genuine descent core — is the (v0<=x /\
+83749	banner	q<>0_B) regime, isolated here as the two named residuals
+83750	banner	sax_qcore / sax_Gcore.  See report for the obstruction:
+83751	banner	qcore/Gcore encode the outer-level-minimality invariant of
+83752	banner	Trans (v0=entry M 1 0 small enough vs the deposited heads),
+83753	banner	which is a fragment of "Trans M in OT" itself and is NOT
+83754	banner	derivable from predOT/newOT/descP locally (OT counterexample
+83755	banner	q=Trm[DB 5 0], x=0, ps=[] : all local data hold yet
+83756	banner	lessBT q (Dpt 0 q) is False).
+83759	section	r44-slotAppg --- appended-principal \<open>G\<^sub>B\<close>-bound reduction (sax_ prefix)
+83819	banner	r44 merge: wt-s4b — slotTail C2 (stx_slotTail_properprefix_from_descent; falseness-check TRUE)
+83883	banner	r45 merge: wt-y1 — condIII noParentPred CLOSED (npx_, exchIII slot unconditional)
+83885	banner	r45 front NOPARENT (npx_): the condIII noParentPred residual
+83889	banner	r45-NOPARENT --- closing the noParentPred residual of
+83890	banner	cpx_exchIII_slot: the condIII dispatcher slot goes
+83891	banner	UNCONDITIONAL.
+83894	section	r45-NOPARENT (\<open>npx_\<close> prefix) --- the \<open>noParentPred
+83952	subsection	\<open>oper\<close> collapses to \<open>Pred\<close> on the no-parent branch
+83972	subsection	The no-parent characterisation: every \<open>le0\<close>-ancestor of \<open>j\<^sub>1
+84045	subsection	\<open>domB\<close> heredity through a \<open>T\<^bsub>m\<^esub>\<close>-dominating head
+84086	subsection	\<open>domB (Trans N) = T\<^bsub>e-1\<^esub>
+84165	subsection	The condIII \<open>(m,k) = (0,0)
+84266	subsection	The \<open>noParentPred\<close> residual, closed
+84292	subsection	\<open>cpx_exchIII_slot\<close> UNCONDITIONAL --- the condIII dispatcher slot
+84323	banner	end r45 front NOPARENT
+84325	banner	r45 merge: wt-s4c — condIV nonadmeq_exch CLOSED (cnv_, condIV exchange fully unconditional)
+84328	banner	r45 CONDIV-NONADMEQ (cnv_ prefix): discharge of the nonadmeq_exch
+84332	banner	r45-CNV --- the condIV exchange triple on the NON-admeq
+84333	banner	branch, discharging the sole residual nonadmeq_exch of
+84334	banner	cnx_condIV_exchange_alluncond.  KEY INSIGHT: the r39
+84335	banner	condIII route (cpx_condIII_mnform + w84x_exchange13_core)
+84336	banner	is anchored at the j-3 slice and only needs
+84337	banner	branch = (III or IV) and ltJ: j-3 < j-1 --- NO admeq.
+84338	banner	Under NON-admeq condIV, ltJ holds outright: j-3 = Adm(j-2)
+84339	banner	<= Adm(j0) = j-1 by Adm-monotonicity (adm_Adm_max), and
+84340	banner	nonadmeq gives strictness.  So the whole non-admeq regime
+84341	banner	(including the degenerate e1jm1 = v1 hosts where transC2 is
+84342	banner	NOT kind1-able) is covered by the j-3-anchored kind1 anchor
+84343	banner	D_{e3}(bpHeadT (Trans N)) with u = e1jm3 < v1 (c4dx_uv):
+84344	banner	no u = v degenerate fseq analysis and no (a)/(b) host case
+84345	banner	split is needed.  The only condIII-specific bricks of the
+84346	banner	r39 assembly are the base facts (crx_base0_of_run /
+84347	banner	crx_base1_of_nest / crx_A0lt_of_nest), whose cIII enters
+84348	banner	solely through the FLAT c2 shape crx_c2_shape_condIII;
+84349	banner	under condIV the c2 body is the NESTED
+84350	banner	t3 + D_{e1j0}(t4 + D_v1 0) (c4dx_condIV_c2body_shape), and
+84351	banner	the same growth/surgery arguments go through one nesting
+84352	banner	level deeper (uniform hole pair via m_7_2_add_scb_conj1/2 +
+84353	banner	scb_Dpt_lift + scb_addBT_left).  Empirical basis:
+84354	banner	python/_r42_r32exch.py (exchange 3/3 conjuncts on the
+84355	banner	non-admeq host, e1jm1 = v1 hosts are the only ones found)
+84356	banner	+ python/_r42_cex_probe.py (structural readback).
+84359	section	r45-CNV --- condIV exchange on the \<open>\<not>admeq\<close> branch: full discharge
+85253	banner	end r45 CONDIV-NONADMEQ
+85255	banner	r45 merge: wt-s4b — {BASE,STEP} back-peel: STEP closed modulo TSPIN (bpx_)
+85257	banner	r45 {BASE,STEP}: wt-s4b block (bpx_ prefix)
+85261	banner	r45-BASESTEP (bpx_ prefix): the §8.2 terminal-slice back-
+85262	banner	peel {BASE, STEP} of vg7x_VE34_of_DT.  STEP is DISCHARGED
+85263	banner	modulo the SINGLE named transport equation TSPIN (+ fin);
+85264	banner	BASE remains carried (see obstruction note below).
+86074	banner	r45 merge: wt-s4a — spine qp-descent REFUTED; slotTail slot modulo devel (spx_)
+86076	banner	r45 spine (spx_ prefix): slotTail C2 — descent hypothesis REFUTED,
+86077	banner	corrected deposit-development route (spx_slotTail_modDevel)
+86079	section	r45-spine --- §8.7 slotTail: \<open>leBT q qp\<close> REFUTED; corrected route (spx_ prefix)
+86184	banner	r46 merge: wt-s4b — TSPIN CLOSED (tsx_, VE34 modulo BASEf only)
+86187	banner	r46 TSPIN (tsx_ prefix): the terminal-slice transport equation
+86190	banner	r46-TSPIN (tsx_ prefix): the terminal-slice transport
+86191	banner	equation TSPIN of bpx_VE34_step_modTSPIN is DISCHARGED
+86192	banner	(with the STEP-context hypotheses reg/lt/regP/ihP/fin).
+86193	banner	Route: Mark-surgery naturality of the Trans recursion at
+86194	banner	the (non-admissible) last joint.  The slice Mp = seg N j0'
+86195	banner	(Lng N - 1) runs the SAME mono-surgery recursion as N:
+86196	banner	transC1 Mp = transC1 N (Mark repr + Adm slice heredity),
+86197	banner	transC2 Mp = transC2 N (condition transport), and the scb
+86198	banner	assembly lifts the slice decomposition into the host's
+86199	banner	(scb_addBT_left + Dpt-lift + scb uniqueness), yielding
+86200	banner	Trans N = D_{N10}(F +B Trans Mp)
+86201	banner	from the IH-identified Pred form.  Empirically validated
+86202	banner	(scratchpad tsx_validate.py: transC1/transC2 naturality,
+86203	banner	assembly, parent/Adm transport -- 0 failures on the
+86204	banner	enumerated vg7x_reg4 STEP corpus).
+86207	section	r46-TSPIN --- the terminal-slice transport equation (tsx_ prefix)
+87035	banner	end r46 TSPIN (tsx_)
+87037	banner	r46 merge: wt-y1 — BASEf run-peel machinery (bfx_, modulo {TSPIN-base,PIN,SPLIT0})
+87040	banner	r46 BASEf block (bfx_ prefix)
+87043	banner	r46-BASEF (bfx_ prefix): the {BASE} slot of the §8.2 VE34
+87044	banner	back-peel, mechanized as the article's SAME-HEAD-RUN
+87045	banner	induction.  The run-peel machinery (r>0) is PROVEN: JEQ
+87046	banner	(run branches share the joint), regime/fin/LastStep/front/
+87047	banner	terminal stability under the branch-peel, and the VE3
+87048	banner	transport.  Residuals: {TSPIN (extended to base hosts),
+87049	banner	PIN, SPLIT0}.
+88199	banner	end r46 BASEf block (bfx_)
+88201	banner	r46 merge: wt-s4a — devel->devpair sharpening (dvx_, one witness closes slotTail+slotNewOT)
+88203	banner	r46 devel (dvx_ prefix): §8.7 slotTail/slotNewOT — deposit-development
+88204	banner	witness reduction: devel \<Longleftarrow> devpair (+ fseq-descent slot)
+88206	section	r46-devel --- the \<open>devel
+88498	banner	r46 merge: wt-s4c — fseq-descent census (dpx_, modulo {TOT,TVall}; exchIV/VI slots unconditional)
+88501	banner	r46 DISPATCH (dpx_ prefix): the §8.7 fseq-descent dispatcher census
+88504	banner	r46-DPX --- definitive premise census of the descent
+88505	banner	dispatcher m_8_7_fseq_descend_dispatcher.  Wired here:
+88506	banner	exchI   = scx_condI_exchange1              (unconditional)
+88507	banner	exchII  = c2sx_exchange_ex_condII_of_tailval  (mod TVall)
+88508	banner	exchIII = npx_exchIII_slot_uncond          (unconditional)
+88509	banner	exchIV  = cnv_condIV_exchange_final (hasParent branch)
+88510	banner	+ the NEW noParent corner CLOSED here (dpx_)
+88511	banner	exchV   = atx_nf3x through dispatcher_condV (unconditional)
+88512	banner	exchVI  = c613x_condVI_exch_adm + c6nx_..._nadm_uncond
+88513	banner	RESULT (dpx_fseq_descend_census): 補題（基本列の降下性）
+88514	banner	GREEN modulo exactly {TOT, TVall}.
+88586	subsection	The condIV no-parent \<open>k = 0\<close> readback (inequality form)
+88738	subsection	The condIV no-parent \<open>exchIV\<close> leg, and the slot UNCONDITIONAL
+88784	subsection	The \<open>exchVI\<close> slot, unconditional
+88812	subsection	THE CENSUS: 補題（基本列の降下性） modulo exactly \<open>{TOT, TVall}\<close>
+88911	banner	end r46 DISPATCH (dpx_)
+88913	banner	r47 merge: wt-y1 — BASE-family: run-STEP closed, NOTLEFT0 closed -> VE34 modulo SINGLE residual HEADEQ0 (bgx_)
+88916	banner	r47-BASEFAM (bgx_ prefix): the three residuals of
+88917	banner	bfx_VE34_of_DT_modTSPIN_PIN_SPLIT0 attacked through the
+88918	banner	Adm0 SHARP VALUE FORMS.  At a BASE host (cfbx_j1p = Lng-1)
+88919	banner	the recursion is the Adm0 one: transJm1 N = 0, so
+88920	banner	Trans N = transC2 N with transC1 N = Trans (Pred N); the
+88921	banner	transC2 body is EXPLICIT (clause-2/clause-4 shape by the
+88922	banner	isleft selector).  The terminal slice Mp = seg N j0' (j1)
+88923	banner	runs the SAME Adm0 recursion with parent 0 (admissible!),
+88924	banner	in the condA branch, giving the closed form
+88925	banner	Trans Mp = D_{N1,j0'}(bpHeadT (Trans (Pred Mp))
+88926	banner	+B D_{N1,j1} 0)                 (bgx_Mp_form)
+88927	banner	STEP-0 empirics (python/_r47_basefam.py, 27 constructive
+88928	banner	reg7 BASE hosts, GRID 4x4 L<=5 + 3x3 L=6):
+88929	banner	ADM0/JPBASE/NOJUMP/MPFORM/CL2/CL4/TSB 27/27,
+88930	banner	ISLEFT <-> run-step 27/27, HEADEQ/FRONT0/SPLIT0 17/17
+88931	banner	(all 17 run-base hosts), HEADEQ FAILS at run-step 0/10
+88932	banner	(as designed: there the deposit is the IH-identified
+88933	banner	LAST principal, not the whole Pred body).
+88934	banner	RESULT: run-STEP base hosts close FULLY (PIN+TSPIN from the
+88935	banner	clause-4 form + IH; VE3 = bfx_VE3_base_step); run-BASE
+88936	banner	hosts close modulo {NOTLEFT0, HEADEQ0} (this file's
+88937	banner	residuals; NOTLEFT0 falls to the strong-monomiality census
+88938	banner	below).
+89981	banner	end r47 BASEFAM (bgx_)
+89983	banner	r47 merge: wt-s4a — devpair: D_0 0_B corner CLOSED + devchain weakening (dpr_)
+89986	banner	r47 DEVPAIR (dpr_ prefix): the packaged §8.7 witness
+89987	banner	residual of dvx_devel_of_devpair / dvx_two_slots_of_devpair
+89990	section	r47-DPR --- the \<open>devpair
+90034	subsection	Brick (iii): the \<open>D\<^sub>0 0\<^sub>B\<close> corner witness, CLOSED
+90115	subsection	The equal-deposit case of \<open>devpair\<close>: one witness suffices
+90157	subsection	The multi-step development chain \<open>dpr_dev
+90264	subsection	Consumers: both §8.7 slots modulo the WEAKENED residual
+90353	banner	end r47 DEVPAIR (dpr_)
+90355	banner	r47 merge: wt-s4c — slotAppg modulo {depdom,deple} (hgx_; slice-only reduction refuted by abstract CEX)
+90358	banner	r47 head-gap (hgx_): §8.7 slotAppg via deposit OT-membership
+90361	section	r47 --- §8.7 slotAppg head-gap reduction (hgx_ prefix)
+90704	banner	end r47 head-gap (hgx_)
+90706	banner	r47 merge: wt-s4b — multiD DISSOLVED into descent pillar (mdx_, modulo fseqD only)
+90709	banner	r47 multiD (mdx_ prefix): the LAST §8.7 slot with no route
+90710	banner	DISSOLVED into the descent pillar --- adjacent-P-component
+90711	banner	Trans descent by ST_PS generation induction, modulo ONE
+90712	banner	named residual fseqD (the mono fseq descent).
+90715	section	r47-multiD (mdx_) --- the \<open>multiD
+91054	banner	end r47 multiD (mdx_)
+91056	banner	r48 merge: wt-y1 — HEADEQ0 CLOSED -> VE34 + p_8_2_condIIIV modulo fin only (hqx_)
+91058	banner	r48 HEADEQ0 (hqx_): the single remaining VE34 residual CLOSED
+91061	banner	r48-HEADEQ0 (hqx_ prefix).  KEY DIAGNOSIS: HEADEQ0 at a
+91062	banner	run-base host N is EXACTLY the (r27-PROVEN) terminal-slice
+91063	banner	value equation cfbx_VE (vcx_VE_all) at host Q = Pred N and
+91064	banner	offset m = j0' = Joints N ! (Lng (Br N) - 1):
+91065	banner	Pred (seg N j0' (Lng N-1)) = seg (Pred N) j0' (Lng(Pred N)-1)
+91066	banner	-- the terminal slice OF Pred N.  So the ONLY new content is
+91067	banner	the regime membership cfbx_reg j0' (Pred N):
+91068	banner	- the second-to-last joint jq = Joints N ! (Lng(Br N)-2)
+91069	banner	sits at or above j0' (descending heads + condA edges +
+91070	banner	trunk offsets, exactly the jqge step of bgx_notleft_run0);
+91071	banner	- if jq > j0': FIRST disjunct of cfbx_reg;
+91072	banner	- if jq = j0' (shared joint): the run-base LastStep
+91073	banner	minimality forbids a guarded head there, so the head is
+91074	banner	EQUAL (reduced coeff) -- the SECOND disjunct, descending
+91075	banner	from Pred N \<in> DT_PS (bfx_PredDT_base).
+91076	banner	The Br (Pred N) = [] corner (minimal base Lng N = TrMax+2)
+91077	banner	is the diagSeq closed form on both sides (m_8_1_diagSeq_Trans).
+91078	banner	Then the r47 capstones bgx_VE34_of_reg_modHEADEQ /
+91079	banner	bgx_VE34_of_DT_modHEADEQ close VE34 with NO residual beyond
+91080	banner	fin (hqx_VE34_of_reg / hqx_VE34_of_DT).
+91438	banner	end r48 HEADEQ0 (hqx_)
+91440	banner	r48 merge: wt-s4a — devchain modulo non-corner branchwit; IncrFirst-normalized branch witnesses (dcx_)
+91443	banner	r48 devchain (dcx_): the dpr_ devchain residual via
+91444	banner	IncrFirst-NORMALIZED BRANCH witnesses + corner dispatch
+91590	subsection	Core assembly: \<open>devchain\<close> from ONE normalized-branch witness
+91665	subsection	Consumers: both §8.7 slots modulo {non-corner \<open>branchwit
+91739	banner	end r48 devchain (dcx_)
+91741	banner	r48 merge: wt-s4c — depdom sharply reduced {freshdom,preddomNE,transfer}; slotAppg wired (ddx_)
+91744	banner	r48 depdom (ddx_ prefix): closing §8.7 slotAppg's deposit
+91745	banner	outer-G_B residual.  Target = the depdom assumption of
+91746	banner	hgx_slotAppg_modDom (~67591).
+91747	banner	STEP-0 empirics (python/_r48_depdom_step0{,b}.py, corpus
+91748	banner	Lng<=18, 1737 applicable frame hosts):
+91749	banner	(i)   ps = [] DOMINATES: 1721/1737 (99.1%); there the
+91750	banner	v0-rooted term Dpt v0 (Dpt x q) IS Trans M itself
+91751	banner	(1721/1721), so the hgx_depdom_of_sliceV0 witness
+91752	banner	route is DEAD for ps=[] (a shorter witness would
+91753	banner	contradict Trans faithfulness; found 0/1721).
+91754	banner	(ii)  for ps = [] the predecessor body is ALWAYS a single
+91755	banner	principal with the SAME head x (1721/1721): the
+91756	banner	keystone lands in the proper-prefix cases (3)/(4),
+91757	banner	so a6 = Trans (Pred M) in OT_B gives EXACTLY the
+91758	banner	predecessor depdom (the G_B-half of
+91759	banner	isOT_BP (DB v0 (Dpt x q'))) FOR FREE.
+91760	banner	(iii) terminal slices seg M j (Lng M - 1) NEVER carry the
+91761	banner	v0-rooted term for ps <> [] (0/14, r48 run 1); the
+91762	banner	16/16 global witnesses found for ps <> [] are a
+91763	banner	branch-repetition artifact (witness = the prefix
+91764	banner	minus the last branch, whose ps happened to equal
+91765	banner	the deposit) -- NOT a general mechanism.
+91766	banner	(iv)  escape profile: over all 1737 hosts, EVERY escape
+91767	banner	y in {q} u G_v0(q) is 0_B, or has head index < x,
+91768	banner	or head = x with body < q (esc_bad = 0) -- the
+91769	banner	true invariant is a hereditary head cap at x.
+91770	banner	Architecture: realign the keystone (fresh vs deepened
+91771	banner	deposit), discharge the ps=[] predecessor bound from a6,
+91772	banner	and reduce depdom to THREE sharp named residuals:
+91773	banner	freshdom (whole-body corner), preddomNE (the ps<>[]
+91774	banner	predecessor last-principal v0-bound -- needs the pillar
+91775	banner	invariant strengthening), transfer (the single Pred->M
+91776	banner	deposit-body step).  transfer is PROVEN here for the
+91777	banner	top-level append shape q = q' +B Dpt w 0B, w <= x (the
+91778	banner	condI/III/V/VI anchor-at-deposit case), evidencing
+91779	banner	tractability of the general step.
+91782	section	r48 depdom --- §8.7 slotAppg deposit outer-\<open>G\<^sub>B\<close> reduction (ddx_ prefix)
+92163	banner	end r48 depdom (ddx_)
+92165	banner	r48 merge: wt-s4b — joint length-induction refuted; termination census modulo {4 slots,TVall,AP} (asx_)
+92168	banner	r48 ASSEMBLY (asx_): the termination-theorem skeleton.
+92169	banner	The two pillars (descent dpx_, OT mdx_/rgx_) tied together
+92170	banner	at the GLOBAL level, modulo ONE new knot residual AP
+92171	banner	(adjacent-P-component all-pairs descent) + the four r47
+92172	banner	value slots + TVall.  The length-indexed simultaneous
+92173	banner	induction the r47 plan envisioned is PROVABLY NOT
+92174	banner	well-founded with the r46/r47 engines (audit below).
+92287	subsection	The knot residual \<open>AP\<close> dissolves \<open>multiD\<close>
+92331	subsection	OT half: \<open>Trans\<close> preserves standard\<open>\<rightarrow>\<close>OT modulo \<open>{4 slots, AP}\<close>
+92529	subsection	The knot, made explicit in Isar
+92555	subsection	Post-knot takeover: once \<open>AP\<close> is grounded, \<open>devchain
+92593	banner	end r48 ASSEMBLY (asx_)
+92595	banner	r49 merge: wt-s4b — AP GROUNDED via r28 otx dispatcher; census upgraded to {OTint,OTpred,OTmulti,TVall} (apx_)
+92597	banner	r49 AP-KNOT (apx_): AP grounded
+92599	section	r49 AP-KNOT (\<open>apx_\<close>) --- \<open>AP
+92716	subsection	Global descent and \<open>fseqD\<close>, modulo the same slots
+92802	subsection	THE TARGET: \<open>AP\<close> grounded (exact census shape)
+92869	subsection	Downstream corollary: the \<open>multiD\<close> keystone grounded
+92912	subsection	The upgraded termination census: BOTH pillars, \<open>AP\<close> discharged
+93011	banner	end r49 AP-KNOT (apx_)
+93013	banner	r51 merge: wt-y1 — TVall modulo {LDJB,FINRC}: ldj-leg via hqx at Rc + R3LE discharged; census sharpened (tvx_)
+93016	banner	r51 TVALL (tvx_): the condition-(II) tail-slice ldj-leg via the
+93017	banner	\<S>8.2 terminal-slice proposition applied at the reduced
+93018	banner	ancestor slice Rc = Red (seg M (Adm M j0) (Lng M - 2))
+93020	section	r51-TVALL --- the \<open>leftDj0\<close> leg of \<open>c2sx_tailval\<close> (prefix \<open>tvx_\<close>)
+93065	subsection	tvx: the boundary strictness \<open>0 < d < TrMax R\<^sub>c\<close> (unconditional)
+93202	subsection	tvx: the boundary discharger --- tail-slice value AND \<open>leftDj0\<close>
+93321	banner	end r51 TVALL brick 1 (tvx_ boundary discharger)
+93324	subsection	tvx: named boundary data and the fin-threaded census slot
+93358	subsection	tvx: the assembled \<open>TVall\<close>, modulo the named residuals
+93515	banner	end r51 TVALL brick 2 (tvx_ assembly + revised census)
+93518	subsection	tvx: the first-node row bound (\<open>R3LE\<close> DISCHARGED)
+93618	subsection	tvx: the SHARPENED census --- \<open>TVall\<close> modulo \<open>{LDJB, FINRC}\<close> only
+93675	banner	end r51 TVALL brick 3 (R3LE discharged, census sharpened)
+93677	banner	r51 merge: wt-s4c — OTint condV leg closed modulo oix_transport; III/IV carried (oix_)
+93680	banner	r51-OIX (oix_ prefix): the OTint census slot attacked from
+93681	banner	the per-condition VALUE forms.  condV-adm leg (both e = 0
+93682	banner	and e > 0, uniformly) is reduced to ONE pure-BT residual
+93683	banner	oix_transport (right-spine sandwich substitution); ALL
+93684	banner	host-specific obligations (tower value form, orders, newOT,
+93685	banner	G-domination) are discharged GREEN below.
+93688	section	r51-OIX --- \<open>OTint
+93738	subsection	Pure-\<open>BT\<close> bricks: band exclusion and the prefix \<open>G\<close>-guard
+93804	subsection	The condV-adm block tower \<open>block\<^sup>k(base)\<close>, \<open>block(x) = t\<^sub>2 + D\<^sub>e x\<close>
+93935	subsection	\<open>newOT\<close>: the substituted core \<open>D\<^sub>e(V\<^sub>k)\<close> is an OT principal (GREEN)
+94025	subsection	\<open>setle\<close>: \<open>G\<close>-domination of \<open>V\<close>-towers by \<open>W
+94235	subsection	The pure-\<open>BT
+94272	subsection	The condV-adm \<open>OTint\<close> leg, closed modulo \<open>oix_transport
+94409	subsection	The exact \<open>OTint
+94870	subsection	The \<open>OTint
+94988	banner	end r51-OIX block
+94990	banner	r51 merge: wt-y3 — buc1: level-0 acc UNCONDITIONAL + goal == single residual wfs_level_jump; wellorder/rank toolkit (wfs_)
+94996	section	r51 wfs — \<open>wf RPrel\<close> via level stratification and the semantic rank
+95033	subsection	(1) Infra probe: \<open><o\<close> and \<open>Wellfounded.acc\<close> from Main
+95044	subsection	(2) The D-index level \<open>wfs_lvT / wfs_lvP\<close>
+95083	subsection	Structural size (for the paired strong inductions)
+95105	subsection	\<open>descP\<close>: every component is \<open>\<le>\<close> the head
+95127	subsection	(3) STRAT-0: level-0 OT terms are downward closed under \<open><\<close>
+95269	subsection	(4) DEPTH-MONO-0: on level-0 OT terms the order bounds the depth
+95431	subsection	(5) Level-0 accessibility and the LEVEL-JUMP residual
+95581	subsection	(6) \<open>wfs_acc_total
+95692	subsection	(7) The semantic rank \<open>wfs_rk\<close> into \<open>(ordLess, wf_ordLess)\<close>
+95821	banner	end r51 buc1-semantic front (wfs_)
+95823	banner	r52 merge: wt-y3 — buc1 jump r52: STRAT-n(lvP) refuted -> head-index STRAT; frag machinery; collapse-core residual + tuple-acc bricks (wfj_)
+95828	section	r52 wfj — opening the level jump: STRAT-\<open>n\<close> refuted, head-index fragments
+95845	subsection	(1a) Head index \<open>wfj_hd\<close>: the TRUE STRAT-\<open>n\<close>
+95869	subsection	(1b) STRAT-\<open>n\<close> for \<open>wfs_lvP\<close> is FALSE for every \<open>n \<ge> 1\<close>
+95915	subsection	(2) The head-index fragments \<open>wfj_frag
+96023	subsection	(3) The jump opening: \<open>G
+96259	subsection	(4) First engine brick: the ACC-LOCAL tuple lift
+96494	banner	end r52 buc1 level-jump front (wfj_)
+96496	banner	r52 merge: wt-s4c — oix_transport level-peel bricks (otx2_, salvaged)
+96499	banner	r52-OTX2 (otx2_ prefix): the r51 pure-BT residual
+96500	banner	oix_transport DISCHARGED as a theorem.
+96503	section	r52-OTX2 --- discharging @{const oix_transport}
+96531	subsection	Order and \<open>descP\<close> bricks
+96592	subsection	Alignment: the shared \<open>(s, b)
+97066	banner	end r52-otx2 alignment bricks
+97068	banner	r53 merge: wt-y1 — LDJB CLOSED -> TVall modulo FINRC; pillars {OTint,OTpred,OTmulti,FINRC} (ljx_)
+97071	banner	r52 LDJB (ljx_): the LAST TVall residual closed via the
+97072	banner	RightAnces/RightNodes right-spine route (NO hqx, NO fin).
+97075	section	r52-LDJB --- \<open>ldj \<Longrightarrow> d = j\<^sub>L \<and> guard
+97118	subsection	ljx: elementary bricks
+97210	subsection	ljx: the ldj side --- position 1 of the right spine is \<open>v\<^sub>0\<close>
+97281	subsection	ljx: the structural side at \<open>j\<^sub>L = TrMax R\<^sub>c
+97405	subsection	ljx: r53 bricks --- prefix transport (\<open>nextrel0\<close>/\<open>adm\<close>/\<open>Adm
+97514	subsection	ljx: the structural side at \<open>j\<^sub>L < TrMax R\<^sub>c
+97796	subsection	ljx: the LDJB residual CLOSED, and the census updates
+97964	banner	end r53 LDJB (ljx_): the ldj boundary residual CLOSED
+97966	banner	r53 merge: wt-s4b — OTmulti modulo {OTint,TVall,ordIntC}; OTpred modulo {DEEPOT,NOBR} (opx_)
+97970	banner	r52 OPX: the OTpred / OTmulti census slots (opx_ prefix)
+97973	section	r52-OPX --- the \<open>OTmulti\<close> / \<open>OTpred\<close> census slots
+98020	subsection	Order and \<open>descP\<close> bricks
+98145	subsection	The \<open>OT\<^bsub>B\<^esub>\<close> reassembly brick
+98183	subsection	\<open>operB\<close> localisation to the last top-level principal
+98215	subsection	Mono components have singleton \<open>Trans\<close> lists
+98231	subsection	THE OTmulti SLOT, reduced to \<open>{OTint, TVall, ordIntC}\<close>
+98776	banner	end r52 OPX part 1 (bricks + OTmulti)
+98779	banner	r53 OPM: census v2 (OTmulti discharged) + OTpred removal
+98780	banner	analysis (fresh keystone clauses closed, deepened =
+98781	banner	single named residual DEEPOT)
+98784	section	r53-OPM --- census v2 (\<open>OTmulti\<close> discharged) and the \<open>OTpred
+98833	subsection	The \<open>OTpred\<close> removal analysis --- keystone FRESH clauses are FREE
+98966	banner	end r53 OPM part 1 (census v2 + OTpred removal bricks)
+98968	subsection	\<open>OTpred\<close> on multi hosts REDUCES to \<open>OTpred
+99193	subsection	THE MONO \<open>OTpred\<close> assembly and the FULL \<open>OTpred
+99348	banner	end r53 OPM part 2 (OTpred slot eliminated; census v3)
+99350	banner	r53 merge: wt-s4c — oix_transport THEOREM -> OTint condV residual-free; slot modulo {otIII,otIV,PredNp,Lpv,L1v} (otx3_)
+99353	banner	r53-OTX3 (otx3_ prefix): oix_transport ASSEMBLED as a
+99354	banner	THEOREM from the r52 otx2_ bricks; the OTint condV legs
+99355	banner	and the census drop the transport hypothesis.
+99358	section	r53-OTX3 --- @{const oix_transport} discharged; transport-free census
+99379	subsection	Bricks: \<open>setle \<Rightarrow> \<triangleleft>
+99544	subsection	The context recursion and the transport theorem
+99627	banner	end r53-otx3 transport theorem
+99629	subsection	Transport-free consumers: the condV \<open>OTint\<close> legs and the census
+99760	banner	end r53-otx3 block
+99762	banner	r53 merge: wt-y3 — collapse core: impredicativity established; residual = pbody-acc / staged jump ladder (wfc_)
+99768	section	r53 wfc — the collapse core: the head recursion is discharged
+99790	subsection	(1) \<open>G\<close>-set antitonicity and secured-content propagation
+99854	subsection	(2) The same-head acc lift: body \<open>RTrel
+99900	subsection	(3) The head recursion is free: body accessibility \<open>\<Longrightarrow>\<close> \<open>wf RPrel\<close>
+100125	banner	end r53 wfc block 1 (head-recursion discharge + tuple reflection)
+100127	subsection	(5) The \<open>lvP
+100403	banner	end r53 wfc block 2 (lvP-staged bootstrap + jump-step residual)
+100405	banner	r54 merge: wt-y1 — ordIntC CLOSED + L1v CLOSED + master census 7 residuals (oc4_)
+100408	banner	r54-OC4 (oc4_ prefix) --- (1) the ordIntC residual of
+100409	banner	opx_OTmulti CLOSED (leBT weakening of the closed interior
+100410	banner	exchange legs III/IV/V); (2) the COMBINED termination
+100411	banner	census: both pillars modulo
+100412	banner	{otIII, otIV, PredNp, Lpv, L1v, DEEPOT, NOBR, FINRC}.
+100415	section	r54-OC4 --- \<open>ordIntC\<close> closed and the combined termination census
+100417	subsection	The \<open>ordIntC\<close> residual, closed (strict form first)
+100649	banner	end r54-OC4 block 1 (ordIntC closed + master census)
+100651	subsection	Wiring bonus: the \<open>OTmulti\<close> slot modulo \<open>{OTint, TVall}\<close> only
+100677	banner	end r54-OC4 block 2 (OTmulti slot modulo {OTint,TVall})
+100679	subsection	The \<open>L1v
+100756	banner	end r54-OC4 block 3 (L1v closed; census tightened to 7 residuals)
+100758	banner	r54 merge: wt-s4c — base3 {PredNp,Lpv,L1v} DISCHARGED -> OTint modulo {otIII,otIV} (oi4_)
+100764	section	r54 oi4 --- the \<open>OTint\<close> base3 \<open>{PredNp, Lpv, L1v}\<close> discharged
+100781	subsection	The two \<open>DEADM\<close> kernel instances, packaged
+100825	subsection	The base3 pieces as THEOREMS (exact r53 slot shapes)
+100863	subsection	The condV-NADM \<open>OTint\<close> leg, RESIDUAL-FREE
+100879	subsection	The \<open>OTint\<close> slot modulo \<open>{otIII, otIV}\<close> and the census
+100941	banner	end r54 oi4 base3 block
+100943	banner	r54 merge: wt-y3 — distinguished sets blocks 1+2: definition, Mset, D1 union, acc bridge (wds_)
+100950	section	r54 wds — distinguished sets (ausgezeichnete Mengen) for the collapse
+101000	subsection	(1) The tuple hull and finiteness of the \<open>G\<close>-trace
+101034	subsection	(2) The definition, destructors, and the acc bridge
+101139	subsection	(4) \<open>M\<^sub>v\<close>: the union of all \<open>v\<close>-distinguished sets, basic closure
+101183	subsection	(5) D1: the union lemma — \<open>M\<^sub>v\<close> is itself \<open>v\<close>-distinguished
+101263	banner	end r54 wds block 1 (definition + comparability + Mset + D1)
+101268	subsection	(6) D3: the collapse lemma — THE residual for r55+
+101307	subsection	(7) The Hauptlemma: collapse \<open>\<Longrightarrow>\<close> every \<open>OT\<close>+\<open>dfree
+101368	subsection	(8) The chain: collapse \<open>\<Longrightarrow>\<close> \<open>wfc_pbody_acc\<close> \<open>\<Longrightarrow>\<close> [Buc1] 2.2
+101420	subsection	(9) Converse sanity: the residual is EXACTLY theorem-strength
+101507	banner	end r54 wds block 2 (collapse residual + Hauptlemma + full chain)
+101511	banner	r72-LBASE (opf_ prefix): the scb-wrapper BASE comparison
+101512	banner	leBT (D_ub 0) (d4vx_ins s0 ub b0 0_B)  --- PROVED.
+101515	section	r72-LBASE --- the \<open>Lbase
+101730	banner	end r72-LBASE
+
+## 8/Support_8_C.thy
 
 16	banner	r54 od4: the OTpred residuals {DEEPOT, NOBR}.
 17	banner	Brick A: the right-spine un-insertion relation od4_R and
@@ -1707,543 +2931,550 @@ Format: `line<TAB>kind<TAB>text`. Regenerate after every C->B fold.
 1201	subsection	The shared condIII / condIV exchange package (\<open>REGS\<close>/\<open>REGSP\<close>/\<open>RUN
 1372	subsection	Regime bundle (host-only facts)
 1433	subsection	r72: the \<open>LbaseU\<close> census slot, discharged UNCONDITIONALLY
-1587	subsection	r72: tower algebra for the \<open>0\<^sub>B\<close>-seeded core, and the re-seeded \<open>base\<^sub>1\<close>
-1845	subsection	The \<open>OTint\<close> step on \<open>hasParent
-2140	subsection	The \<open>otIII\<close> leg, closed modulo \<open>{OTA1, SETLE1}\<close>
-2205	subsection	The \<open>otIV
-2351	subsection	The \<open>OTint\<close> slot and the \<open>OTmulti\<close> slot, same residuals
-2433	banner	r55 front A+B synthesis: discharge DEEPOT/NOBR via od4
-2491	banner	r56 OTint one-block bricks: OTA1 engine (front A) + IVNP (front B)
-2495	banner	r56 ot1_ : discharge OTA1/SETLE1 (the two one-block tower
-2496	banner	facts) into oi5_termination_census.  STEP-0 (python)
-2497	banner	confirmed OTA1 (isOT_BP) and SETLE1 (setle) hold 899/899
-2498	banner	on genuine condIII/IV ST_PS hosts, decomposition UNIQUE.
-2499	banner	Body-level drivers verified: tri0 = b1x_triG(Dinf X0)A0 X1,
-2500	banner	BE0 (G u A0 <= A0 all-u), newOT_body isOT_BP(DB ub A0).
-2501	banner	setle_body (G u A0 vs insert X0 (G u X0)) is FALSE (u=0),
-2502	banner	so the plain otx3_core is BLOCKED; the tri-variant below
-2503	banner	takes tri0 directly at the hole instead of rebuilding it
-2504	banner	from a (false) setle.
-2616	section	r56-IVCORNER (\<open>ot2_\<close>) --- the two condIV corner residuals
-2618	subsection	\<open>IVNP\<close>: the no-parent condIV corner
-2640	banner	r56: discharge IVNP via ot2_IVNP => census modulo 4
-2691	banner	r57 OTint: tri0 engine (front A) + IVADMEQ pkg-reduction (front B)
-3067	section	r57-IVADMEQ (\<open>ot2_\<close>) --- the standard-condIV admeq OT step
-3069	subsection	The full-depth OT transport reduction (condV-style, at head \<open>e\<^sub>3\<close>)
-3218	subsection	Host-only discharge of the mnform package (\<open>d1/d2/d3/HB\<close> residual)
-3331	subsection	Surgery \<open>\<rightarrow>\<close> nested \<open>+\<^sub>B\<close>: the \<open>d4vx_ins\<close> hole is a CLEAN body substitution
-3418	banner	r58 OTint: ltJ-rethread census oi8_ + OTA1 reduced to A0OT (front A) + IVADMEQ NEWOT engine (front B)
-3423	banner	r58 ltJ-THREADED census chain (prefix oi8_): the census
-3424	banner	demands OTA1/SETLE1 only UNDER ltJ (s84x_jm3 P<transJm1 P).
-3425	banner	condIII always has ltJ; condIV-not-admeq derives it via
-3426	banner	cnv_condIV_ltJ; condIV-admeq->IVADMEQ; no-parent->IVNP.
-3427	banner	Verbatim copies of oi5_OTint_IIIIV_hp/condIII/condIV with
-3428	banner	the ltJ premise added to OTA1/SETLE1 and passed at the two
-3429	banner	application sites; then a single oi8_termination_census.
-3840	subsection	The ltJ-threaded master census, modulo \<open>{OTA1_ltJ, SETLE1_ltJ, IVADMEQ, FINRC}\<close>
-3903	banner	r58 OTA1_ltJ assembly (front A): reduce the ltJ-guarded
-3904	banner	census assumption OTA1_ltJ to the two genuinely-hard
-3905	banner	bricks {nub, tri0} via ot1_OTA1_from_bricks.  Everything
-3906	banner	else (the flat forms, the donor-OT readoff via
-3907	banner	m_8_7_OT_scb_recursive on operB(numBT 1/2), the base
-3908	banner	orders) is discharged from oi5_IIIIV_pkg + oi5_regime.
-4674	banner	r59 OTint: A0OT CLOSED => OTA1 pillar done (front A) + SETLE1 body-driver (front B)
-4926	subsection	The body driver \<open>BE'\<close> (hole-body domination, from \<open>tri0\<close>)
-5022	banner	r60 OTint: IVADMEQ CLOSED (front B) + SETLE1 head-guarded engine ox6_ (front A)
-5075	subsection	The head-guarded scbext-setle descent engine \<open>ox6_setle_scbext\<close>
-5829	banner	r61 endgame: SETLE1 restricted engine ox6_*_restr (front A) + FINRC bounded content ot_finRc_* / A9 determination (front B)
-6082	banner	r61 FINRC closure attempt (prefix ot_finRc_):  the condII
-6083	banner	finiteness residual tvx_finRc IS the A9 nth-artifact in
-6084	banner	fin-set form.  DETERMINATION + the true bounded content.
-6157	banner	r62: SETLE1 sec7.4 sub-bricks ox7_ (align3-track+leBT-hole; head-bound(ii) REFUTED, needs RightNodes>=v1) + FINRC A9 root=LastStep_def; consumer bodies ot_finRc_LastStep_* (no fin)
-6167	subsection	\<open>ox7_scbext_leBT_hole
-6201	subsection	\<open>ox7_align3_track
-6280	banner	r62 FINRC de-risk (sub-task (4)): the CONSUMER-SIDE of the
-6281	banner	A9 fin-form fix, ready to plug in once LastStep_def's Min
-6282	banner	binder carries the  J < Lng (Br M)  guard.
-6353	banner	r63: SETLE1 sec7.4 RightNodes(body)>=v1 (ox7_) [front A] + buc1 wds_collapse attack-surface wcl_ bricks [front B]
-6363	banner	e3 # RightNodes body and j1 = |r|-1, all MIDDLE nodes r!j (0<j<j1)
-6371	subsection	\<open>ox7_RightNodes_body_ge_v1
-6466	banner	r63 wcl: buc1-collapse --- engine-entry framing of THE
-6467	banner	residual wds_collapse (= wfj_collapse_core = wfc_pbody_acc
-6468	banner	= wf RPrel), the last external citation [Buc1] Lemma 2.2
-6469	banner	(Buchholz--Schuette Fundierung of (OT_B,<)).
-6471	banner	This block delivers UNCONDITIONAL structural bricks that
-6472	banner	sharpen the attack surface for the collapse, WITHOUT citing
-6473	banner	any residual:
-6474	banner	(A) wcl_min_bad_secured: the wfs_szP-minimal counterexample
-6475	banner	to accessibility is automatically G-trace-SECURED
-6476	banner	(wfj_secT) --- the standard [Buc1]/Buchholz--Schuette
-6477	banner	entry point: what the collapse engine must refute is a
-6478	banner	SECURED principal that fails to be accessible.
-6479	banner	(B) wcl_accfrag_*: the accessible fragment
-6480	banner	wfj_frag v \<inter> acc RPrel satisfies the domain/downward/
-6481	banner	relative-acc clauses of wds_distinguished UNCONDITIONALLY;
-6482	banner	its 4th (G-progressiveness) clause is EXACTLY the
-6483	banner	collapse-core, so under the residual it is the CONCRETE
-6484	banner	maximal v-distinguished set (= wds_Mset v), discharging
-6485	banner	the r54 honesty note on D1 witness existence.
-6488	section	r63-wcl --- [Buc1] 2.2 collapse: engine-entry framing (prefix \<open>wcl_\<close>)
-6490	subsection	(A) The minimal counterexample to the collapse is \<open>G\<close>-trace-secured
-6571	subsection	(B) The accessible fragment \<open>wfj_frag v \<inter> acc RPrel
-6680	subsection	(C) The minimal counterexample has an \<open>RTrel
-6770	banner	r64: wcl_ continuation --- the LEXICOGRAPHIC (head, size)
-6771	banner	minimal bad witness, and the sharp UPPER-COMPONENT residual.
-6773	banner	r63 exposed two INCOMPATIBLE minimality framings:
-6774	banner	* SIZE-minimal bad (wcl_min_bad_body_acc): body is acc, but
-6775	banner	head-<v predecessors may be LARGER (out of reach), so the
-6776	banner	wfc_principal_acc_of_body hlt-premise is NOT discharged.
-6777	banner	* HEAD-minimal bad: hlt IS discharged, but the body need not
-6778	banner	be acc.
-6779	banner	The resolution is the LEXICOGRAPHIC minimum on (head, size)
-6780	banner	with HEAD dominating: it discharges BOTH the head-<n branch
-6781	banner	(i, by head-minimality) AND the head-=n smaller-body branch
-6782	banner	(ii, by size-minimality within the level).  The SOLE residual
-6783	banner	is then the head->n ("upper", shielded/collapsed) components
-6784	banner	of the minimal-bad body --- exactly the psi-collapse content
-6785	banner	of [Buc1] Lemma 2.2.  This is a genuine sharpening: the entire
-6786	banner	head-<= n segment of the minimal-bad body is now free.
-6789	subsection	(D) The lexicographic \<open>(head, size)\<close>-minimal bad witness
-6879	subsection	(E) The sharp UPPER-component residual: the last content of [Buc1] 2.2
-7030	banner	r65: SETLE1_ltJ LEFT-END head bound (prefix ox7_) [front A]
-7032	banner	r64 REFUTED the right-spine L1/L2 route: the restricted
-7033	banner	spineH of ox6_setle_scbext_restr is governed by the FIRST-
-7034	banner	principal (LEFT-end) head bpHeadV(body), NOT the right spine.
-7035	banner	python census (537 REAL ST_PS-cap-PT_PS hosts, ST_PS oracle):
-7036	banner	* bpHeadV(body) >= v1  holds on ALL 537 (0 failures);
-7037	banner	* s0 is NEVER empty  => bpHeadV(X1) = bpHeadV(body);
-7038	banner	* the exact universal spineH (leBT t' X1 for every
-7039	banner	tx' in GBT u X1 with matched hole + size bound) holds on
-7040	banner	ALL 537 (0 failures) for u in {0,1};
-7041	banner	* the 2 ambiguous hosts M=(0,0)(1,0)(1,1)(2,1)(1,1)(2,1)
-7042	banner	and its (2,2) variant are NON-real (is_standard = False).
-7043	banner	So the LEFT-end bound closes spineH.  (python:
-7044	banner	python/_r65_lefthead_step0.py)
-7046	banner	KEY PROOF IDEA for the LEFT-end bound (r64 said RightNodes
-7047	banner	ALONE cannot bound bpHeadV; RightNodes + OT descP CAN):
-7048	banner	body in OT_B  =>  its principal list descP-descending, so
-7049	banner	head(first principal) >= head(last principal); and
-7050	banner	head(last principal) = RightNodes(body)!0 (lpx_bpHeadV_PB_
-7051	banner	last), which is >= v1 by the r63 RightNodes bound.  Hence
-7052	banner	bpHeadV(body) = head(first) >= head(last) >= v1.
-7055	subsection	\<open>ox7_slice_TransOT\<close>: the census slice \<open>Trans (s84x_N M)\<close> is in \<open>OT\<^bsub>B\<^esub>\<close>
-7131	subsection	\<open>ox7_bpHeadV_body_ge_v1
-7245	subsection	\<open>ox7_ub_lt_bpHeadV_body
-7277	banner	r65 (OPUS 4.8): the tower STEP and the intrinsic-globality
-7278	banner	obstruction of wcl_upper (prefixes wtw_ / wcl_).
-7280	banner	r64 pinned [Buc1] 2.2 to the single residual wcl_upper: for
-7281	banner	the lex-(head,size)-minimal bad principal D_n b, the head->n
-7282	banner	body components are RPrel-accessible.  This round makes the
-7283	banner	tower STEP explicit and unconditional (wtw_core_step: the
-7284	banner	level-u principal is accessible once head-<u principals AND
-7285	banner	the head->=u components are), and CERTIFIES why the residual
-7286	banner	cannot be discharged level-locally: for a bad witness, EVERY
-7287	banner	head->n component has the bad principal itself as a strict
-7288	banner	RPrel-predecessor (wcl_high_comp_bad_pred), so it is provably
-7289	banner	NON-accessible (wcl_high_comp_not_acc) — the head->n content
-7290	banner	is exactly the shielded material with no elementary handle.
-7293	subsection	(F) r65: the unconditional tower STEP and the globality of \<open>wcl_upper\<close>
-7512	banner	r66 (OPUS 4.8): SETLE1_ltJ position-0 first-difference close
-7514	banner	r65 localized the census SETLE1_ltJ residual (via
-7515	banner	ox6_SETLE1_reduce_restr) to a spineH: leBT t' X1 for every
-7516	banner	matched-hole right-spine ancestor body t' of A1, with matched
-7517	banner	tx' in GBT u X1 sharing the hole (sc,bc).  The r65 next-idea
-7518	banner	closes spineH at position 0: t' and X1 differ at the FIRST
-7519	banner	principal head, and bpHeadV(t') < bpHeadV(X1) DECIDES
-7520	banner	lessBT t' X1 outright (dictionary order, [Buc1] (<1)-(<3)).
-7521	banner	This front supplies the two reusable position-0 bricks
-7522	banner	(ox7_headlt_lessBT, ox7_bpHeadV_share) and threads the census
-7523	banner	SETLE1_ltJ slot down to the SINGLE clean strict-head residual
-7524	banner	HEAD: bpHeadV(t') < bpHeadV(X1) (ot7_SETLE1_ltJ_of_head,
-7525	banner	oi8_census_SETLE_of_head).  The remaining truth of HEAD is the
-7526	banner	census right-spine-terminal geometry (bpHeadV(t')=ub), a deep
-7527	banner	Trans-image fact recorded in the status text at the end.
-7530	subsection	\<open>ox7_headlt_lessBT
-7564	subsection	\<open>ox7_bpHeadV_share
-7604	subsection	\<open>ot7_SETLE1_ltJ_of_head
-7709	banner	r66 (OPUS 4.8) — buc1 MAJOR REFRAME: transcribe Buchholz's
-7710	banner	OWN proof of wf ([1] \<section>2, Lemmas 2.4--2.8), a FORWARD
-7711	banner	structural induction on TERM LENGTH (NOT the dead r65
-7712	banner	head-level / minimal-bad tower).  Prefix  bwo_  (Buchholz
-7713	banner	well-ordering).
-7716	section	r66 bwo — Buchholz's own proof of \<open>wf RPrel\<close> ([1] \<section>2, Lemmas 2.4--2.8)
-7763	subsection	(1) The derived sets of [1] p.138: \<open>A\<^sub>\<nu>(X,a)\<close>, \<open>X\<^bsup>(a)\<^esup>\<close>, \<open>Xbar\<close>, \<open>W\<^sup>*\<close>
-7799	subsection	(2) Correspondence aliases: Buchholz 2.4(b) / 2.7-\<open>D\<^sub>v\<close> / 2.8 = proven code
-7805	subsection	(3) The single residual and the main reduction \<open>bwo_2_2_wf\<close>
-7899	banner	end r66 bwo block (Buchholz \<section>2 transcription; residual = bwo_Wstar_total)
-7902	banner	r67 (OPUS 4.8): the r66 HEAD residual is REFUTED
-7903	banner	(ox7_hole_right_spine_terminal / bpHeadV t' < bpHeadV X1)
-7905	banner	STEP-0 (python/_r67_headterm_step0.py, real ST_PS census
-7906	banner	hosts, oper-images of diagonals; yaBMS is_standard oracle):
-7907	banner	The r66 position-0 first-difference HEAD
-7908	banner	forall matched-hole tx' in GBT u X1.  bpHeadV t' < bpHeadV
-7909	banner	X1   (t' the A-side, share => bpHeadV t' = bpHeadV tx')
-7910	banner	is FALSE.  90/332 matched tx' have bpHeadV t' = bpHeadV X1
-7911	banner	(EQUALITY, never >).  The stronger task claim bpHeadV t'=ub
-7912	banner	fails 198/332.
-7914	banner	GENUINE ST_PS CEX (is_standard = 1 via yaBMS `bms -s`):
-7915	banner	M = (0,0)(1,1)(2,2)(3,3)(4,1)(5,0)(6,1)(7,1)(8,1)
-7916	banner	reduced, monoT, condIII, hasParent, 1<Lng-1, ltJ
-7917	banner	(s84x_jm3=5 < transJm1=7).  v1=1, ub=0.
-7918	banner	X1 = D_1(D_1(D_0(D_0 0))),  bpHeadV X1 = 1.
-7919	banner	matched tx' = D_1(D_0(D_0 0)) in GBT u X1 (u in {0,1}),
-7920	banner	flat = [D_0](=sc) @ flatBP(D_0(D_0 0))(=hole P) @ [] (bc);
-7921	banner	size t' < size A1 (bound SATISFIED, does not exclude it);
-7922	banner	bpHeadV tx' = 1 = bpHeadV X1  --- NOT strictly less.
-7924	banner	ROOT CAUSE.  The matched-hole set (tx' in GBT u X1 carrying
-7925	banner	the hole P = D_ub(D_ub 0) at its rightmost spine, bc all-RP)
-7926	banner	is NOT just the immediate parent body of P: it contains
-7927	banner	EVERY higher right-spine ancestor body of P.  A higher one
-7928	banner	b1 = D_h0(...P...) has first head h0 = bpHeadV X1, so the
-7929	banner	position-0 head AGREES with X1 and the first-difference sits
-7930	banner	DEEPER (where t' hits the hole head ub while X1 still has an
-7931	banner	s0 right-spine head >= v1 > ub).  r66's position-0 reduction
-7932	banner	(ot7_SETLE1_ltJ_of_head, ox7_headlt_lessBT) is thus too
-7933	banner	STRONG; HEAD cannot be discharged (it is false).
-7935	banner	WHAT IS STILL TRUE (0 fails on all matched tx'):
-7936	banner	(a) bpHeadV t' <= bpHeadV X1   (weak head bound);
-7937	banner	(b) leBT t' X1                 (spineH itself; r65: 537/537).
-7938	banner	So SETLE1 is reduced (ox6_SETLE1_reduce_restr) to the TRUE
-7939	banner	spineH = "leBT t' X1 for every matched-hole tx' in GBT u X1
-7940	banner	(size t' < size A1)", which is NOT further reducible to a
-7941	banner	position-0 head separation.
-7943	banner	CORRECTED RESIDUAL / NEXT IDEA (right-spine DESCENT, not the
-7944	banner	position-0 head, and INDEPENDENT of A0 since the divergence
-7945	banner	is strictly before the hole body):
-7946	banner	prove   lessBT tx' X1   for every matched-hole tx' in
-7947	banner	GBT u X1  (X-side, hole body X0 = D_ub 0), by induction down
-7948	banner	X1's rightmost spine:
-7949	banner	* bpHeadV X1 = h0 is the MAX right-spine head
-7950	banner	(OT descP + rnsub RightNodes bound, r63/r65; the LEFT-
-7951	banner	end head governs, cf. ox7_bpHeadV_body_ge_v1);
-7952	banner	* matched tx' = D_{h_k}(deeper), h_k <= h0; if h_k < h0
-7953	banner	then bpHeadV tx' < bpHeadV X1 closes at THIS level
-7954	banner	(ox7_headlt_lessBT); if h_k = h0 recurse into the bodies
-7955	banner	(both share the head, compare one spine level deeper);
-7956	banner	* the base of the descent is the hole D_ub, ub < v1 <= all
-7957	banner	right-spine heads, so the recursion terminates with a
-7958	banner	strict drop.
-7959	banner	Then transport lessBT tx' X1 to lessBT t' X1 (t' = tx' with
-7960	banner	hole body X0 -> A0): the first-difference is at an outer
-7961	banner	principal head, strictly ABOVE the hole body, so replacing
-7962	banner	X0 by A0 leaves the difference and its verdict unchanged.
-7963	banner	The load-bearing NEW lemma is "matched right-spine sub-body
-7964	banner	of the census X1 is lessBT X1" (a shared-outer-heads /
-7965	banner	hole-head-drop first-difference), which the existing
-7966	banner	position-0 bricks (ox7_headlt_lessBT / ox7_bpHeadV_share)
-7967	banner	are too shallow to give.
-7972	banner	r67 buc1: Buchholz [1] Lemma 2.4(a) shift-closure + the
-7973	banner	addBT/domB/operB glue underneath 2.5/2.6/2.7.  Prefix bwo_
-7974	banner	(append-only).
-7977	section	r67 bwo — the \<open>+\<^sub>B\<close> glue and Buchholz [1] Lemma 2.4(a)
-7993	subsection	(4) \<open>+\<^sub>B\<close> / \<open>domB\<close> / \<open>operB\<close> glue
-8100	subsection	(5) [Buc1] Lemma 2.4(a): shift closure \<open>A\<^sub>\<nu>(X\<^bsup>(a)\<^esup>) \<subseteq> X\<^bsup>(a)\<^esup>\<close>
-8176	subsection	(6) [Buc1] Lemma 2.5 sub-result (1), modulo leastness (A2)
-8246	banner	end r67 bwo block (glue + [Buc1] Lemma 2.4(a) + 2.5 sub(1)/A2)
-8250	banner	r68 (OPUS 4.8): the CORRECTED SETLE1 residual — the DEEP
-8251	banner	first-difference descent.  Prefix  ox8_.
-8253	banner	r67 REFUTED the position-0 HEAD route (bpHeadV t' < bpHeadV
-8254	banner	X1 is FALSE: the matched-hole set contains EVERY higher
-8255	banner	right-spine ancestor, and a higher one shares X1's outer
-8256	banner	head).  The TRUE residual (spineH of ox6_SETLE1_reduce_restr)
-8257	banner	is  leBT t' X1  for the matched right-spine ancestor bodies.
-8259	banner	STEP-0 (python/_r68_deepdesc_step0.py; 1984 REAL ST_PS
-8260	banner	census hosts = BFS-standard corpus, condIII/IV + hasParent +
-8261	banner	1<Lng-1 + ltJ; 11306 peel levels):
-8262	banner	* goal   lessBT Z_k X1  : 11306/11306 (0 fails)
-8263	banner	* X-side lessBT Y_k X1  : 11306/11306
-8264	banner	* VERDICT INVARIANCE    : 11306/11306 — the verdict of
-8265	banner	lessBT (Y_k with hole body := Q) X1 is the SAME for
-8266	banner	Q in {0, D_ub 0, A0, BIG}, i.e. the first difference
-8267	banner	sits strictly ABOVE the hole body (so the X0 -> A0
-8268	banner	transport is sound).
-8269	banner	* X1's right spine above the hole: heads all >= v1 > ub,
-8270	banner	and EVERY spine level is a PURE CHAIN (single principal,
-8271	banner	11306/11306) — the comparison path = the spine path.
-8272	banner	* bpHeadV Z_k > bpHeadV X1 : NEVER (0/11306); = : 4083
-8273	banner	(r67's CEX class, needs the deep descent); < : 7223.
-8274	banner	* every matched tx' in GBT 0 X1 IS a spine body Y_k
-8275	banner	(off-spine matched: 0).
-8276	banner	* NEGATIVE: the stepwise chain  lessBT Y_k Y_(k-1)  FAILS
-8277	banner	2274/11306 — so the descent CANNOT be assembled by
-8278	banner	transitivity along the spine; it must be proved AGAINST
-8279	banner	X1 directly (a lexicographic / self-maximality fact).
-8280	banner	* isOT_BT X1 : 1984/1984.
-8282	banner	THE SOURCE OF THE DESCENT (this block).  The self-maximality
-8283	banner	of the spine is NOT an OT-generic fact (the head word can
-8284	banner	genuinely increase: 3379 strict drops vs 5943 non-drops) —
-8285	banner	it comes from ONE Buchholz G-condition, at the LOW enclosing
-8286	banner	head e3:  D_e3(body) is the deepest-right principal of
-8287	banner	Trans M (the kind-1 scb block k1 of oi5_IIIIV_pkg), so
-8288	banner	m_8_7_OT_scb_recursive gives  isOT_BP (D_e3 body), i.e.
-8289	banner	for all x in G_e3(body).  x < body.
-8290	banner	And e3 < v1 (oi5_regime(1)) <= EVERY right-spine head of
-8291	banner	body (ox7_RightNodes_body_ge_v1), so the WHOLE right spine
-8292	banner	of body lies inside G_e3(body).  Hence EVERY right-spine
-8293	banner	sub-body of body is < body — exactly the self-maximality
-8294	banner	that STEP-0 measures, now unconditional.
-8297	section	r68 ox8 — right-spine sub-bodies and the OT \<open>G\<close>-descent
-8299	subsection	(1) The right-spine sub-body operators \<open>ox8_lastV\<close> / \<open>ox8_lastT
-8380	subsection	(2) The \<open>G\<close>-descent: an \<open>OT\<close> principal bounds its whole right spine
-8402	subsection	(3) \<open>RightNodes\<close> reads exactly the \<open>ox8_rsub\<close> chain
-8451	subsection	(4) \<open>d\<close>-freeness along the spine
-8494	subsection	(5) Census: \<open>D\<^bsub>e\<^sub>3\<^esub>(body)\<close> is an \<open>OT\<close> principal
-8528	subsection	(6) CENSUS KEYSTONE: every right-spine sub-body of \<open>body
-8589	subsection	(7) STATUS — the EXACT residual after r68: the surgery TRANSPORT
-8661	banner	end r68 ox8 block (part 1: the G-descent source; residual = TRANSPORT)
-8691	subsection	(1) The operator \<open>A\<^sub>\<nu>\<close>, parametrised by the lower-level family
-8739	subsection	(2) The iterated inductive definition \<open>W\<^sub>v = lfp A\<^sub>v\<close>
-8884	banner	end r68 bwl part 1 (lfp semantics: A1/A2/W1/W2/W3/level-mono FREE)
-8886	subsection	(3) [Buc1] Lemma 2.4 on the \<open>lfp\<close> semantics
-8991	subsection	(4) The numerals live in every \<open>W\<^sub>v\<close>
-9009	subsection	(5) [Buc1] Lemma 2.5 sub-result (1) — now UNCONDITIONAL
-9052	banner	end r68 bwl part 2 ([Buc1] 2.4(a),(b), numerals, 2.5(1) unconditional)
-9054	subsection	(6) Shape lemmas for the principal \<open>D\<^sub>w c\<close> (guards of \<open>operB\<close>/\<open>domB\<close>)
-9106	subsection	(7) The collapsing closure: \<open>u \<le> w \<Longrightarrow> x \<in> W\<^sub>u \<Longrightarrow> D\<^sub>w x \<in> W\<^sub>w\<close>
-9224	banner	end r68 bwl part 3 (collapsing closure W_u -> D_w W_u subseteq W_w, u<=w)
-9226	subsection	(8) The \<open>xseq\<close> branch ([].4)(ii), i.e. the [Buc2]-corrected case
-9264	subsection	(9) The DOWNWARD collapse \<open>W\<^sub>m \<subseteq> {y. \<forall>v \<le> m. D\<^sub>v y \<in> W\<^sub>v}\<close>
-9454	banner	end r68 bwl part 4 (downward collapse; W_m inside Wstar)
-9456	subsection	(10) [Buc1] p.138(5): \<open>W\<^sup>* = {x. \<forall>u < \<nu>. D\<^sub>u x \<in> W\<^sub>u}\<close> (here \<open>\<nu> = \<omega>\<close>)
-9475	subsection	(11) [Buc1] Lemma 2.6: \<open>A\<^sub>\<nu>(W\<^sup>*) \<subseteq> W\<^sup>*\<close>
-9627	subsection	(12) [Buc1] Lemma 2.7 (length induction) for the \<open>D\<^sub>\<omega>\<close>-free terms
-9722	subsection	(13) [Buc1] 2.8 for \<open>T\<^bsub>B\<^esub>\<close>: every \<open>D\<^sub>\<omega>\<close>-free term lies in \<open>W\<^sup>*\<close>
-9742	banner	end r68 bwl part 5 ([Buc1] 2.6, 2.7 for dfree, 2.8: T_B inside Wstar)
-9744	subsection	(14) The bridge \<open>W\<^sub>u \<longrightarrow> acc\<close>, and the NEW single residual \<open>bwl_cof\<close>
-9952	banner	end r68 bwl part 6 (bridge; residual = bwl_cof, the Bachmann property)
-9956	banner	r69 FINRC ROOT SURGERY (prefix ot9_): correction A9 fin-form
-9957	banner	LastStep_def's Min-binder is now GUARDED by J < Lng (Br M).
-9958	banner	Consequence: the whole fin/finM/FINRC cascade is PROVABLE.
-10070	banner	end r69 FINRC root surgery (A9 fin-form): FINRC DISCHARGED
-10075	banner	r69 (OPUS 4.8): the SURGERY TRANSPORT.  Prefix  ox9_.
-10077	banner	r68 proved the TRUE SOURCE of the SETLE1 descent
-10078	banner	(ox8_body_rspine_lessBT: every right-spine sub-body of
-10079	banner	body = bpHeadT (Trans (s84x_N M)) is < body, from the ONE
-10080	banner	Buchholz G-condition at the low enclosing head e3).  What
-10081	banner	SETLE1 actually needs is that comparison carried over to the
-10082	banner	SURGERED trees  A1 = body[hole := D_ub A0],
-10083	banner	X1 = body[hole := D_ub X0]  (hole = D_v1 0, ub = v1 - 1):
-10084	banner	lessBT (ox8_rsub A1 k) X1     (k >= 1).
-10086	banner	STEP-0 (python/_r69_transport_step0{,b,c}.py; standard ST_PS
-10087	banner	corpus, condIII/IV + hasParent + 1<Lng-1 + ltJ; 361/427
-10088	banner	hosts, 1117 peel levels):
-10089	banner	* lessBT (ox8_rsub A1 k) X1        : 1117/1117
-10090	banner	* lessBT (ox8_rsub body k) body    : 1117/1117 (= ox8)
-10091	banner	* r68's claim "every spine level of X1 above the hole is a
-10092	banner	PURE CHAIN" is FALSE on this corpus (14 hosts have a wide
-10093	banner	hole level, 15 have a non-monotone width word), and the
-10094	banner	dangerous branch (C) below DOES occur (13/1117).  So the
-10095	banner	r68 assembly sketch (chain-ness) is NOT the right brick.
-10096	banner	* the TRUE brick: EVERY head occurring ANYWHERE in body is
-10097	banner	>= v1 (427/427 hosts; ox9_hge below).  With it the whole
-10098	banner	transport is elementary -- the surgery never flips a
-10099	banner	verdict, because the LEFT operand can never reach the
-10100	banner	RIGHT operand's leaf hole D_v1 0 (that would need a head
-10101	banner	< v1).  Run as a decision procedure the proof below
-10102	banner	closes 1117/1117 with 0 dangers.
-10104	banner	So SETLE1 is REDUCED, unconditionally, to the single local
-10105	banner	head-bound  ox9_hge (enat v1) (bpHeadT (Trans (s84x_N M)))
-10106	banner	-- a Trans-image geometry fact, NOT an OT fact (descP only
-10107	banner	bounds heads from below by the LAST head of their own list).
-10110	section	r69 ox9 --- the surgery transport
-10112	subsection	(1) The all-heads bound \<open>ox9_hge\<close> and the hole relation \<open>ox9_holeD\<close>
-10171	subsection	(2) Elementary \<open>lessBT\<close> / \<open>lessBP\<close> facts
-10202	subsection	(3) The one-sided transport \<open>ox9_TT
-10307	subsection	(4) The two-sided transport \<open>ox9_MAIN\<close>
-10500	subsection	(5) Reading \<open>ox9_holeD\<close> off the flat surgery, and descending it
-10614	subsection	(6) The re-threaded SETLE engine \<open>ox9_engine\<close>
-10752	subsection	(7) The census \<open>SETLE1_ltJ\<close> slot, modulo the head bound --- WITHDRAWN (r72)
-10767	banner	end r69 ox9 block (census wrappers withdrawn in r72; engine kept)
-10770	banner	r70 (OKH front).  STEP-0 verdict: the r69 census residual
-10771	banner	OKH  =  ox9_ok v1 (v1-1) (bpHeadT (Trans (s84x_N P)))
-10772	banner	is  FALSE.  So is the recommended route "leafcond".  Both
-10773	banner	die on the SAME witness, a genuine ST_PS census host:
-10775	banner	P = (0,0)(1,1)(2,1)(3,1)(4,0)(5,1)(6,1)(7,1)(8,0)(9,1)
-10776	banner	(10,1)(11,1)(11,0)(12,0)(10,1)(11,1)(10,1)(11,1)
-10778	banner	certified (python/_r70_okh_cex.py) to satisfy EVERY census
-10779	banner	hypothesis: P in ST_PS (explicit oper chain from
-10780	banner	diagSeq 0 2, replayed), monoT (hence PT_PS), hasParent P 1
-10781	banner	(Lng P - 1), 1 < Lng P - 1, transCondIII P, Trans P in
-10782	banner	OT_B, s84x_jm3 P = 8 < 16 = transJm1 P.  For it
-10783	banner	v1 = 1,  ub = 0,  X0 = D_0 0,  pX = D_0 X0 = D_0(D_0 0)
-10784	banner	body = bpHeadT (Trans (s84x_N P))
-10785	banner	= D_1((D_1((D_1 0, D_0(D_0 0))), D_1(D_1 0),
-10786	banner	D_1(D_1 0)))
-10787	banner	and body carries, OFF the right spine, the principal
-10788	banner	D_0 (D_0 0)  =  pX  EXACTLY.
-10789	banner	Its head 0 < v1 = 1 and its body D_0 0 is NOT < X0 = D_0 0
-10790	banner	(they are EQUAL), so ox9_okP fails -- ox9_ok fails at
-10791	banner	EQUALITY with the surgery filler.  ox10_cex_not_ok below
-10792	banner	is the Isabelle check.  (ox9_hge and leafcond die a
-10793	banner	fortiori.)  Corpus: pure ST_PS (diagSeq + oper closure),
-10794	banner	maxlen 20, 542 census hosts / 1212 peel levels: 8 hosts
-10795	banner	refute ox9_ok.  (r69 saw 0 -- its walks were too short.)
-10796	banner	Hence theorem oi9_census_OKH is VACUOUS.
-10798	banner	BUT the transport TARGET survives (1212/1212, 0 failures):
-10799	banner	ox9_ok was only ever a SUFFICIENT condition, and it is
-10800	banner	strictly too strong -- it is a GLOBAL "every principal
-10801	banner	anywhere" guard, while ox9_lexP consumes it only at the
-10802	banner	hole-aligned positions of the tie path, which the bad
-10803	banner	principal never occupies (it lives in the body of a
-10804	banner	NON-last principal, off the right spine).
-10806	banner	r70 route: ox9_ok/PXOK/DESC are consumed by ox9_engine
-10807	banner	ONLY to feed ox9_MAIN, whose ONLY output is
-10808	banner	leLA : leBT (ox8_rsub A1 (Suc k)) X1.
-10809	banner	Take that as the hypothesis instead, and factor it:
-10810	banner	MONO(k): lessBT (ox8_rsub A1 k) (ox8_rsub WB k)
-10811	banner	-- ALREADY PROVEN (ox9_holeD_lessBT: the
-10812	banner	surgery pA < D_v1 0 lowers the tree)
-10813	banner	KK(k)  : lessBT (ox8_rsub WB k) X1
-10814	banner	-- the UNSURGERED spine sub-body of the census
-10815	banner	body stays below the LOWERED body X1.
-10816	banner	KK is a Trans-image geometry fact with NO A0 and NO
-10817	banner	ox9_ok in it, and it is TRUE on the corpus (1212/1212,
-10818	banner	including all 8 ox9_ok-refuting hosts; python/_r70_key.py).
-10819	banner	ox10_engine below re-derives the whole census from KK.
-10822	section	r70 ox10 --- OKH is FALSE; the census residual becomes the \<open>KK\<close> bound
-10824	subsection	(1) The counterexample: \<open>ox9_ok\<close> fails at EQUALITY with the filler
-10853	subsection	(2) \<open>ox10_engine\<close>: the same engine, driven by \<open>KK\<close> alone
-10988	subsection	(3) The census \<open>SETLE1\<close> slot from \<open>KK\<close>
-11085	subsection	(4) The census roll-up: both pillars from \<open>KK\<close> alone
-11158	subsection	(5) \<open>ox10_lexP\<close>: the list transport with a POSITIONAL guard
-11240	banner	end r70 ox10 block (OKH refuted; census residual = KK)
-11276	section	r70-y3 --- W-induction as the termination engine (\<open>y3_\<close>)
-11278	subsection	(1) \<open>W\<close> is monotone in the level, and every \<open>D\<^sub>\<omega>\<close>-free \<open>T\<^sub>m\<close>-term is in \<open>W\<^sub>m\<close>
-11401	subsection	(2) The three \<open>dom\<close>-shapes are pairwise distinct
-11448	subsection	(3) The residual \<open>bwl_cof\<close> loses its \<open>W\<close>-membership clause
-11513	subsection	(4) The FREE hydra theorem: \<open>W\<^sub>v \<subseteq> acc\<close> of the fundamental-sequence tree
-11600	subsection	(5) The NEW residual \<open>y3_cofimg\<close> and the citation-free termination engine
-11777	banner	end r70 y3 block
-11815	banner	end r70 y3 audit/refutation notes
-11880	section	r71 ox11 --- the POSITIONAL transport (the repair of \<open>ox9_TT\<close>)
-11882	subsection	(1) A prefix verdict survives any extension of the right operand
-11919	subsection	(2) \<open>ox11_safe\<close>: the walk is decided above the hole
-11942	subsection	(3) \<open>ox11_TT\<close>: THE POSITIONAL TRANSPORT
-12046	subsection	(4) Discharging \<open>ox11_safe\<close> from a CLOSED SET plus a BOTTOM GUARD
-12156	subsection	(5) The census: \<open>KK\<close> from the BOTTOM GUARD alone
-12357	subsection	(6) The census roll-up: both pillars from the BOTTOM GUARD alone
-12481	section	r71-y4 --- the Bachmann (cofinality) property of the fundamental sequences (\<open>y4_\<close>)
-12483	subsection	(1) The \<open>xseq\<close> tower is strictly increasing
-12564	subsection	(2) List/order helpers for the two reductions
-12651	subsection	(3) THE COLLAPSING COFINALITY --- case ([].4)(ii)
-12905	subsection	(4) Strict increase of the \<open>\<nat>\<close>-indexed fundamental sequence
-13056	subsection	(5) Helpers for the Bachmann induction
-13246	subsection	(6) \<^bold>\<open>THE BACHMANN (COFINALITY) PROPERTY\<close>
-13682	subsection	(7) CAPSTONES --- \<open>wf RPrel
-13751	subsection	(8) HONESTY REPORT --- audits, and why the \<open>G\<close>-hypothesis is load-bearing
-13902	section	r72 ox12 --- \<open>KK\<close> CLOSED: \<open>ox11_safe\<close> is vacuous by a SIZE count
-13904	subsection	(1) The symbol count \<open>ox12_szT\<close> / \<open>ox12_szP\<close>
-13923	subsection	(2) THE COLLAPSE: \<open>ox11_safe\<close> from \<open>ox12_szT Z < ox12_szT W\<close>
-13986	subsection	(3) One right-spine step strictly drops the symbol count
-14037	subsection	(4) \<open>KK\<close> --- PROVED (the census, with \<open>Trans N \<in> OT\<^bsub>B\<^esub>\<close> available)
-14097	subsection	(5) The census roll-up --- UNCONDITIONAL
-14160	subsection	(6) \<open>KK\<close> in the exact shape the capstones assume (no \<open>OT\<^bsub>B\<^esub>\<close> premise)
-14187	subsection	(7) \<^bold>\<open>PSS TERMINATION --- UNCONDITIONAL\<close>
-14214	subsection	(8) The ARTICLE'S OWN termination statement (\<open>p_8_7_termination\<close>)
-14400	subsection	(9) The \<open>OT\<close>-membership slots of \<section>8.1 and \<section>8.3, now unblocked
-14443	subsection	Well-definedness holes (footnote audit): \<open>LastStep\<close>'s \<open>Min
-14691	subsection	Exchange (1) on \<open>RT\<^bsub>PS\<^esub>\<close>, all \<open>n \<ge> 1\<close>
-14738	subsection	Descent (2) on \<open>RT\<^bsub>PS\<^esub>\<close>, all \<open>n \<ge> 1\<close>
-14824	subsection	The article's \<section>8.1 proposition, on its stated domain
-14836	section	r74: \<section>8.5 条件(V) の交換関係 — 記事の印字インデックス \<open>m\<^sub>n\<close> でのフル命題
-14871	subsection	Pure \<open>BT\<close> tower comparisons at the article index (non-adm cores)
-14921	subsection	NON-ADM leg: exchange (1) and (3) at the article index \<open>m\<^sub>n = n\<close>
-14974	subsection	ADM leg: exchange (1) at the article index \<open>m\<^sub>n = n - 1\<close>
-15066	subsection	THE ARTICLE'S \<section>8.5 命題, verbatim (both legs, printed index \<open>m\<^sub>n\<close>)
-15128	section	r74: \<section>8.4 補題（条件(III)か(IV)の下での基本列の基本性質）part (3)
-15151	subsection	Reflection: a common surgery pair TRANSPORTS the order backwards
-15200	subsection	The packaging step: flat-form pair + strict order \<Longrightarrow> the part-(3) witness
-15239	subsection	The \<open>j\<^sub>-\<^sub>3\<close>-anchored branch: condition (III), and (IV) with \<open>Adm(j\<^sub>-\<^sub>2) \<noteq> j\<^sub>-\<^sub>1\<close>
-15381	subsection	Condition (IV), the \<open>\<not>admeq\<close> branch: same anchor, different order source
-15405	subsection	Condition (IV), the \<open>admeq\<close> branch: the \<open>c\<^sub>2\<close>-anchored witness
-15518	subsection	THE ARTICLE'S \<section>8.4 補題, parts (1) and (3), verbatim
-15585	section	r74 (y3s): the \<section>7 \<open>T\<^bsub>PS\<^esub>\<close> scope gap --- \<open>Red\<close>-iteration transport
-15634	subsection	Basic \<open>Red\<close>-iteration bricks
-15714	subsection	The stabilisation predicate and the domain transport
-15852	subsection	The article propositions, on \<open>T\<^bsub>PS\<^esub> \<inter> RedStab\<close>
-15977	section	r75-Y3I --- \<section>8.4 の \<open>Trans\<close> 内部記号クラスタ（六補題）
-15979	subsection	Exposure of the remaining \<open>Trans\<close>-recursion \<open>let\<close>-symbols (\<open>t\<^sub>3\<close>, \<open>t\<^sub>4\<close>)
-16047	subsection	The branch dichotomy needed by L4/L5 (\<open>guard \<Longrightarrow> (III) \<or> (IV)\<close>)
-16112	subsection	L1 (content.md 4265) 補題（条件(III)～(V)の下での右端の置き換えと\<open>Trans\<close>の関係）
-16133	subsection	L2 (content.md 4389) 補題（条件(III)～(VI)の下での展開規則の基本性質）
-16173	subsection	L3 (content.md 4507) 補題（条件(III)～(VI)の下での\<open>Trans\<close>とscb分解の関係）
-16185	subsection	L4 (content.md 4605) 補題（条件(III)～(V)の下での切片のscb分解）
-16260	subsection	L5 (content.md 4702) 補題（条件(III)～(V)の下での各種scb分解）
-16313	subsection	L6 (content.md 4802) 補題（条件(III)か(IV)の下での各種scb分解）
-16365	section	r75: RED2 --- \<open>Red (Red M) \<in> RT\<^bsub>PS\<^esub>\<close> for every \<open>M \<in> T\<^bsub>PS\<^esub>\<close>
-16510	subsection	Two list-level lemmas about concatenations of \<open>Red\<close>-blocks
-16692	subsection	The \<open>P\<close>-component left ends, and invariant (D)
-16799	subsection	The main lemma and RED2
-16897	subsection	The four \<section>7 propositions, now on bare \<open>T\<^bsub>PS\<^esub>\<close>
-16926	section	r76-Y3Q --- \<section>6.5 命題（単項性と \<open>Red\<close> の関係）on all of \<open>PT\<^bsub>PS\<^esub>\<close>
-16970	section	r76-Y3P --- \<section>7.4 命題（\<open>Mark\<close>と\<open><\<^bsub>M\<^esub>\<^sup>NextAdm\<close>の関係）: TRUE on \<open>T\<^bsub>PS\<^esub>\<close> (verdict, not yet proved)
-17033	section	r76-Y3J --- \<section>8.3 命題（条件(II)の下での \<open>Trans\<close> と基本列の交換関係）(1)(2)(3)
-17035	subsection	The article's \<open>m\<^sub>n\<close>, and the \<open>t\<^sub>3\<close>/\<open>t\<^sub>4\<close> bridge to the \<open>c2sx\<close> corpus
-17069	subsection	The tail-slice value, unconditionally
-17082	subsection	The double-track invariant (\<open>Mark(M[n],j\<^sub>-\<^sub>1)
-17175	subsection	The \<open>c\<^sub>2\<close> scb pin and the closed-form count identity
-17229	subsection	THE ARTICLE'S \<section>8.3 命題, conclusions (1), (2), (3)
-17429	section	r76-Y3K --- \<open>reg\<close>-free \<open>REGS\<close>/\<open>REGSP\<close>, and \<section>8.4 L4 without \<open>reg\<close>
-17475	subsection	The REGS/REGSP chain, re-run with the numeric premise (prefix \<open>y3k_\<close>)
-18556	subsection	\<open>REGS\<close>/\<open>REGSP\<close> for (III) \<^emph>\<open>or\<close> (IV) \<^emph>\<open>or\<close> (V) --- no \<open>reg\<close>
-18582	subsection	\<section>8.4 L4 (content.md 4605) --- the article's hypotheses ONLY
-18672	section	r76-Y3L --- \<section>8.4 補題 part (2)
-18680	subsection	\<open>[1]\<^bsup>k\<^esup> = take\<close>, and \<open>M[n+1][1]\<^bsup>j\<^sub>1-\<^sub>1-j\<^sub>-\<^sub>2\<^esup> = L\<^sub>n\<close>
-18734	subsection	\<open>Trans(L\<^sub>n) = Trans(M)[n-1]\<close> --- the two closed forms in one \<open>(s,b)\<close> context
-18961	section	r77-Y3M --- \<section>8.4 補題 part (2): the condIV \<open>admeq\<close> corner
-18963	subsection	The corner collapse: \<open>Trans(N) = c\<^sub>2\<close>, and \<open>c\<^sub>2\<close> is principal at \<open>M\<^bsub>1,j\<^sub>-\<^sub>1\<^esub>\<close>
-19012	subsection	Part (2) at the \<open>admeq\<close> corner
-19100	subsection	Part (2) on the article's FULL hypotheses (condition (III) or (IV))
-19148	section	r77-Y3U --- corrected forms of the FALSE \<open>pss_paper\<close> statements
-19150	subsection	A12 --- \<section>7.2 命題（scb分解の置換可能性）
-19228	subsection	A11 --- \<section>7.2 命題（scb分解の合成則）(2)
-19238	subsection	A13 --- \<section>7.2 系（加法とscb分解の関係）(3)
-19249	subsection	A17 --- \<section>7.3 命題（右端第1基点の \<open>Mark\<close> の基本性質）
-19257	subsection	A45 / A46 --- \<section>7.4 系（\<open>Trans\<close> と NextAdm / \<open>Mark\<close>・\<open>Pred\<close> 表示）
-19269	subsection	A18 --- \<section>7.4 系（\<open>Mark\<close> と \<open><\<^sup>NextAdm\<close> の関係）
-19280	subsection	A20 / A21 --- \<section>8.1 補題（条件(I)か(III)の下での \<open>c\<^sub>1\<close> 前後の具体表示）
-19291	subsection	A22 --- \<section>8.3 補題（第0種型基本列の基本不等式）
-19299	subsection	The register: which \<open>pss_paper\<close> statements are FALSE
-19353	section	r77-Y3T --- \<open>m_8_7_toplevel_OT_tail_annihilate\<close>, freed of the sorry'd citation
-19399	section	r77-Y3P2 --- \<section>7.4 \<open>Mark\<close>/\<open>NextAdm\<close> on \<open>T\<^bsub>PS\<^esub>\<close>: the two bricks, machine-checked
-19508	section	r78-Y3W --- (F): \<open>Red\<close> only ADDS row-0 ancestor edges
-19510	subsection	The value-level characterisation of \<open>le\<^sub>0\<close>
-19602	subsection	Concatenation bookkeeping
-19634	subsection	\<open>Br\<close>-block bookkeeping for a core-nontrunk \<open>M\<close>
-19790	subsection	(F) --- the theorem
-20302	subsection	The residue of the \<section>7.4 proposition on \<open>T\<^bsub>PS\<^esub>\<close>: pure admissibility
-20456	section	r79-Y3X --- Brick A: admissibility survives \<open>Red\<close> on marked ancestral columns
-20458	subsection	Elementary \<open>adm\<close> bricks
-20486	subsection	Row-generic block bookkeeping (the \<open>i\<close>-indexed forms of r78)
-20550	subsection	The row-1 parent behind \<open>npJ\<close>
-20596	section	r79-Y3Z --- (C4) / Brick A are FALSE on \<open>T\<^bsub>PS\<^esub>\<close>
-20672	subsection	\<open>TrMax cexM = 1\<close>, and the branch data
-20799	subsection	Evaluating \<open>Red\<close>
-20962	subsection	The refutation
-21120	section	r80-Y3Y --- unconditional principality of \<open>Mark\<close> on \<open>RT\<^bsub>PS\<^esub>\<close>
-21420	section	r81-Y4 --- the RELAXED nesting engine: \<open>Mark\<close> nests with NO hypothesis on the inner column
-21452	subsection	(a) the reflexive decomposition of a \<open>Mark\<close> value
-21471	subsection	(b) the free nesting engine
-21947	subsection	(c) uniqueness: the relaxed engine, \<open>\<exists>!\<close> form
-22002	subsection	(d) the \<open>Pred\<close>-companion: one common position for \<open>Pred N\<close> and \<open>N\<close>
-22444	subsection	(e) the deliverables, in the shape the §7.4 系 asks for
-22474	subsection	(f) what the JOINT nesting really needs --- the honest \<open>RT\<^bsub>PS\<^esub>\<close> engine
-22822	subsection	(g) closing note --- the \<open>T\<^bsub>PS\<^esub>\<close> form of the §7.4 系 is FALSE
-22875	section	r81-Y6 --- \<section>7.4 \<open>Mark\<close>/\<open>NextAdm\<close> on \<open>T\<^bsub>PS\<^esub>\<close>: transport and assembly
-22877	subsection	The self scb-decomposition of a principal-or-zero term
-22900	subsection	The reflexive half (\<open>j = j\<^sub>0\<close>), unconditionally
-22963	subsection	The article's \<section>7.4 proposition on \<open>T\<^bsub>PS\<^esub>\<close>, modulo the relaxed engine
-23071	section	r81-Y6Z --- refutation: \<open>adm\<close> at the OUTER column is load-bearing
-23073	subsection	The mechanism, proved: coinciding cores + differing ambients
-23113	subsection	The witnesses (vetted model), and what they kill
-23198	section	r82-Y6X --- the \<section>7.4 \<open>Mark\<close>/\<open>NextAdm\<close> 系 is FALSE on \<open>T\<^bsub>PS\<^esub>\<close>
-23200	subsection	Reusable one-step unfoldings of the \<open>Trans\<close>/\<open>Mark\<close> recursion
-23355	subsection	Resolving the \<open>SOME\<close>, the \<open>MarkedB\<close> test, and \<open>Adm\<close>
-23448	subsection	The reduct tower \<open>(0,0)(1,1)(1,1)(2,2)(3,3)(3,3)\<close> and its prefixes
-23479	subsection	\<open>\<le>\<^sub>0\<close>, parents and admissibility on the reduct tower
-23733	subsection	The \<open>T\<^bsub>PS\<^esub>\<close> witness \<open>y6M\<close>, and \<open>Red y6M = y6B6\<close>
-24291	subsection	Evaluating \<open>Trans\<close> and \<open>Mark\<close> up the tower
-24715	subsection	Transporting the \<open>Mark\<close> values back to \<open>y6M\<close>
-24741	subsection	The hypotheses of the article's 系, at \<open>y6M\<close>
-24802	subsection	\<^bold>\<open>The refutation\<close>
+1588	subsection	r72: tower algebra for the \<open>0\<^sub>B\<close>-seeded core, and the re-seeded \<open>base\<^sub>1\<close>
+1846	subsection	The \<open>OTint\<close> step on \<open>hasParent
+2141	subsection	The \<open>otIII\<close> leg, closed modulo \<open>{OTA1, SETLE1}\<close>
+2206	subsection	The \<open>otIV
+2352	subsection	The \<open>OTint\<close> slot and the \<open>OTmulti\<close> slot, same residuals
+2434	banner	r55 front A+B synthesis: discharge DEEPOT/NOBR via od4
+2492	banner	r56 OTint one-block bricks: OTA1 engine (front A) + IVNP (front B)
+2496	banner	r56 ot1_ : discharge OTA1/SETLE1 (the two one-block tower
+2497	banner	facts) into oi5_termination_census.  STEP-0 (python)
+2498	banner	confirmed OTA1 (isOT_BP) and SETLE1 (setle) hold 899/899
+2499	banner	on genuine condIII/IV ST_PS hosts, decomposition UNIQUE.
+2500	banner	Body-level drivers verified: tri0 = b1x_triG(Dinf X0)A0 X1,
+2501	banner	BE0 (G u A0 <= A0 all-u), newOT_body isOT_BP(DB ub A0).
+2502	banner	setle_body (G u A0 vs insert X0 (G u X0)) is FALSE (u=0),
+2503	banner	so the plain otx3_core is BLOCKED; the tri-variant below
+2504	banner	takes tri0 directly at the hole instead of rebuilding it
+2505	banner	from a (false) setle.
+2617	section	r56-IVCORNER (\<open>ot2_\<close>) --- the two condIV corner residuals
+2619	subsection	\<open>IVNP\<close>: the no-parent condIV corner
+2641	banner	r56: discharge IVNP via ot2_IVNP => census modulo 4
+2692	banner	r57 OTint: tri0 engine (front A) + IVADMEQ pkg-reduction (front B)
+3068	section	r57-IVADMEQ (\<open>ot2_\<close>) --- the standard-condIV admeq OT step
+3070	subsection	The full-depth OT transport reduction (condV-style, at head \<open>e\<^sub>3\<close>)
+3219	subsection	Host-only discharge of the mnform package (\<open>d1/d2/d3/HB\<close> residual)
+3332	subsection	Surgery \<open>\<rightarrow>\<close> nested \<open>+\<^sub>B\<close>: the \<open>d4vx_ins\<close> hole is a CLEAN body substitution
+3419	banner	r58 OTint: ltJ-rethread census oi8_ + OTA1 reduced to A0OT (front A) + IVADMEQ NEWOT engine (front B)
+3424	banner	r58 ltJ-THREADED census chain (prefix oi8_): the census
+3425	banner	demands OTA1/SETLE1 only UNDER ltJ (s84x_jm3 P<transJm1 P).
+3426	banner	condIII always has ltJ; condIV-not-admeq derives it via
+3427	banner	cnv_condIV_ltJ; condIV-admeq->IVADMEQ; no-parent->IVNP.
+3428	banner	Verbatim copies of oi5_OTint_IIIIV_hp/condIII/condIV with
+3429	banner	the ltJ premise added to OTA1/SETLE1 and passed at the two
+3430	banner	application sites; then a single oi8_termination_census.
+3841	subsection	The ltJ-threaded master census, modulo \<open>{OTA1_ltJ, SETLE1_ltJ, IVADMEQ, FINRC}\<close>
+3904	banner	r58 OTA1_ltJ assembly (front A): reduce the ltJ-guarded
+3905	banner	census assumption OTA1_ltJ to the two genuinely-hard
+3906	banner	bricks {nub, tri0} via ot1_OTA1_from_bricks.  Everything
+3907	banner	else (the flat forms, the donor-OT readoff via
+3908	banner	m_8_7_OT_scb_recursive on operB(numBT 1/2), the base
+3909	banner	orders) is discharged from oi5_IIIIV_pkg + oi5_regime.
+4675	banner	r59 OTint: A0OT CLOSED => OTA1 pillar done (front A) + SETLE1 body-driver (front B)
+4927	subsection	The body driver \<open>BE'\<close> (hole-body domination, from \<open>tri0\<close>)
+5023	banner	r60 OTint: IVADMEQ CLOSED (front B) + SETLE1 head-guarded engine ox6_ (front A)
+5076	subsection	The head-guarded scbext-setle descent engine \<open>ox6_setle_scbext\<close>
+5830	banner	r61 endgame: SETLE1 restricted engine ox6_*_restr (front A) + FINRC bounded content ot_finRc_* / A9 determination (front B)
+6083	banner	r61 FINRC closure attempt (prefix ot_finRc_):  the condII
+6084	banner	finiteness residual tvx_finRc IS the A9 nth-artifact in
+6085	banner	fin-set form.  DETERMINATION + the true bounded content.
+6158	banner	r62: SETLE1 sec7.4 sub-bricks ox7_ (align3-track+leBT-hole; head-bound(ii) REFUTED, needs RightNodes>=v1) + FINRC A9 root=LastStep_def; consumer bodies ot_finRc_LastStep_* (no fin)
+6168	subsection	\<open>ox7_scbext_leBT_hole
+6202	subsection	\<open>ox7_align3_track
+6281	banner	r62 FINRC de-risk (sub-task (4)): the CONSUMER-SIDE of the
+6282	banner	A9 fin-form fix, ready to plug in once LastStep_def's Min
+6283	banner	binder carries the  J < Lng (Br M)  guard.
+6354	banner	r63: SETLE1 sec7.4 RightNodes(body)>=v1 (ox7_) [front A] + buc1 wds_collapse attack-surface wcl_ bricks [front B]
+6364	banner	e3 # RightNodes body and j1 = |r|-1, all MIDDLE nodes r!j (0<j<j1)
+6372	subsection	\<open>ox7_RightNodes_body_ge_v1
+6467	banner	r63 wcl: buc1-collapse --- engine-entry framing of THE
+6468	banner	residual wds_collapse (= wfj_collapse_core = wfc_pbody_acc
+6469	banner	= wf RPrel), the last external citation [Buc1] Lemma 2.2
+6470	banner	(Buchholz--Schuette Fundierung of (OT_B,<)).
+6472	banner	This block delivers UNCONDITIONAL structural bricks that
+6473	banner	sharpen the attack surface for the collapse, WITHOUT citing
+6474	banner	any residual:
+6475	banner	(A) wcl_min_bad_secured: the wfs_szP-minimal counterexample
+6476	banner	to accessibility is automatically G-trace-SECURED
+6477	banner	(wfj_secT) --- the standard [Buc1]/Buchholz--Schuette
+6478	banner	entry point: what the collapse engine must refute is a
+6479	banner	SECURED principal that fails to be accessible.
+6480	banner	(B) wcl_accfrag_*: the accessible fragment
+6481	banner	wfj_frag v \<inter> acc RPrel satisfies the domain/downward/
+6482	banner	relative-acc clauses of wds_distinguished UNCONDITIONALLY;
+6483	banner	its 4th (G-progressiveness) clause is EXACTLY the
+6484	banner	collapse-core, so under the residual it is the CONCRETE
+6485	banner	maximal v-distinguished set (= wds_Mset v), discharging
+6486	banner	the r54 honesty note on D1 witness existence.
+6489	section	r63-wcl --- [Buc1] 2.2 collapse: engine-entry framing (prefix \<open>wcl_\<close>)
+6491	subsection	(A) The minimal counterexample to the collapse is \<open>G\<close>-trace-secured
+6572	subsection	(B) The accessible fragment \<open>wfj_frag v \<inter> acc RPrel
+6681	subsection	(C) The minimal counterexample has an \<open>RTrel
+6771	banner	r64: wcl_ continuation --- the LEXICOGRAPHIC (head, size)
+6772	banner	minimal bad witness, and the sharp UPPER-COMPONENT residual.
+6774	banner	r63 exposed two INCOMPATIBLE minimality framings:
+6775	banner	* SIZE-minimal bad (wcl_min_bad_body_acc): body is acc, but
+6776	banner	head-<v predecessors may be LARGER (out of reach), so the
+6777	banner	wfc_principal_acc_of_body hlt-premise is NOT discharged.
+6778	banner	* HEAD-minimal bad: hlt IS discharged, but the body need not
+6779	banner	be acc.
+6780	banner	The resolution is the LEXICOGRAPHIC minimum on (head, size)
+6781	banner	with HEAD dominating: it discharges BOTH the head-<n branch
+6782	banner	(i, by head-minimality) AND the head-=n smaller-body branch
+6783	banner	(ii, by size-minimality within the level).  The SOLE residual
+6784	banner	is then the head->n ("upper", shielded/collapsed) components
+6785	banner	of the minimal-bad body --- exactly the psi-collapse content
+6786	banner	of [Buc1] Lemma 2.2.  This is a genuine sharpening: the entire
+6787	banner	head-<= n segment of the minimal-bad body is now free.
+6790	subsection	(D) The lexicographic \<open>(head, size)\<close>-minimal bad witness
+6880	subsection	(E) The sharp UPPER-component residual: the last content of [Buc1] 2.2
+7031	banner	r65: SETLE1_ltJ LEFT-END head bound (prefix ox7_) [front A]
+7033	banner	r64 REFUTED the right-spine L1/L2 route: the restricted
+7034	banner	spineH of ox6_setle_scbext_restr is governed by the FIRST-
+7035	banner	principal (LEFT-end) head bpHeadV(body), NOT the right spine.
+7036	banner	python census (537 REAL ST_PS-cap-PT_PS hosts, ST_PS oracle):
+7037	banner	* bpHeadV(body) >= v1  holds on ALL 537 (0 failures);
+7038	banner	* s0 is NEVER empty  => bpHeadV(X1) = bpHeadV(body);
+7039	banner	* the exact universal spineH (leBT t' X1 for every
+7040	banner	tx' in GBT u X1 with matched hole + size bound) holds on
+7041	banner	ALL 537 (0 failures) for u in {0,1};
+7042	banner	* the 2 ambiguous hosts M=(0,0)(1,0)(1,1)(2,1)(1,1)(2,1)
+7043	banner	and its (2,2) variant are NON-real (is_standard = False).
+7044	banner	So the LEFT-end bound closes spineH.  (python:
+7045	banner	python/_r65_lefthead_step0.py)
+7047	banner	KEY PROOF IDEA for the LEFT-end bound (r64 said RightNodes
+7048	banner	ALONE cannot bound bpHeadV; RightNodes + OT descP CAN):
+7049	banner	body in OT_B  =>  its principal list descP-descending, so
+7050	banner	head(first principal) >= head(last principal); and
+7051	banner	head(last principal) = RightNodes(body)!0 (lpx_bpHeadV_PB_
+7052	banner	last), which is >= v1 by the r63 RightNodes bound.  Hence
+7053	banner	bpHeadV(body) = head(first) >= head(last) >= v1.
+7056	subsection	\<open>ox7_slice_TransOT\<close>: the census slice \<open>Trans (s84x_N M)\<close> is in \<open>OT\<^bsub>B\<^esub>\<close>
+7132	subsection	\<open>ox7_bpHeadV_body_ge_v1
+7246	subsection	\<open>ox7_ub_lt_bpHeadV_body
+7278	banner	r65 (OPUS 4.8): the tower STEP and the intrinsic-globality
+7279	banner	obstruction of wcl_upper (prefixes wtw_ / wcl_).
+7281	banner	r64 pinned [Buc1] 2.2 to the single residual wcl_upper: for
+7282	banner	the lex-(head,size)-minimal bad principal D_n b, the head->n
+7283	banner	body components are RPrel-accessible.  This round makes the
+7284	banner	tower STEP explicit and unconditional (wtw_core_step: the
+7285	banner	level-u principal is accessible once head-<u principals AND
+7286	banner	the head->=u components are), and CERTIFIES why the residual
+7287	banner	cannot be discharged level-locally: for a bad witness, EVERY
+7288	banner	head->n component has the bad principal itself as a strict
+7289	banner	RPrel-predecessor (wcl_high_comp_bad_pred), so it is provably
+7290	banner	NON-accessible (wcl_high_comp_not_acc) — the head->n content
+7291	banner	is exactly the shielded material with no elementary handle.
+7294	subsection	(F) r65: the unconditional tower STEP and the globality of \<open>wcl_upper\<close>
+7513	banner	r66 (OPUS 4.8): SETLE1_ltJ position-0 first-difference close
+7515	banner	r65 localized the census SETLE1_ltJ residual (via
+7516	banner	ox6_SETLE1_reduce_restr) to a spineH: leBT t' X1 for every
+7517	banner	matched-hole right-spine ancestor body t' of A1, with matched
+7518	banner	tx' in GBT u X1 sharing the hole (sc,bc).  The r65 next-idea
+7519	banner	closes spineH at position 0: t' and X1 differ at the FIRST
+7520	banner	principal head, and bpHeadV(t') < bpHeadV(X1) DECIDES
+7521	banner	lessBT t' X1 outright (dictionary order, [Buc1] (<1)-(<3)).
+7522	banner	This front supplies the two reusable position-0 bricks
+7523	banner	(ox7_headlt_lessBT, ox7_bpHeadV_share) and threads the census
+7524	banner	SETLE1_ltJ slot down to the SINGLE clean strict-head residual
+7525	banner	HEAD: bpHeadV(t') < bpHeadV(X1) (ot7_SETLE1_ltJ_of_head,
+7526	banner	oi8_census_SETLE_of_head).  The remaining truth of HEAD is the
+7527	banner	census right-spine-terminal geometry (bpHeadV(t')=ub), a deep
+7528	banner	Trans-image fact recorded in the status text at the end.
+7531	subsection	\<open>ox7_headlt_lessBT
+7565	subsection	\<open>ox7_bpHeadV_share
+7605	subsection	\<open>ot7_SETLE1_ltJ_of_head
+7710	banner	r66 (OPUS 4.8) — buc1 MAJOR REFRAME: transcribe Buchholz's
+7711	banner	OWN proof of wf ([1] \<section>2, Lemmas 2.4--2.8), a FORWARD
+7712	banner	structural induction on TERM LENGTH (NOT the dead r65
+7713	banner	head-level / minimal-bad tower).  Prefix  bwo_  (Buchholz
+7714	banner	well-ordering).
+7717	section	r66 bwo — Buchholz's own proof of \<open>wf RPrel\<close> ([1] \<section>2, Lemmas 2.4--2.8)
+7764	subsection	(1) The derived sets of [1] p.138: \<open>A\<^sub>\<nu>(X,a)\<close>, \<open>X\<^bsup>(a)\<^esup>\<close>, \<open>Xbar\<close>, \<open>W\<^sup>*\<close>
+7800	subsection	(2) Correspondence aliases: Buchholz 2.4(b) / 2.7-\<open>D\<^sub>v\<close> / 2.8 = proven code
+7806	subsection	(3) The single residual and the main reduction \<open>bwo_2_2_wf\<close>
+7900	banner	end r66 bwo block (Buchholz \<section>2 transcription; residual = bwo_Wstar_total)
+7903	banner	r67 (OPUS 4.8): the r66 HEAD residual is REFUTED
+7904	banner	(ox7_hole_right_spine_terminal / bpHeadV t' < bpHeadV X1)
+7906	banner	STEP-0 (python/_r67_headterm_step0.py, real ST_PS census
+7907	banner	hosts, oper-images of diagonals; yaBMS is_standard oracle):
+7908	banner	The r66 position-0 first-difference HEAD
+7909	banner	forall matched-hole tx' in GBT u X1.  bpHeadV t' < bpHeadV
+7910	banner	X1   (t' the A-side, share => bpHeadV t' = bpHeadV tx')
+7911	banner	is FALSE.  90/332 matched tx' have bpHeadV t' = bpHeadV X1
+7912	banner	(EQUALITY, never >).  The stronger task claim bpHeadV t'=ub
+7913	banner	fails 198/332.
+7915	banner	GENUINE ST_PS CEX (is_standard = 1 via yaBMS `bms -s`):
+7916	banner	M = (0,0)(1,1)(2,2)(3,3)(4,1)(5,0)(6,1)(7,1)(8,1)
+7917	banner	reduced, monoT, condIII, hasParent, 1<Lng-1, ltJ
+7918	banner	(s84x_jm3=5 < transJm1=7).  v1=1, ub=0.
+7919	banner	X1 = D_1(D_1(D_0(D_0 0))),  bpHeadV X1 = 1.
+7920	banner	matched tx' = D_1(D_0(D_0 0)) in GBT u X1 (u in {0,1}),
+7921	banner	flat = [D_0](=sc) @ flatBP(D_0(D_0 0))(=hole P) @ [] (bc);
+7922	banner	size t' < size A1 (bound SATISFIED, does not exclude it);
+7923	banner	bpHeadV tx' = 1 = bpHeadV X1  --- NOT strictly less.
+7925	banner	ROOT CAUSE.  The matched-hole set (tx' in GBT u X1 carrying
+7926	banner	the hole P = D_ub(D_ub 0) at its rightmost spine, bc all-RP)
+7927	banner	is NOT just the immediate parent body of P: it contains
+7928	banner	EVERY higher right-spine ancestor body of P.  A higher one
+7929	banner	b1 = D_h0(...P...) has first head h0 = bpHeadV X1, so the
+7930	banner	position-0 head AGREES with X1 and the first-difference sits
+7931	banner	DEEPER (where t' hits the hole head ub while X1 still has an
+7932	banner	s0 right-spine head >= v1 > ub).  r66's position-0 reduction
+7933	banner	(ot7_SETLE1_ltJ_of_head, ox7_headlt_lessBT) is thus too
+7934	banner	STRONG; HEAD cannot be discharged (it is false).
+7936	banner	WHAT IS STILL TRUE (0 fails on all matched tx'):
+7937	banner	(a) bpHeadV t' <= bpHeadV X1   (weak head bound);
+7938	banner	(b) leBT t' X1                 (spineH itself; r65: 537/537).
+7939	banner	So SETLE1 is reduced (ox6_SETLE1_reduce_restr) to the TRUE
+7940	banner	spineH = "leBT t' X1 for every matched-hole tx' in GBT u X1
+7941	banner	(size t' < size A1)", which is NOT further reducible to a
+7942	banner	position-0 head separation.
+7944	banner	CORRECTED RESIDUAL / NEXT IDEA (right-spine DESCENT, not the
+7945	banner	position-0 head, and INDEPENDENT of A0 since the divergence
+7946	banner	is strictly before the hole body):
+7947	banner	prove   lessBT tx' X1   for every matched-hole tx' in
+7948	banner	GBT u X1  (X-side, hole body X0 = D_ub 0), by induction down
+7949	banner	X1's rightmost spine:
+7950	banner	* bpHeadV X1 = h0 is the MAX right-spine head
+7951	banner	(OT descP + rnsub RightNodes bound, r63/r65; the LEFT-
+7952	banner	end head governs, cf. ox7_bpHeadV_body_ge_v1);
+7953	banner	* matched tx' = D_{h_k}(deeper), h_k <= h0; if h_k < h0
+7954	banner	then bpHeadV tx' < bpHeadV X1 closes at THIS level
+7955	banner	(ox7_headlt_lessBT); if h_k = h0 recurse into the bodies
+7956	banner	(both share the head, compare one spine level deeper);
+7957	banner	* the base of the descent is the hole D_ub, ub < v1 <= all
+7958	banner	right-spine heads, so the recursion terminates with a
+7959	banner	strict drop.
+7960	banner	Then transport lessBT tx' X1 to lessBT t' X1 (t' = tx' with
+7961	banner	hole body X0 -> A0): the first-difference is at an outer
+7962	banner	principal head, strictly ABOVE the hole body, so replacing
+7963	banner	X0 by A0 leaves the difference and its verdict unchanged.
+7964	banner	The load-bearing NEW lemma is "matched right-spine sub-body
+7965	banner	of the census X1 is lessBT X1" (a shared-outer-heads /
+7966	banner	hole-head-drop first-difference), which the existing
+7967	banner	position-0 bricks (ox7_headlt_lessBT / ox7_bpHeadV_share)
+7968	banner	are too shallow to give.
+7973	banner	r67 buc1: Buchholz [1] Lemma 2.4(a) shift-closure + the
+7974	banner	addBT/domB/operB glue underneath 2.5/2.6/2.7.  Prefix bwo_
+7975	banner	(append-only).
+7978	section	r67 bwo — the \<open>+\<^sub>B\<close> glue and Buchholz [1] Lemma 2.4(a)
+7994	subsection	(4) \<open>+\<^sub>B\<close> / \<open>domB\<close> / \<open>operB\<close> glue
+8101	subsection	(5) [Buc1] Lemma 2.4(a): shift closure \<open>A\<^sub>\<nu>(X\<^bsup>(a)\<^esup>) \<subseteq> X\<^bsup>(a)\<^esup>\<close>
+8177	subsection	(6) [Buc1] Lemma 2.5 sub-result (1), modulo leastness (A2)
+8247	banner	end r67 bwo block (glue + [Buc1] Lemma 2.4(a) + 2.5 sub(1)/A2)
+8251	banner	r68 (OPUS 4.8): the CORRECTED SETLE1 residual — the DEEP
+8252	banner	first-difference descent.  Prefix  ox8_.
+8254	banner	r67 REFUTED the position-0 HEAD route (bpHeadV t' < bpHeadV
+8255	banner	X1 is FALSE: the matched-hole set contains EVERY higher
+8256	banner	right-spine ancestor, and a higher one shares X1's outer
+8257	banner	head).  The TRUE residual (spineH of ox6_SETLE1_reduce_restr)
+8258	banner	is  leBT t' X1  for the matched right-spine ancestor bodies.
+8260	banner	STEP-0 (python/_r68_deepdesc_step0.py; 1984 REAL ST_PS
+8261	banner	census hosts = BFS-standard corpus, condIII/IV + hasParent +
+8262	banner	1<Lng-1 + ltJ; 11306 peel levels):
+8263	banner	* goal   lessBT Z_k X1  : 11306/11306 (0 fails)
+8264	banner	* X-side lessBT Y_k X1  : 11306/11306
+8265	banner	* VERDICT INVARIANCE    : 11306/11306 — the verdict of
+8266	banner	lessBT (Y_k with hole body := Q) X1 is the SAME for
+8267	banner	Q in {0, D_ub 0, A0, BIG}, i.e. the first difference
+8268	banner	sits strictly ABOVE the hole body (so the X0 -> A0
+8269	banner	transport is sound).
+8270	banner	* X1's right spine above the hole: heads all >= v1 > ub,
+8271	banner	and EVERY spine level is a PURE CHAIN (single principal,
+8272	banner	11306/11306) — the comparison path = the spine path.
+8273	banner	* bpHeadV Z_k > bpHeadV X1 : NEVER (0/11306); = : 4083
+8274	banner	(r67's CEX class, needs the deep descent); < : 7223.
+8275	banner	* every matched tx' in GBT 0 X1 IS a spine body Y_k
+8276	banner	(off-spine matched: 0).
+8277	banner	* NEGATIVE: the stepwise chain  lessBT Y_k Y_(k-1)  FAILS
+8278	banner	2274/11306 — so the descent CANNOT be assembled by
+8279	banner	transitivity along the spine; it must be proved AGAINST
+8280	banner	X1 directly (a lexicographic / self-maximality fact).
+8281	banner	* isOT_BT X1 : 1984/1984.
+8283	banner	THE SOURCE OF THE DESCENT (this block).  The self-maximality
+8284	banner	of the spine is NOT an OT-generic fact (the head word can
+8285	banner	genuinely increase: 3379 strict drops vs 5943 non-drops) —
+8286	banner	it comes from ONE Buchholz G-condition, at the LOW enclosing
+8287	banner	head e3:  D_e3(body) is the deepest-right principal of
+8288	banner	Trans M (the kind-1 scb block k1 of oi5_IIIIV_pkg), so
+8289	banner	m_8_7_OT_scb_recursive gives  isOT_BP (D_e3 body), i.e.
+8290	banner	for all x in G_e3(body).  x < body.
+8291	banner	And e3 < v1 (oi5_regime(1)) <= EVERY right-spine head of
+8292	banner	body (ox7_RightNodes_body_ge_v1), so the WHOLE right spine
+8293	banner	of body lies inside G_e3(body).  Hence EVERY right-spine
+8294	banner	sub-body of body is < body — exactly the self-maximality
+8295	banner	that STEP-0 measures, now unconditional.
+8298	section	r68 ox8 — right-spine sub-bodies and the OT \<open>G\<close>-descent
+8300	subsection	(1) The right-spine sub-body operators \<open>ox8_lastV\<close> / \<open>ox8_lastT
+8381	subsection	(2) The \<open>G\<close>-descent: an \<open>OT\<close> principal bounds its whole right spine
+8403	subsection	(3) \<open>RightNodes\<close> reads exactly the \<open>ox8_rsub\<close> chain
+8452	subsection	(4) \<open>d\<close>-freeness along the spine
+8495	subsection	(5) Census: \<open>D\<^bsub>e\<^sub>3\<^esub>(body)\<close> is an \<open>OT\<close> principal
+8529	subsection	(6) CENSUS KEYSTONE: every right-spine sub-body of \<open>body
+8590	subsection	(7) STATUS — the EXACT residual after r68: the surgery TRANSPORT
+8662	banner	end r68 ox8 block (part 1: the G-descent source; residual = TRANSPORT)
+8692	subsection	(1) The operator \<open>A\<^sub>\<nu>\<close>, parametrised by the lower-level family
+8740	subsection	(2) The iterated inductive definition \<open>W\<^sub>v = lfp A\<^sub>v\<close>
+8885	banner	end r68 bwl part 1 (lfp semantics: A1/A2/W1/W2/W3/level-mono FREE)
+8887	subsection	(3) [Buc1] Lemma 2.4 on the \<open>lfp\<close> semantics
+8992	subsection	(4) The numerals live in every \<open>W\<^sub>v\<close>
+9010	subsection	(5) [Buc1] Lemma 2.5 sub-result (1) — now UNCONDITIONAL
+9053	banner	end r68 bwl part 2 ([Buc1] 2.4(a),(b), numerals, 2.5(1) unconditional)
+9055	subsection	(6) Shape lemmas for the principal \<open>D\<^sub>w c\<close> (guards of \<open>operB\<close>/\<open>domB\<close>)
+9107	subsection	(7) The collapsing closure: \<open>u \<le> w \<Longrightarrow> x \<in> W\<^sub>u \<Longrightarrow> D\<^sub>w x \<in> W\<^sub>w\<close>
+9225	banner	end r68 bwl part 3 (collapsing closure W_u -> D_w W_u subseteq W_w, u<=w)
+9227	subsection	(8) The \<open>xseq\<close> branch ([].4)(ii), i.e. the [Buc2]-corrected case
+9265	subsection	(9) The DOWNWARD collapse \<open>W\<^sub>m \<subseteq> {y. \<forall>v \<le> m. D\<^sub>v y \<in> W\<^sub>v}\<close>
+9455	banner	end r68 bwl part 4 (downward collapse; W_m inside Wstar)
+9457	subsection	(10) [Buc1] p.138(5): \<open>W\<^sup>* = {x. \<forall>u < \<nu>. D\<^sub>u x \<in> W\<^sub>u}\<close> (here \<open>\<nu> = \<omega>\<close>)
+9476	subsection	(11) [Buc1] Lemma 2.6: \<open>A\<^sub>\<nu>(W\<^sup>*) \<subseteq> W\<^sup>*\<close>
+9628	subsection	(12) [Buc1] Lemma 2.7 (length induction) for the \<open>D\<^sub>\<omega>\<close>-free terms
+9723	subsection	(13) [Buc1] 2.8 for \<open>T\<^bsub>B\<^esub>\<close>: every \<open>D\<^sub>\<omega>\<close>-free term lies in \<open>W\<^sup>*\<close>
+9743	banner	end r68 bwl part 5 ([Buc1] 2.6, 2.7 for dfree, 2.8: T_B inside Wstar)
+9745	subsection	(14) The bridge \<open>W\<^sub>u \<longrightarrow> acc\<close>, and the NEW single residual \<open>bwl_cof\<close>
+9953	banner	end r68 bwl part 6 (bridge; residual = bwl_cof, the Bachmann property)
+9957	banner	r69 FINRC ROOT SURGERY (prefix ot9_): correction A9 fin-form
+9958	banner	LastStep_def's Min-binder is now GUARDED by J < Lng (Br M).
+9959	banner	Consequence: the whole fin/finM/FINRC cascade is PROVABLE.
+10071	banner	end r69 FINRC root surgery (A9 fin-form): FINRC DISCHARGED
+10076	banner	r69 (OPUS 4.8): the SURGERY TRANSPORT.  Prefix  ox9_.
+10078	banner	r68 proved the TRUE SOURCE of the SETLE1 descent
+10079	banner	(ox8_body_rspine_lessBT: every right-spine sub-body of
+10080	banner	body = bpHeadT (Trans (s84x_N M)) is < body, from the ONE
+10081	banner	Buchholz G-condition at the low enclosing head e3).  What
+10082	banner	SETLE1 actually needs is that comparison carried over to the
+10083	banner	SURGERED trees  A1 = body[hole := D_ub A0],
+10084	banner	X1 = body[hole := D_ub X0]  (hole = D_v1 0, ub = v1 - 1):
+10085	banner	lessBT (ox8_rsub A1 k) X1     (k >= 1).
+10087	banner	STEP-0 (python/_r69_transport_step0{,b,c}.py; standard ST_PS
+10088	banner	corpus, condIII/IV + hasParent + 1<Lng-1 + ltJ; 361/427
+10089	banner	hosts, 1117 peel levels):
+10090	banner	* lessBT (ox8_rsub A1 k) X1        : 1117/1117
+10091	banner	* lessBT (ox8_rsub body k) body    : 1117/1117 (= ox8)
+10092	banner	* r68's claim "every spine level of X1 above the hole is a
+10093	banner	PURE CHAIN" is FALSE on this corpus (14 hosts have a wide
+10094	banner	hole level, 15 have a non-monotone width word), and the
+10095	banner	dangerous branch (C) below DOES occur (13/1117).  So the
+10096	banner	r68 assembly sketch (chain-ness) is NOT the right brick.
+10097	banner	* the TRUE brick: EVERY head occurring ANYWHERE in body is
+10098	banner	>= v1 (427/427 hosts; ox9_hge below).  With it the whole
+10099	banner	transport is elementary -- the surgery never flips a
+10100	banner	verdict, because the LEFT operand can never reach the
+10101	banner	RIGHT operand's leaf hole D_v1 0 (that would need a head
+10102	banner	< v1).  Run as a decision procedure the proof below
+10103	banner	closes 1117/1117 with 0 dangers.
+10105	banner	So SETLE1 is REDUCED, unconditionally, to the single local
+10106	banner	head-bound  ox9_hge (enat v1) (bpHeadT (Trans (s84x_N M)))
+10107	banner	-- a Trans-image geometry fact, NOT an OT fact (descP only
+10108	banner	bounds heads from below by the LAST head of their own list).
+10111	section	r69 ox9 --- the surgery transport
+10113	subsection	(1) The all-heads bound \<open>ox9_hge\<close> and the hole relation \<open>ox9_holeD\<close>
+10172	subsection	(2) Elementary \<open>lessBT\<close> / \<open>lessBP\<close> facts
+10203	subsection	(3) The one-sided transport \<open>ox9_TT
+10308	subsection	(4) The two-sided transport \<open>ox9_MAIN\<close>
+10501	subsection	(5) Reading \<open>ox9_holeD\<close> off the flat surgery, and descending it
+10615	subsection	(6) The re-threaded SETLE engine \<open>ox9_engine\<close>
+10753	subsection	(7) The census \<open>SETLE1_ltJ\<close> slot, modulo the head bound --- WITHDRAWN (r72)
+10768	banner	end r69 ox9 block (census wrappers withdrawn in r72; engine kept)
+10771	banner	r70 (OKH front).  STEP-0 verdict: the r69 census residual
+10772	banner	OKH  =  ox9_ok v1 (v1-1) (bpHeadT (Trans (s84x_N P)))
+10773	banner	is  FALSE.  So is the recommended route "leafcond".  Both
+10774	banner	die on the SAME witness, a genuine ST_PS census host:
+10776	banner	P = (0,0)(1,1)(2,1)(3,1)(4,0)(5,1)(6,1)(7,1)(8,0)(9,1)
+10777	banner	(10,1)(11,1)(11,0)(12,0)(10,1)(11,1)(10,1)(11,1)
+10779	banner	certified (python/_r70_okh_cex.py) to satisfy EVERY census
+10780	banner	hypothesis: P in ST_PS (explicit oper chain from
+10781	banner	diagSeq 0 2, replayed), monoT (hence PT_PS), hasParent P 1
+10782	banner	(Lng P - 1), 1 < Lng P - 1, transCondIII P, Trans P in
+10783	banner	OT_B, s84x_jm3 P = 8 < 16 = transJm1 P.  For it
+10784	banner	v1 = 1,  ub = 0,  X0 = D_0 0,  pX = D_0 X0 = D_0(D_0 0)
+10785	banner	body = bpHeadT (Trans (s84x_N P))
+10786	banner	= D_1((D_1((D_1 0, D_0(D_0 0))), D_1(D_1 0),
+10787	banner	D_1(D_1 0)))
+10788	banner	and body carries, OFF the right spine, the principal
+10789	banner	D_0 (D_0 0)  =  pX  EXACTLY.
+10790	banner	Its head 0 < v1 = 1 and its body D_0 0 is NOT < X0 = D_0 0
+10791	banner	(they are EQUAL), so ox9_okP fails -- ox9_ok fails at
+10792	banner	EQUALITY with the surgery filler.  ox10_cex_not_ok below
+10793	banner	is the Isabelle check.  (ox9_hge and leafcond die a
+10794	banner	fortiori.)  Corpus: pure ST_PS (diagSeq + oper closure),
+10795	banner	maxlen 20, 542 census hosts / 1212 peel levels: 8 hosts
+10796	banner	refute ox9_ok.  (r69 saw 0 -- its walks were too short.)
+10797	banner	Hence theorem oi9_census_OKH is VACUOUS.
+10799	banner	BUT the transport TARGET survives (1212/1212, 0 failures):
+10800	banner	ox9_ok was only ever a SUFFICIENT condition, and it is
+10801	banner	strictly too strong -- it is a GLOBAL "every principal
+10802	banner	anywhere" guard, while ox9_lexP consumes it only at the
+10803	banner	hole-aligned positions of the tie path, which the bad
+10804	banner	principal never occupies (it lives in the body of a
+10805	banner	NON-last principal, off the right spine).
+10807	banner	r70 route: ox9_ok/PXOK/DESC are consumed by ox9_engine
+10808	banner	ONLY to feed ox9_MAIN, whose ONLY output is
+10809	banner	leLA : leBT (ox8_rsub A1 (Suc k)) X1.
+10810	banner	Take that as the hypothesis instead, and factor it:
+10811	banner	MONO(k): lessBT (ox8_rsub A1 k) (ox8_rsub WB k)
+10812	banner	-- ALREADY PROVEN (ox9_holeD_lessBT: the
+10813	banner	surgery pA < D_v1 0 lowers the tree)
+10814	banner	KK(k)  : lessBT (ox8_rsub WB k) X1
+10815	banner	-- the UNSURGERED spine sub-body of the census
+10816	banner	body stays below the LOWERED body X1.
+10817	banner	KK is a Trans-image geometry fact with NO A0 and NO
+10818	banner	ox9_ok in it, and it is TRUE on the corpus (1212/1212,
+10819	banner	including all 8 ox9_ok-refuting hosts; python/_r70_key.py).
+10820	banner	ox10_engine below re-derives the whole census from KK.
+10823	section	r70 ox10 --- OKH is FALSE; the census residual becomes the \<open>KK\<close> bound
+10825	subsection	(1) The counterexample: \<open>ox9_ok\<close> fails at EQUALITY with the filler
+10854	subsection	(2) \<open>ox10_engine\<close>: the same engine, driven by \<open>KK\<close> alone
+10989	subsection	(3) The census \<open>SETLE1\<close> slot from \<open>KK\<close>
+11086	subsection	(4) The census roll-up: both pillars from \<open>KK\<close> alone
+11159	subsection	(5) \<open>ox10_lexP\<close>: the list transport with a POSITIONAL guard
+11241	banner	end r70 ox10 block (OKH refuted; census residual = KK)
+11277	section	r70-y3 --- W-induction as the termination engine (\<open>y3_\<close>)
+11279	subsection	(1) \<open>W\<close> is monotone in the level, and every \<open>D\<^sub>\<omega>\<close>-free \<open>T\<^sub>m\<close>-term is in \<open>W\<^sub>m\<close>
+11402	subsection	(2) The three \<open>dom\<close>-shapes are pairwise distinct
+11449	subsection	(3) The residual \<open>bwl_cof\<close> loses its \<open>W\<close>-membership clause
+11514	subsection	(4) The FREE hydra theorem: \<open>W\<^sub>v \<subseteq> acc\<close> of the fundamental-sequence tree
+11601	subsection	(5) The NEW residual \<open>y3_cofimg\<close> and the citation-free termination engine
+11778	banner	end r70 y3 block
+11816	banner	end r70 y3 audit/refutation notes
+11881	section	r71 ox11 --- the POSITIONAL transport (the repair of \<open>ox9_TT\<close>)
+11883	subsection	(1) A prefix verdict survives any extension of the right operand
+11920	subsection	(2) \<open>ox11_safe\<close>: the walk is decided above the hole
+11943	subsection	(3) \<open>ox11_TT\<close>: THE POSITIONAL TRANSPORT
+12047	subsection	(4) Discharging \<open>ox11_safe\<close> from a CLOSED SET plus a BOTTOM GUARD
+12157	subsection	(5) The census: \<open>KK\<close> from the BOTTOM GUARD alone
+12358	subsection	(6) The census roll-up: both pillars from the BOTTOM GUARD alone
+12482	section	r71-y4 --- the Bachmann (cofinality) property of the fundamental sequences (\<open>y4_\<close>)
+12484	subsection	(1) The \<open>xseq\<close> tower is strictly increasing
+12565	subsection	(2) List/order helpers for the two reductions
+12652	subsection	(3) THE COLLAPSING COFINALITY --- case ([].4)(ii)
+12906	subsection	(4) Strict increase of the \<open>\<nat>\<close>-indexed fundamental sequence
+13057	subsection	(5) Helpers for the Bachmann induction
+13247	subsection	(6) \<^bold>\<open>THE BACHMANN (COFINALITY) PROPERTY\<close>
+13683	subsection	(7) CAPSTONES --- \<open>wf RPrel
+13752	subsection	(8) HONESTY REPORT --- audits, and why the \<open>G\<close>-hypothesis is load-bearing
+13903	section	r72 ox12 --- \<open>KK\<close> CLOSED: \<open>ox11_safe\<close> is vacuous by a SIZE count
+13905	subsection	(1) The symbol count \<open>ox12_szT\<close> / \<open>ox12_szP\<close>
+13924	subsection	(2) THE COLLAPSE: \<open>ox11_safe\<close> from \<open>ox12_szT Z < ox12_szT W\<close>
+13987	subsection	(3) One right-spine step strictly drops the symbol count
+14038	subsection	(4) \<open>KK\<close> --- PROVED (the census, with \<open>Trans N \<in> OT\<^bsub>B\<^esub>\<close> available)
+14098	subsection	(5) The census roll-up --- UNCONDITIONAL
+14161	subsection	(6) \<open>KK\<close> in the exact shape the capstones assume (no \<open>OT\<^bsub>B\<^esub>\<close> premise)
+14188	subsection	(7) \<^bold>\<open>PSS TERMINATION --- UNCONDITIONAL\<close>
+14215	subsection	(8) The ARTICLE'S OWN termination statement (\<open>p_8_7_termination\<close>)
+14401	subsection	(9) The \<open>OT\<close>-membership slots of \<section>8.1 and \<section>8.3, now unblocked
+14444	subsection	Well-definedness holes (footnote audit): \<open>LastStep\<close>'s \<open>Min
+14692	subsection	Exchange (1) on \<open>RT\<^bsub>PS\<^esub>\<close>, all \<open>n \<ge> 1\<close>
+14739	subsection	Descent (2) on \<open>RT\<^bsub>PS\<^esub>\<close>, all \<open>n \<ge> 1\<close>
+14825	subsection	The article's \<section>8.1 proposition, on its stated domain
+14837	section	r74: \<section>8.5 条件(V) の交換関係 — 記事の印字インデックス \<open>m\<^sub>n\<close> でのフル命題
+14872	subsection	Pure \<open>BT\<close> tower comparisons at the article index (non-adm cores)
+14922	subsection	NON-ADM leg: exchange (1) and (3) at the article index \<open>m\<^sub>n = n\<close>
+14975	subsection	ADM leg: exchange (1) at the article index \<open>m\<^sub>n = n - 1\<close>
+15067	subsection	THE ARTICLE'S \<section>8.5 命題, verbatim (both legs, printed index \<open>m\<^sub>n\<close>)
+15129	section	r74: \<section>8.4 補題（条件(III)か(IV)の下での基本列の基本性質）part (3)
+15152	subsection	Reflection: a common surgery pair TRANSPORTS the order backwards
+15201	subsection	The packaging step: flat-form pair + strict order \<Longrightarrow> the part-(3) witness
+15240	subsection	The \<open>j\<^sub>-\<^sub>3\<close>-anchored branch: condition (III), and (IV) with \<open>Adm(j\<^sub>-\<^sub>2) \<noteq> j\<^sub>-\<^sub>1\<close>
+15382	subsection	Condition (IV), the \<open>\<not>admeq\<close> branch: same anchor, different order source
+15406	subsection	Condition (IV), the \<open>admeq\<close> branch: the \<open>c\<^sub>2\<close>-anchored witness
+15519	subsection	THE ARTICLE'S \<section>8.4 補題, parts (1) and (3), verbatim
+15637	section	r75-Y3I --- \<section>8.4 の \<open>Trans\<close> 内部記号クラスタ（六補題）
+15639	subsection	Exposure of the remaining \<open>Trans\<close>-recursion \<open>let\<close>-symbols (\<open>t\<^sub>3\<close>, \<open>t\<^sub>4\<close>)
+15707	subsection	The branch dichotomy needed by L4/L5 (\<open>guard \<Longrightarrow> (III) \<or> (IV)\<close>)
+15772	subsection	L1 (content.md 4265) 補題（条件(III)～(V)の下での右端の置き換えと\<open>Trans\<close>の関係）
+15793	subsection	L2 (content.md 4389) 補題（条件(III)～(VI)の下での展開規則の基本性質）
+15833	subsection	L3 (content.md 4507) 補題（条件(III)～(VI)の下での\<open>Trans\<close>とscb分解の関係）
+15845	subsection	L4 (content.md 4605) 補題（条件(III)～(V)の下での切片のscb分解）
+15920	subsection	L5 (content.md 4702) 補題（条件(III)～(V)の下での各種scb分解）
+15973	subsection	L6 (content.md 4802) 補題（条件(III)か(IV)の下での各種scb分解）
+16036	section	r76-Y3Q --- \<section>6.5 命題（単項性と \<open>Red\<close> の関係）on all of \<open>PT\<^bsub>PS\<^esub>\<close>
+16080	section	r76-Y3P --- \<section>7.4 命題（\<open>Mark\<close>と\<open><\<^bsub>M\<^esub>\<^sup>NextAdm\<close>の関係）: TRUE on \<open>T\<^bsub>PS\<^esub>\<close> (verdict, not yet proved)
+16143	section	r76-Y3J --- \<section>8.3 命題（条件(II)の下での \<open>Trans\<close> と基本列の交換関係）(1)(2)(3)
+16145	subsection	The article's \<open>m\<^sub>n\<close>, and the \<open>t\<^sub>3\<close>/\<open>t\<^sub>4\<close> bridge to the \<open>c2sx\<close> corpus
+16179	subsection	The tail-slice value, unconditionally
+16192	subsection	The double-track invariant (\<open>Mark(M[n],j\<^sub>-\<^sub>1)
+16285	subsection	The \<open>c\<^sub>2\<close> scb pin and the closed-form count identity
+16339	subsection	THE ARTICLE'S \<section>8.3 命題, conclusions (1), (2), (3)
+16539	section	r76-Y3K --- \<open>reg\<close>-free \<open>REGS\<close>/\<open>REGSP\<close>, and \<section>8.4 L4 without \<open>reg\<close>
+16585	subsection	The REGS/REGSP chain, re-run with the numeric premise (prefix \<open>y3k_\<close>)
+17666	subsection	\<open>REGS\<close>/\<open>REGSP\<close> for (III) \<^emph>\<open>or\<close> (IV) \<^emph>\<open>or\<close> (V) --- no \<open>reg\<close>
+17692	subsection	\<section>8.4 L4 (content.md 4605) --- the article's hypotheses ONLY
+17782	section	r76-Y3L --- \<section>8.4 補題 part (2)
+17790	subsection	\<open>[1]\<^bsup>k\<^esup> = take\<close>, and \<open>M[n+1][1]\<^bsup>j\<^sub>1-\<^sub>1-j\<^sub>-\<^sub>2\<^esup> = L\<^sub>n\<close>
+17844	subsection	\<open>Trans(L\<^sub>n) = Trans(M)[n-1]\<close> --- the two closed forms in one \<open>(s,b)\<close> context
+18071	section	r77-Y3M --- \<section>8.4 補題 part (2): the condIV \<open>admeq\<close> corner
+18073	subsection	The corner collapse: \<open>Trans(N) = c\<^sub>2\<close>, and \<open>c\<^sub>2\<close> is principal at \<open>M\<^bsub>1,j\<^sub>-\<^sub>1\<^esub>\<close>
+18122	subsection	Part (2) at the \<open>admeq\<close> corner
+18210	subsection	Part (2) on the article's FULL hypotheses (condition (III) or (IV))
+18238	subsection	A11 --- \<section>7.2 命題（scb分解の合成則）(2)
+18248	subsection	A13 --- \<section>7.2 系（加法とscb分解の関係）(3)
+18259	subsection	A17 --- \<section>7.3 命題（右端第1基点の \<open>Mark\<close> の基本性質）
+18267	subsection	A45 / A46 --- \<section>7.4 系（\<open>Trans\<close> と NextAdm / \<open>Mark\<close>・\<open>Pred\<close> 表示）
+18279	subsection	A18 --- \<section>7.4 系（\<open>Mark\<close> と \<open><\<^sup>NextAdm\<close> の関係）
+18290	subsection	A20 / A21 --- \<section>8.1 補題（条件(I)か(III)の下での \<open>c\<^sub>1\<close> 前後の具体表示）
+18301	subsection	A22 --- \<section>8.3 補題（第0種型基本列の基本不等式）
+18309	subsection	The register: which article statements are FALSE
+18367	section	r77-Y3T --- \<open>m_8_7_toplevel_OT_tail_annihilate\<close>, freed of the sorry'd citation
+18413	section	r77-Y3P2 --- \<section>7.4 \<open>Mark\<close>/\<open>NextAdm\<close> on \<open>T\<^bsub>PS\<^esub>\<close>: the two bricks, machine-checked
+18522	section	r78-Y3W --- (F): \<open>Red\<close> only ADDS row-0 ancestor edges
+18524	subsection	The value-level characterisation of \<open>le\<^sub>0\<close>
+18616	subsection	Concatenation bookkeeping
+18648	subsection	\<open>Br\<close>-block bookkeeping for a core-nontrunk \<open>M\<close>
+18804	subsection	(F) --- the theorem
+19316	subsection	The residue of the \<section>7.4 proposition on \<open>T\<^bsub>PS\<^esub>\<close>: pure admissibility
+19470	section	r79-Y3X --- Brick A: admissibility survives \<open>Red\<close> on marked ancestral columns
+19472	subsection	Elementary \<open>adm\<close> bricks
+19500	subsection	Row-generic block bookkeeping (the \<open>i\<close>-indexed forms of r78)
+19564	subsection	The row-1 parent behind \<open>npJ\<close>
+19610	section	r79-Y3Z --- (C4) / Brick A are FALSE on \<open>T\<^bsub>PS\<^esub>\<close>
+19686	subsection	\<open>TrMax cexM = 1\<close>, and the branch data
+19813	subsection	Evaluating \<open>Red\<close>
+19976	subsection	The refutation
+20134	section	r80-Y3Y --- unconditional principality of \<open>Mark\<close> on \<open>RT\<^bsub>PS\<^esub>\<close>
+20434	section	r81-Y4 --- the RELAXED nesting engine: \<open>Mark\<close> nests with NO hypothesis on the inner column
+20466	subsection	(a) the reflexive decomposition of a \<open>Mark\<close> value
+20485	subsection	(b) the free nesting engine
+20961	subsection	(c) uniqueness: the relaxed engine, \<open>\<exists>!\<close> form
+21016	subsection	(d) the \<open>Pred\<close>-companion: one common position for \<open>Pred N\<close> and \<open>N\<close>
+21458	subsection	(e) the deliverables, in the shape the §7.4 系 asks for
+21488	subsection	(f) what the JOINT nesting really needs --- the honest \<open>RT\<^bsub>PS\<^esub>\<close> engine
+21836	subsection	(g) closing note --- the \<open>T\<^bsub>PS\<^esub>\<close> form of the §7.4 系 is FALSE
+21889	section	r81-Y6 --- \<section>7.4 \<open>Mark\<close>/\<open>NextAdm\<close> on \<open>T\<^bsub>PS\<^esub>\<close>: transport and assembly
+21891	subsection	The self scb-decomposition of a principal-or-zero term
+21914	subsection	The reflexive half (\<open>j = j\<^sub>0\<close>), unconditionally
+21977	subsection	The article's \<section>7.4 proposition on \<open>T\<^bsub>PS\<^esub>\<close>, modulo the relaxed engine
+22085	section	r81-Y6Z --- refutation: \<open>adm\<close> at the OUTER column is load-bearing
+22087	subsection	The mechanism, proved: coinciding cores + differing ambients
+22127	subsection	The witnesses (vetted model), and what they kill
+22212	section	r82-Y6X --- the \<section>7.4 \<open>Mark\<close>/\<open>NextAdm\<close> 系 is FALSE on \<open>T\<^bsub>PS\<^esub>\<close>
+22214	subsection	Reusable one-step unfoldings of the \<open>Trans\<close>/\<open>Mark\<close> recursion
+22369	subsection	Resolving the \<open>SOME\<close>, the \<open>MarkedB\<close> test, and \<open>Adm\<close>
+22462	subsection	The reduct tower \<open>(0,0)(1,1)(1,1)(2,2)(3,3)(3,3)\<close> and its prefixes
+22493	subsection	\<open>\<le>\<^sub>0\<close>, parents and admissibility on the reduct tower
+22747	subsection	The \<open>T\<^bsub>PS\<^esub>\<close> witness \<open>y6M\<close>, and \<open>Red y6M = y6B6\<close>
+23305	subsection	Evaluating \<open>Trans\<close> and \<open>Mark\<close> up the tower
+23729	subsection	Transporting the \<open>Mark\<close> values back to \<open>y6M\<close>
+23755	subsection	The hypotheses of the article's 系, at \<open>y6M\<close>
+23816	subsection	\<^bold>\<open>The refutation\<close>
 
+## 8/audit.thy
+
+
+## pss_paper.thy
+
+26	section	§7 Buchholz の表記系への翻訳
+40	subsection	§7.1 Buchholz の表記系 — 項と順序 ([Buc1] §2)
+122	subsection	§7.1 Buchholz の表記系 — 基本列と \<open>dom\<close> ([Buc1] §3)
+251	subsection	§7.2 scb分解 ([Buc1] のアルファベット \<open>\<Sigma>\<close> 上)
+328	subsection	§7.3 翻訳写像 (Trans / Mark)
+
+## pss_mechanized.thy
+
+
+## layerB/pss_wip.thy
+
+
+## layerC/pss_scratch.thy

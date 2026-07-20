@@ -1,0 +1,23 @@
+source	source_section	target_token	target_section	resolved_target_fact	is_thm_deps_edge	resolution
+pss_mechanized.m_6_5_Red_Pred	6.5	m_7_2_RightNodes_subexpr	7.2	pss_mechanized.m_7_2_RightNodes_subexpr	false	discard as text-only forward mention; no theorem move or import is required
+pss_mechanized.m_6_5_Red_oper_final	6.5	m_7_2_scb_replaceable_corr_mod_image	7.2	pss_mechanized.m_7_2_scb_replaceable_corr_mod_image	false	discard as text-only forward mention; no theorem move or import is required
+pss_mechanized.m_6_6_Red_diag_prefix	6.6	m_7_2_scb_replaceable	7.2		false	discard as text-only forward mention; no theorem move or import is required
+pss_mechanized.m_6_6_Red_diag_prefix	6.6	m_7_2_scb_replaceable_corr	7.2		false	discard as text-only forward mention; no theorem move or import is required
+pss_mechanized.m_6_6_Red_diag_prefix	6.6	p_7_2_scb_replaceable	7.2	pss_paper.p_7_2_scb_replaceable	false	discard as text-only forward mention; no theorem move or import is required
+pss_mechanized.m_6_6_condAB_coeff	6.6	p_7_4_Adm_nextAdm	7.4	pss_paper.p_7_4_Adm_nextAdm	false	discard as text-only forward mention; no theorem move or import is required
+pss_mechanized.m_6_6_reduced_leftend	6.6	m_7_2_add_scb	7.2		false	discard as text-only forward mention; no theorem move or import is required
+pss_mechanized.m_6_8_standard_slice_Br_descending	6.8	m_7_1_term_components	7.1	pss_mechanized.m_7_1_term_components	false	discard as text-only forward mention; no theorem move or import is required
+pss_mechanized.m_7_1_lessBT_linord	7.1	m_8_7_OT_examples	8.7	pss_wip.m_8_7_OT_examples	false	discard as text-only forward mention; no theorem move or import is required
+pss_paper.p_7_1_term_components	7.1	m_8_7_toplevel_OT_tail_annihilate	8.7	pss_wip.m_8_7_toplevel_OT_tail_annihilate	false	discard as text-only forward mention; no theorem move or import is required
+pss_wip.m_7_2_add_scb_conj3	7.2	m_8_4_oper_Suc_append	8.4	pss_wip.m_8_4_oper_Suc_append	false	discard as text-only forward mention; no theorem move or import is required
+pss_wip.m_7_2_add_scb_conj3	7.2	m_8_7_OT_dom_hereditary	8.7	pss_wip.m_8_7_OT_dom_hereditary	false	discard as text-only forward mention; no theorem move or import is required
+pss_wip.m_7_2_add_scb_conj3_uncond	7.2	m_8_2_j0eq_Adm0	8.2	pss_wip.m_8_2_j0eq_Adm0	false	discard as text-only forward mention; no theorem move or import is required
+pss_wip.m_7_2_add_scb_conj3_uncond	7.2	m_8_2_j1eq_Adm0	8.2	pss_wip.m_8_2_j1eq_Adm0	false	discard as text-only forward mention; no theorem move or import is required
+pss_wip.m_7_2_add_scb_conj3_uncond	7.2	m_8_2_parent_le_TrMax_Adm0	8.2	pss_wip.m_8_2_parent_le_TrMax_Adm0	false	discard as text-only forward mention; no theorem move or import is required
+pss_wip.m_7_2_add_scb_conj3_uncond	7.2	m_8_2_subexpr_component_Pred_Adm0	8.2	pss_wip.m_8_2_subexpr_component_Pred_Adm0	false	discard as text-only forward mention; no theorem move or import is required
+pss_wip.m_7_2_add_scb_conj3_uncond	7.2	m_8_2_subexpr_component_Pred_Adm0_clause1_keystone	8.2	pss_wip.m_8_2_subexpr_component_Pred_Adm0_clause1_keystone	false	discard as text-only forward mention; no theorem move or import is required
+pss_wip.m_7_2_scb_fseq_kind1_basic	7.2	m_8_2_subexpr_component_Pred_Adm0_clause4_core	8.2	pss_wip.m_8_2_subexpr_component_Pred_Adm0_clause4_core	false	discard as text-only forward mention; no theorem move or import is required
+pss_wip.m_7_2_scb_fseq_kind1_general	7.2	p_8_6_trailing_principal_annihilable	8.6	pss_paper.p_8_6_trailing_principal_annihilable	false	discard as text-only forward mention; no theorem move or import is required
+pss_wip.m_7_3_Mark_P_invariance	7.3	m_8_1_Pred_diagSeq_Trans	8.1	pss_wip.m_8_1_Pred_diagSeq_Trans	false	discard as text-only forward mention; no theorem move or import is required
+pss_wip.m_7_3_Trans_monoT	7.3	m_8_3_kind0_branch_rule	8.3	pss_wip.m_8_3_kind0_branch_rule	false	discard as text-only forward mention; no theorem move or import is required
+pss_wip.m_7_4_Mark_Trans_repr	7.4	m_8_1_c1_around_part1_noeq	8.1	pss_wip.m_8_1_c1_around_part1_noeq	false	discard as text-only forward mention; no theorem move or import is required
