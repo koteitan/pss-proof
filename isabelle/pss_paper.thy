@@ -7,7 +7,7 @@ text \<open>
   Faithful transcription of the *statements* (命題 / 補題 / 系 / 定理) of
   P進大好きbot's article "ペア数列の停止性", in the order they appear.
 
-  Every remaining statement here is left as @{command sorry}: this file records WHAT
+  Every remaining §8 statement here is left as @{command sorry}: this file records WHAT
   the article claims, not the proofs.  Statements whose proof the article
   itself omits, and statements we have simply not yet proved, are all
   @{command sorry} here.  The §5–§6 proofs live with their proposition theories
@@ -63,15 +63,6 @@ fun lessBT :: "BT \<Rightarrow> BT \<Rightarrow> bool" and lessBP :: "BP \<Right
 
 abbreviation leBT :: "BT \<Rightarrow> BT \<Rightarrow> bool" where
   "leBT a b \<equiv> lessBT a b \<or> a = b"
-
-text \<open>[Buc1] Lemma 2.1: \<open><\<close> is a strict linear order on \<open>T\<close> — irreflexive,
-  transitive, and trichotomous (the latter gives totality and asymmetry).\<close>
-
-lemma p_7_1_lessBT_linord:
-  shows "\<not> lessBT t t"
-    and "lessBT a b \<Longrightarrow> lessBT b c \<Longrightarrow> lessBT a c"
-    and "lessBT a b \<or> a = b \<or> lessBT b a"
-  sorry
 
 text \<open>[Buc1] (G1)–(G3): \<open>G\<^sub>u a \<subseteq> T\<close>.\<close>
 
@@ -224,14 +215,6 @@ definition PB :: "BT \<Rightarrow> BT list" where
 definition SigmaB :: "BT list \<Rightarrow> BT" where
   "SigmaB ts = Trm (concat (map untrm ts))"
 
-text \<open>命題（順序数項の単項成分の基本性質） (§7.1): with \<open>J\<^sub>1 := Lng(P(t)) - 1\<close>,
-  (1) \<open>J\<^sub>1 = -1\<close> (i.e. \<open>Lng(P t) = 0\<close>) iff \<open>t = 0\<close>, and (2) \<open>t = \<Sigma>\<^bsub>B\<^esub>(P t)\<close>.\<close>
-
-lemma p_7_1_term_components:
-  assumes "t \<in> T_B"
-  shows "(Lng (PB t) = 0 \<longleftrightarrow> t = Trm []) \<and> SigmaB (PB t) = t"
-  sorry
-
 text \<open>[Buc1] の外部補題（\<^bold>\<open>引用\<close>）。原文（P進大好きbot「ペア数列の停止性」）はこれらを
   Buchholz [Buc1] から引用し、\<^bold>\<open>証明していない\<close>。忠実性方針（原作にない原始的要素を
   導入しない）に従い、ここでも引用として \<open>sorry\<close> で立てる（証明は後日埋める、2026-06-25
@@ -283,15 +266,6 @@ fun flatBT :: "BT \<Rightarrow> Sym list" and flatBP :: "BP \<Rightarrow> Sym li
      LP # (flatBP p @ concat (map (\<lambda>r. CM # flatBP r) (q # ps))) @ [RP]"
 | "flatBP (DB u a) = Dsym u # flatBT a"
 
-text \<open>命題（順序数項のカッコの個数が左右で等しいこと） (§7.1): in the \<open>\<Sigma>\<close>-string
-  of any \<open>t \<in> T\<^bsub>B\<^esub>\<close> the letter \<open>\<^bold>(\<close> occurs as often as \<open>\<^bold>)\<close>.\<close>
-
-lemma p_7_1_paren_balance:
-  assumes "t \<in> T_B"
-  shows "length (filter (\<lambda>x. x = LP) (flatBT t))
-       = length (filter (\<lambda>x. x = RP) (flatBT t))"
-  sorry
-
 text \<open>\<open>RightNodes : T\<^bsub>B\<^esub> \<to> \<nat>\<^bsup><\<omega>\<^esup>\<close> (§7.2): \<open>0 \<mapsto> ()\<close>; \<open>D\<^sub>u t' \<mapsto> (u) \<frown>
   RightNodes t'\<close>; a multi term \<open>\<mapsto> RightNodes\<close> of its last principal component.\<close>
 
@@ -323,12 +297,14 @@ text \<open>第\<open>0\<close>種 / 第\<open>1\<close>種 scb-decomposition (�
 definition scb_kind0 :: "BT \<Rightarrow> Sym list \<Rightarrow> Sym list \<Rightarrow> Sym list \<Rightarrow> bool" where
   "scb_kind0 t s c b \<longleftrightarrow>
      scb_decomp t s c b
+   \<and> isPTB_str c
    \<and> (\<forall>p. c = flatBP p \<longrightarrow>
         (Lng (RightNodes (Trm [p])) = 2 \<and> RightNodes (Trm [p]) ! 1 = 0))"
 
 definition scb_kind1 :: "BT \<Rightarrow> Sym list \<Rightarrow> Sym list \<Rightarrow> Sym list \<Rightarrow> bool" where
   "scb_kind1 t s c b \<longleftrightarrow>
      scb_decomp t s c b
+   \<and> isPTB_str c
    \<and> (\<forall>p. c = flatBP p \<longrightarrow>
         (let r = RightNodes (Trm [p]); j1 = Lng r - 1 in
          j1 \<ge> 1 \<and> r ! 0 < r ! j1 \<and> (\<forall>j. 0 < j \<and> j < j1 \<longrightarrow> r ! j \<ge> r ! j1)))"
@@ -340,64 +316,6 @@ definition MarkedB :: "(BT \<times> BT) set" where
   "MarkedB = {(t, c). \<exists>s b. scb_decomp t s (flatBT c) b}"
 
 
-text \<open>
-  Modelling note for the §7.2 propositions below.  The article ranges over
-  \<open>\<Sigma>\<^bsup><\<omega>\<^esup>\<close> (strings) and \<open>\<nat>\<^bsup><\<omega>\<^esup>\<close>; we model the former as \<^typ>\<open>Sym list\<close>
-  and the latter as \<^typ>\<open>nat list\<close>, with the string connective \<open>s c b\<close> = list
-  append \<open>@\<close> and \<open>\<oplus>\<^sub>\<nat>\<close> = \<open>@\<close>.  "\<open>x \<in> T\<^bsub>B\<^esub>\<close> as a string" (i.e. the string is the
-  \<open>flat\<close> of a \<open>D\<^sub>\<omega>\<close>-free term) is written \<open>\<exists>t. t \<in> T\<^bsub>B\<^esub> \<and> flatBT t = \<dots>\<close>; the
-  unique witnessing term is recovered by \<open>unflatBT\<close> (defined in §7.3).  "\<open>c\<close> 単項" (\<open>c \<in> PT\<^bsub>B\<^esub>\<close>)
-  for a \<^typ>\<open>BT\<close> is \<open>\<exists>p. c = Trm [p]\<close> (a single principal component), with
-  \<open>D\<^sub>\<omega>\<close>-freeness added as \<open>c \<in> T\<^bsub>B\<^esub>\<close> where the article writes \<open>PT\<^bsub>B\<^esub>\<close>.  The
-  string-level \<open>D\<^sub>v\<close>-prefix \<open>D\<^sub>v s\<close> is \<open>Dsym (enat v) # s\<close> (cf. \<^const>\<open>flatBP\<close>).
-\<close>
-
-text \<open>命題（scb分解の置換可能性） (§7.2): for strings \<open>s,b\<close> and terms \<open>c\<^sub>0,c\<^sub>1\<close>,
-  if (\<open>c\<^sub>0\<close> is not principal \<open>\<or>\<close> \<open>c\<^sub>1\<close> is principal), the string \<open>s\<frown>flat c\<^sub>0\<frown>b\<close> is
-  (the \<open>flat\<close> of) a term \<open>\<in> T\<^bsub>B\<^esub>\<close>, and \<open>(s, flat c\<^sub>0, b)\<close> is an scb-decomposition
-  of it, then \<open>s\<frown>flat c\<^sub>1\<frown>b\<close> is also (the \<open>flat\<close> of) a term \<open>\<in> T\<^bsub>B\<^esub>\<close> and
-  \<open>(s, flat c\<^sub>1, b)\<close> is an scb-decomposition of it.\<close>
-
-lemma p_7_2_scb_replaceable:
-  assumes "c\<^sub>0 \<in> T_B" "c\<^sub>1 \<in> T_B"
-    and "(\<not>(\<exists>p. c\<^sub>0 = Trm [p])) \<or> (\<exists>p. c\<^sub>1 = Trm [p])"
-    and "t\<^sub>0 \<in> T_B" "flatBT t\<^sub>0 = s @ flatBT c\<^sub>0 @ b"
-    and "scb_decomp t\<^sub>0 s (flatBT c\<^sub>0) b"
-  shows "\<exists>t\<^sub>1. t\<^sub>1 \<in> T_B \<and> flatBT t\<^sub>1 = s @ flatBT c\<^sub>1 @ b
-            \<and> scb_decomp t\<^sub>1 s (flatBT c\<^sub>1) b"
-  sorry
-
-text \<open>命題（scb分解の合成則） (§7.2):
-  (1) if \<open>(s\<^sub>0,flat c\<^sub>0,b\<^sub>0)\<close> is an scb-decomposition of \<open>t\<close> (\<open>c\<^sub>0 \<in> PT\<^bsub>B\<^esub>\<close>) and
-      \<open>(s\<^sub>1,c\<^sub>1,b\<^sub>1)\<close> is an scb-decomposition of \<open>c\<^sub>0\<close>, then \<open>(s\<^sub>0\<frown>s\<^sub>1, c\<^sub>1, b\<^sub>1\<frown>b\<^sub>0)\<close>
-      is an scb-decomposition of \<open>t\<close>;
-  (2) if \<open>(s,c,b)\<close> is an scb-decomposition of \<open>t\<close> then \<open>(D\<^sub>v s, c, b)\<close> is one of
-      \<open>D\<^sub>v t\<close>.\<close>
-
-lemma p_7_2_scb_compose:
-  assumes "t \<in> T_B"
-  shows "\<And>c\<^sub>0 s\<^sub>0 s\<^sub>1 c\<^sub>1 b\<^sub>1 b\<^sub>0.
-            c\<^sub>0 \<in> T_B \<Longrightarrow> (\<exists>p. c\<^sub>0 = Trm [p]) \<Longrightarrow>
-            scb_decomp t s\<^sub>0 (flatBT c\<^sub>0) b\<^sub>0 \<Longrightarrow>
-            scb_decomp c\<^sub>0 s\<^sub>1 c\<^sub>1 b\<^sub>1 \<Longrightarrow>
-            scb_decomp t (s\<^sub>0 @ s\<^sub>1) c\<^sub>1 (b\<^sub>1 @ b\<^sub>0)"
-    and "\<And>v s c b. scb_decomp t s c b \<Longrightarrow>
-            scb_decomp (Dpt (enat v) t) (Dsym (enat v) # s) c b"
-  sorry
-
-text \<open>命題（scb分解の自明性の判定条件） (§7.2): for \<open>(t,c) \<in> T\<^bsub>B\<^esub>\<^sup>Marked\<close> the
-  following are equivalent: (1) \<open>t = c\<close>; (2) every scb-decomposition \<open>(s,flat c,b)\<close>
-  of \<open>t\<close> has \<open>s = ()\<close> and \<open>b = ()\<close>; (3) some scb-decomposition \<open>((),flat c,b)\<close> of
-  \<open>t\<close> exists.\<close>
-
-lemma p_7_2_scb_triviality:
-  assumes "(t, c) \<in> MarkedB"
-  shows "(t = c)
-       \<longleftrightarrow> (\<forall>s b. scb_decomp t s (flatBT c) b \<longrightarrow> s = [] \<and> b = [])"
-    and "(t = c)
-       \<longleftrightarrow> (\<exists>b. scb_decomp t [] (flatBT c) b)"
-  sorry
-
 text \<open>\<open>t\<close> が第\<open>0\<close>種 / 第\<open>1\<close>種 scb分解可能 (§7.2): some \<open>scb_kind0\<close> / \<open>scb_kind1\<close>
   decomposition of \<open>t\<close> exists.\<close>
 
@@ -406,108 +324,6 @@ abbreviation scb_kind0_able :: "BT \<Rightarrow> bool" where
 
 abbreviation scb_kind1_able :: "BT \<Rightarrow> bool" where
   "scb_kind1_able t \<equiv> \<exists>s c b. scb_kind1 t s c b"
-
-text \<open>命題（scb分解の一意性） (§7.2):
-  (1) the \<open>(s,b)\<close>-part of an scb-decomposition with a fixed \<open>c\<close> is unique;
-  (2) \<open>dom(t) = \<nat>\<close> iff \<open>t\<close> is 第\<open>0\<close>種- or 第\<open>1\<close>種-scb-decomposable;
-  (3) \<open>t\<close> is not both 第\<open>0\<close>種- and 第\<open>1\<close>種-scb-decomposable;
-  (4) the 第\<open>0\<close>種 scb-decomposition of \<open>t\<close> is unique;
-  (5) the 第\<open>1\<close>種 scb-decomposition of \<open>t\<close> is unique.\<close>
-
-lemma p_7_2_scb_unique:
-  assumes "t \<in> T_B"
-  shows "\<And>s\<^sub>0 s\<^sub>1 c b\<^sub>0 b\<^sub>1.
-            scb_decomp t s\<^sub>0 c b\<^sub>0 \<Longrightarrow> scb_decomp t s\<^sub>1 c b\<^sub>1 \<Longrightarrow>
-            s\<^sub>0 = s\<^sub>1 \<and> b\<^sub>0 = b\<^sub>1"
-    and "(domB t = NatSet) \<longleftrightarrow> (scb_kind0_able t \<or> scb_kind1_able t)"
-    and "\<not> scb_kind0_able t \<or> \<not> scb_kind1_able t"
-    and "\<And>s\<^sub>0 c\<^sub>0 b\<^sub>0 s\<^sub>1 c\<^sub>1 b\<^sub>1.
-            scb_kind0 t s\<^sub>0 c\<^sub>0 b\<^sub>0 \<Longrightarrow> scb_kind0 t s\<^sub>1 c\<^sub>1 b\<^sub>1 \<Longrightarrow>
-            (s\<^sub>0, c\<^sub>0, b\<^sub>0) = (s\<^sub>1, c\<^sub>1, b\<^sub>1)"
-    and "\<And>s\<^sub>0 c\<^sub>0 b\<^sub>0 s\<^sub>1 c\<^sub>1 b\<^sub>1.
-            scb_kind1 t s\<^sub>0 c\<^sub>0 b\<^sub>0 \<Longrightarrow> scb_kind1 t s\<^sub>1 c\<^sub>1 b\<^sub>1 \<Longrightarrow>
-            (s\<^sub>0, c\<^sub>0, b\<^sub>0) = (s\<^sub>1, c\<^sub>1, b\<^sub>1)"
-  sorry
-
-text \<open>系（加法とscb分解の関係） (§7.2): for \<open>t \<in> T\<^bsub>B\<^esub>\<close>, \<open>c \<in> PT\<^bsub>B\<^esub>\<close>:
-  (1) \<open>(t+c, c) \<in> T\<^bsub>B\<^esub>\<^sup>Marked\<close>;
-  (2) if \<open>(s,flat c,b)\<close> is an scb-decomposition of \<open>t+c\<close>, then \<open>(s,flat c',b)\<close>
-      is one of \<open>t+c'\<close>;
-  (3) if \<open>s\<^sub>1\<frown>D\<^sub>v(t+c)\<frown>b\<^sub>1 \<in> T\<^bsub>B\<^esub>\<close> and \<open>(s\<^sub>0,flat c,b\<^sub>0)\<close> is an scb-decomposition of
-      \<open>s\<^sub>1 D\<^sub>v(t+c) b\<^sub>1\<close>, then \<open>s\<^sub>1 D\<^sub>v(t+c') b\<^sub>1 \<in> T\<^bsub>B\<^esub>\<close> and \<open>(s\<^sub>0,flat c',b\<^sub>0)\<close> is
-      an scb-decomposition of it.\<close>
-
-lemma p_7_2_add_scb:
-  assumes "t \<in> T_B" "c \<in> T_B" "\<exists>p. c = Trm [p]"
-  shows "(t +\<^sub>B c, c) \<in> MarkedB"
-    and "\<And>s b c'. c' \<in> T_B \<Longrightarrow> (\<exists>p. c' = Trm [p]) \<Longrightarrow>
-            scb_decomp (t +\<^sub>B c) s (flatBT c) b \<Longrightarrow>
-            scb_decomp (t +\<^sub>B c') s (flatBT c') b"
-    and "\<And>v s\<^sub>0 s\<^sub>1 b\<^sub>0 b\<^sub>1 c' u\<^sub>1.
-            c' \<in> T_B \<Longrightarrow> (\<exists>p. c' = Trm [p]) \<Longrightarrow>
-            u\<^sub>1 \<in> T_B \<Longrightarrow> flatBT u\<^sub>1 = s\<^sub>1 @ (Dsym (enat v) # flatBT (t +\<^sub>B c)) @ b\<^sub>1 \<Longrightarrow>
-            scb_decomp u\<^sub>1 s\<^sub>0 (flatBT c) b\<^sub>0 \<Longrightarrow>
-            (\<exists>u\<^sub>1'. u\<^sub>1' \<in> T_B
-                 \<and> flatBT u\<^sub>1' = s\<^sub>1 @ (Dsym (enat v) # flatBT (t +\<^sub>B c')) @ b\<^sub>1
-                 \<and> scb_decomp u\<^sub>1' s\<^sub>0 (flatBT c') b\<^sub>0)"
-  sorry
-
-text \<open>命題（scb分解と基本列の関係） (§7.2):
-  (1-1) \<open>t'\<^sub>0 + D\<^sub>v(t'\<^sub>1 + D\<^sub>0 0)[n] = t'\<^sub>0 + (D\<^sub>v t'\<^sub>1)\<cdot>(n+1)\<close>;
-  (1-2) if \<open>(s, D\<^sub>u(t'\<^sub>0 + D\<^sub>v(t'\<^sub>1+D\<^sub>0 0)), b)\<close> is an scb-decomposition of \<open>t\<close>,
-        then \<open>(s, D\<^sub>u(t'\<^sub>0 + (D\<^sub>v t'\<^sub>1)\<cdot>(n+1)), b)\<close> is one of \<open>t[n]\<close>;
-  (2) if \<open>(s\<^sub>1,c\<^sub>2,b\<^sub>1)\<close> is a 第\<open>1\<close>種 scb-decomposition of \<open>t\<close> and
-        \<open>(D\<^sub>u s\<^sub>0, D\<^sub>v 0, b\<^sub>0)\<close> is an scb-decomposition of \<open>c\<^sub>2\<close>, then \<open>v > u\<close> and
-        the \<open>\<Sigma>\<close>-string of \<open>t[n]\<close> is
-        \<open>s\<^sub>1 D\<^sub>u (s\<^sub>0 D\<^bsub>v-1\<^esub>)\<^bsup>n+1\<^esup> 0 b\<^sub>0\<^bsup>n+1\<^esup> b\<^sub>1\<close>.
-  Modelling: BT fundamental sequence \<open>t[n] = operB t (numB<\<close>\<open>n)\<close> (numeral term);
-  string powers \<open>x\<^bsup>k\<^esup> = concat (replicate k x)\<close>.\<close>
-
-lemma p_7_2_scb_fseq:
-  fixes v n :: nat
-  shows "\<And>t'\<^sub>0 t'\<^sub>1. t'\<^sub>0 \<in> T_B \<Longrightarrow> t'\<^sub>1 \<in> T_B \<Longrightarrow>
-            operB (t'\<^sub>0 +\<^sub>B Dpt (enat v) (t'\<^sub>1 +\<^sub>B Dpt 0 0\<^sub>B)) (numBT n)
-              = t'\<^sub>0 +\<^sub>B multBT (Dpt (enat v) t'\<^sub>1) (n + 1)"
-    and "\<And>t'\<^sub>0 t'\<^sub>1 t u s b.
-            t'\<^sub>0 \<in> T_B \<Longrightarrow> t'\<^sub>1 \<in> T_B \<Longrightarrow> t \<in> T_B \<Longrightarrow>
-            scb_decomp t s
-              (flatBT (Dpt (enat u) (t'\<^sub>0 +\<^sub>B Dpt (enat v) (t'\<^sub>1 +\<^sub>B Dpt 0 0\<^sub>B)))) b \<Longrightarrow>
-            scb_decomp (operB t (numBT n)) s
-              (flatBT (Dpt (enat u) (t'\<^sub>0 +\<^sub>B multBT (Dpt (enat v) t'\<^sub>1) (n + 1)))) b"
-    and "\<And>t u s\<^sub>0 s\<^sub>1 c\<^sub>2 b\<^sub>0 b\<^sub>1.
-            t \<in> T_B \<Longrightarrow>
-            scb_kind1 t s\<^sub>1 (flatBT c\<^sub>2) b\<^sub>1 \<Longrightarrow>
-            scb_decomp c\<^sub>2 (Dsym (enat u) # s\<^sub>0) (flatBT (Dpt (enat v) 0\<^sub>B)) b\<^sub>0 \<Longrightarrow>
-            v > u \<and>
-            flatBT (operB t (numBT n)) =
-              s\<^sub>1 @ (Dsym (enat u)
-                # concat (replicate (n + 1) (s\<^sub>0 @ [Dsym (enat (v - 1))]))
-                @ [Zsym]
-                @ concat (replicate (n + 1) b\<^sub>0))
-              @ b\<^sub>1"
-  sorry
-
-text \<open>命題（\<open>RightNodes\<close>と部分表現の関係） (§7.2): for strings \<open>s,b\<close>, \<open>v \<in> \<nat>\<close> and
-  \<open>t \<in> PT\<^bsub>B\<^esub>\<close>, if \<open>b\<close> consists only of \<open>\<^bold>)\<close> and \<open>s\<frown>flat(D\<^sub>v 0)\<frown>b \<in> T\<^bsub>B\<^esub>\<close>, then
-  \<open>s\<frown>flat(D\<^sub>v t)\<frown>b \<in> T\<^bsub>B\<^esub>\<close>, \<open>Lng(P(s D\<^sub>v t b)) = Lng(P(s D\<^sub>v 0 b))\<close>, and there are
-  unique \<open>a\<^sub>0,a\<^sub>1 \<in> \<nat>\<^bsup><\<omega>\<^esup>\<close> with
-  (1) \<open>RightNodes(s D\<^sub>v t b) = a\<^sub>0 \<frown> [v] \<frown> a\<^sub>1\<close>;
-  (2) \<open>RightNodes(s D\<^sub>v 0 b) = a\<^sub>0 \<frown> [v]\<close>;
-  (3) \<open>RightNodes(D\<^sub>v t) = [v] \<frown> a\<^sub>1\<close>.
-  Modelling: \<open>P(\<dots>)\<close> on a string = \<open>P\<^bsub>B\<^esub>\<close> of the witnessing term \<open>unflatBT\<close>.\<close>
-
-lemma p_7_2_RightNodes_subexpr:
-  fixes v :: nat
-  assumes "t \<in> T_B" "\<exists>p. t = Trm [p]"
-    and "\<forall>x \<in> set b. x = RP"
-    and "t\<^sub>0 \<in> T_B" "flatBT t\<^sub>0 = s @ flatBT (Dpt (enat v) 0\<^sub>B) @ b"
-  shows "\<exists>t\<^sub>1. t\<^sub>1 \<in> T_B \<and> flatBT t\<^sub>1 = s @ flatBT (Dpt (enat v) t) @ b
-            \<and> Lng (PB t\<^sub>1) = Lng (PB t\<^sub>0)
-            \<and> (\<exists>!aa. RightNodes t\<^sub>1 = fst aa @ [v] @ snd aa
-                  \<and> RightNodes t\<^sub>0 = fst aa @ [v]
-                  \<and> RightNodes (Dpt (enat v) t) = [v] @ snd aa)"
-  sorry
-
 
 subsection \<open>§7.3 翻訳写像 (Trans / Mark)\<close>
 
@@ -681,190 +497,6 @@ definition transC2 :: "pairseq \<Rightarrow> BT" where
          else Dpt v (t3 +\<^sub>B Dpt (enat (entry M 1 jp))
                             (t4 +\<^sub>B Dpt (enat (entry M 1 j1)) 0\<^sub>B)))"
 
-text \<open>命題（\<open>Trans\<close>の well-defined 性）(§7.3, 2184): the recursion determines a
-  unique total \<open>Trans\<close>/\<open>Mark\<close>.  In Isabelle this is the totality of the
-  \<open>function\<close>-domain (termination); deferred — not transcribed as a separate
-  \<open>sorry\<close> lemma here.\<close>
-
-text \<open>命題（\<open>2\<close>列ペア数列の基本性質） (§7.3, 2190).\<close>
-
-lemma p_7_3_twoColumn:
-  assumes "M \<in> RT_PS" "monoT M" "Lng M = 2"
-  shows "Trans M = Dpt (enat (entry M 1 0)) (Dpt (enat (entry M 1 1)) 0\<^sub>B)"
-    and "(M, 0) \<in> Marked" and "(M, 1) \<in> Marked"
-    and "Mark M 0 = Dpt (enat (entry M 1 0)) (Dpt (enat (entry M 1 1)) 0\<^sub>B)"
-    and "Mark M 1 = Dpt (enat (entry M 1 1)) 0\<^sub>B"
-  sorry
-
-text \<open>命題（\<open>Trans\<close>の\<open>(IncrFirst,Red)\<close>不変\<open>P\<close>同変性） (1) (§7.3, 2234).\<close>
-
-lemma p_7_3_Trans_IncrFirst_Red:
-  assumes "M \<in> T_PS"
-  shows "Trans M = Trans (Red M)" and "Trans M = Trans (IncrFirst M)"
-  sorry
-
-text \<open>命題（\<open>Mark\<close>の\<open>(IncrFirst,Red,P)\<close>不変性） (1) (§7.3, 2246).\<close>
-
-lemma p_7_3_Mark_IncrFirst_Red:
-  assumes "(M, m) \<in> Marked"
-  shows "Mark M m = Mark (Red M) m" and "Mark M m = Mark (IncrFirst M) m"
-  sorry
-
-text \<open>命題（\<open>Trans\<close>が零項性を保つこと） (§7.3, 2254).\<close>
-
-lemma p_7_3_Trans_zeroT:
-  assumes "M \<in> T_PS"
-  shows "zeroT M \<longleftrightarrow> Trans M = 0\<^sub>B"
-  sorry
-
-text \<open>命題（\<open>c\<^sub>1\<close>と\<open>c\<^sub>2\<close>の大小関係） (§7.3, article 2270): for \<open>M \<in> RT\<^bsub>PS\<^esub> \<inter> PT\<^bsub>PS\<^esub>\<close>,
-  using the symbols of the recursive definition of \<open>Trans\<close> (now exposed as
-  \<open>transC1\<close>/\<open>transC2\<close>), if \<open>j\<^sub>1 > 0\<close> and \<open>t\<^sub>1 \<noteq> 0\<close> then \<open>c\<^sub>1\<close> and \<open>c\<^sub>2\<close> are
-  principal (単項 = a single principal component, \<open>Lng (PB \<cdot>) = 1\<close>) and
-  \<open>c\<^sub>1 < c\<^sub>2\<close> (\<open>lessBT\<close>).\<close>
-
-lemma p_7_3_c1_c2:
-  assumes "M \<in> RT_PS" "M \<in> PT_PS" "transJ1 M > 0" "transT1 M \<noteq> 0\<^sub>B"
-  shows "Lng (PB (transC1 M)) = 1" and "Lng (PB (transC2 M)) = 1"
-    and "lessBT (transC1 M) (transC2 M)"
-  sorry
-
-text \<open>命題（\<open>Pred\<close>の\<open>Trans\<close>に関する降下性） (§7.3, 2278).\<close>
-
-lemma p_7_3_Pred_Trans_descend:
-  assumes "M \<in> T_PS" "Lng M > 1"
-  shows "lessBT (Trans (Pred M)) (Trans M)"
-  sorry
-
-text \<open>命題（右端第\<open>1\<close>基点の\<open>Mark\<close>の基本性質） (§7.3, 2296).\<close>
-
-lemma p_7_3_Mark_rightmost1:
-  assumes "(M, m) \<in> Marked" "M \<in> RT_PS"
-  shows "(m = Lng M - 1) \<longleftrightarrow> (Mark M m = Dpt (enat (entry M 1 m)) 0\<^sub>B)"
-  sorry
-
-text \<open>命題（\<open>Trans\<close>が単項性を保つこと） (§7.3, 2358).  A \<open>BT\<close> term is principal
-  (\<open>\<in> PT\<^bsub>B\<^esub>\<close>) iff it has a single principal component, i.e. \<open>Lng (P\<^bsub>B\<^esub> t) = 1\<close>.
-
-  CORRECTION A16: the transcribed exceptional-disjunct form
-  \<open>monoT M \<longleftrightarrow> (Lng (PB (Trans M)) = 1 \<or> (zeroT (P M ! 0) \<and> Lng (P M) = 2))\<close>
-  is FALSE (53 counterexamples, e.g. \<open>M = [(0,0),(0,0),(1,1)]\<close> is \<open>multiT\<close> but
-  \<open>Trans M\<close> is single AND the right disjunct holds — the disjunct was added in the
-  wrong direction).  The empirically true form (1269 reduced cases, 0 CEX)
-  restricts to a non-zero first \<open>P\<close>-component: under \<open>\<not> zeroT (P M ! 0)\<close>,
-  \<open>monoT M \<longleftrightarrow> Lng (PB (Trans M)) = 1\<close>.  Stated \<open>RT\<^bsub>PS\<^esub>\<close>-restricted (the §7.3
-  convention; \<open>M \<in> T\<^bsub>PS\<^esub>\<close> reduces to \<open>Red M \<in> RT\<^bsub>PS\<^esub>\<close> with \<open>Trans (Red M) = Trans M\<close>).\<close>
-
-lemma p_7_3_Trans_monoT:
-  assumes "M \<in> RT_PS" "\<not> zeroT (P M ! 0)"
-  shows "monoT M \<longleftrightarrow> Lng (PB (Trans M)) = 1"
-  sorry
-
-
-subsection \<open>§7.4 許容的親子関係\<close>
-
-text \<open>命題（\<open>Adm\<^sub>M\<close>と\<open><\<^bsub>M\<^esub>\<^sup>NextAdm\<close>の関係） — when \<open>j\<^sub>1 = Lng M - 1\<close> has a
-  unique row-\<open>i\<close> parent \<open>j\<^sub>0\<close>, its admissibilization \<open>Adm\<^sub>M(j\<^sub>0)\<close> is the
-  admissible parent of \<open>j\<^sub>1\<close>.  (This §7.4 proposition is \<open>Trans\<close>-free; the
-  remaining §7.3 / §7.4 statements await the \<open>Trans\<close> / \<open>Mark\<close> definition.)\<close>
-
-lemma p_7_4_Adm_nextAdm:
-  assumes "M \<in> T_PS" "hasParent M i (Lng M - 1)"
-  shows "nextAdm M i (Adm M (parent M i (Lng M - 1))) (Lng M - 1)"
-  sorry
-
-
-text \<open>命題（\<open>Trans\<close>と\<open><\<^bsub>M\<^esub>\<^sup>NextAdm\<close>の関係） (§7.4): for \<open>M \<in> T\<^bsub>PS\<^esub>\<close> with
-  \<open>j\<^sub>1 = Lng M - 1\<close>, if there is a unique \<open>j\<^sub>0\<close> with
-  \<open>(0,j\<^sub>0) <\<^bsub>M\<^esub>\<^sup>NextAdm (0,j\<^sub>1)\<close>, then there exist unique
-  \<open>(s\<^sub>0,b\<^sub>0) \<in> (\<Sigma>\<^bsup><\<omega>\<^esup>)\<^sup>2\<close> such that
-  \<open>(s\<^sub>0, Mark(Pred M, j\<^sub>0), b\<^sub>0)\<close> is an scb-decomposition of \<open>Trans(Pred M)\<close> and
-  \<open>(s\<^sub>0, Mark(M, j\<^sub>0), b\<^sub>0)\<close> is an scb-decomposition of \<open>Trans M\<close>.\<close>
-
-lemma p_7_4_Trans_nextAdm:
-  assumes "M \<in> T_PS"
-    and "\<exists>!j0. nextAdm M 0 j0 (Lng M - 1)"
-  shows "\<exists>!sb. scb_decomp (Trans (Pred M))
-                  (fst sb) (flatBT (Mark (Pred M) (THE j0. nextAdm M 0 j0 (Lng M - 1)))) (snd sb)
-            \<and> scb_decomp (Trans M)
-                  (fst sb) (flatBT (Mark M (THE j0. nextAdm M 0 j0 (Lng M - 1)))) (snd sb)"
-  sorry
-
-text \<open>系（\<open>Mark\<close>と\<open><\<^bsub>M\<^esub>\<^sup>NextAdm\<close>の関係） (§7.4): under the same hypotheses, with
-  \<open>j\<^sub>0\<close> the unique NextAdm-parent of \<open>j\<^sub>1 = Lng M - 1\<close>, for any \<open>j\<close> with
-  \<open>(0,j) \<le>\<^sub>M (0,j\<^sub>0)\<close> there exist unique \<open>(s\<^sub>0,b\<^sub>0)\<close> such that
-  \<open>(s\<^sub>0, Mark(Pred M, j\<^sub>0), b\<^sub>0)\<close> is an scb-decomposition of \<open>Mark(Pred M, j)\<close> and
-  \<open>(s\<^sub>0, Mark(M, j\<^sub>0), b\<^sub>0)\<close> is an scb-decomposition of \<open>Mark(M, j)\<close>.\<close>
-
-lemma p_7_4_Mark_nextAdm:
-  assumes "M \<in> T_PS"
-    and "\<exists>!j0. nextAdm M 0 j0 (Lng M - 1)"
-    and "leR M 0 j (THE j0. nextAdm M 0 j0 (Lng M - 1))"
-  shows "\<exists>!sb. scb_decomp (Mark (Pred M) j)
-                  (fst sb) (flatBT (Mark (Pred M) (THE j0. nextAdm M 0 j0 (Lng M - 1)))) (snd sb)
-            \<and> scb_decomp (Mark M j)
-                  (fst sb) (flatBT (Mark M (THE j0. nextAdm M 0 j0 (Lng M - 1)))) (snd sb)"
-  sorry
-
-text \<open>系（\<open>Trans\<close>の\<open>Mark\<close>と\<open>Pred\<close>による表示） (§7.4): for any
-  \<open>(M,m) \<in> T\<^bsub>PS\<^esub>\<^sup>Marked\<close> (modelled by \<open>(M,m) \<in> Marked\<close>), if \<open>m < Lng M - 1\<close>
-  then there exist unique \<open>(s\<^sub>0,b\<^sub>0)\<close> such that \<open>(s\<^sub>0, Mark(Pred M, m), b\<^sub>0)\<close> is an
-  scb-decomposition of \<open>Trans(Pred M)\<close> and \<open>(s\<^sub>0, Mark(M, m), b\<^sub>0)\<close> is an
-  scb-decomposition of \<open>Trans M\<close>.\<close>
-
-lemma p_7_4_Trans_Mark_Pred:
-  assumes "(M, m) \<in> Marked"
-    and "m < Lng M - 1"
-  shows "\<exists>!sb. scb_decomp (Trans (Pred M)) (fst sb) (flatBT (Mark (Pred M) m)) (snd sb)
-            \<and> scb_decomp (Trans M) (fst sb) (flatBT (Mark M m)) (snd sb)"
-  sorry
-
-text \<open>命題（\<open>Mark\<close>の\<open>Trans\<close>による表示） (§7.4, article 2490): for any
-  \<open>(M,m) \<in> T\<^bsub>PS\<^esub>\<^sup>Marked\<close>, set \<open>j\<^sub>1 := Lng M - 1\<close>; if \<open>j\<^sub>1 - m > 0\<close> then
-  \<open>Mark(M, m) = Trans((M\<^sub>j)\<^bsub>j=m\<^esub>\<^bsup>j\<^sub>1\<^esup>)\<close>, i.e. the marked value at column \<open>m\<close> equals
-  the \<open>Trans\<close> of the backward slice from \<open>m\<close> to the last column.  The article
-  reduces to \<open>M \<in> RT\<^bsub>PS\<^esub> \<inter> PT\<^bsub>PS\<^esub>\<close> via the \<open>(IncrFirst,Red,P)\<close>-invariances; as with
-  the other §7.4 propositions we transcribe the \<open>M \<in> RT\<^bsub>PS\<^esub>\<close> form (the general
-  \<open>T\<^bsub>PS\<^esub>\<close> form awaits the §6 \<open>P\<close>-\<open>Red\<close>-equivariance).  \<open>(M\<^sub>j)\<^bsub>j=m\<^esub>\<^bsup>j\<^sub>1\<^esup> = seg M m (Lng M - 1)\<close>.
-  Mechanized as \<open>m_7_4_Mark_Trans_repr\<close> in \<open>pss_wip\<close> (fully proven, no \<open>sorry\<close>).\<close>
-
-lemma p_7_4_Mark_Trans_repr:
-  assumes "(M, m) \<in> Marked" "M \<in> RT_PS"
-    and "m < Lng M - 1"
-  shows "Mark M m = Trans (seg M m (Lng M - 1))"
-  sorry
-
-text \<open>系（\<open>Trans\<close>の\<open>Mark\<close>と切片による表示） (§7.4): for any
-  \<open>(M,m) \<in> RT\<^bsub>PS\<^esub>\<^sup>Marked\<close> (modelled by \<open>(M,m) \<in> Marked \<and> M \<in> RT\<^bsub>PS\<^esub>\<close>), if
-  \<open>0 < m < Lng M - 1\<close> then there exist unique \<open>(s\<^sub>0,b\<^sub>0)\<close> such that
-  \<open>(s\<^sub>0, D\<^bsub>M\<^sub>1\<^sub>,\<^sub>m\<^esub> 0, b\<^sub>0)\<close> is an scb-decomposition of \<open>Trans((M\<^sub>j)\<^bsub>j=0\<^esub>\<^bsup>m\<^esup>)\<close> and
-  \<open>(s\<^sub>0, Mark(M, m), b\<^sub>0)\<close> is an scb-decomposition of \<open>Trans M\<close>.  Here
-  \<open>(M\<^sub>j)\<^bsub>j=0\<^esub>\<^bsup>m\<^esup> = seg M 0 m\<close> and \<open>D\<^bsub>M\<^sub>1\<^sub>,\<^sub>m\<^esub> 0 = Dpt (enat (entry M 1 m)) 0\<^sub>B\<close>.\<close>
-
-lemma p_7_4_Trans_Mark_seg:
-  assumes "(M, m) \<in> Marked" "M \<in> RT_PS"
-    and "0 < m" "m < Lng M - 1"
-  shows "\<exists>!sb. scb_decomp (Trans (seg M 0 m))
-                  (fst sb) (flatBT (Dpt (enat (entry M 1 m)) 0\<^sub>B)) (snd sb)
-            \<and> scb_decomp (Trans M) (fst sb) (flatBT (Mark M m)) (snd sb)"
-  sorry
-
-text \<open>系（\<open>RightNodes\<close>と\<open>Mark\<close>の関係） (§7.4): for any
-  \<open>(M,m) \<in> RT\<^bsub>PS\<^esub>\<^sup>Marked\<close> (modelled by \<open>(M,m) \<in> Marked \<and> M \<in> RT\<^bsub>PS\<^esub>\<close>), if
-  \<open>0 < m < Lng M - 1\<close> then there exist \<open>a\<^sub>0, a\<^sub>1 \<in> \<nat>\<^bsup><\<omega>\<^esup>\<close> such that
-  \<open>RightNodes(Trans M) = a\<^sub>0 \<frown> (M\<^sub>1\<^sub>,\<^sub>m) \<frown> a\<^sub>1\<close>,
-  \<open>RightNodes(Trans((M\<^sub>j)\<^bsub>j=0\<^esub>\<^bsup>m\<^esup>)) = a\<^sub>0 \<frown> (M\<^sub>1\<^sub>,\<^sub>m)\<close>, and
-  \<open>RightNodes(Mark(M, m)) = (M\<^sub>1\<^sub>,\<^sub>m) \<frown> a\<^sub>1\<close>.  Here the article's \<open>\<oplus>\<^sub>\<nat>\<close> on
-  \<open>\<nat>\<^bsup><\<omega>\<^esup>\<close> is list append \<open>@\<close>, and \<open>(M\<^sub>1\<^sub>,\<^sub>m) = [entry M 1 m]\<close>.\<close>
-
-lemma p_7_4_RightNodes_Mark:
-  assumes "(M, m) \<in> Marked" "M \<in> RT_PS"
-    and "0 < m" "m < Lng M - 1"
-  shows "\<exists>a0 a1. RightNodes (Trans M) = a0 @ [entry M 1 m] @ a1
-              \<and> RightNodes (Trans (seg M 0 m)) = a0 @ [entry M 1 m]
-              \<and> RightNodes (Mark M m) = [entry M 1 m] @ a1"
-  sorry
-
 text \<open>\<open>RightAnces : T\<^bsub>PS\<^esub> \<to> \<nat>\<^bsup><\<omega>\<^esup>\<close> (§7.4, article 2704–2741): a recursion on
   \<open>Lng M\<close> mirroring \<open>Trans\<close> (reduced/mono/multi/non-reduced; conditions (I)–(VI);
   \<open>j\<^sub>0 = parent M 0 j\<^sub>1\<close>, \<open>j\<^sub>-\<^sub>1 = Adm M j\<^sub>0\<close>).  Independent of \<open>Trans\<close>/\<open>Mark\<close>;
@@ -886,21 +518,6 @@ function (domintros) RightAnces :: "pairseq \<Rightarrow> nat list" where
           (let J1 = Lng (P M) - 1;  PJ = P M ! J1 in
            if PJ = [(0,0)] then [0] else RightAnces PJ))"
   by pat_completeness auto
-
-text \<open>命題（\<open>RightNodes\<close>と\<open>RightAnces\<close>の関係） (§7.4, 2745).\<close>
-
-lemma p_7_4_RightAnces_RightNodes:
-  assumes "M \<in> T_PS"
-  shows "RightAnces M = RightNodes (Trans M)"
-  sorry
-
-text \<open>系（非零項の\<open>RightAnces\<close>が非空であること） (§7.4, 2809).\<close>
-
-lemma p_7_4_RightAnces_zeroT:
-  assumes "M \<in> T_PS"
-  shows "zeroT M \<longleftrightarrow> RightAnces M = []"
-  sorry
-
 
 section \<open>§8 停止性 (Termination)\<close>
 
