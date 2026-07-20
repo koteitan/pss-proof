@@ -67,7 +67,7 @@ task.md のユーザー向け骨格に対する、作業側の詳細版。ユー
 - has_gz⟹D系(§6.7)
 - ⚠️ Pred_oper0 / 零化一般 / 固定count condII は REFUTED ではない。A25/A26/A27/A36 はすべて取り下げ済み（corrections-old.md）で原文は正しく、該当項目は未証明。旧 operB 読みに基づく反例 route だけを再利用しない
 - **leBT q qp(spine qp-descent、slotTail)**: ST_PS で偽 33/33(方向が逆: Pred は trailing deposit を縮める、qp<q)。stx_..._from_descent の descent 仮定は充足不能=DEAD route [r45]
-- **STRAT-n(lvP 版、buc1)**: n≥1 で偽(witness D_0(D_k 0) < D_1 0)。層化は head-index で行う(wfj_strat_hd) [r52]
+- **STRAT-n(lvP 版、buc1)**: n≥1 で偽(witness D_0(D_k 0) < D_1 0)。層化は head-index で行う（`wfj_strat_hd`。停止性木から分離後は `memo/M_8_7_Wfj_Level_Jump.thy`） [r52]
 - **長さ指標 joint 帰納(r46/r47 エンジン)**: 証明不可能(EDGE-1/EDGE-2 が長さ非有界、a5/長さIH と矛盾——asx_ 監査)。stage-first も a5/Pred で対称に失敗。接地は stage 帰納+補正 readback(route A)のみ [r48]
 - **OKH(=ox9_ok)/leafcond**: **両方とも偽**(8/542 純ST_PS census host、maxlen20・400歩乱歩)。witness は body が surgery filler pX=D_ub X0 を右spine外に含み、**等号で落ちる**。⟹**r69 の oi9_census_OKH は空虚**。r69 の緑は maxlen24 でも head<v1 を持つ host が3件しかなく **~99%空虚**だった。**HD(KK を index0 の head 比較で決める)も偽**(40/1700、walk が等しい principal で tie して右へ進む=KK は walk-level の事実)。**12件目の偽陽性** [r70]
 - **fseq 対応の等式化 Trans(M[n])=operB (Trans M)(numBT k)**: **偽**(condIII 72/196、condIV 0/4、condV 0/70。Trans(M[n]) は fseq の**孫**で連続2成員の厳密な間)。非数値 z への一般化でも等式は増えない。既証明 exchange slot が leBT のみ/厳密< であることとも整合。**cofinality は不可避** [r70]

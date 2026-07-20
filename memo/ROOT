@@ -1,0 +1,14 @@
+session PSS_MEMO = PSS_CORRECTIONS +
+  description "
+    Machine-checked residue of the abandoned distinguished-set / Fundierung
+    campaign.  This session is intentionally outside the PSS_C build chain.
+  "
+  options [document = false, quick_and_dirty]
+  theories
+    M_8_Wf_Bounded_Chain_Reductions
+    M_8_7_Wfs_Semantic_Rank
+    M_8_7_Wfj_Level_Jump
+    M_8_7_Wfc_Component_Jumps
+    M_8_7_Wds_Distinguished_Sets
+    M_8_7_Wcl_Collapse_Obstruction
+    M_8_7_Bwo_Well_Ordering_Residue

@@ -5,7 +5,9 @@ Scans for structure markers:
   - banner comments   (* ===== ... ===== *)
   - section/subsection headings
 and emits docs/thy-toc.md with one `line<TAB>text` row per marker, grouped by
-file. Regenerate after every C->B fold (or any bulk edit of a frozen layer):
+file.  The checked `corrections/` and `memo/` archive theories are included as
+siblings of `isabelle/`. Regenerate after every C->B fold (or any bulk edit of
+a frozen or archived layer):
 
     python3 tools/make_toc.py
 
@@ -28,6 +30,10 @@ FILES = [
     'pss_mechanized.thy',
     'layerB/pss_wip.thy',
     'layerC/pss_scratch.thy',
+] + [
+    f'../{archive_dir}/{path.name}'
+    for archive_dir in ('corrections', 'memo')
+    for path in sorted((ROOT.parent / archive_dir).glob('*.thy'))
 ]
 OUT = ROOT / 'docs' / 'thy-toc.md'
 
@@ -63,7 +69,7 @@ def main():
             out.append(f'{i}\t{kind}\t{txt}')
         out.append('')
     OUT.parent.mkdir(exist_ok=True)
-    OUT.write_text('\n'.join(out) + '\n')
+    OUT.write_text('\n'.join(out).rstrip() + '\n')
     print(f'wrote {OUT} ({len(out)} lines)')
 
 if __name__ == '__main__':

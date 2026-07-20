@@ -9,6 +9,8 @@ P進大好きbot 氏のブログ記事「ペア数列の停止性」（巨大数
 | ディレクトリ | 内容 | 状態 |
 |---|---|---|
 | [`isabelle/`](isabelle/) | Isabelle/HOL 版 | **完了**（停止性を仮定ゼロ・`sorry` ゼロで証明） |
+| [`corrections/`](corrections/) | Isabelle/HOL の反例・経験検証資料（独立セッション） | 機械検査済みアーカイブ |
+| [`memo/`](memo/) | 停止性に採用しなかった Isabelle/HOL 証明キャンペーン | 機械検査済みアーカイブ |
 | [`lean/`](lean/) | Lean 4 版（原文の命題 1 つ = ファイル 1 つ） | **作業中** |
 | `python/` | 反例探索・数値検証モデル | 共通 |
 | `tools/` | 原文処理 | 共通 |
@@ -23,7 +25,7 @@ theorem y5_Fdom   : ...                     (* 原文の言明 p_8_7_termination
 ```
 
 - 外部文献 [Buc1] の補題（2.1 / 2.2 / 3.2a / 3.3）も**すべて自前で証明**しており、引用による穴は無い。
-- `sorry` に依存していないことは **ML の監査ブロックがビルド時に強制**する（`isabelle/layerC/pss_scratch.thy` 末尾）。
+- `sorry` に依存していないことは **ML の監査ブロックがビルド時に強制**する（`isabelle/8/audit.thy`）。
   停止性の定理群が `isabelle/pss_paper.thy` の 131 個の `sorry` のいずれかに到達したら、`error` でビルドが落ちる。
   **緑ビルド＝監査合格**であり、negative control（意図的に汚した定理を混ぜるとビルドが落ちる）で検証済み。
 
@@ -38,8 +40,10 @@ theorem y5_Fdom   : ...                     (* 原文の言明 p_8_7_termination
 | `isabelle/pss_paper.thy` | 論文の命題・補題・系・定理のステートメントのみを転記（すべて `sorry`） |
 | `isabelle/pss_mechanized.thy` | 独自の機械化証明（`sorry` を解消） |
 | `isabelle/layerB/pss_wip.thy` | 証明済みの本体（凍結層） |
-| `isabelle/layerC/pss_scratch.thy` | 作業中の最上層＋停止性の仕上げ＋ML 監査ブロック |
+| `isabelle/layerC/pss_scratch.thy` | 作業層の互換エンドポイント |
 | `isabelle/ROOT` | Isabelle セッション定義（`PSS_A` ← `PSS_B` ← `PSS_C` の入れ子） |
+| `corrections/ROOT` | 反例資料の独立セッション `PSS_CORRECTIONS` |
+| `memo/ROOT` | 不採用キャンペーンの独立セッション `PSS_MEMO` |
 
 Lean 版の構成は [`lean/spec.md`](lean/spec.md)、進捗は [`lean/task.md`](lean/task.md)、
 作業手順は [`lean/step.md`](lean/step.md) にある。
@@ -72,6 +76,12 @@ cd isabelle && isbman build -d . -v PSS_C
 
 緑の判定は `Finished PSS_C` がちょうど 1 行、`***` で始まる行が 0 行、`AUDIT FAILED` が 0 行。
 
+停止性木と独立した Isabelle アーカイブ：
+
+```
+cd isabelle && isbman build -d . -d ../corrections -d ../memo -v PSS_MEMO
+```
+
 **Lean**：
 
 ```
@@ -86,4 +96,3 @@ cd lean && lake build
 - Bashicu, "[BASIC 言語による巨大数のまとめ](https://googology.fandom.com/ja/wiki/%E3%83%A6%E3%83%BC%E3%82%B6%E3%83%BC%E3%83%96%E3%83%AD%E3%82%B0:BashicuHyudora/BASIC%E8%A8%80%E8%AA%9E%E3%81%AB%E3%82%88%E3%82%8B%E5%B7%A8%E5%A4%A7%E6%95%B0%E3%81%AE%E3%81%BE%E3%81%A8%E3%82%81?oldid=15603&useskin=oasis)", [巨大数研究 Wiki](http://ja.googology.wikia.com/) ユーザーブログ, 2015.8.21.
 - koteitan, "[バシク行列の亜種ルールの分類](https://googology.fandom.com/ja/wiki/%E3%83%A6%E3%83%BC%E3%82%B6%E3%83%BC%E3%83%96%E3%83%AD%E3%82%B0:Koteitan/%E3%83%90%E3%82%B7%E3%82%AF%E8%A1%8C%E5%88%97%E3%81%AE%E4%BA%9C%E7%A8%AE%E3%83%AB%E3%83%BC%E3%83%AB%E3%81%AE%E5%88%86%E9%A1%9E)", [巨大数研究 Wiki](http://ja.googology.wikia.com/) ユーザーブログ, 2018.6.2.
 - P進大好きbot. "[ペア数列の停止性](https://googology.fandom.com/ja/wiki/%E3%83%A6%E3%83%BC%E3%82%B6%E3%83%BC%E3%83%96%E3%83%AD%E3%82%B0:P%E9%80%B2%E5%A4%A7%E5%A5%BD%E3%81%8Dbot/%E3%83%9A%E3%82%A2%E6%95%B0%E5%88%97%E3%81%AE%E5%81%9C%E6%AD%A2%E6%80%A7)", [巨大数研究 Wiki](http://ja.googology.wikia.com/) ユーザーブログ, 2018.11.11.
-

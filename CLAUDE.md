@@ -44,11 +44,18 @@ and imports its parent's top theory **session-qualified** (`imports "PSS_A.pss_m
 | `PSS_A` | `.` | `pss_defs` + `PSS/` + `5/` + `6/` + `pss_paper` + `7/` + `8/` + **`8/audit`** | FROZEN base | `Finished PSS_A` |
 | `PSS_B` | `layerB` | `pss_wip` | FROZEN base | `Finished PSS_B` |
 | `PSS_C` | `layerC` | `pss_scratch` | **ACTIVE top** (current work) | `Finished PSS_C` |
+| `PSS_CORRECTIONS` | `../corrections` | two counterexample theories | checked archive, parent `PSS_A` | `Finished PSS_CORRECTIONS` |
+| `PSS_MEMO` | `../memo` | seven abandoned-campaign theories | checked archive, parent `PSS_CORRECTIONS` | `Finished PSS_MEMO` |
 
 ```
 isbman build -m "pss-..." -d . -v PSS_C   # everyone (sub-agents AND main): only the active layer
 isbman build -m "pss-..." -d . -v PSS_B   # one-time: freeze the base (build A then B), then never again
+isbman build -m "pss-archive-..." -d . -d ../corrections -d ../memo -v PSS_MEMO
 ```
+
+The archive branch is `PSS_A → PSS_CORRECTIONS → PSS_MEMO`; it is deliberately
+separate from `PSS_A → PSS_B → PSS_C`, so the normal per-round `PSS_C` build never
+processes counterexamples or abandoned proof campaigns.
 
 - **Frozen base = A + B**: built **once**, then reused as heaps. NOT rebuilt per
   round. (A's first build reprocesses the 66k-line mechanized — that one ~11 min
@@ -117,13 +124,16 @@ The Isabelle build only needs `tmp/content.md` to *exist* (`@{file}` check).
 | `pss_mechanized.thy` | a (`.`) | Compatibility shim after the relocation (imports `audit`); the §8 body it used to hold is now `8/Support_8_A–C` |
 | `layerB/pss_wip.thy` | b | Earlier campaign's proven body — now FROZEN into the base heap |
 | `layerC/pss_scratch.thy` | c | **ACTIVE** layer: the lemmas currently being proven (see the Build section) |
+| `../corrections/*.thy` | archive | Counterexample and empirical-verification facts, checked by `PSS_CORRECTIONS` |
+| `../memo/*.thy` | archive | Abandoned distinguished-set / Fundierung campaign, checked by `PSS_MEMO` |
 
 Import chain: `pss_defs` ← `PSS/Pre_5` ← §5 proposition/frontier theories ←
 `PSS/After_5` ← §6 proposition/frontier theories ← `PSS/After_6` ← `pss_paper` ←
 §7 proposition/frontier theories ← `PSS/After_7` ← `8/Support_8_A–C` ← §8
 proposition theories ← `8/audit` ← `pss_mechanized` ←
 `pss_wip` ← `pss_scratch` (the last two
-cross-session, imported session-qualified). Active proof work happens in
+cross-session, imported session-qualified). The independent archive chain branches at
+`pss_mechanized` into `PSS_CORRECTIONS` and then `PSS_MEMO`. Active proof work happens in
 `layerC/pss_scratch.thy`; the rest is pre-built. When moving an `@{file}`
 antiquotation into a chapter directory, adjust its relative path and add a local
 `tmp` symlink only if it still addresses `tmp/...`.

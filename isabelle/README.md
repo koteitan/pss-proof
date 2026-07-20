@@ -31,6 +31,9 @@ isabelle/
 └── layerC/pss_scratch.thy  作業層
 ```
 
+リポジトリ直下の兄弟ディレクトリ `corrections/` と `memo/` には、停止性の依存木から分離した
+反例資料と不採用キャンペーンを置く。それぞれ独立した `ROOT` を持ち、機械検査は継続する。
+
 ファイル名の規約：`P_<節>_<slug>.thy` が原文の命題 1 個（証明込み）、`Support_*.thy` が
 その章だけで使うヘルパ、`PSS/Frontier_*.thy` が複数章で使う共有ヘルパ。
 
@@ -47,6 +50,8 @@ isabelle/
 | `PSS_A` | `.` | `pss_defs` ＋ `PSS/` ＋ `5/`〜`8/` ＋ `pss_paper` ＋ `8/audit` | 凍結ベース |
 | `PSS_B` | `layerB` | `pss_wip` | 凍結ベース |
 | `PSS_C` | `layerC` | `pss_scratch` | 作業層 |
+| `PSS_CORRECTIONS` | `../corrections` | 反例・経験検証資料 | `PSS_A` から分岐する検査用アーカイブ |
+| `PSS_MEMO` | `../memo` | distinguished-set / Fundierung 不採用キャンペーン | `PSS_CORRECTIONS` の子 |
 
 `8/audit.thy` は `PSS_A` の最終 theory なので、**`PSS_A` が緑になること自体が監査合格**を意味する。
 停止性の定理群が `sorry` を持つ言明に到達したら `error` でビルドが落ちる。
@@ -66,6 +71,14 @@ cd isabelle && isbman build -d . -v PSS_C
 ```
 
 緑の判定は `Finished PSS_C` がちょうど 1 行、`***` で始まる行が 0 行、`AUDIT FAILED` が 0 行。
+
+停止性木と独立したアーカイブの検査：
+
+```
+cd isabelle && isbman build -d . -d ../corrections -d ../memo -v PSS_MEMO
+```
+
+このビルドは `PSS_CORRECTIONS` も親として検査するが、通常の `PSS_C` ビルドからは到達しない。
 
 ## 残る `sorry`（8 件、いずれも停止性の証明が参照しない）
 

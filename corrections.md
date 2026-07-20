@@ -1205,6 +1205,7 @@ $$M = (0,0)(4,2)(2,6)(4,2)(8,4)(6,4) \in T_{\textrm{PS}} \setminus RT_{\textrm{P
   \(\textrm{Mark}(M,0) = D_0(D_1 0 + D_1(D_3 0 + D_3 0)) \neq D_0(D_1 0 + D_1(D_3 0)) = \textrm{Mark}(\textrm{Pred}(M),0)\)（周囲が相違）。
 - \(\textrm{Pred}\) 側のscb分解は 1 個、\(M\) 側も 1 個あるが、**共通のものは 0 個**。結論の \((s_0,b_0)\) は存在しない。
 
-反例と機構はいずれも Isabelle/HOL で機械証明済み（`y6z_7_4_Mark_nextAdm_TPS_false`、`y6z_no_common_position`。
-`sorry` 非依存を build 強制監査）。簡約な \(M\) では成立し、その形（訂正案の形）も証明済み
+反例と機構はいずれも Isabelle/HOL で機械証明済み（[`y6z_7_4_Mark_nextAdm_TPS_false` と
+`y6z_no_common_position`](corrections/C_7_4_Mark_NextAdm_Counterexample.thy)。
+`PSS_CORRECTIONS` で `sorry` 非依存を機械検査）。簡約な \(M\) では成立し、その形（訂正案の形）も証明済み
 （`m_7_4_Mark_nextAdm`）。

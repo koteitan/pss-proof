@@ -200,35 +200,10 @@ ML \<open>
      ("y4e_Mark_nest_relaxed_Pred", @{thm y4e_Mark_nest_relaxed_Pred}),
      ("y4f_surg_guard_of_jm1",    @{thm y4f_surg_guard_of_jm1}),
      ("y4f_Mark_nest_Pred_joint_sharp", @{thm y4f_Mark_nest_Pred_joint_sharp}),
-     \<comment> \<open>r81: the \<section>7.4 \<open>Mark\<close>/\<open>NextAdm\<close> proposition on \<open>T\<^bsub>PS\<^esub>\<close> --- reflexive case
-         UNCONDITIONAL, general case modulo the relaxed (adm-free) engine only\<close>
-     ("y6_Mark_selfnest_RT",      @{thm y6_Mark_selfnest_RT}),
-     ("y6_Mark_selfnest_TPS",     @{thm y6_Mark_selfnest_TPS}),
-     ("y6_7_4_Mark_nextAdm_TPS",  @{thm y6_7_4_Mark_nextAdm_TPS}),
-     \<comment> \<open>r81: the REFUTATION mechanism --- the \<section>7.4 nesting conclusion is
-         impossible wherever the outer column's \<open>Mark\<close> is \<open>Pred\<close>-stable and the
-         inner column's is not (which is what a NON-admissible outer column does)\<close>
-     ("y6z_no_common_position",   @{thm y6z_no_common_position}),
-     ("y6z_nest_false_at",        @{thm y6z_nest_false_at}),
-     \<comment> \<open>r82: the MACHINE-CHECKED counterexample --- the \<section>7.4 \<open>Mark\<close>/\<open>NextAdm\<close>
-         corollary is FALSE on \<open>T\<^bsub>PS\<^esub>\<close>.  Witness
-         \<open>(0,0)(4,2)(2,6)(4,2)(8,4)(6,4)\<close>, \<open>j = 0\<close>, \<open>j\<^sub>0 = 3\<close>:
-         every hypothesis holds, the conclusion fails\<close>
-     ("y6M_Red",                  @{thm y6M_Red}),
-     ("y6B6_RT",                  @{thm y6B6_RT}),
-     ("y6B6_nadm3",               @{thm y6B6_nadm3}),
-     ("y6M_adm",                  @{thm y6M_adm}),
-     ("y6M_nextAdm_ex1",          @{thm y6M_nextAdm_ex1}),
-     ("y6M_nextAdm_THE",          @{thm y6M_nextAdm_THE}),
-     ("y6M_marked0",              @{thm y6M_marked0}),
-     ("y6M_leR_0_3",              @{thm y6M_leR_0_3}),
-     ("y6_Mark_B6_0",             @{thm y6_Mark_B6_0}),
-     ("y6_Mark_B6_3",             @{thm y6_Mark_B6_3}),
-     ("y6_Mark_B5_0",             @{thm y6_Mark_B5_0}),
-     ("y6_Mark_B5_3",             @{thm y6_Mark_B5_3}),
-     ("y6M_cores_coincide",       @{thm y6M_cores_coincide}),
-     ("y6M_marks_differ",         @{thm y6M_marks_differ}),
-     ("y6z_7_4_Mark_nextAdm_TPS_false", @{thm y6z_7_4_Mark_nextAdm_TPS_false})];
+     \<comment> \<open>The \<section>7.4 counterexample conclusions and their annotations are now
+         checked by the sibling \<open>PSS_CORRECTIONS\<close> session.  This live prerequisite of
+         that archive remains proof-term clean.\<close>
+     ("y6B6_nadm3",               @{thm y6B6_nadm3})];
 
   \<comment> \<open>Phase 4: the documented wrappers retained exactly from main must
       remain explicit skip-proofs.  The \<section>8.1 wrapper is article-false under the
