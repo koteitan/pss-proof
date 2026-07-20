@@ -5,70 +5,71 @@
 ペア数列システムの停止性の Isabelle/HOL 版。**停止性は仮定ゼロ・`sorry` ゼロで証明済み**
 （ビルド時に ML 監査ブロックが強制）。
 
-> **状態**：`lean/` と同型のレイアウト（章ディレクトリ＋1 命題 1 ファイル＋共有 `PSS/` 層）へ
-> **再編中**。以下は**再編後の目標構成**。共有/章ローカルの正確な境界とセッション構成は
-> 依存 DAG 解析（reorg Phase 0）で確定する。
+`lean/` と同型のレイアウト（章ディレクトリ＋1 命題 1 ファイル＋共有 `PSS/` 層）への再編は
+**完了済み**。
 
-## ディレクトリ構成（目標）
+## ディレクトリ構成
 
 ```
 isabelle/
-├── ROOT                    セッション定義（DAG 順: PSS ← §5 ← §6 ← §7 ← §8）
-├── PSS/                    共有層：定義＋跨章ヘルパ（≥2 章が使うもの、~482）
-│   ├── Defs.thy            §4–§6 の定義
-│   ├── Seg.thy             seg_* entry_* le0_*
-│   ├── Idxsum.thy          idxsum_* oper_* poper_*
-│   ├── Mono.thy            単調性 / IncrFirst
-│   ├── Adm.thy             adm_*（許容性）
-│   ├── Red.thy             §6.5 Red 簡約
-│   ├── Standard.thy        ST_PS / RT_PS
-│   ├── Scb.thy             scb_*
-│   ├── Buchholz.thy        §7 [Buc1] 表記系（operB_* domB_* TrMax_* …）
-│   └── Trans.thy           Trans（tran* repr_* rnsub_* …）
-├── 5/                      §5: 13 命題（+局所ヘルパ 5）
-│   ├── p_5_1_parent_exists_1.thy
-│   │   …
-│   └── p_5_4_F_oper_val.thy
-├── 6/                      §6: 55 命題（+局所ヘルパ 636）
-├── 7/                      §7: 27 命題（+局所ヘルパ 199）
-└── 8/                      §8: 33 命題 + 局所ヘルパ 2,171
-    ├── p_8_7_termination.thy   命題（主定理）
-    ├── aux_8_4_corner.thy      局所ヘルパ（話題別・章内の複数命題が共有）
-    │   …
-    └── audit.thy               ML 監査（全定理の sorry 依存をビルド時に検査）
+├── ROOT                    セッション定義（PSS_A ← PSS_B ← PSS_C）
+├── pss_defs.thy            §4–§6 の定義
+├── PSS/                    共有層 154：跨章ヘルパ
+│   ├── Pre_5.thy           §5 の前段
+│   ├── Frontier_NNN.thy    連番の共有ヘルパ（148）
+│   └── After_5/6/7.thy     章境界を露出させる節点
+├── 5/                      §5：命題 13 ＋ 章ローカルヘルパ 1
+├── 6/                      §6：命題 55 ＋ 章ローカルヘルパ 73
+├── 7/                      §7：命題 27 ＋ 章ローカルヘルパ 51
+├── 8/                      §8：命題 33 ＋ 章ローカルヘルパ 3 ＋ audit
+│   ├── P_8_7_termination.thy   主定理
+│   ├── Support_8_A/B/C.thy     §8 内で共有される大型ヘルパ
+│   └── audit.thy               ML 監査（PSS_A の最終 theory）
+├── pss_paper.thy           外部文献 [Buc1] の転記（定義＋引用 3 補題）
+├── pss_mechanized.thy      再編後の互換シム
+├── layerB/pss_wip.thy      凍結層
+└── layerC/pss_scratch.thy  作業層
 ```
+
+ファイル名の規約：`P_<節>_<slug>.thy` が原文の命題 1 個（証明込み）、`Support_*.thy` が
+その章だけで使うヘルパ、`PSS/Frontier_*.thy` が複数章で使う共有ヘルパ。
 
 ## ヘルパの振り分け
 
-各補助補題を **usage-chapter set** で機械的に配置する：**≥2 章が（推移的に）使う → 共有
-`PSS/`**、**1 章のみ → その章ディレクトリのローカル**。約 4,400 補助補題のうち共有は
-~482（13%）、残りは章ローカル（§8 が 2,171 で最大）。
+各補助補題を **usage-chapter set** で機械的に配置している：**≥2 章が（推移的に）使う → 共有
+`PSS/`**、**1 章のみ → その章ディレクトリ**。依存 DAG 解析（reorg Phase 0、`phase0/REPORT.md`）で
+4,353 fact の非巡回 DAG を抽出し、共有 2,288 / 章ローカル 1,283 に分割した。
 
-## 局所ヘルパの置き場所
+## セッション構成
 
-章ローカルのヘルパは**その章ディレクトリ内**に置く。使われ方で 2 通り：
+| セッション | ディレクトリ | 内容 | 役割 |
+|---|---|---|---|
+| `PSS_A` | `.` | `pss_defs` ＋ `PSS/` ＋ `5/`〜`8/` ＋ `pss_paper` ＋ `8/audit` | 凍結ベース |
+| `PSS_B` | `layerB` | `pss_wip` | 凍結ベース |
+| `PSS_C` | `layerC` | `pss_scratch` | 作業層 |
 
-- **1 命題だけが使う** → その命題ファイル `p_<§>_<slug>.thy` に**同梱**（命題＋私的補題）。
-- **章内の複数命題が共有** → **話題別の局所ヘルパ theory** にまとめる（`lean` の
-  `8/8.4-corner-core.lean` に相当。Isabelle 名は `aux_8_4_corner.thy` 等）。使う命題ファイルが import。
-
-どちら（同梱 / 別ファイル）になるかは章内の使用関係（Phase 0 DAG）で確定する。
-
-## セッション（ROOT）
-
-依存 DAG に沿った層：`PSS`（共有・凍結）← `PSS_5` ← `PSS_6` ← `PSS_7` ← `PSS_8`。
-各セッションは一度だけビルド＝凍結ヒープの再処理なし。ML 監査は最上位セッションの
-`8/audit.thy` 末尾に置く。
-
-## 命名
-
-- ファイル名＝命題名 `p_<§>_<slug>.thy`（例 `p_8_7_termination.thy`）、theory 名も同じ。
-  独自証明は `m_<§>_<slug>`、補助補題は内容接頭辞（`seg_`, `idxsum_`, `adm_`, `scb_` …）。
-- **Isabelle の theory 名はドット/ハイフン不可・数字始まり不可**。`lean` の
-  `8.7-termination.lean` 相当は `p_8_7_termination.thy`（ディレクトリ名 `5/`…`8/` は可）。
+`8/audit.thy` は `PSS_A` の最終 theory なので、**`PSS_A` が緑になること自体が監査合格**を意味する。
+停止性の定理群が `sorry` を持つ言明に到達したら `error` でビルドが落ちる。
 
 ## ビルド
 
-フルビルドは最上位セッションを建てる（依存で `PSS`・§5–§7 も建つ）：
-`cd isabelle && isbman build -d . -v PSS_8`。緑の判定は対象セッションの `Finished` が
-ちょうど 1 行、`***` で始まる行が 0 行、`AUDIT FAILED` が 0 行。
+フルビルド：
+
+```
+cd isabelle && isbman build -d . -v PSS_A PSS_B PSS_C
+```
+
+毎ラウンドは作業中の最上層だけ：
+
+```
+cd isabelle && isbman build -d . -v PSS_C
+```
+
+緑の判定は `Finished PSS_C` がちょうど 1 行、`***` で始まる行が 0 行、`AUDIT FAILED` が 0 行。
+
+## 残る `sorry`（8 件、いずれも停止性の証明が参照しない）
+
+- `pss_paper.thy` 3 件 — 外部文献 [Buc1] の引用補題（2.2 / 3.2a / 3.3）。うち 3.2a と 3.3 は
+  `7/` に自前の証明 `m_buc1_*` がある
+- `8/` 5 件 — 原文の命題のうち未証明のもの。`P_8_1_condI_III_c1_around` は原文が偽
+  （訂正 A20 / A21）、残り 4 件は原文は真だが未証明

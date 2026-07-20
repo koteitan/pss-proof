@@ -2,81 +2,77 @@
 
 # isabelle/ — file layout of the Isabelle/HOL formalization
 
-The Isabelle/HOL version of the termination proof of the pair sequence system.
-**Termination is proved with zero hypotheses and zero `sorry`** (enforced at build time by
-an ML audit block).
+The Isabelle/HOL side of the pair-sequence-system termination proof. **Termination is
+proven with zero hypotheses and zero `sorry`**, enforced at build time by an ML audit block.
 
-> **Status**: being **reorganized** into the same shape as `lean/` (chapter dirs + one
-> proposition per file + a shared `PSS/` layer). The layout below is the **target**. The
-> exact shared/chapter-local boundary and the session structure are fixed by the dependency
-> DAG analysis (reorg Phase 0).
+The reorganization into the same layout as `lean/` (chapter directories, one proposition
+per file, a shared `PSS/` layer) is **complete**.
 
-## Directory layout (target)
+## Directory layout
 
 ```
 isabelle/
-├── ROOT                    session definitions (DAG order: PSS ← §5 ← §6 ← §7 ← §8)
-├── PSS/                    shared layer: definitions + cross-chapter helpers (≥2 chapters, ~482)
-│   ├── Defs.thy            §4–§6 definitions
-│   ├── Seg.thy             seg_* entry_* le0_*
-│   ├── Idxsum.thy          idxsum_* oper_* poper_*
-│   ├── Mono.thy            monotonicity / IncrFirst
-│   ├── Adm.thy             adm_* (admissibility)
-│   ├── Red.thy             §6.5 Red reduction
-│   ├── Standard.thy        ST_PS / RT_PS
-│   ├── Scb.thy             scb_*
-│   ├── Buchholz.thy        §7 [Buc1] notation (operB_* domB_* TrMax_* …)
-│   └── Trans.thy           Trans (tran* repr_* rnsub_* …)
-├── 5/                      §5: 13 propositions (+5 local helpers)
-│   ├── p_5_1_parent_exists_1.thy
-│   │   …
-│   └── p_5_4_F_oper_val.thy
-├── 6/                      §6: 55 propositions (+636 local helpers)
-├── 7/                      §7: 27 propositions (+199 local helpers)
-└── 8/                      §8: 33 propositions + 2,171 local helpers
-    ├── p_8_7_termination.thy   proposition (main theorem)
-    ├── aux_8_4_corner.thy      local helper (topic-grouped; shared within the chapter)
-    │   …
-    └── audit.thy               ML audit (build-time check of sorry dependencies)
+├── ROOT                    session definitions (PSS_A ← PSS_B ← PSS_C)
+├── pss_defs.thy            definitions of §4–§6
+├── PSS/                    shared layer, 154: cross-chapter helpers
+│   ├── Pre_5.thy           material preceding §5
+│   ├── Frontier_NNN.thy    numbered shared helpers (148)
+│   └── After_5/6/7.thy     nodes exposing the chapter boundaries
+├── 5/                      §5: 13 propositions + 1 chapter-local helper
+├── 6/                      §6: 55 propositions + 73 chapter-local helpers
+├── 7/                      §7: 27 propositions + 51 chapter-local helpers
+├── 8/                      §8: 33 propositions + 3 chapter-local helpers + audit
+│   ├── P_8_7_termination.thy   the main theorem
+│   ├── Support_8_A/B/C.thy     large helpers shared within §8
+│   └── audit.thy               ML audit (last theory of PSS_A)
+├── pss_paper.thy           transcription of the external reference [Buc1]
+├── pss_mechanized.thy      compatibility shim after the relocation
+├── layerB/pss_wip.thy      frozen layer
+└── layerC/pss_scratch.thy  active layer
 ```
 
-## Helper partition
+Naming convention: `P_<section>_<slug>.thy` holds one article proposition together with its
+proof, `Support_*.thy` holds helpers used within a single chapter, and
+`PSS/Frontier_*.thy` holds helpers used by more than one chapter.
+
+## How helpers are assigned
 
 Each auxiliary lemma is placed mechanically by its **usage-chapter set**: **used
-(transitively) by ≥2 chapters → shared `PSS/`**; **used by one chapter → that chapter's
-dir**. Of the ~4,400 auxiliary lemmas, ~482 (13%) are shared; the rest are chapter-local
-(§8 has the most, 2,171).
+(transitively) by ≥2 chapters → shared `PSS/`**, **by exactly one chapter → that chapter's
+directory**. The dependency-DAG analysis (reorg Phase 0, `phase0/REPORT.md`) extracted an
+acyclic DAG over 4,353 facts and split it into 2,288 shared and 1,283 chapter-local.
 
-## Where chapter-local helpers live
+## Sessions
 
-A chapter-local helper stays **inside its own chapter directory**, in one of two ways:
+| Session | Directory | Contents | Role |
+|---|---|---|---|
+| `PSS_A` | `.` | `pss_defs` + `PSS/` + `5/`–`8/` + `pss_paper` + `8/audit` | frozen base |
+| `PSS_B` | `layerB` | `pss_wip` | frozen base |
+| `PSS_C` | `layerC` | `pss_scratch` | active layer |
 
-- **used by a single proposition** → inlined in that proposition's file
-  `p_<§>_<slug>.thy` (proposition + its private lemmas).
-- **shared by several propositions of the chapter** → grouped into a **topic-based local
-  helper theory** (the analogue of `lean`'s `8/8.4-corner-core.lean`; an Isabelle-valid
-  name such as `aux_8_4_corner.thy`), imported by the proposition files that use it.
-
-Which case applies (inlined vs. its own file) is decided by the intra-chapter usage
-(Phase 0 DAG).
-
-## Sessions (ROOT)
-
-Layered along the dependency DAG: `PSS` (shared, frozen) ← `PSS_5` ← `PSS_6` ← `PSS_7` ←
-`PSS_8`. Each session is built once, so no frozen heap is reprocessed. The ML audit lives
-at the end of the top session's `8/audit.thy`.
-
-## Naming
-
-- File name = proposition name `p_<§>_<slug>.thy` (e.g. `p_8_7_termination.thy`); the
-  theory name is the same. Our proofs use `m_<§>_<slug>`; auxiliary lemmas carry a content
-  prefix (`seg_`, `idxsum_`, `adm_`, `scb_`, …).
-- **Isabelle theory names cannot contain dots or hyphens and cannot start with a digit**,
-  so `lean`'s `8.7-termination.lean` becomes `p_8_7_termination.thy` (directory names
-  `5/`…`8/` are fine).
+`8/audit.thy` is the last theory of `PSS_A`, so **a green `PSS_A` IS the audit passing**:
+the build fails with `error` if any termination theorem reaches a `sorry`-carrying statement.
 
 ## Build
 
-A full build builds the top session (its ancestors `PSS` and §5–§7 build as dependencies):
-`cd isabelle && isbman build -d . -v PSS_8`. Green = the target session's `Finished` exactly
-one line, zero lines starting with `***`, zero `AUDIT FAILED`.
+Full build:
+
+```
+cd isabelle && isbman build -d . -v PSS_A PSS_B PSS_C
+```
+
+Per round, only the active top layer:
+
+```
+cd isabelle && isbman build -d . -v PSS_C
+```
+
+Green means exactly one `Finished PSS_C` line, zero lines starting with `***`, and zero
+`AUDIT FAILED`.
+
+## The remaining 8 `sorry` (none reachable from the termination proof)
+
+- 3 in `pss_paper.thy` — lemmas cited from the external reference [Buc1] (2.2 / 3.2a / 3.3);
+  for 3.2a and 3.3 we additionally have our own proofs `m_buc1_*` under `7/`
+- 5 in `8/` — article propositions left unproven. `P_8_1_condI_III_c1_around` is false as
+  printed (corrections A20 / A21); the other four are true but unproven
