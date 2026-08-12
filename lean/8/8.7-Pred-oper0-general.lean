@@ -59,7 +59,7 @@ A23（基本列 \(([\ ].4)(\mathrm{ii})\) の誤読）で、`operB` を誤実装
 ## 依存（ビルド済みのみ import）
 
 `8.6-trailing-principal-annihilable`（`trailing_principal_annihilable`；推移的に
-`PSS.Buchholz`/`PSS.Scb`/`PSS.Flat`）、`7.2-scb-unique`（`flatBT_injective`；
+`Buchholz-1986 および Buchholz-rel-ord`/`PSS.Scb`/`PSS.Flat`）、`7.2-scb-unique`（`flatBT_injective`；
 `PSS.Flat`）、`PSS.Trans`（`Trans`/`transCondVI`）、`PSS.Red`（`RTPS`）、
 `PSS.Mono`（`monoT`）。
 

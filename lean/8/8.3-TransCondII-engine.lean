@@ -1,7 +1,7 @@
 import «5».«5.3-pred-is-oper1»
 import «6».«6.7-standard-prefix»
 import «6».«6.7-standard-reduced»
-import «7».«7.1-buchholz-fseq-lt»
+import «Buchholz-1986».«Buchholz-1986-3.2-descent»
 import «7».«7.2-scb-fseq»
 import «7».«7.3-Trans-welldefined»
 import «7».«7.3-Trans-preserves-zeroT»
@@ -43,7 +43,7 @@ import «8».«8.7-fseq-descend»
 - 依存（ビルド済みのみ import）: `5.3-pred-is-oper1`（`pred_is_oper1`
   ＝ `m_8_4_oper1_eq_Pred`）、`6.7-standard-prefix`（`STPS_TPS`）、
   `6.7-standard-reduced`（`STPS_RTPS` ＝ `m_6_7_ST_PS_subseteq_RT_PS`）、
-  `7.1-buchholz-fseq-lt`（`buchholz_fseq_lt` ＝ `m_buc1_3_2a_fseq_lt`
+  `Buchholz-1986-3.2-descent`（`buchholz_fseq_lt` ＝ `m_buc1_3_2a_fseq_lt`
   ＝ [Buc1] Lemma 3.2(a)）、`7.2-scb-fseq`（`scb_fseq_decomp`
   ＝ `m_7_2_scb_fseq_scb`）、`7.3-Trans-welldefined`（`unflatBT_flat`,
   `Trans_mem_T_B`）、`7.3-Trans-preserves-zeroT`（`Trans_preserves_zeroT`

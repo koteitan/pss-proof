@@ -23,9 +23,9 @@ close ではなく infrastructure BANK。
 - `unflatBT` = `PSS.Trans`；`unflatBT_flat` = `«7».«7.3-Trans-welldefined»`。
 - 像存在補題 `scbimg_image_BT` の Lean twin = `principal_replacement_image`
   (`«7».«7.2-scb-replaceable»`)。ただし後述の仮定差あり。
-- `GBT`/`GBP`/`leBT`/`T_B`/`TBv`/`Dprin`/`BZero`/`dfree_BP` = `PSS.Buchholz`
+- `GBT`/`GBP`/`leBT`/`T_B`/`TBv`/`Dprin`/`BZero`/`dfree_BP` = `Buchholz-1986 および Buchholz-rel-ord`
   （GBT/GBP は Lean twin あり、再定義不要）。
-- `LawfulBEq BT` = `PSS.Buchholz`（`leBT x x = true` に使用）。
+- `LawfulBEq BT` = `Buchholz-1986 および Buchholz-rel-ord`（`leBT x x = true` に使用）。
 
 ## 忠実性の注記（parent への申し送り）
 

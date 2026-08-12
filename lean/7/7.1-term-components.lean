@@ -1,4 +1,4 @@
-import PSS.Buchholz
+import «Buchholz-rel-ord».«Buchholz-rel-ord-6»
 
 /-!
 # §7.1 命題（順序数項の単項成分の基本性質）

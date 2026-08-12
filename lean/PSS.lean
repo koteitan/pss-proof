@@ -3,7 +3,7 @@ import PSS.Mono
 import PSS.Adm
 import PSS.Red
 import PSS.Standard
-import PSS.Buchholz
+import «Buchholz-rel-ord».«Buchholz-rel-ord-6»
 import PSS.Scb
 import PSS.Flat
 import PSS.Trans

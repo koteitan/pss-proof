@@ -2,7 +2,7 @@ import PSS.Defs
 import PSS.Red
 import PSS.Mono
 import PSS.Trans
-import PSS.Buchholz
+import «Buchholz-rel-ord».«Buchholz-rel-ord-6»
 
 /-!
 # §8.7 補題（`Pred` と `[0]` の関係）— 記録された「反例」の機械的否認
@@ -24,7 +24,7 @@ stale であり、反例は反例ではない。**
 * 訂正 A27（＝この補題を偽とする訂正案）は **2026-07-13 に取り下げ済み**
   (`corrections-old.md:69`)。取り下げ理由は A23（基本列 \(([\ ].4)(\mathrm{ii})\) の
   誤読）で、`operB` を誤って実装していた間だけ原文が偽に見えていた、というもの。
-* 訂正後の正しい `operB`（`PSS/Buchholz.lean`、A23 反映済み）の下では、当の
+* 訂正後の正しい `operB`（`Buchholz-1986/ および Buchholz-rel-ord/`、A23 反映済み）の下では、当の
   \(M = (0,0)(1,1)(2,1)\) は
   \(\textrm{Trans}(M) = D_0 D_1 D_1 0 \to D_0 D_1 D_0 0 \to D_0 D_1 0 = t_1\)
   と **k = 2 でちょうど結論を満たす**。本ファイルはこれを機械証明する
@@ -72,7 +72,7 @@ stale であり、反例は反例ではない。**
 
 `PSS.Defs`（`PS` / `TPS` / `Lng` / `Pred`）、`PSS.Red`（`reduced` / `RTPS`）、
 `PSS.Mono`（`monoT`）、`PSS.Trans`（`Trans` / `transCondVI`）、
-`PSS.Buchholz`（`operB` / `numBT` / `OT` / `Dprin` / `BZero`）。
+`Buchholz-1986 および Buchholz-rel-ord`（`operB` / `numBT` / `OT` / `Dprin` / `BZero`）。
 
 ## 移植上の注意
 

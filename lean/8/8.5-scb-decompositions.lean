@@ -41,7 +41,7 @@ import «8».«8.4-rm84-rfacts-close»
 - 依存（すべてビルド済み）: «8».«8.5-Trans-fseq-condV»
   （named Prop `ExchV_nf3x` ＝ `atx_nf3x`、および `e5x_bodyM` / `s85b_W` /
   `transT2` / `transJ0` / `transJm1`）。推移的に `PSS.Scb`（`flatBT` / `flatBP` /
-  `flatBPTail` / `scb_decomp`）、`PSS.Buchholz`（`addBT` / `Dprin` / `BZero`）。
+  `flatBPTail` / `scb_decomp`）、`Buchholz-1986 および Buchholz-rel-ord`（`addBT` / `Dprin` / `BZero`）。
   **`7.2-scb-unique` は不要**: 本ファイルの反証は `(s'₁,b'₁)` の一意性を使わず
   **任意の** `(s'₁,b'₁)` に対して原文形を否定する（一意性より強い）。
   無条件版 `scbdec_condV_part5_corrected_uncond` のために exchV discharge 連鎖

@@ -1,6 +1,6 @@
 # pss-proof
 
-Version: **v0.3.0**
+Version: **v0.3.1**
 
 ペア数列システム（pair sequence system）の停止性証明を形式検証するプロジェクト。
 

@@ -1,5 +1,5 @@
 import «7».«7.3-Trans-welldefined»
-import «7».«7.1-buchholz-fseq-lt»
+import «Buchholz-1986».«Buchholz-1986-3.2-descent»
 import «7».«7.1-term-components»
 
 /-!

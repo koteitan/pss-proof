@@ -55,7 +55,7 @@ import «8».«8.7-Trans-preserves-OT»
 `lessBT (Trans (oper M n)) (operB (Trans M) (numBT n))`、
 `8.5-Trans-fseq-condV`:459/511 の adm/非 adm 両枝も `lessBT`
 （`8.5`:568 `exchV_holds` が `leBT` に緩めているのは `leBT = (== || lessBT)` だから）。
-したがって `7.1-buchholz-fseq-closed`:1358 `buchholz_fseq_closed`
+したがって `Buchholz-1986-3.3`:1358 `buchholz_fseq_closed`
 （`a ∈ OT_B → a ≠ 0_B → operB a (numBT n) ∈ OT_B`）を当てても
 `operB (Trans M) (numBT k) ∈ OT_B` までしか行かず、**`OT_B` は `lessBT` で
 下方閉ではない**（`OT_B` は正規形の集合であって始切片ではない）ので

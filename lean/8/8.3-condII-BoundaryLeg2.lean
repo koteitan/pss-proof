@@ -47,7 +47,7 @@ import «8».«8.3-condII-masterCF-port»
   «8».«8.3-condII-masterCF»（`CondII_tailval` / `condII_ldj` / `condII_pj` /
   `condII_t4`）／«8».«8.3-condII-masterCF-port»（`TV_BoundaryLeg` / `tvx_*`）
   ／`PSS/Trans`（`transT2` / `transJ0` / `bpHeadV` / `bpHeadT`）
-  ／`PSS/Buchholz`（`PB` / `addBT` / `Dprin` / `BZero`）まで。
+  ／`Buchholz-1986/ および Buchholz-rel-ord/`（`PB` / `addBT` / `Dprin` / `BZero`）まで。
 
 ## 状態
 

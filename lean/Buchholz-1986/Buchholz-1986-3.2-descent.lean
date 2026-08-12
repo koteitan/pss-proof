@@ -1,7 +1,8 @@
-import «7».«7.1-lessBT-linear-order»
+import «Buchholz-1986».«Buchholz-1986-2.1-order»
+import «Buchholz-rel-ord».«Buchholz-rel-ord-6»
 
 /-!
-# §7.1 [Buc1] Lemma 3.2(a): fundamental sequences descend
+# Buchholz (1986) Lemma 3.2(a): fundamental sequences descend
 
 The source paper cites Buchholz's lemma.  This file proves the executable
 `operB` implementation strictly decreases every nonzero `OT_B` term.  The

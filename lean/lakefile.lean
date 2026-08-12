@@ -13,6 +13,26 @@ require mathlib from git
 /-- Shared definitions: the article's §5 formalization (ported from `pss_defs.thy`). -/
 @[default_target] lean_lib PSS
 
+/-- Buchholz (1986), A new system of proof-theoretic ordinal functions. -/
+@[default_target] lean_lib «Buchholz-1986» where
+  srcDir := "."
+  globs := #[Glob.andSubmodules `«Buchholz-1986»]
+
+/-- Buchholz, Relating ordinals to proofs in a prespicious way (unpublished). -/
+@[default_target] lean_lib «Buchholz-rel-ord» where
+  srcDir := "."
+  globs := #[Glob.andSubmodules `«Buchholz-rel-ord»]
+
+/-- Buchholz (1987; received 1984), An independence result for (Π¹₁-CA)+BI. -/
+@[default_target] lean_lib «Buchholz-1987» where
+  srcDir := "."
+  globs := #[Glob.andSubmodules `«Buchholz-1987»]
+
+/-- A syntactic proof of the well-foundedness of `(OT_B, <)`, without ordinal semantics. -/
+@[default_target] lean_lib «OTB-well-founded-syntactic» where
+  srcDir := "."
+  globs := #[Glob.andSubmodules `«OTB-well-founded-syntactic»]
+
 /-- §5 定式化 — one file per proposition of chapter 5. -/
 @[default_target] lean_lib «5» where
   srcDir := "."

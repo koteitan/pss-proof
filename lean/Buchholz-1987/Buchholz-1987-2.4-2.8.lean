@@ -1,15 +1,16 @@
-import «7».«7.1-buchholz-wf-W»
+import «Buchholz-1987».«Buchholz-1987-2.3-W»
 
 /-!
-# §7.1 [Buc1] §2 本体 — `W` 階層の閉包定理 (foundation 2/2)
+# Buchholz (1987) Lemmas 2.4–2.8 — `W` 階層の閉包定理
 
-- 原文: `tmp/content.md` 5978 / 6331（`(OT_B, <)` の整礎性を [Buc1] 補題 2.2 で引用）
-- [Buc1]: §2 p.137–139。2.4(a)(b)、2.5(1)、2.6、2.7、2.8。
+- 用いる別文献: W. Buchholz, “An independence result for (Π¹₁-CA)+BI”,
+  Annals of Pure and Applied Logic 33 (1987), §2, pp. 137–140。
+- 対応箇所: 2.4(a)(b)、2.5(1)、2.6、2.7、2.8。
   基本列は訂正 A23 後の `xseq`（`x₀ = D_u 0`, `x_{j+1} = D_u (b[x_j])`,
   `(D_v b)[n] = D_v (b[x_n])`）。
-- 訂正: A23（[Buc1] 脚注 [30] の `xseq` 転置誤植の訂正。`bwl_DC` / `bwl_2_6` の
+- 基本列: 原記事の訂正 A23 に従う（未公刊 [Buc2] p.6 Definition 6）。`bwl_DC` / `bwl_2_6` の
   case 4.2 が訂正後の形で証明される。Buchholz 自身の `b[1] ∈ W*` 迂回と
-  「基点を全水準で」という回避策はいずれも不要になる）
+  「基点を全水準で」という回避策はいずれも不要になる。
 - Isabelle: `isabelle/layerC/pss_scratch.thy`
   - `bwo_shift` (7773), `bwo_domB_Nil` (7997), `bwo_addBT_Nil_right` (8002),
     `bwo_addBT_Nil_left` (8005), `bwo_addBT_assoc` (8008), `bwo_addBT_domB` (8014),
@@ -27,16 +28,14 @@ import «7».«7.1-buchholz-wf-W»
     `bwl_WstarD` (9464), `bwl_W_in_Wstar` (9469), `bwl_zero_Wstar` (9472),
     `bwl_2_6` (9477), `bwl_size_list_butlast` (9629), `bwl_size_butlast_lt` (9633),
     `bwl_2_7_aux` (9647), `bwl_2_8_dfree_Wstar` (9724), `bwl_2_8_principal` (9733)
-- 依存: `7.1-buchholz-wf-W`（`bwl_Aop`/`bwl_Aset`/`bwl_W`/`bwl_A1`/`bwl_A2`/
+- 依存: `Buchholz-1987-2.3-W`（`bwl_Aop`/`bwl_Aset`/`bwl_W`/`bwl_A1`/`bwl_A2`/
   `bwl_A1_intro`/`bwl_A1_dest`/`bwl_A2'`/`bwl_W_zero`/`y3_W_mono`/
-  `Bwl28Principal`/`Bwl24bAdd`）、`PSS.Buchholz`。
-- 状態: ✅ green（sorry 0、名前付き仮定 0）。`7.1-buchholz-wf-W` の 2 つの名前付き
+  `Bwl28Principal`/`Bwl24bAdd`）、`Buchholz-1986`、`Buchholz-rel-ord-6`。
+- 状態: ✅ green（sorry 0、名前付き仮定 0）。`Buchholz-1987-2.3-W` の 2 つの名前付き
   仮定 `Bwl28Principal` / `Bwl24bAdd` を**定理として排出**する
   （`Bwl28Principal_holds` / `Bwl24bAdd_holds`）。
 
-引用される [Buc1] 2.2 は**意味論的**（順序数への評価写像 `o`、`ψ_v`、`Ω_u`）であり、
-定義的 HOL / Lean では表現できない。ここで移植するのは Buchholz–Schütte の
-distinguished sets 法による**基数不要**の経路である。**順序数・`ψ`・`Ω` は一切現れない。**
+ここで移植するのは Buchholz (1987) の `W_v` による構文的な経路である。
 
 Isabelle の `domB c = TBv (enat u)`（集合形）は Lean では tag 形 `domTag c = .below u`
 で計算する。両者は `BDom.toSet` の単射性（`domB_below_iff_b2` 等）で橋渡しする。
@@ -47,7 +46,7 @@ namespace PSS
 
 /-! ## 0. `BDom.toSet` の単射性（Isabelle の集合形 ↔ Lean の tag 形）
 
-built tree の `7.1-buchholz-wf-bachmann` に同内容の `private` 版があるが、`private` は
+built tree の `OTB-well-founded-syntactic-cofinality` に同内容の `private` 版があるが、`private` は
 参照できないので再証明する。 -/
 
 private theorem BZero_mem_TBv_b2 (v : ℕ∞) : BZero ∈ TBv v := by
@@ -385,16 +384,16 @@ theorem bwl_W3 {u v : ℕ} {a : BT} (uv : u < v) (d : domB a = TBv (u : ℕ∞))
   exact_mod_cast uv
 
 /-- Isabelle `bwl_W_level_mono` (pss_scratch.thy:8874)。built tree の `y3_W_mono`
-    と同一命題（`7.1-buchholz-wf-W` で既に証明済み）。 -/
+    と同一命題（`Buchholz-1987-2.3-W` で既に証明済み）。 -/
 theorem bwl_W_level_mono {u v : ℕ} (uv : u ≤ v) : bwl_W u ⊆ bwl_W v := y3_W_mono uv
 
-/-! ## 4. [Buc1] Lemma 2.4 -/
+/-! ## 4. Buchholz (1987) Lemma 2.4 -/
 
-/-- [Buc1] p.138 (3) の `a`-シフト `X^{(a)} := {y | a + y ∈ X}`。
+/-- Buchholz (1987) p.138 (3) の `a`-シフト `X^{(a)} := {y | a + y ∈ X}`。
     Isabelle: `bwo_shift` (pss_scratch.thy:7773)。 -/
 def bwo_shift (a : BT) (X : Set BT) : Set BT := {y | addBT a y ∈ X}
 
-/-- [Buc1] 2.4(a)。Isabelle: `bwl_2_4a_shift` (pss_scratch.thy:8892)。 -/
+/-- Buchholz (1987) 2.4(a)。Isabelle: `bwl_2_4a_shift` (pss_scratch.thy:8892)。 -/
 theorem bwl_2_4a_shift {Wf : ℕ → Set BT} {nv : ℕ∞} {X : Set BT} {a b : BT}
     (Acl : ∀ c : BT, bwl_Aop Wf nv X c → c ∈ X) (aX : a ∈ X)
     (body : bwl_Aop Wf nv (bwo_shift a X) b) : b ∈ bwo_shift a X := by
@@ -422,7 +421,7 @@ theorem bwl_2_4a_shift {Wf : ℕ → Set BT} {nv : ℕ∞} {X : Set BT} {a b : B
     unfold bwl_Aop
     exact Or.inr (Or.inr ⟨u, hu, d, op⟩)
 
-/-- [Buc1] 2.4(b)。Isabelle: `bwl_2_4b_add` (pss_scratch.thy:8965)。 -/
+/-- Buchholz (1987) 2.4(b)。Isabelle: `bwl_2_4b_add` (pss_scratch.thy:8965)。 -/
 theorem bwl_2_4b_add {v : ℕ} {a b : BT} (ha : a ∈ bwl_W v) (hb : b ∈ bwl_W v) :
     addBT a b ∈ bwl_W v := by
   have Acl : ∀ c : BT, bwl_Aop bwl_W (v : ℕ∞) (bwl_W v) c → c ∈ bwl_W v :=
@@ -432,7 +431,7 @@ theorem bwl_2_4b_add {v : ℕ} {a b : BT} (ha : a ∈ bwl_W v) (hb : b ∈ bwl_W
   have sub : bwl_W v ⊆ bwo_shift a (bwl_W v) := bwl_A2' sh
   exact sub hb
 
-/-- [Buc1] 2.6 case 3 で使う反復形。Isabelle: `bwl_2_4b_mult` (pss_scratch.thy:8981)。 -/
+/-- Buchholz (1987) 2.6 case 3 で使う反復形。Isabelle: `bwl_2_4b_mult` (pss_scratch.thy:8981)。 -/
 theorem bwl_2_4b_mult {v : ℕ} {y : BT} (hy : y ∈ bwl_W v) (n : ℕ) :
     multBT y n ∈ bwl_W v := by
   induction n with
@@ -458,7 +457,7 @@ theorem bwl_numBT_W (n v : ℕ) : numBT n ∈ bwl_W v := by
   rw [show Dprin 0 BZero = (.trm [.db 0 BZero] : BT) from rfl, multBT_single_b2] at h
   exact h
 
-/-! ## 6. [Buc1] Lemma 2.5 sub-result (1) -/
+/-! ## 6. Buchholz (1987) Lemma 2.5 sub-result (1) -/
 
 /-- Isabelle `bwl_2_5_sub1` (pss_scratch.thy:9014)。 -/
 theorem bwl_2_5_sub1 {nv : ℕ∞} {X : Set BT} {a : BT} {u : ℕ}
@@ -575,7 +574,7 @@ private theorem Dprin_num_case_b2 {v : ℕ} {c : BT} (cne : c ≠ BZero)
     rw [operB_case_iii_b2 cne hdz hk]
     exact hY n
 
-/-- `A` の `T_k` clause で `k < v` のとき（[Buc1] ([].4)(iii)、規則 (W3)）。 -/
+/-- `A` の `T_k` clause で `k < v` のとき（Buchholz (1987) ([].4)(iii)、規則 (W3)）。 -/
 private theorem Dprin_below_case_iii_b2 {v k : ℕ} {c : BT} (cne : c ≠ BZero)
     (htag : domTag c = .below k) (hkv : k < v)
     (hY : ∀ z ∈ bwl_W k, Dprin (v : ℕ∞) (operB c z) ∈ bwl_W v) :
@@ -594,7 +593,7 @@ private theorem Dprin_below_case_iii_b2 {v k : ℕ} {c : BT} (cne : c ≠ BZero)
   rw [operB_case_iii_b2 cne hdz hk]
   exact hY z hz
 
-/-- `A` の `T_k` clause で `v ≤ k` のとき（[Buc1] ([].4)(ii) = 訂正 A23 後の `xseq`
+/-- `A` の `T_k` clause で `v ≤ k` のとき（Buchholz (1987) ([].4)(ii) = 訂正 A23 後の `xseq`
     分岐、規則 (W2)）。 -/
 private theorem Dprin_below_case_ii_b2 {v k : ℕ} {c : BT} (cne : c ≠ BZero)
     (htag : domTag c = .below k) (hvk : v ≤ k)
@@ -676,7 +675,7 @@ theorem bwl_W_subset_star {m v : ℕ} {y : BT} (hy : y ∈ bwl_W m) :
   · exact (bwl_DC m hy) v h
   · exact bwl_key_collapse (Nat.not_le.mp h).le hy
 
-/-! ## 12. [Buc1] p.138(5): `W* = {x | ∀ u < ν. D_u x ∈ W_u}`（ここで `ν = ω`） -/
+/-! ## 12. Buchholz (1987) p.138(5): `W* = {x | ∀ u < ν. D_u x ∈ W_u}`（ここで `ν = ω`） -/
 
 /-- Isabelle `bwl_Wstar` (pss_scratch.thy:9458)。 -/
 def bwl_Wstar : Set BT := {x : BT | ∀ u : ℕ, Dprin (u : ℕ∞) x ∈ bwl_W u}
@@ -696,7 +695,7 @@ theorem bwl_W_in_Wstar {m : ℕ} {y : BT} (h : y ∈ bwl_W m) : y ∈ bwl_Wstar 
 /-- Isabelle `bwl_zero_Wstar` (pss_scratch.thy:9472)。 -/
 theorem bwl_zero_Wstar : BZero ∈ bwl_Wstar := bwl_W_in_Wstar (bwl_W_zero 0)
 
-/-! ## 13. [Buc1] Lemma 2.6: `A_ν(W*) ⊆ W*` -/
+/-! ## 13. Buchholz (1987) Lemma 2.6: `A_ν(W*) ⊆ W*` -/
 
 /-- Isabelle `bwl_2_6` (pss_scratch.thy:9477)。 -/
 theorem bwl_2_6 {b : BT} (A : bwl_Aop bwl_W ⊤ bwl_Wstar b) : b ∈ bwl_Wstar := by
@@ -715,12 +714,12 @@ theorem bwl_2_6 {b : BT} (A : bwl_Aop bwl_W ⊤ bwl_Wstar b) : b ∈ bwl_Wstar :
         xseq_mem_W_b2 (fun z hz => bwl_WstarD (hop z hz) u)
       exact Dprin_below_case_ii_b2 bne htag hvu hx (fun z hz => bwl_WstarD (hop z hz) v)
 
-/-! ## 14. [Buc1] Lemma 2.7（`D_ω`-free 項に対する長さ帰納）
+/-! ## 14. Buchholz (1987) Lemma 2.7（`D_ω`-free 項に対する長さ帰納）
 
 `ν = ω = ⊤` を取り `D_ω`-free 項 `T_B` に制限する。すると Buchholz の case 3
 （`a = D_ν b` で指標が `ν` に等しい場合。Lemma 2.5 と `D_ν`-閉包 `Xbar` を要する
 唯一の case）は**起こり得ない** — `D_ω`-free な principal の指標は必ず有限、すなわち
-Buchholz の case 4 であり、2.6 と最小性 (A2) で処理される。したがって [Buc1] 2.5 の
+Buchholz の case 4 であり、2.6 と最小性 (A2) で処理される。したがって同論文 2.5 の
 6-case `Xbar` 解析は丸ごと迂回される。帰納は `btWeight`（Isabelle の `size` に相当）
 で行い、`X` は一般化する（case 2 でシフト `X^{(c)}`、case 3 で `W*` に具体化）。 -/
 
@@ -844,7 +843,7 @@ private theorem bwl_2_7_size_b2 : ∀ (n : ℕ) (a : BT), btWeight a ≤ n →
           cases ps with
           | nil =>
               -- 単一 principal `a = D_w b`。`D_ω`-free 性が `w = k < ω = ν` を強制
-              -- （[Buc1] 2.7 case 4）。
+              -- （Buchholz (1987) 2.7 case 4）。
               obtain ⟨w, b⟩ := p
               have dfa' : dfree_BPList [BP.db w b] = true := by
                 rwa [dfree_BT_trm_b2] at dfa
@@ -867,7 +866,7 @@ private theorem bwl_2_7_size_b2 : ∀ (n : ℕ) (a : BT), btWeight a ≤ n →
                 fun c h => Acl c (bwl_Aop_mono_nv le_top h)
               exact bwl_A2' AnX Dn
           | cons q qs =>
-              -- `a = c + a_k`（`c` は butlast）。[Buc1] 2.7 case 2、2.4(a) 経由。
+              -- `a = c + a_k`（`c` は butlast）。Buchholz (1987) 2.7 case 2、2.4(a) 経由。
               have hne : (p :: q :: qs) ≠ [] := by simp
               obtain ⟨L, hLmem, hsplit⟩ :
                   ∃ L : BP, L ∈ (p :: q :: qs) ∧
@@ -912,7 +911,7 @@ theorem bwl_2_7_aux (a : BT) (X : Set BT)
     (Acl : ∀ c : BT, bwl_Aop bwl_W ⊤ X c → c ∈ X) (dfa : dfree_BT a = true) : a ∈ X :=
   bwl_2_7_size_b2 (btWeight a) a le_rfl X Acl dfa
 
-/-! ## 15. [Buc1] 2.8 for `T_B`: `D_ω`-free 項はすべて `W*` にいる -/
+/-! ## 15. Buchholz (1987) 2.8 for `T_B`: `D_ω`-free 項はすべて `W*` にいる -/
 
 /-- Isabelle `bwl_2_8_dfree_Wstar` (pss_scratch.thy:9724)。`OT`（正規形）仮定は不要。 -/
 theorem bwl_2_8_dfree_Wstar {t : BT} (df : dfree_BT t = true) : t ∈ bwl_Wstar :=
@@ -923,14 +922,14 @@ theorem bwl_2_8_principal {u : ℕ} {t : BT} (df : dfree_BT t = true) :
     Dprin (u : ℕ∞) t ∈ bwl_W u :=
   bwl_WstarD (bwl_2_8_dfree_Wstar df) u
 
-/-! ## 16. `7.1-buchholz-wf-W` の 2 つの名前付き仮定の排出 -/
+/-! ## 16. `Buchholz-1987-2.3-W` の 2 つの名前付き仮定の排出 -/
 
-/-- `7.1-buchholz-wf-W` の名前付き仮定 `Bwl28Principal`（= [Buc1] 2.8 の系）を
+/-- `Buchholz-1987-2.3-W` の名前付き仮定 `Bwl28Principal`（= Buchholz (1987) 2.8 の系）を
     定理として供給する。 -/
 theorem Bwl28Principal_holds : Bwl28Principal :=
   fun _ _ df => bwl_2_8_principal df
 
-/-- `7.1-buchholz-wf-W` の名前付き仮定 `Bwl24bAdd`（= [Buc1] 2.4(b)）を
+/-- `Buchholz-1987-2.3-W` の名前付き仮定 `Bwl24bAdd`（= Buchholz (1987) 2.4(b)）を
     定理として供給する。 -/
 theorem Bwl24bAdd_holds : Bwl24bAdd :=
   fun _ _ _ ha hb => bwl_2_4b_add ha hb

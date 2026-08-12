@@ -1,7 +1,7 @@
-import PSS.Buchholz
+import «Buchholz-1986».«Buchholz-1986-2.1»
 
 /-!
-# §7.1 命題（`lessBT` が狭義線形順序であること）
+# Buchholz (1986) Lemma 2.1 — `lessBT` が狭義線形順序であること
 
 - Isabelle: `m_7_1_lessBT_linord`
 - 状態: ✅ 証明済（sorry 0）

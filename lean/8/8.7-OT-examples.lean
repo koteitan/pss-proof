@@ -1,4 +1,4 @@
-import PSS.Buchholz
+import «Buchholz-rel-ord».«Buchholz-rel-ord-6»
 
 /-!
 # §8.7 補題（順序数項の基本例）
@@ -7,7 +7,7 @@ import PSS.Buchholz
 - 訂正: なし
 - Isabelle: `p_8_7_OT_examples` (isabelle/pss_paper.thy:2307) の証明は
             `m_8_7_OT_examples` (isabelle/pss_mechanized.thy:24537)
-- 依存: PSS.Buchholz
+- 依存: Buchholz-1986 および Buchholz-rel-ord
 - 状態: ✅ 証明済（sorry 0）
 
 `OT_B` の基本例 4 本: (1) `D_u 0`、(2) `D_u (D_v 0)`、(3) `(D_u 0) ×_B (n-1)`、

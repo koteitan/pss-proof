@@ -5,7 +5,7 @@ import «8».«8.7-otint-tri0-census»
 import «8».«8.7-tri0-dispatch»
 import «8».«8.7-tri0-spine»
 import «8».«8.7-wrapper-condiv»
-import «7».«7.1-buchholz-fseq-closed»
+import «Buchholz-1986».«Buchholz-1986-3.3»
 
 /-!
 # PSS.«8».«8.7-a0otnub-assembly» — `A0OTNub` UNCONDITIONAL (all four residuals supplied)
@@ -21,7 +21,7 @@ it into the `otSetleCore` composition.
 The four legs:
 * `NubGControl_an` — the last generic [Buc1] Lemma 3.4 `G`-control residual.  It is the
   **verbatim twin** of the public `OixGControl` (`«8».«8.7-otint-transport»`), discharged
-  here from the public `G_control_bc`/`triGBC` (`«7».«7.1-buchholz-fseq-closed»`) exactly
+  here from the public `G_control_bc`/`triGBC` (`«Buchholz-1986».«Buchholz-1986-3.3»`) exactly
   as `OixGControl_holds` (`«8».«8.7-otint-uncond»`) does — `b1x_triG` is defeq to `triGBC`.
 * `A0OT_an` — the one-time census unknown `isOT_BT A₀`, closed by
   `A0OT_holds_ac censusProvenance_holds_cp` (`«8».«8.7-a0ot-close»` +
@@ -53,7 +53,7 @@ namespace PSS
 /-- **`NubGControl_an` discharged unconditionally.**  Verbatim twin of the public
 `OixGControl` (`«8».«8.7-otint-transport»`); mirror of `OixGControl_holds`
 (`«8».«8.7-otint-uncond»`).  `b1x_triG z b a` is defeq to `triGBC z b a`, so the public
-Buchholz Lemma 3.4 `G_control_bc` (`«7».«7.1-buchholz-fseq-closed»`) closes it directly. -/
+Buchholz Lemma 3.4 `G_control_bc` (`«Buchholz-1986».«Buchholz-1986-3.3»`) closes it directly. -/
 private theorem nubGControl_holds_na2 : NubGControl_an := by
   intro z b a u htri hba hGa hGz
   have htri' : triGBC z b a := htri

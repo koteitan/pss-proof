@@ -1,7 +1,7 @@
-import «7».«7.1-buchholz-fseq-lt»
+import «Buchholz-1986».«Buchholz-1986-3.2-descent»
 
 /-!
-# §7.1 [Buc1] Lemma 3.3: closure of fundamental sequences
+# Buchholz (1986) Lemma 3.3: closure of fundamental sequences
 
 This file proves that the executable Buchholz fundamental sequence operation
 preserves `OT_B`.  As in the completed Isabelle development, the induction is

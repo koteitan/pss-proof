@@ -8,8 +8,8 @@ import «6».«6.6-reduced-leftend»
 import «6».«6.6-reduced-iff-condAB»
 import «6».«6.7-standard-reduced»
 import «6».«6.7-standard-P-components»
-import «7».«7.1-lessBT-linear-order»
-import «7».«7.1-buchholz-fseq-lt»
+import «Buchholz-1986».«Buchholz-1986-2.1-order»
+import «Buchholz-1986».«Buchholz-1986-3.2-descent»
 import «7».«7.3-Trans-welldefined»
 import «7».«7.3-Trans-preserves-zeroT»
 import «7».«7.3-Trans-preserves-monoT»
@@ -33,8 +33,8 @@ import «8».«8.7-const00-Trans»
   `7.3-two-column`（`two_column_Trans`）、`7.3-Trans-welldefined`
   （`Trans_Mark_multi_equations` ＝ Isabelle `trans_multi_split`、
   `trans_multi_last_component`）、`7.3-Trans-preserves-zeroT`/`-monoT`、
-  `7.1-buchholz-fseq-lt`（`buchholz_fseq_lt` ＝ `m_buc1_3_2a_fseq_lt`、
-  `addBT_lt_right_bf` ＝ `lessBT_addBT_mono_right`）、`7.1-lessBT-linear-order`、
+  `Buchholz-1986-3.2-descent`（`buchholz_fseq_lt` ＝ `m_buc1_3_2a_fseq_lt`、
+  `addBT_lt_right_bf` ＝ `lessBT_addBT_mono_right`）、`Buchholz-1986-2.1-order`、
   `8.2-subexpr-adm0-ctx`（`condII_or_condIV` ＝ `m_8_2_condII_or_condIV`）、
   `8.7-const00-Trans`、`6.7-standard-reduced`/`-P-components`、
   `6.6-reduced-leftend`（`RTPS_mono_head_eq` ＝ `reduced_mono_head_diag`）、

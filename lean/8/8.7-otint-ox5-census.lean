@@ -22,7 +22,7 @@ PURE Buchholz machinery, all ported here:
 - `b1x_triG_addBT_x5` / `b1x_triG_Dpt_x5` — [Buc1] Lemma 3.5 (G-control is a
   congruence for left `+_B` and for `D_v`; Isabelle `b1x_triG_addBT` /
   `b1x_triG_Dpt`, `layerB/pss_wip.thy`:50486/50515).  Re-derived from the PUBLIC
-  `sandwich_prefix_bc` / `sandwich_Dprin_bc` (`«7».«7.1-buchholz-fseq-closed»`),
+  `sandwich_prefix_bc` / `sandwich_Dprin_bc` (`«Buchholz-1986».«Buchholz-1986-3.3»`),
   since the `triG_add_bc` / `triG_Dprin_bc` twins there are `private`.
 - `ot1_triG_grow_x5` — the trivial-base principal growth control
   `b1x_triG z (D_v t₂) (D_v (t₂ +_B c'))` (Isabelle `ot1_triG_grow`, :2765).

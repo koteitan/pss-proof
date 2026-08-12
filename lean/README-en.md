@@ -11,7 +11,7 @@ The Lean 4 version of the termination proof of the pair sequence system.
 
 ```
 lean/
-├── lakefile.lean           package definition (default_target: PSS, «5» «6» «7» «8»)
+├── lakefile.lean           package definition
 ├── lean-toolchain          leanprover/lean4:v4.30.0
 ├── PSS/                     shared layer: definitions + reusable helpers
 │   ├── Defs.lean            §5 definitions
@@ -21,9 +21,18 @@ lean/
 │   ├── Standard.lean        ST_PS / RT_PS
 │   ├── Scb.lean             scb (subexpressions)
 │   ├── Flat.lean            flattening
-│   ├── Trans.lean           Trans (translation to Buchholz notation)
-│   └── Buchholz.lean        §7 [Buc1] notation system
+│   └── Trans.lean           Trans (translation to Buchholz notation)
 ├── PSS.lean                 aggregate import of PSS/
+├── Buchholz-1986/           [Buc1] definitions and lemmas, split by subsection
+├── Buchholz-1987/           the W_v construction from the 1987 paper, §2
+├── Buchholz-rel-ord/        unpublished [Buc2], p. 6, Definition 6
+├── OTB-well-founded-syntactic/
+│                            syntactic well-foundedness proof without ordinal semantics
+├── Buchholz-1986.lean
+├── Buchholz-1987.lean
+├── Buchholz-rel-ord.lean    aggregate imports for the three literature dirs
+├── OTB-well-founded-syntactic.lean
+│                            aggregate import for the syntactic well-foundedness proof
 ├── 5/ 6/ 7/ 8/              chapter dirs (one proposition per file)
 │                            e.g. 8/8.7-termination.lean (main theorem)
 ├── 5.lean 6.lean 7.lean 8.lean  per-chapter aggregate imports
@@ -41,7 +50,7 @@ lean/
 |---|---|
 | `5/` | 6 |
 | `6/` | 65 |
-| `7/` | 38 |
+| `7/` | 32 |
 | `8/` | 250 |
 
 More files than propositions because large proofs are decomposed across several files.
@@ -51,6 +60,8 @@ More files than propositions because large proofs are decomposed across several 
 - File names `<§>.<sub>-<slug>.lean` (e.g. `7.2-scb-unique.lean`, `8.7-termination.lean`).
 - Module names are wrapped in guillemets: `«8».«8.7-termination»` (to allow dots and a
   leading digit).
+- Literature files use `<source>-<subsection>.lean`, paired with a same-named Japanese
+  MathJax `<source>-<subsection>.md`.
 
 ## Build & verification
 

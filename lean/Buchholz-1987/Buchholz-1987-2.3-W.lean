@@ -1,11 +1,11 @@
-import «7».«7.3-Trans-welldefined»
-import PSS.Buchholz
+import «Buchholz-rel-ord».«Buchholz-rel-ord-6»
 
 /-!
-# §7.1 [Buc1] 2.2 キャンペーン — `W` 階層の土台 (foundation 1/2)
+# Buchholz (1987) §2 — `W` 階層の土台
 
-- 原文: `tmp/content.md` 5978 / 6331（`(OT_B, <)` の整礎性を [Buc1] 補題 2.2 で引用）
-- [Buc1]: §2 p.137–138 の反復帰納的定義 `W_v = lfp(A_v)`（(W1)(W2)(W3)）と
+- 用いる別文献: W. Buchholz, “An independence result for (Π¹₁-CA)+BI”,
+  Annals of Pure and Applied Logic 33 (1987), §2, pp. 137–138。
+- 同論文の反復帰納的定義 `W_v = lfp(A_v)`（(W1)(W2)(W3)）と
   p.137 命題 `u ≤ v ⟹ W_u ⊆ W_v`
 - 訂正: なし
 - Isabelle: `isabelle/layerC/pss_scratch.thy`
@@ -14,18 +14,15 @@ import PSS.Buchholz
     `bwl_A2'` (8835), `bwl_W_zero` (8846)
   - `y3_W_mono` (11280), `y3_TBv_dfree_W_aux` (11295), `y3_TBv_dfree_W` (11320),
     `y3_dfree_ex_lev_aux` (11333), `y3_dfree_ex_lev` (11370),
-    `y3_Trans_dfree` (11390), `y3_one_in_TBv` (11403),
+    `y3_one_in_TBv` (11403),
     `y3_D0one_not_NatSet` (11406), `y3_TBv_ne_zeroset` (11416),
     `y3_TBv_ne_NatSet` (11424), `y3_TBv_inj` (11432)
-- 依存: `PSS.Buchholz`（`BT`/`BP`/`TBv`/`NatSet`/`numBT`/`domB`/`operB`/`addBT`/
-  `dfree_BT`）、`7.3-Trans-welldefined`（`Trans_mem_T_B`）
+- 依存: `Buchholz-1986` と `Buchholz-rel-ord-6` の項・基本列定義。
 - 状態: ✅ green（sorry 0）。`Bwl28Principal` / `Bwl24bAdd` の 2 つの名前付き仮定
-  （[Buc1] 2.8 / 2.4(b)、foundation 2/2 の担当）に modulo。
+  （Buchholz (1987) 2.8 / 2.4(b)、foundation 2/2 の担当）に modulo。
 
-引用する [Buc1] 2.2 は**意味論的**（順序数への評価写像 `o` と正則基数 `Ω_u` を使う）で
-定義的 HOL / Lean では表現できない。原文が実際に使うのは構文的な帰結だけであり、
-Isabelle 版はそれを Buchholz–Schütte の distinguished sets 法（基数不要）で証明した。
-本キャンペーンはそちらを移植する。**順序数・`ψ`・`Ω` は一切導入しない。**
+この `W_v` 構成は、[Buc1] の意味論的な補題2.2を使わずに同じ整礎性の帰結を得るために、
+Buchholz (1987) の構文的証明を利用する部分である。
 
 `W_v` は**反復**帰納的定義である: (W3) の `W_u` (`u < v`) は生成中の集合に対して
 単調でないパラメータ位置に現れるので、単一の `lfp` では作れない。Isabelle 同様、
@@ -60,7 +57,7 @@ private theorem lfpS_unfold_w3 {f : Set BT → Set BT} (hm : Monotone f) :
 
 /-! ## (1) 作用素 `A_ν` — 下位の族をパラメータとして受け取る -/
 
-/-- [Buc1] p.138 (1)(2)。下位の階層 `Wf` はパラメータ。
+/-- Buchholz (1987) p.138 (1)(2)。下位の階層 `Wf` はパラメータ。
     Isabelle: `bwl_Aop` (pss_scratch.thy:8695)。 -/
 def bwl_Aop (Wf : ℕ → Set BT) (nv : ℕ∞) (X : Set BT) (a : BT) : Prop :=
   a = BZero ∨
@@ -85,7 +82,7 @@ theorem bwl_Aset_mono (Wf : ℕ → Set BT) (nv : ℕ∞) : Monotone (bwl_Aset W
   intro X Y hXY a ha
   exact bwl_Aop_mono_X (Wf := Wf) (nv := nv) ha hXY
 
-/-- [Buc1] は 2.5(1) の証明で `A_u(X) ⊆ A_ν(X)` (`u ≤ ν`) を使う。
+/-- Buchholz (1987) は 2.5(1) の証明で `A_u(X) ⊆ A_ν(X)` (`u ≤ ν`) を使う。
     Isabelle: `bwl_Aop_mono_nv` (pss_scratch.thy:8719)。 -/
 theorem bwl_Aop_mono_nv {Wf : ℕ → Set BT} {nv nv' : ℕ∞} {X : Set BT} {a : BT}
     (le : nv ≤ nv') (h : bwl_Aop Wf nv X a) : bwl_Aop Wf nv' X a := by
@@ -155,13 +152,13 @@ theorem bwl_W_unfold (v : ℕ) : bwl_W v = lfpS_w3 (bwl_Aset bwl_W (v : ℕ∞))
     exact bwl_Aop_cong (Wf := bwl_Wf v) (Wg := bwl_W) (nv := (v : ℕ∞)) (X := X) cong
   rw [stage, funext ptw]
 
-/-- **(A1)** [Buc1] p.138: `A_v(W_v) = W_v` — 不動点方程式。
+/-- **(A1)** Buchholz (1987) p.138: `A_v(W_v) = W_v` — 不動点方程式。
     Isabelle: `bwl_A1` (pss_scratch.thy:8800)。 -/
 theorem bwl_A1 (v : ℕ) : bwl_Aset bwl_W (v : ℕ∞) (bwl_W v) = bwl_W v := by
   rw [bwl_W_unfold v]
   exact lfpS_unfold_w3 (bwl_Aset_mono bwl_W (v : ℕ∞))
 
-/-- **(A2)** [Buc1] p.138: `A_v(Y) ⊆ Y ⟹ W_v ⊆ Y` — 帰納法規則。
+/-- **(A2)** Buchholz (1987) p.138: `A_v(Y) ⊆ Y ⟹ W_v ⊆ Y` — 帰納法規則。
     Isabelle: `bwl_A2` (pss_scratch.thy:8807)。 -/
 theorem bwl_A2 {v : ℕ} {Y : Set BT} (A : bwl_Aset bwl_W (v : ℕ∞) Y ⊆ Y) :
     bwl_W v ⊆ Y := by
@@ -189,24 +186,24 @@ theorem bwl_A2' {v : ℕ} {Y : Set BT}
 theorem bwl_W_zero (v : ℕ) : BZero ∈ bwl_W v :=
   bwl_A1_intro (Or.inl rfl)
 
-/-! ## 名前付き仮定（green-modulo。foundation 2/2 = [Buc1] §2 本体の担当）
+/-! ## 名前付き仮定（green-modulo。foundation 2/2 = Buchholz (1987) §2 本体の担当）
 
-以下の 2 命題は [Buc1] §2 の本体であり、Isabelle では証明済み。本ファイルはこれらを
+以下の 2 命題は Buchholz (1987) §2 の本体であり、Isabelle では証明済み。本ファイルはこれらを
 仮定として受け取る（`bwl_W` は本ファイルの定義なので、命題は本ファイルで述べられる）。 -/
 
-/-- [Buc1] 2.8 の系。Isabelle: `bwl_2_8_principal` (pss_scratch.thy:9733)
+/-- Buchholz (1987) 2.8 の系。Isabelle: `bwl_2_8_principal` (pss_scratch.thy:9733)
     `dfree_BT t ⟹ Trm [DB (enat u) t] ∈ bwl_W u`。 -/
 def Bwl28Principal : Prop :=
   ∀ (u : ℕ) (t : BT), dfree_BT t = true → Dprin (u : ℕ∞) t ∈ bwl_W u
 
-/-- [Buc1] 2.4(b)。Isabelle: `bwl_2_4b_add` (pss_scratch.thy:8965)
+/-- Buchholz (1987) 2.4(b)。Isabelle: `bwl_2_4b_add` (pss_scratch.thy:8965)
     `a ∈ bwl_W v ⟹ b ∈ bwl_W v ⟹ a +⇩B b ∈ bwl_W v`。 -/
 def Bwl24bAdd : Prop :=
   ∀ (v : ℕ) (a b : BT), a ∈ bwl_W v → b ∈ bwl_W v → addBT a b ∈ bwl_W v
 
 /-! ## (1) `W` は水準について単調、`D_ω`-free な `T_m`-項は `W_m` にいる -/
 
-/-- [Buc1] p.137 命題: `u ≤ v ⟹ W_u ⊆ W_v`。
+/-- Buchholz (1987) p.137 命題: `u ≤ v ⟹ W_u ⊆ W_v`。
     Isabelle: `y3_W_mono` (pss_scratch.thy:11280)。 -/
 theorem y3_W_mono {u v : ℕ} (uv : u ≤ v) : bwl_W u ⊆ bwl_W v := by
   refine bwl_A2' (fun c A => ?_)
@@ -316,16 +313,6 @@ theorem y3_dfree_W_ex (Hprin : Bwl28Principal) (Hadd : Bwl24bAdd) {z : BT}
   obtain ⟨m, hm⟩ := y3_dfree_ex_lev df
   exact ⟨m, y3_TBv_dfree_W Hprin Hadd df hm⟩
 
-/-- `Trans` の像は `D_ω`-free（`m_7_3_Trans_in_T_B` により `T_B` に属する）。
-    Isabelle: `y3_Trans_dfree` (pss_scratch.thy:11390)。 -/
-theorem y3_Trans_dfree {M : PS} (MR : RTPS M) : dfree_BT (Trans M) = true :=
-  Trans_mem_T_B M MR
-
-/-- Isabelle: `y3_Trans_W` (pss_scratch.thy:11395)。 -/
-theorem y3_Trans_W (Hprin : Bwl28Principal) (Hadd : Bwl24bAdd) {M : PS} (MR : RTPS M) :
-    ∃ m : ℕ, Trans M ∈ bwl_W m :=
-  y3_dfree_W_ex Hprin Hadd (y3_Trans_dfree MR)
-
 /-! ## (2) 三種類の `dom` 形は互いに相異なる -/
 
 /-- Isabelle: `y3_one_in_TBv` (pss_scratch.thy:11403)。 -/
@@ -386,8 +373,6 @@ theorem y3_TBv_inj {m m' : ℕ} (e : TBv (m : ℕ∞) = TBv (m' : ℕ∞)) : m =
 #print axioms y3_dfree_ex_lev_aux
 #print axioms y3_dfree_ex_lev
 #print axioms y3_dfree_W_ex
-#print axioms y3_Trans_dfree
-#print axioms y3_Trans_W
 #print axioms y3_one_in_TBv
 #print axioms y3_D0one_not_NatSet
 #print axioms y3_TBv_ne_zeroset

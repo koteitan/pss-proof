@@ -1,4 +1,4 @@
-import «7».«7.1-lessBT-linear-order»
+import «Buchholz-1986».«Buchholz-1986-2.1-order»
 import «8».«8.7-otint-transport-prims»
 
 /-!
@@ -25,9 +25,9 @@ so it needs neither `ox9_ok` nor `ox9_MAIN`.
   `oi5_IIIIV_pkg`, `ox6_holeH`, `ox9_holeD_of_flat3`, `m_7_2_scb_unique_sb`, `d4vx_ins_flat`).
 
 ## 依存（ビルド済みのみ import）
-- `«8».«8.7-otint-transport-prims»` — `b1x_setle`（透過的に `PSS.Buchholz`: `BT`/`BP`/
+- `«8».«8.7-otint-transport-prims»` — `b1x_setle`（透過的に `Buchholz-1986 および Buchholz-rel-ord`: `BT`/`BP`/
   `Dprin`/`BZero`/`lessBT`/`lessBP`/`leBT`/`GBT`/`GBP`/`gatherB*`）。
-- `«7».«7.1-lessBT-linear-order»` — `lessBT_linear_trans`。
+- `«Buchholz-1986».«Buchholz-1986-2.1-order»` — `lessBT_linear_trans`。
 - `b1x_GBT_trans`（Isabelle wip:50234）は Lean 側 public twin が無い（`GBT_trans_b4`/`_bc`
   は private）。本ファイルで suffix `_ox` にて再証明。
 

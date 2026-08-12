@@ -1,20 +1,21 @@
-import «7».«7.1-buchholz-wf-Buc2body»
-import «7».«7.1-buchholz-wf-bachmann»
-import «7».«7.1-buchholz-fseq-closed»
-import PSS.Buchholz
+import «Buchholz-1987».«Buchholz-1987-2.4-2.8»
+import «OTB-well-founded-syntactic».«OTB-well-founded-syntactic-cofinality»
+import «Buchholz-1986».«Buchholz-1986-3.3»
 
 /-!
-# §7.1 [Buc1] 補題 2.2 — `(OT_B, <)` の整礎性（キャンペーン頂点）
+# `(OT_B, <)` の整礎性 — 順序数意味論を使わない構文的証明
 
-- 原文: `tmp/content.md` 5978 / 6331（`(OT_B, <)` の整礎性を [Buc1] 補題 2.2 として引用）。
+- PSS 原文: `tmp/content.md` 5978 / 6331（`(OT_B, <)` の整礎性を主張し、その根拠として
+  [Buc1] Lemma 2.2 を引用）。従って本ファイルの定理は [Buc1] Lemma 2.2 そのものではなく、
+  PSS 原文がそこから引き出して使用する**別命題**である。
   逐語形は `buc1_2_2_OT_B_wf`（isabelle/pss_paper.thy、`sorry` 引用）。
-- [Buc1]: Lemma 2.2（p.137）。**Buchholz 自身の 2.2 は意味論的**（順序数への評価写像
+- [Buc1]: Lemma 2.2（pp. 201–202）。**Buchholz 自身の 2.2 は意味論的**（順序数への評価写像
   `o : OT → Ord`、`ψ_v`、`Ω_u` を使い、`a < c ⟹ o(a) < o(c)` を示す）であり、
   定義的 HOL / Lean では**表現できない**。ここで移植するのは Buchholz–Schütte の
   distinguished sets 法による **cardinal-free** 経路である。
   **順序数・`ψ`・`Ω` は本ファイルに一切現れない。**
-- 訂正: なし（A23＝[Buc1] 脚注 [30] の `xseq` 転置誤植の訂正は上流
-  `7.1-buchholz-wf-Buc2body` / `7.1-buchholz-wf-bachmann` で消化済）。
+- 訂正: なし（A23＝原記事脚注 [30] の `xseq` 転置誤植の訂正は上流
+  `Buchholz-rel-ord-6` / `OTB-well-founded-syntactic-cofinality` で消化済）。
 - Isabelle: `isabelle/layerC/pss_scratch.thy`
   - `RTrel` (64629, layerB/pss_wip.thy) ＝ 本ファイルの `RTrelW`
   - `wfox_goal_eq_RTrel` (layerB/pss_wip.thy:64633) ＝ 目標関係が `RTrel` に一致
@@ -22,13 +23,13 @@ import PSS.Buchholz
   - `y3_cof0` (11455) / `y3_cof0_imp_bwl_cof` (11464) ＝ `bwl_cof_wfe`
   - `bwl_acc_of_W` (9808) ＝ `acc_of_W_wfe`
   - `y4_cof0` (13678) / `y4_wf_RPrel` (13689)
-  - `y4_buc1_2_2_OT_B_wf` (13700) ＝ 本ファイルの `buchholz_wf`
-- 依存（ビルド済みのみ import）: `7.1-buchholz-wf-W`（`bwl_W`/`bwl_Aop`/`bwl_A2'`/
-  `y3_TBv_dfree_W`/`y3_dfree_W_ex`、経由: Buc2body）、`7.1-buchholz-wf-Buc2body`
+  - `y4_buc1_2_2_OT_B_wf` (13700) ＝ 本ファイルの `OT_B_wellFounded`
+- 依存: `Buchholz-1987-2.3-W`（`bwl_W`/`bwl_Aop`/`bwl_A2'`/
+  `y3_TBv_dfree_W`/`y3_dfree_W_ex`）、`Buchholz-1987-2.4-2.8`
   （`Bwl28Principal_holds`/`Bwl24bAdd_holds`/`bwo_domB_Nil`）、
-  `7.1-buchholz-wf-bachmann`（`y4_bachmann_domB` ＝ Bachmann 共終性）、
-  `7.1-buchholz-fseq-closed`（`buchholz_fseq_closed`/`buchholz_fseq_closed_general`
-  ＝ [Buc1] 3.3）、`PSS.Buchholz`。
+  `OTB-well-founded-syntactic-cofinality`（`y4_bachmann_domB` ＝ Bachmann 共終性）、
+  `Buchholz-1986-3.3`（`buchholz_fseq_closed`/`buchholz_fseq_closed_general`
+  ＝ [Buc1] 3.3）。
 - 状態: ✅ green（sorry 0、**名前付き仮定 0**）。
 
 ## Isabelle 経路との差分（`RPrel` 層の全消去）
@@ -52,24 +53,24 @@ overshoot のない同値なので、この短絡は強さを失わない。）
 
 `lean/8/8.7-OT-tail-annihilable.lean:52` の名前付き仮定
 `def OT_B_wf : Prop := WellFounded (fun a b : BT => a ∈ OT_B ∧ b ∈ OT_B ∧ lessBT a b = true)`
-と本ファイルの `buchholz_wf` は**同一の型**である。従って `buchholz_wf` はその仮定の
+と本ファイルの `OT_B_wellFounded` は**同一の型**である。従って `OT_B_wellFounded` はその仮定の
 drop-in であり、8.7 の唯一の残差が閉じる。
 
-**本ファイルは 8.7 を import しない**（＝`theorem OT_B_wf_holds : OT_B_wf := buchholz_wf`
+**本ファイルは 8.7 を import しない**（＝`theorem OT_B_wf_holds : OT_B_wf := OT_B_wellFounded`
 を同居させない）。理由は依存の向き: 8.7 の残差を落とす配線は 8.7 側が本ファイルを
 import する形になるので、こちらから 8.7 を import すると**循環する**。§7 が §8 を
 import する層の逆転でもある。
 
 同値性は使い捨てファイルで**外部確認済み**（本ファイルは未ビルドなので import できず、
 上流の同一 import 集合で検査した）。8.7 と本ファイルの上流
-（`7.1-buchholz-wf-Buc2body` / `7.1-buchholz-wf-bachmann` / `7.1-buchholz-fseq-closed`）は
+（`Buchholz-1987-2.4-2.8` / `OTB-well-founded-syntactic-cofinality` / `Buchholz-1986-3.3`）は
 名前衝突なく co-import でき、その状態で
 
     example : OT_B_wf ↔
         WellFounded (fun a b : BT => a ∈ OT_B ∧ b ∈ OT_B ∧ lessBT a b = true) := Iff.rfl
 
 が通る（`check_lean.py` rc=0）。すなわち両者は**定義的に等しい**。配線側は
-`theorem OT_B_wf_holds : OT_B_wf := buchholz_wf` と書けばよい。
+`theorem OT_B_wf_holds : OT_B_wf := OT_B_wellFounded` と書けばよい。
 
 `private` 補助の接尾辞は `_wfe`。
 -/
@@ -126,7 +127,7 @@ private theorem TBv_ne_empty_wfe (m : ℕ) : (TBv (m : ℕ∞) : Set BT) ≠ (�
 `y3_cof0_imp_bwl_cof` (11464) がその節を `y3_TBv_dfree_W`（`z ∈ dom(a) = T_m` かつ
 `z` が `D_ω`-free なら既に `z ∈ W_m`）で無料で回復する。`y4_cof0` (13678) は
 「`y3_cof0` は文字どおり `y4_bachmann`」であった。Lean 側では `y4_bachmann_domB`
-（`7.1-buchholz-wf-bachmann`）が `y3_cof0` そのものなので、ここで両段を合成する。 -/
+（`OTB-well-founded-syntactic-cofinality`）が `y3_cof0` そのものなので、ここで両段を合成する。 -/
 
 private theorem bwl_cof_wfe {a b : BT}
     (ota : isOT_BT a = true) (dfa : dfree_BT a = true)
@@ -218,19 +219,23 @@ private theorem acc_all_wfe (t : BT) : Acc RTrelW t := by
     obtain ⟨_, tOT, _⟩ := RTrelW_iff.mp hy
     exact absurd (memOTB_wfe.mp tOT).2 hdf
 
-/-! ## 5. [Buc1] 補題 2.2 -/
+/-! ## 5. PSS 原文が用いる `(OT_B, <)` の整礎性 -/
 
-/-- **[Buc1] 補題 2.2**: `(OT_B, <)` は整礎である。
+/-- **PSS 原文の外部引用から切り出した命題**: `(OT_B, <)` は整礎である。
+
+[Buc1] Lemma 2.2 そのものは評価写像 `o` の意味論的性質であり、この主張とは異なる。
+PSS 原文はその意味論的結果を根拠として本主張を使用するが、ここでは順序数意味論を
+使わず、`W_u` と Bachmann 共終性によって本主張を直接証明した。
 
 Isabelle: `y4_buc1_2_2_OT_B_wf : wf {(a, b). a ∈ OT_B ∧ b ∈ OT_B ∧ lessBT a b}`
 (isabelle/layerC/pss_scratch.thy:13700)。Isabelle の `(x,y) ∈ r` は「`x` が小さい」
 なので Lean の `WellFounded` の引数順と一致する。
 
 `lean/8/8.7-OT-tail-annihilable.lean:52` の名前付き仮定 `OT_B_wf` と型が一致する。 -/
-theorem buchholz_wf :
+theorem OT_B_wellFounded :
     WellFounded (fun a b : BT => a ∈ OT_B ∧ b ∈ OT_B ∧ lessBT a b = true) :=
   WellFounded.intro acc_all_wfe
 
-#print axioms buchholz_wf
+#print axioms OT_B_wellFounded
 
 end PSS

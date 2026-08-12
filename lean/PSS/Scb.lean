@@ -1,4 +1,4 @@
-import PSS.Buchholz
+import «Buchholz-rel-ord».«Buchholz-rel-ord-6»
 
 /-!
 # PSS.Scb — §7.2 scb 分解

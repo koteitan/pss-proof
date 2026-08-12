@@ -1,7 +1,7 @@
 import «5».«5.3-pred-is-oper1»
 import «6».«6.7-standard-prefix»
-import «7».«7.1-lessBT-linear-order»
-import «7».«7.1-buchholz-fseq-lt»
+import «Buchholz-1986».«Buchholz-1986-2.1-order»
+import «Buchholz-1986».«Buchholz-1986-3.2-descent»
 import «7».«7.3-Trans-preserves-zeroT»
 import «7».«7.3-Pred-Trans-descend»
 import «8».«8.7-fseq-descend»
@@ -33,8 +33,8 @@ import «8».«8.7-fseq-descend»
 
 - 依存（ビルド済みのみ import）: `5.3-pred-is-oper1`（`pred_is_oper1`
   ＝ `m_8_4_oper1_eq_Pred`）、`6.7-standard-prefix`（`STPS_TPS` ＝ `ST_PS_T_PS`）、
-  `7.1-lessBT-linear-order`（`lessBT_linear_trans` ＝ `lessBT_trans`）、
-  `7.1-buchholz-fseq-lt`（`buchholz_fseq_lt` ＝ `m_buc1_3_2a_fseq_lt`
+  `Buchholz-1986-2.1-order`（`lessBT_linear_trans` ＝ `lessBT_trans`）、
+  `Buchholz-1986-3.2-descent`（`buchholz_fseq_lt` ＝ `m_buc1_3_2a_fseq_lt`
   ＝ [Buc1] Lemma 3.2(a)）、`7.3-Trans-preserves-zeroT`（`Trans_preserves_zeroT`
   ＝ `m_7_3_Trans_zeroT`）、`7.3-Pred-Trans-descend`（`Pred_Trans_descend`
   ＝ `m_7_3_Pred_Trans_descend`）、`8.7-fseq-descend`（drop-in 先の `Prop`）。

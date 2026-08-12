@@ -1,7 +1,7 @@
-import «7».«7.1-buchholz-fseq-lt»
-import «7».«7.1-buchholz-wf»
-import «7».«7.1-buchholz-fseq-closed»
-import PSS.Buchholz
+import «Buchholz-1986».«Buchholz-1986-3.2-descent»
+import «OTB-well-founded-syntactic».«OTB-well-founded-syntactic-main»
+import «Buchholz-1986».«Buchholz-1986-3.3»
+import «Buchholz-rel-ord».«Buchholz-rel-ord-6»
 
 /-!
 # §8.7 補題（順序数項の末尾項の零化可能性）
@@ -19,16 +19,16 @@ import PSS.Buchholz
   （末尾 principal `D_u t'` を前置 `q` の上で `[0]` 反復により `D_u 0` へ落とす）
   を移植する。scb 形（`p_8_7_OT_tail_annihilable` 逐語形）は Isabelle 側も
   機械化していないため対象外。
-- 依存（ビルド済みのみ import）: `PSS.Buchholz`（`BT`/`OT_B`/`lessBT`/`operB`/
+- 依存（ビルド済みのみ import）: `Buchholz-1986 および Buchholz-rel-ord`（`BT`/`OT_B`/`lessBT`/`operB`/
   `bOperCore`/`domTag`/`domB`/`Dprin`/`addBT`/`BZero`/`numBT`/`multBT`/`TBv`/
-  `NatSet`）、`7.1-buchholz-fseq-lt`（`buchholz_fseq_descent` ＝ [Buc1] 3.2(a)）、
-  `7.1-buchholz-fseq-closed`（`buchholz_fseq_closed_general` ＝ [Buc1] 3.3）。
-  ※ `7.1-buchholz-wf-Buc2body` は **未ビルド**なので import しない
+  `NatSet`）、`Buchholz-1986-3.2-descent`（`buchholz_fseq_descent` ＝ [Buc1] 3.2(a)）、
+  `Buchholz-1986-3.3`（`buchholz_fseq_closed_general` ＝ [Buc1] 3.3）。
+  ※ `Buchholz-1987-2.4-2.8` は **未ビルド**なので import しない
   （`([].5)` 分配則は本ファイル内で `bOperCore_list_snoc_ota` として再証明した）。
 - 状態: ✅ green（sorry 0）。名前付き仮定は **`OT_B_wf` の 1 つのみ**
   （Isabelle の `wf {(a,b). a ∈ OT_B ∧ b ∈ OT_B ∧ lessBT a b}`
   ＝ `y4_buc1_2_2_OT_B_wf`。Lean 側の [Buc1] 2.2 キャンペーン
-  `7.1-buchholz-wf-W` / `7.1-buchholz-wf-bachmann` は土台のみ着地済で
+  `Buchholz-1987-2.3-W` / `OTB-well-founded-syntactic-cofinality` は土台のみ着地済で
   頂点定理が未着地のため、仮定として括り出す）。
 
 **Isabelle より強い点**: layerB / layerC の版は 1 ステップ降下 `step`
@@ -259,11 +259,13 @@ theorem toplevel_OT_tail_annihilate (hwf : OT_B_wf)
 
 /-! ## `OT_B_wf` の実体化（2026-07-17、親配線）
 
-[Buc1] 補題 2.2 が `7.1-buchholz-wf` で**仮定ゼロで証明された**ので、名前付き仮定
+PSS 原文が [Buc1] 補題 2.2 を根拠として用いる整礎性命題が
+`OTB-well-founded-syntactic-main` で**仮定ゼロで証明された**ので、名前付き仮定
 `OT_B_wf` を落として無条件形にする。 -/
 
-/-- `OT_B_wf` は `buchholz_wf`（`7.1-buchholz-wf`、仮定ゼロ）そのもの。 -/
-theorem OT_B_wf_holds : OT_B_wf := buchholz_wf
+/-- `OT_B_wf` は `OT_B_wellFounded`（`OTB-well-founded-syntactic-main`、仮定ゼロ）
+そのもの。 -/
+theorem OT_B_wf_holds : OT_B_wf := OT_B_wellFounded
 
 /-- 補題（順序数項の末尾項の零化可能性）の **無条件形**（top-level 値レベル）。 -/
 theorem toplevel_OT_tail_annihilate_uncond

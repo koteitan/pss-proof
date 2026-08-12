@@ -1,7 +1,7 @@
 import «6».«6.7-standard-reduced»
 import «6».«6.7-standard-prefix»
-import «7».«7.1-lessBT-linear-order»
-import «7».«7.1-buchholz-fseq-lt»
+import «Buchholz-1986».«Buchholz-1986-2.1-order»
+import «Buchholz-1986».«Buchholz-1986-3.2-descent»
 import «7».«7.2-add-scb»
 import «7».«7.3-c1-c2-order»
 import «7».«7.3-Pred-Trans-descend»
@@ -51,8 +51,8 @@ import «7».«7.3-Pred-Trans-descend»
     交換命題を閉じたため obsolete。13 の死路（spinelaw-universal / leaf-fold /
     entry1 / d_M=1 / standalone-endpoint / re-deposit …）も同様に再走禁止。
 - 依存: `7.3-Pred-Trans-descend` (`scbext_lessBT`)、`7.3-c1-c2-order`
-  (`lessBT_addBT_self`)、`7.1-buchholz-fseq-lt` (`addBT_lt_right_bf`)、
-  `7.1-lessBT-linear-order` (`lessBT_linear_trans`)、`7.2-add-scb`
+  (`lessBT_addBT_self`)、`Buchholz-1986-3.2-descent` (`addBT_lt_right_bf`)、
+  `Buchholz-1986-2.1-order` (`lessBT_linear_trans`)、`7.2-add-scb`
   (`add_scb_replace_last` ＝ Isabelle `m_7_2_add_scb_conj2`、`addBT_mem_T_B`)、
   `7.3-Trans-welldefined` (`Dprin_mem_T_B`)、`6.7-standard-reduced` (`STPS_RTPS`)。
 - ツリー項目: **交換則 1/7**。`8.7-fseq-descend.lean` の `FseqDesc_exchV` を

@@ -3,7 +3,7 @@ import «7».«7.4-RightNodes-Mark»
 import «7».«7.3-Mark-rightmost1»
 import «7».«7.4-RightAnces-RightNodes»
 import «7».«7.2-scb-fseq»
-import «7».«7.1-buchholz-fseq-lt»
+import «Buchholz-1986».«Buchholz-1986-3.2-descent»
 
 /-!
 # §8.5 exchV の named Prop の解消（`ExchV_*` の drop-in）
@@ -75,7 +75,7 @@ import «7».«7.1-buchholz-fseq-lt»
   «7».«7.4-RightAnces-RightNodes»（`RightNodes_transC2_tail`
   ＝ Isabelle `ra_RightNodes_transC2_tail`）、
   **«7».«7.2-scb-fseq»（`scb_fseq_kind1_general` ＝ `m_7_2_scb_fseq_kind1_general`、
-  `operB` 塔の唯一のエンジン）**、«7».«7.1-buchholz-fseq-lt»（`domTag_snoc_bf`）、
+  `operB` 塔の唯一のエンジン）**、«Buchholz-1986».«Buchholz-1986-3.2-descent»（`domTag_snoc_bf`）、
   «7».«7.2-scb-unique»（`scb_unique_decomp_unconditional`
   ＝ `m_7_2_scb_unique_sb`、推移的）。
 - 訂正: なし（A28 は取り下げ済み、`corrections-old.md`:95）。

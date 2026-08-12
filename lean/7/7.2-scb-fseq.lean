@@ -5,7 +5,7 @@ import «7».«7.2-scb-unique»
 # §7.2 — scb decomposition and Buchholz fundamental sequences
 
 Lean translation of the three conjuncts of `p_7_2_scb_fseq`, using the A23
-correction already built into `PSS.Buchholz.xseq`.
+correction already built into `Buchholz-rel-ord-6 の xseq`.
 -/
 
 namespace PSS

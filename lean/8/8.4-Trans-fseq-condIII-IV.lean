@@ -1,4 +1,4 @@
-import «7».«7.1-lessBT-linear-order»
+import «Buchholz-1986».«Buchholz-1986-2.1-order»
 import «7».«7.3-Pred-Trans-descend»
 
 /-!
@@ -34,7 +34,7 @@ import «7».«7.3-Pred-Trans-descend»
     `d4vx_core_flat` (同 :63783)、`c4cx_d4vx_ins_mono` / `c4cx_d4vx_core_compose` /
     `c4cx_d4vx_core_mono_base`。
 
-- 依存（ビルド済みのみ import）: `7.1-lessBT-linear-order`（`lessBT_linear_trans`）、
+- 依存（ビルド済みのみ import）: `Buchholz-1986-2.1-order`（`lessBT_linear_trans`）、
   `7.3-Pred-Trans-descend`（`scbext_lessBT` ＝ 部分表現の不等式の延長性）。
 
 - 数値監査: `python/_e34_audit.py`（A23 訂正後の operB）。真正 ST_PS プールで

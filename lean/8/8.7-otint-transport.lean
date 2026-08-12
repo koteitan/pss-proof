@@ -1,5 +1,5 @@
 import «8».«8.7-otint-transport-prims»
-import «7».«7.1-lessBT-linear-order»
+import «Buchholz-1986».«Buchholz-1986-2.1-order»
 
 /-!
 # PSS.«8».«8.7-otint-transport» — OT transport pillar: `oix_transport` and its discharge
@@ -23,7 +23,7 @@ import «7».«7.1-lessBT-linear-order»
 ## 依存（ビルド済みのみ import）
 
 - `8.7-otint-transport-prims`: `b1x_setle`(+subset/widen/union)、`b1x_triG`(+I/D)、`d4vx_*`。
-- `7.1-lessBT-linear-order`: `lessBT_linear_irrefl`/`_trans`/`_trichotomy`。
+- `Buchholz-1986-2.1-order`: `lessBT_linear_irrefl`/`_trans`/`_trichotomy`。
 - 透過的に `PSS.*`（`flatBT`/`scb_decomp`/`GBT`/`GBP`/`leBT`/`lessBT`/`isOT_BT`/`isOT_BP`/
   `descP`/`Dprin`/`gatherBT`/`gatherBPList`/`btWeight`）と `PSS.Flat`（`flatBP_cancel`/
   `flatBT_injective`）。
@@ -43,7 +43,7 @@ import «7».«7.1-lessBT-linear-order»
 **`oix_transport_holds : oix_transport`** は GREEN-MODULO、次の 4 本の generic Buchholz
 residual に依存する（いずれも Isabelle 側で証明済み・満足可能）:
 - `OixGControl`   ＝ [Buc1] Lemma 3.4（Isa `b1x_G_control` wip:50342;
-  Lean private twin `G_control_bc` @ `7.1-buchholz-fseq-closed`:254、`b1x_triG` は
+  Lean private twin `G_control_bc` @ `Buchholz-1986-3.3`:254、`b1x_triG` は
   `triGBC` と defeq）。
 - `OixSandwichPrefix` ＝ Isa `b1x_sandwich_prefix` (wip:50424;
   private twin `sandwich_prefix_bc`:334)。
@@ -260,7 +260,7 @@ private theorem GBP_subset_GBT_mem_oix {u : ℕ∞} {p : BP} :
       simp only [GBT, gatherBT, Set.mem_setOf_eq] at hx2
       exact Or.inr hx2
 
-/-! ## 5. 残差 `Prop`（generic Buchholz machinery; `7.1-buchholz-fseq-closed` の
+/-! ## 5. 残差 `Prop`（generic Buchholz machinery; `Buchholz-1986-3.3` の
 private twin `G_control_bc`/`sandwich_prefix_bc`/`sandwich_Dprin_bc`、および
 `otx2_align3`/`m_8_7_isOT_BT_snoc_leBT`。いずれも Isabelle 側で証明済み） -/
 
@@ -582,7 +582,7 @@ private theorem core_oix (hAlign : OixAlign3) (hGC : OixGControl)
       exact level_oix hSP hSD qs loOT hiOT pOT ih2 ih3 ih4
 
 /-- **`oix_transport` を discharge**（residual: `OixAlign3`/`OixGControl`/
-`OixSandwichPrefix`/`OixSandwichDpt` — いずれも Isabelle 済、`7.1-buchholz-fseq-closed`
+`OixSandwichPrefix`/`OixSandwichDpt` — いずれも Isabelle 済、`Buchholz-1986-3.3`
 の private twin `sandwich_*_bc`/`G_control_bc` と `otx2_align3` に対応）。 -/
 theorem oix_transport_holds (hAlign : OixAlign3) (hGC : OixGControl)
     (hSP : OixSandwichPrefix) (hSD : OixSandwichDpt) : oix_transport := by

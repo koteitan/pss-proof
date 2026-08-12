@@ -63,7 +63,7 @@ import «7».«7.3-Trans-IncrFirst-Red»
 （`Joints_FirstNodes_basic`／`standard_slice_Red_strongmono`／`Lng_Red_invariance`／
 `ancestor_slice_Red_IncrFirst`／`entry_IncrFirstN_one`／`entry_seg`／`length_seg`／
 `Mark_Trans_repr`）, «7».«7.3-Trans-IncrFirst-Red»（`Trans_Red`）,
-`PSS/Trans.lean`／`PSS/Buchholz.lean`／`PSS/Adm.lean`.
+`PSS/Trans.lean`／`Buchholz-1986/ および Buchholz-rel-ord/`／`PSS/Adm.lean`.
 
 ## 状態
 

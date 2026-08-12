@@ -25,7 +25,7 @@ import «8».«8.7-OT-scb-recursive»
     §8.5 の既存 Prop を使う）。並行 agent が `ExchV_M_tower` を攻めており、
     それが両者を供給する。
   - `e4x_OT_B_operB_numBT` の twin ＝ `buchholz_fseq_closed`
-    (`7.1-buchholz-fseq-closed`:1358, `a ∈ OT_B → a ≠ 0_B → operB a (numBT n) ∈ OT_B`)。
+    (`Buchholz-1986-3.3`:1358, `a ∈ OT_B → a ≠ 0_B → operB a (numBT n) ∈ OT_B`)。
 - 依存（ビルド済みのみ import）: «8».«8.7-otdisp-OTint»（4 分岐 Prop の定義元・
   推移的に `OT_B`/`Trans`/`m_8_7_OT_scb_recursive`）、«8».«8.7-otint-uncond»
   （`oix_transport_uncond`/`oix_transportD`/`b1x_setle`）、«8».«8.5-exchV-props»

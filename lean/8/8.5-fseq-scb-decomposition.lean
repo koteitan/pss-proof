@@ -52,7 +52,7 @@ import «8».«8.4-rm84-rfacts-close»
   «8».«8.5-scb-decompositions»（`scb5Pow`）、推移的に «8».«8.5-Trans-fseq-condV»
   （named Prop `ExchV_nf3x`、`e5x_bodyM` / `e5x_bodyO` / `s85b_W`、
   `transT2` / `transJ0` / `transJm1`）、`PSS.Scb`（`flatBT` / `flatBP` /
-  `scb_decomp`）、`PSS.Buchholz`（`addBT` / `Dprin` / `BZero`）。
+  `scb_decomp`）、`Buchholz-1986 および Buchholz-rel-ord`（`addBT` / `Dprin` / `BZero`）。
 - 訂正: **A29**（`corrections.md`:889、[軽微]、非許容枝 (5) の `n=1` 指数）
   ＋ 本ファイルで顕在化した **`t'` の内部矛盾**（上記 ⚠️）。
 - 状態: GREEN（sorry 0）。named Prop `ExchV_nf3x`（既存、新規残差ではない）上の

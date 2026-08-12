@@ -1,5 +1,5 @@
 import «7».«7.2-scb-unique»
-import «7».«7.1-buchholz-fseq-lt»
+import «Buchholz-1986».«Buchholz-1986-3.2-descent»
 
 /-!
 # §8.7 補題（順序数項の共終数の遺伝性）
@@ -8,7 +8,7 @@ import «7».«7.1-buchholz-fseq-lt»
 - 訂正: なし
 - Isabelle: `p_8_7_OT_dom_hereditary` (isabelle/pss_paper.thy:2273) の証明は
              `m_8_7_OT_dom_hereditary` (isabelle/layerB/pss_wip.thy:17802)
-- 依存: `7.2-scb-unique`（右端 pinning）、`7.1-buchholz-fseq-lt`（`domTag_snoc_bf`）、
+- 依存: `7.2-scb-unique`（右端 pinning）、`Buchholz-1986-3.2-descent`（`domTag_snoc_bf`）、
   `PSS.Flat`（`flatBT_injective`）
 - 状態: ✅ 証明済（sorry 0）
 

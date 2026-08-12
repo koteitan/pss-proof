@@ -1,8 +1,8 @@
 import «8».«8.6-diagSeq-Trans-fseq»
 import «8».«8.6-trailing-principal-annihilable»
 import «8».«8.7-OT-examples»
-import «7».«7.1-buchholz-fseq-lt»
-import «7».«7.1-buchholz-fseq-closed»
+import «Buchholz-1986».«Buchholz-1986-3.2-descent»
+import «Buchholz-1986».«Buchholz-1986-3.3»
 import «7».«7.3-Pred-Trans-descend»
 import «7».«7.3-Trans-preserves-zeroT»
 import «5».«5.3-pred-is-oper1»
@@ -14,7 +14,7 @@ import «5».«5.3-pred-is-oper1»
 - 訂正: **なし（原文は印字どおり真）**。A-番号監査:
   * **A23**（§7.1 脚注 [30] の `x_i` の `D_u` と `b[·]` の転置）は本命題の *主張* には
     かからない。かかるのは `operB`（基本列）の *定義* であり、Lean 側は
-    `PSS/Buchholz.lean` の `bOperCore`/`xseq` で既に A23 訂正後の規則を採用済み。
+    `Buchholz-1986/ および Buchholz-rel-ord/` の `bOperCore`/`xseq` で既に A23 訂正後の規則を採用済み。
     むしろ原文 §8.6 の証明が挙げる 2 ケース（`(D_v 0)[0] = 0` と
     `(D_v 0)[D_{v-1} 0] = D_{v-1} 0`）が A23 訂正の読みの裏づけになっている
     （`corrections.md` A23 の根拠 2）。
@@ -35,7 +35,7 @@ import «5».«5.3-pred-is-oper1»
 - 依存: `8.6-diagSeq-Trans-fseq`（`diagSeq_Trans_fseq`）、`8.1-diagSeq-Trans`
   （`diagSeq_Trans`、上記経由）、`8.6-trailing-principal-annihilable`
   （`trailing_principal_annihilable` ＝ A23 訂正後の零化上界）、`8.7-OT-examples`
-  （`OT_examples_2`）、`7.1-buchholz-fseq-lt`（[Buc1] Lemma 3.2(a)
+  （`OT_examples_2`）、`Buchholz-1986-3.2-descent`（[Buc1] Lemma 3.2(a)
   ＝ `buchholz_fseq_lt`）、`7.3-Pred-Trans-descend`、`7.3-Trans-preserves-zeroT`、
   `5.3-pred-is-oper1`、`7.2-scb-fseq`（`operB_dprin_kind1`、上記経由）。
 - 状態: 🚧 GREEN（sorry 0）。エンジン・対角ホスト実例は**無条件**。原文の完全形

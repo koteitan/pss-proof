@@ -1,16 +1,16 @@
-import «7».«7.1-buchholz-fseq-closed»
-import «7».«7.1-buchholz-fseq-lt»
-import «7».«7.1-lessBT-linear-order»
-import PSS.Buchholz
+import «Buchholz-1986».«Buchholz-1986-3.3»
+import «Buchholz-1986».«Buchholz-1986-3.2-descent»
+import «Buchholz-1986».«Buchholz-1986-2.1-order»
 
 /-!
-# [Buc1] 2.2 キャンペーン — Bachmann（共終性）性質（foundation 2/2）
+# `(OT_B, <)` の整礎性の構文的証明 — Bachmann（共終性）性質
 
-- 原文: [Buc1] §2–§3。原文 §7.1 の基本列 `operB`（訂正 A23 後）。
-  **意味論版 [Buc1] Lemma 2.2（順序数への評価写像 `o`, `ψ_v`, `Ω_u`）は移植対象外**
-  （我々の設定では表現不能）。ここで移植するのは Buchholz–Schütte の
-  distinguished-sets 経路＝`wf {(a,b). a ∈ OT_B ∧ b ∈ OT_B ∧ lessBT a b}` の
-  **cardinal-free** 証明のうち、Bachmann 性質の部分。
+- 対象: PSS 原文が [Buc1] Lemma 2.2 を根拠として用いる別命題、すなわち
+  `(OT_B, <)` の整礎性。原文 §7.1 の基本列 `operB`（訂正 A23 後）を使う。
+  **[Buc1] Lemma 2.2 そのもの**（順序数への評価写像 `o`, `ψ_v`, `Ω_u` に関する
+  意味論的主張）は移植対象外であり、本ファイルの命題でもない。ここで証明するのは
+  Buchholz–Schütte の distinguished-sets 経路による **cardinal-free** な整礎性証明のうち、
+  Bachmann 性質の部分である。
 - Isabelle: `isabelle/layerC/pss_scratch.thy` の y4 ブロック 12493–13677。
   `y4_xseq_Dpt` 12493 / `y4_xseq_TBv` 12502 / `y4_xseq_lt` 12509 / `y4_xseq_mono` 12538 /
   `y4_xseq_le_mono` 12558 / `y4_leBT_addBT_self` 12568 / `y4_leBT_addBT_mono_right` 12578 /
@@ -19,11 +19,11 @@ import PSS.Buchholz
   `y4_N_mono_le` 13034 / `y4_descP_all_le_hd` 13060 / `y4_TBv_of_head` 13084 /
   `y4_leBT_min` 13102 / `y4_bump` 13128 / `y4_operB_domzero_const` 13154 /
   `y4_le_replicate` 13221 / `y4_dfree_suffix` 13242 / `y4_bachmann` 13261。
-- 依存: `PSS.Buchholz`（`operB`/`xseq`/`domTag`/`GBT`/`descP`）、
-  `7.1-buchholz-fseq-lt`（`addBT_lt_right_bf`/`TBv_lt_head_bf`/`leBT_single_index_bf`/
+- 依存: `Buchholz-rel-ord-6`（`operB`/`xseq`）、
+  `Buchholz-1986-3.2-descent`（`addBT_lt_right_bf`/`TBv_lt_head_bf`/`leBT_single_index_bf`/
   `descP_last_head_bf`/`domTag_snoc_bf`/`domTagBP_below_head_bf`）、
-  `7.1-buchholz-fseq-closed`（`buchholz_fseq_closed_general`）、
-  `7.1-lessBT-linear-order`（`lessBT_linear_trans`/`lessBT_linear_trichotomy`）。
+  `Buchholz-1986-3.3`（`buchholz_fseq_closed_general`）、
+  `Buchholz-1986-2.1-order`（`lessBT_linear_trans`/`lessBT_linear_trichotomy`）。
 - 状態: ✅ 証明済（sorry 0、**名前付き仮定 0＝green-modulo ではない**）。
   `operB` の単調性・下界性（Isabelle の `b1x_mono` / `b1x_lowerbound`、
   layerB/pss_wip.thy 50059 / 50147）と `GBT` の三性質（同 50212/50234/50257）、
@@ -313,7 +313,7 @@ private theorem multBT_single_b4 (q : BP) (n : ℕ) :
 
 Isabelle `b1x_mono` (layerB/pss_wip.thy:50059) / `b1x_lowerbound` (同 50147) /
 `b1x_GBT_size` (同 50212) / `b1x_GBT_trans` (同 50234) / `b1x_GBT_antitone` (同 50257)。
-built tree の `7.1-buchholz-fseq-closed` に同内容の `private` 版があるが、
+built tree の `Buchholz-1986-3.3` に同内容の `private` 版があるが、
 `private` は参照できないので公開補題（`addBT_lt_right_bf` 等）から再証明する。 -/
 
 /-- Isabelle `b1x_mono`：`dom a = T_w` 上で `a[·]` は狭義単調。 -/

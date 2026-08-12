@@ -1,5 +1,5 @@
 import «6».«6.8-d1pos-final»
-import «7».«7.1-buchholz-wf»
+import «OTB-well-founded-syntactic».«OTB-well-founded-syntactic-main»
 import «7».«7.3-Trans-leftmost»
 import «8».«8.5-exchV-props»
 import «8».«8.7-OT-examples»
@@ -81,13 +81,13 @@ import «8».«8.7-otmulti-condII-close»
 
 | 部品 | Lean | 仮定 |
 |---|---|---|
-| 整礎性 `wf(OT_B, <_B)` | `buchholz_wf` (`7.1-buchholz-wf`:230) | **ゼロ** |
+| 整礎性 `wf(OT_B, <_B)` | `OT_B_wellFounded` (`OTB-well-founded-syntactic-main`) | **ゼロ** |
 | OT 柱 `Trans(ST_PS) ⊆ OT_B` | `Trans_preserves_OT` (`8.7-Trans-preserves-OT`:489) | `OTdisp_*` 12 本 |
 | 降下柱 `Trans(M[n]) < Trans(M)` | `p_8_7_fseq_descend` (`8.7-fseq-descend`:808) | `FseqDesc_*` 16 本 |
 
-`buchholz_wf` は [Buc1] 補題 2.2 **そのものではない**（あちらは意味論的主張で
+`OT_B_wellFounded` は [Buc1] 補題 2.2 **そのものではない**（あちらは意味論的主張で
 ここでは表現できない）。ここで必要なのは `(OT_B, <_B)` の整礎性という
-**構文的主張**だけで、それは `7.1-buchholz-wf` が仮定ゼロで与えている。
+**構文的主張**だけで、それは `OTB-well-founded-syntactic-main` が仮定ゼロで与えている。
 これは Isabelle の `y4_buc1_2_2_OT_B_wf` (pss_scratch.thy:13700) と同じ立場である
 （「引用の retire」）。
 
@@ -183,7 +183,7 @@ Isabelle の `y5_Fdom` は `ST_PS` 列の非空性のために `y5_take_concat_n
 
 ## 依存（ビルド済みのみ import）
 
-`7.1-buchholz-wf`（`buchholz_wf`）、`8.7-Trans-preserves-OT`
+`OTB-well-founded-syntactic-main`（`OT_B_wellFounded`）、`8.7-Trans-preserves-OT`
 （`OTdisp_*` 12 本 / `Trans_preserves_OT`）、`8.7-fseq-descend`
 （`FseqDesc_*` 16 本 / `p_8_7_fseq_descend`）、`8.7-fseq-descend-props`＋`-props2`
 （配線 13 本）、`7.3-Trans-leftmost`（`m_7_3_Trans_leftmost_2_dropin`: 未配線
@@ -397,12 +397,12 @@ private theorem PSSstep_invImage_term {N M : PS}
 /-- Isabelle `y5_PSS_wf` (pss_scratch.thy:14197): `wf y3_PSSrel`。
 
 `PSSstep` を `Trans` で `(OT_B, <_B)` に引き戻す（Isabelle の
-`wf_subset[OF wf_inv_image[OF wfR] sub]`）。整礎性 `buchholz_wf` は**仮定ゼロ**
+`wf_subset[OF wf_inv_image[OF wfR] sub]`）。整礎性 `OT_B_wellFounded` は**仮定ゼロ**
 なので、この定理の仮定は 2 本柱の残差 `H` だけである。 -/
 theorem PSS_wf : WellFounded PSSstep := by
   have hinv : WellFounded
       (InvImage (fun a b : BT => a ∈ OT_B ∧ b ∈ OT_B ∧ lessBT a b = true) Trans) :=
-    InvImage.wf Trans buchholz_wf
+    InvImage.wf Trans OT_B_wellFounded
   refine ⟨fun M => ?_⟩
   induction M using hinv.induction with
   | _ x IH => exact Acc.intro x (fun y hy => IH y (PSSstep_invImage_term hy))

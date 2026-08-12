@@ -6,9 +6,9 @@ import «6».«6.5-Red-Pred-commute»
 import «6».«6.6-one-column»
 import «6».«6.6-reduced-leftend»
 import «6».«6.7-standard-P-components»
-import «7».«7.1-buchholz-fseq-lt»
-import «7».«7.1-buchholz-wf-bachmann»
-import «7».«7.1-lessBT-linear-order»
+import «Buchholz-1986».«Buchholz-1986-3.2-descent»
+import «OTB-well-founded-syntactic».«OTB-well-founded-syntactic-cofinality»
+import «Buchholz-1986».«Buchholz-1986-2.1-order»
 import «7».«7.3-Trans-preserves-zeroT»
 import «7».«7.3-Trans-preserves-monoT»
 import «7».«7.3-Pred-Trans-descend»
@@ -63,9 +63,9 @@ oper N m ≠ Pred N → Trans (oper N m) ∈ OT_B` で、**この 3 本をすべ
 mono 成分（`Lng > 1`）は **290/290 が条件 I**（内部枝 III/IV/V は経験的に空）だが、
 これは移植可能な定理ではない。零脚も 42/42 で `Trans (L[m])` は数項。
 
-- 依存（ビルド済みのみ import）: `7.1-buchholz-fseq-lt`（`buchholz_fseq_lt`）、
-  `7.1-buchholz-fseq-closed`（`buchholz_fseq_closed`）、`7.1-lessBT-linear-order`
-  （`lessBT_linear_trans`）、`7.1-buchholz-wf-bachmann`（`y4_descP_*`）、
+- 依存（ビルド済みのみ import）: `Buchholz-1986-3.2-descent`（`buchholz_fseq_lt`）、
+  `Buchholz-1986-3.3`（`buchholz_fseq_closed`）、`Buchholz-1986-2.1-order`
+  （`lessBT_linear_trans`）、`OTB-well-founded-syntactic-cofinality`（`y4_descP_*`）、
   `7.3-Trans-preserves-zeroT` / `7.3-Trans-preserves-monoT`（`m_7_3_Trans_monoT`）、
   `7.3-Pred-Trans-descend`、`6.2-*`（`P_*` 機構）、`6.6-one-column`、
   `6.6-reduced-leftend`（`RTPS_TPS`）、`6.7-standard-P-components`（`SkTPS_*`）、

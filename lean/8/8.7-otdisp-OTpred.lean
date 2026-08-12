@@ -1,5 +1,5 @@
-import PSS.Buchholz
-import «7».«7.1-lessBT-linear-order»
+import «Buchholz-rel-ord».«Buchholz-rel-ord-6»
+import «Buchholz-1986».«Buchholz-1986-2.1-order»
 
 /-!
 # §8.7 `OTdisp_OTpred` へ向けた Brick A — 右スパイン un-insertion の `OT` 代数
@@ -18,9 +18,9 @@ import «7».«7.1-lessBT-linear-order»
   * `od4_site_G`（:327）→ `od4_site_G_op`
   * `od4_R_isOT`（:359）→ `od4R_isOT`
   * `od4_R_OT_B`（:394）→ `od4R_OT_B`
-- 依存（ビルド済みのみ import）: `PSS.Buchholz`（`BT`/`BP`/`lessBT`/`leBT`/
+- 依存（ビルド済みのみ import）: `Buchholz-1986 および Buchholz-rel-ord`（`BT`/`BP`/`lessBT`/`leBT`/
   `GBT`/`GBP`/`descP`/`isOT_BT`/`isOT_BP`/`OT_B`/`T_B`）、
-  `7.1-lessBT-linear-order`（`lessBT_linear_trans`／`lessBT_linear_irrefl`）。
+  `Buchholz-1986-2.1-order`（`lessBT_linear_trans`／`lessBT_linear_irrefl`）。
 - 状態: 🤖 GREEN（`sorry` 0、axioms = propext/Classical.choice/Quot.sound）。
   **`OTdisp_OTpred` は本ファイルでは閉じていない**（Brick B–E が未移植）。
 

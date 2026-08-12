@@ -1,6 +1,6 @@
 import «8».«8.7-otint-transport»
 import «8».«8.7-otpred-brickB»
-import «7».«7.1-buchholz-fseq-closed»
+import «Buchholz-1986».«Buchholz-1986-3.3»
 
 /-!
 # PSS.«8».«8.7-otint-uncond» — `oix_transport` の無条件化
@@ -19,7 +19,7 @@ discharge し、無条件版 `oix_transport_uncond : oix_transport` を得る。
 
 ## 討伐の手段
 
-3 本の sandwich/G-control residual は `7.1-buchholz-fseq-closed` の PUBLIC twin
+3 本の sandwich/G-control residual は `Buchholz-1986-3.3` の PUBLIC twin
 `G_control_bc`(:254) / `sandwich_prefix_bc`(:334) / `sandwich_Dprin_bc`(:379) と
 verbatim 一致（`b1x_triG` は `triGBC` と defeq、`b1x_setle` は `setLeBC` と defeq）。
 `OixAlign3` のみ本ファイルで flatinj toolkit を用いて移植: `8.7-otpred-brickB` の
@@ -32,7 +32,7 @@ PUBLIC な `otx2_BP_prefix`/`otx2_peel`/`otx2_top_shape` の上に 3 スロッ�
   透過的に `8.7-otint-transport-prims`（`b1x_triG`/`b1x_setle`）。
 - `8.7-otpred-brickB`: `otx2_BP_prefix`/`otx2_peel`/`otx2_top_shape`（PUBLIC）。
   透過的に `PSS.Flat`（`flatBP_injective`/`flatBP_length_ge_two`）。
-- `7.1-buchholz-fseq-closed`: `triGBC`/`G_control_bc`/`sandwich_prefix_bc`/`sandwich_Dprin_bc`。
+- `Buchholz-1986-3.3`: `triGBC`/`G_control_bc`/`sandwich_prefix_bc`/`sandwich_Dprin_bc`。
 
 ## 状態
 

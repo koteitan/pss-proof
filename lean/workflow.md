@@ -6,7 +6,7 @@
 
 ## 0. 現在地（2026-07-18 Wave R 継続・Codex 作業中）
 
-- ✅ 定義層 / §5 / §6 / §7 / §8.1 は完了。`7.1-buchholz-wf` と
+- ✅ 定義層 / §5 / §6 / §7 / §8.1 は完了。`OTB-well-founded-syntactic-main` と
   `8.1-condI-III-c1-around` part (4) も既に無条件で閉じた。
 - §8.2 の subexpr/strongmono/rightmost-parent は完了。条件(V) terminal-slice は
   `8.2-condV-terminal-slice-Trans-close` で無条件に閉じた。残る同節の原文定理は
@@ -162,7 +162,8 @@ dispatcher。先に dispatcher を named-仮定 modulo で移植し、交換則
 （`y3t_toplevel_OT_tail_annihilate`、layerC:19355）を使うので ↓ の決定後。
 
 ### 決定済み（2026-07-16 ユーザー）
-- **`7.1-buchholz-wf`（[Buc1] Lemma 2.2 = OT_B 整礎性）は Lean でも自前証明する**。
+- **`OTB-well-founded-syntactic-main`（PSS 原文が [Buc1] Lemma 2.2 を根拠として用いる
+  別命題＝`OT_B` 整礎性）は Lean でも自前証明する**。
   Isabelle の y4 campaign（`y4_buc1_2_2_OT_B_wf`、layerC:13700、`y4_bachmann` 核の
   W-階層帰納。y4 block ≈ layerC 12493–13700 ＋ y3 W-機構 11247–11777、~2k 行）を移植。
   §8.7 の wf 帰納系（tail-annihilable・termination）が依存するため、

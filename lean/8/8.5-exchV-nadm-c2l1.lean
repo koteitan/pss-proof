@@ -58,7 +58,7 @@ witness/factAB gated）に依存する深い leaf なので本ファイルでは
 `ancestor_basic_1`/`mono_hasParent_row0`/`STPS_RTPS`/`STPS_TPS` を推移的に供給）,
 `PSS/Trans.lean`（`transC2`/`transC2Core`/`transV`/`transT2`/`transJ0`/`transJm1`/
 `lastIdx`/`lastParent`/`bpHeadV`/`transCondI…VI`）, `PSS/Adm.lean`（`adm`/`Adm`）,
-`PSS/Buchholz.lean`（`addBT`/`BZero`/`Dprin`/`PB`）.
+`Buchholz-1986/ および Buchholz-rel-ord/`（`addBT`/`BZero`/`Dprin`/`PB`）.
 
 ## 状態
 

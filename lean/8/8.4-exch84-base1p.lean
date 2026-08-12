@@ -1,4 +1,4 @@
-import «7».«7.1-lessBT-linear-order»
+import «Buchholz-1986».«Buchholz-1986-2.1-order»
 import «8».«8.4-exch84-regsp»
 import «8».«8.4-exch84-base0»
 import «8».«8.5-exchV-props»
@@ -52,7 +52,7 @@ scb 分解 `c2_1`（`s84x_N`）と `c5_1`（`s84x_Np`）から `bpHeadT` の fla
   `add_scb_marked`/`add_scb_replace_last`・`scb_unique_decomp_unconditional`・
   `scbext_lessBT`・`unflatBT_flat`・`lessBT_addBT_self`・`STPS_RTPS`/`RTPS_TPS`・
   `addBT_mem_T_B`）、«8».«8.4-exch84-base0»（`Base0_A0bridge`）、
-  «8».«8.5-exchV-props»（`c1_shape_holds`）、«7».«7.1-lessBT-linear-order»
+  «8».«8.5-exchV-props»（`c1_shape_holds`）、«Buchholz-1986».«Buchholz-1986-2.1-order»
   （`lessBT_linear_irrefl`）。
 - 状態: 🤖 GREEN-MODULO（sorry 0、axioms = propext/Classical.choice/Quot.sound）。
   残差 named Prop = `Exch84_scbDecompPkg`（REGS/REGSP scb 分解束）、

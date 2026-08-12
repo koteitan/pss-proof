@@ -224,7 +224,7 @@ parent/Lng 形に落としてから作業する。
 - ✅ **§6 ペア数列の基本性質**[r61] — 全 8 節 ✅（詳細注釈は畳み込みで削除、
   各節の勝ち筋・罠は §3/§4/§4.5 と git 履歴 d96fb0b 以前の本ファイルを参照）。Isa: `m_6_*`。
 
-- ✅ **§7 Buchholz の表記系への翻訳**[r37] — 全 4 節＋[Buc1] 3.2a/3.2 ✅、`7.1-buchholz-wf` も
+- ✅ **§7 Buchholz の表記系への翻訳**[r37] — 全 4 節＋[Buc1] 3.2a/3.2 ✅、`OTB-well-founded-syntactic-main` も
   自前証明済（仮定 0）。詳細は git 履歴参照。Isa: `m_7_*`。
 
 - ✅ **§8 停止性**[r197] — 全 7 節 ✅。`8.4-part2-close` の
@@ -496,7 +496,7 @@ parent/Lng 形に落としてから作業する。
     ⑧OTint transport 心臓部（`8.7-otint-transport`、oix_transport/oix_transportD 定義
     ＋otx2_/otx3_ 全 assembly＋btWeight 帰納 otx3_core）。`oix_transport_holds` は 4 Prop
     modulo — **うち 3 本（OixSandwichPrefix/OixSandwichDpt/OixGControl）は
-    7.1-buchholz-fseq-closed の private 双子（sandwich_prefix_bc:334/sandwich_Dprin_bc:379/
+    Buchholz-1986-3.3 の private 双子（sandwich_prefix_bc:334/sandwich_Dprin_bc:379/
     G_control_bc:254）＝promotion だけで落ちる**。残 1=OixAlign3（otx2_align3 wip:114296、
     flatinj toolkit ~200L）。OTdisp_OTint 本体はさらに下流の 4 hasParent legs
     （8.7-otdisp-OTint 宣言済、oix_OTint_condV_adm wip:111599 等）。

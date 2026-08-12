@@ -4,7 +4,7 @@ import «6».«6.6-one-column»
 import «6».«6.6-P-condAB»
 import «6».«6.6-reduced-iff-condAB»
 import «6».«6.7-standard-reduced»
-import «7».«7.1-buchholz-fseq-closed»
+import «Buchholz-1986».«Buchholz-1986-3.3»
 import «7».«7.3-two-column»
 import «7».«7.3-Trans-preserves-zeroT»
 import «8».«8.1-diagSeq-Trans»
@@ -29,7 +29,7 @@ import «8».«8.7-OT-examples»
   `ST_PS` 上の `Trans` が [Buc1] の順序数項に落ちることを言う。
 - 依存（ビルド済みのみ import）: `8.1-diagSeq-Trans`（`diagSeq_Trans`
   ＝ `m_8_1_diagSeq_Trans`）、`8.7-OT-examples`（`OT_examples_1`/`OT_examples_2`
-  ＝ `m_8_7_OT_ex1`/`m_8_7_OT_ex2`）、`7.1-buchholz-fseq-closed`
+  ＝ `m_8_7_OT_ex1`/`m_8_7_OT_ex2`）、`Buchholz-1986-3.3`
   （`buchholz_fseq_closed` ＝ [Buc1] Lemma 3.3、`e4x_OT_B_operB_numBT` の非零脚）、
   `8.2-subexpr-adm0-ctx`（`condII_or_condIV` ＝ `m_8_2_condII_or_condIV`）、
   `6.6-P-condAB`（`mono_hasParent_row0` ＝ `monoT_hasParent0_last`）、

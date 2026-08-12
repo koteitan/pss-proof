@@ -4,7 +4,7 @@ import «8».«8.4-exch84-mcond»
 import «7».«7.3-Pred-Trans-descend»
 import «7».«7.3-two-column»
 import «7».«7.3-Trans-IncrFirst-Red»
-import «7».«7.1-lessBT-linear-order»
+import «Buchholz-1986».«Buchholz-1986-2.1-order»
 import «8».«8.2-condV-terminal-slice-Trans»
 import «8».«8.1-condI-masterCF»
 import «8».«8.2-strongmono-slice»
