@@ -8,7 +8,7 @@ P進大好きbot 氏のブログ記事「ペア数列の停止性」（巨大数
 
 | ディレクトリ | 内容 | 状態 |
 |---|---|---|
-| [`isabelle/`](isabelle/) | Isabelle/HOL 版 | **完了**（停止性を仮定ゼロ・`sorry` ゼロで証明） |
+| [`isabelle/`](isabelle/) | Isabelle/HOL 版 | **完了**（停止性を `sorry` ゼロで証明） |
 | [`corrections/`](corrections/) | Isabelle/HOL の反例・経験検証資料（独立セッション） | 機械検査済みアーカイブ |
 | [`memo/`](memo/) | 停止性に採用しなかった Isabelle/HOL 証明キャンペーン | 機械検査済みアーカイブ |
 | [`lean/`](lean/) | Lean 4 版（原文の命題 1 つ = ファイル 1 つ） | **作業中** |
