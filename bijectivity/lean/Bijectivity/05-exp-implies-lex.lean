@@ -50,6 +50,15 @@ theorem expand_lePS : ∀ (a : List ℕ) (N : PS), (∀ n ∈ a, 1 ≤ n) → ex
       refine lePS_trans (expand_lePS a (oper N n) ?_) (oper_lePS N n (ha n (by simp)))
       intro m hm; exact ha m (by simp [hm])
 
+/-- \(\textrm{Lng}(N)\leq1\) なら展開はすべて自明で、反復しても \(N\) のまま。 -/
+theorem expand_of_lng_le_one : ∀ (a : List ℕ) {N : PS}, Lng N ≤ 1 → expand N a = N
+  | [], _, _ => rfl
+  | n :: a, N, hN => by
+      have hop : oper N n = N := by
+        have : Lng N - 1 = 0 := by omega
+        simp [oper, this]
+      rw [expand, hop, expand_of_lng_le_one a hN]
+
 /-- 原文の命題（辞書式的順序が基本列的順序を含意すること）の逐語形。
 
 上記のとおり \(N=((0,0))\) が反例なので UNPROVEN STUB として残す。 -/

@@ -10,6 +10,10 @@ import Bijectivity.«12-lex-implies-exp»
 原文の証明:
 > 基本列的順序が辞書式的順序を含意すること 及び
 > 辞書式的順序が基本列的順序を含意すること より即座に従う。□
+
+なお原文が引く「辞書式的順序が基本列的順序を含意すること」は逐語形では偽なので
+（`05-exp-implies-lex.lean` の訂正候補を参照）、ここではその訂正形を用い、
+\(\textrm{Lng}(N)\leq1\) の場合は展開が自明であることから直接処理する。
 -/
 
 namespace Bijectivity
@@ -28,6 +32,8 @@ theorem lePS_iff_leExpPS {M N : PS} (hM : CTPS M) (hN : CTPS N) :
     cases a with
     | nil => exact Or.inl (by simpa [expand] using he)
     | cons n a =>
-        exact Or.inr (ltExpPS_ltPS hM hN ⟨n :: a, by simp, ha, he⟩)
+        rcases Nat.lt_or_ge 1 (Lng N) with hN1 | hN1
+        · exact Or.inr (ltExpPS_ltPS_of_lng hN1 ⟨n :: a, by simp, ha, he⟩)
+        · exact Or.inl (by rw [he, expand_of_lng_le_one _ hN1])
 
 end Bijectivity
