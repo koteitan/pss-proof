@@ -61,7 +61,9 @@ Naruyoko,「ペア数列システムの停止性証明に用いられた変換�
 `18` 命題（\(\textrm{Trans}\) が順序を保つこと）、
 `19` 補題（対応する項の上界未満の字母）、
 `20` 命題（対応する項の上界）(1)(2)、
-`23` 定理（変換写像の全単射性）の同型写像部分 `trans_order_iso`。
+`21`,`22`,`23` の**全域性（`MapsTo`）と単射性（`InjOn`）**、
+`23` 定理（変換写像の全単射性）の同型写像部分 `trans_order_iso` と
+定義域・値域の被覆 `ctps_cover` / `transRange_cover`。
 
 すなわち **ペア数列上の順序論（`01`–`14`）は完了**しており、
 \(\leq_{\textrm{PS}}\) と \(\leq_{\textrm{PS}[]}\) が \(CT_{\textrm{PS}}\) 上で
@@ -72,16 +74,35 @@ M<_{\textrm{PS}}N\iff\textrm{Trans}(M)<_{\textrm{B}}\textrm{Trans}(N)
 \quad(M,N\in CT_{\textrm{PS}})
 \]
 
-が機械検証されている（主定理の単射性・順序同型の部分）。`18` は既存の
-`lean/8/8.7-termination.lean` の `Trans_fseq_descend`（仮定 0、`sorry` 0）を用いる。
+が機械検証されている。さらに主定理については
+
+\[
+\textrm{Trans}:CT_{\textrm{PS}}\longrightarrow
+\{t\mid t\in OT_{\textrm{B}\omega}\land t<_{\textrm{B}}D_0D_\omega0\}
+\]
+
+が**well-defined かつ単射な順序同型埋め込み**であることが、外部引用ゼロ・`sorry` ゼロで
+証明されている（`trans_mapsTo` / `trans_injOn` / `trans_order_iso`）。
+`18` は既存の `lean/8/8.7-termination.lean` の `Trans_fseq_descend`（仮定 0、`sorry` 0）、
+`23` の全域性は同 `Trans_STPS_OT_B` を用いる。
+
+残るのは**全射性だけ**であり、依存は
+
+```
+23 SurjOn ← 22(2) SurjOn ← 21 SurjOn ← { 15 前半, 17 } ,  17 ← 16
+```
+
+と一本道に整理済み（帰着は証明済み。`23` の全射性は原文どおり 系（ペア数列の解析）(2)
+へ機械的に帰着してある）。
 
 残りは言明を逐語転記した上で `sorry` を置いてある（各ファイルに原文の証明を引用済み）。
 
 | | 残っている部分 |
 |---|---|
-| `15` 後続な項の基本列 | 前半のみ。\(\textrm{dom}(\textrm{Trans}(M))=1\Rightarrow M_{\textrm{Lng}(M)-1}=(0,0)\)（値の形からペア数列の形への読み戻し）が repo に無い。後半は証明済み |
-| `16` 基本列の関係 | [1] の条件 (I)–(VI) の下での \(\textrm{Trans}\) と基本列の交換関係を全部束ねる必要がある |
-| `17`,`21`,`22`,`23` の全射性 | 順序数側（`Cited.lean` の外部引用、[4][5] の補題）。評価写像 \(o\) は `axiom` なので、これらは追加の外部引用を `Cited.lean` に足さない限り閉じない |
+| `15` 後続な項の基本列 | **前半のみ**。\(\textrm{dom}(\textrm{Trans}(M))=1\Rightarrow M_{\textrm{Lng}(M)-1}=(0,0)\)（\(\textrm{Trans}\) の値の形からペア数列の形への読み戻し）。原文は [1] の 系（\(\textrm{Trans}\) と非可算基数の関係）から導くが、その系は repo に移植されていない。後半 `successor_fseq_of_last_zero` は証明済み |
+| `16` 基本列の関係 | [1] の条件 (I)–(VI) の下での \(\textrm{Trans}\) と基本列の交換関係（`lean/8/8.1`–`8.6`）を全部束ねる必要がある |
+| `17` 基本列の収束性 | `16` 待ち。加えて [5] Theorem 1.4(a) / Lemma 1.6 を `Cited.lean` に足す必要がある |
+| `21`,`22`,`23` の全射性 | 上の一本道のとおり `15` 前半と `17` 待ち。加えて [4] Lemma 2.2(c) の全射側・2.3(b)（\(\textrm{dom}=\textrm{cof}\)）を `Cited.lean` に足す必要がある |
 
 ## 原文への訂正案
 
