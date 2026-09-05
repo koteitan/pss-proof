@@ -39,70 +39,68 @@ Naruyoko,「ペア数列システムの停止性証明に用いられた変換�
 外部引用を `axiom` として 1 ファイルに隔離してあるので、各定理が何を仮定しているかは
 `#print axioms` で機械的に追跡できる。
 
-## 証明済み
+## 状態: **`16` 以外は全部証明済み**
 
-`#print axioms` が標準 3 公理のみ（`sorryAx` なし）:
+`bijectivity/lean/Bijectivity/` に残る `sorry` は **3 か所だけ**である。
 
-`01` 系（辞書式的順序が辞書式順序であること）、
-`02` 系（辞書式的順序の線形性）、
-`03` 命題（基本列的順序が推移性）、
-`04` 命題（基本列の辞書式的縮小性）、
-`05` 命題（辞書式的順序が基本列的順序を含意すること）**の訂正形**、
-`06` 命題（基本列の切片の不変性）、
-`07` 命題（展開と `Pred` の関係）、
-`08` 補題（最左列の不変性）、
-`09` 補題（標準形と基本列的順序の関係）、
-`10` 命題（可算な標準形の起源）、
-`11` 補題（標準形の始切片への経路）**の訂正形**、
-`12` 命題（基本列的順序が辞書式的順序を含意すること）、
-`13` 系（順序の等価性）、
-`14` 系（順序の線形性）、
-`15` 命題（後続な項の基本列）、
-`18` 命題（\(\textrm{Trans}\) が順序を保つこと）、
-`19` 補題（対応する項の上界未満の字母）、
-`20` 命題（対応する項の上界）(1)(2)、
-`21`,`22`,`23` の**全域性（`MapsTo`）と単射性（`InjOn`）**、
-`23` 定理（変換写像の全単射性）の同型写像部分 `trans_order_iso` と
-定義域・値域の被覆 `ctps_cover` / `transRange_cover`。
+| 場所 | 種類 |
+|---|---|
+| `16-fseq-relation.lean` | **唯一の未証明命題**（下記） |
+| `05-exp-implies-lex.lean` | 逐語形が**偽**（訂正 `B1`、訂正形は証明済み・何からも使われない） |
+| `11-path-to-initial-segment.lean` | 逐語形が**偽**（訂正 `B2`、同上） |
 
-すなわち **ペア数列上の順序論（`01`–`14`）は完了**しており、
-\(\leq_{\textrm{PS}}\) と \(\leq_{\textrm{PS}[]}\) が \(CT_{\textrm{PS}}\) 上で
-一致する全順序であること、および
+したがって原文の 23 命題は、**`16` を仮定すれば全部証明されている**。
+主定理 `trans_bijOn` の `#print axioms` は `sorryAx`（`16` 由来のみ）と
+`Cited.lean` の外部引用と標準 3 公理だけを挙げる。
 
-\[
-M<_{\textrm{PS}}N\iff\textrm{Trans}(M)<_{\textrm{B}}\textrm{Trans}(N)
-\quad(M,N\in CT_{\textrm{PS}})
-\]
+### 外部引用に依存しない部分
 
-が機械検証されている。さらに主定理については
+`01`–`16` のうち `16` 以外、および `18`,`19`,`20`,`23` の同型写像・全域性・単射性は
+**外部引用ゼロ・`sorry` ゼロ**である。特に
 
 \[
 \textrm{Trans}:CT_{\textrm{PS}}\longrightarrow
 \{t\mid t\in OT_{\textrm{B}\omega}\land t<_{\textrm{B}}D_0D_\omega0\}
 \]
 
-が**well-defined かつ単射な順序同型埋め込み**であることが、外部引用ゼロ・`sorry` ゼロで
-証明されている（`trans_mapsTo` / `trans_injOn` / `trans_order_iso`）。
-`18` は既存の `lean/8/8.7-termination.lean` の `Trans_fseq_descend`（仮定 0、`sorry` 0）、
-`23` の全域性は同 `Trans_STPS_OT_B` を用いる。
+が **well-defined かつ単射な順序同型埋め込み**であること
+（`trans_mapsTo` / `trans_injOn` / `trans_order_iso`）は完全に機械検証されている。
 
-残るのは**全射性だけ**であり、依存は
+### 外部引用に依存する部分
 
-```
-23 SurjOn ← 22(2) SurjOn ← 21 SurjOn ← 17 ← 16
-```
+順序数側（`17`,`21`,`22`,`23` の全射性）は `Cited.lean` の 8 本の `axiom` を使う。
+いずれも原文が [Buc1]/[Buc2] から引くと明記している事実で、原文が使う形のまま置いてある。
 
-と一本道に整理済み（帰着は証明済み。`23` の全射性は原文どおり 系（ペア数列の解析）(2)
-へ機械的に帰着してある）。
-
-残る `sorry` は下表の 4 か所と、逐語形が偽であることが分かっている
-`05`/`11` の逐語形（`B1`/`B2`、訂正形は証明済み）だけである。
-
-| | 残っている部分 |
+| axiom | 出典 |
 |---|---|
-| `16` 基本列の関係 | **唯一の一次的な穴**。[1] の 条件 (I)–(VI) の下での \(\textrm{Trans}\) と基本列の交換関係のうち、結論 **(1)–(3)** が要る。Lean 側の §8 は停止性に必要な**降下側だけ**を移植しており（`8/8.3-Trans-fseq-condII.lean` の MODELLING NOTE 参照）、条件 (I) 以外は (1)–(3) が deferred のまま。`8/8.7-fseq-descend.lean` の `FseqDesc_exchI`〜`exchVI` は無条件に証明済みだが、向きが逆（`Trans(M[n]) ≤ Trans(M)[k]`）で `16` には使えない |
-| `17` 基本列の収束性 | `16` 待ち。加えて [5] Theorem 1.4(a) / Lemma 1.6 を `Cited.lean` に足す必要がある |
-| `21`,`22`,`23` の全射性 | 上の一本道のとおり `17` 待ち。加えて [4] Lemma 2.2(c) の全射側・2.3(b)（\(\textrm{dom}=\textrm{cof}\)）を `Cited.lean` に足す必要がある |
+| `o` / `psi0psiOmega0` / `o_DzeroDomegaZero` | [Buc1] の評価写像と \(\psi_0\psi_\omega0\) |
+| `o_lt_of_lessBT` / `o_surj_below` | [Buc1] Lemma 2.2(c)（\(o\) が順序同型） |
+| `o_BZero` / `o_DzeroZero` / `o_addBT` | [Buc1] の加法標準形 |
+| `o_iSup_operB` | [Buc2] Theorem 1.4(a) / Lemma 1.6 |
+
+原文が全射性で引く **[3] の命題 11 は公理化していない**。非有界性・
+命題（後続な項の基本列）・命題（基本列の収束性）から超限帰納で直接証明してある
+（`21-ordinal-bijectivity.lean` の `oTrans_surjOn`）。
+
+### 残る `16`
+
+原文: 任意の \(M\in ST_{\textrm{PS}}\) と \(m\) に対し、
+\(\textrm{dom}(\textrm{Trans}(M))=\omega\) ならばある \(n\in\mathbb{N}_+\) が存在して
+\(\textrm{Trans}(M)[m]\leq_{\textrm{B}}\textrm{Trans}(M[n])\)。
+
+必要なのは [1] の 条件 (I)–(VI) の下での \(\textrm{Trans}\) と基本列の交換関係のうち
+
+* 条件 (I) → 結論 (1)（**Lean 済**: `8/8.1-Trans-fseq-condI.lean` の `p_8_1_Trans_fseq_condI`）
+* 条件 (II) → 結論 (2)（未移植）
+* 条件 (III)/(IV) → 結論 (3)（未移植）
+* 条件 (V) → 結論 (3)（未移植）
+* 条件 (VI) → 結論 (2)（未移植）
+
+の 5 本。Lean 側の §8 は停止性に必要な**降下側だけ**を移植しており
+（`8/8.3-Trans-fseq-condII.lean` の MODELLING NOTE）、条件 (I) 以外は (1)–(3) が
+deferred のままである。`8/8.7-fseq-descend.lean` の `FseqDesc_exchI`〜`exchVI` は
+無条件に証明済みだが**向きが逆**（`Trans(M[n]) ≤ Trans(M)[k]`）で `16` には使えない。
+Isabelle 側には `y3j_p_8_3_condII_exchange_1/2/3` 等の形で存在するので、移植が残作業。
 
 ## 原文への訂正案
 

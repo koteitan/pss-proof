@@ -196,6 +196,113 @@ theorem gather_bound_all_zero : ∀ (ps : List BP), isOT_BPList ps = true →
         · exact lessBT_linear_trans _ _ _ (List.all_eq_true.mp hall x hx'') hlta
       · exact gather_bound_all_zero rest hOT'.2 (fun p hp => hb p (by simp [hp])) x hx'
 
+/-! ## `dom` の値の分類（`21` で使う） -/
+
+/-- 上界 \(D_0D_\omega0\) 未満なら、主項列の添字はすべて 0。 -/
+theorem index_zero_of_lt_bound : ∀ (ps : List BP), descP ps = true →
+    lessBT (BT.trm ps) DzeroDomegaZero = true → ∀ p ∈ ps, dbIndex p = 0
+  | [], _, _ => by simp
+  | .db w a :: rest, hdesc, h => by
+      have hhead : w = 0 ∧ lessBT a DomegaZero = true := by
+        rcases lessBP_split (lessBPList_single_cons h) with hlt | ⟨h1, h2⟩
+        · exact absurd hlt (by simp)
+        · exact ⟨h1, h2⟩
+      intro p hp
+      rcases List.mem_cons.mp hp with rfl | hp'
+      · exact hhead.1
+      · cases p with
+        | db w' a' =>
+            have hle := descP_head_bound _ _ hdesc _ hp'
+            rcases prin_leBT_split hle with hlt' | ⟨h1, _⟩
+            · rw [hhead.1] at hlt'; exact absurd hlt' (by simp)
+            · rw [h1]; exact hhead.1
+
+/-- 主項列の `domTag` は末尾の主項で決まる。 -/
+theorem domTagList_eq_last : ∀ (ps : List BP) (h : ps ≠ []),
+    domTagList ps = domTagBP (ps.getLast h)
+  | [_], _ => rfl
+  | p :: q :: rest, _ => by
+      show domTagList (q :: rest) = _
+      rw [domTagList_eq_last (q :: rest) (by simp)]
+      congr 1
+
+mutual
+
+/-- 主項の `dom` は空にならない。 -/
+theorem domTagBP_ne_empty : ∀ p : BP, domTagBP p ≠ BDom.empty
+  | .db v b => by
+      by_cases hb : b = BZero
+      · subst hb
+        by_cases hv : v = 0
+        · subst hv; simp [domTagBP]
+        · by_cases hv2 : v = ⊤
+          · subst hv2; simp [domTagBP]
+          · simp [domTagBP, hv, hv2]
+      · have hbne : (b == BZero) = false := by simpa using hb
+        have hd : domTag b ≠ BDom.empty := domTag_ne_empty b hb
+        cases hdd : domTag b with
+        | empty => exact absurd hdd hd
+        | zeroOnly => simp [domTagBP, hbne, hdd]
+        | naturals => simp [domTagBP, hbne, hdd]
+        | below u => by_cases hle : v ≤ (u : ℕ∞) <;> simp [domTagBP, hbne, hdd, hle]
+
+/-- 非零項の `dom` は空にならない。 -/
+theorem domTag_ne_empty : ∀ (t : BT), t ≠ BZero → domTag t ≠ BDom.empty
+  | .trm ps, hne => by
+      have hps : ps ≠ [] := by
+        intro h; exact hne (by simp [BZero, h])
+      exact domTagList_ne_empty ps hps
+
+/-- 非空主項列の `dom` は空にならない。 -/
+theorem domTagList_ne_empty : ∀ (ps : List BP), ps ≠ [] → domTagList ps ≠ BDom.empty
+  | [], h => absurd rfl h
+  | [p], _ => domTagBP_ne_empty p
+  | _ :: q :: rest, _ => domTagList_ne_empty (q :: rest) (by simp)
+
+end
+
+/-- \(\textrm{dom}(t)=\varnothing\) は \(t=0\) と同値。 -/
+theorem domTag_empty_iff (t : BT) : domTag t = BDom.empty ↔ t = BZero := by
+  constructor
+  · intro h
+    by_contra hne
+    exact domTag_ne_empty t hne h
+  · rintro rfl; rfl
+
+/-- 上界 \(D_0D_\omega0\) 未満の非零な順序数項の \(\textrm{dom}\) は
+\(1\) か \(\omega\) のいずれか。 -/
+theorem domTag_cases_of_bound {t : BT} (hOT : t ∈ OT)
+    (h : lessBT t DzeroDomegaZero = true) (hne : t ≠ BZero) :
+    domTag t = BDom.zeroOnly ∨ domTag t = BDom.naturals := by
+  cases t with
+  | trm ps =>
+    have hps : ps ≠ [] := by
+      intro hnil; exact hne (by simp [BZero, hnil])
+    have hOT' : isOT_BPList ps = true ∧ descP ps = true := by
+      have hOTt : isOT_BT (BT.trm ps) = true := hOT
+      simpa [isOT_BT, Bool.and_eq_true] using hOTt
+    have hlastmem : ps.getLast hps ∈ ps := List.getLast_mem hps
+    have hidx : dbIndex (ps.getLast hps) = 0 :=
+      index_zero_of_lt_bound ps hOT'.2 h _ hlastmem
+    have hdl : domTag (BT.trm ps) = domTagBP (ps.getLast hps) := domTagList_eq_last ps hps
+    rw [hdl]
+    cases hq : ps.getLast hps with
+    | db w b =>
+      have hw : w = 0 := by rw [hq] at hidx; exact hidx
+      subst hw
+      by_cases hb : b = BZero
+      · subst hb; left; simp [domTagBP]
+      · have hbne : (b == BZero) = false := by simpa using hb
+        have hd : domTag b ≠ BDom.empty := domTag_ne_empty b hb
+        cases hdd : domTag b with
+        | empty => exact absurd hdd hd
+        | zeroOnly => right; simp [domTagBP, hbne, hdd]
+        | naturals => right; simp [domTagBP, hbne, hdd]
+        | below u =>
+            right
+            have hle : (0 : ℕ∞) ≤ (u : ℕ∞) := by simp
+            simp [domTagBP, hbne, hdd, hle]
+
 /-- 原文の補題（対応する項の上界未満の字母）。 -/
 theorem OT_iff_OT_B_of_lt {t : BT} (h : lessBT t DzeroDomegaZero = true) :
     t ∈ OT ↔ t ∈ OT_B := by

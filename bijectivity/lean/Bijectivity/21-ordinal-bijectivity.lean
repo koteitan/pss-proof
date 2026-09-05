@@ -1,6 +1,7 @@
 import Bijectivity.«17-fseq-convergence»
 import Bijectivity.«18-trans-preserves-order»
 import Bijectivity.«20-term-upper-bound»
+import Bijectivity.«15-successor-fseq»
 
 /-!
 # 命題（変換写像の順序数への全単射性）
@@ -73,13 +74,92 @@ theorem oTrans_injOn : Set.InjOn (fun M => o (PSS.Trans M)) {M : PS | CTPS M} :=
   · exact absurd (o_lt_of_lessBT (trans_lessBT_of_ltPS hN hM h1))
       (by rw [← h]; exact lt_irrefl _)
 
-/-! ## 全射性（未証明） -/
+/-! ## 全射性 -/
 
-/-- 原文の全射性。命題（後続な項の基本列）と命題（基本列の収束性）待ち。 -/
+/-- 上界の項は順序数項。 -/
+theorem OT_DzeroDomegaZero : DzeroDomegaZero ∈ OT := by
+  show isOT_BT DzeroDomegaZero = true
+  decide
+
+theorem o_DzeroZero' : o DzeroZero = 1 := by rw [DzeroZero]; exact o_DzeroZero
+
+/-- \(CT_{\textrm{PS}}\) は基本列で閉じている。 -/
+theorem ctps_oper {M : PS} (hM : CTPS M) {n : ℕ} (hn : 1 ≤ n) : CTPS (oper M n) := by
+  obtain ⟨v, hv⟩ := (ctps_iff_leExpPS M).mp hM
+  exact (ctps_iff_leExpPS _).mpr ⟨v, leExpPS_trans (oper_leExpPS M hn) hv⟩
+
+/-- 原文「\(\{o(\textrm{Trans}(M))\}\) は \(\psi_0\psi_\omega0\) の非有界な部分集合」。
+対応する項の上界未満の字母 と 対応する項の上界 (2) と [4] Lemma 2.2(c) から従う。 -/
+theorem oTrans_unbounded {α : Ordinal} (hα : α < psi0psiOmega0) :
+    ∃ M : PS, CTPS M ∧ α < o (PSS.Trans M) := by
+  have hlt : α < o DzeroDomegaZero := by rw [o_DzeroDomegaZero]; exact hα
+  obtain ⟨t, htOT, htlt, hto⟩ := o_surj_below OT_DzeroDomegaZero hlt
+  have htB : t ∈ T_B := ((OT_iff_OT_B_of_lt htlt).mp htOT).2
+  obtain ⟨M, hM, hMlt⟩ := exists_trans_gt htB htlt
+  exact ⟨M, hM, by rw [← hto]; exact o_lt_of_lessBT hMlt⟩
+
+/-- 原文の全射性。原文は [3] の命題 11 を引くが、ここでは
+非有界性・後続な項の基本列・基本列の収束性から超限帰納で直接示す。 -/
 theorem oTrans_surjOn :
     Set.SurjOn (fun M => o (PSS.Trans M)) {M : PS | CTPS M}
       {α : Ordinal | α < psi0psiOmega0} := by
-  sorry
+  intro α hα
+  simp only [Set.mem_setOf_eq] at hα
+  have hTne : {β : Ordinal | α ≤ β ∧ ∃ M : PS, CTPS M ∧ o (PSS.Trans M) = β}.Nonempty := by
+    obtain ⟨M, hM, hlt⟩ := oTrans_unbounded hα
+    exact ⟨o (PSS.Trans M), le_of_lt hlt, ⟨M, hM, rfl⟩⟩
+  obtain ⟨β, hβmem, hβmin⟩ :=
+    (wellFounded_lt (α := Ordinal)).has_min
+      {β : Ordinal | α ≤ β ∧ ∃ M : PS, CTPS M ∧ o (PSS.Trans M) = β} hTne
+  obtain ⟨hαβ, M, hM, hMβ⟩ := hβmem
+  rcases eq_or_lt_of_le hαβ with heq | hlt
+  · exact ⟨M, hM, hMβ.trans heq.symm⟩
+  exfalso
+  have hTz : PSS.Trans M ≠ BZero := by
+    intro hz
+    rw [hz, o_BZero] at hMβ
+    rw [← hMβ] at hlt
+    exact absurd hlt (by simp)
+  have hOTM : PSS.Trans M ∈ OT := (Trans_STPS_OT_B M hM.1).1
+  have hbnd : lessBT (PSS.Trans M) DzeroDomegaZero = true := trans_lt_bound hM
+  rcases domTag_cases_of_bound hOTM hbnd hTz with hd | hd
+  · -- 後続の場合: 命題（後続な項の基本列）
+    have hM1 : CTPS (oper M 1) := ctps_oper hM (le_refl 1)
+    have hstep := successor_fseq (M := M) (STPS_RTPS M hM.1) (n := 1) (le_refl 1) hd
+    refine hβmin (o (PSS.Trans (oper M 1))) ⟨?_, ⟨oper M 1, hM1, rfl⟩⟩ ?_
+    · rcases hstep with ⟨h1, h2⟩ | h2
+      · rw [h2, o_BZero]
+        rw [← hMβ, h1, o_DzeroZero'] at hlt
+        exact le_of_eq (Ordinal.lt_one_iff_zero.mp hlt)
+      · by_contra hc
+        push_neg at hc
+        have hβeq : β = o (PSS.Trans (oper M 1)) + 1 := by
+          rw [← hMβ, ← h2, o_addBT, o_DzeroZero']
+        have : β ≤ α := by
+          rw [hβeq, Ordinal.add_one_eq_succ]
+          exact Order.succ_le_of_lt hc
+        exact absurd hlt (not_lt.mpr this)
+    · rcases hstep with ⟨h1, h2⟩ | h2
+      · rw [h2, o_BZero, ← hMβ, h1, o_DzeroZero']
+        exact zero_lt_one
+      · have hβeq : β = o (PSS.Trans (oper M 1)) + 1 := by
+          rw [← hMβ, ← h2, o_addBT, o_DzeroZero']
+        rw [hβeq, Ordinal.add_one_eq_succ]
+        exact Order.lt_succ _
+  · -- 極限の場合: 命題（基本列の収束性）
+    have hlen : 1 < Lng M := one_lt_lng_of_domIsOmega (STPS_RTPS M hM.1) hd
+    have hconv := fseq_convergence hM.1 hd
+    have hex : ∃ n : {n : ℕ // 1 ≤ n}, α < o (PSS.Trans (oper M n.1)) := by
+      by_contra hc
+      push_neg at hc
+      have hle : (⨆ n : {n : ℕ // 1 ≤ n}, o (PSS.Trans (oper M n.1))) ≤ α :=
+        Ordinal.iSup_le_iff.mpr hc
+      rw [hconv, hMβ] at hle
+      exact absurd hlt (not_lt.mpr hle)
+    obtain ⟨⟨n, hn⟩, hnlt⟩ := hex
+    refine hβmin (o (PSS.Trans (oper M n))) ⟨le_of_lt hnlt, ⟨oper M n, ctps_oper hM hn, rfl⟩⟩ ?_
+    rw [← hMβ]
+    exact o_lt_of_lessBT (Trans_fseq_descend M n hM.1 hn hlen)
 
 /-- 原文の命題（変換写像の順序数への全単射性）。 -/
 theorem oTrans_bijOn :

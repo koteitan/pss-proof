@@ -75,7 +75,7 @@ namespace Bijectivity
 open PSS
 
 /-- \(D_00\)。 -/
-def DzeroZero : BT := Dprin 0 (BT.trm [])
+def DzeroZero : BT := Dprin 0 BZero
 
 theorem Trans_zero_singleton' : PSS.Trans [(0, 0)] = BZero :=
   (Trans_preserves_zeroT [(0, 0)] (by simp [TPS])).mp (by simp [zeroT, entry])
@@ -160,6 +160,38 @@ theorem not_domIsOne_of_lng_one {M : PS} (hM : RTPS M) (hlen : Lng M = 1) :
     have hcontra' : domTagBP (BP.db (p.2 : ℕ∞) BZero) = BDom.zeroOnly := hcontra
     have := (domTagBP_zeroOnly_iff _ _).mp hcontra'
     exact hz (by exact_mod_cast this.1)
+
+/-- \(\textrm{Lng}(M)=1\) の簡約形では \(\textrm{dom}(\textrm{Trans}(M))\neq\omega\)。 -/
+theorem one_lt_lng_of_domIsOmega {M : PS} (hM : RTPS M)
+    (hdom : domIsOmega (PSS.Trans M)) : 1 < Lng M := by
+  by_contra hc
+  have hT : TPS M := RTPS_TPS M hM
+  have hpos := List.length_pos_of_ne_nil hT
+  have hlen : Lng M = 1 := by simp only [Lng] at hpos hc ⊢; omega
+  obtain ⟨p, rfl⟩ := List.length_eq_one_iff.mp hlen
+  have hRed : Red [p] = [p] := by
+    have h : reduced [p] = true := hM
+    simp only [reduced, Bool.and_eq_true, beq_iff_eq] at h
+    exact h.2
+  by_cases hz : p.2 = 0
+  · have hzT : zeroT [p] = true := by simp [zeroT, entry, hz]
+    have hMz : [p] = [(0, 0)] := by rw [← hRed]; exact Red_zero_mr [p] hzT
+    rw [domIsOmega, hMz, Trans_zero_singleton'] at hdom
+    simp [BZero, domTag, domTagList] at hdom
+  · have hpne : p ≠ (0, 0) := by
+      intro h; exact hz (by rw [h])
+    have hT2 : PSS.Trans [p] = Dprin (p.2 : ℕ∞) BZero := by
+      rw [Trans_eq_lengthAux [p] hM]
+      have hred : reduced [p] = true := hM
+      simp only [TransAux, hred, Bool.not_true, Bool.false_eq_true, ↓reduceIte,
+        lastIdx]
+      simp [hpne, entry]
+    rw [domIsOmega, hT2] at hdom
+    have hz' : ((p.2 : ℕ∞) == 0) = false := by
+      simp only [beq_eq_false_iff_ne, ne_eq]
+      exact_mod_cast fun h => hz (by exact_mod_cast h)
+    have htop : ((p.2 : ℕ∞) == ⊤) = false := by simp
+    simp [Dprin, domTag, domTagList, domTagBP, hz', htop] at hdom
 
 /-! ## 前半のうち `monoT M` の場合 -/
 
@@ -371,7 +403,7 @@ theorem last_zero_of_domIsOne {M : PS} (hM : RTPS M) (hdom : domIsOne (PSS.Trans
 /-- 原文の命題（後続な項の基本列）。 -/
 theorem successor_fseq {M : PS} (hM : RTPS M) {n : ℕ} (hn : 1 ≤ n)
     (hdom : domIsOne (PSS.Trans M)) :
-    (PSS.Trans M = DzeroZero ∧ PSS.Trans (oper M n) = BT.trm []) ∨
+    (PSS.Trans M = DzeroZero ∧ PSS.Trans (oper M n) = BZero) ∨
       addBT (PSS.Trans (oper M n)) DzeroZero = PSS.Trans M := by
   obtain ⟨hlen, h0, h1⟩ := last_zero_of_domIsOne hM hdom
   exact Or.inr (successor_fseq_of_last_zero hM hlen h0 h1 n)
