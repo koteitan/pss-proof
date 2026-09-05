@@ -52,3 +52,8 @@ require mathlib from git
 @[default_target] lean_lib «8» where
   srcDir := "."
   globs := #[Glob.andSubmodules `«8»]
+
+/-- Naruyoko (2022), 変換写像の全単射性 — sources live in `<repo>/bijectivity/lean`. -/
+@[default_target] lean_lib «Bijectivity» where
+  srcDir := "../bijectivity/lean"
+  globs := #[Glob.andSubmodules `«Bijectivity»]
