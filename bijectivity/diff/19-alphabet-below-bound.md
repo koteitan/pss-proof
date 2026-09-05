@@ -144,7 +144,7 @@ $t\in OT_{\textrm{B}\omega}$ と $t\in T_{\textrm{B}}$ から $t\in OT_{\textrm{
 
   この形式化では 4 のとおり、項と主項列についての相互構造再帰に組み替えてある。あわせて、再帰に耐えるように仮定を $D_0t'\in OT_{\textrm{B}\omega}$ から「$G_0t$ の全元が $D_\omega0$ 未満」へ一般化した（原文の仮定はこれを含意する）。理由は 4 の末尾に書いたとおり、主項 $D_wa$ の順序数主項条件は $G_wa$ しか押さえず、$w>0$ のとき $D_0a\in OT_{\textrm{B}\omega}$ は手元に無いからである。埋めるのに要ったのは、この一般化と 4 の相互再帰（$G_0$ の一段展開 3 を含めて 50 行ほど）で、新しい数学的な着想は要らない。
 
-- **[Y]** 証明中の $T_{\textrm{PS}}$ は $T_{\textrm{B}}$ の誤記
+- **[⚠️Y]** 証明中の $T_{\textrm{PS}}$ は $T_{\textrm{B}}$ の誤記
 
   原文は $t=0$ の場合、単項の場合、複項の場合、まとめの行、最終行の 5 箇所で $t\in T_{\textrm{PS}}$、$OT_{\textrm{B}}=OT_{\textrm{B}\omega}\cap T_{\textrm{PS}}$ と書くが、$t$ は Buchholz の項であって、ペア数列全体 $T_{\textrm{PS}}$ の元ではない。ここで示しているのは「$t$ が字母 $D_\omega$ を含まない」であるから、いずれも $T_{\textrm{B}}$ が正しい。$T_{\textrm{PS}}$ をそのまま形式化すると、示すべき $t\in OT_{\textrm{B}}$ が得られない。直し方は $T_{\textrm{PS}}$ を $T_{\textrm{B}}$ に置き換えるだけで一意であり、証明の構造は変わらない。この形式化は $OT_{\textrm{B}}=OT_{\textrm{B}\omega}\cap T_{\textrm{B}}$ を定義として採っている。
 

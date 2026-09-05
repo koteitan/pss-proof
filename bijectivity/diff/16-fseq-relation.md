@@ -367,7 +367,7 @@ $m\leq m'$ で $a[m]\leq_{\textrm{B}}a[m']$。前者は $a$ の項の重さに�
 
 ## 原文通りに書けなかった理由
 
-- **[Y]** 複項の場合の末尾の等式連鎖は偽で、$\leq_{\textrm{B}}$ かつ添字は $m$ ではない（訂正 B4）
+- **[⚠️Y]** 複項の場合の末尾の等式連鎖は偽で、$\leq_{\textrm{B}}$ かつ添字は $m$ ではない（訂正 B4）
 
   原文の最後の連鎖は
   $\Sigma_{\textrm{B}}(P(M)_J^+)_{J=0}^{J_1-1}+(\textrm{Trans}(P(M)_{J_1})[m])
@@ -380,7 +380,7 @@ $m\leq m'$ で $a[m]\leq_{\textrm{B}}a[m']$。前者は $a$ の項の重さに�
   $\textrm{Trans}(M)[m]\leq_{\textrm{B}}\textrm{Trans}(M[n])$ を作る。
   直しは連鎖の 4 行目以降を $\leq_{\textrm{B}}$ と $n$ に置き換えるだけで、補題の主張も下流も変わらない。
 
-- **[Y]** 単項・$t_1=0$ の第 2 例の基本列の値が $D_0$ 1 個ぶん多い
+- **[⚠️Y]** 単項・$t_1=0$ の第 2 例の基本列の値が $D_0$ 1 個ぶん多い
 
   原文は $\textrm{dom}(D_10)=\Omega_1$ から
   $(D_0D_10)[n]=D_0D_0^nD_0D_00=D_0^{n+3}0$ とするが、正しくは $D_0^{n+2}0$ である。
@@ -393,7 +393,7 @@ $m\leq m'$ で $a[m]\leq_{\textrm{B}}a[m']$。前者は $a$ の項の重さに�
   結論 $\textrm{Trans}(M)[m]\leq_{\textrm{B}}\textrm{Trans}(M[m+3])$ 自体は
   $D_0^{m+2}0\leq_{\textrm{B}}D_0^{m+3}0$ なので真のままだが、Lean は等号が立つ $n=m+2$ を取る。
 
-- **[Y]** 単項・$t_1=0$ の第 2 例の $\textrm{Trans}(M[n])=D_0^n0$ は $n=1$ で偽
+- **[⚠️Y]** 単項・$t_1=0$ の第 2 例の $\textrm{Trans}(M[n])=D_0^n0$ は $n=1$ で偽
 
   $M=((0,0),(1,1))$ のとき $M[1]=\textrm{Pred}(M)=((0,0))$ で $\textrm{Trans}(M[1])=0$ だが、
   $D_0^10=D_00\neq0$ である。Lean が使う [1] の公差 $(1,0)$ の列の $\textrm{Trans}$ は
@@ -402,7 +402,7 @@ $m\leq m'$ で $a[m]\leq_{\textrm{B}}a[m']$。前者は $a$ の項の重さに�
   原文はこの $1$ 例外を書かずに「任意の $n\in\mathbb{N}$ に対して」と書いている。
   結論では $n\geq3$ しか使わないので下流は変わらない。
 
-- **[Y]** $P(M)_{J_1}\in PT_{\textrm{PS}}\cup ST_{\textrm{PS}}$ の $\cup$ は $\cap$
+- **[⚠️Y]** $P(M)_{J_1}\in PT_{\textrm{PS}}\cup ST_{\textrm{PS}}$ の $\cup$ は $\cap$
 
   直前で示した中間結論は「任意の $M\in PT_{\textrm{PS}}\cap ST_{\textrm{PS}}$ に対して…」であり、
   その次の行でそれを $P(M)_{J_1}$ に適用するのだから、必要なのは
