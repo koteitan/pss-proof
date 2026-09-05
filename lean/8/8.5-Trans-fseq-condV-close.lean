@@ -72,8 +72,9 @@ private theorem exchVresAdm_vc : ExchVres_adm_M_tower :=
 private theorem admForms_vc : ExchV_scbdec_adm_forms :=
   adm_forms_holds exchVresAdm_vc
 
-/-- `ExchV_nf3x` の無条件供給（`8.7-termination`:270 `exchVnf3x_term`）。 -/
-private theorem nf3x_vc : ExchV_nf3x :=
+/-- `ExchV_nf3x` の無条件供給（`8.7-termination`:270 `exchVnf3x_term`）。
+非 adm 枝の閉形式は `bijectivity` の 補題（基本列の関係）でも要るので公開する。 -/
+theorem nf3x_vc : ExchV_nf3x :=
   nf3x_holds_xv2 exchVMtower_vc
 
 /-! ## 公開定理の無条件双子（p ファイルの論理式と同一、6 Prop 仮定を除去） -/

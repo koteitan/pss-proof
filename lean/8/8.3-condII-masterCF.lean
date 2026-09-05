@@ -580,17 +580,24 @@ Isabelle の構造をそのまま:
    `t₂ +_B W^(m-1) = t₃ +_B X^(cnt₁ + (m-1))` に再結合し、`c = cnt₁ + (m-1) ≥ 1`
    を存在量化に落とす（＝A36 の数え上げ二分岐が消える場所）。 -/
 
-/-- Isabelle `c2sx_condII_masterCF` (pss_wip.thy:87430) — `TV` 込みの 1:1 形。 -/
-theorem condII_masterCF_of_tailval (hstep : CondII_step) :
+/-- Isabelle `c2sx_condII_masterCF` (pss_wip.thy:87430) の**数え上げを露出した形**。
+Isabelle の `y3j_mnp1 M m = if leftDj0 M then m else m - 1`（`8/Support_8_C.thy`:15042）
+がここでは `cnt₁ + (m - 1)`（`cnt₁ = if condII_ldj M then 1 else 0`）として現れる。
+`condII_masterCF_of_tailval` はこれを存在量化に落としたものである。
+
+正確な数え上げは Naruyoko (2022) の 補題（基本列の関係）で要る（あちらは
+`Trans(M)[k]` を与えて `Trans(M[m])` の側の添字を**指定**する必要がある）。 -/
+theorem condII_masterCF_exact_of_tailval (hstep : CondII_step) :
     ∀ M : PS, RTPS M → monoT M = true → 1 < Lng M - 1 → transCondII M = true →
       CondII_tailval M →
-      ∃ (s b : List Sym) (u v : ℕ) (t₀ t₁ : BT), t₀ ∈ T_B ∧ t₁ ∈ T_B ∧
+      ∃ (s b : List Sym) (u v : ℕ) (t₀ t₁ : BT) (cnt : ℕ),
+        t₀ ∈ T_B ∧ t₁ ∈ T_B ∧ cnt ≤ 1 ∧
         scb_decomp (Trans M) s
           (flatBT (Dprin (u : ℕ∞)
             (addBT t₀ (Dprin (v : ℕ∞) (addBT t₁ (Dprin 0 BZero)))))) b ∧
-        (∀ m, 1 < m → ∃ c, 1 ≤ c ∧ Trans (oper M m)
+        (∀ m, 1 ≤ m → Trans (oper M m)
           = unflatBT (s ++ flatBT (Dprin (u : ℕ∞)
-              (addBT t₀ (multBT (Dprin (v : ℕ∞) t₁) c))) ++ b)) := by
+              (addBT t₀ (multBT (Dprin (v : ℕ∞) t₁) (cnt + (m - 1))))) ++ b)) := by
   intro M hR hmono hj1 hcond hTV
   have hM : TPS M := RTPS_TPS M hR
   have hL : 1 < Lng M := by omega
@@ -655,15 +662,15 @@ theorem condII_masterCF_of_tailval (hstep : CondII_step) :
             hva.symm ht2TB dInit (by rw [e1]; rw [e2] at *; exact mkIH)
             (by rw [e1]; rw [e2] at *; exact dIH)
   -- (3) 閉形式（存在量化）
-  refine ⟨s1, b1, va, v0, condII_t3 M, condII_t4 M, hSP2, hSP3, ?_, ?_⟩
+  refine ⟨s1, b1, va, v0, condII_t3 M, condII_t4 M, cnt1, hSP2, hSP3,
+    (by rw [hcnt1]; split <;> omega), ?_, ?_⟩
   · -- `dM`: `c2_val` を `flatBT` 経由で読む
     have : transC2 M = Dprin (va : ℕ∞)
         (addBT (condII_t3 M) (Dprin (v0 : ℕ∞)
           (addBT (condII_t4 M) (Dprin 0 BZero)))) := hc2V
     rw [← this]
     exact dWM
-  · intro m hm
-    have hm1 : 1 ≤ m := by omega
+  · intro m hm1
     obtain ⟨_, d⟩ := INV m hm1
     have hTmE : Trans (oper M m)
         = unflatBT (s1 ++ flatBT (Dprin (va : ℕ∞)
@@ -675,8 +682,25 @@ theorem condII_masterCF_of_tailval (hstep : CondII_step) :
     have hceq : addBT (transT2 M) (multBT W (m - 1))
         = addBT (condII_t3 M) (multBT X (cnt1 + (m - 1))) := by
       rw [hTVE, hSP1, addBT_assoc_cf2, ← multBT_add_cf2]
-    have hcge : 1 ≤ cnt1 + (m - 1) := by omega
-    exact ⟨cnt1 + (m - 1), hcge, by rw [hTmE, hceq]⟩
+    rw [hTmE, hceq]
+
+/-- Isabelle `c2sx_condII_masterCF` (pss_wip.thy:87430) — `TV` 込みの 1:1 形。
+`condII_masterCF_exact_of_tailval` の数え上げを存在量化に落としたもの。 -/
+theorem condII_masterCF_of_tailval (hstep : CondII_step) :
+    ∀ M : PS, RTPS M → monoT M = true → 1 < Lng M - 1 → transCondII M = true →
+      CondII_tailval M →
+      ∃ (s b : List Sym) (u v : ℕ) (t₀ t₁ : BT), t₀ ∈ T_B ∧ t₁ ∈ T_B ∧
+        scb_decomp (Trans M) s
+          (flatBT (Dprin (u : ℕ∞)
+            (addBT t₀ (Dprin (v : ℕ∞) (addBT t₁ (Dprin 0 BZero)))))) b ∧
+        (∀ m, 1 < m → ∃ c, 1 ≤ c ∧ Trans (oper M m)
+          = unflatBT (s ++ flatBT (Dprin (u : ℕ∞)
+              (addBT t₀ (multBT (Dprin (v : ℕ∞) t₁) c))) ++ b)) := by
+  intro M hR hmono hj1 hcond hTV
+  obtain ⟨s, b, u, v, t₀, t₁, cnt, ht₀, ht₁, _hcnt, hd, hall⟩ :=
+    condII_masterCF_exact_of_tailval hstep M hR hmono hj1 hcond hTV
+  exact ⟨s, b, u, v, t₀, t₁, ht₀, ht₁, hd,
+    fun m hm => ⟨cnt + (m - 1), by omega, hall m (by omega)⟩⟩
 
 /-! ## 終切片の値、そして `CondII_masterCF` の drop-in
 

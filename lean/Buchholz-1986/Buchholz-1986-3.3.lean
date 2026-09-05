@@ -493,9 +493,13 @@ private theorem triG_Dprin_bc {z b₀ b : BT} (v : ℕ∞)
     intro x hx
     exact hx.elim
 
-/-! ## Monotonicity and the lower bound on `T_w` domains -/
+/-! ## Monotonicity and the lower bound on `T_w` domains
 
-private theorem operB_mono_below_bc (a z₁ z₂ : BT) (w : ℕ)
+`operB_mono_below_bc` / `operB_lowerbound_below_bc` / `xseq_mem_TBv_bc` are public
+because the `bijectivity` development needs them for `y4_N_mono` (the index
+monotonicity of `operB` on `dom = ω` terms). -/
+
+theorem operB_mono_below_bc (a z₁ z₂ : BT) (w : ℕ)
     (htag : domTag a = .below w)
     (hz₁ : z₁ ∈ TBv (w : ℕ∞)) (hz₂ : z₂ ∈ TBv (w : ℕ∞))
     (hzlt : lessBT z₁ z₂ = true) :
@@ -574,7 +578,7 @@ private theorem OT_tag_below_head_bc (p : BP) (ps : List BP) (w : ℕ)
       have hhlp : hl ≤ hp := leBT_single_index_bf hl hp cl cp hle
       exact ⟨hp, cp, rfl, hwhl.trans_le hhlp⟩
 
-private theorem operB_lowerbound_below_bc (a z : BT) (w : ℕ)
+theorem operB_lowerbound_below_bc (a z : BT) (w : ℕ)
     (hot : isOT_BT a = true) (htag : domTag a = .below w)
     (hz : z ∈ TBv (w : ℕ∞)) : leBT z (operB a z) = true := by
   rcases a with ⟨xs⟩
@@ -636,7 +640,7 @@ private theorem NatSet_mem_TBv_bc {z : BT} {w : ℕ}
   rcases hz with ⟨n, rfl⟩
   simp [numBT, TBv, BZero]
 
-private theorem xseq_mem_TBv_bc (b : BT) (w i : ℕ) :
+theorem xseq_mem_TBv_bc (b : BT) (w i : ℕ) :
     xseq b (w : ℕ∞) i ∈ TBv (w : ℕ∞) := by
   cases i with
   | zero => simp [xseq, bOperCore, Dprin, TBv]
