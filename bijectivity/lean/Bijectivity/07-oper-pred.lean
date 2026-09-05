@@ -1,4 +1,6 @@
 import Bijectivity.«06-fseq-segment-invariance»
+import «5».«5.3-pred-is-oper1»
+import «6».«6.5-Red-Pred-commute»
 
 /-!
 # 命題（展開と `Pred` の関係）
@@ -23,6 +25,15 @@ UNPROVEN STUB。なお原文の \((M[n]_j)_{j=0}^{j_1-1}=\textrm{Pred}(M)\) は
 namespace Bijectivity
 
 open PSS
+
+/-- 退化枝: `oper M n = Pred M` のとき。 -/
+theorem oper_take_pred_of_pred {M : PS} {n : ℕ} (hM : 1 < Lng M) (h : oper M n = Pred M) :
+    Lng M - 1 ≤ Lng (oper M n) ∧ (oper M n).take (Lng M - 1) = Pred M := by
+  rw [h, length_Pred M hM]
+  exact ⟨le_refl _, by
+    rw [Pred_eq_take M hM, List.take_take]
+    congr 1
+    simp [Lng]⟩
 
 /-- 原文の命題（展開と `Pred` の関係）。先頭 \(j_1\) 項を `List.take` で表す。 -/
 theorem oper_take_pred {M : PS} (hM : 1 < Lng M) (n : ℕ) (hn : 1 ≤ n) :

@@ -1,4 +1,6 @@
 import Bijectivity.«09-standard-iff-exp»
+import «5».«5.3-pred-is-oper1»
+import «6».«6.5-Red-Pred-commute»
 
 /-!
 # 補題（標準形の始切片への経路）
@@ -23,12 +25,43 @@ import Bijectivity.«09-standard-iff-exp»
 よって結論を \(\leq_{\textrm{PS}[]}\) とするのが正しい。
 狭義にしたい場合は仮定を \(j_1'<j_1\) とする。
 
-UNPROVEN STUB（訂正形・逐語形とも）。
+逐語形は上記の理由で UNPROVEN STUB のまま残し、訂正形を証明する。
 -/
 
 namespace Bijectivity
 
 open PSS
+
+/-- \(\textrm{seg}\,M\,0\,j\) は先頭 \(j+1\) 項である。 -/
+theorem seg_zero_eq_take (M : PS) {j : ℕ} (h : j + 1 ≤ Lng M) :
+    seg M 0 j = M.take (j + 1) := by
+  apply List.ext_getElem
+  · simp [seg, Lng] at h ⊢; omega
+  · intro i h1 h2
+    have hi : i < Lng M := by simp [seg] at h1; omega
+    simp only [seg, List.getElem_map, List.getElem_range', List.getElem_take]
+    simp [entry, List.getElem?_eq_getElem hi]
+
+/-- 反復 `Pred`（＝反復 `[1]`）による先頭切片への経路。原文の帰納に対応する。 -/
+theorem take_leExpPS : ∀ (k : ℕ) (M : PS), TPS M → k < Lng M →
+    M.take (Lng M - k) ≤ₚ[] M
+  | 0, M, _, _ => ⟨[], by simp, by simp [expand, Lng]⟩
+  | k + 1, M, hM, hk => by
+      have hlen : 1 < Lng M := by omega
+      have hlenP : Lng (Pred M) = Lng M - 1 := length_Pred M hlen
+      have hPne : TPS (Pred M) := by
+        intro he
+        have h0 : Lng (Pred M) = 0 := by rw [he]; rfl
+        omega
+      have ih := take_leExpPS k (Pred M) hPne (by omega)
+      have hstep : Pred M ≤ₚ[] M := by
+        rw [pred_is_oper1 M hM hlen]; exact oper_leExpPS M (le_refl 1)
+      have heq : (Pred M).take (Lng (Pred M) - k) = M.take (Lng M - (k + 1)) := by
+        rw [hlenP, Pred_eq_take M hlen, List.take_take]
+        congr 1
+        omega
+      rw [heq] at ih
+      exact leExpPS_trans ih hstep
 
 /-- 原文の補題（標準形の始切片への経路）の逐語形。上記のとおり \(j_1'=j_1\) が反例。 -/
 theorem seg_ltExpPS_verbatim {M : PS} (hM : STPS M) {j1' : ℕ} (h : j1' ≤ Lng M - 1) :
@@ -36,8 +69,17 @@ theorem seg_ltExpPS_verbatim {M : PS} (hM : STPS M) {j1' : ℕ} (h : j1' ≤ Lng
   sorry
 
 /-- 訂正形（結論を \(\leq_{\textrm{PS}[]}\) に）。 -/
-theorem seg_leExpPS {M : PS} (hM : STPS M) {j1' : ℕ} (h : j1' ≤ Lng M - 1) :
+theorem seg_leExpPS {M : PS} (hM : TPS M) {j1' : ℕ} (h : j1' ≤ Lng M - 1) :
     seg M 0 j1' ≤ₚ[] M := by
-  sorry
+  have hpos : 0 < Lng M := by
+    rcases M with _ | ⟨p, M⟩
+    · exact absurd rfl hM
+    · simp [Lng]
+  have hle : j1' + 1 ≤ Lng M := by omega
+  rw [seg_zero_eq_take M hle]
+  have h2 := take_leExpPS (Lng M - (j1' + 1)) M hM (by omega)
+  have heq : Lng M - (Lng M - (j1' + 1)) = j1' + 1 := by omega
+  rw [heq] at h2
+  exact h2
 
 end Bijectivity
