@@ -37,16 +37,17 @@ import «OTB-well-founded-syntactic».«OTB-well-founded-syntactic-main»
 これで [Buc1] Lemma 2.1 / 2.2(c) にあたる性質（順序を保つこと・初期切片への全射性・
 \(o(0)=0\)・\(o(D_00)=1\)）は**すべて定理**になる。
 
-## 残る 2 本の `axiom`
+## 残る 1 本の `axiom`
 
 | axiom | 出典 | 検証 |
 |---|---|---|
-| `o_addBT` | [Buc1] の加法標準形 | — |
-| `o_iSup_operB` | [Buc2] Theorem 1.4(a) / Lemma 1.6 | `Audit-operB.lean` で小 \(OT_{\textrm{B}}\) プール全数検証 |
+| `fseq_cofinal` | [Buc2] Theorem 1.4(a) / Lemma 1.6 | `Audit-operB.lean` で小 \(OT_{\textrm{B}}\) プール全数検証 |
 
-どちらも \(OT_{\textrm{B}}\) 上でしか主張していない。`o_iSup_operB`（基本列の共終性）は
-本リポジトリの `operB` が訂正 A23 入りなので引用だけでは済まず、`Audit-operB.lean` が
-小さなプール上で全数検証している。
+[Buc1] の加法標準形のうち原文が使う分（\(o(s+_{\textrm{B}}D_00)=o(s)+1\)）は
+`o_addBT_DzeroZero` として定理にしてある。残る `fseq_cofinal` は
+**順序数を含まない純粋に構文的な主張**（基本列が初期切片で共終であること）なので、
+`Audit-operB.lean` がその形のまま小さなプール上で全数検証できる。
+本リポジトリの `operB` は訂正 A23 入りなので、引用だけでは済まないため。
 
 ## 🚨 `OT_B` の仮定は落とせない
 
@@ -337,13 +338,38 @@ theorem o_addBT_DzeroZero {s : BT} (hs : s ∈ OT_B)
   · have := Order.succ_le_of_lt h1
     rwa [Order.succ_eq_add_one] at this
 
-/-! ## 残る 1 本の外部引用 -/
+/-! ## \(o(t)\) は初期切片の上限 -/
 
-/-- [Buc2] Theorem 1.4(a) 及び Lemma 1.6: \(\textrm{dom}(t)=\omega\) のとき
-\(t\) の基本列は \(o(t)\) に収束する。`Audit-operB.lean` が小さな
-\(OT_{\textrm{B}}\) プール上で全数検証している。 -/
-axiom o_iSup_operB {t : BT} (ht : t ∈ OT_B) (h : domTag t = BDom.naturals) :
-    ⨆ m : ℕ, o (operB t (numBT m)) = o t
+/-- \(o(t)=\sup_{u<_{\textrm{B}}t}(o(u)+1)\)。`o_lt_of_lessBT` と `o_surj_below` だけで出る。 -/
+theorem o_eq_iSup_below {t : BT} (ht : t ∈ OT_B) :
+    o t = ⨆ u : {u : BT // u ∈ OT_B ∧ lessBT u t = true}, (o u.1 + 1) := by
+  refine le_antisymm ?_ ?_
+  · by_contra hgt
+    push_neg at hgt
+    obtain ⟨w, hwOTB, hwlt, hwo⟩ := o_surj_below ht hgt
+    have hle := Ordinal.le_iSup
+      (fun u : {u : BT // u ∈ OT_B ∧ lessBT u t = true} => o u.1 + 1) ⟨w, hwOTB, hwlt⟩
+    rw [hwo] at hle
+    exact absurd hle (by simp)
+  · refine Ordinal.iSup_le_iff.mpr ?_
+    rintro ⟨u, huOTB, hult⟩
+    have := Order.succ_le_of_lt (o_lt_of_lessBT huOTB ht hult)
+    rwa [Order.succ_eq_add_one] at this
+
+/-! ## 残る 1 本の外部引用 — 基本列の共終性 -/
+
+/-- [Buc2] Theorem 1.4(a) の**構文的な中身**: \(\textrm{dom}(t)=\omega\) のとき
+基本列 \(t[0],t[1],\dots\) は \(\{u\in OT_{\textrm{B}}\mid u<_{\textrm{B}}t\}\) で共終。
+
+順序数を含まない純粋に構文的な主張なので、`Audit-operB.lean` が小さな
+\(OT_{\textrm{B}}\) プール上でこの形のまま全数検証している。 -/
+def FseqCofinal : Prop :=
+  ∀ t : BT, t ∈ OT_B → domTag t = BDom.naturals →
+    ∀ u : BT, u ∈ OT_B → lessBT u t = true →
+      ∃ m : ℕ, leBT u (operB t (numBT m)) = true
+
+/-- [Buc2] Theorem 1.4(a) / Lemma 1.6。**本形式化に残る唯一の `axiom`**。 -/
+axiom fseq_cofinal : FseqCofinal
 
 /-! ## `dom` の記法 -/
 

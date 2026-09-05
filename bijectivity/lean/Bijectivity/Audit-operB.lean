@@ -4,16 +4,19 @@ import «Buchholz-1986».«Buchholz-1986-3.3»
 /-!
 # 監査 — 基本列の共終性（`o_iSup_operB` の経験的検証）
 
-`Cited.lean` に残る 2 本の実質的な外部引用のうち、**深いほうは
-`o_iSup_operB`**（[Buc2] Theorem 1.4(a)）である。これは
+`Cited.lean` に残る**唯一の**外部引用 `fseq_cofinal`（[Buc2] Theorem 1.4(a)）を
+経験的に検証する。その主張は
 
 \[
-\textrm{dom}(t)=\omega \;\Longrightarrow\; \sup_m o(t[m])=o(t)
+t\in OT_{\textrm{B}},\ \textrm{dom}(t)=\omega,\ u\in OT_{\textrm{B}},\ u<_{\textrm{B}}t
+\;\Longrightarrow\; \exists m,\ u\leq_{\textrm{B}}t[m]
 \]
 
-すなわち「基本列 \(t[0],t[1],\dots\) が \(t\) 未満で共終」という主張で、`o` を
-\((OT_{\textrm{B}\omega},<_{\textrm{B}})\) の順序同型として取る模型では
-**この主張が成り立つかどうかがそのまま公理系の無矛盾性を左右する**。
+＝「基本列 \(t[0],t[1],\dots\) が \(\{u\in OT_{\textrm{B}}\mid u<_{\textrm{B}}t\}\)
+で共終」であり、**順序数を含まない純粋に構文的な主張**なので、下の `coversBelow` は
+`FseqCofinal` の内側をそのまま `pool` に制限したものになっている。
+（原文の \(\sup_m o(t[m])=o(t)\) はここから `17-fseq-convergence` の
+`o_iSup_operB` として導かれる。）
 
 しかも本リポジトリの `operB` は [Buc2] の定義そのものではなく、**訂正 A23** を
 当てた形（`x₀ = D_u0`、`x_{i+1} = D_u(b[x_i])`、`(D_vb)[n] = D_v(b[x_n])`,
@@ -21,12 +24,8 @@ import «Buchholz-1986».«Buchholz-1986-3.3»
 ものではなく、**この定義に対して**確かめる価値がある。
 
 本ファイルは小さな \(OT_{\textrm{B}}\) 項のプールを全数列挙し、
-\(\textrm{dom}(t)=\omega\) なる各 \(t\) について
-
-* プール内の \(u<_{\textrm{B}}t\) すべてに対して \(u\leq_{\textrm{B}}t[m]\) となる
-  \(m\leq B\) が存在する
-
-ことを `#guard` で検査する。反例が出ればビルドが落ちる。
+\(\textrm{dom}(t)=\omega\) なる各 \(t\) について上の主張を \(m\leq B\) の範囲で
+`#guard` で検査する。反例が出ればビルドが落ちる。
 
 ## 結果
 
@@ -46,9 +45,8 @@ import «Buchholz-1986».«Buchholz-1986-3.3»
 （`t[m] <_B t` と `t[m] <_B t[m+1]` のほうは経験検証ではなく定理である:
 `buchholz_fseq_lt`（[Buc1] Lemma 3.2(a)）と `operB_numBT_step`（`16c-operB-mono`）。）
 
-もう 1 本の `o_addBT` は [Buc1] の加法標準形＝Cantor 標準形の加法性で、
-`addBT` が principal リストの連結であることから直接従う性質なので、ここでは
-経験検証していない。
+[Buc1] の加法標準形のうち原文が使う分は `Cited.lean` の `o_addBT_DzeroZero`
+として**証明済み**なので、経験検証の対象は `fseq_cofinal` だけである。
 -/
 
 namespace Bijectivity

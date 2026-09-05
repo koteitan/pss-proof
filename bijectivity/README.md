@@ -70,11 +70,20 @@ Naruyoko,「ペア数列システムの停止性証明に用いられた変換�
 ### 外部引用に依存する部分
 
 順序数側（`17`,`21`,`22`,`23` の全射性）は `Cited.lean` の `axiom` を使うが、
-**`o_iSup_operB` の 1 本だけ**である。
+**`fseq_cofinal` の 1 本だけ**である。しかもそれは**順序数を含まない構文的な主張**で、
+
+\[
+t\in OT_{\textrm{B}},\ \textrm{dom}(t)=\omega,\ u\in OT_{\textrm{B}},\ u<_{\textrm{B}}t
+\;\Longrightarrow\; \exists m,\ u\leq_{\textrm{B}}t[m]
+\]
+
+＝基本列が初期切片で共終であること（[Buc2] Theorem 1.4(a)）である。原文の
+\(\sup_m o(\textrm{Trans}(M[m]))=o(\textrm{Trans}(M))\) はここから
+`17-fseq-convergence.lean` の `o_iSup_operB` として**導かれる**。
 
 | axiom | 出典 | 検証 |
 |---|---|---|
-| `o_iSup_operB` | [Buc2] Theorem 1.4(a) / Lemma 1.6（基本列の共終性） | `Audit-operB.lean` で全数検証 |
+| `fseq_cofinal` | [Buc2] Theorem 1.4(a) / Lemma 1.6（基本列の共終性） | `Audit-operB.lean` がこの形のまま全数検証 |
 
 **評価写像 \(o\) と \(\psi_0\psi_\omega0\) は公理ではない。**
 \((OT_{\textrm{B}},<_{\textrm{B}})\) は
