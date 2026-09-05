@@ -11,7 +11,7 @@ P進大好きbot 氏のブログ記事「ペア数列の停止性」（巨大数
 | [`isabelle/`](isabelle/) | Isabelle/HOL 版 | **完了**（停止性を `sorry` ゼロで証明） |
 | [`corrections/`](corrections/) | Isabelle/HOL の反例・経験検証資料（独立セッション） | 機械検査済みアーカイブ |
 | [`memo/`](memo/) | 停止性に採用しなかった Isabelle/HOL 証明キャンペーン | 機械検査済みアーカイブ |
-| [`lean/`](lean/) | Lean 4 版（原文の命題 1 つ = ファイル 1 つ） | **作業中** |
+| [`lean/`](lean/) | Lean 4 版（原文の命題 1 つ = ファイル 1 つ） | **完了**（停止性を `sorry` ゼロで証明） |
 | `python/` | 反例探索・数値検証モデル | 共通 |
 | `tools/` | 原文処理 | 共通 |
 
@@ -29,7 +29,7 @@ theorem y5_Fdom   : ...                     (* 原文の言明 p_8_7_termination
   停止性の定理群が `isabelle/pss_paper.thy` の 131 個の `sorry` のいずれかに到達したら、`error` でビルドが落ちる。
   **緑ビルド＝監査合格**であり、negative control（意図的に汚した定理を混ぜるとビルドが落ちる）で検証済み。
 
-原文の全命題・補題・系・定理の形式化も完了している（[`isabelle/task.md`](isabelle/task.md) の進捗ツリー参照）。
+原文の全命題・補題・系・定理の形式化も完了している。
 その過程で原文の訂正案を 30 件見つけた（下記）。
 
 ## ファイル構成（Isabelle 版）
@@ -45,16 +45,11 @@ theorem y5_Fdom   : ...                     (* 原文の言明 p_8_7_termination
 | `corrections/ROOT` | 反例資料の独立セッション `PSS_CORRECTIONS` |
 | `memo/ROOT` | 不採用キャンペーンの独立セッション `PSS_MEMO` |
 
-Lean 版の構成は [`lean/spec.md`](lean/spec.md)、進捗は [`lean/task.md`](lean/task.md)、
-作業手順は [`lean/step.md`](lean/step.md) にある。
+Lean 版の構成は [`lean/spec.md`](lean/spec.md)、作業手順は [`lean/step.md`](lean/step.md) にある。
 
 各事実は `<§番号>_<内容>` 形式で命名し、コメントに元論文の節番号（§）と日本語名を付けて
 元論文と対応付けられるようにしている。`pss_paper.thy` の `p_` 接頭辞が論文の主張、
 `pss_mechanized.thy` の `m_` 接頭辞が独自証明に対応する。
-
-## 進捗
-
-各命題・補題・系・定理の証明状況は [`isabelle/task.md`](isabelle/task.md) と [`lean/task.md`](lean/task.md) に進捗ツリー（未証明🚨 / 証明済✅ / 原文偽❌ / 作業中🤖）としてまとめている。
 
 ## 原文への訂正案
 
