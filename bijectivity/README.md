@@ -51,7 +51,7 @@ Naruyoko,「ペア数列システムの停止性証明に用いられた変換�
 | `05-exp-implies-lex.lean` | `not_ltExpPS_ltPS`（訂正 `B1`） | `ltExpPS_ltPS_of_lng` |
 | `11-path-to-initial-segment.lean` | `not_seg_ltExpPS`（訂正 `B2`） | `seg_leExpPS` |
 
-主定理 `trans_bijOn` の `#print axioms` は `Cited.lean` の外部引用 **2 本**と
+主定理 `trans_bijOn` の `#print axioms` は `Cited.lean` の外部引用 **1 本**と
 標準 3 公理だけを挙げる（**`sorryAx` はどこにも現れない**）。
 
 ### 外部引用に依存しない部分
@@ -69,12 +69,12 @@ Naruyoko,「ペア数列システムの停止性証明に用いられた変換�
 
 ### 外部引用に依存する部分
 
-順序数側（`17`,`21`,`22`,`23` の全射性）は `Cited.lean` の `axiom` を使うが、**2 本だけ**である。
+順序数側（`17`,`21`,`22`,`23` の全射性）は `Cited.lean` の `axiom` を使うが、
+**`o_iSup_operB` の 1 本だけ**である。
 
 | axiom | 出典 | 検証 |
 |---|---|---|
-| `o_addBT` | [Buc1] の加法標準形 | — |
-| `o_iSup_operB` | [Buc2] Theorem 1.4(a) / Lemma 1.6 | `Audit-operB.lean` で全数検証 |
+| `o_iSup_operB` | [Buc2] Theorem 1.4(a) / Lemma 1.6（基本列の共終性） | `Audit-operB.lean` で全数検証 |
 
 **評価写像 \(o\) と \(\psi_0\psi_\omega0\) は公理ではない。**
 \((OT_{\textrm{B}},<_{\textrm{B}})\) は
@@ -90,7 +90,10 @@ Naruyoko,「ペア数列システムの停止性証明に用いられた変換�
 * 初期切片への全射性（`o_surj_below` / `o_surj_below_psi`）
 * \(o(0)=0\)（`o_BZero`）、\(o(D_00)=1\)（`o_DzeroZero`）
 
-は**すべて定理**である。
+は**すべて定理**である。原文が [Buc1] の加法標準形から使う分も
+\(o(s+_{\textrm{B}}D_00)=o(s)+1\) の形だけなので、\(D_00\) を足すのが
+\(OT_{\textrm{B}}\) の**直後者**を取ることを示して定理にしてある
+（`o_addBT_DzeroZero`、間に何も無いことは `no_between_snoc_D00`）。
 
 原文が全射性で引く **[3] の命題 11 も公理化していない**。非有界性・
 命題（後続な項の基本列）・命題（基本列の収束性）から超限帰納で直接証明してある

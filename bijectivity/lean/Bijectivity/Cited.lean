@@ -245,11 +245,99 @@ theorem o_DzeroZero : o (Dprin 0 BZero) = 1 := by
   · have := Order.succ_le_of_lt h0
     rwa [Order.succ_eq_add_one, zero_add] at this
 
-/-! ## 残る 2 本の外部引用 -/
+/-! ## \(+_{\textrm{B}}D_00\) は \(OT_{\textrm{B}}\) の直後者（[Buc1] の加法標準形のうち使う分） -/
 
-/-- [Buc1] の加法標準形: \(o\) は項の加法を順序数の加法に写す。 -/
-axiom o_addBT {s t : BT} (hs : s ∈ OT_B) (ht : t ∈ OT_B) (hst : addBT s t ∈ OT_B) :
-    o (addBT s t) = o s + o t
+/-- `lessBP` は単項項の `lessBT` そのもの。 -/
+private theorem lessBP_eq_lessBT (p q : BP) :
+    lessBP p q = lessBT (BT.trm [p]) (BT.trm [q]) := by
+  simp [lessBT, lessBPList]
+
+private theorem lessBP_irrefl (p : BP) : lessBP p p = false := by
+  rw [lessBP_eq_lessBT]; exact lessBT_linear_irrefl _
+
+/-- \(D_00\) より小さい principal は無い。 -/
+private theorem not_lessBP_D00 (p : BP) : lessBP p (.db 0 BZero) = false := by
+  rcases p with ⟨v, b⟩
+  simp only [lessBP, Bool.or_eq_false_iff, Bool.and_eq_false_imp,
+    decide_eq_false_iff_not, not_lt, beq_iff_eq]
+  refine ⟨by simp, ?_⟩
+  intro _
+  rcases b with ⟨cs⟩
+  cases cs <;> simp [BZero, lessBT, lessBPList]
+
+/-- \(s<_{\textrm{B}}s+_{\textrm{B}}D_00\)。 -/
+private theorem lessBPList_snoc_self :
+    ∀ as : List BP, lessBPList as (as ++ [BP.db 0 BZero]) = true
+  | [] => by simp [lessBPList]
+  | a :: as => by
+      have ih := lessBPList_snoc_self as
+      simp only [List.cons_append, lessBPList, Bool.or_eq_true, Bool.and_eq_true,
+        beq_self_eq_true, true_and]
+      exact Or.inr ih
+
+theorem lessBT_addBT_D00_self (s : BT) :
+    lessBT s (addBT s (Dprin 0 BZero)) = true := by
+  rcases s with ⟨as⟩
+  show lessBPList as (as ++ [BP.db 0 BZero]) = true
+  exact lessBPList_snoc_self as
+
+/-- \(s\) と \(s+_{\textrm{B}}D_00\) の間には何も無い。 -/
+private theorem no_between_snoc_D00 :
+    ∀ (as cs : List BP), lessBPList as cs = true →
+      lessBPList cs (as ++ [BP.db 0 BZero]) = true → False
+  | [], cs, h1, h2 => by
+      cases cs with
+      | nil => simp [lessBPList] at h1
+      | cons c rest =>
+          simp only [List.nil_append, lessBPList, Bool.or_eq_true, Bool.and_eq_true,
+            beq_iff_eq] at h2
+          rcases h2 with h | ⟨-, h⟩
+          · rw [not_lessBP_D00 c] at h; exact Bool.noConfusion h
+          · cases rest <;> simp [lessBPList] at h
+  | a :: as, cs, h1, h2 => by
+      cases cs with
+      | nil => simp [lessBPList] at h1
+      | cons c rest =>
+          simp only [lessBPList, Bool.or_eq_true, Bool.and_eq_true, beq_iff_eq] at h1
+          simp only [List.cons_append, lessBPList, Bool.or_eq_true, Bool.and_eq_true,
+            beq_iff_eq] at h2
+          rcases h1 with hac | ⟨hac, has⟩
+          · rcases h2 with hca | ⟨hca, -⟩
+            · have := lessBT_linear_trans _ _ _
+                ((lessBP_eq_lessBT a c) ▸ hac) ((lessBP_eq_lessBT c a) ▸ hca)
+              rw [lessBT_linear_irrefl] at this
+              exact Bool.noConfusion this
+            · rw [hca, lessBP_irrefl] at hac; exact Bool.noConfusion hac
+          · rcases h2 with hca | ⟨-, hrest⟩
+            · rw [← hac, lessBP_irrefl] at hca; exact Bool.noConfusion hca
+            · exact no_between_snoc_D00 as rest has hrest
+
+/-- **[Buc1] の加法標準形のうち原文が使う分**: \(D_00\) を足すのは
+\(OT_{\textrm{B}}\) の直後者を取ることなので \(o(s+_{\textrm{B}}D_00)=o(s)+1\)。 -/
+theorem o_addBT_DzeroZero {s : BT} (hs : s ∈ OT_B)
+    (hx : addBT s (Dprin 0 BZero) ∈ OT_B) :
+    o (addBT s (Dprin 0 BZero)) = o s + 1 := by
+  have hlt : lessBT s (addBT s (Dprin 0 BZero)) = true := lessBT_addBT_D00_self s
+  have h1 : o s < o (addBT s (Dprin 0 BZero)) := o_lt_of_lessBT hs hx hlt
+  refine le_antisymm ?_ ?_
+  · by_contra hgt
+    push_neg at hgt
+    obtain ⟨u, huOTB, hulx, huo⟩ := o_surj_below hx hgt
+    have hsu : o s < o u := by
+      rw [huo]
+      exact lt_of_lt_of_le (Order.lt_succ _) (le_of_eq (Order.succ_eq_add_one _))
+    have hsub : lessBT s u = true := by
+      rcases lessBT_linear_trichotomy s u with h | h | h
+      · exact h
+      · rw [h] at hsu; exact absurd hsu (lt_irrefl _)
+      · exact absurd (o_lt_of_lessBT huOTB hs h) (asymm hsu)
+    rcases s with ⟨as⟩
+    rcases u with ⟨cs⟩
+    exact no_between_snoc_D00 as cs hsub hulx
+  · have := Order.succ_le_of_lt h1
+    rwa [Order.succ_eq_add_one] at this
+
+/-! ## 残る 1 本の外部引用 -/
 
 /-- [Buc2] Theorem 1.4(a) 及び Lemma 1.6: \(\textrm{dom}(t)=\omega\) のとき
 \(t\) の基本列は \(o(t)\) に収束する。`Audit-operB.lean` が小さな

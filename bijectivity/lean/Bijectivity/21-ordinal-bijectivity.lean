@@ -152,8 +152,8 @@ theorem oTrans_surjOn :
       · by_contra hc
         push_neg at hc
         have hβeq : β = o (PSS.Trans (oper M 1)) + 1 := by
-          rw [← hMβ, ← h2, o_addBT (OTB_Trans_of_CTPS hM1) OTB_DzeroZero
-            (h2 ▸ OTB_Trans_of_CTPS hM), o_DzeroZero']
+          rw [← hMβ, ← h2, DzeroZero, o_addBT_DzeroZero (OTB_Trans_of_CTPS hM1)
+            (h2 ▸ OTB_Trans_of_CTPS hM)]
         have : β ≤ α := by
           rw [hβeq, Ordinal.add_one_eq_succ]
           exact Order.succ_le_of_lt hc
@@ -162,8 +162,8 @@ theorem oTrans_surjOn :
       · rw [h2, o_BZero, ← hMβ, h1, o_DzeroZero']
         exact zero_lt_one
       · have hβeq : β = o (PSS.Trans (oper M 1)) + 1 := by
-          rw [← hMβ, ← h2, o_addBT (OTB_Trans_of_CTPS hM1) OTB_DzeroZero
-            (h2 ▸ OTB_Trans_of_CTPS hM), o_DzeroZero']
+          rw [← hMβ, ← h2, DzeroZero, o_addBT_DzeroZero (OTB_Trans_of_CTPS hM1)
+            (h2 ▸ OTB_Trans_of_CTPS hM)]
         rw [hβeq, Ordinal.add_one_eq_succ]
         exact Order.lt_succ _
   · -- 極限の場合: 命題（基本列の収束性）

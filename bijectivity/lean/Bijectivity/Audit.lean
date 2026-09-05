@@ -17,11 +17,12 @@ Isabelle 側の `isabelle/8/audit.thy` にあたるビルド時ゲート。原�
 未証明で残さず**その否定**（`not_ltExpPS_ltPS` / `not_seg_ltExpPS`、訂正 `B1`/`B2`）
 を証明してある。
 
-外部引用は `Cited.lean` の **2 本だけ**（`o_addBT` ＝ [Buc1] の加法標準形、
-`o_iSup_operB` ＝ [Buc2] Theorem 1.4(a)）。評価写像 \(o\) 自身と
-\(\psi_0\psi_\omega0\) は公理ではなく `OT_B` の整礎性から**構成**してある。
-その 2 本は `17` / `21` / `22` / `23` の全射性にだけ現れ、
-`16` と `23` の順序同型 `trans_order_iso` は外部引用ゼロである。
+**外部引用は `o_iSup_operB` の 1 本だけ**（[Buc2] Theorem 1.4(a) ＝ 基本列の共終性、
+`Audit-operB.lean` で経験検証）。評価写像 \(o\) と \(\psi_0\psi_\omega0\) は
+`OT_B` の整礎性から構成してあり、[Buc1] Lemma 2.1 / 2.2(c) にあたる性質と
+加法標準形のうち原文が使う分（\(o(s+D_00)=o(s)+1\)）はすべて定理である。
+`o_iSup_operB` は `17` / `21` / `22` / `23` の全射性にだけ現れ、`16` と
+`23` の順序同型 `trans_order_iso` は外部引用ゼロである。
 -/
 
 /-! ## 01 系（辞書式的順序が辞書式順序であること） -/
@@ -309,11 +310,7 @@ info: 'Bijectivity.exists_trans_gt' depends on axioms: [propext, Classical.choic
 /-! ## 21 命題（変換写像の順序数への全単射性） -/
 
 /--
-info: 'Bijectivity.oTrans_bijOn' depends on axioms: [propext,
- Bijectivity.o_addBT,
- Bijectivity.o_iSup_operB,
- Classical.choice,
- Quot.sound]
+info: 'Bijectivity.oTrans_bijOn' depends on axioms: [propext, Bijectivity.o_iSup_operB, Classical.choice, Quot.sound]
 -/
 #guard_msgs (whitespace := lax) in
 #print axioms Bijectivity.oTrans_bijOn
@@ -322,11 +319,7 @@ info: 'Bijectivity.oTrans_bijOn' depends on axioms: [propext,
 /-! ## 22 系（ペア数列の解析） -/
 
 /--
-info: 'Bijectivity.analysis_ordinal' depends on axioms: [propext,
- Bijectivity.o_addBT,
- Bijectivity.o_iSup_operB,
- Classical.choice,
- Quot.sound]
+info: 'Bijectivity.analysis_ordinal' depends on axioms: [propext, Bijectivity.o_iSup_operB, Classical.choice, Quot.sound]
 -/
 #guard_msgs (whitespace := lax) in
 #print axioms Bijectivity.analysis_ordinal
@@ -338,11 +331,7 @@ info: 'Bijectivity.analysis_ordinal_lt' depends on axioms: [propext, Classical.c
 #print axioms Bijectivity.analysis_ordinal_lt
 
 /--
-info: 'Bijectivity.analysis_term' depends on axioms: [propext,
- Bijectivity.o_addBT,
- Bijectivity.o_iSup_operB,
- Classical.choice,
- Quot.sound]
+info: 'Bijectivity.analysis_term' depends on axioms: [propext, Bijectivity.o_iSup_operB, Classical.choice, Quot.sound]
 -/
 #guard_msgs (whitespace := lax) in
 #print axioms Bijectivity.analysis_term
@@ -357,11 +346,7 @@ info: 'Bijectivity.analysis_term_lt' depends on axioms: [propext, Classical.choi
 /-! ## 23 定理（変換写像の全単射性） -/
 
 /--
-info: 'Bijectivity.trans_bijOn' depends on axioms: [propext,
- Bijectivity.o_addBT,
- Bijectivity.o_iSup_operB,
- Classical.choice,
- Quot.sound]
+info: 'Bijectivity.trans_bijOn' depends on axioms: [propext, Bijectivity.o_iSup_operB, Classical.choice, Quot.sound]
 -/
 #guard_msgs (whitespace := lax) in
 #print axioms Bijectivity.trans_bijOn
