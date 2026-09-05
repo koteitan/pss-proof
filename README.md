@@ -12,6 +12,7 @@ P進大好きbot 氏のブログ記事「ペア数列の停止性」（巨大数
 | [`corrections/`](corrections/) | Isabelle/HOL の反例・経験検証資料（独立セッション） | 機械検査済みアーカイブ |
 | [`memo/`](memo/) | 停止性に採用しなかった Isabelle/HOL 証明キャンペーン | 機械検査済みアーカイブ |
 | [`lean/`](lean/) | Lean 4 版（原文の命題 1 つ = ファイル 1 つ） | **完了**（停止性を `sorry` ゼロで証明） |
+| [`bijectivity/`](bijectivity/) | 続編記事「変換写像の全単射性」(Naruyoko, 2022) の Lean 4 形式化 | **完了**（原文 23 項目すべて） |
 | `python/` | 反例探索・数値検証モデル | 共通 |
 | `tools/` | 原文処理 | 共通 |
 
@@ -31,6 +32,24 @@ theorem y5_Fdom   : ...                     (* 原文の言明 p_8_7_termination
 
 原文の全命題・補題・系・定理の形式化も完了している。
 その過程で原文の訂正案を 30 件見つけた（下記）。
+
+## 続編: 変換写像の全単射性
+
+[`bijectivity/`](bijectivity/) は Naruyoko 氏の記事
+「ペア数列システムの停止性証明に用いられた変換写像の全単射性」(2022) の Lean 4
+形式化である。停止性で使った \(\textrm{Trans}\) が実は
+
+\[
+\textrm{Trans}:CT_{\textrm{PS}}\longrightarrow
+\{t\mid t\in OT_{\textrm{B}\omega}\land t<_{\textrm{B}}D_0D_\omega0\}
+\]
+
+の順序同型（全単射）であることを示す。**原文の 23 項目すべてを形式化済み**で、
+\(\textrm{Trans}\) が well-defined かつ単射な順序同型埋め込みであることは
+外部引用ゼロ・`sorry` ゼロで証明されている。全射性だけが [Buc1]/[Buc2] の評価写像
+\(o\) に関する 8 本の引用に依存する。詳細は
+[`bijectivity/README.md`](bijectivity/README.md)、原文への訂正案 5 件は
+[`bijectivity/corrections.md`](bijectivity/corrections.md)。
 
 ## ファイル構成（Isabelle 版）
 

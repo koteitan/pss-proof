@@ -122,6 +122,16 @@ Naruyoko,「ペア数列システムの停止性証明に用いられた変換�
 | `16c-operB-mono.lean` | `operB` の添字単調性（Isabelle `y4_N_mono_le`）。条件 (V) 非許容枝の \(m=0\) 用 |
 | `16d-condII-fseq-rel.lean` | 条件 (II) の交換関係 (2) |
 
+## 監査（ビルド時ゲート）
+
+[`lean/Bijectivity/Audit.lean`](lean/Bijectivity/Audit.lean) が原文 23 項目それぞれの
+`#print axioms` の出力を `#guard_msgs` で固定している。どれかが `sorry` に依存し始めたり
+（`sorryAx` が増える）、`Cited.lean` の外部引用が増えたりすると**ビルドが落ちる**。
+Isabelle 側の `isabelle/8/audit.thy` にあたる。緑ビルド＝監査合格である。
+
+`sorryAx` を期待しているのは `05` と `11` の**逐語形 2 本だけ**で、これは原文の言明が
+偽であるため（訂正 `B1` / `B2`）。
+
 ## 原文への訂正案
 
 形式化の過程で見つかった原文の訂正案は [`corrections.md`](corrections.md) に集約している
