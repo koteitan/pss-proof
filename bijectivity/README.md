@@ -76,7 +76,7 @@ Naruyoko,「ペア数列システムの停止性証明に用いられた変換�
 | `o` / `psi0psiOmega0` / `o_DzeroDomegaZero` | [Buc1] の評価写像と \(\psi_0\psi_\omega0\) |
 | `o_lt_of_lessBT` / `o_surj_below` | [Buc1] Lemma 2.2(c)（\(o\) が順序同型） |
 | `o_BZero` / `o_DzeroZero` / `o_addBT` | [Buc1] の加法標準形 |
-| `o_iSup_operB` | [Buc2] Theorem 1.4(a) / Lemma 1.6 |
+| `o_iSup_operB` | [Buc2] Theorem 1.4(a) / Lemma 1.6（`Audit-operB.lean` で経験検証） |
 
 原文が全射性で引く **[3] の命題 11 は公理化していない**。非有界性・
 命題（後続な項の基本列）・命題（基本列の収束性）から超限帰納で直接証明してある
@@ -92,7 +92,8 @@ Naruyoko,「ペア数列システムの停止性証明に用いられた変換�
 
 したがって \(o\) の単調性を `BT` 全体で述べると順序数の無限降下列が作れて
 **公理系が矛盾する**。`o_lt_of_lessBT` / `o_addBT` / `o_iSup_operB` には
-`OT` の仮定を付けてある（`o_addBT` は和が `OT` に入ることも要る）。
+`OT` の仮定を付けてある（`o_addBT` は和が入ることも要る。`o_addBT` と
+`o_iSup_operB` は使う場所がすべて \(OT_{\textrm{B}}\) なので、そちらに絞ってある）。
 この形なら模型がある: \((OT_{\textrm{B}\omega},<_{\textrm{B}})\) は [Buc1] により
 整礎な線形順序なので順序型を持ち、\(o\) をその順序同型（`OT` の外では \(0\)）と
 取ればすべての公理が成り立つ。
@@ -132,10 +133,16 @@ Isabelle 側の `isabelle/8/audit.thy` にあたる。緑ビルド＝監査合�
 `sorryAx` を期待しているのは `05` と `11` の**逐語形 2 本だけ**で、これは原文の言明が
 偽であるため（訂正 `B1` / `B2`）。
 
+[`lean/Bijectivity/Audit-operB.lean`](lean/Bijectivity/Audit-operB.lean) は残る外部引用の
+うち深いほう `o_iSup_operB`（[Buc2] Theorem 1.4(a) ＝ 基本列の共終性）を、小さな
+\(OT_{\textrm{B}}\) 項のプール上で全数検証する。本リポジトリの `operB` は
+[Buc2] の定義そのものではなく**訂正 A23 を当てた形**なので、引用だけで済ませずに
+確かめている（プール 496 項・\(\textrm{dom}=\omega\) の項 361 個で反例 0）。
+
 ## 原文への訂正案
 
 形式化の過程で見つかった原文の訂正案は [`corrections.md`](corrections.md) に集約している
-（現在 5 件）。
+（現在 7 件、うち `B6`/`B7` は軽微）。
 
 | id | 内容 |
 |---|---|
@@ -144,6 +151,8 @@ Isabelle 側の `isabelle/8/audit.thy` にあたる。緑ビルド＝監査合�
 | `B3` | 命題（基本列的順序が辞書式的順序を含意すること）の内側の帰納法に基底段階が無い |
 | `B4` | 補題（基本列の関係）の複項の場合の最後の計算は \(\leq_{\textrm{B}}\) で添字も違う |
 | `B5` | 補題（基本列の関係）の条件 (V) 非許容枝では \(m=0\) が [1] の交換関係で覆えない |
+| `B6` | 命題（対応する項の上界）(1) の連鎖の 1 つ目は \(\leq_{\textrm{B}}\)（軽微） |
+| `B7` | 命題（対応する項の上界）(2) の \(D_0D_u=0\textrm{Trans}\) は誤植（軽微） |
 
 ## ビルド
 

@@ -169,3 +169,44 @@ $n\geq1$ に対し $m_n=n\geq1$ なので $m=0$ に対応する $n$ が無い。
 `bijectivity/lean/Bijectivity/16c-operB-mono.lean` の `operB_numBT_mono_holds`
 （Isabelle `y4_N_mono_le`, `isabelle/8/Support_8_C.thy`:11924 の移植）。
 使用箇所は `16b-mono-fseq-rel.lean` の `mono_fseq_rel` の条件 (V) 非許容枝。
+
+## B6. 命題（対応する項の上界）(1): 結論の連鎖の 1 つ目は $\leq_{\textrm{B}}$ [軽微]
+
+### 位置
+命題（対応する項の上界）(1) の証明の最終行。
+
+### 原文
+\(\textrm{Trans}\)が順序を保つことより\(\textrm{Trans}(M)<_{\textrm{B}}\textrm{Trans}(((j,j))_{j=0}^v)<_{\textrm{B}}D_0D_\omega0\)である。
+
+### 訂正案
+\(\textrm{Trans}\)が順序を保つことより\(\textrm{Trans}(M)\leq_{\textrm{B}}\textrm{Trans}(((j,j))_{j=0}^v)<_{\textrm{B}}D_0D_\omega0\)である。
+
+### 原文の問題点
+直前の行で得ているのは $M\leq_{\textrm{PS}}((j,j))_{j=0}^v$（等号込み）なので、
+命題（$\textrm{Trans}$ が順序を保つこと）から出るのは $\leq_{\textrm{B}}$ である。
+$M=((j,j))_{j=0}^v\in CT_{\textrm{PS}}$ のとき両辺は等しいので $<_{\textrm{B}}$ は偽。
+
+連鎖の 2 つ目が狭義なので結論 $\textrm{Trans}(M)<_{\textrm{B}}D_0D_\omega0$ は変わらない。
+
+### 形式化
+`bijectivity/lean/Bijectivity/20-term-upper-bound.lean` の `trans_lt_bound`。
+$((j,j))_{j=0}^{v+1}$ を取り直して $\leq_{\textrm{B}}$ と $D_0D_v0<_{\textrm{B}}D_0D_{v+1}0$ を合成している。
+
+## B7. 命題（対応する項の上界）(2): $D_0D_u=0\textrm{Trans}$ は誤植 [軽微]
+
+### 位置
+命題（対応する項の上界）(2) の証明の最終行。
+
+### 原文
+[1]の公差\((1,1)\)のペア数列の\(\textrm{Trans}\)の基本性質より\(t<_{\textrm{B}}D_0D_u=0\textrm{Trans}(((j,j))_{j=0}^u)=D_0D_u0\)である。
+
+### 訂正案
+[1]の公差\((1,1)\)のペア数列の\(\textrm{Trans}\)の基本性質より\(t<_{\textrm{B}}D_0D_u0=\textrm{Trans}(((j,j))_{j=0}^u)\)である。
+
+### 原文の問題点
+`D_0D_u=0\textrm{Trans}` は `D_0D_u0=\textrm{Trans}` の誤植（`0` と `=` の入れ替わり）。
+また末尾の `=D_0D_u0` は同じ項の繰り返しなので削れる。
+
+### 形式化
+`bijectivity/lean/Bijectivity/20-term-upper-bound.lean` の `exists_trans_gt`
+（`Trans_diagSeq_zero` が \(\textrm{Trans}(((j,j))_{j=0}^v)=D_0D_v0\)）。

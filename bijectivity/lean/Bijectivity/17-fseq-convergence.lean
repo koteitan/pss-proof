@@ -56,7 +56,7 @@ theorem fseq_convergence {M : PS} (hM : STPS M) (hdom : domIsOmega (PSS.Trans M)
     exact le_of_lt (o_lt_of_lessBT (hnOT n hn).1 hMOT.1
       (Trans_fseq_descend M n hM hn hlen))
   · -- 基本列の関係 と [5] Theorem 1.4(a) / Lemma 1.6
-    rw [← o_iSup_operB hMOT.1 hdom]
+    rw [← o_iSup_operB hMOT hdom]
     refine Ordinal.iSup_le_iff.mpr ?_
     intro m
     obtain ⟨n, hn, hle⟩ := fseq_relation hM m hdom

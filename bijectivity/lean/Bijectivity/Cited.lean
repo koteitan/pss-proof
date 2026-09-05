@@ -32,7 +32,10 @@ import «Buchholz-rel-ord».«Buchholz-rel-ord-6»
 この形の公理系には模型がある: \((OT_{\textrm{B}\omega},<_{\textrm{B}})\) は
 [Buc1] により整礎な線形順序なので順序型 \(\gamma\) を持ち、\(o\) をその順序同型
 （`OT` の外では \(0\)）、\(\psi_0\psi_\omega0=o(D_0D_\omega0)\) と取ればよい。
-`o_addBT` は [Buc1] の加法標準形、`o_iSup_operB` は [Buc2] Theorem 1.4(a) である。
+`o_addBT` は [Buc1] の加法標準形、`o_iSup_operB` は [Buc2] Theorem 1.4(a) である
+（この 2 本は使う場所がすべて \(OT_{\textrm{B}}\)＝\(D_\omega\) を含まない順序数項なので、
+仮定もそちらに絞ってある。`o_iSup_operB`＝基本列の共終性は
+`Audit-operB.lean` で小さな \(OT_{\textrm{B}}\) プール上を全数検証してある）。
 -/
 
 namespace Bijectivity
@@ -73,7 +76,7 @@ axiom o_DzeroZero : o (Dprin 0 BZero) = 1
 `addBT s t ∈ OT`（＝連結が降順のまま）も要る。これを落とすと
 `s = D_00`, `t = D_10` で `addBT s t` が順序数項でなくなり、`o` の値が
 どの模型でも決まらない。 -/
-axiom o_addBT {s t : BT} (hs : s ∈ OT) (ht : t ∈ OT) (hst : addBT s t ∈ OT) :
+axiom o_addBT {s t : BT} (hs : s ∈ OT_B) (ht : t ∈ OT_B) (hst : addBT s t ∈ OT_B) :
     o (addBT s t) = o s + o t
 
 /-- [Buc1] Lemma 2.2(c): \(o\) は \((OT_{\textrm{B}\omega},<_{\textrm{B}})\) から
@@ -83,7 +86,7 @@ axiom o_surj_below {t₀ : BT} (h₀ : t₀ ∈ OT) {α : Ordinal} (h : α < o t
 
 /-- [Buc2] Theorem 1.4(a) 及び Lemma 1.6: \(\textrm{dom}(t)=\omega\) のとき
 \(t\) の基本列は \(o(t)\) に収束する。 -/
-axiom o_iSup_operB {t : BT} (ht : t ∈ OT) (h : domTag t = BDom.naturals) :
+axiom o_iSup_operB {t : BT} (ht : t ∈ OT_B) (h : domTag t = BDom.naturals) :
     ⨆ m : ℕ, o (operB t (numBT m)) = o t
 
 /-! ## `BT` 全体では \(<_{\textrm{B}}\) が整礎でないことの証拠（機械検証） -/

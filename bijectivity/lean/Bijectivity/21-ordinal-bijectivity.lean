@@ -44,16 +44,24 @@ theorem OT_DzeroDomegaZero : DzeroDomegaZero ∈ OT := by
   show isOT_BT DzeroDomegaZero = true
   decide
 
-/-- \(D_00\) は順序数項。 -/
-theorem OT_DzeroZero : DzeroZero ∈ OT := by
-  show isOT_BT DzeroZero = true
-  decide
+/-- \(D_00\) は \(D_\omega\) を含まない順序数項。 -/
+theorem OTB_DzeroZero : DzeroZero ∈ OT_B := by
+  constructor
+  · show isOT_BT DzeroZero = true
+    decide
+  · show dfree_BT DzeroZero = true
+    decide
+
+theorem OT_DzeroZero : DzeroZero ∈ OT := OTB_DzeroZero.1
 
 theorem o_DzeroZero' : o DzeroZero = 1 := by rw [DzeroZero]; exact o_DzeroZero
 
 /-- \(\textrm{Trans}\) の値は順序数項（`8.7-termination` の OT 柱）。 -/
+theorem OTB_Trans_of_CTPS {M : PS} (hM : CTPS M) : PSS.Trans M ∈ OT_B :=
+  Trans_STPS_OT_B M hM.1
+
 theorem OT_Trans_of_CTPS {M : PS} (hM : CTPS M) : PSS.Trans M ∈ OT :=
-  (Trans_STPS_OT_B M hM.1).1
+  (OTB_Trans_of_CTPS hM).1
 
 /-! ## 全域性 -/
 
@@ -147,7 +155,8 @@ theorem oTrans_surjOn :
       · by_contra hc
         push_neg at hc
         have hβeq : β = o (PSS.Trans (oper M 1)) + 1 := by
-          rw [← hMβ, ← h2, o_addBT (OT_Trans_of_CTPS hM1) OT_DzeroZero (h2 ▸ hOTM), o_DzeroZero']
+          rw [← hMβ, ← h2, o_addBT (OTB_Trans_of_CTPS hM1) OTB_DzeroZero
+            (h2 ▸ OTB_Trans_of_CTPS hM), o_DzeroZero']
         have : β ≤ α := by
           rw [hβeq, Ordinal.add_one_eq_succ]
           exact Order.succ_le_of_lt hc
@@ -156,7 +165,8 @@ theorem oTrans_surjOn :
       · rw [h2, o_BZero, ← hMβ, h1, o_DzeroZero']
         exact zero_lt_one
       · have hβeq : β = o (PSS.Trans (oper M 1)) + 1 := by
-          rw [← hMβ, ← h2, o_addBT (OT_Trans_of_CTPS hM1) OT_DzeroZero (h2 ▸ hOTM), o_DzeroZero']
+          rw [← hMβ, ← h2, o_addBT (OTB_Trans_of_CTPS hM1) OTB_DzeroZero
+            (h2 ▸ OTB_Trans_of_CTPS hM), o_DzeroZero']
         rw [hβeq, Ordinal.add_one_eq_succ]
         exact Order.lt_succ _
   · -- 極限の場合: 命題（基本列の収束性）
