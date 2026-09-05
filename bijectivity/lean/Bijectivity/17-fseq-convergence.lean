@@ -1,6 +1,5 @@
 import Bijectivity.«16-fseq-relation»
 import Bijectivity.«16c-operB-mono»
-import Bijectivity.«16f-buc2-cofinality»
 import Bijectivity.«15-successor-fseq»
 import «8».«8.7-termination»
 
@@ -39,7 +38,7 @@ theorem o_le_of_leBT {a b : BT} (ha : a ∈ OT_B) (hb : b ∈ OT_B) (h : leBT a 
   · exact le_rfl
 
 /-- **[Buc2] Theorem 1.4(a)**: \(\textrm{dom}(t)=\omega\) なら
-\(\sup_m o(t[m])=o(t)\)。構文的な共終性 `fseq_cofinal` と、基本列の
+\(\sup_m o(t[m])=o(t)\)。構文的な共終性 `fseq_cofinal`（＝`y4_bachmann`）と、基本列の
 降下性（[Buc1] Lemma 3.2(a)）・閉性（同 3.3）・添字単調性（`16c`）から出る。 -/
 theorem o_iSup_operB {t : BT} (ht : t ∈ OT_B) (h : domTag t = BDom.naturals) :
     ⨆ m : ℕ, o (operB t (numBT m)) = o t := by
@@ -59,7 +58,7 @@ theorem o_iSup_operB {t : BT} (ht : t ∈ OT_B) (h : domTag t = BDom.naturals) :
     obtain ⟨m, hm⟩ := fseq_cofinal t ht h u huOTB hult
     have h1 : o u ≤ o (operB t (numBT m)) := o_le_of_leBT huOTB (hcl m) hm
     have h2 : o (operB t (numBT m)) < o (operB t (numBT (m + 1))) :=
-      o_lt_of_lessBT (hcl m) (hcl (m + 1)) (operB_numBT_step t ht.1 h m)
+      o_lt_of_lessBT (hcl m) (hcl (m + 1)) (operB_numBT_step t ht h m)
     have h3 : o (operB t (numBT (m + 1))) ≤ ⨆ n : ℕ, o (operB t (numBT n)) :=
       Ordinal.le_iSup (fun n : ℕ => o (operB t (numBT n))) (m + 1)
     have := Order.succ_le_of_lt (lt_of_le_of_lt h1 (lt_of_lt_of_le h2 h3))

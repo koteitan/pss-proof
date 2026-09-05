@@ -12,7 +12,7 @@ P進大好きbot 氏のブログ記事「ペア数列の停止性」（巨大数
 | [`corrections/`](corrections/) | Isabelle/HOL の反例・経験検証資料（独立セッション） | 機械検査済みアーカイブ |
 | [`memo/`](memo/) | 停止性に採用しなかった Isabelle/HOL 証明キャンペーン | 機械検査済みアーカイブ |
 | [`lean/`](lean/) | Lean 4 版（原文の命題 1 つ = ファイル 1 つ） | **完了**（停止性を `sorry` ゼロで証明） |
-| [`bijectivity/`](bijectivity/) | 続編記事「変換写像の全単射性」(Naruyoko, 2022) の Lean 4 形式化 | **完了**（原文 23 項目すべて、`sorry` ゼロ） |
+| [`bijectivity/`](bijectivity/) | 続編記事「変換写像の全単射性」(Naruyoko, 2022) の Lean 4 形式化 | **完了**（原文 23 項目すべて、`sorry` ゼロ・引用ゼロ） |
 | `python/` | 反例探索・数値検証モデル | 共通 |
 | `tools/` | 原文処理 | 共通 |
 

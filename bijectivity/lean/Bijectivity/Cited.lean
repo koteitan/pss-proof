@@ -5,13 +5,15 @@ import «Buchholz-1986».«Buchholz-1986-2.1-order»
 import «Buchholz-1986».«Buchholz-1986-3.2»
 import «Buchholz-rel-ord».«Buchholz-rel-ord-6»
 import «OTB-well-founded-syntactic».«OTB-well-founded-syntactic-main»
+import «OTB-well-founded-syntactic».«OTB-well-founded-syntactic-cofinality»
 
 /-!
-# 順序数側の評価写像 \(o\)
+# 順序数側の評価写像 \(o\)（公理ではなく構成）
 
 原文は「表記」節で \(\psi_ua\)、\(D_ua\)、\(G_ua\)、\(o\) を [Buc1] から引くと明記している。
 本ファイルはそのうち \(o\) と \(\psi_0\psi_\omega0\) を**引用ではなく構成**し、
-原文が使う性質のうち構成から出るものは定理として与える。**残る `axiom` は 2 本だけ**。
+原文が使う性質をすべて定理として与える。**`axiom` はひとつも無い**
+（ファイル名は歴史的なもの）。
 
 引用元:
 * [Buc1] W. Buchholz, “A new system of proof-theoretic ordinal functions”,
@@ -37,17 +39,15 @@ import «OTB-well-founded-syntactic».«OTB-well-founded-syntactic-main»
 これで [Buc1] Lemma 2.1 / 2.2(c) にあたる性質（順序を保つこと・初期切片への全射性・
 \(o(0)=0\)・\(o(D_00)=1\)）は**すべて定理**になる。
 
-## 残る 1 本の `axiom`
+## `axiom` はゼロ
 
-| axiom | 出典 | 検証 |
-|---|---|---|
-| `cof_single_principal`（`16f`） | [Buc2] Theorem 1.4(a) / Lemma 1.6 の**単項 \(D_vb\), \(b\neq0\) の部分** | `Audit-operB.lean` で小 \(OT_{\textrm{B}}\) プール全数検証 |
+原文が [Buc1] / [Buc2] から引く事実はすべて本リポジトリ内で証明済みである。
 
-[Buc1] の加法標準形のうち原文が使う分（\(o(s+_{\textrm{B}}D_00)=o(s)+1\)）は
-`o_addBT_DzeroZero` として定理にしてある。残る `fseq_cofinal` は
-**順序数を含まない純粋に構文的な主張**（基本列が初期切片で共終であること）なので、
-`Audit-operB.lean` がその形のまま小さなプール上で全数検証できる。
-本リポジトリの `operB` は訂正 A23 入りなので、引用だけでは済まないため。
+| 原文が引く事実 | 証明 |
+|---|---|
+| \((OT_{\textrm{B}},<_{\textrm{B}})\) の整礎性（[Buc1] 2.2） | `OTB-well-founded-syntactic-main` の `OT_B_wellFounded` |
+| 基本列の共終性（[Buc2] Theorem 1.4(a)） | `OTB-well-founded-syntactic-cofinality` の `y4_bachmann` |
+| 加法標準形のうち使う分 | 下の `o_addBT_DzeroZero`（\(D_00\) を足すのは直後者） |
 
 ## 🚨 `OT_B` の仮定は落とせない
 
@@ -364,13 +364,18 @@ theorem o_eq_iSup_below {t : BT} (ht : t ∈ OT_B) :
 順序数を含まない純粋に構文的な主張なので、`Audit-operB.lean` が小さな
 \(OT_{\textrm{B}}\) プール上でこの形のまま全数検証している。
 
-`16f-buc2-cofinality.lean` がこれを**単項 \(D_vb\)（\(b\neq0\)）の場合**まで
-還元してある（多項の剥がしと \(b=0\) の 2 枝は証明済み）。残差はそこの
-`cof_single_principal`。 -/
+**これは公理ではない**: `OTB-well-founded-syntactic-cofinality.lean` の
+`y4_bachmann`（Isabelle `y4_bachmann`, `layerC/pss_scratch.thy`:13261）が
+Buchholz–Schütte の distinguished-sets 経路の cardinal-free 版として
+**仮定ゼロ・`sorry` ゼロで証明済み**なので、そこから直接出る。 -/
 def FseqCofinal : Prop :=
   ∀ t : BT, t ∈ OT_B → domTag t = BDom.naturals →
     ∀ u : BT, u ∈ OT_B → lessBT u t = true →
       ∃ m : ℕ, leBT u (operB t (numBT m)) = true
+
+/-- [Buc2] Theorem 1.4(a)。`y4_bachmann` の \(\textrm{dom}=\omega\) 枝そのもの。 -/
+theorem fseq_cofinal : FseqCofinal := fun t hOT hdom u huOTB hult =>
+  (y4_bachmann t u hOT.1 hOT.2 huOTB.1 huOTB.2 hult).1 (Or.inr hdom)
 
 /-! ## `dom` の記法 -/
 

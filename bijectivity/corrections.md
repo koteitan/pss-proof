@@ -168,7 +168,8 @@ $n\geq1$ に対し $m_n=n\geq1$ なので $m=0$ に対応する $n$ が無い。
 
 ### 形式化
 `bijectivity/lean/Bijectivity/16c-operB-mono.lean` の `operB_numBT_mono_holds`
-（Isabelle `y4_N_mono_le`, `isabelle/8/Support_8_C.thy`:11924 の移植）。
+（`lean/OTB-well-founded-syntactic/OTB-well-founded-syntactic-cofinality.lean` の
+`y4_N_mono_le` への配線）。
 使用箇所は `16b-mono-fseq-rel.lean` の `mono_fseq_rel` の条件 (V) 非許容枝。
 
 ## B6. 命題（対応する項の上界）(1): 結論の連鎖の 1 つ目は $\leq_{\textrm{B}}$ [軽微]

@@ -4,8 +4,10 @@ import «Buchholz-1986».«Buchholz-1986-3.3»
 /-!
 # 監査 — 基本列の共終性（`o_iSup_operB` の経験的検証）
 
-`Cited.lean` に残る**唯一の**外部引用 `fseq_cofinal`（[Buc2] Theorem 1.4(a)）を
-経験的に検証する。その主張は
+`Cited.lean` の `FseqCofinal`（[Buc2] Theorem 1.4(a)）の**独立な数値検証**。
+この主張自体は `OTB-well-founded-syntactic-cofinality.lean` の `y4_bachmann` で
+**証明済み**（仮定ゼロ・`sorry` ゼロ）なので、本ファイルは公理の裏付けではなく
+**独立二重チェック**として残す。その主張は
 
 \[
 t\in OT_{\textrm{B}},\ \textrm{dom}(t)=\omega,\ u\in OT_{\textrm{B}},\ u<_{\textrm{B}}t
@@ -46,7 +48,8 @@ t\in OT_{\textrm{B}},\ \textrm{dom}(t)=\omega,\ u\in OT_{\textrm{B}},\ u<_{\text
 `buchholz_fseq_lt`（[Buc1] Lemma 3.2(a)）と `operB_numBT_step`（`16c-operB-mono`）。）
 
 [Buc1] の加法標準形のうち原文が使う分は `Cited.lean` の `o_addBT_DzeroZero`
-として**証明済み**なので、経験検証の対象は `fseq_cofinal` だけである。
+として証明済みである。本ファイルの検証は `y4_bachmann` の結論と `operB` の実装が
+食い違っていないことの独立チェックにあたる。
 -/
 
 namespace Bijectivity

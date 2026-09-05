@@ -51,8 +51,8 @@ Naruyoko,「ペア数列システムの停止性証明に用いられた変換�
 | `05-exp-implies-lex.lean` | `not_ltExpPS_ltPS`（訂正 `B1`） | `ltExpPS_ltPS_of_lng` |
 | `11-path-to-initial-segment.lean` | `not_seg_ltExpPS`（訂正 `B2`） | `seg_leExpPS` |
 
-主定理 `trans_bijOn` の `#print axioms` は外部引用 **1 本**と
-標準 3 公理だけを挙げる（**`sorryAx` はどこにも現れない**）。
+**主定理 `trans_bijOn` の `#print axioms` は `propext` / `Classical.choice` /
+`Quot.sound` の 3 つだけ**である。`sorryAx` も外部引用の `axiom` も現れない。
 
 ### 外部引用に依存しない部分
 
@@ -67,58 +67,23 @@ Naruyoko,「ペア数列システムの停止性証明に用いられた変換�
 が **well-defined かつ単射な順序同型埋め込み**であること
 （`trans_mapsTo` / `trans_injOn` / `trans_order_iso`）は完全に機械検証されている。
 
-### 外部引用に依存する部分
+### 外部引用も**ゼロ**
 
-順序数側（`17`,`21`,`22`,`23` の全射性）は `Cited.lean` の `axiom` を使うが、
-**`fseq_cofinal` の 1 本だけ**である。しかもそれは**順序数を含まない構文的な主張**で、
+原文が [Buc1] / [Buc2] / [3] から引く事実は、**すべて本リポジトリ内で証明済み**である。
 
-\[
-t\in OT_{\textrm{B}},\ \textrm{dom}(t)=\omega,\ u\in OT_{\textrm{B}},\ u<_{\textrm{B}}t
-\;\Longrightarrow\; \exists m,\ u\leq_{\textrm{B}}t[m]
-\]
+| 原文が引く事実 | 本リポジトリでの証明 |
+|---|---|
+| \((OT_{\textrm{B}},<_{\textrm{B}})\) の整礎性（[Buc1] Lemma 2.2） | `OTB-well-founded-syntactic-main.lean` の `OT_B_wellFounded` |
+| 基本列の共終性（[Buc2] Theorem 1.4(a)） | `OTB-well-founded-syntactic-cofinality.lean` の `y4_bachmann` |
+| 基本列の狭義下降（[Buc1] Lemma 3.2(a)） | `Buchholz-1986-3.2-descent.lean` の `buchholz_fseq_lt` |
+| 基本列の \(OT_{\textrm{B}}\) 閉性（[Buc1] Lemma 3.3） | `Buchholz-1986-3.3.lean` の `buchholz_fseq_closed` |
+| 評価写像 \(o\)、\(\psi_0\psi_\omega0\)、順序保存・全射性（[Buc1] Lemma 2.1 / 2.2(c)） | `Cited.lean` で `Ordinal.typein` として**構成**（`o_lt_of_lessBT` / `o_surj_below` / `o_BZero` / `o_DzeroZero`） |
+| 加法標準形のうち原文が使う分 | `Cited.lean` の `o_addBT_DzeroZero`（\(D_00\) を足すのが直後者） |
+| [3] の命題 11（全射性） | 公理化せず、非有界性・`15`・`17` から超限帰納で直接証明（`oTrans_surjOn`） |
 
-＝基本列が初期切片で共終であること（[Buc2] Theorem 1.4(a)）である。原文の
-\(\sup_m o(\textrm{Trans}(M[m]))=o(\textrm{Trans}(M))\) はここから
-`17-fseq-convergence.lean` の `o_iSup_operB` として**導かれる**。
+`Cited.lean` の名前は歴史的なもので、いまや `axiom` はひとつも無い。
 
-| axiom | 出典 | 検証 |
-|---|---|---|
-| `cof_single_principal` | [Buc2] Theorem 1.4(a) の**単項 \(D_vb\), \(b\neq0\) の部分** | `Audit-operB.lean` が全数検証 |
-
-`16f-buc2-cofinality.lean` が共終性を**単項の場合まで還元**してある。証明済みなのは
-
-* 多項の剥がし（`cof_peel`）: 末尾 principal に帰着する
-* \(t=D_00\)（`cof_D00`）と \(t=D_v0,\ v>0\)（`cof_Dv0`）の 2 枝
-* \(v=\omega\) は `dfree`（\(OT_{\textrm{B}}\)）で排除
-
-残るのは \(D_vb\)（\(b\neq0\)）の 4 分岐、すなわち `operB` の
-\(\textrm{dom}(b)=\{0\}\) / \(T_w\)（\(v\leq w\)：訂正 A23 の塔）/ \(T_w\)（\(v>w\)）/
-\(\mathbb{N}\) である。
-
-**評価写像 \(o\) と \(\psi_0\psi_\omega0\) は公理ではない。**
-\((OT_{\textrm{B}},<_{\textrm{B}})\) は
-
-* 整礎（`OTB-well-founded-syntactic` が**仮定ゼロ**で証明した `OT_B_wellFounded`）
-* 三分律（`lessBT_linear_trichotomy`）と推移律（`lessBT_linear_trans`）
-
-を満たすので整列順序であり、\(o\) をその順序型への順序同型（`Ordinal.typein`）、
-\(\psi_0\psi_\omega0\) を \(\{t\in OT_{\textrm{B}}\mid t<_{\textrm{B}}D_0D_\omega0\}\)
-の順序型として**構成**してある。したがって原文が [Buc1] Lemma 2.1 / 2.2(c) から引く
-
-* \(o\) が \(<_{\textrm{B}}\) を保つこと（`o_lt_of_lessBT`）
-* 初期切片への全射性（`o_surj_below` / `o_surj_below_psi`）
-* \(o(0)=0\)（`o_BZero`）、\(o(D_00)=1\)（`o_DzeroZero`）
-
-は**すべて定理**である。原文が [Buc1] の加法標準形から使う分も
-\(o(s+_{\textrm{B}}D_00)=o(s)+1\) の形だけなので、\(D_00\) を足すのが
-\(OT_{\textrm{B}}\) の**直後者**を取ることを示して定理にしてある
-（`o_addBT_DzeroZero`、間に何も無いことは `no_between_snoc_D00`）。
-
-原文が全射性で引く **[3] の命題 11 も公理化していない**。非有界性・
-命題（後続な項の基本列）・命題（基本列の収束性）から超限帰納で直接証明してある
-（`21-ordinal-bijectivity.lean` の `oTrans_surjOn`）。
-
-#### 🚨 公理はすべて \(OT_{\textrm{B}}\) 上でしか主張していない
+#### 🚨 順序数側の主張はすべて \(OT_{\textrm{B}}\) 上でしか述べていない
 
 `BT`（Buchholz 項の型）全体では \(<_{\textrm{B}}\) は**整礎ではない**。
 `lessBT (D_0 t) (D_0 t') = lessBT t t'` かつ任意の \(t\) に対して
@@ -126,8 +91,8 @@ t\in OT_{\textrm{B}},\ \textrm{dom}(t)=\omega,\ u\in OT_{\textrm{B}},\ u<_{\text
 無限降下列になる（`Cited.lean` の `descChain` / `descChain_lt` で機械検証、
 `descChain_not_OT` のとおり \(n\geq2\) で順序数項から外れる）。
 
-したがって \(o\) の単調性を `BT` 全体で述べると順序数の無限降下列が作れて
-**矛盾する**。上記の定理・公理はすべて `OT_B` の仮定付きである。
+\(o\) の単調性を `BT` 全体で述べると順序数の無限降下列が作れて**矛盾する**ので、
+`o_lt_of_lessBT` 等はすべて `OT_B` の仮定付きである。
 
 ### `16`（補題（基本列の関係））の内訳
 
