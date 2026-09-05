@@ -18,31 +18,33 @@
 
 ## 項目
 
+W と S は件数が多く、どの項目にもあるので、この表には出さない。
+
 | # | 項目 | 指摘 |
 |---|---|---|
-| [01](01-lex-is-lexicographic.md) | 系 (辞書式的順序が辞書式順序であること) | W-1, W-2, W-3 |
-| [02](02-lex-linear.md) | 系 (辞書式的順序の線形性) | W-4, W-5, W-6, W-7 |
-| [03](03-exp-order-transitive.md) | 命題 (基本列的順序が推移性) | W-8, R-1, W-9, S-1, W-10 |
-| [04](04-fseq-lex-decreasing.md) | 命題 (基本列の辞書式的縮小性) | W-11, S-2, W-12, W-13, S-3 |
-| [05](05-exp-implies-lex.md) | 命題 (辞書式的順序が基本列的順序を含意すること) | 🚨X-1, R-2, W-14, S-4 |
-| [06](06-fseq-segment-invariance.md) | 命題 (基本列の切片の不変性) | ⚠️Y-1, W-15, W-16, R-3, R-4 |
-| [07](07-oper-pred.md) | 命題 (展開とPredの関係) | ⚠️Y-2, R-5, R-6, S-5 |
-| [08](08-leftmost-invariance.md) | 補題 (最左列の不変性) | R-7, S-6, W-17 |
-| [09](09-standard-iff-exp.md) | 補題 (標準形と基本列的順序の関係) | R-8, R-9, W-18, S-7, ⚠️Y-3 |
-| [10](10-countable-standard-origin.md) | 命題 (可算な標準形の起源) | R-10, ⚠️Y-4, W-19, W-20 |
-| [11](11-path-to-initial-segment.md) | 補題 (標準形の始切片への経路) | ⚠️Y-5, R-11, W-21 |
-| [12](12-lex-implies-exp.md) | 命題 (基本列的順序が辞書式的順序を含意すること) | R-12, W-22, ⚠️Y-6, 🚨Z-1, W-23, W-24, ⚠️Y-7, W-25, W-26, W-27, R-13 |
-| [13](13-order-equivalence.md) | 系 (順序の等価性) | W-28, W-29, R-14 |
+| [01](01-lex-is-lexicographic.md) | 系 (辞書式的順序が辞書式順序であること) | — |
+| [02](02-lex-linear.md) | 系 (辞書式的順序の線形性) | — |
+| [03](03-exp-order-transitive.md) | 命題 (基本列的順序が推移性) | R-1 |
+| [04](04-fseq-lex-decreasing.md) | 命題 (基本列の辞書式的縮小性) | — |
+| [05](05-exp-implies-lex.md) | 命題 (辞書式的順序が基本列的順序を含意すること) | 🚨X-1, R-2 |
+| [06](06-fseq-segment-invariance.md) | 命題 (基本列の切片の不変性) | ⚠️Y-1, R-3, R-4 |
+| [07](07-oper-pred.md) | 命題 (展開とPredの関係) | ⚠️Y-2, R-5, R-6 |
+| [08](08-leftmost-invariance.md) | 補題 (最左列の不変性) | R-7 |
+| [09](09-standard-iff-exp.md) | 補題 (標準形と基本列的順序の関係) | R-8, R-9, ⚠️Y-3 |
+| [10](10-countable-standard-origin.md) | 命題 (可算な標準形の起源) | R-10, ⚠️Y-4 |
+| [11](11-path-to-initial-segment.md) | 補題 (標準形の始切片への経路) | ⚠️Y-5, R-11 |
+| [12](12-lex-implies-exp.md) | 命題 (基本列的順序が辞書式的順序を含意すること) | R-12, ⚠️Y-6, 🚨Z-1, ⚠️Y-7, R-13 |
+| [13](13-order-equivalence.md) | 系 (順序の等価性) | R-14 |
 | [14](14-order-linearity.md) | 系 (順序の線形性) | R-15 |
-| [15](15-successor-fseq.md) | 命題 (後続な項の基本列) | S-8, S-9, S-10, R-16, ⚠️Y-8, W-30, R-17, ⚠️Y-9, W-31, R-18, R-19 |
-| [16](16-fseq-relation.md) | 補題 (基本列の関係) | ⚠️Y-10, ⚠️Y-11, ⚠️Y-12, ⚠️Y-13, W-32, W-33, W-34, W-35, R-20, R-21 |
-| [17](17-fseq-convergence.md) | 命題 (基本列の収束性) | 🌳U-1, S-11, W-36, W-37 |
-| [18](18-trans-preserves-order.md) | 命題 (Transが順序を保つこと) | R-22, W-38, W-39, W-40, S-12 |
-| [19](19-alphabet-below-bound.md) | 補題 (対応する項の上界未満の字母) | W-41, ⚠️Y-14, W-42, R-23 |
-| [20](20-term-upper-bound.md) | 命題 (対応する項の上界) | W-43, W-44, ⚠️Y-15, ⚠️Y-16, R-24, W-45, W-46, W-47, ⚠️Y-17 |
-| [21](21-ordinal-bijectivity.md) | 命題 (変換写像の順序数への全単射性) | 🌳U-2, W-48, W-49, S-13, W-50, R-25, W-51, S-14 |
-| [22](22-pair-sequence-analysis.md) | 系 (ペア数列の解析) | S-15, S-16, R-26, W-52, W-53, R-27 |
-| [23](23-trans-bijectivity.md) | 定理 (変換写像の全単射性) | R-28, W-54, R-29, R-30 |
+| [15](15-successor-fseq.md) | 命題 (後続な項の基本列) | R-16, ⚠️Y-8, R-17, ⚠️Y-9, R-18, R-19 |
+| [16](16-fseq-relation.md) | 補題 (基本列の関係) | ⚠️Y-10, ⚠️Y-11, ⚠️Y-12, ⚠️Y-13, R-20, R-21 |
+| [17](17-fseq-convergence.md) | 命題 (基本列の収束性) | 🌳U-1 |
+| [18](18-trans-preserves-order.md) | 命題 (Transが順序を保つこと) | R-22 |
+| [19](19-alphabet-below-bound.md) | 補題 (対応する項の上界未満の字母) | ⚠️Y-14, R-23 |
+| [20](20-term-upper-bound.md) | 命題 (対応する項の上界) | ⚠️Y-15, ⚠️Y-16, R-24, ⚠️Y-17 |
+| [21](21-ordinal-bijectivity.md) | 命題 (変換写像の順序数への全単射性) | 🌳U-2, R-25 |
+| [22](22-pair-sequence-analysis.md) | 系 (ペア数列の解析) | R-26, R-27 |
+| [23](23-trans-bijectivity.md) | 定理 (変換写像の全単射性) | R-28, R-29, R-30 |
 
 ## 指摘一覧
 
