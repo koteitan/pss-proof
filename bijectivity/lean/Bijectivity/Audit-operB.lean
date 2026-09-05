@@ -30,10 +30,18 @@ import «Buchholz-1986».«Buchholz-1986-3.3»
 
 ## 結果
 
-| 指標の範囲 | 深さ | プール | \(\textrm{dom}=\omega\) の項 | 反例 |
+| 指標の範囲 | \(t\) の深さ | プール | \(\textrm{dom}=\omega\) の項 | 反例 |
 |---|---|---|---|---|
 | \(\{0,1\}\) | 2 | 91 | 64 | **0** |
 | \(\{0,1,2\}\) | 2 | 496 | 361 | **0** |
+| \(\{0,1,2,3\}\) | 2 | 1891 | 1355 | **0** |
+| \(\{0,1,2\}\) | 3（非対称版） | 496 | 1071 | **0** |
+| \(\{0,1,2,3,4\}\) | 2 | 5671 | 3964 | **0**（ビルド時間の都合で `#guard` にはしていない） |
+
+非対称版は \(t\) を 1 段深くして（深さ 3 の単項）、比較相手 \(u\) は深さ 2 の
+プールのままにしたもの。`operB` の A23 分岐（`xseq` の塔）は
+\(t=D_v(D_w\cdots)\) で \(v\leq w-1\) のときに走るので、深さ 2 で既に踏んでいるが、
+入れ子の塔も見ておくためのもの。
 
 （`t[m] <_B t` と `t[m] <_B t[m+1]` のほうは経験検証ではなく定理である:
 `buchholz_fseq_lt`（[Buc1] Lemma 3.2(a)）と `operB_numBT_step`（`16c-operB-mono`）。）
@@ -70,7 +78,17 @@ def cofAudit (idx : List ℕ∞) (d B : ℕ) : ℕ × ℕ × ℕ :=
   let ts := pool.filter (fun t => domTag t == BDom.naturals)
   (pool.length, ts.length, (ts.filter (fun t => !coversBelow pool B t)).length)
 
+/-- 深い `t` を浅いプールで検査する非対称版（`t` は深さ 3 の単項）。 -/
+def cofAuditDeep (idx : List ℕ∞) (d B : ℕ) : ℕ × ℕ × ℕ :=
+  let uPool := otbGrow idx d
+  let ps : List BP := idx.flatMap (fun v => uPool.map (fun b => BP.db v b))
+  let tPool := ((ps.map (fun p => BT.trm [p])).filter (fun t => isOT_BT t && dfree_BT t)).eraseDups
+  let ts := tPool.filter (fun t => domTag t == BDom.naturals)
+  (uPool.length, ts.length, (ts.filter (fun t => !coversBelow uPool B t)).length)
+
 #guard cofAudit [0, 1] 2 6 == (91, 64, 0)
 #guard cofAudit [0, 1, 2] 2 6 == (496, 361, 0)
+#guard cofAudit [0, 1, 2, 3] 2 8 == (1891, 1355, 0)
+#guard cofAuditDeep [0, 1, 2] 2 8 == (496, 1071, 0)
 
 end Bijectivity
