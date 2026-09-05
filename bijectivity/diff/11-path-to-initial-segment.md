@@ -1,4 +1,4 @@
-[< back](README.md)
+[← back](README.md)
 
 # 11: 補題 (標準形の始切片への経路)
 

@@ -1,4 +1,4 @@
-[< back](README.md)
+[← back](README.md)
 
 # 16: 補題 (基本列の関係)
 

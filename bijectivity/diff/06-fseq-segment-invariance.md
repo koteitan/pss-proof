@@ -1,4 +1,4 @@
-[< back](README.md)
+[← back](README.md)
 
 # 06: 命題 (基本列の切片の不変性)
 

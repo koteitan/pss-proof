@@ -1,4 +1,4 @@
-[< back](README.md)
+[← back](README.md)
 
 # 02: 系 (辞書式的順序の線形性)
 

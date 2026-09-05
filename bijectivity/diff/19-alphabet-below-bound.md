@@ -1,4 +1,4 @@
-[< back](README.md)
+[← back](README.md)
 
 # 19: 補題 (対応する項の上界未満の字母)
 

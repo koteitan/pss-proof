@@ -1,4 +1,4 @@
-[< back](README.md)
+[← back](README.md)
 
 # 15: 命題 (後続な項の基本列)
 

@@ -1,4 +1,4 @@
-[< back](README.md)
+[← back](README.md)
 
 # 13: 系 (順序の等価性)
 

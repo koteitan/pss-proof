@@ -1,4 +1,4 @@
-[< back](README.md)
+[← back](README.md)
 
 # 09: 補題 (標準形と基本列的順序の関係)
 

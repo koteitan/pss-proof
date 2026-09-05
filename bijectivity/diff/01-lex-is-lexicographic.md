@@ -1,4 +1,4 @@
-[< back](README.md)
+[← back](README.md)
 
 # 01: 系 (辞書式的順序が辞書式順序であること)
 

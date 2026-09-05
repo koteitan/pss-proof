@@ -1,4 +1,4 @@
-[< back](README.md)
+[← back](README.md)
 
 # 07: 命題 (展開とPredの関係)
 

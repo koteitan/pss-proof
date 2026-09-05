@@ -1,4 +1,4 @@
-[< back](README.md)
+[← back](README.md)
 
 # 23: 定理 (変換写像の全単射性)
 

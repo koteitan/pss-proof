@@ -7,7 +7,7 @@
 ## 1. 章構成
 
 ```
-[< back](README.md)
+[← back](README.md)
 # (命題番号): (タイトル)
 
 ## 原文

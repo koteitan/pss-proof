@@ -1,4 +1,4 @@
-[< back](README.md)
+[← back](README.md)
 
 # 21: 命題 (変換写像の順序数への全単射性)
 

@@ -1,4 +1,4 @@
-[< back](README.md)
+[← back](README.md)
 
 # 22: 系 (ペア数列の解析)
 

@@ -1,4 +1,4 @@
-[< back](README.md)
+[← back](README.md)
 
 # 08: 補題 (最左列の不変性)
 

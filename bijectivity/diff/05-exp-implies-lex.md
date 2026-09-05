@@ -1,4 +1,4 @@
-[< back](README.md)
+[← back](README.md)
 
 # 05: 命題 (辞書式的順序が基本列的順序を含意すること)
 

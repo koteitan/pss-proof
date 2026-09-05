@@ -1,4 +1,4 @@
-[< back](README.md)
+[← back](README.md)
 
 # 04: 命題 (基本列の辞書式的縮小性)
 

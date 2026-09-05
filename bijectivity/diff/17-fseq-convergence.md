@@ -1,4 +1,4 @@
-[< back](README.md)
+[← back](README.md)
 
 # 17: 命題 (基本列の収束性)
 

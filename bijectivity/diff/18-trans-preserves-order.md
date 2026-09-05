@@ -1,4 +1,4 @@
-[< back](README.md)
+[← back](README.md)
 
 # 18: 命題 (Transが順序を保つこと)
 

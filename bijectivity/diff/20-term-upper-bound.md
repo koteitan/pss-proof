@@ -1,4 +1,4 @@
-[< back](README.md)
+[← back](README.md)
 
 # 20: 命題 (対応する項の上界)
 

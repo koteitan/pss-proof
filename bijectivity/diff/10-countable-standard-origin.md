@@ -1,4 +1,4 @@
-[< back](README.md)
+[← back](README.md)
 
 # 10: 命題 (可算な標準形の起源)
 

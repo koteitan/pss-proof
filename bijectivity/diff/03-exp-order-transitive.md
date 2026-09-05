@@ -1,4 +1,4 @@
-[< back](README.md)
+[← back](README.md)
 
 # 03: 命題 (基本列的順序が推移性)
 
