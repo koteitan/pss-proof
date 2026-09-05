@@ -29,7 +29,7 @@ namespace Bijectivity
 open PSS
 
 /-- \(\leq_{\textrm{B}}\) は \(o\) で保たれる（[Buc1] Lemma 2.2(c)）。 -/
-theorem o_le_of_leBT {a b : BT} (ha : a ∈ OT) (hb : b ∈ OT) (h : leBT a b = true) :
+theorem o_le_of_leBT {a b : BT} (ha : a ∈ OT_B) (hb : b ∈ OT_B) (h : leBT a b = true) :
     o a ≤ o b := by
   simp only [leBT, Bool.or_eq_true, beq_iff_eq] at h
   rcases h with h | rfl
@@ -53,14 +53,14 @@ theorem fseq_convergence {M : PS} (hM : STPS M) (hdom : domIsOmega (PSS.Trans M)
   · -- [1] の基本列の降下性
     refine Ordinal.iSup_le_iff.mpr ?_
     rintro ⟨n, hn⟩
-    exact le_of_lt (o_lt_of_lessBT (hnOT n hn).1 hMOT.1
+    exact le_of_lt (o_lt_of_lessBT (hnOT n hn) hMOT
       (Trans_fseq_descend M n hM hn hlen))
   · -- 基本列の関係 と [5] Theorem 1.4(a) / Lemma 1.6
     rw [← o_iSup_operB hMOT hdom]
     refine Ordinal.iSup_le_iff.mpr ?_
     intro m
     obtain ⟨n, hn, hle⟩ := fseq_relation hM m hdom
-    exact (o_le_of_leBT (buchholz_fseq_closed _ m hMOT hTne).1 (hnOT n hn).1 hle).trans
+    exact (o_le_of_leBT (buchholz_fseq_closed _ m hMOT hTne) (hnOT n hn) hle).trans
       (Ordinal.le_iSup (fun k : {n : ℕ // 1 ≤ n} => o (PSS.Trans (oper M k.1))) ⟨n, hn⟩)
 
 end Bijectivity

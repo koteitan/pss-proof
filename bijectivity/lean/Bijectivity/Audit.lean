@@ -13,14 +13,15 @@ Isabelle 側の `isabelle/8/audit.thy` にあたるビルド時ゲート。原�
 
 **ビルドが落ちる**。緑ビルド＝この監査に合格である。
 
-`05` と `11` の逐語形は原文の言明が**偽**なので、逐語形そのものではなく
-**その否定**（`not_ltExpPS_ltPS` / `not_seg_ltExpPS`、訂正 `B1` / `B2`）を証明してある。
-したがって **`sorryAx` はどこにも現れない**。訂正形は `ltExpPS_ltPS_of_lng` /
-`seg_leExpPS`。
+**`sorryAx` はどこにも現れない**。原文の言明が偽である `05`/`11` の逐語形は、
+未証明で残さず**その否定**（`not_ltExpPS_ltPS` / `not_seg_ltExpPS`、訂正 `B1`/`B2`）
+を証明してある。
 
-`o` 系 8 本（`Cited.lean`）は原文が [Buc1]/[Buc2] から引く外部引用で、
-`17` / `21` / `22` と `23` の全射性にだけ現れる。
-`23` の `trans_order_iso`（順序同型）と `16` は外部引用ゼロである。
+外部引用は `Cited.lean` の **2 本だけ**（`o_addBT` ＝ [Buc1] の加法標準形、
+`o_iSup_operB` ＝ [Buc2] Theorem 1.4(a)）。評価写像 \(o\) 自身と
+\(\psi_0\psi_\omega0\) は公理ではなく `OT_B` の整礎性から**構成**してある。
+その 2 本は `17` / `21` / `22` / `23` の全射性にだけ現れ、
+`16` と `23` の順序同型 `trans_order_iso` は外部引用ゼロである。
 -/
 
 /-! ## 01 系（辞書式的順序が辞書式順序であること） -/
@@ -266,12 +267,7 @@ info: 'Bijectivity.fseq_relation' depends on axioms: [propext, Classical.choice,
 /-! ## 17 命題（基本列の収束性） -/
 
 /--
-info: 'Bijectivity.fseq_convergence' depends on axioms: [propext,
- Bijectivity.o,
- Bijectivity.o_iSup_operB,
- Bijectivity.o_lt_of_lessBT,
- Classical.choice,
- Quot.sound]
+info: 'Bijectivity.fseq_convergence' depends on axioms: [propext, Bijectivity.o_iSup_operB, Classical.choice, Quot.sound]
 -/
 #guard_msgs (whitespace := lax) in
 #print axioms Bijectivity.fseq_convergence
@@ -314,15 +310,8 @@ info: 'Bijectivity.exists_trans_gt' depends on axioms: [propext, Classical.choic
 
 /--
 info: 'Bijectivity.oTrans_bijOn' depends on axioms: [propext,
- Bijectivity.o,
- Bijectivity.o_BZero,
- Bijectivity.o_DzeroDomegaZero,
- Bijectivity.o_DzeroZero,
  Bijectivity.o_addBT,
  Bijectivity.o_iSup_operB,
- Bijectivity.o_lt_of_lessBT,
- Bijectivity.o_surj_below,
- Bijectivity.psi0psiOmega0,
  Classical.choice,
  Quot.sound]
 -/
@@ -334,15 +323,8 @@ info: 'Bijectivity.oTrans_bijOn' depends on axioms: [propext,
 
 /--
 info: 'Bijectivity.analysis_ordinal' depends on axioms: [propext,
- Bijectivity.o,
- Bijectivity.o_BZero,
- Bijectivity.o_DzeroDomegaZero,
- Bijectivity.o_DzeroZero,
  Bijectivity.o_addBT,
  Bijectivity.o_iSup_operB,
- Bijectivity.o_lt_of_lessBT,
- Bijectivity.o_surj_below,
- Bijectivity.psi0psiOmega0,
  Classical.choice,
  Quot.sound]
 -/
@@ -350,26 +332,15 @@ info: 'Bijectivity.analysis_ordinal' depends on axioms: [propext,
 #print axioms Bijectivity.analysis_ordinal
 
 /--
-info: 'Bijectivity.analysis_ordinal_lt' depends on axioms: [propext,
- Bijectivity.o,
- Bijectivity.o_lt_of_lessBT,
- Classical.choice,
- Quot.sound]
+info: 'Bijectivity.analysis_ordinal_lt' depends on axioms: [propext, Classical.choice, Quot.sound]
 -/
 #guard_msgs (whitespace := lax) in
 #print axioms Bijectivity.analysis_ordinal_lt
 
 /--
 info: 'Bijectivity.analysis_term' depends on axioms: [propext,
- Bijectivity.o,
- Bijectivity.o_BZero,
- Bijectivity.o_DzeroDomegaZero,
- Bijectivity.o_DzeroZero,
  Bijectivity.o_addBT,
  Bijectivity.o_iSup_operB,
- Bijectivity.o_lt_of_lessBT,
- Bijectivity.o_surj_below,
- Bijectivity.psi0psiOmega0,
  Classical.choice,
  Quot.sound]
 -/
@@ -387,15 +358,8 @@ info: 'Bijectivity.analysis_term_lt' depends on axioms: [propext, Classical.choi
 
 /--
 info: 'Bijectivity.trans_bijOn' depends on axioms: [propext,
- Bijectivity.o,
- Bijectivity.o_BZero,
- Bijectivity.o_DzeroDomegaZero,
- Bijectivity.o_DzeroZero,
  Bijectivity.o_addBT,
  Bijectivity.o_iSup_operB,
- Bijectivity.o_lt_of_lessBT,
- Bijectivity.o_surj_below,
- Bijectivity.psi0psiOmega0,
  Classical.choice,
  Quot.sound]
 -/

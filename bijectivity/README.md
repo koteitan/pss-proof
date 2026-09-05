@@ -51,7 +51,7 @@ Naruyoko,「ペア数列システムの停止性証明に用いられた変換�
 | `05-exp-implies-lex.lean` | `not_ltExpPS_ltPS`（訂正 `B1`） | `ltExpPS_ltPS_of_lng` |
 | `11-path-to-initial-segment.lean` | `not_seg_ltExpPS`（訂正 `B2`） | `seg_leExpPS` |
 
-主定理 `trans_bijOn` の `#print axioms` は `Cited.lean` の外部引用 8 本と
+主定理 `trans_bijOn` の `#print axioms` は `Cited.lean` の外部引用 **2 本**と
 標準 3 公理だけを挙げる（**`sorryAx` はどこにも現れない**）。
 
 ### 外部引用に依存しない部分
@@ -69,21 +69,34 @@ Naruyoko,「ペア数列システムの停止性証明に用いられた変換�
 
 ### 外部引用に依存する部分
 
-順序数側（`17`,`21`,`22`,`23` の全射性）は `Cited.lean` の 8 本の `axiom` を使う。
-いずれも原文が [Buc1]/[Buc2] から引くと明記している事実で、原文が使う形のまま置いてある。
+順序数側（`17`,`21`,`22`,`23` の全射性）は `Cited.lean` の `axiom` を使うが、**2 本だけ**である。
 
-| axiom | 出典 |
-|---|---|
-| `o` / `psi0psiOmega0` / `o_DzeroDomegaZero` | [Buc1] の評価写像と \(\psi_0\psi_\omega0\) |
-| `o_lt_of_lessBT` / `o_surj_below` | [Buc1] Lemma 2.2(c)（\(o\) が順序同型） |
-| `o_BZero` / `o_DzeroZero` / `o_addBT` | [Buc1] の加法標準形 |
-| `o_iSup_operB` | [Buc2] Theorem 1.4(a) / Lemma 1.6（`Audit-operB.lean` で経験検証） |
+| axiom | 出典 | 検証 |
+|---|---|---|
+| `o_addBT` | [Buc1] の加法標準形 | — |
+| `o_iSup_operB` | [Buc2] Theorem 1.4(a) / Lemma 1.6 | `Audit-operB.lean` で全数検証 |
 
-原文が全射性で引く **[3] の命題 11 は公理化していない**。非有界性・
+**評価写像 \(o\) と \(\psi_0\psi_\omega0\) は公理ではない。**
+\((OT_{\textrm{B}},<_{\textrm{B}})\) は
+
+* 整礎（`OTB-well-founded-syntactic` が**仮定ゼロ**で証明した `OT_B_wellFounded`）
+* 三分律（`lessBT_linear_trichotomy`）と推移律（`lessBT_linear_trans`）
+
+を満たすので整列順序であり、\(o\) をその順序型への順序同型（`Ordinal.typein`）、
+\(\psi_0\psi_\omega0\) を \(\{t\in OT_{\textrm{B}}\mid t<_{\textrm{B}}D_0D_\omega0\}\)
+の順序型として**構成**してある。したがって原文が [Buc1] Lemma 2.1 / 2.2(c) から引く
+
+* \(o\) が \(<_{\textrm{B}}\) を保つこと（`o_lt_of_lessBT`）
+* 初期切片への全射性（`o_surj_below` / `o_surj_below_psi`）
+* \(o(0)=0\)（`o_BZero`）、\(o(D_00)=1\)（`o_DzeroZero`）
+
+は**すべて定理**である。
+
+原文が全射性で引く **[3] の命題 11 も公理化していない**。非有界性・
 命題（後続な項の基本列）・命題（基本列の収束性）から超限帰納で直接証明してある
 （`21-ordinal-bijectivity.lean` の `oTrans_surjOn`）。
 
-#### 🚨 公理はすべて \(OT_{\textrm{B}\omega}\) 上でしか主張していない
+#### 🚨 公理はすべて \(OT_{\textrm{B}}\) 上でしか主張していない
 
 `BT`（Buchholz 項の型）全体では \(<_{\textrm{B}}\) は**整礎ではない**。
 `lessBT (D_0 t) (D_0 t') = lessBT t t'` かつ任意の \(t\) に対して
@@ -92,12 +105,7 @@ Naruyoko,「ペア数列システムの停止性証明に用いられた変換�
 `descChain_not_OT` のとおり \(n\geq2\) で順序数項から外れる）。
 
 したがって \(o\) の単調性を `BT` 全体で述べると順序数の無限降下列が作れて
-**公理系が矛盾する**。`o_lt_of_lessBT` / `o_addBT` / `o_iSup_operB` には
-`OT` の仮定を付けてある（`o_addBT` は和が入ることも要る。`o_addBT` と
-`o_iSup_operB` は使う場所がすべて \(OT_{\textrm{B}}\) なので、そちらに絞ってある）。
-この形なら模型がある: \((OT_{\textrm{B}\omega},<_{\textrm{B}})\) は [Buc1] により
-整礎な線形順序なので順序型を持ち、\(o\) をその順序同型（`OT` の外では \(0\)）と
-取ればすべての公理が成り立つ。
+**矛盾する**。上記の定理・公理はすべて `OT_B` の仮定付きである。
 
 ### `16`（補題（基本列の関係））の内訳
 

@@ -71,8 +71,7 @@ theorem oTrans_mapsTo :
       {α : Ordinal | α < psi0psiOmega0} := by
   intro M hM
   show o (PSS.Trans M) < psi0psiOmega0
-  rw [← o_DzeroDomegaZero]
-  exact o_lt_of_lessBT (OT_Trans_of_CTPS hM) OT_DzeroDomegaZero (trans_lt_bound hM)
+  exact o_lt_psi (OTB_Trans_of_CTPS hM) (trans_lt_bound hM)
 
 /-! ## 単射性 -/
 
@@ -94,11 +93,11 @@ theorem oTrans_injOn : Set.InjOn (fun M => o (PSS.Trans M)) {M : PS | CTPS M} :=
   intro M hM N hN h
   simp only at h
   rcases ltPS_trichotomy M N with h1 | h1 | h1
-  · exact absurd (o_lt_of_lessBT (OT_Trans_of_CTPS hM) (OT_Trans_of_CTPS hN)
+  · exact absurd (o_lt_of_lessBT (OTB_Trans_of_CTPS hM) (OTB_Trans_of_CTPS hN)
       (trans_lessBT_of_ltPS hM hN h1))
       (by rw [h]; exact lt_irrefl _)
   · exact h1
-  · exact absurd (o_lt_of_lessBT (OT_Trans_of_CTPS hN) (OT_Trans_of_CTPS hM)
+  · exact absurd (o_lt_of_lessBT (OTB_Trans_of_CTPS hN) (OTB_Trans_of_CTPS hM)
       (trans_lessBT_of_ltPS hN hM h1))
       (by rw [← h]; exact lt_irrefl _)
 
@@ -113,11 +112,9 @@ theorem ctps_oper {M : PS} (hM : CTPS M) {n : ℕ} (hn : 1 ≤ n) : CTPS (oper M
 対応する項の上界未満の字母 と 対応する項の上界 (2) と [4] Lemma 2.2(c) から従う。 -/
 theorem oTrans_unbounded {α : Ordinal} (hα : α < psi0psiOmega0) :
     ∃ M : PS, CTPS M ∧ α < o (PSS.Trans M) := by
-  have hlt : α < o DzeroDomegaZero := by rw [o_DzeroDomegaZero]; exact hα
-  obtain ⟨t, htOT, htlt, hto⟩ := o_surj_below OT_DzeroDomegaZero hlt
-  have htB : t ∈ T_B := ((OT_iff_OT_B_of_lt htlt).mp htOT).2
-  obtain ⟨M, hM, hMlt⟩ := exists_trans_gt htB htlt
-  exact ⟨M, hM, by rw [← hto]; exact o_lt_of_lessBT htOT (OT_Trans_of_CTPS hM) hMlt⟩
+  obtain ⟨t, htOTB, htlt, hto⟩ := o_surj_below_psi hα
+  obtain ⟨M, hM, hMlt⟩ := exists_trans_gt htOTB.2 htlt
+  exact ⟨M, hM, by rw [← hto]; exact o_lt_of_lessBT htOTB (OTB_Trans_of_CTPS hM) hMlt⟩
 
 /-- 原文の全射性。原文は [3] の命題 11 を引くが、ここでは
 非有界性・後続な項の基本列・基本列の収束性から超限帰納で直接示す。 -/
@@ -182,7 +179,7 @@ theorem oTrans_surjOn :
     obtain ⟨⟨n, hn⟩, hnlt⟩ := hex
     refine hβmin (o (PSS.Trans (oper M n))) ⟨le_of_lt hnlt, ⟨oper M n, ctps_oper hM hn, rfl⟩⟩ ?_
     rw [← hMβ]
-    exact o_lt_of_lessBT (OT_Trans_of_CTPS (ctps_oper hM hn)) (OT_Trans_of_CTPS hM)
+    exact o_lt_of_lessBT (OTB_Trans_of_CTPS (ctps_oper hM hn)) (OTB_Trans_of_CTPS hM)
       (Trans_fseq_descend M n hM.1 hn hlen)
 
 /-- 原文の命題（変換写像の順序数への全単射性）。 -/
