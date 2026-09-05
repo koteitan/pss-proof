@@ -34,7 +34,8 @@ theorem analysis_ordinal_mapsTo {M : PS} (hM : CTPS M) :
     Set.MapsTo (fun N => o (PSS.Trans N)) {N : PS | CTPS N ∧ N <ₚ M}
       {α : Ordinal | α < o (PSS.Trans M)} := by
   rintro N ⟨hN, hlt⟩
-  exact o_lt_of_lessBT (trans_lessBT_of_ltPS hN hM hlt)
+  exact o_lt_of_lessBT (OT_Trans_of_CTPS hN) (OT_Trans_of_CTPS hM)
+    (trans_lessBT_of_ltPS hN hM hlt)
 
 /-- (1) の単射性。 -/
 theorem analysis_ordinal_injOn {M : PS} :
@@ -57,9 +58,25 @@ theorem analysis_ordinal_surjOn {M : PS} (hM : CTPS M) :
   · rw [h1] at hNo'
     rw [hNo'] at hα
     exact absurd hα (lt_irrefl _)
-  · have hlt2 := o_lt_of_lessBT (trans_lessBT_of_ltPS hM hN h1)
+  · have hlt2 := o_lt_of_lessBT (OT_Trans_of_CTPS hM) (OT_Trans_of_CTPS hN)
+      (trans_lessBT_of_ltPS hM hN h1)
     rw [hNo'] at hlt2
     exact absurd (lt_trans hlt2 hα) (lt_irrefl _)
+
+/-- (1) の同型性のうち順序を保つ部分。原文の「同型写像」は順序集合の同型なので、
+全単射（`analysis_ordinal`）だけでなくこの向きの同値も要る。 -/
+theorem analysis_ordinal_lt {N N' : PS} (hN : CTPS N) (hN' : CTPS N') :
+    N <ₚ N' ↔ o (PSS.Trans N) < o (PSS.Trans N') := by
+  constructor
+  · intro h
+    exact o_lt_of_lessBT (OT_Trans_of_CTPS hN) (OT_Trans_of_CTPS hN')
+      (trans_lessBT_of_ltPS hN hN' h)
+  · intro h
+    rcases ltPS_trichotomy N N' with h1 | rfl | h1
+    · exact h1
+    · exact absurd h (lt_irrefl _)
+    · exact absurd (lt_trans h (o_lt_of_lessBT (OT_Trans_of_CTPS hN')
+        (OT_Trans_of_CTPS hN) (trans_lessBT_of_ltPS hN' hN h1))) (lt_irrefl _)
 
 /-- 原文の系（ペア数列の解析）(1)。 -/
 theorem analysis_ordinal {M : PS} (hM : CTPS M) :
@@ -82,14 +99,14 @@ theorem analysis_term_injOn {M : PS} :
   fun _ hN _ hN' h => trans_injOn hN.1 hN'.1 h
 
 /-- [4] Lemma 2.2(c) より \(o\) は単射（\(<_{\textrm{B}}\) の三分律から従う）。 -/
-theorem o_injective {a b : BT} (h : o a = o b) : a = b := by
+theorem o_injective {a b : BT} (ha : a ∈ OT) (hb : b ∈ OT) (h : o a = o b) : a = b := by
   rcases lessBT_linear_trichotomy a b with h1 | h1 | h1
-  · have hlt := o_lt_of_lessBT h1
+  · have hlt := o_lt_of_lessBT ha hb h1
     rw [h] at hlt
     exact absurd hlt (lt_irrefl _)
   · exact h1
-  · have hlt := o_lt_of_lessBT h1
-    rw [h] at hlt
+  · have hlt := o_lt_of_lessBT hb ha h1
+    rw [← h] at hlt
     exact absurd hlt (lt_irrefl _)
 
 /-- (2) の全射性。(1) の全射性と \(o\) の単射性から従う。 -/
@@ -97,9 +114,23 @@ theorem analysis_term_surjOn {M : PS} (hM : CTPS M) :
     Set.SurjOn PSS.Trans {N : PS | CTPS N ∧ N <ₚ M}
       {t : BT | t ∈ OT ∧ lessBT t (PSS.Trans M) = true} := by
   rintro t ⟨htOT, htlt⟩
-  have hα : o t < o (PSS.Trans M) := o_lt_of_lessBT htlt
+  have hα : o t < o (PSS.Trans M) := o_lt_of_lessBT htOT (OT_Trans_of_CTPS hM) htlt
   obtain ⟨N, hN, hNo⟩ := analysis_ordinal_surjOn hM hα
-  exact ⟨N, hN, o_injective hNo⟩
+  exact ⟨N, hN, o_injective (OT_Trans_of_CTPS hN.1) htOT hNo⟩
+
+/-- (2) の同型性のうち順序を保つ部分（定理（変換写像の全単射性）の
+「特に同型写像である」もこれを使う）。 -/
+theorem analysis_term_lt {N N' : PS} (hN : CTPS N) (hN' : CTPS N') :
+    N <ₚ N' ↔ lessBT (PSS.Trans N) (PSS.Trans N') = true := by
+  constructor
+  · exact trans_lessBT_of_ltPS hN hN'
+  · intro h
+    rcases ltPS_trichotomy N N' with h1 | rfl | h1
+    · exact h1
+    · simp [lessBT_linear_irrefl] at h
+    · have := lessBT_linear_trans _ _ _ h (trans_lessBT_of_ltPS hN' hN h1)
+      rw [lessBT_linear_irrefl] at this
+      exact absurd this (by simp)
 
 /-- 原文の系（ペア数列の解析）(2)。 -/
 theorem analysis_term {M : PS} (hM : CTPS M) :

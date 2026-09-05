@@ -76,11 +76,30 @@ theorem ltPS_trichotomy (M N : PS) : M <ₚ N ∨ M = N ∨ N <ₚ M := by
   · exact Or.inr (Or.inl (flatten_inj h))
   · exact Or.inr (Or.inr ((ltPS_iff_ltLex N M).mpr h))
 
-/-- \(\leq_{\textrm{PS}}\) が全順序であること。 -/
+/-- 原文の系（辞書式的順序の線形性）: \(\leq_{\textrm{PS}}\) の全律。 -/
 theorem lePS_total (M N : PS) : M ≤ₚ N ∨ N ≤ₚ M := by
   rcases ltPS_trichotomy M N with h | h | h
   · exact Or.inl (Or.inr h)
   · exact Or.inl (Or.inl h)
   · exact Or.inr (Or.inr h)
+
+/-- 原文の系（辞書式的順序の線形性）: \(\leq_{\textrm{PS}}\) の反射性。 -/
+theorem lePS_refl (M : PS) : M ≤ₚ M := Or.inl rfl
+
+/-- 原文の系（辞書式的順序の線形性）: \(\leq_{\textrm{PS}}\) の推移性。 -/
+theorem lePS_trans {M N O : PS} (h1 : M ≤ₚ N) (h2 : N ≤ₚ O) : M ≤ₚ O := by
+  rcases h1 with rfl | h1
+  · exact h2
+  rcases h2 with rfl | h2
+  · exact Or.inr h1
+  exact Or.inr (ltPS_trans h1 h2)
+
+/-- 原文の系（辞書式的順序の線形性）: \(\leq_{\textrm{PS}}\) の反対称性。 -/
+theorem lePS_antisymm {M N : PS} (h1 : M ≤ₚ N) (h2 : N ≤ₚ M) : M = N := by
+  rcases h1 with rfl | h1
+  · rfl
+  rcases h2 with rfl | h2
+  · rfl
+  exact absurd (ltPS_trans h1 h2) (ltPS_irrefl M)
 
 end Bijectivity

@@ -37,6 +37,24 @@ namespace Bijectivity
 
 open PSS
 
+/-! ## 順序数項であること（`o` の外部引用は `OT` の上でしか使えない） -/
+
+/-- 上界の項は順序数項。 -/
+theorem OT_DzeroDomegaZero : DzeroDomegaZero ∈ OT := by
+  show isOT_BT DzeroDomegaZero = true
+  decide
+
+/-- \(D_00\) は順序数項。 -/
+theorem OT_DzeroZero : DzeroZero ∈ OT := by
+  show isOT_BT DzeroZero = true
+  decide
+
+theorem o_DzeroZero' : o DzeroZero = 1 := by rw [DzeroZero]; exact o_DzeroZero
+
+/-- \(\textrm{Trans}\) の値は順序数項（`8.7-termination` の OT 柱）。 -/
+theorem OT_Trans_of_CTPS {M : PS} (hM : CTPS M) : PSS.Trans M ∈ OT :=
+  (Trans_STPS_OT_B M hM.1).1
+
 /-! ## 全域性 -/
 
 /-- 原文の全域性: \(o(\textrm{Trans}(M))<\psi_0\psi_\omega0\)。 -/
@@ -46,7 +64,7 @@ theorem oTrans_mapsTo :
   intro M hM
   show o (PSS.Trans M) < psi0psiOmega0
   rw [← o_DzeroDomegaZero]
-  exact o_lt_of_lessBT (trans_lt_bound hM)
+  exact o_lt_of_lessBT (OT_Trans_of_CTPS hM) OT_DzeroDomegaZero (trans_lt_bound hM)
 
 /-! ## 単射性 -/
 
@@ -68,20 +86,15 @@ theorem oTrans_injOn : Set.InjOn (fun M => o (PSS.Trans M)) {M : PS | CTPS M} :=
   intro M hM N hN h
   simp only at h
   rcases ltPS_trichotomy M N with h1 | h1 | h1
-  · exact absurd (o_lt_of_lessBT (trans_lessBT_of_ltPS hM hN h1))
+  · exact absurd (o_lt_of_lessBT (OT_Trans_of_CTPS hM) (OT_Trans_of_CTPS hN)
+      (trans_lessBT_of_ltPS hM hN h1))
       (by rw [h]; exact lt_irrefl _)
   · exact h1
-  · exact absurd (o_lt_of_lessBT (trans_lessBT_of_ltPS hN hM h1))
+  · exact absurd (o_lt_of_lessBT (OT_Trans_of_CTPS hN) (OT_Trans_of_CTPS hM)
+      (trans_lessBT_of_ltPS hN hM h1))
       (by rw [← h]; exact lt_irrefl _)
 
 /-! ## 全射性 -/
-
-/-- 上界の項は順序数項。 -/
-theorem OT_DzeroDomegaZero : DzeroDomegaZero ∈ OT := by
-  show isOT_BT DzeroDomegaZero = true
-  decide
-
-theorem o_DzeroZero' : o DzeroZero = 1 := by rw [DzeroZero]; exact o_DzeroZero
 
 /-- \(CT_{\textrm{PS}}\) は基本列で閉じている。 -/
 theorem ctps_oper {M : PS} (hM : CTPS M) {n : ℕ} (hn : 1 ≤ n) : CTPS (oper M n) := by
@@ -96,7 +109,7 @@ theorem oTrans_unbounded {α : Ordinal} (hα : α < psi0psiOmega0) :
   obtain ⟨t, htOT, htlt, hto⟩ := o_surj_below OT_DzeroDomegaZero hlt
   have htB : t ∈ T_B := ((OT_iff_OT_B_of_lt htlt).mp htOT).2
   obtain ⟨M, hM, hMlt⟩ := exists_trans_gt htB htlt
-  exact ⟨M, hM, by rw [← hto]; exact o_lt_of_lessBT hMlt⟩
+  exact ⟨M, hM, by rw [← hto]; exact o_lt_of_lessBT htOT (OT_Trans_of_CTPS hM) hMlt⟩
 
 /-- 原文の全射性。原文は [3] の命題 11 を引くが、ここでは
 非有界性・後続な項の基本列・基本列の収束性から超限帰納で直接示す。 -/
@@ -134,7 +147,7 @@ theorem oTrans_surjOn :
       · by_contra hc
         push_neg at hc
         have hβeq : β = o (PSS.Trans (oper M 1)) + 1 := by
-          rw [← hMβ, ← h2, o_addBT, o_DzeroZero']
+          rw [← hMβ, ← h2, o_addBT (OT_Trans_of_CTPS hM1) OT_DzeroZero (h2 ▸ hOTM), o_DzeroZero']
         have : β ≤ α := by
           rw [hβeq, Ordinal.add_one_eq_succ]
           exact Order.succ_le_of_lt hc
@@ -143,7 +156,7 @@ theorem oTrans_surjOn :
       · rw [h2, o_BZero, ← hMβ, h1, o_DzeroZero']
         exact zero_lt_one
       · have hβeq : β = o (PSS.Trans (oper M 1)) + 1 := by
-          rw [← hMβ, ← h2, o_addBT, o_DzeroZero']
+          rw [← hMβ, ← h2, o_addBT (OT_Trans_of_CTPS hM1) OT_DzeroZero (h2 ▸ hOTM), o_DzeroZero']
         rw [hβeq, Ordinal.add_one_eq_succ]
         exact Order.lt_succ _
   · -- 極限の場合: 命題（基本列の収束性）
@@ -159,7 +172,8 @@ theorem oTrans_surjOn :
     obtain ⟨⟨n, hn⟩, hnlt⟩ := hex
     refine hβmin (o (PSS.Trans (oper M n))) ⟨le_of_lt hnlt, ⟨oper M n, ctps_oper hM hn, rfl⟩⟩ ?_
     rw [← hMβ]
-    exact o_lt_of_lessBT (Trans_fseq_descend M n hM.1 hn hlen)
+    exact o_lt_of_lessBT (OT_Trans_of_CTPS (ctps_oper hM hn)) (OT_Trans_of_CTPS hM)
+      (Trans_fseq_descend M n hM.1 hn hlen)
 
 /-- 原文の命題（変換写像の順序数への全単射性）。 -/
 theorem oTrans_bijOn :

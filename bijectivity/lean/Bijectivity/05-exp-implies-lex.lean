@@ -35,14 +35,6 @@ namespace Bijectivity
 
 open PSS
 
-/-- \(\leq_{\textrm{PS}}\) の推移性（原文の 辞書式的順序の線形性 の一部）。 -/
-theorem lePS_trans {M N O : PS} (h1 : M ≤ₚ N) (h2 : N ≤ₚ O) : M ≤ₚ O := by
-  rcases h1 with rfl | h1
-  · exact h2
-  · rcases h2 with rfl | h2
-    · exact Or.inr h1
-    · exact Or.inr (ltPS_trans h1 h2)
-
 /-- 反復展開は \(\leq_{\textrm{PS}}\) を下げる。原文の \(Q_i\) の帰納に対応する。 -/
 theorem expand_lePS : ∀ (a : List ℕ) (N : PS), (∀ n ∈ a, 1 ≤ n) → expand N a ≤ₚ N
   | [], N, _ => Or.inl rfl

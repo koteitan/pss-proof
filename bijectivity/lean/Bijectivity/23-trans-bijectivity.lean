@@ -92,14 +92,5 @@ theorem trans_bijOn : Set.BijOn PSS.Trans {M | CTPS M} TransRange :=
 原文の証明の単射性の部分（「\(\textrm{Trans}\) が順序を保つこと、[4] Lemma 2.1
 及び 2.2(c) より単射」）にあたる。順序の三分律と \(<_{\textrm{B}}\) の線形性から従う。 -/
 theorem trans_order_iso {M N : PS} (hM : CTPS M) (hN : CTPS N) :
-    M <ₚ N ↔ lessBT (PSS.Trans M) (PSS.Trans N) = true := by
-  constructor
-  · exact trans_lessBT_of_ltPS hM hN
-  · intro h
-    rcases ltPS_trichotomy M N with h1 | rfl | h1
-    · exact h1
-    · simp [lessBT_linear_irrefl] at h
-    · have := lessBT_linear_trans _ _ _ h (trans_lessBT_of_ltPS hN hM h1)
-      simp [lessBT_linear_irrefl] at this
+    M <ₚ N ↔ lessBT (PSS.Trans M) (PSS.Trans N) = true := analysis_term_lt hM hN
 
-end Bijectivity
