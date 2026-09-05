@@ -41,7 +41,7 @@ import «OTB-well-founded-syntactic».«OTB-well-founded-syntactic-main»
 
 | axiom | 出典 | 検証 |
 |---|---|---|
-| `fseq_cofinal` | [Buc2] Theorem 1.4(a) / Lemma 1.6 | `Audit-operB.lean` で小 \(OT_{\textrm{B}}\) プール全数検証 |
+| `cof_single_principal`（`16f`） | [Buc2] Theorem 1.4(a) / Lemma 1.6 の**単項 \(D_vb\), \(b\neq0\) の部分** | `Audit-operB.lean` で小 \(OT_{\textrm{B}}\) プール全数検証 |
 
 [Buc1] の加法標準形のうち原文が使う分（\(o(s+_{\textrm{B}}D_00)=o(s)+1\)）は
 `o_addBT_DzeroZero` として定理にしてある。残る `fseq_cofinal` は
@@ -195,19 +195,19 @@ theorem o_surj_below_psi {α : Ordinal} (h : α < psi0psiOmega0) :
     exact ⟨t, htOTB, lessBT_linear_trans _ _ _ htlt u.2.2, hto⟩
   · exact ⟨u.1, huOTB, u.2.2, by rw [hou, heq]⟩
 
-private theorem BZero_mem_OTB : BZero ∈ OT_B :=
+theorem BZero_mem_OTB : BZero ∈ OT_B :=
   ⟨by show isOT_BT BZero = true; decide, by show dfree_BT BZero = true; decide⟩
 
-private theorem DzeroZero_mem_OTB : (Dprin 0 BZero : BT) ∈ OT_B :=
+theorem DzeroZero_mem_OTB : (Dprin 0 BZero : BT) ∈ OT_B :=
   ⟨by show isOT_BT (Dprin 0 BZero) = true; decide,
    by show dfree_BT (Dprin 0 BZero) = true; decide⟩
 
 /-- \(0\) 未満の項は無い。 -/
-private theorem not_lessBT_BZero (t : BT) : lessBT t BZero = false := by
+theorem not_lessBT_BZero (t : BT) : lessBT t BZero = false := by
   rcases t with ⟨ps⟩; cases ps <;> simp [BZero, lessBT, lessBPList]
 
 /-- \(D_00\) 未満の項は \(0\) だけ。 -/
-private theorem eq_BZero_of_lessBT_DzeroZero {t : BT}
+theorem eq_BZero_of_lessBT_DzeroZero {t : BT}
     (h : lessBT t (Dprin 0 BZero) = true) : t = BZero := by
   rcases t with ⟨ps⟩
   cases ps with
@@ -362,14 +362,15 @@ theorem o_eq_iSup_below {t : BT} (ht : t ∈ OT_B) :
 基本列 \(t[0],t[1],\dots\) は \(\{u\in OT_{\textrm{B}}\mid u<_{\textrm{B}}t\}\) で共終。
 
 順序数を含まない純粋に構文的な主張なので、`Audit-operB.lean` が小さな
-\(OT_{\textrm{B}}\) プール上でこの形のまま全数検証している。 -/
+\(OT_{\textrm{B}}\) プール上でこの形のまま全数検証している。
+
+`16f-buc2-cofinality.lean` がこれを**単項 \(D_vb\)（\(b\neq0\)）の場合**まで
+還元してある（多項の剥がしと \(b=0\) の 2 枝は証明済み）。残差はそこの
+`cof_single_principal`。 -/
 def FseqCofinal : Prop :=
   ∀ t : BT, t ∈ OT_B → domTag t = BDom.naturals →
     ∀ u : BT, u ∈ OT_B → lessBT u t = true →
       ∃ m : ℕ, leBT u (operB t (numBT m)) = true
-
-/-- [Buc2] Theorem 1.4(a) / Lemma 1.6。**本形式化に残る唯一の `axiom`**。 -/
-axiom fseq_cofinal : FseqCofinal
 
 /-! ## `dom` の記法 -/
 

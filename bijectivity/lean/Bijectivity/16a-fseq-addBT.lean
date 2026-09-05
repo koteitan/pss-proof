@@ -132,21 +132,21 @@ theorem lessBT_addBT_D00_left {t : BT}
       simp only [lessBPList, Bool.or_eq_true, Bool.and_eq_true, beq_self_eq_true, true_and]
       exact Or.inr this
 
-private theorem descP_tail_fr : ∀ (ps : List BP), descP ps = true → descP ps.tail = true
+theorem descP_tail_fr : ∀ (ps : List BP), descP ps = true → descP ps.tail = true
   | [], _ => by simp [descP]
   | [_], _ => by simp [descP]
   | _ :: q :: ps, h => by
       simp only [descP, Bool.and_eq_true] at h
       simpa using h.2
 
-private theorem descP_suffix_fr : ∀ (as bs : List BP), descP (as ++ bs) = true → descP bs = true
+theorem descP_suffix_fr : ∀ (as bs : List BP), descP (as ++ bs) = true → descP bs = true
   | [], _, h => h
   | a :: as, bs, h => by
       refine descP_suffix_fr as bs ?_
       have := descP_tail_fr (a :: (as ++ bs)) (by simpa using h)
       simpa using this
 
-private theorem leBT_trans_fr {a b c : BT} (h1 : leBT a b = true) (h2 : leBT b c = true) :
+theorem leBT_trans_fr {a b c : BT} (h1 : leBT a b = true) (h2 : leBT b c = true) :
     leBT a c = true := by
   simp only [leBT, Bool.or_eq_true, beq_iff_eq] at h1 h2 ⊢
   rcases h1 with h1 | rfl
@@ -155,7 +155,7 @@ private theorem leBT_trans_fr {a b c : BT} (h1 : leBT a b = true) (h2 : leBT b c
     · exact Or.inl h1
   · exact h2
 
-private theorem leBT_addBT_right_fr (t : BT) {x y : BT} (h : leBT x y = true) :
+theorem leBT_addBT_right_fr (t : BT) {x y : BT} (h : leBT x y = true) :
     leBT (addBT t x) (addBT t y) = true := by
   simp only [leBT, Bool.or_eq_true, beq_iff_eq] at h ⊢
   rcases h with h | rfl

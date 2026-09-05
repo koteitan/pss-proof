@@ -51,7 +51,7 @@ Naruyoko,「ペア数列システムの停止性証明に用いられた変換�
 | `05-exp-implies-lex.lean` | `not_ltExpPS_ltPS`（訂正 `B1`） | `ltExpPS_ltPS_of_lng` |
 | `11-path-to-initial-segment.lean` | `not_seg_ltExpPS`（訂正 `B2`） | `seg_leExpPS` |
 
-主定理 `trans_bijOn` の `#print axioms` は `Cited.lean` の外部引用 **1 本**と
+主定理 `trans_bijOn` の `#print axioms` は外部引用 **1 本**と
 標準 3 公理だけを挙げる（**`sorryAx` はどこにも現れない**）。
 
 ### 外部引用に依存しない部分
@@ -83,7 +83,17 @@ t\in OT_{\textrm{B}},\ \textrm{dom}(t)=\omega,\ u\in OT_{\textrm{B}},\ u<_{\text
 
 | axiom | 出典 | 検証 |
 |---|---|---|
-| `fseq_cofinal` | [Buc2] Theorem 1.4(a) / Lemma 1.6（基本列の共終性） | `Audit-operB.lean` がこの形のまま全数検証 |
+| `cof_single_principal` | [Buc2] Theorem 1.4(a) の**単項 \(D_vb\), \(b\neq0\) の部分** | `Audit-operB.lean` が全数検証 |
+
+`16f-buc2-cofinality.lean` が共終性を**単項の場合まで還元**してある。証明済みなのは
+
+* 多項の剥がし（`cof_peel`）: 末尾 principal に帰着する
+* \(t=D_00\)（`cof_D00`）と \(t=D_v0,\ v>0\)（`cof_Dv0`）の 2 枝
+* \(v=\omega\) は `dfree`（\(OT_{\textrm{B}}\)）で排除
+
+残るのは \(D_vb\)（\(b\neq0\)）の 4 分岐、すなわち `operB` の
+\(\textrm{dom}(b)=\{0\}\) / \(T_w\)（\(v\leq w\)：訂正 A23 の塔）/ \(T_w\)（\(v>w\)）/
+\(\mathbb{N}\) である。
 
 **評価写像 \(o\) と \(\psi_0\psi_\omega0\) は公理ではない。**
 \((OT_{\textrm{B}},<_{\textrm{B}})\) は

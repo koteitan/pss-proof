@@ -9,7 +9,7 @@ Isabelle 側の `isabelle/8/audit.thy` にあたるビルド時ゲート。原�
 それぞれについて `#print axioms` の出力を `#guard_msgs` で固定してあるので、
 
 * どれかが `sorry` に依存し始めたら（`sorryAx` が現れる）
-* `Cited.lean` の外部引用が増えたり別の公理が紛れ込んだら
+* 外部引用が増えたり別の公理が紛れ込んだら
 
 **ビルドが落ちる**。緑ビルド＝この監査に合格である。
 
@@ -17,13 +17,13 @@ Isabelle 側の `isabelle/8/audit.thy` にあたるビルド時ゲート。原�
 未証明で残さず**その否定**（`not_ltExpPS_ltPS` / `not_seg_ltExpPS`、訂正 `B1`/`B2`）
 を証明してある。
 
-**外部引用は `fseq_cofinal` の 1 本だけ**（[Buc2] Theorem 1.4(a) ＝ 基本列が
-初期切片で共終であること。順序数を含まない純粋に構文的な主張で、
-`Audit-operB.lean` がその形のまま全数検証している）。
+**外部引用は `cof_single_principal` の 1 本だけ**（[Buc2] Theorem 1.4(a) ＝ 基本列の
+共終性の、単項 \(D_vb\)・\(b\neq0\) の部分。`16f-buc2-cofinality.lean` が多項の
+剥がしと \(b=0\) の 2 枝を証明して、そこまで還元してある）。
 
 評価写像 \(o\) と \(\psi_0\psi_\omega0\) は公理ではなく `OT_B` の整礎性から構成し、
 [Buc1] Lemma 2.1 / 2.2(c) にあたる性質と加法標準形のうち原文が使う分は定理である。
-`fseq_cofinal` は `17` / `21` / `22` / `23` の**全射性にだけ**現れ、
+残る 1 本は `17` / `21` / `22` / `23` の**全射性にだけ**現れ、
 `16`・`18`・`19`・`20`・`22` の順序同型・`23` の `trans_order_iso` は外部引用ゼロである。
 -/
 
@@ -270,7 +270,10 @@ info: 'Bijectivity.fseq_relation' depends on axioms: [propext, Classical.choice,
 /-! ## 17 命題（基本列の収束性） -/
 
 /--
-info: 'Bijectivity.fseq_convergence' depends on axioms: [propext, Bijectivity.fseq_cofinal, Classical.choice, Quot.sound]
+info: 'Bijectivity.fseq_convergence' depends on axioms: [propext,
+ Bijectivity.cof_single_principal,
+ Classical.choice,
+ Quot.sound]
 -/
 #guard_msgs (whitespace := lax) in
 #print axioms Bijectivity.fseq_convergence
@@ -312,7 +315,7 @@ info: 'Bijectivity.exists_trans_gt' depends on axioms: [propext, Classical.choic
 /-! ## 21 命題（変換写像の順序数への全単射性） -/
 
 /--
-info: 'Bijectivity.oTrans_bijOn' depends on axioms: [propext, Bijectivity.fseq_cofinal, Classical.choice, Quot.sound]
+info: 'Bijectivity.oTrans_bijOn' depends on axioms: [propext, Bijectivity.cof_single_principal, Classical.choice, Quot.sound]
 -/
 #guard_msgs (whitespace := lax) in
 #print axioms Bijectivity.oTrans_bijOn
@@ -321,7 +324,10 @@ info: 'Bijectivity.oTrans_bijOn' depends on axioms: [propext, Bijectivity.fseq_c
 /-! ## 22 系（ペア数列の解析） -/
 
 /--
-info: 'Bijectivity.analysis_ordinal' depends on axioms: [propext, Bijectivity.fseq_cofinal, Classical.choice, Quot.sound]
+info: 'Bijectivity.analysis_ordinal' depends on axioms: [propext,
+ Bijectivity.cof_single_principal,
+ Classical.choice,
+ Quot.sound]
 -/
 #guard_msgs (whitespace := lax) in
 #print axioms Bijectivity.analysis_ordinal
@@ -333,7 +339,7 @@ info: 'Bijectivity.analysis_ordinal_lt' depends on axioms: [propext, Classical.c
 #print axioms Bijectivity.analysis_ordinal_lt
 
 /--
-info: 'Bijectivity.analysis_term' depends on axioms: [propext, Bijectivity.fseq_cofinal, Classical.choice, Quot.sound]
+info: 'Bijectivity.analysis_term' depends on axioms: [propext, Bijectivity.cof_single_principal, Classical.choice, Quot.sound]
 -/
 #guard_msgs (whitespace := lax) in
 #print axioms Bijectivity.analysis_term
@@ -348,7 +354,7 @@ info: 'Bijectivity.analysis_term_lt' depends on axioms: [propext, Classical.choi
 /-! ## 23 定理（変換写像の全単射性） -/
 
 /--
-info: 'Bijectivity.trans_bijOn' depends on axioms: [propext, Bijectivity.fseq_cofinal, Classical.choice, Quot.sound]
+info: 'Bijectivity.trans_bijOn' depends on axioms: [propext, Bijectivity.cof_single_principal, Classical.choice, Quot.sound]
 -/
 #guard_msgs (whitespace := lax) in
 #print axioms Bijectivity.trans_bijOn
