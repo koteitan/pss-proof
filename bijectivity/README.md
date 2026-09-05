@@ -33,29 +33,29 @@ Naruyoko,「ペア数列システムの停止性証明に用いられた変換�
 | `Defs.lean` | この記事で新たに導入される記法 \(<_{\textrm{PS}}\)、\(\leq_{\textrm{PS}[]}\)、\(CT_{\textrm{PS}}\) |
 | `Cited.lean` | **外部引用**（評価写像 \(o\)、\(\psi_0\psi_\omega0\) ほか）を `axiom` として隔離 |
 | `01`–`14` | ペア数列上の順序論（`12a`–`12c` は `12` の補助） |
-| `15`–`22` | \(\textrm{Trans}\) 側および順序数側 |
+| `15`–`22` | \(\textrm{Trans}\) 側および順序数側（`16a`–`16d` は `16` の補助） |
 | `23` | 主定理 |
 
 外部引用を `axiom` として 1 ファイルに隔離してあるので、各定理が何を仮定しているかは
 `#print axioms` で機械的に追跡できる。
 
-## 状態: **`16` 以外は全部証明済み**
+## 状態: **原文の 23 命題すべてを証明済み**
 
-`bijectivity/lean/Bijectivity/` に残る `sorry` は **3 か所だけ**である。
+`bijectivity/lean/Bijectivity/` に残る `sorry` は **2 か所だけ**で、どちらも
+**原文の言明が偽である**ために意図的に残した逐語形である（訂正形は証明済みで、
+下流はそちらを使う）。
 
 | 場所 | 種類 |
 |---|---|
-| `16-fseq-relation.lean` | **唯一の未証明命題**（下記） |
-| `05-exp-implies-lex.lean` | 逐語形が**偽**（訂正 `B1`、訂正形は証明済み・何からも使われない） |
-| `11-path-to-initial-segment.lean` | 逐語形が**偽**（訂正 `B2`、同上） |
+| `05-exp-implies-lex.lean` | 逐語形が**偽**（訂正 `B1`、訂正形 `ltExpPS_ltPS_of_lng` は証明済み） |
+| `11-path-to-initial-segment.lean` | 逐語形が**偽**（訂正 `B2`、訂正形は証明済み） |
 
-したがって原文の 23 命題は、**`16` を仮定すれば全部証明されている**。
-主定理 `trans_bijOn` の `#print axioms` は `sorryAx`（`16` 由来のみ）と
-`Cited.lean` の外部引用と標準 3 公理だけを挙げる。
+主定理 `trans_bijOn` の `#print axioms` は `Cited.lean` の外部引用 8 本と
+標準 3 公理だけを挙げる（**`sorryAx` は現れない**）。
 
 ### 外部引用に依存しない部分
 
-`01`–`16` のうち `16` 以外、および `18`,`19`,`20`,`23` の同型写像・全域性・単射性は
+`01`–`16` と `18`,`19`,`20`、および `23` の同型写像・全域性・単射性は
 **外部引用ゼロ・`sorry` ゼロ**である。特に
 
 \[
@@ -82,36 +82,43 @@ Naruyoko,「ペア数列システムの停止性証明に用いられた変換�
 命題（後続な項の基本列）・命題（基本列の収束性）から超限帰納で直接証明してある
 （`21-ordinal-bijectivity.lean` の `oTrans_surjOn`）。
 
-### 残る `16`
+### `16`（補題（基本列の関係））の内訳
 
-原文: 任意の \(M\in ST_{\textrm{PS}}\) と \(m\) に対し、
-\(\textrm{dom}(\textrm{Trans}(M))=\omega\) ならばある \(n\in\mathbb{N}_+\) が存在して
-\(\textrm{Trans}(M)[m]\leq_{\textrm{B}}\textrm{Trans}(M[n])\)。
+原文が引く [1] の 5 つの交換関係は、すべて `lean/8/` の無条件版から供給できた。
 
-必要なのは [1] の 条件 (I)–(VI) の下での \(\textrm{Trans}\) と基本列の交換関係のうち
+| 条件 | 原文が引く結論 | Lean での供給元 |
+|---|---|---|
+| (I) | (1) | `8/8.1-Trans-fseq-condI` の `condI_exchange1`（＋ `scx_condI_j0pos_masterCF`） |
+| (II) | (2) | `16d-condII-fseq-rel.lean`（`8/8.3-condII-masterCF` の `condII_masterCF_exact_of_tailval` から数え上げを逆に解く） |
+| (III)/(IV) | (3) | `8/8.4-Trans-fseq-condIII-IV` の `Trans_oper_exchange` 第 2 結論 |
+| (V) | (3) | `8/8.5-Trans-fseq-condV-close` の `Trans_oper_exchange_condV_adm_uncond_vc` 第 4 結論（許容枝）／`ExchV_nf3x` の閉形式（非許容枝） |
+| (VI) | (2) | `8/8.6-Trans-fseq-condVI-close` の `p_8_6_Trans_fseq_condVI_uncond` 第 2 結論 |
 
-* 条件 (I) → 結論 (1)（**Lean 済**: `8/8.1-Trans-fseq-condI.lean` の `p_8_1_Trans_fseq_condI`）
-* 条件 (II) → 結論 (2)（未移植）
-* 条件 (III)/(IV) → 結論 (3)（未移植）
-* 条件 (V) → 結論 (3)（未移植）
-* 条件 (VI) → 結論 (2)（未移植）
+条件 (III)/(IV) の「\(j_1\) が段 1 に親を持たない」枝は
+`Exch84_noParent_domTag_holds` が \(\textrm{dom}(\textrm{Trans}(M))=T_{e-1}\neq\omega\)
+を与えるので、仮定の下では起こらない。
 
-の 5 本。Lean 側の §8 は停止性に必要な**降下側だけ**を移植しており
-（`8/8.3-Trans-fseq-condII.lean` の MODELLING NOTE）、条件 (I) 以外は (1)–(3) が
-deferred のままである。`8/8.7-fseq-descend.lean` の `FseqDesc_exchI`〜`exchVI` は
-無条件に証明済みだが**向きが逆**（`Trans(M[n]) ≤ Trans(M)[k]`）で `16` には使えない。
-Isabelle 側には `y3j_p_8_3_condII_exchange_1/2/3` 等の形で存在するので、移植が残作業。
+補助ファイル:
+
+| ファイル | 内容 |
+|---|---|
+| `16a-fseq-addBT.lean` | \((t_0+t_1)[m]=t_0+(t_1[m])\) と複項 → 単項の帰着 |
+| `16b-mono-fseq-rel.lean` | 単項の場合（\(t_1=0\) の 2 例 ＋ 条件 (I)–(VI)） |
+| `16c-operB-mono.lean` | `operB` の添字単調性（Isabelle `y4_N_mono_le`）。条件 (V) 非許容枝の \(m=0\) 用 |
+| `16d-condII-fseq-rel.lean` | 条件 (II) の交換関係 (2) |
 
 ## 原文への訂正案
 
 形式化の過程で見つかった原文の訂正案は [`corrections.md`](corrections.md) に集約している
-（現在 3 件）。
+（現在 5 件）。
 
 | id | 内容 |
 |---|---|
 | `B1` | 命題（辞書式的順序が基本列的順序を含意すること）に \(\textrm{Lng}(N)>1\) が要る |
 | `B2` | 補題（標準形の始切片への経路）の結論は \(\leq_{\textrm{PS}[]}\) |
 | `B3` | 命題（基本列的順序が辞書式的順序を含意すること）の内側の帰納法に基底段階が無い |
+| `B4` | 補題（基本列の関係）の複項の場合の最後の計算は \(\leq_{\textrm{B}}\) で添字も違う |
+| `B5` | 補題（基本列の関係）の条件 (V) 非許容枝では \(m=0\) が [1] の交換関係で覆えない |
 
 ## ビルド
 

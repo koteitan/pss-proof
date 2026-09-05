@@ -111,3 +111,61 @@ $N=N'$ の導出）は原文のままでよい。
 `bijectivity/lean/Bijectivity/12-lex-implies-exp.lean`（訂正形で証明済み）。
 有限性は `12b-ctps-finite.lean` の `ctps_finite`、主要部は `12c-big-step.lean` の
 `big_step`。
+
+## B4. 補題（基本列の関係）: 複項の場合の最後の計算は $\leq_{\textrm{B}}$ で添字も違う
+
+### 位置
+補題（基本列の関係）の証明、$M$ が複項である場合の末尾。
+
+### 原文
+よって$$\begin{array}{l}\textrm{Trans}(M)[m]\\=\Sigma_{\textrm{B}}(P(M)_J^+)_{J=0}^{J_1}[m]\\=\Sigma_{\textrm{B}}(P(M)_J^+)_{J=0}^{J_1-1}+(P(M)_{J_1}^+[m])\\=\Sigma_{\textrm{B}}(P(M)_J^+)_{J=0}^{J_1-1}+(\textrm{Trans}(P(M)_{J_1})[m])\\=\Sigma_{\textrm{B}}(P(M)_J^+)_{J=0}^{J_1-1}+\textrm{Trans}(P(M)_{J_1}[m])\\=\textrm{Trans}(M[m])\\\leq_{\textrm{B}}\textrm{Trans}(M[m])\end{array}$$である。
+
+### 訂正案
+上より $m$ に対しある $n\in\mathbb{N}_+$ が存在して $\textrm{Trans}(P(M)_{J_1})[m]\leq_{\textrm{B}}\textrm{Trans}(P(M)_{J_1}[n])$ である。この $n$ に対して
+$$\begin{array}{l}\textrm{Trans}(M)[m]\\=\Sigma_{\textrm{B}}(P(M)_J^+)_{J=0}^{J_1-1}+(\textrm{Trans}(P(M)_{J_1})[m])\\\leq_{\textrm{B}}\Sigma_{\textrm{B}}(P(M)_J^+)_{J=0}^{J_1-1}+\textrm{Trans}(P(M)_{J_1}[n])\\=\textrm{Trans}(M[n])\end{array}$$
+である。
+
+### 原文の問題点
+直前で示した単項の場合の結論は「ある $n\in\mathbb{N}_+$ が存在して
+$\textrm{Trans}(P(M)_{J_1})[m]\leq_{\textrm{B}}\textrm{Trans}(P(M)_{J_1}[n])$」であって、
+$n=m$ とは限らず、また等号ではない。原文の 4 行目は
+$\textrm{Trans}(P(M)_{J_1})[m]=\textrm{Trans}(P(M)_{J_1}[m])$ を使っており、これは
+単項の場合の結論より強い（実際、条件 (III)/(IV)/(V) では等号は成り立たない）。
+
+$+_{\textrm{B}}$ は右引数について狭義単調（$t_0+t_1<_{\textrm{B}}t_0+t_1'$ if
+$t_1<_{\textrm{B}}t_1'$）なので、$\leq_{\textrm{B}}$ と添字 $n$ をそのまま持ち上げれば
+結論は変わらない。
+
+### 形式化
+`bijectivity/lean/Bijectivity/16a-fseq-addBT.lean` の `fseq_relation_of_mono`。
+
+## B5. 補題（基本列の関係）: 条件 (V) の非許容枝では $m=0$ が [1] の交換関係で覆えない
+
+### 位置
+補題（基本列の関係）の証明、$M$ が単項で $t_1\neq0$、条件 (V) の場合。
+
+### 原文
+\(M\)が条件(I)-(VI)を満たすとき、それぞれ[1]の条件(I)の下でのTransと基本列の交換関係(1)、条件(II)の下でのTransと基本列の交換関係(2)、条件(III)か(IV)の下でのTransと基本列の交換関係(3)、条件(V)の下でのTransと基本列の交換関係(3)及び条件(VI)の下でのTransと基本列の交換関係(2)よりある\(n\in\mathbb{N}_+\)が存在して\(\textrm{Trans}(M)[m]\leq_{\textrm{B}}\textrm{Trans}(M[n])\)である。
+
+### 訂正案
+（同文に次を補う）ただし条件 (V) で $j_0$ が $M$ 許容でない場合は $m_n=n$ であり、
+$n\in\mathbb{N}_+$ より $m_n\geq1$ なので、$m=0$ は交換関係 (3) では覆えない。
+この場合は $[]$ の単調性、すなわち $\textrm{dom}(t)=\omega$ なる $t\in OT_{\textrm{B}\omega}$
+と $m\leq m'$ に対し $t[m]\leq_{\textrm{B}}t[m']$ であることから
+$\textrm{Trans}(M)[0]\leq_{\textrm{B}}\textrm{Trans}(M)[1]\leq_{\textrm{B}}\textrm{Trans}(M[2])$
+とすればよい。
+
+### 原文の問題点
+[1] の 条件 (V) の下での $\textrm{Trans}$ と基本列の交換関係 (3) は
+$\textrm{Trans}(M)[m_n]\leq_{\textrm{B}}\textrm{Trans}(M[n+1])$ の形で、
+$m_n=\textrm{if }j_0\text{ が }M\text{ 許容 then }n-1\text{ else }n$ である。
+許容枝では $n=1$ で $m_n=0$ となり $m=0$ も覆えるが、非許容枝では
+$n\geq1$ に対し $m_n=n\geq1$ なので $m=0$ に対応する $n$ が無い。
+
+他の 4 条件では $m=0$ も覆える（条件 (I) は $n=1$、条件 (II) は $n=1$ または $2$、
+条件 (III)/(IV) は $n=2$、条件 (VI) は $n=1$ または $2$）。
+
+### 形式化
+`bijectivity/lean/Bijectivity/16c-operB-mono.lean` の `operB_numBT_mono_holds`
+（Isabelle `y4_N_mono_le`, `isabelle/8/Support_8_C.thy`:11924 の移植）。
+使用箇所は `16b-mono-fseq-rel.lean` の `mono_fseq_rel` の条件 (V) 非許容枝。

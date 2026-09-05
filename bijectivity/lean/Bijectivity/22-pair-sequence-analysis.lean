@@ -20,8 +20,7 @@ import Bijectivity.«21-ordinal-bijectivity»
 
 ## 状態
 
-**全域性（`MapsTo`）と単射性（`InjOn`）は (1)(2) とも証明済み**。
-全射性（`SurjOn`）は `21` の全射性待ち。
+(1)(2) とも全域性（`MapsTo`）・単射性（`InjOn`）・全射性（`SurjOn`）すべて証明済み。
 -/
 
 namespace Bijectivity

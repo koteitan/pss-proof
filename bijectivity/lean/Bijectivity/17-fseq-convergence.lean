@@ -16,11 +16,12 @@ import «8».«8.7-termination»
 
 形式化もこの 3 つで閉じている。
 
-* 基本列の関係 = `16-fseq-relation.lean` の `fseq_relation`（**未証明**）
+* 基本列の関係 = `16-fseq-relation.lean` の `fseq_relation`（証明済み）
 * [1] の基本列の降下性 = `lean/8/8.7-termination.lean` の `Trans_fseq_descend`（証明済み）
 * [5] Theorem 1.4(a) / Lemma 1.6 = `Cited.lean` の `o_iSup_operB`（外部引用）
 
-したがって本命題は **`16` だけに依存する**（`#print axioms` で確認できる）。
+したがって本命題の外部引用は `o_iSup_operB`（と `o` / `o_lt_of_lessBT`）だけである
+（`#print axioms` で確認できる）。
 -/
 
 namespace Bijectivity
