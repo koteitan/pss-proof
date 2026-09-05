@@ -1,6 +1,7 @@
 import Bijectivity.Defs
 import «Bijectivity».«01-lex-is-lexicographic»
 import «Bijectivity».«02-lex-linear»
+import «Bijectivity».«02b-lex-list-lemmas»
 import «Bijectivity».«03-exp-order-transitive»
 import «Bijectivity».«04-fseq-lex-decreasing»
 import «Bijectivity».«05-exp-implies-lex»

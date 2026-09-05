@@ -1,4 +1,5 @@
-import Bijectivity.«02-lex-linear»
+import Bijectivity.«02b-lex-list-lemmas»
+import «6».«6.5-Red-Pred-commute»
 
 /-!
 # 命題（基本列の辞書式的縮小性）
@@ -27,9 +28,25 @@ namespace Bijectivity
 
 open PSS
 
-/-- 原文の命題（基本列の辞書式的縮小性）。 -/
+/-- 退化枝: `oper M n = Pred M` のとき。真の接頭辞なので \(<_{\textrm{PS}}\)。 -/
+theorem oper_ltPS_of_pred {M : PS} {n : ℕ} (hM : 1 < Lng M) (h : oper M n = Pred M) :
+    oper M n <ₚ M := by
+  rw [h, Pred_eq_take M hM]
+  exact ltPS_take M (by omega)
+
+/-- 原文の命題（基本列の辞書式的縮小性）。
+
+退化枝（`oper M n = Pred M`）は `oper_ltPS_of_pred` で閉じている。
+残るのは tiling 枝で、原文どおり \(\bigoplus(B_i)_{i=1}^{n-1}<_{\textrm{PS}}(M_{j_1})\)
+を \(<^\textrm{Next}\) の定義（`nextrel0` / `nextrel1` が与える
+\(M_{0,j_0}<M_{0,j_1}\) / \(M_{1,j_0}<M_{1,j_1}\)）から示す必要がある。 -/
 theorem oper_ltPS {M : PS} (hM : 1 < Lng M) (n : ℕ) (hn : 1 ≤ n) : oper M n <ₚ M := by
-  sorry
+  have hj1ne : Lng M - 1 ≠ 0 := by omega
+  by_cases hz : entry M 0 (Lng M - 1) = 0 && entry M 1 (Lng M - 1) = 0
+  · exact oper_ltPS_of_pred hM (by simp [oper, hj1ne, hz])
+  · by_cases hp : hasParent M (idx1 M (Lng M - 1)) (Lng M - 1) = true
+    · sorry
+    · exact oper_ltPS_of_pred hM (by simp [oper, hj1ne, hz, hp])
 
 /-- 系: \(\textrm{Lng}\) の条件を外した弱形（\(\textrm{Lng}(M)\leq1\) では
 `oper M n = M` なので等号で成立する）。 -/
