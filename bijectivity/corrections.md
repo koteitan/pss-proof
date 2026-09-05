@@ -36,8 +36,8 @@ $M=N[a_0]\cdots[a_{\textrm{Lng}(a)-1}]$」と定義しているが、この定�
 - $\textrm{Lng}(N)>1$ を補えば原文の証明がそのまま通る。
 
 ### 形式化
-`bijectivity/lean/Bijectivity/05-exp-implies-lex.lean` の `ltExpPS_ltPS_of_lng`
-（訂正形、証明済み）。逐語形 `ltExpPS_ltPS` は `sorry` のまま残してある。
+`bijectivity/lean/Bijectivity/05-exp-implies-lex.lean`。逐語形が**偽であること**を
+`not_ltExpPS_ltPS` として上の反例で証明してある。訂正形は `ltExpPS_ltPS_of_lng`。
 
 ## B2. 補題（標準形の始切片への経路）: 結論は $\leq_{\textrm{PS}[]}$
 
@@ -61,8 +61,9 @@ $((j,j))_{j=0}^{v^M}\leq_{\textrm{PS}[]}((j,j))_{j=0}^v$ と $\leq$ で用いて
 $j_1'<j_1$ とする。
 
 ### 形式化
-`bijectivity/lean/Bijectivity/11-path-to-initial-segment.lean` の `seg_leExpPS`
-（訂正形、証明済み）。逐語形 `seg_ltExpPS_verbatim` は `sorry` のまま残してある。
+`bijectivity/lean/Bijectivity/11-path-to-initial-segment.lean`。逐語形が**偽であること**を
+`not_seg_ltExpPS` として反例 \(M=((j,j))_{j=0}^1\), \(j_1'=1\) で証明してある。
+訂正形は `seg_leExpPS`。
 
 ## B3. 命題（基本列的順序が辞書式的順序を含意すること）: 内側の帰納法に基底段階が無い
 

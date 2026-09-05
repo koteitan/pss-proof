@@ -27,8 +27,8 @@ import Bijectivity.«04-fseq-lex-decreasing»
   \(M<_{\textrm{PS}}N\) は偽である。
 
 すなわち \(<_{\textrm{PS}[]}\) は狭義でなく、\(M\neq N\)（あるいは
-\(\textrm{Lng}(N)>1\)）を補う必要がある。補った形を `ltExpPS_ltPS_of_ne`
-として与える。
+\(\textrm{Lng}(N)>1\)）を補う必要がある。補った形を `ltExpPS_ltPS_of_lng` として、
+逐語形が**偽であること自体**を `not_ltExpPS_ltPS` として与える（`sorry` は使わない）。
 -/
 
 namespace Bijectivity
@@ -51,11 +51,24 @@ theorem expand_of_lng_le_one : ∀ (a : List ℕ) {N : PS}, Lng N ≤ 1 → expa
         simp [oper, this]
       rw [expand, hop, expand_of_lng_le_one a hN]
 
-/-- 原文の命題（辞書式的順序が基本列的順序を含意すること）の逐語形。
+/-- \(((0,0))\in CT_{\textrm{PS}}\)。 -/
+theorem ctps_zero_singleton : CTPS ([((0 : ℕ), (0 : ℕ))] : PS) := by
+  refine ⟨?_, rfl⟩
+  have h : ([((0 : ℕ), (0 : ℕ))] : PS) = diagSeq 0 0 := rfl
+  rw [h]
+  exact STPS.diag 0 0 (le_refl 0)
 
-上記のとおり \(N=((0,0))\) が反例なので UNPROVEN STUB として残す。 -/
-theorem ltExpPS_ltPS {M N : PS} (hM : CTPS M) (hN : CTPS N) (h : M <ₚ[] N) : M <ₚ N := by
-  sorry
+/-- **原文の命題（辞書式的順序が基本列的順序を含意すること）の逐語形は偽**（訂正 `B1`）。
+
+反例は \(M=N=((0,0))\)、\(a=(1)\)。\(\textrm{Lng}(N)=1\) なので \(N[1]=N\) であり、
+\(a\neq()\) だから \(M<_{\textrm{PS}[]}N\) は成り立つが \(M=N\) なので
+\(M<_{\textrm{PS}}N\) は偽である。訂正形は下の `ltExpPS_ltPS_of_lng`。 -/
+theorem not_ltExpPS_ltPS :
+    ¬ (∀ M N : PS, CTPS M → CTPS N → M <ₚ[] N → M <ₚ N) := by
+  intro h
+  have hlt : ([((0 : ℕ), (0 : ℕ))] : PS) <ₚ[] [((0 : ℕ), (0 : ℕ))] :=
+    ⟨[1], by simp, by simp, (expand_of_lng_le_one [1] (by simp [Lng])).symm⟩
+  exact ltPS_irrefl _ (h _ _ ctps_zero_singleton ctps_zero_singleton hlt)
 
 /-- 訂正形: \(\textrm{Lng}(N)>1\) を補うと原文の証明がそのまま通る。 -/
 theorem ltExpPS_ltPS_of_lng {M N : PS} (hN : 1 < Lng N) (h : M <ₚ[] N) : M <ₚ N := by

@@ -1,3 +1,4 @@
+import Bijectivity.«05-exp-implies-lex»
 import Bijectivity.«09-standard-iff-exp»
 import «5».«5.3-pred-is-oper1»
 import «6».«6.5-Red-Pred-commute»
@@ -63,10 +64,25 @@ theorem take_leExpPS : ∀ (k : ℕ) (M : PS), TPS M → k < Lng M →
       rw [heq] at ih
       exact leExpPS_trans ih hstep
 
-/-- 原文の補題（標準形の始切片への経路）の逐語形。上記のとおり \(j_1'=j_1\) が反例。 -/
-theorem seg_ltExpPS_verbatim {M : PS} (hM : STPS M) {j1' : ℕ} (h : j1' ≤ Lng M - 1) :
-    seg M 0 j1' <ₚ[] M := by
-  sorry
+/-- \(\textrm{Lng}(M)>1\) なら \(M<_{\textrm{PS}[]}M\) は偽（展開は狭義に下がる）。 -/
+theorem ltExpPS_irrefl {M : PS} (hM : 1 < Lng M) : ¬ (M <ₚ[] M) :=
+  fun h => ltPS_irrefl M (ltExpPS_ltPS_of_lng hM h)
+
+/-- **原文の補題（標準形の始切片への経路）の逐語形は偽**（訂正 `B2`）。
+
+反例は \(M=((j,j))_{j=0}^1\)、\(j_1'=j_1=1\)。このとき
+\((M_j)_{j=0}^{j_1'}=M\) なので原文の結論は \(M<_{\textrm{PS}[]}M\) を主張するが、
+\(\textrm{Lng}(M)>1\) では展開が狭義に下がるのでこれは偽である。
+訂正形（結論を \(\leq_{\textrm{PS}[]}\) に）は下の `seg_leExpPS`。 -/
+theorem not_seg_ltExpPS :
+    ¬ (∀ (M : PS) (j1' : ℕ), STPS M → j1' ≤ Lng M - 1 → seg M 0 j1' <ₚ[] M) := by
+  intro h
+  have hS : STPS (diagSeq 0 1) := STPS.diag 0 1 (by omega)
+  have hseg : seg (diagSeq 0 1) 0 1 = diagSeq 0 1 := by decide
+  have hlen : 1 < Lng (diagSeq 0 1) := by decide
+  have hx := h (diagSeq 0 1) 1 hS (by decide)
+  rw [hseg] at hx
+  exact ltExpPS_irrefl hlen hx
 
 /-- 訂正形（結論を \(\leq_{\textrm{PS}[]}\) に）。 -/
 theorem seg_leExpPS {M : PS} (hM : TPS M) {j1' : ℕ} (h : j1' ≤ Lng M - 1) :

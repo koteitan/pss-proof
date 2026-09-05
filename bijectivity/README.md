@@ -39,19 +39,20 @@ Naruyoko,「ペア数列システムの停止性証明に用いられた変換�
 外部引用を `axiom` として 1 ファイルに隔離してあるので、各定理が何を仮定しているかは
 `#print axioms` で機械的に追跡できる。
 
-## 状態: **原文の 23 命題すべてを証明済み**
+## 状態: **原文の 23 命題すべてを証明済み、`sorry` ゼロ**
 
-`bijectivity/lean/Bijectivity/` に残る `sorry` は **2 か所だけ**で、どちらも
-**原文の言明が偽である**ために意図的に残した逐語形である（訂正形は証明済みで、
-下流はそちらを使う）。
+`bijectivity/lean/Bijectivity/` に `sorry` は**ひとつも無い**。
 
-| 場所 | 種類 |
-|---|---|
-| `05-exp-implies-lex.lean` | 逐語形が**偽**（訂正 `B1`、訂正形 `ltExpPS_ltPS_of_lng` は証明済み） |
-| `11-path-to-initial-segment.lean` | 逐語形が**偽**（訂正 `B2`、訂正形は証明済み） |
+原文の言明が**偽**である 2 か所（`05` と `11` の逐語形）は、未証明のまま置くのではなく
+**その否定を証明**してある。
+
+| 場所 | 逐語形の否定 | 訂正形 |
+|---|---|---|
+| `05-exp-implies-lex.lean` | `not_ltExpPS_ltPS`（訂正 `B1`） | `ltExpPS_ltPS_of_lng` |
+| `11-path-to-initial-segment.lean` | `not_seg_ltExpPS`（訂正 `B2`） | `seg_leExpPS` |
 
 主定理 `trans_bijOn` の `#print axioms` は `Cited.lean` の外部引用 8 本と
-標準 3 公理だけを挙げる（**`sorryAx` は現れない**）。
+標準 3 公理だけを挙げる（**`sorryAx` はどこにも現れない**）。
 
 ### 外部引用に依存しない部分
 
@@ -130,8 +131,7 @@ Naruyoko,「ペア数列システムの停止性証明に用いられた変換�
 （`sorryAx` が増える）、`Cited.lean` の外部引用が増えたりすると**ビルドが落ちる**。
 Isabelle 側の `isabelle/8/audit.thy` にあたる。緑ビルド＝監査合格である。
 
-`sorryAx` を期待しているのは `05` と `11` の**逐語形 2 本だけ**で、これは原文の言明が
-偽であるため（訂正 `B1` / `B2`）。
+**`sorryAx` はどの項目にも現れない**（`05`/`11` は逐語形の否定を証明してあるため）。
 
 [`lean/Bijectivity/Audit-operB.lean`](lean/Bijectivity/Audit-operB.lean) は残る外部引用の
 うち深いほう `o_iSup_operB`（[Buc2] Theorem 1.4(a) ＝ 基本列の共終性）を、小さな

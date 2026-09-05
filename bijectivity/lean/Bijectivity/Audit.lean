@@ -8,14 +8,15 @@ import Bijectivity.«23-trans-bijectivity»
 Isabelle 側の `isabelle/8/audit.thy` にあたるビルド時ゲート。原文の 23 項目の
 それぞれについて `#print axioms` の出力を `#guard_msgs` で固定してあるので、
 
-* どれかが `sorry` に依存し始めたら（`sorryAx` が増える）
+* どれかが `sorry` に依存し始めたら（`sorryAx` が現れる）
 * `Cited.lean` の外部引用が増えたり別の公理が紛れ込んだら
 
 **ビルドが落ちる**。緑ビルド＝この監査に合格である。
 
-`05` と `11` の**逐語形**は原文の言明が偽なので `sorryAx` を含むのが正しい
-（訂正 `B1` / `B2`、訂正形はそれぞれ `ltExpPS_ltPS_of_lng` / `seg_leExpPS`）。
-下ではその 2 本だけ `sorryAx` を期待している。ほかに `sorryAx` は現れない。
+`05` と `11` の逐語形は原文の言明が**偽**なので、逐語形そのものではなく
+**その否定**（`not_ltExpPS_ltPS` / `not_seg_ltExpPS`、訂正 `B1` / `B2`）を証明してある。
+したがって **`sorryAx` はどこにも現れない**。訂正形は `ltExpPS_ltPS_of_lng` /
+`seg_leExpPS`。
 
 `o` 系 8 本（`Cited.lean`）は原文が [Buc1]/[Buc2] から引く外部引用で、
 `17` / `21` / `22` と `23` の全射性にだけ現れる。
@@ -100,13 +101,13 @@ info: 'Bijectivity.oper_ltPS' depends on axioms: [propext, Classical.choice, Quo
 #print axioms Bijectivity.oper_ltPS
 
 
-/-! ## 05 命題（辞書式的順序が基本列的順序を含意すること）— 逐語形は偽（訂正 B1） -/
+/-! ## 05 命題（辞書式的順序が基本列的順序を含意すること）— 逐語形の否定を証明（訂正 B1） -/
 
 /--
-info: 'Bijectivity.ltExpPS_ltPS' depends on axioms: [propext, sorryAx]
+info: 'Bijectivity.not_ltExpPS_ltPS' depends on axioms: [propext, Quot.sound]
 -/
 #guard_msgs (whitespace := lax) in
-#print axioms Bijectivity.ltExpPS_ltPS
+#print axioms Bijectivity.not_ltExpPS_ltPS
 
 /--
 info: 'Bijectivity.ltExpPS_ltPS_of_lng' depends on axioms: [propext, Classical.choice, Quot.sound]
@@ -160,13 +161,13 @@ info: 'Bijectivity.ctps_iff_leExpPS' depends on axioms: [propext, Classical.choi
 #print axioms Bijectivity.ctps_iff_leExpPS
 
 
-/-! ## 11 補題（標準形の始切片への経路）— 逐語形は偽（訂正 B2） -/
+/-! ## 11 補題（標準形の始切片への経路）— 逐語形の否定を証明（訂正 B2） -/
 
 /--
-info: 'Bijectivity.seg_ltExpPS_verbatim' depends on axioms: [propext, sorryAx]
+info: 'Bijectivity.not_seg_ltExpPS' depends on axioms: [propext, Classical.choice, Quot.sound]
 -/
 #guard_msgs (whitespace := lax) in
-#print axioms Bijectivity.seg_ltExpPS_verbatim
+#print axioms Bijectivity.not_seg_ltExpPS
 
 /--
 info: 'Bijectivity.seg_leExpPS' depends on axioms: [propext, Classical.choice, Quot.sound]
