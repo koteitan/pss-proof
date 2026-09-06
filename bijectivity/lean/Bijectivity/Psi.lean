@@ -968,10 +968,30 @@ theorem surj_core_of_psi
 \(x\in C_v(x)\) が要る。これは一般には成り立たないので、\(\psi_v\) の値が同じ引数の
 うち適切なものを取り直すことになる。
 
-⚠ 単純に \(x_0=\min\{y\mid\psi_v(y)=\psi_v(x)\}\) と取っても \(x_0\in C_v(x_0)\) は
-出ない。\(C_v(x_0)\cap x_0\) が \(x_0\) で共終になる場合、\(x_0\) は有限回の生成規則で
-は作れないまま最小でありうる（\(\psi_0\) の不動点がその形）。取り直しの正しい作り方は
-[Buc1] の該当補題を読んでから決める。 -/
+[Buc1] §1 の定義では、この条件が閉包の生成規則そのものに入っている。
+
+\[
+C_v^{n+1}(α)=C_v^n(α)\cup\{γ\mid P(γ)\subseteq C_v^n(α)\}
+\cup\{\psi_uξ\midξ\inα\cap C_v^n(α)\ \land\ ξ\in C_u(ξ)\ \land\ u\leω\}
+\]
+
+この `CGen` は条件を落とした形（[Buc1] の (C1)(C2)(C3) による特徴づけ）で、
+[Buc1] の Remark によれば集合としては一致する。ただし全射性に効くのは条件つきの
+ほうで、[Buc1] Lemma 1.4(b) が
+
+\[
+γ\in C_v(α)\ \land\ Ω_v\leγ\in P\ \Longrightarrow\
+\exists u,ξ\ (γ=\psi_uξ\ \land\ ξ\inα\cap C_v(α)\cap C_u(ξ))
+\]
+
+を与える。ここで得られる \(ξ\in C_u(ξ)\) がそのまま \(D_us\) の標準形条件になる。
+
+したがって残る作業は、`CGen` の `psi` 生成規則に \(x\in C_v(x)\) を足して [Buc1] の
+定義に揃えることである。その際:
+
+- `psi_lt_psi` は仮定 \(x\in C_u(x)\) つきになる（[Buc1] Lemma 1.3 と同じ形）
+- `mem_CSet_of_gatherBT` は順序数項限定に直し、Lemma 2.1 と相互再帰にする
+- `CStage` は上界評価にしか使わないので条件なしのままでよい -/
 theorem surj_core : SurjCore := by
   sorry
 
