@@ -27,18 +27,20 @@ C_u(α)=\bigcup_{n<ω}C_u^n(α),\qquad ψ_u(α)=\min\{β\midβ\notin C_u(α)\}
 ここでは \(C_u(α)\) を段階の合併ではなく、同じものを生成する帰納的述語
 `CGen` として定める（`add` と `psi` の閉包規則が段階を吸収する）。
 
-## 残りの工程
+## 工程
 
 | | 内容 | 状態 |
 |---|---|---|
-| (1) | \(ψ_u(α)\) の存在（\(C_u(α)\neq\mathrm{Ord}\)、基数評価 \(|C_u(α)|<Ω_{u+1}\)） | **済** |
-| (2) | \(C_u(α)\cap Ω_{u+1}=ψ_u(α)\)（崩壊の要） | **済** |
-| (3) | 評価写像 \(o\) の定義と \(G_u\to C_u\) の橋渡し | **済** |
-| (4) | [Buc1] Lemma 2.1（\(o\) が順序を保つ、単射性つき） | **済** |
-| (5) | [Buc1] Lemma 2.2(c) の還元と易しい向き | **済** |
-| (6) | 加法標準形（項の正規化和 `naddBT`） | **済** |
-| (7) | `surj_core` の `0` と `+` の場合（`surj_core_of_psi`） | **済** |
-| (8) | `surj_core` の \(ψ\) の場合 | `sorry`（残り 1 本） |
+| (1) | \(ψ_u(α)\) の存在（\(C_u(α)\neq\mathrm{Ord}\)、基数評価 \(|C_u(α)|<Ω_{u+1}\)） | 済 |
+| (2) | [Buc1] 1.5 \(C_u(α)\cap Ω_{u+1}=ψ_u(α)\) | 済 |
+| (3) | 評価写像 \(o\) と \(G_u\to C_u\) の橋渡し | 済 |
+| (4) | [Buc1] Lemma 2.1（\(o\) が順序を保つ、単射性つき） | 済 |
+| (5) | [Buc1] Lemma 1.4(a)(b)（反転と一意性） | 済 |
+| (6) | 1.2(g)・先頭 principal・加法標準形 | 済 |
+| (7) | 逆向き橋渡し \(o(t)\in C_w(b)\Rightarrow G_w(t)\lt b\) | 済 |
+| (8) | [Buc1] Lemma 2.2(c)（像が \(ψ_0ψ_ω0\) の始切片） | 済 |
+
+**`sorry` なし。** `#print axioms` は `propext` / `Classical.choice` / `Quot.sound` の 3 つのみ。
 
 閉包は [Buc1] の条件つき定義（`psi` 生成規則に \(ξ\in C_u(ξ)\)）を採っている。
 
@@ -490,6 +492,69 @@ theorem mem_CSet_lt_psi (u : ℕ∞) (a : Ordinal.{0}) {c : Ordinal.{0}}
     · subst hv
       exact psi_lt_psi hxa hx hnf
 
+/-! ### 和の成分が閉包に属すること -/
+
+/-- [Buc1] Lemma 1.2(g)。右側の和は閉包に属する。 -/
+theorem CSet_right_summand {u : ℕ∞} {a γ : Ordinal.{0}} (hγ : γ ∈ CSet u a) :
+    ∀ x y : Ordinal.{0}, γ = x + y → y ∈ CSet u a := by
+  refine CSet_induction (P := fun c => ∀ x y : Ordinal.{0}, c = x + y → y ∈ CSet u a)
+    ?_ ?_ ?_ ?_ hγ
+  · intro b hb x y hxy
+    exact CSet_lt_Om (lt_of_le_of_lt (hxy ▸ (le_add_self : y ≤ x + y)) hb)
+  · intro x y hxy
+    have : y = 0 := by
+      have := (Ordinal.add_eq_zero_iff).1 hxy.symm
+      exact this.2
+    rw [this]; exact CSet_zero
+  · intro z hz ihz w hw ihw x y hxy
+    rcases le_or_gt x z with hxz | hzx
+    · have hz' : x + (z - x) = z := Ordinal.add_sub_cancel_of_le hxz
+      have : x + ((z - x) + w) = x + y := by rw [← add_assoc, hz', hxy]
+      have hy : (z - x) + w = y := (add_right_inj x).1 this
+      exact hy ▸ CSet_add (ihz x (z - x) hz'.symm) hw
+    · have hx' : z + (x - z) = x := Ordinal.add_sub_cancel_of_le (le_of_lt hzx)
+      have : z + w = z + ((x - z) + y) := by rw [← add_assoc, hx', hxy]
+      have hw' : w = (x - z) + y := (add_right_inj z).1 this
+      exact ihw (x - z) y hw'
+  · intro x hx _ hxa v hnf x' y hxy
+    have hmem : psi v x ∈ CSet u a := CSet_psi hx hxa v hnf
+    have hx'le : x' ≤ psi v x := by rw [hxy]; exact le_self_add
+    have hyle : y ≤ psi v x := by rw [hxy]; exact le_add_self
+    rcases lt_or_eq_of_le hyle with hylt | hyeq
+    · rcases lt_or_eq_of_le hx'le with hx'lt | hx'eq
+      · have hlt2 : x' + y < psi v x := (isPrincipal_add_psi v x) hx'lt hylt
+        rw [← hxy] at hlt2
+        exact absurd hlt2 (lt_irrefl _)
+      · rw [hx'eq] at hxy
+        have h0 : psi v x + 0 = psi v x + y := by rw [add_zero]; exact hxy
+        rw [← (add_right_inj (psi v x)).1 h0]
+        exact CSet_zero
+    · rw [hyeq]; exact hmem
+
+/-- \(γ\) 以下の加法的 principal のうち最大のものは閉包に属する。 -/
+theorem CSet_leading {u : ℕ∞} {a γ : Ordinal.{0}} (hγ : γ ∈ CSet u a) :
+    ∀ p : Ordinal.{0}, Ordinal.IsPrincipal (· + ·) p → p ≤ γ →
+      (∀ q : Ordinal.{0}, Ordinal.IsPrincipal (· + ·) q → q ≤ γ → q ≤ p) → p ∈ CSet u a := by
+  refine CSet_induction
+    (P := fun c => ∀ p : Ordinal.{0}, Ordinal.IsPrincipal (· + ·) p → p ≤ c →
+      (∀ q : Ordinal.{0}, Ordinal.IsPrincipal (· + ·) q → q ≤ c → q ≤ p) → p ∈ CSet u a)
+    ?_ ?_ ?_ ?_ hγ
+  · exact fun b hb p _ hple _ => CSet_lt_Om (lt_of_le_of_lt hple hb)
+  · intro p _ hp0 _
+    rw [nonpos_iff_eq_zero.1 hp0]
+    exact CSet_zero
+  · intro z _ ihz w _ ihw p hp hple hmax
+    rcases le_or_gt p w with hpw | hwp
+    · exact ihw p hp hpw (fun q hq hqw => hmax q hq (le_trans hqw le_add_self))
+    · have hpz : p ≤ z := by
+        by_contra hc
+        exact absurd (hp (not_le.1 hc) hwp) (not_lt.2 hple)
+      exact ihz p hp hpz (fun q hq hqz => hmax q hq (le_trans hqz le_self_add))
+  · intro x hx _ hxa v hnf p _ hple hmax
+    have := hmax (psi v x) (isPrincipal_add_psi v x) le_rfl
+    rw [le_antisymm hple this]
+    exact CSet_psi hx hxa v hnf
+
 /-! ### [Buc1] Lemma 1.4 -/
 
 /-- [Buc1] Lemma 1.4(b)。\(C_u(α)\) の元で \(Ω_u\) 以上の加法的 principal は、
@@ -624,6 +689,16 @@ theorem oval_trm_lt_psi {v : ℕ∞} {x : Ordinal.{0}} :
       have hps : oval (BT.trm ps) < psi v x :=
         oval_trm_lt_psi (fun q hq => h q (List.mem_cons_of_mem _ hq))
       simpa using add_lt_psi hp hps
+
+/-- 加法的 principal 未満の principal 成分からなる列の評価はその principal 未満。 -/
+theorem oval_trm_lt_principal {q : Ordinal.{0}} (hq : Ordinal.IsPrincipal (· + ·) q)
+    (hq0 : 0 < q) : ∀ {ps : List BP}, (∀ p ∈ ps, ovalBP p < q) → oval (BT.trm ps) < q
+  | [], _ => by simpa using hq0
+  | p :: ps, h => by
+      have hp := h p (List.mem_cons_self)
+      have hps : oval (BT.trm ps) < q :=
+        oval_trm_lt_principal hq hq0 (fun r hr => h r (List.mem_cons_of_mem _ hr))
+      simpa using hq hp hps
 
 /-- 添字が小さい principal は値も小さい（\(\psi_u(x)\lt Ω_{u+1}\leq Ω_v\leq\psi_v(y)\)）。 -/
 theorem ovalBP_lt_of_index {u v : ℕ∞} (huv : u < v) (a b : BT) :
@@ -904,6 +979,94 @@ mutual
         | (simp only [btWeight, bpWeight, bpListWeight]; omega)
 end
 
+/-! ### 構文側の逆向き橋渡し -/
+
+/-- 列の評価が閉包に属するなら、各 principal 成分の評価も属する。
+右の和は [Buc1] 1.2(g)、左の和は先頭 principal の補題で取り出す。 -/
+theorem ovalBP_mem_of_oval_mem : ∀ (w : ℕ∞) (b : Ordinal.{0}) (ps : List BP),
+    isOT_BPList ps = true → descP ps = true →
+    oval (BT.trm ps) ∈ CSet w b → ∀ p ∈ ps, ovalBP p ∈ CSet w b
+  | _, _, [], _, _, _, _, hp => absurd hp (by simp)
+  | w, b, p :: ps, hl, hd, hmem, r, hr => by
+      simp only [isOT_BPList, Bool.and_eq_true] at hl
+      have hsum : oval (BT.trm (p :: ps)) = ovalBP p + oval (BT.trm ps) := rfl
+      have hps : oval (BT.trm ps) ∈ CSet w b := CSet_right_summand hmem _ _ hsum
+      have hlead : ovalBP p ∈ CSet w b := by
+        refine CSet_leading hmem (ovalBP p) ?_ ?_ ?_
+        · cases p with | db v c => exact isPrincipal_add_psi v (oval c)
+        · rw [hsum]; exact le_self_add
+        · intro q hq hqle
+          by_contra hc
+          have hpq : ovalBP p < q := not_le.1 hc
+          have hall : ∀ r' ∈ p :: ps, ovalBP r' < q := by
+            intro r' hr'
+            rcases List.mem_cons.1 hr' with rfl | hr''
+            · exact hpq
+            · have hple := descP_le_head p ps hd r' hr''
+              simp only [leBT, Bool.or_eq_true, beq_iff_eq, lessBT_single] at hple
+              have hle : ovalBP r' ≤ ovalBP p := by
+                rcases hple with hlt | heq
+                · exact le_of_lt
+                    (oval_lt_of_lessBP r' p (isOT_of_mem_list hl.2 hr'') hl.1 hlt)
+                · have hre : r' = p := by simpa using heq
+                  rw [hre]
+              exact lt_of_le_of_lt hle hpq
+          exact absurd (oval_trm_lt_principal hq (lt_trans (ovalBP_pos p) hpq) hall)
+            (not_lt.2 hqle)
+      rcases List.mem_cons.1 hr with rfl | hr'
+      · exact hlead
+      · exact ovalBP_mem_of_oval_mem w b ps hl.2 (descP_tail hd) hps r hr'
+
+mutual
+  /-- 逆向き橋渡し。順序数項 \(t\) の評価が \(C_w(b)\) に属するなら
+  \(G_w(t)\) の元の評価は \(b\) 未満。 -/
+  theorem gather_lt_BT : ∀ (w : ℕ∞) (b : Ordinal.{0}) (t : BT), isOT_BT t = true →
+      oval t ∈ CSet w b → ∀ y ∈ gatherBT w t, oval y < b
+    | w, b, .trm ps, ht, hmem, y, hy => by
+        simp only [isOT_BT, Bool.and_eq_true] at ht
+        exact gather_lt_BPList w b ps ht.1 ht.2 hmem y (by simpa [gatherBT] using hy)
+  termination_by _ _ t => btWeight t
+  decreasing_by simp only [btWeight]; omega
+
+  theorem gather_lt_BP : ∀ (w : ℕ∞) (b : Ordinal.{0}) (p : BP), isOT_BP p = true →
+      ovalBP p ∈ CSet w b → ∀ y ∈ gatherBP w p, oval y < b
+    | w, b, .db v c, hp, hmem, y, hy => by
+        simp only [isOT_BP, Bool.and_eq_true] at hp
+        by_cases hwv : w ≤ v
+        · simp only [gatherBP, hwv, decide_true, if_true, List.mem_cons] at hy
+          have hnf : oval c ∈ CSet v (oval c) := by
+            refine mem_CSet_of_gatherBT v (oval c) c hp.1 (fun z hz => ?_)
+            have hzc : lessBT z c = true := by
+              simpa using List.all_eq_true.1 hp.2 z hz
+            exact oval_lt_of_lessBT z c (isOT_of_mem_gatherBT v c hp.1 z hz) hp.1 hzc
+          obtain ⟨hclt, hcmem⟩ := lt_of_psi_mem hwv hnf (by simpa using hmem)
+          rcases hy with rfl | hy'
+          · exact hclt
+          · exact gather_lt_BT w b c hp.1 hcmem y hy'
+        · simp [gatherBP, hwv] at hy
+  termination_by _ _ p => bpWeight p
+  decreasing_by simp only [bpWeight]; omega
+
+  theorem gather_lt_BPList : ∀ (w : ℕ∞) (b : Ordinal.{0}) (ps : List BP),
+      isOT_BPList ps = true → descP ps = true →
+      oval (BT.trm ps) ∈ CSet w b → ∀ y ∈ gatherBPList w ps, oval y < b
+    | _, _, [], _, _, _, _, hy => by simp [gatherBPList] at hy
+    | w, b, p :: ps, hl, hd, hmem, y, hy => by
+        simp only [isOT_BPList, Bool.and_eq_true] at hl
+        simp only [gatherBPList, List.mem_append] at hy
+        have hpmem : ovalBP p ∈ CSet w b :=
+          ovalBP_mem_of_oval_mem w b (p :: ps) (by
+            simp only [isOT_BPList, Bool.and_eq_true]; exact ⟨hl.1, hl.2⟩) hd hmem p (by simp)
+        have hps : oval (BT.trm ps) ∈ CSet w b := CSet_right_summand hmem _ _ rfl
+        rcases hy with hy1 | hy2
+        · exact gather_lt_BP w b p hl.1 hpmem y hy1
+        · exact gather_lt_BPList w b ps hl.2 (descP_tail hd) hps y hy2
+  termination_by _ _ ps => bpListWeight ps
+  decreasing_by
+    all_goals simp only [bpListWeight]
+    all_goals omega
+end
+
 /-! ### 加法標準形
 
 順序数の和 \(x+y\) を表す項は、単なる連結ではない。\(x\) の principal 成分のうち
@@ -1117,7 +1280,7 @@ def SurjCore : Prop :=
 
 /-- \(ψ\) の場合だけを残した形。`0` と `+` の場合はここで閉じる。 -/
 theorem surj_core_of_psi
-    (hpsi : ∀ (v : ℕ∞) (x : Ordinal.{0}), x < psi ⊤ 0 →
+    (hpsi : ∀ (v : ℕ∞) (x : Ordinal.{0}), x < psi ⊤ 0 → x ∈ CSet v x →
       (∃ s : BT, isOT_BT s = true ∧ oval s = x) →
       ∃ t : BT, isOT_BT t = true ∧ oval t = psi v x) : SurjCore := by
   intro a ha
@@ -1131,42 +1294,27 @@ theorem surj_core_of_psi
   · rintro x _ ⟨s, hs, hsv⟩ y _ ⟨t, ht, htv⟩
     exact ⟨naddBT s t, isOT_naddBT s t hs ht, by
       rw [oval_naddBT s t hs ht, hsv, htv]⟩
-  · rintro x _ ih hx v _
-    exact hpsi v x hx ih
+  · rintro x _ ih hx v hnf
+    exact hpsi v x hx hnf ih
 
-/-- 残る唯一の穴。`surj_core_of_psi` により、示すべきは \(ψ\) の場合だけである。
+/-- \(ψ\) の場合。標準形条件 \(x\in C_v(x)\) が逆向き橋渡しを通して
+\(D_vs\) の順序数項性を与える。 -/
+theorem surj_psi (v : ℕ∞) (x : Ordinal.{0}) (hnf : x ∈ CSet v x)
+    (h : ∃ s : BT, isOT_BT s = true ∧ oval s = x) :
+    ∃ t : BT, isOT_BT t = true ∧ oval t = psi v x := by
+  obtain ⟨s, hs, rfl⟩ := h
+  refine ⟨Dprin v s, ?_, by simp⟩
+  have hcond : ∀ y ∈ gatherBT v s, lessBT y s = true := by
+    intro y hy
+    have hlt : oval y < oval s := gather_lt_BT v (oval s) s hs hnf y hy
+    have hyOT : isOT_BT y = true := isOT_of_mem_gatherBT v s hs y hy
+    exact (oval_lt_iff hyOT hs).2 hlt
+  have hall : (gatherBT v s).all (fun y => lessBT y s) = true :=
+    List.all_eq_true.2 (fun y hy => by simpa using hcond y hy)
+  simp [Dprin, isOT_BT, isOT_BPList, isOT_BP, descP, hs, hall]
 
-\(x\ltψ_ω0\) が項 \(s\) で表されるとき、\(\psi_v(x)\) を表す項が要る。素直な候補
-\(D_vs\) が順序数項であるためには \(G_v(s)\) の元がすべて \(\lt_Bs\)、すなわち
-\(x\in C_v(x)\) が要る。これは一般には成り立たないので、\(\psi_v\) の値が同じ引数の
-うち適切なものを取り直すことになる。
-
-[Buc1] §1 の定義では、この条件が閉包の生成規則そのものに入っている。
-
-\[
-C_v^{n+1}(α)=C_v^n(α)\cup\{γ\mid P(γ)\subseteq C_v^n(α)\}
-\cup\{\psi_uξ\midξ\inα\cap C_v^n(α)\ \land\ ξ\in C_u(ξ)\ \land\ u\leω\}
-\]
-
-この `CGen` は条件を落とした形（[Buc1] の (C1)(C2)(C3) による特徴づけ）で、
-[Buc1] の Remark によれば集合としては一致する。ただし全射性に効くのは条件つきの
-ほうで、[Buc1] Lemma 1.4(b) が
-
-\[
-γ\in C_v(α)\ \land\ Ω_v\leγ\in P\ \Longrightarrow\
-\exists u,ξ\ (γ=\psi_uξ\ \land\ ξ\inα\cap C_v(α)\cap C_u(ξ))
-\]
-
-を与える。ここで得られる \(ξ\in C_u(ξ)\) がそのまま \(D_us\) の標準形条件になる。
-
-したがって残る作業は、`CGen` の `psi` 生成規則に \(x\in C_v(x)\) を足して [Buc1] の
-定義に揃えることである。その際:
-
-- `psi_lt_psi` は仮定 \(x\in C_u(x)\) つきになる（[Buc1] Lemma 1.3 と同じ形）
-- `mem_CSet_of_gatherBT` は順序数項限定に直し、Lemma 2.1 と相互再帰にする
-- `CStage` は上界評価にしか使わないので条件なしのままでよい -/
-theorem surj_core : SurjCore := by
-  sorry
+theorem surj_core : SurjCore :=
+  surj_core_of_psi (fun v x _ hnf h => surj_psi v x hnf h)
 
 /-- [Buc1] Lemma 2.2(c) のうち易しい向き。 -/
 theorem oval_image_subset :
