@@ -40,6 +40,8 @@ C_u(α)=\bigcup_{n<ω}C_u^n(α),\qquad ψ_u(α)=\min\{β\midβ\notin C_u(α)\}
 | (7) | `surj_core` の `0` と `+` の場合（`surj_core_of_psi`） | **済** |
 | (8) | `surj_core` の \(ψ\) の場合 | `sorry`（残り 1 本） |
 
+閉包は [Buc1] の条件つき定義（`psi` 生成規則に \(ξ\in C_u(ξ)\)）を採っている。
+
 (1)(2) から出たもの: \(Ω_u\leψ_u(α)<Ω_{u+1}\)、\(ψ\) の広義・狭義単調性、
 \(ψ_u(α)\) が加法的 principal であること。
 -/
@@ -101,33 +103,112 @@ theorem Om_lt_OmSucc (u : ℕ∞) : Om u < OmSucc u := by
     · simp only [Om, OmSucc, if_neg h]
       exact mono _ _ (by simp)
 
-/-! ## \(C_u(α)\) -/
+/-! ## \(C_u(α)\)
 
-/-- \(C_u(α)\) を生成する帰納的述語。`f` は「\(α\) 未満の引数での \(ψ\)」。 -/
-inductive CGen (u : ℕ∞) (a : Ordinal.{0})
-    (f : ∀ x : Ordinal.{0}, x < a → ℕ∞ → Ordinal.{0}) : Ordinal.{0} → Prop
-  | lt_Om {b} : b < Om u → CGen u a f b
-  | zero : CGen u a f 0
-  | add {x y} : CGen u a f x → CGen u a f y → CGen u a f (x + y)
-  | psi {x} (hx : x < a) (v : ℕ∞) : CGen u a f x → CGen u a f (f x hx v)
+[Buc1] §1 の定義をそのまま写す。
 
-/-- \(ψ\) の本体。`a` に関する整礎再帰。 -/
-noncomputable def psiStep (a : Ordinal.{0})
-    (f : ∀ x : Ordinal.{0}, x < a → ℕ∞ → Ordinal.{0}) : ℕ∞ → Ordinal.{0} :=
-  fun u => sInf {b | ¬ CGen u a f b}
+\[
+C_v(α)=\bigcup_{n\lt\omega}C_v^n(α),\qquad C_v^0(α)=Ω_v,
+\]
+\[
+C_v^{n+1}(α)=C_v^n(α)\cup\{γ\mid P(γ)\subseteq C_v^n(α)\}
+\cup\{\psi_uξ\midξ\inα\cap C_v^n(α)\ \land\ ξ\in C_u(ξ)\ \land\ u\leω\}
+\]
 
-/-- \(ψ_u(α)\)。 -/
-noncomputable def psi (u : ℕ∞) (a : Ordinal.{0}) : Ordinal.{0} :=
-  Ordinal.lt_wf.fix psiStep a u
+段階の合併の代わりに、[Buc1] が同値として挙げる「(C1)(C2)(C3) を満たす最小の集合」
+の形を採る（\(P(γ)\subseteq X\) による閉包は加法についての閉包と同値。[Buc1] 1.2(e)）。
+最小性は「条件を満たす集合すべての共通部分」として書く。帰納的述語にしないのは、
+\(ξ\in C_u(ξ)\) が「\(ξ\) 未満の引数での \(\psi\)」を参照するため、帰納的述語では
+関数を添字に持つことになって扱えないからである。
+-/
+
+/-- 閉包の条件。`nf x hx v` が \(x\in C_v(x)\)、`pv x hx v` が \(\psi_v(x)\) にあたる。 -/
+structure IsCClosed (u : ℕ∞) (a : Ordinal.{0})
+    (nf : ∀ x : Ordinal.{0}, x < a → ℕ∞ → Prop)
+    (pv : ∀ x : Ordinal.{0}, x < a → ℕ∞ → Ordinal.{0})
+    (X : Set Ordinal.{0}) : Prop where
+  lt_Om : ∀ b, b < Om u → b ∈ X
+  zero : (0 : Ordinal.{0}) ∈ X
+  add : ∀ x ∈ X, ∀ y ∈ X, x + y ∈ X
+  psi : ∀ x ∈ X, ∀ (hx : x < a) (v : ℕ∞), nf x hx v → pv x hx v ∈ X
+
+/-- 条件を満たす最小の集合。 -/
+def CSetOf (u : ℕ∞) (a : Ordinal.{0})
+    (nf : ∀ x : Ordinal.{0}, x < a → ℕ∞ → Prop)
+    (pv : ∀ x : Ordinal.{0}, x < a → ℕ∞ → Ordinal.{0}) : Set Ordinal.{0} :=
+  {b | ∀ X : Set Ordinal.{0}, IsCClosed u a nf pv X → b ∈ X}
+
+theorem isCClosed_CSetOf (u : ℕ∞) (a : Ordinal.{0}) (nf) (pv) :
+    IsCClosed u a nf pv (CSetOf u a nf pv) where
+  lt_Om _ h := fun _ hX => hX.lt_Om _ h
+  zero := fun _ hX => hX.zero
+  add _ hx _ hy := fun X hX => hX.add _ (hx X hX) _ (hy X hX)
+  psi _ hx hxa v hnf := fun X hX => hX.psi _ (hx X hX) hxa v hnf
+
+/-- \(C\) と \(ψ\) を \(α\) に関する整礎再帰で同時に定める。 -/
+noncomputable def cpsiStep (a : Ordinal.{0})
+    (F : ∀ y : Ordinal.{0}, y < a → (ℕ∞ → Set Ordinal.{0}) × (ℕ∞ → Ordinal.{0})) :
+    (ℕ∞ → Set Ordinal.{0}) × (ℕ∞ → Ordinal.{0}) :=
+  (fun u => CSetOf u a (fun x hx v => x ∈ (F x hx).1 v) (fun x hx v => (F x hx).2 v),
+   fun u => sInf {b | b ∉ CSetOf u a (fun x hx v => x ∈ (F x hx).1 v)
+                        (fun x hx v => (F x hx).2 v)})
+
+noncomputable def cpsi : Ordinal.{0} → (ℕ∞ → Set Ordinal.{0}) × (ℕ∞ → Ordinal.{0}) :=
+  Ordinal.lt_wf.fix cpsiStep
 
 /-- \(C_u(α)\)。 -/
-def CSet (u : ℕ∞) (a : Ordinal.{0}) : Set Ordinal.{0} :=
-  {b | CGen u a (fun x _ v => psi v x) b}
+def CSet (u : ℕ∞) (a : Ordinal.{0}) : Set Ordinal.{0} := (cpsi a).1 u
 
-theorem psi_eq (u : ℕ∞) (a : Ordinal.{0}) :
-    psi u a = sInf {b | b ∉ CSet u a} := by
-  rw [psi, Ordinal.lt_wf.fix_eq]
+/-- \(ψ_u(α)\)。 -/
+noncomputable def psi (u : ℕ∞) (a : Ordinal.{0}) : Ordinal.{0} := (cpsi a).2 u
+
+theorem cpsi_eq (a : Ordinal.{0}) : cpsi a = cpsiStep a (fun y _ => cpsi y) :=
+  Ordinal.lt_wf.fix_eq cpsiStep a
+
+theorem CSet_eq (u : ℕ∞) (a : Ordinal.{0}) :
+    CSet u a = CSetOf u a (fun x _ v => x ∈ CSet v x) (fun x _ v => psi v x) := by
+  rw [CSet, cpsi_eq]; rfl
+
+theorem psi_eq (u : ℕ∞) (a : Ordinal.{0}) : psi u a = sInf {b | b ∉ CSet u a} := by
+  conv_rhs => rw [CSet_eq]
+  rw [psi, cpsi_eq]
   rfl
+
+/-! ### 閉包の規則と帰納法 -/
+
+theorem CSet_lt_Om {u : ℕ∞} {a b : Ordinal.{0}} (h : b < Om u) : b ∈ CSet u a := by
+  rw [CSet_eq]; exact (isCClosed_CSetOf u a _ _).lt_Om b h
+
+theorem CSet_zero {u : ℕ∞} {a : Ordinal.{0}} : (0 : Ordinal.{0}) ∈ CSet u a := by
+  rw [CSet_eq]; exact (isCClosed_CSetOf u a _ _).zero
+
+theorem CSet_add {u : ℕ∞} {a x y : Ordinal.{0}} (hx : x ∈ CSet u a) (hy : y ∈ CSet u a) :
+    x + y ∈ CSet u a := by
+  rw [CSet_eq] at hx hy ⊢
+  exact (isCClosed_CSetOf u a _ _).add x hx y hy
+
+theorem CSet_psi {u : ℕ∞} {a x : Ordinal.{0}} (hx : x ∈ CSet u a) (hxa : x < a) (v : ℕ∞)
+    (hnf : x ∈ CSet v x) : psi v x ∈ CSet u a := by
+  rw [CSet_eq] at hx ⊢
+  exact (isCClosed_CSetOf u a _ _).psi x hx hxa v hnf
+
+/-- 閉包に関する帰納法。4 規則を満たす述語は \(C_u(α)\) を含む。 -/
+theorem CSet_induction {u : ℕ∞} {a : Ordinal.{0}} {P : Ordinal.{0} → Prop}
+    (hOm : ∀ b, b < Om u → P b)
+    (hzero : P 0)
+    (hadd : ∀ x, x ∈ CSet u a → P x → ∀ y, y ∈ CSet u a → P y → P (x + y))
+    (hpsi : ∀ x, x ∈ CSet u a → P x → ∀ (hxa : x < a) (v : ℕ∞), x ∈ CSet v x → P (psi v x))
+    {b : Ordinal.{0}} (hb : b ∈ CSet u a) : P b := by
+  have hb' : b ∈ CSet u a ∧ P b := by
+    rw [CSet_eq] at hb
+    refine hb {c | c ∈ CSet u a ∧ P c} ⟨?_, ?_, ?_, ?_⟩
+    · exact fun c hc => ⟨CSet_lt_Om hc, hOm c hc⟩
+    · exact ⟨CSet_zero, hzero⟩
+    · rintro x ⟨hx, px⟩ y ⟨hy, py⟩
+      exact ⟨CSet_add hx hy, hadd x hx px y hy py⟩
+    · rintro x ⟨hx, px⟩ hxa v hnf
+      exact ⟨CSet_psi hx hxa v hnf, hpsi x hx px hxa v hnf⟩
+  exact hb'.2
 
 /-! ### 段階表現 -/
 
@@ -149,19 +230,16 @@ theorem CStage_mono {u : ℕ∞} {a : Ordinal.{0}} {m n : ℕ} (h : m ≤ n) :
     · exact fun x hx => Or.inl (Or.inl (ih (Nat.lt_succ_iff.mp hm) hx))
     · rw [le_antisymm h hm]
 
-theorem CGen_stage {u : ℕ∞} {a b : Ordinal.{0}}
-    (h : CGen u a (fun x _ v => psi v x) b) : ∃ n, b ∈ CStage u a n := by
-  induction h with
-  | lt_Om hb => exact ⟨0, Or.inl hb⟩
-  | zero => exact ⟨0, Or.inr rfl⟩
-  | add _ _ ihx ihy =>
-      obtain ⟨n, hn⟩ := ihx
-      obtain ⟨m, hm⟩ := ihy
-      exact ⟨max n m + 1, Or.inl (Or.inr ⟨_, CStage_mono (le_max_left n m) hn,
-        _, CStage_mono (le_max_right n m) hm, rfl⟩)⟩
-  | psi hx v _ ih =>
-      obtain ⟨n, hn⟩ := ih
-      exact ⟨n + 1, Or.inr ⟨v, _, hn, hx, rfl⟩⟩
+theorem CGen_stage {u : ℕ∞} {a b : Ordinal.{0}} (h : b ∈ CSet u a) :
+    ∃ n, b ∈ CStage u a n := by
+  refine CSet_induction (P := fun c => ∃ n, c ∈ CStage u a n) ?_ ?_ ?_ ?_ h
+  · exact fun b hb => ⟨0, Or.inl hb⟩
+  · exact ⟨0, Or.inr rfl⟩
+  · rintro x _ ⟨n, hn⟩ y _ ⟨m, hm⟩
+    exact ⟨max n m + 1, Or.inl (Or.inr ⟨_, CStage_mono (le_max_left n m) hn,
+      _, CStage_mono (le_max_right n m) hm, rfl⟩)⟩
+  · rintro x _ ⟨n, hn⟩ hxa v _
+    exact ⟨n + 1, Or.inr ⟨v, _, hn, hxa, rfl⟩⟩
 
 /-! ### 基数評価 -/
 
@@ -311,7 +389,7 @@ theorem psi_lt_OmSucc (u : ℕ∞) (a : Ordinal.{0}) : psi u a < OmSucc u := by
 /-- \(Ω_u\leψ_u(α)\)。 -/
 theorem Om_le_psi (u : ℕ∞) (a : Ordinal.{0}) : Om u ≤ psi u a := by
   by_contra hcon
-  exact psi_not_mem u a (CGen.lt_Om (not_le.1 hcon))
+  exact psi_not_mem u a (CSet_lt_Om (not_le.1 hcon))
 
 /-! ### \(Ω\) の単調性 -/
 
@@ -346,16 +424,23 @@ theorem le_of_Om_lt_OmSucc {u v : ℕ∞} (h : Om v < OmSucc u) : v ≤ u := by
 /-! ### \(C_u(α)\) の \(α\) についての単調性 -/
 
 theorem CGen_mono_arg {u : ℕ∞} {x y : Ordinal.{0}} (h : x ≤ y) {b : Ordinal.{0}}
-    (hb : CGen u x (fun z _ v => psi v z) b) : CGen u y (fun z _ v => psi v z) b := by
-  induction hb with
-  | lt_Om h' => exact CGen.lt_Om h'
-  | zero => exact CGen.zero
-  | add _ _ ihx ihy => exact CGen.add ihx ihy
-  | psi hz v _ ih => exact CGen.psi (lt_of_lt_of_le hz h) v ih
+    (hb : b ∈ CSet u x) : b ∈ CSet u y := by
+  refine CSet_induction (P := fun c => c ∈ CSet u y) ?_ ?_ ?_ ?_ hb
+  · exact fun _ hb' => CSet_lt_Om hb'
+  · exact CSet_zero
+  · exact fun _ _ hx _ _ hy => CSet_add hx hy
+  · exact fun z _ hz hza v hnf => CSet_psi hz (lt_of_lt_of_le hza h) v hnf
 
 theorem psi_mono {u : ℕ∞} {x y : Ordinal.{0}} (h : x ≤ y) : psi u x ≤ psi u y := by
   rw [psi_eq]
   exact csInf_le' (fun hmem => psi_not_mem u y (CGen_mono_arg h hmem))
+
+/-- \(x<y\) かつ \(x\in C_u(y)\) なら \(ψ_u(x)<ψ_u(y)\)（狭義単調性）。 -/
+theorem psi_lt_psi {u : ℕ∞} {x y : Ordinal.{0}} (hxy : x < y) (hx : x ∈ CSet u y)
+    (hnf : x ∈ CSet u x) : psi u x < psi u y := by
+  rcases lt_or_eq_of_le (psi_mono (le_of_lt hxy)) with h | h
+  · exact h
+  · exact absurd (h ▸ CSet_psi hx hxy u hnf) (psi_not_mem u y)
 
 /-! ### \(ψ_u(α)\) は加法的principal -/
 
@@ -369,7 +454,7 @@ theorem add_lt_psi {u : ℕ∞} {a x y : Ordinal.{0}} (hx : x < psi u a) (hy : y
     have : x + (psi u a - x) ≤ x + y := by rw [hsplit]; exact hle
     exact (add_le_add_iff_left x).1 this
   have hmem : psi u a ∈ CSet u a := by
-    have := CGen.add (lt_psi_mem hx) (lt_psi_mem (lt_of_le_of_lt hey hy))
+    have := CSet_add (lt_psi_mem hx) (lt_psi_mem (lt_of_le_of_lt hey hy))
     rwa [hsplit] at this
   exact psi_not_mem u a hmem
 
@@ -385,31 +470,20 @@ theorem add_psi_eq (u : ℕ∞) (a : Ordinal.{0}) {b : Ordinal.{0}} (h : b < psi
 
 theorem mem_CSet_lt_psi (u : ℕ∞) (a : Ordinal.{0}) {c : Ordinal.{0}}
     (hc : c ∈ CSet u a) : c < OmSucc u → c < psi u a := by
-  induction hc with
-  | lt_Om h => exact fun _ => lt_of_lt_of_le h (Om_le_psi u a)
-  | zero => exact fun _ => lt_of_lt_of_le (Om_pos u) (Om_le_psi u a)
-  | @add x y _ _ ihx ihy =>
-      intro h
-      have hxlt : x < OmSucc u := lt_of_le_of_lt (le_self_add : x ≤ x + y) h
-      have hylt : y < OmSucc u := lt_of_le_of_lt (le_add_self : y ≤ x + y) h
-      exact add_lt_psi (ihx hxlt) (ihy hylt)
-  | @psi x hxa v hx _ =>
-      intro h
-      have hvu : v ≤ u := le_of_Om_lt_OmSucc (lt_of_le_of_lt (Om_le_psi v x) h)
-      rcases lt_or_eq_of_le hvu with hv | hv
-      · exact lt_of_lt_of_le (psi_lt_OmSucc v x)
-          (le_trans (OmSucc_le_Om hv) (Om_le_psi u a))
-      · subst hv
-        rcases lt_or_eq_of_le (psi_mono (le_of_lt hxa) : psi v x ≤ psi v a) with hlt | heq
-        · exact hlt
-        · exact absurd (heq ▸ CGen.psi hxa v hx) (psi_not_mem v a)
-
-/-- \(x<y\) かつ \(x\in C_u(y)\) なら \(ψ_u(x)<ψ_u(y)\)（狭義単調性）。 -/
-theorem psi_lt_psi {u : ℕ∞} {x y : Ordinal.{0}} (hxy : x < y) (hx : x ∈ CSet u y) :
-    psi u x < psi u y := by
-  rcases lt_or_eq_of_le (psi_mono (le_of_lt hxy)) with h | h
-  · exact h
-  · exact absurd (h ▸ CGen.psi hxy u hx) (psi_not_mem u y)
+  refine CSet_induction (P := fun c => c < OmSucc u → c < psi u a) ?_ ?_ ?_ ?_ hc
+  · exact fun _ h => fun _ => lt_of_lt_of_le h (Om_le_psi u a)
+  · exact fun _ => lt_of_lt_of_le (Om_pos u) (Om_le_psi u a)
+  · intro x _ ihx y _ ihy h
+    have hxlt : x < OmSucc u := lt_of_le_of_lt (le_self_add : x ≤ x + y) h
+    have hylt : y < OmSucc u := lt_of_le_of_lt (le_add_self : y ≤ x + y) h
+    exact add_lt_psi (ihx hxlt) (ihy hylt)
+  · intro x hx _ hxa v hnf h
+    have hvu : v ≤ u := le_of_Om_lt_OmSucc (lt_of_le_of_lt (Om_le_psi v x) h)
+    rcases lt_or_eq_of_le hvu with hv | hv
+    · exact lt_of_lt_of_le (psi_lt_OmSucc v x)
+        (le_trans (OmSucc_le_Om hv) (Om_le_psi u a))
+    · subst hv
+      exact psi_lt_psi hxa hx hnf
 
 /-! ## (2) 崩壊の要 -/
 
@@ -471,44 +545,6 @@ theorem oval_append (as bs : List BP) :
   induction as with
   | nil => simp
   | cons p ps ih => simp [ih, add_assoc]
-
-/-! ### \(G_u\) と \(C_u\) の橋渡し
-
-[Buc1] の要は「\(G_u(t)\) の元がすべて \(β\) 未満なら \(o(t)\in C_u(β)\)」である。
-\(D_va\) の場合は \(u\leq v\) なら \(a\in G_u(D_va)\) から `psi` 生成規則で、
-\(u\gt v\) なら \(\psi_v(o(a))\lt Ω_{v+1}\leq Ω_u\) から `lt_Om` 生成規則で入る。
--/
-
-mutual
-  theorem mem_CSet_of_gatherBT : ∀ (u : ℕ∞) (b : Ordinal.{0}) (t : BT),
-      (∀ x ∈ gatherBT u t, oval x < b) → oval t ∈ CSet u b
-    | u, b, .trm ps, h => mem_CSet_of_gatherBPList u b ps (by simpa [gatherBT] using h)
-
-  theorem mem_CSet_of_gatherBP : ∀ (u : ℕ∞) (b : Ordinal.{0}) (p : BP),
-      (∀ x ∈ gatherBP u p, oval x < b) → ovalBP p ∈ CSet u b
-    | u, b, .db v a, h => by
-        by_cases huv : u ≤ v
-        · have hmem : ∀ x ∈ gatherBP u (.db v a), oval x < b := h
-          simp only [gatherBP, huv, decide_true, if_true, List.mem_cons] at hmem
-          have hab : oval a < b := hmem a (Or.inl rfl)
-          have hrest : ∀ x ∈ gatherBT u a, oval x < b := fun x hx => hmem x (Or.inr hx)
-          have : oval a ∈ CSet u b := mem_CSet_of_gatherBT u b a hrest
-          simpa using CGen.psi hab v this
-        · have hlt : psi v (oval a) < Om u :=
-            lt_of_lt_of_le (psi_lt_OmSucc v (oval a)) (OmSucc_le_Om (not_le.1 huv))
-          simpa using CGen.lt_Om hlt
-
-  theorem mem_CSet_of_gatherBPList : ∀ (u : ℕ∞) (b : Ordinal.{0}) (ps : List BP),
-      (∀ x ∈ gatherBPList u ps, oval x < b) → oval (BT.trm ps) ∈ CSet u b
-    | _, _, [], _ => by simpa using CGen.zero
-    | u, b, p :: ps, h => by
-        simp only [gatherBPList, List.mem_append] at h
-        have hp : ovalBP p ∈ CSet u b :=
-          mem_CSet_of_gatherBP u b p (fun x hx => h x (Or.inl hx))
-        have hps : oval (BT.trm ps) ∈ CSet u b :=
-          mem_CSet_of_gatherBPList u b ps (fun x hx => h x (Or.inr hx))
-        simpa using CGen.add hp hps
-end
 
 /-! ### Lemma 2.1 の部品 -/
 
@@ -669,19 +705,27 @@ mutual
         · exact ovalBP_lt_of_index huv a b
         · simp only [isOT_BP, Bool.and_eq_true] at hp hq
           have hlt : oval a < oval b := oval_lt_of_lessBT a b hp.1 hq.1 hab
-          have hmem : oval a ∈ CSet u (oval b) := by
-            refine mem_CSet_of_gatherBT u (oval b) a (fun x hx => ?_)
+          have hsmall : ∀ x ∈ gatherBT u a, oval x < oval a := by
+            intro x hx
             have hxa : lessBT x a = true := by
               simpa using List.all_eq_true.1 hp.2 x hx
             have hxOT : isOT_BT x = true := isOT_of_mem_gatherBT u a hp.1 x hx
             have hwx : btWeight x < btWeight a := weight_of_mem_gatherBT u a x hx
-            exact lt_trans (oval_lt_of_lessBT x a hxOT hp.1 hxa) hlt
-          simpa using psi_lt_psi hlt hmem
+            exact oval_lt_of_lessBT x a hxOT hp.1 hxa
+          have hmem : oval a ∈ CSet u (oval b) :=
+            mem_CSet_of_gatherBT u (oval b) a hp.1 (fun x hx => lt_trans (hsmall x hx) hlt)
+          have hnf : oval a ∈ CSet u (oval a) :=
+            mem_CSet_of_gatherBT u (oval a) a hp.1 hsmall
+          simpa using psi_lt_psi hlt hmem hnf
   termination_by p => bpWeight p
   decreasing_by
-    all_goals simp only [bpWeight]
-    · omega
-    · omega
+    all_goals
+      first
+        | omega
+        | (simp only [btWeight]; omega)
+        | (simp only [bpWeight]; omega)
+        | (simp only [bpListWeight]; omega)
+        | (simp only [btWeight, bpWeight, bpListWeight]; omega)
 
   theorem oval_lt_of_lessBPList : ∀ (as bs : List BP),
       isOT_BPList as = true → descP as = true →
@@ -726,8 +770,73 @@ mutual
           simpa using (add_lt_add_iff_left (ovalBP a)).2 hrec
   termination_by as => bpListWeight as
   decreasing_by
-    all_goals simp only [bpListWeight]
-    all_goals omega
+    all_goals
+      first
+        | omega
+        | (simp only [btWeight]; omega)
+        | (simp only [bpWeight]; omega)
+        | (simp only [bpListWeight]; omega)
+        | (simp only [btWeight, bpWeight, bpListWeight]; omega)
+  theorem mem_CSet_of_gatherBT : ∀ (u : ℕ∞) (b : Ordinal.{0}) (t : BT), isOT_BT t = true →
+      (∀ x ∈ gatherBT u t, oval x < b) → oval t ∈ CSet u b
+    | u, b, .trm ps, ht, h => by
+        simp only [isOT_BT, Bool.and_eq_true] at ht
+        exact mem_CSet_of_gatherBPList u b ps ht.1 (by simpa [gatherBT] using h)
+  termination_by _ _ t => btWeight t
+  decreasing_by simp only [btWeight]; omega
+
+  theorem mem_CSet_of_gatherBP : ∀ (u : ℕ∞) (b : Ordinal.{0}) (p : BP), isOT_BP p = true →
+      (∀ x ∈ gatherBP u p, oval x < b) → ovalBP p ∈ CSet u b
+    | u, b, .db v a, hp, h => by
+        simp only [isOT_BP, Bool.and_eq_true] at hp
+        by_cases huv : u ≤ v
+        · have hmem : ∀ x ∈ gatherBP u (.db v a), oval x < b := h
+          simp only [gatherBP, huv, decide_true, if_true, List.mem_cons] at hmem
+          have hab : oval a < b := hmem a (Or.inl rfl)
+          have hrest : ∀ x ∈ gatherBT u a, oval x < b := fun x hx => hmem x (Or.inr hx)
+          have hmemb : oval a ∈ CSet u b := mem_CSet_of_gatherBT u b a hp.1 hrest
+          have hnf : oval a ∈ CSet v (oval a) := by
+            refine mem_CSet_of_gatherBT v (oval a) a hp.1 (fun x hx => ?_)
+            have hxa : lessBT x a = true := by
+              simpa using List.all_eq_true.1 hp.2 x hx
+            have hxOT : isOT_BT x = true := isOT_of_mem_gatherBT v a hp.1 x hx
+            have hwx : btWeight x < btWeight a := weight_of_mem_gatherBT v a x hx
+            exact oval_lt_of_lessBT x a hxOT hp.1 hxa
+          simpa using CSet_psi hmemb hab v hnf
+        · have hlt : psi v (oval a) < Om u :=
+            lt_of_lt_of_le (psi_lt_OmSucc v (oval a)) (OmSucc_le_Om (not_le.1 huv))
+          simpa using CSet_lt_Om hlt
+  termination_by _ _ p => bpWeight p
+  decreasing_by
+    all_goals
+      first
+        | omega
+        | (simp only [btWeight]; omega)
+        | (simp only [bpWeight]; omega)
+        | (simp only [bpListWeight]; omega)
+        | (simp only [btWeight, bpWeight, bpListWeight]; omega)
+
+  theorem mem_CSet_of_gatherBPList : ∀ (u : ℕ∞) (b : Ordinal.{0}) (ps : List BP),
+      isOT_BPList ps = true →
+      (∀ x ∈ gatherBPList u ps, oval x < b) → oval (BT.trm ps) ∈ CSet u b
+    | _, _, [], _, _ => by simpa using CSet_zero
+    | u, b, p :: ps, hl, h => by
+        simp only [isOT_BPList, Bool.and_eq_true] at hl
+        simp only [gatherBPList, List.mem_append] at h
+        have hp : ovalBP p ∈ CSet u b :=
+          mem_CSet_of_gatherBP u b p hl.1 (fun x hx => h x (Or.inl hx))
+        have hps : oval (BT.trm ps) ∈ CSet u b :=
+          mem_CSet_of_gatherBPList u b ps hl.2 (fun x hx => h x (Or.inr hx))
+        simpa using CSet_add hp hps
+  termination_by _ _ ps => bpListWeight ps
+  decreasing_by
+    all_goals
+      first
+        | omega
+        | (simp only [btWeight]; omega)
+        | (simp only [bpWeight]; omega)
+        | (simp only [bpListWeight]; omega)
+        | (simp only [btWeight, bpWeight, bpListWeight]; omega)
 end
 
 /-! ### 加法標準形
@@ -947,52 +1056,18 @@ theorem surj_core_of_psi
       (∃ s : BT, isOT_BT s = true ∧ oval s = x) →
       ∃ t : BT, isOT_BT t = true ∧ oval t = psi v x) : SurjCore := by
   intro a ha
-  induction ha with
-  | @lt_Om b h =>
-      have hb : b = 0 := by
-        rw [Om_zero] at h
-        exact Order.lt_one_iff.1 h
-      exact ⟨BZero, by decide, by simp [hb]⟩
-  | zero => exact ⟨BZero, by decide, by simp⟩
-  | @add x y _ _ ihx ihy =>
-      obtain ⟨s, hs, hsv⟩ := ihx
-      obtain ⟨t, ht, htv⟩ := ihy
-      exact ⟨naddBT s t, isOT_naddBT s t hs ht, by
-        rw [oval_naddBT s t hs ht, hsv, htv]⟩
-  | @psi x hx v _ ih => exact hpsi v x hx ih
-
-/-! ### [Buc1] の条件つき閉包
-
-[Buc1] §1 の \(C_v(α)\) は、`psi` 生成規則に \(ξ\in C_u(ξ)\) を課した形で定義される。
-`psi` はすでに全域なので、条件つきの閉包は素直な帰納的述語として書ける。
-
-条件つきのほうを使うと [Buc1] Lemma 1.4(b)（\(C_v(α)\) の加法的 principal は
-標準形の引数をもつ \(\psi_uξ\) である）が構成から出て、全射性の \(ψ\) の場合が通る。
--/
-
-/-- [Buc1] の条件つき閉包 \(C_v(α)\)。 -/
-inductive CN : ℕ∞ → Ordinal.{0} → Ordinal.{0} → Prop
-  | lt_Om {u a b} : b < Om u → CN u a b
-  | zero {u a} : CN u a 0
-  | add {u a x y} : CN u a x → CN u a y → CN u a (x + y)
-  | psi {u a x} (hx : x < a) (v : ℕ∞) : CN u a x → CN v x x → CN u a (psi v x)
-
-/-- 条件つき閉包は条件なしの閉包に含まれる（生成規則を落とすだけ）。 -/
-theorem CN_subset_CSet : ∀ {u a b : _}, CN u a b → b ∈ CSet u a := by
-  intro u a b h
-  induction h with
-  | lt_Om h' => exact CGen.lt_Om h'
-  | zero => exact CGen.zero
-  | add _ _ ihx ihy => exact CGen.add ihx ihy
-  | psi hx v _ _ ih _ => exact CGen.psi hx v ih
-
-/-- 条件つき閉包も \(α\) について単調。 -/
-theorem CN_mono_arg {u : ℕ∞} {x y b : Ordinal.{0}} (h : x ≤ y) (hb : CN u x b) : CN u y b := by
-  induction hb with
-  | lt_Om h' => exact CN.lt_Om h'
-  | zero => exact CN.zero
-  | add _ _ ihx ihy => exact CN.add (ihx h) (ihy h)
-  | psi hz v _ hcond ih _ => exact CN.psi (lt_of_lt_of_le hz h) v (ih h) hcond
+  refine CSet_induction (P := fun c => ∃ t : BT, isOT_BT t = true ∧ oval t = c) ?_ ?_ ?_ ?_ ha
+  · intro b h
+    have hb : b = 0 := by
+      rw [Om_zero] at h
+      exact Order.lt_one_iff.1 h
+    exact ⟨BZero, by decide, by simp [hb]⟩
+  · exact ⟨BZero, by decide, by simp⟩
+  · rintro x _ ⟨s, hs, hsv⟩ y _ ⟨t, ht, htv⟩
+    exact ⟨naddBT s t, isOT_naddBT s t hs ht, by
+      rw [oval_naddBT s t hs ht, hsv, htv]⟩
+  · rintro x _ ih hx v _
+    exact hpsi v x hx ih
 
 /-- 残る唯一の穴。`surj_core_of_psi` により、示すべきは \(ψ\) の場合だけである。
 
