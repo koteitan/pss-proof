@@ -37,7 +37,8 @@ C_u(α)=\bigcup_{n<ω}C_u^n(α),\qquad ψ_u(α)=\min\{β\midβ\notin C_u(α)\}
 | (4) | [Buc1] Lemma 2.1（\(o\) が順序を保つ、単射性つき） | **済** |
 | (5) | [Buc1] Lemma 2.2(c) の還元と易しい向き | **済** |
 | (6) | 加法標準形（項の正規化和 `naddBT`） | **済** |
-| (7) | 全射性の核 `surj_core` | `sorry`（残り 1 本、\(ψ\) の場合の標準形選択） |
+| (7) | `surj_core` の `0` と `+` の場合（`surj_core_of_psi`） | **済** |
+| (8) | `surj_core` の \(ψ\) の場合 | `sorry`（残り 1 本） |
 
 (1)(2) から出たもの: \(Ω_u\leψ_u(α)<Ω_{u+1}\)、\(ψ\) の広義・狭義単調性、
 \(ψ_u(α)\) が加法的 principal であること。
@@ -940,6 +941,37 @@ theorem mem_OT_DzeroDomegaZeroP : DzeroDomegaZeroP ∈ OT := isOT_DzeroDomegaZer
 def SurjCore : Prop :=
   ∀ a ∈ CSet 0 (psi ⊤ 0), ∃ t : BT, isOT_BT t = true ∧ oval t = a
 
+/-- \(ψ\) の場合だけを残した形。`0` と `+` の場合はここで閉じる。 -/
+theorem surj_core_of_psi
+    (hpsi : ∀ (v : ℕ∞) (x : Ordinal.{0}), x < psi ⊤ 0 →
+      (∃ s : BT, isOT_BT s = true ∧ oval s = x) →
+      ∃ t : BT, isOT_BT t = true ∧ oval t = psi v x) : SurjCore := by
+  intro a ha
+  induction ha with
+  | @lt_Om b h =>
+      have hb : b = 0 := by
+        rw [Om_zero] at h
+        exact Order.lt_one_iff.1 h
+      exact ⟨BZero, by decide, by simp [hb]⟩
+  | zero => exact ⟨BZero, by decide, by simp⟩
+  | @add x y _ _ ihx ihy =>
+      obtain ⟨s, hs, hsv⟩ := ihx
+      obtain ⟨t, ht, htv⟩ := ihy
+      exact ⟨naddBT s t, isOT_naddBT s t hs ht, by
+        rw [oval_naddBT s t hs ht, hsv, htv]⟩
+  | @psi x hx v _ ih => exact hpsi v x hx ih
+
+/-- 残る唯一の穴。`surj_core_of_psi` により、示すべきは \(ψ\) の場合だけである。
+
+\(x\ltψ_ω0\) が項 \(s\) で表されるとき、\(\psi_v(x)\) を表す項が要る。素直な候補
+\(D_vs\) が順序数項であるためには \(G_v(s)\) の元がすべて \(\lt_Bs\)、すなわち
+\(x\in C_v(x)\) が要る。これは一般には成り立たないので、\(\psi_v\) の値が同じ引数の
+うち適切なものを取り直すことになる。
+
+⚠ 単純に \(x_0=\min\{y\mid\psi_v(y)=\psi_v(x)\}\) と取っても \(x_0\in C_v(x_0)\) は
+出ない。\(C_v(x_0)\cap x_0\) が \(x_0\) で共終になる場合、\(x_0\) は有限回の生成規則で
+は作れないまま最小でありうる（\(\psi_0\) の不動点がその形）。取り直しの正しい作り方は
+[Buc1] の該当補題を読んでから決める。 -/
 theorem surj_core : SurjCore := by
   sorry
 
