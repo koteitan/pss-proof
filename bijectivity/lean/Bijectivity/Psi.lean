@@ -961,6 +961,39 @@ theorem surj_core_of_psi
         rw [oval_naddBT s t hs ht, hsv, htv]⟩
   | @psi x hx v _ ih => exact hpsi v x hx ih
 
+/-! ### [Buc1] の条件つき閉包
+
+[Buc1] §1 の \(C_v(α)\) は、`psi` 生成規則に \(ξ\in C_u(ξ)\) を課した形で定義される。
+`psi` はすでに全域なので、条件つきの閉包は素直な帰納的述語として書ける。
+
+条件つきのほうを使うと [Buc1] Lemma 1.4(b)（\(C_v(α)\) の加法的 principal は
+標準形の引数をもつ \(\psi_uξ\) である）が構成から出て、全射性の \(ψ\) の場合が通る。
+-/
+
+/-- [Buc1] の条件つき閉包 \(C_v(α)\)。 -/
+inductive CN : ℕ∞ → Ordinal.{0} → Ordinal.{0} → Prop
+  | lt_Om {u a b} : b < Om u → CN u a b
+  | zero {u a} : CN u a 0
+  | add {u a x y} : CN u a x → CN u a y → CN u a (x + y)
+  | psi {u a x} (hx : x < a) (v : ℕ∞) : CN u a x → CN v x x → CN u a (psi v x)
+
+/-- 条件つき閉包は条件なしの閉包に含まれる（生成規則を落とすだけ）。 -/
+theorem CN_subset_CSet : ∀ {u a b : _}, CN u a b → b ∈ CSet u a := by
+  intro u a b h
+  induction h with
+  | lt_Om h' => exact CGen.lt_Om h'
+  | zero => exact CGen.zero
+  | add _ _ ihx ihy => exact CGen.add ihx ihy
+  | psi hx v _ _ ih _ => exact CGen.psi hx v ih
+
+/-- 条件つき閉包も \(α\) について単調。 -/
+theorem CN_mono_arg {u : ℕ∞} {x y b : Ordinal.{0}} (h : x ≤ y) (hb : CN u x b) : CN u y b := by
+  induction hb with
+  | lt_Om h' => exact CN.lt_Om h'
+  | zero => exact CN.zero
+  | add _ _ ihx ihy => exact CN.add (ihx h) (ihy h)
+  | psi hz v _ hcond ih _ => exact CN.psi (lt_of_lt_of_le hz h) v (ih h) hcond
+
 /-- 残る唯一の穴。`surj_core_of_psi` により、示すべきは \(ψ\) の場合だけである。
 
 \(x\ltψ_ω0\) が項 \(s\) で表されるとき、\(\psi_v(x)\) を表す項が要る。素直な候補
