@@ -24,3 +24,4 @@ import «Bijectivity».«20-term-upper-bound»
 import «Bijectivity».«21-ordinal-bijectivity»
 import «Bijectivity».«22-pair-sequence-analysis»
 import «Bijectivity».«23-trans-bijectivity»
+import «Bijectivity».«PsiBridge»
