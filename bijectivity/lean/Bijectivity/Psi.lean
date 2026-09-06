@@ -1,6 +1,8 @@
 import Mathlib.SetTheory.Ordinal.Arithmetic
 import Mathlib.SetTheory.Cardinal.Aleph
+import «Buchholz-1986».«Buchholz-1986-2.1-order»
 import «Buchholz-1986».«Buchholz-1986-2.2»
+import «Buchholz-rel-ord».«Buchholz-rel-ord-6»
 
 /-!
 # Buchholz の順序数崩壊関数 \(ψ_u\)（構成中）
@@ -31,8 +33,8 @@ C_u(α)=\bigcup_{n<ω}C_u^n(α),\qquad ψ_u(α)=\min\{β\midβ\notin C_u(α)\}
 | (1) | \(ψ_u(α)\) の存在（\(C_u(α)\neq\mathrm{Ord}\)、基数評価 \(|C_u(α)|<Ω_{u+1}\)） | **済** |
 | (2) | \(C_u(α)\cap Ω_{u+1}=ψ_u(α)\)（崩壊の要） | **済** |
 | (3) | 評価写像 \(o\) の定義と \(G_u\to C_u\) の橋渡し | **済** |
-| (4) | [Buc1] Lemma 2.1（\(o\) が順序を保つ） | `sorry` |
-| (5) | [Buc1] Lemma 2.2(c)（像が \(ψ_0ψ_ω0\) の始切片） | `sorry` |
+| (4) | [Buc1] Lemma 2.1（\(o\) が順序を保つ、単射性つき） | **済** |
+| (5) | [Buc1] Lemma 2.2(c)（像が \(ψ_0ψ_ω0\) の始切片） | `sorry`（残り 1 本） |
 
 (1)(2) から出たもの: \(Ω_u\leψ_u(α)<Ω_{u+1}\)、\(ψ\) の広義・狭義単調性、
 \(ψ_u(α)\) が加法的 principal であること。
@@ -496,6 +498,226 @@ mutual
         simpa using CGen.add hp hps
 end
 
+/-! ### Lemma 2.1 の部品 -/
+
+/-- \(\psi_v(x)\) は加法的 principal なので、principal 成分がすべてそれ未満の列の
+評価もそれ未満。 -/
+theorem oval_trm_lt_psi {v : ℕ∞} {x : Ordinal.{0}} :
+    ∀ {ps : List BP}, (∀ p ∈ ps, ovalBP p < psi v x) → oval (BT.trm ps) < psi v x
+  | [], _ => by
+      simpa using lt_of_lt_of_le (Om_pos v) (Om_le_psi v x)
+  | p :: ps, h => by
+      have hp := h p (List.mem_cons_self)
+      have hps : oval (BT.trm ps) < psi v x :=
+        oval_trm_lt_psi (fun q hq => h q (List.mem_cons_of_mem _ hq))
+      simpa using add_lt_psi hp hps
+
+/-- 添字が小さい principal は値も小さい（\(\psi_u(x)\lt Ω_{u+1}\leq Ω_v\leq\psi_v(y)\)）。 -/
+theorem ovalBP_lt_of_index {u v : ℕ∞} (huv : u < v) (a b : BT) :
+    ovalBP (BP.db u a) < ovalBP (BP.db v b) := by
+  simpa using lt_of_lt_of_le (psi_lt_OmSucc u (oval a))
+    (le_trans (OmSucc_le_Om huv) (Om_le_psi v (oval b)))
+
+/-- `descP` の各成分は先頭以下。 -/
+theorem descP_le_head : ∀ (p : BP) (ps : List BP), descP (p :: ps) = true →
+    ∀ q ∈ ps, leBT (BT.trm [q]) (BT.trm [p]) = true
+  | _, [], _, _, hq => absurd hq (by simp)
+  | p, q :: qs, h, r, hr => by
+      simp only [descP, Bool.and_eq_true] at h
+      rcases List.mem_cons.1 hr with rfl | hr'
+      · exact h.1
+      · have := descP_le_head q qs h.2 r hr'
+        -- leBT の推移律
+        simp only [leBT, Bool.or_eq_true, beq_iff_eq] at this h ⊢
+        rcases this with hlt | heqr
+        · rcases h.1 with hlt' | heq
+          · exact Or.inl (lessBT_linear_trans _ _ _ hlt hlt')
+          · exact Or.inl (heq ▸ hlt)
+        · rw [heqr]
+          exact h.1
+
+/-! ### `OT` は部分項について閉じている -/
+
+mutual
+  theorem isOT_of_mem_gatherBT : ∀ (u : ℕ∞) (t : BT), isOT_BT t = true →
+      ∀ x ∈ gatherBT u t, isOT_BT x = true
+    | u, .trm ps, h, x, hx => by
+        simp only [isOT_BT, Bool.and_eq_true] at h
+        exact isOT_of_mem_gatherBPList u ps h.1 x (by simpa [gatherBT] using hx)
+
+  theorem isOT_of_mem_gatherBP : ∀ (u : ℕ∞) (p : BP), isOT_BP p = true →
+      ∀ x ∈ gatherBP u p, isOT_BT x = true
+    | u, .db v b, h, x, hx => by
+        simp only [isOT_BP, Bool.and_eq_true] at h
+        by_cases huv : u ≤ v
+        · simp only [gatherBP, huv, decide_true, if_true, List.mem_cons] at hx
+          rcases hx with rfl | hx'
+          · exact h.1
+          · exact isOT_of_mem_gatherBT u b h.1 x hx'
+        · simp [gatherBP, huv] at hx
+
+  theorem isOT_of_mem_gatherBPList : ∀ (u : ℕ∞) (ps : List BP), isOT_BPList ps = true →
+      ∀ x ∈ gatherBPList u ps, isOT_BT x = true
+    | _, [], _, _, hx => absurd hx (by simp [gatherBPList])
+    | u, p :: ps, h, x, hx => by
+        simp only [isOT_BPList, Bool.and_eq_true] at h
+        simp only [gatherBPList, List.mem_append] at hx
+        rcases hx with hx | hx
+        · exact isOT_of_mem_gatherBP u p h.1 x hx
+        · exact isOT_of_mem_gatherBPList u ps h.2 x hx
+end
+
+/-! ### 重さ: \(G_u(t)\) の元は \(t\) より軽い
+
+`G_u a` の元は Lean から見て `a` の構造的部分項ではないので、主帰納法は
+[Buchholz-rel-ord] の項の重さ `btWeight` に関する整礎再帰で回す。
+-/
+
+theorem bpWeight_le_of_mem : ∀ {p : BP} {ps : List BP}, p ∈ ps → bpWeight p ≤ bpListWeight ps
+  | _, [], h => absurd h (by simp)
+  | p, q :: qs, h => by
+      rcases List.mem_cons.1 h with rfl | h'
+      · simp only [bpListWeight]
+        omega
+      · have := bpWeight_le_of_mem h'
+        simp only [bpListWeight]
+        omega
+
+mutual
+  theorem weight_of_mem_gatherBT : ∀ (u : ℕ∞) (t : BT),
+      ∀ x ∈ gatherBT u t, btWeight x < btWeight t
+    | u, .trm ps, x, hx => by
+        have := weight_of_mem_gatherBPList u ps x (by simpa [gatherBT] using hx)
+        simp only [btWeight]
+        omega
+
+  theorem weight_of_mem_gatherBP : ∀ (u : ℕ∞) (p : BP),
+      ∀ x ∈ gatherBP u p, btWeight x < bpWeight p
+    | u, .db v b, x, hx => by
+        by_cases huv : u ≤ v
+        · simp only [gatherBP, huv, decide_true, if_true, List.mem_cons] at hx
+          rcases hx with rfl | hx'
+          · simp [bpWeight]
+          · have := weight_of_mem_gatherBT u b x hx'
+            simp only [bpWeight]
+            omega
+        · simp [gatherBP, huv] at hx
+
+  theorem weight_of_mem_gatherBPList : ∀ (u : ℕ∞) (ps : List BP),
+      ∀ x ∈ gatherBPList u ps, btWeight x < bpListWeight ps
+    | _, [], x, hx => absurd hx (by simp [gatherBPList])
+    | u, p :: ps, x, hx => by
+        simp only [gatherBPList, List.mem_append] at hx
+        rcases hx with hx | hx
+        · have := weight_of_mem_gatherBP u p x hx
+          simp only [bpListWeight]
+          omega
+        · have := weight_of_mem_gatherBPList u ps x hx
+          simp only [bpListWeight]
+          omega
+end
+
+/-! ### `OT` の補助 -/
+
+theorem isOT_of_mem_list : ∀ {p : BP} {ps : List BP}, isOT_BPList ps = true → p ∈ ps →
+    isOT_BP p = true
+  | _, [], _, h => absurd h (by simp)
+  | p, q :: qs, hl, h => by
+      simp only [isOT_BPList, Bool.and_eq_true] at hl
+      rcases List.mem_cons.1 h with rfl | h'
+      · exact hl.1
+      · exact isOT_of_mem_list hl.2 h'
+
+theorem descP_tail : ∀ {p : BP} {ps : List BP}, descP (p :: ps) = true → descP ps = true
+  | _, [], _ => by simp [descP]
+  | _, _ :: _, h => by
+      simp only [descP, Bool.and_eq_true] at h
+      exact h.2
+
+theorem lessBT_single (p q : BP) : lessBT (BT.trm [p]) (BT.trm [q]) = lessBP p q := by
+  simp [lessBT, lessBPList]
+
+/-! ### [Buc1] Lemma 2.1 の順方向 -/
+
+mutual
+  theorem oval_lt_of_lessBT : ∀ (s t : BT), isOT_BT s = true → isOT_BT t = true →
+      lessBT s t = true → oval s < oval t
+    | .trm as, .trm bs, hs, ht, h => by
+        simp only [isOT_BT, Bool.and_eq_true] at hs ht
+        exact oval_lt_of_lessBPList as bs hs.1 hs.2 ht.1 ht.2 (by simpa [lessBT] using h)
+  termination_by s => btWeight s
+  decreasing_by simp only [btWeight]; omega
+
+  theorem oval_lt_of_lessBP : ∀ (p q : BP), isOT_BP p = true → isOT_BP q = true →
+      lessBP p q = true → ovalBP p < ovalBP q
+    | .db u a, .db v b, hp, hq, h => by
+        simp only [lessBP, Bool.or_eq_true, Bool.and_eq_true, decide_eq_true_eq,
+          beq_iff_eq] at h
+        rcases h with huv | ⟨rfl, hab⟩
+        · exact ovalBP_lt_of_index huv a b
+        · simp only [isOT_BP, Bool.and_eq_true] at hp hq
+          have hlt : oval a < oval b := oval_lt_of_lessBT a b hp.1 hq.1 hab
+          have hmem : oval a ∈ CSet u (oval b) := by
+            refine mem_CSet_of_gatherBT u (oval b) a (fun x hx => ?_)
+            have hxa : lessBT x a = true := by
+              simpa using List.all_eq_true.1 hp.2 x hx
+            have hxOT : isOT_BT x = true := isOT_of_mem_gatherBT u a hp.1 x hx
+            have hwx : btWeight x < btWeight a := weight_of_mem_gatherBT u a x hx
+            exact lt_trans (oval_lt_of_lessBT x a hxOT hp.1 hxa) hlt
+          simpa using psi_lt_psi hlt hmem
+  termination_by p => bpWeight p
+  decreasing_by
+    all_goals simp only [bpWeight]
+    · omega
+    · omega
+
+  theorem oval_lt_of_lessBPList : ∀ (as bs : List BP),
+      isOT_BPList as = true → descP as = true →
+      isOT_BPList bs = true → descP bs = true →
+      lessBPList as bs = true → oval (BT.trm as) < oval (BT.trm bs)
+    | [], [], _, _, _, _, h => by simp [lessBPList] at h
+    | [], b :: bs', _, _, _, _, _ => by
+        have hpos : (0 : Ordinal) < ovalBP b + oval (BT.trm bs') :=
+          lt_of_lt_of_le (ovalBP_pos b) le_self_add
+        simpa using hpos
+    | _ :: _, [], _, _, _, _, h => by simp [lessBPList] at h
+    | a :: as', b :: bs', ha, hda, hb, hdb, h => by
+        simp only [lessBPList, Bool.or_eq_true, Bool.and_eq_true, beq_iff_eq] at h
+        simp only [isOT_BPList, Bool.and_eq_true] at ha hb
+        rcases h with hab | ⟨rfl, htail⟩
+        · obtain ⟨v, c, rfl⟩ : ∃ v c, b = BP.db v c := by
+            cases b with | db v c => exact ⟨v, c, rfl⟩
+          have hab' : ovalBP a < ovalBP (BP.db v c) :=
+            oval_lt_of_lessBP a (BP.db v c) ha.1 hb.1 hab
+          have hall : ∀ p ∈ a :: as', ovalBP p < psi v (oval c) := by
+            intro p hp
+            rcases List.mem_cons.1 hp with rfl | hp'
+            · simpa using hab'
+            · have hple := descP_le_head a as' hda p hp'
+              have hpOT : isOT_BP p = true := isOT_of_mem_list ha.2 hp'
+              have hwp : bpWeight p ≤ bpListWeight as' := bpWeight_le_of_mem hp'
+              have hple' : ovalBP p ≤ ovalBP a := by
+                simp only [leBT, Bool.or_eq_true, beq_iff_eq, lessBT_single] at hple
+                rcases hple with hlt | heq
+                · exact le_of_lt (oval_lt_of_lessBP p a hpOT ha.1 hlt)
+                · have hpa : p = a := by simpa using heq
+                  rw [hpa]
+              exact lt_of_le_of_lt hple' (by simpa using hab')
+          have hsum : oval (BT.trm (a :: as')) < psi v (oval c) := oval_trm_lt_psi hall
+          show ovalBP a + oval (BT.trm as') < ovalBP (BP.db v c) + oval (BT.trm bs')
+          calc ovalBP a + oval (BT.trm as') = oval (BT.trm (a :: as')) := rfl
+            _ < psi v (oval c) := hsum
+            _ = ovalBP (BP.db v c) := by simp
+            _ ≤ ovalBP (BP.db v c) + oval (BT.trm bs') := le_self_add
+        · have hrec := oval_lt_of_lessBPList as' bs' ha.2 (descP_tail hda) hb.2
+            (descP_tail hdb) htail
+          simpa using (add_lt_add_iff_left (ovalBP a)).2 hrec
+  termination_by as => bpListWeight as
+  decreasing_by
+    all_goals simp only [bpListWeight]
+    all_goals omega
+end
+
 /-! ## 残り: [Buc1] Lemma 2.1 と 2.2(c) -/
 
 /-- \(D_0D_\omega0\)。主定理の値域の上界にあたる項。 -/
@@ -508,7 +730,20 @@ def DzeroDomegaZeroP : BT := Dprin 0 (Dprin ⊤ BZero)
 /-- [Buc1] Lemma 2.1: \(o\) は \(OT\) 上で順序を保つ。 -/
 theorem oval_lt_iff {s t : BT} (hs : s ∈ OT) (ht : t ∈ OT) :
     lessBT s t = true ↔ oval s < oval t := by
-  sorry
+  constructor
+  · exact fun h => oval_lt_of_lessBT s t hs ht h
+  · intro h
+    rcases lessBT_linear_trichotomy s t with h1 | rfl | h1
+    · exact h1
+    · exact absurd h (lt_irrefl _)
+    · exact absurd (lt_trans h (oval_lt_of_lessBT t s ht hs h1)) (lt_irrefl _)
+
+/-- \(o\) は \(OT\) 上で単射。 -/
+theorem oval_injOn {s t : BT} (hs : s ∈ OT) (ht : t ∈ OT) (h : oval s = oval t) : s = t := by
+  rcases lessBT_linear_trichotomy s t with h1 | h1 | h1
+  · exact absurd ((oval_lt_iff hs ht).1 h1) (by rw [h]; exact lt_irrefl _)
+  · exact h1
+  · exact absurd ((oval_lt_iff ht hs).1 h1) (by rw [h]; exact lt_irrefl _)
 
 /-- [Buc1] Lemma 2.2(c): \(D_0D_\omega0\) 未満の順序数項の像はちょうど
 \(\psi_0\psi_\omega0\) の始切片。 -/
