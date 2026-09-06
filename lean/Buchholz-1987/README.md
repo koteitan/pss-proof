@@ -7,9 +7,9 @@
 
 ## §2.3
 
-- 2.3 §2 — \(W_v\) の反復帰納的定義 [lean](Buchholz-1987-2.3-W.lean) [md](Buchholz-1987-2.3-W.md)
+- 2.3 §2 — $`W_v`$ の反復帰納的定義 [lean](Buchholz-1987-2.3-W.lean) [md](Buchholz-1987-2.3-W.md)
 
 ## §2.4–2.8
 
-- 2.4–2.8 \(W_v\) の閉包 [lean](Buchholz-1987-2.4-2.8.lean) [md](Buchholz-1987-2.4-2.8.md)
+- 2.4–2.8 $`W_v`$ の閉包 [lean](Buchholz-1987-2.4-2.8.lean) [md](Buchholz-1987-2.4-2.8.md)
 

@@ -44,7 +44,7 @@
 - ✅ corrections.md の全数監査(16件が我々の誤り=取り下げ。多くは operB 誤読から派生)[r4]
 - ✅ §5 定式化
 - ✅ §6 ペア数列の基本性質[r2]
-- ✅ §7 Buchholzの表記系への翻訳（系（$\textrm{Mark}$ と NextAdm）の原文 $T_{PS}$ 版は**偽**＝訂正A47。反例を機械証明）[r5][0.92][5.3h]
+- ✅ §7 Buchholzの表記系への翻訳（系（$`\textrm{Mark}`$ と NextAdm）の原文 $`T_{PS}`$ 版は**偽**＝訂正A47。反例を機械証明）[r5][0.92][5.3h]
 - ✅ §8 停止性
 - ✅ 停止性チェーン外の stale 引用（y3t_toplevel_OT_tail_annihilate。layerB 版は引用ゼロと確認）
 - 🚨 原文章立命題の documented sorry 残置（原文偽と未証明を区別）[r0]

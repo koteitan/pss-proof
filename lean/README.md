@@ -13,7 +13,7 @@
 
 ### 基礎定理
 
-- [\(OT_B\) の整礎性 — 構文的証明](OTB-well-founded-syntactic/README.md)
+- [OT_B の整礎性 — 構文的証明](OTB-well-founded-syntactic/README.md)
 
 ### 参照文献
 

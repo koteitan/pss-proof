@@ -12,7 +12,7 @@
 
 ## §2.2
 
-- 2.2 \(G_u\)、\(T_B\)、\(OT_B\) [lean](Buchholz-1986-2.2.lean) [md](Buchholz-1986-2.2.md)
+- 2.2 $`G_u`$、$`T_B`$、$`OT_B`$ [lean](Buchholz-1986-2.2.lean) [md](Buchholz-1986-2.2.md)
 
 ## §3.2
 

@@ -37,17 +37,17 @@ theorem y5_Fdom   : ...                     (* 原文の言明 p_8_7_termination
 
 [`bijectivity/`](bijectivity/) は Naruyoko 氏の記事
 「ペア数列システムの停止性証明に用いられた変換写像の全単射性」(2022) の Lean 4
-形式化である。停止性で使った \(\textrm{Trans}\) が実は
+形式化である。停止性で使った $`\textrm{Trans}`$ が実は
 
-\[
+```math
 \textrm{Trans}:CT_{\textrm{PS}}\longrightarrow
-\{t\mid t\in OT_{\textrm{B}\omega}\land t<_{\textrm{B}}D_0D_\omega0\}
-\]
+\{t\mid t\in OT_{\textrm{B}\omega}\land t\lt_{\textrm{B}}D_0D_\omega0\}
+```
 
 の順序同型（全単射）であることを示す。**原文の 23 項目すべてを形式化済み・`sorry` ゼロ**で、
-\(\textrm{Trans}\) が well-defined かつ単射な順序同型埋め込みであることは
+$`\textrm{Trans}`$ が well-defined かつ単射な順序同型埋め込みであることは
 外部引用ゼロで証明されている。原文の言明が偽である 2 か所は、その**否定を証明**してある。全射性だけが [Buc2] Theorem 1.4(a)（基本列が初期切片で共終であること）の
-**単項の場合**への引用 1 本に依存する。評価写像 \(o\) 自身は公理ではなく \(OT_{\textrm{B}}\) の
+**単項の場合**への引用 1 本に依存する。評価写像 $`o`$ 自身は公理ではなく $`OT_{\textrm{B}}`$ の
 整礎性から構成してあり、残る 1 本も順序数を含まない構文的な主張なので、
 そのままの形で全数検証にかけられる。詳細は
 [`bijectivity/README.md`](bijectivity/README.md)、原文への訂正案 5 件は

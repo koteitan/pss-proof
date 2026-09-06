@@ -6,7 +6,7 @@
 
 ## 全体構造：単調性 `SkT_PS_mono` を使った `k × Lng` 辞書式帰納（Row1Zero 不要）
 
-> **重要な経緯**: 当初「単調性 $S_{k-1}\subseteq S_k$ は偽」と誤判断し、Row1Zero 経由の補強 (R)/(U) を
+> **重要な経緯**: 当初「単調性 $`S_{k-1}\subseteq S_k`$ は偽」と誤判断し、Row1Zero 経由の補強 (R)/(U) を
 > 設計した（playbook で T と fold する計画）。しかし**単調性は真**（私の経験検証が truncation
 > アーティファクトだった）。agent が `SkT_PS_mono` を発見・私が完成（緑、0669768）。
 > **単調性があれば Row1Zero は丸ごと不要**。corrections.md A6 も訂正済。
