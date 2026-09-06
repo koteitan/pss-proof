@@ -47,20 +47,20 @@ Lean の証明を数式に直すとき、「ここはだいたいこういう証
 
 ### 悪い例
 
-> 補題 8.4 を使って充足コードの正しさを得る。$\Delta_0$-絶対性から外部でも成立するので、
+> 補題 8.4 を使って充足コードの正しさを得る。$`\Delta_0`$-絶対性から外部でも成立するので、
 > 正表示の同値が従う。負表示も同様。
 
 何を何に適用したのか、どの集合を取ったのか、絶対性がどの包含関係から出るのかが書かれていない。
 
 ### 良い例
 
-> $a$ の値域を含む推移的集合として $A$ を取る。具体的には $\rho$ を
-> $\omega + 1 < \rho < \theta$ かつ $\rho + 1 < \theta$ なる順序数とし $A = L_\rho$ と置く。
-> このとき $A$ は推移的で、$\mathrm{ran}(a) \subseteq A$、$A \in L_{\rho+1} \subseteq W$。
-> 次に補題 10.5(1) を $W$ の内部で $A$ に適用して $U, T \in W$ で
-> $W \models \mathrm{SatCode}(A,U,T)$ なるものを取る。$\mathrm{SatCode}$ は $\Delta_0$ で
-> $W$ は推移的だから、$\Delta_0$-絶対性により外部でも $\mathrm{SatCode}(A,U,T)$。
-> 補題 8.4 から $\langle e,a\rangle \in T \iff (A,\in) \models \delta[a]$。…
+> $`a`$ の値域を含む推移的集合として $`A`$ を取る。具体的には $`\rho`$ を
+> $`\omega + 1 \lt  \rho \lt  \theta`$ かつ $`\rho + 1 \lt  \theta`$ なる順序数とし $`A = L_\rho`$ と置く。
+> このとき $`A`$ は推移的で、$`\mathrm{ran}(a) \subseteq A`$、$`A \in L_{\rho+1} \subseteq W`$。
+> 次に補題 10.5(1) を $`W`$ の内部で $`A`$ に適用して $`U, T \in W`$ で
+> $`W \models \mathrm{SatCode}(A,U,T)`$ なるものを取る。$`\mathrm{SatCode}`$ は $`\Delta_0`$ で
+> $`W`$ は推移的だから、$`\Delta_0`$-絶対性により外部でも $`\mathrm{SatCode}(A,U,T)`$。
+> 補題 8.4 から $`\langle e,a\rangle \in T \iff (A,\in) \models \delta[a]`$。…
 
 （上の 2 例は別プロジェクトのもので、粒度の見本として置いてある。）
 
@@ -84,8 +84,8 @@ Lean の証明を数式に直すとき、「ここはだいたいこういう証
 「Lean での命題」「Lean での証明」は数式で書く。Lean の識別子もファイル名も書かない。
 名前が要るときは、原文の記号か、原文に無ければ日本語の名前を使う。
 
-- 悪い: $\mathrm{IsCodeW}\ h\ w\ e$
-- 良い: $\mathrm{Form}(e)$、または「整式コード判定」
+- 悪い: $`\mathrm{IsCodeW}\ h\ w\ e`$
+- 良い: $`\mathrm{Form}(e)`$、または「整式コード判定」
 
 **例外は「### lean との対応」の節だけ。** ここには識別子とファイル名を書く。
 数式だけでは Lean のどこを読めばよいか分からないので、対応表を最後に一つ置く。
@@ -97,9 +97,9 @@ Lean の証明を数式に直すとき、「ここはだいたいこういう証
 
 | 数式 | Lean | ファイル |
 |---|---|---|
-| $M<_{\textrm{PS}}N$ | `ltPS M N`（記法 `M <ₚ N`） | `lean/Bijectivity/Defs.lean` |
-| $M<_{\textrm{PS}[]}N$ | `ltExpPS M N`（記法 `M <ₚ[] N`） | 同上 |
-| $M[n]$ | `PSS.oper M n` | `lean/PSS/Defs.lean` |
+| $`M\lt_{\textrm{PS}}N`$ | `ltPS M N`（記法 `M <ₚ N`） | `lean/Bijectivity/Defs.lean` |
+| $`M\lt_{\textrm{PS}[]}N`$ | `ltExpPS M N`（記法 `M <ₚ[] N`） | 同上 |
+| $`M[n]`$ | `PSS.oper M n` | `lean/PSS/Defs.lean` |
 | 基本列の辞書式的縮小性 | `oper_ltPS` | `lean/Bijectivity/04-fseq-lex-decreasing.lean` |
 
 - ファイルは `bijectivity/` からの相対パス（`lean/Bijectivity/…`）で書く。
@@ -115,7 +115,7 @@ Lean の証明を数式に直すとき、「ここはだいたいこういう証
 省略されたまま書き、補ったのは Lean 側だと分かるようにする。
 
 数式は原文の記法をそのまま MathJax に直す。記号の置き換えをしない
-（$\hat\Sigma_q$ を $\Sigma_q$ にしない、$\prec^*_q$ を $\prec_q$ にしない）。
+（$`\hat\Sigma_q`$ を $`\Sigma_q`$ にしない、$`\prec^*_q`$ を $`\prec_q`$ にしない）。
 
 ### 引用に `>` を使わない
 
@@ -246,3 +246,16 @@ $$\mathrm{Form}(e) \ :\Longleftrightarrow\ \exists s \in \omega\ (\cdots)$$
 
 指摘に通し番号（`W-1`、`U-3` など）を振るのは [README.md](README.md) の役割である。
 このページには番号を書かない（§5）。
+
+## 11. 数式は GitHub が読める書き方にする
+
+GitHub の markdown は `$…$` を数式として拾う前に強調記法を処理する。`_` の直前が
+約物（`<`、`)`、`}`、`,` など）だと強調が開いてしまい、行内の次の `_` と対になって
+数式をまたぐ。`$(M_i)_{i=1}$` のような式はこれで壊れる。次の 2 つで書く。
+
+- インライン数式は `` $`…`$ ``。バッククォートで囲むと強調記法が入らない。
+- 別行立て数式は ```` ```math ```` フェンス。`$$…$$` は文脈によって拾われない。
+
+バッククォートの中では `<` と `>` が二重エスケープされるので、**`\lt` と `\gt`** を使う。
+
+数式の外の地の文に `_` を書くときは `\_` と書く（同じ理由）。
