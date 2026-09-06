@@ -1,5 +1,6 @@
 import Mathlib.SetTheory.Ordinal.Arithmetic
 import Mathlib.SetTheory.Cardinal.Aleph
+import Mathlib.SetTheory.Ordinal.Principal
 import «Buchholz-1986».«Buchholz-1986-2.1-order»
 import «Buchholz-1986».«Buchholz-1986-2.2»
 import «Buchholz-rel-ord».«Buchholz-rel-ord-6»
@@ -34,7 +35,8 @@ C_u(α)=\bigcup_{n<ω}C_u^n(α),\qquad ψ_u(α)=\min\{β\midβ\notin C_u(α)\}
 | (2) | \(C_u(α)\cap Ω_{u+1}=ψ_u(α)\)（崩壊の要） | **済** |
 | (3) | 評価写像 \(o\) の定義と \(G_u\to C_u\) の橋渡し | **済** |
 | (4) | [Buc1] Lemma 2.1（\(o\) が順序を保つ、単射性つき） | **済** |
-| (5) | [Buc1] Lemma 2.2(c)（像が \(ψ_0ψ_ω0\) の始切片） | `sorry`（残り 1 本） |
+| (5) | [Buc1] Lemma 2.2(c) の還元と易しい向き | **済** |
+| (6) | 全射性の核 `surj_core`（\(C_0(ψ_ω0)\) の元が項で表される） | `sorry`（残り 1 本） |
 
 (1)(2) から出たもの: \(Ω_u\leψ_u(α)<Ω_{u+1}\)、\(ψ\) の広義・狭義単調性、
 \(ψ_u(α)\) が加法的 principal であること。
@@ -368,6 +370,14 @@ theorem add_lt_psi {u : ℕ∞} {a x y : Ordinal.{0}} (hx : x < psi u a) (hy : y
     have := CGen.add (lt_psi_mem hx) (lt_psi_mem (lt_of_le_of_lt hey hy))
     rwa [hsplit] at this
   exact psi_not_mem u a hmem
+
+/-- \(ψ_u(α)\) は加法的 principal（Mathlib の `IsPrincipal`）。 -/
+theorem isPrincipal_add_psi (u : ℕ∞) (a : Ordinal.{0}) :
+    Ordinal.IsPrincipal (· + ·) (psi u a) := fun {_ _} hx hy => add_lt_psi hx hy
+
+/-- 吸収律: \(β\ltψ_u(α)\) なら \(β+ψ_u(α)=ψ_u(α)\)。加法標準形に使う。 -/
+theorem add_psi_eq (u : ℕ∞) (a : Ordinal.{0}) {b : Ordinal.{0}} (h : b < psi u a) :
+    b + psi u a = psi u a := (isPrincipal_add_psi u a).add_eq_right h
 
 /-! ### (2) 崩壊の要 -/
 
@@ -747,10 +757,44 @@ theorem oval_injOn {s t : BT} (hs : s ∈ OT) (ht : t ∈ OT) (h : oval s = oval
 
 /-- [Buc1] Lemma 2.2(c): \(D_0D_\omega0\) 未満の順序数項の像はちょうど
 \(\psi_0\psi_\omega0\) の始切片。 -/
+theorem isOT_DzeroDomegaZeroP : isOT_BT DzeroDomegaZeroP = true := by decide
+
+theorem mem_OT_DzeroDomegaZeroP : DzeroDomegaZeroP ∈ OT := isOT_DzeroDomegaZeroP
+
+/-- 全射性の核。\(C_0(\psi_\omega0)\) の元はすべて順序数項で表される。
+
+閉包に関する帰納法で示す。生成規則ごとに:
+
+- \(b\lt Ω_0=1\) と \(0\) は `BZero`
+- \(x+y\) は加法標準形（principal 成分の降順列）への正規化が要る
+- \(\psi_v(ξ)\) は \(ξ\) を表す項 \(s\) から \(D_vs\) を作る。ここで \(D_vs\) が
+  順序数項であるためには \(ξ\in C_v(ξ)\)（標準形条件）が要り、そのために
+  \(\psi_v(ξ)=\psi_v(ξ')\) なる最小の \(ξ'\) を取り直す段が入る
+-/
+def SurjCore : Prop :=
+  ∀ a ∈ CSet 0 (psi ⊤ 0), ∃ t : BT, isOT_BT t = true ∧ oval t = a
+
+theorem surj_core : SurjCore := by
+  sorry
+
+/-- [Buc1] Lemma 2.2(c) のうち易しい向き。 -/
+theorem oval_image_subset :
+    oval '' {t : BT | t ∈ OT ∧ lessBT t DzeroDomegaZeroP = true}
+      ⊆ {a : Ordinal.{0} | a < psi 0 (psi ⊤ 0)} := by
+  rintro a ⟨t, ⟨htOT, htlt⟩, rfl⟩
+  have := (oval_lt_iff htOT mem_OT_DzeroDomegaZeroP).1 htlt
+  simpa using this
+
 theorem oval_surjOn_below :
     oval '' {t : BT | t ∈ OT ∧ lessBT t DzeroDomegaZeroP = true}
       = {a : Ordinal.{0} | a < psi 0 (psi ⊤ 0)} := by
-  sorry
+  refine Set.Subset.antisymm oval_image_subset ?_
+  intro a ha
+  simp only [Set.mem_setOf_eq] at ha
+  obtain ⟨t, htOT, rfl⟩ := surj_core a (lt_psi_mem ha)
+  refine ⟨t, ⟨htOT, ?_⟩, rfl⟩
+  refine (oval_lt_iff htOT mem_OT_DzeroDomegaZeroP).2 ?_
+  simpa using ha
 
 /-! ## ここから先（未着手）
 
