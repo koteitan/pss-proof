@@ -153,9 +153,7 @@ M\leq_{\textrm{PS}[]}((j,j))_{j=0}^{v+1}
 - $`M=((j,j))_{j=0}^{v+1}`$ のとき: 両辺の $`\textrm{Trans}`$ が同じ項なので $`\leq_{\textrm{B}}`$ の反射律で済む。
 - $`M\lt_{\textrm{PS}}((j,j))_{j=0}^{v+1}`$ のとき: $`\textrm{Trans}`$ が順序を保つこと
 
-  ```math
-  M,N\in CT_{\textrm{PS}}\ \land\ M\lt_{\textrm{PS}}N\ \Longrightarrow\ \textrm{Trans}(M)\lt_{\textrm{B}}\textrm{Trans}(N)
-  ```
+  $`M,N\in CT_{\textrm{PS}}\ \land\ M\lt_{\textrm{PS}}N\ \Longrightarrow\ \textrm{Trans}(M)\lt_{\textrm{B}}\textrm{Trans}(N)`$
 
   を、仮定 $`M\in CT_{\textrm{PS}}`$ と補助補題 E の $`((j,j))_{j=0}^{v+1}\in CT_{\textrm{PS}}`$ とともに適用し、狭義の $`\lt_{\textrm{B}}`$ を得て $`\leq_{\textrm{B}}`$ に緩める。
 
@@ -193,15 +191,11 @@ M\leq_{\textrm{PS}[]}((j,j))_{j=0}^{v+1}
 
   次に先頭の添字が $`0`$ であることを仮定 $`t\lt_{\textrm{B}}D_0D_\omega0`$ から出す。右辺は 1 要素の列 $`(D_0(D_\omega0))`$ なので、列の $`\lt_{\textrm{B}}`$ の第 4 節から
 
-  ```math
-  D_{u_0}a\lt_{\textrm{B}}D_0(D_\omega0)\quad\text{または}\quad\bigl(D_{u_0}a=D_0(D_\omega0)\ \land\ r\lt_{\textrm{B}}()\bigr)
-  ```
+  $`D_{u_0}a\lt_{\textrm{B}}D_0(D_\omega0)\quad\text{または}\quad\bigl(D_{u_0}a=D_0(D_\omega0)\ \land\ r\lt_{\textrm{B}}()\bigr)`$
 
   であり、後者は補助補題 A で消える。前者を principal の比較の定義で開くと
 
-  ```math
-  u_0\lt 0\quad\text{または}\quad\bigl(u_0=0\ \land\ a\lt_{\textrm{B}}D_\omega0\bigr)
-  ```
+  $`u_0\lt 0\quad\text{または}\quad\bigl(u_0=0\ \land\ a\lt_{\textrm{B}}D_\omega0\bigr)`$
 
   となる。$`\mathbb{N}\cup\{\omega\}`$ で $`0`$ は最小元だから $`u_0\lt 0`$ は偽であり、よって $`u_0=0`$ である。同時に得られる $`a\lt_{\textrm{B}}D_\omega0`$ はこの先で使わない（原文もこれを使わない）。
 

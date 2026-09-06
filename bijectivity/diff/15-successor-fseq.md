@@ -117,9 +117,7 @@ $`M=(p)`$ と書く。$`M`$ が簡約なので $`\textrm{Red}(M)=M`$ である�
 6. $`N\neq((0,0))`$ の場合（矛盾を導く）。
    - 補題F の対偶より $`N`$ は零項でない。$`\textrm{Trans}`$ が零項性を保つことより $`\textrm{Trans}(N)\neq0`$。
    - [1] の $`\textrm{Trans}`$ の $`P`$ ブロック分解を使う。これは「$`A\oplus N`$ が簡約、$`N`$ が簡約、$`P(A\oplus N)=P(A)\oplus P(N)`$ ならば
-     ```math
-     \textrm{Trans}(A\oplus N)=\textrm{Trans}(A)+\begin{cases}D_00+\textrm{Trans}(N)&P(N)_0=((0,0))\cr \textrm{Trans}(N)&\text{その他}\end{cases}
-     ```
+     $`\textrm{Trans}(A\oplus N)=\textrm{Trans}(A)+\begin{cases}D_00+\textrm{Trans}(N)&P(N)_0=((0,0))\cr \textrm{Trans}(N)&\text{その他}\end{cases}`$
      」という形である。いまは $`P(N)_0=N\neq((0,0))`$ なので $`\textrm{Trans}(M)=\textrm{Trans}(A)+\textrm{Trans}(N)`$。
    - $`\textrm{Trans}(N)\neq0`$ だから補題B より $`\textrm{dom}(\textrm{Trans}(M))=\textrm{dom}(\textrm{Trans}(N))`$、すなわち $`\textrm{dom}(\textrm{Trans}(N))=1`$。
    - $`N`$ は零項でない非複項なので単項である。$`\textrm{Lng}(N)\gt 1`$ なら補題E に、$`\textrm{Lng}(N)=1`$ なら補題C に矛盾する。
@@ -133,15 +131,11 @@ $`M=(p)`$ と書く。$`M`$ が簡約なので $`\textrm{Red}(M)=M`$ である�
 1. $`M_{j_1}=(0,0)`$ から $`M`$ の $`j_1`$ 以降の部分は $`((0,0))`$、$`\textrm{Pred}(M)=(M_j)_{j=0}^{j_1-1}`$ なので $`M=\textrm{Pred}(M)\oplus((0,0))`$。
 2. 切片を 2 つ確定させる。$`(M_j)_{j=0}^{j_1-1}=\textrm{Pred}(M)`$（$`0`$ から始まる切片は先頭 $`j_1`$ 項に一致する）、$`(M_j)_{j=j_1}^{j_1}=((0,0))`$（$`M_{0,j_1}=M_{1,j_1}=0`$ から成分計算）。
 3. [1] の $`P`$ の加法性を $`j_0=j_1`$ で適用する。適用条件は $`0\lt j_1`$、$`j_1\leq\textrm{Lng}(M)-1`$、および「$`\forall j\lt j_1`$ に対し $`M_{0,j_1}\leq M_{0,j}`$」の 3 つで、前 2 つは $`\textrm{Lng}(M)\gt 1`$ から、最後は $`M_{0,j_1}=0`$ から従う。結論は
-   ```math
-   P(M)=P\bigl((M_j)_{j=0}^{j_1-1}\bigr)\oplus P\bigl((M_j)_{j=j_1}^{j_1}\bigr)=P(\textrm{Pred}(M))\oplus P(((0,0)))
-   ```
+   $`P(M)=P\bigl((M_j)_{j=0}^{j_1-1}\bigr)\oplus P\bigl((M_j)_{j=j_1}^{j_1}\bigr)=P(\textrm{Pred}(M))\oplus P(((0,0)))`$
    である。
 4. $`P(((0,0)))=(((0,0)))`$ なので、その第 0 成分は $`((0,0))`$ である。
 5. [1] の $`\textrm{Trans}`$ の $`P`$ ブロック分解を $`A=\textrm{Pred}(M)`$、$`N=((0,0))`$ に適用する。3 つの前提（$`A\oplus N=M`$ が簡約、$`N=((0,0))`$ が簡約、$`P(A\oplus N)=P(A)\oplus P(N)`$）は 1・3 と「$`((0,0))`$ は標準形ゆえ簡約」から揃う。今度は $`P(N)_0=((0,0))`$ なので第 1 分岐に落ち、
-   ```math
-   \textrm{Trans}(M)=\textrm{Trans}(\textrm{Pred}(M))+\bigl(D_00+\textrm{Trans}(((0,0)))\bigr)=\textrm{Trans}(\textrm{Pred}(M))+(D_00+0)=\textrm{Trans}(\textrm{Pred}(M))+D_00
-   ```
+   $`\textrm{Trans}(M)=\textrm{Trans}(\textrm{Pred}(M))+\bigl(D_00+\textrm{Trans}(((0,0)))\bigr)=\textrm{Trans}(\textrm{Pred}(M))+(D_00+0)=\textrm{Trans}(\textrm{Pred}(M))+D_00`$
    である（最後は主項列の連結が空列を吸収することによる）。
 6. 補題I より $`M[n]=\textrm{Pred}(M)`$ なので $`\textrm{Trans}(M[n])+D_00=\textrm{Trans}(M)`$。
 

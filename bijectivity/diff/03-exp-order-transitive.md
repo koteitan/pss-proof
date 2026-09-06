@@ -67,15 +67,11 @@ M\lt_{\textrm{PS}[]}N \ :\Longleftrightarrow\ \exists a\ \bigl(a\neq()\ \land\ (
 - $`b=()`$ の場合。左辺は $`()\oplus a=a`$ より $`\mathrm{Ex}(N,a)`$。右辺は $`\mathrm{Ex}(N,())=N`$ より $`\mathrm{Ex}(N,a)`$。定義の第 1 式だけで両辺が一致する。
 - $`b=(n)\oplus b'`$ の場合。帰納法の仮定は「任意のペア数列 $`N`$ に対して $`\mathrm{Ex}(N,b'\oplus a)=\mathrm{Ex}(\mathrm{Ex}(N,b'),a)`$」である。
 
-  ```math
-  \mathrm{Ex}(N,((n)\oplus b')\oplus a)=\mathrm{Ex}(N,(n)\oplus(b'\oplus a))=\mathrm{Ex}(N[n],b'\oplus a)
-  ```
+  $`\mathrm{Ex}(N,((n)\oplus b')\oplus a)=\mathrm{Ex}(N,(n)\oplus(b'\oplus a))=\mathrm{Ex}(N[n],b'\oplus a)`$
 
   （連結の結合律と定義の第 2 式）。ここで帰納法の仮定を $`N:=N[n]`$ に適用して
 
-  ```math
-  \mathrm{Ex}(N[n],b'\oplus a)=\mathrm{Ex}(\mathrm{Ex}(N[n],b'),a)=\mathrm{Ex}(\mathrm{Ex}(N,(n)\oplus b'),a)
-  ```
+  $`\mathrm{Ex}(N[n],b'\oplus a)=\mathrm{Ex}(\mathrm{Ex}(N[n],b'),a)=\mathrm{Ex}(\mathrm{Ex}(N,(n)\oplus b'),a)`$
 
   （最後は定義の第 2 式を内側で逆向きに使った）。これが求める右辺である。
 

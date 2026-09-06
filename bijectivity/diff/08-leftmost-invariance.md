@@ -56,9 +56,7 @@ M\leq_{\textrm{PS}[]}N\ :\Longleftrightarrow\ \exists a\in\mathbb{N}_+^{\lt\omeg
 
 - $`a=(n)\oplus a'`$ のとき。定義より $`\textrm{expand}(N,(n)\oplus a')=\textrm{expand}(N[n],a')`$ である。$`a'`$ の各成分は $`(n)\oplus a'`$ の成分でもあるから $`1`$ 以上であり、帰納法の仮定を $`N`$ ではなく $`N[n]`$ に対して適用して
 
-  ```math
-  \textrm{head}(\textrm{expand}(N[n],a'))=\textrm{head}(N[n]).
-  ```
+  $`\textrm{head}(\textrm{expand}(N[n],a'))=\textrm{head}(N[n]).`$
 
   よって残る目標は $`\textrm{head}(N[n])=\textrm{head}(N)`$ であり、$`1\lt\textrm{Lng}(N)`$ か $`\textrm{Lng}(N)\leq1`$ かで場合分けする。
 
@@ -78,9 +76,7 @@ M\leq_{\textrm{PS}[]}N\ :\Longleftrightarrow\ \exists a\in\mathbb{N}_+^{\lt\omeg
 
   以上より
 
-  ```math
-  \textrm{head}(M[n])=\textrm{head}\big((M[n]_j)_{j=0}^{j_1-1}\big)=\textrm{head}(\textrm{Pred}(M))=\textrm{head}(M).
-  ```
+  $`\textrm{head}(M[n])=\textrm{head}\big((M[n]_j)_{j=0}^{j_1-1}\big)=\textrm{head}(\textrm{Pred}(M))=\textrm{head}(M).`$
 
 **(3) 本補題。** 仮定 $`M\leq_{\textrm{PS}[]}N`$ から、定義により各成分が $`1`$ 以上の列 $`a`$ と等式 $`M=\textrm{expand}(N,a)`$ を取り出し、$`M`$ をこの式で置き換える。(1) を $`a`$ と $`N`$ に適用して $`\textrm{head}(\textrm{expand}(N,a))=\textrm{head}(N)`$、すなわち $`\textrm{head}(M)=\textrm{head}(N)`$ を得る。□
 

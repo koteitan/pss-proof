@@ -102,9 +102,7 @@ $`N[a_0]\cdots[a_{\textrm{Lng}(a)-1}]=N`$」を長さ 1 の添字列 $`(n)`$ に
      $`Q[n]\in ST_{\textrm{PS}}`$ は $`ST_{\textrm{PS}}`$ の生成規則「標準形の正の基本列は標準形」を
      $`Q\in ST_{\textrm{PS}}`$ と $`n\geq1`$ に使って得、$`a'`$ の各成分が $`1`$ 以上であることは
      $`a'`$ の成分がすべて $`a`$ の成分でもあることから従う。得られるのは
-     ```math
-     \textrm{Trans}((Q[n])[a'_0]\cdots[a'_{\textrm{Lng}(a')-1}])\ \leq_{\textrm{B}}\ \textrm{Trans}(Q[n]).
-     ```
+     $`\textrm{Trans}((Q[n])[a'_0]\cdots[a'_{\textrm{Lng}(a')-1}])\ \leq_{\textrm{B}}\ \textrm{Trans}(Q[n]).`$
   3. 反復展開の定義 $`Q[a_0]\cdots[a_{\textrm{Lng}(a)-1}]=(Q[n])[a'_0]\cdots[a'_{\textrm{Lng}(a')-1}]`$
      で目標の左辺を書き換え、2 と 1 を補助 A の $`\leq_{\textrm{B}}`$ の推移律でつなぐ。
 
@@ -145,16 +143,12 @@ $`\lt_{\textrm{PS}}`$ を「最初の相違位置」で分解する補題（原�
    成分条件から $`n\geq1`$。
 4. [1] の基本列の降下性を $`N`$ と $`n`$ に適用する。適用条件は $`N\in ST_{\textrm{PS}}`$
    （$`N\in CT_{\textrm{PS}}`$ の第 1 条件）、$`n\geq1`$（3 より）、$`\textrm{Lng}(N)\gt 1`$（2 より）で、
-   ```math
-   \textrm{Trans}(N[n])\lt_{\textrm{B}}\textrm{Trans}(N).
-   ```
+   $`\textrm{Trans}(N[n])\lt_{\textrm{B}}\textrm{Trans}(N).`$
    これが原文の $`\textrm{Trans}(Q_1)=\textrm{Trans}(N[a_0])\lt_{\textrm{B}}\textrm{Trans}(N)`$ である。
 5. 補助 C を添字列 $`a'`$ と数列 $`N[n]`$ に適用する。適用条件は
    $`N[n]\in ST_{\textrm{PS}}`$（$`ST_{\textrm{PS}}`$ の生成規則を $`N\in ST_{\textrm{PS}}`$ と $`n\geq1`$ に使う）と
    $`a'`$ の各成分が $`1`$ 以上であることで、
-   ```math
-   \textrm{Trans}((N[n])[a'_0]\cdots[a'_{\textrm{Lng}(a')-1}])\ \leq_{\textrm{B}}\ \textrm{Trans}(N[n]).
-   ```
+   $`\textrm{Trans}((N[n])[a'_0]\cdots[a'_{\textrm{Lng}(a')-1}])\ \leq_{\textrm{B}}\ \textrm{Trans}(N[n]).`$
    これが原文の $`i`$ についての帰納法にあたる部分である。
 6. 1 で得た $`M=N[a_0]\cdots[a_{\textrm{Lng}(a)-1}]`$ と反復展開の定義
    $`N[a_0]\cdots[a_{\textrm{Lng}(a)-1}]=(N[n])[a'_0]\cdots[a'_{\textrm{Lng}(a')-1}]`$ で目標を書き換えると、

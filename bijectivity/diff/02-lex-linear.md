@@ -168,9 +168,7 @@ $`A`$ についての構造帰納法。
 
 - $`A=[]`$: 両辺は $`B\lt_{\textrm{PS}}C`$ そのものなので、同値は反射律。
 - $`A=p::A'`$: 左辺は $`(p::(A'\oplus_{\mathbb{N}^2}B))\lt_{\textrm{PS}}(p::(A'\oplus_{\mathbb{N}^2}C))`$ で、定義を展開すると
-  ```math
-  p_0\lt p_0\ \lor\ (p_0=p_0\land p_1\lt p_1)\ \lor\ (p_0=p_0\land p_1=p_1\land (A'\oplus_{\mathbb{N}^2}B)\lt_{\textrm{PS}}(A'\oplus_{\mathbb{N}^2}C))
-  ```
+  $`p_0\lt p_0\ \lor\ (p_0=p_0\land p_1\lt p_1)\ \lor\ (p_0=p_0\land p_1=p_1\land (A'\oplus_{\mathbb{N}^2}B)\lt_{\textrm{PS}}(A'\oplus_{\mathbb{N}^2}C))`$
   となる。$`\lt`$ の非反射性で第 1・第 2 の選言肢が偽になり、自明な等号 $`p_0=p_0,\ p_1=p_1`$ が落ちて、左辺は $`(A'\oplus_{\mathbb{N}^2}B)\lt_{\textrm{PS}}(A'\oplus_{\mathbb{N}^2}C)`$ に等しい。帰納法の仮定を $`A'`$ に適用して $`B\lt_{\textrm{PS}}C`$ と同値。
 
 #### 13. 真の接頭辞の小ささ
@@ -180,9 +178,7 @@ $`M`$ と $`k`$ についての再帰。
 - $`M=[]`$: 仮定 $`k\lt\textrm{Lng}([])=0`$ が偽なので矛盾。
 - $`M=p::M',\ k=0`$: 接頭辞は空列で、$`[]\lt_{\textrm{PS}}(p::M')`$ は定義より真。
 - $`M=p::M',\ k=k'+1`$: 仮定 $`k'+1\lt\textrm{Lng}(M')+1`$ から $`k'\lt\textrm{Lng}(M')`$。長さ $`k'+1`$ の接頭辞は $`p::((M'_j)_{j=0}^{k'-1})`$ なので、示すべきは
-  ```math
-  (p::(M'_j)_{j=0}^{k'-1})\lt_{\textrm{PS}}(p::M')
-  ```
+  $`(p::(M'_j)_{j=0}^{k'-1})\lt_{\textrm{PS}}(p::M')`$
   である。12 と同じく定義を展開すると、$`\lt`$ の非反射性で第 1・第 2 の選言肢が消え、自明な等号が落ちて $`(M'_j)_{j=0}^{k'-1}\lt_{\textrm{PS}}M'`$ が残る。これは再帰の仮定である。
 
 ## 原文通りに書けなかった理由

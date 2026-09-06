@@ -70,9 +70,7 @@ $`k`$ についての帰納法。ここが原文の「帰納法により」に�
      $`\textrm{Lng}(\textrm{Pred}(M))=\textrm{Lng}(M)-1\geq 1`$ で矛盾する。
   3. 帰納法の仮定を $`k`$ と $`\textrm{Pred}(M)`$ に適用する。適用条件
      $`k\lt\textrm{Lng}(\textrm{Pred}(M))=\textrm{Lng}(M)-1`$ は $`k+1\lt\textrm{Lng}(M)`$ から従う。得られるのは
-     ```math
-     \textrm{Pred}(M)\!\restriction\!\bigl(\textrm{Lng}(\textrm{Pred}(M))-k\bigr)\ \leq_{\textrm{PS}[]}\ \textrm{Pred}(M).
-     ```
+     $`\textrm{Pred}(M)\!\restriction\!\bigl(\textrm{Lng}(\textrm{Pred}(M))-k\bigr)\ \leq_{\textrm{PS}[]}\ \textrm{Pred}(M).`$
   4. 一歩ぶんの経路 $`\textrm{Pred}(M)\leq_{\textrm{PS}[]}M`$ を作る。[1] の「$`\textrm{Pred}`$ が $`[1]`$ で
      表されること」（$`M\in T_{\textrm{PS}}`$ と $`\textrm{Lng}(M)\gt 1`$ を要する）より
      $`\textrm{Pred}(M)=M[1]`$ であり、$`n\geq1`$ なら添字列 $`a=(n)`$ をとって
@@ -80,11 +78,7 @@ $`k`$ についての帰納法。ここが原文の「帰納法により」に�
   5. 3 の左辺を $`M`$ の切片に書き換える。$`\textrm{Lng}(\textrm{Pred}(M))=\textrm{Lng}(M)-1`$ と
      $`\textrm{Pred}(M)=M\!\restriction\!(\textrm{Lng}(M)-1)`$、および切片の合成則
      $`(M\!\restriction\!a)\!\restriction\!b=M\!\restriction\!\min(a,b)`$ より
-     ```math
-     \textrm{Pred}(M)\!\restriction\!\bigl(\textrm{Lng}(M)-1-k\bigr)
-     =M\!\restriction\!\min\bigl(\textrm{Lng}(M)-1-k,\ \textrm{Lng}(M)-1\bigr)
-     =M\!\restriction\!\bigl(\textrm{Lng}(M)-(k+1)\bigr).
-     ```
+     $`\begin{aligned}\textrm{Pred}(M)\!\restriction\!\bigl(\textrm{Lng}(M)-1-k\bigr)\cr =M\!\restriction\!\min\bigl(\textrm{Lng}(M)-1-k,\ \textrm{Lng}(M)-1\bigr)\cr =M\!\restriction\!\bigl(\textrm{Lng}(M)-(k+1)\bigr).\end{aligned}`$
      最後の等号は自然数の切り算（$`0`$ 止まりの引き算）についての算術で、
      $`\textrm{Lng}(M)-1-k\leq\textrm{Lng}(M)-1`$ から $`\min`$ が左に決まることによる。
   6. 3 を 5 で書き換えたものと 4 を、$`\leq_{\textrm{PS}[]}`$ の推移性（原文の命題（基本列的順序が推移性））で

@@ -56,9 +56,7 @@ $`\lt_{\textrm{PS}}`$ も同じ形の 4 節による再帰で定める。$`p=(p_
 2. $`() \lt_{\textrm{PS}} (q)\oplus_{\mathbb{N}^2} N`$ は真。
 3. $`(p)\oplus_{\mathbb{N}^2} M \lt_{\textrm{PS}} ()`$ は偽。
 4. $`(p)\oplus_{\mathbb{N}^2} M \lt_{\textrm{PS}} (q)\oplus_{\mathbb{N}^2} N`$ は
-   ```math
-   p_0\lt q_0 \ \lor\ (p_0=q_0 \land p_1\lt q_1) \ \lor\ (p_0=q_0 \land p_1=q_1 \land M\lt_{\textrm{PS}}N)
-   ```
+   $`p_0\lt q_0 \ \lor\ (p_0=q_0 \land p_1\lt q_1) \ \lor\ (p_0=q_0 \land p_1=q_1 \land M\lt_{\textrm{PS}}N)`$
    と同値。
 
 第 4 節の 3 つの選言肢が、原文の 3 つの場合分けにそれぞれ対応する（$`p_0=M_{0,0}`$、$`p_1=M_{1,0}`$、$`M`$ が $`(M_i)_{i=1}^{\textrm{Lng}(M)-1}`$）。第 1-3 節は原文には無く、再帰が空列に達したときのために補ったものである。
@@ -91,33 +89,23 @@ $`M`$ に関する構造帰納法。$`N`$ は各段で全称のまま残すの�
 - $`N=()`$ のとき。左辺は $`\lt_{\textrm{PS}}`$ の第 3 節より偽。右辺は $`\bigoplus_\mathbb{N}M=(p_0,p_1)\oplus_\mathbb{N}\bigoplus_\mathbb{N}M'`$ が空でなく $`\bigoplus_\mathbb{N}()=()`$ なので、$`\lt_{\textrm{lex}}`$ の第 3 節より偽。偽 $`\iff`$ 偽。
 - $`N=(q)\oplus_{\mathbb{N}^2}N'`$ のとき。左辺を $`\lt_{\textrm{PS}}`$ の第 4 節で 1 回展開し、その第 3 選言肢の中の $`M'\lt_{\textrm{PS}}N'`$ を帰納法の仮定（$`N:=N'`$）で書き換えると
 
-  ```math
-  p_0\lt q_0 \ \lor\ (p_0=q_0 \land p_1\lt q_1) \ \lor\ \bigl(p_0=q_0 \land p_1=q_1 \land \textstyle\bigoplus_\mathbb{N}M'\lt_{\textrm{lex}}\bigoplus_\mathbb{N}N'\bigr).
-  ```
+  $`p_0\lt q_0 \ \lor\ (p_0=q_0 \land p_1\lt q_1) \ \lor\ \bigl(p_0=q_0 \land p_1=q_1 \land \textstyle\bigoplus_\mathbb{N}M'\lt_{\textrm{lex}}\bigoplus_\mathbb{N}N'\bigr).`$
 
   右辺は平坦化の定義から
 
-  ```math
-  \bigoplus_\mathbb{N}M = (p_0)\oplus_\mathbb{N}(p_1)\oplus_\mathbb{N}\bigoplus_\mathbb{N}M', \qquad \bigoplus_\mathbb{N}N = (q_0)\oplus_\mathbb{N}(q_1)\oplus_\mathbb{N}\bigoplus_\mathbb{N}N'
-  ```
+  $`\bigoplus_\mathbb{N}M = (p_0)\oplus_\mathbb{N}(p_1)\oplus_\mathbb{N}\bigoplus_\mathbb{N}M', \qquad \bigoplus_\mathbb{N}N = (q_0)\oplus_\mathbb{N}(q_1)\oplus_\mathbb{N}\bigoplus_\mathbb{N}N'`$
 
   であり、$`\lt_{\textrm{lex}}`$ の第 4 節を先頭成分 $`p_0,q_0`$ について 1 回適用して
 
-  ```math
-  p_0\lt q_0 \ \lor\ \Bigl(p_0=q_0 \land \bigl((p_1)\oplus_\mathbb{N}\textstyle\bigoplus_\mathbb{N}M' \lt_{\textrm{lex}} (q_1)\oplus_\mathbb{N}\bigoplus_\mathbb{N}N'\bigr)\Bigr),
-  ```
+  $`p_0\lt q_0 \ \lor\ \Bigl(p_0=q_0 \land \bigl((p_1)\oplus_\mathbb{N}\textstyle\bigoplus_\mathbb{N}M' \lt_{\textrm{lex}} (q_1)\oplus_\mathbb{N}\bigoplus_\mathbb{N}N'\bigr)\Bigr),`$
 
   さらに第 4 節を第 2 成分 $`p_1,q_1`$ についてもう 1 回適用して
 
-  ```math
-  p_0\lt q_0 \ \lor\ \Bigl(p_0=q_0 \land \bigl(p_1\lt q_1 \lor (p_1=q_1 \land \textstyle\bigoplus_\mathbb{N}M'\lt_{\textrm{lex}}\bigoplus_\mathbb{N}N')\bigr)\Bigr)
-  ```
+  $`p_0\lt q_0 \ \lor\ \Bigl(p_0=q_0 \land \bigl(p_1\lt q_1 \lor (p_1=q_1 \land \textstyle\bigoplus_\mathbb{N}M'\lt_{\textrm{lex}}\bigoplus_\mathbb{N}N')\bigr)\Bigr)`$
 
   となる。したがって残るのは、$`A:\ p_0\lt q_0`$、$`B:\ p_0=q_0`$、$`C:\ p_1\lt q_1`$、$`D:\ p_1=q_1`$、$`E:\ \bigoplus_\mathbb{N}M'\lt_{\textrm{lex}}\bigoplus_\mathbb{N}N'`$ と置いたときの命題論理の同値
 
-  ```math
-  A \lor (B\land C) \lor (B\land D\land E) \iff A \lor \bigl(B \land (C \lor (D\land E))\bigr)
-  ```
+  $`A \lor (B\land C) \lor (B\land D\land E) \iff A \lor \bigl(B \land (C \lor (D\land E))\bigr)`$
 
   のみである。これを両方向とも、選言肢ごとに明示的に構成する。
 
