@@ -29,11 +29,12 @@ C_u(α)=\bigcup_{n<ω}C_u^n(α),\qquad ψ_u(α)=\min\{β\midβ\notin C_u(α)\}
 | | 内容 | 状態 |
 |---|---|---|
 | (1) | \(ψ_u(α)\) の存在（\(C_u(α)\neq\mathrm{Ord}\)、基数評価 \(|C_u(α)|<Ω_{u+1}\)） | **済** |
-| (2) | \(C_u(α)\cap Ω_{u+1}=ψ_u(α)\)（崩壊の要） | `sorry` |
+| (2) | \(C_u(α)\cap Ω_{u+1}=ψ_u(α)\)（崩壊の要） | **済** |
 | (3) | [Buc1] Lemma 2.1（評価 \(o\) が順序を保つ） | 未着手 |
 | (4) | [Buc1] Lemma 2.2(c)（像が \(ψ_0ψ_ω0\) の始切片） | 未着手 |
 
-(1)(2) が済むと、単調性・\(Ω_u\leψ_u(α)<Ω_{u+1}\) 等はここから出る。
+(1)(2) から出たもの: \(Ω_u\leψ_u(α)<Ω_{u+1}\)、\(ψ\) の広義・狭義単調性、
+\(ψ_u(α)\) が加法的 principal であること。
 -/
 
 namespace Bijectivity
@@ -65,6 +66,16 @@ noncomputable def OmSucc (u : ℕ∞) : Ordinal.{0} :=
 
 @[simp] theorem OmSucc_coe (n : ℕ) :
     OmSucc (n : ℕ∞) = (ℵ_ ((n : Ordinal) + 1)).ord := rfl
+
+theorem Om_pos (u : ℕ∞) : 0 < Om u := by
+  have key : ∀ x : Ordinal, 0 < (ℵ_ x).ord := fun x =>
+    Cardinal.ord_pos.2 (Cardinal.aleph_pos x)
+  cases u with
+  | top => simpa [Om] using key _
+  | coe n =>
+    by_cases h : n = 0
+    · simp [Om, h]
+    · simpa [Om, h] using key ((n : ℕ) : Ordinal)
 
 theorem Om_lt_OmSucc (u : ℕ∞) : Om u < OmSucc u := by
   have mono : ∀ x y : Ordinal, x < y → (ℵ_ x).ord < (ℵ_ y).ord :=
@@ -295,12 +306,107 @@ theorem Om_le_psi (u : ℕ∞) (a : Ordinal.{0}) : Om u ≤ psi u a := by
   by_contra hcon
   exact psi_not_mem u a (CGen.lt_Om (not_le.1 hcon))
 
+/-! ### \(Ω\) の単調性 -/
+
+theorem alephOrd_le {x y : Ordinal} (h : x ≤ y) : (ℵ_ x).ord ≤ (ℵ_ y).ord :=
+  Cardinal.ord_le_ord.2 (Cardinal.aleph_le_aleph.2 h)
+
+theorem OmSucc_le_Om {u v : ℕ∞} (h : u < v) : OmSucc u ≤ Om v := by
+  cases u with
+  | top => exact absurd h (not_lt_of_ge le_top)
+  | coe n =>
+    cases v with
+    | top =>
+        rw [OmSucc_coe, Om_top]
+        refine alephOrd_le (le_of_lt ?_)
+        have := Ordinal.natCast_lt_omega0 (n + 1)
+        push_cast at this
+        exact this
+    | coe m =>
+        have hnm : n < m := by exact_mod_cast h
+        have hm : m ≠ 0 := by omega
+        rw [OmSucc_coe, Om_coe, if_neg hm]
+        refine alephOrd_le ?_
+        have : ((n + 1 : ℕ) : Ordinal) ≤ ((m : ℕ) : Ordinal) := by
+          exact_mod_cast Nat.succ_le_of_lt hnm
+        push_cast at this
+        exact this
+
+theorem le_of_Om_lt_OmSucc {u v : ℕ∞} (h : Om v < OmSucc u) : v ≤ u := by
+  by_contra hc
+  exact absurd (OmSucc_le_Om (not_le.1 hc)) (not_le.2 h)
+
+/-! ### \(C_u(α)\) の \(α\) についての単調性 -/
+
+theorem CGen_mono_arg {u : ℕ∞} {x y : Ordinal.{0}} (h : x ≤ y) {b : Ordinal.{0}}
+    (hb : CGen u x (fun z _ v => psi v z) b) : CGen u y (fun z _ v => psi v z) b := by
+  induction hb with
+  | lt_Om h' => exact CGen.lt_Om h'
+  | zero => exact CGen.zero
+  | add _ _ ihx ihy => exact CGen.add ihx ihy
+  | psi hz v _ ih => exact CGen.psi (lt_of_lt_of_le hz h) v ih
+
+theorem psi_mono {u : ℕ∞} {x y : Ordinal.{0}} (h : x ≤ y) : psi u x ≤ psi u y := by
+  rw [psi_eq]
+  exact csInf_le' (fun hmem => psi_not_mem u y (CGen_mono_arg h hmem))
+
+/-! ### \(ψ_u(α)\) は加法的principal -/
+
+theorem add_lt_psi {u : ℕ∞} {a x y : Ordinal.{0}} (hx : x < psi u a) (hy : y < psi u a) :
+    x + y < psi u a := by
+  by_contra hc
+  have hle : psi u a ≤ x + y := not_lt.1 hc
+  have hxle : x ≤ psi u a := le_of_lt hx
+  have hsplit : x + (psi u a - x) = psi u a := Ordinal.add_sub_cancel_of_le hxle
+  have hey : psi u a - x ≤ y := by
+    have : x + (psi u a - x) ≤ x + y := by rw [hsplit]; exact hle
+    exact (add_le_add_iff_left x).1 this
+  have hmem : psi u a ∈ CSet u a := by
+    have := CGen.add (lt_psi_mem hx) (lt_psi_mem (lt_of_le_of_lt hey hy))
+    rwa [hsplit] at this
+  exact psi_not_mem u a hmem
+
+/-! ### (2) 崩壊の要 -/
+
+theorem mem_CSet_lt_psi (u : ℕ∞) (a : Ordinal.{0}) {c : Ordinal.{0}}
+    (hc : c ∈ CSet u a) : c < OmSucc u → c < psi u a := by
+  induction hc with
+  | lt_Om h => exact fun _ => lt_of_lt_of_le h (Om_le_psi u a)
+  | zero => exact fun _ => lt_of_lt_of_le (Om_pos u) (Om_le_psi u a)
+  | @add x y _ _ ihx ihy =>
+      intro h
+      have hxlt : x < OmSucc u := lt_of_le_of_lt (le_self_add : x ≤ x + y) h
+      have hylt : y < OmSucc u := lt_of_le_of_lt (le_add_self : y ≤ x + y) h
+      exact add_lt_psi (ihx hxlt) (ihy hylt)
+  | @psi x hxa v hx _ =>
+      intro h
+      have hvu : v ≤ u := le_of_Om_lt_OmSucc (lt_of_le_of_lt (Om_le_psi v x) h)
+      rcases lt_or_eq_of_le hvu with hv | hv
+      · exact lt_of_lt_of_le (psi_lt_OmSucc v x)
+          (le_trans (OmSucc_le_Om hv) (Om_le_psi u a))
+      · subst hv
+        rcases lt_or_eq_of_le (psi_mono (le_of_lt hxa) : psi v x ≤ psi v a) with hlt | heq
+        · exact hlt
+        · exact absurd (heq ▸ CGen.psi hxa v hx) (psi_not_mem v a)
+
+/-- \(x<y\) かつ \(x\in C_u(y)\) なら \(ψ_u(x)<ψ_u(y)\)（狭義単調性）。 -/
+theorem psi_lt_psi {u : ℕ∞} {x y : Ordinal.{0}} (hxy : x < y) (hx : x ∈ CSet u y) :
+    psi u x < psi u y := by
+  rcases lt_or_eq_of_le (psi_mono (le_of_lt hxy)) with h | h
+  · exact h
+  · exact absurd (h ▸ CGen.psi hxy u hx) (psi_not_mem u y)
+
 /-! ## (2) 崩壊の要 -/
 
 /-- \(C_u(α)\cap Ω_{u+1}=ψ_u(α)\)。 -/
 theorem CSet_inter_OmSucc (u : ℕ∞) (a : Ordinal.{0}) :
     CSet u a ∩ {b | b < OmSucc u} = {b | b < psi u a} := by
-  sorry
+  ext b
+  constructor
+  · rintro ⟨hb, hlt⟩
+    exact mem_CSet_lt_psi u a hb hlt
+  · intro hb
+    exact ⟨lt_psi_mem hb, lt_trans hb (psi_lt_OmSucc u a)⟩
 
 /-! ## ここから先（未着手）
 
