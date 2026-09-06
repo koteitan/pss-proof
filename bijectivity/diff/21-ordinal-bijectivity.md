@@ -27,27 +27,13 @@ $`o\circ\textrm{Trans}`$は$`CT_{\textrm{PS}}\to\psi_0\psi_\omega0`$上で全域
 ### Lean での命題
 
 ```math
-\tilde o\circ\textrm{Trans}\ \text{は}\ \{M\mid M\in CT_{\textrm{PS}}\}\ \text{から}\ \{\alpha\mid\alpha\lt\tilde\psi\}\ \text{への全域・単射・全射な写像である}
-```
-
-すなわち次の 3 つが同時に成り立つ。
-
-```math
-\forall M\in CT_{\textrm{PS}},\ \tilde o(\textrm{Trans}(M))\lt\tilde\psi
-```
-
-```math
-\forall M,N\in CT_{\textrm{PS}},\ \tilde o(\textrm{Trans}(M))=\tilde o(\textrm{Trans}(N))\Rightarrow M=N
-```
-
-```math
-\forall\alpha\lt\tilde\psi,\ \exists M\in CT_{\textrm{PS}},\ \tilde o(\textrm{Trans}(M))=\alpha
+\tilde o\circ\textrm{Trans}\ \text{は}\ \{M\mid M\in CT_{\textrm{PS}}\}\to\{\alpha\mid\alpha\lt\tilde\psi\}\ \text{上で全域かつ全単射である}
 ```
 
 さらに、上界を Buchholz の値そのものに置いた形
 
 ```math
-\tilde o\circ\textrm{Trans}\ \text{は}\ \{M\mid M\in CT_{\textrm{PS}}\}\ \text{から}\ \{\alpha\mid\alpha\lt\psi_0(\psi_\omega(0))\}\ \text{への全域・単射・全射な写像である}
+\tilde o\circ\textrm{Trans}\ \text{は}\ \{M\mid M\in CT_{\textrm{PS}}\}\to\{\alpha\mid\alpha\lt\psi_0(\psi_\omega(0))\}\ \text{上で全域かつ全単射である}
 ```
 
 も証明されている。記号は次のとおりである。
@@ -72,7 +58,21 @@ x\in X\ \land\ x\lt\alpha\ \land\ v\leq\omega\ \land\ x\in C_v(x)\ \Rightarrow\ 
 
 ### Lean での証明
 
-証明は 4 段からなる。第 0 段は原文が [4] から引用で済ませている $`\psi_u`$ と $`o`$ の構成、第 1 段が全域性、第 2 段が単射性、第 3 段が全射性である。
+全単射性は全域性・単射性・全射性の 3 本の合成である。すなわち
+
+```math
+\forall M\in CT_{\textrm{PS}},\ \tilde o(\textrm{Trans}(M))\lt\tilde\psi
+```
+
+```math
+\forall M,N\in CT_{\textrm{PS}},\ \tilde o(\textrm{Trans}(M))=\tilde o(\textrm{Trans}(N))\Rightarrow M=N
+```
+
+```math
+\forall\alpha\lt\tilde\psi,\ \exists M\in CT_{\textrm{PS}},\ \tilde o(\textrm{Trans}(M))=\alpha
+```
+
+の 3 つを示す。原文もこの 3 つを示していて、全域性は第 1 行の「$`\{\textrm{Trans}(M)\mid M\in CT_{\textrm{PS}}\}`$ は $`\{t\mid t\in OT_{\textrm{B}\omega}\land t\lt_{\textrm{B}}D_0D_\omega0\}`$ の部分集合」にあたる。ただし原文と違い、その前に原文が [4] からの引用で済ませている $`\psi_u`$ と $`o`$ を構成する段が要る。第 0 段がその構成、第 1 段が全域性、第 2 段が単射性、第 3 段が全射性である。
 
 #### 0. $`\psi_u`$、$`o`$、$`\tilde o`$、$`\tilde\psi`$ の構成
 
