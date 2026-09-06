@@ -24,10 +24,10 @@ import Bijectivity.«16d-condII-fseq-rel»
 
 * 複項の場合の末尾の計算は原文では等号 \(\textrm{Trans}(M)[m]=\textrm{Trans}(M[m])\)
   と書かれているが、単項の場合の結論は添字 \(n\) が \(m\) とは限らない \(\leq\) なので、
-  正しくは \(\leq_{\textrm{B}}\textrm{Trans}(M[n])\) である（訂正 B4）。
+  正しくは \(\leq_{\textrm{B}}\textrm{Trans}(M[n])\) である（訂正 Y-10）。
 * 条件 (V) の非許容枝では [1] の交換関係 (3) が \(m\geq1\) しか与えないので、
   \(m=0\) は `operB` の添字単調性（`16c`、Isabelle `y4_N_mono_le`）を経由する
-  （訂正 B5）。
+  （訂正 W-34）。
 
 ## 状態
 

@@ -16,7 +16,7 @@ import «8».«8.7-termination»
 * [1] の \(P\) と基本列の関係 (2) ＝ `FseqDesc_m_6_2_P_oper_2_holds`。
 * [1] の \(\textrm{Trans}\) の \(P\) 同変性 ＝ `f7x_Trans_append_Pblocks_holds`。
 
-## 原文との差 (訂正 B4)
+## 原文との差 (訂正 Y-10)
 
 原文の複項の場合の末尾の計算は
 
@@ -29,7 +29,7 @@ import «8».«8.7-termination»
 \leq_{\textrm{B}}\textrm{Trans}(P(M)_{J_1}[n])\) であって添字 \(n\) は \(m\) とは
 限らず、しかも \(=\) ではなく \(\leq_{\textrm{B}}\) である。正しくは
 \(\textrm{Trans}(M)[m]\leq_{\textrm{B}}\textrm{Trans}(M[n])\)。詳細は
-`bijectivity/corrections.md` の B4。
+`bijectivity/corrections.md` の Y-10。
 -/
 
 namespace Bijectivity

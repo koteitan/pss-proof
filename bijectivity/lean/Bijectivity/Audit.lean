@@ -105,7 +105,7 @@ info: 'Bijectivity.oper_ltPS' depends on axioms: [propext, Classical.choice, Quo
 #print axioms Bijectivity.oper_ltPS
 
 
-/-! ## 05 命題（辞書式的順序が基本列的順序を含意すること）— 逐語形の否定を証明（訂正 B1） -/
+/-! ## 05 命題（辞書式的順序が基本列的順序を含意すること）— 逐語形の否定を証明（訂正 X-1） -/
 
 /--
 info: 'Bijectivity.not_ltExpPS_ltPS' depends on axioms: [propext, Quot.sound]
@@ -165,7 +165,7 @@ info: 'Bijectivity.ctps_iff_leExpPS' depends on axioms: [propext, Classical.choi
 #print axioms Bijectivity.ctps_iff_leExpPS
 
 
-/-! ## 11 補題（標準形の始切片への経路）— 逐語形の否定を証明（訂正 B2） -/
+/-! ## 11 補題（標準形の始切片への経路）— 逐語形の否定を証明（訂正 Y-5） -/
 
 /--
 info: 'Bijectivity.not_seg_ltExpPS' depends on axioms: [propext, Classical.choice, Quot.sound]
