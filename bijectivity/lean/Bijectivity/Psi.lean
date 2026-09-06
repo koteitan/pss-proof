@@ -36,7 +36,8 @@ C_u(α)=\bigcup_{n<ω}C_u^n(α),\qquad ψ_u(α)=\min\{β\midβ\notin C_u(α)\}
 | (3) | 評価写像 \(o\) の定義と \(G_u\to C_u\) の橋渡し | **済** |
 | (4) | [Buc1] Lemma 2.1（\(o\) が順序を保つ、単射性つき） | **済** |
 | (5) | [Buc1] Lemma 2.2(c) の還元と易しい向き | **済** |
-| (6) | 全射性の核 `surj_core`（\(C_0(ψ_ω0)\) の元が項で表される） | `sorry`（残り 1 本） |
+| (6) | 加法標準形（項の正規化和 `naddBT`） | **済** |
+| (7) | 全射性の核 `surj_core` | `sorry`（残り 1 本、\(ψ\) の場合の標準形選択） |
 
 (1)(2) から出たもの: \(Ω_u\leψ_u(α)<Ω_{u+1}\)、\(ψ\) の広義・狭義単調性、
 \(ψ_u(α)\) が加法的 principal であること。
@@ -727,6 +728,171 @@ mutual
     all_goals simp only [bpListWeight]
     all_goals omega
 end
+
+/-! ### 加法標準形
+
+順序数の和 \(x+y\) を表す項は、単なる連結ではない。\(x\) の principal 成分のうち
+\(y\) の先頭 principal より小さいものは和で吸収されるので落とす必要がある。
+-/
+
+/-- principal の三分律。 -/
+theorem lessBP_trichotomy (p q : BP) : lessBP p q = true ∨ p = q ∨ lessBP q p = true := by
+  rcases lessBT_linear_trichotomy (BT.trm [p]) (BT.trm [q]) with h | h | h
+  · exact Or.inl (by simpa [lessBT_single] using h)
+  · exact Or.inr (Or.inl (by simpa using h))
+  · exact Or.inr (Or.inr (by simpa [lessBT_single] using h))
+
+theorem leBT_single_of_not_lessBP {p q : BP} (h : lessBP p q = false) :
+    leBT (BT.trm [q]) (BT.trm [p]) = true := by
+  rcases lessBP_trichotomy p q with h1 | rfl | h1
+  · exact absurd h1 (by simp [h])
+  · simp [leBT]
+  · simp [leBT, lessBT_single, h1]
+
+/-- `descP` は接頭辞に遺伝する。 -/
+theorem descP_prefix : ∀ (ps qs : List BP), descP (ps ++ qs) = true → descP ps = true
+  | [], _, _ => by simp [descP]
+  | [_], _, _ => by simp [descP]
+  | p :: q :: ps', qs, h => by
+      simp only [List.cons_append, descP, Bool.and_eq_true] at h ⊢
+      exact ⟨h.1, descP_prefix (q :: ps') qs h.2⟩
+
+/-- `descP` は接尾辞に遺伝する。 -/
+theorem descP_suffix : ∀ (ps qs : List BP), descP (ps ++ qs) = true → descP qs = true
+  | [], _, h => by simpa using h
+  | p :: ps', qs, h => by
+      have : descP (ps' ++ qs) = true := by
+        cases ps' with
+        | nil => cases qs with
+                 | nil => simp [descP]
+                 | cons r rs =>
+                     simp only [List.nil_append, List.cons_append, descP,
+                       Bool.and_eq_true] at h ⊢
+                     exact h.2
+        | cons r rs =>
+            simp only [List.cons_append, descP, Bool.and_eq_true] at h
+            exact h.2
+      exact descP_suffix ps' qs this
+
+/-- `isOT_BPList` は連結について分配する。 -/
+theorem isOT_BPList_append : ∀ (ps qs : List BP),
+    isOT_BPList ps = true → isOT_BPList qs = true → isOT_BPList (ps ++ qs) = true
+  | [], _, _, h => by simpa using h
+  | p :: ps', qs, hp, hq => by
+      simp only [List.cons_append, isOT_BPList, Bool.and_eq_true] at hp ⊢
+      exact ⟨hp.1, isOT_BPList_append ps' qs hp.2 hq⟩
+
+/-- 境界条件つきの `descP` の連結。 -/
+theorem descP_append : ∀ (ps : List BP) (q : BP) (qs : List BP),
+    descP ps = true → descP (q :: qs) = true →
+    (∀ p ∈ ps, leBT (BT.trm [q]) (BT.trm [p]) = true) →
+    descP (ps ++ q :: qs) = true
+  | [], _, _, _, hq, _ => by simpa using hq
+  | [p], q, qs, _, hq, hb => by
+      simp only [List.cons_append, List.nil_append, descP, Bool.and_eq_true]
+      exact ⟨hb p (by simp), hq⟩
+  | p :: r :: ps', q, qs, hp, hq, hb => by
+      simp only [List.cons_append, descP, Bool.and_eq_true] at hp ⊢
+      refine ⟨hp.1, ?_⟩
+      have := descP_append (r :: ps') q qs hp.2 hq (fun x hx => hb x (by simp [hx]))
+      simpa using this
+
+theorem mem_takeWhile_prop : ∀ {f : BP → Bool} {l : List BP} {x : BP},
+    x ∈ l.takeWhile f → f x = true
+  | _, [], _, h => by simp at h
+  | f, a :: l, x, h => by
+      by_cases hfa : f a = true
+      · rw [List.takeWhile_cons_of_pos hfa] at h
+        rcases List.mem_cons.1 h with rfl | h'
+        · exact hfa
+        · exact mem_takeWhile_prop h'
+      · rw [List.takeWhile_cons_of_neg (by simp [hfa])] at h
+        simp at h
+
+theorem isOT_BPList_prefix : ∀ (ps qs : List BP),
+    isOT_BPList (ps ++ qs) = true → isOT_BPList ps = true
+  | [], _, _ => by simp [isOT_BPList]
+  | p :: ps', qs, h => by
+      simp only [List.cons_append, isOT_BPList, Bool.and_eq_true] at h ⊢
+      exact ⟨h.1, isOT_BPList_prefix ps' qs h.2⟩
+
+theorem oval_trm_lt_ovalBP {ps : List BP} {q : BP}
+    (h : ∀ p ∈ ps, ovalBP p < ovalBP q) : oval (BT.trm ps) < ovalBP q := by
+  cases q with
+  | db v c => exact oval_trm_lt_psi (by simpa using h)
+
+/-- 落とす部分（`t` の先頭より小さい成分）の評価は先頭 principal 未満。 -/
+theorem oval_dropWhile_lt : ∀ (as : List BP) (q : BP), descP as = true →
+    isOT_BPList as = true → isOT_BP q = true →
+    oval (BT.trm (as.dropWhile (fun p => !lessBP p q))) < ovalBP q
+  | [], q, _, _, _ => by
+      cases q with
+      | db v c => simpa using lt_of_lt_of_le (Om_pos v) (Om_le_psi v (oval c))
+  | p :: ps, q, hd, hl, hq => by
+      simp only [isOT_BPList, Bool.and_eq_true] at hl
+      by_cases hpq : lessBP p q = true
+      · rw [List.dropWhile_cons_of_neg (by simp [hpq])]
+        refine oval_trm_lt_ovalBP (fun r hr => ?_)
+        rcases List.mem_cons.1 hr with rfl | hr'
+        · exact oval_lt_of_lessBP r q hl.1 hq hpq
+        · have hple := descP_le_head p ps hd r hr'
+          simp only [leBT, Bool.or_eq_true, beq_iff_eq, lessBT_single] at hple
+          have hrp : ovalBP r ≤ ovalBP p := by
+            rcases hple with hlt | heq
+            · exact le_of_lt (oval_lt_of_lessBP r p (isOT_of_mem_list hl.2 hr') hl.1 hlt)
+            · have : r = p := by simpa using heq
+              rw [this]
+          exact lt_of_le_of_lt hrp (oval_lt_of_lessBP p q hl.1 hq hpq)
+      · rw [List.dropWhile_cons_of_pos (by simp [hpq])]
+        exact oval_dropWhile_lt ps q (descP_tail hd) hl.2 hq
+
+/-- 加法標準形の連結。`s` の principal 成分のうち `t` の先頭より小さいものは
+順序数の和で吸収されるので落とす。 -/
+def naddBT : BT → BT → BT
+  | s, .trm [] => s
+  | .trm as, .trm (q :: qs) => .trm (as.takeWhile (fun p => !lessBP p q) ++ q :: qs)
+
+theorem isOT_naddBT : ∀ (s t : BT), isOT_BT s = true → isOT_BT t = true →
+    isOT_BT (naddBT s t) = true
+  | s, .trm [], hs, _ => by simpa [naddBT] using hs
+  | .trm as, .trm (q :: qs), hs, ht => by
+      simp only [isOT_BT, Bool.and_eq_true] at hs ht
+      have hsplit := List.takeWhile_append_dropWhile
+        (p := fun p => !lessBP p q) (l := as)
+      have hlpre : isOT_BPList (as.takeWhile (fun p => !lessBP p q)) = true :=
+        isOT_BPList_prefix _ _ (by rw [hsplit]; exact hs.1)
+      have hdpre : descP (as.takeWhile (fun p => !lessBP p q)) = true :=
+        descP_prefix _ _ (by rw [hsplit]; exact hs.2)
+      simp only [naddBT, isOT_BT, Bool.and_eq_true]
+      refine ⟨isOT_BPList_append _ _ hlpre ht.1, descP_append _ q qs hdpre ht.2 ?_⟩
+      intro p hp
+      have := mem_takeWhile_prop hp
+      exact leBT_single_of_not_lessBP (by simpa using this)
+
+theorem oval_naddBT : ∀ (s t : BT), isOT_BT s = true → isOT_BT t = true →
+    oval (naddBT s t) = oval s + oval t
+  | s, .trm [], _, _ => by simp [naddBT]
+  | .trm as, .trm (q :: qs), hs, ht => by
+      simp only [isOT_BT, Bool.and_eq_true] at hs ht
+      have hsplit := List.takeWhile_append_dropWhile
+        (p := fun p => !lessBP p q) (l := as)
+      have hdrop : oval (BT.trm (as.dropWhile (fun p => !lessBP p q))) < ovalBP q :=
+        oval_dropWhile_lt as q hs.2 hs.1 (by
+          simp only [isOT_BPList, Bool.and_eq_true] at ht; exact ht.1.1)
+      have habs : oval (BT.trm (as.dropWhile (fun p => !lessBP p q))) + ovalBP q = ovalBP q := by
+        cases q with
+        | db v c => exact add_psi_eq v (oval c) (by simpa using hdrop)
+      have hasplit : oval (BT.trm as)
+          = oval (BT.trm (as.takeWhile (fun p => !lessBP p q)))
+            + oval (BT.trm (as.dropWhile (fun p => !lessBP p q))) := by
+        conv_lhs => rw [← hsplit]
+        exact oval_append _ _
+      simp only [naddBT]
+      rw [oval_append, hasplit, oval_trm_cons]
+      have key : oval (BT.trm (as.dropWhile (fun p => !lessBP p q)))
+            + (ovalBP q + oval (BT.trm qs)) = ovalBP q + oval (BT.trm qs) := by
+        rw [← add_assoc, habs]
+      rw [add_assoc, key]
 
 /-! ## 残り: [Buc1] Lemma 2.1 と 2.2(c) -/
 
