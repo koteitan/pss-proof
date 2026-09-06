@@ -16,10 +16,10 @@
   $`\textrm{operator}[]`$の定義中の記号を$`M`$に対して定義する。  
   $`M[n]=M`$または$`M[n]=\textrm{Pred}(M)`$ならば明らかに$`\textrm{Lng}(M[n])\geq j_1`$かつ$`(M[n]_j)_{j=0}^{j_1-1}=\textrm{Pred}(M)`$である。  
   よって$`j_1\gt 0`$かつ$`M_{j_1}\neq(0,0)`$かつある非負整数$`j_0`$が存在して$`(i_1,j_0)\lt^\textrm{Next}_M(i_1,j_1)`$であるとする。  
-    $`\begin{aligned}\textrm{Lng}(M[n])&=\textrm{Lng}(G\oplus_{\mathbb{N}^2}\left(\bigoplus_{\mathbb{N}^2}B\right))\cr &=j_0+n(j_1-j_0)\cr &\geq j_1\end{aligned}`$
+   $`\begin{aligned}\textrm{Lng}(M[n])&=\textrm{Lng}(G\oplus_{\mathbb{N}^2}\left(\bigoplus_{\mathbb{N}^2}B\right))\cr &=j_0+n(j_1-j_0)\cr &\geq j_1\end{aligned}`$
 
-    である。
-    [1]の$`\textrm{Pred}`$が$`[1]`$で表されること及び基本列の切片の不変性より$`(M[n]_j)_{j=0}^{j_1-1}=\textrm{Pred}(M)`$である。  
+   である。
+   [1]の$`\textrm{Pred}`$が$`[1]`$で表されること及び基本列の切片の不変性より$`(M[n]_j)_{j=0}^{j_1-1}=\textrm{Pred}(M)`$である。  
   よっていずれの場合でも$`\textrm{Lng}(M[n])\geq j_1`$かつ$`(M[n]_j)_{j=0}^{j_1-1}=\textrm{Pred}(M)`$である。□
 
 ## Lean
