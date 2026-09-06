@@ -30,8 +30,9 @@ C_u(α)=\bigcup_{n<ω}C_u^n(α),\qquad ψ_u(α)=\min\{β\midβ\notin C_u(α)\}
 |---|---|---|
 | (1) | \(ψ_u(α)\) の存在（\(C_u(α)\neq\mathrm{Ord}\)、基数評価 \(|C_u(α)|<Ω_{u+1}\)） | **済** |
 | (2) | \(C_u(α)\cap Ω_{u+1}=ψ_u(α)\)（崩壊の要） | **済** |
-| (3) | [Buc1] Lemma 2.1（評価 \(o\) が順序を保つ） | 未着手 |
-| (4) | [Buc1] Lemma 2.2(c)（像が \(ψ_0ψ_ω0\) の始切片） | 未着手 |
+| (3) | 評価写像 \(o\) の定義と \(G_u\to C_u\) の橋渡し | **済** |
+| (4) | [Buc1] Lemma 2.1（\(o\) が順序を保つ） | `sorry` |
+| (5) | [Buc1] Lemma 2.2(c)（像が \(ψ_0ψ_ω0\) の始切片） | `sorry` |
 
 (1)(2) から出たもの: \(Ω_u\leψ_u(α)<Ω_{u+1}\)、\(ψ\) の広義・狭義単調性、
 \(ψ_u(α)\) が加法的 principal であること。
@@ -39,7 +40,7 @@ C_u(α)=\bigcup_{n<ω}C_u^n(α),\qquad ψ_u(α)=\min\{β\midβ\notin C_u(α)\}
 
 namespace Bijectivity
 
-open Ordinal Cardinal
+open Ordinal Cardinal PSS
 
 /-! ## \(Ω_u\) -/
 
@@ -407,6 +408,114 @@ theorem CSet_inter_OmSucc (u : ℕ∞) (a : Ordinal.{0}) :
     exact mem_CSet_lt_psi u a hb hlt
   · intro hb
     exact ⟨lt_psi_mem hb, lt_trans hb (psi_lt_OmSucc u a)⟩
+
+/-! ## 評価写像 \(o\)
+
+[Buc1] の \(o\) は項の構造に沿った再帰である。
+
+\[
+o(0)=0,\qquad o(D_ua)=\psi_u(o(a)),\qquad o(t_0+t_1)=o(t_0)+o(t_1)
+\]
+
+`BT` は principal 項の列なので、列の評価を先頭から順に足したものとして定める。
+-/
+
+mutual
+  /-- \(o:T_{\textrm{B}\omega}\to\mathrm{Ord}\)。 -/
+  noncomputable def oval : BT → Ordinal.{0}
+    | BT.trm ps => ovalList ps
+  /-- principal 項の評価 \(o(D_va)=\psi_v(o(a))\)。 -/
+  noncomputable def ovalBP : BP → Ordinal.{0}
+    | BP.db v a => psi v (oval a)
+  /-- principal 項の列の評価（先頭から順に加える）。 -/
+  noncomputable def ovalList : List BP → Ordinal.{0}
+    | [] => 0
+    | p :: ps => ovalBP p + ovalList ps
+end
+
+@[simp] theorem oval_trm_nil : oval (BT.trm []) = 0 := rfl
+
+@[simp] theorem oval_zero : oval BZero = 0 := rfl
+
+@[simp] theorem ovalBP_db (v : ℕ∞) (a : BT) : ovalBP (BP.db v a) = psi v (oval a) := rfl
+
+@[simp] theorem oval_trm_cons (p : BP) (ps : List BP) :
+    oval (BT.trm (p :: ps)) = ovalBP p + oval (BT.trm ps) := rfl
+
+@[simp] theorem oval_Dprin (v : ℕ∞) (a : BT) : oval (Dprin v a) = psi v (oval a) := by
+  show ovalBP (BP.db v a) + oval (BT.trm []) = _
+  simp
+
+/-- principal 項の評価は正。 -/
+theorem ovalBP_pos (p : BP) : 0 < ovalBP p := by
+  cases p with
+  | db v a => exact lt_of_lt_of_le (Om_pos v) (Om_le_psi v (oval a))
+
+/-- 列の評価は連結について加法的（\(o(t_0+t_1)=o(t_0)+o(t_1)\)）。 -/
+theorem oval_append (as bs : List BP) :
+    oval (BT.trm (as ++ bs)) = oval (BT.trm as) + oval (BT.trm bs) := by
+  induction as with
+  | nil => simp
+  | cons p ps ih => simp [ih, add_assoc]
+
+/-! ### \(G_u\) と \(C_u\) の橋渡し
+
+[Buc1] の要は「\(G_u(t)\) の元がすべて \(β\) 未満なら \(o(t)\in C_u(β)\)」である。
+\(D_va\) の場合は \(u\leq v\) なら \(a\in G_u(D_va)\) から `psi` 生成規則で、
+\(u\gt v\) なら \(\psi_v(o(a))\lt Ω_{v+1}\leq Ω_u\) から `lt_Om` 生成規則で入る。
+-/
+
+mutual
+  theorem mem_CSet_of_gatherBT : ∀ (u : ℕ∞) (b : Ordinal.{0}) (t : BT),
+      (∀ x ∈ gatherBT u t, oval x < b) → oval t ∈ CSet u b
+    | u, b, .trm ps, h => mem_CSet_of_gatherBPList u b ps (by simpa [gatherBT] using h)
+
+  theorem mem_CSet_of_gatherBP : ∀ (u : ℕ∞) (b : Ordinal.{0}) (p : BP),
+      (∀ x ∈ gatherBP u p, oval x < b) → ovalBP p ∈ CSet u b
+    | u, b, .db v a, h => by
+        by_cases huv : u ≤ v
+        · have hmem : ∀ x ∈ gatherBP u (.db v a), oval x < b := h
+          simp only [gatherBP, huv, decide_true, if_true, List.mem_cons] at hmem
+          have hab : oval a < b := hmem a (Or.inl rfl)
+          have hrest : ∀ x ∈ gatherBT u a, oval x < b := fun x hx => hmem x (Or.inr hx)
+          have : oval a ∈ CSet u b := mem_CSet_of_gatherBT u b a hrest
+          simpa using CGen.psi hab v this
+        · have hlt : psi v (oval a) < Om u :=
+            lt_of_lt_of_le (psi_lt_OmSucc v (oval a)) (OmSucc_le_Om (not_le.1 huv))
+          simpa using CGen.lt_Om hlt
+
+  theorem mem_CSet_of_gatherBPList : ∀ (u : ℕ∞) (b : Ordinal.{0}) (ps : List BP),
+      (∀ x ∈ gatherBPList u ps, oval x < b) → oval (BT.trm ps) ∈ CSet u b
+    | _, _, [], _ => by simpa using CGen.zero
+    | u, b, p :: ps, h => by
+        simp only [gatherBPList, List.mem_append] at h
+        have hp : ovalBP p ∈ CSet u b :=
+          mem_CSet_of_gatherBP u b p (fun x hx => h x (Or.inl hx))
+        have hps : oval (BT.trm ps) ∈ CSet u b :=
+          mem_CSet_of_gatherBPList u b ps (fun x hx => h x (Or.inr hx))
+        simpa using CGen.add hp hps
+end
+
+/-! ## 残り: [Buc1] Lemma 2.1 と 2.2(c) -/
+
+/-- \(D_0D_\omega0\)。主定理の値域の上界にあたる項。 -/
+def DzeroDomegaZeroP : BT := Dprin 0 (Dprin ⊤ BZero)
+
+@[simp] theorem oval_DzeroDomegaZeroP :
+    oval DzeroDomegaZeroP = psi 0 (psi ⊤ 0) := by
+  simp [DzeroDomegaZeroP]
+
+/-- [Buc1] Lemma 2.1: \(o\) は \(OT\) 上で順序を保つ。 -/
+theorem oval_lt_iff {s t : BT} (hs : s ∈ OT) (ht : t ∈ OT) :
+    lessBT s t = true ↔ oval s < oval t := by
+  sorry
+
+/-- [Buc1] Lemma 2.2(c): \(D_0D_\omega0\) 未満の順序数項の像はちょうど
+\(\psi_0\psi_\omega0\) の始切片。 -/
+theorem oval_surjOn_below :
+    oval '' {t : BT | t ∈ OT ∧ lessBT t DzeroDomegaZeroP = true}
+      = {a : Ordinal.{0} | a < psi 0 (psi ⊤ 0)} := by
+  sorry
 
 /-! ## ここから先（未着手）
 
