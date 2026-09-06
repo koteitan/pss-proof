@@ -417,6 +417,11 @@ theorem OmSucc_le_Om {u v : ℕ∞} (h : u < v) : OmSucc u ≤ Om v := by
         push_cast at this
         exact this
 
+theorem Om_le_Om {u v : ℕ∞} (h : u ≤ v) : Om u ≤ Om v := by
+  rcases lt_or_eq_of_le h with hlt | rfl
+  · exact le_trans (le_of_lt (Om_lt_OmSucc u)) (OmSucc_le_Om hlt)
+  · exact le_rfl
+
 theorem le_of_Om_lt_OmSucc {u v : ℕ∞} (h : Om v < OmSucc u) : v ≤ u := by
   by_contra hc
   exact absurd (OmSucc_le_Om (not_le.1 hc)) (not_le.2 h)
@@ -484,6 +489,66 @@ theorem mem_CSet_lt_psi (u : ℕ∞) (a : Ordinal.{0}) {c : Ordinal.{0}}
         (le_trans (OmSucc_le_Om hv) (Om_le_psi u a))
     · subst hv
       exact psi_lt_psi hxa hx hnf
+
+/-! ### [Buc1] Lemma 1.4 -/
+
+/-- [Buc1] Lemma 1.4(b)。\(C_u(α)\) の元で \(Ω_u\) 以上の加法的 principal は、
+標準形の引数をもつ \(\psi\) 値である。閉包が「4 規則を満たす最小の集合」なので、
+主張そのものが 4 規則で閉じていることを見ればよい。 -/
+theorem CSet_inversion {u : ℕ∞} {a γ : Ordinal.{0}} (hγ : γ ∈ CSet u a)
+    (hprin : Ordinal.IsPrincipal (· + ·) γ) (hOm : Om u ≤ γ) :
+    ∃ (v : ℕ∞) (x : Ordinal.{0}), x < a ∧ x ∈ CSet u a ∧ x ∈ CSet v x ∧ γ = psi v x := by
+  refine CSet_induction
+    (P := fun c => Ordinal.IsPrincipal (· + ·) c → Om u ≤ c →
+      ∃ (v : ℕ∞) (x : Ordinal.{0}), x < a ∧ x ∈ CSet u a ∧ x ∈ CSet v x ∧ c = psi v x)
+    ?_ ?_ ?_ ?_ hγ hprin hOm
+  · exact fun b hb _ hb' => absurd (lt_of_lt_of_le hb hb') (lt_irrefl _)
+  · exact fun _ h0 => absurd (lt_of_lt_of_le (Om_pos u) h0) (lt_irrefl _)
+  · intro x _ ihx y _ ihy hp hle
+    rcases lt_or_eq_of_le (le_self_add : x ≤ x + y) with hxl | hxe
+    · rcases lt_or_eq_of_le (le_add_self : y ≤ x + y) with hyl | hye
+      · exact absurd (hp hxl hyl) (lt_irrefl _)
+      · rw [← hye] at hp hle ⊢
+        exact ihy hp hle
+    · have hy0 : y = 0 := by
+        have : x + 0 = x + y := by simpa using hxe
+        exact ((add_right_inj x).1 this).symm
+      rw [hy0, add_zero] at hp hle ⊢
+      exact ihx hp hle
+  · intro x hx _ hxa v hnf _ _
+    exact ⟨v, x, hxa, hx, hnf, rfl⟩
+
+/-- [Buc1] Lemma 1.4(a)。標準形の引数をもつ \(\psi\) 値の表示は一意。 -/
+theorem psi_inj {u v : ℕ∞} {x y : Ordinal.{0}}
+    (hx : x ∈ CSet u x) (hy : y ∈ CSet v y) (h : psi u x = psi v y) : u = v ∧ x = y := by
+  have huv : u = v := by
+    by_contra hne
+    rcases lt_or_gt_of_ne hne with hlt | hlt
+    · have h1 : psi u x < Om v :=
+        lt_of_lt_of_le (psi_lt_OmSucc u x) (OmSucc_le_Om hlt)
+      rw [h] at h1
+      exact absurd (lt_of_lt_of_le h1 (Om_le_psi v y)) (lt_irrefl _)
+    · have h1 : psi v y < Om u :=
+        lt_of_lt_of_le (psi_lt_OmSucc v y) (OmSucc_le_Om hlt)
+      rw [← h] at h1
+      exact absurd (lt_of_lt_of_le h1 (Om_le_psi u x)) (lt_irrefl _)
+  subst huv
+  refine ⟨rfl, ?_⟩
+  rcases lt_trichotomy x y with hlt | heq | hlt
+  · exact absurd (psi_lt_psi hlt (CGen_mono_arg (le_of_lt hlt) hx) hx) (by rw [h]; exact lt_irrefl _)
+  · exact heq
+  · exact absurd (psi_lt_psi hlt (CGen_mono_arg (le_of_lt hlt) hy) hy)
+      (by rw [← h]; exact lt_irrefl _)
+
+/-- 順序数側の逆向き橋渡し。\(\psi_v(x)\in C_w(b)\) かつ \(w\leq v\) なら
+\(x\lt b\) かつ \(x\in C_w(b)\)。 -/
+theorem lt_of_psi_mem {v w : ℕ∞} {x b : Ordinal.{0}} (hwv : w ≤ v)
+    (hnf : x ∈ CSet v x) (hmem : psi v x ∈ CSet w b) : x < b ∧ x ∈ CSet w b := by
+  have hOm : Om w ≤ psi v x := le_trans (Om_le_Om hwv) (Om_le_psi v x)
+  obtain ⟨v', x', hx'b, hx'mem, hx'nf, heq⟩ :=
+    CSet_inversion hmem (isPrincipal_add_psi v x) hOm
+  obtain ⟨rfl, rfl⟩ := psi_inj hx'nf hnf heq.symm
+  exact ⟨hx'b, hx'mem⟩
 
 /-! ## (2) 崩壊の要 -/
 
